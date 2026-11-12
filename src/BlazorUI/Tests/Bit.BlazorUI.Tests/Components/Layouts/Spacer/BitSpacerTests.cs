@@ -49,7 +49,7 @@ public class BitSpacerTests : BunitTestContext
         // Only the tag changes: everything the spacer generates has to survive the swap.
         Assert.AreEqual(element.ToUpperInvariant(), root.TagName);
         Assert.AreEqual("true", root.GetAttribute("aria-hidden"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin-inline-start:1rem");
+        Assert.Contains("margin-inline-start:1rem", root.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -61,7 +61,7 @@ public class BitSpacerTests : BunitTestContext
 
         var style = root.GetAttribute("style");
 
-        Assert.IsTrue(style.Contains("flex-grow:1"));
+        Assert.Contains("flex-grow:1", style!);
     }
 
     [TestMethod]
@@ -80,10 +80,10 @@ public class BitSpacerTests : BunitTestContext
 
         // Written invariantly, as CSS reads it: the culture of the machine would put its own minus sign (fa-IR and
         // ar-SA lead it with a direction mark) in front of a negative width the spacer writes as plain "-8px".
-        StringAssert.Contains(style, $"margin-inline-start:{width.ToString(CultureInfo.InvariantCulture)}px");
+        Assert.Contains($"margin-inline-start:{width.ToString(CultureInfo.InvariantCulture)}px", style!);
 
         // A fixed spacer must not also absorb the leftover space of its container.
-        Assert.IsFalse(style.Contains("flex-grow"));
+        Assert.DoesNotContain("flex-grow", style);
     }
 
     [TestMethod]
@@ -99,9 +99,9 @@ public class BitSpacerTests : BunitTestContext
 
         var style = component.Find(".bit-spc").GetAttribute("style");
 
-        StringAssert.Contains(style, $"margin-block-start:{height}px");
-        Assert.IsFalse(style.Contains("margin-inline-start"));
-        Assert.IsFalse(style.Contains("flex-grow"));
+        Assert.Contains($"margin-block-start:{height}px", style!);
+        Assert.DoesNotContain("margin-inline-start", style);
+        Assert.DoesNotContain("flex-grow", style);
     }
 
     [TestMethod]
@@ -128,8 +128,8 @@ public class BitSpacerTests : BunitTestContext
 
             var style = component.Find(".bit-spc").GetAttribute("style")!;
 
-            StringAssert.Contains(style, "margin-inline-start:-8px");
-            StringAssert.Contains(style, "margin-block-start:-4px");
+            Assert.Contains("margin-inline-start:-8px", style);
+            Assert.Contains("margin-block-start:-4px", style);
         }
         finally
         {
@@ -149,9 +149,9 @@ public class BitSpacerTests : BunitTestContext
 
         var style = component.Find(".bit-spc").GetAttribute("style");
 
-        StringAssert.Contains(style, "margin-inline-start:16px");
-        StringAssert.Contains(style, "margin-block-start:24px");
-        Assert.IsFalse(style.Contains("flex-grow"));
+        Assert.Contains("margin-inline-start:16px", style!);
+        Assert.Contains("margin-block-start:24px", style);
+        Assert.DoesNotContain("flex-grow", style);
     }
 
     [TestMethod]
@@ -167,9 +167,9 @@ public class BitSpacerTests : BunitTestContext
 
         var style = component.Find(".bit-spc").GetAttribute("style");
 
-        StringAssert.Contains(style, $"margin-inline-start:{gap}");
-        Assert.IsFalse(style.Contains("margin-block-start"));
-        Assert.IsFalse(style.Contains("flex-grow"));
+        Assert.Contains($"margin-inline-start:{gap}", style!);
+        Assert.DoesNotContain("margin-block-start", style);
+        Assert.DoesNotContain("flex-grow", style);
     }
 
     [TestMethod]
@@ -183,8 +183,8 @@ public class BitSpacerTests : BunitTestContext
 
         var style = component.Find(".bit-spc").GetAttribute("style");
 
-        StringAssert.Contains(style, "margin-block-start:3rem");
-        Assert.IsFalse(style.Contains("margin-inline-start"));
+        Assert.Contains("margin-block-start:3rem", style!);
+        Assert.DoesNotContain("margin-inline-start", style);
     }
 
     [TestMethod]
@@ -198,8 +198,8 @@ public class BitSpacerTests : BunitTestContext
 
         var style = component.Find(".bit-spc").GetAttribute("style");
 
-        StringAssert.Contains(style, "margin-inline-start:2rem");
-        Assert.IsFalse(style.Contains("64px"));
+        Assert.Contains("margin-inline-start:2rem", style!);
+        Assert.DoesNotContain("64px", style);
     }
 
     [TestMethod]
@@ -215,9 +215,9 @@ public class BitSpacerTests : BunitTestContext
 
         var style = component.Find(".bit-spc").GetAttribute("style");
 
-        StringAssert.Contains(style, "margin-block-start:2rem");
-        StringAssert.Contains(style, "margin-inline-start:16px");
-        Assert.IsFalse(style.Contains("64px"));
+        Assert.Contains("margin-block-start:2rem", style!);
+        Assert.Contains("margin-inline-start:16px", style);
+        Assert.DoesNotContain("64px", style);
     }
 
     [TestMethod]
@@ -232,7 +232,7 @@ public class BitSpacerTests : BunitTestContext
 
         var style = component.Find(".bit-spc").GetAttribute("style");
 
-        StringAssert.Contains(style, $"flex-grow:{grow}");
+        Assert.Contains($"flex-grow:{grow}", style!);
     }
 
     [TestMethod]
@@ -246,7 +246,7 @@ public class BitSpacerTests : BunitTestContext
 
         var style = component.Find(".bit-spc").GetAttribute("style");
 
-        Assert.IsFalse(style.Contains("flex-grow"));
+        Assert.DoesNotContain("flex-grow", style!);
     }
 
     [TestMethod]
@@ -264,8 +264,8 @@ public class BitSpacerTests : BunitTestContext
 
         // The length itself comes from the spacing scale of the theme through the class of the size.
         Assert.IsTrue(root.ClassList.Contains(expectedClass));
-        StringAssert.Contains(root.GetAttribute("style"), "margin-inline-start:var(--bit-spc-size)");
-        Assert.IsFalse(root.GetAttribute("style")!.Contains("flex-grow"));
+        Assert.Contains("margin-inline-start:var(--bit-spc-size)", root.GetAttribute("style")!);
+        Assert.DoesNotContain("flex-grow", root.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -280,8 +280,8 @@ public class BitSpacerTests : BunitTestContext
         var root = component.Find(".bit-spc");
 
         Assert.IsTrue(root.ClassList.Contains("bit-spc-lg"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin-block-start:var(--bit-spc-size)");
-        Assert.IsFalse(root.GetAttribute("style")!.Contains("margin-inline-start"));
+        Assert.Contains("margin-block-start:var(--bit-spc-size)", root.GetAttribute("style")!);
+        Assert.DoesNotContain("margin-inline-start", root.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -304,8 +304,8 @@ public class BitSpacerTests : BunitTestContext
         });
 
         // The class still carries the token, but the more specific Gap is what the margin resolves to.
-        StringAssert.Contains(component.Find(".bit-spc").GetAttribute("style"), "margin-inline-start:2rem");
-        Assert.IsFalse(component.Find(".bit-spc").GetAttribute("style")!.Contains("--bit-spc-size"));
+        Assert.Contains("margin-inline-start:2rem", component.Find(".bit-spc").GetAttribute("style")!);
+        Assert.DoesNotContain("--bit-spc-size", component.Find(".bit-spc").GetAttribute("style")!);
 
         component.Render(parameters =>
         {
@@ -314,8 +314,8 @@ public class BitSpacerTests : BunitTestContext
             parameters.Add(p => p.Width, 24);
         });
 
-        StringAssert.Contains(component.Find(".bit-spc").GetAttribute("style"), "margin-inline-start:24px");
-        Assert.IsFalse(component.Find(".bit-spc").GetAttribute("style")!.Contains("--bit-spc-size"));
+        Assert.Contains("margin-inline-start:24px", component.Find(".bit-spc").GetAttribute("style")!);
+        Assert.DoesNotContain("--bit-spc-size", component.Find(".bit-spc").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -331,8 +331,8 @@ public class BitSpacerTests : BunitTestContext
         var style = component.Find(".bit-spc").GetAttribute("style");
 
         // Width owns the inline axis whichever way the spacer faces, while a vertical Size targets the block one.
-        StringAssert.Contains(style, "margin-inline-start:16px");
-        StringAssert.Contains(style, "margin-block-start:var(--bit-spc-size)");
+        Assert.Contains("margin-inline-start:16px", style!);
+        Assert.Contains("margin-block-start:var(--bit-spc-size)", style);
     }
 
     [TestMethod]
@@ -344,7 +344,7 @@ public class BitSpacerTests : BunitTestContext
             parameters.Add(p => p.Size, BitSize.Small);
         });
 
-        Assert.IsFalse(component.Find(".bit-spc").GetAttribute("style")!.Contains("flex-grow"));
+        Assert.DoesNotContain("flex-grow", component.Find(".bit-spc").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -357,8 +357,8 @@ public class BitSpacerTests : BunitTestContext
 
         var style = component.Find(".bit-spc").GetAttribute("style");
 
-        StringAssert.Contains(style, "min-inline-size:2rem");
-        StringAssert.Contains(style, "flex-grow:1");
+        Assert.Contains("min-inline-size:2rem", style!);
+        Assert.Contains("flex-grow:1", style);
     }
 
     [TestMethod]
@@ -372,8 +372,8 @@ public class BitSpacerTests : BunitTestContext
 
         var style = component.Find(".bit-spc").GetAttribute("style");
 
-        StringAssert.Contains(style, "min-block-size:2rem");
-        Assert.IsFalse(style.Contains("min-inline-size"));
+        Assert.Contains("min-block-size:2rem", style!);
+        Assert.DoesNotContain("min-inline-size", style);
     }
 
     [TestMethod]
@@ -391,7 +391,7 @@ public class BitSpacerTests : BunitTestContext
         });
 
         // A fixed spacer can never collapse, so the floor of a flexible one has nothing to do on it.
-        Assert.IsFalse(component.Find(".bit-spc").GetAttribute("style")!.Contains("min-inline-size"));
+        Assert.DoesNotContain("min-inline-size", component.Find(".bit-spc").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -399,15 +399,15 @@ public class BitSpacerTests : BunitTestContext
     {
         var component = RenderComponent<BitSpacer>();
 
-        StringAssert.Contains(component.Find(".bit-spc").GetAttribute("style"), "flex-grow:1");
+        Assert.Contains("flex-grow:1", component.Find(".bit-spc").GetAttribute("style")!);
 
         component.Render(parameters => parameters.Add(p => p.Width, 32));
 
-        StringAssert.Contains(component.Find(".bit-spc").GetAttribute("style"), "margin-inline-start:32px");
+        Assert.Contains("margin-inline-start:32px", component.Find(".bit-spc").GetAttribute("style")!);
 
         component.Render(parameters => parameters.Add(p => p.Width, null));
 
-        StringAssert.Contains(component.Find(".bit-spc").GetAttribute("style"), "flex-grow:1");
+        Assert.Contains("flex-grow:1", component.Find(".bit-spc").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -459,7 +459,7 @@ public class BitSpacerTests : BunitTestContext
         }
         else
         {
-            StringAssert.Contains(style, expectedStyle);
+            Assert.Contains(expectedStyle, style!);
         }
     }
 
@@ -629,18 +629,18 @@ public class BitSpacerTests : BunitTestContext
         // even though the cascaded Gap is the more specific of the two and wins the margin.
         Assert.IsTrue(spacers[0].ClassList.Contains("cascaded"));
         Assert.IsTrue(spacers[0].ClassList.Contains("bit-spc-lg"));
-        StringAssert.Contains(spacers[0].GetAttribute("style")!, "margin-block-start:3rem");
+        Assert.Contains("margin-block-start:3rem", spacers[0].GetAttribute("style")!);
 
         // The second one sets its own gap, which the cascading parameters must not overwrite.
         Assert.IsTrue(spacers[1].ClassList.Contains("cascaded"));
-        StringAssert.Contains(spacers[1].GetAttribute("style")!, "margin-block-start:5rem");
-        Assert.IsFalse(spacers[1].GetAttribute("style")!.Contains("3rem"));
+        Assert.Contains("margin-block-start:5rem", spacers[1].GetAttribute("style")!);
+        Assert.DoesNotContain("3rem", spacers[1].GetAttribute("style")!);
 
         // The third one is flexible, so it takes the cascaded Grow and MinGap on the cascaded axis.
         Assert.IsTrue(spacers[2].ClassList.Contains("cascaded"));
         Assert.AreEqual("SPAN", spacers[2].TagName);
-        StringAssert.Contains(spacers[2].GetAttribute("style")!, "flex-grow:2");
-        StringAssert.Contains(spacers[2].GetAttribute("style")!, "min-block-size:1rem");
+        Assert.Contains("flex-grow:2", spacers[2].GetAttribute("style")!);
+        Assert.Contains("min-block-size:1rem", spacers[2].GetAttribute("style")!);
     }
 
     [TestMethod]

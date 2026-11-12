@@ -45,7 +45,7 @@ public class BitAiMarkdownViewParamsTests : BitAiTestBase
 
         Assert.IsTrue(root.ClassList.Contains("cascaded"));
         Assert.IsTrue(root.ClassList.Contains("cascaded-root"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin: 1px");
+        Assert.Contains("margin: 1px", root.GetAttribute("style")!);
         Assert.IsTrue(component.Find(".bit-aimdv-par").ClassList.Contains("cascaded-par"));
     }
 

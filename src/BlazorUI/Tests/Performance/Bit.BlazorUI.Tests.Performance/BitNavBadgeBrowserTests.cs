@@ -36,7 +36,7 @@ public class BitNavBadgeBrowserTests : PerformanceTestBase
         var text = await Rect(Row("ltr", Inbox, ".bit-nav-itx"));
 
         Assert.AreEqual(item.Right, badge.Right, 1, "The badge is not at the end of the row.");
-        Assert.IsTrue(text.Right < badge.Left, "The badge is not after the text.");
+        Assert.IsLessThan(badge.Left, text.Right, "The badge is not after the text.");
     }
 
     [TestMethod]
@@ -51,7 +51,7 @@ public class BitNavBadgeBrowserTests : PerformanceTestBase
             var text = await Rect(Row(section, Inbox, ".bit-nav-itx"));
 
             Assert.AreEqual(item.Left, badge.Left, 1, $"The badge is not at the end of the row in {section}.");
-            Assert.IsTrue(badge.Right < text.Left, $"The badge is not after the text in {section}.");
+            Assert.IsLessThan(text.Left, badge.Right, $"The badge is not after the text in {section}.");
         }
     }
 
@@ -67,7 +67,7 @@ public class BitNavBadgeBrowserTests : PerformanceTestBase
         Assert.IsTrue(await Page.EvalOnSelectorAsync<bool>(Row("ltr", Long, ".bit-nav-itx"), "e => e.scrollWidth > e.clientWidth"),
             "The text was expected to overflow the row.");
         Assert.IsTrue(badge.Right <= item.Right + 0.5 && badge.Left >= item.Left, "The badge left the row.");
-        Assert.IsTrue(text.Right <= badge.Left, "The text runs under the badge.");
+        Assert.IsLessThanOrEqualTo(badge.Left, text.Right, "The text runs under the badge.");
         Assert.IsTrue(await Page.EvalOnSelectorAsync<bool>(Row("ltr", Long, ".bit-nav-bdg"), "e => e.scrollWidth <= e.clientWidth"),
             "The badge itself is clipped.");
     }
@@ -94,7 +94,7 @@ public class BitNavBadgeBrowserTests : PerformanceTestBase
         var custom = await Rect(Row("template", Inbox, ".custom"));
 
         Assert.AreEqual(item.Right, badge.Right, 1, "The badge is not at the end of the row.");
-        Assert.IsTrue(custom.Right < badge.Left, "The badge is not after the template.");
+        Assert.IsLessThan(badge.Left, custom.Right, "The badge is not after the template.");
     }
 
     [TestMethod]
@@ -104,7 +104,7 @@ public class BitNavBadgeBrowserTests : PerformanceTestBase
 
         var dot = await Rect(Row("ltr", Dot, ".bit-nav-bdt"));
 
-        Assert.IsTrue(dot.Width > 0, "The dot is not drawn.");
+        Assert.IsGreaterThan(0, dot.Width, "The dot is not drawn.");
         Assert.AreEqual(dot.Width, dot.Height, 0.5, "The dot is not round.");
         await Expect(Page.Locator(Row("ltr", Dot, ".bit-nav-bdt"))).ToHaveCSSAsync("background-color", BadgeBackground);
     }
@@ -118,12 +118,12 @@ public class BitNavBadgeBrowserTests : PerformanceTestBase
         var icon = await Rect(Row("rail", Inbox, ".bit-nav-iic"));
         var badge = await Rect(Row("rail", Inbox, ".bit-nav-bdg"));
 
-        Assert.IsTrue(badge.Width > 0, "The rail does not draw the badge.");
+        Assert.IsGreaterThan(0, badge.Width, "The rail does not draw the badge.");
         // Inside the item, over the upper end corner of the icon rather than beside it.
         Assert.IsTrue(badge.Left >= item.Left && badge.Right <= item.Right + 0.5 && badge.Top >= item.Top && badge.Bottom <= item.Bottom + 0.5,
             "The badge left the item.");
-        Assert.IsTrue(badge.Top < icon.Top + icon.Height / 2, "The badge is not at the top of the icon.");
-        Assert.IsTrue(badge.Right > icon.Right, "The badge is not at the end corner of the icon.");
+        Assert.IsLessThan(icon.Top + icon.Height / 2, badge.Top, "The badge is not at the top of the icon.");
+        Assert.IsGreaterThan(icon.Right, badge.Right, "The badge is not at the end corner of the icon.");
         Assert.AreEqual(0, await Page.Locator(Row("rail", Inbox, ".suffix")).CountAsync());
     }
 
@@ -170,7 +170,7 @@ public class BitNavBadgeBrowserTests : PerformanceTestBase
         Assert.IsTrue(smallDot.Height < mediumDot.Height && mediumDot.Height < largeDot.Height,
             $"The dot does not grow with the Size: {smallDot.Height}, {mediumDot.Height}, {largeDot.Height}.");
         // A one-digit count is no wider than it is tall, and a two-digit one is still at least as wide.
-        Assert.IsTrue(medium.Width >= medium.Height - 0.5, "The badge is narrower than it is tall.");
+        Assert.IsGreaterThanOrEqualTo(medium.Height - 0.5, medium.Width, "The badge is narrower than it is tall.");
     }
 
     [TestMethod]
@@ -202,8 +202,8 @@ public class BitNavBadgeBrowserTests : PerformanceTestBase
         var opacity = await Page.EvalOnSelectorAsync<string>(Row("disabled", Inbox, ".bit-nav-bdg"), "e => getComputedStyle(e).opacity");
         var dotOpacity = await Page.EvalOnSelectorAsync<string>(Row("disabled", Dot, ".bit-nav-bdt"), "e => getComputedStyle(e).opacity");
 
-        Assert.IsTrue(double.Parse(opacity, System.Globalization.CultureInfo.InvariantCulture) < 1, "The badge of a disabled nav is not dimmed.");
-        Assert.IsTrue(double.Parse(dotOpacity, System.Globalization.CultureInfo.InvariantCulture) < 1, "The dot of a disabled nav is not dimmed.");
+        Assert.IsLessThan(1, double.Parse(opacity, System.Globalization.CultureInfo.InvariantCulture), "The badge of a disabled nav is not dimmed.");
+        Assert.IsLessThan(1, double.Parse(dotOpacity, System.Globalization.CultureInfo.InvariantCulture), "The dot of a disabled nav is not dimmed.");
         // Still in its own colors, only dimmed.
         await AssertBadgeColors(Row("disabled", Inbox, ".bit-nav-bdg"));
     }
@@ -223,15 +223,15 @@ public class BitNavBadgeBrowserTests : PerformanceTestBase
         // In the flow of the row: relative, the containing block of the visually hidden text it holds, never the
         // absolute of a badge pinned over the corner.
         await Expect(Page.Locator($"{inner} .bit-nav-sfx")).ToHaveCSSAsync("position", "relative");
-        Assert.IsTrue(badge.Left >= icon.Right, "The inner badge is not after its icon.");
-        Assert.IsTrue(badge.Right <= item.Right + 0.5, "The inner badge left its row.");
+        Assert.IsGreaterThanOrEqualTo(icon.Right, badge.Left, "The inner badge is not after its icon.");
+        Assert.IsLessThanOrEqualTo(item.Right + 0.5, badge.Right, "The inner badge left its row.");
         await Expect(Page.Locator($"{inner} .bit-nav-bdg")).ToHaveCSSAsync("opacity", "1");
 
         // The outer item is the disabled rail item, so its own badge is cornered and dimmed.
         var outer = "#nested > .bit-nav > .bit-nav-lst > li:nth-child(1) > .bit-nav-ict > .bit-nav-mct > .bit-nav-itm > .bit-nav-sfx";
         await Expect(Page.Locator(outer)).ToHaveCSSAsync("position", "absolute");
         var outerOpacity = await Page.EvalOnSelectorAsync<string>($"{outer} > .bit-nav-bdg", "e => getComputedStyle(e).opacity");
-        Assert.IsTrue(double.Parse(outerOpacity, System.Globalization.CultureInfo.InvariantCulture) < 1, "The disabled rail item's badge is not dimmed.");
+        Assert.IsLessThan(1, double.Parse(outerOpacity, System.Globalization.CultureInfo.InvariantCulture), "The disabled rail item's badge is not dimmed.");
     }
 
     private async Task AssertBadgeColors(string selector)

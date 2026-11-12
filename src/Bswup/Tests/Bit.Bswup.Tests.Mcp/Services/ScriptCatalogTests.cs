@@ -19,7 +19,7 @@ public class ScriptCatalogTests
     {
         Assert.AreNotEqual("unknown", BswupScriptCatalog.Version,
             "the version stamp could not be parsed - every tool then reports 'unknown' as the build it answers for");
-        StringAssert.Matches(BswupScriptCatalog.Version, new Regex(@"^\d+\.\d+\.\d+"));
+        Assert.MatchesRegex(new Regex(@"^\d+\.\d+\.\d+"), BswupScriptCatalog.Version);
     }
 
     [TestMethod]
@@ -29,7 +29,7 @@ public class ScriptCatalogTests
         var worker = BswupSourceCatalog.GetSourceFile("Library/Scripts/bit-bswup.sw.ts");
 
         Assert.IsNotNull(worker);
-        StringAssert.Contains(worker, $"'{BswupScriptCatalog.Version}'");
+        Assert.Contains($"'{BswupScriptCatalog.Version}'", worker);
     }
 
     // -- Script-tag attributes -------------------------------------------------
@@ -39,9 +39,8 @@ public class ScriptCatalogTests
     {
         var names = BswupScriptCatalog.ScriptOptions.Select(option => option.Name).ToArray();
 
-        CollectionAssert.AreEquivalent(
-            new[] { "scope", "log", "sw", "handler", "blazorScript", "updateInterval", "updateOnVisibility", "stallTimeout", "persistStorage", "options" },
-            names);
+        Assert.AreSequenceEqual(
+            new[] { "scope", "log", "sw", "handler", "blazorScript", "updateInterval", "updateOnVisibility", "stallTimeout", "persistStorage", "options" }, names, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -52,7 +51,7 @@ public class ScriptCatalogTests
             .Select(option => option.Name)
             .ToArray();
 
-        Assert.AreEqual(0, unread.Length,
+        Assert.IsEmpty(unread,
             $"documented but no longer read by bit-bswup.js: {string.Join(", ", unread)}");
     }
 
@@ -97,7 +96,7 @@ public class ScriptCatalogTests
             "disableHashlessAssetsUpdate", "forcePrerender", "enableCacheControl", "cacheVersion", "mode",
         })
         {
-            CollectionAssert.Contains(names, expected);
+            Assert.Contains(expected, names);
         }
     }
 
@@ -108,7 +107,7 @@ public class ScriptCatalogTests
 
         foreach (var internals in new[] { "clients", "skipWaiting", "registration", "assetsManifest" })
         {
-            CollectionAssert.DoesNotContain(names, internals, $"'{internals}' is not something an app assigns");
+            Assert.DoesNotContain(internals, names, $"'{internals}' is not something an app assigns");
         }
     }
 
@@ -152,7 +151,7 @@ public class ScriptCatalogTests
         foreach (var setting in documentedOnly)
         {
             Assert.IsFalse(BswupScriptCatalog.IsKnownSetting(setting.Name), setting.Name);
-            StringAssert.Contains(setting.Summary, "no longer declares", setting.Name);
+            Assert.Contains("no longer declares", setting.Summary!, setting.Name);
         }
     }
 
@@ -168,9 +167,8 @@ public class ScriptCatalogTests
     [TestMethod]
     public void Modes_AreTheOnesTheShippedWorkerSwitchesOn()
     {
-        CollectionAssert.AreEquivalent(
-            new[] { "NoPrerender", "InitialPrerender", "AlwaysPrerender", "FullOffline" },
-            BswupScriptCatalog.Modes.Select(mode => mode.Name).ToArray());
+        Assert.AreSequenceEqual(
+            new[] { "NoPrerender", "InitialPrerender", "AlwaysPrerender", "FullOffline" }, BswupScriptCatalog.Modes.Select(mode => mode.Name).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -181,7 +179,7 @@ public class ScriptCatalogTests
         var noPrerender = BswupScriptCatalog.Modes.Single(mode => mode.Name == "NoPrerender");
         var initialPrerender = BswupScriptCatalog.Modes.Single(mode => mode.Name == "InitialPrerender");
 
-        CollectionAssert.AreEquivalent(noPrerender.Settings.ToArray(), initialPrerender.Settings.ToArray());
+        Assert.AreSequenceEqual(noPrerender.Settings.ToArray(), initialPrerender.Settings.ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -207,7 +205,7 @@ public class ScriptCatalogTests
     {
         foreach (var mode in BswupScriptCatalog.Modes)
         {
-            Assert.IsTrue(mode.Settings.Count > 0, mode.Name);
+            Assert.IsNotEmpty(mode.Settings, mode.Name);
         }
     }
 
@@ -237,7 +235,7 @@ public class ScriptCatalogTests
             "updateNotFound", "updateCheckFailed", "stateChanged", "activate", "error",
         })
         {
-            CollectionAssert.Contains(names, expected);
+            Assert.Contains(expected, names);
         }
     }
 
@@ -259,7 +257,7 @@ public class ScriptCatalogTests
             .Select(message => message.Name)
             .ToArray();
 
-        Assert.AreEqual(0, undeclared.Length,
+        Assert.IsEmpty(undeclared,
             $"documented but no longer declared - a handler matching on these gets undefined: {string.Join(", ", undeclared)}");
     }
 
@@ -279,7 +277,7 @@ public class ScriptCatalogTests
             .Select(group => group.Key)
             .ToArray();
 
-        Assert.AreEqual(0, duplicates.Length, $"two live messages resolve to the same string: {string.Join(", ", duplicates)}");
+        Assert.IsEmpty(duplicates, $"two live messages resolve to the same string: {string.Join(", ", duplicates)}");
     }
 
     // -- The JavaScript API ----------------------------------------------------
@@ -302,7 +300,7 @@ public class ScriptCatalogTests
             .Select(member => member.Name)
             .ToArray();
 
-        Assert.AreEqual(0, missing.Length,
+        Assert.IsEmpty(missing,
             $"documented but no longer on the global BitBswup object: {string.Join(", ", missing)}");
     }
 
@@ -323,10 +321,9 @@ public class ScriptCatalogTests
     {
         var include = BswupScriptCatalog.DefaultAssetsInclude;
 
-        Assert.IsTrue(include.Length > 10, "the built-in include list failed to parse");
-        CollectionAssert.Contains(include, @"/\.dll$/");
-        CollectionAssert.Contains(include, @"/\.wasm(\.br|\.gz)?$/",
-            "the README documents this one as /\\.wasm/, which is why it is read off the source instead");
+        Assert.IsGreaterThan(10, include.Length, "the built-in include list failed to parse");
+        Assert.Contains(@"/\.dll$/", include);
+        Assert.Contains(@"/\.wasm(\.br|\.gz)?$/", include, "the README documents this one as /\\.wasm/, which is why it is read off the source instead");
     }
 
     [TestMethod]
@@ -334,8 +331,8 @@ public class ScriptCatalogTests
     {
         var exclude = BswupScriptCatalog.DefaultAssetsExclude;
 
-        CollectionAssert.Contains(exclude, @"/^service-worker\.js$/");
-        Assert.IsTrue(exclude.Any(pattern => pattern.Contains("bit-bswup\\.sw\\.js", StringComparison.Ordinal)));
+        Assert.Contains(@"/^service-worker\.js$/", exclude);
+        Assert.Contains(pattern => pattern.Contains("bit-bswup\\.sw\\.js", StringComparison.Ordinal), exclude);
     }
 
     [TestMethod]
@@ -349,7 +346,7 @@ public class ScriptCatalogTests
 
             // Checked rather than sliced blind: a literal read without its closing delimiter would
             // otherwise come back as an index-out-of-range instead of as what it is.
-            Assert.IsTrue(end > 0, $"'{pattern}' has no closing delimiter");
+            Assert.IsGreaterThan(0, end, $"'{pattern}' has no closing delimiter");
 
             var body = pattern[1..end];
 

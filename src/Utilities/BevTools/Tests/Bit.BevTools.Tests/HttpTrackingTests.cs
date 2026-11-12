@@ -55,7 +55,7 @@ public class HttpTrackingTests
             try
             {
                 SessionResolver.NoteCurrentContext(session);
-                request = client.GetAsync("https://example.com/flaky");
+                request = client.GetAsync("https://example.com/flaky", TestContext.CancellationToken);
             }
             finally
             {
@@ -64,7 +64,7 @@ public class HttpTrackingTests
 
             await request;
 
-            CollectionAssert.AreEqual(new int?[] { 503, 200 }, session.Http.Snapshot().Select(r => r.StatusCode).ToArray());
+            Assert.AreSequenceEqual(new int?[] { 503, 200 }, session.Http.Snapshot().Select(r => r.StatusCode).ToArray());
         }
     }
 
@@ -82,7 +82,7 @@ public class HttpTrackingTests
             client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "secret");
             client.DefaultRequestHeaders.Add("X-Trace", "abc");
 
-            var response = await client.GetAsync("https://example.com/api/items?token=abc&page=1");
+            var response = await client.GetAsync("https://example.com/api/items?token=abc&page=1", TestContext.CancellationToken);
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 
             var record = Assert.ContainsSingle(session.Http.Snapshot());
@@ -110,7 +110,7 @@ public class HttpTrackingTests
         {
             var handler = new BevToolsHttpMessageHandler(session) { InnerHandler = new StubHandler(_ => new HttpResponseMessage(HttpStatusCode.InternalServerError)) };
             using var client = new HttpClient(handler);
-            await client.GetAsync("https://example.com/api/flaky");
+            await client.GetAsync("https://example.com/api/flaky", TestContext.CancellationToken);
 
             var record = Assert.ContainsSingle(session.Http.Snapshot());
             Assert.IsTrue(record.IsFailed);
@@ -129,7 +129,7 @@ public class HttpTrackingTests
         {
             var handler = new BevToolsHttpMessageHandler(session) { InnerHandler = new ThrowingHandler() };
             using var client = new HttpClient(handler);
-            await Assert.ThrowsExactlyAsync<HttpRequestException>(() => client.GetAsync("https://example.com/down"));
+            await Assert.ThrowsExactlyAsync<HttpRequestException>(() => client.GetAsync("https://example.com/down", TestContext.CancellationToken));
 
             var record = Assert.ContainsSingle(session.Http.Snapshot());
             Assert.Contains("connection refused", record.Error!);
@@ -146,7 +146,7 @@ public class HttpTrackingTests
         {
             var factory = (IHttpClientFactory)scope.ServiceProvider.GetService(typeof(IHttpClientFactory))!;
             using var client = factory.CreateClient("api");
-            await client.GetAsync("https://example.com/via-factory");
+            await client.GetAsync("https://example.com/via-factory", TestContext.CancellationToken);
             var record = Assert.ContainsSingle(session.Http.Snapshot());
             Assert.AreEqual(204, record.StatusCode);
         }
@@ -164,9 +164,11 @@ public class HttpTrackingTests
         {
             var factory = scope.ServiceProvider.GetRequiredService<IHttpClientFactory>();
             using var client = factory.CreateClient("api");
-            await client.GetAsync("https://example.com/untracked");
+            await client.GetAsync("https://example.com/untracked", TestContext.CancellationToken);
 
             Assert.IsEmpty(session.Http.Snapshot());
         }
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

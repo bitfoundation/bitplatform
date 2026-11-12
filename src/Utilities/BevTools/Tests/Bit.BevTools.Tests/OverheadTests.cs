@@ -28,8 +28,8 @@ public class OverheadTests : BunitContext
 
         var overhead = session.Overhead;
         // 1 initial parent + child render, then 500 parent-only refreshes (child parameters do not change).
-        Assert.IsTrue(overhead.AppRenderCount >= 502, $"expected at least 502 app renders, got {overhead.AppRenderCount}");
-        Assert.IsTrue(overhead.InstrumentationPerRenderMicroseconds < 500, $"instrumentation cost {overhead.InstrumentationPerRenderMicroseconds:0} µs per render is too high");
+        Assert.IsGreaterThanOrEqualTo(502, overhead.AppRenderCount, $"expected at least 502 app renders, got {overhead.AppRenderCount}");
+        Assert.IsLessThan(500, overhead.InstrumentationPerRenderMicroseconds, $"instrumentation cost {overhead.InstrumentationPerRenderMicroseconds:0} µs per render is too high");
     }
 
     [TestMethod]
@@ -83,9 +83,9 @@ public class OverheadTests : BunitContext
             cut.InvokeAsync(() => cut.Instance.Refresh());
         }
 
-        Assert.IsTrue(session.Timeline.Count <= session.Options.MaxEvents);
+        Assert.IsLessThanOrEqualTo(session.Options.MaxEvents, session.Timeline.Count);
         var parent = session.Components.All.Single(r => r.Type == typeof(ParentComponent));
-        Assert.AreEqual(50, parent.Renders.Length);
+        Assert.HasCount(50, parent.Renders);
         Assert.AreEqual(2001, parent.RenderCount);
     }
 
@@ -101,8 +101,8 @@ public class OverheadTests : BunitContext
 
         session.Components.Refresh(force: true);
         var childRecords = session.Components.All.Where(r => r.Type == typeof(ChildComponent)).ToList();
-        Assert.IsTrue(childRecords.Count(r => !r.IsDisposed) <= 1);
-        Assert.IsTrue(session.Components.LiveCount <= 2, "only live components stay in the identity map");
+        Assert.IsLessThanOrEqualTo(1, childRecords.Count(r => !r.IsDisposed));
+        Assert.IsLessThanOrEqualTo(2, session.Components.LiveCount, "only live components stay in the identity map");
         foreach (var r in childRecords.Where(r => r.IsDisposed))
         {
             Assert.IsNull(r.Component);

@@ -56,7 +56,7 @@ public sealed class AdversarialFilterTests
             var ex = Capture.Exception(() => result = filter.Apply(src, OperationContext.Default));
             using (result)
             {
-                Assert.IsTrue(ex is null, $"{kind} with region {region} threw {ex?.GetType().Name}: {ex?.Message}");
+                Assert.IsNull(ex, $"{kind} with region {region} threw {ex?.GetType().Name}: {ex?.Message}");
                 Assert.AreEqual(src.Size, result!.Size);
                 Assert.IsTrue(expected.AsSpan().SequenceEqual(result.Bytes),
                     $"{kind} with the off-image region {region} changed pixels");
@@ -105,7 +105,7 @@ public sealed class AdversarialFilterTests
             var ex = Capture.Exception(() => result = filter.Apply(src, OperationContext.Default));
             using (result)
             {
-                Assert.IsTrue(ex is null, $"{kind} with region {region} threw {ex?.GetType().Name}: {ex?.Message}");
+                Assert.IsNull(ex, $"{kind} with region {region} threw {ex?.GetType().Name}: {ex?.Message}");
                 Assert.AreEqual(src.Size, result!.Size);
             }
         }
@@ -151,7 +151,7 @@ public sealed class AdversarialFilterTests
             var ex = Capture.Exception(() => result = filter.Apply(src, OperationContext.Default));
             using (result)
             {
-                Assert.IsTrue(ex is null, $"{kind} on a {w}x{h} image threw {ex?.GetType().Name}: {ex?.Message}");
+                Assert.IsNull(ex, $"{kind} on a {w}x{h} image threw {ex?.GetType().Name}: {ex?.Message}");
                 Assert.AreEqual(src.Size, result!.Size);
             }
         }
@@ -307,7 +307,7 @@ public sealed class AdversarialFilterTests
         {
             using var dst = op.Apply(src, OperationContext.Default);
             for (var i = 0; i < src.PixelCount; i++)
-                Assert.IsTrue(src.Pixels[i].A == dst.Pixels[i].A, $"{op.Name} changed alpha at pixel {i}");
+                Assert.AreEqual(dst.Pixels[i].A, src.Pixels[i].A, $"{op.Name} changed alpha at pixel {i}");
         }
     }
 

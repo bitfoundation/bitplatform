@@ -13,15 +13,15 @@ public class BitButtonGroupOptionsOrderTests : BunitTestContext
     {
         var component = RenderComponent<BitButtonGroupOptionsOrderTest>(parameters => parameters.Add(p => p.ShowMiddle, false));
 
-        CollectionAssert.AreEqual(new[] { "First", "Last" }, GetItemTexts(component));
+        Assert.AreSequenceEqual(new[] { "First", "Last" }, GetItemTexts(component));
 
         component.Render(parameters => parameters.Add(p => p.ShowMiddle, true));
 
-        CollectionAssert.AreEqual(new[] { "First", "Middle", "Last" }, GetItemTexts(component));
+        Assert.AreSequenceEqual(new[] { "First", "Middle", "Last" }, GetItemTexts(component));
 
         component.Render(parameters => parameters.Add(p => p.ShowMiddle, false));
 
-        CollectionAssert.AreEqual(new[] { "First", "Last" }, GetItemTexts(component));
+        Assert.AreSequenceEqual(new[] { "First", "Last" }, GetItemTexts(component));
     }
 
     [TestMethod,
@@ -37,9 +37,10 @@ public class BitButtonGroupOptionsOrderTests : BunitTestContext
         // app wraps in an element of its own (a tooltip's anchor) is painted like the ones placed straight in the group.
         var buttons = component.FindAll("button.bit-btg-itm");
 
-        Assert.AreEqual(2, buttons.Count);
+        Assert.HasCount(2, buttons);
         Assert.IsTrue(buttons.All(b => b.ClassList.Contains(expected)), $"Not every button carries {expected}.");
-        Assert.AreEqual(1, buttons.Count(b => b.ParentElement?.ClassList.Contains("wrapper") is true));
+        var actualValue = buttons.Count(b => b.ParentElement?.ClassList.Contains("wrapper") is true);
+        Assert.AreEqual(1, actualValue);
     }
 
     [TestMethod]
@@ -83,7 +84,9 @@ public class BitButtonGroupOptionsOrderTests : BunitTestContext
         // API can only tell once its options have registered themselves, that is once the group has rendered.
         Assert.AreEqual("true", buttons[2].GetAttribute("aria-disabled"));
         Assert.AreEqual("false", buttons[2].GetAttribute("aria-pressed"));
-        CollectionAssert.AreEqual(new[] { "a", "b" }, toggleKeys?.ToArray());
+        var expectedValue = new[] { "a", "b" };
+        var actualValue = toggleKeys?.ToArray();
+        Assert.AreSequenceEqual(expectedValue, actualValue);
     }
 
     private static string[] GetItemTexts(IRenderedComponent<BitButtonGroupOptionsOrderTest> component)

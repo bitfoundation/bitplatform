@@ -142,8 +142,8 @@ public class BlowIntegrationTests
         SyncAll(a, b);
 
         AssertConverged("after concurrent edits", a, b);
-        CollectionAssert.AreEquivalent(new[] { "1", "2", "4", "5" }, a.Nodes.Select(static node => node.Id).ToArray());
-        CollectionAssert.AreEquivalent(new[] { "e1-2", "e1-4" }, b.Edges.Select(static edge => edge.Id).ToArray());
+        Assert.AreSequenceEqual(new[] { "1", "2", "4", "5" }, a.Nodes.Select(static node => node.Id).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
+        Assert.AreSequenceEqual(new[] { "e1-2", "e1-4" }, b.Edges.Select(static edge => edge.Id).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         Assert.AreEqual(new BlowXYPosition(50, 0), b.Node("1").Position);
     }
 
@@ -228,8 +228,8 @@ public class BlowIntegrationTests
         SyncAll(a, b);
 
         AssertConverged("delete and edit", a, b);
-        Assert.AreEqual(1, b.Nodes.Count);
-        Assert.AreEqual(0, b.Edges.Count, "An edge whose node is gone is not shown.");
+        Assert.ContainsSingle(b.Nodes);
+        Assert.IsEmpty(b.Edges, "An edge whose node is gone is not shown.");
         Assert.IsTrue(b.Doc.GetMap("flow").ContainsKey("e:late"), "It is kept, for if the node comes back.");
         Assert.IsFalse(b.Binding.Commit(), "A hidden edge is not a deleted one.");
     }
@@ -256,8 +256,8 @@ public class BlowIntegrationTests
         SyncAll(a, b);
 
         AssertConverged("reorders", a, b);
-        CollectionAssert.AreEqual(new[] { "4", "2", "3", "1" }, a.Nodes.Select(static node => node.Id).ToArray());
-        CollectionAssert.AreEqual(new[] { "c", "a", "b" }, a.Edges.Select(static edge => edge.Id).ToArray());
+        Assert.AreSequenceEqual(new[] { "4", "2", "3", "1" }, a.Nodes.Select(static node => node.Id).ToArray());
+        Assert.AreSequenceEqual(new[] { "c", "a", "b" }, a.Edges.Select(static edge => edge.Id).ToArray());
     }
 
     [TestMethod]
@@ -284,8 +284,8 @@ public class BlowIntegrationTests
         Assert.AreEqual(1, b.RemoteChanges);
         Assert.AreEqual(0, b.Transactions, "Applying a remote change writes nothing back.");
         Assert.IsFalse(b.Binding.Commit(), "What was applied is what the shared state holds.");
-        Assert.AreEqual(10, b.Nodes.Count);
-        Assert.AreEqual(9, b.Edges.Count);
+        Assert.HasCount(10, b.Nodes);
+        Assert.HasCount(9, b.Edges);
 
         // The canvas reports the remote edit back with its origin; the binding does not write it.
         b.Binding.OnGraphChangedAsync(new BlowGraphChange(BlowChangeKind.Edited, BlowChangeOrigin.Remote) { Label = "remote" });
@@ -311,10 +311,10 @@ public class BlowIntegrationTests
         });
 
         Sync(a.Doc, b.Doc);
-        Assert.AreEqual(1, b.Nodes.Count, "The change was applied while the shared document reported it.");
+        Assert.ContainsSingle(b.Nodes, "The change was applied while the shared document reported it.");
 
         deferred!();
-        Assert.AreEqual(1, b.Nodes.Count, "Running the edit later does nothing more.");
+        Assert.ContainsSingle(b.Nodes, "Running the edit later does nothing more.");
     }
 
     [TestMethod]
@@ -406,12 +406,10 @@ public class BlowIntegrationTests
 
         // The binding copies the properties it knows by name. Blow adding a persistent property shows up here.
         string[] runtime = ["Id", "Selected"];
-        CollectionAssert.AreEquivalent(
-            new[] { "Position", "Type", "Label", "Data", "Width", "Height", "Draggable", "Selectable", "Connectable", "Hidden", "Collapsed", "Deletable", "SourcePosition", "TargetPosition", "UseCustomDragHandle", "Focusable", "AriaLabel", "ParentId", "ExtentParent", "Extent", "ExpandParent", "Class", "Style", "ZIndex", "Origin", "Ports" },
-            Settable(typeof(BlowNode)).Except(runtime).ToArray());
-        CollectionAssert.AreEquivalent(
-            new[] { "Source", "Target", "SourceHandle", "TargetHandle", "Type", "PathOptions", "Label", "LabelStyle", "LabelShowBg", "LabelBgStyle", "LabelBgPaddingX", "LabelBgPaddingY", "LabelBgBorderRadius", "Animated", "Hidden", "Selectable", "Focusable", "Deletable", "Reconnectable", "StrokeWidth", "Stroke", "MarkerEnd", "MarkerStart", "MarkerType", "MarkerColor", "MarkerWidth", "MarkerHeight", "Class", "Style", "InteractionWidth", "ZIndex", "Data" },
-            Settable(typeof(BlowEdge)).Except(runtime).ToArray());
+        Assert.AreSequenceEqual(
+            new[] { "Position", "Type", "Label", "Data", "Width", "Height", "Draggable", "Selectable", "Connectable", "Hidden", "Collapsed", "Deletable", "SourcePosition", "TargetPosition", "UseCustomDragHandle", "Focusable", "AriaLabel", "ParentId", "ExtentParent", "Extent", "ExpandParent", "Class", "Style", "ZIndex", "Origin", "Ports" }, Settable(typeof(BlowNode)).Except(runtime).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
+        Assert.AreSequenceEqual(
+            new[] { "Source", "Target", "SourceHandle", "TargetHandle", "Type", "PathOptions", "Label", "LabelStyle", "LabelShowBg", "LabelBgStyle", "LabelBgPaddingX", "LabelBgPaddingY", "LabelBgBorderRadius", "Animated", "Hidden", "Selectable", "Focusable", "Deletable", "Reconnectable", "StrokeWidth", "Stroke", "MarkerEnd", "MarkerStart", "MarkerType", "MarkerColor", "MarkerWidth", "MarkerHeight", "Class", "Style", "InteractionWidth", "ZIndex", "Data" }, Settable(typeof(BlowEdge)).Except(runtime).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
         // Back to the defaults: a property Blow leaves out of its file is removed from the shared state too.
         a.Nodes[1] = new BlowNode { Id = "full" };
@@ -461,8 +459,8 @@ public class BlowIntegrationTests
         SyncAll(a, b);
         Assert.IsNotNull(undo.Undo());
         SyncAll(a, b);
-        Assert.AreEqual(1, b.Nodes.Count);
-        Assert.AreEqual(0, b.Edges.Count);
+        Assert.ContainsSingle(b.Nodes);
+        Assert.IsEmpty(b.Edges);
         Assert.IsNotNull(undo.Redo());
         SyncAll(a, b);
         AssertConverged("after redoing the addition", a, b);
@@ -487,8 +485,8 @@ public class BlowIntegrationTests
         });
         Sync(other, a.Doc);
 
-        Assert.AreEqual(0, a.Edges.Count);
-        Assert.AreEqual(1, reasons.Count, string.Join('\n', reasons));
+        Assert.IsEmpty(a.Edges);
+        Assert.ContainsSingle(reasons, string.Join('\n', reasons));
         Assert.AreEqual("Renamed", a.Node("1").Label, "The rest of the change still applies.");
         Assert.AreEqual(1, a.Transactions, "Nothing is written back over it.");
         Assert.IsFalse(a.Binding.Commit());
@@ -509,8 +507,8 @@ public class BlowIntegrationTests
         b.Binding.RemoteChangeRejected += reasons.Add;
         Sync(a.Doc, b.Doc);
 
-        CollectionAssert.AreEquivalent(new[] { "1", "2", "wide1", "wide2" }, b.Nodes.Select(node => node.Id).ToArray());
-        CollectionAssert.AreEquivalent(new[] { "e1-2", "ewide" }, b.Edges.Select(edge => edge.Id).ToArray());
+        Assert.AreSequenceEqual(new[] { "1", "2", "wide1", "wide2" }, b.Nodes.Select(node => node.Id).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
+        Assert.AreSequenceEqual(new[] { "e1-2", "ewide" }, b.Edges.Select(edge => edge.Id).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         Assert.HasCount(2, reasons, string.Join('\n', reasons));
 
         // What this replica could not read is not a deletion: a commit here leaves it for the others.
@@ -519,8 +517,8 @@ public class BlowIntegrationTests
         Sync(b.Doc, a.Doc);
 
         Assert.AreEqual(new BlowXYPosition(5, 5), a.Node("1").Position);
-        CollectionAssert.AreEquivalent(new[] { "1", "2", "wide1", "wide2", "huge" }, a.Nodes.Select(node => node.Id).ToArray());
-        CollectionAssert.AreEquivalent(new[] { "e1-2", "ewide", "ehuge", "e-huge" }, a.Edges.Select(edge => edge.Id).ToArray());
+        Assert.AreSequenceEqual(new[] { "1", "2", "wide1", "wide2", "huge" }, a.Nodes.Select(node => node.Id).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
+        Assert.AreSequenceEqual(new[] { "e1-2", "ewide", "ehuge", "e-huge" }, a.Edges.Select(edge => edge.Id).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
         // A real deletion still goes through, and takes the edges to the deleted node with it.
         b.Nodes.RemoveAll(node => node.Id == "1");
@@ -528,7 +526,7 @@ public class BlowIntegrationTests
         Assert.IsTrue(b.Binding.Commit());
         Sync(b.Doc, a.Doc);
 
-        CollectionAssert.AreEquivalent(new[] { "2", "wide1", "wide2", "huge" }, a.Nodes.Select(node => node.Id).ToArray());
+        Assert.AreSequenceEqual(new[] { "2", "wide1", "wide2", "huge" }, a.Nodes.Select(node => node.Id).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         Assert.IsEmpty(a.Edges);
         Assert.IsNull(a.Doc.GetMap("flow").Get("e:ehuge"));
 
@@ -564,9 +562,9 @@ public class BlowIntegrationTests
         BcrdtBlowParticipant ana = b.Participants.Single();
         Assert.AreEqual("Ana", ana.Collaborator.User.Name);
         Assert.AreEqual(new BlowXYPosition(10, 20), ana.Cursor);
-        CollectionAssert.AreEqual(new[] { "2" }, ana.SelectedNodes.ToArray());
-        CollectionAssert.AreEqual(new[] { "e" }, ana.SelectedEdges.ToArray());
-        Assert.IsFalse(nodesB.Any(static node => node.Selected), "Selection reaches others as presence, not as state.");
+        Assert.AreSequenceEqual(new[] { "2" }, ana.SelectedNodes.ToArray());
+        Assert.AreSequenceEqual(new[] { "e" }, ana.SelectedEdges.ToArray());
+        Assert.DoesNotContain(static node => node.Selected, nodesB, "Selection reaches others as presence, not as state.");
 
         using var withoutPresence = new BcrdtBlowBinding(peers[0].Doc.GetMap("other"), [], []);
         Assert.ThrowsExactly<InvalidOperationException>(() => withoutPresence.PublishSelection());

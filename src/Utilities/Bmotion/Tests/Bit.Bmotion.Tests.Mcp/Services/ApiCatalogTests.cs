@@ -1,4 +1,4 @@
-using System.Reflection;
+﻿using System.Reflection;
 
 namespace Bit.Bmotion.Tests.Mcp.Services;
 
@@ -24,12 +24,12 @@ public class ApiCatalogTests
     {
         var types = BmotionApiCatalog.Types;
 
-        Assert.IsTrue(types.Length >= 20, $"Only {types.Length} public types were found.");
+        Assert.IsGreaterThanOrEqualTo(20, types.Length, $"Only {types.Length} public types were found.");
 
         foreach (var type in types)
         {
             Assert.AreNotEqual(string.Empty, type.Name.Trim());
-            CollectionAssert.Contains(KnownKinds, type.Kind, $"'{type.Name}' is a '{type.Kind}'.");
+            Assert.Contains(type.Kind, KnownKinds, $"'{type.Name}' is a '{type.Kind}'.");
             // Compiler-generated names and raw arity markers would be noise in a reference an agent
             // reads; a generic spelled out as BmotionPresenceGroup<TItem> is exactly right.
             Assert.IsFalse(type.Name.Contains('`'), $"'{type.Name}' still carries its arity marker.");
@@ -38,7 +38,7 @@ public class ApiCatalogTests
 
         var names = types.Select(type => type.Name).ToArray();
 
-        CollectionAssert.AreEquivalent(names.Distinct().ToArray(), names, "A type is listed twice.");
+        Assert.AreSequenceEqual(names.Distinct().ToArray(), names, Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, "A type is listed twice.");
     }
 
     [TestMethod]
@@ -54,7 +54,7 @@ public class ApiCatalogTests
     [DataRow("BmotionAnimateService")]
     public void Types_IncludeEveryTypeTheToolDescriptionsTellAnAgentToAskFor(string name)
     {
-        Assert.IsTrue(BmotionApiCatalog.Types.Any(type => type.Name == name),
+        Assert.Contains(type => type.Name == name, BmotionApiCatalog.Types,
                       $"GetBmotionApiDetails advertises '{name}', which is not in the list.");
     }
 
@@ -70,7 +70,7 @@ public class ApiCatalogTests
             .Select(type => type.Name)
             .ToArray();
 
-        Assert.AreEqual(0, unfetchable.Length, $"Listed but not fetchable: {string.Join(", ", unfetchable)}.");
+        Assert.IsEmpty(unfetchable, $"Listed but not fetchable: {string.Join(", ", unfetchable)}.");
     }
 
     [TestMethod]
@@ -134,7 +134,7 @@ public class ApiCatalogTests
 
         foreach (var expected in new[] { "Initial", "Animate", "Exit", "Transition", "ChildContent" })
         {
-            CollectionAssert.Contains(parameters, expected, $"<Bmotion> has no '{expected}' parameter in the reference.");
+            Assert.Contains(expected, parameters, $"<Bmotion> has no '{expected}' parameter in the reference.");
         }
 
         // Parameters come first: they are what a caller writes, and the rest is implementation.
@@ -152,7 +152,7 @@ public class ApiCatalogTests
 
         foreach (var framework in new[] { "SetParametersAsync", "StateHasChanged", "OnInitialized", "InvokeAsync" })
         {
-            Assert.IsFalse(component.Members.Any(member => member.Name == framework),
+            Assert.DoesNotContain(member => member.Name == framework, component.Members,
                            $"'{framework}' comes from ComponentBase and does not belong in the reference.");
         }
     }
@@ -165,7 +165,7 @@ public class ApiCatalogTests
         Assert.AreEqual("Enum", ease.Kind);
         Assert.IsTrue(ease.Members.All(member => member.Kind == "EnumValue"));
 
-        CollectionAssert.AreEquivalent(Enum.GetNames<BmEase>(), ease.Members.Select(member => member.Name).ToArray());
+        Assert.AreSequenceEqual(Enum.GetNames<BmEase>(), ease.Members.Select(member => member.Name).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
         // The underlying constant is reported, so BmEase.Linear can be told from BmEase.Out.
         Assert.IsTrue(ease.Members.All(member => member.Default is not null));
@@ -182,7 +182,7 @@ public class ApiCatalogTests
         {
             var methods = bm.Members.Where(member => member.Kind == "Method" && member.Name == factory).ToArray();
 
-            Assert.AreNotEqual(0, methods.Length, $"Bm.{factory} is missing from the reference.");
+            Assert.IsNotEmpty(methods, $"Bm.{factory} is missing from the reference.");
             Assert.IsTrue(methods.All(method => method.Signature is not null && method.Signature.StartsWith('(')),
                           $"Bm.{factory} is listed without a parameter list.");
         }
@@ -201,10 +201,10 @@ public class ApiCatalogTests
 
         var documented = BmotionApiCatalog.Types.Count(type => string.IsNullOrWhiteSpace(type.Summary) is false);
 
-        Assert.IsTrue(documented > BmotionApiCatalog.Types.Length / 2,
+        Assert.IsGreaterThan(BmotionApiCatalog.Types.Length / 2, documented,
                       $"Only {documented} of {BmotionApiCatalog.Types.Length} types carry a summary.");
 
-        StringAssert.Contains(BmotionApiCatalog.GetTypeDetails("BmSpring")!.Summary ?? string.Empty, "spring",
+        Assert.Contains("spring", BmotionApiCatalog.GetTypeDetails("BmSpring")!.Summary ?? string.Empty,
                               StringComparison.OrdinalIgnoreCase);
     }
 

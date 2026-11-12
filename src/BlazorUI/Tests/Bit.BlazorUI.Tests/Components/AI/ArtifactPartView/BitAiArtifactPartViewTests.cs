@@ -34,7 +34,7 @@ public class BitAiArtifactPartViewTests : BitAiTestBase
         Assert.IsFalse(view.Markup.Contains("artifactpartview", System.StringComparison.OrdinalIgnoreCase));
         Assert.IsNotNull(view.Find(".bit-aiapv > .bit-aiatv"));
         Assert.AreEqual("Project README", view.Find(".bit-aiatv-ttl").TextContent);
-        Assert.HasCount(1, view.FindComponents<BitAiStreamingMarkdown>());
+        Assert.ContainsSingle(view.FindComponents<BitAiStreamingMarkdown>());
         Assert.IsNotNull(view.Find("button[aria-label='Download']"));
         Assert.IsNotNull(view.Find("button[aria-label='Expand']"));
     }
@@ -51,7 +51,7 @@ public class BitAiArtifactPartViewTests : BitAiTestBase
         var view = RenderPart(conversation, part);
 
         Assert.AreEqual(part.ArtifactVersion, view.FindComponent<BitAiArtifactView>().Instance.InitialVersion);
-        StringAssert.Contains(view.Find(".bit-aiatv-bdy").TextContent, "first draft");
+        Assert.Contains("first draft", view.Find(".bit-aiatv-bdy").TextContent);
     }
 
     [TestMethod]
@@ -63,7 +63,7 @@ public class BitAiArtifactPartViewTests : BitAiTestBase
 
         Assert.IsEmpty(view.FindComponents<BitAiArtifactView>());
         var placeholder = view.Find(".bit-aiapv > .bit-aiapv-plh");
-        StringAssert.Contains(placeholder.TextContent, "Artifact");
+        Assert.Contains("Artifact", placeholder.TextContent);
         Assert.AreEqual("missing", view.FindComponent<BitTag>().Instance.Title);
         // A neutral tag through the host-default class, never a Color, so the app's --bit-Tag-* variables reach it.
         Assert.IsTrue(placeholder.ClassList.Contains("bit-tag-dft-ter"));
@@ -100,7 +100,7 @@ public class BitAiArtifactPartViewTests : BitAiTestBase
         Assert.IsTrue(root.ClassList.Contains("c-root"));
         Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
         Assert.AreEqual("rtl", root.GetAttribute("dir"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin:1px");
+        Assert.Contains("margin:1px", root.GetAttribute("style")!);
         Assert.IsTrue(view.Find(".bit-aiatv-hdr").ClassList.Contains("c-header"));
     }
 
@@ -132,7 +132,7 @@ public class BitAiArtifactPartViewTests : BitAiTestBase
         var style = view.Find(".bit-aiapv").GetAttribute("style");
 
         if (expected is null) Assert.IsTrue(string.IsNullOrEmpty(style));
-        else StringAssert.Contains(style, expected);
+        else Assert.Contains(expected, style!);
     }
 
     [TestMethod]
@@ -154,7 +154,7 @@ public class BitAiArtifactPartViewTests : BitAiTestBase
     [TestMethod]
     public void BitAiArtifactPartViewParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual("BitParams.BitAiArtifactPartView", BitAiArtifactPartViewParams.ParamName);
+        Assert.AreEqual("BitParams.BitAiArtifactPartView", new BitAiArtifactPartViewParams().Name);
         Assert.AreEqual(BitAiArtifactPartViewParams.ParamName, new BitAiArtifactPartViewParams().Name);
     }
 }

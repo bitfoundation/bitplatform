@@ -16,11 +16,11 @@ public class McpResourcePromptTests
     [TestMethod]
     public async Task The_fixed_resources_and_the_guide_sections_are_listed()
     {
-        var uris = (await McpTestHost.Client.ListResourcesAsync()).Select(resource => resource.Uri).ToArray();
+        var uris = (await McpTestHost.Client.ListResourcesAsync(cancellationToken: TestContext.CancellationToken)).Select(resource => resource.Uri).ToArray();
 
         CollectionAssert.IsSubsetOf(new[] { "balette://guide", "balette://api", "balette://theme" }, uris);
-        CollectionAssert.Contains(uris, "balette://guide/Getting%20started");
-        CollectionAssert.Contains(uris, "balette://guide/Search%20and%20ranking");
+        Assert.Contains("balette://guide/Getting%20started", uris);
+        Assert.Contains("balette://guide/Search%20and%20ranking", uris);
 
         // Every top-level section, and only those: the sub-sections stay templated.
         var listed = uris.Count(uri => uri.StartsWith("balette://guide/", StringComparison.Ordinal));
@@ -30,7 +30,7 @@ public class McpResourcePromptTests
     [TestMethod]
     public async Task The_templates_are_published()
     {
-        var templates = (await McpTestHost.Client.ListResourceTemplatesAsync()).Select(template => template.UriTemplate).ToArray();
+        var templates = (await McpTestHost.Client.ListResourceTemplatesAsync(cancellationToken: TestContext.CancellationToken)).Select(template => template.UriTemplate).ToArray();
 
         CollectionAssert.IsSubsetOf(new[] { "balette://guide/{heading}", "balette://api/{typeName}", "balette://source/{path}" }, templates);
     }
@@ -38,7 +38,7 @@ public class McpResourcePromptTests
     [TestMethod]
     public async Task Every_listed_resource_reads_back_as_text()
     {
-        foreach (var resource in await McpTestHost.Client.ListResourcesAsync())
+        foreach (var resource in await McpTestHost.Client.ListResourcesAsync(cancellationToken: TestContext.CancellationToken))
         {
             var text = await ReadAsync(resource.Uri);
 
@@ -70,9 +70,9 @@ public class McpResourcePromptTests
     [TestMethod]
     public async Task Every_prompt_is_published()
     {
-        var names = (await McpTestHost.Client.ListPromptsAsync()).Select(prompt => prompt.Name).ToArray();
+        var names = (await McpTestHost.Client.ListPromptsAsync(cancellationToken: TestContext.CancellationToken)).Select(prompt => prompt.Name).ToArray();
 
-        CollectionAssert.AreEquivalent(_prompts.Select(prompt => prompt.Name).ToArray(), names);
+        Assert.AreSequenceEqual(_prompts.Select(prompt => prompt.Name).ToArray(), names, Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -89,7 +89,7 @@ public class McpResourcePromptTests
             var mentioned = ToolNames.MentionedIn(text).ToArray();
             Assert.IsNotEmpty(mentioned, name);
 
-            foreach (var tool in mentioned) CollectionAssert.Contains(McpSurfaceTests.ExpectedTools, tool, $"'{name}' mentions '{tool}', which is not a tool.");
+            foreach (var tool in mentioned) Assert.Contains(tool, McpSurfaceTests.ExpectedTools, $"'{name}' mentions '{tool}', which is not a tool.");
         }
     }
 
@@ -141,7 +141,7 @@ public class McpResourcePromptTests
     [TestMethod]
     public async Task An_unknown_prompt_is_an_error()
     {
-        await Assert.ThrowsAsync<McpException>(async () => await McpTestHost.Client.GetPromptAsync("write-my-app"));
+        await Assert.ThrowsAsync<McpException>(async () => await McpTestHost.Client.GetPromptAsync("write-my-app", cancellationToken: TestContext.CancellationToken));
     }
 
     // ---- Completions -------------------------------------------------------
@@ -149,22 +149,22 @@ public class McpResourcePromptTests
     [TestMethod]
     public async Task Resource_placeholders_complete_from_the_catalogs()
     {
-        var types = (await McpTestHost.Client.CompleteAsync(new ResourceTemplateReference { Uri = "balette://api/{typeName}" }, "typeName", "BaletteCommand")).Completion.Values;
-        var headings = (await McpTestHost.Client.CompleteAsync(new ResourceTemplateReference { Uri = "balette://guide/{heading}" }, "heading", "nested")).Completion.Values;
-        var paths = (await McpTestHost.Client.CompleteAsync(new ResourceTemplateReference { Uri = "balette://source/{path}" }, "path", "DemoCommands")).Completion.Values;
+        var types = (await McpTestHost.Client.CompleteAsync(new ResourceTemplateReference { Uri = "balette://api/{typeName}" }, "typeName", "BaletteCommand", cancellationToken: TestContext.CancellationToken)).Completion.Values;
+        var headings = (await McpTestHost.Client.CompleteAsync(new ResourceTemplateReference { Uri = "balette://guide/{heading}" }, "heading", "nested", cancellationToken: TestContext.CancellationToken)).Completion.Values;
+        var paths = (await McpTestHost.Client.CompleteAsync(new ResourceTemplateReference { Uri = "balette://source/{path}" }, "path", "DemoCommands", cancellationToken: TestContext.CancellationToken)).Completion.Values;
 
-        CollectionAssert.Contains(types.ToArray(), "BaletteCommand");
+        Assert.Contains("BaletteCommand", types.ToArray());
         Assert.StartsWith("BaletteCommand", types[0], "A value the typed text starts should rank first.");
-        CollectionAssert.Contains(headings.ToArray(), "Nested pages");
-        CollectionAssert.Contains(paths.ToArray(), "Demo/Client/Services/DemoCommands.cs");
+        Assert.Contains("Nested pages", headings.ToArray());
+        Assert.Contains("Demo/Client/Services/DemoCommands.cs", paths.ToArray());
     }
 
     [TestMethod]
     public async Task Prompt_arguments_complete_with_the_phrasings_they_were_written_for()
     {
-        var symptoms = (await McpTestHost.Client.CompleteAsync(new PromptReference { Name = "debug-balette-palette" }, "symptom", "")).Completion.Values;
-        var features = (await McpTestHost.Client.CompleteAsync(new PromptReference { Name = "implement-balette-feature" }, "feature", "toggle")).Completion.Values;
-        var modes = (await McpTestHost.Client.CompleteAsync(new PromptReference { Name = "add-balette-to-app" }, "renderMode", "")).Completion.Values;
+        var symptoms = (await McpTestHost.Client.CompleteAsync(new PromptReference { Name = "debug-balette-palette" }, "symptom", "", cancellationToken: TestContext.CancellationToken)).Completion.Values;
+        var features = (await McpTestHost.Client.CompleteAsync(new PromptReference { Name = "implement-balette-feature" }, "feature", "toggle", cancellationToken: TestContext.CancellationToken)).Completion.Values;
+        var modes = (await McpTestHost.Client.CompleteAsync(new PromptReference { Name = "add-balette-to-app" }, "renderMode", "", cancellationToken: TestContext.CancellationToken)).Completion.Values;
 
         Assert.IsNotEmpty(symptoms);
         Assert.IsTrue(features.All(feature => feature.Contains("toggle", StringComparison.OrdinalIgnoreCase)));
@@ -185,4 +185,6 @@ public class McpResourcePromptTests
 
         return string.Join('\n', result.Contents.OfType<TextResourceContents>().Select(contents => contents.Text));
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

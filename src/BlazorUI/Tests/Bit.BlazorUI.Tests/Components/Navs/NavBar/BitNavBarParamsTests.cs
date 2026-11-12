@@ -74,7 +74,7 @@ public class BitNavBarParamsTests : BunitTestContext
                                                          .Where(n => baseParameters.Contains(n) is false && _notCascaded.Contains(n) is false)
                                                          .ToList();
 
-        Assert.IsTrue(parameters.Count > 0);
+        Assert.IsNotEmpty(parameters);
 
         foreach (var name in parameters)
         {
@@ -131,7 +131,7 @@ public class BitNavBarParamsTests : BunitTestContext
 
         Assert.AreEqual("cascaded-id", root.Id);
         Assert.IsTrue(root.ClassList.Contains("cascaded"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin:1px");
+        Assert.Contains("margin:1px", root.GetAttribute("style")!);
         Assert.AreEqual("rtl", root.GetAttribute("dir"));
         Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
         Assert.IsTrue(root.ClassList.Contains("bit-dis"));
@@ -139,7 +139,7 @@ public class BitNavBarParamsTests : BunitTestContext
         // A disabled navbar disables everything it renders.
         var items = component.FindAll(".bit-nbr-itm");
 
-        Assert.AreEqual(3, items.Count);
+        Assert.HasCount(3, items);
         Assert.IsTrue(items.All(i => i.ClassList.Contains("bit-nbr-dis")));
     }
 
@@ -168,8 +168,8 @@ public class BitNavBarParamsTests : BunitTestContext
         });
 
         // The cascaded Replace mode renders the template in place of every item, so no item of the navbar's own is left.
-        Assert.AreEqual(2, component.FindAll(".bit-nbr-lit > .replaced").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-nbr-itm").Count);
+        Assert.HasCount(2, component.FindAll(".bit-nbr-lit > .replaced"));
+        Assert.IsEmpty(component.FindAll(".bit-nbr-itm"));
     }
 
     // bUnit writes every element reference and event handler as a blazor:* attribute holding an id numbered per

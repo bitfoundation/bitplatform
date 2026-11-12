@@ -102,12 +102,12 @@ public class BitShimmerTests : BunitTestContext
 
         if (expectedStyle.Length > 0)
         {
-            Assert.IsTrue(style.Contains(expectedStyle));
+            Assert.Contains(expectedStyle, style);
         }
         else
         {
-            Assert.IsFalse(style.Contains("visibility:hidden"));
-            Assert.IsFalse(style.Contains("display:none"));
+            Assert.DoesNotContain("visibility:hidden", style);
+            Assert.DoesNotContain("display:none", style);
         }
     }
 
@@ -192,7 +192,7 @@ public class BitShimmerTests : BunitTestContext
     {
         var component = RenderComponent<BitShimmer>(parameters => parameters.Add(p => p.Radius, "0.75rem"));
 
-        Assert.IsTrue(component.Find(".bit-smr").GetAttribute("style").Contains("--bit-smr-rad:0.75rem"));
+        Assert.Contains("--bit-smr-rad:0.75rem", component.Find(".bit-smr").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -209,7 +209,7 @@ public class BitShimmerTests : BunitTestContext
         // The shape still names the corner it would draw; the radius lands on the style attribute, which is
         // where it wins over the class that names it.
         Assert.IsTrue(root.ClassList.Contains("bit-smr-pil"));
-        Assert.IsTrue(root.GetAttribute("style").Contains("--bit-smr-rad:0"));
+        Assert.Contains("--bit-smr-rad:0", root.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -217,14 +217,14 @@ public class BitShimmerTests : BunitTestContext
     {
         var component = RenderComponent<BitShimmer>(parameters => parameters.Add(p => p.Radius, "0.25rem"));
 
-        Assert.IsTrue(component.Find(".bit-smr").GetAttribute("style").Contains("--bit-smr-rad:0.25rem"));
+        Assert.Contains("--bit-smr-rad:0.25rem", component.Find(".bit-smr").GetAttribute("style")!);
 
         component.Render(parameters => parameters.Add(p => p.Radius, "1rem"));
 
         var style = component.Find(".bit-smr").GetAttribute("style");
 
-        Assert.IsTrue(style.Contains("--bit-smr-rad:1rem"));
-        Assert.IsFalse(style.Contains("--bit-smr-rad:0.25rem"));
+        Assert.Contains("--bit-smr-rad:1rem", style!);
+        Assert.DoesNotContain("--bit-smr-rad:0.25rem", style);
     }
 
 
@@ -249,8 +249,8 @@ public class BitShimmerTests : BunitTestContext
 
         // An unset Size, Color or Background is the default the public --bit-Shimmer-* variables restyle; a class
         // carrying it would read to the stylesheet as a choice, and win over a variable set on :root.
-        CollectionAssert.AreEquivalent(new[] { "bit-smr", "bit-smr-lin" }, component.Find(".bit-smr").ClassList.ToArray());
-        CollectionAssert.AreEquivalent(new[] { "bit-smr-wrp" }, component.Find(".bit-smr-wrp").ClassList.ToArray());
+        Assert.AreSequenceEqual(new[] { "bit-smr", "bit-smr-lin" }, component.Find(".bit-smr").ClassList.ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
+        Assert.AreSequenceEqual(new[] { "bit-smr-wrp" }, component.Find(".bit-smr-wrp").ClassList.ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -277,12 +277,12 @@ public class BitShimmerTests : BunitTestContext
     {
         var component = RenderComponent<BitShimmer>(parameters => parameters.Add(p => p.Height, "1rem"));
 
-        Assert.IsTrue(component.Find(".bit-smr").GetAttribute("style").Contains("--bit-smr-hgt:1rem"));
+        Assert.Contains("--bit-smr-hgt:1rem", component.Find(".bit-smr").GetAttribute("style")!);
 
         component.Render(parameters => parameters.Add(p => p.Height, "3rem"));
 
-        Assert.IsTrue(component.Find(".bit-smr").GetAttribute("style").Contains("--bit-smr-hgt:3rem"));
-        Assert.IsFalse(component.Find(".bit-smr").GetAttribute("style").Contains("--bit-smr-hgt:1rem"));
+        Assert.Contains("--bit-smr-hgt:3rem", component.Find(".bit-smr").GetAttribute("style")!);
+        Assert.DoesNotContain("--bit-smr-hgt:1rem", component.Find(".bit-smr").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -303,12 +303,12 @@ public class BitShimmerTests : BunitTestContext
         {
             // The height sizes the placeholder rather than the root, so it is published as a custom property
             // that the line (or each of the lines) reads.
-            Assert.IsTrue(style.Contains($"--bit-smr-hgt:{height}"));
+            Assert.Contains($"--bit-smr-hgt:{height}", style!);
         }
 
         if (width is not null)
         {
-            Assert.IsTrue(style.Contains($"width:{width}"));
+            Assert.Contains($"width:{width}", style!);
         }
     }
 
@@ -319,10 +319,10 @@ public class BitShimmerTests : BunitTestContext
 
         var style = component.Find(".bit-smr").GetAttribute("style") ?? string.Empty;
 
-        Assert.IsFalse(style.Contains("--bit-smr-hgt"));
-        Assert.IsFalse(style.Contains("--bit-smr-gap"));
-        Assert.IsFalse(style.Contains("--bit-smr-llw"));
-        Assert.IsFalse(style.Contains("--bit-smr-dly"));
+        Assert.DoesNotContain("--bit-smr-hgt", style);
+        Assert.DoesNotContain("--bit-smr-gap", style);
+        Assert.DoesNotContain("--bit-smr-llw", style);
+        Assert.DoesNotContain("--bit-smr-dly", style);
     }
 
 
@@ -339,8 +339,8 @@ public class BitShimmerTests : BunitTestContext
     {
         var component = RenderComponent<BitShimmer>(parameters => parameters.Add(p => p.Lines, lines));
 
-        Assert.AreEqual(expectedCount, component.FindAll(".bit-smr-wrp").Count);
-        Assert.AreEqual(expectedCount, component.FindAll(".bit-smr-anm").Count);
+        Assert.HasCount(expectedCount, component.FindAll(".bit-smr-wrp"));
+        Assert.HasCount(expectedCount, component.FindAll(".bit-smr-anm"));
     }
 
     [TestMethod]
@@ -362,7 +362,7 @@ public class BitShimmerTests : BunitTestContext
             parameters.Add(p => p.Lines, 4);
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-smr-wrp").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-smr-wrp"));
         Assert.IsFalse(component.Find(".bit-smr").ClassList.Contains("bit-smr-mln"));
     }
 
@@ -378,8 +378,8 @@ public class BitShimmerTests : BunitTestContext
 
         var style = component.Find(".bit-smr").GetAttribute("style");
 
-        Assert.IsTrue(style.Contains("--bit-smr-gap:1rem"));
-        Assert.IsTrue(style.Contains("--bit-smr-llw:35%"));
+        Assert.Contains("--bit-smr-gap:1rem", style!);
+        Assert.Contains("--bit-smr-llw:35%", style);
     }
 
     [TestMethod]
@@ -387,11 +387,11 @@ public class BitShimmerTests : BunitTestContext
     {
         var component = RenderComponent<BitShimmer>();
 
-        Assert.AreEqual(1, component.FindAll(".bit-smr-wrp").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-smr-wrp"));
 
         component.Render(parameters => parameters.Add(p => p.Lines, 4));
 
-        Assert.AreEqual(4, component.FindAll(".bit-smr-wrp").Count);
+        Assert.HasCount(4, component.FindAll(".bit-smr-wrp"));
         Assert.IsTrue(component.Find(".bit-smr").ClassList.Contains("bit-smr-mln"));
     }
 
@@ -410,7 +410,7 @@ public class BitShimmerTests : BunitTestContext
 
         var wrappers = component.FindAll(".bit-smr-wrp");
 
-        Assert.AreEqual(4, wrappers.Count);
+        Assert.HasCount(4, wrappers);
         Assert.AreEqual("width:100%", wrappers[0].GetAttribute("style"));
         Assert.AreEqual("width:88%", wrappers[1].GetAttribute("style"));
         Assert.AreEqual("width:94%", wrappers[2].GetAttribute("style"));
@@ -473,7 +473,7 @@ public class BitShimmerTests : BunitTestContext
             parameters.Add(p => p.LineWidths, ["70%", "40%", "20%"]);
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-smr-wrp").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-smr-wrp"));
         Assert.IsNull(component.Find(".bit-smr-wrp").GetAttribute("style"));
     }
 
@@ -489,7 +489,7 @@ public class BitShimmerTests : BunitTestContext
         });
 
         // A cover is one box over the whole of the content, so there are no lines for the list to measure.
-        Assert.AreEqual(1, component.FindAll(".bit-smr-wrp").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-smr-wrp"));
         Assert.IsNull(component.Find(".bit-smr-wrp").GetAttribute("style"));
     }
 
@@ -538,7 +538,7 @@ public class BitShimmerTests : BunitTestContext
             parameters.AddChildContent("Loaded content");
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-smr-wrp").Count);
+        Assert.IsEmpty(component.FindAll(".bit-smr-wrp"));
     }
 
 
@@ -595,8 +595,8 @@ public class BitShimmerTests : BunitTestContext
 
         var style = component.Find(".bit-smr-anm").GetAttribute("style");
 
-        Assert.IsTrue(style.Contains("animation-duration:3000ms"));
-        Assert.IsTrue(style.Contains("animation-delay:500ms"));
+        Assert.Contains("animation-duration:3000ms", style!);
+        Assert.Contains("animation-delay:500ms", style);
     }
 
     [TestMethod]
@@ -611,8 +611,8 @@ public class BitShimmerTests : BunitTestContext
 
         var style = component.Find(".bit-smr-anm").GetAttribute("style") ?? string.Empty;
 
-        Assert.IsFalse(style.Contains("animation-duration"));
-        Assert.IsFalse(style.Contains("animation-delay"));
+        Assert.DoesNotContain("animation-duration", style);
+        Assert.DoesNotContain("animation-delay", style);
     }
 
     [TestMethod]
@@ -641,7 +641,7 @@ public class BitShimmerTests : BunitTestContext
     {
         var component = RenderComponent<BitShimmer>(parameters => parameters.Add(p => p.ShowDelay, 750));
 
-        Assert.IsTrue(component.Find(".bit-smr").GetAttribute("style").Contains("--bit-smr-dly:750ms"));
+        Assert.Contains("--bit-smr-dly:750ms", component.Find(".bit-smr").GetAttribute("style")!);
     }
 
 
@@ -666,7 +666,7 @@ public class BitShimmerTests : BunitTestContext
     {
         var component = RenderComponent<BitShimmer>(parameters => parameters.Add(p => p.ShowDelay, -750));
 
-        Assert.IsTrue(component.Find(".bit-smr").GetAttribute("style").Contains("--bit-smr-dly:0ms"));
+        Assert.Contains("--bit-smr-dly:0ms", component.Find(".bit-smr").GetAttribute("style")!);
     }
 
 
@@ -799,7 +799,7 @@ public class BitShimmerTests : BunitTestContext
         // The response beat the delay that was holding the placeholder back, so there was never a placeholder
         // for a shortest life to apply to.
         Assert.IsTrue(component.Find(".bit-smr").ClassList.Contains("bit-smr-ldd"));
-        Assert.AreEqual(0, component.FindAll(".bit-smr-wrp").Count);
+        Assert.IsEmpty(component.FindAll(".bit-smr-wrp"));
     }
 
     [TestMethod]
@@ -838,13 +838,13 @@ public class BitShimmerTests : BunitTestContext
 
         // The response landed while the placeholder was still living out its shortest life, so the swap waits.
         Assert.IsFalse(component.Find(".bit-smr").ClassList.Contains("bit-smr-ldd"));
-        Assert.AreEqual(1, component.FindAll(".bit-smr-wrp").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-smr-wrp"));
 
         component.WaitForAssertion(() => Assert.IsTrue(component.Find(".bit-smr").ClassList.Contains("bit-smr-ldd")),
                                    TimeSpan.FromSeconds(5));
 
-        Assert.AreEqual(0, component.FindAll(".bit-smr-wrp").Count);
-        Assert.IsTrue(component.Find(".bit-smr-cnt").TextContent.Contains("Loaded content"));
+        Assert.IsEmpty(component.FindAll(".bit-smr-wrp"));
+        Assert.Contains("Loaded content", component.Find(".bit-smr-cnt").TextContent);
     }
 
     [TestMethod]
@@ -891,7 +891,7 @@ public class BitShimmerTests : BunitTestContext
         Assert.IsFalse(SpinWait.SpinUntil(() => component.RenderCount > renders, 80));
 
         Assert.IsFalse(component.Find(".bit-smr").ClassList.Contains("bit-smr-ldd"));
-        Assert.AreEqual(1, component.FindAll(".bit-smr-wrp").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-smr-wrp"));
     }
 
     [TestMethod]
@@ -1068,7 +1068,7 @@ public class BitShimmerTests : BunitTestContext
         Assert.AreEqual("Loading the price", root.GetAttribute("aria-label"));
         Assert.AreEqual("true", root.GetAttribute("aria-busy"));
         Assert.AreEqual("rtl", root.GetAttribute("dir"));
-        Assert.IsTrue(root.GetAttribute("style").Contains("width:4rem"));
+        Assert.Contains("width:4rem", root.GetAttribute("style")!);
         Assert.IsNotNull(component.Find(".bit-smr-wrp"));
         Assert.IsNotNull(component.Find(".bit-smr-anm"));
     }
@@ -1143,8 +1143,8 @@ public class BitShimmerTests : BunitTestContext
             parameters.AddChildContent("Loaded content");
         });
 
-        Assert.IsTrue(component.Markup.Contains("Loaded content"));
-        Assert.AreEqual(0, component.FindAll(".bit-smr-wrp").Count);
+        Assert.Contains("Loaded content", component.Markup);
+        Assert.IsEmpty(component.FindAll(".bit-smr-wrp"));
         Assert.IsNotNull(component.Find(".bit-smr-cnt"));
     }
 
@@ -1153,8 +1153,8 @@ public class BitShimmerTests : BunitTestContext
     {
         var component = RenderComponent<BitShimmer>(parameters => parameters.AddChildContent("Loaded content"));
 
-        Assert.IsFalse(component.Markup.Contains("Loaded content"));
-        Assert.AreEqual(0, component.FindAll(".bit-smr-cnt").Count);
+        Assert.DoesNotContain("Loaded content", component.Markup);
+        Assert.IsEmpty(component.FindAll(".bit-smr-cnt"));
     }
 
     [TestMethod]
@@ -1166,7 +1166,7 @@ public class BitShimmerTests : BunitTestContext
             parameters.Add(p => p.Content, (RenderFragment)(builder => builder.AddContent(0, "Aliased content")));
         });
 
-        Assert.IsTrue(component.Markup.Contains("Aliased content"));
+        Assert.Contains("Aliased content", component.Markup);
     }
 
     [TestMethod]
@@ -1179,8 +1179,8 @@ public class BitShimmerTests : BunitTestContext
             parameters.AddChildContent("Child content");
         });
 
-        Assert.IsTrue(component.Markup.Contains("Child content"));
-        Assert.IsFalse(component.Markup.Contains("Aliased content"));
+        Assert.Contains("Child content", component.Markup);
+        Assert.DoesNotContain("Aliased content", component.Markup);
     }
 
     [TestMethod]
@@ -1224,11 +1224,11 @@ public class BitShimmerTests : BunitTestContext
 
         var style = component.Find(".bit-smr").GetAttribute("style") ?? string.Empty;
 
-        Assert.IsTrue(style.Contains("--bit-smr-hgt:5rem"));
-        Assert.IsTrue(style.Contains("--bit-smr-gap:1rem"));
-        Assert.IsTrue(style.Contains("--bit-smr-llw:35%"));
-        Assert.IsTrue(style.Contains("--bit-smr-rad:0.5rem"));
-        Assert.IsTrue(style.Contains("--bit-smr-dly:750ms"));
+        Assert.Contains("--bit-smr-hgt:5rem", style);
+        Assert.Contains("--bit-smr-gap:1rem", style);
+        Assert.Contains("--bit-smr-llw:35%", style);
+        Assert.Contains("--bit-smr-rad:0.5rem", style);
+        Assert.Contains("--bit-smr-dly:750ms", style);
 
         component.Render(parameters => parameters.Add(p => p.Loaded, true));
 
@@ -1236,11 +1236,11 @@ public class BitShimmerTests : BunitTestContext
 
         // The properties are inherited, so leaving them on a loaded shimmer would hand the sizing of a
         // placeholder that is gone to every shimmer the content it made room for happens to contain.
-        Assert.IsFalse(style.Contains("--bit-smr-hgt"));
-        Assert.IsFalse(style.Contains("--bit-smr-gap"));
-        Assert.IsFalse(style.Contains("--bit-smr-llw"));
-        Assert.IsFalse(style.Contains("--bit-smr-rad"));
-        Assert.IsFalse(style.Contains("--bit-smr-dly"));
+        Assert.DoesNotContain("--bit-smr-hgt", style);
+        Assert.DoesNotContain("--bit-smr-gap", style);
+        Assert.DoesNotContain("--bit-smr-llw", style);
+        Assert.DoesNotContain("--bit-smr-rad", style);
+        Assert.DoesNotContain("--bit-smr-dly", style);
     }
 
     [TestMethod]
@@ -1254,7 +1254,7 @@ public class BitShimmerTests : BunitTestContext
         });
 
         // A placeholder and the content that replaces it occupy the same column, so the width stays.
-        Assert.IsTrue(component.Find(".bit-smr").GetAttribute("style").Contains("width:15rem"));
+        Assert.Contains("width:15rem", component.Find(".bit-smr").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1267,8 +1267,8 @@ public class BitShimmerTests : BunitTestContext
             parameters.AddChildContent("Loaded content");
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-smr-wrp").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-smr-anm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-smr-wrp"));
+        Assert.IsEmpty(component.FindAll(".bit-smr-anm"));
     }
 
     [TestMethod]
@@ -1276,17 +1276,17 @@ public class BitShimmerTests : BunitTestContext
     {
         var component = RenderComponent<BitShimmer>(parameters => parameters.AddChildContent("Loaded content"));
 
-        Assert.AreEqual(1, component.FindAll(".bit-smr-wrp").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-smr-wrp"));
 
         component.Render(parameters => parameters.Add(p => p.Loaded, true));
 
-        Assert.AreEqual(0, component.FindAll(".bit-smr-wrp").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-smr-cnt").Count);
+        Assert.IsEmpty(component.FindAll(".bit-smr-wrp"));
+        Assert.ContainsSingle(component.FindAll(".bit-smr-cnt"));
 
         component.Render(parameters => parameters.Add(p => p.Loaded, false));
 
-        Assert.AreEqual(1, component.FindAll(".bit-smr-wrp").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-smr-cnt").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-smr-wrp"));
+        Assert.IsEmpty(component.FindAll(".bit-smr-cnt"));
     }
 
     [TestMethod]
@@ -1328,7 +1328,7 @@ public class BitShimmerTests : BunitTestContext
         });
 
         Assert.IsNotNull(component.Find(".custom-template"));
-        Assert.AreEqual(0, component.FindAll(".bit-smr-wrp").Count);
+        Assert.IsEmpty(component.FindAll(".bit-smr-wrp"));
         Assert.IsTrue(component.Find(".bit-smr").ClassList.Contains("bit-smr-tpl"));
     }
 
@@ -1354,7 +1354,7 @@ public class BitShimmerTests : BunitTestContext
         Assert.IsFalse(root.ClassList.Contains("bit-smr-crl"));
         Assert.IsFalse(root.ClassList.Contains("bit-smr-lin"));
         Assert.IsFalse(root.ClassList.Contains("bit-smr-mln"));
-        Assert.AreEqual(1, component.FindAll(".custom-template").Count);
+        Assert.ContainsSingle(component.FindAll(".custom-template"));
     }
 
     [TestMethod]
@@ -1372,9 +1372,9 @@ public class BitShimmerTests : BunitTestContext
             parameters.AddChildContent("Loaded content");
         });
 
-        Assert.AreEqual(0, component.FindAll(".custom-template").Count);
+        Assert.IsEmpty(component.FindAll(".custom-template"));
         Assert.IsFalse(component.Find(".bit-smr").ClassList.Contains("bit-smr-tpl"));
-        Assert.IsTrue(component.Markup.Contains("Loaded content"));
+        Assert.Contains("Loaded content", component.Markup);
     }
 
 
@@ -1395,8 +1395,8 @@ public class BitShimmerTests : BunitTestContext
         // is laid over it rather than in place of it.
         Assert.IsTrue(root.ClassList.Contains("bit-smr-ovl"));
         Assert.IsNotNull(component.Find(".bit-smr-cvd"));
-        Assert.IsTrue(component.Markup.Contains("Covered content"));
-        Assert.AreEqual(1, component.FindAll(".bit-smr-wrp").Count);
+        Assert.Contains("Covered content", component.Markup);
+        Assert.ContainsSingle(component.FindAll(".bit-smr-wrp"));
     }
 
     [TestMethod]
@@ -1404,9 +1404,9 @@ public class BitShimmerTests : BunitTestContext
     {
         var component = RenderComponent<BitShimmer>(parameters => parameters.AddChildContent("<span>Covered content</span>"));
 
-        Assert.AreEqual(0, component.FindAll(".bit-smr-cvd").Count);
+        Assert.IsEmpty(component.FindAll(".bit-smr-cvd"));
         Assert.IsFalse(component.Find(".bit-smr").ClassList.Contains("bit-smr-ovl"));
-        Assert.IsFalse(component.Markup.Contains("Covered content"));
+        Assert.DoesNotContain("Covered content", component.Markup);
     }
 
     [TestMethod]
@@ -1418,7 +1418,7 @@ public class BitShimmerTests : BunitTestContext
             parameters.Add(p => p.Content, (RenderFragment)(builder => builder.AddContent(0, "Covered content")));
         });
 
-        Assert.IsTrue(component.Find(".bit-smr-cvd").TextContent.Contains("Covered content"));
+        Assert.Contains("Covered content", component.Find(".bit-smr-cvd").TextContent);
     }
 
     [TestMethod]
@@ -1433,7 +1433,7 @@ public class BitShimmerTests : BunitTestContext
 
         // A cover is one box over content whose size is already known, so the stack of lines is not one of the
         // two layouts the box would then have.
-        Assert.AreEqual(1, component.FindAll(".bit-smr-wrp").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-smr-wrp"));
         Assert.IsFalse(component.Find(".bit-smr").ClassList.Contains("bit-smr-mln"));
     }
 
@@ -1454,10 +1454,10 @@ public class BitShimmerTests : BunitTestContext
 
         var root = component.Find(".bit-smr");
 
-        Assert.AreEqual(0, component.FindAll(".custom-template").Count);
+        Assert.IsEmpty(component.FindAll(".custom-template"));
         Assert.IsFalse(root.ClassList.Contains("bit-smr-tpl"));
         Assert.IsTrue(root.ClassList.Contains("bit-smr-ovl"));
-        Assert.AreEqual(1, component.FindAll(".bit-smr-wrp").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-smr-wrp"));
     }
 
     [TestMethod]
@@ -1469,17 +1469,17 @@ public class BitShimmerTests : BunitTestContext
             parameters.AddChildContent("Covered content");
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-smr-cvd").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-smr-cvd"));
 
         component.Render(parameters => parameters.Add(p => p.Loaded, true));
 
         var root = component.Find(".bit-smr");
 
-        Assert.AreEqual(0, component.FindAll(".bit-smr-cvd").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-smr-wrp").Count);
+        Assert.IsEmpty(component.FindAll(".bit-smr-cvd"));
+        Assert.IsEmpty(component.FindAll(".bit-smr-wrp"));
         Assert.IsFalse(root.ClassList.Contains("bit-smr-ovl"));
         Assert.IsTrue(root.ClassList.Contains("bit-smr-ldd"));
-        Assert.IsTrue(component.Find(".bit-smr-cnt").TextContent.Contains("Covered content"));
+        Assert.Contains("Covered content", component.Find(".bit-smr-cnt").TextContent);
     }
 
     [TestMethod]
@@ -1503,12 +1503,12 @@ public class BitShimmerTests : BunitTestContext
         component.Render(parameters => parameters.Add(p => p.Loaded, false));
 
         Assert.AreSame(probe, component.FindComponent<StatefulProbe>().Instance);
-        Assert.AreEqual(1, component.FindAll(".bit-smr-cvd").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-smr-cvd"));
 
         component.Render(parameters => parameters.Add(p => p.Loaded, true));
 
         Assert.AreSame(probe, component.FindComponent<StatefulProbe>().Instance);
-        Assert.AreEqual(1, component.FindAll(".bit-smr-cnt").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-smr-cnt"));
         Assert.AreEqual(1, probe.InitializedCount);
     }
 
@@ -1605,7 +1605,7 @@ public class BitShimmerTests : BunitTestContext
 
         var wrappers = component.FindAll(".bit-smr-wrp");
 
-        Assert.AreEqual(3, wrappers.Count);
+        Assert.HasCount(3, wrappers);
         foreach (var wrapper in wrappers)
         {
             Assert.IsTrue(wrapper.ClassList.Contains("bit-smr-berr"));
@@ -1621,7 +1621,7 @@ public class BitShimmerTests : BunitTestContext
     {
         var component = RenderComponent<BitShimmer>();
 
-        Assert.AreEqual(0, component.FindAll(".bit-smr-vhd").Count);
+        Assert.IsEmpty(component.FindAll(".bit-smr-vhd"));
     }
 
     [TestMethod]
@@ -1756,7 +1756,7 @@ public class BitShimmerTests : BunitTestContext
     {
         var component = RenderComponent<BitShimmer>(parameters => parameters.Add(p => p.LoadedLabel, "Profile loaded"));
 
-        Assert.AreEqual(1, component.FindAll(".bit-smr-vhd").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-smr-vhd"));
         Assert.AreEqual(string.Empty, component.Find(".bit-smr-vhd").TextContent);
     }
 
@@ -1893,11 +1893,11 @@ public class BitShimmerTests : BunitTestContext
 
         var markup = component.Markup;
 
-        Assert.IsTrue(markup.Contains("custom-root"));
-        Assert.IsTrue(markup.Contains("custom-shimmer"));
-        Assert.IsTrue(markup.Contains("custom-wrapper"));
-        Assert.IsTrue(markup.Contains("background:tomato"));
-        Assert.IsTrue(markup.Contains("darkgoldenrod"));
+        Assert.Contains("custom-root", markup);
+        Assert.Contains("custom-shimmer", markup);
+        Assert.Contains("custom-wrapper", markup);
+        Assert.Contains("background:tomato", markup);
+        Assert.Contains("darkgoldenrod", markup);
     }
 
     [TestMethod]
@@ -1913,8 +1913,8 @@ public class BitShimmerTests : BunitTestContext
         var root = component.Find(".bit-smr");
 
         Assert.IsTrue(root.ClassList.Contains("custom-class"));
-        Assert.IsTrue(root.GetAttribute("style").Contains("border:2px solid gray"));
-        Assert.IsTrue(root.GetAttribute("style").Contains("width:10rem"));
+        Assert.Contains("border:2px solid gray", root.GetAttribute("style")!);
+        Assert.Contains("width:10rem", root.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1959,8 +1959,8 @@ public class BitShimmerTests : BunitTestContext
             parameters.Add(p => p.Classes, new BitShimmerClassStyles { Shimmer = "custom-shimmer", ShimmerWrapper = "custom-wrapper" });
         });
 
-        Assert.AreEqual(3, component.FindAll(".custom-wrapper").Count);
-        Assert.AreEqual(3, component.FindAll(".custom-shimmer").Count);
+        Assert.HasCount(3, component.FindAll(".custom-wrapper"));
+        Assert.HasCount(3, component.FindAll(".custom-shimmer"));
     }
 
 
@@ -1999,7 +1999,7 @@ public class BitShimmerTests : BunitTestContext
         foreach (var declaration in new[] { "margin: 1px;", "width:10rem", "--bit-smr-hgt:0.5rem", "--bit-smr-gap:1rem",
                                             "--bit-smr-llw:30%", "--bit-smr-rad:2px", "--bit-smr-dly:200ms" })
         {
-            StringAssert.Contains(style, declaration);
+            Assert.Contains(declaration, style);
         }
 
         var wrappers = first.QuerySelectorAll(".bit-smr-wrp");
@@ -2034,10 +2034,10 @@ public class BitShimmerTests : BunitTestContext
 
         var style = second.GetAttribute("style")!;
 
-        StringAssert.Contains(style, "--bit-smr-hgt:2rem");
-        StringAssert.Contains(style, "--bit-smr-rad:0");
-        Assert.IsFalse(style.Contains("--bit-smr-hgt:0.5rem"));
-        Assert.IsFalse(style.Contains("--bit-smr-rad:2px"));
+        Assert.Contains("--bit-smr-hgt:2rem", style);
+        Assert.Contains("--bit-smr-rad:0", style);
+        Assert.DoesNotContain("--bit-smr-hgt:0.5rem", style);
+        Assert.DoesNotContain("--bit-smr-rad:2px", style);
 
         // A single line has nothing to stagger and nothing for the cascaded list of widths to reach.
         Assert.AreEqual(1, second.QuerySelectorAll(".bit-smr-wrp").Length);
@@ -2066,7 +2066,7 @@ public class BitShimmerTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("bit-smr-pil"));
         Assert.IsTrue(root.ClassList.Contains("bit-smr-inl"));
         Assert.IsTrue(root.ClassList.Contains("bit-smr-ovl"));
-        Assert.AreEqual(1, component.FindAll(".bit-smr-cvd").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-smr-cvd"));
     }
 
     [TestMethod]

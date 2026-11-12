@@ -1,4 +1,4 @@
-using Bit.Butil.Tests.E2E.Infrastructure;
+﻿using Bit.Butil.Tests.E2E.Infrastructure;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.Butil.Tests.E2E;
@@ -165,7 +165,7 @@ public class MessageEncodingTests : ButilPageTest
             }
             """);
 
-        CollectionAssert.AreEqual(new[] { "\"[object Object]\"", "\"[object Object]\"" }, result);
+        Assert.AreSequenceEqual(new[] { "\"[object Object]\"", "\"[object Object]\"" }, result);
     }
 
     [TestMethod]
@@ -190,6 +190,6 @@ public class MessageEncodingTests : ButilPageTest
             }
             """);
 
-        CollectionAssert.AreEqual(new[] { "true", "[object Array]" }, result);
+        Assert.AreSequenceEqual(new[] { "true", "[object Array]" }, result);
     }
 }

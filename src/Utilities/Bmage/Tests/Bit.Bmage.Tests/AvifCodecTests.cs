@@ -37,7 +37,7 @@ public sealed class AvifCodecTests
     public void MatchesLibheifDecode(string name)
     {
         using var decoded = DecodeLikeLibheif(Asset(name + ".avif"));
-        using var reference = PngDecoder.Decode(Asset(name + ".png"));
+        using var reference = PngDecoder.Decode(Asset(name + ".png"), cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual(reference.Width, decoded.Width);
         Assert.AreEqual(reference.Height, decoded.Height);
         Assert.IsLessThanOrEqualTo(1, TestImages.MaxChannelDifference(reference, decoded));
@@ -59,13 +59,13 @@ public sealed class AvifCodecTests
     public void InterpolatesSubsampledChroma()
     {
         // The default decode interpolates chroma where libheif repeats it: different at colour edges, close overall.
-        using var interpolated = AvifDecoder.Decode(Asset("photo-420.avif"));
+        using var interpolated = AvifDecoder.Decode(Asset("photo-420.avif"), cancellationToken: TestContext.CancellationToken);
         using var repeated = DecodeLikeLibheif(Asset("photo-420.avif"));
         Assert.IsGreaterThan(1, TestImages.MaxChannelDifference(repeated, interpolated));
         Assert.IsLessThan(8.0, TestImages.MeanChannelDifference(repeated, interpolated));
 
         // Full-resolution chroma has nothing to interpolate.
-        using var full = AvifDecoder.Decode(Asset("photo-444-10bit.avif"));
+        using var full = AvifDecoder.Decode(Asset("photo-444-10bit.avif"), cancellationToken: TestContext.CancellationToken);
         using var fullRepeated = DecodeLikeLibheif(Asset("photo-444-10bit.avif"));
         Assert.AreEqual(0, TestImages.MaxChannelDifference(fullRepeated, full));
     }
@@ -73,7 +73,7 @@ public sealed class AvifCodecTests
     [TestMethod]
     public void DecodesAlpha()
     {
-        using var decoded = AvifDecoder.Decode(Asset("alpha.avif"));
+        using var decoded = AvifDecoder.Decode(Asset("alpha.avif"), cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual(255, decoded[2, 2].A);
         Assert.AreEqual(0, decoded[48, 32].A);
         Assert.AreEqual(69, decoded[2, 32].A);
@@ -98,8 +98,8 @@ public sealed class AvifCodecTests
     public async Task DecodesThroughTheDecoderInterface()
     {
         IImageDecoder decoder = new AvifDecoder();
-        CollectionAssert.AreEqual(new[] { ImageFormat.Avif }, decoder.Formats.ToArray());
-        using var decoded = await decoder.DecodeAsync(Asset("photo-420.avif"), DecodeOptions.Default, Memory.PooledPixelAllocator.Shared);
+        Assert.AreSequenceEqual(new[] { ImageFormat.Avif }, decoder.Formats.ToArray());
+        using var decoded = await decoder.DecodeAsync(Asset("photo-420.avif"), DecodeOptions.Default, Memory.PooledPixelAllocator.Shared, TestContext.CancellationToken);
         Assert.AreEqual(96, decoded.Width);
         Assert.AreEqual(ImageFormat.Avif, decoded.Metadata!.SourceFormat);
     }
@@ -216,7 +216,7 @@ public sealed class AvifCodecTests
             .Add(new AvifBuilder.Item(1, "grid", grid, [Ispe(90, 64)], [("dimg", [2, 2])]))
             .Add(new AvifBuilder.Item(2, "av01", source.GetItemData(tile, int.MaxValue), CopyProperties(source, tile), []))
             .Build(primary: 1);
-        Assert.ThrowsExactly<ImageDecodeException>(() => AvifDecoder.Decode(file));
+        Assert.ThrowsExactly<ImageDecodeException>(() => AvifDecoder.Decode(file, cancellationToken: TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -276,9 +276,10 @@ public sealed class AvifCodecTests
             .Build(primary: 1);
 
         var metadata = AvifDecoder.ReadMetadata(file, "photo.avif");
-        Assert.AreEqual("Bmage", metadata.Exif?.Make);
-        CollectionAssert.AreEqual(icc, metadata.IccProfile.ToArray());
-        CollectionAssert.AreEqual(xmp, metadata.Xmp.ToArray());
+        var actualValue = metadata.Exif?.Make;
+        Assert.AreEqual("Bmage", actualValue);
+        Assert.AreSequenceEqual(icc, metadata.IccProfile.ToArray());
+        Assert.AreSequenceEqual(xmp, metadata.Xmp.ToArray());
         Assert.AreEqual(ImageFormat.Avif, metadata.SourceFormat);
         Assert.AreEqual("photo.avif", metadata.FileName);
 
@@ -287,7 +288,8 @@ public sealed class AvifCodecTests
         using var decoded = DecodeLikeLibheif(file);
         Assert.AreEqual(0, TestImages.MaxChannelDifference(plain, decoded));
         Assert.AreEqual(Orientation.Normal, decoded.Metadata!.Orientation);
-        Assert.AreEqual("Bmage", decoded.Metadata.Exif?.Make);
+        var actualValue1 = decoded.Metadata.Exif?.Make;
+        Assert.AreEqual("Bmage", actualValue1);
 
         using var withoutMetadata = DecodeLikeLibheif(file, new DecodeOptions { ReadMetadata = false });
         Assert.IsNull(withoutMetadata.Metadata!.Exif);
@@ -312,20 +314,20 @@ public sealed class AvifCodecTests
     public void RejectsImagesOverTheLimitsBeforeDecoding()
     {
         var limits = new ImageLimits { MaxWidth = 64, MaxHeight = 64 };
-        Assert.ThrowsExactly<ImageLimitExceededException>(() => AvifDecoder.Decode(Asset("photo-420.avif"), new DecodeOptions { Limits = limits }));
-        Assert.ThrowsExactly<ImageLimitExceededException>(() => AvifDecoder.Decode(Asset("photo-420.avif"), new DecodeOptions { Limits = ImageLimits.Default with { MaxEncodedBytes = 100 } }));
+        Assert.ThrowsExactly<ImageLimitExceededException>(() => AvifDecoder.Decode(Asset("photo-420.avif"), new DecodeOptions { Limits = limits }, cancellationToken: TestContext.CancellationToken));
+        Assert.ThrowsExactly<ImageLimitExceededException>(() => AvifDecoder.Decode(Asset("photo-420.avif"), new DecodeOptions { Limits = ImageLimits.Default with { MaxEncodedBytes = 100 } }, cancellationToken: TestContext.CancellationToken));
 
         // A header claiming 100000x100000 is refused from the header, not by running out of memory.
         var huge = Rebuild("photo-420.avif", [], Ispe(100_000, 100_000));
-        Assert.ThrowsExactly<ImageLimitExceededException>(() => AvifDecoder.Decode(huge));
+        Assert.ThrowsExactly<ImageLimitExceededException>(() => AvifDecoder.Decode(huge, cancellationToken: TestContext.CancellationToken));
         Assert.AreEqual(100_000, new AvifDecoder().Identify(huge)!.Width);
     }
 
     [TestMethod]
     public void RejectsDataThatIsNotAvif()
     {
-        Assert.ThrowsExactly<ImageDecodeException>(() => AvifDecoder.Decode(Asset("photo-420.png")));
-        Assert.ThrowsExactly<ImageDecodeException>(() => AvifDecoder.Decode([]));
+        Assert.ThrowsExactly<ImageDecodeException>(() => AvifDecoder.Decode(Asset("photo-420.png"), cancellationToken: TestContext.CancellationToken));
+        Assert.ThrowsExactly<ImageDecodeException>(() => AvifDecoder.Decode([], cancellationToken: TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -336,7 +338,7 @@ public sealed class AvifCodecTests
         var file = new AvifBuilder { DataOffsetShift = 1_000_000 }
             .Add(new AvifBuilder.Item(1, "av01", source.GetItemData(item, int.MaxValue), CopyProperties(source, item), []))
             .Build(primary: 1);
-        Assert.ThrowsExactly<ImageDecodeException>(() => AvifDecoder.Decode(file));
+        Assert.ThrowsExactly<ImageDecodeException>(() => AvifDecoder.Decode(file, cancellationToken: TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -398,7 +400,7 @@ public sealed class AvifCodecTests
         Assert.AreEqual(expected, AvifDecoder.HasNonSrgbColors(file));
         Assert.IsFalse(AvifDecoder.HasNonSrgbColors(Asset("photo-420.avif")), "no colr says nothing about the gamut");
         // The colours are decoded either way; only a host with a browser can do better with them.
-        using var decoded = AvifDecoder.Decode(file);
+        using var decoded = AvifDecoder.Decode(file, cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual(ImageFormat.Avif, decoded.Metadata!.SourceFormat);
     }
 
@@ -444,7 +446,7 @@ public sealed class AvifCodecTests
         using (var decoded = DecodeLikeLibheif(ShownAgain(frameId: 5, displayFrameId: 5)))
             Assert.AreEqual(0, TestImages.MaxChannelDifference(plain, decoded));
 
-        Assert.ThrowsExactly<ImageDecodeException>(() => AvifDecoder.Decode(ShownAgain(frameId: 5, displayFrameId: 6)));
+        Assert.ThrowsExactly<ImageDecodeException>(() => AvifDecoder.Decode(ShownAgain(frameId: 5, displayFrameId: 6), cancellationToken: TestContext.CancellationToken));
     }
 
     /// <summary>
@@ -493,7 +495,7 @@ public sealed class AvifCodecTests
             .Build(primary: 1);
 
         foreach (var threads in new[] { 1, 4 })
-            Assert.ThrowsExactly<ImageDecodeException>(() => AvifDecoder.Decode(file, new DecodeOptions { MaxDegreeOfParallelism = threads }), $"{threads} threads");
+            Assert.ThrowsExactly<ImageDecodeException>(() => AvifDecoder.Decode(file, new DecodeOptions { MaxDegreeOfParallelism = threads }, cancellationToken: TestContext.CancellationToken), $"{threads} threads");
     }
 
     [TestMethod]
@@ -554,12 +556,12 @@ public sealed class AvifCodecTests
             .Add(new AvifBuilder.Item(1, "grid", grid, [Ispe(96, 64)], [("dimg", [2])]))
             .Add(new AvifBuilder.Item(2, "av01", source.GetItemData(tile, int.MaxValue), CopyProperties(source, tile), []))
             .Build(primary: 1);
-        using (var whole = AvifDecoder.Decode(file)) Assert.AreEqual(96, whole.Width);
+        using (var whole = AvifDecoder.Decode(file, cancellationToken: TestContext.CancellationToken)) Assert.AreEqual(96, whole.Width);
 
         var iinf = file.AsSpan().IndexOf("iinf"u8);
         Assert.AreEqual(2, BinaryPrimitives.ReadUInt16BigEndian(file.AsSpan(iinf + 8)));
         BinaryPrimitives.WriteUInt16BigEndian(file.AsSpan(iinf + 8), 1);
-        Assert.ThrowsExactly<ImageDecodeException>(() => AvifDecoder.Decode(file));
+        Assert.ThrowsExactly<ImageDecodeException>(() => AvifDecoder.Decode(file, cancellationToken: TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -569,8 +571,8 @@ public sealed class AvifCodecTests
         var asset = Asset("alpha.avif");
         var padded = new byte[asset.Length + 64];
         asset.CopyTo(padded, 32);
-        using var expected = AvifDecoder.Decode(asset);
-        using var decoded = await new AvifDecoder().DecodeAsync(padded.AsMemory(32, asset.Length), DecodeOptions.Default, Memory.PooledPixelAllocator.Shared);
+        using var expected = AvifDecoder.Decode(asset, cancellationToken: TestContext.CancellationToken);
+        using var decoded = await new AvifDecoder().DecodeAsync(padded.AsMemory(32, asset.Length), DecodeOptions.Default, Memory.PooledPixelAllocator.Shared, TestContext.CancellationToken);
         Assert.AreEqual(0, TestImages.MaxChannelDifference(expected, decoded));
     }
 
@@ -878,4 +880,6 @@ public sealed class AvifCodecTests
             return bytes;
         }
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

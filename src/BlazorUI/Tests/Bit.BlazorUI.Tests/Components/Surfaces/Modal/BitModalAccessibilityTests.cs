@@ -151,7 +151,7 @@ public class BitModalAccessibilityTests : BunitTestContext
         Assert.AreEqual(3, asked);
         Assert.IsTrue(isOpen);
         Assert.AreEqual(0, dismissed);
-        Assert.AreEqual(1, com.FindAll(".bit-mdl-ctn").Count);
+        Assert.ContainsSingle(com.FindAll(".bit-mdl-ctn"));
         var content = com.Find(".bit-mdl-ctn");
         Assert.IsTrue(content.ClassList.Contains("bit-mdl-bna") || content.ClassList.Contains("bit-mdl-bnb"));
     }
@@ -172,7 +172,7 @@ public class BitModalAccessibilityTests : BunitTestContext
         com.WaitForAssertion(() =>
         {
             Assert.IsFalse(isOpen);
-            Assert.AreEqual(0, com.FindAll(".bit-mdl").Count);
+            Assert.IsEmpty(com.FindAll(".bit-mdl"));
         });
     }
 
@@ -229,7 +229,7 @@ public class BitModalAccessibilityTests : BunitTestContext
         com.InvokeAsync(() => answer.SetResult(true));
 
         // The late answer finds nothing left to dismiss, so nothing more is reported.
-        com.WaitForAssertion(() => Assert.AreEqual(0, com.FindAll(".bit-mdl-ctn").Count));
+        com.WaitForAssertion(() => Assert.IsEmpty(com.FindAll(".bit-mdl-ctn")));
         Assert.AreEqual(dismissedByTheApp, dismissed);
     }
 
@@ -254,7 +254,7 @@ public class BitModalAccessibilityTests : BunitTestContext
         // open and does not pulse either.
         Assert.AreEqual(1, escapes);
         Assert.IsTrue(isOpen);
-        Assert.AreEqual(1, com.FindAll(".bit-mdl-ctn").Count);
+        Assert.ContainsSingle(com.FindAll(".bit-mdl-ctn"));
         Assert.IsFalse(com.Find(".bit-mdl-ctn").ClassList.Contains("bit-mdl-bna"));
     }
 
@@ -263,7 +263,7 @@ public class BitModalAccessibilityTests : BunitTestContext
     {
         var com = RenderComponent<BitModal>(parameters => parameters.Add(p => p.DefaultIsOpen, true));
 
-        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.watchEscape"].Count));
+        com.WaitForAssertion(() => Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.watchEscape"]));
 
         var rootId = com.Find(".bit-mdl").Id;
         Assert.AreEqual(rootId, Context.JSInterop.Invocations["BitBlazorUI.Utils.watchEscape"][0].Arguments[0]);
@@ -271,7 +271,7 @@ public class BitModalAccessibilityTests : BunitTestContext
         // Part of the watch is on the window, so it is taken back with the close rather than left to the element.
         await com.InvokeAsync(() => com.Instance.Close());
 
-        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.unwatchEscape"].Count));
+        com.WaitForAssertion(() => Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.unwatchEscape"]));
         Assert.AreEqual(rootId, Context.JSInterop.Invocations["BitBlazorUI.Utils.unwatchEscape"][0].Arguments[0]);
     }
 
@@ -310,7 +310,7 @@ public class BitModalAccessibilityTests : BunitTestContext
 
         await com.InvokeAsync(() => com.Instance.Close());
 
-        com.WaitForAssertion(() => Assert.AreEqual(0, com.FindAll(".bit-mdl").Count));
+        com.WaitForAssertion(() => Assert.IsEmpty(com.FindAll(".bit-mdl")));
         Assert.AreEqual(0, asked);
     }
 }

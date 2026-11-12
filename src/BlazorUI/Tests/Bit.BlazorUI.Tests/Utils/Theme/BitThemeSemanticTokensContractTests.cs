@@ -46,9 +46,8 @@ public sealed class BitThemeSemanticTokensContractTests
             .OrderBy(k => k, StringComparer.Ordinal)
             .ToArray();
 
-        Assert.IsTrue(declared.Length > 0, "semantic-tokens.scss declares no --bit-sem-* tokens.");
-        CollectionAssert.AreEqual(declared, emitted,
-            "Styles/semantic-tokens.scss and BitTheme.Color.Semantic have drifted apart. " +
+        Assert.IsNotEmpty(declared, "semantic-tokens.scss declares no --bit-sem-* tokens.");
+        Assert.AreSequenceEqual(declared, emitted, "Styles/semantic-tokens.scss and BitTheme.Color.Semantic have drifted apart. " +
             $"Declared: [{string.Join(", ", declared)}] Emitted: [{string.Join(", ", emitted)}]");
     }
 

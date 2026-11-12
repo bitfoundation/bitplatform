@@ -18,6 +18,6 @@ public class BitAiUnmatchedEmphasisPerformanceTests
 
         // Measured at about 50ms in Release; the limit leaves room for a busy CI machine while
         // staying an order of magnitude under the four seconds the quadratic scan took.
-        Assert.IsTrue(elapsed < TimeSpan.FromMilliseconds(400), $"'{pattern}' took {elapsed.TotalMilliseconds:F0}ms for {source.Length} characters.");
+        Assert.IsLessThan(TimeSpan.FromMilliseconds(400), elapsed, $"'{pattern}' took {elapsed.TotalMilliseconds:F0}ms for {source.Length} characters.");
     }
 }

@@ -32,7 +32,7 @@ public class BitParamsContractTests
 
         var unread = ParamsTypes().Where(t => read.Contains(t) is false).Select(t => t.Name).ToArray();
 
-        Assert.AreEqual(0, unread.Length, $"Read by no component: {string.Join(", ", unread)}");
+        Assert.IsEmpty(unread, $"Read by no component: {string.Join(", ", unread)}");
     }
 
     [TestMethod]
@@ -70,7 +70,7 @@ public class BitParamsContractTests
             }
         }
 
-        Assert.AreEqual(0, unmatched.Count, string.Join(Environment.NewLine, unmatched));
+        Assert.IsEmpty(unmatched, string.Join(Environment.NewLine, unmatched));
     }
 
     [TestMethod]
@@ -109,7 +109,7 @@ public class BitParamsContractTests
             }
         }
 
-        Assert.AreEqual(0, hooked.Count, string.Join(Environment.NewLine, hooked));
+        Assert.IsEmpty(hooked, string.Join(Environment.NewLine, hooked));
     }
 
     [TestMethod]
@@ -130,7 +130,7 @@ public class BitParamsContractTests
             if (keepsItself is false) unkept.Add(type.Name);
         }
 
-        Assert.AreEqual(0, unkept.Count, $"No public parameterless constructor carrying [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(<itself>))]: {string.Join(", ", unkept)}");
+        Assert.IsEmpty(unkept, $"No public parameterless constructor carrying [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(<itself>))]: {string.Join(", ", unkept)}");
     }
 
     [TestMethod]
@@ -156,7 +156,7 @@ public class BitParamsContractTests
             }
         }
 
-        Assert.AreEqual(0, keepers.Count, string.Join(Environment.NewLine, keepers));
+        Assert.IsEmpty(keepers, string.Join(Environment.NewLine, keepers));
     }
 
 
@@ -193,7 +193,7 @@ public class BitParamsContractTests
                                .ToArray();
 
             // The restore reads exactly one params object per component; one that read two would take back neither.
-            Assert.IsTrue(cascades.Length <= 1, $"{type.Name} reads {cascades.Length} params objects.");
+            Assert.IsLessThanOrEqualTo(1, cascades.Length, $"{type.Name} reads {cascades.Length} params objects.");
 
             if (cascades.Length == 1) yield return (type, cascades[0]);
         }

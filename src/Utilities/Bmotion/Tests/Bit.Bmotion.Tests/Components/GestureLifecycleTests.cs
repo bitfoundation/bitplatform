@@ -45,7 +45,7 @@ public class GestureLifecycleTests
             .Add(p => p.OnFocusEnd, EventCallback.Factory.Create(this, () => ended = true))
             .Add(p => p.ChildContent, Div));
 
-        Assert.AreEqual(true, AttachedFlags(ctx, "box")["focus"], "focus listeners must be requested");
+        Assert.IsTrue((bool?)AttachedFlags(ctx, "box")["focus"], "focus listeners must be requested");
 
         await cut.InvokeAsync(() => Events(ctx, "box").OnFocusIn());
         await ctx.RunFramesAsync(0, 1000);
@@ -174,7 +174,7 @@ public class GestureLifecycleTests
             var overlay = ctx.Interop.ArgsOf("playWaapiAnimation").Where(a => (string?)a[0] == "box").ToList();
             if (inProcess)
             {
-                Assert.AreEqual(0, overlay.Count, "WebAssembly: the overlay is the frame loop's");
+                Assert.IsEmpty(overlay, "WebAssembly: the overlay is the frame loop's");
                 await cut.InvokeAsync(() => el.SetDragPosition(30, 0));
                 await ctx.RunFramesAsync(0, 600);
                 var state = State(ctx, "box");
@@ -184,7 +184,7 @@ public class GestureLifecycleTests
             else
             {
                 // Blazor Server: the browser plays it (the frame loop can't), and the bridge shows the drag on top.
-                Assert.AreEqual(1, overlay.Count);
+                Assert.ContainsSingle(overlay);
             }
         }
     }
@@ -205,7 +205,7 @@ public class GestureLifecycleTests
         Assert.AreEqual(0, settled.Transforms["x"], 0.5, "snap-to-origin ignores the release velocity");
         Assert.AreEqual(0, settled.Transforms["y"], 0.5);
         Assert.AreEqual(1.0, settled.Transforms["scale"], 1e-6, "the WhileDrag layer is released");
-        CollectionAssert.AreEqual(new[] { "start", "move", "end" }, log);
+        Assert.AreSequenceEqual(new[] { "start", "move", "end" }, log);
     }
 
     [TestMethod]
@@ -218,12 +218,12 @@ public class GestureLifecycleTests
         // A fast horizontal flick; vertical velocity below the inertia threshold.
         await DragTo(cut, ctx, 50, 10, velX: 10, velY: 0);
 
-        CollectionAssert.Contains(State(ctx, "box").ActiveProperties.ToArray(), "x", "momentum coasts the flicked axis");
-        CollectionAssert.DoesNotContain(State(ctx, "box").ActiveProperties.ToArray(), "y", "a still axis does not coast");
+        Assert.Contains("x", State(ctx, "box").ActiveProperties.ToArray(), "momentum coasts the flicked axis");
+        Assert.DoesNotContain("y", State(ctx, "box").ActiveProperties.ToArray(), "a still axis does not coast");
         await ctx.RunFramesAsync(0, 5000);
 
         var settled = State(ctx, "box");
-        Assert.IsTrue(settled.Transforms["x"] > 50, $"momentum must carry x past the release point: {settled.Transforms["x"]}");
+        Assert.IsGreaterThan(50, settled.Transforms["x"], $"momentum must carry x past the release point: {settled.Transforms["x"]}");
         Assert.AreEqual(10, settled.Transforms["y"], 1e-6, "y stays where it was released");
         Assert.IsFalse(settled.HasActiveAnimations, "the coast comes to rest");
     }
@@ -257,14 +257,14 @@ public class GestureLifecycleTests
             .Add(p => p.OnPanEnd, EventCallback.Factory.Create(this, () => log.Add("end")))
             .Add(p => p.ChildContent, Div));
 
-        Assert.AreEqual(true, AttachedFlags(ctx, "box")["pan"], "pan listeners must be requested");
+        Assert.IsTrue((bool?)AttachedFlags(ctx, "box")["pan"], "pan listeners must be requested");
 
         var el = Events(ctx, "box");
         await cut.InvokeAsync(el.OnPanStart_);
         await cut.InvokeAsync(() => el.OnPanMove(100, 200, 3, 4, 30, 40, 500, -250));
         await cut.InvokeAsync(el.OnPanEnd_);
 
-        CollectionAssert.AreEqual(new[] { "start", "pan", "end" }, log);
+        Assert.AreSequenceEqual(new[] { "start", "pan", "end" }, log);
         Assert.IsNotNull(info);
         Assert.AreEqual((100.0, 200.0), (info.Point.X, info.Point.Y));
         Assert.AreEqual((3.0, 4.0), (info.Delta.X, info.Delta.Y));
@@ -291,7 +291,7 @@ public class GestureLifecycleTests
         await ctx.RunFramesAsync(0, 400);
 
         var colors = frames.Where(f => f.ContainsKey("backgroundColor")).Select(f => f["backgroundColor"]).ToArray();
-        Assert.IsTrue(colors.Distinct().Count() >= 3, $"a 200ms tween should report several distinct frames: {string.Join(" | ", colors)}");
+        Assert.IsGreaterThanOrEqualTo(3, colors.Distinct().Count(), $"a 200ms tween should report several distinct frames: {string.Join(" | ", colors)}");
         Assert.AreEqual(ctx.Engine.GetCurrentStyles("box")!["backgroundColor"], colors[^1],
             "the last reported frame is what the element settled on");
     }
@@ -317,12 +317,12 @@ public class GestureLifecycleTests
         // Retarget before the first animation finishes: it is superseded, not completed.
         cut.Render(ps => ps.Add(p => p.Animate, Bm.To(opacity: 0.5)));
         await ctx.FinishWaapiAsync("box");
-        await firstCompletion.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        await firstCompletion.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
 
-        Assert.AreEqual(2, started.Count);
+        Assert.HasCount(2, started);
         lock (completed)
         {
-            Assert.AreEqual(1, completed.Count);
+            Assert.ContainsSingle(completed);
             Assert.AreEqual(0.5, completed[0]!.Opacity!.Last, "the completion carries the target that actually finished");
         }
     }
@@ -411,16 +411,18 @@ public class GestureLifecycleTests
             b.AddComponentParameter(5, nameof(Bmotion.ChildContent), Div);
             b.CloseComponent();
         })));
-        Assert.AreEqual(false, AttachedFlags(ctx, "thumb")["dragListener"], "the element itself must not start drags");
+        Assert.IsFalse((bool?)AttachedFlags(ctx, "thumb")["dragListener"], "the element itself must not start drags");
 
         await host.InvokeAsync(() => controls.StartAsync(new PointerEventArgs { PointerId = 7, ClientX = 12.5, ClientY = 30 }).AsTask());
 
         var call = ctx.Interop.ArgsOf("startDrag").Single();
-        CollectionAssert.AreEqual(new object?[] { "thumb", 7L, 12.5, 30.0 }, call);
+        Assert.AreSequenceEqual(new object?[] { "thumb", 7L, 12.5, 30.0 }, call);
 
         // Unmounting detaches the controls again.
         host.Render(ps => ps.Add(p => p.Show, false));
         await controls.StartAsync(new PointerEventArgs { PointerId = 8 });
         Assert.AreEqual(1, ctx.Interop.CountOf("startDrag"));
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

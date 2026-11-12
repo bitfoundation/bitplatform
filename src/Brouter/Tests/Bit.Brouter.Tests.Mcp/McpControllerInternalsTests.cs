@@ -15,8 +15,8 @@ public class McpControllerInternalsTests
     [TestMethod]
     public void A_route_table_is_split_on_newlines_semicolons_and_top_level_commas()
     {
-        CollectionAssert.AreEqual(new[] { "/a", "/b", "/c", "/d" }, McpController.SplitTemplates("/a\n/b;/c,/d"));
-        CollectionAssert.AreEqual(new[] { "/a", "/b" }, McpController.SplitTemplates("/a\r\n/b"));
+        Assert.AreSequenceEqual(new[] { "/a", "/b", "/c", "/d" }, McpController.SplitTemplates("/a\n/b;/c,/d"));
+        Assert.AreSequenceEqual(new[] { "/a", "/b" }, McpController.SplitTemplates("/a\r\n/b"));
     }
 
     [TestMethod]
@@ -24,20 +24,19 @@ public class McpControllerInternalsTests
     {
         // Splitting there would tear one valid template into two invalid ones, and then report the
         // wreckage as the caller's mistake.
-        CollectionAssert.AreEqual(new[] { "/a/{id:range(1,10)}" }, McpController.SplitTemplates("/a/{id:range(1,10)}"));
-        CollectionAssert.AreEqual(new[] { "/a/{code:length(2,4)}" }, McpController.SplitTemplates("/a/{code:length(2,4)}"));
+        Assert.AreSequenceEqual(new[] { "/a/{id:range(1,10)}" }, McpController.SplitTemplates("/a/{id:range(1,10)}"));
+        Assert.AreSequenceEqual(new[] { "/a/{code:length(2,4)}" }, McpController.SplitTemplates("/a/{code:length(2,4)}"));
 
-        CollectionAssert.AreEqual(
-            new[] { "/a/{id:range(1,10)}", "/b/{n:min(1)}" },
-            McpController.SplitTemplates("/a/{id:range(1,10)}, /b/{n:min(1)}"));
+        Assert.AreSequenceEqual(
+            new[] { "/a/{id:range(1,10)}", "/b/{n:min(1)}" }, McpController.SplitTemplates("/a/{id:range(1,10)}, /b/{n:min(1)}"));
     }
 
     [TestMethod]
     public void Blank_lines_and_stray_whitespace_are_not_templates()
     {
-        CollectionAssert.AreEqual(new[] { "/a", "/b" }, McpController.SplitTemplates("\n\n  /a  \n\n   \n/b\n;;\n"));
-        CollectionAssert.AreEqual(Array.Empty<string>(), McpController.SplitTemplates(""));
-        CollectionAssert.AreEqual(Array.Empty<string>(), McpController.SplitTemplates(null));
+        Assert.AreSequenceEqual(new[] { "/a", "/b" }, McpController.SplitTemplates("\n\n  /a  \n\n   \n/b\n;;\n"));
+        Assert.AreSequenceEqual(Array.Empty<string>(), McpController.SplitTemplates(""));
+        Assert.AreSequenceEqual(Array.Empty<string>(), McpController.SplitTemplates(null));
     }
 
     [TestMethod]
@@ -45,8 +44,8 @@ public class McpControllerInternalsTests
     {
         // The depth counter never goes below zero, so a malformed template is one bad entry rather
         // than a table that silently stops being split.
-        CollectionAssert.AreEqual(new[] { "/a/{id", "/b" }, McpController.SplitTemplates("/a/{id\n/b"));
-        CollectionAssert.AreEqual(new[] { "/a}", "/b" }, McpController.SplitTemplates("/a},/b"));
+        Assert.AreSequenceEqual(new[] { "/a/{id", "/b" }, McpController.SplitTemplates("/a/{id\n/b"));
+        Assert.AreSequenceEqual(new[] { "/a}", "/b" }, McpController.SplitTemplates("/a},/b"));
     }
 
     [TestMethod]
@@ -56,7 +55,7 @@ public class McpControllerInternalsTests
 
         var templates = McpController.SplitTemplates(pasted);
 
-        Assert.AreEqual(200, templates.Length);
+        Assert.HasCount(200, templates);
         Assert.AreEqual("/r0", templates[0], "The cut should keep the beginning, which is the part a caller meant to send.");
 
         // What was cut has to remain knowable, or the answer cannot own up to being partial.

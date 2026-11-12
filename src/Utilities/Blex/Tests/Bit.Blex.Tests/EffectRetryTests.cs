@@ -1,11 +1,11 @@
-using Bit.Blex.Testing;
+﻿using Bit.Blex.Testing;
 using Microsoft.Extensions.Time.Testing;
 
 namespace Bit.Blex.Tests;
 
 /// <summary>Effects that fail, hang or recover on demand, for retry and timeout.</summary>
 [BlexStoreAttribute(Name = "retry")]
-public partial class RetryStore
+internal partial class RetryStore
 {
     [BlexStateAttribute] private string _value = "";
 
@@ -160,7 +160,7 @@ public class EffectRetryTests
         Assert.AreEqual(2, store.Attempts, "the wait doubles before each further retry");
 
         clock.Advance(1);
-        await run.WaitAsync(TimeSpan.FromSeconds(5));
+        await run.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
 
         Assert.AreEqual(3, store.Attempts);
         Assert.AreEqual("ok", store.Value);
@@ -179,7 +179,8 @@ public class EffectRetryTests
         await harness.Store.Exhaust();
 
         Assert.AreEqual(3, harness.Store.Attempts);
-        Assert.AreEqual("exhausted 3", harness.Store.ExhaustError?.Message);
+        var actualValue = harness.Store.ExhaustError?.Message;
+        Assert.AreEqual("exhausted 3", actualValue);
         var failure = Assert.ContainsSingle(harness.Failures);
         Assert.AreEqual("exhausted 3", failure.Exception.Message);
     }
@@ -198,7 +199,7 @@ public class EffectRetryTests
         Assert.IsTrue(store.HangIsLoading);
 
         clock.Advance(1);
-        await run.WaitAsync(TimeSpan.FromSeconds(5));
+        await run.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
 
         var error = Assert.IsInstanceOfType<TimeoutException>(store.HangError);
         Assert.IsInstanceOfType<OperationCanceledException>(error.InnerException);
@@ -216,7 +217,7 @@ public class EffectRetryTests
 
         var run = store.HangThenRecover();
         clock.Advance(1000);
-        await run.WaitAsync(TimeSpan.FromSeconds(5));
+        await run.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
 
         Assert.AreEqual(2, store.Attempts);
         Assert.AreEqual("recovered", store.Value);
@@ -234,7 +235,7 @@ public class EffectRetryTests
         Assert.AreEqual(1, clock.Timers);
 
         store.CancelAlwaysFail();
-        await run.WaitAsync(TimeSpan.FromSeconds(5));
+        await run.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
 
         Assert.AreEqual(1, store.Attempts);
         Assert.IsNull(store.AlwaysFailError, "cancellation through the effect's own token is not a failure");
@@ -252,10 +253,11 @@ public class EffectRetryTests
         var run = store.Tokenless();
         store.Dispose();
         clock.Advance(1000);
-        await run.WaitAsync(TimeSpan.FromSeconds(5));
+        await run.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
 
         Assert.AreEqual(1, store.Attempts, "no attempt starts once the store is disposed");
-        Assert.AreEqual("tokenless 1", store.TokenlessError?.Message);
+        var actualValue = store.TokenlessError?.Message;
+        Assert.AreEqual("tokenless 1", actualValue);
     }
 
     [TestMethod]
@@ -282,10 +284,12 @@ public class EffectRetryTests
         replica.Store.FailuresBeforeSuccess = 2;
 
         // Nobody advances the clock: a replay that waited out the backoff would never finish.
-        await replica.Manager.ReplayAsync(original.Log.Actions).WaitAsync(TimeSpan.FromSeconds(5));
+        await replica.Manager.ReplayAsync(original.Log.Actions).WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
 
         Assert.AreEqual(3, replica.Store.Attempts);
         Assert.AreEqual("replayed", replica.Store.Value);
         Assert.AreEqual(0, clock.Timers);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

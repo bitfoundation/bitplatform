@@ -49,7 +49,7 @@ public partial class DemoScopedCssAnchorTests
                                    .Where(path => IsBuildOutput(root, path) is false)
                                    .ToArray();
 
-        Assert.IsTrue(stylesheets.Length > 0, "No isolated stylesheet was found in the demo client.");
+        Assert.IsNotEmpty(stylesheets, "No isolated stylesheet was found in the demo client.");
 
         var checkedPages = 0;
         var offenders = new List<string>();
@@ -73,10 +73,9 @@ public partial class DemoScopedCssAnchorTests
             }
         }
 
-        Assert.IsTrue(checkedPages > 0, "No demo stylesheet styles a class through ::deep; the reading of the stylesheets is broken.");
+        Assert.IsGreaterThan(0, checkedPages, "No demo stylesheet styles a class through ::deep; the reading of the stylesheets is broken.");
 
-        CollectionAssert.AreEqual(Array.Empty<string>(), offenders.ToArray(),
-            "These classes are styled through ::deep but used with no plain HTML element of the page above them, so the " +
+        Assert.AreSequenceEqual(Array.Empty<string>(), offenders.ToArray(), "These classes are styled through ::deep but used with no plain HTML element of the page above them, so the " +
             "page's scope attribute never reaches them and the rule matches nothing. Wrap the markup in a plain element " +
             $"(a <div>) inside the DemoExample:{Environment.NewLine}{string.Join(Environment.NewLine, offenders)}");
     }
@@ -89,7 +88,7 @@ public partial class DemoScopedCssAnchorTests
     [DataRow("> ::deep .custom-root { color: red; }")]
     public void AnUnanchoredDeepRuleShouldBeRead(string stylesheet)
     {
-        CollectionAssert.Contains(GetUnanchoredDeepClasses(stylesheet).ToArray(), "custom-root");
+        Assert.Contains("custom-root", GetUnanchoredDeepClasses(stylesheet).ToArray());
     }
 
     [TestMethod]
@@ -100,7 +99,7 @@ public partial class DemoScopedCssAnchorTests
     [DataRow("// ::deep .custom-root\n.x { color: red; }")]
     public void AnAnchoredOrPlainRuleShouldNotBeRead(string stylesheet)
     {
-        Assert.AreEqual(0, GetUnanchoredDeepClasses(stylesheet).Count, stylesheet);
+        Assert.IsEmpty(GetUnanchoredDeepClasses(stylesheet), stylesheet);
     }
 
     [TestMethod]
@@ -113,7 +112,7 @@ public partial class DemoScopedCssAnchorTests
     {
         var uses = FindUnanchoredUses(razor, new HashSet<string> { "custom-root" }).ToArray();
 
-        Assert.AreEqual(1, uses.Length, razor);
+        Assert.ContainsSingle(uses, razor);
         Assert.AreEqual("custom-root", uses[0].Class);
     }
 
@@ -126,7 +125,7 @@ public partial class DemoScopedCssAnchorTests
     [DataRow("<DemoExample Title=\"Style\">\n    <BitPersona Class=\"custom-root-other\" />\n</DemoExample>")]
     public void AnAnchoredOrUnrelatedUseShouldNotBeFound(string razor)
     {
-        Assert.AreEqual(0, FindUnanchoredUses(razor, new HashSet<string> { "custom-root" }).Count(), razor);
+        Assert.IsEmpty(FindUnanchoredUses(razor, new HashSet<string> { "custom-root" }), razor);
     }
 
     // The classes of the rules under a ::deep with no selector in front of it: the one the ::deep itself names and

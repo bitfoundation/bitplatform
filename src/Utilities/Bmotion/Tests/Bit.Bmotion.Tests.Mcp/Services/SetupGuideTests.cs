@@ -1,4 +1,4 @@
-namespace Bit.Bmotion.Tests.Mcp.Services;
+﻿namespace Bit.Bmotion.Tests.Mcp.Services;
 
 /// <summary>
 /// The per-render-mode setup guide. Getting this wrong is the setup bug that does not fail at
@@ -18,7 +18,7 @@ public class SetupGuideTests
             var guide = BmotionSetupGuide.Get(mode);
 
             Assert.IsNotNull(guide, $"'{mode}' is advertised but has no guide.");
-            Assert.IsTrue(guide.Length > 500, $"The '{mode}' guide is only {guide.Length} characters.");
+            Assert.IsGreaterThan(500, guide.Length, $"The '{mode}' guide is only {guide.Length} characters.");
         }
     }
 
@@ -29,9 +29,9 @@ public class SetupGuideTests
         {
             var guide = BmotionSetupGuide.Get(mode)!;
 
-            StringAssert.Contains(guide, "dotnet add package Bit.Bmotion", $"The '{mode}' guide does not say how to install it.");
-            StringAssert.Contains(guide, "_Imports.razor", $"The '{mode}' guide omits the @using nobody remembers.");
-            StringAssert.Contains(guide, "<Bmotion", $"The '{mode}' guide shows no animation to prove the wiring works.");
+            Assert.Contains("dotnet add package Bit.Bmotion", guide, $"The '{mode}' guide does not say how to install it.");
+            Assert.Contains("_Imports.razor", guide, $"The '{mode}' guide omits the @using nobody remembers.");
+            Assert.Contains("<Bmotion", guide, $"The '{mode}' guide shows no animation to prove the wiring works.");
 
             // Registration is either written out or factored into the shared extension method the
             // guide points at; what matters is that following this one guide reaches it.
@@ -51,16 +51,16 @@ public class SetupGuideTests
     {
         var server = BmotionSetupGuide.Get("server")!;
 
-        StringAssert.Contains(server, "Blazor Server");
+        Assert.Contains("Blazor Server", server);
         Assert.IsTrue(server.Contains("drag", StringComparison.OrdinalIgnoreCase),
                       "The Server guide does not say how drag behaves there.");
         Assert.IsTrue(server.Contains("frame loop", StringComparison.OrdinalIgnoreCase),
                       "The Server guide does not explain which animations survive.");
 
         // What is left of the frame loop - the cases that still jump - has to be named.
-        StringAssert.Contains(server, "Transition.OnUpdate");
-        StringAssert.Contains(server, "`d`");
-        StringAssert.Contains(server, "BmRepeat.Reverse");
+        Assert.Contains("Transition.OnUpdate", server);
+        Assert.Contains("`d`", server);
+        Assert.Contains("BmRepeat.Reverse", server);
     }
 
     /// <summary>
@@ -73,8 +73,8 @@ public class SetupGuideTests
     {
         var server = BmotionSetupGuide.Get("server")!;
 
-        StringAssert.Contains(server, "two-keyframe Web Animation");
-        StringAssert.Contains(server, "Recorded by the engine");
+        Assert.Contains("two-keyframe Web Animation", server);
+        Assert.Contains("Recorded by the engine", server);
 
         foreach (var line in server.Split('\n').Where(line => line.Contains("Jumps to the target", StringComparison.Ordinal)))
         {
@@ -110,8 +110,8 @@ public class SetupGuideTests
     {
         var guide = BmotionSetupGuide.Get(mode)!;
 
-        StringAssert.Contains(guide, "Server/Program.cs", $"The '{mode}' guide does not wire the server container.");
-        StringAssert.Contains(guide, "Client/Program.cs", $"The '{mode}' guide does not wire the client container.");
+        Assert.Contains("Server/Program.cs", guide, $"The '{mode}' guide does not wire the server container.");
+        Assert.Contains("Client/Program.cs", guide, $"The '{mode}' guide does not wire the client container.");
 
         Assert.IsTrue(guide.Contains("BOTH", StringComparison.OrdinalIgnoreCase) ||
                       guide.Contains("both containers", StringComparison.OrdinalIgnoreCase),

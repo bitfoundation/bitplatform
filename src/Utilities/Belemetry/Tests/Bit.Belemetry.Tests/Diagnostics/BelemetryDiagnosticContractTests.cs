@@ -25,13 +25,13 @@ public class BelemetryDiagnosticContractTests
             Assert.AreEqual(category, BelemetryDiagnosticJson.ParseCategory(name));
         }
         Assert.AreEqual(bits.Count, Enum.GetValues<BelemetryDiagnosticCategories>().Length - 2);
-        StringAssert.Contains(Script("config.ts"), $"categories: {(int)BelemetryDiagnosticCategories.All}");
+        Assert.Contains($"categories: {(int)BelemetryDiagnosticCategories.All}", Script("config.ts"));
     }
 
     [TestMethod]
     public void TheScriptsTriggerCallback_IsTheOneDotnetExposes()
     {
-        StringAssert.Contains(Script(Path.Combine("exporters", "relay.ts")), "diagnosticTrigger: 'Belemetry.DiagnosticTrigger'");
+        Assert.Contains("diagnosticTrigger: 'Belemetry.DiagnosticTrigger'", Script(Path.Combine("exporters", "relay.ts")));
         var method = typeof(BelemetryJsCallbacks).GetMethod(nameof(BelemetryJsCallbacks.DiagnosticTrigger))!;
         Assert.AreEqual("Belemetry.DiagnosticTrigger", method.GetCustomAttributes(typeof(Microsoft.JSInterop.JSInvokableAttribute), false).Cast<Microsoft.JSInterop.JSInvokableAttribute>().Single().Identifier);
     }
@@ -76,7 +76,7 @@ public class BelemetryDiagnosticContractTests
         var reader = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "Bit.Belemetry", "Diagnostics", "BelemetryBrowserEvidence.cs"));
         foreach (var field in fields.Except(["type", "message", "stack"]))
         {
-            StringAssert.Contains(reader, $"\"{field}\"", $"BelemetryBrowserEvidence does not read '{field}'.");
+            Assert.Contains($"\"{field}\"", reader, $"BelemetryBrowserEvidence does not read '{field}'.");
         }
     }
 }

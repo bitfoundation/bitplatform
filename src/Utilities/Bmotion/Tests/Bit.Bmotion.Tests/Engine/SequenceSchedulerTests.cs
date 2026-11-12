@@ -1,4 +1,4 @@
-namespace Bit.Bmotion.Tests.Engine;
+﻿namespace Bit.Bmotion.Tests.Engine;
 
 /// <summary>
 /// Tests for the timeline playhead behind <see cref="BmSequence"/>. The point of running segment
@@ -33,7 +33,7 @@ public class SequenceSchedulerTests
         // A scheduler created mid-session must not inherit the whole page-load elapsed time.
         scheduler.Tick(900_000);
 
-        CollectionAssert.AreEqual(Array.Empty<string>(), fired);
+        Assert.AreSequenceEqual(Array.Empty<string>(), fired);
     }
 
     [TestMethod]
@@ -44,7 +44,7 @@ public class SequenceSchedulerTests
         scheduler.Tick(0);
         scheduler.Tick(16);
 
-        CollectionAssert.AreEqual(new[] { "a" }, fired);
+        Assert.AreSequenceEqual(new[] { "a" }, fired);
     }
 
     [TestMethod]
@@ -54,7 +54,7 @@ public class SequenceSchedulerTests
 
         Advance(scheduler, 0, 600);
 
-        CollectionAssert.AreEqual(new[] { "first", "second", "third" }, fired);
+        Assert.AreSequenceEqual(new[] { "first", "second", "third" }, fired);
     }
 
     [TestMethod]
@@ -64,7 +64,7 @@ public class SequenceSchedulerTests
 
         Advance(scheduler, 0, 300);
 
-        CollectionAssert.AreEqual(Array.Empty<string>(), fired);
+        Assert.AreSequenceEqual(Array.Empty<string>(), fired);
         Assert.IsFalse(scheduler.IsFinished);
     }
 
@@ -76,8 +76,7 @@ public class SequenceSchedulerTests
 
         Advance(scheduler, 0, 2000);
 
-        CollectionAssert.AreEqual(Array.Empty<string>(), fired,
-            "a paused sequence must not keep starting its later segments");
+        Assert.AreSequenceEqual(Array.Empty<string>(), fired, "a paused sequence must not keep starting its later segments");
     }
 
     [TestMethod]
@@ -90,9 +89,8 @@ public class SequenceSchedulerTests
         var (realtime, realtimeFired) = Build((0.4, "a"));
         Advance(realtime, 0, 150);
 
-        CollectionAssert.AreEqual(new[] { "a" }, fastFired);
-        CollectionAssert.AreEqual(Array.Empty<string>(), realtimeFired,
-            "at realtime the same 150ms must not have reached a 0.4s offset");
+        Assert.AreSequenceEqual(new[] { "a" }, fastFired);
+        Assert.AreSequenceEqual(Array.Empty<string>(), realtimeFired, "at realtime the same 150ms must not have reached a 0.4s offset");
     }
 
     [TestMethod]
@@ -103,12 +101,12 @@ public class SequenceSchedulerTests
         Advance(scheduler, 0, 160);       // ~0.16s of the 0.3s elapsed
         scheduler.Rate = 0;
         Advance(scheduler, 176, 5000);    // held: no progress at all
-        CollectionAssert.AreEqual(Array.Empty<string>(), fired);
+        Assert.AreSequenceEqual(Array.Empty<string>(), fired);
 
         scheduler.Rate = 1;
         Advance(scheduler, 5016, 5200);   // the remaining ~0.14s
 
-        CollectionAssert.AreEqual(new[] { "a" }, fired);
+        Assert.AreSequenceEqual(new[] { "a" }, fired);
     }
 
     [TestMethod]
@@ -119,12 +117,11 @@ public class SequenceSchedulerTests
         scheduler.Tick(0);
         scheduler.Tick(30_000);   // tab was backgrounded for 30 seconds
 
-        CollectionAssert.AreEqual(Array.Empty<string>(), fired,
-            "the step is capped at one frame's worth, so 30s of real time cannot flush the timeline");
+        Assert.AreSequenceEqual(Array.Empty<string>(), fired, "the step is capped at one frame's worth, so 30s of real time cannot flush the timeline");
 
         // Resuming normally, the timeline picks up from ~0.064s and only the imminent segment runs.
         Advance(scheduler, 30_016, 30_200);
-        CollectionAssert.AreEqual(new[] { "a" }, fired);
+        Assert.AreSequenceEqual(new[] { "a" }, fired);
     }
 
     [TestMethod]
@@ -136,7 +133,7 @@ public class SequenceSchedulerTests
         scheduler.Cancel();
         Advance(scheduler, 136, 1000);
 
-        CollectionAssert.AreEqual(new[] { "a" }, fired);
+        Assert.AreSequenceEqual(new[] { "a" }, fired);
         Assert.IsTrue(scheduler.IsFinished);
     }
 
@@ -164,7 +161,7 @@ public class SequenceSchedulerTests
 
         Advance(scheduler, 0, 400);
 
-        CollectionAssert.AreEqual(new[] { "b" }, fired);
+        Assert.AreSequenceEqual(new[] { "b" }, fired);
     }
 
     [TestMethod]

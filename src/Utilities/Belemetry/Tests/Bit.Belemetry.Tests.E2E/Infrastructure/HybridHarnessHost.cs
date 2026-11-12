@@ -7,7 +7,7 @@ namespace Bit.Belemetry.Tests.E2E.Infrastructure;
 /// port, and Playwright attaches to it like to any Chromium - the page it drives is the one inside the app window,
 /// running the real hybrid renderer. Its exports go to the receiver of a web harness host (<c>--collector-origin</c>).
 /// </summary>
-public sealed class HybridHarnessHost : IAsyncDisposable
+internal sealed class HybridHarnessHost : IAsyncDisposable
 {
     /// <summary>The origin BlazorWebView serves the app from.</summary>
     public const string AppOrigin = "https://0.0.0.1";

@@ -58,7 +58,7 @@ public class PersistenceHooksTests
         };
 
         await using var persistor = new BlexStatePersistor(manager, storage, options);
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
 
         store.SetTheme("dark");
         await persistor.FlushAsync();
@@ -79,7 +79,7 @@ public class PersistenceHooksTests
 
         await using (var persistor = new BlexStatePersistor(manager, storage, options))
         {
-            await persistor.StartAsync();
+            await persistor.StartAsync(TestContext.CancellationToken);
             store.FontSize = 99;
             store.SetTheme("dark");
             await persistor.FlushAsync();
@@ -89,7 +89,7 @@ public class PersistenceHooksTests
         var freshManager = new BlexManager();
         freshManager.Register(fresh);
         await using var restore = new BlexStatePersistor(freshManager, storage, options);
-        await restore.StartAsync();
+        await restore.StartAsync(TestContext.CancellationToken);
 
         Assert.AreEqual("dark", fresh.Theme);
         Assert.AreEqual(14, fresh.FontSize); // the declared default, not the 99 we never saved
@@ -104,7 +104,7 @@ public class PersistenceHooksTests
         var options = new BlexPersistenceOptions { Partialize = (_, state) => allow ? state : null };
 
         await using var persistor = new BlexStatePersistor(manager, storage, options);
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
         Assert.AreEqual("sepia", store.Theme);
 
         store.SetTheme("dark");
@@ -138,7 +138,7 @@ public class PersistenceHooksTests
         manager.OnError = errors.Add;
 
         await using var persistor = new BlexStatePersistor(manager, storage, options);
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
 
         store.SetTheme("dark");
         await persistor.FlushAsync();
@@ -158,7 +158,7 @@ public class PersistenceHooksTests
 
         await using (var first = new BlexStatePersistor(manager, storage, options))
         {
-            await first.StartAsync();
+            await first.StartAsync(TestContext.CancellationToken);
             Assert.AreSequenceEqual([("settings", (JsonObject?)null)], seen); // nothing stored yet
 
             store.SetTheme("dark");
@@ -170,7 +170,7 @@ public class PersistenceHooksTests
         var freshManager = new BlexManager();
         freshManager.Register(fresh);
         await using var second = new BlexStatePersistor(freshManager, storage, options);
-        await second.StartAsync();
+        await second.StartAsync(TestContext.CancellationToken);
 
         var (name, applied) = Assert.ContainsSingle(seen);
         Assert.AreEqual("settings", name);
@@ -190,7 +190,7 @@ public class PersistenceHooksTests
         };
 
         await using var persistor = new BlexStatePersistor(manager, storage, options);
-        await persistor.StartAsync(); // must not throw
+        await persistor.StartAsync(TestContext.CancellationToken); // must not throw
 
         Assert.Contains(e => e.Source == "persistence" && e.Exception is InvalidOperationException, errors);
     }
@@ -203,7 +203,7 @@ public class PersistenceHooksTests
         var options = new BlexPersistenceOptions { SkipHydration = true };
 
         await using var persistor = new BlexStatePersistor(manager, storage, options);
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
 
         Assert.AreEqual("light", store.Theme); // stored state deliberately not applied yet
 
@@ -213,7 +213,7 @@ public class PersistenceHooksTests
         Assert.Contains("21", storage.Data["blex:settings"]);
 
         storage.Data["blex:settings"] = """{"Theme":"dark","FontSize":16}""";
-        await persistor.RehydrateAsync();
+        await persistor.RehydrateAsync(TestContext.CancellationToken);
         Assert.AreEqual("dark", store.Theme);
         Assert.AreEqual(16, store.FontSize);
     }
@@ -225,8 +225,8 @@ public class PersistenceHooksTests
         storage.Data["blex:settings"] = """{"Theme":"dark"}""";
 
         await using var persistor = new BlexStatePersistor(manager, storage);
-        await persistor.StartAsync();
-        await persistor.RehydrateAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
+        await persistor.RehydrateAsync(TestContext.CancellationToken);
         await persistor.FlushAsync();
 
         // The restore itself is not an action, so nothing was scheduled and the (partial) stored
@@ -234,4 +234,6 @@ public class PersistenceHooksTests
         Assert.AreEqual("""{"Theme":"dark"}""", storage.Data["blex:settings"]);
         Assert.AreEqual("dark", store.Theme);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

@@ -1,4 +1,4 @@
-using Bit.BlazeDb.EntityFrameworkCore.Infrastructure;
+﻿using Bit.BlazeDb.EntityFrameworkCore.Infrastructure;
 using Bit.BlazeDb.Storage;
 using Bit.BlazeDb.Tests.@event;
 using Bit.BlazeDb.Tests.EntityFrameworkCore;
@@ -27,31 +27,31 @@ public class CommittedSnapshotTests
         var ada = context.People.Single();
         ada.Name = "Unsaved";
         var engine = context.Database.GetBlazeDb();
-        await engine.CheckpointAsync();
+        await engine.CheckpointAsync(TestContext.CancellationToken);
         using var export = new MemoryStream();
-        await engine.ExportAsync(export);
+        await engine.ExportAsync(export, TestContext.CancellationToken);
 
         // What storage holds now, opened as the next session would.
-        await using (var reopened = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { Storage = storage.Clone() }.AddTable(EfPerson.Table)))
+        await using (var reopened = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { Storage = storage.Clone() }.AddTable(EfPerson.Table), TestContext.CancellationToken))
         {
             Assert.AreEqual("Ada", reopened.GetTable(EfPerson.Table).Get(1)!.Name);
         }
         var imported = new BlazeDbInMemoryStorage();
         export.Position = 0;
-        await BlazeDbDatabase.ImportAsync(export, imported);
-        await using (var restored = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { Storage = imported }.AddTable(EfPerson.Table)))
+        await BlazeDbDatabase.ImportAsync(export, imported, TestContext.CancellationToken);
+        await using (var restored = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { Storage = imported }.AddTable(EfPerson.Table), TestContext.CancellationToken))
         {
             Assert.AreEqual("Ada", restored.GetTable(EfPerson.Table).Get(1)!.Name);
         }
 
         // Saved, it is committed and checkpointed like any write.
         context.SaveChanges();
-        await engine.CheckpointAsync();
-        await using (var reopened = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { Storage = storage.Clone() }.AddTable(EfPerson.Table)))
+        await engine.CheckpointAsync(TestContext.CancellationToken);
+        await using (var reopened = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { Storage = storage.Clone() }.AddTable(EfPerson.Table), TestContext.CancellationToken))
         {
             Assert.AreEqual("Unsaved", reopened.GetTable(EfPerson.Table).Get(1)!.Name);
         }
-        await context.Database.EnsureDeletedAsync();
+        await context.Database.EnsureDeletedAsync(TestContext.CancellationToken);
     }
 
     [TestMethod]
@@ -62,23 +62,23 @@ public class CommittedSnapshotTests
         {
             Storage = storage,
             FlushInterval = TimeSpan.FromHours(1),
-        }.AddTable(PersonTable.Descriptor));
+        }.AddTable(PersonTable.Descriptor), TestContext.CancellationToken);
         var people = db.GetTable(PersonTable.Descriptor);
         for (var i = 0; i < 200; i++)
         {
             people.Insert(new Person(i, "p" + i, i));
         }
-        await db.FlushAsync();
+        await db.FlushAsync(TestContext.CancellationToken);
         people.Delete(3);
         people.Upsert(new Person(4, "four", 4));
 
-        var checkpoint = db.CheckpointAsync().AsTask();
+        var checkpoint = db.CheckpointAsync(TestContext.CancellationToken).AsTask();
         people.Insert(new Person(1000, "during", 1));
         await checkpoint;
         people.Delete(5);
         await db.DisposeAsync();
 
-        await using var reopened = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { Storage = storage }.AddTable(PersonTable.Descriptor));
+        await using var reopened = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { Storage = storage }.AddTable(PersonTable.Descriptor), TestContext.CancellationToken);
         var table = reopened.GetTable(PersonTable.Descriptor);
         Assert.AreEqual(199, table.Count);
         Assert.IsFalse(table.Contains(3));
@@ -92,24 +92,24 @@ public class CommittedSnapshotTests
     {
         var storage = new BlazeDbInMemoryStorage();
         var withTable = new BlazeDbDatabaseOptions { Storage = storage, FlushInterval = TimeSpan.FromHours(1) }.AddTable(DecimalKeyed.Table);
-        await using (var db = await BlazeDbDatabase.OpenAsync(withTable))
+        await using (var db = await BlazeDbDatabase.OpenAsync(withTable, TestContext.CancellationToken))
         {
             var rows = db.GetTable(DecimalKeyed.Table);
             rows.Insert(new DecimalKeyed { Id = 1.0m, Note = "one" });
             rows.Insert(new DecimalKeyed { Id = 2m, Note = "two" });
-            await db.CheckpointAsync();
+            await db.CheckpointAsync(TestContext.CancellationToken);
             // 1.00m is the same key to the table, but not the same bytes as written.
             Assert.IsTrue(rows.Delete(1.00m));
         }
 
         // Opened without the table: its rows are carried as bytes, and the delete is replayed and checkpointed there.
-        await using (var narrow = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { Storage = storage }.AddTable(PersonTable.Descriptor)))
+        await using (var narrow = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { Storage = storage }.AddTable(PersonTable.Descriptor), TestContext.CancellationToken))
         {
-            CollectionAssert.AreEqual(new[] { "decimal_keys" }, narrow.UnregisteredTables.ToArray());
-            await narrow.CheckpointAsync();
+            Assert.AreSequenceEqual(new[] { "decimal_keys" }, narrow.UnregisteredTables.ToArray());
+            await narrow.CheckpointAsync(TestContext.CancellationToken);
         }
 
-        await using var reopened = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { Storage = storage }.AddTable(DecimalKeyed.Table));
+        await using var reopened = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { Storage = storage }.AddTable(DecimalKeyed.Table), TestContext.CancellationToken);
         var table = reopened.GetTable(DecimalKeyed.Table);
         Assert.AreEqual(1, table.Count);
         Assert.AreEqual("two", table.Get(2.00m)!.Note);
@@ -135,7 +135,7 @@ public class CommittedSnapshotTests
             snapshot.WriteBytes(row.WrittenSpan);
         }
         snapshot.WriteFixed32(Bit.BlazeDb.Wal.BlazeDbCrc32.Compute(snapshot.WrittenSpan));
-        await storage.WriteAtomicAsync("snapshot-1.blz", snapshot.ToArray());
+        await storage.WriteAtomicAsync("snapshot-1.blz", snapshot.ToArray(), TestContext.CancellationToken);
         var manifest = new Bit.BlazeDb.Serialization.BlazeDbBufferWriter();
         manifest.WriteRaw("BLZM"u8);
         manifest.WriteByte(1);
@@ -144,23 +144,23 @@ public class CommittedSnapshotTests
         manifest.WriteString("wal-1.blz");
         manifest.WriteVarUInt(0);
         manifest.WriteFixed32(Bit.BlazeDb.Wal.BlazeDbCrc32.Compute(manifest.WrittenSpan));
-        await storage.WriteAtomicAsync("manifest.blz", manifest.ToArray());
+        await storage.WriteAtomicAsync("manifest.blz", manifest.ToArray(), TestContext.CancellationToken);
 
         var options = new BlazeDbDatabaseOptions { Storage = storage, FlushInterval = TimeSpan.FromHours(1) }.AddTable(PersonTable.Descriptor);
-        await using (var db = await BlazeDbDatabase.OpenAsync(options))
+        await using (var db = await BlazeDbDatabase.OpenAsync(options, TestContext.CancellationToken))
         {
             var people = db.GetTable(PersonTable.Descriptor);
             Assert.AreEqual(3, people.Count);
             people.Delete(2);
             people.Upsert(new Person(3, "Dijkstra", 72));
-            await db.CheckpointAsync();
+            await db.CheckpointAsync(TestContext.CancellationToken);
         }
 
         await using var reopened = await BlazeDbDatabase.OpenAsync(
-            new BlazeDbDatabaseOptions { Storage = storage }.AddTable(PersonTable.Descriptor));
+            new BlazeDbDatabaseOptions { Storage = storage }.AddTable(PersonTable.Descriptor), TestContext.CancellationToken);
         var table = reopened.GetTable(PersonTable.Descriptor);
-        CollectionAssert.AreEquivalent(new[] { "Ada", "Dijkstra" }, table.Scan().Select(p => p.Name).ToArray());
-        CollectionAssert.AreEqual("BLZS"u8.ToArray().Append((byte)2).ToArray(), storage.GetFile(storage.Snapshot(2))![..5]);
+        Assert.AreSequenceEqual(new[] { "Ada", "Dijkstra" }, table.Scan().Select(p => p.Name).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
+        Assert.AreSequenceEqual("BLZS"u8.ToArray().Append((byte)2).ToArray(), storage.GetFile(storage.Snapshot(2))![..5]);
     }
 
     [TestMethod]
@@ -168,24 +168,24 @@ public class CommittedSnapshotTests
     {
         var storage = new BlazeDbInMemoryStorage();
         var writerOptions = new BlazeDbDatabaseOptions { Storage = storage, FlushInterval = TimeSpan.FromHours(1) }.AddTable(PersonTable.Descriptor);
-        await using var writer = await BlazeDbDatabase.OpenAsync(writerOptions);
+        await using var writer = await BlazeDbDatabase.OpenAsync(writerOptions, TestContext.CancellationToken);
         writer.GetTable(PersonTable.Descriptor).Insert(new Person(1, "Ada", 36));
-        await writer.FlushAsync();
+        await writer.FlushAsync(TestContext.CancellationToken);
 
         await using var replica = await BlazeDbDatabase.OpenAsync(
-            new BlazeDbDatabaseOptions { Storage = storage, ReadOnly = true }.AddTable(PersonTable.Descriptor));
+            new BlazeDbDatabaseOptions { Storage = storage, ReadOnly = true }.AddTable(PersonTable.Descriptor), TestContext.CancellationToken);
         // The writer commits, flushes and checkpoints past what the replica loaded.
         writer.GetTable(PersonTable.Descriptor).Insert(new Person(2, "Grace", 45));
-        await writer.FlushAsync();
-        await writer.CheckpointAsync();
+        await writer.FlushAsync(TestContext.CancellationToken);
+        await writer.CheckpointAsync(TestContext.CancellationToken);
 
         using var export = new MemoryStream();
-        await replica.ExportAsync(export);
+        await replica.ExportAsync(export, TestContext.CancellationToken);
         export.Position = 0;
         var imported = new BlazeDbInMemoryStorage();
-        await BlazeDbDatabase.ImportAsync(export, imported);
-        await using var restored = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { Storage = imported }.AddTable(PersonTable.Descriptor));
-        CollectionAssert.AreEqual(new[] { 1 }, restored.GetTable(PersonTable.Descriptor).Scan().Select(p => p.Id).ToArray());
+        await BlazeDbDatabase.ImportAsync(export, imported, TestContext.CancellationToken);
+        await using var restored = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { Storage = imported }.AddTable(PersonTable.Descriptor), TestContext.CancellationToken);
+        Assert.AreSequenceEqual(new[] { 1 }, restored.GetTable(PersonTable.Descriptor).Scan().Select(p => p.Id).ToArray());
     }
 
     [TestMethod]
@@ -193,13 +193,13 @@ public class CommittedSnapshotTests
     {
         var storage = new BlazeDbInMemoryStorage();
         var options = new BlazeDbDatabaseOptions { Storage = storage, FlushInterval = TimeSpan.FromHours(1) }.AddTable(PersonTable.Descriptor);
-        await using (var db = await BlazeDbDatabase.OpenAsync(options))
+        await using (var db = await BlazeDbDatabase.OpenAsync(options, TestContext.CancellationToken))
         {
             var people = db.GetTable(PersonTable.Descriptor);
             for (var i = 0; i < 5; i++)
             {
                 people.Insert(new Person(i, "p" + i, i));
-                await db.FlushAsync();
+                await db.FlushAsync(TestContext.CancellationToken);
             }
             // Damage in the middle of the log, with intact records after it: a scan reports corruption.
             var wal = storage.Wal();
@@ -207,10 +207,10 @@ public class CommittedSnapshotTests
             bytes[bytes.Length / 2] ^= 0xFF;
             storage.SetFile(wal, bytes);
 
-            await db.CheckpointAsync();
+            await db.CheckpointAsync(TestContext.CancellationToken);
         }
 
-        await using var reopened = await BlazeDbDatabase.OpenAsync(options);
+        await using var reopened = await BlazeDbDatabase.OpenAsync(options, TestContext.CancellationToken);
         Assert.AreEqual(5, reopened.GetTable(PersonTable.Descriptor).Count);
     }
 
@@ -235,4 +235,6 @@ public class CommittedSnapshotTests
         Assert.AreEqual("same", BlazeDbKeyCanonical.Of("same"));
         Assert.AreEqual(42, BlazeDbKeyCanonical.Of(42));
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

@@ -49,7 +49,7 @@ public class McpToolSurfaceTests
     [TestMethod]
     public void Every_expected_tool_is_published_and_nothing_else_is()
     {
-        CollectionAssert.AreEquivalent(ExpectedTools, _tools.Select(tool => tool.Name).ToArray());
+        Assert.AreSequenceEqual(ExpectedTools, _tools.Select(tool => tool.Name).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -58,7 +58,8 @@ public class McpToolSurfaceTests
         foreach (var tool in _tools)
         {
             Assert.IsFalse(string.IsNullOrWhiteSpace(tool.Title), $"'{tool.Name}' has no title, so a client lists it by its method name.");
-            Assert.IsTrue(tool.Description?.Length > 80,
+            var actualValue = tool.Description?.Length > 80;
+            Assert.IsTrue(actualValue,
                 $"'{tool.Name}' has a description of {tool.Description?.Length ?? 0} characters - too short to choose it by.");
         }
     }
@@ -71,8 +72,8 @@ public class McpToolSurfaceTests
             var annotations = tool.ProtocolTool.Annotations;
 
             Assert.IsNotNull(annotations, $"'{tool.Name}' carries no annotations, so a client has to assume it might write.");
-            Assert.AreEqual(true, annotations.ReadOnlyHint, $"'{tool.Name}' is not marked read-only; a client will stop and ask before running it.");
-            Assert.AreEqual(false, annotations.OpenWorldHint, $"'{tool.Name}' is not marked closed-world.");
+            Assert.IsTrue(annotations.ReadOnlyHint, $"'{tool.Name}' is not marked read-only; a client will stop and ask before running it.");
+            Assert.IsFalse(annotations.OpenWorldHint, $"'{tool.Name}' is not marked closed-world.");
             Assert.IsNull(annotations.DestructiveHint, $"'{tool.Name}' states a destructive hint, which is meaningless on a read-only tool.");
             Assert.IsNull(annotations.IdempotentHint, $"'{tool.Name}' states an idempotent hint, which is meaningless on a read-only tool.");
         }
@@ -123,15 +124,15 @@ public class McpToolSurfaceTests
             var tool = _tools.Single(t => t.Name == name);
             var required = tool.JsonSchema.GetProperty("required").EnumerateArray().Select(value => value.GetString()).ToArray();
 
-            CollectionAssert.Contains(required, argument, $"'{name}.{argument}' is not declared required.");
+            Assert.Contains(argument, required, $"'{name}.{argument}' is not declared required.");
         }
 
         // The options beside them have defaults; a caller who leaves them out gets the documented behavior.
         var searchRequired = _tools.Single(tool => tool.Name == "SearchBlex").JsonSchema.GetProperty("required").EnumerateArray().Select(v => v.GetString()).ToArray();
-        CollectionAssert.DoesNotContain(searchRequired, "limit");
+        Assert.DoesNotContain("limit", searchRequired);
 
         var inspectRequired = _tools.Single(tool => tool.Name == "InspectBlexStore").JsonSchema.GetProperty("required").EnumerateArray().Select(v => v.GetString()).ToArray();
-        CollectionAssert.DoesNotContain(inspectRequired, "includeGeneratedCode");
+        Assert.DoesNotContain("includeGeneratedCode", inspectRequired);
     }
 
     [TestMethod]
@@ -147,7 +148,7 @@ public class McpToolSurfaceTests
             Assert.IsTrue(tool.JsonSchema.GetProperty("properties").TryGetProperty(argument, out _),
                 $"'{name}' does not take the '{argument}' key it is supposed to answer by.");
 
-            StringAssert.Contains(tool.Description!, "Omit", $"'{name}' never says what leaving its key out answers with.");
+            Assert.Contains("Omit", tool.Description!, $"'{name}' never says what leaving its key out answers with.");
         }
     }
 
@@ -158,7 +159,7 @@ public class McpToolSurfaceTests
         var values = tool.JsonSchema.GetProperty("properties").GetProperty("hostingModel").GetProperty("enum")
                          .EnumerateArray().Select(value => value.GetString()).ToArray();
 
-        CollectionAssert.AreEquivalent(Bit.Blex.Demo.Server.Services.BlexSetupGuide.HostingModels, values);
+        Assert.AreSequenceEqual(Bit.Blex.Demo.Server.Services.BlexSetupGuide.HostingModels, values, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -200,6 +201,6 @@ public class McpToolSurfaceTests
                                             + JsonSerializer.Serialize(tool.JsonSchema).Length
                                             + (tool.ReturnJsonSchema is null ? 0 : JsonSerializer.Serialize(tool.ReturnJsonSchema).Length));
 
-        Assert.IsTrue(characters < 16_000, $"The published tool surface is {characters} characters, which every request now carries.");
+        Assert.IsLessThan(16_000, characters, $"The published tool surface is {characters} characters, which every request now carries.");
     }
 }

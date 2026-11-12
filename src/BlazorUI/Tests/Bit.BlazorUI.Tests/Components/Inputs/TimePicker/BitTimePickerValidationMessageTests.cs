@@ -37,7 +37,7 @@ public class BitTimePickerValidationMessageTests : BunitTestContext
         });
 
         // Nothing is shown before the EditContext has anything to say.
-        Assert.AreEqual(0, component.FindAll(".bit-tpc-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tpc-erm"));
         Assert.IsNull(component.Find(".bit-tpc-inp").GetAttribute("aria-describedby"));
 
         component.InvokeAsync(() => editContext.Validate());
@@ -54,7 +54,7 @@ public class BitTimePickerValidationMessageTests : BunitTestContext
         component.Find(".bit-tpc-inp").Input("14:30");
 
         Assert.AreEqual(new TimeSpan(14, 30, 0), model.Time);
-        Assert.AreEqual(0, component.FindAll(".bit-tpc-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tpc-erm"));
         Assert.IsNull(component.Find(".bit-tpc-inp").GetAttribute("aria-describedby"));
         Assert.IsNull(component.Find(".bit-tpc-inp").GetAttribute("aria-invalid"));
     }
@@ -81,21 +81,21 @@ public class BitTimePickerValidationMessageTests : BunitTestContext
         // Each refused text shows its own reason; the time stays empty meanwhile, so "required" stands beside it.
         component.Find(".bit-tpc-inp").Input("not a time");
 
-        StringAssert.Contains(component.Find(".bit-tpc-erm").TextContent, "Not a time.");
-        StringAssert.Contains(component.Find(".bit-tpc-erm").TextContent, RequiredMessage);
+        Assert.Contains("Not a time.", component.Find(".bit-tpc-erm").TextContent);
+        Assert.Contains(RequiredMessage, component.Find(".bit-tpc-erm").TextContent);
 
         component.Find(".bit-tpc-inp").Input("19:00");
 
-        StringAssert.Contains(component.Find(".bit-tpc-erm").TextContent, "Between 08:00 and 18:00 only.");
-        Assert.IsFalse(component.Find(".bit-tpc-erm").TextContent.Contains("Not a time."));
+        Assert.Contains("Between 08:00 and 18:00 only.", component.Find(".bit-tpc-erm").TextContent);
+        Assert.DoesNotContain("Not a time.", component.Find(".bit-tpc-erm").TextContent);
 
         component.Find(".bit-tpc-inp").Input("10:20");
 
-        StringAssert.Contains(component.Find(".bit-tpc-erm").TextContent, "Quarter hours only.");
+        Assert.Contains("Quarter hours only.", component.Find(".bit-tpc-erm").TextContent);
 
         component.Find(".bit-tpc-inp").Input("10:15");
 
-        Assert.AreEqual(0, component.FindAll(".bit-tpc-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tpc-erm"));
 
         component.Find("form").Submit();
 
@@ -146,7 +146,7 @@ public class BitTimePickerValidationMessageTests : BunitTestContext
 
         // The field is marked as before, and the message stays where the page puts it.
         Assert.AreEqual("true", component.Find(".bit-tpc-inp").GetAttribute("aria-invalid"));
-        Assert.AreEqual(0, component.FindAll(".bit-tpc-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tpc-erm"));
         Assert.IsNull(component.Find(".bit-tpc-inp").GetAttribute("aria-describedby"));
     }
 
@@ -167,7 +167,7 @@ public class BitTimePickerValidationMessageTests : BunitTestContext
 
         component.InvokeAsync(() => editContext.Validate());
 
-        Assert.AreEqual(1, component.FindAll(".bit-tpc-erm").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-tpc-erm"));
         Assert.AreEqual("That slot was taken while you were choosing.", component.Find(".bit-tpc-erm").TextContent.Trim());
 
         // Once the app takes its message back, the EditContext's takes the line.
@@ -202,7 +202,7 @@ public class BitTimePickerValidationMessageTests : BunitTestContext
         var labelId = component.Find(".bit-tpc-inp").GetAttribute("aria-describedby");
 
         Assert.AreEqual("Unavailable", component.Find(".bit-tpc-erm b").TextContent);
-        Assert.IsFalse(component.Find(".bit-tpc-erm").TextContent.Contains(RequiredMessage));
+        Assert.DoesNotContain(RequiredMessage, component.Find(".bit-tpc-erm").TextContent);
         Assert.AreEqual("The booking service is unavailable.", component.Find($"#{labelId}").TextContent);
     }
 
@@ -242,7 +242,7 @@ public class BitTimePickerValidationMessageTests : BunitTestContext
         // What is wrong with the value first, then the helper texts, and last the text beside the field.
         var ids = component.Find(".bit-tpc-inp").GetAttribute("aria-describedby")!.Split(' ');
 
-        Assert.AreEqual(4, ids.Length);
+        Assert.HasCount(4, ids);
         Assert.AreEqual(component.Find(".bit-tpc-erm").Id, ids[0]);
         Assert.AreEqual(component.Find(".bit-tpc-des").Id, ids[1]);
         Assert.AreEqual("Times are in your local time zone.", component.Find($"#{ids[2]}").TextContent);
@@ -269,7 +269,7 @@ public class BitTimePickerValidationMessageTests : BunitTestContext
         var described = component.FindAll(".bit-tpc-tin[aria-describedby]");
 
         Assert.AreEqual(RequiredMessage, error.TextContent.Trim());
-        Assert.AreEqual(1, described.Count);
+        Assert.ContainsSingle(described);
         Assert.AreEqual(error.Id, described[0].GetAttribute("aria-describedby"));
     }
 
@@ -328,12 +328,12 @@ public class BitTimePickerValidationMessageTests : BunitTestContext
 
         component.InvokeAsync(() => editContext.Validate());
 
-        Assert.AreEqual(1, component.FindAll(".bit-tpc-erm").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-tpc-erm"));
 
         attributes[nameof(BitTimePicker.NoValidate)] = true;
         Rerender(component, editContext, model, attributes);
 
-        Assert.AreEqual(0, component.FindAll(".bit-tpc-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tpc-erm"));
         Assert.IsNull(component.Find(".bit-tpc-inp").GetAttribute("aria-describedby"));
     }
 
@@ -349,8 +349,8 @@ public class BitTimePickerValidationMessageTests : BunitTestContext
         component.InvokeAsync(() => editContext.Validate());
 
         // The model has a message, but the picker has no member of it the message could belong to.
-        Assert.IsTrue(editContext.GetValidationMessages().Any());
-        Assert.AreEqual(0, component.FindAll(".bit-tpc-erm").Count);
+        Assert.IsNotEmpty(editContext.GetValidationMessages());
+        Assert.IsEmpty(component.FindAll(".bit-tpc-erm"));
     }
 
     [TestMethod]

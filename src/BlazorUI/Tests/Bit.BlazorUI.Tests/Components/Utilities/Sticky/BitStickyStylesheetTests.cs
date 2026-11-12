@@ -20,11 +20,11 @@ public partial class BitStickyStylesheetTests
 
         var documented = DocumentedVariables(stylesheet);
 
-        Assert.AreEqual(10, documented.Length, "The stylesheet does not document the ten public variables.");
+        Assert.HasCount(10, documented, "The stylesheet does not document the ten public variables.");
 
         foreach (var name in documented)
         {
-            StringAssert.Contains(stylesheet, $"var({name}, ", $"{name} is documented but never read with a fallback.");
+            Assert.Contains($"var({name}, ", stylesheet, $"{name} is documented but never read with a fallback.");
         }
     }
 
@@ -38,7 +38,7 @@ public partial class BitStickyStylesheetTests
 
         foreach (var name in read)
         {
-            CollectionAssert.Contains(documented, name, $"{name} is read but not documented in the header.");
+            Assert.Contains(name, documented, $"{name} is read but not documented in the header.");
         }
     }
 
@@ -59,12 +59,12 @@ public partial class BitStickyStylesheetTests
         // --bit-stk-zin was documented by earlier versions, so a stylesheet setting it keeps working, but the public
         // variable wins over it, and it is no longer declared on the root, which would shadow the public variable
         // inherited from an ancestor.
-        StringAssert.Contains(root, "z-index: var(--bit-Sticky-z-index, var(--bit-stk-zin, 1));");
-        Assert.IsFalse(root.Contains("--bit-stk-zin:"), "The legacy z-index variable is declared on the root.");
+        Assert.Contains("z-index: var(--bit-Sticky-z-index, var(--bit-stk-zin, 1));", root);
+        Assert.DoesNotContain("--bit-stk-zin:", root, "The legacy z-index variable is declared on the root.");
 
         // Declared on the root, it never reached the element from an ancestor; registered as a property that does
         // not inherit, a stale value left on :root still does not.
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n@property --bit-stk-zin {"), "inherits: false;");
+        Assert.Contains("inherits: false;", SourceFiles.GetScssBlock(stylesheet, "\n@property --bit-stk-zin {"));
     }
 
     [TestMethod]
@@ -72,18 +72,18 @@ public partial class BitStickyStylesheetTests
     {
         var stylesheet = ReadStylesheet();
 
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-stk-top {"), "inset-block-start: var(--bit-Sticky-offset-top, 0);");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-stk-btm {"), "inset-block-end: var(--bit-Sticky-offset-bottom, 0);");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-stk-srt {"), "inset-inline-start: var(--bit-Sticky-offset-start, 0);");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-stk-end {"), "inset-inline-end: var(--bit-Sticky-offset-end, 0);");
+        Assert.Contains("inset-block-start: var(--bit-Sticky-offset-top, 0);", SourceFiles.GetScssBlock(stylesheet, "\n.bit-stk-top {"));
+        Assert.Contains("inset-block-end: var(--bit-Sticky-offset-bottom, 0);", SourceFiles.GetScssBlock(stylesheet, "\n.bit-stk-btm {"));
+        Assert.Contains("inset-inline-start: var(--bit-Sticky-offset-start, 0);", SourceFiles.GetScssBlock(stylesheet, "\n.bit-stk-srt {"));
+        Assert.Contains("inset-inline-end: var(--bit-Sticky-offset-end, 0);", SourceFiles.GetScssBlock(stylesheet, "\n.bit-stk-end {"));
 
         var both = SourceFiles.GetScssBlock(stylesheet, "\n.bit-stk-tab {");
-        StringAssert.Contains(both, "inset-block-start: var(--bit-Sticky-offset-top, 0);");
-        StringAssert.Contains(both, "inset-block-end: var(--bit-Sticky-offset-bottom, 0);");
+        Assert.Contains("inset-block-start: var(--bit-Sticky-offset-top, 0);", both);
+        Assert.Contains("inset-block-end: var(--bit-Sticky-offset-bottom, 0);", both);
 
         var sides = SourceFiles.GetScssBlock(stylesheet, "\n.bit-stk-sae {");
-        StringAssert.Contains(sides, "inset-inline-start: var(--bit-Sticky-offset-start, 0);");
-        StringAssert.Contains(sides, "inset-inline-end: var(--bit-Sticky-offset-end, 0);");
+        Assert.Contains("inset-inline-start: var(--bit-Sticky-offset-start, 0);", sides);
+        Assert.Contains("inset-inline-end: var(--bit-Sticky-offset-end, 0);", sides);
     }
 
     [TestMethod]
@@ -93,23 +93,23 @@ public partial class BitStickyStylesheetTests
         var elevated = SourceFiles.GetScssBlock(stylesheet, "\n.bit-stk-elv {");
 
         // Every layer starts transparent on each elevated root, so a nested sticky never inherits a shadow.
-        StringAssert.Contains(elevated, "--bit-stk-shd-top: 0 0 transparent;");
-        StringAssert.Contains(elevated, "--bit-stk-shd-rgt: 0 0 transparent;");
+        Assert.Contains("--bit-stk-shd-top: 0 0 transparent;", elevated);
+        Assert.Contains("--bit-stk-shd-rgt: 0 0 transparent;", elevated);
 
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n    &.bit-stk-stc {"), "box-shadow: var(--bit-stk-shd-top), var(--bit-stk-shd-btm), var(--bit-stk-shd-lft), var(--bit-stk-shd-rgt);");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n    &.bit-stk-stc-top {"), "var(--bit-Sticky-shadow-top, #{$box-shadow-appbar-top})");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n    &.bit-stk-stc-btm {"), "var(--bit-Sticky-shadow-bottom, #{$box-shadow-appbar-bottom})");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n    &.bit-stk-stc-lft {"), "var(--bit-Sticky-shadow-left, #{$box-shadow-card})");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n    &.bit-stk-stc-rgt {"), "var(--bit-Sticky-shadow-right, #{$box-shadow-card})");
+        Assert.Contains("box-shadow: var(--bit-stk-shd-top), var(--bit-stk-shd-btm), var(--bit-stk-shd-lft), var(--bit-stk-shd-rgt);", SourceFiles.GetScssBlock(stylesheet, "\n    &.bit-stk-stc {"));
+        Assert.Contains("var(--bit-Sticky-shadow-top, #{$box-shadow-appbar-top})", SourceFiles.GetScssBlock(stylesheet, "\n    &.bit-stk-stc-top {"));
+        Assert.Contains("var(--bit-Sticky-shadow-bottom, #{$box-shadow-appbar-bottom})", SourceFiles.GetScssBlock(stylesheet, "\n    &.bit-stk-stc-btm {"));
+        Assert.Contains("var(--bit-Sticky-shadow-left, #{$box-shadow-card})", SourceFiles.GetScssBlock(stylesheet, "\n    &.bit-stk-stc-lft {"));
+        Assert.Contains("var(--bit-Sticky-shadow-right, #{$box-shadow-card})", SourceFiles.GetScssBlock(stylesheet, "\n    &.bit-stk-stc-rgt {"));
 
-        StringAssert.Contains(elevated, "transition: box-shadow $mot-duration $mot-easing;");
+        Assert.Contains("transition: box-shadow $mot-duration $mot-easing;", elevated);
     }
 
     [TestMethod]
     public void BitStickyShouldLetABroughtBackgroundWinOverTheStuckSurface()
     {
         // :where() keeps the surface at zero specificity, below any Class the page gives the element.
-        StringAssert.Contains(SourceFiles.GetScssBlock(ReadStylesheet(), "\n:where(.bit-stk-elv.bit-stk-stc) {"), "background-color: var(--bit-Sticky-background, #{$clr-bg-pri});");
+        Assert.Contains("background-color: var(--bit-Sticky-background, #{$clr-bg-pri});", SourceFiles.GetScssBlock(ReadStylesheet(), "\n:where(.bit-stk-elv.bit-stk-stc) {"));
     }
 
     [TestMethod]
@@ -117,10 +117,10 @@ public partial class BitStickyStylesheetTests
     {
         var forced = SourceFiles.GetScssBlock(ReadStylesheet(), "\n@media (forced-colors: active) {");
 
-        StringAssert.Contains(forced, ".bit-stk-elv.bit-stk-stc {");
-        StringAssert.Contains(forced, "outline: $shp-border-width $shp-border-style CanvasText;");
+        Assert.Contains(".bit-stk-elv.bit-stk-stc {", forced);
+        Assert.Contains("outline: $shp-border-width $shp-border-style CanvasText;", forced);
         // Drawn inside the box, so the pin flipping it on and off moves nothing.
-        StringAssert.Contains(forced, "outline-offset: calc(-1 * #{$shp-border-width});");
+        Assert.Contains("outline-offset: calc(-1 * #{$shp-border-width});", forced);
     }
 
     [TestMethod]
@@ -128,8 +128,8 @@ public partial class BitStickyStylesheetTests
     {
         var print = SourceFiles.GetScssBlock(ReadStylesheet(), "\n@media print {");
 
-        StringAssert.Contains(print, "position: static;");
-        StringAssert.Contains(print, "box-shadow: none;");
+        Assert.Contains("position: static;", print);
+        Assert.Contains("box-shadow: none;", print);
     }
 
     private static string[] DocumentedVariables(string stylesheet)

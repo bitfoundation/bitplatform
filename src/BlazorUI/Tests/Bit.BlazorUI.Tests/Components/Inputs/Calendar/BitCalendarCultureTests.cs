@@ -46,7 +46,7 @@ public class BitCalendarCultureTests : BunitTestContext
 
         Assert.Contains(persianYear.ToString(CultureInfo.InvariantCulture), GetMonthTitle(component));
         Assert.HasCount(daysInEsfand, days);
-        CollectionAssert.AreEqual(Enumerable.Range(1, daysInEsfand).Select(d => d.ToString(CultureInfo.InvariantCulture)).ToArray(), days);
+        Assert.AreSequenceEqual(Enumerable.Range(1, daysInEsfand).Select(d => d.ToString(CultureInfo.InvariantCulture)).ToArray(), days);
     }
 
     [TestMethod]
@@ -167,7 +167,7 @@ public class BitCalendarCultureTests : BunitTestContext
 
         var months = component.FindAll(".bit-cal-mwp .bit-cal-pkb");
 
-        CollectionAssert.AreEqual(culture.DateTimeFormat.MonthNames.Take(12).ToArray(), months.Select(m => m.GetAttribute("title")).ToArray());
+        Assert.AreSequenceEqual(culture.DateTimeFormat.MonthNames.Take(12).ToArray(), months.Select(m => m.GetAttribute("title")).ToArray());
         Assert.AreEqual("true", months[11].GetAttribute("aria-selected"));
 
         months[0].Click();
@@ -381,7 +381,7 @@ public class BitCalendarCultureTests : BunitTestContext
         });
 
         Assert.Contains("2025-03-15", component.Find(".bit-cal-sdt").TextContent);
-        Assert.IsFalse(component.Find(".bit-cal-sdt").TextContent.Contains("15.03.2025"));
+        Assert.DoesNotContain("15.03.2025", component.Find(".bit-cal-sdt").TextContent);
     }
 
     [TestMethod]

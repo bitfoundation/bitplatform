@@ -121,7 +121,7 @@ public class BitAiWireContractTests
     [TestMethod]
     public void EveryEventIsPinned()
     {
-        CollectionAssert.AreEquivalent(BitAiWireSamples.All.Select(e => e.Type).ToArray(), Expected.Keys.ToArray());
+        Assert.AreSequenceEqual(BitAiWireSamples.All.Select(e => e.Type).ToArray(), Expected.Keys.ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]

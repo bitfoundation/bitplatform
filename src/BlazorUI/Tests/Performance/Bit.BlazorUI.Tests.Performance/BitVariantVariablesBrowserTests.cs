@@ -118,8 +118,8 @@ public partial class BitVariantVariablesBrowserTests : PerformanceTestBase
 
         await SetVariables();
 
-        Assert.IsTrue(checkedCount > 100, $"Only {checkedCount} twins were checked; the page or the stylesheet was not read.");
-        Assert.AreEqual(0, failures.Count, $"{failures.Count} of {checkedCount} twins misbehave:{Environment.NewLine}{string.Join(Environment.NewLine, failures)}");
+        Assert.IsGreaterThan(100, checkedCount, $"Only {checkedCount} twins were checked; the page or the stylesheet was not read.");
+        Assert.IsEmpty(failures, $"{failures.Count} of {checkedCount} twins misbehave:{Environment.NewLine}{string.Join(Environment.NewLine, failures)}");
     }
 
     [TestMethod]
@@ -132,7 +132,7 @@ public partial class BitVariantVariablesBrowserTests : PerformanceTestBase
             foreach (var variant in Variants)
             {
                 var count = await Page.Locator($"#variants [data-variant={variant}][data-disabled=false] [data-cmp={component}] *").CountAsync();
-                Assert.IsTrue(count > 0, $"The {variant} {component} rendered nothing.");
+                Assert.IsGreaterThan(0, count, $"The {variant} {component} rendered nothing.");
             }
         }
     }

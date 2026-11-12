@@ -58,15 +58,15 @@ public class BlazeDbDocumentStoreTests
         await using BlazeDbDatabase database = await OpenAsync();
         var store = new BcrdtBlazeDbDocumentStore(database);
 
-        Assert.IsTrue((await store.LoadAsync("doc")).IsEmpty);
+        Assert.IsTrue((await store.LoadAsync("doc", TestContext.CancellationToken)).IsEmpty);
 
         using var doc = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 1 });
-        doc.Updated += args => store.AppendUpdateAsync("doc", args.Update).AsTask().GetAwaiter().GetResult();
+        doc.Updated += args => store.AppendUpdateAsync("doc", args.Update, TestContext.CancellationToken).AsTask().GetAwaiter().GetResult();
         doc.GetText("body").Insert(0, "hello");
         doc.GetText("body").Insert(5, " world");
         doc.GetText("body").Delete(0, 1);
 
-        BcrdtStoredDocument stored = await store.LoadAsync("doc");
+        BcrdtStoredDocument stored = await store.LoadAsync("doc", TestContext.CancellationToken);
 
         Assert.AreEqual(3, stored.RecordCount);
         Assert.AreEqual("ello world", Text(stored.Update!));
@@ -80,19 +80,19 @@ public class BlazeDbDocumentStoreTests
         var store = new BcrdtBlazeDbDocumentStore(database);
 
         using var doc = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 1 });
-        doc.Updated += args => store.AppendUpdateAsync("doc", args.Update).AsTask().GetAwaiter().GetResult();
+        doc.Updated += args => store.AppendUpdateAsync("doc", args.Update, TestContext.CancellationToken).AsTask().GetAwaiter().GetResult();
         for (int i = 0; i < 20; i++) doc.GetText("body").Insert(i, ((char)('a' + i)).ToString());
 
-        await store.CompactAsync("doc");
-        BcrdtStoredDocument stored = await store.LoadAsync("doc");
+        await store.CompactAsync("doc", TestContext.CancellationToken);
+        BcrdtStoredDocument stored = await store.LoadAsync("doc", TestContext.CancellationToken);
 
         Assert.AreEqual(1, stored.RecordCount);
         Assert.AreEqual(doc.GetText("body").ToString(), Text(stored.Update!));
-        Assert.HasCount(1, Rows(database, "doc"));
+        Assert.ContainsSingle(Rows(database, "doc"));
 
         // A single record has nothing to merge with.
-        await store.CompactAsync("doc");
-        Assert.AreEqual(1, (await store.LoadAsync("doc")).RecordCount);
+        await store.CompactAsync("doc", TestContext.CancellationToken);
+        Assert.AreEqual(1, (await store.LoadAsync("doc", TestContext.CancellationToken)).RecordCount);
     }
 
     [TestMethod]
@@ -103,18 +103,18 @@ public class BlazeDbDocumentStoreTests
         var store = new BcrdtBlazeDbDocumentStore(database);
 
         string[] words = ["one", "two", "three", "four", "five"];
-        for (int i = 0; i < words.Length; i++) await store.AppendUpdateAsync("doc", CreateUpdate(words[i], clientId: (ulong)(i + 1)));
-        string expected = Text((await store.LoadAsync("doc")).Update!);
+        for (int i = 0; i < words.Length; i++) await store.AppendUpdateAsync("doc", CreateUpdate(words[i], clientId: (ulong)(i + 1)), TestContext.CancellationToken);
+        string expected = Text((await store.LoadAsync("doc", TestContext.CancellationToken)).Update!);
 
         BlazeDbInMemoryStorage before = storage.Clone();
-        await store.CompactAsync("doc");
+        await store.CompactAsync("doc", TestContext.CancellationToken);
         BlazeDbInMemoryStorage after = storage.Clone();
 
         // The merged record and the deletions are one commit, so cutting into it takes all of it back.
         foreach ((BlazeDbInMemoryStorage crashed, int records) in new[] { (before, 5), (after, 1), (TearLog(after, 1), 5), (TearLog(after, 9), 5) })
         {
             await using BlazeDbDatabase recovered = await OpenAsync(crashed);
-            BcrdtStoredDocument stored = await new BcrdtBlazeDbDocumentStore(recovered).LoadAsync("doc");
+            BcrdtStoredDocument stored = await new BcrdtBlazeDbDocumentStore(recovered).LoadAsync("doc", TestContext.CancellationToken);
 
             Assert.AreEqual(records, stored.RecordCount);
             Assert.AreEqual(expected, Text(stored.Update!));
@@ -130,17 +130,17 @@ public class BlazeDbDocumentStoreTests
         await using BlazeDbDatabase database = await OpenAsync(storage, flushInterval: TimeSpan.FromHours(1));
         var store = new BcrdtBlazeDbDocumentStore(database);
 
-        await store.AppendUpdateAsync("doc", CreateUpdate("first", clientId: 1));
-        await store.AppendUpdateAsync("doc", CreateUpdate("second", clientId: 2));
+        await store.AppendUpdateAsync("doc", CreateUpdate("first", clientId: 1), TestContext.CancellationToken);
+        await store.AppendUpdateAsync("doc", CreateUpdate("second", clientId: 2), TestContext.CancellationToken);
 
         await using (BlazeDbDatabase recovered = await OpenAsync(storage.Clone()))
         {
-            Assert.AreEqual(2, (await new BcrdtBlazeDbDocumentStore(recovered).LoadAsync("doc")).RecordCount);
+            Assert.AreEqual(2, (await new BcrdtBlazeDbDocumentStore(recovered).LoadAsync("doc", TestContext.CancellationToken)).RecordCount);
         }
 
         await using (BlazeDbDatabase recovered = await OpenAsync(TearLog(storage, 3)))
         {
-            BcrdtStoredDocument stored = await new BcrdtBlazeDbDocumentStore(recovered).LoadAsync("doc");
+            BcrdtStoredDocument stored = await new BcrdtBlazeDbDocumentStore(recovered).LoadAsync("doc", TestContext.CancellationToken);
             Assert.AreEqual(1, stored.RecordCount);
             Assert.AreEqual("first", Text(stored.Update!));
         }
@@ -153,18 +153,18 @@ public class BlazeDbDocumentStoreTests
         await using BlazeDbDatabase database = await OpenAsync(storage, flushInterval: TimeSpan.FromHours(1));
         var store = new BcrdtBlazeDbDocumentStore(database, new BcrdtBlazeDbDocumentStoreOptions { WaitForDurability = false });
 
-        await store.AppendUpdateAsync("doc", CreateUpdate("buffered"));
+        await store.AppendUpdateAsync("doc", CreateUpdate("buffered"), TestContext.CancellationToken);
 
         await using (BlazeDbDatabase recovered = await OpenAsync(storage.Clone()))
         {
-            Assert.IsTrue((await new BcrdtBlazeDbDocumentStore(recovered).LoadAsync("doc")).IsEmpty);
+            Assert.IsTrue((await new BcrdtBlazeDbDocumentStore(recovered).LoadAsync("doc", TestContext.CancellationToken)).IsEmpty);
         }
 
-        await database.FlushAsync();
+        await database.FlushAsync(TestContext.CancellationToken);
 
         await using (BlazeDbDatabase recovered = await OpenAsync(storage.Clone()))
         {
-            Assert.AreEqual("buffered", Text((await new BcrdtBlazeDbDocumentStore(recovered).LoadAsync("doc")).Update!));
+            Assert.AreEqual("buffered", Text((await new BcrdtBlazeDbDocumentStore(recovered).LoadAsync("doc", TestContext.CancellationToken)).Update!));
         }
     }
 
@@ -174,23 +174,23 @@ public class BlazeDbDocumentStoreTests
         await using BlazeDbDatabase database = await OpenAsync();
         var store = new BcrdtBlazeDbDocumentStore(database);
 
-        await store.AppendUpdateAsync("first", CreateUpdate("one", clientId: 1));
-        await store.AppendUpdateAsync("second", CreateUpdate("two", clientId: 2));
-        await store.AppendUpdateAsync("first", CreateUpdate("three", clientId: 3));
+        await store.AppendUpdateAsync("first", CreateUpdate("one", clientId: 1), TestContext.CancellationToken);
+        await store.AppendUpdateAsync("second", CreateUpdate("two", clientId: 2), TestContext.CancellationToken);
+        await store.AppendUpdateAsync("first", CreateUpdate("three", clientId: 3), TestContext.CancellationToken);
 
-        CollectionAssert.AreEquivalent(new[] { "first", "second" }, (await store.ListAsync()).ToArray());
-        Assert.AreEqual(2, (await store.LoadAsync("first")).RecordCount);
-        Assert.AreEqual("two", Text((await store.LoadAsync("second")).Update!));
+        Assert.AreSequenceEqual(new[] { "first", "second" }, (await store.ListAsync(TestContext.CancellationToken)).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
+        Assert.AreEqual(2, (await store.LoadAsync("first", TestContext.CancellationToken)).RecordCount);
+        Assert.AreEqual("two", Text((await store.LoadAsync("second", TestContext.CancellationToken)).Update!));
 
-        await store.CompactAsync("first");
-        Assert.AreEqual(1, (await store.LoadAsync("second")).RecordCount);
+        await store.CompactAsync("first", TestContext.CancellationToken);
+        Assert.AreEqual(1, (await store.LoadAsync("second", TestContext.CancellationToken)).RecordCount);
 
-        await store.DeleteAsync("first");
-        await store.DeleteAsync("never-stored");
+        await store.DeleteAsync("first", TestContext.CancellationToken);
+        await store.DeleteAsync("never-stored", TestContext.CancellationToken);
 
-        CollectionAssert.AreEquivalent(new[] { "second" }, (await store.ListAsync()).ToArray());
-        Assert.IsTrue((await store.LoadAsync("first")).IsEmpty);
-        Assert.AreEqual("two", Text((await store.LoadAsync("second")).Update!));
+        Assert.AreSequenceEqual(new[] { "second" }, (await store.ListAsync(TestContext.CancellationToken)).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
+        Assert.IsTrue((await store.LoadAsync("first", TestContext.CancellationToken)).IsEmpty);
+        Assert.AreEqual("two", Text((await store.LoadAsync("second", TestContext.CancellationToken)).Update!));
     }
 
     [TestMethod]
@@ -206,23 +206,23 @@ public class BlazeDbDocumentStoreTests
         await using (BlazeDbDatabase database = await OpenAsync(storage))
         {
             var store = new BcrdtBlazeDbDocumentStore(database);
-            for (int i = 0; i < ids.Length; i++) await store.AppendUpdateAsync(ids[i], CreateUpdate($"doc-{i}"));
+            for (int i = 0; i < ids.Length; i++) await store.AppendUpdateAsync(ids[i], CreateUpdate($"doc-{i}"), TestContext.CancellationToken);
         }
 
         await using BlazeDbDatabase reopened = await OpenAsync(storage);
         var reloaded = new BcrdtBlazeDbDocumentStore(reopened);
 
-        CollectionAssert.AreEquivalent(ids, (await reloaded.ListAsync()).ToArray());
+        Assert.AreSequenceEqual(ids, (await reloaded.ListAsync(TestContext.CancellationToken)).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         for (int i = 0; i < ids.Length; i++)
         {
-            BcrdtStoredDocument stored = await reloaded.LoadAsync(ids[i]);
+            BcrdtStoredDocument stored = await reloaded.LoadAsync(ids[i], TestContext.CancellationToken);
             Assert.AreEqual(1, stored.RecordCount);
             Assert.AreEqual($"doc-{i}", Text(stored.Update!));
         }
 
         // A lone surrogate would be written as a replacement character and read back as a different identifier.
-        await Assert.ThrowsExactlyAsync<ArgumentException>(async () => await reloaded.AppendUpdateAsync("\ud800", CreateUpdate("lost")));
-        await Assert.ThrowsExactlyAsync<ArgumentException>(async () => await reloaded.LoadAsync(""));
+        await Assert.ThrowsExactlyAsync<ArgumentException>(async () => await reloaded.AppendUpdateAsync("\ud800", CreateUpdate("lost"), TestContext.CancellationToken));
+        await Assert.ThrowsExactlyAsync<ArgumentException>(async () => await reloaded.LoadAsync("", TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -233,28 +233,28 @@ public class BlazeDbDocumentStoreTests
         var skipped = new List<string>();
         store.UnreadableRecordSkipped += skipped.Add;
 
-        await store.AppendUpdateAsync("doc", CreateUpdate("readable", clientId: 1));
+        await store.AppendUpdateAsync("doc", CreateUpdate("readable", clientId: 1), TestContext.CancellationToken);
 
         // Written by something else, under the very number the store would have used next.
         byte[] garbage = [0xFF, 0xFF, 0xFF, 0xFF];
         database.GetTable(BcrdtBlazeDbUpdateRecord.Table).Insert(new BcrdtBlazeDbUpdateRecord { Id = 2, DocumentId = "doc", Update = garbage });
-        await store.AppendUpdateAsync("doc", CreateUpdate("also readable", clientId: 2));
+        await store.AppendUpdateAsync("doc", CreateUpdate("also readable", clientId: 2), TestContext.CancellationToken);
 
-        CollectionAssert.AreEquivalent(new long[] { 1, 2, 3 }, Rows(database, "doc").Select(row => row.Id).ToArray());
+        Assert.AreSequenceEqual(new long[] { 1, 2, 3 }, Rows(database, "doc").Select(row => row.Id).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
-        BcrdtStoredDocument stored = await store.LoadAsync("doc");
+        BcrdtStoredDocument stored = await store.LoadAsync("doc", TestContext.CancellationToken);
         Assert.AreEqual(2, stored.RecordCount);
-        StringAssert.Contains(Text(stored.Update!), "readable");
-        CollectionAssert.AreEqual(new[] { "doc" }, skipped);
+        Assert.Contains("readable", Text(stored.Update!));
+        Assert.AreSequenceEqual(new[] { "doc" }, skipped);
 
-        await store.CompactAsync("doc");
+        await store.CompactAsync("doc", TestContext.CancellationToken);
 
         // The merged record, in the first one's place, and the row it could not merge, untouched.
         List<BcrdtBlazeDbUpdateRecord> rows = Rows(database, "doc");
         Assert.HasCount(2, rows);
-        Assert.IsTrue(rows.Any(row => row.Id == 2 && row.Update.SequenceEqual(garbage)));
-        Assert.IsTrue(rows.Any(row => row.Id == 1));
-        Assert.AreEqual(1, (await store.LoadAsync("doc")).RecordCount);
+        Assert.Contains(row => row.Id == 2 && row.Update.SequenceEqual(garbage), rows);
+        Assert.Contains(row => row.Id == 1, rows);
+        Assert.AreEqual(1, (await store.LoadAsync("doc", TestContext.CancellationToken)).RecordCount);
     }
 
     [TestMethod]
@@ -267,22 +267,22 @@ public class BlazeDbDocumentStoreTests
 
         // Each reads on its own, but the second leaves a hole in its author's clock range wider than any replica
         // writes, so no merge that includes it succeeds.
-        await store.AppendUpdateAsync("doc", CollectedRange(7, 0));
-        await store.AppendUpdateAsync("doc", CollectedRange(7, 2 + (ulong)BcrdtUpdateCodec.MaxClockGap));
-        await store.AppendUpdateAsync("doc", CreateUpdate("kept"));
+        await store.AppendUpdateAsync("doc", CollectedRange(7, 0), TestContext.CancellationToken);
+        await store.AppendUpdateAsync("doc", CollectedRange(7, 2 + (ulong)BcrdtUpdateCodec.MaxClockGap), TestContext.CancellationToken);
+        await store.AppendUpdateAsync("doc", CreateUpdate("kept"), TestContext.CancellationToken);
 
-        BcrdtStoredDocument stored = await store.LoadAsync("doc");
+        BcrdtStoredDocument stored = await store.LoadAsync("doc", TestContext.CancellationToken);
         using var reloaded = new BcrdtDocument();
         reloaded.ApplyUpdate(stored.Update!);
 
         Assert.AreEqual(2, stored.RecordCount);
         Assert.AreEqual("kept", reloaded.GetText("body").ToString());
         Assert.AreEqual(1L, reloaded.GetStateVector().Get(7));
-        Assert.HasCount(1, skipped);
+        Assert.ContainsSingle(skipped);
 
-        await store.CompactAsync("doc");
+        await store.CompactAsync("doc", TestContext.CancellationToken);
         Assert.HasCount(2, Rows(database, "doc"));
-        Assert.AreEqual("kept", Text((await store.LoadAsync("doc")).Update!));
+        Assert.AreEqual("kept", Text((await store.LoadAsync("doc", TestContext.CancellationToken)).Update!));
     }
 
     [TestMethod]
@@ -294,23 +294,23 @@ public class BlazeDbDocumentStoreTests
         store.UnreadableRecordSkipped += skipped.Add;
 
         // The oldest record reads on its own but merges with none of the later ones, which all merge with each other.
-        await store.AppendUpdateAsync("doc", CollectedRange(7, 10 + (ulong)BcrdtUpdateCodec.MaxClockGap));
-        await store.AppendUpdateAsync("doc", CollectedRange(7, 0));
-        await store.AppendUpdateAsync("doc", CollectedRange(7, 1));
-        await store.AppendUpdateAsync("doc", CollectedRange(7, 2));
+        await store.AppendUpdateAsync("doc", CollectedRange(7, 10 + (ulong)BcrdtUpdateCodec.MaxClockGap), TestContext.CancellationToken);
+        await store.AppendUpdateAsync("doc", CollectedRange(7, 0), TestContext.CancellationToken);
+        await store.AppendUpdateAsync("doc", CollectedRange(7, 1), TestContext.CancellationToken);
+        await store.AppendUpdateAsync("doc", CollectedRange(7, 2), TestContext.CancellationToken);
 
-        BcrdtStoredDocument stored = await store.LoadAsync("doc");
+        BcrdtStoredDocument stored = await store.LoadAsync("doc", TestContext.CancellationToken);
         using var reloaded = new BcrdtDocument();
         reloaded.ApplyUpdate(stored.Update!);
 
         Assert.AreEqual(3, stored.RecordCount, "the healthy history loads, not the bad record alone");
         Assert.AreEqual(3L, reloaded.GetStateVector().Get(7));
-        Assert.HasCount(1, skipped);
+        Assert.ContainsSingle(skipped);
 
-        await store.CompactAsync("doc");
+        await store.CompactAsync("doc", TestContext.CancellationToken);
         List<BcrdtBlazeDbUpdateRecord> rows = Rows(database, "doc");
         Assert.HasCount(2, rows);
-        Assert.IsTrue(rows.Any(row => row.Id == 1), "the record that could not be merged stays where it is");
+        Assert.Contains(row => row.Id == 1, rows, "the record that could not be merged stays where it is");
     }
 
     [TestMethod]
@@ -318,19 +318,19 @@ public class BlazeDbDocumentStoreTests
     {
         await using BlazeDbDatabase database = await OpenAsync();
         var store = new BcrdtBlazeDbDocumentStore(database);
-        await store.AppendUpdateAsync("doc", CreateUpdate("before", clientId: 1));
-        await store.AppendUpdateAsync("doc", CreateUpdate("and before", clientId: 4));
+        await store.AppendUpdateAsync("doc", CreateUpdate("before", clientId: 1), TestContext.CancellationToken);
+        await store.AppendUpdateAsync("doc", CreateUpdate("and before", clientId: 4), TestContext.CancellationToken);
 
         using (BlazeDbTransaction transaction = database.BeginTransaction())
         {
             // Joining it would let the rollback below take back an update the store had reported stored.
-            await Assert.ThrowsExactlyAsync<IOException>(async () => await store.AppendUpdateAsync("doc", CreateUpdate("during", clientId: 2)));
-            await Assert.ThrowsExactlyAsync<IOException>(async () => await store.CompactAsync("doc"));
+            await Assert.ThrowsExactlyAsync<IOException>(async () => await store.AppendUpdateAsync("doc", CreateUpdate("during", clientId: 2), TestContext.CancellationToken));
+            await Assert.ThrowsExactlyAsync<IOException>(async () => await store.CompactAsync("doc", TestContext.CancellationToken));
             transaction.Rollback();
         }
 
-        await store.AppendUpdateAsync("doc", CreateUpdate("after", clientId: 3));
-        Assert.AreEqual(3, (await store.LoadAsync("doc")).RecordCount);
+        await store.AppendUpdateAsync("doc", CreateUpdate("after", clientId: 3), TestContext.CancellationToken);
+        Assert.AreEqual(3, (await store.LoadAsync("doc", TestContext.CancellationToken)).RecordCount);
     }
 
     [TestMethod]
@@ -340,7 +340,7 @@ public class BlazeDbDocumentStoreTests
         var store = new BcrdtBlazeDbDocumentStore(database);
         using var doc = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 1 });
         await using BcrdtDocumentPersistence persistence = await BcrdtDocumentPersistence.AttachAsync(
-            doc, store, "doc", new BcrdtDocumentPersistenceOptions { RetryDelay = TimeSpan.FromMilliseconds(10) });
+            doc, store, "doc", new BcrdtDocumentPersistenceOptions { RetryDelay = TimeSpan.FromMilliseconds(10) }, TestContext.CancellationToken);
 
         var failures = new List<Exception>();
         persistence.WriteFailed += failures.Add;
@@ -351,7 +351,7 @@ public class BlazeDbDocumentStoreTests
         transaction.Dispose();
 
         await persistence.FlushAsync();
-        Assert.AreEqual("kept for later", Text((await store.LoadAsync("doc")).Update!));
+        Assert.AreEqual("kept for later", Text((await store.LoadAsync("doc", TestContext.CancellationToken)).Update!));
         Assert.IsInstanceOfType<IOException>(failures[0]);
     }
 
@@ -361,28 +361,28 @@ public class BlazeDbDocumentStoreTests
         var storage = new BlazeDbInMemoryStorage();
         await using (BlazeDbDatabase writer = await OpenAsync(storage))
         {
-            await new BcrdtBlazeDbDocumentStore(writer).AppendUpdateAsync("doc", CreateUpdate("from the writer"));
+            await new BcrdtBlazeDbDocumentStore(writer).AppendUpdateAsync("doc", CreateUpdate("from the writer"), TestContext.CancellationToken);
         }
 
         await using BlazeDbDatabase replica = await OpenAsync(storage, readOnly: true);
         var store = new BcrdtBlazeDbDocumentStore(replica);
 
-        Assert.AreEqual("from the writer", Text((await store.LoadAsync("doc")).Update!));
-        CollectionAssert.AreEqual(new[] { "doc" }, (await store.ListAsync()).ToArray());
+        Assert.AreEqual("from the writer", Text((await store.LoadAsync("doc", TestContext.CancellationToken)).Update!));
+        Assert.AreSequenceEqual(new[] { "doc" }, (await store.ListAsync(TestContext.CancellationToken)).ToArray());
 
         // Refused outright, so the persistence layer reports it once instead of retrying forever.
-        await Assert.ThrowsExactlyAsync<NotSupportedException>(async () => await store.AppendUpdateAsync("doc", CreateUpdate("from a reader", clientId: 2)));
-        await Assert.ThrowsExactlyAsync<NotSupportedException>(async () => await store.DeleteAsync("doc"));
+        await Assert.ThrowsExactlyAsync<NotSupportedException>(async () => await store.AppendUpdateAsync("doc", CreateUpdate("from a reader", clientId: 2), TestContext.CancellationToken));
+        await Assert.ThrowsExactlyAsync<NotSupportedException>(async () => await store.DeleteAsync("doc", TestContext.CancellationToken));
     }
 
     [TestMethod]
     public async Task A_database_without_the_table_is_reported_with_how_to_register_it()
     {
-        await using BlazeDbDatabase database = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions());
+        await using BlazeDbDatabase database = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions(), TestContext.CancellationToken);
         var store = new BcrdtBlazeDbDocumentStore(database);
 
-        InvalidOperationException error = await Assert.ThrowsExactlyAsync<InvalidOperationException>(async () => await store.LoadAsync("doc"));
-        StringAssert.Contains(error.Message, "AddTable(BcrdtBlazeDbDocumentStore.Table)");
+        InvalidOperationException error = await Assert.ThrowsExactlyAsync<InvalidOperationException>(async () => await store.LoadAsync("doc", TestContext.CancellationToken));
+        Assert.Contains("AddTable(BcrdtBlazeDbDocumentStore.Table)", error.Message);
     }
 
     [TestMethod]
@@ -394,11 +394,11 @@ public class BlazeDbDocumentStoreTests
         store.ChangeHandlerFailed += reported.Add;
         database.Changed += (_, _) => throw new InvalidOperationException("an application bug");
 
-        await store.AppendUpdateAsync("doc", CreateUpdate("stored once"));
+        await store.AppendUpdateAsync("doc", CreateUpdate("stored once"), TestContext.CancellationToken);
 
-        Assert.HasCount(1, Rows(database, "doc"));
-        Assert.HasCount(1, reported);
-        Assert.AreEqual("stored once", Text((await store.LoadAsync("doc")).Update!));
+        Assert.ContainsSingle(Rows(database, "doc"));
+        Assert.ContainsSingle(reported);
+        Assert.AreEqual("stored once", Text((await store.LoadAsync("doc", TestContext.CancellationToken)).Update!));
     }
 
     [TestMethod]
@@ -407,23 +407,23 @@ public class BlazeDbDocumentStoreTests
         var storage = new FailingStorage();
         await using BlazeDbDatabase database = await OpenAsync(storage, flushInterval: TimeSpan.FromHours(1));
         var store = new BcrdtBlazeDbDocumentStore(database);
-        await store.AppendUpdateAsync("doc", CreateUpdate("stored"));
+        await store.AppendUpdateAsync("doc", CreateUpdate("stored"), TestContext.CancellationToken);
 
         storage.Failing = true;
         byte[] update = CreateUpdate("retried", clientId: 2);
-        await Assert.ThrowsExactlyAsync<IOException>(async () => await store.AppendUpdateAsync("doc", update));
-        await Assert.ThrowsExactlyAsync<IOException>(async () => await store.AppendUpdateAsync("doc", update));
-        await Assert.ThrowsExactlyAsync<IOException>(async () => await store.AppendUpdateAsync("doc", update));
+        await Assert.ThrowsExactlyAsync<IOException>(async () => await store.AppendUpdateAsync("doc", update, TestContext.CancellationToken));
+        await Assert.ThrowsExactlyAsync<IOException>(async () => await store.AppendUpdateAsync("doc", update, TestContext.CancellationToken));
+        await Assert.ThrowsExactlyAsync<IOException>(async () => await store.AppendUpdateAsync("doc", update, TestContext.CancellationToken));
 
         // The first attempt committed; the retries waited for its flush instead of committing again.
         Assert.HasCount(2, Rows(database, "doc"));
 
         storage.Failing = false;
-        await store.AppendUpdateAsync("doc", update);
+        await store.AppendUpdateAsync("doc", update, TestContext.CancellationToken);
 
         Assert.HasCount(3, Rows(database, "doc"));
         await using BlazeDbDatabase recovered = await OpenAsync(storage.Inner.Clone());
-        StringAssert.Contains(Text((await new BcrdtBlazeDbDocumentStore(recovered).LoadAsync("doc")).Update!), "retried");
+        Assert.Contains("retried", Text((await new BcrdtBlazeDbDocumentStore(recovered).LoadAsync("doc", TestContext.CancellationToken)).Update!));
     }
 
     [TestMethod]
@@ -432,21 +432,21 @@ public class BlazeDbDocumentStoreTests
         var storage = new FailingStorage();
         await using BlazeDbDatabase database = await OpenAsync(storage, flushInterval: TimeSpan.FromHours(1));
         var store = new BcrdtBlazeDbDocumentStore(database);
-        await store.AppendUpdateAsync("doc", CreateUpdate("stored"));
+        await store.AppendUpdateAsync("doc", CreateUpdate("stored"), TestContext.CancellationToken);
 
         storage.Failing = true;
-        await Assert.ThrowsExactlyAsync<IOException>(async () => await store.DeleteAsync("doc"));
+        await Assert.ThrowsExactlyAsync<IOException>(async () => await store.DeleteAsync("doc", TestContext.CancellationToken));
 
         // The first attempt committed the deletion, so the retry finds no rows: it still waits for the flush.
         Assert.IsEmpty(Rows(database, "doc"));
-        await Assert.ThrowsExactlyAsync<IOException>(async () => await store.DeleteAsync("doc"));
-        await Assert.ThrowsExactlyAsync<IOException>(async () => await store.CompactAsync("doc"));
+        await Assert.ThrowsExactlyAsync<IOException>(async () => await store.DeleteAsync("doc", TestContext.CancellationToken));
+        await Assert.ThrowsExactlyAsync<IOException>(async () => await store.CompactAsync("doc", TestContext.CancellationToken));
 
         storage.Failing = false;
-        await store.DeleteAsync("doc");
+        await store.DeleteAsync("doc", TestContext.CancellationToken);
 
         await using BlazeDbDatabase recovered = await OpenAsync(storage.Inner.Clone());
-        Assert.IsNull((await new BcrdtBlazeDbDocumentStore(recovered).LoadAsync("doc")).Update);
+        Assert.IsNull((await new BcrdtBlazeDbDocumentStore(recovered).LoadAsync("doc", TestContext.CancellationToken)).Update);
     }
 
     [TestMethod]
@@ -456,16 +456,16 @@ public class BlazeDbDocumentStoreTests
         using var gate = new SemaphoreSlim(1, 1);
         var store = new BcrdtBlazeDbDocumentStore(database, new BcrdtBlazeDbDocumentStoreOptions { Gate = gate });
 
-        await gate.WaitAsync();
-        Task append = store.AppendUpdateAsync("doc", CreateUpdate("waits")).AsTask();
-        await Task.Delay(50);
+        await gate.WaitAsync(TestContext.CancellationToken);
+        Task append = store.AppendUpdateAsync("doc", CreateUpdate("waits"), TestContext.CancellationToken).AsTask();
+        await Task.Delay(50, TestContext.CancellationToken);
 
         Assert.IsFalse(append.IsCompleted);
         Assert.IsEmpty(Rows(database, "doc"));
 
         gate.Release();
         await append;
-        Assert.HasCount(1, Rows(database, "doc"));
+        Assert.ContainsSingle(Rows(database, "doc"));
     }
 
     [TestMethod]
@@ -476,10 +476,10 @@ public class BlazeDbDocumentStoreTests
         var second = new BcrdtBlazeDbDocumentStore(_ => ValueTask.FromResult(database));
 
         await Task.WhenAll(Enumerable.Range(0, 40).Select(i =>
-            (i % 2 == 0 ? first : second).AppendUpdateAsync($"doc-{i % 4}", CreateUpdate($"{i}", clientId: (ulong)(i + 1))).AsTask()));
+            (i % 2 == 0 ? first : second).AppendUpdateAsync($"doc-{i % 4}", CreateUpdate($"{i}", clientId: (ulong)(i + 1)), TestContext.CancellationToken).AsTask()));
 
         Assert.AreEqual(40, database.GetTable(BcrdtBlazeDbUpdateRecord.Table).Count);
-        Assert.AreEqual(10, (await second.LoadAsync("doc-3")).RecordCount);
+        Assert.AreEqual(10, (await second.LoadAsync("doc-3", TestContext.CancellationToken)).RecordCount);
     }
 
     [TestMethod]
@@ -493,7 +493,7 @@ public class BlazeDbDocumentStoreTests
             var store = new BcrdtBlazeDbDocumentStore(database);
             using var doc = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 1 });
             await using BcrdtDocumentPersistence persistence = await BcrdtDocumentPersistence.AttachAsync(
-                doc, store, "notes", new BcrdtDocumentPersistenceOptions { CompactionThreshold = 5 });
+                doc, store, "notes", new BcrdtDocumentPersistenceOptions { CompactionThreshold = 5 }, TestContext.CancellationToken);
 
             for (int i = 0; i < 23; i++)
             {
@@ -510,7 +510,7 @@ public class BlazeDbDocumentStoreTests
 
         await using BlazeDbDatabase reopened = await OpenAsync(storage);
         using var reloaded = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 2 });
-        await using BcrdtDocumentPersistence reattached = await BcrdtDocumentPersistence.AttachAsync(reloaded, new BcrdtBlazeDbDocumentStore(reopened), "notes");
+        await using BcrdtDocumentPersistence reattached = await BcrdtDocumentPersistence.AttachAsync(reloaded, new BcrdtBlazeDbDocumentStore(reopened), "notes", cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(expected, BcrdtConvergenceHarness.Describe(reloaded));
     }
@@ -523,14 +523,14 @@ public class BlazeDbDocumentStoreTests
         BlazeDbDatabase database = await OpenAsync(storage);
 
         await using BcrdtCollaborationService other = new(Options(connect: true), new RoomTransportFactory(network));
-        BcrdtCollaborativeDocument b = await other.OpenAsync("shared");
+        BcrdtCollaborativeDocument b = await other.OpenAsync("shared", cancellationToken: TestContext.CancellationToken);
 
         await using (ServiceProvider services = Services(network, database, connect: true))
         await using (AsyncServiceScope scope = services.CreateAsyncScope())
         {
             Assert.IsInstanceOfType<BcrdtBlazeDbDocumentStore>(scope.ServiceProvider.GetRequiredService<IBcrdtDocumentStore>());
 
-            BcrdtCollaborativeDocument a = await scope.ServiceProvider.GetRequiredService<IBcrdtCollaborationService>().OpenAsync("shared");
+            BcrdtCollaborativeDocument a = await scope.ServiceProvider.GetRequiredService<IBcrdtCollaborationService>().OpenAsync("shared", cancellationToken: TestContext.CancellationToken);
             a.Text("body").Insert(0, "written by A");
             await WaitUntilAsync(() => b.Text("body").ToString() == "written by A");
         }
@@ -542,13 +542,13 @@ public class BlazeDbDocumentStoreTests
         await using (ServiceProvider services = Services(network, database, connect: false))
         await using (AsyncServiceScope scope = services.CreateAsyncScope())
         {
-            BcrdtCollaborativeDocument a = await scope.ServiceProvider.GetRequiredService<IBcrdtCollaborationService>().OpenAsync("shared");
+            BcrdtCollaborativeDocument a = await scope.ServiceProvider.GetRequiredService<IBcrdtCollaborationService>().OpenAsync("shared", cancellationToken: TestContext.CancellationToken);
             Assert.AreEqual("written by A", a.Text("body").ToString());
 
             // Both sides change the document while A is offline; reconnecting reconciles both ways.
             a.Array("items").Push("offline in A");
             b.Array("items").Push("online in B");
-            await a.ConnectAsync();
+            await a.ConnectAsync(TestContext.CancellationToken);
             await WaitUntilAsync(() => a.Array("items").Count == 2 && b.Array("items").Count == 2);
 
             BcrdtConvergenceHarness.AssertConverged(a.Crdt, b.Crdt);
@@ -608,4 +608,6 @@ public class BlazeDbDocumentStoreTests
 
         public ValueTask DeleteAsync(string name, CancellationToken cancellationToken = default) => Inner.DeleteAsync(name, cancellationToken);
     }
+
+    public TestContext TestContext { get; set; }
 }

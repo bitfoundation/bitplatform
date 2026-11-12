@@ -86,8 +86,11 @@ public abstract partial class DemoTest
         }
 
         if (errors.Length > 0)
-            Assert.Fail($"The page reported {errors.Length} error(s):{Environment.NewLine}{string.Join(Environment.NewLine, errors)}" +
-                        $"{Environment.NewLine}Recent demo server output:{Environment.NewLine}{Session.Host?.RecentOutput}");
+        {
+            var expectedValue = $"The page reported {errors.Length} error(s):{Environment.NewLine}{string.Join(Environment.NewLine, errors)}" +
+                    $"{Environment.NewLine}Recent demo server output:{Environment.NewLine}{Session.Host?.RecentOutput}";
+            Assert.Fail(expectedValue);
+        }
     }
 
     /// <summary>
@@ -183,7 +186,7 @@ public abstract partial class DemoTest
         PollAsync(probe, value => EqualityComparer<T>.Default.Equals(value, expected), $"{expectation} to be '{expected}'");
 
     /// <summary>The focused element: its id, its role (else its tag name) and its text.</summary>
-    protected static async Task<FocusedElement?> FocusedAsync(IPage page)
+    private protected static async Task<FocusedElement?> FocusedAsync(IPage page)
     {
         var parts = await page.EvaluateAsync<string[]?>(
             """
@@ -213,5 +216,5 @@ public abstract partial class DemoTest
     [GeneratedRegex(@"[^\w.()-]+")]
     private static partial Regex UnsafeFileNameCharacters();
 
-    public sealed record FocusedElement(string Id, string Role, string Text);
+    internal sealed record FocusedElement(string Id, string Role, string Text);
 }

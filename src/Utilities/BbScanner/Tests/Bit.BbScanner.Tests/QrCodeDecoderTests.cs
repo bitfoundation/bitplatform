@@ -72,7 +72,7 @@ public class QrCodeDecoderTests
         Assert.IsNotNull(result);
         Assert.AreEqual(Content, result.Payload.Text);
         Assert.AreEqual(BbBarcodeFormat.QrCode, result.Format);
-        Assert.IsTrue(result.Points.Length >= 3);
+        Assert.IsGreaterThanOrEqualTo(3, result.Points.Length);
     }
 
     [TestMethod]
@@ -112,7 +112,7 @@ public class QrCodeDecoderTests
 
         Assert.IsNotNull(result);
         Assert.AreEqual(Content, result.Text);
-        Assert.IsTrue(result.ErrorsCorrected > 0);
+        Assert.IsGreaterThan(0, result.ErrorsCorrected);
     }
 
     [TestMethod]
@@ -153,7 +153,7 @@ public class QrCodeDecoderTests
             {
                 var result = new BbQrCodeReader().Decode(binary, options);
 
-                Assert.IsTrue(result is not null, $"No symbol found at scale {scale} with TryHarder={options.TryHarder}.");
+                Assert.IsNotNull(result, $"No symbol found at scale {scale} with TryHarder={options.TryHarder}.");
                 Assert.AreEqual(content, result.Payload.Text);
             }
         }
@@ -190,7 +190,7 @@ public class QrCodeDecoderTests
 
             var result = reader.Decode(binary, BbMatrixDecodeOptions.Thorough);
 
-            Assert.IsTrue(result is not null, $"Version {version} rotated {rotation} degrees was not found.");
+            Assert.IsNotNull(result, $"Version {version} rotated {rotation} degrees was not found.");
             Assert.AreEqual(content, result.Payload.Text);
         }
     }
@@ -209,8 +209,8 @@ public class QrCodeDecoderTests
         var finder = new BbQrFinderPatternFinder(binary);
         var candidates = finder.FindCandidates(tryHarder: true);
 
-        Assert.IsTrue(candidates.Length >= 1);
-        Assert.IsTrue(candidates.Length <= BbQrFinderPatternFinder.MaxCandidates);
+        Assert.IsGreaterThanOrEqualTo(1, candidates.Length);
+        Assert.IsLessThanOrEqualTo(BbQrFinderPatternFinder.MaxCandidates, candidates.Length);
 
         var best = candidates[0];
         const float Expected = (4 + 3.5f) * 4;
@@ -224,11 +224,11 @@ public class QrCodeDecoderTests
 
         for (var i = 1; i < candidates.Length; i++)
         {
-            Assert.IsTrue(candidates[i].Distortion >= candidates[i - 1].Distortion);
+            Assert.IsGreaterThanOrEqualTo(candidates[i - 1].Distortion, candidates[i].Distortion);
         }
 
         Assert.IsTrue(finder.TryFind(tryHarder: true, out var patterns));
-        Assert.AreEqual(3, patterns.Length);
+        Assert.HasCount(3, patterns);
         Assert.AreEqual(Far, patterns[0].Y, 1.0f);
     }
 
@@ -338,8 +338,8 @@ public class QrCodeDecoderTests
         using var proportioned = Corners(stretch: 1);
         using var stretched = Corners(stretch: 5);
 
-        Assert.AreEqual(1, new BbQrFinderPatternFinder(proportioned).FindCandidates(tryHarder: true).Length);
-        Assert.AreEqual(0, new BbQrFinderPatternFinder(stretched).FindCandidates(tryHarder: true).Length);
+        Assert.ContainsSingle(new BbQrFinderPatternFinder(proportioned).FindCandidates(tryHarder: true));
+        Assert.IsEmpty(new BbQrFinderPatternFinder(stretched).FindCandidates(tryHarder: true));
 
         static BbBitMatrix Corners(int stretch)
         {

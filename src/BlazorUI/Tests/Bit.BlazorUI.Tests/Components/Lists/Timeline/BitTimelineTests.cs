@@ -99,10 +99,10 @@ public class BitTimelineTests : BunitTestContext
 
         var items = component.FindAll(".bit-tln-itm");
 
-        Assert.AreEqual(2, items.Count);
+        Assert.HasCount(2, items);
 
-        Assert.IsTrue(component.Markup.Contains("First"));
-        Assert.IsTrue(component.Markup.Contains("Second"));
+        Assert.Contains("First", component.Markup);
+        Assert.Contains("Second", component.Markup);
     }
 
     [TestMethod]
@@ -118,8 +118,8 @@ public class BitTimelineTests : BunitTestContext
             }));
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-tln-itm").Count);
-        Assert.IsTrue(component.Markup.Contains("Option"));
+        Assert.ContainsSingle(component.FindAll(".bit-tln-itm"));
+        Assert.Contains("Option", component.Markup);
     }
 
     [TestMethod]
@@ -178,7 +178,7 @@ public class BitTimelineTests : BunitTestContext
 
         var texts = component.FindAll(".bit-tln-pcn .bit-tln-ttx").Select(e => e.TextContent).ToArray();
 
-        CollectionAssert.AreEqual(new[] { "One", "Two" }, texts);
+        Assert.AreSequenceEqual(new[] { "One", "Two" }, texts);
         Assert.AreEqual("One second", component.Find(".bit-tln-scn .bit-tln-ttx").TextContent);
     }
 
@@ -191,7 +191,7 @@ public class BitTimelineTests : BunitTestContext
         });
 
         // The secondary side has no text, so no empty span is emitted for it.
-        Assert.AreEqual(1, component.FindAll(".bit-tln-ttx").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-tln-ttx"));
         Assert.AreEqual(0, component.Find(".bit-tln-scn").ChildElementCount);
     }
 
@@ -205,11 +205,11 @@ public class BitTimelineTests : BunitTestContext
             parameters.Add(p => p.Items, items);
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-tln-itm").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-tln-itm"));
 
         component.Render(parameters => parameters.Add(p => p.Items, new List<BitTimelineItem>()));
 
-        Assert.AreEqual(0, component.FindAll(".bit-tln-itm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tln-itm"));
     }
 
     [TestMethod]
@@ -222,7 +222,7 @@ public class BitTimelineTests : BunitTestContext
             parameters.Add(p => p.Items, source);
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-tln-itm").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-tln-itm"));
         Assert.AreEqual(1, source.EnumerationCount);
     }
 
@@ -240,7 +240,7 @@ public class BitTimelineTests : BunitTestContext
 
         component.Render(parameters => parameters.Add(p => p.Items, items));
 
-        Assert.AreEqual(2, component.FindAll(".bit-tln-itm").Count);
+        Assert.HasCount(2, component.FindAll(".bit-tln-itm"));
     }
 
     #endregion
@@ -465,7 +465,7 @@ public class BitTimelineTests : BunitTestContext
 
         var root = component.Find(".bit-tln");
 
-        Assert.IsTrue(root.GetAttribute("style")!.Contains("color: red"));
+        Assert.Contains("color: red", root.GetAttribute("style")!);
         Assert.IsTrue(root.ClassList.Contains("custom-root"));
     }
 
@@ -615,7 +615,7 @@ public class BitTimelineTests : BunitTestContext
 
         var item = component.Find(".bit-tln-itm");
 
-        Assert.IsTrue(item.GetAttribute("style")!.Contains("color: blue"));
+        Assert.Contains("color: blue", item.GetAttribute("style")!);
         Assert.AreEqual("The tooltip", item.GetAttribute("title"));
         Assert.AreEqual("The label", item.GetAttribute("aria-label"));
     }
@@ -631,16 +631,16 @@ public class BitTimelineTests : BunitTestContext
             builder.CloseComponent();
         }));
 
-        Assert.AreEqual(3, component.FindAll(".bit-tln-itm").Count);
-        Assert.AreEqual(2, component.FindAll(".bit-tln-dot").Count);
+        Assert.HasCount(3, component.FindAll(".bit-tln-itm"));
+        Assert.HasCount(2, component.FindAll(".bit-tln-dot"));
 
         // The item without a dot still reserves its space, so its connector keeps the axis of the
         // rest of the timeline, and the placeholder stays out of the accessibility tree.
         var placeholders = component.FindAll(".bit-tln-hdd");
 
-        Assert.AreEqual(1, placeholders.Count);
+        Assert.ContainsSingle(placeholders);
         Assert.AreEqual("true", placeholders[0].GetAttribute("aria-hidden"));
-        Assert.IsTrue(component.FindAll(".bit-tln-itm")[2].QuerySelector(".bit-tln-hdd") is not null);
+        Assert.IsNotNull(component.FindAll(".bit-tln-itm")[2].QuerySelector(".bit-tln-hdd"));
 
         // The divider of the hidden dot is marked, so the two halves of its line meet across the placeholder.
         var dividers = component.FindAll(".bit-tln-dvd");
@@ -701,8 +701,8 @@ public class BitTimelineTests : BunitTestContext
 
         var markersBefore = component.FindAll(".bit-tln-itm").Select(e => e.ClassName).ToArray();
 
-        Assert.IsTrue(markersBefore[0]!.Contains("item-a"));
-        Assert.IsTrue(markersBefore[1]!.Contains("item-b"));
+        Assert.Contains("item-a", markersBefore[0]!);
+        Assert.Contains("item-b", markersBefore[1]!);
 
         // Reordering with stable keys moves the items, instead of keeping them in place and swapping
         // only their contents, so the per-item markers travel along with the texts.
@@ -717,7 +717,7 @@ public class BitTimelineTests : BunitTestContext
 
         var texts = component.FindAll(".bit-tln-pcn .bit-tln-ttx").Select(e => e.TextContent).ToArray();
 
-        CollectionAssert.AreEqual(new[] { "Two", "One" }, texts);
+        Assert.AreSequenceEqual(new[] { "Two", "One" }, texts);
     }
 
     #endregion
@@ -738,7 +738,7 @@ public class BitTimelineTests : BunitTestContext
         Assert.IsNull(item.GetAttribute("tabindex"));
         Assert.IsFalse(item.ClassList.Contains("bit-tln-int"));
         // A presentational item hosts no button at all, so it stays out of the tab order entirely.
-        Assert.AreEqual(0, component.FindAll(".bit-tln-btn").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tln-btn"));
     }
 
     [TestMethod]
@@ -782,7 +782,7 @@ public class BitTimelineTests : BunitTestContext
         Assert.AreEqual("LI", items[1].TagName);
 
         // Only the item that answers to a click hosts a button.
-        Assert.AreEqual(1, component.FindAll(".bit-tln-btn").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-tln-btn"));
         Assert.AreEqual(1, items[0].QuerySelectorAll(".bit-tln-btn").Length);
         Assert.AreEqual(0, items[1].QuerySelectorAll(".bit-tln-btn").Length);
     }
@@ -936,7 +936,7 @@ public class BitTimelineTests : BunitTestContext
         // A presentational item hosts no button, so there is nothing that answers to the keyboard and a
         // key press of the page is never swallowed by the timeline.
         Assert.AreEqual("LI", item.TagName);
-        Assert.AreEqual(0, component.FindAll(".bit-tln-btn").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tln-btn"));
         Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Utils.registerButtonKeys"));
     }
 
@@ -966,10 +966,10 @@ public class BitTimelineTests : BunitTestContext
         });
 
         Assert.AreEqual("One", component.Find(".the-template").TextContent);
-        Assert.AreEqual(0, component.FindAll(".bit-tln-dvd").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-tln-pcn").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tln-dvd"));
+        Assert.IsEmpty(component.FindAll(".bit-tln-pcn"));
         // The template brings its own layout, so the item is not marked as holding the parts.
-        Assert.AreEqual(0, component.FindAll(".bit-tln-prt").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tln-prt"));
     }
 
     [TestMethod]
@@ -1020,9 +1020,9 @@ public class BitTimelineTests : BunitTestContext
             ]);
         });
 
-        Assert.AreEqual(1, component.FindAll(".shared-template").Count);
+        Assert.ContainsSingle(component.FindAll(".shared-template"));
         Assert.AreEqual("One", component.Find(".shared-template").TextContent);
-        Assert.AreEqual(1, component.FindAll(".own-template").Count);
+        Assert.ContainsSingle(component.FindAll(".own-template"));
     }
 
     [TestMethod]
@@ -1045,8 +1045,8 @@ public class BitTimelineTests : BunitTestContext
             ]);
         });
 
-        Assert.AreEqual(1, component.FindAll(".the-dot").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-tln-dot").Count);
+        Assert.ContainsSingle(component.FindAll(".the-dot"));
+        Assert.IsEmpty(component.FindAll(".bit-tln-dot"));
     }
 
     [TestMethod]
@@ -1068,7 +1068,7 @@ public class BitTimelineTests : BunitTestContext
         });
 
         // The hidden dot stays hidden even when the timeline provides a dot template.
-        Assert.AreEqual(1, component.FindAll(".shared-dot").Count);
+        Assert.ContainsSingle(component.FindAll(".shared-dot"));
     }
 
     [TestMethod]
@@ -1098,9 +1098,9 @@ public class BitTimelineTests : BunitTestContext
             ]);
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-tln-pcn .the-primary").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-tln-scn .the-secondary").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-tln-ttx").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-tln-pcn .the-primary"));
+        Assert.ContainsSingle(component.FindAll(".bit-tln-scn .the-secondary"));
+        Assert.IsEmpty(component.FindAll(".bit-tln-ttx"));
     }
 
     #endregion
@@ -1158,15 +1158,15 @@ public class BitTimelineTests : BunitTestContext
             parameters.Add(p => p.Items, [new BitTimelineItem { PrimaryText = "One", SecondaryText = "Two", IconName = "Add" }]);
         });
 
-        Assert.IsTrue(component.Find(".bit-tln").GetAttribute("style")!.Contains("color: red"));
-        Assert.IsTrue(component.Find(".bit-tln-itm").GetAttribute("style")!.Contains("color: green"));
-        Assert.IsTrue(component.Find(".bit-tln-pcn").GetAttribute("style")!.Contains("color: blue"));
-        Assert.IsTrue(component.Find(".bit-tln-pcn .bit-tln-ttx").GetAttribute("style")!.Contains("color: teal"));
-        Assert.IsTrue(component.Find(".bit-tln-scn").GetAttribute("style")!.Contains("color: olive"));
-        Assert.IsTrue(component.Find(".bit-tln-scn .bit-tln-ttx").GetAttribute("style")!.Contains("color: navy"));
-        Assert.IsTrue(component.Find(".bit-tln-dvd").GetAttribute("style")!.Contains("color: gray"));
-        Assert.IsTrue(component.Find(".bit-tln-dot").GetAttribute("style")!.Contains("color: pink"));
-        Assert.IsTrue(component.Find(".bit-tln-ico").GetAttribute("style")!.Contains("color: gold"));
+        Assert.Contains("color: red", component.Find(".bit-tln").GetAttribute("style")!);
+        Assert.Contains("color: green", component.Find(".bit-tln-itm").GetAttribute("style")!);
+        Assert.Contains("color: blue", component.Find(".bit-tln-pcn").GetAttribute("style")!);
+        Assert.Contains("color: teal", component.Find(".bit-tln-pcn .bit-tln-ttx").GetAttribute("style")!);
+        Assert.Contains("color: olive", component.Find(".bit-tln-scn").GetAttribute("style")!);
+        Assert.Contains("color: navy", component.Find(".bit-tln-scn .bit-tln-ttx").GetAttribute("style")!);
+        Assert.Contains("color: gray", component.Find(".bit-tln-dvd").GetAttribute("style")!);
+        Assert.Contains("color: pink", component.Find(".bit-tln-dot").GetAttribute("style")!);
+        Assert.Contains("color: gold", component.Find(".bit-tln-ico").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1246,7 +1246,7 @@ public class BitTimelineTests : BunitTestContext
         Assert.AreEqual("One", component.Find(".bit-tln-pcn .bit-tln-ttx").TextContent);
         Assert.IsTrue(items[0].ClassList.Contains("bit-tln-ilt"));
         Assert.IsFalse(items[1].ClassList.Contains("bit-tln-ilt"));
-        Assert.AreEqual(1, component.FindAll(".bit-tln-dot").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-tln-dot"));
     }
 
     [TestMethod]
@@ -1262,7 +1262,7 @@ public class BitTimelineTests : BunitTestContext
             ]);
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-tln-dot").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-tln-dot"));
     }
 
     [TestMethod]
@@ -1277,7 +1277,7 @@ public class BitTimelineTests : BunitTestContext
 
         // Without name selectors, none of the optional values are readable, so the item must fall back
         // to a visible dot and to the direction of the timeline instead of hiding and flipping itself.
-        Assert.AreEqual(1, component.FindAll(".bit-tln-dot").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-tln-dot"));
         Assert.IsFalse(item.ClassList.Contains("bit-tln-irv"));
         Assert.IsFalse(item.ClassList.Contains("bit-tln-ids"));
         Assert.IsFalse(item.ClassList.Contains("bit-tln-ils"));
@@ -1373,7 +1373,7 @@ public class BitTimelineTests : BunitTestContext
 
         var timelines = component.FindAll(".bit-tln");
 
-        Assert.AreEqual(3, timelines.Count);
+        Assert.HasCount(3, timelines);
 
         // The first timeline takes everything from the cascading parameters.
         var first = timelines[0];
@@ -1382,7 +1382,7 @@ public class BitTimelineTests : BunitTestContext
         {
             Assert.IsTrue(first.ClassList.Contains(cls), cls);
         }
-        StringAssert.Contains(first.GetAttribute("style")!, "margin: 1px;");
+        Assert.Contains("margin: 1px;", first.GetAttribute("style")!);
         Assert.IsTrue(first.QuerySelector(".bit-tln-dot")!.ClassList.Contains("cascaded-dot"));
 
         // The second one sets its own color and orientation, which the cascading parameters must not overwrite.

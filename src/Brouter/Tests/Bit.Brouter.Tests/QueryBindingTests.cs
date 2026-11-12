@@ -131,7 +131,7 @@ public class QueryBindingTests : BunitTestContext
 
         Assert.IsTrue(loc.QueryParams.ContainsKey("tags"));
         var values = loc.QueryParams["tags"];
-        Assert.AreEqual(2, values.Count);
+        Assert.HasCount(2, values);
         Assert.AreEqual("a", values[0]);
         Assert.AreEqual("b", values[1]);
     }
@@ -145,8 +145,8 @@ public class QueryBindingTests : BunitTestContext
 
         Assert.AreEqual("x", loc.GetQuery("tag"));
         var all = loc.GetQueryAll("tag");
-        Assert.AreEqual(2, all.Count);
-        CollectionAssert.AreEqual(new[] { "x", "y" }, all.ToArray());
+        Assert.HasCount(2, all);
+        Assert.AreSequenceEqual(new[] { "x", "y" }, all.ToArray());
     }
 
     [TestMethod]
@@ -184,7 +184,7 @@ public class QueryBindingTests : BunitTestContext
             "/q", ["q"], "?a=1", "");
 
         Assert.IsNull(loc.GetQuery("missing"));
-        Assert.AreEqual(0, loc.GetQueryAll("missing").Count);
+        Assert.IsEmpty(loc.GetQueryAll("missing"));
     }
 
     [TestMethod]
@@ -204,9 +204,9 @@ public class QueryBindingTests : BunitTestContext
         all = loc.GetQueryAll("name");
 
         Assert.IsNotNull(value);
-        StringAssert.Contains(value, "ok");
+        Assert.Contains("ok", value);
         Assert.IsNotNull(all);
-        Assert.AreEqual(1, all.Count);
-        StringAssert.Contains(all[0], "ok");
+        Assert.ContainsSingle(all);
+        Assert.Contains("ok", all[0]);
     }
 }

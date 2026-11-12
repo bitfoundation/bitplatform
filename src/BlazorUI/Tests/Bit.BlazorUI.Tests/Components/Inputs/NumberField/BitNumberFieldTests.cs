@@ -68,11 +68,11 @@ public class BitNumberFieldTests : BunitTestContext
 
         if (mode.HasValue)
         {
-            Assert.AreEqual(2, arrowButtons.Count);
+            Assert.HasCount(2, arrowButtons);
         }
         else
         {
-            Assert.AreEqual(0, arrowButtons.Count);
+            Assert.IsEmpty(arrowButtons);
         }
     }
 
@@ -102,7 +102,7 @@ public class BitNumberFieldTests : BunitTestContext
         }
         else
         {
-            Assert.AreEqual(2, component.FindAll("i").Count);
+            Assert.HasCount(2, component.FindAll("i"));
         }
     }
 
@@ -131,7 +131,7 @@ public class BitNumberFieldTests : BunitTestContext
         }
         else
         {
-            Assert.AreEqual(0, component.FindAll("i").Count);
+            Assert.IsEmpty(component.FindAll("i"));
         }
     }
 
@@ -183,7 +183,7 @@ public class BitNumberFieldTests : BunitTestContext
         var button = component.Find("button:last-child");
         var icon = component.Find("button:last-child > span > i");
 
-        Assert.IsTrue(icon.OuterHtml.Contains($"bit-icon--{iconName}"));
+        Assert.Contains($"bit-icon--{iconName}", icon.OuterHtml);
         Assert.AreEqual(!isEnabled, button.HasAttribute("disabled"));
         Assert.AreEqual(!isEnabled, button.HasAttribute("aria-disabled"));
 
@@ -906,7 +906,7 @@ public class BitNumberFieldTests : BunitTestContext
         if (ariaDescription is null)
         {
             Assert.IsNull(input.GetAttribute("aria-describedby"));
-            Assert.AreEqual(0, component.FindAll(".bit-nfl-dsc[id]").Count);
+            Assert.IsEmpty(component.FindAll(".bit-nfl-dsc[id]"));
         }
         else
         {
@@ -1479,7 +1479,7 @@ public class BitNumberFieldTests : BunitTestContext
         Assert.AreEqual(1, valueAfterPress);
 
         // Holding the button down then keeps the value climbing on its own.
-        component.WaitForAssertion(() => Assert.IsTrue(component.Instance.Value >= 5), TimeSpan.FromSeconds(10));
+        component.WaitForAssertion(() => Assert.IsGreaterThanOrEqualTo(5, component.Instance.Value), TimeSpan.FromSeconds(10));
 
         // ... and releasing it stops the spin for good. The release is awaited, so it has been handled -
         // after any tick that was already queued ahead of it - before the two reads that must agree are
@@ -1487,7 +1487,7 @@ public class BitNumberFieldTests : BunitTestContext
         await incrementButton.PointerUpAsync(new PointerEventArgs());
 
         var valueAfterRelease = component.Instance.Value;
-        await Task.Delay(100);
+        await Task.Delay(100, TestContext.CancellationToken);
         Assert.AreEqual(valueAfterRelease, component.Instance.Value);
     }
 
@@ -1516,12 +1516,12 @@ public class BitNumberFieldTests : BunitTestContext
         });
         Assert.AreEqual(-1, valueAfterPress);
 
-        component.WaitForAssertion(() => Assert.IsTrue(component.Instance.Value <= -5), TimeSpan.FromSeconds(10));
+        component.WaitForAssertion(() => Assert.IsLessThanOrEqualTo(-5, component.Instance.Value), TimeSpan.FromSeconds(10));
 
         await decrementButton.PointerUpAsync(new PointerEventArgs());
 
         var valueAfterRelease = component.Instance.Value;
-        await Task.Delay(100);
+        await Task.Delay(100, TestContext.CancellationToken);
         Assert.AreEqual(valueAfterRelease, component.Instance.Value);
     }
 
@@ -1543,7 +1543,7 @@ public class BitNumberFieldTests : BunitTestContext
 
         component.WaitForAssertion(() => Assert.AreEqual(5, component.Instance.Value), TimeSpan.FromSeconds(10));
 
-        await Task.Delay(100);
+        await Task.Delay(100, TestContext.CancellationToken);
         Assert.AreEqual(5, component.Instance.Value);
 
         incrementButton.PointerUp();
@@ -1837,7 +1837,7 @@ public class BitNumberFieldTests : BunitTestContext
         Assert.IsNotNull(describedBy);
 
         var ids = describedBy!.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-        Assert.AreEqual(2, ids.Length);
+        Assert.HasCount(2, ids);
         Assert.AreEqual("Visible hint", component.Find($"[id='{ids[0]}']").TextContent.Trim());
         Assert.AreEqual("Screen reader only hint", component.Find($"[id='{ids[1]}']").TextContent.Trim());
     }
@@ -1847,7 +1847,7 @@ public class BitNumberFieldTests : BunitTestContext
     {
         var component = RenderComponent<BitNumberField<int>>();
 
-        Assert.AreEqual(0, component.FindAll(".bit-nfl-des").Count);
+        Assert.IsEmpty(component.FindAll(".bit-nfl-des"));
         Assert.IsNull(component.Find("input").GetAttribute("aria-describedby"));
         Assert.IsFalse(component.Find(".bit-nfl").ClassList.Contains("bit-nfl-hds"));
     }
@@ -2124,7 +2124,7 @@ public class BitNumberFieldTests : BunitTestContext
         });
 
         // The clear button is not shown, yet the value can still be cleared from code.
-        Assert.AreEqual(0, component.FindAll("button.bit-nfl-cbt").Count);
+        Assert.IsEmpty(component.FindAll("button.bit-nfl-cbt"));
 
         await component.Instance.ClearAsync();
 
@@ -2225,7 +2225,7 @@ public class BitNumberFieldTests : BunitTestContext
         component.Find(".bit-nfl-aup").PointerUp(new PointerEventArgs { PointerType = "touch" });
 
         Assert.AreEqual(2, component.Instance.Value);
-        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "Blazor._internal.domWrapper.focus"));
+        Assert.DoesNotContain(i => i.Identifier == "Blazor._internal.domWrapper.focus", Context.JSInterop.Invocations);
 
         // The spinbutton is not focused to announce its new value itself, so the live region does.
         Assert.AreEqual("2", component.Find("span[role=status]").TextContent.Trim());
@@ -2252,12 +2252,12 @@ public class BitNumberFieldTests : BunitTestContext
         component.Find(".bit-nfl-aup").Click(new MouseEventArgs { Detail = 1 });
 
         Assert.AreEqual(1, component.Instance.Value);
-        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "Blazor._internal.domWrapper.focus"));
+        Assert.DoesNotContain(i => i.Identifier == "Blazor._internal.domWrapper.focus", Context.JSInterop.Invocations);
 
         // A click on the container itself still puts the caret in the input.
         component.Find(".bit-nfl-cnt").Click();
 
-        Assert.IsTrue(Context.JSInterop.Invocations.Any(i => i.Identifier == "Blazor._internal.domWrapper.focus"));
+        Assert.Contains(i => i.Identifier == "Blazor._internal.domWrapper.focus", Context.JSInterop.Invocations);
     }
 
     [TestMethod]
@@ -2312,7 +2312,7 @@ public class BitNumberFieldTests : BunitTestContext
         component.Find(".bit-nfl-aup").PointerUp(new PointerEventArgs { PointerType = "mouse" });
 
         Assert.AreEqual(2, component.Instance.Value);
-        Assert.IsTrue(Context.JSInterop.Invocations.Any(i => i.Identifier == "Blazor._internal.domWrapper.focus"));
+        Assert.Contains(i => i.Identifier == "Blazor._internal.domWrapper.focus", Context.JSInterop.Invocations);
         Assert.AreEqual(string.Empty, component.Find("span[role=status]").TextContent.Trim());
     }
 
@@ -2471,14 +2471,14 @@ public class BitNumberFieldTests : BunitTestContext
             parameters.Add(p => p.DefaultValue, 3);
         });
 
-        Assert.AreEqual(showClearButton ? 1 : 0, component.FindAll("button.bit-nfl-cbt").Count);
+        Assert.HasCount(showClearButton ? 1 : 0, component.FindAll("button.bit-nfl-cbt"));
 
         if (showClearButton is false) return;
 
         component.Find("button.bit-nfl-cbt").Click();
 
         Assert.IsNull(component.Instance.Value);
-        Assert.AreEqual(0, component.FindAll("button.bit-nfl-cbt").Count);
+        Assert.IsEmpty(component.FindAll("button.bit-nfl-cbt"));
     }
 
     [TestMethod]
@@ -2491,7 +2491,7 @@ public class BitNumberFieldTests : BunitTestContext
             parameters.Add(p => p.DefaultValue, 3);
         });
 
-        Assert.AreEqual(0, component.FindAll("button.bit-nfl-cbt").Count);
+        Assert.IsEmpty(component.FindAll("button.bit-nfl-cbt"));
     }
 
     [TestMethod]
@@ -2677,11 +2677,11 @@ public class BitNumberFieldTests : BunitTestContext
 
         component.WaitForAssertion(() => Assert.AreEqual(9, component.Instance.Value), TimeSpan.FromSeconds(10));
 
-        await Task.Delay(150);
+        await Task.Delay(150, TestContext.CancellationToken);
 
         Assert.AreEqual(9, component.Instance.Value);
         // 0 -> 3 -> 6 -> 9, then the one step that found no room left and ended the press.
-        Assert.IsTrue(incrementCount <= 5, $"The continuous spin kept running: {incrementCount} increments.");
+        Assert.IsLessThanOrEqualTo(5, incrementCount, $"The continuous spin kept running: {incrementCount} increments.");
 
         incrementButton.PointerUp();
     }
@@ -2724,7 +2724,7 @@ public class BitNumberFieldTests : BunitTestContext
         });
 
         var buttons = component.FindAll("button");
-        Assert.IsTrue(buttons.Count >= 2);
+        Assert.IsGreaterThanOrEqualTo(2, buttons.Count);
 
         await component.InvokeAsync(() => buttons[0].TriggerEvent("onpointerdown", new PointerEventArgs()));
 
@@ -2875,7 +2875,7 @@ public class BitNumberFieldTests : BunitTestContext
             parameters.Add(p => p.ErrorMessageTemplate, (RenderFragment)(builder => builder.AddContent(0, "!")));
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-nfl-erm span").Count);
+        Assert.IsEmpty(component.FindAll(".bit-nfl-erm span"));
         Assert.AreEqual("Invalid input", component.Find("[role=\"status\"]").TextContent);
     }
 
@@ -2890,7 +2890,7 @@ public class BitNumberFieldTests : BunitTestContext
         });
 
         Assert.AreEqual("Invalid input", component.Find("[role=\"status\"]").TextContent);
-        Assert.AreEqual(0, component.FindAll("[id$=\"-error-label\"]").Count);
+        Assert.IsEmpty(component.FindAll("[id$=\"-error-label\"]"));
         Assert.AreEqual(component.Find(".bit-nfl-erm").Id, component.Find("input").GetAttribute("aria-describedby"));
     }
 
@@ -2916,7 +2916,7 @@ public class BitNumberFieldTests : BunitTestContext
         Assert.IsTrue(label.ClassList.Contains("bit-nfl-dsc"));
 
         // The template is still what is seen.
-        Assert.AreEqual(1, component.FindAll(".bit-nfl-erm .warning-icon").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-nfl-erm .warning-icon"));
     }
 
     [TestMethod]
@@ -2930,7 +2930,7 @@ public class BitNumberFieldTests : BunitTestContext
 
         Assert.AreEqual("Too young.", component.Find("[role=\"status\"]").TextContent);
         Assert.AreEqual(component.Find(".bit-nfl-erm").Id, component.Find("input").GetAttribute("aria-describedby"));
-        Assert.AreEqual(0, component.FindAll("[id$=\"-error-label\"]").Count);
+        Assert.IsEmpty(component.FindAll("[id$=\"-error-label\"]"));
     }
 
     [TestMethod]
@@ -3030,7 +3030,7 @@ public class BitNumberFieldTests : BunitTestContext
 
         Assert.AreEqual("مقدار نامعتبر", component.Find("[role=\"status\"]").TextContent);
         Assert.AreEqual("مقدار نامعتبر", label.TextContent);
-        Assert.AreEqual(0, component.FindAll(".bit-nfl-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-nfl-erm"));
 
         // A plain message speaks for itself, the forced state or not.
         component.Render(parameters => parameters.Add(p => p.ErrorMessage, "Too young."));
@@ -3049,7 +3049,7 @@ public class BitNumberFieldTests : BunitTestContext
 
         Assert.IsTrue(component.Find(".bit-nfl").ClassList.Contains("bit-inv"));
         Assert.AreEqual("true", component.Find("input").GetAttribute("aria-invalid"));
-        Assert.AreEqual(0, component.FindAll(".bit-nfl-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-nfl-erm"));
         // Its reason is explained (and announced) elsewhere, so it says nothing without a label of its own.
         Assert.AreEqual(string.Empty, component.Find("[role=\"status\"]").TextContent);
         Assert.IsNull(component.Find("input").GetAttribute("aria-describedby"));
@@ -3228,7 +3228,7 @@ public class BitNumberFieldTests : BunitTestContext
             parameters.Add(p => p.Loading, true);
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-nfl-lod").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-nfl-lod"));
         // The value is said along with the busy state, the region being the only thing announcing it.
         Assert.AreEqual("0, Loading", component.Find("span[role=status]").TextContent.Trim());
     }
@@ -3298,7 +3298,7 @@ public class BitNumberFieldTests : BunitTestContext
         });
 
         Assert.AreEqual("wait", component.Find(".bit-nfl-lod em").TextContent);
-        Assert.AreEqual(0, component.FindAll(".bit-nfl-lod .bit-nfl-spn").Count);
+        Assert.IsEmpty(component.FindAll(".bit-nfl-lod .bit-nfl-spn"));
     }
 
     [TestMethod]
@@ -3306,7 +3306,7 @@ public class BitNumberFieldTests : BunitTestContext
     {
         var component = RenderComponent<BitNumberField<int>>();
 
-        Assert.AreEqual(0, component.FindAll(".bit-nfl-lod").Count);
+        Assert.IsEmpty(component.FindAll(".bit-nfl-lod"));
         Assert.IsNull(component.Find("input").GetAttribute("aria-busy"));
     }
 
@@ -3345,11 +3345,11 @@ public class BitNumberFieldTests : BunitTestContext
         var component = RenderComponent<BitNumberField<int>>(parameters => parameters.Add(p => p.HideInput, true));
 
         Assert.IsTrue(component.Find(".bit-nfl").ClassList.Contains("bit-nfl-mcp"));
-        Assert.AreEqual(2, component.FindAll(".bit-nfl-cnt button").Count);
+        Assert.HasCount(2, component.FindAll(".bit-nfl-cnt button"));
 
         // Without HideInput no mode still means no buttons.
         var plain = RenderComponent<BitNumberField<int>>();
-        Assert.AreEqual(0, plain.FindAll(".bit-nfl-cnt button").Count);
+        Assert.IsEmpty(plain.FindAll(".bit-nfl-cnt button"));
     }
 
     [TestMethod]
@@ -3628,7 +3628,7 @@ public class BitNumberFieldTests : BunitTestContext
         Assert.AreEqual(2, valueAfterPress);
 
         // Long past the delay the press-and-hold spin would have started after.
-        await Task.Delay(80);
+        await Task.Delay(80, TestContext.CancellationToken);
 
         Assert.AreEqual(2, component.Instance.Value);
     }
@@ -3755,8 +3755,9 @@ public class BitNumberFieldTests : BunitTestContext
 
         // Every keystroke is reported, as only the change event raised on blur leaves out a value already reported. And
         // 1.5m and 1.50m are equal, yet the binding keeps the scale it is handed: the one typed last.
-        Assert.AreEqual(2, values.Count);
-        Assert.AreEqual("1.50", values[1]?.ToString(CultureInfo.InvariantCulture));
+        Assert.HasCount(2, values);
+        var actualValue = values[1]?.ToString(CultureInfo.InvariantCulture);
+        Assert.AreEqual("1.50", actualValue);
     }
 
     [TestMethod]
@@ -3939,7 +3940,7 @@ public class BitNumberFieldTests : BunitTestContext
         try { await failed; } catch (InvalidOperationException) { }
         await home;
 
-        CollectionAssert.AreEqual(new[] { "a", "Home" }, keys);
+        Assert.AreSequenceEqual(new[] { "a", "Home" }, keys);
         Assert.AreEqual(0, component.Instance.Value);
     }
 
@@ -3961,7 +3962,7 @@ public class BitNumberFieldTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("custom-class"));
         Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
         Assert.AreEqual("rtl", root.GetAttribute("dir"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin: 1px;");
+        Assert.Contains("margin: 1px;", root.GetAttribute("style")!);
         Assert.AreEqual("root", root.GetAttribute("data-test"));
     }
 
@@ -3982,7 +3983,7 @@ public class BitNumberFieldTests : BunitTestContext
         }
         else
         {
-            StringAssert.Contains(style, expectedStyle);
+            Assert.Contains(expectedStyle, style!);
         }
     }
 
@@ -4089,7 +4090,7 @@ public class BitNumberFieldTests : BunitTestContext
         root = component.Find(".bit-nfl");
         Assert.IsTrue(root.ClassList.Contains("bit-nfl-fcs"));
         Assert.IsTrue(root.ClassList.Contains("is-focused"));
-        StringAssert.Contains(root.GetAttribute("style"), "outline: 1px solid red;");
+        Assert.Contains("outline: 1px solid red;", root.GetAttribute("style")!);
 
         component.Find("input").FocusOut();
 
@@ -4219,7 +4220,7 @@ public class BitNumberFieldTests : BunitTestContext
             parameters.Add(p => p.Loading, true);
         });
 
-        StringAssert.Contains(component.Find(".bit-nfl").GetAttribute("style"), "--s: root;");
+        Assert.Contains("--s: root;", component.Find(".bit-nfl").GetAttribute("style")!);
         Assert.AreEqual("--s: label-container;", component.Find(".bit-nfl-lct").GetAttribute("style"));
         Assert.AreEqual("--s: label;", component.Find(".bit-nfl-lbl").GetAttribute("style"));
         Assert.AreEqual("--s: input-container;", component.Find(".bit-nfl-cnt").GetAttribute("style"));
@@ -4333,8 +4334,8 @@ public class BitNumberFieldTests : BunitTestContext
 
         Assert.AreEqual("USD", component.Find(".bit-nfl-cnt .my-prefix").TextContent);
         Assert.AreEqual("kilos", component.Find(".bit-nfl-cnt .my-suffix").TextContent);
-        Assert.AreEqual(0, component.FindAll(".bit-nfl-pre").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-nfl-suf").Count);
+        Assert.IsEmpty(component.FindAll(".bit-nfl-pre"));
+        Assert.IsEmpty(component.FindAll(".bit-nfl-suf"));
 
         // A template takes the id with it, so there is nothing left for the input to point at.
         Assert.IsNull(component.Find("input").GetAttribute("aria-describedby"));
@@ -4390,7 +4391,7 @@ public class BitNumberFieldTests : BunitTestContext
         Assert.IsTrue(component.Find("input").HasAttribute("autofocus"));
         // The button only takes it over in HideInput mode.
         Assert.IsFalse(component.Find(".bit-nfl-aup").HasAttribute("autofocus"));
-        component.WaitForAssertion(() => Assert.IsTrue(Context.JSInterop.Invocations.Any(i => i.Identifier == "Blazor._internal.domWrapper.focus")));
+        component.WaitForAssertion(() => Assert.Contains(i => i.Identifier == "Blazor._internal.domWrapper.focus", Context.JSInterop.Invocations));
     }
 
     [TestMethod]
@@ -4459,4 +4460,6 @@ public class BitNumberFieldTests : BunitTestContext
         Assert.AreEqual(5, component.Instance.Value);
         Assert.AreEqual(0, changes);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

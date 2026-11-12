@@ -48,7 +48,7 @@ public class ViewTransitionTests : BunitTestContext
         cut.WaitForAssertion(() => cut.Find("[data-testid=b]"));
 
         // Begin fired before the render, complete after it landed.
-        Assert.IsTrue(module.Invocations.Count(i => i.Identifier == "beginViewTransition") >= 1);
+        Assert.IsGreaterThanOrEqualTo(1, module.Invocations.Count(i => i.Identifier == "beginViewTransition"));
         await WaitForInvocationAsync(module, "completeViewTransition");
 
         // Begin carries the direction token (a programmatic Navigate is a push), the
@@ -56,8 +56,8 @@ public class ViewTransitionTests : BunitTestContext
         // drive the built-in direction-aware animations.
         var begin = module.Invocations.First(i => i.Identifier == "beginViewTransition");
         Assert.AreEqual("push", begin.Arguments[0]);
-        Assert.AreEqual(true, begin.Arguments[1]);
-        Assert.AreEqual(true, begin.Arguments[2]);
+        Assert.IsTrue((bool?)begin.Arguments[1]);
+        Assert.IsTrue((bool?)begin.Arguments[2]);
     }
 
     [TestMethod]
@@ -77,7 +77,7 @@ public class ViewTransitionTests : BunitTestContext
         cut.WaitForAssertion(() =>
         {
             Assert.IsNotNull(cut.Find("[data-testid=b]"));
-            Assert.IsTrue(module.Invocations.Count(i => i.Identifier == "beginViewTransition") >= 1);
+            Assert.IsGreaterThanOrEqualTo(1, module.Invocations.Count(i => i.Identifier == "beginViewTransition"));
             Assert.AreEqual(0, module.Invocations.Count(i => i.Identifier == "completeViewTransition"));
         });
     }
@@ -106,7 +106,7 @@ public class ViewTransitionTests : BunitTestContext
         cut.WaitForAssertion(() =>
         {
             Assert.IsNotNull(cut.Find("[data-testid=b]"));
-            Assert.IsTrue(module.Invocations.Count(i => i.Identifier == "beginViewTransition") >= 1);
+            Assert.IsGreaterThanOrEqualTo(1, module.Invocations.Count(i => i.Identifier == "beginViewTransition"));
         });
     }
 

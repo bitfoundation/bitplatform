@@ -21,11 +21,11 @@ public class BitAiRenderSchedulerTests
         // Waits for the first render rather than for a fixed time a busy machine can overrun, then for three more
         // intervals, in which a request that was not coalesced would have rendered again.
         var deadline = DateTime.UtcNow.AddSeconds(10);
-        while (Volatile.Read(ref renders) == 0 && DateTime.UtcNow < deadline) await Task.Delay(5);
-        await Task.Delay(120);
+        while (Volatile.Read(ref renders) == 0 && DateTime.UtcNow < deadline) await Task.Delay(5, TestContext.CancellationToken);
+        await Task.Delay(120, TestContext.CancellationToken);
 
         Assert.IsInRange(1, 3, Volatile.Read(ref renders));
-        Assert.IsTrue(scheduler.CoalescedCount > 100);
+        Assert.IsGreaterThan(100, scheduler.CoalescedCount);
     }
 
     [TestMethod]
@@ -52,7 +52,7 @@ public class BitAiRenderSchedulerTests
 
         await scheduler.DisposeAsync();
         scheduler.Request();
-        await Task.Delay(40);
+        await Task.Delay(40, TestContext.CancellationToken);
 
         Assert.AreEqual(0, renders);
     }
@@ -75,7 +75,7 @@ public class BitAiRenderSchedulerTests
         await first;
 
         var deadline = DateTime.UtcNow.AddSeconds(10);
-        while (Volatile.Read(ref renders) < 2 && DateTime.UtcNow < deadline) await Task.Delay(5);
+        while (Volatile.Read(ref renders) < 2 && DateTime.UtcNow < deadline) await Task.Delay(5, TestContext.CancellationToken);
 
         Assert.AreEqual(2, Volatile.Read(ref renders));
     }
@@ -90,10 +90,10 @@ public class BitAiRenderSchedulerTests
 
         scheduler.Request();
         var deadline = DateTime.UtcNow.AddSeconds(10);
-        while (Volatile.Read(ref flushes) < 1 && DateTime.UtcNow < deadline) await Task.Delay(5);
+        while (Volatile.Read(ref flushes) < 1 && DateTime.UtcNow < deadline) await Task.Delay(5, TestContext.CancellationToken);
 
         scheduler.Request();
-        while (Volatile.Read(ref flushes) < 2 && DateTime.UtcNow < deadline) await Task.Delay(5);
+        while (Volatile.Read(ref flushes) < 2 && DateTime.UtcNow < deadline) await Task.Delay(5, TestContext.CancellationToken);
 
         Assert.AreEqual(2, Volatile.Read(ref flushes));
     }
@@ -107,10 +107,12 @@ public class BitAiRenderSchedulerTests
             var requests = Task.Run(() =>
             {
                 for (var j = 0; j < 50; j++) scheduler.Request();
-            });
+            }, TestContext.CancellationToken);
 
             await scheduler.DisposeAsync();
             await requests;
         }
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

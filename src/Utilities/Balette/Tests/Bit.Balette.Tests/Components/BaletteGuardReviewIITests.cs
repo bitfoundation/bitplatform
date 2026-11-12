@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -246,7 +246,7 @@ public sealed class BaletteGuardReviewIITests : BunitContext
         decision.SetResult(BaletteGuardResult.Allow);
         await run;
 
-        CollectionAssert.AreEqual(new[] { "refresh", "restart" }, ran);
+        Assert.AreSequenceEqual(new[] { "refresh", "restart" }, ran);
     }
 
     [TestMethod]
@@ -272,7 +272,7 @@ public sealed class BaletteGuardReviewIITests : BunitContext
 
         Assert.ContainsSingle(_refused);
         Assert.IsNotEmpty(_log.Messages);
-        Assert.IsFalse(_log.Messages.Any(m => m.Contains("ada", StringComparison.OrdinalIgnoreCase)));
+        Assert.DoesNotContain(m => m.Contains("ada", StringComparison.OrdinalIgnoreCase), _log.Messages);
     }
 
     /// <summary>Counts what it is asked, and refuses commands tagged <see cref="Refuse"/>.</summary>

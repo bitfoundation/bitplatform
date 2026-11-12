@@ -6,14 +6,14 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Bit.Blex.Tests.Components;
 
-public sealed class GreetingSource
+internal sealed class GreetingSource
 {
     public string Text { get; init; } = "hello";
 }
 
 /// <summary>A store with a constructor dependency, which a scope resolves from DI.</summary>
 [BlexStoreAttribute(Name = "greeting")]
-public partial class GreetingStore
+internal partial class GreetingStore
 {
     [BlexStateAttribute] private string _text;
 

@@ -48,7 +48,7 @@ public class StrokePointsTests
     {
         BinkStrokePoints points = TestData.PressureRamp(new Vector2(0, 0), new Vector2(300, 0), 300);
         BinkStrokePoints simplified = points.Simplify(0.5f);
-        Assert.IsTrue(simplified.Count < points.Count);
+        Assert.IsLessThan(points.Count, simplified.Count);
         Assert.AreEqual(points.X[0], simplified.X[0], 5e-5);
         Assert.AreEqual(points.X[^1], simplified.X[^1], 5e-5);
         Assert.AreEqual(points.Pressure[0], simplified.Pressure[0], 5e-5);
@@ -111,7 +111,7 @@ public class StrokeOutlineTests
 
         float light = MeasureWidthAt(geometry.Path, 60f);
         float heavy = MeasureWidthAt(geometry.Path, 330f);
-        Assert.IsTrue(heavy > light * 2f, $"expected the heavy end ({heavy}) to be much wider than the light end ({light})");
+        Assert.IsGreaterThan(light * 2f, heavy, $"expected the heavy end ({heavy}) to be much wider than the light end ({light})");
     }
 
     [TestMethod]
@@ -123,8 +123,8 @@ public class StrokeOutlineTests
         BinkStrokeGeometry geometry = brush.BuildGeometry(buffer.ToStrokePoints().AsView());
 
         Assert.IsFalse(geometry.IsEmpty);
-        Assert.IsTrue(geometry.Bounds.Width > 4f, "a tap must leave a visible mark");
-        Assert.IsTrue(geometry.Bounds.Width < 20f);
+        Assert.IsGreaterThan(4f, geometry.Bounds.Width, "a tap must leave a visible mark");
+        Assert.IsLessThan(20f, geometry.Bounds.Width);
     }
 
     [TestMethod]
@@ -147,9 +147,9 @@ public class StrokeOutlineTests
         BinkStrokeGeometry geometry = brush.BuildGeometry(buffer.ToStrokePoints().AsView());
         BinkRect pointBounds = buffer.Bounds;
         // The outline may only extend by about the stroke radius plus a small allowance.
-        Assert.IsTrue(geometry.Bounds.Left > pointBounds.Left - 20f, $"outline extended to {geometry.Bounds.Left} from {pointBounds.Left}");
-        Assert.IsTrue(geometry.Bounds.Right < pointBounds.Right + 20f);
-        Assert.IsTrue(geometry.Bounds.Bottom < pointBounds.Bottom + 20f);
+        Assert.IsGreaterThan(pointBounds.Left - 20f, geometry.Bounds.Left, $"outline extended to {geometry.Bounds.Left} from {pointBounds.Left}");
+        Assert.IsLessThan(pointBounds.Right + 20f, geometry.Bounds.Right);
+        Assert.IsLessThan(pointBounds.Bottom + 20f, geometry.Bounds.Bottom);
     }
 
     [TestMethod]
@@ -193,7 +193,7 @@ public class StrokeOutlineTests
         BinkStrokePoints points = TestData.Circle(new Vector2(0, 0), 200f, 20_000);
         BinkStrokeGeometry geometry = new BinkPenBrush().BuildGeometry(points.AsView());
         Assert.IsFalse(geometry.IsEmpty);
-        Assert.IsTrue(geometry.Bounds.Width > 380f);
+        Assert.IsGreaterThan(380f, geometry.Bounds.Width);
     }
 }
 
@@ -213,8 +213,8 @@ public class StrokeBuilderTests
         BinkStrokePoints points = builder.End(Sample(20, 0, 400, BinkPointerPhase.Up));
 
         // 20 units at a 5-unit minimum spacing is about 4 stored points, not 100.
-        Assert.IsTrue(points.Count < 10, $"expected fewer than 10 points but got {points.Count}");
-        Assert.IsTrue(points.Count >= 2);
+        Assert.IsLessThan(10, points.Count, $"expected fewer than 10 points but got {points.Count}");
+        Assert.IsGreaterThanOrEqualTo(2, points.Count);
     }
 
     [TestMethod]
@@ -239,8 +239,8 @@ public class StrokeBuilderTests
         BinkStrokePoints smoothed = smooth.End();
         BinkStrokePoints unsmoothed = raw.End();
 
-        Assert.IsTrue(Roughness(smoothed) < Roughness(unsmoothed) * 0.6f, "smoothing did not reduce jitter");
-        Assert.IsTrue(MathF.Abs(smoothed.Bounds.Width - unsmoothed.Bounds.Width) < 12f, "smoothing distorted the overall path");
+        Assert.IsLessThan(Roughness(unsmoothed) * 0.6f, Roughness(smoothed), "smoothing did not reduce jitter");
+        Assert.IsLessThan(12f, MathF.Abs(smoothed.Bounds.Width - unsmoothed.Bounds.Width), "smoothing distorted the overall path");
     }
 
     private static float Roughness(BinkStrokePoints points)
@@ -270,7 +270,7 @@ public class StrokeBuilderTests
 
         float slowPressure = slowPoints.Pressure[^1];
         float fastPressure = fastPoints.Pressure[^1];
-        Assert.IsTrue(fastPressure < slowPressure, $"fast strokes should be lighter: fast {fastPressure}, slow {slowPressure}");
+        Assert.IsLessThan(slowPressure, fastPressure, $"fast strokes should be lighter: fast {fastPressure}, slow {slowPressure}");
     }
 
     [TestMethod]
@@ -346,9 +346,9 @@ public class EraserTests
         bool erased = BinkStrokeEditor.EraseSegments(stroke, [new Vector2(50, 0)], 8f, fragments);
 
         Assert.IsTrue(erased);
-        Assert.AreEqual(2, fragments.Count);
-        Assert.IsTrue(fragments[0].Points.Bounds.Right < 45f);
-        Assert.IsTrue(fragments[1].Points.Bounds.Left > 55f);
+        Assert.HasCount(2, fragments);
+        Assert.IsLessThan(45f, fragments[0].Points.Bounds.Right);
+        Assert.IsGreaterThan(55f, fragments[1].Points.Bounds.Left);
         Assert.AreEqual(stroke.Id, fragments[0].Id);
         Assert.AreNotEqual(stroke.Id, fragments[1].Id);
     }
@@ -377,7 +377,7 @@ public class EraserTests
         var fragments = new List<BinkStroke>();
         Assert.IsTrue(BinkStrokeEditor.EraseSegments(stroke, [new Vector2(100, 0)], 20f, fragments));
         Assert.ContainsSingle(fragments);
-        Assert.IsTrue(fragments[0].Points.Bounds.Right < 80f);
+        Assert.IsLessThan(80f, fragments[0].Points.Bounds.Right);
     }
 
     [TestMethod]
@@ -390,7 +390,7 @@ public class EraserTests
         var fragments = new List<BinkStroke>();
         Assert.IsFalse(BinkStrokeEditor.EraseSegments(stroke, [new Vector2(50, 0)], 8f, fragments));
         Assert.IsTrue(BinkStrokeEditor.EraseSegments(stroke, [new Vector2(550, 500)], 8f, fragments));
-        Assert.AreEqual(2, fragments.Count);
+        Assert.HasCount(2, fragments);
     }
 
     [TestMethod]
@@ -400,9 +400,9 @@ public class EraserTests
         var fragments = new List<BinkStroke>();
         Vector2[] path = [new(40, 50), new(160, 50)];
         Assert.IsTrue(BinkStrokeEditor.EraseSegments(stroke, path, 5f, fragments));
-        Assert.AreEqual(2, fragments.Count);
-        Assert.IsTrue(fragments[0].Points.Bounds.Right < 40f);
-        Assert.IsTrue(fragments[1].Points.Bounds.Left > 160f);
+        Assert.HasCount(2, fragments);
+        Assert.IsLessThan(40f, fragments[0].Points.Bounds.Right);
+        Assert.IsGreaterThan(160f, fragments[1].Points.Bounds.Left);
     }
 }
 
@@ -420,10 +420,10 @@ public class PressureFidelityTests
         for (int i = 1; i <= 60; i++) builder.Add(Pen(40 + i * 8f, 150, i * 5, i < 30 ? 0.12f : 1.0f));
         BinkStrokePoints points = builder.End(Pen(520, 150, 305, 0f, BinkPointerPhase.Up));
 
-        Assert.IsTrue(points.Pressure[0] < 0.3f, $"the light start should stay light but was {points.Pressure[0]}");
+        Assert.IsLessThan(0.3f, points.Pressure[0], $"the light start should stay light but was {points.Pressure[0]}");
         float heaviest = 0f;
         foreach (float p in points.Pressure) heaviest = MathF.Max(heaviest, p);
-        Assert.IsTrue(heaviest > 0.9f, $"the heavy half should reach full pressure but the maximum was {heaviest}");
+        Assert.IsGreaterThan(0.9f, heaviest, $"the heavy half should reach full pressure but the maximum was {heaviest}");
     }
 
     [TestMethod]
@@ -437,7 +437,7 @@ public class PressureFidelityTests
 
         BinkStrokePoints simplified = original.Simplify(0.08f);
 
-        Assert.IsTrue(simplified.Count >= 3, $"expected the pressure step to be preserved but only {simplified.Count} points remain");
+        Assert.IsGreaterThanOrEqualTo(3, simplified.Count, $"expected the pressure step to be preserved but only {simplified.Count} points remain");
         float min = 1f, max = 0f;
         foreach (float p in simplified.Pressure)
         {
@@ -453,7 +453,7 @@ public class PressureFidelityTests
         var buffer = new BinkStrokePointBuffer();
         for (int i = 0; i <= 200; i++) buffer.Add(new BinkPoint(i * 2f, 50f, 0.5f, i * 4f));
         BinkStrokePoints simplified = buffer.ToStrokePoints().Simplify(0.1f);
-        Assert.IsTrue(simplified.Count < 10, $"a straight constant-pressure line should collapse but kept {simplified.Count} points");
+        Assert.IsLessThan(10, simplified.Count, $"a straight constant-pressure line should collapse but kept {simplified.Count} points");
     }
 
     [TestMethod]
@@ -466,7 +466,7 @@ public class PressureFidelityTests
 
         float light = MeasureHeight(geometry.Path, 100f);
         float heavy = MeasureHeight(geometry.Path, 400f);
-        Assert.IsTrue(heavy > light * 2f, $"expected the heavy half to be much wider: light {light}, heavy {heavy}");
+        Assert.IsGreaterThan(light * 2f, heavy, $"expected the heavy half to be much wider: light {light}, heavy {heavy}");
     }
 
     [TestMethod]
@@ -483,7 +483,7 @@ public class PressureFidelityTests
         float light = MeasureHeight(geometry.Path, 140f);
         float heavy = MeasureHeight(geometry.Path, 420f);
 
-        Assert.IsTrue(heavy > light * 1.6f,
+        Assert.IsGreaterThan(light * 1.6f, heavy,
             $"pressure should widen the stroke: light {light:0.00}, heavy {heavy:0.00}, {points.Count} points, pressures {string.Join(", ", points.Pressure.ToArray().Select(v => v.ToString("0.00")))}");
     }
 

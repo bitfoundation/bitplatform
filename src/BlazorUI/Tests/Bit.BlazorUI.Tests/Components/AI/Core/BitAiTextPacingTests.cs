@@ -32,7 +32,7 @@ public class BitAiTextPacingTests
         };
 
         var received = new List<BitAiEvent>();
-        await foreach (var evt in Replay(source).Paced(options)) received.Add(evt);
+        await foreach (var evt in Replay(source).Paced(options, TestContext.CancellationToken)) received.Add(evt);
 
         var text = string.Concat(received.OfType<BitAiTextDeltaEvent>().Select(e => e.Delta));
         Assert.AreEqual("Hello there, this is a longer burst of output.And more after the tool.", text);
@@ -57,9 +57,9 @@ public class BitAiTextPacingTests
         };
 
         var count = 0;
-        await foreach (var _ in Replay(source).Paced(options)) count++;
+        await foreach (var _ in Replay(source).Paced(options, TestContext.CancellationToken)) count++;
 
-        Assert.IsTrue(count > 1, "A 200 character burst should be released over several ticks.");
+        Assert.IsGreaterThan(1, count, "A 200 character burst should be released over several ticks.");
     }
 
     [TestMethod]
@@ -75,7 +75,7 @@ public class BitAiTextPacingTests
         };
 
         var received = new List<BitAiEvent>();
-        await foreach (var evt in Replay(source).Paced(options)) received.Add(evt);
+        await foreach (var evt in Replay(source).Paced(options, TestContext.CancellationToken)) received.Add(evt);
 
         var deltas = received.OfType<BitAiTextDeltaEvent>().ToList();
         Assert.AreEqual(68, deltas.Sum(d => d.Delta.Length));
@@ -95,12 +95,12 @@ public class BitAiTextPacingTests
         };
 
         var deltas = new List<string>();
-        await foreach (var evt in Replay(source).Paced(options))
+        await foreach (var evt in Replay(source).Paced(options, TestContext.CancellationToken))
         {
             if (evt is BitAiTextDeltaEvent text) deltas.Add(text.Delta);
         }
 
-        Assert.IsTrue(deltas.Count > 1);
+        Assert.IsGreaterThan(1, deltas.Count);
         foreach (var delta in deltas)
         {
             Assert.IsFalse(char.IsHighSurrogate(delta[^1]), "A delta ended with half a surrogate pair.");
@@ -122,7 +122,7 @@ public class BitAiTextPacingTests
     {
         var inverted = new BitAiTextPacingOptions { MinCharsPerTick = 10, MaxCharsPerTick = 5 };
 
-        var error = Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => Replay([]).Paced(inverted));
+        var error = Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => Replay([]).Paced(inverted, TestContext.CancellationToken));
         Assert.Contains(nameof(BitAiTextPacingOptions.MaxCharsPerTick), error.Message, StringComparison.Ordinal);
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BitAiChatSessionOptions { Pacing = inverted });
     }
@@ -139,7 +139,7 @@ public class BitAiTextPacingTests
         };
 
         var text = new System.Text.StringBuilder();
-        await foreach (var evt in Replay([new BitAiTextDeltaEvent(new string('x', 250))]).Paced(options))
+        await foreach (var evt in Replay([new BitAiTextDeltaEvent(new string('x', 250))]).Paced(options, TestContext.CancellationToken))
         {
             if (evt is BitAiTextDeltaEvent delta) text.Append(delta.Delta);
         }
@@ -153,12 +153,12 @@ public class BitAiTextPacingTests
     {
         var stopped = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        await foreach (var _ in Endless(stopped).Paced(BitAiTextPacingOptions.Default))
+        await foreach (var _ in Endless(stopped, TestContext.CancellationToken).Paced(BitAiTextPacingOptions.Default, TestContext.CancellationToken))
         {
             break;
         }
 
-        var finished = await Task.WhenAny(stopped.Task, Task.Delay(10_000));
+        var finished = await Task.WhenAny(stopped.Task, Task.Delay(10_000, TestContext.CancellationToken));
         Assert.AreSame(stopped.Task, finished);
     }
 
@@ -188,4 +188,6 @@ public class BitAiTextPacingTests
             yield return evt;
         }
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

@@ -23,8 +23,7 @@ public class SearchIndexTests
     {
         var hits = BmageSearchIndex.Search(query, 8);
 
-        CollectionAssert.Contains(hits.Select(hit => hit.Tool).ToArray(), expected,
-                                  $"'{query}' found: {string.Join(" | ", hits.Select(hit => $"{hit.Kind}: {hit.Title}"))}");
+        Assert.Contains(expected, hits.Select(hit => hit.Tool).ToArray(), $"'{query}' found: {string.Join(" | ", hits.Select(hit => $"{hit.Kind}: {hit.Title}"))}");
     }
 
     [TestMethod]
@@ -59,7 +58,7 @@ public class SearchIndexTests
     public void Search_TheLimit_IsHonouredAndClamped()
     {
         Assert.HasCount(3, BmageSearchIndex.Search("crop", 3));
-        Assert.HasCount(1, BmageSearchIndex.Search("crop", 0));
+        Assert.ContainsSingle(BmageSearchIndex.Search("crop", 0));
         Assert.HasCount(50, BmageSearchIndex.Search("image pipeline operation", 500));
     }
 }

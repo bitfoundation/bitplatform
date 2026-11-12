@@ -28,7 +28,7 @@ public class BitFocusOnInvalidSubmitE2ETests : E2ETestBase
         // The field the focus lands on is described by its message, which is what reads it out.
         var error = Page.Locator("#tf-email .bit-tfl-erm");
         await Expect(error).ToHaveTextAsync("The Email field is required.");
-        StringAssert.Contains((await TextField("tf-email").GetAttributeAsync("aria-describedby"))!, (await error.GetAttributeAsync("id"))!);
+        Assert.Contains((await error.GetAttributeAsync("id"))!, (await TextField("tf-email").GetAttributeAsync("aria-describedby"))!);
 
         // Once the email is fixed, the next failed submit moves on to the city.
         await TextField("tf-email").FillAsync("ada@example.com");

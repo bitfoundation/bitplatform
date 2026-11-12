@@ -43,8 +43,8 @@ public class HttpSurfaceTests : McpTestBase
         {
             var query = arguments.GetValueOrDefault(tool, string.Empty);
 
-            using var response = await Http.GetAsync(McpServerFixture.Url($"api/mcp/{tool}{query}"));
-            var body = await response.Content.ReadAsStringAsync();
+            using var response = await Http.GetAsync(McpServerFixture.Url($"api/mcp/{tool}{query}"), TestContext.CancellationToken);
+            var body = await response.Content.ReadAsStringAsync(TestContext.CancellationToken);
 
             using (Assert.Scope())
             {
@@ -61,17 +61,18 @@ public class HttpSurfaceTests : McpTestBase
         // something the other is not - a filter, a cache, a different origin. Held against the tool
         // itself rather than against a hand-written expectation, which is the only way the two can
         // be shown not to have drifted.
-        using var response = await Http.GetAsync(McpServerFixture.Url("api/mcp/GetButilApiDetails?typeName=Clipboard"));
+        using var response = await Http.GetAsync(McpServerFixture.Url("api/mcp/GetButilApiDetails?typeName=Clipboard"), TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 
-        var overHttp = JsonSerializer.Deserialize<ApiDetailsResult>(await response.Content.ReadAsStringAsync(), JsonOptions);
+        var overHttp = JsonSerializer.Deserialize<ApiDetailsResult>(await response.Content.ReadAsStringAsync(TestContext.CancellationToken), JsonOptions);
         var overMcp = await CallStructuredAsync<ApiDetailsResult>("GetButilApiDetails", new { typeName = "Clipboard" });
 
         using (Assert.Scope())
         {
             Assert.IsNotNull(overHttp);
-            Assert.AreEqual("Clipboard", overHttp!.Details?.Name);
+            var actualValue = overHttp!.Details?.Name;
+            Assert.AreEqual("Clipboard", actualValue);
 
             // Re-serialized rather than compared as records: the payload carries arrays, and record
             // equality on those is by reference.
@@ -91,7 +92,7 @@ public class HttpSurfaceTests : McpTestBase
         request.Headers.Add("Access-Control-Request-Method", "POST");
         request.Headers.Add("Access-Control-Request-Headers", "content-type");
 
-        using var response = await Http.SendAsync(request);
+        using var response = await Http.SendAsync(request, TestContext.CancellationToken);
 
         using (Assert.Scope())
         {
@@ -117,7 +118,7 @@ public class HttpSurfaceTests : McpTestBase
         request.Headers.Add("Origin", "https://claude.ai");
         request.Headers.Add("Accept", "application/json, text/event-stream");
 
-        using var response = await Http.SendAsync(request);
+        using var response = await Http.SendAsync(request, TestContext.CancellationToken);
 
         var exposed = string.Join(",", response.Headers.TryGetValues("Access-Control-Expose-Headers", out var values) ? values : []);
 
@@ -141,7 +142,7 @@ public class HttpSurfaceTests : McpTestBase
         using var request = new HttpRequestMessage(HttpMethod.Get, McpServerFixture.Url("api/mcp/GetButilApiDetails"));
         request.Headers.Add("Origin", "https://example.test");
 
-        using var response = await Http.SendAsync(request);
+        using var response = await Http.SendAsync(request, TestContext.CancellationToken);
 
         using (Assert.Scope())
         {
@@ -155,7 +156,7 @@ public class HttpSurfaceTests : McpTestBase
     {
         // Everything behind these routes is public read-only documentation. A 401 here would mean
         // an MCP client is being asked to authenticate to read a library's docs.
-        using var response = await Http.GetAsync(McpServerFixture.Url("api/mcp/GetButilSetupGuide?hostingModel=wasm"));
+        using var response = await Http.GetAsync(McpServerFixture.Url("api/mcp/GetButilSetupGuide?hostingModel=wasm"), TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
     }
@@ -163,14 +164,14 @@ public class HttpSurfaceTests : McpTestBase
     [TestMethod]
     public async Task Discovery_files_point_at_the_endpoint()
     {
-        using var robots = await Http.GetAsync(McpServerFixture.Url("robots.txt"));
-        var robotsBody = await robots.Content.ReadAsStringAsync();
+        using var robots = await Http.GetAsync(McpServerFixture.Url("robots.txt"), TestContext.CancellationToken);
+        var robotsBody = await robots.Content.ReadAsStringAsync(TestContext.CancellationToken);
 
-        using var llms = await Http.GetAsync(McpServerFixture.Url("llms.txt"));
-        var llmsBody = await llms.Content.ReadAsStringAsync();
+        using var llms = await Http.GetAsync(McpServerFixture.Url("llms.txt"), TestContext.CancellationToken);
+        var llmsBody = await llms.Content.ReadAsStringAsync(TestContext.CancellationToken);
 
-        using var sitemap = await Http.GetAsync(McpServerFixture.Url("sitemap.xml"));
-        var sitemapBody = await sitemap.Content.ReadAsStringAsync();
+        using var sitemap = await Http.GetAsync(McpServerFixture.Url("sitemap.xml"), TestContext.CancellationToken);
+        var sitemapBody = await sitemap.Content.ReadAsStringAsync(TestContext.CancellationToken);
 
         using (Assert.Scope())
         {
@@ -197,14 +198,14 @@ public class HttpSurfaceTests : McpTestBase
         // shows up is a slug the tools know about and the sitemap does not.
         // Both comparisons below are "no page is missing", which an index of no pages satisfies -
         // so the index having arrived at all is asserted before anything is held against it.
-        using var response = await Http.GetAsync(McpServerFixture.Url("api/mcp/GetButilDocsPage"));
+        using var response = await Http.GetAsync(McpServerFixture.Url("api/mcp/GetButilDocsPage"), TestContext.CancellationToken);
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, "The docs index did not answer over HTTP.");
 
-        var pages = DocsIndexRow.ParseAll(await response.Content.ReadAsStringAsync());
+        var pages = DocsIndexRow.ParseAll(await response.Content.ReadAsStringAsync(TestContext.CancellationToken));
         Assert.IsNotEmpty(pages, "The docs index answered with no rows, so there is nothing to hold the discovery files to.");
 
-        var sitemap = await (await Http.GetAsync(McpServerFixture.Url("sitemap.xml"))).Content.ReadAsStringAsync();
-        var llms = await (await Http.GetAsync(McpServerFixture.Url("llms.txt"))).Content.ReadAsStringAsync();
+        var sitemap = await (await Http.GetAsync(McpServerFixture.Url("sitemap.xml"), TestContext.CancellationToken)).Content.ReadAsStringAsync(TestContext.CancellationToken);
+        var llms = await (await Http.GetAsync(McpServerFixture.Url("llms.txt"), TestContext.CancellationToken)).Content.ReadAsStringAsync(TestContext.CancellationToken);
 
         // The sitemap is parsed rather than searched: a substring test on "/{slug}<" is also
         // satisfied by any longer URL that happens to end in the same slug.
@@ -229,7 +230,7 @@ public class HttpSurfaceTests : McpTestBase
     {
         // llms.txt tells an assistant where the server is. A relative move of the route would leave
         // that sentence pointing at a 404 that nothing else in the suite would notice.
-        var llms = await (await Http.GetAsync(McpServerFixture.Url("llms.txt"))).Content.ReadAsStringAsync();
+        var llms = await (await Http.GetAsync(McpServerFixture.Url("llms.txt"), TestContext.CancellationToken)).Content.ReadAsStringAsync(TestContext.CancellationToken);
 
         Assert.Contains($"{McpServerFixture.BaseUrl}/mcp", llms,
             "llms.txt should advertise the endpoint on the origin the request arrived on.");
@@ -242,8 +243,8 @@ public class HttpSurfaceTests : McpTestBase
         };
         request.Headers.Add("Accept", "application/json, text/event-stream");
 
-        using var response = await Http.SendAsync(request);
-        var body = await response.Content.ReadAsStringAsync();
+        using var response = await Http.SendAsync(request, TestContext.CancellationToken);
+        var body = await response.Content.ReadAsStringAsync(TestContext.CancellationToken);
 
         using (Assert.Scope())
         {
@@ -252,4 +253,6 @@ public class HttpSurfaceTests : McpTestBase
             Assert.Contains("SearchButil", body, "POST /mcp did not list this server's tools.");
         }
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

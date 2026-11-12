@@ -15,21 +15,23 @@ public class BitAiHighlighterGrammarTests
     {
         const string code = "Get-ChildItem -Path $env:HOME -Recurse | Where-Object { $_.Length -gt 100 } # list\n<# block\ncomment #>\n$Name = \"a`\"b\"";
 
-        CollectionAssert.AreEqual(new[] { "Get-ChildItem", "Where-Object" }, Texts(code, "powershell", BitAiTokenKind.Function).ToArray());
-        CollectionAssert.AreEqual(new[] { "-Path", "-Recurse" }, Texts(code, "powershell", BitAiTokenKind.Attribute).ToArray());
-        CollectionAssert.AreEqual(new[] { "$env:HOME", "$_", "$Name" }, Texts(code, "powershell", BitAiTokenKind.Variable).ToArray());
+        Assert.AreSequenceEqual(new[] { "Get-ChildItem", "Where-Object" }, Texts(code, "powershell", BitAiTokenKind.Function).ToArray());
+        Assert.AreSequenceEqual(new[] { "-Path", "-Recurse" }, Texts(code, "powershell", BitAiTokenKind.Attribute).ToArray());
+        Assert.AreSequenceEqual(new[] { "$env:HOME", "$_", "$Name" }, Texts(code, "powershell", BitAiTokenKind.Variable).ToArray());
         Assert.Contains("-gt", Texts(code, "powershell", BitAiTokenKind.Keyword));
-        CollectionAssert.AreEqual(new[] { "# list", "<# block\ncomment #>" }, Texts(code, "powershell", BitAiTokenKind.Comment).ToArray());
-        CollectionAssert.AreEqual(new[] { "\"a`\"b\"" }, Texts(code, "powershell", BitAiTokenKind.String).ToArray());
+        Assert.AreSequenceEqual(new[] { "# list", "<# block\ncomment #>" }, Texts(code, "powershell", BitAiTokenKind.Comment).ToArray());
+        Assert.AreSequenceEqual(new[] { "\"a`\"b\"" }, Texts(code, "powershell", BitAiTokenKind.String).ToArray());
     }
 
     [TestMethod]
     [DataRow("ps1")]
     [DataRow("pwsh")]
     [DataRow("PowerShell")]
-    public void PowerShellAliasesResolveToPowerShellNotBash(string alias) =>
-        Assert.AreEqual("powershell", BitAiLanguageRegistry.Find(alias)?.Id);
-
+    public void PowerShellAliasesResolveToPowerShellNotBash(string alias)
+    {
+        var actualValue = BitAiLanguageRegistry.Find(alias)?.Id;
+        Assert.AreEqual("powershell", actualValue);
+    }
     [TestMethod]
     public void BashStillHighlightsItsOwnKeywords() =>
         Assert.Contains("echo", Texts("if true; then echo hi; fi", "bash", BitAiTokenKind.Keyword));
@@ -38,7 +40,7 @@ public class BitAiHighlighterGrammarTests
     public void JavaScriptTemplateLiteralsSpanLines()
     {
         const string code = "const s = `line one\n${x} line two`;\nlet y = 1;";
-        CollectionAssert.AreEqual(new[] { "`line one\n${x} line two`" }, Texts(code, "typescript", BitAiTokenKind.String).ToArray());
+        Assert.AreSequenceEqual(new[] { "`line one\n${x} line two`" }, Texts(code, "typescript", BitAiTokenKind.String).ToArray());
         Assert.Contains("let", Texts(code, "typescript", BitAiTokenKind.Keyword));
     }
 

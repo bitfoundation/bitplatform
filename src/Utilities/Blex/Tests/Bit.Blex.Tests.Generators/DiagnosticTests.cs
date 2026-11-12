@@ -3,6 +3,8 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+[assembly: global::Microsoft.VisualStudio.TestTools.UnitTesting.DoNotParallelizeAttribute]
+
 namespace Bit.Blex.Tests.Generators;
 
 [TestClass]
@@ -102,7 +104,7 @@ public class DiagnosticTests
 
         var diagnostic = result.GeneratorDiagnostics.Single(d => d.Id == "BLEX026");
         Assert.AreEqual(name, source.Substring(diagnostic.Location.SourceSpan.Start, diagnostic.Location.SourceSpan.Length));
-        StringAssert.Contains(diagnostic.GetMessage(), $"'{name}'");
+        Assert.Contains($"'{name}'", diagnostic.GetMessage());
         Assert.IsEmpty(result.GeneratedSources);
     }
 
@@ -120,7 +122,7 @@ public class DiagnosticTests
             """;
 
         var all = GeneratorTestHelper.Run(Usings + $$"""[BlexStoreAttribute({{Arguments}})] public partial class S { {{Members}} }""");
-        var overrides = CSharpSyntaxTree.ParseText(all.SingleGenerated).GetRoot().DescendantNodes()
+        var overrides = CSharpSyntaxTree.ParseText(all.SingleGenerated, cancellationToken: TestContext.CancellationToken).GetRoot(TestContext.CancellationToken).DescendantNodes()
             .OfType<MemberDeclarationSyntax>()
             .Where(member => member.Modifiers.Any(SyntaxKind.OverrideKeyword))
             .Select(member => member switch
@@ -623,7 +625,7 @@ public class DiagnosticTests
 
         // The gate must precede BeginAction: a superseded invocation is never offered to
         // middleware and records nothing.
-        Assert.IsTrue(generated.IndexOf("DebounceEffectAsync(250") < generated.IndexOf("BeginAction(\"Search\""));
+        Assert.IsLessThan(generated.IndexOf("BeginAction(\"Search\""), generated.IndexOf("DebounceEffectAsync(250"));
     }
 
     [TestMethod]
@@ -655,4 +657,6 @@ public class DiagnosticTests
             """);
         Assert.IsTrue(result.HasDiagnostic("BLEX018"));
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

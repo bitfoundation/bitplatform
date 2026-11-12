@@ -23,12 +23,12 @@ public class BitTooltipPrerenderTests
             [nameof(BitTooltip.ChildContent)] = (RenderFragment)(b => b.AddMarkupContent(0, "<button>Anchor</button>")),
         });
 
-        StringAssert.Contains(html, "Anchor");
-        StringAssert.Contains(html, "Describes the anchor");
-        StringAssert.Contains(html, "role=\"tooltip\"");
+        Assert.Contains("Anchor", html);
+        Assert.Contains("Describes the anchor", html);
+        Assert.Contains("role=\"tooltip\"", html);
         // The description is there before any script runs, so a screen reader has the text the moment the anchor is reached.
-        StringAssert.Contains(html, "aria-describedby=\"tip-ttp\"");
-        Assert.IsFalse(html.Contains("bit-ttp-vis"));
+        Assert.Contains("aria-describedby=\"tip-ttp\"", html);
+        Assert.DoesNotContain("bit-ttp-vis", html);
     }
 
     [TestMethod]
@@ -41,8 +41,8 @@ public class BitTooltipPrerenderTests
             [nameof(BitTooltip.LazyRender)] = true,
         });
 
-        StringAssert.Contains(html, "bit-ttp-vis");
+        Assert.Contains("bit-ttp-vis", html);
         // A lazily rendered content that starts shown is rendered on the static page too.
-        StringAssert.Contains(html, "Tip");
+        Assert.Contains("Tip", html);
     }
 }

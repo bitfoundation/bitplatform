@@ -107,7 +107,7 @@ public class ActivityAttributionTests : BunitContext
 
         Assert.IsTrue(ActivityObserver.LifecycleMetricsObserved);
         Assert.IsTrue(Session.TypeMetrics.TryGetValue(typeof(ClickableComponent).FullName!, out var metrics));
-        Assert.IsTrue(metrics!.ParameterUpdates > 0);
+        Assert.IsGreaterThan(0, metrics!.ParameterUpdates);
     }
 
     [TestMethod]
@@ -134,7 +134,7 @@ public class ActivityAttributionTests : BunitContext
     }
 }
 
-public class ClickableComponent : ComponentBase
+internal class ClickableComponent : ComponentBase
 {
     private int _count;
 

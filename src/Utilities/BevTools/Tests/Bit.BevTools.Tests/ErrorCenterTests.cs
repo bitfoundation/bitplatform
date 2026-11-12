@@ -18,7 +18,7 @@ public class ErrorCenterTests
             session.Errors.Record(new InvalidOperationException("boom"), "render", component: secondComponent);
 
             var errors = session.Errors.Snapshot();
-            Assert.AreEqual(2, errors.Length);
+            Assert.HasCount(2, errors);
             Assert.AreEqual(2, errors.Single(e => e.ComponentInstanceId == firstComponent.InstanceId).Count);
             Assert.AreEqual(1, errors.Single(e => e.ComponentInstanceId == secondComponent.InstanceId).Count);
         }

@@ -27,16 +27,20 @@ public sealed class LazyLoadingTests : BlazeDbTest
     [TestInitialize]
     public async Task StartSampleAsync()
     {
+        string? unavailableReason = null;
         try
         {
             _sample = await LazyLoadingSample.GetAsync("Bit.BlazeDb", "BLAZEDB", E2EEnvironment.Configuration);
         }
         catch (Exception ex) when (ex is FileNotFoundException or InvalidOperationException or TimeoutException)
         {
-            var reason = $"the lazy loading sample could not be started in the {E2EEnvironment.Configuration} configuration: {ex.Message}";
-            // A build server must not report a suite that never ran as anything but a failure.
-            if (E2EEnvironment.IsContinuousIntegration) Assert.Fail("The browser tests could not run: " + reason);
-            Assert.Inconclusive("The browser tests could not run: " + reason);
+            unavailableReason = $"the lazy loading sample could not be started in the {E2EEnvironment.Configuration} configuration: {ex.Message}";
+        }
+
+        if (unavailableReason is not null)
+        {            // A build server must not report a suite that never ran as anything but a failure.
+            if (E2EEnvironment.IsContinuousIntegration) Assert.Fail("The browser tests could not run: " + unavailableReason);
+            Assert.Inconclusive("The browser tests could not run: " + unavailableReason);
         }
     }
 
@@ -88,7 +92,8 @@ public sealed class LazyLoadingTests : BlazeDbTest
         // The server prerenders the router - LazyAssemblyLoader resolved there too - the layout with its table type, and
         // the page, which opens nothing there: it says the database is opening until it runs in the browser.
         var response = await NavigateAsync(page, "/todos");
-        Assert.AreEqual(200, response?.Status);
+        var actualValue = response?.Status;
+        Assert.AreEqual(200, actualValue);
         var prerendered = await response!.TextAsync();
         Assert.Contains("data-storage=\"Opening\"", prerendered);
         Assert.Contains("Water the plants", prerendered);

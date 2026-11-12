@@ -136,12 +136,12 @@ public partial class PushEndpointAllowListTests
             }
             catch (TooManyRequestsException)
             {
-                Assert.IsGreaterThan(0, served, "The endpoint must serve some requests before throttling starts.");
-                return;
+                break;
             }
         }
 
-        Assert.Fail($"A burst of 40 anonymous push requests was never throttled ({served} served).");
+        Assert.IsGreaterThan(0, served, "The endpoint must serve some requests before throttling starts.");
+        Assert.IsLessThan(40, served, $"A burst of 40 anonymous push requests was never throttled ({served} served).");
     }
 
     [TestMethod]
@@ -166,12 +166,12 @@ public partial class PushEndpointAllowListTests
             }
             catch (TooManyRequestsException)
             {
-                Assert.IsGreaterThan(0, served, "The endpoint must serve some requests before throttling starts.");
-                return;
+                break;
             }
         }
 
-        Assert.Fail($"A burst of 40 anonymous diagnostics that each request a test push was never throttled ({served} served).");
+        Assert.IsGreaterThan(0, served, "The endpoint must serve some requests before throttling starts.");
+        Assert.IsLessThan(40, served, $"A burst of 40 anonymous diagnostics that each request a test push was never throttled ({served} served).");
     }
 
     private static PushNotificationSubscriptionDto NewBrowserSubscription(string endpoint)

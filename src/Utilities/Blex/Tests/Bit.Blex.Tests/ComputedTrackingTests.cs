@@ -1,4 +1,4 @@
-namespace Bit.Blex.Tests;
+﻿namespace Bit.Blex.Tests;
 
 /// <summary>Counts how often each computed of <see cref="TrackedStore"/> runs; static, so reading it does not count as reading the store.</summary>
 public static class TrackedRuns
@@ -14,7 +14,7 @@ public static class TrackedRuns
 
 /// <summary>Computeds that read different fields, one through another computed, one through a helper.</summary>
 [BlexStoreAttribute(Name = "tracked")]
-public partial class TrackedStore
+internal partial class TrackedStore
 {
     [BlexStateAttribute] private int _a;
     [BlexStateAttribute] private int _b;

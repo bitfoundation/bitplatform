@@ -56,7 +56,7 @@ public class BitAiRendererBoundaryTests : BitAiTestBase
         var tag = component.FindComponent<BitTag>();
         Assert.AreEqual("The renderer for 'chart' failed", tag.Instance.Text);
         Assert.AreEqual("unexpected shape", tag.Instance.Title);
-        StringAssert.Contains(root.TextContent, "The renderer for 'chart' failed");
+        Assert.Contains("The renderer for 'chart' failed", root.TextContent);
     }
 
     [TestMethod]
@@ -64,7 +64,7 @@ public class BitAiRendererBoundaryTests : BitAiTestBase
     {
         var component = RenderComponent<BitAiRendererBoundary>(p => p.Add(c => c.ChildContent, Throwing("boom")));
 
-        StringAssert.Contains(component.Find(".bit-airbd").TextContent, "This content could not be rendered");
+        Assert.Contains("This content could not be rendered", component.Find(".bit-airbd").TextContent);
     }
 
     [TestMethod]
@@ -93,7 +93,7 @@ public class BitAiRendererBoundaryTests : BitAiTestBase
         {
             host.Render(p => p.Add(h => h.Tick, tick));
 
-            Assert.HasCount(1, host.FindAll(".bit-airbd"), $"render {tick}");
+            Assert.ContainsSingle(host.FindAll(".bit-airbd"), $"render {tick}");
             Assert.AreEqual("partial", host.FindComponent<BitTag>().Instance.Title, $"render {tick}");
         }
 
@@ -114,7 +114,7 @@ public class BitAiRendererBoundaryTests : BitAiTestBase
         component.Render(p => p.Add(c => c.ChildContent, content));
         component.Render(p => p.Add(c => c.ChildContent, content));
 
-        Assert.HasCount(1, component.FindAll(".bit-airbd"));
+        Assert.ContainsSingle(component.FindAll(".bit-airbd"));
 
         component.Render(p => p.Add(c => c.ChildContent, Content("complete")));
 
@@ -151,7 +151,7 @@ public class BitAiRendererBoundaryTests : BitAiTestBase
         }
         else
         {
-            StringAssert.Contains(style, expected);
+            Assert.Contains(expected, style);
         }
     }
 

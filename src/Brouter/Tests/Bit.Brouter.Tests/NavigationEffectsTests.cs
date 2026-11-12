@@ -27,7 +27,7 @@ public class NavigationEffectsTests : BunitTestContext
             var invocation = module.Invocations["applyNavigationEffects"].Single();
             Assert.AreEqual("#install", invocation.Arguments[0]);   // hash
             Assert.IsNull(invocation.Arguments[1]);                 // focus selector (unset)
-            Assert.AreEqual(false, invocation.Arguments[2]);        // scrollToTop
+            Assert.IsFalse((bool?)invocation.Arguments[2]);        // scrollToTop
         });
     }
 
@@ -45,7 +45,7 @@ public class NavigationEffectsTests : BunitTestContext
         var cut = RenderComponent<NavigationEffectsHost>();
 
         cut.WaitForAssertion(() => Assert.IsNotNull(cut.Find("[data-testid=docs]")));
-        Assert.AreEqual(0, module.Invocations["applyNavigationEffects"].Count);
+        Assert.IsEmpty(module.Invocations["applyNavigationEffects"]);
     }
 
     [TestMethod]
@@ -66,7 +66,7 @@ public class NavigationEffectsTests : BunitTestContext
             var invocation = module.Invocations["applyNavigationEffects"].Single();
             Assert.IsNull(invocation.Arguments[0]);                 // no hash
             Assert.AreEqual("h1", invocation.Arguments[1]);         // focus selector
-            Assert.AreEqual(false, invocation.Arguments[2]);        // scrollToTop
+            Assert.IsFalse((bool?)invocation.Arguments[2]);        // scrollToTop
         });
     }
 
@@ -86,7 +86,7 @@ public class NavigationEffectsTests : BunitTestContext
             var invocation = module.Invocations["applyNavigationEffects"].Single();
             Assert.IsNull(invocation.Arguments[0]);                 // no hash
             Assert.IsNull(invocation.Arguments[1]);                 // no focus selector
-            Assert.AreEqual(true, invocation.Arguments[2]);         // scrollToTop
+            Assert.IsTrue((bool?)invocation.Arguments[2]);         // scrollToTop
         });
     }
 
@@ -103,7 +103,7 @@ public class NavigationEffectsTests : BunitTestContext
         var cut = RenderComponent<NavigationEffectsHost>();
 
         cut.WaitForAssertion(() => Assert.IsNotNull(cut.Find("[data-testid=home]")));
-        Assert.AreEqual(0, module.Invocations["applyNavigationEffects"].Count);
+        Assert.IsEmpty(module.Invocations["applyNavigationEffects"]);
     }
 
     [TestMethod]
@@ -145,7 +145,7 @@ public class NavigationEffectsTests : BunitTestContext
             var invocation = module.Invocations["applyNavigationEffects"].Last();
             Assert.IsNull(invocation.Arguments[3]);                 // no restore key
         });
-        Assert.AreEqual(0, module.Invocations["saveScrollPosition"].Count);
+        Assert.IsEmpty(module.Invocations["saveScrollPosition"]);
     }
 
     [TestMethod]
@@ -211,7 +211,7 @@ public class NavigationEffectsTests : BunitTestContext
         cut.WaitForAssertion(() => Assert.IsNotNull(cut.Find("[data-testid=home]")));
 
         // Initial load has no page to leave -> nothing saved yet.
-        Assert.AreEqual(0, module.Invocations["saveScrollPosition"].Count);
+        Assert.IsEmpty(module.Invocations["saveScrollPosition"]);
 
         nav.NavigateTo("http://localhost/docs");
 
@@ -240,7 +240,7 @@ public class NavigationEffectsTests : BunitTestContext
         {
             var invocation = module.Invocations["applyNavigationEffects"].Single();
             Assert.AreEqual("#install", invocation.Arguments[0]);
-            Assert.AreEqual(true, invocation.Arguments[2]);
+            Assert.IsTrue((bool?)invocation.Arguments[2]);
         });
     }
 }

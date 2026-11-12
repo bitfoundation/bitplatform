@@ -102,7 +102,7 @@ public class PresenceLifecycleTests
         await ctx.FinishWaapiAsync();
 
         cut.WaitForAssertion(() => Assert.AreEqual(1, exits), TimeSpan.FromSeconds(5));
-        cut.WaitForAssertion(() => Assert.AreEqual(0, cut.FindAll("div.box").Count));
+        cut.WaitForAssertion(() => Assert.IsEmpty(cut.FindAll("div.box")));
     }
 
     [TestMethod]
@@ -143,11 +143,11 @@ public class PresenceLifecycleTests
         await cut.InvokeAsync(() => { });
 
         Assert.AreEqual(0, exits, "the stale exit must not complete the newer one");
-        Assert.AreEqual(1, cut.FindAll("div.box").Count, "the element stays while exit 2 plays");
+        Assert.ContainsSingle(cut.FindAll("div.box"), "the element stays while exit 2 plays");
 
         // Exit 2 finishing is what completes the presence - once.
         await ctx.FinishWaapiAsync("box");
-        cut.WaitForAssertion(() => Assert.AreEqual(0, cut.FindAll("div.box").Count), TimeSpan.FromSeconds(5));
+        cut.WaitForAssertion(() => Assert.IsEmpty(cut.FindAll("div.box")), TimeSpan.FromSeconds(5));
         Assert.AreEqual(1, exits);
     }
 
@@ -169,7 +169,7 @@ public class PresenceLifecycleTests
         await ctx.FinishWaapiAsync("item-a");
         await ctx.FinishWaapiAsync("item-c");
 
-        cut.WaitForAssertion(() => Assert.AreEqual(1, cut.FindAll("div.box").Count));
+        cut.WaitForAssertion(() => Assert.ContainsSingle(cut.FindAll("div.box")));
         // A second report per item would come from the removed children's disposal, which the
         // render above has already performed; flush the dispatcher so it would have landed.
         await cut.InvokeAsync(() => { });
@@ -206,6 +206,6 @@ public class PresenceLifecycleTests
         var settled = State(ctx, "box");
         Assert.AreEqual(0, settled.Transforms["x"], 1e-6);
         Assert.AreEqual(1.0, settled.NumericValues["opacity"], 1e-9);
-        Assert.AreEqual(1, cut.FindAll("div.box").Count);
+        Assert.ContainsSingle(cut.FindAll("div.box"));
     }
 }

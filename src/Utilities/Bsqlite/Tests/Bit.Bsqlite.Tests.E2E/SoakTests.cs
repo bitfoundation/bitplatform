@@ -129,9 +129,8 @@ public sealed class SoakTests : BsqliteTest
                 tab: index,
                 rows: rowsPerTab)));
 
-            CollectionAssert.AreEqual(
-                pages.Select(_ => rowsPerTab).ToArray(),
-                outcomes.Select(outcome => outcome.GetProperty("written").GetInt32()).ToArray());
+            Assert.AreSequenceEqual(
+                pages.Select(_ => rowsPerTab).ToArray(), outcomes.Select(outcome => outcome.GetProperty("written").GetInt32()).ToArray());
             TestContext.WriteLine($"progress: {outcomes.Sum(o => o.GetProperty("retries").GetInt32())} write retries");
 
             var reader = pages[0];

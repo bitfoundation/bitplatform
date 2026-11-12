@@ -41,13 +41,13 @@ public sealed class GuardTests : BlowTest
         await WheelAsync(page, log.Centre, 120);
 
         Assert.AreEqual(before, await ViewportAsync(page), "a wheel over the nowheel list zoomed the flow");
-        Assert.IsTrue(await page.EvaluateAsync<double>("() => document.querySelector('.guard-log').scrollTop") > 0,
+        Assert.IsGreaterThan(0, await page.EvaluateAsync<double>("() => document.querySelector('.guard-log').scrollTop"),
             "the nowheel list did not scroll");
 
         // The same wheel over the node's title, outside the nowheel element, does zoom.
         var title = await BoxAsync(page, ".bit-blow-node[data-id=\"log\"] .guard-title");
         await WheelAsync(page, title.Centre, -120);
-        Assert.IsTrue((await ViewportAsync(page)).Zoom > before.Zoom, "a wheel over the rest of the node did not zoom");
+        Assert.IsGreaterThan(before.Zoom, (await ViewportAsync(page)).Zoom, "a wheel over the rest of the node did not zoom");
     }
 
     [TestMethod]

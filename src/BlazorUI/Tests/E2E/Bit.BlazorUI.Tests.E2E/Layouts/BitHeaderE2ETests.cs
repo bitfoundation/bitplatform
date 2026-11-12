@@ -44,10 +44,10 @@ public class BitHeaderE2ETests : E2ETestBase
         var response = await Page.APIRequest.GetAsync($"{BaseUrl}/e2e/header");
         var html = await response.TextAsync();
 
-        StringAssert.Contains(html, "<header");
-        StringAssert.Contains(html, "id=\"basic-header\"");
-        StringAssert.Contains(html, "bit-hdr-gut");
-        StringAssert.Contains(html, "<span id=\"status\">Loading</span>");
+        Assert.Contains("<header", html);
+        Assert.Contains("id=\"basic-header\"", html);
+        Assert.Contains("bit-hdr-gut", html);
+        Assert.Contains("<span id=\"status\">Loading</span>", html);
     }
 
     [TestMethod]
@@ -271,13 +271,13 @@ public class BitHeaderE2ETests : E2ETestBase
 
         var main = await BoxAsync("#ext-main");
         var child = await BoxAsync("#ext-child");
-        Assert.IsTrue(child.Y >= main.Bottom, "the second row is below the main one");
+        Assert.IsGreaterThanOrEqualTo(main.Bottom, child.Y, "the second row is below the main one");
         AssertClose(main.X, child.X, "lined up with the main row's gutter");
 
         // With a second row the Height is a floor rather than the height.
         await Expect(Page.Locator("#ext-header")).ToHaveAttributeAsync("style", new System.Text.RegularExpressions.Regex("min-height:60px"));
         var header = await BoxAsync("#ext-header");
-        Assert.IsTrue(header.H >= 60 - Tolerance, "the Height is the floor");
+        Assert.IsGreaterThanOrEqualTo(60 - Tolerance, header.H, "the Height is the floor");
         AssertClose((await BoxAsync("#ext-header > .bit-hdr-gut")).H + (await BoxAsync("#ext-header > .bit-hdr-ext")).H, header.H, "the two rows decide the height");
 
         await Expect(Page.Locator("#basic-header > .bit-hdr-ext")).ToHaveCountAsync(0);
@@ -542,7 +542,7 @@ public class BitHeaderE2ETests : E2ETestBase
         await Page.Locator("#btn-before-skip").FocusAsync();
         await Page.Keyboard.PressAsync("Tab");
         await Expect(skip).ToBeFocusedAsync();
-        Assert.IsTrue((await BoxAsync("#skip-header .bit-hdr-skp")).W > 50, "visible once focused");
+        Assert.IsGreaterThan(50, (await BoxAsync("#skip-header .bit-hdr-skp")).W, "visible once focused");
         await Expect(skip).ToHaveCSSAsync("background-color", await ResolveAsync("background-color", "var(--bit-clr-pri)"));
 
         await Page.Keyboard.PressAsync("Tab");
@@ -583,7 +583,7 @@ public class BitHeaderE2ETests : E2ETestBase
         await NextFramesAsync();
         var header = await BoxAsync("#padding-header");
         var focused = await BoxAsync("#pad-btn-4");
-        Assert.IsTrue(focused.Y >= header.Bottom - Tolerance, $"the focused control ({focused.Y}) is below the header ({header.Bottom})");
+        Assert.IsGreaterThanOrEqualTo(header.Bottom - Tolerance, focused.Y, $"the focused control ({focused.Y}) is below the header ({header.Bottom})");
     }
 
     [TestMethod]
@@ -734,7 +734,7 @@ public class BitHeaderE2ETests : E2ETestBase
         await Expect(header).ToHaveClassAsync(HasClass("bit-rtl"));
         var box = await BoxAsync("#rtl-header");
         AssertClose(box.Right - 24, (await BoxAsync("#rtl-1")).Right, "the first child at the right, inside the gutter");
-        Assert.IsTrue((await BoxAsync("#rtl-2")).X < (await BoxAsync("#rtl-1")).X, "the second to its left");
+        Assert.IsLessThan((await BoxAsync("#rtl-1")).X, (await BoxAsync("#rtl-2")).X, "the second to its left");
 
         AssertClose((await BoxAsync("#rtl-inherited")).Right - 24, (await BoxAsync("#rtli-1")).Right, "inherited");
     }
@@ -845,7 +845,7 @@ public class BitHeaderE2ETests : E2ETestBase
 
     private static void AssertClose(double expected, double actual, string what)
     {
-        Assert.IsTrue(Math.Abs(expected - actual) <= Tolerance, $"{what}: expected {expected}, got {actual}");
+        Assert.IsLessThanOrEqualTo(Tolerance, Math.Abs(expected - actual), $"{what}: expected {expected}, got {actual}");
     }
 
     private sealed record Box(double X, double Y, double W, double H)

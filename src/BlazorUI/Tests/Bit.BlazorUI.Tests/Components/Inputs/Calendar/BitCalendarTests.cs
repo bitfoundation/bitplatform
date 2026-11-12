@@ -767,8 +767,9 @@ public class BitCalendarTests : BunitTestContext
         });
 
         var day15 = component.FindAll(".bit-cal-dbt").First(b => b.TextContent.Trim() == "15");
+        var actualValue = day15.GetAttribute("title")?.Contains("Team Standup");
 
-        Assert.IsTrue(day15.GetAttribute("title")?.Contains("Team Standup"));
+        Assert.IsTrue(actualValue);
     }
 
     [TestMethod]
@@ -794,9 +795,11 @@ public class BitCalendarTests : BunitTestContext
         var day15 = component.FindAll(".bit-cal-dbt").First(b => b.TextContent.Trim() == "15");
         var title = day15.GetAttribute("title");
         var expectedTime = new TimeOnly(9, 30).ToString("HH:mm", System.Globalization.CultureInfo.InvariantCulture);
+        var actualValue = title?.Contains("Sync");
 
-        Assert.IsTrue(title?.Contains("Sync"));
-        Assert.IsTrue(title?.Contains(expectedTime));
+        Assert.IsTrue(actualValue);
+        var actualValue1 = title?.Contains(expectedTime);
+        Assert.IsTrue(actualValue1);
     }
 
     [TestMethod]
@@ -821,10 +824,11 @@ public class BitCalendarTests : BunitTestContext
         });
 
         var day15 = component.FindAll(".bit-cal-dbt").First(b => b.TextContent.Trim() == "15");
+        var actualValue = day15.GetAttribute("title")?.Contains("09.30");
 
         // The hour is padded whatever the culture writes it like, so the assertion is on the padded time
         // rather than on a substring of it that an unpadded "9.30" would match just as well.
-        Assert.IsTrue(day15.GetAttribute("title")?.Contains("09.30"));
+        Assert.IsTrue(actualValue);
     }
 
     [TestMethod]
@@ -849,10 +853,11 @@ public class BitCalendarTests : BunitTestContext
         });
 
         var day15 = component.FindAll(".bit-cal-dbt").First(b => b.TextContent.Trim() == "15");
+        var actualValue = day15.GetAttribute("title")?.Contains("09:05");
 
         // The separators and the order come from the culture, but the parts are padded, so the times of
         // a list of events line up under one another.
-        Assert.IsTrue(day15.GetAttribute("title")?.Contains("09:05"));
+        Assert.IsTrue(actualValue);
     }
 
     [TestMethod]
@@ -1201,7 +1206,7 @@ public class BitCalendarTests : BunitTestContext
         var disabledButtons = component.FindAll(".bit-cal-dbt[disabled]");
 
         // two disabled days per rendered week
-        Assert.AreEqual(component.FindAll(".bit-cal-dgr").Count * 2, disabledButtons.Count);
+        Assert.HasCount(component.FindAll(".bit-cal-dgr").Count * 2, disabledButtons);
     }
 
     [TestMethod]
@@ -1215,7 +1220,7 @@ public class BitCalendarTests : BunitTestContext
 
         var disabledButtons = component.FindAll(".bit-cal-dbt[disabled]");
 
-        Assert.HasCount(1, disabledButtons);
+        Assert.ContainsSingle(disabledButtons);
         Assert.AreEqual("15", disabledButtons[0].TextContent.Trim());
     }
 
@@ -1275,7 +1280,7 @@ public class BitCalendarTests : BunitTestContext
 
         var customButtons = component.FindAll(".custom-day-class");
 
-        Assert.HasCount(1, customButtons);
+        Assert.ContainsSingle(customButtons);
         Assert.AreEqual("15", customButtons[0].TextContent.Trim());
     }
 
@@ -1627,7 +1632,7 @@ public class BitCalendarTests : BunitTestContext
         var increaseHour = component.FindAll(".bit-cal-tbt")[0];
         increaseHour.PointerDown();
 
-        await Task.Delay(600);
+        await Task.Delay(600, TestContext.CancellationToken);
 
         Assert.AreEqual(11, value!.Value.Hour);
 
@@ -2068,7 +2073,7 @@ public class BitCalendarTests : BunitTestContext
 
         var titles = component.FindAll(".bit-cal-eit").Select(t => t.TextContent.Trim()).ToList();
 
-        CollectionAssert.AreEqual(new[] { "AllDay", "Morning", "Afternoon" }, titles);
+        Assert.AreSequenceEqual(new[] { "AllDay", "Morning", "Afternoon" }, titles);
     }
 
     [TestMethod]
@@ -2220,7 +2225,7 @@ public class BitCalendarTests : BunitTestContext
             parameters.Add(p => p.StartingValue, new DateTimeOffset(2024, 3, 15, 0, 0, 0, TimeSpan.Zero));
         });
 
-        Assert.AreEqual(13, component.FindAll(".bit-cal-pkb").Count);
+        Assert.HasCount(13, component.FindAll(".bit-cal-pkb"));
     }
 
     [TestMethod]
@@ -2247,7 +2252,7 @@ public class BitCalendarTests : BunitTestContext
         // The seventh name of the table is the second Adar, which a common year does not have at all: reading
         // the names straight off it would spell the month differently from the date the calendar is showing.
         Assert.AreNotEqual(nisan, culture.DateTimeFormat.GetMonthName(7));
-        Assert.AreEqual(12, component.FindAll(".bit-cal-pkb").Count);
+        Assert.HasCount(12, component.FindAll(".bit-cal-pkb"));
         Assert.AreEqual(nisan, component.FindAll(".bit-cal-pkb")[6].GetAttribute("title"));
         Assert.Contains(nisan, component.Find(".bit-cal-pkt, .bit-cal-ptb").TextContent);
     }
@@ -2263,7 +2268,7 @@ public class BitCalendarTests : BunitTestContext
             parameters.Add(p => p.Culture, culture);
         });
 
-        Assert.AreEqual(7, component.FindAll(".bit-cal-dgh .bit-cal-wlb").Count);
+        Assert.HasCount(7, component.FindAll(".bit-cal-dgh .bit-cal-wlb"));
     }
 
     [TestMethod]
@@ -2309,7 +2314,7 @@ public class BitCalendarTests : BunitTestContext
 
         Assert.IsTrue(colored.QuerySelector(".bit-cal-evi")!.ClassList.Contains("bit-cal-evi-suc"));
         // An event of no color of its own takes the calendar's, which is a fallback rather than a class.
-        Assert.IsFalse(plain.QuerySelector(".bit-cal-evi")!.ClassList.Any(c => c.StartsWith("bit-cal-evi-")));
+        Assert.DoesNotContain(c => c.StartsWith("bit-cal-evi-"), plain.QuerySelector(".bit-cal-evi")!.ClassList);
     }
 
     [TestMethod]
@@ -2610,7 +2615,7 @@ public class BitCalendarTests : BunitTestContext
         component.FindAll(".bit-cal-ptb").Last().Click();
         component.Find(".bit-cal-pkb[tabindex='0']").KeyDown(shiftEscape);
         Assert.Contains("2026", component.FindAll(".bit-cal-pkb").Select(b => b.TextContent.Trim()).ToList());
-        Assert.IsFalse(component.FindAll(".bit-cal-pkb").Any(b => b.TextContent.Trim() == "Jan"));
+        Assert.DoesNotContain(b => b.TextContent.Trim() == "Jan", component.FindAll(".bit-cal-pkb"));
     }
 
     [TestMethod]
@@ -2798,8 +2803,8 @@ public class BitCalendarTests : BunitTestContext
 
         var titles = component.FindAll(".bit-cal-pkt");
 
-        Assert.AreEqual(expectedCount, component.FindAll(".bit-cal-dwp").Count);
-        Assert.AreEqual(expectedCount, titles.Count);
+        Assert.HasCount(expectedCount, component.FindAll(".bit-cal-dwp"));
+        Assert.HasCount(expectedCount, titles);
 
         var expectedTitles = new[] { "January 2026", "February 2026", "March 2026" };
         for (var i = 0; i < expectedCount; i++)
@@ -2822,10 +2827,10 @@ public class BitCalendarTests : BunitTestContext
 
         // January, February and March of 2026, each day of them once: a day of the adjacent months would
         // be a day of the pane beside it, so the grids render nothing but their own months.
-        Assert.AreEqual(31 + 28 + 31, component.FindAll(".bit-cal-dbt").Count);
+        Assert.HasCount(31 + 28 + 31, component.FindAll(".bit-cal-dbt"));
 
         // And the months keep an even height beside one another, whatever FixedWeeks says.
-        Assert.AreEqual(3 * 6, component.FindAll(".bit-cal-dgr").Count);
+        Assert.HasCount(3 * 6, component.FindAll(".bit-cal-dgr"));
     }
 
     [TestMethod]
@@ -2843,7 +2848,7 @@ public class BitCalendarTests : BunitTestContext
 
         // The last day of the first month is next to the first day of the second, which the view already
         // shows - so the focus crosses into it and the calendar stays where it is.
-        Assert.IsTrue(component.Find(".bit-cal-dbt[tabindex='0']").Id!.EndsWith("day-2026-02-01"));
+        Assert.EndsWith("day-2026-02-01", component.Find(".bit-cal-dbt[tabindex='0']").Id!);
         Assert.AreEqual("January 2026", component.FindAll(".bit-cal-pkt")[0].TextContent.Trim());
         Assert.AreEqual("February 2026", component.FindAll(".bit-cal-pkt")[1].TextContent.Trim());
     }
@@ -2865,7 +2870,7 @@ public class BitCalendarTests : BunitTestContext
         // the day the keyboard landed on in the pane it was reached from, the last one.
         Assert.AreEqual("February 2026", component.FindAll(".bit-cal-pkt")[0].TextContent.Trim());
         Assert.AreEqual("March 2026", component.FindAll(".bit-cal-pkt")[1].TextContent.Trim());
-        Assert.IsTrue(component.Find(".bit-cal-dbt[tabindex='0']").Id!.EndsWith("day-2026-03-15"));
+        Assert.EndsWith("day-2026-03-15", component.Find(".bit-cal-dbt[tabindex='0']").Id!);
     }
 
     [TestMethod,
@@ -2947,12 +2952,12 @@ public class BitCalendarTests : BunitTestContext
 
         var titles = component.FindAll(".bit-cal-pkt").Select(t => t.TextContent.Trim()).ToArray();
 
-        Assert.AreEqual(3, titles.Length);
-        Assert.AreEqual(3, titles.Distinct().Count());
+        Assert.HasCount(3, titles);
+        Assert.HasCount(3, titles.Distinct());
 
         // Every pane holds its own month from end to end, whatever its length.
         var days = component.FindAll(".bit-cal-dbt").Count;
-        Assert.AreEqual(days, component.FindAll(".bit-cal-dbt").Select(b => b.Id).Distinct().Count());
+        Assert.HasCount(days, component.FindAll(".bit-cal-dbt").Select(b => b.Id).Distinct());
     }
 
     [TestMethod]
@@ -2970,7 +2975,7 @@ public class BitCalendarTests : BunitTestContext
         // three rather than the last one three times - which would repeat the ids of its days.
         var titles = component.FindAll(".bit-cal-pkt").Select(t => t.TextContent.Trim()).ToArray();
 
-        Assert.AreEqual(3, titles.Distinct().Count());
+        Assert.HasCount(3, titles.Distinct());
         Assert.AreEqual("October 9999", titles[0]);
         Assert.AreEqual("December 9999", titles[2]);
     }
@@ -3114,13 +3119,13 @@ public class BitCalendarTests : BunitTestContext
         component.FindAll(".bit-cal-dbt:not(.bit-cal-dbo)").First(b => b.TextContent.Trim() == "15").Click();
 
         Assert.AreEqual(new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeSpan.Zero), value);
-        CollectionAssert.AreEqual(new DateTimeOffset?[] { new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeSpan.Zero) }, selections);
+        Assert.AreSequenceEqual(new DateTimeOffset?[] { new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeSpan.Zero) }, selections);
 
         // A deselection is a selection of nothing, which is reported as such.
         component.FindAll(".bit-cal-dbt:not(.bit-cal-dbo)").First(b => b.TextContent.Trim() == "15").Click();
 
         Assert.IsNull(value);
-        Assert.AreEqual(2, selections.Count);
+        Assert.HasCount(2, selections);
         Assert.IsNull(selections[1]);
     }
 
@@ -3238,8 +3243,8 @@ public class BitCalendarTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("the-class"));
         Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
         Assert.AreEqual("rtl", root.GetAttribute("dir"));
-        Assert.IsTrue(root.GetAttribute("style")!.Contains("margin: 1px;"));
-        Assert.IsTrue(root.GetAttribute("style")!.Contains("visibility:hidden"));
+        Assert.Contains("margin: 1px;", root.GetAttribute("style")!);
+        Assert.Contains("visibility:hidden", root.GetAttribute("style")!);
         Assert.AreEqual("root", root.GetAttribute("data-test"));
 
         // The ids of the cells are built from the root's, so an explicit Id names them too.
@@ -3247,7 +3252,7 @@ public class BitCalendarTests : BunitTestContext
 
         component.Render(parameters => parameters.Add(p => p.Visibility, BitVisibility.Collapsed));
 
-        Assert.IsTrue(component.Find(".bit-cal").GetAttribute("style")!.Contains("display:none"));
+        Assert.Contains("display:none", component.Find(".bit-cal").GetAttribute("style")!);
     }
 
     /// <summary>
@@ -3262,7 +3267,7 @@ public class BitCalendarTests : BunitTestContext
         var setup = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.Calendars.setup");
 
         Assert.AreEqual("the-id", setup.Arguments[0]);
-        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.Calendars.dispose"));
+        Assert.DoesNotContain(i => i.Identifier == "BitBlazorUI.Calendars.dispose", Context.JSInterop.Invocations);
 
         await component.Instance.DisposeAsync();
 
@@ -3291,7 +3296,7 @@ public class BitCalendarTests : BunitTestContext
         var focus = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Calendars.focusCell");
 
         Assert.AreEqual(component.Find(".bit-cal-dbt[tabindex='0']").Id, focus.Arguments[0]);
-        Assert.AreEqual(true, focus.Arguments[1]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(focus.Arguments[1]));
 
         // The month overlay takes the day grid away, so the focus goes to the month in the tab sequence instead.
         component.Find(".bit-cal-ptb").Click();
@@ -3301,7 +3306,7 @@ public class BitCalendarTests : BunitTestContext
         focus = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Calendars.focusCell");
 
         Assert.AreEqual(component.Find(".bit-cal-pkb[tabindex='0']").Id, focus.Arguments[0]);
-        Assert.AreEqual(false, focus.Arguments[1]);
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(focus.Arguments[1]));
     }
 
     [TestMethod]
@@ -3345,8 +3350,8 @@ public class BitCalendarTests : BunitTestContext
             parameters.Add(p => p.StartingValue, new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeSpan.Zero));
         });
 
-        Assert.AreEqual(0, plain.FindAll(".bit-cal-pcm").Count);
-        Assert.AreEqual(0, plain.FindAll(".bit-cal-psm").Count);
+        Assert.IsEmpty(plain.FindAll(".bit-cal-pcm"));
+        Assert.IsEmpty(plain.FindAll(".bit-cal-psm"));
 
         var highlighted = RenderComponent<BitCalendar>(parameters =>
         {
@@ -3388,7 +3393,7 @@ public class BitCalendarTests : BunitTestContext
 
         Assert.AreEqual("May 2026", component.Find(".bit-cal-pkt").TextContent.Trim());
         Assert.AreEqual(new DateTimeOffset(2026, 5, 1, 0, 0, 0, TimeSpan.Zero), changedMonth);
-        Assert.IsTrue(component.FindAll(".bit-cal-dbt").Any(b => b.GetAttribute("aria-current") == "date"));
+        Assert.Contains(b => b.GetAttribute("aria-current") == "date", component.FindAll(".bit-cal-dbt"));
 
         // The month of today is on screen, so there is nowhere left for the button to go.
         Assert.IsTrue(component.Find(".bit-cal-gtb").HasAttribute("disabled"));
@@ -3417,7 +3422,7 @@ public class BitCalendarTests : BunitTestContext
 
         component.Render(parameters => parameters.Add(p => p.ShowNowButton, false));
 
-        Assert.AreEqual(0, component.FindAll(".bit-cal-gtn").Count);
+        Assert.IsEmpty(component.FindAll(".bit-cal-gtn"));
     }
 
     [TestMethod,
@@ -3466,7 +3471,7 @@ public class BitCalendarTests : BunitTestContext
 
         component.Find(".bit-cal-mwp .bit-cal-ptb").Click();
 
-        Assert.IsTrue(component.FindAll(".bit-cal-pkb").Any(y => y.TextContent.Trim() == "Y-2026"));
+        Assert.Contains(y => y.TextContent.Trim() == "Y-2026", component.FindAll(".bit-cal-pkb"));
     }
 
     [TestMethod]
@@ -3489,7 +3494,7 @@ public class BitCalendarTests : BunitTestContext
 
         Assert.IsNull(value);
         Assert.AreEqual(0, selected);
-        Assert.AreEqual(0, component.FindAll(".bit-cal-dbt[aria-selected='true']").Count);
+        Assert.IsEmpty(component.FindAll(".bit-cal-dbt[aria-selected='true']"));
 
         // Browsing is still allowed: the month navigation works on a read-only calendar.
         component.FindAll(".bit-cal-dwp .bit-cal-nbt").Last().Click();
@@ -3528,9 +3533,9 @@ public class BitCalendarTests : BunitTestContext
             parameters.Add(p => p.ShowMonthPicker, false);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-cal-mwp").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-cal-pkb").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-cal-dwp").Count);
+        Assert.IsEmpty(component.FindAll(".bit-cal-mwp"));
+        Assert.IsEmpty(component.FindAll(".bit-cal-pkb"));
+        Assert.ContainsSingle(component.FindAll(".bit-cal-dwp"));
     }
 
     /// <summary>
@@ -3549,11 +3554,11 @@ public class BitCalendarTests : BunitTestContext
             [nameof(BitCalendar.Value)] = new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeSpan.Zero),
         });
 
-        StringAssert.Contains(html, "bit-cal");
-        StringAssert.Contains(html, "January 2026");
-        StringAssert.Contains(html, "role=\"grid\"");
-        StringAssert.Contains(html, "aria-selected=\"true\"");
-        StringAssert.Contains(html, "bit-cal-tin");
+        Assert.Contains("bit-cal", html);
+        Assert.Contains("January 2026", html);
+        Assert.Contains("role=\"grid\"", html);
+        Assert.Contains("aria-selected=\"true\"", html);
+        Assert.Contains("bit-cal-tin", html);
     }
 
     [TestMethod]
@@ -3570,7 +3575,7 @@ public class BitCalendarTests : BunitTestContext
         Assert.AreEqual(1, component.Instance.InvalidCount);
         Assert.IsTrue(component.Find(".bit-cal").ClassList.Contains("bit-inv"));
         Assert.AreEqual("true", component.Find(".bit-cal-grd").GetAttribute("aria-invalid"));
-        Assert.AreEqual(1, component.FindAll(".validation-message").Count);
+        Assert.ContainsSingle(component.FindAll(".validation-message"));
 
         // Picking a day fills the field and clears the rejection.
         component.FindAll(".bit-cal-dbt:not(.bit-cal-dbo)").First(b => b.TextContent.Trim() == "15").Click();
@@ -3620,6 +3625,8 @@ public class BitCalendarTests : BunitTestContext
             Assert.IsFalse(input.HasAttribute("blazor:onfocus"));
         }
 
-        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.Utils.selectText"));
+        Assert.DoesNotContain(i => i.Identifier == "BitBlazorUI.Utils.selectText", Context.JSInterop.Invocations);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

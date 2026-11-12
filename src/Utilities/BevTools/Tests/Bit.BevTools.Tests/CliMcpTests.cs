@@ -40,10 +40,10 @@ public class CliMcpTests : BunitContext
             var parent = Session.Components.All.Single(c => c.DisplayName == nameof(ParentComponent)).InstanceId;
             await using var served = await Served.StartAsync(baseline, current);
 
-            StringAssert.Contains(served.Client.ServerInstructions, "never connects to a running app");
-            StringAssert.Contains(served.Client.ServerInstructions, "redacted at capture");
-            var tools = await served.Client.ListToolsAsync();
-            CollectionAssert.AreEquivalent(Tools, tools.Select(t => t.Name).ToArray());
+            Assert.Contains("never connects to a running app", served.Client.ServerInstructions!);
+            Assert.Contains("redacted at capture", served.Client.ServerInstructions);
+            var tools = await served.Client.ListToolsAsync(cancellationToken: TestContext.CancellationToken);
+            Assert.AreSequenceEqual(Tools, tools.Select(t => t.Name).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
             foreach (var tool in tools)
             {
                 var annotations = tool.ProtocolTool.Annotations!;
@@ -69,7 +69,7 @@ public class CliMcpTests : BunitContext
 
             var (unnamedError, unnamed) = await served.CallTextAsync("get_findings");
             Assert.IsTrue(unnamedError, "two exports are loaded and none was named");
-            StringAssert.Contains(unnamed, "2 exports are loaded");
+            Assert.Contains("2 exports are loaded", unnamed);
 
             using (var findings = await served.CallAsync("get_findings", new() { ["session"] = "0" }))
             {
@@ -108,7 +108,7 @@ public class CliMcpTests : BunitContext
 
             var (missingError, missing) = await served.CallTextAsync("get_component", new() { ["session"] = "0", ["instanceId"] = 987654321 });
             Assert.IsTrue(missingError);
-            StringAssert.Contains(missing, "No component #987654321");
+            Assert.Contains("No component #987654321", missing);
 
             using (var slowest = await served.CallAsync("get_slowest_components", new() { ["session"] = "1", ["by"] = "renders", ["limit"] = 1 }))
             {
@@ -121,7 +121,7 @@ public class CliMcpTests : BunitContext
             using (var errors = await served.CallAsync("get_errors", new() { ["session"] = "0", ["text"] = "7001" }))
             {
                 Assert.AreEqual(1, errors.RootElement.GetProperty("total").GetInt32());
-                StringAssert.Contains(Assert.ContainsSingle(errors.RootElement.GetProperty("errors").EnumerateArray()).GetProperty("message").GetString(), "Order 7001");
+                Assert.Contains("Order 7001", Assert.ContainsSingle(errors.RootElement.GetProperty("errors").EnumerateArray()).GetProperty("message").GetString()!);
             }
 
             using (var groups = await served.CallAsync("get_error_groups", new() { ["session"] = "0" }))
@@ -135,7 +135,7 @@ public class CliMcpTests : BunitContext
             {
                 var request = Assert.ContainsSingle(failed.RootElement.GetProperty("requests").EnumerateArray());
                 Assert.AreEqual(500, request.GetProperty("statusCode").GetInt32());
-                StringAssert.Contains(request.GetProperty("url").GetString(), "/api/orders/7");
+                Assert.Contains("/api/orders/7", request.GetProperty("url").GetString()!);
             }
 
             using (var byEndpoint = await served.CallAsync("get_http", new() { ["session"] = "0", ["endpoint"] = "/API/CUSTOMERS" }))
@@ -174,7 +174,7 @@ public class CliMcpTests : BunitContext
                 var events = root.GetProperty("events").EnumerateArray().ToList();
                 next = root.GetProperty("nextAfterEventId").GetInt64();
                 Assert.AreEqual(events[^1].GetProperty("id").GetInt64(), next);
-                CollectionAssert.AreEqual(events.Select(e => e.GetProperty("id").GetInt64()).Order().ToArray(), events.Select(e => e.GetProperty("id").GetInt64()).ToArray(), "in order");
+                Assert.AreSequenceEqual(events.Select(e => e.GetProperty("id").GetInt64()).Order().ToArray(), events.Select(e => e.GetProperty("id").GetInt64()).ToArray(), "in order");
             }
 
             using (var following = await served.CallAsync("get_timeline", new() { ["afterEventId"] = next, ["limit"] = 5 }))
@@ -194,7 +194,7 @@ public class CliMcpTests : BunitContext
                 Assert.IsTrue(events.All(e => e.GetProperty("kind").GetString() == "Custom"));
                 var longOne = Assert.ContainsSingle(e => e.GetProperty("title").GetString() == "long detail", events);
                 Assert.IsLessThanOrEqualTo(1001, longOne.GetProperty("detail").GetString()!.Length);
-                StringAssert.EndsWith(longOne.GetProperty("detail").GetString(), "…");
+                Assert.EndsWith("…", longOne.GetProperty("detail").GetString());
                 Assert.AreEqual("detail", Assert.ContainsSingle(longOne.GetProperty("truncatedFields").EnumerateArray()).GetString());
                 Assert.IsFalse(events.First(e => e.GetProperty("title").GetString() != "long detail").TryGetProperty("truncatedFields", out _), "only what was cut is named");
             }
@@ -240,7 +240,7 @@ public class CliMcpTests : BunitContext
             {
                 using (var warnings = await served.CallAsync("get_logs", new() { ["minLevel"] = "warning" }))
                 {
-                    CollectionAssert.AreEqual(new[] { "Order 7001 failed", "Circuit lost" }, warnings.RootElement.GetProperty("logs").EnumerateArray().Select(l => l.GetProperty("message").GetString()).ToArray(), "most recent first");
+                    Assert.AreSequenceEqual(new[] { "Order 7001 failed", "Circuit lost" }, warnings.RootElement.GetProperty("logs").EnumerateArray().Select(l => l.GetProperty("message").GetString()).ToArray(), "most recent first");
                 }
 
                 using (var framework = await served.CallAsync("get_logs", new() { ["categoryPrefix"] = "Microsoft.AspNetCore.Components" }))
@@ -305,7 +305,7 @@ public class CliMcpTests : BunitContext
                 Assert.AreEqual(current, root.GetProperty("current").GetString());
                 var parent = Assert.ContainsSingle(c => c.GetProperty("displayName").GetString() == nameof(ParentComponent), root.GetProperty("changes").EnumerateArray());
                 Assert.AreEqual("Regressed", parent.GetProperty("kind").GetString());
-                StringAssert.StartsWith(parent.GetProperty("reason").GetString(), "renders +2");
+                Assert.StartsWith("renders +2", parent.GetProperty("reason").GetString());
             }
 
             using (var same = await served.CallAsync("compare", new() { ["baseline"] = "1", ["current"] = "1" }))
@@ -327,7 +327,7 @@ public class CliMcpTests : BunitContext
 
             var (unknownError, unknown) = await served.CallTextAsync("compare", new() { ["baseline"] = "0", ["current"] = "7" });
             Assert.IsTrue(unknownError);
-            StringAssert.Contains(unknown, "No export has index 7");
+            Assert.Contains("No export has index 7", unknown);
             Assert.IsTrue((await served.CallTextAsync("compare", new() { ["baseline"] = "0", ["current"] = "1", ["timeChangeRatio"] = -1 })).IsError);
             Assert.IsTrue((await served.CallTextAsync("compare", new() { ["baseline"] = "0", ["current"] = "1", ["minAllocationChangeBytes"] = -1 })).IsError);
             Assert.IsTrue((await served.CallTextAsync("compare", new() { ["baseline"] = "0", ["current"] = "1", ["allocationChangeRatio"] = -0.5 })).IsError);
@@ -351,7 +351,7 @@ public class CliMcpTests : BunitContext
         var root = page.RootElement;
         var returned = root.GetProperty("returned").GetInt32();
         Assert.IsTrue(returned is > 0 and < 300, "returned: " + returned);
-        StringAssert.StartsWith(root.GetProperty("truncatedBy").GetString(), "size");
+        Assert.StartsWith("size", root.GetProperty("truncatedBy").GetString());
         var next = root.GetProperty("nextAfterEventId").GetInt64();
         Assert.AreEqual(returned, next);
 
@@ -376,7 +376,7 @@ public class CliMcpTests : BunitContext
         Assert.AreEqual(sessions.Count, root.GetProperty("returned").GetInt32());
         Assert.AreEqual(200, root.GetProperty("total").GetInt32());
         Assert.IsTrue(root.GetProperty("truncated").GetBoolean());
-        StringAssert.StartsWith(root.GetProperty("truncatedBy").GetString(), "size");
+        Assert.StartsWith("size", root.GetProperty("truncatedBy").GetString());
         Assert.AreEqual(sessions.Count - 1, sessions[^1].GetProperty("index").GetInt32(), "in order, nothing skipped");
     }
 
@@ -389,7 +389,7 @@ public class CliMcpTests : BunitContext
         Assert.AreEqual(1, exports.Get("A.json").Index);
         Assert.AreEqual(1, exports.Get("run/A.json").Index);
         var ambiguous = Assert.ThrowsExactly<ModelContextProtocol.McpException>(() => exports.Get("A.JSON"));
-        StringAssert.Contains(ambiguous.Message, "Several loaded exports");
+        Assert.Contains("Several loaded exports", ambiguous.Message);
     }
 
     [TestMethod]
@@ -404,13 +404,13 @@ public class CliMcpTests : BunitContext
 
             var (none, _, noneError) = Run("mcp");
             Assert.AreEqual(BevToolsCli.Unusable, none);
-            StringAssert.Contains(noneError, "Expected: bevtools mcp <export.json>");
+            Assert.Contains("Expected: bevtools mcp <export.json>", noneError);
             var (missing, _, missingError) = Run("mcp", baseline, Path.Combine(folder.FullName, "missing.json"));
             Assert.AreEqual(BevToolsCli.Unusable, missing, "every file is read before anything is served");
-            StringAssert.Contains(missingError, "No such file");
+            Assert.Contains("No such file", missingError);
             var (other, _, otherError) = Run("mcp", notAnExport);
             Assert.AreEqual(BevToolsCli.Unusable, other);
-            StringAssert.Contains(otherError, "not a BevTools session export");
+            Assert.Contains("not a BevTools session export", otherError);
             Assert.AreEqual(BevToolsCli.Unusable, Run("mcp", baseline, "--port", "8080").Code, "no options: it serves stdio only");
 
             // Served is disposed by closing the client's side; its DisposeAsync fails the test if the server outlives it.
@@ -421,8 +421,8 @@ public class CliMcpTests : BunitContext
             // An agent may call several tools at once; each still gets the whole, same answer.
             var answers = await Task.WhenAll(Enumerable.Range(0, 16).Select(i => served.CallTextAsync(i % 2 == 0 ? "get_findings" : "get_timeline")));
             Assert.IsTrue(answers.All(a => !a.IsError));
-            Assert.AreEqual(1, answers.Where((_, i) => i % 2 == 0).Select(a => a.Text).Distinct().Count());
-            Assert.AreEqual(1, answers.Where((_, i) => i % 2 == 1).Select(a => a.Text).Distinct().Count());
+            Assert.ContainsSingle(answers.Where((_, i) => i % 2 == 0).Select(a => a.Text).Distinct());
+            Assert.ContainsSingle(answers.Where((_, i) => i % 2 == 1).Select(a => a.Text).Distinct());
         }
         finally
         {
@@ -440,8 +440,8 @@ public class CliMcpTests : BunitContext
         await cut.InvokeAsync(() => cut.Instance.Increment());
         using (var client = new HttpClient(new BevToolsHttpMessageHandler(Session) { InnerHandler = new StatusHandler() }))
         {
-            await client.GetAsync("https://shop.test/api/orders/7");
-            await client.GetAsync("https://shop.test/api/customers/3");
+            await client.GetAsync("https://shop.test/api/orders/7", TestContext.CancellationToken);
+            await client.GetAsync("https://shop.test/api/customers/3", TestContext.CancellationToken);
         }
 
         Session.Errors.Record(new InvalidOperationException("Order 7001 was not found"), "blazor");
@@ -521,4 +521,6 @@ public class CliMcpTests : BunitContext
             _timeout.Dispose();
         }
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

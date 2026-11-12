@@ -33,12 +33,12 @@ public class BitAccordionE2ETests : E2ETestBase
         var html = await response.TextAsync();
 
         Assert.IsTrue(response.Ok);
-        StringAssert.Contains(html, "id=\"acd-basic\"");
-        StringAssert.Contains(html, "id=\"acd-basic-hdr\"");
-        StringAssert.Contains(html, "aria-expanded=\"false\"");
-        StringAssert.Contains(html, "Basic title");
+        Assert.Contains("id=\"acd-basic\"", html);
+        Assert.Contains("id=\"acd-basic-hdr\"", html);
+        Assert.Contains("aria-expanded=\"false\"", html);
+        Assert.Contains("Basic title", html);
         Assert.IsTrue(Regex.IsMatch(html, "id=\"acd-default\"[^>]*class=\"[^\"]*bit-acd-exp"), "DefaultIsExpanded is not prerendered open.");
-        StringAssert.Contains(html, "<span id=\"status\">Loading</span>");
+        Assert.Contains("<span id=\"status\">Loading</span>", html);
     }
 
     [TestMethod]
@@ -162,7 +162,7 @@ public class BitAccordionE2ETests : E2ETestBase
         // At the end by default.
         var endExpander = (await HeaderPart("acd-exp-name", "bit-acd-eiw").BoundingBoxAsync())!;
         var endTitle = (await HeaderPart("acd-exp-name", "bit-acd-ttl").BoundingBoxAsync())!;
-        Assert.IsTrue(endExpander.X > endTitle.X + endTitle.Width);
+        Assert.IsGreaterThan(endTitle.X + endTitle.Width, endExpander.X);
     }
 
     [TestMethod]
@@ -568,7 +568,7 @@ public class BitAccordionE2ETests : E2ETestBase
         var samples = await ReadHeightSamplesAsync();
         var full = await Content("acd-slow").EvaluateAsync<double>("el => el.getBoundingClientRect().height");
         var intermediate = samples.Count(h => h > 1 && h < full - 1);
-        Assert.IsTrue(intermediate >= 5, $"Only {intermediate} intermediate heights in [{string.Join(", ", samples)}], full {full}.");
+        Assert.IsGreaterThanOrEqualTo(5, intermediate, $"Only {intermediate} intermediate heights in [{string.Join(", ", samples)}], full {full}.");
     }
 
     [TestMethod]
@@ -610,8 +610,8 @@ public class BitAccordionE2ETests : E2ETestBase
         await Page.EmulateMediaAsync(new() { ReducedMotion = ReducedMotion.Reduce });
         await OpenAsync(Url);
 
-        Assert.IsTrue(ToMs(await StyleAsync(Row("acd-theme-dur"), "transition-duration")) < 0.1);
-        Assert.IsTrue(ToMs(await StyleAsync(Row("acd-slow"), "transition-duration")) < 0.1, "A TransitionDuration does not follow reduced motion.");
+        Assert.IsLessThan(0.1, ToMs(await StyleAsync(Row("acd-theme-dur"), "transition-duration")));
+        Assert.IsLessThan(0.1, ToMs(await StyleAsync(Row("acd-slow"), "transition-duration")), "A TransitionDuration does not follow reduced motion.");
         Assert.AreEqual(300, ToMs(await StyleAsync(Row("acd-force"), "transition-duration")), 1);
         await Expect(Root("acd-force")).ToHaveClassAsync(HasClass("bit-fam"));
 
@@ -917,7 +917,7 @@ public class BitAccordionE2ETests : E2ETestBase
             fills.Add(await StyleAsync(Root(id), "background-color"));
         }
 
-        Assert.AreEqual(4, fills.Distinct().Count(), string.Join(" | ", fills));
+        Assert.HasCount(4, fills.Distinct(), string.Join(" | ", fills));
         Assert.AreEqual(Transparent, fills[3]);
 
         // Unset publishes no class and takes the primary fill.
@@ -945,7 +945,7 @@ public class BitAccordionE2ETests : E2ETestBase
             outlines.Add(await StyleAsync(Root(id), "border-top-color"));
         }
 
-        Assert.AreEqual(4, outlines.Distinct().Count(), string.Join(" | ", outlines));
+        Assert.HasCount(4, outlines.Distinct(), string.Join(" | ", outlines));
         Assert.AreEqual(Transparent, outlines[3]);
         Assert.AreEqual(outlines[0], await StyleAsync(Root("acd-basic"), "border-top-color"));
     }
@@ -1110,7 +1110,7 @@ public class BitAccordionE2ETests : E2ETestBase
 
         await Expect(Root("acd-vis-hidden")).ToHaveCSSAsync("visibility", "hidden");
         await Expect(Root("acd-vis-hidden")).ToBeHiddenAsync();
-        Assert.IsTrue((await Root("acd-vis-hidden").BoundingBoxAsync())!.Height > 0);
+        Assert.IsGreaterThan(0, (await Root("acd-vis-hidden").BoundingBoxAsync())!.Height);
 
         await Expect(Root("acd-vis-collapsed")).ToHaveCSSAsync("display", "none");
         await Expect(Root("acd-vis-collapsed")).ToBeHiddenAsync();
@@ -1172,8 +1172,8 @@ public class BitAccordionE2ETests : E2ETestBase
         var title = (await HeaderPart(id, "bit-acd-ttl").BoundingBoxAsync())!;
         var expander = (await HeaderPart(id, "bit-acd-eiw").BoundingBoxAsync())!;
 
-        Assert.IsTrue(icon.X > title.X, $"The icon ({icon.X}) does not lead from the right of the title ({title.X}).");
-        Assert.IsTrue(expander.X + expander.Width <= title.X, $"The expander ({expander.X}) does not close the header on the left ({title.X}).");
+        Assert.IsGreaterThan(title.X, icon.X, $"The icon ({icon.X}) does not lead from the right of the title ({title.X}).");
+        Assert.IsLessThanOrEqualTo(title.X, expander.X + expander.Width, $"The expander ({expander.X}) does not close the header on the left ({title.X}).");
     }
 
     private async Task SkipWithoutHiddenUntilFoundAsync()

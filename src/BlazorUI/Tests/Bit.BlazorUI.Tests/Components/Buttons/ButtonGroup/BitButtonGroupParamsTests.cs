@@ -59,8 +59,8 @@ public class BitButtonGroupParamsTests : BunitTestContext
     [TestMethod]
     public void BitButtonGroupParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitButtonGroup<BitButtonGroupItem>)}", BitButtonGroupParams.ParamName);
-        Assert.AreEqual("BitParams.BitButtonGroup", BitButtonGroupParams.ParamName);
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitButtonGroup<BitButtonGroupItem>)}", new BitButtonGroupParams().Name);
+        Assert.AreEqual("BitParams.BitButtonGroup", new BitButtonGroupParams().Name);
     }
 
     [TestMethod]
@@ -118,7 +118,7 @@ public class BitButtonGroupParamsTests : BunitTestContext
         Assert.IsTrue(group.ClassList.Contains("bit-btg-dtc"));
         Assert.IsTrue(group.ClassList.Contains("bit-btg-ion"));
         Assert.IsTrue(group.ClassList.Contains("bit-btg-wrp"));
-        StringAssert.Contains(group.GetAttribute("style"), "--bit-ButtonGroup-gap:1rem");
+        Assert.Contains("--bit-ButtonGroup-gap:1rem", group.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -194,7 +194,9 @@ public class BitButtonGroupParamsTests : BunitTestContext
         Assert.AreSame(classes, instance.Classes);
         Assert.AreEqual(BitColor.Warning, instance.Color);
         Assert.AreEqual("italic", instance.DefaultToggleKey);
-        CollectionAssert.AreEqual(new[] { "bold" }, instance.DefaultToggleKeys?.ToArray());
+        var expectedValue = new[] { "bold" };
+        var actualValue = instance.DefaultToggleKeys?.ToArray();
+        Assert.AreSequenceEqual(expectedValue, actualValue);
         Assert.IsTrue(instance.Detached);
         Assert.IsTrue(instance.DisabledInteractive);
         Assert.IsTrue(instance.FixedToggle);
@@ -262,10 +264,10 @@ public class BitButtonGroupParamsTests : BunitTestContext
         Assert.IsTrue(group.ClassList.Contains("custom-root"));
         Assert.IsTrue(button.ClassList.Contains("custom-button"));
         Assert.IsTrue(text.ClassList.Contains("custom-text"));
-        StringAssert.Contains(group.GetAttribute("style"), "color: red;");
+        Assert.Contains("color: red;", group.GetAttribute("style")!);
         // The button style is joined with the item's own, which is why the trailing semicolon is not part of it.
-        StringAssert.Contains(button.GetAttribute("style"), "margin: 5px");
-        StringAssert.Contains(text.GetAttribute("style"), "padding: 10px;");
+        Assert.Contains("margin: 5px", button.GetAttribute("style")!);
+        Assert.Contains("padding: 10px;", text.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -286,7 +288,7 @@ public class BitButtonGroupParamsTests : BunitTestContext
         Assert.AreEqual("test-id", group.GetAttribute("id"));
         Assert.IsTrue(group.ClassList.Contains("bit-dis"));
         Assert.AreEqual("true", group.GetAttribute("aria-disabled"));
-        StringAssert.Contains(group.GetAttribute("style"), "background: blue;");
+        Assert.Contains("background: blue;", group.GetAttribute("style")!);
         Assert.IsTrue(group.ClassList.Contains("base-class"));
         Assert.IsTrue(component.FindAll("button").All(b => b.HasAttribute("disabled")));
     }
@@ -308,7 +310,7 @@ public class BitButtonGroupParamsTests : BunitTestContext
         Assert.AreEqual("rtl", group.GetAttribute("dir"));
         Assert.IsTrue(group.ClassList.Contains("bit-rtl"));
         Assert.IsTrue(group.ClassList.Contains("bit-fam"));
-        StringAssert.Contains(group.GetAttribute("style"), "display:none");
+        Assert.Contains("display:none", group.GetAttribute("style")!);
         Assert.AreEqual("yes", group.GetAttribute("data-cascaded"));
 
         // the tab index is the one of the group's single tab stop
@@ -328,7 +330,7 @@ public class BitButtonGroupParamsTests : BunitTestContext
         var group = component.Find(".bit-btg");
 
         Assert.IsTrue(group.ClassList.Contains("bit-btg-txt"));
-        CollectionAssert.AreEquivalent(new[] { "bit-btg", "bit-btg-txt", "bit-btg-nav" }, group.ClassList.ToArray());
+        Assert.AreSequenceEqual(new[] { "bit-btg", "bit-btg-txt", "bit-btg-nav" }, group.ClassList.ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -406,11 +408,11 @@ public class BitButtonGroupParamsTests : BunitTestContext
 
         var groups = component.FindAll(".bit-btg");
 
-        Assert.AreEqual(3, groups.Count);
+        Assert.HasCount(3, groups);
         Assert.IsTrue(groups.All(g => g.ClassList.Contains("bit-btg-otl") && g.ClassList.Contains("bit-btg-rnd")));
     }
 
-    public class KeylessButtonGroupItem
+    internal class KeylessButtonGroupItem
     {
         public string? Text { get; set; }
     }

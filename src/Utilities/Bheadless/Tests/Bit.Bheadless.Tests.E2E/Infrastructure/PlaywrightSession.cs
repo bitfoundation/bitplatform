@@ -11,7 +11,7 @@ namespace Bit.Bheadless.Tests.E2E.Infrastructure;
 /// Whatever stops the suite from running at all - no browser, a demo that does not publish or start - is captured
 /// once as <see cref="Session.Unavailable"/>, so every test reports it without waiting out the same timeout again.
 /// </remarks>
-public static class PlaywrightSession
+internal static class PlaywrightSession
 {
     private static readonly Lazy<Task<Session>> _session = new(StartAsync);
     private static readonly SemaphoreSlim _relaunch = new(1, 1);
@@ -121,7 +121,7 @@ public static class PlaywrightSession
     }
 
     /// <summary>The shared browser and demo, or the reason the suite cannot run.</summary>
-    public sealed record Session(IPlaywright? Playwright, IBrowser? Browser, DemoHost? Host, string? Unavailable)
+    internal sealed record Session(IPlaywright? Playwright, IBrowser? Browser, DemoHost? Host, string? Unavailable)
     {
         /// <summary>The browser now: <see cref="EnsureBrowserAsync"/> replaces one that exited.</summary>
         public IBrowser? Browser { get; set; } = Browser;

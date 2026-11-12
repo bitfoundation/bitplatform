@@ -109,7 +109,7 @@ public class BitFullCalendarSettingsTests
             FirstDayOfWeek = DayOfWeek.Sunday
         };
 
-        Assert.AreEqual(2, settings.HiddenDays!.Count);
+        Assert.HasCount(2, settings.HiddenDays!);
         Assert.AreEqual(DayOfWeek.Sunday, settings.FirstDayOfWeek);
     }
 

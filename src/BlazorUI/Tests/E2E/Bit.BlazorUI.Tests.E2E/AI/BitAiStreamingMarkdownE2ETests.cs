@@ -196,13 +196,13 @@ public class BitAiStreamingMarkdownE2ETests : E2ETestBase
 
         // It arrived a little at a time, not in one piece at the end.
         var lengths = await Page.TextLengthsAsync("sm-live");
-        Assert.IsTrue(lengths.Length >= 6, $"The answer went through several states: {string.Join(",", lengths)}.");
-        Assert.IsTrue(lengths.Count(l => l > 0 && l < lengths[^1] / 2) >= 2, $"Parts of the answer were drawn long before the whole of it: {string.Join(",", lengths)}.");
+        Assert.IsGreaterThanOrEqualTo(6, lengths.Length, $"The answer went through several states: {string.Join(",", lengths)}.");
+        Assert.IsGreaterThanOrEqualTo(2, lengths.Count(l => l > 0 && l < lengths[^1] / 2), $"Parts of the answer were drawn long before the whole of it: {string.Join(",", lengths)}.");
 
         var stream = await Page.EvaluateAsync<JsonElement>("() => window.__e2eStream");
         Assert.IsTrue(stream.GetProperty("caret").GetBoolean(), "The caret trailed the text while it streamed.");
         var prose = stream.GetProperty("prose").EnumerateArray().Select(e => e.GetString()).ToArray();
-        Assert.AreEqual(0, prose.Length, $"A marker of the Markdown showed in the prose: {string.Join(" | ", prose)}");
+        Assert.IsEmpty(prose, $"A marker of the Markdown showed in the prose: {string.Join(" | ", prose)}");
     }
 
     // ---------- caret ----------
@@ -223,7 +223,7 @@ public class BitAiStreamingMarkdownE2ETests : E2ETestBase
         await Expect(caret).ToHaveCSSAsync("background-color", await Page.ResolveColorAsync("var(--bit-clr-pri)"));
 
         var last = await paragraph.CharacterRectAsync("The answer is still being".Length - 1);
-        Assert.IsTrue((await caret.RectAsync()).Left >= last.Right - 0.5, "The caret is after the last character.");
+        Assert.IsGreaterThanOrEqualTo(last.Right - 0.5, (await caret.RectAsync()).Left, "The caret is after the last character.");
 
         // Text that is complete has none, and neither has one under options that turn it off.
         await Expect(Page.Locator("#sm-caret-done .bit-aimdv-crt")).ToHaveCountAsync(0);
@@ -256,7 +256,7 @@ public class BitAiStreamingMarkdownE2ETests : E2ETestBase
         await Expect(hard.Locator("br")).ToHaveCountAsync(1);
         var firstLine = await hard.CharacterRectAsync(0);
         var secondLine = await hard.CharacterRectAsync("Server rendering is fast to first paint.".Length);
-        Assert.IsTrue(secondLine.Top >= firstLine.Bottom - 1, "The second sentence starts a line of its own.");
+        Assert.IsGreaterThanOrEqualTo(firstLine.Bottom - 1, secondLine.Top, "The second sentence starts a line of its own.");
 
         // By default a single newline is a space, as CommonMark has it.
         var soft = Page.Locator("#sm-soft p.bit-aimdv-par");
@@ -284,7 +284,7 @@ public class BitAiStreamingMarkdownE2ETests : E2ETestBase
 
             var lastCharacter = await paragraph.CharacterRectAsync(text.Length - 1);
             var box = await caret.RectAsync();
-            Assert.IsTrue(box.Right <= lastCharacter.Left + 0.5, $"{id}: the caret ({box.Right}) is at the left end of the text ({lastCharacter.Left}).");
+            Assert.IsLessThanOrEqualTo(lastCharacter.Left + 0.5, box.Right, $"{id}: the caret ({box.Right}) is at the left end of the text ({lastCharacter.Left}).");
         }
 
         var ltr = Page.Locator("#sm-ltr .bit-aimdv-crt");

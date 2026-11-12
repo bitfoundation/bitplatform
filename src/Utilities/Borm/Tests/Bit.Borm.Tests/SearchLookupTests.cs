@@ -51,7 +51,7 @@ public class SearchLookupTests : ComponentTestBase
         Assert.IsEmpty(state.OptionsFor(field, "customer"));
 
         await state.SearchOptionsAsync(field, "customer", "con");
-        CollectionAssert.AreEqual(new[] { "Contoso", "Contoso Pharma" }, state.OptionsFor(field, "customer").Select(o => o.Label).ToArray());
+        Assert.AreSequenceEqual(new[] { "Contoso", "Contoso Pharma" }, state.OptionsFor(field, "customer").Select(o => o.Label).ToArray());
         Assert.AreEqual("con", lookup.Calls.Single().Text);
     }
 
@@ -67,7 +67,7 @@ public class SearchLookupTests : ComponentTestBase
         slow.SetResult();
         await first;
 
-        CollectionAssert.AreEqual(new[] { "Fabrikam" }, state.OptionsFor(field, "customer").Select(o => o.Label).ToArray());
+        Assert.AreSequenceEqual(new[] { "Fabrikam" }, state.OptionsFor(field, "customer").Select(o => o.Label).ToArray());
         Assert.AreEqual("fab", state.SearchText("customer"));
     }
 
@@ -104,7 +104,7 @@ public class SearchLookupTests : ComponentTestBase
         var input = cut.Find("#borm_customer");
 
         input.Input("north");
-        cut.WaitForAssertion(() => Assert.HasCount(1, cut.FindAll("#borm_customer_list option")));
+        cut.WaitForAssertion(() => Assert.ContainsSingle(cut.FindAll("#borm_customer_list option")));
         input.Change("Northwind");
         Assert.AreEqual("c4", data["customer"]);
 
@@ -135,7 +135,7 @@ public class SearchLookupTests : ComponentTestBase
 
         cut.Find("#borm_customer").Change("Nobody Ltd");
 
-        cut.WaitForAssertion(() => Assert.HasCount(1, state.MessagesFor("customer")));
+        cut.WaitForAssertion(() => Assert.ContainsSingle(state.MessagesFor("customer")));
         Assert.AreEqual("c1", data["customer"]);
         Assert.AreEqual(BormValidationSource.Conversion, state.MessagesFor("customer").Single().Source);
         Assert.IsFalse(state.IsValid);
@@ -186,6 +186,6 @@ public class SearchLookupTests : ComponentTestBase
         var (state, _, _) = Form(lookup, minLength: 3);
         var cut = Render<BormView>(p => p.Add(x => x.State, state));
 
-        StringAssert.Contains(cut.Find(".bit-borm-combobox [aria-live]").TextContent, "at least 3 characters");
+        Assert.Contains("at least 3 characters", cut.Find(".bit-borm-combobox [aria-live]").TextContent);
     }
 }

@@ -27,13 +27,13 @@ public class BitSplitterPrerenderTests
             [nameof(BitSplitter.SecondPanel)] = (RenderFragment)(b => b.AddContent(0, "Second")),
         });
 
-        StringAssert.Contains(html, "First");
-        StringAssert.Contains(html, "Second");
-        StringAssert.Contains(html, "--bit-spl-fpn-size:150px");
-        StringAssert.Contains(html, "role=\"separator\"");
-        StringAssert.Contains(html, "aria-label=\"Resize the panels\"");
-        StringAssert.Contains(html, "aria-controls=\"the-splitter-fpn\"");
-        StringAssert.Contains(html, "bit-spl-cbt");
+        Assert.Contains("First", html);
+        Assert.Contains("Second", html);
+        Assert.Contains("--bit-spl-fpn-size:150px", html);
+        Assert.Contains("role=\"separator\"", html);
+        Assert.Contains("aria-label=\"Resize the panels\"", html);
+        Assert.Contains("aria-controls=\"the-splitter-fpn\"", html);
+        Assert.Contains("bit-spl-cbt", html);
     }
 
     [TestMethod]

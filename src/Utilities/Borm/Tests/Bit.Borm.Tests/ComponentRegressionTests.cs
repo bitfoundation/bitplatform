@@ -10,7 +10,7 @@ namespace Bit.Borm.Tests;
 /// that was updated in place from one that was thrown away and recreated — the difference between a
 /// caret that stays put and one that is lost.
 /// </summary>
-public sealed class ElementSpyTextInput : BormTextInput
+internal sealed class ElementSpyTextInput : BormTextInput
 {
     public static readonly List<string> ElementIds = [];
 
@@ -77,7 +77,7 @@ public class ComponentRegressionTests : ComponentTestBase
         await cut.InvokeAsync(() => cut.Instance.Form.SetServerError("address", "Cannot deliver there"));
 
         var hrefs = cut.FindAll(".bit-borm-summary__list a").Select(a => a.GetAttribute("href")!).ToList();
-        Assert.AreEqual(4, hrefs.Count);
+        Assert.HasCount(4, hrefs);
         foreach (var href in hrefs)
         {
             var id = href[(href.IndexOf('#', StringComparison.Ordinal) + 1)..];
@@ -110,7 +110,7 @@ public class ComponentRegressionTests : ComponentTestBase
     {
         var form = CityAfterCountry(async country =>
         {
-            await Task.Delay(10);
+            await Task.Delay(10, TestContext.CancellationToken);
             return country == "fr" ? [new("paris", "Paris")] : [];
         });
         var cut = RenderForm(form);
@@ -155,7 +155,7 @@ public class ComponentRegressionTests : ComponentTestBase
 
         cut.Find("#borm_note").Change("x");
 
-        Assert.AreEqual(3, cut.FindAll(".bit-borm-tag").Count);
+        Assert.HasCount(3, cut.FindAll(".bit-borm-tag"));
     }
 
     [TestMethod]
@@ -166,8 +166,9 @@ public class ComponentRegressionTests : ComponentTestBase
         var cut = RenderForm(form, data);
 
         cut.FindAll(".bit-borm-tag__remove")[2].Click();
+        var actualValue = ((IEnumerable<object?>)data["skills"]!).Select(t => t?.ToString());
 
-        Assert.AreSequenceEqual(["a", "b"], ((IEnumerable<object?>)data["skills"]!).Select(t => t?.ToString()));
+        Assert.AreSequenceEqual(["a", "b"], actualValue);
     }
 
     // ---------------------------------------------------------------- debounced values
@@ -206,7 +207,7 @@ public class ComponentRegressionTests : ComponentTestBase
 
         cut.WaitForAssertion(() => Assert.IsNotNull(cut.Find("#borm_r")));
         Assert.AreEqual("hello", data["q"]);
-        await Task.Delay(600);
+        await Task.Delay(600, TestContext.CancellationToken);
         Assert.IsNull(data.GetValueOrDefault("r"));
     }
 
@@ -227,7 +228,7 @@ public class ComponentRegressionTests : ComponentTestBase
         await cut.InvokeAsync(() => cut.Instance.Form.SetValue("show", false));
 
         Assert.IsEmpty(cut.FindAll("#borm_q"));
-        await Task.Delay(600);
+        await Task.Delay(600, TestContext.CancellationToken);
         Assert.IsNull(data.GetValueOrDefault("q"));
     }
 
@@ -242,7 +243,7 @@ public class ComponentRegressionTests : ComponentTestBase
 
         _ = cut.Find("#borm_codes_1").InputAsync(new ChangeEventArgs { Value = "B-EDITED" });
         await cut.InvokeAsync(() => cut.Instance.Form.RemoveArrayItem("codes", 1));
-        await Task.Delay(600);
+        await Task.Delay(600, TestContext.CancellationToken);
 
         Assert.AreSequenceEqual(["A"], ((List<object?>)data["codes"]!).Cast<string>());
     }
@@ -269,7 +270,7 @@ public class ComponentRegressionTests : ComponentTestBase
 
         _ = cut.Find("#borm_items_1_name").InputAsync(new ChangeEventArgs { Value = "one-edited" });
         await cut.InvokeAsync(() => state.RemoveArrayItem("items", 0));
-        await Task.Delay(500);
+        await Task.Delay(500, TestContext.CancellationToken);
 
         Assert.AreEqual("one-edited", state.GetValue("items[0].name"));
         Assert.AreEqual("two", state.GetValue("items[1].name"));
@@ -297,7 +298,7 @@ public class ComponentRegressionTests : ComponentTestBase
         var form = BormBuilder.Create().Text("name", f => f.Required()).Build();
         var cut = RenderForm(form, new Dictionary<string, object?>(), p => p.Add(x => x.ShowErrorSummary, true));
         cut.Find("form").Submit();
-        Assert.IsTrue(FocusCalls() > 0);
+        Assert.IsGreaterThan(0, FocusCalls());
 
         cut.Render(p => p
             .Add(x => x.Definition, form)
@@ -306,7 +307,7 @@ public class ComponentRegressionTests : ComponentTestBase
         var before = FocusCalls();
         cut.Find("form").Submit();
 
-        Assert.IsTrue(FocusCalls() > before);
+        Assert.IsGreaterThan(before, FocusCalls());
     }
 
     // ---------------------------------------------------------------- read-only repeaters
@@ -412,7 +413,7 @@ public class ComponentRegressionTests : ComponentTestBase
 
         await cut.Find("form").SubmitAsync();
 
-        cut.WaitForAssertion(() => Assert.IsTrue(FocusCalls() > before));
+        cut.WaitForAssertion(() => Assert.IsGreaterThan(before, FocusCalls()));
         Assert.Contains("Cannot deliver there", cut.Find("#borm_address_error").TextContent, StringComparison.Ordinal);
         Assert.AreEqual("", cut.Find("form > [role=status]").TextContent.Trim());
     }
@@ -429,7 +430,7 @@ public class ComponentRegressionTests : ComponentTestBase
 
         await cut.Find(".bit-borm-summary__list a").ClickAsync(new Microsoft.AspNetCore.Components.Web.MouseEventArgs());
 
-        Assert.IsTrue(FocusCalls() > before);
+        Assert.IsGreaterThan(before, FocusCalls());
         Assert.AreEqual("-1", cut.Find("#borm_lines").GetAttribute("tabindex"));
     }
 
@@ -581,7 +582,7 @@ public class ComponentRegressionTests : ComponentTestBase
         {
             for (var i = 0; i < 20; i++)
             {
-                await Task.Delay(10);
+                await Task.Delay(10, TestContext.CancellationToken);
                 cut.Render();
             }
         });
@@ -644,4 +645,6 @@ public class ComponentRegressionTests : ComponentTestBase
 
         Assert.AreNotSame(before, cut.FindComponent<InputFile>().Instance);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

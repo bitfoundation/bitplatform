@@ -204,7 +204,7 @@ public class BitAiCodeBlockViewTests : BitAiTestBase
 
         Assert.IsTrue(root.ClassList.Contains("custom-class"));
         Assert.IsTrue(root.ClassList.Contains("c-root"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin: 1px");
+        Assert.Contains("margin: 1px", root.GetAttribute("style")!);
         Assert.IsTrue(component.Find(".bit-aicbv-hdr").ClassList.Contains("c-hdr"));
         Assert.AreEqual("margin: 2px", component.Find(".bit-aicbv-hdr").GetAttribute("style"));
         Assert.IsTrue(component.Find(".bit-aicbv-lng").ClassList.Contains("c-lng"));
@@ -231,7 +231,7 @@ public class BitAiCodeBlockViewTests : BitAiTestBase
         }
         else
         {
-            StringAssert.Contains(style, expected);
+            Assert.Contains(expected, style);
         }
     }
 

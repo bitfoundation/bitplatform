@@ -32,7 +32,7 @@ public class BitDateRangePickerCultureTests : BunitTestContext
 
         Assert.AreEqual($"{culture.DateTimeFormat.GetMonthName(12)} {persianYear}", GetMonthTitle(component));
         Assert.AreEqual(persianYear.ToString(CultureInfo.InvariantCulture), component.Find(".bit-dtrp-mwp .bit-dtrp-ptb").TextContent.Trim());
-        CollectionAssert.AreEqual(Enumerable.Range(1, daysInEsfand).Select(d => d.ToString(CultureInfo.InvariantCulture)).ToArray(), GetInMonthDays(component));
+        Assert.AreSequenceEqual(Enumerable.Range(1, daysInEsfand).Select(d => d.ToString(CultureInfo.InvariantCulture)).ToArray(), GetInMonthDays(component));
     }
 
     [TestMethod]

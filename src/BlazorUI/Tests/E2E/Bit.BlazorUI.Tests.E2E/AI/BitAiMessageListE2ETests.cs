@@ -128,7 +128,7 @@ public class BitAiMessageListE2ETests : E2ETestBase
 
         await List("msl-pin").WaitForScrolledToBottomAsync();
         var state = await List("msl-pin").ScrollStateAsync();
-        Assert.IsTrue(state.Height > state.ClientHeight * 2, "The transcript is taller than its box.");
+        Assert.IsGreaterThan(state.ClientHeight * 2, state.Height, "The transcript is taller than its box.");
         await Expect(Pinned).ToHaveTextAsync("True");
         await Expect(PinButton).ToHaveCountAsync(0);
 
@@ -189,7 +189,7 @@ public class BitAiMessageListE2ETests : E2ETestBase
         await Page.WaitForTimeoutAsync(1200);
 
         var state = await list.ScrollStateAsync();
-        Assert.IsTrue(state.FromBottom > 300, $"The view stays where the wheel took it: {state.FromBottom}px from the bottom.");
+        Assert.IsGreaterThan(300, state.FromBottom, $"The view stays where the wheel took it: {state.FromBottom}px from the bottom.");
         await Expect(Pinned).ToHaveTextAsync("False");
         await Expect(PinButton).ToBeVisibleAsync();
         await Expect(PinLog).ToHaveTextAsync(Log(log, "False"));
@@ -229,8 +229,8 @@ public class BitAiMessageListE2ETests : E2ETestBase
         await Expect(reply.GetByText("Paragraph 10:", new() { Exact = false })).ToHaveCountAsync(1);
 
         var during = await list.ScrollStateAsync();
-        Assert.IsTrue(during.Top > before.Top + 100, "The view moved down with the reply.");
-        Assert.IsTrue(during.FromBottom <= 48, $"The view is at the newest line: {during.FromBottom}px from the bottom.");
+        Assert.IsGreaterThan(before.Top + 100, during.Top, "The view moved down with the reply.");
+        Assert.IsLessThanOrEqualTo(48, during.FromBottom, $"The view is at the newest line: {during.FromBottom}px from the bottom.");
 
         await Expect(reply).ToHaveAttributeAsync("aria-busy", "false", new() { Timeout = 20000 });
         await list.WaitForScrolledToBottomAsync();
@@ -256,7 +256,7 @@ public class BitAiMessageListE2ETests : E2ETestBase
 
         var during = await list.ScrollStateAsync();
         Assert.AreEqual(before.Top, during.Top, 1, "The view stays where the reader left it.");
-        Assert.IsTrue(during.Height > before.Height + 200, "The reply grew the transcript under it.");
+        Assert.IsGreaterThan(before.Height + 200, during.Height, "The reply grew the transcript under it.");
         await Expect(Pinned).ToHaveTextAsync("False");
 
         await Expect(reply).ToHaveAttributeAsync("aria-busy", "false", new() { Timeout = 20000 });
@@ -302,7 +302,7 @@ public class BitAiMessageListE2ETests : E2ETestBase
         await PinButton.Locator("button").ClickAsync();
         await list.WaitForScrolledToBottomAsync();
         await Expect(Pinned).ToHaveTextAsync("True");
-        CollectionAssert.Contains(await ScrollCallsAsync(), "smooth");
+        Assert.Contains("smooth", await ScrollCallsAsync());
 
         // Under reduced motion the motion factor of the theme is 0, so the same call jumps.
         await Page.EmulateMediaAsync(new() { ReducedMotion = ReducedMotion.Reduce });
@@ -348,7 +348,7 @@ public class BitAiMessageListE2ETests : E2ETestBase
         await Expect(reply.GetByText("Paragraph 8:", new() { Exact = false })).ToHaveCountAsync(1);
 
         var during = await list.ScrollStateAsync();
-        Assert.IsTrue(during.Height > during.ClientHeight + 200, "The reply outgrew the box.");
+        Assert.IsGreaterThan(during.ClientHeight + 200, during.Height, "The reply outgrew the box.");
         Assert.AreEqual(before.Top, during.Top, 1, "With AutoScroll off the view stays where it was.");
     }
 
@@ -408,11 +408,11 @@ public class BitAiMessageListE2ETests : E2ETestBase
 
         Assert.IsTrue(response.Ok);
         var virtualIds = Regex.Matches(html, @"data-message-id=""v(\d+)""").Select(m => int.Parse(m.Groups[1].Value)).ToList();
-        Assert.AreEqual(20, virtualIds.Count, "The prerendered tail is as long as the threshold.");
+        Assert.HasCount(20, virtualIds, "The prerendered tail is as long as the threshold.");
         Assert.AreEqual(181, virtualIds.Min());
         Assert.AreEqual(200, virtualIds.Max());
-        Assert.AreEqual(30, Regex.Matches(html, @"data-message-id=""b\d+""").Count, "Below the threshold every message is prerendered.");
-        StringAssert.Contains(html, "role=\"log\"");
+        Assert.HasCount(30, Regex.Matches(html, @"data-message-id=""b\d+"""), "Below the threshold every message is prerendered.");
+        Assert.Contains("role=\"log\"", html);
     }
 
     // ---------- templates ----------
@@ -488,7 +488,7 @@ public class BitAiMessageListE2ETests : E2ETestBase
         await Expect(column).ToHaveCSSAsync("padding-left", "14px");
         if (await Page.SupportsCssAsync("scrollbar-color", "red transparent"))
         {
-            StringAssert.StartsWith(await ComputedStyleAsync("#msl-var", "scrollbar-color"), "rgb(200, 10, 20)");
+            Assert.StartsWith("rgb(200, 10, 20)", await ComputedStyleAsync("#msl-var", "scrollbar-color"));
         }
 
         // The two messages are 30px apart, once any entrance has landed.
@@ -508,7 +508,7 @@ public class BitAiMessageListE2ETests : E2ETestBase
         await Expect(column).ToHaveCSSAsync("row-gap", await column.ResolveLengthInAsync("calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale, 1) * 4)"));
         if (await Page.SupportsCssAsync("scrollbar-color", "red transparent"))
         {
-            StringAssert.StartsWith(await ComputedStyleAsync("#msl-basic", "scrollbar-color"), await Page.ResolveColorAsync("var(--bit-clr-brd-sec)"));
+            Assert.StartsWith(await Page.ResolveColorAsync("var(--bit-clr-brd-sec)"), await ComputedStyleAsync("#msl-basic", "scrollbar-color"));
         }
     }
 
@@ -534,7 +534,7 @@ public class BitAiMessageListE2ETests : E2ETestBase
 
         var column = await list.Locator(".bit-aimsl-con").RectAsync();
         var bubble = await list.Locator("article[data-role='user'] .bit-aicms-bbl").RectAsync();
-        Assert.IsTrue(bubble.Left < column.Left + 40, $"The bubble is at the left: {bubble.Left} vs {column.Left}.");
+        Assert.IsLessThan(column.Left + 40, bubble.Left, $"The bubble is at the left: {bubble.Left} vs {column.Left}.");
     }
 
     [TestMethod]

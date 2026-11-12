@@ -53,9 +53,9 @@ public partial class InteropContractTests
     {
         // Guards the regexes: a pattern that silently matched nothing would make the contract vacuous.
         var invoked = InvokedByTheBridge();
-        Assert.IsTrue(invoked.Count >= 20, $"only found {invoked.Count} invoked functions: {string.Join(", ", invoked)}");
+        Assert.IsGreaterThanOrEqualTo(20, invoked.Count, $"only found {invoked.Count} invoked functions: {string.Join(", ", invoked)}");
         CollectionAssert.IsSubsetOf(new[] { "startRafLoop", "getBoundingRect", "playWaapiFlip", "playScrollTimelineAnimation" }, invoked.ToArray());
-        Assert.IsTrue(ExportedByTheModule().Contains("startViewTransition"), "async exports must be recognised too");
+        Assert.Contains("startViewTransition", ExportedByTheModule(), "async exports must be recognised too");
     }
 
     [TestMethod]
@@ -63,7 +63,7 @@ public partial class InteropContractTests
     {
         var missing = InvokedByTheBridge().Except(ExportedByTheModule()).Order().ToArray();
 
-        Assert.AreEqual(0, missing.Length, $"BmotionInterop invokes functions bit-bmotion.ts does not export: {string.Join(", ", missing)}");
+        Assert.IsEmpty(missing, $"BmotionInterop invokes functions bit-bmotion.ts does not export: {string.Join(", ", missing)}");
     }
 
     [TestMethod]
@@ -74,7 +74,7 @@ public partial class InteropContractTests
 
         var unknown = recorded.Except(InvokedByTheBridge()).Order().ToArray();
 
-        Assert.AreEqual(0, unknown.Length,
+        Assert.IsEmpty(unknown,
             $"the fake records calls the real bridge never makes, so assertions on them prove nothing: {string.Join(", ", unknown)}");
     }
 }

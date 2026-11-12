@@ -32,7 +32,7 @@ public sealed class ProgrammaticTests : BmotionPageTest
         var paused = await WaitForRestAsync("#prog-0");
         await Page.WaitForTimeoutAsync(400);
 
-        Assert.IsTrue(paused.X < 190, $"Paused too late to tell: {paused}");
+        Assert.IsLessThan(190, paused.X, $"Paused too late to tell: {paused}");
         Assert.AreEqual(paused.X, (await ProbeAsync("#prog-0")).X, 1, "The animation kept moving while paused.");
         await ExpectEventAsync("selector:done", 0);
 
@@ -170,7 +170,7 @@ public sealed class ProgrammaticTests : BmotionPageTest
         await ClickAsync("ref-pause");
         var paused = await WaitForRestAsync("#box");
         await Page.WaitForTimeoutAsync(300);
-        Assert.IsTrue(paused.X < 115, $"Paused too late to tell: {paused}");
+        Assert.IsLessThan(115, paused.X, $"Paused too late to tell: {paused}");
         Assert.AreEqual(paused.X, (await ProbeAsync("#box")).X, 1, "Pause() didn't hold the element.");
 
         await ClickAsync("ref-resume");
@@ -187,7 +187,7 @@ public sealed class ProgrammaticTests : BmotionPageTest
         var stopped = await WaitForRestAsync("#box");
         await Page.WaitForTimeoutAsync(300);
         Assert.AreEqual(stopped.X, (await ProbeAsync("#box")).X, 1);
-        Assert.IsTrue(stopped.X < 115, $"Stopped too late to tell: {stopped}");
+        Assert.IsLessThan(115, stopped.X, $"Stopped too late to tell: {stopped}");
     }
 
     [TestMethod]

@@ -31,7 +31,7 @@ public class BitAiIconClassesTests : BitAiTestBase
             var type = merge.GetParameters()[1].ParameterType;
             var properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(p => p.PropertyType == typeof(string)).ToArray();
 
-            Assert.IsTrue(properties.Any(p => p.Name == "Icon"), $"{type.Name} has no Icon to put the glyph on.");
+            Assert.Contains(p => p.Name == "Icon", properties, $"{type.Name} has no Icon to put the glyph on.");
 
             var classes = Activator.CreateInstance(type)!;
             foreach (var property in properties) property.SetValue(classes, $"app-{property.Name}");
@@ -54,8 +54,9 @@ public class BitAiIconClassesTests : BitAiTestBase
 
         var component = RenderComponent<BitAiScrollToLatest>(p => p.Add(c => c.Visible, true).Add(c => c.Classes, classes));
         var first = component.FindComponent<BitButton>().Instance.Classes;
+        var actualValue = first?.Icon;
 
-        Assert.AreEqual("bit-icon-ai bit-icon-ai--Down app-icon", first?.Icon);
+        Assert.AreEqual("bit-icon-ai bit-icon-ai--Down app-icon", actualValue);
 
         component.Render(p => p.Add(c => c.Visible, true).Add(c => c.Classes, classes));
 
@@ -66,7 +67,8 @@ public class BitAiIconClassesTests : BitAiTestBase
         var second = component.FindComponent<BitButton>().Instance.Classes;
 
         Assert.AreNotSame(first, second);
-        Assert.AreEqual("bit-icon-ai bit-icon-ai--Down other-icon", second?.Icon);
+        var actualValue1 = second?.Icon;
+        Assert.AreEqual("bit-icon-ai bit-icon-ai--Down other-icon", actualValue1);
     }
 
     [TestMethod]
@@ -77,11 +79,13 @@ public class BitAiIconClassesTests : BitAiTestBase
         var component = RenderComponent<BitAiMessageActions>(p => p.Add(c => c.Message, message));
 
         var like = component.FindComponents<BitButton>().Single(b => b.Instance.IconName is "Like");
-        Assert.AreEqual("bit-icon-ai bit-icon-ai--Like", like.Instance.Classes?.Icon);
+        var actualValue = like.Instance.Classes?.Icon;
+        Assert.AreEqual("bit-icon-ai bit-icon-ai--Like", actualValue);
 
         like.Find("button").Click();
 
         var liked = component.FindComponents<BitButton>().Single(b => b.Instance.IconName is "LikeSolid");
-        Assert.AreEqual("bit-icon-ai bit-icon-ai--LikeSolid", liked.Instance.Classes?.Icon);
+        var actualValue1 = liked.Instance.Classes?.Icon;
+        Assert.AreEqual("bit-icon-ai bit-icon-ai--LikeSolid", actualValue1);
     }
 }

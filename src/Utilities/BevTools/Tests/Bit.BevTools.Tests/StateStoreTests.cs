@@ -5,7 +5,7 @@ namespace Bit.BevTools.Tests;
 [TestClass]
 public class StateStoreTests
 {
-    public sealed class CounterState : IBevStateProvider
+    internal sealed class CounterState : IBevStateProvider
     {
         public int Count { get; private set; }
 
@@ -115,7 +115,7 @@ public class StateStoreTests
 
             Assert.AreEqual(2, entry.ChangeCount);
             var changes = entry.Changes;
-            Assert.AreEqual(2, changes.Length);
+            Assert.HasCount(2, changes);
             var last = changes[1];
             Assert.AreEqual("Increment", last.Action);
             Assert.Contains(c => c.Path == "Count" && c.Before == "1" && c.After == "2", last.Changes);
@@ -149,7 +149,7 @@ public class StateStoreTests
         }
 
         var full = Detail(BevValueAccess.Full);
-        StringAssert.StartsWith(full, "from the cart · id=42, street=\"1 Main St\", password=«redacted», customer=");
+        Assert.StartsWith("from the cart · id=42, street=\"1 Main St\", password=«redacted», customer=", full);
         Assert.AreEqual("from the cart · id=42, street=\"1 Main St\", password=«redacted», customer=CounterState", Detail(BevValueAccess.Shallow), "an object by its type");
         Assert.AreEqual("from the cart · id, street, password, customer", Detail(BevValueAccess.None), "names only");
     }

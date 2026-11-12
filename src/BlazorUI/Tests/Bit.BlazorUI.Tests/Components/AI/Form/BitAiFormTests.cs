@@ -56,7 +56,7 @@ public class BitAiFormTests : BitAiTestBase
 
         Assert.IsFalse(string.IsNullOrEmpty(id));
         Assert.AreEqual("INPUT", form.Find($"[id='{id}']").TagName);
-        StringAssert.Contains(form.Markup, "Guests");
+        Assert.Contains("Guests", form.Markup);
         Assert.AreEqual("TEXTAREA", InputOf(form, "Notes").TagName);
         Assert.AreEqual("email", InputOf(form, "Email").GetAttribute("type"));
     }
@@ -72,7 +72,7 @@ public class BitAiFormTests : BitAiTestBase
         Submit(form).Click();
 
         Assert.IsNull(submitted);
-        StringAssert.Contains(form.Markup, "Guests is required.");
+        Assert.Contains("Guests is required.", form.Markup);
         Assert.AreEqual("true", InputOf(form, "Guests").GetAttribute("aria-invalid"));
     }
 
@@ -101,7 +101,7 @@ public class BitAiFormTests : BitAiTestBase
         InputOf(form, "Guests").Change("20");
         Submit(form).Click();
 
-        StringAssert.Contains(form.Markup, "at most 8");
+        Assert.Contains("at most 8", form.Markup);
         Assert.AreEqual("20", form.Instance.Values["guests"]);
     }
 
@@ -118,7 +118,7 @@ public class BitAiFormTests : BitAiTestBase
 
         InputOf(form, "City").Input("Oslo");
 
-        Assert.IsFalse(form.Markup.Contains("City is required."));
+        Assert.DoesNotContain("City is required.", form.Markup);
         Assert.AreEqual("Oslo", form.Instance.Values["city"]);
     }
 
@@ -133,7 +133,7 @@ public class BitAiFormTests : BitAiTestBase
             Fields = [.. Definition.Fields, new BitAiFormField("seating")],
         }));
 
-        StringAssert.Contains(form.Markup, "Seating");
+        Assert.Contains("Seating", form.Markup);
         Assert.AreEqual("3", form.Instance.Values["guests"]);
     }
 
@@ -227,10 +227,10 @@ public class BitAiFormTests : BitAiTestBase
         Assert.IsTrue(fields["code"].ReadOnly);
         Assert.AreEqual("booking", fields["kind"].Value);
         Assert.IsTrue(fields["kind"].ReadOnly);
-        CollectionAssert.AreEqual(new[] { "Free", "Professional" }, fields["plan"].OptionLabels!.ToArray());
+        Assert.AreSequenceEqual(new[] { "Free", "Professional" }, fields["plan"].OptionLabels!.ToArray());
         Assert.AreEqual(BitAiFieldType.Select, fields["size"].Type);
-        CollectionAssert.AreEqual(new[] { "s", "l" }, fields["size"].Options!.ToArray());
-        CollectionAssert.AreEqual(new[] { "Small", "Large" }, fields["size"].OptionLabels!.ToArray());
+        Assert.AreSequenceEqual(new[] { "s", "l" }, fields["size"].Options!.ToArray());
+        Assert.AreSequenceEqual(new[] { "Small", "Large" }, fields["size"].OptionLabels!.ToArray());
         Assert.AreEqual(BitAiFieldType.Time, fields["when"].Type);
         Assert.AreEqual(BitAiFieldType.Url, fields["site"].Type);
         Assert.AreEqual(BitAiFieldType.DateTime, fields["at"].Type);
@@ -259,7 +259,7 @@ public class BitAiFormTests : BitAiTestBase
         var home = fields["home"];
         Assert.AreEqual(BitAiFieldType.Object, home.Type);
         Assert.AreEqual("Home address", home.Label);
-        Assert.AreEqual(1, home.Fields!.Count);
+        Assert.ContainsSingle(home.Fields!);
         Assert.IsTrue(home.Fields[0].Required);
 
         var tags = fields["tags"];
@@ -269,7 +269,7 @@ public class BitAiFormTests : BitAiTestBase
 
         var guests = fields["guests"];
         Assert.AreEqual(BitAiFieldType.Object, guests.Items!.Type);
-        CollectionAssert.AreEqual(new[] { "name", "vip" }, guests.Items.Fields!.Select(f => f.Name).ToArray());
+        Assert.AreSequenceEqual(new[] { "name", "vip" }, guests.Items.Fields!.Select(f => f.Name).ToArray());
 
         Assert.AreEqual(BitAiFieldType.Text, fields["loop"].Type);
     }
@@ -285,15 +285,15 @@ public class BitAiFormTests : BitAiTestBase
 
         InputOf(form, "Seats").Change("1.5");
         Submit(form).Click();
-        StringAssert.Contains(form.Find(".bit-aifrm-fld").TextContent, "whole number");
+        Assert.Contains("whole number", form.Find(".bit-aifrm-fld").TextContent);
 
         InputOf(form, "Seats").Change("3");
         Submit(form).Click();
-        StringAssert.Contains(form.Find(".bit-aifrm-fld").TextContent, "multiple of 2");
+        Assert.Contains("multiple of 2", form.Find(".bit-aifrm-fld").TextContent);
 
         InputOf(form, "Seats").Change("4");
         Submit(form).Click();
-        Assert.IsFalse(form.Find(".bit-aifrm-fld").TextContent.Contains("must be"));
+        Assert.DoesNotContain("must be", form.Find(".bit-aifrm-fld").TextContent);
         Assert.IsNull(InputOf(form, "Seats").GetAttribute("aria-invalid"));
     }
 
@@ -309,22 +309,22 @@ public class BitAiFormTests : BitAiTestBase
         // The field is addressable by an id built from its path, sanitised to what an id selector accepts.
         var field = form.Find(".bit-aifrm-fld > *");
         Assert.IsTrue(Regex.IsMatch(field.Id!, "^[A-Za-z0-9_-]+$"), field.Id);
-        StringAssert.StartsWith(field.Id, form.Instance.UniqueId);
+        Assert.StartsWith(form.Instance.UniqueId, field.Id);
 
         var input = form.Find("input");
         Assert.AreEqual(input.Id, form.Find("label").GetAttribute("for"));
         Assert.IsTrue(input.HasAttribute("required"));
         Assert.IsFalse(input.HasAttribute("aria-invalid"));
         var describedBy = input.GetAttribute("aria-describedby")!.Split(' ');
-        Assert.IsTrue(describedBy.Any(id => form.Find($"[id='{id}']").TextContent.Contains("As on the booking.")));
+        Assert.Contains(id => form.Find($"[id='{id}']").TextContent.Contains("As on the booking."), describedBy);
 
         Submit(form).Click();
 
         input = form.Find("input");
         Assert.AreEqual("true", input.GetAttribute("aria-invalid"));
         describedBy = input.GetAttribute("aria-describedby")!.Split(' ');
-        Assert.IsTrue(describedBy.Any(id => form.Find($"[id='{id}']").TextContent.Contains("Guest name is required.")));
-        Assert.IsTrue(describedBy.Any(id => form.Find($"[id='{id}']").TextContent.Contains("As on the booking.")));
+        Assert.Contains(id => form.Find($"[id='{id}']").TextContent.Contains("Guest name is required."), describedBy);
+        Assert.Contains(id => form.Find($"[id='{id}']").TextContent.Contains("As on the booking."), describedBy);
     }
 
     [TestMethod]
@@ -502,7 +502,7 @@ public class BitAiFormTests : BitAiTestBase
         string[] expected = ["bit-tfl", "bit-tfl", "bit-nfl", "bit-chb", "bit-drp", "bit-dtp", "bit-dtp", "bit-tpc", "bit-tfl", "bit-tfl", "bit-tfl"];
         var fields = form.FindAll(".bit-aifrm-fld");
 
-        Assert.AreEqual(expected.Length, fields.Count);
+        Assert.HasCount(expected.Length, fields);
         for (var i = 0; i < expected.Length; i++)
         {
             Assert.IsTrue(fields[i].Children[0].ClassList.Contains(expected[i]), $"Field {i} is not a {expected[i]}.");
@@ -640,7 +640,7 @@ public class BitAiFormTests : BitAiTestBase
         Assert.IsTrue(root.GetProperty("vip").GetBoolean());
         Assert.AreEqual("ada@example.com", root.GetProperty("contact").GetProperty("email").GetString());
         Assert.IsFalse(root.GetProperty("contact").TryGetProperty("phone", out _));
-        CollectionAssert.AreEqual(new[] { "window", "quiet" }, root.GetProperty("tags").EnumerateArray().Select(e => e.GetString()).ToArray());
+        Assert.AreSequenceEqual(new[] { "window", "quiet" }, root.GetProperty("tags").EnumerateArray().Select(e => e.GetString()).ToArray());
         var people = root.GetProperty("people");
         Assert.AreEqual(1, people.GetArrayLength());
         Assert.AreEqual("Ada", people[0].GetProperty("name").GetString());
@@ -655,12 +655,12 @@ public class BitAiFormTests : BitAiTestBase
             Fields = [new BitAiFormField("tags") { Type = BitAiFieldType.Array, Items = new BitAiFormField("tag"), MinItems = 2, Value = """["a","b","c"]""" }],
         };
         var form = RenderComponent<BitAiForm>(p => p.Add(c => c.Definition, definition));
-        Assert.AreEqual(3, form.FindAll(".bit-aifrm-itm").Count);
+        Assert.HasCount(3, form.FindAll(".bit-aifrm-itm"));
         Assert.AreEqual("Remove Tags 2", form.FindAll("button.bit-aifrm-rmv")[1].GetAttribute("aria-label"));
 
         form.FindAll("button.bit-aifrm-rmv")[1].Click();
 
-        CollectionAssert.AreEqual(new[] { "a", "c" }, form.FindAll(".bit-aifrm-itm input").Select(i => i.GetAttribute("value")).ToArray());
+        Assert.AreSequenceEqual(new[] { "a", "c" }, form.FindAll(".bit-aifrm-itm input").Select(i => i.GetAttribute("value")).ToArray());
         Assert.AreEqual("c", form.Instance.Values["tags[1]"]);
         Assert.IsFalse(form.Instance.Values.ContainsKey("tags[2]"));
 
@@ -668,7 +668,7 @@ public class BitAiFormTests : BitAiTestBase
         Submit(form).Click();
 
         var error = form.Find(".bit-aifrm-err");
-        StringAssert.Contains(error.TextContent, "at least 2 items");
+        Assert.Contains("at least 2 items", error.TextContent);
         Assert.AreEqual("alert", error.GetAttribute("role"));
         Assert.IsTrue(form.Find("fieldset").ClassList.Contains("bit-aifrm-inv"));
         Assert.AreEqual(error.Id, form.Find("fieldset").GetAttribute("aria-describedby"));
@@ -702,9 +702,9 @@ public class BitAiFormTests : BitAiTestBase
         var form = RenderComponent<BitAiForm>(p => p.Add(c => c.Definition, definition));
 
         var entries = form.FindAll(".bit-aifrm-iob");
-        Assert.AreEqual(2, entries.Count);
+        Assert.HasCount(2, entries);
         Assert.IsTrue(entries.All(e => e.GetAttribute("role") == "group"));
-        CollectionAssert.AreEqual(new[] { "Speakers 1", "Speakers 2" }, entries.Select(e => e.GetAttribute("aria-label")).ToArray());
+        Assert.AreSequenceEqual(new[] { "Speakers 1", "Speakers 2" }, entries.Select(e => e.GetAttribute("aria-label")).ToArray());
 
         // An entry of values is its one input, named through its own aria-label rather than a group around it.
         var tag = form.FindAll(".bit-aifrm-itm").Single(i => i.ClassList.Contains("bit-aifrm-iob") is false);
@@ -732,7 +732,7 @@ public class BitAiFormTests : BitAiTestBase
 
         add.Click();
 
-        Assert.AreEqual(2, form.FindAll(".bit-aifrm-itm").Count);
+        Assert.HasCount(2, form.FindAll(".bit-aifrm-itm"));
         Assert.IsFalse(form.Instance.Values.ContainsKey("tags[2]"));
     }
 
@@ -751,7 +751,7 @@ public class BitAiFormTests : BitAiTestBase
 
         // The last entry goes, and its button with it: the focus moves to the remove button of the new last one.
         form.FindAll("button.bit-aifrm-rmv")[2].Click();
-        Assert.HasCount(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
         Assert.AreEqual(RemoveButtons()[1].Instance.RootElement.Id, FocusedId());
 
         // The first entry goes: the next one moves into its slot, and its remove button takes the focus there.
@@ -773,8 +773,8 @@ public class BitAiFormTests : BitAiTestBase
         };
         var form = RenderComponent<BitAiForm>(p => p.Add(c => c.Definition, definition));
 
-        Assert.AreEqual(0, form.FindAll("button.bit-aifrm-rmv").Count);
-        Assert.AreEqual(0, form.FindAll("button.bit-aifrm-add").Count);
+        Assert.IsEmpty(form.FindAll("button.bit-aifrm-rmv"));
+        Assert.IsEmpty(form.FindAll("button.bit-aifrm-add"));
     }
 
     [TestMethod]
@@ -817,8 +817,8 @@ public class BitAiFormTests : BitAiTestBase
             .Add(c => c.Definition, Definition)
             .Add(c => c.Submitted, true));
 
-        Assert.AreEqual(0, form.FindAll(".bit-aifrm-act").Count);
-        StringAssert.Contains(form.Find(".bit-aifrm-sbm .bit-tag").TextContent, "Submitted");
+        Assert.IsEmpty(form.FindAll(".bit-aifrm-act"));
+        Assert.Contains("Submitted", form.Find(".bit-aifrm-sbm .bit-tag").TextContent);
         // A neutral tag through the host-default class, never a Color, so the app's --bit-Tag-* variables reach it.
         Assert.IsTrue(form.Find(".bit-aifrm-sbm .bit-tag").ClassList.Contains("bit-tag-dft-ter"));
         Assert.IsNull(form.FindComponent<BitTag>().Instance.Color);
@@ -842,7 +842,7 @@ public class BitAiFormTests : BitAiTestBase
             .Add(c => c.Definition, new BitAiFormDefinition { CancelLabel = "" })
             .Add(c => c.OnCancel, () => { }));
 
-        Assert.AreEqual(0, form.FindAll("button.bit-aifrm-cnl").Count);
+        Assert.IsEmpty(form.FindAll("button.bit-aifrm-cnl"));
     }
 
     [TestMethod]
@@ -850,8 +850,8 @@ public class BitAiFormTests : BitAiTestBase
     {
         var form = RenderComponent<BitAiForm>(p => p.Add(c => c.Definition, Definition));
 
-        Assert.AreEqual(0, form.FindAll("button.bit-aifrm-cnl").Count);
-        Assert.AreEqual(1, form.FindAll("button.bit-aifrm-sbt").Count);
+        Assert.IsEmpty(form.FindAll("button.bit-aifrm-cnl"));
+        Assert.ContainsSingle(form.FindAll("button.bit-aifrm-sbt"));
     }
 
     [TestMethod]
@@ -875,7 +875,7 @@ public class BitAiFormTests : BitAiTestBase
             form.Find("input").Change("1.5");
             Submit(form).Click();
 
-            Assert.IsFalse(form.Markup.Contains("must be"));
+            Assert.DoesNotContain("must be", form.Markup);
             Assert.AreEqual("1.5", submitted!["ratio"]);
         }
         finally
@@ -935,12 +935,12 @@ public class BitAiFormTests : BitAiTestBase
         Assert.AreEqual("booking", root.Id);
         Assert.IsTrue(root.ClassList.Contains("custom-class"));
         Assert.IsTrue(root.ClassList.Contains("root-class"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin: 1px");
-        StringAssert.Contains(root.GetAttribute("style"), "padding: 2px");
+        Assert.Contains("margin: 1px", root.GetAttribute("style")!);
+        Assert.Contains("padding: 2px", root.GetAttribute("style")!);
         Assert.IsTrue(form.Find(".bit-aifrm-ttl").ClassList.Contains("title-class"));
         Assert.AreEqual("color: red", form.Find(".bit-aifrm-ttl").GetAttribute("style"));
-        Assert.AreEqual(3, form.FindAll(".bit-aifrm-fld.field-class").Count);
-        StringAssert.StartsWith(form.Find(".bit-aifrm-fld > *").Id, "booking-");
+        Assert.HasCount(3, form.FindAll(".bit-aifrm-fld.field-class"));
+        Assert.StartsWith("booking-", form.Find(".bit-aifrm-fld > *").Id);
     }
 
     [TestMethod,
@@ -961,7 +961,7 @@ public class BitAiFormTests : BitAiTestBase
         }
         else
         {
-            StringAssert.Contains(style, expected);
+            Assert.Contains(expected, style);
         }
     }
 }

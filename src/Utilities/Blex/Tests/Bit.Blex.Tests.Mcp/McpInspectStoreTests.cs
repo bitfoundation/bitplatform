@@ -33,7 +33,7 @@ public class McpInspectStoreTests
         var result = await InspectAsync(Counter);
 
         Assert.IsTrue(result.IsValid, string.Join("; ", result.Diagnostics.Select(d => d.Message)));
-        Assert.AreEqual(0, result.Diagnostics.Length);
+        Assert.IsEmpty(result.Diagnostics);
 
         var store = result.Stores.Single();
         Assert.AreEqual("CounterStore", store.Name);
@@ -41,13 +41,13 @@ public class McpInspectStoreTests
 
         var signatures = store.Members.Select(member => member.Signature).ToArray();
 
-        CollectionAssert.Contains(signatures, "int Count { get; set; }");
-        CollectionAssert.Contains(signatures, "int Double { get; }");
-        CollectionAssert.Contains(signatures, "void Increment()");
+        Assert.Contains("int Count { get; set; }", signatures);
+        Assert.Contains("int Double { get; }", signatures);
+        Assert.Contains("void Increment()", signatures);
         // The CancellationToken is supplied by the wrapper, so it is not on the public method.
-        CollectionAssert.Contains(signatures, "Task Load(int id)");
-        CollectionAssert.Contains(signatures, "void CancelLoad()");
-        CollectionAssert.Contains(signatures, "bool LoadIsLoading { get; }");
+        Assert.Contains("Task Load(int id)", signatures);
+        Assert.Contains("void CancelLoad()", signatures);
+        Assert.Contains("bool LoadIsLoading { get; }", signatures);
     }
 
     [TestMethod]
@@ -71,7 +71,7 @@ public class McpInspectStoreTests
         Assert.AreEqual(4, diagnostic.Line, "The diagnostic does not point at the class declaration.");
 
         Assert.IsFalse(result.Stores.Single().Generated);
-        Assert.IsTrue(result.Notes.Any(note => note.Contains("was rejected", StringComparison.Ordinal)));
+        Assert.Contains(note => note.Contains("was rejected", StringComparison.Ordinal), result.Notes);
     }
 
     [TestMethod]
@@ -104,7 +104,7 @@ public class McpInspectStoreTests
             """);
 
         Assert.IsFalse(result.IsValid);
-        Assert.IsTrue(result.Diagnostics.Any(d => d.Source == "compiler" && d.Id == "CS0103"));
+        Assert.Contains(d => d.Source == "compiler" && d.Id == "CS0103", result.Diagnostics);
         Assert.IsTrue(result.Stores.Single().Generated, "A store the generator accepted is reported as rejected.");
     }
 
@@ -113,8 +113,8 @@ public class McpInspectStoreTests
     {
         var result = await InspectAsync("public class NotAStore { }");
 
-        Assert.AreEqual(0, result.Stores.Length);
-        Assert.IsTrue(result.Notes.Any(note => note.Contains("No class marked [BlexStore]", StringComparison.Ordinal)));
+        Assert.IsEmpty(result.Stores);
+        Assert.Contains(note => note.Contains("No class marked [BlexStore]", StringComparison.Ordinal), result.Notes);
     }
 
     [TestMethod]
@@ -125,7 +125,7 @@ public class McpInspectStoreTests
         var withCode = await McpCall.StructuredAsync<BlexStoreInspectionDto>("InspectBlexStore",
             new() { ["source"] = Counter, ["includeGeneratedCode"] = true });
 
-        StringAssert.Contains(withCode.GeneratedCode!, "partial class CounterStore : global::Bit.Blex.BlexStoreBase");
+        Assert.Contains("partial class CounterStore : global::Bit.Blex.BlexStoreBase", withCode.GeneratedCode!);
     }
 
     [TestMethod]
@@ -133,7 +133,7 @@ public class McpInspectStoreTests
     {
         var result = await InspectAsync(Counter + new string(' ', 60_000));
 
-        StringAssert.StartsWith(result.Notes[0], "INCOMPLETE ANALYSIS");
+        Assert.StartsWith("INCOMPLETE ANALYSIS", result.Notes[0]);
     }
 
     [TestMethod]
@@ -266,7 +266,7 @@ public class McpInspectStoreTests
         var message = result.Diagnostics.Single(d => d.Id == "CS0029").Message;
 
         Assert.IsLessThan(BlexStoreInspector.MaxMessageLength + 100, message.Length);
-        StringAssert.Contains(message, $"(cut at {BlexStoreInspector.MaxMessageLength} of ");
+        Assert.Contains($"(cut at {BlexStoreInspector.MaxMessageLength} of ", message);
     }
 
     [TestMethod]
@@ -544,7 +544,7 @@ public class McpInspectStoreTests
 
             var bad = await InspectAsync(AsStore(doc.Bad));
 
-            Assert.IsTrue(bad.Diagnostics.Any(d => d.Id == doc.Code),
+            Assert.Contains(d => d.Id == doc.Code, bad.Diagnostics,
                 $"The docs' rejected sample for {doc.Code} is not reported as {doc.Code} by the generator: " +
                 $"{string.Join("; ", bad.Diagnostics.Select(d => $"{d.Id} {d.Message}"))}");
 
@@ -555,14 +555,14 @@ public class McpInspectStoreTests
                 // would not.
                 var good = await InspectAsync(AsStore(doc.Good));
 
-                Assert.IsFalse(good.Diagnostics.Any(d => d.Id == doc.Code),
+                Assert.DoesNotContain(d => d.Id == doc.Code, good.Diagnostics,
                     $"The docs' fix for {doc.Code} is still reported as {doc.Code} by the generator: {string.Join("; ", good.Diagnostics.Select(d => $"{d.Id} {d.Message}"))}");
             }
 
             judged++;
         }
 
-        Assert.IsTrue(judged >= 15, $"Only {judged} documented samples were judged.");
+        Assert.IsGreaterThanOrEqualTo(15, judged, $"Only {judged} documented samples were judged.");
     }
 
     /// <summary>
@@ -592,6 +592,6 @@ public class McpInspectStoreTests
     {
         Assert.IsFalse(result.IsValid);
         Assert.IsEmpty(result.Stores);
-        StringAssert.StartsWith(result.Notes[^1], "REFUSED: " + reason);
+        Assert.StartsWith("REFUSED: " + reason, result.Notes[^1]);
     }
 }

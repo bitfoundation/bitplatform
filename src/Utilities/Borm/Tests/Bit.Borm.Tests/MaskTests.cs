@@ -120,7 +120,7 @@ public class MaskTests : ComponentTestBase
 
         Assert.AreEqual("5551234567", data["phone"]);
         Assert.AreEqual("(555) 123-4567", cut.Find("#borm_phone").GetAttribute("value"));
-        StringAssert.Contains(cut.Find(".bit-borm-review").TextContent, "(555) 123-4567");
+        Assert.Contains("(555) 123-4567", cut.Find(".bit-borm-review").TextContent);
     }
 
     [TestMethod]
@@ -128,17 +128,17 @@ public class MaskTests : ComponentTestBase
     {
         var (state, _) = Phone(storeRaw: true);
         var json = BormJsonSchemaExporter.Export(state.Definition);
-        StringAssert.Contains(json, "\"x-mask\": \"(000) 000-0000\"");
+        Assert.Contains("\"x-mask\": \"(000) 000-0000\"", json);
 
         var back = BormJsonSchemaImporter.Import(json).Fields[0];
         Assert.AreEqual("(000) 000-0000", back.Mask);
         Assert.IsTrue(back.MaskStoresRaw);
-        Assert.IsTrue(back.Validators.Any(v => v is BormMaskRule));
+        Assert.Contains(v => v is BormMaskRule, back.Validators);
 
         Assert.IsFalse(BormJsonSchemaImporter.TryImport("""
             { "type": "object", "properties": { "code": { "type": "string", "x-mask": "--" } } }
             """, out _, out var error));
-        StringAssert.Contains(error, "x-mask of 'code'");
+        Assert.Contains("x-mask of 'code'", error!);
     }
 
     [TestMethod]

@@ -29,10 +29,10 @@ public class BitCircularTimePickerTouchE2ETests : E2ETestBase
     private static async Task AssertClearOfTopSafeAreaAsync(ILocator callout, double safeArea)
     {
         var readOut = (await callout.Locator(".bit-ctp-hmc").BoundingBoxAsync())!;
-        Assert.IsTrue(readOut.Y >= safeArea, $"The read-out sits under the top safe area ({readOut.Y}px).");
+        Assert.IsGreaterThanOrEqualTo(safeArea, readOut.Y, $"The read-out sits under the top safe area ({readOut.Y}px).");
 
         var close = (await callout.Locator(".bit-ctp-cbn").BoundingBoxAsync())!;
-        Assert.IsTrue(close.Y >= safeArea, $"The close button sits under the top safe area ({close.Y}px).");
+        Assert.IsGreaterThanOrEqualTo(safeArea, close.Y, $"The close button sits under the top safe area ({close.Y}px).");
     }
 
     private ILocator StandaloneCallout(string scope) => Page.Locator($"#{scope} .bit-ctp-cal").First;
@@ -203,7 +203,7 @@ public class BitCircularTimePickerTouchE2ETests : E2ETestBase
         await body.EvaluateAsync("el => { el.scrollTop = el.scrollHeight; }");
         await NextFramesAsync();
 
-        Assert.IsTrue(await body.EvaluateAsync<double>("el => el.scrollTop") > 0, "The body under the toolbar does not scroll.");
+        Assert.IsGreaterThan(0, await body.EvaluateAsync<double>("el => el.scrollTop"), "The body under the toolbar does not scroll.");
         Assert.AreEqual(0, await container.EvaluateAsync<double>("el => el.scrollTop"), "The container scrolled the toolbar away.");
         Assert.AreEqual(0, (await callout.Locator(".bit-ctp-tlb").BoundingBoxAsync())!.Y, 1, "The toolbar no longer runs up to the top of the screen.");
         await AssertClearOfTopSafeAreaAsync(callout, 47);

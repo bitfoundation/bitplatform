@@ -253,7 +253,7 @@ public sealed class BitThemeFamilyAliasReSubstitutionTests : BunitTestContext
             }
         }
 
-        Assert.IsTrue(checkedPairs > 500, $"Only {checkedPairs} alias/selector pairs were checked; the bundles no longer look like theme stylesheets.");
+        Assert.IsGreaterThan(500, checkedPairs, $"Only {checkedPairs} alias/selector pairs were checked; the bundles no longer look like theme stylesheets.");
     }
 
     [TestMethod]
@@ -267,12 +267,10 @@ public sealed class BitThemeFamilyAliasReSubstitutionTests : BunitTestContext
             .SelectMany(s => OverlayGroup.Matches(s).Select(m => m.Groups[1].Value))
             .ToHashSet(StringComparer.Ordinal);
 
-        CollectionAssert.AreEquivalent(
-            OverlayGroupNames().ToArray(),
-            keyed.ToArray());
+        Assert.AreSequenceEqual(
+            OverlayGroupNames().ToArray(), keyed.ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
-        CollectionAssert.AreEquivalent(GroupAliases.Keys.ToArray(), keyed.ToArray(),
-            "This test's own map of the aliases per group has drifted from the groups the stylesheets key on.");
+        Assert.AreSequenceEqual(GroupAliases.Keys.ToArray(), keyed.ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, "This test's own map of the aliases per group has drifted from the groups the stylesheets key on.");
     }
 
     [TestMethod]
@@ -289,7 +287,7 @@ public sealed class BitThemeFamilyAliasReSubstitutionTests : BunitTestContext
                                                  r.Selectors.Contains($":where(:root [bit-theme-overlay~={group}])", StringComparer.Ordinal));
 
             Assert.IsNotNull(rule, $"The core stylesheet has no overlay rule for the {group} group.");
-            CollectionAssert.AreEquivalent(aliases, rule.Declarations.Select(d => d.Key).ToArray(), $"The core overlay rule for the {group} group.");
+            Assert.AreSequenceEqual(aliases, rule.Declarations.Select(d => d.Key).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, $"The core overlay rule for the {group} group.");
         }
     }
 
@@ -310,9 +308,8 @@ public sealed class BitThemeFamilyAliasReSubstitutionTests : BunitTestContext
                 // .bit-fam (ForceAnimation) substitutes them again too, from the same mixin, for the subtree it opts out.
                 if (rule.Selectors is [".bit-fam"]) continue;
 
-                CollectionAssert.AreEqual(shared, rule.Selectors,
-                    $"{bundle}: '{string.Join(", ", rule.Selectors)}' declares a motion alias; a theme re-values the -full tokens instead.");
-                CollectionAssert.AreEquivalent(GroupAliases["motion"], rule.Declarations.Select(d => d.Key).ToArray(), $"{bundle}: the motion alias rule.");
+                Assert.AreSequenceEqual(shared, rule.Selectors, $"{bundle}: '{string.Join(", ", rule.Selectors)}' declares a motion alias; a theme re-values the -full tokens instead.");
+                Assert.AreSequenceEqual(GroupAliases["motion"], rule.Declarations.Select(d => d.Key).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, $"{bundle}: the motion alias rule.");
                 checkedRules++;
             }
         }
@@ -341,8 +338,7 @@ public sealed class BitThemeFamilyAliasReSubstitutionTests : BunitTestContext
                 {
                     foreach (var (alias, _) in rule.Declarations)
                     {
-                        CollectionAssert.Contains(GroupAliases[group], alias,
-                            $"{bundle}: '{string.Join(", ", rule.Selectors)}' re-declares {alias} for the {group} group, which the core " +
+                        Assert.Contains(alias, GroupAliases[group], $"{bundle}: '{string.Join(", ", rule.Selectors)}' re-declares {alias} for the {group} group, which the core " +
                             $"stylesheet's rule for that group does not - add it to the group's mixin in family-tokens.scss.");
                     }
                 }
@@ -351,7 +347,7 @@ public sealed class BitThemeFamilyAliasReSubstitutionTests : BunitTestContext
             }
         }
 
-        Assert.IsTrue(checkedRules > 20, $"Only {checkedRules} overlay rules were found; the bundles no longer look like theme stylesheets.");
+        Assert.IsGreaterThan(20, checkedRules, $"Only {checkedRules} overlay rules were found; the bundles no longer look like theme stylesheets.");
     }
 
     [TestMethod]
@@ -361,7 +357,7 @@ public sealed class BitThemeFamilyAliasReSubstitutionTests : BunitTestContext
         // forced-colors mode unless the system-palette block covers that element too, from above them.
         var css = File.ReadAllText(SourceFiles.GetPath(CompiledBundles[0]));
 
-        StringAssert.Contains(css, ":root:root:root:root [bit-theme-overlay]");
+        Assert.Contains(":root:root:root:root [bit-theme-overlay]", css);
     }
 
     [TestMethod]
@@ -481,8 +477,8 @@ public sealed class BitThemeFamilyAliasReSubstitutionTests : BunitTestContext
         var div = RenderProvider(theme).Find("div");
         var style = div.GetAttribute("style") ?? string.Empty;
 
-        StringAssert.Contains(style, "--bit-shp-radius-surface:2rem");
-        StringAssert.Contains(style, "--bit-clr-tooltip-bg:#222222");
+        Assert.Contains("--bit-shp-radius-surface:2rem", style);
+        Assert.Contains("--bit-clr-tooltip-bg:#222222", style);
         Assert.AreEqual("radius tooltip", div.GetAttribute(BitThemeAttributeNames.ThemeOverlay));
     }
 
@@ -498,8 +494,8 @@ public sealed class BitThemeFamilyAliasReSubstitutionTests : BunitTestContext
         var div = RenderProvider(theme).Find("div");
         var style = div.GetAttribute("style") ?? string.Empty;
 
-        StringAssert.Contains(style, "--bit-tpg-fw-semibold:700");
-        StringAssert.Contains(style, "--bit-tpg-field-label-font-weight:500");
+        Assert.Contains("--bit-tpg-fw-semibold:700", style);
+        Assert.Contains("--bit-tpg-field-label-font-weight:500", style);
         Assert.IsFalse(style.Contains("--bit-tpg-dialog-title-font-weight:", StringComparison.Ordinal), $"Only what the theme sets is inline. Actual: {style}");
         Assert.AreEqual("typography", div.GetAttribute(BitThemeAttributeNames.ThemeOverlay));
     }
@@ -563,10 +559,9 @@ public sealed class BitThemeFamilyAliasReSubstitutionTests : BunitTestContext
         var invocation = Context.JSInterop.VerifyInvoke("BitBlazorUI.Theme.applyTheme");
         var variables = (IReadOnlyDictionary<string, string>)invocation.Arguments[0]!;
 
-        Assert.AreEqual(2, invocation.Arguments.Count, "applyTheme takes the variables and the target; it derives the groups itself.");
+        Assert.HasCount(2, invocation.Arguments, "applyTheme takes the variables and the target; it derives the groups itself.");
         Assert.AreEqual("#111111", variables["--bit-clr-fg-pri"]);
-        Assert.IsFalse(GroupAliases.Values.SelectMany(a => a).Any(variables.ContainsKey),
-            "The family aliases are the stylesheets' to re-declare, not the overlay's.");
+        Assert.DoesNotContain(variables.ContainsKey, GroupAliases.Values.SelectMany(a => a), "The family aliases are the stylesheets' to re-declare, not the overlay's.");
     }
 
     [TestMethod]
@@ -579,8 +574,7 @@ public sealed class BitThemeFamilyAliasReSubstitutionTests : BunitTestContext
 
         var cSharp = OverlayGroups().Select(g => $"{g.Key}: {string.Join(" ", g.Value)}").ToArray();
 
-        CollectionAssert.AreEqual(cSharp, typeScript,
-            "FAMILY_ALIAS_OVERLAY_GROUPS in BitTheme.ts has drifted from BitThemeMapper.FamilyAliasOverlayGroups. " +
+        Assert.AreSequenceEqual(cSharp, typeScript, "FAMILY_ALIAS_OVERLAY_GROUPS in BitTheme.ts has drifted from BitThemeMapper.FamilyAliasOverlayGroups. " +
             $"C#: [{string.Join("; ", cSharp)}] TypeScript: [{string.Join("; ", typeScript)}]");
     }
 
@@ -617,8 +611,7 @@ public sealed class BitThemeFamilyAliasReSubstitutionTests : BunitTestContext
                     {
                         if (declared.Contains(read) || reValuable.Contains(read) is false) continue;
 
-                        Assert.IsTrue(feeding.Contains(read),
-                            $"{bundle}: '{rule.Selectors[0]}' builds {alias} from {read}, which no group re-declaring {alias} " +
+                        Assert.Contains(read, feeding, $"{bundle}: '{rule.Selectors[0]}' builds {alias} from {read}, which no group re-declaring {alias} " +
                             "names as an input - add it to that group in BitThemeMapper.FamilyAliasOverlayGroups and BitTheme.ts.");
                         checkedReads++;
                     }
@@ -626,7 +619,7 @@ public sealed class BitThemeFamilyAliasReSubstitutionTests : BunitTestContext
             }
         }
 
-        Assert.IsTrue(checkedReads > 50, $"Only {checkedReads} token reads were checked; the overlay rules no longer look like the family tier.");
+        Assert.IsGreaterThan(50, checkedReads, $"Only {checkedReads} token reads were checked; the overlay rules no longer look like the family tier.");
     }
 
     [TestMethod]
@@ -658,7 +651,7 @@ public sealed class BitThemeFamilyAliasReSubstitutionTests : BunitTestContext
             }
         }
 
-        Assert.IsTrue(checkedTwins > 20, $"Only {checkedTwins} named scoped twins were found.");
-        Assert.IsTrue(checkedDocuments > 20, $"Only {checkedDocuments} named document selectors were found.");
+        Assert.IsGreaterThan(20, checkedTwins, $"Only {checkedTwins} named scoped twins were found.");
+        Assert.IsGreaterThan(20, checkedDocuments, $"Only {checkedDocuments} named document selectors were found.");
     }
 }

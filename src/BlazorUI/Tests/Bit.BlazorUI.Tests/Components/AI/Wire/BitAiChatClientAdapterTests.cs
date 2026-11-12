@@ -44,7 +44,7 @@ public class BitAiChatClientAdapterTests
             BitAiFakeChatClient.Text("Hello "),
             new ChatResponseUpdate(ChatRole.Assistant, "world") { ModelId = "gpt-test", FinishReason = ChatFinishReason.Length });
 
-        var events = await Collect(client.StreamBitAiEventsAsync(Request(User("hi"))));
+        var events = await Collect(client.StreamBitAiEventsAsync(Request(User("hi")), cancellationToken: TestContext.CancellationToken));
 
         Assert.IsInstanceOfType<BitAiMessageStartedEvent>(events[0]);
         Assert.AreEqual("Hello world", string.Concat(events.OfType<BitAiTextDeltaEvent>().Select(e => e.Delta)));
@@ -68,7 +68,7 @@ public class BitAiChatClientAdapterTests
                 Annotations = [new CitationAnnotation { Title = "Docs", Url = new Uri("https://example.com/docs"), Snippet = "quote" }],
             }));
 
-        var events = await Collect(client.StreamBitAiEventsAsync(Request(User("hi"))));
+        var events = await Collect(client.StreamBitAiEventsAsync(Request(User("hi")), cancellationToken: TestContext.CancellationToken));
 
         var reasoning = events.OfType<BitAiReasoningDeltaEvent>().Single();
         Assert.AreEqual("Let me think", reasoning.Delta);
@@ -109,7 +109,7 @@ public class BitAiChatClientAdapterTests
             BitAiFakeChatClient.Of(new UsageContent(new UsageDetails { InputTokenCount = 5, OutputTokenCount = 1 })),
             BitAiFakeChatClient.Of(new UsageContent(new UsageDetails { InputTokenCount = 8, OutputTokenCount = 2 })));
 
-        var events = await Collect(client.StreamBitAiEventsAsync(Request(User("hi"))));
+        var events = await Collect(client.StreamBitAiEventsAsync(Request(User("hi")), cancellationToken: TestContext.CancellationToken));
 
         var last = events.OfType<BitAiUsageUpdatedEvent>().Last().Usage;
         Assert.AreEqual(13, last.InputTokens);
@@ -122,9 +122,9 @@ public class BitAiChatClientAdapterTests
         var call = new FunctionCallContent("call1", "search", new Dictionary<string, object?>());
         var client = new BitAiFakeChatClient(BitAiFakeChatClient.Of(call), BitAiFakeChatClient.Of(call));
 
-        var events = await Collect(client.StreamBitAiEventsAsync(Request(User("hi"))));
+        var events = await Collect(client.StreamBitAiEventsAsync(Request(User("hi")), cancellationToken: TestContext.CancellationToken));
 
-        Assert.AreEqual(1, events.OfType<BitAiToolCallStartedEvent>().Count());
+        Assert.ContainsSingle(events.OfType<BitAiToolCallStartedEvent>());
     }
 
     [TestMethod]
@@ -134,13 +134,15 @@ public class BitAiChatClientAdapterTests
             BitAiFakeChatClient.Of(new FunctionCallContent("call1", "now", arguments: null)),
             BitAiFakeChatClient.Of(new FunctionCallContent("call2", "search", arguments: null) { Exception = new JsonException("bad arguments") }));
 
-        var events = await Collect(client.StreamBitAiEventsAsync(Request(User("hi"))));
+        var events = await Collect(client.StreamBitAiEventsAsync(Request(User("hi")), cancellationToken: TestContext.CancellationToken));
 
         foreach (var call in events.OfType<BitAiToolCallStartedEvent>())
         {
-            Assert.AreEqual(JsonValueKind.Object, call.Arguments?.ValueKind, call.ToolCallId);
+            var expectedValue = JsonValueKind.Object;
+            var actualValue = call.Arguments?.ValueKind;
+            Assert.AreEqual(expectedValue, actualValue, call.ToolCallId);
         }
-        Assert.AreEqual(2, events.OfType<BitAiToolCallStartedEvent>().Count());
+        Assert.HasCount(2, events.OfType<BitAiToolCallStartedEvent>());
     }
 
     [TestMethod]
@@ -153,7 +155,7 @@ public class BitAiChatClientAdapterTests
             BitAiFakeChatClient.Of(new UriContent(new Uri(file), "application/pdf")),
             BitAiFakeChatClient.Of(new TextContent("x") { Annotations = [new CitationAnnotation { Url = new Uri(signed) }] }));
 
-        var events = await Collect(client.StreamBitAiEventsAsync(Request(User("hi"))));
+        var events = await Collect(client.StreamBitAiEventsAsync(Request(User("hi")), cancellationToken: TestContext.CancellationToken));
 
         Assert.AreEqual(signed, events.OfType<BitAiImageEvent>().Single().Url);
         Assert.AreEqual(file, events.OfType<BitAiFileEvent>().Single().Attachment.Url);
@@ -176,12 +178,12 @@ public class BitAiChatClientAdapterTests
         var tool = new BitAiMessage(BitAiRole.User);
         tool.AddPart(new BitAiToolResultPart("later", BitAiToolOutcome.FromText("found")));
 
-        var messages = await BitAiChatClientExtensions.ToChatMessagesAsync([User("go"), assistant, tool, User("again")]);
+        var messages = await BitAiChatClientExtensions.ToChatMessagesAsync([User("go"), assistant, tool, User("again")], TestContext.CancellationToken);
 
         var results = messages.SelectMany(m => m.Contents.OfType<FunctionResultContent>()).ToList();
-        CollectionAssert.AreEquivalent(new[] { "stopped", "rejected", "later" }, results.Select(r => r.CallId).ToArray(), "Every call has one result, none twice.");
-        StringAssert.Contains((string)results.Single(r => r.CallId == "stopped").Result!, "cancelled");
-        StringAssert.Contains((string)results.Single(r => r.CallId == "rejected").Result!, "rejected");
+        Assert.AreSequenceEqual(new[] { "stopped", "rejected", "later" }, results.Select(r => r.CallId).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, "Every call has one result, none twice.");
+        Assert.Contains("cancelled", (string)results.Single(r => r.CallId == "stopped").Result!);
+        Assert.Contains("rejected", (string)results.Single(r => r.CallId == "rejected").Result!);
     }
 
     [TestMethod]
@@ -189,7 +191,7 @@ public class BitAiChatClientAdapterTests
     {
         var client = new BitAiFakeChatClient(BitAiFakeChatClient.Of(new FunctionResultContent("call1", null) { Exception = new InvalidOperationException("nope") }));
 
-        var events = await Collect(client.StreamBitAiEventsAsync(Request(User("hi"))));
+        var events = await Collect(client.StreamBitAiEventsAsync(Request(User("hi")), cancellationToken: TestContext.CancellationToken));
 
         var outcome = events.OfType<BitAiToolResultEvent>().Single().Outcome;
         Assert.IsFalse(outcome.IsSuccess);
@@ -202,7 +204,7 @@ public class BitAiChatClientAdapterTests
         var thrown = new InvalidOperationException("Server=db;Password=secret");
         var client = new BitAiFakeChatClient(BitAiFakeChatClient.Of(new FunctionResultContent("call1", null) { Exception = thrown }));
 
-        var events = await Collect(client.StreamBitAiEventsAsync(Request(User("hi"))));
+        var events = await Collect(client.StreamBitAiEventsAsync(Request(User("hi")), cancellationToken: TestContext.CancellationToken));
 
         var evt = events.OfType<BitAiToolResultEvent>().Single();
         Assert.AreSame(thrown, evt.Outcome.Error!.Exception, "The exception stays on the error, for the server's logs.");
@@ -215,7 +217,7 @@ public class BitAiChatClientAdapterTests
     {
         var client = new BitAiFakeChatClient(BitAiFakeChatClient.Of(new ErrorContent("quota of org-secret exceeded") { ErrorCode = "rate_limit", Details = "request req-secret" }));
 
-        var events = await Collect(client.StreamBitAiEventsAsync(Request(User("hi"))));
+        var events = await Collect(client.StreamBitAiEventsAsync(Request(User("hi")), cancellationToken: TestContext.CancellationToken));
 
         var evt = events.OfType<BitAiErrorEvent>().Single();
         Assert.AreEqual("rate_limit", evt.Error.Code);
@@ -232,7 +234,7 @@ public class BitAiChatClientAdapterTests
             BitAiFakeChatClient.Of(new TextContent("x") { Annotations = [new CitationAnnotation { FileId = blank, Title = blank }] }),
             BitAiFakeChatClient.Of(new TextContent("y") { Annotations = [new CitationAnnotation { FileId = blank, Title = "Handbook" }] }));
 
-        var events = await Collect(client.StreamBitAiEventsAsync(Request(User("hi"))));
+        var events = await Collect(client.StreamBitAiEventsAsync(Request(User("hi")), cancellationToken: TestContext.CancellationToken));
 
         var sources = events.OfType<BitAiCitationEvent>().Select(e => e.Citation.Source).ToArray();
         Assert.HasCount(2, sources);
@@ -255,17 +257,17 @@ public class BitAiChatClientAdapterTests
         call.CompleteArguments(SearchArguments);
         call.SetResult(BitAiToolOutcome.FromText("3 hits"));
 
-        var messages = await BitAiChatClientExtensions.ToChatMessagesAsync([user, assistant]);
+        var messages = await BitAiChatClientExtensions.ToChatMessagesAsync([user, assistant], TestContext.CancellationToken);
 
-        Assert.AreEqual(3, messages.Count);
+        Assert.HasCount(3, messages);
 
         Assert.AreEqual(ChatRole.User, messages[0].Role);
         Assert.AreEqual(user.MessageId, messages[0].MessageId);
         Assert.AreEqual("Find blazor", messages[0].Contents.OfType<TextContent>().Single().Text);
         var data = messages[0].Contents.OfType<DataContent>().ToList();
-        Assert.AreEqual(2, data.Count);
+        Assert.HasCount(2, data);
         Assert.AreEqual("notes.txt", data[0].Name);
-        CollectionAssert.AreEqual(new byte[] { 7, 8 }, data[1].Data.ToArray());
+        Assert.AreSequenceEqual(new byte[] { 7, 8 }, data[1].Data.ToArray());
         Assert.AreEqual("https://example.com/photo.png", messages[0].Contents.OfType<UriContent>().Single().Uri.ToString());
 
         Assert.AreEqual(ChatRole.Assistant, messages[1].Role);
@@ -322,12 +324,12 @@ public class BitAiChatClientAdapterTests
         var appOptions = new ChatOptions { Tools = [serverTool] };
         var options = BitAiChatClientExtensions.ToChatOptions(request, appOptions);
 
-        Assert.AreEqual(2, options.Tools!.Count);
+        Assert.HasCount(2, options.Tools!);
         Assert.AreSame(serverTool, options.Tools[0]);
         var declaration = (AIFunctionDeclaration)options.Tools[1];
         Assert.AreEqual("pick_color", declaration.Name);
         Assert.IsNotInstanceOfType<AIFunction>(declaration, "A browser tool is declared, never invoked on the server.");
-        Assert.AreEqual(1, appOptions.Tools.Count, "The app's options are not changed.");
+        Assert.ContainsSingle(appOptions.Tools, "The app's options are not changed.");
     }
 
     [TestMethod]
@@ -346,18 +348,16 @@ public class BitAiChatClientAdapterTests
         assistant.AddPart(new BitAiReasoningPart("got them") { Signature = "sig2" });
         assistant.AddPart(new BitAiTextPart("Found 4."));
 
-        var messages = await BitAiChatClientExtensions.ToChatMessagesAsync([User("go"), assistant]);
+        var messages = await BitAiChatClientExtensions.ToChatMessagesAsync([User("go"), assistant], TestContext.CancellationToken);
 
-        CollectionAssert.AreEqual(
-            new[] { ChatRole.User, ChatRole.Assistant, ChatRole.Tool, ChatRole.Assistant },
-            messages.Select(m => m.Role).ToArray());
+        Assert.AreSequenceEqual(
+            new[] { ChatRole.User, ChatRole.Assistant, ChatRole.Tool, ChatRole.Assistant }, messages.Select(m => m.Role).ToArray());
 
         Assert.AreEqual("sig1", messages[1].Contents.OfType<TextReasoningContent>().Single().ProtectedData);
-        CollectionAssert.AreEqual(new[] { "call1", "call2" }, messages[1].Contents.OfType<FunctionCallContent>().Select(c => c.CallId).ToArray(),
-            "The calls of one round stay in one message.");
-        Assert.IsFalse(messages[1].Contents.OfType<TextContent>().Any(t => t.Text == "Found 4."), "The answer is not replayed ahead of the results it read.");
+        Assert.AreSequenceEqual(new[] { "call1", "call2" }, messages[1].Contents.OfType<FunctionCallContent>().Select(c => c.CallId).ToArray(), "The calls of one round stay in one message.");
+        Assert.DoesNotContain(t => t.Text == "Found 4.", messages[1].Contents.OfType<TextContent>(), "The answer is not replayed ahead of the results it read.");
 
-        CollectionAssert.AreEqual(new[] { "call1", "call2" }, messages[2].Contents.OfType<FunctionResultContent>().Select(r => r.CallId).ToArray());
+        Assert.AreSequenceEqual(new[] { "call1", "call2" }, messages[2].Contents.OfType<FunctionResultContent>().Select(r => r.CallId).ToArray());
 
         Assert.AreEqual("sig2", messages[3].Contents.OfType<TextReasoningContent>().Single().ProtectedData);
         Assert.AreEqual("Found 4.", messages[3].Contents.OfType<TextContent>().Single().Text);
@@ -377,10 +377,10 @@ public class BitAiChatClientAdapterTests
         user.AddPart(new BitAiImagePart(url));
         user.AddAttachment(new BitAiAttachment("a1", "a.png") { ContentType = "image/png", Url = url });
 
-        var messages = await BitAiChatClientExtensions.ToChatMessagesAsync([user]);
+        var messages = await BitAiChatClientExtensions.ToChatMessagesAsync([user], TestContext.CancellationToken);
 
         Assert.AreEqual("look", messages.Single().Contents.OfType<TextContent>().Single().Text);
-        Assert.IsFalse(messages.Single().Contents.OfType<UriContent>().Any(), url);
+        Assert.IsEmpty(messages.Single().Contents.OfType<UriContent>(), url);
     }
 
     [TestMethod]
@@ -390,11 +390,10 @@ public class BitAiChatClientAdapterTests
         user.AddAttachment(new BitAiAttachment("a1", "a.png") { ContentType = "image/png", Url = "https://example.com/a.png" });
         user.AddAttachment(new BitAiAttachment("a2", "b.pdf") { ContentType = "application/pdf", Url = "gs://bucket/b.pdf" });
 
-        var messages = await BitAiChatClientExtensions.ToChatMessagesAsync([user]);
+        var messages = await BitAiChatClientExtensions.ToChatMessagesAsync([user], TestContext.CancellationToken);
 
-        CollectionAssert.AreEqual(
-            new[] { "https://example.com/a.png", "gs://bucket/b.pdf" },
-            messages.Single().Contents.OfType<UriContent>().Select(u => u.Uri.ToString()).ToArray());
+        Assert.AreSequenceEqual(
+            new[] { "https://example.com/a.png", "gs://bucket/b.pdf" }, messages.Single().Contents.OfType<UriContent>().Select(u => u.Uri.ToString()).ToArray());
     }
 
     [TestMethod]
@@ -403,7 +402,7 @@ public class BitAiChatClientAdapterTests
         var client = new BitAiFakeChatClient(BitAiFakeChatClient.Text("Hi "), BitAiFakeChatClient.Text("there"));
 
         await using var session = new BitAiChatSession(new BitAiChatClientTransport(client), null, new BitAiChatSessionOptions { Pacing = null });
-        await session.SubmitAsync("hello");
+        await session.SubmitAsync("hello", cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual("Hi there", session.Conversation.Messages[1].GetText());
         Assert.AreEqual("hello", client.Messages[0].Single().Text);
@@ -420,10 +419,12 @@ public class BitAiChatClientAdapterTests
         registry.Register(BitAiTool.Create(new BitAiToolDefinition("pick_color"), (_, _) => ValueTask.FromResult(BitAiToolOutcome.FromText("red"))));
 
         await using var session = new BitAiChatSession(new BitAiChatClientTransport(client), null, new BitAiChatSessionOptions { Pacing = null }, registry);
-        await session.SubmitAsync("pick one");
+        await session.SubmitAsync("pick one", cancellationToken: TestContext.CancellationToken);
 
-        Assert.AreEqual(2, client.Messages.Count);
+        Assert.HasCount(2, client.Messages);
         Assert.AreEqual("pick_color", ((AIFunctionDeclaration)client.Options[0]!.Tools!.Single()).Name);
-        StringAssert.EndsWith(session.Conversation.Messages[1].GetText(), "You picked red");
+        Assert.EndsWith("You picked red", session.Conversation.Messages[1].GetText());
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

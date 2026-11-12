@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Bit.BevTools.Tests;
 
 [BlexStore(Name = "cart")]
-public partial class BevCartStore
+internal partial class BevCartStore
 {
     [BlexState] private int _items;
 
@@ -98,9 +98,9 @@ public class BlexIntegrationTests
             }
         }
 
-        CollectionAssert.AreEqual(new[] { "count=2, password=«redacted»", "code=\"SPRING\"" }, Details(BevValueAccess.Full));
-        CollectionAssert.AreEqual(new[] { "count=2, password=«redacted»", "code=\"SPRING\"" }, Details(BevValueAccess.Shallow));
-        CollectionAssert.AreEqual(new[] { "count, password", "code" }, Details(BevValueAccess.None), "names only, as for every other value");
+        Assert.AreSequenceEqual(new[] { "count=2, password=«redacted»", "code=\"SPRING\"" }, Details(BevValueAccess.Full));
+        Assert.AreSequenceEqual(new[] { "count=2, password=«redacted»", "code=\"SPRING\"" }, Details(BevValueAccess.Shallow));
+        Assert.AreSequenceEqual(new[] { "count, password", "code" }, Details(BevValueAccess.None), "names only, as for every other value");
     }
 
     [TestMethod]
@@ -128,7 +128,7 @@ public class BlexIntegrationTests
 
             var outcome = await session.State.RestoreAsync(change.Id);
 
-            StringAssert.StartsWith(outcome, "Blex could not restore it: InvalidOperationException: Blex could not restore every store: cart");
+            Assert.StartsWith("Blex could not restore it: InvalidOperationException: Blex could not restore every store: cart", outcome);
             Assert.Contains(e => e.Source == "restore", heard, "the app's own OnError still gets it");
             Assert.AreSame(heard, manager.OnError!.Target, "and is put back as it was");
             Assert.DoesNotContain(e => e.Category == "state-restore", session.Timeline.Snapshot(), "nothing restored is said to be");
@@ -168,7 +168,7 @@ public class BlexIntegrationTests
             session.PauseCapture();
             store.Add(1, "x");
             Assert.IsEmpty(session.State.Entries.Single().Changes);
-            await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => provider.RestoreAsync("1").AsTask(), "nothing recorded, nothing kept");
+            await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => provider.RestoreAsync("1", TestContext.CancellationToken).AsTask(), "nothing recorded, nothing kept");
 
             session.ResumeCapture();
             store.Add(1, "x");
@@ -178,4 +178,6 @@ public class BlexIntegrationTests
             Assert.AreEqual(2, store.Items);
         }
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

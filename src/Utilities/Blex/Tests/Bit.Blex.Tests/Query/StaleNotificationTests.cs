@@ -68,8 +68,10 @@ public class StaleNotificationTests
 
         query.Dispose();
         clock.Advance(TimeSpan.FromSeconds(20));
-        await Task.Delay(50);
+        await Task.Delay(50, TestContext.CancellationToken);
 
         Assert.AreEqual(0, changes, "the stale notice goes with the observer");
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

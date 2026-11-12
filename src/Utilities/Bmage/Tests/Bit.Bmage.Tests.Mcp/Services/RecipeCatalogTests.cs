@@ -24,7 +24,7 @@ public class RecipeCatalogTests
     [TestMethod]
     public void Recipes_AreWellFormed()
     {
-        CollectionAssert.AllItemsAreUnique(BmageRecipeCatalog.All.Select(recipe => recipe.Id).ToArray());
+        Assert.AreAllDistinct(BmageRecipeCatalog.All.Select(recipe => recipe.Id).ToArray());
 
         foreach (var recipe in BmageRecipeCatalog.All)
         {
@@ -32,7 +32,7 @@ public class RecipeCatalogTests
             Assert.IsFalse(string.IsNullOrWhiteSpace(recipe.Code), recipe.Id);
             Assert.IsFalse(string.IsNullOrWhiteSpace(recipe.Notes), recipe.Id);
             Assert.IsFalse(string.IsNullOrWhiteSpace(recipe.Keywords), recipe.Id);
-            CollectionAssert.Contains(new[] { "Browser", "Server", "Anywhere" }, recipe.RunsIn, recipe.Id);
+            Assert.Contains(recipe.RunsIn, new[] { "Browser", "Server", "Anywhere" }, recipe.Id);
         }
     }
 
@@ -86,7 +86,8 @@ public class RecipeCatalogTests
     [TestMethod]
     public void Find_IgnoresCase_AndAnswersNullForTheUnknown()
     {
-        Assert.AreEqual("thumbnail", BmageRecipeCatalog.Find(" Thumbnail ")?.Id);
+        var actualValue = BmageRecipeCatalog.Find(" Thumbnail ")?.Id;
+        Assert.AreEqual("thumbnail", actualValue);
         Assert.IsNull(BmageRecipeCatalog.Find("teleport"));
         Assert.IsNull(BmageRecipeCatalog.Find(null));
     }

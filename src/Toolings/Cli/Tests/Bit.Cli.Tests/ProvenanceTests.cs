@@ -32,7 +32,7 @@ public class ProvenanceTests
 
             Assert.AreEqual(expected, await Provenance.FindAttestationAsync(handler, file, CancellationToken.None));
             Assert.AreEqual(Provenance.AttestationsApiUrl(Provenance.Sha256(file)), handler.Request!.RequestUri!.ToString());
-            StringAssert.StartsWith(handler.Request.Headers.UserAgent.ToString(), "bit-cli/");
+            Assert.StartsWith("bit-cli/", handler.Request.Headers.UserAgent.ToString());
         }
         finally
         {
@@ -56,7 +56,7 @@ public class ProvenanceTests
 
         var signed = Provenance.WindowsSignature(typeof(object).Assembly.Location);
         Assert.AreEqual(SignatureState.Valid, signed.State);
-        StringAssert.Contains(signed.Signer, ".NET");
+        Assert.Contains(".NET", signed.Signer!);
 
         Assert.AreEqual(SignatureState.Unsigned, Provenance.WindowsSignature(typeof(ProvenanceTests).Assembly.Location).State);
 

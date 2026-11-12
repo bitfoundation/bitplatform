@@ -354,14 +354,14 @@ public class BitOverlayTests : BunitTestContext
 
         var layerId = component.Find(".bit-ovl").Id;
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.captureFocusOrigin"].Count));
+        component.WaitForAssertion(() => Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.captureFocusOrigin"]));
         Assert.AreEqual(layerId, Context.JSInterop.Invocations["BitBlazorUI.Utils.captureFocusOrigin"][^1].Arguments[0]);
         Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.restoreFocusOrigin"]);
 
         component.Find(".bit-ovl").Click();
 
         Assert.IsFalse(isOpen);
-        component.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.restoreFocusOrigin"].Count));
+        component.WaitForAssertion(() => Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.restoreFocusOrigin"]));
         Assert.AreEqual(layerId, Context.JSInterop.Invocations["BitBlazorUI.Utils.restoreFocusOrigin"][^1].Arguments[0]);
     }
 
@@ -445,7 +445,7 @@ public class BitOverlayTests : BunitTestContext
         {
             var invocation = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"][0];
             Assert.AreEqual(scrollerSelector ?? "body", invocation.Arguments[1]);
-            Assert.AreEqual(true, invocation.Arguments[2]);
+            Assert.IsTrue(Assert.IsInstanceOfType<bool>(invocation.Arguments[2]));
         }, TimeSpan.FromSeconds(5));
     }
 
@@ -476,7 +476,7 @@ public class BitOverlayTests : BunitTestContext
         {
             var held = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"]
                                         .Where(i => i.Arguments[1] is ElementReference { Id: "captured-scroller" } && i.Arguments[2] is true);
-            Assert.AreEqual(1, held.Count());
+            Assert.ContainsSingle(held);
         }, TimeSpan.FromSeconds(5));
     }
 
@@ -514,7 +514,7 @@ public class BitOverlayTests : BunitTestContext
         component.WaitForAssertion(() =>
         {
             var invocation = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"][0];
-            Assert.AreEqual(true, invocation.Arguments[3]);
+            Assert.IsTrue(Assert.IsInstanceOfType<bool>(invocation.Arguments[3]));
         }, TimeSpan.FromSeconds(5));
     }
 
@@ -532,7 +532,7 @@ public class BitOverlayTests : BunitTestContext
             parameters.Add(p => p.ScrollerSelector, ".scroller");
         });
 
-        component.WaitForAssertion(() => Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"]), TimeSpan.FromSeconds(5));
+        component.WaitForAssertion(() => Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"]), TimeSpan.FromSeconds(5));
 
         isOpen = false;
         component.Render(parameters =>
@@ -547,7 +547,7 @@ public class BitOverlayTests : BunitTestContext
             var invocations = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"];
             Assert.HasCount(2, invocations);
             Assert.AreEqual(".scroller", invocations[1].Arguments[1]);
-            Assert.AreEqual(false, invocations[1].Arguments[2]);
+            Assert.IsFalse(Assert.IsInstanceOfType<bool>(invocations[1].Arguments[2]));
         }, TimeSpan.FromSeconds(5));
     }
 
@@ -629,7 +629,7 @@ public class BitOverlayTests : BunitTestContext
             parameters.Add(p => p.ScrollerSelector, ".scroller");
         });
 
-        component.WaitForAssertion(() => Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.forwardScroll"]), TimeSpan.FromSeconds(5));
+        component.WaitForAssertion(() => Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.forwardScroll"]), TimeSpan.FromSeconds(5));
 
         component.Render(parameters =>
         {
@@ -656,7 +656,7 @@ public class BitOverlayTests : BunitTestContext
             parameters.Add(p => p.ScrollerSelector, ".scroller");
         });
 
-        component.WaitForAssertion(() => Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.forwardScroll"]), TimeSpan.FromSeconds(5));
+        component.WaitForAssertion(() => Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.forwardScroll"]), TimeSpan.FromSeconds(5));
 
         isOpen = false;
         component.Render(parameters =>
@@ -666,7 +666,7 @@ public class BitOverlayTests : BunitTestContext
         });
 
         component.WaitForAssertion(
-            () => Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.stopForwardScroll"]),
+            () => Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.stopForwardScroll"]),
             TimeSpan.FromSeconds(5));
     }
 
@@ -681,11 +681,11 @@ public class BitOverlayTests : BunitTestContext
             parameters.Add(p => p.ScrollerSelector, ".scroller");
         });
 
-        component.WaitForAssertion(() => Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.forwardScroll"]), TimeSpan.FromSeconds(5));
+        component.WaitForAssertion(() => Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.forwardScroll"]), TimeSpan.FromSeconds(5));
 
         await Context.DisposeComponentsAsync();
 
-        Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.stopForwardScroll"]);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.stopForwardScroll"]);
     }
 
     // An Overlay taken off the page while it was open would otherwise leave the scroller it held without
@@ -699,13 +699,13 @@ public class BitOverlayTests : BunitTestContext
             parameters.Add(p => p.AutoToggleScroll, true);
         });
 
-        component.WaitForAssertion(() => Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"]), TimeSpan.FromSeconds(5));
+        component.WaitForAssertion(() => Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"]), TimeSpan.FromSeconds(5));
 
         await Context.DisposeComponentsAsync();
 
         var invocations = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"];
         Assert.HasCount(2, invocations);
-        Assert.AreEqual(false, invocations[1].Arguments[2]);
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(invocations[1].Arguments[2]));
     }
 
     [TestMethod,
@@ -791,8 +791,8 @@ public class BitOverlayTests : BunitTestContext
         component.WaitForAssertion(() =>
         {
             var invocations = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"];
-            Assert.HasCount(1, invocations);
-            Assert.AreEqual(true, invocations[0].Arguments[2]);
+            Assert.ContainsSingle(invocations);
+            Assert.IsTrue(Assert.IsInstanceOfType<bool>(invocations[0].Arguments[2]));
         }, TimeSpan.FromSeconds(5));
     }
 
@@ -806,7 +806,7 @@ public class BitOverlayTests : BunitTestContext
             parameters.Add(p => p.AutoToggleScroll, true);
         });
 
-        component.WaitForAssertion(() => Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"]), TimeSpan.FromSeconds(5));
+        component.WaitForAssertion(() => Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"]), TimeSpan.FromSeconds(5));
 
         component.Render(parameters =>
         {
@@ -818,7 +818,7 @@ public class BitOverlayTests : BunitTestContext
         {
             var invocations = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"];
             Assert.HasCount(2, invocations);
-            Assert.AreEqual(false, invocations[1].Arguments[2]);
+            Assert.IsFalse(Assert.IsInstanceOfType<bool>(invocations[1].Arguments[2]));
         }, TimeSpan.FromSeconds(5));
     }
 
@@ -834,7 +834,7 @@ public class BitOverlayTests : BunitTestContext
             parameters.Add(p => p.ScrollerSelector, ".scroller");
         });
 
-        component.WaitForAssertion(() => Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"]), TimeSpan.FromSeconds(5));
+        component.WaitForAssertion(() => Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"]), TimeSpan.FromSeconds(5));
 
         component.Render(parameters =>
         {
@@ -848,9 +848,9 @@ public class BitOverlayTests : BunitTestContext
             var invocations = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"];
             Assert.HasCount(3, invocations);
             Assert.AreEqual(".scroller", invocations[1].Arguments[1]);
-            Assert.AreEqual(false, invocations[1].Arguments[2]);
+            Assert.IsFalse(Assert.IsInstanceOfType<bool>(invocations[1].Arguments[2]));
             Assert.AreEqual(".another-scroller", invocations[2].Arguments[1]);
-            Assert.AreEqual(true, invocations[2].Arguments[2]);
+            Assert.IsTrue(Assert.IsInstanceOfType<bool>(invocations[2].Arguments[2]));
         }, TimeSpan.FromSeconds(5));
     }
 
@@ -865,7 +865,7 @@ public class BitOverlayTests : BunitTestContext
             parameters.Add(p => p.ScrollerSelector, ".scroller");
         });
 
-        component.WaitForAssertion(() => Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.forwardScroll"]), TimeSpan.FromSeconds(5));
+        component.WaitForAssertion(() => Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.forwardScroll"]), TimeSpan.FromSeconds(5));
 
         component.Render(parameters =>
         {
@@ -876,9 +876,9 @@ public class BitOverlayTests : BunitTestContext
 
         component.WaitForAssertion(() =>
         {
-            Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.stopForwardScroll"]);
-            Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"]);
-            Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.forwardScroll"]);
+            Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.stopForwardScroll"]);
+            Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"]);
+            Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.forwardScroll"]);
         }, TimeSpan.FromSeconds(5));
     }
 
@@ -1310,7 +1310,7 @@ public class BitOverlayTests : BunitTestContext
         });
 
         component.WaitForAssertion(
-            () => StringAssert.Contains(component.Find(".bit-ovl").GetAttribute("style"), "top:120px"),
+            () => Assert.Contains("top:120px", component.Find(".bit-ovl").GetAttribute("style")!),
             TimeSpan.FromSeconds(5));
     }
 
@@ -1332,7 +1332,7 @@ public class BitOverlayTests : BunitTestContext
 
         var style = component.Find(".bit-ovl").GetAttribute("style") ?? string.Empty;
 
-        Assert.IsFalse(style.Contains("top:"), $"A fixed Overlay must not carry a top offset, got '{style}'.");
+        Assert.DoesNotContain("top:", style, $"A fixed Overlay must not carry a top offset, got '{style}'.");
     }
 
     // The offset is taken back with the overflow, so a closed Overlay carries nothing of the opening.
@@ -1350,7 +1350,7 @@ public class BitOverlayTests : BunitTestContext
         });
 
         component.WaitForAssertion(
-            () => StringAssert.Contains(component.Find(".bit-ovl").GetAttribute("style"), "top:120px"),
+            () => Assert.Contains("top:120px", component.Find(".bit-ovl").GetAttribute("style")!),
             TimeSpan.FromSeconds(5));
 
         isOpen = false;
@@ -1364,7 +1364,7 @@ public class BitOverlayTests : BunitTestContext
         component.WaitForAssertion(() =>
         {
             var style = component.Find(".bit-ovl").GetAttribute("style") ?? string.Empty;
-            Assert.IsFalse(style.Contains("top:"), $"A closed Overlay must not carry a top offset, got '{style}'.");
+            Assert.DoesNotContain("top:", style, $"A closed Overlay must not carry a top offset, got '{style}'.");
         }, TimeSpan.FromSeconds(5));
     }
 
@@ -1385,7 +1385,7 @@ public class BitOverlayTests : BunitTestContext
         });
 
         component.WaitForAssertion(
-            () => StringAssert.Contains(component.Find(".bit-ovl").GetAttribute("style"), "top:120px"),
+            () => Assert.Contains("top:120px", component.Find(".bit-ovl").GetAttribute("style")!),
             TimeSpan.FromSeconds(5));
 
         component.Render(parameters =>
@@ -1397,7 +1397,7 @@ public class BitOverlayTests : BunitTestContext
         });
 
         component.WaitForAssertion(
-            () => StringAssert.Contains(component.Find(".bit-ovl").GetAttribute("style"), "top:300px"),
+            () => Assert.Contains("top:300px", component.Find(".bit-ovl").GetAttribute("style")!),
             TimeSpan.FromSeconds(5));
     }
 
@@ -1443,12 +1443,12 @@ public class BitOverlayTests : BunitTestContext
 
         var layerId = component.Find(".bit-ovl").Id;
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.watchLayerEscape"].Count));
+        component.WaitForAssertion(() => Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.watchLayerEscape"]));
         Assert.AreEqual(layerId, Context.JSInterop.Invocations["BitBlazorUI.Utils.watchLayerEscape"][0].Arguments[0]);
 
         component.Find(".bit-ovl").Click();
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.unwatchLayerEscape"].Count));
+        component.WaitForAssertion(() => Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.unwatchLayerEscape"]));
         Assert.AreEqual(layerId, Context.JSInterop.Invocations["BitBlazorUI.Utils.unwatchLayerEscape"][0].Arguments[0]);
     }
 
@@ -1471,7 +1471,7 @@ public class BitOverlayTests : BunitTestContext
             parameters.Add(p => p.Disabled, disabled);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.watchLayerEscape"].Count));
+        component.WaitForAssertion(() => Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.watchLayerEscape"]));
 
         await component.InvokeAsync(() => component.Instance._OnEscape());
 
@@ -1516,11 +1516,11 @@ public class BitOverlayTests : BunitTestContext
     {
         var component = RenderComponent<BitOverlay>(parameters => parameters.Add(p => p.IsOpen, true));
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.watchLayerEscape"].Count));
+        component.WaitForAssertion(() => Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.watchLayerEscape"]));
 
         await component.Instance.DisposeAsync();
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.unwatchLayerEscape"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.unwatchLayerEscape"]);
     }
 
     [TestMethod]
@@ -1568,7 +1568,7 @@ public class BitOverlayTests : BunitTestContext
             var invocation = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"][0];
             Assert.IsInstanceOfType<ElementReference>(invocation.Arguments[1]);
             Assert.AreEqual("shell-scroller", ((ElementReference)invocation.Arguments[1]!).Id);
-            Assert.AreEqual(true, invocation.Arguments[2]);
+            Assert.IsTrue(Assert.IsInstanceOfType<bool>(invocation.Arguments[2]));
         }, TimeSpan.FromSeconds(5));
     }
 

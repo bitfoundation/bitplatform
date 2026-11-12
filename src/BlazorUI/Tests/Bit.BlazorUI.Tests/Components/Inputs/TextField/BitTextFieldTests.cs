@@ -710,7 +710,7 @@ public class BitTextFieldTests : BunitTestContext
         });
 
         var ghostOverlays = component.FindAll(".bit-tfl-gho");
-        Assert.AreEqual(0, ghostOverlays.Count);
+        Assert.IsEmpty(ghostOverlays);
     }
 
     [TestMethod,
@@ -1152,11 +1152,11 @@ public class BitTextFieldTests : BunitTestContext
             parameters.Add(p => p.ShowClearButton, true);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-tfl-cbt").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tfl-cbt"));
 
         component.Find(".bit-tfl-inp").Change("hello");
 
-        Assert.AreEqual(1, component.FindAll(".bit-tfl-cbt").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-tfl-cbt"));
     }
 
     [TestMethod,
@@ -1178,7 +1178,7 @@ public class BitTextFieldTests : BunitTestContext
 
         Assert.IsTrue(string.IsNullOrEmpty(component.Instance.Value));
         Assert.AreEqual(1, clearCount);
-        Assert.AreEqual(0, component.FindAll(".bit-tfl-cbt").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tfl-cbt"));
     }
 
     [TestMethod,
@@ -1196,7 +1196,7 @@ public class BitTextFieldTests : BunitTestContext
 
         // Taking the focus on the press would blur the field, and the commit of the change event raised for it can
         // re-render the app between the press and the click.
-        Assert.IsTrue(component.Find(".bit-tfl-cbt").Attributes.Any(a => a.Name.Equals("blazor:onmousedown:preventDefault", StringComparison.OrdinalIgnoreCase)));
+        Assert.Contains(a => a.Name.Equals("blazor:onmousedown:preventDefault", StringComparison.OrdinalIgnoreCase), component.Find(".bit-tfl-cbt").Attributes);
     }
 
     [TestMethod]
@@ -1258,8 +1258,8 @@ public class BitTextFieldTests : BunitTestContext
             parameters.Add(p => p.ClearButtonTemplate, (RenderFragment)(builder => builder.AddMarkupContent(0, "<span class=\"custom-clear\">x</span>")));
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-tfl-cbt .custom-clear").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-tfl-cbt i").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-tfl-cbt .custom-clear"));
+        Assert.IsEmpty(component.FindAll(".bit-tfl-cbt i"));
     }
 
     [TestMethod]
@@ -1367,8 +1367,8 @@ public class BitTextFieldTests : BunitTestContext
     {
         var component = RenderComponent<BitTextField>();
 
-        Assert.AreEqual(0, component.FindAll(".bit-tfl-cnt").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-tfl-ftr").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tfl-cnt"));
+        Assert.IsEmpty(component.FindAll(".bit-tfl-ftr"));
     }
 
     [TestMethod]
@@ -1399,7 +1399,7 @@ public class BitTextFieldTests : BunitTestContext
         Assert.IsNotNull(describedBy);
 
         var ids = describedBy!.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-        Assert.AreEqual(2, ids.Length);
+        Assert.HasCount(2, ids);
         Assert.AreEqual(ids[0], component.Find(".bit-tfl-des").Id);
         Assert.AreEqual(ids[1], component.Find(".bit-tfl-cnt").Id);
     }
@@ -1561,22 +1561,31 @@ public class BitTextFieldTests : BunitTestContext
         // must not leave the separator it would have been joined with behind.
         var cssClass = bitTextField.GetAttribute("class");
         Assert.IsFalse(bitTextField.ClassList.Contains("bit-tfl-fcs"));
-        Assert.AreEqual(cssClass?.Trim(), cssClass);
-        Assert.IsFalse(cssClass?.Contains("  "));
+        var expectedValue = cssClass?.Trim();
+        var actualValue = cssClass;
+        Assert.AreEqual(expectedValue, actualValue);
+        var actualValue1 = cssClass?.Contains("  ");
+        Assert.IsFalse(actualValue1);
 
         component.Find(".bit-tfl-inp").FocusIn();
 
         cssClass = bitTextField.GetAttribute("class");
         Assert.IsTrue(bitTextField.ClassList.Contains("bit-tfl-fcs"));
-        Assert.AreEqual(cssClass?.Trim(), cssClass);
-        Assert.IsFalse(cssClass?.Contains("  "));
+        var expectedValue2 = cssClass?.Trim();
+        var actualValue3 = cssClass;
+        Assert.AreEqual(expectedValue2, actualValue3);
+        var actualValue4 = cssClass?.Contains("  ");
+        Assert.IsFalse(actualValue4);
 
         component.Find(".bit-tfl-inp").FocusOut();
 
         cssClass = bitTextField.GetAttribute("class");
         Assert.IsFalse(bitTextField.ClassList.Contains("bit-tfl-fcs"));
-        Assert.AreEqual(cssClass?.Trim(), cssClass);
-        Assert.IsFalse(cssClass?.Contains("  "));
+        var expectedValue5 = cssClass?.Trim();
+        var actualValue6 = cssClass;
+        Assert.AreEqual(expectedValue5, actualValue6);
+        var actualValue7 = cssClass?.Contains("  ");
+        Assert.IsFalse(actualValue7);
     }
 
     [TestMethod]
@@ -1611,7 +1620,7 @@ public class BitTextFieldTests : BunitTestContext
         });
 
         Assert.AreEqual("password", component.Find(".bit-tfl-inp").GetAttribute("type"));
-        Assert.AreEqual(0, component.FindAll(".bit-tfl-rpb").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tfl-rpb"));
     }
 
     [TestMethod]
@@ -1694,7 +1703,7 @@ public class BitTextFieldTests : BunitTestContext
 
         // Only the live region is left, which is visually hidden the same way but carries a role and is
         // never pointed at by aria-describedby.
-        Assert.AreEqual(0, component.FindAll(".bit-tfl-dsc:not([role])").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tfl-dsc:not([role])"));
         Assert.IsFalse(component.Find(".bit-tfl-inp").HasAttribute("aria-describedby"));
     }
 
@@ -1714,7 +1723,7 @@ public class BitTextFieldTests : BunitTestContext
         Assert.IsNotNull(describedBy);
 
         var ids = describedBy!.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-        Assert.AreEqual(3, ids.Length);
+        Assert.HasCount(3, ids);
         Assert.AreEqual(ids[0], component.Find(".bit-tfl-des").Id);
         Assert.AreEqual(ids[1], component.Find(".bit-tfl-dsc").Id);
         Assert.AreEqual(ids[2], component.Find(".bit-tfl-cnt").Id);
@@ -1842,7 +1851,7 @@ public class BitTextFieldTests : BunitTestContext
 
         var invocations = Context.JSInterop.Invocations["BitBlazorUI.TextField.setupSelectOnFocus"];
 
-        Assert.AreEqual(selectOnFocus ? 1 : 0, invocations.Count);
+        Assert.HasCount(selectOnFocus ? 1 : 0, invocations);
     }
 
     [TestMethod]
@@ -1860,7 +1869,7 @@ public class BitTextFieldTests : BunitTestContext
 
         var disposals = Context.JSInterop.Invocations["BitBlazorUI.TextField.disposeFeature"];
 
-        Assert.AreEqual(1, disposals.Count);
+        Assert.ContainsSingle(disposals);
         Assert.AreEqual("selectOnFocus", disposals.Single().Arguments[1]);
     }
 
@@ -1874,7 +1883,7 @@ public class BitTextFieldTests : BunitTestContext
 
         component.InvokeAsync(() => component.Instance.SelectAsync().AsTask()).GetAwaiter().GetResult();
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.selectText"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.selectText"]);
     }
 
     [TestMethod]
@@ -1923,7 +1932,7 @@ public class BitTextFieldTests : BunitTestContext
             parameters.Add(p => p.DefaultValue, "hello");
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-tfl-cbt").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tfl-cbt"));
 
         component.Instance.ClearAsync().GetAwaiter().GetResult();
 
@@ -2030,7 +2039,7 @@ public class BitTextFieldTests : BunitTestContext
             parameters.Add(p => p.Immediate, true);
         });
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.TextField.setupComposition"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.TextField.setupComposition"]);
     }
 
     [TestMethod]
@@ -2038,7 +2047,7 @@ public class BitTextFieldTests : BunitTestContext
     {
         RenderComponent<BitTextField>();
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.TextField.setupComposition"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.TextField.setupComposition"]);
     }
 
     [TestMethod]
@@ -2051,7 +2060,7 @@ public class BitTextFieldTests : BunitTestContext
             parameters.Add(p => p.OnEnter, () => { });
         });
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.TextField.setupComposition"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.TextField.setupComposition"]);
     }
 
     [TestMethod]
@@ -2062,7 +2071,7 @@ public class BitTextFieldTests : BunitTestContext
             parameters.Add(p => p.OnEscape, () => { });
         });
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.TextField.setupComposition"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.TextField.setupComposition"]);
     }
 
     [TestMethod]
@@ -2080,7 +2089,7 @@ public class BitTextFieldTests : BunitTestContext
 
         var disposals = Context.JSInterop.Invocations["BitBlazorUI.TextField.disposeFeature"];
 
-        Assert.AreEqual(1, disposals.Count);
+        Assert.ContainsSingle(disposals);
         Assert.AreEqual("composition", disposals.Single().Arguments[1]);
     }
 
@@ -2094,14 +2103,14 @@ public class BitTextFieldTests : BunitTestContext
             parameters.Add(p => p.AutoHeight, true);
         });
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.TextField.setupMultilineInput"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.TextField.setupMultilineInput"]);
 
         component.Render(parameters =>
         {
             parameters.Add(p => p.Multiline, true);
         });
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.TextField.setupMultilineInput"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.TextField.setupMultilineInput"]);
     }
 
     [TestMethod]
@@ -2119,7 +2128,7 @@ public class BitTextFieldTests : BunitTestContext
 
         var disposals = Context.JSInterop.Invocations["BitBlazorUI.TextField.disposeFeature"];
 
-        Assert.AreEqual(1, disposals.Count);
+        Assert.ContainsSingle(disposals);
         Assert.AreEqual("multiline", disposals.Single().Arguments[1]);
     }
 
@@ -2133,14 +2142,14 @@ public class BitTextFieldTests : BunitTestContext
             parameters.Add(p => p.Multiline, true);
         });
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.TextField.setupMultilineInput"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.TextField.setupMultilineInput"]);
 
         component.Render(parameters =>
         {
             parameters.Add(p => p.PreventEnter, true);
         });
 
-        Assert.AreEqual(2, Context.JSInterop.Invocations["BitBlazorUI.TextField.setupMultilineInput"].Count);
+        Assert.HasCount(2, Context.JSInterop.Invocations["BitBlazorUI.TextField.setupMultilineInput"]);
     }
 
     [TestMethod,
@@ -2248,11 +2257,11 @@ public class BitTextFieldTests : BunitTestContext
             parameters.Add(p => p.Loading, true);
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-tfl-lod").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-tfl-lod"));
 
         // The field draws its own spinner rather than rendering another component of the library.
-        Assert.AreEqual(1, component.FindAll(".bit-tfl-lod .bit-tfl-spn").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-tfl-lod .bit-ldn").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-tfl-lod .bit-tfl-spn"));
+        Assert.IsEmpty(component.FindAll(".bit-tfl-lod .bit-ldn"));
 
         // The announcement comes from the live region of the field rather than from the indicator itself:
         // a region added to the page along with its text is regularly not announced at all.
@@ -2264,7 +2273,7 @@ public class BitTextFieldTests : BunitTestContext
     {
         var component = RenderComponent<BitTextField>();
 
-        Assert.AreEqual(0, component.FindAll(".bit-tfl-lod").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tfl-lod"));
     }
 
     [TestMethod]
@@ -2288,8 +2297,8 @@ public class BitTextFieldTests : BunitTestContext
             parameters.Add(p => p.LoadingTemplate, (RenderFragment)(builder => builder.AddMarkupContent(0, "<span class=\"custom-loading\">...</span>")));
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-tfl-lod .custom-loading").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-tfl-lod .bit-tfl-spn").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-tfl-lod .custom-loading"));
+        Assert.IsEmpty(component.FindAll(".bit-tfl-lod .bit-tfl-spn"));
     }
 
     [TestMethod]
@@ -2326,7 +2335,7 @@ public class BitTextFieldTests : BunitTestContext
             parameters.Add(p => p.LoadingTemplate, (RenderFragment)(builder => builder.AddMarkupContent(0, "<span class=\"custom-loading\">...</span>")));
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-tfl-lod .custom-loading").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-tfl-lod .custom-loading"));
         Assert.AreEqual("Loading", component.Find("[role=status]").TextContent);
 
         component.Render(parameters =>
@@ -2414,7 +2423,7 @@ public class BitTextFieldTests : BunitTestContext
 
         Assert.IsTrue(bitTextField.ClassList.Contains("bit-tfl-req"));
         Assert.IsFalse(bitTextField.ClassList.Contains("bit-tfl-rnl"));
-        Assert.AreEqual(1, component.FindAll(".bit-tfl-wrp > label").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-tfl-wrp > label"));
     }
 
     [TestMethod]
@@ -2507,13 +2516,13 @@ public class BitTextFieldTests : BunitTestContext
 
         var setup = Context.JSInterop.Invocations["BitBlazorUI.TextField.setupMultilineInput"].Single();
 
-        Assert.AreEqual(true, setup.Arguments[2]);   // autoHeight
-        Assert.AreEqual(true, setup.Arguments[3]);   // preventEnter
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(setup.Arguments[2]));   // autoHeight
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(setup.Arguments[3]));   // preventEnter
         Assert.AreEqual(5, setup.Arguments[4]);      // maxRows
 
         // Setting the feature up measures the element once, so a field that is rendered with a value
         // already in it does not stay one row tall until the first keystroke.
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.TextField.adjustHeight"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.TextField.adjustHeight"]);
     }
 
     [TestMethod]
@@ -2526,7 +2535,7 @@ public class BitTextFieldTests : BunitTestContext
             parameters.Add(p => p.MaxRows, 5);
         });
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.TextField.adjustHeight"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.TextField.adjustHeight"]);
 
         component.Render(parameters =>
         {
@@ -2535,7 +2544,7 @@ public class BitTextFieldTests : BunitTestContext
 
         var adjustments = Context.JSInterop.Invocations["BitBlazorUI.TextField.adjustHeight"];
 
-        Assert.AreEqual(2, adjustments.Count);
+        Assert.HasCount(2, adjustments);
         Assert.AreEqual(10, adjustments.Last().Arguments[2]);
     }
 
@@ -2551,10 +2560,10 @@ public class BitTextFieldTests : BunitTestContext
             parameters.Add(p => p.DefaultValue, "hello");
         });
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.TextField.setupMultilineInput"].Count);
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.TextField.setupGhostText"].Count);
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.TextField.setupComposition"].Count);
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.TextField.setupSelectOnFocus"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.TextField.setupMultilineInput"]);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.TextField.setupGhostText"]);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.TextField.setupComposition"]);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.TextField.setupSelectOnFocus"]);
     }
 
     [TestMethod]
@@ -2567,14 +2576,14 @@ public class BitTextFieldTests : BunitTestContext
             parameters.Add(p => p.GhostText, "suggestion");
         });
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.TextField.setupGhostText"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.TextField.setupGhostText"]);
 
         component.Render(parameters =>
         {
             parameters.Add(p => p.Multiline, true);
         });
 
-        Assert.AreEqual(2, Context.JSInterop.Invocations["BitBlazorUI.TextField.setupGhostText"].Count);
+        Assert.HasCount(2, Context.JSInterop.Invocations["BitBlazorUI.TextField.setupGhostText"]);
     }
 
     [TestMethod,
@@ -2591,11 +2600,11 @@ public class BitTextFieldTests : BunitTestContext
             parameters.Add(p => p.ShowClearButton, true);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-tfl-cbt").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tfl-cbt"));
 
         component.Find(".bit-tfl-inp").Input("h");
 
-        Assert.AreEqual(1, component.FindAll(".bit-tfl-cbt").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-tfl-cbt"));
         Assert.IsNull(component.Instance.Value);
     }
 
@@ -2610,11 +2619,11 @@ public class BitTextFieldTests : BunitTestContext
             parameters.Add(p => p.DefaultValue, "hello");
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-tfl-cbt").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-tfl-cbt"));
 
         component.Find(".bit-tfl-inp").Input(string.Empty);
 
-        Assert.AreEqual(0, component.FindAll(".bit-tfl-cbt").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tfl-cbt"));
     }
 
     [TestMethod]
@@ -2631,7 +2640,7 @@ public class BitTextFieldTests : BunitTestContext
 
         component.Find(".bit-tfl-inp").Change("   ");
 
-        Assert.AreEqual(0, component.FindAll(".bit-tfl-cbt").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tfl-cbt"));
         Assert.AreEqual("0", component.Find(".bit-tfl-cnt").TextContent.Trim());
     }
 
@@ -2725,7 +2734,7 @@ public class BitTextFieldTests : BunitTestContext
 
         var classes = component.Find(".bit-tfl").ClassList;
 
-        Assert.AreEqual(1, classes.Count(c => c == "bit-inv"));
+        Assert.ContainsSingle(c => c == "bit-inv", classes);
         Assert.AreEqual("true", component.Find(".bit-tfl-inp").GetAttribute("aria-invalid"));
     }
 
@@ -2768,7 +2777,7 @@ public class BitTextFieldTests : BunitTestContext
 
         Assert.IsNotNull(describedBy);
         Assert.AreEqual("external-id", describedBy!.Split(' ').First());
-        Assert.AreEqual(3, describedBy.Split(' ').Length);
+        Assert.HasCount(3, describedBy.Split(' '));
     }
 
     [TestMethod]
@@ -2806,11 +2815,11 @@ public class BitTextFieldTests : BunitTestContext
 
         var pushes = Context.JSInterop.Invocations["BitBlazorUI.TextField.setGhostText"];
 
-        Assert.AreEqual(1, pushes.Count);
+        Assert.ContainsSingle(pushes);
 
         component.Render();
 
-        Assert.AreEqual(2, pushes.Count);
+        Assert.HasCount(2, pushes);
         Assert.AreEqual("suggestion", pushes.Last().Arguments[1]);
     }
 
@@ -2832,7 +2841,7 @@ public class BitTextFieldTests : BunitTestContext
 
         component.Render();
 
-        Assert.AreEqual(countAfterTheSuggestionIsGone, pushes.Count);
+        Assert.HasCount(countAfterTheSuggestionIsGone, pushes);
         Assert.AreEqual(string.Empty, pushes.Last().Arguments[1]);
     }
 
@@ -2849,8 +2858,8 @@ public class BitTextFieldTests : BunitTestContext
             parameters.Add(p => p.DefaultValue, "hello");
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-tfl-mlf .bit-tfl-ico").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-tfl-mlf .bit-tfl-cbt").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-tfl-mlf .bit-tfl-ico"));
+        Assert.ContainsSingle(component.FindAll(".bit-tfl-mlf .bit-tfl-cbt"));
     }
 
     [TestMethod]
@@ -2952,11 +2961,11 @@ public class BitTextFieldTests : BunitTestContext
             parameters.Add(p => p.CountStrategy, (Func<string?, int>)(_ => 0));
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-tfl-cbt").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tfl-cbt"));
 
         component.Find(".bit-tfl-inp").Input("hello");
 
-        Assert.AreEqual(1, component.FindAll(".bit-tfl-cbt").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-tfl-cbt"));
     }
 
     [TestMethod]
@@ -3044,7 +3053,7 @@ public class BitTextFieldTests : BunitTestContext
     {
         var component = RenderComponent<BitTextField>();
 
-        Assert.AreEqual(0, component.FindAll(".bit-tfl-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tfl-erm"));
     }
 
     [TestMethod,
@@ -3157,7 +3166,7 @@ public class BitTextFieldTests : BunitTestContext
         });
 
         Assert.AreEqual("Invalid input", component.Find("[role=status]").TextContent);
-        Assert.AreEqual(0, component.FindAll("[id$=\"-error-label\"]").Count);
+        Assert.IsEmpty(component.FindAll("[id$=\"-error-label\"]"));
     }
 
     [TestMethod]
@@ -3192,7 +3201,7 @@ public class BitTextFieldTests : BunitTestContext
             parameters.Add(p => p.ErrorMessage, (string?)null);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-tfl-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tfl-erm"));
         Assert.IsFalse(component.Find(".bit-tfl").ClassList.Contains("bit-inv"));
         Assert.IsFalse(component.Find(".bit-tfl-inp").HasAttribute("aria-invalid"));
     }
@@ -3207,7 +3216,7 @@ public class BitTextFieldTests : BunitTestContext
 
         component.Find("form").Submit();
 
-        Assert.AreEqual(1, component.Find(".bit-tfl").ClassList.Count(c => c == "bit-inv"));
+        Assert.ContainsSingle(c => c == "bit-inv", component.Find(".bit-tfl").ClassList);
     }
 
     [TestMethod]
@@ -3224,7 +3233,7 @@ public class BitTextFieldTests : BunitTestContext
 
         var ids = component.Find(".bit-tfl-inp").GetAttribute("aria-describedby")!.Split(' ');
 
-        Assert.AreEqual(3, ids.Length);
+        Assert.HasCount(3, ids);
         Assert.AreEqual(component.Find(".bit-tfl-erm").Id, ids[0]);
         Assert.AreEqual(component.Find(".bit-tfl-des").Id, ids[1]);
         Assert.AreEqual(component.Find(".bit-tfl-cnt").Id, ids[2]);
@@ -3309,7 +3318,7 @@ public class BitTextFieldTests : BunitTestContext
 
         Assert.AreNotEqual(-1, errorIndex);
         Assert.AreNotEqual(-1, footerIndex);
-        Assert.IsTrue(errorIndex < footerIndex);
+        Assert.IsLessThan(footerIndex, errorIndex);
     }
 
     [TestMethod,
@@ -3333,7 +3342,7 @@ public class BitTextFieldTests : BunitTestContext
         input.Input("h");
         input.Input("he");
 
-        CollectionAssert.AreEqual(new[] { "h", "he" }, values);
+        Assert.AreSequenceEqual(new[] { "h", "he" }, values);
         Assert.IsNull(component.Instance.Value);
     }
 
@@ -3430,7 +3439,7 @@ public class BitTextFieldTests : BunitTestContext
             parameters.Add(p => p.OnInput, () => { });
         });
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.TextField.setupComposition"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.TextField.setupComposition"]);
     }
 
     [TestMethod]
@@ -3445,14 +3454,14 @@ public class BitTextFieldTests : BunitTestContext
             parameters.Add(p => p.Rows, 2);
         });
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.TextField.adjustHeight"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.TextField.adjustHeight"]);
 
         component.Render(parameters =>
         {
             parameters.Add(p => p.Rows, 6);
         });
 
-        Assert.AreEqual(2, Context.JSInterop.Invocations["BitBlazorUI.TextField.adjustHeight"].Count);
+        Assert.HasCount(2, Context.JSInterop.Invocations["BitBlazorUI.TextField.adjustHeight"]);
     }
 
     [TestMethod]
@@ -3467,14 +3476,14 @@ public class BitTextFieldTests : BunitTestContext
             parameters.Add(p => p.Size, BitSize.Small);
         });
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.TextField.adjustHeight"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.TextField.adjustHeight"]);
 
         component.Render(parameters =>
         {
             parameters.Add(p => p.Size, BitSize.Large);
         });
 
-        Assert.AreEqual(2, Context.JSInterop.Invocations["BitBlazorUI.TextField.adjustHeight"].Count);
+        Assert.HasCount(2, Context.JSInterop.Invocations["BitBlazorUI.TextField.adjustHeight"]);
     }
 
     [TestMethod]
@@ -3487,14 +3496,14 @@ public class BitTextFieldTests : BunitTestContext
             parameters.Add(p => p.Rows, 2);
         });
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.TextField.adjustHeight"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.TextField.adjustHeight"]);
 
         component.Render(parameters =>
         {
             parameters.Add(p => p.Label, "a label");
         });
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.TextField.adjustHeight"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.TextField.adjustHeight"]);
     }
 
     [TestMethod]
@@ -3717,8 +3726,8 @@ public class BitTextFieldTests : BunitTestContext
 
         Assert.IsTrue(component.Find(".bit-tfl").ClassList.Contains("cascaded-root"));
         Assert.IsTrue(component.Find(".bit-tfl-inp").ClassList.Contains("cascaded-input"));
-        Assert.IsTrue(component.Find(".bit-tfl").GetAttribute("style")!.Contains("color: red"));
-        Assert.IsTrue(component.Find(".bit-tfl-lbl").GetAttribute("style")!.Contains("color: blue"));
+        Assert.Contains("color: red", component.Find(".bit-tfl").GetAttribute("style")!);
+        Assert.Contains("color: blue", component.Find(".bit-tfl-lbl").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -3780,7 +3789,7 @@ public class BitTextFieldTests : BunitTestContext
 
         var dispose = Context.JSInterop.Invocations["BitBlazorUI.TextField.disposeFeature"];
 
-        Assert.IsTrue(dispose.Any(i => (string?)i.Arguments[1] == "chromeFocus"));
+        Assert.Contains(i => (string?)i.Arguments[1] == "chromeFocus", dispose);
     }
 
     [TestMethod]
@@ -3793,7 +3802,7 @@ public class BitTextFieldTests : BunitTestContext
 
         var (iconIndex, inputWrapperIndex) = IndexOfIconAndInput(component);
 
-        Assert.IsTrue(iconIndex > inputWrapperIndex);
+        Assert.IsGreaterThan(inputWrapperIndex, iconIndex);
     }
 
     [TestMethod,
@@ -3893,8 +3902,8 @@ public class BitTextFieldTests : BunitTestContext
             parameters.Add(p => p.IconName, "Search");
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-tfl-icb").Count);
-        Assert.AreEqual(1, component.FindAll("i.bit-tfl-ico").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tfl-icb"));
+        Assert.ContainsSingle(component.FindAll("i.bit-tfl-ico"));
     }
 
     [TestMethod]
@@ -4202,7 +4211,7 @@ public class BitTextFieldTests : BunitTestContext
             parameters.Add(p => p.DefaultValue, "hello");
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-tfl-cbt").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tfl-cbt"));
 
         component.Find(".bit-tfl-inp").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
@@ -4472,7 +4481,7 @@ public class BitTextFieldTests : BunitTestContext
             parameters.Add(p => p.ClearOnEscape, true);
         });
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.TextField.setupComposition"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.TextField.setupComposition"]);
     }
 
     [TestMethod]
@@ -4530,7 +4539,7 @@ public class BitTextFieldTests : BunitTestContext
         component.Find(".bit-tfl-inp").Change("typed");
 
         Assert.AreEqual("typed", value);
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.setProperty"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.setProperty"]);
     }
 
     [TestMethod]
@@ -4551,7 +4560,7 @@ public class BitTextFieldTests : BunitTestContext
 
         component.Find(".bit-tfl-cbt").Click();
 
-        Assert.IsTrue(Context.JSInterop.Invocations["BitBlazorUI.TextField.adjustHeight"].Count > before);
+        Assert.IsGreaterThan(before, Context.JSInterop.Invocations["BitBlazorUI.TextField.adjustHeight"].Count);
     }
 
     [TestMethod]
@@ -4588,7 +4597,7 @@ public class BitTextFieldTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("custom-class"));
         Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
         Assert.AreEqual("rtl", root.GetAttribute("dir"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin: 1px;");
+        Assert.Contains("margin: 1px;", root.GetAttribute("style")!);
         Assert.AreEqual("root", root.GetAttribute("data-splat"));
 
         Assert.AreEqual("email", input.GetAttribute("name"));
@@ -4616,7 +4625,7 @@ public class BitTextFieldTests : BunitTestContext
         }
         else
         {
-            StringAssert.Contains(style, expectedStyle);
+            Assert.Contains(expectedStyle, style);
         }
     }
 
@@ -4675,8 +4684,8 @@ public class BitTextFieldTests : BunitTestContext
             parameters.Add(p => p.SuffixTemplate, (RenderFragment)(builder => builder.AddMarkupContent(0, "<b class=\"custom-suffix\">S</b>")));
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-tfl-pre").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-tfl-suf").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tfl-pre"));
+        Assert.IsEmpty(component.FindAll(".bit-tfl-suf"));
         Assert.IsNotNull(component.Find(".bit-tfl-fgp > .custom-prefix"));
         Assert.IsNotNull(component.Find(".bit-tfl-fgp > .custom-suffix"));
 
@@ -4814,7 +4823,7 @@ public class BitTextFieldTests : BunitTestContext
             var element = component.Find(selector);
 
             Assert.IsTrue(element.ClassList.Contains(cssClass), $"{selector} lacks {cssClass}");
-            StringAssert.Contains(element.GetAttribute("style"), style, $"{selector} lacks {style}");
+            Assert.Contains(style, element.GetAttribute("style")!, $"{selector} lacks {style}");
         }
 
         AssertPart(".bit-tfl", "root-class", "color: red;");
@@ -4941,7 +4950,7 @@ public class BitTextFieldTests : BunitTestContext
         await input.InputAsync(new ChangeEventArgs { Value = "a" });
         _ = input.InputAsync(new ChangeEventArgs { Value = "ab" });
 
-        CollectionAssert.AreEqual(new[] { "a" }, values);
+        Assert.AreSequenceEqual(new[] { "a" }, values);
         Assert.AreEqual("a", component.Instance.Value);
     }
 
@@ -4962,7 +4971,7 @@ public class BitTextFieldTests : BunitTestContext
         input.KeyDown("Escape");
         input.KeyDown("a");
 
-        CollectionAssert.AreEqual(new[] { "down:Enter", "enter", "down:Escape", "escape", "down:a" }, log);
+        Assert.AreSequenceEqual(new[] { "down:Enter", "enter", "down:Escape", "escape", "down:a" }, log);
     }
 
     [TestMethod]
@@ -5015,7 +5024,7 @@ public class BitTextFieldTests : BunitTestContext
         await Context.DisposeComponentsAsync();
 
         // Every feature of the field owns listeners on the element, which are taken away with the field.
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.TextField.dispose"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.TextField.dispose"]);
     }
 
     [TestMethod]
@@ -5029,7 +5038,7 @@ public class BitTextFieldTests : BunitTestContext
         await Context.DisposeComponentsAsync();
 
         // A plain field set nothing up, so it has nothing to tear down and pays no round trip for it.
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.TextField.dispose"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.TextField.dispose"]);
     }
 
     [TestMethod]
@@ -5050,7 +5059,7 @@ public class BitTextFieldTests : BunitTestContext
 
         var disposal = Context.DisposeComponentsAsync();
 
-        Assert.HasCount(1, dispose.Invocations);
+        Assert.ContainsSingle(dispose.Invocations);
         Assert.AreSame(textField, reference.Value);
 
         dispose.SetVoidResult();

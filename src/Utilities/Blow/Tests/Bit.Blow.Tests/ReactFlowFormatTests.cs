@@ -78,8 +78,8 @@ public class ReactFlowFormatTests
         var result = BlowReactFlowFormat.Import(ReactFlowObject);
 
         var located = result.Issues.Select(i => $"{i.Severity}:{i.Path}").ToArray();
-        CollectionAssert.Contains(located, "Warning:$.nodes[1].dragHandle");
-        CollectionAssert.Contains(located, "Warning:$.edges[2].type");
+        Assert.Contains("Warning:$.nodes[1].dragHandle", located);
+        Assert.Contains("Warning:$.edges[2].type", located);
         Assert.IsTrue(result.Succeeded, "warnings alone do not fail an import");
     }
 

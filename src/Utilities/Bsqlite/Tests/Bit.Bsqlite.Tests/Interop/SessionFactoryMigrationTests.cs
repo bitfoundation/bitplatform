@@ -1,4 +1,4 @@
-using Bit.Bsqlite.Data;
+﻿using Bit.Bsqlite.Data;
 using Bit.Bsqlite.Storage;
 using Bit.Bsqlite.Storage.InMemory;
 using Bit.Bsqlite.Testing;
@@ -44,7 +44,7 @@ public sealed class SessionFactoryMigrationTests
             Assert.AreEqual("opfs", session.Resolution.Provider.Name);
         }
 
-        CollectionAssert.AreEqual(Image, await opfs.Admin.ExportAsync(Database, Ct));
+        Assert.AreSequenceEqual(Image, await opfs.Admin.ExportAsync(Database, Ct));
         Assert.IsFalse(await cacheStorage.Admin.ExistsAsync(Database, Ct));
         Assert.IsFalse(await indexedDb.Admin.ExistsAsync(Database, Ct));
         Assert.AreEqual("opfs", await store.GetProviderNameAsync(Database, Ct));

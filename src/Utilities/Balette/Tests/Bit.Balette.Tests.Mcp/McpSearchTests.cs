@@ -100,7 +100,7 @@ public partial class McpSearchTests
         // Deconstruct names every property it has, so it answers a question about any one of them first.
         var result = await McpCall.StructuredAsync<BaletteSearchResultDto>("SearchBalette", new() { ["query"] = query, ["limit"] = 50 });
 
-        Assert.IsFalse(result.Hits.Any(IsObjectPlumbing), $"'{query}': {string.Join(" | ", result.Hits.Select(hit => hit.Title))}");
+        Assert.DoesNotContain(IsObjectPlumbing, result.Hits, $"'{query}': {string.Join(" | ", result.Hits.Select(hit => hit.Title))}");
     }
 
     /// <summary>
@@ -156,7 +156,7 @@ public partial class McpSearchTests
         {
             var result = await McpCall.StructuredAsync<BaletteSearchResultDto>("SearchBalette", new() { ["query"] = query, ["limit"] = 50 });
 
-            Assert.IsFalse(result.Hits.Any(hit => hit.Kind == "Guide section" && hit.Title is "MCP server" or "Documentation"), query);
+            Assert.DoesNotContain(hit => hit.Kind == "Guide section" && hit.Title is "MCP server" or "Documentation", result.Hits, query);
         }
     }
 
@@ -225,7 +225,7 @@ public partial class McpSearchTests
             Assert.IsTrue(match.Success, $"'{call}' is not a call a caller can make verbatim.");
 
             var tool = match.Groups["tool"].Value;
-            CollectionAssert.Contains(McpSurfaceTests.ExpectedTools, tool, $"'{call}' names a tool that does not exist.");
+            Assert.Contains(tool, McpSurfaceTests.ExpectedTools, $"'{call}' names a tool that does not exist.");
 
             var arguments = match.Groups["name"].Success
                 ? new Dictionary<string, object?> { [match.Groups["name"].Value] = match.Groups["value"].Value }

@@ -30,7 +30,7 @@ public class BitChoiceGroupAccessibilityTests : BunitTestContext
 
         var inputs = component.FindAll(".bit-chg-icn input");
 
-        Assert.AreEqual(2, inputs.Count);
+        Assert.HasCount(2, inputs);
         Assert.IsTrue(inputs.All(i => i.HasAttribute("disabled")));
     }
 
@@ -72,7 +72,7 @@ public class BitChoiceGroupAccessibilityTests : BunitTestContext
         });
 
         // Only the labels of the items, no empty group label.
-        Assert.AreEqual(2, component.FindAll("label").Count);
+        Assert.HasCount(2, component.FindAll("label"));
         Assert.IsTrue(component.FindAll("label").All(l => l.HasAttribute("for")));
     }
 
@@ -142,10 +142,10 @@ public class BitChoiceGroupAccessibilityTests : BunitTestContext
         foreach (var input in inputs)
         {
             Assert.IsFalse(string.IsNullOrWhiteSpace(input.Id));
-            Assert.IsFalse(input.Id!.Any(char.IsWhiteSpace), $"the id '{input.Id}' contains whitespace");
+            Assert.DoesNotContain(char.IsWhiteSpace, input.Id!, $"the id '{input.Id}' contains whitespace");
         }
 
-        Assert.AreEqual(inputs.Count, inputs.Select(i => i.Id).Distinct().Count());
+        Assert.HasCount(inputs.Count, inputs.Select(i => i.Id).Distinct());
 
         for (var i = 0; i < inputs.Count; i++)
         {
@@ -154,7 +154,7 @@ public class BitChoiceGroupAccessibilityTests : BunitTestContext
 
         var describedBy = inputs[0].GetAttribute("aria-describedby");
         Assert.IsNotNull(describedBy);
-        Assert.AreEqual(1, component.FindAll($"#{describedBy}").Count);
+        Assert.ContainsSingle(component.FindAll($"#{describedBy}"));
     }
 
     [TestMethod]
@@ -173,7 +173,7 @@ public class BitChoiceGroupAccessibilityTests : BunitTestContext
 
         var ids = component.FindAll(".bit-chg-icn input").Select(i => i.Id).ToList();
 
-        Assert.AreEqual(2, ids.Distinct().Count());
+        Assert.HasCount(2, ids.Distinct());
     }
 
     [TestMethod]
@@ -190,7 +190,7 @@ public class BitChoiceGroupAccessibilityTests : BunitTestContext
             parameters.Add(p => p.ItemLabelTemplate, (BitChoiceGroupItem<string> item) => builder => builder.AddContent(0, item.Text));
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-chg-dsc").Count);
+        Assert.IsEmpty(component.FindAll(".bit-chg-dsc"));
         Assert.IsFalse(component.Find(".bit-chg-icn input").HasAttribute("aria-describedby"));
     }
 
@@ -221,7 +221,7 @@ public class BitChoiceGroupAccessibilityTests : BunitTestContext
             parameters.Add(p => p.Items, GetItems());
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-chg-gds").Count);
+        Assert.IsEmpty(component.FindAll(".bit-chg-gds"));
         Assert.IsFalse(component.Find(".bit-chg").HasAttribute("aria-describedby"));
     }
 
@@ -315,7 +315,7 @@ public class BitChoiceGroupAccessibilityTests : BunitTestContext
 
         var ids = describedBy!.Split(' ');
 
-        Assert.AreEqual(2, ids.Length);
+        Assert.HasCount(2, ids);
         Assert.AreEqual("consumer-hint", ids[0]);
         Assert.AreEqual("group description", component.Find($"#{ids[1]}").TextContent);
     }
@@ -352,7 +352,7 @@ public class BitChoiceGroupAccessibilityTests : BunitTestContext
 
         var ids = describedBy!.Split(' ');
 
-        Assert.AreEqual(2, ids.Length);
+        Assert.HasCount(2, ids);
         Assert.AreEqual("consumer-hint", ids[0]);
         Assert.AreEqual("desc A", component.Find($"#{ids[1]}").TextContent);
     }
@@ -535,7 +535,7 @@ public class BitChoiceGroupAccessibilityTests : BunitTestContext
 
         Assert.AreEqual("true", component.Find(".bit-chg").GetAttribute("aria-required"));
         Assert.AreEqual("true", component.Find(".bit-chg").GetAttribute("aria-readonly"));
-        Assert.IsFalse(component.FindAll(".bit-chg-icn input").Any(i => i.HasAttribute("required")));
+        Assert.DoesNotContain(i => i.HasAttribute("required"), component.FindAll(".bit-chg-icn input"));
     }
 
     // A disabled group is neither submitted nor validated and drops the required asterisk from its label,
@@ -554,6 +554,6 @@ public class BitChoiceGroupAccessibilityTests : BunitTestContext
 
         Assert.IsFalse(root.HasAttribute("aria-required"));
         Assert.IsFalse(root.ClassList.Contains("bit-chg-req"));
-        Assert.IsFalse(component.FindAll(".bit-chg-icn input").Any(i => i.HasAttribute("required")));
+        Assert.DoesNotContain(i => i.HasAttribute("required"), component.FindAll(".bit-chg-icn input"));
     }
 }

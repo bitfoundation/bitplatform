@@ -21,7 +21,7 @@ public class SourceCatalogTests
 
         var embedded = BmageSourceCatalog.Documents.Select(document => document.Name).Where(name => name != BmageSourceCatalog.ReadmeName).Order().ToArray();
 
-        CollectionAssert.AreEqual(onDisk, embedded);
+        Assert.AreSequenceEqual(onDisk, embedded);
     }
 
     [TestMethod]
@@ -59,7 +59,7 @@ public class SourceCatalogTests
                 var section = BmageSourceCatalog.GetDocumentSection(document.Name, heading);
 
                 Assert.IsNotNull(section, $"{document.Name}: '{heading}' is listed but cannot be read.");
-                StringAssert.StartsWith(section, $"{new string('#', level)} {heading}");
+                Assert.StartsWith($"{new string('#', level)} {heading}", section);
             }
         }
 
@@ -92,24 +92,24 @@ public class SourceCatalogTests
     {
         var chrome = BmageSourceCatalog.SourceFiles.Where(file => file.Path.StartsWith("Demo/Client/Layout/", StringComparison.Ordinal)).ToArray();
 
-        Assert.IsTrue(chrome.Any(file => file.Path == "Demo/Client/Layout/MainLayout.razor"), "The layout is not embedded.");
+        Assert.Contains(file => file.Path == "Demo/Client/Layout/MainLayout.razor", chrome, "The layout is not embedded.");
         Assert.IsTrue(chrome.All(file => file.Kind == BmageSourceCatalog.SiteChromeKind), string.Join(", ", chrome.Where(file => file.Kind != BmageSourceCatalog.SiteChromeKind).Select(file => file.Path)));
-        Assert.IsFalse(BmageSourceCatalog.SourceFiles.Any(file => file.Kind == BmageSourceCatalog.SiteChromeKind && file.Path.StartsWith("Demo/Client/Layout/", StringComparison.Ordinal) is false));
+        Assert.DoesNotContain(file => file.Kind == BmageSourceCatalog.SiteChromeKind && file.Path.StartsWith("Demo/Client/Layout/", StringComparison.Ordinal) is false, BmageSourceCatalog.SourceFiles);
 
         var hits = BmageSearchIndex.Search("command palette header footer navigation layout", 50);
 
         Assert.IsNotEmpty(hits);
-        Assert.IsFalse(hits.Any(hit => hit.Title.StartsWith("Demo/Client/Layout/", StringComparison.Ordinal)),
+        Assert.DoesNotContain(hit => hit.Title.StartsWith("Demo/Client/Layout/", StringComparison.Ordinal), hits,
             string.Join(", ", hits.Select(hit => hit.Title)));
     }
 
     [TestMethod]
     public void Sources_TheHostWiringAndTheClientProject_AreEmbedded()
     {
-        StringAssert.Contains(BmageSourceCatalog.GetSourceFile("Demo/Server/Program.cs"), "AddDemoServices");
-        StringAssert.Contains(BmageSourceCatalog.GetSourceFile("Demo/Server/Components/App.razor"), "bit-bmage-editor.css");
-        StringAssert.Contains(BmageSourceCatalog.GetSourceFile("Demo/Client/Extensions/IServiceCollectionExtensions.cs"), "AddBitBmageServices");
-        StringAssert.Contains(BmageSourceCatalog.GetSourceFile("Demo/Client/Bit.Bmage.Demo.Client.csproj"), "RunAOTCompilation");
+        Assert.Contains("AddDemoServices", BmageSourceCatalog.GetSourceFile("Demo/Server/Program.cs")!);
+        Assert.Contains("bit-bmage-editor.css", BmageSourceCatalog.GetSourceFile("Demo/Server/Components/App.razor")!);
+        Assert.Contains("AddBitBmageServices", BmageSourceCatalog.GetSourceFile("Demo/Client/Extensions/IServiceCollectionExtensions.cs")!);
+        Assert.Contains("RunAOTCompilation", BmageSourceCatalog.GetSourceFile("Demo/Client/Bit.Bmage.Demo.Client.csproj")!);
 
         Assert.AreEqual("Host", BmageSourceCatalog.SourceFiles.Single(file => file.Path == "Demo/Server/Program.cs").Kind);
     }
@@ -117,17 +117,17 @@ public class SourceCatalogTests
     [TestMethod]
     public void Sources_TheMauiSamplesWiring_IsEmbedded_AsSamples()
     {
-        StringAssert.Contains(BmageSourceCatalog.GetSourceFile("Samples/MAUI/MauiProgram.cs"), "AddMauiBlazorWebView");
-        StringAssert.Contains(BmageSourceCatalog.GetSourceFile("Samples/MAUI/MainPage.xaml"), "BlazorWebView");
-        StringAssert.Contains(BmageSourceCatalog.GetSourceFile("Samples/MAUI/wwwroot/index.html"), "bit-bmage-editor.css");
-        StringAssert.Contains(BmageSourceCatalog.GetSourceFile("Samples/MAUI/Extensions/IServiceCollectionExtensions.cs"), "MaxDegreeOfParallelism");
-        StringAssert.Contains(BmageSourceCatalog.GetSourceFile("Samples/MAUI/Bit.Bmage.Samples.Maui.csproj"), "<UseMaui>true</UseMaui>");
-        StringAssert.Contains(BmageSourceCatalog.GetSourceFile("Samples/Core/Extensions/IServiceCollectionExtensions.cs"), "AddBitBmageServices");
+        Assert.Contains("AddMauiBlazorWebView", BmageSourceCatalog.GetSourceFile("Samples/MAUI/MauiProgram.cs")!);
+        Assert.Contains("BlazorWebView", BmageSourceCatalog.GetSourceFile("Samples/MAUI/MainPage.xaml")!);
+        Assert.Contains("bit-bmage-editor.css", BmageSourceCatalog.GetSourceFile("Samples/MAUI/wwwroot/index.html")!);
+        Assert.Contains("MaxDegreeOfParallelism", BmageSourceCatalog.GetSourceFile("Samples/MAUI/Extensions/IServiceCollectionExtensions.cs")!);
+        Assert.Contains("<UseMaui>true</UseMaui>", BmageSourceCatalog.GetSourceFile("Samples/MAUI/Bit.Bmage.Samples.Maui.csproj")!);
+        Assert.Contains("AddBitBmageServices", BmageSourceCatalog.GetSourceFile("Samples/Core/Extensions/IServiceCollectionExtensions.cs")!);
 
         var samples = BmageSourceCatalog.SourceFiles.Where(file => file.Path.StartsWith("Samples/", StringComparison.Ordinal)).ToArray();
         Assert.HasCount(6, samples);
         Assert.IsTrue(samples.All(file => file.Kind == "Sample"), string.Join(", ", samples.Select(file => $"{file.Path}: {file.Kind}")));
-        StringAssert.Contains(samples.Single(file => file.Path.EndsWith(".csproj", StringComparison.Ordinal)).Description, "MAUI");
+        Assert.Contains("MAUI", samples.Single(file => file.Path.EndsWith(".csproj", StringComparison.Ordinal)).Description!);
     }
 
     [TestMethod]
@@ -146,6 +146,6 @@ public class SourceCatalogTests
     [TestMethod]
     public void Sources_NothingFromBinOrObj_IsEmbedded()
     {
-        Assert.IsFalse(BmageSourceCatalog.SourceFiles.Any(file => file.Path.Contains("/obj/", StringComparison.OrdinalIgnoreCase) || file.Path.Contains("/bin/", StringComparison.OrdinalIgnoreCase)));
+        Assert.DoesNotContain(file => file.Path.Contains("/obj/", StringComparison.OrdinalIgnoreCase) || file.Path.Contains("/bin/", StringComparison.OrdinalIgnoreCase), BmageSourceCatalog.SourceFiles);
     }
 }

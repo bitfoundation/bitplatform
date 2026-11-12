@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Bit.Borm.Tests;
 
-public sealed class StaticPerson
+internal sealed class StaticPerson
 {
     public string Name { get; set; } = "";
     public bool Subscribe { get; set; }
@@ -15,12 +15,12 @@ public sealed class StaticPerson
     public List<StaticLine> Lines { get; set; } = [];
 }
 
-public sealed class StaticAddress
+internal sealed class StaticAddress
 {
     public string City { get; set; } = "";
 }
 
-public sealed class StaticLine
+internal sealed class StaticLine
 {
     public string Product { get; set; } = "";
 }
@@ -56,7 +56,9 @@ public class StaticRenderingTests : ComponentTestBase
 
     private static StaticPerson Person() => new()
     {
-        Name = "Ada", Tags = ["red", "blue"], Lines = [new() { Product = "A" }, new() { Product = "B" }]
+        Name = "Ada",
+        Tags = ["red", "blue"],
+        Lines = [new() { Product = "A" }, new() { Product = "B" }]
     };
 
     [TestMethod]
@@ -76,7 +78,7 @@ public class StaticRenderingTests : ComponentTestBase
         // A ticked box posts "true"; an unticked one posts nothing, which binds as false.
         Assert.AreEqual("true", cut.Find("#borm_Subscribe").GetAttribute("value"));
         Assert.IsTrue(cut.FindAll("#borm_Plan input[type=radio]").All(r => r.GetAttribute("name") == "Model.Plan"));
-        CollectionAssert.AreEqual(new[] { "red", "blue" }, cut.FindAll("input[type=hidden][name^='Model.Tags[']").Select(i => i.GetAttribute("value")).ToArray());
+        Assert.AreSequenceEqual(new[] { "red", "blue" }, cut.FindAll("input[type=hidden][name^='Model.Tags[']").Select(i => i.GetAttribute("value")).ToArray());
     }
 
     [TestMethod]
@@ -95,20 +97,25 @@ public class StaticRenderingTests : ComponentTestBase
             .Build();
         var data = new Dictionary<string, object?>
         {
-            ["Plan"] = "team", ["Size"] = "m", ["Agree"] = true, ["Days"] = new List<string> { "mon", "wed" },
-            ["Volume"] = 7, ["Sign"] = signature, ["Locked"] = "x"
+            ["Plan"] = "team",
+            ["Size"] = "m",
+            ["Agree"] = true,
+            ["Days"] = new List<string> { "mon", "wed" },
+            ["Volume"] = 7,
+            ["Sign"] = signature,
+            ["Locked"] = "x"
         };
         var cut = Render<BormView>(p => p.Add(x => x.Definition, form).Add(x => x.Data, data).Add(x => x.FormName, "plan"));
         string?[] Posted(string name) => cut.FindAll($"input[type=hidden][name='Model.{name}']").Select(i => i.GetAttribute("value")).ToArray();
 
         // Drawn disabled - there is no read-only select - and a disabled control is never posted.
         Assert.IsTrue(cut.Find("#borm_Plan").HasAttribute("disabled"));
-        CollectionAssert.AreEqual(new[] { "team" }, Posted("Plan"));
-        CollectionAssert.AreEqual(new[] { "m" }, Posted("Size"));
-        CollectionAssert.AreEqual(new[] { "true" }, Posted("Agree"));
-        CollectionAssert.AreEqual(new[] { "mon", "wed" }, Posted("Days"));
-        CollectionAssert.AreEqual(new[] { "7" }, Posted("Volume"));
-        CollectionAssert.AreEqual(new[] { signature }, Posted("Sign"));
+        Assert.AreSequenceEqual(new[] { "team" }, Posted("Plan"));
+        Assert.AreSequenceEqual(new[] { "m" }, Posted("Size"));
+        Assert.AreSequenceEqual(new[] { "true" }, Posted("Agree"));
+        Assert.AreSequenceEqual(new[] { "mon", "wed" }, Posted("Days"));
+        Assert.AreSequenceEqual(new[] { "7" }, Posted("Volume"));
+        Assert.AreSequenceEqual(new[] { signature }, Posted("Sign"));
         // A disabled field is not part of what the form sends, read-only or not.
         Assert.IsEmpty(Posted("Locked"));
     }

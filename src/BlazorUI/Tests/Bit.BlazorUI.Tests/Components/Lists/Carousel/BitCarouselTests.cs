@@ -27,7 +27,7 @@ public partial class BitCarouselTests : BunitTestContext
         var component = RenderComponent<BitCarouselTest>();
 
         var items = component.FindAll(".bit-crsi");
-        Assert.AreEqual(3, items.Count);
+        Assert.HasCount(3, items);
 
         // container
         var container = component.Find(".bit-csl-cnt");
@@ -40,7 +40,7 @@ public partial class BitCarouselTests : BunitTestContext
         Assert.IsNotNull(prevButton);
 
         // the dots appear once the carousel has been laid out and knows its pages count
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+        component.WaitForAssertion(() => Assert.HasCount(3, component.FindAll(".bit-csl-dot")));
     }
 
     [TestMethod]
@@ -68,7 +68,7 @@ public partial class BitCarouselTests : BunitTestContext
             Assert.AreEqual("Choose slide to display", dotsGroup.GetAttribute("aria-label"));
 
             var dots = component.FindAll("button.bit-csl-dot");
-            Assert.AreEqual(3, dots.Count);
+            Assert.HasCount(3, dots);
             Assert.AreEqual("Slide 1", dots[0].GetAttribute("aria-label"));
             Assert.AreEqual("true", dots[0].GetAttribute("aria-current"));
             Assert.IsNull(dots[1].GetAttribute("aria-current"));
@@ -107,7 +107,7 @@ public partial class BitCarouselTests : BunitTestContext
             parameters.Add(p => p.PrevAriaLabel, "Previous");
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+        component.WaitForAssertion(() => Assert.HasCount(3, component.FindAll(".bit-csl-dot")));
 
         Assert.IsTrue(component.Find(".bit-csl").ClassList.Contains("bit-csl-rtl"));
 
@@ -169,7 +169,7 @@ public partial class BitCarouselTests : BunitTestContext
     {
         var component = RenderComponent<BitCarouselTest>();
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+        component.WaitForAssertion(() => Assert.HasCount(3, component.FindAll(".bit-csl-dot")));
 
         Assert.IsFalse(component.Find(".bit-csl").ClassList.Contains("bit-csl-rtl"));
     }
@@ -203,7 +203,7 @@ public partial class BitCarouselTests : BunitTestContext
             parameters.Add(p => p.Dir, BitDir.Ltr);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+        component.WaitForAssertion(() => Assert.HasCount(3, component.FindAll(".bit-csl-dot")));
 
         Assert.IsFalse(component.Find(".bit-csl").ClassList.Contains("bit-csl-rtl"));
         Context.JSInterop.VerifyNotInvoke("BitBlazorUI.Utils.isRtl");
@@ -218,7 +218,7 @@ public partial class BitCarouselTests : BunitTestContext
         });
 
         var dots = component.FindAll(".bit-csl-dcn");
-        Assert.AreEqual(0, dots.Count);
+        Assert.IsEmpty(dots);
     }
 
     [TestMethod]
@@ -230,7 +230,7 @@ public partial class BitCarouselTests : BunitTestContext
             parameters.Add(p => p.VisibleItemsCount, 3);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(0, component.FindAll(".bit-csl-dcn").Count));
+        component.WaitForAssertion(() => Assert.IsEmpty(component.FindAll(".bit-csl-dcn")));
     }
 
     [TestMethod]
@@ -244,8 +244,8 @@ public partial class BitCarouselTests : BunitTestContext
         var next = component.FindAll(".bit-csl-nbt");
         var prev = component.FindAll(".bit-csl-pbt");
 
-        Assert.AreEqual(0, next.Count);
-        Assert.AreEqual(0, prev.Count);
+        Assert.IsEmpty(next);
+        Assert.IsEmpty(prev);
     }
 
     [TestMethod]
@@ -351,7 +351,7 @@ public partial class BitCarouselTests : BunitTestContext
         });
 
         var root = component.Find(".bit-csl");
-        StringAssert.Contains(root.GetAttribute("style"), "--bit-csl-gap:1rem");
+        Assert.Contains("--bit-csl-gap:1rem", root.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -403,7 +403,7 @@ public partial class BitCarouselTests : BunitTestContext
             parameters.Add(p => p.ShowPlayPause, true);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll(".bit-csl-ppb").Count));
+        component.WaitForAssertion(() => Assert.ContainsSingle(component.FindAll(".bit-csl-ppb")));
 
         var button = component.Find(".bit-csl-ppb");
         Assert.AreEqual("Stop automatic slide show", button.GetAttribute("aria-label"));
@@ -435,9 +435,9 @@ public partial class BitCarouselTests : BunitTestContext
             parameters.Add(p => p.ShowPlayPause, true);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+        component.WaitForAssertion(() => Assert.HasCount(3, component.FindAll(".bit-csl-dot")));
 
-        Assert.AreEqual(0, component.FindAll(".bit-csl-ppb").Count);
+        Assert.IsEmpty(component.FindAll(".bit-csl-ppb"));
     }
 
     [TestMethod]
@@ -450,7 +450,7 @@ public partial class BitCarouselTests : BunitTestContext
             parameters.Add(p => p.OnChange, (int page) => changedPage = page);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+        component.WaitForAssertion(() => Assert.HasCount(3, component.FindAll(".bit-csl-dot")));
 
         var carousel = component.Instance.Carousel;
 
@@ -488,7 +488,7 @@ public partial class BitCarouselTests : BunitTestContext
     {
         var component = RenderComponent<BitCarouselTest>();
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+        component.WaitForAssertion(() => Assert.HasCount(3, component.FindAll(".bit-csl-dot")));
 
         var carousel = component.Instance.Carousel;
 
@@ -512,7 +512,7 @@ public partial class BitCarouselTests : BunitTestContext
             parameters.Add(p => p.InfiniteScrolling, true);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+        component.WaitForAssertion(() => Assert.HasCount(3, component.FindAll(".bit-csl-dot")));
 
         var carousel = component.Instance.Carousel;
 
@@ -530,7 +530,7 @@ public partial class BitCarouselTests : BunitTestContext
     {
         var component = RenderComponent<BitCarouselTest>();
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+        component.WaitForAssertion(() => Assert.HasCount(3, component.FindAll(".bit-csl-dot")));
 
         component.FindAll(".bit-csl-dot")[2].Click();
 
@@ -573,7 +573,7 @@ public partial class BitCarouselTests : BunitTestContext
     {
         var component = RenderComponent<BitCarouselTest>();
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+        component.WaitForAssertion(() => Assert.HasCount(3, component.FindAll(".bit-csl-dot")));
 
         var dots = component.FindAll(".bit-csl-dot");
         Assert.AreEqual("0", dots[0].GetAttribute("tabindex"));
@@ -598,7 +598,7 @@ public partial class BitCarouselTests : BunitTestContext
             parameters.Add(p => p.NoKeyboard, true);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+        component.WaitForAssertion(() => Assert.HasCount(3, component.FindAll(".bit-csl-dot")));
 
         foreach (var dot in component.FindAll(".bit-csl-dot"))
         {
@@ -611,7 +611,7 @@ public partial class BitCarouselTests : BunitTestContext
     {
         var component = RenderComponent<BitCarouselTest>();
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+        component.WaitForAssertion(() => Assert.HasCount(3, component.FindAll(".bit-csl-dot")));
 
         // the key was pressed on a dot
         await PressKey(component, "ArrowRight", "dot");
@@ -627,7 +627,7 @@ public partial class BitCarouselTests : BunitTestContext
     {
         var component = RenderComponent<BitCarouselTest>();
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+        component.WaitForAssertion(() => Assert.HasCount(3, component.FindAll(".bit-csl-dot")));
 
         // the dot that held the focus went away (HideDots) before the key was handled
         component.Render(parameters => parameters.Add(p => p.HideDots, true));
@@ -644,7 +644,7 @@ public partial class BitCarouselTests : BunitTestContext
     {
         var component = RenderComponent<BitCarouselTest>();
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+        component.WaitForAssertion(() => Assert.HasCount(3, component.FindAll(".bit-csl-dot")));
 
         await PressKey(component, "ArrowRight");
 
@@ -658,7 +658,7 @@ public partial class BitCarouselTests : BunitTestContext
     {
         var component = RenderComponent<BitCarouselTest>();
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+        component.WaitForAssertion(() => Assert.HasCount(3, component.FindAll(".bit-csl-dot")));
 
         // a control inside the first slide holds the focus when the carousel is moved past that slide
         var slide = component.FindAll(".bit-crsi")[0];
@@ -681,7 +681,7 @@ public partial class BitCarouselTests : BunitTestContext
     {
         var component = RenderComponent<BitCarouselTest>();
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+        component.WaitForAssertion(() => Assert.HasCount(3, component.FindAll(".bit-csl-dot")));
 
         // the next button sits at the right edge of a left-to-right carousel, and hides itself on the last page
         await PressKey(component, "End", "next");
@@ -707,7 +707,7 @@ public partial class BitCarouselTests : BunitTestContext
             parameters.Add(p => p.Dir, BitDir.Rtl);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+        component.WaitForAssertion(() => Assert.HasCount(3, component.FindAll(".bit-csl-dot")));
 
         await PressKey(component, "End", "next");
 
@@ -863,11 +863,11 @@ public partial class BitCarouselTests : BunitTestContext
 
         var root = component.Find(".bit-csl");
         Assert.IsTrue(root.ClassList.Contains("custom-root"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin: 1px;");
+        Assert.Contains("margin: 1px;", root.GetAttribute("style")!);
 
         var container = component.Find(".bit-csl-cnt");
         Assert.IsTrue(container.ClassList.Contains("custom-container"));
-        StringAssert.Contains(container.GetAttribute("style"), "padding: 1px;");
+        Assert.Contains("padding: 1px;", container.GetAttribute("style")!);
 
         var item = component.Find(".bit-crsi");
         Assert.IsTrue(item.ClassList.Contains("custom-item"));
@@ -894,7 +894,7 @@ public partial class BitCarouselTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
 
         var container = component.Find(".bit-csl-cnt");
-        StringAssert.Contains(container.GetAttribute("style"), "direction:rtl");
+        Assert.Contains("direction:rtl", container.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -907,7 +907,7 @@ public partial class BitCarouselTests : BunitTestContext
             parameters.Add(p => p.InfiniteScrolling, true);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+        component.WaitForAssertion(() => Assert.HasCount(3, component.FindAll(".bit-csl-dot")));
 
         var nextButton = component.Find(".bit-csl-nbt");
         await nextButton.ClickAsync(new Microsoft.AspNetCore.Components.Web.MouseEventArgs());
@@ -934,7 +934,7 @@ public partial class BitCarouselTests : BunitTestContext
     {
         var component = RenderComponent<BitCarouselTest>();
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+        component.WaitForAssertion(() => Assert.HasCount(3, component.FindAll(".bit-csl-dot")));
 
         var carousel = component.Instance.Carousel;
 
@@ -959,7 +959,7 @@ public partial class BitCarouselTests : BunitTestContext
             parameters.Add(p => p.Dir, BitDir.Rtl);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+        component.WaitForAssertion(() => Assert.HasCount(3, component.FindAll(".bit-csl-dot")));
 
         var carousel = component.Instance.Carousel;
 
@@ -983,7 +983,7 @@ public partial class BitCarouselTests : BunitTestContext
             parameters.Add(p => p.Dir, dir);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+        component.WaitForAssertion(() => Assert.HasCount(3, component.FindAll(".bit-csl-dot")));
         component.WaitForAssertion(() => Assert.IsTrue(component.Find(".bit-csl").ClassList.Contains("bit-csl-rtl")));
 
         var carousel = component.Instance.Carousel;
@@ -1003,7 +1003,7 @@ public partial class BitCarouselTests : BunitTestContext
             parameters.Add(p => p.Vertical, true);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+        component.WaitForAssertion(() => Assert.HasCount(3, component.FindAll(".bit-csl-dot")));
 
         var carousel = component.Instance.Carousel;
 
@@ -1025,15 +1025,15 @@ public partial class BitCarouselTests : BunitTestContext
 
         var component = RenderComponent<BitCarouselTest>();
 
-        component.WaitForAssertion(() => CollectionAssert.AreEqual(new[] { "ArrowLeft", "ArrowRight", "Home", "End" }, RegisteredKeys()));
+        component.WaitForAssertion(() => Assert.AreSequenceEqual(new[] { "ArrowLeft", "ArrowRight", "Home", "End" }, RegisteredKeys()));
 
         component.Render(parameters => parameters.Add(p => p.Vertical, true));
 
-        component.WaitForAssertion(() => CollectionAssert.AreEqual(new[] { "ArrowUp", "ArrowDown", "Home", "End" }, RegisteredKeys()));
+        component.WaitForAssertion(() => Assert.AreSequenceEqual(new[] { "ArrowUp", "ArrowDown", "Home", "End" }, RegisteredKeys()));
 
         component.Render(parameters => parameters.Add(p => p.NoKeyboard, true));
 
-        component.WaitForAssertion(() => Assert.AreEqual(0, RegisteredKeys().Length));
+        component.WaitForAssertion(() => Assert.IsEmpty(RegisteredKeys()));
     }
 
     [TestMethod]
@@ -1044,7 +1044,7 @@ public partial class BitCarouselTests : BunitTestContext
             parameters.Add(p => p.Wheel, true);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+        component.WaitForAssertion(() => Assert.HasCount(3, component.FindAll(".bit-csl-dot")));
 
         var container = component.Find(".bit-csl-cnt");
         var carousel = component.Instance.Carousel;
@@ -1059,7 +1059,7 @@ public partial class BitCarouselTests : BunitTestContext
     {
         var component = RenderComponent<BitCarouselTest>();
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+        component.WaitForAssertion(() => Assert.HasCount(3, component.FindAll(".bit-csl-dot")));
 
         var container = component.Find(".bit-csl-cnt");
 
@@ -1148,7 +1148,7 @@ public partial class BitCarouselTests : BunitTestContext
 
         var carousel = component.Instance.Carousel;
 
-        component.WaitForAssertion(() => Assert.IsTrue(carousel.CurrentPage > 0), TimeSpan.FromSeconds(5));
+        component.WaitForAssertion(() => Assert.IsGreaterThan(0, carousel.CurrentPage), TimeSpan.FromSeconds(5));
     }
 
     [TestMethod]
@@ -1208,7 +1208,7 @@ public partial class BitCarouselTests : BunitTestContext
         Assert.IsFalse(carousel.IsPlaying);
 
         // A few intervals worth of quiet proves the timer is not ticking behind the paused state.
-        await Task.Delay(250);
+        await Task.Delay(250, TestContext.CancellationToken);
 
         Assert.AreEqual(0, carousel.CurrentPage);
     }
@@ -1232,13 +1232,13 @@ public partial class BitCarouselTests : BunitTestContext
         // exception ends up at the renderer, which rethrows it from the render-tree helpers.
         for (var i = 0; i < 100 && carousel.CurrentPage == 0; i++)
         {
-            await Task.Delay(50);
+            await Task.Delay(50, TestContext.CancellationToken);
         }
 
-        Assert.IsTrue(carousel.CurrentPage > 0);
+        Assert.IsGreaterThan(0, carousel.CurrentPage);
 
         // The test (and the test host) surviving a few more failing ticks is the actual assertion here.
-        await Task.Delay(250);
+        await Task.Delay(250, TestContext.CancellationToken);
     }
 
     [TestMethod]
@@ -1262,7 +1262,7 @@ public partial class BitCarouselTests : BunitTestContext
         await component.InvokeAsync(() => carousel.GoTo(2));
 
         // A few intervals worth of quiet proves the timer never starts against an empty carousel.
-        await Task.Delay(250);
+        await Task.Delay(250, TestContext.CancellationToken);
 
         Assert.AreEqual(0, carousel.CurrentPage);
     }
@@ -1272,7 +1272,7 @@ public partial class BitCarouselTests : BunitTestContext
     {
         var component = RenderComponent<BitCarouselTest>();
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+        component.WaitForAssertion(() => Assert.HasCount(3, component.FindAll(".bit-csl-dot")));
 
         var carousel = component.Instance.Carousel;
 
@@ -1294,7 +1294,7 @@ public partial class BitCarouselTests : BunitTestContext
             parameters.Add(p => p.AutoPlayInterval, 50d);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+        component.WaitForAssertion(() => Assert.HasCount(3, component.FindAll(".bit-csl-dot")));
 
         var carousel = component.Instance.Carousel;
 
@@ -1425,7 +1425,7 @@ public partial class BitCarouselTests : BunitTestContext
         Assert.IsTrue(component.Find(".bit-csl-cnt").Children[1].ClassList.Contains("bit-csl-nbt"));
 
         // The container keeps the direction it inherits rather than being handed one: only an explicit Dir writes it.
-        Assert.IsFalse((component.Find(".bit-csl-cnt").GetAttribute("style") ?? "").Contains("direction:rtl"));
+        Assert.DoesNotContain("direction:rtl", (component.Find(".bit-csl-cnt").GetAttribute("style") ?? ""));
     }
 
     [TestMethod]
@@ -1438,7 +1438,7 @@ public partial class BitCarouselTests : BunitTestContext
             parameters.Add(p => p.InfiniteScrolling, true);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+        component.WaitForAssertion(() => Assert.HasCount(3, component.FindAll(".bit-csl-dot")));
 
         var container = component.Find(".bit-csl-cnt");
         var carousel = component.Instance.Carousel;
@@ -1529,8 +1529,8 @@ public partial class BitCarouselTests : BunitTestContext
         component.WaitForAssertion(() =>
         {
             var items = component.FindAll(".bit-crsi");
-            StringAssert.Contains(items[0].GetAttribute("style"), "opacity:1");
-            StringAssert.Contains(items[1].GetAttribute("style"), "opacity:0");
+            Assert.Contains("opacity:1", items[0].GetAttribute("style")!);
+            Assert.Contains("opacity:0", items[1].GetAttribute("style")!);
         });
 
         await component.InvokeAsync(component.Instance.Carousel.GoNext);
@@ -1540,10 +1540,10 @@ public partial class BitCarouselTests : BunitTestContext
         component.WaitForAssertion(() =>
         {
             var items = component.FindAll(".bit-crsi");
-            StringAssert.Contains(items[1].GetAttribute("style"), "opacity:1");
-            StringAssert.Contains(items[1].GetAttribute("style"), "transition:opacity");
-            StringAssert.Contains(items[0].GetAttribute("style"), "opacity:0");
-            Assert.IsFalse(items[1].GetAttribute("style")!.Contains("translate"));
+            Assert.Contains("opacity:1", items[1].GetAttribute("style")!);
+            Assert.Contains("transition:opacity", items[1].GetAttribute("style")!);
+            Assert.Contains("opacity:0", items[0].GetAttribute("style")!);
+            Assert.DoesNotContain("translate", items[1].GetAttribute("style")!);
         });
     }
 
@@ -1563,7 +1563,7 @@ public partial class BitCarouselTests : BunitTestContext
 
         // The breakpoints go by the width of the carousel itself: from 600px up the Sm value
         // applies, and from 960px up the Md value overrides it.
-        component.WaitForAssertion(() => Assert.AreEqual(expectedVisible, component.FindAll(".bit-crsi-cur").Count));
+        component.WaitForAssertion(() => Assert.HasCount(expectedVisible, component.FindAll(".bit-crsi-cur")));
     }
 
     [TestMethod]
@@ -1582,7 +1582,7 @@ public partial class BitCarouselTests : BunitTestContext
         // Below the smallest breakpoint that was set, the base VisibleItemsCount applies. It is set
         // to something other than the default of a single slide, so a carousel that fell through to
         // one of the variants instead does not pass this by accident.
-        component.WaitForAssertion(() => Assert.AreEqual(4, component.FindAll(".bit-crsi-cur").Count));
+        component.WaitForAssertion(() => Assert.HasCount(4, component.FindAll(".bit-crsi-cur")));
     }
 
     [TestMethod]
@@ -1599,7 +1599,7 @@ public partial class BitCarouselTests : BunitTestContext
 
         // A matching responsive option is the most specific thing the carousel was told about its
         // width, so it wins over the breakpoint variants of VisibleItemsCount.
-        component.WaitForAssertion(() => Assert.AreEqual(4, component.FindAll(".bit-crsi-cur").Count));
+        component.WaitForAssertion(() => Assert.HasCount(4, component.FindAll(".bit-crsi-cur")));
     }
 
     [TestMethod]
@@ -1614,7 +1614,7 @@ public partial class BitCarouselTests : BunitTestContext
 
         // The duration is handed to the stylesheet as the -full token, so the reduced-motion
         // media query can still collapse it.
-        StringAssert.Contains(root.GetAttribute("style"), "--bit-csl-dur-full:1.5s");
+        Assert.Contains("--bit-csl-dur-full:1.5s", root.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1627,7 +1627,7 @@ public partial class BitCarouselTests : BunitTestContext
 
         var root = component.Find(".bit-csl");
 
-        StringAssert.Contains(root.GetAttribute("style"), "--bit-csl-dur-full:0s");
+        Assert.Contains("--bit-csl-dur-full:0s", root.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1675,12 +1675,12 @@ public partial class BitCarouselTests : BunitTestContext
         Assert.IsTrue(next.ClassList.Contains("next-button"));
         Assert.IsTrue(next.QuerySelector("i")!.ClassList.Contains("next-icon"));
         Assert.IsTrue(next.QuerySelector("i")!.ClassList.Contains("next-button-icon"));
-        StringAssert.Contains(next.GetAttribute("style"), "color: red");
+        Assert.Contains("color: red", next.GetAttribute("style")!);
 
         Assert.IsTrue(prev.ClassList.Contains("prev-button"));
         Assert.IsTrue(prev.QuerySelector("i")!.ClassList.Contains("bit-icon--Remove"));
         Assert.IsTrue(prev.QuerySelector("i")!.ClassList.Contains("prev-button-icon"));
-        StringAssert.Contains(prev.GetAttribute("style"), "color: blue");
+        Assert.Contains("color: blue", prev.GetAttribute("style")!);
     }
 
     // The default chevrons point to the edge their button sits at, whichever way the button goes: the next button sits
@@ -1841,7 +1841,7 @@ public partial class BitCarouselTests : BunitTestContext
         component.WaitForAssertion(() =>
         {
             Assert.AreEqual(7, component.Instance.Carousel.PagesCount);
-            Assert.AreEqual(7, component.FindAll(".bit-csl-dot").Count);
+            Assert.HasCount(7, component.FindAll(".bit-csl-dot"));
         });
     }
 
@@ -1858,7 +1858,7 @@ public partial class BitCarouselTests : BunitTestContext
         component.WaitForAssertion(() =>
         {
             Assert.AreEqual(3, component.Instance.Carousel.PagesCount);
-            Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count);
+            Assert.HasCount(3, component.FindAll(".bit-csl-dot"));
         });
     }
 
@@ -1888,7 +1888,7 @@ public partial class BitCarouselTests : BunitTestContext
         await component.InvokeAsync(carousel.GoPrev);
         component.WaitForAssertion(() => Assert.AreEqual(1, carousel.CurrentPage));
 
-        CollectionAssert.AreEqual(new[] { 1, 2, 1 }, changedPages);
+        Assert.AreSequenceEqual(new[] { 1, 2, 1 }, changedPages);
 
         component.WaitForAssertion(() =>
         {
@@ -2027,7 +2027,7 @@ public partial class BitCarouselTests : BunitTestContext
             var root = component.Find(".bit-csl");
             var focusables = root.QuerySelectorAll("button");
 
-            Assert.IsTrue(focusables.Length > 1);
+            Assert.IsGreaterThan(1, focusables.Length);
             Assert.IsTrue(focusables[0].ClassList.Contains("bit-csl-ppb"));
         });
     }
@@ -2086,7 +2086,7 @@ public partial class BitCarouselTests : BunitTestContext
         {
             var items = component.FindAll(".bit-crsi");
 
-            Assert.AreEqual(5, items.Count);
+            Assert.HasCount(5, items);
             Assert.AreEqual("1 of 5", items[0].GetAttribute("aria-label"));
             Assert.AreEqual("5 of 5", items[4].GetAttribute("aria-label"));
         });
@@ -2109,7 +2109,7 @@ public partial class BitCarouselTests : BunitTestContext
 
             Assert.IsTrue(items[0].ClassList.Contains("bit-crsi-cur"));
             Assert.IsTrue(items[0].ClassList.Contains("custom-current-item"));
-            StringAssert.Contains(items[0].GetAttribute("style"), "outline: 1px solid red;");
+            Assert.Contains("outline: 1px solid red;", items[0].GetAttribute("style")!);
 
             Assert.IsTrue(items[1].ClassList.Contains("bit-crsi-cur"));
 
@@ -2133,7 +2133,7 @@ public partial class BitCarouselTests : BunitTestContext
         {
             var dots = component.FindAll(".bit-csl-dot");
 
-            Assert.AreEqual(3, dots.Count);
+            Assert.HasCount(3, dots);
             Assert.AreEqual("P1", dots[0].TextContent);
             Assert.AreEqual("P3", dots[2].TextContent);
             Assert.IsTrue(dots[0].ClassList.Contains("bit-csl-dtt"));
@@ -2194,7 +2194,7 @@ public partial class BitCarouselTests : BunitTestContext
     {
         var component = RenderComponent<BitCarouselTest>();
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+        component.WaitForAssertion(() => Assert.HasCount(3, component.FindAll(".bit-csl-dot")));
 
         var container = component.Find(".bit-csl-cnt");
         var carousel = component.Instance.Carousel;
@@ -2218,7 +2218,7 @@ public partial class BitCarouselTests : BunitTestContext
             parameters.Add(p => p.DragThreshold, 100);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+        component.WaitForAssertion(() => Assert.HasCount(3, component.FindAll(".bit-csl-dot")));
 
         var container = component.Find(".bit-csl-cnt");
 
@@ -2233,7 +2233,7 @@ public partial class BitCarouselTests : BunitTestContext
     {
         var component = RenderComponent<BitCarouselTest>();
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+        component.WaitForAssertion(() => Assert.HasCount(3, component.FindAll(".bit-csl-dot")));
 
         var container = component.Find(".bit-csl-cnt");
 
@@ -2253,7 +2253,7 @@ public partial class BitCarouselTests : BunitTestContext
             parameters.Add(p => p.NoDrag, true);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+        component.WaitForAssertion(() => Assert.HasCount(3, component.FindAll(".bit-csl-dot")));
 
         var container = component.Find(".bit-csl-cnt");
 
@@ -2285,8 +2285,8 @@ public partial class BitCarouselTests : BunitTestContext
             Assert.AreEqual(1, carousel.CurrentPage);
 
             var items = component.FindAll(".bit-crsi");
-            StringAssert.Contains(items[1].GetAttribute("style"), "opacity:1");
-            StringAssert.Contains(items[0].GetAttribute("style"), "opacity:0");
+            Assert.Contains("opacity:1", items[1].GetAttribute("style")!);
+            Assert.Contains("opacity:0", items[0].GetAttribute("style")!);
         });
     }
 
@@ -2298,7 +2298,7 @@ public partial class BitCarouselTests : BunitTestContext
             parameters.Add(p => p.AnimationDuration, 0);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+        component.WaitForAssertion(() => Assert.HasCount(3, component.FindAll(".bit-csl-dot")));
 
         var carousel = component.Instance.Carousel;
 
@@ -2499,7 +2499,7 @@ public partial class BitCarouselTests : BunitTestContext
             parameters.Add(p => p.StopOnInteraction, true);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+        component.WaitForAssertion(() => Assert.HasCount(3, component.FindAll(".bit-csl-dot")));
 
         var carousel = component.Instance.Carousel;
 
@@ -2522,7 +2522,7 @@ public partial class BitCarouselTests : BunitTestContext
             parameters.Add(p => p.Wheel, true);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+        component.WaitForAssertion(() => Assert.HasCount(3, component.FindAll(".bit-csl-dot")));
 
         var container = component.Find(".bit-csl-cnt");
         var carousel = component.Instance.Carousel;
@@ -2541,7 +2541,7 @@ public partial class BitCarouselTests : BunitTestContext
             parameters.Add(p => p.Dir, BitDir.Rtl);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+        component.WaitForAssertion(() => Assert.HasCount(3, component.FindAll(".bit-csl-dot")));
 
         var container = component.Find(".bit-csl-cnt");
         var carousel = component.Instance.Carousel;
@@ -2561,7 +2561,7 @@ public partial class BitCarouselTests : BunitTestContext
             parameters.Add(p => p.InfiniteScrolling, true);
         });
 
-        backwards.WaitForAssertion(() => Assert.AreEqual(3, backwards.FindAll(".bit-csl-dot").Count));
+        backwards.WaitForAssertion(() => Assert.HasCount(3, backwards.FindAll(".bit-csl-dot")));
 
         backwards.Find(".bit-csl-cnt").Wheel(new WheelEventArgs { DeltaY = -100 });
 
@@ -2576,7 +2576,7 @@ public partial class BitCarouselTests : BunitTestContext
             parameters.Add(p => p.Dir, BitDir.Rtl);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+        component.WaitForAssertion(() => Assert.HasCount(3, component.FindAll(".bit-csl-dot")));
 
         var container = component.Find(".bit-csl-cnt");
         var carousel = component.Instance.Carousel;
@@ -2593,21 +2593,23 @@ public partial class BitCarouselTests : BunitTestContext
     {
         var component = RenderComponent<BitCarouselTest>();
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+        component.WaitForAssertion(() => Assert.HasCount(3, component.FindAll(".bit-csl-dot")));
 
         // The first page cannot go back, so the button that would is out of the way.
         component.WaitForAssertion(() =>
         {
-            StringAssert.Contains(component.Find(".bit-csl-pbt").GetAttribute("style") ?? "", "display:none");
-            Assert.IsFalse(component.Find(".bit-csl-nbt").GetAttribute("style")?.Contains("display:none") is true);
+            Assert.Contains("display:none", component.Find(".bit-csl-pbt").GetAttribute("style") ?? "");
+            var actualValue = component.Find(".bit-csl-nbt").GetAttribute("style")?.Contains("display:none") is true;
+            Assert.IsFalse(actualValue);
         });
 
         component.FindAll(".bit-csl-dot")[2].Click();
 
         component.WaitForAssertion(() =>
         {
-            StringAssert.Contains(component.Find(".bit-csl-nbt").GetAttribute("style") ?? "", "display:none");
-            Assert.IsFalse(component.Find(".bit-csl-pbt").GetAttribute("style")?.Contains("display:none") is true);
+            Assert.Contains("display:none", component.Find(".bit-csl-nbt").GetAttribute("style") ?? "");
+            var actualValue1 = component.Find(".bit-csl-pbt").GetAttribute("style")?.Contains("display:none") is true;
+            Assert.IsFalse(actualValue1);
         });
     }
 
@@ -2621,8 +2623,10 @@ public partial class BitCarouselTests : BunitTestContext
 
         component.WaitForAssertion(() =>
         {
-            Assert.IsFalse(component.Find(".bit-csl-nbt").GetAttribute("style")?.Contains("display:none") is true);
-            Assert.IsFalse(component.Find(".bit-csl-pbt").GetAttribute("style")?.Contains("display:none") is true);
+            var actualValue = component.Find(".bit-csl-nbt").GetAttribute("style")?.Contains("display:none") is true;
+            Assert.IsFalse(actualValue);
+            var actualValue1 = component.Find(".bit-csl-pbt").GetAttribute("style")?.Contains("display:none") is true;
+            Assert.IsFalse(actualValue1);
         });
     }
 
@@ -2750,7 +2754,7 @@ public partial class BitCarouselTests : BunitTestContext
 
         var carousel = component.Instance.Carousel;
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+        component.WaitForAssertion(() => Assert.HasCount(3, component.FindAll(".bit-csl-dot")));
 
         component.Render(parameters => parameters.Add(p => p.AutoPlay, true));
 
@@ -2799,7 +2803,7 @@ public partial class BitCarouselTests : BunitTestContext
 
         reducedMotion.SetResult(false);
 
-        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.Utils.registerNavigationKeys"));
+        Assert.DoesNotContain(i => i.Identifier == "BitBlazorUI.Utils.registerNavigationKeys", Context.JSInterop.Invocations);
         Assert.IsFalse(carousel.IsPlaying);
     }
 
@@ -2811,7 +2815,7 @@ public partial class BitCarouselTests : BunitTestContext
             parameters.Add(p => p.NoKeyboard, true);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+        component.WaitForAssertion(() => Assert.HasCount(3, component.FindAll(".bit-csl-dot")));
 
         await PressKey(component, "ArrowRight");
 
@@ -2823,7 +2827,7 @@ public partial class BitCarouselTests : BunitTestContext
     {
         var component = RenderComponent<BitCarouselTest>();
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+        component.WaitForAssertion(() => Assert.HasCount(3, component.FindAll(".bit-csl-dot")));
 
         // The up/down arrows are not the keys of a horizontal carousel, and neither is a letter.
         await PressKey(component, "ArrowDown");
@@ -2837,7 +2841,7 @@ public partial class BitCarouselTests : BunitTestContext
     {
         var component = RenderComponent<BitCarouselTest>();
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+        component.WaitForAssertion(() => Assert.HasCount(3, component.FindAll(".bit-csl-dot")));
 
         Assert.AreEqual("next", component.Find(".bit-csl-nbt").GetAttribute("data-bit-key-origin"));
         Assert.AreEqual("prev", component.Find(".bit-csl-pbt").GetAttribute("data-bit-key-origin"));
@@ -2850,7 +2854,7 @@ public partial class BitCarouselTests : BunitTestContext
     {
         var component = RenderComponent<BitCarouselTest>();
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+        component.WaitForAssertion(() => Assert.HasCount(3, component.FindAll(".bit-csl-dot")));
 
         // The click focused the button it landed on.
         component.Find(".bit-csl").FocusIn();
@@ -2871,7 +2875,7 @@ public partial class BitCarouselTests : BunitTestContext
     {
         var component = RenderComponent<BitCarouselTest>();
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+        component.WaitForAssertion(() => Assert.HasCount(3, component.FindAll(".bit-csl-dot")));
 
         // A click (or a tap in Safari) that does not focus the button leaves the focus outside the carousel.
         component.Find(".bit-csl-nbt").Click();
@@ -2928,7 +2932,7 @@ public partial class BitCarouselTests : BunitTestContext
     {
         var component = RenderComponent<BitCarouselTest>();
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+        component.WaitForAssertion(() => Assert.HasCount(3, component.FindAll(".bit-csl-dot")));
 
         var container = component.Find(".bit-csl-cnt");
 
@@ -2953,7 +2957,7 @@ public partial class BitCarouselTests : BunitTestContext
         {
             var invocation = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Utils.registerPreventPointerDown");
 
-            Assert.AreEqual(true, invocation.Arguments[1]);
+            Assert.IsTrue(Assert.IsInstanceOfType<bool>(invocation.Arguments[1]));
             Assert.AreEqual(35, invocation.Arguments[2]);
             Assert.AreEqual("x", invocation.Arguments[3]);
         });
@@ -2972,7 +2976,7 @@ public partial class BitCarouselTests : BunitTestContext
     [TestMethod]
     public void BitCarouselParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitCarousel)}", BitCarouselParams.ParamName);
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitCarousel)}", new BitCarouselParams().Name);
     }
 
     [TestMethod]
@@ -3003,8 +3007,8 @@ public partial class BitCarouselTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("bit-csl-suc"));
         Assert.IsTrue(root.ClassList.Contains("bit-csl-lg"));
         Assert.IsTrue(root.ClassList.Contains("bit-csl-vrt"));
-        StringAssert.Contains(root.GetAttribute("style"), "--bit-csl-gap:12px");
-        StringAssert.Contains(root.GetAttribute("style"), "--bit-csl-dur-full:1s");
+        Assert.Contains("--bit-csl-gap:12px", root.GetAttribute("style")!);
+        Assert.Contains("--bit-csl-dur-full:1s", root.GetAttribute("style")!);
 
         var carousel = component.FindComponent<BitCarousel>().Instance;
 
@@ -3034,7 +3038,7 @@ public partial class BitCarouselTests : BunitTestContext
         Assert.IsFalse(root.ClassList.Contains("bit-csl-suc"));
         Assert.IsTrue(root.ClassList.Contains("bit-csl-lg"));
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+        component.WaitForAssertion(() => Assert.HasCount(3, component.FindAll(".bit-csl-dot")));
     }
 
     [TestMethod]
@@ -3257,4 +3261,6 @@ public partial class BitCarouselTests : BunitTestContext
 
         Assert.AreEqual("Featured", component.Find(".bit-csl").GetAttribute("aria-label"));
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

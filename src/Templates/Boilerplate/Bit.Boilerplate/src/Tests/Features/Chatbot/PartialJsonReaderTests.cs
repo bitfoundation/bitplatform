@@ -80,7 +80,8 @@ public class PartialJsonReaderTests
     [DataRow("""{"an""", DisplayName = "A property name that has not finished")]
     public void APrefixWithNoAnswerInIt_Should_ReadAsNothing(string prefix)
     {
-        Assert.IsNull(Reader().Append(prefix)?.Answer);
+        var actualValue = Reader().Append(prefix)?.Answer;
+        Assert.IsNull(actualValue);
     }
 
     /// <summary>
@@ -107,8 +108,9 @@ public class PartialJsonReaderTests
     public void ItemsThatAreWhole_Should_BeReadBeforeTheRestArrive()
     {
         var partial = Reader().Append("""{"answer":"Done","notes":["First","Second","Thi""");
+        var actualValue = partial?.Notes;
 
-        Assert.IsNotNull(partial?.Notes);
+        Assert.IsNotNull(actualValue);
         Assert.HasCount(3, partial.Notes);
         Assert.AreEqual("First", partial.Notes[0]);
         Assert.AreEqual("Thi", partial.Notes[2]);
@@ -185,15 +187,15 @@ public class PartialJsonReaderTests
             {
                 partial = reader.Append(document[at..Math.Min(at + size, document.Length)]);
             }
+            var actualValue = partial?.Notes;
 
-            Assert.IsNotNull(partial?.Notes, $"Chunks of {size} characters read differently.");
+            Assert.IsNotNull(actualValue, $"Chunks of {size} characters read differently.");
             Assert.AreEqual("A \"quoted\" word, a ☕ and a\nnewline.", partial.Answer, $"Chunks of {size} characters read differently.");
             Assert.HasCount(2, partial.Notes, $"Chunks of {size} characters read differently.");
         }
     }
 
-    /// <summary>An answer with an array after it.</summary>
-    public class ReplyWithNotes
+    internal class ReplyWithNotes
     {
         public string? Answer { get; set; }
 

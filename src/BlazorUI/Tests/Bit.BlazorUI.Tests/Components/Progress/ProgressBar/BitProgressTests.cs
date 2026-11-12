@@ -24,7 +24,8 @@ public class BitProgressTests : BunitTestContext
         var piWrapper = component.Find(".bit-prb-bcn");
         var piWrapperStyle = piWrapper.GetAttribute("style");
         var expectedValue = $"height: {thickness}px";
-        Assert.IsTrue(piWrapperStyle?.Contains(expectedValue));
+        var actualValue = piWrapperStyle?.Contains(expectedValue);
+        Assert.IsTrue(actualValue);
     }
 
     [TestMethod]
@@ -65,7 +66,8 @@ public class BitProgressTests : BunitTestContext
         var piBar = component.Find(".bit-prb-bar");
         var piBarStyle = piBar.GetAttribute("style");
         var expectedValue = $"width: {percent}%";
-        Assert.IsTrue(piBarStyle?.Contains(expectedValue));
+        var actualValue = piBarStyle?.Contains(expectedValue);
+        Assert.IsTrue(actualValue);
     }
 
     [TestMethod,
@@ -82,7 +84,8 @@ public class BitProgressTests : BunitTestContext
         var piBar = component.Find(".bit-prb-bar");
         var piBarStyle = piBar.GetAttribute("style");
         var expectedValue = "width: 100%";
-        Assert.IsTrue(piBarStyle?.Contains(expectedValue));
+        var actualValue = piBarStyle?.Contains(expectedValue);
+        Assert.IsTrue(actualValue);
     }
 
     [TestMethod,
@@ -99,7 +102,8 @@ public class BitProgressTests : BunitTestContext
         var piBar = component.Find(".bit-prb-bar");
         var piBarStyle = piBar.GetAttribute("style");
         var expectedValue = "width: 0%";
-        Assert.IsTrue(piBarStyle?.Contains(expectedValue));
+        var actualValue = piBarStyle?.Contains(expectedValue);
+        Assert.IsTrue(actualValue);
     }
 
 
@@ -309,7 +313,7 @@ public class BitProgressTests : BunitTestContext
             parameters.Add(p => p.Percent, 0);
         });
 
-        Assert.AreEqual(1, component.FindAll("[role=progressbar]").Count);
+        Assert.ContainsSingle(component.FindAll("[role=progressbar]"));
         Assert.IsTrue(component.Find("[role=progressbar]").ClassList.Contains("bit-prb-bcn"));
         Assert.IsNull(component.Find(".bit-prb-bar").GetAttribute("role"));
         Assert.IsNull(component.Find(".bit-prb-bar").GetAttribute("aria-labelledby"));
@@ -325,7 +329,7 @@ public class BitProgressTests : BunitTestContext
             parameters.Add(p => p.Percent, 42);
         });
 
-        Assert.AreEqual(1, component.FindAll("[role=progressbar]").Count);
+        Assert.ContainsSingle(component.FindAll("[role=progressbar]"));
         Assert.IsNull(component.Find(".bit-prb-crp").GetAttribute("role"));
         Assert.IsNull(component.Find(".bit-prb-crp").GetAttribute("aria-label"));
     }
@@ -869,7 +873,7 @@ public class BitProgressTests : BunitTestContext
         // the space is kept and the value is already there when the indicator appears.
         Assert.IsTrue(root.ClassList.Contains("bit-prb-dly"));
         Assert.Contains("--bit-prb-delay: 400ms;", root.GetAttribute("style")!);
-        Assert.AreEqual(1, component.FindAll("[role=progressbar]").Count);
+        Assert.ContainsSingle(component.FindAll("[role=progressbar]"));
     }
 
     [TestMethod]
@@ -1117,7 +1121,7 @@ public class BitProgressTests : BunitTestContext
         Assert.IsTrue(header.Children[1].ClassList.Contains("bit-prb-pco"));
 
         // ... and it is not rendered a second time under the bar.
-        Assert.AreEqual(1, component.FindAll(".bit-prb-pct").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-prb-pct"));
     }
 
     [TestMethod]
@@ -1527,7 +1531,7 @@ public class BitProgressTests : BunitTestContext
 
         var bar = component.Find(".bit-prb-bar").GetAttribute("style")!;
         Assert.Contains("height: 42%", bar);
-        Assert.IsFalse(bar.Contains("width:"));
+        Assert.DoesNotContain("width:", bar);
 
         Assert.Contains("height: 70%", component.Find(".bit-prb-buf").GetAttribute("style")!);
     }
@@ -1545,7 +1549,7 @@ public class BitProgressTests : BunitTestContext
         var container = component.Find(".bit-prb-bcn").GetAttribute("style")!;
         Assert.Contains("width: 12px", container);
         Assert.Contains("height: 8rem", container);
-        Assert.IsFalse(container.Contains("min-height"));
+        Assert.DoesNotContain("min-height", container);
     }
 
     [TestMethod]
@@ -1570,7 +1574,7 @@ public class BitProgressTests : BunitTestContext
         });
 
         var container = component.Find(".bit-prb-bcn").GetAttribute("style")!;
-        Assert.IsFalse(container.Contains("8rem"));
+        Assert.DoesNotContain("8rem", container);
         Assert.Contains("min-height", container);
     }
 
@@ -2079,7 +2083,7 @@ public class BitProgressTests : BunitTestContext
 
         var style = component.Find(".bit-prb").GetAttribute("style")!;
 
-        Assert.IsTrue(style.IndexOf("tomato") < style.IndexOf("rebeccapurple"));
+        Assert.IsLessThan(style.IndexOf("rebeccapurple"), style.IndexOf("tomato"));
         Assert.Contains("--bit-prb-segments: 4;", style);
     }
 
@@ -2136,7 +2140,7 @@ public class BitProgressTests : BunitTestContext
 
         // The per-size tokens - the track, the ring stroke, the diameter and the type - hang off exactly one class.
         Assert.IsTrue(classList.Contains(expectedClass));
-        Assert.AreEqual(1, classList.Count(c => c is "bit-prb-sm" or "bit-prb-md" or "bit-prb-lg"));
+        Assert.ContainsSingle(c => c is "bit-prb-sm" or "bit-prb-md" or "bit-prb-lg", classList);
     }
 
     [TestMethod]
@@ -2283,13 +2287,13 @@ public class BitProgressTests : BunitTestContext
         });
 
         var barStyle = component.Find(".bit-prb-bar").GetAttribute("style")!;
-        Assert.IsTrue(barStyle.IndexOf("width: 42%") < barStyle.IndexOf("width: 10%"));
+        Assert.IsLessThan(barStyle.IndexOf("width: 10%"), barStyle.IndexOf("width: 42%"));
 
         var trackStyle = component.Find(".bit-prb-trc").GetAttribute("style")!;
-        Assert.IsTrue(trackStyle.IndexOf("var(--bit-prb-thickness)") < trackStyle.IndexOf("height: 3px"));
+        Assert.IsLessThan(trackStyle.IndexOf("height: 3px"), trackStyle.IndexOf("var(--bit-prb-thickness)"));
 
         var bufferStyle = component.Find(".bit-prb-buf").GetAttribute("style")!;
-        Assert.IsTrue(bufferStyle.IndexOf("width: 60%") < bufferStyle.IndexOf("width: 20%"));
+        Assert.IsLessThan(bufferStyle.IndexOf("width: 20%"), bufferStyle.IndexOf("width: 60%"));
     }
 
     [TestMethod]
@@ -2337,8 +2341,8 @@ public class BitProgressTests : BunitTestContext
 
         if (expected.Length == 0)
         {
-            Assert.IsFalse(style.Contains("visibility:hidden"));
-            Assert.IsFalse(style.Contains("display:none"));
+            Assert.DoesNotContain("visibility:hidden", style);
+            Assert.DoesNotContain("display:none", style);
         }
         else
         {

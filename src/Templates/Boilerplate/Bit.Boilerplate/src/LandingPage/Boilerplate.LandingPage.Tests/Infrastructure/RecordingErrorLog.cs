@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Boilerplate.LandingPage.Tests.Infrastructure;
 
-public sealed class RecordingErrorLog : ILoggerProvider, ILogger
+internal sealed class RecordingErrorLog : ILoggerProvider, ILogger
 {
     public ConcurrentQueue<string> Errors { get; } = new();
 

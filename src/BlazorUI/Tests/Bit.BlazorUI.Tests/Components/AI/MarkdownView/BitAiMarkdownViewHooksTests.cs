@@ -91,10 +91,10 @@ public class BitAiMarkdownViewHooksTests : BitAiTestBase
         var component = RenderMarkdown("before\n\n```mermaid\ngraph TD; A-->\n```\n\nafter");
 
         var paragraphs = component.FindAll(".bit-aimdv > p.bit-aimdv-par").Select(p => p.TextContent).ToArray();
-        CollectionAssert.AreEqual(new[] { "before", "after" }, paragraphs);
+        Assert.AreSequenceEqual(new[] { "before", "after" }, paragraphs);
 
         var notice = component.Find(".bit-aimdv > .bit-airbd");
-        StringAssert.Contains(notice.TextContent, "The renderer for 'mermaid' failed");
+        Assert.Contains("The renderer for 'mermaid' failed", notice.TextContent);
         Assert.AreEqual("unexpected shape", component.FindComponent<BitTag>().Instance.Title);
     }
 
@@ -105,7 +105,7 @@ public class BitAiMarkdownViewHooksTests : BitAiTestBase
 
         var component = RenderMarkdown("```vega\n{}\n```\n\nafter");
 
-        StringAssert.Contains(component.Find(".bit-airbd").TextContent, "The renderer for 'vega' failed");
+        Assert.Contains("The renderer for 'vega' failed", component.Find(".bit-airbd").TextContent);
         Assert.AreEqual("after", component.Find("p.bit-aimdv-par").TextContent);
     }
 
@@ -123,8 +123,8 @@ public class BitAiMarkdownViewHooksTests : BitAiTestBase
         // The notice of an inline expression stays in its line, inside the paragraph, between the words around it.
         var inline = component.Find(".bit-aimdv-par > .bit-airbd");
         Assert.IsTrue(inline.ClassList.Contains("bit-aimdv-rbi"));
-        StringAssert.StartsWith(inline.ParentElement!.TextContent, "Inline");
-        StringAssert.EndsWith(inline.ParentElement!.TextContent, "here");
+        Assert.StartsWith("Inline", inline.ParentElement!.TextContent);
+        Assert.EndsWith("here", inline.ParentElement!.TextContent);
 
         // The block expression's notice stands in a block of its own.
         var block = component.Find(".bit-aimdv > .bit-airbd");
@@ -157,7 +157,7 @@ public class BitAiMarkdownViewHooksTests : BitAiTestBase
         Assert.AreSame(citation, handed!.Citation);
 
         // A number no citation answers to stays the text the model wrote, renderer or not.
-        StringAssert.Contains(component.Find(".bit-aimdv-par").TextContent, "[7]");
+        Assert.Contains("[7]", component.Find(".bit-aimdv-par").TextContent);
     }
 
     [TestMethod]
@@ -240,7 +240,7 @@ public class BitAiMarkdownViewHooksTests : BitAiTestBase
             .Add(p => p.CascadedOptions, BitAiUiOptions.Default with { InlineCitations = false }));
 
         Assert.IsEmpty(component.FindAll(".my-chip"));
-        StringAssert.Contains(component.Find(".bit-aimdv-par").TextContent, "[1]");
+        Assert.Contains("[1]", component.Find(".bit-aimdv-par").TextContent);
     }
 
     [TestMethod]
@@ -255,8 +255,8 @@ public class BitAiMarkdownViewHooksTests : BitAiTestBase
 
         var notice = component.Find(".bit-aimdv-par > .bit-airbd");
         Assert.IsTrue(notice.ClassList.Contains("bit-aimdv-rbi"));
-        StringAssert.Contains(notice.TextContent, "The renderer for 'citation' failed");
-        StringAssert.StartsWith(notice.ParentElement!.TextContent, "as stated");
+        Assert.Contains("The renderer for 'citation' failed", notice.TextContent);
+        Assert.StartsWith("as stated", notice.ParentElement!.TextContent);
         Assert.AreEqual("after", component.FindAll(".bit-aimdv > p.bit-aimdv-par").Last().TextContent);
     }
 
@@ -271,7 +271,7 @@ public class BitAiMarkdownViewHooksTests : BitAiTestBase
 
         var section = component.Find("section.bit-aimdv-fns");
         Assert.AreEqual("doc-endnotes", section.GetAttribute("role"));
-        StringAssert.Contains(section.TextContent, "The note.");
+        Assert.Contains("The note.", section.TextContent);
 
         var backLinks = section.QuerySelectorAll("a.bit-aimdv-fnb");
         Assert.HasCount(2, backLinks);
@@ -345,7 +345,7 @@ public class BitAiMarkdownViewHooksTests : BitAiTestBase
         var link = component.Find("a.bit-aimdv-lnk");
 
         Assert.IsFalse(PreventsTheClickDefault(link));
-        Assert.IsFalse(link.Attributes.Any(a => a.Name.Equals("blazor:onclick", StringComparison.OrdinalIgnoreCase)));
+        Assert.DoesNotContain(a => a.Name.Equals("blazor:onclick", StringComparison.OrdinalIgnoreCase), link.Attributes);
     }
 
     private static bool PreventsTheClickDefault(AngleSharp.Dom.IElement element) =>
@@ -360,9 +360,9 @@ public class BitAiMarkdownViewHooksTests : BitAiTestBase
     {
         var component = RenderMarkdown("<div onclick=\"x()\">hi</div>", new BitAiMarkdownOptions { AllowRawHtml = true });
 
-        Assert.IsFalse(component.Markup.Contains("<div onclick"));
+        Assert.DoesNotContain("<div onclick", component.Markup);
         Assert.IsEmpty(component.FindAll("pre"));
-        StringAssert.StartsWith(component.Find("p.bit-aimdv-par").TextContent, "<div onclick=");
+        Assert.StartsWith("<div onclick=", component.Find("p.bit-aimdv-par").TextContent);
     }
 
     [TestMethod]
@@ -398,8 +398,7 @@ public class BitAiMarkdownViewHooksTests : BitAiTestBase
             .Add(p => p.Document, BitAiMarkdownParser.Parse("## Setup\n\n## Setup"))
             .Add(p => p.Id, "answer"));
 
-        CollectionAssert.AreEqual(new[] { "answer-bit-ai-h-setup", "answer-bit-ai-h-setup-2" },
-                                  component.FindAll(".bit-aimdv-hdg").Select(h => h.Id).ToArray());
+        Assert.AreSequenceEqual(new[] { "answer-bit-ai-h-setup", "answer-bit-ai-h-setup-2" }, component.FindAll(".bit-aimdv-hdg").Select(h => h.Id).ToArray());
     }
 
     [TestMethod]
@@ -415,7 +414,7 @@ public class BitAiMarkdownViewHooksTests : BitAiTestBase
     {
         var component = RenderMarkdown("para\n\n    var x = 1;");
 
-        StringAssert.Contains(component.Find(".bit-aicbv-cod").TextContent, "var x = 1;");
+        Assert.Contains("var x = 1;", component.Find(".bit-aicbv-cod").TextContent);
     }
 
     [TestMethod]
@@ -424,7 +423,7 @@ public class BitAiMarkdownViewHooksTests : BitAiTestBase
         var component = RenderMarkdown("See [the docs][d].\n\n[d]: https://x.dev/docs");
 
         Assert.AreEqual("https://x.dev/docs", component.Find("a.bit-aimdv-lnk").GetAttribute("href"));
-        Assert.IsFalse(component.Markup.Contains("[d]"));
+        Assert.DoesNotContain("[d]", component.Markup);
     }
 
     [TestMethod]
@@ -466,7 +465,7 @@ public class BitAiMarkdownViewHooksTests : BitAiTestBase
 
         Assert.IsEmpty(component.FindAll("img"));
         var blocked = component.FindAll(".bit-aimdv-imb");
-        Assert.HasCount(1, blocked);
+        Assert.ContainsSingle(blocked);
         Assert.AreEqual("a cat", blocked[0].TextContent);
     }
 
@@ -504,13 +503,13 @@ public class BitAiMarkdownViewHooksTests : BitAiTestBase
         Assert.AreEqual("-1", dog.GetAttribute("tabindex"));
 
         var focus = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"];
-        Assert.HasCount(1, focus);
+        Assert.ContainsSingle(focus);
         Assert.AreEqual(dog.GetAttribute("blazor:elementreference"), ((ElementReference)focus[0].Arguments[0]!).Id);
 
         // Rendered again, the image keeps the focus where it is.
         component.Render();
 
-        Assert.HasCount(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
     }
 
     [TestMethod]
@@ -567,8 +566,8 @@ public class BitAiMarkdownViewHooksTests : BitAiTestBase
 
         var sources = component.FindAll("img").Select(i => i.GetAttribute("src")).ToArray();
 
-        CollectionAssert.AreEqual(new[] { "https://cdn.x.dev/a.png", "https://img.trusted.org/b.png" }, sources);
-        Assert.HasCount(1, component.FindAll("button.bit-acb"));
+        Assert.AreSequenceEqual(new[] { "https://cdn.x.dev/a.png", "https://img.trusted.org/b.png" }, sources);
+        Assert.ContainsSingle(component.FindAll("button.bit-acb"));
     }
 
     [TestMethod]
@@ -579,7 +578,7 @@ public class BitAiMarkdownViewHooksTests : BitAiTestBase
         var cdn = RenderMarkdown("![a](/img/a.png)", ui: BitAiUiOptions.Default with { Images = BitAiImagePolicy.AllowListedHosts("cdn.x.dev") });
 
         // Shown as written: the browser resolves it.
-        CollectionAssert.AreEqual(new[] { "/img/a.png", "img/b.png" }, own.FindAll("img.bit-aimdv-img").Select(i => i.GetAttribute("src")).ToArray());
+        Assert.AreSequenceEqual(new[] { "/img/a.png", "img/b.png" }, own.FindAll("img.bit-aimdv-img").Select(i => i.GetAttribute("src")).ToArray());
         Assert.IsEmpty(own.FindAll("button.bit-acb"));
 
         Assert.IsEmpty(cdn.FindAll("img"));

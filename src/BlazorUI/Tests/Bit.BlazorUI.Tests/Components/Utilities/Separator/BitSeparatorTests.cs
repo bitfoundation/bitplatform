@@ -1092,7 +1092,7 @@ public class BitSeparatorTests : BunitTestContext
         // The root attributes the component builds itself are joined with, or yield to, the splatted ones.
         Assert.IsTrue(separators[4].ClassList.Contains("bit-spr"));
         Assert.IsTrue(separators[4].ClassList.Contains("page-class"));
-        StringAssert.Contains(separators[4].GetAttribute("style"), "margin: 0");
+        Assert.Contains("margin: 0", separators[4].GetAttribute("style")!);
         Assert.AreEqual("rtl", separators[4].GetAttribute("dir"));
         Assert.AreEqual("page-id", separators[4].GetAttribute("id"));
     }

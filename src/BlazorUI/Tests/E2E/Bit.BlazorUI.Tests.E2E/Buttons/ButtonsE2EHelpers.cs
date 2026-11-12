@@ -154,6 +154,6 @@ internal static class ButtonsE2EHelpers
     /// </summary>
     public static void AreClose(double expected, double actual, double tolerance, string message)
     {
-        Assert.IsTrue(Math.Abs(expected - actual) <= tolerance, $"{message}: expected {expected}, was {actual} (tolerance {tolerance}).");
+        Assert.IsLessThanOrEqualTo(tolerance, Math.Abs(expected - actual), $"{message}: expected {expected}, was {actual} (tolerance {tolerance}).");
     }
 }

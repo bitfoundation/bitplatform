@@ -34,12 +34,12 @@ public class BelemetryExporterSetTests
 
         var filtered = BelemetryExporterSet.WithMinimumSeverity(batch, BelemetrySeverity.Warn);
         Assert.AreNotSame(batch, filtered);
-        CollectionAssert.AreEqual(new[] { "warn", "error" }, filtered.Logs.Select(l => l.Body).ToArray());
+        Assert.AreSequenceEqual(new[] { "warn", "error" }, filtered.Logs.Select(l => l.Body).ToArray());
 
         // Events are not logs to a log level: a page view or a custom event is Info and must still reach the backend.
         var pageView = Records.Log("Home", "browser.page_view");
         var withEvents = BelemetryExporterSet.WithMinimumSeverity(new BelemetryBatch(Records.Resource(), logs: [info, pageView, error]), BelemetrySeverity.Error);
-        CollectionAssert.AreEqual(new[] { "Home", "error" }, withEvents.Logs.Select(l => l.Body).ToArray());
+        Assert.AreSequenceEqual(new[] { "Home", "error" }, withEvents.Logs.Select(l => l.Body).ToArray());
         Assert.AreSame(batch.Spans, filtered.Spans);
         Assert.AreSame(batch.Metrics, filtered.Metrics);
         Assert.AreSame(batch.Resource, filtered.Resource);
@@ -68,10 +68,10 @@ public class BelemetryExporterSetTests
 
         var everything = handler.Requests.Single(r => r.Message.RequestUri!.Host == "everything.test");
         var errorsOnly = handler.Requests.Single(r => r.Message.RequestUri!.Host == "errors.test");
-        StringAssert.Contains(System.Text.Encoding.UTF8.GetString(everything.Body), "fine");
-        StringAssert.Contains(System.Text.Encoding.UTF8.GetString(everything.Body), "broken");
-        StringAssert.DoesNotMatch(System.Text.Encoding.UTF8.GetString(errorsOnly.Body), new System.Text.RegularExpressions.Regex("fine"));
-        StringAssert.Contains(System.Text.Encoding.UTF8.GetString(errorsOnly.Body), "broken");
+        Assert.Contains("fine", System.Text.Encoding.UTF8.GetString(everything.Body));
+        Assert.Contains("broken", System.Text.Encoding.UTF8.GetString(everything.Body));
+        Assert.DoesNotMatchRegex(new System.Text.RegularExpressions.Regex("fine"), System.Text.Encoding.UTF8.GetString(errorsOnly.Body));
+        Assert.Contains("broken", System.Text.Encoding.UTF8.GetString(errorsOnly.Body));
         Assert.HasCount(2, host.Memory.Logs, "The in-memory exporter has no minimum: it gets both.");
     }
 
@@ -147,6 +147,6 @@ public class BelemetryExporterSetTests
         foreach (var log in new[] { info, pageView, error }) host.Pipeline.Enqueue(log);
         foreach (var s in new[] { span, failed }) host.Pipeline.Enqueue(s);
 
-        CollectionAssert.AreEqual(new object[] { error, failed }, accepted, "Sentry sends neither a span without an exception, a page view nor a log below its level.");
+        Assert.AreSequenceEqual(new object[] { error, failed }, accepted, "Sentry sends neither a span without an exception, a page view nor a log below its level.");
     }
 }

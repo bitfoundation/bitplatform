@@ -52,7 +52,7 @@ public class BitSnackBarServiceTests : BunitTestContext
         var item = await service.Info("title");
 
         Assert.IsNotNull(item);
-        Assert.AreEqual(0, com.Instance.Items.Count);
+        Assert.IsEmpty(com.Instance.Items);
     }
 
     [TestMethod]
@@ -61,7 +61,7 @@ public class BitSnackBarServiceTests : BunitTestContext
         // An app that never registered the services loses this one opt-in feature, not the snack bar.
         var com = RenderComponent<BitSnackBar>(parameters => parameters.Add(p => p.ServiceHost, true));
 
-        Assert.AreEqual(1, com.FindAll(".bit-snb").Count);
+        Assert.ContainsSingle(com.FindAll(".bit-snb"));
     }
 
     [TestMethod]
@@ -117,7 +117,7 @@ public class BitSnackBarServiceTests : BunitTestContext
 
         await service.Close(item);
 
-        Assert.AreEqual(0, owner.Instance.Items.Count);
+        Assert.IsEmpty(owner.Instance.Items);
         Assert.AreEqual(BitSnackBarDismissReason.Programmatic, item.DismissReason);
     }
 
@@ -137,9 +137,9 @@ public class BitSnackBarServiceTests : BunitTestContext
 
         // A timer or a hub callback is off the renderer's context; the owner is found from the item itself rather
         // than by reading the host's lists from there.
-        await Task.Run(() => service.Close(item));
+        await Task.Run(() => service.Close(item), TestContext.CancellationToken);
 
-        Assert.AreEqual(0, com.Instance.Items.Count);
+        Assert.IsEmpty(com.Instance.Items);
         Assert.AreEqual(BitSnackBarDismissReason.Programmatic, item.DismissReason);
     }
 
@@ -166,7 +166,7 @@ public class BitSnackBarServiceTests : BunitTestContext
         await service.Update(item);
 
         Assert.AreEqual(0, dismissed);
-        Assert.AreEqual(0, com.Instance.Items.Count);
+        Assert.IsEmpty(com.Instance.Items);
     }
 
     [TestMethod]
@@ -185,11 +185,11 @@ public class BitSnackBarServiceTests : BunitTestContext
         await service.Info("first");
         var queued = await service.Info("second");
 
-        Assert.AreEqual(1, com.Instance.PendingItems.Count);
+        Assert.ContainsSingle(com.Instance.PendingItems);
 
         await service.Close(queued);
 
-        Assert.AreEqual(0, com.Instance.PendingItems.Count);
+        Assert.IsEmpty(com.Instance.PendingItems);
         Assert.AreEqual(BitSnackBarDismissReason.Programmatic, queued.DismissReason);
     }
 
@@ -210,7 +210,7 @@ public class BitSnackBarServiceTests : BunitTestContext
 
         await service.Clear();
 
-        Assert.AreEqual(0, com.Instance.Items.Count);
+        Assert.IsEmpty(com.Instance.Items);
     }
 
     [TestMethod]
@@ -239,4 +239,6 @@ public class BitSnackBarServiceTests : BunitTestContext
         await Assert.ThrowsExactlyAsync<InvalidOperationException>(() =>
             service.Track(Task.FromException(new InvalidOperationException()), "Loading", "Done", ex => "Failed"));
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

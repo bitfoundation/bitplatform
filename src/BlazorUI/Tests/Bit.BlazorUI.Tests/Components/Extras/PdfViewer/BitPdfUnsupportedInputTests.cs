@@ -146,7 +146,7 @@ public class BitPdfUnsupportedInputTests : BunitTestContext
             }
         }
 
-        Assert.AreEqual(0, failures.Count, string.Join("\n", failures.Take(10)));
+        Assert.IsEmpty(failures, string.Join("\n", failures.Take(10)));
     }
 
     [TestMethod]
@@ -170,7 +170,7 @@ public class BitPdfUnsupportedInputTests : BunitTestContext
             }
         }
 
-        Assert.AreEqual(0, failures.Count, string.Join("\n", failures.Take(10)));
+        Assert.IsEmpty(failures, string.Join("\n", failures.Take(10)));
     }
 
     // ----- Hostile content -----
@@ -270,7 +270,7 @@ public class BitPdfUnsupportedInputTests : BunitTestContext
         Exception? ex = OpenEverything(HostileCases[name]());
 
         Assert.IsNull(ex, ex?.ToString());
-        Assert.IsTrue(watch.Elapsed < TimeSpan.FromSeconds(10), $"Took {watch.Elapsed}.");
+        Assert.IsLessThan(TimeSpan.FromSeconds(10), watch.Elapsed, $"Took {watch.Elapsed}.");
     }
 
     // The next ones used to overflow the stack, which no catch can stop: a regression takes
@@ -350,7 +350,7 @@ public class BitPdfUnsupportedInputTests : BunitTestContext
         var watch = System.Diagnostics.Stopwatch.StartNew();
 
         Assert.IsNull(OpenEverything(bytes));
-        Assert.IsTrue(watch.Elapsed < TimeSpan.FromSeconds(10), $"Took {watch.Elapsed}.");
+        Assert.IsLessThan(TimeSpan.FromSeconds(10), watch.Elapsed, $"Took {watch.Elapsed}.");
     }
 
     // A CTM or font size that overflows to Infinity under a text run put a non-finite number
@@ -387,9 +387,9 @@ public class BitPdfUnsupportedInputTests : BunitTestContext
         component.WaitForAssertion(() => Assert.IsNotNull(error));
         Assert.AreEqual(0, component.Instance.PageCount);
         // No password dialog: a password cannot open this file.
-        Assert.AreEqual(0, component.FindAll(".bit-pdv-password").Count);
+        Assert.IsEmpty(component.FindAll(".bit-pdv-password"));
         var alert = component.Find(".bit-pdv-error[role=alert]");
-        StringAssert.Contains(alert.TextContent, error!);
+        Assert.Contains(error!, alert.TextContent);
     }
 
     [TestMethod]
@@ -405,7 +405,7 @@ public class BitPdfUnsupportedInputTests : BunitTestContext
 
         component.WaitForAssertion(() => Assert.IsNotNull(error));
         Assert.AreEqual(0, component.Instance.PageCount);
-        Assert.AreEqual(1, component.FindAll(".bit-pdv-error").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-pdv-error"));
     }
 
     [TestMethod]
@@ -430,6 +430,6 @@ public class BitPdfUnsupportedInputTests : BunitTestContext
 
         component.WaitForPages(2);
         Assert.IsNull(error);
-        StringAssert.Contains(component.Instance.ExtractText(), "Still readable");
+        Assert.Contains("Still readable", component.Instance.ExtractText());
     }
 }

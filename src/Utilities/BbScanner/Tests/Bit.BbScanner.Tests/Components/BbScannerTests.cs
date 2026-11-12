@@ -156,8 +156,8 @@ public class BbScannerTests : BunitContext
 
         var results = qr.Instance.DecodeAllInImage(rgba, frame.Width, frame.Height, BbPixelFormat.Rgba32);
 
-        CollectionAssert.AreEquivalent(new[] { "LEFT", "RIGHT" }, results.Select(r => r.Text).ToArray());
-        Assert.HasCount(1, qr.Instance.DecodeAllInImage(rgba, frame.Width, frame.Height, BbPixelFormat.Rgba32, maxSymbols: 1));
+        Assert.AreSequenceEqual(new[] { "LEFT", "RIGHT" }, results.Select(r => r.Text).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
+        Assert.ContainsSingle(qr.Instance.DecodeAllInImage(rgba, frame.Width, frame.Height, BbPixelFormat.Rgba32, maxSymbols: 1));
     }
 
     [TestMethod]
@@ -166,7 +166,7 @@ public class BbScannerTests : BunitContext
         var scanner = RenderPrerendered();
 
         var error = await Assert.ThrowsExactlyAsync<BbScannerException>(() =>
-            scanner.InvokeAsync(() => scanner.Instance.ScanImageAsync(new byte[] { 0x89, 0x50, 0x4E, 0x47 }, "image/png")));
+            scanner.InvokeAsync(() => scanner.Instance.ScanImageAsync(new byte[] { 0x89, 0x50, 0x4E, 0x47 }, "image/png", cancellationToken: TestContext.CancellationToken)));
 
         Assert.AreEqual(BbScannerErrorKind.NotSupported, error.Kind);
         Assert.Contains("DecodeAllInImage", error.Message, "The message points at what does work here.");
@@ -180,7 +180,7 @@ public class BbScannerTests : BunitContext
         using var stream = new MemoryStream(new byte[4096]);
 
         var error = await Assert.ThrowsExactlyAsync<BbScannerException>(() =>
-            scanner.InvokeAsync(() => scanner.Instance.ScanImageAsync(stream)));
+            scanner.InvokeAsync(() => scanner.Instance.ScanImageAsync(stream, cancellationToken: TestContext.CancellationToken)));
 
         Assert.AreEqual(BbScannerErrorKind.NotSupported, error.Kind);
         Assert.AreEqual(0, stream.Position, "An upload over a circuit must not cross the network only to be refused.");
@@ -202,8 +202,8 @@ public class BbScannerTests : BunitContext
         using var stream = new MemoryStream([0x89, 0x50, 0x4E, 0x47]);
 
         await Assert.ThrowsExactlyAsync<ObjectDisposedException>(() =>
-            scanner.InvokeAsync(() => scanner.Instance.ScanImageAsync(new byte[] { 0x89, 0x50, 0x4E, 0x47 }, "image/png")));
-        await Assert.ThrowsExactlyAsync<ObjectDisposedException>(() => scanner.InvokeAsync(() => scanner.Instance.ScanImageAsync(stream)));
+            scanner.InvokeAsync(() => scanner.Instance.ScanImageAsync(new byte[] { 0x89, 0x50, 0x4E, 0x47 }, "image/png", cancellationToken: TestContext.CancellationToken)));
+        await Assert.ThrowsExactlyAsync<ObjectDisposedException>(() => scanner.InvokeAsync(() => scanner.Instance.ScanImageAsync(stream, cancellationToken: TestContext.CancellationToken)));
         Assert.ThrowsExactly<ObjectDisposedException>(() => scanner.Instance.ScanCurrentFrameAsync());
     }
 
@@ -213,7 +213,7 @@ public class BbScannerTests : BunitContext
         var own = RenderPrerendered();
         var given = RenderPrerendered(parameters => parameters.AddUnmatched("id", "my-scanner"));
 
-        StringAssert.StartsWith(own.Find(".bit-bbscanner").Id, "bit-bbscanner-");
+        Assert.StartsWith("bit-bbscanner-", own.Find(".bit-bbscanner").Id);
         Assert.AreEqual("my-scanner", given.Find(".bit-bbscanner").Id);
     }
 
@@ -248,4 +248,6 @@ public class BbScannerTests : BunitContext
             builder.Add(p => p.AutoStart, false);
             parameters?.Invoke(builder);
         });
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

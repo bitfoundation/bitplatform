@@ -56,9 +56,9 @@ public class BitBadgeE2ETests : E2ETestBase
     {
         var html = await Page.PrerenderedHtmlAsync($"{BaseUrl}/e2e/badge");
 
-        StringAssert.Contains(html, "id=\"basic-badge\"");
-        StringAssert.Contains(html, "bit-bdg-ctn");
-        StringAssert.Contains(html, ">Loading<");
+        Assert.Contains("id=\"basic-badge\"", html);
+        Assert.Contains("bit-bdg-ctn", html);
+        Assert.Contains(">Loading<", html);
 
         await OpenAsync("/e2e/badge");
         await Expect(Page.Locator(Badge("basic-badge"))).ToHaveTextAsync("5");
@@ -177,7 +177,7 @@ public class BitBadgeE2ETests : E2ETestBase
         var height = (await Page.BoxAsync(Badge("shape-pill"))).Height;
 
         await Expect(Page.Locator(Badge("shape-square"))).ToHaveCSSAsync("border-top-left-radius", "0px");
-        Assert.IsTrue(pill >= height / 2, $"A pill's radius ({pill}) rounds its whole height ({height}).");
+        Assert.IsGreaterThanOrEqualTo(height / 2, pill, $"A pill's radius ({pill}) rounds its whole height ({height}).");
         Assert.AreEqual(pill, defaultRadius, "An unset shape is the pill.");
         Assert.IsTrue(rounded > 0 && rounded < height / 2, $"A rounded badge takes the control corner ({rounded}).");
     }
@@ -198,12 +198,12 @@ public class BitBadgeE2ETests : E2ETestBase
         // The glyph comes before the content, and after it when Reversed.
         var icon = await Page.BoxAsync($"{Badge("content-icon-text")} > .bit-bdg-ico");
         var text = await Page.BoxAsync($"{Badge("content-icon-text")} > .bit-bdg-con");
-        Assert.IsTrue(icon.Right <= text.Left + 0.5, "The icon leads the content.");
+        Assert.IsLessThanOrEqualTo(text.Left + 0.5, icon.Right, "The icon leads the content.");
 
         await Expect(Page.Locator("#content-reversed")).ToHaveClassAsync(HasClass("bit-bdg-rvs"));
         var reversedIcon = await Page.BoxAsync($"{Badge("content-reversed")} > .bit-bdg-ico");
         var reversedText = await Page.BoxAsync($"{Badge("content-reversed")} > .bit-bdg-con");
-        Assert.IsTrue(reversedIcon.Left >= reversedText.Right - 0.5, "Reversed puts the icon after the content.");
+        Assert.IsGreaterThanOrEqualTo(reversedText.Right - 0.5, reversedIcon.Left, "Reversed puts the icon after the content.");
 
         // A template replaces the content.
         await Expect(Page.Locator(Badge("content-template"))).ToHaveTextAsync("99%");
@@ -288,12 +288,12 @@ public class BitBadgeE2ETests : E2ETestBase
         var dot = await Page.BoxAsync(Badge("dot-badge"));
         Assert.AreEqual(9, dot.Width, 0.5, "The medium dot is 9px wide.");
         Assert.AreEqual(dot.Width, dot.Height, 0.5, "A dot is a circle.");
-        Assert.IsTrue(NotificationsE2EHelpers.Px(await ComputedStyleAsync(Badge("dot-badge"), "border-top-left-radius")) >= dot.Width / 2, "A dot is fully rounded.");
+        Assert.IsGreaterThanOrEqualTo(dot.Width / 2, NotificationsE2EHelpers.Px(await ComputedStyleAsync(Badge("dot-badge"), "border-top-left-radius")), "A dot is fully rounded.");
 
         // The description is what a screen reader reads, kept in the tree but out of sight.
         var description = Page.Locator($"{Badge("dot-badge")} > .bit-bdg-vhd");
         await Expect(description).ToHaveTextAsync("New mail");
-        Assert.IsTrue((await description.BoxAsync()).Width <= 1, "The description is visually hidden.");
+        Assert.IsLessThanOrEqualTo(1, (await description.BoxAsync()).Width, "The description is visually hidden.");
 
         // The overlay leaves the child usable underneath it.
         await Page.ClickAsync("#dot-child-btn");
@@ -319,7 +319,7 @@ public class BitBadgeE2ETests : E2ETestBase
             if (v != vertical || h != horizontal) failures.Add($"{name}: expected {vertical}/{horizontal}, got {v}/{h}");
         }
 
-        Assert.AreEqual(0, failures.Count, string.Join(Environment.NewLine, failures));
+        Assert.IsEmpty(failures, string.Join(Environment.NewLine, failures));
     }
 
     [TestMethod]
@@ -343,7 +343,7 @@ public class BitBadgeE2ETests : E2ETestBase
             if (v != vertical || h != rtlHorizontal) failures.Add($"{name}: expected {vertical}/{rtlHorizontal}, got {v}/{h}");
         }
 
-        Assert.AreEqual(0, failures.Count, string.Join(Environment.NewLine, failures));
+        Assert.IsEmpty(failures, string.Join(Environment.NewLine, failures));
     }
 
     [TestMethod]
@@ -361,7 +361,7 @@ public class BitBadgeE2ETests : E2ETestBase
         // The icon order follows the direction too: the leading icon sits on the right.
         var icon = await Page.BoxAsync($"{Badge("inh-rvs")} > .bit-bdg-ico");
         var text = await Page.BoxAsync($"{Badge("inh-rvs")} > .bit-bdg-con");
-        Assert.IsTrue(icon.Left >= text.Right - 0.5, "In RTL the icon leads from the right.");
+        Assert.IsGreaterThanOrEqualTo(text.Right - 0.5, icon.Left, "In RTL the icon leads from the right.");
     }
 
     [TestMethod]
@@ -434,7 +434,7 @@ public class BitBadgeE2ETests : E2ETestBase
 
         var ring = await ComputedStyleAsync(Badge("bordered-badge"), "box-shadow");
         var page = await Page.ResolveColorAsync("--bit-clr-bg-pri");
-        StringAssert.Contains(ring, page, "The ring is drawn in the page's background color.");
+        Assert.Contains(page, ring, "The ring is drawn in the page's background color.");
     }
 
     [TestMethod]
@@ -504,20 +504,20 @@ public class BitBadgeE2ETests : E2ETestBase
 
         var end = await Page.BoxAsync(Badge("inl-end"));
         var endChild = await Page.BoxAsync("#inl-end-child");
-        Assert.IsTrue(end.Left >= endChild.Right, "An unset side is after the child.");
+        Assert.IsGreaterThanOrEqualTo(endChild.Right, end.Left, "An unset side is after the child.");
         Assert.AreEqual(endChild.CenterY, end.CenterY, 1, "The badge is centred on the child's line.");
 
         var start = await Page.BoxAsync(Badge("inl-start"));
         var startChild = await Page.BoxAsync("#inl-start-child");
-        Assert.IsTrue(start.Right <= startChild.Left, "CenterStart is before the child.");
+        Assert.IsLessThanOrEqualTo(startChild.Left, start.Right, "CenterStart is before the child.");
 
         var rtl = await Page.BoxAsync(Badge("inl-rtl"));
         var rtlChild = await Page.BoxAsync("#inl-rtl-child");
-        Assert.IsTrue(rtl.Right <= rtlChild.Left, "In RTL the end side is the left.");
+        Assert.IsLessThanOrEqualTo(rtlChild.Left, rtl.Right, "In RTL the end side is the left.");
 
         var rtlLeft = await Page.BoxAsync(Badge("inl-rtl-left"));
         var rtlLeftChild = await Page.BoxAsync("#inl-rtl-left-child");
-        Assert.IsTrue(rtlLeft.Right <= rtlLeftChild.Left, "A physical Left stays on the left in RTL.");
+        Assert.IsLessThanOrEqualTo(rtlLeftChild.Left, rtlLeft.Right, "A physical Left stays on the left in RTL.");
     }
 
     [TestMethod]
@@ -810,8 +810,8 @@ public class BitBadgeE2ETests : E2ETestBase
         await Expect(dot).ToHaveCSSAsync("height", "12px");
 
         var ring = await ComputedStyleAsync(Badge("cv-dot"), "box-shadow");
-        StringAssert.Contains(ring, "rgb(255, 165, 0)");
-        StringAssert.Contains(ring, "3px");
+        Assert.Contains("rgb(255, 165, 0)", ring);
+        Assert.Contains("3px", ring);
 
         Assert.AreEqual("rgb(220, 20, 60)", await Page.PseudoStyleAsync(Badge("cv-dot"), "::after", "border-top-color"));
     }
@@ -867,7 +867,7 @@ public class BitBadgeE2ETests : E2ETestBase
         await Page.Keyboard.PressAsync("Shift+Tab");
         await Page.Keyboard.PressAsync("Tab");
         await Expect(button).ToBeFocusedAsync();
-        StringAssert.Contains(await ComputedStyleAsync("#cv-hover button", "box-shadow"), "rgb(255, 0, 255)");
+        Assert.Contains("rgb(255, 0, 255)", await ComputedStyleAsync("#cv-hover button", "box-shadow"));
     }
 
     [TestMethod]

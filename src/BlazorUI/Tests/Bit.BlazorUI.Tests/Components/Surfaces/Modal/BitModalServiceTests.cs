@@ -33,8 +33,8 @@ public class BitModalServiceTests : BunitTestContext
 
         container.WaitForAssertion(() =>
         {
-            Assert.AreEqual(1, container.FindAll(".bit-mdl").Count);
-            Assert.IsTrue(container.Markup.Contains(message));
+            Assert.ContainsSingle(container.FindAll(".bit-mdl"));
+            Assert.Contains(message, container.Markup);
         });
     }
 
@@ -47,14 +47,14 @@ public class BitModalServiceTests : BunitTestContext
 
         container.WaitForAssertion(() =>
         {
-            Assert.AreEqual(1, container.FindAll(".bit-mdl").Count);
+            Assert.ContainsSingle(container.FindAll(".bit-mdl"));
         });
 
         await modalRef.Close();
 
         container.WaitForAssertion(() =>
         {
-            Assert.AreEqual(0, container.FindAll(".bit-mdl").Count);
+            Assert.IsEmpty(container.FindAll(".bit-mdl"));
         });
     }
 
@@ -130,8 +130,8 @@ public class BitModalServiceTests : BunitTestContext
             // The container's class is the default, and the showing's own style wins over the container's.
             Assert.IsTrue(root.ClassList.Contains("house"));
             Assert.IsTrue(root.ClassList.Contains("own-root"));
-            StringAssert.Contains(root.GetAttribute("style"), "--bit-Modal-radius:1rem");
-            Assert.IsFalse(root.GetAttribute("style")!.Contains("--bit-Modal-radius:0"));
+            Assert.Contains("--bit-Modal-radius:1rem", root.GetAttribute("style")!);
+            Assert.DoesNotContain("--bit-Modal-radius:0", root.GetAttribute("style")!);
         });
     }
 
@@ -152,7 +152,7 @@ public class BitModalServiceTests : BunitTestContext
 
             Assert.IsFalse(root.ClassList.Contains("before"));
             Assert.IsTrue(root.ClassList.Contains("after"));
-            StringAssert.Contains(root.GetAttribute("style"), "color:blue");
+            Assert.Contains("color:blue", root.GetAttribute("style")!);
         });
     }
 
@@ -223,11 +223,11 @@ public class BitModalServiceTests : BunitTestContext
         var first = await ModalService.Show<TestModalContent>();
         var second = await ModalService.Show<TestModalContent>();
 
-        container.WaitForAssertion(() => Assert.AreEqual(2, container.FindAll(".bit-mdl").Count));
+        container.WaitForAssertion(() => Assert.HasCount(2, container.FindAll(".bit-mdl")));
 
         await ModalService.CloseAll();
 
-        container.WaitForAssertion(() => Assert.AreEqual(0, container.FindAll(".bit-mdl").Count));
+        container.WaitForAssertion(() => Assert.IsEmpty(container.FindAll(".bit-mdl")));
 
         Assert.IsTrue(first.IsClosed);
         Assert.IsTrue(second.IsClosed);
@@ -255,7 +255,7 @@ public class BitModalServiceTests : BunitTestContext
 
         // A stack unwinds from the top, so each modal hands the focus back to the one it was opened from while
         // that one is still open to take it.
-        CollectionAssert.AreEqual(new[] { third, second, first }, closedOrder);
+        Assert.AreSequenceEqual(new[] { third, second, first }, closedOrder);
     }
 
     [TestMethod]
@@ -270,7 +270,7 @@ public class BitModalServiceTests : BunitTestContext
 
         var container = RenderComponent<BitModalContainer>();
 
-        container.WaitForAssertion(() => Assert.AreEqual(0, container.FindAll(".bit-mdl").Count));
+        container.WaitForAssertion(() => Assert.IsEmpty(container.FindAll(".bit-mdl")));
     }
 
     [TestMethod]
@@ -288,11 +288,11 @@ public class BitModalServiceTests : BunitTestContext
 
         var modalRef = await ModalService.Show<TestModalContent>();
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-mdl").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-mdl")));
 
         _ = container.PressEscape();
 
-        container.WaitForAssertion(() => Assert.AreEqual(0, container.FindAll(".bit-mdl").Count));
+        container.WaitForAssertion(() => Assert.IsEmpty(container.FindAll(".bit-mdl")));
 
         Assert.IsTrue(modalRef.IsClosed);
         Assert.IsNull(await modalRef.Result);
@@ -305,11 +305,11 @@ public class BitModalServiceTests : BunitTestContext
 
         var modalRef = await ModalService.Show<TestModalContent>(new BitModalParameters { Blocking = true });
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-mdl").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-mdl")));
 
         container.Find(".bit-mdl-ovl").Click();
 
-        Assert.AreEqual(1, container.FindAll(".bit-mdl").Count);
+        Assert.ContainsSingle(container.FindAll(".bit-mdl"));
         Assert.IsFalse(modalRef.IsClosed);
     }
 
@@ -322,7 +322,7 @@ public class BitModalServiceTests : BunitTestContext
 
         container.WaitForAssertion(() =>
         {
-            Assert.AreEqual(1, container.FindAll(".bit-mdl").Count);
+            Assert.ContainsSingle(container.FindAll(".bit-mdl"));
         });
 
         Assert.IsTrue(modalRef.Persistent);
@@ -344,8 +344,8 @@ public class BitModalServiceTests : BunitTestContext
 
         container.WaitForAssertion(() =>
         {
-            Assert.AreEqual(1, container.FindAll(".bit-mdl").Count);
-            Assert.AreEqual(1, container.FindAll(".markup-content").Count);
+            Assert.ContainsSingle(container.FindAll(".bit-mdl"));
+            Assert.ContainsSingle(container.FindAll(".markup-content"));
             Assert.IsTrue(container.Find(".bit-mdl").ClassList.Contains("bit-mdl-fwi"));
         });
 
@@ -354,7 +354,7 @@ public class BitModalServiceTests : BunitTestContext
 
         await modalRef.Close();
 
-        container.WaitForAssertion(() => Assert.AreEqual(0, container.FindAll(".bit-mdl").Count));
+        container.WaitForAssertion(() => Assert.IsEmpty(container.FindAll(".bit-mdl")));
     }
 
     [TestMethod]
@@ -393,7 +393,7 @@ public class BitModalServiceTests : BunitTestContext
         {
             Assert.AreEqual("the header", container.Find(".bit-mdl-hdr").TextContent);
             Assert.AreEqual("the footer", container.Find(".bit-mdl-fcn").TextContent);
-            Assert.AreEqual(1, container.FindAll(".bit-mdl-cls").Count);
+            Assert.ContainsSingle(container.FindAll(".bit-mdl-cls"));
         });
     }
 
@@ -412,21 +412,21 @@ public class BitModalServiceTests : BunitTestContext
             Blocking = true
         });
 
-        container.WaitForAssertion(() => Assert.AreEqual(2, container.FindAll(".bit-mdl").Count));
+        container.WaitForAssertion(() => Assert.HasCount(2, container.FindAll(".bit-mdl")));
 
         // One header and one close button between the two of them, and they are the outer one's.
-        Assert.AreEqual(1, container.FindAll(".bit-mdl-hdr").Count);
+        Assert.ContainsSingle(container.FindAll(".bit-mdl-hdr"));
         Assert.AreEqual("the outer header", container.Find(".bit-mdl-hdr").TextContent);
-        Assert.AreEqual(1, container.FindAll(".bit-mdl-cls").Count);
-        Assert.AreEqual(0, container.FindAll(".inner-modal .bit-mdl-hdr").Count);
-        Assert.AreEqual(0, container.FindAll(".inner-modal .bit-mdl-cls").Count);
+        Assert.ContainsSingle(container.FindAll(".bit-mdl-cls"));
+        Assert.IsEmpty(container.FindAll(".inner-modal .bit-mdl-hdr"));
+        Assert.IsEmpty(container.FindAll(".inner-modal .bit-mdl-cls"));
 
         container.Find(".inner-modal .bit-mdl-ovl").Click();
 
         // The outer modal is the one that refuses to be dismissed by a click outside of it; the inner one
         // was never asked to.
-        container.WaitForAssertion(() => Assert.AreEqual(0, container.FindAll(".inner-modal").Count));
-        Assert.AreEqual(1, container.FindAll(".bit-mdl").Count);
+        container.WaitForAssertion(() => Assert.IsEmpty(container.FindAll(".inner-modal")));
+        Assert.ContainsSingle(container.FindAll(".bit-mdl"));
     }
 
     [TestMethod,
@@ -441,14 +441,14 @@ public class BitModalServiceTests : BunitTestContext
 
         // The focus is recorded whether or not the modal can be seen, so this is the point at which a modal
         // that was going to take the keyboard and the page would have taken them.
-        container.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.storeFocus"].Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.storeFocus"]));
 
-        StringAssert.Contains(container.Find(".bit-mdl").GetAttribute("style"), expectedStyle);
+        Assert.Contains(expectedStyle, container.Find(".bit-mdl").GetAttribute("style")!);
 
         // A modal the user cannot see carries none of the behaviors of one they can: holding either of them
         // would leave the page unusable behind a surface nobody can find.
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"].Count);
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"]);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"]);
     }
 
     [TestMethod]
@@ -466,7 +466,7 @@ public class BitModalServiceTests : BunitTestContext
 
         await ModalService.Show<TestModalContent>();
 
-        first.WaitForAssertion(() => Assert.AreEqual(1, first.FindAll(".bit-mdl").Count));
+        first.WaitForAssertion(() => Assert.ContainsSingle(first.FindAll(".bit-mdl")));
     }
 
     [TestMethod]
@@ -476,13 +476,13 @@ public class BitModalServiceTests : BunitTestContext
 
         var modalRef = await ModalService.Show<TestModalContent>(new BitModalParameters { ShowCloseButton = true });
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-mdl").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-mdl")));
 
         container.Find(".bit-mdl-cls").Click();
 
         container.WaitForAssertion(() =>
         {
-            Assert.AreEqual(0, container.FindAll(".bit-mdl").Count);
+            Assert.IsEmpty(container.FindAll(".bit-mdl"));
             Assert.IsTrue(modalRef.IsClosed);
         });
     }
@@ -507,7 +507,7 @@ public class BitModalServiceTests : BunitTestContext
         container.WaitForAssertion(() =>
         {
             Assert.AreEqual("after", container.Find(".bit-mdl-hdr").TextContent.Trim());
-            StringAssert.Contains(container.Find(".bit-mdl-hdr").GetAttribute("style"), "color:blue");
+            Assert.Contains("color:blue", container.Find(".bit-mdl-hdr").GetAttribute("style")!);
             Assert.IsTrue(container.Find(".bit-mdl").ClassList.Contains("kept"));
         });
 
@@ -550,15 +550,15 @@ public class BitModalServiceTests : BunitTestContext
 
         own.WaitForAssertion(() =>
         {
-            Assert.AreEqual(1, own.FindAll(".bit-mdl").Count);
-            StringAssert.Contains(own.Markup, "own");
-            Assert.IsFalse(own.Markup.Contains("registered"));
+            Assert.ContainsSingle(own.FindAll(".bit-mdl"));
+            Assert.Contains("own", own.Markup);
+            Assert.DoesNotContain("registered", own.Markup);
         });
 
         registered.WaitForAssertion(() =>
         {
-            Assert.AreEqual(1, registered.FindAll(".bit-mdl").Count);
-            StringAssert.Contains(registered.Markup, "registered");
+            Assert.ContainsSingle(registered.FindAll(".bit-mdl"));
+            Assert.Contains("registered", registered.Markup);
         });
 
         // Each service kept its own container: mounting the second did not take the registered one over.

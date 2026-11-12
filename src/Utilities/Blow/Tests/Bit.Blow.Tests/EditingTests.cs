@@ -85,7 +85,7 @@ public class EditingTests : BunitContext
         var deleted = _changes[^1];
         Assert.AreEqual(BlowChangeKind.Removed, deleted.Kind);
         Assert.AreEqual("a", deleted.RemovedNodes.Single().Id);
-        Assert.AreEqual(1, deleted.RemovedEdges.Count, "the edge attached to the node went with it");
+        Assert.ContainsSingle(deleted.RemovedEdges, "the edge attached to the node went with it");
         Assert.IsEmpty(edges);
     }
 
@@ -117,7 +117,7 @@ public class EditingTests : BunitContext
         Assert.AreEqual(BlowChangeKind.Replaced, undo.Kind);
         Assert.AreEqual(BlowChangeOrigin.History, undo.Origin);
         Assert.AreEqual("undo", undo.Label);
-        Assert.IsTrue(undo.RemovedNodes.Any(n => n.Id == "d"));
+        Assert.Contains(n => n.Id == "d", undo.RemovedNodes);
         Assert.AreEqual("add", cut.Instance.History!.RedoLabel);
     }
 
@@ -147,7 +147,7 @@ public class EditingTests : BunitContext
         Assert.AreEqual(new BlowXYPosition(200, 0), nodes[1].Position, "a node that cannot be dragged moved");
         Assert.AreEqual(BlowChangeOrigin.Api, _changes.Single().Origin);
         Assert.AreEqual("move", cut.Instance.History!.UndoLabel);
-        StringAssert.Contains(cut.Find(".bit-blow-a11y-live").TextContent, "moved");
+        Assert.Contains("moved", cut.Find(".bit-blow-a11y-live").TextContent);
     }
 
     // ---- transactions ----
@@ -175,12 +175,12 @@ public class EditingTests : BunitContext
         var change = _changes.Single();
         Assert.AreEqual(BlowChangeKind.Edited, change.Kind);
         Assert.AreEqual("import", change.Label);
-        CollectionAssert.AreEquivalent(new[] { "d", "e" }, change.Nodes.Select(n => n.Id).ToArray());
+        Assert.AreSequenceEqual(new[] { "d", "e" }, change.Nodes.Select(n => n.Id).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         Assert.AreEqual("x", change.Edges.Single().Id);
         Assert.AreEqual("c", change.RemovedNodes.Single().Id);
 
         await cut.InvokeAsync(() => cut.Instance.UndoAsync());
-        CollectionAssert.AreEqual(new[] { "a", "b", "c" }, nodes.Select(n => n.Id).ToArray(), "undo did not take the whole edit back");
+        Assert.AreSequenceEqual(new[] { "a", "b", "c" }, nodes.Select(n => n.Id).ToArray(), "undo did not take the whole edit back");
         Assert.AreEqual(new BlowXYPosition(0, 0), nodes[0].Position);
     }
 
@@ -263,7 +263,7 @@ public class EditingTests : BunitContext
         Assert.AreEqual(60, group.Height);
         Assert.AreEqual(group.Id, nodes.Single(n => n.Id == "a").ParentId);
         Assert.AreEqual(new BlowXYPosition(10, 10), nodes.Single(n => n.Id == "a").Position);
-        Assert.IsTrue(nodes.IndexOf(group) < nodes.FindIndex(n => n.Id == "a"), "the group is drawn in front of its members");
+        Assert.IsLessThan(nodes.FindIndex(n => n.Id == "a"), nodes.IndexOf(group), "the group is drawn in front of its members");
         Assert.IsTrue(group.Selected);
         Assert.AreEqual("group", _changes[^1].Label);
 
@@ -288,7 +288,7 @@ public class EditingTests : BunitContext
         Assert.AreEqual("a", children.Single().Id);
         Assert.IsNull(children[0].ParentId);
         Assert.AreEqual(new BlowXYPosition(120, 130), children[0].Position);
-        Assert.HasCount(1, nodes);
+        Assert.ContainsSingle(nodes);
         Assert.IsEmpty(edges, "the edge to the removed group stayed");
         Assert.AreEqual("to-group", _changes[^1].RemovedEdges.Single().Id);
     }
@@ -323,10 +323,10 @@ public class EditingTests : BunitContext
         var cut = Render(nodes);
 
         await cut.InvokeAsync(() => cut.Instance.BringToFrontAsync([nodes[0]]));
-        CollectionAssert.AreEqual(new[] { "x", "y", "g", "child" }, nodes.Select(n => n.Id).ToArray());
+        Assert.AreSequenceEqual(new[] { "x", "y", "g", "child" }, nodes.Select(n => n.Id).ToArray());
 
         await cut.InvokeAsync(() => cut.Instance.SendToBackAsync([nodes.Single(n => n.Id == "y")]));
-        CollectionAssert.AreEqual(new[] { "y", "x", "g", "child" }, nodes.Select(n => n.Id).ToArray());
+        Assert.AreSequenceEqual(new[] { "y", "x", "g", "child" }, nodes.Select(n => n.Id).ToArray());
         Assert.AreEqual("order", _changes[^1].Label);
     }
 }

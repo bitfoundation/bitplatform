@@ -24,7 +24,7 @@ public class InteropContractTests
     public TestContext TestContext { get; set; } = null!;
 
     [TestMethod]
-    public void Every_csharp_interop_call_resolves_against_the_bundle_and_its_lazy_module()
+    public async Task Every_csharp_interop_call_resolves_against_the_bundle_and_its_lazy_module()
     {
         var root = LocateButilRoot();
         var script = Path.Combine(root, "Tests", "Bit.Butil.Tests.E2E", "Infrastructure", "verify-interop-contract.mjs");
@@ -50,25 +50,28 @@ public class InteropContractTests
             },
         };
 
+        string? startFailure = null;
         try
         {
             process.Start();
         }
         catch (Exception ex)
         {
-            Assert.Inconclusive($"Node is not available on PATH, so the interop contract could not be checked: {ex.Message}");
-            return;
+            startFailure = ex.Message;
         }
+
+        if (startFailure is not null)
+            throw new AssertInconclusiveException($"Node is not available on PATH, so the interop contract could not be checked: {startFailure}");
 
         // Drain both pipes at once, before waiting: the report can fill either one, and a full pipe blocks the
         // process this is waiting for - which reading one to EOF and only then the other would do too,
         // whenever the one still unread is the one that filled up.
-        var outputTask = process.StandardOutput.ReadToEndAsync();
-        var errorTask = process.StandardError.ReadToEndAsync();
-        process.WaitForExit();
+        var outputTask = process.StandardOutput.ReadToEndAsync(TestContext.CancellationToken);
+        var errorTask = process.StandardError.ReadToEndAsync(TestContext.CancellationToken);
+        await process.WaitForExitAsync(TestContext.CancellationToken);
 
-        var stdout = outputTask.Result;
-        var stderr = errorTask.Result;
+        var stdout = await outputTask;
+        var stderr = await errorTask;
 
         // Logged before the assertion, so the script's report is in the run's log for a pass as well as a fail.
         TestContext.WriteLine(stdout.Trim());

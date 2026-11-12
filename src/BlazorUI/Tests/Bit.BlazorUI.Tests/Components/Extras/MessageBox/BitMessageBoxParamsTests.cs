@@ -62,7 +62,7 @@ public class BitMessageBoxParamsTests : BunitTestContext
     [TestMethod]
     public void BitMessageBoxParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual("BitParams.BitMessageBox", BitMessageBoxParams.ParamName);
+        Assert.AreEqual("BitParams.BitMessageBox", new BitMessageBoxParams().Name);
         Assert.AreEqual(BitMessageBoxParams.ParamName, new BitMessageBoxParams().Name);
         Assert.IsInstanceOfType<IBitComponentParams>(new BitMessageBoxParams());
     }
@@ -110,7 +110,7 @@ public class BitMessageBoxParamsTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("cascaded"));
         Assert.IsTrue(root.ClassList.Contains("cascaded-root"));
         Assert.IsTrue(root.ClassList.Contains("bit-msb-sm"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin:1px");
+        Assert.Contains("margin:1px", root.GetAttribute("style")!);
 
         var title = component.Find(".bit-msb-ttl");
 
@@ -119,7 +119,7 @@ public class BitMessageBoxParamsTests : BunitTestContext
 
         var texts = component.FindAll(".bit-msb-ftr .bit-btn").Select(b => b.TextContent.Trim()).ToArray();
 
-        CollectionAssert.AreEqual(new[] { "Abbrechen", "Nein", "Ja" }, texts);
+        Assert.AreSequenceEqual(new[] { "Abbrechen", "Nein", "Ja" }, texts);
         Assert.AreEqual("Schließen", component.Find(".bit-msb-hdr .bit-btn").GetAttribute("aria-label"));
     }
 
@@ -143,7 +143,7 @@ public class BitMessageBoxParamsTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("bit-msb-lg"));
         Assert.IsFalse(root.ClassList.Contains("bit-msb-sm"));
         Assert.AreEqual("Sure", component.FindAll(".bit-msb-ftr .bit-btn")[0].TextContent.Trim());
-        Assert.AreEqual(1, component.FindAll(".bit-msb-hdr .bit-btn").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-msb-hdr .bit-btn"));
     }
 
     [TestMethod]
@@ -161,8 +161,8 @@ public class BitMessageBoxParamsTests : BunitTestContext
 
         Assert.IsTrue(buttons[0].ClassList.Contains("bit-btn-err"), "The affirmative button does not take the cascaded PrimaryButtonColor.");
         Assert.IsTrue(buttons[1].ClassList.Contains("bit-btn-sec"), "The other buttons do not take the cascaded ButtonColor.");
-        Assert.AreEqual(0, component.FindAll(".bit-msb-ico").Count, "The cascaded HideIcon is ignored.");
-        Assert.AreEqual(0, component.FindAll(".bit-msb-hdr .bit-btn").Count, "The cascaded ShowCloseButton is ignored.");
+        Assert.IsEmpty(component.FindAll(".bit-msb-ico"), "The cascaded HideIcon is ignored.");
+        Assert.IsEmpty(component.FindAll(".bit-msb-hdr .bit-btn"), "The cascaded ShowCloseButton is ignored.");
     }
 
     [TestMethod]
@@ -196,17 +196,19 @@ public class BitMessageBoxParamsTests : BunitTestContext
             Title = "The title",
             Buttons = BitMessageBoxButtons.OkCancel,
             CancelText = "Non",
-        });
+        }, TestContext.CancellationToken);
 
-        host.WaitForAssertion(() => Assert.AreEqual(1, host.FindAll(".bit-msb").Count));
+        host.WaitForAssertion(() => Assert.ContainsSingle(host.FindAll(".bit-msb")));
 
         var texts = host.FindAll(".bit-msb-ftr .bit-btn").Select(b => b.TextContent.Trim()).ToArray();
 
         // The cascade fills in what the showing left unset, and the showing's own value wins over it.
-        CollectionAssert.AreEqual(new[] { "D'accord", "Non" }, texts);
+        Assert.AreSequenceEqual(new[] { "D'accord", "Non" }, texts);
 
         host.FindAll(".bit-msb-ftr .bit-btn")[0].Click();
 
         Assert.AreEqual(BitMessageBoxResult.Ok, await showing);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

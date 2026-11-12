@@ -39,7 +39,7 @@ public class BitMenuButtonSubmenuTests : BunitTestContext
         });
 
         var rootItems = com.FindAll(".bit-mnb-cal:not(.bit-mnb-sub) > ul > li > .bit-mnb-itm");
-        Assert.AreEqual(3, rootItems.Count);
+        Assert.HasCount(3, rootItems);
 
         var parentItem = rootItems[1];
 
@@ -83,7 +83,7 @@ public class BitMenuButtonSubmenuTests : BunitTestContext
         Assert.AreEqual("menu", submenuItems[1].GetAttribute("aria-haspopup"));
 
         // Two levels of submenu, and each is a callout of its own rather than a part of the one above it.
-        Assert.AreEqual(2, com.FindAll(".bit-mnb-sub").Count);
+        Assert.HasCount(2, com.FindAll(".bit-mnb-sub"));
     }
 
     [TestMethod]
@@ -205,17 +205,15 @@ public class BitMenuButtonSubmenuTests : BunitTestContext
 
         var rootItems = com.FindAll(".bit-mnb-cal:not(.bit-mnb-sub) > ul > li > .bit-mnb-itm");
 
-        CollectionAssert.AreEqual(
-            new[] { "Text box", "Chart", "Table" },
-            rootItems.Select(i => i.QuerySelector(".bit-mnb-btx")!.TextContent.Trim()).ToArray());
+        Assert.AreSequenceEqual(
+            new[] { "Text box", "Chart", "Table" }, rootItems.Select(i => i.QuerySelector(".bit-mnb-btx")!.TextContent.Trim()).ToArray());
 
         Assert.AreEqual("menu", rootItems[1].GetAttribute("aria-haspopup"));
 
         var submenuItems = com.Find(".bit-mnb-sub ul").QuerySelectorAll(":scope > li > .bit-mnb-itm");
 
-        CollectionAssert.AreEqual(
-            new[] { "Bar", "Line" },
-            submenuItems.Select(i => i.QuerySelector(".bit-mnb-btx")!.TextContent.Trim()).ToArray());
+        Assert.AreSequenceEqual(
+            new[] { "Bar", "Line" }, submenuItems.Select(i => i.QuerySelector(".bit-mnb-btx")!.TextContent.Trim()).ToArray());
 
         // The check column is decided by the submenu the options are in, not by the menu around it.
         Assert.AreEqual("menuitemcheckbox", submenuItems[1].GetAttribute("role"));

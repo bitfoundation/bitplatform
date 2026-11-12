@@ -41,8 +41,8 @@ public class BitRatingParamsTests : BunitTestContext
     [TestMethod]
     public void BitRatingParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitRating)}", BitRatingParams.ParamName);
-        Assert.AreEqual("BitParams.BitRating", BitRatingParams.ParamName);
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitRating)}", new BitRatingParams().Name);
+        Assert.AreEqual("BitParams.BitRating", new BitRatingParams().Name);
     }
 
     [TestMethod]
@@ -73,7 +73,7 @@ public class BitRatingParamsTests : BunitTestContext
 
         var root = component.Find(".bit-rtg");
 
-        Assert.AreEqual(3, component.FindAll(".bit-rtg-btn").Count);
+        Assert.HasCount(3, component.FindAll(".bit-rtg-btn"));
         Assert.IsTrue(root.ClassList.Contains("bit-rtg-suc"));
         Assert.IsTrue(root.ClassList.Contains("bit-rtg-lg"));
         Assert.IsTrue(root.ClassList.Contains("bit-rtg-vrt"));
@@ -102,7 +102,7 @@ public class BitRatingParamsTests : BunitTestContext
 
         var root = component.Find(".bit-rtg");
 
-        Assert.AreEqual(6, component.FindAll(".bit-rtg-btn").Count);
+        Assert.HasCount(6, component.FindAll(".bit-rtg-btn"));
         Assert.IsTrue(root.ClassList.Contains("bit-rtg-err"));
         Assert.IsFalse(root.ClassList.Contains("bit-rtg-suc"));
 
@@ -132,8 +132,8 @@ public class BitRatingParamsTests : BunitTestContext
 
         Assert.AreEqual("cascaded-id", root.Id);
         Assert.IsTrue(root.ClassList.Contains("cascaded-class"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin: 1px;");
-        StringAssert.Contains(root.GetAttribute("style"), "visibility:hidden");
+        Assert.Contains("margin: 1px;", root.GetAttribute("style")!);
+        Assert.Contains("visibility:hidden", root.GetAttribute("style")!);
         Assert.AreEqual("rtl", root.GetAttribute("dir"));
         Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
         Assert.IsTrue(root.ClassList.Contains("bit-dis"));
@@ -166,7 +166,7 @@ public class BitRatingParamsTests : BunitTestContext
         });
 
         Assert.IsTrue(component.Find(".bit-rtg").ClassList.Contains("custom-root"));
-        StringAssert.Contains(component.Find(".bit-rtg").GetAttribute("style"), "color: red;");
+        Assert.Contains("color: red;", component.Find(".bit-rtg").GetAttribute("style")!);
         Assert.IsTrue(component.Find(".bit-rtg-btn").ClassList.Contains("custom-button"));
         Assert.AreEqual("color: blue;", component.Find(".bit-rtg-btn").GetAttribute("style"));
     }
@@ -257,8 +257,9 @@ public class BitRatingParamsTests : BunitTestContext
         // And the markup follows what was cascaded, not only the properties.
         var root = component.Find(".bit-rtg");
 
-        Assert.AreEqual(3, component.FindAll(".bit-rtg-btn").Count);
-        Assert.AreEqual("external-heading", root.GetAttribute("aria-labelledby")?.Split(' ')[0]);
+        Assert.HasCount(3, component.FindAll(".bit-rtg-btn"));
+        var actualValue = root.GetAttribute("aria-labelledby")?.Split(' ')[0];
+        Assert.AreEqual("external-heading", actualValue);
         Assert.AreEqual("Bad", component.Find(".bit-rtg-btn").GetAttribute("title"));
         Assert.AreEqual("Cascaded description", component.Find(".bit-rtg-dsc").TextContent.Trim());
         Assert.IsTrue(root.ClassList.Contains("bit-rtg-lst"));
@@ -335,13 +336,13 @@ public class BitRatingParamsTests : BunitTestContext
         var root = component.Find(".bit-rtg");
 
         // Nothing cascades, so the defaults hold: five interactive stars, no color and no size class.
-        Assert.AreEqual(5, component.FindAll(".bit-rtg-btn").Count);
+        Assert.HasCount(5, component.FindAll(".bit-rtg-btn"));
         Assert.AreEqual("radiogroup", root.GetAttribute("role"));
         Assert.IsFalse(root.ClassList.Contains("bit-rtg-pri"));
         Assert.IsFalse(root.ClassList.Contains("bit-rtg-md"));
         Assert.IsFalse(root.ClassList.Contains("bit-rtg-rdl"));
         Assert.IsFalse(root.ClassList.Contains("bit-dis"));
-        Assert.AreEqual(0, component.FindAll(".bit-rtg-lbc").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rtg-lbc"));
     }
 
     [TestMethod]
@@ -371,6 +372,6 @@ public class BitRatingParamsTests : BunitTestContext
                                        .Where(n => paramsProperties.Contains(n) is false)
                                        .ToList();
 
-        CollectionAssert.AreEqual(new List<string>(), missing, string.Join(", ", missing));
+        Assert.AreSequenceEqual(new List<string>(), missing, string.Join(", ", missing));
     }
 }

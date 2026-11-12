@@ -64,7 +64,7 @@ public class BitMarkdownEditorParamsTests : BunitTestContext
     [TestMethod]
     public void BitMarkdownEditorParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual("BitParams.BitMarkdownEditor", BitMarkdownEditorParams.ParamName);
+        Assert.AreEqual("BitParams.BitMarkdownEditor", new BitMarkdownEditorParams().Name);
         Assert.AreEqual(BitMarkdownEditorParams.ParamName, new BitMarkdownEditorParams().Name);
         Assert.IsInstanceOfType<IBitComponentParams>(new BitMarkdownEditorParams());
     }
@@ -109,7 +109,7 @@ public class BitMarkdownEditorParamsTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("cascaded-root"));
         Assert.IsTrue(root.ClassList.Contains("bit-mde-rsz"));
         Assert.IsTrue(root.ClassList.Contains("bit-mde-stk"));
-        StringAssert.Contains(root.GetAttribute("style"), "--bit-MarkdownEditor-height:12rem");
+        Assert.Contains("--bit-MarkdownEditor-height:12rem", root.GetAttribute("style")!);
 
         var textArea = component.Find(".bit-mde-txa");
 
@@ -119,8 +119,8 @@ public class BitMarkdownEditorParamsTests : BunitTestContext
         Assert.AreEqual("50", textArea.GetAttribute("maxlength"));
         Assert.AreEqual("Markdown-Editor", textArea.GetAttribute("aria-label"));
 
-        StringAssert.Contains(component.Find(".bit-mde-tlb").GetAttribute("style"), "color:red");
-        StringAssert.Contains(component.Find(".bit-mde-sbr").TextContent, "0 Min.");
+        Assert.Contains("color:red", component.Find(".bit-mde-tlb").GetAttribute("style")!);
+        Assert.Contains("0 Min.", component.Find(".bit-mde-sbr").TextContent);
     }
 
     [TestMethod]
@@ -139,8 +139,8 @@ public class BitMarkdownEditorParamsTests : BunitTestContext
         });
 
         Assert.AreEqual("Own", component.Find(".bit-mde-txa").GetAttribute("placeholder"));
-        Assert.AreEqual(1, component.FindAll(".bit-mde-tlb").Count);
-        StringAssert.Contains(component.Find(".bit-mde").GetAttribute("style"), "--bit-MarkdownEditor-height:5rem");
+        Assert.ContainsSingle(component.FindAll(".bit-mde-tlb"));
+        Assert.Contains("--bit-MarkdownEditor-height:5rem", component.Find(".bit-mde").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -158,8 +158,8 @@ public class BitMarkdownEditorParamsTests : BunitTestContext
             OnImageUpload = _ => System.Threading.Tasks.Task.FromResult<string?>("https://example.com/a.png"),
         });
 
-        Assert.AreEqual(2, component.FindAll(".bit-mde-tlb .bit-mde-btn").Count);
-        Assert.AreEqual(1, component.FindAll("[data-cmd=upload][data-bit-mde-upload]").Count);
+        Assert.HasCount(2, component.FindAll(".bit-mde-tlb .bit-mde-btn"));
+        Assert.ContainsSingle(component.FindAll("[data-cmd=upload][data-bit-mde-upload]"));
     }
 
     [TestMethod]
@@ -174,11 +174,11 @@ public class BitMarkdownEditorParamsTests : BunitTestContext
         });
 
         Assert.AreEqual("Cascaded", component.Find(".bit-mde-txa").GetAttribute("placeholder"));
-        Assert.AreEqual(0, component.FindAll(".bit-mde-sbr").Count);
+        Assert.IsEmpty(component.FindAll(".bit-mde-sbr"));
 
         component.Render(parameters => parameters.Add(p => p.Parameters, new List<IBitComponentParams>()));
 
         Assert.IsFalse(component.Find(".bit-mde-txa").HasAttribute("placeholder"));
-        Assert.AreEqual(1, component.FindAll(".bit-mde-sbr").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-mde-sbr"));
     }
 }

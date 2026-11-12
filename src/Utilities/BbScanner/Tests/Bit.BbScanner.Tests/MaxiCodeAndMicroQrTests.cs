@@ -25,8 +25,12 @@ public class MaxiCodeAndMicroQrTests
         Assert.IsNotNull(result, content);
         Assert.AreEqual(content, result.Text);
         Assert.AreEqual(BbBarcodeFormat.MaxiCode, result.Format);
-        Assert.AreEqual($"Mode {mode}", result.Metadata?.SymbolVersion);
-        Assert.AreEqual(mode == 5 ? "Enhanced" : "Standard", result.Metadata?.ErrorCorrectionLevel);
+        var expectedValue = $"Mode {mode}";
+        var actualValue = result.Metadata?.SymbolVersion;
+        Assert.AreEqual(expectedValue, actualValue);
+        var expectedValue1 = mode == 5 ? "Enhanced" : "Standard";
+        var actualValue2 = result.Metadata?.ErrorCorrectionLevel;
+        Assert.AreEqual(expectedValue1, actualValue2);
     }
 
     [TestMethod]
@@ -206,8 +210,12 @@ public class MaxiCodeAndMicroQrTests
         {
             using var image = symbol.Render(3);
             var result = Decode(image, BbBarcodeFormat.QrCode | BbBarcodeFormat.MicroQrCode, still: true);
-            Assert.AreEqual(BbBarcodeFormat.QrCode, result?.Format, symbol.Id);
-            Assert.AreEqual(symbol.Expected, result?.Text, symbol.Id);
+            var expectedValue = BbBarcodeFormat.QrCode;
+            var actualValue = result?.Format;
+            Assert.AreEqual(expectedValue, actualValue, symbol.Id);
+            var expectedValue1 = symbol.Expected;
+            var actualValue2 = result?.Text;
+            Assert.AreEqual(expectedValue1, actualValue2, symbol.Id);
         }
     }
 

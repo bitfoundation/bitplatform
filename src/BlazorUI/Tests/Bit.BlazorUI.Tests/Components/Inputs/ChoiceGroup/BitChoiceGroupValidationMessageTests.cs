@@ -30,7 +30,7 @@ public class BitChoiceGroupValidationMessageTests : BunitTestContext
         var component = RenderComponent<BitChoiceGroupValidationTest>(parameters => parameters.Add(p => p.ShowValidationMessage, true));
 
         // Nothing is shown before the form has anything to say.
-        Assert.AreEqual(0, component.FindAll(".bit-chg-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-chg-erm"));
         Assert.IsNull(component.Find(".bit-chg").GetAttribute("aria-describedby"));
 
         component.Find("form").Submit();
@@ -50,14 +50,14 @@ public class BitChoiceGroupValidationMessageTests : BunitTestContext
                                  .Where(p => p is not null)
                                  .ToArray();
 
-        CollectionAssert.AreEqual(new[] { "items", "error" }, parts);
-        Assert.IsFalse(component.FindAll(".bit-chg-icn input").Any(i => i.HasAttribute("aria-describedby")));
+        Assert.AreSequenceEqual(new[] { "items", "error" }, parts);
+        Assert.DoesNotContain(i => i.HasAttribute("aria-describedby"), component.FindAll(".bit-chg-icn input"));
 
         // A pick the form accepts takes the line, and the reference to it, away again.
         component.FindAll(".bit-chg-icn input")[1].Change(true);
 
         Assert.AreEqual("B", component.Instance.TestModel.Choice);
-        Assert.AreEqual(0, component.FindAll(".bit-chg-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-chg-erm"));
         Assert.IsNull(component.Find(".bit-chg").GetAttribute("aria-describedby"));
 
         component.Find("form").Submit();
@@ -109,7 +109,7 @@ public class BitChoiceGroupValidationMessageTests : BunitTestContext
 
         // The group is marked as before, and the message stays where the page puts it.
         Assert.AreEqual("true", component.Find(".bit-chg").GetAttribute("aria-invalid"));
-        Assert.AreEqual(0, component.FindAll(".bit-chg-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-chg-erm"));
         Assert.IsNull(component.Find(".bit-chg").GetAttribute("aria-describedby"));
     }
 
@@ -128,7 +128,7 @@ public class BitChoiceGroupValidationMessageTests : BunitTestContext
 
         component.InvokeAsync(() => editContext.Validate());
 
-        Assert.AreEqual(1, component.FindAll(".bit-chg-erm").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-chg-erm"));
         Assert.AreEqual("Express shipping is not available to your address.", component.Find(".bit-chg-erm").TextContent.Trim());
 
         // Once the app takes its message back, the EditContext's takes the line.
@@ -163,7 +163,7 @@ public class BitChoiceGroupValidationMessageTests : BunitTestContext
         var labelId = component.Find(".bit-chg").GetAttribute("aria-describedby");
 
         Assert.AreEqual("Unavailable", component.Find(".bit-chg-erm b").TextContent);
-        Assert.IsFalse(component.Find(".bit-chg-erm").TextContent.Contains(RequiredMessage));
+        Assert.DoesNotContain(RequiredMessage, component.Find(".bit-chg-erm").TextContent);
         Assert.AreEqual("This plan is not available in your region.", component.Find($"#{labelId}").TextContent);
     }
 
@@ -191,7 +191,7 @@ public class BitChoiceGroupValidationMessageTests : BunitTestContext
 
         // The messages do not wire a group for a live region of its own either.
         Assert.AreEqual(RequiredMessage, plain.Find(".bit-chg-erm").TextContent.Trim());
-        Assert.AreEqual(0, plain.FindAll("[role=status]").Count);
+        Assert.IsEmpty(plain.FindAll("[role=status]"));
     }
 
     [TestMethod]
@@ -214,7 +214,7 @@ public class BitChoiceGroupValidationMessageTests : BunitTestContext
         // and the line under the items.
         var ids = component.Find(".bit-chg").GetAttribute("aria-describedby")!.Split(' ');
 
-        Assert.AreEqual(3, ids.Length);
+        Assert.HasCount(3, ids);
         Assert.AreEqual("page-hint", ids[0]);
         Assert.AreEqual(component.Find(".bit-chg-gds").Id, ids[1]);
         Assert.AreEqual(component.Find(".bit-chg-erm").Id, ids[2]);
@@ -273,11 +273,11 @@ public class BitChoiceGroupValidationMessageTests : BunitTestContext
 
         component.InvokeAsync(() => editContext.Validate());
 
-        Assert.AreEqual(1, component.FindAll(".bit-chg-erm").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-chg-erm"));
 
         component.Render(parameters => parameters.Add(p => p.NoValidate, true));
 
-        Assert.AreEqual(0, component.FindAll(".bit-chg-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-chg-erm"));
         Assert.IsNull(component.Find(".bit-chg").GetAttribute("aria-describedby"));
     }
 
@@ -293,8 +293,8 @@ public class BitChoiceGroupValidationMessageTests : BunitTestContext
         component.InvokeAsync(() => editContext.Validate());
 
         // The model has a message, but the group has no member of it the message could belong to.
-        Assert.IsTrue(editContext.GetValidationMessages().Any());
-        Assert.AreEqual(0, component.FindAll(".bit-chg-erm").Count);
+        Assert.IsNotEmpty(editContext.GetValidationMessages());
+        Assert.IsEmpty(component.FindAll(".bit-chg-erm"));
     }
 
     [TestMethod]
@@ -334,7 +334,7 @@ public class BitChoiceGroupValidationMessageTests : BunitTestContext
         component.FindAll(".bit-chg-icn input")[0].Change(true);
 
         Assert.AreEqual("A", model.Choice);
-        Assert.AreEqual(0, component.FindAll(".bit-chg-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-chg-erm"));
     }
 
     [TestMethod]

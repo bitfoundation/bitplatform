@@ -134,7 +134,7 @@ public class DataMatrixBitStreamTests
         // ECI 26 is UTF-8. The bytes are two code units of one character; without applying the
         // ECI they would come out as two Latin-1 characters.
         var utf8 = Encoding.UTF8.GetBytes("é");
-        Assert.AreEqual(2, utf8.Length);
+        Assert.HasCount(2, utf8);
 
         // ECI 26, then a Base 256 run of two bytes. Base 256 values are randomised by their
         // one based position in the data stream, which the ECI codewords occupy first.
@@ -223,7 +223,7 @@ public class DataMatrixBitStreamTests
 
         // Some random streams are legal ASCII, which is fine; the contract is only that nothing
         // throws and that the parser is willing to say no.
-        Assert.IsTrue(accepted < 200 * BbDataMatrixVersion.All.Count, "Every random stream was accepted.");
+        Assert.IsLessThan(200 * BbDataMatrixVersion.All.Count, accepted, "Every random stream was accepted.");
     }
 
     [TestMethod]

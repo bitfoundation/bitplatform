@@ -257,7 +257,7 @@ public class ObjectInspectorTests
         Assert.AreEqual(BevNodeKind.Collection, root.Kind);
         Assert.AreEqual(4, root.Count);
         var children = inspector.Children(new List<int> { 1, 2, 3, 4 }, "");
-        Assert.AreEqual(3, children.Count); // 2 items + "…"
+        Assert.HasCount(3, children); // 2 items + "…"
         Assert.AreEqual("[1]", children[1].Name);
 
         var dict = inspector.Children(new Node(), "Map");
@@ -321,12 +321,12 @@ public class ObjectInspectorTests
 
         // Spent wall-clock budget: the root entry is written, nothing below it is read (Throws would be).
         inspector.FlattenNamed(result, "Second", new Node(), member: null, maxDepth: 2, maxItems: 25, maxEntries: 150, deadline: 0);
-        Assert.AreEqual(walked + 1, result.Count);
+        Assert.HasCount(walked + 1, result);
         Assert.Contains("Second", result.Keys);
 
         // The entry cap counts the whole dictionary, so it is the caller's running total that bounds the walk.
         inspector.FlattenNamed(result, "Third", new Node(), member: null, maxDepth: 2, maxItems: 25, maxEntries: result.Count + 2, BevObjectInspector.FlattenDeadline());
-        Assert.AreEqual(walked + 1 + 2, result.Count);
+        Assert.HasCount(walked + 1 + 2, result);
     }
 
     [TestMethod]

@@ -21,17 +21,17 @@ public class BitFileInputStylesheetTests
 
         // The label of an Outline or Text browse button sits on the page rather than on the role's fill, so it is drawn in
         // the role's text color: a secondary or a warning main is picked to fill a surface and is under 3:1 as text on white.
-        StringAssert.Contains(stylesheet, "--bit-fin-c-fg: var(--bit-fin-clr-fg, var(--bit-FileInput-color, #{$clr-pri}));");
+        Assert.Contains("--bit-fin-c-fg: var(--bit-fin-clr-fg, var(--bit-FileInput-color, #{$clr-pri}));", stylesheet);
         foreach (var selector in new[] { "\n.bit-fin-otl {", "\n.bit-fin-txt {" })
         {
-            StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, selector), "color: var(--bit-fin-lbl-sfg, var(--bit-fin-c-fg));");
+            Assert.Contains("color: var(--bit-fin-lbl-sfg, var(--bit-fin-c-fg));", SourceFiles.GetScssBlock(stylesheet, selector));
         }
 
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, ".bit-fin-#{$role} {"), "--bit-fin-clr-fg: #{role-text($role, $tokens)};");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-fin.bit-inv:not(.bit-dis) {"), "--bit-fin-clr-fg: var(--bit-FileInput-invalid-color, #{$clr-err-fg});");
+        Assert.Contains("--bit-fin-clr-fg: #{role-text($role, $tokens)};", SourceFiles.GetScssBlock(stylesheet, ".bit-fin-#{$role} {"));
+        Assert.Contains("--bit-fin-clr-fg: var(--bit-FileInput-invalid-color, #{$clr-err-fg});", SourceFiles.GetScssBlock(stylesheet, "\n.bit-fin.bit-inv:not(.bit-dis) {"));
 
         // Only the label: the rule keeps the role's main.
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-fin-otl {"), "border-color: var(--bit-fin-lbl-sbr, var(--bit-fin-c));");
+        Assert.Contains("border-color: var(--bit-fin-lbl-sbr, var(--bit-fin-c));", SourceFiles.GetScssBlock(stylesheet, "\n.bit-fin-otl {"));
     }
 
     [TestMethod]
@@ -40,23 +40,23 @@ public class BitFileInputStylesheetTests
         var stylesheet = ReadStylesheet();
 
         // The role slots resolved on the root read an explicit Color first, then the variable, then the primary role.
-        StringAssert.Contains(stylesheet, "--bit-fin-c: var(--bit-fin-clr, var(--bit-FileInput-color, #{$clr-pri}));");
-        StringAssert.Contains(stylesheet, "--bit-fin-c-txt: var(--bit-fin-clr-txt, var(--bit-FileInput-text-color, #{$clr-pri-text}));");
-        StringAssert.Contains(stylesheet, "--bit-fin-c-hover: var(--bit-fin-clr-hover, var(--bit-FileInput-hover-color, #{$clr-pri-hover}));");
-        StringAssert.Contains(stylesheet, "--bit-fin-c-active: var(--bit-fin-clr-active, var(--bit-FileInput-active-color, #{$clr-pri-active}));");
-        StringAssert.Contains(stylesheet, "focus-ring-own(var(--bit-fin-clr-focus, var(--bit-FileInput-focus-color)))");
+        Assert.Contains("--bit-fin-c: var(--bit-fin-clr, var(--bit-FileInput-color, #{$clr-pri}));", stylesheet);
+        Assert.Contains("--bit-fin-c-txt: var(--bit-fin-clr-txt, var(--bit-FileInput-text-color, #{$clr-pri-text}));", stylesheet);
+        Assert.Contains("--bit-fin-c-hover: var(--bit-fin-clr-hover, var(--bit-FileInput-hover-color, #{$clr-pri-hover}));", stylesheet);
+        Assert.Contains("--bit-fin-c-active: var(--bit-fin-clr-active, var(--bit-FileInput-active-color, #{$clr-pri-active}));", stylesheet);
+        Assert.Contains("focus-ring-own(var(--bit-fin-clr-focus, var(--bit-FileInput-focus-color)))", stylesheet);
 
         // The drop indicator's own variables come after an explicit Color too.
-        StringAssert.Contains(stylesheet, "var(--bit-fin-clr-txt, var(--bit-FileInput-drop-color, var(--bit-fin-c-txt)))");
-        StringAssert.Contains(stylesheet, "var(--bit-fin-clr-hover, var(--bit-FileInput-drop-background, var(--bit-fin-c-hover)))");
+        Assert.Contains("var(--bit-fin-clr-txt, var(--bit-FileInput-drop-color, var(--bit-fin-c-txt)))", stylesheet);
+        Assert.Contains("var(--bit-fin-clr-hover, var(--bit-FileInput-drop-background, var(--bit-fin-c-hover)))", stylesheet);
 
         // An explicit Size publishes these, so they are read before the variable, which only restyles the medium file
         // input an unset one stands for.
-        StringAssert.Contains(stylesheet, "var(--bit-fin-lbl-height, var(--bit-FileInput-label-height, #{$siz-ctrl-md}))");
-        StringAssert.Contains(stylesheet, "var(--bit-fin-lbl-fontsize, var(--bit-FileInput-label-font-size, #{$tg-fs-sm}))");
-        StringAssert.Contains(stylesheet, "var(--bit-fin-dzn-height, var(--bit-FileInput-drop-zone-height, #{spacing(11)}))");
-        StringAssert.Contains(stylesheet, "var(--bit-fin-prv-size, var(--bit-FileInput-preview-size, #{spacing(5)}))");
-        StringAssert.Contains(stylesheet, "var(--bit-fin-rbt-size, var(--bit-FileInput-remove-button-size, #{$siz-ctrl-md}))");
+        Assert.Contains("var(--bit-fin-lbl-height, var(--bit-FileInput-label-height, #{$siz-ctrl-md}))", stylesheet);
+        Assert.Contains("var(--bit-fin-lbl-fontsize, var(--bit-FileInput-label-font-size, #{$tg-fs-sm}))", stylesheet);
+        Assert.Contains("var(--bit-fin-dzn-height, var(--bit-FileInput-drop-zone-height, #{spacing(11)}))", stylesheet);
+        Assert.Contains("var(--bit-fin-prv-size, var(--bit-FileInput-preview-size, #{spacing(5)}))", stylesheet);
+        Assert.Contains("var(--bit-fin-rbt-size, var(--bit-FileInput-remove-button-size, #{$siz-ctrl-md}))", stylesheet);
 
         // A public variable never comes before a value a parameter publishes; it may come before the role slots
         // (--bit-fin-c*), which are already resolved with the Color ahead of it.
@@ -76,18 +76,16 @@ public class BitFileInputStylesheetTests
 
         // Each variant reads a tier of its own ahead of the shared disabled colors, so a theme can set one look apart
         // from the others on :root. The role colors stay shared: every variant derives its look from the same role.
-        StringAssert.Contains(block, $"var(--bit-FileInput-{variant}-{name}, var(--bit-FileInput-{name}, ",
-                              $"{selector} does not read --bit-FileInput-{variant}-{name} ahead of --bit-FileInput-{name}.");
+        Assert.Contains($"var(--bit-FileInput-{variant}-{name}, var(--bit-FileInput-{name}, ", block, $"{selector} does not read --bit-FileInput-{variant}-{name} ahead of --bit-FileInput-{name}.");
         Assert.IsFalse(Regex.IsMatch(block, $@"var\(--bit-FileInput-(?!{variant}-|text-color\b)(?:fill|outline|text)-"),
                        $"{selector} reads the variables of another variant.");
 
         // The remove buttons, which every variant draws alike, read the disabled background their variant resolved - on
         // them and on the button, never on the root, so a public variable set on Styles.Label or Styles.RemoveButton
         // still reaches the part it was set on.
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-fin-rbt {"), "background-color: var(--bit-fin-dis-bg, #{$clr-bg-dis});");
-        StringAssert.DoesNotMatch(SourceFiles.GetScssDeclarations(stylesheet, $"\n{selector} {{"), new Regex(@"--bit-fin-dis-bg\s*:"),
-                                  $"{selector} resolves the disabled background on the root, out of reach of a part's own style.");
-        StringAssert.Contains(SourceFiles.GetScssBlock(block, ".bit-fin-lbl,\n    .bit-fin-rbt {"), "--bit-fin-dis-bg: ");
+        Assert.Contains("background-color: var(--bit-fin-dis-bg, #{$clr-bg-dis});", SourceFiles.GetScssBlock(stylesheet, "\n.bit-fin-rbt {"));
+        Assert.DoesNotMatchRegex(new Regex(@"--bit-fin-dis-bg\s*:"), SourceFiles.GetScssDeclarations(stylesheet, $"\n{selector} {{"), $"{selector} resolves the disabled background on the root, out of reach of a part's own style.");
+        Assert.Contains("--bit-fin-dis-bg: ", SourceFiles.GetScssBlock(block, ".bit-fin-lbl,\n    .bit-fin-rbt {"));
     }
 
     [TestMethod]
@@ -104,11 +102,11 @@ public class BitFileInputStylesheetTests
                                          "--bit-fin-fs-fontsize", "--bit-fin-prv-size", "--bit-fin-dzn-height", "--bit-fin-dzn-padding",
                                          "--bit-fin-dzn-ico-size", "--bit-fin-rbt-size", "--bit-fin-ico-fontsize" })
         {
-            StringAssert.Contains(root, $"{property}: initial;");
+            Assert.Contains($"{property}: initial;", root);
         }
 
-        Assert.IsTrue(stylesheet.IndexOf("\n.bit-fin {", StringComparison.Ordinal) < stylesheet.IndexOf(".bit-fin-#{$role} {", StringComparison.Ordinal), "The role classes come before the root that resets them.");
-        Assert.IsTrue(stylesheet.IndexOf("\n.bit-fin {", StringComparison.Ordinal) < stylesheet.IndexOf("\n.bit-fin-md {", StringComparison.Ordinal), "The size classes come before the root that resets them.");
+        Assert.IsLessThan(stylesheet.IndexOf(".bit-fin-#{$role} {", StringComparison.Ordinal), stylesheet.IndexOf("\n.bit-fin {", StringComparison.Ordinal), "The role classes come before the root that resets them.");
+        Assert.IsLessThan(stylesheet.IndexOf("\n.bit-fin-md {", StringComparison.Ordinal), stylesheet.IndexOf("\n.bit-fin {", StringComparison.Ordinal), "The size classes come before the root that resets them.");
     }
 
     [TestMethod]
@@ -119,11 +117,11 @@ public class BitFileInputStylesheetTests
 
         // The message follows the variable the invalid browse button does, read as text on the page, and the size the
         // hint under it does - which an explicit Size wins over.
-        StringAssert.Contains(declarations, "color: var(--bit-FileInput-invalid-color, #{$clr-err-fg});");
-        StringAssert.Contains(declarations, "font-size: var(--bit-fin-fs-fontsize, var(--bit-FileInput-description-font-size, #{$tg-fs-xs}));");
+        Assert.Contains("color: var(--bit-FileInput-invalid-color, #{$clr-err-fg});", declarations);
+        Assert.Contains("font-size: var(--bit-fin-fs-fontsize, var(--bit-FileInput-description-font-size, #{$tg-fs-xs}));", declarations);
 
         // Nothing else styles it - the disabled file input only sets the text color of its root, which the message
         // does not inherit - so a message gone grey never stops reading as the reason.
-        Assert.AreEqual(1, Regex.Matches(SourceFiles.StripScssComments(stylesheet), @"\.bit-fin-erm\b").Count, "Another rule restyles the error message.");
+        Assert.ContainsSingle(Regex.Matches(SourceFiles.StripScssComments(stylesheet), @"\.bit-fin-erm\b"), "Another rule restyles the error message.");
     }
 }

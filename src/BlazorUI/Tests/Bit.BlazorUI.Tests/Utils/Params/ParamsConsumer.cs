@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Bit.BlazorUI.Tests.Utils.Params;
 
-public sealed class ParamsConsumer : ComponentBase
+internal sealed class ParamsConsumer : ComponentBase
 {
     [CascadingParameter(Name = "A")] public FakeParamsA? A { get; set; }
 

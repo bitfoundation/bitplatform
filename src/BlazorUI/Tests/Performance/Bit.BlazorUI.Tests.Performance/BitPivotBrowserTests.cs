@@ -124,7 +124,7 @@ public class BitPivotBrowserTests : PerformanceTestBase
 
         var lefts = await Probe("rtl").EvaluateAsync<double[]>(
             "el => [...el.querySelectorAll('[role=tab]')].slice(0, 2).map(t => t.getBoundingClientRect().left)");
-        Assert.IsTrue(lefts[1] < lefts[0], "Tab 2 is laid out to the left of Tab 1");
+        Assert.IsLessThan(lefts[0], lefts[1], "Tab 2 is laid out to the left of Tab 1");
 
         await TabIntoTheHeader("rtl");
 
@@ -254,7 +254,7 @@ public class BitPivotBrowserTests : PerformanceTestBase
         var header = Probe("manual").Locator("[role=tablist]");
         var box = await header.BoundingBoxAsync() ?? throw new AssertFailedException("The header has no box.");
         var lastTab = await Tab("manual", "Tab 5").BoundingBoxAsync() ?? throw new AssertFailedException("Tab 5 has no box.");
-        Assert.IsTrue(lastTab.X + lastTab.Width < box.X + box.Width - 20, "The header has padding past its last tab.");
+        Assert.IsLessThan(box.X + box.Width - 20, lastTab.X + lastTab.Width, "The header has padding past its last tab.");
 
         await header.ClickAsync(new() { Position = new() { X = box.Width - 8, Y = box.Height / 2 } });
 

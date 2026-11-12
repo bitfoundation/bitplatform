@@ -48,7 +48,7 @@ public class BitPhoneInputValidationMessageTests : BunitTestContext
         });
 
         // Nothing is shown before the form has anything to say.
-        Assert.AreEqual(0, component.FindAll(".bit-phi-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-phi-erm"));
         Assert.IsNull(component.Find("input.bit-phi-inp").GetAttribute("aria-describedby"));
 
         component.Find("form").Submit();
@@ -78,7 +78,7 @@ public class BitPhoneInputValidationMessageTests : BunitTestContext
 
         component.WaitForAssertion(() =>
         {
-            Assert.AreEqual(0, component.FindAll(".bit-phi-erm").Count);
+            Assert.IsEmpty(component.FindAll(".bit-phi-erm"));
             Assert.IsNull(component.Find("input.bit-phi-inp").GetAttribute("aria-describedby"));
         });
 
@@ -131,7 +131,7 @@ public class BitPhoneInputValidationMessageTests : BunitTestContext
 
         // The field is marked as before, and the message stays where the page puts it.
         Assert.AreEqual("true", component.Find("input.bit-phi-inp").GetAttribute("aria-invalid"));
-        Assert.AreEqual(0, component.FindAll(".bit-phi-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-phi-erm"));
         Assert.IsNull(component.Find("input.bit-phi-inp").GetAttribute("aria-describedby"));
     }
 
@@ -150,7 +150,7 @@ public class BitPhoneInputValidationMessageTests : BunitTestContext
 
         component.InvokeAsync(() => editContext.Validate());
 
-        Assert.AreEqual(1, component.FindAll(".bit-phi-erm").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-phi-erm"));
         Assert.AreEqual("That number is already registered.", component.Find(".bit-phi-erm").TextContent.Trim());
 
         // Once the app takes its message back, the EditContext's takes the line.
@@ -181,7 +181,7 @@ public class BitPhoneInputValidationMessageTests : BunitTestContext
         component.InvokeAsync(() => editContext.Validate());
 
         Assert.AreEqual("Already registered", component.Find(".bit-phi-erm b").TextContent);
-        Assert.IsFalse(component.Find(".bit-phi-erm").TextContent.Contains(RequiredMessage));
+        Assert.DoesNotContain(RequiredMessage, component.Find(".bit-phi-erm").TextContent);
     }
 
     [TestMethod]
@@ -197,7 +197,7 @@ public class BitPhoneInputValidationMessageTests : BunitTestContext
 
         // A submit validates every field at once; the field that takes the focus says what is wrong with it instead.
         Assert.AreEqual(RequiredMessage, component.Find(".bit-phi-erm").TextContent.Trim());
-        Assert.IsFalse(component.Find(".bit-phi-lvr").TextContent.Contains(RequiredMessage));
+        Assert.DoesNotContain(RequiredMessage, component.Find(".bit-phi-lvr").TextContent);
     }
 
     [TestMethod]
@@ -221,7 +221,7 @@ public class BitPhoneInputValidationMessageTests : BunitTestContext
         // number means nothing without it; then what is wrong with the value, and last the description.
         var ids = component.Find("input.bit-phi-inp").GetAttribute("aria-describedby")!.Split(' ');
 
-        Assert.AreEqual(4, ids.Length);
+        Assert.HasCount(4, ids);
         Assert.AreEqual("page-hint", ids[0]);
         Assert.AreEqual(component.Find("div.bit-phi-drp").Id, ids[1]);
         Assert.AreEqual(component.Find(".bit-phi-erm").Id, ids[2]);
@@ -243,11 +243,11 @@ public class BitPhoneInputValidationMessageTests : BunitTestContext
 
         component.InvokeAsync(() => editContext.Validate());
 
-        Assert.AreEqual(1, component.FindAll(".bit-phi-erm").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-phi-erm"));
 
         component.Render(parameters => parameters.Add(p => p.NoValidate, true));
 
-        Assert.AreEqual(0, component.FindAll(".bit-phi-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-phi-erm"));
         Assert.IsNull(component.Find("input.bit-phi-inp").GetAttribute("aria-describedby"));
     }
 
@@ -263,8 +263,8 @@ public class BitPhoneInputValidationMessageTests : BunitTestContext
         component.InvokeAsync(() => editContext.Validate());
 
         // The model has a message, but the phone input has no member of it the message could belong to.
-        Assert.IsTrue(editContext.GetValidationMessages().Any());
-        Assert.AreEqual(0, component.FindAll(".bit-phi-erm").Count);
+        Assert.IsNotEmpty(editContext.GetValidationMessages());
+        Assert.IsEmpty(component.FindAll(".bit-phi-erm"));
     }
 
     [TestMethod]

@@ -87,9 +87,9 @@ public class BitRichTextEditorE2ETests : E2ETestBase
         var response = await Page.APIRequest.GetAsync($"{BaseUrl}{Route}");
         var html = await response.TextAsync();
 
-        StringAssert.Contains(html, "<div id=\"rte-basic\" class=\"bit-rte\"><div role=\"toolbar\" aria-label=\"Formatting\"");
-        StringAssert.Contains(html, "contenteditable=\"true\" data-placeholder=\"Write something...\"><p>Initial <strong>bound</strong> value</p></div>");
-        StringAssert.Contains(html, "<span id=\"status\">Loading</span>");
+        Assert.Contains("<div id=\"rte-basic\" class=\"bit-rte\"><div role=\"toolbar\" aria-label=\"Formatting\"", html);
+        Assert.Contains("contenteditable=\"true\" data-placeholder=\"Write something...\"><p>Initial <strong>bound</strong> value</p></div>", html);
+        Assert.Contains("<span id=\"status\">Loading</span>", html);
 
         await OpenAsync(Route);
         await Expect(Surface("rte-basic").Locator("strong")).ToHaveTextAsync("bound");
@@ -110,7 +110,7 @@ public class BitRichTextEditorE2ETests : E2ETestBase
 
         await Expect(Page.Locator("#value")).ToHaveTextAsync("<p>Initial <strong>bound</strong> value typed</p>");
         await Expect(Page.Locator("#last-change")).ToHaveTextAsync("<p>Initial <strong>bound</strong> value typed</p>");
-        Assert.IsTrue(int.Parse((await Page.Locator("#change-count").TextContentAsync())!) >= 1);
+        Assert.IsGreaterThanOrEqualTo(1, int.Parse((await Page.Locator("#change-count").TextContentAsync())!));
     }
 
     [TestMethod]
@@ -137,7 +137,7 @@ public class BitRichTextEditorE2ETests : E2ETestBase
         await Expect(Surface("rte-basic")).ToHaveTextAsync("");
         await Expect(Surface("rte-basic")).ToHaveAttributeAsync("aria-placeholder", "Write something...");
         var placeholder = await Surface("rte-basic").EvaluateAsync<string>("e => getComputedStyle(e.querySelector('p') || e, '::before').content");
-        StringAssert.Contains(placeholder, "Write something...");
+        Assert.Contains("Write something...", placeholder);
     }
 
     [TestMethod]
@@ -146,7 +146,7 @@ public class BitRichTextEditorE2ETests : E2ETestBase
         await OpenAsync(Route);
 
         var surface = Surface("rte-size");
-        StringAssert.Contains(await Page.Locator("#rte-size").GetAttributeAsync("style"), "--bit-RichTextEditor-height:8rem");
+        Assert.Contains("--bit-RichTextEditor-height:8rem", (await Page.Locator("#rte-size").GetAttributeAsync("style"))!);
         await Expect(surface).ToHaveAttributeAsync("spellcheck", "false");
         await Expect(surface).ToHaveClassAsync(HasClass("bit-rte-edt-rsz"));
         await Expect(surface).ToHaveCSSAsync("resize", "vertical");
@@ -193,7 +193,7 @@ public class BitRichTextEditorE2ETests : E2ETestBase
 
         var controls = Page.Locator("#rte-groups .bit-rte-tlb").Locator("button, select, input");
         var names = await controls.EvaluateAllAsync<string[]>("els => els.map(e => e.getAttribute('aria-label'))");
-        CollectionAssert.AreEquivalent(labels, names, $"{group}: {string.Join(", ", names)}");
+        Assert.AreSequenceEqual(labels, names, Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, $"{group}: {string.Join(", ", names)}");
         await Expect(Page.Locator("#rte-groups .bit-rte-tlb .bit-rte-grp")).ToHaveCountAsync(labels.Length == 0 ? 0 : 1);
     }
 
@@ -446,7 +446,7 @@ public class BitRichTextEditorE2ETests : E2ETestBase
         await Page.Locator("#rte-ext select[aria-label='Font family']").SelectOptionAsync("Georgia");
         await Expect(Page.Locator("#ext-value")).ToContainTextAsync("Georgia");
         var family = await Surface("rte-ext").EvaluateAsync<string>(@"e => { const w = document.createTreeWalker(e, NodeFilter.SHOW_TEXT); let n; while ((n = w.nextNode())) if (n.nodeValue.includes('beta')) return getComputedStyle(n.parentElement).fontFamily; return ''; }");
-        StringAssert.Contains(family, "Georgia");
+        Assert.Contains("Georgia", family);
 
         await SelectTextAsync("rte-ext", "beta");
         await Page.Locator("#rte-ext select[aria-label='Font size']").SelectOptionAsync("24px");
@@ -504,9 +504,9 @@ public class BitRichTextEditorE2ETests : E2ETestBase
         await Expect(Page.Locator("#color-value")).ToContainTextAsync(new Regex("background-color: (rgb\\(0, 0, 255\\)|#0000ff)"));
 
         var families = await Page.Locator("#rte-colors select[aria-label='Font family'] option").AllTextContentsAsync();
-        CollectionAssert.AreEqual(new[] { "Font", "Georgia", "Courier New" }, families.ToArray());
+        Assert.AreSequenceEqual(new[] { "Font", "Georgia", "Courier New" }, families.ToArray());
         var sizes = await Page.Locator("#rte-colors select[aria-label='Font size'] option").AllTextContentsAsync();
-        CollectionAssert.AreEqual(new[] { "Size", "12px", "20px" }, sizes.ToArray());
+        Assert.AreSequenceEqual(new[] { "Size", "12px", "20px" }, sizes.ToArray());
     }
 
     [TestMethod]
@@ -993,7 +993,7 @@ public class BitRichTextEditorE2ETests : E2ETestBase
         await Expect(list).ToHaveAttributeAsync("role", "region");
         await Expect(Btn("rte-shortcuts", "Keyboard shortcuts")).ToHaveAttributeAsync("aria-expanded", "true");
         await Expect(panel.Locator("tbody tr").First).ToBeVisibleAsync();
-        Assert.IsTrue(await panel.Locator("tbody tr").CountAsync() > 5);
+        Assert.IsGreaterThan(5, await panel.Locator("tbody tr").CountAsync());
         await Expect(panel.Locator("kbd", new() { HasTextString = "Ctrl+Shift+1" })).ToHaveCountAsync(1);
 
         await Page.Keyboard.PressAsync("Escape");
@@ -1077,7 +1077,7 @@ public class BitRichTextEditorE2ETests : E2ETestBase
         var panel = Page.Locator("#rte-groups .bit-rte-emoji-panel");
         await Expect(panel).ToBeVisibleAsync();
         await Expect(panel.Locator("input[aria-label='Search emoji']")).ToBeFocusedAsync();
-        Assert.IsTrue(await panel.Locator(".bit-rte-emoji").CountAsync() > 20);
+        Assert.IsGreaterThan(20, await panel.Locator(".bit-rte-emoji").CountAsync());
 
         await panel.Locator("input[aria-label='Search emoji']").FillAsync("zzzz-none");
         await Expect(panel.Locator(".bit-rte-emoji-empty")).ToHaveTextAsync("No matches");
@@ -1153,7 +1153,7 @@ public class BitRichTextEditorE2ETests : E2ETestBase
 
         var buttons = Page.Locator("#rte-basic .bit-rte-tlb").Locator("button, select");
         var stops = await buttons.EvaluateAllAsync<string[]>("els => els.map(e => String(e.getAttribute('tabindex')))");
-        Assert.AreEqual(1, stops.Count(t => t != "-1"), "the toolbar is not one tab stop");
+        Assert.ContainsSingle(t => t != "-1", stops, "the toolbar is not one tab stop");
         Assert.AreNotEqual("-1", stops[0]);
 
         await buttons.First.FocusAsync();
@@ -1185,7 +1185,7 @@ public class BitRichTextEditorE2ETests : E2ETestBase
         var describedBy = (await surface.GetAttributeAsync("aria-describedby"))!;
         var description = root.Locator(".bit-rte-dsc");
         await Expect(description).ToHaveTextAsync("Plain words work best.");
-        StringAssert.Contains(describedBy, (await description.GetAttributeAsync("id"))!);
+        Assert.Contains((await description.GetAttributeAsync("id"))!, describedBy);
 
         var count = root.Locator(".bit-rte-cnt");
         await Expect(count).ToContainTextAsync("0 words · 0/40 chars");
@@ -1213,7 +1213,7 @@ public class BitRichTextEditorE2ETests : E2ETestBase
         await Expect(root.Locator(".bit-rte-cnt")).ToContainTextAsync("/40 chars");
         await Expect(root.Locator(".bit-rte-cnt-over")).ToHaveTextAsync("limit reached");
         var text = await surface.InnerTextAsync();
-        Assert.IsTrue(text.Trim().Length <= 40, $"MaxLength let {text.Trim().Length} characters in");
+        Assert.IsLessThanOrEqualTo(40, text.Trim().Length, $"MaxLength let {text.Trim().Length} characters in");
         await Expect(Page.Locator("#form .validation-message")).ToHaveCountAsync(0);
         await Expect(root).Not.ToHaveClassAsync(HasClass("bit-inv"));
 
@@ -1235,7 +1235,7 @@ public class BitRichTextEditorE2ETests : E2ETestBase
         await Expect(message).ToHaveTextAsync("The server rejected it.");
         await Expect(root).ToHaveClassAsync(HasClass("bit-inv"));
         await Expect(Surface("rte-error")).ToHaveAttributeAsync("aria-invalid", "true");
-        StringAssert.Contains(await Surface("rte-error").GetAttributeAsync("aria-describedby"), (await message.GetAttributeAsync("id"))!);
+        Assert.Contains((await message.GetAttributeAsync("id"))!, (await Surface("rte-error").GetAttributeAsync("aria-describedby"))!);
         Assert.AreNotEqual(borderBefore, await root.EvaluateAsync<string>("r => getComputedStyle(r).borderTopColor"));
 
         // Editing the value clears the error the page set (@bind-Value:after is the page's), Invalid alone marks it too.
@@ -1391,7 +1391,7 @@ public class BitRichTextEditorE2ETests : E2ETestBase
         await Expect(Surface("rte-cascaded")).ToHaveAttributeAsync("aria-placeholder", "Cascaded placeholder");
         await Expect(Surface("rte-cascaded")).ToHaveClassAsync(HasClass("cascaded-editor"));
         await Expect(Page.Locator("#rte-cascaded .bit-rte-tlb")).ToHaveCountAsync(0);
-        StringAssert.Contains(await Page.Locator("#rte-cascaded").GetAttributeAsync("style"), "--bit-RichTextEditor-height:9rem");
+        Assert.Contains("--bit-RichTextEditor-height:9rem", (await Page.Locator("#rte-cascaded").GetAttributeAsync("style"))!);
 
         await Expect(Surface("rte-cascaded-own")).ToHaveAttributeAsync("aria-placeholder", "My own placeholder");
         await Expect(Page.Locator("#rte-cascaded-own .bit-rte-tlb")).ToHaveCountAsync(1);
@@ -1464,7 +1464,7 @@ public class BitRichTextEditorE2ETests : E2ETestBase
             Assert.AreNotEqual(expected, await ComputedStyleAsync($"#rte-vars-default{selector}", property), $"default {selector} {property}");
         }
 
-        StringAssert.Contains(await ComputedStyleAsync("#rte-vars .bit-rte-edt", "font-family"), "Georgia");
+        Assert.Contains("Georgia", await ComputedStyleAsync("#rte-vars .bit-rte-edt", "font-family"));
         Assert.AreEqual("150px", await ComputedStyleAsync("#rte-vars .bit-rte-edt", "min-height"));
     }
 
@@ -1481,7 +1481,7 @@ public class BitRichTextEditorE2ETests : E2ETestBase
         {
             var toolbar = (await Page.Locator($"#{id} .bit-rte-tlb").BoundingBoxAsync())!;
             var first = (await Page.Locator($"#{id} .bit-rte-tlb button").First.BoundingBoxAsync())!;
-            Assert.IsTrue(first.X > toolbar.X + toolbar.Width / 2, $"{id}: the first button is not on the right");
+            Assert.IsGreaterThan(toolbar.X + toolbar.Width / 2, first.X, $"{id}: the first button is not on the right");
         }
 
         await SelectTextAsync("rte-rtl", "سلام");
@@ -1547,7 +1547,7 @@ public class BitRichTextEditorE2ETests : E2ETestBase
         await Page.ClickAsync("#btn-visibility");
         await Expect(Page.Locator("#visibility")).ToHaveTextAsync("Hidden");
         await Expect(root).ToHaveCSSAsync("visibility", "hidden");
-        Assert.IsTrue((await root.BoundingBoxAsync())!.Height > 0, "a hidden editor keeps its box");
+        Assert.IsGreaterThan(0, (await root.BoundingBoxAsync())!.Height, "a hidden editor keeps its box");
 
         await Page.ClickAsync("#btn-visibility");
         await Expect(Page.Locator("#visibility")).ToHaveTextAsync("Collapsed");

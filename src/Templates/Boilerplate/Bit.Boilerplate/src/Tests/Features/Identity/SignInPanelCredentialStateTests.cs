@@ -84,13 +84,13 @@ public class SignInPanelCredentialStateTests
 
         try
         {
-            await autoSubmitRejected.Task.WaitAsync(TimeSpan.FromSeconds(30));
+            await autoSubmitRejected.Task.WaitAsync(TimeSpan.FromSeconds(30), TestContext.CancellationToken);
         }
-        catch (TimeoutException)
+        catch (TimeoutException exception)
         {
-            Assert.Fail($"The auto-submitted one-time code should have been rejected as expired. Last snack bar: " +
-                        $"'{lastSnackBar ?? "<none>"}'. '{AppStrings.InvalidUserCredentials}' here means the seeded " +
-                        $"account had a live one-time code despite the reset above - find whoever issued it.");
+            throw new TimeoutException($"The auto-submitted one-time code should have been rejected as expired. Last snack bar: " +
+                                       $"'{lastSnackBar ?? "<none>"}'. '{AppStrings.InvalidUserCredentials}' here means the seeded " +
+                                       $"account had a live one-time code despite the reset above - find whoever issued it.", exception);
         }
 
         unsubscribe();
@@ -253,7 +253,7 @@ public class SignInPanelCredentialStateTests
             .AddChildContent<SignInPanel>(panel => panel
                 .Add(p => p.SignInPanelType, SignInPanelType.Full)));
 
-        await Task.Delay(TimeSpan.FromSeconds(1));
+        await Task.Delay(TimeSpan.FromSeconds(1), TestContext.CancellationToken);
         unsubscribe();
         GC.KeepAlive(onSnackBar);
 

@@ -100,7 +100,7 @@ public class BitCultureInvariantMarkupContractTests : BunitTestContext
 
             var ids = component.FindAll(".bit-bfc-mini-calendar-day").Select(day => day.Id ?? string.Empty).ToList();
 
-            Assert.IsTrue(ids.Any(id => id.EndsWith("-20260318", StringComparison.Ordinal)), string.Join(", ", ids));
+            Assert.Contains(id => id.EndsWith("-20260318", StringComparison.Ordinal), ids, string.Join(", ", ids));
         });
     }
 

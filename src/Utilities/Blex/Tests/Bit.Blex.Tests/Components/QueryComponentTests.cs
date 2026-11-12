@@ -1,4 +1,4 @@
-using Bit.Blex.Blazor;
+﻿using Bit.Blex.Blazor;
 using Bit.Blex.Query;
 using Bit.Blex.Tests.Query;
 using Bunit;
@@ -9,7 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Bit.Blex.Tests.Components;
 
 /// <summary>A component that observes one todo by id through <c>UseQuery</c>.</summary>
-public sealed class TodoTitle : BlexComponentBase
+internal sealed class TodoTitle : BlexComponentBase
 {
     [Parameter] public int Id { get; set; }
 
@@ -30,7 +30,7 @@ public sealed class TodoTitle : BlexComponentBase
 /// One <c>UseQuery</c> call in a loop over items, and another made once in <c>OnInitialized</c> -- the shapes a
 /// single-observer-per-call-site design turned into an endless refetch, and a dropped observer.
 /// </summary>
-public sealed class TodoList : BlexComponentBase
+internal sealed class TodoList : BlexComponentBase
 {
     [Parameter] public int[] Ids { get; set; } = [];
 
@@ -56,7 +56,7 @@ public sealed class TodoList : BlexComponentBase
 }
 
 /// <summary>A feed paged through <c>UseInfiniteQuery</c>, keyed by a filter parameter.</summary>
-public sealed class FeedList : BlexComponentBase
+internal sealed class FeedList : BlexComponentBase
 {
     [Parameter] public PagedServer Server { get; set; } = default!;
 
@@ -72,7 +72,7 @@ public sealed class FeedList : BlexComponentBase
 }
 
 /// <summary>A component that re-renders as a mutation it watches changes.</summary>
-public sealed class SaveButton : BlexComponentBase
+internal sealed class SaveButton : BlexComponentBase
 {
     [Inject] private BlexQueryClient Queries { get; set; } = default!;
 
@@ -147,7 +147,7 @@ public class QueryComponentTests : BunitContext
 
         server.Respond(1, "eggs");
         cut.WaitForAssertion(() => cut.MarkupMatches("<b>eggs</b>"));
-        Assert.AreEqual(1, Queries.GetQueries().Count(q => q.ObserverCount == 1), "the view let go of the previous key");
+        Assert.ContainsSingle(q => q.ObserverCount == 1, Queries.GetQueries(), "the view let go of the previous key");
     }
 
     [TestMethod]
@@ -165,7 +165,7 @@ public class QueryComponentTests : BunitContext
         cut.Render(p => p.Add(x => x.Filter, "mine"));
         cut.WaitForAssertion(() => cut.MarkupMatches("v1-1 +"));
         Assert.AreNotSame(first, cut.Instance.Feed);
-        Assert.AreEqual(1, Queries.GetQueries().Count(q => q.ObserverCount == 1), "the previous filter's feed was let go");
+        Assert.ContainsSingle(q => q.ObserverCount == 1, Queries.GetQueries(), "the previous filter's feed was let go");
     }
 
     [TestMethod]
@@ -221,7 +221,7 @@ public class QueryComponentTests : BunitContext
         var cut = Render<SaveButton>(p => p.Add(x => x.Server, server));
         cut.MarkupMatches("Idle");
 
-        var call = cut.InvokeAsync(() => cut.Instance.Save.MutateAsync(1));
+        var call = cut.InvokeAsync(() => cut.Instance.Save.MutateAsync(1, TestContext.CancellationToken));
         cut.WaitForAssertion(() => cut.MarkupMatches("Pending"));
 
         server.Respond(0, 2);
@@ -241,7 +241,7 @@ public class QueryComponentTests : BunitContext
         server.Respond(2, "c");
         cut.WaitForAssertion(() => cut.MarkupMatches("a,b,c"));
 
-        await Task.Delay(100);
+        await Task.Delay(100, TestContext.CancellationToken);
         Assert.AreEqual(3, server.Calls, "rendering the answers must not start new fetches");
 
         // The list shrinks: the item it lost is released, the others keep their observers and their data.
@@ -278,4 +278,6 @@ public class QueryComponentTests : BunitContext
         var error = Assert.ThrowsExactly<InvalidOperationException>(() => bare.Render<TodoTitle>(p => p.Add(x => x.Id, 1).Add(x => x.Server, new FakeServer<string>())));
         Assert.Contains("AddBitBlexQueries", error.Message);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

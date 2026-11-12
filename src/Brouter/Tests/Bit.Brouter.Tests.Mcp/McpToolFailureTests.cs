@@ -25,7 +25,7 @@ public class McpToolFailureTests
         var exception = await Assert.ThrowsExactlyAsync<McpProtocolException>(
             async () => await McpCall.RawAsync("GetBrouterEverything"));
 
-        StringAssert.Contains(exception.Message, "GetBrouterEverything");
+        Assert.Contains("GetBrouterEverything", exception.Message);
     }
 
     [TestMethod]
@@ -37,7 +37,7 @@ public class McpToolFailureTests
         {
             var result = await McpCall.RawAsync(tool);
 
-            Assert.AreEqual(true, result.IsError, $"'{tool}' answered a call that left out its required argument.");
+            Assert.IsTrue(result.IsError, $"'{tool}' answered a call that left out its required argument.");
         }
     }
 
@@ -55,8 +55,8 @@ public class McpToolFailureTests
 
         var truncated = Bit.Brouter.Demo.Server.Controllers.McpController.Truncate(text);
 
-        StringAssert.Contains(truncated, "[truncated");
-        StringAssert.Contains(truncated, "the full text is longer than");
+        Assert.Contains("[truncated", truncated);
+        Assert.Contains("the full text is longer than", truncated);
 
         var kept = truncated[..truncated.IndexOf("\n\n[truncated", StringComparison.Ordinal)];
 
@@ -89,7 +89,7 @@ public class McpToolFailureTests
         {
             var text = await McpCall.TextAsync(tool, arguments);
 
-            Assert.IsTrue(text.Length <= MaxDocumentLength + 200,
+            Assert.IsLessThanOrEqualTo(MaxDocumentLength + 200, text.Length,
                 $"'{tool}' answered with {text.Length} characters, past the {MaxDocumentLength} cap.");
         }
     }
@@ -104,7 +104,7 @@ public class McpToolFailureTests
             var arguments = MinimalArgumentsFor(tool);
             var result = await McpCall.RawAsync(tool, arguments);
 
-            Assert.AreEqual(false, result.IsError is true, $"'{tool}' failed when called with its documented arguments.");
+            Assert.AreNotEqual(true, result.IsError, $"'{tool}' failed when called with its documented arguments.");
 
             var text = string.Join('\n', result.Content.OfType<TextContentBlock>().Select(block => block.Text));
 

@@ -26,14 +26,14 @@ public class BitTagsInputPrerenderTests
             [nameof(BitTagsInput.AutoFocus)] = true,
         });
 
-        StringAssert.Contains(html, "Skills");
-        StringAssert.Contains(html, "bit-tgi-tag");
-        StringAssert.Contains(html, "blazor");
-        StringAssert.Contains(html, "razor");
-        StringAssert.Contains(html, "<datalist");
-        StringAssert.Contains(html, "csharp");
-        StringAssert.Contains(html, "bit-tgi-cbt");
-        StringAssert.Contains(html, "name=\"skills\"");
-        StringAssert.Contains(html, "value=\"blazor;razor\"");
+        Assert.Contains("Skills", html);
+        Assert.Contains("bit-tgi-tag", html);
+        Assert.Contains("blazor", html);
+        Assert.Contains("razor", html);
+        Assert.Contains("<datalist", html);
+        Assert.Contains("csharp", html);
+        Assert.Contains("bit-tgi-cbt", html);
+        Assert.Contains("name=\"skills\"", html);
+        Assert.Contains("value=\"blazor;razor\"", html);
     }
 }

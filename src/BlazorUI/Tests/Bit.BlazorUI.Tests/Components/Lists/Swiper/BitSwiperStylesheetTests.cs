@@ -17,13 +17,13 @@ public class BitSwiperStylesheetTests
 
         // An explicit Color, Accent or Size publishes these only while it is set, so they are read before the variable,
         // which only restyles the default an unset one stands for.
-        StringAssert.Contains(stylesheet, "$swp-clr: var(--bit-swp-clr, var(--bit-Swiper-dot-current-color, #{$clr-pri}));");
-        StringAssert.Contains(stylesheet, "$swp-clr-hover: var(--bit-swp-clr-hover, var(--bit-Swiper-dot-current-hover-color, #{$clr-pri-hover}));");
-        StringAssert.Contains(stylesheet, "$swp-btn: var(--bit-swp-btn, var(--bit-Swiper-button-color, #{$clr-fg-pri}));");
-        StringAssert.Contains(stylesheet, "$swp-btn-hover: var(--bit-swp-btn-hover, var(--bit-Swiper-button-hover-color, #{$clr-fg-pri-hover}));");
-        StringAssert.Contains(stylesheet, "--bit-swp-focus: var(--bit-swp-fcs, var(--bit-Swiper-focus-color));");
-        StringAssert.Contains(stylesheet, "--bit-swp-dot-size: var(--bit-swp-dotsz, var(--bit-Swiper-dot-size, #{spacing(1.25)}));");
-        StringAssert.Contains(stylesheet, "font-size: var(--bit-swp-btnsz, var(--bit-Swiper-button-size, #{spacing(3)}));");
+        Assert.Contains("$swp-clr: var(--bit-swp-clr, var(--bit-Swiper-dot-current-color, #{$clr-pri}));", stylesheet);
+        Assert.Contains("$swp-clr-hover: var(--bit-swp-clr-hover, var(--bit-Swiper-dot-current-hover-color, #{$clr-pri-hover}));", stylesheet);
+        Assert.Contains("$swp-btn: var(--bit-swp-btn, var(--bit-Swiper-button-color, #{$clr-fg-pri}));", stylesheet);
+        Assert.Contains("$swp-btn-hover: var(--bit-swp-btn-hover, var(--bit-Swiper-button-hover-color, #{$clr-fg-pri-hover}));", stylesheet);
+        Assert.Contains("--bit-swp-focus: var(--bit-swp-fcs, var(--bit-Swiper-focus-color));", stylesheet);
+        Assert.Contains("--bit-swp-dot-size: var(--bit-swp-dotsz, var(--bit-Swiper-dot-size, #{spacing(1.25)}));", stylesheet);
+        Assert.Contains("font-size: var(--bit-swp-btnsz, var(--bit-Swiper-button-size, #{spacing(3)}));", stylesheet);
 
         // The one private value read after a public variable is the dot size already resolved above, which is only the
         // default of the current dot's width - a width no parameter sets.
@@ -40,7 +40,7 @@ public class BitSwiperStylesheetTests
         // same weight - still win on the root that carries them.
         foreach (var property in new[] { "--bit-swp-dotsz", "--bit-swp-btnsz", "--bit-swp-clr", "--bit-swp-clr-hover", "--bit-swp-btn", "--bit-swp-btn-hover", "--bit-swp-fcs" })
         {
-            StringAssert.Contains(root, $"{property}: initial;");
+            Assert.Contains($"{property}: initial;", root);
         }
     }
 

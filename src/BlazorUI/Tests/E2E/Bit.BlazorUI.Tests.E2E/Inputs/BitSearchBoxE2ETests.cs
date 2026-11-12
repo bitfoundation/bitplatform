@@ -98,9 +98,9 @@ public class BitSearchBoxE2ETests : E2ETestBase
         var response = await Page.APIRequest.GetAsync($"{BaseUrl}{Url}");
         var html = await response.TextAsync();
 
-        StringAssert.Contains(html, "id=\"sb-basic\"");
-        StringAssert.Contains(html, "role=\"searchbox\"");
-        StringAssert.Contains(html, "id=\"status\">Loading<");
+        Assert.Contains("id=\"sb-basic\"", html);
+        Assert.Contains("role=\"searchbox\"", html);
+        Assert.Contains("id=\"status\">Loading<", html);
 
         await OpenAsync(Url);
         await Expect(Root("sb-basic")).ToHaveClassAsync(HasClass("bit-srb"));
@@ -217,7 +217,7 @@ public class BitSearchBoxE2ETests : E2ETestBase
         var wrapper = Page.Locator("#sb-basic .bit-srb-iwp");
         await Expect(wrapper.Locator("i")).ToHaveClassAsync(HasClass("bit-icon--Search"));
         await Expect(wrapper).ToHaveAttributeAsync("aria-hidden", "true");
-        Assert.IsTrue(await WidthAsync(wrapper) > 10);
+        Assert.IsGreaterThan(10, await WidthAsync(wrapper));
 
         await wrapper.ClickAsync();
         await Expect(Input("sb-basic")).ToBeFocusedAsync();
@@ -252,7 +252,7 @@ public class BitSearchBoxE2ETests : E2ETestBase
         await Expect(Input("sb-required")).ToHaveAttributeAsync("required", "");
         await Expect(Input("sb-required")).ToHaveAttributeAsync("aria-required", "true");
         await Expect(Root("sb-required")).ToHaveClassAsync(HasClass("bit-srb-req"));
-        StringAssert.StartsWith(await Page.Locator("#sb-required .bit-srb-lbl").EvaluateAsync<string>("el => getComputedStyle(el, '::after').content"), "\"*\"");
+        Assert.StartsWith("\"*\"", await Page.Locator("#sb-required .bit-srb-lbl").EvaluateAsync<string>("el => getComputedStyle(el, '::after').content"));
     }
 
     [TestMethod]
@@ -315,7 +315,7 @@ public class BitSearchBoxE2ETests : E2ETestBase
         var root = Root("sb-visibility");
         await Page.ClickAsync("#btn-vis-hidden");
         await Expect(root).ToHaveCSSAsync("visibility", "hidden");
-        Assert.IsTrue((await BoxOfAsync(root)).Height > 20);
+        Assert.IsGreaterThan(20, (await BoxOfAsync(root)).Height);
         await Page.ClickAsync("#btn-vis-collapsed");
         await Expect(root).ToHaveCSSAsync("display", "none");
         await Page.ClickAsync("#btn-vis-visible");
@@ -419,7 +419,7 @@ public class BitSearchBoxE2ETests : E2ETestBase
         await Input("sb-fixedicon").FocusAsync();
         await Expect(Root("sb-fixedicon")).ToHaveClassAsync(HasClass("bit-srb-foc"));
         await Expect(Page.Locator("#sb-fixedicon .bit-srb-iwp i")).ToHaveCSSAsync("opacity", "1");
-        Assert.IsTrue(await WidthAsync(Page.Locator("#sb-fixedicon .bit-srb-iwp")) > 10);
+        Assert.IsGreaterThan(10, await WidthAsync(Page.Locator("#sb-fixedicon .bit-srb-iwp")));
 
         await Expect(Root("sb-noanim")).ToHaveClassAsync(HasClass("bit-srb-nan"));
         await Expect(Page.Locator("#sb-noanim .bit-srb-iwp")).ToHaveCSSAsync("transition-duration", "0s");
@@ -500,7 +500,7 @@ public class BitSearchBoxE2ETests : E2ETestBase
         await Expect(Page.Locator("#sb-searchbtn-loading .bit-srb-cbt")).ToHaveCountAsync(0);
         await Expect(Input("sb-searchbtn-loading")).ToHaveAttributeAsync("aria-busy", "true");
         await Expect(Page.Locator("#sb-searchbtn-loading .bit-srb-elv")).ToHaveTextAsync("Searching");
-        StringAssert.Contains(await ComputedStyleAsync("#sb-searchbtn-loading .bit-srb-spn", "animation-name"), "bit-spin");
+        Assert.Contains("bit-spin", await ComputedStyleAsync("#sb-searchbtn-loading .bit-srb-spn", "animation-name"));
 
         await Expect(Page.Locator("#sb-searchbtn-loading-label .bit-srb-elv")).ToHaveTextAsync("Looking it up");
 
@@ -629,11 +629,11 @@ public class BitSearchBoxE2ETests : E2ETestBase
 
         var prefix = Page.Locator("#sb-prefix .bit-srb-pre");
         await Expect(prefix).ToHaveTextAsync("https://");
-        Assert.IsTrue((await BoxOfAsync(prefix)).X < (await BoxOfAsync(Input("sb-prefix"))).X);
+        Assert.IsLessThan((await BoxOfAsync(Input("sb-prefix"))).X, (await BoxOfAsync(prefix)).X);
         var suffix = Page.Locator("#sb-suffix .bit-srb-suf");
         await Expect(suffix).ToHaveTextAsync(".com");
         var suffixInput = await BoxOfAsync(Input("sb-suffix"));
-        Assert.IsTrue((await BoxOfAsync(suffix)).X >= suffixInput.X + suffixInput.Width - 1);
+        Assert.IsGreaterThanOrEqualTo(suffixInput.X + suffixInput.Width - 1, (await BoxOfAsync(suffix)).X);
 
         await Input("sb-prefix").PressSequentiallyAsync("bitplatform.dev", Typing);
         await BlurAsync();
@@ -709,7 +709,7 @@ public class BitSearchBoxE2ETests : E2ETestBase
         await Expect(Root("sb-fullwidth")).ToHaveClassAsync(HasClass("bit-srb-flw"));
         var full = await WidthAsync(Root("sb-fullwidth"));
         var notFull = await WidthAsync(Root("sb-notfullwidth"));
-        Assert.IsTrue(full > notFull + 50, $"{full} fills more than {notFull}.");
+        Assert.IsGreaterThan(notFull + 50, full, $"{full} fills more than {notFull}.");
         var container = await BoxOfAsync(Page.Locator("#fullwidth-box"));
         var button = await BoxOfAsync(Page.Locator("#fullwidth-box button"));
         Assert.AreEqual(container.Width - button.Width - 16, full, 2);
@@ -847,7 +847,7 @@ public class BitSearchBoxE2ETests : E2ETestBase
         var callout = await BoxOfAsync(await CalloutAsync("sb-suggest"));
         Assert.AreEqual(field.Y + field.Height, callout.Y, 3, "The list opens right under the field.");
         Assert.AreEqual(field.X, callout.X, 3, "The list is aligned with the field.");
-        Assert.IsTrue(callout.Width >= field.Width - 2, "The list is at least as wide as the field.");
+        Assert.IsGreaterThanOrEqualTo(field.Width - 2, callout.Width, "The list is at least as wide as the field.");
 
         await Expect(Page.Locator("#sb-suggest [role=status][aria-live=polite]")).ToHaveTextAsync(new Regex("^4 suggestions available\\. Use the up and down arrow keys"));
     }
@@ -1030,7 +1030,7 @@ public class BitSearchBoxE2ETests : E2ETestBase
         await Input("sb-suggest-wide").PressSequentiallyAsync("a", Typing);
         var wide = await CalloutAsync("sb-suggest-wide");
         await Expect(wide).ToBeVisibleAsync();
-        Assert.IsTrue(await WidthAsync(wide) > await WidthAsync(Root("sb-suggest-wide")) + 20, "The list is wider than the field.");
+        Assert.IsGreaterThan(await WidthAsync(Root("sb-suggest-wide")) + 20, await WidthAsync(wide), "The list is wider than the field.");
     }
 
     [TestMethod]
@@ -1463,7 +1463,7 @@ public class BitSearchBoxE2ETests : E2ETestBase
     {
         await OpenAsync(Url);
 
-        StringAssert.Contains(await ComputedStyleAsync("#sb-style", "box-shadow"), "rgb(30, 144, 255)");
+        Assert.Contains("rgb(30, 144, 255)", await ComputedStyleAsync("#sb-style", "box-shadow"));
         await Expect(Root("sb-class")).ToHaveClassAsync(HasClass("custom-class"));
 
         await Expect(Root("sb-styles")).ToHaveCSSAsync("margin-left", "16px");
@@ -1556,16 +1556,16 @@ public class BitSearchBoxE2ETests : E2ETestBase
         await Expect(Root("sb-rtl")).ToHaveAttributeAsync("dir", "rtl");
 
         var ltrInput = await BoxOfAsync(Input("sb-ltr"));
-        Assert.IsTrue((await BoxOfAsync(Page.Locator("#sb-ltr .bit-srb-iwp"))).X < ltrInput.X, "LTR: the icon on the left.");
+        Assert.IsLessThan(ltrInput.X, (await BoxOfAsync(Page.Locator("#sb-ltr .bit-srb-iwp"))).X, "LTR: the icon on the left.");
         Assert.AreEqual("none", await ComputedStyleAsync("#sb-ltr .bit-srb-sbn i", "transform"));
 
         var input = await BoxOfAsync(Input("sb-rtl"));
         var icon = await BoxOfAsync(Page.Locator("#sb-rtl .bit-srb-iwp"));
         var button = await BoxOfAsync(Page.Locator("#sb-rtl .bit-srb-sbn"));
         var prefix = await BoxOfAsync(Page.Locator("#sb-rtl .bit-srb-pre"));
-        Assert.IsTrue(icon.X >= input.X + input.Width - 1, "RTL: the icon on the right.");
-        Assert.IsTrue(prefix.X >= input.X + input.Width - 1, "RTL: the prefix on the right.");
-        Assert.IsTrue(button.X + button.Width <= input.X + 1, "RTL: the search button on the left.");
+        Assert.IsGreaterThanOrEqualTo(input.X + input.Width - 1, icon.X, "RTL: the icon on the right.");
+        Assert.IsGreaterThanOrEqualTo(input.X + input.Width - 1, prefix.X, "RTL: the prefix on the right.");
+        Assert.IsLessThanOrEqualTo(input.X + 1, button.X + button.Width, "RTL: the search button on the left.");
         Assert.AreNotEqual("none", await ComputedStyleAsync("#sb-rtl .bit-srb-sbn i", "transform"), "The search arrow is mirrored.");
 
         await Input("sb-rtl").PressSequentiallyAsync("app", Typing);
@@ -1581,8 +1581,8 @@ public class BitSearchBoxE2ETests : E2ETestBase
 
         await Expect(Root("sb-rtl-inherited")).Not.ToHaveClassAsync(HasClass("bit-rtl"));
         var input = await BoxOfAsync(Input("sb-rtl-inherited"));
-        Assert.IsTrue((await BoxOfAsync(Page.Locator("#sb-rtl-inherited .bit-srb-iwp"))).X >= input.X + input.Width - 1);
-        Assert.IsTrue((await BoxOfAsync(Page.Locator("#sb-rtl-inherited .bit-srb-sbn"))).X < input.X);
+        Assert.IsGreaterThanOrEqualTo(input.X + input.Width - 1, (await BoxOfAsync(Page.Locator("#sb-rtl-inherited .bit-srb-iwp"))).X);
+        Assert.IsLessThan(input.X, (await BoxOfAsync(Page.Locator("#sb-rtl-inherited .bit-srb-sbn"))).X);
         Assert.AreNotEqual("none", await ComputedStyleAsync("#sb-rtl-inherited .bit-srb-sbn i", "transform"), "The search arrow is mirrored there too.");
     }
 
@@ -1594,15 +1594,15 @@ public class BitSearchBoxE2ETests : E2ETestBase
     {
         await OpenAsync(Url);
 
-        Assert.IsTrue(MaxSeconds(await ComputedStyleAsync("#sb-motion .bit-srb-iwp", "transition-duration")) > 0.01);
+        Assert.IsGreaterThan(0.01, MaxSeconds(await ComputedStyleAsync("#sb-motion .bit-srb-iwp", "transition-duration")));
 
         await Page.EmulateMediaAsync(new() { ReducedMotion = ReducedMotion.Reduce });
         var reduced = await ComputedStyleAsync("#sb-motion .bit-srb-iwp", "transition-duration");
-        Assert.IsTrue(MaxSeconds(reduced) < 0.011, reduced);
+        Assert.IsLessThan(0.011, MaxSeconds(reduced), reduced);
 
         await Expect(Root("sb-motion-force")).ToHaveClassAsync(HasClass("bit-fam"));
         var forced = await ComputedStyleAsync("#sb-motion-force .bit-srb-iwp", "transition-duration");
-        Assert.IsTrue(MaxSeconds(forced) > 0.01, forced);
+        Assert.IsGreaterThan(0.01, MaxSeconds(forced), forced);
     }
 
     private static double MaxSeconds(string durations) =>

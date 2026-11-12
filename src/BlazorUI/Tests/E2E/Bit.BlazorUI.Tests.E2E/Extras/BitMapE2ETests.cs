@@ -55,15 +55,15 @@ public class BitMapE2ETests : E2ETestBase
 
         // The instructions are visually hidden until the canvas has the keyboard focus.
         var help = Page.Locator("#map-basic-help");
-        Assert.IsTrue((await help.BoundingBoxAsync())!.Width <= 1);
+        Assert.IsLessThanOrEqualTo(1, (await help.BoundingBoxAsync())!.Width);
         await canvas.FocusAsync();
         await Expect(canvas).ToBeFocusedAsync();
         await Expect(help).ToBeVisibleAsync();
-        Assert.IsTrue((await help.BoundingBoxAsync())!.Width > 50);
+        Assert.IsGreaterThan(50, (await help.BoundingBoxAsync())!.Width);
 
         // One tab stop: the provider's own surface is out of the tab order.
         var focusables = await Page.Locator("#map-basic [tabindex='0'], #map-basic a[href]:not([tabindex='-1'])").CountAsync();
-        Assert.IsTrue(focusables >= 1);
+        Assert.IsGreaterThanOrEqualTo(1, focusables);
     }
 
     [TestMethod]
@@ -98,9 +98,9 @@ public class BitMapE2ETests : E2ETestBase
         var map = (await Canvas("map-markers").BoundingBoxAsync())!;
         var centerX = map.X + map.Width / 2;
         var centerY = map.Y + map.Height / 2;
-        Assert.IsTrue((await bigBen.BoundingBoxAsync())!.X < centerX - 100);
-        Assert.IsTrue((await Marker("map-markers", "Tower Bridge").BoundingBoxAsync())!.X > centerX + 30);
-        Assert.IsTrue((await Marker("map-markers", "St Paul's Cathedral").BoundingBoxAsync())!.Y < centerY - 40);
+        Assert.IsLessThan(centerX - 100, (await bigBen.BoundingBoxAsync())!.X);
+        Assert.IsGreaterThan(centerX + 30, (await Marker("map-markers", "Tower Bridge").BoundingBoxAsync())!.X);
+        Assert.IsLessThan(centerY - 40, (await Marker("map-markers", "St Paul's Cathedral").BoundingBoxAsync())!.Y);
 
         // IconUrl draws the page's own image at its size; Color recolours the pin.
         var custom = Marker("map-markers", "St Paul's Cathedral");
@@ -204,9 +204,9 @@ public class BitMapE2ETests : E2ETestBase
         var map = (await page.Locator("#map-scrolled").BoundingBoxAsync())!;
         var view = (await scroller.BoundingBoxAsync())!;
         var windowHeight = await page.EvaluateAsync<double>("() => window.innerHeight");
-        Assert.IsTrue(map.Y + map.Height > view.Y + view.Height + 40, "The bottom of the map is out of the box's view.");
-        Assert.IsTrue(map.Y + map.Height > windowHeight + 40, "The bottom of the map is out of the window's view.");
-        Assert.IsTrue(box.Y + box.Height < Math.Min(view.Y + view.Height, windowHeight), "The marker is in view.");
+        Assert.IsGreaterThan(view.Y + view.Height + 40, map.Y + map.Height, "The bottom of the map is out of the box's view.");
+        Assert.IsGreaterThan(windowHeight + 40, map.Y + map.Height, "The bottom of the map is out of the window's view.");
+        Assert.IsLessThan(Math.Min(view.Y + view.Height, windowHeight), box.Y + box.Height, "The marker is in view.");
 
         return (windowTop, box.X + box.Width / 2, box.Y + box.Height / 2);
     }
@@ -256,7 +256,7 @@ public class BitMapE2ETests : E2ETestBase
 
         await Expect(Page.Locator("#drag-end")).ToHaveTextAsync(new Regex(@"^big-ben\|51\.\d{4},-0\.\d{4}$"));
         var lng = double.Parse((await Page.Locator("#drag-end").InnerTextAsync()).Split(',')[1], CultureInfo.InvariantCulture);
-        Assert.IsTrue(lng > -0.1246 + 0.005, $"Dragged east to {lng}.");
+        Assert.IsGreaterThan(-0.1246 + 0.005, lng, $"Dragged east to {lng}.");
     }
 
     [TestMethod]
@@ -677,7 +677,7 @@ public class BitMapE2ETests : E2ETestBase
         await Page.Mouse.DblClickAsync(box.X + 300, box.Y + 200);
         await Expect(Page.Locator("#double-clicked")).ToHaveTextAsync(new Regex(@"^51\.50\d\d,-0\.09\d\d$"));
         await NumberAboveAsync("#zoom", 13);
-        Assert.IsTrue(int.Parse(await Page.Locator("#view-changes").InnerTextAsync()) >= 1);
+        Assert.IsGreaterThanOrEqualTo(1, int.Parse(await Page.Locator("#view-changes").InnerTextAsync()));
     }
 
     [TestMethod]
@@ -757,7 +757,7 @@ public class BitMapE2ETests : E2ETestBase
         var table = list.Locator("table");
         await Expect(table.Locator("caption")).ToHaveTextAsync("London landmarks");
         var headers = await table.Locator("thead th").AllTextContentsAsync();
-        CollectionAssert.AreEqual(new[] { "Name", "Latitude", "Longitude", "Show on map" }, headers.Select(h => h.Trim()).ToArray());
+        Assert.AreSequenceEqual(new[] { "Name", "Latitude", "Longitude", "Show on map" }, headers.Select(h => h.Trim()).ToArray());
         await Expect(table.Locator("tbody tr")).ToHaveCountAsync(3);
         var bigBenRow = table.Locator("tbody tr", new() { HasTextString = "Big Ben" });
         await Expect(bigBenRow.Locator("td").First).ToHaveTextAsync("51.50070");
@@ -776,11 +776,11 @@ public class BitMapE2ETests : E2ETestBase
 
         var srList = Page.Locator("#map-list-sr + .bit-map-marker-list");
         await Expect(srList).ToHaveClassAsync(HasClass("bit-map-help"));
-        Assert.IsTrue((await srList.BoundingBoxAsync())!.Width <= 1);
+        Assert.IsLessThanOrEqualTo(1, (await srList.BoundingBoxAsync())!.Width);
         await Expect(srList.Locator("tbody tr")).ToHaveCountAsync(3);
 
         var items = await Page.Locator("#map-list-template + .bit-map-marker-list .custom-marker-list li").AllTextContentsAsync();
-        Assert.AreEqual(3, items.Count);
+        Assert.HasCount(3, items);
         CollectionAssert.IsSubsetOf(new[] { "Big Ben", "Tower Bridge" }, items.ToList());
     }
 
@@ -882,7 +882,7 @@ public class BitMapE2ETests : E2ETestBase
         var room = zoomBox.Y + zoomBox.Height - canvasBox.Y;
         await Expect(overlay).Not.ToHaveCSSAsync("padding-top", "0px");
         Assert.AreEqual(room, await PaddingTopAsync(overlay), 1);
-        Assert.IsTrue((await Page.Locator("#overlay-badge").BoundingBoxAsync())!.Y >= zoomBox.Y + zoomBox.Height - 1,
+        Assert.IsGreaterThanOrEqualTo(zoomBox.Y + zoomBox.Height - 1, (await Page.Locator("#overlay-badge").BoundingBoxAsync())!.Y,
             "The badge starts under the zoom buttons, which draw over it");
 
         await Page.Locator("#btn-toggle-overlay-zoom-control").ClickAsync();
@@ -952,8 +952,8 @@ public class BitMapE2ETests : E2ETestBase
         // Dimmed without fading the canvas itself, which would make one layer of it and take the controls back under
         // the overlay: the map goes under a cover of its background, and the controls fade on their own.
         Assert.AreEqual("1", await ComputedStyleAsync("#map-disabled-canvas", "opacity"));
-        Assert.IsTrue(double.Parse(await CoverOpacityAsync("#map-disabled-canvas"), CultureInfo.InvariantCulture) > 0);
-        Assert.IsTrue(double.Parse(await ComputedStyleAsync("#map-disabled .leaflet-top", "opacity"), CultureInfo.InvariantCulture) < 1);
+        Assert.IsGreaterThan(0, double.Parse(await CoverOpacityAsync("#map-disabled-canvas"), CultureInfo.InvariantCulture));
+        Assert.IsLessThan(1, double.Parse(await ComputedStyleAsync("#map-disabled .leaflet-top", "opacity"), CultureInfo.InvariantCulture));
         Assert.AreEqual("5", await ComputedStyleAsync("#map-disabled .leaflet-top", "z-index"));
         var listButton = Page.Locator("#map-disabled + .bit-map-marker-list button").First;
         await Expect(listButton).ToBeDisabledAsync();
@@ -1075,9 +1075,9 @@ public class BitMapE2ETests : E2ETestBase
         var response = await Page.APIRequest.GetAsync($"{BaseUrl}{Route}");
         var html = await response.TextAsync();
 
-        StringAssert.Contains(html, "id=\"map-basic-canvas\"");
-        StringAssert.Contains(html, "role=\"region\"");
-        StringAssert.Contains(html, "aria-busy=\"true\"");
+        Assert.Contains("id=\"map-basic-canvas\"", html);
+        Assert.Contains("role=\"region\"", html);
+        Assert.Contains("aria-busy=\"true\"", html);
     }
 
     [TestMethod]
@@ -1377,7 +1377,7 @@ public class BitMapProvidersE2ETests : E2ETestBase
         await Page.Locator("#btn-load-arcgis").ClickAsync();
 
         await Expect(Page.Locator("#ag-state")).ToHaveTextAsync("Unsupported", new() { Timeout = 30000 });
-        Assert.AreEqual(0, sdkRequests.Count, $"The ArcGIS SDK was requested by a browser without WebGL 2: {string.Join(", ", sdkRequests)}");
+        Assert.IsEmpty(sdkRequests, $"The ArcGIS SDK was requested by a browser without WebGL 2: {string.Join(", ", sdkRequests)}");
     }
 
     [TestMethod]

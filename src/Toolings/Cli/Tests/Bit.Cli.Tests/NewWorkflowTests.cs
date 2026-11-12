@@ -19,10 +19,10 @@ public class NewWorkflowTests
 
         Assert.AreEqual(0, exitCode, host.Output);
         Assert.IsTrue(File.Exists(Path.Combine(host.WorkingDirectory, "Contoso", "src", "Server", "Contoso.Server.Api", "AppCertificate.key")));
-        Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments.FirstOrDefault() is "workload" or "restore" or "build" or "dnx"), Calls(host));
-        Assert.IsFalse(host.Runner.Calls.Any(c => c.FileName is "git" or "node" or "docker" or "aspire"), Calls(host));
-        StringAssert.Contains(host.Output, "bit setup");
-        StringAssert.Contains(host.Output, "bit setup adds it");
+        Assert.DoesNotContain(c => c.Arguments.FirstOrDefault() is "workload" or "restore" or "build" or "dnx", host.Runner.Calls, Calls(host));
+        Assert.DoesNotContain(c => c.FileName is "git" or "node" or "docker" or "aspire", host.Runner.Calls, Calls(host));
+        Assert.Contains("bit setup", host.Output);
+        Assert.Contains("bit setup adds it", host.Output);
         Assert.IsTrue(File.Exists(Path.Combine(host.WorkingDirectory, "Contoso", "Contoso.slnx")));
         Assert.IsFalse(File.Exists(Path.Combine(host.WorkingDirectory, "Contoso", "Contoso.sln")));
     }
@@ -48,7 +48,7 @@ public class NewWorkflowTests
         File.WriteAllText(Path.Combine(Directory.CreateDirectory(Path.Combine(project, "src", "Server", "Contoso.Server.Api", "Infrastructure", "Data", "Migrations")).FullName, "Initial.cs"), "");
 
         Assert.AreEqual(0, await host.RunAsync("setup", project, "--yes", "--no-run"), host.Output);
-        Assert.AreEqual(1, host.Runner.Calls.Count(c => c.Arguments.Contains("Initial")), Calls(host));
+        Assert.ContainsSingle(c => c.Arguments.Contains("Initial"), host.Runner.Calls, Calls(host));
     }
 
     [TestMethod]
@@ -69,11 +69,11 @@ public class NewWorkflowTests
         var dotnetCalls = host.Runner.Calls.Where(c => c.FileName is "dotnet").Select(c => string.Join(' ', c.Arguments)).ToList();
         var positions = order.Select(step => dotnetCalls.FindIndex(call => call.Contains(step, StringComparison.Ordinal))).ToArray();
 
-        CollectionAssert.DoesNotContain(positions, -1, string.Join(Environment.NewLine, dotnetCalls));
-        CollectionAssert.AreEqual(positions.Order().ToArray(), positions, string.Join(Environment.NewLine, dotnetCalls));
-        StringAssert.Contains(host.Output, "NU1301");
-        StringAssert.Contains(host.Output, "dotnet restore Contoso.Web.slnf");
-        StringAssert.Contains(host.Output, "Contoso is ready");
+        Assert.DoesNotContain(-1, positions, string.Join(Environment.NewLine, dotnetCalls));
+        Assert.AreSequenceEqual(positions.Order().ToArray(), positions, string.Join(Environment.NewLine, dotnetCalls));
+        Assert.Contains("NU1301", host.Output);
+        Assert.Contains("dotnet restore Contoso.Web.slnf", host.Output);
+        Assert.Contains("Contoso is ready", host.Output);
     }
 
     [TestMethod]
@@ -100,10 +100,10 @@ public class NewWorkflowTests
             "build src/Client/Contoso.Client.Maui/Contoso.Client.Maui.csproj",
             "build src/Client/Contoso.Client.Windows/Contoso.Client.Windows.csproj"
         ]);
-        Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments.FirstOrDefault() is "run" || c.FileName is "aspire"), Calls(host));
-        Assert.IsFalse(host.Runner.Calls.Any(c => string.Join(' ', c.Arguments) is "build Contoso.slnx"), "The whole solution isn't built again: " + Calls(host));
+        Assert.DoesNotContain(c => c.Arguments.FirstOrDefault() is "run" || c.FileName is "aspire", host.Runner.Calls, Calls(host));
+        Assert.DoesNotContain(c => string.Join(' ', c.Arguments) is "build Contoso.slnx", host.Runner.Calls, "The whole solution isn't built again: " + Calls(host));
         Assert.IsEmpty(host.Runner.Detached);
-        StringAssert.Contains(host.FlatOutput, "build the Workbench, build the landing page, WebAssembly build support, restore and build the web app, Chromium for UI tests, initial migration, dotnet format, Android build support, restore and build the native apps");
+        Assert.Contains("build the Workbench, build the landing page, WebAssembly build support, restore and build the web app, Chromium for UI tests, initial migration, dotnet format, Android build support, restore and build the native apps", host.FlatOutput);
     }
 
     [TestMethod]
@@ -131,9 +131,9 @@ public class NewWorkflowTests
             "build src/Client/Contoso.Client.Maui/Contoso.Client.Maui.csproj",
             "build src/Client/Contoso.Client.Windows/Contoso.Client.Windows.csproj"
         ]);
-        Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments.FirstOrDefault() is "run"), "Without a terminal the Workbench and the landing page are only built: " + Calls(host));
-        StringAssert.Contains(host.FlatOutput, "Started and stopped the project with Aspire");
-        StringAssert.Contains(host.FlatOutput, "Contoso is ready");
+        Assert.DoesNotContain(c => c.Arguments.FirstOrDefault() is "run", host.Runner.Calls, "Without a terminal the Workbench and the landing page are only built: " + Calls(host));
+        Assert.Contains("Started and stopped the project with Aspire", host.FlatOutput);
+        Assert.Contains("Contoso is ready", host.FlatOutput);
     }
 
     [TestMethod]
@@ -144,7 +144,7 @@ public class NewWorkflowTests
 
         Assert.AreEqual(0, await host.RunAsync("new", "Contoso", "--template-package", FakeTemplatePackage(host), "--platforms", "android", "--dry-run", "--yes"), host.Output);
 
-        StringAssert.Contains(host.FlatOutput, ".NET SDK check, container runtime for Aspire, build and open the Workbench, build and open the landing page, WebAssembly build support, restore and build the web app, Chromium for UI tests, initial migration, trust for VS Code and AI tools, VS Code extensions, start it with Aspire and open the dashboard and the app, dotnet format, Android build support, restore and build the native apps, open in VS Code");
+        Assert.Contains(".NET SDK check, container runtime for Aspire, build and open the Workbench, build and open the landing page, WebAssembly build support, restore and build the web app, Chromium for UI tests, initial migration, trust for VS Code and AI tools, VS Code extensions, start it with Aspire and open the dashboard and the app, dotnet format, Android build support, restore and build the native apps, open in VS Code", host.FlatOutput);
     }
 
     [TestMethod]
@@ -156,8 +156,8 @@ public class NewWorkflowTests
         var exitCode = await host.RunAsync("new", "Contoso", "--template-package", FakeTemplatePackage(host), "--yes", "--no-setup", "--no-git", "--no-trust");
 
         Assert.AreEqual(CliApp.ExitFailed, exitCode, host.Output);
-        StringAssert.Contains(host.Output, "Contoso wasn't created");
-        Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments.FirstOrDefault() is "format" or "dnx"), Calls(host));
+        Assert.Contains("Contoso wasn't created", host.Output);
+        Assert.DoesNotContain(c => c.Arguments.FirstOrDefault() is "format" or "dnx", host.Runner.Calls, Calls(host));
     }
 
     [TestMethod]
@@ -180,8 +180,12 @@ public class NewWorkflowTests
         var changed = await source.EnsureInstalledAsync(null, package, null, CancellationToken.None);
 
         Assert.IsNotNull(first.Package);
-        Assert.AreEqual(first.Package.HiveDirectory, again.Package?.HiveDirectory);
-        Assert.AreNotEqual(first.Package.HiveDirectory, changed.Package?.HiveDirectory);
+        var expectedValue = first.Package.HiveDirectory;
+        var actualValue = again.Package?.HiveDirectory;
+        Assert.AreEqual(expectedValue, actualValue);
+        var expectedValue1 = first.Package.HiveDirectory;
+        var actualValue2 = changed.Package?.HiveDirectory;
+        Assert.AreNotEqual(expectedValue1, actualValue2);
         Assert.AreEqual(2, host.Runner.Calls.Count(c => c.Arguments.Take(2).SequenceEqual(["new", "install"])), Calls(host));
     }
 
@@ -205,8 +209,10 @@ public class NewWorkflowTests
         var (again, _) = await source.EnsureInstalledAsync("10.7.0", null, null, CancellationToken.None);
 
         Assert.IsNotNull(TemplateSource.ReadManifest(package!.PackagePath), "A half-written package was taken as installed.");
-        Assert.AreEqual(package.PackagePath, again?.PackagePath);
-        Assert.AreEqual(1, host.Runner.Calls.Count(c => c.Arguments.Take(2).SequenceEqual(["new", "install"])), Calls(host));
+        var expectedValue = package.PackagePath;
+        var actualValue = again?.PackagePath;
+        Assert.AreEqual(expectedValue, actualValue);
+        Assert.ContainsSingle(c => c.Arguments.Take(2).SequenceEqual(["new", "install"]), host.Runner.Calls, Calls(host));
     }
 
     [TestMethod]
@@ -220,7 +226,7 @@ public class NewWorkflowTests
         var (package, result) = await new TemplateSource(host.Environment, host.Runner).EnsureInstalledAsync(version, null, null, CancellationToken.None);
 
         Assert.IsNull(package);
-        StringAssert.Contains(result.Output, "isn't a bit Boilerplate version");
+        Assert.Contains("isn't a bit Boilerplate version", result.Output);
         Assert.IsTrue(File.Exists(Path.Combine(outside, "keep.txt")));
         Assert.IsEmpty(host.Runner.Calls);
     }
@@ -235,8 +241,10 @@ public class NewWorkflowTests
         File.WriteAllText(Path.Combine(hive, "packages.json"), $$"""{"Packages":[{"MountPointUri":{{System.Text.Json.JsonSerializer.Serialize(installed)}}}]}""");
 
         var (package, _) = await new TemplateSource(host.Environment, host.Runner).EnsureInstalledAsync("10.7.0", null, null, CancellationToken.None);
+        var expectedValue = installed;
+        var actualValue = package?.PackagePath;
 
-        Assert.AreEqual(installed, package?.PackagePath);
+        Assert.AreEqual(expectedValue, actualValue);
         Assert.IsEmpty(host.Runner.Calls, Calls(host));
     }
 
@@ -259,7 +267,7 @@ public class NewWorkflowTests
             Task.Run(() => new TemplateSource(host.Environment, host.Runner).EnsureInstalledAsync("10.7.0", null, null, CancellationToken.None)));
 
         Assert.IsTrue(results.All(r => r.Package is not null), Calls(host));
-        Assert.AreEqual(1, host.Runner.Calls.Count(c => c.Arguments.Take(2).SequenceEqual(["new", "install"])), Calls(host));
+        Assert.ContainsSingle(c => c.Arguments.Take(2).SequenceEqual(["new", "install"]), host.Runner.Calls, Calls(host));
     }
 
     [TestMethod]
@@ -279,13 +287,17 @@ public class NewWorkflowTests
         var source = new TemplateSource(host.Environment, host.Runner);
         var first = await source.EnsureInstalledAsync(null, folder, null, CancellationToken.None);
         var again = await source.EnsureInstalledAsync(null, folder, null, CancellationToken.None);
+        var expectedValue = TemplateSource.FolderVersion;
+        var actualValue = first.Package?.Version;
 
-        Assert.AreEqual(TemplateSource.FolderVersion, first.Package?.Version);
-        Assert.AreEqual(first.Package!.HiveDirectory, again.Package?.HiveDirectory);
+        Assert.AreEqual(expectedValue, actualValue);
+        var expectedValue1 = first.Package!.HiveDirectory;
+        var actualValue2 = again.Package?.HiveDirectory;
+        Assert.AreEqual(expectedValue1, actualValue2);
         var install = host.Runner.Calls.Single(c => c.Arguments.Take(2).SequenceEqual(["new", "install"]));
         Assert.AreEqual(folder, install.Arguments[2]);
         Assert.IsNotNull(TemplateSource.ReadManifest(folder));
-        StringAssert.Contains(TemplateSource.ReadEntry(folder, "Bit.Boilerplate/global.json"), "10.0.300");
+        Assert.Contains("10.0.300", TemplateSource.ReadEntry(folder, "Bit.Boilerplate/global.json")!);
     }
 
     private static string FakeTemplatePackage(TestHost host)

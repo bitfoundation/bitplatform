@@ -36,9 +36,9 @@ public class BitLoadingE2ETests : E2ETestBase
 
         foreach (var (name, code) in Loaders)
         {
-            StringAssert.Contains(html, $"<span id=\"ldn-{name}-default\" class=\"bit-ldn bit-ldn-ltp bit-ldn-{code}\" role=\"status\" aria-live=\"polite\">");
+            Assert.Contains($"<span id=\"ldn-{name}-default\" class=\"bit-ldn bit-ldn-ltp bit-ldn-{code}\" role=\"status\" aria-live=\"polite\">", html);
         }
-        StringAssert.Contains(html, "<span id=\"status\">Loading</span>");
+        Assert.Contains("<span id=\"status\">Loading</span>", html);
 
         await OpenAsync(Path);
         await Expect(Page.Locator("#ldn-Ring-default")).ToHaveAttributeAsync("role", "status");
@@ -53,7 +53,7 @@ public class BitLoadingE2ETests : E2ETestBase
         var root = $"#ldn-{name}-default";
         var names = await Page.Locator(root).EvaluateAsync<string[]>("el => el.getAnimations({ subtree: true }).map(a => a.animationName)");
 
-        Assert.IsTrue(names.Length > 0, $"{name} runs an animation.");
+        Assert.IsNotEmpty(names, $"{name} runs an animation.");
         Assert.IsTrue(names.All(n => n.StartsWith($"bit-ldn-{code}-anm")), $"{name} runs its own keyframes: {string.Join(", ", names)}.");
         Assert.IsTrue(await Page.Locator(root).EvaluateAsync<bool>("el => el.getAnimations({ subtree: true }).every(a => a.playState === 'running')"));
 
@@ -155,7 +155,7 @@ public class BitLoadingE2ETests : E2ETestBase
         var fast = await DurationsAsync($"#ldn-{name}-speed");
 
         await Expect(Page.Locator($"#ldn-{name}-speed")).ToHaveAttributeAsync("style", new Regex("--bit-ldn-spd:2"));
-        CollectionAssert.AreEqual(normal.Select(d => Math.Round(d / 2)).ToArray(), fast.Select(d => Math.Round(d)).ToArray(), $"{name} runs twice as fast.");
+        Assert.AreSequenceEqual(normal.Select(d => Math.Round(d / 2)).ToArray(), fast.Select(d => Math.Round(d)).ToArray(), $"{name} runs twice as fast.");
 
         var paused = Page.Locator($"#ldn-{name}-paused");
         await Expect(paused).ToHaveClassAsync(HasClass("bit-ldn-pau"));
@@ -199,10 +199,10 @@ public class BitLoadingE2ETests : E2ETestBase
         {
             var slow = normal[name].Select(d => Math.Round(d * 3)).ToArray();
             await Page.WaitForFunctionAsync("sel => document.querySelector(sel).getAnimations({ subtree: true }).length > 0", $"#ldn-{name}-default");
-            CollectionAssert.AreEqual(slow, (await DurationsAsync($"#ldn-{name}-default")).Select(d => Math.Round(d)).ToArray(), $"{name} is three times slower.");
+            Assert.AreSequenceEqual(slow, (await DurationsAsync($"#ldn-{name}-default")).Select(d => Math.Round(d)).ToArray(), $"{name} is three times slower.");
 
             await Expect(Page.Locator($"#ldn-{name}-force")).ToHaveClassAsync(HasClass("bit-fam"));
-            CollectionAssert.AreEqual(normal[name].Select(d => Math.Round(d)).ToArray(), (await DurationsAsync($"#ldn-{name}-force")).Select(d => Math.Round(d)).ToArray(), $"{name} keeps its pace with ForceAnimation.");
+            Assert.AreSequenceEqual(normal[name].Select(d => Math.Round(d)).ToArray(), (await DurationsAsync($"#ldn-{name}-force")).Select(d => Math.Round(d)).ToArray(), $"{name} keeps its pace with ForceAnimation.");
         }
     }
 
@@ -252,7 +252,7 @@ public class BitLoadingE2ETests : E2ETestBase
         Assert.AreEqual(0, await root.EvaluateAsync<int>("el => el.children.length"), "Nothing inside yet.");
 
         await Expect(root.Locator(".bit-ldn-lbl")).ToHaveTextAsync("Delayed");
-        Assert.IsTrue(watch.ElapsedMilliseconds >= 1500, $"Shown after {watch.ElapsedMilliseconds}ms of its 2000.");
+        Assert.IsGreaterThanOrEqualTo(1500, watch.ElapsedMilliseconds, $"Shown after {watch.ElapsedMilliseconds}ms of its 2000.");
         await Expect(root.Locator(".bit-ldn-ccn")).ToHaveCountAsync(1);
 
         // A delay set back to zero shows the loader at once.
@@ -332,7 +332,7 @@ public class BitLoadingE2ETests : E2ETestBase
             Assert.IsTrue(await PaintsAsync(id, warning), $"{id} takes the cascaded color.");
         }
 
-        CollectionAssert.AreEqual(new[] { 800.0 }, (await DurationsAsync("#ldn-params-ring")).Select(d => Math.Round(d)).Distinct().ToArray());
+        Assert.AreSequenceEqual(new[] { 800.0 }, (await DurationsAsync("#ldn-params-ring")).Select(d => Math.Round(d)).Distinct().ToArray());
         await Expect(Page.Locator("#ldn-params-ring")).ToHaveClassAsync(HasClass("bit-ldn-led"));
         await Expect(Page.Locator("#ldn-params-spinner")).ToHaveClassAsync(HasClass("bit-ldn-lbm"));
     }
@@ -383,7 +383,7 @@ public class BitLoadingE2ETests : E2ETestBase
         Assert.IsTrue(await PaintsAsync("#ldn-css", "rgb(40, 50, 60)"), "--bit-Loading-track-color");
         Assert.AreEqual(50, await css.Locator(".bit-ldn-ccn").EvaluateAsync<double>("el => el.offsetWidth"), 0.5);
         Assert.AreEqual("5px", await css.EvaluateAsync<string>("el => getComputedStyle(el).getPropertyValue('--bit-ldn-thickness').trim()"));
-        CollectionAssert.AreEqual(new[] { 2400.0 }, (await DurationsAsync("#ldn-css")).Select(d => Math.Round(d)).Distinct().ToArray(), "--bit-Loading-speed 0.5 halves the pace.");
+        Assert.AreSequenceEqual(new[] { 2400.0 }, (await DurationsAsync("#ldn-css")).Select(d => Math.Round(d)).Distinct().ToArray(), "--bit-Loading-speed 0.5 halves the pace.");
         await Expect(css).ToHaveCSSAsync("row-gap", "13px");
         await Expect(css.Locator(".bit-ldn-lbl")).ToHaveCSSAsync("color", "rgb(70, 80, 90)");
         await Expect(css.Locator(".bit-ldn-lbl")).ToHaveCSSAsync("font-size", "17px");
@@ -394,7 +394,7 @@ public class BitLoadingE2ETests : E2ETestBase
         Assert.IsFalse(await PaintsAsync("#ldn-css-params", "rgb(10, 20, 30)"));
         Assert.AreEqual(40, await parameters.Locator(".bit-ldn-ccn").EvaluateAsync<double>("el => el.offsetWidth"), 0.5);
         Assert.AreEqual("2px", await parameters.EvaluateAsync<string>("el => getComputedStyle(el).getPropertyValue('--bit-ldn-thickness').trim()"));
-        CollectionAssert.AreEqual(new[] { 600.0 }, (await DurationsAsync("#ldn-css-params")).Select(d => Math.Round(d)).Distinct().ToArray());
+        Assert.AreSequenceEqual(new[] { 600.0 }, (await DurationsAsync("#ldn-css-params")).Select(d => Math.Round(d)).Distinct().ToArray());
         await Expect(parameters.Locator(".bit-ldn-lbl")).ToHaveCSSAsync("font-size", await ResolveAsync("font-size", "var(--bit-tpg-fs-xs)"));
 
         Assert.AreEqual(30, await Page.Locator("#ldn-css-custom .bit-ldn-ccn").EvaluateAsync<double>("el => el.offsetWidth"), 0.5);

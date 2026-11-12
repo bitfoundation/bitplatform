@@ -198,10 +198,10 @@ public class BitAiVoiceInputRecordingTests : BitAiTestBase
         var audio = new FakeStreamReference([1, 2, 3, 4]);
         await voice.InvokeAsync(() => voice.Instance._OnRecordingCompleted(audio, "audio/webm;codecs=opus", 4));
 
-        CollectionAssert.AreEqual(new byte[] { 1, 2, 3, 4 }, recorded.Bytes);
+        Assert.AreSequenceEqual(new byte[] { 1, 2, 3, 4 }, recorded.Bytes);
         Assert.AreEqual("audio/webm", recorded.ContentType);
-        CollectionAssert.AreEqual(new[] { "hello there" }, transcripts);
-        CollectionAssert.AreEqual(new[] { true, false }, listening);
+        Assert.AreSequenceEqual(new[] { "hello there" }, transcripts);
+        Assert.AreSequenceEqual(new[] { true, false }, listening);
         Assert.IsFalse(voice.Instance.IsTranscribing);
         Assert.IsTrue(audio.Disposed);
         Assert.AreEqual("Dictation stopped", voice.Find("[role=status]").TextContent.Trim());
@@ -223,7 +223,7 @@ public class BitAiVoiceInputRecordingTests : BitAiTestBase
         // The maximum length, a silence or another capture of the microphone ended it, with no press.
         await voice.InvokeAsync(() => voice.Instance._OnRecordingCompleted(new FakeStreamReference([7]), "audio/mp4", 1));
 
-        CollectionAssert.AreEqual(new[] { "said" }, transcripts);
+        Assert.AreSequenceEqual(new[] { "said" }, transcripts);
         Assert.IsFalse(voice.Instance.IsListening);
         Assert.AreEqual("Dictate", voice.Find("button").GetAttribute("aria-label"));
     }
@@ -339,7 +339,7 @@ public class BitAiVoiceInputRecordingTests : BitAiTestBase
 
         Assert.AreEqual("de-DE", service.Language);
         Assert.AreEqual("audio/ogg", service.ContentType);
-        CollectionAssert.AreEqual(new[] { "from the service" }, transcripts);
+        Assert.AreSequenceEqual(new[] { "from the service" }, transcripts);
     }
 
     [TestMethod]

@@ -256,7 +256,7 @@ public class DebouncedAsyncValidationTests : ComponentTestBase
 
         await input.BlurAsync(new());
 
-        Assert.IsTrue(checks > 0);
+        Assert.IsGreaterThan(0, checks);
     }
 
     private static async Task WaitFor(Func<bool> condition)

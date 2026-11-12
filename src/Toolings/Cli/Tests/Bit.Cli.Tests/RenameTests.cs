@@ -31,29 +31,29 @@ public class RenameTests
         Assert.IsFalse(File.Exists(Path.Combine(folder, "Old.slnx")));
         Assert.IsFalse(Directory.Exists(Path.Combine(folder, "src", "Server", "Old.Server.Api")));
         Assert.AreEqual("<Solution>\n  <Project Path=\"src/Server/Contoso.Shop.Server.Api/Contoso.Shop.Server.Api.csproj\" />\n</Solution>\n", File.ReadAllText(Path.Combine(folder, "Contoso.Shop.slnx")));
-        StringAssert.Contains(File.ReadAllText(Path.Combine(folder, "Contoso.Shop.Web.slnf")), "\"path\": \"Contoso.Shop.slnx\"");
-        StringAssert.Contains(File.ReadAllText(Path.Combine(api, "Contoso.Shop.Server.Api.csproj")), "<RootNamespace>Contoso.Shop.Server.Api</RootNamespace>");
+        Assert.Contains("\"path\": \"Contoso.Shop.slnx\"", File.ReadAllText(Path.Combine(folder, "Contoso.Shop.Web.slnf")));
+        Assert.Contains("<RootNamespace>Contoso.Shop.Server.Api</RootNamespace>", File.ReadAllText(Path.Combine(api, "Contoso.Shop.Server.Api.csproj")));
 
         var code = File.ReadAllBytes(Path.Combine(api, "Data", "AppDbContext.cs"));
-        CollectionAssert.AreEqual(new byte[] { 0xEF, 0xBB, 0xBF }, code[..3]);
+        Assert.AreSequenceEqual(new byte[] { 0xEF, 0xBB, 0xBF }, code[..3]);
         Assert.AreEqual("namespace Contoso.Shop.Server.Api.Data;\n\npublic class AppDbContext\n{\n    public const string Database = \"Contoso.ShopDb\";\n    public const string Words = \"Bold Golden MyOldValue Unfold\";\n}\n", Encoding.UTF8.GetString(code[3..]));
 
         Assert.AreEqual("@echo off\r\ndotnet run --project src\\Server\\Contoso.Shop.Server.Api\r\necho contoso.shop-e2e\r\n", File.ReadAllText(Path.Combine(folder, "run.cmd")));
-        StringAssert.Contains(File.ReadAllText(Path.Combine(folder, "src", "Client", "Contoso.Shop.Client.Maui", "Contoso.Shop.Client.Maui.csproj")), "<ApplicationId>com.companyname.contoso.shop</ApplicationId>");
+        Assert.Contains("<ApplicationId>com.companyname.contoso.shop</ApplicationId>", File.ReadAllText(Path.Combine(folder, "src", "Client", "Contoso.Shop.Client.Maui", "Contoso.Shop.Client.Maui.csproj")));
 
         Assert.IsFalse(Directory.Exists(Path.Combine(api, "bin")));
         Assert.IsFalse(Directory.Exists(Path.Combine(api, "obj")));
         Assert.IsFalse(Directory.Exists(Path.Combine(folder, ".vs")));
 
         Assert.AreEqual("module.exports = 'Old.Server.Api';", File.ReadAllText(Path.Combine(core, "node_modules", "old-package", "bin", "Old.js")));
-        CollectionAssert.AreEqual(png, File.ReadAllBytes(Path.Combine(api, "wwwroot", "Contoso.Shop.png")));
-        CollectionAssert.AreEqual(blob, File.ReadAllBytes(Path.Combine(api, "Contoso.Shop.dat")));
+        Assert.AreSequenceEqual(png, File.ReadAllBytes(Path.Combine(api, "wwwroot", "Contoso.Shop.png")));
+        Assert.AreSequenceEqual(blob, File.ReadAllBytes(Path.Combine(api, "Contoso.Shop.dat")));
 
-        Assert.IsFalse(host.Runner.Calls.Any(c => c.FileName is "dotnet" && c.Arguments.FirstOrDefault() is "build-server"));
-        StringAssert.Contains(host.FlatOutput, "Old is now Contoso.Shop");
-        StringAssert.Contains(host.FlatOutput, "git diff");
-        StringAssert.Contains(host.FlatOutput, "bit setup");
-        StringAssert.Contains(host.FlatOutput, "The project folder is still named Old");
+        Assert.DoesNotContain(c => c.FileName is "dotnet" && c.Arguments.FirstOrDefault() is "build-server", host.Runner.Calls);
+        Assert.Contains("Old is now Contoso.Shop", host.FlatOutput);
+        Assert.Contains("git diff", host.FlatOutput);
+        Assert.Contains("bit setup", host.FlatOutput);
+        Assert.Contains("The project folder is still named Old", host.FlatOutput);
     }
 
     [TestMethod]
@@ -73,9 +73,9 @@ public class RenameTests
             Assert.AreEqual(CliApp.ExitFailed, await host.RunAsync("rename", "Contoso.Shop", folder), host.Output);
         }
 
-        StringAssert.Contains(host.FlatOutput, "Didn't rename files and folders");
+        Assert.Contains("Didn't rename files and folders", host.FlatOutput);
         Assert.IsTrue(File.Exists(Path.Combine(folder, "Old.slnx")));
-        StringAssert.Contains(File.ReadAllText(csproj), "<RootNamespace>Old.Server.Api</RootNamespace>");
+        Assert.Contains("<RootNamespace>Old.Server.Api</RootNamespace>", File.ReadAllText(csproj));
         Assert.IsEmpty(Directory.GetFiles(folder, "*.tmp", SearchOption.AllDirectories));
     }
 
@@ -111,10 +111,10 @@ public class RenameTests
 
         Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("rename", "Contoso.Shop", folder, "--yes"));
 
-        StringAssert.Contains(host.FlatOutput, "Commit or stash them first");
+        Assert.Contains("Commit or stash them first", host.FlatOutput);
         Assert.IsTrue(File.Exists(Path.Combine(folder, "Old.slnx")));
         Assert.IsTrue(Directory.Exists(Path.Combine(folder, "src", "Server", "Old.Server.Api", "bin")));
-        Assert.IsFalse(host.Runner.Calls.Any(c => c.FileName is "dotnet"));
+        Assert.DoesNotContain(c => c.FileName is "dotnet", host.Runner.Calls);
     }
 
     [TestMethod]
@@ -125,7 +125,7 @@ public class RenameTests
         host.Runner.On("git", "rev-parse", 128, "fatal: not a git repository");
 
         Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("rename", "Contoso.Shop", folder));
-        StringAssert.Contains(host.FlatOutput, "Pass --yes");
+        Assert.Contains("Pass --yes", host.FlatOutput);
         Assert.IsTrue(File.Exists(Path.Combine(folder, "Old.slnx")));
 
         var prompter = new ScriptedPrompter().On("isn't in a git repository", false);
@@ -149,7 +149,7 @@ public class RenameTests
         var folder = CreateProject(host);
 
         Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("rename", "contoso-shop", folder));
-        StringAssert.Contains(host.Output, "bit rename ContosoShop");
+        Assert.Contains("bit rename ContosoShop", host.Output);
         Assert.IsTrue(File.Exists(Path.Combine(folder, "Old.slnx")));
         Assert.IsEmpty(host.Runner.Calls);
     }
@@ -162,8 +162,8 @@ public class RenameTests
         Write(Path.Combine(folder, "src", "Client", "Old.Client.Core", "Components", "Shop.razor"), "<h1>Shop</h1>\n");
 
         Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("rename", "Contoso.Shop", folder, "--yes"));
-        StringAssert.Contains(host.FlatOutput, "'Shop' is also the name of a type");
-        StringAssert.Contains(host.FlatOutput, "bit rename Contoso.MyShop");
+        Assert.Contains("'Shop' is also the name of a type", host.FlatOutput);
+        Assert.Contains("bit rename Contoso.MyShop", host.FlatOutput);
         Assert.IsTrue(File.Exists(Path.Combine(folder, "Old.slnx")));
         Assert.IsEmpty(host.Runner.Calls);
     }
@@ -175,8 +175,8 @@ public class RenameTests
         var folder = CreateProject(host);
 
         Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("rename", "Server.Shop", folder, "--yes"));
-        StringAssert.Contains(host.FlatOutput, "'Server' is also the name of a namespace inside the project");
-        StringAssert.Contains(host.FlatOutput, "bit rename MyServer.Shop");
+        Assert.Contains("'Server' is also the name of a namespace inside the project", host.FlatOutput);
+        Assert.Contains("bit rename MyServer.Shop", host.FlatOutput);
         Assert.IsTrue(File.Exists(Path.Combine(folder, "Old.slnx")));
         Assert.IsEmpty(host.Runner.Calls);
     }
@@ -189,7 +189,7 @@ public class RenameTests
         Write(Path.Combine(folder, "src", "Server", "Old.Server.Api", "Components", "Old.razor.cs"), "namespace Old.Server.Api.Components;\n\npublic partial class Old;\n");
 
         Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("rename", "Contoso.Shop", folder, "--yes"));
-        StringAssert.Contains(host.FlatOutput, "can't tell which Old to change");
+        Assert.Contains("can't tell which Old to change", host.FlatOutput);
         Assert.IsTrue(File.Exists(Path.Combine(folder, "Old.slnx")));
         Assert.IsEmpty(host.Runner.Calls);
     }
@@ -201,7 +201,7 @@ public class RenameTests
         var folder = CreateProject(host);
 
         Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("rename", "Магазин", folder, "--yes"));
-        StringAssert.Contains(host.FlatOutput, "com.companyname.магазин");
+        Assert.Contains("com.companyname.магазин", host.FlatOutput);
         Assert.IsTrue(File.Exists(Path.Combine(folder, "Old.slnx")));
         Assert.IsEmpty(host.Runner.Calls);
     }
@@ -213,7 +213,7 @@ public class RenameTests
         var folder = CreateProject(host);
 
         Assert.AreEqual(0, await host.RunAsync("rename", "Old", folder));
-        StringAssert.Contains(host.Output, "already named");
+        Assert.Contains("already named", host.Output);
         Assert.IsEmpty(host.Runner.Calls);
     }
 
@@ -223,7 +223,7 @@ public class RenameTests
         using var host = new TestHost();
 
         Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("rename", "Contoso.Shop"));
-        StringAssert.Contains(host.Output, "isn't a bit Boilerplate project folder");
+        Assert.Contains("isn't a bit Boilerplate project folder", host.Output);
     }
 
     [TestMethod]

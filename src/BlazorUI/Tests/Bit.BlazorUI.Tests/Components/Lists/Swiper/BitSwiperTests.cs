@@ -29,7 +29,7 @@ public class BitSwiperTests : BunitTestContext
     {
         var component = RenderComponent<BitSwiperTest>();
 
-        Assert.AreEqual(3, component.FindAll(".bit-swpi").Count);
+        Assert.HasCount(3, component.FindAll(".bit-swpi"));
 
         Assert.IsNotNull(component.Find(".bit-swp-vwp"));
         Assert.IsNotNull(component.Find(".bit-swp-cnt"));
@@ -47,8 +47,8 @@ public class BitSwiperTests : BunitTestContext
             parameters.Add(p => p.HideNextPrev, true);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-swp-lbt").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-swp-rbt").Count);
+        Assert.IsEmpty(component.FindAll(".bit-swp-lbt"));
+        Assert.IsEmpty(component.FindAll(".bit-swp-rbt"));
     }
 
     [TestMethod]
@@ -181,7 +181,7 @@ public class BitSwiperTests : BunitTestContext
 
         var containerStyle = component.Find(".bit-swp-cnt").GetAttribute("style") ?? string.Empty;
 
-        Assert.IsTrue(containerStyle.Contains("direction:rtl"));
+        Assert.Contains("direction:rtl", containerStyle);
     }
 
     #endregion
@@ -484,7 +484,7 @@ public class BitSwiperTests : BunitTestContext
             parameters.Add(p => p.Gap, "1rem");
         });
 
-        Assert.IsTrue((component.Find(".bit-swp").GetAttribute("style") ?? string.Empty).Contains("--bit-swp-gap:1rem"));
+        Assert.Contains("--bit-swp-gap:1rem", (component.Find(".bit-swp").GetAttribute("style") ?? string.Empty));
     }
 
     [TestMethod]
@@ -492,7 +492,7 @@ public class BitSwiperTests : BunitTestContext
     {
         var component = RenderComponent<BitSwiperTest>();
 
-        Assert.IsFalse((component.Find(".bit-swp").GetAttribute("style") ?? string.Empty).Contains("--bit-swp-isz"));
+        Assert.DoesNotContain("--bit-swp-isz", (component.Find(".bit-swp").GetAttribute("style") ?? string.Empty));
     }
 
     [TestMethod]
@@ -506,7 +506,7 @@ public class BitSwiperTests : BunitTestContext
 
         var style = component.Find(".bit-swp").GetAttribute("style") ?? string.Empty;
 
-        Assert.IsTrue(style.Contains("--bit-swp-isz:calc((100% - 3 * var(--bit-swp-gap, 0px)) / 4)"));
+        Assert.Contains("--bit-swp-isz:calc((100% - 3 * var(--bit-swp-gap, 0px)) / 4)", style);
     }
 
     [TestMethod]
@@ -517,7 +517,7 @@ public class BitSwiperTests : BunitTestContext
             parameters.Add(p => p.VisibleItemsCount, 1);
         });
 
-        Assert.IsTrue((component.Find(".bit-swp").GetAttribute("style") ?? string.Empty).Contains("--bit-swp-isz:100%"));
+        Assert.Contains("--bit-swp-isz:100%", (component.Find(".bit-swp").GetAttribute("style") ?? string.Empty));
     }
 
     [TestMethod]
@@ -532,15 +532,15 @@ public class BitSwiperTests : BunitTestContext
 
         // below the small breakpoint the base value applies
         await PushState(component, viewport: 500);
-        Assert.IsTrue((component.Find(".bit-swp").GetAttribute("style") ?? string.Empty).Contains("--bit-swp-isz:100%"));
+        Assert.Contains("--bit-swp-isz:100%", (component.Find(".bit-swp").GetAttribute("style") ?? string.Empty));
 
         // between the small and the medium breakpoint the small variant applies
         await PushState(component, viewport: 700);
-        Assert.IsTrue((component.Find(".bit-swp").GetAttribute("style") ?? string.Empty).Contains("/ 2)"));
+        Assert.Contains("/ 2)", (component.Find(".bit-swp").GetAttribute("style") ?? string.Empty));
 
         // past the medium breakpoint the largest variant that was set wins
         await PushState(component, viewport: 1000);
-        Assert.IsTrue((component.Find(".bit-swp").GetAttribute("style") ?? string.Empty).Contains("/ 3)"));
+        Assert.Contains("/ 3)", (component.Find(".bit-swp").GetAttribute("style") ?? string.Empty));
     }
 
     [TestMethod]
@@ -569,18 +569,18 @@ public class BitSwiperTests : BunitTestContext
         var root = component.Find(".bit-swp");
 
         Assert.IsTrue(root.ClassList.Contains("custom-root"));
-        Assert.IsTrue((root.GetAttribute("style") ?? string.Empty).Contains("z-index:5"));
+        Assert.Contains("z-index:5", (root.GetAttribute("style") ?? string.Empty));
 
         var container = component.Find(".bit-swp-cnt");
 
         Assert.IsTrue(container.ClassList.Contains("custom-container"));
-        Assert.IsTrue((container.GetAttribute("style") ?? string.Empty).Contains("padding:1px"));
+        Assert.Contains("padding:1px", (container.GetAttribute("style") ?? string.Empty));
 
         var next = component.Find(".bit-swp-rbt");
 
         Assert.IsTrue(next.ClassList.Contains("custom-buttons"));
         Assert.IsTrue(next.ClassList.Contains("custom-next"));
-        Assert.IsTrue((next.GetAttribute("style") ?? string.Empty).Contains("opacity:0.7"));
+        Assert.Contains("opacity:0.7", (next.GetAttribute("style") ?? string.Empty));
 
         Assert.IsTrue(component.Find(".bit-swp-lbt").ClassList.Contains("custom-prev"));
         Assert.IsTrue(component.Find(".bit-swp-rbt i").ClassList.Contains("custom-icons"));
@@ -603,7 +603,7 @@ public class BitSwiperTests : BunitTestContext
         Assert.IsFalse(items[0].ClassList.Contains("bit-swpi-cur"));
         Assert.IsTrue(items[1].ClassList.Contains("bit-swpi-cur"));
         Assert.IsTrue(items[1].ClassList.Contains("custom-current"));
-        Assert.IsTrue((items[1].GetAttribute("style") ?? string.Empty).Contains("outline:1px solid red"));
+        Assert.Contains("outline:1px solid red", (items[1].GetAttribute("style") ?? string.Empty));
     }
 
     [TestMethod]
@@ -668,7 +668,7 @@ public class BitSwiperTests : BunitTestContext
     {
         var component = RenderComponent<BitSwiperTest>();
 
-        Assert.AreEqual(0, component.FindAll(".bit-swp-dot").Count);
+        Assert.IsEmpty(component.FindAll(".bit-swp-dot"));
     }
 
     [TestMethod]
@@ -680,13 +680,13 @@ public class BitSwiperTests : BunitTestContext
         });
 
         // nothing is known about the pages before the swiper has been measured
-        Assert.AreEqual(0, component.FindAll(".bit-swp-dot").Count);
+        Assert.IsEmpty(component.FindAll(".bit-swp-dot"));
 
         await PushState(component, page: 1, pagesCount: 3);
 
         var dots = component.FindAll("button.bit-swp-dot");
 
-        Assert.AreEqual(3, dots.Count);
+        Assert.HasCount(3, dots);
         Assert.AreEqual("Slide 1", dots[0].GetAttribute("aria-label"));
         Assert.IsNull(dots[0].GetAttribute("aria-current"));
         Assert.AreEqual("true", dots[1].GetAttribute("aria-current"));
@@ -708,7 +708,7 @@ public class BitSwiperTests : BunitTestContext
 
         await PushState(component, pagesCount: 1, scrollable: false);
 
-        Assert.AreEqual(0, component.FindAll(".bit-swp-dot").Count);
+        Assert.IsEmpty(component.FindAll(".bit-swp-dot"));
     }
 
     [TestMethod]
@@ -776,7 +776,7 @@ public class BitSwiperTests : BunitTestContext
             parameters.Add(p => p.AutoPlayInterval, 60000);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-swp-ppb").Count);
+        Assert.IsEmpty(component.FindAll(".bit-swp-ppb"));
 
         component.Render(parameters => parameters.Add(p => p.AutoPlay, true));
 
@@ -1085,7 +1085,7 @@ public class BitSwiperTests : BunitTestContext
 
         var go = await WaitForInvocation("BitBlazorUI.Swiper.go");
 
-        Assert.AreEqual(false, go.Arguments[1]);
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(go.Arguments[1]));
     }
 
     [TestMethod]
@@ -1108,7 +1108,7 @@ public class BitSwiperTests : BunitTestContext
         });
 
         // it stopped where it stood instead of being sent back to the start
-        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.Swiper.goToEdge"));
+        Assert.DoesNotContain(i => i.Identifier == "BitBlazorUI.Swiper.goToEdge", Context.JSInterop.Invocations);
     }
 
     #endregion
@@ -1129,14 +1129,14 @@ public class BitSwiperTests : BunitTestContext
 
         var next = LastInvocation("BitBlazorUI.Swiper.go");
 
-        Assert.AreEqual(true, next.Arguments[1]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(next.Arguments[1]));
         Assert.AreEqual(3, next.Arguments[2]);
 
         component.Find(".bit-swp-lbt").Click();
 
         var prev = LastInvocation("BitBlazorUI.Swiper.go");
 
-        Assert.AreEqual(false, prev.Arguments[1]);
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(prev.Arguments[1]));
         Assert.AreEqual(3, prev.Arguments[2]);
     }
 
@@ -1161,19 +1161,19 @@ public class BitSwiperTests : BunitTestContext
         var swiper = component.Instance.Swiper;
 
         await component.InvokeAsync(swiper.GoNext);
-        Assert.AreEqual(true, LastInvocation("BitBlazorUI.Swiper.go").Arguments[1]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(LastInvocation("BitBlazorUI.Swiper.go").Arguments[1]));
 
         await component.InvokeAsync(swiper.GoPrev);
-        Assert.AreEqual(false, LastInvocation("BitBlazorUI.Swiper.go").Arguments[1]);
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(LastInvocation("BitBlazorUI.Swiper.go").Arguments[1]));
 
         await component.InvokeAsync(() => swiper.GoTo(2));
         Assert.AreEqual(1, LastInvocation("BitBlazorUI.Swiper.goToItem").Arguments[1]);
 
         await component.InvokeAsync(swiper.GoToStart);
-        Assert.AreEqual(false, LastInvocation("BitBlazorUI.Swiper.goToEdge").Arguments[1]);
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(LastInvocation("BitBlazorUI.Swiper.goToEdge").Arguments[1]));
 
         await component.InvokeAsync(swiper.GoToEnd);
-        Assert.AreEqual(true, LastInvocation("BitBlazorUI.Swiper.goToEdge").Arguments[1]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(LastInvocation("BitBlazorUI.Swiper.goToEdge").Arguments[1]));
 
         await component.InvokeAsync(swiper.Refresh);
         Context.JSInterop.VerifyInvoke("BitBlazorUI.Swiper.refresh");
@@ -1365,7 +1365,7 @@ public class BitSwiperTests : BunitTestContext
 
         component.Find(".bit-swp").KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
 
-        Assert.AreEqual(true, LastInvocation("BitBlazorUI.Swiper.go").Arguments[1]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(LastInvocation("BitBlazorUI.Swiper.go").Arguments[1]));
     }
 
     [TestMethod]
@@ -1381,7 +1381,7 @@ public class BitSwiperTests : BunitTestContext
         component.Find(".bit-swp-rbt").Click();
 
         // Moving on from the end goes back to the start instead of standing still.
-        Assert.AreEqual(false, LastInvocation("BitBlazorUI.Swiper.goToEdge").Arguments[1]);
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(LastInvocation("BitBlazorUI.Swiper.goToEdge").Arguments[1]));
         Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Swiper.go"));
     }
 
@@ -1397,7 +1397,7 @@ public class BitSwiperTests : BunitTestContext
 
         component.Find(".bit-swp").KeyDown(new KeyboardEventArgs { Key = "ArrowLeft" });
 
-        Assert.AreEqual(true, LastInvocation("BitBlazorUI.Swiper.goToEdge").Arguments[1]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(LastInvocation("BitBlazorUI.Swiper.goToEdge").Arguments[1]));
     }
 
     [TestMethod]
@@ -1410,14 +1410,14 @@ public class BitSwiperTests : BunitTestContext
 
         await PushState(component, atStart: true, atEnd: false);
 
-        Assert.IsFalse((component.Find(".bit-swp-lbt").GetAttribute("style") ?? string.Empty).Contains("display:none"));
-        Assert.IsFalse((component.Find(".bit-swp-rbt").GetAttribute("style") ?? string.Empty).Contains("display:none"));
+        Assert.DoesNotContain("display:none", (component.Find(".bit-swp-lbt").GetAttribute("style") ?? string.Empty));
+        Assert.DoesNotContain("display:none", (component.Find(".bit-swp-rbt").GetAttribute("style") ?? string.Empty));
 
         // A swiper with nothing to scroll still has nowhere to go, rewinding or not.
         await PushState(component, scrollable: false, atStart: true, atEnd: true);
 
-        Assert.IsTrue((component.Find(".bit-swp-lbt").GetAttribute("style") ?? string.Empty).Contains("display:none"));
-        Assert.IsTrue((component.Find(".bit-swp-rbt").GetAttribute("style") ?? string.Empty).Contains("display:none"));
+        Assert.Contains("display:none", (component.Find(".bit-swp-lbt").GetAttribute("style") ?? string.Empty));
+        Assert.Contains("display:none", (component.Find(".bit-swp-rbt").GetAttribute("style") ?? string.Empty));
     }
 
     [TestMethod]
@@ -1429,7 +1429,7 @@ public class BitSwiperTests : BunitTestContext
 
         await component.InvokeAsync(component.Instance.Swiper.GoNext);
 
-        Assert.AreEqual(true, LastInvocation("BitBlazorUI.Swiper.go").Arguments[1]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(LastInvocation("BitBlazorUI.Swiper.go").Arguments[1]));
         Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Swiper.goToEdge"));
     }
 
@@ -1440,13 +1440,13 @@ public class BitSwiperTests : BunitTestContext
 
         await PushState(component, atStart: true, atEnd: false);
 
-        Assert.IsTrue((component.Find(".bit-swp-lbt").GetAttribute("style") ?? string.Empty).Contains("display:none"));
-        Assert.IsFalse((component.Find(".bit-swp-rbt").GetAttribute("style") ?? string.Empty).Contains("display:none"));
+        Assert.Contains("display:none", (component.Find(".bit-swp-lbt").GetAttribute("style") ?? string.Empty));
+        Assert.DoesNotContain("display:none", (component.Find(".bit-swp-rbt").GetAttribute("style") ?? string.Empty));
 
         await PushState(component, index: 2, atStart: false, atEnd: true);
 
-        Assert.IsFalse((component.Find(".bit-swp-lbt").GetAttribute("style") ?? string.Empty).Contains("display:none"));
-        Assert.IsTrue((component.Find(".bit-swp-rbt").GetAttribute("style") ?? string.Empty).Contains("display:none"));
+        Assert.DoesNotContain("display:none", (component.Find(".bit-swp-lbt").GetAttribute("style") ?? string.Empty));
+        Assert.Contains("display:none", (component.Find(".bit-swp-rbt").GetAttribute("style") ?? string.Empty));
     }
 
     [TestMethod]
@@ -1456,8 +1456,8 @@ public class BitSwiperTests : BunitTestContext
 
         await PushState(component, atStart: true, atEnd: true, scrollable: false);
 
-        Assert.IsTrue((component.Find(".bit-swp-lbt").GetAttribute("style") ?? string.Empty).Contains("display:none"));
-        Assert.IsTrue((component.Find(".bit-swp-rbt").GetAttribute("style") ?? string.Empty).Contains("display:none"));
+        Assert.Contains("display:none", (component.Find(".bit-swp-lbt").GetAttribute("style") ?? string.Empty));
+        Assert.Contains("display:none", (component.Find(".bit-swp-rbt").GetAttribute("style") ?? string.Empty));
     }
 
     #endregion
@@ -1475,7 +1475,7 @@ public class BitSwiperTests : BunitTestContext
 
         var keys = (string[])LastInvocation("BitBlazorUI.Utils.registerPreventKeys").Arguments[1]!;
 
-        CollectionAssert.AreEquivalent(new[] { "ArrowLeft", "ArrowRight", "Home", "End", "PageUp", "PageDown" }, keys);
+        Assert.AreSequenceEqual(new[] { "ArrowLeft", "ArrowRight", "Home", "End", "PageUp", "PageDown" }, keys, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -1488,7 +1488,7 @@ public class BitSwiperTests : BunitTestContext
 
         var keys = (string[])LastInvocation("BitBlazorUI.Utils.registerPreventKeys").Arguments[1]!;
 
-        CollectionAssert.AreEquivalent(new[] { "ArrowUp", "ArrowDown", "Home", "End", "PageUp", "PageDown" }, keys);
+        Assert.AreSequenceEqual(new[] { "ArrowUp", "ArrowDown", "Home", "End", "PageUp", "PageDown" }, keys, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -1501,7 +1501,7 @@ public class BitSwiperTests : BunitTestContext
 
         var keys = (string[])LastInvocation("BitBlazorUI.Utils.registerPreventKeys").Arguments[1]!;
 
-        Assert.AreEqual(0, keys.Length);
+        Assert.IsEmpty(keys);
     }
 
     [TestMethod]
@@ -1522,18 +1522,18 @@ public class BitSwiperTests : BunitTestContext
 
         var options = LastInvocation("BitBlazorUI.Swiper.setup").Arguments[4]!;
 
-        Assert.AreEqual(true, ReadOption(options, "Vertical"));
-        Assert.AreEqual(true, ReadOption(options, "NoDrag"));
-        Assert.AreEqual(true, ReadOption(options, "Wheel"));
-        Assert.AreEqual(true, ReadOption(options, "Enabled"));
-        Assert.AreEqual(true, ReadOption(options, "Snap"));
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(ReadOption(options, "Vertical")));
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(ReadOption(options, "NoDrag")));
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(ReadOption(options, "Wheel")));
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(ReadOption(options, "Enabled")));
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(ReadOption(options, "Snap")));
         Assert.AreEqual(0.5, ReadOption(options, "Align"));
         Assert.AreEqual(0.25, ReadOption(options, "Duration"));
         Assert.AreEqual(12, ReadOption(options, "Threshold"));
         Assert.AreEqual(2, ReadOption(options, "ScrollCount"));
 
         // the browser keeps the focus off a button that is about to hide, which a rewinding swiper never does
-        Assert.AreEqual(true, ReadOption(options, "Rewind"));
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(ReadOption(options, "Rewind")));
 
         // DefaultItem is 1 based, and reaches the browser as the zero based index it lays the swiper out on
         Assert.AreEqual(2, ReadOption(options, "Start"));
@@ -1546,7 +1546,7 @@ public class BitSwiperTests : BunitTestContext
 
         var options = LastInvocation("BitBlazorUI.Swiper.setup").Arguments[4]!;
 
-        Assert.AreEqual(false, ReadOption(options, "Snap"));
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(ReadOption(options, "Snap")));
         Assert.AreEqual(0d, ReadOption(options, "Align"));
         Assert.AreEqual(0, ReadOption(options, "Start"));
     }
@@ -1566,7 +1566,7 @@ public class BitSwiperTests : BunitTestContext
 
         var options = LastInvocation("BitBlazorUI.Swiper.setup").Arguments[4]!;
 
-        Assert.AreEqual(true, ReadOption(options, "Enabled"));
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(ReadOption(options, "Enabled")));
         Assert.AreEqual(5, ReadOption(options, "Threshold"));
         Assert.AreEqual(1, ReadOption(options, "ScrollCount"));
         Assert.AreEqual(0.5, ReadOption(options, "Duration"));
@@ -1662,7 +1662,7 @@ public class BitSwiperTests : BunitTestContext
 
         var items = component.FindAll(".bit-swpi");
 
-        Assert.AreEqual(2, items.Count);
+        Assert.HasCount(2, items);
         Assert.AreEqual("1 of 2", items[0].GetAttribute("aria-label"));
         Assert.AreEqual("2 of 2", items[1].GetAttribute("aria-label"));
     }
@@ -1701,7 +1701,7 @@ public class BitSwiperTests : BunitTestContext
         await PushState(component, index: 1, page: 1);
         await PushState(component, index: 2);
 
-        CollectionAssert.AreEqual(new[] { 1, 2 }, changes);
+        Assert.AreSequenceEqual(new[] { 1, 2 }, changes);
     }
 
     [TestMethod]
@@ -1815,11 +1815,11 @@ public class BitSwiperTests : BunitTestContext
     {
         var component = RenderComponent<BitSwiper>();
 
-        Assert.IsFalse((component.Find(".bit-swp").GetAttribute("style") ?? string.Empty).Contains("--bit-swp-peek"));
+        Assert.DoesNotContain("--bit-swp-peek", (component.Find(".bit-swp").GetAttribute("style") ?? string.Empty));
 
         component.Render(parameters => parameters.Add(p => p.Peek, "2rem"));
 
-        Assert.IsTrue((component.Find(".bit-swp").GetAttribute("style") ?? string.Empty).Contains("--bit-swp-peek:2rem"));
+        Assert.Contains("--bit-swp-peek:2rem", (component.Find(".bit-swp").GetAttribute("style") ?? string.Empty));
     }
 
     [TestMethod]
@@ -1848,7 +1848,7 @@ public class BitSwiperTests : BunitTestContext
 
         var disposes = Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.Swiper.dispose").ToArray();
 
-        Assert.AreEqual(1, disposes.Length);
+        Assert.ContainsSingle(disposes);
         Assert.AreEqual(id, disposes[0].Arguments[0]);
     }
 

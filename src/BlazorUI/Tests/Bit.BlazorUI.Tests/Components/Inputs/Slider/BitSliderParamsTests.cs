@@ -51,8 +51,8 @@ public class BitSliderParamsTests : BunitTestContext
     [TestMethod]
     public void BitSliderParamsShouldHaveTheCorrectParamName()
     {
-        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitSlider)}", BitSliderParams.ParamName);
-        Assert.AreEqual("BitParams.BitSlider", BitSliderParams.ParamName);
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitSlider)}", new BitSliderParams().Name);
+        Assert.AreEqual("BitParams.BitSlider", new BitSliderParams().Name);
     }
 
     [TestMethod]
@@ -94,7 +94,7 @@ public class BitSliderParamsTests : BunitTestContext
 
         // Marks every 25 of a 0..100 scale, so five of them - which also proves the mark caches are built after the
         // cascade has been applied rather than before it.
-        Assert.AreEqual(5, com.FindAll(".bit-sld-mrk").Count);
+        Assert.HasCount(5, com.FindAll(".bit-sld-mrk"));
     }
 
     [TestMethod]
@@ -156,8 +156,8 @@ public class BitSliderParamsTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("cascaded"));
         Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
         Assert.IsTrue(root.ClassList.Contains("bit-dis"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin: 1px;");
-        StringAssert.Contains(root.GetAttribute("style"), "visibility:hidden");
+        Assert.Contains("margin: 1px;", root.GetAttribute("style")!);
+        Assert.Contains("visibility:hidden", root.GetAttribute("style")!);
         Assert.AreEqual("rtl", root.GetAttribute("dir"));
 
         Assert.AreEqual("3", input.GetAttribute("tabindex"));
@@ -184,9 +184,9 @@ public class BitSliderParamsTests : BunitTestContext
         });
 
         Assert.IsTrue(com.Find(".bit-sld").ClassList.Contains("custom-root"));
-        StringAssert.Contains(com.Find(".bit-sld").GetAttribute("style"), "color: red;");
+        Assert.Contains("color: red;", com.Find(".bit-sld").GetAttribute("style")!);
         Assert.IsTrue(com.Find(".bit-sld-thb").ClassList.Contains("custom-thumb"));
-        StringAssert.Contains(com.Find(".bit-sld-thb").GetAttribute("style"), "border-radius: 0;");
+        Assert.Contains("border-radius: 0;", com.Find(".bit-sld-thb").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -278,7 +278,7 @@ public class BitSliderParamsTests : BunitTestContext
         Assert.IsFalse(instance.ShowValue);
         Assert.AreEqual(BitSize.Small, instance.Size);
         // The cascade hands the component a copy of the dictionary, so an instance never writes into the shared one.
-        CollectionAssert.AreEquivalent(boxAttributes.ToList(), instance.SliderBoxHtmlAttributes!.ToList());
+        Assert.AreSequenceEqual(boxAttributes.ToList(), instance.SliderBoxHtmlAttributes!.ToList(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         Assert.AreEqual(2, instance.Step);
         Assert.AreSame(@params.Styles, instance.Styles);
         Assert.AreEqual(BitSliderThumbLabel.On, instance.ThumbLabel);
@@ -300,16 +300,16 @@ public class BitSliderParamsTests : BunitTestContext
         Assert.AreEqual("Cascaded lower", com.Find(".bit-sld-inp-lwr").GetAttribute("aria-label"));
         Assert.AreEqual("Cascaded upper", com.Find(".bit-sld-inp-upr").GetAttribute("aria-label"));
         Assert.AreEqual("Cascaded description", com.Find(".bit-sld-dsc").TextContent);
-        Assert.AreEqual(0, com.FindAll(".bit-sld-vlb").Count);
-        Assert.AreEqual(0, com.FindAll(".bit-sld-fil").Count);
-        Assert.AreEqual(3, com.FindAll(".bit-sld-mlb").Count);
+        Assert.IsEmpty(com.FindAll(".bit-sld-vlb"));
+        Assert.IsEmpty(com.FindAll(".bit-sld-fil"));
+        Assert.HasCount(3, com.FindAll(".bit-sld-mlb"));
         Assert.AreEqual("Low", com.FindAll(".bit-sld-mlb")[0].TextContent.Trim());
 
         // The explicit marks and the per-value text reach both thumbs.
         foreach (var input in com.FindAll(".bit-sld-inp"))
         {
             Assert.AreEqual("2", input.GetAttribute("step"));
-            StringAssert.StartsWith(input.GetAttribute("aria-valuetext"), "Level ");
+            Assert.StartsWith("Level ", input.GetAttribute("aria-valuetext"));
         }
     }
 
@@ -389,8 +389,8 @@ public class BitSliderParamsTests : BunitTestContext
         Assert.AreEqual("0", input.GetAttribute("min"));
         Assert.AreEqual("10", input.GetAttribute("max"));
         Assert.AreEqual("1", input.GetAttribute("step"));
-        Assert.AreEqual(1, com.FindAll(".bit-sld-vlb").Count);
-        Assert.AreEqual(0, com.FindAll(".bit-sld-mrk").Count);
+        Assert.ContainsSingle(com.FindAll(".bit-sld-vlb"));
+        Assert.IsEmpty(com.FindAll(".bit-sld-mrk"));
     }
 
     [TestMethod]
@@ -404,7 +404,7 @@ public class BitSliderParamsTests : BunitTestContext
                                      nameof(BitSlider.UpperValue), nameof(BitSlider.RangeValue), nameof(BitSlider.DefaultLowerValue),
                                      nameof(BitSlider.DefaultUpperValue) })
         {
-            Assert.IsFalse(properties.Contains(name), $"BitSliderParams cascades {name}.");
+            Assert.DoesNotContain(name, properties, $"BitSliderParams cascades {name}.");
         }
     }
 
@@ -425,6 +425,6 @@ public class BitSliderParamsTests : BunitTestContext
                                        .Where(n => paramsProperties.Contains(n) is false)
                                        .ToList();
 
-        CollectionAssert.AreEqual(new List<string>(), missing, string.Join(", ", missing));
+        Assert.AreSequenceEqual(new List<string>(), missing, string.Join(", ", missing));
     }
 }

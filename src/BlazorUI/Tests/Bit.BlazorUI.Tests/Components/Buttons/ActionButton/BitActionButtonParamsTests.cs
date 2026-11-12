@@ -47,8 +47,8 @@ public class BitActionButtonParamsTests : BunitTestContext
     [TestMethod]
     public void BitActionButtonParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitActionButton)}", BitActionButtonParams.ParamName);
-        Assert.AreEqual("BitParams.BitActionButton", BitActionButtonParams.ParamName);
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitActionButton)}", new BitActionButtonParams().Name);
+        Assert.AreEqual("BitParams.BitActionButton", new BitActionButtonParams().Name);
     }
 
     [TestMethod]
@@ -258,7 +258,7 @@ public class BitActionButtonParamsTests : BunitTestContext
         Assert.IsTrue(button.ClassList.Contains("custom-root"));
         Assert.IsTrue(icon.ClassList.Contains("custom-icon"));
         Assert.IsTrue(content.ClassList.Contains("custom-content"));
-        StringAssert.Contains(button.GetAttribute("style"), "color: red;");
+        Assert.Contains("color: red;", button.GetAttribute("style")!);
         Assert.AreEqual("margin: 5px;", icon.GetAttribute("style"));
         Assert.AreEqual("padding: 10px;", content.GetAttribute("style"));
     }
@@ -316,7 +316,7 @@ public class BitActionButtonParamsTests : BunitTestContext
         Assert.IsTrue(button.HasAttribute("disabled"));
         Assert.AreEqual("true", button.GetAttribute("aria-disabled"));
         Assert.AreEqual("-1", button.GetAttribute("tabindex"));
-        StringAssert.Contains(button.GetAttribute("style"), "background: blue;");
+        Assert.Contains("background: blue;", button.GetAttribute("style")!);
         Assert.IsTrue(button.ClassList.Contains("base-class"));
     }
 
@@ -337,7 +337,7 @@ public class BitActionButtonParamsTests : BunitTestContext
         Assert.AreEqual("rtl", button.GetAttribute("dir"));
         Assert.IsTrue(button.ClassList.Contains("bit-rtl"));
         Assert.IsTrue(button.ClassList.Contains("bit-fam"));
-        StringAssert.Contains(button.GetAttribute("style"), "visibility:hidden");
+        Assert.Contains("visibility:hidden", button.GetAttribute("style")!);
         Assert.AreEqual("4", button.GetAttribute("tabindex"));
         Assert.AreEqual("yes", button.GetAttribute("data-cascaded"));
     }
@@ -352,7 +352,7 @@ public class BitActionButtonParamsTests : BunitTestContext
 
         var button = component.Find(".bit-acb");
 
-        CollectionAssert.AreEquivalent(new[] { "bit-acb", "bit-acb-pri" }, button.ClassList.ToArray());
+        Assert.AreSequenceEqual(new[] { "bit-acb", "bit-acb-pri" }, button.ClassList.ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         Assert.IsFalse(button.HasAttribute("style"));
         Assert.IsFalse(button.HasAttribute("title"));
     }

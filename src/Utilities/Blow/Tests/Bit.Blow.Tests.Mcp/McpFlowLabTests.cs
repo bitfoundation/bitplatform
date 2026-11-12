@@ -49,7 +49,7 @@ public class McpFlowLabTests
 
         Assert.AreEqual("checks", group.ParentId);
         Assert.AreEqual("group", group.ParentType);
-        CollectionAssert.AreEqual(new[] { "lint", "test" }, group.Children);
+        Assert.AreSequenceEqual(new[] { "lint", "test" }, group.Children);
 
         // The group is 200 x 150 at (220, 80) and its children sit inside it, so the flow's right edge is
         // the group's - which only holds if the children were resolved against their parent.
@@ -73,7 +73,7 @@ public class McpFlowLabTests
         Assert.IsTrue(report.Valid, report.Error);
         Assert.AreEqual(1, Count(report.EdgeTypes, nameof(BlowEdgeType.Step)));
         Assert.AreEqual(new BlowViewportDto { X = 10, Y = 20, Zoom = 1.5 }, report.Viewport);
-        Assert.IsTrue(report.Notes.Any(note => note.Contains("never reads back", StringComparison.Ordinal)), "The members JsonSerializer writes but never reads should be pointed out.");
+        Assert.Contains(note => note.Contains("never reads back", StringComparison.Ordinal), report.Notes, "The members JsonSerializer writes but never reads should be pointed out.");
     }
 
     [TestMethod]
@@ -93,16 +93,15 @@ public class McpFlowLabTests
 
         Assert.IsTrue(report.Valid, report.Error);
 
-        CollectionAssert.AreEquivalent(
-            new[] { BlowErrorCode.DuplicateNodeId, BlowErrorCode.DuplicateEdgeId, BlowErrorCode.MissingEdgeEndpoint, BlowErrorCode.MissingParentNode, BlowErrorCode.DuplicateHandleId },
-            report.Problems!.Select(problem => problem.Code).ToArray());
+        Assert.AreSequenceEqual(
+            new[] { BlowErrorCode.DuplicateNodeId, BlowErrorCode.DuplicateEdgeId, BlowErrorCode.MissingEdgeEndpoint, BlowErrorCode.MissingParentNode, BlowErrorCode.DuplicateHandleId }, report.Problems!.Select(problem => problem.Code).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
         Assert.Contains("'missing'", report.Problems!.Single(problem => problem.Code == BlowErrorCode.MissingEdgeEndpoint).Message);
         Assert.Contains("'nowhere'", report.Problems!.Single(problem => problem.Code == BlowErrorCode.MissingParentNode).Message);
 
         // One note per kind of problem, saying what the canvas does about it.
-        Assert.IsTrue(report.Notes.Any(note => note.Contains("keeps the first node", StringComparison.Ordinal)));
-        Assert.IsTrue(report.Notes.Any(note => note.Contains("laid out as a root", StringComparison.Ordinal) || note.Contains("lays each of them out as a root", StringComparison.Ordinal)));
+        Assert.Contains(note => note.Contains("keeps the first node", StringComparison.Ordinal), report.Notes);
+        Assert.Contains(note => note.Contains("laid out as a root", StringComparison.Ordinal) || note.Contains("lays each of them out as a root", StringComparison.Ordinal), report.Notes);
     }
 
     [TestMethod]
@@ -148,12 +147,12 @@ public class McpFlowLabTests
         var report = await InspectAsync(flow.ToJsonString());
 
         // The canvas reports the parent cycles itself; the rest are not BlowErrorCodes, which is why the tool says them.
-        CollectionAssert.AreEquivalent(new[] { "parent-cycle", "parent-cycle" }, report.Problems!.Select(p => p.Code).ToArray());
-        Assert.IsTrue(report.Notes.Any(note => note.Contains("parent cycle", StringComparison.Ordinal) && note.Contains("'p'", StringComparison.Ordinal)));
-        Assert.IsTrue(report.Notes.Any(note => note.Contains("own parent", StringComparison.Ordinal) && note.Contains("'self'", StringComparison.Ordinal)));
-        Assert.IsTrue(report.Notes.Any(note => note.Contains("'into-input'", StringComparison.Ordinal) && note.Contains("no target handle", StringComparison.Ordinal)));
-        Assert.IsTrue(report.Notes.Any(note => note.Contains("'task'", StringComparison.Ordinal) && note.Contains("NodeTemplate", StringComparison.Ordinal)));
-        Assert.IsTrue(report.Notes.Any(note => note.Contains("start -> task", StringComparison.Ordinal) && note.Contains("PreventDuplicateEdges", StringComparison.Ordinal)));
+        Assert.AreSequenceEqual(new[] { "parent-cycle", "parent-cycle" }, report.Problems!.Select(p => p.Code).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
+        Assert.Contains(note => note.Contains("parent cycle", StringComparison.Ordinal) && note.Contains("'p'", StringComparison.Ordinal), report.Notes);
+        Assert.Contains(note => note.Contains("own parent", StringComparison.Ordinal) && note.Contains("'self'", StringComparison.Ordinal), report.Notes);
+        Assert.Contains(note => note.Contains("'into-input'", StringComparison.Ordinal) && note.Contains("no target handle", StringComparison.Ordinal), report.Notes);
+        Assert.Contains(note => note.Contains("'task'", StringComparison.Ordinal) && note.Contains("NodeTemplate", StringComparison.Ordinal), report.Notes);
+        Assert.Contains(note => note.Contains("start -> task", StringComparison.Ordinal) && note.Contains("PreventDuplicateEdges", StringComparison.Ordinal), report.Notes);
     }
 
     [TestMethod]
@@ -176,8 +175,8 @@ public class McpFlowLabTests
         var looped = report.SubFlows!.Single(subFlow => subFlow.ParentId == "p");
 
         Assert.AreEqual(1, looped.Depth);
-        CollectionAssert.AreEqual(new[] { "q", "r" }, looped.Children);
-        Assert.IsTrue(report.Notes.Any(note => note.Contains("parent cycle", StringComparison.Ordinal) && note.Contains("'p', 'q', 'r'", StringComparison.Ordinal)));
+        Assert.AreSequenceEqual(new[] { "q", "r" }, looped.Children);
+        Assert.Contains(note => note.Contains("parent cycle", StringComparison.Ordinal) && note.Contains("'p', 'q', 'r'", StringComparison.Ordinal), report.Notes);
     }
 
     [TestMethod]
@@ -207,7 +206,7 @@ public class McpFlowLabTests
         Assert.AreEqual(1, report.HiddenNodes);
         Assert.AreEqual(1, report.HiddenEdges, "An edge to a hidden node is not drawn.");
         Assert.IsLessThan(1000, report.Bounds!.Width);
-        Assert.IsFalse(report.Layout!.Positions.Any(position => position.Id == "hidden"));
+        Assert.DoesNotContain(position => position.Id == "hidden", report.Layout!.Positions);
     }
 
     [TestMethod]
@@ -219,7 +218,7 @@ public class McpFlowLabTests
 
         Assert.AreEqual("layered-left-to-right", layout.Algorithm);
         Assert.AreEqual(2, layout.Groups, "The roots, and the group's children.");
-        CollectionAssert.AreEquivalent(new[] { "start", "review", "checks", "lint", "test", "ship" }, layout.Positions.Select(position => position.Id).ToArray());
+        Assert.AreSequenceEqual(new[] { "start", "review", "checks", "lint", "test", "ship" }, layout.Positions.Select(position => position.Id).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         Assert.IsTrue(layout.Positions.All(position => position.SourcePosition == nameof(BlowPosition.Right) && position.TargetPosition == nameof(BlowPosition.Left)));
         Assert.AreEqual("checks", layout.Positions.Single(position => position.Id == "lint").ParentId);
         Assert.Contains("BlowLayoutDirection.LeftToRight", layout.Code);
@@ -233,7 +232,7 @@ public class McpFlowLabTests
         var report = await InspectAsync((await InspectAsync(null)).Sample, layout: "force-directed");
 
         Assert.IsNull(report.Layout);
-        Assert.IsTrue(report.Notes.Any(note => note.Contains("'force-directed' is not a layout", StringComparison.Ordinal) && note.Contains("layered", StringComparison.Ordinal)));
+        Assert.Contains(note => note.Contains("'force-directed' is not a layout", StringComparison.Ordinal) && note.Contains("layered", StringComparison.Ordinal), report.Notes);
     }
 
     [TestMethod]
@@ -241,7 +240,7 @@ public class McpFlowLabTests
     {
         var report = await InspectAsync(new JsonObject { ["nodes"] = new JsonArray(Node("a")), ["viewport"] = new JsonObject { ["x"] = 0, ["y"] = 0, ["zoom"] = 9 } }.ToJsonString());
 
-        Assert.IsTrue(report.Notes.Any(note => note.Contains("MinZoom..MaxZoom", StringComparison.Ordinal)));
+        Assert.Contains(note => note.Contains("MinZoom..MaxZoom", StringComparison.Ordinal), report.Notes);
     }
 
     [TestMethod]

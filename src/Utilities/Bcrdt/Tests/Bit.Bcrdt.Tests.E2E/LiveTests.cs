@@ -30,7 +30,7 @@ public sealed class LiveTests : BcrdtTest
             string[] sockets;
             lock (tab.Sockets) sockets = [.. tab.Sockets];
             var expected = socketPath.Replace("{room}", room, StringComparison.Ordinal);
-            Assert.IsTrue(sockets.Any(url => new Uri(url).AbsolutePath.StartsWith(expected, StringComparison.Ordinal)),
+            Assert.Contains(url => new Uri(url).AbsolutePath.StartsWith(expected, StringComparison.Ordinal), sockets,
                 $"the tab opened no WebSocket to {expected}; it opened {Quote(sockets)}");
         }
 
@@ -123,7 +123,7 @@ public sealed class LiveTests : BcrdtTest
         await EventuallyAsync(async () =>
         {
             int records = await StoredRecordsAsync(writer.Page);
-            await Task.Delay(500);
+            await Task.Delay(500, TestContext.CancellationToken);
             return await StoredRecordsAsync(writer.Page) == records;
         }, () => "the offline edit's writes settled");
         await writer.Page.ReloadAsync();
@@ -155,7 +155,7 @@ public sealed class LiveTests : BcrdtTest
         await Assertions.Expect(Editor(first.Page)).ToHaveValueAsync("Offline in the first tab. Offline in the second.");
 
         // Nobody else has any of it yet.
-        await Task.Delay(1000);
+        await Task.Delay(1000, TestContext.CancellationToken);
         await Assertions.Expect(Editor(elsewhere.Page)).ToHaveValueAsync("");
 
         // Back online, the handshake each tab runs brings the server - and everyone else - what they wrote.
@@ -283,4 +283,5 @@ public sealed class LiveTests : BcrdtTest
         (await page.Locator("section.panel .panel-name").InnerTextAsync()).Replace("You are", "", StringComparison.Ordinal).Trim();
 
     private sealed record Tab(IPage Page, List<string> Sockets);
+
 }

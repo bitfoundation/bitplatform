@@ -23,7 +23,7 @@ public abstract class AiChatbotTestsBase : AppTestBase
     private const decimal ProductQuestionBudget = 75_000;
 
     /// <summary>Opens <paramref name="app"/>, waits for it to be interactive and opens its chat panel.</summary>
-    protected async Task<AiChatPanel> OpenChatPanel(App app)
+    private protected async Task<AiChatPanel> OpenChatPanel(App app)
     {
         var page = await OpenApp(app);
 

@@ -20,7 +20,7 @@ public class BarcodeDecoderTests
         Assert.AreEqual("PIPELINE", result.Text);
         Assert.AreEqual(BbBarcodeFormat.QrCode, result.Format);
         Assert.AreEqual(image.Width, result.FrameWidth);
-        Assert.IsTrue(result.BoundingBox.Width > 0);
+        Assert.IsGreaterThan(0, result.BoundingBox.Width);
     }
 
     [TestMethod]
@@ -116,7 +116,7 @@ public class BarcodeDecoderTests
 
         Assert.IsNotNull(result);
         Assert.AreEqual("REGION", result.Text);
-        Assert.IsTrue(result.BoundingBox.X >= qr.Width, "Points must be reported in full frame coordinates.");
+        Assert.IsGreaterThanOrEqualTo(qr.Width, result.BoundingBox.X, "Points must be reported in full frame coordinates.");
     }
 
     [TestMethod]
@@ -130,7 +130,7 @@ public class BarcodeDecoderTests
 
         Assert.IsNotNull(result);
         Assert.AreEqual("DOWNSAMPLED", result.Text);
-        Assert.IsTrue(result.BoundingBox.Width > image.Width / 4);
+        Assert.IsGreaterThan(image.Width / 4, result.BoundingBox.Width);
     }
 
     [TestMethod]
@@ -169,8 +169,8 @@ public class BarcodeDecoderTests
         using var decoder = new BbBarcodeDecoder(new BbScannerOptions { DownsampleFactor = 8 });
 
         Assert.IsNull(decoder.Decode(gray, 60, 60, BbPixelFormat.Gray8));
-        Assert.IsTrue(decoder.LastFrame.DecodedWidth >= 8, $"Decoded {decoder.LastFrame.DecodedWidth} pixels wide.");
-        Assert.IsTrue(decoder.LastFrame.DecodedHeight >= 8, $"Decoded {decoder.LastFrame.DecodedHeight} pixels high.");
+        Assert.IsGreaterThanOrEqualTo(8, decoder.LastFrame.DecodedWidth, $"Decoded {decoder.LastFrame.DecodedWidth} pixels wide.");
+        Assert.IsGreaterThanOrEqualTo(8, decoder.LastFrame.DecodedHeight, $"Decoded {decoder.LastFrame.DecodedHeight} pixels high.");
     }
 
     [TestMethod]
@@ -184,7 +184,7 @@ public class BarcodeDecoderTests
         var diagnostics = decoder.LastFrame;
         Assert.IsTrue(diagnostics.Decoded);
         Assert.AreEqual(image.Width, diagnostics.DecodedWidth);
-        Assert.IsTrue(diagnostics.Total > TimeSpan.Zero);
+        Assert.IsGreaterThan(TimeSpan.Zero, diagnostics.Total);
         Assert.AreEqual(1, decoder.FramesDecoded);
         Assert.AreEqual(1, decoder.FramesWithSymbol);
     }
@@ -216,6 +216,6 @@ public class BarcodeDecoderTests
         var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
 
         // A small, fixed overhead is acceptable; growth proportional to frames is not.
-        Assert.IsTrue(allocated < 20 * 1024, $"Allocated {allocated} bytes over 20 empty frames.");
+        Assert.IsLessThan(20 * 1024, allocated, $"Allocated {allocated} bytes over 20 empty frames.");
     }
 }

@@ -49,7 +49,7 @@ public class BitVirtualizeE2ETests : E2ETestBase
 
         // 300px of 50px rows: 6 in view, plus 3 after them.
         await Expect(Rendered("vir-basic")).ToHaveCountAsync(9);
-        CollectionAssert.AreEqual(Enumerable.Range(0, 9).ToArray(), await RenderedIndicesAsync("vir-basic"));
+        Assert.AreSequenceEqual(Enumerable.Range(0, 9).ToArray(), await RenderedIndicesAsync("vir-basic"));
         await Expect(ItemAt("vir-basic", 0)).ToHaveCSSAsync("height", "50px");
         await Expect(ItemAt("vir-basic", 1)).ToHaveTextAsync("Item 1");
         var a = await ItemAt("vir-basic", 0).BoundingBoxAsync();
@@ -61,7 +61,7 @@ public class BitVirtualizeE2ETests : E2ETestBase
         await Expect(ItemAt("vir-basic", 0)).ToHaveCountAsync(0);
         await Page.WaitForFunctionAsync("() => [...document.querySelectorAll('#vir-basic .bit-vir-itm')].some(e => Math.abs(+e.dataset.bitVirIndex - 500000) < 20)");
         var indices = await RenderedIndicesAsync("vir-basic");
-        Assert.IsTrue(indices.Length <= 13, $"Only a window is rendered, was {indices.Length}.");
+        Assert.IsLessThanOrEqualTo(13, indices.Length, $"Only a window is rendered, was {indices.Length}.");
         Assert.IsTrue(indices.Min() >= 499_950 && indices.Max() <= 500_050, string.Join(",", indices));
         await Expect(ItemAt("vir-basic", indices[4])).ToHaveTextAsync($"Item {indices[4]}");
         await Expect(ItemAt("vir-basic", indices[4])).ToBeInViewportAsync();
@@ -141,7 +141,7 @@ public class BitVirtualizeE2ETests : E2ETestBase
         await SetScrollAsync("vir-provider", 200_000);
         await Expect(ItemAt("vir-provider", 5000)).ToHaveTextAsync("Record 5000");
         var requests = await Page.Locator("#prov-requests").TextContentAsync();
-        StringAssert.Matches(requests!, new Regex(@"\|4\d{3}:\d+"));
+        Assert.MatchesRegex(new Regex(@"\|4\d{3}:\d+"), requests!);
         await Expect(List("vir-provider")).Not.ToHaveAttributeAsync("aria-busy", "true");
     }
 
@@ -356,7 +356,7 @@ public class BitVirtualizeE2ETests : E2ETestBase
         await Expect(list).ToHaveClassAsync(HasClass("bit-vir-ext"));
         Assert.AreEqual(50_000, (await list.BoundingBoxAsync())!.Height, 2, "The list grows to the full size of its items.");
         var count = await Rendered("vir-scroller").CountAsync();
-        Assert.IsTrue(count < 15, $"Only a window is rendered, was {count}.");
+        Assert.IsLessThan(15, count, $"Only a window is rendered, was {count}.");
 
         await Page.Locator("#vir-outer").EvaluateAsync("e => e.scrollTop = 100 + 300 * 50");
         await Expect(ItemAt("vir-scroller", 300)).ToBeVisibleAsync();
@@ -455,7 +455,7 @@ public class BitVirtualizeE2ETests : E2ETestBase
         await Page.Keyboard.PressAsync("ArrowDown");
         await Expect(ItemAt("vir-vars", 0)).ToBeFocusedAsync();
         var ring = await ComputedStyleAsync("#vir-vars .bit-vir-itm:focus", "outline-color") + await ComputedStyleAsync("#vir-vars .bit-vir-itm:focus", "box-shadow");
-        StringAssert.Contains(ring, "rgb(0, 200, 0)");
+        Assert.Contains("rgb(0, 200, 0)", ring);
     }
 
     // ---------- templates ----------
@@ -672,7 +672,7 @@ public class BitVirtualizeE2ETests : E2ETestBase
         var list = await List("vir-rtl").BoundingBoxAsync();
         var a = await ItemAt("vir-rtl", 0).BoundingBoxAsync();
         var b = await ItemAt("vir-rtl", 1).BoundingBoxAsync();
-        Assert.IsTrue(b!.X < a!.X, "The second item sits to the left of the first.");
+        Assert.IsLessThan(a!.X, b!.X, "The second item sits to the left of the first.");
         Assert.AreEqual(list!.X + list.Width - 1, a.X + a.Width, 2, "The first item starts at the right edge.");
 
         await SetScrollAsync("vir-rtl", -50_000, horizontal: true);
@@ -688,10 +688,10 @@ public class BitVirtualizeE2ETests : E2ETestBase
         var html = await response.TextAsync();
 
         Assert.IsTrue(response.Ok);
-        StringAssert.Contains(html, "<div id=\"vir-basic\" role=\"list\" class=\"bit-vir vir-box\" tabindex=\"0\">");
-        StringAssert.Contains(html, "aria-setsize=\"1000000\" aria-posinset=\"1\"");
-        Assert.IsFalse(html.Contains(">Item 999<"), "Only a window is prerendered.");
-        StringAssert.Contains(html, "<span id=\"status\">Loading</span>");
+        Assert.Contains("<div id=\"vir-basic\" role=\"list\" class=\"bit-vir vir-box\" tabindex=\"0\">", html);
+        Assert.Contains("aria-setsize=\"1000000\" aria-posinset=\"1\"", html);
+        Assert.DoesNotContain(">Item 999<", html, "Only a window is prerendered.");
+        Assert.Contains("<span id=\"status\">Loading</span>", html);
     }
 
     [TestMethod]

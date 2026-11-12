@@ -19,28 +19,28 @@ public partial class BitTextFieldStylesheetTests
 
         // An explicit Size publishes these, so they are read before the variable, which only restyles the medium
         // field an unset one stands for.
-        StringAssert.Contains(stylesheet, "var(--bit-tfl-font-size, var(--bit-TextField-font-size, #{$tg-fs-sm}))");
-        StringAssert.Contains(stylesheet, "var(--bit-tfl-font-size, var(--bit-TextField-label-font-size, var(--bit-TextField-font-size, #{$tg-fs-sm})))");
-        StringAssert.Contains(stylesheet, "var(--bit-tfl-min-height, var(--bit-TextField-min-height, #{$siz-ctrl-md}))");
-        StringAssert.Contains(stylesheet, "var(--bit-tfl-line-height, var(--bit-TextField-line-height, #{spacing(2.125)}))");
-        StringAssert.Contains(stylesheet, "var(--bit-tfl-icon-font-size, var(--bit-TextField-icon-size, #{$siz-icon-md}))");
-        StringAssert.Contains(stylesheet, "var(--bit-tfl-btn-width, var(--bit-TextField-button-width, #{$siz-ctrl-md}))");
-        StringAssert.Contains(stylesheet, "var(--bit-tfl-spn-size, var(--bit-TextField-spinner-size, calc(var(--bit-TextField-icon-size, #{$siz-icon-md}) + 2 * #{$siz-spinner-stroke})))");
+        Assert.Contains("var(--bit-tfl-font-size, var(--bit-TextField-font-size, #{$tg-fs-sm}))", stylesheet);
+        Assert.Contains("var(--bit-tfl-font-size, var(--bit-TextField-label-font-size, var(--bit-TextField-font-size, #{$tg-fs-sm})))", stylesheet);
+        Assert.Contains("var(--bit-tfl-min-height, var(--bit-TextField-min-height, #{$siz-ctrl-md}))", stylesheet);
+        Assert.Contains("var(--bit-tfl-line-height, var(--bit-TextField-line-height, #{spacing(2.125)}))", stylesheet);
+        Assert.Contains("var(--bit-tfl-icon-font-size, var(--bit-TextField-icon-size, #{$siz-icon-md}))", stylesheet);
+        Assert.Contains("var(--bit-tfl-btn-width, var(--bit-TextField-button-width, #{$siz-ctrl-md}))", stylesheet);
+        Assert.Contains("var(--bit-tfl-spn-size, var(--bit-TextField-spinner-size, calc(var(--bit-TextField-icon-size, #{$siz-icon-md}) + 2 * #{$siz-spinner-stroke})))", stylesheet);
 
         // So does an explicit Accent, Background and Border, for every color they paint.
-        StringAssert.Contains(stylesheet, "var(--bit-tfl-clr, var(--bit-TextField-accent-color, #{$clr-pri}))");
-        StringAssert.Contains(stylesheet, "var(--bit-tfl-clr, var(--bit-TextField-button-color, var(--bit-TextField-accent-color, #{$clr-pri})))");
-        StringAssert.Contains(stylesheet, "focus-ring-own(var(--bit-tfl-clr-focus, var(--bit-TextField-focus-color)))");
-        StringAssert.Contains(stylesheet, "var(--bit-tfl-spn-clr, var(--bit-TextField-spinner-color, currentcolor))");
+        Assert.Contains("var(--bit-tfl-clr, var(--bit-TextField-accent-color, #{$clr-pri}))", stylesheet);
+        Assert.Contains("var(--bit-tfl-clr, var(--bit-TextField-button-color, var(--bit-TextField-accent-color, #{$clr-pri})))", stylesheet);
+        Assert.Contains("focus-ring-own(var(--bit-tfl-clr-focus, var(--bit-TextField-focus-color)))", stylesheet);
+        Assert.Contains("var(--bit-tfl-spn-clr, var(--bit-TextField-spinner-color, currentcolor))", stylesheet);
         // The frame at rest reads the variable its hover moves first, then the fill ranked as everywhere else.
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-tfl-fgp-bg, var(--bit-tfl-clr-bg, var(--bit-TextField-background, #{$clr-bg-pri})));");
-        StringAssert.Contains(stylesheet, "var(--bit-tfl-clr-brd, var(--bit-TextField-border-color, #{$clr-brd-pri}))");
-        StringAssert.Contains(stylesheet, "var(--bit-tfl-clr-brd-hover, var(--bit-TextField-hover-border-color, #{$clr-brd-pri-hover}))");
+        Assert.Contains("background-color: var(--bit-tfl-fgp-bg, var(--bit-tfl-clr-bg, var(--bit-TextField-background, #{$clr-bg-pri})));", stylesheet);
+        Assert.Contains("var(--bit-tfl-clr-brd, var(--bit-TextField-border-color, #{$clr-brd-pri}))", stylesheet);
+        Assert.Contains("var(--bit-tfl-clr-brd-hover, var(--bit-TextField-hover-border-color, #{$clr-brd-pri-hover}))", stylesheet);
 
         // The hovered fill and the focused frame are states no Background or Border kind has a value of its own for,
         // so their variables still come first and fall back to the fill and the frame ranked as above.
-        StringAssert.Contains(stylesheet, "var(--bit-TextField-hover-background, var(--bit-tfl-clr-bg, var(--bit-TextField-background, #{$clr-bg-pri})))");
-        StringAssert.Contains(stylesheet, "var(--bit-TextField-focus-border-color, var(--bit-tfl-clr-brd, var(--bit-TextField-border-color, #{$clr-brd-pri})))");
+        Assert.Contains("var(--bit-TextField-hover-background, var(--bit-tfl-clr-bg, var(--bit-TextField-background, #{$clr-bg-pri})))", stylesheet);
+        Assert.Contains("var(--bit-TextField-focus-border-color, var(--bit-tfl-clr-brd, var(--bit-TextField-border-color, #{$clr-brd-pri})))", stylesheet);
 
         var offenders = PublicBeforePrivate().Matches(stylesheet)
                                              .Select(m => m.Value)
@@ -48,7 +48,7 @@ public partial class BitTextFieldStylesheetTests
                                                          v.StartsWith("var(--bit-TextField-focus-border-color,") is false)
                                              .ToArray();
 
-        CollectionAssert.AreEqual(System.Array.Empty<string>(), offenders, "A public variable is read before the parameter it restyles the default of.");
+        Assert.AreSequenceEqual(System.Array.Empty<string>(), offenders, "A public variable is read before the parameter it restyles the default of.");
     }
 
     [TestMethod]
@@ -63,7 +63,7 @@ public partial class BitTextFieldStylesheetTests
                                          "--bit-tfl-btn-width", "--bit-tfl-spn-size", "--bit-tfl-clr", "--bit-tfl-clr-focus", "--bit-tfl-clr-bg", "--bit-tfl-clr-brd",
                                          "--bit-tfl-clr-brd-hover" })
         {
-            StringAssert.Contains(root, $"{property}: initial;");
+            Assert.Contains($"{property}: initial;", root);
         }
     }
 
@@ -74,7 +74,7 @@ public partial class BitTextFieldStylesheetTests
 
         // The arc reads the Accent before its public variable, so the disabled field hands it the grey of its slot
         // instead - the state is read before the parameter, as everywhere else.
-        StringAssert.Contains(disabled, "--bit-tfl-spn-clr: currentcolor;");
+        Assert.Contains("--bit-tfl-spn-clr: currentcolor;", disabled);
     }
 
     [TestMethod]
@@ -85,17 +85,17 @@ public partial class BitTextFieldStylesheetTests
         // The frame is the one rule that reads the variable. Every part at an end of it inherits the corners the frame is
         // drawn with instead, so a radius of several corners, or one given to the frame through Styles or Classes, reaches
         // them too - a copy of the variable would not.
-        Assert.AreEqual(1, Regex.Matches(stylesheet, @"--bit-TextField-radius\b").Count, "A part reads the radius variable instead of inheriting the frame's corners.");
-        StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-tfl-fgp {"), "border-radius: var(--bit-TextField-radius, #{$shp-radius-control});");
+        Assert.ContainsSingle(Regex.Matches(stylesheet, @"--bit-TextField-radius\b"), "A part reads the radius variable instead of inheriting the frame's corners.");
+        Assert.Contains("border-radius: var(--bit-TextField-radius, #{$shp-radius-control});", SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-tfl-fgp {"));
 
         // One rule per end for every part, at the weight of a single class, leaving alone an end a template holds.
-        StringAssert.Contains(stylesheet, ":where(.bit-tfl:not(.bit-tfl-ptm) > .bit-tfl-wrp > .bit-tfl-fgp) > :first-child {");
-        StringAssert.Contains(stylesheet, ":where(.bit-tfl:not(.bit-tfl-stm) > .bit-tfl-wrp > .bit-tfl-fgp) > :last-child {");
+        Assert.Contains(":where(.bit-tfl:not(.bit-tfl-ptm) > .bit-tfl-wrp > .bit-tfl-fgp) > :first-child {", stylesheet);
+        Assert.Contains(":where(.bit-tfl:not(.bit-tfl-stm) > .bit-tfl-wrp > .bit-tfl-fgp) > :last-child {", stylesheet);
 
         // The input and the overlay under it copy the physical corners of the ghost wrapper, which has the frame's
         // direction, so an input given a direction of its own is still rounded on the side the frame is.
-        StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-tfl-inp {"), "border-radius: inherit;");
-        StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-tfl-gho {"), "border-radius: inherit;");
+        Assert.Contains("border-radius: inherit;", SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-tfl-inp {"));
+        Assert.Contains("border-radius: inherit;", SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-tfl-gho {"));
     }
 
     [TestMethod]
@@ -106,10 +106,10 @@ public partial class BitTextFieldStylesheetTests
 
         // The cover is read the way the frame's fill is, the variable the hover moves first, and reaches the middle of a
         // textarea of any size: an inset shadow only reaches in from each edge as far as its spread.
-        StringAssert.Contains(input, "-webkit-box-shadow: 0 0 0 100vmax var(--bit-tfl-fgp-bg, var(--bit-tfl-clr-bg, var(--bit-TextField-background, #{$clr-bg-pri}))) inset;");
+        Assert.Contains("-webkit-box-shadow: 0 0 0 100vmax var(--bit-tfl-fgp-bg, var(--bit-tfl-clr-bg, var(--bit-TextField-background, #{$clr-bg-pri}))) inset;", input);
 
         // A disabled frame hands the cover its own fill through that same variable.
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n    &.bit-dis {"), "--bit-tfl-fgp-bg: var(--bit-TextField-disabled-background, #{$clr-bg-dis});");
+        Assert.Contains("--bit-tfl-fgp-bg: var(--bit-TextField-disabled-background, #{$clr-bg-dis});", SourceFiles.GetScssBlock(stylesheet, "\n    &.bit-dis {"));
     }
 
     private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Inputs", "TextField", "BitTextField.scss");

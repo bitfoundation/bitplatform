@@ -61,8 +61,8 @@ public class BitChartUtilsTests
     {
         Assert.IsTrue(BitChartColorUtil.TryParse(BitChartColorUtil.Adjust("#808080", 0.5), out var lr, out _, out _, out _));
         Assert.IsTrue(BitChartColorUtil.TryParse(BitChartColorUtil.Adjust("#808080", -0.5), out var dr, out _, out _, out _));
-        Assert.IsTrue(lr > 128);
-        Assert.IsTrue(dr < 128);
+        Assert.IsGreaterThan(128, lr);
+        Assert.IsLessThan(128, dr);
     }
 
     [TestMethod]
@@ -105,19 +105,19 @@ public class BitChartUtilsTests
         double small = BitChartTextMeasure.Width("Hello", 10);
         double big = BitChartTextMeasure.Width("Hello", 20);
         Assert.AreEqual(small * 2, big, 0.001);
-        Assert.IsTrue(BitChartTextMeasure.Width("Hello world", 12) > BitChartTextMeasure.Width("Hello", 12));
+        Assert.IsGreaterThan(BitChartTextMeasure.Width("Hello", 12), BitChartTextMeasure.Width("Hello world", 12));
     }
 
     [TestMethod]
     public void TextMeasureShouldKnowNarrowGlyphsFromWideOnes()
     {
-        Assert.IsTrue(BitChartTextMeasure.Width("iiii", 12) < BitChartTextMeasure.Width("WWWW", 12));
+        Assert.IsLessThan(BitChartTextMeasure.Width("WWWW", 12), BitChartTextMeasure.Width("iiii", 12));
     }
 
     [TestMethod]
     public void TextMeasureShouldMakeBoldTextWider()
     {
-        Assert.IsTrue(BitChartTextMeasure.Width("Total", 12, "bold") > BitChartTextMeasure.Width("Total", 12));
+        Assert.IsGreaterThan(BitChartTextMeasure.Width("Total", 12), BitChartTextMeasure.Width("Total", 12, "bold"));
     }
 
     [TestMethod]
@@ -141,7 +141,7 @@ public class BitChartUtilsTests
     [TestMethod]
     public void AFullWidthLabelShouldMeasureWiderThanTheSameCountOfLatinLetters()
     {
-        Assert.IsTrue(BitChartTextMeasure.Width("東京都", 12) > BitChartTextMeasure.Width("abc", 12));
+        Assert.IsGreaterThan(BitChartTextMeasure.Width("abc", 12), BitChartTextMeasure.Width("東京都", 12));
     }
 
     [TestMethod]
@@ -156,7 +156,7 @@ public class BitChartUtilsTests
     public void TextMeasureShouldStillHandleUnknownLatinLikeCharacters()
     {
         // Beyond the table but not full-width: measured at the average rather than dropped.
-        Assert.IsTrue(BitChartTextMeasure.Width("Ω", 12) > 0);
+        Assert.IsGreaterThan(0, BitChartTextMeasure.Width("Ω", 12));
     }
 
     [TestMethod]
@@ -177,7 +177,7 @@ public class BitChartUtilsTests
 
         var sampled = BitChartDecimation.Lttb(data, 100);
 
-        Assert.AreEqual(100, sampled.Count);
+        Assert.HasCount(100, sampled);
     }
 
     [TestMethod]
@@ -200,7 +200,7 @@ public class BitChartUtilsTests
         var sampled = BitChartDecimation.Lttb(data, 120);
 
         for (int i = 1; i < sampled.Count; i++)
-            Assert.IsTrue(sampled[i].x >= sampled[i - 1].x, $"out of order at {i}");
+            Assert.IsGreaterThanOrEqualTo(sampled[i - 1].x, sampled[i].x, $"out of order at {i}");
     }
 
     [TestMethod]
@@ -210,7 +210,7 @@ public class BitChartUtilsTests
 
         var sampled = BitChartDecimation.Lttb(data, 30);
 
-        Assert.IsTrue(sampled.Any(p => p.y >= 1000), "the spike is what the chart is about; it must survive");
+        Assert.Contains(p => p.y >= 1000, sampled, "the spike is what the chart is about; it must survive");
     }
 
     [TestMethod]
@@ -243,8 +243,8 @@ public class BitChartUtilsTests
         var ticks = BitChartTimeAxis.Ticks(start.ToOADate(), start.AddDays(365).ToOADate(),
             BitChartTimeUnit.Day, null, 8);
 
-        Assert.IsTrue(ticks.Count <= 8 * 3, $"got {ticks.Count} ticks");
-        Assert.IsTrue(ticks.Count > 1);
+        Assert.IsLessThanOrEqualTo(8 * 3, ticks.Count, $"got {ticks.Count} ticks");
+        Assert.IsGreaterThan(1, ticks.Count);
     }
 
     [TestMethod]
@@ -258,7 +258,7 @@ public class BitChartUtilsTests
         for (int i = 0; i < ticks.Count; i++)
         {
             Assert.IsTrue(ticks[i].Value >= min - 1e-9 && ticks[i].Value <= max + 1e-9);
-            if (i > 0) Assert.IsTrue(ticks[i].Value > ticks[i - 1].Value);
+            if (i > 0) Assert.IsGreaterThan(ticks[i - 1].Value, ticks[i].Value);
         }
     }
 
@@ -276,7 +276,7 @@ public class BitChartUtilsTests
     public void TimeAxisShouldAlwaysProduceAtLeastOneTick()
     {
         double value = new DateTime(2026, 5, 5).ToOADate();
-        Assert.AreEqual(1, BitChartTimeAxis.Ticks(value, value, BitChartTimeUnit.Year, null, 5).Count);
+        Assert.ContainsSingle(BitChartTimeAxis.Ticks(value, value, BitChartTimeUnit.Year, null, 5));
     }
 
     [TestMethod]
@@ -301,7 +301,7 @@ public class BitChartUtilsTests
         var ticks = BitChartTimeAxis.Ticks(start.ToOADate(), start.AddDays(120).ToOADate(),
             BitChartTimeUnit.Month, null, 10, new CultureInfo("fr-FR"));
 
-        Assert.IsTrue(ticks.Any(t => t.Label.StartsWith("janv")), string.Join("|", ticks.Select(t => t.Label)));
+        Assert.Contains(t => t.Label.StartsWith("janv"), ticks, string.Join("|", ticks.Select(t => t.Label)));
     }
 
     [TestMethod]
@@ -311,7 +311,7 @@ public class BitChartUtilsTests
         var ticks = BitChartTimeAxis.Ticks(start.ToOADate(), start.AddDays(120).ToOADate(),
             BitChartTimeUnit.Month, null, 10);
 
-        Assert.IsTrue(ticks.Any(t => t.Label.StartsWith("Jan")), string.Join("|", ticks.Select(t => t.Label)));
+        Assert.Contains(t => t.Label.StartsWith("Jan"), ticks, string.Join("|", ticks.Select(t => t.Label)));
     }
 
     // ---- point shapes ----
@@ -345,7 +345,7 @@ public class BitChartUtilsTests
     {
         var node = BitChartPointShapes.Build(BitChartPointStyle.Triangle, 10, 20, 5, "#f00", "#00f", 1, 45);
 
-        StringAssert.Contains(node!.Transform!, "rotate(45 10 20)");
+        Assert.Contains("rotate(45 10 20)", node!.Transform!);
     }
 
     // ---- number formatting ----
@@ -454,8 +454,8 @@ public class BitChartUtilsTests
         scale.SetDataRange(0, 10_000_000);
         scale.SetPixelRange(600, 0);
 
-        Assert.IsTrue(scale.Ticks.Count <= 100, $"got {scale.Ticks.Count} ticks");
-        Assert.IsTrue(scale.Ticks.Count >= 2);
+        Assert.IsLessThanOrEqualTo(100, scale.Ticks.Count, $"got {scale.Ticks.Count} ticks");
+        Assert.IsGreaterThanOrEqualTo(2, scale.Ticks.Count);
     }
 
     [TestMethod]
@@ -464,7 +464,7 @@ public class BitChartUtilsTests
         foreach (var (min, max) in new[] { (-1e12, 1e12), (0d, 0d), (double.NaN, 5d), (1e9, -1e9) })
         {
             var ticks = BitChartTimeAxis.Ticks(min, max, BitChartTimeUnit.Auto, null, 8);
-            Assert.IsTrue(ticks.Count > 0, $"{min}..{max} produced no ticks");
+            Assert.IsNotEmpty(ticks, $"{min}..{max} produced no ticks");
         }
     }
 
@@ -474,7 +474,7 @@ public class BitChartUtilsTests
         double end = DateTime.MaxValue.AddDays(-1).ToOADate();
         var ticks = BitChartTimeAxis.Ticks(end, end + 0.5, BitChartTimeUnit.Year, null, 5);
 
-        Assert.IsTrue(ticks.Count > 0);
-        Assert.IsTrue(ticks.Count < 100);
+        Assert.IsNotEmpty(ticks);
+        Assert.IsLessThan(100, ticks.Count);
     }
 }

@@ -244,7 +244,7 @@ public class BitMarkdownViewerTests : BunitTestContext
         });
 
         var imgs = component.FindAll(".bit-mdv img");
-        Assert.AreEqual(1, imgs.Count);
+        Assert.ContainsSingle(imgs);
         // No src means the browser never issues the cross-origin (exfiltration) request.
         var src = imgs[0].GetAttribute("src") ?? string.Empty;
         Assert.AreEqual(string.Empty, src);
@@ -262,7 +262,7 @@ public class BitMarkdownViewerTests : BunitTestContext
         });
 
         var imgs = component.FindAll(".bit-mdv img");
-        Assert.AreEqual(2, imgs.Count);
+        Assert.HasCount(2, imgs);
         Assert.IsTrue(imgs.All(img => string.IsNullOrEmpty(img.GetAttribute("src"))));
     }
 
@@ -276,7 +276,7 @@ public class BitMarkdownViewerTests : BunitTestContext
         });
 
         var imgs = component.FindAll(".bit-mdv img");
-        Assert.AreEqual(1, imgs.Count);
+        Assert.ContainsSingle(imgs);
         Assert.AreEqual("/assets/logo.png", imgs[0].GetAttribute("src"));
     }
 
@@ -292,7 +292,7 @@ public class BitMarkdownViewerTests : BunitTestContext
         });
 
         var imgs = component.FindAll(".bit-mdv img");
-        Assert.AreEqual(1, imgs.Count);
+        Assert.ContainsSingle(imgs);
         Assert.AreEqual("http://localhost/assets/logo.png", imgs[0].GetAttribute("src"));
     }
 
@@ -307,7 +307,7 @@ public class BitMarkdownViewerTests : BunitTestContext
         });
 
         var imgs = component.FindAll(".bit-mdv img");
-        Assert.AreEqual(1, imgs.Count);
+        Assert.ContainsSingle(imgs);
         Assert.AreEqual(string.Empty, imgs[0].GetAttribute("src") ?? string.Empty);
     }
 
@@ -321,7 +321,7 @@ public class BitMarkdownViewerTests : BunitTestContext
         });
 
         var imgs = component.FindAll(".bit-mdv img");
-        Assert.AreEqual(1, imgs.Count);
+        Assert.ContainsSingle(imgs);
         Assert.AreEqual(string.Empty, imgs[0].GetAttribute("src") ?? string.Empty);
     }
 
@@ -335,7 +335,7 @@ public class BitMarkdownViewerTests : BunitTestContext
         });
 
         var imgs = component.FindAll(".bit-mdv img");
-        Assert.AreEqual(1, imgs.Count);
+        Assert.ContainsSingle(imgs);
         Assert.AreEqual(string.Empty, imgs[0].GetAttribute("src") ?? string.Empty);
     }
 
@@ -349,7 +349,7 @@ public class BitMarkdownViewerTests : BunitTestContext
         });
 
         var imgs = component.FindAll(".bit-mdv img");
-        Assert.AreEqual(1, imgs.Count);
+        Assert.ContainsSingle(imgs);
         Assert.AreEqual("https://example.com/a.png", imgs[0].GetAttribute("src"));
         Assert.AreEqual("no-referrer", imgs[0].GetAttribute("referrerpolicy"));
     }
@@ -498,7 +498,7 @@ public class BitMarkdownViewerTests : BunitTestContext
 
         Assert.Contains("<ol", markup);
         Assert.Contains("start=\"3\"", markup);
-        Assert.AreEqual(2, component.FindAll(".bit-mdv ol li").Count);
+        Assert.HasCount(2, component.FindAll(".bit-mdv ol li"));
     }
 
     [TestMethod]
@@ -559,7 +559,7 @@ public class BitMarkdownViewerTests : BunitTestContext
 
         var links = component.FindAll(".bit-mdv a");
 
-        Assert.AreEqual(2, links.Count);
+        Assert.HasCount(2, links);
         Assert.AreEqual("https://bitplatform.dev", links[0].GetAttribute("href"));
         Assert.AreEqual("https://bitplatform.dev", links[1].GetAttribute("href"));
     }
@@ -627,7 +627,7 @@ public class BitMarkdownViewerTests : BunitTestContext
         var markup = component.Markup;
 
         Assert.Contains("[a] then", markup);
-        Assert.AreEqual(1, component.FindAll(".bit-mdv a").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-mdv a"));
     }
 
     [TestMethod]
@@ -641,7 +641,7 @@ public class BitMarkdownViewerTests : BunitTestContext
         var markup = component.Markup;
 
         Assert.Contains("[1] and [note] here", markup);
-        Assert.AreEqual(0, component.FindAll(".bit-mdv a").Count);
+        Assert.IsEmpty(component.FindAll(".bit-mdv a"));
     }
 
     [TestMethod]
@@ -657,7 +657,7 @@ public class BitMarkdownViewerTests : BunitTestContext
             parameters.Add(p => p.Pipeline, BitMarkdownPipelines.GitHub);
         });
 
-        Assert.AreEqual(2, component.FindAll(".bit-mdv input[type=checkbox]").Count);
+        Assert.HasCount(2, component.FindAll(".bit-mdv input[type=checkbox]"));
     }
 
     [TestMethod]
@@ -812,7 +812,7 @@ public class BitMarkdownViewerTests : BunitTestContext
 
         var items = component.FindAll(".bit-mdv .footnotes li");
 
-        Assert.AreEqual(2, items.Count);
+        Assert.HasCount(2, items);
         Assert.Contains("B.", items[0].TextContent);
         Assert.Contains("A.", items[1].TextContent);
     }
@@ -833,7 +833,7 @@ public class BitMarkdownViewerTests : BunitTestContext
 
         Assert.Contains($"id=\"{scope}-fnref-1\"", markup);
         Assert.Contains($"id=\"{scope}-fnref-1-2\"", markup);
-        Assert.AreEqual(2, component.FindAll(".bit-mdv .footnote-backref").Count);
+        Assert.HasCount(2, component.FindAll(".bit-mdv .footnote-backref"));
     }
 
     [TestMethod]
@@ -850,10 +850,10 @@ public class BitMarkdownViewerTests : BunitTestContext
         var item = component.Find(".bit-mdv .footnote-item");
         var paragraphs = item.Children.Where(c => c.TagName == "P").ToList();
 
-        Assert.AreEqual(2, paragraphs.Count);
+        Assert.HasCount(2, paragraphs);
         Assert.AreEqual(0, paragraphs[0].QuerySelectorAll(".footnote-backref").Length);
         Assert.AreEqual(2, paragraphs[1].QuerySelectorAll(".footnote-backref").Length);
-        Assert.IsFalse(item.Children.Any(c => c.ClassList.Contains("footnote-backref")));
+        Assert.DoesNotContain(c => c.ClassList.Contains("footnote-backref"), item.Children);
     }
 
     [TestMethod]
@@ -947,7 +947,7 @@ public class BitMarkdownViewerTests : BunitTestContext
 
         Assert.AreEqual(title, component.Find(".bit-mdv .markdown-alert-title").TextContent);
         Assert.Contains("Something worth knowing.", alert.TextContent);
-        Assert.AreEqual(0, component.FindAll(".bit-mdv blockquote").Count);
+        Assert.IsEmpty(component.FindAll(".bit-mdv blockquote"));
     }
 
     [TestMethod]
@@ -959,8 +959,8 @@ public class BitMarkdownViewerTests : BunitTestContext
             parameters.Add(p => p.Pipeline, BitMarkdownPipelines.Advanced);
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-mdv blockquote").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-mdv .markdown-alert").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-mdv blockquote"));
+        Assert.IsEmpty(component.FindAll(".bit-mdv .markdown-alert"));
     }
 
     [TestMethod]
@@ -973,8 +973,8 @@ public class BitMarkdownViewerTests : BunitTestContext
             parameters.Add(p => p.Pipeline, BitMarkdownPipelines.Advanced);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-mdv .markdown-alert").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-mdv blockquote").Count);
+        Assert.IsEmpty(component.FindAll(".bit-mdv .markdown-alert"));
+        Assert.ContainsSingle(component.FindAll(".bit-mdv blockquote"));
     }
 
     [TestMethod]
@@ -986,8 +986,8 @@ public class BitMarkdownViewerTests : BunitTestContext
             parameters.Add(p => p.Pipeline, BitMarkdownPipelines.Basic);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-mdv .markdown-alert").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-mdv blockquote").Count);
+        Assert.IsEmpty(component.FindAll(".bit-mdv .markdown-alert"));
+        Assert.ContainsSingle(component.FindAll(".bit-mdv blockquote"));
     }
 
     [TestMethod]
@@ -1003,7 +1003,7 @@ public class BitMarkdownViewerTests : BunitTestContext
         });
 
         Assert.Contains("class=\"footnote-ref\"", component.Markup);
-        Assert.AreEqual(1, component.FindAll(".bit-mdv .markdown-alert-tip").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-mdv .markdown-alert-tip"));
     }
 
     [TestMethod]
@@ -1017,7 +1017,7 @@ public class BitMarkdownViewerTests : BunitTestContext
         });
 
         Assert.Contains("two[^B].", component.Markup);
-        Assert.AreEqual(1, component.FindAll(".bit-mdv .footnote-ref").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-mdv .footnote-ref"));
     }
 
     [TestMethod]
@@ -1030,7 +1030,7 @@ public class BitMarkdownViewerTests : BunitTestContext
 
         var links = component.FindAll(".bit-mdv a");
 
-        Assert.AreEqual(1, links.Count);
+        Assert.ContainsSingle(links);
         Assert.AreEqual("/o", links[0].GetAttribute("href"));
         // The inner link is unwrapped; its content survives as the outer link's text.
         Assert.AreEqual("inner", links[0].TextContent);
@@ -1049,7 +1049,7 @@ public class BitMarkdownViewerTests : BunitTestContext
             parameters.Add(p => p.Pipeline, pipeline);
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-mdv br").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-mdv br"));
     }
 
     [TestMethod]
@@ -1060,7 +1060,7 @@ public class BitMarkdownViewerTests : BunitTestContext
             parameters.Add(p => p.Markdown, "line one\nline two");
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-mdv br").Count);
+        Assert.IsEmpty(component.FindAll(".bit-mdv br"));
     }
 
     // -- Rendering details ---------------------------------------------------
@@ -1170,7 +1170,7 @@ public class BitMarkdownViewerTests : BunitTestContext
 
         var headings = BitMarkdownAstHelper.Descendants(parsed).OfType<BitMarkdownHeadingNode>().ToList();
 
-        Assert.AreEqual(2, headings.Count);
+        Assert.HasCount(2, headings);
         Assert.AreEqual("one", headings[0].Id);
         Assert.AreEqual("two", headings[1].Id);
     }
@@ -1199,7 +1199,7 @@ public class BitMarkdownViewerTests : BunitTestContext
             parameters.Add(p => p.Markdown, "one  \ntwo\\\nthree");
         });
 
-        Assert.AreEqual(2, component.FindAll(".bit-mdv br").Count);
+        Assert.HasCount(2, component.FindAll(".bit-mdv br"));
     }
 
     [TestMethod]
@@ -1210,7 +1210,7 @@ public class BitMarkdownViewerTests : BunitTestContext
             parameters.Add(p => p.Markdown, "- one\n\n- two");
         });
 
-        Assert.AreEqual(2, component.FindAll(".bit-mdv li > p").Count);
+        Assert.HasCount(2, component.FindAll(".bit-mdv li > p"));
     }
 
     [TestMethod]
@@ -1221,8 +1221,8 @@ public class BitMarkdownViewerTests : BunitTestContext
             parameters.Add(p => p.Markdown, "- one\n- two");
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-mdv li > p").Count);
-        Assert.AreEqual(2, component.FindAll(".bit-mdv li").Count);
+        Assert.IsEmpty(component.FindAll(".bit-mdv li > p"));
+        Assert.HasCount(2, component.FindAll(".bit-mdv li"));
     }
 
     [TestMethod]
@@ -1233,7 +1233,7 @@ public class BitMarkdownViewerTests : BunitTestContext
             parameters.Add(p => p.Markdown, "- one\n* two");
         });
 
-        Assert.AreEqual(2, component.FindAll(".bit-mdv ul").Count);
+        Assert.HasCount(2, component.FindAll(".bit-mdv ul"));
     }
 
     [TestMethod]
@@ -1263,7 +1263,7 @@ public class BitMarkdownViewerTests : BunitTestContext
 
         var cells = component.FindAll(".bit-mdv tbody td");
 
-        Assert.AreEqual(2, cells.Count);
+        Assert.HasCount(2, cells);
         Assert.AreEqual("x | y", cells[0].TextContent);
     }
 
@@ -1330,7 +1330,7 @@ public class BitMarkdownViewerTests : BunitTestContext
             parameters.Add(p => p.Pipeline, BitMarkdownPipelines.GitHub);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-mdv a").Count);
+        Assert.IsEmpty(component.FindAll(".bit-mdv a"));
     }
 
     [TestMethod]
@@ -1357,7 +1357,7 @@ public class BitMarkdownViewerTests : BunitTestContext
 
         var links = component.FindAll(".bit-mdv a");
 
-        Assert.AreEqual(1, links.Count);
+        Assert.ContainsSingle(links);
         Assert.AreEqual("https://a.com", links[0].GetAttribute("href"));
     }
 
@@ -1380,7 +1380,7 @@ public class BitMarkdownViewerTests : BunitTestContext
             parameters.Add(p => p.Markdown, "> outer\n>\n> > inner");
         });
 
-        Assert.AreEqual(2, component.FindAll(".bit-mdv blockquote").Count);
+        Assert.HasCount(2, component.FindAll(".bit-mdv blockquote"));
     }
 
     [TestMethod]
@@ -1393,7 +1393,7 @@ public class BitMarkdownViewerTests : BunitTestContext
 
         var links = component.FindAll(".bit-mdv a");
 
-        Assert.AreEqual(2, links.Count);
+        Assert.HasCount(2, links);
         Assert.AreEqual("https://bitplatform.dev", links[0].GetAttribute("href"));
         Assert.AreEqual("mailto:a@b.com", links[1].GetAttribute("href"));
     }
@@ -1559,8 +1559,8 @@ public class BitMarkdownViewerTests : BunitTestContext
         // A fence after any content - or nested inside a block quote - is an ordinary thematic
         // break, not a metadata block.
         Assert.IsNull(BitMarkdownFrontMatterNode.Find(pipeline.Parse("intro\n\n---\na: b\n---\n")));
-        Assert.AreEqual(0, BitMarkdownAstHelper.Descendants(pipeline.Parse("> ---\n> a: b\n> ---\n"))
-                                               .OfType<BitMarkdownFrontMatterNode>().Count());
+        Assert.IsEmpty(BitMarkdownAstHelper.Descendants(pipeline.Parse("> ---\n> a: b\n> ---\n"))
+                                               .OfType<BitMarkdownFrontMatterNode>());
     }
 
     [TestMethod]
@@ -1574,7 +1574,7 @@ public class BitMarkdownViewerTests : BunitTestContext
             parameters.Add(p => p.Pipeline, pipeline);
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-mdv hr").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-mdv hr"));
     }
 
     [TestMethod]
@@ -1657,7 +1657,7 @@ public class BitMarkdownViewerTests : BunitTestContext
             parameters.Add(p => p.Pipeline, BitMarkdownPipelines.Advanced);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-mdv .bit-mdv-anchor").Count);
+        Assert.IsEmpty(component.FindAll(".bit-mdv .bit-mdv-anchor"));
     }
 
     [TestMethod]
@@ -1685,7 +1685,7 @@ public class BitMarkdownViewerTests : BunitTestContext
         var root = component.Find(".bit-mdv");
 
         Assert.AreEqual("SPAN", root.TagName);
-        Assert.Contains("bit-mdv-inline", root.ClassName);
+        Assert.Contains("bit-mdv-inline", root.ClassName!);
         Assert.DoesNotContain("<p>", root.InnerHtml);
         Assert.Contains("<strong>bold</strong>", root.InnerHtml);
     }
@@ -1716,7 +1716,7 @@ public class BitMarkdownViewerTests : BunitTestContext
         var root = component.Find(".bit-mdv");
 
         Assert.AreEqual("DIV", root.TagName);
-        Assert.DoesNotContain("bit-mdv-inline", root.ClassName);
+        Assert.DoesNotContain("bit-mdv-inline", root.ClassName!);
         Assert.Contains("<p>", root.InnerHtml);
     }
 
@@ -1769,7 +1769,7 @@ public class BitMarkdownViewerTests : BunitTestContext
         var root = component.Find(".bit-mdv");
 
         // The classes are what let the stylesheet drop the bullets without ":has()".
-        Assert.Contains("contains-task-list", root.QuerySelector("ul")!.ClassName);
+        Assert.Contains("contains-task-list", root.QuerySelector("ul")!.ClassName!);
         Assert.AreEqual(2, root.QuerySelectorAll("li.task-list-item").Length);
     }
 
@@ -1818,7 +1818,7 @@ public class BitMarkdownViewerTests : BunitTestContext
 
         var container = component.Find(".bit-mdv .markdown-container");
 
-        Assert.Contains("markdown-container-warning", container.ClassName);
+        Assert.Contains("markdown-container-warning", container.ClassName!);
         Assert.AreEqual("Read this", container.QuerySelector(".markdown-container-title")!.TextContent);
         Assert.IsNotNull(container.QuerySelector("strong"));
     }
@@ -1835,8 +1835,8 @@ public class BitMarkdownViewerTests : BunitTestContext
         Assert.IsNotNull(outer);
         Assert.AreEqual("note", outer.Name);
         // The inner fence is balanced against its own closer, so it does not end the outer one.
-        Assert.AreEqual(1, outer.Children.OfType<BitMarkdownContainerNode>().Count());
-        Assert.AreEqual(2, outer.Children.OfType<BitMarkdownParagraphNode>().Count());
+        Assert.ContainsSingle(outer.Children.OfType<BitMarkdownContainerNode>());
+        Assert.HasCount(2, outer.Children.OfType<BitMarkdownParagraphNode>());
     }
 
     [TestMethod]
@@ -1848,7 +1848,7 @@ public class BitMarkdownViewerTests : BunitTestContext
             parameters.Add(p => p.Pipeline, BitMarkdownPipelines.GitHub);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-mdv .markdown-container").Count);
+        Assert.IsEmpty(component.FindAll(".bit-mdv .markdown-container"));
         Assert.Contains(":::warning", component.Find(".bit-mdv").TextContent);
     }
 
@@ -1900,7 +1900,7 @@ public class BitMarkdownViewerTests : BunitTestContext
             parameters.Add(p => p.Pipeline, pipeline);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-mdv dl").Count);
+        Assert.IsEmpty(component.FindAll(".bit-mdv dl"));
     }
 
     [TestMethod]
@@ -1912,8 +1912,8 @@ public class BitMarkdownViewerTests : BunitTestContext
 
         var document = pipeline.Parse(":::note\nx\n:::\n\nTerm\n: def");
 
-        Assert.AreEqual(1, document.Children.OfType<BitMarkdownContainerNode>().Count());
-        Assert.AreEqual(1, document.Children.OfType<BitMarkdownDefinitionListNode>().Count());
+        Assert.ContainsSingle(document.Children.OfType<BitMarkdownContainerNode>());
+        Assert.ContainsSingle(document.Children.OfType<BitMarkdownDefinitionListNode>());
     }
 
     [TestMethod]
@@ -2027,7 +2027,7 @@ public class BitMarkdownViewerTests : BunitTestContext
             parameters.Add(p => p.Pipeline, pipeline);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-mdv .math").Count);
+        Assert.IsEmpty(component.FindAll(".bit-mdv .math"));
     }
 
     [TestMethod]
@@ -2039,7 +2039,7 @@ public class BitMarkdownViewerTests : BunitTestContext
             parameters.Add(p => p.Pipeline, BitMarkdownPipelines.Advanced);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-mdv .math").Count);
+        Assert.IsEmpty(component.FindAll(".bit-mdv .math"));
     }
 
     [TestMethod]
@@ -2072,7 +2072,7 @@ public class BitMarkdownViewerTests : BunitTestContext
         });
 
         // Neither an untitled image nor one sitting inside a sentence becomes a figure.
-        Assert.AreEqual(0, component.FindAll(".bit-mdv figure").Count);
+        Assert.IsEmpty(component.FindAll(".bit-mdv figure"));
     }
 
     [TestMethod]
@@ -2427,8 +2427,8 @@ public class BitMarkdownViewerTests : BunitTestContext
 
         Assert.IsNotNull(outer);
         Assert.AreEqual("note", outer.Name);
-        Assert.AreEqual(1, outer.Children.OfType<BitMarkdownContainerNode>().Count());
-        Assert.AreEqual(2, outer.Children.OfType<BitMarkdownParagraphNode>().Count());
+        Assert.ContainsSingle(outer.Children.OfType<BitMarkdownContainerNode>());
+        Assert.HasCount(2, outer.Children.OfType<BitMarkdownParagraphNode>());
     }
 
     [TestMethod]
@@ -2523,7 +2523,7 @@ public class BitMarkdownViewerTests : BunitTestContext
 
         Assert.AreEqual("/cat.png", figure.GetAttribute("data-src"));
         Assert.AreEqual("a cat", figure.TextContent);
-        Assert.AreEqual(0, component.FindAll(".bit-mdv img").Count);
+        Assert.IsEmpty(component.FindAll(".bit-mdv img"));
     }
 
     [TestMethod]
@@ -2545,7 +2545,7 @@ public class BitMarkdownViewerTests : BunitTestContext
 
         Assert.AreEqual("https://bitplatform.dev", button.GetAttribute("data-href"));
         Assert.AreEqual("bit", button.TextContent);
-        Assert.AreEqual(0, component.FindAll(".bit-mdv a").Count);
+        Assert.IsEmpty(component.FindAll(".bit-mdv a"));
     }
 
     [TestMethod]
@@ -2599,7 +2599,7 @@ public class BitMarkdownViewerTests : BunitTestContext
             parameters.Add(p => p.LinkTemplate, link => builder => builder.AddContent(0, "LINK"));
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-mdv a").Count);
+        Assert.IsEmpty(component.FindAll(".bit-mdv a"));
         Assert.Contains("LINK", component.Find(".bit-mdv").TextContent);
     }
 
@@ -2701,7 +2701,7 @@ public class BitMarkdownViewerTests : BunitTestContext
             parameters.Add(p => p.Pipeline, pipeline);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-mdv .math").Count);
+        Assert.IsEmpty(component.FindAll(".bit-mdv .math"));
         Assert.AreEqual("a $5 rebate", component.Find(".bit-mdv p").TextContent);
     }
 
@@ -2716,7 +2716,7 @@ public class BitMarkdownViewerTests : BunitTestContext
             parameters.Add(p => p.Pipeline, pipeline);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-mdv .math").Count);
+        Assert.IsEmpty(component.FindAll(".bit-mdv .math"));
         Assert.AreEqual("a $x and b", component.Find(".bit-mdv p").TextContent);
     }
 
@@ -2743,8 +2743,8 @@ public class BitMarkdownViewerTests : BunitTestContext
         var quoted = pipeline.Parse("> :::note\n> x\n> :::");
         var listed = pipeline.Parse("- Term\n  : def");
 
-        Assert.AreEqual(1, BitMarkdownAstHelper.Descendants(quoted).OfType<BitMarkdownContainerNode>().Count());
-        Assert.AreEqual(1, BitMarkdownAstHelper.Descendants(listed).OfType<BitMarkdownDefinitionListNode>().Count());
+        Assert.ContainsSingle(BitMarkdownAstHelper.Descendants(quoted).OfType<BitMarkdownContainerNode>());
+        Assert.ContainsSingle(BitMarkdownAstHelper.Descendants(listed).OfType<BitMarkdownDefinitionListNode>());
     }
 
     [TestMethod]
@@ -2880,7 +2880,7 @@ public class BitMarkdownViewerTests : BunitTestContext
         // laid out inline by the stylesheet instead.
         Assert.AreEqual("SPAN", paragraphsOnly.Find(".bit-mdv").TagName);
         Assert.AreEqual("DIV", withAList.Find(".bit-mdv").TagName);
-        Assert.Contains("bit-mdv-inline", withAList.Find(".bit-mdv").ClassName);
+        Assert.Contains("bit-mdv-inline", withAList.Find(".bit-mdv").ClassName!);
     }
 
     [TestMethod]
@@ -2920,7 +2920,7 @@ public class BitMarkdownViewerTests : BunitTestContext
         // A <div> inside a <p> is markup no browser keeps as written, and the DOM it rearranges it
         // into is not the one Blazor thinks it rendered - so only a standalone run gets one.
         Assert.AreEqual("SPAN", math.TagName);
-        Assert.Contains("math-display", math.ClassName);
+        Assert.Contains("math-display", math.ClassName!);
         Assert.AreEqual("$$a+b$$", math.TextContent);
     }
 
@@ -2956,8 +2956,8 @@ public class BitMarkdownViewerTests : BunitTestContext
             .Add(p => p.Pipeline, pipeline)
             .Add(p => p.LinkTemplate, (RenderFragment<BitMarkdownLinkNode>)(link => builder => builder.AddContent(0, "x"))));
 
-        StringAssert.Contains(component.Markup, "Hinweis");
-        StringAssert.DoesNotMatch(component.Markup, new Regex(">Note<"));
+        Assert.Contains("Hinweis", component.Markup);
+        Assert.DoesNotMatchRegex(new Regex(">Note<"), component.Markup);
     }
 
     [TestMethod]
@@ -2992,7 +2992,7 @@ public class BitMarkdownViewerTests : BunitTestContext
 
         var boxes = component.FindAll("input.task-list-item-checkbox");
 
-        Assert.AreEqual(2, boxes.Count);
+        Assert.HasCount(2, boxes);
         boxes[1].Change(true);
 
         Assert.IsNotNull(reported);

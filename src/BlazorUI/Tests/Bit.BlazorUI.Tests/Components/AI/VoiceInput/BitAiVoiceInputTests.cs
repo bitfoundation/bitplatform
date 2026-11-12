@@ -38,7 +38,7 @@ public class BitAiVoiceInputTests : BitAiTestBase
         Assert.IsTrue(root.ClassList.Contains("root-class"));
         Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
         Assert.AreEqual("rtl", root.GetAttribute("dir"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin: 1px");
+        Assert.Contains("margin: 1px", root.GetAttribute("style")!);
         Assert.IsTrue(voice.Find(".bit-aivci-sts").ClassList.Contains("live-class"));
         Assert.IsNotNull(voice.Find(".bit-aivci > button.bit-aivci-btn"));
         Assert.IsTrue(voice.Find(".bit-aivci-btn i").ClassList.Contains("bit-icon-ai--Microphone"));
@@ -58,7 +58,7 @@ public class BitAiVoiceInputTests : BitAiTestBase
 
         voice.Find("button").Click();
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations[Start].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations[Start]);
     }
 
     [TestMethod]
@@ -87,7 +87,7 @@ public class BitAiVoiceInputTests : BitAiTestBase
         voice.Find("button").Click();
         Assert.AreEqual(7, (int)Context.JSInterop.VerifyInvoke(Stop).Arguments[0]!);
         Assert.AreEqual("Dictation stopped", voice.Find("[role=status]").TextContent.Trim());
-        CollectionAssert.AreEqual(new[] { true, false }, listening);
+        Assert.AreSequenceEqual(new[] { true, false }, listening);
     }
 
     [TestMethod]
@@ -163,17 +163,17 @@ public class BitAiVoiceInputTests : BitAiTestBase
 
         await voice.InvokeAsync(() => voice.Instance._OnTranscriptReceived(string.Empty, "hel"));
         voice.Find("button").Click();
-        CollectionAssert.AreEqual(new[] { "hel", string.Empty }, interims);
+        Assert.AreSequenceEqual(new[] { "hel", string.Empty }, interims);
 
         voice.Find("button").Click();
         await voice.InvokeAsync(() => voice.Instance._OnTranscriptReceived(string.Empty, "wor"));
         await voice.InvokeAsync(() => voice.Instance._OnDictationError("network"));
-        CollectionAssert.AreEqual(new[] { "hel", string.Empty, "wor", string.Empty }, interims);
+        Assert.AreSequenceEqual(new[] { "hel", string.Empty, "wor", string.Empty }, interims);
 
         voice.Find("button").Click();
         await voice.InvokeAsync(() => voice.Instance._OnTranscriptReceived(string.Empty, "ld"));
         await voice.InvokeAsync(() => voice.Instance._OnDictationEnded());
-        CollectionAssert.AreEqual(new[] { "hel", string.Empty, "wor", string.Empty, "ld", string.Empty }, interims);
+        Assert.AreSequenceEqual(new[] { "hel", string.Empty, "wor", string.Empty, "ld", string.Empty }, interims);
     }
 
     [TestMethod]
@@ -188,7 +188,7 @@ public class BitAiVoiceInputTests : BitAiTestBase
         await voice.InvokeAsync(() => voice.Instance._OnTranscriptReceived("hello", string.Empty));
         voice.Find("button").Click();
 
-        CollectionAssert.AreEqual(new[] { string.Empty }, interims);
+        Assert.AreSequenceEqual(new[] { string.Empty }, interims);
     }
 
     // The recognizer finishes the phrase it was hearing after stop(), and that phrase is still raised.
@@ -205,7 +205,7 @@ public class BitAiVoiceInputTests : BitAiTestBase
 
         await voice.InvokeAsync(() => voice.Instance._OnTranscriptReceived("the last words", string.Empty));
 
-        CollectionAssert.AreEqual(new[] { "the last words" }, transcripts);
+        Assert.AreSequenceEqual(new[] { "the last words" }, transcripts);
     }
 
     [TestMethod]
@@ -271,7 +271,7 @@ public class BitAiVoiceInputTests : BitAiTestBase
         Assert.IsFalse(first.Instance.IsListening);
         Assert.AreEqual("Dictate", first.Find("button").GetAttribute("aria-label"));
         Assert.AreEqual("Dictation stopped", first.Find("[role=status]").TextContent.Trim());
-        CollectionAssert.AreEqual(new[] { true, false }, listening);
+        Assert.AreSequenceEqual(new[] { true, false }, listening);
         Assert.IsTrue(second.Instance.IsListening);
     }
 

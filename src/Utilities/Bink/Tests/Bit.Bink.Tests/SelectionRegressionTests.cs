@@ -20,7 +20,7 @@ public class SelectionRegressionTests(TestContext output)
         for (int i = 0; i < 4; i++) TransformSelection(context, Matrix3x2.CreateRotation(MathF.PI / 2f, before.Center));
         BinkRect after = context.Document.GetElement(rect.Id).Bounds;
         output.WriteLine($"before={before} after={after}");
-        Assert.IsTrue(Vector2.Distance(before.TopLeft, after.TopLeft) < 0.01f, $"{before} != {after}");
+        Assert.IsLessThan(0.01f, Vector2.Distance(before.TopLeft, after.TopLeft), $"{before} != {after}");
     }
 
     [TestMethod]
@@ -38,7 +38,7 @@ public class SelectionRegressionTests(TestContext output)
         }
         BinkRect after = context.Document.GetElement(stroke.Id).Bounds;
         output.WriteLine($"before={before} after={after}");
-        Assert.IsTrue(MathF.Abs(before.Width - after.Width) < 1f, $"width drifted {before.Width} -> {after.Width}");
+        Assert.IsLessThan(1f, MathF.Abs(before.Width - after.Width), $"width drifted {before.Width} -> {after.Width}");
     }
 
     [TestMethod]
@@ -65,7 +65,7 @@ public class SelectionRegressionTests(TestContext output)
         output.WriteLine($"drew {drawn} of {document.ElementCount} elements in {clock.Elapsed.TotalMilliseconds:0.00} ms");
         Assert.AreEqual(ids.Count, drawn);
         // Generous, but it fails outright if the filter is ever probed with something worse than a hash lookup.
-        Assert.IsTrue(clock.Elapsed.TotalMilliseconds < 2000, $"filtered rendering took {clock.Elapsed.TotalMilliseconds:0} ms");
+        Assert.IsLessThan(2000, clock.Elapsed.TotalMilliseconds, $"filtered rendering took {clock.Elapsed.TotalMilliseconds:0} ms");
     }
 
     private static void TransformSelection(TestToolContext context, Matrix3x2 matrix)

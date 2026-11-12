@@ -41,7 +41,7 @@ public abstract class AiChatPanelTestBase : AppPageTest
     /// those with <see cref="SendFollowUpMessage"/>, which fails rather than silently starting over.
     /// </para>
     /// </summary>
-    protected async Task SendChatMessage(ILocator panel, string message, TestChatClient chatClient)
+    private protected async Task SendChatMessage(ILocator panel, string message, TestChatClient chatClient)
     {
         var conversationsBefore = chatClient.ReceivedConversations.Count;
 
@@ -68,7 +68,7 @@ public abstract class AiChatPanelTestBase : AppPageTest
     /// Sends a further message over the connection the first one already proved is up, leaving the conversation - and
     /// whatever the panel is holding on to across turns - intact.
     /// </summary>
-    protected async Task SendFollowUpMessage(ILocator panel, string message, TestChatClient chatClient)
+    private protected async Task SendFollowUpMessage(ILocator panel, string message, TestChatClient chatClient)
     {
         var conversationsBefore = chatClient.ReceivedConversations.Count;
 
@@ -79,7 +79,7 @@ public abstract class AiChatPanelTestBase : AppPageTest
                       $"The follow-up message '{message}' never reached the server.");
     }
 
-    protected async Task<bool> WaitForServerToReceiveAMessage(TestChatClient chatClient, int conversationsBefore, TimeSpan timeout)
+    private protected async Task<bool> WaitForServerToReceiveAMessage(TestChatClient chatClient, int conversationsBefore, TimeSpan timeout)
     {
         var deadline = DateTimeOffset.UtcNow + timeout;
 

@@ -41,7 +41,7 @@ public class KeyboardTests : BortableTestContext
 
         var instructions = list.Find("#L1-instructions");
         Assert.IsTrue(instructions.HasAttribute("hidden"));
-        StringAssert.Contains(instructions.TextContent, "Space or Enter");
+        Assert.Contains("Space or Enter", instructions.TextContent);
     }
 
     [TestMethod]
@@ -196,7 +196,7 @@ public class KeyboardTests : BortableTestContext
         Assert.AreEqual("Cancelled. A is back at position 1 of 3.", result.Announce);
         Assert.IsFalse(result.Dragging);
         Assert.IsTrue(Single(log, "End", "L1").Canceled);
-        Assert.IsFalse(log.Any(r => r.Name == "ItemsChanged"));
+        Assert.DoesNotContain(r => r.Name == "ItemsChanged", log);
     }
 
     [TestMethod]
@@ -242,7 +242,7 @@ public class KeyboardTests : BortableTestContext
         var (l1, l2) = RenderPair(left, right, log);
 
         var picked = await PickAsync(l1, "A");
-        CollectionAssert.AreEquivalent(new[] { "L1", "L2" }, picked.Lists);
+        Assert.AreSequenceEqual(new[] { "L1", "L2" }, picked.Lists, Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
         var moved = await KeyAsync(l1, "to", "L2", 1);
 
@@ -284,7 +284,7 @@ public class KeyboardTests : BortableTestContext
         Assert.AreSequenceEqual(["X"], right);
         Assert.AreEqual("Cancelled. B is back at position 2 of 2 in To do.", result.Announce);
         Assert.AreEqual("L1", result.List);
-        Assert.IsFalse(log.Any(r => r.Name is "ItemsChanged" or "Add" or "Remove"));
+        Assert.DoesNotContain(r => r.Name is "ItemsChanged" or "Add" or "Remove", log);
     }
 
     [TestMethod]

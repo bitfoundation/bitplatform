@@ -30,13 +30,15 @@ public class StaticRenderingLogTests
 
         foreach (var route in Routes)
         {
-            using var _ = await client.GetAsync(route);
+            using var _ = await client.GetAsync(route, TestContext.CancellationToken);
         }
 
         var errors = factory.Logs.Entries.Where(e => e.Level >= LogLevel.Error).ToArray();
-        Assert.AreEqual(0, errors.Length, string.Join(Environment.NewLine, errors.Select(e => e.ToString())));
+        Assert.IsEmpty(errors, string.Join(Environment.NewLine, errors.Select(e => e.ToString())));
 
         var interop = factory.Logs.Entries.Where(e => e.Category.StartsWith("Bit.Brouter", StringComparison.Ordinal) && e.Message.Contains("interop", StringComparison.OrdinalIgnoreCase)).ToArray();
-        Assert.AreEqual(0, interop.Length, string.Join(Environment.NewLine, interop.Select(e => e.ToString())));
+        Assert.IsEmpty(interop, string.Join(Environment.NewLine, interop.Select(e => e.ToString())));
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

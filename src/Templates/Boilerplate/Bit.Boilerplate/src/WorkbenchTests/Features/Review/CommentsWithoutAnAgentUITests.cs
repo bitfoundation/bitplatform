@@ -30,7 +30,7 @@ public class CommentsWithoutAnAgentUITests : ReviewPageTest
 
         var thread = (await Server.Agent.GetThreads(CancellationToken.None)).Single(t => t.Id == id);
 
-        Assert.HasCount(1, thread.Messages);
+        Assert.ContainsSingle(thread.Messages);
     }
 
     [TestMethod, WithAnAgent]

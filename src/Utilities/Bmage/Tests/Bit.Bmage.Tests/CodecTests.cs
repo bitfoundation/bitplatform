@@ -15,9 +15,9 @@ public sealed class PngCodecTests
     public void RoundTripsOpaqueImageLosslessly()
     {
         using var source = TestImages.Gradient(37, 23);
-        var encoded = PngEncoder.Encode(source);
+        var encoded = PngEncoder.Encode(source, cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual(ImageFormat.Png, ImageFormats.Detect(encoded.Data));
-        using var decoded = PngDecoder.Decode(encoded.Data);
+        using var decoded = PngDecoder.Decode(encoded.Data, cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual(source.Width, decoded.Width);
         Assert.AreEqual(source.Height, decoded.Height);
         Assert.AreEqual(0, TestImages.MaxChannelDifference(source, decoded));
@@ -27,8 +27,8 @@ public sealed class PngCodecTests
     public void RoundTripsAlphaLosslessly()
     {
         using var source = TestImages.Translucent(16, 16);
-        var encoded = PngEncoder.Encode(source);
-        using var decoded = PngDecoder.Decode(encoded.Data);
+        var encoded = PngEncoder.Encode(source, cancellationToken: TestContext.CancellationToken);
+        using var decoded = PngDecoder.Decode(encoded.Data, cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual(0, TestImages.MaxChannelDifference(source, decoded));
     }
 
@@ -40,8 +40,8 @@ public sealed class PngCodecTests
     public void RoundTripsAtEveryCompressionLevel(int level)
     {
         using var source = TestImages.Gradient(29, 17);
-        var encoded = PngEncoder.Encode(source, new ImageExportOptions { Format = ImageFormat.Png, PngCompressionLevel = level });
-        using var decoded = PngDecoder.Decode(encoded.Data);
+        var encoded = PngEncoder.Encode(source, new ImageExportOptions { Format = ImageFormat.Png, PngCompressionLevel = level }, TestContext.CancellationToken);
+        using var decoded = PngDecoder.Decode(encoded.Data, cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual(0, TestImages.MaxChannelDifference(source, decoded));
     }
 
@@ -49,7 +49,7 @@ public sealed class PngCodecTests
     public void IdentifyReadsDimensionsWithoutDecoding()
     {
         using var source = TestImages.Translucent(21, 13);
-        var encoded = PngEncoder.Encode(source);
+        var encoded = PngEncoder.Encode(source, cancellationToken: TestContext.CancellationToken);
         var info = new PngDecoder().Identify(encoded.Data);
         Assert.IsNotNull(info);
         Assert.AreEqual(21, info!.Width);
@@ -61,7 +61,7 @@ public sealed class PngCodecTests
     public void OpaqueImagesEncodeWithoutAlphaChannel()
     {
         using var source = TestImages.Gradient(8, 8);
-        var encoded = PngEncoder.Encode(source);
+        var encoded = PngEncoder.Encode(source, cancellationToken: TestContext.CancellationToken);
         var info = new PngDecoder().Identify(encoded.Data)!;
         Assert.IsFalse(info.HasAlpha);
     }
@@ -72,9 +72,10 @@ public sealed class PngCodecTests
         using var source = TestImages.Gradient(8, 8);
         var exif = new ExifData().WithPrimary(new ExifDirectory().With(ExifTag.Make, ExifValue.FromString("Bmage")));
         source.Metadata = new ImageMetadata(exif);
-        var encoded = PngEncoder.Encode(source, new ImageExportOptions { Format = ImageFormat.Png, Metadata = MetadataPolicy.Preserve });
-        using var decoded = PngDecoder.Decode(encoded.Data);
-        Assert.AreEqual("Bmage", decoded.Metadata?.Exif?.Make);
+        var encoded = PngEncoder.Encode(source, new ImageExportOptions { Format = ImageFormat.Png, Metadata = MetadataPolicy.Preserve }, TestContext.CancellationToken);
+        using var decoded = PngDecoder.Decode(encoded.Data, cancellationToken: TestContext.CancellationToken);
+        var actualValue = decoded.Metadata?.Exif?.Make;
+        Assert.AreEqual("Bmage", actualValue);
     }
 
     [TestMethod]
@@ -82,27 +83,28 @@ public sealed class PngCodecTests
     {
         using var source = TestImages.Gradient(8, 8);
         source.Metadata = new ImageMetadata(new ExifData().WithPrimary(new ExifDirectory().With(ExifTag.Make, ExifValue.FromString("Camera"))));
-        var encoded = PngEncoder.Encode(source);
-        using var decoded = PngDecoder.Decode(encoded.Data);
-        Assert.IsNull(decoded.Metadata?.Exif);
+        var encoded = PngEncoder.Encode(source, cancellationToken: TestContext.CancellationToken);
+        using var decoded = PngDecoder.Decode(encoded.Data, cancellationToken: TestContext.CancellationToken);
+        var actualValue = decoded.Metadata?.Exif;
+        Assert.IsNull(actualValue);
     }
 
     [TestMethod]
     public void RejectsTruncatedData()
     {
         using var source = TestImages.Gradient(32, 32);
-        var encoded = PngEncoder.Encode(source);
+        var encoded = PngEncoder.Encode(source, cancellationToken: TestContext.CancellationToken);
         var truncated = encoded.Data[..(encoded.Data.Length / 2)];
-        Assert.ThrowsExactly<ImageDecodeException>(() => PngDecoder.Decode(truncated));
+        Assert.ThrowsExactly<ImageDecodeException>(() => PngDecoder.Decode(truncated, cancellationToken: TestContext.CancellationToken));
     }
 
     [TestMethod]
     public void RejectsOversizedImages()
     {
         using var source = TestImages.Gradient(64, 64);
-        var encoded = PngEncoder.Encode(source);
+        var encoded = PngEncoder.Encode(source, cancellationToken: TestContext.CancellationToken);
         var limits = new ImageLimits { MaxWidth = 32, MaxHeight = 32 };
-        Assert.ThrowsExactly<ImageLimitExceededException>(() => PngDecoder.Decode(encoded.Data, new DecodeOptions { Limits = limits }));
+        Assert.ThrowsExactly<ImageLimitExceededException>(() => PngDecoder.Decode(encoded.Data, new DecodeOptions { Limits = limits }, cancellationToken: TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -110,15 +112,17 @@ public sealed class PngCodecTests
     {
         using var source = TestImages.Quadrants(8, 8);
         source.Metadata = new ImageMetadata(ExifData.FromOrientation(Orientation.Rotate90));
-        var encoded = PngEncoder.Encode(source, new ImageExportOptions { Format = ImageFormat.Png, Metadata = MetadataPolicy.Preserve });
+        var encoded = PngEncoder.Encode(source, new ImageExportOptions { Format = ImageFormat.Png, Metadata = MetadataPolicy.Preserve }, TestContext.CancellationToken);
 
         // Preserve resets the stored orientation to normal, so re-inject it to simulate a camera file.
         var reOriented = PngContainer.WriteMetadata(encoded.Data, new ImageMetadata(ExifData.FromOrientation(Orientation.Rotate90)));
-        using var decoded = PngDecoder.Decode(reOriented, new DecodeOptions { AutoOrient = true });
+        using var decoded = PngDecoder.Decode(reOriented, new DecodeOptions { AutoOrient = true }, cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual(Orientation.Normal, decoded.Metadata!.Orientation);
         // Top-left of the rotated image comes from the bottom-left of the original (blue).
         Assert.AreEqual(new Rgba32(0, 0, 255), decoded[0, 0]);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }
 
 [TestClass]
@@ -128,8 +132,8 @@ public sealed class BmpCodecTests
     public void RoundTripsOpaqueImage()
     {
         using var source = TestImages.Gradient(33, 17);
-        var encoded = BmpEncoder.Encode(source);
-        using var decoded = BmpDecoder.Decode(encoded.Data);
+        var encoded = BmpEncoder.Encode(source, TestContext.CancellationToken);
+        using var decoded = BmpDecoder.Decode(encoded.Data, cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual(0, TestImages.MaxChannelDifference(source, decoded));
     }
 
@@ -137,8 +141,8 @@ public sealed class BmpCodecTests
     public void RoundTripsAlphaImage()
     {
         using var source = TestImages.Translucent(9, 7);
-        var encoded = BmpEncoder.Encode(source);
-        using var decoded = BmpDecoder.Decode(encoded.Data);
+        var encoded = BmpEncoder.Encode(source, TestContext.CancellationToken);
+        using var decoded = BmpDecoder.Decode(encoded.Data, cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual(0, TestImages.MaxChannelDifference(source, decoded));
     }
 
@@ -146,11 +150,13 @@ public sealed class BmpCodecTests
     public void IdentifiesDimensions()
     {
         using var source = TestImages.Gradient(11, 5);
-        var encoded = BmpEncoder.Encode(source);
+        var encoded = BmpEncoder.Encode(source, TestContext.CancellationToken);
         var info = new BmpDecoder().Identify(encoded.Data)!;
         Assert.AreEqual(11, info.Width);
         Assert.AreEqual(5, info.Height);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }
 
 [TestClass]
@@ -160,40 +166,40 @@ public sealed class JpegCodecTests
     public void RoundTripsGradientWithinToleranceAtHighQuality()
     {
         using var source = TestImages.Gradient(64, 48);
-        var encoded = JpegEncoder.Encode(source, new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 0.95 });
+        var encoded = JpegEncoder.Encode(source, new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 0.95 }, TestContext.CancellationToken);
         Assert.AreEqual(ImageFormat.Jpeg, ImageFormats.Detect(encoded.Data));
-        using var decoded = JpegDecoder.Decode(encoded.Data);
+        using var decoded = JpegDecoder.Decode(encoded.Data, cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual(source.Width, decoded.Width);
         Assert.AreEqual(source.Height, decoded.Height);
-        Assert.IsTrue(TestImages.MeanChannelDifference(source, decoded) < 3.0, $"Mean difference {TestImages.MeanChannelDifference(source, decoded):0.##} is too high.");
+        Assert.IsLessThan(3.0, TestImages.MeanChannelDifference(source, decoded), $"Mean difference {TestImages.MeanChannelDifference(source, decoded):0.##} is too high.");
     }
 
     [TestMethod]
     public void DecodesOwnSubsampledOutput()
     {
         using var source = TestImages.Gradient(70, 34);
-        var encoded = JpegEncoder.Encode(source, new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 0.8 });
-        using var decoded = JpegDecoder.Decode(encoded.Data);
+        var encoded = JpegEncoder.Encode(source, new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 0.8 }, TestContext.CancellationToken);
+        using var decoded = JpegDecoder.Decode(encoded.Data, cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual(70, decoded.Width);
         Assert.AreEqual(34, decoded.Height);
-        Assert.IsTrue(TestImages.MeanChannelDifference(source, decoded) < 8.0);
+        Assert.IsLessThan(8.0, TestImages.MeanChannelDifference(source, decoded));
     }
 
     [TestMethod]
     public void LowerQualityProducesSmallerFiles()
     {
         using var source = TestImages.Gradient(128, 128);
-        var high = JpegEncoder.Encode(source, new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 0.95 });
-        var low = JpegEncoder.Encode(source, new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 0.4 });
-        Assert.IsTrue(low.Length < high.Length, $"low={low.Length} high={high.Length}");
+        var high = JpegEncoder.Encode(source, new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 0.95 }, TestContext.CancellationToken);
+        var low = JpegEncoder.Encode(source, new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 0.4 }, TestContext.CancellationToken);
+        Assert.IsLessThan(high.Length, low.Length, $"low={low.Length} high={high.Length}");
     }
 
     [TestMethod]
     public void CompositesTransparencyOverBackground()
     {
         using var source = ImageBuffer.Create(16, 16, Rgba32.Transparent);
-        var encoded = JpegEncoder.Encode(source, new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 0.95, Background = new Rgba32(255, 0, 0) });
-        using var decoded = JpegDecoder.Decode(encoded.Data);
+        var encoded = JpegEncoder.Encode(source, new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 0.95, Background = new Rgba32(255, 0, 0) }, TestContext.CancellationToken);
+        using var decoded = JpegDecoder.Decode(encoded.Data, cancellationToken: TestContext.CancellationToken);
         var p = decoded[8, 8];
         Assert.IsTrue(p.R > 200 && p.G < 60 && p.B < 60, $"Expected red background, got {p}");
         Assert.AreEqual(255, p.A);
@@ -203,7 +209,7 @@ public sealed class JpegCodecTests
     public void IdentifyReadsDimensions()
     {
         using var source = TestImages.Gradient(37, 21);
-        var encoded = JpegEncoder.Encode(source);
+        var encoded = JpegEncoder.Encode(source, cancellationToken: TestContext.CancellationToken);
         var info = new JpegDecoder().Identify(encoded.Data)!;
         Assert.AreEqual(37, info.Width);
         Assert.AreEqual(21, info.Height);
@@ -214,9 +220,10 @@ public sealed class JpegCodecTests
     {
         using var source = TestImages.Gradient(16, 16);
         source.Metadata = new ImageMetadata(new ExifData().WithPrimary(new ExifDirectory().With(ExifTag.Model, ExifValue.FromString("Test Model"))));
-        var encoded = JpegEncoder.Encode(source, new ImageExportOptions { Format = ImageFormat.Jpeg, Metadata = MetadataPolicy.Preserve });
-        using var decoded = JpegDecoder.Decode(encoded.Data);
-        Assert.AreEqual("Test Model", decoded.Metadata?.Exif?.Model);
+        var encoded = JpegEncoder.Encode(source, new ImageExportOptions { Format = ImageFormat.Jpeg, Metadata = MetadataPolicy.Preserve }, TestContext.CancellationToken);
+        using var decoded = JpegDecoder.Decode(encoded.Data, cancellationToken: TestContext.CancellationToken);
+        var actualValue = decoded.Metadata?.Exif?.Model;
+        Assert.AreEqual("Test Model", actualValue);
     }
 
     [TestMethod]
@@ -224,24 +231,24 @@ public sealed class JpegCodecTests
     {
         var garbage = new byte[512];
         garbage[0] = 0xFF; garbage[1] = 0xD8; garbage[2] = 0xFF;
-        Assert.ThrowsExactly<ImageDecodeException>(() => JpegDecoder.Decode(garbage));
+        Assert.ThrowsExactly<ImageDecodeException>(() => JpegDecoder.Decode(garbage, cancellationToken: TestContext.CancellationToken));
     }
 
     [TestMethod]
     public void ABaselineJpegRepeatingItsScanStopsAtTheScansItsFrameAllows()
     {
         using var source = TestImages.Gradient(32, 24);
-        var encoded = JpegEncoder.Encode(source).Data;
+        var encoded = JpegEncoder.Encode(source, cancellationToken: TestContext.CancellationToken).Data;
         var sos = encoded.AsSpan().IndexOf(new byte[] { 0xFF, 0xDA });
         var header = encoded.AsSpan(sos, 2 + (encoded[sos + 2] << 8 | encoded[sos + 3])).ToArray();
         var withScans = (int extra) => encoded[..^2].Concat(Enumerable.Repeat(header, extra).SelectMany(h => h)).Concat(new byte[] { 0xFF, 0xD9 }).ToArray();
 
         // Scans past one per component are ignored, however many there are, and the image decoded by then is kept.
-        using var allowed = JpegDecoder.Decode(withScans(2));
+        using var allowed = JpegDecoder.Decode(withScans(2), cancellationToken: TestContext.CancellationToken);
         foreach (var extra in new[] { 3, 10_000 })
         {
             var watch = System.Diagnostics.Stopwatch.StartNew();
-            using var decoded = JpegDecoder.Decode(withScans(extra));
+            using var decoded = JpegDecoder.Decode(withScans(extra), cancellationToken: TestContext.CancellationToken);
             Assert.IsLessThan(2000, watch.ElapsedMilliseconds, $"{extra} extra scans took {watch.ElapsedMilliseconds} ms.");
             Assert.AreEqual(0, TestImages.MaxChannelDifference(allowed, decoded), $"{extra} extra scans");
         }
@@ -261,9 +268,9 @@ public sealed class JpegCodecTests
             return [.. jpeg];
         }
 
-        using var capped = JpegDecoder.Decode(Progressive(500));
+        using var capped = JpegDecoder.Decode(Progressive(500), cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual(8, capped.Width);
-        using var past = JpegDecoder.Decode(Progressive(501));
+        using var past = JpegDecoder.Decode(Progressive(501), cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual(0, TestImages.MaxChannelDifference(capped, past));
     }
 
@@ -305,7 +312,7 @@ public sealed class JpegCodecTests
         jpeg.AddRange([0xFF, 0xDA, 0x00, 0x08, 0x01, 0x01, 0x00, 0x01, 0x3F, 0x54, .. Bits("0 1 1 10")]);
         jpeg.AddRange([0xFF, 0xD9]);
 
-        using var decoded = JpegDecoder.Decode([.. jpeg]);
+        using var decoded = JpegDecoder.Decode([.. jpeg], cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual(8, decoded.Width);
         Assert.AreEqual(8, decoded.Height);
         // DC 96, 48 at the first horizontal frequency and 16 at the first vertical one, through the inverse DCT.
@@ -325,14 +332,14 @@ public sealed class JpegCodecTests
     public void IdentifySkipsAStuffedByteBeforeTheFrameHeader()
     {
         using var source = TestImages.Gradient(37, 21);
-        var encoded = JpegEncoder.Encode(source).Data;
+        var encoded = JpegEncoder.Encode(source, cancellationToken: TestContext.CancellationToken).Data;
         var sof = encoded.AsSpan().IndexOf(new byte[] { 0xFF, 0xC0 });
         var stuffed = encoded[..sof].Concat(new byte[] { 0xFF, 0x00, 0x12, 0x34 }).Concat(encoded[sof..]).ToArray();
 
         var info = new JpegDecoder().Identify(stuffed)!;
         Assert.AreEqual(37, info.Width);
         Assert.AreEqual(21, info.Height);
-        using var decoded = JpegDecoder.Decode(stuffed);
+        using var decoded = JpegDecoder.Decode(stuffed, cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual(37, decoded.Width);
     }
 
@@ -340,7 +347,7 @@ public sealed class JpegCodecTests
     public void ReadOrientationAgreesWithReadMetadata()
     {
         using var source = TestImages.Gradient(16, 8);
-        var plain = JpegEncoder.Encode(source).Data;
+        var plain = JpegEncoder.Encode(source, cancellationToken: TestContext.CancellationToken).Data;
         foreach (var orientation in new[] { Orientation.Normal, Orientation.Rotate90, Orientation.FlipHorizontal, Orientation.Rotate270 })
         {
             var exif = ExifData.FromOrientation(orientation);
@@ -350,6 +357,8 @@ public sealed class JpegCodecTests
         }
         Assert.AreEqual(Orientation.Normal, JpegContainer.ReadOrientation(plain));
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }
 
 [TestClass]
@@ -422,7 +431,7 @@ public sealed class GifCodecTests
     [TestMethod]
     public void DecodesFirstFrame()
     {
-        using var img = GifDecoder.Decode(SampleGif);
+        using var img = GifDecoder.Decode(SampleGif, cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual(4, img.Width);
         Assert.AreEqual(4, img.Height);
         Assert.AreEqual(new Rgba32(255, 0, 0), img[0, 0]);
@@ -436,7 +445,7 @@ public sealed class GifCodecTests
     {
         var shifted = SampleGif;
         shifted[26] = 1;
-        using (var img = GifDecoder.Decode(shifted))
+        using (var img = GifDecoder.Decode(shifted, cancellationToken: TestContext.CancellationToken))
         {
             Assert.AreEqual(4, img.Width);
             Assert.AreEqual(4, img.Height);
@@ -448,14 +457,14 @@ public sealed class GifCodecTests
         // However small the logical screen, the frame itself is still held to the pixel limit.
         var huge = SampleGif;
         huge[30] = 0xD0; huge[31] = 0x07; huge[32] = 0xD0; huge[33] = 0x07;
-        using (var img = GifDecoder.Decode(huge)) Assert.AreEqual(4, img.Width);
-        Assert.ThrowsExactly<ImageLimitExceededException>(() => GifDecoder.Decode(huge, DecodeOptions.Default with { Limits = ImageLimits.Default with { MaxPixels = 1_000_000 } }));
+        using (var img = GifDecoder.Decode(huge, cancellationToken: TestContext.CancellationToken)) Assert.AreEqual(4, img.Width);
+        Assert.ThrowsExactly<ImageLimitExceededException>(() => GifDecoder.Decode(huge, DecodeOptions.Default with { Limits = ImageLimits.Default with { MaxPixels = 1_000_000 } }, cancellationToken: TestContext.CancellationToken));
 
         // And to the width and height limits, which a long thin frame stays under the pixel limit by.
         var wide = SampleGif;
         wide[30] = 0xFF; wide[31] = 0xFF; wide[32] = 0x10; wide[33] = 0x00;
-        using (var img = GifDecoder.Decode(wide, DecodeOptions.Default with { Limits = ImageLimits.Unrestricted })) Assert.AreEqual(4, img.Width);
-        Assert.ThrowsExactly<ImageLimitExceededException>(() => GifDecoder.Decode(wide));
+        using (var img = GifDecoder.Decode(wide, DecodeOptions.Default with { Limits = ImageLimits.Unrestricted }, cancellationToken: TestContext.CancellationToken)) Assert.AreEqual(4, img.Width);
+        Assert.ThrowsExactly<ImageLimitExceededException>(() => GifDecoder.Decode(wide, cancellationToken: TestContext.CancellationToken));
     }
 
     /// <summary>
@@ -476,7 +485,7 @@ public sealed class GifCodecTests
         foreach (var index in patterns)
             foreach (var (screenWidth, screenHeight) in new[] { (40, 30), (10, 10), (1, 1) })
             {
-                using var img = GifDecoder.Decode(Gif(screenWidth, screenHeight, 40, 30, index));
+                using var img = GifDecoder.Decode(Gif(screenWidth, screenHeight, 40, 30, index), cancellationToken: TestContext.CancellationToken);
                 Assert.AreEqual(screenWidth, img.Width);
                 for (var y = 0; y < screenHeight; y++)
                     for (var x = 0; x < screenWidth; x++)
@@ -544,4 +553,6 @@ public sealed class GifCodecTests
         Assert.AreEqual(4, info.Width);
         Assert.AreEqual(4, info.Height);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

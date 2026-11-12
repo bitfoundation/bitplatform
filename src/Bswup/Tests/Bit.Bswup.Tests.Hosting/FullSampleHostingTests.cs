@@ -27,24 +27,24 @@ public class FullSampleHostingTests
     public async Task The_document_loads_Blazor_and_Bswup_and_the_progress_UI()
     {
         using var client = SampleHostFactories.FullSample.Value.CreateClient();
-        using var response = await client.GetAsync("/");
+        using var response = await client.GetAsync("/", TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
-        var html = await response.Content.ReadAsStringAsync();
-        StringAssert.Contains(html, "<script src=\"_framework/blazor.web.js\" autostart=\"false\"></script>");
-        StringAssert.Contains(html, "_content/Bit.Bswup/bit-bswup.js");
-        StringAssert.Contains(html, "_content/Bit.Bswup/bit-bswup.progress.js");
-        StringAssert.Contains(html, "data-bit-bswup-config=\"true\"");
+        var html = await response.Content.ReadAsStringAsync(TestContext.CancellationToken);
+        Assert.Contains("<script src=\"_framework/blazor.web.js\" autostart=\"false\"></script>", html);
+        Assert.Contains("_content/Bit.Bswup/bit-bswup.js", html);
+        Assert.Contains("_content/Bit.Bswup/bit-bswup.progress.js", html);
+        Assert.Contains("data-bit-bswup-config=\"true\"", html);
     }
 
     [TestMethod]
     public async Task The_service_worker_imports_Bswup()
     {
         using var client = SampleHostFactories.FullSample.Value.CreateClient();
-        using var response = await client.GetAsync("/service-worker.js");
+        using var response = await client.GetAsync("/service-worker.js", TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
-        StringAssert.Contains(await response.Content.ReadAsStringAsync(), "self.importScripts('_content/Bit.Bswup/bit-bswup.sw.js');");
+        Assert.Contains("self.importScripts('_content/Bit.Bswup/bit-bswup.sw.js');", await response.Content.ReadAsStringAsync(TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -57,7 +57,7 @@ public class FullSampleHostingTests
         var problems = await manifest.VerifyServedAsync(client, "/",
             @"^Bit\.Bswup\.FullSample\.Client\.styles\.css$", @"weather\.json$", @"^_framework/blazor\.webassembly\.js$");
 
-        Assert.AreEqual(0, problems.Count, string.Join(Environment.NewLine, problems));
+        Assert.IsEmpty(problems, string.Join(Environment.NewLine, problems));
     }
 
     [TestMethod]
@@ -68,9 +68,11 @@ public class FullSampleHostingTests
     public async Task Every_external_asset_the_samples_worker_precaches_is_served(string url)
     {
         using var client = SampleHostFactories.FullSample.Value.CreateClient();
-        using var response = await client.GetAsync(url);
+        using var response = await client.GetAsync(url, TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, $"{url} is listed in the sample's externalAssets but not served.");
     }
+
+    public TestContext TestContext { get; set; }
 }
 #endif

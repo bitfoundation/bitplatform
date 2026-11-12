@@ -48,7 +48,7 @@ public class DocumentTests
         BinkElement updated = document.Layers[0].Elements[0];
         Assert.AreEqual(a.Id, updated.Id);
         Assert.AreEqual("edited", updated.Description);
-        Assert.IsTrue(updated.Version > a.Version);
+        Assert.IsGreaterThan(a.Version, updated.Version);
         Assert.AreEqual(b.Id, document.Layers[0].Elements[1].Id);
     }
 
@@ -81,7 +81,7 @@ public class DocumentTests
         document.Apply(new BinkReorderElementOperation(strokes[2].Id, layer, 99));
         document.Apply(new BinkReorderElementOperation(strokes[0].Id, layer, -5));
 
-        CollectionAssert.AreEqual(strokes.Select(s => s.Id).ToArray(), document.Layers[0].Elements.Select(e => e.Id).ToArray());
+        Assert.AreSequenceEqual(strokes.Select(s => s.Id).ToArray(), document.Layers[0].Elements.Select(e => e.Id).ToArray());
         for (int i = 0; i < strokes.Length; i++) Assert.AreEqual(i, document.Layers[0].IndexOf(strokes[i].Id));
     }
 
@@ -111,7 +111,7 @@ public class DocumentTests
         BinkLayer hidden = document.AddLayer("Hidden");
         document.AddElement(new BinkRectangleShape(new BinkRect(500, 500, 20, 20)), hidden.Id);
         document.UpdateLayer(hidden.Id, p => p with { IsVisible = false });
-        Assert.IsTrue(document.ContentBounds.Right < 100);
+        Assert.IsLessThan(100, document.ContentBounds.Right);
     }
 
     [TestMethod]
@@ -163,7 +163,7 @@ public class DocumentTests
 
         Assert.IsNotNull(inverse);
         var batch = Assert.IsExactInstanceOfType<BinkBatchOperation>(inverse);
-        Assert.AreEqual(3, batch.Operations.Count);
+        Assert.HasCount(3, batch.Operations);
         Assert.IsInstanceOfType<BinkSetMetadataOperation>(batch.Operations[0]);
         Assert.IsInstanceOfType<BinkReplaceElementOperation>(batch.Operations[1]);
         Assert.IsInstanceOfType<BinkRemoveElementOperation>(batch.Operations[2]);

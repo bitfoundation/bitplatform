@@ -36,7 +36,7 @@ public abstract partial class BswupTest
     /// <summary>"/" for the Blazor Web App, "/standalone/" for the standalone WebAssembly app. Also the worker's scope.</summary>
     protected virtual string AppPath => "/";
 
-    protected HarnessSession Session => _session ?? throw new InvalidOperationException("The session is opened in TestInitialize.");
+    private protected HarnessSession Session => _session ?? throw new InvalidOperationException("The session is opened in TestInitialize.");
 
     protected IBrowserContext Context => _context ?? throw new InvalidOperationException("The context is opened in TestInitialize.");
 
@@ -137,7 +137,7 @@ public abstract partial class BswupTest
     protected async Task AssertNoFurtherReloadAsync(int loads, IPage? page = null)
     {
         page ??= Page;
-        await Task.Delay(3000);
+        await Task.Delay(3000, TestContext.CancellationToken);
         await page.WaitForLoadStateAsync(LoadState.DOMContentLoaded);
         Assert.AreEqual(loads.ToString(), await page.Locator("html").GetAttributeAsync("data-harness-loads"), "The page reloaded again.");
     }
@@ -160,7 +160,7 @@ public abstract partial class BswupTest
             if (DateTime.UtcNow > deadline)
                 Assert.Fail($"Timed out after {timeoutMs}ms waiting for the page's network to be quiet ({activity.InFlight} request(s) in flight).");
 
-            await Task.Delay(100);
+            await Task.Delay(100, TestContext.CancellationToken);
         }
     }
 
@@ -176,11 +176,11 @@ public abstract partial class BswupTest
         (page ?? Page).EvaluateAsync<bool>("() => !!navigator.serviceWorker.controller");
 
     /// <summary>The Bswup messages the current document received, oldest first.</summary>
-    protected Task<HarnessEvent[]> EventsAsync(IPage? page = null) =>
+    private protected Task<HarnessEvent[]> EventsAsync(IPage? page = null) =>
         (page ?? Page).EvaluateAsync<HarnessEvent[]>("() => window.harness ? window.harness.events : []");
 
     /// <summary>Waits until the current document received a <paramref name="type"/> message (matching <paramref name="match"/>).</summary>
-    protected async Task<HarnessEvent> WaitForEventAsync(string type, Func<HarnessEvent, bool>? match = null, IPage? page = null, int timeoutMs = 120_000)
+    private protected async Task<HarnessEvent> WaitForEventAsync(string type, Func<HarnessEvent, bool>? match = null, IPage? page = null, int timeoutMs = 120_000)
     {
         var events = await EventuallyAsync(() => EventsAsync(page), all => all.Any(e => e.Type == type && (match?.Invoke(e) ?? true)),
             $"a {type} message", timeoutMs);
@@ -202,18 +202,18 @@ public abstract partial class BswupTest
     /// the <paramref name="excluded"/> the test configured): the asset URL resolved against the worker, followed
     /// by <c>.&lt;hash&gt;</c> when the asset has one.
     /// </summary>
-    protected string[] PrecacheKeys(HarnessSession.AssetsManifest manifest, params string[] excluded) =>
+    private protected string[] PrecacheKeys(HarnessSession.AssetsManifest manifest, params string[] excluded) =>
         [.. PrecachedAssets(manifest, excluded).Select(asset => AppUrl(asset.Url) + (string.IsNullOrEmpty(asset.Hash) ? string.Empty : "." + asset.Hash))];
 
     /// <summary>The manifest assets the worker precaches with its default include/exclude lists (and the <paramref name="excluded"/> the test configured).</summary>
-    protected static HarnessSession.AssetsManifest.Asset[] PrecachedAssets(HarnessSession.AssetsManifest manifest, params string[] excluded) =>
+    private protected static HarnessSession.AssetsManifest.Asset[] PrecachedAssets(HarnessSession.AssetsManifest manifest, params string[] excluded) =>
         [.. manifest.Assets
             .Where(asset => DefaultIncludes.Any(pattern => pattern.IsMatch(asset.Url)))
             .Where(asset => DefaultExcludes.Any(pattern => pattern.IsMatch(asset.Url)) is false)
             .Where(asset => excluded.Any(pattern => Regex.IsMatch(asset.Url, pattern)) is false)];
 
     /// <summary>Runs fetch() inside the page (so through its service worker) and reports the outcome instead of throwing.</summary>
-    protected Task<FetchOutcome> FetchAsync(string url, string? method = null, Dictionary<string, string>? headers = null, IPage? page = null) =>
+    private protected Task<FetchOutcome> FetchAsync(string url, string? method = null, Dictionary<string, string>? headers = null, IPage? page = null) =>
         (page ?? Page).EvaluateAsync<FetchOutcome>("""
             async ([url, method, headers]) => {
                 try {
@@ -302,7 +302,7 @@ public abstract partial class BswupTest
 }
 
 /// <summary>One Bswup message as harness.js recorded it.</summary>
-public sealed class HarnessEvent
+internal sealed class HarnessEvent
 {
     public string Type { get; set; } = string.Empty;
 
@@ -330,7 +330,7 @@ public sealed class HarnessEvent
         $"{Type}{(FirstInstall is null ? "" : $" firstInstall={FirstInstall}")}{(Percent is null ? "" : $" {Percent:0}%")}{(Reason is null ? "" : $" reason={Reason} fatal={Fatal}")}{(Version is null ? "" : $" version={Version}")}{(Url is null ? "" : $" url={Url}")}";
 }
 
-public sealed class FetchOutcome
+internal sealed class FetchOutcome
 {
     /// <summary>fetch() rejected: a network error, which is what a request the worker cannot serve gets offline.</summary>
     public bool Failed { get; set; }

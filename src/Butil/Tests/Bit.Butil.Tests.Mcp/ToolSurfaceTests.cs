@@ -102,8 +102,7 @@ public class ToolSurfaceTests : McpTestBase
                     ? [.. properties.EnumerateObject().Select(property => property.Name)]
                     : [];
 
-                CollectionAssert.AreEquivalent(ButilMcp.Tools[tool.Name], declared,
-                    $"{tool.Name} does not declare the parameters the suite expects.");
+                Assert.AreSequenceEqual(ButilMcp.Tools[tool.Name], declared, Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, $"{tool.Name} does not declare the parameters the suite expects.");
             }
         }
     }

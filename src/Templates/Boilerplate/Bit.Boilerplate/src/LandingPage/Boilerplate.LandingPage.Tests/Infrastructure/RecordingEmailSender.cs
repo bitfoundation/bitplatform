@@ -5,7 +5,7 @@ using FluentEmail.Core.Models;
 
 namespace Boilerplate.LandingPage.Tests.Infrastructure;
 
-public sealed class RecordingEmailSender : ISender
+internal sealed class RecordingEmailSender : ISender
 {
     public ConcurrentQueue<EmailData> Sent { get; } = new();
 

@@ -40,18 +40,18 @@ public class McpDropLabTests
         Assert.IsTrue(report.DragStarted);
         Assert.IsTrue(report.BeginFired);
         Assert.AreEqual("move", report.EffectAllowed);
-        CollectionAssert.AreEqual(new[] { "board", "todo", "card-2" }, report.HoverPath);
+        Assert.AreSequenceEqual(new[] { "board", "todo", "card-2" }, report.HoverPath);
 
         // Nested targets get OnDrop innermost first, and each outer one sees that an inner one already dropped.
         Assert.IsTrue(report.DropFired);
-        CollectionAssert.AreEqual(new[] { "card-2", "todo", "board" }, report.DropOrder);
+        Assert.AreSequenceEqual(new[] { "card-2", "todo", "board" }, report.DropOrder);
         Assert.IsFalse(Target(report, "card-2").InnerAlreadyDropped);
         Assert.IsTrue(Target(report, "todo").InnerAlreadyDropped);
         Assert.IsTrue(Target(report, "board").InnerAlreadyDropped);
 
         // "todo" published first, "board" last: a non-null outer result overrides the inner one.
         Assert.AreEqual(new BdndDragEndReportDto { DidDrop = true, DropResult = "board" }, report.End);
-        Assert.IsTrue(report.Notes.Any(note => note.Contains("replaces an inner one", StringComparison.Ordinal)));
+        Assert.Contains(note => note.Contains("replaces an inner one", StringComparison.Ordinal), report.Notes);
     }
 
     [TestMethod]
@@ -77,7 +77,7 @@ public class McpDropLabTests
         Assert.IsFalse(done.IsOver);
         Assert.IsNull(done.DropOrder);
         Assert.IsFalse(attachments.CanDrop);
-        CollectionAssert.AreEqual(new[] { BdndNativeTypes.File }, attachments.Accept);
+        Assert.AreSequenceEqual(new[] { BdndNativeTypes.File }, attachments.Accept);
         Assert.AreEqual(0, done.ParentIndex);
         Assert.AreEqual("board", report.Targets![done.ParentIndex!.Value].Id);
         Assert.AreEqual(1, done.Depth);
@@ -98,9 +98,9 @@ public class McpDropLabTests
         Assert.IsTrue(list.IsOver);
         Assert.IsTrue(list.IsOverShallow, "With the inner target out of it, the list is the innermost hovered target that counts.");
 
-        CollectionAssert.AreEqual(new[] { "list" }, report.DropOrder);
+        Assert.AreSequenceEqual(new[] { "list" }, report.DropOrder);
         Assert.AreEqual(new BdndDragEndReportDto { DidDrop = true, DropResult = "list" }, report.End);
-        Assert.IsTrue(report.Notes.Any(note => note.Contains("'trash' does not accept 'card'", StringComparison.Ordinal) && note.Contains("falls through to 'list'", StringComparison.Ordinal)));
+        Assert.Contains(note => note.Contains("'trash' does not accept 'card'", StringComparison.Ordinal) && note.Contains("falls through to 'list'", StringComparison.Ordinal), report.Notes);
     }
 
     [TestMethod]
@@ -111,8 +111,8 @@ public class McpDropLabTests
         Assert.IsFalse(report.DropFired, "With no target able to drop, the browser fires no drop event.");
         Assert.IsEmpty(report.DropOrder!);
         Assert.AreEqual(new BdndDragEndReportDto { DidDrop = false }, report.End);
-        Assert.IsTrue(report.Notes.Any(note => note.Contains("no drop event", StringComparison.Ordinal)));
-        Assert.IsTrue(report.Notes.Any(note => note.Contains("No target accepts 'card'", StringComparison.Ordinal)));
+        Assert.Contains(note => note.Contains("no drop event", StringComparison.Ordinal), report.Notes);
+        Assert.Contains(note => note.Contains("No target accepts 'card'", StringComparison.Ordinal), report.Notes);
     }
 
     [TestMethod]
@@ -129,9 +129,9 @@ public class McpDropLabTests
         Assert.IsFalse(done.CanDrop);
         Assert.IsNull(done.DropOrder);
 
-        CollectionAssert.AreEqual(new[] { "board" }, report.DropOrder);
+        Assert.AreSequenceEqual(new[] { "board" }, report.DropOrder);
         Assert.AreEqual(new BdndDragEndReportDto { DidDrop = true }, report.End);
-        Assert.IsTrue(report.Notes.Any(note => note.Contains("CanDropPredicate answered false", StringComparison.Ordinal) && note.Contains("'board'", StringComparison.Ordinal)));
+        Assert.Contains(note => note.Contains("CanDropPredicate answered false", StringComparison.Ordinal) && note.Contains("'board'", StringComparison.Ordinal), report.Notes);
     }
 
     [TestMethod]
@@ -149,9 +149,9 @@ public class McpDropLabTests
         var report = await InspectAsync(Scenario("card", "slot",
             Target("column", ["card"], children: [Target("slot", ["card"], result: "slot")])));
 
-        CollectionAssert.AreEqual(new[] { "slot", "column" }, report.DropOrder);
+        Assert.AreSequenceEqual(new[] { "slot", "column" }, report.DropOrder);
         Assert.AreEqual(new BdndDragEndReportDto { DidDrop = true, DropResult = "slot" }, report.End);
-        Assert.IsFalse(report.Notes.Any(note => note.Contains("replaces an inner one", StringComparison.Ordinal)));
+        Assert.DoesNotContain(note => note.Contains("replaces an inner one", StringComparison.Ordinal), report.Notes);
     }
 
     [TestMethod]
@@ -165,7 +165,7 @@ public class McpDropLabTests
 
         // CanDrop is about the item, not the pointer.
         Assert.IsTrue(report.Targets!.All(target => target.CanDrop && target.IsOver is false));
-        Assert.IsTrue(report.Notes.Any(note => note.Contains("dropped outside every target", StringComparison.Ordinal)));
+        Assert.Contains(note => note.Contains("dropped outside every target", StringComparison.Ordinal), report.Notes);
     }
 
     [TestMethod]
@@ -179,7 +179,7 @@ public class McpDropLabTests
         Assert.IsEmpty(report.DataTransferTypes!, "The script tags no drag for a source that cannot drag.");
         Assert.IsNull(report.End);
         Assert.IsFalse(Target(report, "list").CanDrop);
-        Assert.IsTrue(report.Notes.Any(note => note.Contains("draggable=\"false\"", StringComparison.Ordinal)));
+        Assert.Contains(note => note.Contains("draggable=\"false\"", StringComparison.Ordinal), report.Notes);
     }
 
     [TestMethod]
@@ -188,7 +188,7 @@ public class McpDropLabTests
         var report = await InspectAsync(Scenario(new JsonObject { ["type"] = "box", ["dropEffect"] = "copy" }, "bin", Target("bin", ["box"])));
 
         Assert.AreEqual("copy", report.EffectAllowed);
-        Assert.HasCount(1, report.DataTransferTypes!);
+        Assert.ContainsSingle(report.DataTransferTypes!);
         Assert.StartsWith("application/x-bit-bdnd-", report.DataTransferTypes![0]);
     }
 
@@ -200,7 +200,7 @@ public class McpDropLabTests
         Assert.IsTrue(Target(report, "bin").CanDrop);
         Assert.IsFalse(report.DropFired);
         Assert.AreEqual(new BdndDragEndReportDto { DidDrop = false }, report.End);
-        Assert.IsTrue(report.Notes.Any(note => note.Contains("dropEffect is 'none'", StringComparison.Ordinal)));
+        Assert.Contains(note => note.Contains("dropEffect is 'none'", StringComparison.Ordinal), report.Notes);
     }
 
     [TestMethod]
@@ -209,7 +209,7 @@ public class McpDropLabTests
         var report = await InspectAsync(Scenario(new JsonObject { ["type"] = "box", ["dropEffect"] = "copymove" }, "bin", Target("bin", ["box"])));
 
         Assert.IsTrue(report.DropFired);
-        Assert.IsTrue(report.Notes.Any(note => note.Contains("'copyMove'", StringComparison.Ordinal)));
+        Assert.Contains(note => note.Contains("'copyMove'", StringComparison.Ordinal), report.Notes);
     }
 
     [TestMethod]
@@ -221,12 +221,12 @@ public class McpDropLabTests
         Assert.IsTrue(report.Valid, report.Error);
         Assert.IsTrue(report.Native);
         Assert.AreEqual(BdndNativeTypes.File, report.ItemType);
-        CollectionAssert.AreEqual(new[] { "Files" }, report.DataTransferTypes);
+        Assert.AreSequenceEqual(new[] { "Files" }, report.DataTransferTypes);
         Assert.IsNull(report.End, "No BdndDraggable is involved, so there is no OnEnd.");
         Assert.IsNull(report.DragStarted);
 
         // Both hovered targets take the drop, innermost first; the state lights up only under the pointer.
-        CollectionAssert.AreEqual(new[] { "zone", "page" }, report.DropOrder);
+        Assert.AreSequenceEqual(new[] { "zone", "page" }, report.DropOrder);
         Assert.AreEqual(BdndNativeTypes.File, Target(report, "zone").NativeItemType);
 
         foreach (var id in new[] { "page", "zone" })
@@ -239,8 +239,8 @@ public class McpDropLabTests
         Assert.IsFalse(Target(report, "page").IsOverShallow, "an accepting target nested in it is hovered");
 
         Assert.IsFalse(Target(report, "other").CanDrop);
-        Assert.IsTrue(report.Notes.Any(note => note.Contains("OnNativeDrop, never OnDrop", StringComparison.Ordinal)));
-        Assert.IsTrue(report.Notes.Any(note => note.Contains("'result' was not published", StringComparison.Ordinal)));
+        Assert.Contains(note => note.Contains("OnNativeDrop, never OnDrop", StringComparison.Ordinal), report.Notes);
+        Assert.Contains(note => note.Contains("'result' was not published", StringComparison.Ordinal), report.Notes);
     }
 
     [TestMethod]
@@ -251,7 +251,7 @@ public class McpDropLabTests
         Assert.IsFalse(report.DropFired);
         Assert.IsEmpty(report.DropOrder!);
         Assert.IsFalse(Target(report, "zone").IsOver);
-        Assert.IsTrue(report.Notes.Any(note => note.Contains("'zone' accepts 'file' - an in-app type name", StringComparison.Ordinal)));
+        Assert.Contains(note => note.Contains("'zone' accepts 'file' - an in-app type name", StringComparison.Ordinal), report.Notes);
     }
 
     [TestMethod]
@@ -261,7 +261,7 @@ public class McpDropLabTests
         {
             var report = await InspectAsync(Scenario($"BdndNativeTypes.{name}", "zone", Target("zone", [constant])));
 
-            CollectionAssert.AreEqual(new[] { "zone" }, report.DropOrder, name);
+            Assert.AreSequenceEqual(new[] { "zone" }, report.DropOrder, name);
             Assert.AreEqual(constant, Target(report, "zone").NativeItemType, name);
         }
     }
@@ -272,8 +272,8 @@ public class McpDropLabTests
         var report = await InspectAsync(Scenario("card", "list", Target("list", ["Card", "cards"])));
 
         Assert.IsFalse(Target(report, "list").CanDrop);
-        Assert.IsTrue(report.Notes.Any(note => note.Contains("'list' accepts 'Card', which is not 'card'", StringComparison.Ordinal)));
-        Assert.IsTrue(report.Notes.Any(note => note.Contains("'list' accepts 'cards', which is not 'card'", StringComparison.Ordinal)));
+        Assert.Contains(note => note.Contains("'list' accepts 'Card', which is not 'card'", StringComparison.Ordinal), report.Notes);
+        Assert.Contains(note => note.Contains("'list' accepts 'cards', which is not 'card'", StringComparison.Ordinal), report.Notes);
     }
 
     [TestMethod]
@@ -284,8 +284,8 @@ public class McpDropLabTests
         Assert.HasCount(2, report.Targets!);
         Assert.IsTrue(Target(report, "list").Hovered, "hover resolves a repeated id to the first target that has it.");
         Assert.IsFalse(report.Targets![1].Hovered);
-        Assert.IsTrue(report.Notes.Any(note => note.Contains("used by 2 targets", StringComparison.Ordinal)));
-        Assert.IsTrue(report.Notes.Any(note => note.Contains("accepts nothing", StringComparison.Ordinal)));
+        Assert.Contains(note => note.Contains("used by 2 targets", StringComparison.Ordinal), report.Notes);
+        Assert.Contains(note => note.Contains("accepts nothing", StringComparison.Ordinal), report.Notes);
     }
 
     [TestMethod]
@@ -294,7 +294,7 @@ public class McpDropLabTests
         var path = await InspectAsync(Scenario("card", new JsonArray("outer", "inner"), Target("outer", ["card"], children: [Target("inner", ["card"])])));
         var broken = await InspectAsync(Scenario("card", new JsonArray("inner", "outer"), Target("outer", ["card"], children: [Target("inner", ["card"])])));
 
-        CollectionAssert.AreEqual(new[] { "outer", "inner" }, path.HoverPath);
+        Assert.AreSequenceEqual(new[] { "outer", "inner" }, path.HoverPath);
         Assert.IsFalse(broken.Valid);
         Assert.Contains("not a chain of nested targets", broken.Error!);
     }
@@ -335,7 +335,7 @@ public class McpDropLabTests
         Assert.Contains("is not the id of any target", longHover.Error!);
         Assert.DoesNotContain("Did you mean", longHover.Error!);
         Assert.IsTrue(type.Valid, type.Error);
-        Assert.IsFalse(type.Notes.Any(note => note.Contains("a typo here", StringComparison.Ordinal)));
+        Assert.DoesNotContain(note => note.Contains("a typo here", StringComparison.Ordinal), type.Notes);
     }
 
     [TestMethod]
@@ -359,7 +359,7 @@ public class McpDropLabTests
         var report = await InspectAsync(new JsonObject { ["draggable"] = new JsonObject { ["type"] = "card" }, ["targets"] = new JsonArray(target), ["hover"] = "list" }.ToJsonString());
 
         Assert.IsTrue(report.Valid);
-        Assert.IsTrue(report.Notes.Any(note => note.Contains("'acept'", StringComparison.Ordinal) && note.Contains("did you mean 'accept'", StringComparison.Ordinal)));
+        Assert.Contains(note => note.Contains("'acept'", StringComparison.Ordinal) && note.Contains("did you mean 'accept'", StringComparison.Ordinal), report.Notes);
     }
 
     [TestMethod]
@@ -379,7 +379,7 @@ public class McpDropLabTests
 
         Assert.HasCount(BdndDropLab.MaxListed, listed);
         Assert.StartsWith("'acept' is not a property of targets[0] and was ignored - did you mean 'accept'?", listed[0]);
-        Assert.IsTrue(report.Notes.Any(note => note.StartsWith($"{1_001 - BdndDropLab.MaxListed} more ignored properties are not listed", StringComparison.Ordinal)), string.Join('\n', report.Notes));
+        Assert.Contains(note => note.StartsWith($"{1_001 - BdndDropLab.MaxListed} more ignored properties are not listed", StringComparison.Ordinal), report.Notes, string.Join('\n', report.Notes));
     }
 
     [TestMethod]
@@ -390,7 +390,7 @@ public class McpDropLabTests
 
         var report = await InspectAsync(Scenario(draggable, "list", Target("list", ["card"])));
 
-        Assert.IsTrue(report.Notes.Any(note => note.StartsWith("1 more ignored property is not listed", StringComparison.Ordinal)), string.Join('\n', report.Notes));
+        Assert.Contains(note => note.StartsWith("1 more ignored property is not listed", StringComparison.Ordinal), report.Notes, string.Join('\n', report.Notes));
     }
 
     [TestMethod]
@@ -402,7 +402,7 @@ public class McpDropLabTests
         var report = await InspectAsync(Scenario(draggable, "zone", Target("zone", ["BdndNativeTypes.File"])));
 
         Assert.IsTrue(report.Valid, report.Error);
-        Assert.IsTrue(report.Notes.Any(note => note.StartsWith("canDrag and dropEffect were ignored", StringComparison.Ordinal)));
+        Assert.Contains(note => note.StartsWith("canDrag and dropEffect were ignored", StringComparison.Ordinal), report.Notes);
     }
 
     [TestMethod]

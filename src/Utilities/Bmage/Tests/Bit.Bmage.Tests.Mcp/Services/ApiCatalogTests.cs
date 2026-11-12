@@ -13,7 +13,7 @@ public class ApiCatalogTests
     {
         var packages = BmageApiCatalog.Types.Select(type => type.Package).Distinct().Order().ToArray();
 
-        CollectionAssert.AreEqual(new[] { "Bit.Bmage", "Bit.Bmage.Blazor" }, packages);
+        Assert.AreSequenceEqual(new[] { "Bit.Bmage", "Bit.Bmage.Blazor" }, packages);
 
         foreach (var (name, package, ns) in new[]
         {
@@ -51,9 +51,9 @@ public class ApiCatalogTests
     [TestMethod]
     public void Types_TheBuildArtefactsAreLeftOut()
     {
-        Assert.IsFalse(BmageApiCatalog.Types.Any(type => type.Name == "_Imports"));
+        Assert.DoesNotContain(type => type.Name == "_Imports", BmageApiCatalog.Types);
         // Compiler-generated types ("<PrivateImplementationDetails>") are not API; a generic type's friendly name may contain '<'.
-        Assert.IsFalse(BmageApiCatalog.Types.Any(type => type.Name.StartsWith('<')));
+        Assert.DoesNotContain(type => type.Name.StartsWith('<'), BmageApiCatalog.Types);
     }
 
     [TestMethod]
@@ -101,10 +101,10 @@ public class ApiCatalogTests
 
         Assert.AreEqual("100", editor.Members.Single(member => member.Name == "MaxHistoryDepth").Default);
         Assert.AreEqual("\"ltr\"", editor.Members.Single(member => member.Name == "Direction").Default);
-        Assert.IsTrue(editor.Members.Any(member => member.Name == "LoadImageAsync" && member.Signature!.Contains("bool takeOwnership = true", StringComparison.Ordinal)));
+        Assert.Contains(member => member.Name == "LoadImageAsync" && member.Signature!.Contains("bool takeOwnership = true", StringComparison.Ordinal), editor.Members);
 
         // What every component inherits from ComponentBase is not the editor's API.
-        Assert.IsFalse(editor.Members.Any(member => member.Name is "SetParametersAsync" or "BuildRenderTree" or "OnInitializedAsync"));
+        Assert.DoesNotContain(member => member.Name is "SetParametersAsync" or "BuildRenderTree" or "OnInitializedAsync", editor.Members);
     }
 
     [TestMethod]
@@ -117,11 +117,11 @@ public class ApiCatalogTests
         Assert.AreEqual("ImagePipeline", maxSize.Type);
 
         var rotate = pipeline.Members.Single(member => member.Name == "Rotate");
-        StringAssert.Contains(rotate.Signature, "Rgba32 background = default");
+        Assert.Contains("Rgba32 background = default", rotate.Signature!);
 
         // Extension methods say so.
         var registration = BmageApiCatalog.GetTypeDetails("BitBmageBlazor")!.Members.First(member => member.Name == "AddBitBmageServices");
-        StringAssert.StartsWith(registration.Signature, "(this IServiceCollection services");
+        Assert.StartsWith("(this IServiceCollection services", registration.Signature);
     }
 
     [TestMethod]
@@ -133,8 +133,8 @@ public class ApiCatalogTests
         Assert.IsGreaterThanOrEqualTo(1, constructors.Length);
 
         var options = BmageApiCatalog.GetTypeDetails("ImageExportOptions")!;
-        Assert.IsFalse(options.Members.Any(member => member.Kind == "Constructor" && member.Signature == "(ImageExportOptions original)"));
-        Assert.IsFalse(options.Members.Any(member => member.Name is "EqualityContract" or "Deconstruct" or "PrintMembers"));
+        Assert.DoesNotContain(member => member.Kind == "Constructor" && member.Signature == "(ImageExportOptions original)", options.Members);
+        Assert.DoesNotContain(member => member.Name is "EqualityContract" or "Deconstruct" or "PrintMembers", options.Members);
     }
 
     [TestMethod]
@@ -142,17 +142,19 @@ public class ApiCatalogTests
     {
         var policy = BmageApiCatalog.GetTypeDetails("MetadataPolicy")!;
 
-        CollectionAssert.AreEqual(new[] { "Preserve", "Remove", "StripSensitive" }, policy.Members.Select(member => member.Name).Order().ToArray());
+        Assert.AreSequenceEqual(new[] { "Preserve", "Remove", "StripSensitive" }, policy.Members.Select(member => member.Name).Order().ToArray());
 
         var strip = policy.Members.Single(member => member.Name == "StripSensitive");
-        StringAssert.Contains(strip.Summary, "GPS");
+        Assert.Contains("GPS", strip.Summary!);
     }
 
     [TestMethod]
     public void Lookup_ByFullNameMemberAndCaseInsensitively()
     {
-        Assert.AreEqual("ImageExporter", BmageApiCatalog.GetTypeDetails("Bit.Bmage.Output.ImageExporter")?.Name);
-        Assert.AreEqual("ImageExporter", BmageApiCatalog.GetTypeDetails("imageexporter")?.Name);
+        var actualValue = BmageApiCatalog.GetTypeDetails("Bit.Bmage.Output.ImageExporter")?.Name;
+        Assert.AreEqual("ImageExporter", actualValue);
+        var actualValue1 = BmageApiCatalog.GetTypeDetails("imageexporter")?.Name;
+        Assert.AreEqual("ImageExporter", actualValue1);
         Assert.IsNull(BmageApiCatalog.GetTypeDetails("Teleporter"));
 
         var member = BmageApiCatalog.GetMemberDetails("ImageExportOptions.MaxFileSize")!;

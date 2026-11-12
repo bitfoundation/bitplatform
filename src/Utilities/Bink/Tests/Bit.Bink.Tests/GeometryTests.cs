@@ -230,7 +230,7 @@ public class PathGeometryTests
             Vector2 exact = p0 * (mt * mt * mt) + p1 * (3 * mt * mt * t) + p2 * (3 * mt * t * t) + p3 * (t * t * t);
             float best = float.MaxValue;
             for (int s = 1; s < points.Count; s++) best = MathF.Min(best, BinkGeometryMath.DistanceToSegment(exact, points[s - 1], points[s]));
-            Assert.IsTrue(best <= tolerance, $"point at t={t} was {best} away from the flattened polyline");
+            Assert.IsLessThanOrEqualTo(tolerance, best, $"point at t={t} was {best} away from the flattened polyline");
         }
         Assert.AreEqual(p3, points[^1]);
     }

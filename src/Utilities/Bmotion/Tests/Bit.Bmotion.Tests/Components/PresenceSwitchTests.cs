@@ -51,12 +51,12 @@ public class PresenceSwitchTests
         cut.Render(ps => ps.Add(p => p.Item, 2));
 
         // The old page is playing its exit; the new one hasn't mounted.
-        CollectionAssert.AreEqual(new[] { "page-1" }, Pages(cut));
-        Assert.IsFalse(ctx.Interop.Calls.Any(c => c.Method == "registerElement" && (string?)c.Args[0] == "page-2"));
+        Assert.AreSequenceEqual(new[] { "page-1" }, Pages(cut));
+        Assert.DoesNotContain(c => c.Method == "registerElement" && (string?)c.Args[0] == "page-2", ctx.Interop.Calls);
 
         await ctx.FinishWaapiAsync("page-1");
 
-        cut.WaitForAssertion(() => CollectionAssert.AreEqual(new[] { "page-2" }, Pages(cut)));
+        cut.WaitForAssertion(() => Assert.AreSequenceEqual(new[] { "page-2" }, Pages(cut)));
         cut.WaitForAssertion(() => Assert.AreEqual(1, exits));
         Assert.AreEqual("Page 2", cut.Find("section").TextContent);
     }
@@ -70,7 +70,7 @@ public class PresenceSwitchTests
         cut.Render(ps => ps.Add(p => p.Item, 2));
 
         // Both on screen at once - and the outgoing page still renders its own item, not the new one.
-        CollectionAssert.AreEqual(new[] { "page-1", "page-2" }, Pages(cut));
+        Assert.AreSequenceEqual(new[] { "page-1", "page-2" }, Pages(cut));
         Assert.AreEqual("Page 1", cut.Find("#page-1").TextContent);
     }
 
@@ -84,7 +84,7 @@ public class PresenceSwitchTests
         cut.Render(ps => ps.Add(p => p.Item, 2));
         await ctx.FinishWaapiAsync("page-1");
 
-        cut.WaitForAssertion(() => CollectionAssert.AreEqual(new[] { "page-2" }, Pages(cut)));
+        cut.WaitForAssertion(() => Assert.AreSequenceEqual(new[] { "page-2" }, Pages(cut)));
         cut.WaitForAssertion(() => Assert.AreEqual(1, exits));
     }
 
@@ -97,7 +97,7 @@ public class PresenceSwitchTests
 
         cut.Render(ps => ps.Add(p => p.Item, 1));
 
-        CollectionAssert.AreEqual(new[] { "page-1" }, Pages(cut));
+        Assert.AreSequenceEqual(new[] { "page-1" }, Pages(cut));
         Assert.AreEqual(playsBefore, ctx.Interop.CountOf("playWaapiAnimation"), "nothing may exit or enter");
     }
 
@@ -112,8 +112,8 @@ public class PresenceSwitchTests
         cut.Render(ps => ps.Add(p => p.Item, 3));
         await ctx.FinishWaapiAsync("page-1");
 
-        cut.WaitForAssertion(() => CollectionAssert.AreEqual(new[] { "page-3" }, Pages(cut)));
-        Assert.IsFalse(ctx.Interop.Calls.Any(c => c.Method == "registerElement" && (string?)c.Args[0] == "page-2"),
+        cut.WaitForAssertion(() => Assert.AreSequenceEqual(new[] { "page-3" }, Pages(cut)));
+        Assert.DoesNotContain(c => c.Method == "registerElement" && (string?)c.Args[0] == "page-2", ctx.Interop.Calls,
             "a superseded pending item must never mount");
     }
 
@@ -126,7 +126,7 @@ public class PresenceSwitchTests
 
         cut.Render(ps => ps.Add(p => p.Item, 2));
 
-        Assert.IsTrue(ctx.Interop.Calls.Any(c => c.Method == "popLayout" && (string?)c.Args[0] == "page-1"));
-        Assert.IsFalse(ctx.Interop.Calls.Any(c => c.Method == "popLayout" && (string?)c.Args[0] == "page-2"));
+        Assert.Contains(c => c.Method == "popLayout" && (string?)c.Args[0] == "page-1", ctx.Interop.Calls);
+        Assert.DoesNotContain(c => c.Method == "popLayout" && (string?)c.Args[0] == "page-2", ctx.Interop.Calls);
     }
 }

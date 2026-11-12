@@ -175,7 +175,7 @@ public class DemoRegressionTests : DemoTest
     {
         var page = await OpenAsync("optimize");
         var path = Path.Combine(Path.GetTempPath(), $"bmage-{Guid.NewGuid():N}-notes.txt");
-        await File.WriteAllTextAsync(path, "not an image");
+        await File.WriteAllTextAsync(path, "not an image", TestContext.CancellationToken);
         try
         {
             await page.SetInputFilesAsync("input[type=file]", path);
@@ -204,7 +204,7 @@ public class DemoRegressionTests : DemoTest
         var page = await OpenEditorWithImageAsync();
         await page.WaitForFunctionAsync($"() => /Source\\s+{SampleImage.Width} × {SampleImage.Height}/.test(document.querySelector('pre.demo-readout')?.textContent ?? '')",
             null, new PageWaitForFunctionOptions { Timeout = 10_000 });
-        StringAssert.Contains(await ReadDocumentAsync(page), "Layers (0, bottom first)");
+        Assert.Contains("Layers (0, bottom first)", await ReadDocumentAsync(page));
     }
 
     [TestMethod]
@@ -254,7 +254,7 @@ public class DemoRegressionTests : DemoTest
         await page.WaitForTimeoutAsync(1200);
 
         var messages = await page.Locator(".bmg-editor [role=status], .bmg-editor [role=alert]").AllInnerTextsAsync();
-        Assert.IsFalse(messages.Any(m => m.Contains("قلم", StringComparison.Ordinal) || m.Contains("font", StringComparison.OrdinalIgnoreCase)), string.Join(" | ", messages));
+        Assert.DoesNotContain(m => m.Contains("قلم", StringComparison.Ordinal) || m.Contains("font", StringComparison.OrdinalIgnoreCase), messages, string.Join(" | ", messages));
         var after = await page.EvaluateAsync<int[]>($"() => {{ const c = document.querySelector('.bmg-canvas'); return Array.from(c.getContext('2d').getImageData(...{Region}).data); }}");
         var changed = 0;
         for (var i = 0; i < before.Length; i += 4)
@@ -280,8 +280,8 @@ public class DemoRegressionTests : DemoTest
 
             var rows = await page.Locator(".results-table tbody tr").AllInnerTextsAsync();
             Assert.HasCount(8, rows);
-            Assert.IsTrue(rows.Any(r => r.Contains("WEBP", StringComparison.Ordinal) || r.Contains("JPEG", StringComparison.Ordinal)), "a finished image is kept");
-            Assert.IsTrue(rows.Any(r => r.Contains("stopped", StringComparison.Ordinal)), "the rest are marked");
+            Assert.Contains(r => r.Contains("WEBP", StringComparison.Ordinal) || r.Contains("JPEG", StringComparison.Ordinal), rows, "a finished image is kept");
+            Assert.Contains(r => r.Contains("stopped", StringComparison.Ordinal), rows, "the rest are marked");
             Assert.AreEqual(0, await page.Locator(".demo-error").CountAsync());
             Assert.IsFalse(await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Download results" }).IsDisabledAsync());
         }
@@ -328,7 +328,7 @@ public class DemoRegressionTests : DemoTest
         await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Run on a sample image" }).ClickAsync();
         await page.WaitForSelectorAsync("img.pipeline-preview", new PageWaitForSelectorOptions { Timeout = 60_000 });
         var path = Path.Combine(Path.GetTempPath(), $"bmage-{Guid.NewGuid():N}.bmage");
-        await File.WriteAllTextAsync(path, "not a project");
+        await File.WriteAllTextAsync(path, "not a project", TestContext.CancellationToken);
         try
         {
             await page.SetInputFilesAsync("input[type=file][accept='.bmage']", path);
@@ -349,7 +349,7 @@ public class DemoRegressionTests : DemoTest
         await box.FillAsync("webp fallback");
         await box.PressAsync("Enter");
         await page.WaitForSelectorAsync(".mcp-hits li", new PageWaitForSelectorOptions { Timeout = 30_000 });
-        StringAssert.EndsWith(page.Url, "/mcp-server");
+        Assert.EndsWith("/mcp-server", page.Url);
     }
 
     [TestMethod]
@@ -422,8 +422,8 @@ public class DemoRegressionTests : DemoTest
         await layers.GetByRole(AriaRole.Button, new() { Name = "Clipped group", Exact = true }).ClickAsync();
         await SettleAsync(layers);
         var json = await layers.Locator(".layers-json").InnerTextAsync();
-        StringAssert.Contains(json, "\"type\": \"group\"");
-        StringAssert.Contains(json, "\"clipToLayerBelow\": true");
+        Assert.Contains("\"type\": \"group\"", json);
+        Assert.Contains("\"clipToLayerBelow\": true", json);
         await AssertCleanAsync(layers, errors);
 
         // Retouch: the eyedropper's white balance, then the trim, which crops the cut-out product to its bounds.

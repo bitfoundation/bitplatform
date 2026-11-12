@@ -43,7 +43,7 @@ public class CliFormatTests : BunitContext
             Assert.AreEqual(expected.Findings.Count(f => f.Fails), root.GetProperty("failingFindings").GetInt32());
             Assert.AreEqual(1, root.GetProperty("dismissedFindings").GetInt32());
             Assert.AreEqual(expected.Errors, root.GetProperty("errors").GetInt64());
-            CollectionAssert.AreEqual(expected.Caveats.ToArray(), root.GetProperty("caveats").EnumerateArray().Select(c => c.GetString()).ToArray());
+            Assert.AreSequenceEqual(expected.Caveats.ToArray(), root.GetProperty("caveats").EnumerateArray().Select(c => c.GetString()).ToArray());
 
             var findings = root.GetProperty("findings").EnumerateArray().ToList();
             var checkedFindings = expected.Findings.Concat(expected.Dismissed).ToList();
@@ -108,8 +108,8 @@ public class CliFormatTests : BunitContext
             Assert.AreEqual("bevtools", driver.GetProperty("name").GetString());
             Assert.AreEqual("https://github.com/bitfoundation/bitplatform", driver.GetProperty("informationUri").GetString());
             var rules = driver.GetProperty("rules").EnumerateArray().Select(r => r.GetProperty("id").GetString()!).ToList();
-            CollectionAssert.AreEquivalent(expected.Findings.Concat(expected.Dismissed).Select(f => f.RuleId).Distinct().ToArray(), rules.ToArray());
-            Assert.AreEqual(rules.Count, rules.Distinct().Count(), "one rule per id");
+            Assert.AreSequenceEqual(expected.Findings.Concat(expected.Dismissed).Select(f => f.RuleId).Distinct().ToArray(), rules.ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
+            Assert.HasCount(rules.Count, rules.Distinct(), "one rule per id");
 
             var invocation = Assert.ContainsSingle(run.GetProperty("invocations").EnumerateArray());
             Assert.IsTrue(invocation.GetProperty("executionSuccessful").GetBoolean());
@@ -125,8 +125,8 @@ public class CliFormatTests : BunitContext
                 Assert.IsFalse(result.TryGetProperty("locations", out _));
                 var finding = expected.Findings.Concat(expected.Dismissed).Single(f => f.RuleId == ruleId);
                 Assert.AreEqual(finding.Fingerprint, result.GetProperty("partialFingerprints").GetProperty(BevCliFormats.FingerprintKey).GetString());
-                StringAssert.StartsWith(result.GetProperty("message").GetProperty("text").GetString(), finding.Title);
-                StringAssert.Contains(result.GetProperty("message").GetProperty("text").GetString(), finding.Evidence);
+                Assert.StartsWith(finding.Title, result.GetProperty("message").GetProperty("text").GetString());
+                Assert.Contains(finding.Evidence, result.GetProperty("message").GetProperty("text").GetString()!);
                 Assert.AreEqual(finding.Dismissed, result.TryGetProperty("suppressions", out var suppressions));
                 if (finding.Dismissed)
                 {
@@ -163,10 +163,10 @@ public class CliFormatTests : BunitContext
             var properties = run.GetProperty("properties");
             Assert.IsFalse(properties.GetProperty("passed").GetBoolean());
             Assert.IsTrue(properties.GetProperty("failedOnErrors").GetBoolean());
-            Assert.IsFalse(run.GetProperty("results").EnumerateArray().Any(r => r.GetProperty("properties").GetProperty("fails").GetBoolean()), "no result says the check failed");
+            Assert.DoesNotContain(r => r.GetProperty("properties").GetProperty("fails").GetBoolean(), run.GetProperty("results").EnumerateArray(), "no result says the check failed");
             var notification = Assert.ContainsSingle(n => n.GetProperty("level").GetString() == "error",
                 Assert.ContainsSingle(run.GetProperty("invocations").EnumerateArray()).GetProperty("toolExecutionNotifications").EnumerateArray());
-            StringAssert.Contains(notification.GetProperty("message").GetProperty("text").GetString(), "fail the check (--fail-on-errors)");
+            Assert.Contains("fail the check (--fail-on-errors)", notification.GetProperty("message").GetProperty("text").GetString()!);
 
             var (passingCode, passing, _) = Run("check", export, "--format", "sarif", "--fail-on", "none");
             Assert.AreEqual(BevToolsCli.Passed, passingCode);
@@ -193,7 +193,7 @@ public class CliFormatTests : BunitContext
             var (code, _, error) = Run("check", export, "--output", file, "--report", Path.Combine(folder.FullName, ".", "out.md"));
 
             Assert.AreEqual(BevToolsCli.Unusable, code);
-            StringAssert.Contains(error, "--output and --report need different files");
+            Assert.Contains("--output and --report need different files", error);
             Assert.IsFalse(File.Exists(file), "refused before anything was written");
         }
         finally
@@ -246,12 +246,12 @@ public class CliFormatTests : BunitContext
                 Assert.IsTrue(line.StartsWith("::error title=", StringComparison.Ordinal) || line.StartsWith("::warning title=", StringComparison.Ordinal) || line.StartsWith("::notice title=", StringComparison.Ordinal), line);
             }
 
-            StringAssert.StartsWith(lines[^1], "BevTools check failed: ");
+            Assert.StartsWith("BevTools check failed: ", lines[^1]);
             var hostile = Assert.ContainsSingle(l => l.Contains("cli.hostile", StringComparison.Ordinal), lines);
             Assert.AreEqual("::warning title=BevTools cli.hostile%3A Hostile%3A a%3Ab%2C c::line one 50%25 done%0D%0Aline two%0A::error title=pwned::injected %250A", hostile);
             Assert.DoesNotContain(l => l.StartsWith("::error title=pwned", StringComparison.Ordinal), lines);
-            StringAssert.Contains(Assert.ContainsSingle(l => l.StartsWith("::error title=BevTools cli.error%3A", StringComparison.Ordinal), lines), "::Total -5 for order 7%0ASuggestion: Check the discount.");
-            StringAssert.EndsWith(Assert.ContainsSingle(l => l.StartsWith("::notice title=BevTools cli.hint%3A", StringComparison.Ordinal), lines), "%0AListed only: it does not fail this check.");
+            Assert.Contains("::Total -5 for order 7%0ASuggestion: Check the discount.", Assert.ContainsSingle(l => l.StartsWith("::error title=BevTools cli.error%3A", StringComparison.Ordinal), lines));
+            Assert.EndsWith("%0AListed only: it does not fail this check.", Assert.ContainsSingle(l => l.StartsWith("::notice title=BevTools cli.hint%3A", StringComparison.Ordinal), lines));
             Assert.DoesNotContain(l => l.Contains("cli.dismissed", StringComparison.Ordinal), lines, "a dismissed finding is no annotation");
             Assert.Contains(l => l.StartsWith("::notice title=BevTools check caveat::", StringComparison.Ordinal), lines);
         }
@@ -288,13 +288,13 @@ public class CliFormatTests : BunitContext
             var (emptyCode, emptyOutput, emptyError) = Run("check", export, "--output", "");
             Assert.AreEqual(BevToolsCli.Unusable, emptyCode);
             Assert.AreEqual("", emptyOutput);
-            StringAssert.Contains(emptyError, "--output needs a file path");
+            Assert.Contains("--output needs a file path", emptyError);
             var (badCode, _, badError) = Run("check", export, "--format", "xml");
             Assert.AreEqual(BevToolsCli.Unusable, badCode);
-            StringAssert.Contains(badError, "--format takes markdown, json, sarif or github, not 'xml'");
+            Assert.Contains("--format takes markdown, json, sarif or github, not 'xml'", badError);
             var (compareCode, _, compareError) = Run("compare", export, export, "--format", "sarif");
             Assert.AreEqual(BevToolsCli.Unusable, compareCode, "a comparison has no SARIF form");
-            StringAssert.Contains(compareError, "--format takes markdown or json");
+            Assert.Contains("--format takes markdown or json", compareError);
             Assert.AreEqual(BevToolsCli.Unusable, Run("check", export, "--format").Code);
         }
         finally
@@ -332,7 +332,7 @@ public class CliFormatTests : BunitContext
             var parent = Assert.ContainsSingle(c => c.GetProperty("displayName").GetString() == nameof(ParentComponent), changes);
             Assert.AreEqual("Regressed", parent.GetProperty("kind").GetString());
             Assert.AreEqual(parent.GetProperty("baselineRenders").GetInt32() + 2, parent.GetProperty("currentRenders").GetInt32());
-            StringAssert.StartsWith(parent.GetProperty("reason").GetString(), "renders +2");
+            Assert.StartsWith("renders +2", parent.GetProperty("reason").GetString());
             Assert.IsTrue(parent.TryGetProperty("currentP95RenderMs", out _));
 
             var (sameCode, sameOutput, _) = Run("compare", baseline, baseline, "--format", "json");

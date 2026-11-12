@@ -16,7 +16,7 @@ public sealed class BitShortIdTests
         {
             var id = BitShortId.NewId();
 
-            Assert.IsTrue(id.Length > 0);
+            Assert.IsGreaterThan(0, id.Length);
             Assert.IsTrue(char.IsAsciiLetterLower(id[0]), $"'{id}' does not start with a letter.");
         }
     }
@@ -43,7 +43,7 @@ public sealed class BitShortIdTests
         }
 
         // a birthday collision over 10k draws of a 32-bit value is possible but vanishingly rare
-        Assert.IsTrue(ids.Count >= 9_999, $"{10_000 - ids.Count} ids collided.");
+        Assert.IsGreaterThanOrEqualTo(9_999, ids.Count, $"{10_000 - ids.Count} ids collided.");
     }
 
     [TestMethod]

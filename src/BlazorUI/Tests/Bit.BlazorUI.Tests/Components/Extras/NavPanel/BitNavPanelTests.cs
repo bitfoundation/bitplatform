@@ -58,7 +58,7 @@ public class BitNavPanelTests : BunitTestContext
         Assert.IsNotNull(root);
         Assert.AreEqual("Header", header.TextContent);
         Assert.AreEqual("Footer", footer.TextContent);
-        Assert.AreEqual(2, component.FindAll(".bit-nav-ict").Count);
+        Assert.HasCount(2, component.FindAll(".bit-nav-ict"));
     }
 
     [TestMethod]
@@ -77,8 +77,8 @@ public class BitNavPanelTests : BunitTestContext
         });
 
         Assert.AreEqual("3", component.Find(".bit-nav-bdg").TextContent);
-        Assert.AreEqual(1, component.FindAll(".bit-nav-bdt").Count);
-        Assert.AreEqual(2, component.FindAll(".bit-nav-sfx .suffix").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-nav-bdt"));
+        Assert.HasCount(2, component.FindAll(".bit-nav-sfx .suffix"));
     }
 
     [TestMethod]
@@ -94,7 +94,7 @@ public class BitNavPanelTests : BunitTestContext
         });
 
         Assert.AreEqual("3", component.Find(".bit-nav-bdg").TextContent);
-        Assert.AreEqual(0, component.FindAll(".suffix").Count);
+        Assert.IsEmpty(component.FindAll(".suffix"));
         Assert.AreEqual("Inbox (3)", component.Find(".bit-nav-ict").GetAttribute("aria-label"));
     }
 
@@ -153,7 +153,7 @@ public class BitNavPanelTests : BunitTestContext
         Assert.AreEqual("Menu", toggleBtn.GetAttribute("aria-label"));
         Assert.AreEqual("Menu", toggleBtn.GetAttribute("title"));
         Assert.IsNotNull(component.Find(".bit-npn-tbn i.fa-bars"));
-        Assert.AreEqual(0, component.FindAll(".bit-icon-ex--ColumnRightTwoThirds").Count);
+        Assert.IsEmpty(component.FindAll(".bit-icon-ex--ColumnRightTwoThirds"));
     }
 
     [TestMethod]
@@ -236,7 +236,7 @@ public class BitNavPanelTests : BunitTestContext
             parameters.Add(p => p.NoOverlay, true);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-npn-ovl").Count);
+        Assert.IsEmpty(component.FindAll(".bit-npn-ovl"));
     }
 
     [TestMethod]
@@ -251,7 +251,7 @@ public class BitNavPanelTests : BunitTestContext
 
         // Nothing of a disabled panel answers a click, so it covers the page with nothing that would then
         // have to be dismissed.
-        Assert.AreEqual(0, component.FindAll(".bit-npn-ovl").Count);
+        Assert.IsEmpty(component.FindAll(".bit-npn-ovl"));
     }
 
     [TestMethod]
@@ -320,7 +320,7 @@ public class BitNavPanelTests : BunitTestContext
             parameters.Add(p => p.HideToggle, true);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-npn-tbn").Count);
+        Assert.IsEmpty(component.FindAll(".bit-npn-tbn"));
     }
 
     [TestMethod]
@@ -333,7 +333,7 @@ public class BitNavPanelTests : BunitTestContext
             parameters.Add(p => p.IsToggled, true);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-npn-tbn").Count);
+        Assert.IsEmpty(component.FindAll(".bit-npn-tbn"));
         Assert.IsFalse(component.Find(".bit-npn").ClassList.Contains("bit-npn-tgl"));
     }
 
@@ -371,7 +371,8 @@ public class BitNavPanelTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("bit-npn-fiw"));
         Assert.IsTrue(root.ClassList.Contains("bit-npn-fuw"));
         Assert.IsTrue(root.ClassList.Contains("bit-npn-npd"));
-        Assert.IsTrue(root.GetAttribute("style")?.Contains("top:24px"));
+        var actualValue = root.GetAttribute("style")?.Contains("top:24px");
+        Assert.IsTrue(actualValue);
     }
 
     [TestMethod]
@@ -385,9 +386,11 @@ public class BitNavPanelTests : BunitTestContext
         });
 
         var style = component.Find(".bit-npn").GetAttribute("style");
+        var actualValue = style?.Contains("--bit-npn-w:260px");
 
-        Assert.IsTrue(style?.Contains("--bit-npn-w:260px"));
-        Assert.IsTrue(style?.Contains("--bit-npn-tw:72px"));
+        Assert.IsTrue(actualValue);
+        var actualValue1 = style?.Contains("--bit-npn-tw:72px");
+        Assert.IsTrue(actualValue1);
     }
 
     [TestMethod]
@@ -422,8 +425,8 @@ public class BitNavPanelTests : BunitTestContext
             parameters.Add(p => p.NoSearchBox, true);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-srb-inp").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-npn-tsb").Count);
+        Assert.IsEmpty(component.FindAll(".bit-srb-inp"));
+        Assert.IsEmpty(component.FindAll(".bit-npn-tsb"));
     }
 
     [TestMethod]
@@ -437,10 +440,10 @@ public class BitNavPanelTests : BunitTestContext
         var parentButton = component.FindAll(".bit-nav-ict")[1];
 
         parentButton.Click();
-        component.WaitForAssertion(() => Assert.AreEqual(5, component.FindAll(".bit-nav-ict").Count));
+        component.WaitForAssertion(() => Assert.HasCount(5, component.FindAll(".bit-nav-ict")));
 
         component.FindAll(".bit-nav-ict")[1].Click();
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-nav-ict").Count));
+        component.WaitForAssertion(() => Assert.HasCount(3, component.FindAll(".bit-nav-ict")));
     }
 
     [TestMethod]
@@ -451,7 +454,7 @@ public class BitNavPanelTests : BunitTestContext
             parameters.Add(p => p.Items, Items);
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-srb-inp").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-srb-inp"));
     }
 
     [TestMethod]
@@ -468,8 +471,8 @@ public class BitNavPanelTests : BunitTestContext
         component.WaitForAssertion(() =>
         {
             var items = component.FindAll(".bit-nav-ict");
-            Assert.AreEqual(1, items.Count);
-            Assert.IsTrue(items[0].TextContent.Contains("Settings"));
+            Assert.ContainsSingle(items);
+            Assert.Contains("Settings", items[0].TextContent);
         });
 
         // The description of an item, and every word of the term having to be somewhere in it.
@@ -477,8 +480,8 @@ public class BitNavPanelTests : BunitTestContext
         component.WaitForAssertion(() =>
         {
             var items = component.FindAll(".bit-nav-ict");
-            Assert.AreEqual(1, items.Count);
-            Assert.IsTrue(items[0].TextContent.Contains("Home"));
+            Assert.ContainsSingle(items);
+            Assert.Contains("Home", items[0].TextContent);
         });
 
         // The data of an item.
@@ -487,7 +490,7 @@ public class BitNavPanelTests : BunitTestContext
         {
             var items = component.FindAll(".bit-nav-ict");
             // "Home" matches through its Data and "Dashboard" through its text, and neither is listed twice.
-            Assert.AreEqual(2, items.Count);
+            Assert.HasCount(2, items);
         });
     }
 
@@ -505,13 +508,13 @@ public class BitNavPanelTests : BunitTestContext
         component.WaitForAssertion(() =>
         {
             var items = component.FindAll(".bit-nav-ict");
-            Assert.AreEqual(1, items.Count);
-            Assert.IsTrue(items[0].TextContent.Contains("AdminPanel"));
+            Assert.ContainsSingle(items);
+            Assert.Contains("AdminPanel", items[0].TextContent);
         });
 
         // The matched group still opens onto the items it groups.
         component.FindAll(".bit-nav-ict")[0].Click();
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-nav-ict").Count));
+        component.WaitForAssertion(() => Assert.HasCount(3, component.FindAll(".bit-nav-ict")));
     }
 
     [TestMethod]
@@ -528,8 +531,8 @@ public class BitNavPanelTests : BunitTestContext
 
         component.WaitForAssertion(() =>
         {
-            Assert.AreEqual(0, component.FindAll(".bit-nav-ict").Count);
-            Assert.IsTrue(component.Markup.Contains("Nothing here!"));
+            Assert.IsEmpty(component.FindAll(".bit-nav-ict"));
+            Assert.Contains("Nothing here!", component.Markup);
         });
 
         // Typing on after an empty result has to keep filtering rather than showing the whole list again.
@@ -537,8 +540,8 @@ public class BitNavPanelTests : BunitTestContext
 
         component.WaitForAssertion(() =>
         {
-            Assert.AreEqual(1, component.FindAll(".bit-nav-ict").Count);
-            Assert.IsFalse(component.Markup.Contains("Nothing here!"));
+            Assert.ContainsSingle(component.FindAll(".bit-nav-ict"));
+            Assert.DoesNotContain("Nothing here!", component.Markup);
         });
     }
 
@@ -554,7 +557,7 @@ public class BitNavPanelTests : BunitTestContext
 
         component.Find(".bit-srb-inp").Change("zzz");
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll(".empty").Count));
+        component.WaitForAssertion(() => Assert.ContainsSingle(component.FindAll(".empty")));
     }
 
     [TestMethod]
@@ -589,11 +592,11 @@ public class BitNavPanelTests : BunitTestContext
             parameters.Add(p => p.SearchText, "settings");
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll(".bit-nav-ict").Count));
+        component.WaitForAssertion(() => Assert.ContainsSingle(component.FindAll(".bit-nav-ict")));
 
         component.Render(parameters => parameters.Add(p => p.SearchText, null));
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-nav-ict").Count));
+        component.WaitForAssertion(() => Assert.HasCount(3, component.FindAll(".bit-nav-ict")));
     }
 
     [TestMethod]
@@ -609,10 +612,10 @@ public class BitNavPanelTests : BunitTestContext
 
         // "page" is in the description of Home, which the custom filter does not look at.
         component.Find(".bit-srb-inp").Change("page");
-        component.WaitForAssertion(() => Assert.AreEqual(0, component.FindAll(".bit-nav-ict").Count));
+        component.WaitForAssertion(() => Assert.IsEmpty(component.FindAll(".bit-nav-ict")));
 
         component.Find(".bit-srb-inp").Change("ho");
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll(".bit-nav-ict").Count));
+        component.WaitForAssertion(() => Assert.ContainsSingle(component.FindAll(".bit-nav-ict")));
     }
 
     [TestMethod]
@@ -625,13 +628,13 @@ public class BitNavPanelTests : BunitTestContext
         });
 
         component.Find(".bit-srb-inp").Change("settings");
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll(".bit-nav-ict").Count));
+        component.WaitForAssertion(() => Assert.ContainsSingle(component.FindAll(".bit-nav-ict")));
 
         component.InvokeAsync(() => component.Instance.ClearSearch());
 
         component.WaitForAssertion(() =>
         {
-            Assert.AreEqual(3, component.FindAll(".bit-nav-ict").Count);
+            Assert.HasCount(3, component.FindAll(".bit-nav-ict"));
             Assert.AreEqual(string.Empty, component.Find(".bit-srb-inp").GetAttribute("value") ?? string.Empty);
         });
     }
@@ -646,11 +649,11 @@ public class BitNavPanelTests : BunitTestContext
         });
 
         component.Find(".bit-srb-inp").Change("settings");
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll(".bit-nav-ict").Count));
+        component.WaitForAssertion(() => Assert.ContainsSingle(component.FindAll(".bit-nav-ict")));
 
         component.Find(".bit-npn-tbn").Click();
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-nav-ict").Count));
+        component.WaitForAssertion(() => Assert.HasCount(3, component.FindAll(".bit-nav-ict")));
     }
 
     [TestMethod]
@@ -815,7 +818,7 @@ public class BitNavPanelTests : BunitTestContext
 
         component.WaitForAssertion(() =>
         {
-            Assert.AreEqual(3, component.FindAll(".bit-nav-ict").Count);
+            Assert.HasCount(3, component.FindAll(".bit-nav-ict"));
             Assert.IsNull(component.Find(".bit-npn").GetAttribute("data-bit-esc"));
         });
     }
@@ -838,9 +841,9 @@ public class BitNavPanelTests : BunitTestContext
         SetDrawerScreen(component, true);
 
         component.Find(".bit-srb-inp").Change("settings");
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll(".bit-nav-ict").Count));
+        component.WaitForAssertion(() => Assert.ContainsSingle(component.FindAll(".bit-nav-ict")));
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.watchEscapeClaim"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.watchEscapeClaim"]);
 
         // The search box claimed the press, which is what the browser answers ahead of the keydown.
         Assert.IsNotNull(component.Find(".bit-srb-inp").GetAttribute("data-bit-esc"));
@@ -853,7 +856,7 @@ public class BitNavPanelTests : BunitTestContext
 
         component.WaitForAssertion(() =>
         {
-            Assert.AreEqual(3, component.FindAll(".bit-nav-ict").Count, "the search box emptied the search");
+            Assert.HasCount(3, component.FindAll(".bit-nav-ict"), "the search box emptied the search");
             Assert.IsTrue(isOpen, "the drawer stays open on the same press");
         });
 
@@ -880,13 +883,13 @@ public class BitNavPanelTests : BunitTestContext
         SetDrawerScreen(component, true);
 
         component.Find(".bit-srb-inp").Change("settings");
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll(".bit-nav-ict").Count));
+        component.WaitForAssertion(() => Assert.ContainsSingle(component.FindAll(".bit-nav-ict")));
 
         component.Find(".bit-npn").KeyDown(new KeyboardEventArgs { Key = "Escape", ShiftKey = true });
 
         component.WaitForAssertion(() =>
         {
-            Assert.AreEqual(1, component.FindAll(".bit-nav-ict").Count, "the search stays in place");
+            Assert.ContainsSingle(component.FindAll(".bit-nav-ict"), "the search stays in place");
             Assert.IsTrue(isOpen);
         });
 
@@ -950,10 +953,10 @@ public class BitNavPanelTests : BunitTestContext
         });
 
         component.InvokeAsync(() => component.Instance.ExpandAll());
-        component.WaitForAssertion(() => Assert.AreEqual(5, component.FindAll(".bit-nav-ict").Count));
+        component.WaitForAssertion(() => Assert.HasCount(5, component.FindAll(".bit-nav-ict")));
 
         component.InvokeAsync(() => component.Instance.CollapseAll());
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-nav-ict").Count));
+        component.WaitForAssertion(() => Assert.HasCount(3, component.FindAll(".bit-nav-ict")));
     }
 
     [TestMethod]
@@ -965,7 +968,7 @@ public class BitNavPanelTests : BunitTestContext
             parameters.Add(p => p.AllExpanded, true);
         });
 
-        Assert.AreEqual(5, component.FindAll(".bit-nav-ict").Count);
+        Assert.HasCount(5, component.FindAll(".bit-nav-ict"));
     }
 
     [TestMethod]
@@ -980,8 +983,8 @@ public class BitNavPanelTests : BunitTestContext
             parameters.Add(p => p.DefaultSelectedItem, items[2]);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll(".bit-nav-sel").Count));
-        Assert.IsTrue(component.Find(".bit-nav-sel").TextContent.Contains("Settings"));
+        component.WaitForAssertion(() => Assert.ContainsSingle(component.FindAll(".bit-nav-sel")));
+        Assert.Contains("Settings", component.Find(".bit-nav-sel").TextContent);
     }
 
     [TestMethod]
@@ -993,7 +996,7 @@ public class BitNavPanelTests : BunitTestContext
             parameters.Add(p => p.NavMode, BitNavMode.Manual);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-nav-sel").Count);
+        Assert.IsEmpty(component.FindAll(".bit-nav-sel"));
     }
 
     [TestMethod]
@@ -1011,7 +1014,11 @@ public class BitNavPanelTests : BunitTestContext
 
         component.FindAll(".bit-nav-ict")[0].Click();
 
-        component.WaitForAssertion(() => Assert.AreEqual("Home", selected?.Text));
+        component.WaitForAssertion(() =>
+        {
+            var actualValue = selected?.Text;
+            Assert.AreEqual("Home", actualValue);
+        });
     }
 
     [TestMethod]
@@ -1040,12 +1047,12 @@ public class BitNavPanelTests : BunitTestContext
             });
         });
 
-        Assert.AreEqual(2, component.FindAll(".bit-nav-ict").Count);
-        Assert.IsTrue(component.FindAll(".bit-nav-ict")[0].TextContent.Contains("Home"));
+        Assert.HasCount(2, component.FindAll(".bit-nav-ict"));
+        Assert.Contains("Home", component.FindAll(".bit-nav-ict")[0].TextContent);
 
         // The search reads the custom item through the very same selectors.
         component.Find(".bit-srb-inp").Change("docs");
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll(".bit-nav-ict").Count));
+        component.WaitForAssertion(() => Assert.ContainsSingle(component.FindAll(".bit-nav-ict")));
     }
 
     [TestMethod]
@@ -1127,11 +1134,11 @@ public class BitNavPanelTests : BunitTestContext
             parameters.Add(p => p.Items, new List<BitNavItem>());
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-nav-ict").Count);
+        Assert.IsEmpty(component.FindAll(".bit-nav-ict"));
 
         component.Render(parameters => parameters.Add(p => p.Items, Items));
 
-        Assert.AreEqual(2, component.FindAll(".bit-nav-ict").Count);
+        Assert.HasCount(2, component.FindAll(".bit-nav-ict"));
     }
 
     [TestMethod]
@@ -1144,11 +1151,11 @@ public class BitNavPanelTests : BunitTestContext
         });
 
         component.Find(".bit-srb-inp").Change("settings");
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll(".bit-nav-ict").Count));
+        component.WaitForAssertion(() => Assert.ContainsSingle(component.FindAll(".bit-nav-ict")));
 
         component.Render(parameters => parameters.Add(p => p.Items, TreeItems()));
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll(".bit-nav-ict").Count));
+        component.WaitForAssertion(() => Assert.ContainsSingle(component.FindAll(".bit-nav-ict")));
     }
 
     [TestMethod]
@@ -1199,13 +1206,13 @@ public class BitNavPanelTests : BunitTestContext
         SetDrawerScreen(component, true);
 
         component.Find(".bit-srb-inp").Change("settings");
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll(".bit-nav-ict").Count));
+        component.WaitForAssertion(() => Assert.ContainsSingle(component.FindAll(".bit-nav-ict")));
 
         component.Find(".bit-npn").KeyDown(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "Escape" });
 
         component.WaitForAssertion(() =>
         {
-            Assert.AreEqual(3, component.FindAll(".bit-nav-ict").Count);
+            Assert.HasCount(3, component.FindAll(".bit-nav-ict"));
             Assert.IsTrue(isOpen);
         });
 
@@ -1276,7 +1283,7 @@ public class BitNavPanelTests : BunitTestContext
         component.WaitForAssertion(() =>
         {
             Assert.IsTrue(isToggled);
-            Assert.AreEqual(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+            Assert.ContainsSingle(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
         });
     }
 
@@ -1398,16 +1405,20 @@ public class BitNavPanelTests : BunitTestContext
         });
 
         component.InvokeAsync(() => component.Instance.ExpandItem(items[1]));
-        component.WaitForAssertion(() => Assert.AreEqual(5, component.FindAll(".bit-nav-ict").Count));
+        component.WaitForAssertion(() => Assert.HasCount(5, component.FindAll(".bit-nav-ict")));
 
         component.InvokeAsync(() => component.Instance.CollapseItem(items[1]));
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-nav-ict").Count));
+        component.WaitForAssertion(() => Assert.HasCount(3, component.FindAll(".bit-nav-ict")));
 
         component.InvokeAsync(() => component.Instance.ToggleItem(items[1]));
-        component.WaitForAssertion(() => Assert.AreEqual(5, component.FindAll(".bit-nav-ict").Count));
+        component.WaitForAssertion(() => Assert.HasCount(5, component.FindAll(".bit-nav-ict")));
 
         component.InvokeAsync(() => component.Instance.SelectItem(items[2]));
-        component.WaitForAssertion(() => Assert.AreEqual("Settings", selected?.Text));
+        component.WaitForAssertion(() =>
+        {
+            var actualValue = selected?.Text;
+            Assert.AreEqual("Settings", actualValue);
+        });
     }
 
     [TestMethod]
@@ -1439,12 +1450,12 @@ public class BitNavPanelTests : BunitTestContext
         });
 
         component.Find(".bit-srb-inp").Change("settings");
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll(".bit-nav-ict").Count));
+        component.WaitForAssertion(() => Assert.ContainsSingle(component.FindAll(".bit-nav-ict")));
 
         items.Add(new() { Text = "Settings backup", Url = "/backup" });
         component.Render();
 
-        component.WaitForAssertion(() => Assert.AreEqual(2, component.FindAll(".bit-nav-ict").Count));
+        component.WaitForAssertion(() => Assert.HasCount(2, component.FindAll(".bit-nav-ict")));
     }
 
     [TestMethod]
@@ -1463,7 +1474,7 @@ public class BitNavPanelTests : BunitTestContext
         component.WaitForAssertion(() =>
         {
             var focused = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].ToList();
-            Assert.AreEqual(1, focused.Count);
+            Assert.ContainsSingle(focused);
             // The focused reference is compared against the search box's own input reference.
             var input = component.FindComponent<BitSearchBox>().Instance.InputElement;
             Assert.AreEqual(input.Id, ((ElementReference)focused[0].Arguments[0]!).Id);
@@ -1489,7 +1500,7 @@ public class BitNavPanelTests : BunitTestContext
         component.WaitForAssertion(() =>
         {
             var focused = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].ToList();
-            Assert.AreEqual(2, focused.Count);
+            Assert.HasCount(2, focused);
             Assert.AreEqual(component.Instance.RootElement.Id, ((ElementReference)focused[0].Arguments[0]!).Id);
             Assert.AreNotEqual(component.Instance.RootElement.Id, ((ElementReference)focused[1].Arguments[0]!).Id);
         });
@@ -1508,7 +1519,7 @@ public class BitNavPanelTests : BunitTestContext
 
         component.WaitForAssertion(() => Assert.IsTrue(component.Find(".bit-npn").ClassList.Contains("bit-npn-col")));
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
 
         // The screen shrinks below the breakpoint while the panel is open: the column it was is now a modal drawer
         // over the page, so the keyboard is moved into it exactly as if it had just been opened.
@@ -1517,10 +1528,10 @@ public class BitNavPanelTests : BunitTestContext
         component.WaitForAssertion(() =>
         {
             Assert.AreEqual("-1", component.Find(".bit-npn").GetAttribute("tabindex"));
-            Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.captureFocusOrigin"].Count);
+            Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.captureFocusOrigin"]);
 
             var focused = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].ToList();
-            Assert.AreEqual(1, focused.Count);
+            Assert.ContainsSingle(focused);
             Assert.AreEqual(component.Instance.RootElement.Id, ((ElementReference)focused[0].Arguments[0]!).Id);
         });
     }
@@ -1542,8 +1553,8 @@ public class BitNavPanelTests : BunitTestContext
         // was recorded to hand it back to either.
         component.WaitForAssertion(() =>
         {
-            Assert.AreEqual(0, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
-            Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.captureFocusOrigin"].Count);
+            Assert.IsEmpty(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
+            Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.captureFocusOrigin"]);
         });
     }
 
@@ -1557,7 +1568,7 @@ public class BitNavPanelTests : BunitTestContext
 
         component.Render(parameters => parameters.Add(p => p.IsOpen, true));
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
     }
 
     [TestMethod]
@@ -1572,8 +1583,8 @@ public class BitNavPanelTests : BunitTestContext
 
         component.WaitForAssertion(() =>
         {
-            Assert.AreEqual(1, component.FindAll(".bit-nav-sel").Count);
-            Assert.IsTrue(component.Find(".bit-nav-sel").TextContent.Contains("Settings"));
+            Assert.ContainsSingle(component.FindAll(".bit-nav-sel"));
+            Assert.Contains("Settings", component.Find(".bit-nav-sel").TextContent);
         });
     }
 
@@ -1590,7 +1601,11 @@ public class BitNavPanelTests : BunitTestContext
 
         Services.GetRequiredService<NavigationManager>().NavigateTo("dashboard");
 
-        component.WaitForAssertion(() => Assert.AreEqual("Dashboard", selected?.Text));
+        component.WaitForAssertion(() =>
+        {
+            var actualValue = selected?.Text;
+            Assert.AreEqual("Dashboard", actualValue);
+        });
     }
 
     [TestMethod]
@@ -1602,7 +1617,7 @@ public class BitNavPanelTests : BunitTestContext
         });
 
         Assert.IsNotNull(component.Find(".bit-npn"));
-        Assert.AreEqual(0, component.FindAll(".bit-nav-ict").Count);
+        Assert.IsEmpty(component.FindAll(".bit-nav-ict"));
     }
 
     [TestMethod]
@@ -1645,7 +1660,7 @@ public class BitNavPanelTests : BunitTestContext
             parameters.Add(p => p.IconAriaLabel, "bit platform");
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-npn-hdr a").Count);
+        Assert.IsEmpty(component.FindAll(".bit-npn-hdr a"));
         Assert.AreEqual("bit platform", component.Find(".bit-npn-img").GetAttribute("alt"));
     }
 
@@ -1756,7 +1771,7 @@ public class BitNavPanelTests : BunitTestContext
         // Letting go without a trigger puts it back.
         await component.InvokeAsync(() => trap.Instance._OnEnd(0, 0, diffX, 0, 0, 0));
 
-        Assert.IsFalse((component.Find(".bit-npn").GetAttribute("style") ?? string.Empty).Contains("translateX"));
+        Assert.DoesNotContain("translateX", (component.Find(".bit-npn").GetAttribute("style") ?? string.Empty));
     }
 
     [TestMethod,
@@ -1784,7 +1799,7 @@ public class BitNavPanelTests : BunitTestContext
 
         Assert.AreEqual(closes, isOpen is false);
         // A named direction is never read off the browser.
-        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.Utils.isRtl"));
+        Assert.DoesNotContain(i => i.Identifier == "BitBlazorUI.Utils.isRtl", Context.JSInterop.Invocations);
     }
 
     [TestMethod]
@@ -1805,7 +1820,7 @@ public class BitNavPanelTests : BunitTestContext
         await component.InvokeAsync(() => trap.Instance._OnMove(0, 0, -40, 0, 0, 0));
         await component.InvokeAsync(() => trap.Instance._OnTrigger(-100, 0, 1, 0));
 
-        Assert.IsFalse((component.Find(".bit-npn").GetAttribute("style") ?? string.Empty).Contains("translateX"));
+        Assert.DoesNotContain("translateX", (component.Find(".bit-npn").GetAttribute("style") ?? string.Empty));
         Assert.AreEqual(0, reported);
     }
 
@@ -1826,9 +1841,9 @@ public class BitNavPanelTests : BunitTestContext
             parameters.Add(p => p.NoSwipe, true);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-stp").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-npn-swp").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-npn-cnt").Count);
+        Assert.IsEmpty(component.FindAll(".bit-stp"));
+        Assert.ContainsSingle(component.FindAll(".bit-npn-swp"));
+        Assert.ContainsSingle(component.FindAll(".bit-npn-cnt"));
     }
 
     [TestMethod]
@@ -1842,13 +1857,13 @@ public class BitNavPanelTests : BunitTestContext
 
         // Both words are somewhere in the same item, so it stays.
         component.Find(".bit-srb-inp").Change("home page");
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll(".bit-nav-ict").Count));
+        component.WaitForAssertion(() => Assert.ContainsSingle(component.FindAll(".bit-nav-ict")));
 
         // Each word is in an item of its own, and neither item holds both.
         component.Find(".bit-srb-inp").Change("home settings");
         component.WaitForAssertion(() =>
         {
-            Assert.AreEqual(0, component.FindAll(".bit-nav-ict").Count);
+            Assert.IsEmpty(component.FindAll(".bit-nav-ict"));
             Assert.AreEqual("Nothing found!", component.Find(".bit-txt").TextContent.Trim());
         });
     }
@@ -1873,10 +1888,10 @@ public class BitNavPanelTests : BunitTestContext
 
         component.WaitForAssertion(() =>
         {
-            Assert.IsTrue(terms.Contains("set"));
-            Assert.IsTrue(terms.Contains("ting"));
+            Assert.Contains("set", terms);
+            Assert.Contains("ting", terms);
             // "Settings" holds both of them, and it is the only item that does.
-            Assert.AreEqual(1, component.FindAll(".bit-nav-ict").Count);
+            Assert.ContainsSingle(component.FindAll(".bit-nav-ict"));
         });
     }
 
@@ -1897,7 +1912,7 @@ public class BitNavPanelTests : BunitTestContext
         component.WaitForAssertion(() =>
         {
             Assert.IsNull(selected);
-            Assert.AreEqual(0, component.FindAll(".bit-nav-sel").Count);
+            Assert.IsEmpty(component.FindAll(".bit-nav-sel"));
         });
     }
 
@@ -2082,7 +2097,7 @@ public class BitNavPanelTests : BunitTestContext
             parameters.Add(p => p.Items, Items);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-npn-cbn").Count);
+        Assert.IsEmpty(component.FindAll(".bit-npn-cbn"));
     }
 
     [TestMethod]
@@ -2126,14 +2141,14 @@ public class BitNavPanelTests : BunitTestContext
         var rootId = component.Find(".bit-npn").Id;
 
         // A column of the page holds nothing.
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"].Count);
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"]);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"]);
 
         SetDrawerScreen(component, true);
 
         component.WaitForAssertion(() =>
         {
-            Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"].Count);
+            Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"]);
             Assert.AreEqual(rootId, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"].Single().Arguments[0]);
         });
 
@@ -2142,8 +2157,8 @@ public class BitNavPanelTests : BunitTestContext
         component.WaitForAssertion(() =>
         {
             Assert.IsFalse(isOpen);
-            Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.unlockScroll"].Count);
-            Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.disposeFocusTrap"].Count);
+            Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.unlockScroll"]);
+            Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.disposeFocusTrap"]);
         });
     }
 
@@ -2162,8 +2177,8 @@ public class BitNavPanelTests : BunitTestContext
 
         component.WaitForAssertion(() => Assert.AreEqual("dialog", component.Find(".bit-npn").GetAttribute("role")));
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"].Count);
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"]);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"]);
     }
 
     [TestMethod]
@@ -2181,14 +2196,14 @@ public class BitNavPanelTests : BunitTestContext
         SetDrawerScreen(component, true);
 
         component.WaitForAssertion(
-            () => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.captureFocusOrigin"].Count));
+            () => Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.captureFocusOrigin"]));
 
         component.Find(".bit-npn-ovl").Click();
 
         component.WaitForAssertion(() =>
         {
             Assert.IsFalse(isOpen);
-            Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.restoreFocusOrigin"].Count);
+            Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.restoreFocusOrigin"]);
         });
     }
 
@@ -2206,7 +2221,7 @@ public class BitNavPanelTests : BunitTestContext
 
         component.WaitForAssertion(() => Assert.AreEqual("dialog", component.Find(".bit-npn").GetAttribute("role")));
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.captureFocusOrigin"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.captureFocusOrigin"]);
     }
 
     [TestMethod]
@@ -2232,11 +2247,11 @@ public class BitNavPanelTests : BunitTestContext
             var root = component.Find(".bit-npn");
 
             Assert.AreEqual("-1", root.GetAttribute("tabindex"));
-            Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.captureFocusOrigin"].Count);
+            Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.captureFocusOrigin"]);
 
             // The drawer itself, not the search box: focusing an input would open the on-screen keyboard.
             var focused = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].ToList();
-            Assert.AreEqual(1, focused.Count);
+            Assert.ContainsSingle(focused);
             Assert.AreNotEqual(component.FindComponent<BitSearchBox>().Instance.InputElement.Id, ((ElementReference)focused[0].Arguments[0]!).Id);
         });
 
@@ -2245,7 +2260,7 @@ public class BitNavPanelTests : BunitTestContext
         component.WaitForAssertion(() =>
         {
             Assert.IsFalse(isOpen);
-            Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.restoreFocusOrigin"].Count);
+            Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.restoreFocusOrigin"]);
         });
     }
 
@@ -2265,7 +2280,7 @@ public class BitNavPanelTests : BunitTestContext
         component.WaitForAssertion(() => Assert.AreEqual("dialog", component.Find(".bit-npn").GetAttribute("role")));
 
         Assert.IsNull(component.Find(".bit-npn").GetAttribute("tabindex"));
-        Assert.AreEqual(0, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
     }
 
     [TestMethod]
@@ -2308,7 +2323,7 @@ public class BitNavPanelTests : BunitTestContext
         {
             Assert.IsTrue(component.Find(".bit-npn").ClassList.Contains("bit-npn-col"));
             // A column has no overlay at all.
-            Assert.AreEqual(0, component.FindAll(".bit-npn-ovl").Count);
+            Assert.IsEmpty(component.FindAll(".bit-npn-ovl"));
         });
     }
 
@@ -2325,12 +2340,12 @@ public class BitNavPanelTests : BunitTestContext
         });
 
         Assert.IsTrue(component.Find(".bit-npn").ClassList.Contains("bit-npn-drw"));
-        Assert.AreEqual(0, component.FindComponents<BitMediaQuery>().Count);
+        Assert.IsEmpty(component.FindComponents<BitMediaQuery>());
 
         component.WaitForAssertion(() =>
         {
             Assert.AreEqual("dialog", component.Find(".bit-npn").GetAttribute("role"));
-            Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"].Count);
+            Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"]);
         });
 
         component.Find(".bit-npn").KeyDown(new KeyboardEventArgs { Key = "Escape" });
@@ -2353,15 +2368,15 @@ public class BitNavPanelTests : BunitTestContext
         var root = component.Find(".bit-npn");
 
         Assert.IsTrue(root.ClassList.Contains("bit-npn-col"));
-        Assert.AreEqual(0, component.FindAll(".bit-npn-ovl").Count);
-        Assert.AreEqual(0, component.FindComponents<BitMediaQuery>().Count);
+        Assert.IsEmpty(component.FindAll(".bit-npn-ovl"));
+        Assert.IsEmpty(component.FindComponents<BitMediaQuery>());
         Assert.IsNull(root.GetAttribute("role"));
 
         // A column is not dismissed by the key, and holds neither the page nor the focus.
         root.KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
         Assert.IsTrue(isOpen);
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"]);
     }
 
     [TestMethod]
@@ -2382,7 +2397,7 @@ public class BitNavPanelTests : BunitTestContext
         Assert.IsNull(link.GetAttribute("aria-label"));
         Assert.AreEqual("bit platform", link.QuerySelector(".bit-npn-htx")!.TextContent);
         Assert.AreEqual(string.Empty, link.QuerySelector("img")!.GetAttribute("alt"));
-        Assert.AreEqual(1, component.FindAll(".bit-npn-tbn").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-npn-tbn"));
     }
 
     [TestMethod]
@@ -2396,7 +2411,7 @@ public class BitNavPanelTests : BunitTestContext
             parameters.Add(p => p.HeaderText, "bit platform");
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-npn-hdr a").Count);
+        Assert.IsEmpty(component.FindAll(".bit-npn-hdr a"));
         Assert.AreEqual(string.Empty, component.Find(".bit-npn-img").GetAttribute("alt"));
         Assert.AreEqual("bit platform", component.Find(".bit-npn-htx").TextContent);
     }
@@ -2414,7 +2429,7 @@ public class BitNavPanelTests : BunitTestContext
         });
 
         // A link left on screen with nothing visible in it would still be a tab stop of the rail.
-        StringAssert.Contains(component.Find(".bit-npn-hln").GetAttribute("style"), "display:none");
+        Assert.Contains("display:none", component.Find(".bit-npn-hln").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -2436,7 +2451,7 @@ public class BitNavPanelTests : BunitTestContext
         // The class is what an engine without :dir() docks the drawer by.
         Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
         Assert.AreEqual("rtl", root.GetAttribute("dir"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin:1px");
+        Assert.Contains("margin:1px", root.GetAttribute("style")!);
         // The toggle button points at the id the panel was given.
         Assert.AreEqual("the-panel", component.Find(".bit-npn-tbn").GetAttribute("aria-controls"));
     }
@@ -2462,7 +2477,7 @@ public class BitNavPanelTests : BunitTestContext
         }
         else
         {
-            StringAssert.Contains(style, expected);
+            Assert.Contains(expected, style);
         }
     }
 
@@ -2523,7 +2538,7 @@ public class BitNavPanelTests : BunitTestContext
             parameters.Add(p => p.Items, Items);
         });
 
-        Assert.IsFalse(component.Find(".bit-npn").ClassList.Any(c => c.StartsWith("bit-nav-a", StringComparison.Ordinal)));
+        Assert.DoesNotContain(c => c.StartsWith("bit-nav-a", StringComparison.Ordinal), component.Find(".bit-npn").ClassList);
     }
 
     [TestMethod]
@@ -2588,7 +2603,7 @@ public class BitNavPanelTests : BunitTestContext
         Assert.IsTrue(nav.FullWidth);
 
         Assert.IsTrue(component.Find("nav.bit-nav").ClassList.Contains("nav-classes"));
-        StringAssert.Contains(component.Find("nav.bit-nav").GetAttribute("style"), "color:red");
+        Assert.Contains("color:red", component.Find("nav.bit-nav").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -2602,7 +2617,7 @@ public class BitNavPanelTests : BunitTestContext
 
         var templates = component.FindAll(".bit-nav-ict .itm-tpl");
 
-        Assert.AreEqual(2, templates.Count);
+        Assert.HasCount(2, templates);
         Assert.AreEqual("Home!", templates[0].TextContent);
     }
 
@@ -2735,7 +2750,7 @@ public class BitNavPanelTests : BunitTestContext
             var element = component.Find(selector);
 
             Assert.IsTrue(element.ClassList.Contains(cssClass), selector);
-            StringAssert.Contains(element.GetAttribute("style"), style, selector);
+            Assert.Contains(style, element.GetAttribute("style")!, selector);
         }
 
         AssertPart(".bit-npn", "c-root", "color:red");
@@ -2764,18 +2779,18 @@ public class BitNavPanelTests : BunitTestContext
         var root = component.Find(".bit-npn");
 
         Assert.IsTrue(root.ClassList.Contains("c-toggled"));
-        StringAssert.Contains(root.GetAttribute("style"), "color:red");
+        Assert.Contains("color:red", root.GetAttribute("style")!);
 
         var searchButton = component.Find(".bit-npn-tsb");
 
         Assert.IsTrue(searchButton.ClassList.Contains("c-tsb"));
-        StringAssert.Contains(searchButton.GetAttribute("style"), "color:blue");
+        Assert.Contains("color:blue", searchButton.GetAttribute("style")!);
 
         // The rail is left, and the toggled look with it.
         component.Render(parameters => parameters.Add(p => p.IsToggled, false));
 
         Assert.IsFalse(component.Find(".bit-npn").ClassList.Contains("c-toggled"));
-        Assert.IsFalse((component.Find(".bit-npn").GetAttribute("style") ?? string.Empty).Contains("color:red"));
+        Assert.DoesNotContain("color:red", (component.Find(".bit-npn").GetAttribute("style") ?? string.Empty));
     }
 
     [TestMethod]
@@ -2795,7 +2810,7 @@ public class BitNavPanelTests : BunitTestContext
 
             Assert.AreEqual("Nothing found!", message.TextContent.Trim());
             Assert.IsTrue(message.ClassList.Contains("c-empty"));
-            StringAssert.Contains(message.GetAttribute("style"), "color:red");
+            Assert.Contains("color:red", message.GetAttribute("style")!);
         });
     }
 
@@ -2810,8 +2825,8 @@ public class BitNavPanelTests : BunitTestContext
         });
 
         // The rail has no room for either; the search box stays rendered but hidden, so it keeps its state.
-        Assert.AreEqual(0, component.FindAll(".bit-txt").Count);
-        StringAssert.Contains(component.Find(".bit-srb").GetAttribute("style"), "display:none");
+        Assert.IsEmpty(component.FindAll(".bit-txt"));
+        Assert.Contains("display:none", component.Find(".bit-srb").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -2836,7 +2851,7 @@ public class BitNavPanelTests : BunitTestContext
         component.WaitForAssertion(() =>
         {
             Assert.IsFalse(component.Find(".bit-npn").ClassList.Contains("bit-npn-tgl"));
-            Assert.AreEqual(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+            Assert.ContainsSingle(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
         });
     }
 
@@ -2855,7 +2870,7 @@ public class BitNavPanelTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance.FocusSearchBox());
 
         Assert.IsTrue(isToggled);
-        Assert.AreEqual(0, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
     }
 
     [TestMethod]
@@ -2871,18 +2886,18 @@ public class BitNavPanelTests : BunitTestContext
 
         component.WaitForAssertion(() =>
         {
-            Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"].Count);
-            Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"].Count);
-            Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.captureFocusOrigin"].Count);
+            Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"]);
+            Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"]);
+            Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.captureFocusOrigin"]);
         });
 
         // A drawer disposed while it is open would otherwise leave the page held by a key nothing releases again.
         await component.Instance.DisposeAsync();
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.unlockScroll"].Count);
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.disposeFocusTrap"].Count);
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.disposeFocusOrigin"].Count);
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.restoreFocusOrigin"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.unlockScroll"]);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.disposeFocusTrap"]);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.disposeFocusOrigin"]);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.restoreFocusOrigin"]);
     }
 
     [TestMethod]
@@ -2896,9 +2911,9 @@ public class BitNavPanelTests : BunitTestContext
         await component.Instance.DisposeAsync();
 
         // Only what was taken is handed back.
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.unlockScroll"].Count);
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.disposeFocusTrap"].Count);
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.disposeFocusOrigin"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.unlockScroll"]);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.disposeFocusTrap"]);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.disposeFocusOrigin"]);
     }
 
     [TestMethod]
@@ -2943,7 +2958,7 @@ public class BitNavPanelTests : BunitTestContext
         });
 
         Assert.IsTrue(component.Find(".bit-npn-tbn i").ClassList.Contains("bit-icon--GlobalNavButton"));
-        Assert.AreEqual(0, component.FindAll(".bit-icon-ex--ColumnRightTwoThirds").Count);
+        Assert.IsEmpty(component.FindAll(".bit-icon-ex--ColumnRightTwoThirds"));
 
         // Without one, the glyph ships with the Extras package rather than the icon font.
         component.Render(parameters =>
@@ -2952,7 +2967,7 @@ public class BitNavPanelTests : BunitTestContext
             parameters.Add(p => p.ToggleIconName, null);
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-npn-tbn .bit-icon-ex--ColumnRightTwoThirds").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-npn-tbn .bit-icon-ex--ColumnRightTwoThirds"));
     }
 
     [TestMethod]
@@ -2980,9 +2995,9 @@ public class BitNavPanelTests : BunitTestContext
         });
 
         // A link with nothing in it would be a tab stop leading nowhere visible.
-        Assert.AreEqual(0, component.FindAll(".bit-npn-hdr a").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-npn-img").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-npn-tbn").Count);
+        Assert.IsEmpty(component.FindAll(".bit-npn-hdr a"));
+        Assert.IsEmpty(component.FindAll(".bit-npn-img"));
+        Assert.ContainsSingle(component.FindAll(".bit-npn-tbn"));
     }
 
     // Drives the media query the panel reads its own shape from, which is the browser's answer in an app and

@@ -32,12 +32,12 @@ public class BitNavPanelLazyDrawerTests : BunitTestContext
         var component = RenderPanel(BitNavPanelBreakpoint.Always, isOpen: false);
 
         // The root is there for the drawer to slide in from, and the content is not.
-        Assert.AreEqual(1, component.FindAll(".bit-npn").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-npn-swp").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-npn-cnt").Count);
-        Assert.AreEqual(0, component.FindComponents<BitNav<BitNavItem>>().Count);
-        Assert.AreEqual(0, component.FindComponents<BitSearchBox>().Count);
-        Assert.AreEqual(0, component.FindComponents<BitSwipeTrap>().Count);
+        Assert.HasCount(1, component.FindAll(".bit-npn"));
+        Assert.HasCount(1, component.FindAll(".bit-npn-swp"));
+        Assert.IsEmpty(component.FindAll(".bit-npn-cnt"));
+        Assert.IsEmpty(component.FindComponents<BitNav<BitNavItem>>());
+        Assert.IsEmpty(component.FindComponents<BitSearchBox>());
+        Assert.IsEmpty(component.FindComponents<BitSwipeTrap>());
     }
 
     [TestMethod]
@@ -49,9 +49,9 @@ public class BitNavPanelLazyDrawerTests : BunitTestContext
 
         component.Render(parameters => parameters.Add(p => p.IsOpen, true));
 
-        Assert.AreEqual(1, component.FindComponents<BitSwipeTrap>().Count);
-        Assert.AreEqual(1, component.FindAll("a[href='/home']").Count);
-        Assert.AreEqual(1, component.FindAll("a[href='/docs']").Count);
+        Assert.HasCount(1, component.FindComponents<BitSwipeTrap>());
+        Assert.HasCount(1, component.FindAll("a[href='/home']"));
+        Assert.HasCount(1, component.FindAll("a[href='/docs']"));
 
         var nav = component.FindComponent<BitNav<BitNavItem>>().Instance;
 
@@ -68,7 +68,7 @@ public class BitNavPanelLazyDrawerTests : BunitTestContext
 
         var component = RenderPanel(BitNavPanelBreakpoint.Always, isOpen: true);
 
-        Assert.AreEqual(1, component.FindComponents<BitNav<BitNavItem>>().Count);
+        Assert.HasCount(1, component.FindComponents<BitNav<BitNavItem>>());
     }
 
     [TestMethod]
@@ -78,8 +78,8 @@ public class BitNavPanelLazyDrawerTests : BunitTestContext
 
         var component = RenderPanel(BitNavPanelBreakpoint.Always, isOpen: false, noLazyDrawer: true);
 
-        Assert.AreEqual(1, component.FindComponents<BitNav<BitNavItem>>().Count);
-        Assert.AreEqual(1, component.FindComponents<BitSearchBox>().Count);
+        Assert.HasCount(1, component.FindComponents<BitNav<BitNavItem>>());
+        Assert.HasCount(1, component.FindComponents<BitSearchBox>());
     }
 
     [TestMethod]
@@ -99,7 +99,7 @@ public class BitNavPanelLazyDrawerTests : BunitTestContext
             }));
         });
 
-        Assert.AreEqual(1, component.FindComponents<BitNav<BitNavItem>>().Count);
+        Assert.HasCount(1, component.FindComponents<BitNav<BitNavItem>>());
     }
 
     [TestMethod]
@@ -110,7 +110,7 @@ public class BitNavPanelLazyDrawerTests : BunitTestContext
 
         var component = RenderPanel(BitNavPanelBreakpoint.Always, isOpen: false);
 
-        Assert.AreEqual(1, component.FindComponents<BitNav<BitNavItem>>().Count);
+        Assert.HasCount(1, component.FindComponents<BitNav<BitNavItem>>());
     }
 
     [TestMethod]
@@ -120,7 +120,7 @@ public class BitNavPanelLazyDrawerTests : BunitTestContext
 
         var component = RenderPanel(BitNavPanelBreakpoint.Never, isOpen: false);
 
-        Assert.AreEqual(1, component.FindComponents<BitNav<BitNavItem>>().Count);
+        Assert.HasCount(1, component.FindComponents<BitNav<BitNavItem>>());
     }
 
     [TestMethod]
@@ -132,11 +132,11 @@ public class BitNavPanelLazyDrawerTests : BunitTestContext
 
         var component = RenderPanel(BitNavPanelBreakpoint.Md, isOpen: false);
 
-        Assert.AreEqual(1, component.FindComponents<BitNav<BitNavItem>>().Count);
+        Assert.HasCount(1, component.FindComponents<BitNav<BitNavItem>>());
 
         await SetDrawerScreen(component, isDrawer: true);
 
-        Assert.AreEqual(1, component.FindComponents<BitNav<BitNavItem>>().Count);
+        Assert.HasCount(1, component.FindComponents<BitNav<BitNavItem>>());
     }
 
     [TestMethod]
@@ -147,7 +147,7 @@ public class BitNavPanelLazyDrawerTests : BunitTestContext
 
         var component = RenderPanel(BitNavPanelBreakpoint.Md, isOpen: false);
 
-        Assert.AreEqual(0, component.FindComponents<BitNav<BitNavItem>>().Count);
+        Assert.IsEmpty(component.FindComponents<BitNav<BitNavItem>>());
 
         // Asked of the query the panel turns into a drawer below: off the breakpoints the stylesheet lays it out at
         // until the media query reports, then off the live ones the media query is built from.
@@ -158,11 +158,11 @@ public class BitNavPanelLazyDrawerTests : BunitTestContext
 
         await SetDrawerScreen(component, isDrawer: true);
 
-        Assert.AreEqual(0, component.FindComponents<BitNav<BitNavItem>>().Count);
+        Assert.IsEmpty(component.FindComponents<BitNav<BitNavItem>>());
 
         component.Render(parameters => parameters.Add(p => p.IsOpen, true));
 
-        Assert.AreEqual(1, component.FindComponents<BitNav<BitNavItem>>().Count);
+        Assert.HasCount(1, component.FindComponents<BitNav<BitNavItem>>());
     }
 
     [TestMethod]
@@ -174,11 +174,11 @@ public class BitNavPanelLazyDrawerTests : BunitTestContext
 
         var component = RenderPanel(BitNavPanelBreakpoint.Lg, isOpen: false);
 
-        Assert.AreEqual(0, component.FindComponents<BitNav<BitNavItem>>().Count);
+        Assert.IsEmpty(component.FindComponents<BitNav<BitNavItem>>());
 
         await SetDrawerScreen(component, isDrawer: false);
 
-        Assert.AreEqual(1, component.FindComponents<BitNav<BitNavItem>>().Count);
+        Assert.HasCount(1, component.FindComponents<BitNav<BitNavItem>>());
     }
 
     [TestMethod]
@@ -192,7 +192,7 @@ public class BitNavPanelLazyDrawerTests : BunitTestContext
 
         var component = RenderPanel(BitNavPanelBreakpoint.Md, isOpen: false);
 
-        Assert.AreEqual(1, component.FindComponents<BitNav<BitNavItem>>().Count);
+        Assert.HasCount(1, component.FindComponents<BitNav<BitNavItem>>());
 
         // Nothing of the page is read to find that out.
         Context.JSInterop.VerifyInvoke(MatchNowIdentifier, calledTimes: 1);
@@ -207,7 +207,7 @@ public class BitNavPanelLazyDrawerTests : BunitTestContext
 
         var component = RenderPanel(BitNavPanelBreakpoint.Md, isOpen: false);
 
-        Assert.AreEqual(1, component.FindComponents<BitNav<BitNavItem>>().Count);
+        Assert.HasCount(1, component.FindComponents<BitNav<BitNavItem>>());
     }
 
     [TestMethod]
@@ -278,9 +278,9 @@ public class BitNavPanelLazyDrawerTests : BunitTestContext
             parameters.Add(p => p.SelectedItemChanged, (BitNavItem? _) => { });
         });
 
-        Assert.AreEqual(1, bound.FindComponents<BitNav<BitNavItem>>().Count);
-        Assert.AreEqual(1, listened.FindComponents<BitNav<BitNavItem>>().Count);
-        Assert.AreEqual(0, manual.FindComponents<BitNav<BitNavItem>>().Count);
+        Assert.HasCount(1, bound.FindComponents<BitNav<BitNavItem>>());
+        Assert.HasCount(1, listened.FindComponents<BitNav<BitNavItem>>());
+        Assert.IsEmpty(manual.FindComponents<BitNav<BitNavItem>>());
     }
 
     [TestMethod]
@@ -299,7 +299,7 @@ public class BitNavPanelLazyDrawerTests : BunitTestContext
             parameters.Add(p => p.SelectedItemChanged, (BitNavItem? item) => selected = item);
         });
 
-        Assert.AreEqual(0, component.FindComponents<BitNav<BitNavItem>>().Count);
+        Assert.IsEmpty(component.FindComponents<BitNav<BitNavItem>>());
 
         await component.InvokeAsync(() => component.Instance.SelectItem(items[1]));
 
@@ -332,11 +332,11 @@ public class BitNavPanelLazyDrawerTests : BunitTestContext
 
         var component = RenderPanel(BitNavPanelBreakpoint.Always, isOpen: false, items: items);
 
-        Assert.AreEqual(0, component.FindComponents<BitNav<BitNavItem>>().Count);
+        Assert.IsEmpty(component.FindComponents<BitNav<BitNavItem>>());
 
         // Rendered by the call itself, which then answers for it.
         Assert.IsTrue(await component.InvokeAsync(() => component.Instance.IsItemExpanded(items[0])));
-        Assert.AreEqual(1, component.FindComponents<BitNav<BitNavItem>>().Count);
+        Assert.HasCount(1, component.FindComponents<BitNav<BitNavItem>>());
     }
 
     [TestMethod]

@@ -47,7 +47,7 @@ public class BitAiFormParamsTests : BitAiTestBase
     [TestMethod]
     public void BitAiFormParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual("BitParams.BitAiForm", BitAiFormParams.ParamName);
+        Assert.AreEqual("BitParams.BitAiForm", new BitAiFormParams().Name);
         Assert.AreEqual(BitAiFormParams.ParamName, new BitAiFormParams().Name);
     }
 
@@ -62,7 +62,7 @@ public class BitAiFormParamsTests : BitAiTestBase
                                           .Where(n => baseParameters.Contains(n) is false && _notCascaded.Contains(n) is false)
                                           .ToList();
 
-        Assert.IsTrue(parameters.Count > 0);
+        Assert.IsNotEmpty(parameters);
 
         foreach (var name in parameters)
         {

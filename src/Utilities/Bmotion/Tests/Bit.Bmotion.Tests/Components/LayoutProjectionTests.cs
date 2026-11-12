@@ -1,4 +1,4 @@
-using Bit.Bmotion.Tests.TestInfra;
+﻿using Bit.Bmotion.Tests.TestInfra;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 
@@ -110,7 +110,7 @@ public class LayoutProjectionTests
         // pre-render snapshot and the post-render measurement must have happened for that to mean
         // anything.
         var measurements = ctx.Interop.ArgsOf("getBoundingRect");
-        Assert.IsTrue(measurements.Count >= 2, $"expected a snapshot and a re-measure, got {measurements.Count}");
+        Assert.IsGreaterThanOrEqualTo(2, measurements.Count, $"expected a snapshot and a re-measure, got {measurements.Count}");
         foreach (var args in measurements)
             Assert.IsTrue(((BmotionMeasureOptions)args[1]!).TrackScroll);
     }
@@ -128,7 +128,7 @@ public class LayoutProjectionTests
         cut.Render(ps => ps.Add(p => p.Custom, "changed"));
 
         var measurements = ctx.Interop.ArgsOf("getBoundingRect");
-        Assert.IsTrue(measurements.Count >= 2, $"expected a snapshot and a re-measure, got {measurements.Count}");
+        Assert.IsGreaterThanOrEqualTo(2, measurements.Count, $"expected a snapshot and a re-measure, got {measurements.Count}");
         foreach (var args in measurements)
             Assert.IsTrue(((BmotionMeasureOptions)args[1]!).FixedRoot);
     }
@@ -146,7 +146,7 @@ public class LayoutProjectionTests
         int before = ctx.Interop.CountOf("getBoundingRect");
         cut.Render(ps => ps.Add(p => p.Custom, "a"));
 
-        Assert.IsTrue(ctx.Interop.CountOf("getBoundingRect") > before);
+        Assert.IsGreaterThan(before, ctx.Interop.CountOf("getBoundingRect"));
     }
 
     [TestMethod]
@@ -181,7 +181,7 @@ public class LayoutProjectionTests
         int before = ctx.Interop.CountOf("getBoundingRect");
         cut.Render(ps => ps.Add(p => p.LayoutDependency, "second"));
 
-        Assert.IsTrue(ctx.Interop.CountOf("getBoundingRect") > before);
+        Assert.IsGreaterThan(before, ctx.Interop.CountOf("getBoundingRect"));
     }
 
     // ── What the after-render measurement sees ────────────────────────────────
@@ -220,7 +220,10 @@ public class LayoutProjectionTests
         // The render moves the box 100px right: the snapshot sees it at 0, every measurement after at 100.
         ctx.Interop.BoundingRectProvider = _ => new BmotionBoundingRect
         {
-            Left = measurements++ == 0 ? 0 : 100, Top = pushedDown, Width = 100, Height = 100,
+            Left = measurements++ == 0 ? 0 : 100,
+            Top = pushedDown,
+            Width = 100,
+            Height = 100,
         };
         var cut = ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "box")

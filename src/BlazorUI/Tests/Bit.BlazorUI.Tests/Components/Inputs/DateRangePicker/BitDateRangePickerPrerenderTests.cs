@@ -36,16 +36,16 @@ public class BitDateRangePickerPrerenderTests
             },
         });
 
-        StringAssert.Contains(html, "bit-dtrp");
-        StringAssert.Contains(html, "Stay");
-        StringAssert.Contains(html, "role=\"combobox\"");
-        StringAssert.Contains(html, "value=\"2026-01-15 - 2026-01-20\"");
-        StringAssert.Contains(html, "bit-dtrp-cal");
-        StringAssert.Contains(html, "January 2026");
-        StringAssert.Contains(html, "bit-dtrp-dss");
-        StringAssert.Contains(html, "bit-dtrp-dse");
-        StringAssert.Contains(html, "bit-dtrp-dsb");
-        StringAssert.Contains(html, "This week");
+        Assert.Contains("bit-dtrp", html);
+        Assert.Contains("Stay", html);
+        Assert.Contains("role=\"combobox\"", html);
+        Assert.Contains("value=\"2026-01-15 - 2026-01-20\"", html);
+        Assert.Contains("bit-dtrp-cal", html);
+        Assert.Contains("January 2026", html);
+        Assert.Contains("bit-dtrp-dss", html);
+        Assert.Contains("bit-dtrp-dse", html);
+        Assert.Contains("bit-dtrp-dsb", html);
+        Assert.Contains("This week", html);
     }
 
     [TestMethod,
@@ -67,7 +67,7 @@ public class BitDateRangePickerPrerenderTests
             [nameof(BitDateRangePicker.StartingValue)] = new BitDateRangePickerValue { StartDate = new DateTimeOffset(new DateTime(2026, 1, 15), TimeSpan.Zero) },
         });
 
-        StringAssert.Contains(html, "bit-dtrp-grd");
+        Assert.Contains("bit-dtrp-grd", html);
         Assert.AreEqual(standalone, html.Contains("bit-input-hidden"));
         Assert.AreEqual(standalone, html.Contains("bit-dtrp-sta"));
         Assert.AreEqual(standalone is false, html.Contains("bit-dtrp-ovl"));

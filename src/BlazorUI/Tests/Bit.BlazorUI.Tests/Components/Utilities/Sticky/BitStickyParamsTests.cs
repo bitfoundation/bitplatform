@@ -45,8 +45,8 @@ public class BitStickyParamsTests : BunitTestContext
     [TestMethod]
     public void BitStickyParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitSticky)}", BitStickyParams.ParamName);
-        Assert.AreEqual("BitParams.BitSticky", BitStickyParams.ParamName);
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitSticky)}", new BitStickyParams().Name);
+        Assert.AreEqual("BitParams.BitSticky", new BitStickyParams().Name);
     }
 
     [TestMethod]
@@ -96,11 +96,11 @@ public class BitStickyParamsTests : BunitTestContext
         var style = root.GetAttribute("style")!;
 
         // An offset set takes the place of the default top placement, cascaded or not, and a bare number is still pixels.
-        StringAssert.Contains(style, "top: 1rem");
-        StringAssert.Contains(style, "bottom: 2rem");
-        StringAssert.Contains(style, "left: 3px");
-        StringAssert.Contains(style, "right: 4%");
-        StringAssert.Contains(style, "z-index: 7");
+        Assert.Contains("top: 1rem", style);
+        Assert.Contains("bottom: 2rem", style);
+        Assert.Contains("left: 3px", style);
+        Assert.Contains("right: 4%", style);
+        Assert.Contains("z-index: 7", style);
         Assert.IsFalse(root.ClassList.Contains("bit-stk-top"));
     }
 
@@ -184,9 +184,9 @@ public class BitStickyParamsTests : BunitTestContext
         Assert.AreEqual("FOOTER", root.TagName);
         Assert.IsTrue(root.ClassList.Contains("bit-stk-srt"));
         Assert.IsFalse(root.ClassList.Contains("bit-stk-btm"));
-        StringAssert.Contains(style, "top: 5rem");
-        Assert.IsFalse(style.Contains("1rem"));
-        StringAssert.Contains(style, "z-index: 9");
+        Assert.Contains("top: 5rem", style);
+        Assert.DoesNotContain("1rem", style);
+        Assert.Contains("z-index: 9", style);
 
         // A false written by the sticky is a value the cascade must not overwrite, so neither half of the script attaches.
         Assert.IsFalse(root.ClassList.Contains("bit-stk-elv"));

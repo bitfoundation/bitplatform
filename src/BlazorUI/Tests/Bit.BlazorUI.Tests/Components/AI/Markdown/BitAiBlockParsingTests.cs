@@ -13,7 +13,7 @@ public class BitAiBlockParsingTests
     {
         var document = Parse("first line\nstill first\n\nsecond");
 
-        Assert.AreEqual(2, document.Blocks.Count);
+        Assert.HasCount(2, document.Blocks);
         foreach (var b in document.Blocks)
         {
             Assert.IsExactInstanceOfType<BitAiParagraphBlock>(b);
@@ -88,7 +88,7 @@ public class BitAiBlockParsingTests
         var list = Assert.IsExactInstanceOfType<BitAiListBlock>(Parse("- one\n- two\n- three").Blocks[0]);
 
         Assert.IsFalse(list.IsOrdered);
-        Assert.AreEqual(3, list.Items.Count);
+        Assert.HasCount(3, list.Items);
     }
 
     [TestMethod]
@@ -98,7 +98,7 @@ public class BitAiBlockParsingTests
 
         Assert.IsTrue(list.IsOrdered);
         Assert.AreEqual(3, list.Start);
-        Assert.AreEqual(2, list.Items.Count);
+        Assert.HasCount(2, list.Items);
     }
 
     [TestMethod]
@@ -115,7 +115,7 @@ public class BitAiBlockParsingTests
     {
         var list = Assert.IsExactInstanceOfType<BitAiListBlock>(Parse("- outer\n  - inner\n- outer two").Blocks[0]);
 
-        Assert.AreEqual(2, list.Items.Count);
+        Assert.HasCount(2, list.Items);
         Assert.Contains(b => b is BitAiListBlock, list.Items[0].Blocks);
     }
 
@@ -133,8 +133,8 @@ public class BitAiBlockParsingTests
         var table = Assert.IsExactInstanceOfType<BitAiTableBlock>(
             Parse("| Name | Qty |\n| :--- | ---: |\n| Apple | 3 |\n| Pear | 12 |").Blocks[0]);
 
-        Assert.AreEqual(2, table.Header.Count);
-        Assert.AreEqual(2, table.Rows.Count);
+        Assert.HasCount(2, table.Header);
+        Assert.HasCount(2, table.Rows);
         Assert.AreEqual(BitAiColumnAlignment.Left, table.Alignments[0]);
         Assert.AreEqual(BitAiColumnAlignment.Right, table.Alignments[1]);
     }

@@ -1,4 +1,4 @@
-using Bit.Bmotion.Tests.TestInfra;
+﻿using Bit.Bmotion.Tests.TestInfra;
 
 namespace Bit.Bmotion.Tests.Services;
 
@@ -91,7 +91,7 @@ public class ViewTransitionTests
 
         await vt.StartAsync(() => { }, new BmViewTransitionOptions { Types = ["forward", "slide"] });
 
-        CollectionAssert.AreEqual(new[] { "forward", "slide" }, interop.ViewTransitionTypes);
+        Assert.AreSequenceEqual(new[] { "forward", "slide" }, interop.ViewTransitionTypes);
     }
 
     [TestMethod]

@@ -1,4 +1,4 @@
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Diagnostics;
 using Bit.Bcrdt.Server;
 
@@ -59,9 +59,9 @@ public class TracingTests
         await using BcrdtSyncProvider second = await ProviderAsync(secondDoc, network.CreateTransport(Room), TimeSpan.FromMinutes(5));
 
         // Alone in the room, the first concludes that nobody is there; the second is answered by the first.
-        await first.ConnectAsync();
+        await first.ConnectAsync(TestContext.CancellationToken);
         Activity alone = await spans.WaitForAsync(parent, BcrdtDiagnostics.HandshakeSpan);
-        await second.ConnectAsync();
+        await second.ConnectAsync(TestContext.CancellationToken);
         await EventuallyAsync(() => second.IsSynced, "the second provider should sync");
 
         Activity answered = await spans.WaitForAsync(parent, BcrdtDiagnostics.HandshakeSpan, span => !ReferenceEquals(span, alone));
@@ -74,7 +74,7 @@ public class TracingTests
         // What the first sent in answer was applied as part of the second's handshake.
         Activity applied = await spans.WaitForAsync(parent, BcrdtDiagnostics.UpdateApplySpan, span => span.ParentSpanId == answered.SpanId);
         Assert.AreEqual("sync_step2", applied.GetTagItem("bcrdt.message.kind"));
-        Assert.IsTrue((int)applied.GetTagItem("bcrdt.message.size")! > 0);
+        Assert.IsGreaterThan(0, (int)applied.GetTagItem("bcrdt.message.size")!);
 
         // Long-lived spans are never left as the ambient one.
         Assert.AreSame(parent, Activity.Current);
@@ -90,8 +90,8 @@ public class TracingTests
         using var secondDoc = new BcrdtDocument(new BcrdtDocumentOptions { Id = DocumentId, ClientId = SecondClient });
         await using BcrdtSyncProvider first = await ProviderAsync(firstDoc, network.CreateTransport(Room), TimeSpan.FromMilliseconds(50));
         await using BcrdtSyncProvider second = await ProviderAsync(secondDoc, network.CreateTransport(Room), TimeSpan.FromMilliseconds(50));
-        await first.ConnectAsync();
-        await second.ConnectAsync();
+        await first.ConnectAsync(TestContext.CancellationToken);
+        await second.ConnectAsync(TestContext.CancellationToken);
         await EventuallyAsync(() => first.IsSynced && second.IsSynced, "both should sync");
 
         // The in-memory network delivers on the sender's flow, so the change is applied under the test's span.
@@ -102,7 +102,7 @@ public class TracingTests
 
             Activity applied = await spans.WaitForAsync(parent, BcrdtDiagnostics.UpdateApplySpan);
             Assert.AreEqual("update", applied.GetTagItem("bcrdt.message.kind"));
-            Assert.IsTrue((int)applied.GetTagItem("bcrdt.message.size")! > "a remote change".Length);
+            Assert.IsGreaterThan("a remote change".Length, (int)applied.GetTagItem("bcrdt.message.size")!);
             Assert.AreEqual(ActivityStatusCode.Unset, applied.Status);
             Assert.AreEqual(parent.SpanId, applied.ParentSpanId);
             Assert.AreSame(parent, Activity.Current);
@@ -124,7 +124,7 @@ public class TracingTests
         await using (BcrdtSyncProvider provider = await ProviderAsync(doc, transport, TimeSpan.FromMinutes(5)))
         {
             // Nobody answers and the timeout is long: the handshake is still under way when the connection drops.
-            await provider.ConnectAsync();
+            await provider.ConnectAsync(TestContext.CancellationToken);
             transport.SimulateDrop(new IOException($"Lost '{DocumentId}'."));
 
             Activity dropped = await spans.WaitForAsync(parent, BcrdtDiagnostics.HandshakeSpan);
@@ -137,7 +137,7 @@ public class TracingTests
             Assert.AreEqual(1, reconnected.GetTagItem("bcrdt.reconnect.attempt"));
             Assert.AreEqual("connected", reconnected.GetTagItem("bcrdt.outcome"));
             await EventuallyAsync(() => provider.Status == BcrdtConnectionStatus.Handshaking, "the provider should be handshaking again");
-            Assert.IsFalse(spans.InTrace(parent).Any(span => span.OperationName == BcrdtDiagnostics.HandshakeSpan && !ReferenceEquals(span, dropped)),
+            Assert.DoesNotContain(span => span.OperationName == BcrdtDiagnostics.HandshakeSpan && !ReferenceEquals(span, dropped), spans.InTrace(parent),
                 "the second handshake is still under way");
         }
 
@@ -172,7 +172,7 @@ public class TracingTests
         }
 
         Assert.AreSame(parent, Activity.Current);
-        Assert.AreEqual(1, spans.InTrace(parent).Count(span => span.OperationName == BcrdtDiagnostics.HandshakeSpan));
+        Assert.ContainsSingle(span => span.OperationName == BcrdtDiagnostics.HandshakeSpan, spans.InTrace(parent));
     }
 
     [TestMethod]
@@ -185,8 +185,8 @@ public class TracingTests
         using var doc = new BcrdtDocument(new BcrdtDocumentOptions { Id = DocumentId, ClientId = FirstClient });
         await using BcrdtSyncProvider provider = await ProviderAsync(doc, network.CreateTransport(Room), TimeSpan.FromMinutes(5));
 
-        await provider.ConnectAsync();
-        await provider.DisconnectAsync();
+        await provider.ConnectAsync(TestContext.CancellationToken);
+        await provider.DisconnectAsync(TestContext.CancellationToken);
 
         Activity handshake = await spans.WaitForAsync(parent, BcrdtDiagnostics.HandshakeSpan);
         Assert.AreEqual("disconnected", handshake.GetTagItem("bcrdt.outcome"));
@@ -199,14 +199,14 @@ public class TracingTests
     {
         using var spans = new SpanRecorder();
         var store = new TracingStore();
-        await store.AppendUpdateAsync(DocumentId, Seed());
+        await store.AppendUpdateAsync(DocumentId, Seed(), TestContext.CancellationToken);
 
         using var doc = new BcrdtDocument(new BcrdtDocumentOptions { Id = DocumentId, ClientId = FirstClient });
         Activity loaded;
         BcrdtDocumentPersistence persistence;
         using (Activity parent = TestSource.StartActivity("persistence-test")!)
         {
-            persistence = await BcrdtDocumentPersistence.AttachAsync(doc, store, options: new BcrdtDocumentPersistenceOptions { CompactionThreshold = 3 });
+            persistence = await BcrdtDocumentPersistence.AttachAsync(doc, store, options: new BcrdtDocumentPersistenceOptions { CompactionThreshold = 3 }, cancellationToken: TestContext.CancellationToken);
             loaded = await spans.WaitForAsync(parent, BcrdtDiagnostics.PersistenceLoadSpan);
             Assert.AreSame(parent, Activity.Current);
         }
@@ -214,7 +214,7 @@ public class TracingTests
         await using (persistence)
         {
             Assert.AreEqual(1, loaded.GetTagItem("bcrdt.persistence.records"));
-            Assert.IsTrue((long)loaded.GetTagItem("bcrdt.persistence.size")! > 0);
+            Assert.IsGreaterThan(0, (long)loaded.GetTagItem("bcrdt.persistence.size")!);
 
             for (int i = 0; i < 3; i++)
             {
@@ -222,7 +222,7 @@ public class TracingTests
                 await persistence.FlushAsync();
             }
 
-            Activity compaction = await store.Compacted.Task.WaitAsync(Patience);
+            Activity compaction = await store.Compacted.Task.WaitAsync(Patience, TestContext.CancellationToken);
             await EventuallyAsync(() => compaction.IsStopped, "the compaction span should end");
             Assert.AreEqual(BcrdtDiagnostics.PersistenceCompactSpan, compaction.OperationName);
             Assert.AreEqual(3, compaction.GetTagItem("bcrdt.persistence.records"));
@@ -232,7 +232,7 @@ public class TracingTests
             Activity append = store.Appends.First();
             Assert.AreEqual(BcrdtDiagnostics.PersistenceAppendSpan, append.OperationName);
             Assert.AreEqual(1, append.GetTagItem("bcrdt.persistence.updates"));
-            Assert.IsTrue((long)append.GetTagItem("bcrdt.persistence.size")! > 0);
+            Assert.IsGreaterThan(0, (long)append.GetTagItem("bcrdt.persistence.size")!);
             AssertCarriesNoIdentifier([loaded, compaction, .. store.Appends]);
         }
     }
@@ -244,12 +244,12 @@ public class TracingTests
         var store = new TracingStore { FailCompaction = true };
         using var doc = new BcrdtDocument(new BcrdtDocumentOptions { Id = DocumentId, ClientId = FirstClient });
         await using BcrdtDocumentPersistence persistence =
-            await BcrdtDocumentPersistence.AttachAsync(doc, store, options: new BcrdtDocumentPersistenceOptions { CompactionThreshold = 1 });
+            await BcrdtDocumentPersistence.AttachAsync(doc, store, options: new BcrdtDocumentPersistenceOptions { CompactionThreshold = 1 }, cancellationToken: TestContext.CancellationToken);
 
         doc.GetText("body").Insert(0, "x");
         await persistence.FlushAsync();
 
-        Activity compaction = await store.Compacted.Task.WaitAsync(Patience);
+        Activity compaction = await store.Compacted.Task.WaitAsync(Patience, TestContext.CancellationToken);
         await EventuallyAsync(() => compaction.IsStopped, "the compaction span should end");
         Assert.AreEqual(ActivityStatusCode.Error, compaction.Status);
         Assert.AreEqual(nameof(IOException), compaction.GetTagItem("error.type"));
@@ -268,7 +268,7 @@ public class TracingTests
 
         using (Activity parent = TestSource.StartActivity("host-test")!)
         {
-            using BcrdtHostSession session = await host.JoinAsync(DocumentId, connection);
+            using BcrdtHostSession session = await host.JoinAsync(DocumentId, connection, TestContext.CancellationToken);
             Activity load = await spans.WaitForAsync(parent, BcrdtDiagnostics.HostLoadSpan);
             Activity storeLoad = await spans.WaitForAsync(parent, BcrdtDiagnostics.PersistenceLoadSpan);
             Assert.AreEqual(load.SpanId, storeLoad.ParentSpanId);
@@ -285,14 +285,14 @@ public class TracingTests
             Activity answer = await spans.WaitForAsync(parent, BcrdtDiagnostics.HostHandshakeSpan);
             Assert.AreEqual("sync_step1", answer.GetTagItem("bcrdt.message.kind"));
             Assert.AreEqual("answered", answer.GetTagItem("bcrdt.outcome"));
-            Assert.IsTrue((long)answer.GetTagItem("bcrdt.reply.size")! > 0);
+            Assert.IsGreaterThan(0, (long)answer.GetTagItem("bcrdt.reply.size")!);
 
             Assert.AreSame(parent, Activity.Current);
             AssertCarriesNoIdentifier(spans.InTrace(parent));
         }
 
         await host.DisposeAsync();
-        Activity unload = await store.Detached.Task.WaitAsync(Patience);
+        Activity unload = await store.Detached.Task.WaitAsync(Patience, TestContext.CancellationToken);
         await EventuallyAsync(() => unload.IsStopped, "the unload span should end");
         Assert.AreEqual(BcrdtDiagnostics.HostUnloadSpan, unload.OperationName);
         Assert.AreEqual(default, unload.ParentSpanId);
@@ -313,8 +313,8 @@ public class TracingTests
         });
         var writer = new TestConnection(BcrdtDocumentAccess.ReadWrite);
         var reader = new TestConnection(BcrdtDocumentAccess.ReadOnly);
-        using BcrdtHostSession writerSession = await host.JoinAsync(DocumentId, writer);
-        using BcrdtHostSession readerSession = await host.JoinAsync(DocumentId, reader);
+        using BcrdtHostSession writerSession = await host.JoinAsync(DocumentId, writer, TestContext.CancellationToken);
+        using BcrdtHostSession readerSession = await host.JoinAsync(DocumentId, reader, TestContext.CancellationToken);
 
         using Activity parent = TestSource.StartActivity("drop-test")!;
 
@@ -331,7 +331,7 @@ public class TracingTests
         Assert.AreEqual(ActivityStatusCode.Unset, rejected.Status);
 
         var another = new TestConnection(BcrdtDocumentAccess.ReadWrite);
-        using BcrdtHostSession anotherSession = await host.JoinAsync(DocumentId, another);
+        using BcrdtHostSession anotherSession = await host.JoinAsync(DocumentId, another, TestContext.CancellationToken);
         Assert.IsFalse(await anotherSession.ReceiveAsync(BcrdtSyncProtocol.EncodeUpdate(Seed())));
         Activity failed = await spans.WaitForAsync(parent, BcrdtDiagnostics.HostApplySpan, span => (string?)span.GetTagItem("bcrdt.validation") == "failed");
         Assert.AreEqual("rejected", failed.GetTagItem("bcrdt.reason"));
@@ -377,12 +377,12 @@ public class TracingTests
         using var firstDoc = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = FirstClient });
         using var secondDoc = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = SecondClient });
         await using (BcrdtDocumentPersistence persistence = await BcrdtDocumentPersistence.AttachAsync(
-            firstDoc, new BcrdtInMemoryDocumentStore(), options: new BcrdtDocumentPersistenceOptions { CompactionThreshold = 1 }))
+            firstDoc, new BcrdtInMemoryDocumentStore(), options: new BcrdtDocumentPersistenceOptions { CompactionThreshold = 1 }, cancellationToken: TestContext.CancellationToken))
         await using (BcrdtSyncProvider first = await ProviderAsync(firstDoc, network.CreateTransport(Room), TimeSpan.FromMilliseconds(50)))
         await using (BcrdtSyncProvider second = await ProviderAsync(secondDoc, network.CreateTransport(Room), TimeSpan.FromMilliseconds(50)))
         {
-            await first.ConnectAsync();
-            await second.ConnectAsync();
+            await first.ConnectAsync(TestContext.CancellationToken);
+            await second.ConnectAsync(TestContext.CancellationToken);
             await EventuallyAsync(() => first.IsSynced && second.IsSynced, "both should sync");
             firstDoc.GetText("body").Insert(0, "untraced");
             await EventuallyAsync(() => secondDoc.GetText("body").ToString() == "untraced", "the change should arrive");
@@ -391,11 +391,11 @@ public class TracingTests
 
         await using (var host = new BcrdtDocumentHost())
         {
-            using BcrdtHostSession session = await host.JoinAsync(DocumentId, new TestConnection(BcrdtDocumentAccess.ReadWrite));
+            using BcrdtHostSession session = await host.JoinAsync(DocumentId, new TestConnection(BcrdtDocumentAccess.ReadWrite), TestContext.CancellationToken);
             Assert.IsTrue(await session.ReceiveAsync(BcrdtSyncProtocol.EncodeUpdate(Seed())));
         }
 
-        Assert.IsTrue(Volatile.Read(ref asked) > 0, "the instrumentation was reached");
+        Assert.IsGreaterThan(0, Volatile.Read(ref asked), "the instrumentation was reached");
         Assert.AreEqual(0, Volatile.Read(ref created));
         Assert.IsNull(Activity.Current);
     }
@@ -436,7 +436,7 @@ public class TracingTests
                 }
             }
         }
-        Assert.IsTrue(count > 0, "there should be spans to check");
+        Assert.IsGreaterThan(0, count, "there should be spans to check");
     }
 
     private static async Task EventuallyAsync(Func<bool> condition, string because)
@@ -444,7 +444,7 @@ public class TracingTests
         var clock = Stopwatch.StartNew();
         while (!condition())
         {
-            Assert.IsTrue(clock.Elapsed < Patience, because);
+            Assert.IsLessThan(Patience, clock.Elapsed, because);
             await Task.Delay(10);
         }
     }
@@ -480,7 +480,7 @@ public class TracingTests
             {
                 Activity? found = InTrace(parent).FirstOrDefault(span => span.OperationName == name && (where?.Invoke(span) ?? true));
                 if (found is not null) return found;
-                Assert.IsTrue(clock.Elapsed < Patience, $"no {name} span ended");
+                Assert.IsLessThan(Patience, clock.Elapsed, $"no {name} span ended");
                 await Task.Delay(10);
             }
         }
@@ -547,4 +547,6 @@ public class TracingTests
 
         public void Refuse(string reason) { }
     }
+
+    public TestContext TestContext { get; set; }
 }

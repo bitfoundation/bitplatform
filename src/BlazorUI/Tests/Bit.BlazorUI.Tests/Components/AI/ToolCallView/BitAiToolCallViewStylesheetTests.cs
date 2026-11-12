@@ -15,12 +15,12 @@ public class BitAiToolCallViewStylesheetTests
         var rules = SourceFiles.GetScssRules(SourceFiles.Read("Bit.BlazorUI.AI", "Components", "ToolCallView", "BitAiToolCallView.scss"));
 
         var chevron = rules.Single(rule => rule.Ancestors.Count == 0 && rule.Header == ".bit-aitcv-chv");
-        CollectionAssert.Contains(chevron.Declarations.ToArray(), "transition: transform $mot-duration $mot-easing");
+        Assert.Contains("transition: transform $mot-duration $mot-easing", chevron.Declarations.ToArray());
 
         var open = rules.Single(rule => rule.Ancestors.Count == 0 && rule.Header == ".bit-aitcv-opn > .bit-aitcv-hdr > .bit-aitcv-chv");
-        CollectionAssert.AreEqual(new[] { "transform: rotate(90deg)" }, open.Declarations.ToArray());
+        Assert.AreSequenceEqual(new[] { "transform: rotate(90deg)" }, open.Declarations.ToArray());
 
         var mirror = rules.Single(rule => rule.Header.StartsWith(".bit-aitcv-chv:is(:dir(rtl)"));
-        CollectionAssert.AreEqual(new[] { "scale: -1 1" }, mirror.Declarations.ToArray());
+        Assert.AreSequenceEqual(new[] { "scale: -1 1" }, mirror.Declarations.ToArray());
     }
 }

@@ -21,7 +21,7 @@ public partial class BitFlagStylesheetTests
 
         var documented = DocumentedVariables(stylesheet);
 
-        Assert.IsTrue(documented.Length > 0, "The stylesheet documents no public variable.");
+        Assert.IsNotEmpty(documented, "The stylesheet documents no public variable.");
 
         var body = SourceFiles.StripScssComments(stylesheet);
 
@@ -31,7 +31,7 @@ public partial class BitFlagStylesheetTests
             // to the global --bit-shd-focus-ring (see BitFocusRingStylesheetTests).
             var read = name.EndsWith("-focus-color", StringComparison.Ordinal) ? $"var({name})" : $"var({name}, ";
 
-            StringAssert.Contains(body, read, $"{name} is documented but never read as it should be.");
+            Assert.Contains(read, body, $"{name} is documented but never read as it should be.");
         }
     }
 
@@ -59,7 +59,7 @@ public partial class BitFlagStylesheetTests
 
         var onTheDemoPage = Regex.Matches(demo, @"Name = ""(--bit-Flag-[a-z-]+)""").Select(m => m.Groups[1].Value).ToArray();
 
-        CollectionAssert.AreEquivalent(DocumentedVariables(ReadStylesheet()), onTheDemoPage);
+        Assert.AreSequenceEqual(DocumentedVariables(ReadStylesheet()), onTheDemoPage, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod,
@@ -76,8 +76,8 @@ public partial class BitFlagStylesheetTests
         // every other flag of the page, so each variable is read by the rule of its own parameter and nowhere else.
         var stylesheet = ReadStylesheet();
 
-        StringAssert.Contains(RuleOf(stylesheet, selector), $"var({variable}, ");
-        Assert.AreEqual(1, Regex.Matches(SourceFiles.StripScssComments(stylesheet), $@"var\({Regex.Escape(variable)}[,)]").Count, $"{variable} is read outside {selector}.");
+        Assert.Contains($"var({variable}, ", RuleOf(stylesheet, selector));
+        Assert.ContainsSingle(Regex.Matches(SourceFiles.StripScssComments(stylesheet), $@"var\({Regex.Escape(variable)}[,)]"), $"{variable} is read outside {selector}.");
     }
 
     [TestMethod]
@@ -86,11 +86,11 @@ public partial class BitFlagStylesheetTests
         // The variable is the default of the frame; the size classes and the inline Width and Height come after it.
         var stylesheet = ReadStylesheet();
 
-        StringAssert.Contains(RuleOf(stylesheet, ".bit-flg"), "--bit-flg-siz: var(--bit-Flag-size, #{$siz-icon-md});");
+        Assert.Contains("--bit-flg-siz: var(--bit-Flag-size, #{$siz-icon-md});", RuleOf(stylesheet, ".bit-flg"));
 
         foreach (var size in new[] { "sm", "md", "lg" })
         {
-            Assert.IsFalse(RuleOf(stylesheet, $".bit-flg-{size}").Contains("--bit-Flag-size"), $"Size {size} reads the variable it should win over.");
+            Assert.DoesNotContain("--bit-Flag-size", RuleOf(stylesheet, $".bit-flg-{size}"), $"Size {size} reads the variable it should win over.");
         }
     }
 
@@ -99,8 +99,7 @@ public partial class BitFlagStylesheetTests
     {
         // The surface corner of a preset is sized for cards - Material's is 12px - and would turn a 16px flag into a
         // pill, so the default is capped by the size of the flag. A value of the page's own is taken as given.
-        StringAssert.Contains(RuleOf(ReadStylesheet(), ".bit-flg-rnd"),
-                              "--bit-flg-rad: var(--bit-Flag-radius, min(#{$shp-radius-surface}, calc(var(--bit-flg-siz) / 8)));");
+        Assert.Contains("--bit-flg-rad: var(--bit-Flag-radius, min(#{$shp-radius-surface}, calc(var(--bit-flg-siz) / 8)));", RuleOf(ReadStylesheet(), ".bit-flg-rnd"));
     }
 
     [TestMethod]
@@ -112,14 +111,13 @@ public partial class BitFlagStylesheetTests
 
         var focus = SourceFiles.GetScssBlock(stylesheet, "&:focus-visible {");
 
-        StringAssert.Contains(focus, "@include focus-ring-own(var(--bit-Flag-focus-color), var(--bit-flg-elv));");
-        Assert.IsFalse(focus.Contains("outline:"), "The focus ring is drawn by hand rather than with the shared mixin.");
+        Assert.Contains("@include focus-ring-own(var(--bit-Flag-focus-color), var(--bit-flg-elv));", focus);
+        Assert.DoesNotContain("outline:", focus, "The focus ring is drawn by hand rather than with the shared mixin.");
 
-        StringAssert.Contains(RuleOf(stylesheet, ".bit-flg"), "--bit-flg-elv: 0 0 #0000;");
-        StringAssert.Contains(RuleOf(stylesheet, ".bit-flg-shd"), "--bit-flg-elv: var(--bit-Flag-shadow, #{$box-shadow-card});\n    box-shadow: var(--bit-flg-elv);");
+        Assert.Contains("--bit-flg-elv: 0 0 #0000;", RuleOf(stylesheet, ".bit-flg"));
+        Assert.Contains("--bit-flg-elv: var(--bit-Flag-shadow, #{$box-shadow-card});\n    box-shadow: var(--bit-flg-elv);", RuleOf(stylesheet, ".bit-flg-shd"));
 
-        StringAssert.Contains(SourceFiles.Read("Bit.BlazorUI", "Styles", "functions.scss"),
-"@mixin focus-ring-own($color, $also: null) {");
+        Assert.Contains("@mixin focus-ring-own($color, $also: null) {", SourceFiles.Read("Bit.BlazorUI", "Styles", "functions.scss"));
     }
 
     [TestMethod]
@@ -130,17 +128,16 @@ public partial class BitFlagStylesheetTests
         // the clipping to the overflow of its frame, which follows the inside of the border exactly.
         var crop = RuleOf(ReadStylesheet(), ".bit-flg-crp");
 
-        StringAssert.Contains(crop, "round var(--bit-flg-rad));");
-        Assert.IsFalse(crop.Contains("calc(var(--bit-flg-rad)"), "The corner of the frame is calculated with.");
-        StringAssert.Contains(crop, "&:not(.bit-flg-clk) {\n        overflow: clip;");
-        StringAssert.Contains(crop, "&:not(.bit-flg-clk) > .bit-flg-img {\n        clip-path: none;");
+        Assert.Contains("round var(--bit-flg-rad));", crop);
+        Assert.DoesNotContain("calc(var(--bit-flg-rad)", crop, "The corner of the frame is calculated with.");
+        Assert.Contains("&:not(.bit-flg-clk) {\n        overflow: clip;", crop);
+        Assert.Contains("&:not(.bit-flg-clk) > .bit-flg-img {\n        clip-path: none;", crop);
     }
 
     [TestMethod]
     public void BitFlagShouldPutAPageEmojiFontAheadOfThePlatformOnes()
     {
-        StringAssert.Contains(RuleOf(ReadStylesheet(), ".bit-flg-emj"),
-                              "font-family: var(--bit-Flag-emoji-font-family, 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', 'Segoe UI Symbol', sans-serif);");
+        Assert.Contains("font-family: var(--bit-Flag-emoji-font-family, 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', 'Segoe UI Symbol', sans-serif);", RuleOf(ReadStylesheet(), ".bit-flg-emj"));
     }
 
     private static string[] DocumentedVariables(string stylesheet)

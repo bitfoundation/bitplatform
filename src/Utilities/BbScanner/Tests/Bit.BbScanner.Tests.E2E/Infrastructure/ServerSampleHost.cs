@@ -5,7 +5,7 @@
 /// the first time a test asks for it: the demo runs every page on WebAssembly, and this is where the scanner runs on a
 /// circuit instead - the camera in the browser, the frame loop and the decoder on the server.
 /// </summary>
-public static class ServerSampleHost
+internal static class ServerSampleHost
 {
     private static readonly Lazy<Task<Host>> _host = new(StartAsync);
 
@@ -52,5 +52,5 @@ public static class ServerSampleHost
     }
 
     /// <summary>Where the sample answers, without a trailing slash, or why it does not.</summary>
-    public sealed record Host(string? BaseUrl, ChildProcess? Process, string? Unavailable);
+    internal sealed record Host(string? BaseUrl, ChildProcess? Process, string? Unavailable);
 }

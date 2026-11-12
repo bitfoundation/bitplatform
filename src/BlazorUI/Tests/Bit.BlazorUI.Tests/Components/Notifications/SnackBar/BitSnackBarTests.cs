@@ -67,7 +67,7 @@ public class BitSnackBarTests : BunitTestContext
         }
         else
         {
-            Assert.AreEqual(0, com.FindAll(".bit-snb-bdy").Count);
+            Assert.IsEmpty(com.FindAll(".bit-snb-bdy"));
         }
     }
 
@@ -81,7 +81,7 @@ public class BitSnackBarTests : BunitTestContext
         Assert.AreEqual("title", item.Title);
         Assert.AreEqual("body", item.Body);
         Assert.AreEqual(BitColor.Success, item.Color);
-        Assert.AreEqual(1, com.Instance.Items.Count);
+        Assert.ContainsSingle(com.Instance.Items);
         Assert.AreSame(item, com.Instance.Items[0]);
     }
 
@@ -96,7 +96,7 @@ public class BitSnackBarTests : BunitTestContext
         var again = await com.Instance.Show(item);
 
         Assert.AreSame(item, again);
-        Assert.AreEqual(1, com.FindAll(".bit-snb-itm").Count);
+        Assert.ContainsSingle(com.FindAll(".bit-snb-itm"));
     }
 
     [TestMethod,
@@ -116,16 +116,16 @@ public class BitSnackBarTests : BunitTestContext
 
         await com.Instance.Show("title");
 
-        Assert.AreEqual(1, com.FindAll(".bit-snb-itm").Count);
+        Assert.ContainsSingle(com.FindAll(".bit-snb-itm"));
 
         if (autoDismiss)
         {
-            com.WaitForAssertion(() => Assert.AreEqual(0, com.FindAll(".bit-snb-itm").Count), TimeSpan.FromSeconds(5));
+            com.WaitForAssertion(() => Assert.IsEmpty(com.FindAll(".bit-snb-itm")), TimeSpan.FromSeconds(5));
         }
         else
         {
-            await Task.Delay(TimeSpan.FromMilliseconds(600));
-            Assert.AreEqual(1, com.FindAll(".bit-snb-itm").Count);
+            await Task.Delay(TimeSpan.FromMilliseconds(600), TestContext.CancellationToken);
+            Assert.ContainsSingle(com.FindAll(".bit-snb-itm"));
         }
     }
 
@@ -140,10 +140,10 @@ public class BitSnackBarTests : BunitTestContext
 
         await com.Instance.Show("title");
 
-        await Task.Delay(TimeSpan.FromMilliseconds(300));
+        await Task.Delay(TimeSpan.FromMilliseconds(300), TestContext.CancellationToken);
 
-        Assert.AreEqual(1, com.FindAll(".bit-snb-itm").Count);
-        Assert.AreEqual(0, com.FindAll(".bit-snb-prb").Count);
+        Assert.ContainsSingle(com.FindAll(".bit-snb-itm"));
+        Assert.IsEmpty(com.FindAll(".bit-snb-prb"));
     }
 
     [TestMethod]
@@ -159,9 +159,9 @@ public class BitSnackBarTests : BunitTestContext
         await com.Instance.Show("long lived");
         await com.Instance.Show("short lived", autoDismissTime: TimeSpan.FromMilliseconds(300));
 
-        Assert.AreEqual(2, com.FindAll(".bit-snb-itm").Count);
+        Assert.HasCount(2, com.FindAll(".bit-snb-itm"));
 
-        com.WaitForAssertion(() => Assert.AreEqual(1, com.FindAll(".bit-snb-itm").Count), TimeSpan.FromSeconds(5));
+        com.WaitForAssertion(() => Assert.ContainsSingle(com.FindAll(".bit-snb-itm")), TimeSpan.FromSeconds(5));
 
         Assert.AreEqual("long lived", com.Instance.Items[0].Title);
     }
@@ -179,7 +179,7 @@ public class BitSnackBarTests : BunitTestContext
 
         var progress = com.Find(".bit-snb-prb");
 
-        Assert.IsTrue(progress.GetAttribute("style")!.Contains("animation-duration:7s"));
+        Assert.Contains("animation-duration:7s", progress.GetAttribute("style")!);
         Assert.AreEqual("true", progress.GetAttribute("aria-hidden"));
     }
 
@@ -195,8 +195,8 @@ public class BitSnackBarTests : BunitTestContext
 
         await com.Instance.Show("title");
 
-        Assert.AreEqual(1, com.FindAll(".bit-snb-itm").Count);
-        Assert.AreEqual(0, com.FindAll(".bit-snb-prb").Count);
+        Assert.ContainsSingle(com.FindAll(".bit-snb-itm"));
+        Assert.IsEmpty(com.FindAll(".bit-snb-prb"));
     }
 
     [TestMethod]
@@ -210,11 +210,11 @@ public class BitSnackBarTests : BunitTestContext
 
         await com.Instance.Show("title", persistent: true);
 
-        Assert.AreEqual(0, com.FindAll(".bit-snb-prb").Count);
+        Assert.IsEmpty(com.FindAll(".bit-snb-prb"));
 
-        await Task.Delay(TimeSpan.FromMilliseconds(600));
+        await Task.Delay(TimeSpan.FromMilliseconds(600), TestContext.CancellationToken);
 
-        Assert.AreEqual(1, com.FindAll(".bit-snb-itm").Count);
+        Assert.ContainsSingle(com.FindAll(".bit-snb-itm"));
     }
 
     [TestMethod,
@@ -266,7 +266,7 @@ public class BitSnackBarTests : BunitTestContext
         };
 
         var items = com.FindAll(".bit-snb-itm");
-        Assert.AreEqual(2, items.Count);
+        Assert.HasCount(2, items);
 
         foreach (var item in items)
         {
@@ -324,11 +324,11 @@ public class BitSnackBarTests : BunitTestContext
         var closeButton = com.Find(".bit-snb-cbt");
 
         var itemsBeforeClose = com.FindAll(".bit-snb-itm");
-        Assert.AreEqual(1, itemsBeforeClose.Count);
+        Assert.ContainsSingle(itemsBeforeClose);
 
         closeButton.Click();
 
-        com.WaitForAssertion(() => Assert.AreEqual(0, com.FindAll(".bit-snb-itm").Count));
+        com.WaitForAssertion(() => Assert.IsEmpty(com.FindAll(".bit-snb-itm")));
     }
 
     [TestMethod]
@@ -340,8 +340,8 @@ public class BitSnackBarTests : BunitTestContext
 
         await com.Instance.Close(item);
 
-        Assert.AreEqual(0, com.FindAll(".bit-snb-itm").Count);
-        Assert.AreEqual(0, com.Instance.Items.Count);
+        Assert.IsEmpty(com.FindAll(".bit-snb-itm"));
+        Assert.IsEmpty(com.Instance.Items);
     }
 
     [TestMethod]
@@ -353,12 +353,12 @@ public class BitSnackBarTests : BunitTestContext
         await com.Instance.Show("second");
         await com.Instance.Show("third");
 
-        Assert.AreEqual(3, com.FindAll(".bit-snb-itm").Count);
+        Assert.HasCount(3, com.FindAll(".bit-snb-itm"));
 
         await com.Instance.Clear();
 
-        Assert.AreEqual(0, com.FindAll(".bit-snb-itm").Count);
-        Assert.AreEqual(0, com.Instance.Items.Count);
+        Assert.IsEmpty(com.FindAll(".bit-snb-itm"));
+        Assert.IsEmpty(com.Instance.Items);
     }
 
     [TestMethod]
@@ -388,7 +388,7 @@ public class BitSnackBarTests : BunitTestContext
 
         var item = await com.Instance.Show("title");
 
-        Assert.IsTrue(com.Find(".bit-snb-prb").GetAttribute("style")!.Contains("animation-duration:60s"));
+        Assert.Contains("animation-duration:60s", com.Find(".bit-snb-prb").GetAttribute("style")!);
 
         // A CSS animation does not start over because its element was re-rendered, so the bar is keyed by the
         // countdown it draws and a restarted one replaces it. What that is visible as here is the bar coming back
@@ -397,7 +397,7 @@ public class BitSnackBarTests : BunitTestContext
 
         await com.Instance.Update(item);
 
-        Assert.IsTrue(com.Find(".bit-snb-prb").GetAttribute("style")!.Contains("animation-duration:30s"));
+        Assert.Contains("animation-duration:30s", com.Find(".bit-snb-prb").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -455,7 +455,7 @@ public class BitSnackBarTests : BunitTestContext
 
         await com.Instance.Update(new BitSnackBarItem { Title = "nothing" });
 
-        Assert.AreEqual(0, com.FindAll(".bit-snb-itm").Count);
+        Assert.IsEmpty(com.FindAll(".bit-snb-itm"));
     }
 
     [TestMethod]
@@ -472,7 +472,7 @@ public class BitSnackBarTests : BunitTestContext
 
         await closing;
 
-        Assert.AreEqual(0, com.FindAll(".bit-snb-itm").Count);
+        Assert.IsEmpty(com.FindAll(".bit-snb-itm"));
     }
 
     [TestMethod]
@@ -480,7 +480,7 @@ public class BitSnackBarTests : BunitTestContext
     {
         var com = RenderComponent<BitSnackBar>(parameters => parameters.Add(p => p.TransitionDuration, 350));
 
-        Assert.IsTrue(com.Find(".bit-snb").GetAttribute("style")!.Contains("--bit-snb-dur-full:350ms"));
+        Assert.Contains("--bit-snb-dur-full:350ms", com.Find(".bit-snb").GetAttribute("style")!);
     }
 
     [TestMethod,
@@ -493,7 +493,7 @@ public class BitSnackBarTests : BunitTestContext
 
         await com.Instance.Show("title");
 
-        Assert.AreEqual(persistent ? 0 : 1, com.FindAll(".bit-snb-cbt").Count);
+        Assert.HasCount(persistent ? 0 : 1, com.FindAll(".bit-snb-cbt"));
     }
 
     [TestMethod]
@@ -506,7 +506,7 @@ public class BitSnackBarTests : BunitTestContext
 
         var items = com.FindAll(".bit-snb-itm");
 
-        Assert.AreEqual(2, items.Count);
+        Assert.HasCount(2, items);
         Assert.AreEqual(1, items[0].QuerySelectorAll(".bit-snb-cbt").Length);
         Assert.AreEqual(0, items[1].QuerySelectorAll(".bit-snb-cbt").Length);
     }
@@ -524,7 +524,7 @@ public class BitSnackBarTests : BunitTestContext
         await com.Instance.Show("second");
         await com.Instance.Show("third");
 
-        Assert.AreEqual(2, com.FindAll(".bit-snb-itm").Count);
+        Assert.HasCount(2, com.FindAll(".bit-snb-itm"));
         Assert.AreEqual("second", com.Instance.Items[0].Title);
         Assert.AreEqual("third", com.Instance.Items[1].Title);
     }
@@ -543,7 +543,7 @@ public class BitSnackBarTests : BunitTestContext
         await com.Instance.Show("second");
         await com.Instance.Show("third");
 
-        Assert.AreEqual(2, com.Instance.Items.Count);
+        Assert.HasCount(2, com.Instance.Items);
         Assert.AreEqual("third", com.Instance.Items[0].Title);
         Assert.AreEqual("second", com.Instance.Items[1].Title);
     }
@@ -560,7 +560,7 @@ public class BitSnackBarTests : BunitTestContext
         await com.Instance.Show("second");
         await com.Instance.Show("third");
 
-        Assert.AreEqual(3, com.FindAll(".bit-snb-itm").Count);
+        Assert.HasCount(3, com.FindAll(".bit-snb-itm"));
     }
 
     [TestMethod]
@@ -586,7 +586,7 @@ public class BitSnackBarTests : BunitTestContext
         var second = await com.Instance.Show("title", "body", BitColor.Info);
 
         Assert.AreSame(first, second);
-        Assert.AreEqual(1, com.FindAll(".bit-snb-itm").Count);
+        Assert.ContainsSingle(com.FindAll(".bit-snb-itm"));
     }
 
     [TestMethod]
@@ -598,7 +598,7 @@ public class BitSnackBarTests : BunitTestContext
         await com.Instance.Show("title", "body", BitColor.Error);
         await com.Instance.Show("title", "other body", BitColor.Info);
 
-        Assert.AreEqual(3, com.FindAll(".bit-snb-itm").Count);
+        Assert.HasCount(3, com.FindAll(".bit-snb-itm"));
     }
 
     [TestMethod]
@@ -609,7 +609,7 @@ public class BitSnackBarTests : BunitTestContext
         await com.Instance.Show("title", "body");
         await com.Instance.Show("title", "body");
 
-        Assert.AreEqual(2, com.FindAll(".bit-snb-itm").Count);
+        Assert.HasCount(2, com.FindAll(".bit-snb-itm"));
     }
 
     [TestMethod]
@@ -680,7 +680,7 @@ public class BitSnackBarTests : BunitTestContext
         Assert.AreSame(item, itemClicked);
 
         // Without DismissOnClick a click leaves the item where it is.
-        Assert.AreEqual(1, com.FindAll(".bit-snb-itm").Count);
+        Assert.ContainsSingle(com.FindAll(".bit-snb-itm"));
     }
 
     [TestMethod]
@@ -698,7 +698,7 @@ public class BitSnackBarTests : BunitTestContext
 
         com.Find(".bit-snb-itm").Click();
 
-        com.WaitForAssertion(() => Assert.AreEqual(0, com.FindAll(".bit-snb-itm").Count));
+        com.WaitForAssertion(() => Assert.IsEmpty(com.FindAll(".bit-snb-itm")));
     }
 
     [TestMethod]
@@ -715,9 +715,9 @@ public class BitSnackBarTests : BunitTestContext
 
         com.Find(".bit-snb-itm").Click();
 
-        await Task.Delay(50);
+        await Task.Delay(50, TestContext.CancellationToken);
 
-        Assert.AreEqual(1, com.FindAll(".bit-snb-itm").Count);
+        Assert.ContainsSingle(com.FindAll(".bit-snb-itm"));
         Assert.IsFalse(com.Find(".bit-snb-itm").ClassList.Contains("bit-snb-clk"));
     }
 
@@ -730,7 +730,7 @@ public class BitSnackBarTests : BunitTestContext
 
         com.Find(".bit-snb-itm").KeyDown("Escape");
 
-        com.WaitForAssertion(() => Assert.AreEqual(0, com.FindAll(".bit-snb-itm").Count));
+        com.WaitForAssertion(() => Assert.IsEmpty(com.FindAll(".bit-snb-itm")));
     }
 
     [TestMethod]
@@ -746,9 +746,9 @@ public class BitSnackBarTests : BunitTestContext
 
         com.Find(".bit-snb-itm").KeyDown("Escape");
 
-        await Task.Delay(50);
+        await Task.Delay(50, TestContext.CancellationToken);
 
-        Assert.AreEqual(1, com.FindAll(".bit-snb-itm").Count);
+        Assert.ContainsSingle(com.FindAll(".bit-snb-itm"));
     }
 
     [TestMethod,
@@ -783,9 +783,9 @@ public class BitSnackBarTests : BunitTestContext
         // item: one with a modifier goes on to that surface alone.
         com.Find(".bit-snb-itm").KeyDown(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "Escape", ShiftKey = shift, CtrlKey = ctrl, AltKey = alt, MetaKey = meta });
 
-        await Task.Delay(50);
+        await Task.Delay(50, TestContext.CancellationToken);
 
-        Assert.AreEqual(1, com.FindAll(".bit-snb-itm").Count);
+        Assert.ContainsSingle(com.FindAll(".bit-snb-itm"));
     }
 
     [TestMethod]
@@ -830,9 +830,9 @@ public class BitSnackBarTests : BunitTestContext
 
         com.Find(".bit-snb-itm").KeyDown("Enter");
 
-        await Task.Delay(50);
+        await Task.Delay(50, TestContext.CancellationToken);
 
-        Assert.AreEqual(1, com.FindAll(".bit-snb-itm").Count);
+        Assert.ContainsSingle(com.FindAll(".bit-snb-itm"));
     }
 
     [TestMethod]
@@ -851,13 +851,13 @@ public class BitSnackBarTests : BunitTestContext
 
         Assert.IsTrue(com.Find(".bit-snb-itm").ClassList.Contains("bit-snb-pau"));
 
-        await Task.Delay(TimeSpan.FromMilliseconds(600));
+        await Task.Delay(TimeSpan.FromMilliseconds(600), TestContext.CancellationToken);
 
-        Assert.AreEqual(1, com.FindAll(".bit-snb-itm").Count);
+        Assert.ContainsSingle(com.FindAll(".bit-snb-itm"));
 
         com.Find(".bit-snb-itm").PointerLeave();
 
-        com.WaitForAssertion(() => Assert.AreEqual(0, com.FindAll(".bit-snb-itm").Count), TimeSpan.FromSeconds(5));
+        com.WaitForAssertion(() => Assert.IsEmpty(com.FindAll(".bit-snb-itm")), TimeSpan.FromSeconds(5));
     }
 
     [TestMethod]
@@ -877,7 +877,7 @@ public class BitSnackBarTests : BunitTestContext
 
         Assert.IsFalse(com.Find(".bit-snb-itm").ClassList.Contains("bit-snb-pau"));
 
-        com.WaitForAssertion(() => Assert.AreEqual(0, com.FindAll(".bit-snb-itm").Count), TimeSpan.FromSeconds(5));
+        com.WaitForAssertion(() => Assert.IsEmpty(com.FindAll(".bit-snb-itm")), TimeSpan.FromSeconds(5));
     }
 
     [TestMethod]
@@ -896,13 +896,13 @@ public class BitSnackBarTests : BunitTestContext
 
         Assert.IsTrue(com.Find(".bit-snb-itm").ClassList.Contains("bit-snb-pau"));
 
-        await Task.Delay(TimeSpan.FromMilliseconds(600));
+        await Task.Delay(TimeSpan.FromMilliseconds(600), TestContext.CancellationToken);
 
-        Assert.AreEqual(1, com.FindAll(".bit-snb-itm").Count);
+        Assert.ContainsSingle(com.FindAll(".bit-snb-itm"));
 
         com.Find(".bit-snb-itm").FocusOut();
 
-        com.WaitForAssertion(() => Assert.AreEqual(0, com.FindAll(".bit-snb-itm").Count), TimeSpan.FromSeconds(5));
+        com.WaitForAssertion(() => Assert.IsEmpty(com.FindAll(".bit-snb-itm")), TimeSpan.FromSeconds(5));
     }
 
     [TestMethod]
@@ -921,13 +921,13 @@ public class BitSnackBarTests : BunitTestContext
 
         Assert.IsTrue(com.Find(".bit-snb-itm").ClassList.Contains("bit-snb-pau"));
 
-        await Task.Delay(TimeSpan.FromMilliseconds(600));
+        await Task.Delay(TimeSpan.FromMilliseconds(600), TestContext.CancellationToken);
 
-        Assert.AreEqual(1, com.FindAll(".bit-snb-itm").Count);
+        Assert.ContainsSingle(com.FindAll(".bit-snb-itm"));
 
         await com.Instance.Resume(item);
 
-        com.WaitForAssertion(() => Assert.AreEqual(0, com.FindAll(".bit-snb-itm").Count), TimeSpan.FromSeconds(5));
+        com.WaitForAssertion(() => Assert.IsEmpty(com.FindAll(".bit-snb-itm")), TimeSpan.FromSeconds(5));
     }
 
     [TestMethod]
@@ -949,13 +949,13 @@ public class BitSnackBarTests : BunitTestContext
 
         Assert.IsTrue(com.Find(".bit-snb-itm").ClassList.Contains("bit-snb-pau"));
 
-        await Task.Delay(TimeSpan.FromMilliseconds(600));
+        await Task.Delay(TimeSpan.FromMilliseconds(600), TestContext.CancellationToken);
 
-        Assert.AreEqual(1, com.FindAll(".bit-snb-itm").Count);
+        Assert.ContainsSingle(com.FindAll(".bit-snb-itm"));
 
         com.Find(".bit-snb-itm").PointerLeave();
 
-        com.WaitForAssertion(() => Assert.AreEqual(0, com.FindAll(".bit-snb-itm").Count), TimeSpan.FromSeconds(5));
+        com.WaitForAssertion(() => Assert.IsEmpty(com.FindAll(".bit-snb-itm")), TimeSpan.FromSeconds(5));
     }
 
     [TestMethod]
@@ -976,9 +976,9 @@ public class BitSnackBarTests : BunitTestContext
 
         Assert.IsTrue(com.Find(".bit-snb-itm").ClassList.Contains("bit-snb-pau"));
 
-        await Task.Delay(TimeSpan.FromMilliseconds(600));
+        await Task.Delay(TimeSpan.FromMilliseconds(600), TestContext.CancellationToken);
 
-        Assert.AreEqual(1, com.FindAll(".bit-snb-itm").Count);
+        Assert.ContainsSingle(com.FindAll(".bit-snb-itm"));
     }
 
     [TestMethod]
@@ -1121,7 +1121,7 @@ public class BitSnackBarTests : BunitTestContext
 
         await com.Instance.Show("title");
 
-        Assert.AreEqual(0, com.FindAll(".bit-snb-ico").Count);
+        Assert.IsEmpty(com.FindAll(".bit-snb-ico"));
     }
 
     [TestMethod]
@@ -1170,7 +1170,7 @@ public class BitSnackBarTests : BunitTestContext
 
         var icons = com.FindAll(".bit-snb-ico");
 
-        Assert.AreEqual(1, icons.Count);
+        Assert.ContainsSingle(icons);
         Assert.IsTrue(icons[0].ClassList.Contains("bit-icon--Rocket"));
     }
 
@@ -1376,7 +1376,7 @@ public class BitSnackBarTests : BunitTestContext
 
         await com.Instance.Show("title", "body");
 
-        Assert.AreEqual(0, com.FindAll(".bit-snb-act").Count);
+        Assert.IsEmpty(com.FindAll(".bit-snb-act"));
     }
 
     [TestMethod]
@@ -1397,8 +1397,8 @@ public class BitSnackBarTests : BunitTestContext
             Actions = builder => builder.AddMarkupContent(0, "<span class=\"own\">own</span>")
         });
 
-        Assert.AreEqual(1, com.FindAll(".bit-snb-act .own").Count);
-        Assert.AreEqual(0, com.FindAll(".bit-snb-act .host").Count);
+        Assert.ContainsSingle(com.FindAll(".bit-snb-act .own"));
+        Assert.IsEmpty(com.FindAll(".bit-snb-act .host"));
     }
 
     [TestMethod]
@@ -1421,9 +1421,9 @@ public class BitSnackBarTests : BunitTestContext
         Assert.AreEqual("title", com.Find(".custom").TextContent);
 
         // The template takes the place of the header, body and actions, and keeps the countdown bar.
-        Assert.AreEqual(0, com.FindAll(".bit-snb-hdr").Count);
-        Assert.AreEqual(0, com.FindAll(".bit-snb-bdy").Count);
-        Assert.AreEqual(1, com.FindAll(".bit-snb-prb").Count);
+        Assert.IsEmpty(com.FindAll(".bit-snb-hdr"));
+        Assert.IsEmpty(com.FindAll(".bit-snb-bdy"));
+        Assert.ContainsSingle(com.FindAll(".bit-snb-prb"));
     }
 
     [TestMethod,
@@ -1460,7 +1460,7 @@ public class BitSnackBarTests : BunitTestContext
         var item = com.Find(".bit-snb-itm");
 
         Assert.IsTrue(item.ClassList.Contains("custom-class"));
-        Assert.IsTrue(item.GetAttribute("style")!.Contains("color: red"));
+        Assert.Contains("color: red", item.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1475,7 +1475,7 @@ public class BitSnackBarTests : BunitTestContext
         var style = com.Find(".bit-snb-itm").GetAttribute("style")!;
 
         // Two parts in one style attribute are only two declarations while a semicolon stands between them.
-        Assert.IsTrue(style.Contains("border: 1px solid red;color: blue"), style);
+        Assert.Contains("border: 1px solid red;color: blue", style, style);
     }
 
     [TestMethod]
@@ -1545,17 +1545,17 @@ public class BitSnackBarTests : BunitTestContext
 
         await com.Instance.Show("title", "body");
 
-        Assert.IsTrue(com.Find(".bit-snb").GetAttribute("style")!.Contains("z-index: 1"));
-        Assert.IsTrue(com.Find(".bit-snb-itm").GetAttribute("style")!.Contains("color: red"));
-        Assert.IsTrue(com.Find(".bit-snb-hdr").GetAttribute("style")!.Contains("color: green"));
-        Assert.IsTrue(com.Find(".bit-snb-ict").GetAttribute("style")!.Contains("color: blue"));
-        Assert.IsTrue(com.Find(".bit-snb-ico").GetAttribute("style")!.Contains("font-size: 1rem"));
-        Assert.IsTrue(com.Find(".bit-snb-ttl").GetAttribute("style")!.Contains("font-weight: 700"));
-        Assert.IsTrue(com.Find(".bit-snb-bdy").GetAttribute("style")!.Contains("font-style: italic"));
-        Assert.IsTrue(com.Find(".bit-snb-act").GetAttribute("style")!.Contains("gap: 1rem"));
-        Assert.IsTrue(com.Find(".bit-snb-cbt").GetAttribute("style")!.Contains("opacity: 0.5"));
-        Assert.IsTrue(com.Find(".bit-snb-cbt > i").GetAttribute("style")!.Contains("font-size: 2rem"));
-        Assert.IsTrue(com.Find(".bit-snb-prb").GetAttribute("style")!.Contains("background-color: red"));
+        Assert.Contains("z-index: 1", com.Find(".bit-snb").GetAttribute("style")!);
+        Assert.Contains("color: red", com.Find(".bit-snb-itm").GetAttribute("style")!);
+        Assert.Contains("color: green", com.Find(".bit-snb-hdr").GetAttribute("style")!);
+        Assert.Contains("color: blue", com.Find(".bit-snb-ict").GetAttribute("style")!);
+        Assert.Contains("font-size: 1rem", com.Find(".bit-snb-ico").GetAttribute("style")!);
+        Assert.Contains("font-weight: 700", com.Find(".bit-snb-ttl").GetAttribute("style")!);
+        Assert.Contains("font-style: italic", com.Find(".bit-snb-bdy").GetAttribute("style")!);
+        Assert.Contains("gap: 1rem", com.Find(".bit-snb-act").GetAttribute("style")!);
+        Assert.Contains("opacity: 0.5", com.Find(".bit-snb-cbt").GetAttribute("style")!);
+        Assert.Contains("font-size: 2rem", com.Find(".bit-snb-cbt > i").GetAttribute("style")!);
+        Assert.Contains("background-color: red", com.Find(".bit-snb-prb").GetAttribute("style")!);
     }
 
     [TestMethod,
@@ -1598,12 +1598,12 @@ public class BitSnackBarTests : BunitTestContext
 
         if (expectedStyle.HasValue())
         {
-            Assert.IsTrue(style.Contains(expectedStyle), style);
+            Assert.Contains(expectedStyle, style, style);
         }
         else
         {
-            Assert.IsFalse(style.Contains("visibility:hidden"));
-            Assert.IsFalse(style.Contains("display:none"));
+            Assert.DoesNotContain("visibility:hidden", style);
+            Assert.DoesNotContain("display:none", style);
         }
     }
 
@@ -1673,8 +1673,8 @@ public class BitSnackBarTests : BunitTestContext
 
         await com.Instance.Close(first);
 
-        Assert.AreEqual(2, snapshot.Count);
-        Assert.AreEqual(1, com.Instance.Items.Count);
+        Assert.HasCount(2, snapshot);
+        Assert.ContainsSingle(com.Instance.Items);
     }
 
     [TestMethod]
@@ -1690,7 +1690,7 @@ public class BitSnackBarTests : BunitTestContext
 
         await com.Instance.Show("title");
 
-        com.WaitForAssertion(() => Assert.AreEqual(0, com.FindAll(".bit-snb-itm").Count), TimeSpan.FromSeconds(5));
+        com.WaitForAssertion(() => Assert.IsEmpty(com.FindAll(".bit-snb-itm")), TimeSpan.FromSeconds(5));
     }
 
     [TestMethod]
@@ -1700,7 +1700,7 @@ public class BitSnackBarTests : BunitTestContext
 
         await Task.Run(() => com.Instance.Show("title", "body"));
 
-        com.WaitForAssertion(() => Assert.AreEqual(1, com.FindAll(".bit-snb-itm").Count));
+        com.WaitForAssertion(() => Assert.ContainsSingle(com.FindAll(".bit-snb-itm")));
     }
 
     [TestMethod]
@@ -1722,7 +1722,7 @@ public class BitSnackBarTests : BunitTestContext
 
         await closing;
 
-        com.WaitForAssertion(() => Assert.AreEqual(2, com.Instance.Items.Count), TimeSpan.FromSeconds(5));
+        com.WaitForAssertion(() => Assert.HasCount(2, com.Instance.Items), TimeSpan.FromSeconds(5));
 
         Assert.AreEqual("second", com.Instance.Items[0].Title);
         Assert.AreEqual("third", com.Instance.Items[1].Title);
@@ -1744,7 +1744,7 @@ public class BitSnackBarTests : BunitTestContext
 
         await ((IAsyncDisposable)com.Instance).DisposeAsync();
 
-        await Task.Delay(TimeSpan.FromMilliseconds(500));
+        await Task.Delay(TimeSpan.FromMilliseconds(500), TestContext.CancellationToken);
 
         // The countdown runs unawaited, so nothing it threw would ever reach this test; what is checked is that it
         // did nothing once the countdown and the exit animation of a disposed snack bar would have run out.
@@ -1765,10 +1765,10 @@ public class BitSnackBarTests : BunitTestContext
         await com.Instance.Show("title");
 
         // Unlike Persistent, this only takes the button away.
-        Assert.AreEqual(0, com.FindAll(".bit-snb-cbt").Count);
-        Assert.AreEqual(1, com.FindAll(".bit-snb-prb").Count);
+        Assert.IsEmpty(com.FindAll(".bit-snb-cbt"));
+        Assert.ContainsSingle(com.FindAll(".bit-snb-prb"));
 
-        com.WaitForAssertion(() => Assert.AreEqual(0, com.FindAll(".bit-snb-itm").Count), TimeSpan.FromSeconds(5));
+        com.WaitForAssertion(() => Assert.IsEmpty(com.FindAll(".bit-snb-itm")), TimeSpan.FromSeconds(5));
     }
 
     [TestMethod]
@@ -1779,7 +1779,7 @@ public class BitSnackBarTests : BunitTestContext
         await com.Instance.Show(new BitSnackBarItem { Title = "with" });
         await com.Instance.Show(new BitSnackBarItem { Title = "without", HideDismiss = true });
 
-        Assert.AreEqual(1, com.FindAll(".bit-snb-cbt").Count);
+        Assert.ContainsSingle(com.FindAll(".bit-snb-cbt"));
     }
 
     [TestMethod]
@@ -1795,7 +1795,7 @@ public class BitSnackBarTests : BunitTestContext
 
         com.Find(".bit-snb-itm").KeyDown("Escape");
 
-        com.WaitForAssertion(() => Assert.AreEqual(0, com.FindAll(".bit-snb-itm").Count), TimeSpan.FromSeconds(5));
+        com.WaitForAssertion(() => Assert.IsEmpty(com.FindAll(".bit-snb-itm")), TimeSpan.FromSeconds(5));
     }
 
     [TestMethod]
@@ -1812,7 +1812,7 @@ public class BitSnackBarTests : BunitTestContext
 
         com.Find(".bit-snb-itm").Click();
 
-        com.WaitForAssertion(() => Assert.AreEqual(0, com.FindAll(".bit-snb-itm").Count), TimeSpan.FromSeconds(5));
+        com.WaitForAssertion(() => Assert.IsEmpty(com.FindAll(".bit-snb-itm")), TimeSpan.FromSeconds(5));
     }
 
     [TestMethod]
@@ -1820,7 +1820,7 @@ public class BitSnackBarTests : BunitTestContext
     {
         var com = RenderComponent<BitSnackBar>(parameters => parameters.Add(p => p.Offset, "2rem"));
 
-        Assert.IsTrue(com.Find(".bit-snb").GetAttribute("style")!.Contains("--bit-snb-off:2rem"));
+        Assert.Contains("--bit-snb-off:2rem", com.Find(".bit-snb").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1828,7 +1828,7 @@ public class BitSnackBarTests : BunitTestContext
     {
         var com = RenderComponent<BitSnackBar>();
 
-        Assert.IsFalse((com.Find(".bit-snb").GetAttribute("style") ?? "").Contains("--bit-snb-off"));
+        Assert.DoesNotContain("--bit-snb-off", (com.Find(".bit-snb").GetAttribute("style") ?? ""));
     }
 
     [TestMethod,
@@ -1866,16 +1866,16 @@ public class BitSnackBarTests : BunitTestContext
         await com.Instance.Show("second");
         var third = await com.Instance.Show("third");
 
-        Assert.AreEqual(2, com.Instance.Items.Count);
-        Assert.AreEqual(1, com.Instance.PendingItems.Count);
+        Assert.HasCount(2, com.Instance.Items);
+        Assert.ContainsSingle(com.Instance.PendingItems);
         Assert.AreSame(third, com.Instance.PendingItems[0]);
-        CollectionAssert.AreEqual(new[] { "first", "second" }, shown);
+        Assert.AreSequenceEqual(new[] { "first", "second" }, shown);
 
         await com.Instance.Close(first);
 
         // The slot the first item held goes to whatever was waiting for one.
-        Assert.AreEqual(0, com.Instance.PendingItems.Count);
-        CollectionAssert.AreEqual(new[] { "first", "second", "third" }, shown);
+        Assert.IsEmpty(com.Instance.PendingItems);
+        Assert.AreSequenceEqual(new[] { "first", "second", "third" }, shown);
         Assert.AreEqual("third", com.Instance.Items[1].Title);
     }
 
@@ -1899,7 +1899,7 @@ public class BitSnackBarTests : BunitTestContext
         await com.Instance.Close(first);
 
         Assert.AreEqual("second", com.Instance.Items[0].Title);
-        Assert.AreEqual(1, com.Instance.PendingItems.Count);
+        Assert.ContainsSingle(com.Instance.PendingItems);
     }
 
     [TestMethod]
@@ -1919,8 +1919,8 @@ public class BitSnackBarTests : BunitTestContext
         await com.Instance.Show("second");
         await com.Instance.Show("third");
 
-        Assert.AreEqual(2, com.Instance.Items.Count);
-        Assert.AreEqual(0, com.Instance.PendingItems.Count);
+        Assert.HasCount(2, com.Instance.Items);
+        Assert.IsEmpty(com.Instance.PendingItems);
         Assert.AreEqual(2, shown);
         Assert.AreEqual("first", com.Instance.Items[0].Title);
     }
@@ -1937,8 +1937,8 @@ public class BitSnackBarTests : BunitTestContext
         await com.Instance.Show("second");
         await com.Instance.Show("third");
 
-        Assert.AreEqual(3, com.Instance.Items.Count);
-        Assert.AreEqual(0, com.Instance.PendingItems.Count);
+        Assert.HasCount(3, com.Instance.Items);
+        Assert.IsEmpty(com.Instance.PendingItems);
     }
 
     [TestMethod]
@@ -1959,10 +1959,10 @@ public class BitSnackBarTests : BunitTestContext
 
         await com.Instance.Close(queued);
 
-        Assert.AreEqual(0, com.Instance.PendingItems.Count);
+        Assert.IsEmpty(com.Instance.PendingItems);
         Assert.AreSame(queued, dismissed);
         Assert.AreEqual(BitSnackBarDismissReason.Programmatic, queued.DismissReason);
-        Assert.AreEqual(1, com.Instance.Items.Count);
+        Assert.ContainsSingle(com.Instance.Items);
     }
 
     [TestMethod]
@@ -1983,9 +1983,9 @@ public class BitSnackBarTests : BunitTestContext
 
         await com.Instance.Clear();
 
-        Assert.AreEqual(0, com.Instance.Items.Count);
-        Assert.AreEqual(0, com.Instance.PendingItems.Count);
-        CollectionAssert.AreEquivalent(new[] { "first", "second" }, dismissed);
+        Assert.IsEmpty(com.Instance.Items);
+        Assert.IsEmpty(com.Instance.PendingItems);
+        Assert.AreSequenceEqual(new[] { "first", "second" }, dismissed, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -2003,7 +2003,7 @@ public class BitSnackBarTests : BunitTestContext
         var again = await com.Instance.Show(queued);
 
         Assert.AreSame(queued, again);
-        Assert.AreEqual(1, com.Instance.PendingItems.Count);
+        Assert.ContainsSingle(com.Instance.PendingItems);
     }
 
     [TestMethod]
@@ -2022,7 +2022,7 @@ public class BitSnackBarTests : BunitTestContext
         var duplicate = await com.Instance.Show("second", "body");
 
         Assert.AreSame(queued, duplicate);
-        Assert.AreEqual(1, com.Instance.PendingItems.Count);
+        Assert.ContainsSingle(com.Instance.PendingItems);
     }
 
     [TestMethod]
@@ -2042,8 +2042,8 @@ public class BitSnackBarTests : BunitTestContext
 
         await com.Instance.Close(first);
 
-        Assert.AreEqual(1, snapshot.Count);
-        Assert.AreEqual(0, com.Instance.PendingItems.Count);
+        Assert.ContainsSingle(snapshot);
+        Assert.IsEmpty(com.Instance.PendingItems);
     }
 
     [TestMethod]
@@ -2059,7 +2059,7 @@ public class BitSnackBarTests : BunitTestContext
 
         var item = await com.Instance.Show("title", "body");
 
-        await Task.Delay(300);
+        await Task.Delay(300, TestContext.CancellationToken);
 
         // Measured from before the repeat to after the item is seen to leave, which is never shorter than the
         // countdown the repeat started: a slow machine only lengthens it. A fixed wait checked against a countdown
@@ -2071,15 +2071,14 @@ public class BitSnackBarTests : BunitTestContext
         // The repeat folded into the item that is still showing, which is the one whose countdown is started over.
         Assert.AreSame(item, repeat);
 
-        com.WaitForAssertion(() => Assert.AreEqual(0, com.FindAll(".bit-snb-itm").Count), TimeSpan.FromSeconds(5));
+        com.WaitForAssertion(() => Assert.IsEmpty(com.FindAll(".bit-snb-itm")), TimeSpan.FromSeconds(5));
 
         sinceTheRepeat.Stop();
 
         // The repeat is news of its own, so the notification that stands for it is given its full lifetime back
         // rather than being left to run out on the clock of the first one, some 700 ms after the repeat. The margin
         // is the coarser clock the timers run on.
-        Assert.IsTrue(sinceTheRepeat.Elapsed >= TimeSpan.FromMilliseconds(950),
-                      $"The item left {sinceTheRepeat.ElapsedMilliseconds} ms after the repeat, before a full lifetime.");
+        Assert.IsGreaterThanOrEqualTo(TimeSpan.FromMilliseconds(950), sinceTheRepeat.Elapsed, $"The item left {sinceTheRepeat.ElapsedMilliseconds} ms after the repeat, before a full lifetime.");
     }
 
     [TestMethod,
@@ -2096,7 +2095,7 @@ public class BitSnackBarTests : BunitTestContext
 
         // Both regions are in the page from the first render, which is the only way what is put into one of them
         // later is heard at all.
-        Assert.AreEqual(2, com.FindAll(".bit-snb-lvr").Count);
+        Assert.HasCount(2, com.FindAll(".bit-snb-lvr"));
 
         await com.Instance.Show("title", "body", color);
 
@@ -2198,7 +2197,7 @@ public class BitSnackBarTests : BunitTestContext
 
         Assert.AreEqual("title. body", com.Find(".bit-snb-lvr[aria-live=\"polite\"]").TextContent);
         Assert.AreEqual("", com.Find(".bit-snb-lvr[aria-live=\"assertive\"]").TextContent);
-        Assert.AreEqual(1, com.FindAll(".bit-snb-itm").Count);
+        Assert.ContainsSingle(com.FindAll(".bit-snb-itm"));
     }
 
     [TestMethod]
@@ -2220,14 +2219,14 @@ public class BitSnackBarTests : BunitTestContext
         // again; the pointer has not moved, so the countdown stays held back.
         com.Find(".bit-snb-itm").FocusOut();
 
-        await Task.Delay(700);
+        await Task.Delay(700, TestContext.CancellationToken);
 
         Assert.IsTrue(com.Find(".bit-snb-itm").ClassList.Contains("bit-snb-pau"));
-        Assert.AreEqual(1, com.FindAll(".bit-snb-itm").Count);
+        Assert.ContainsSingle(com.FindAll(".bit-snb-itm"));
 
         com.Find(".bit-snb-itm").PointerLeave();
 
-        com.WaitForAssertion(() => Assert.AreEqual(0, com.FindAll(".bit-snb-itm").Count), TimeSpan.FromSeconds(5));
+        com.WaitForAssertion(() => Assert.IsEmpty(com.FindAll(".bit-snb-itm")), TimeSpan.FromSeconds(5));
     }
 
     [TestMethod]
@@ -2246,13 +2245,13 @@ public class BitSnackBarTests : BunitTestContext
         com.Find(".bit-snb-itm").PointerEnter();
         com.Find(".bit-snb-itm").PointerLeave();
 
-        await Task.Delay(700);
+        await Task.Delay(700, TestContext.CancellationToken);
 
         Assert.IsTrue(com.Find(".bit-snb-itm").ClassList.Contains("bit-snb-pau"));
 
         com.Find(".bit-snb-itm").FocusOut();
 
-        com.WaitForAssertion(() => Assert.AreEqual(0, com.FindAll(".bit-snb-itm").Count), TimeSpan.FromSeconds(5));
+        com.WaitForAssertion(() => Assert.IsEmpty(com.FindAll(".bit-snb-itm")), TimeSpan.FromSeconds(5));
     }
 
     [TestMethod]
@@ -2407,9 +2406,9 @@ public class BitSnackBarTests : BunitTestContext
         com.Find(".bit-snb-itm").KeyDown("Enter");
         com.Find(".bit-snb-itm").KeyUp("Enter");
 
-        await Task.Delay(50);
+        await Task.Delay(50, TestContext.CancellationToken);
 
-        Assert.AreEqual(1, com.FindAll(".bit-snb-itm").Count);
+        Assert.ContainsSingle(com.FindAll(".bit-snb-itm"));
         Assert.AreEqual(0, clicked);
     }
 
@@ -2557,15 +2556,15 @@ public class BitSnackBarTests : BunitTestContext
 
         // A dismiss button that removes itself would otherwise leave the keyboard focus on nothing, sending the
         // next Tab back to the top of the page.
-        com.WaitForAssertion(() => Assert.IsTrue(
-            Context.JSInterop.Invocations.Any(i => i.Identifier.Contains("focus", StringComparison.OrdinalIgnoreCase))));
+        com.WaitForAssertion(() => Assert.Contains(
+i => i.Identifier.Contains("focus", StringComparison.OrdinalIgnoreCase), Context.JSInterop.Invocations));
     }
     [TestMethod]
     public void BitSnackBarMaxWidthTest()
     {
         var com = RenderComponent<BitSnackBar>(parameters => parameters.Add(p => p.MaxWidth, "24rem"));
 
-        Assert.IsTrue(com.Find(".bit-snb").GetAttribute("style")!.Contains("--bit-snb-max-w:24rem"));
+        Assert.Contains("--bit-snb-max-w:24rem", com.Find(".bit-snb").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -2573,7 +2572,7 @@ public class BitSnackBarTests : BunitTestContext
     {
         var com = RenderComponent<BitSnackBar>();
 
-        Assert.IsFalse((com.Find(".bit-snb").GetAttribute("style") ?? "").Contains("--bit-snb-max-w"));
+        Assert.DoesNotContain("--bit-snb-max-w", (com.Find(".bit-snb").GetAttribute("style") ?? ""));
     }
 
     [TestMethod]
@@ -2589,7 +2588,7 @@ public class BitSnackBarTests : BunitTestContext
 
         Services.GetRequiredService<NavigationManager>().NavigateTo("/somewhere-else");
 
-        com.WaitForAssertion(() => Assert.AreEqual(0, com.Instance.Items.Count), TimeSpan.FromSeconds(5));
+        com.WaitForAssertion(() => Assert.IsEmpty(com.Instance.Items), TimeSpan.FromSeconds(5));
 
         Assert.AreEqual(BitSnackBarDismissReason.Clear, item.DismissReason);
     }
@@ -2605,7 +2604,7 @@ public class BitSnackBarTests : BunitTestContext
 
         Services.GetRequiredService<NavigationManager>().NavigateTo("/somewhere-else");
 
-        com.WaitForAssertion(() => Assert.AreEqual(0, com.Instance.Items.Count), TimeSpan.FromSeconds(5));
+        com.WaitForAssertion(() => Assert.IsEmpty(com.Instance.Items), TimeSpan.FromSeconds(5));
     }
 
     [TestMethod]
@@ -2623,9 +2622,9 @@ public class BitSnackBarTests : BunitTestContext
 
         Services.GetRequiredService<NavigationManager>().NavigateTo("/somewhere-else");
 
-        await Task.Delay(100);
+        await Task.Delay(100, TestContext.CancellationToken);
 
-        Assert.AreEqual(1, com.Instance.Items.Count);
+        Assert.ContainsSingle(com.Instance.Items);
     }
 
     [TestMethod]
@@ -2637,9 +2636,9 @@ public class BitSnackBarTests : BunitTestContext
 
         Services.GetRequiredService<NavigationManager>().NavigateTo("/somewhere-else");
 
-        await Task.Delay(100);
+        await Task.Delay(100, TestContext.CancellationToken);
 
-        Assert.AreEqual(1, com.Instance.Items.Count);
+        Assert.ContainsSingle(com.Instance.Items);
     }
 
     [TestMethod]
@@ -2655,7 +2654,7 @@ public class BitSnackBarTests : BunitTestContext
         await com.Instance.Show("first");
         await com.Instance.Show("second");
 
-        Assert.AreEqual(1, com.Instance.PendingItems.Count);
+        Assert.ContainsSingle(com.Instance.PendingItems);
 
         // A slot that nothing is going to dismiss its way into still has to be taken by whatever was waiting.
         com.Render(parameters =>
@@ -2665,9 +2664,9 @@ public class BitSnackBarTests : BunitTestContext
             parameters.Add(p => p.OverflowBehavior, BitSnackBarOverflowBehavior.Queue);
         });
 
-        com.WaitForAssertion(() => Assert.AreEqual(0, com.Instance.PendingItems.Count), TimeSpan.FromSeconds(5));
+        com.WaitForAssertion(() => Assert.IsEmpty(com.Instance.PendingItems), TimeSpan.FromSeconds(5));
 
-        Assert.AreEqual(2, com.Instance.Items.Count);
+        Assert.HasCount(2, com.Instance.Items);
     }
 
     [TestMethod]
@@ -2708,14 +2707,14 @@ public class BitSnackBarTests : BunitTestContext
         com.Find(".bit-snb-itm").PointerEnter();
         com.Find(".bit-snb-itm").PointerLeave();
 
-        await Task.Delay(700);
+        await Task.Delay(700, TestContext.CancellationToken);
 
-        Assert.AreEqual(1, com.FindAll(".bit-snb-itm").Count);
+        Assert.ContainsSingle(com.FindAll(".bit-snb-itm"));
         Assert.IsTrue(com.Find(".bit-snb-itm").ClassList.Contains("bit-snb-pau"));
 
         await com.Instance.Resume(item);
 
-        com.WaitForAssertion(() => Assert.AreEqual(0, com.FindAll(".bit-snb-itm").Count), TimeSpan.FromSeconds(5));
+        com.WaitForAssertion(() => Assert.IsEmpty(com.FindAll(".bit-snb-itm")), TimeSpan.FromSeconds(5));
     }
 
     [TestMethod]
@@ -2735,9 +2734,9 @@ public class BitSnackBarTests : BunitTestContext
         com.Find(".bit-snb-itm").FocusIn();
         com.Find(".bit-snb-itm").FocusOut();
 
-        await Task.Delay(700);
+        await Task.Delay(700, TestContext.CancellationToken);
 
-        Assert.AreEqual(1, com.FindAll(".bit-snb-itm").Count);
+        Assert.ContainsSingle(com.FindAll(".bit-snb-itm"));
     }
 
     [TestMethod]
@@ -2761,7 +2760,7 @@ public class BitSnackBarTests : BunitTestContext
 
         Assert.AreNotSame(first, second);
 
-        com.WaitForAssertion(() => Assert.AreEqual(1, com.Instance.Items.Count), TimeSpan.FromSeconds(5));
+        com.WaitForAssertion(() => Assert.ContainsSingle(com.Instance.Items), TimeSpan.FromSeconds(5));
 
         Assert.AreSame(second, com.Instance.Items[0]);
     }
@@ -2785,7 +2784,7 @@ public class BitSnackBarTests : BunitTestContext
         // held back with nothing left to let it go.
         await com.Instance.Show(item);
 
-        com.WaitForAssertion(() => Assert.AreEqual(0, com.FindAll(".bit-snb-itm").Count), TimeSpan.FromSeconds(5));
+        com.WaitForAssertion(() => Assert.IsEmpty(com.FindAll(".bit-snb-itm")), TimeSpan.FromSeconds(5));
     }
     [TestMethod]
     public async Task BitSnackBarPreventDuplicatesCountsTheRepeatsTest()
@@ -2802,7 +2801,7 @@ public class BitSnackBarTests : BunitTestContext
         // Suppressing the repeat keeps the page from filling with the same notification, but the thing did happen
         // again; the item that stands for all of them counts how many.
         Assert.AreEqual(2, item.DuplicateCount);
-        Assert.AreEqual(1, com.Instance.Items.Count);
+        Assert.ContainsSingle(com.Instance.Items);
     }
 
     [TestMethod]
@@ -2836,7 +2835,7 @@ public class BitSnackBarTests : BunitTestContext
         await com.Instance.Show("title", "body");
 
         Assert.AreEqual(0, item.DuplicateCount);
-        Assert.AreEqual(2, com.Instance.Items.Count);
+        Assert.HasCount(2, com.Instance.Items);
     }
 
     [TestMethod]
@@ -2880,7 +2879,7 @@ public class BitSnackBarTests : BunitTestContext
             () => Assert.AreEqual("", com.Find(".bit-snb-lvr[aria-live=\"polite\"]").TextContent),
             TimeSpan.FromSeconds(5));
 
-        Assert.AreEqual(1, com.FindAll(".bit-snb-itm").Count);
+        Assert.ContainsSingle(com.FindAll(".bit-snb-itm"));
     }
 
     [TestMethod]
@@ -2896,7 +2895,7 @@ public class BitSnackBarTests : BunitTestContext
         await com.Instance.Show("first");
         await com.Instance.Show("second");
 
-        Assert.AreEqual(1, com.Instance.PendingItems.Count);
+        Assert.ContainsSingle(com.Instance.PendingItems);
 
         // Queueing is no longer how overflow is dealt with, so what was waiting is dealt with the new way rather
         // than held for a slot nobody is going to free.
@@ -2907,9 +2906,9 @@ public class BitSnackBarTests : BunitTestContext
             parameters.Add(p => p.OverflowBehavior, BitSnackBarOverflowBehavior.DismissOldest);
         });
 
-        com.WaitForAssertion(() => Assert.AreEqual(0, com.Instance.PendingItems.Count), TimeSpan.FromSeconds(5));
+        com.WaitForAssertion(() => Assert.IsEmpty(com.Instance.PendingItems), TimeSpan.FromSeconds(5));
 
-        Assert.AreEqual(1, com.Instance.Items.Count);
+        Assert.ContainsSingle(com.Instance.Items);
         Assert.AreEqual("second", com.Instance.Items[0].Title);
     }
     [TestMethod]
@@ -2936,7 +2935,7 @@ public class BitSnackBarTests : BunitTestContext
 
         await closing;
 
-        com.WaitForAssertion(() => Assert.AreEqual(0, com.Instance.Items.Count), TimeSpan.FromSeconds(5));
+        com.WaitForAssertion(() => Assert.IsEmpty(com.Instance.Items), TimeSpan.FromSeconds(5));
     }
 
     [TestMethod]
@@ -2960,7 +2959,7 @@ public class BitSnackBarTests : BunitTestContext
         // Waiting to arrive is not being gone: what took the item away last time is no longer what it is.
         await com.Instance.Show(item);
 
-        Assert.AreEqual(1, com.Instance.PendingItems.Count);
+        Assert.ContainsSingle(com.Instance.PendingItems);
         Assert.IsNull(item.DismissReason);
     }
     [TestMethod]
@@ -3005,7 +3004,7 @@ public class BitSnackBarTests : BunitTestContext
     {
         RenderComponent<BitSnackBar>();
 
-        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.SnackBars.registerHotkey"));
+        Assert.DoesNotContain(i => i.Identifier == "BitBlazorUI.SnackBars.registerHotkey", Context.JSInterop.Invocations);
     }
 
     [TestMethod]
@@ -3016,7 +3015,7 @@ public class BitSnackBarTests : BunitTestContext
         var invocation = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.SnackBars.registerHotkey");
 
         Assert.AreEqual(com.Find(".bit-snb").Id, invocation.Arguments[0]);
-        CollectionAssert.AreEqual(new[] { "F8" }, (string[])invocation.Arguments[1]!);
+        Assert.AreSequenceEqual(new[] { "F8" }, (string[])invocation.Arguments[1]!);
     }
 
     [TestMethod]
@@ -3026,7 +3025,7 @@ public class BitSnackBarTests : BunitTestContext
 
         com.Render(parameters => parameters.Add(p => p.Hotkey, (string[]?)null));
 
-        Assert.IsTrue(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.SnackBars.unregisterHotkey"));
+        Assert.Contains(i => i.Identifier == "BitBlazorUI.SnackBars.unregisterHotkey", Context.JSInterop.Invocations);
     }
 
     [TestMethod]
@@ -3037,7 +3036,7 @@ public class BitSnackBarTests : BunitTestContext
         await com.Instance.Show("title");
 
         // A snack bar that never asked for a swipe reaches the script not once, not even to unregister.
-        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier.StartsWith("BitBlazorUI.SnackBars.")));
+        Assert.DoesNotContain(i => i.Identifier.StartsWith("BitBlazorUI.SnackBars."), Context.JSInterop.Invocations);
 
         // The id the swipe script reads is on the item whether or not the swipe is registered, so turning the
         // feature on needs no re-render of what is already showing.
@@ -3066,7 +3065,7 @@ public class BitSnackBarTests : BunitTestContext
 
         com.Render(parameters => parameters.Add(p => p.SwipeToDismiss, false));
 
-        Assert.IsTrue(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.SnackBars.unregisterSwipe"));
+        Assert.Contains(i => i.Identifier == "BitBlazorUI.SnackBars.unregisterSwipe", Context.JSInterop.Invocations);
     }
 
     [TestMethod]
@@ -3082,7 +3081,7 @@ public class BitSnackBarTests : BunitTestContext
 
         await com.Instance._SwipeDismissed(item.Id.ToString());
 
-        Assert.AreEqual(0, com.Instance.Items.Count);
+        Assert.IsEmpty(com.Instance.Items);
         Assert.AreEqual(BitSnackBarDismissReason.Swipe, item.DismissReason);
     }
 
@@ -3103,7 +3102,7 @@ public class BitSnackBarTests : BunitTestContext
 
         await com.Instance._SwipeDismissed(item.Id.ToString());
 
-        Assert.AreEqual(1, com.Instance.Items.Count);
+        Assert.ContainsSingle(com.Instance.Items);
         Assert.IsNull(item.DismissReason);
     }
 
@@ -3121,7 +3120,7 @@ public class BitSnackBarTests : BunitTestContext
         await com.Instance._SwipeDismissed(Guid.NewGuid().ToString());
         await com.Instance._SwipeDismissed("not-a-guid");
 
-        Assert.AreEqual(1, com.Instance.Items.Count);
+        Assert.ContainsSingle(com.Instance.Items);
     }
 
     [TestMethod]
@@ -3140,7 +3139,7 @@ public class BitSnackBarTests : BunitTestContext
 
         await com.Instance._SwipeDismissed(item.Id.ToString());
 
-        Assert.AreEqual(0, com.Instance.Items.Count);
+        Assert.IsEmpty(com.Instance.Items);
     }
 
     [TestMethod]
@@ -3166,7 +3165,7 @@ public class BitSnackBarTests : BunitTestContext
 
         await ((IAsyncDisposable)com.Instance).DisposeAsync();
 
-        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.SnackBars.dispose"));
+        Assert.DoesNotContain(i => i.Identifier == "BitBlazorUI.SnackBars.dispose", Context.JSInterop.Invocations);
     }
 
     [TestMethod]
@@ -3179,7 +3178,7 @@ public class BitSnackBarTests : BunitTestContext
         com.Find(".bit-snb-cbt").KeyDown("Escape");
 
         com.WaitForAssertion(() => Assert.AreEqual(BitSnackBarDismissReason.Escape, item.DismissReason));
-        Assert.AreEqual(0, com.FindAll(".bit-snb-itm").Count);
+        Assert.IsEmpty(com.FindAll(".bit-snb-itm"));
     }
 
     [TestMethod]
@@ -3200,15 +3199,15 @@ public class BitSnackBarTests : BunitTestContext
 
         await visibility._VisibilityChanged(true);
 
-        await Task.Delay(600);
+        await Task.Delay(600, TestContext.CancellationToken);
 
         // The countdown of a notification in a background tab is held rather than spent before it is looked at.
-        Assert.AreEqual(1, com.Instance.Items.Count);
+        Assert.ContainsSingle(com.Instance.Items);
         Assert.IsTrue(com.Find(".bit-snb-itm").ClassList.Contains("bit-snb-pau"));
 
         await visibility._VisibilityChanged(false);
 
-        com.WaitForAssertion(() => Assert.AreEqual(0, com.Instance.Items.Count), TimeSpan.FromSeconds(5));
+        com.WaitForAssertion(() => Assert.IsEmpty(com.Instance.Items), TimeSpan.FromSeconds(5));
     }
 
     [TestMethod]
@@ -3229,13 +3228,13 @@ public class BitSnackBarTests : BunitTestContext
 
         await visibility._WindowFocusChanged(true);
 
-        await Task.Delay(600);
+        await Task.Delay(600, TestContext.CancellationToken);
 
-        Assert.AreEqual(1, com.Instance.Items.Count);
+        Assert.ContainsSingle(com.Instance.Items);
 
         await visibility._WindowFocusChanged(false);
 
-        com.WaitForAssertion(() => Assert.AreEqual(0, com.Instance.Items.Count), TimeSpan.FromSeconds(5));
+        com.WaitForAssertion(() => Assert.IsEmpty(com.Instance.Items), TimeSpan.FromSeconds(5));
     }
 
     [TestMethod]
@@ -3251,7 +3250,7 @@ public class BitSnackBarTests : BunitTestContext
 
         await com.Instance.Show("title");
 
-        com.WaitForAssertion(() => Assert.AreEqual(0, com.FindAll(".bit-snb-itm").Count), TimeSpan.FromSeconds(5));
+        com.WaitForAssertion(() => Assert.IsEmpty(com.FindAll(".bit-snb-itm")), TimeSpan.FromSeconds(5));
     }
 
     [TestMethod]
@@ -3277,13 +3276,13 @@ public class BitSnackBarTests : BunitTestContext
         // Letting go of one reason while the other still stands does not let the countdown go.
         await visibility._VisibilityChanged(false);
 
-        await Task.Delay(600);
+        await Task.Delay(600, TestContext.CancellationToken);
 
-        Assert.AreEqual(1, com.Instance.Items.Count);
+        Assert.ContainsSingle(com.Instance.Items);
 
         await visibility._WindowFocusChanged(false);
 
-        com.WaitForAssertion(() => Assert.AreEqual(0, com.Instance.Items.Count), TimeSpan.FromSeconds(5));
+        com.WaitForAssertion(() => Assert.IsEmpty(com.Instance.Items), TimeSpan.FromSeconds(5));
     }
 
     [TestMethod]
@@ -3304,9 +3303,9 @@ public class BitSnackBarTests : BunitTestContext
 
         await visibility._VisibilityChanged(true);
 
-        await Task.Delay(400);
+        await Task.Delay(400, TestContext.CancellationToken);
 
-        Assert.AreEqual(1, com.Instance.Items.Count);
+        Assert.ContainsSingle(com.Instance.Items);
 
         // The next visibility event might never come, so turning the guard off has to let go of what it is holding.
         com.Render(parameters =>
@@ -3317,7 +3316,7 @@ public class BitSnackBarTests : BunitTestContext
             parameters.Add(p => p.TransitionDuration, 0);
         });
 
-        com.WaitForAssertion(() => Assert.AreEqual(0, com.Instance.Items.Count), TimeSpan.FromSeconds(5));
+        com.WaitForAssertion(() => Assert.IsEmpty(com.Instance.Items), TimeSpan.FromSeconds(5));
     }
 
     [TestMethod]
@@ -3336,15 +3335,15 @@ public class BitSnackBarTests : BunitTestContext
 
         await com.Instance.Show("title");
 
-        await Task.Delay(600);
+        await Task.Delay(600, TestContext.CancellationToken);
 
         // No visibilitychange is coming for a tab that was already in the background when the snack bar started.
-        Assert.AreEqual(1, com.Instance.Items.Count);
+        Assert.ContainsSingle(com.Instance.Items);
         Assert.IsTrue(com.Find(".bit-snb-itm").ClassList.Contains("bit-snb-pau"));
 
         await visibility._VisibilityChanged(false);
 
-        com.WaitForAssertion(() => Assert.AreEqual(0, com.Instance.Items.Count), TimeSpan.FromSeconds(5));
+        com.WaitForAssertion(() => Assert.IsEmpty(com.Instance.Items), TimeSpan.FromSeconds(5));
     }
 
     [TestMethod]
@@ -3363,13 +3362,13 @@ public class BitSnackBarTests : BunitTestContext
 
         await com.Instance.Show("title");
 
-        await Task.Delay(600);
+        await Task.Delay(600, TestContext.CancellationToken);
 
-        Assert.AreEqual(1, com.Instance.Items.Count);
+        Assert.ContainsSingle(com.Instance.Items);
 
         await visibility._WindowFocusChanged(false);
 
-        com.WaitForAssertion(() => Assert.AreEqual(0, com.Instance.Items.Count), TimeSpan.FromSeconds(5));
+        com.WaitForAssertion(() => Assert.IsEmpty(com.Instance.Items), TimeSpan.FromSeconds(5));
     }
 
     [TestMethod]
@@ -3401,7 +3400,7 @@ public class BitSnackBarTests : BunitTestContext
 
         await visibility._VisibilityChanged(false);
 
-        com.WaitForAssertion(() => Assert.AreEqual(0, com.Instance.Items.Count), TimeSpan.FromSeconds(5));
+        com.WaitForAssertion(() => Assert.IsEmpty(com.Instance.Items), TimeSpan.FromSeconds(5));
     }
 
     [TestMethod]
@@ -3457,7 +3456,7 @@ public class BitSnackBarTests : BunitTestContext
 
         await com.Instance.Show("title");
 
-        com.WaitForAssertion(() => Assert.AreEqual(0, com.Instance.Items.Count), TimeSpan.FromSeconds(5));
+        com.WaitForAssertion(() => Assert.IsEmpty(com.Instance.Items), TimeSpan.FromSeconds(5));
     }
 
     [TestMethod]
@@ -3473,19 +3472,19 @@ public class BitSnackBarTests : BunitTestContext
         var item = await com.Instance.Show(new BitSnackBarItem { Title = "Uploading...", IsLoading = true });
 
         // The spinner stands in for the icon even on a host that shows none, and the item is marked busy.
-        Assert.AreEqual(1, com.FindAll(".bit-snb-spn").Count);
-        Assert.AreEqual(0, com.FindAll(".bit-snb-ico").Count);
+        Assert.ContainsSingle(com.FindAll(".bit-snb-spn"));
+        Assert.IsEmpty(com.FindAll(".bit-snb-ico"));
         Assert.AreEqual("true", com.Find(".bit-snb-itm").GetAttribute("aria-busy"));
 
         // Work that is still running is not over, so the item sits out the countdown and draws no bar for it.
-        Assert.AreEqual(0, com.FindAll(".bit-snb-prb").Count);
+        Assert.IsEmpty(com.FindAll(".bit-snb-prb"));
 
-        await Task.Delay(500);
+        await Task.Delay(500, TestContext.CancellationToken);
 
-        Assert.AreEqual(1, com.Instance.Items.Count);
+        Assert.ContainsSingle(com.Instance.Items);
 
         // A loading item is still dismissible, unlike a persistent one.
-        Assert.AreEqual(1, com.FindAll(".bit-snb-cbt").Count);
+        Assert.ContainsSingle(com.FindAll(".bit-snb-cbt"));
 
         item.IsLoading = false;
         item.Title = "Uploaded";
@@ -3493,11 +3492,11 @@ public class BitSnackBarTests : BunitTestContext
 
         await com.Instance.Update(item);
 
-        Assert.AreEqual(0, com.FindAll(".bit-snb-spn").Count);
+        Assert.IsEmpty(com.FindAll(".bit-snb-spn"));
         Assert.IsFalse(com.Find(".bit-snb-itm").HasAttribute("aria-busy"));
-        Assert.AreEqual(1, com.FindAll(".bit-snb-prb").Count);
+        Assert.ContainsSingle(com.FindAll(".bit-snb-prb"));
 
-        com.WaitForAssertion(() => Assert.AreEqual(0, com.Instance.Items.Count), TimeSpan.FromSeconds(5));
+        com.WaitForAssertion(() => Assert.IsEmpty(com.Instance.Items), TimeSpan.FromSeconds(5));
     }
 
     [TestMethod]
@@ -3507,16 +3506,16 @@ public class BitSnackBarTests : BunitTestContext
 
         var item = await com.Instance.Show(new BitSnackBarItem { Title = "Syncing", IsLoading = true });
 
-        Assert.AreEqual(1, com.FindAll(".bit-snb-spn").Count);
-        Assert.AreEqual(0, com.FindAll(".bit-snb-ico").Count);
+        Assert.ContainsSingle(com.FindAll(".bit-snb-spn"));
+        Assert.IsEmpty(com.FindAll(".bit-snb-ico"));
         Assert.AreEqual("true", com.Find(".bit-snb-ict").GetAttribute("aria-hidden"));
 
         item.IsLoading = false;
 
         await com.Instance.Update(item);
 
-        Assert.AreEqual(0, com.FindAll(".bit-snb-spn").Count);
-        Assert.AreEqual(1, com.FindAll(".bit-snb-ico").Count);
+        Assert.IsEmpty(com.FindAll(".bit-snb-spn"));
+        Assert.ContainsSingle(com.FindAll(".bit-snb-ico"));
     }
 
     [TestMethod]
@@ -3528,7 +3527,7 @@ public class BitSnackBarTests : BunitTestContext
 
         var tracking = com.InvokeAsync(() => com.Instance.Track(source.Task, "Saving...", n => $"Saved {n} rows", ex => "Save failed", "orders.csv"));
 
-        com.WaitForAssertion(() => Assert.AreEqual(1, com.FindAll(".bit-snb-spn").Count));
+        com.WaitForAssertion(() => Assert.ContainsSingle(com.FindAll(".bit-snb-spn")));
 
         var item = com.Instance.Items[0];
         Assert.IsTrue(item.IsLoading);
@@ -3540,13 +3539,13 @@ public class BitSnackBarTests : BunitTestContext
         Assert.AreEqual(3, await tracking);
 
         // The same item carries the outcome, so the notification changes in place rather than being replaced.
-        Assert.AreEqual(1, com.Instance.Items.Count);
+        Assert.ContainsSingle(com.Instance.Items);
         Assert.AreSame(item, com.Instance.Items[0]);
         Assert.IsFalse(item.IsLoading);
         Assert.AreEqual("Saved 3 rows", item.Title);
         Assert.AreEqual(BitColor.Success, item.Color);
         Assert.AreEqual("orders.csv", item.Body);
-        com.WaitForAssertion(() => Assert.AreEqual(0, com.FindAll(".bit-snb-spn").Count));
+        com.WaitForAssertion(() => Assert.IsEmpty(com.FindAll(".bit-snb-spn")));
     }
 
     [TestMethod]
@@ -3558,7 +3557,7 @@ public class BitSnackBarTests : BunitTestContext
 
         var tracking = com.InvokeAsync(() => com.Instance.Track(source.Task, "Saving...", "Saved", ex => $"Failed: {ex.Message}"));
 
-        com.WaitForAssertion(() => Assert.AreEqual(1, com.Instance.Items.Count));
+        com.WaitForAssertion(() => Assert.ContainsSingle(com.Instance.Items));
 
         source.SetException(new InvalidOperationException("disk full"));
 
@@ -3580,13 +3579,13 @@ public class BitSnackBarTests : BunitTestContext
 
         var tracking = com.InvokeAsync(() => com.Instance.Track(source.Task, "Saving...", "Saved", ex => "Save failed"));
 
-        com.WaitForAssertion(() => Assert.AreEqual(1, com.Instance.Items.Count));
+        com.WaitForAssertion(() => Assert.ContainsSingle(com.Instance.Items));
 
-        source.SetCanceled();
+        source.SetCanceled(TestContext.CancellationToken);
 
         await Assert.ThrowsAsync<OperationCanceledException>(() => tracking);
 
-        Assert.AreEqual(0, com.Instance.Items.Count);
+        Assert.IsEmpty(com.Instance.Items);
     }
 
     [TestMethod]
@@ -3604,18 +3603,18 @@ public class BitSnackBarTests : BunitTestContext
 
         var tracking = com.InvokeAsync(() => com.Instance.Track(source.Task, "Saving...", "Saved", ex => "Save failed"));
 
-        com.WaitForAssertion(() => Assert.AreEqual(1, com.Instance.Items.Count));
+        com.WaitForAssertion(() => Assert.ContainsSingle(com.Instance.Items));
 
         com.Find(".bit-snb-cbt").Click();
 
-        Assert.AreEqual(0, com.Instance.Items.Count);
+        Assert.IsEmpty(com.Instance.Items);
 
         source.SetResult();
 
         await tracking;
 
         // The loading item keeps the reason it left with, and the outcome arrives as news of its own.
-        Assert.AreEqual(1, com.Instance.Items.Count);
+        Assert.ContainsSingle(com.Instance.Items);
         Assert.AreNotSame(dismissed[0], com.Instance.Items[0]);
         Assert.AreEqual(BitSnackBarDismissReason.DismissButton, dismissed[0].DismissReason);
         Assert.AreEqual("Saved", com.Instance.Items[0].Title);
@@ -3634,7 +3633,7 @@ public class BitSnackBarTests : BunitTestContext
         var secondTracking = com.InvokeAsync(() => com.Instance.Track(second.Task, "Exporting...", "Exported", ex => "Export failed"));
 
         // Two runs of the same work are two notifications, each settled by its own outcome.
-        com.WaitForAssertion(() => Assert.AreEqual(2, com.Instance.Items.Count));
+        com.WaitForAssertion(() => Assert.HasCount(2, com.Instance.Items));
 
         first.SetResult();
         await firstTracking;
@@ -3660,12 +3659,12 @@ public class BitSnackBarTests : BunitTestContext
 
         var tracking = com.InvokeAsync(() => com.Instance.Track(source.Task, "Exporting...", "Exported", ex => "Export failed"));
 
-        com.WaitForAssertion(() => Assert.AreEqual(1, com.Instance.Items.Count));
+        com.WaitForAssertion(() => Assert.ContainsSingle(com.Instance.Items));
 
         // An unrelated notification with the same text is not handed the loading item, which Track still owns.
         var other = await com.Instance.Show(new BitSnackBarItem { Title = "Exporting...", Color = BitColor.Info });
 
-        Assert.AreEqual(2, com.Instance.Items.Count);
+        Assert.HasCount(2, com.Instance.Items);
         Assert.AreNotSame(com.Instance.Items[0], other);
         Assert.AreEqual(0, com.Instance.Items[0].DuplicateCount);
 
@@ -3682,7 +3681,7 @@ public class BitSnackBarTests : BunitTestContext
 
         var tracking = com.InvokeAsync(() => com.Instance.Track(source.Task, "Saving...", "Saved", ex => $"Failed: {ex.InnerException!.Message}"));
 
-        com.WaitForAssertion(() => Assert.AreEqual(1, com.Instance.Items.Count));
+        com.WaitForAssertion(() => Assert.ContainsSingle(com.Instance.Items));
 
         source.SetException(new InvalidOperationException("disk full"));
 
@@ -3704,7 +3703,7 @@ public class BitSnackBarTests : BunitTestContext
 
         var tracking = com.InvokeAsync(() => com.Instance.Track(source.Task, "Saving...", s => $"Saved {s!.Length} rows", ex => "Save failed"));
 
-        com.WaitForAssertion(() => Assert.AreEqual(1, com.Instance.Items.Count));
+        com.WaitForAssertion(() => Assert.ContainsSingle(com.Instance.Items));
 
         source.SetResult(null);
 
@@ -3738,7 +3737,7 @@ public class BitSnackBarTests : BunitTestContext
 
         Assert.IsFalse(com.Find(".bit-snb-itm").ClassList.Contains("bit-snb-pau"));
 
-        com.WaitForAssertion(() => Assert.AreEqual(0, com.FindAll(".bit-snb-itm").Count), TimeSpan.FromSeconds(5));
+        com.WaitForAssertion(() => Assert.IsEmpty(com.FindAll(".bit-snb-itm")), TimeSpan.FromSeconds(5));
     }
 
     [TestMethod,
@@ -3852,7 +3851,7 @@ public class BitSnackBarTests : BunitTestContext
 
         // The item that is left takes the focus, so nothing goes back yet. It is handed over through the script,
         // which only moves a focus that is still the host's to move.
-        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.SnackBars.restoreFocus"));
+        Assert.DoesNotContain(i => i.Identifier == "BitBlazorUI.SnackBars.restoreFocus", Context.JSInterop.Invocations);
 
         var invocation = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.SnackBars.passFocus");
         Assert.AreEqual(com.Find(".bit-snb").Id, invocation.Arguments[0]);
@@ -3873,7 +3872,7 @@ public class BitSnackBarTests : BunitTestContext
         await com.Instance.Close(first);
 
         // A focus moved onto the other item would hold its countdown back for someone who is not using the keyboard.
-        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier.Contains("focus", StringComparison.OrdinalIgnoreCase)));
+        Assert.DoesNotContain(i => i.Identifier.Contains("focus", StringComparison.OrdinalIgnoreCase), Context.JSInterop.Invocations);
     }
 
     [TestMethod]
@@ -3887,8 +3886,8 @@ public class BitSnackBarTests : BunitTestContext
         com.FindAll(".bit-snb-itm")[0].PointerDown();
         com.FindAll(".bit-snb-cbt")[0].Click();
 
-        Assert.AreEqual(1, com.Instance.Items.Count);
-        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier.Contains("focus", StringComparison.OrdinalIgnoreCase)));
+        Assert.ContainsSingle(com.Instance.Items);
+        Assert.DoesNotContain(i => i.Identifier.Contains("focus", StringComparison.OrdinalIgnoreCase), Context.JSInterop.Invocations);
     }
 
     [TestMethod]
@@ -3905,8 +3904,8 @@ public class BitSnackBarTests : BunitTestContext
         // The key that comes after the click is what the user is working with now.
         com.FindAll(".bit-snb-itm")[0].KeyDown("Escape");
 
-        Assert.AreEqual(1, com.Instance.Items.Count);
-        Assert.IsTrue(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.SnackBars.passFocus"));
+        Assert.ContainsSingle(com.Instance.Items);
+        Assert.Contains(i => i.Identifier == "BitBlazorUI.SnackBars.passFocus", Context.JSInterop.Invocations);
     }
 
     [TestMethod]
@@ -3945,7 +3944,7 @@ public class BitSnackBarTests : BunitTestContext
 
         await com.Instance.FocusAsync();
 
-        Assert.IsTrue(Context.JSInterop.Invocations.Any(i => i.Identifier.Contains("domWrapper.focus", StringComparison.Ordinal)));
+        Assert.Contains(i => i.Identifier.Contains("domWrapper.focus", StringComparison.Ordinal), Context.JSInterop.Invocations);
     }
 
     [TestMethod]
@@ -3965,7 +3964,7 @@ public class BitSnackBarTests : BunitTestContext
 
         await com.Instance.Close(item);
 
-        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier.Contains("focus", StringComparison.OrdinalIgnoreCase)));
+        Assert.DoesNotContain(i => i.Identifier.Contains("focus", StringComparison.OrdinalIgnoreCase), Context.JSInterop.Invocations);
     }
 
     [TestMethod]
@@ -3984,7 +3983,7 @@ public class BitSnackBarTests : BunitTestContext
 
         await com.Instance.Close(item);
 
-        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.SnackBars.restoreFocus"));
+        Assert.DoesNotContain(i => i.Identifier == "BitBlazorUI.SnackBars.restoreFocus", Context.JSInterop.Invocations);
     }
 
     [TestMethod]
@@ -4002,7 +4001,7 @@ public class BitSnackBarTests : BunitTestContext
 
         await com.Instance.Close(item);
 
-        Assert.IsTrue(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.SnackBars.restoreFocus"));
+        Assert.Contains(i => i.Identifier == "BitBlazorUI.SnackBars.restoreFocus", Context.JSInterop.Invocations);
     }
 
     [TestMethod]
@@ -4019,8 +4018,8 @@ public class BitSnackBarTests : BunitTestContext
         await com.Instance.Clear();
 
         // Every item is leaving, so none of them is handed the focus on the way.
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.SnackBars.restoreFocus"));
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier.Contains("focus", StringComparison.OrdinalIgnoreCase)));
+        Assert.ContainsSingle(i => i.Identifier == "BitBlazorUI.SnackBars.restoreFocus", Context.JSInterop.Invocations);
+        Assert.ContainsSingle(i => i.Identifier.Contains("focus", StringComparison.OrdinalIgnoreCase), Context.JSInterop.Invocations);
     }
 
     [TestMethod]
@@ -4038,9 +4037,9 @@ public class BitSnackBarTests : BunitTestContext
 
         Services.GetRequiredService<NavigationManager>().NavigateTo("/somewhere-else");
 
-        com.WaitForAssertion(() => Assert.AreEqual(0, com.Instance.Items.Count), TimeSpan.FromSeconds(5));
+        com.WaitForAssertion(() => Assert.IsEmpty(com.Instance.Items), TimeSpan.FromSeconds(5));
 
-        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.SnackBars.restoreFocus"));
+        Assert.DoesNotContain(i => i.Identifier == "BitBlazorUI.SnackBars.restoreFocus", Context.JSInterop.Invocations);
     }
 
     [TestMethod]
@@ -4057,4 +4056,6 @@ public class BitSnackBarTests : BunitTestContext
 
         Assert.AreEqual("Main", root.GetAttribute("aria-label"));
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

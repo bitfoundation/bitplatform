@@ -1,4 +1,4 @@
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 
 namespace Bit.Butil.Tests.E2E.Infrastructure;
 
@@ -13,7 +13,7 @@ namespace Bit.Butil.Tests.E2E.Infrastructure;
 /// that failed is remembered, so the tests after it fail at once with the reason instead of each waiting out
 /// the startup timeout.
 /// </remarks>
-public sealed class HybridHostPool
+internal sealed class HybridHostPool
 {
     private static readonly ConcurrentDictionary<bool, HybridHostPool> _pools = new();
 

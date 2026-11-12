@@ -40,7 +40,7 @@ public class BitDropdownTemplatesE2ETests : BitDropdownE2ETestBase
 
         var label = Page.Locator("#dd-tpl > label");
         await Expect(label.Locator("#lbl-tpl")).ToHaveTextAsync("Custom label");
-        StringAssert.StartsWith(await Trigger("dd-tpl").GetAttributeAsync("aria-labelledby"), await label.GetAttributeAsync("id"));
+        Assert.StartsWith(await label.GetAttributeAsync("id"), await Trigger("dd-tpl").GetAttributeAsync("aria-labelledby"));
         await Expect(Page.Locator("#text-tpl")).ToHaveCountAsync(0);
 
         var callout = await OpenDropdownAsync("dd-tpl");

@@ -6,7 +6,7 @@ namespace Bit.BbScanner.Tests.E2E.Infrastructure;
 /// One browser, one page, and the bookkeeping a scanner test needs: console errors, page
 /// exceptions, and a count of the camera tracks the page has opened and released.
 /// </summary>
-public sealed class ScannerSession : IAsyncDisposable
+internal sealed class ScannerSession : IAsyncDisposable
 {
     private readonly IBrowser _browser;
     private readonly IBrowserContext _context;

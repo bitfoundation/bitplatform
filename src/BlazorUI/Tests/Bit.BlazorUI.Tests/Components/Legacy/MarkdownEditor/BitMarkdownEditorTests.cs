@@ -96,7 +96,7 @@ public class BitMarkdownEditorTests : BunitTestContext
         Assert.AreEqual("root", root.GetAttribute("data-test"));
         Assert.AreEqual("rtl", root.GetAttribute("dir"));
         Assert.IsTrue(root.ClassList.Contains("custom-class"));
-        StringAssert.Contains(root.GetAttribute("style"), "padding:1px");
+        Assert.Contains("padding:1px", root.GetAttribute("style")!);
         Assert.IsNull(component.Find("textarea").GetAttribute("data-test"));
     }
 
@@ -214,7 +214,7 @@ public class BitMarkdownEditorTests : BunitTestContext
 
         var disposal = Context.DisposeComponentsAsync();
 
-        Assert.HasCount(1, dispose.Invocations);
+        Assert.ContainsSingle(dispose.Invocations);
         Assert.AreSame(editor, reference.Value);
 
         dispose.SetVoidResult();

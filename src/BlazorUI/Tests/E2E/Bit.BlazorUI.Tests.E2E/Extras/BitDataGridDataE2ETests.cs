@@ -66,7 +66,7 @@ public class BitDataGridDataE2ETests : BitDataGridE2ETestBase
         await UntilAsync(async () => await DataRows(id).CountAsync() >= fill, $"The grid did not load the {fill} rows that fill its viewport.");
         await Page.WaitForTimeoutAsync(500);
         var rows = await DataRows(id).CountAsync();
-        Assert.IsTrue(rows < fill + batch, $"The grid loaded {rows} rows, more than a batch past the {fill} that fill its viewport.");
+        Assert.IsLessThan(fill + batch, rows, $"The grid loaded {rows} rows, more than a batch past the {fill} that fill its viewport.");
     }
 
     [TestMethod]
@@ -81,17 +81,17 @@ public class BitDataGridDataE2ETests : BitDataGridE2ETestBase
         await Expect(Page.Locator($"#{id} .bit-dtg-body")).Not.ToHaveAttributeAsync("role", new Regex(".*"));
 
         var rendered = await DataRows(id).CountAsync();
-        Assert.IsTrue(rendered < 80, $"{rendered} of 5,000 rows are in the DOM.");
+        Assert.IsLessThan(80, rendered, $"{rendered} of 5,000 rows are in the DOM.");
 
         var scrollHeight = await Viewport(id).EvaluateAsync<double>("el => el.scrollHeight");
-        Assert.IsTrue(scrollHeight > 5000 * 36 * 0.95, $"The scroll height ({scrollHeight}px) does not reserve every row.");
+        Assert.IsGreaterThan(5000 * 36 * 0.95, scrollHeight, $"The scroll height ({scrollHeight}px) does not reserve every row.");
 
         // Halfway down, the rows of halfway down are in view, numbered by their place in the whole list.
         await Viewport(id).EvaluateAsync("el => el.scrollTop = el.scrollHeight / 2");
         int[] first = [];
         await UntilAsync(async () => (first = await FirstRowInViewAsync(id))[0] is > 2300 and < 2700, "The rows halfway down the list were not rendered in view.");
         Assert.AreEqual(first[0] + 1, first[1], "A row's aria-rowindex is not its place in the whole list.");
-        Assert.IsTrue(await DataRows(id).CountAsync() < 80, "Scrolling piled rows up in the DOM.");
+        Assert.IsLessThan(80, await DataRows(id).CountAsync(), "Scrolling piled rows up in the DOM.");
 
         // And at the end, the last row, in view and numbered last. Read in one go, since the virtualizer may still be
         // settling its window while the viewport takes its last scroll position.
@@ -111,7 +111,7 @@ public class BitDataGridDataE2ETests : BitDataGridE2ETestBase
             return lastRow is not null;
         }, "The last row was never rendered in view at the end of the list.");
         Assert.AreEqual("5001", lastRow);
-        Assert.IsTrue(await DataRows(id).CountAsync() < 80, "Scrolling to the end piled rows up in the DOM.");
+        Assert.IsLessThan(80, await DataRows(id).CountAsync(), "Scrolling to the end piled rows up in the DOM.");
     }
 
     [TestMethod]
@@ -133,7 +133,7 @@ public class BitDataGridDataE2ETests : BitDataGridE2ETestBase
         // The frozen column stays rendered and the row cells follow their headers.
         await Expect(HeaderRow(id).Locator("> [aria-colindex='1']")).ToHaveTextAsync("Id");
         await Expect(Cell(id, 0, 41)).ToHaveTextAsync("140");
-        Assert.IsTrue(await renderedHeaders.CountAsync() < 20);
+        Assert.IsLessThan(20, await renderedHeaders.CountAsync());
     }
 
     [TestMethod]
@@ -151,11 +151,11 @@ public class BitDataGridDataE2ETests : BitDataGridE2ETestBase
         await Expect(Viewport(id)).ToBeHiddenAsync();
         await Page.WaitForTimeoutAsync(500);
         var hidden = await renderedHeaders.CountAsync();
-        Assert.IsTrue(hidden < 20, $"The hidden grid rendered {hidden} of its 41 columns.");
+        Assert.IsLessThan(20, hidden, $"The hidden grid rendered {hidden} of its 41 columns.");
 
         await Page.Locator("#btn-toggle-columns").ClickAsync();
         await Expect(HeaderRow(id).Locator("> [aria-colindex='3']")).ToHaveTextAsync("C02");
-        Assert.IsTrue(await renderedHeaders.CountAsync() < 20);
+        Assert.IsLessThan(20, await renderedHeaders.CountAsync());
     }
 
     [TestMethod]
@@ -228,7 +228,7 @@ public class BitDataGridDataE2ETests : BitDataGridE2ETestBase
         await Expect(Text("server-last")).ToHaveTextAsync(new Regex("filters 1, search , total 10$"));
         await ExpectColumnAsync(id, 2, Enumerable.Range(70, 10).Select(i => $"Item {i:0000}").ToArray());
         var cancelled = int.Parse(await Text("server-cancelled").InnerTextAsync());
-        Assert.IsTrue(cancelled >= 1, "No superseded request was cancelled.");
+        Assert.IsGreaterThanOrEqualTo(1, cancelled, "No superseded request was cancelled.");
     }
 
     [TestMethod]
@@ -265,7 +265,7 @@ public class BitDataGridDataE2ETests : BitDataGridE2ETestBase
         await Expect(Cell(id, 0, 2)).ToHaveTextAsync("Item 0001");
         await Expect(FooterRow(id).Locator("> [aria-colindex='3']")).ToHaveTextAsync("Σ 2001000 in all");
         await Expect(Table(id)).ToHaveAttributeAsync("aria-rowcount", "2002");
-        Assert.IsTrue(await DataRows(id).CountAsync() < 100);
+        Assert.IsLessThan(100, await DataRows(id).CountAsync());
 
         // Aimed again on every try: the list measures its rows again as each window of them lands, which changes how
         // tall it is - on a loaded host after this scroll as well as before it - and so which rows three quarters of
@@ -277,8 +277,8 @@ public class BitDataGridDataE2ETests : BitDataGridE2ETestBase
             return (first = await FirstRowInViewAsync(id))[0] is > 1300 and < 1700;
         }, "The rows three quarters down were not fetched into view.");
         Assert.AreEqual(first[0] + 1, first[1], "A row's aria-rowindex is not its place in the whole set.");
-        Assert.IsTrue(int.Parse(await Text("virtual-max-skip").InnerTextAsync()) > 1000, "No window of the scrolled-to rows was asked for.");
-        Assert.IsTrue(await DataRows(id).CountAsync() < 100, "The scrolled-past rows piled up in the DOM.");
+        Assert.IsGreaterThan(1000, int.Parse(await Text("virtual-max-skip").InnerTextAsync()), "No window of the scrolled-to rows was asked for.");
+        Assert.IsLessThan(100, await DataRows(id).CountAsync(), "The scrolled-past rows piled up in the DOM.");
     }
 
     [TestMethod]
@@ -400,7 +400,7 @@ public class BitDataGridDataE2ETests : BitDataGridE2ETestBase
         await Expect(skeleton).ToBeVisibleAsync();
         await Expect(Table("grid-skeleton")).ToHaveAttributeAsync("aria-busy", "true");
         await Expect(skeleton).ToHaveCSSAsync("animation-name", "bit-dtg-shimmer");
-        Assert.IsTrue(await SortHintTransitionAsync("grid-server", "Name") >= 0.05, "The sort hint does not fade in.");
+        Assert.IsGreaterThanOrEqualTo(0.05, await SortHintTransitionAsync("grid-server", "Name"), "The sort hint does not fade in.");
 
         await Page.Locator("#btn-release-skeleton").ClickAsync();
         await Expect(DataRows("grid-skeleton")).ToHaveCountAsync(8);
@@ -418,7 +418,7 @@ public class BitDataGridDataE2ETests : BitDataGridE2ETestBase
         await Expect(skeleton).ToBeVisibleAsync();
         await Expect(skeleton).ToHaveCSSAsync("animation-name", "none");
         var duration = await SortHintTransitionAsync("grid-server", "Name");
-        Assert.IsTrue(duration < 0.01, $"The sort hint still fades in over {duration}s under reduced motion.");
+        Assert.IsLessThan(0.01, duration, $"The sort hint still fades in over {duration}s under reduced motion.");
 
         // ForceAnimation (the bit-fam class it puts on the root) brings the shimmer back.
         await Expect(Grid("grid-skeleton-fam")).ToHaveClassAsync(HasClass("bit-fam"));

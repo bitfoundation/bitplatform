@@ -67,7 +67,7 @@ public class RouteContextActivationTests
         context.FireArrival(BrouterLocation.Empty, BrouterLocation.Empty, FailOnError);
 
         Assert.AreEqual(1, handler.Activations);
-        Assert.AreEqual(true, handler.LastActivationWasFirst, "The first real activation must report IsFirstActivation.");
+        Assert.IsTrue(handler.LastActivationWasFirst, "The first real activation must report IsFirstActivation.");
         Assert.AreEqual(0, handler.Renavigations);
     }
 

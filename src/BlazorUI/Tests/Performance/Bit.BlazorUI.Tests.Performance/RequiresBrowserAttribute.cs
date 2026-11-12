@@ -8,7 +8,7 @@ namespace Bit.BlazorUI.Tests.Performance;
 /// <see cref="IgnoreAttribute"/> cannot do that - it skips the class whatever the filter selected.
 /// </summary>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
-public sealed class RequiresBrowserAttribute : ConditionBaseAttribute
+internal sealed class RequiresBrowserAttribute : ConditionBaseAttribute
 {
     public RequiresBrowserAttribute() : base(ConditionMode.Include)
     {

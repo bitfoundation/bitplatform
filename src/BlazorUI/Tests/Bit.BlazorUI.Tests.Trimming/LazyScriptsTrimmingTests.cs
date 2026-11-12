@@ -30,14 +30,14 @@ public sealed class LazyScriptsTrimmingTests
 
         foreach (var package in new[] { Core, Extras, AI, Legacy })
         {
-            Assert.AreEqual(0, publish.PublishedModules(package).Count, $"{package} published the modules of the lazy scripts in bundle mode.");
+            Assert.IsEmpty(publish.PublishedModules(package), $"{package} published the modules of the lazy scripts in bundle mode.");
         }
 
         Assert.IsFalse(publish.HasAsset(Core, "scripts/bit.blazorui.boot.js"), "The core boot module was published in bundle mode.");
         Assert.IsFalse(publish.HasAsset(Core, "scripts/Bit.BlazorUI.lib.module.js"), "The core initializer was published in bundle mode.");
 
         // And Blazor is not told to import one, which would load the boot scripts beside the bundle.
-        Assert.IsFalse(publish.ListedInitializers().Any(i => i.Contains("Bit.BlazorUI", StringComparison.Ordinal)),
+        Assert.DoesNotContain(i => i.Contains("Bit.BlazorUI", StringComparison.Ordinal), publish.ListedInitializers(),
                        $"A bundle-mode app lists the initializers of the lazy scripts: {string.Join(", ", publish.ListedInitializers())}");
     }
 
@@ -51,7 +51,7 @@ public sealed class LazyScriptsTrimmingTests
 
         foreach (var package in new[] { Core, Extras })
         {
-            CollectionAssert.DoesNotContain(publish.ReadTrimmedAssembly(package).Resources.ToList(), "bit-lazy-scripts.json", $"{package} keeps the map of the modules in a bundle-mode app.");
+            Assert.DoesNotContain("bit-lazy-scripts.json", publish.ReadTrimmedAssembly(package).Resources.ToList(), $"{package} keeps the map of the modules in a bundle-mode app.");
         }
     }
 
@@ -65,7 +65,7 @@ public sealed class LazyScriptsTrimmingTests
 
             foreach (var package in new[] { Core, Extras })
             {
-                CollectionAssert.Contains(publish.ReadTrimmedAssembly(package).Resources.ToList(), "bit-lazy-scripts.json", $"{package} lost the map of the modules the app publishes.");
+                Assert.Contains("bit-lazy-scripts.json", publish.ReadTrimmedAssembly(package).Resources.ToList(), $"{package} lost the map of the modules the app publishes.");
             }
         }
     }
@@ -80,7 +80,7 @@ public sealed class LazyScriptsTrimmingTests
         foreach (var package in new[] { Core, Extras, AI, Legacy })
         {
             var pieces = PublishResult.GetPieces(package);
-            CollectionAssert.AreEquivalent(pieces.ScriptModules.Select(m => m.Name).ToList(), publish.PublishedModules(package), $"{package} did not publish every module.");
+            Assert.AreSequenceEqual(pieces.ScriptModules.Select(m => m.Name).ToList(), publish.PublishedModules(package), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, $"{package} did not publish every module.");
             Assert.IsFalse(publish.HasAsset(package, pieces.ScriptBundle!), $"{package} published its bundle in lazy mode.");
 
             if (pieces.ScriptBoot is not null)
@@ -94,9 +94,9 @@ public sealed class LazyScriptsTrimmingTests
 
         // Blazor imports the initializers of the packages that boot a script; Legacy boots none and has none.
         var initializers = publish.ListedInitializers();
-        Assert.IsTrue(initializers.Any(i => i.StartsWith("_content/Bit.BlazorUI/scripts/Bit.BlazorUI.", StringComparison.Ordinal)), string.Join(", ", initializers));
-        Assert.IsTrue(initializers.Any(i => i.StartsWith("_content/Bit.BlazorUI.Extras/scripts/Bit.BlazorUI.Extras.", StringComparison.Ordinal)), string.Join(", ", initializers));
-        Assert.IsFalse(initializers.Any(i => i.Contains("Legacy", StringComparison.Ordinal)), string.Join(", ", initializers));
+        Assert.Contains(i => i.StartsWith("_content/Bit.BlazorUI/scripts/Bit.BlazorUI.", StringComparison.Ordinal), initializers, string.Join(", ", initializers));
+        Assert.Contains(i => i.StartsWith("_content/Bit.BlazorUI.Extras/scripts/Bit.BlazorUI.Extras.", StringComparison.Ordinal), initializers, string.Join(", ", initializers));
+        Assert.DoesNotContain(i => i.Contains("Legacy", StringComparison.Ordinal), initializers, string.Join(", ", initializers));
 
         // The AI package has an initializer exactly when one of its scripts boots.
         Assert.AreEqual(PublishResult.GetPieces(AI).ScriptBoot is not null,
@@ -112,22 +112,22 @@ public sealed class LazyScriptsTrimmingTests
         var modules = LazyServer.PublishedModules(Core);
         foreach (var expected in new[] { "general", "Utils.Keys", "BitTextField", "Utils.Escape", "Callouts", "Callouts.Registry", "Utils.Tooltips", "Utils.Focus", "PageVisibility" })
         {
-            CollectionAssert.Contains(modules, expected, $"The trimmed lazy app has no module {expected}.");
+            Assert.Contains(expected, modules, $"The trimmed lazy app has no module {expected}.");
         }
         foreach (var unexpected in new[] { "BitScrollablePane", "BitSwiper", "BitSplitter", "BitFileUpload", "SnackBars", "BitTheme", "BitPivot", "Stickies", "Events" })
         {
-            CollectionAssert.DoesNotContain(modules, unexpected, $"The trimmed lazy app publishes {unexpected}, which nothing it runs imports.");
+            Assert.DoesNotContain(unexpected, modules, $"The trimmed lazy app publishes {unexpected}, which nothing it runs imports.");
         }
-        Assert.AreEqual(0, LazyServer.PublishedModules(Legacy).Count);
+        Assert.IsEmpty(LazyServer.PublishedModules(Legacy));
 
         // Of the AI package, the copy button's module alone: the one script the one component the app renders of it calls.
-        CollectionAssert.AreEqual(new[] { "BitAiCopyButton" }, LazyServer.PublishedModules(AI));
+        Assert.AreSequenceEqual(new[] { "BitAiCopyButton" }, LazyServer.PublishedModules(AI));
 
         // The boot module imports the scripts the app starts with that it keeps, in the bundle's order - not the theme's,
         // which nothing of the app needs.
         var pieces = PublishResult.GetPieces(Core);
         var booted = pieces.ScriptModules.Where(m => m.Boot && modules.Contains(m.Name)).ToList();
-        CollectionAssert.AreEquivalent(new[] { "general", "Utils.Keys", "Utils.Escape" }, booted.Select(m => m.Name).ToList());
+        Assert.AreSequenceEqual(new[] { "general", "Utils.Keys", "Utils.Escape" }, booted.Select(m => m.Name).ToList(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         Assert.AreEqual(AssetComposer.BootModuleText(pieces.ScriptBoot!, booted), LazyServer.ReadAsset(Core, pieces.ScriptBoot!));
 
         // Every module that is published imports only modules that are.
@@ -135,12 +135,12 @@ public sealed class LazyScriptsTrimmingTests
         {
             foreach (var dependency in pieces.ScriptModules.Single(m => m.Name == name).Dependencies)
             {
-                CollectionAssert.Contains(modules, dependency, $"{name} imports {dependency}, which the publish left out.");
+                Assert.Contains(dependency, modules, $"{name} imports {dependency}, which the publish left out.");
             }
         }
 
         Assert.IsFalse(LazyServer.HasAsset(Core, "scripts/bit.blazorui.js"));
-        StringAssert.Contains(LazyServer.Output, "Bit.BlazorUI: Bit.BlazorUI lazy script modules -> ");
+        Assert.Contains("Bit.BlazorUI: Bit.BlazorUI lazy script modules -> ", LazyServer.Output);
     }
 
     [TestMethod]
@@ -150,8 +150,8 @@ public sealed class LazyScriptsTrimmingTests
         var publish = Publisher.Publish(Publisher.Fixture, "BitBlazorUITrimAssets=true", "BitBlazorUIIncludeScriptModules=true");
         publish.AssertSucceeded();
 
-        CollectionAssert.AreEquivalent(PublishResult.GetPieces(Core).ScriptModules.Select(m => m.Name).ToList(), publish.PublishedModules(Core));
-        CollectionAssert.DoesNotContain(publish.KeptScripts(Core), "BitSwiper");
+        Assert.AreSequenceEqual(PublishResult.GetPieces(Core).ScriptModules.Select(m => m.Name).ToList(), publish.PublishedModules(Core), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
+        Assert.DoesNotContain("BitSwiper", publish.KeptScripts(Core));
     }
 
     [TestMethod]
@@ -160,11 +160,11 @@ public sealed class LazyScriptsTrimmingTests
         LazyWebAssembly.AssertSucceeded();
 
         var modules = LazyWebAssembly.PublishedModules(Core);
-        foreach (var expected in new[] { "general", "Utils.Keys", "Callouts", "BitTextField", "BitNav", "BitTheme" }) CollectionAssert.Contains(modules, expected);
-        foreach (var unexpected in new[] { "BitScrollablePane", "BitSplitter", "BitPullToRefresh" }) CollectionAssert.DoesNotContain(modules, unexpected);
-        CollectionAssert.Contains(LazyWebAssembly.PublishedModules(Extras), "BitDataGrid");
-        CollectionAssert.DoesNotContain(LazyWebAssembly.PublishedModules(Extras), "BitPdfViewer");
-        foreach (var expected in new[] { "BitAiPromptInput", "BitAiMessageList" }) CollectionAssert.Contains(LazyWebAssembly.PublishedModules(AI), expected);
+        foreach (var expected in new[] { "general", "Utils.Keys", "Callouts", "BitTextField", "BitNav", "BitTheme" }) Assert.Contains(expected, modules);
+        foreach (var unexpected in new[] { "BitScrollablePane", "BitSplitter", "BitPullToRefresh" }) Assert.DoesNotContain(unexpected, modules);
+        Assert.Contains("BitDataGrid", LazyWebAssembly.PublishedModules(Extras));
+        Assert.DoesNotContain("BitPdfViewer", LazyWebAssembly.PublishedModules(Extras));
+        foreach (var expected in new[] { "BitAiPromptInput", "BitAiMessageList" }) Assert.Contains(expected, LazyWebAssembly.PublishedModules(AI));
 
         Assert.IsFalse(LazyWebAssembly.HasAsset(Core, "scripts/bit.blazorui.js"));
         Assert.IsFalse(LazyWebAssembly.HasAsset(AI, "scripts/bit.blazorui.ai.js"));
@@ -194,13 +194,13 @@ public sealed class LazyScriptsTrimmingTests
         Assert.IsTrue(await page.EvaluateAsync<bool>("() => typeof BitBlazorUI.$bundles === 'undefined'"), "A bundle ran in a lazy app.");
         Assert.IsTrue(await page.EvaluateAsync<bool>("() => typeof BitBlazorUI.Utils.claimEscape === 'function'"), "The claim of the Escape key was not booted.");
         Assert.IsTrue(await page.EvaluateAsync<bool>("() => typeof BitBlazorUI.Swiper === 'undefined' && typeof BitBlazorUI.SnackBars === 'undefined'"));
-        Assert.IsFalse(requested.Any(r => r.Contains("/bit.blazorui.js", StringComparison.Ordinal) || r.Contains("/bit.blazorui.extras.js", StringComparison.Ordinal) || r.Contains("/bit.blazorui.ai.js", StringComparison.Ordinal)));
+        Assert.DoesNotContain(r => r.Contains("/bit.blazorui.js", StringComparison.Ordinal) || r.Contains("/bit.blazorui.extras.js", StringComparison.Ordinal) || r.Contains("/bit.blazorui.ai.js", StringComparison.Ordinal), requested);
 
         await session.AssertEveryComponentIsStyledAsync(LazyServer, Core, Extras, AI);
 
         // The dropdown's callout opens and closes on Escape - the callouts' module imported for it.
         await session.OpenAndEscapeCalloutAsync(page.Locator(".bit-drp").First, "BitDropdown");
-        Assert.IsTrue(requested.Any(r => r.Contains("/_content/Bit.BlazorUI/scripts/modules/Callouts.js", StringComparison.Ordinal)), "The callouts' module was not imported.");
+        Assert.Contains(r => r.Contains("/_content/Bit.BlazorUI/scripts/modules/Callouts.js", StringComparison.Ordinal), requested, "The callouts' module was not imported.");
 
         // The tooltip shows on the pointer and goes on Escape.
         await page.Locator(".bit-ttp .bit-ico").First.HoverAsync();
@@ -212,9 +212,9 @@ public sealed class LazyScriptsTrimmingTests
         Assert.AreEqual("Ada", await page.Locator(".bit-tfl input").First.InputValueAsync());
 
         // The AI package's copy button: its module is imported the first time the button calls into it.
-        Assert.IsFalse(requested.Any(r => r.Contains("/_content/Bit.BlazorUI.AI/scripts/modules/", StringComparison.Ordinal)), "An AI module was imported before anything called it.");
+        Assert.DoesNotContain(r => r.Contains("/_content/Bit.BlazorUI.AI/scripts/modules/", StringComparison.Ordinal), requested, "An AI module was imported before anything called it.");
         await session.AssertAiCopyButtonWorksAsync();
-        Assert.IsTrue(requested.Any(r => r.Contains("/_content/Bit.BlazorUI.AI/scripts/modules/BitAiCopyButton.js", StringComparison.Ordinal)), "The copy button's module was not imported.");
+        Assert.Contains(r => r.Contains("/_content/Bit.BlazorUI.AI/scripts/modules/BitAiCopyButton.js", StringComparison.Ordinal), requested, "The copy button's module was not imported.");
 
         session.AssertNoErrors($"The trimmed lazy server app in {engine}");
     }

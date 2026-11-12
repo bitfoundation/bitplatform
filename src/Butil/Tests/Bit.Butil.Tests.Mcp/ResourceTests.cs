@@ -27,7 +27,7 @@ public class ResourceTests : McpTestBase
 
         using (Assert.Scope())
         {
-            CollectionAssert.AreEquivalent(ButilMcp.Resources.Keys.ToArray(), advertised.Keys.ToArray());
+            Assert.AreSequenceEqual(ButilMcp.Resources.Keys.ToArray(), advertised.Keys.ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
             foreach (var (name, uri) in ButilMcp.Resources)
             {
@@ -58,7 +58,7 @@ public class ResourceTests : McpTestBase
 
         using (Assert.Scope())
         {
-            CollectionAssert.AreEquivalent(ButilMcp.ResourceTemplates.Keys.ToArray(), advertised.Keys.ToArray());
+            Assert.AreSequenceEqual(ButilMcp.ResourceTemplates.Keys.ToArray(), advertised.Keys.ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
             foreach (var (name, expected) in ButilMcp.ResourceTemplates)
             {

@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Bit.Borm.Tests;
 
-public class RowStateModel
+internal class RowStateModel
 {
     public List<RowStateRow> Rows { get; set; } = [];
     public RowStateRow[] Fixed { get; set; } = [];
@@ -13,7 +13,7 @@ public class RowStateModel
     public string? Name { get; set; }
 }
 
-public class RowStateRow
+internal class RowStateRow
 {
     public string? Country { get; set; }
     public string? City { get; set; }
@@ -107,7 +107,7 @@ public class SupersededWorkTests
         var first = state.ValidateFieldAsync(field, "Name");
         var second = state.ValidateFieldAsync(field, "Name");
 
-        Assert.AreEqual(2, observed.Count);
+        Assert.HasCount(2, observed);
         Assert.IsTrue(observed[0].IsCancellationRequested);
         Assert.IsFalse(observed[1].IsCancellationRequested);
 
@@ -281,7 +281,7 @@ public class RowStateTests
         Assert.AreSequenceEqual(new[] { b }, model.Fixed);
 
         Assert.AreEqual(1, state.AddArrayItem(field, "Fixed"));
-        Assert.AreEqual(2, model.Fixed.Length);
+        Assert.HasCount(2, model.Fixed);
 
         state.ClearArrayItems("Fixed");
         Assert.IsEmpty(model.Fixed);

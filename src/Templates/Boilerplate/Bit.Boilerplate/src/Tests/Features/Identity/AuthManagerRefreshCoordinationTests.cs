@@ -120,7 +120,7 @@ public partial class AuthManagerRefreshCoordinationTests
         releaseTheRefresh.SetResult();
         await Task.WhenAll(first, second);
 
-        Assert.HasCount(1, refreshRequests, "Two overlapping plain refreshes must share a single request.");
+        Assert.ContainsSingle(refreshRequests, "Two overlapping plain refreshes must share a single request.");
     }
 
     /// <summary>

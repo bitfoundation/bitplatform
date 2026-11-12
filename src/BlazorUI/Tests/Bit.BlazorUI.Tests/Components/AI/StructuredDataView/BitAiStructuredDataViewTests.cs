@@ -24,12 +24,12 @@ public class BitAiStructuredDataViewTests : BitAiTestBase
 
         var view = RenderComponent<BitAiStructuredDataView>(p => p.Add(c => c.Part, part));
 
-        Assert.HasCount(1, view.FindComponents<BitAiDataTable>());
+        Assert.ContainsSingle(view.FindComponents<BitAiDataTable>());
         var markup = view.Markup;
-        StringAssert.Contains(markup, "<table");
-        StringAssert.Contains(markup, "Name");
-        StringAssert.Contains(markup, "Field");
-        StringAssert.Contains(markup, "logic");
+        Assert.Contains("<table", markup);
+        Assert.Contains("Name", markup);
+        Assert.Contains("Field", markup);
+        Assert.Contains("logic", markup);
     }
 
     [TestMethod]
@@ -42,7 +42,7 @@ public class BitAiStructuredDataViewTests : BitAiTestBase
         var list = view.Find(".bit-aisdv > dl.bit-aisdv-lst");
         Assert.AreEqual(3, list.QuerySelectorAll(".bit-aisdv-ent").Length);
         Assert.AreEqual("First Name", view.Find("dt.bit-aisdv-trm").TextContent);
-        StringAssert.Contains(view.Markup, "1815");
+        Assert.Contains("1815", view.Markup);
         Assert.AreEqual("-", view.Find(".bit-aisdv-emp").TextContent);
     }
 
@@ -64,7 +64,7 @@ public class BitAiStructuredDataViewTests : BitAiTestBase
 
         var view = RenderComponent<BitAiStructuredDataView>(p => p.Add(c => c.Part, part));
 
-        Assert.HasCount(1, view.FindComponents<BitAiJsonView>());
+        Assert.ContainsSingle(view.FindComponents<BitAiJsonView>());
         Assert.IsEmpty(view.FindComponents<BitAiDataTable>());
     }
 
@@ -82,7 +82,7 @@ public class BitAiStructuredDataViewTests : BitAiTestBase
         var view = RenderComponent<BitAiStructuredDataView>(p => p.Add(c => c.Part, part));
 
         Assert.IsNotNull(view.Find(".invoice-card"));
-        Assert.HasCount(1, view.FindComponents<BitAiRendererBoundary>());
+        Assert.ContainsSingle(view.FindComponents<BitAiRendererBoundary>());
         Assert.IsEmpty(view.FindAll("dt"));
     }
 
@@ -114,8 +114,8 @@ public class BitAiStructuredDataViewTests : BitAiTestBase
 
         var markup = RenderComponent<BitAiStructuredDataView>(p => p.Add(c => c.Part, part)).Markup;
 
-        StringAssert.Contains(markup, "Ada");
-        StringAssert.Contains(markup, "Al");
+        Assert.Contains("Ada", markup);
+        Assert.Contains("Al", markup);
     }
 
     [TestMethod]
@@ -125,7 +125,7 @@ public class BitAiStructuredDataViewTests : BitAiTestBase
 
         var view = RenderComponent<BitAiStructuredDataView>(p => p.Add(c => c.Part, part));
 
-        Assert.HasCount(1, view.FindComponents<BitAiThinkingIndicator>());
+        Assert.ContainsSingle(view.FindComponents<BitAiThinkingIndicator>());
     }
 
     [TestMethod]
@@ -135,8 +135,7 @@ public class BitAiStructuredDataViewTests : BitAiTestBase
 
         var view = RenderComponent<BitAiStructuredDataView>(p => p.Add(c => c.Part, part));
 
-        CollectionAssert.AreEqual(new[] { "First Name", "Last name", "Id", "Zip code", "" },
-                                  view.FindAll("dt.bit-aisdv-trm").Select(dt => dt.TextContent).ToArray());
+        Assert.AreSequenceEqual(new[] { "First Name", "Last name", "Id", "Zip code", "" }, view.FindAll("dt.bit-aisdv-trm").Select(dt => dt.TextContent).ToArray());
     }
 
     [TestMethod]
@@ -160,7 +159,7 @@ public class BitAiStructuredDataViewTests : BitAiTestBase
         Assert.IsTrue(root.ClassList.Contains("c-root"));
         Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
         Assert.AreEqual("rtl", root.GetAttribute("dir"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin:1px");
+        Assert.Contains("margin:1px", root.GetAttribute("style")!);
         Assert.IsTrue(view.Find(".bit-aisdv-lst").ClassList.Contains("c-list"));
         Assert.IsTrue(view.Find(".bit-aisdv-ent").ClassList.Contains("c-entry"));
         Assert.IsTrue(view.Find(".bit-aisdv-trm").ClassList.Contains("c-label"));
@@ -182,7 +181,7 @@ public class BitAiStructuredDataViewTests : BitAiTestBase
         var style = view.Find(".bit-aisdv").GetAttribute("style");
 
         if (expected is null) Assert.IsTrue(string.IsNullOrEmpty(style));
-        else StringAssert.Contains(style, expected);
+        else Assert.Contains(expected, style!);
     }
 
     [TestMethod]
@@ -204,7 +203,7 @@ public class BitAiStructuredDataViewTests : BitAiTestBase
     [TestMethod]
     public void BitAiStructuredDataViewParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual("BitParams.BitAiStructuredDataView", BitAiStructuredDataViewParams.ParamName);
+        Assert.AreEqual("BitParams.BitAiStructuredDataView", new BitAiStructuredDataViewParams().Name);
         Assert.AreEqual(BitAiStructuredDataViewParams.ParamName, new BitAiStructuredDataViewParams().Name);
     }
 }

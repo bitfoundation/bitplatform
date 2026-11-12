@@ -125,7 +125,7 @@ public class BitThemePairBrowserTests : PerformanceTestBase
         // What the server renders for the next request, before any script of it runs.
         var html = await Page.EvaluateAsync<string>("fetch(location.href).then(r => r.text())");
 
-        StringAssert.Contains(html, "bit-theme=\"material-dark\"");
+        Assert.Contains("bit-theme=\"material-dark\"", html);
     }
 
     [TestMethod]
@@ -166,7 +166,7 @@ public class BitThemePairBrowserTests : PerformanceTestBase
         await Page.GotoAsync($"{BaseUrl}/regression/theme-host?cookie=1&{Material}&default=material-light");
         var html = await Page.EvaluateAsync<string>("fetch(location.href).then(r => r.text())");
 
-        StringAssert.Contains(html, "bit-theme=\"material-dark\"");
+        Assert.Contains("bit-theme=\"material-dark\"", html);
         await AssertTheme("material-dark");
     }
 
@@ -206,7 +206,7 @@ public class BitThemePairBrowserTests : PerformanceTestBase
 
         // What the server renders from the old cookie alone, before any script of the new page has rewritten it.
         var html = await Page.EvaluateAsync<string>("u => fetch(u).then(r => r.text())", url);
-        StringAssert.Contains(html, "bit-theme=\"material-dark\"");
+        Assert.Contains("bit-theme=\"material-dark\"", html);
 
         await Page.GotoAsync($"{BaseUrl}{url}");
         await AssertTheme("material-dark");

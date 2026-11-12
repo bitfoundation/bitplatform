@@ -27,7 +27,7 @@ public class SyncStatusTests
         var clock = Stopwatch.StartNew();
         while (!condition())
         {
-            Assert.IsTrue(clock.Elapsed < Patience, because);
+            Assert.IsLessThan(Patience, clock.Elapsed, because);
             await Task.Delay(10);
         }
     }
@@ -36,7 +36,7 @@ public class SyncStatusTests
     public async Task A_document_without_a_transport_is_local_only()
     {
         await using var service = new BcrdtCollaborationService(new BcrdtCollaborationOptions { CreateUndoManager = false });
-        BcrdtCollaborativeDocument document = await service.OpenAsync("alone");
+        BcrdtCollaborativeDocument document = await service.OpenAsync("alone", cancellationToken: TestContext.CancellationToken);
 
         var status = BcrdtSyncStatusSnapshot.Of(document);
 
@@ -63,7 +63,7 @@ public class SyncStatusTests
                 CreateUndoManager = false,
             },
             new RoomTransportFactory(network));
-        BcrdtCollaborativeDocument document = await service.OpenAsync("shared");
+        BcrdtCollaborativeDocument document = await service.OpenAsync("shared", cancellationToken: TestContext.CancellationToken);
 
         await AssertEventuallyAsync(() => BcrdtSyncStatusSnapshot.Of(document).IsSynced, "the document should sync");
         var synced = BcrdtSyncStatusSnapshot.Of(document);
@@ -75,7 +75,7 @@ public class SyncStatusTests
         Assert.AreEqual("Synced", BcrdtSyncStatus.Describe(synced, CultureInfo.InvariantCulture));
         Assert.AreEqual("synced", BcrdtSyncStatus.StatusName(synced));
 
-        await document.DisconnectAsync();
+        await document.DisconnectAsync(TestContext.CancellationToken);
         await AssertEventuallyAsync(() => BcrdtSyncStatusSnapshot.Of(document).IsOffline, "the document should go offline");
         var offline = BcrdtSyncStatusSnapshot.Of(document);
 
@@ -86,7 +86,7 @@ public class SyncStatusTests
             BcrdtSyncStatus.Describe(offline, CultureInfo.InvariantCulture));
         Assert.AreEqual("disconnected", BcrdtSyncStatus.StatusName(offline));
 
-        await document.ConnectAsync();
+        await document.ConnectAsync(TestContext.CancellationToken);
         await AssertEventuallyAsync(() => BcrdtSyncStatusSnapshot.Of(document).IsSynced, "the document should sync again");
 
         // A snapshot is a value: the one taken offline still says so.
@@ -123,4 +123,6 @@ public class SyncStatusTests
             "Reconnecting - last synced " + at.ToLocalTime().ToString("T", CultureInfo.InvariantCulture) + " - read-only",
             BcrdtSyncStatus.Describe(reconnecting, CultureInfo.InvariantCulture));
     }
+
+    public TestContext TestContext { get; set; }
 }

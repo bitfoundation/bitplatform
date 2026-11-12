@@ -1,4 +1,4 @@
-using System.Numerics;
+﻿using System.Numerics;
 using Bit.Bmage.Drawing;
 using Bit.Bmage.Text;
 using Bit.Bmage.Text.Unicode;
@@ -46,7 +46,7 @@ public sealed class TextShapingTests
     public void ADualJoiningLetterTakesItsFourForms(string letter, int isolated, int final, int initial, int medial)
     {
         Assert.AreNotEqual(0, Form(isolated));
-        CollectionAssert.AreEqual(new[] { Nominal(letter) }, Shape(letter));
+        Assert.AreSequenceEqual(new[] { Nominal(letter) }, Shape(letter));
         // Next to alef, which joins backward only and asks no contextual alternate of its neighbours: the letter
         // before it starts a join, after a beh it ends one, between the two it continues one.
         Assert.AreEqual(Form(initial), Shape(letter + "ا")[0]);
@@ -68,9 +68,9 @@ public sealed class TextShapingTests
     public void ARightJoiningLetterEndsTheJoin()
     {
         // Beh then alef: alef joins the beh before it, and nothing after the alef joins it.
-        CollectionAssert.AreEqual(new[] { Form(0xFE91), Form(0xFE8E), Nominal("ب") }, Shape("باب"));
+        Assert.AreSequenceEqual(new[] { Form(0xFE91), Form(0xFE8E), Nominal("ب") }, Shape("باب"));
         // Dal, reh and waw never join forward: each starts the next letter over.
-        CollectionAssert.AreEqual(new[] { Form(0xFE91), Form(0xFEAA), Form(0xFE91), Form(0xFEAE) }, Shape("بدبر"));
+        Assert.AreSequenceEqual(new[] { Form(0xFE91), Form(0xFEAA), Form(0xFE91), Form(0xFEAE) }, Shape("بدبر"));
     }
 
     [TestMethod]
@@ -80,8 +80,8 @@ public sealed class TextShapingTests
         var codePoints = TextShaper.CodePoints("ب‌ب");
         var buffer = TextShaper.ShapeRun(Vazirmatn, codePoints, 0, codePoints.Length, UnicodeScript.Arabic, rtl: true);
         var glyphs = buffer.AsSpan().ToArray();
-        CollectionAssert.AreEqual(new[] { Nominal("ب"), Nominal("ب") }, glyphs.Where(g => g.XAdvance > 0).Select(g => g.Glyph).ToArray());
-        Assert.AreEqual(3, glyphs.Length);
+        Assert.AreSequenceEqual(new[] { Nominal("ب"), Nominal("ب") }, glyphs.Where(g => g.XAdvance > 0).Select(g => g.Glyph).ToArray());
+        Assert.HasCount(3, glyphs);
         Assert.AreEqual(0, glyphs[1].XAdvance, "ZWNJ has no width");
 
         // A zero width joiner joins instead.
@@ -94,15 +94,15 @@ public sealed class TextShapingTests
         // A soft hyphen, a right-to-left mark and a word joiner between two letters: only the letters are drawn.
         var glyphs = Line("A­‏B⁠C", Latin);
         Assert.HasCount(3, glyphs);
-        CollectionAssert.AreEqual(new[] { Latin.GetGlyphIndex('A'), Latin.GetGlyphIndex('B'), Latin.GetGlyphIndex('C') }, glyphs.Select(g => g.Glyph).ToArray());
+        Assert.AreSequenceEqual(new[] { Latin.GetGlyphIndex('A'), Latin.GetGlyphIndex('B'), Latin.GetGlyphIndex('C') }, glyphs.Select(g => g.Glyph).ToArray());
     }
 
     [TestMethod]
     public void LamAndAlefFormALigature()
     {
-        CollectionAssert.AreEqual(new[] { Form(0xFEFB) }, Shape("لا"));
+        Assert.AreSequenceEqual(new[] { Form(0xFEFB) }, Shape("لا"));
         // After a joining letter the ligature takes its final form.
-        CollectionAssert.AreEqual(new[] { Form(0xFE91), Form(0xFEFC) }, Shape("بلا"));
+        Assert.AreSequenceEqual(new[] { Form(0xFE91), Form(0xFEFC) }, Shape("بلا"));
     }
 
     [TestMethod]

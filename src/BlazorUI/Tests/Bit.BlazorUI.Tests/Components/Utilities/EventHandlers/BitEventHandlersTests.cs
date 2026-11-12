@@ -81,7 +81,7 @@ public class BitEventHandlersTests : BunitTestContext
                             .SelectMany(m => Regex.Matches(m.Groups["names"].Value, @"'(?<name>\w+)'").Select(n => n.Groups["name"].Value))
                             .ToArray();
 
-        CollectionAssert.AreEquivalent(declared, scripted);
+        Assert.AreSequenceEqual(declared, scripted, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod,
@@ -93,7 +93,7 @@ public class BitEventHandlersTests : BunitTestContext
         var script = ReadScript();
 
         var start = script.IndexOf($"const {factory} = ", StringComparison.Ordinal);
-        Assert.IsTrue(start >= 0, $"{factory} is gone from Events.ts; this contract needs to follow it.");
+        Assert.IsGreaterThanOrEqualTo(0, start, $"{factory} is gone from Events.ts; this contract needs to follow it.");
 
         var end = script.IndexOf("});", start, StringComparison.Ordinal);
         var body = script[start..end];
@@ -103,7 +103,7 @@ public class BitEventHandlersTests : BunitTestContext
         var filled = Regex.Matches(body, @"^\s*(?<field>\w+):", RegexOptions.Multiline).Select(m => m.Groups["field"].Value).ToArray();
         var expected = argsType.GetProperties().Select(p => char.ToLowerInvariant(p.Name[0]) + p.Name[1..]).ToArray();
 
-        CollectionAssert.AreEquivalent(expected, filled);
+        Assert.AreSequenceEqual(expected, filled, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -160,7 +160,7 @@ public class BitEventHandlersTests : BunitTestContext
         component.Find("#transitioned").TriggerEvent("ontransitionend", new BitTransitionEventArgs { PropertyName = "opacity", TargetId = "transitioned" });
 
         // The ancestor hears its content's ends, and the target id is what tells them from its own.
-        CollectionAssert.AreEqual(new[]
+        Assert.AreSequenceEqual(new[]
         {
             "animated animationend bit-x from animated",
             "outer animationend bit-x from animated",
@@ -174,7 +174,7 @@ public class BitEventHandlersTests : BunitTestContext
         component.Find("#animated").TriggerEvent("onanimationend", new BitAnimationEventArgs { AnimationName = "bit-x", TargetId = "animated" });
         component.Find("#transitioned").TriggerEvent("ontransitionend", new BitTransitionEventArgs { PropertyName = "opacity", TargetId = "transitioned" });
 
-        CollectionAssert.AreEqual(new[]
+        Assert.AreSequenceEqual(new[]
         {
             "animated animationend bit-x from animated",
             "transitioned transitionend opacity from transitioned",
@@ -198,7 +198,7 @@ public class BitEventHandlersTests : BunitTestContext
             ("ontransitioncancel", typeof(BitTransitionEventArgs)),
         };
 
-        Assert.AreEqual(expected.Length, registrations.Count);
+        Assert.HasCount(expected.Length, registrations);
 
         foreach (var (name, argsType) in expected)
         {

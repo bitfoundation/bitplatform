@@ -17,7 +17,7 @@ public class TypedActionTests
 
         Assert.AreEqual(typeof(OrderBookStore), place.StoreType);
         Assert.AreEqual("Place", place.Name);
-        CollectionAssert.AreEqual(new[] { "name", "quantity" }, place.ParameterNames.ToArray());
+        Assert.AreSequenceEqual(new[] { "name", "quantity" }, place.ParameterNames.ToArray());
         Assert.IsEmpty(OrderBookStore.Actions.Clear.ParameterNames);
         Assert.AreEqual("OrderBookStore.Place", place.ToString());
     }
@@ -28,7 +28,7 @@ public class TypedActionTests
 
     [TestMethod]
     public void Effects_get_descriptors_without_their_cancellation_token()
-        => CollectionAssert.AreEqual(new[] { "reason" }, OrderBookStore.Actions.Sync.ParameterNames.ToArray());
+        => Assert.AreSequenceEqual(new[] { "reason" }, OrderBookStore.Actions.Sync.ParameterNames.ToArray());
 
     [TestMethod]
     public void Matches_tells_the_action_apart_by_store_type_and_name()
@@ -125,7 +125,7 @@ public class TypedActionTests
         await OrderBookStore.Actions.AddUnits.InvokeAsync(harness.Store, 7);
 
         Assert.AreEqual(7, harness.Store.Units);
-        CollectionAssert.AreEqual(new[] { "Place", "Clear", "AddUnits" }, harness.Log.Names.ToArray());
+        Assert.AreSequenceEqual(new[] { "Place", "Clear", "AddUnits" }, harness.Log.Names.ToArray());
     }
 
     [TestMethod]
@@ -157,8 +157,8 @@ public class TypedActionTests
 
         await OrderBookStore.Actions.Tag.InvokeAsync(harness.Store, ["new", "rush"]);
 
-        CollectionAssert.AreEqual(new[] { "new", "rush" }, harness.Store.Tags);
-        CollectionAssert.AreEqual(new[] { "new", "rush" }, harness.Log.PayloadsOf(OrderBookStore.Actions.Tag)[0]);
+        Assert.AreSequenceEqual(new[] { "new", "rush" }, harness.Store.Tags);
+        Assert.AreSequenceEqual(new[] { "new", "rush" }, harness.Log.PayloadsOf(OrderBookStore.Actions.Tag)[0]);
     }
 
     [TestMethod]

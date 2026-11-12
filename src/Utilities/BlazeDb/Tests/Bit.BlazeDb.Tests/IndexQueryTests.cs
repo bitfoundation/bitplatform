@@ -35,8 +35,8 @@ public class IndexQueryTests
         var from = fromExclusive ? BlazeDbBound<int?>.Exclusive(3) : BlazeDbBound<int?>.At(3);
         var to = toExclusive ? BlazeDbBound<int?>.Exclusive(6) : BlazeDbBound<int?>.At(6);
 
-        CollectionAssert.AreEqual(expected, accounts.Range(Account.Indexes.Slot, from, to).Select(a => a.Id).ToArray());
-        CollectionAssert.AreEqual(Enumerable.Reverse(expected).ToArray(), accounts.Range(Account.Indexes.Slot, from, to, descending: true).Select(a => a.Id).ToArray());
+        Assert.AreSequenceEqual(expected, accounts.Range(Account.Indexes.Slot, from, to).Select(a => a.Id).ToArray());
+        Assert.AreSequenceEqual(Enumerable.Reverse(expected).ToArray(), accounts.Range(Account.Indexes.Slot, from, to, descending: true).Select(a => a.Id).ToArray());
     }
 
     [TestMethod]
@@ -49,15 +49,15 @@ public class IndexQueryTests
         var createdIndex = new BlazeDbOrderedIndexDefinition<Account, DateTime>("Created", static a => a.CreatedAt);
         var descriptor = new BlazeDbTableDescriptor<int, Account>("created", static a => a.Id,
             Account.Table.RowWriter, Account.Table.RowReader, Account.Table.KeyWriter, Account.Table.KeyReader, [createdIndex]);
-        await using var db2 = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions().AddTable(descriptor));
+        await using var db2 = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions().AddTable(descriptor), TestContext.CancellationToken);
         var table = db2.GetTable(descriptor);
         table.InsertMany(accounts.Scan().Select(a => new Account { Id = a.Id, Username = a.Username, CreatedAt = a.CreatedAt }));
 
-        CollectionAssert.AreEquivalent(new[] { 4, 5, 6, 7, 8, 9, 10 }, table.Range(createdIndex, BlazeDbBound<DateTime>.Exclusive(oneOClock), BlazeDbBound<DateTime>.Unbounded).Select(a => a.Id).ToArray());
-        CollectionAssert.AreEquivalent(new[] { 1 }, table.Range(createdIndex, BlazeDbBound<DateTime>.Unbounded, BlazeDbBound<DateTime>.Exclusive(oneOClock)).Select(a => a.Id).ToArray());
-        Assert.AreEqual(0, table.Range(createdIndex, BlazeDbBound<DateTime>.Exclusive(oneOClock), BlazeDbBound<DateTime>.Exclusive(oneOClock)).Count());
-        Assert.AreEqual(0, table.Range(createdIndex, BlazeDbBound<DateTime>.Exclusive(oneOClock), oneOClock).Count());
-        Assert.AreEqual(2, table.Range(createdIndex, oneOClock, oneOClock).Count());
+        Assert.AreSequenceEqual(new[] { 4, 5, 6, 7, 8, 9, 10 }, table.Range(createdIndex, BlazeDbBound<DateTime>.Exclusive(oneOClock), BlazeDbBound<DateTime>.Unbounded).Select(a => a.Id).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
+        Assert.AreSequenceEqual(new[] { 1 }, table.Range(createdIndex, BlazeDbBound<DateTime>.Unbounded, BlazeDbBound<DateTime>.Exclusive(oneOClock)).Select(a => a.Id).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
+        Assert.IsEmpty(table.Range(createdIndex, BlazeDbBound<DateTime>.Exclusive(oneOClock), BlazeDbBound<DateTime>.Exclusive(oneOClock)));
+        Assert.IsEmpty(table.Range(createdIndex, BlazeDbBound<DateTime>.Exclusive(oneOClock), oneOClock));
+        Assert.HasCount(2, table.Range(createdIndex, oneOClock, oneOClock));
     }
 
     [TestMethod]
@@ -82,7 +82,7 @@ public class IndexQueryTests
         }
 
         var expected = accounts.Scan().OrderBy(a => a.TenantId).ThenBy(a => a.Username, StringComparer.Ordinal).Select(a => a.Id).ToList();
-        CollectionAssert.AreEqual(expected, seen);
+        Assert.AreSequenceEqual(expected, seen);
     }
 
     [TestMethod]
@@ -97,8 +97,8 @@ public class IndexQueryTests
         foreach (var prefix in new[] { "a", "a1", "A", "a￿", "b", "", "zz", "￿" })
         {
             var expected = accounts.Scan().Where(a => a.Email.StartsWith(prefix, StringComparison.Ordinal)).Select(a => a.Email).Order(StringComparer.Ordinal).ToList();
-            CollectionAssert.AreEqual(expected, accounts.StartsWith(Account.Indexes.Email, prefix).Select(a => a.Email).ToList(), $"prefix '{prefix}'");
-            CollectionAssert.AreEqual(Enumerable.Reverse(expected).ToList(), accounts.StartsWith(Account.Indexes.Email, prefix, descending: true).Select(a => a.Email).ToList(), $"prefix '{prefix}' descending");
+            Assert.AreSequenceEqual(expected, accounts.StartsWith(Account.Indexes.Email, prefix).Select(a => a.Email).ToList(), $"prefix '{prefix}'");
+            Assert.AreSequenceEqual(Enumerable.Reverse(expected).ToList(), accounts.StartsWith(Account.Indexes.Email, prefix, descending: true).Select(a => a.Email).ToList(), $"prefix '{prefix}' descending");
         }
     }
 
@@ -117,7 +117,7 @@ public class IndexQueryTests
         var ignoreCase = new BlazeDbOrderedIndexDefinition<Account, string>("EmailIgnoreCase", static a => a.Email, StringComparer.OrdinalIgnoreCase);
         var descriptor = new BlazeDbTableDescriptor<int, Account>("ci", static a => a.Id,
             Account.Table.RowWriter, Account.Table.RowReader, Account.Table.KeyWriter, Account.Table.KeyReader, [ignoreCase]);
-        await using var db = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions().AddTable(descriptor));
+        await using var db = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions().AddTable(descriptor), TestContext.CancellationToken);
 
         Assert.ThrowsExactly<NotSupportedException>(() => db.GetTable(descriptor).StartsWith(ignoreCase, "a").ToList());
     }
@@ -125,7 +125,7 @@ public class IndexQueryTests
     [TestMethod]
     public async Task CountBy_Lists_Every_Value_With_Its_Row_Count_Including_Null()
     {
-        await using var db = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions().AddTable(TodoItem.Table));
+        await using var db = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions().AddTable(TodoItem.Table), TestContext.CancellationToken);
         var todos = db.GetTable(TodoItem.Table);
         string?[] categories = ["work", "home", null, "work", "work", null, "errand"];
         todos.InsertMany(categories.Select(c => new TodoItem { Id = Guid.NewGuid(), Category = c }));
@@ -133,10 +133,10 @@ public class IndexQueryTests
         var counts = todos.CountBy(TodoItem.Indexes.Category).ToDictionary(p => p.Key ?? "<null>", p => p.Value);
 
         var expected = categories.GroupBy(c => c ?? "<null>").ToDictionary(g => g.Key, g => g.Count());
-        CollectionAssert.AreEquivalent(expected, counts);
+        Assert.AreSequenceEqual(expected, counts, Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
         todos.DeleteWhere(t => t.Category == "errand");
-        Assert.IsFalse(todos.CountBy(TodoItem.Indexes.Category).Any(p => p.Key == "errand"), "An emptied value disappears.");
+        Assert.DoesNotContain(p => p.Key == "errand", todos.CountBy(TodoItem.Indexes.Category), "An emptied value disappears.");
     }
 
     [TestMethod]
@@ -150,7 +150,7 @@ public class IndexQueryTests
             .ThenBy(a => a.Id, descending: true)
             .ToList();
 
-        CollectionAssert.AreEqual(accounts.Scan().OrderBy(a => a.TenantId).ThenByDescending(a => a.Id).Select(a => a.Id).ToList(), rows.Select(a => a.Id).ToList());
+        Assert.AreSequenceEqual(accounts.Scan().OrderBy(a => a.TenantId).ThenByDescending(a => a.Id).Select(a => a.Id).ToList(), rows.Select(a => a.Id).ToList());
         Assert.ThrowsExactly<InvalidOperationException>(() => BlazeDbQuery<int, Account>.From(accounts).ThenBy(a => a.Id));
     }
 
@@ -163,9 +163,8 @@ public class IndexQueryTests
         var query = BlazeDbQuery<int, Account>.From(accounts).UseIndexPrefix(Account.Indexes.Email, "c").Take(3);
 
         Assert.IsTrue(query.IsIndexOrdered);
-        CollectionAssert.AreEqual(
-            accounts.Scan().Select(a => a.Email).Where(e => e.StartsWith('c')).Order(StringComparer.Ordinal).Take(3).ToList(),
-            query.ToList().Select(a => a.Email).ToList());
+        Assert.AreSequenceEqual(
+            accounts.Scan().Select(a => a.Email).Where(e => e.StartsWith('c')).Order(StringComparer.Ordinal).Take(3).ToList(), query.ToList().Select(a => a.Email).ToList());
     }
 
     [TestMethod]
@@ -187,11 +186,13 @@ public class IndexQueryTests
             "order: index order, no sort",
             "skip: 20",
             "take: 10"), plan);
-        Assert.IsFalse(plan.Contains("1234"));
+        Assert.DoesNotContain("1234", plan);
 
         var scan = BlazeDbQuery<int, Account>.From(accounts).OrderBy(a => a.Email).ThenBy(a => a.Id).Explain();
-        StringAssert.StartsWith(scan, "source: full scan");
-        StringAssert.Contains(scan, "sorted in memory by 2 keys");
-        StringAssert.Contains(BlazeDbQuery<int, Account>.From(accounts).UseIndex(Account.Indexes.TenantId, 1).Explain(), "hash index 'TenantId' lookup");
+        Assert.StartsWith("source: full scan", scan);
+        Assert.Contains("sorted in memory by 2 keys", scan);
+        Assert.Contains("hash index 'TenantId' lookup", BlazeDbQuery<int, Account>.From(accounts).UseIndex(Account.Indexes.TenantId, 1).Explain());
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

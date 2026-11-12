@@ -45,7 +45,7 @@ public class BitAiToolApprovalParamsTests : BitAiTestBase
     [TestMethod]
     public void BitAiToolApprovalParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual("BitParams.BitAiToolApproval", BitAiToolApprovalParams.ParamName);
+        Assert.AreEqual("BitParams.BitAiToolApproval", new BitAiToolApprovalParams().Name);
         Assert.AreEqual(BitAiToolApprovalParams.ParamName, new BitAiToolApprovalParams().Name);
         Assert.IsInstanceOfType<IBitComponentParams>(new BitAiToolApprovalParams());
     }
@@ -84,8 +84,8 @@ public class BitAiToolApprovalParamsTests : BitAiTestBase
 
         Assert.IsTrue(root.ClassList.Contains("cascaded"));
         Assert.IsTrue(root.ClassList.Contains("cascaded-root"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin:1px");
-        StringAssert.Contains(root.GetAttribute("style"), "padding:2px");
+        Assert.Contains("margin:1px", root.GetAttribute("style")!);
+        Assert.Contains("padding:2px", root.GetAttribute("style")!);
     }
 
     [TestMethod]

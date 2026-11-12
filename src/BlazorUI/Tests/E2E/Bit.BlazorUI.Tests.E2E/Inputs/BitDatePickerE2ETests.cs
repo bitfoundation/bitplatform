@@ -48,10 +48,10 @@ public class BitDatePickerE2ETests : BitDatePickersE2ETestBase
         var html = await response.TextAsync();
 
         Assert.IsTrue(response.Ok);
-        StringAssert.Contains(html, "id=\"dp-basic\"");
-        StringAssert.Contains(html, "role=\"combobox\"");
-        StringAssert.Contains(html, "placeholder=\"Select a date\"");
-        StringAssert.Contains(html, "<span id=\"status\">Loading</span>");
+        Assert.Contains("id=\"dp-basic\"", html);
+        Assert.Contains("role=\"combobox\"", html);
+        Assert.Contains("placeholder=\"Select a date\"", html);
+        Assert.Contains("<span id=\"status\">Loading</span>", html);
 
         await OpenAsync(Route);
 
@@ -891,7 +891,7 @@ public class BitDatePickerE2ETests : BitDatePickersE2ETestBase
 
         var first = await BoxAsync(panes.Nth(0));
         var second = await BoxAsync(panes.Nth(1));
-        Assert.IsTrue(second.X >= first.X + first.Width - 1, "The second month is laid out beside the first.");
+        Assert.IsGreaterThanOrEqualTo(first.X + first.Width - 1, second.X, "The second month is laid out beside the first.");
         Assert.AreEqual(first.Y, second.Y, 4);
 
         await PressAsync("End", Day(pid, 2024, 6, 15));
@@ -1004,7 +1004,7 @@ public class BitDatePickerE2ETests : BitDatePickersE2ETestBase
 
         var label = await BoxAsync(Page.Locator("#dp-sa .bit-dtp-lbl"));
         var box = await BoxAsync(calendar);
-        Assert.IsTrue(box.Y >= label.Y + label.Height - 1, "The calendar follows its label in the flow of the page.");
+        Assert.IsGreaterThanOrEqualTo(label.Y + label.Height - 1, box.Y, "The calendar follows its label in the flow of the page.");
 
         await Day(pid, 2024, 6, 20).ClickAsync();
         await Expect(Page.Locator("#sa-value")).ToHaveTextAsync("2024-06-20 00:00");
@@ -1037,8 +1037,8 @@ public class BitDatePickerE2ETests : BitDatePickersE2ETestBase
         var header = await BoxAsync(Callout(pid).Locator("#tpl-header"));
         var footer = await BoxAsync(Callout(pid).Locator("#tpl-footer"));
         var grid = await BoxAsync(Callout(pid).Locator(".bit-dtp-grp"));
-        Assert.IsTrue(header.Y + header.Height <= grid.Y + 1, "The header sits above the calendar.");
-        Assert.IsTrue(footer.Y >= grid.Y + grid.Height - 1, "The footer sits below the calendar.");
+        Assert.IsLessThanOrEqualTo(grid.Y + 1, header.Y + header.Height, "The header sits above the calendar.");
+        Assert.IsGreaterThanOrEqualTo(grid.Y + grid.Height - 1, footer.Y, "The footer sits below the calendar.");
 
         await Expect(Day(pid, 2024, 6, 20).Locator(".e2e-day-cell[data-day='20']")).ToHaveTextAsync("d20");
         await Expect(MonthCell(pid, 6).Locator(".e2e-month-cell")).ToHaveTextAsync("m6");

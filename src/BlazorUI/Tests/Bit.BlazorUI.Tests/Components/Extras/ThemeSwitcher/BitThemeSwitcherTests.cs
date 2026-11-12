@@ -31,14 +31,14 @@ public class BitThemeSwitcherTests : BunitTestContext
 
         var component = RenderComponent<BitThemeSwitcher>();
 
-        Assert.AreEqual(1, component.FindAll(".bit-ths-dds").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-ths-dds"));
 
         // Both scheme buttons are always rendered; which one is visible is a stylesheet decision keyed on the
         // document's bit-theme attribute, so the markup cannot depend on C# knowing the active scheme.
         var buttons = component.FindAll(".bit-ths-csb");
-        Assert.AreEqual(2, buttons.Count);
-        Assert.AreEqual(1, component.FindAll(".bit-ths-drk").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-ths-lgt").Count);
+        Assert.HasCount(2, buttons);
+        Assert.ContainsSingle(component.FindAll(".bit-ths-drk"));
+        Assert.ContainsSingle(component.FindAll(".bit-ths-lgt"));
     }
 
     [TestMethod]
@@ -48,9 +48,8 @@ public class BitThemeSwitcherTests : BunitTestContext
 
         var component = RenderComponent<BitThemeSwitcher>();
 
-        CollectionAssert.AreEqual(
-            new[] { "fluent", "fluent2", "material", "cupertino" },
-            BitThemeSwitcher.DefaultDesignSystems.Select(i => i.Value).ToArray());
+        Assert.AreSequenceEqual(
+            new[] { "fluent", "fluent2", "material", "cupertino" }, BitThemeSwitcher.DefaultDesignSystems.Select(i => i.Value).ToArray());
 
         // Fluent's pair is the core light/dark one rather than fluent-light / fluent-dark: those two are what
         // the JS toggle flips between by default, which is what the toggle handler defers to.
@@ -79,8 +78,8 @@ public class BitThemeSwitcherTests : BunitTestContext
             parameters.Add(p => p.NoDesignSystem, noDesignSystem);
         });
 
-        Assert.AreNotEqual(0, component.FindAll(kept).Count);
-        Assert.AreEqual(0, component.FindAll(dropped).Count);
+        Assert.IsNotEmpty(component.FindAll(kept));
+        Assert.IsEmpty(component.FindAll(dropped));
     }
 
     [TestMethod]
@@ -333,7 +332,7 @@ public class BitThemeSwitcherTests : BunitTestContext
         var buttons = component.FindAll(".bit-ths-csb");
 
         // The pair the stylesheet picks one of, so the loop below cannot pass by finding none.
-        Assert.AreEqual(2, buttons.Count);
+        Assert.HasCount(2, buttons);
 
         foreach (var button in buttons)
         {
@@ -367,21 +366,21 @@ public class BitThemeSwitcherTests : BunitTestContext
 
         var root = component.Find(".bit-ths");
         Assert.IsTrue(root.ClassList.Contains("custom-root"));
-        Assert.IsTrue(root.GetAttribute("style")!.Contains("gap:1.5rem"));
+        Assert.Contains("gap:1.5rem", root.GetAttribute("style")!);
 
         Assert.IsTrue(component.Find(".bit-ths-dds").ClassList.Contains("custom-dds"));
 
         var dark = component.Find(".bit-ths-drk");
         Assert.IsTrue(dark.ClassList.Contains("custom-csb"));
         Assert.IsTrue(dark.ClassList.Contains("custom-drk"));
-        Assert.IsTrue(dark.GetAttribute("style")!.Contains("border-radius:0.25rem"));
-        Assert.IsTrue(dark.GetAttribute("style")!.Contains("outline-width:3px"));
+        Assert.Contains("border-radius:0.25rem", dark.GetAttribute("style")!);
+        Assert.Contains("outline-width:3px", dark.GetAttribute("style")!);
         Assert.IsTrue(dark.QuerySelector("i")!.ClassList.Contains("custom-icon"));
 
         var light = component.Find(".bit-ths-lgt");
         Assert.IsTrue(light.ClassList.Contains("custom-lgt"));
         // The per-scheme style belongs to the other button only.
-        Assert.IsFalse(light.GetAttribute("style")!.Contains("outline-width:3px"));
+        Assert.DoesNotContain("outline-width:3px", light.GetAttribute("style")!);
     }
 
     [TestMethod]

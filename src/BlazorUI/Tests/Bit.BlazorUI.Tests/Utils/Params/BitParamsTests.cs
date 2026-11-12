@@ -70,7 +70,7 @@ public class BitParamsTests : BunitTestContext
         var provider = component.FindComponent<BitCascadingValueProvider>().Instance;
         var values = provider.Values!.Where(v => v.Value is IBitComponentParams).ToList();
 
-        Assert.HasCount(1, values);
+        Assert.ContainsSingle(values);
         Assert.AreEqual("B", values[0].Name);
         component.MarkupMatches("-Hello");
     }
@@ -118,8 +118,9 @@ public class BitParamsTests : BunitTestContext
         });
 
         await component.InvokeAsync(() => component.Instance.SetParametersAsync(parameters));
+        var actualValue = component.Instance.Parameters?.Count();
 
-        Assert.AreEqual(1, component.Instance.Parameters?.Count());
+        Assert.AreEqual(1, actualValue);
     }
 
     [TestMethod]
@@ -407,7 +408,7 @@ public class BitParamsTests : BunitTestContext
         // its class and style strings when the cascade has nothing new to say.
         component.Render(builder => builder.Add(p => p.Parameters, [@params]));
 
-        Assert.IsTrue(rendered.RenderCount > renders);
+        Assert.IsGreaterThan(renders, rendered.RenderCount);
         Assert.AreSame(classes, rendered.Instance.ClassBuilder.Value);
         Assert.AreSame(styles, rendered.Instance.StyleBuilder.Value);
     }
@@ -464,7 +465,7 @@ public class BitParamsTests : BunitTestContext
         component.Render(builder => builder.Add(p => p.Parameters, [new BitButtonParams { Size = BitSize.Large }, textFieldParams]));
 
         Assert.IsTrue(component.Find("button").ClassList.Contains("bit-btn-lg"));
-        Assert.IsTrue(textField.RenderCount > renders);
+        Assert.IsGreaterThan(renders, textField.RenderCount);
         Assert.AreSame(classes, textField.Instance.ClassBuilder.Value);
         Assert.AreSame(styles, textField.Instance.StyleBuilder.Value);
     }
@@ -846,8 +847,10 @@ public class BitParamsTests : BunitTestContext
     public void TheGeneratedCodeShouldReadTheParamsObjectDirectly()
     {
         var property = typeof(BitButton).GetProperty("CascadedParams", BindingFlags.Instance | BindingFlags.NonPublic);
+        var expectedValue = typeof(BitButton);
+        var actualValue = property?.DeclaringType;
 
-        Assert.AreEqual(typeof(BitButton), property?.DeclaringType);
+        Assert.AreEqual(expectedValue, actualValue);
     }
 
     [TestMethod]

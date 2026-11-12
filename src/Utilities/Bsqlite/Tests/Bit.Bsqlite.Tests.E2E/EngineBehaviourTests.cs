@@ -42,11 +42,11 @@ public sealed class EngineBehaviourTests : BsqliteTest
         await OpenForStatementCacheAsync();
 
         await ExecAsync(Page, "INSERT INTO product (name) VALUES ('A')");
-        CollectionAssert.AreEqual(new[] { "id", "name", "price" }, (await QueryAsync(Page, "SELECT * FROM product")).ColumnNames);
+        Assert.AreSequenceEqual(new[] { "id", "name", "price" }, (await QueryAsync(Page, "SELECT * FROM product")).ColumnNames);
 
         await ExecAsync(Page, "ALTER TABLE product ADD COLUMN sku TEXT");
 
-        CollectionAssert.AreEqual(new[] { "id", "name", "price", "sku" }, (await QueryAsync(Page, "SELECT * FROM product")).ColumnNames);
+        Assert.AreSequenceEqual(new[] { "id", "name", "price", "sku" }, (await QueryAsync(Page, "SELECT * FROM product")).ColumnNames);
     }
 
     [TestMethod]
@@ -170,7 +170,7 @@ public sealed class EngineBehaviourTests : BsqliteTest
             """);
 
         Array.Sort(tables, StringComparer.Ordinal);
-        CollectionAssert.AreEqual(new[] { "line", "product" }, tables);
+        Assert.AreSequenceEqual(new[] { "line", "product" }, tables);
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -222,7 +222,7 @@ public sealed class EngineBehaviourTests : BsqliteTest
         AssertJson.AreEqual("""[["a"], ["b"]]""", limited.Rows);
 
         var schemaOnly = (await ExecuteAsync(Page, new WireRequest("SELECT id, name FROM product", ResultKind: "reader", MaxRows: 0)))[0];
-        CollectionAssert.AreEqual(new[] { "id", "name" }, schemaOnly.ColumnNames);
+        Assert.AreSequenceEqual(new[] { "id", "name" }, schemaOnly.ColumnNames);
         AssertJson.AreEqual("[]", schemaOnly.Rows);
     }
 

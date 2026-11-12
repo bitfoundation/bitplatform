@@ -1,4 +1,4 @@
-namespace Bit.Bmotion.Tests.Models;
+﻿namespace Bit.Bmotion.Tests.Models;
 
 /// <summary>
 /// Tests for <see cref="BmTransition.WithDelay"/>: it must produce an independent copy that keeps
@@ -37,11 +37,11 @@ public class TransitionWithDelayTests
 
         Assert.AreEqual(1.25, copy.Duration);
         Assert.AreEqual(BmEase.CircInOut, copy.Ease);
-        CollectionAssert.AreEqual(original.Bezier, copy.Bezier);
+        Assert.AreSequenceEqual(original.Bezier, copy.Bezier);
         Assert.AreEqual(4, copy.Steps);
         Assert.AreEqual(BmStepJump.Start, copy.StepJump);
-        CollectionAssert.AreEqual(original.Times, copy.Times);
-        CollectionAssert.AreEqual(original.Eases, copy.Eases);
+        Assert.AreSequenceEqual(original.Times, copy.Times);
+        Assert.AreSequenceEqual(original.Eases, copy.Eases);
     }
 
     [TestMethod]
@@ -117,7 +117,7 @@ public class TransitionWithDelayTests
 
         // The copied map is independent: adding to it must not reach back into the original.
         copy.Properties["x"] = Bm.Tween(0.2);
-        Assert.AreEqual(1, original.Properties!.Count);
+        Assert.ContainsSingle(original.Properties);
     }
 
     [TestMethod]

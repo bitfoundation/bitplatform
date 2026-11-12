@@ -76,7 +76,7 @@ public class NestedListTests : BortableTestContext
 
         // Card A1: its own list, the other card list and the board (the same group) all take it.
         var started = await DragStartAsync(cardsA, "A1");
-        CollectionAssert.AreEquivalent(new[] { "board", "cards-A", "cards-B" }, started!.Lists);
+        Assert.AreSequenceEqual(new[] { "board", "cards-A", "cards-B" }, started!.Lists, Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
         // The browser layer routes the pointer over B's card list to that list, the innermost one under it.
         await DragOverAsync(cardsB, 1);

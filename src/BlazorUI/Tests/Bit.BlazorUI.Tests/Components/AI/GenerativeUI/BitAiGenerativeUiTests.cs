@@ -55,12 +55,12 @@ public class BitAiGenerativeUiTests
         Assert.AreEqual("Oslo", result.Parameters["City"]);
         Assert.AreEqual(3, result.Parameters["Days"]);
         Assert.IsFalse(result.Parameters.ContainsKey("OnClick"));
-        Assert.AreEqual(2, result.Parameters.Count);
+        Assert.HasCount(2, result.Parameters);
 
         // Ignored, as documented: listed for diagnostics, but not errors and not held against completeness.
         Assert.IsEmpty(result.Errors);
         Assert.IsTrue(result.IsComplete);
-        CollectionAssert.AreEqual(new[] { "onClick", "nope" }, result.IgnoredProperties.ToArray());
+        Assert.AreSequenceEqual(new[] { "onClick", "nope" }, result.IgnoredProperties.ToArray());
     }
 
     [TestMethod]
@@ -72,8 +72,8 @@ public class BitAiGenerativeUiTests
         var result = BitAiGenerativePropsBinder.Bind(component, JsonDocument.Parse("""{"days":"many","nope":1}""").RootElement);
 
         Assert.IsFalse(result.IsComplete);
-        Assert.AreEqual(2, result.Errors.Count);
-        CollectionAssert.AreEqual(new[] { "nope" }, result.IgnoredProperties.ToArray());
+        Assert.HasCount(2, result.Errors);
+        Assert.AreSequenceEqual(new[] { "nope" }, result.IgnoredProperties.ToArray());
     }
 
     [TestMethod]
@@ -116,7 +116,7 @@ public class BitAiGenerativeUiTests
 
     public enum Severity { Info, Warning }
 
-    public sealed class Unconstructible(int code)
+    internal sealed class Unconstructible(int code)
     {
         public int Value { get; } = code;
     }
@@ -204,7 +204,7 @@ public class BitAiGenerativeUiTests
 
         var result = BitAiGenerativePropsBinder.Bind(component, JsonDocument.Parse("""{"days":"many"}""").RootElement);
 
-        CollectionAssert.AreEqual(result.Failures.Select(f => f.ToString()).ToArray(), result.Errors.ToArray());
+        Assert.AreSequenceEqual(result.Failures.Select(f => f.ToString()).ToArray(), result.Errors.ToArray());
         Assert.AreEqual($"'days' could not be read as Int32: {result.Failures[0].Detail}", result.Errors[0]);
         Assert.AreEqual("'City' is required by 'weather_card'.", result.Errors[1]);
     }

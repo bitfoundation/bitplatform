@@ -16,20 +16,20 @@ public class McpResourcePromptTests
     [TestMethod]
     public async Task The_fixed_resources_and_the_guide_sections_are_listed()
     {
-        var uris = (await McpTestHost.Client.ListResourcesAsync()).Select(resource => resource.Uri).ToArray();
+        var uris = (await McpTestHost.Client.ListResourcesAsync(cancellationToken: TestContext.CancellationToken)).Select(resource => resource.Uri).ToArray();
 
         CollectionAssert.IsSubsetOf(new[] { "borm://guide", "borm://api", "borm://theme", "borm://sample-schema" }, uris);
-        CollectionAssert.Contains(uris, "borm://guide/Getting%20started");
-        CollectionAssert.Contains(uris, "borm://guide/Generating%20a%20schema%20from%20a%20C%23%20type");
+        Assert.Contains("borm://guide/Getting%20started", uris);
+        Assert.Contains("borm://guide/Generating%20a%20schema%20from%20a%20C%23%20type", uris);
 
         // Only the top-level sections are listed; the rest stay behind the template.
-        CollectionAssert.DoesNotContain(uris, "borm://guide/Install");
+        Assert.DoesNotContain("borm://guide/Install", uris);
     }
 
     [TestMethod]
     public async Task The_templates_are_published()
     {
-        var templates = (await McpTestHost.Client.ListResourceTemplatesAsync()).Select(template => template.UriTemplate).ToArray();
+        var templates = (await McpTestHost.Client.ListResourceTemplatesAsync(cancellationToken: TestContext.CancellationToken)).Select(template => template.UriTemplate).ToArray();
 
         CollectionAssert.IsSubsetOf(new[] { "borm://guide/{heading}", "borm://api/{typeName}", "borm://source/{path}" }, templates);
     }
@@ -37,7 +37,7 @@ public class McpResourcePromptTests
     [TestMethod]
     public async Task Every_listed_resource_reads_back_as_text()
     {
-        foreach (var resource in await McpTestHost.Client.ListResourcesAsync())
+        foreach (var resource in await McpTestHost.Client.ListResourcesAsync(cancellationToken: TestContext.CancellationToken))
         {
             var text = await ReadAsync(resource.Uri);
 
@@ -80,9 +80,9 @@ public class McpResourcePromptTests
     [TestMethod]
     public async Task Every_prompt_is_published()
     {
-        var names = (await McpTestHost.Client.ListPromptsAsync()).Select(prompt => prompt.Name).ToArray();
+        var names = (await McpTestHost.Client.ListPromptsAsync(cancellationToken: TestContext.CancellationToken)).Select(prompt => prompt.Name).ToArray();
 
-        CollectionAssert.AreEquivalent(_prompts.Select(prompt => prompt.Name).ToArray(), names);
+        Assert.AreSequenceEqual(_prompts.Select(prompt => prompt.Name).ToArray(), names, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -97,7 +97,7 @@ public class McpResourcePromptTests
             var mentioned = ToolNames.MentionedIn(text).ToArray();
             Assert.IsNotEmpty(mentioned, name);
 
-            foreach (var tool in mentioned) CollectionAssert.Contains(McpSurfaceTests.ExpectedTools, tool, $"'{name}' mentions '{tool}', which is not a tool.");
+            foreach (var tool in mentioned) Assert.Contains(tool, McpSurfaceTests.ExpectedTools, $"'{name}' mentions '{tool}', which is not a tool.");
         }
     }
 
@@ -153,7 +153,7 @@ public class McpResourcePromptTests
     [TestMethod]
     public async Task An_unknown_prompt_is_an_error()
     {
-        await Assert.ThrowsAsync<McpException>(async () => await McpTestHost.Client.GetPromptAsync("write-my-app"));
+        await Assert.ThrowsAsync<McpException>(async () => await McpTestHost.Client.GetPromptAsync("write-my-app", cancellationToken: TestContext.CancellationToken));
     }
 
     // ---- Completions -------------------------------------------------------
@@ -161,23 +161,23 @@ public class McpResourcePromptTests
     [TestMethod]
     public async Task Resource_placeholders_complete_from_the_catalogs()
     {
-        var types = (await McpTestHost.Client.CompleteAsync(new ResourceTemplateReference { Uri = "borm://api/{typeName}" }, "typeName", "BormState")).Completion.Values;
-        var headings = (await McpTestHost.Client.CompleteAsync(new ResourceTemplateReference { Uri = "borm://guide/{heading}" }, "heading", "valid")).Completion.Values;
-        var paths = (await McpTestHost.Client.CompleteAsync(new ResourceTemplateReference { Uri = "borm://source/{path}" }, "path", "Wizard")).Completion.Values;
+        var types = (await McpTestHost.Client.CompleteAsync(new ResourceTemplateReference { Uri = "borm://api/{typeName}" }, "typeName", "BormState", cancellationToken: TestContext.CancellationToken)).Completion.Values;
+        var headings = (await McpTestHost.Client.CompleteAsync(new ResourceTemplateReference { Uri = "borm://guide/{heading}" }, "heading", "valid", cancellationToken: TestContext.CancellationToken)).Completion.Values;
+        var paths = (await McpTestHost.Client.CompleteAsync(new ResourceTemplateReference { Uri = "borm://source/{path}" }, "path", "Wizard", cancellationToken: TestContext.CancellationToken)).Completion.Values;
 
-        CollectionAssert.Contains(types.ToArray(), "BormState");
+        Assert.Contains("BormState", types.ToArray());
         Assert.AreEqual("BormState", types[0], "A value the typed text starts should rank first.");
-        CollectionAssert.Contains(headings.ToArray(), "Validation");
-        CollectionAssert.Contains(headings.ToArray(), "When validation runs");
-        CollectionAssert.Contains(paths.ToArray(), "Demo/Client/Pages/WizardDemo.razor");
+        Assert.Contains("Validation", headings.ToArray());
+        Assert.Contains("When validation runs", headings.ToArray());
+        Assert.Contains("Demo/Client/Pages/WizardDemo.razor", paths.ToArray());
     }
 
     [TestMethod]
     public async Task Prompt_arguments_complete_with_the_phrasings_they_were_written_for()
     {
-        var symptoms = (await McpTestHost.Client.CompleteAsync(new PromptReference { Name = "debug-borm-form" }, "symptom", "")).Completion.Values;
-        var features = (await McpTestHost.Client.CompleteAsync(new PromptReference { Name = "implement-borm-form" }, "feature", "wizard")).Completion.Values;
-        var models = (await McpTestHost.Client.CompleteAsync(new PromptReference { Name = "add-borm-to-app" }, "hostingModel", "")).Completion.Values;
+        var symptoms = (await McpTestHost.Client.CompleteAsync(new PromptReference { Name = "debug-borm-form" }, "symptom", "", cancellationToken: TestContext.CancellationToken)).Completion.Values;
+        var features = (await McpTestHost.Client.CompleteAsync(new PromptReference { Name = "implement-borm-form" }, "feature", "wizard", cancellationToken: TestContext.CancellationToken)).Completion.Values;
+        var models = (await McpTestHost.Client.CompleteAsync(new PromptReference { Name = "add-borm-to-app" }, "hostingModel", "", cancellationToken: TestContext.CancellationToken)).Completion.Values;
 
         Assert.IsNotEmpty(symptoms);
         Assert.IsNotEmpty(features);
@@ -197,4 +197,6 @@ public class McpResourcePromptTests
 
         return string.Join('\n', result.Contents.OfType<TextResourceContents>().Select(contents => contents.Text));
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

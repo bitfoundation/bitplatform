@@ -15,7 +15,7 @@ namespace Boilerplate.Tests.Features.Identity;
 /// every later test and for the next run. A per-run account with a Guid e-mail turns any leftover into an inert orphan.
 /// </para>
 /// </summary>
-public static class TestAccountUtils
+internal static class TestAccountUtils
 {
     /// <summary>
     /// Registers a brand-new account, confirms it with the code from the captured e-mail, and signs it in - the same
@@ -109,8 +109,7 @@ public static class TestAccountUtils
         return new GlobalAdminGrant(client.Server, userId);
     }
 
-    /// <summary>Revokes the g-admin grant <see cref="MakeGlobalAdmin"/> made, when the test is done with it.</summary>
-    public sealed class GlobalAdminGrant(AppTestServer server, Guid userId) : IAsyncDisposable
+    internal sealed class GlobalAdminGrant(AppTestServer server, Guid userId) : IAsyncDisposable
     {
         public async ValueTask DisposeAsync()
         {

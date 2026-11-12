@@ -45,7 +45,7 @@ public class BitDataGridRowReorderE2ETests : BitDataGridE2ETestBase
         await Expect(Handle(0)).ToHaveAttributeAsync("draggable", "true");
         await Expect(Handle(0)).ToHaveTextAsync("⠿");
         var indexes = await DataRows(Id).EvaluateAllAsync<string[]>("rows => rows.map(r => r.getAttribute('data-ri'))");
-        CollectionAssert.AreEqual(new[] { "0", "1", "2", "3", "4" }, indexes);
+        Assert.AreSequenceEqual(new[] { "0", "1", "2", "3", "4" }, indexes);
     }
 
     [TestMethod]

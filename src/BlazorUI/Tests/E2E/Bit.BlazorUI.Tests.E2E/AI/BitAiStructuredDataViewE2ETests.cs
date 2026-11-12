@@ -123,8 +123,8 @@ public class BitAiStructuredDataViewE2ETests : E2ETestBase
         var counts = (await Page.EvaluateAsync<JsonElement>("() => window.__sdvRows")).EnumerateArray().Select(e => e.GetInt32()).Where(n => n > 0).ToArray();
         var seen = string.Join(",", counts);
         Assert.AreEqual(4, counts.Last(), seen);
-        Assert.IsTrue(counts.Length >= 3, $"The table grew a row at a time, not all at once: {seen}.");
-        CollectionAssert.AreEqual(counts.OrderBy(n => n).ToArray(), counts, $"Rows were only ever added: {seen}.");
+        Assert.IsGreaterThanOrEqualTo(3, counts.Length, $"The table grew a row at a time, not all at once: {seen}.");
+        Assert.AreSequenceEqual(counts.OrderBy(n => n).ToArray(), counts, $"Rows were only ever added: {seen}.");
     }
 
     [TestMethod]
@@ -194,7 +194,7 @@ public class BitAiStructuredDataViewE2ETests : E2ETestBase
         // Each label sits above its value.
         var labelBox = await label.RectAsync();
         var valueBox = await list.Locator("dd").First.RectAsync();
-        Assert.IsTrue(valueBox.Top >= labelBox.Bottom - 1, "The value is under its label.");
+        Assert.IsGreaterThanOrEqualTo(labelBox.Bottom - 1, valueBox.Top, "The value is under its label.");
         await Expect(list.Locator("dd").First).ToHaveCSSAsync("margin-left", "0px");
     }
 

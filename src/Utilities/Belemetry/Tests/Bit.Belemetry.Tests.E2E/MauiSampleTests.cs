@@ -25,7 +25,7 @@ public class MauiSampleTests : HarnessTest
 
     protected override string BaseUrl => MauiSampleApp.AppOrigin;
 
-    protected override CollectorClient Collector => App.Collector;
+    private protected override CollectorClient Collector => App.Collector;
 
     private MauiSampleApp App => _app ?? throw new InvalidOperationException("The page is opened in TestInitialize.");
 

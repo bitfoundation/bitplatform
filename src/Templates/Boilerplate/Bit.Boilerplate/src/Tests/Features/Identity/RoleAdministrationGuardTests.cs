@@ -81,8 +81,7 @@ public class RoleAdministrationGuardTests
 
         var values = await ReadClaimValues(server, roleId, AppClaimTypes.MAX_PRIVILEGED_SESSIONS);
 
-        Assert.HasCount(1, values,
-            $"A single-valued claim must end up as exactly one row; found [{string.Join(", ", values)}]. Two rows mean the " +
+        Assert.ContainsSingle(values, $"A single-valued claim must end up as exactly one row; found [{string.Join(", ", values)}]. Two rows mean the " +
             "reader's Max() keeps the old value, so the cap can only ever be raised.");
         Assert.AreEqual("2", values[0], "The stored value must be the one the administrator just saved.");
     }

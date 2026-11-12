@@ -91,7 +91,7 @@ public class PipelineSpecTests
 
         Assert.IsNull(result.Error, result.Error);
         Assert.AreEqual(1, result.Pipeline!.Count);
-        StringAssert.Contains(result.Warnings.Single(), "ExecuteAsync");
+        Assert.Contains("ExecuteAsync", result.Warnings.Single());
     }
 
     [TestMethod]
@@ -115,7 +115,7 @@ public class PipelineSpecTests
 
         Assert.IsNull(result.Pipeline);
         Assert.IsNotNull(result.Error);
-        StringAssert.Contains(result.Error, expected);
+        Assert.Contains(expected, result.Error);
     }
 
     [TestMethod]
@@ -125,7 +125,7 @@ public class PipelineSpecTests
 
         foreach (var name in new[] { "AutoOrient", "MaxSize", "Cover", "SmartCrop", "Sharpen", "Pixelate" })
         {
-            StringAssert.Contains(error, name);
+            Assert.Contains(name, error);
         }
 
         Assert.IsFalse(error.Contains("AddRange", StringComparison.Ordinal), "A builder the spec cannot call is offered as one it can.");
@@ -136,6 +136,6 @@ public class PipelineSpecTests
     {
         var result = BmagePipelineSpec.Parse(string.Concat(Enumerable.Repeat(".Brightness(0)", 400)));
 
-        StringAssert.Contains(result.Error, "at most");
+        Assert.Contains("at most", result.Error!);
     }
 }

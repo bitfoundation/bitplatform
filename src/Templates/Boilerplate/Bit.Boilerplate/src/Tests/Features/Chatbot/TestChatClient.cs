@@ -3,23 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace Boilerplate.Tests.Features.Chatbot;
 
-/// <summary>
-/// A scripted <see cref="IChatClient"/> that stands in for the language model.
-/// <para>
-/// This is not a mock of one of the template's own interfaces: <see cref="IChatClient"/> is the
-/// <c>Microsoft.Extensions.AI</c> abstraction every agent is built on (See <c>AddAppAIAgents</c>), so replacing the
-/// registration is the one seam that removes the model - and only the model. <c>AsAIAgent</c> still wraps whatever
-/// client it is given in a <c>FunctionInvokingChatClient</c>, so the agent under test keeps its real seeded system
-/// prompt, its real tool set and its real streaming pipeline.
-/// </para>
-/// <para>
-/// Two things make the tests deterministic. <see cref="ReceivedConversations"/> records the exact message list handed
-/// to the model on every call - which is the only place the chatbot's private history is observable - and
-/// <see cref="PauseAfterFirstChunk"/> stops a stream half way, so a test can interrupt a message at a known point
-/// rather than racing the wall clock.
-/// </para>
-/// </summary>
-public sealed class TestChatClient : IChatClient
+internal sealed class TestChatClient : IChatClient
 {
     private int streamingCallCount;
     private readonly List<ChatMessage[]> receivedConversations = [];

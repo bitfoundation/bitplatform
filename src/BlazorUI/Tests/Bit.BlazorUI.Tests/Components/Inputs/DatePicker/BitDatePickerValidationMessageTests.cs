@@ -32,7 +32,7 @@ public class BitDatePickerValidationMessageTests : BunitTestContext
         var component = RenderDatePicker(editContext, model, new() { [nameof(BitDatePicker.ShowValidationMessage)] = true });
 
         // Nothing is shown before the EditContext has anything to say.
-        Assert.AreEqual(0, component.FindAll(".bit-dtp-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-dtp-erm"));
         Assert.IsNull(component.Find(".bit-dtp-inp").GetAttribute("aria-describedby"));
 
         component.InvokeAsync(() => editContext.Validate());
@@ -50,7 +50,7 @@ public class BitDatePickerValidationMessageTests : BunitTestContext
         component.Find(".bit-dtp-dtd").Click();
 
         Assert.IsNotNull(model.Value);
-        Assert.AreEqual(0, component.FindAll(".bit-dtp-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-dtp-erm"));
         Assert.IsNull(component.Find(".bit-dtp-inp").GetAttribute("aria-describedby"));
         Assert.IsNull(component.Find(".bit-dtp-inp").GetAttribute("aria-invalid"));
     }
@@ -76,20 +76,20 @@ public class BitDatePickerValidationMessageTests : BunitTestContext
         // The text leaves the value empty, so the field is refused for both.
         var error = component.Find(".bit-dtp-erm");
 
-        StringAssert.Contains(error.TextContent, "Type the date as dd/MM/yyyy.");
-        StringAssert.Contains(error.TextContent, RequiredMessage);
+        Assert.Contains("Type the date as dd/MM/yyyy.", error.TextContent);
+        Assert.Contains(RequiredMessage, error.TextContent);
 
         // What is wrong with the text is read before the pattern it should have been typed in.
         var ids = component.Find(".bit-dtp-inp").GetAttribute("aria-describedby")!.Split(' ');
 
-        Assert.AreEqual(2, ids.Length);
+        Assert.HasCount(2, ids);
         Assert.AreEqual(error.Id, ids[0]);
-        StringAssert.Contains(component.Find($"#{ids[1]}").TextContent, "dd/MM/yyyy");
+        Assert.Contains("dd/MM/yyyy", component.Find($"#{ids[1]}").TextContent);
 
         // A date takes the parsing error away with the text that caused it.
         component.Find(".bit-dtp-inp").Input("20/01/2026");
 
-        Assert.AreEqual(0, component.FindAll(".bit-dtp-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-dtp-erm"));
         Assert.AreEqual(new DateTime(2026, 1, 20), model.Value!.Value.Date);
     }
 
@@ -137,7 +137,7 @@ public class BitDatePickerValidationMessageTests : BunitTestContext
 
         // The field is marked as before, and the message stays where the page puts it.
         Assert.AreEqual("true", component.Find(".bit-dtp-inp").GetAttribute("aria-invalid"));
-        Assert.AreEqual(0, component.FindAll(".bit-dtp-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-dtp-erm"));
         Assert.IsNull(component.Find(".bit-dtp-inp").GetAttribute("aria-describedby"));
     }
 
@@ -158,7 +158,7 @@ public class BitDatePickerValidationMessageTests : BunitTestContext
 
         component.InvokeAsync(() => editContext.Validate());
 
-        Assert.AreEqual(1, component.FindAll(".bit-dtp-erm").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-dtp-erm"));
         Assert.AreEqual("The clinic is closed that week.", component.Find(".bit-dtp-erm").TextContent.Trim());
 
         // Once the app takes its message back, the EditContext's takes the line.
@@ -193,7 +193,7 @@ public class BitDatePickerValidationMessageTests : BunitTestContext
         var labelId = component.Find(".bit-dtp-inp").GetAttribute("aria-describedby");
 
         Assert.AreEqual("Unavailable", component.Find(".bit-dtp-erm b").TextContent);
-        Assert.IsFalse(component.Find(".bit-dtp-erm").TextContent.Contains(RequiredMessage));
+        Assert.DoesNotContain(RequiredMessage, component.Find(".bit-dtp-erm").TextContent);
         Assert.AreEqual("The booking service is unavailable.", component.Find($"#{labelId}").TextContent);
     }
 
@@ -233,7 +233,7 @@ public class BitDatePickerValidationMessageTests : BunitTestContext
         // What is wrong with the value first, then the helper texts, and last the description the page wrote itself.
         var ids = component.Find(".bit-dtp-inp").GetAttribute("aria-describedby")!.Split(' ');
 
-        Assert.AreEqual(4, ids.Length);
+        Assert.HasCount(4, ids);
         Assert.AreEqual(component.Find(".bit-dtp-erm").Id, ids[0]);
         Assert.AreEqual(component.Find(".bit-dtp-des").Id, ids[1]);
         Assert.AreEqual("Dates are stored in UTC.", component.Find($"#{ids[2]}").TextContent);
@@ -317,12 +317,12 @@ public class BitDatePickerValidationMessageTests : BunitTestContext
 
         component.InvokeAsync(() => editContext.Validate());
 
-        Assert.AreEqual(1, component.FindAll(".bit-dtp-erm").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-dtp-erm"));
 
         attributes[nameof(BitDatePicker.NoValidate)] = true;
         Rerender(component, editContext, model, attributes);
 
-        Assert.AreEqual(0, component.FindAll(".bit-dtp-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-dtp-erm"));
         Assert.IsNull(component.Find(".bit-dtp-inp").GetAttribute("aria-describedby"));
     }
 
@@ -338,8 +338,8 @@ public class BitDatePickerValidationMessageTests : BunitTestContext
         component.InvokeAsync(() => editContext.Validate());
 
         // The model has a message, but the DatePicker has no member of it the message could belong to.
-        Assert.IsTrue(editContext.GetValidationMessages().Any());
-        Assert.AreEqual(0, component.FindAll(".bit-dtp-erm").Count);
+        Assert.IsNotEmpty(editContext.GetValidationMessages());
+        Assert.IsEmpty(component.FindAll(".bit-dtp-erm"));
     }
 
     [TestMethod]
@@ -359,7 +359,7 @@ public class BitDatePickerValidationMessageTests : BunitTestContext
         component.Find(".bit-dtp-wrp").Click();
         component.Find(".bit-dtp-dtd").Click();
 
-        Assert.AreEqual(0, component.FindAll(".bit-dtp-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-dtp-erm"));
 
         component.Find("form").Submit();
 

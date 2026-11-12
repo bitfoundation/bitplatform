@@ -66,8 +66,8 @@ public class BitMenuButtonParamsTests : BunitTestContext
     [TestMethod]
     public void BitMenuButtonParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitMenuButton<BitMenuButtonItem>)}", BitMenuButtonParams.ParamName);
-        Assert.AreEqual("BitParams.BitMenuButton", BitMenuButtonParams.ParamName);
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitMenuButton<BitMenuButtonItem>)}", new BitMenuButtonParams().Name);
+        Assert.AreEqual("BitParams.BitMenuButton", new BitMenuButtonParams().Name);
     }
 
     [TestMethod]
@@ -313,11 +313,11 @@ public class BitMenuButtonParamsTests : BunitTestContext
         var callout = component.Find(".bit-mnb-cal");
 
         Assert.IsTrue(menuButton.ClassList.Contains("custom-root"));
-        StringAssert.Contains(menuButton.GetAttribute("style"), "color: red;");
+        Assert.Contains("color: red;", menuButton.GetAttribute("style")!);
         Assert.IsTrue(operatorButton.ClassList.Contains("custom-operator"));
-        StringAssert.Contains(operatorButton.GetAttribute("style"), "padding: 10px;");
+        Assert.Contains("padding: 10px;", operatorButton.GetAttribute("style")!);
         Assert.IsTrue(callout.ClassList.Contains("custom-callout"));
-        StringAssert.Contains(callout.GetAttribute("style"), "color: blue;");
+        Assert.Contains("color: blue;", callout.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -338,7 +338,7 @@ public class BitMenuButtonParamsTests : BunitTestContext
         Assert.AreEqual("test-id", menuButton.Id);
         Assert.IsTrue(menuButton.ClassList.Contains("bit-dis"));
         Assert.IsTrue(menuButton.ClassList.Contains("base-class"));
-        StringAssert.Contains(menuButton.GetAttribute("style"), "background: blue;");
+        Assert.Contains("background: blue;", menuButton.GetAttribute("style")!);
 
         Assert.AreEqual("Base Label", operatorButton.GetAttribute("aria-label"));
         Assert.IsTrue(operatorButton.HasAttribute("disabled"));
@@ -363,7 +363,7 @@ public class BitMenuButtonParamsTests : BunitTestContext
         Assert.AreEqual("rtl", menuButton.GetAttribute("dir"));
         Assert.IsTrue(menuButton.ClassList.Contains("bit-rtl"));
         Assert.IsTrue(menuButton.ClassList.Contains("bit-fam"));
-        StringAssert.Contains(menuButton.GetAttribute("style"), "visibility:hidden");
+        Assert.Contains("visibility:hidden", menuButton.GetAttribute("style")!);
         Assert.AreEqual("yes", menuButton.GetAttribute("data-cascaded"));
 
         // the callout is a sibling of the root, so the direction and the animation opt-out are written on it as well
@@ -412,7 +412,7 @@ public class BitMenuButtonParamsTests : BunitTestContext
 
         var menuButton = component.Find(".bit-mnb");
 
-        CollectionAssert.AreEquivalent(new[] { "bit-mnb", "bit-mnb-nsp", "bit-mnb-txt" }, menuButton.ClassList.ToArray());
+        Assert.AreSequenceEqual(new[] { "bit-mnb", "bit-mnb-nsp", "bit-mnb-txt" }, menuButton.ClassList.ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         Assert.IsFalse(menuButton.HasAttribute("style"));
     }
 }

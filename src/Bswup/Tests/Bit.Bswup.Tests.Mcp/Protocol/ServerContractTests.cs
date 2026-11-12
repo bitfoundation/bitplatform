@@ -43,12 +43,12 @@ public class ServerContractTests
         var instructions = _server.Mcp.ServerInstructions;
 
         Assert.IsFalse(string.IsNullOrWhiteSpace(instructions));
-        StringAssert.Contains(instructions, "rather than from memory");
-        StringAssert.Contains(instructions, "BEFORE the importScripts line");
-        StringAssert.Contains(instructions, "service-worker.published.js");
-        StringAssert.Contains(instructions, "SearchBswup");
-        StringAssert.Contains(instructions, "AutoReload", "whether an update announces itself is what recalled knowledge gets wrong");
-        StringAssert.Contains(instructions, "ShowOnUpdate", "and so is whether its download is shown");
+        Assert.Contains("rather than from memory", instructions);
+        Assert.Contains("BEFORE the importScripts line", instructions);
+        Assert.Contains("service-worker.published.js", instructions);
+        Assert.Contains("SearchBswup", instructions);
+        Assert.Contains("AutoReload", instructions, "whether an update announces itself is what recalled knowledge gets wrong");
+        Assert.Contains("ShowOnUpdate", instructions, "and so is whether its download is shown");
     }
 
     [TestMethod]
@@ -65,17 +65,16 @@ public class ServerContractTests
     [TestMethod]
     public async Task ToolList_IsExactlyTheToolsTheServerPublishes()
     {
-        var tools = await _server.Mcp.ListToolsAsync();
+        var tools = await _server.Mcp.ListToolsAsync(cancellationToken: TestContext.CancellationToken);
 
-        CollectionAssert.AreEquivalent(
+        Assert.AreSequenceEqual(
             new[]
             {
                 "SearchBswup", "GetBswupSetupGuide", "GetBswupScriptOptions",
                 "GetBswupServiceWorkerSettings", "InspectBswupServiceWorker",
                 "GetBswupEvents", "GetBswupJsApi", "GetBswupProgressUI",
                 "GetBswupDocsPage", "GetBswupSourceFiles", "GetBswupSourceFile",
-            },
-            tools.Select(tool => tool.Name).ToArray());
+            }, tools.Select(tool => tool.Name).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -86,52 +85,50 @@ public class ServerContractTests
         // contains does not belong in it - which is why there is no overview tool restating the
         // list, no second pair of tools serving the README the docs pages already say, and no
         // listing tool for a set of slugs that fits in a description.
-        var tools = await _server.Mcp.ListToolsAsync();
+        var tools = await _server.Mcp.ListToolsAsync(cancellationToken: TestContext.CancellationToken);
 
         var characters = tools.Sum(tool =>
             tool.Name.Length + (tool.Description?.Length ?? 0) +
             tool.ProtocolTool.InputSchema.GetRawText().Length +
             (tool.ProtocolTool.OutputSchema?.GetRawText().Length ?? 0));
 
-        Assert.IsTrue(tools.Count <= 12, $"{tools.Count} tools");
-        Assert.IsTrue(characters <= 18_000, $"the tool list costs {characters} characters before anyone asks anything");
+        Assert.IsLessThanOrEqualTo(12, tools.Count, $"{tools.Count} tools");
+        Assert.IsLessThanOrEqualTo(18_000, characters, $"the tool list costs {characters} characters before anyone asks anything");
     }
 
     [TestMethod]
     public async Task ToolList_DoesNotLeakTheBodyOnlyHttpOverloads()
     {
-        var tools = await _server.Mcp.ListToolsAsync();
+        var tools = await _server.Mcp.ListToolsAsync(cancellationToken: TestContext.CancellationToken);
 
         // The POST forms exist so a whole file fits in a request; they are HTTP endpoints, not a
         // second copy of the same tool for an agent to choose between.
-        Assert.IsFalse(tools.Any(tool => tool.Name.EndsWith("FromBody", StringComparison.Ordinal)),
+        Assert.DoesNotContain(tool => tool.Name.EndsWith("FromBody", StringComparison.Ordinal), tools,
             string.Join(", ", tools.Select(tool => tool.Name)));
     }
 
     [TestMethod]
     public async Task PromptList_IsExactlyTheFourWorkflows()
     {
-        var prompts = await _server.Mcp.ListPromptsAsync();
+        var prompts = await _server.Mcp.ListPromptsAsync(cancellationToken: TestContext.CancellationToken);
 
-        CollectionAssert.AreEquivalent(
-            new[] { "add-bswup-to-app", "configure-bswup-caching", "debug-bswup", "remove-bswup" },
-            prompts.Select(prompt => prompt.Name).ToArray());
+        Assert.AreSequenceEqual(
+            new[] { "add-bswup-to-app", "configure-bswup-caching", "debug-bswup", "remove-bswup" }, prompts.Select(prompt => prompt.Name).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
     public async Task ResourceList_CarriesTheFixedDocumentsWithSlugNamesAndHumanTitles()
     {
-        var resources = await _server.Mcp.ListResourcesAsync();
+        var resources = await _server.Mcp.ListResourcesAsync(cancellationToken: TestContext.CancellationToken);
 
-        CollectionAssert.AreEquivalent(
-            new[] { "bswup://guide", "bswup://settings", "bswup://options", "bswup://events" },
-            resources.Select(resource => resource.Uri).ToArray());
+        Assert.AreSequenceEqual(
+            new[] { "bswup://guide", "bswup://settings", "bswup://options", "bswup://events" }, resources.Select(resource => resource.Uri).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
         foreach (var resource in resources)
         {
             // The name is what a client keys its cache on and has to stay put across a rewording;
             // the title is the only one of the two anyone reads.
-            StringAssert.StartsWith(resource.Name, "bswup-", resource.Uri);
+            Assert.StartsWith("bswup-", resource.Name, resource.Uri);
             Assert.IsFalse(string.IsNullOrWhiteSpace(resource.Title), resource.Uri);
             Assert.IsFalse(string.IsNullOrWhiteSpace(resource.Description), resource.Uri);
             Assert.AreEqual("text/markdown", resource.MimeType, resource.Uri);
@@ -141,11 +138,10 @@ public class ServerContractTests
     [TestMethod]
     public async Task ResourceTemplateList_CoversTheThreeCatalogsKeyedByAValue()
     {
-        var templates = await _server.Mcp.ListResourceTemplatesAsync();
+        var templates = await _server.Mcp.ListResourceTemplatesAsync(cancellationToken: TestContext.CancellationToken);
 
-        CollectionAssert.AreEquivalent(
-            new[] { "bswup://docs/{slug}", "bswup://guide/{heading}", "bswup://source/{path}" },
-            templates.Select(template => template.UriTemplate).ToArray());
+        Assert.AreSequenceEqual(
+            new[] { "bswup://docs/{slug}", "bswup://guide/{heading}", "bswup://source/{path}" }, templates.Select(template => template.UriTemplate).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
         foreach (var template in templates)
         {
@@ -153,4 +149,6 @@ public class ServerContractTests
             Assert.IsFalse(string.IsNullOrWhiteSpace(template.Description), template.UriTemplate);
         }
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

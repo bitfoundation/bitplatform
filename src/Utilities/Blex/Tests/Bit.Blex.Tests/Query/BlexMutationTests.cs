@@ -1,4 +1,4 @@
-using Bit.Blex.Query;
+﻿using Bit.Blex.Query;
 using static Bit.Blex.Tests.Query.QueryTest;
 
 namespace Bit.Blex.Tests.Query;
@@ -32,7 +32,7 @@ public class BlexMutationTests
         save.Changed += () => statuses.Add(save.Status);
 
         Assert.IsTrue(save.IsIdle);
-        var call = save.MutateAsync("x");
+        var call = save.MutateAsync("x", TestContext.CancellationToken);
         Assert.IsTrue(save.IsPending);
         Assert.AreEqual("x", save.Arg);
 
@@ -53,10 +53,11 @@ public class BlexMutationTests
             (_, _) => Task.FromException<int>(new InvalidOperationException("rejected")),
             new() { OnError = (ex, _) => reported = ex });
 
-        await save.MutateAsync("x");
+        await save.MutateAsync("x", TestContext.CancellationToken);
 
         Assert.IsTrue(save.IsError);
-        Assert.AreEqual("rejected", save.Error?.Message);
+        var actualValue = save.Error?.Message;
+        Assert.AreEqual("rejected", actualValue);
         Assert.AreSame(save.Error, reported);
     }
 
@@ -69,7 +70,7 @@ public class BlexMutationTests
             (text, ct) => server.Fetch()(ct),
             new() { OnMutate = text => client.Optimistic<IReadOnlyList<string>>(["todos"], items => [.. items ?? [], text]) });
 
-        var call = add.MutateAsync("b");
+        var call = add.MutateAsync("b", TestContext.CancellationToken);
         Assert.AreSequenceEqual(["a", "b"], list.Data!.ToList(), "the optimistic value is shown before the server answers");
 
         server.Fail(0, new InvalidOperationException("rejected"));
@@ -88,8 +89,8 @@ public class BlexMutationTests
             (text, ct) => server.Fetch()(ct),
             new() { OnMutate = text => client.Optimistic<IReadOnlyList<string>>(["todos"], items => [.. items ?? [], text]) });
 
-        var first = add.MutateAsync("b");
-        var second = add.MutateAsync("c");          // its optimistic value lands on top of the first's
+        var first = add.MutateAsync("b", TestContext.CancellationToken);
+        var second = add.MutateAsync("c", TestContext.CancellationToken);          // its optimistic value lands on top of the first's
         Assert.AreSequenceEqual(["a", "b", "c"], list.Data!.ToList());
 
         server.Fail(0, new InvalidOperationException("first rejected"));
@@ -113,7 +114,7 @@ public class BlexMutationTests
             (text, _) => Task.FromResult(text),
             new() { Invalidates = [["todos"]] });
 
-        var call = add.MutateAsync("b");
+        var call = add.MutateAsync("b", TestContext.CancellationToken);
         Assert.AreEqual(2, lists.Calls, "the list refetches after the change");
         Assert.IsTrue(add.IsPending, "'saved' must not show next to the list from before the save");
 
@@ -138,7 +139,7 @@ public class BlexMutationTests
                 OnSettled = n => order.Add("settled"),
             });
 
-        await save.MutateAsync(2);
+        await save.MutateAsync(2, TestContext.CancellationToken);
 
         Assert.AreSequenceEqual(["mutate", "success 4", "settled"], order);
         Assert.IsTrue(save.IsSuccess, "a callback failing does not turn a change the server accepted into a failure");
@@ -171,8 +172,8 @@ public class BlexMutationTests
         var server = new FakeServer<int>();
         var save = client.Mutation<int, int>((n, ct) => server.Fetch()(ct));
 
-        var first = save.MutateAsync(1);
-        var second = save.MutateAsync(2);
+        var first = save.MutateAsync(1, TestContext.CancellationToken);
+        var second = save.MutateAsync(2, TestContext.CancellationToken);
         server.Respond(1, 20);
         await second;
         server.Respond(0, 10);
@@ -191,7 +192,7 @@ public class BlexMutationTests
             (n, _) => ++attempts < 3 ? Task.FromException<int>(new InvalidOperationException("flaky")) : Task.FromResult(n),
             new() { RetryCount = 2, RetryDelay = TimeSpan.FromMilliseconds(100) });
 
-        var call = save.MutateAsync(7);
+        var call = save.MutateAsync(7, TestContext.CancellationToken);
         await Until(() => clock.Timers == 1);
         clock.Advance(TimeSpan.FromMilliseconds(100));
         await Until(() => clock.Timers == 2);
@@ -266,4 +267,6 @@ public class BlexMutationTests
         Assert.AreEqual("new", interactive.GetQueryData<string>(["n"]));
         await Task.CompletedTask;
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

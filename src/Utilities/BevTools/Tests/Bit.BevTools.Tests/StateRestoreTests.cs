@@ -114,7 +114,7 @@ public class StateRestoreTests : BunitContext
         tokens.Raise();
         var change = Session.State.Entries.Single().Changes.Single();
         Assert.IsNull(change.RestoreToken);
-        StringAssert.Contains(await Session.State.RestoreAsync(change.Id), "cannot restore this change");
+        Assert.Contains("cannot restore this change", await Session.State.RestoreAsync(change.Id));
 
         var counter = new VersionedCounter();
         Session.State.Register(counter);
@@ -122,7 +122,7 @@ public class StateRestoreTests : BunitContext
         var counted = Session.State.Entries.Single(e => e.Name == "Counter").Changes.Single();
         // A token the provider no longer knows: its exception is an answer, and an error of BevTools' own.
         typeof(BevStateChangeRecord).GetProperty(nameof(BevStateChangeRecord.RestoreToken))!.SetValue(counted, "404");
-        StringAssert.StartsWith(await Session.State.RestoreAsync(counted.Id), "Counter could not restore it: InvalidOperationException: No version 404");
+        Assert.StartsWith("Counter could not restore it: InvalidOperationException: No version 404", await Session.State.RestoreAsync(counted.Id));
         Assert.Contains(e => e.Source == "bevtools", Session.Errors.Snapshot());
     }
 
@@ -137,7 +137,7 @@ public class StateRestoreTests : BunitContext
             session.State.Register(counter);
             counter.Add(1);
             Assert.IsFalse(session.AllowsStateRestore);
-            StringAssert.StartsWith(await session.State.RestoreAsync(session.State.Entries.Single().Changes.Single().Id), "Restoring state is not allowed");
+            Assert.StartsWith("Restoring state is not allowed", await session.State.RestoreAsync(session.State.Entries.Single().Changes.Single().Id));
             Assert.AreEqual(1, counter.Value);
             Assert.AreEqual(BevCapabilityStatus.NotAvailable, session.Capabilities.Single(c => c.Name.StartsWith("Restoring an earlier state", StringComparison.Ordinal)).Status);
         }
@@ -158,7 +158,7 @@ public class StateRestoreTests : BunitContext
 
         using var json = JsonDocument.Parse(BevSessionExporter.ToJson(Session, new BevSessionExportOptions { Indented = false, Sections = new HashSet<string> { "state" } }));
         var text = json.RootElement.GetProperty("state").GetRawText();
-        StringAssert.Contains(text, "\"restorable\":true");
+        Assert.Contains("\"restorable\":true", text);
         Assert.DoesNotContain("restoreToken", text, StringComparison.Ordinal, "the token means something only to the live app");
     }
 
@@ -171,17 +171,17 @@ public class StateRestoreTests : BunitContext
         counter.Add(40);
         var panel = Render<BevToolsPanel>();
         panel.FindAll(".bev-tab").First(t => t.TextContent.Trim().StartsWith("State", StringComparison.Ordinal)).Click();
-        StringAssert.Contains(panel.Find(".bev-right").TextContent, "Add · 40");
+        Assert.Contains("Add · 40", panel.Find(".bev-right").TextContent);
 
         panel.Find("input[aria-label='Filter state providers and changes']").Input("40");
         var rows = panel.FindAll(".bev-right .bev-ev-row");
-        Assert.HasCount(1, rows, "only the change whose detail matches");
+        Assert.ContainsSingle(rows, "only the change whose detail matches");
 
         panel.Find("input[aria-label='Filter state providers and changes']").Input("");
         // Newest first: the last row's button restores the first change.
         panel.FindAll(".bev-right .bev-ev-row button[aria-label^='Restore Counter to after Add']").Last().Click();
         Assert.AreEqual(7, counter.Value);
-        StringAssert.Contains(panel.Markup, "Restored Counter to after Add.");
+        Assert.Contains("Restored Counter to after Add.", panel.Markup);
     }
 
     [TestMethod]
@@ -198,7 +198,7 @@ public class StateRestoreTests : BunitContext
         var entry = Assert.ContainsSingle(Session.State.Entries);
         Assert.AreSame(first, entry.Provider);
         Assert.AreEqual("7", Assert.ContainsSingle(entry.Changes).Detail);
-        StringAssert.Contains(Assert.ContainsSingle(e => e.Source == "bevtools", Session.Errors.Snapshot()).Message, "A state provider named 'Counter' is already registered");
+        Assert.Contains("A state provider named 'Counter' is already registered", Assert.ContainsSingle(e => e.Source == "bevtools", Session.Errors.Snapshot()).Message);
         Assert.AreSame(first, Assert.ContainsSingle(Session.State.Entries).Provider, "disposing the refused registration leaves the first one");
     }
 
@@ -210,7 +210,7 @@ public class StateRestoreTests : BunitContext
         counter.Add(7);
         var panel = Render<BevToolsPanel>();
         panel.FindAll(".bev-tab").First(t => t.TextContent.Trim().StartsWith("State", StringComparison.Ordinal)).Click();
-        StringAssert.Contains(panel.Find(".bev-right").TextContent, "Current snapshot");
+        Assert.Contains("Current snapshot", panel.Find(".bev-right").TextContent);
 
         panel.Find("input[aria-label='Filter state providers and changes']").Input("nothing like it");
         Assert.IsEmpty(panel.FindAll(".bev-left .bev-ev-row"));

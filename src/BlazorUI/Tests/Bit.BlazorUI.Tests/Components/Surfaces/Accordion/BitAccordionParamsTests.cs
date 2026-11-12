@@ -68,8 +68,8 @@ public class BitAccordionParamsTests : BunitTestContext
     {
         var @params = new BitAccordionParams();
 
-        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitAccordion)}", BitAccordionParams.ParamName);
-        Assert.AreEqual("BitParams.BitAccordion", BitAccordionParams.ParamName);
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitAccordion)}", new BitAccordionParams().Name);
+        Assert.AreEqual("BitParams.BitAccordion", new BitAccordionParams().Name);
         Assert.IsInstanceOfType<IBitComponentParams>(@params);
         Assert.AreEqual(BitAccordionParams.ParamName, @params.Name);
     }
@@ -153,7 +153,7 @@ public class BitAccordionParamsTests : BunitTestContext
     {
         var component = RenderWithParams(new BitAccordionParams { HideExpanderIcon = true });
 
-        Assert.AreEqual(0, component.FindAll(".bit-acd-eiw").Count);
+        Assert.IsEmpty(component.FindAll(".bit-acd-eiw"));
     }
 
     [TestMethod]
@@ -184,7 +184,7 @@ public class BitAccordionParamsTests : BunitTestContext
         Assert.IsTrue(component.Find(".bit-acd-eic").ClassList.Contains("cascaded-expander"));
         Assert.IsTrue(component.Find(".bit-acd-con").ClassList.Contains("cascaded-content"));
 
-        StringAssert.Contains(component.Find(".bit-acd").GetAttribute("style"), "margin: 1px;");
+        Assert.Contains("margin: 1px;", component.Find(".bit-acd").GetAttribute("style")!);
         Assert.AreEqual("color: red;", component.Find(".bit-acd-hdr").GetAttribute("style"));
         Assert.AreEqual("color: blue;", component.Find(".bit-acd-ttl").GetAttribute("style"));
         Assert.AreEqual("color: green;", component.Find(".bit-acd-con").GetAttribute("style"));
@@ -209,7 +209,7 @@ public class BitAccordionParamsTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
         Assert.IsTrue(root.ClassList.Contains("bit-dis"));
         Assert.IsTrue(root.ClassList.Contains("cascaded"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin: 2px;");
+        Assert.Contains("margin: 2px;", root.GetAttribute("style")!);
         Assert.AreEqual("Cascaded", root.GetAttribute("aria-label"));
         Assert.AreEqual("group", root.GetAttribute("role"));
 
@@ -243,9 +243,9 @@ public class BitAccordionParamsTests : BunitTestContext
         // NoBorder written as false by the accordion opts it out of the cascaded one; what it did not write is
         // still filled in from the cascade.
         Assert.IsFalse(root.ClassList.Contains("bit-acd-nbd"));
-        StringAssert.Contains(style, "--bit-acd-dur-full:50ms");
-        Assert.IsFalse(style.Contains("--bit-acd-dur-full:150ms"));
-        StringAssert.Contains(style, "--bit-acd-max-h:10rem");
+        Assert.Contains("--bit-acd-dur-full:50ms", style);
+        Assert.DoesNotContain("--bit-acd-dur-full:150ms", style);
+        Assert.Contains("--bit-acd-max-h:10rem", style);
         Assert.IsTrue(root.ClassList.Contains("bit-acd-eop"));
     }
 
@@ -273,7 +273,7 @@ public class BitAccordionParamsTests : BunitTestContext
         Assert.IsFalse(root.ClassList.Contains("bit-acd-nbd"));
         Assert.IsFalse(root.ClassList.Contains("bit-acd-lg"));
         Assert.IsFalse(root.ClassList.Contains("bit-acd-mxh"));
-        Assert.IsFalse((root.GetAttribute("style") ?? string.Empty).Contains("--bit-acd-max-h"));
+        Assert.DoesNotContain("--bit-acd-max-h", (root.GetAttribute("style") ?? string.Empty));
     }
 
     [TestMethod]

@@ -43,8 +43,8 @@ public class BitBadgeParamsTests : BunitTestContext
     [TestMethod]
     public void BitBadgeParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitBadge)}", BitBadgeParams.ParamName);
-        Assert.AreEqual("BitParams.BitBadge", BitBadgeParams.ParamName);
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitBadge)}", new BitBadgeParams().Name);
+        Assert.AreEqual("BitParams.BitBadge", new BitBadgeParams().Name);
     }
 
     [TestMethod]
@@ -164,7 +164,7 @@ public class BitBadgeParamsTests : BunitTestContext
         var icon = component.Find(".bit-bdg-ico");
         Assert.IsTrue(icon.ClassList.Contains("my-icon"));
         Assert.IsFalse(icon.ClassList.Contains("bit-icon--Mail"));
-        Assert.AreEqual(1, component.FindAll(".tpl").Count);
+        Assert.ContainsSingle(component.FindAll(".tpl"));
         Assert.AreEqual("new", component.Find(".bit-bdg-con").TextContent);
     }
 
@@ -175,7 +175,7 @@ public class BitBadgeParamsTests : BunitTestContext
                                          builder => builder.AddAttribute(1, nameof(BitBadge.Content), 99));
 
         Assert.IsTrue(component.Find(".bit-bdg").ClassList.Contains("bit-bdg-dot"));
-        Assert.AreEqual(0, component.FindAll(".bit-bdg-con").Count);
+        Assert.IsEmpty(component.FindAll(".bit-bdg-con"));
         Assert.AreEqual("New mail", component.Find(".bit-bdg-vhd").TextContent);
     }
 
@@ -189,8 +189,8 @@ public class BitBadgeParamsTests : BunitTestContext
         });
 
         // The badge is taken off the page while its child content keeps rendering.
-        Assert.AreEqual(0, component.FindAll(".bit-bdg-ctn").Count);
-        Assert.AreEqual(1, component.FindAll(".child").Count);
+        Assert.IsEmpty(component.FindAll(".bit-bdg-ctn"));
+        Assert.ContainsSingle(component.FindAll(".child"));
     }
 
     [TestMethod]
@@ -206,7 +206,7 @@ public class BitBadgeParamsTests : BunitTestContext
 
         var decorative = RenderWithParams(new BitBadgeParams { Decorative = true }, builder => builder.AddAttribute(1, nameof(BitBadge.Content), 5));
 
-        Assert.AreEqual(0, decorative.FindAll(".bit-bdg-lvr").Count);
+        Assert.IsEmpty(decorative.FindAll(".bit-bdg-lvr"));
         Assert.AreEqual("true", decorative.Find(".bit-bdg-wrp").GetAttribute("aria-hidden"));
     }
 
@@ -269,7 +269,7 @@ public class BitBadgeParamsTests : BunitTestContext
         var component = RenderWithParams(new BitBadgeParams { ShowZero = false },
                                          builder => builder.AddAttribute(1, nameof(BitBadge.Content), 0));
 
-        Assert.AreEqual(0, component.FindAll(".bit-bdg-ctn").Count);
+        Assert.IsEmpty(component.FindAll(".bit-bdg-ctn"));
     }
 
     [TestMethod]
@@ -309,8 +309,8 @@ public class BitBadgeParamsTests : BunitTestContext
 
         var style = component.Find(".bit-bdg").GetAttribute("style")!;
 
-        StringAssert.Contains(style, "--bit-bdg-ofs-x:2px");
-        StringAssert.Contains(style, "--bit-bdg-ofs-y:-3px");
+        Assert.Contains("--bit-bdg-ofs-x:2px", style);
+        Assert.Contains("--bit-bdg-ofs-y:-3px", style);
     }
 
     [TestMethod]
@@ -343,8 +343,8 @@ public class BitBadgeParamsTests : BunitTestContext
         Assert.AreEqual("yes", root.GetAttribute("data-cascaded"));
 
         var style = root.GetAttribute("style")!;
-        StringAssert.Contains(style, "margin: 1px;");
-        StringAssert.Contains(style, "visibility:hidden");
+        Assert.Contains("margin: 1px;", style);
+        Assert.Contains("visibility:hidden", style);
 
         // The cascaded Disabled, label and tab index reach the button the badge became, the way the badge's own do.
         var button = component.Find("button.bit-bdg-ctn");
@@ -408,7 +408,8 @@ public class BitBadgeParamsTests : BunitTestContext
         Assert.IsTrue(badge.Dot);
         Assert.IsTrue(badge.Hidden);
         Assert.AreEqual("/inbox", badge.Href);
-        Assert.AreEqual("my-icon", badge.Icon?.Name);
+        var actualValue = badge.Icon?.Name;
+        Assert.AreEqual("my-icon", actualValue);
         Assert.AreEqual("Mail", badge.IconName);
         Assert.IsTrue(badge.Inline);
         Assert.IsTrue(badge.Live);

@@ -13,10 +13,10 @@ public class RequiredSemanticsTests
         var validator = new BormValidator();
 
         data.SetValue("accept", false);
-        Assert.Contains(m => m.Message == "Please accept.", await validator.ValidateAsync(form, data));
+        Assert.Contains(m => m.Message == "Please accept.", await validator.ValidateAsync(form, data, cancellationToken: TestContext.CancellationToken));
 
         data.SetValue("accept", true);
-        Assert.IsEmpty(await validator.ValidateAsync(form, data));
+        Assert.IsEmpty(await validator.ValidateAsync(form, data, cancellationToken: TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -30,8 +30,10 @@ public class RequiredSemanticsTests
         var data = new BormDictionaryDataAccessor();
         data.SetValue("optIn", false);
 
-        Assert.IsEmpty(await new BormValidator().ValidateAsync(form, data));
+        Assert.IsEmpty(await new BormValidator().ValidateAsync(form, data, cancellationToken: TestContext.CancellationToken));
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }
 
 [TestClass]
@@ -176,12 +178,14 @@ public class ConditionalRuleTests
         var validator = new BormValidator();
 
         // Personal account: neither rule applies.
-        Assert.IsEmpty(await validator.ValidateAsync(form, new BormModelDataAccessor(model)));
+        Assert.IsEmpty(await validator.ValidateAsync(form, new BormModelDataAccessor(model), cancellationToken: TestContext.CancellationToken));
 
         model.IsBusiness = true;
-        var messages = await validator.ValidateAsync(form, new BormModelDataAccessor(model));
+        var messages = await validator.ValidateAsync(form, new BormModelDataAccessor(model), cancellationToken: TestContext.CancellationToken);
         Assert.Contains(m => m.FieldPath == "CompanyName", messages);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }
 
 [TestClass]

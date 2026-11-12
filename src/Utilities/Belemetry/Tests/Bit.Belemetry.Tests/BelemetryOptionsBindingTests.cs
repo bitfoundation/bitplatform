@@ -104,15 +104,15 @@ public class BelemetryOptionsBindingTests
         Assert.IsFalse(o.Consent.HonorGlobalPrivacyControl);
         Assert.AreEqual(50, o.Consent.PendingLimit);
 
-        CollectionAssert.Contains(o.Privacy.RedactQueryParameters, "ssn");
-        CollectionAssert.Contains(o.Privacy.RedactQueryParameters, "token", "Binding a list adds to the defaults; it does not replace them.");
+        Assert.Contains("ssn", o.Privacy.RedactQueryParameters);
+        Assert.Contains("token", o.Privacy.RedactQueryParameters, "Binding a list adds to the defaults; it does not replace them.");
         Assert.IsTrue(o.Privacy.StripQueryString);
         Assert.IsFalse(o.Privacy.StripFragment);
         Assert.IsFalse(o.Privacy.ScrubPatterns);
         Assert.IsFalse(o.Privacy.CollectUserAgent);
-        CollectionAssert.AreEqual(new[] { "user.email" }, o.Privacy.BlockedAttributes);
-        CollectionAssert.Contains(o.Privacy.RedactedAttributes, "ssn");
-        CollectionAssert.Contains(o.Privacy.RedactedAttributes, "password", "Added to the defaults.");
+        Assert.AreSequenceEqual(new[] { "user.email" }, o.Privacy.BlockedAttributes);
+        Assert.Contains("ssn", o.Privacy.RedactedAttributes);
+        Assert.Contains("password", o.Privacy.RedactedAttributes, "Added to the defaults.");
 
         Assert.IsFalse(o.Errors.CaptureUnhandledExceptions);
         Assert.AreEqual(TimeSpan.FromSeconds(2), o.Errors.DuplicateWindow);
@@ -123,10 +123,10 @@ public class BelemetryOptionsBindingTests
         Assert.AreEqual(BelemetryBrowserTransport.Relay, b.Transport);
         Assert.IsTrue(b.TrackHashChanges);
         Assert.IsTrue(b.TrackPageVisitTime);
-        CollectionAssert.AreEqual(new[] { "/orders/{id:int}" }, b.PageRoutes);
+        Assert.AreSequenceEqual(new[] { "/orders/{id:int}" }, b.PageRoutes);
         Assert.IsFalse(b.DiscoverPageRoutes);
         // The binder appends to a list's defaults, so "click" is there twice; the browser config dedupes it (see BelemetryBrowserConfigFactoryTests).
-        CollectionAssert.AreEqual(new[] { "click", "click", "submit" }, b.InteractionEvents);
+        Assert.AreSequenceEqual(new[] { "click", "click", "submit" }, b.InteractionEvents);
         Assert.IsTrue(b.CaptureInteractionText);
         Assert.AreEqual(32, b.MaxInteractionTextLength);
         Assert.IsFalse(b.TrackRageClicks);
@@ -136,11 +136,11 @@ public class BelemetryOptionsBindingTests
         Assert.IsTrue(b.LongTasks);
         Assert.IsFalse(b.Fetch);
         Assert.IsFalse(b.Xhr);
-        CollectionAssert.Contains(b.PropagateTraceContextTo, "^https://api\\.shop\\.test/");
-        CollectionAssert.Contains(b.IgnoreUrls, "/cdn/");
-        CollectionAssert.Contains(b.IgnoreErrorMessages, "Script error");
+        Assert.Contains("^https://api\\.shop\\.test/", b.PropagateTraceContextTo);
+        Assert.Contains("/cdn/", b.IgnoreUrls);
+        Assert.Contains("Script error", b.IgnoreErrorMessages);
         Assert.IsTrue(b.CaptureConsole);
-        CollectionAssert.Contains(b.ConsoleLevels, "error");
+        Assert.Contains("error", b.ConsoleLevels);
         Assert.AreEqual(TimeSpan.FromMinutes(10), b.SessionInactivityTimeout);
         Assert.AreEqual(TimeSpan.FromHours(8), b.SessionMaxDuration);
         Assert.AreEqual(0.5, b.SessionSampleRatio);
@@ -153,18 +153,18 @@ public class BelemetryOptionsBindingTests
         Assert.AreEqual(LogLevel.Warning, o.Logs.MinimumLevel);
         Assert.IsFalse(o.Logs.IncludeScopes);
         Assert.IsTrue(o.Logs.IncludeMessageTemplate);
-        CollectionAssert.AreEqual(new[] { "Microsoft.AspNetCore" }, o.Logs.ExcludedCategories);
+        Assert.AreSequenceEqual(new[] { "Microsoft.AspNetCore" }, o.Logs.ExcludedCategories);
 
-        CollectionAssert.Contains(o.Traces.Sources, "Shop.*");
-        CollectionAssert.AreEqual(new[] { "Microsoft.AspNetCore.Components.HandleEvent" }, o.Traces.IgnoredActivityNames);
+        Assert.Contains("Shop.*", o.Traces.Sources);
+        Assert.AreSequenceEqual(new[] { "Microsoft.AspNetCore.Components.HandleEvent" }, o.Traces.IgnoredActivityNames);
         Assert.AreEqual(0.25, o.Traces.SamplingRatio);
         Assert.AreEqual(16, o.Traces.MaxEventsPerSpan);
         Assert.AreEqual(8, o.Traces.MaxLinksPerSpan);
 
-        CollectionAssert.Contains(o.Metrics.Meters, "Shop");
+        Assert.Contains("Shop", o.Metrics.Meters);
         Assert.AreEqual(TimeSpan.FromSeconds(30), o.Metrics.ExportInterval);
         Assert.AreEqual(BelemetryMetricTemporality.Delta, o.Metrics.Temporality);
-        CollectionAssert.AreEqual(new double[] { 0, 10, 100 }, o.Metrics.HistogramBoundaries);
+        Assert.AreSequenceEqual(new double[] { 0, 10, 100 }, o.Metrics.HistogramBoundaries);
         Assert.AreEqual(500, o.Metrics.CardinalityLimit);
 
         Assert.AreEqual(4096, o.Batch.MaxQueueSize);
@@ -180,7 +180,7 @@ public class BelemetryOptionsBindingTests
 
         Assert.IsTrue(o.Server.CollectDotnetTelemetry);
         Assert.AreEqual(BelemetryFeatures.Errors | BelemetryFeatures.Traces, o.Server.Features);
-        CollectionAssert.AreEqual(new[] { "/health", "/alive" }, o.Server.IgnoredRequestPaths);
+        Assert.AreSequenceEqual(new[] { "/health", "/alive" }, o.Server.IgnoredRequestPaths);
 
         var otlp = o.OtlpExporters.Single();
         Assert.AreEqual(new Uri("https://otlp.shop.test:4317"), otlp.Endpoint);
@@ -198,7 +198,7 @@ public class BelemetryOptionsBindingTests
         Assert.AreEqual(LogLevel.Information, otlp.MinimumLogLevel);
 
         var azure = o.AzureMonitorExporters.Single();
-        StringAssert.Contains(azure.ConnectionString, "InstrumentationKey=");
+        Assert.Contains("InstrumentationKey=", azure.ConnectionString!);
         Assert.IsFalse(azure.MaskIp);
         Assert.AreEqual(BelemetryCompression.Gzip, azure.Compression);
         Assert.AreEqual(TimeSpan.FromSeconds(20), azure.Timeout);
@@ -230,10 +230,10 @@ public class BelemetryOptionsBindingTests
         Assert.IsFalse(d.IncludeSuccessfulActivity);
         Assert.IsTrue(d.IncludeLogMessages);
         Assert.IsFalse(d.IncludeExceptionMessages);
-        CollectionAssert.AreEqual(new[] { "tenant" }, d.AllowedAttributes);
-        CollectionAssert.AreEqual(new[] { "page" }, d.AllowedQueryParameters);
-        CollectionAssert.Contains(d.RedactedKeys, "ssn", "Appended to the defaults (a binder appends to a list).");
-        CollectionAssert.Contains(d.RedactedKeys, "circuitid");
+        Assert.AreSequenceEqual(new[] { "tenant" }, d.AllowedAttributes);
+        Assert.AreSequenceEqual(new[] { "page" }, d.AllowedQueryParameters);
+        Assert.Contains("ssn", d.RedactedKeys, "Appended to the defaults (a binder appends to a list).");
+        Assert.Contains("circuitid", d.RedactedKeys);
         Assert.AreEqual(BelemetryDiagnosticTriggers.UnhandledExceptions | BelemetryDiagnosticTriggers.BrowserErrors, d.AutoCaptureTriggers);
         Assert.AreEqual(TimeSpan.FromSeconds(1), d.PostTriggerWindow);
         Assert.AreEqual(TimeSpan.FromMinutes(5), d.AutoCaptureCooldown);
@@ -269,8 +269,8 @@ public class BelemetryOptionsBindingTests
         Assert.AreEqual(BelemetryHostKind.Server, settings.Host);
         Assert.IsTrue(settings.CollectDotnet);
         Assert.AreEqual(new Uri("https://otlp.shop.test:4317"), settings.OtlpExporters.Single().Endpoint);
-        Assert.HasCount(1, settings.AzureMonitorExporters);
-        Assert.HasCount(1, settings.SentryExporters);
+        Assert.ContainsSingle(settings.AzureMonitorExporters);
+        Assert.ContainsSingle(settings.SentryExporters);
         Assert.IsTrue(settings.HasExporters);
         Assert.AreEqual("checkout", settings.Resource.Attributes["team"]);
     }

@@ -3,12 +3,12 @@ using Microsoft.Extensions.Logging;
 
 namespace Bit.Brouter.Tests.Hosting.Infrastructure;
 
-public sealed record CapturedLogEntry(string Category, LogLevel Level, string Message, Exception? Exception)
+internal sealed record CapturedLogEntry(string Category, LogLevel Level, string Message, Exception? Exception)
 {
     public override string ToString() => $"[{Level}] {Category}: {Message}{(Exception is null ? "" : " - " + Exception.GetType().Name + ": " + Exception.Message)}";
 }
 
-public sealed class CapturingLoggerProvider : ILoggerProvider
+internal sealed class CapturingLoggerProvider : ILoggerProvider
 {
     private readonly ConcurrentQueue<CapturedLogEntry> _entries = new();
 

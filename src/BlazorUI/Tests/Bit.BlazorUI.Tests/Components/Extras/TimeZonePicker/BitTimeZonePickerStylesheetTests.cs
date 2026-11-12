@@ -17,16 +17,16 @@ public partial class BitTimeZonePickerStylesheetTests
     {
         var stylesheet = SourceFiles.StripScssComments(ReadStylesheet());
 
-        StringAssert.Contains(stylesheet, "--bit-tzp-fs: var(--bit-tzp-sz-fs, var(--bit-TimeZonePicker-font-size, #{$tg-fs-sm}));");
-        StringAssert.Contains(stylesheet, "--bit-tzp-lbl-fs: var(--bit-tzp-sz-fs, var(--bit-TimeZonePicker-label-font-size, var(--bit-TimeZonePicker-font-size, #{$tg-fs-sm})));");
-        StringAssert.Contains(stylesheet, "--bit-tzp-h: var(--bit-tzp-sz-h, var(--bit-TimeZonePicker-min-height, #{$siz-ctrl-md}));");
-        StringAssert.Contains(stylesheet, "--bit-tzp-pad: var(--bit-tzp-sz-pad, var(--bit-TimeZonePicker-padding, 0 #{$siz-ctrl-pad-x-md}));");
-        StringAssert.Contains(stylesheet, "--bit-tzp-itm-h: var(--bit-tzp-sz-itm-h, var(--bit-TimeZonePicker-item-height, #{$siz-item-md}));");
+        Assert.Contains("--bit-tzp-fs: var(--bit-tzp-sz-fs, var(--bit-TimeZonePicker-font-size, #{$tg-fs-sm}));", stylesheet);
+        Assert.Contains("--bit-tzp-lbl-fs: var(--bit-tzp-sz-fs, var(--bit-TimeZonePicker-label-font-size, var(--bit-TimeZonePicker-font-size, #{$tg-fs-sm})));", stylesheet);
+        Assert.Contains("--bit-tzp-h: var(--bit-tzp-sz-h, var(--bit-TimeZonePicker-min-height, #{$siz-ctrl-md}));", stylesheet);
+        Assert.Contains("--bit-tzp-pad: var(--bit-tzp-sz-pad, var(--bit-TimeZonePicker-padding, 0 #{$siz-ctrl-pad-x-md}));", stylesheet);
+        Assert.Contains("--bit-tzp-itm-h: var(--bit-tzp-sz-itm-h, var(--bit-TimeZonePicker-item-height, #{$siz-item-md}));", stylesheet);
 
-        StringAssert.Contains(stylesheet, "--bit-tzp-bg: var(--bit-tzp-kind-bg, var(--bit-TimeZonePicker-background, #{$clr-bg-pri}));");
-        StringAssert.Contains(stylesheet, "--bit-tzp-brd: var(--bit-tzp-kind-brd, var(--bit-tzp-role-main, var(--bit-TimeZonePicker-border-color, #{$clr-brd-pri})));");
-        StringAssert.Contains(stylesheet, "--bit-tzp-brd-hover: var(--bit-tzp-kind-brd-hover, var(--bit-tzp-role-main, var(--bit-TimeZonePicker-hover-border-color, #{$clr-brd-pri-hover})));");
-        StringAssert.Contains(stylesheet, "--bit-tzp-focus: var(--bit-tzp-role-focus, var(--bit-TimeZonePicker-focus-color));");
+        Assert.Contains("--bit-tzp-bg: var(--bit-tzp-kind-bg, var(--bit-TimeZonePicker-background, #{$clr-bg-pri}));", stylesheet);
+        Assert.Contains("--bit-tzp-brd: var(--bit-tzp-kind-brd, var(--bit-tzp-role-main, var(--bit-TimeZonePicker-border-color, #{$clr-brd-pri})));", stylesheet);
+        Assert.Contains("--bit-tzp-brd-hover: var(--bit-tzp-kind-brd-hover, var(--bit-tzp-role-main, var(--bit-TimeZonePicker-hover-border-color, #{$clr-brd-pri-hover})));", stylesheet);
+        Assert.Contains("--bit-tzp-focus: var(--bit-tzp-role-focus, var(--bit-TimeZonePicker-focus-color));", stylesheet);
 
         Assert.IsFalse(PublicBeforePrivate().IsMatch(stylesheet), "A public variable is read before the parameter it restyles the default of.");
     }
@@ -41,11 +41,11 @@ public partial class BitTimeZonePickerStylesheetTests
         foreach (var property in new[] { "--bit-tzp-sz-fs", "--bit-tzp-sz-h", "--bit-tzp-sz-pad", "--bit-tzp-sz-itm-h",
                                          "--bit-tzp-role-main", "--bit-tzp-role-focus", "--bit-tzp-kind-bg", "--bit-tzp-kind-brd", "--bit-tzp-kind-brd-hover" })
         {
-            StringAssert.Contains(resets, $"{property}: initial;");
+            Assert.Contains($"{property}: initial;", resets);
         }
 
-        StringAssert.Contains(SourceFiles.GetScssDeclarations(ReadStylesheet(), "\n.bit-tzp {"), "@include tzp-resets;");
-        StringAssert.Contains(SourceFiles.GetScssDeclarations(ReadStylesheet(), "\n.bit-tzp-cal {"), "@include tzp-resets;");
+        Assert.Contains("@include tzp-resets;", SourceFiles.GetScssDeclarations(ReadStylesheet(), "\n.bit-tzp {"));
+        Assert.Contains("@include tzp-resets;", SourceFiles.GetScssDeclarations(ReadStylesheet(), "\n.bit-tzp-cal {"));
     }
 
     [TestMethod]
@@ -53,9 +53,9 @@ public partial class BitTimeZonePickerStylesheetTests
     {
         var stylesheet = ReadStylesheet();
 
-        StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-tzp-lbl {"), "font-size: var(--bit-tzp-lbl-fs);");
-        StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-tzp-rlb {"), "font-size: var(--bit-tzp-lbl-fs);");
-        StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-tzp-cal {"), "@include tzp-vars;");
+        Assert.Contains("font-size: var(--bit-tzp-lbl-fs);", SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-tzp-lbl {"));
+        Assert.Contains("font-size: var(--bit-tzp-lbl-fs);", SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-tzp-rlb {"));
+        Assert.Contains("@include tzp-vars;", SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-tzp-cal {"));
     }
 
     [TestMethod]
@@ -64,8 +64,8 @@ public partial class BitTimeZonePickerStylesheetTests
         // The offsets lead every row, so their figures are of one width and never wrap.
         var offset = SourceFiles.GetScssDeclarations(ReadStylesheet(), "\n.bit-tzp-ofs {");
 
-        StringAssert.Contains(offset, "font-variant-numeric: tabular-nums;");
-        StringAssert.Contains(offset, "white-space: nowrap;");
+        Assert.Contains("font-variant-numeric: tabular-nums;", offset);
+        Assert.Contains("white-space: nowrap;", offset);
     }
 
     [TestMethod]
@@ -79,9 +79,9 @@ public partial class BitTimeZonePickerStylesheetTests
         var separator = SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-tzp-sep {");
         var block = SourceFiles.GetScssBlock(stylesheet, "\n.bit-tzp-sep {");
 
-        StringAssert.Contains(separator, "@include visually-hidden;");
-        Assert.IsFalse(block.Contains("display: none"));
-        Assert.IsFalse(block.Contains("visibility: hidden"));
+        Assert.Contains("@include visually-hidden;", separator);
+        Assert.DoesNotContain("display: none", block);
+        Assert.DoesNotContain("visibility: hidden", block);
     }
 
     [TestMethod]
@@ -90,12 +90,12 @@ public partial class BitTimeZonePickerStylesheetTests
         var stylesheet = ReadStylesheet();
 
         var field = SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-tzp-fld {");
-        StringAssert.Contains(field, "--bit-tzp-fld-brd-st: initial;");
-        StringAssert.Contains(field, "var(--bit-tzp-fld-brd-st, var(--bit-tzp-brd))");
+        Assert.Contains("--bit-tzp-fld-brd-st: initial;", field);
+        Assert.Contains("var(--bit-tzp-fld-brd-st, var(--bit-tzp-brd))", field);
 
         var item = SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-tzp-itm {");
-        StringAssert.Contains(item, "--bit-tzp-itm-st-bg: initial;");
-        StringAssert.Contains(item, "background-color: var(--bit-tzp-itm-st-bg, transparent);");
+        Assert.Contains("--bit-tzp-itm-st-bg: initial;", item);
+        Assert.Contains("background-color: var(--bit-tzp-itm-st-bg, transparent);", item);
     }
 
     private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI.Extras", "Components", "TimeZonePicker", "BitTimeZonePicker.scss");

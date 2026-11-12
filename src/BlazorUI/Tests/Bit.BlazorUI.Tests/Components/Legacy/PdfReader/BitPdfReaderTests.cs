@@ -39,7 +39,7 @@ public class BitPdfReaderTests : BunitTestContext
         var renders = Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.Legacy.PdfReader.renderPage").ToList();
 
         Assert.AreEqual(PdfId, canvas.Id);
-        Assert.AreEqual(1, renders.Count);
+        Assert.ContainsSingle(renders);
         Assert.AreEqual(1, (int)renders[0].Arguments[1]!);
     }
 
@@ -58,10 +58,10 @@ public class BitPdfReaderTests : BunitTestContext
 
         var renders = Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.Legacy.PdfReader.renderPage").ToList();
 
-        Assert.AreEqual(4, renders.Count);
-        Assert.AreEqual(4, canvases.Count);
-        Assert.IsTrue(canvases.Any(c => c.Id == $"{PdfId}-1"));
-        Assert.IsTrue(canvases.Any(c => c.Id == $"{PdfId}-4"));
+        Assert.HasCount(4, renders);
+        Assert.HasCount(4, canvases);
+        Assert.Contains(c => c.Id == $"{PdfId}-1", canvases);
+        Assert.Contains(c => c.Id == $"{PdfId}-4", canvases);
     }
 
     [TestMethod]
@@ -102,7 +102,7 @@ public class BitPdfReaderTests : BunitTestContext
                                                    .Select(i => (int)i.Arguments[1]!)
                                                    .ToList();
 
-        CollectionAssert.AreEqual(new List<int> { 1, 2, 1, 3, 1 }, renders);
+        Assert.AreSequenceEqual(new List<int> { 1, 2, 1, 3, 1 }, renders);
     }
 
     [TestMethod]
@@ -120,7 +120,7 @@ public class BitPdfReaderTests : BunitTestContext
 
         var refreshes = Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.Legacy.PdfReader.refreshPage").ToList();
 
-        Assert.AreEqual(3, refreshes.Count);
+        Assert.HasCount(3, refreshes);
     }
 
     [TestMethod]
@@ -156,7 +156,7 @@ public class BitPdfReaderTests : BunitTestContext
         var canvas = component.Find("canvas");
 
         Assert.IsTrue(canvas.ClassList.Contains("canvas-class"));
-        Assert.IsTrue((canvas.GetAttribute("style") ?? string.Empty).Contains("height:100px"));
+        Assert.Contains("height:100px", (canvas.GetAttribute("style") ?? string.Empty));
     }
 
     [TestMethod]
@@ -183,7 +183,7 @@ public class BitPdfReaderTests : BunitTestContext
                                                    .Select(i => (int)i.Arguments[1]!)
                                                    .ToList();
 
-        CollectionAssert.AreEqual(new List<int> { 2 }, renders);
+        Assert.AreSequenceEqual(new List<int> { 2 }, renders);
     }
 
     [TestMethod]
@@ -219,11 +219,11 @@ public class BitPdfReaderTests : BunitTestContext
             [nameof(BitPdfReaderLegacy.Horizontal)] = true,
         });
 
-        StringAssert.Contains(html, "bit-pdr");
-        StringAssert.Contains(html, "bit-pdr-hor");
-        StringAssert.Contains(html, $"id=\"{PdfId}\"");
-        StringAssert.Contains(html, "canvas-class");
-        Assert.AreEqual(1, System.Text.RegularExpressions.Regex.Matches(html, "<canvas").Count);
+        Assert.Contains("bit-pdr", html);
+        Assert.Contains("bit-pdr-hor", html);
+        Assert.Contains($"id=\"{PdfId}\"", html);
+        Assert.Contains("canvas-class", html);
+        Assert.ContainsSingle(System.Text.RegularExpressions.Regex.Matches(html, "<canvas"));
     }
 
     [TestMethod]
@@ -249,7 +249,7 @@ public class BitPdfReaderTests : BunitTestContext
         Assert.AreEqual("root", root.GetAttribute("data-test"));
         Assert.AreEqual("rtl", root.GetAttribute("dir"));
         Assert.IsTrue(root.ClassList.Contains("custom-class"));
-        StringAssert.Contains(root.GetAttribute("style"), "padding:1px");
+        Assert.Contains("padding:1px", root.GetAttribute("style")!);
         // The canvas keeps its own id, the one pdf.js draws into.
         Assert.AreEqual(PdfId, component.Find("canvas").Id);
     }

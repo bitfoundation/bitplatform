@@ -52,8 +52,8 @@ public class BitDateRangePickerParamsTests : BunitTestContext
     [TestMethod]
     public void BitDateRangePickerParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitDateRangePicker)}", BitDateRangePickerParams.ParamName);
-        Assert.AreEqual("BitParams.BitDateRangePicker", BitDateRangePickerParams.ParamName);
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitDateRangePicker)}", new BitDateRangePickerParams().Name);
+        Assert.AreEqual("BitParams.BitDateRangePicker", new BitDateRangePickerParams().Name);
     }
 
     [TestMethod]
@@ -296,7 +296,7 @@ public class BitDateRangePickerParamsTests : BunitTestContext
         Assert.AreSame(footer, instance.CalloutFooterTemplate);
         Assert.AreSame(header, instance.CalloutHeaderTemplate);
         // The cascade hands the component a copy of the dictionary, so an instance never writes into the shared one.
-        CollectionAssert.AreEquivalent(calloutHtmlAttributes.ToList(), instance.CalloutHtmlAttributes.ToList());
+        Assert.AreSequenceEqual(calloutHtmlAttributes.ToList(), instance.CalloutHtmlAttributes.ToList(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         Assert.AreEqual("Cascaded cancel", instance.CancelButtonText);
         Assert.AreSame(classes, instance.Classes);
         Assert.AreSame(clearButtonIcon, instance.ClearButtonIcon);
@@ -453,9 +453,9 @@ public class BitDateRangePickerParamsTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("bit-dtrp-nbd"));
         Assert.IsTrue(root.ClassList.Contains("bit-dtrp-lic"));
         Assert.AreEqual("ltr", root.GetAttribute("dir"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin: 1px;");
-        StringAssert.Contains(root.GetAttribute("style"), "color: red;");
-        StringAssert.Contains(root.GetAttribute("style"), "visibility:hidden");
+        Assert.Contains("margin: 1px;", root.GetAttribute("style")!);
+        Assert.Contains("color: red;", root.GetAttribute("style")!);
+        Assert.Contains("visibility:hidden", root.GetAttribute("style")!);
         Assert.AreEqual("Cascaded placeholder", input.GetAttribute("placeholder"));
         Assert.AreEqual("Cascaded aria label", input.GetAttribute("aria-label"));
         Assert.AreEqual("5", input.GetAttribute("tabindex"));
@@ -533,7 +533,7 @@ public class BitDateRangePickerParamsTests : BunitTestContext
         Assert.AreEqual("Own placeholder", component.Find(".bit-dtrp-inp").GetAttribute("placeholder"));
 
         // What the picker left unset is still filled in from the cascade.
-        Assert.IsTrue(component.FindAll(".bit-dtrp-wnm").Count > 0);
+        Assert.IsNotEmpty(component.FindAll(".bit-dtrp-wnm"));
     }
 
     [TestMethod]
@@ -546,7 +546,7 @@ public class BitDateRangePickerParamsTests : BunitTestContext
         });
 
         Assert.IsTrue(component.Find(".bit-dtrp").ClassList.Contains("cascaded-root"));
-        StringAssert.Contains(component.Find(".bit-dtrp").GetAttribute("style"), "color: red;");
+        Assert.Contains("color: red;", component.Find(".bit-dtrp").GetAttribute("style")!);
         Assert.IsTrue(component.Find(".bit-dtrp-inp").ClassList.Contains("cascaded-input"));
         Assert.AreEqual("color: blue;", component.Find(".bit-dtrp-inp").GetAttribute("style"));
         Assert.IsTrue(component.Find(".bit-dtrp-cal").ClassList.Contains("cascaded-callout"));
@@ -662,7 +662,7 @@ public class BitDateRangePickerParamsTests : BunitTestContext
         Assert.IsFalse(root.ClassList.Contains("bit-dtrp-nbd"));
         Assert.IsFalse(root.ClassList.Contains("bit-dtrp-sm"));
         Assert.IsFalse(root.ClassList.Contains("bit-dtrp-lg"));
-        Assert.AreEqual(1, component.FindAll(".bit-dtrp-dwp").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-dtrp-dwp"));
     }
 
     [TestMethod]

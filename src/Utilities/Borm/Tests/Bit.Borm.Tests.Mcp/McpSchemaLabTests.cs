@@ -36,7 +36,7 @@ public class McpSchemaLabTests
         Assert.AreEqual(8, report.FieldCount);
         Assert.IsEmpty(report.Diagnostics!);
         Assert.IsTrue(report.RoundTrips);
-        CollectionAssert.AreEqual(new[] { "you", "request" }, report.Steps!.Select(step => step.Id).ToArray());
+        Assert.AreSequenceEqual(new[] { "you", "request" }, report.Steps!.Select(step => step.Id).ToArray());
 
         var company = Field(report, "company");
 
@@ -50,11 +50,11 @@ public class McpSchemaLabTests
 
         Assert.AreEqual("Select", topic.Type);
         Assert.IsTrue(topic.Required);
-        CollectionAssert.AreEqual(new[] { "bug = Something is broken", "idea = An idea", "billing = Billing" }, topic.Options);
+        Assert.AreSequenceEqual(new[] { "bug = Something is broken", "idea = An idea", "billing = Billing" }, topic.Options);
 
         var severity = Field(report, "severity");
 
-        CollectionAssert.Contains(severity.Rules, "range >= 1 and <= 5");
+        Assert.Contains("range >= 1 and <= 5", severity.Rules!);
         Assert.AreEqual("""{"field":"topic","op":"Equals","value":"bug"}""", severity.VisibleWhen);
 
         Assert.AreEqual("Tags", Field(report, "labels").Type);
@@ -90,13 +90,13 @@ public class McpSchemaLabTests
         var report = await InspectAsync(schema.ToJsonString());
 
         Assert.IsTrue(report.Valid, report.Error);
-        CollectionAssert.AreEqual(new[] { "lines", "lines[].product", "lines[].quantity", "tags", "tags[]" }, report.Fields!.Select(field => field.Path).ToArray());
+        Assert.AreSequenceEqual(new[] { "lines", "lines[].product", "lines[].quantity", "tags", "tags[]" }, report.Fields!.Select(field => field.Path).ToArray());
 
         Assert.AreEqual("Array", Field(report, "lines").Type);
-        CollectionAssert.Contains(Field(report, "lines").Rules, "items 1..any");
+        Assert.Contains("items 1..any", Field(report, "lines").Rules!);
         Assert.IsTrue(Field(report, "lines[].product").Required);
-        CollectionAssert.Contains(Field(report, "lines[].quantity").Rules, "range > 0", "An exclusive bound stays exclusive.");
-        CollectionAssert.Contains(Field(report, "tags[]").Rules, "pattern ^[a-z]+$");
+        Assert.Contains("range > 0", Field(report, "lines[].quantity").Rules!, "An exclusive bound stays exclusive.");
+        Assert.Contains("pattern ^[a-z]+$", Field(report, "tags[]").Rules!);
         Assert.IsTrue(report.RoundTrips);
     }
 
@@ -147,11 +147,11 @@ public class McpSchemaLabTests
 
         // The oracle is the library itself: the same document, imported and checked here.
         Assert.IsTrue(BormJsonSchemaImporter.TryImport(schema, out var definition, out _));
-        CollectionAssert.AreEqual(definition.Validate().Select(diagnostic => diagnostic.Message).ToArray(), report.Diagnostics!.Select(diagnostic => diagnostic.Message).ToArray());
+        Assert.AreSequenceEqual(definition.Validate().Select(diagnostic => diagnostic.Message).ToArray(), report.Diagnostics!.Select(diagnostic => diagnostic.Message).ToArray());
 
-        Assert.IsTrue(report.Diagnostics!.Any(diagnostic => diagnostic.Severity == "Error" && diagnostic.Path == "ghost"));
-        Assert.IsTrue(report.Diagnostics!.Any(diagnostic => diagnostic.Path == "name" && diagnostic.Message.Contains("MinLength", StringComparison.Ordinal)));
-        Assert.IsTrue(report.Notes.Any(note => note.Contains("Validate() reports", StringComparison.Ordinal)));
+        Assert.Contains(diagnostic => diagnostic.Severity == "Error" && diagnostic.Path == "ghost", report.Diagnostics!);
+        Assert.Contains(diagnostic => diagnostic.Path == "name" && diagnostic.Message.Contains("MinLength", StringComparison.Ordinal), report.Diagnostics);
+        Assert.Contains(note => note.Contains("Validate() reports", StringComparison.Ordinal), report.Notes);
     }
 
     [TestMethod]
@@ -206,7 +206,7 @@ public class McpSchemaLabTests
             Assert.IsFalse(BormJsonSchemaImporter.TryImport(schema, out _, out var error));
             Assert.IsFalse(report.Valid, schema);
             Assert.AreEqual(error, report.Error, schema);
-            Assert.IsTrue(report.Notes.Any(note => note.Contains("TryImport's own message", StringComparison.Ordinal)), schema);
+            Assert.Contains(note => note.Contains("TryImport's own message", StringComparison.Ordinal), report.Notes, schema);
         }
     }
 
@@ -244,7 +244,7 @@ public class McpSchemaLabTests
         var report = await InspectAsync(new JsonObject { ["type"] = "object", ["$defs"] = definitions }.ToJsonString());
 
         Assert.IsTrue(report.Valid, report.Error);
-        Assert.IsTrue(clock.Elapsed < TimeSpan.FromSeconds(3), $"took {clock.Elapsed}");
+        Assert.IsLessThan(TimeSpan.FromSeconds(3), clock.Elapsed, $"took {clock.Elapsed}");
         Note(report, "'#/$defs/missing' at /$defs/last", "point at nothing");
     }
 
@@ -255,7 +255,7 @@ public class McpSchemaLabTests
 
         Assert.IsTrue(report.Valid, report.Error);
         Assert.AreEqual(0, report.FieldCount);
-        Assert.IsTrue(report.Notes.Any(note => note.Contains("no fields at all", StringComparison.Ordinal)));
+        Assert.Contains(note => note.Contains("no fields at all", StringComparison.Ordinal), report.Notes);
     }
 
     internal static Task<BormSchemaReportDto> InspectAsync(string? schema)
@@ -271,7 +271,7 @@ public class McpSchemaLabTests
 
     private static void Note(BormSchemaReportDto report, string subject, string finding)
     {
-        Assert.IsTrue(report.Notes.Any(note => note.Contains(subject, StringComparison.Ordinal) && note.Contains(finding, StringComparison.Ordinal)),
+        Assert.Contains(note => note.Contains(subject, StringComparison.Ordinal) && note.Contains(finding, StringComparison.Ordinal), report.Notes,
             $"No note says {subject} {finding}:{Environment.NewLine}{string.Join(Environment.NewLine, report.Notes)}");
     }
 }

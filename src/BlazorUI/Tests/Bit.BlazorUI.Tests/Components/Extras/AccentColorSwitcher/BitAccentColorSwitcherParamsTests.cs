@@ -53,7 +53,7 @@ public class BitAccentColorSwitcherParamsTests : BunitTestContext
     [TestMethod]
     public void BitAccentColorSwitcherParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual("BitParams.BitAccentColorSwitcher", BitAccentColorSwitcherParams.ParamName);
+        Assert.AreEqual("BitParams.BitAccentColorSwitcher", new BitAccentColorSwitcherParams().Name);
     }
 
     [TestMethod]
@@ -76,7 +76,7 @@ public class BitAccentColorSwitcherParamsTests : BunitTestContext
                                                        .Where(n => baseParameters.Contains(n) is false && _notCascaded.Contains(n) is false)
                                                        .ToArray();
 
-        Assert.IsTrue(parameters.Length > 0);
+        Assert.IsNotEmpty(parameters);
 
         foreach (var name in parameters)
         {
@@ -91,7 +91,7 @@ public class BitAccentColorSwitcherParamsTests : BunitTestContext
 
         var swatches = component.FindAll(".bit-acs-swt");
 
-        Assert.AreEqual(2, swatches.Count);
+        Assert.HasCount(2, swatches);
         Assert.AreEqual("Crimson", swatches[0].GetAttribute("title"));
         Assert.AreEqual("Indigo", swatches[1].GetAttribute("title"));
     }
@@ -112,12 +112,12 @@ public class BitAccentColorSwitcherParamsTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("cascaded-root"));
         Assert.IsTrue(root.ClassList.Contains("cascaded-classes-root"));
         Assert.AreEqual("rtl", root.GetAttribute("dir"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin: 1px");
+        Assert.Contains("margin: 1px", root.GetAttribute("style")!);
 
         foreach (var swatch in component.FindAll(".bit-acs-swt"))
         {
             Assert.IsTrue(swatch.ClassList.Contains("cascaded-swatch"));
-            StringAssert.Contains(swatch.GetAttribute("style"), "padding: 2px");
+            Assert.Contains("padding: 2px", swatch.GetAttribute("style")!);
         }
     }
 
@@ -147,7 +147,7 @@ public class BitAccentColorSwitcherParamsTests : BunitTestContext
 
         var swatch = component.Find(".bit-acs-swt");
 
-        Assert.AreEqual(1, component.FindAll(".bit-acs-swt").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-acs-swt"));
         Assert.AreEqual("Teal", swatch.GetAttribute("title"));
         Assert.IsTrue(swatch.ClassList.Contains("own-swatch"));
         Assert.IsFalse(swatch.ClassList.Contains("cascaded-swatch"));
@@ -160,7 +160,7 @@ public class BitAccentColorSwitcherParamsTests : BunitTestContext
 
         var root = component.Find(".bit-acs");
 
-        Assert.AreEqual(BitAccentColorSwitcher.DefaultAccents.Count, component.FindAll(".bit-acs-swt").Count);
+        Assert.HasCount(BitAccentColorSwitcher.DefaultAccents.Count, component.FindAll(".bit-acs-swt"));
         Assert.AreEqual("bit-acs", root.GetAttribute("class")!.Trim());
         Assert.IsTrue(string.IsNullOrEmpty(root.GetAttribute("style")));
         Assert.IsNull(root.GetAttribute("dir"));

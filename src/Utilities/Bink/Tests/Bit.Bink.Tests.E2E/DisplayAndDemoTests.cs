@@ -115,7 +115,7 @@ public sealed class DisplayAndDemoTests : BinkTest
 
         int ink = await CountInkAsync(page);
         TestContext.WriteLine($"ink after the stray contact was cancelled: {ink}");
-        Assert.IsTrue(ink > 300, $"the stroke was discarded when an unrelated pointer was cancelled ({ink} ink pixels)");
+        Assert.IsGreaterThan(300, ink, $"the stroke was discarded when an unrelated pointer was cancelled ({ink} ink pixels)");
     }
 
     [TestMethod]
@@ -188,11 +188,11 @@ public sealed class DisplayAndDemoTests : BinkTest
         int surfaces = await page.EvaluateAsync<int>("() => globalThis.__bitBinkSurfaces ? globalThis.__bitBinkSurfaces.size : -1");
         int liveCanvases = await page.EvaluateAsync<int>("() => document.querySelectorAll('.bit-bink-canvas').length");
         TestContext.WriteLine($"surfaces registered: {surfaces}, canvases in the DOM: {liveCanvases}");
-        Assert.IsTrue(surfaces >= 0, "the browser layer never registered a surface");
-        Assert.IsTrue(surfaces <= liveCanvases, $"{surfaces} surfaces are registered for {liveCanvases} canvases");
+        Assert.IsGreaterThanOrEqualTo(0, surfaces, "the browser layer never registered a surface");
+        Assert.IsLessThanOrEqualTo(liveCanvases, surfaces, $"{surfaces} surfaces are registered for {liveCanvases} canvases");
 
         await DrawAsync(page, (120, 120), (320, 200));
-        Assert.IsTrue(await CountInkAsync(page) > 200, "the canvas stopped drawing after repeated navigation");
+        Assert.IsGreaterThan(200, await CountInkAsync(page), "the canvas stopped drawing after repeated navigation");
     }
 
     [TestMethod]
@@ -250,7 +250,7 @@ public sealed class DisplayAndDemoTests : BinkTest
         lock (problems) found = [.. problems];
         TestContext.WriteLine($"{path}: {count} buttons exercised, {found.Length} problems");
         foreach (string problem in found) TestContext.WriteLine("  " + problem);
-        Assert.AreEqual(0, found.Length, $"{path} logged errors:{Environment.NewLine}{string.Join(Environment.NewLine, found)}");
+        Assert.IsEmpty(found, $"{path} logged errors:{Environment.NewLine}{string.Join(Environment.NewLine, found)}");
     }
 
     [TestMethod]
@@ -261,11 +261,11 @@ public sealed class DisplayAndDemoTests : BinkTest
         var buttons = page.Locator(".bink-toolbar button:enabled:visible");
         int count = await buttons.CountAsync();
         TestContext.WriteLine($"toolbar buttons: {count}");
-        Assert.IsTrue(count > 5, "the whiteboard toolbar should offer more than a handful of controls");
+        Assert.IsGreaterThan(5, count, "the whiteboard toolbar should offer more than a handful of controls");
 
         // Select the pen again so the surface is drawable, then confirm ink still lands.
         await page.GetByRole(AriaRole.Button, new() { Name = "Pen", Exact = true }).First.ClickAsync();
         await DrawAsync(page, (140, 140), (340, 240));
-        Assert.IsTrue(await CountInkAsync(page) > 200, "the whiteboard stopped drawing");
+        Assert.IsGreaterThan(200, await CountInkAsync(page), "the whiteboard stopped drawing");
     }
 }

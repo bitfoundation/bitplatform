@@ -87,8 +87,7 @@ public partial class ServerSideHttpClientTests
 
         var origins = scope.ServiceProvider.GetRequiredService<HttpClient>().DefaultRequestHeaders.GetValues("X-Origin").ToArray();
 
-        Assert.HasCount(1, origins,
-            "X-Origin must be single valued; a second value makes GetWebAppUrl() reject the comma-joined string and " +
+        Assert.ContainsSingle(origins, "X-Origin must be single valued; a second value makes GetWebAppUrl() reject the comma-joined string and " +
             "makes the HubConnection registration's Single() throw.");
         Assert.AreEqual("https://app.example.com/", origins[0]);
     }

@@ -12,7 +12,7 @@ namespace Bit.BlazorUI.Tests.Components.Inputs.ChoiceGroup;
 [TestClass]
 public class BitChoiceGroupNameSelectorsTests : BunitTestContext
 {
-    public class Fruit
+    internal class Fruit
     {
         public string? Name { get; set; }
 
@@ -61,16 +61,16 @@ public class BitChoiceGroupNameSelectorsTests : BunitTestContext
         var containers = component.FindAll(".bit-chg-icn");
         var inputs = component.FindAll(".bit-chg-icn input");
 
-        Assert.AreEqual(3, containers.Count);
-        CollectionAssert.AreEqual(new[] { "Apple", "Lemon", "Durian" }, component.FindAll(".bit-chg-itx").Select(t => t.TextContent).ToArray());
-        CollectionAssert.AreEqual(new[] { "apl", "lmn", "drn" }, inputs.Select(i => i.GetAttribute("value")).ToArray());
+        Assert.HasCount(3, containers);
+        Assert.AreSequenceEqual(new[] { "Apple", "Lemon", "Durian" }, component.FindAll(".bit-chg-itx").Select(t => t.TextContent).ToArray());
+        Assert.AreSequenceEqual(new[] { "apl", "lmn", "drn" }, inputs.Select(i => i.GetAttribute("value")).ToArray());
         Assert.AreEqual("Sweet", component.Find(".bit-chg-dsc").TextContent);
         Assert.IsTrue(containers[1].QuerySelector(".bit-chg-ico")!.ClassList.Contains("bit-icon--Sunny"));
         Assert.IsTrue(inputs[2].HasAttribute("disabled"));
         Assert.IsTrue(containers[2].ClassList.Contains("bit-chg-ids"));
 
         // The index is written back onto the items through the name given for it.
-        CollectionAssert.AreEqual(new[] { 0, 1, 2 }, fruits.Select(f => f.Pos).ToArray());
+        Assert.AreSequenceEqual(new[] { 0, 1, 2 }, fruits.Select(f => f.Pos).ToArray());
     }
 
     [TestMethod]
@@ -112,7 +112,7 @@ public class BitChoiceGroupNameSelectorsTests : BunitTestContext
             parameters.Add(p => p.NameSelectors, selectors);
         });
 
-        CollectionAssert.AreEqual(new[] { "APPLE", "LEMON", "DURIAN" }, component.FindAll(".bit-chg-itx").Select(t => t.TextContent).ToArray());
+        Assert.AreSequenceEqual(new[] { "APPLE", "LEMON", "DURIAN" }, component.FindAll(".bit-chg-itx").Select(t => t.TextContent).ToArray());
 
         var inputs = component.FindAll(".bit-chg-icn input");
 
@@ -139,14 +139,14 @@ public class BitChoiceGroupNameSelectorsTests : BunitTestContext
             parameters.Add(p => p.Value, "2");
         });
 
-        CollectionAssert.AreEqual(new[] { "First", "Second" }, component.FindAll(".bit-chg-itx").Select(t => t.TextContent).ToArray());
+        Assert.AreSequenceEqual(new[] { "First", "Second" }, component.FindAll(".bit-chg-itx").Select(t => t.TextContent).ToArray());
         Assert.IsTrue(component.FindAll(".bit-chg-icn")[1].ClassList.Contains("bit-chg-ich"));
         Assert.IsTrue(component.FindAll(".bit-chg-icn")[1].ClassList.Contains("bit-chg-ids"));
         Assert.AreEqual(1, items[1].Index);
         Assert.IsTrue(items[1].IsSelected);
     }
 
-    public class LookAlike
+    internal class LookAlike
     {
         public string? Text { get; set; }
 

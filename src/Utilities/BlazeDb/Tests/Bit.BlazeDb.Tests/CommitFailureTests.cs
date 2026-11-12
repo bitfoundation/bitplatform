@@ -74,7 +74,7 @@ public class CommitFailureTests
 
         // The database is usable straight away, and what did commit is all the log holds.
         table.Insert(new Person(4, "Alan", 0));
-        await db.FlushAsync();
+        await db.FlushAsync(TestContext.CancellationToken);
         await using var reopened = await OpenAsync(storage.Clone());
         Assert.AreSequenceEqual([1, 4], reopened.GetTable(Fragile).Scan().Select(p => p.Id).Order().ToList());
     }
@@ -91,4 +91,6 @@ public class CommitFailureTests
         Assert.ThrowsExactly<InvalidOperationException>(() => table.Insert(new Person(2, "boom", 0)));
         Assert.AreEqual(1, table.Count);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

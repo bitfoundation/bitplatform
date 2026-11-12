@@ -53,9 +53,9 @@ public class QrVersionTableTests
             var q = version.GetEcBlocksForLevel(BbQrErrorCorrectionLevel.Q).TotalEcCodewords;
             var h = version.GetEcBlocksForLevel(BbQrErrorCorrectionLevel.H).TotalEcCodewords;
 
-            Assert.IsTrue(l < m, $"Version {number}: L should carry fewer EC codewords than M.");
-            Assert.IsTrue(m < q, $"Version {number}: M should carry fewer EC codewords than Q.");
-            Assert.IsTrue(q < h, $"Version {number}: Q should carry fewer EC codewords than H.");
+            Assert.IsLessThan(m, l, $"Version {number}: L should carry fewer EC codewords than M.");
+            Assert.IsLessThan(q, m, $"Version {number}: M should carry fewer EC codewords than Q.");
+            Assert.IsLessThan(h, q, $"Version {number}: Q should carry fewer EC codewords than H.");
         }
     }
 
@@ -77,7 +77,7 @@ public class QrVersionTableTests
 
             for (var i = 1; i < centers.Length; i++)
             {
-                Assert.IsTrue(centers[i] > centers[i - 1], $"Version {number}: centres must ascend.");
+                Assert.IsGreaterThan(centers[i - 1], centers[i], $"Version {number}: centres must ascend.");
             }
         }
     }

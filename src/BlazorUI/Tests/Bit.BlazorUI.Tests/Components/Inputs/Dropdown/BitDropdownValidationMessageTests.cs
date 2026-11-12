@@ -44,7 +44,7 @@ public class BitDropdownValidationMessageTests : BunitTestContext
         var component = RenderDropdown(editContext, model, new() { [nameof(StringDropdown.ShowValidationMessage)] = true });
 
         // Nothing is shown before the EditContext has anything to say.
-        Assert.AreEqual(0, component.FindAll(".bit-drp-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-drp-erm"));
         Assert.IsNull(component.Find(Trigger).GetAttribute("aria-describedby"));
 
         component.InvokeAsync(() => editContext.Validate());
@@ -62,7 +62,7 @@ public class BitDropdownValidationMessageTests : BunitTestContext
         component.FindAll(".bit-drp-itm")[0].Click();
 
         Assert.AreEqual("f-app", model.Value);
-        Assert.AreEqual(0, component.FindAll(".bit-drp-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-drp-erm"));
         Assert.IsNull(component.Find(Trigger).GetAttribute("aria-describedby"));
         Assert.IsNull(component.Find(Trigger).GetAttribute("aria-invalid"));
     }
@@ -93,8 +93,8 @@ public class BitDropdownValidationMessageTests : BunitTestContext
         component.Find(Trigger).Click();
         component.FindAll(".bit-drp-iwr button")[2].Click();
 
-        CollectionAssert.AreEqual(new[] { "f-ora", "f-ban" }, model.Values!.ToArray());
-        Assert.AreEqual(0, component.FindAll(".bit-drp-erm").Count);
+        Assert.AreSequenceEqual(new[] { "f-ora", "f-ban" }, model.Values!.ToArray());
+        Assert.IsEmpty(component.FindAll(".bit-drp-erm"));
 
         component.Find("form").Submit();
 
@@ -145,7 +145,7 @@ public class BitDropdownValidationMessageTests : BunitTestContext
 
         // The dropdown is marked as before, and the message stays where the page puts it.
         Assert.AreEqual("true", component.Find(Trigger).GetAttribute("aria-invalid"));
-        Assert.AreEqual(0, component.FindAll(".bit-drp-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-drp-erm"));
         Assert.IsNull(component.Find(Trigger).GetAttribute("aria-describedby"));
     }
 
@@ -166,7 +166,7 @@ public class BitDropdownValidationMessageTests : BunitTestContext
 
         component.InvokeAsync(() => editContext.Validate());
 
-        Assert.AreEqual(1, component.FindAll(".bit-drp-erm").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-drp-erm"));
         Assert.AreEqual("The store has none of these left.", component.Find(".bit-drp-erm").TextContent.Trim());
 
         // Once the app takes its message back, the EditContext's takes the line.
@@ -201,7 +201,7 @@ public class BitDropdownValidationMessageTests : BunitTestContext
         var labelId = component.Find(Trigger).GetAttribute("aria-describedby");
 
         Assert.AreEqual("Closed", component.Find(".bit-drp-erm b").TextContent);
-        Assert.IsFalse(component.Find(".bit-drp-erm").TextContent.Contains(RequiredMessage));
+        Assert.DoesNotContain(RequiredMessage, component.Find(".bit-drp-erm").TextContent);
         Assert.AreEqual("The store is closed.", component.Find($"#{labelId}").TextContent);
     }
 
@@ -239,7 +239,7 @@ public class BitDropdownValidationMessageTests : BunitTestContext
 
         var ids = component.Find(Trigger).GetAttribute("aria-describedby")!.Split(' ');
 
-        Assert.AreEqual(3, ids.Length);
+        Assert.HasCount(3, ids);
         Assert.AreEqual(component.Find(".bit-drp-erm").Id, ids[0]);
         Assert.AreEqual(component.Find(".bit-drp-des").Id, ids[1]);
         Assert.AreEqual("One item only.", component.Find($"#{ids[2]}").TextContent);
@@ -320,12 +320,12 @@ public class BitDropdownValidationMessageTests : BunitTestContext
 
         component.InvokeAsync(() => editContext.Validate());
 
-        Assert.AreEqual(1, component.FindAll(".bit-drp-erm").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-drp-erm"));
 
         attributes[nameof(StringDropdown.NoValidate)] = true;
         Rerender(component, editContext, model, attributes);
 
-        Assert.AreEqual(0, component.FindAll(".bit-drp-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-drp-erm"));
         Assert.IsNull(component.Find(Trigger).GetAttribute("aria-describedby"));
     }
 
@@ -341,8 +341,8 @@ public class BitDropdownValidationMessageTests : BunitTestContext
         component.InvokeAsync(() => editContext.Validate());
 
         // The model has a message, but the dropdown has no member of it the message could belong to.
-        Assert.IsTrue(editContext.GetValidationMessages().Any());
-        Assert.AreEqual(0, component.FindAll(".bit-drp-erm").Count);
+        Assert.IsNotEmpty(editContext.GetValidationMessages());
+        Assert.IsEmpty(component.FindAll(".bit-drp-erm"));
     }
 
     [TestMethod]
@@ -363,7 +363,7 @@ public class BitDropdownValidationMessageTests : BunitTestContext
         component.Find(Trigger).Click();
         component.FindAll(".bit-drp-itm")[1].Click();
 
-        Assert.AreEqual(0, component.FindAll(".bit-drp-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-drp-erm"));
 
         component.Find("form").Submit();
 

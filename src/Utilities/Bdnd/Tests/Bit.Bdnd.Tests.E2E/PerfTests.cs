@@ -37,7 +37,7 @@ public sealed class PerfTests : BdndTest
           longTasks: r.longTasks, longTaskMs: r.longTaskMs, mutations: r.mutations }; }
         """;
 
-    public sealed class Sample
+    internal sealed class Sample
     {
         public double Ms { get; set; }
         public int Frames { get; set; }

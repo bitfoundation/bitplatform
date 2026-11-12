@@ -12,7 +12,7 @@ public class BitAiClosingFenceStreamingTests
 {
     private static BitAiCodeBlock OnlyCode(BitAiMarkdownDocument document)
     {
-        Assert.HasCount(1, document.Blocks);
+        Assert.ContainsSingle(document.Blocks);
         return Assert.IsExactInstanceOfType<BitAiCodeBlock>(document.Blocks[0]);
     }
 

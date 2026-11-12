@@ -488,16 +488,16 @@ public class BitAiAgentRunViewE2ETests : E2ETestBase
         {
             var icon = await Page.Locator($"#{id} .bit-aiarv-hic").RectAsync();
             var title = await Page.Locator($"#{id} .bit-aiarv-ttl").RectAsync();
-            Assert.IsTrue(icon.Left > title.Left, $"{id}: the icon leads the header from the right.");
+            Assert.IsGreaterThan(title.Left, icon.Left, $"{id}: the icon leads the header from the right.");
 
             var marker = await Page.Locator($"#{id} .bit-aiasv-mrk").First.RectAsync();
             var body = await Page.Locator($"#{id} .bit-aiasv-bdy").First.RectAsync();
-            Assert.IsTrue(marker.Left > body.Left, $"{id}: the marker of a step is on its right.");
+            Assert.IsGreaterThan(body.Left, marker.Left, $"{id}: the marker of a step is on its right.");
         }
 
         var ltrMarker = await Page.Locator("#arv-styles .bit-aiasv-mrk").First.RectAsync();
         var ltrBody = await Page.Locator("#arv-styles .bit-aiasv-bdy").First.RectAsync();
-        Assert.IsTrue(ltrMarker.Left < ltrBody.Left, "Left to right, the marker of a step is on its left.");
+        Assert.IsLessThan(ltrBody.Left, ltrMarker.Left, "Left to right, the marker of a step is on its left.");
     }
 
     [TestMethod]
@@ -546,7 +546,7 @@ public class BitAiAgentRunViewE2ETests : E2ETestBase
         {
             var actual = await Page.EvaluateAsync<string>(
                 "id => [...document.querySelectorAll('#' + id + ' .bit-aiasv')].map(s => s.className).join(' | ')", runId);
-            Assert.Fail($"The steps of {runId} never were [{string.Join(", ", states)}]; they are: {actual}");
+            throw new global::System.InvalidOperationException($"The steps of {runId} never were [{string.Join(", ", states)}]; they are: {actual}");
         }
     }
 

@@ -31,7 +31,7 @@ public class BitFullCalendarBoundStateBrowserTests : PerformanceTestBase
     public async Task BitFullCalendar_PrerendersTheBoundValues()
     {
         // The HTML sent before the page is interactive is the first render of the same parameter pass.
-        var html = await _http.GetStringAsync($"{BaseUrl}{PageUrl}");
+        var html = await _http.GetStringAsync($"{BaseUrl}{PageUrl}", TestContext.CancellationToken);
 
         var views = Section(html, "views");
         Assert.AreEqual("Week", SelectedTab(views, "bit-bfc-view-tab"), "the prerender opens on another view");
@@ -150,7 +150,7 @@ public class BitFullCalendarBoundStateBrowserTests : PerformanceTestBase
         await Expect(Page.Locator("#date .bound")).Not.ToHaveTextAsync(expected);
 
         var bound = DateTime.ParseExact(await Page.Locator("#date .bound").InnerTextAsync(), "yyyy-MM-dd", CultureInfo.InvariantCulture);
-        Assert.IsTrue(bound > DateTime.ParseExact(expected, "yyyy-MM-dd", CultureInfo.InvariantCulture), "next moved the date backwards");
+        Assert.IsGreaterThan(DateTime.ParseExact(expected, "yyyy-MM-dd", CultureInfo.InvariantCulture), bound, "next moved the date backwards");
         await AssertNoErrors();
     }
 
@@ -190,19 +190,19 @@ public class BitFullCalendarBoundStateBrowserTests : PerformanceTestBase
     {
         var errors = _pageErrors.Where(e => e.Contains("favicon", StringComparison.OrdinalIgnoreCase) is false).ToList();
 
-        Assert.AreEqual(0, errors.Count, $"the page reported: {string.Join(" || ", errors)}");
+        Assert.IsEmpty(errors, $"the page reported: {string.Join(" || ", errors)}");
 
         var json = await _http.GetStringAsync($"{BaseUrl}/api/server-errors");
         var serverErrors = JsonSerializer.Deserialize<string[]>(json) ?? [];
 
-        Assert.AreEqual(0, serverErrors.Length, $"the server logged: {string.Join(" || ", serverErrors)}");
+        Assert.IsEmpty(serverErrors, $"the server logged: {string.Join(" || ", serverErrors)}");
     }
 
     /// <summary>The prerendered markup of one section of the page.</summary>
     private static string Section(string html, string id)
     {
         var start = html.IndexOf($"<section id=\"{id}\"", StringComparison.Ordinal);
-        Assert.IsTrue(start >= 0, $"the page has no section {id}");
+        Assert.IsGreaterThanOrEqualTo(0, start, $"the page has no section {id}");
 
         var end = html.IndexOf("</section>", start, StringComparison.Ordinal);
         return html[start..end];

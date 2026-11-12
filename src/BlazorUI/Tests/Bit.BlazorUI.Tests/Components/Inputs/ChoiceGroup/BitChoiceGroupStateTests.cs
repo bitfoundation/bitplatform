@@ -27,11 +27,11 @@ public class BitChoiceGroupStateTests : BunitTestContext
             parameters.Add(p => p.Items, GetItems());
         });
 
-        Assert.AreEqual(3, component.FindAll(".bit-chg-icn").Count);
+        Assert.HasCount(3, component.FindAll(".bit-chg-icn"));
 
         component.Render(parameters => parameters.Add(p => p.Items, new List<BitChoiceGroupItem<string>>()));
 
-        Assert.AreEqual(0, component.FindAll(".bit-chg-icn").Count);
+        Assert.IsEmpty(component.FindAll(".bit-chg-icn"));
     }
 
     [TestMethod]
@@ -44,13 +44,13 @@ public class BitChoiceGroupStateTests : BunitTestContext
             parameters.Add(p => p.Items, items);
         });
 
-        Assert.AreEqual(3, component.FindAll(".bit-chg-icn").Count);
+        Assert.HasCount(3, component.FindAll(".bit-chg-icn"));
 
         items.Add(new() { Text = "Item D", Value = "D" });
 
         component.Render(parameters => parameters.Add(p => p.Items, items));
 
-        Assert.AreEqual(4, component.FindAll(".bit-chg-icn").Count);
+        Assert.HasCount(4, component.FindAll(".bit-chg-icn"));
         Assert.AreEqual(3, items[3].Index);
     }
 
@@ -70,7 +70,7 @@ public class BitChoiceGroupStateTests : BunitTestContext
 
         component.Render(parameters => parameters.Add(p => p.Items, items));
 
-        Assert.AreEqual(3, component.FindAll(".bit-chg-icn").Count);
+        Assert.HasCount(3, component.FindAll(".bit-chg-icn"));
         Assert.AreEqual("Item B (updated)", component.FindAll(".bit-chg-icn")[1].TextContent.Trim());
     }
 
@@ -109,7 +109,7 @@ public class BitChoiceGroupStateTests : BunitTestContext
 
         component.Render(parameters => parameters.Add(p => p.Value, (string?)null));
 
-        Assert.IsFalse(items.Any(i => i.IsSelected));
+        Assert.DoesNotContain(i => i.IsSelected, items);
     }
 
     [TestMethod]
@@ -182,12 +182,12 @@ public class BitChoiceGroupStateTests : BunitTestContext
             parameters.Add(p => p.Items, items);
         });
 
-        CollectionAssert.AreEqual(new[] { 0, 1, 2 }, items.Select(i => i.Index).ToArray());
+        Assert.AreSequenceEqual(new[] { 0, 1, 2 }, items.Select(i => i.Index).ToArray());
 
         var reversed = Enumerable.Reverse(items).ToList();
         component.Render(parameters => parameters.Add(p => p.Items, reversed));
 
-        CollectionAssert.AreEqual(new[] { 0, 1, 2 }, reversed.Select(i => i.Index).ToArray());
+        Assert.AreSequenceEqual(new[] { 0, 1, 2 }, reversed.Select(i => i.Index).ToArray());
         Assert.AreEqual(2, items[0].Index);
     }
 
@@ -218,7 +218,7 @@ public class BitChoiceGroupStateTests : BunitTestContext
             parameters.Add(p => p.Value, new Sku("B"));
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-chg-ich").Count);
+        Assert.IsEmpty(component.FindAll(".bit-chg-ich"));
     }
 
     [TestMethod]

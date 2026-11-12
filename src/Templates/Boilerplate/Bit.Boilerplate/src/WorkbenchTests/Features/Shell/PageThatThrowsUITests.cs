@@ -11,7 +11,7 @@ public class PageThatThrowsUITests : ShellPageTest
     // The shifts page's shell fails for whoever opens it, which this class's tests do only to see the way out of it.
     private static readonly ConcurrentDictionary<string, (string Key, string Path)> breakdowns = new() { [string.Empty] = (nameof(WorkbenchStrings.ShiftsTitle), "/workbench/shifts") };
 
-    protected override Task<WorkbenchTestServer> ServerToTest => HasAgent ? withAgent.Value : withoutAgent.Value;
+    private protected override Task<WorkbenchTestServer> ServerToTest => HasAgent ? withAgent.Value : withoutAgent.Value;
 
     private static Task<WorkbenchTestServer> StartServer(bool isDevMode)
     {

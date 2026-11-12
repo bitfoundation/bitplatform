@@ -141,7 +141,7 @@ public class AwarenessTests
         }
 
         Assert.AreEqual(1, a.OnlineCount);
-        Assert.IsTrue(a.Entries[2].State is not null);
+        Assert.IsNotNull(a.Entries[2].State);
     }
 
     [TestMethod]
@@ -254,8 +254,10 @@ public class AwarenessTests
         {
             BcrdtRelativePosition original = BcrdtRelativePosition.FromIndex(text, index);
             BcrdtRelativePosition decoded = BcrdtRelativePosition.Decode(original.Encode());
+            var expectedValue = original.Resolve(doc)?.Index;
+            var actualValue = decoded.Resolve(doc)?.Index;
 
-            Assert.AreEqual(original.Resolve(doc)?.Index, decoded.Resolve(doc)?.Index);
+            Assert.AreEqual(expectedValue, actualValue);
         }
     }
 
@@ -269,6 +271,6 @@ public class AwarenessTests
             .Distinct()
             .Count();
 
-        Assert.IsTrue(colours >= 5, $"Only {colours} distinct colours across 50 users; the palette is not spreading.");
+        Assert.IsGreaterThanOrEqualTo(5, colours, $"Only {colours} distinct colours across 50 users; the palette is not spreading.");
     }
 }

@@ -44,10 +44,10 @@ public class BitFooterE2ETests : E2ETestBase
         var response = await Page.APIRequest.GetAsync($"{BaseUrl}/e2e/footer");
         var html = await response.TextAsync();
 
-        StringAssert.Contains(html, "<footer");
-        StringAssert.Contains(html, "id=\"basic-footer\"");
-        StringAssert.Contains(html, "bit-ftr-gut");
-        StringAssert.Contains(html, "<span id=\"status\">Loading</span>");
+        Assert.Contains("<footer", html);
+        Assert.Contains("id=\"basic-footer\"", html);
+        Assert.Contains("bit-ftr-gut", html);
+        Assert.Contains("<span id=\"status\">Loading</span>", html);
     }
 
     [TestMethod]
@@ -505,7 +505,7 @@ public class BitFooterE2ETests : E2ETestBase
         await NextFramesAsync();
         var footer = await BoxAsync("#padding-footer");
         var focused = await BoxAsync("#pad-btn-9");
-        Assert.IsTrue(focused.Bottom <= footer.Y + Tolerance, $"the focused control ({focused.Bottom}) is above the footer ({footer.Y})");
+        Assert.IsLessThanOrEqualTo(footer.Y + Tolerance, focused.Bottom, $"the focused control ({focused.Bottom}) is above the footer ({footer.Y})");
     }
 
     [TestMethod]
@@ -642,7 +642,7 @@ public class BitFooterE2ETests : E2ETestBase
         await Expect(footer).ToHaveClassAsync(HasClass("bit-rtl"));
         var box = await BoxAsync("#rtl-footer");
         AssertClose(box.Right - 24, (await BoxAsync("#rtl-1")).Right, "the first child at the right, inside the gutter");
-        Assert.IsTrue((await BoxAsync("#rtl-2")).X < (await BoxAsync("#rtl-1")).X, "the second to its left");
+        Assert.IsLessThan((await BoxAsync("#rtl-1")).X, (await BoxAsync("#rtl-2")).X, "the second to its left");
 
         AssertClose((await BoxAsync("#rtl-inherited")).Right - 24, (await BoxAsync("#rtli-1")).Right, "inherited");
     }
@@ -752,7 +752,7 @@ public class BitFooterE2ETests : E2ETestBase
 
     private static void AssertClose(double expected, double actual, string what)
     {
-        Assert.IsTrue(Math.Abs(expected - actual) <= Tolerance, $"{what}: expected {expected}, got {actual}");
+        Assert.IsLessThanOrEqualTo(Tolerance, Math.Abs(expected - actual), $"{what}: expected {expected}, got {actual}");
     }
 
     private sealed record Box(double X, double Y, double W, double H)

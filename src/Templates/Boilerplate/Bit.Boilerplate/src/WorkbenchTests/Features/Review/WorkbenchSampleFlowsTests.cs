@@ -43,6 +43,6 @@ public class WorkbenchSampleFlowsTests
         var flows = WorkbenchSampleFlows.Create(ctx.Services.GetRequiredService<IStringLocalizer<WorkbenchStrings>>(), pageKey => pageKey != "buildings");
 
         Assert.DoesNotContain(flow => flow.Id == WorkbenchSampleFlows.BuildingsId, flows);
-        Assert.HasCount(1, flows);
+        Assert.ContainsSingle(flows);
     }
 }

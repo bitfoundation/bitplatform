@@ -49,10 +49,10 @@ public class BitPdfViewerE2ETests : E2ETestBase
         var html = await response.TextAsync();
 
         Assert.AreEqual(200, response.Status);
-        StringAssert.Contains(html, "id=\"pdv-dims\"");
+        Assert.Contains("id=\"pdv-dims\"", html);
         var dims = html[html.IndexOf("id=\"pdv-dims\"", StringComparison.Ordinal)..];
-        StringAssert.Contains(dims[..Math.Min(dims.Length, 40000)], "Page One Heading");
-        StringAssert.Contains(html, "<span id=\"status\">Loading</span>");
+        Assert.Contains("Page One Heading", dims[..Math.Min(dims.Length, 40000)]);
+        Assert.Contains("<span id=\"status\">Loading</span>", html);
     }
 
     [TestMethod]
@@ -188,7 +188,7 @@ public class BitPdfViewerE2ETests : E2ETestBase
         var select = Page.Locator("#pdv-main select[aria-label='Zoom level']");
         await Expect(select).ToHaveValueAsync("FitWidth");
         var options = await select.Locator("option").AllTextContentsAsync();
-        CollectionAssert.AreEqual(new[] { "Automatic zoom", "Fit width", "Fit page", "Fit height", "Actual size", "50%", "75%", "100%", "125%", "150%", "200%", "300%", "400%" }, options.Select(o => o.Trim()).ToArray());
+        Assert.AreSequenceEqual(new[] { "Automatic zoom", "Fit width", "Fit page", "Fit height", "Actual size", "50%", "75%", "100%", "125%", "150%", "200%", "300%", "400%" }, options.Select(o => o.Trim()).ToArray());
 
         await select.SelectOptionAsync("z1");
         await Expect(label).ToHaveTextAsync("100%");
@@ -219,7 +219,7 @@ public class BitPdfViewerE2ETests : E2ETestBase
         await Expect(label).ToHaveTextAsync("120%");
         await Page.Keyboard.PressAsync("Control+Minus");
         await Expect(label).ToHaveTextAsync("100%");
-        Assert.IsTrue(int.Parse((await Page.Locator("#zoom-changed").TextContentAsync())!) >= 6);
+        Assert.IsGreaterThanOrEqualTo(6, int.Parse((await Page.Locator("#zoom-changed").TextContentAsync())!));
     }
 
     [TestMethod]
@@ -230,7 +230,7 @@ public class BitPdfViewerE2ETests : E2ETestBase
         var select = Page.Locator("#pdv-zoom select[aria-label='Zoom level']");
         await Expect(select).ToHaveValueAsync("FitPage");
         var options = await select.Locator("option").AllTextContentsAsync();
-        CollectionAssert.AreEqual(new[] { "Automatic zoom", "Fit width", "Fit page", "Fit height", "Actual size", "50%", "100%", "200%" }, options.Select(o => o.Trim()).ToArray());
+        Assert.AreSequenceEqual(new[] { "Automatic zoom", "Fit width", "Fit page", "Fit height", "Actual size", "50%", "100%", "200%" }, options.Select(o => o.Trim()).ToArray());
 
         var label = Page.Locator("#pdv-zoom .bit-pdv-zoom");
         await select.SelectOptionAsync("z1");
@@ -397,7 +397,7 @@ public class BitPdfViewerE2ETests : E2ETestBase
         // Firefox and WebKit compute auto for a span - which defers to the layer - where Chromium reports the text it ends
         // up with.
         Assert.AreEqual("text", await layer.EvaluateAsync<string>("l => getComputedStyle(l).userSelect"));
-        CollectionAssert.Contains(new[] { "text", "auto" }, await span.EvaluateAsync<string>("s => getComputedStyle(s).userSelect"));
+        Assert.Contains(await span.EvaluateAsync<string>("s => getComputedStyle(s).userSelect"), new[] { "text", "auto" });
         Assert.AreEqual("rgba(0, 0, 0, 0)", await span.EvaluateAsync<string>("s => getComputedStyle(s).color"));
         await Expect(Viewer("pdv-main").Locator(".bit-pdv-surface")).Not.ToHaveClassAsync(HasClass("bit-pdv-nocopy"));
 
@@ -550,7 +550,7 @@ public class BitPdfViewerE2ETests : E2ETestBase
         var download = await Page.RunAndWaitForDownloadAsync(() => item.ClickAsync());
         Assert.AreEqual("notes.txt", download.SuggestedFilename);
         var path = await download.PathAsync();
-        Assert.AreEqual("hello attachment", await File.ReadAllTextAsync(path!));
+        Assert.AreEqual("hello attachment", await File.ReadAllTextAsync(path!, TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -594,8 +594,8 @@ public class BitPdfViewerE2ETests : E2ETestBase
         var download = await Page.RunAndWaitForDownloadAsync(() => Btn("pdv-main", "Download document").ClickAsync());
         Assert.AreEqual("renamed-sample.pdf", download.SuggestedFilename);
         await Expect(Page.Locator("#downloading")).ToHaveTextAsync("pdf-sample.pdf");
-        var bytes = await File.ReadAllBytesAsync((await download.PathAsync())!);
-        CollectionAssert.AreEqual(await SampleBytesAsync(), bytes);
+        var bytes = await File.ReadAllBytesAsync((await download.PathAsync())!, TestContext.CancellationToken);
+        Assert.AreSequenceEqual(await SampleBytesAsync(), bytes);
 
         // Ctrl+S from the surface downloads too.
         await Page.Locator("#pdv-main .bit-pdv-surface").FocusAsync();
@@ -611,7 +611,7 @@ public class BitPdfViewerE2ETests : E2ETestBase
         await Page.ClickAsync("#btn-cancel-download");
         await Expect(Page.Locator("#btn-cancel-download")).ToHaveTextAsync("Cancel download: False");
         await Page.RunAndWaitForDownloadAsync(() => Btn("pdv-main", "Download document").ClickAsync());
-        Assert.AreEqual(1, downloads.Count, "a cancelled download was saved");
+        Assert.ContainsSingle(downloads, "a cancelled download was saved");
     }
 
     [TestMethod]
@@ -634,8 +634,8 @@ public class BitPdfViewerE2ETests : E2ETestBase
         await Expect(Page.Locator("#printing")).ToHaveTextAsync("1-3");
         await Page.WaitForFunctionAsync("() => window.__printCalls.length === 1");
         var printed = await Page.EvaluateAsync<string>("() => window.__printCalls[0]");
-        StringAssert.Contains(printed, "Page One Heading");
-        StringAssert.Contains(printed, "Page Three Heading");
+        Assert.Contains("Page One Heading", printed);
+        Assert.Contains("Page Three Heading", printed);
 
         await Page.ClickAsync("#btn-api-next");
         await Expect(Page.Locator("#page-value")).ToHaveTextAsync("2");
@@ -643,8 +643,8 @@ public class BitPdfViewerE2ETests : E2ETestBase
         await Expect(Page.Locator("#printing")).ToHaveTextAsync("2-2");
         await Page.WaitForFunctionAsync("() => window.__printCalls.length === 2");
         printed = await Page.EvaluateAsync<string>("() => window.__printCalls[1]");
-        StringAssert.Contains(printed, "Page Two Heading");
-        Assert.IsFalse(printed.Contains("Page One Heading"), "printing the current page printed another one");
+        Assert.Contains("Page Two Heading", printed);
+        Assert.DoesNotContain("Page One Heading", printed, "printing the current page printed another one");
 
         // A cancelled print prints nothing: the next print the page sees is the one made after it.
         await Page.ClickAsync("#btn-cancel-print");
@@ -656,7 +656,7 @@ public class BitPdfViewerE2ETests : E2ETestBase
         await Page.ClickAsync("#btn-api-print-current");
         await Page.WaitForFunctionAsync("() => window.__printCalls.length >= 3");
         Assert.AreEqual(3, await Page.EvaluateAsync<int>("() => window.__printCalls.length"), "a cancelled print was printed");
-        StringAssert.Contains(await Page.EvaluateAsync<string>("() => window.__printCalls[2]"), "Page Two Heading");
+        Assert.Contains("Page Two Heading", await Page.EvaluateAsync<string>("() => window.__printCalls[2]"));
     }
 
     [TestMethod]
@@ -724,7 +724,7 @@ public class BitPdfViewerE2ETests : E2ETestBase
         }
 
         var (v1, v2) = await BoxesAsync();
-        Assert.IsTrue(v2.Y > v1.Y + 100, "vertical scrolling does not stack the pages");
+        Assert.IsGreaterThan(v1.Y + 100, v2.Y, "vertical scrolling does not stack the pages");
 
         await scroll.SelectOptionAsync("Horizontal");
         await Expect(scroll).ToHaveValueAsync("Horizontal");
@@ -829,7 +829,7 @@ public class BitPdfViewerE2ETests : E2ETestBase
         await Expect(Page.Locator("#api-result")).ToHaveTextAsync(new Regex("^info:"));
         var info = (await Page.Locator("#api-result").TextContentAsync())!;
         var sample = await SampleBytesAsync();
-        StringAssert.StartsWith(info, $"info:3|E2E Sample Document|Agent Twenty|False|1.7|{sample.Length}|True:3|True:1|True:2|{sample.Length}|ActualSize|Horizontal|Odd|Pan|Bookmarks|True:keyword:1/3|False");
+        Assert.StartsWith($"info:3|E2E Sample Document|Agent Twenty|False|1.7|{sample.Length}|True:3|True:1|True:2|{sample.Length}|ActualSize|Horizontal|Odd|Pan|Bookmarks|True:keyword:1/3|False", info);
 
         // ClearSearch empties the query and its matches; the box stays where the reader left it.
         await Page.ClickAsync("#btn-api-clear-search");
@@ -847,13 +847,13 @@ public class BitPdfViewerE2ETests : E2ETestBase
         // The extraction is a round trip: the result is waited for before it is read.
         await Expect(Page.Locator("#api-result")).ToContainTextAsync("text:");
         var text = (await Page.Locator("#api-result").TextContentAsync())!;
-        StringAssert.Contains(text, "text:");
+        Assert.Contains("text:", text);
         var parts = text["text:".Length..].Split("##");
-        StringAssert.Contains(parts[0], "Page Two Heading");
-        Assert.IsFalse(parts[0].Contains("Page One Heading"), "ExtractPageText(2) read page 1");
-        StringAssert.Contains(parts[1], "Page One Heading");
-        StringAssert.Contains(parts[1], " | ");
-        StringAssert.Contains(parts[1], "Page Three Heading");
+        Assert.Contains("Page Two Heading", parts[0]);
+        Assert.DoesNotContain("Page One Heading", parts[0], "ExtractPageText(2) read page 1");
+        Assert.Contains("Page One Heading", parts[1]);
+        Assert.Contains(" | ", parts[1]);
+        Assert.Contains("Page Three Heading", parts[1]);
 
         await Page.ClickAsync("#btn-api-open-bytes");
         await Expect(Page.Locator("#pdv-main .bit-pdv-title")).ToHaveTextAsync("opened-by-api.pdf");
@@ -935,7 +935,7 @@ public class BitPdfViewerE2ETests : E2ETestBase
         await Expect(Page.Locator("#missing-error")).ToContainTextAsync("404");
         foreach (var error in ConsoleErrors)
         {
-            StringAssert.Contains(error, "404", "the only console error is the browser's report of the missing document");
+            Assert.Contains("404", error, "the only console error is the browser's report of the missing document");
         }
     }
 
@@ -949,17 +949,17 @@ public class BitPdfViewerE2ETests : E2ETestBase
         var release = new TaskCompletionSource();
         var serve = Task.Run(async () =>
         {
-            using var client = await listener.AcceptTcpClientAsync();
+            using var client = await listener.AcceptTcpClientAsync(TestContext.CancellationToken);
             var stream = client.GetStream();
             var buffer = new byte[8192];
-            await stream.ReadAsync(buffer);
+            await stream.ReadAsync(buffer, TestContext.CancellationToken);
             await release.Task;
             // In WebAssembly the browser fetches the document, from an origin other than the page's.
             var head = Encoding.ASCII.GetBytes($"HTTP/1.1 200 OK\r\nContent-Type: application/pdf\r\nContent-Length: {sample.Length}\r\nAccess-Control-Allow-Origin: *\r\nConnection: close\r\n\r\n");
-            await stream.WriteAsync(head);
-            await stream.WriteAsync(sample);
-            await stream.FlushAsync();
-        });
+            await stream.WriteAsync(head, TestContext.CancellationToken);
+            await stream.WriteAsync(sample, TestContext.CancellationToken);
+            await stream.FlushAsync(TestContext.CancellationToken);
+        }, TestContext.CancellationToken);
 
         try
         {
@@ -1068,7 +1068,7 @@ public class BitPdfViewerE2ETests : E2ETestBase
         await Expect(Page.Locator("#toolbar-name")).ToHaveTextAsync(item);
 
         var names = await Page.Locator("#pdv-items .bit-pdv-toolbar button[aria-label]").EvaluateAllAsync<string[]>("els => els.map(e => e.getAttribute('aria-label'))");
-        CollectionAssert.AreEquivalent(labels, names, $"{item}: {string.Join(", ", names)}");
+        Assert.AreSequenceEqual(labels, names, Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, $"{item}: {string.Join(", ", names)}");
 
         // The templates stay at both ends whatever the items.
         await Expect(Page.Locator("#pdv-items .tpl-start")).ToHaveTextAsync("Start 3");
@@ -1258,12 +1258,12 @@ public class BitPdfViewerE2ETests : E2ETestBase
         {
             var toolbar = (await Page.Locator($"#{id} .bit-pdv-toolbar").BoundingBoxAsync())!;
             var first = (await Btn(id, "Page thumbnails").BoundingBoxAsync())!;
-            Assert.IsTrue(first.X > toolbar.X + toolbar.Width / 2, $"{id}: the first group is not on the right");
+            Assert.IsGreaterThan(toolbar.X + toolbar.Width / 2, first.X, $"{id}: the first group is not on the right");
 
             // The page box and its arrows read left to right, as numbers do.
             var prev = (await Btn(id, "Previous page").BoundingBoxAsync())!;
             var next = (await Btn(id, "Next page").BoundingBoxAsync())!;
-            Assert.IsTrue(prev.X < next.X, $"{id}: the page arrows were flipped");
+            Assert.IsLessThan(next.X, prev.X, $"{id}: the page arrows were flipped");
         }
     }
 

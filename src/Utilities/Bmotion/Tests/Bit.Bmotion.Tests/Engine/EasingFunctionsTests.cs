@@ -38,7 +38,7 @@ public class EasingFunctionsTests
     {
         // ease-out is faster early: at 25% of time, more than 25% of progress
         var fn = BmEaseFunctions.Get(new BmotionTransitionConfig { Ease = BmEase.Out });
-        Assert.IsTrue(fn(0.25) > 0.25);
+        Assert.IsGreaterThan(0.25, fn(0.25));
     }
 
     [TestMethod]
@@ -46,7 +46,7 @@ public class EasingFunctionsTests
     {
         // ease-in is slower early: at 25% of time, less than 25% of progress
         var fn = BmEaseFunctions.Get(new BmotionTransitionConfig { Ease = BmEase.In });
-        Assert.IsTrue(fn(0.25) < 0.25);
+        Assert.IsLessThan(0.25, fn(0.25));
     }
 
     [TestMethod]

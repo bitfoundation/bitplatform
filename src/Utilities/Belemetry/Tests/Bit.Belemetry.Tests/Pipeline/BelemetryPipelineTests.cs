@@ -33,8 +33,8 @@ public class BelemetryPipelineTests
         host.Consent.Decide(BelemetryFeatures.Errors | BelemetryFeatures.Logs | BelemetryFeatures.Traces);
 
         await host.FlushAsync();
-        CollectionAssert.AreEquivalent(new[] { "error", "log" }, host.Memory.Logs.Select(l => l.Body).ToArray());
-        Assert.HasCount(1, host.Memory.Spans);
+        Assert.AreSequenceEqual(new[] { "error", "log" }, host.Memory.Logs.Select(l => l.Body).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
+        Assert.ContainsSingle(host.Memory.Spans);
 
         // After the decision, records of features not granted are not even held.
         pipeline.Enqueue(Log("event2", BelemetryFeatures.Events));
@@ -67,7 +67,7 @@ public class BelemetryPipelineTests
         host.Consent.Decide(BelemetryFeatures.Logs);
 
         await host.FlushAsync();
-        CollectionAssert.AreEqual(new[] { "m2", "m3", "m4" }, host.Memory.Logs.Select(l => l.Body).ToArray());
+        Assert.AreSequenceEqual(new[] { "m2", "m3", "m4" }, host.Memory.Logs.Select(l => l.Body).ToArray());
     }
 
     [TestMethod]
@@ -155,8 +155,7 @@ public class BelemetryPipelineTests
         host.Pipeline.Relay(RelayBatch(null, KeptSession));
         await host.FlushAsync();
 
-        CollectionAssert.AreEqual(new[] { 0.25, 0.5, 0.25 }, host.Memory.Logs.Select(l => l.SamplingRatio).ToArray(),
-                                  "A page is untrusted on a server: a smaller ratio than the configured one is not taken, a larger one is.");
+        Assert.AreSequenceEqual(new[] { 0.25, 0.5, 0.25 }, host.Memory.Logs.Select(l => l.SamplingRatio).ToArray(), "A page is untrusted on a server: a smaller ratio than the configured one is not taken, a larger one is.");
     }
 
     [TestMethod]
@@ -173,8 +172,7 @@ public class BelemetryPipelineTests
         host.Pipeline.Relay(RelayBatch(null, DroppedSession));
         await host.FlushAsync();
 
-        CollectionAssert.AreEqual(new[] { "view-1", "view-2" }, host.Memory.Logs.Select(l => l.Body).ToArray(),
-                                  "The page did not sample the first session: its records would count four times. One without a session id is taken.");
+        Assert.AreSequenceEqual(new[] { "view-1", "view-2" }, host.Memory.Logs.Select(l => l.Body).ToArray(), "The page did not sample the first session: its records would count four times. One without a session id is taken.");
         Assert.IsEmpty(host.Memory.Spans, "Both spans are of the session the ratio drops.");
         Assert.IsTrue(host.Memory.Logs.All(l => l.SamplingRatio == 0.25));
     }
@@ -313,10 +311,10 @@ public class BelemetryPipelineTests
         Assert.AreEqual(BelemetryFeatures.Dependencies, span.Feature);
         Assert.AreEqual(200L, span.Attributes["http.response.status_code"]);
         Assert.AreEqual(0.5, span.Attributes["ratio"]);
-        CollectionAssert.AreEqual(new[] { 1L, 2L }, (long[])span.Attributes["codes"]!);
-        CollectionAssert.AreEqual(new[] { 1.0, 2.5 }, (double[])span.Attributes["mixed"]!);
-        CollectionAssert.AreEqual(new[] { true }, (bool[])span.Attributes["flags"]!);
-        CollectionAssert.AreEqual(new[] { "a", "1" }, (string[])span.Attributes["names"]!);
+        Assert.AreSequenceEqual(new[] { 1L, 2L }, (long[])span.Attributes["codes"]!);
+        Assert.AreSequenceEqual(new[] { 1.0, 2.5 }, (double[])span.Attributes["mixed"]!);
+        Assert.AreSequenceEqual(new[] { true }, (bool[])span.Attributes["flags"]!);
+        Assert.AreSequenceEqual(new[] { "a", "1" }, (string[])span.Attributes["names"]!);
         Assert.AreEqual("first-byte", span.Events.Single().Name);
         Assert.AreEqual(1_700_000_000_100_000_000L, span.Events[0].TimeUnixNano);
         Assert.AreEqual(1L, span.Events[0].Attributes["n"]);
@@ -399,10 +397,10 @@ public class BelemetryPipelineTests
         await host.FlushAsync();
         var log = host.Memory.Logs.Single();
         Assert.AreEqual("keep", log.Body);
-        Assert.AreEqual(true, log.Attributes["processed"]);
+        Assert.IsTrue((bool?)log.Attributes["processed"]);
         var span = host.Memory.Spans.Single();
         Assert.AreEqual("keep", span.Name);
-        Assert.AreEqual(true, span.Attributes["processed"]);
+        Assert.IsTrue((bool?)span.Attributes["processed"]);
     }
 
     [TestMethod]
@@ -419,7 +417,7 @@ public class BelemetryPipelineTests
 
         Assert.HasCount(5, host.Memory.Logs, "A record is kept when a processor throws on it.");
         var reports = capture.Entries.Where(e => e.Category == BelemetryLogger.DiagnosticsCategory && e.Message.Contains(nameof(ThrowingProcessor), StringComparison.Ordinal)).ToList();
-        Assert.HasCount(1, reports);
+        Assert.ContainsSingle(reports);
         Assert.AreEqual(LogLevel.Warning, reports[0].Level);
     }
 
@@ -561,8 +559,8 @@ public class BelemetryPipelineTests
         host.Pipeline.Enqueue(Records.Span());
 
         await host.FlushAsync();
-        CollectionAssert.AreEqual(new[] { "m2", "m3" }, host.Memory.Logs.Select(l => l.Body).ToArray());
-        Assert.HasCount(1, host.Memory.Spans);
+        Assert.AreSequenceEqual(new[] { "m2", "m3" }, host.Memory.Logs.Select(l => l.Body).ToArray());
+        Assert.ContainsSingle(host.Memory.Spans);
     }
 
     [TestMethod]
@@ -580,7 +578,7 @@ public class BelemetryPipelineTests
         await host.FlushAsync();
         Assert.HasCount(3, host.Memory.Logs);
         Assert.IsTrue(batches.All(b => b.Logs.Count <= 2));
-        Assert.IsTrue(batches.Any(b => b.Resource == other && b.Logs.Single().Body == "b"));
+        Assert.Contains(b => b.Resource == other && b.Logs.Single().Body == "b", batches);
     }
 
     [TestMethod]
@@ -800,13 +798,13 @@ public class BelemetryPipelineTests
         await host.FlushAsync();
         await host.FlushAsync(includeMetrics: true);
 
-        Assert.HasCount(1, handler.Requests, "Not retried.");
+        Assert.ContainsSingle(handler.Requests, "Not retried.");
         Assert.IsEmpty(host.Memory.Logs, "Nor handed to the exporters after it.");
         var exported = host.Memory.Metrics.Last(m => m.Name == "belemetry.records.exported").Points;
         long Withdrawn(string exporter) => exported.Single(p => p.Attributes.GetString("belemetry.exporter") == exporter && p.Attributes.GetString("belemetry.outcome") == "withdrawn").LongValue;
         Assert.AreEqual(1, Withdrawn("otlp"));
         Assert.AreEqual(1, Withdrawn("in-memory"));
-        Assert.IsFalse(exported.Any(p => p.Attributes.GetString("belemetry.outcome") == "failed"), "Withdrawn is not a delivery failure.");
+        Assert.DoesNotContain(p => p.Attributes.GetString("belemetry.outcome") == "failed", exported, "Withdrawn is not a delivery failure.");
     }
 
     [TestMethod]
@@ -837,7 +835,7 @@ public class BelemetryPipelineTests
 
         host.Pipeline.Enqueue(Log("a", BelemetryFeatures.Logs)); // a full batch wakes the loop
         var deadline = DateTime.UtcNow.AddSeconds(5);
-        while (probe.Exports == 0 && DateTime.UtcNow < deadline) await Task.Delay(20);
+        while (probe.Exports == 0 && DateTime.UtcNow < deadline) await Task.Delay(20, TestContext.CancellationToken);
 
         Assert.AreEqual(1, probe.Exports, "The loop exported the full batch on its own.");
         Assert.IsFalse(probe.SawContext, "The export ran on the starter's SynchronizationContext.");
@@ -864,7 +862,7 @@ public class BelemetryPipelineTests
 
         host.Pipeline.Enqueue(Log("a", BelemetryFeatures.Logs));
         var deadline = DateTime.UtcNow.AddSeconds(5);
-        while (probe.Exports == 0 && DateTime.UtcNow < deadline) await Task.Delay(20);
+        while (probe.Exports == 0 && DateTime.UtcNow < deadline) await Task.Delay(20, TestContext.CancellationToken);
         Assert.AreEqual(1, probe.Exports);
     }
 
@@ -885,9 +883,9 @@ public class BelemetryPipelineTests
 
         var names = pipeline.Exporters.HttpExporters.Select(e => e.Name).ToArray();
 
-        CollectionAssert.AreEqual(new[] { "otlp", "otlp1", "azuremonitor", "azuremonitor1" }, names);
+        Assert.AreSequenceEqual(new[] { "otlp", "otlp1", "azuremonitor", "azuremonitor1" }, names);
         Assert.IsTrue(names.Where(n => n.StartsWith("azure", StringComparison.Ordinal)).All(n => System.Text.RegularExpressions.Regex.IsMatch(n, @"^azuremonitor\d*$", System.Text.RegularExpressions.RegexOptions.IgnoreCase)));
-        Assert.IsFalse(names.Where(n => n.StartsWith("otlp", StringComparison.Ordinal)).Any(n => System.Text.RegularExpressions.Regex.IsMatch(n, @"^azuremonitor\d*$", System.Text.RegularExpressions.RegexOptions.IgnoreCase)));
+        Assert.DoesNotContain(n => System.Text.RegularExpressions.Regex.IsMatch(n, @"^azuremonitor\d*$", System.Text.RegularExpressions.RegexOptions.IgnoreCase), names.Where(n => n.StartsWith("otlp", StringComparison.Ordinal)));
     }
 
     [TestMethod]
@@ -969,11 +967,11 @@ public class BelemetryPipelineTests
         host.StartLogging();
 
         var deadline = DateTime.UtcNow.AddSeconds(5);
-        while (MetricsWarnings(capture).Length == 0 && DateTime.UtcNow < deadline) await Task.Delay(20);
+        while (MetricsWarnings(capture).Length == 0 && DateTime.UtcNow < deadline) await Task.Delay(20, TestContext.CancellationToken);
 
         var warning = MetricsWarnings(capture).SingleOrDefault();
         Assert.IsNotNull(warning, "No warning was logged for metrics switched off.");
-        StringAssert.Contains(warning, "<MetricsSupport>true</MetricsSupport>");
+        Assert.Contains("<MetricsSupport>true</MetricsSupport>", warning);
     }
 
     [TestMethod]
@@ -993,7 +991,7 @@ public class BelemetryPipelineTests
 
         // The warning is the first thing the export loop does; a flush round trip is well past it.
         await host.FlushAsync(includeMetrics: true);
-        await Task.Delay(200);
+        await Task.Delay(200, TestContext.CancellationToken);
 
         Assert.IsEmpty(MetricsWarnings(capture));
     }
@@ -1021,4 +1019,6 @@ public class BelemetryPipelineTests
             return ValueTask.FromResult(BelemetryExportResult.Success);
         }
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

@@ -77,7 +77,7 @@ public sealed class GuidanceTests : BonboardingTest
         await hint.Locator("[data-bonboarding-action='next']").ClickAsync();
 
         await Assertions.Expect(page.Locator(ImportBeacon)).ToHaveCountAsync(0);
-        StringAssert.Contains(await FocusedAsync(page), "Import", "Focus went to the element the hint was about.");
+        Assert.Contains("Import", await FocusedAsync(page), "Focus went to the element the hint was about.");
 
         // Remembered across a reload.
         await page.ReloadAsync();

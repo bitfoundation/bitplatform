@@ -90,7 +90,7 @@ public class BitComponentBaseHtmlAttributesTests : BunitTestContext
 
         // The component clears its own dictionary on every render, so it never takes the one it was given as its own.
         Assert.AreNotSame(htmlAttributes, component.Instance.HtmlAttributes);
-        Assert.HasCount(1, htmlAttributes);
+        Assert.ContainsSingle(htmlAttributes);
         Assert.AreEqual("x", htmlAttributes["data-test"]);
         Assert.AreEqual("x", component.Find("button").GetAttribute("data-test"));
     }
@@ -172,7 +172,7 @@ public class BitComponentBaseHtmlAttributesTests : BunitTestContext
         // Every pass clears the component's own dictionary, which leaves the one it was handed as it was.
         component.Render();
 
-        Assert.HasCount(1, htmlAttributes);
+        Assert.ContainsSingle(htmlAttributes);
         Assert.AreEqual("x", htmlAttributes["data-test"]);
     }
 

@@ -25,16 +25,20 @@ public sealed class LazyLoadingTests : BdndTest
     [TestInitialize]
     public async Task StartSampleAsync()
     {
+        string? unavailableReason = null;
         try
         {
             _sample = await LazyLoadingSample.GetAsync("Bit.Bdnd", "BDND", E2EEnvironment.Configuration);
         }
         catch (Exception ex) when (ex is FileNotFoundException or InvalidOperationException or TimeoutException)
         {
-            var reason = $"the lazy loading sample could not be started in the {E2EEnvironment.Configuration} configuration: {ex.Message}";
-            // A build server must not report a suite that never ran as anything but a failure.
-            if (E2EEnvironment.IsContinuousIntegration) Assert.Fail("The browser tests could not run: " + reason);
-            Assert.Inconclusive("The browser tests could not run: " + reason);
+            unavailableReason = $"the lazy loading sample could not be started in the {E2EEnvironment.Configuration} configuration: {ex.Message}";
+        }
+
+        if (unavailableReason is not null)
+        {            // A build server must not report a suite that never ran as anything but a failure.
+            if (E2EEnvironment.IsContinuousIntegration) Assert.Fail("The browser tests could not run: " + unavailableReason);
+            Assert.Inconclusive("The browser tests could not run: " + unavailableReason);
         }
     }
 
@@ -75,7 +79,8 @@ public sealed class LazyLoadingTests : BdndTest
         // The server prerenders the router - LazyAssemblyLoader resolved there too - and the board, from its own
         // registration.
         var response = await GotoAsync(page, "/board");
-        Assert.AreEqual(200, response?.Status);
+        var actualValue = response?.Status;
+        Assert.AreEqual(200, actualValue);
         var prerendered = await response!.TextAsync();
         Assert.Contains("Review", prerendered);
         Assert.Contains("Nothing yet", prerendered);

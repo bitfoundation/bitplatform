@@ -61,7 +61,7 @@ public class OtlpPartialSuccessTests
     public void UnframesAnUncompressedGrpcMessage()
     {
         var message = new ExportTraceServiceResponse { PartialSuccess = new ExportTracePartialSuccess { RejectedSpans = 1 } }.ToByteArray();
-        CollectionAssert.AreEqual(message, BelemetryHttpSender.Unframe(BelemetryHttpSender.Frame(message, compressed: false)));
+        Assert.AreSequenceEqual(message, BelemetryHttpSender.Unframe(BelemetryHttpSender.Frame(message, compressed: false)));
         Assert.IsNull(BelemetryHttpSender.Unframe(BelemetryHttpSender.Frame(message, compressed: true)), "A compressed frame is not decoded.");
         Assert.IsNull(BelemetryHttpSender.Unframe([0, 0, 0, 0, 9, 1]), "A length past the end.");
         Assert.IsNull(BelemetryHttpSender.Unframe(null));
@@ -94,7 +94,7 @@ public class OtlpPartialSuccessTests
         var outcome = await sender.SendAsync(exporter, request, retry: true, CancellationToken.None);
 
         Assert.AreEqual(BelemetrySendOutcome.Delivered, outcome);
-        Assert.HasCount(1, handler.Requests, "A partial success must not be retried.");
-        StringAssert.Contains(warnings.Single(), "accepted the request but 3 rejected: too old");
+        Assert.ContainsSingle(handler.Requests, "A partial success must not be retried.");
+        Assert.Contains("accepted the request but 3 rejected: too old", warnings.Single());
     }
 }

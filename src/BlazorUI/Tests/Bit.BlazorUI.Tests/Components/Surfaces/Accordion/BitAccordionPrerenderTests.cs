@@ -21,12 +21,12 @@ public class BitAccordionPrerenderTests
             [nameof(BitAccordion.ChildContent)] = (RenderFragment)(builder => builder.AddMarkupContent(0, "<span class=\"body\">Body</span>")),
         });
 
-        StringAssert.Contains(html, "bit-acd-hdr");
-        StringAssert.Contains(html, "Shipping");
-        StringAssert.Contains(html, "aria-expanded=\"false\"");
-        StringAssert.Contains(html, "bit-acd-cco");
+        Assert.Contains("bit-acd-hdr", html);
+        Assert.Contains("Shipping", html);
+        Assert.Contains("aria-expanded=\"false\"", html);
+        Assert.Contains("bit-acd-cco", html);
         // The content is in the page from the first render, so a reader without a runtime still has it.
-        StringAssert.Contains(html, "class=\"body\"");
+        Assert.Contains("class=\"body\"", html);
     }
 
     [TestMethod]
@@ -38,9 +38,9 @@ public class BitAccordionPrerenderTests
             [nameof(BitAccordion.DefaultIsExpanded)] = true,
         });
 
-        StringAssert.Contains(html, "bit-acd-exp");
-        StringAssert.Contains(html, "aria-expanded=\"true\"");
-        StringAssert.Contains(html, "bit-acd-cex");
+        Assert.Contains("bit-acd-exp", html);
+        Assert.Contains("aria-expanded=\"true\"", html);
+        Assert.Contains("bit-acd-cex", html);
     }
 
     [TestMethod]
@@ -54,7 +54,7 @@ public class BitAccordionPrerenderTests
             [nameof(BitAccordion.HiddenUntilFound)] = true,
         });
 
-        StringAssert.Contains(html, "hidden=\"until-found\"");
-        StringAssert.Contains(html, "bit-acd-huf");
+        Assert.Contains("hidden=\"until-found\"", html);
+        Assert.Contains("bit-acd-huf", html);
     }
 }

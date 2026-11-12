@@ -33,7 +33,7 @@ public class BitSpacerStylesheetTests : BunitTestContext
 
         var block = SourceFiles.GetScssBlock(ReadStylesheet(), $"\n.{className} {{", $"No rule for .{className}.");
 
-        StringAssert.Contains(block, $"--bit-spc-size: var({variable}, #{{{fallback}}});");
+        Assert.Contains($"--bit-spc-size: var({variable}, #{{{fallback}}});", block);
     }
 
     [TestMethod]
@@ -63,8 +63,8 @@ public class BitSpacerStylesheetTests : BunitTestContext
         var style = component.Find(".bit-spc").GetAttribute("style")!;
 
         // Gap is the more specific of the two, so the step the class resolves is left unread on that axis.
-        StringAssert.Contains(style, "margin-inline-start:2rem");
-        Assert.IsFalse(style.Contains("--bit-spc-size"));
+        Assert.Contains("margin-inline-start:2rem", style);
+        Assert.DoesNotContain("--bit-spc-size", style);
     }
 
     [TestMethod]
@@ -79,7 +79,7 @@ public class BitSpacerStylesheetTests : BunitTestContext
         // And the one private property is only ever declared from a public one.
         foreach (Match declaration in Regex.Matches(code, @"--bit-spc-size\s*:\s*(?<value>[^;]+);"))
         {
-            StringAssert.Matches(declaration.Groups["value"].Value, new Regex(@"^var\(--bit-Spacer-[a-z]+-size, #\{spacing\([0-9.]+\)\}\)$"));
+            Assert.MatchesRegex(new Regex(@"^var\(--bit-Spacer-[a-z]+-size, #\{spacing\([0-9.]+\)\}\)$"), declaration.Groups["value"].Value);
         }
     }
 

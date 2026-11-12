@@ -42,8 +42,8 @@ public class PageTests
 
         foreach (var url in await SitemapUrls())
         {
-            using var response = await client.GetAsync(url);
-            var html = await response.Content.ReadAsStringAsync();
+            using var response = await client.GetAsync(url, TestContext.CancellationToken);
+            var html = await response.Content.ReadAsStringAsync(TestContext.CancellationToken);
 
             if (response.StatusCode is not HttpStatusCode.OK)
             {
@@ -65,7 +65,7 @@ public class PageTests
 
             if (Regex.Match(html, "<meta property=\"og:image\" content=\"([^\"]+)\"") is { Success: true } preview && previews.Add(preview.Groups[1].Value))
             {
-                using var image = await client.GetAsync(preview.Groups[1].Value);
+                using var image = await client.GetAsync(preview.Groups[1].Value, TestContext.CancellationToken);
 
                 if (image.StatusCode is not HttpStatusCode.OK || image.Content.Headers.ContentType?.MediaType is not "image/png")
                     failures.Add($"{url} has a preview image that doesn't load: {preview.Groups[1].Value}");
@@ -111,11 +111,11 @@ public class PageTests
             foreach (var (_, culture) in LandingCultures.Supported)
             {
                 var home = LandingCultures.Localize(site.Path.Length is 0 ? LandingRoutes.Home : site.Path, culture);
-                var link = Regex.Match(await client.GetStringAsync(home), "<link rel=\"manifest\" href=\"([^\"]+)\"");
+                var link = Regex.Match(await client.GetStringAsync(home, TestContext.CancellationToken), "<link rel=\"manifest\" href=\"([^\"]+)\"");
 
                 Assert.IsTrue(link.Success, $"{home} links no manifest");
 
-                using var manifest = JsonDocument.Parse(await client.GetStringAsync(link.Groups[1].Value));
+                using var manifest = JsonDocument.Parse(await client.GetStringAsync(link.Groups[1].Value, TestContext.CancellationToken));
 
                 Assert.AreEqual(site.Name, manifest.RootElement.GetProperty("name").GetString(), home);
                 Assert.AreEqual(home, manifest.RootElement.GetProperty("start_url").GetString(), home);
@@ -135,7 +135,7 @@ public class PageTests
     [TestMethod]
     public async Task TheGallery_Should_OfferTheTourWithoutLoadingIt()
     {
-        var html = await client.GetStringAsync(LandingRoutes.Home);
+        var html = await client.GetStringAsync(LandingRoutes.Home, TestContext.CancellationToken);
 
         Assert.DoesNotContain("Bonboarding", html, "The tour's code and styles download only when someone starts it.");
 
@@ -156,7 +156,7 @@ public class PageTests
 
         foreach (var site in LandingSites.All)
         {
-            var html = await client.GetStringAsync(site.Path.Length is 0 ? LandingRoutes.Home : site.Path);
+            var html = await client.GetStringAsync(site.Path.Length is 0 ? LandingRoutes.Home : site.Path, TestContext.CancellationToken);
 
             foreach (Match toggle in Regex.Matches(html, "<button[^>]*class=\"lp-chat-(bubble|concierge-tab)[^>]*>"))
             {
@@ -181,7 +181,7 @@ public class PageTests
 
         foreach (var url in await SitemapUrls())
         {
-            var html = await client.GetStringAsync(url);
+            var html = await client.GetStringAsync(url, TestContext.CancellationToken);
 
             foreach (Match tag in Regex.Matches(html, "<(img|iframe)\\b[^>]*\\bloading=\"lazy\"[^>]*>"))
             {
@@ -201,7 +201,7 @@ public class PageTests
     [TestMethod]
     public async Task TheDownloadQr_Should_NotBeHiddenOnAnyScreen()
     {
-        var styles = await client.GetStringAsync("Boilerplate.LandingPage.Client.bundle.scp.css");
+        var styles = await client.GetStringAsync("Boilerplate.LandingPage.Client.bundle.scp.css", TestContext.CancellationToken);
 
         Assert.Contains(".lp-qr", styles);
         Assert.DoesNotMatchRegex(new Regex(@"\.lp-qr[^{,]*\{[^}]*display:\s*none"), styles);
@@ -214,7 +214,7 @@ public class PageTests
     public async Task ACrawlerOrABenchmark_Should_GetThePageWithoutItsScripts(string userAgent)
     {
         using var response = await GetAs(client, userAgent, SamplePath());
-        var html = await response.Content.ReadAsStringAsync();
+        var html = await response.Content.ReadAsStringAsync(TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
         Assert.Contains("<h1", html);
@@ -228,7 +228,7 @@ public class PageTests
     public async Task AVisitor_Should_GetThePageWithItsScripts(string userAgent)
     {
         using var response = await GetAs(client, userAgent, SamplePath());
-        var html = await response.Content.ReadAsStringAsync();
+        var html = await response.Content.ReadAsStringAsync(TestContext.CancellationToken);
 
         Assert.MatchesRegex(scriptTagWithSource, html);
         Assert.Contains("Blazor.start", html);
@@ -273,7 +273,7 @@ public class PageTests
     [TestMethod]
     public async Task OutsideProduction_Should_TellSearchEnginesNotToIndex()
     {
-        using var response = await client.GetAsync(LandingSites.All[0].Path);
+        using var response = await client.GetAsync(LandingSites.All[0].Path, TestContext.CancellationToken);
 
         Assert.AreEqual("noindex, nofollow", string.Join(", ", response.Headers.GetValues("X-Robots-Tag")));
     }
@@ -284,7 +284,7 @@ public class PageTests
         await using var production = await new LandingTestServer().Start(environment: "Production");
         using var productionClient = production.CreateClient();
 
-        using var response = await productionClient.GetAsync(LandingSites.All[0].Path);
+        using var response = await productionClient.GetAsync(LandingSites.All[0].Path, TestContext.CancellationToken);
 
         var directives = string.Join(", ", response.Headers.GetValues("Content-Security-Policy"))
             .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
@@ -312,12 +312,14 @@ public class PageTests
         });
         using var productionClient = production.CreateClient();
 
-        using var response = await productionClient.GetAsync(LandingSites.All[0].Path);
-        var html = await response.Content.ReadAsStringAsync();
+        using var response = await productionClient.GetAsync(LandingSites.All[0].Path, TestContext.CancellationToken);
+        var html = await response.Content.ReadAsStringAsync(TestContext.CancellationToken);
         var csp = string.Join(", ", response.Headers.GetValues("Content-Security-Policy"));
 
         Assert.AreEqual(reachesTheBrowser, csp.Contains($"connect-src 'self' https://*.applicationinsights.azure.com https://dc.services.visualstudio.com {endpoint};", StringComparison.Ordinal));
-        Assert.AreEqual(reachesTheBrowser, html.Contains($"\"OTEL_EXPORTER_OTLP_ENDPOINT\":\"{endpoint}\",\"OTEL_EXPORTER_OTLP_PROTOCOL\":\"{protocol?.ToLowerInvariant()}\"", StringComparison.Ordinal));
+        var expectedValue = reachesTheBrowser;
+        var actualValue = html.Contains($"\"OTEL_EXPORTER_OTLP_ENDPOINT\":\"{endpoint}\",\"OTEL_EXPORTER_OTLP_PROTOCOL\":\"{protocol?.ToLowerInvariant()}\"", StringComparison.Ordinal);
+        Assert.AreEqual(expectedValue, actualValue);
         Assert.DoesNotContain("k3y-n0t-for-pages", html);
     }
 
@@ -335,8 +337,8 @@ public class PageTests
         });
         using var productionClient = production.CreateClient();
 
-        using var response = await productionClient.GetAsync(LandingSites.All[0].Path);
-        var html = await response.Content.ReadAsStringAsync();
+        using var response = await productionClient.GetAsync(LandingSites.All[0].Path, TestContext.CancellationToken);
+        var html = await response.Content.ReadAsStringAsync(TestContext.CancellationToken);
         var csp = string.Join(", ", response.Headers.GetValues("Content-Security-Policy"));
 
         Assert.AreEqual(reachesTheBrowser, csp.Contains($"connect-src 'self' https://*.applicationinsights.azure.com https://dc.services.visualstudio.com {endpoint};", StringComparison.Ordinal));
@@ -377,8 +379,8 @@ public class PageTests
 
         using var response = await GetFrom(indexedClient, "www.example.com", path);
         using var sitemapResponse = await GetFrom(indexedClient, "www.example.com", "sitemap.xml");
-        var html = await response.Content.ReadAsStringAsync();
-        var sitemap = await sitemapResponse.Content.ReadAsStringAsync();
+        var html = await response.Content.ReadAsStringAsync(TestContext.CancellationToken);
+        var sitemap = await sitemapResponse.Content.ReadAsStringAsync(TestContext.CancellationToken);
 
         Assert.Contains($"rel=\"canonical\" href=\"http://www.example.com{path}\"", html);
         Assert.IsFalse(response.Headers.Contains("X-Robots-Tag"));
@@ -400,14 +402,14 @@ public class PageTests
             Assert.AreEqual(HttpStatusCode.OK, first.StatusCode);
             Assert.IsFalse(first.Headers.Age.HasValue, $"{file} should be rendered the first time.");
             Assert.IsTrue(second.Headers.Age.HasValue, $"{file} should come from the output cache the second time.");
-            Assert.Contains("two.example.com", await otherHost.Content.ReadAsStringAsync(), $"{file} must not hand one host's addresses to another.");
+            Assert.Contains("two.example.com", await otherHost.Content.ReadAsStringAsync(TestContext.CancellationToken), $"{file} must not hand one host's addresses to another.");
         }
     }
 
     [TestMethod]
     public async Task APage_Should_SayItsLanguageInTheResponse()
     {
-        using var english = await client.GetAsync(SamplePath());
+        using var english = await client.GetAsync(SamplePath(), TestContext.CancellationToken);
 
         Assert.AreEqual("en-US", english.Content.Headers.ContentLanguage.Single());
 
@@ -417,7 +419,7 @@ public class PageTests
             return;
         }
 
-        using var persian = await client.GetAsync($"/fa-IR{SamplePath()}");
+        using var persian = await client.GetAsync($"/fa-IR{SamplePath()}", TestContext.CancellationToken);
 
         Assert.AreEqual("fa-IR", persian.Content.Headers.ContentLanguage.Single());
     }
@@ -425,10 +427,10 @@ public class PageTests
     [TestMethod]
     public async Task TheHealthEndpoint_Should_SayDegraded_WithoutAnSmtpServer()
     {
-        using var response = await client.GetAsync("health");
+        using var response = await client.GetAsync("health", TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
-        Assert.AreEqual("Degraded", await response.Content.ReadAsStringAsync());
+        Assert.AreEqual("Degraded", await response.Content.ReadAsStringAsync(TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -437,11 +439,11 @@ public class PageTests
         await using var noMail = await new LandingTestServer().Start(before: builder => builder.Configuration["ConnectionStrings:smtp"] = "Endpoint=smtp://127.0.0.1:1");
         using var noMailClient = noMail.CreateClient();
 
-        using var health = await noMailClient.GetAsync("health");
-        using var alive = await noMailClient.GetAsync("alive");
+        using var health = await noMailClient.GetAsync("health", TestContext.CancellationToken);
+        using var alive = await noMailClient.GetAsync("alive", TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.ServiceUnavailable, health.StatusCode);
-        Assert.AreEqual("Unhealthy", await health.Content.ReadAsStringAsync(), "The answer stays the bare status: this endpoint is public.");
+        Assert.AreEqual("Unhealthy", await health.Content.ReadAsStringAsync(TestContext.CancellationToken), "The answer stays the bare status: this endpoint is public.");
         Assert.AreEqual(HttpStatusCode.OK, alive.StatusCode, "Deployments check /alive, and a mail outage must not restart the site.");
     }
 
@@ -468,13 +470,14 @@ public class PageTests
         await using var failing = await new LandingTestServer().Start(after: services => services.AddScoped<IStoreListingClient, FailingStoreListingClient>(), environment: "Production");
         using var failingClient = failing.CreateClient();
 
-        using var response = await failingClient.GetAsync(sample.Path);
-        var html = await response.Content.ReadAsStringAsync();
+        using var response = await failingClient.GetAsync(sample.Path, TestContext.CancellationToken);
+        var html = await response.Content.ReadAsStringAsync(TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.InternalServerError, response.StatusCode);
         Assert.Contains("Something went wrong on our side", html);
         Assert.DoesNotContain("lp-error", html, "The plain page, not the panel of a page answering 200.");
-        Assert.IsFalse(response.Headers.CacheControl?.Public ?? false, "A CDN must not keep it.");
+        var actualValue = response.Headers.CacheControl?.Public ?? false;
+        Assert.IsFalse(actualValue, "A CDN must not keep it.");
     }
 
     [TestMethod]
@@ -490,7 +493,7 @@ public class PageTests
         await using var failing = await new LandingTestServer().Start(builder => builder.Logging.AddProvider(log), services => services.AddScoped<IStoreListingClient, FailingStoreListingClient>(), "Production");
         using var failingClient = failing.CreateClient();
 
-        using var response = await failingClient.GetAsync(sample.Path);
+        using var response = await failingClient.GetAsync(sample.Path, TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.InternalServerError, response.StatusCode);
         Assert.ContainsSingle(log.Errors.Where(error => error == FailingStoreListingClient.Failure));
@@ -500,7 +503,7 @@ public class PageTests
     [TestMethod]
     public async Task TheHome_Should_ShowItsScoresWithTheirSource()
     {
-        var html = await client.GetStringAsync(LandingRoutes.Home);
+        var html = await client.GetStringAsync(LandingRoutes.Home, TestContext.CancellationToken);
 
         if (html.Contains("gallery-hero", StringComparison.Ordinal) is false)
         {
@@ -544,4 +547,6 @@ public class PageTests
 
         return [.. sitemap.Descendants(sitemapNamespace + "loc").Select(loc => loc.Value)];
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

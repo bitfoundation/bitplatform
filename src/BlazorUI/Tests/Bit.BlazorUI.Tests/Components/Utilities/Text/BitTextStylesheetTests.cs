@@ -33,13 +33,13 @@ public class BitTextStylesheetTests
 
         var read = Regex.Matches(stylesheet, @"var\((--bit-Text-[a-z-]+)").Select(m => m.Groups[1].Value).Distinct().ToArray();
 
-        CollectionAssert.AreEquivalent(PublicVariables, read);
+        Assert.AreSequenceEqual(PublicVariables, read, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
         foreach (var variable in PublicVariables)
         {
             Assert.IsFalse(Regex.IsMatch(stylesheet, $@"^\s*{variable}\s*:", RegexOptions.Multiline), $"{variable} is declared, so it no longer inherits.");
             Assert.IsTrue(Regex.IsMatch(stylesheet, $@"var\({variable}, [^)]"), $"{variable} is read without a fallback.");
-            StringAssert.Contains(stylesheet, $"//   {variable} ", $"{variable} is missing from the header of the stylesheet.");
+            Assert.Contains($"//   {variable} ", stylesheet, $"{variable} is missing from the header of the stylesheet.");
         }
     }
 
@@ -50,7 +50,7 @@ public class BitTextStylesheetTests
 
         var listed = Regex.Matches(demo, @"Name = ""(--bit-Text-[a-z-]+)""").Select(m => m.Groups[1].Value).ToArray();
 
-        CollectionAssert.AreEquivalent(PublicVariables, listed);
+        Assert.AreSequenceEqual(PublicVariables, listed, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     // The variables restyle the defaults; a parameter is a choice made on the text itself. The color and the family are
@@ -72,7 +72,7 @@ public class BitTextStylesheetTests
         var parameter = stylesheet.IndexOf(parameterRule, StringComparison.Ordinal);
 
         Assert.IsTrue(root >= 0 && variable > root, $"\"{variableRule}\" is not read on the root.");
-        Assert.IsTrue(parameter > variable, $"\"{parameterRule.Trim()}\" is declared before the root and loses to its variable.");
+        Assert.IsGreaterThan(variable, parameter, $"\"{parameterRule.Trim()}\" is declared before the root and loses to its variable.");
     }
 
     // A visually hidden text the keyboard lands on - a skip link, or one inside it - has to be drawn while it holds
@@ -83,7 +83,7 @@ public class BitTextStylesheetTests
     {
         var stylesheet = ReadStylesheet();
 
-        StringAssert.Contains(stylesheet, "\n.bit-txt-vhd:where(:not(:focus-visible:not([tabindex=\"-1\"]), :has(:focus-visible:not([tabindex=\"-1\"])))) {");
+        Assert.Contains("\n.bit-txt-vhd:where(:not(:focus-visible:not([tabindex=\"-1\"]), :has(:focus-visible:not([tabindex=\"-1\"])))) {", stylesheet);
         Assert.IsFalse(stylesheet.Contains("\n.bit-txt-vhd {", StringComparison.Ordinal), "The visually hidden rules apply to a focused text as well.");
     }
 
@@ -97,8 +97,8 @@ public class BitTextStylesheetTests
 
         var disabled = SourceFiles.GetScssBlock(stylesheet, "\n.bit-txt.bit-dis {");
 
-        StringAssert.Contains(disabled, "@media (forced-colors: active) {");
-        StringAssert.Contains(disabled, "color: GrayText;");
+        Assert.Contains("@media (forced-colors: active) {", disabled);
+        Assert.Contains("color: GrayText;", disabled);
     }
 
     // A background role is Canvas under a forced palette, and Chromium draws a Canvas backplate behind the text, so a
@@ -109,7 +109,7 @@ public class BitTextStylesheetTests
     {
         var stylesheet = ReadStylesheet();
 
-        StringAssert.Matches(stylesheet, new Regex(@"@media \(forced-colors: active\) \{\s*@each \$role in \$bit-background-color-roles \{\s*\.bit-txt-#\{\$role\} \{\s*color: CanvasText;"));
+        Assert.MatchesRegex(new Regex(@"@media \(forced-colors: active\) \{\s*@each \$role in \$bit-background-color-roles \{\s*\.bit-txt-#\{\$role\} \{\s*color: CanvasText;"), stylesheet);
     }
 
     // The ring is for a text the keyboard can tab to; a text focused only by script (tabindex -1, as FocusOnNavigate
@@ -122,8 +122,8 @@ public class BitTextStylesheetTests
 
         var root = SourceFiles.GetScssBlock(stylesheet, "\n.bit-txt {");
 
-        StringAssert.Contains(root, "&:focus-visible:not([tabindex=\"-1\"]) {");
-        StringAssert.Contains(root, "@include focus-ring;");
+        Assert.Contains("&:focus-visible:not([tabindex=\"-1\"]) {", root);
+        Assert.Contains("@include focus-ring;", root);
         Assert.IsFalse(root.Contains("&:focus-visible {", StringComparison.Ordinal), "A text focused by script is drawn with the ring.");
     }
 
@@ -136,7 +136,7 @@ public class BitTextStylesheetTests
     {
         var roles = SourceFiles.GetScssBlock(ReadStylesheet(), "\n    .bit-txt-#{$role} {");
 
-        StringAssert.Contains(roles, "color: role-text($role, $tokens);");
+        Assert.Contains("color: role-text($role, $tokens);", roles);
         Assert.IsFalse(roles.Contains("role($tokens, main)", StringComparison.Ordinal), "A Color paints the text in the role's fill color.");
     }
 

@@ -258,7 +258,7 @@ public partial class BitCascadingValueProviderTests : BunitTestContext
         var consumer = component.FindComponent<CascadingConsumer>().Instance;
 
         Assert.AreEqual(49, consumer.Number);
-        Assert.AreEqual(1, component.FindComponents<CascadingValue<int>>().Count);
+        Assert.ContainsSingle(component.FindComponents<CascadingValue<int>>());
     }
 
     [TestMethod]
@@ -278,7 +278,7 @@ public partial class BitCascadingValueProviderTests : BunitTestContext
         });
 
         Assert.AreEqual(7, component.FindComponent<CascadingConsumer>().Instance.Number);
-        Assert.AreEqual(50, component.FindComponents<CascadingValue<int>>().Count);
+        Assert.HasCount(50, component.FindComponents<CascadingValue<int>>());
     }
 
     [TestMethod]
@@ -305,7 +305,7 @@ public partial class BitCascadingValueProviderTests : BunitTestContext
 
         Assert.AreEqual(2, consumer.Number);
         Assert.IsNull(consumer.Greeting);
-        Assert.AreEqual(0, component.FindComponents<CascadingValue<string>>().Count);
+        Assert.IsEmpty(component.FindComponents<CascadingValue<string>>());
     }
 
     [TestMethod]

@@ -113,7 +113,7 @@ public class TourCommentUITests : ReviewPageTest
     {
         await Context.RouteAsync(url => url.Contains("/preview/shifts", StringComparison.Ordinal), async route =>
         {
-            await Task.Delay(TimeSpan.FromSeconds(3));
+            await Task.Delay(TimeSpan.FromSeconds(3), TestContext.CancellationToken);
             await route.ContinueAsync();
         });
 

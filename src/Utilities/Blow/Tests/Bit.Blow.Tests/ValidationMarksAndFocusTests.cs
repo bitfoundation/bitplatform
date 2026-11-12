@@ -75,7 +75,7 @@ public class ValidationMarksAndFocusTests : BunitContext
         ]);
         var cut = Render(Graph(), extra: p => p.Add(c => c.Validation, validation));
 
-        StringAssert.StartsWith(DescriptionOf(cut, ".bit-blow-node[data-id='c']"), "Error: Broken. Warning: Slow. Not connected.");
+        Assert.StartsWith("Error: Broken. Warning: Slow. Not connected.", DescriptionOf(cut, ".bit-blow-node[data-id='c']"));
     }
 
     [TestMethod]
@@ -97,11 +97,11 @@ public class ValidationMarksAndFocusTests : BunitContext
         var nodes = Graph();
         var cut = Render(nodes, [new BlowEdge { Id = "a-b", Source = "a", Target = "b" }, new BlowEdge { Id = "c-b", Source = "c", Target = "b" }]);
 
-        StringAssert.StartsWith(DescriptionOf(cut, ".bit-blow-node[data-id='b']"), "2 incoming connections.");
-        StringAssert.StartsWith(DescriptionOf(cut, ".bit-blow-node[data-id='a']"), "1 outgoing connection.");
+        Assert.StartsWith("2 incoming connections.", DescriptionOf(cut, ".bit-blow-node[data-id='b']"));
+        Assert.StartsWith("1 outgoing connection.", DescriptionOf(cut, ".bit-blow-node[data-id='a']"));
 
         cut.Find(".bit-blow-node[data-id='b']").KeyDown(new KeyboardEventArgs { Key = "Enter" });
-        StringAssert.StartsWith(DescriptionOf(cut, ".bit-blow-node[data-id='b']"), "Selected. 2 incoming connections.");
+        Assert.StartsWith("Selected. 2 incoming connections.", DescriptionOf(cut, ".bit-blow-node[data-id='b']"));
     }
 
     [TestMethod]
@@ -119,8 +119,8 @@ public class ValidationMarksAndFocusTests : BunitContext
 
         cut.Find(".bit-blow-edge").KeyDown(new KeyboardEventArgs { Key = "Enter" });
 
-        StringAssert.Contains(cut.Find(".bit-blow-a11y-live").TextContent, "Edge Read to Log selected");
-        StringAssert.StartsWith(DescriptionOf(cut, ".bit-blow-edge"), "Selected.");
+        Assert.Contains("Edge Read to Log selected", cut.Find(".bit-blow-a11y-live").TextContent);
+        Assert.StartsWith("Selected.", DescriptionOf(cut, ".bit-blow-edge"));
     }
 
     // ---- focus and selection from code ----
@@ -185,11 +185,11 @@ public class ValidationMarksAndFocusTests : BunitContext
         await cut.InvokeAsync(() => cut.Instance.SelectAsync([nodes[0]]));
         await cut.InvokeAsync(() => cut.Instance.SelectAsync([nodes[1], nodes[2]], additive: true));
 
-        CollectionAssert.AreEqual(new[] { true, true, false }, nodes.Select(n => n.Selected).ToArray());
+        Assert.AreSequenceEqual(new[] { true, true, false }, nodes.Select(n => n.Selected).ToArray());
         Assert.HasCount(2, changes);
 
         await cut.InvokeAsync(() => cut.Instance.SelectAsync([nodes[1]]));
-        CollectionAssert.AreEqual(new[] { false, true, false }, nodes.Select(n => n.Selected).ToArray());
+        Assert.AreSequenceEqual(new[] { false, true, false }, nodes.Select(n => n.Selected).ToArray());
     }
 
     [TestMethod]
@@ -224,7 +224,7 @@ public class ValidationMarksAndFocusTests : BunitContext
         Assert.AreEqual("0", map.GetAttribute("tabindex"));
         Assert.AreEqual("group", map.GetAttribute("role"));
         Assert.AreEqual("mini map", map.GetAttribute("aria-roledescription"));
-        StringAssert.Contains(cut.Find($"[id='{map.GetAttribute("aria-describedby")}']").TextContent, "Arrow keys move the view");
+        Assert.Contains("Arrow keys move the view", cut.Find($"[id='{map.GetAttribute("aria-describedby")}']").TextContent);
 
         var still = RenderWithMiniMap(pannable: false, zoomable: false).Find(".bit-blow-minimap");
         Assert.IsNull(still.GetAttribute("tabindex"));

@@ -22,12 +22,12 @@ public class BitFileInputPrerenderTests
             [nameof(BitFileInput.AllowedExtensions)] = new[] { ".pdf" },
         });
 
-        StringAssert.Contains(html, "bit-fin");
-        StringAssert.Contains(html, "bit-fin-dzn");
-        StringAssert.Contains(html, "Attach");
-        StringAssert.Contains(html, "type=\"file\"");
-        StringAssert.Contains(html, "accept=\".pdf\"");
-        StringAssert.Contains(html, "name=\"attachments\"");
-        StringAssert.Contains(html, "bit-input-hidden");
+        Assert.Contains("bit-fin", html);
+        Assert.Contains("bit-fin-dzn", html);
+        Assert.Contains("Attach", html);
+        Assert.Contains("type=\"file\"", html);
+        Assert.Contains("accept=\".pdf\"", html);
+        Assert.Contains("name=\"attachments\"", html);
+        Assert.Contains("bit-input-hidden", html);
     }
 }

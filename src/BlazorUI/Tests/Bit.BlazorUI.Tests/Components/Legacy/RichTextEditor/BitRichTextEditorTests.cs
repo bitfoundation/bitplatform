@@ -71,7 +71,7 @@ public class BitRichTextEditorTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("bit-rte-rvs"));
         // The Extras editor shares the bit-rte-* names, so the legacy stylesheet is scoped under a class of its own.
         Assert.IsTrue(root.ClassList.Contains("bit-rte-lgc"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin:1px");
+        Assert.Contains("margin:1px", root.GetAttribute("style")!);
         Assert.IsTrue(component.Find(".bit-rte-edt").ClassList.Contains("custom-editor"));
         Assert.AreEqual("color:red", component.Find(".bit-rte-edt").GetAttribute("style"));
         Assert.IsTrue(component.Find(".bit-rte-tlb").ClassList.Contains("custom-toolbar"));
@@ -90,7 +90,7 @@ public class BitRichTextEditorTests : BunitTestContext
 
         var component = RenderComponent<BitRichTextEditorLegacy>();
 
-        Assert.AreEqual(0, component.FindAll(".bit-rte-tlb").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rte-tlb"));
         // Quill draws its own toolbar then, so no container is handed to it.
         Assert.IsNull(Context.JSInterop.VerifyInvoke("BitBlazorUI.Legacy.RichTextEditor.setup").Arguments[3]);
     }
@@ -166,14 +166,14 @@ public class BitRichTextEditorTests : BunitTestContext
 
         // The theme decides which of Quill's stylesheets is loaded.
         var stylesheets = (IEnumerable<string>)Context.JSInterop.VerifyInvoke("BitBlazorUI.Legacy.Utils.initStylesheets").Arguments[0]!;
-        StringAssert.Contains(stylesheets.First(), "quill.bubble");
+        Assert.Contains("quill.bubble", stylesheets.First());
 
         var setup = Context.JSInterop.VerifyInvoke("BitBlazorUI.Legacy.RichTextEditor.setup");
         Assert.AreEqual(component.Find(".bit-rte").Id, setup.Arguments[0]);
         Assert.AreEqual("bubble", setup.Arguments[4]);
         Assert.AreEqual("Type here", setup.Arguments[5]);
-        Assert.AreEqual(true, setup.Arguments[6]);
-        Assert.AreEqual(true, setup.Arguments[7]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(setup.Arguments[6]));
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(setup.Arguments[7]));
     }
 
     [TestMethod]
@@ -184,12 +184,12 @@ public class BitRichTextEditorTests : BunitTestContext
         RenderComponent<BitRichTextEditorLegacy>();
 
         var stylesheets = (IEnumerable<string>)Context.JSInterop.VerifyInvoke("BitBlazorUI.Legacy.Utils.initStylesheets").Arguments[0]!;
-        StringAssert.Contains(stylesheets.First(), "quill.snow");
+        Assert.Contains("quill.snow", stylesheets.First());
 
         var setup = Context.JSInterop.VerifyInvoke("BitBlazorUI.Legacy.RichTextEditor.setup");
         Assert.AreEqual("snow", setup.Arguments[4]);
-        Assert.AreEqual(false, setup.Arguments[6]);
-        Assert.AreEqual(false, setup.Arguments[7]);
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(setup.Arguments[6]));
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(setup.Arguments[7]));
     }
 
     [TestMethod]
@@ -229,12 +229,12 @@ public class BitRichTextEditorTests : BunitTestContext
             [nameof(BitRichTextEditorLegacy.Reversed)] = true,
         });
 
-        StringAssert.Contains(html, "bit-rte-lgc");
-        StringAssert.Contains(html, "bit-rte-rvs");
-        StringAssert.Contains(html, "bit-rte-tlb");
-        StringAssert.Contains(html, "Toolbar;");
-        StringAssert.Contains(html, "bit-rte-edt");
-        StringAssert.Contains(html, "Editor;");
+        Assert.Contains("bit-rte-lgc", html);
+        Assert.Contains("bit-rte-rvs", html);
+        Assert.Contains("bit-rte-tlb", html);
+        Assert.Contains("Toolbar;", html);
+        Assert.Contains("bit-rte-edt", html);
+        Assert.Contains("Editor;", html);
     }
 
     [TestMethod]
@@ -261,7 +261,7 @@ public class BitRichTextEditorTests : BunitTestContext
         Assert.AreEqual("fa", root.GetAttribute("lang"));
         Assert.AreEqual("rtl", root.GetAttribute("dir"));
         Assert.IsTrue(root.ClassList.Contains("custom-class"));
-        StringAssert.Contains(root.GetAttribute("style"), "padding:1px");
+        Assert.Contains("padding:1px", root.GetAttribute("style")!);
     }
 
     [TestMethod,

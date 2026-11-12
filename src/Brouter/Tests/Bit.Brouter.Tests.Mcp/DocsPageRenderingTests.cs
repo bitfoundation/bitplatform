@@ -20,23 +20,29 @@ public class DocsPageRenderingTests
     [TestMethod]
     public void A_slug_resolves_to_the_same_page_for_the_tool_and_for_the_resource()
     {
+        var actualValue = DocsPageRenderer.FindPage("guards")?.Slug;
         // Both go through this one method, which is what makes a slug that works in one work in the other.
-        Assert.AreEqual("guards", DocsPageRenderer.FindPage("guards")?.Slug);
+        Assert.AreEqual("guards", actualValue);
 
         // The overview's own slug is the empty string, which is not a thing anyone types.
         foreach (var alias in new[] { "overview", "index", "docs" })
         {
-            Assert.AreEqual(string.Empty, DocsPageRenderer.FindPage(alias)?.Slug, $"'{alias}' did not resolve to the overview.");
+            var expectedValue = string.Empty;
+            var actualValue1 = DocsPageRenderer.FindPage(alias)?.Slug;
+            Assert.AreEqual(expectedValue, actualValue1, $"'{alias}' did not resolve to the overview.");
         }
 
         // A slug arrives from a URL as often as from an agent, so the stand-ins are recognized the
         // way the catalog recognizes every other slug: slashes trimmed and case ignored.
         foreach (var alias in new[] { "/overview", "Overview", "/docs/", "INDEX" })
         {
-            Assert.AreEqual(string.Empty, DocsPageRenderer.FindPage(alias)?.Slug, $"'{alias}' did not resolve to the overview.");
+            var expectedValue2 = string.Empty;
+            var actualValue3 = DocsPageRenderer.FindPage(alias)?.Slug;
+            Assert.AreEqual(expectedValue2, actualValue3, $"'{alias}' did not resolve to the overview.");
         }
+        var actualValue4 = DocsPageRenderer.FindPage("/Guards/")?.Slug;
 
-        Assert.AreEqual("guards", DocsPageRenderer.FindPage("/Guards/")?.Slug);
+        Assert.AreEqual("guards", actualValue4);
 
         Assert.IsNull(DocsPageRenderer.FindPage("nope"));
     }
@@ -46,11 +52,11 @@ public class DocsPageRenderingTests
     {
         var answer = DocsPageRenderer.NoSuchPage("nope");
 
-        StringAssert.Contains(answer, "'nope'");
+        Assert.Contains("'nope'", answer);
 
         foreach (var page in DocsCatalog.AllPages)
         {
-            StringAssert.Contains(answer, page.Slug.Length == 0 ? "overview" : page.Slug);
+            Assert.Contains(page.Slug.Length == 0 ? "overview" : page.Slug, answer);
         }
     }
 
@@ -66,8 +72,8 @@ public class DocsPageRenderingTests
 
             Assert.IsNull(error, $"The '{page.Title}' page threw while rendering: {error}");
             Assert.IsNotNull(markdown);
-            Assert.IsTrue(markdown.Length > 500, $"The '{page.Title}' page rendered {markdown.Length} characters of Markdown.");
-            StringAssert.StartsWith(markdown, "# ", $"The '{page.Title}' page did not render a heading of its own.");
+            Assert.IsGreaterThan(500, markdown.Length, $"The '{page.Title}' page rendered {markdown.Length} characters of Markdown.");
+            Assert.StartsWith("# ", markdown, $"The '{page.Title}' page did not render a heading of its own.");
         }
     }
 
@@ -91,12 +97,12 @@ public class DocsPageRenderingTests
 
         var unavailable = DocsPageRenderer.Unavailable(page, "JSInterop is not available");
 
-        StringAssert.Contains(unavailable, page.Title);
-        StringAssert.Contains(unavailable, page.Url);
-        StringAssert.Contains(unavailable, "JSInterop is not available");
+        Assert.Contains(page.Title, unavailable);
+        Assert.Contains(page.Url, unavailable);
+        Assert.Contains("JSInterop is not available", unavailable);
 
         // And where the same material is available as text, so the agent has somewhere to go.
-        StringAssert.Contains(unavailable, "SearchBrouter");
+        Assert.Contains("SearchBrouter", unavailable);
     }
 
     private static async Task<(string? Markdown, string? Error)> RenderAsync(DocsPageInfo page)

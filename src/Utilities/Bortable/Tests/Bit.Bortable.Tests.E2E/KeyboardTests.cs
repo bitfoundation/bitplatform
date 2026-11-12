@@ -60,20 +60,20 @@ public sealed class KeyboardTests : BortableTest
 
         await Item(page, "simple-list", "Item 2").FocusAsync();
         await PressKeyAsync(page, " ");
-        StringAssert.StartsWith(await AnnouncedAsync(page), "Picked up Item 2. It is at position 2 of 6");
+        Assert.StartsWith("Picked up Item 2. It is at position 2 of 6", await AnnouncedAsync(page));
         await Expect(Item(page, "simple-list", "Item 2")).ToHaveClassAsync(HasClass("bit-bortable-chosen"));
 
         await PressKeyAsync(page, "ArrowDown");
         await PressKeyAsync(page, "ArrowDown");
         // Live, like a pointer drag: the list shows the move, the bound list waits for the drop.
         await AssertLabelsAsync(page, "simple-list", ["Item 1", "Item 3", "Item 4", "Item 2", "Item 5", "Item 6"]);
-        StringAssert.StartsWith(await AnnouncedAsync(page), "Item 2 moved to position 4 of 6");
+        Assert.StartsWith("Item 2 moved to position 4 of 6", await AnnouncedAsync(page));
         Assert.AreEqual("Item 2", await FocusedAsync(page), "The focus follows the item.");
 
         await PressKeyAsync(page, " ");
 
         await AssertOrderAsync(page, "simple-list", "simple-order", "Item 1", "Item 3", "Item 4", "Item 2", "Item 5", "Item 6");
-        StringAssert.StartsWith(await AnnouncedAsync(page), "Dropped Item 2 at position 4 of 6");
+        Assert.StartsWith("Dropped Item 2 at position 4 of 6", await AnnouncedAsync(page));
         Assert.AreEqual("Item 2", await FocusedAsync(page));
         await Expect(page.Locator(".bit-bortable-chosen")).ToHaveCountAsync(0);
     }
@@ -123,7 +123,7 @@ public sealed class KeyboardTests : BortableTest
         await PressKeyAsync(page, "Escape");
 
         await AssertOrderAsync(page, "simple-list", "simple-order", Simple);
-        StringAssert.StartsWith(await AnnouncedAsync(page), "Cancelled. Item 1 is back at position 1 of 6");
+        Assert.StartsWith("Cancelled. Item 1 is back at position 1 of 6", await AnnouncedAsync(page));
         Assert.AreEqual("Item 1", await FocusedAsync(page));
     }
 
@@ -203,7 +203,7 @@ public sealed class KeyboardTests : BortableTest
               return result;
             }
             """);
-        Assert.IsFalse(prevented.Any(p => p), "A key pressed outside the dragged item was taken by the drag.");
+        Assert.DoesNotContain(p => p, prevented, "A key pressed outside the dragged item was taken by the drag.");
 
         await Item(page, "simple-list", "Item 1").FocusAsync();
         await PressKeyAsync(page, "Escape");

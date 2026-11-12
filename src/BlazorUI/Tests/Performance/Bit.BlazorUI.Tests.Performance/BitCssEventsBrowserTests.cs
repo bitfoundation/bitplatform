@@ -29,12 +29,12 @@ public class BitCssEventsBrowserTests : PerformanceTestBase
         await Run("ev-animated");
         var log = await WaitForLog("ev-outer animationend");
 
-        CollectionAssert.Contains(log, "ev-animated animationstart name=css-events-pulse target=ev-animated pseudo= elapsed=0");
-        CollectionAssert.Contains(log, "ev-animated animationiteration name=css-events-pulse target=ev-animated pseudo= elapsed=0.2");
-        CollectionAssert.Contains(log, "ev-animated animationend name=css-events-pulse target=ev-animated pseudo= elapsed=0.4");
+        Assert.Contains("ev-animated animationstart name=css-events-pulse target=ev-animated pseudo= elapsed=0", log);
+        Assert.Contains("ev-animated animationiteration name=css-events-pulse target=ev-animated pseudo= elapsed=0.2", log);
+        Assert.Contains("ev-animated animationend name=css-events-pulse target=ev-animated pseudo= elapsed=0.4", log);
 
         // The end bubbles, and the target id is what tells an ancestor its content's end from its own.
-        CollectionAssert.Contains(log, "ev-outer animationend name=css-events-pulse target=ev-animated pseudo= elapsed=0.4");
+        Assert.Contains("ev-outer animationend name=css-events-pulse target=ev-animated pseudo= elapsed=0.4", log);
     }
 
     [TestMethod]
@@ -45,13 +45,13 @@ public class BitCssEventsBrowserTests : PerformanceTestBase
         await Run("ev-stopped");
         var log = await WaitForLog("ev-stopped animationend");
 
-        CollectionAssert.Contains(log, "ev-stopped animationend name=css-events-pulse target=ev-stopped-inner pseudo= elapsed=0.1");
+        Assert.Contains("ev-stopped animationend name=css-events-pulse target=ev-stopped-inner pseudo= elapsed=0.1", log);
 
         // A later end that does bubble is what shows the stopped one had its chance to reach the ancestor first.
         await Run("ev-animated");
         log = await WaitForLog("ev-outer animationend");
 
-        Assert.IsFalse(log.Any(l => l.StartsWith("ev-outer") && l.Contains("target=ev-stopped-inner")), string.Join("\n", log));
+        Assert.DoesNotContain(l => l.StartsWith("ev-outer") && l.Contains("target=ev-stopped-inner"), log, string.Join("\n", log));
     }
 
     [TestMethod]
@@ -62,7 +62,7 @@ public class BitCssEventsBrowserTests : PerformanceTestBase
         await Run("ev-pseudo");
         var log = await WaitForLog("ev-pseudo animationend");
 
-        CollectionAssert.Contains(log, "ev-pseudo animationend name=css-events-pulse target=ev-pseudo pseudo=::before elapsed=0.1");
+        Assert.Contains("ev-pseudo animationend name=css-events-pulse target=ev-pseudo pseudo=::before elapsed=0.1", log);
     }
 
     [TestMethod]
@@ -73,8 +73,8 @@ public class BitCssEventsBrowserTests : PerformanceTestBase
         await Run("ev-zero-animation");
         var log = await WaitForLog("ev-zero-animation animationend");
 
-        CollectionAssert.Contains(log, "ev-zero-animation animationstart name=css-events-pulse target=ev-zero-animation pseudo= elapsed=0");
-        CollectionAssert.Contains(log, "ev-zero-animation animationend name=css-events-pulse target=ev-zero-animation pseudo= elapsed=0");
+        Assert.Contains("ev-zero-animation animationstart name=css-events-pulse target=ev-zero-animation pseudo= elapsed=0", log);
+        Assert.Contains("ev-zero-animation animationend name=css-events-pulse target=ev-zero-animation pseudo= elapsed=0", log);
     }
 
     [TestMethod]
@@ -94,7 +94,7 @@ public class BitCssEventsBrowserTests : PerformanceTestBase
 
         var log = await WaitForLog("ev-cancel animationcancel");
 
-        Assert.IsTrue(log.Any(l => l.StartsWith("ev-cancel animationcancel name=css-events-pulse target=ev-cancel pseudo= elapsed=")), string.Join("\n", log));
+        Assert.Contains(l => l.StartsWith("ev-cancel animationcancel name=css-events-pulse target=ev-cancel pseudo= elapsed="), log, string.Join("\n", log));
     }
 
     [TestMethod]
@@ -105,10 +105,10 @@ public class BitCssEventsBrowserTests : PerformanceTestBase
         await Run("ev-transitioned");
         var log = await WaitForLog("ev-outer transitionend");
 
-        CollectionAssert.Contains(log, "ev-transitioned transitionrun property=opacity target=ev-transitioned pseudo= elapsed=0");
-        CollectionAssert.Contains(log, "ev-transitioned transitionstart property=opacity target=ev-transitioned pseudo= elapsed=0");
-        CollectionAssert.Contains(log, "ev-transitioned transitionend property=opacity target=ev-transitioned pseudo= elapsed=0.15");
-        CollectionAssert.Contains(log, "ev-outer transitionend property=opacity target=ev-transitioned pseudo= elapsed=0.15");
+        Assert.Contains("ev-transitioned transitionrun property=opacity target=ev-transitioned pseudo= elapsed=0", log);
+        Assert.Contains("ev-transitioned transitionstart property=opacity target=ev-transitioned pseudo= elapsed=0", log);
+        Assert.Contains("ev-transitioned transitionend property=opacity target=ev-transitioned pseudo= elapsed=0.15", log);
+        Assert.Contains("ev-outer transitionend property=opacity target=ev-transitioned pseudo= elapsed=0.15", log);
     }
 
     [TestMethod]
@@ -122,7 +122,7 @@ public class BitCssEventsBrowserTests : PerformanceTestBase
         await Run("ev-transitioned");
         var log = await WaitForLog("ev-outer transitionend");
 
-        Assert.IsFalse(log.Any(l => l.Contains("ev-zero-transition")), string.Join("\n", log));
+        Assert.DoesNotContain(l => l.Contains("ev-zero-transition"), log, string.Join("\n", log));
     }
 
     [TestMethod]
@@ -145,14 +145,14 @@ public class BitCssEventsBrowserTests : PerformanceTestBase
         }");
 
         // The app's first registration is taken in; a second one still throws the way Blazor always has.
-        StringAssert.StartsWith(outcome, "second threw:");
-        StringAssert.Contains(outcome, "already registered");
+        Assert.StartsWith("second threw:", outcome);
+        Assert.Contains("already registered", outcome);
 
         await Run("ev-app");
         var log = await WaitForLog("ev-app transitionrun");
 
         // The app's fields win a clash, and the library's are still there beside them.
-        CollectionAssert.Contains(log, "ev-app transitionrun property=app:opacity target=ev-app pseudo= elapsed=0");
+        Assert.Contains("ev-app transitionrun property=app:opacity target=ev-app pseudo= elapsed=0", log);
     }
 
     [TestMethod]
@@ -200,12 +200,12 @@ public class BitCssEventsBrowserTests : PerformanceTestBase
         await Open();
 
         var order = await Page.EvaluateAsync<string>(@"() => [...document.scripts].map(s => s.getAttribute('src') || '').filter(s => s).join(' ')");
-        StringAssert.StartsWith(order, "_content/Bit.BlazorUI/scripts/bit.blazorui.js _framework/blazor.web.js");
+        Assert.StartsWith("_content/Bit.BlazorUI/scripts/bit.blazorui.js _framework/blazor.web.js", order);
 
         await Run("ev-transitioned");
         var log = await WaitForLog("ev-transitioned transitionend");
 
-        CollectionAssert.Contains(log, "ev-transitioned transitionend property=opacity target=ev-transitioned pseudo= elapsed=0.15");
+        Assert.Contains("ev-transitioned transitionend property=opacity target=ev-transitioned pseudo= elapsed=0.15", log);
     }
 
     [TestMethod]
@@ -222,7 +222,7 @@ public class BitCssEventsBrowserTests : PerformanceTestBase
 
         // Its fade is 600ms long: taken away early it would cut the cross-fade short.
         var stayed = fade.GoneAt!.Value - fade.LeavingAt!.Value;
-        Assert.IsTrue(stayed >= 400, $"The placeholder was taken away {stayed:0}ms into a 600ms fade.");
+        Assert.IsGreaterThanOrEqualTo(400, stayed, $"The placeholder was taken away {stayed:0}ms into a 600ms fade.");
     }
 
     [TestMethod]
@@ -237,7 +237,7 @@ public class BitCssEventsBrowserTests : PerformanceTestBase
         Assert.IsNotNull(restyled.GoneAt, "A placeholder whose fade a restyle renamed was left over the image.");
 
         var stayed = restyled.GoneAt!.Value - restyled.LeavingAt!.Value;
-        Assert.IsTrue(stayed >= 400, $"The placeholder was taken away {stayed:0}ms into a 600ms fade.");
+        Assert.IsGreaterThanOrEqualTo(400, stayed, $"The placeholder was taken away {stayed:0}ms into a 600ms fade.");
     }
 
     [TestMethod]

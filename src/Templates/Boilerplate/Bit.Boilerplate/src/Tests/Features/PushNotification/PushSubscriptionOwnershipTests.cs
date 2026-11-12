@@ -67,7 +67,8 @@ public partial class PushSubscriptionOwnershipTests
             }
 
             var afterFirstUser = await ReadSubscription(server, deviceId, TestContext.CancellationToken);
-            Assert.IsNotNull(afterFirstUser?.UserSessionId, "A subscribe made by a signed-in caller must bind the row to that caller's session, otherwise the rest of this test proves nothing.");
+            var actualValue = afterFirstUser?.UserSessionId;
+            Assert.IsNotNull(actualValue, "A subscribe made by a signed-in caller must bind the row to that caller's session, otherwise the rest of this test proves nothing.");
             firstSessionId = afterFirstUser.UserSessionId!.Value;
 
             // A different account entirely, on the same device. Each client has a token store of its own, so this one
@@ -81,7 +82,8 @@ public partial class PushSubscriptionOwnershipTests
             }
 
             var afterSecondUser = await ReadSubscription(server, deviceId, TestContext.CancellationToken);
-            Assert.IsNotNull(afterSecondUser?.UserSessionId);
+            var actualValue1 = afterSecondUser?.UserSessionId;
+            Assert.IsNotNull(actualValue1);
 
             Assert.AreNotEqual(firstSessionId, afterSecondUser.UserSessionId,
                 "The device's subscription must follow whoever is signed in on it now. Refusing this is what an ownership check would do, and it would leave the new user permanently without push on their own device.");
@@ -142,7 +144,8 @@ public partial class PushSubscriptionOwnershipTests
             }
 
             var afterFirstSignIn = await ReadSubscription(server, deviceId, TestContext.CancellationToken);
-            Assert.IsNotNull(afterFirstSignIn?.UserSessionId, "The first subscribe should have bound the row to the first session.");
+            var actualValue = afterFirstSignIn?.UserSessionId;
+            Assert.IsNotNull(actualValue, "The first subscribe should have bound the row to the first session.");
             firstSessionId = afterFirstSignIn.UserSessionId!.Value;
 
             // Step one of the real sequence, and the one that fails first: the tokens are gone, so the app reloads
@@ -160,7 +163,8 @@ public partial class PushSubscriptionOwnershipTests
             }
 
             var afterAnonymousPropagation = await ReadSubscription(server, deviceId, TestContext.CancellationToken);
-            Assert.IsNull(afterAnonymousPropagation?.UserSessionId,
+            var actualValue1 = afterAnonymousPropagation?.UserSessionId;
+            Assert.IsNull(actualValue1,
                 "The device is no longer signed in, so its own anonymous re-subscribe has to detach the row from the session whose tokens are gone. Refusing it - which an ownership check does - leaves the row pointing at a dead session and the device without push.");
 
             // A brand-new client is a brand-new (empty) token store - exactly what clearing local storage and the cookie
@@ -183,8 +187,9 @@ public partial class PushSubscriptionOwnershipTests
             }
 
             var afterSecondSignIn = await ReadSubscription(server, deviceId, TestContext.CancellationToken);
+            var actualValue2 = afterSecondSignIn?.UserSessionId;
 
-            Assert.IsNotNull(afterSecondSignIn?.UserSessionId);
+            Assert.IsNotNull(actualValue2);
             Assert.AreNotEqual(firstSessionId, afterSecondSignIn.UserSessionId,
                 "Signing in again on the same device must re-point that device's subscription at the new session, otherwise push keeps being addressed to a session whose tokens the user no longer has.");
             Assert.AreEqual("channel-after", afterSecondSignIn.PushChannel, "The re-subscribe must update the push channel too.");
@@ -262,7 +267,7 @@ public partial class PushSubscriptionOwnershipTests
 
             var rows = await dbContext.PushNotificationSubscriptions.Where(s => s.DeviceId == deviceId).ToArrayAsync(TestContext.CancellationToken);
 
-            Assert.HasCount(1, rows, "Re-subscribing the same anonymous device must renew its row, not accumulate a new one on every call.");
+            Assert.ContainsSingle(rows, "Re-subscribing the same anonymous device must renew its row, not accumulate a new one on every call.");
             Assert.AreEqual("channel-2", rows[0].PushChannel, "The renewal must actually update the push channel.");
         }
         finally
@@ -388,7 +393,7 @@ public partial class PushSubscriptionOwnershipTests
                 UserSessionIds = sessionIds
             }, TestContext.CancellationToken)));
 
-            Assert.HasCount(1, await ReadSubscriptions(server, deviceId, TestContext.CancellationToken));
+            Assert.ContainsSingle(await ReadSubscriptions(server, deviceId, TestContext.CancellationToken));
         }
         finally
         {
@@ -581,7 +586,8 @@ public partial class PushSubscriptionOwnershipTests
                 new() { DeviceId = firstDeviceId, Platform = "fcmV1", PushChannel = "first-channel" }, TestContext.CancellationToken);
 
             var firstRow = await ReadSubscription(server, firstDeviceId, TestContext.CancellationToken);
-            Assert.IsNotNull(firstRow?.UserSessionId, "The session has to own the first device's row, otherwise only one row matches below and the case under test never arises.");
+            var actualValue = firstRow?.UserSessionId;
+            Assert.IsNotNull(actualValue, "The session has to own the first device's row, otherwise only one row matches below and the case under test never arises.");
 
             // ...and now reports the second, whose row already exists. Both rows match the lookup.
             await pushNotificationController.Subscribe(
@@ -593,8 +599,9 @@ public partial class PushSubscriptionOwnershipTests
             Assert.IsNotNull(secondRow);
             Assert.AreEqual(firstRow.UserSessionId, secondRow.UserSessionId,
                 "The device the session now reports must end up owning it.");
+            var actualValue1 = firstRowAfterwards?.UserSessionId;
 
-            Assert.IsNull(firstRowAfterwards?.UserSessionId,
+            Assert.IsNull(actualValue1,
                 "The row the session held before must have let go of it. UserSessionId is unique, so leaving both set is a constraint violation rather than a stale row.");
 
             Assert.AreEqual("second-channel", secondRow!.PushChannel, "The second device's channel must be the one that got written.");

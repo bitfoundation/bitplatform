@@ -53,8 +53,8 @@ public class BitSwiperParamsTests : BunitTestContext
     [TestMethod]
     public void BitSwiperParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitSwiper)}", BitSwiperParams.ParamName);
-        Assert.AreEqual("BitParams.BitSwiper", BitSwiperParams.ParamName);
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitSwiper)}", new BitSwiperParams().Name);
+        Assert.AreEqual("BitParams.BitSwiper", new BitSwiperParams().Name);
     }
 
     [TestMethod]
@@ -106,7 +106,7 @@ public class BitSwiperParamsTests : BunitTestContext
         var setup = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Swiper.setup");
         var options = setup.Arguments[4]!;
 
-        Assert.AreEqual(true, options.GetType().GetProperty("Vertical")!.GetValue(options));
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(options.GetType().GetProperty("Vertical")!.GetValue(options)));
         Assert.AreEqual(2, options.GetType().GetProperty("ScrollCount")!.GetValue(options));
         Assert.AreEqual(0.25, options.GetType().GetProperty("Duration")!.GetValue(options));
     }
@@ -126,10 +126,10 @@ public class BitSwiperParamsTests : BunitTestContext
         var root = component.Find(".bit-swp");
         var style = root.GetAttribute("style") ?? string.Empty;
 
-        Assert.IsTrue(style.Contains("--bit-swp-gap:12px"));
-        Assert.IsTrue(style.Contains("--bit-swp-peek:2rem"));
-        Assert.IsTrue(style.Contains("--bit-swp-isz:calc((100% - 2 * var(--bit-swp-gap, 0px)) / 3)"));
-        Assert.IsTrue(style.Contains("outline: 1px solid red;"));
+        Assert.Contains("--bit-swp-gap:12px", style);
+        Assert.Contains("--bit-swp-peek:2rem", style);
+        Assert.Contains("--bit-swp-isz:calc((100% - 2 * var(--bit-swp-gap, 0px)) / 3)", style);
+        Assert.Contains("outline: 1px solid red;", style);
         Assert.IsTrue(root.ClassList.Contains("cascaded-root"));
     }
 

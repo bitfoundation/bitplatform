@@ -129,7 +129,7 @@ public class BitModalE2ETests : E2ETestBase
             "end" => area.X + area.Width - (box.X + box.Width),
             _ => Math.Abs(box.X + box.Width / 2 - (area.X + area.Width / 2))
         };
-        Assert.IsTrue(x <= tolerance, $"horizontal {horizontal}: area {area.X},{area.Width} box {box.X},{box.Width}");
+        Assert.IsLessThanOrEqualTo(tolerance, x, $"horizontal {horizontal}: area {area.X},{area.Width} box {box.X},{box.Width}");
 
         var y = vertical switch
         {
@@ -137,7 +137,7 @@ public class BitModalE2ETests : E2ETestBase
             "end" => area.Y + area.Height - (box.Y + box.Height),
             _ => Math.Abs(box.Y + box.Height / 2 - (area.Y + area.Height / 2))
         };
-        Assert.IsTrue(y <= tolerance, $"vertical {vertical}: area {area.Y},{area.Height} box {box.Y},{box.Height}");
+        Assert.IsLessThanOrEqualTo(tolerance, y, $"vertical {vertical}: area {area.Y},{area.Height} box {box.Y},{box.Height}");
     }
 
     // ---------- Basic ----------
@@ -223,7 +223,7 @@ public class BitModalE2ETests : E2ETestBase
 
         await Expect(Root("basic-modal")).ToHaveCountAsync(0);
         var classes = await RecordedClassesAsync();
-        Assert.IsTrue(classes.Any(c => Regex.IsMatch(c, @"(^|\s)bit-mdl-lvg(\s|$)")), string.Join(" | ", classes));
+        Assert.Contains(c => Regex.IsMatch(c, @"(^|\s)bit-mdl-lvg(\s|$)"), classes, string.Join(" | ", classes));
     }
 
     [TestMethod]
@@ -357,7 +357,7 @@ public class BitModalE2ETests : E2ETestBase
         }
         else
         {
-            Assert.IsTrue(box.Width < area.Width - 50);
+            Assert.IsLessThan(area.Width - 50, box.Width);
         }
 
         if (tall)
@@ -367,7 +367,7 @@ public class BitModalE2ETests : E2ETestBase
         }
         else
         {
-            Assert.IsTrue(box.Height < area.Height - 50);
+            Assert.IsLessThan(area.Height - 50, box.Height);
         }
     }
 
@@ -416,7 +416,7 @@ public class BitModalE2ETests : E2ETestBase
 
         var body = await BoxAsync(Part("footer-modal", ".bit-mdl-bdy"));
         var footer = await BoxAsync(Part("footer-modal", ".bit-mdl-fcn"));
-        Assert.IsTrue(footer.Y >= body.Y + body.Height - 1);
+        Assert.IsGreaterThanOrEqualTo(body.Y + body.Height - 1, footer.Y);
 
         await Page.Locator("#footer-leave").ClickAsync();
         await Expect(Page.Locator("#footer-open")).ToHaveTextAsync("False");
@@ -977,7 +977,7 @@ public class BitModalE2ETests : E2ETestBase
         var icon = Part("iconfa-modal", ".bit-mdl-cls i");
         await Expect(icon).ToHaveClassAsync(HasClass("fa-solid"));
         await Expect(icon).ToHaveClassAsync(HasClass("fa-xmark"));
-        Assert.IsFalse((await icon.GetAttributeAsync("class"))!.Contains("bit-icon--"));
+        Assert.DoesNotContain("bit-icon--", (await icon.GetAttributeAsync("class"))!);
     }
 
     // ---------- Style, Class, Styles, Classes, CSS variables ----------
@@ -1063,7 +1063,7 @@ public class BitModalE2ETests : E2ETestBase
 
         var close = await BoxAsync(Part("rtl-modal", ".bit-mdl-cls"));
         var header = await BoxAsync(Part("rtl-modal", ".bit-mdl-hdr"));
-        Assert.IsTrue(close.X < header.X, "The close button sits on the left of the header.");
+        Assert.IsLessThan(header.X, close.X, "The close button sits on the left of the header.");
 
         AssertPlaced(await BoxAsync(Root("rtl-modal")), await BoxAsync(Content("rtl-modal")), "end", "start");
     }
@@ -1145,8 +1145,8 @@ public class BitModalE2ETests : E2ETestBase
     {
         var response = await Page.APIRequest.GetAsync($"{BaseUrl}/e2e/modal/prerender");
         var html = await response.TextAsync();
-        StringAssert.Contains(html, "Prerendered modal");
-        StringAssert.Contains(html, "bit-mdl-ctn");
+        Assert.Contains("Prerendered modal", html);
+        Assert.Contains("bit-mdl-ctn", html);
 
         await OpenAsync("/e2e/modal/prerender");
 

@@ -53,7 +53,7 @@ public sealed class InternalsTests : BcrdtTest
         await Assertions.Expect(Stat(a, Characters)).ToHaveTextAsync("701");
         await Assertions.Expect(Stat(b, Characters)).ToHaveTextAsync("701");
         var scattered = await StatAsync(a, Blocks);
-        Assert.IsTrue(scattered > 100, $"200 scattered insertions left only {scattered} blocks");
+        Assert.IsGreaterThan(100, scattered, $"200 scattered insertions left only {scattered} blocks");
 
         await ExpectSameProjectionsAsync(page);
     }

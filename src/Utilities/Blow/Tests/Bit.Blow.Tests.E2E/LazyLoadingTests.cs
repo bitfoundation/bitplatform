@@ -26,16 +26,20 @@ public sealed class LazyLoadingTests : BlowTest
     [TestInitialize]
     public async Task StartSampleAsync()
     {
+        string? unavailableReason = null;
         try
         {
             _sample = await LazyLoadingSample.GetAsync("Bit.Blow", "BLOW", E2EEnvironment.Configuration);
         }
         catch (Exception ex) when (ex is FileNotFoundException or InvalidOperationException or TimeoutException)
         {
-            var reason = $"the lazy loading sample could not be started in the {E2EEnvironment.Configuration} configuration: {ex.Message}";
-            // A build server must not report a suite that never ran as anything but a failure.
-            if (E2EEnvironment.IsContinuousIntegration) Assert.Fail("The browser tests could not run: " + reason);
-            Assert.Inconclusive("The browser tests could not run: " + reason);
+            unavailableReason = $"the lazy loading sample could not be started in the {E2EEnvironment.Configuration} configuration: {ex.Message}";
+        }
+
+        if (unavailableReason is not null)
+        {            // A build server must not report a suite that never ran as anything but a failure.
+            if (E2EEnvironment.IsContinuousIntegration) Assert.Fail("The browser tests could not run: " + unavailableReason);
+            Assert.Inconclusive("The browser tests could not run: " + unavailableReason);
         }
     }
 
@@ -80,7 +84,8 @@ public sealed class LazyLoadingTests : BlowTest
         // The server prerenders the router - LazyAssemblyLoader resolved there too - and the canvas with its nodes, which
         // nothing measures until the browser takes over.
         var response = await GotoAsync(page, "/workflow");
-        Assert.AreEqual(200, response?.Status);
+        var actualValue = response?.Status;
+        Assert.AreEqual(200, actualValue);
         var prerendered = await response!.TextAsync();
         Assert.Contains("bit-blow-node", prerendered);
         Assert.Contains("not measured yet", prerendered);

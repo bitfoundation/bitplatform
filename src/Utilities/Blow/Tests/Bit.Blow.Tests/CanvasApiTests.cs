@@ -58,7 +58,7 @@ public class CanvasApiTests : BunitContext
 
         var cut = Render(TwoNodes(), edges);
 
-        Assert.AreEqual(4, cut.FindAll("marker").Count);
+        Assert.HasCount(4, cut.FindAll("marker"));
     }
 
     [TestMethod]
@@ -478,9 +478,11 @@ public class CanvasApiTests : BunitContext
         });
 
         cut.Instance.IsValidConnectionTarget("b", null, BlowHandleType.Target);
+        var actualValue = seen?.Source;
 
-        Assert.AreEqual("a", seen?.Source);
-        Assert.AreEqual("b", seen?.Target);
+        Assert.AreEqual("a", actualValue);
+        var actualValue1 = seen?.Target;
+        Assert.AreEqual("b", actualValue1);
     }
 
     [TestMethod]
@@ -561,7 +563,7 @@ public class CanvasApiTests : BunitContext
             BlowHandleRegistration.Key("b", BlowHandleType.Source, null),
         };
 
-        Assert.AreEqual(keys.Length, keys.Distinct().Count());
+        Assert.HasCount(keys.Length, keys.Distinct());
     }
 
     [TestMethod]

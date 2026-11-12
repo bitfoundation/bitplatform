@@ -54,7 +54,7 @@ public class McpHandshakeTests
     [TestMethod]
     public void Instructions_name_the_build_they_answer_from()
     {
-        StringAssert.Contains(McpTestHost.Client.ServerInstructions!, BrouterServerInstructions.BrouterVersion);
+        Assert.Contains(BrouterServerInstructions.BrouterVersion, McpTestHost.Client.ServerInstructions!);
     }
 
     [TestMethod]
@@ -73,12 +73,14 @@ public class McpHandshakeTests
     {
         // The instructions tell the model which tool to reach for. A tool renamed here without being
         // renamed there sends it looking for something the server does not have.
-        var tools = (await McpTestHost.Client.ListToolsAsync()).Select(tool => tool.Name).ToHashSet(StringComparer.Ordinal);
+        var tools = (await McpTestHost.Client.ListToolsAsync(cancellationToken: TestContext.CancellationToken)).Select(tool => tool.Name).ToHashSet(StringComparer.Ordinal);
 
         foreach (var mentioned in ToolNames.MentionedIn(McpTestHost.Client.ServerInstructions!))
         {
-            Assert.IsTrue(tools.Contains(mentioned),
+            Assert.Contains(mentioned, tools,
                 $"The server instructions tell the model to call '{mentioned}', which this server does not expose.");
         }
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

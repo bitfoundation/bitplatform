@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Bit.BlazorUI.Tests.Components.Inputs.Slider;
 
+[System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MSTEST0004", Justification = "Public Razor parameter properties require this framework-facing model type to be public.")]
 public class BitSliderTestModel
 {
     // A slider always holds some number, so the interesting annotation is a range narrower than the one the
@@ -16,6 +17,7 @@ public class BitSliderTestModel
 /// annotated - and validated - the way any other field is. It starts too narrow to pass, so the form is
 /// invalid until the thumbs are dragged apart.
 /// </summary>
+[System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MSTEST0004", Justification = "Public Razor parameter properties require this framework-facing model type to be public.")]
 public class BitSliderRangeTestModel
 {
     [MinimumRangeLength(3, ErrorMessage = "Pick a band at least 3 wide")]
@@ -23,7 +25,7 @@ public class BitSliderRangeTestModel
 }
 
 [AttributeUsage(AttributeTargets.Property)]
-public sealed class MinimumRangeLengthAttribute(double minimum) : ValidationAttribute
+internal sealed class MinimumRangeLengthAttribute(double minimum) : ValidationAttribute
 {
     public override bool IsValid(object? value)
     {

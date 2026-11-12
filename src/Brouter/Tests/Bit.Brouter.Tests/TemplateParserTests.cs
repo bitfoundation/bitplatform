@@ -1,4 +1,4 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.Brouter.Tests;
 
@@ -9,14 +9,14 @@ public class TemplateParserTests
     public void Empty_template_yields_empty_segments()
     {
         var result = BrouterTemplateParser.ParseTemplate("");
-        Assert.AreEqual(0, result.TemplateSegments.Count);
+        Assert.IsEmpty(result.TemplateSegments);
     }
 
     [TestMethod]
     public void Slash_template_is_handled()
     {
         var result = BrouterTemplateParser.ParseTemplate("/");
-        Assert.AreEqual(0, result.TemplateSegments.Count);
+        Assert.IsEmpty(result.TemplateSegments);
     }
 
     [TestMethod]
@@ -27,7 +27,7 @@ public class TemplateParserTests
     public void Single_literal_parses_one_segment(string template)
     {
         var result = BrouterTemplateParser.ParseTemplate(template);
-        Assert.AreEqual(1, result.TemplateSegments.Count);
+        Assert.ContainsSingle(result.TemplateSegments);
     }
 
     [TestMethod]
@@ -73,7 +73,7 @@ public class TemplateParserTests
     {
         var result = BrouterTemplateParser.ParseTemplate("/files/{*path:nonfile}");
         Assert.IsTrue(result.TemplateSegments[1].IsCatchAll);
-        Assert.AreEqual(1, result.TemplateSegments[1].Constraints.Length);
+        Assert.ContainsSingle(result.TemplateSegments[1].Constraints);
         Assert.AreEqual("nonfile", result.TemplateSegments[1].Constraints[0].Name);
     }
 
@@ -83,7 +83,7 @@ public class TemplateParserTests
         // Framework parity: "/products/{culture?}/list" is a valid template. The optional-ness is
         // ignored at match time (the parameter behaves as required), but parsing must accept it.
         var result = BrouterTemplateParser.ParseTemplate("/products/{culture?}/list");
-        Assert.AreEqual(3, result.TemplateSegments.Count);
+        Assert.HasCount(3, result.TemplateSegments);
         Assert.IsTrue(result.TemplateSegments[1].IsOptional);
         Assert.AreEqual("culture", result.TemplateSegments[1].Value);
     }
@@ -111,7 +111,7 @@ public class TemplateParserTests
         // Framework parity: like a middle optional, a non-trailing default parses fine and simply
         // behaves as required at match time (defaults only bind when a trailing run is omitted).
         var result = BrouterTemplateParser.ParseTemplate("/{a=x}/{b}");
-        Assert.AreEqual(2, result.TemplateSegments.Count);
+        Assert.HasCount(2, result.TemplateSegments);
         Assert.IsTrue(result.TemplateSegments[0].HasDefault);
         Assert.AreEqual("x", result.TemplateSegments[0].DefaultValue);
     }
@@ -121,7 +121,7 @@ public class TemplateParserTests
     {
         var segment = BrouterTemplateParser.ParseTemplate("/blog/{id:int=5}").TemplateSegments[1];
         Assert.AreEqual("5", segment.DefaultValue);
-        Assert.AreEqual(1, segment.Constraints.Length);
+        Assert.ContainsSingle(segment.Constraints);
         Assert.AreEqual("int", segment.Constraints[0].Name);
     }
 
@@ -147,18 +147,18 @@ public class TemplateParserTests
     public void Multiple_constraints_parse()
     {
         var result = BrouterTemplateParser.ParseTemplate("/{id:int:long}");
-        Assert.AreEqual(2, result.TemplateSegments[0].Constraints.Length);
+        Assert.HasCount(2, result.TemplateSegments[0].Constraints);
     }
 
     [TestMethod]
     public void Parameterized_constraints_split_parenthesis_aware()
     {
         var result = BrouterTemplateParser.ParseTemplate("/{v:range(1,5)}");
-        Assert.AreEqual(1, result.TemplateSegments[0].Constraints.Length);
+        Assert.ContainsSingle(result.TemplateSegments[0].Constraints);
         Assert.AreEqual("range(1,5)", result.TemplateSegments[0].Constraints[0].Name);
 
         result = BrouterTemplateParser.ParseTemplate("/{v:min(1):max(5)}");
-        Assert.AreEqual(2, result.TemplateSegments[0].Constraints.Length);
+        Assert.HasCount(2, result.TemplateSegments[0].Constraints);
     }
 
     [TestMethod]
@@ -168,11 +168,11 @@ public class TemplateParserTests
         var segment = result.TemplateSegments[1];
 
         Assert.IsTrue(segment.IsComplex);
-        Assert.AreEqual(3, segment.Parts!.Count);
+        Assert.HasCount(3, segment.Parts!);
         Assert.AreEqual("name", segment.Parts[0].Value);
         Assert.IsFalse(segment.Parts[1].IsParameter);
         Assert.AreEqual("ext", segment.Parts[2].Value);
-        CollectionAssert.AreEquivalent(new[] { "name", "ext" }, segment.ParameterNames.ToArray());
+        Assert.AreSequenceEqual(new[] { "name", "ext" }, segment.ParameterNames.ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]

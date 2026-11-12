@@ -156,10 +156,10 @@ public class BitResourceTimelineTrimmingTests
         Assert.IsEmpty(notFound, "The scan did not reach: " + string.Join(", ", notFound));
 
         // Only the data of the timeline crosses the boundary: the arguments of its events travel in process.
-        Assert.IsFalse(reached.Contains(typeof(BitResourceTimelineConfig)), "The Config is sent in its parts, never as a whole.");
-        Assert.IsFalse(reached.Contains(typeof(BitResourceTimelinePointerArgs)));
-        Assert.IsFalse(reached.Contains(typeof(BitResourceTimelineRowContext)));
-        Assert.IsFalse(reached.Contains(typeof(BitResourceTimelineWindow)));
+        Assert.DoesNotContain(typeof(BitResourceTimelineConfig), reached, "The Config is sent in its parts, never as a whole.");
+        Assert.DoesNotContain(typeof(BitResourceTimelinePointerArgs), reached);
+        Assert.DoesNotContain(typeof(BitResourceTimelineRowContext), reached);
+        Assert.DoesNotContain(typeof(BitResourceTimelineWindow), reached);
     }
 
     [TestMethod]
@@ -169,7 +169,7 @@ public class BitResourceTimelineTrimmingTests
 
         // A new enum reaching a payload is a decision: it needs no root (see the remarks of the class) only while it is
         // reached through the type of a property, and the engine reads it only while it is written by its name.
-        CollectionAssert.AreEqual(new[]
+        Assert.AreSequenceEqual(new[]
         {
             typeof(BitResourceTimelineBarIconPosition),
             typeof(BitResourceTimelineBarSectionPosition),
@@ -182,7 +182,9 @@ public class BitResourceTimelineTrimmingTests
 
         foreach (var type in enums)
         {
-            Assert.AreEqual(typeof(JsonStringEnumConverter<>).MakeGenericType(type), type.GetCustomAttribute<JsonConverterAttribute>()?.ConverterType,
+            var expectedValue = typeof(JsonStringEnumConverter<>).MakeGenericType(type);
+            var actualValue = type.GetCustomAttribute<JsonConverterAttribute>()?.ConverterType;
+            Assert.AreEqual(expectedValue, actualValue,
                             $"{type.Name} is not written by its name.");
         }
     }
@@ -196,7 +198,7 @@ public class BitResourceTimelineTrimmingTests
 
         var row = Library.GetType("Bit.BlazorUI.BitResourceTimelineResourceRow", throwOnError: true)!;
 
-        Assert.IsFalse(InteropCalls().Concat(Callbacks()).SelectMany(Reach).Contains(row), "The rows are deserialized into a type, which a trimmed app would have to root.");
+        Assert.DoesNotContain(row, InteropCalls().Concat(Callbacks()).SelectMany(Reach), "The rows are deserialized into a type, which a trimmed app would have to root.");
     }
 
 

@@ -51,7 +51,7 @@ public class BitMessageBoxPromptTests : BunitTestContext
 
         var prompting = MessageBoxService.Prompt("Rename", "The new name of the file:", "report.txt");
 
-        container.WaitForAssertion(() => Assert.AreEqual(2, container.FindAll(".bit-msb-ftr .bit-btn").Count));
+        container.WaitForAssertion(() => Assert.HasCount(2, container.FindAll(".bit-msb-ftr .bit-btn")));
 
         container.FindAll(".bit-msb-ftr .bit-btn")[1].Click();
 
@@ -65,7 +65,7 @@ public class BitMessageBoxPromptTests : BunitTestContext
 
         var prompting = MessageBoxService.Prompt("Note", "Anything to add?");
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb .bit-tfl-inp").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-msb .bit-tfl-inp")));
 
         container.FindAll(".bit-msb-ftr .bit-btn")[0].Click();
 
@@ -79,10 +79,10 @@ public class BitMessageBoxPromptTests : BunitTestContext
 
         var prompting = MessageBoxService.Prompt("Rename", "The new name of the file:");
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb .bit-tfl-inp").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-msb .bit-tfl-inp")));
 
         Assert.IsTrue(container.Find(".bit-msb .bit-tfl-inp").HasAttribute("autofocus"));
-        Assert.AreEqual(0, container.FindAll(".bit-msb-ftr .bit-btn[autofocus]").Count);
+        Assert.IsEmpty(container.FindAll(".bit-msb-ftr .bit-btn[autofocus]"));
 
         container.FindAll(".bit-msb-ftr .bit-btn")[1].Click();
 
@@ -100,9 +100,9 @@ public class BitMessageBoxPromptTests : BunitTestContext
             Body = "The new name of the file:",
             Required = true,
             RequiredMessage = "Enter a name."
-        });
+        }, TestContext.CancellationToken);
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb .bit-tfl-inp").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-msb .bit-tfl-inp")));
 
         Assert.IsTrue(container.Find(".bit-msb .bit-tfl-inp").HasAttribute("required"));
 
@@ -110,7 +110,7 @@ public class BitMessageBoxPromptTests : BunitTestContext
 
         container.WaitForAssertion(() =>
         {
-            Assert.IsTrue(container.Find(".bit-msb .bit-tfl-erm").TextContent.Contains("Enter a name."));
+            Assert.Contains("Enter a name.", container.Find(".bit-msb .bit-tfl-erm").TextContent);
             Assert.AreEqual("true", container.Find(".bit-msb .bit-tfl-inp").GetAttribute("aria-invalid"));
         });
 
@@ -119,7 +119,7 @@ public class BitMessageBoxPromptTests : BunitTestContext
         // Fixing the value takes the message away at once, before the box is answered again.
         container.Find(".bit-msb .bit-tfl-inp").Input("notes.txt");
 
-        container.WaitForAssertion(() => Assert.AreEqual(0, container.FindAll(".bit-msb .bit-tfl-erm").Count));
+        container.WaitForAssertion(() => Assert.IsEmpty(container.FindAll(".bit-msb .bit-tfl-erm")));
 
         container.FindAll(".bit-msb-ftr .bit-btn")[0].Click();
 
@@ -137,13 +137,13 @@ public class BitMessageBoxPromptTests : BunitTestContext
             Body = "The new name of the file:",
             Value = "a/b",
             Validator = v => v.Contains('/') ? "A name cannot hold a slash." : null
-        });
+        }, TestContext.CancellationToken);
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb .bit-tfl-inp").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-msb .bit-tfl-inp")));
 
         container.FindAll(".bit-msb-ftr .bit-btn")[0].Click();
 
-        container.WaitForAssertion(() => Assert.IsTrue(container.Find(".bit-msb .bit-tfl-erm").TextContent.Contains("A name cannot hold a slash.")));
+        container.WaitForAssertion(() => Assert.Contains("A name cannot hold a slash.", container.Find(".bit-msb .bit-tfl-erm").TextContent));
 
         Assert.IsFalse(prompting.IsCompleted);
 
@@ -164,23 +164,23 @@ public class BitMessageBoxPromptTests : BunitTestContext
             Body = "The new name of the file:",
             Value = "a/b",
             Validator = v => v.Contains('/') ? "A name cannot hold a slash." : null
-        });
+        }, TestContext.CancellationToken);
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb .bit-tfl-inp").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-msb .bit-tfl-inp")));
 
         // Nothing is said while the field is being typed into for the first time.
         container.Find(".bit-msb .bit-tfl-inp").Input("a/bc");
-        Assert.AreEqual(0, container.FindAll(".bit-msb .bit-tfl-erm").Count);
+        Assert.IsEmpty(container.FindAll(".bit-msb .bit-tfl-erm"));
 
         container.FindAll(".bit-msb-ftr .bit-btn")[0].Click();
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb .bit-tfl-erm").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-msb .bit-tfl-erm")));
 
         container.Find(".bit-msb .bit-tfl-inp").Input("abc");
-        container.WaitForAssertion(() => Assert.AreEqual(0, container.FindAll(".bit-msb .bit-tfl-erm").Count));
+        container.WaitForAssertion(() => Assert.IsEmpty(container.FindAll(".bit-msb .bit-tfl-erm")));
 
         // A value that turns invalid again is flagged again, without another press of the button.
         container.Find(".bit-msb .bit-tfl-inp").Input("abc/");
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb .bit-tfl-erm").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-msb .bit-tfl-erm")));
 
         container.FindAll(".bit-msb-ftr .bit-btn")[1].Click();
 
@@ -199,12 +199,12 @@ public class BitMessageBoxPromptTests : BunitTestContext
             Body = "The new name of the file:",
             Required = true,
             OnBeforeResult = EventCallback.Factory.Create<BitMessageBoxBeforeResultArgs>(this, _ => asked++)
-        });
+        }, TestContext.CancellationToken);
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb .bit-tfl-inp").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-msb .bit-tfl-inp")));
 
         container.FindAll(".bit-msb-ftr .bit-btn")[0].Click();
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb .bit-tfl-erm").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-msb .bit-tfl-erm")));
 
         Assert.AreEqual(0, asked);
 
@@ -222,7 +222,7 @@ public class BitMessageBoxPromptTests : BunitTestContext
 
         var prompting = MessageBoxService.Prompt("Rename", "The new name of the file:");
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb .bit-tfl-inp").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-msb .bit-tfl-inp")));
 
         container.Find(".bit-msb .bit-tfl-inp").Input("final.txt");
 
@@ -245,9 +245,9 @@ public class BitMessageBoxPromptTests : BunitTestContext
             Title = "Feedback",
             Body = "What could be better?",
             Multiline = true
-        });
+        }, TestContext.CancellationToken);
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb textarea.bit-tfl-inp").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-msb textarea.bit-tfl-inp")));
 
         container.Find(".bit-msb .bit-tfl-inp").Input("More examples");
         container.Find(".bit-msb .bit-tfl-inp").KeyDown(new KeyboardEventArgs { Key = "Enter" });
@@ -270,9 +270,9 @@ public class BitMessageBoxPromptTests : BunitTestContext
             Body = "The new name of the file:",
             Buttons = BitMessageBoxButtons.YesNo,
             Value = "a"
-        });
+        }, TestContext.CancellationToken);
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb .bit-tfl-inp").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-msb .bit-tfl-inp")));
 
         container.Find(".bit-msb .bit-tfl-inp").KeyDown(new KeyboardEventArgs { Key = "Enter" });
 
@@ -286,7 +286,7 @@ public class BitMessageBoxPromptTests : BunitTestContext
 
         var prompting = MessageBoxService.Prompt("Rename", "The new name of the file:");
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb .bit-tfl-inp").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-msb .bit-tfl-inp")));
 
         Assert.AreEqual("The new name of the file:", container.Find(".bit-msb .bit-tfl-inp").GetAttribute("aria-label"));
 
@@ -310,9 +310,9 @@ public class BitMessageBoxPromptTests : BunitTestContext
             Title = "Rename",
             Body = "Pick something short.",
             Label = "Name"
-        });
+        }, TestContext.CancellationToken);
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb .bit-tfl-lbl").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-msb .bit-tfl-lbl")));
 
         Assert.AreEqual("Name", container.Find(".bit-msb .bit-tfl-lbl").TextContent.Trim());
         Assert.AreEqual(container.Find(".bit-msb-pmg").Id, container.Find("[role='dialog']").GetAttribute("aria-describedby"));
@@ -334,9 +334,9 @@ public class BitMessageBoxPromptTests : BunitTestContext
             InputType = BitInputType.Password,
             Placeholder = "Password",
             MaxLength = 20
-        });
+        }, TestContext.CancellationToken);
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb .bit-tfl-inp").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-msb .bit-tfl-inp")));
 
         var input = container.Find(".bit-msb .bit-tfl-inp");
         Assert.AreEqual("password", input.GetAttribute("type"));
@@ -362,15 +362,15 @@ public class BitMessageBoxPromptTests : BunitTestContext
             InputType = BitInputType.Password,
             AutoComplete = "current-password",
             CanRevealPassword = true
-        });
+        }, TestContext.CancellationToken);
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb .bit-tfl-inp").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-msb .bit-tfl-inp")));
 
         var input = container.Find(".bit-msb .bit-tfl-inp");
         Assert.AreEqual("current-password", input.GetAttribute("autocomplete"));
         Assert.AreEqual("done", input.GetAttribute("enterkeyhint"));
-        Assert.IsTrue(container.Find(".bit-msb .bit-tfl-des").TextContent.Contains("The one you sign in with."));
-        Assert.AreEqual(1, container.FindAll(".bit-msb .bit-tfl-rpb").Count);
+        Assert.Contains("The one you sign in with.", container.Find(".bit-msb .bit-tfl-des").TextContent);
+        Assert.ContainsSingle(container.FindAll(".bit-msb .bit-tfl-rpb"));
 
         container.FindAll(".bit-msb-ftr .bit-btn")[1].Click();
 
@@ -382,9 +382,9 @@ public class BitMessageBoxPromptTests : BunitTestContext
     {
         var container = RenderComponent<BitModalContainer>();
 
-        var prompting = MessageBoxService.Prompt(new BitMessageBoxPromptParameters { Title = "Feedback", Body = "Anything?", Multiline = true });
+        var prompting = MessageBoxService.Prompt(new BitMessageBoxPromptParameters { Title = "Feedback", Body = "Anything?", Multiline = true }, TestContext.CancellationToken);
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb textarea.bit-tfl-inp").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-msb textarea.bit-tfl-inp")));
 
         Assert.IsNull(container.Find(".bit-msb .bit-tfl-inp").GetAttribute("enterkeyhint"));
 
@@ -406,28 +406,28 @@ public class BitMessageBoxPromptTests : BunitTestContext
             Body = "The name of the folder:",
             Value = "Projects",
             AsyncValidator = (v, _) => { checkedValues.Add(v); return check.Task; }
-        });
+        }, TestContext.CancellationToken);
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb .bit-tfl-inp").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-msb .bit-tfl-inp")));
 
         container.FindAll(".bit-msb-ftr .bit-btn")[0].Click();
 
         // The field says it is busy while the check runs.
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb .bit-tfl-lod").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-msb .bit-tfl-lod")));
         Assert.IsFalse(prompting.IsCompleted);
 
         check.SetResult("A folder with this name already exists.");
 
         container.WaitForAssertion(() =>
         {
-            Assert.AreEqual(0, container.FindAll(".bit-msb .bit-tfl-lod").Count);
-            Assert.IsTrue(container.Find(".bit-msb .bit-tfl-erm").TextContent.Contains("already exists"));
+            Assert.IsEmpty(container.FindAll(".bit-msb .bit-tfl-lod"));
+            Assert.Contains("already exists", container.Find(".bit-msb .bit-tfl-erm").TextContent);
         });
         Assert.IsFalse(prompting.IsCompleted);
 
         // The message is about a value that is no longer there once the field is edited.
         container.Find(".bit-msb .bit-tfl-inp").Input("Projects 2");
-        container.WaitForAssertion(() => Assert.AreEqual(0, container.FindAll(".bit-msb .bit-tfl-erm").Count));
+        container.WaitForAssertion(() => Assert.IsEmpty(container.FindAll(".bit-msb .bit-tfl-erm")));
 
         check = new TaskCompletionSource<string?>();
         check.SetResult(null);
@@ -435,7 +435,7 @@ public class BitMessageBoxPromptTests : BunitTestContext
         container.FindAll(".bit-msb-ftr .bit-btn")[0].Click();
 
         Assert.AreEqual("Projects 2", await prompting);
-        CollectionAssert.AreEqual(new[] { "Projects", "Projects 2" }, checkedValues);
+        Assert.AreSequenceEqual(new[] { "Projects", "Projects 2" }, checkedValues);
     }
 
     [TestMethod]
@@ -450,12 +450,12 @@ public class BitMessageBoxPromptTests : BunitTestContext
             Body = "The name of the folder:",
             Required = true,
             AsyncValidator = (_, _) => { asyncRuns++; return Task.FromResult<string?>(null); }
-        });
+        }, TestContext.CancellationToken);
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb .bit-tfl-inp").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-msb .bit-tfl-inp")));
 
         container.FindAll(".bit-msb-ftr .bit-btn")[0].Click();
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb .bit-tfl-erm").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-msb .bit-tfl-erm")));
 
         Assert.AreEqual(0, asyncRuns);
 
@@ -478,20 +478,20 @@ public class BitMessageBoxPromptTests : BunitTestContext
             Body = "The name of the folder:",
             Value = "Projects",
             AsyncValidator = (_, _) => check.Task
-        });
+        }, TestContext.CancellationToken);
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb .bit-tfl-inp").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-msb .bit-tfl-inp")));
 
         container.FindAll(".bit-msb-ftr .bit-btn")[0].Click();
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb .bit-tfl-lod").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-msb .bit-tfl-lod")));
 
         container.Find(".bit-msb .bit-tfl-inp").Input("Projects 2");
 
         check.SetResult("A folder with this name already exists.");
 
         // Refused, but the message about "Projects" is not shown under "Projects 2".
-        container.WaitForAssertion(() => Assert.AreEqual(0, container.FindAll(".bit-msb .bit-tfl-lod").Count));
-        Assert.AreEqual(0, container.FindAll(".bit-msb .bit-tfl-erm").Count);
+        container.WaitForAssertion(() => Assert.IsEmpty(container.FindAll(".bit-msb .bit-tfl-lod")));
+        Assert.IsEmpty(container.FindAll(".bit-msb .bit-tfl-erm"));
         Assert.IsFalse(prompting.IsCompleted);
 
         container.FindAll(".bit-msb-ftr .bit-btn")[1].Click();
@@ -511,12 +511,12 @@ public class BitMessageBoxPromptTests : BunitTestContext
             Body = "The name of the folder:",
             Value = "Reports",
             AsyncValidator = (_, _) => check.Task
-        });
+        }, TestContext.CancellationToken);
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb .bit-tfl-inp").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-msb .bit-tfl-inp")));
 
         container.FindAll(".bit-msb-ftr .bit-btn")[0].Click();
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb .bit-tfl-lod").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-msb .bit-tfl-lod")));
 
         // An edit made while the check runs is not what the check said yes to.
         container.Find(".bit-msb .bit-tfl-inp").Input("Reports/2026");
@@ -534,12 +534,12 @@ public class BitMessageBoxPromptTests : BunitTestContext
 
         var prompting = MessageBoxService.Prompt(new BitMessageBoxPromptParameters { Title = "Rename", Body = "The new name:", Value = "a" }, cts.Token);
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-msb")));
 
         await cts.CancelAsync();
 
         Assert.IsNull(await prompting);
-        container.WaitForAssertion(() => Assert.AreEqual(0, container.FindAll(".bit-msb").Count));
+        container.WaitForAssertion(() => Assert.IsEmpty(container.FindAll(".bit-msb")));
     }
 
     [TestMethod]
@@ -553,9 +553,9 @@ public class BitMessageBoxPromptTests : BunitTestContext
             Body = "The name of the folder:",
             Value = "Reports",
             AsyncValidator = (_, _) => Task.FromException<string?>(new InvalidOperationException("The server is down."))
-        });
+        }, TestContext.CancellationToken);
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb .bit-tfl-inp").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-msb .bit-tfl-inp")));
 
         // The click that ran the check is not where the failure goes: it reaches the code waiting on the prompt.
         await container.FindAll(".bit-msb-ftr .bit-btn")[0].ClickAsync(new MouseEventArgs());
@@ -563,7 +563,7 @@ public class BitMessageBoxPromptTests : BunitTestContext
         var error = await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => prompting);
         Assert.AreEqual("The server is down.", error.Message);
 
-        container.WaitForAssertion(() => Assert.AreEqual(0, container.FindAll(".bit-msb").Count));
+        container.WaitForAssertion(() => Assert.IsEmpty(container.FindAll(".bit-msb")));
     }
 
     [TestMethod]
@@ -576,15 +576,15 @@ public class BitMessageBoxPromptTests : BunitTestContext
             Title = "Rename",
             Body = "The new name of the file:",
             Validator = _ => throw new InvalidOperationException("Broken check.")
-        });
+        }, TestContext.CancellationToken);
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb .bit-tfl-inp").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-msb .bit-tfl-inp")));
 
         await container.Find(".bit-msb .bit-tfl-inp").KeyDownAsync(new KeyboardEventArgs { Key = "Enter" });
 
         await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => prompting);
 
-        container.WaitForAssertion(() => Assert.AreEqual(0, container.FindAll(".bit-msb").Count));
+        container.WaitForAssertion(() => Assert.IsEmpty(container.FindAll(".bit-msb")));
     }
 
     [TestMethod]
@@ -600,12 +600,12 @@ public class BitMessageBoxPromptTests : BunitTestContext
             Body = "The name of the folder:",
             Value = "Reports",
             AsyncValidator = (_, ct) => { token = ct; return check.Task; }
-        });
+        }, TestContext.CancellationToken);
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb .bit-tfl-inp").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-msb .bit-tfl-inp")));
 
         container.FindAll(".bit-msb-ftr .bit-btn")[0].Click();
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb .bit-tfl-lod").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-msb .bit-tfl-lod")));
 
         // The check never answers, and Cancel is not kept waiting on it: it ends the prompt and gives the check up.
         container.FindAll(".bit-msb-ftr .bit-btn")[1].Click();
@@ -629,10 +629,10 @@ public class BitMessageBoxPromptTests : BunitTestContext
             AsyncValidator = (_, ct) => { token = ct; return new TaskCompletionSource<string?>().Task; }
         }, cts.Token);
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb .bit-tfl-inp").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-msb .bit-tfl-inp")));
 
         container.FindAll(".bit-msb-ftr .bit-btn")[0].Click();
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb .bit-tfl-lod").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-msb .bit-tfl-lod")));
 
         await cts.CancelAsync();
 
@@ -652,15 +652,15 @@ public class BitMessageBoxPromptTests : BunitTestContext
             Body = "Anything to add?",
             Validator = v => { seen.Add(v); return null; },
             AsyncValidator = (v, _) => { seen.Add(v); return Task.FromResult<string?>(null); }
-        });
+        }, TestContext.CancellationToken);
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb .bit-tfl-inp").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-msb .bit-tfl-inp")));
 
         container.FindAll(".bit-msb-ftr .bit-btn")[0].Click();
 
         // What is checked is what is handed back.
         Assert.AreEqual(string.Empty, await prompting);
-        CollectionAssert.AreEqual(new[] { string.Empty, string.Empty }, seen);
+        Assert.AreSequenceEqual(new[] { string.Empty, string.Empty }, seen);
     }
 
     [TestMethod]
@@ -673,12 +673,12 @@ public class BitMessageBoxPromptTests : BunitTestContext
             Title = "Delete the account?",
             Body = "Enter your password to confirm.",
             Color = BitColor.Error
-        });
+        }, TestContext.CancellationToken);
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb .bit-tfl-inp").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-msb .bit-tfl-inp")));
 
-        Assert.AreEqual(1, container.FindAll("[role='dialog']").Count);
-        Assert.AreEqual(0, container.FindAll("[role='alertdialog']").Count);
+        Assert.ContainsSingle(container.FindAll("[role='dialog']"));
+        Assert.IsEmpty(container.FindAll("[role='alertdialog']"));
 
         container.FindAll(".bit-msb-ftr .bit-btn")[1].Click();
 
@@ -696,7 +696,7 @@ public class BitMessageBoxPromptTests : BunitTestContext
 
         var prompting = MessageBoxService.Prompt("Rename", "The new name of the file:");
 
-        host.WaitForAssertion(() => Assert.AreEqual(1, host.FindAll(".bit-msb .bit-tfl-inp").Count));
+        host.WaitForAssertion(() => Assert.ContainsSingle(host.FindAll(".bit-msb .bit-tfl-inp")));
 
         Assert.IsTrue(host.Find(".bit-msb").ClassList.Contains("bit-msb-sm"));
         Assert.IsTrue(host.Find(".bit-msb .bit-tfl").ClassList.Contains("bit-tfl-sm"));
@@ -720,9 +720,9 @@ public class BitMessageBoxPromptTests : BunitTestContext
                 builder.OpenComponent<AnswerYesFooter>(0);
                 builder.CloseComponent();
             }
-        });
+        }, TestContext.CancellationToken);
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".answer-yes").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".answer-yes")));
 
         container.Find(".answer-yes").Click();
 
@@ -744,4 +744,6 @@ public class BitMessageBoxPromptTests : BunitTestContext
             builder.CloseElement();
         }
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

@@ -25,10 +25,10 @@ public class DiffTests
 
         Assert.AreEqual("10.8.0", record.Version);
         Assert.AreEqual("Contoso", record.Name);
-        CollectionAssert.AreEquivalent(new Dictionary<string, string> { ["database"] = "PostgreSQL", ["aspire"] = "False", ["sample"] = "true" }, record.Options.ToDictionary());
+        Assert.AreSequenceEqual(new Dictionary<string, string> { ["database"] = "PostgreSQL", ["aspire"] = "False", ["sample"] = "true" }, record.Options.ToDictionary(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
         var (arguments, _) = TemplateDiff.TemplateArguments(TemplateManifest.Embedded, record.Options);
-        CollectionAssert.AreEqual(new[] { "--database", "PostgreSQL", "--aspire", "false", "--sample", "true" }, arguments);
+        Assert.AreSequenceEqual(new[] { "--database", "PostgreSQL", "--aspire", "false", "--sample", "true" }, arguments);
 
         File.Delete(Path.Combine(host.WorkingDirectory, "bit.json"));
         Assert.IsNull(TemplateDiff.ReadProject(host.WorkingDirectory).Version);
@@ -65,8 +65,8 @@ public class DiffTests
 
         var (arguments, unknown) = TemplateDiff.TemplateArguments(TemplateManifest.Embedded, options);
 
-        CollectionAssert.AreEqual(new[] { "--database", "PostgreSQL" }, arguments);
-        CollectionAssert.AreEquivalent(new[] { "--madeUp true", "--module Nope" }, unknown);
+        Assert.AreSequenceEqual(new[] { "--database", "PostgreSQL" }, arguments);
+        Assert.AreSequenceEqual(new[] { "--madeUp true", "--module Nope" }, unknown, Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -86,7 +86,7 @@ public class DiffTests
         File.WriteAllText(Path.Combine(host.WorkingDirectory, "bit.json"), """{ "version": "10.6.0", "name": "../../Shop" }""");
 
         Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("diff", "10.6.0", "10.7.0"), host.Output);
-        StringAssert.Contains(host.FlatOutput, "isn't a project name");
+        Assert.Contains("isn't a project name", host.FlatOutput);
         Assert.IsEmpty(host.Runner.Calls);
         Assert.IsFalse(Directory.Exists(Path.Combine(host.Environment.BitDirectory, "diff")));
     }
@@ -97,7 +97,7 @@ public class DiffTests
         using var host = new Infrastructure.TestHost(HostOs.Linux);
 
         Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("diff", "--yes", "--name", "Shop"), host.Output);
-        StringAssert.Contains(host.FlatOutput, "'--yes' isn't a bit Boilerplate version");
+        Assert.Contains("'--yes' isn't a bit Boilerplate version", host.FlatOutput);
         Assert.IsEmpty(host.Runner.Calls);
         Assert.IsFalse(Directory.Exists(Path.Combine(host.Environment.BitDirectory, "diff")));
     }
@@ -110,7 +110,7 @@ public class DiffTests
 
         await host.RunAsync("diff", "--framework", "net11.0");
 
-        StringAssert.Contains(host.FlatOutput, "from net10.0 to net11.0");
+        Assert.Contains("from net10.0 to net11.0", host.FlatOutput);
     }
 
     [TestMethod]

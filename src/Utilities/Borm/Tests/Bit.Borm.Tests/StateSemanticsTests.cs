@@ -2,7 +2,7 @@
 
 namespace Bit.Borm.Tests;
 
-public class TotalsModel
+internal class TotalsModel
 {
     public int Quantity { get; set; } = 2;
     public decimal UnitPrice { get; set; } = 5;
@@ -100,7 +100,7 @@ public class ValidityReportingTests
     }
 }
 
-public class SeedMinItemsModel
+internal class SeedMinItemsModel
 {
     public List<LineItem> Lines { get; set; } = [];
 }
@@ -164,7 +164,7 @@ public class SeedMinItemsTests
         // The lists share the limit rather than each taking it.
         Assert.AreEqual(BormDraft.MaxRows, state.ArrayCount("rows") + state.ArrayCount("more"));
         Assert.IsFalse(state.IsFormDirty);
-        Assert.IsTrue(clock.Elapsed < TimeSpan.FromSeconds(5), $"took {clock.Elapsed}");
+        Assert.IsLessThan(TimeSpan.FromSeconds(5), clock.Elapsed, $"took {clock.Elapsed}");
     }
 
     [TestMethod]
@@ -216,12 +216,12 @@ public class SeedMinItemsTests
 }
 
 /// <summary>A list the form cannot add to: the array is fixed in size and the property has no setter.</summary>
-public class SeedFixedModel
+internal class SeedFixedModel
 {
     public string[] Tags { get; } = [];
 }
 
-public sealed class SignupFluentValidator : AbstractValidator<SignupModel>
+internal sealed class SignupFluentValidator : AbstractValidator<SignupModel>
 {
     public SignupFluentValidator()
     {

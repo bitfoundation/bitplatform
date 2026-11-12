@@ -34,7 +34,7 @@ public class ExpressionBuilderTests
     }
 
     [TestMethod]
-    public void A_hidden_field_is_not_validated_whatever_its_rules_say()
+    public async global::System.Threading.Tasks.Task A_hidden_field_is_not_validated_whatever_its_rules_say()
     {
         var form = BormBuilder.Create()
             .Checkbox("ship")
@@ -42,9 +42,9 @@ public class ExpressionBuilderTests
             .Build();
         var state = Dictionary(form);
 
-        Assert.IsTrue(state.ValidateAsync().AsTask().Result);
+        Assert.IsTrue((await state.ValidateAsync().AsTask()));
         state.SetValue("ship", true);
-        Assert.IsFalse(state.ValidateAsync().AsTask().Result);
+        Assert.IsFalse((await state.ValidateAsync().AsTask()));
     }
 
     [TestMethod]
@@ -105,11 +105,11 @@ public class ExpressionBuilderTests
 
         var total = form.FindField("Total")!;
         Assert.IsTrue(total.ReadOnly);
-        CollectionAssert.AreEquivalent(new[] { "Lines", "Discount" }, total.ComputedDependencies.ToArray());
+        Assert.AreSequenceEqual(new[] { "Lines", "Discount" }, total.ComputedDependencies.ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
-    public void An_expression_rule_fails_only_when_it_is_false_and_revalidates_on_what_it_reads()
+    public async global::System.Threading.Tasks.Task An_expression_rule_fails_only_when_it_is_false_and_revalidates_on_what_it_reads()
     {
         var form = BormBuilder.Create()
             .Date("start")
@@ -120,33 +120,33 @@ public class ExpressionBuilderTests
 
         // Nothing to compare yet: the rule has nothing to say.
         state.SetValue("end", new DateOnly(2024, 5, 1));
-        Assert.IsTrue(state.ValidateAsync().AsTask().Result);
+        Assert.IsTrue((await state.ValidateAsync().AsTask()));
 
         state.SetValue("start", new DateOnly(2024, 5, 3));
-        Assert.IsFalse(state.ValidateAsync().AsTask().Result);
+        Assert.IsFalse((await state.ValidateAsync().AsTask()));
         Assert.AreEqual("End must be on or after start.", state.MessagesFor("end").Single().Message);
 
         // Correcting the *other* field clears the message, because the rule registered what it reads.
-        CollectionAssert.Contains(end.RevalidateOn.ToArray(), "start");
+        Assert.Contains("start", end.RevalidateOn.ToArray());
         state.SetValue("start", new DateOnly(2024, 4, 1));
-        state.ValidateDependentsAsync("start").AsTask().Wait();
+        await state.ValidateDependentsAsync("start").AsTask().WaitAsync(TestContext.CancellationToken);
         Assert.IsEmpty(state.MessagesFor("end"));
     }
 
     [TestMethod]
-    public void A_warning_expression_rule_advises_without_blocking_the_submit()
+    public async global::System.Threading.Tasks.Task A_warning_expression_rule_advises_without_blocking_the_submit()
     {
         var form = BormBuilder.Create()
             .Integer("guests", f => f.Must("{guests} <= 8", "Large parties may wait longer.", BormValidationSeverity.Warning))
             .Build();
         var state = Dictionary(form, new Dictionary<string, object?> { ["guests"] = 12L });
 
-        Assert.IsTrue(state.ValidateAsync().AsTask().Result);
+        Assert.IsTrue((await state.ValidateAsync().AsTask()));
         Assert.AreEqual(BormValidationSeverity.Warning, state.MessagesFor("guests").Single().Severity);
     }
 
     [TestMethod]
-    public void A_form_level_expression_rule_puts_its_message_on_the_field_it_names()
+    public async global::System.Threading.Tasks.Task A_form_level_expression_rule_puts_its_message_on_the_field_it_names()
     {
         var form = BormBuilder.Create()
             .Array("shares", s => s.Number("percent"))
@@ -161,15 +161,15 @@ public class ExpressionBuilderTests
             }
         });
 
-        Assert.IsFalse(state.ValidateAsync().AsTask().Result);
+        Assert.IsFalse((await state.ValidateAsync().AsTask()));
         Assert.AreEqual("The shares must add up to 100%.", state.MessagesFor("shares").Single().Message);
 
         state.SetValue("shares[1].percent", 40.0);
-        Assert.IsTrue(state.ValidateAsync().AsTask().Result);
+        Assert.IsTrue((await state.ValidateAsync().AsTask()));
     }
 
     [TestMethod]
-    public void An_expression_rule_on_a_row_template_judges_each_row_on_its_own()
+    public async global::System.Threading.Tasks.Task An_expression_rule_on_a_row_template_judges_each_row_on_its_own()
     {
         var form = BormBuilder.Create()
             .Array("rooms", r => r
@@ -185,9 +185,9 @@ public class ExpressionBuilderTests
             }
         });
 
-        Assert.IsFalse(state.ValidateAsync().AsTask().Result);
+        Assert.IsFalse((await state.ValidateAsync().AsTask()));
         Assert.IsEmpty(state.MessagesFor("rooms[0].children"));
-        Assert.HasCount(1, state.MessagesFor("rooms[1].children"));
+        Assert.ContainsSingle(state.MessagesFor("rooms[1].children"));
     }
 
     [TestMethod]
@@ -201,7 +201,7 @@ public class ExpressionBuilderTests
             .Build();
         var state = Dictionary(form);
 
-        Assert.HasCount(1, state.VisibleSteps);
+        Assert.ContainsSingle(state.VisibleSteps);
         state.SetValue("kind", "business");
         Assert.HasCount(2, state.VisibleSteps);
     }
@@ -214,6 +214,8 @@ public class ExpressionBuilderTests
         Assert.ThrowsExactly<BormExpressionException>(() =>
             BormBuilder.Create().Text("a", f => f.Computed("sum({b}")).Build());
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }
 
 [TestClass]
@@ -249,7 +251,7 @@ public class ExpressionJsonTests
     """;
 
     [TestMethod]
-    public void Expressions_in_a_document_become_conditions_computed_values_and_rules()
+    public async global::System.Threading.Tasks.Task Expressions_in_a_document_become_conditions_computed_values_and_rules()
     {
         var form = BormJsonSchemaImporter.Import(Document);
         var total = form.FindField("total")!;
@@ -258,11 +260,11 @@ public class ExpressionJsonTests
 
         Assert.IsNotNull(total.Computed);
         Assert.IsTrue(total.ReadOnly);
-        CollectionAssert.AreEquivalent(new[] { "quantity", "unitPrice" }, total.ComputedDependencies.ToArray());
+        Assert.AreSequenceEqual(new[] { "quantity", "unitPrice" }, total.ComputedDependencies.ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         Assert.IsInstanceOfType<BormExpressionCondition>(notes.VisibleWhen);
         Assert.IsInstanceOfType<BormConditionGroup>(notes.RequiredWhen);
         Assert.HasCount(3, code.Validators.OfType<BormExpressionRule>().ToList());
-        Assert.HasCount(1, form.Validators.OfType<BormExpressionRule>().ToList());
+        Assert.ContainsSingle(form.Validators.OfType<BormExpressionRule>().ToList());
         Assert.IsInstanceOfType<BormExpressionCondition>(form.Steps[1].VisibleWhen);
 
         var data = new Dictionary<string, object?> { ["quantity"] = 3L, ["unitPrice"] = 50.0 };
@@ -273,12 +275,12 @@ public class ExpressionJsonTests
         Assert.HasCount(2, state.VisibleSteps);
 
         state.SetValue("code", "abc");
-        state.ValidateAsync().AsTask().Wait();
+        await state.ValidateAsync().AsTask().WaitAsync(TestContext.CancellationToken);
         var messages = state.MessagesFor("code").Select(m => m.Message).ToList();
-        CollectionAssert.Contains(messages, "Codes have six characters.");
-        CollectionAssert.Contains(messages, "Codes usually start with X.");
+        Assert.Contains("Codes have six characters.", messages);
+        Assert.Contains("Codes usually start with X.", messages);
         // A rule given no message of its own speaks through the message provider.
-        CollectionAssert.Contains(messages, BormDefaultMessageProvider.Instance.Get(BormMessageKeys.Rule));
+        Assert.Contains(BormDefaultMessageProvider.Instance.Get(BormMessageKeys.Rule), messages);
     }
 
     [TestMethod]
@@ -289,10 +291,10 @@ public class ExpressionJsonTests
         var twice = BormJsonSchemaImporter.Import(json);
 
         Assert.AreEqual(json, BormJsonSchemaExporter.Export(twice));
-        StringAssert.Contains(json, "\"x-computed\": \"{quantity} * {unitPrice}\"");
-        StringAssert.Contains(json, "\"x-visibleWhen\": \"{total} \\u003E 100\"");
-        StringAssert.Contains(json, "\"severity\": \"warning\"");
-        StringAssert.Contains(json, "\"field\": \"quantity\"");
+        Assert.Contains("\"x-computed\": \"{quantity} * {unitPrice}\"", json);
+        Assert.Contains("\"x-visibleWhen\": \"{total} \\u003E 100\"", json);
+        Assert.Contains("\"severity\": \"warning\"", json);
+        Assert.Contains("\"field\": \"quantity\"", json);
         Assert.HasCount(3, twice.FindField("code")!.Validators.OfType<BormExpressionRule>().ToList());
     }
 
@@ -312,7 +314,7 @@ public class ExpressionJsonTests
 
         Assert.AreEqual(1200m, data["gross"]);
         Assert.IsTrue(state.IsVisible(back.FindField("reason")!));
-        Assert.HasCount(1, back.Validators.OfType<BormExpressionRule>().ToList());
+        Assert.ContainsSingle(back.Validators.OfType<BormExpressionRule>().ToList());
     }
 
     [TestMethod]
@@ -327,7 +329,7 @@ public class ExpressionJsonTests
                  })
         {
             Assert.IsFalse(BormJsonSchemaImporter.TryImport(document, out _, out var error), document);
-            StringAssert.Contains(error, keyword);
+            Assert.Contains(keyword, error!);
         }
     }
 
@@ -337,6 +339,8 @@ public class ExpressionJsonTests
         var form = BormJsonSchemaImporter.Import("""{"type":"object","properties":{"a":{"type":"string","x-rules":[{"message":"m"},"", 5]}}}""");
         Assert.IsEmpty(form.FindField("a")!.Validators.OfType<BormExpressionRule>().ToList());
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }
 
 [TestClass]
@@ -353,11 +357,11 @@ public class ExpressionDiagnosticTests
             .Build();
 
         var problems = form.Validate().Select(d => d.Message).ToList();
-        Assert.IsTrue(problems.Any(p => p.Contains("lines[0].totl")), string.Join("\n", problems));
-        Assert.IsTrue(problems.Any(p => p.Contains("'nope'")));
-        Assert.IsTrue(problems.Any(p => p.Contains("'alsoNope'")));
-        Assert.IsTrue(problems.Any(p => p.Contains("'missing'")));
-        Assert.IsTrue(problems.Any(p => p.Contains("'notAField'")));
+        Assert.Contains(p => p.Contains("lines[0].totl"), problems, string.Join("\n", problems));
+        Assert.Contains(p => p.Contains("'nope'"), problems);
+        Assert.Contains(p => p.Contains("'alsoNope'"), problems);
+        Assert.Contains(p => p.Contains("'missing'"), problems);
+        Assert.Contains(p => p.Contains("'notAField'"), problems);
     }
 
     [TestMethod]
@@ -383,8 +387,8 @@ public class ExpressionDiagnosticTests
             .Build();
 
         var cycles = form.Validate().Where(d => d.Message.Contains("cycle")).ToList();
-        Assert.HasCount(1, cycles);
-        StringAssert.Contains(cycles[0].Message, "a → c → b → a");
+        Assert.ContainsSingle(cycles);
+        Assert.Contains("a → c → b → a", cycles[0].Message);
         Assert.AreEqual(BormSchemaDiagnosticSeverity.Warning, cycles[0].Severity);
     }
 
@@ -396,7 +400,7 @@ public class ExpressionDiagnosticTests
                 .Number("x", f => f.Computed("{y}"))
                 .Number("y", f => f.Computed(ctx => ctx.Sibling("x"), "x")))
             .Build();
-        Assert.HasCount(1, circular.Validate().Where(d => d.Message.Contains("cycle")).ToList());
+        Assert.ContainsSingle(circular.Validate().Where(d => d.Message.Contains("cycle")).ToList());
 
         var invoice = BormBuilder.Create()
             .Array("rows", r => r.Number("qty").Number("total", f => f.Computed("{qty} * 2")))

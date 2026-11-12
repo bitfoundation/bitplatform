@@ -96,7 +96,7 @@ public class BelemetryUnhandledExceptionTests
         Assert.AreEqual("An unhandled exception ended the process.", log.Body);
         Assert.AreEqual("System.InvalidOperationException", log.Attributes[BelemetrySemanticConventions.ExceptionType]);
         Assert.AreEqual("The order book is closed.", log.Attributes[BelemetrySemanticConventions.ExceptionMessage]);
-        StringAssert.Contains((string)log.Attributes[BelemetrySemanticConventions.ExceptionStacktrace]!, nameof(Thrown));
+        Assert.Contains(nameof(Thrown), (string)log.Attributes[BelemetrySemanticConventions.ExceptionStacktrace]!);
         Assert.IsNull(log.TraceId);
     }
 
@@ -133,7 +133,7 @@ public class BelemetryUnhandledExceptionTests
         Assert.AreEqual("System.TimeoutException", logs[0].Attributes[BelemetrySemanticConventions.ExceptionType], "A lone exception is unwrapped, nested aggregates included.");
         Assert.AreEqual("one", logs[0].Attributes[BelemetrySemanticConventions.ExceptionMessage]);
         Assert.AreEqual("System.AggregateException", logs[1].Attributes[BelemetrySemanticConventions.ExceptionType], "Several stay together.");
-        StringAssert.Contains((string)logs[1].Attributes[BelemetrySemanticConventions.ExceptionStacktrace]!, "three");
+        Assert.Contains("three", (string)logs[1].Attributes[BelemetrySemanticConventions.ExceptionStacktrace]!);
         Assert.IsTrue(logs.All(l => l.Severity == BelemetrySeverity.Error && l.Feature == BelemetryFeatures.Errors && l.Body == "A faulted task's exception was never observed."));
     }
 
@@ -193,7 +193,7 @@ public class BelemetryUnhandledExceptionTests
 
             Assert.IsEmpty(handler.Requests, "Nothing async completes as the process ends: it is saved, not sent.");
             var files = StoredFiles();
-            Assert.HasCount(1, files);
+            Assert.ContainsSingle(files);
             Assert.IsFalse(File.ReadAllText(files[0]).Contains("pw-7f3a", StringComparison.Ordinal), "Headers (API keys) are never written to disk.");
             Assert.IsEmpty(pipeline.DrainForUnload(), "The queue went to disk.");
         }
@@ -208,7 +208,7 @@ public class BelemetryUnhandledExceptionTests
         Assert.AreEqual("http://collector.test:4318/v1/logs", request.Message.RequestUri!.ToString());
         Assert.AreEqual("pw-7f3a", request.Message.Headers.GetValues("x-api-key").Single(), "The exporter's current headers are added when it is sent.");
         var logs = ExportLogsServiceRequest.Parser.ParseFrom(request.Body).ResourceLogs.SelectMany(r => r.ScopeLogs).SelectMany(s => s.LogRecords).ToList();
-        CollectionAssert.AreEqual(new[] { "placing the order", "An unhandled exception ended the process." }, logs.Select(l => l.Body.StringValue).ToArray());
+        Assert.AreSequenceEqual(new[] { "placing the order", "An unhandled exception ended the process." }, logs.Select(l => l.Body.StringValue).ToArray());
         Assert.AreEqual("System.InvalidOperationException", logs[1].Attributes.Single(a => a.Key == BelemetrySemanticConventions.ExceptionType).Value.StringValue);
         Assert.IsEmpty(StoredFiles());
     }
@@ -226,7 +226,7 @@ public class BelemetryUnhandledExceptionTests
 
         // Should the process go on after all, the record is still queued for the export.
         await pipeline.FlushAsync(false, CancellationToken.None);
-        Assert.HasCount(1, handler.Requests);
+        Assert.ContainsSingle(handler.Requests);
     }
 
     [TestMethod]
@@ -258,9 +258,9 @@ public class BelemetryUnhandledExceptionTests
         pipeline.UnhandledExceptions.OnUnhandled(new InvalidOperationException("The order book is closed."), terminating: true);
         await Task.WhenAll(flushes);
 
-        Assert.HasCount(1, flushes);
+        Assert.ContainsSingle(flushes);
         Assert.IsEmpty(handler.Requests, "No export took it into a request the process would never complete.");
-        Assert.HasCount(1, StoredFiles(), "It was saved for the next launch.");
+        Assert.ContainsSingle(StoredFiles(), "It was saved for the next launch.");
     }
 
     [TestMethod]
@@ -288,13 +288,13 @@ public class BelemetryUnhandledExceptionTests
                                                                                   .Select(l => l.Body.StringValue).ToList()).ToList();
         Assert.IsTrue(requests.All(r => r.Count <= 10), "Each request holds a batch, as the export loop's do.");
         Assert.IsLessThanOrEqualTo(maxBytes, StoredFiles().Sum(f => new FileInfo(f).Length));
-        Assert.IsTrue(requests.Any(r => r.Contains("An unhandled exception ended the process.")), "The crash is kept.");
+        Assert.Contains(r => r.Contains("An unhandled exception ended the process."), requests, "The crash is kept.");
 
         // The newest records are kept, and the oldest give way.
         var kept = requests.SelectMany(r => r).Where(b => b.EndsWith(filler, StringComparison.Ordinal)).Select(b => int.Parse(b[..3])).Order().ToList();
         Assert.IsGreaterThan(0, kept.Count);
         Assert.IsLessThan(200, kept.Count, "The store could not hold them all.");
-        CollectionAssert.AreEqual(Enumerable.Range(200 - kept.Count, kept.Count).ToList(), kept);
+        Assert.AreSequenceEqual(Enumerable.Range(200 - kept.Count, kept.Count).ToList(), kept);
     }
 
     // Set for the process ARealCrash_SavesTheQueueAsTheProcessEnds_AndTheNextLaunchSendsIt starts: its store's directory.
@@ -319,15 +319,15 @@ public class BelemetryUnhandledExceptionTests
 
         using (var process = Process.Start(start)!)
         {
-            var output = process.StandardOutput.ReadToEndAsync();
-            var error = process.StandardError.ReadToEndAsync();
+            var output = process.StandardOutput.ReadToEndAsync(TestContext.CancellationToken);
+            var error = process.StandardError.ReadToEndAsync(TestContext.CancellationToken);
             using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(2));
             await process.WaitForExitAsync(timeout.Token);
 
             var said = await output + await error;
             Assert.AreNotEqual(0, process.ExitCode, said);
-            StringAssert.Contains(said, "The order book is closed.", "The runtime reported the crash.");
-            Assert.HasCount(1, StoredFiles(), said);
+            Assert.Contains("The order book is closed.", said, "The runtime reported the crash.");
+            Assert.ContainsSingle(StoredFiles(), said);
         }
 
         // The next launch.
@@ -338,7 +338,7 @@ public class BelemetryUnhandledExceptionTests
         }
 
         var logs = ExportLogsServiceRequest.Parser.ParseFrom(handler.Requests.Single().Body).ResourceLogs.SelectMany(r => r.ScopeLogs).SelectMany(s => s.LogRecords).ToList();
-        CollectionAssert.AreEqual(new[] { "placing the order", "An unhandled exception ended the process." }, logs.Select(l => l.Body.StringValue).ToArray());
+        Assert.AreSequenceEqual(new[] { "placing the order", "An unhandled exception ended the process." }, logs.Select(l => l.Body.StringValue).ToArray());
         Assert.AreEqual("The order book is closed.", logs[1].Attributes.Single(a => a.Key == BelemetrySemanticConventions.ExceptionMessage).Value.StringValue);
         Assert.IsEmpty(StoredFiles());
     }
@@ -431,7 +431,7 @@ public class BelemetryUnhandledExceptionTests
             // What an AndroidEnvironment.UnhandledExceptionRaiser handler does.
             provider.TrackBitBelemetryUnhandledException(new InvalidOperationException("The order book is closed."));
 
-            Assert.HasCount(1, StoredFiles());
+            Assert.ContainsSingle(StoredFiles());
             Assert.IsEmpty(handler.Requests);
         }
 
@@ -441,7 +441,7 @@ public class BelemetryUnhandledExceptionTests
         }
 
         var logs = ExportLogsServiceRequest.Parser.ParseFrom(handler.Requests.Single().Body).ResourceLogs.SelectMany(r => r.ScopeLogs).SelectMany(s => s.LogRecords).ToList();
-        CollectionAssert.AreEqual(new[] { "placing the order", "An unhandled exception ended the process." }, logs.Select(l => l.Body.StringValue).ToArray());
+        Assert.AreSequenceEqual(new[] { "placing the order", "An unhandled exception ended the process." }, logs.Select(l => l.Body.StringValue).ToArray());
     }
 
     [TestMethod]
@@ -510,4 +510,6 @@ public class BelemetryUnhandledExceptionTests
     // Not inlined, so no local of the caller keeps the task alive for the collector.
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static void DropAFaultedTask(string message) => _ = Task.FromException(new InvalidOperationException(message));
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

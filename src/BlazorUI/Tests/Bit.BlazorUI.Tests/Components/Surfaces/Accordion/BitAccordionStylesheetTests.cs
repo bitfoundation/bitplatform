@@ -48,7 +48,7 @@ public class BitAccordionStylesheetTests
 
         foreach (var variable in PublicVariables)
         {
-            Assert.IsTrue(stylesheet.Contains($"var({variable}, "), $"{variable} is never read with a fallback.");
+            Assert.Contains($"var({variable}, ", stylesheet, $"{variable} is never read with a fallback.");
             Assert.IsFalse(Regex.IsMatch(stylesheet, $@"(^|[\s;{{]){Regex.Escape(variable)}\s*:", RegexOptions.Multiline), $"{variable} is declared, which stops it from inheriting.");
         }
 
@@ -67,7 +67,7 @@ public class BitAccordionStylesheetTests
 
         var documented = Regex.Matches(demo, @"Name = ""(--bit-Accordion-[a-z-]+)""").Select(m => m.Groups[1].Value).ToArray();
 
-        CollectionAssert.AreEquivalent(PublicVariables, documented);
+        Assert.AreSequenceEqual(PublicVariables, documented, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -80,14 +80,14 @@ public class BitAccordionStylesheetTests
         // the parameters.
         var root = SourceFiles.GetScssBlock(stylesheet, "\n.bit-acd {");
 
-        StringAssert.Contains(root, "--bit-acd-bg: var(--bit-Accordion-background, #{$clr-bg-pri});");
-        StringAssert.Contains(root, "--bit-acd-brd: var(--bit-Accordion-border-color, #{$clr-brd-pri});");
-        StringAssert.Contains(root, "background-color: var(--bit-acd-bg);");
+        Assert.Contains("--bit-acd-bg: var(--bit-Accordion-background, #{$clr-bg-pri});", root);
+        Assert.Contains("--bit-acd-brd: var(--bit-Accordion-border-color, #{$clr-brd-pri});", root);
+        Assert.Contains("background-color: var(--bit-acd-bg);", root);
 
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-acd-tbg {"), "--bit-acd-bg: #{$clr-bg-ter};");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-acd-sbr {"), "--bit-acd-brd: #{$clr-brd-sec};");
+        Assert.Contains("--bit-acd-bg: #{$clr-bg-ter};", SourceFiles.GetScssBlock(stylesheet, "\n.bit-acd-tbg {"));
+        Assert.Contains("--bit-acd-brd: #{$clr-brd-sec};", SourceFiles.GetScssBlock(stylesheet, "\n.bit-acd-sbr {"));
 
-        Assert.IsTrue(stylesheet.IndexOf("\n.bit-acd {", System.StringComparison.Ordinal) < stylesheet.IndexOf("\n.bit-acd-tbg {", System.StringComparison.Ordinal));
+        Assert.IsLessThan(stylesheet.IndexOf("\n.bit-acd-tbg {", System.StringComparison.Ordinal), stylesheet.IndexOf("\n.bit-acd {", System.StringComparison.Ordinal));
     }
 
     [TestMethod]
@@ -97,19 +97,19 @@ public class BitAccordionStylesheetTests
 
         // Set on the open accordion's own header line, never on the root, where it would inherit into every accordion
         // nested in the panel; and not on a disabled one, which keeps its greyed-out text.
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-acd-exp:not(.bit-dis) > .bit-acd-hwr {"), "color: var(--bit-Accordion-header-expanded-color, inherit);");
-        StringAssert.DoesNotMatch(SourceFiles.GetScssBlock(stylesheet, "\n.bit-acd {"), new Regex("header-expanded-color"));
+        Assert.Contains("color: var(--bit-Accordion-header-expanded-color, inherit);", SourceFiles.GetScssBlock(stylesheet, "\n.bit-acd-exp:not(.bit-dis) > .bit-acd-hwr {"));
+        Assert.DoesNotMatchRegex(new Regex("header-expanded-color"), SourceFiles.GetScssBlock(stylesheet, "\n.bit-acd {"));
 
         // The hover and pressed shades do not replace an expanded fill, whose text color was picked against it; the
         // rule has the specificity of the generic one and so has to follow it.
         var expandedHover = stylesheet.IndexOf("\n.bit-acd-exp:not(.bit-dis, .bit-acd-rdo) > .bit-acd-hwr {", System.StringComparison.Ordinal);
 
-        Assert.IsTrue(expandedHover > stylesheet.IndexOf("\n.bit-acd:not(.bit-dis, .bit-acd-rdo) > .bit-acd-hwr {", System.StringComparison.Ordinal));
-        StringAssert.Contains(stylesheet[expandedHover..], "--bit-acd-hwr-sbg: var(--bit-Accordion-header-expanded-background, var(--bit-acd-hov));");
-        StringAssert.Contains(stylesheet[expandedHover..], "--bit-acd-hwr-sbg: var(--bit-Accordion-header-expanded-background, var(--bit-acd-prs));");
+        Assert.IsGreaterThan(stylesheet.IndexOf("\n.bit-acd:not(.bit-dis, .bit-acd-rdo) > .bit-acd-hwr {", System.StringComparison.Ordinal), expandedHover);
+        Assert.Contains("--bit-acd-hwr-sbg: var(--bit-Accordion-header-expanded-background, var(--bit-acd-hov));", stylesheet[expandedHover..]);
+        Assert.Contains("--bit-acd-hwr-sbg: var(--bit-Accordion-header-expanded-background, var(--bit-acd-prs));", stylesheet[expandedHover..]);
 
         // The states only move the variable; the open header line at rest is the rule that paints it.
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-acd-exp > .bit-acd-hwr {"),"background-color: var(--bit-acd-hwr-sbg, var(--bit-Accordion-header-expanded-background, transparent));");
+        Assert.Contains("background-color: var(--bit-acd-hwr-sbg, var(--bit-Accordion-header-expanded-background, transparent));", SourceFiles.GetScssBlock(stylesheet, "\n.bit-acd-exp > .bit-acd-hwr {"));
     }
 
     [TestMethod]
@@ -119,8 +119,8 @@ public class BitAccordionStylesheetTests
 
         // An inset shadow on the panel, not a border that would add to the height of a collapsed one; the fill sits
         // on the grid row, which is no taller than what is showing of the panel.
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-acd-con {"), "box-shadow: inset 0 var(--bit-Accordion-border-width, #{$shp-border-width}) 0 0 var(--bit-Accordion-divider-color, transparent);");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-acd-cnt {\n    display: grid;"), "background-color: var(--bit-Accordion-content-background, transparent);");
+        Assert.Contains("box-shadow: inset 0 var(--bit-Accordion-border-width, #{$shp-border-width}) 0 0 var(--bit-Accordion-divider-color, transparent);", SourceFiles.GetScssBlock(stylesheet, "\n.bit-acd-con {"));
+        Assert.Contains("background-color: var(--bit-Accordion-content-background, transparent);", SourceFiles.GetScssBlock(stylesheet, "\n.bit-acd-cnt {\n    display: grid;"));
     }
 
     [TestMethod]
@@ -130,19 +130,19 @@ public class BitAccordionStylesheetTests
 
         // A HiddenUntilFound panel is hidden by its attribute alone, and one the browser has revealed (the class
         // without the attribute) is opened by the stylesheet before the render that expands the accordion.
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-acd-huf {"), "visibility: inherit;");
-        StringAssert.Contains(stylesheet, ".bit-acd-cnt:has(> .bit-acd-cwr > .bit-acd-huf:not([hidden])) {\n    grid-template-rows: 1fr;");
+        Assert.Contains("visibility: inherit;", SourceFiles.GetScssBlock(stylesheet, "\n.bit-acd-huf {"));
+        Assert.Contains(".bit-acd-cnt:has(> .bit-acd-cwr > .bit-acd-huf:not([hidden])) {\n    grid-template-rows: 1fr;", stylesheet);
 
         // At once, the row and the padding alike: the browser scrolls to the match as it reveals it, and a panel still
         // growing around it would move it away again.
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, ".bit-acd-cnt:has(> .bit-acd-cwr > .bit-acd-huf:not([hidden])) {"), "transition: none;");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-acd-huf {"), "transition: none;");
+        Assert.Contains("transition: none;", SourceFiles.GetScssBlock(stylesheet, ".bit-acd-cnt:has(> .bit-acd-cwr > .bit-acd-huf:not([hidden])) {"));
+        Assert.Contains("transition: none;", SourceFiles.GetScssBlock(stylesheet, "\n.bit-acd-huf {"));
 
         // So does the render that expands the accordion around a reveal, for where it lands ahead of the browser's
         // own reveal (WebAssembly renders inside the beforematch event) and the pair above never applies. The class is
         // on the grid row itself, so the row stops animating in an engine without :has() as well.
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-acd-rvl,\n.bit-acd-rvl > .bit-acd-cwr > .bit-acd-con {"), "transition: none;");
-        Assert.IsFalse(stylesheet.Contains(":has(> .bit-acd-cwr > .bit-acd-rvl)"));
+        Assert.Contains("transition: none;", SourceFiles.GetScssBlock(stylesheet, "\n.bit-acd-rvl,\n.bit-acd-rvl > .bit-acd-cwr > .bit-acd-con {"));
+        Assert.DoesNotContain(":has(> .bit-acd-cwr > .bit-acd-rvl)", stylesheet);
     }
 
     [TestMethod]
@@ -152,7 +152,7 @@ public class BitAccordionStylesheetTests
 
         // WebKit lays out a panel mid-way through a discrete content-visibility transition as already hidden, which
         // snaps the row shut; the component applies hidden="until-found" once the close has played instead.
-        Assert.IsFalse(code.Any(line => line.Contains("allow-discrete")), "A discrete transition snaps a HiddenUntilFound close shut in WebKit.");
+        Assert.DoesNotContain(line => line.Contains("allow-discrete"), code, "A discrete transition snaps a HiddenUntilFound close shut in WebKit.");
     }
 
     [TestMethod]
@@ -165,8 +165,8 @@ public class BitAccordionStylesheetTests
         {
             var block = SourceFiles.GetScssBlock(stylesheet, selector);
 
-            StringAssert.Contains(block, "&:has(> .bit-acd-hed > .bit-acd-hdr:not(.bit-acd-bsy):hover)");
-            StringAssert.Contains(block, "&:has(> .bit-acd-hed > .bit-acd-hdr:not(.bit-acd-bsy):active)");
+            Assert.Contains("&:has(> .bit-acd-hed > .bit-acd-hdr:not(.bit-acd-bsy):hover)", block);
+            Assert.Contains("&:has(> .bit-acd-hed > .bit-acd-hdr:not(.bit-acd-bsy):active)", block);
         }
     }
 
@@ -176,13 +176,13 @@ public class BitAccordionStylesheetTests
         // hidden="until-found" hides the content through content-visibility, which paper would honor too.
         var print = ReadStylesheet()[ReadStylesheet().IndexOf("@media print {", System.StringComparison.Ordinal)..];
 
-        StringAssert.Contains(print, "content-visibility: visible;");
+        Assert.Contains("content-visibility: visible;", print);
     }
 
     [TestMethod]
     public void BitAccordionShouldMarkADisabledAccordionInForcedColors()
     {
-        StringAssert.Contains(ReadStylesheet(), "@media (forced-colors: active) {\n    .bit-acd.bit-dis > .bit-acd-hwr {");
+        Assert.Contains("@media (forced-colors: active) {\n    .bit-acd.bit-dis > .bit-acd-hwr {", ReadStylesheet());
     }
 
     [TestMethod]
@@ -192,25 +192,25 @@ public class BitAccordionStylesheetTests
 
         // An explicit Size publishes these, so they are read before the variable, which only restyles the medium
         // accordion an unset one stands for.
-        StringAssert.Contains(stylesheet, "font-size: var(--bit-acd-fontsize, var(--bit-Accordion-font-size, #{$tg-fs-sm}));");
-        StringAssert.Contains(stylesheet, "padding: var(--bit-acd-pad, var(--bit-Accordion-header-padding, #{spacing(1.5)}));");
-        StringAssert.Contains(stylesheet, "padding: var(--bit-acd-pad, var(--bit-Accordion-content-padding, #{spacing(1.5)}));");
-        StringAssert.Contains(stylesheet, "font-size: var(--bit-acd-icn-fontsize, var(--bit-Accordion-icon-size, #{$siz-icon-md}));");
-        StringAssert.Contains(stylesheet, "font-size: var(--bit-acd-ttl-fontsize, var(--bit-Accordion-title-font-size, #{$tg-fs-md}));");
+        Assert.Contains("font-size: var(--bit-acd-fontsize, var(--bit-Accordion-font-size, #{$tg-fs-sm}));", stylesheet);
+        Assert.Contains("padding: var(--bit-acd-pad, var(--bit-Accordion-header-padding, #{spacing(1.5)}));", stylesheet);
+        Assert.Contains("padding: var(--bit-acd-pad, var(--bit-Accordion-content-padding, #{spacing(1.5)}));", stylesheet);
+        Assert.Contains("font-size: var(--bit-acd-icn-fontsize, var(--bit-Accordion-icon-size, #{$siz-icon-md}));", stylesheet);
+        Assert.Contains("font-size: var(--bit-acd-ttl-fontsize, var(--bit-Accordion-title-font-size, #{$tg-fs-md}));", stylesheet);
 
         // An explicit Background brings the header shades of its own fill, which the hover variables do not reach.
         foreach (var (kind, token) in new[] { ("pbg", "pri"), ("sbg", "sec"), ("tbg", "ter") })
         {
             var block = SourceFiles.GetScssBlock(stylesheet, $"\n.bit-acd-{kind} {{");
 
-            StringAssert.Contains(block, $"--bit-acd-hov: #{{$clr-bg-{token}-hover}};");
-            StringAssert.Contains(block, $"--bit-acd-prs: #{{$clr-bg-{token}-active}};");
-            Assert.IsFalse(block.Contains("--bit-Accordion-"), $"A public variable wins over the {kind} Background.");
+            Assert.Contains($"--bit-acd-hov: #{{$clr-bg-{token}-hover}};", block);
+            Assert.Contains($"--bit-acd-prs: #{{$clr-bg-{token}-active}};", block);
+            Assert.DoesNotContain("--bit-Accordion-", block, $"A public variable wins over the {kind} Background.");
         }
 
         // Only an open header's own fill - a state of its own - is still read before a shade of the Background.
         var publicFirst = Regex.Matches(stylesheet, @"var\(--bit-Accordion-([a-z-]+), var\(--bit-acd-").Select(m => m.Groups[1].Value).Distinct().ToArray();
-        CollectionAssert.AreEqual(new[] { "header-expanded-background" }, publicFirst);
+        Assert.AreSequenceEqual(new[] { "header-expanded-background" }, publicFirst);
     }
 
     [TestMethod]
@@ -224,7 +224,7 @@ public class BitAccordionStylesheetTests
         // already (see BitAccordionShouldLetBackgroundAndBorderWinOverAnInheritedVariable).
         foreach (var property in new[] { "--bit-acd-pad", "--bit-acd-ttl-fontsize", "--bit-acd-fontsize", "--bit-acd-icn-fontsize" })
         {
-            StringAssert.Contains(root, $"{property}: initial;");
+            Assert.Contains($"{property}: initial;", root);
         }
     }
 

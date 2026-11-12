@@ -1,4 +1,4 @@
-using Bunit;
+﻿using Bunit;
 using Bunit.TestDoubles;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -37,7 +37,7 @@ public class InitialMountTests : BunitTestContext
         cut.WaitForAssertion(() => Assert.IsNotNull(cut.Find("[data-testid=im-content]")));
         // The probe recorded true only if the content existed BEFORE the first dispatcher yield,
         // i.e. inside the mount's first render batch - the no-blank-flash guarantee.
-        cut.WaitForAssertion(() => Assert.AreEqual(true, InitialMountState.ContentPresentAtFirstYield,
+        cut.WaitForAssertion(() => Assert.IsTrue(InitialMountState.ContentPresentAtFirstYield,
             "the matched route must render within the initial render batch, not a later one"));
     }
 
@@ -47,7 +47,7 @@ public class InitialMountTests : BunitTestContext
         var cut = RenderHostAt<InitialMountNestedHost>("http://localhost/docs/guide/intro");
 
         cut.WaitForAssertion(() => Assert.IsNotNull(cut.Find("[data-testid=im-content]")));
-        cut.WaitForAssertion(() => Assert.AreEqual(true, InitialMountState.ContentPresentAtFirstYield,
+        cut.WaitForAssertion(() => Assert.IsTrue(InitialMountState.ContentPresentAtFirstYield,
             "nested registration cascades one render wave per level; the boot sentinel must bridge " +
             "all of them without leaving the first batch"));
     }
@@ -58,7 +58,7 @@ public class InitialMountTests : BunitTestContext
         var cut = RenderHostAt<InitialMountWrappedHost>("http://localhost/home");
 
         cut.WaitForAssertion(() => Assert.IsNotNull(cut.Find("[data-testid=im-content]")));
-        cut.WaitForAssertion(() => Assert.AreEqual(true, InitialMountState.ContentPresentAtFirstYield,
+        cut.WaitForAssertion(() => Assert.IsTrue(InitialMountState.ContentPresentAtFirstYield,
             "a wrapper component adds a registration-silent render wave the sentinel must tolerate"));
     }
 
@@ -81,7 +81,7 @@ public class InitialMountTests : BunitTestContext
 
         // Mount at /late while the /late route does not exist yet: nothing matches.
         var cut = RenderComponent<InitialMountLateRouteHost>(p => p.Add(h => h.ShowLate, false));
-        cut.WaitForAssertion(() => Assert.AreEqual(0, cut.FindAll("[data-testid=im-late]").Count));
+        cut.WaitForAssertion(() => Assert.IsEmpty(cut.FindAll("[data-testid=im-late]")));
 
         // Reveal the route. Its registration must trigger the winner re-evaluation and render it
         // in place - no navigate-away-and-back required.
@@ -103,6 +103,6 @@ public class InitialMountTests : BunitTestContext
         cut.Render(p => p.Add(h => h.ShowLate, true));
 
         cut.WaitForAssertion(() => Assert.AreEqual("always", cut.Find("[data-testid=im-always]").TextContent));
-        Assert.AreEqual(0, cut.FindAll("[data-testid=im-late]").Count);
+        Assert.IsEmpty(cut.FindAll("[data-testid=im-late]"));
     }
 }

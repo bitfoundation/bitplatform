@@ -90,10 +90,10 @@ public partial class BitFullCalendarE2ETests : E2ETestBase
         var html = await response.TextAsync();
 
         Assert.IsTrue(response.Ok);
-        StringAssert.Contains(html, "class=\"bit-bfc ");
-        StringAssert.Contains(html, "July 2025");
-        StringAssert.Contains(html, "Team Standup");
-        StringAssert.Contains(html, "Loading", "The prerendered HTML is the one sent before the circuit connects.");
+        Assert.Contains("class=\"bit-bfc ", html);
+        Assert.Contains("July 2025", html);
+        Assert.Contains("Team Standup", html);
+        Assert.Contains("Loading", html, "The prerendered HTML is the one sent before the circuit connects.");
 
         await OpenMainAsync();
         await Expect(Title(Cal)).ToHaveTextAsync("July 2025");

@@ -162,7 +162,7 @@ public class StaticSsrModeTests : HarnessTest
 
         var requests = await BrouterModuleRequestsAsync();
 
-        Assert.AreEqual(0, requests.Length, $"Static rendering requested {string.Join(", ", requests.Select(r => r.Url))}.");
+        Assert.IsEmpty(requests, $"Static rendering requested {string.Join(", ", requests.Select(r => r.Url))}.");
     }
 
     [TestMethod]

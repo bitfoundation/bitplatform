@@ -61,13 +61,13 @@ public class OrderedCollectionTests
         board.Add(id: "d");
         BcrdtMap e = board.Insert(0, card => card.Set("title", "first"), id: "e");
 
-        CollectionAssert.AreEqual(new[] { "e", "a", "c", "b", "d" }, Ids(board));
+        Assert.AreSequenceEqual(new[] { "e", "a", "c", "b", "d" }, Ids(board));
         Assert.AreEqual(5, board.Count);
         Assert.AreEqual(2, board.IndexOf("c"));
         Assert.AreEqual(-1, board.IndexOf("missing"));
         Assert.AreSame(e, board.Get("e"));
         Assert.AreEqual("first", e.Get("title"));
-        CollectionAssert.AreEqual(Ids(board), board.Select(entry => entry.Id).ToArray());
+        Assert.AreSequenceEqual(Ids(board), board.Select(entry => entry.Id).ToArray());
         Assert.IsTrue(board.All(entry => BcrdtOrderKey.IsValid(entry.OrderKey)));
 
         Assert.AreEqual("e", board.IdOf(e));
@@ -95,7 +95,7 @@ public class OrderedCollectionTests
         board.Move(board.IdOf(card)!, 1, InColumn("doing"), moved => moved.Set("column", "doing"));
 
         IReadOnlyList<BcrdtOrderedEntry> doing = board.GetOrdered(InColumn("doing"));
-        CollectionAssert.AreEqual(new[] { "already-doing", board.IdOf(card) }, doing.Select(entry => entry.Id).ToArray());
+        Assert.AreSequenceEqual(new[] { "already-doing", board.IdOf(card) }, doing.Select(entry => entry.Id).ToArray());
         Assert.AreSame(card, doing[1].Item);
         Assert.AreEqual("Write the release notes", card.GetText("title")!.ToString());
         Assert.IsEmpty(board.GetOrdered(InColumn("todo")));
@@ -156,7 +156,7 @@ public class OrderedCollectionTests
                 oracle.Remove(id);
             }
 
-            CollectionAssert.AreEqual(oracle, Ids(board), $"Seed {seed}, step {step}.");
+            Assert.AreSequenceEqual(oracle, Ids(board), $"Seed {seed}, step {step}.");
         }
     }
 
@@ -182,8 +182,8 @@ public class OrderedCollectionTests
 
         board.Move("b", 0);
 
-        CollectionAssert.AreEqual(new[] { "b", "a", "c" }, Ids(board));
-        CollectionAssert.AreEqual(new[] { "b:order" }, changed);
+        Assert.AreSequenceEqual(new[] { "b", "a", "c" }, Ids(board));
+        Assert.AreSequenceEqual(new[] { "b:order" }, changed);
         Assert.AreEqual(1, updates);
         Assert.AreSame(b, board.Get("b"));
         Assert.AreEqual("keep me", b.GetText("notes")!.ToString());
@@ -216,16 +216,16 @@ public class OrderedCollectionTests
         foreach (string id in new[] { "d1", "d2" }) board.Add(card => card.Set("column", "done"), InColumn("done"), id);
         board.Insert(1, card => card.Set("column", "done"), InColumn("done"), "d3");
 
-        CollectionAssert.AreEqual(new[] { "t1", "t2", "t3" }, Ids(board, InColumn("todo")));
-        CollectionAssert.AreEqual(new[] { "d1", "d3", "d2" }, Ids(board, InColumn("done")));
+        Assert.AreSequenceEqual(new[] { "t1", "t2", "t3" }, Ids(board, InColumn("todo")));
+        Assert.AreSequenceEqual(new[] { "d1", "d3", "d2" }, Ids(board, InColumn("done")));
 
         int updates = 0;
         doc.Updated += _ => updates++;
         board.Move("t2", 1, InColumn("done"), card => card.Set("column", "done"));
 
         Assert.AreEqual(1, updates);
-        CollectionAssert.AreEqual(new[] { "t1", "t3" }, Ids(board, InColumn("todo")));
-        CollectionAssert.AreEqual(new[] { "d1", "t2", "d3", "d2" }, Ids(board, InColumn("done")));
+        Assert.AreSequenceEqual(new[] { "t1", "t3" }, Ids(board, InColumn("todo")));
+        Assert.AreSequenceEqual(new[] { "d1", "t2", "d3", "d2" }, Ids(board, InColumn("done")));
         Assert.AreEqual(1, board.IndexOf("t2", InColumn("done")));
         Assert.AreEqual(-1, board.IndexOf("t2", InColumn("todo")));
     }
@@ -239,30 +239,30 @@ public class OrderedCollectionTests
         foreach (string id in new[] { "t1", "t2", "t3", "t4" }) Raw(board, id, "a0");
         Raw(board, "x", "a1");
 
-        CollectionAssert.AreEqual(new[] { "w", "t1", "t2", "t3", "t4", "x" }, Ids(board));
+        Assert.AreSequenceEqual(new[] { "w", "t1", "t2", "t3", "t4", "x" }, Ids(board));
 
         int updates = 0;
         doc.Updated += _ => updates++;
 
         // Between t1 and t2: one item on the left, three on the right - only t1 is rewritten.
         board.Insert(2, id: "n1");
-        CollectionAssert.AreEqual(new[] { "w", "t1", "n1", "t2", "t3", "t4", "x" }, Ids(board));
+        Assert.AreSequenceEqual(new[] { "w", "t1", "n1", "t2", "t3", "t4", "x" }, Ids(board));
         Assert.AreNotEqual("a0", board.Get("t1")!.Get("order"));
         foreach (string id in new[] { "t2", "t3", "t4" }) Assert.AreEqual("a0", board.Get(id)!.Get("order"));
 
         // Between t3 and t4: two tied on the left, one on the right - only t4 is rewritten.
         board.Insert(5, id: "n2");
-        CollectionAssert.AreEqual(new[] { "w", "t1", "n1", "t2", "t3", "n2", "t4", "x" }, Ids(board));
+        Assert.AreSequenceEqual(new[] { "w", "t1", "n1", "t2", "t3", "n2", "t4", "x" }, Ids(board));
         Assert.AreNotEqual("a0", board.Get("t4")!.Get("order"));
         Assert.AreEqual("a0", board.Get("t2")!.Get("order"));
         Assert.AreEqual("a0", board.Get("t3")!.Get("order"));
 
         // Between t2 and t3, a tie with nothing tied around it: one of them is rewritten.
         board.Move("x", 4);
-        CollectionAssert.AreEqual(new[] { "w", "t1", "n1", "t2", "x", "t3", "n2", "t4" }, Ids(board));
+        Assert.AreSequenceEqual(new[] { "w", "t1", "n1", "t2", "x", "t3", "n2", "t4" }, Ids(board));
 
         Assert.AreEqual(3, updates);
-        Assert.AreEqual(board.Count, board.Select(entry => entry.OrderKey).Distinct().Count());
+        Assert.HasCount(board.Count, board.Select(entry => entry.OrderKey).Distinct());
     }
 
     [TestMethod]
@@ -274,13 +274,13 @@ public class OrderedCollectionTests
 
         // Two tied on the left, one on the right: t3 moves up into the open end.
         board.Insert(2, id: "late");
-        CollectionAssert.AreEqual(new[] { "t1", "t2", "late", "t3" }, Ids(board));
+        Assert.AreSequenceEqual(new[] { "t1", "t2", "late", "t3" }, Ids(board));
         Assert.AreEqual("a5", board.Get("t1")!.Get("order"));
         Assert.AreEqual("a5", board.Get("t2")!.Get("order"));
 
         // One on each side: t1 moves down into the open start.
         board.Insert(1, id: "early");
-        CollectionAssert.AreEqual(new[] { "t1", "early", "t2", "late", "t3" }, Ids(board));
+        Assert.AreSequenceEqual(new[] { "t1", "early", "t2", "late", "t3" }, Ids(board));
         Assert.AreEqual("a5", board.Get("t2")!.Get("order"));
         Assert.IsLessThan(0, string.CompareOrdinal(board.Get("t1")!.Get("order") as string, "a5"));
     }
@@ -298,14 +298,14 @@ public class OrderedCollectionTests
         Raw(board, "b-trailing-zero", "a10");
         board.Items.Set("note", "not an item");
 
-        CollectionAssert.AreEqual(new[] { "k1", "k2", "b-trailing-zero", "m-garbage", "q-number", "z-missing" }, Ids(board));
+        Assert.AreSequenceEqual(new[] { "k1", "k2", "b-trailing-zero", "m-garbage", "q-number", "z-missing" }, Ids(board));
         Assert.AreEqual(6, board.Count);
         Assert.IsNull(board.GetOrdered()[2].OrderKey);
         Assert.IsNull(board.Get("note"));
 
         // Before the unkeyed items, nothing of theirs changes.
         board.Insert(2, id: "n1");
-        CollectionAssert.AreEqual(new[] { "k1", "k2", "n1", "b-trailing-zero", "m-garbage", "q-number", "z-missing" }, Ids(board));
+        Assert.AreSequenceEqual(new[] { "k1", "k2", "n1", "b-trailing-zero", "m-garbage", "q-number", "z-missing" }, Ids(board));
         Assert.AreEqual("not a key!", board.Get("m-garbage")!.Get("order"));
 
         // After two of them, those two get valid keys, in the order they had.
@@ -313,7 +313,7 @@ public class OrderedCollectionTests
         doc.Updated += _ => updates++;
         board.Insert(5, id: "n2");
 
-        CollectionAssert.AreEqual(new[] { "k1", "k2", "n1", "b-trailing-zero", "m-garbage", "n2", "q-number", "z-missing" }, Ids(board));
+        Assert.AreSequenceEqual(new[] { "k1", "k2", "n1", "b-trailing-zero", "m-garbage", "n2", "q-number", "z-missing" }, Ids(board));
         Assert.AreEqual(1, updates);
         Assert.IsTrue(BcrdtOrderKey.IsValid(board.Get("m-garbage")!.Get("order") as string));
         Assert.AreEqual(42L, board.Get("q-number")!.Get("order"));
@@ -353,9 +353,9 @@ public class OrderedCollectionTests
         SyncAll(a, b);
 
         string[] ids = Ids(boardA);
-        CollectionAssert.AreEqual(ids, Ids(boardB));
+        Assert.AreSequenceEqual(ids, Ids(boardB));
         Assert.HasCount(4, ids);
-        Assert.AreEqual(1, ids.Count(id => id == "q"));
+        Assert.ContainsSingle(id => id == "q", ids);
         Assert.IsTrue(ids[0] == "q" || ids[3] == "q");
         BcrdtConvergenceHarness.AssertConverged(a, b);
     }
@@ -388,8 +388,8 @@ public class OrderedCollectionTests
             Assert.AreEqual("Final", card.Get("title"));
             Assert.AreEqual("Notes and more", card.GetText("notes")!.ToString());
             Assert.AreEqual("done", card.Get("column"));
-            CollectionAssert.AreEqual(new[] { "y" }, Ids(board, InColumn("done")));
-            CollectionAssert.AreEqual(new[] { "x" }, Ids(board, InColumn("todo")));
+            Assert.AreSequenceEqual(new[] { "y" }, Ids(board, InColumn("done")));
+            Assert.AreSequenceEqual(new[] { "x" }, Ids(board, InColumn("todo")));
         }
     }
 
@@ -409,14 +409,14 @@ public class OrderedCollectionTests
         SyncAll(a, b);
 
         string[] ids = Ids(boardA);
-        CollectionAssert.AreEqual(ids, Ids(boardB));
+        Assert.AreSequenceEqual(ids, Ids(boardB));
         Assert.AreEqual("first", ids[0]);
         Assert.AreEqual("last", ids[3]);
-        CollectionAssert.AreEquivalent(new[] { "from-a", "from-b" }, ids[1..3]);
+        Assert.AreSequenceEqual(new[] { "from-a", "from-b" }, ids[1..3], Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
         // Whatever the keys, there is always room between the two.
         boardB.Insert(2, id: "between");
-        CollectionAssert.AreEqual(new[] { ids[0], ids[1], "between", ids[2], ids[3] }, Ids(boardB));
+        Assert.AreSequenceEqual(new[] { ids[0], ids[1], "between", ids[2], ids[3] }, Ids(boardB));
     }
 
     [TestMethod]
@@ -433,8 +433,8 @@ public class OrderedCollectionTests
         boardB.Move("q", 0);
         SyncAll(a, b);
 
-        CollectionAssert.AreEqual(new[] { "p", "r" }, Ids(boardA));
-        CollectionAssert.AreEqual(new[] { "p", "r" }, Ids(boardB));
+        Assert.AreSequenceEqual(new[] { "p", "r" }, Ids(boardA));
+        Assert.AreSequenceEqual(new[] { "p", "r" }, Ids(boardB));
     }
 
     [TestMethod]
@@ -446,13 +446,13 @@ public class OrderedCollectionTests
         using var undo = new BcrdtUndoManager(board.Items, new BcrdtUndoManagerOptions { CaptureTimeout = TimeSpan.Zero });
 
         board.Move("r", 0);
-        CollectionAssert.AreEqual(new[] { "r", "p", "q" }, Ids(board));
+        Assert.AreSequenceEqual(new[] { "r", "p", "q" }, Ids(board));
 
         undo.Undo();
-        CollectionAssert.AreEqual(new[] { "p", "q", "r" }, Ids(board));
+        Assert.AreSequenceEqual(new[] { "p", "q", "r" }, Ids(board));
 
         undo.Redo();
-        CollectionAssert.AreEqual(new[] { "r", "p", "q" }, Ids(board));
+        Assert.AreSequenceEqual(new[] { "r", "p", "q" }, Ids(board));
     }
 
     [TestMethod]
@@ -468,7 +468,7 @@ public class OrderedCollectionTests
         var reloaded = new BcrdtOrderedCollection(loaded.GetMap("cards"), "rank");
 
         Assert.AreEqual("rank", reloaded.OrderField);
-        CollectionAssert.AreEqual(new[] { "p", "r", "q" }, Ids(reloaded));
+        Assert.AreSequenceEqual(new[] { "p", "r", "q" }, Ids(reloaded));
         Assert.IsNull(board.Get("p")!.Get(BcrdtOrderedCollection.DefaultOrderField));
     }
 
@@ -568,7 +568,7 @@ public class OrderedCollectionTests
             }
             catch (Exception ex)
             {
-                throw new AssertFailedException($"Seed {seed} failed in round {round}:" + Environment.NewLine + string.Join(Environment.NewLine, history.TakeLast(30)), ex);
+                throw new InvalidOperationException($"Seed {seed} failed in round {round}:" + Environment.NewLine + string.Join(Environment.NewLine, history.TakeLast(30)), ex);
             }
         }
 
@@ -583,8 +583,8 @@ public class OrderedCollectionTests
             string[] reference = Ids(boards[0]);
             foreach (BcrdtOrderedCollection board in boards)
             {
-                CollectionAssert.AreEqual(reference, Ids(board), "The replicas disagree on the order.");
-                CollectionAssert.AreEqual(expected, Ids(board).Order(StringComparer.Ordinal).ToArray(), "An item was lost or resurrected.");
+                Assert.AreSequenceEqual(reference, Ids(board), "The replicas disagree on the order.");
+                Assert.AreSequenceEqual(expected, Ids(board).Order(StringComparer.Ordinal).ToArray(), "An item was lost or resurrected.");
                 AssertEveryItemOnce(board, seed, settled: true);
 
                 foreach (string id in expected)
@@ -596,7 +596,7 @@ public class OrderedCollectionTests
         }
         catch (Exception ex)
         {
-            throw new AssertFailedException(
+            throw new InvalidOperationException(
                 $"Seed {seed} failed. Last operations:\n{string.Join("\n", history.TakeLast(20))}", ex);
         }
     }
@@ -610,11 +610,11 @@ public class OrderedCollectionTests
     private static void AssertEveryItemOnce(BcrdtOrderedCollection board, int seed, bool settled)
     {
         string[] all = Ids(board);
-        Assert.AreEqual(all.Length, all.Distinct().Count(), $"Seed {seed}: an item is listed twice.");
-        Assert.AreEqual(board.Count, all.Length, $"Seed {seed}: an item is missing from the order.");
+        Assert.HasCount(all.Length, all.Distinct(), $"Seed {seed}: an item is listed twice.");
+        Assert.HasCount(board.Count, all, $"Seed {seed}: an item is missing from the order.");
 
         string[] byColumn = [.. Columns.SelectMany(column => Ids(board, InColumn(column)))];
-        Assert.AreEqual(byColumn.Length, byColumn.Distinct().Count(), $"Seed {seed}: an item is in two columns.");
-        if (settled) CollectionAssert.AreEquivalent(all, byColumn, $"Seed {seed}: an item is in no column.");
+        Assert.HasCount(byColumn.Length, byColumn.Distinct(), $"Seed {seed}: an item is in two columns.");
+        if (settled) Assert.AreSequenceEqual(all, byColumn, Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, $"Seed {seed}: an item is in no column.");
     }
 }

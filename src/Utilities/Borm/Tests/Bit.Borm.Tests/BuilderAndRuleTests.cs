@@ -13,7 +13,7 @@ public class RuleDeduplicationTests
             .Build();
 
         var messages = await new BormValidator()
-            .ValidateAsync(form, new BormModelDataAccessor(new RegistrationModel()));
+            .ValidateAsync(form, new BormModelDataAccessor(new RegistrationModel()), cancellationToken: TestContext.CancellationToken);
 
         var firstName = messages.Where(m => m.FieldPath == "FirstName").ToList();
         Assert.ContainsSingle(firstName);
@@ -37,8 +37,10 @@ public class RuleDeduplicationTests
             .Must(v => v is not null, "one")
             .Must(v => v is string, "two");
 
-        Assert.AreEqual(2, field.Validators.Count);
+        Assert.HasCount(2, field.Validators);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }
 
 [TestClass]
@@ -195,7 +197,7 @@ public class TypedBuilderTests
 
         var address = form.FindField("Address")!;
         Assert.AreEqual(BormFieldType.Object, address.Type);
-        Assert.AreEqual(2, address.Children.Count);
+        Assert.HasCount(2, address.Children);
         Assert.AreEqual("Town", address.Children[1].Label);
         // DataAnnotations on the child type are picked up too.
         Assert.IsTrue(address.Children[0].Required);
@@ -212,7 +214,7 @@ public class TypedBuilderTests
 
         var items = form.FindField("Items")!;
         Assert.AreEqual(BormFieldType.Array, items.Type);
-        Assert.AreEqual(2, items.ItemTemplate!.Children.Count);
+        Assert.HasCount(2, items.ItemTemplate!.Children);
         Assert.AreEqual(BormFieldType.Integer, items.ItemTemplate.Children[1].Type);
     }
 
@@ -275,7 +277,7 @@ public class EnumOptionTests
     {
         var options = BormEnumOptions.For(typeof(Priority));
 
-        Assert.AreEqual(2, options.Count); // Internal is AutoGenerateField = false
+        Assert.HasCount(2, options); // Internal is AutoGenerateField = false
         Assert.AreEqual("High priority", options[0].Label);
         Assert.AreEqual("High", options[0].Value);
         Assert.AreEqual("Low priority", options[1].Label);
@@ -288,7 +290,7 @@ public class EnumOptionTests
         var availability = form.FindField("Availability")!;
 
         Assert.AreEqual(BormFieldType.MultiSelect, availability.Type);
-        Assert.AreEqual(3, availability.Options.Count); // None is excluded
+        Assert.HasCount(3, availability.Options); // None is excluded
         Assert.DoesNotContain(o => o.Value == "None", availability.Options);
     }
 
@@ -305,7 +307,7 @@ public class EnumOptionTests
 
         Assert.AreEqual(BormFieldType.MultiSelect, built.Type);
         Assert.AreSequenceEqual(generated.Options.Select(o => o.Value), built.Options.Select(o => o.Value));
-        Assert.AreEqual(7, built.Options.Count);
+        Assert.HasCount(7, built.Options);
     }
 
     private sealed class DaysModel

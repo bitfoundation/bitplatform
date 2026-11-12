@@ -1,4 +1,4 @@
-namespace Bit.Bcrdt.Tests;
+﻿namespace Bit.Bcrdt.Tests;
 
 /// <summary>
 /// <see cref="BcrdtCounter"/>: concurrent changes add up, and no increment is ever lost.
@@ -210,7 +210,7 @@ public class CounterTests
         Sync(a, b);
         b.GetCounter("votes").Add(7);
 
-        CollectionAssert.AreEqual(new long[] { -4, 7 }, changes);
+        Assert.AreSequenceEqual(new long[] { -4, 7 }, changes);
     }
 
     [TestMethod]
@@ -382,7 +382,7 @@ public class CounterTests
         }
         catch (Exception ex)
         {
-            throw new AssertFailedException(
+            throw new InvalidOperationException(
                 $"Seed {seed} diverged. Last operations:\n{string.Join("\n", history.TakeLast(20))}", ex);
         }
     }

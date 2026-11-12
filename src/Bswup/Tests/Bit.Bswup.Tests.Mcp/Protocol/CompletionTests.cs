@@ -34,7 +34,7 @@ public class CompletionTests
         var completion = await CompleteResourceAsync("bswup://docs/{slug}", "slug", string.Empty);
 
         Assert.AreEqual(DocsCatalog.AllPages.Count(), completion.Completion.Total);
-        CollectionAssert.Contains(completion.Completion.Values.ToArray(), "service-worker");
+        Assert.Contains("service-worker", completion.Completion.Values.ToArray());
     }
 
     [TestMethod]
@@ -44,8 +44,8 @@ public class CompletionTests
 
         // The introduction's own slug is the empty string, which is not a value anyone can pick
         // from a list - and the lookup maps the word back.
-        CollectionAssert.Contains(completion.Completion.Values.ToArray(), "introduction");
-        CollectionAssert.DoesNotContain(completion.Completion.Values.ToArray(), string.Empty);
+        Assert.Contains("introduction", completion.Completion.Values.ToArray());
+        Assert.DoesNotContain(string.Empty, completion.Completion.Values.ToArray());
     }
 
     [TestMethod]
@@ -53,7 +53,7 @@ public class CompletionTests
     {
         var completion = await CompleteResourceAsync("bswup://guide/{heading}", "heading", "java");
 
-        CollectionAssert.Contains(completion.Completion.Values.ToArray(), "JavaScript API");
+        Assert.Contains("JavaScript API", completion.Completion.Values.ToArray());
     }
 
     [TestMethod]
@@ -61,7 +61,7 @@ public class CompletionTests
     {
         var completion = await CompleteResourceAsync("bswup://source/{path}", "path", "bit-bswup.sw");
 
-        CollectionAssert.Contains(completion.Completion.Values.ToArray(), "Library/Scripts/bit-bswup.sw.ts");
+        Assert.Contains("Library/Scripts/bit-bswup.sw.ts", completion.Completion.Values.ToArray());
     }
 
     [TestMethod]
@@ -73,8 +73,8 @@ public class CompletionTests
 
         var values = completion.Completion.Values.ToArray();
 
-        CollectionAssert.Contains(values, "service-worker", string.Join(", ", values));
-        CollectionAssert.Contains(values, "events", string.Join(", ", values));
+        Assert.Contains("service-worker", values, string.Join(", ", values));
+        Assert.Contains("events", values, string.Join(", ", values));
 
         var lastPrefix = Array.FindLastIndex(values, value => value.StartsWith("s", StringComparison.OrdinalIgnoreCase));
         var firstContains = Array.FindIndex(values, value => value.StartsWith("s", StringComparison.OrdinalIgnoreCase) is false);
@@ -83,7 +83,7 @@ public class CompletionTests
 
         // Every prefix match ranks above every merely-containing one, even the short ones - which
         // is what the length tie-break would otherwise reverse ("events" is shorter than both).
-        Assert.IsTrue(lastPrefix < firstContains, string.Join(", ", values));
+        Assert.IsLessThan(firstContains, lastPrefix, string.Join(", ", values));
     }
 
     [TestMethod]
@@ -91,7 +91,7 @@ public class CompletionTests
     {
         var completion = await CompleteResourceAsync("bswup://guide/{heading}", "heading", "JAVASCRIPT");
 
-        CollectionAssert.Contains(completion.Completion.Values.ToArray(), "JavaScript API");
+        Assert.Contains("JavaScript API", completion.Completion.Values.ToArray());
     }
 
     [TestMethod]
@@ -100,16 +100,16 @@ public class CompletionTests
         var completion = await CompleteResourceAsync("bswup://source/{path}", "path", "service-worker");
         var values = completion.Completion.Values.ToArray();
 
-        Assert.IsTrue(values.Length > 1);
+        Assert.IsGreaterThan(1, values.Length);
 
         // Every path starts with its folder, so nothing here is a prefix match and length alone
         // orders the list - which makes every adjacent pair, not just the ends, assertable.
-        Assert.IsFalse(values.Any(value => value.StartsWith("service-worker", StringComparison.OrdinalIgnoreCase)),
+        Assert.DoesNotContain(value => value.StartsWith("service-worker", StringComparison.OrdinalIgnoreCase), values,
             string.Join(", ", values));
 
         for (int i = 1; i < values.Length; i++)
         {
-            Assert.IsTrue(values[i - 1].Length <= values[i].Length, string.Join(", ", values));
+            Assert.IsLessThanOrEqualTo(values[i].Length, values[i - 1].Length, string.Join(", ", values));
         }
     }
 
@@ -118,7 +118,7 @@ public class CompletionTests
     {
         var completion = await CompleteResourceAsync("bswup://docs/{slug}", "slug", "zzzz");
 
-        Assert.AreEqual(0, completion.Completion.Values.Count);
+        Assert.IsEmpty(completion.Completion.Values);
         Assert.AreEqual(0, completion.Completion.Total);
     }
 
@@ -127,7 +127,7 @@ public class CompletionTests
     {
         var completion = await CompleteResourceAsync("bswup://source/{path}", "path", string.Empty);
 
-        Assert.IsTrue(completion.Completion.Values.Count <= 100, "the protocol caps one response at 100 values");
+        Assert.IsLessThanOrEqualTo(100, completion.Completion.Values.Count, "the protocol caps one response at 100 values");
 
         if (completion.Completion.Total > 100)
         {
@@ -142,7 +142,7 @@ public class CompletionTests
 
         string[] expected = [.. BswupSetupGuide.HostingModels, "unknown"];
 
-        CollectionAssert.AreEquivalent(expected, completion.Completion.Values.ToArray());
+        Assert.AreSequenceEqual(expected, completion.Completion.Values.ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -150,7 +150,7 @@ public class CompletionTests
     {
         var completion = await CompletePromptAsync("configure-bswup-caching", "requirement", "cache");
 
-        Assert.AreEqual(0, completion.Completion.Values.Count, "a free-text argument has nothing to offer");
+        Assert.IsEmpty(completion.Completion.Values, "a free-text argument has nothing to offer");
     }
 
     [TestMethod]
@@ -158,6 +158,6 @@ public class CompletionTests
     {
         var completion = await CompleteResourceAsync("bswup://nope/{x}", "x", string.Empty);
 
-        Assert.AreEqual(0, completion.Completion.Values.Count);
+        Assert.IsEmpty(completion.Completion.Values);
     }
 }

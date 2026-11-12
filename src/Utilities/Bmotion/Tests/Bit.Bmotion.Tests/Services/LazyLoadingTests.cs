@@ -230,7 +230,7 @@ public sealed class LazyLoadingTests
                 ? !flag
                 : Enum.GetValues(property.PropertyType).Cast<object>().First(candidate => candidate.Equals(value) is false));
 
-            CollectionAssert.AreEqual(new[] { property.Name }, new BitBmotionOptions().DifferencesFrom(other).ToArray(), property.Name);
+            Assert.AreSequenceEqual(new[] { property.Name }, new BitBmotionOptions().DifferencesFrom(other).ToArray(), property.Name);
         }
     }
 
@@ -283,7 +283,7 @@ public sealed class LazyLoadingTests
         // the engine the app's own code reaches is the one that took the element on, through the one module
         var engine = ctx.Services.GetBmotionService<BmotionAnimationEngine>();
         Assert.IsTrue(engine.IsRegistered("box"));
-        Assert.HasCount(1, ctx.JSInterop.Invocations["import"]);
+        Assert.ContainsSingle(ctx.JSInterop.Invocations["import"]);
     }
 
     [TestMethod]

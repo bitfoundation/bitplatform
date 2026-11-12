@@ -155,7 +155,7 @@ public class SelectionTests : BortableTestContext
         var published = new List<IReadOnlyCollection<string>>();
         var list = RenderSelectable(["A"], published);
 
-        StringAssert.Contains(list.Find("#L1-instructions").TextContent, "Shift and Space");
+        Assert.Contains("Shift and Space", list.Find("#L1-instructions").TextContent);
         Assert.IsTrue(SentOptions(list)!.MultiDrag);
     }
 

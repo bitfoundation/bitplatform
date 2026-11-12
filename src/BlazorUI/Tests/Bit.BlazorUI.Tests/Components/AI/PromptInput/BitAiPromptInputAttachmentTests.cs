@@ -54,11 +54,11 @@ public class BitAiPromptInputAttachmentTests : BitAiTestBase
         await composer.InvokeAsync(() => composer.Instance._OnDroppedFile(File("one.bin", "application/octet-stream", [1])));
         await composer.InvokeAsync(() => composer.Instance._OnDroppedFile(File("two.bin", "application/octet-stream", [2])));
 
-        Assert.HasCount(1, composer.Instance.Attachments);
+        Assert.ContainsSingle(composer.Instance.Attachments);
         var rejection = Assert.ContainsSingle(rejections);
         Assert.AreEqual(BitAiAttachmentRejectionReason.TooMany, rejection.Reason);
         Assert.AreEqual("two.bin", rejection.FileName);
-        StringAssert.Contains(composer.Find(".bit-aipri-ntc").TextContent, "Up to 1 files can be attached");
+        Assert.Contains("Up to 1 files can be attached", composer.Find(".bit-aipri-ntc").TextContent);
     }
 
     [TestMethod]
@@ -96,10 +96,10 @@ public class BitAiPromptInputAttachmentTests : BitAiTestBase
         Assert.AreEqual(0, content.Opens);
         Assert.IsFalse(content.Disposed);
 
-        await using var stream = await attachment.OpenReadAsync();
+        await using var stream = await attachment.OpenReadAsync(TestContext.CancellationToken);
         using var buffer = new MemoryStream();
-        await stream.CopyToAsync(buffer);
-        CollectionAssert.AreEqual(new byte[] { 1, 2, 3, 4 }, buffer.ToArray());
+        await stream.CopyToAsync(buffer, TestContext.CancellationToken);
+        Assert.AreSequenceEqual(new byte[] { 1, 2, 3, 4 }, buffer.ToArray());
         Assert.AreEqual(1, content.Opens);
     }
 
@@ -168,7 +168,7 @@ public class BitAiPromptInputAttachmentTests : BitAiTestBase
         var rejection = Assert.ContainsSingle(rejections);
         Assert.AreEqual("shot.png", rejection.FileName);
         Assert.AreEqual(BitAiAttachmentRejectionReason.TypeNotAllowed, rejection.Reason);
-        StringAssert.Contains(composer.Find(".bit-aipri-ntc").TextContent, "shot.png is not a supported file type.");
+        Assert.Contains("shot.png is not a supported file type.", composer.Find(".bit-aipri-ntc").TextContent);
         Assert.IsTrue(image.Disposed);
         Assert.AreEqual("blob:shot", Context.JSInterop.VerifyInvoke("BitBlazorUI.AiPromptInput.revokePreview").Arguments[0]);
 
@@ -193,7 +193,7 @@ public class BitAiPromptInputAttachmentTests : BitAiTestBase
         await composer.InvokeAsync(() => composer.Instance._OnDroppedFile(
             new BitAiComposerFile("sent.bin", "application/octet-stream", 4) { Content = submitted }));
         composer.Find(".bit-aipri-snd").Click();
-        Assert.HasCount(1, submissions);
+        Assert.ContainsSingle(submissions);
 
         await composer.InvokeAsync(() => composer.Instance._OnDroppedFile(
             new BitAiComposerFile("left.bin", "application/octet-stream", 4) { Content = staged }));
@@ -244,7 +244,7 @@ public class BitAiPromptInputAttachmentTests : BitAiTestBase
 
         var input = component.Find("input[type=file]");
 
-        Assert.IsFalse((input.GetAttribute("style") ?? string.Empty).Contains("display:none"));
+        Assert.DoesNotContain("display:none", (input.GetAttribute("style") ?? string.Empty));
         Assert.IsTrue(input.ClassList.Contains("bit-aipri-fil"));
     }
 
@@ -267,7 +267,7 @@ public class BitAiPromptInputAttachmentTests : BitAiTestBase
         Assert.AreEqual("image/*", composer.Find("input[type=file]").GetAttribute("accept"));
 
         composer.Render(p => p.Add(c => c.Capabilities, BitAiModelCapabilities.Vision | BitAiModelCapabilities.Documents));
-        StringAssert.Contains(composer.Find("input[type=file]").GetAttribute("accept"), "application/pdf");
+        Assert.Contains("application/pdf", composer.Find("input[type=file]").GetAttribute("accept")!);
 
         composer.Render(p => p.Add(c => c.Accept, ".csv"));
         Assert.AreEqual(".csv", composer.Find("input[type=file]").GetAttribute("accept"));
@@ -382,4 +382,6 @@ public class BitAiPromptInputAttachmentTests : BitAiTestBase
 
         Context.JSInterop.VerifyInvoke("BitBlazorUI.AiPromptInput.registerDrop", calledTimes: 2);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

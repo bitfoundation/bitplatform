@@ -1,4 +1,4 @@
-namespace Bit.Bmotion.Tests.Engine;
+﻿namespace Bit.Bmotion.Tests.Engine;
 
 /// <summary>
 /// Golden tests pinning the exact transform/CSS output of <see cref="BmProps.ToCssStyleString"/>
@@ -45,8 +45,15 @@ public class BmPropsCompositionGoldenTests
             "transform:perspective(500px) translate(100px,50px) scale(1.5) rotate(45deg) rotateX(30deg) rotateY(60deg) skewX(15deg) skewY(10deg);",
             new BmProps
             {
-                Perspective = 500, X = 100, Y = 50, Scale = 1.5, Rotate = 45,
-                RotateX = 30, RotateY = 60, SkewX = 15, SkewY = 10,
+                Perspective = 500,
+                X = 100,
+                Y = 50,
+                Scale = 1.5,
+                Rotate = 45,
+                RotateX = 30,
+                RotateY = 60,
+                SkewX = 15,
+                SkewY = 10,
             }.ToCssStyleString());
 
     [TestMethod]
@@ -58,9 +65,9 @@ public class BmPropsCompositionGoldenTests
     public void StyleString_IncludesOpacityAndOrigin()
     {
         var css = new BmProps { X = 5, Opacity = 0.5, OriginX = 0, OriginY = 0.5 }.ToCssStyleString();
-        StringAssert.Contains(css, "transform:translate(5px,0px);");
-        StringAssert.Contains(css, "transform-origin:0% 50%;");
-        StringAssert.Contains(css, "opacity:0.5;");
+        Assert.Contains("transform:translate(5px,0px);", css);
+        Assert.Contains("transform-origin:0% 50%;", css);
+        Assert.Contains("opacity:0.5;", css);
     }
 
     // ── ToCssStyleDictionary: samples the LAST keyframe ───────────────────────
@@ -77,8 +84,15 @@ public class BmPropsCompositionGoldenTests
     {
         var d = new BmProps
         {
-            Perspective = 500, X = 100, Y = 50, Scale = 1.5, Rotate = 45,
-            RotateX = 30, RotateY = 60, SkewX = 15, SkewY = 10,
+            Perspective = 500,
+            X = 100,
+            Y = 50,
+            Scale = 1.5,
+            Rotate = 45,
+            RotateX = 30,
+            RotateY = 60,
+            SkewX = 15,
+            SkewY = 10,
         }.ToCssStyleDictionary();
         Assert.AreEqual(
             "perspective(500px) translate(100px,50px) scale(1.5) rotate(45deg) rotateX(30deg) rotateY(60deg) skewX(15deg) skewY(10deg)",
@@ -107,8 +121,8 @@ public class BmPropsCompositionGoldenTests
         // `d` in an inline style string is invalid CSS (needs a path() wrapper); it must not appear.
         // Other string props are unaffected.
         var css = new BmProps { D = "M0 0 L10 10", Left = "5px" }.ToCssStyleString();
-        StringAssert.Contains(css, "left:5px;");
-        Assert.IsFalse(css.Contains("d:"), $"d must be omitted from the inline style string: {css}");
+        Assert.Contains("left:5px;", css);
+        Assert.DoesNotContain("d:", css, $"d must be omitted from the inline style string: {css}");
     }
 
     [TestMethod]

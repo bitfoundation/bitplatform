@@ -307,14 +307,12 @@ public class ChatbotSpeechEndpointTests
             }
             catch (TooManyRequestsException)
             {
-                // Control: the endpoint really answered before it started refusing, so this is throttling rather
-                // than the request never getting there.
-                Assert.IsGreaterThan(0, served, "The endpoint must serve some requests before throttling starts.");
-                return;
+                break;
             }
         }
 
-        Assert.Fail($"A burst of {burstSize} synthesis requests from one user was never throttled ({served} served).");
+        Assert.IsGreaterThan(0, served, "The endpoint must serve some requests before throttling starts.");
+        Assert.IsLessThan(burstSize, served, $"A burst of {burstSize} synthesis requests from one user was never throttled ({served} served).");
     }
 
 

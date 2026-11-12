@@ -59,8 +59,8 @@ public abstract class InteractiveHarnessTests : HarnessTest
         await WaitForInteractiveAsync();
 
         var status = Page.Locator("#status");
-        CollectionAssert.Contains(ExpectedPlatforms.ToList(), await status.GetAttributeAsync("data-platform"));
-        CollectionAssert.Contains(ExpectedRenderers.ToList(), await status.GetAttributeAsync("data-renderer"));
+        Assert.Contains(await status.GetAttributeAsync("data-platform"), ExpectedPlatforms.ToList());
+        Assert.Contains(await status.GetAttributeAsync("data-renderer"), ExpectedRenderers.ToList());
     }
 
     [TestMethod]
@@ -86,7 +86,7 @@ public abstract class InteractiveHarnessTests : HarnessTest
         // Written by bit-blex-storage.js under the configured key prefix and the store's name.
         await Expect(Page.Locator("#count")).ToHaveAttributeAsync("data-count", "3");
         var stored = await PollAsync(() => LocalStorageAsync(CounterStorageKey), value => value?.Contains('3') is true);
-        StringAssert.Contains(stored, "3", $"The counter store was not persisted under '{CounterStorageKey}'.");
+        Assert.Contains("3", stored!, $"The counter store was not persisted under '{CounterStorageKey}'.");
 
         await GotoAsync("/");
         await WaitForInteractiveAsync();
@@ -250,7 +250,7 @@ public abstract class InteractiveHarnessTests : HarnessTest
         await Expect(quote).ToHaveAttributeAsync("data-fetching", "false");
 
         var refetched = await quote.GetAttributeAsync("data-quote");
-        CollectionAssert.Contains(ExpectedPlatforms.ToList(), refetched!.Split('-')[0], "The refetch ran somewhere other than the interactive runtime.");
+        Assert.Contains(refetched!.Split('-')[0], ExpectedPlatforms.ToList(), "The refetch ran somewhere other than the interactive runtime.");
     }
 
     [TestMethod]

@@ -47,7 +47,7 @@ public class BitNavUrlE2ETests : E2ETestBase
     private static string NavHtml(string html, string navId)
     {
         var start = html.IndexOf($"id=\"{navId}\"", StringComparison.Ordinal);
-        Assert.IsTrue(start >= 0, $"The prerendered HTML holds #{navId}.");
+        Assert.IsGreaterThanOrEqualTo(0, start, $"The prerendered HTML holds #{navId}.");
         var end = html.IndexOf("</nav>", start, StringComparison.Ordinal);
         return html[start..end];
     }
@@ -58,14 +58,14 @@ public class BitNavUrlE2ETests : E2ETestBase
         var response = await Page.APIRequest.GetAsync($"{BaseUrl}{PAGE}/team/alice");
         var html = await response.TextAsync();
 
-        StringAssert.Contains(html, "Status: <span id=\"status\">Loading</span>");
+        Assert.Contains("Status: <span id=\"status\">Loading</span>", html);
 
         // The Items API: the nested item is selected and the branch leading to it is open.
-        StringAssert.Matches(NavHtml(html, "nav-exact"), new Regex("href=\"/e2e/nav/url/team/alice\"[^>]*class=\"bit-nav-ict bit-nav-sel[^\"]*\"[^>]*aria-current=\"page\""));
+        Assert.MatchesRegex(new Regex("href=\"/e2e/nav/url/team/alice\"[^>]*class=\"bit-nav-ict bit-nav-sel[^\"]*\"[^>]*aria-current=\"page\""), NavHtml(html, "nav-exact"));
 
         // The options and the custom items do the same.
-        StringAssert.Matches(NavHtml(html, "nav-options-auto"), new Regex("href=\"/e2e/nav/url/team/alice\"[^>]*class=\"bit-nav-ict bit-nav-sel[^\"]*\"[^>]*aria-current=\"page\""));
-        StringAssert.Matches(NavHtml(html, "nav-custom-auto"), new Regex("href=\"/e2e/nav/url/team/alice\"[^>]*class=\"bit-nav-ict bit-nav-sel[^\"]*\"[^>]*aria-current=\"page\""));
+        Assert.MatchesRegex(new Regex("href=\"/e2e/nav/url/team/alice\"[^>]*class=\"bit-nav-ict bit-nav-sel[^\"]*\"[^>]*aria-current=\"page\""), NavHtml(html, "nav-options-auto"));
+        Assert.MatchesRegex(new Regex("href=\"/e2e/nav/url/team/alice\"[^>]*class=\"bit-nav-ict bit-nav-sel[^\"]*\"[^>]*aria-current=\"page\""), NavHtml(html, "nav-custom-auto"));
 
         // And the interactive render keeps it.
         await OpenAsync($"{PAGE}/team/alice");

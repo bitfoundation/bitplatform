@@ -54,10 +54,10 @@ public sealed class NodeEditToolTests
         Drag(context, tool, new Vector2(200, 100), new Vector2(260, 80));
 
         var edited = (BinkPolygonShape)context.Document.GetElement(triangle.Id);
-        CollectionAssert.AreEqual(new Vector2[] { new(100, 100), new(260, 80), new(150, 200) }, edited.Points.ToArray());
+        Assert.AreSequenceEqual(new Vector2[] { new(100, 100), new(260, 80), new(150, 200) }, edited.Points.ToArray());
         Assert.AreEqual(1, context.History.UndoCount, "The whole drag is one step.");
         context.History.Undo();
-        CollectionAssert.AreEqual(triangle.Points.ToArray(), ((BinkPolygonShape)context.Document.GetElement(triangle.Id)).Points.ToArray());
+        Assert.AreSequenceEqual(triangle.Points.ToArray(), ((BinkPolygonShape)context.Document.GetElement(triangle.Id)).Points.ToArray());
     }
 
     [TestMethod]
@@ -83,9 +83,8 @@ public sealed class NodeEditToolTests
         BinkPathElement path = BinkPathElement.FromSvgPathData("M 0 0 C 10 -20 40 -20 50 0 C 60 20 90 20 100 0");
         IReadOnlyList<BinkNode> nodes = BinkNodeEditTool.GetNodes(path);
         Assert.HasCount(7, nodes);
-        CollectionAssert.AreEqual(
-            new[] { BinkNodeKind.Anchor, BinkNodeKind.Control, BinkNodeKind.Control, BinkNodeKind.Anchor, BinkNodeKind.Control, BinkNodeKind.Control, BinkNodeKind.Anchor },
-            nodes.Select(n => n.Kind).ToArray());
+        Assert.AreSequenceEqual(
+            new[] { BinkNodeKind.Anchor, BinkNodeKind.Control, BinkNodeKind.Control, BinkNodeKind.Anchor, BinkNodeKind.Control, BinkNodeKind.Control, BinkNodeKind.Anchor }, nodes.Select(n => n.Kind).ToArray());
 
         var moved = (BinkPathElement)BinkNodeEditTool.MoveNode(path, 3, new Vector2(50, 30))!;
         IReadOnlyList<BinkNode> after = BinkNodeEditTool.GetNodes(moved);

@@ -1,4 +1,4 @@
-namespace Bit.Bmotion.Tests.Engine;
+﻿namespace Bit.Bmotion.Tests.Engine;
 
 /// <summary>Tests for perceptual OKLab color interpolation (plan item 3.1).</summary>
 [TestClass]
@@ -37,7 +37,7 @@ public class OklabColorTests
         int OklabSpread = Math.Max(oklabMid.R, Math.Max(oklabMid.G, oklabMid.B)) - Math.Min(oklabMid.R, Math.Min(oklabMid.G, oklabMid.B));
 
         // sRGB midpoint is near-grey (low channel spread); OKLab is more colorful (higher spread).
-        Assert.IsTrue(OklabSpread > SrgbSpread, $"oklab spread {OklabSpread} should exceed srgb {SrgbSpread}");
+        Assert.IsGreaterThan(SrgbSpread, OklabSpread, $"oklab spread {OklabSpread} should exceed srgb {SrgbSpread}");
     }
 
     [TestMethod]

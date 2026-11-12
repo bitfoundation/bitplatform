@@ -195,7 +195,7 @@ public class ScannerLifecycleTests : BbScannerTest
             await session.WaitForStatusAsync(["scanning"]);
 
             // Only ever one camera at a time, however fast the user moves.
-            Assert.IsTrue(await session.TracksLiveAsync() <= 1, "More than one camera track was live at once.");
+            Assert.IsLessThanOrEqualTo(1, await session.TracksLiveAsync(), "More than one camera track was live at once.");
         }
 
         await session.NavigateByLinkAsync("API reference");
@@ -257,7 +257,7 @@ public class ScannerLifecycleTests : BbScannerTest
             await session.Page.SelectOptionAsync("select:below(:text('Facing'))", i % 2 == 0 ? "Front" : "Rear");
             await session.WaitForStatusAsync(["scanning", "faulted"]);
             await Task.Delay(500, TestContext.CancellationToken);
-            Assert.IsTrue(await session.TracksLiveAsync() <= 1, "Switching cameras left more than one track open.");
+            Assert.IsLessThanOrEqualTo(1, await session.TracksLiveAsync(), "Switching cameras left more than one track open.");
         }
     }
 
@@ -281,7 +281,7 @@ public class ScannerLifecycleTests : BbScannerTest
 
         // The decoder reuses its buffers, so a long run must not multiply the heap. Blazor's own
         // allocations make an exact figure meaningless; an unbounded leak is what this catches.
-        Assert.IsTrue(after < before + (24 * 1024 * 1024), $"Heap grew from {before} to {after} bytes over 45 seconds of continuous scanning.");
+        Assert.IsLessThan(before + (24 * 1024 * 1024), after, $"Heap grew from {before} to {after} bytes over 45 seconds of continuous scanning.");
         Assert.IsEmpty(session.PageErrors);
     }
 
@@ -305,6 +305,6 @@ new MutationObserver(records => { window.__bscanMutations += records.length; }).
 
         // Ten seconds at fifteen frames a second is 150 frames; a handful of mutations is the
         // status bar, not the frame loop.
-        Assert.IsTrue(mutations < 30, $"The scanner mutated the DOM {mutations} times in ten seconds of scanning.");
+        Assert.IsLessThan(30, mutations, $"The scanner mutated the DOM {mutations} times in ten seconds of scanning.");
     }
 }

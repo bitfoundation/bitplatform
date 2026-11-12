@@ -1,4 +1,4 @@
-namespace Bit.Bmotion.Tests.Engine;
+﻿namespace Bit.Bmotion.Tests.Engine;
 
 /// <summary>
 /// Tests for the expanded easing presets (plan item 2.2): Sine/Quad/Quart/Quint/Expo/Elastic/Bounce
@@ -62,7 +62,7 @@ public class EasingPresetsTests
         // ElasticOut overshoots above 1 somewhere in the middle.
         var peak = 0.0;
         for (double t = 0; t <= 1; t += 0.01) peak = Math.Max(peak, Ease(BmEase.ElasticOut)(t));
-        Assert.IsTrue(peak > 1.0, "elastic-out should overshoot past 1");
+        Assert.IsGreaterThan(1.0, peak, "elastic-out should overshoot past 1");
     }
 
     // ── Steps ─────────────────────────────────────────────────────────────────

@@ -8,7 +8,7 @@ namespace Bit.BlazorUI.Tests.Utils.Params;
 /// <summary>
 /// A state holder that reports its own property changes, which is what BitCascadingValue.AutoNotify watches.
 /// </summary>
-public sealed class NotifyingCascadingState : INotifyPropertyChanged
+internal sealed class NotifyingCascadingState : INotifyPropertyChanged
 {
     private string _text = "initial";
 
@@ -34,7 +34,7 @@ public sealed class NotifyingCascadingState : INotifyPropertyChanged
     public bool HasSubscribers => PropertyChanged is not null;
 }
 
-public sealed class NotifyingStateConsumer : ComponentBase
+internal sealed class NotifyingStateConsumer : ComponentBase
 {
     [CascadingParameter] public NotifyingCascadingState? State { get; set; }
 
@@ -44,7 +44,7 @@ public sealed class NotifyingStateConsumer : ComponentBase
     }
 }
 
-public sealed class ObservableNamesConsumer : ComponentBase
+internal sealed class ObservableNamesConsumer : ComponentBase
 {
     [CascadingParameter] public ObservableCollection<string>? Names { get; set; }
 
@@ -58,7 +58,7 @@ public sealed class ObservableNamesConsumer : ComponentBase
 /// Reads two differently named cascading values of the same type, which is what tells apart a consumer that
 /// was matched again under a new name from one that is still bound to the supplier of the old one.
 /// </summary>
-public sealed class DualNameConsumer : ComponentBase
+internal sealed class DualNameConsumer : ComponentBase
 {
     [CascadingParameter(Name = "First")] public string? First { get; set; }
 

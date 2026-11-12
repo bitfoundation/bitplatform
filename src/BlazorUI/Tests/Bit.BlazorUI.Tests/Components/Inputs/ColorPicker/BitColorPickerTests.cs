@@ -645,12 +645,12 @@ public class BitColorPickerTests : BunitTestContext
         if (showInputs)
         {
             // The hexadecimal field plus one per channel.
-            Assert.AreEqual(4, com.FindAll(".bit-clp-fin").Count);
+            Assert.HasCount(4, com.FindAll(".bit-clp-fin"));
             Assert.AreEqual("#FFFFFF", com.Find(".bit-clp-fhx .bit-clp-fin").GetAttribute("value"));
         }
         else
         {
-            Assert.AreEqual(0, com.FindAll(".bit-clp-fin").Count);
+            Assert.IsEmpty(com.FindAll(".bit-clp-fin"));
         }
     }
 
@@ -666,7 +666,7 @@ public class BitColorPickerTests : BunitTestContext
             parameters.Add(p => p.Value, "rgba(255,0,0,0.5)");
         });
 
-        Assert.AreEqual(5, com.FindAll(".bit-clp-fin").Count);
+        Assert.HasCount(5, com.FindAll(".bit-clp-fin"));
         Assert.AreEqual("#FF000080", com.Find(".bit-clp-fhx .bit-clp-fin").GetAttribute("value"));
     }
 
@@ -783,11 +783,11 @@ public class BitColorPickerTests : BunitTestContext
 
         if (first is null)
         {
-            Assert.AreEqual(0, labels.Count);
+            Assert.IsEmpty(labels);
         }
         else
         {
-            CollectionAssert.AreEqual(new[] { first, second, third }, labels);
+            Assert.AreSequenceEqual(new[] { first, second, third }, labels);
         }
     }
 
@@ -913,7 +913,7 @@ public class BitColorPickerTests : BunitTestContext
             parameters.Add(p => p.ShowInputsModeSwitch, true);
         });
 
-        Assert.AreEqual(0, com.FindAll(".bit-clp-swb").Count);
+        Assert.IsEmpty(com.FindAll(".bit-clp-swb"));
     }
 
     // Moving the fields to another set of channels is not a change to the color, so a read-only picker has
@@ -985,7 +985,7 @@ public class BitColorPickerTests : BunitTestContext
 
         var calls = Context.JSInterop.Invocations["BitBlazorUI.Utils.setProperty"];
 
-        Assert.AreEqual(1, calls.Count);
+        Assert.ContainsSingle(calls);
         Assert.AreEqual("value", calls[0].Arguments[1]);
         Assert.AreEqual(committed, calls[0].Arguments[2]);
     }
@@ -1002,7 +1002,7 @@ public class BitColorPickerTests : BunitTestContext
 
         com.Find(".bit-clp-fhx .bit-clp-fin").Change("#00FF00");
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.setProperty"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.setProperty"]);
     }
 
     [TestMethod]
@@ -1016,7 +1016,7 @@ public class BitColorPickerTests : BunitTestContext
 
         var presets = com.FindAll(".bit-clp-prt");
 
-        Assert.AreEqual(3, presets.Count);
+        Assert.HasCount(3, presets);
         // Named as well as spelled out, since a hexadecimal string read aloud digit by digit says nothing
         // about the color it stands for.
         Assert.AreEqual("vibrant red, #FF0000", presets[0].GetAttribute("aria-label"));
@@ -1026,7 +1026,7 @@ public class BitColorPickerTests : BunitTestContext
 
         // The raw preset string never reaches the style attribute: it is normalized first, which is also
         // what lets a swatch be compared against the current color.
-        StringAssert.Contains(presets[2].GetAttribute("style"), "--bit-clp-prt-clr:rgba(0,0,255,1)");
+        Assert.Contains("--bit-clp-prt-clr:rgba(0,0,255,1)", presets[2].GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1110,7 +1110,7 @@ public class BitColorPickerTests : BunitTestContext
         var presets = com.Find(".bit-clp-prs");
 
         Assert.IsTrue(presets.ClassList.Contains("bit-clp-prg"));
-        StringAssert.Contains(presets.GetAttribute("style"), "--bit-clp-prs-cols:2");
+        Assert.Contains("--bit-clp-prs-cols:2", presets.GetAttribute("style")!);
     }
 
     // A palette is a set of alternatives, not a queue of controls: one Tab reaches it and the arrow keys
@@ -1131,12 +1131,12 @@ public class BitColorPickerTests : BunitTestContext
         var presets = com.FindAll(".bit-clp-prt");
 
         // Entering the palette lands on the color the picker is already on.
-        CollectionAssert.AreEqual(new[] { "-1", "0", "-1" }, presets.Select(p => p.GetAttribute("tabindex")).ToArray());
+        Assert.AreSequenceEqual(new[] { "-1", "0", "-1" }, presets.Select(p => p.GetAttribute("tabindex")).ToArray());
 
         // With nothing of the palette picked, the first swatch is the way in.
         com.Render(parameters => parameters.Add(p => p.Value, "#123456"));
 
-        CollectionAssert.AreEqual(new[] { "0", "-1", "-1" }, com.FindAll(".bit-clp-prt").Select(p => p.GetAttribute("tabindex")).ToArray());
+        Assert.AreSequenceEqual(new[] { "0", "-1", "-1" }, com.FindAll(".bit-clp-prt").Select(p => p.GetAttribute("tabindex")).ToArray());
     }
 
     // Only the focus moves - a swatch is picked by pressing it, the same way it is with the pointer - so
@@ -1236,9 +1236,8 @@ public class BitColorPickerTests : BunitTestContext
 
         var calls = Context.JSInterop.Invocations["BitBlazorUI.Utils.registerPreventKeys"];
 
-        Assert.AreEqual(1, calls.Count);
-        CollectionAssert.AreEqual(new[] { "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Home", "End" },
-                                  (string[])calls[0].Arguments[1]!);
+        Assert.ContainsSingle(calls);
+        Assert.AreSequenceEqual(new[] { "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Home", "End" }, (string[])calls[0].Arguments[1]!);
     }
 
     [TestMethod]
@@ -1246,7 +1245,7 @@ public class BitColorPickerTests : BunitTestContext
     {
         var com = RenderComponent<BitColorPicker>();
 
-        Assert.AreEqual(0, com.FindAll(".bit-clp-prs").Count);
+        Assert.IsEmpty(com.FindAll(".bit-clp-prs"));
     }
 
     // The eyedropper is a browser capability rather than a parameter: the button is only rendered once
@@ -1264,7 +1263,7 @@ public class BitColorPickerTests : BunitTestContext
             parameters.Add(p => p.ShowEyeDropper, true);
         });
 
-        Assert.AreEqual(supported ? 1 : 0, com.FindAll(".bit-clp-eyd").Count);
+        Assert.HasCount(supported ? 1 : 0, com.FindAll(".bit-clp-eyd"));
     }
 
     [TestMethod]
@@ -1274,7 +1273,7 @@ public class BitColorPickerTests : BunitTestContext
 
         var com = RenderComponent<BitColorPicker>();
 
-        Assert.AreEqual(0, com.FindAll(".bit-clp-eyd").Count);
+        Assert.IsEmpty(com.FindAll(".bit-clp-eyd"));
     }
 
     [TestMethod]
@@ -1345,8 +1344,8 @@ public class BitColorPickerTests : BunitTestContext
 
         var style = com.Find(".bit-clp-thumb").GetAttribute("style");
 
-        StringAssert.Contains(style, "inset-inline-start:25%");
-        StringAssert.Contains(style, "top:25%");
+        Assert.Contains("inset-inline-start:25%", style!);
+        Assert.Contains("top:25%", style);
     }
 
     [TestMethod]
@@ -1380,25 +1379,25 @@ public class BitColorPickerTests : BunitTestContext
         });
 
         Assert.IsTrue(com.Find(".bit-clp").ClassList.Contains("custom-root"));
-        StringAssert.Contains(com.Find(".bit-clp").GetAttribute("style"), "z-index: 1;");
+        Assert.Contains("z-index: 1;", com.Find(".bit-clp").GetAttribute("style")!);
         Assert.IsTrue(com.Find(".bit-clp-rec").ClassList.Contains("custom-area"));
-        StringAssert.Contains(com.Find(".bit-clp-rec").GetAttribute("style"), "border-radius: 1rem;");
+        Assert.Contains("border-radius: 1rem;", com.Find(".bit-clp-rec").GetAttribute("style")!);
         Assert.IsTrue(com.Find(".bit-clp-thumb").ClassList.Contains("custom-thumb"));
         Assert.IsTrue(com.Find(".bit-clp-pre").ClassList.Contains("custom-preview"));
-        StringAssert.Contains(com.Find(".bit-clp-pre").GetAttribute("style"), "border-radius: 50%;");
+        Assert.Contains("border-radius: 50%;", com.Find(".bit-clp-pre").GetAttribute("style")!);
         Assert.IsTrue(com.Find(".bit-clp-fin").ClassList.Contains("custom-field"));
 
         var presets = com.FindAll(".bit-clp-prt");
         Assert.IsTrue(presets.All(p => p.ClassList.Contains("custom-preset")));
-        StringAssert.Contains(presets[0].GetAttribute("style"), "border-radius: 50%;");
-        StringAssert.Contains(presets[1].GetAttribute("style"), "border-radius: 50%;");
+        Assert.Contains("border-radius: 50%;", presets[0].GetAttribute("style")!);
+        Assert.Contains("border-radius: 50%;", presets[1].GetAttribute("style")!);
 
         // The selected swatch is the one the color is on, and it takes the selected part on top of the
         // one every swatch gets rather than instead of it.
         Assert.IsTrue(presets[0].ClassList.Contains("custom-preset-selected"));
-        StringAssert.Contains(presets[0].GetAttribute("style"), "--bit-clp-prt-sel-clr: blue;");
+        Assert.Contains("--bit-clp-prt-sel-clr: blue;", presets[0].GetAttribute("style")!);
         Assert.IsFalse(presets[1].ClassList.Contains("custom-preset-selected"));
-        Assert.IsFalse(presets[1].GetAttribute("style")!.Contains("--bit-clp-prt-sel-clr"));
+        Assert.DoesNotContain("--bit-clp-prt-sel-clr", presets[1].GetAttribute("style")!);
     }
 
     // The panel carries no text of its own, so it names itself with the color it is on - unless an
@@ -1472,7 +1471,7 @@ public class BitColorPickerTests : BunitTestContext
             }));
         });
 
-        Assert.AreEqual(0, com.FindAll(".bit-clp-lbl").Count);
+        Assert.IsEmpty(com.FindAll(".bit-clp-lbl"));
         Assert.AreEqual("Pick one", com.Find(".custom-label").TextContent);
         Assert.AreEqual(com.Find(".bit-clp").GetAttribute("aria-labelledby"), com.Find(".bit-clp-lbc").Id);
     }
@@ -1482,7 +1481,7 @@ public class BitColorPickerTests : BunitTestContext
     {
         var com = RenderComponent<BitColorPicker>();
 
-        Assert.AreEqual(0, com.FindAll(".bit-clp-lbc").Count);
+        Assert.IsEmpty(com.FindAll(".bit-clp-lbc"));
         Assert.IsNull(com.Find(".bit-clp").GetAttribute("aria-labelledby"));
     }
 
@@ -1557,7 +1556,7 @@ public class BitColorPickerTests : BunitTestContext
     {
         var com = RenderComponent<BitColorPicker>();
 
-        Assert.AreEqual(0, com.FindAll(".bit-clp-cnr").Count);
+        Assert.IsEmpty(com.FindAll(".bit-clp-cnr"));
     }
 
     [TestMethod,
@@ -1616,7 +1615,7 @@ public class BitColorPickerTests : BunitTestContext
         }
         else
         {
-            StringAssert.Contains(style, expectedStyle);
+            Assert.Contains(expectedStyle, style);
         }
     }
 
@@ -1734,18 +1733,18 @@ public class BitColorPickerTests : BunitTestContext
             parameters.Add(p => p.Presets, ["#FF0000", "#00FF00"]);
         });
 
-        Assert.AreEqual(2, com.FindAll(".bit-clp-prt").Count);
+        Assert.HasCount(2, com.FindAll(".bit-clp-prt"));
 
         com.Render(parameters => parameters.Add(p => p.Presets, ["#0000FF"]));
 
         var presets = com.FindAll(".bit-clp-prt");
 
-        Assert.AreEqual(1, presets.Count);
+        Assert.ContainsSingle(presets);
         Assert.AreEqual("#0000FF", presets[0].GetAttribute("title"));
 
         com.Render(parameters => parameters.Add(p => p.Presets, (IEnumerable<string>?)null));
 
-        Assert.AreEqual(0, com.FindAll(".bit-clp-prt").Count);
+        Assert.IsEmpty(com.FindAll(".bit-clp-prt"));
     }
 
     // A bare number on a slider is a position on an unnamed scale, so both tracks spell out the unit they
@@ -1810,8 +1809,8 @@ public class BitColorPickerTests : BunitTestContext
             });
 
             Assert.AreEqual("0.25", com.Find(".bit-clp-asd .bit-clp-inp").GetAttribute("value"));
-            StringAssert.Contains(com.Find(".bit-clp-hsd .bit-clp-inp").GetAttribute("value"), "210.5");
-            StringAssert.Contains(com.Find(".bit-clp-thumb").GetAttribute("style"), "inset-inline-start:50%");
+            Assert.Contains("210.5", com.Find(".bit-clp-hsd .bit-clp-inp").GetAttribute("value")!);
+            Assert.Contains("inset-inline-start:50%", com.Find(".bit-clp-thumb").GetAttribute("style")!);
         }
         finally
         {
@@ -1953,7 +1952,7 @@ public class BitColorPickerTests : BunitTestContext
 
         Assert.AreEqual("#FF0000", com.Instance.Hex);
         Assert.AreEqual(1, com.Instance.Alpha);
-        Assert.AreEqual(2, Context.JSInterop.Invocations["BitBlazorUI.Utils.setProperty"].Count);
+        Assert.HasCount(2, Context.JSInterop.Invocations["BitBlazorUI.Utils.setProperty"]);
     }
 
     // The readout answers the question the color is being picked to settle, so it is read out with the
@@ -2020,13 +2019,13 @@ public class BitColorPickerTests : BunitTestContext
 
         Assert.IsTrue(com.Find(".bit-clp").ClassList.Contains("bit-clp-lg"));
         Assert.AreEqual("Cascaded label", com.Find(".bit-clp-lbl").TextContent);
-        Assert.AreEqual(1, com.FindAll(".bit-clp-pre").Count);
-        Assert.AreEqual(1, com.FindAll(".bit-clp-asd").Count);
-        Assert.AreEqual(2, com.FindAll(".bit-clp-prt").Count);
+        Assert.ContainsSingle(com.FindAll(".bit-clp-pre"));
+        Assert.ContainsSingle(com.FindAll(".bit-clp-asd"));
+        Assert.HasCount(2, com.FindAll(".bit-clp-prt"));
 
         // The cascaded DefaultInputsMode decides which fields are rendered, and the cascaded Format decides
         // the notation the picker answers in from its very first render.
-        Assert.AreEqual(0, com.FindAll(".bit-clp-fhx").Count);
+        Assert.IsEmpty(com.FindAll(".bit-clp-fhx"));
         Assert.AreEqual("Hue", com.FindAll(".bit-clp-fin")[0].GetAttribute("title"));
         Assert.AreEqual("rgba(255,255,255,1)", com.FindComponent<BitColorPicker>().Instance.Value);
     }
@@ -2057,10 +2056,10 @@ public class BitColorPickerTests : BunitTestContext
         });
 
         Assert.IsTrue(com.Find(".bit-clp").ClassList.Contains("bit-clp-sm"));
-        Assert.AreEqual(0, com.FindAll(".bit-clp-pre").Count);
+        Assert.IsEmpty(com.FindAll(".bit-clp-pre"));
 
         // What the picker left unset is still filled in from the cascade.
-        Assert.AreEqual(4, com.FindAll(".bit-clp-fin").Count);
+        Assert.HasCount(4, com.FindAll(".bit-clp-fin"));
     }
 
     // Only the STARTING mode is cascaded, because the picker's own switch moves the mode: a cascaded
@@ -2116,7 +2115,7 @@ public class BitColorPickerTests : BunitTestContext
 
         await com.InvokeAsync(() => com.Instance.FocusAsync());
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
 
         // The hexadecimal field is not always the first one either - a picker typed in HSL starts at the
         // hue field instead.
@@ -2128,11 +2127,11 @@ public class BitColorPickerTests : BunitTestContext
             parameters.Add(p => p.InputsMode, BitColorInputsMode.Hsl);
         });
 
-        Assert.AreEqual(0, com.FindAll(".bit-clp-fhx").Count);
+        Assert.IsEmpty(com.FindAll(".bit-clp-fhx"));
 
         await com.InvokeAsync(() => com.Instance.FocusAsync());
 
-        Assert.AreEqual(2, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+        Assert.HasCount(2, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
     }
 
     // A one-way bound Value leaves every field, swatch and slider natively disabled, and a disabled element
@@ -2151,7 +2150,7 @@ public class BitColorPickerTests : BunitTestContext
 
         await com.InvokeAsync(() => com.Instance.FocusAsync());
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
 
         // With the switch gone there is nothing left that is focusable, and nothing is asked for.
         com.Render(parameters =>
@@ -2165,7 +2164,7 @@ public class BitColorPickerTests : BunitTestContext
 
         await com.InvokeAsync(() => com.Instance.FocusAsync());
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
     }
 
     // Almost everything the picker tells a screen reader is text it writes rather than text a consumer hands
@@ -2256,7 +2255,7 @@ public class BitColorPickerTests : BunitTestContext
 
         await com.InvokeAsync(() => com.Instance.FocusAsync());
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
     }
 
     [TestMethod]
@@ -2269,7 +2268,7 @@ public class BitColorPickerTests : BunitTestContext
 
         await com.InvokeAsync(() => com.Instance.FocusAsync());
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
     }
 
 
@@ -2290,8 +2289,8 @@ public class BitColorPickerTests : BunitTestContext
             parameters.Add(p => p.ShowHueSlider, hue);
         });
 
-        Assert.AreEqual(areas, com.FindAll(".bit-clp-rec").Count);
-        Assert.AreEqual(hues, com.FindAll(".bit-clp-hsd").Count);
+        Assert.HasCount(areas, com.FindAll(".bit-clp-rec"));
+        Assert.HasCount(hues, com.FindAll(".bit-clp-hsd"));
     }
 
     // The row holding the sliders, the eyedropper and the preview is only drawn where it has something to
@@ -2306,9 +2305,9 @@ public class BitColorPickerTests : BunitTestContext
             parameters.Add(p => p.Presets, ["#FF0000", "#00FF00"]);
         });
 
-        Assert.AreEqual(0, com.FindAll(".bit-clp-cnt").Count);
-        Assert.AreEqual(0, com.FindAll(".bit-clp-sct").Count);
-        Assert.AreEqual(2, com.FindAll(".bit-clp-prt").Count);
+        Assert.IsEmpty(com.FindAll(".bit-clp-cnt"));
+        Assert.IsEmpty(com.FindAll(".bit-clp-sct"));
+        Assert.HasCount(2, com.FindAll(".bit-clp-prt"));
 
         // The color is unaffected by which parts are drawn: the parts are ways of choosing it, not where it
         // is kept.
@@ -2327,9 +2326,9 @@ public class BitColorPickerTests : BunitTestContext
             parameters.Add(p => p.ShowSaturationArea, false);
         });
 
-        Assert.AreEqual(1, com.FindAll(".bit-clp-cnt").Count);
-        Assert.AreEqual(0, com.FindAll(".bit-clp-sct").Count);
-        Assert.AreEqual(1, com.FindAll(".bit-clp-pre").Count);
+        Assert.ContainsSingle(com.FindAll(".bit-clp-cnt"));
+        Assert.IsEmpty(com.FindAll(".bit-clp-sct"));
+        Assert.ContainsSingle(com.FindAll(".bit-clp-pre"));
     }
 
     // The contrast readout describes the first widget the panel renders, so the verdict is read out with the
@@ -2367,13 +2366,13 @@ public class BitColorPickerTests : BunitTestContext
 
         await com.InvokeAsync(() => com.Instance.FocusAsync());
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
 
         com.Render(parameters => parameters.Add(p => p.ShowHueSlider, false));
 
         await com.InvokeAsync(() => com.Instance.FocusAsync());
 
-        Assert.AreEqual(2, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+        Assert.HasCount(2, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
     }
 
     // A key pressed with a modifier on it belongs to the browser or to the operating system - Ctrl+Home goes
@@ -2416,16 +2415,16 @@ public class BitColorPickerTests : BunitTestContext
 
         var com = RenderComponent<BitColorPicker>();
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.ColorPicker.setup"].Count);
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.ColorPicker.dispose"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.ColorPicker.setup"]);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.ColorPicker.dispose"]);
 
         com.Render(parameters => parameters.Add(p => p.ShowSaturationArea, false));
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.ColorPicker.dispose"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.ColorPicker.dispose"]);
 
         com.Render(parameters => parameters.Add(p => p.ShowSaturationArea, true));
 
-        Assert.AreEqual(2, Context.JSInterop.Invocations["BitBlazorUI.ColorPicker.setup"].Count);
+        Assert.HasCount(2, Context.JSInterop.Invocations["BitBlazorUI.ColorPicker.setup"]);
     }
 
     // A picker that never draws the gradient never registers anything to release either.
@@ -2437,7 +2436,7 @@ public class BitColorPickerTests : BunitTestContext
             parameters.Add(p => p.ShowSaturationArea, false);
         });
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.ColorPicker.setup"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.ColorPicker.setup"]);
     }
 
     [TestMethod]
@@ -2463,9 +2462,9 @@ public class BitColorPickerTests : BunitTestContext
             });
         });
 
-        Assert.AreEqual(0, com.FindAll(".bit-clp-rec").Count);
-        Assert.AreEqual(0, com.FindAll(".bit-clp-hsd").Count);
-        Assert.AreEqual(2, com.FindAll(".bit-clp-prt").Count);
+        Assert.IsEmpty(com.FindAll(".bit-clp-rec"));
+        Assert.IsEmpty(com.FindAll(".bit-clp-hsd"));
+        Assert.HasCount(2, com.FindAll(".bit-clp-prt"));
     }
 
     [TestMethod]
@@ -2513,9 +2512,9 @@ public class BitColorPickerTests : BunitTestContext
         Assert.IsNull(root.GetAttribute("aria-invalid"));
         Assert.AreEqual("true", component.Find(".bit-input-hidden").GetAttribute("aria-invalid"));
         Assert.AreEqual("true", component.Find(".bit-clp-rec").GetAttribute("aria-invalid"));
-        Assert.AreEqual(2, component.FindAll(".bit-clp-inp").Count);
+        Assert.HasCount(2, component.FindAll(".bit-clp-inp"));
         Assert.IsTrue(component.FindAll(".bit-clp-inp").All(i => i.GetAttribute("aria-invalid") == "true"));
-        Assert.AreEqual(5, component.FindAll(".bit-clp-fin").Count);
+        Assert.HasCount(5, component.FindAll(".bit-clp-fin"));
         Assert.IsTrue(component.FindAll(".bit-clp-fin").All(i => i.GetAttribute("aria-invalid") == "true"));
 
         if (fromPreset)
@@ -2741,14 +2740,14 @@ public class BitColorPickerTests : BunitTestContext
 
         await com.InvokeAsync(() => com.Instance.HandlePointerMove(1, 0));
 
-        CollectionAssert.AreEqual(new[] { "#FF0000" }, values);
-        Assert.HasCount(1, colors);
+        Assert.AreSequenceEqual(new[] { "#FF0000" }, values);
+        Assert.ContainsSingle(colors);
         Assert.AreEqual("#FF0000", colors[0].Hex);
         Assert.AreEqual("rgb(255,0,0)", colors[0].Rgb);
 
         await com.InvokeAsync(() => com.Instance.HandlePointerMove(1, 1));
 
-        CollectionAssert.AreEqual(new[] { "#FF0000", "#000000" }, values);
+        Assert.AreSequenceEqual(new[] { "#FF0000", "#000000" }, values);
         Assert.HasCount(2, colors);
 
         await com.InvokeAsync(com.Instance.HandlePointerUp);
@@ -2779,7 +2778,7 @@ public class BitColorPickerTests : BunitTestContext
 
         Assert.AreEqual("#FF0000", com.Instance.Value);
         Assert.IsEmpty(values);
-        Assert.HasCount(1, colors);
+        Assert.ContainsSingle(colors);
         Assert.AreEqual(0.5, colors[0].Alpha);
     }
 
@@ -2915,14 +2914,14 @@ public class BitColorPickerTests : BunitTestContext
 
         RenderComponent<BitColorPicker>();
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.ColorPicker.dispose"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.ColorPicker.dispose"]);
 
         // Disposal goes through bUnit so the component is disposed once, by the framework that owns it.
         await Context.DisposeComponentsAsync();
 
         var dispose = Context.JSInterop.Invocations["BitBlazorUI.ColorPicker.dispose"];
 
-        Assert.AreEqual(1, dispose.Count);
+        Assert.ContainsSingle(dispose);
         Assert.AreEqual("controller-id", dispose[0].Arguments[0]);
     }
 
@@ -2938,7 +2937,7 @@ public class BitColorPickerTests : BunitTestContext
 
         await Context.DisposeComponentsAsync();
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.ColorPicker.dispose"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.ColorPicker.dispose"]);
     }
 
     [TestMethod,
@@ -2970,7 +2969,7 @@ public class BitColorPickerTests : BunitTestContext
 
         Assert.AreEqual("brand-color", root.Id);
         Assert.IsTrue(root.ClassList.Contains("custom-class"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin: 1px;");
+        Assert.Contains("margin: 1px;", root.GetAttribute("style")!);
 
         // The ids of the fields and of the label are derived from the root's, so a label points at its field.
         com.Render(parameters =>

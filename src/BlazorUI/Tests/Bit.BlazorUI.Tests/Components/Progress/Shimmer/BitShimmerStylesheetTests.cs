@@ -32,12 +32,12 @@ public class BitShimmerStylesheetTests
 
         var read = Regex.Matches(stylesheet, @"var\((--bit-Shimmer-[a-z-]+)").Select(m => m.Groups[1].Value).Distinct().Order().ToArray();
 
-        CollectionAssert.AreEquivalent(PublicVariables, read);
+        Assert.AreSequenceEqual(PublicVariables, read, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
         foreach (var variable in PublicVariables)
         {
             Assert.IsFalse(Regex.IsMatch(stylesheet, $@"^\s*{variable}\s*:", RegexOptions.Multiline), $"{variable} is declared, so it no longer inherits.");
-            StringAssert.Contains(stylesheet, $"//   {variable} ", $"{variable} is missing from the header of the stylesheet.");
+            Assert.Contains($"//   {variable} ", stylesheet, $"{variable} is missing from the header of the stylesheet.");
         }
     }
 
@@ -48,7 +48,7 @@ public class BitShimmerStylesheetTests
 
         var listed = Regex.Matches(demo, @"Name = ""(--bit-Shimmer-[a-z-]+)""").Select(m => m.Groups[1].Value).ToArray();
 
-        CollectionAssert.AreEquivalent(PublicVariables, listed);
+        Assert.AreSequenceEqual(PublicVariables, listed, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -58,17 +58,17 @@ public class BitShimmerStylesheetTests
 
         // The parameters publish the private properties inline, so they are read first and the variable only
         // restyles what the shimmer did not set.
-        StringAssert.Contains(stylesheet, "var(--bit-smr-hgt, var(--bit-smr-lnh, var(--bit-Shimmer-height, ");
-        StringAssert.Contains(stylesheet, "var(--bit-smr-hgt, var(--bit-smr-crs, var(--bit-Shimmer-circle-size, ");
-        StringAssert.Contains(stylesheet, "var(--bit-smr-gap, var(--bit-Shimmer-gap, ");
-        StringAssert.Contains(stylesheet, "var(--bit-smr-llw, var(--bit-Shimmer-last-line-width, 60%))");
+        Assert.Contains("var(--bit-smr-hgt, var(--bit-smr-lnh, var(--bit-Shimmer-height, ", stylesheet);
+        Assert.Contains("var(--bit-smr-hgt, var(--bit-smr-crs, var(--bit-Shimmer-circle-size, ", stylesheet);
+        Assert.Contains("var(--bit-smr-gap, var(--bit-Shimmer-gap, ", stylesheet);
+        Assert.Contains("var(--bit-smr-llw, var(--bit-Shimmer-last-line-width, 60%))", stylesheet);
 
         // A Square or a Pill is a choice rather than a default, so it outranks the variable as well.
-        StringAssert.Contains(stylesheet, "var(--bit-smr-rad, var(--bit-smr-shp, var(--bit-Shimmer-radius, ");
+        Assert.Contains("var(--bit-smr-rad, var(--bit-smr-shp, var(--bit-Shimmer-radius, ", stylesheet);
 
         // So is an explicit Size, Color or Background, whose classes publish these only while they are set.
-        StringAssert.Contains(stylesheet, "var(--bit-smr-wrp-bg, var(--bit-Shimmer-background, ");
-        StringAssert.Contains(stylesheet, "var(--bit-smr-bg-clr, var(--bit-Shimmer-color, ");
+        Assert.Contains("var(--bit-smr-wrp-bg, var(--bit-Shimmer-background, ", stylesheet);
+        Assert.Contains("var(--bit-smr-bg-clr, var(--bit-Shimmer-color, ", stylesheet);
 
         Assert.IsFalse(Regex.IsMatch(stylesheet, @"var\(--bit-Shimmer-[a-z-]+, var\(--bit-smr-"), "A public variable is read before the parameter it restyles the default of.");
     }
@@ -83,7 +83,7 @@ public class BitShimmerStylesheetTests
         // A Template is built out of shimmers of its own, which must not inherit the corner of the outer shape.
         foreach (var property in new[] { "--bit-smr-hgt", "--bit-smr-gap", "--bit-smr-llw", "--bit-smr-rad", "--bit-smr-shp", "--bit-smr-dly", "--bit-smr-lnh", "--bit-smr-crs", "--bit-smr-bg-clr", "--bit-smr-wrp-bg" })
         {
-            StringAssert.Contains(root, $"{property}: initial;");
+            Assert.Contains($"{property}: initial;", root);
         }
     }
 
@@ -96,7 +96,7 @@ public class BitShimmerStylesheetTests
 
         // The theme's minimum control width is a floor for a labeled button, which Fluent leaves at `auto` - a width
         // an empty inline-block resolves to nothing - so the inline placeholder has a length of its own.
-        StringAssert.Contains(inline, "width: spacing(8);");
-        Assert.IsFalse(inline.Contains("siz-ctrl-min-width"), "An inline shimmer falls back to the minimum width of a button, which is `auto` under Fluent.");
+        Assert.Contains("width: spacing(8);", inline);
+        Assert.DoesNotContain("siz-ctrl-min-width", inline, "An inline shimmer falls back to the minimum width of a button, which is `auto` under Fluent.");
     }
 }

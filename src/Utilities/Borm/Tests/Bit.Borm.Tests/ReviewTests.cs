@@ -24,7 +24,11 @@ public class ReviewTests : ComponentTestBase
 
     private static Dictionary<string, object?> Answers() => new()
     {
-        ["name"] = "Ada", ["pin"] = "1234", ["plan"] = "team", ["newsletter"] = true, ["budget"] = 1500.5,
+        ["name"] = "Ada",
+        ["pin"] = "1234",
+        ["plan"] = "team",
+        ["newsletter"] = true,
+        ["budget"] = 1500.5,
         ["start"] = "2026-11-02",
         ["people"] = new List<object?> { new Dictionary<string, object?> { ["who"] = "Grace" } }
     };
@@ -50,8 +54,7 @@ public class ReviewTests : ComponentTestBase
             Assert.AreEqual("Not answered", entries["Notes"]);
             Assert.AreEqual("Grace", entries["Who"]);
             // The review step does not review itself.
-            CollectionAssert.AreEqual(new[] { "You", "Your plan" },
-                cut.FindAll(".bit-borm-review__heading").Select(h => h.TextContent).ToArray());
+            Assert.AreSequenceEqual(new[] { "You", "Your plan" }, cut.FindAll(".bit-borm-review__heading").Select(h => h.TextContent).ToArray());
         }
         finally
         {
@@ -81,7 +84,7 @@ public class ReviewTests : ComponentTestBase
 
         await cut.InvokeAsync(() => state.SetValue("plan", "solo"));
 
-        Assert.IsTrue(cut.FindAll(".bit-borm-review__value").Any(v => v.TextContent.Trim() == "Solo"));
+        Assert.Contains(v => v.TextContent.Trim() == "Solo", cut.FindAll(".bit-borm-review__value"));
     }
 
     [TestMethod]
@@ -94,6 +97,6 @@ public class ReviewTests : ComponentTestBase
 
         Assert.HasCount(2, cut.FindAll(".bit-borm-review__entry"));
         Assert.IsEmpty(cut.FindAll("button"));
-        StringAssert.Contains(cut.Markup, "Not answered");
+        Assert.Contains("Not answered", cut.Markup);
     }
 }

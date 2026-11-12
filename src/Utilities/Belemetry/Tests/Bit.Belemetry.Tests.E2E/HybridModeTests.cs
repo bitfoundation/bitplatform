@@ -25,7 +25,7 @@ public class HybridModeTests : HarnessTest
 
     protected override string BaseUrl => HybridHarnessHost.AppOrigin;
 
-    protected override CollectorClient Collector => _collector ?? throw new InvalidOperationException("The page is opened in TestInitialize.");
+    private protected override CollectorClient Collector => _collector ?? throw new InvalidOperationException("The page is opened in TestInitialize.");
 
     protected override async Task<IPage> OpenPageAsync()
     {
@@ -90,17 +90,17 @@ public class HybridModeTests : HarnessTest
         Assert.AreEqual("csharp", dotnet.Platform);
         Assert.AreEqual("bit.belemetry.dotnet", dotnet.SdkName);
         Assert.IsTrue(dotnet.Handled);
-        Assert.IsTrue(dotnet.Frames.Any(f => f.EndsWith("HomePage.TrackException", StringComparison.Ordinal)), string.Join(" | ", dotnet.Frames));
+        Assert.Contains(f => f.EndsWith("HomePage.TrackException", StringComparison.Ordinal), dotnet.Frames, string.Join(" | ", dotnet.Frames));
 
         using var json = System.Text.Json.JsonDocument.Parse(dotnet.Json!);
         var images = json.RootElement.GetProperty("debug_meta").GetProperty("images").EnumerateArray().ToList();
         var harness = images.Single(i => i.GetProperty("code_file").GetString()!.EndsWith("Bit.Belemetry.Tests.Harness.dll", StringComparison.OrdinalIgnoreCase));
         Assert.AreEqual("pe_dotnet", harness.GetProperty("type").GetString());
-        StringAssert.Matches(harness.GetProperty("debug_id").GetString(), new System.Text.RegularExpressions.Regex("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}-[0-9a-f]+$"));
+        Assert.MatchesRegex(new System.Text.RegularExpressions.Regex("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}-[0-9a-f]+$"), harness.GetProperty("debug_id").GetString());
         var frame = json.RootElement.GetProperty("exception").GetProperty("values")[0].GetProperty("stacktrace").GetProperty("frames").EnumerateArray()
             .Single(f => f.GetProperty("function").GetString() == "TrackException");
-        StringAssert.StartsWith(frame.GetProperty("function_id").GetString(), "0x");
-        StringAssert.StartsWith(frame.GetProperty("instruction_addr").GetString(), "0x");
+        Assert.StartsWith("0x", frame.GetProperty("function_id").GetString());
+        Assert.StartsWith("0x", frame.GetProperty("instruction_addr").GetString());
         Assert.AreEqual($"rel:{images.IndexOf(harness)}", frame.GetProperty("addr_mode").GetString());
 
         // What the symbolicator will look up, read back from the assembly file without Belemetry: the image is that build's
@@ -127,7 +127,7 @@ public class HybridModeTests : HarnessTest
         Assert.AreEqual("javascript", js.Platform);
         Assert.AreEqual("bit.belemetry.javascript", js.SdkName, "The record is the page's, whoever exports it.");
         Assert.IsFalse(js.Handled);
-        Assert.IsTrue(js.Frames.Any(f => f.Contains("harness.js", StringComparison.Ordinal)), string.Join(" | ", js.Frames));
+        Assert.Contains(f => f.Contains("harness.js", StringComparison.Ordinal), js.Frames, string.Join(" | ", js.Frames));
     }
 
     [TestMethod]

@@ -75,8 +75,8 @@ public class BitNumberFieldParamsTests : BunitTestContext
     [TestMethod]
     public void BitNumberFieldParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual($"{nameof(BitParams)}.BitNumberField", BitNumberFieldParams.ParamName);
-        Assert.AreEqual("BitParams.BitNumberField", BitNumberFieldParams.ParamName);
+        Assert.AreEqual($"{nameof(BitParams)}.BitNumberField", new BitNumberFieldParams().Name);
+        Assert.AreEqual("BitParams.BitNumberField", new BitNumberFieldParams().Name);
     }
 
     [TestMethod]
@@ -121,7 +121,7 @@ public class BitNumberFieldParamsTests : BunitTestContext
 
         foreach (var name in paramsProperties)
         {
-            Assert.IsTrue(fieldParameters.Contains(name), $"BitNumberFieldParams.{name} is no parameter of the field.");
+            Assert.Contains(name, fieldParameters, $"BitNumberFieldParams.{name} is no parameter of the field.");
         }
     }
 
@@ -157,7 +157,7 @@ public class BitNumberFieldParamsTests : BunitTestContext
         Assert.IsTrue(component.Find(".bit-nfl-inp").ClassList.Contains("cascaded-input"));
 
         // The cascaded mode reaches the markup: two spin buttons where none would be drawn without it.
-        Assert.AreEqual(2, component.FindAll(".bit-nfl-sbn").Count);
+        Assert.HasCount(2, component.FindAll(".bit-nfl-sbn"));
     }
 
     [TestMethod]
@@ -169,7 +169,7 @@ public class BitNumberFieldParamsTests : BunitTestContext
             Styles = new() { Root = "--s: root;", Input = "--s: input;", IncrementButton = "--s: increment;" },
         });
 
-        StringAssert.Contains(component.Find(".bit-nfl").GetAttribute("style"), "--s: root;");
+        Assert.Contains("--s: root;", component.Find(".bit-nfl").GetAttribute("style")!);
         Assert.AreEqual("--s: input;", component.Find(".bit-nfl-inp").GetAttribute("style"));
         Assert.AreEqual("--s: increment;", component.Find(".bit-nfl-aup").GetAttribute("style"));
     }
@@ -311,7 +311,7 @@ public class BitNumberFieldParamsTests : BunitTestContext
         Assert.AreEqual("rtl", root.GetAttribute("dir"));
         Assert.IsTrue(root.ClassList.Contains("bit-dis"));
         Assert.IsTrue(root.ClassList.Contains("cascaded"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin: 1px;");
+        Assert.Contains("margin: 1px;", root.GetAttribute("style")!);
         Assert.AreEqual("cascaded-id", root.Id);
         Assert.AreEqual("yes", root.GetAttribute("data-cascaded"));
 
@@ -608,7 +608,7 @@ public class BitNumberFieldParamsTests : BunitTestContext
             Assert.IsFalse(root.ClassList.Contains(cssClass), $"An empty params object published {cssClass}.");
         }
 
-        Assert.AreEqual(0, component.FindAll("button").Count);
+        Assert.IsEmpty(component.FindAll("button"));
         Assert.AreEqual("numeric", component.Find("input").GetAttribute("inputmode"));
     }
 

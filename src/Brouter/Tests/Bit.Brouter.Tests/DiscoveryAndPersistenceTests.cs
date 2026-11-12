@@ -51,7 +51,7 @@ public class DiscoveryAndPersistenceTests : BunitTestContext
     {
         var assembly = typeof(DiscoveryHost).Assembly;
 
-        CollectionAssert.AreEquivalent(assembly.GetTypes(), BrouteScanner.GetLoadableTypes(assembly.ManifestModule));
+        Assert.AreSequenceEqual(assembly.GetTypes(), BrouteScanner.GetLoadableTypes(assembly.ManifestModule), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -114,7 +114,7 @@ public class DiscoveryAndPersistenceTests : BunitTestContext
         Assert.IsNull(captured);
     }
 
-    public sealed class UncoveredDto
+    internal sealed class UncoveredDto
     {
         public int X { get; set; }
     }

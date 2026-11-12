@@ -106,8 +106,8 @@ public class PlatformApisTests : ButilPageTest
 
         // plat:ai:<supported>/<plain>/<with options>/<has params>
         var parts = (await CurrentStatusAsync()).Split('/');
-        Assert.AreEqual(4, parts.Length, "the probe reports supported, both availabilities and params");
-        CollectionAssert.Contains(_aiAvailabilities, parts[1], $"'{parts[1]}' is not an AiAvailability");
-        CollectionAssert.Contains(_aiAvailabilities, parts[2], $"'{parts[2]}' is not an AiAvailability");
+        Assert.HasCount(4, parts, "the probe reports supported, both availabilities and params");
+        Assert.Contains(parts[1], _aiAvailabilities, $"'{parts[1]}' is not an AiAvailability");
+        Assert.Contains(parts[2], _aiAvailabilities, $"'{parts[2]}' is not an AiAvailability");
     }
 }

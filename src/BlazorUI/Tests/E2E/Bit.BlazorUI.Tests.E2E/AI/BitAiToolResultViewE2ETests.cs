@@ -141,13 +141,13 @@ public class BitAiToolResultViewE2ETests : E2ETestBase
 
         var (iconLeft, _, _, _) = await View("trv-text").Locator(".bit-aitrv-ico").RectAsync();
         var (titleLeft, _, _, _) = await View("trv-text").Locator(".bit-aitrv-ttl").RectAsync();
-        Assert.IsTrue(iconLeft < titleLeft, "Left to right, the glyph leads the title from the left.");
+        Assert.IsLessThan(titleLeft, iconLeft, "Left to right, the glyph leads the title from the left.");
 
         foreach (var id in new[] { "trv-rtl", "trv-rtl-inherited" })
         {
             var (_, _, iconRight, _) = await View(id).Locator(".bit-aitrv-ico").RectAsync();
             var (_, _, titleRight, _) = await View(id).Locator(".bit-aitrv-ttl").RectAsync();
-            Assert.IsTrue(iconRight > titleRight, $"{id}: right to left, the glyph leads the title from the right.");
+            Assert.IsGreaterThan(titleRight, iconRight, $"{id}: right to left, the glyph leads the title from the right.");
         }
 
         await Expect(View("trv-rtl")).ToHaveAttributeAsync("dir", "rtl");

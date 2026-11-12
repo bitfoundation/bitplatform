@@ -115,7 +115,7 @@ public sealed class BaletteGuardReviewTests : BunitContext
 
         // Tab, then Enter on the action: the action panel is under its row.
         await Press(cut, "Tab");
-        cut.WaitForAssertion(() => Assert.IsTrue(cut.FindAll("[data-balette=item]").Any(i => i.TextContent.Contains("Delete without asking"))));
+        cut.WaitForAssertion(() => Assert.Contains(i => i.TextContent.Contains("Delete without asking"), cut.FindAll("[data-balette=item]")));
         await Press(cut, "Enter");
         Assert.AreEqual(0, ran);
 
@@ -247,8 +247,8 @@ public sealed class BaletteGuardReviewTests : BunitContext
         Assert.AreEqual(ActivityStatusCode.Error, failed.Status);
         Assert.AreEqual(typeof(InvalidOperationException).FullName, failed.GetTagItem("exception.type"));
         Assert.IsEmpty(failed.Events);
-        Assert.IsFalse(stopped.Any(a => a.TagObjects.Any(t => t.Value is string s && s.Contains("top-secret-value", StringComparison.Ordinal))));
-        Assert.IsFalse(stopped.Any(a => (a.StatusDescription ?? string.Empty).Contains("top-secret-value", StringComparison.Ordinal)));
+        Assert.DoesNotContain(a => a.TagObjects.Any(t => t.Value is string s && s.Contains("top-secret-value", StringComparison.Ordinal)), stopped);
+        Assert.DoesNotContain(a => (a.StatusDescription ?? string.Empty).Contains("top-secret-value", StringComparison.Ordinal), stopped);
     }
 
     [TestMethod]

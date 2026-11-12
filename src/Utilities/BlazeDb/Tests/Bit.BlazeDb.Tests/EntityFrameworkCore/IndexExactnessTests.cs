@@ -68,7 +68,7 @@ public class IndexExactnessTests
     }
 }
 
-public sealed class MeasuresContext : DbContext
+internal sealed class MeasuresContext : DbContext
 {
     public MeasuresContext(DbContextOptions<MeasuresContext> options) : base(options)
     {
@@ -83,7 +83,7 @@ public sealed class MeasuresContext : DbContext
 }
 
 [BlazeDbTable("readings")]
-public partial class Reading
+internal partial class Reading
 {
     [BlazeDbKey]
     public int Id { get; set; }
@@ -95,7 +95,7 @@ public partial class Reading
     public double Level { get; set; }
 }
 
-public sealed class Member
+internal sealed class Member
 {
     public int Id { get; set; }
 
@@ -107,7 +107,7 @@ public sealed class Member
 }
 
 /// <summary>A hand-written descriptor, which is where an index can be given a comparer of its own.</summary>
-public static class MemberTable
+internal static class MemberTable
 {
     public static readonly BlazeDbHashIndexDefinition<Member, string> Email =
         new(nameof(Member.Email), static m => m.Email, StringComparer.OrdinalIgnoreCase, unique: true);

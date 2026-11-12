@@ -25,7 +25,7 @@ public class CompletionTests : McpTestBase
 
         using (Assert.Scope())
         {
-            CollectionAssert.AreEquivalent(new[] { "wasm", "web-app", "server", "hybrid", "unknown" }, completion.Values.ToArray());
+            Assert.AreSequenceEqual(new[] { "wasm", "web-app", "server", "hybrid", "unknown" }, completion.Values.ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
             Assert.AreEqual(5, completion.Total);
             Assert.AreNotEqual(true, completion.HasMore);
         }

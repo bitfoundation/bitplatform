@@ -52,7 +52,7 @@ public class BitAiReviewRegressionTests
         ]);
 
         var session = new BitAiChatSession(transport, tools: tools, options: new BitAiChatSessionOptions { Pacing = null });
-        var reply = await session.SubmitAsync("go");
+        var reply = await session.SubmitAsync("go", cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(0, executions);
         Assert.AreEqual("remote", reply!.FindToolCall("c1")!.Result!.Text);
@@ -108,7 +108,7 @@ public class BitAiReviewRegressionTests
 
         run.Steps[0].Start();
 
-        Assert.IsTrue(run.Version > before);
+        Assert.IsGreaterThan(before, run.Version);
     }
 
     [TestMethod]
@@ -116,13 +116,13 @@ public class BitAiReviewRegressionTests
     {
         var deltas = 0;
         var sawCompletedLast = false;
-        await foreach (var evt in Burst().Paced(new BitAiTextPacingOptions { Interval = TimeSpan.FromMilliseconds(1) }))
+        await foreach (var evt in Burst(TestContext.CancellationToken).Paced(new BitAiTextPacingOptions { Interval = TimeSpan.FromMilliseconds(1) }, TestContext.CancellationToken))
         {
             if (evt is BitAiTextDeltaEvent) deltas++;
             sawCompletedLast = evt is BitAiMessageCompletedEvent;
         }
 
-        Assert.IsTrue(deltas > 3, $"expected several paced deltas, got {deltas}");
+        Assert.IsGreaterThan(3, deltas, $"expected several paced deltas, got {deltas}");
         Assert.IsTrue(sawCompletedLast);
     }
 
@@ -147,7 +147,7 @@ public class BitAiReviewRegressionTests
         await flush;
 
         var deadline = DateTime.UtcNow.AddSeconds(10);
-        while (renders < 2 && DateTime.UtcNow < deadline) await Task.Delay(10);
+        while (renders < 2 && DateTime.UtcNow < deadline) await Task.Delay(10, TestContext.CancellationToken);
 
         Assert.AreEqual(2, renders);
         await scheduler.DisposeAsync();
@@ -171,7 +171,7 @@ public class BitAiReviewRegressionTests
             Timeout = TimeSpan.FromMilliseconds(50),
         });
 
-        var reply = await session.SubmitAsync("hello");
+        var reply = await session.SubmitAsync("hello", cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(BitAiMessageStatus.Failed, reply!.Status);
         Assert.AreEqual(BitAiErrorKind.Timeout, session.LastError!.Kind);
@@ -234,15 +234,15 @@ public class BitAiReviewRegressionTests
 
         Assert.AreEqual("conv_1", restored.ConversationId);
         Assert.AreEqual("Round trip", restored.Title);
-        Assert.AreEqual(2, restored.Messages.Count);
+        Assert.HasCount(2, restored.Messages);
         Assert.AreEqual("notes.txt", restored.Messages[0].Attachments[0].Name);
 
         var assistant = restored.Messages[1];
         Assert.AreEqual(BitAiMessageStatus.Complete, assistant.Status);
         Assert.AreEqual(BitAiFeedbackKind.Positive, assistant.Feedback);
         Assert.AreEqual(30, assistant.Metadata!.Usage.TotalTokens);
-        Assert.AreEqual(conversation.Messages[1].Parts.Count, assistant.Parts.Count);
-        CollectionAssert.AreEqual(conversation.Messages[1].Parts.Select(p => p.Kind).ToArray(), assistant.Parts.Select(p => p.Kind).ToArray());
+        Assert.HasCount(conversation.Messages[1].Parts.Count, assistant.Parts);
+        Assert.AreSequenceEqual(conversation.Messages[1].Parts.Select(p => p.Kind).ToArray(), assistant.Parts.Select(p => p.Kind).ToArray());
         Assert.AreEqual("thinking...", assistant.PartsOf<BitAiReasoningPart>().Single().Text);
         Assert.AreEqual(BitAiToolCallStatus.Completed, assistant.FindToolCall("c1")!.Status);
         Assert.AreEqual(3, assistant.FindToolCall("c1")!.Result!.Value!.Value.GetProperty("hits").GetInt32());
@@ -259,7 +259,7 @@ public class BitAiReviewRegressionTests
 
         var run = restored.Runs["r1"];
         Assert.AreEqual(BitAiAgentRunStatus.Completed, run.Status);
-        Assert.AreEqual(2, run.Steps.Count);
+        Assert.HasCount(2, run.Steps);
         Assert.AreEqual(BitAiAgentStepStatus.Completed, run.Steps[0].Status);
 
         // Serialising the restored conversation again yields the same document.
@@ -324,4 +324,6 @@ public class BitAiReviewRegressionTests
             await Task.CompletedTask;
         }
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

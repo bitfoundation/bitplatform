@@ -99,7 +99,7 @@ public class McpSurfaceTests
         var mentioned = ToolNames.MentionedIn(instructions!).ToArray();
 
         Assert.IsNotEmpty(mentioned);
-        foreach (var tool in mentioned) CollectionAssert.Contains(ExpectedTools, tool, $"The instructions mention '{tool}', which is not a tool.");
+        foreach (var tool in mentioned) Assert.Contains(tool, ExpectedTools, $"The instructions mention '{tool}', which is not a tool.");
     }
 
     [TestMethod]
@@ -110,14 +110,14 @@ public class McpSurfaceTests
         var section = BormSourceCatalog.GetGuideSection("MCP server");
 
         Assert.IsNotNull(section, "The README has lost its 'MCP server' section.");
-        CollectionAssert.AreEquivalent(ExpectedTools, ToolNames.MentionedIn(section).ToArray());
+        Assert.AreSequenceEqual(ExpectedTools, ToolNames.MentionedIn(section).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         Assert.Contains("https://borm.bitplatform.dev/mcp", section);
     }
 
     [TestMethod]
     public void Every_expected_tool_is_published_and_nothing_else_is()
     {
-        CollectionAssert.AreEquivalent(ExpectedTools, _tools.Select(tool => tool.Name).ToArray());
+        Assert.AreSequenceEqual(ExpectedTools, _tools.Select(tool => tool.Name).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -147,8 +147,8 @@ public class McpSurfaceTests
             var annotations = tool.ProtocolTool.Annotations;
 
             Assert.IsNotNull(annotations, $"'{tool.Name}' has no annotations.");
-            Assert.AreEqual(true, annotations.ReadOnlyHint, $"'{tool.Name}' is not marked read-only; a client will stop and ask before running it.");
-            Assert.AreEqual(false, annotations.OpenWorldHint, $"'{tool.Name}' is not marked closed-world.");
+            Assert.IsTrue(annotations.ReadOnlyHint, $"'{tool.Name}' is not marked read-only; a client will stop and ask before running it.");
+            Assert.IsFalse(annotations.OpenWorldHint, $"'{tool.Name}' is not marked closed-world.");
         }
     }
 
@@ -175,7 +175,7 @@ public class McpSurfaceTests
 
             if (tool.JsonSchema.TryGetProperty("required", out var required))
             {
-                Assert.IsFalse(required.EnumerateArray().Any(value => value.GetString() == argument),
+                Assert.DoesNotContain(value => value.GetString() == argument, required.EnumerateArray(),
                     $"'{name}' requires '{argument}', so it can no longer answer with the index.");
             }
         }
@@ -188,7 +188,7 @@ public class McpSurfaceTests
 
         string?[] values = [.. setup.JsonSchema.GetProperty("properties").GetProperty("hostingModel").GetProperty("enum").EnumerateArray().Select(value => value.GetString())];
 
-        CollectionAssert.AreEquivalent(BormSetupGuide.HostingModels, values);
+        Assert.AreSequenceEqual(BormSetupGuide.HostingModels, values, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]

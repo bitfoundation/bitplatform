@@ -60,7 +60,7 @@ public class BitChartTests : BunitTestContext
         var root = component.Find(".bit-cht");
         Assert.IsTrue(root.ClassList.Contains("my-chart"));
         Assert.AreEqual("chart-1", root.Id);
-        StringAssert.Contains(root.GetAttribute("style"), "opacity:0.5");
+        Assert.Contains("opacity:0.5", root.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -114,15 +114,16 @@ public class BitChartTests : BunitTestContext
         // text by the direction of the element its first character is in, so each sits in a left-to-right tspan, which
         // leaves the text itself reading in the chart's direction. The categories centered on their ticks need none.
         var values = component.FindAll("svg.bit-cht-svg text[text-anchor=end]");
-        Assert.IsTrue(values.Count > 1);
+        Assert.IsGreaterThan(1, values.Count);
         foreach (var value in values)
         {
             Assert.IsNull(value.GetAttribute("direction"), value.OuterHtml);
-            Assert.AreEqual("ltr", value.QuerySelector("tspan")?.GetAttribute("direction"), value.OuterHtml);
+            var actualValue = value.QuerySelector("tspan")?.GetAttribute("direction");
+            Assert.AreEqual("ltr", actualValue, value.OuterHtml);
         }
 
         var categories = component.FindAll("svg.bit-cht-svg text").Where(t => t.TextContent is "Jan" or "Feb" or "Mar").ToList();
-        Assert.AreEqual(3, categories.Count);
+        Assert.HasCount(3, categories);
         foreach (var category in categories)
             Assert.IsNull(category.QuerySelector("tspan"), category.OuterHtml);
     }
@@ -132,8 +133,7 @@ public class BitChartTests : BunitTestContext
     {
         var component = RenderChart();
 
-        Assert.AreEqual(0, component.FindAll("style").Count,
-            "the chart styles ship in the Extras stylesheet, not duplicated into every instance");
+        Assert.IsEmpty(component.FindAll("style"), "the chart styles ship in the Extras stylesheet, not duplicated into every instance");
     }
 
     // ---- accessibility ----
@@ -169,11 +169,11 @@ public class BitChartTests : BunitTestContext
         // The description is the how-to-navigate sentence alone: a table pointed at by aria-describedby would be read
         // as one flat string on every focus, so it is a real table a screen reader browses instead.
         var described = svg.GetAttribute("aria-describedby")!;
-        Assert.IsFalse(described.Contains(table.Id!), "the table is read as one flat string when it is a description");
+        Assert.DoesNotContain(table.Id!, described, "the table is read as one flat string when it is a description");
         Assert.IsNotNull(component.Find($"#{described}"));
         Assert.AreEqual(3, table.QuerySelectorAll("thead th").Length - 1);
         Assert.AreEqual(2, table.QuerySelectorAll("tbody tr").Length);
-        StringAssert.Contains(table.QuerySelector("caption")!.TextContent, "Bar chart with 2 data series.");
+        Assert.Contains("Bar chart with 2 data series.", table.QuerySelector("caption")!.TextContent);
     }
 
     [TestMethod]
@@ -182,7 +182,7 @@ public class BitChartTests : BunitTestContext
         var component = RenderChart();
 
         var hintId = component.Find("svg").GetAttribute("aria-describedby")!;
-        StringAssert.Contains(component.Find($"#{hintId}").TextContent, "arrow keys");
+        Assert.Contains("arrow keys", component.Find($"#{hintId}").TextContent);
         Assert.AreEqual("chart", component.Find("svg").GetAttribute("aria-roledescription"));
     }
 
@@ -223,7 +223,7 @@ public class BitChartTests : BunitTestContext
             p.Add(c => c.Data, TwoSeries());
             p.Add(c => c.NavigationHint, "Arrow keys walk the bars.");
         });
-        StringAssert.Contains(custom.Find(".bit-cht").TextContent, "Arrow keys walk the bars.");
+        Assert.Contains("Arrow keys walk the bars.", custom.Find(".bit-cht").TextContent);
 
         var silent = RenderComponent<BitChart>(p =>
         {
@@ -231,7 +231,7 @@ public class BitChartTests : BunitTestContext
             p.Add(c => c.NavigationHint, null);
         });
         Assert.IsNull(silent.Find("svg").GetAttribute("aria-describedby"));
-        Assert.AreEqual(1, silent.FindAll("table").Count);
+        Assert.ContainsSingle(silent.FindAll("table"));
     }
 
     [TestMethod]
@@ -241,7 +241,7 @@ public class BitChartTests : BunitTestContext
 
         // Nothing to walk: the hint would be a lie.
         Assert.IsNull(component.Find("svg").GetAttribute("aria-describedby"));
-        Assert.AreEqual(0, component.FindAll(".bit-cht-sr[id$='-hint']").Count);
+        Assert.IsEmpty(component.FindAll(".bit-cht-sr[id$='-hint']"));
     }
 
     [TestMethod]
@@ -254,7 +254,7 @@ public class BitChartTests : BunitTestContext
             p.Add(c => c.NavigationHint, null);
         });
 
-        Assert.AreEqual(0, component.FindAll("table").Count);
+        Assert.IsEmpty(component.FindAll("table"));
         Assert.IsNull(component.Find("svg").GetAttribute("aria-describedby"));
     }
 
@@ -270,7 +270,7 @@ public class BitChartTests : BunitTestContext
         var described = component.Find("svg").GetAttribute("aria-describedby");
         Assert.IsNotNull(described);
         Assert.IsFalse(described!.Contains(' '), "with no table there is only the hint to point at");
-        StringAssert.Contains(component.Find($"#{described}").TextContent, "arrow keys");
+        Assert.Contains("arrow keys", component.Find($"#{described}").TextContent);
     }
 
     [TestMethod]
@@ -283,8 +283,8 @@ public class BitChartTests : BunitTestContext
         var component = RenderChart(BitChartType.Scatter, data);
 
         var headers = component.FindAll("table thead th").Select(h => h.TextContent).ToList();
-        CollectionAssert.AreEqual(new[] { "Series", "X", "Y" }, headers);
-        Assert.AreEqual(2, component.FindAll("table tbody tr").Count);
+        Assert.AreSequenceEqual(new[] { "Series", "X", "Y" }, headers);
+        Assert.HasCount(2, component.FindAll("table tbody tr"));
     }
 
     // ---- legend ----
@@ -295,7 +295,7 @@ public class BitChartTests : BunitTestContext
         var component = RenderChart();
 
         var items = component.FindAll(".bit-cht-lgd-itm");
-        Assert.AreEqual(2, items.Count);
+        Assert.HasCount(2, items);
         foreach (var item in items)
         {
             Assert.AreEqual("button", item.TagName.ToLowerInvariant(),
@@ -356,7 +356,7 @@ public class BitChartTests : BunitTestContext
         var item = component.FindAll(".bit-cht-lgd-itm")[0];
         Assert.AreEqual("span", item.TagName.ToLowerInvariant());
         Assert.IsNull(item.GetAttribute("aria-pressed"));
-        Assert.AreEqual(0, component.FindAll(".bit-cht-lgd button").Count);
+        Assert.IsEmpty(component.FindAll(".bit-cht-lgd button"));
     }
 
     [TestMethod]
@@ -376,8 +376,9 @@ public class BitChartTests : BunitTestContext
         Assert.IsNull(item.GetAttribute("aria-pressed"), "a button that toggles nothing has no pressed state to report");
 
         item.Click();
+        var actualValue = clicked?.Text;
 
-        Assert.AreEqual("Alpha", clicked?.Text);
+        Assert.AreEqual("Alpha", actualValue);
         Assert.IsFalse(component.FindAll(".bit-cht-lgd-itm")[0].ClassList.Contains("bit-cht-hdn"));
     }
 
@@ -394,7 +395,7 @@ public class BitChartTests : BunitTestContext
         int before = component.FindAll(".bit-cht-data > g").Count;
         component.FindAll(".bit-cht-lgd-itm")[0].Click();
 
-        Assert.AreEqual(before - 1, component.FindAll(".bit-cht-data > g").Count);
+        Assert.HasCount(before - 1, component.FindAll(".bit-cht-data > g"));
     }
 
     // ---- interaction ----
@@ -404,12 +405,12 @@ public class BitChartTests : BunitTestContext
     {
         var component = RenderChart();
 
-        Assert.AreEqual(0, component.FindAll(".bit-cht-tt").Count);
+        Assert.IsEmpty(component.FindAll(".bit-cht-tt"));
         component.FindAll(".bit-cht-data > g")[0].MouseEnter();
 
-        Assert.AreEqual(1, component.FindAll(".bit-cht-tt").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-cht-tt"));
         component.FindAll(".bit-cht-data > g")[0].MouseLeave();
-        Assert.AreEqual(0, component.FindAll(".bit-cht-tt").Count);
+        Assert.IsEmpty(component.FindAll(".bit-cht-tt"));
     }
 
     [TestMethod]
@@ -418,11 +419,11 @@ public class BitChartTests : BunitTestContext
         var component = RenderChart(BitChartType.Line);
 
         var bands = component.FindAll(".bit-cht-band");
-        Assert.AreEqual(3, bands.Count);
+        Assert.HasCount(3, bands);
         bands[1].MouseEnter();
 
         var rows = component.FindAll(".bit-cht-tt .bit-cht-tt-itm");
-        Assert.AreEqual(2, rows.Count, "a band covers the whole index, so both series are listed");
+        Assert.HasCount(2, rows, "a band covers the whole index, so both series are listed");
     }
 
     [TestMethod]
@@ -433,7 +434,7 @@ public class BitChartTests : BunitTestContext
 
         component.FindAll(".bit-cht-data > g")[0].MouseEnter();
 
-        Assert.AreEqual(0, component.FindAll(".bit-cht-tt").Count);
+        Assert.IsEmpty(component.FindAll(".bit-cht-tt"));
     }
 
     [TestMethod]
@@ -467,7 +468,7 @@ public class BitChartTests : BunitTestContext
         component.FindAll(".bit-cht-data > g")[0].MouseEnter();
         component.FindAll(".bit-cht-data > g")[0].MouseLeave();
 
-        Assert.AreEqual(2, seen.Count);
+        Assert.HasCount(2, seen);
         Assert.IsNotNull(seen[0]);
         Assert.IsNull(seen[1]);
     }
@@ -490,7 +491,7 @@ public class BitChartTests : BunitTestContext
 
         component.FindAll(".bit-cht-data > g")[0].MouseEnter();
 
-        Assert.AreEqual(1, component.FindAll(".bit-cht-tt-custom .my-tt").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-cht-tt-custom .my-tt"));
     }
 
     // ---- keyboard ----
@@ -503,11 +504,11 @@ public class BitChartTests : BunitTestContext
         component.Find("svg").KeyDown(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "ArrowRight" });
 
         var live = component.Find("[role=status]");
-        StringAssert.Contains(live.TextContent, "Jan");
+        Assert.Contains("Jan", live.TextContent);
         // Counted within the series the arrow keys walk (3 points), not across the whole scene.
-        StringAssert.Contains(live.TextContent, "1 of 3");
-        StringAssert.Contains(live.TextContent, "series 1 of 2");
-        Assert.AreEqual(1, component.FindAll(".bit-cht-focus-ring").Count);
+        Assert.Contains("1 of 3", live.TextContent);
+        Assert.Contains("series 1 of 2", live.TextContent);
+        Assert.ContainsSingle(component.FindAll(".bit-cht-focus-ring"));
     }
 
     [TestMethod]
@@ -519,7 +520,7 @@ public class BitChartTests : BunitTestContext
         svg.KeyDown(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "ArrowRight" });
         svg.KeyDown(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "Escape" });
 
-        Assert.AreEqual(0, component.FindAll(".bit-cht-focus-ring").Count);
+        Assert.IsEmpty(component.FindAll(".bit-cht-focus-ring"));
         Assert.AreEqual(string.Empty, component.Find("[role=status]").TextContent.Trim());
     }
 
@@ -546,7 +547,7 @@ public class BitChartTests : BunitTestContext
         Assert.AreEqual("claim", component.Find("svg").GetAttribute("data-bit-esc"));
 
         component.Find("svg").KeyDown(new KeyboardEventArgs { Key = "Escape" });
-        Assert.AreEqual(0, component.FindAll(".bit-cht-tt").Count);
+        Assert.IsEmpty(component.FindAll(".bit-cht-tt"));
         Assert.IsNull(component.Find("svg").GetAttribute("data-bit-esc"));
     }
 
@@ -560,8 +561,8 @@ public class BitChartTests : BunitTestContext
         svg.KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
         svg.KeyDown(new KeyboardEventArgs { Key = "Escape", ShiftKey = true });
 
-        Assert.AreEqual(1, component.FindAll(".bit-cht-focus-ring").Count);
-        StringAssert.Contains(component.Find("[role=status]").TextContent, "Jan");
+        Assert.ContainsSingle(component.FindAll(".bit-cht-focus-ring"));
+        Assert.Contains("Jan", component.Find("[role=status]").TextContent);
         Assert.AreEqual("claim", component.Find("svg").GetAttribute("data-bit-esc"));
     }
 
@@ -586,7 +587,7 @@ public class BitChartTests : BunitTestContext
 
         component.Find("svg").KeyDown(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "End" });
 
-        StringAssert.Contains(component.Find("[role=status]").TextContent, "Mar");
+        Assert.Contains("Mar", component.Find("[role=status]").TextContent);
     }
 
     [TestMethod]
@@ -641,7 +642,7 @@ public class BitChartTests : BunitTestContext
     [TestMethod]
     public void AChartWithDataShouldNotShowTheEmptyState()
     {
-        Assert.AreEqual(0, RenderChart().FindAll(".bit-cht-nodata").Count);
+        Assert.IsEmpty(RenderChart().FindAll(".bit-cht-nodata"));
     }
 
     // ---- titles ----
@@ -669,7 +670,7 @@ public class BitChartTests : BunitTestContext
         var options = new BitChartOptions { Plugins = { Title = { Display = true, Text = "One\nTwo" } } };
         var component = RenderChart(options: options);
 
-        Assert.AreEqual(1, component.FindAll(".bit-cht-ttl br").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-cht-ttl br"));
     }
 
     // ---- csv export ----
@@ -695,8 +696,8 @@ public class BitChartTests : BunitTestContext
         };
         var csv = RenderChart(BitChartType.Bar, data).Instance.ToCsv();
 
-        StringAssert.Contains(csv, "\"a,b\"");
-        StringAssert.Contains(csv, "\"say \"\"hi\"\"\"");
+        Assert.Contains("\"a,b\"", csv);
+        Assert.Contains("\"say \"\"hi\"\"\"", csv);
     }
 
     [TestMethod]
@@ -708,8 +709,8 @@ public class BitChartTests : BunitTestContext
         };
         var csv = RenderChart(BitChartType.Bubble, data).Replace_ToCsv();
 
-        StringAssert.StartsWith(csv, "Series,X,Y,R");
-        StringAssert.Contains(csv, "P,3,4,5");
+        Assert.StartsWith("Series,X,Y,R", csv);
+        Assert.Contains("P,3,4,5", csv);
     }
 
     [TestMethod]
@@ -721,7 +722,7 @@ public class BitChartTests : BunitTestContext
         };
         var lines = RenderChart(BitChartType.Scatter, data).Replace_ToCsv().TrimEnd('\n').Split('\n');
 
-        CollectionAssert.AreEqual(new[] { "Series,X,Y", "P,1,2", "P,3,4" }, lines, "the table shows no radius column here, and neither does the file");
+        Assert.AreSequenceEqual(new[] { "Series,X,Y", "P,1,2", "P,3,4" }, lines, "the table shows no radius column here, and neither does the file");
     }
 
     [TestMethod]
@@ -747,8 +748,8 @@ public class BitChartTests : BunitTestContext
         var component = RenderChart(BitChartType.Scatter, data, options);
 
         // Both series share the x axis, so its title still names that column; the y values are on two axes.
-        StringAssert.StartsWith(component.Instance.ToCsv(), "Series,Month,Y");
-        CollectionAssert.AreEqual(new[] { "Series", "Month", "Y" }, component.FindAll("table thead th").Select(h => h.TextContent).ToList());
+        Assert.StartsWith("Series,Month,Y", component.Instance.ToCsv());
+        Assert.AreSequenceEqual(new[] { "Series", "Month", "Y" }, component.FindAll("table thead th").Select(h => h.TextContent).ToList());
     }
 
     [TestMethod]
@@ -762,7 +763,7 @@ public class BitChartTests : BunitTestContext
         };
         var csv = RenderChart(BitChartType.Bar, data, options).Instance.ToCsv();
 
-        StringAssert.Contains(csv, "\"1,5\"");
+        Assert.Contains("\"1,5\"", csv);
     }
 
     // ---- zoom api ----
@@ -805,8 +806,8 @@ public class BitChartTests : BunitTestContext
         component.InvokeAsync(() => chart.ZoomTo("y", -500, 5000));
         var clamped = chart.GetAxisRange("y")!.Value;
 
-        Assert.IsTrue(clamped.Min >= full.Min - 1e-6, $"{clamped.Min} < {full.Min}");
-        Assert.IsTrue(clamped.Max <= full.Max + 1e-6, $"{clamped.Max} > {full.Max}");
+        Assert.IsGreaterThanOrEqualTo(full.Min - 1e-6, clamped.Min, $"{clamped.Min} < {full.Min}");
+        Assert.IsLessThanOrEqualTo(full.Max + 1e-6, clamped.Max, $"{clamped.Max} > {full.Max}");
     }
 
     [TestMethod]
@@ -830,8 +831,7 @@ public class BitChartTests : BunitTestContext
 
         // Horizontal bars put the values across the plot, so an "X" gesture is about the value axis.
         var after = chart.GetAxisRange("y")!.Value;
-        Assert.IsTrue(after.Max - after.Min < before.Max - before.Min,
-            "the mode names a direction on screen, not the axis called x");
+        Assert.IsLessThan(before.Max - before.Min, after.Max - after.Min, "the mode names a direction on screen, not the axis called x");
     }
 
     [TestMethod]
@@ -872,9 +872,8 @@ public class BitChartTests : BunitTestContext
         component.InvokeAsync(() => chart.OnWheelZoom(0.02, 0.5, -100));
         var after = chart.GetAxisRange("x")!.Value;
 
-        Assert.IsTrue(after.Max < before.Max);
-        Assert.IsTrue(after.Min - before.Min < before.Max - after.Max,
-            "the edge nearest the pointer barely moves");
+        Assert.IsLessThan(before.Max, after.Max);
+        Assert.IsLessThan(before.Max - after.Max, after.Min - before.Min, "the edge nearest the pointer barely moves");
     }
 
     [TestMethod]
@@ -905,8 +904,8 @@ public class BitChartTests : BunitTestContext
 
         var component = RenderChart(BitChartType.Line, data);
 
-        Assert.AreEqual(500, component.FindAll("table tbody tr").Count);
-        StringAssert.Contains(component.Find("table caption").TextContent, "3,000");
+        Assert.HasCount(500, component.FindAll("table tbody tr"));
+        Assert.Contains("3,000", component.Find("table caption").TextContent);
     }
 
     [TestMethod]
@@ -917,8 +916,8 @@ public class BitChartTests : BunitTestContext
 
         var component = RenderChart(BitChartType.Line, data);
 
-        Assert.AreEqual(10, component.FindAll("table tbody tr").Count);
-        Assert.IsFalse(component.Find("table caption").TextContent.Contains("Showing the first"));
+        Assert.HasCount(10, component.FindAll("table tbody tr"));
+        Assert.DoesNotContain("Showing the first", component.Find("table caption").TextContent);
     }
 
     [TestMethod]
@@ -934,7 +933,7 @@ public class BitChartTests : BunitTestContext
             p.Add(c => c.MaxTableRows, 5);
         });
 
-        Assert.AreEqual(5, component.FindAll("table tbody tr").Count);
+        Assert.HasCount(5, component.FindAll("table tbody tr"));
     }
 
     // ---- title placement ----
@@ -955,7 +954,7 @@ public class BitChartTests : BunitTestContext
         var title = component.Find(".bit-cht-mid > .bit-cht-ttl");
         Assert.IsTrue(title.ClassList.Contains("bit-cht-ttl-v"));
         Assert.IsTrue(title.ClassList.Contains(sideClass));
-        StringAssert.Contains(title.TextContent, "Down the side");
+        Assert.Contains("Down the side", title.TextContent);
     }
 
     // A subtitle goes wherever a title can - beside the plot it sits between the title and the plot, on either
@@ -985,13 +984,13 @@ public class BitChartTests : BunitTestContext
         Assert.IsTrue(subtitle.ClassList.Contains("bit-cht-ttl-v"));
         Assert.AreEqual("Sub", subtitle.TextContent.Trim());
         string[] sideClasses = ["bit-cht-lft", "bit-cht-rgt", "bit-cht-sta", "bit-cht-end"];
-        CollectionAssert.AreEqual(new[] { sideClass }, sideClasses.Where(title.ClassList.Contains).ToArray());
-        CollectionAssert.AreEqual(new[] { sideClass }, sideClasses.Where(subtitle.ClassList.Contains).ToArray());
+        Assert.AreSequenceEqual(new[] { sideClass }, sideClasses.Where(title.ClassList.Contains).ToArray());
+        Assert.AreSequenceEqual(new[] { sideClass }, sideClasses.Where(subtitle.ClassList.Contains).ToArray());
 
         var order = component.Find(".bit-cht-mid").Children
                              .Select(c => c.ClassList.Contains("bit-cht-plot") ? "plot" : c.ClassList.Contains("bit-cht-sub") ? "sub" : "title")
                              .ToArray();
-        CollectionAssert.AreEqual(beforeThePlot ? new[] { "title", "sub", "plot" } : new[] { "plot", "sub", "title" }, order);
+        Assert.AreSequenceEqual(beforeThePlot ? new[] { "title", "sub", "plot" } : new[] { "plot", "sub", "title" }, order);
     }
 
     [TestMethod]
@@ -1003,8 +1002,8 @@ public class BitChartTests : BunitTestContext
         };
         var component = RenderChart(options: options);
 
-        Assert.AreEqual(0, component.FindAll(".bit-cht-mid > .bit-cht-ttl").Count);
-        StringAssert.Contains(component.Find(".bit-cht > .bit-cht-ttl").TextContent, "Fallback");
+        Assert.IsEmpty(component.FindAll(".bit-cht-mid > .bit-cht-ttl"));
+        Assert.Contains("Fallback", component.Find(".bit-cht > .bit-cht-ttl").TextContent);
     }
 
     // ---- legend placement ----
@@ -1039,7 +1038,7 @@ public class BitChartTests : BunitTestContext
     {
         var component = RenderLegendAt(placement);
 
-        Assert.AreEqual(0, component.FindAll(".bit-cht-mid > .bit-cht-lgd").Count);
+        Assert.IsEmpty(component.FindAll(".bit-cht-mid > .bit-cht-lgd"));
         Assert.IsTrue(component.Find(".bit-cht > .bit-cht-lgd").ClassList.Contains("bit-cht-lgd-h"));
     }
 
@@ -1053,7 +1052,7 @@ public class BitChartTests : BunitTestContext
         component.FindAll(".bit-cht-band")[1].MouseEnter();
 
         var chip = component.FindAll(".bit-cht-hover text").Select(t => t.TextContent).ToList();
-        CollectionAssert.Contains(chip, "Feb", string.Join("|", chip));
+        Assert.Contains("Feb", chip, string.Join("|", chip));
     }
 
     // A bar of a group sits beside its category's middle (#14043): the crosshair marks the category, so it stays put from
@@ -1248,7 +1247,7 @@ public class BitChartTests : BunitTestContext
 
         component.FindAll(".bit-cht-data > g")[0].MouseEnter();
 
-        Assert.AreEqual(drawn ? 1 : 0, component.FindAll(".bit-cht-hover line").Count);
+        Assert.HasCount(drawn ? 1 : 0, component.FindAll(".bit-cht-hover line"));
     }
 
     // Hovers each element the selector finds in turn, finding it again every time since a hover re-renders the chart.
@@ -1279,10 +1278,10 @@ public class BitChartTests : BunitTestContext
             lines[chip.TextContent].Add(line);
         }
 
-        Assert.AreEqual(3, lines.Count, string.Join(", ", lines.Keys));
+        Assert.HasCount(3, lines, string.Join(", ", lines.Keys));
         foreach (var (category, positions) in lines)
         {
-            Assert.AreEqual(1, positions.Count, $"{category}: {string.Join(", ", positions)}");
+            Assert.ContainsSingle(positions, $"{category}: {string.Join(", ", positions)}");
             var tick = component.FindAll(".bit-cht-bg text").Single(t => t.TextContent == category);
             Assert.AreEqual(Coordinate(tick.GetAttribute(along)), positions.Single(), 0.01, category);
         }
@@ -1308,8 +1307,8 @@ public class BitChartTests : BunitTestContext
 
         component.FindAll(".bit-cht-band")[1].MouseEnter();
 
-        Assert.AreEqual(0, component.FindAll(".bit-cht-hover line").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-cht-hover text").Count);
+        Assert.IsEmpty(component.FindAll(".bit-cht-hover line"));
+        Assert.IsEmpty(component.FindAll(".bit-cht-hover text"));
     }
 
     [TestMethod]
@@ -1320,8 +1319,8 @@ public class BitChartTests : BunitTestContext
 
         component.FindAll(".bit-cht-band")[1].MouseEnter();
 
-        Assert.AreEqual(1, component.FindAll(".bit-cht-hover line").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-cht-hover text").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-cht-hover line"));
+        Assert.IsEmpty(component.FindAll(".bit-cht-hover text"));
     }
 
     [TestMethod]
@@ -1344,9 +1343,9 @@ public class BitChartTests : BunitTestContext
         svg.KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });   // Alpha / Feb
 
         var live = component.Find("[role=status]").TextContent;
-        StringAssert.Contains(live, "Feb");
-        StringAssert.Contains(live, "Alpha");
-        StringAssert.Contains(live, "series 1 of 2");
+        Assert.Contains("Feb", live);
+        Assert.Contains("Alpha", live);
+        Assert.Contains("series 1 of 2", live);
     }
 
     [TestMethod]
@@ -1359,8 +1358,8 @@ public class BitChartTests : BunitTestContext
 
         // Three points: the fourth press comes back to the first, still inside the same series.
         var live = component.Find("[role=status]").TextContent;
-        StringAssert.Contains(live, "Jan");
-        StringAssert.Contains(live, "series 1 of 2");
+        Assert.Contains("Jan", live);
+        Assert.Contains("series 1 of 2", live);
     }
 
     [TestMethod]
@@ -1374,9 +1373,9 @@ public class BitChartTests : BunitTestContext
         svg.KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });    // Beta / Feb
 
         var live = component.Find("[role=status]").TextContent;
-        StringAssert.Contains(live, "Feb", "stepping between series must stay on the same category");
-        StringAssert.Contains(live, "Beta");
-        StringAssert.Contains(live, "series 2 of 2");
+        Assert.Contains("Feb", live, "stepping between series must stay on the same category");
+        Assert.Contains("Beta", live);
+        Assert.Contains("series 2 of 2", live);
     }
 
     [TestMethod]
@@ -1388,7 +1387,7 @@ public class BitChartTests : BunitTestContext
         svg.KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
         svg.KeyDown(new KeyboardEventArgs { Key = "ArrowUp" });
 
-        StringAssert.Contains(component.Find("[role=status]").TextContent, "series 2 of 2");
+        Assert.Contains("series 2 of 2", component.Find("[role=status]").TextContent);
     }
 
     [TestMethod]
@@ -1406,8 +1405,8 @@ public class BitChartTests : BunitTestContext
         svg.KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });
 
         var live = component.Find("[role=status]").TextContent;
-        StringAssert.Contains(live, "2 of 3", "with nothing to switch to, down has to keep walking the data");
-        Assert.IsFalse(live.Contains("series"), "a single series is not worth announcing");
+        Assert.Contains("2 of 3", live, "with nothing to switch to, down has to keep walking the data");
+        Assert.DoesNotContain("series", live, "a single series is not worth announcing");
     }
 
     // ---- the interaction survives a re-render ----
@@ -1419,12 +1418,12 @@ public class BitChartTests : BunitTestContext
         var component = RenderChart(BitChartType.Bar, data);
 
         component.FindAll(".bit-cht-data > g")[0].MouseEnter();
-        Assert.AreEqual(1, component.FindAll(".bit-cht-tt").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-cht-tt"));
 
         // A parent re-render (same data) must not blink the tooltip out from under the pointer.
         component.Render(p => p.Add(c => c.Class, "re-rendered"));
 
-        Assert.AreEqual(1, component.FindAll(".bit-cht-tt").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-cht-tt"));
     }
 
     [TestMethod]
@@ -1436,7 +1435,7 @@ public class BitChartTests : BunitTestContext
 
         component.Render(p => p.Add(c => c.Class, "re-rendered"));
 
-        Assert.AreEqual(1, component.FindAll(".bit-cht-focus-ring").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-cht-focus-ring"));
         Assert.AreEqual(before, component.Find("[role=status]").TextContent);
     }
 
@@ -1446,11 +1445,11 @@ public class BitChartTests : BunitTestContext
         var component = RenderChart();
 
         component.FindAll(".bit-cht-data > g")[0].MouseEnter();
-        Assert.AreEqual(1, component.FindAll(".bit-cht-tt").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-cht-tt"));
 
         component.InvokeAsync(() => component.Instance.ToggleDataset(0));
 
-        Assert.AreEqual(0, component.FindAll(".bit-cht-tt").Count);
+        Assert.IsEmpty(component.FindAll(".bit-cht-tt"));
     }
 
     [TestMethod]
@@ -1482,7 +1481,7 @@ public class BitChartTests : BunitTestContext
         component.FindAll(".bit-cht-data > g")[0]
                  .TriggerEvent("onpointerdown", new PointerEventArgs { PointerType = "touch" });
 
-        Assert.AreEqual(1, component.FindAll(".bit-cht-tt").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-cht-tt"));
     }
 
     [TestMethod]
@@ -1494,7 +1493,7 @@ public class BitChartTests : BunitTestContext
                  .TriggerEvent("onpointerdown", new PointerEventArgs { PointerType = "touch" });
 
         var tooltip = component.Find(".bit-cht-tt");
-        StringAssert.Contains(tooltip.TextContent, "Feb");
+        Assert.Contains("Feb", tooltip.TextContent);
     }
 
     [TestMethod]
@@ -1522,15 +1521,14 @@ public class BitChartTests : BunitTestContext
     {
         var data = TwoSeries();
         var component = RenderChart(BitChartType.Bar, data);
-        Assert.AreEqual(6, component.FindAll(".bit-cht-data > g").Count);
+        Assert.HasCount(6, component.FindAll(".bit-cht-data > g"));
 
         data.Labels.Add("Apr");
         data.Datasets[0].Data.Add(4);
         data.Datasets[1].Data.Add(0);
         component.InvokeAsync(component.Instance.Refresh);
 
-        Assert.AreEqual(8, component.FindAll(".bit-cht-data > g").Count,
-            "Refresh has to rebuild the scene from the data as it now stands");
+        Assert.HasCount(8, component.FindAll(".bit-cht-data > g"), "Refresh has to rebuild the scene from the data as it now stands");
     }
 
     [TestMethod]
@@ -1544,11 +1542,11 @@ public class BitChartTests : BunitTestContext
 
         Assert.IsFalse(chart.IsDatasetVisible(0));
         Assert.AreEqual("false", component.FindAll(".bit-cht-lgd-itm")[0].GetAttribute("aria-pressed"));
-        Assert.AreEqual(3, component.FindAll(".bit-cht-data > g").Count, "only the second series is left");
+        Assert.HasCount(3, component.FindAll(".bit-cht-data > g"), "only the second series is left");
 
         component.InvokeAsync(() => chart.ToggleDataset(0));
         Assert.IsTrue(chart.IsDatasetVisible(0));
-        Assert.AreEqual(6, component.FindAll(".bit-cht-data > g").Count);
+        Assert.HasCount(6, component.FindAll(".bit-cht-data > g"));
     }
 
     [TestMethod]
@@ -1580,7 +1578,7 @@ public class BitChartTests : BunitTestContext
         component.InvokeAsync(() => chart.ToggleDataIndex(1));
 
         Assert.IsFalse(chart.IsDataIndexVisible(1));
-        Assert.AreEqual(2, component.FindAll(".bit-cht-data > g").Count);
+        Assert.HasCount(2, component.FindAll(".bit-cht-data > g"));
     }
 
     [TestMethod]
@@ -1591,11 +1589,11 @@ public class BitChartTests : BunitTestContext
 
         component.InvokeAsync(() => chart.SetDatasetVisible(0, false));
         component.InvokeAsync(() => chart.SetDatasetVisible(1, false));
-        Assert.AreEqual(0, component.FindAll(".bit-cht-data > g").Count);
+        Assert.IsEmpty(component.FindAll(".bit-cht-data > g"));
 
         component.InvokeAsync(chart.ResetVisibility);
 
-        Assert.AreEqual(6, component.FindAll(".bit-cht-data > g").Count);
+        Assert.HasCount(6, component.FindAll(".bit-cht-data > g"));
     }
 
     [TestMethod]
@@ -1606,7 +1604,7 @@ public class BitChartTests : BunitTestContext
         component.InvokeAsync(() => component.Instance.SetDatasetVisible(9, false));
 
         Assert.IsFalse(component.Instance.IsDatasetVisible(9));
-        Assert.AreEqual(6, component.FindAll(".bit-cht-data > g").Count);
+        Assert.HasCount(6, component.FindAll(".bit-cht-data > g"));
     }
 
     // ---- the screen-reader table stays a table, not a wall of cells ----
@@ -1621,9 +1619,9 @@ public class BitChartTests : BunitTestContext
         var component = RenderChart(BitChartType.Line, data);
 
         Assert.AreEqual(100, component.FindAll("table thead th").Count - 1);
-        Assert.AreEqual(100, component.FindAll("table tbody td").Count);
-        StringAssert.Contains(component.Find("table caption").TextContent, "3,000");
-        StringAssert.Contains(component.Find("table caption").TextContent, "columns");
+        Assert.HasCount(100, component.FindAll("table tbody td"));
+        Assert.Contains("3,000", component.Find("table caption").TextContent);
+        Assert.Contains("columns", component.Find("table caption").TextContent);
     }
 
     [TestMethod]
@@ -1639,7 +1637,7 @@ public class BitChartTests : BunitTestContext
             p.Add(c => c.MaxTableColumns, 5);
         });
 
-        Assert.AreEqual(5, component.FindAll("table tbody td").Count);
+        Assert.HasCount(5, component.FindAll("table tbody td"));
     }
 
     [TestMethod]
@@ -1648,7 +1646,7 @@ public class BitChartTests : BunitTestContext
         var component = RenderChart();
 
         Assert.AreEqual(3, component.FindAll("table tbody tr td").Count / 2);
-        Assert.IsFalse(component.Find("table caption").TextContent.Contains("columns"));
+        Assert.DoesNotContain("columns", component.Find("table caption").TextContent);
     }
 
     [TestMethod]
@@ -1693,7 +1691,7 @@ public class BitChartTests : BunitTestContext
     public void TheEmptyPlotShouldOnlyLookClickableWhenItIs()
     {
         var plain = RenderChart(BitChartType.Line);
-        StringAssert.Contains(plain.Find(".bit-cht-band").GetAttribute("style"), "cursor:default");
+        Assert.Contains("cursor:default", plain.Find(".bit-cht-band").GetAttribute("style")!);
 
         var clickable = RenderComponent<BitChart>(p =>
         {
@@ -1701,7 +1699,7 @@ public class BitChartTests : BunitTestContext
             p.Add(c => c.Data, TwoSeries());
             p.Add(c => c.OnElementClick, (ValueTuple<int, int> _) => { });
         });
-        StringAssert.Contains(clickable.Find(".bit-cht-band").GetAttribute("style"), "cursor:pointer");
+        Assert.Contains("cursor:pointer", clickable.Find(".bit-cht-band").GetAttribute("style")!);
     }
 
     // ---- the focus ring traces the element ----
@@ -1763,7 +1761,7 @@ public class BitChartTests : BunitTestContext
         component.InvokeAsync(() => chart.OnPinchZoom(0.5, 0.5, 2));
         var after = chart.GetAxisRange("x")!.Value;
 
-        Assert.IsTrue(after.Max - after.Min < before.Max - before.Min, "spreading the fingers zooms in");
+        Assert.IsLessThan(before.Max - before.Min, after.Max - after.Min, "spreading the fingers zooms in");
     }
 
     [TestMethod]
@@ -1782,7 +1780,7 @@ public class BitChartTests : BunitTestContext
         component.InvokeAsync(() => chart.OnPinchZoom(0.5, 0.5, 0.5));
         var after = chart.GetAxisRange("x")!.Value;
 
-        Assert.IsTrue(after.Max - after.Min > zoomed.Max - zoomed.Min);
+        Assert.IsGreaterThan(zoomed.Max - zoomed.Min, after.Max - after.Min);
     }
 
     [TestMethod]
@@ -1861,7 +1859,7 @@ public class BitChartTests : BunitTestContext
         Assert.DoesNotContain("zoom", hintOf(RenderChart(BitChartType.Line)));
 
         var zoomable = RenderChart(BitChartType.Line, options: new BitChartOptions { Zoom = { Enabled = true } });
-        StringAssert.Contains(hintOf(zoomable), "Press plus or minus to zoom");
+        Assert.Contains("Press plus or minus to zoom", hintOf(zoomable));
 
         var silenced = RenderComponent<BitChart>(p =>
         {
@@ -1883,7 +1881,7 @@ public class BitChartTests : BunitTestContext
         var bars = component.FindAll(".bit-cht-data rect");
         Assert.AreEqual("var(--bit-Chart-series-color-1, #36a2eb)", bars[0].GetAttribute("fill"));
         Assert.AreEqual("var(--bit-Chart-series-color-2, #ff6384)", bars[3].GetAttribute("fill"));
-        StringAssert.Contains(component.FindAll(".bit-cht-lgd-box")[0].GetAttribute("style"), "--bit-Chart-series-color-1");
+        Assert.Contains("--bit-Chart-series-color-1", component.FindAll(".bit-cht-lgd-box")[0].GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1901,7 +1899,7 @@ public class BitChartTests : BunitTestContext
 
         var component = RenderChart(chartType, data);
 
-        StringAssert.Contains(component.Find(".bit-cht-lgd-box").GetAttribute("style"), "border-color:red;");
+        Assert.Contains("border-color:red;", component.Find(".bit-cht-lgd-box").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1916,7 +1914,7 @@ public class BitChartTests : BunitTestContext
 
         var component = RenderChart(BitChartType.Line, data);
 
-        StringAssert.Contains(component.Find(".bit-cht-lgd-box").GetAttribute("style"), "border-color:var(--bit-Chart-series-color-1");
+        Assert.Contains("border-color:var(--bit-Chart-series-color-1", component.Find(".bit-cht-lgd-box").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1940,14 +1938,14 @@ public class BitChartTests : BunitTestContext
         component.FindAll(".bit-cht-el")[0].MouseEnter();
 
         var style = component.Find(".bit-cht-tt").GetAttribute("style")!;
-        StringAssert.Contains(style, "background:var(--bit-Chart-tooltip-background, var(--bit-clr-tooltip-bg))");
+        Assert.Contains("background:var(--bit-Chart-tooltip-background, var(--bit-clr-tooltip-bg))", style);
         Assert.DoesNotContain("border-radius", style, "the radius comes from the stylesheet's theme token");
 
         var options = new BitChartOptions { Plugins = { Tooltip = { CornerRadius = 2 } } };
         var custom = RenderChart(options: options);
         custom.FindAll(".bit-cht-el")[0].MouseEnter();
 
-        StringAssert.Contains(custom.Find(".bit-cht-tt").GetAttribute("style"), "border-radius:2px");
+        Assert.Contains("border-radius:2px", custom.Find(".bit-cht-tt").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1956,7 +1954,7 @@ public class BitChartTests : BunitTestContext
         Assert.DoesNotContain("--bit-cht-ease", RenderChart().Find("svg").GetAttribute("style")!);
 
         var options = new BitChartOptions { Animation = { Easing = "linear" } };
-        StringAssert.Contains(RenderChart(options: options).Find("svg").GetAttribute("style"), "--bit-cht-ease:linear");
+        Assert.Contains("--bit-cht-ease:linear", RenderChart(options: options).Find("svg").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1977,25 +1975,35 @@ public class BitChartTests : BunitTestContext
             p.Add(c => c.Options, options);
             p.Add(c => c.Classes, new BitChartClassStyles
             {
-                Root = "c-root", Title = "c-title", Subtitle = "c-sub", Legend = "c-legend",
-                LegendItem = "c-item", Plot = "c-plot", Tooltip = "c-tip"
+                Root = "c-root",
+                Title = "c-title",
+                Subtitle = "c-sub",
+                Legend = "c-legend",
+                LegendItem = "c-item",
+                Plot = "c-plot",
+                Tooltip = "c-tip"
             });
             p.Add(c => c.Styles, new BitChartClassStyles
             {
-                Root = "margin:1px", Title = "margin:2px", Subtitle = "margin:3px", Legend = "margin:4px",
-                LegendItem = "margin:5px", Plot = "margin:6px", Tooltip = "margin:7px"
+                Root = "margin:1px",
+                Title = "margin:2px",
+                Subtitle = "margin:3px",
+                Legend = "margin:4px",
+                LegendItem = "margin:5px",
+                Plot = "margin:6px",
+                Tooltip = "margin:7px"
             });
         });
         component.FindAll(".bit-cht-el")[0].MouseEnter();
 
         Assert.IsTrue(component.Find(".bit-cht").ClassList.Contains("c-root"));
-        StringAssert.Contains(component.Find(".bit-cht").GetAttribute("style"), "margin:1px");
-        StringAssert.Contains(component.Find(".bit-cht-ttl.c-title").GetAttribute("style"), "margin:2px");
-        StringAssert.Contains(component.Find(".bit-cht-sub.c-sub").GetAttribute("style"), "margin:3px");
-        StringAssert.Contains(component.Find(".bit-cht-lgd.c-legend").GetAttribute("style"), "margin:4px");
-        StringAssert.Contains(component.FindAll(".bit-cht-lgd-itm.c-item")[1].GetAttribute("style"), "margin:5px");
-        StringAssert.Contains(component.Find(".bit-cht-plot.c-plot").GetAttribute("style"), "margin:6px");
-        StringAssert.Contains(component.Find(".bit-cht-tt.c-tip").GetAttribute("style"), "margin:7px");
+        Assert.Contains("margin:1px", component.Find(".bit-cht").GetAttribute("style")!);
+        Assert.Contains("margin:2px", component.Find(".bit-cht-ttl.c-title").GetAttribute("style")!);
+        Assert.Contains("margin:3px", component.Find(".bit-cht-sub.c-sub").GetAttribute("style")!);
+        Assert.Contains("margin:4px", component.Find(".bit-cht-lgd.c-legend").GetAttribute("style")!);
+        Assert.Contains("margin:5px", component.FindAll(".bit-cht-lgd-itm.c-item")[1].GetAttribute("style")!);
+        Assert.Contains("margin:6px", component.Find(".bit-cht-plot.c-plot").GetAttribute("style")!);
+        Assert.Contains("margin:7px", component.Find(".bit-cht-tt.c-tip").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -2018,8 +2026,8 @@ public class BitChartTests : BunitTestContext
         });
 
         // An inline declaration later in the attribute wins, so the caller's has to come after the generated ones.
-        StringAssert.EndsWith(component.Find(".bit-cht-ttl").GetAttribute("style")!.TrimEnd(';'), "color:red");
-        StringAssert.EndsWith(component.Find(".bit-cht-sub").GetAttribute("style")!.TrimEnd(';'), "font-size:24px");
+        Assert.EndsWith("color:red", component.Find(".bit-cht-ttl").GetAttribute("style")!.TrimEnd(';'));
+        Assert.EndsWith("font-size:24px", component.Find(".bit-cht-sub").GetAttribute("style")!.TrimEnd(';'));
     }
 
     [TestMethod]
@@ -2031,7 +2039,7 @@ public class BitChartTests : BunitTestContext
             p.Add(c => c.Styles, new BitChartClassStyles { NoData = "margin:8px" });
         });
 
-        StringAssert.Contains(component.Find(".bit-cht-nodata.c-empty").GetAttribute("style"), "margin:8px");
+        Assert.Contains("margin:8px", component.Find(".bit-cht-nodata.c-empty").GetAttribute("style")!);
     }
 
     // ---- enabled state ----
@@ -2058,10 +2066,10 @@ public class BitChartTests : BunitTestContext
         component.FindAll(".bit-cht-el")[0].Click();
         component.Find("svg").KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
 
-        Assert.AreEqual(0, component.FindAll(".bit-cht-tt").Count);
+        Assert.IsEmpty(component.FindAll(".bit-cht-tt"));
         Assert.AreEqual(0, clicks);
         Assert.IsTrue(string.IsNullOrEmpty(component.Find("[role=status]").TextContent));
-        StringAssert.Contains(component.FindAll(".bit-cht-el")[0].GetAttribute("style"), "cursor:default");
+        Assert.Contains("cursor:default", component.FindAll(".bit-cht-el")[0].GetAttribute("style")!);
         Assert.IsNull(legendClicked);
     }
 
@@ -2070,12 +2078,12 @@ public class BitChartTests : BunitTestContext
     {
         var component = RenderChart();
         component.Find("svg").KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
-        Assert.AreEqual(1, component.FindAll(".bit-cht-tt").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-cht-tt"));
 
         component.Render(p => p.Add(c => c.Disabled, true));
 
-        Assert.AreEqual(0, component.FindAll(".bit-cht-tt").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-cht-focus-ring").Count);
+        Assert.IsEmpty(component.FindAll(".bit-cht-tt"));
+        Assert.IsEmpty(component.FindAll(".bit-cht-focus-ring"));
     }
 
     [TestMethod]
@@ -2121,7 +2129,7 @@ public class BitChartTests : BunitTestContext
     {
         var component = RenderChart(BitChartType.Line, options: new BitChartOptions { Sparkline = true });
 
-        Assert.AreEqual(0, component.FindAll(".bit-cht-lgd").Count, "a sparkline has no legend");
+        Assert.IsEmpty(component.FindAll(".bit-cht-lgd"), "a sparkline has no legend");
         Assert.IsNotNull(component.Find("table"), "dropping the chrome must not drop the accessible data");
         Assert.AreEqual("0", component.Find("svg").GetAttribute("tabindex"), "it stays keyboard reachable");
     }
@@ -2157,16 +2165,16 @@ public class BitChartTests : BunitTestContext
         Assert.AreEqual("نمودار Line با 2 سری", component.Find("svg").GetAttribute("aria-label"));
         Assert.AreEqual("راهنمای نمودار", component.Find(".bit-cht-lgd").GetAttribute("aria-label"));
         // An unlabeled dataset gets the same name in the legend, the table and the CSV.
-        StringAssert.Contains(component.Find(".bit-cht-lgd").TextContent, "مجموعه 1");
+        Assert.Contains("مجموعه 1", component.Find(".bit-cht-lgd").TextContent);
         Assert.AreEqual("مجموعه 1", component.Find("table tbody th").TextContent);
         Assert.AreEqual("سری", component.Find("table thead th").TextContent);
-        StringAssert.Contains(component.Find("table caption").TextContent, "1 از 2 ردیف");
-        StringAssert.StartsWith(component.Instance.ToCsv(), "سری,Jan,Feb");
+        Assert.Contains("1 از 2 ردیف", component.Find("table caption").TextContent);
+        Assert.StartsWith("سری,Jan,Feb", component.Instance.ToCsv());
 
         component.Find("svg").KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
         var live = component.Find(".bit-cht-sr[role=status]").TextContent;
-        StringAssert.Contains(live, "1 از 2");
-        StringAssert.Contains(live, "سری 1 از 2");
+        Assert.Contains("1 از 2", live);
+        Assert.Contains("سری 1 از 2", live);
     }
 
     [TestMethod]
@@ -2176,7 +2184,7 @@ public class BitChartTests : BunitTestContext
         var component = RenderChart(BitChartType.Bar, data);
 
         Assert.AreEqual("Chart legend", component.Find(".bit-cht-lgd").GetAttribute("aria-label"));
-        StringAssert.Contains(component.Find(".bit-cht-lgd").TextContent, "Dataset 1");
+        Assert.Contains("Dataset 1", component.Find(".bit-cht-lgd").TextContent);
         Assert.AreEqual("Dataset 1", component.Find("table tbody th").TextContent);
     }
 
@@ -2192,7 +2200,7 @@ public class BitChartTests : BunitTestContext
         component.Find("svg").KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
 
         // A stray brace in a translation is a typo: the text is said as written rather than throwing out of the render.
-        StringAssert.Contains(component.Find(".bit-cht-sr[role=status]").TextContent, "{0} of {1");
+        Assert.Contains("{0} of {1", component.Find(".bit-cht-sr[role=status]").TextContent);
     }
 
     [TestMethod]
@@ -2214,9 +2222,9 @@ public class BitChartTests : BunitTestContext
 
         // The axis title says what the values are; a title the axis does not show is not used.
         var headers = component.FindAll("table thead th").Select(h => h.TextContent).ToList();
-        CollectionAssert.AreEqual(new[] { "Series", "GDP", "Y", "R" }, headers);
-        CollectionAssert.AreEqual(new[] { "1", "2", "5" }, component.FindAll("table tbody tr")[0].QuerySelectorAll("td").Select(c => c.TextContent).ToList());
-        StringAssert.StartsWith(component.Instance.ToCsv(), "Series,GDP,Y,R");
+        Assert.AreSequenceEqual(new[] { "Series", "GDP", "Y", "R" }, headers);
+        Assert.AreSequenceEqual(new[] { "1", "2", "5" }, component.FindAll("table tbody tr")[0].QuerySelectorAll("td").Select(c => c.TextContent).ToList());
+        Assert.StartsWith("Series,GDP,Y,R", component.Instance.ToCsv());
     }
 
     // ---- loading ----
@@ -2236,14 +2244,14 @@ public class BitChartTests : BunitTestContext
         // Announced by the live region that is always there, since one appearing with its text is often not read.
         Assert.AreEqual("Fetching", component.Find(".bit-cht-sr[role=status]").TextContent.Trim());
         Assert.IsNull(loading.GetAttribute("role"));
-        StringAssert.Contains(loading.TextContent, "Fetching");
-        Assert.AreEqual(0, component.FindAll(".bit-cht-nodata").Count, "a chart still loading claimed it has no data");
+        Assert.Contains("Fetching", loading.TextContent);
+        Assert.IsEmpty(component.FindAll(".bit-cht-nodata"), "a chart still loading claimed it has no data");
 
         component.Render(p => p.Add(c => c.IsLoading, false));
 
         Assert.IsNull(component.Find(".bit-cht").GetAttribute("aria-busy"));
-        Assert.AreEqual(0, component.FindAll(".bit-cht-ldg").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-cht-nodata").Count);
+        Assert.IsEmpty(component.FindAll(".bit-cht-ldg"));
+        Assert.ContainsSingle(component.FindAll(".bit-cht-nodata"));
     }
 
     [TestMethod]
@@ -2263,11 +2271,11 @@ public class BitChartTests : BunitTestContext
         // tab order, and the template replaces the spinner.
         Assert.AreEqual("Loading", component.Find(".bit-cht-sr[role=status]").TextContent.Trim());
         Assert.AreEqual("-1", component.Find("svg").GetAttribute("tabindex"));
-        Assert.AreEqual(1, component.FindAll(".bit-cht-ldg .skeleton").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-cht-spn").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-cht-ldg .skeleton"));
+        Assert.IsEmpty(component.FindAll(".bit-cht-spn"));
 
         component.FindAll(".bit-cht-data > g")[0].MouseEnter();
-        Assert.AreEqual(0, component.FindAll(".bit-cht-tt").Count);
+        Assert.IsEmpty(component.FindAll(".bit-cht-tt"));
     }
 
     // ---- dismissing a hover tooltip (WCAG 1.4.13) ----
@@ -2282,11 +2290,11 @@ public class BitChartTests : BunitTestContext
             p.Add(c => c.OnElementHover, (BitChartTooltipContext? ctx) => reported = ctx);
         });
         component.FindAll(".bit-cht-data > g")[0].MouseEnter();
-        Assert.AreEqual(1, component.FindAll(".bit-cht-tt").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-cht-tt"));
 
         component.InvokeAsync(component.Instance.OnDismissTooltip);
 
-        Assert.AreEqual(0, component.FindAll(".bit-cht-tt").Count);
+        Assert.IsEmpty(component.FindAll(".bit-cht-tt"));
         Assert.IsNull(reported, "whoever tracks the active element was not told it is gone");
     }
 
@@ -2298,7 +2306,7 @@ public class BitChartTests : BunitTestContext
 
         component.InvokeAsync(component.Instance.OnDismissTooltip);
 
-        Assert.AreEqual(1, component.FindAll(".bit-cht-focus-ring").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-cht-focus-ring"));
     }
 
     // ---- legend highlight ----
@@ -2313,13 +2321,13 @@ public class BitChartTests : BunitTestContext
 
         // Beta is brought forward: Alpha's line and points fade, Beta's do not.
         var dimmedLines = component.FindAll(".bit-cht-series > g.bit-cht-dim");
-        Assert.AreEqual(1, dimmedLines.Count);
-        Assert.AreEqual(3, component.FindAll(".bit-cht-el.bit-cht-dim").Count);
-        Assert.AreEqual(6, component.FindAll(".bit-cht-el").Count);
+        Assert.ContainsSingle(dimmedLines);
+        Assert.HasCount(3, component.FindAll(".bit-cht-el.bit-cht-dim"));
+        Assert.HasCount(6, component.FindAll(".bit-cht-el"));
 
         component.FindAll(".bit-cht-lgd-itm")[1].MouseLeave();
 
-        Assert.AreEqual(0, component.FindAll(".bit-cht-dim").Count);
+        Assert.IsEmpty(component.FindAll(".bit-cht-dim"));
     }
 
     [TestMethod]
@@ -2329,7 +2337,7 @@ public class BitChartTests : BunitTestContext
     {
         var component = RenderChart(BitChartType.Line);
         component.FindAll(".bit-cht-lgd-itm")[1].MouseEnter();
-        Assert.AreNotEqual(0, component.FindAll(".bit-cht-dim").Count);
+        Assert.IsNotEmpty(component.FindAll(".bit-cht-dim"));
 
         // A disabled legend button need not fire mouseleave, so the fade cannot wait for one.
         component.Render(p =>
@@ -2337,10 +2345,10 @@ public class BitChartTests : BunitTestContext
             if (loading) p.Add(c => c.IsLoading, true);
             else p.Add(c => c.Disabled, true);
         });
-        Assert.AreEqual(0, component.FindAll(".bit-cht-dim").Count);
+        Assert.IsEmpty(component.FindAll(".bit-cht-dim"));
 
         component.FindAll(".bit-cht-lgd-itm")[1].MouseEnter();
-        Assert.AreEqual(0, component.FindAll(".bit-cht-dim").Count);
+        Assert.IsEmpty(component.FindAll(".bit-cht-dim"));
     }
 
     [TestMethod]
@@ -2354,8 +2362,8 @@ public class BitChartTests : BunitTestContext
         component.FindAll(".bit-cht-lgd-itm")[0].MouseEnter();
 
         // Beta's three labels fade with its bars; Alpha's stay.
-        Assert.AreEqual(3, component.FindAll(".bit-cht-fg > g.bit-cht-dim text").Count);
-        Assert.AreEqual(6, component.FindAll(".bit-cht-fg text").Count);
+        Assert.HasCount(3, component.FindAll(".bit-cht-fg > g.bit-cht-dim text"));
+        Assert.HasCount(6, component.FindAll(".bit-cht-fg text"));
     }
 
     [TestMethod]
@@ -2364,10 +2372,10 @@ public class BitChartTests : BunitTestContext
         var component = RenderChart();
 
         component.FindAll(".bit-cht-lgd-itm")[0].Focus();
-        Assert.AreEqual(3, component.FindAll(".bit-cht-el.bit-cht-dim").Count);
+        Assert.HasCount(3, component.FindAll(".bit-cht-el.bit-cht-dim"));
 
         component.FindAll(".bit-cht-lgd-itm")[0].Blur();
-        Assert.AreEqual(0, component.FindAll(".bit-cht-dim").Count);
+        Assert.IsEmpty(component.FindAll(".bit-cht-dim"));
     }
 
     [TestMethod]
@@ -2382,7 +2390,7 @@ public class BitChartTests : BunitTestContext
 
         component.FindAll(".bit-cht-lgd-itm")[2].MouseEnter();
 
-        Assert.AreEqual(2, component.FindAll(".bit-cht-el.bit-cht-dim").Count);
+        Assert.HasCount(2, component.FindAll(".bit-cht-el.bit-cht-dim"));
     }
 
     [TestMethod]
@@ -2393,13 +2401,13 @@ public class BitChartTests : BunitTestContext
             Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { HighlightOnHover = false } }
         });
         off.FindAll(".bit-cht-lgd-itm")[0].MouseEnter();
-        Assert.AreEqual(0, off.FindAll(".bit-cht-dim").Count);
+        Assert.IsEmpty(off.FindAll(".bit-cht-dim"));
 
         // A hidden series is not drawn, so bringing it forward would only fade everything else.
         var component = RenderChart();
         component.FindAll(".bit-cht-lgd-itm")[0].Click();
         component.FindAll(".bit-cht-lgd-itm")[0].MouseEnter();
-        Assert.AreEqual(0, component.FindAll(".bit-cht-dim").Count);
+        Assert.IsEmpty(component.FindAll(".bit-cht-dim"));
     }
 
     // ---- descriptions ----
@@ -2414,9 +2422,9 @@ public class BitChartTests : BunitTestContext
         });
 
         var ids = component.Find("svg").GetAttribute("aria-describedby")!.Split(' ');
-        Assert.AreEqual(2, ids.Length, "the summary, then how to walk the data");
+        Assert.HasCount(2, ids, "the summary, then how to walk the data");
         Assert.AreEqual("Alpha falls while Beta rises.", component.Find($"#{ids[0]}").TextContent);
-        StringAssert.Contains(component.Find($"#{ids[1]}").TextContent, "arrow keys");
+        Assert.Contains("arrow keys", component.Find($"#{ids[1]}").TextContent);
         Assert.IsTrue(component.Find($"#{ids[0]}").ClassList.Contains("bit-cht-sr"), "it is visually hidden");
     }
 
@@ -2448,7 +2456,7 @@ public class BitChartTests : BunitTestContext
         Assert.AreEqual("Marked on the chart: Target: 2.", component.Find($"#{ids[0]}").TextContent);
 
         var silent = RenderChart(BitChartType.Line);
-        Assert.AreEqual(1, silent.Find("svg").GetAttribute("aria-describedby")!.Split(' ').Length, "no plugin, no note");
+        Assert.ContainsSingle(silent.Find("svg").GetAttribute("aria-describedby")!.Split(' '), "no plugin, no note");
     }
 
     [TestMethod]
@@ -2476,7 +2484,7 @@ public class BitChartTests : BunitTestContext
             Plugins = new BitChartPluginOptions { Title = new BitChartTitleOptions { Display = true, Text = "T", Align = BitPlacement.Start } }
         });
 
-        StringAssert.Contains(component.Find(".bit-cht-ttl > div").GetAttribute("style"), "text-align:start");
+        Assert.Contains("text-align:start", component.Find(".bit-cht-ttl > div").GetAttribute("style")!);
     }
 
     [TestMethod]

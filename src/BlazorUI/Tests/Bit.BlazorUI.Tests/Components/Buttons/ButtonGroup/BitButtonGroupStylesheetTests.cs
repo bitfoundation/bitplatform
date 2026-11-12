@@ -20,8 +20,8 @@ public partial class BitButtonGroupStylesheetTests
         var documented = DocumentedVariable().Matches(stylesheet).Select(m => m.Groups[1].Value).Distinct().ToArray();
         var read = ReadVariable().Matches(stylesheet).Select(m => m.Groups[1].Value).Distinct().ToArray();
 
-        Assert.IsTrue(documented.Length > 0, "The stylesheet documents no public variable.");
-        CollectionAssert.AreEquivalent(documented, read, "The variables the header documents are not the ones the stylesheet reads.");
+        Assert.IsNotEmpty(documented, "The stylesheet documents no public variable.");
+        Assert.AreSequenceEqual(documented, read, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, "The variables the header documents are not the ones the stylesheet reads.");
 
         Assert.IsFalse(DeclaredVariable().IsMatch(SourceFiles.StripScssComments(stylesheet)), "A public --bit-ButtonGroup-* variable is declared, which stops it inheriting.");
     }
@@ -33,45 +33,45 @@ public partial class BitButtonGroupStylesheetTests
 
         // An explicit Size publishes these on the group, so the buttons read them before the variable, which only
         // restyles the medium group an unset one stands for.
-        StringAssert.Contains(stylesheet, "padding: var(--bit-btg-itm-padding, var(--bit-ButtonGroup-padding, #{$siz-ctrl-pad-y-md} #{$siz-ctrl-pad-x-md}));");
-        StringAssert.Contains(stylesheet, "min-height: var(--bit-btg-itm-min-height, var(--bit-ButtonGroup-min-height, #{$siz-ctrl-md}));");
-        StringAssert.Contains(stylesheet, "--bit-btg-itm-fs: var(--bit-btg-itm-fontsize, var(--bit-ButtonGroup-font-size, #{$tg-fs-sm}));");
-        StringAssert.Contains(stylesheet, "--bit-btg-itm-ics: var(--bit-btg-itm-iconsize, var(--bit-ButtonGroup-icon-size, #{$siz-icon-md}));");
-        StringAssert.Contains(stylesheet, "font-size: var(--bit-btg-itm-bdg-fs, var(--bit-ButtonGroup-badge-font-size, #{$tg-fs-xs}));");
-        StringAssert.Contains(stylesheet, "padding: var(--bit-btg-itm-pad-y, var(--bit-ButtonGroup-padding, #{$siz-ctrl-pad-y-md}));");
+        Assert.Contains("padding: var(--bit-btg-itm-padding, var(--bit-ButtonGroup-padding, #{$siz-ctrl-pad-y-md} #{$siz-ctrl-pad-x-md}));", stylesheet);
+        Assert.Contains("min-height: var(--bit-btg-itm-min-height, var(--bit-ButtonGroup-min-height, #{$siz-ctrl-md}));", stylesheet);
+        Assert.Contains("--bit-btg-itm-fs: var(--bit-btg-itm-fontsize, var(--bit-ButtonGroup-font-size, #{$tg-fs-sm}));", stylesheet);
+        Assert.Contains("--bit-btg-itm-ics: var(--bit-btg-itm-iconsize, var(--bit-ButtonGroup-icon-size, #{$siz-icon-md}));", stylesheet);
+        Assert.Contains("font-size: var(--bit-btg-itm-bdg-fs, var(--bit-ButtonGroup-badge-font-size, #{$tg-fs-xs}));", stylesheet);
+        Assert.Contains("padding: var(--bit-btg-itm-pad-y, var(--bit-ButtonGroup-padding, #{$siz-ctrl-pad-y-md}));", stylesheet);
 
         // Rounded is a choice as well, so its full radius outranks the public radius, on the group and on the detached
         // buttons alike.
-        StringAssert.Contains(stylesheet, "border-radius: var(--bit-btg-rad, var(--bit-ButtonGroup-radius, #{$shp-radius-button}));");
-        StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-btg-rnd {"), "--bit-btg-rad: #{$shp-radius-full};");
+        Assert.Contains("border-radius: var(--bit-btg-rad, var(--bit-ButtonGroup-radius, #{$shp-radius-button}));", stylesheet);
+        Assert.Contains("--bit-btg-rad: #{$shp-radius-full};", SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-btg-rnd {"));
 
         // So does an explicit Color, for every color it paints - read on the button itself, where a variable set on the
         // Style of a single button arrives, with the default of the variant after it. The hover and press states set the
         // variables the rules at rest paint from (--bit-btg-itm-sfg / -sbg / -sbr), never the colors themselves, so the
         // state's value is read ahead of the rest value it stands in for.
-        StringAssert.Contains(stylesheet, "color: var(--bit-btg-itm-sfg, var(--bit-btg-itm-clr-txt, var(--bit-ButtonGroup-fill-color, var(--bit-ButtonGroup-color, var(--bit-btg-dfl-txt)))));");
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-btg-itm-sbg, var(--bit-btg-itm-clr-bg, var(--bit-ButtonGroup-fill-background, var(--bit-ButtonGroup-background, var(--bit-btg-dfl-bg)))));");
-        StringAssert.Contains(stylesheet, "border-color: var(--bit-btg-clr-outer, var(--bit-ButtonGroup-fill-border-color, var(--bit-ButtonGroup-border-color, var(--bit-btg-dfl-outer))));");
-        StringAssert.Contains(stylesheet, "--bit-btg-sep-lin: var(--bit-btg-itm-clr-brd, var(--bit-ButtonGroup-fill-separator-color, var(--bit-ButtonGroup-separator-color, var(--bit-ButtonGroup-fill-border-color, var(--bit-ButtonGroup-border-color, var(--bit-btg-dfl-brd))))));");
-        StringAssert.Contains(stylesheet, "--bit-btg-itm-sbg: var(--bit-btg-itm-clr-bg-hover, var(--bit-ButtonGroup-fill-hover-background, var(--bit-ButtonGroup-hover-background, #{$clr-pri-hover})));");
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-btg-itm-sbg, var(--bit-btg-clr-dark, var(--bit-ButtonGroup-selected-background, #{$clr-pri-dark})));");
+        Assert.Contains("color: var(--bit-btg-itm-sfg, var(--bit-btg-itm-clr-txt, var(--bit-ButtonGroup-fill-color, var(--bit-ButtonGroup-color, var(--bit-btg-dfl-txt)))));", stylesheet);
+        Assert.Contains("background-color: var(--bit-btg-itm-sbg, var(--bit-btg-itm-clr-bg, var(--bit-ButtonGroup-fill-background, var(--bit-ButtonGroup-background, var(--bit-btg-dfl-bg)))));", stylesheet);
+        Assert.Contains("border-color: var(--bit-btg-clr-outer, var(--bit-ButtonGroup-fill-border-color, var(--bit-ButtonGroup-border-color, var(--bit-btg-dfl-outer))));", stylesheet);
+        Assert.Contains("--bit-btg-sep-lin: var(--bit-btg-itm-clr-brd, var(--bit-ButtonGroup-fill-separator-color, var(--bit-ButtonGroup-separator-color, var(--bit-ButtonGroup-fill-border-color, var(--bit-ButtonGroup-border-color, var(--bit-btg-dfl-brd))))));", stylesheet);
+        Assert.Contains("--bit-btg-itm-sbg: var(--bit-btg-itm-clr-bg-hover, var(--bit-ButtonGroup-fill-hover-background, var(--bit-ButtonGroup-hover-background, #{$clr-pri-hover})));", stylesheet);
+        Assert.Contains("background-color: var(--bit-btg-itm-sbg, var(--bit-btg-clr-dark, var(--bit-ButtonGroup-selected-background, #{$clr-pri-dark})));", stylesheet);
 
         // The variables the states move start out unset on each button, so one nested in another never inherits its state.
         var item = SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-btg-itm {");
-        StringAssert.Contains(item, "--bit-btg-itm-sfg: initial;");
-        StringAssert.Contains(item, "--bit-btg-itm-sbg: initial;");
-        StringAssert.Contains(item, "--bit-btg-itm-sbr: initial;");
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-btg-itm-clr-bg-dis, var(--bit-ButtonGroup-fill-disabled-background, var(--bit-ButtonGroup-disabled-background, var(--bit-btg-dfl-bg-dis))));");
-        StringAssert.Contains(stylesheet, "focus-ring-own(var(--bit-btg-clr-focus, var(--bit-ButtonGroup-focus-color)))");
+        Assert.Contains("--bit-btg-itm-sfg: initial;", item);
+        Assert.Contains("--bit-btg-itm-sbg: initial;", item);
+        Assert.Contains("--bit-btg-itm-sbr: initial;", item);
+        Assert.Contains("background-color: var(--bit-btg-itm-clr-bg-dis, var(--bit-ButtonGroup-fill-disabled-background, var(--bit-ButtonGroup-disabled-background, var(--bit-btg-dfl-bg-dis))));", stylesheet);
+        Assert.Contains("focus-ring-own(var(--bit-btg-clr-focus, var(--bit-ButtonGroup-focus-color)))", stylesheet);
 
         // The default of each variant is the primary role, and what a Color does not paint - the transparent background
         // of Outline - has no value of the Color's in front of the variable.
         var fill = SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-btg-fil {");
-        StringAssert.Contains(fill, "--bit-btg-itm-clr-bg: var(--bit-btg-clr);");
-        StringAssert.Contains(fill, "--bit-btg-dfl-bg: #{$clr-pri};");
+        Assert.Contains("--bit-btg-itm-clr-bg: var(--bit-btg-clr);", fill);
+        Assert.Contains("--bit-btg-dfl-bg: #{$clr-pri};", fill);
         var outline = SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-btg-otl {");
-        StringAssert.Contains(outline, "--bit-btg-itm-clr-bg: initial;");
-        StringAssert.Contains(outline, "--bit-btg-dfl-bg: transparent;");
+        Assert.Contains("--bit-btg-itm-clr-bg: initial;", outline);
+        Assert.Contains("--bit-btg-dfl-bg: transparent;", outline);
 
         Assert.IsFalse(Regex.IsMatch(stylesheet, @"var\(--bit-ButtonGroup-[a-z-]+, var\(--bit-btg-(?!dfl-)"), "A public variable is read before the parameter it restyles the default of.");
     }
@@ -93,15 +93,13 @@ public partial class BitButtonGroupStylesheetTests
 
         foreach (var name in new[] { "border-color", "separator-color", "disabled-border-color" })
         {
-            StringAssert.Contains(group, $"var(--bit-ButtonGroup-{variant}-{name}, var(--bit-ButtonGroup-{name}, ",
-                                  $".{variantClass} does not read --bit-ButtonGroup-{variant}-{name} ahead of --bit-ButtonGroup-{name}.");
+            Assert.Contains($"var(--bit-ButtonGroup-{variant}-{name}, var(--bit-ButtonGroup-{name}, ", group, $".{variantClass} does not read --bit-ButtonGroup-{variant}-{name} ahead of --bit-ButtonGroup-{name}.");
         }
 
         foreach (var name in new[] { "color", "background", "hover-color", "hover-background", "active-background",
                                      "disabled-background", "disabled-border-color" })
         {
-            StringAssert.Contains(buttons, $"var(--bit-ButtonGroup-{variant}-{name}, var(--bit-ButtonGroup-{name}, ",
-                                  $"The buttons of .{variantClass} do not read --bit-ButtonGroup-{variant}-{name} ahead of --bit-ButtonGroup-{name}.");
+            Assert.Contains($"var(--bit-ButtonGroup-{variant}-{name}, var(--bit-ButtonGroup-{name}, ", buttons, $"The buttons of .{variantClass} do not read --bit-ButtonGroup-{variant}-{name} ahead of --bit-ButtonGroup-{name}.");
         }
 
         // A variant reads a shared color variable only right behind its own twin, and never the tier of another variant.
@@ -133,7 +131,7 @@ public partial class BitButtonGroupStylesheetTests
                                          "--bit-btg-clr-dis", "--bit-btg-clr-dis-text", "--bit-btg-itm-min-height", "--bit-btg-itm-pad-y",
                                          "--bit-btg-itm-padding", "--bit-btg-itm-fontsize", "--bit-btg-itm-bdg-fs", "--bit-btg-itm-iconsize", "--bit-btg-rad" })
         {
-            StringAssert.Contains(root, $"{property}: initial;");
+            Assert.Contains($"{property}: initial;", root);
         }
     }
 
@@ -147,13 +145,13 @@ public partial class BitButtonGroupStylesheetTests
         // The labels of an Outline or Text group sit on the page rather than on the role's fill, so they are drawn in the
         // role's text color: a secondary or a warning main is picked to fill a surface and is under 3:1 as text on white.
         var group = SourceFiles.GetScssDeclarations(stylesheet, $"\n.{variantClass} {{");
-        StringAssert.Contains(group, "--bit-btg-itm-clr-txt: var(--bit-btg-clr-fg, var(--bit-btg-clr));");
-        StringAssert.Contains(group, "--bit-btg-dfl-txt: #{$clr-pri};");
+        Assert.Contains("--bit-btg-itm-clr-txt: var(--bit-btg-clr-fg, var(--bit-btg-clr));", group);
+        Assert.Contains("--bit-btg-dfl-txt: #{$clr-pri};", group);
 
         // Only the labels: the focus ring keeps the role's main.
-        StringAssert.Contains(group, "--bit-btg-itm-clr-fcs: var(--bit-btg-clr);");
+        Assert.Contains("--bit-btg-itm-clr-fcs: var(--bit-btg-clr);", group);
 
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n    .bit-btg-#{$role} {"), "--bit-btg-clr-fg: #{role-text($role, $tokens)};");
+        Assert.Contains("--bit-btg-clr-fg: #{role-text($role, $tokens)};", SourceFiles.GetScssBlock(stylesheet, "\n    .bit-btg-#{$role} {"));
 
         // The surface roles are written out by hand, with the text color role-text gives them: the fg of the role map - the
         // on-color a background or border role is paired with (its main is the page, or a hairline on it) and the main of a
@@ -161,7 +159,7 @@ public partial class BitButtonGroupStylesheetTests
         foreach (var (role, text) in new[] { ("pbg", "fg-pri"), ("sbg", "fg-pri"), ("tbg", "fg-pri"), ("pfg", "fg-pri"), ("sfg", "fg-sec"),
                                              ("tfg", "fg-ter"), ("pbr", "fg-pri"), ("sbr", "fg-pri"), ("tbr", "fg-pri") })
         {
-            StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, $"\n.bit-btg-{role} {{"), $"--bit-btg-clr-fg: #{{$clr-{text}}};");
+            Assert.Contains($"--bit-btg-clr-fg: #{{$clr-{text}}};", SourceFiles.GetScssDeclarations(stylesheet, $"\n.bit-btg-{role} {{"));
         }
     }
 

@@ -64,7 +64,7 @@ public class XmlTests
         Assert.AreSame(heading, tree[0]);
         Assert.AreSame(text, tree[3]);
         Assert.AreEqual("<h1></h1><p>one</p><p>two</p>loose", tree.ToXmlString());
-        CollectionAssert.AreEqual(new object[] { heading, tree[1], tree[2], text }, tree.ToArray());
+        Assert.AreSequenceEqual(new object[] { heading, tree[1], tree[2], text }, tree.ToArray());
 
         tree.Delete(1, 2);
         Assert.AreEqual("<h1></h1>loose", tree.ToXmlString());
@@ -94,14 +94,14 @@ public class XmlTests
         Assert.AreEqual("https://bitplatform.dev", link.GetAttribute("href"));
         Assert.AreEqual(3L, link.GetAttribute("data-rank"));
         Assert.IsTrue(link.HasAttribute("href"));
-        CollectionAssert.AreEqual(new[] { "data-rank", "href" }, link.GetAttributes().Keys.ToArray());
+        Assert.AreSequenceEqual(new[] { "data-rank", "href" }, link.GetAttributes().Keys.ToArray());
 
         // Null is absence: an attribute that is present has a value.
         link.SetAttribute("data-rank", null);
         Assert.IsFalse(link.HasAttribute("data-rank"));
         link.RemoveAttribute("href");
         link.RemoveAttribute("never-set");
-        Assert.AreEqual(0, link.GetAttributes().Count);
+        Assert.IsEmpty(link.GetAttributes());
         Assert.AreEqual("<a>bit</a>", link.ToXmlString());
     }
 
@@ -180,7 +180,7 @@ public class XmlTests
         Assert.ThrowsExactly<NotSupportedException>(() => element.SetAttribute("data", new BcrdtMap()));
         Assert.ThrowsExactly<NotSupportedException>(() => element.SetAttribute("data", new BcrdtXmlText("x")));
         Assert.ThrowsExactly<NotSupportedException>(() => element.SetAttribute("data", new object()));
-        Assert.AreEqual(0, element.GetAttributes().Count);
+        Assert.IsEmpty(element.GetAttributes());
     }
 
     [TestMethod]
@@ -200,7 +200,7 @@ public class XmlTests
         Assert.AreSame(list, first.ParentNode);
         Assert.AreSame(second, text.ParentNode);
         Assert.AreEqual("tasks", list.GetAttribute("class"));
-        CollectionAssert.AreEqual(new object[] { first, first[0], second, text }, list.Descendants().ToArray());
+        Assert.AreSequenceEqual(new object[] { first, first[0], second, text }, list.Descendants().ToArray());
 
         using BcrdtDocument doc = Doc(1);
         int updates = 0;
@@ -307,10 +307,10 @@ public class XmlTests
         var projection = (List<object?>)tree.ToJson();
         var element = (SortedDictionary<string, object?>)projection[0]!;
 
-        CollectionAssert.AreEqual(new[] { "attributes", "children", "name" }, element.Keys.ToArray());
+        Assert.AreSequenceEqual(new[] { "attributes", "children", "name" }, element.Keys.ToArray());
         Assert.AreEqual("h1", element["name"]);
-        CollectionAssert.AreEqual(new[] { "class", "level" }, ((IReadOnlyDictionary<string, object?>)element["attributes"]!).Keys.ToArray());
-        CollectionAssert.AreEqual(new object[] { "Title" }, (List<object?>)element["children"]!);
+        Assert.AreSequenceEqual(new[] { "class", "level" }, ((IReadOnlyDictionary<string, object?>)element["attributes"]!).Keys.ToArray());
+        Assert.AreSequenceEqual(new object[] { "Title" }, (List<object?>)element["children"]!);
         Assert.AreEqual("tail", projection[1]);
     }
 
@@ -335,7 +335,7 @@ public class XmlTests
         Assert.AreEqual("<section id=\"changed\"><p>body</p></section><section id=\"s1\"><p>body</p></section>", tree.ToXmlString());
 
         var copiedText = (BcrdtXmlText)((BcrdtXmlElement)copy[0])[0];
-        Assert.AreEqual(true, copiedText.ToDelta()[0].Attributes!["italic"]);
+        Assert.IsTrue((bool?)copiedText.ToDelta()[0].Attributes!["italic"]);
 
         BcrdtXmlFragment fragmentCopy = tree.Clone();
         Assert.AreEqual(2, fragmentCopy.Count);
@@ -357,7 +357,7 @@ public class XmlTests
             .. tree.Descendants().Select(node => node is BcrdtXmlElement element ? element.Name : node.ToXmlString()),
         ];
 
-        CollectionAssert.AreEqual(new[] { "h1", "ul", "p", "a", "p", "b", "end" }, order);
+        Assert.AreSequenceEqual(new[] { "h1", "ul", "p", "a", "p", "b", "end" }, order);
         Assert.AreEqual(2, tree.Descendants().OfType<BcrdtXmlElement>().Count(element => element.Name == "p"));
     }
 
@@ -372,9 +372,9 @@ public class XmlTests
         text.Format(6, 5, new Dictionary<string, object?> { ["bold"] = true });
 
         IReadOnlyList<BcrdtDeltaOperation> delta = text.ToDelta();
-        Assert.AreEqual(2, delta.Count);
+        Assert.HasCount(2, delta);
         Assert.AreEqual("world", delta[1].Content);
-        Assert.AreEqual(true, delta[1].Attributes!["bold"]);
+        Assert.IsTrue((bool?)delta[1].Attributes!["bold"]);
         Assert.IsInstanceOfType<BcrdtText>(text);
         Assert.AreEqual(BcrdtTypeKind.XmlText, text.Kind);
         Assert.AreSame(doc.GetXmlFragment("tree"), text.ParentNode);
@@ -408,14 +408,13 @@ public class XmlTests
         element.SetAttribute("class", "lead");
         element.Push(new BcrdtXmlText("child"));
 
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             new[]
             {
                 "tree children=True delta=Delete:1,Insert:1",
                 "p children=False attributes=class",
                 "p children=True attributes=",
-            },
-            seen);
+            }, seen);
     }
 
     [TestMethod]
@@ -436,7 +435,7 @@ public class XmlTests
 
         text.Insert(3, "d");
 
-        CollectionAssert.AreEqual(new[] { "BcrdtTextEvent@1/0" }, paths);
+        Assert.AreSequenceEqual(new[] { "BcrdtTextEvent@1/0" }, paths);
     }
 
     [TestMethod]
@@ -461,7 +460,7 @@ public class XmlTests
 
         text.Insert(3, "d");
 
-        CollectionAssert.AreEqual(new[] { "1/0" }, paths);
+        Assert.AreSequenceEqual(new[] { "1/0" }, paths);
     }
 
     [TestMethod]
@@ -482,7 +481,7 @@ public class XmlTests
     public async Task The_collaborative_document_exposes_root_fragments()
     {
         await using var service = new BcrdtCollaborationService(new BcrdtCollaborationOptions { CreateUndoManager = false });
-        BcrdtCollaborativeDocument document = await service.OpenAsync("xml");
+        BcrdtCollaborativeDocument document = await service.OpenAsync("xml", cancellationToken: TestContext.CancellationToken);
 
         document.XmlFragment("body").Push(Paragraph("hi"));
 
@@ -516,7 +515,7 @@ public class XmlTests
 
         using BcrdtDocument peer = Doc(2);
         peer.ApplyUpdate(doc.EncodeStateAsUpdate());
-        Assert.AreEqual(BcrdtAbstractType.MaxNestingDepth, peer.GetXmlFragment("tree").Descendants().Count());
+        Assert.HasCount(BcrdtAbstractType.MaxNestingDepth, peer.GetXmlFragment("tree").Descendants());
         BcrdtConvergenceHarness.AssertConverged(doc, peer);
     }
 
@@ -582,7 +581,7 @@ public class XmlTests
         Assert.IsInstanceOfType<BcrdtXmlText>(receivedHeading[0]);
         Assert.IsInstanceOfType<BcrdtXmlText>(received[1]);
         Assert.AreEqual(tree.ToXmlString(), received.ToXmlString());
-        Assert.AreEqual(true, ((BcrdtXmlText)receivedHeading[0]).ToDelta()[0].Attributes!["bold"]);
+        Assert.IsTrue((bool?)((BcrdtXmlText)receivedHeading[0]).ToDelta()[0].Attributes!["bold"]);
         Assert.AreEqual("<p>aside</p>", reader.GetMap("meta").Get<BcrdtXmlElement>("aside")!.ToXmlString());
         BcrdtConvergenceHarness.AssertConverged(author, reader);
     }
@@ -612,9 +611,9 @@ public class XmlTests
         string markup = a.GetXmlFragment("tree").ToXmlString();
         Assert.AreEqual(markup, b.GetXmlFragment("tree").ToXmlString());
         Assert.AreEqual(3, a.GetXmlFragment("tree").Count);
-        StringAssert.Contains(markup, "<p>from a</p>");
-        StringAssert.Contains(markup, "<p>from b</p>");
-        StringAssert.EndsWith(markup, "<p class=\"a\" id=\"b\">A:shared:B</p>");
+        Assert.Contains("<p>from a</p>", markup);
+        Assert.Contains("<p>from b</p>", markup);
+        Assert.EndsWith("<p class=\"a\" id=\"b\">A:shared:B</p>", markup);
     }
 
     [TestMethod]
@@ -764,7 +763,7 @@ public class XmlTests
             Assert.AreEqual(2, side.Count);
             Assert.AreEqual("<p real=\"yes\"></p>", side[1].ToXmlString());
             Assert.AreEqual("kept<p real=\"yes\"></p>", side.ToXmlString());
-            CollectionAssert.AreEqual(new[] { "real" }, ((BcrdtXmlElement)side[1]).GetAttributes().Keys.ToArray());
+            Assert.AreSequenceEqual(new[] { "real" }, ((BcrdtXmlElement)side[1]).GetAttributes().Keys.ToArray());
             Assert.IsNull(((BcrdtXmlElement)side[1]).GetAttribute("nested"));
         }
 
@@ -777,7 +776,7 @@ public class XmlTests
 
         Assert.AreEqual("keptbetween<p real=\"yes\"></p>", tree.ToXmlString());
         Assert.AreEqual(tree.ToXmlString(), received.ToXmlString());
-        CollectionAssert.AreEqual(new[] { "Retain:1,Insert:1" }, deltas);
+        Assert.AreSequenceEqual(new[] { "Retain:1,Insert:1" }, deltas);
 
         tree.Delete(0, 3);
         Sync(a, b);
@@ -939,7 +938,7 @@ public class XmlTests
         }
         catch (Exception ex)
         {
-            throw new AssertFailedException(
+            throw new InvalidOperationException(
                 $"Seed {seed} diverged. Last operations:\n{string.Join("\n", history.TakeLast(20))}", ex);
         }
     }
@@ -978,7 +977,7 @@ public class XmlTests
         }
         catch (Exception ex)
         {
-            throw new AssertFailedException(
+            throw new InvalidOperationException(
                 $"Seed {seed} diverged. Last operations:\n{string.Join("\n", history.TakeLast(20))}", ex);
         }
     }
@@ -1026,8 +1025,10 @@ public class XmlTests
         }
         catch (Exception ex)
         {
-            throw new AssertFailedException(
+            throw new InvalidOperationException(
                 $"Seed {seed} diverged. Last operations:\n{string.Join("\n", history.TakeLast(20))}", ex);
         }
     }
+
+    public TestContext TestContext { get; set; }
 }

@@ -1,4 +1,4 @@
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Net.WebSockets;
 using System.Runtime.CompilerServices;
@@ -43,7 +43,7 @@ public class AccessAndHostingTests
         var clock = Stopwatch.StartNew();
         while (!condition())
         {
-            Assert.IsTrue(clock.Elapsed < Patience, because);
+            Assert.IsLessThan(Patience, clock.Elapsed, because);
             await Task.Delay(10);
         }
     }
@@ -53,7 +53,7 @@ public class AccessAndHostingTests
         var clock = Stopwatch.StartNew();
         while (!await condition())
         {
-            Assert.IsTrue(clock.Elapsed < Patience, because);
+            Assert.IsLessThan(Patience, clock.Elapsed, because);
             await Task.Delay(10);
         }
     }
@@ -98,7 +98,7 @@ public class AccessAndHostingTests
         int accessChanges = 0;
         provider.AccessChanged += _ => Interlocked.Increment(ref accessChanges);
 
-        await provider.ConnectAsync();
+        await provider.ConnectAsync(TestContext.CancellationToken);
         await AssertEventuallyAsync(() => server.Received.Any(m => m.Kind == BcrdtSyncMessageKind.SyncStep1), "the provider should be in the room");
         await server.SendAsync(BcrdtSyncProtocol.EncodeAuth(BcrdtDocumentAccess.ReadOnly, null));
         await AssertEventuallyAsync(() => provider.Access == BcrdtDocumentAccess.ReadOnly, "the grant should be taken");
@@ -112,10 +112,10 @@ public class AccessAndHostingTests
 
         // A local edit stays local, and the application hears about it.
         doc.GetText("body").Insert(0, "!");
-        await Task.Delay(QuietPeriod);
+        await Task.Delay(QuietPeriod, TestContext.CancellationToken);
 
-        Assert.IsFalse(server.Received.Any(m => m.Kind is BcrdtSyncMessageKind.Update or BcrdtSyncMessageKind.SyncStep2 or BcrdtSyncMessageKind.SyncStep1Reply));
-        Assert.IsTrue(errors.Any(e => e is InvalidOperationException), "a local edit on a read-only connection must be reported");
+        Assert.DoesNotContain(m => m.Kind is BcrdtSyncMessageKind.Update or BcrdtSyncMessageKind.SyncStep2 or BcrdtSyncMessageKind.SyncStep1Reply, server.Received);
+        Assert.Contains(e => e is InvalidOperationException, errors, "a local edit on a read-only connection must be reported");
     }
 
     [TestMethod]
@@ -126,12 +126,12 @@ public class AccessAndHostingTests
 
         using var doc = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 1 });
         await using BcrdtSyncProvider provider = await ProviderAsync(doc, network.CreateTransport("room"));
-        await provider.ConnectAsync();
+        await provider.ConnectAsync(TestContext.CancellationToken);
         await AssertEventuallyAsync(() => peer.Received.Any(m => m.Kind == BcrdtSyncMessageKind.SyncStep1), "the announcement should arrive");
 
         // The reply travels first and is small; on a slow link the delta behind it is still on its way.
         await peer.SendAsync(BcrdtSyncProtocol.EncodeSyncStep1Reply(new BcrdtStateVector(), 1));
-        await Task.Delay(QuietPeriod);
+        await Task.Delay(QuietPeriod, TestContext.CancellationToken);
         Assert.AreEqual(BcrdtConnectionStatus.Handshaking, provider.Status, "synced before the peer's data arrived");
 
         await peer.SendAsync(BcrdtSyncProtocol.EncodeSyncStep2(BcrdtUpdateEncoder.Empty));
@@ -146,9 +146,9 @@ public class AccessAndHostingTests
         await using BcrdtSyncProvider provider = await ProviderAsync(doc, transport, options: Options(
             reconnect: new BcrdtReconnectPolicy { BaseDelay = TimeSpan.FromMilliseconds(100), MaxDelay = TimeSpan.FromSeconds(10) }));
 
-        await provider.ConnectAsync();
-        await Task.Delay(TimeSpan.FromSeconds(2));
-        await provider.DisconnectAsync();
+        await provider.ConnectAsync(TestContext.CancellationToken);
+        await Task.Delay(TimeSpan.FromSeconds(2), TestContext.CancellationToken);
+        await provider.DisconnectAsync(TestContext.CancellationToken);
 
         // Exponential from 100 ms fits half a dozen attempts in two seconds; retrying at the first
         // delay forever fits forty.
@@ -174,13 +174,13 @@ public class AccessAndHostingTests
         holder.GetText("body").Insert(0, string.Concat(Enumerable.Repeat("The quick brown fox jumps over the lazy dog. ", 6_000)));
         await using var holderTransport = new BcrdtWebSocketTransport(new Uri(host.WebSocketBase + "/ws/big"));
         await using BcrdtSyncProvider holderProvider = await ProviderAsync(holder, holderTransport, options: options);
-        await holderProvider.ConnectAsync();
+        await holderProvider.ConnectAsync(TestContext.CancellationToken);
         await AssertEventuallyAsync(() => holderProvider.IsSynced, "alone in the room");
 
         using var newcomer = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 2 });
         await using var newcomerTransport = new BcrdtWebSocketTransport(new Uri(host.WebSocketBase + "/ws/big"));
         await using BcrdtSyncProvider newcomerProvider = await ProviderAsync(newcomer, newcomerTransport, options: options);
-        await newcomerProvider.ConnectAsync();
+        await newcomerProvider.ConnectAsync(TestContext.CancellationToken);
 
         await AssertEventuallyAsync(() => newcomer.GetText("body").Count == holder.GetText("body").Count, "the whole document should arrive");
         await AssertEventuallyAsync(() => newcomerProvider.IsSynced, "and the newcomer should be synced");
@@ -210,8 +210,8 @@ public class AccessAndHostingTests
         await using BcrdtSyncProvider writer = await ProviderAsync(writerDoc, writerTransport, options: Options(TimeSpan.FromMilliseconds(300)));
         await using BcrdtSyncProvider reader = await ProviderAsync(readerDoc, readerTransport, options: Options(TimeSpan.FromMilliseconds(300)));
 
-        await writer.ConnectAsync();
-        await reader.ConnectAsync();
+        await writer.ConnectAsync(TestContext.CancellationToken);
+        await reader.ConnectAsync(TestContext.CancellationToken);
         await AssertEventuallyAsync(() => reader.Access == BcrdtDocumentAccess.ReadOnly, "the reader should be told");
         Assert.AreEqual(BcrdtDocumentAccess.ReadWrite, writer.Access);
 
@@ -219,8 +219,8 @@ public class AccessAndHostingTests
         await AssertEventuallyAsync(() => readerDoc.GetText("body").ToString() == "hello", "a reader still receives changes");
 
         readerDoc.GetText("body").Insert(0, "X");
-        await writer.ResyncAsync();
-        await Task.Delay(QuietPeriod);
+        await writer.ResyncAsync(TestContext.CancellationToken);
+        await Task.Delay(QuietPeriod, TestContext.CancellationToken);
         Assert.AreEqual("hello", writerDoc.GetText("body").ToString());
 
         // Even a client that ignores its grant gets nothing through.
@@ -228,7 +228,7 @@ public class AccessAndHostingTests
         using var forged = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 3 });
         forged.GetText("body").Insert(0, "forged ");
         await rogue.SendAsync(BcrdtSyncProtocol.EncodeUpdate(forged.EncodeStateAsUpdate()), WebSocketMessageType.Binary, true, CancellationToken.None);
-        await Task.Delay(QuietPeriod);
+        await Task.Delay(QuietPeriod, TestContext.CancellationToken);
         Assert.AreEqual("hello", writerDoc.GetText("body").ToString());
     }
 
@@ -246,16 +246,16 @@ public class AccessAndHostingTests
         await using BcrdtSyncProvider writer = await ProviderAsync(writerDoc, writerTransport, options: Options(TimeSpan.FromMilliseconds(300)));
         await using BcrdtSyncProvider reader = await ProviderAsync(readerDoc, readerTransport, options: Options(TimeSpan.FromMilliseconds(300)));
 
-        await writer.ConnectAsync();
-        await reader.ConnectAsync();
+        await writer.ConnectAsync(TestContext.CancellationToken);
+        await reader.ConnectAsync(TestContext.CancellationToken);
         await AssertEventuallyAsync(() => reader.Access == BcrdtDocumentAccess.ReadOnly, "the reader should be told");
 
         writerDoc.GetText("body").Insert(0, "hello");
         await AssertEventuallyAsync(() => readerDoc.GetText("body").ToString() == "hello", "a reader still receives changes");
 
         readerDoc.GetText("body").Insert(0, "X");
-        await writer.ResyncAsync();
-        await Task.Delay(QuietPeriod);
+        await writer.ResyncAsync(TestContext.CancellationToken);
+        await Task.Delay(QuietPeriod, TestContext.CancellationToken);
         Assert.AreEqual("hello", writerDoc.GetText("body").ToString());
     }
 
@@ -276,12 +276,12 @@ public class AccessAndHostingTests
             {
                 await using var transport = new BcrdtWebSocketTransport(new Uri(host.WebSocketBase + "/ws/notes"));
                 await using BcrdtSyncProvider provider = await ProviderAsync(author, transport);
-                await provider.ConnectAsync();
+                await provider.ConnectAsync(TestContext.CancellationToken);
                 await AssertEventuallyAsync(() => provider.IsSynced, "the host answers the handshake");
 
                 author.GetText("body").Insert(0, "kept by the server");
                 await AssertEventuallyAsync(
-                    async () => await documentHost.ReadAsync("notes", doc => doc.GetText("body").ToString()) == "kept by the server",
+                    async () => await documentHost.ReadAsync("notes", doc => doc.GetText("body").ToString(), TestContext.CancellationToken) == "kept by the server",
                     "the host should hold the change");
             }
 
@@ -289,7 +289,7 @@ public class AccessAndHostingTests
             using var newcomer = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 2 });
             await using var newcomerTransport = new BcrdtWebSocketTransport(new Uri(host.WebSocketBase + "/ws/notes"));
             await using BcrdtSyncProvider newcomerProvider = await ProviderAsync(newcomer, newcomerTransport);
-            await newcomerProvider.ConnectAsync();
+            await newcomerProvider.ConnectAsync(TestContext.CancellationToken);
 
             await AssertEventuallyAsync(() => newcomerProvider.IsSynced, "the newcomer should be synced");
             Assert.AreEqual("kept by the server", newcomer.GetText("body").ToString());
@@ -297,7 +297,7 @@ public class AccessAndHostingTests
 
         // And a new host on the same store - a restarted server - has it too.
         await using var restarted = new BcrdtDocumentHost(new BcrdtDocumentHostOptions { Store = store });
-        Assert.AreEqual("kept by the server", await restarted.ReadAsync("notes", doc => doc.GetText("body").ToString()));
+        Assert.AreEqual("kept by the server", await restarted.ReadAsync("notes", doc => doc.GetText("body").ToString(), TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -312,10 +312,10 @@ public class AccessAndHostingTests
 
         await using var transport = new BcrdtWebSocketTransport(new Uri(host.WebSocketBase + "/ws/offline"));
         await using BcrdtSyncProvider provider = await ProviderAsync(doc, transport);
-        await provider.ConnectAsync();
+        await provider.ConnectAsync(TestContext.CancellationToken);
 
         await AssertEventuallyAsync(
-            async () => await documentHost.ReadAsync("offline", hosted => hosted.GetText("body").ToString()) == "offline",
+            async () => await documentHost.ReadAsync("offline", hosted => hosted.GetText("body").ToString(), TestContext.CancellationToken) == "offline",
             "the host should collect the offline work, deletions included");
     }
 
@@ -328,10 +328,10 @@ public class AccessAndHostingTests
         using var doc = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 1 });
         await using var transport = new BcrdtWebSocketTransport(new Uri(host.WebSocketBase + "/ws/board"));
         await using BcrdtSyncProvider provider = await ProviderAsync(doc, transport);
-        await provider.ConnectAsync();
+        await provider.ConnectAsync(TestContext.CancellationToken);
         await AssertEventuallyAsync(() => provider.IsSynced, "connected");
 
-        await documentHost.EditAsync("board", hosted => hosted.GetMap("").Set("status", "approved"));
+        await documentHost.EditAsync("board", hosted => hosted.GetMap("").Set("status", "approved"), TestContext.CancellationToken);
 
         await AssertEventuallyAsync(() => doc.GetMap("").Get("status") as string == "approved", "the server's change should arrive");
     }
@@ -351,10 +351,10 @@ public class AccessAndHostingTests
         int denied = 0;
         revoked.AuthorizationDenied += _ => Interlocked.Increment(ref denied);
 
-        await kept.ConnectAsync();
+        await kept.ConnectAsync(TestContext.CancellationToken);
         await AssertEventuallyAsync(() => kept.IsSynced, "the first client connected");
 
-        await revoked.ConnectAsync();
+        await revoked.ConnectAsync(TestContext.CancellationToken);
         await AssertEventuallyAsync(() => revoked.IsSynced, "the second client connected");
 
         keptDoc.GetText("body").Insert(0, "shared ");
@@ -378,9 +378,9 @@ public class AccessAndHostingTests
         revokedDoc.GetText("body").Insert(0, "too late ");
         keptDoc.GetText("body").Insert(7, "still");
         await AssertEventuallyAsync(
-            async () => await documentHost.ReadAsync("shared", doc => doc.GetText("body").ToString()) == "shared still",
+            async () => await documentHost.ReadAsync("shared", doc => doc.GetText("body").ToString(), TestContext.CancellationToken) == "shared still",
             "the remaining client goes on editing");
-        await Task.Delay(QuietPeriod);
+        await Task.Delay(QuietPeriod, TestContext.CancellationToken);
         Assert.AreEqual("shared still", keptDoc.GetText("body").ToString(), "nothing the revoked client wrote reaches anyone");
         Assert.AreEqual("too late shared ", revokedDoc.GetText("body").ToString(), "and nothing more reaches it");
     }
@@ -391,8 +391,8 @@ public class AccessAndHostingTests
         await using var documentHost = new BcrdtDocumentHost();
         var before = new RefusableConnection("ada", "before");
         var after = new RefusableConnection("ada", "after");
-        using BcrdtHostSession first = await documentHost.JoinAsync("doc", before);
-        using BcrdtHostSession second = await documentHost.JoinAsync("doc", after);
+        using BcrdtHostSession first = await documentHost.JoinAsync("doc", before, TestContext.CancellationToken);
+        using BcrdtHostSession second = await documentHost.JoinAsync("doc", after, TestContext.CancellationToken);
 
         using var presence = new BcrdtAwarenessStore(42);
         byte[]? published = null;
@@ -412,7 +412,7 @@ public class AccessAndHostingTests
 
         // Nobody else may speak for it, even right after it changed hands.
         var other = new RefusableConnection("grace");
-        using BcrdtHostSession third = await documentHost.JoinAsync("doc", other);
+        using BcrdtHostSession third = await documentHost.JoinAsync("doc", other, TestContext.CancellationToken);
         presence.SetLocalField("name", "not Ada");
         Assert.IsFalse(await third.ReceiveAsync(BcrdtSyncProtocol.EncodeAwarenessUpdate(published!)));
     }
@@ -423,8 +423,8 @@ public class AccessAndHostingTests
         await using var documentHost = new BcrdtDocumentHost();
         var ada = new RefusableConnection("ada");
         var mallory = new RefusableConnection("mallory");
-        BcrdtHostSession adaSession = await documentHost.JoinAsync("doc", ada);
-        using BcrdtHostSession mallorySession = await documentHost.JoinAsync("doc", mallory);
+        BcrdtHostSession adaSession = await documentHost.JoinAsync("doc", ada, TestContext.CancellationToken);
+        using BcrdtHostSession mallorySession = await documentHost.JoinAsync("doc", mallory, TestContext.CancellationToken);
 
         using var presence = new BcrdtAwarenessStore(42);
         byte[]? published = null;
@@ -459,9 +459,9 @@ public class AccessAndHostingTests
         await using var documentHost = new BcrdtDocumentHost();
         var alice = new RefusableConnection("alice");
         var bob = new RefusableConnection("bob");
-        using BcrdtHostSession aliceSession = await documentHost.JoinAsync("doc", alice);
-        using BcrdtHostSession bobSession = await documentHost.JoinAsync("doc", bob);
-        using BcrdtHostSession bobElsewhere = await documentHost.JoinAsync("other", bob);
+        using BcrdtHostSession aliceSession = await documentHost.JoinAsync("doc", alice, TestContext.CancellationToken);
+        using BcrdtHostSession bobSession = await documentHost.JoinAsync("doc", bob, TestContext.CancellationToken);
+        using BcrdtHostSession bobElsewhere = await documentHost.JoinAsync("other", bob, TestContext.CancellationToken);
 
         // Bob is on everyone's participant list.
         using var bobPresence = new BcrdtAwarenessStore(42);
@@ -488,7 +488,7 @@ public class AccessAndHostingTests
         using var author = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 7 });
         author.GetText("body").Insert(0, "from bob");
         Assert.IsFalse(await bobSession.ReceiveAsync(BcrdtSyncProtocol.EncodeUpdate(author.EncodeStateAsUpdate())));
-        Assert.AreEqual("", await documentHost.ReadAsync("doc", doc => doc.GetText("body").ToString()));
+        Assert.AreEqual("", await documentHost.ReadAsync("doc", doc => doc.GetText("body").ToString(), TestContext.CancellationToken));
 
         bob.Sent.Clear();
         Assert.IsFalse(await bobSession.ReceiveAsync(BcrdtSyncProtocol.EncodeSyncStep1(new BcrdtStateVector())));
@@ -496,7 +496,7 @@ public class AccessAndHostingTests
 
         bob.Sent.Clear();
         alice.Sent.Clear();
-        await documentHost.EditAsync("doc", doc => doc.GetText("body").Insert(0, "server"));
+        await documentHost.EditAsync("doc", doc => doc.GetText("body").Insert(0, "server"), TestContext.CancellationToken);
         Assert.IsNotEmpty(alice.Sent);
         Assert.IsEmpty(bob.Sent, "a revoked connection hears nothing more of the document");
 
@@ -550,8 +550,8 @@ public class AccessAndHostingTests
         int denied = 0;
         bad.AuthorizationDenied += _ => Interlocked.Increment(ref denied);
 
-        await good.ConnectAsync();
-        await bad.ConnectAsync();
+        await good.ConnectAsync(TestContext.CancellationToken);
+        await bad.ConnectAsync(TestContext.CancellationToken);
         await AssertEventuallyAsync(() => good.IsSynced && bad.IsSynced, "both connected");
 
         goodDoc.GetText("body").Insert(0, "fine ");
@@ -561,16 +561,16 @@ public class AccessAndHostingTests
 
         await AssertEventuallyAsync(() => denied == 1, "the sender should be refused");
         Assert.AreEqual(BcrdtConnectionStatus.Faulted, bad.Status);
-        await Task.Delay(QuietPeriod);
+        await Task.Delay(QuietPeriod, TestContext.CancellationToken);
         Assert.AreEqual("fine ", goodDoc.GetText("body").ToString());
-        Assert.AreEqual("fine ", await documentHost.ReadAsync("rules", doc => doc.GetText("body").ToString()));
+        Assert.AreEqual("fine ", await documentHost.ReadAsync("rules", doc => doc.GetText("body").ToString(), TestContext.CancellationToken));
     }
 
     [TestMethod]
     public async Task With_a_host_a_joiner_is_answered_by_the_host_alone()
     {
         await using var documentHost = new BcrdtDocumentHost();
-        await documentHost.EditAsync("quiet", doc => doc.GetText("body").Insert(0, "abc"));
+        await documentHost.EditAsync("quiet", doc => doc.GetText("body").Insert(0, "abc"), TestContext.CancellationToken);
         await using LoopbackHost host = await HostedWebSocketAsync(documentHost);
 
         using ClientWebSocket bystander = await RawSocket.ConnectAsync(host.WebSocketBase + "/ws/quiet");
@@ -581,8 +581,12 @@ public class AccessAndHostingTests
 
         BcrdtSyncMessage? first = await RawSocket.ReceiveAsync(joiner, Patience);
         BcrdtSyncMessage? second = await RawSocket.ReceiveAsync(joiner, Patience);
-        Assert.AreEqual(BcrdtSyncMessageKind.SyncStep1Reply, first?.Kind);
-        Assert.AreEqual(BcrdtSyncMessageKind.SyncStep2, second?.Kind);
+        var expectedValue = BcrdtSyncMessageKind.SyncStep1Reply;
+        var actualValue = first?.Kind;
+        Assert.AreEqual(expectedValue, actualValue);
+        var expectedValue1 = BcrdtSyncMessageKind.SyncStep2;
+        var actualValue2 = second?.Kind;
+        Assert.AreEqual(expectedValue1, actualValue2);
 
         using var check = new BcrdtDocument();
         check.ApplyUpdate(second!.Value.Payload);
@@ -609,7 +613,9 @@ public class AccessAndHostingTests
 
         var observed = new BcrdtAwarenessStore(99);
         BcrdtSyncMessage? heard = await RawSocket.ReceiveAsync(observer, Patience);
-        Assert.AreEqual(BcrdtSyncMessageKind.AwarenessUpdate, heard?.Kind);
+        var expectedValue = BcrdtSyncMessageKind.AwarenessUpdate;
+        var actualValue = heard?.Kind;
+        Assert.AreEqual(expectedValue, actualValue);
         observed.ApplyUpdate(heard!.Value.Payload);
         Assert.AreEqual("Ada", observed.GetField(10, "name"));
 
@@ -624,7 +630,9 @@ public class AccessAndHostingTests
         // When Ada's connection goes without a goodbye, the host says it for her.
         ada.Abort();
         heard = await RawSocket.ReceiveAsync(observer, Patience);
-        Assert.AreEqual(BcrdtSyncMessageKind.AwarenessUpdate, heard?.Kind);
+        var expectedValue1 = BcrdtSyncMessageKind.AwarenessUpdate;
+        var actualValue2 = heard?.Kind;
+        Assert.AreEqual(expectedValue1, actualValue2);
         observed.ApplyUpdate(heard!.Value.Payload);
         Assert.DoesNotContain(10UL, observed.OnlineClients);
     }
@@ -644,7 +652,9 @@ public class AccessAndHostingTests
         using var doc = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 5 });
         doc.GetText("body").Insert(0, "ok");
         await sender.SendAsync(BcrdtSyncProtocol.EncodeUpdate(doc.EncodeStateAsUpdate()), WebSocketMessageType.Binary, true, CancellationToken.None);
-        Assert.AreEqual(BcrdtSyncMessageKind.Update, (await RawSocket.ReceiveAsync(receiver, Patience))?.Kind);
+        var expectedValue = BcrdtSyncMessageKind.Update;
+        var actualValue = (await RawSocket.ReceiveAsync(receiver, Patience))?.Kind;
+        Assert.AreEqual(expectedValue, actualValue);
     }
 
     [TestMethod]
@@ -663,9 +673,11 @@ public class AccessAndHostingTests
             byte[] orphan = author.EncodeStateAsUpdate(before);
             await client.SendAsync(BcrdtSyncProtocol.EncodeUpdate(orphan), WebSocketMessageType.Binary, true, CancellationToken.None);
         }
+        var expectedValue = BcrdtSyncMessageKind.SyncStep1;
+        var actualValue = (await RawSocket.ReceiveAsync(client, Patience))?.Kind;
 
         // Asked once for the rest.
-        Assert.AreEqual(BcrdtSyncMessageKind.SyncStep1, (await RawSocket.ReceiveAsync(client, Patience))?.Kind);
+        Assert.AreEqual(expectedValue, actualValue);
 
         // The client answers with what it has - not what is missing - and the host does not ask again.
         await client.SendAsync(BcrdtSyncProtocol.EncodeSyncStep2(BcrdtUpdateEncoder.Empty), WebSocketMessageType.Binary, true, CancellationToken.None);
@@ -692,17 +704,21 @@ public class AccessAndHostingTests
         presence.Updated += published => update = published;
         presence.SetLocalField("name", "Ada");
         await stale.SendAsync(BcrdtSyncProtocol.EncodeAwarenessUpdate(update!), WebSocketMessageType.Binary, true, CancellationToken.None);
-        Assert.AreEqual(BcrdtSyncMessageKind.AwarenessUpdate, (await RawSocket.ReceiveAsync(observer, Patience))?.Kind);
+        var expectedValue = BcrdtSyncMessageKind.AwarenessUpdate;
+        var actualValue = (await RawSocket.ReceiveAsync(observer, Patience))?.Kind;
+        Assert.AreEqual(expectedValue, actualValue);
 
         // The old connection goes quiet without closing - a network blip the server has not noticed -
         // and the same client comes back on a new one.
         using ClientWebSocket fresh = await RawSocket.ConnectAsync(host.WebSocketBase + "/ws/takeover");
-        await Task.Delay(400);
+        await Task.Delay(400, TestContext.CancellationToken);
         presence.SetLocalField("name", "Ada again");
         await fresh.SendAsync(BcrdtSyncProtocol.EncodeAwarenessUpdate(update!), WebSocketMessageType.Binary, true, CancellationToken.None);
 
         BcrdtSyncMessage? heard = await RawSocket.ReceiveAsync(observer, Patience);
-        Assert.AreEqual(BcrdtSyncMessageKind.AwarenessUpdate, heard?.Kind, "the client's presence must not be dropped as a forgery");
+        var expectedValue1 = BcrdtSyncMessageKind.AwarenessUpdate;
+        var actualValue2 = heard?.Kind;
+        Assert.AreEqual(expectedValue1, actualValue2, "the client's presence must not be dropped as a forgery");
         var observed = new BcrdtAwarenessStore(99);
         observed.ApplyUpdate(heard!.Value.Payload);
         Assert.AreEqual("Ada again", observed.GetField(42, "name"));
@@ -732,8 +748,8 @@ public class AccessAndHostingTests
         await using var socket = new BcrdtWebSocketTransport(new Uri(host.WebSocketBase + "/ws/shared"));
         await using BcrdtSyncProvider overSignalR = await ProviderAsync(signalRDoc, signalR);
         await using BcrdtSyncProvider overSocket = await ProviderAsync(socketDoc, socket);
-        await overSignalR.ConnectAsync();
-        await overSocket.ConnectAsync();
+        await overSignalR.ConnectAsync(TestContext.CancellationToken);
+        await overSocket.ConnectAsync(TestContext.CancellationToken);
         await AssertEventuallyAsync(() => overSignalR.IsSynced && overSocket.IsSynced, "both connected");
 
         signalRDoc.GetText("body").Insert(0, "from SignalR. ");
@@ -758,20 +774,20 @@ public class AccessAndHostingTests
         {
             await using var transport = new BcrdtSignalRTransport(host.BaseUrl + "/hub", "notes");
             await using BcrdtSyncProvider provider = await ProviderAsync(author, transport);
-            await provider.ConnectAsync();
+            await provider.ConnectAsync(TestContext.CancellationToken);
             await AssertEventuallyAsync(() => provider.IsSynced, "the host answers the handshake");
             author.GetText("body").Insert(0, "kept");
 
             BcrdtDocumentHost documentHost = host.App.Services.GetRequiredService<BcrdtDocumentHost>();
             await AssertEventuallyAsync(
-                async () => await documentHost.ReadAsync("notes", doc => doc.GetText("body").ToString()) == "kept",
+                async () => await documentHost.ReadAsync("notes", doc => doc.GetText("body").ToString(), TestContext.CancellationToken) == "kept",
                 "the host should hold the change");
         }
 
         using var newcomer = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 2 });
         await using var newcomerTransport = new BcrdtSignalRTransport(host.BaseUrl + "/hub", "notes");
         await using BcrdtSyncProvider newcomerProvider = await ProviderAsync(newcomer, newcomerTransport);
-        await newcomerProvider.ConnectAsync();
+        await newcomerProvider.ConnectAsync(TestContext.CancellationToken);
 
         await AssertEventuallyAsync(() => newcomer.GetText("body").ToString() == "kept", "the host should hand the document over");
         await AssertEventuallyAsync(() => newcomerProvider.IsSynced, "and the newcomer should be synced");
@@ -784,7 +800,7 @@ public class AccessAndHostingTests
         // may hold - all produced at once.
         await using var documentHost = new BcrdtDocumentHost(new BcrdtDocumentHostOptions { MaxMessageSize = 16 * 1024 });
         await documentHost.EditAsync("big", doc =>
-            doc.GetText("body").Insert(0, string.Concat(Enumerable.Repeat("The quick brown fox jumps over the lazy dog. ", 20_000))));
+            doc.GetText("body").Insert(0, string.Concat(Enumerable.Repeat("The quick brown fox jumps over the lazy dog. ", 20_000))), TestContext.CancellationToken);
         await using LoopbackHost host = await LoopbackHost.StartAsync(app => app.MapBitBcrdtWebSocket(
             "/ws/{documentId}",
             options: new BcrdtWebSocketEndpointOptions
@@ -803,9 +819,9 @@ public class AccessAndHostingTests
             if (change.State == BcrdtTransportState.Connected) Interlocked.Increment(ref connections);
         };
         await using BcrdtSyncProvider provider = await ProviderAsync(newcomer, transport);
-        await provider.ConnectAsync();
+        await provider.ConnectAsync(TestContext.CancellationToken);
 
-        int expected = await documentHost.ReadAsync("big", doc => doc.GetText("body").Count);
+        int expected = await documentHost.ReadAsync("big", doc => doc.GetText("body").Count, TestContext.CancellationToken);
         await AssertEventuallyAsync(() => newcomer.GetText("body").Count == expected, "the whole document should arrive");
         await AssertEventuallyAsync(() => provider.IsSynced, "and the newcomer should be synced");
         Assert.AreEqual(1, Volatile.Read(ref connections), "the answer must not disconnect the client it was meant for");
@@ -816,7 +832,7 @@ public class AccessAndHostingTests
     {
         var documentHost = new BcrdtDocumentHost();
         var connection = new RecordingConnection();
-        BcrdtHostSession session = await documentHost.JoinAsync("closing", connection);
+        BcrdtHostSession session = await documentHost.JoinAsync("closing", connection, TestContext.CancellationToken);
 
         // The application stops while a relay is still delivering what its client sent.
         await documentHost.DisposeAsync();
@@ -842,10 +858,10 @@ public class AccessAndHostingTests
         await using AsyncServiceScope circuit = provider.CreateAsyncScope();
 
         CircuitHandler[] handlers = [.. circuit.ServiceProvider.GetServices<CircuitHandler>()];
-        Assert.HasCount(1, handlers, "registering it twice should add it once");
+        Assert.ContainsSingle(handlers, "registering it twice should add it once");
 
         BcrdtCollaborativeDocument document = await circuit.ServiceProvider.GetRequiredService<IBcrdtCollaborationService>()
-            .OpenAsync("notes", new BcrdtOpenDocumentOptions { User = new BcrdtCollaboratorInfo("ada", "Ada", "#ff0000") });
+            .OpenAsync("notes", new BcrdtOpenDocumentOptions { User = new BcrdtCollaboratorInfo("ada", "Ada", "#ff0000") }, TestContext.CancellationToken);
 
         // The handler reads nothing off the circuit, and a Circuit cannot be made outside a running server.
         await handlers[0].OnConnectionDownAsync(null!, CancellationToken.None);
@@ -900,7 +916,9 @@ public class AccessAndHostingTests
             var socket = new ClientWebSocket();
             await socket.ConnectAsync(new Uri(address), CancellationToken.None);
             BcrdtSyncMessage? grant = await ReceiveAsync(socket, Patience);
-            Assert.AreEqual(BcrdtSyncMessageKind.Auth, grant?.Kind);
+            var expectedValue = BcrdtSyncMessageKind.Auth;
+            var actualValue = grant?.Kind;
+            Assert.AreEqual(expectedValue, actualValue);
             Assert.AreEqual(expected, BcrdtSyncProtocol.DecodeAuthAccess(grant!.Value.Payload).Access);
             return socket;
         }
@@ -988,10 +1006,12 @@ public class AccessAndHostingTests
 
         public ValueTask DisposeAsync() => ValueTask.CompletedTask;
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }
 
 /// <summary>A hub that makes a connection read-only when it asks with <c>?role=reader</c>.</summary>
-public sealed class ReaderAwareHub : BcrdtHub
+internal sealed class ReaderAwareHub : BcrdtHub
 {
     protected override ValueTask<BcrdtDocumentAccess> AuthorizeAccessAsync(string documentId) =>
         ValueTask.FromResult(Context.GetHttpContext()?.Request.Query["role"].ToString() == "reader"

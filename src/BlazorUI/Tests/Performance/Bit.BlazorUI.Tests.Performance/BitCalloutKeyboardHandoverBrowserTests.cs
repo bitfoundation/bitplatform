@@ -314,12 +314,12 @@ public class BitCalloutKeyboardHandoverBrowserTests : PerformanceTestBase
     {
         var errors = _pageErrors.Where(e => e.Contains("favicon", System.StringComparison.OrdinalIgnoreCase) is false).ToList();
 
-        Assert.AreEqual(0, errors.Count, $"the page reported: {string.Join(" || ", errors)}");
+        Assert.IsEmpty(errors, $"the page reported: {string.Join(" || ", errors)}");
 
         var json = await _http.GetStringAsync($"{BaseUrl}/api/server-errors");
         var serverErrors = JsonSerializer.Deserialize<string[]>(json) ?? [];
 
-        Assert.AreEqual(0, serverErrors.Length, $"the server logged: {string.Join(" || ", serverErrors)}");
+        Assert.IsEmpty(serverErrors, $"the server logged: {string.Join(" || ", serverErrors)}");
     }
 
     private async Task OpenPage(string caseName, string query = "")

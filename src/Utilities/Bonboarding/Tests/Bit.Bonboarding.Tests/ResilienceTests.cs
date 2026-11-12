@@ -39,7 +39,7 @@ public class ResilienceTests
         harness.WithElements("#a", "#b");
         harness.Interop.Failure = failure;
 
-        var session = await harness.Service.StartAsync(Tour());
+        var session = await harness.Service.StartAsync(Tour(), cancellationToken: TestContext.CancellationToken);
 
         // The step is shown without measurement rather than the tour dying.
         Assert.AreEqual(BonboardingTourStatus.Running, session.Status);
@@ -54,13 +54,13 @@ public class ResilienceTests
         await using var harness = new BonboardingHarness();
         harness.WithElements("#a", "#b");
 
-        var session = await harness.Service.StartAsync(Tour());
+        var session = await harness.Service.StartAsync(Tour(), cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual(BonboardingTourStatus.Running, session.Status);
 
         harness.Interop.Failure = failure;
 
-        await session.NextAsync();
-        await session.RefreshAsync();
+        await session.NextAsync(TestContext.CancellationToken);
+        await session.RefreshAsync(TestContext.CancellationToken);
 
         Assert.AreEqual("b", session.CurrentStep!.Id);
         Assert.IsNull(session.Error);
@@ -73,10 +73,10 @@ public class ResilienceTests
         await using var harness = new BonboardingHarness();
         harness.WithElements("#a", "#b");
 
-        var session = await harness.Service.StartAsync(Tour());
+        var session = await harness.Service.StartAsync(Tour(), cancellationToken: TestContext.CancellationToken);
         harness.Interop.Failure = failure;
 
-        await session.CompleteAsync();
+        await session.CompleteAsync(TestContext.CancellationToken);
 
         Assert.AreEqual(BonboardingTourStatus.Completed, session.Status);
         Assert.IsNull(session.Error);
@@ -96,10 +96,10 @@ public class ResilienceTests
 
         harness.Interop.Failure = () => new JSDisconnectedException("the circuit is gone");
 
-        await store.SetAsync(new BonboardingRecord { TourId = "resilient", CurrentStepId = "a" });
+        await store.SetAsync(new BonboardingRecord { TourId = "resilient", CurrentStepId = "a" }, TestContext.CancellationToken);
 
-        Assert.IsNotNull(await store.GetAsync("resilient"));
-        Assert.AreEqual(0, harness.Interop.Storage.Count);
+        Assert.IsNotNull(await store.GetAsync("resilient", TestContext.CancellationToken));
+        Assert.IsEmpty(harness.Interop.Storage);
     }
 
     [TestMethod]
@@ -108,14 +108,14 @@ public class ResilienceTests
         var harness = new BonboardingHarness();
         harness.WithElements("#a", "#b");
 
-        var session = await harness.Service.StartAsync(Tour());
+        var session = await harness.Service.StartAsync(Tour(), cancellationToken: TestContext.CancellationToken);
         Assert.IsTrue(session.IsActive);
 
         await harness.DisposeAsync();
 
         // Commands issued after disposal are ignored rather than throwing.
-        await session.NextAsync();
-        await session.DismissAsync();
+        await session.NextAsync(TestContext.CancellationToken);
+        await session.DismissAsync(TestContext.CancellationToken);
     }
 
     [TestMethod]
@@ -124,7 +124,7 @@ public class ResilienceTests
         await using var harness = new BonboardingHarness();
         harness.WithElements("#a");
 
-        var session = (BonboardingTourSession)await harness.Service.StartAsync(Tour());
+        var session = (BonboardingTourSession)await harness.Service.StartAsync(Tour(), cancellationToken: TestContext.CancellationToken);
 
         await session.DisposeAsync();
         await session.DisposeAsync();
@@ -137,8 +137,8 @@ public class ResilienceTests
         await using var harness = new BonboardingHarness();
         harness.Interop.IsAvailable = false;
 
-        var session = await harness.Service.StartAsync(Tour());
-        await session.CompleteAsync();
+        var session = await harness.Service.StartAsync(Tour(), cancellationToken: TestContext.CancellationToken);
+        await session.CompleteAsync(TestContext.CancellationToken);
 
         Assert.IsEmpty(harness.Interop.AttachedSessions);
         Assert.IsEmpty(harness.Interop.Activations);
@@ -151,14 +151,14 @@ public class ResilienceTests
         await using var harness = new BonboardingHarness();
         harness.WithElements("#a", "#b");
 
-        var session = await harness.Service.StartAsync(Tour());
+        var session = await harness.Service.StartAsync(Tour(), cancellationToken: TestContext.CancellationToken);
 
         // Navigation, geometry pushes and a refresh all racing, as they do on a resizing page.
         await Task.WhenAll(
-            session.NextAsync(),
-            session.PreviousAsync(),
+            session.NextAsync(TestContext.CancellationToken),
+            session.PreviousAsync(TestContext.CancellationToken),
             harness.Interop.PushGeometryAsync(session.Id),
-            session.RefreshAsync(),
+            session.RefreshAsync(TestContext.CancellationToken),
             harness.Interop.PushGeometryAsync(session.Id));
 
         Assert.IsTrue(session.Status is BonboardingTourStatus.Running or BonboardingTourStatus.Completed);
@@ -171,7 +171,7 @@ public class ResilienceTests
         await using var harness = new BonboardingHarness();
         harness.WithElements("#a");
 
-        var session = (BonboardingTourSession)await harness.Service.StartAsync(Tour());
+        var session = (BonboardingTourSession)await harness.Service.StartAsync(Tour(), cancellationToken: TestContext.CancellationToken);
         await harness.Interop.PushGeometryAsync(session.Id);
 
         var current = session.Placement;
@@ -205,7 +205,7 @@ public class ResilienceTests
             await harness.Interop.PushGeometryAsync(activation.SessionId);
         };
 
-        var session = await harness.Service.StartAsync(Tour());
+        var session = await harness.Service.StartAsync(Tour(), cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(moved, session.TargetRect);
     }
@@ -226,4 +226,6 @@ public class ResilienceTests
         Assert.AreEqual(Warning, BonboardingInteropFailure.LevelFor(new JSException("SyntaxError: not a valid selector")));
         Assert.AreEqual(Warning, BonboardingInteropFailure.LevelFor(new InvalidOperationException("the custom store is misconfigured")));
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

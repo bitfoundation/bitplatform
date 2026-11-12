@@ -24,8 +24,8 @@ public class BitModalParamsTests : BunitTestContext
     {
         var @params = new BitModalParams();
 
-        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitModal)}", BitModalParams.ParamName);
-        Assert.AreEqual("BitParams.BitModal", BitModalParams.ParamName);
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitModal)}", new BitModalParams().Name);
+        Assert.AreEqual("BitParams.BitModal", new BitModalParams().Name);
         Assert.IsInstanceOfType<IBitComponentParams>(@params);
         Assert.AreEqual(BitModalParams.ParamName, @params.Name);
     }
@@ -48,13 +48,13 @@ public class BitModalParamsTests : BunitTestContext
         var root = component.Find(".bit-mdl");
         var content = component.Find(".bit-mdl-ctn");
 
-        CollectionAssert.AreEquivalent(new[] { "bit-mdl", "bit-mdl-bdr" }, root.ClassList.ToArray());
+        Assert.AreSequenceEqual(new[] { "bit-mdl", "bit-mdl-bdr" }, root.ClassList.ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         Assert.IsTrue(string.IsNullOrEmpty(root.GetAttribute("style")));
         Assert.AreEqual("bit-mdl-ctn", content.ClassName);
         Assert.AreEqual("dialog", content.GetAttribute("role"));
         Assert.AreEqual("true", content.GetAttribute("aria-modal"));
-        Assert.AreEqual(1, component.FindAll(".bit-mdl-ovl").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-mdl-cls").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-mdl-ovl"));
+        Assert.IsEmpty(component.FindAll(".bit-mdl-cls"));
         Assert.AreEqual("Content", content.TextContent.Trim());
     }
 
@@ -65,7 +65,7 @@ public class BitModalParamsTests : BunitTestContext
 
         var modals = component.FindComponents<BitModal>();
 
-        Assert.AreEqual(2, modals.Count);
+        Assert.HasCount(2, modals);
 
         // The first Modal takes everything from the cascading parameters.
         var first = modals[0].Find(".bit-mdl");
@@ -77,8 +77,8 @@ public class BitModalParamsTests : BunitTestContext
 
         var firstContent = modals[0].Find(".bit-mdl-ctn");
         Assert.IsTrue(firstContent.ClassList.Contains("cascaded-content"));
-        StringAssert.Contains(firstContent.GetAttribute("style"), "max-width:30rem;");
-        StringAssert.Contains(firstContent.GetAttribute("style"), "margin: 1px;");
+        Assert.Contains("max-width:30rem;", firstContent.GetAttribute("style")!);
+        Assert.Contains("margin: 1px;", firstContent.GetAttribute("style")!);
         Assert.AreEqual("alertdialog", firstContent.GetAttribute("role"));
         Assert.AreEqual("Dismiss", modals[0].Find(".bit-mdl-cls").GetAttribute("aria-label"));
 
@@ -88,7 +88,7 @@ public class BitModalParamsTests : BunitTestContext
         Assert.IsFalse(second.ClassList.Contains("bit-mdl-tcr"));
         Assert.IsTrue(second.ClassList.Contains("second"));
         Assert.IsTrue(second.ClassList.Contains("bit-mdl-mfl"));
-        StringAssert.Contains(modals[1].Find(".bit-mdl-ctn").GetAttribute("style"), "max-width:10rem;");
+        Assert.Contains("max-width:10rem;", modals[1].Find(".bit-mdl-ctn").GetAttribute("style")!);
         Assert.AreEqual("Close it", modals[1].Find(".bit-mdl-cls").GetAttribute("aria-label"));
     }
 
@@ -150,13 +150,13 @@ public class BitModalParamsTests : BunitTestContext
             Assert.IsTrue(root.ClassList.Contains("bit-mdl-ben"));
             Assert.IsFalse(root.ClassList.Contains("bit-mdl-tcr"));
             Assert.IsTrue(root.ClassList.Contains("bit-mdl-mfl"));
-            StringAssert.Contains(component.Find(".bit-mdl-ctn").GetAttribute("style"), "max-width:20rem;");
+            Assert.Contains("max-width:20rem;", component.Find(".bit-mdl-ctn").GetAttribute("style")!);
         });
 
         // The show turned Blocking back off, so the overlay dismisses the Modal despite the cascaded default.
         component.Find(".bit-mdl-ovl").Click();
 
-        component.WaitForAssertion(() => Assert.AreEqual(0, component.FindAll(".bit-mdl").Count));
+        component.WaitForAssertion(() => Assert.IsEmpty(component.FindAll(".bit-mdl")));
     }
 
     [TestMethod]
@@ -187,8 +187,8 @@ public class BitModalParamsTests : BunitTestContext
             var root = component.Find(".bit-mdl");
             Assert.IsTrue(root.ClassList.Contains("bit-mdl-bcr"));
             Assert.IsFalse(root.ClassList.Contains("bit-mdl-tcr"));
-            StringAssert.Contains(root.GetAttribute("style"), "--bit-Modal-radius:0");
-            Assert.AreEqual(1, component.FindAll(".bit-mdl-cls").Count);
+            Assert.Contains("--bit-Modal-radius:0", root.GetAttribute("style")!);
+            Assert.ContainsSingle(component.FindAll(".bit-mdl-cls"));
         });
     }
 
@@ -227,7 +227,7 @@ public class BitModalParamsTests : BunitTestContext
 
         component.Find(".bit-mdl-ovl").Click();
 
-        component.WaitForAssertion(() => Assert.AreEqual(0, component.FindAll(".bit-mdl").Count));
+        component.WaitForAssertion(() => Assert.IsEmpty(component.FindAll(".bit-mdl")));
     }
 
     [TestMethod]
@@ -252,7 +252,7 @@ public class BitModalParamsTests : BunitTestContext
             var root = component.Find(".bit-mdl");
             Assert.IsTrue(root.ClassList.Contains("bit-dis"));
             Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
-            Assert.AreEqual(1, root.ClassList.Count(c => c == "bit-dis"));
+            Assert.ContainsSingle(c => c == "bit-dis", root.ClassList);
         });
     }
 
@@ -290,7 +290,7 @@ public class BitModalParamsTests : BunitTestContext
             Assert.AreEqual("ltr", root.GetAttribute("dir"));
             Assert.IsFalse(root.ClassList.Contains("bit-rtl"));
             Assert.IsFalse(root.ClassList.Contains("bit-dis"));
-            Assert.IsFalse((root.GetAttribute("style") ?? string.Empty).Contains("visibility:hidden"));
+            Assert.DoesNotContain("visibility:hidden", (root.GetAttribute("style") ?? string.Empty));
         });
     }
 
@@ -311,9 +311,9 @@ public class BitModalParamsTests : BunitTestContext
 
         // With nothing to override them, the defaults mark the root once each.
         var root = component.Find(".bit-mdl");
-        Assert.AreEqual(1, root.ClassList.Count(c => c == "bit-rtl"));
-        Assert.AreEqual(1, root.ClassList.Count(c => c == "bit-dis"));
-        StringAssert.Contains(root.GetAttribute("style"), "visibility:hidden");
+        Assert.ContainsSingle(c => c == "bit-rtl", root.ClassList);
+        Assert.ContainsSingle(c => c == "bit-dis", root.ClassList);
+        Assert.Contains("visibility:hidden", root.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -364,7 +364,7 @@ public class BitModalParamsTests : BunitTestContext
                                       .Where(n => paramsProperties.Contains(n) is false)
                                       .ToList();
 
-        CollectionAssert.AreEqual(new List<string>(), missing, string.Join(", ", missing));
+        Assert.AreSequenceEqual(new List<string>(), missing, string.Join(", ", missing));
     }
 
     [TestMethod]

@@ -24,9 +24,9 @@ public class BitFlagPrerenderTests
             [nameof(BitFlag.Rounded)] = true,
         });
 
-        StringAssert.Contains(html, "_content/Bit.BlazorUI.Extras/flags/NL-flat-16.webp");
-        StringAssert.Contains(html, "alt=\"Netherlands\"");
-        StringAssert.Contains(html, "bit-flg-rnd");
+        Assert.Contains("_content/Bit.BlazorUI.Extras/flags/NL-flat-16.webp", html);
+        Assert.Contains("alt=\"Netherlands\"", html);
+        Assert.Contains("bit-flg-rnd", html);
     }
 
     [TestMethod]
@@ -38,10 +38,10 @@ public class BitFlagPrerenderTests
             [nameof(BitFlag.Emoji)] = true,
         });
 
-        StringAssert.Contains(html, "bit-flg-emj");
+        Assert.Contains("bit-flg-emj", html);
         // The renderer writes the two regional indicators as character references.
-        StringAssert.Contains(System.Net.WebUtility.HtmlDecode(html), "\U0001F1F3\U0001F1F1");
-        Assert.IsFalse(html.Contains("<img"));
+        Assert.Contains("\U0001F1F3\U0001F1F1", System.Net.WebUtility.HtmlDecode(html));
+        Assert.DoesNotContain("<img", html);
     }
 
     [TestMethod]
@@ -53,8 +53,8 @@ public class BitFlagPrerenderTests
             [nameof(BitFlag.OnClick)] = EventCallback.Factory.Create<MouseEventArgs>(new object(), () => { }),
         });
 
-        StringAssert.Contains(html, "role=\"button\"");
-        StringAssert.Contains(html, "tabindex=\"0\"");
-        StringAssert.Contains(html, "aria-label=\"Netherlands\"");
+        Assert.Contains("role=\"button\"", html);
+        Assert.Contains("tabindex=\"0\"", html);
+        Assert.Contains("aria-label=\"Netherlands\"", html);
     }
 }

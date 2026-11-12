@@ -100,7 +100,7 @@ public class BitPanelE2ETests : E2ETestBase
         }
         catch (TimeoutException)
         {
-            Assert.Fail($"basic-log: expected '{expected}', was '{await Page.Locator("#basic-log").TextContentAsync()}'");
+            throw new global::System.InvalidOperationException($"basic-log: expected '{expected}', was '{await Page.Locator("#basic-log").TextContentAsync()}'");
         }
     }
 
@@ -682,8 +682,8 @@ public class BitPanelE2ETests : E2ETestBase
         await Expect(Page.Locator("#swipe-open")).ToHaveTextAsync("False");
         await Expect(Page.Locator("#swipe-log")).ToHaveTextAsync("OnSwipeStart,OnDismissing:Swipe,OnSwipeEnd");
         Assert.AreEqual(200, double.Parse(await Page.Locator("#swipe-end").TextContentAsync() ?? "0", System.Globalization.CultureInfo.InvariantCulture), 2);
-        Assert.IsTrue(int.Parse((await Page.Locator("#swipe-moves").TextContentAsync())!) > 0, "OnSwipeMove is raised while dragging.");
-        Assert.IsTrue(double.Parse((await Page.Locator("#swipe-start").TextContentAsync())!, System.Globalization.CultureInfo.InvariantCulture) > 0);
+        Assert.IsGreaterThan(0, int.Parse((await Page.Locator("#swipe-moves").TextContentAsync())!), "OnSwipeMove is raised while dragging.");
+        Assert.IsGreaterThan(0, double.Parse((await Page.Locator("#swipe-start").TextContentAsync())!, System.Globalization.CultureInfo.InvariantCulture));
     }
 
     [TestMethod]
@@ -813,7 +813,7 @@ public class BitPanelE2ETests : E2ETestBase
 
         await Expect(Page.Locator("#swipe-open")).ToHaveTextAsync("True");
         await Expect(Page.Locator("#swipe-log")).Not.ToContainTextAsync("OnDismissing");
-        Assert.IsTrue((await Page.EvaluateAsync<string>("() => window.getSelection().toString()")).Length > 0, "The drag selected text.");
+        Assert.IsGreaterThan(0, (await Page.EvaluateAsync<string>("() => window.getSelection().toString()")).Length, "The drag selected text.");
     }
 
     // ---------- Nested panels ----------
@@ -935,7 +935,7 @@ public class BitPanelE2ETests : E2ETestBase
         await OpenPanelAsync("btn-render-open", "render-panel");
 
         var duration = await Container("render-panel").EvaluateAsync<double>("el => Math.max(...getComputedStyle(el).transitionDuration.split(',').map(d => parseFloat(d)))");
-        Assert.IsTrue(duration < 0.01, $"transition-duration {duration}s");
+        Assert.IsLessThan(0.01, duration, $"transition-duration {duration}s");
         await Expect(Page.Locator("#render-settled")).ToHaveTextAsync("True");
 
         await Page.Keyboard.PressAsync("Escape");
@@ -977,7 +977,7 @@ public class BitPanelE2ETests : E2ETestBase
         var icon = Part("iconfa-panel", ".bit-pnl-cli");
         await Expect(icon).ToHaveClassAsync(HasClass("fa-solid"));
         await Expect(icon).ToHaveClassAsync(HasClass("fa-xmark"));
-        Assert.IsFalse((await icon.GetAttributeAsync("class"))!.Contains("bit-icon--"));
+        Assert.DoesNotContain("bit-icon--", (await icon.GetAttributeAsync("class"))!);
     }
 
     [TestMethod]
@@ -1081,7 +1081,7 @@ public class BitPanelE2ETests : E2ETestBase
 
         await Expect(Root("rtlstart-panel")).ToHaveClassAsync(HasClass("bit-rtl"));
         await Expect(Root("rtlstart-panel")).ToHaveAttributeAsync("dir", "rtl");
-        Assert.IsTrue((await TranslationAsync("rtlstart-panel"))[0] > 0, "Closed, a right-to-left start panel waits beyond the right edge.");
+        Assert.IsGreaterThan(0, (await TranslationAsync("rtlstart-panel"))[0], "Closed, a right-to-left start panel waits beyond the right edge.");
 
         await OpenPanelAsync("btn-rtlstart-open", "rtlstart-panel");
 
@@ -1091,7 +1091,7 @@ public class BitPanelE2ETests : E2ETestBase
 
         var close = await BoxAsync(Part("rtlstart-panel", ".bit-pnl-cls"));
         var header = await BoxAsync(Part("rtlstart-panel", ".bit-pnl-hdr"));
-        Assert.IsTrue(close.X < header.X, "The close button sits on the left of the header.");
+        Assert.IsLessThan(header.X, close.X, "The close button sits on the left of the header.");
         await Expect(Part("rtlstart-panel", ".bit-pnl-cls")).ToHaveAttributeAsync("aria-label", "بستن");
     }
 
@@ -1174,12 +1174,12 @@ public class BitPanelE2ETests : E2ETestBase
     public async Task Prerender_TheClosedPanelAndAnOpenOneAreInTheServerHtml()
     {
         var page = await (await Page.APIRequest.GetAsync($"{BaseUrl}{PagePath}")).TextAsync();
-        StringAssert.Contains(page, "id=\"basic-panel\"");
-        StringAssert.Contains(page, "bit-pnl-cnt");
+        Assert.Contains("id=\"basic-panel\"", page);
+        Assert.Contains("bit-pnl-cnt", page);
 
         var open = await (await Page.APIRequest.GetAsync($"{BaseUrl}/e2e/panel/prerender")).TextAsync();
-        StringAssert.Contains(open, "Prerendered panel");
-        StringAssert.Contains(open, "bit-pnl-opn");
+        Assert.Contains("Prerendered panel", open);
+        Assert.Contains("bit-pnl-opn", open);
 
         await OpenAsync("/e2e/panel/prerender");
         await Expect(Container("initial-panel")).ToHaveClassAsync(HasClass("bit-pnl-opn"));

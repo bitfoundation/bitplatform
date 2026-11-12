@@ -77,7 +77,7 @@ public class BitPanelTouchE2ETests : E2ETestBase
         await Expect(Page.Locator("#swipe-open")).ToHaveTextAsync("False");
         await Expect(Page.Locator("#swipe-log")).ToHaveTextAsync("OnSwipeStart,OnDismissing:Swipe,OnSwipeEnd");
         await Expect(Page.Locator("#swipe-end")).ToHaveTextAsync("200");
-        Assert.IsTrue(int.Parse((await Page.Locator("#swipe-moves").TextContentAsync())!) > 0);
+        Assert.IsGreaterThan(0, int.Parse((await Page.Locator("#swipe-moves").TextContentAsync())!));
         await Expect(Container("swipe-panel")).Not.ToHaveClassAsync(HasClass("bit-pnl-opn"));
     }
 

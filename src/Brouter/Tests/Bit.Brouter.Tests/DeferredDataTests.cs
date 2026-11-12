@@ -21,7 +21,7 @@ public class DeferredDataTests : BunitTestContext
             // Critical content is on screen although the deferred task hasn't resolved.
             Assert.IsNotNull(cut.Find("[data-testid=post]"));
             Assert.IsNotNull(cut.Find("[data-testid=comments-pending]"));
-            Assert.AreEqual(0, cut.FindAll("[data-testid=comments]").Count);
+            Assert.IsEmpty(cut.FindAll("[data-testid=comments]"));
         });
     }
 
@@ -39,7 +39,7 @@ public class DeferredDataTests : BunitTestContext
         cut.WaitForAssertion(() =>
         {
             Assert.AreEqual("42 comments", cut.Find("[data-testid=comments]").TextContent);
-            Assert.AreEqual(0, cut.FindAll("[data-testid=comments-pending]").Count);
+            Assert.IsEmpty(cut.FindAll("[data-testid=comments-pending]"));
         });
     }
 
@@ -56,7 +56,7 @@ public class DeferredDataTests : BunitTestContext
 
         cut.WaitForAssertion(() =>
         {
-            Assert.IsTrue(cut.Find("[data-testid=comments-error]").TextContent.Contains("comments api down"));
+            Assert.Contains("comments api down", cut.Find("[data-testid=comments-error]").TextContent);
             Assert.IsNotNull(cut.Find("[data-testid=post]")); // the page itself is unaffected
         });
     }

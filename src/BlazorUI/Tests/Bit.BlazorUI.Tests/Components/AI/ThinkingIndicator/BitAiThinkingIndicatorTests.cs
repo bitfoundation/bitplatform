@@ -57,8 +57,8 @@ public class BitAiThinkingIndicatorTests : BitAiTestBase
         Assert.AreEqual("thinking", root.Id);
         Assert.IsTrue(root.ClassList.Contains("custom-class"));
         Assert.IsTrue(root.ClassList.Contains("root-class"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin: 1px");
-        StringAssert.Contains(root.GetAttribute("style"), "padding: 2px");
+        Assert.Contains("margin: 1px", root.GetAttribute("style")!);
+        Assert.Contains("padding: 2px", root.GetAttribute("style")!);
         Assert.IsTrue(indicator.Find(".bit-ldn-lbl").ClassList.Contains("label-class"));
     }
 
@@ -103,14 +103,14 @@ public class BitAiThinkingIndicatorTests : BitAiTestBase
         }
         else
         {
-            StringAssert.Contains(style, expected);
+            Assert.Contains(expected, style);
         }
     }
 
     [TestMethod]
     public void BitAiThinkingIndicatorParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual("BitParams.BitAiThinkingIndicator", BitAiThinkingIndicatorParams.ParamName);
+        Assert.AreEqual("BitParams.BitAiThinkingIndicator", new BitAiThinkingIndicatorParams().Name);
         Assert.AreEqual(BitAiThinkingIndicatorParams.ParamName, new BitAiThinkingIndicatorParams().Name);
     }
 
@@ -131,7 +131,7 @@ public class BitAiThinkingIndicatorTests : BitAiTestBase
                                                        .Where(n => baseParameters.Contains(n) is false && notCascaded.Contains(n) is false)
                                                        .ToList();
 
-        Assert.IsTrue(parameters.Count > 0);
+        Assert.IsNotEmpty(parameters);
 
         foreach (var name in parameters)
         {
@@ -154,6 +154,6 @@ public class BitAiThinkingIndicatorTests : BitAiTestBase
         var root = component.Find(".bit-aithi");
 
         Assert.IsTrue(root.ClassList.Contains("cascaded"));
-        StringAssert.Contains(root.GetAttribute("style"), "color: red");
+        Assert.Contains("color: red", root.GetAttribute("style")!);
     }
 }

@@ -74,7 +74,7 @@ public class BitAiToolApprovalTests : BitAiTestBase
             .Add(c => c.ShowApproveAlways, false));
 
         var buttons = component.FindAll("button");
-        Assert.AreEqual(2, buttons.Count);
+        Assert.HasCount(2, buttons);
         Assert.AreEqual(BitAiStrings.Default.Reject, buttons[0].TextContent.Trim());
         Assert.AreEqual(BitAiStrings.Default.Approve, buttons[1].TextContent.Trim());
     }
@@ -87,8 +87,8 @@ public class BitAiToolApprovalTests : BitAiTestBase
 
         var component = RenderComponent<BitAiToolApproval>(p => p.Add(c => c.Call, call));
 
-        Assert.AreEqual(2, component.FindAll("button").Count);
-        Assert.IsFalse(component.Markup.Contains(BitAiStrings.Default.ApproveAlways));
+        Assert.HasCount(2, component.FindAll("button"));
+        Assert.DoesNotContain(BitAiStrings.Default.ApproveAlways, component.Markup);
     }
 
     [TestMethod]
@@ -120,7 +120,7 @@ public class BitAiToolApprovalTests : BitAiTestBase
         var detail = component.Find(".bit-aitap-dtl");
         Assert.AreEqual("About to run delete_everything", detail.TextContent.Trim());
         // Under the question, above the buttons.
-        Assert.HasCount(1, component.FindAll(".bit-aitap-txt + .bit-aitap-dtl + .bit-aitap-act"));
+        Assert.ContainsSingle(component.FindAll(".bit-aitap-txt + .bit-aitap-dtl + .bit-aitap-act"));
     }
 
     [TestMethod]
@@ -144,7 +144,7 @@ public class BitAiToolApprovalTests : BitAiTestBase
         });
 
         var buttons = component.FindAll("button");
-        Assert.AreEqual(2, buttons.Count);
+        Assert.HasCount(2, buttons);
         Assert.AreEqual("No", buttons[0].TextContent.Trim());
         Assert.AreEqual("Yes", buttons[1].TextContent.Trim());
         Assert.AreEqual("delete_everything", component.Find(".bit-aitap-dtl").TextContent.Trim());
@@ -169,7 +169,7 @@ public class BitAiToolApprovalTests : BitAiTestBase
         });
 
         var buttons = component.FindAll("button");
-        Assert.AreEqual(3, buttons.Count);
+        Assert.HasCount(3, buttons);
         Assert.AreEqual("Always yes", buttons[1].TextContent.Trim());
     }
 
@@ -191,7 +191,7 @@ public class BitAiToolApprovalTests : BitAiTestBase
 
         Assert.AreEqual(BitAiApprovalDecision.Rejected, call.Approval);
         Assert.AreEqual(BitAiToolCallStatus.Rejected, call.Status);
-        CollectionAssert.AreEqual(new[] { BitAiApprovalDecision.Rejected }, raised);
+        Assert.AreSequenceEqual(new[] { BitAiApprovalDecision.Rejected }, raised);
     }
 
     // With a session the decision is its to take, and one it refuses - the call is no longer waiting - is not reported.
@@ -215,7 +215,7 @@ public class BitAiToolApprovalTests : BitAiTestBase
         component.FindAll("button").Last().Click();
 
         Assert.AreEqual(BitAiToolCallStatus.Rejected, call.Status);
-        CollectionAssert.AreEqual(new[] { BitAiApprovalDecision.Rejected }, raised);
+        Assert.AreSequenceEqual(new[] { BitAiApprovalDecision.Rejected }, raised);
     }
 
     [TestMethod]
@@ -227,7 +227,7 @@ public class BitAiToolApprovalTests : BitAiTestBase
         Assert.AreEqual("group", root.GetAttribute("role"));
         Assert.AreEqual("Allow delete_everything to run?", root.GetAttribute("aria-label"));
         Assert.IsTrue(component.FindAll("button").All(b => b.GetAttribute("type") == "button"));
-        CollectionAssert.AreEqual(new[] { "Decline", "Always allow", "Allow" }, component.FindAll("button").Select(b => b.TextContent.Trim()).ToArray());
+        Assert.AreSequenceEqual(new[] { "Decline", "Always allow", "Allow" }, component.FindAll("button").Select(b => b.TextContent.Trim()).ToArray());
     }
 
     [TestMethod]
@@ -335,8 +335,8 @@ public class BitAiToolApprovalTests : BitAiTestBase
         Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
         Assert.AreEqual("rtl", root.GetAttribute("dir"));
         Assert.AreEqual("approval", root.Id);
-        StringAssert.Contains(root.GetAttribute("style"), "margin:1px");
-        StringAssert.Contains(root.GetAttribute("style"), "padding:2px");
+        Assert.Contains("margin:1px", root.GetAttribute("style")!);
+        Assert.Contains("padding:2px", root.GetAttribute("style")!);
         Assert.IsTrue(component.Find(".bit-aitap-txt").ClassList.Contains("text-class"));
         Assert.AreEqual("gap:3px", component.Find(".bit-aitap-act").GetAttribute("style"));
     }

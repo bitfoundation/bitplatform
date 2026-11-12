@@ -539,7 +539,7 @@ public class BitAppShellTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance.ClearPersistedScroll());
         Assert.IsNull(await component.InvokeAsync(() => component.Instance.GetScrollOffset()));
 
-        Assert.IsTrue(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.AppShell.initScroll"));
+        Assert.Contains(i => i.Identifier == "BitBlazorUI.AppShell.initScroll", Context.JSInterop.Invocations);
 
         await Context.DisposeComponentsAsync();
     }
@@ -603,18 +603,18 @@ public class BitAppShellTests : BunitTestContext
             parameters.Add(p => p.PersistScroll, true);
         });
 
-        Assert.IsFalse(Context.JSInterop.Invocations.Identifiers.Contains("BitBlazorUI.AppShell.updateScroll"));
+        Assert.DoesNotContain("BitBlazorUI.AppShell.updateScroll", Context.JSInterop.Invocations.Identifiers);
 
         component.Render(parameters => parameters.Add(p => p.ScrollRestoration, BitAppShellScrollRestoration.History));
 
         var invocation = Context.JSInterop.VerifyInvoke("BitBlazorUI.AppShell.updateScroll");
 
-        Assert.AreEqual(true, invocation.Arguments[2]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(invocation.Arguments[2]));
 
         // Nothing more is sent while the mode stays what it is.
         component.Render(parameters => parameters.Add(p => p.ScrollRestoration, BitAppShellScrollRestoration.History));
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.AppShell.updateScroll"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.AppShell.updateScroll"]);
     }
 
     [TestMethod]
@@ -724,7 +724,7 @@ public class BitAppShellTests : BunitTestContext
         InvokeLocationChanged(component.Instance, "https://example.com/other");
 
         var invocation = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.Extras.goToTop");
-        
+
         Assert.HasCount(2, invocation.Arguments);
     }
 
@@ -1135,8 +1135,8 @@ public class BitAppShellTests : BunitTestContext
         InvokeLocationChanged(component.Instance, "https://example.com/page3");
 
         var invocations = Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.Extras.goToTop");
-        
-        Assert.AreEqual(3, invocations.Count());
+
+        Assert.HasCount(3, invocations);
     }
 
     [TestMethod]
@@ -1298,7 +1298,7 @@ public class BitAppShellTests : BunitTestContext
 
         // The stylesheet is what stops the reader, so a shell that asked for nothing else does not pay
         // for a scroll listener, a ResizeObserver and a measurement per frame to be told to sit still.
-        Assert.IsFalse(Context.JSInterop.Invocations.Identifiers.Contains("BitBlazorUI.ScrollablePane.setup"));
+        Assert.DoesNotContain("BitBlazorUI.ScrollablePane.setup", Context.JSInterop.Invocations.Identifiers);
 
         Assert.IsTrue(component.Find(".bit-ash-main").ClassList.Contains("bit-ash-nsc"));
     }
@@ -1351,7 +1351,7 @@ public class BitAppShellTests : BunitTestContext
     {
         var component = RenderComponent<BitAppShell>();
 
-        Assert.IsFalse((component.Find(".bit-ash-main").GetAttribute("style") ?? string.Empty).Contains("overscroll-behavior"));
+        Assert.DoesNotContain("overscroll-behavior", (component.Find(".bit-ash-main").GetAttribute("style") ?? string.Empty));
     }
 
     [TestMethod]
@@ -1455,7 +1455,7 @@ public class BitAppShellTests : BunitTestContext
 
         Assert.AreEqual("row-9", invocation.Arguments[1]);
         Assert.AreEqual(12d, invocation.Arguments[2]);
-        Assert.AreEqual(false, invocation.Arguments[3]);
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(invocation.Arguments[3]));
         Assert.AreEqual("center", invocation.Arguments[4]);
     }
 
@@ -1466,7 +1466,7 @@ public class BitAppShellTests : BunitTestContext
 
         await component.Instance.ScrollToElement(" ");
 
-        Assert.IsFalse(Context.JSInterop.Invocations.Identifiers.Contains("BitBlazorUI.ScrollablePane.scrollToElement"));
+        Assert.DoesNotContain("BitBlazorUI.ScrollablePane.scrollToElement", Context.JSInterop.Invocations.Identifiers);
     }
 
     [TestMethod]
@@ -1505,7 +1505,7 @@ public class BitAppShellTests : BunitTestContext
     {
         RenderComponent<BitAppShell>();
 
-        Assert.IsFalse(Context.JSInterop.Invocations.Identifiers.Contains("BitBlazorUI.ScrollablePane.setup"));
+        Assert.DoesNotContain("BitBlazorUI.ScrollablePane.setup", Context.JSInterop.Invocations.Identifiers);
     }
 
     [TestMethod]
@@ -1552,8 +1552,8 @@ public class BitAppShellTests : BunitTestContext
         component.Render();
         component.Render();
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.ScrollablePane.setup"].Count);
-        Assert.IsFalse(Context.JSInterop.Invocations.Identifiers.Contains("BitBlazorUI.ScrollablePane.update"));
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.ScrollablePane.setup"]);
+        Assert.DoesNotContain("BitBlazorUI.ScrollablePane.update", Context.JSInterop.Invocations.Identifiers);
     }
 
     [TestMethod]
@@ -1702,7 +1702,7 @@ public class BitAppShellTests : BunitTestContext
 
         InvokeLocationChanged(component.Instance, "https://example.com/page#section-2");
 
-        Assert.AreEqual(before, Context.JSInterop.Invocations["BitBlazorUI.Extras.goToTop"].Count);
+        Assert.HasCount(before, Context.JSInterop.Invocations["BitBlazorUI.Extras.goToTop"]);
     }
 
     [TestMethod]
@@ -1718,7 +1718,7 @@ public class BitAppShellTests : BunitTestContext
         InvokeLocationChanged(component.Instance, "https://example.com/other");
 
         // The first and the last are real navigations; the fragment-only one in between is not.
-        Assert.AreEqual(2, Context.JSInterop.Invocations["BitBlazorUI.Extras.goToTop"].Count);
+        Assert.HasCount(2, Context.JSInterop.Invocations["BitBlazorUI.Extras.goToTop"]);
     }
 
     [TestMethod]
@@ -1735,7 +1735,7 @@ public class BitAppShellTests : BunitTestContext
 
         InvokeLocationChanged(component.Instance, "https://example.com/page#section-2");
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.AppShell.locationChangedScroll"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.AppShell.locationChangedScroll"]);
     }
 
     [TestMethod]
@@ -1776,7 +1776,7 @@ public class BitAppShellTests : BunitTestContext
 
         InvokeLocationChanged(component.Instance, "https://example.com/one");
 
-        Assert.IsFalse(Context.JSInterop.Invocations.Identifiers.Contains("BitBlazorUI.Extras.goToTop"));
+        Assert.DoesNotContain("BitBlazorUI.Extras.goToTop", Context.JSInterop.Invocations.Identifiers);
 
         component.Render(parameters => parameters.Add(p => p.AutoGoToTop, true));
 
@@ -1797,7 +1797,7 @@ public class BitAppShellTests : BunitTestContext
 
         InvokeLocationChanged(component.Instance, "https://example.com/two");
 
-        Assert.IsFalse(Context.JSInterop.Invocations.Identifiers.Contains("BitBlazorUI.Extras.goToTop"));
+        Assert.DoesNotContain("BitBlazorUI.Extras.goToTop", Context.JSInterop.Invocations.Identifiers);
     }
 
     [TestMethod]
@@ -1805,7 +1805,7 @@ public class BitAppShellTests : BunitTestContext
     {
         var component = RenderComponent<BitAppShell>();
 
-        Assert.IsFalse(Context.JSInterop.Invocations.Identifiers.Contains("BitBlazorUI.AppShell.initScroll"));
+        Assert.DoesNotContain("BitBlazorUI.AppShell.initScroll", Context.JSInterop.Invocations.Identifiers);
 
         component.Render(parameters => parameters.Add(p => p.PersistScroll, true));
 
@@ -1823,7 +1823,7 @@ public class BitAppShellTests : BunitTestContext
         component.Render();
         component.Render();
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.AppShell.initScroll"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.AppShell.initScroll"]);
     }
 
     [TestMethod]
@@ -1833,8 +1833,8 @@ public class BitAppShellTests : BunitTestContext
 
         component.Render();
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.AppShell.registerShell"].Count);
-        Assert.IsFalse(Context.JSInterop.Invocations.Identifiers.Contains("BitBlazorUI.AppShell.unregisterShell"));
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.AppShell.registerShell"]);
+        Assert.DoesNotContain("BitBlazorUI.AppShell.unregisterShell", Context.JSInterop.Invocations.Identifiers);
 
         component.Instance.DisposeAsync().AsTask().GetAwaiter().GetResult();
 
@@ -1854,8 +1854,8 @@ public class BitAppShellTests : BunitTestContext
         var identifiers = Context.JSInterop.Invocations.Select(i => i.Identifier).ToList();
 
         // Ahead of the move, so the move is read as a jump rather than as the reader heading down the content.
-        Assert.IsTrue(identifiers.IndexOf("BitBlazorUI.AppShell.holdScrollState") >= 0);
-        Assert.IsTrue(identifiers.IndexOf("BitBlazorUI.AppShell.holdScrollState") < identifiers.IndexOf("BitBlazorUI.Extras.scrollTo"));
+        Assert.IsGreaterThanOrEqualTo(0, identifiers.IndexOf("BitBlazorUI.AppShell.holdScrollState"));
+        Assert.IsLessThan(identifiers.IndexOf("BitBlazorUI.Extras.scrollTo"), identifiers.IndexOf("BitBlazorUI.AppShell.holdScrollState"));
     }
 
     [TestMethod]
@@ -1865,7 +1865,7 @@ public class BitAppShellTests : BunitTestContext
 
         component.InvokeAsync(() => component.Instance.ScrollTo(null, 500)).GetAwaiter().GetResult();
 
-        Assert.IsFalse(Context.JSInterop.Invocations.Identifiers.Contains("BitBlazorUI.AppShell.holdScrollState"));
+        Assert.DoesNotContain("BitBlazorUI.AppShell.holdScrollState", Context.JSInterop.Invocations.Identifiers);
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -1877,7 +1877,7 @@ public class BitAppShellTests : BunitTestContext
     {
         RenderComponent<BitAppShell>();
 
-        Assert.IsFalse(Context.JSInterop.Invocations.Identifiers.Contains("BitBlazorUI.AppShell.setupKeyboard"));
+        Assert.DoesNotContain("BitBlazorUI.AppShell.setupKeyboard", Context.JSInterop.Invocations.Identifiers);
     }
 
     [TestMethod]
@@ -1902,7 +1902,7 @@ public class BitAppShellTests : BunitTestContext
         component.Render();
         component.Render();
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.AppShell.setupKeyboard"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.AppShell.setupKeyboard"]);
     }
 
     [TestMethod]
@@ -1910,7 +1910,7 @@ public class BitAppShellTests : BunitTestContext
     {
         var component = RenderComponent<BitAppShell>();
 
-        Assert.IsFalse(Context.JSInterop.Invocations.Identifiers.Contains("BitBlazorUI.AppShell.setupKeyboard"));
+        Assert.DoesNotContain("BitBlazorUI.AppShell.setupKeyboard", Context.JSInterop.Invocations.Identifiers);
 
         component.Render(parameters => parameters.Add(p => p.AvoidKeyboard, true));
 
@@ -1950,7 +1950,7 @@ public class BitAppShellTests : BunitTestContext
     {
         RenderComponent<BitAppShell>();
 
-        Assert.IsFalse(Context.JSInterop.Invocations.Identifiers.Contains("BitBlazorUI.AppShell.setupScrollState"));
+        Assert.DoesNotContain("BitBlazorUI.AppShell.setupScrollState", Context.JSInterop.Invocations.Identifiers);
     }
 
     [TestMethod]
@@ -1966,11 +1966,13 @@ public class BitAppShellTests : BunitTestContext
 
         var invocations = Context.JSInterop.Invocations["BitBlazorUI.AppShell.setupScrollState"];
 
-        Assert.AreEqual(1, invocations.Count);
+        Assert.ContainsSingle(invocations);
+        var expectedValue = component.Instance.UniqueId.ToString();
+        var actualValue = invocations[0].Arguments[0]?.ToString();
 
         // The shell's id, its root and its main container - the element that scrolls and the one marked.
-        Assert.AreEqual(component.Instance.UniqueId.ToString(), invocations[0].Arguments[0]?.ToString());
-        Assert.AreEqual(3, invocations[0].Arguments.Count);
+        Assert.AreEqual(expectedValue, actualValue);
+        Assert.HasCount(3, invocations[0].Arguments);
     }
 
     [TestMethod]
@@ -2026,7 +2028,7 @@ public class BitAppShellTests : BunitTestContext
         component.Render(parameters => parameters.Add(p => p.PersistScroll, false));
         component.Render(parameters => parameters.Add(p => p.PersistScroll, true));
 
-        Assert.AreEqual(2, Context.JSInterop.Invocations["BitBlazorUI.AppShell.initScroll"].Count);
+        Assert.HasCount(2, Context.JSInterop.Invocations["BitBlazorUI.AppShell.initScroll"]);
     }
 
 
@@ -2121,7 +2123,7 @@ public class BitAppShellTests : BunitTestContext
         }
         else
         {
-            Assert.IsFalse(style.Contains("scrollbar-gutter"));
+            Assert.DoesNotContain("scrollbar-gutter", style);
         }
     }
 
@@ -2141,7 +2143,7 @@ public class BitAppShellTests : BunitTestContext
         var style = component.Find(".bit-ash-main").GetAttribute("style") ?? string.Empty;
 
         Assert.Contains(expected, style);
-        Assert.IsFalse(style.Contains("overflow-y"));
+        Assert.DoesNotContain("overflow-y", style);
     }
 
     [TestMethod]
@@ -2155,7 +2157,7 @@ public class BitAppShellTests : BunitTestContext
         var style = component.Find(".bit-ash-main").GetAttribute("style") ?? string.Empty;
 
         Assert.Contains("overflow-y:hidden", style);
-        Assert.IsFalse(style.Contains("overflow-x"));
+        Assert.DoesNotContain("overflow-x", style);
     }
 
     [TestMethod]
@@ -2163,7 +2165,7 @@ public class BitAppShellTests : BunitTestContext
     {
         var component = RenderComponent<BitAppShell>();
 
-        Assert.IsFalse((component.Find(".bit-ash-main").GetAttribute("style") ?? string.Empty).Contains("overflow"));
+        Assert.DoesNotContain("overflow", (component.Find(".bit-ash-main").GetAttribute("style") ?? string.Empty));
     }
 
     [TestMethod]
@@ -2178,7 +2180,7 @@ public class BitAppShellTests : BunitTestContext
 
         var style = component.Find(".bit-ash-main").GetAttribute("style") ?? string.Empty;
 
-        Assert.IsTrue(style.EndsWith("overflow:hidden"));
+        Assert.EndsWith("overflow:hidden", style);
     }
 
     [TestMethod]
@@ -2230,7 +2232,7 @@ public class BitAppShellTests : BunitTestContext
         // opens with content already in it would be left standing at the top without this one call.
         var invocation = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.ScrollablePane.autoScroll");
 
-        Assert.AreEqual(true, invocation.Arguments[1]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(invocation.Arguments[1]));
     }
 
     [TestMethod]
@@ -2243,7 +2245,7 @@ public class BitAppShellTests : BunitTestContext
 
         component.Render(parameters => parameters.Add(p => p.AutoScrollThreshold, 64));
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.ScrollablePane.autoScroll"));
+        Assert.ContainsSingle(i => i.Identifier == "BitBlazorUI.ScrollablePane.autoScroll", Context.JSInterop.Invocations);
     }
 
     [TestMethod]
@@ -2254,7 +2256,7 @@ public class BitAppShellTests : BunitTestContext
             parameters.Add(p => p.PreserveScroll, true);
         });
 
-        Assert.IsFalse(Context.JSInterop.Invocations.Identifiers.Contains("BitBlazorUI.ScrollablePane.autoScroll"));
+        Assert.DoesNotContain("BitBlazorUI.ScrollablePane.autoScroll", Context.JSInterop.Invocations.Identifiers);
     }
 
     [TestMethod]
@@ -2319,7 +2321,7 @@ public class BitAppShellTests : BunitTestContext
 
         await component.Instance.Refresh();
 
-        Assert.IsFalse(Context.JSInterop.Invocations.Identifiers.Contains("BitBlazorUI.ScrollablePane.refresh"));
+        Assert.DoesNotContain("BitBlazorUI.ScrollablePane.refresh", Context.JSInterop.Invocations.Identifiers);
     }
 
     [TestMethod]
@@ -2387,7 +2389,7 @@ public class BitAppShellTests : BunitTestContext
 
         var invocation = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.ScrollablePane.scrollToElement");
 
-        Assert.AreEqual(false, invocation.Arguments[3]);
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(invocation.Arguments[3]));
     }
 
     [TestMethod,
@@ -2444,7 +2446,7 @@ public class BitAppShellTests : BunitTestContext
 
         var invocation = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.ScrollablePane.scrollToElement");
 
-        Assert.AreEqual(false, invocation.Arguments[3]);
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(invocation.Arguments[3]));
     }
 
 
@@ -2486,7 +2488,7 @@ public class BitAppShellTests : BunitTestContext
 
         var invocation = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.AppShell.disposeKeyboard");
 
-        Assert.HasCount(1, invocation.Arguments);
+        Assert.ContainsSingle(invocation.Arguments);
     }
 
 
@@ -2535,20 +2537,20 @@ public class BitAppShellTests : BunitTestContext
 
         Assert.IsNotNull(options);
 
-        Assert.AreEqual(true, OptionOf(options!, "AutoScroll"));
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(OptionOf(options!, "AutoScroll")));
         Assert.AreEqual(48, OptionOf(options!, "AutoScrollThreshold"));
-        Assert.AreEqual(true, OptionOf(options!, "Preserve"));
-        Assert.AreEqual(true, OptionOf(options!, "NoScroll"));
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(OptionOf(options!, "Preserve")));
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(OptionOf(options!, "NoScroll")));
         Assert.AreEqual(16, OptionOf(options!, "Offset"));
         Assert.AreEqual(100, OptionOf(options!, "Throttle"));
-        Assert.AreEqual(false, OptionOf(options!, "Smooth"));
-        Assert.AreEqual(true, OptionOf(options!, "Left"));
-        Assert.AreEqual(true, OptionOf(options!, "Scroll"));
-        Assert.AreEqual(false, OptionOf(options!, "Right"));
-        Assert.AreEqual(false, OptionOf(options!, "Top"));
-        Assert.AreEqual(false, OptionOf(options!, "Bottom"));
-        Assert.AreEqual(false, OptionOf(options!, "ScrollStart"));
-        Assert.AreEqual(false, OptionOf(options!, "ScrollEnd"));
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(OptionOf(options!, "Smooth")));
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(OptionOf(options!, "Left")));
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(OptionOf(options!, "Scroll")));
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(OptionOf(options!, "Right")));
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(OptionOf(options!, "Top")));
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(OptionOf(options!, "Bottom")));
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(OptionOf(options!, "ScrollStart")));
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(OptionOf(options!, "ScrollEnd")));
     }
 
     [TestMethod]
@@ -2563,11 +2565,11 @@ public class BitAppShellTests : BunitTestContext
 
         Assert.IsNotNull(options);
 
-        Assert.AreEqual(true, OptionOf(options!, "Bottom"));
-        Assert.AreEqual(false, OptionOf(options!, "Scroll"));
-        Assert.AreEqual(false, OptionOf(options!, "AutoScroll"));
-        Assert.AreEqual(false, OptionOf(options!, "Preserve"));
-        Assert.AreEqual(true, OptionOf(options!, "Smooth"));
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(OptionOf(options!, "Bottom")));
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(OptionOf(options!, "Scroll")));
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(OptionOf(options!, "AutoScroll")));
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(OptionOf(options!, "Preserve")));
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(OptionOf(options!, "Smooth")));
     }
 
     private static object? OptionOf(object options, string name)
@@ -2634,13 +2636,13 @@ public class BitAppShellTests : BunitTestContext
         Assert.IsTrue(roots[0].ClassList.Contains("bit-ash-nin"));
         Assert.IsTrue(roots[0].ClassList.Contains("bit-ash-fsc"));
         Assert.IsTrue(roots[0].ClassList.Contains("bit-ash-sin"));
-        StringAssert.Contains(roots[0].GetAttribute("style"), "--bit-AppShell-background: red");
+        Assert.Contains("--bit-AppShell-background: red", roots[0].GetAttribute("style")!);
         Assert.IsTrue(mains[0].ClassList.Contains("cascaded-main"));
         Assert.IsTrue(mains[0].ClassList.Contains("bit-ash-nsc"));
         Assert.IsFalse(mains[0].ClassList.Contains("bit-ash-smt"));
-        StringAssert.Contains(mains[0].GetAttribute("style"), "scrollbar-gutter:stable");
-        StringAssert.Contains(mains[0].GetAttribute("style"), "scroll-padding:3rem 0 0 0");
-        StringAssert.Contains(mains[0].GetAttribute("style"), "overflow:hidden");
+        Assert.Contains("scrollbar-gutter:stable", mains[0].GetAttribute("style")!);
+        Assert.Contains("scroll-padding:3rem 0 0 0", mains[0].GetAttribute("style")!);
+        Assert.Contains("overflow:hidden", mains[0].GetAttribute("style")!);
 
         // The second one sets its own values, which must not be overwritten - an own false included.
         Assert.IsFalse(roots[1].ClassList.Contains("bit-ash-nin"));
@@ -2648,13 +2650,13 @@ public class BitAppShellTests : BunitTestContext
         Assert.IsFalse(mains[1].ClassList.Contains("cascaded-main"));
         Assert.IsFalse(mains[1].ClassList.Contains("bit-ash-nsc"));
         Assert.IsTrue(mains[1].ClassList.Contains("bit-ash-smt"));
-        StringAssert.Contains(mains[1].GetAttribute("style"), "scroll-padding:1rem");
-        Assert.IsFalse(mains[1].GetAttribute("style")!.Contains("overflow:hidden"));
+        Assert.Contains("scroll-padding:1rem", mains[1].GetAttribute("style")!);
+        Assert.DoesNotContain("overflow:hidden", mains[1].GetAttribute("style")!);
 
         // What it did not set is still filled in from them.
         Assert.IsTrue(roots[1].ClassList.Contains("cascaded"));
         Assert.IsTrue(roots[1].ClassList.Contains("bit-ash-fsc"));
-        StringAssert.Contains(mains[1].GetAttribute("style"), "scrollbar-gutter:stable");
+        Assert.Contains("scrollbar-gutter:stable", mains[1].GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -2787,8 +2789,8 @@ public class BitAppShellTests : BunitTestContext
 
         Assert.IsTrue(root.ClassList.Contains("second-class"));
         Assert.IsFalse(root.ClassList.Contains("first-class"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin:2px");
-        Assert.IsFalse(root.GetAttribute("style")!.Contains("margin:1px"));
+        Assert.Contains("margin:2px", root.GetAttribute("style")!);
+        Assert.DoesNotContain("margin:1px", root.GetAttribute("style")!);
     }
 
     private static void InvokeLocationChanged(BitAppShell instance, string uri)

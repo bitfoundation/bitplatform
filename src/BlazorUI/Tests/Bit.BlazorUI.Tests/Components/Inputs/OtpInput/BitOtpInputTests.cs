@@ -304,14 +304,14 @@ public class BitOtpInputTests : BunitTestContext
         com.Render(parameters => parameters.Add(p => p.Length, 6));
 
         var inputs = com.FindAll(".bit-otp-inp");
-        Assert.AreEqual(6, inputs.Count);
+        Assert.HasCount(6, inputs);
         // The characters that were already typed stay in the inputs that survive the resize.
         Assert.AreEqual("1", inputs[0].GetAttribute("value"));
         Assert.AreEqual("2", inputs[1].GetAttribute("value"));
 
         com.Render(parameters => parameters.Add(p => p.Length, 2));
 
-        Assert.AreEqual(2, com.FindAll(".bit-otp-inp").Count);
+        Assert.HasCount(2, com.FindAll(".bit-otp-inp"));
     }
 
     [TestMethod,
@@ -377,7 +377,7 @@ public class BitOtpInputTests : BunitTestContext
 
         var hiddenInputs = com.FindAll("input[type=hidden]");
 
-        Assert.AreEqual(1, hiddenInputs.Count);
+        Assert.ContainsSingle(hiddenInputs);
         Assert.AreEqual("otp", hiddenInputs[0].GetAttribute("name"));
         Assert.AreEqual("1234", hiddenInputs[0].GetAttribute("value"));
     }
@@ -438,7 +438,7 @@ public class BitOtpInputTests : BunitTestContext
 
         var separators = com.FindAll(".bit-otp-sep");
 
-        Assert.AreEqual(3, separators.Count);
+        Assert.HasCount(3, separators);
         Assert.AreEqual("-", separators[0].TextContent);
         Assert.AreEqual("true", separators[0].GetAttribute("aria-hidden"));
     }
@@ -451,7 +451,7 @@ public class BitOtpInputTests : BunitTestContext
             parameters.Add(p => p.Length, 4);
         });
 
-        Assert.AreEqual(0, com.FindAll(".bit-otp-sep").Count);
+        Assert.IsEmpty(com.FindAll(".bit-otp-sep"));
     }
 
     [TestMethod,
@@ -1125,7 +1125,7 @@ public class BitOtpInputTests : BunitTestContext
         await com.FindAll(".bit-otp-inp")[0].InputAsync(new ChangeEventArgs { Value = "1" });
 
         Assert.AreEqual("19", com.Instance.Value);
-        Assert.AreEqual(focusCount + 1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+        Assert.HasCount(focusCount + 1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
     }
 
     [TestMethod]
@@ -1150,7 +1150,7 @@ public class BitOtpInputTests : BunitTestContext
         }
 
         Assert.AreEqual("1234", com.Instance.Value);
-        Assert.AreEqual(focusCount + 3, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+        Assert.HasCount(focusCount + 3, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
     }
 
     [TestMethod]
@@ -1165,7 +1165,7 @@ public class BitOtpInputTests : BunitTestContext
 
         var wrapper = com.Find(".bit-otp-iwr");
 
-        Assert.AreEqual(1, com.FindAll(".bit-otp-sep").Count);
+        Assert.ContainsSingle(com.FindAll(".bit-otp-sep"));
         Assert.AreEqual(7, wrapper.Children.Length);
         // The single separator sits right after the third input, which is what makes the code read 123-456.
         Assert.IsTrue(wrapper.Children[3].ClassList.Contains("bit-otp-sep"));
@@ -1184,7 +1184,7 @@ public class BitOtpInputTests : BunitTestContext
             parameters.Add(p => p.SeparatorInterval, separatorInterval);
         });
 
-        Assert.AreEqual(3, com.FindAll(".bit-otp-sep").Count);
+        Assert.HasCount(3, com.FindAll(".bit-otp-sep"));
     }
 
     [TestMethod,
@@ -1261,7 +1261,7 @@ public class BitOtpInputTests : BunitTestContext
         Assert.AreEqual("1234", com.Instance.Value);
 
         var inputs = com.FindAll(".bit-otp-inp");
-        Assert.AreEqual(4, inputs.Count);
+        Assert.HasCount(4, inputs);
         Assert.AreEqual("4", inputs[3].GetAttribute("value"));
     }
 
@@ -1289,10 +1289,10 @@ public class BitOtpInputTests : BunitTestContext
         });
 
         await com.FindAll(".bit-otp-inp")[0].InputAsync(new ChangeEventArgs { Value = "1" });
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.OtpInput.blur"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.OtpInput.blur"]);
 
         await com.FindAll(".bit-otp-inp")[1].InputAsync(new ChangeEventArgs { Value = "2" });
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.OtpInput.blur"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.OtpInput.blur"]);
     }
 
     [TestMethod]
@@ -1305,7 +1305,7 @@ public class BitOtpInputTests : BunitTestContext
 
         await com.FindAll(".bit-otp-inp")[0].InputAsync(new ChangeEventArgs { Value = "1" });
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.OtpInput.blur"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.OtpInput.blur"]);
     }
 
     [TestMethod,
@@ -1324,7 +1324,7 @@ public class BitOtpInputTests : BunitTestContext
 
         var invocations = Context.JSInterop.Invocations["BitBlazorUI.OtpInput.setup"];
 
-        Assert.AreEqual(1, invocations.Count);
+        Assert.ContainsSingle(invocations);
         Assert.AreEqual(smsAutoFill, invocations[0].Arguments[3]);
     }
 
@@ -1372,7 +1372,7 @@ public class BitOtpInputTests : BunitTestContext
 
         var separators = com.FindAll(".bit-otp-sep");
 
-        Assert.AreEqual(1, separators.Count);
+        Assert.ContainsSingle(separators);
         // The context of the template is the index of the input the separator is rendered before.
         Assert.AreEqual("<i>2</i>", separators[0].InnerHtml);
     }
@@ -1386,7 +1386,7 @@ public class BitOtpInputTests : BunitTestContext
             parameters.Add(p => p.SeparatorTemplate, (RenderFragment<int>)(_ => builder => builder.AddMarkupContent(0, "<i>x</i>")));
         });
 
-        Assert.AreEqual(2, com.FindAll(".bit-otp-sep").Count);
+        Assert.HasCount(2, com.FindAll(".bit-otp-sep"));
     }
 
     [TestMethod]
@@ -1610,7 +1610,7 @@ public class BitOtpInputTests : BunitTestContext
         await Task.WhenAll(rejected, accepted);
 
         Assert.AreEqual("A", com.Instance.Value);
-        Assert.AreEqual(0, invalids.Count);
+        Assert.IsEmpty(invalids);
     }
 
     [TestMethod]
@@ -1632,9 +1632,9 @@ public class BitOtpInputTests : BunitTestContext
 
         await com.FindAll(".bit-otp-inp")[1].KeyDownAsync(new KeyboardEventArgs { Code = "ArrowLeft", Key = "ArrowLeft" });
 
-        Assert.IsTrue(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.Utils.isRtl"));
-        Assert.AreEqual(0, FocusedInputs().Length);
-        CollectionAssert.AreEqual(new[] { "ArrowLeft" }, keys);
+        Assert.Contains(i => i.Identifier == "BitBlazorUI.Utils.isRtl", Context.JSInterop.Invocations);
+        Assert.IsEmpty(FocusedInputs());
+        Assert.AreSequenceEqual(new[] { "ArrowLeft" }, keys);
     }
 
     [TestMethod]
@@ -1888,7 +1888,7 @@ public class BitOtpInputTests : BunitTestContext
             parameters.Add(p => p.Length, 2);
         });
 
-        Assert.AreEqual(0, com.FindAll("input[type=hidden]").Count);
+        Assert.IsEmpty(com.FindAll("input[type=hidden]"));
     }
 
     [TestMethod]
@@ -1920,7 +1920,7 @@ public class BitOtpInputTests : BunitTestContext
         await com.FindAll(".bit-otp-inp")[0].InputAsync(new ChangeEventArgs { Value = "1" });
         await com.FindAll(".bit-otp-inp")[1].InputAsync(new ChangeEventArgs { Value = "2" });
 
-        CollectionAssert.AreEqual(new[] { "1", "12" }, onChangeValues);
+        Assert.AreSequenceEqual(new[] { "1", "12" }, onChangeValues);
     }
 
     [TestMethod,
@@ -2039,8 +2039,8 @@ public class BitOtpInputTests : BunitTestContext
 
         var invocations = Context.JSInterop.Invocations["BitBlazorUI.OtpInput.setup"];
 
-        Assert.AreEqual(1, invocations.Count);
-        Assert.AreEqual(true, invocations[0].Arguments[3]);
+        Assert.ContainsSingle(invocations);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(invocations[0].Arguments[3]));
 
         com.Render(parameters =>
         {
@@ -2048,8 +2048,8 @@ public class BitOtpInputTests : BunitTestContext
             parameters.Add(p => p.Disabled, true);
         });
 
-        Assert.AreEqual(2, invocations.Count);
-        Assert.AreEqual(false, invocations[1].Arguments[3]);
+        Assert.HasCount(2, invocations);
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(invocations[1].Arguments[3]));
     }
 
     [TestMethod]
@@ -2084,7 +2084,7 @@ public class BitOtpInputTests : BunitTestContext
             parameters.Add(p => p.Length, 2);
         });
 
-        Assert.AreEqual(0, com.FindAll(".bit-otp-dsc").Count);
+        Assert.IsEmpty(com.FindAll(".bit-otp-dsc"));
         Assert.IsFalse(com.Find(".bit-otp-iwr").HasAttribute("aria-describedby"));
     }
 
@@ -2191,8 +2191,8 @@ public class BitOtpInputTests : BunitTestContext
 
         // The consumer is told about the input the user actually reached, and the focus is then corrected
         // onto the first input left to fill.
-        CollectionAssert.AreEqual(new[] { 3 }, focusInIndexes);
-        Assert.AreEqual(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+        Assert.AreSequenceEqual(new[] { 3 }, focusInIndexes);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
     }
 
     [TestMethod]
@@ -2209,7 +2209,7 @@ public class BitOtpInputTests : BunitTestContext
 
         await com.FindAll(".bit-otp-inp")[3].FocusInAsync(new FocusEventArgs());
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
     }
 
     [TestMethod]
@@ -2223,7 +2223,7 @@ public class BitOtpInputTests : BunitTestContext
 
         await com.FindAll(".bit-otp-inp")[3].FocusInAsync(new FocusEventArgs());
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
 
         // A read-only component is showing a code rather than waiting for one, so clicking a character of
         // it is a way of reading it rather than of typing it.
@@ -2235,7 +2235,7 @@ public class BitOtpInputTests : BunitTestContext
 
         await com.FindAll(".bit-otp-inp")[3].FocusInAsync(new FocusEventArgs());
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
     }
 
     [TestMethod]
@@ -2410,11 +2410,11 @@ public class BitOtpInputTests : BunitTestContext
             parameters.Add(p => p.Length, 4);
         });
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.OtpInput.setup"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.OtpInput.setup"]);
 
         com.Render(parameters => parameters.Add(p => p.Length, 6));
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.OtpInput.setup"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.OtpInput.setup"]);
     }
 
     [TestMethod]
@@ -2441,7 +2441,7 @@ public class BitOtpInputTests : BunitTestContext
 
         await com.InvokeAsync(() => com.Instance.BlurAsync());
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.OtpInput.blur"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.OtpInput.blur"]);
     }
 
     [TestMethod]
@@ -2457,7 +2457,7 @@ public class BitOtpInputTests : BunitTestContext
         await otpInput.FocusAsync(0);
         await otpInput.FocusAsync(3);
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
     }
 
     [TestMethod]
@@ -2523,8 +2523,8 @@ public class BitOtpInputTests : BunitTestContext
             if (inputs[i].ClassList.Contains("bit-otp-gnd")) ends.Add(i);
         }
 
-        CollectionAssert.AreEqual(new[] { 0, 3 }, starts);
-        CollectionAssert.AreEqual(new[] { 2, 5 }, ends);
+        Assert.AreSequenceEqual(new[] { 0, 3 }, starts);
+        Assert.AreSequenceEqual(new[] { 2, 5 }, ends);
     }
 
     [TestMethod]
@@ -2585,7 +2585,7 @@ public class BitOtpInputTests : BunitTestContext
         var root = com.Find(".bit-otp");
 
         Assert.AreEqual(isLoading, root.ClassList.Contains("bit-otp-ldg"));
-        Assert.AreEqual(isLoading ? 1 : 0, com.FindAll(".bit-otp-ldr").Count);
+        Assert.HasCount(isLoading ? 1 : 0, com.FindAll(".bit-otp-ldr"));
         Assert.AreEqual(isLoading ? "true" : null, com.Find(".bit-otp-iwr").GetAttribute("aria-busy"));
 
         // A code whose answer is already on its way must not be edited any more than a read-only one.
@@ -2616,7 +2616,7 @@ public class BitOtpInputTests : BunitTestContext
 
         Assert.IsTrue(com.Find(".bit-otp").ClassList.Contains("bit-otp-ldg"));
         Assert.IsTrue(com.Find(".bit-otp").ClassList.Contains("bit-otp-mrg"));
-        Assert.AreEqual(1, com.FindAll(".bit-otp-ldr").Count);
+        Assert.ContainsSingle(com.FindAll(".bit-otp-ldr"));
         Assert.IsTrue(com.FindAll(".bit-otp-inp")[0].ClassList.Contains("bit-otp-gst"));
 
         com.Render(parameters =>
@@ -2627,7 +2627,7 @@ public class BitOtpInputTests : BunitTestContext
 
         Assert.IsFalse(com.Find(".bit-otp").ClassList.Contains("bit-otp-ldg"));
         Assert.IsFalse(com.Find(".bit-otp").ClassList.Contains("bit-otp-mrg"));
-        Assert.AreEqual(0, com.FindAll(".bit-otp-ldr").Count);
+        Assert.IsEmpty(com.FindAll(".bit-otp-ldr"));
         Assert.IsFalse(com.FindAll(".bit-otp-inp")[0].ClassList.Contains("bit-otp-gst"));
     }
 
@@ -2665,8 +2665,8 @@ public class BitOtpInputTests : BunitTestContext
 
         var invocations = Context.JSInterop.Invocations["BitBlazorUI.OtpInput.setup"];
 
-        Assert.AreEqual(1, invocations.Count);
-        Assert.AreEqual(false, invocations[0].Arguments[3]);
+        Assert.ContainsSingle(invocations);
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(invocations[0].Arguments[3]));
     }
 
     [TestMethod]
@@ -2708,7 +2708,7 @@ public class BitOtpInputTests : BunitTestContext
 
         // The typing carries on at the start of the emptied code rather than wherever the caret happened
         // to be when the code was cut out of the inputs.
-        Assert.AreEqual(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
     }
 
     [TestMethod]
@@ -2736,7 +2736,7 @@ public class BitOtpInputTests : BunitTestContext
 
         await pendingInput;
 
-        Assert.AreEqual(2, com.FindAll(".bit-otp-inp").Count);
+        Assert.HasCount(2, com.FindAll(".bit-otp-inp"));
         Assert.AreEqual("12", com.Instance.Value);
     }
 
@@ -2856,8 +2856,10 @@ public class BitOtpInputTests : BunitTestContext
 
         Assert.AreEqual("12", com.Instance.Value);
         Assert.AreEqual("2", com.FindAll(".bit-otp-inp")[1].GetAttribute("value"));
-        Assert.AreEqual(" ", invalidArgs?.Value);
-        Assert.AreEqual(1, invalidArgs?.Index);
+        var actualValue = invalidArgs?.Value;
+        Assert.AreEqual(" ", actualValue);
+        var actualValue1 = invalidArgs?.Index;
+        Assert.AreEqual(1, actualValue1);
     }
 
     [TestMethod]
@@ -2994,14 +2996,14 @@ public class BitOtpInputTests : BunitTestContext
         });
 
         await com.FindAll(".bit-otp-inp")[0].InputAsync(new ChangeEventArgs { Value = "1" });
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.OtpInput.submit"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.OtpInput.submit"]);
 
         await com.FindAll(".bit-otp-inp")[1].InputAsync(new ChangeEventArgs { Value = "2" });
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.OtpInput.submit"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.OtpInput.submit"]);
 
         // Retyping a character of the complete code keeps the very same code, which is not submitted twice.
         await com.FindAll(".bit-otp-inp")[1].InputAsync(new ChangeEventArgs { Value = "2" });
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.OtpInput.submit"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.OtpInput.submit"]);
     }
 
     [TestMethod]
@@ -3019,7 +3021,7 @@ public class BitOtpInputTests : BunitTestContext
         await com.Find(".bit-otp-inp").InputAsync(new ChangeEventArgs { Value = "1" });
 
         Assert.AreEqual(0, submitsSeenByOnFill);
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.OtpInput.submit"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.OtpInput.submit"]);
     }
 
     [TestMethod]
@@ -3032,7 +3034,7 @@ public class BitOtpInputTests : BunitTestContext
 
         await com.Find(".bit-otp-inp").InputAsync(new ChangeEventArgs { Value = "1" });
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.OtpInput.submit"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.OtpInput.submit"]);
     }
     [TestMethod]
     public void BitOtpInputShouldAutoFocusTheFirstEmptyInput()
@@ -3047,13 +3049,13 @@ public class BitOtpInputTests : BunitTestContext
 
         var focuses = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"];
 
-        Assert.AreEqual(1, focuses.Count);
+        Assert.ContainsSingle(focuses);
         Assert.AreEqual(com.Instance.InputElements[2].Id, ((ElementReference)focuses[0].Arguments[0]!).Id);
 
         // The auto focus is a first-render thing: a later render must not pull the focus back into the code.
         com.Render();
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
     }
 
     [TestMethod]
@@ -3068,7 +3070,7 @@ public class BitOtpInputTests : BunitTestContext
 
         var focuses = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"];
 
-        Assert.AreEqual(1, focuses.Count);
+        Assert.ContainsSingle(focuses);
         Assert.AreEqual(com.Instance.InputElements[0].Id, ((ElementReference)focuses[0].Arguments[0]!).Id);
     }
 
@@ -3080,7 +3082,7 @@ public class BitOtpInputTests : BunitTestContext
             parameters.Add(p => p.Length, 4);
         });
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
     }
 
     [TestMethod]
@@ -3095,13 +3097,13 @@ public class BitOtpInputTests : BunitTestContext
             parameters.Add(p => p.Disabled, true);
         });
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
 
         com.Render(parameters => parameters.Add(p => p.Disabled, false));
 
         var focuses = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"];
 
-        Assert.AreEqual(1, focuses.Count);
+        Assert.ContainsSingle(focuses);
         Assert.AreEqual(com.Instance.InputElements[0].Id, ((ElementReference)focuses[0].Arguments[0]!).Id);
     }
 
@@ -3177,7 +3179,7 @@ public class BitOtpInputTests : BunitTestContext
         Assert.AreEqual(0, inputCount);
         Assert.AreEqual("12", com.Instance.Value);
         Assert.IsFalse(com.FindAll(".bit-otp-inp")[2].ClassList.Contains("custom-focused"));
-        Assert.AreEqual(0, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
     }
 
     [TestMethod]
@@ -3255,7 +3257,7 @@ public class BitOtpInputTests : BunitTestContext
 
         var focuses = FocusedInputs();
 
-        Assert.AreEqual(1, focuses.Length);
+        Assert.ContainsSingle(focuses);
         Assert.AreEqual(com.Instance.InputElements[expected].Id, focuses[0].Id);
     }
 
@@ -3298,11 +3300,11 @@ public class BitOtpInputTests : BunitTestContext
 
         await com.FindAll(".bit-otp-inp")[1].KeyDownAsync(new KeyboardEventArgs { Code = key, Key = key });
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
 
         if (vertical)
         {
-            Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.Utils.isRtl"));
+            Assert.DoesNotContain(i => i.Identifier == "BitBlazorUI.Utils.isRtl", Context.JSInterop.Invocations);
         }
     }
 
@@ -3322,7 +3324,7 @@ public class BitOtpInputTests : BunitTestContext
 
         await com.FindAll(".bit-otp-inp")[index].KeyDownAsync(new KeyboardEventArgs { Code = key, Key = key });
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
     }
 
     [TestMethod]
@@ -3384,7 +3386,7 @@ public class BitOtpInputTests : BunitTestContext
 
         var root = com.Find(".bit-otp");
         Assert.IsTrue(root.ClassList.Contains("custom-root"));
-        StringAssert.Contains(root.GetAttribute("style"), "color: red;");
+        Assert.Contains("color: red;", root.GetAttribute("style")!);
 
         var label = com.Find(".bit-otp-lbl");
         Assert.IsTrue(label.ClassList.Contains("custom-label"));
@@ -3455,7 +3457,7 @@ public class BitOtpInputTests : BunitTestContext
 
         if (expectedStyle.HasValue())
         {
-            StringAssert.Contains(style, expectedStyle);
+            Assert.Contains(expectedStyle, style);
         }
         else
         {
@@ -3478,7 +3480,7 @@ public class BitOtpInputTests : BunitTestContext
 
         Assert.AreEqual("otp-id", root.Id);
         Assert.IsTrue(root.ClassList.Contains("custom-class"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin: 1px;");
+        Assert.Contains("margin: 1px;", root.GetAttribute("style")!);
         Assert.AreEqual("otp", root.GetAttribute("data-test"));
     }
 
@@ -3542,7 +3544,7 @@ public class BitOtpInputTests : BunitTestContext
         var disposals = Context.JSInterop.Invocations["BitBlazorUI.OtpInput.dispose"];
 
         // The listeners were registered under the id of the component, which is what takes them off again.
-        Assert.AreEqual(1, disposals.Count);
+        Assert.ContainsSingle(disposals);
         Assert.AreEqual(setup.Arguments[0], disposals[0].Arguments[0]);
     }
 
@@ -3563,7 +3565,7 @@ public class BitOtpInputTests : BunitTestContext
 
         var disposal = Context.DisposeComponentsAsync();
 
-        Assert.HasCount(1, dispose.Invocations);
+        Assert.ContainsSingle(dispose.Invocations);
         Assert.AreSame(otpInput, reference.Value);
 
         dispose.SetVoidResult();

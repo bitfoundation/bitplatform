@@ -55,8 +55,8 @@ public class BitAppShellParamsTests : BunitTestContext
     [TestMethod]
     public void BitAppShellParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitAppShell)}", BitAppShellParams.ParamName);
-        Assert.AreEqual("BitParams.BitAppShell", BitAppShellParams.ParamName);
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitAppShell)}", new BitAppShellParams().Name);
+        Assert.AreEqual("BitParams.BitAppShell", new BitAppShellParams().Name);
     }
 
     [TestMethod]
@@ -116,9 +116,9 @@ public class BitAppShellParamsTests : BunitTestContext
 
         var style = component.Find(".bit-ash-main").GetAttribute("style") ?? string.Empty;
 
-        StringAssert.Contains(style, "overflow-x:hidden");
-        StringAssert.Contains(style, "overflow-y:scroll");
-        StringAssert.Contains(style, "overscroll-behavior:contain");
+        Assert.Contains("overflow-x:hidden", style);
+        Assert.Contains("overflow-y:scroll", style);
+        Assert.Contains("overscroll-behavior:contain", style);
     }
 
     [TestMethod]
@@ -126,7 +126,7 @@ public class BitAppShellParamsTests : BunitTestContext
     {
         RenderWithParams(new BitAppShellParams { AvoidKeyboard = true });
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.AppShell.setupKeyboard"));
+        Assert.ContainsSingle(i => i.Identifier == "BitBlazorUI.AppShell.setupKeyboard", Context.JSInterop.Invocations);
     }
 
     [TestMethod]
@@ -144,9 +144,9 @@ public class BitAppShellParamsTests : BunitTestContext
         var options = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.ScrollablePane.setup").Arguments[3];
 
         Assert.IsNotNull(options);
-        Assert.AreEqual(true, OptionOf(options!, "AutoScroll"));
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(OptionOf(options!, "AutoScroll")));
         Assert.AreEqual(48, OptionOf(options!, "AutoScrollThreshold"));
-        Assert.AreEqual(true, OptionOf(options!, "Preserve"));
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(OptionOf(options!, "Preserve")));
         Assert.AreEqual(16, OptionOf(options!, "Offset"));
         Assert.AreEqual(100, OptionOf(options!, "Throttle"));
     }
@@ -178,9 +178,9 @@ public class BitAppShellParamsTests : BunitTestContext
 
         var style = component.Find(".bit-ash-main").GetAttribute("style") ?? string.Empty;
 
-        StringAssert.Contains(style, "overflow-x:auto");
-        Assert.IsFalse(style.Contains("overflow-x:hidden"));
-        StringAssert.Contains(style, "overscroll-behavior:none");
+        Assert.Contains("overflow-x:auto", style);
+        Assert.DoesNotContain("overflow-x:hidden", style);
+        Assert.Contains("overscroll-behavior:none", style);
 
         var options = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.ScrollablePane.setup").Arguments[3];
 
@@ -194,9 +194,9 @@ public class BitAppShellParamsTests : BunitTestContext
 
         var root = component.Find(".bit-ash");
 
-        Assert.IsFalse(root.ClassList.Any(c => c.StartsWith("bit-ash-", StringComparison.Ordinal)));
+        Assert.DoesNotContain(c => c.StartsWith("bit-ash-", StringComparison.Ordinal), root.ClassList);
         Assert.IsTrue(string.IsNullOrEmpty(component.Find(".bit-ash-main").GetAttribute("style")));
-        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier is "BitBlazorUI.ScrollablePane.setup" or "BitBlazorUI.AppShell.setupKeyboard"));
+        Assert.DoesNotContain(i => i.Identifier is "BitBlazorUI.ScrollablePane.setup" or "BitBlazorUI.AppShell.setupKeyboard", Context.JSInterop.Invocations);
     }
 
     private static object? OptionOf(object options, string name)

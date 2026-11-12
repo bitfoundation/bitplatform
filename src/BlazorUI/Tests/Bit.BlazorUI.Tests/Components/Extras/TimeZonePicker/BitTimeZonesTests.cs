@@ -15,11 +15,11 @@ public class BitTimeZonesTests
     [TestMethod]
     public void BitTimeZonesShouldListEveryTimeZoneOnceUnderItsCanonicalId()
     {
-        Assert.IsTrue(BitTimeZones.All.Length > 400);
+        Assert.IsGreaterThan(400, BitTimeZones.All.Length);
 
         var ids = BitTimeZones.All.Select(z => z.Id).ToArray();
 
-        Assert.AreEqual(ids.Length, ids.Distinct(StringComparer.OrdinalIgnoreCase).Count());
+        Assert.HasCount(ids.Length, ids.Distinct(StringComparer.OrdinalIgnoreCase));
 
         // Every entry is found by its own id, as itself.
         foreach (var zone in BitTimeZones.All)
@@ -51,7 +51,9 @@ public class BitTimeZonesTests
         DataRow("  Asia/Tehran ", "Asia/Tehran")]
     public void BitTimeZonesShouldFindATimeZoneByAnyIanaIdOfIt(string id, string expected)
     {
-        Assert.AreEqual(expected, BitTimeZones.Find(id)?.Id);
+        var expectedValue = expected;
+        var actualValue = BitTimeZones.Find(id)?.Id;
+        Assert.AreEqual(expectedValue, actualValue);
     }
 
     [TestMethod,
@@ -63,7 +65,9 @@ public class BitTimeZonesTests
         DataRow("UTC", "Etc/UTC")]
     public void BitTimeZonesShouldFindATimeZoneByItsWindowsId(string windowsId, string expected)
     {
-        Assert.AreEqual(expected, BitTimeZones.Find(windowsId)?.Id);
+        var expectedValue = expected;
+        var actualValue = BitTimeZones.Find(windowsId)?.Id;
+        Assert.AreEqual(expectedValue, actualValue);
     }
 
     [TestMethod,
@@ -84,8 +88,9 @@ public class BitTimeZonesTests
         Assert.IsNull(BitTimeZones.Find((TimeZoneInfo?)null));
 
         var tehran = TimeZoneInfo.FindSystemTimeZoneById("Asia/Tehran");
+        var actualValue = BitTimeZones.Find(tehran)?.Id;
 
-        Assert.AreEqual("Asia/Tehran", BitTimeZones.Find(tehran)?.Id);
+        Assert.AreEqual("Asia/Tehran", actualValue);
     }
 
     [TestMethod]
@@ -139,7 +144,7 @@ public class BitTimeZonesTests
 
         // A zone newer than the data of the runtime falls back to an older id or to its Windows id, so at most a zone
         // with neither (Antarctica/Troll, which Windows has no zone for) can be missing.
-        Assert.IsTrue(unresolved.Length <= 1, string.Join(", ", unresolved));
+        Assert.IsLessThanOrEqualTo(1, unresolved.Length, string.Join(", ", unresolved));
 
         var tehran = BitTimeZones.Find("Asia/Tehran")!;
 

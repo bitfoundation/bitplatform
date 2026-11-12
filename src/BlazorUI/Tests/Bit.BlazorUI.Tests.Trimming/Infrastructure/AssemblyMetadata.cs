@@ -7,7 +7,7 @@ namespace Bit.BlazorUI.Tests.Trimming.Infrastructure;
 /// What an assembly holds, read off its metadata without loading it: a package as ILLink left it in a trimmed publish, or
 /// as the package's build wrote it.
 /// </summary>
-public sealed class AssemblyMetadata
+internal sealed class AssemblyMetadata
 {
     private readonly Dictionary<string, TypeMembers> _types;
 
@@ -53,4 +53,4 @@ public sealed class AssemblyMetadata
 }
 
 /// <summary>The names of what a type declares itself - its nested types (a closure class of its lambdas) by name only.</summary>
-public sealed record TypeMembers(List<string> Methods, List<string> Fields, List<string> Properties, List<string> NestedTypes);
+internal sealed record TypeMembers(List<string> Methods, List<string> Fields, List<string> Properties, List<string> NestedTypes);

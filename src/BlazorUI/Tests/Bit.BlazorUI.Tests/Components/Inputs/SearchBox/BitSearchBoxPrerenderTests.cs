@@ -26,14 +26,14 @@ public class BitSearchBoxPrerenderTests
             [nameof(BitSearchBox.ShowSearchButton)] = true,
         });
 
-        StringAssert.Contains(html, "Search products");
-        StringAssert.Contains(html, "placeholder=\"Find a product\"");
-        StringAssert.Contains(html, "value=\"bit\"");
-        StringAssert.Contains(html, "role=\"searchbox\"");
+        Assert.Contains("Search products", html);
+        Assert.Contains("placeholder=\"Find a product\"", html);
+        Assert.Contains("value=\"bit\"", html);
+        Assert.Contains("role=\"searchbox\"", html);
         // The renderer writes the plus sign as a character reference.
-        StringAssert.Contains(System.Net.WebUtility.HtmlDecode(html), "aria-keyshortcuts=\"Control+K\"");
-        StringAssert.Contains(html, "bit-srb-cbt");
-        StringAssert.Contains(html, "bit-srb-sbn");
+        Assert.Contains("aria-keyshortcuts=\"Control+K\"", System.Net.WebUtility.HtmlDecode(html));
+        Assert.Contains("bit-srb-cbt", html);
+        Assert.Contains("bit-srb-sbn", html);
     }
 
     [TestMethod]
@@ -45,9 +45,9 @@ public class BitSearchBoxPrerenderTests
         });
 
         // The callout is in the markup, closed, and the live region is empty: nothing has been searched for yet.
-        StringAssert.Contains(html, "role=\"combobox\"");
-        StringAssert.Contains(html, "aria-expanded=\"false\"");
-        StringAssert.Contains(html, "bit-srb-cal");
-        Assert.IsFalse(html.Contains("bit-srb-itm"));
+        Assert.Contains("role=\"combobox\"", html);
+        Assert.Contains("aria-expanded=\"false\"", html);
+        Assert.Contains("bit-srb-cal", html);
+        Assert.DoesNotContain("bit-srb-itm", html);
     }
 }

@@ -103,7 +103,7 @@ public partial class McpOracleTests
 
         var indexed = BormApiCatalog.Types.Select(type => type.Name).ToHashSet(StringComparer.Ordinal);
 
-        CollectionAssert.AreEquivalent(exported.ToArray(), indexed.ToArray());
+        Assert.AreSequenceEqual(exported.ToArray(), indexed.ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         Assert.Contains(nameof(BormFluentValidationIntegration), indexed, "The FluentValidation integration is part of the API, though it ships separately.");
     }
 
@@ -162,11 +162,10 @@ public partial class McpOracleTests
 
             // Every field the importer built, and no other, depth first.
             Assert.AreEqual(Count(definition.Fields), report.FieldCount, name);
-            CollectionAssert.AreEquivalent(definition.Fields.Select(field => field.Name).ToArray(), report.Fields!.Where(field => field.Path.Contains('.') is false && field.Path.Contains('[') is false).Select(field => field.Path).ToArray(), name);
+            Assert.AreSequenceEqual(definition.Fields.Select(field => field.Name).ToArray(), report.Fields!.Where(field => field.Path.Contains('.') is false && field.Path.Contains('[') is false).Select(field => field.Path).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, name);
 
             // The checks, word for word, and the document the exporter writes.
-            CollectionAssert.AreEqual(definition.Validate().Select(diagnostic => diagnostic.ToString()).ToArray(),
-                report.Diagnostics!.Select(diagnostic => $"[{diagnostic.Severity}] {(diagnostic.Path.Length == 0 ? "(form)" : diagnostic.Path)}: {diagnostic.Message}").ToArray(), name);
+            Assert.AreSequenceEqual(definition.Validate().Select(diagnostic => diagnostic.ToString()).ToArray(), report.Diagnostics!.Select(diagnostic => $"[{diagnostic.Severity}] {(diagnostic.Path.Length == 0 ? "(form)" : diagnostic.Path)}: {diagnostic.Message}").ToArray(), name);
             Assert.AreEqual(BormJsonSchemaExporter.Export(definition).ReplaceLineEndings("\n"), report.Export, name);
 
             Assert.IsTrue(report.RoundTrips, $"{name} does not survive Export and a second import: {string.Join(" ", report.Notes)}");
@@ -192,7 +191,7 @@ public partial class McpOracleTests
         var documented = ExtensionRegex().Matches(section).Select(match => match.Value).ToHashSet(StringComparer.Ordinal);
 
         Assert.IsGreaterThan(20, BormSchemaLab.Extensions.Length);
-        CollectionAssert.AreEquivalent(documented.ToArray(), BormSchemaLab.Extensions);
+        Assert.AreSequenceEqual(documented.ToArray(), BormSchemaLab.Extensions, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [GeneratedRegex(@"(?<=`)x-[A-Za-z]+(?=`)")]
@@ -209,7 +208,7 @@ public partial class McpOracleTests
 
         var declared = DeclarationRegex().Matches(css).Select(match => match.Groups["name"].Value).Distinct(StringComparer.Ordinal).ToArray();
 
-        CollectionAssert.AreEquivalent(declared, BormThemeCatalog.Properties.Select(property => property.Name).ToArray());
+        Assert.AreSequenceEqual(declared, BormThemeCatalog.Properties.Select(property => property.Name).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
         foreach (var property in BormThemeCatalog.Properties)
         {
@@ -230,7 +229,7 @@ public partial class McpOracleTests
         var dark = Declarations(rule => rule.Media is null && rule.Selector.Contains("data-theme=\"dark\"", StringComparison.Ordinal));
 
         Assert.IsNotEmpty(dark);
-        CollectionAssert.AreEquivalent(dark.ToArray(), system.ToArray());
+        Assert.AreSequenceEqual(dark.ToArray(), system.ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -242,7 +241,7 @@ public partial class McpOracleTests
         var dark = Declarations(rule => rule.Media is null && rule.Selector.Contains("data-theme=\"dark\"", StringComparison.Ordinal));
         var light = Declarations(rule => rule.Media is null && rule.Selector.Contains("data-theme=\"light\"", StringComparison.Ordinal));
 
-        CollectionAssert.AreEquivalent(dark.Keys.ToArray(), light.Keys.ToArray());
+        Assert.AreSequenceEqual(dark.Keys.ToArray(), light.Keys.ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
         foreach (var (name, value) in light)
         {
@@ -305,7 +304,7 @@ public partial class McpOracleTests
             if (fenced is false && HeadingRegex().Match(line) is { Success: true } match) headings.Add(match.Groups["text"].Value.Trim());
         }
 
-        CollectionAssert.AreEqual(headings, BormSourceCatalog.GuideSections.Select(section => section.Heading).ToArray());
+        Assert.AreSequenceEqual(headings, BormSourceCatalog.GuideSections.Select(section => section.Heading).ToArray());
         Assert.HasCount(BormSourceCatalog.GuideSections.Length, BormSourceCatalog.GuideSections.Select(section => section.Key).Distinct(StringComparer.Ordinal), "Every section needs a key of its own.");
     }
 
@@ -321,7 +320,7 @@ public partial class McpOracleTests
 
         foreach (var route in routes)
         {
-            Assert.IsTrue(BormSourceCatalog.SourceFiles.Any(file => file.Kind == "Page" && file.Title is not null && string.Equals(file.Route, route, StringComparison.OrdinalIgnoreCase)),
+            Assert.Contains(file => file.Kind == "Page" && file.Title is not null && string.Equals(file.Route, route, StringComparison.OrdinalIgnoreCase), BormSourceCatalog.SourceFiles,
                 $"The menu links to '{route}', and no embedded page with a title declares it.");
         }
     }
@@ -342,16 +341,15 @@ public partial class McpOracleTests
             ("GetBormSourceFile", "?path=Demo/Client/Pages/WizardDemo.razor", new() { ["path"] = "Demo/Client/Pages/WizardDemo.razor" }),
         ];
 
-        CollectionAssert.AreEquivalent(McpSurfaceTests.ExpectedTools, calls.Select(call => call.Tool).ToArray(),
-            "The HTTP mirror is being exercised for a different set of tools than the server publishes.");
+        Assert.AreSequenceEqual(McpSurfaceTests.ExpectedTools, calls.Select(call => call.Tool).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, "The HTTP mirror is being exercised for a different set of tools than the server publishes.");
 
         foreach (var (tool, query, arguments) in calls)
         {
-            using var response = await http.GetAsync($"/api/mcp/{tool}{query}");
+            using var response = await http.GetAsync($"/api/mcp/{tool}{query}", TestContext.CancellationToken);
 
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, tool);
 
-            var body = await response.Content.ReadAsStringAsync();
+            var body = await response.Content.ReadAsStringAsync(TestContext.CancellationToken);
 
             if (tool is "SearchBorm" or "InspectBormSchema")
             {
@@ -374,4 +372,6 @@ public partial class McpOracleTests
 
     [GeneratedRegex(@"^#{2,4} (?<text>.+)$")]
     private static partial Regex HeadingRegex();
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

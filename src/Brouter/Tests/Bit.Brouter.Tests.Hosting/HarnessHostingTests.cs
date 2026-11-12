@@ -21,10 +21,10 @@ public class HarnessHostingTests
     [DataRow(Modes.Auto)]
     public async Task A_matched_deep_link_is_rendered_into_the_first_response(string mode)
     {
-        using var response = await HarnessHostFactory.Shared(mode).CreateClient().GetAsync("/items/42");
+        using var response = await HarnessHostFactory.Shared(mode).CreateClient().GetAsync("/items/42", TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
-        StringAssert.Contains(await response.Content.ReadAsStringAsync(), "id=\"page-item\" data-item-id=\"42\"");
+        Assert.Contains("id=\"page-item\" data-item-id=\"42\"", await response.Content.ReadAsStringAsync(TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -33,12 +33,12 @@ public class HarnessHostingTests
     [DataRow(Modes.AutoNoPrerender)]
     public async Task A_mode_without_prerendering_sends_only_the_interactive_component_marker(string mode)
     {
-        using var response = await HarnessHostFactory.Shared(mode).CreateClient().GetAsync("/items/42");
+        using var response = await HarnessHostFactory.Shared(mode).CreateClient().GetAsync("/items/42", TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
-        var html = await response.Content.ReadAsStringAsync();
+        var html = await response.Content.ReadAsStringAsync(TestContext.CancellationToken);
         Assert.IsFalse(html.Contains("id=\"page-item\"", StringComparison.Ordinal), "A non-prerendered mode rendered the route on the server.");
-        StringAssert.Contains(html, "<!--Blazor:");
+        Assert.Contains("<!--Blazor:", html);
     }
 
     [TestMethod]
@@ -48,15 +48,15 @@ public class HarnessHostingTests
     [DataRow(Modes.Auto)]
     public async Task An_unmatched_url_is_answered_with_the_not_found_status_and_the_not_found_content(string mode)
     {
-        using var response = await HarnessHostFactory.Shared(mode).CreateClient().GetAsync("/nope/deeper");
+        using var response = await HarnessHostFactory.Shared(mode).CreateClient().GetAsync("/nope/deeper", TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
 
         // The status alone is not enough: the user still has to see the fallback, and an interactive
         // mode still needs its script to boot on this page.
-        var html = await response.Content.ReadAsStringAsync();
-        StringAssert.Contains(html, "id=\"not-found\" data-path=\"/nope/deeper\"", $"The {(int)response.StatusCode} response did not carry Brouter's NotFound content ({html.Length} characters).");
-        StringAssert.Contains(html, "_framework/blazor.web.js");
+        var html = await response.Content.ReadAsStringAsync(TestContext.CancellationToken);
+        Assert.Contains("id=\"not-found\" data-path=\"/nope/deeper\"", html, $"The {(int)response.StatusCode} response did not carry Brouter's NotFound content ({html.Length} characters).");
+        Assert.Contains("_framework/blazor.web.js", html);
     }
 
     [TestMethod]
@@ -66,10 +66,10 @@ public class HarnessHostingTests
     [DataRow(Modes.Auto)]
     public async Task NavigationManager_NotFound_from_a_page_is_answered_with_404_and_the_not_found_content(string mode)
     {
-        using var response = await HarnessHostFactory.Shared(mode).CreateClient().GetAsync("/missing/0");
+        using var response = await HarnessHostFactory.Shared(mode).CreateClient().GetAsync("/missing/0", TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
-        StringAssert.Contains(await response.Content.ReadAsStringAsync(), "id=\"not-found\" data-path=\"/missing/0\"");
+        Assert.Contains("id=\"not-found\" data-path=\"/missing/0\"", await response.Content.ReadAsStringAsync(TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -79,10 +79,11 @@ public class HarnessHostingTests
     [DataRow(Modes.Auto)]
     public async Task A_guard_redirect_during_static_rendering_redirects_the_request(string mode)
     {
-        using var response = await HarnessHostFactory.Shared(mode).CreateNonRedirectingClient().GetAsync("/guarded");
+        using var response = await HarnessHostFactory.Shared(mode).CreateNonRedirectingClient().GetAsync("/guarded", TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.Found, response.StatusCode);
-        Assert.AreEqual("/denied", response.Headers.Location?.AbsolutePath);
+        var actualValue = response.Headers.Location?.AbsolutePath;
+        Assert.AreEqual("/denied", actualValue);
     }
 
     [TestMethod]
@@ -92,10 +93,11 @@ public class HarnessHostingTests
     [DataRow(Modes.Auto)]
     public async Task A_RedirectTo_route_redirects_the_request(string mode)
     {
-        using var response = await HarnessHostFactory.Shared(mode).CreateNonRedirectingClient().GetAsync("/old-about");
+        using var response = await HarnessHostFactory.Shared(mode).CreateNonRedirectingClient().GetAsync("/old-about", TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.Found, response.StatusCode);
-        Assert.AreEqual("/about", response.Headers.Location?.AbsolutePath);
+        var actualValue = response.Headers.Location?.AbsolutePath;
+        Assert.AreEqual("/about", actualValue);
     }
 
     [TestMethod]
@@ -103,7 +105,7 @@ public class HarnessHostingTests
     [DataRow(Modes.WebAssemblyNoPrerender)]
     public async Task A_guarded_url_is_left_to_the_client_when_nothing_is_prerendered(string mode)
     {
-        using var response = await HarnessHostFactory.Shared(mode).CreateNonRedirectingClient().GetAsync("/guarded");
+        using var response = await HarnessHostFactory.Shared(mode).CreateNonRedirectingClient().GetAsync("/guarded", TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
     }
@@ -115,8 +117,8 @@ public class HarnessHostingTests
     [DataRow(Modes.Auto)]
     public async Task The_loader_runs_once_in_the_request_that_renders_its_page(string mode)
     {
-        using var response = await HarnessHostFactory.Shared(mode).CreateClient().GetAsync("/data");
-        var html = await response.Content.ReadAsStringAsync();
+        using var response = await HarnessHostFactory.Shared(mode).CreateClient().GetAsync("/data", TestContext.CancellationToken);
+        var html = await response.Content.ReadAsStringAsync(TestContext.CancellationToken);
 
         var dataScope = RenderedHtml.TextOf(html, "data-scope");
         Assert.IsFalse(string.IsNullOrEmpty(dataScope), "The response carried no loader data.");
@@ -129,25 +131,25 @@ public class HarnessHostingTests
     [DataRow(Modes.Auto)]
     public async Task The_loader_result_is_persisted_for_the_WebAssembly_runtime_to_restore(string mode)
     {
-        using var response = await HarnessHostFactory.Shared(mode).CreateClient().GetAsync("/data");
-        var html = await response.Content.ReadAsStringAsync();
+        using var response = await HarnessHostFactory.Shared(mode).CreateClient().GetAsync("/data", TestContext.CancellationToken);
+        var html = await response.Content.ReadAsStringAsync(TestContext.CancellationToken);
 
         var state = RenderedHtml.WebAssemblyPersistedState(html);
 
         Assert.IsTrue(state.TryGetValue("Bit.Brouter|/data||0", out var persisted),
             $"PersistLoaderState wrote nothing for /data. Persisted keys: {string.Join(", ", state.Keys)}");
-        StringAssert.Contains(persisted, "Bit.Brouter.Tests.Harness.HarnessData");
-        StringAssert.Contains(persisted, RenderedHtml.TextOf(html, "data-scope")!);
+        Assert.Contains("Bit.Brouter.Tests.Harness.HarnessData", persisted);
+        Assert.Contains(RenderedHtml.TextOf(html, "data-scope")!, persisted);
     }
 
     [TestMethod]
     public async Task Static_rendering_persists_no_loader_state()
     {
-        using var response = await HarnessHostFactory.Shared(Modes.Ssr).CreateClient().GetAsync("/data");
+        using var response = await HarnessHostFactory.Shared(Modes.Ssr).CreateClient().GetAsync("/data", TestContext.CancellationToken);
 
-        var state = RenderedHtml.WebAssemblyPersistedState(await response.Content.ReadAsStringAsync());
+        var state = RenderedHtml.WebAssemblyPersistedState(await response.Content.ReadAsStringAsync(TestContext.CancellationToken));
 
-        Assert.IsFalse(state.Keys.Any(k => k.StartsWith("Bit.Brouter|", StringComparison.Ordinal)),
+        Assert.DoesNotContain(k => k.StartsWith("Bit.Brouter|", StringComparison.Ordinal), state.Keys,
             "Loader state was persisted for a page no interactive runtime will ever pick up.");
     }
 
@@ -158,10 +160,10 @@ public class HarnessHostingTests
     [DataRow(Modes.Auto)]
     public async Task A_failing_loader_renders_the_route_error_content(string mode)
     {
-        using var response = await HarnessHostFactory.Shared(mode).CreateClient().GetAsync("/broken");
+        using var response = await HarnessHostFactory.Shared(mode).CreateClient().GetAsync("/broken", TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
-        StringAssert.Contains(await response.Content.ReadAsStringAsync(), "id=\"route-error\">harness loader failure<");
+        Assert.Contains("id=\"route-error\">harness loader failure<", await response.Content.ReadAsStringAsync(TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -169,18 +171,19 @@ public class HarnessHostingTests
     [DataRow(Modes.Auto)]
     public async Task The_script_module_is_served_as_javascript_with_every_export_Brouter_imports(string mode)
     {
-        using var response = await HarnessHostFactory.Shared(mode).CreateClient().GetAsync("/_content/Bit.Brouter/bit-brouter.js");
+        using var response = await HarnessHostFactory.Shared(mode).CreateClient().GetAsync("/_content/Bit.Brouter/bit-brouter.js", TestContext.CancellationToken);
 
         // Brouter swallows a failed import, so a missing module never surfaces as an error: every
         // JS-backed feature just stops working. Only the response shows it.
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
-        Assert.AreEqual("text/javascript", response.Content.Headers.ContentType?.MediaType,
+        var actualValue = response.Content.Headers.ContentType?.MediaType;
+        Assert.AreEqual("text/javascript", actualValue,
             "The module URL was answered by something other than the static asset (the app's catch-all page?).");
 
-        var exports = ExportedNames(await response.Content.ReadAsStringAsync());
+        var exports = ExportedNames(await response.Content.ReadAsStringAsync(TestContext.CancellationToken));
         foreach (var export in new[] { "wireConditionalPreventDefault", "wirePreload", "beginViewTransition", "completeViewTransition", "setConfirmExternalNavigation", "saveScrollPosition", "applyNavigationEffects" })
         {
-            Assert.IsTrue(exports.Contains(export), $"bit-brouter.js does not export {export}.");
+            Assert.Contains(export, exports, $"bit-brouter.js does not export {export}.");
         }
     }
 
@@ -209,4 +212,6 @@ public class HarnessHostingTests
 
         return names;
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

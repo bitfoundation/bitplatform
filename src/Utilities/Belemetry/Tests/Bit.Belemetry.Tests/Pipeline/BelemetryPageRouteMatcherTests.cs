@@ -10,8 +10,7 @@ public class BelemetryPageRouteMatcherTests
     public void PrefersLiterals_ToConstrainedParameters_ToParameters_ToCatchAlls()
     {
         string[] routes = ["/{*path}", "/orders/{id}", "/orders/{id:int}", "/orders/new", "/orders/{**rest:nonfile}", "/orders"];
-        CollectionAssert.AreEqual(new[] { "/orders", "/orders/new", "/orders/{id:int}", "/orders/{id}", "/orders/{**rest:nonfile}", "/{*path}" },
-                                  new BelemetryPageRouteMatcher(routes).Templates.ToArray());
+        Assert.AreSequenceEqual(new[] { "/orders", "/orders/new", "/orders/{id:int}", "/orders/{id}", "/orders/{**rest:nonfile}", "/{*path}" }, new BelemetryPageRouteMatcher(routes).Templates.ToArray());
         Assert.AreEqual("/orders", Match(routes, "/orders"));
         Assert.AreEqual("/orders/new", Match(routes, "/orders/new"));
         Assert.AreEqual("/orders/{id:int}", Match(routes, "/orders/42"));
@@ -90,7 +89,7 @@ public class BelemetryPageRouteMatcherTests
     public void MatchesSegmentsOfSeveralParts_FromTheRight_AndSkipsMalformedTemplates()
     {
         string[] routes = ["/files/{name}.{ext}", "/broken/{id", "/files/{name}"];
-        CollectionAssert.AreEqual(new[] { "/files/{name}.{ext}", "/files/{name}" }, new BelemetryPageRouteMatcher(routes).Templates.ToArray());
+        Assert.AreSequenceEqual(new[] { "/files/{name}.{ext}", "/files/{name}" }, new BelemetryPageRouteMatcher(routes).Templates.ToArray());
         Assert.AreEqual("/files/{name}.{ext}", Match(routes, "/files/report.pdf"));
         Assert.AreEqual("/files/{name}", Match(routes, "/files/report"));
         Assert.AreEqual("/broken/{n}", Match(routes, "/broken/1"));
@@ -140,6 +139,6 @@ public class BelemetryPageRouteMatcherTests
     [TestMethod]
     public void ListsATemplateOnce_HoweverItIsWritten()
     {
-        CollectionAssert.AreEqual(new[] { "/", "/a" }, new BelemetryPageRouteMatcher(["/a/", "a", "/A", "~/a", "", "/"]).Templates.ToArray());
+        Assert.AreSequenceEqual(new[] { "/", "/a" }, new BelemetryPageRouteMatcher(["/a/", "a", "/A", "~/a", "", "/"]).Templates.ToArray());
     }
 }

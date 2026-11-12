@@ -52,8 +52,7 @@ public sealed class BitComponentCssVariablesContractTests
             .OrderBy(o => o, StringComparer.Ordinal)
             .ToArray();
 
-        CollectionAssert.AreEqual(Array.Empty<string>(), offenders,
-            $"Component styles redeclare global theme tokens: {string.Join(", ", offenders)}");
+        Assert.AreSequenceEqual(Array.Empty<string>(), offenders, $"Component styles redeclare global theme tokens: {string.Join(", ", offenders)}");
     }
 
     /// <summary>
@@ -75,8 +74,7 @@ public sealed class BitComponentCssVariablesContractTests
 
         var offenders = undocumented.Concat(unread).OrderBy(o => o, StringComparer.Ordinal).ToArray();
 
-        CollectionAssert.AreEqual(Array.Empty<string>(), offenders,
-            $"The public CSS variable tier and the demo tables have drifted apart: {string.Join(", ", offenders)}");
+        Assert.AreSequenceEqual(Array.Empty<string>(), offenders, $"The public CSS variable tier and the demo tables have drifted apart: {string.Join(", ", offenders)}");
     }
 
     /// <summary>
@@ -100,8 +98,7 @@ public sealed class BitComponentCssVariablesContractTests
             }
         }
 
-        CollectionAssert.AreEqual(Array.Empty<string>(), offenders.ToArray(),
-            $"Public CSS variables read outside the component they are named for: {string.Join(", ", offenders)}");
+        Assert.AreSequenceEqual(Array.Empty<string>(), offenders.ToArray(), $"Public CSS variables read outside the component they are named for: {string.Join(", ", offenders)}");
     }
 
     private static string GetComponentStylesDirectory() => SourceFiles.GetDirectory("Bit.BlazorUI", "Components");

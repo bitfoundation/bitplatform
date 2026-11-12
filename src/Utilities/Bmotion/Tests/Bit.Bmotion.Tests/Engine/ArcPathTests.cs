@@ -1,4 +1,4 @@
-namespace Bit.Bmotion.Tests.Engine;
+﻿namespace Bit.Bmotion.Tests.Engine;
 
 /// <summary>
 /// Tests for <see cref="BmArc"/> - the curve an element travels along instead of the straight line
@@ -39,7 +39,7 @@ public class ArcPathTests
     {
         var curve = Bm.Arc(strength: 0.5).BuildCurve(0, 0, 200, 0);
 
-        Assert.IsTrue(DeviationFromChord(curve, 0.5) > 1, "an arc must not trace the chord it is bending away from");
+        Assert.IsGreaterThan(1, DeviationFromChord(curve, 0.5), "an arc must not trace the chord it is bending away from");
     }
 
     [TestMethod]
@@ -48,7 +48,7 @@ public class ArcPathTests
         double gentle = DeviationFromChord(Bm.Arc(strength: 0.2).BuildCurve(0, 0, 200, 0), 0.5);
         double strong = DeviationFromChord(Bm.Arc(strength: 0.9).BuildCurve(0, 0, 200, 0), 0.5);
 
-        Assert.IsTrue(strong > gentle, $"strength must deepen the bend ({strong} vs {gentle})");
+        Assert.IsGreaterThan(gentle, strong, $"strength must deepen the bend ({strong} vs {gentle})");
     }
 
     [TestMethod]
@@ -79,8 +79,8 @@ public class ArcPathTests
         double middle = Bm.Arc(strength: 0.6, peak: 0.5).BuildCurve(0, 0, 200, 0).PointAt(0.5).X;
         double late = Bm.Arc(strength: 0.6, peak: 0.85).BuildCurve(0, 0, 200, 0).PointAt(0.5).X;
 
-        Assert.IsTrue(early < middle, $"a low peak must crest nearer the start ({early} vs {middle})");
-        Assert.IsTrue(late > middle, $"a high peak must crest nearer the end ({late} vs {middle})");
+        Assert.IsLessThan(middle, early, $"a low peak must crest nearer the start ({early} vs {middle})");
+        Assert.IsGreaterThan(middle, late, $"a high peak must crest nearer the end ({late} vs {middle})");
     }
 
     [TestMethod]
@@ -102,7 +102,7 @@ public class ArcPathTests
         // Screen coordinates: negative y is up, which is what a thrown object looks like.
         var curve = Bm.Arc(strength: 0.5).BuildCurve(0, 0, 200, 0);
 
-        Assert.IsTrue(curve.PointAt(0.5).Y < 0);
+        Assert.IsLessThan(0, curve.PointAt(0.5).Y);
     }
 
     [TestMethod]
@@ -156,8 +156,8 @@ public class ArcPathTests
         double leaving = curve.RotationAt(0.95);
 
         // Rising then falling: the tangent starts pointing up-and-along and ends down-and-along.
-        Assert.IsTrue(entering < 0, $"expected an upward tangent on the way out, got {entering}");
-        Assert.IsTrue(leaving > 0, $"expected a downward tangent on the way in, got {leaving}");
+        Assert.IsLessThan(0, entering, $"expected an upward tangent on the way out, got {entering}");
+        Assert.IsGreaterThan(0, leaving, $"expected a downward tangent on the way in, got {leaving}");
     }
 
     [TestMethod]
@@ -193,7 +193,7 @@ public class ArcPathTests
         Assert.IsTrue(done, "the arc should settle");
         Assert.AreEqual(200, points[^1].X, 0.5);
         Assert.AreEqual(0, points[^1].Y, 0.5);
-        Assert.IsTrue(points.Any(p => Math.Abs(p.Y) > 1),
+        Assert.Contains(p => Math.Abs(p.Y) > 1, points,
             "the journey must actually leave the straight line, not just end in the right place");
     }
 

@@ -80,7 +80,7 @@ public class BaletteServiceTests
         svc.CommandsChanged += () => changed++;
 
         var handle = svc.Register(BaletteCmd.New("One"), BaletteCmd.New("Two"));
-        Assert.AreEqual(2, svc.Commands.Count);
+        Assert.HasCount(2, svc.Commands);
         Assert.AreEqual(1, changed);
 
         handle.Dispose();
@@ -136,7 +136,8 @@ public class BaletteServiceTests
     {
         var svc = NewService();
         svc.Update(BaletteCmd.Page("Theme", BaletteCmd.New("Dark")).Id("theme"));
-        Assert.AreEqual("theme", svc.Find("theme.dark")?.Parent);
+        var actualValue = svc.Find("theme.dark")?.Parent;
+        Assert.AreEqual("theme", actualValue);
     }
 
     [TestMethod]
@@ -227,34 +228,34 @@ public class CommandHistoryTests
         var time = new FakeTimeProvider(new DateTimeOffset(2026, 1, 1, 12, 0, 0, TimeSpan.Zero));
         var history = new BaletteHistory(new BaletteInMemoryHistoryStore(), new BaletteOptions(), time);
 
-        await history.RecordAsync("a");
+        await history.RecordAsync("a", TestContext.CancellationToken);
         time.Advance(TimeSpan.FromMinutes(1));
-        await history.RecordAsync("a");
+        await history.RecordAsync("a", TestContext.CancellationToken);
         time.Advance(TimeSpan.FromMinutes(1));
-        await history.RecordAsync("b");
+        await history.RecordAsync("b", TestContext.CancellationToken);
 
         Assert.AreEqual(2, history.Get("a")!.Count);
-        Assert.IsTrue(history.Frecency("a") > history.Frecency("b"));
+        Assert.IsGreaterThan(history.Frecency("b"), history.Frecency("a"));
         AssertSequence.AreEqual(["b", "a"], history.Recents(5));
 
         time.Advance(TimeSpan.FromDays(40));
         var old = history.Frecency("a");
-        await history.RecordAsync("c");
-        Assert.IsTrue(history.Frecency("c") > old);
+        await history.RecordAsync("c", TestContext.CancellationToken);
+        Assert.IsGreaterThan(old, history.Frecency("c"));
     }
 
     [TestMethod]
     public async Task Pin_moves_out_of_recents_and_survives_clear()
     {
         var history = new BaletteHistory(new BaletteInMemoryHistoryStore(), new BaletteOptions());
-        await history.RecordAsync("a");
-        await history.RecordAsync("b");
-        await history.TogglePinAsync("a");
+        await history.RecordAsync("a", TestContext.CancellationToken);
+        await history.RecordAsync("b", TestContext.CancellationToken);
+        await history.TogglePinAsync("a", TestContext.CancellationToken);
 
         AssertSequence.AreEqual(["a"], history.Pinned());
         AssertSequence.AreEqual(["b"], history.Recents(5));
 
-        await history.ClearAsync();
+        await history.ClearAsync(TestContext.CancellationToken);
         AssertSequence.AreEqual(["a"], history.Pinned());
         Assert.IsEmpty(history.Recents(5));
     }
@@ -267,11 +268,11 @@ public class CommandHistoryTests
         var history = new BaletteHistory(new BaletteInMemoryHistoryStore(), options, time);
         for (var i = 0; i < 6; i++)
         {
-            await history.RecordAsync($"c{i}");
+            await history.RecordAsync($"c{i}", TestContext.CancellationToken);
             time.Advance(TimeSpan.FromMinutes(1));
         }
 
-        Assert.AreEqual(3, history.Recents(10).Count);
+        Assert.HasCount(3, history.Recents(10));
         AssertSequence.AreEqual(["c5", "c4", "c3"], history.Recents(10));
     }
 
@@ -280,10 +281,12 @@ public class CommandHistoryTests
     {
         var store = new BaletteInMemoryHistoryStore();
         var h1 = new BaletteHistory(store, new BaletteOptions());
-        await h1.RecordAsync("x");
+        await h1.RecordAsync("x", TestContext.CancellationToken);
 
         var h2 = new BaletteHistory(store, new BaletteOptions());
-        await h2.EnsureLoadedAsync();
+        await h2.EnsureLoadedAsync(TestContext.CancellationToken);
         Assert.AreEqual(1, h2.Get("x")!.Count);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

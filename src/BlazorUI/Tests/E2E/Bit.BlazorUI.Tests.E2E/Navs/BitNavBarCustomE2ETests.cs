@@ -130,7 +130,7 @@ public class BitNavBarCustomE2ETests : E2ETestBase
 
         var home = (await Item("cnbr-rtl", "Home").BoundingBoxAsync())!;
         var profile = (await Item("cnbr-rtl", "Profile").BoundingBoxAsync())!;
-        Assert.IsTrue(home.X > profile.X);
+        Assert.IsGreaterThan(profile.X, home.X);
 
         await Expect(Bar("cnbr-disabled")).ToHaveClassAsync(HasClass("bit-dis"));
         await Expect(Item("cnbr-disabled", "Link")).Not.ToHaveAttributeAsync("href", new Regex(".*"));

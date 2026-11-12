@@ -41,9 +41,9 @@ public sealed class ConflictLabTests : BcrdtTest
         // Concurrent insertion at the same index: both runs survive, each in one piece, in the same order on both.
         await RunAsync(page, "Concurrent insertion at the same position", expectedRuns: 1);
         var text = await Field(a, "Text").InnerTextAsync();
-        StringAssert.Contains(text, "[from A]");
-        StringAssert.Contains(text, "[from B]");
-        StringAssert.Contains(text, "seed text.");
+        Assert.Contains("[from A]", text);
+        Assert.Contains("[from B]", text);
+        Assert.Contains("seed text.", text);
         await Assertions.Expect(Field(b, "Text")).ToHaveTextAsync(text);
 
         // The same map key written on both sides: one value wins, the same one on both replicas.

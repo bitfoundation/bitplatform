@@ -34,10 +34,10 @@ public class BitSwiperE2ETests : E2ETestBase
         var response = await Page.APIRequest.GetAsync($"{BaseUrl}/e2e/swiper");
         var html = await response.TextAsync();
 
-        StringAssert.Contains(html, "id=\"basic\"");
-        StringAssert.Contains(html, "bit-swpi");
-        StringAssert.Contains(html, ">I12</div>");
-        StringAssert.Contains(html, "<span id=\"status\">Loading</span>");
+        Assert.Contains("id=\"basic\"", html);
+        Assert.Contains("bit-swpi", html);
+        Assert.Contains(">I12</div>", html);
+        Assert.Contains("<span id=\"status\">Loading</span>", html);
     }
 
     [TestMethod]
@@ -699,7 +699,7 @@ public class BitSwiperE2ETests : E2ETestBase
         await Page.Keyboard.PressAsync("Tab");
         await Page.Keyboard.PressAsync("Shift+Tab");
         await Expect(Page.Locator("#vars")).ToBeFocusedAsync();
-        StringAssert.Contains(await ComputedStyleAsync("#vars", "box-shadow"), "rgb(9, 9, 9)");
+        Assert.Contains("rgb(9, 9, 9)", await ComputedStyleAsync("#vars", "box-shadow"));
 
         await Expect(Page.Locator("#vars-color .bit-swp-cud")).ToHaveCSSAsync("background-color", await ResolveAsync("var(--bit-clr-err)"));
     }
@@ -853,7 +853,7 @@ public class BitSwiperE2ETests : E2ETestBase
 
     private static void AssertClose(double expected, double actual, string what)
     {
-        Assert.IsTrue(Math.Abs(expected - actual) <= Tolerance, $"{what}: expected {expected}, got {actual}");
+        Assert.IsLessThanOrEqualTo(Tolerance, Math.Abs(expected - actual), $"{what}: expected {expected}, got {actual}");
     }
 
     private sealed record Box(double X, double Y, double W, double H)

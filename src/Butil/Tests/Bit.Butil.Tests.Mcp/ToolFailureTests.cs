@@ -236,7 +236,7 @@ public class ToolFailureTests : McpTestBase
 
         using (Assert.Scope())
         {
-            Assert.HasCount(1, none.Hits, "A limit of zero is clamped to one rather than answering with nothing.");
+            Assert.ContainsSingle(none.Hits, "A limit of zero is clamped to one rather than answering with nothing.");
             Assert.IsLessThanOrEqualTo(50, many.Hits.Length, "The upper clamp is what stops one query returning the whole index.");
             Assert.IsNotEmpty(many.Hits);
         }
@@ -271,7 +271,7 @@ public class ToolFailureTests : McpTestBase
 
         using (Assert.Scope())
         {
-            Assert.HasCount(1, plan.Apis);
+            Assert.ContainsSingle(plan.Apis);
             Assert.IsFalse(plan.Apis[0].IsKnown);
             Assert.Contains("Clipboard", plan.Apis[0].Message!,
                 "The refusal shows the three shapes of name the argument accepts.");

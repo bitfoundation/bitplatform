@@ -146,7 +146,7 @@ public class SortingTests : BortableTestContext
 
         // The list moved twice and ended where it started: as in SortableJS, that is not an update.
         Assert.AreSequenceEqual(["A", "B", "C"], items);
-        Assert.IsFalse(log.Any(r => r.Name is "Update" or "Sort"));
+        Assert.DoesNotContain(r => r.Name is "Update" or "Sort", log);
         Assert.AreEqual("End", log[^1].Name);
     }
 
@@ -161,7 +161,7 @@ public class SortingTests : BortableTestContext
         await DragOverAsync(list, 0);
         await DropAsync(list);
 
-        Assert.IsFalse(log.Any(r => r.Name == "ItemsChanged"));
+        Assert.DoesNotContain(r => r.Name == "ItemsChanged", log);
     }
 
     [TestMethod]

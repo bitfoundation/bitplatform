@@ -39,11 +39,23 @@ public class BitPersonaE2ETests : E2ETestBase
 
     private static readonly Dictionary<string, string> CoinTextTokens = new()
     {
-        ["pri"] = "--bit-clr-pri-text", ["sec"] = "--bit-clr-sec-text", ["ter"] = "--bit-clr-ter-text", ["inf"] = "--bit-clr-inf-text",
-        ["suc"] = "--bit-clr-suc-text", ["wrn"] = "--bit-clr-wrn-text", ["swr"] = "--bit-clr-swr-text", ["err"] = "--bit-clr-err-text",
-        ["pbg"] = "--bit-clr-fg-pri", ["sbg"] = "--bit-clr-fg-pri", ["tbg"] = "--bit-clr-fg-pri",
-        ["pfg"] = "--bit-clr-bg-pri", ["sfg"] = "--bit-clr-bg-pri", ["tfg"] = "--bit-clr-bg-pri",
-        ["pbr"] = "--bit-clr-fg-pri", ["sbr"] = "--bit-clr-bg-pri", ["tbr"] = "--bit-clr-bg-pri",
+        ["pri"] = "--bit-clr-pri-text",
+        ["sec"] = "--bit-clr-sec-text",
+        ["ter"] = "--bit-clr-ter-text",
+        ["inf"] = "--bit-clr-inf-text",
+        ["suc"] = "--bit-clr-suc-text",
+        ["wrn"] = "--bit-clr-wrn-text",
+        ["swr"] = "--bit-clr-swr-text",
+        ["err"] = "--bit-clr-err-text",
+        ["pbg"] = "--bit-clr-fg-pri",
+        ["sbg"] = "--bit-clr-fg-pri",
+        ["tbg"] = "--bit-clr-fg-pri",
+        ["pfg"] = "--bit-clr-bg-pri",
+        ["sfg"] = "--bit-clr-bg-pri",
+        ["tfg"] = "--bit-clr-bg-pri",
+        ["pbr"] = "--bit-clr-fg-pri",
+        ["sbr"] = "--bit-clr-bg-pri",
+        ["tbr"] = "--bit-clr-bg-pri",
     };
 
     private static Regex Any => new(".*");
@@ -87,12 +99,12 @@ public class BitPersonaE2ETests : E2ETestBase
     {
         var html = await Page.PrerenderedHtmlAsync($"{BaseUrl}/e2e/persona");
 
-        StringAssert.Contains(html, "id=\"basic-initials\"");
-        StringAssert.Contains(html, ">SK</span>");
+        Assert.Contains("id=\"basic-initials\"", html);
+        Assert.Contains(">SK</span>", html);
 
         // A picture that has not loaded yet is backed by the initials while ShowInitialsUntilImageLoads asks for them.
         var untilLoads = html[html.IndexOf("id=\"until-loads-ok\"", StringComparison.Ordinal)..];
-        StringAssert.Contains(untilLoads[..untilLoads.IndexOf("</section>", StringComparison.Ordinal)], "bit-prs-ini");
+        Assert.Contains("bit-prs-ini", untilLoads[..untilLoads.IndexOf("</section>", StringComparison.Ordinal)]);
 
         await OpenAsync("/e2e/persona");
         await Expect(Page.Locator("#basic-initials .bit-prs-ini")).ToHaveTextAsync("SK");
@@ -135,8 +147,12 @@ public class BitPersonaE2ETests : E2ETestBase
 
         var colors = new Dictionary<string, string>
         {
-            ["Online"] = "--bit-clr-suc", ["Away"] = "--bit-clr-wrn", ["Dnd"] = "--bit-clr-err", ["Busy"] = "--bit-clr-err",
-            ["OutOfOffice"] = "--bit-clr-swr", ["Unknown"] = "--bit-clr-fg-ter",
+            ["Online"] = "--bit-clr-suc",
+            ["Away"] = "--bit-clr-wrn",
+            ["Dnd"] = "--bit-clr-err",
+            ["Busy"] = "--bit-clr-err",
+            ["OutOfOffice"] = "--bit-clr-swr",
+            ["Unknown"] = "--bit-clr-fg-ter",
         };
 
         foreach (var (name, @class, label, _) in Presences)
@@ -210,7 +226,7 @@ public class BitPersonaE2ETests : E2ETestBase
         await Expect(Presence("pre-title")).ToHaveAttributeAsync("aria-label", "Back at 3");
 
         // CoinSize-free, the 100px dot is larger than the 56px one.
-        Assert.IsTrue((await Presence("pre-titles").BoxAsync()).Width > (await Presence("pre-Online").BoxAsync()).Width);
+        Assert.IsGreaterThan((await Presence("pre-Online").BoxAsync()).Width, (await Presence("pre-titles").BoxAsync()).Width);
 
         await Expect(Presence("pre-runtime")).ToHaveClassAsync(HasClass("bit-prs-onl"));
         await Page.ClickAsync("#btn-presence-busy");
@@ -247,7 +263,7 @@ public class BitPersonaE2ETests : E2ETestBase
         Assert.IsTrue(two > three && three > four, $"{two} > {three} > {four}");
         var coin = await Coin("ini-four").BoxAsync();
         var letters = await Page.Locator("#ini-four .bit-prs-ini").BoxAsync();
-        Assert.IsTrue(letters.Width <= coin.Width, "Four letters fit inside the coin.");
+        Assert.IsLessThanOrEqualTo(coin.Width, letters.Width, "Four letters fit inside the coin.");
 
         // Without a name beside them the initials are all a reader has, so they stay in the accessibility tree.
         await Expect(Page.Locator("#ini-no-name .bit-prs-ini")).Not.ToHaveAttributeAsync("aria-hidden", Any);
@@ -289,7 +305,7 @@ public class BitPersonaE2ETests : E2ETestBase
         var circleDot = await Presence("shape-default").BoxAsync();
         var squareCoin = await Coin("shape-rounded").BoxAsync();
         var squareDot = await Presence("shape-rounded").BoxAsync();
-        Assert.IsTrue(squareDot.Right - squareCoin.Right > circleDot.Right - circleCoin.Right, "The dot hangs further out of a square coin.");
+        Assert.IsGreaterThan(circleDot.Right - circleCoin.Right, squareDot.Right - squareCoin.Right, "The dot hangs further out of a square coin.");
 
         var info = await Page.ResolveColorAsync("--bit-clr-inf");
         await Expect(Coin("var-fill")).ToHaveCSSAsync("background-color", info);
@@ -314,13 +330,13 @@ public class BitPersonaE2ETests : E2ETestBase
 
         await Expect(Root("act-ring")).ToHaveClassAsync(HasClass("bit-prs-arg"));
         var ring = await ComputedStyleAsync("#act-ring .bit-prs-cne", "box-shadow");
-        StringAssert.StartsWith(ring, await Page.ResolveColorAsync("--bit-clr-bg-pri"), "The gap is cut in the surface color.");
-        StringAssert.Contains(ring, $", {await Page.ResolveColorAsync("--bit-clr-inf")}", "The ring is in the coin color.");
+        Assert.StartsWith(await Page.ResolveColorAsync("--bit-clr-bg-pri"), ring, "The gap is cut in the surface color.");
+        Assert.Contains($", {await Page.ResolveColorAsync("--bit-clr-inf")}", ring, "The ring is in the coin color.");
 
         await Expect(Root("act-shadow")).ToHaveClassAsync(HasClass("bit-prs-ash"));
         var shadow = await ComputedStyleAsync("#act-shadow .bit-prs-cne", "box-shadow");
         Assert.AreNotEqual("none", shadow);
-        Assert.IsFalse(shadow.Contains(await Page.ResolveColorAsync("--bit-clr-inf")), "A shadow alone draws no ring.");
+        Assert.DoesNotContain(await Page.ResolveColorAsync("--bit-clr-inf"), shadow, "A shadow alone draws no ring.");
 
         await Expect(Root("act-ringshadow")).ToHaveClassAsync(HasClass("bit-prs-ars"));
         var ringShadow = await ComputedStyleAsync("#act-ringshadow .bit-prs-cne", "box-shadow");
@@ -520,7 +536,7 @@ public class BitPersonaE2ETests : E2ETestBase
         await Expect(alt).ToHaveAttributeAsync("sizes", "72px");
         await Expect(alt).ToHaveAttributeAsync("srcset", "samples/persona-sample-72.png 72w, samples/persona-sample.png 96w");
         await Page.WaitForFunctionAsync("() => document.querySelector('#img-alt img').complete");
-        StringAssert.Contains(await alt.EvaluateAsync<string>("img => img.currentSrc"), "samples/persona-sample");
+        Assert.Contains("samples/persona-sample", await alt.EvaluateAsync<string>("img => img.currentSrc"));
 
         // Candidates alone are a picture too.
         await Expect(Root("img-srcset-only")).ToHaveClassAsync(HasClass("bit-prs-him"));
@@ -626,24 +642,24 @@ public class BitPersonaE2ETests : E2ETestBase
 
         var coin = await Coin("lay-default").BoxAsync();
         var details = await Page.Locator("#lay-default .bit-prs-det").BoxAsync();
-        Assert.IsTrue(coin.Right <= details.Left, "The coin leads the texts.");
-        Assert.IsTrue((await Presence("lay-default").BoxAsync()).CenterX > coin.CenterX, "The dot is at the trailing side.");
+        Assert.IsLessThanOrEqualTo(details.Left, coin.Right, "The coin leads the texts.");
+        Assert.IsGreaterThan(coin.CenterX, (await Presence("lay-default").BoxAsync()).CenterX, "The dot is at the trailing side.");
 
         await Expect(Root("lay-reversed")).ToHaveClassAsync(HasClass("bit-prs-rvs"));
         var rCoin = await Coin("lay-reversed").BoxAsync();
         var rDetails = await Page.Locator("#lay-reversed .bit-prs-det").BoxAsync();
-        Assert.IsTrue(rCoin.Left >= rDetails.Right, "Reversed puts the coin after the texts.");
-        Assert.IsTrue((await Presence("lay-reversed").BoxAsync()).CenterX < rCoin.CenterX, "The dot follows to the leading side.");
+        Assert.IsGreaterThanOrEqualTo(rDetails.Right, rCoin.Left, "Reversed puts the coin after the texts.");
+        Assert.IsLessThan(rCoin.CenterX, (await Presence("lay-reversed").BoxAsync()).CenterX, "The dot follows to the leading side.");
 
         var vCoin = await Coin("lay-vertical").BoxAsync();
         var vDetails = await Page.Locator("#lay-vertical .bit-prs-det").BoxAsync();
-        Assert.IsTrue(vCoin.Bottom <= vDetails.Top, "Vertical stacks the coin over the texts.");
+        Assert.IsLessThanOrEqualTo(vDetails.Top, vCoin.Bottom, "Vertical stacks the coin over the texts.");
         Assert.AreEqual(vCoin.CenterX, vDetails.CenterX, 2, "Both are centred.");
         Assert.AreEqual("center", await ComputedStyleAsync("#lay-vertical .bit-prs-det", "text-align"));
 
         var vrCoin = await Coin("lay-vertical-reversed").BoxAsync();
         var vrDetails = await Page.Locator("#lay-vertical-reversed .bit-prs-det").BoxAsync();
-        Assert.IsTrue(vrDetails.Bottom <= vrCoin.Top, "Vertical and Reversed put the texts over the coin.");
+        Assert.IsLessThanOrEqualTo(vrCoin.Top, vrDetails.Bottom, "Vertical and Reversed put the texts over the coin.");
 
         var box = await Page.BoxAsync("#fw-box");
         var full = await Page.BoxAsync("#lay-full");
@@ -736,7 +752,7 @@ public class BitPersonaE2ETests : E2ETestBase
             {
                 await Expect(Page.Locator($"#{id} .bit-prs-imc")).ToHaveCountAsync(0);
                 await Expect(Presence(id)).ToHaveCSSAsync("position", "static");
-                Assert.IsTrue((await Presence(id).BoxAsync()).Right <= (await Page.Locator($"#{id} .bit-prs-det").BoxAsync()).Left, "The dot stands in for the coin in the row.");
+                Assert.IsLessThanOrEqualTo((await Page.Locator($"#{id} .bit-prs-det").BoxAsync()).Left, (await Presence(id).BoxAsync()).Right, "The dot stands in for the coin in the row.");
             }
             else
             {
@@ -854,8 +870,8 @@ public class BitPersonaE2ETests : E2ETestBase
         {
             var coin = await Coin(id).BoxAsync();
             var details = await Page.Locator($"#{id} .bit-prs-det").BoxAsync();
-            Assert.IsTrue(coin.Left >= details.Right, $"{id}: the coin is on the right.");
-            Assert.IsTrue((await Presence(id).BoxAsync()).CenterX < coin.CenterX, $"{id}: the dot is at the trailing (left) side.");
+            Assert.IsGreaterThanOrEqualTo(details.Right, coin.Left, $"{id}: the coin is on the right.");
+            Assert.IsLessThan(coin.CenterX, (await Presence(id).BoxAsync()).CenterX, $"{id}: the dot is at the trailing (left) side.");
         }
 
         // The first initial lands on the right, the way a right-to-left reader starts.
@@ -892,8 +908,8 @@ public class BitPersonaE2ETests : E2ETestBase
         Assert.AreNotEqual("24px", await ComputedStyleAsync("#cv-explicit", "column-gap"), "An explicit Size wins over the gap.");
 
         var ring = await ComputedStyleAsync("#cv-ring .bit-prs-cne", "box-shadow");
-        StringAssert.Contains(ring, "rgb(200, 0, 0) 0px 0px 0px 3px");
-        StringAssert.Contains(ring, "rgb(0, 0, 200) 0px 0px 0px 8px");
+        Assert.Contains("rgb(200, 0, 0) 0px 0px 0px 3px", ring);
+        Assert.Contains("rgb(0, 0, 200) 0px 0px 0px 8px", ring);
         await Expect(Coin("cv-shadow")).ToHaveCSSAsync("box-shadow", "rgb(0, 0, 0) 0px 0px 9px 0px");
 
         await Expect(Page.Locator("#cv-inactive .bit-prs-cin")).ToHaveCSSAsync("opacity", "0.5");
@@ -912,13 +928,13 @@ public class BitPersonaE2ETests : E2ETestBase
         await action.FocusAsync();
         await Page.Keyboard.PressAsync("Shift+Tab");
         await Expect(Coin("cv-overlay")).ToBeFocusedAsync();
-        StringAssert.Contains(await ComputedStyleAsync("#cv-overlay .bit-prs-cne", "box-shadow"), "rgb(255, 0, 255)");
+        Assert.Contains("rgb(255, 0, 255)", await ComputedStyleAsync("#cv-overlay .bit-prs-cne", "box-shadow"));
 
         await Expect(Page.Locator("#cv-disabled .bit-prs-ptx")).ToHaveCSSAsync("color", "rgb(150, 150, 150)");
         await Expect(Page.Locator("#cv-disabled .bit-prs-stx")).ToHaveCSSAsync("color", "rgb(150, 150, 150)");
 
         await Expect(Presence("cv-surface")).ToHaveCSSAsync("background-color", "rgb(240, 240, 200)");
-        StringAssert.StartsWith(await ComputedStyleAsync("#cv-surface .bit-prs-cne", "box-shadow"), "rgb(240, 240, 200)");
+        Assert.StartsWith("rgb(240, 240, 200)", await ComputedStyleAsync("#cv-surface .bit-prs-cne", "box-shadow"));
 
         var presenceColors = new (string Name, string Property, string Value)[]
         {

@@ -74,7 +74,7 @@ public class BitAiChatParamsTests : BitAiTestBase
     [TestMethod]
     public void BitAiChatParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual("BitParams.BitAiChat", BitAiChatParams.ParamName);
+        Assert.AreEqual("BitParams.BitAiChat", new BitAiChatParams().Name);
         Assert.AreEqual(BitAiChatParams.ParamName, new BitAiChatParams().Name);
     }
 
@@ -110,7 +110,7 @@ public class BitAiChatParamsTests : BitAiTestBase
         });
 
         Assert.IsTrue(component.Find(".bit-aicht").ClassList.Contains("cascaded"));
-        Assert.HasCount(1, component.FindAll("article.bit-aicms-sys"));
+        Assert.ContainsSingle(component.FindAll("article.bit-aicms-sys"));
 
         var chat = component.FindComponent<BitAiChat>().Instance;
         Assert.IsFalse(chat.AllowAttachments);

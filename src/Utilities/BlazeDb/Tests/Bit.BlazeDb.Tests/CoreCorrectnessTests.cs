@@ -47,7 +47,7 @@ public class CoreCorrectnessTests
     }
 
     private static void AssertHealthy(BlazeDbDatabase db) =>
-        Assert.AreEqual(0, db.VerifyIntegrity().Count, string.Join(Environment.NewLine, db.VerifyIntegrity()));
+        Assert.IsEmpty(db.VerifyIntegrity(), string.Join(Environment.NewLine, db.VerifyIntegrity()));
 
     [TestMethod]
     public async Task An_Insert_An_Index_Refuses_Leaves_No_Trace()
@@ -60,7 +60,7 @@ public class CoreCorrectnessTests
         Assert.AreEqual(2, table.Count);
         Assert.IsFalse(table.Contains(3));
         Assert.AreEqual(0, table.CountBy(ByName, "Alan"));
-        CollectionAssert.AreEqual(new[] { 1, 2 }, table.OrderBy(ByAge).Select(p => p.Id).ToArray());
+        Assert.AreSequenceEqual(new[] { 1, 2 }, table.OrderBy(ByAge).Select(p => p.Id).ToArray());
         AssertHealthy(db);
     }
 
@@ -76,7 +76,7 @@ public class CoreCorrectnessTests
         Assert.AreSame(before, table.Get(2));
         Assert.AreEqual(1, table.CountBy(ByName, "Grace"));
         Assert.AreEqual(0, table.CountBy(ByName, "Grace Hopper"));
-        CollectionAssert.AreEqual(new[] { 2 }, table.Range(ByAge, 40, 50).Select(p => p.Id).ToArray());
+        Assert.AreSequenceEqual(new[] { 2 }, table.Range(ByAge, 40, 50).Select(p => p.Id).ToArray());
         AssertHealthy(db);
     }
 
@@ -96,7 +96,7 @@ public class CoreCorrectnessTests
             AssertHealthy(db);
         }
 
-        await using var reopened = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { Storage = storage }.AddTable(Fragile));
+        await using var reopened = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { Storage = storage }.AddTable(Fragile), TestContext.CancellationToken);
         var recovered = reopened.GetTable(Fragile);
         Assert.AreEqual(new Person(1, "Ada", 36), recovered.Get(1));
         Assert.AreEqual(new Person(3, "Alan", 41), recovered.Get(3));
@@ -114,7 +114,7 @@ public class CoreCorrectnessTests
             PersonTable.Descriptor.KeyWriter,
             PersonTable.Descriptor.KeyReader,
             [ByName, new BlazeDbHashIndexDefinition<Person, int>("Selector", static p => p.Name == "Doomed" ? throw new InvalidOperationException() : p.Age)]);
-        await using var db = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions().AddTable(descriptor));
+        await using var db = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions().AddTable(descriptor), TestContext.CancellationToken);
         var table = db.GetTable(descriptor);
         table.Insert(new Person(1, "Ada", 36));
 
@@ -131,7 +131,7 @@ public class CoreCorrectnessTests
         var people = db.GetTable(PersonTable.Descriptor);
 
         var error = Assert.ThrowsExactly<ArgumentNullException>(() => people.Insert(null!));
-        StringAssert.Contains(error.Message, "people");
+        Assert.Contains("people", error.Message);
         Assert.ThrowsExactly<ArgumentNullException>(() => people.Upsert(null!));
         Assert.ThrowsExactly<ArgumentNullException>(() => people.Update(null!));
         Assert.AreEqual(0, people.Count);
@@ -140,18 +140,18 @@ public class CoreCorrectnessTests
     [TestMethod]
     public async Task A_Null_Key_Is_Refused_With_The_Key_Property_Named()
     {
-        await using var db = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions().AddTable(Setting.Table));
+        await using var db = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions().AddTable(Setting.Table), TestContext.CancellationToken);
         var settings = db.GetTable(Setting.Table);
 
         var error = Assert.ThrowsExactly<ArgumentException>(() => settings.Insert(new Setting { Name = null!, Value = "x" }));
-        StringAssert.Contains(error.Message, "Name");
+        Assert.Contains("Name", error.Message);
         Assert.AreEqual(0, settings.Count);
     }
 
     [TestMethod]
     public async Task VerifyIntegrity_Reports_An_Indexed_Value_Changed_In_Place()
     {
-        await using var db = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions().AddTable(Account.Table));
+        await using var db = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions().AddTable(Account.Table), TestContext.CancellationToken);
         var accounts = db.GetTable(Account.Table);
         accounts.Insert(new Account { Id = 1, Username = "ada", TenantId = 1, Email = "ada@example.com" });
         AssertHealthy(db);
@@ -159,13 +159,13 @@ public class CoreCorrectnessTests
         accounts.Get(1)!.Username = "countess";
 
         var issues = db.VerifyIntegrity();
-        Assert.IsTrue(issues.Any(i => i.Table == "accounts" && i.Index == "Username"), string.Join(Environment.NewLine, issues));
+        Assert.Contains(i => i.Table == "accounts" && i.Index == "Username", issues, string.Join(Environment.NewLine, issues));
     }
 
     [TestMethod]
     public async Task VerifyIntegrity_Reports_A_Key_Changed_In_Place()
     {
-        await using var db = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions().AddTable(Account.Table));
+        await using var db = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions().AddTable(Account.Table), TestContext.CancellationToken);
         var accounts = db.GetTable(Account.Table);
         accounts.Insert(new Account { Id = 1, Username = "ada", Email = "ada@example.com" });
 
@@ -173,14 +173,14 @@ public class CoreCorrectnessTests
 
         var issue = db.VerifyIntegrity().Single();
         Assert.IsNull(issue.Index);
-        StringAssert.Contains(issue.Description, "99");
+        Assert.Contains("99", issue.Description);
     }
 
     [TestMethod]
     public async Task Disposing_With_A_Transaction_Open_Rolls_It_Back()
     {
         var storage = new BlazeDbInMemoryStorage();
-        var db = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { Storage = storage }.AddTable(PersonTable.Descriptor));
+        var db = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { Storage = storage }.AddTable(PersonTable.Descriptor), TestContext.CancellationToken);
         var people = db.GetTable(PersonTable.Descriptor);
         people.Insert(new Person(1, "Committed", 1));
 
@@ -195,7 +195,7 @@ public class CoreCorrectnessTests
         Assert.ThrowsExactly<ObjectDisposedException>(txn.Commit);
         txn.Dispose(); // the usual `using` pattern must not throw
 
-        await using var reopened = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { Storage = storage }.AddTable(PersonTable.Descriptor));
+        await using var reopened = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { Storage = storage }.AddTable(PersonTable.Descriptor), TestContext.CancellationToken);
         var recovered = reopened.GetTable(PersonTable.Descriptor);
         Assert.AreEqual(1, recovered.Count);
         Assert.AreEqual(new Person(1, "Committed", 1), recovered.Get(1));
@@ -204,10 +204,10 @@ public class CoreCorrectnessTests
     [TestMethod]
     public async Task Disposing_Twice_At_Once_Is_Safe()
     {
-        var db = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { Storage = new BlazeDbInMemoryStorage() }.AddTable(PersonTable.Descriptor));
+        var db = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { Storage = new BlazeDbInMemoryStorage() }.AddTable(PersonTable.Descriptor), TestContext.CancellationToken);
         db.GetTable(PersonTable.Descriptor).Insert(new Person(1, "Ada", 36));
 
-        await Task.WhenAll(Enumerable.Range(0, 8).Select(_ => Task.Run(async () => await db.DisposeAsync())));
+        await Task.WhenAll(Enumerable.Range(0, 8).Select(_ => Task.Run(async () => await db.DisposeAsync(), TestContext.CancellationToken)));
 
         Assert.ThrowsExactly<ObjectDisposedException>(() => db.BeginTransaction());
     }
@@ -238,7 +238,7 @@ public class CoreCorrectnessTests
 
         for (var i = 1; i < versions.Count; i++)
         {
-            Assert.IsTrue(versions[i] > versions[i - 1], $"Version did not move at step {i}.");
+            Assert.IsGreaterThan(versions[i - 1], versions[i], $"Version did not move at step {i}.");
         }
     }
 
@@ -257,7 +257,7 @@ public class CoreCorrectnessTests
             }
 
             var seen = 0;
-            await foreach (var _ in BlazeDbQuery<int, Person>.From(people).ExecuteAsync(batchSize: 2))
+            await foreach (var _ in BlazeDbQuery<int, Person>.From(people).ExecuteAsync(batchSize: 2, TestContext.CancellationToken))
             {
                 if (++seen == 2)
                 {
@@ -265,7 +265,7 @@ public class CoreCorrectnessTests
                 }
             }
         }));
-        StringAssert.Contains(error.Message, "people");
+        Assert.Contains("people", error.Message);
     }
 
     /// <summary>A synchronization context that runs everything posted to it, in order, on the calling thread.</summary>
@@ -308,7 +308,7 @@ public class CoreCorrectnessTests
         }
 
         var seen = 0;
-        await foreach (var person in BlazeDbQuery<int, Person>.From(people).ExecuteAsync(batchSize: 3))
+        await foreach (var person in BlazeDbQuery<int, Person>.From(people).ExecuteAsync(batchSize: 3, TestContext.CancellationToken))
         {
             people.Update(person with { Age = person.Age + 100 });
             seen++;
@@ -317,4 +317,6 @@ public class CoreCorrectnessTests
         Assert.AreEqual(10, seen);
         Assert.IsTrue(people.Scan().All(p => p.Age >= 100));
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

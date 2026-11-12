@@ -3,7 +3,7 @@
 namespace Bit.Blex.Tests;
 
 [BlexStoreAttribute(Name = "search", Persist = true)]
-public partial class SearchHistoryStore
+internal partial class SearchHistoryStore
 {
     [BlexStateAttribute] private string[] _recent = [];
     [BlexStateAttribute(Persist = false)] private string _query = "";
@@ -91,7 +91,7 @@ public class TransientStateTests
         // Written before the field was excluded.
         var (_, store, _, _) = await StartAsync(stored: """{"Recent":["one"],"Query":"stale","Page":7}""");
 
-        CollectionAssert.AreEqual(new[] { "one" }, store.Recent);
+        Assert.AreSequenceEqual(new[] { "one" }, store.Recent);
         Assert.AreEqual("", store.Query);
         Assert.AreEqual(1, store.Page);
     }
@@ -105,7 +105,7 @@ public class TransientStateTests
         storage.RaiseExternal("blex:search", """{"Recent":["theirs"],"Query":"theirs"}""");
         await persistor.FlushAsync();
 
-        CollectionAssert.AreEqual(new[] { "theirs" }, store.Recent);
+        Assert.AreSequenceEqual(new[] { "theirs" }, store.Recent);
         Assert.AreEqual("mine", store.Query);
     }
 

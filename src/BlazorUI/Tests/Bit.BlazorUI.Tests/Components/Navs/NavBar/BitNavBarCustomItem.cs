@@ -6,7 +6,7 @@ namespace Bit.BlazorUI.Tests.Components.Navs.NavBar;
 /// A custom item type whose every property is named differently from the BitNavBarItem it maps onto, so a
 /// NameSelectors test cannot pass by accidentally falling back to the built-in item class.
 /// </summary>
-public class BitNavBarCustomItem
+internal class BitNavBarCustomItem
 {
     public string? Caption { get; set; }
     public string? Glyph { get; set; }

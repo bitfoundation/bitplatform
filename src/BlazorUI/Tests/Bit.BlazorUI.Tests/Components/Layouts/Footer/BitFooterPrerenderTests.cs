@@ -24,16 +24,16 @@ public class BitFooterPrerenderTests
             [nameof(BitFooter.ChildContent)] = (RenderFragment)(builder => builder.AddContent(0, "Prerendered")),
         });
 
-        StringAssert.Contains(html, "<footer");
-        StringAssert.Contains(html, "bit-ftr-fix");
-        StringAssert.Contains(html, "bit-ftr-anm");
-        StringAssert.Contains(html, "bit-ftr-esc");
-        StringAssert.Contains(html, "Prerendered");
+        Assert.Contains("<footer", html);
+        Assert.Contains("bit-ftr-fix", html);
+        Assert.Contains("bit-ftr-anm", html);
+        Assert.Contains("bit-ftr-esc", html);
+        Assert.Contains("Prerendered", html);
 
         // Nothing has scrolled yet, so there is nothing to slide away from or to shadow.
-        Assert.IsFalse(html.Contains("bit-ftr-hdn"));
-        Assert.IsFalse(html.Contains("bit-ftr-elv"));
-        Assert.IsFalse(html.Contains(" inert"));
+        Assert.DoesNotContain("bit-ftr-hdn", html);
+        Assert.DoesNotContain("bit-ftr-elv", html);
+        Assert.DoesNotContain(" inert", html);
     }
 
     [TestMethod]
@@ -46,7 +46,7 @@ public class BitFooterPrerenderTests
         });
 
         // The explicit Hidden needs no script, so the first paint is already slid away and inert.
-        StringAssert.Contains(html, "bit-ftr-hdn");
-        StringAssert.Contains(html, " inert");
+        Assert.Contains("bit-ftr-hdn", html);
+        Assert.Contains(" inert", html);
     }
 }

@@ -57,10 +57,10 @@ public class McpServerIntegrationTests
         var instructions = _server.Client.ServerInstructions;
 
         Assert.IsFalse(string.IsNullOrWhiteSpace(instructions), "The server sends no instructions.");
-        StringAssert.Contains(instructions, nameof(McpController.SearchBmage));
-        StringAssert.Contains(instructions, "AddBitBmageHeadlessServices");
-        StringAssert.Contains(instructions, "OnAfterRenderAsync");
-        StringAssert.Contains(instructions, BmageServerInstructions.BmageVersion);
+        Assert.Contains(nameof(McpController.SearchBmage), instructions);
+        Assert.Contains("AddBitBmageHeadlessServices", instructions);
+        Assert.Contains("OnAfterRenderAsync", instructions);
+        Assert.Contains(BmageServerInstructions.BmageVersion, instructions);
     }
 
     /// <summary>
@@ -71,17 +71,17 @@ public class McpServerIntegrationTests
     [TestMethod]
     public async Task ListTools_ExposesExactlyTheToolsTheAttributesDeclare()
     {
-        var overTheWire = (await _server.Client.ListToolsAsync()).Select(tool => tool.Name).ToArray();
+        var overTheWire = (await _server.Client.ListToolsAsync(cancellationToken: TestContext.CancellationToken)).Select(tool => tool.Name).ToArray();
         var declared = new McpController().GetMcpCatalog().Tools.Select(tool => tool.Name).ToArray();
 
-        CollectionAssert.AreEquivalent(declared, overTheWire, $"Over the wire: {string.Join(", ", overTheWire.Order())}.");
+        Assert.AreSequenceEqual(declared, overTheWire, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, $"Over the wire: {string.Join(", ", overTheWire.Order())}.");
     }
 
     /// <summary>The description and the input schema are the entire basis on which a model chooses a tool.</summary>
     [TestMethod]
     public async Task ListTools_EveryTool_ArrivesWithADescriptionAndAnInputSchema()
     {
-        foreach (var tool in await _server.Client.ListToolsAsync())
+        foreach (var tool in await _server.Client.ListToolsAsync(cancellationToken: TestContext.CancellationToken))
         {
             Assert.IsFalse(string.IsNullOrWhiteSpace(tool.Description), $"'{tool.Name}' arrived with no description.");
 
@@ -95,7 +95,7 @@ public class McpServerIntegrationTests
     [TestMethod]
     public async Task ListTools_TheArgumentNames_AreTheOnesTheMethodsDeclare()
     {
-        var tools = (await _server.Client.ListToolsAsync()).ToDictionary(tool => tool.Name, StringComparer.Ordinal);
+        var tools = (await _server.Client.ListToolsAsync(cancellationToken: TestContext.CancellationToken)).ToDictionary(tool => tool.Name, StringComparer.Ordinal);
 
         foreach (var (name, expected) in new Dictionary<string, string[]>(StringComparer.Ordinal)
         {
@@ -146,12 +146,12 @@ public class McpServerIntegrationTests
 
         var called = 0;
 
-        foreach (var tool in await _server.Client.ListToolsAsync())
+        foreach (var tool in await _server.Client.ListToolsAsync(cancellationToken: TestContext.CancellationToken))
         {
-            var result = await _server.Client.CallToolAsync(tool.Name, arguments.GetValueOrDefault(tool.Name) ?? new Dictionary<string, object?>());
+            var result = await _server.Client.CallToolAsync(tool.Name, arguments.GetValueOrDefault(tool.Name) ?? new Dictionary<string, object?>(), cancellationToken: TestContext.CancellationToken);
 
-            Assert.IsFalse(result.IsError is true, $"'{tool.Name}' answered with an error: {Render(result)}");
-            Assert.AreNotEqual(0, result.Content.Count, $"'{tool.Name}' answered with nothing at all.");
+            Assert.AreNotEqual(true, result.IsError, $"'{tool.Name}' answered with an error: {Render(result)}");
+            Assert.IsNotEmpty(result.Content, $"'{tool.Name}' answered with nothing at all.");
             Assert.AreNotEqual(string.Empty, Render(result).Trim(), $"'{tool.Name}' answered with empty content.");
 
             called++;
@@ -177,9 +177,9 @@ public class McpServerIntegrationTests
                 ["formats"] = "jpeg, png",
                 ["qualities"] = "0.6, 0.9",
                 ["maxFileSize"] = 1_000_000,
-            });
+            }, cancellationToken: TestContext.CancellationToken);
 
-        Assert.IsFalse(result.IsError is true, Render(result));
+        Assert.AreNotEqual(true, result.IsError, Render(result));
 
         var payload = Payload(result);
 
@@ -203,7 +203,7 @@ public class McpServerIntegrationTests
     {
         var result = await _server.Client.CallToolAsync(
             nameof(McpController.RunBmagePipeline),
-            new Dictionary<string, object?> { ["pipeline"] = "Crop(0, 0, 100, 50)", ["width"] = 321, ["height"] = 123, ["formats"] = "png" });
+            new Dictionary<string, object?> { ["pipeline"] = "Crop(0, 0, 100, 50)", ["width"] = 321, ["height"] = 123, ["formats"] = "png" }, cancellationToken: TestContext.CancellationToken);
 
         var payload = Payload(result);
 
@@ -221,7 +221,7 @@ public class McpServerIntegrationTests
             new Dictionary<string, object?>
             {
                 ["code"] = "@page \"/x\"\n@inject ImageProcessor Processor\n\n<p>hi</p>",
-            });
+            }, cancellationToken: TestContext.CancellationToken);
 
         var payload = Payload(result);
 
@@ -237,7 +237,7 @@ public class McpServerIntegrationTests
     [TestMethod]
     public async Task CallTool_TheMetadataComparison_ReportsTheLocationOnlyUnderPreserve()
     {
-        var result = await _server.Client.CallToolAsync(nameof(McpController.CompareBmageMetadataPolicies), new Dictionary<string, object?> { ["format"] = "jpeg" });
+        var result = await _server.Client.CallToolAsync(nameof(McpController.CompareBmageMetadataPolicies), new Dictionary<string, object?> { ["format"] = "jpeg" }, cancellationToken: TestContext.CancellationToken);
 
         var policies = Payload(result).GetProperty("policies").EnumerateArray()
             .ToDictionary(policy => policy.GetProperty("policy").GetString()!, policy => policy.GetProperty("leaksLocation").GetBoolean());
@@ -257,30 +257,30 @@ public class McpServerIntegrationTests
     {
         var result = await _server.Client.CallToolAsync(
             nameof(McpController.RunBmagePipeline),
-            new Dictionary<string, object?> { ["pipeline"] = "ImagePipeline.Create().Teleport(3)" });
+            new Dictionary<string, object?> { ["pipeline"] = "ImagePipeline.Create().Teleport(3)" }, cancellationToken: TestContext.CancellationToken);
 
-        Assert.IsFalse(result.IsError is true, "A correctable mistake was reported as a failed call.");
+        Assert.AreNotEqual(true, result.IsError, "A correctable mistake was reported as a failed call.");
 
         var error = Payload(result).GetProperty("error").GetString();
 
         Assert.IsFalse(string.IsNullOrWhiteSpace(error));
-        StringAssert.Contains(error, "Teleport");
-        StringAssert.Contains(error, "MaxSize", "The explanation does not say what can be called instead.");
+        Assert.Contains("Teleport", error);
+        Assert.Contains("MaxSize", error, "The explanation does not say what can be called instead.");
     }
 
     [TestMethod]
     public async Task CallTool_AMissingId_NamesWhatDoesExist()
     {
-        var result = await _server.Client.CallToolAsync(nameof(McpController.GetBmageRecipe), new Dictionary<string, object?> { ["id"] = "teleport" });
+        var result = await _server.Client.CallToolAsync(nameof(McpController.GetBmageRecipe), new Dictionary<string, object?> { ["id"] = "teleport" }, cancellationToken: TestContext.CancellationToken);
 
-        Assert.IsFalse(result.IsError is true);
-        StringAssert.Contains(Render(result), "avatar-crop");
+        Assert.AreNotEqual(true, result.IsError);
+        Assert.Contains("avatar-crop", Render(result));
     }
 
     [TestMethod]
     public async Task CallTool_AnOptionalArgumentOmitted_UsesTheDeclaredDefault()
     {
-        var result = await _server.Client.CallToolAsync(nameof(McpController.RunBmagePipeline), new Dictionary<string, object?> { ["pipeline"] = "MaxSize(100, 100)" });
+        var result = await _server.Client.CallToolAsync(nameof(McpController.RunBmagePipeline), new Dictionary<string, object?> { ["pipeline"] = "MaxSize(100, 100)" }, cancellationToken: TestContext.CancellationToken);
 
         var payload = Payload(result);
 
@@ -293,21 +293,21 @@ public class McpServerIntegrationTests
     public async Task CallTool_AToolThatDoesNotExist_Fails_WithoutTakingTheSessionDown()
     {
         var error = await Assert.ThrowsAsync<ModelContextProtocol.McpException>(
-            () => _server.Client.CallToolAsync("GetBmageNothing", new Dictionary<string, object?>()).AsTask());
+            () => _server.Client.CallToolAsync("GetBmageNothing", new Dictionary<string, object?>(), cancellationToken: TestContext.CancellationToken).AsTask());
 
-        StringAssert.Contains(error.Message, "GetBmageNothing");
+        Assert.Contains("GetBmageNothing", error.Message);
 
-        Assert.AreNotEqual(0, (await _server.Client.ListToolsAsync()).Count);
+        Assert.IsNotEmpty(await _server.Client.ListToolsAsync(cancellationToken: TestContext.CancellationToken));
     }
 
     [TestMethod]
     public async Task ListPrompts_ExposesEveryWorkflow_WithItsArguments()
     {
-        var prompts = await _server.Client.ListPromptsAsync();
+        var prompts = await _server.Client.ListPromptsAsync(cancellationToken: TestContext.CancellationToken);
 
         var declared = new McpController().GetMcpCatalog().Prompts.Select(prompt => prompt.Name).ToArray();
 
-        CollectionAssert.AreEquivalent(declared, prompts.Select(prompt => prompt.Name).ToArray());
+        Assert.AreSequenceEqual(declared, prompts.Select(prompt => prompt.Name).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
         foreach (var prompt in prompts)
         {
@@ -324,23 +324,23 @@ public class McpServerIntegrationTests
             {
                 ["request"] = "let users crop an avatar to a circle",
                 ["renderMode"] = "server",
-            });
+            }, cancellationToken: TestContext.CancellationToken);
 
-        Assert.AreNotEqual(0, result.Messages.Count);
+        Assert.IsNotEmpty(result.Messages);
 
         var text = string.Join('\n', result.Messages.Select(message => (message.Content as TextContentBlock)?.Text));
 
-        StringAssert.Contains(text, "let users crop an avatar to a circle");
-        StringAssert.Contains(text, "server");
-        StringAssert.Contains(text, nameof(McpController.ReviewBmageCode));
-        StringAssert.Contains(text, nameof(McpController.RunBmagePipeline));
+        Assert.Contains("let users crop an avatar to a circle", text);
+        Assert.Contains("server", text);
+        Assert.Contains(nameof(McpController.ReviewBmageCode), text);
+        Assert.Contains(nameof(McpController.RunBmagePipeline), text);
     }
 
     [TestMethod]
     public async Task ListResources_ExposesTheFixedOnes_AndTheTemplatedOnes()
     {
-        var resources = await _server.Client.ListResourcesAsync();
-        var templates = await _server.Client.ListResourceTemplatesAsync();
+        var resources = await _server.Client.ListResourcesAsync(cancellationToken: TestContext.CancellationToken);
+        var templates = await _server.Client.ListResourceTemplatesAsync(cancellationToken: TestContext.CancellationToken);
 
         var uris = resources.Select(resource => resource.Uri)
             .Concat(templates.Select(template => template.UriTemplate))
@@ -348,17 +348,17 @@ public class McpServerIntegrationTests
 
         var declared = new McpController().GetMcpCatalog().Resources.Select(resource => resource.Name).ToArray();
 
-        CollectionAssert.AreEquivalent(declared, uris, $"Over the wire: {string.Join(", ", uris.Order())}.");
+        Assert.AreSequenceEqual(declared, uris, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, $"Over the wire: {string.Join(", ", uris.Order())}.");
     }
 
     [TestMethod]
     public async Task ReadResource_TheFixedResources_ReturnTheirDocuments()
     {
-        foreach (var resource in await _server.Client.ListResourcesAsync())
+        foreach (var resource in await _server.Client.ListResourcesAsync(cancellationToken: TestContext.CancellationToken))
         {
-            var result = await resource.ReadAsync();
+            var result = await resource.ReadAsync(cancellationToken: TestContext.CancellationToken);
 
-            Assert.AreNotEqual(0, result.Contents.Count, $"'{resource.Uri}' returned nothing.");
+            Assert.IsNotEmpty(result.Contents, $"'{resource.Uri}' returned nothing.");
 
             var text = (result.Contents[0] as TextResourceContents)?.Text;
 
@@ -369,17 +369,17 @@ public class McpServerIntegrationTests
     [TestMethod]
     public async Task ReadResource_ATemplatedResource_ResolvesItsArgument()
     {
-        var document = await _server.Client.ReadResourceAsync("bmage://docs/pipelines");
-        StringAssert.Contains(((TextResourceContents)document.Contents[0]).Text!, "## The optimiser");
+        var document = await _server.Client.ReadResourceAsync("bmage://docs/pipelines", cancellationToken: TestContext.CancellationToken);
+        Assert.Contains("## The optimiser", ((TextResourceContents)document.Contents[0]).Text!);
 
-        var type = await _server.Client.ReadResourceAsync("bmage://api/ImageExportOptions");
-        StringAssert.Contains(((TextResourceContents)type.Contents[0]).Text!, "MaxFileSize");
+        var type = await _server.Client.ReadResourceAsync("bmage://api/ImageExportOptions", cancellationToken: TestContext.CancellationToken);
+        Assert.Contains("MaxFileSize", ((TextResourceContents)type.Contents[0]).Text!);
 
-        var setup = await _server.Client.ReadResourceAsync("bmage://setup/headless");
-        StringAssert.Contains(((TextResourceContents)setup.Contents[0]).Text!, "AddBitBmageHeadlessServices");
+        var setup = await _server.Client.ReadResourceAsync("bmage://setup/headless", cancellationToken: TestContext.CancellationToken);
+        Assert.Contains("AddBitBmageHeadlessServices", ((TextResourceContents)setup.Contents[0]).Text!);
 
-        var recipe = await _server.Client.ReadResourceAsync("bmage://recipes/strip-location");
-        StringAssert.Contains(((TextResourceContents)recipe.Contents[0]).Text!, "MetadataPolicy.StripSensitive");
+        var recipe = await _server.Client.ReadResourceAsync("bmage://recipes/strip-location", cancellationToken: TestContext.CancellationToken);
+        Assert.Contains("MetadataPolicy.StripSensitive", ((TextResourceContents)recipe.Contents[0]).Text!);
     }
 
     /// <summary>
@@ -390,11 +390,11 @@ public class McpServerIntegrationTests
     [TestMethod]
     public async Task ReadResource_ASourceFilePath_SurvivesUriEscaping()
     {
-        var result = await _server.Client.ReadResourceAsync($"bmage://source/{Uri.EscapeDataString("Demo/Server/Program.cs")}");
+        var result = await _server.Client.ReadResourceAsync($"bmage://source/{Uri.EscapeDataString("Demo/Server/Program.cs")}", cancellationToken: TestContext.CancellationToken);
 
         var text = ((TextResourceContents)result.Contents[0]).Text!;
 
-        StringAssert.Contains(text, "MapMcp");
+        Assert.Contains("MapMcp", text);
         Assert.AreEqual(BmageSourceCatalog.GetSourceFile("Demo/Server/Program.cs"), text);
     }
 
@@ -405,14 +405,14 @@ public class McpServerIntegrationTests
     [TestMethod]
     public async Task Complete_ATemplatePlaceholder_OffersTheValuesThatExist()
     {
-        var types = await _server.Client.CompleteAsync(new ResourceTemplateReference { Uri = "bmage://api/{typeName}" }, "typeName", "ImageExp");
+        var types = await _server.Client.CompleteAsync(new ResourceTemplateReference { Uri = "bmage://api/{typeName}" }, "typeName", "ImageExp", cancellationToken: TestContext.CancellationToken);
 
-        CollectionAssert.Contains(types.Completion.Values.ToArray(), "ImageExportOptions");
-        CollectionAssert.Contains(types.Completion.Values.ToArray(), "ImageExporter");
+        Assert.Contains("ImageExportOptions", types.Completion.Values.ToArray());
+        Assert.Contains("ImageExporter", types.Completion.Values.ToArray());
 
-        var recipes = await _server.Client.CompleteAsync(new PromptReference { Name = "build-with-bmage" }, "renderMode", "head");
+        var recipes = await _server.Client.CompleteAsync(new PromptReference { Name = "build-with-bmage" }, "renderMode", "head", cancellationToken: TestContext.CancellationToken);
 
-        CollectionAssert.AreEqual(new[] { "headless" }, recipes.Completion.Values.ToArray());
+        Assert.AreSequenceEqual(new[] { "headless" }, recipes.Completion.Values.ToArray());
     }
 
     /// <summary>
@@ -435,11 +435,11 @@ public class McpServerIntegrationTests
             (nameof(McpController.RunBmagePipeline), new() { ["pipeline"] = "MaxSize(300, 300)", ["width"] = 600, ["height"] = 400, ["formats"] = "png" }),
         };
 
-        var results = await Task.WhenAll(calls.Select(call => _server.Client.CallToolAsync(call.Tool, call.Arguments).AsTask()));
+        var results = await Task.WhenAll(calls.Select(call => _server.Client.CallToolAsync(call.Tool, call.Arguments, cancellationToken: TestContext.CancellationToken).AsTask()));
 
         for (int i = 0; i < results.Length; i++)
         {
-            Assert.IsFalse(results[i].IsError is true, $"'{calls[i].Tool}' failed under concurrency: {Render(results[i])}");
+            Assert.AreNotEqual(true, results[i].IsError, $"'{calls[i].Tool}' failed under concurrency: {Render(results[i])}");
         }
 
         // The same run asked twice in that crowd encodes to the same bytes: the engine is deterministic.
@@ -457,26 +457,26 @@ public class McpServerIntegrationTests
     {
         var http = _server.Http;
 
-        var catalog = await http.GetFromJsonAsync<BmageMcpCatalogDto>("/api/Mcp/GetMcpCatalog");
+        var catalog = await http.GetFromJsonAsync<BmageMcpCatalogDto>("/api/Mcp/GetMcpCatalog", TestContext.CancellationToken);
 
         Assert.IsNotNull(catalog);
-        Assert.AreNotEqual(0, catalog.Tools.Length);
-        Assert.IsFalse(catalog.Tools.SelectMany(tool => tool.Parameters).Any(parameter => parameter.Contains("cancellationToken", StringComparison.Ordinal)));
+        Assert.IsNotEmpty(catalog.Tools);
+        Assert.DoesNotContain(parameter => parameter.Contains("cancellationToken", StringComparison.Ordinal), catalog.Tools.SelectMany(tool => tool.Parameters));
 
         var run = await http.GetFromJsonAsync<BmagePipelineRunDto>(
-            $"/api/Mcp/RunBmagePipeline?pipeline={Uri.EscapeDataString("MaxSize(200, 200)")}&width=400&height=300&formats=jpeg");
+            $"/api/Mcp/RunBmagePipeline?pipeline={Uri.EscapeDataString("MaxSize(200, 200)")}&width=400&height=300&formats=jpeg", TestContext.CancellationToken);
 
         Assert.IsNotNull(run);
         Assert.AreEqual(200, run.OutputWidth);
         Assert.IsNull(run.Error);
 
-        var review = await http.GetFromJsonAsync<BmageReviewDto>($"/api/Mcp/ReviewBmageCode?code={Uri.EscapeDataString("MetadataPolicy.Preserve")}");
+        var review = await http.GetFromJsonAsync<BmageReviewDto>($"/api/Mcp/ReviewBmageCode?code={Uri.EscapeDataString("MetadataPolicy.Preserve")}", TestContext.CancellationToken);
 
         Assert.IsNotNull(review);
         Assert.AreEqual("metadata-preserve-keeps-location", review.Findings.Single().Rule);
 
         // The page runs in the browser, which reads the same JSON: nulls are left out, as the MCP transport leaves them out.
-        var raw = await http.GetStringAsync($"/api/Mcp/GetBmageRecipe?id=nothing");
+        var raw = await http.GetStringAsync($"/api/Mcp/GetBmageRecipe?id=nothing", TestContext.CancellationToken);
         Assert.IsFalse(raw.Contains("\"recipe\":null", StringComparison.Ordinal), raw);
     }
 
@@ -500,4 +500,6 @@ public class McpServerIntegrationTests
 
         return JsonDocument.Parse(Render(result)).RootElement;
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

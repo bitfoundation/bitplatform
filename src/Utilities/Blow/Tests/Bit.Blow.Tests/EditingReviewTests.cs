@@ -70,7 +70,7 @@ public class EditingReviewTests : BunitContext
 
         // The local add is still the user's to undo; the remote move is not.
         await cut.InvokeAsync(() => cut.Instance.UndoAsync());
-        Assert.IsFalse(nodes.Any(n => n.Id == "local"));
+        Assert.DoesNotContain(n => n.Id == "local", nodes);
         Assert.AreEqual(new BlowXYPosition(9, 9), nodes.Single(n => n.Id == "a").Position);
     }
 
@@ -90,7 +90,7 @@ public class EditingReviewTests : BunitContext
         later.SetResult();
         await cut.InvokeAsync(() => detached);
 
-        Assert.AreEqual(2, _changes.Count, "the work left running after the edit was swallowed");
+        Assert.HasCount(2, _changes, "the work left running after the edit was swallowed");
         Assert.AreEqual("add", _changes[^1].Label);
 
         async Task Later()
@@ -122,7 +122,7 @@ public class EditingReviewTests : BunitContext
 
         Assert.AreEqual(1, nodesChanged);
         Assert.AreEqual(1, edgesChanged);
-        Assert.AreEqual(1, _changes.Count);
+        Assert.ContainsSingle(_changes);
     }
 
     [TestMethod]
@@ -237,7 +237,7 @@ public class EditingReviewTests : BunitContext
         Assert.AreEqual(1, history.UndoDepth);
         Assert.AreEqual("move c", history.UndoLabel);
         var back = history.Undo()!;
-        CollectionAssert.AreEqual(new[] { "a", "c" }, back.Nodes.Select(n => n.Id).ToArray());
+        Assert.AreSequenceEqual(new[] { "a", "c" }, back.Nodes.Select(n => n.Id).ToArray());
         Assert.IsEmpty(back.Edges, "undo would bring back an edge to a node another user removed");
     }
 
@@ -309,7 +309,7 @@ public class EditingReviewTests : BunitContext
         Assert.AreEqual("locked", nodes.Single(n => n.Id == "in-locked").ParentId);
 
         await cut.InvokeAsync(() => cut.Instance.UngroupAsync(nodes.Single(n => n.Id == "open")));
-        CollectionAssert.AreEqual(new[] { "open" }, deleted);
+        Assert.AreSequenceEqual(new[] { "open" }, deleted);
     }
 
     // ---- stacking inside a group ----
@@ -328,7 +328,7 @@ public class EditingReviewTests : BunitContext
 
         await cut.InvokeAsync(() => cut.Instance.SendToBackAsync([nodes[3]]));
 
-        CollectionAssert.AreEqual(new[] { "other", "g", "y", "x" }, nodes.Select(n => n.Id).ToArray());
+        Assert.AreSequenceEqual(new[] { "other", "g", "y", "x" }, nodes.Select(n => n.Id).ToArray());
     }
 
     // ---- what the history shares ----
@@ -367,6 +367,6 @@ public class EditingReviewTests : BunitContext
 
         var a = history.Current!.Nodes[0];
         Assert.AreEqual(new BlowDimensions(100, 40), a.Measured);
-        Assert.HasCount(1, a.Handles);
+        Assert.ContainsSingle(a.Handles);
     }
 }

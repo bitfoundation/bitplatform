@@ -171,7 +171,7 @@ public class BitAiTextPartViewE2ETests : E2ETestBase
             var code = paragraph.Locator("code.bit-aimdv-cod");
             await Expect(code).ToHaveCSSAsync("direction", "ltr");
             await Expect(code).ToHaveCSSAsync("unicode-bidi", "isolate");
-            Assert.IsTrue((await code.CharacterRectAsync(4)).Left < (await code.CharacterRectAsync(5)).Left, $"{id}: the ; of x = 1; stays at its right.");
+            Assert.IsLessThan((await code.CharacterRectAsync(5)).Left, (await code.CharacterRectAsync(4)).Left, $"{id}: the ; of x = 1; stays at its right.");
 
             // The sentence starts at the right edge of the paragraph.
             var box = await paragraph.RectAsync();

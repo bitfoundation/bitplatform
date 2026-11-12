@@ -1,5 +1,7 @@
 ﻿using Bit.BlazorUI.Tests.Trimming.Infrastructure;
 
+[assembly: global::Microsoft.VisualStudio.TestTools.UnitTesting.DoNotParallelizeAttribute]
+
 namespace Bit.BlazorUI.Tests.Trimming;
 
 /// <summary>
@@ -37,7 +39,7 @@ public sealed class AiWireFormatTrimmingTests
             .Where(line => line.Contains("warning IL", StringComparison.Ordinal) && line.Contains("Bit.BlazorUI", StringComparison.Ordinal))
             .Distinct()
             .ToArray();
-        Assert.AreEqual(0, warnings.Length, "The package raised trim or AOT warnings:\n" + string.Join('\n', warnings));
+        Assert.IsEmpty(warnings, "The package raised trim or AOT warnings:\n" + string.Join('\n', warnings));
 
         var app = Path.Combine(publish.Directory, OperatingSystem.IsWindows() ? "Bit.BlazorUI.Tests.Trimming.AiWire.exe" : "Bit.BlazorUI.Tests.Trimming.AiWire");
         var (exitCode, output) = Publisher.Run(app, [], publish.Directory, TimeSpan.FromMinutes(1));

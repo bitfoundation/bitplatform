@@ -242,8 +242,7 @@ public class BitAiAgentStepViewE2ETests : E2ETestBase
         // The pulse of a running step is drawn in its running color.
         await Page.EmulateMediaAsync(new() { ReducedMotion = ReducedMotion.Reduce });
         // The halo is the running color made translucent, serialized as rgba() or as color(srgb ...) by the engine.
-        StringAssert.Matches(await ComputedStyleAsync("#asv-vars-running > .bit-aiasv-mrk", "box-shadow"),
-            new Regex(@"rgba\(4, 5, 6|color\(srgb 0\.0156\d* 0\.0196\d* 0\.0235\d*"));
+        Assert.MatchesRegex(new Regex(@"rgba\(4, 5, 6|color\(srgb 0\.0156\d* 0\.0196\d* 0\.0235\d*"), await ComputedStyleAsync("#asv-vars-running > .bit-aiasv-mrk", "box-shadow"));
     }
 
     [TestMethod]
@@ -267,7 +266,7 @@ public class BitAiAgentStepViewE2ETests : E2ETestBase
         {
             var marker = await Marker(id).RectAsync();
             var body = await Page.Locator($"#{id} > .bit-aiasv-bdy").RectAsync();
-            Assert.IsTrue(marker.Left > body.Left, $"{id}: the marker is on the right of the words.");
+            Assert.IsGreaterThan(body.Left, marker.Left, $"{id}: the marker is on the right of the words.");
 
             // The line leaves from under the middle of the marker on that side too.
             var line = await Page.Locator($"#{id}").EvaluateAsync<double>(
@@ -277,7 +276,7 @@ public class BitAiAgentStepViewE2ETests : E2ETestBase
 
         var ltrMarker = await Marker("asv-ltr").RectAsync();
         var ltrBody = await Page.Locator("#asv-ltr > .bit-aiasv-bdy").RectAsync();
-        Assert.IsTrue(ltrMarker.Left < ltrBody.Left, "Left to right, the marker is on the left of the words.");
+        Assert.IsLessThan(ltrBody.Left, ltrMarker.Left, "Left to right, the marker is on the left of the words.");
     }
 
     [TestMethod]

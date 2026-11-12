@@ -76,7 +76,7 @@ public class ShowcaseStatesTests
 
         cut.WaitForAssertion(() => Assert.HasCount(PosWidgetCatalog.All.Count, cut.FindAll($"[role='status'][aria-label='{WorkbenchStrings.PosLoadingWidget}']")), timeout);
 
-        await Task.Delay(1000);
+        await Task.Delay(1000, TestContext.CancellationToken);
 
         Assert.HasCount(PosWidgetCatalog.All.Count, cut.FindAll($"[role='status'][aria-label='{WorkbenchStrings.PosLoadingWidget}']"));
         Assert.DoesNotContain(WorkbenchStrings.PosWidgetFailedTitle, cut.Markup);
@@ -173,4 +173,6 @@ public class ShowcaseStatesTests
     }
 
     private static int Count(string markup, string text) => Regex.Matches(markup, Regex.Escape(text)).Count;
+
+    public Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

@@ -13,8 +13,8 @@ public sealed class BasicsTests : BmotionPageTest
         await WaitForStateAsync("#enter", "s => Math.abs(s.opacity - 1) < 0.01 && Math.abs(s.x) < 0.5");
 
         var log = await LoggedAsync();
-        Assert.AreEqual(1, log.Count(e => e == "enter:start"));
-        Assert.IsTrue(Array.IndexOf(log, "enter:start") < Array.IndexOf(log, "enter:complete"), string.Join(", ", log));
+        Assert.ContainsSingle(e => e == "enter:start", log);
+        Assert.IsLessThan(Array.IndexOf(log, "enter:complete"), Array.IndexOf(log, "enter:start"), string.Join(", ", log));
     }
 
     [TestMethod]
@@ -41,7 +41,7 @@ public sealed class BasicsTests : BmotionPageTest
         await WaitForStateAsync("#toggle", "s => Math.abs(s.x - 120) < 0.5");
         await ExpectEventAsync("toggle:complete", 2);
 
-        Assert.IsTrue(samples.Any(s => s.X is > 1 and < 119), $"No intermediate x while animating: {string.Join(" | ", samples.Select(s => s.X))}");
+        Assert.Contains(s => s.X is > 1 and < 119, samples, $"No intermediate x while animating: {string.Join(" | ", samples.Select(s => s.X))}");
 
         await ClickAsync("toggle-btn");
         await WaitForStateAsync("#toggle", "s => Math.abs(s.x) < 0.5");
@@ -66,7 +66,7 @@ public sealed class BasicsTests : BmotionPageTest
         await ExpectEventAsync("keyframes:complete");
         await WaitForStateAsync("#keyframes", "s => Math.abs(s.scaleX - 1) < 0.01");
 
-        Assert.IsTrue(samples.Max(s => s.ScaleX) > 1.4, $"Never reached the middle keyframe: max scale {samples.Max(s => s.ScaleX)}");
+        Assert.IsGreaterThan(1.4, samples.Max(s => s.ScaleX), $"Never reached the middle keyframe: max scale {samples.Max(s => s.ScaleX)}");
     }
 
     [TestMethod]
@@ -74,7 +74,7 @@ public sealed class BasicsTests : BmotionPageTest
     {
         var samples = await SampleAsync("#forever", 600);
 
-        Assert.IsTrue(samples.Select(s => Math.Round(s.Rotate)).Distinct().Count() > 3, "The endless rotation is not moving.");
+        Assert.IsGreaterThan(3, samples.Select(s => Math.Round(s.Rotate)).Distinct().Count(), "The endless rotation is not moving.");
     }
 
     [TestMethod]
@@ -88,7 +88,7 @@ public sealed class BasicsTests : BmotionPageTest
         // The browser plays a colour tween as a Web Animation, so it passes through intermediate colours on Blazor
         // Server as well as on WebAssembly.
         var intermediate = samples.Select(s => s.BackgroundColor).Where(c => c is not "rgb(255, 0, 0)" and not "rgb(0, 0, 255)").ToArray();
-        Assert.IsTrue(intermediate.Length > 0, $"A colour tween should pass through intermediate colours on {RunHost}.");
+        Assert.IsNotEmpty(intermediate, $"A colour tween should pass through intermediate colours on {RunHost}.");
     }
 
     [TestMethod]
@@ -99,7 +99,7 @@ public sealed class BasicsTests : BmotionPageTest
         await ExpectEventAsync("size:complete");
         await WaitForStateAsync("#size", "s => Math.abs(s.width - 200) < 0.5");
 
-        Assert.IsTrue(samples.Any(s => s.Width is > 61 and < 199), $"A width tween should pass through intermediate widths on {RunHost}.");
+        Assert.Contains(s => s.Width is > 61 and < 199, samples, $"A width tween should pass through intermediate widths on {RunHost}.");
     }
 
     [TestMethod]
@@ -111,7 +111,7 @@ public sealed class BasicsTests : BmotionPageTest
         await ExpectEventAsync("units:complete");
         await WaitForStateAsync("#units", "s => Math.abs(s.width - 200) < 0.5");
 
-        Assert.IsTrue(samples.Any(s => s.Width is > 110 and < 190), $"it jumped: {string.Join(" ", samples.Select(s => s.Width.ToString("0")))}");
+        Assert.Contains(s => s.Width is > 110 and < 190, samples, $"it jumped: {string.Join(" ", samples.Select(s => s.Width.ToString("0")))}");
         // And it is 50% now, not 200px: it follows its track.
         Assert.AreEqual("50%", await Page.Locator("#units").EvaluateAsync<string>("el => el.style.width"));
     }
@@ -124,7 +124,7 @@ public sealed class BasicsTests : BmotionPageTest
         await ExpectEventAsync("spring:complete", timeout: 10_000);
         await WaitForStateAsync("#spring", "s => Math.abs(s.x - 100) < 0.5");
 
-        Assert.IsTrue(samples.Max(s => s.X) > 102, $"An underdamped spring should overshoot: max x {samples.Max(s => s.X)}");
+        Assert.IsGreaterThan(102, samples.Max(s => s.X), $"An underdamped spring should overshoot: max x {samples.Max(s => s.X)}");
     }
 
     [TestMethod]
@@ -147,7 +147,7 @@ public sealed class BasicsTests : BmotionPageTest
         await WaitForStateAsync("#onupdate", "s => Math.abs(s.x - 60) < 0.5");
 
         if (FrameLoop)
-            Assert.IsTrue(Number(await ReadoutAsync("onupdate-frames")) > 0, "OnUpdate never fired during an animation on WebAssembly.");
+            Assert.IsGreaterThan(0, Number(await ReadoutAsync("onupdate-frames")), "OnUpdate never fired during an animation on WebAssembly.");
     }
 
     [TestMethod]

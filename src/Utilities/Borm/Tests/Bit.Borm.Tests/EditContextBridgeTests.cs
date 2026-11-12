@@ -6,20 +6,20 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Bit.Borm.Tests;
 
-public sealed class BridgePerson
+internal sealed class BridgePerson
 {
     public string Name { get; set; } = "";
     public int Age { get; set; }
     public BridgeAddress Address { get; set; } = new();
 }
 
-public sealed class BridgeAddress
+internal sealed class BridgeAddress
 {
     public string City { get; set; } = "";
 }
 
 /// <summary>A custom renderer built on Blazor's own <see cref="InputText"/>, which needs an edit context to exist at all.</summary>
-public sealed class InputTextRenderer : BormInputBase
+internal sealed class InputTextRenderer : BormInputBase
 {
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
@@ -94,7 +94,7 @@ public class EditContextBridgeTests : ComponentTestBase
         {
             state.SetValue("Name", "Ada");
             await state.ValidateFieldAsync("Name");
-        });
+        }, TestContext.CancellationToken);
 
         cut.WaitForAssertion(() => Assert.DoesNotContain("invalid", cut.Find("#borm_Name").ClassList));
     }
@@ -112,7 +112,7 @@ public class EditContextBridgeTests : ComponentTestBase
 
         var listed = cut.FindAll(".validation-message").Select(m => m.TextContent).ToList();
         Assert.HasCount(3, listed);
-        CollectionAssert.Contains(listed, "Must be between 18 and 120.");
+        Assert.Contains("Must be between 18 and 120.", listed);
     }
 
     [TestMethod]
@@ -144,14 +144,14 @@ public class EditContextBridgeTests : ComponentTestBase
         await state.ValidateAsync();
         state.MarkAllTouched();
         var before = invoice.Lines[0];
-        Assert.HasCount(1, adapter.EditContext.GetValidationMessages(new FieldIdentifier(before, "Product")));
+        Assert.ContainsSingle(adapter.EditContext.GetValidationMessages(new FieldIdentifier(before, "Product")));
 
         // The same path and the same complaint, about another object.
         state.SetValue("Lines", new List<ExpressionLine> { new() });
         await state.ValidateAsync();
 
         Assert.IsEmpty(adapter.EditContext.GetValidationMessages(new FieldIdentifier(before, "Product")));
-        Assert.HasCount(1, adapter.EditContext.GetValidationMessages(new FieldIdentifier(invoice.Lines[0], "Product")));
+        Assert.ContainsSingle(adapter.EditContext.GetValidationMessages(new FieldIdentifier(invoice.Lines[0], "Product")));
     }
 
     [TestMethod]
@@ -171,16 +171,16 @@ public class EditContextBridgeTests : ComponentTestBase
     }
 
     [TestMethod]
-    public void A_message_appears_in_the_context_no_sooner_than_the_field_would_show_it()
+    public async global::System.Threading.Tasks.Task A_message_appears_in_the_context_no_sooner_than_the_field_would_show_it()
     {
         var state = new BormState(Form(), new BormModelDataAccessor(new BridgePerson()), Services);
         using var adapter = new BormEditContextAdapter(state);
 
-        state.ValidateAsync().AsTask().Wait();
+        await state.ValidateAsync().AsTask().WaitAsync(TestContext.CancellationToken);
         Assert.IsEmpty(adapter.EditContext.GetValidationMessages());
 
         state.MarkTouched("Name");
-        Assert.HasCount(1, adapter.EditContext.GetValidationMessages());
+        Assert.ContainsSingle(adapter.EditContext.GetValidationMessages());
     }
 
     [TestMethod]
@@ -236,4 +236,6 @@ public class EditContextBridgeTests : ComponentTestBase
         cut.Render(p => p.Add(x => x.ProvideEditContext, false));
         Assert.IsNull(new BormFieldContext(state, state.Definition.Fields[0], "Name").EditContext);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

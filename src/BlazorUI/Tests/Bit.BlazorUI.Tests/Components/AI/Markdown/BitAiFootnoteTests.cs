@@ -13,7 +13,7 @@ public class BitAiFootnoteTests
         var document = BitAiMarkdownSpec.Parse("Text[^b] and more[^a].\n\n[^a]: Note A.\n[^b]: Note B.");
 
         Assert.ContainsSingle(document.Blocks);
-        Assert.AreEqual(2, document.Footnotes.Count);
+        Assert.HasCount(2, document.Footnotes);
         Assert.AreEqual("b", document.Footnotes[0].Label);
         Assert.AreEqual(1, document.Footnotes[0].Number);
         Assert.AreEqual("Note B.", BitAiMarkdownSpec.Text(document.Footnotes[0].Blocks[0]));
@@ -21,7 +21,7 @@ public class BitAiFootnoteTests
         Assert.AreEqual(2, document.Footnotes[1].Number);
 
         var references = Assert.IsExactInstanceOfType<BitAiParagraphBlock>(document.Blocks[0]).Inlines.OfType<BitAiFootnoteReferenceInline>().ToList();
-        CollectionAssert.AreEqual(new[] { 1, 2 }, references.Select(r => r.Number).ToArray());
+        Assert.AreSequenceEqual(new[] { 1, 2 }, references.Select(r => r.Number).ToArray());
     }
 
     [TestMethod]
@@ -32,7 +32,7 @@ public class BitAiFootnoteTests
         var references = Assert.IsExactInstanceOfType<BitAiParagraphBlock>(document.Blocks[0]).Inlines.OfType<BitAiFootnoteReferenceInline>().ToList();
 
         Assert.AreEqual(2, footnote.ReferenceCount);
-        CollectionAssert.AreEqual(new[] { 1, 2 }, references.Select(r => r.Ordinal).ToArray());
+        Assert.AreSequenceEqual(new[] { 1, 2 }, references.Select(r => r.Ordinal).ToArray());
     }
 
     [TestMethod]
@@ -50,9 +50,9 @@ public class BitAiFootnoteTests
     {
         var document = BitAiMarkdownSpec.Parse("x[^1]\n\n[^1]: line one\n    line two\n\n    para two\n\nafter");
 
-        CollectionAssert.AreEqual(new[] { "x[^1]", "after" }, document.Blocks.Select(BitAiMarkdownSpec.Text).ToArray());
+        Assert.AreSequenceEqual(new[] { "x[^1]", "after" }, document.Blocks.Select(BitAiMarkdownSpec.Text).ToArray());
         var footnote = Assert.ContainsSingle(document.Footnotes);
-        CollectionAssert.AreEqual(new[] { "line one\nline two", "para two" }, footnote.Blocks.Select(BitAiMarkdownSpec.Text).ToArray());
+        Assert.AreSequenceEqual(new[] { "line one\nline two", "para two" }, footnote.Blocks.Select(BitAiMarkdownSpec.Text).ToArray());
     }
 
     [TestMethod]
@@ -60,7 +60,7 @@ public class BitAiFootnoteTests
     {
         var document = BitAiMarkdownSpec.Parse("x[^1]\n\n[^1]: see[^2]\n[^2]: end");
 
-        Assert.AreEqual(2, document.Footnotes.Count);
+        Assert.HasCount(2, document.Footnotes);
         Assert.AreEqual("2", document.Footnotes[1].Label);
     }
 
@@ -70,7 +70,7 @@ public class BitAiFootnoteTests
         var document = BitAiMarkdownSpec.Parse("x[^1]\n\n[^1]: n", new BitAiMarkdownOptions { Footnotes = false });
 
         Assert.IsEmpty(document.Footnotes);
-        Assert.AreEqual(2, document.Blocks.Count);
+        Assert.HasCount(2, document.Blocks);
         Assert.AreEqual("[^1]: n", BitAiMarkdownSpec.Text(document.Blocks[1]));
     }
 

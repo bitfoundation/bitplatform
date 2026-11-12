@@ -320,13 +320,13 @@ public class McpToolTests
         // not palette code - an agent asking how to build a command palette must not be handed the site's search.
         Assert.DoesNotContain("Demo/Client/Layout/", index);
         Assert.DoesNotContain("DocsCatalog.cs", index);
-        Assert.IsFalse(BaletteSourceCatalog.SourceFiles.Any(file => file.Path.StartsWith("Demo/Client/Layout/", StringComparison.OrdinalIgnoreCase)));
+        Assert.DoesNotContain(file => file.Path.StartsWith("Demo/Client/Layout/", StringComparison.OrdinalIgnoreCase), BaletteSourceCatalog.SourceFiles);
 
         // Every page renders its samples through <CodeBlock>, so an agent reading one can look the viewer up - and is
         // told it is the demo's - while the lexer behind it is not palette code either.
         Assert.Contains("Demo/Client/Shared/CodeBlock.razor", index);
-        StringAssert.StartsWith(BaletteSourceCatalog.SourceFiles.Single(file => file.Path == "Demo/Client/Shared/CodeBlock.razor").Description, "The demo's code viewer, not part of the library");
-        Assert.IsFalse(BaletteSourceCatalog.SourceFiles.Any(file => file.Path.Contains("SyntaxHighlighter", StringComparison.OrdinalIgnoreCase)));
+        Assert.StartsWith("The demo's code viewer, not part of the library", BaletteSourceCatalog.SourceFiles.Single(file => file.Path == "Demo/Client/Shared/CodeBlock.razor").Description);
+        Assert.DoesNotContain(file => file.Path.Contains("SyntaxHighlighter", StringComparison.OrdinalIgnoreCase), BaletteSourceCatalog.SourceFiles);
 
         // The palette host is, though: it is where this app renders its one <Balette />.
         Assert.Contains(BaletteSourceCatalog.PaletteHostPath, index);

@@ -11,7 +11,7 @@ public class BitAiIndentedCodeTests
     {
         var document = BitAiMarkdownSpec.Parse("para\n\n    code here\n    more\n\nafter");
 
-        Assert.AreEqual(3, document.Blocks.Count);
+        Assert.HasCount(3, document.Blocks);
         var code = Assert.IsExactInstanceOfType<BitAiCodeBlock>(document.Blocks[1]);
         Assert.IsFalse(code.IsFenced);
         Assert.IsNull(code.Language);
@@ -43,7 +43,7 @@ public class BitAiIndentedCodeTests
         var list = Assert.IsExactInstanceOfType<BitAiListBlock>(Assert.ContainsSingle(BitAiMarkdownSpec.Parse("- item\n\n      code").Blocks));
         var item = Assert.ContainsSingle(list.Items);
 
-        Assert.AreEqual(2, item.Blocks.Count);
+        Assert.HasCount(2, item.Blocks);
         Assert.AreEqual("code", Assert.IsExactInstanceOfType<BitAiCodeBlock>(item.Blocks[1]).Code);
     }
 

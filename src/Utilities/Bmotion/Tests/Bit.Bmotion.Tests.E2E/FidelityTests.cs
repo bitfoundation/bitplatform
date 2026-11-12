@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.Text.RegularExpressions;
 
 namespace Bit.Bmotion.Tests.E2E;
@@ -24,7 +24,7 @@ public sealed partial class FidelityTests : BmotionPageTest
 
         // Never through transparent black (the engine's old guess), always somewhere between blue and red.
         Assert.IsTrue(colours.All(c => c.A > 0.99 && c.G < 2), $"Left the blue-red line: {Describe(samples)}");
-        Assert.IsTrue(colours.Any(c => c.R is > 40 and < 215 && c.B is > 40 and < 215), $"No intermediate frame: {Describe(samples)}");
+        Assert.Contains(c => c.R is > 40 and < 215 && c.B is > 40 and < 215, colours, $"No intermediate frame: {Describe(samples)}");
         await WaitForStateAsync("#css-hover", "s => s.backgroundColor === 'rgb(255, 0, 0)'");
 
         await Page.Mouse.MoveAsync(1, 1);
@@ -45,7 +45,7 @@ public sealed partial class FidelityTests : BmotionPageTest
         // The page reports the stylesheet's shadow colour first and with its spread; the hover's is authored the
         // other way round. Unaligned, the two don't mix and the shadow jumps.
         Assert.IsTrue(blurs.All(b => b >= 3.9), $"Dropped below the stylesheet's 4px blur: {Describe(growing)}");
-        Assert.IsTrue(blurs.Any(b => b is > 8 and < 28), $"4px → 32px jumped: {Describe(growing)}");
+        Assert.Contains(b => b is > 8 and < 28, blurs, $"4px → 32px jumped: {Describe(growing)}");
         await WaitForStyleAsync("#css-shadow", "box-shadow", "v => / 32px /.test(v)");
 
         await Page.Mouse.MoveAsync(1, 1);
@@ -62,7 +62,7 @@ public sealed partial class FidelityTests : BmotionPageTest
         await HoverAsync("#css-filter");
         var samples = await SampleStyleAsync("#css-filter", "filter", 900);
 
-        Assert.IsTrue(samples.Any(s => BlurOf(s.Value) is > 1 and < 5), $"none → blur(6px) jumped: {Describe(samples)}");
+        Assert.Contains(s => BlurOf(s.Value) is > 1 and < 5, samples, $"none → blur(6px) jumped: {Describe(samples)}");
         await WaitForStyleAsync("#css-filter", "filter", "v => v === 'blur(6px)'");
     }
 
@@ -75,7 +75,7 @@ public sealed partial class FidelityTests : BmotionPageTest
         await ClickAsync("widen");
         var samples = await SampleAsync("#css-width", 900);
 
-        Assert.IsTrue(samples.Any(s => s.Width is > 120 and < 280), $"No intermediate width: {Describe(samples)}");
+        Assert.Contains(s => s.Width is > 120 and < 280, samples, $"No intermediate width: {Describe(samples)}");
         Assert.IsTrue(samples.All(s => s.Width >= 99.5), $"Started below the stylesheet width: {Describe(samples)}");
         await WaitForStateAsync("#css-width", "s => Math.abs(s.width - 300) < 0.5");
     }
@@ -88,7 +88,7 @@ public sealed partial class FidelityTests : BmotionPageTest
 
         await Page.EvaluateAsync("() => setTimeout(() => document.getElementById('accordion-toggle').click(), 50)");
         var opening = await SampleOnTheTimelineAsync("#accordion", 900);
-        Assert.IsTrue(opening.Any(s => s.Height is > 15 and < 65), $"0 → auto jumped: {Describe(opening)}");
+        Assert.Contains(s => s.Height is > 15 and < 65, opening, $"0 → auto jumped: {Describe(opening)}");
         Assert.IsTrue(opening.All(s => s.Height <= 80.5), $"Overshot its content: {Describe(opening)}");
         await ExpectEventAsync("accordion:opened");
         await WaitForStateAsync("#accordion", "s => Math.abs(s.height - 80) < 0.5 && /height: auto/.test(s.style)");
@@ -100,7 +100,7 @@ public sealed partial class FidelityTests : BmotionPageTest
         // Every frame, in the page: closing from 80 (the height it opened to) would jump past 82-99.5 in one go.
         await Page.EvaluateAsync("() => setTimeout(() => document.getElementById('accordion-toggle').click(), 50)");
         var closing = await SampleOnTheTimelineAsync("#accordion", 1200);
-        Assert.IsTrue(closing.Any(s => s.Height is > 82 and < 99.5), $"Didn't close from its grown height: {Describe(closing)}");
+        Assert.Contains(s => s.Height is > 82 and < 99.5, closing, $"Didn't close from its grown height: {Describe(closing)}");
         await WaitForStateAsync("#accordion", "s => s.height < 0.5");
     }
 
@@ -113,7 +113,7 @@ public sealed partial class FidelityTests : BmotionPageTest
         await ClickAsync("recolor");
         var samples = await SampleAsync("#named", 900);
 
-        Assert.IsTrue(samples.Select(s => Rgba(s.BackgroundColor)).Any(c => c.R is > 40 and < 215 && c.B is > 40 and < 215),
+        Assert.Contains(c => c.R is > 40 and < 215 && c.B is > 40 and < 215, samples.Select(s => Rgba(s.BackgroundColor)),
             $"red → blue jumped: {Describe(samples)}");
         await WaitForStateAsync("#named", "s => s.backgroundColor === 'rgb(0, 0, 255)'");
     }
@@ -128,7 +128,7 @@ public sealed partial class FidelityTests : BmotionPageTest
 
         // An animated colour passes through many values; a snap shows at most the two ends.
         var distinct = samples.Select(s => s.BackgroundColor).Distinct().Count();
-        Assert.IsTrue(distinct > 4, $"black → oklch(...) jumped ({distinct} distinct values): {Describe(samples)}");
+        Assert.IsGreaterThan(4, distinct, $"black → oklch(...) jumped ({distinct} distinct values): {Describe(samples)}");
     }
 
     [TestMethod]
@@ -139,7 +139,7 @@ public sealed partial class FidelityTests : BmotionPageTest
         await HoverAsync("#slow-hover");
         var samples = await SampleAsync("#slow-hover", 700);
 
-        Assert.IsTrue(samples.Any(s => s.ScaleX is > 1.08 and < 1.42), $"The hover overlay snapped: {Describe(samples)}");
+        Assert.Contains(s => s.ScaleX is > 1.08 and < 1.42, samples, $"The hover overlay snapped: {Describe(samples)}");
         await WaitForStateAsync("#slow-hover", "s => Math.abs(s.scaleX - 1.5) < 0.01");
     }
 
@@ -151,7 +151,7 @@ public sealed partial class FidelityTests : BmotionPageTest
         await ClickAsync("reduced-toggle");
         var samples = await SampleAsync("#reduced", 700);
 
-        Assert.IsTrue(samples.Any(s => s.Opacity is > 0.3 and < 0.9), $"The fade snapped: {Describe(samples)}");
+        Assert.Contains(s => s.Opacity is > 0.3 and < 0.9, samples, $"The fade snapped: {Describe(samples)}");
         Assert.IsTrue(samples.All(s => Math.Abs(s.X) < 0.5 || Math.Abs(s.X - 200) < 0.5), $"The move animated: {Describe(samples)}");
         await WaitForStateAsync("#reduced", "s => Math.abs(s.opacity - 0.2) < 0.01 && Math.abs(s.x - 200) < 0.5");
     }
@@ -182,10 +182,10 @@ public sealed partial class FidelityTests : BmotionPageTest
             if (peakSpeed > 0.2 && v < peakSpeed * 0.8) slowed = i;
             peakSpeed = Math.Max(peakSpeed, v);
         }
-        Assert.IsTrue(slowed > 0, $"The retarget never slowed it down: {Describe(samples)}");
+        Assert.IsGreaterThan(0, slowed, $"The retarget never slowed it down: {Describe(samples)}");
         var further = samples.Skip(slowed).Max(s => s.X) - samples[slowed].X;
         var around = string.Join(" ", samples.Skip(Math.Max(0, slowed - 3)).Take(8).Select(s => $"{s.Time:0.0}:{s.X:0.##}"));
-        Assert.IsTrue(further > 4, $"It travelled only {further:0.##} px further after slowing [{around}]: {Describe(samples)}");
+        Assert.IsGreaterThan(4, further, $"It travelled only {further:0.##} px further after slowing [{around}]: {Describe(samples)}");
         await WaitForStateAsync("#handoff", "s => Math.abs(s.x) < 1");
     }
 

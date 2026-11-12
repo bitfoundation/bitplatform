@@ -61,11 +61,11 @@ public class BitButtonE2ETests : E2ETestBase
 
         var primarySize = await compound.Locator(".bit-btn-prt").PxAsync("font-size");
         var secondarySize = await compound.Locator(".bit-btn-sct").PxAsync("font-size");
-        Assert.IsTrue(secondarySize < primarySize, $"The secondary line ({secondarySize}px) should be smaller than the primary one ({primarySize}px).");
+        Assert.IsLessThan(primarySize, secondarySize, $"The secondary line ({secondarySize}px) should be smaller than the primary one ({primarySize}px).");
 
         var primaryBox = await compound.Locator(".bit-btn-prt").BoxAsync();
         var secondaryBox = await compound.Locator(".bit-btn-sct").BoxAsync();
-        Assert.IsTrue(secondaryBox.Y >= primaryBox.Y + primaryBox.Height - 1, "The secondary line sits under the primary one.");
+        Assert.IsGreaterThanOrEqualTo(primaryBox.Y + primaryBox.Height - 1, secondaryBox.Y, "The secondary line sits under the primary one.");
 
         var secondaryOnly = Btn("basic-secondary-only");
         await Expect(secondaryOnly.Locator(".bit-btn-sct")).ToHaveTextAsync("secondary text only");
@@ -288,14 +288,14 @@ public class BitButtonE2ETests : E2ETestBase
 
         await Expect(button).ToHaveClassAsync(HasClass($"bit-btn-{suffix}"));
         Assert.AreEqual(height, await button.PxAsync("min-height"), "min-height");
-        Assert.IsTrue((await button.BoxAsync()).Height >= height - 0.5, "The box is at least the control height.");
+        Assert.IsGreaterThanOrEqualTo(height - 0.5, (await button.BoxAsync()).Height, "The box is at least the control height.");
         Assert.AreEqual(fontSize, await button.Locator(".bit-btn-prt").PxAsync("font-size"), "font-size");
         Assert.AreEqual(iconSize, await button.Locator(".bit-btn-icn").PxAsync("font-size"), "icon size");
 
         var iconOnly = Btn($"size-icon-{size}");
         var box = await iconOnly.BoxAsync();
         ButtonsE2EHelpers.AreClose(box.Height, box.Width, 0.5, "An icon-only button is square");
-        Assert.IsTrue(box.Height >= height - 0.5, "The icon-only square is at least the control height.");
+        Assert.IsGreaterThanOrEqualTo(height - 0.5, box.Height, "The icon-only square is at least the control height.");
 
         var spinner = Btn($"size-loading-{size}").Locator(".bit-btn-spn");
         Assert.AreEqual(iconSize, await spinner.PxAsync("width"), "spinner size");
@@ -310,8 +310,8 @@ public class BitButtonE2ETests : E2ETestBase
 
         await Expect(button).Not.ToHaveClassAsync(HasClass("bit-btn-md"));
         Assert.AreEqual(await Btn("size-Medium").PxAsync("min-height"), await button.PxAsync("min-height"));
-        Assert.IsTrue(await Btn("size-Small").PxAsync("min-height") < await button.PxAsync("min-height"));
-        Assert.IsTrue(await Btn("size-Large").PxAsync("min-height") > await button.PxAsync("min-height"));
+        Assert.IsLessThan(await button.PxAsync("min-height"), await Btn("size-Small").PxAsync("min-height"));
+        Assert.IsGreaterThan(await button.PxAsync("min-height"), await Btn("size-Large").PxAsync("min-height"));
     }
 
     // ---------- icons ----------
@@ -327,16 +327,16 @@ public class BitButtonE2ETests : E2ETestBase
         await Expect(startIcon).ToHaveClassAsync(HasClass("bit-icon"));
         await Expect(startIcon).ToHaveAttributeAsync("aria-hidden", "true");
         await Expect(start).ToHaveCSSAsync("flex-direction", "row");
-        Assert.IsTrue((await startIcon.BoxAsync()).X < (await start.Locator(".bit-btn-prt").BoxAsync()).X, "Start puts the icon before the label.");
+        Assert.IsLessThan((await start.Locator(".bit-btn-prt").BoxAsync()).X, (await startIcon.BoxAsync()).X, "Start puts the icon before the label.");
 
         var end = Btn("icon-end");
         await Expect(end).ToHaveClassAsync(HasClass("bit-btn-eni"));
         await Expect(end).ToHaveCSSAsync("flex-direction", "row-reverse");
-        Assert.IsTrue((await end.Locator(".bit-btn-icn").BoxAsync()).X > (await end.Locator(".bit-btn-prt").BoxAsync()).X, "End puts the icon after the label.");
+        Assert.IsGreaterThan((await end.Locator(".bit-btn-prt").BoxAsync()).X, (await end.Locator(".bit-btn-icn").BoxAsync()).X, "End puts the icon after the label.");
 
         var compound = Btn("icon-compound");
         var marginTop = await compound.Locator(".bit-btn-icn").PxAsync("margin-top");
-        Assert.IsTrue(marginTop > 0, "A compound button drops the icon onto the line of the primary text.");
+        Assert.IsGreaterThan(0, marginTop, "A compound button drops the icon onto the line of the primary text.");
     }
 
     [TestMethod]
@@ -355,7 +355,7 @@ public class BitButtonE2ETests : E2ETestBase
         Assert.IsTrue(await image.EvaluateAsync<bool>("img => img.complete && img.naturalWidth > 0"), "The image is loaded.");
 
         var end = Btn("icon-url-end");
-        Assert.IsTrue((await end.Locator(".bit-btn-icnu").BoxAsync()).X > (await end.Locator(".bit-btn-prt").BoxAsync()).X);
+        Assert.IsGreaterThan((await end.Locator(".bit-btn-prt").BoxAsync()).X, (await end.Locator(".bit-btn-icnu").BoxAsync()).X);
     }
 
     [TestMethod]
@@ -386,7 +386,7 @@ public class BitButtonE2ETests : E2ETestBase
         var circle = Btn("icon-only-rounded");
         var circleBox = await circle.BoxAsync();
         ButtonsE2EHelpers.AreClose(circleBox.Width, circleBox.Height, 0.5, "A rounded icon-only button is square");
-        Assert.IsTrue(await circle.PxAsync("border-top-left-radius") >= circleBox.Width / 2, "Rounded makes the square a circle.");
+        Assert.IsGreaterThanOrEqualTo(circleBox.Width / 2, await circle.PxAsync("border-top-left-radius"), "Rounded makes the square a circle.");
     }
 
     [TestMethod]
@@ -445,7 +445,7 @@ public class BitButtonE2ETests : E2ETestBase
         // the content stays in the flow under the spinner, so the box never shrinks below it; this one's label is
         // wider than "Click me", so the box grows to the label
         var during = await button.BoxAsync();
-        Assert.IsTrue(during.Width >= before.Width - 0.5, "The loading state never shrinks the box.");
+        Assert.IsGreaterThanOrEqualTo(before.Width - 0.5, during.Width, "The loading state never shrinks the box.");
         ButtonsE2EHelpers.AreClose(contentWidth, await button.Locator(".bit-btn-hcn").EvaluateAsync<double>("el => el.getBoundingClientRect().width"), 0.5, "The hidden content keeps its width");
 
         await button.ClickAsync(new() { Force = true });
@@ -497,10 +497,10 @@ public class BitButtonE2ETests : E2ETestBase
 
         switch (placement)
         {
-            case "End": Assert.IsTrue(label.X >= spinner.X + spinner.Width - 0.5, "End puts the label after the spinner."); break;
-            case "Start": Assert.IsTrue(label.X + label.Width <= spinner.X + 0.5, "Start puts the label before the spinner."); break;
-            case "Top": Assert.IsTrue(label.Y + label.Height <= spinner.Y + 0.5, "Top puts the label above the spinner."); break;
-            default: Assert.IsTrue(label.Y >= spinner.Y + spinner.Height - 0.5, "Bottom puts the label under the spinner."); break;
+            case "End": Assert.IsGreaterThanOrEqualTo(spinner.X + spinner.Width - 0.5, label.X, "End puts the label after the spinner."); break;
+            case "Start": Assert.IsLessThanOrEqualTo(spinner.X + 0.5, label.X + label.Width, "Start puts the label before the spinner."); break;
+            case "Top": Assert.IsLessThanOrEqualTo(spinner.Y + 0.5, label.Y + label.Height, "Top puts the label above the spinner."); break;
+            default: Assert.IsGreaterThanOrEqualTo(spinner.Y + spinner.Height - 0.5, label.Y, "Bottom puts the label under the spinner."); break;
         }
     }
 
@@ -634,8 +634,8 @@ public class BitButtonE2ETests : E2ETestBase
         var click = await Page.EvaluateAsync<double>("() => window.__delay.click");
         var busy = await Page.EvaluateAsync<double>("() => window.__delay.busy");
         var spinner = await Page.EvaluateAsync<double>("() => window.__delay.spinner");
-        Assert.IsTrue(busy <= spinner, $"The busy state came at {busy}ms, after the spinner at {spinner}ms.");
-        Assert.IsTrue(spinner - click >= 450, $"The spinner came {spinner - click}ms after the click; the delay is 500ms.");
+        Assert.IsLessThanOrEqualTo(spinner, busy, $"The busy state came at {busy}ms, after the spinner at {spinner}ms.");
+        Assert.IsGreaterThanOrEqualTo(450, spinner - click, $"The spinner came {spinner - click}ms after the click; the delay is 500ms.");
 
         await Btn("btn-release-delay").ClickAsync();
         await Expect(button).Not.ToHaveClassAsync(HasClass("bit-btn-lda"));
@@ -933,7 +933,7 @@ public class BitButtonE2ETests : E2ETestBase
 
         await Expect(full).ToHaveClassAsync(HasClass("bit-btn-flw"));
         ButtonsE2EHelpers.AreClose(container.Width, (await full.BoxAsync()).Width, 0.5, "A full-width button is as wide as its container");
-        Assert.IsTrue((await Btn("fw-off").BoxAsync()).Width < container.Width - 50, "A plain button is sized by its content.");
+        Assert.IsLessThan(container.Width - 50, (await Btn("fw-off").BoxAsync()).Width, "A plain button is sized by its content.");
     }
 
     [TestMethod]
@@ -952,7 +952,7 @@ public class BitButtonE2ETests : E2ETestBase
         Assert.IsTrue(await primary.EvaluateAsync<bool>("el => el.scrollWidth > el.clientWidth"), "The label overflows into the ellipsis.");
         ButtonsE2EHelpers.AreClose(200, (await noWrap.BoxAsync()).Width, 0.5, "The button stays inside its container");
 
-        Assert.IsTrue((await wrap.BoxAsync()).Height > (await noWrap.BoxAsync()).Height, "Without NoWrap the label wraps onto more lines.");
+        Assert.IsGreaterThan((await noWrap.BoxAsync()).Height, (await wrap.BoxAsync()).Height, "Without NoWrap the label wraps onto more lines.");
     }
 
     [TestMethod]
@@ -1091,13 +1091,13 @@ public class BitButtonE2ETests : E2ETestBase
 
         // The scan sees what the page renders: the empty button of #basic has no name.
         var unnamed = await Assert.ThrowsAsync<AssertFailedException>(() => AssertNoAxeViolationsAsync("#basic"));
-        StringAssert.Contains(unnamed.Message, "button-name");
-        StringAssert.Contains(unnamed.Message, "#basic-empty");
+        Assert.Contains("button-name", unnamed.Message);
+        Assert.Contains("#basic-empty", unnamed.Message);
 
         // And a suppression outlives the violation it was written for by failing, not by passing quietly.
         var stale = await Assert.ThrowsAsync<AssertFailedException>(() => AssertNoAxeViolationsAsync("#variant",
             AxeSuppression.Fixture("button-name", "#variant-default", "A suppression with nothing to suppress.")));
-        StringAssert.Contains(stale.Message, "matched nothing");
+        Assert.Contains("matched nothing", stale.Message);
     }
 
     // ---------- disabled ----------
@@ -1371,7 +1371,7 @@ public class BitButtonE2ETests : E2ETestBase
         var loading = Btn("rtl-loading");
         var spinner = await loading.Locator(".bit-btn-spn").BoxAsync();
         var label = await loading.Locator(".bit-btn-lbl").BoxAsync();
-        Assert.IsTrue(label.X + label.Width <= spinner.X + 0.5, "In RTL the loading label sits on the left of the spinner.");
+        Assert.IsLessThanOrEqualTo(spinner.X + 0.5, label.X + label.Width, "In RTL the loading label sits on the left of the spinner.");
     }
 
     [TestMethod]
@@ -1385,7 +1385,7 @@ public class BitButtonE2ETests : E2ETestBase
         await Btn("btn-vis-hidden").ClickAsync();
         await Expect(button).ToHaveCSSAsync("visibility", "hidden");
         await Expect(button).ToBeHiddenAsync();
-        Assert.IsTrue((await button.EvaluateAsync<double>("el => el.getBoundingClientRect().width")) > 0, "Hidden keeps the box.");
+        Assert.IsGreaterThan(0, await button.EvaluateAsync<double>("el => el.getBoundingClientRect().width"), "Hidden keeps the box.");
 
         await Btn("btn-vis-collapsed").ClickAsync();
         await Expect(button).ToHaveCSSAsync("display", "none");
@@ -1402,15 +1402,15 @@ public class BitButtonE2ETests : E2ETestBase
         await OpenAsync("/e2e/button");
 
         var full = ButtonsE2EHelpers.ParseSeconds(await Btn("motion-default").StyleAsync("transition-duration"));
-        Assert.IsTrue(full >= 0.05, $"The color transition runs at full length without the preference ({full}s).");
+        Assert.IsGreaterThanOrEqualTo(0.05, full, $"The color transition runs at full length without the preference ({full}s).");
         var fullSpinner = ButtonsE2EHelpers.ParseSeconds(await Btn("motion-default").Locator(".bit-btn-spn").StyleAsync("animation-duration"));
 
         await Page.EmulateMediaAsync(new() { ReducedMotion = ReducedMotion.Reduce });
 
         var reduced = ButtonsE2EHelpers.ParseSeconds(await Btn("motion-default").StyleAsync("transition-duration"));
-        Assert.IsTrue(reduced < 0.001, $"Reduced motion collapses the transition ({reduced}s).");
+        Assert.IsLessThan(0.001, reduced, $"Reduced motion collapses the transition ({reduced}s).");
         var reducedSpinner = ButtonsE2EHelpers.ParseSeconds(await Btn("motion-default").Locator(".bit-btn-spn").StyleAsync("animation-duration"));
-        Assert.IsTrue(reducedSpinner > fullSpinner, $"Reduced motion slows the spinner down ({fullSpinner}s -> {reducedSpinner}s).");
+        Assert.IsGreaterThan(fullSpinner, reducedSpinner, $"Reduced motion slows the spinner down ({fullSpinner}s -> {reducedSpinner}s).");
 
         await Expect(Btn("motion-forced")).ToHaveClassAsync(HasClass("bit-fam"));
         var forced = ButtonsE2EHelpers.ParseSeconds(await Btn("motion-forced").StyleAsync("transition-duration"));
@@ -1439,10 +1439,10 @@ public class BitButtonE2ETests : E2ETestBase
         var html = await response.TextAsync();
 
         Assert.IsTrue(response.Ok);
-        StringAssert.Contains(html, "id=\"basic-btn\"");
-        StringAssert.Matches(html, new Regex(@"<button id=""basic-btn"" class=""[^""]*\bbit-btn\b"));
-        StringAssert.Contains(html, "<span id=\"status\">Loading</span>");
-        StringAssert.Contains(html, "id=\"href-blank\"");
+        Assert.Contains("id=\"basic-btn\"", html);
+        Assert.MatchesRegex(new Regex(@"<button id=""basic-btn"" class=""[^""]*\bbit-btn\b"), html);
+        Assert.Contains("<span id=\"status\">Loading</span>", html);
+        Assert.Contains("id=\"href-blank\"", html);
     }
 
     [TestMethod]

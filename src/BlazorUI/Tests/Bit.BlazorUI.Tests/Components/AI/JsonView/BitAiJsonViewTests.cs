@@ -27,13 +27,13 @@ public class BitAiJsonViewTests : BitAiTestBase
             .Add(c => c.Value, Json("""{"a":{"x":{"y":1}},"b":{"x":{"y":2}}}"""))
             .Add(c => c.DefaultExpandDepth, 2));
 
-        CollectionAssert.AreEqual(new[] { "true", "true", "false", "true", "false" }, ToggleStates(view));
+        Assert.AreSequenceEqual(new[] { "true", "true", "false", "true", "false" }, ToggleStates(view));
 
         view.FindAll("button.bit-aijsv-tgl")[2].Click();
-        CollectionAssert.AreEqual(new[] { "true", "true", "true", "true", "false" }, ToggleStates(view));
+        Assert.AreSequenceEqual(new[] { "true", "true", "true", "true", "false" }, ToggleStates(view));
 
         view.FindAll("button.bit-aijsv-tgl")[1].Click();
-        CollectionAssert.AreEqual(new[] { "true", "false", "true", "false" }, ToggleStates(view));
+        Assert.AreSequenceEqual(new[] { "true", "false", "true", "false" }, ToggleStates(view));
     }
 
     [TestMethod]
@@ -44,11 +44,11 @@ public class BitAiJsonViewTests : BitAiTestBase
             .Add(c => c.DefaultExpandDepth, 1));
 
         // The root is open; each item starts collapsed.
-        CollectionAssert.AreEqual(new[] { "true", "false", "false", "false" }, ToggleStates(view));
+        Assert.AreSequenceEqual(new[] { "true", "false", "false", "false" }, ToggleStates(view));
 
         view.FindAll("button.bit-aijsv-tgl")[1].Click();
 
-        CollectionAssert.AreEqual(new[] { "true", "true", "false", "false" }, ToggleStates(view));
+        Assert.AreSequenceEqual(new[] { "true", "true", "false", "false" }, ToggleStates(view));
     }
 
     [TestMethod]
@@ -58,8 +58,8 @@ public class BitAiJsonViewTests : BitAiTestBase
             .Add(c => c.Value, Json("""{"items":[1,2,3,4]}"""))
             .Add(c => c.LargeContainerSize, 3));
 
-        CollectionAssert.AreEqual(new[] { "true", "false" }, ToggleStates(view));
-        StringAssert.Contains(view.FindAll("button.bit-aijsv-tgl")[1].TextContent, "[ 4 ]");
+        Assert.AreSequenceEqual(new[] { "true", "false" }, ToggleStates(view));
+        Assert.Contains("[ 4 ]", view.FindAll("button.bit-aijsv-tgl")[1].TextContent);
     }
 
     [TestMethod]
@@ -72,7 +72,7 @@ public class BitAiJsonViewTests : BitAiTestBase
         Assert.AreEqual("1.5", view.Find(".bit-aijsv-num").TextContent);
         Assert.AreEqual("true", view.Find(".bit-aijsv-bln").TextContent);
         Assert.AreEqual("null", view.Find(".bit-aijsv-nul").TextContent);
-        CollectionAssert.AreEqual(new[] { "\"s\"", "\"n\"", "\"b\"", "\"z\"" }, view.FindAll(".bit-aijsv-key").Select(k => k.TextContent).ToArray());
+        Assert.AreSequenceEqual(new[] { "\"s\"", "\"n\"", "\"b\"", "\"z\"" }, view.FindAll(".bit-aijsv-key").Select(k => k.TextContent).ToArray());
     }
 
     [TestMethod]
@@ -84,7 +84,7 @@ public class BitAiJsonViewTests : BitAiTestBase
         var toggles = view.FindAll("button.bit-aijsv-tgl");
 
         Assert.AreEqual("button", toggles[1].GetAttribute("type"));
-        StringAssert.Contains(toggles[1].TextContent, "\"user\"");
+        Assert.Contains("\"user\"", toggles[1].TextContent);
         // The chevron is a picture of the state aria-expanded already gives.
         Assert.AreEqual("true", toggles[1].QuerySelector("i")!.GetAttribute("aria-hidden"));
         // A keyed container is named by its own head, as it reads.
@@ -160,7 +160,7 @@ public class BitAiJsonViewTests : BitAiTestBase
 
         toggle.Click();
 
-        CollectionAssert.AreEqual(new[] { "true", "false" }, ToggleStates(view));
+        Assert.AreSequenceEqual(new[] { "true", "false" }, ToggleStates(view));
     }
 
     [TestMethod]
@@ -179,7 +179,7 @@ public class BitAiJsonViewTests : BitAiTestBase
         Assert.IsTrue(root.ClassList.Contains("custom"));
         Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
         Assert.AreEqual("rtl", root.GetAttribute("dir"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin:1px");
+        Assert.Contains("margin:1px", root.GetAttribute("style")!);
     }
 
     [TestMethod,
@@ -193,7 +193,7 @@ public class BitAiJsonViewTests : BitAiTestBase
         var style = view.Find(".bit-aijsv").GetAttribute("style");
 
         if (expected is null) Assert.IsTrue(string.IsNullOrEmpty(style));
-        else StringAssert.Contains(style, expected);
+        else Assert.Contains(expected, style!);
     }
 
     [TestMethod]
@@ -246,7 +246,7 @@ public class BitAiJsonViewTests : BitAiTestBase
     [TestMethod]
     public void BitAiJsonViewParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual("BitParams.BitAiJsonView", BitAiJsonViewParams.ParamName);
+        Assert.AreEqual("BitParams.BitAiJsonView", new BitAiJsonViewParams().Name);
         Assert.AreEqual(BitAiJsonViewParams.ParamName, new BitAiJsonViewParams().Name);
     }
 }

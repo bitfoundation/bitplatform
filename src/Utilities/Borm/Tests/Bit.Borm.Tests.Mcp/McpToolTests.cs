@@ -163,7 +163,7 @@ public class McpToolTests
         // ("BormBuilder`1.Field``1"); the reference must still find their text.
         var details = BormApiCatalog.GetTypeDetails("BormBuilder<TModel>")!;
 
-        Assert.IsTrue(details.Members.Any(member => member.Kind == "Method" && member.Summary is not null), "None of BormBuilder<TModel>'s methods came with its documentation.");
+        Assert.Contains(member => member.Kind == "Method" && member.Summary is not null, details.Members, "None of BormBuilder<TModel>'s methods came with its documentation.");
         Assert.IsNotNull(details.Summary);
     }
 

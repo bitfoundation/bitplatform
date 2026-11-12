@@ -55,17 +55,17 @@ public class PrerenderCssTests
         var css = BmotionPrerenderCss.BuildStylesheet();
         foreach (var property in BmotionPrerenderCss.AnimatableProperties)
             for (int n = 2; n <= BmotionPrerenderCss.MaxFrames; n++)
-                StringAssert.Contains(css, $"@keyframes bm-{property}-{n}{{");
+                Assert.Contains($"@keyframes bm-{property}-{n}{{", css);
 
-        StringAssert.Contains(css, "@keyframes bm-opacity-3{0%{opacity:var(--bm-opacity-0)}50%{opacity:var(--bm-opacity-1)}100%{opacity:var(--bm-opacity-2)}}");
+        Assert.Contains("@keyframes bm-opacity-3{0%{opacity:var(--bm-opacity-0)}50%{opacity:var(--bm-opacity-1)}100%{opacity:var(--bm-opacity-2)}}", css);
         // No leading ';' on the animation hooks: they must still match once the browser has
         // reserialized the attribute as "--bm-a: ..." after a CSSOM write.
-        StringAssert.Contains(css, "[style*=\"--bm-a:\"]{animation:var(--bm-a)}");
-        StringAssert.Contains(css, "[style*=\"--bm-af:\"]{animation:var(--bm-af)}");
+        Assert.Contains("[style*=\"--bm-a:\"]{animation:var(--bm-a)}", css);
+        Assert.Contains("[style*=\"--bm-af:\"]{animation:var(--bm-af)}", css);
         // Only an element that declares both lists itself follows the OS preference.
-        StringAssert.Contains(css, "@media (prefers-reduced-motion:reduce){[style*=\"--bm-af:\"]{animation:var(--bm-ar)}}");
-        Assert.IsFalse(css.Contains("var(--bm-ar,"), "the reduced list must never fall back onto another element's");
-        StringAssert.Contains(css, "[style*=\";--bm-nj-opacity:\"]{opacity:var(--bm-nj-opacity)!important}");
+        Assert.Contains("@media (prefers-reduced-motion:reduce){[style*=\"--bm-af:\"]{animation:var(--bm-ar)}}", css);
+        Assert.DoesNotContain("var(--bm-ar,", css, "the reduced list must never fall back onto another element's");
+        Assert.Contains("[style*=\";--bm-nj-opacity:\"]{opacity:var(--bm-nj-opacity)!important}", css);
     }
 
     // ── Resting state ──────────────────────────────────────────────────────────
@@ -111,9 +111,9 @@ public class PrerenderCssTests
         var plan = Compile(Bm.To(opacity: 0, y: 20), Bm.To(opacity: 1, y: 0), Bm.Tween(0.5, delay: 0.1));
 
         var transform = plan.Tracks.Single(t => t.CssProperty == "transform");
-        CollectionAssert.AreEqual(new[] { "translate(0px,20px)", "none" }, transform.Frames);
+        Assert.AreSequenceEqual(new[] { "translate(0px,20px)", "none" }, transform.Frames);
         var opacity = plan.Tracks.Single(t => t.CssProperty == "opacity");
-        CollectionAssert.AreEqual(new[] { "0", "1" }, opacity.Frames);
+        Assert.AreSequenceEqual(new[] { "0", "1" }, opacity.Frames);
 
         Assert.AreEqual(500, opacity.Full!.DurationMs, 1e-9);
         Assert.AreEqual(100, opacity.Full.DelayMs, 1e-9);
@@ -134,7 +134,7 @@ public class PrerenderCssTests
     public void Tween_WithoutAFaithfulCssCurve_IsSampledToLinear()
     {
         var plan = Compile(Bm.To(opacity: 0), Bm.To(opacity: 1), Bm.Tween(0.5, ease: BmEase.CircOut));
-        StringAssert.StartsWith(plan.Tracks.Single().Full!.Easing, "linear(0, ");
+        Assert.StartsWith("linear(0, ", plan.Tracks.Single().Full!.Easing);
     }
 
     [TestMethod]
@@ -143,8 +143,8 @@ public class PrerenderCssTests
         var plan = Compile(Bm.To(x: 0), Bm.To(x: 100), Bm.Spring(stiffness: 300, damping: 20));
         var timing = plan.Tracks.Single().Full!;
 
-        StringAssert.StartsWith(timing.Easing, "linear(");
-        Assert.IsTrue(timing.DurationMs > 100, $"a spring takes time to settle, got {timing.DurationMs}ms");
+        Assert.StartsWith("linear(", timing.Easing);
+        Assert.IsGreaterThan(100, timing.DurationMs, $"a spring takes time to settle, got {timing.DurationMs}ms");
     }
 
     [TestMethod]
@@ -162,7 +162,7 @@ public class PrerenderCssTests
 
         Assert.IsTrue(colour.All(p => p is >= 0 and <= 1), "the colour's curve leaves 0..1");
         Assert.AreEqual(1, colour.Max());
-        Assert.IsTrue(move.Max() > 1, "the move still overshoots");
+        Assert.IsGreaterThan(1, move.Max(), "the move still overshoots");
     }
 
     [TestMethod]
@@ -174,7 +174,7 @@ public class PrerenderCssTests
         // transform and opacity in the full list, opacity again in the reduced one: one curve.
         Assert.AreEqual(1, css.Split("linear(").Length - 1, css);
         Assert.AreEqual(3, css.Split("var(--bm-e0)").Length - 1, css);
-        StringAssert.Contains(css, ";--bm-e0:linear(");
+        Assert.Contains(";--bm-e0:linear(", css);
     }
 
     [TestMethod]
@@ -186,7 +186,7 @@ public class PrerenderCssTests
         Assert.IsTrue(plan.IsInfinite);
         Assert.IsTrue(timing.IsInfinite);
         Assert.IsTrue(timing.Alternate);
-        StringAssert.Contains(plan.BuildAnimationDeclarations(BmotionPrerenderMotionPolicy.Full), " infinite alternate backwards");
+        Assert.Contains(" infinite alternate backwards", plan.BuildAnimationDeclarations(BmotionPrerenderMotionPolicy.Full));
     }
 
     [TestMethod]
@@ -195,15 +195,15 @@ public class PrerenderCssTests
         var plan = Compile(null, Bm.To(opacity: new double[] { 0, 1, 0.5 }), Bm.Tween(0.6));
         var css = plan.BuildAnimationDeclarations(BmotionPrerenderMotionPolicy.Full);
 
-        StringAssert.Contains(css, "--bm-a:bm-opacity-3 600ms");
-        StringAssert.Contains(css, ";--bm-opacity-2:0.5");
+        Assert.Contains("--bm-a:bm-opacity-3 600ms", css);
+        Assert.Contains(";--bm-opacity-2:0.5", css);
     }
 
     [TestMethod]
     public void TooManyKeyframes_RenderAtRest()
     {
         var plan = Compile(null, Bm.To(x: new double[] { 0, -10, 10, -10, 10, -5, 0 }), Bm.Tween(0.6));
-        Assert.AreEqual(0, plan.Tracks.Count);
+        Assert.IsEmpty(plan.Tracks);
         Assert.AreEqual(string.Empty, plan.BuildAnimationDeclarations(BmotionPrerenderMotionPolicy.Full));
     }
 
@@ -211,21 +211,21 @@ public class PrerenderCssTests
     public void EvenTimes_Animate()
     {
         var plan = Compile(null, Bm.To(opacity: new double[] { 0, 1, 0.5 }), Bm.Tween(0.6, times: [0, 0.5, 1]));
-        Assert.AreEqual(1, plan.Tracks.Count);
+        Assert.ContainsSingle(plan.Tracks);
     }
 
     [TestMethod]
     public void UnevenTimes_RenderAtRest()
     {
         var plan = Compile(null, Bm.To(opacity: new double[] { 0, 1, 0.5 }), Bm.Tween(0.6, times: [0, 0.2, 1]));
-        Assert.AreEqual(0, plan.Tracks.Count);
+        Assert.IsEmpty(plan.Tracks);
     }
 
     [TestMethod]
     public void Inertia_RendersAtRest()
     {
         var plan = Compile(Bm.To(x: 0), Bm.To(x: 100), Bm.Inertia(velocity: 500));
-        Assert.AreEqual(0, plan.Tracks.Count);
+        Assert.IsEmpty(plan.Tracks);
         Assert.AreEqual("transform:translate(100px,0px);", plan.SettledStyle);
     }
 
@@ -236,8 +236,8 @@ public class PrerenderCssTests
         var plan = Compile(Bm.To(x: 0, scale: 0.5, opacity: 0), Bm.To(x: 100, scale: 1, opacity: 1), transition);
 
         // transform is one CSS property, so x and scale can't keep their own timings - but opacity can.
-        Assert.IsFalse(plan.Tracks.Any(t => t.CssProperty == "transform"));
-        Assert.IsTrue(plan.Tracks.Any(t => t.CssProperty == "opacity"));
+        Assert.DoesNotContain(t => t.CssProperty == "transform", plan.Tracks);
+        Assert.Contains(t => t.CssProperty == "opacity", plan.Tracks);
     }
 
     [TestMethod]
@@ -246,14 +246,14 @@ public class PrerenderCssTests
         var plan = Compile(Bm.To(backgroundColor: "#ff0000"), Bm.To(backgroundColor: "#0000ff"), Bm.Tween(0.4));
         var track = plan.Tracks.Single();
         Assert.AreEqual("background-color", track.CssProperty);
-        CollectionAssert.AreEqual(new[] { "#ff0000", "#0000ff" }, track.Frames);
+        Assert.AreSequenceEqual(new[] { "#ff0000", "#0000ff" }, track.Frames);
     }
 
     [TestMethod]
     public void Color_WithoutAKnownStart_JustLands()
     {
         var plan = Compile(null, Bm.To(backgroundColor: "#0000ff"), Bm.Tween(0.4));
-        Assert.AreEqual(0, plan.Tracks.Count);
+        Assert.IsEmpty(plan.Tracks);
         Assert.AreEqual("background-color:#0000ff;", plan.SettledStyle);
     }
 
@@ -261,9 +261,8 @@ public class PrerenderCssTests
     public void PathDrawing_AnimatesTheDashProperties()
     {
         var plan = Compile(Bm.To(pathLength: 0), Bm.To(pathLength: 1), Bm.Tween(1));
-        CollectionAssert.AreEquivalent(
-            new[] { "stroke-dasharray", "stroke-dashoffset" },
-            plan.Tracks.Select(t => t.CssProperty).ToArray());
+        Assert.AreSequenceEqual(
+            new[] { "stroke-dasharray", "stroke-dashoffset" }, plan.Tracks.Select(t => t.CssProperty).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     // ── Reduced motion ─────────────────────────────────────────────────────────
@@ -274,9 +273,9 @@ public class PrerenderCssTests
         var plan = Compile(Bm.To(opacity: 0, y: 20), Bm.To(opacity: 1, y: 0), Bm.Tween(0.5, ease: BmEase.Linear), withReduced: true);
         var css = plan.BuildAnimationDeclarations(BmotionPrerenderMotionPolicy.FollowOs);
 
-        StringAssert.Contains(css, ";--bm-af:bm-transform-2 500ms linear 0ms 1 normal backwards,bm-opacity-2 500ms linear 0ms 1 normal backwards");
-        StringAssert.Contains(css, ";--bm-ar:bm-opacity-2 500ms linear 0ms 1 normal backwards");
-        Assert.IsFalse(css.Contains("--bm-a:"), css);
+        Assert.Contains(";--bm-af:bm-transform-2 500ms linear 0ms 1 normal backwards,bm-opacity-2 500ms linear 0ms 1 normal backwards", css);
+        Assert.Contains(";--bm-ar:bm-opacity-2 500ms linear 0ms 1 normal backwards", css);
+        Assert.DoesNotContain("--bm-a:", css, css);
     }
 
     [TestMethod]
@@ -289,7 +288,7 @@ public class PrerenderCssTests
         foreach (var policy in new[] { BmotionPrerenderMotionPolicy.Full, BmotionPrerenderMotionPolicy.Reduced })
         {
             var css = plan.BuildAnimationDeclarations(policy);
-            StringAssert.StartsWith(css, ";--bm-a:");
+            Assert.StartsWith(";--bm-a:", css);
             Assert.IsFalse(css.Contains("--bm-ar") || css.Contains("--bm-af"), css);
         }
     }
@@ -310,7 +309,7 @@ public class PrerenderCssTests
     {
         var plan = Compile(Bm.To(opacity: 0), Bm.To(opacity: 1), Bm.Tween(1, ease: BmEase.Linear, delay: 0.2));
         var css = plan.BuildAnimationDeclarations(BmotionPrerenderMotionPolicy.Full, elapsedMs: 700);
-        StringAssert.Contains(css, "bm-opacity-2 1000ms linear -500ms 1 normal backwards");
+        Assert.Contains("bm-opacity-2 1000ms linear -500ms 1 normal backwards", css);
     }
 
     [TestMethod]
@@ -328,8 +327,8 @@ public class PrerenderCssTests
         var rest = BmotionPrerenderCss.FirstFrames(Values(Bm.To(opacity: 0, y: 40, backgroundColor: "#000")));
         var css = BmotionPrerenderCss.BuildNoScriptDeclarations(rest, Values(Bm.To(opacity: 1, y: 0)), null);
 
-        StringAssert.Contains(css, ";--bm-nj-opacity:1");
+        Assert.Contains(";--bm-nj-opacity:1", css);
         // y lands on identity, which composes to no transform at all.
-        Assert.IsFalse(css.Contains("background-color"), css);
+        Assert.DoesNotContain("background-color", css, css);
     }
 }

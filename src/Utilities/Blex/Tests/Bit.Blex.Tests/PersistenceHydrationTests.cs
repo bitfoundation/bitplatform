@@ -58,7 +58,7 @@ public class PersistenceHydrationTests
         var persistor = new BlexStatePersistor(manager, new InMemoryStorage());
 
         Assert.IsFalse(persistor.HasHydrated);
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
         Assert.IsTrue(persistor.HasHydrated);
     }
 
@@ -69,10 +69,10 @@ public class PersistenceHydrationTests
         var options = new BlexPersistenceOptions { SkipHydration = true };
         var persistor = new BlexStatePersistor(manager, new InMemoryStorage(), options);
 
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
         Assert.IsFalse(persistor.HasHydrated);
 
-        await persistor.RehydrateAsync();
+        await persistor.RehydrateAsync(TestContext.CancellationToken);
         Assert.IsTrue(persistor.HasHydrated);
     }
 
@@ -85,7 +85,7 @@ public class PersistenceHydrationTests
         var fired = 0;
         persistor.Hydrated += () => fired++;
 
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
         Assert.AreEqual(1, fired);
     }
 
@@ -98,13 +98,13 @@ public class PersistenceHydrationTests
 
         var options = new BlexPersistenceOptions { SkipHydration = true };
         var persistor = new BlexStatePersistor(manager, storage, options);
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
 
         var waiting = persistor.WhenHydratedAsync();
         Assert.IsFalse(waiting.IsCompleted);
 
-        await persistor.RehydrateAsync();
-        await waiting.WaitAsync(TimeSpan.FromSeconds(5));
+        await persistor.RehydrateAsync(TestContext.CancellationToken);
+        await waiting.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
 
         Assert.AreEqual("dark", store.Theme);
     }
@@ -114,7 +114,7 @@ public class PersistenceHydrationTests
     {
         var (manager, _) = Setup();
         var persistor = new BlexStatePersistor(manager, new InMemoryStorage());
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
 
         Assert.IsTrue(persistor.WhenHydratedAsync().IsCompleted);
     }
@@ -125,14 +125,14 @@ public class PersistenceHydrationTests
         var (manager, _) = Setup();
         var options = new BlexPersistenceOptions { SkipHydration = true };
         var persistor = new BlexStatePersistor(manager, new InMemoryStorage(), options);
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
 
         var waiting = persistor.WhenHydratedAsync();
         await persistor.DisposeAsync();
 
         // A persistor torn down before it hydrated must not leave callers awaiting forever; the
         // flag still reports that hydration never happened.
-        await waiting.WaitAsync(TimeSpan.FromSeconds(5));
+        await waiting.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
         Assert.IsFalse(persistor.HasHydrated);
 
         // Nor callers that only start waiting once it is gone.
@@ -140,6 +140,7 @@ public class PersistenceHydrationTests
     }
 
     [TestMethod]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MSTEST0067", Justification = "The synchronous announcement is intentionally held until its released continuation dispatches.")]
     public async Task WhenHydratedAsync_AnActionDispatchedTheMomentItCompletes_IsSaved()
     {
         var (manager, store) = Setup();
@@ -156,14 +157,14 @@ public class PersistenceHydrationTests
 
         // The waiter resumes on the thread pool once released. Holding the announcement until it has dispatched
         // lets it get there before StartAsync takes another step, as a thread-pool continuation may.
-        persistor.Hydrated += () => dispatched.Wait(TimeSpan.FromSeconds(5));
+        persistor.Hydrated += () => dispatched.Wait(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
 
-        await persistor.StartAsync();
-        await dispatched.WaitAsync(TimeSpan.FromSeconds(5));
+        await persistor.StartAsync(TestContext.CancellationToken);
+        await dispatched.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
         await persistor.FlushAsync();
 
         Assert.IsTrue(storage.Data.TryGetValue("blex:settings", out var saved), "The action was never saved.");
-        StringAssert.Contains(saved, "dark");
+        Assert.Contains("dark", saved);
     }
 
     [TestMethod]
@@ -176,12 +177,12 @@ public class PersistenceHydrationTests
 
         var startupRead = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         storage.ReadGate = startupRead;
-        var start = persistor.StartAsync();
+        var start = persistor.StartAsync(TestContext.CancellationToken);
 
         // A second hydration starts while the first is reading storage, and finishes after it.
         var laterRead = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         storage.ReadGate = laterRead;
-        var rehydrate = persistor.RehydrateAsync();
+        var rehydrate = persistor.RehydrateAsync(TestContext.CancellationToken);
 
         startupRead.SetResult();
         await start;
@@ -191,7 +192,7 @@ public class PersistenceHydrationTests
         store.SetTheme("after");
         await persistor.FlushAsync();
 
-        StringAssert.Contains(storage.Data["blex:settings"], "after", "Saving stayed suspended after both hydrations finished.");
+        Assert.Contains("after", storage.Data["blex:settings"], "Saving stayed suspended after both hydrations finished.");
     }
 
     [TestMethod]
@@ -201,13 +202,13 @@ public class PersistenceHydrationTests
         var storage = new InMemoryStorage();
         storage.Data["blex:settings"] = """{"Theme":"dark"}""";
         var persistor = new BlexStatePersistor(manager, storage, new BlexPersistenceOptions { DebounceInterval = TimeSpan.FromHours(1) });
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
 
         store.SetTheme("edited");   // not written yet
-        await persistor.RehydrateAsync();
+        await persistor.RehydrateAsync(TestContext.CancellationToken);
 
         Assert.AreEqual("edited", store.Theme, "The older stored state was read back over the change.");
-        StringAssert.Contains(storage.Data["blex:settings"], "edited");
+        Assert.Contains("edited", storage.Data["blex:settings"]);
     }
 
     [TestMethod]
@@ -221,7 +222,7 @@ public class PersistenceHydrationTests
 
         var read = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         storage.ReadGate = read;
-        var start = persistor.StartAsync();
+        var start = persistor.StartAsync(TestContext.CancellationToken);
         await persistor.DisposeAsync();
 
         read.SetResult();
@@ -243,11 +244,11 @@ public class PersistenceHydrationTests
         var persistor = new BlexStatePersistor(manager, storage);
         persistor.Hydrated += () => store.SetTheme("dark");
 
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
         await persistor.FlushAsync();
 
         Assert.IsTrue(storage.Data.TryGetValue("blex:settings", out var saved), "The action was never saved.");
-        StringAssert.Contains(saved, "dark");
+        Assert.Contains("dark", saved);
     }
 
     [TestMethod]
@@ -270,7 +271,7 @@ public class PersistenceHydrationTests
         };
 
         var persistor = new BlexStatePersistor(manager, storage, options);
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
 
         Assert.AreEqual("live", store.Theme);   // the live value won
         Assert.AreEqual(22, store.FontSize);    // the stored value applied
@@ -291,7 +292,7 @@ public class PersistenceHydrationTests
         };
 
         var persistor = new BlexStatePersistor(manager, storage, options);
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
 
         Assert.AreEqual("light", store.Theme);
         Assert.AreSequenceEqual(new string?[] { null }, reported);
@@ -311,7 +312,7 @@ public class PersistenceHydrationTests
         };
 
         var persistor = new BlexStatePersistor(manager, storage, options);
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
 
         Assert.AreEqual("dark", store.Theme);
         Assert.AreEqual(30, store.FontSize);
@@ -329,10 +330,12 @@ public class PersistenceHydrationTests
 
         var options = new BlexPersistenceOptions { Merge = (_, _, _) => throw new InvalidOperationException("merge-boom") };
         var persistor = new BlexStatePersistor(manager, storage, options);
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
 
         Assert.AreEqual("light", store.Theme);
         Assert.ContainsSingle(errors);
         Assert.AreEqual("persistence", errors[0].Source);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

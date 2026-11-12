@@ -28,7 +28,7 @@ public class BitComponentBaseTests : BunitTestContext
     /// A component with nothing of its own: no parameters, no generated SetParametersAsync, so every parameter it is
     /// handed goes through the base class alone, and the flags the base keeps are read back through it.
     /// </summary>
-    public sealed class Probe : BitComponentBase
+    internal sealed class Probe : BitComponentBase
     {
         public bool Rendered => IsRendered;
 
@@ -264,7 +264,7 @@ public class BitComponentBaseTests : BunitTestContext
             parameters.AddChildContent<BitElement>();
         });
 
-        Assert.AreEqual(true, ExplicitRtl(component.FindComponent<BitElement>().Instance));
+        Assert.IsTrue(ExplicitRtl(component.FindComponent<BitElement>().Instance));
     }
 
     [TestMethod,
@@ -380,7 +380,7 @@ public class BitComponentBaseTests : BunitTestContext
         // a measurement) is never refused.
         var invocation = Context.JSInterop.VerifyIsRtlInvoked();
         Assert.AreEqual(component.Instance.RootElement, invocation.Arguments[0]);
-        Assert.AreEqual(true, invocation.Arguments[1]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(invocation.Arguments[1]));
     }
 
     [TestMethod]
@@ -437,13 +437,13 @@ public class BitComponentBaseTests : BunitTestContext
     {
         var keys = SourceFiles.Read("Bit.BlazorUI", "Scripts", "Utils.Keys.ts");
 
-        StringAssert.Contains(keys, $"ARROW_KEY_OVERTAKEN = '{ArrowKeyOvertaken}'");
+        Assert.Contains($"ARROW_KEY_OVERTAKEN = '{ArrowKeyOvertaken}'", keys);
 
         // The script follows the keys and the presses that take the focus away from the start of their dispatch, as it
         // loads - which every bundle does, trimmed or not: the arrow keys of every component rely on it.
-        StringAssert.Contains(keys, "document.documentElement.addEventListener('keydown', (e: KeyboardEvent) => BitBlazorUI.Utils.trackArrowKey(e), true);");
-        StringAssert.Contains(keys, "document.documentElement.addEventListener('pointerdown', (e: PointerEvent) => BitBlazorUI.Utils.trackArrowKey(e), true);");
-        StringAssert.Contains(keys, "// bit-trim: always");
+        Assert.Contains("document.documentElement.addEventListener('keydown', (e: KeyboardEvent) => BitBlazorUI.Utils.trackArrowKey(e), true);", keys);
+        Assert.Contains("document.documentElement.addEventListener('pointerdown', (e: PointerEvent) => BitBlazorUI.Utils.trackArrowKey(e), true);", keys);
+        Assert.Contains("// bit-trim: always", keys);
     }
 
     private static readonly PropertyInfo RootElementProperty = typeof(BitComponentBase).GetProperty(nameof(BitComponentBase.RootElement))!;
@@ -457,7 +457,7 @@ public class BitComponentBaseTests : BunitTestContext
     /// A component with one key handler that moves along the inline axis the way every arrow-key navigation of the
     /// library does: it asks for the direction, then acts on it.
     /// </summary>
-    public sealed class ArrowProbe : BitComponentBase
+    internal sealed class ArrowProbe : BitComponentBase
     {
         [Inject] private IJSRuntime _js { get; set; } = default!;
 
@@ -506,7 +506,7 @@ public class BitComponentBaseTests : BunitTestContext
 
         var style = component.Find(".probe").GetAttribute("style");
 
-        StringAssert.StartsWith(style, "color: red");
+        Assert.StartsWith("color: red", style);
 
         if (expected is null)
         {
@@ -514,7 +514,7 @@ public class BitComponentBaseTests : BunitTestContext
         }
         else
         {
-            StringAssert.EndsWith(style, expected);
+            Assert.EndsWith(expected, style);
         }
     }
 
@@ -627,7 +627,7 @@ public class BitComponentBaseTests : BunitTestContext
         Assert.AreEqual("probe first", root.GetAttribute("class"));
         Assert.AreEqual("color: red", root.GetAttribute("style"));
         Assert.IsFalse(root.HasAttribute("data-pass"));
-        Assert.HasCount(0, component.Instance.HtmlAttributes);
+        Assert.IsEmpty(component.Instance.HtmlAttributes);
     }
 
     [TestMethod]
@@ -661,7 +661,7 @@ public class BitComponentBaseTests : BunitTestContext
         Assert.AreEqual(BitVisibility.Hidden, instance.Visibility);
 
         // None of them is an attribute: a component with no parameters of its own splats nothing after such a pass.
-        Assert.HasCount(0, instance.HtmlAttributes);
+        Assert.IsEmpty(instance.HtmlAttributes);
 
         foreach (var name in new[] { nameof(Probe.AriaLabel), nameof(Probe.Class), nameof(Probe.Dir), nameof(Probe.Disabled), nameof(Probe.ForceAnimation), nameof(Probe.Id), nameof(Probe.Style), nameof(Probe.TabIndex), nameof(Probe.Visibility) })
         {
@@ -697,23 +697,23 @@ public class BitComponentBaseTests : BunitTestContext
 
         var events = (FrozenSet<string>)field.GetValue(null)!;
 
-        CollectionAssert.AreEquivalent(new[]
+        Assert.AreSequenceEqual(new[]
         {
             "onclick", "ondblclick", "onauxclick", "oncontextmenu",
             "onmousedown", "onmouseup", "onpointerdown", "onpointerup",
             "ontouchstart", "ontouchend",
             "onkeydown", "onkeyup", "onkeypress",
-        }, events.ToArray());
+        }, events.ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
         // The renderer matches an attribute name without regard to case, so the set has to as well.
-        Assert.IsTrue(events.Contains("OnClick"));
-        Assert.IsTrue(events.Contains("ONKEYDOWN"));
+        Assert.Contains("OnClick", events);
+        Assert.Contains("ONKEYDOWN", events);
 
         // What only follows the pointer or the focus around activates nothing, and stays on a disabled component.
-        Assert.IsFalse(events.Contains("onmouseover"));
-        Assert.IsFalse(events.Contains("onmouseenter"));
-        Assert.IsFalse(events.Contains("onfocus"));
-        Assert.IsFalse(events.Contains("onblur"));
+        Assert.DoesNotContain("onmouseover", events);
+        Assert.DoesNotContain("onmouseenter", events);
+        Assert.DoesNotContain("onfocus", events);
+        Assert.DoesNotContain("onblur", events);
     }
 
 

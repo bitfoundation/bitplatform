@@ -39,7 +39,7 @@ public class BitTextFieldValidationMessageTests : BunitTestContext
         });
 
         // Nothing is shown before the EditContext has anything to say.
-        Assert.AreEqual(0, component.FindAll(".bit-tfl-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tfl-erm"));
         Assert.IsNull(component.Find(".bit-tfl-inp").GetAttribute("aria-describedby"));
 
         component.InvokeAsync(() => editContext.Validate());
@@ -55,7 +55,7 @@ public class BitTextFieldValidationMessageTests : BunitTestContext
         // A value the EditContext accepts takes the line, and the reference to it, away again.
         component.Find(".bit-tfl-inp").Change("a@b.co");
 
-        Assert.AreEqual(0, component.FindAll(".bit-tfl-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tfl-erm"));
         Assert.IsNull(component.Find(".bit-tfl-inp").GetAttribute("aria-describedby"));
         Assert.IsNull(component.Find(".bit-tfl-inp").GetAttribute("aria-invalid"));
     }
@@ -104,7 +104,7 @@ public class BitTextFieldValidationMessageTests : BunitTestContext
 
         // The field is marked as before, and the message stays where the page puts it.
         Assert.AreEqual("true", component.Find(".bit-tfl-inp").GetAttribute("aria-invalid"));
-        Assert.AreEqual(0, component.FindAll(".bit-tfl-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tfl-erm"));
         Assert.IsNull(component.Find(".bit-tfl-inp").GetAttribute("aria-describedby"));
     }
 
@@ -125,7 +125,7 @@ public class BitTextFieldValidationMessageTests : BunitTestContext
 
         component.InvokeAsync(() => editContext.Validate());
 
-        Assert.AreEqual(1, component.FindAll(".bit-tfl-erm").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-tfl-erm"));
         Assert.AreEqual("That address is already registered.", component.Find(".bit-tfl-erm").TextContent.Trim());
 
         // Once the app takes its message back, the EditContext's takes the line.
@@ -228,12 +228,12 @@ public class BitTextFieldValidationMessageTests : BunitTestContext
 
         component.InvokeAsync(() => editContext.Validate());
 
-        Assert.AreEqual(1, component.FindAll(".bit-tfl-erm").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-tfl-erm"));
 
         attributes[nameof(BitTextField.NoValidate)] = true;
         Rerender(component, editContext, model, attributes);
 
-        Assert.AreEqual(0, component.FindAll(".bit-tfl-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tfl-erm"));
         Assert.IsNull(component.Find(".bit-tfl-inp").GetAttribute("aria-describedby"));
     }
 
@@ -249,8 +249,8 @@ public class BitTextFieldValidationMessageTests : BunitTestContext
         component.InvokeAsync(() => editContext.Validate());
 
         // The model has a message, but the field has no member of it the message could belong to.
-        Assert.IsTrue(editContext.GetValidationMessages().Any());
-        Assert.AreEqual(0, component.FindAll(".bit-tfl-erm").Count);
+        Assert.IsNotEmpty(editContext.GetValidationMessages());
+        Assert.IsEmpty(component.FindAll(".bit-tfl-erm"));
     }
 
     [TestMethod]
@@ -270,12 +270,12 @@ public class BitTextFieldValidationMessageTests : BunitTestContext
 
         var message = component.Find(".bit-tfl-erm").TextContent.Trim();
 
-        StringAssert.Contains(message, "The Value field is not a valid e-mail address.");
-        StringAssert.Contains(message, "The field Value must be a string with a maximum length of 16.");
+        Assert.Contains("The Value field is not a valid e-mail address.", message);
+        Assert.Contains("The field Value must be a string with a maximum length of 16.", message);
 
         component.Find(".bit-tfl-inp").Change("a@b.co");
 
-        Assert.AreEqual(0, component.FindAll(".bit-tfl-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tfl-erm"));
 
         component.Find("form").Submit();
 

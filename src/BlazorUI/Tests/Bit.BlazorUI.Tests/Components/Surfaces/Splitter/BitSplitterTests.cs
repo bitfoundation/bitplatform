@@ -58,7 +58,7 @@ public class BitSplitterTests : BunitTestContext
         var style = root.GetAttribute("style");
 
         Assert.IsNotNull(style);
-        Assert.IsTrue(style.Contains($"--bit-spl-gtr-size:{gutter}px"));
+        Assert.Contains($"--bit-spl-gtr-size:{gutter}px", style);
     }
 
     [TestMethod]
@@ -75,10 +75,10 @@ public class BitSplitterTests : BunitTestContext
         var style = component.Find(".bit-spl").GetAttribute("style");
 
         Assert.IsNotNull(style);
-        Assert.IsTrue(style.Contains("--bit-spl-gtr-size:0px"));
-        Assert.IsTrue(style.Contains("--bit-spl-fpn-size:0px"));
-        Assert.IsTrue(style.Contains("--bit-spl-fpn-min:0px"));
-        Assert.IsTrue(style.Contains("--bit-spl-spn-max:0px"));
+        Assert.Contains("--bit-spl-gtr-size:0px", style);
+        Assert.Contains("--bit-spl-fpn-size:0px", style);
+        Assert.Contains("--bit-spl-fpn-min:0px", style);
+        Assert.Contains("--bit-spl-spn-max:0px", style);
     }
 
     [TestMethod]
@@ -205,9 +205,9 @@ public class BitSplitterTests : BunitTestContext
             parameters.Add(p => p.GutterTemplate, (RenderFragment)(builder => builder.AddMarkupContent(0, "<span class=\"custom-gutter\"></span>")));
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-spl-gtr .custom-gutter").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-spl-gic").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-spl-gti").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-spl-gtr .custom-gutter"));
+        Assert.IsEmpty(component.FindAll(".bit-spl-gic"));
+        Assert.IsEmpty(component.FindAll(".bit-spl-gti"));
     }
 
     [TestMethod]
@@ -255,13 +255,13 @@ public class BitSplitterTests : BunitTestContext
         var style = root.GetAttribute("style");
 
         Assert.IsNotNull(style);
-        Assert.IsTrue(style.Contains("--bit-spl-fpn-size:128px"));
-        Assert.IsTrue(style.Contains("--bit-spl-fpn-max:256px"));
-        Assert.IsTrue(style.Contains("--bit-spl-fpn-min:64px"));
+        Assert.Contains("--bit-spl-fpn-size:128px", style);
+        Assert.Contains("--bit-spl-fpn-max:256px", style);
+        Assert.Contains("--bit-spl-fpn-min:64px", style);
 
-        Assert.IsTrue(style.Contains("--bit-spl-spn-size:200px"));
-        Assert.IsTrue(style.Contains("--bit-spl-spn-max:300px"));
-        Assert.IsTrue(style.Contains("--bit-spl-spn-min:100px"));
+        Assert.Contains("--bit-spl-spn-size:200px", style);
+        Assert.Contains("--bit-spl-spn-max:300px", style);
+        Assert.Contains("--bit-spl-spn-min:100px", style);
     }
 
     [TestMethod]
@@ -275,8 +275,8 @@ public class BitSplitterTests : BunitTestContext
         var style = component.Find(".bit-spl").GetAttribute("style");
 
         Assert.IsNotNull(style);
-        Assert.IsTrue(style.Contains("--bit-spl-spn-size:200px"));
-        Assert.IsTrue(style.Contains("--bit-spl-spn-grow:0"));
+        Assert.Contains("--bit-spl-spn-size:200px", style);
+        Assert.Contains("--bit-spl-spn-grow:0", style);
     }
 
     [TestMethod]
@@ -294,10 +294,10 @@ public class BitSplitterTests : BunitTestContext
         var style = component.Find(".bit-spl").GetAttribute("style");
 
         Assert.IsNotNull(style);
-        Assert.IsTrue(style.Contains("--bit-spl-fpn-size:128px"));
-        Assert.IsTrue(style.Contains("--bit-spl-fpn-grow:0"));
-        Assert.IsTrue(style.Contains("--bit-spl-spn-size:200px"));
-        Assert.IsTrue(style.Contains("--bit-spl-spn-grow:1"));
+        Assert.Contains("--bit-spl-fpn-size:128px", style);
+        Assert.Contains("--bit-spl-fpn-grow:0", style);
+        Assert.Contains("--bit-spl-spn-size:200px", style);
+        Assert.Contains("--bit-spl-spn-grow:1", style);
     }
 
     [TestMethod]
@@ -323,12 +323,12 @@ public class BitSplitterTests : BunitTestContext
         var style = component.Find(".bit-spl").GetAttribute("style");
 
         Assert.IsNotNull(style);
-        Assert.IsTrue(style.Contains("--bit-spl-fpn-size:42.5%"));
-        Assert.IsTrue(style.Contains("--bit-spl-fpn-grow:0"));
+        Assert.Contains("--bit-spl-fpn-size:42.5%", style);
+        Assert.Contains("--bit-spl-fpn-grow:0", style);
 
         // The second panel takes what is left over; a pin on it as well could not add up at every width.
-        Assert.IsFalse(style.Contains("--bit-spl-spn-size:"));
-        Assert.IsFalse(style.Contains("--bit-spl-spn-grow:"));
+        Assert.DoesNotContain("--bit-spl-spn-size:", style);
+        Assert.DoesNotContain("--bit-spl-spn-grow:", style);
     }
 
     [TestMethod]
@@ -351,7 +351,7 @@ public class BitSplitterTests : BunitTestContext
             var style = component.Find(".bit-spl").GetAttribute("style");
 
             Assert.IsNotNull(style);
-            Assert.IsTrue(style.Contains("--bit-spl-fpn-size:42.5%"), style);
+            Assert.Contains("--bit-spl-fpn-size:42.5%", style, style);
         }
         finally
         {
@@ -405,8 +405,8 @@ public class BitSplitterTests : BunitTestContext
         var firstPanel = component.Find(".bit-spl-fpn");
         var secondPanel = component.Find(".bit-spl-spn");
 
-        Assert.IsTrue(firstPanel.TextContent.Contains("First Panel Content"));
-        Assert.IsTrue(secondPanel.TextContent.Contains("Second Panel Content"));
+        Assert.Contains("First Panel Content", firstPanel.TextContent);
+        Assert.Contains("Second Panel Content", secondPanel.TextContent);
     }
 
     [TestMethod]
@@ -523,7 +523,7 @@ public class BitSplitterTests : BunitTestContext
         });
 
         Assert.IsTrue(component.Find(".bit-spl").ClassList.Contains("custom-root"));
-        Assert.IsTrue(component.Find(".bit-spl").GetAttribute("style")!.Contains("color:red"));
+        Assert.Contains("color:red", component.Find(".bit-spl").GetAttribute("style")!);
 
         Assert.IsTrue(component.Find(".bit-spl-fpn").ClassList.Contains("custom-first"));
         Assert.AreEqual("color:green", component.Find(".bit-spl-fpn").GetAttribute("style"));
@@ -568,7 +568,7 @@ public class BitSplitterTests : BunitTestContext
 
         var style = component.Find(".bit-spl").GetAttribute("style")!;
 
-        Assert.IsTrue(style.IndexOf("--bit-spl-gtr-size:12px") < style.IndexOf("--bit-spl-gtr-size:99px"));
+        Assert.IsLessThan(style.IndexOf("--bit-spl-gtr-size:99px"), style.IndexOf("--bit-spl-gtr-size:12px"));
     }
 
     [TestMethod]
@@ -584,7 +584,7 @@ public class BitSplitterTests : BunitTestContext
         var root = component.Find(".bit-spl");
 
         Assert.IsTrue(root.ClassList.Contains("bit-spl-col"));
-        Assert.IsTrue(root.GetAttribute("style")!.Contains("--bit-spl-col-size:8px"));
+        Assert.Contains("--bit-spl-col-size:8px", root.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -600,10 +600,10 @@ public class BitSplitterTests : BunitTestContext
         var style = component.Find(".bit-spl").GetAttribute("style")!;
 
         // The share wins over both lengths, and releases the second panel to take the rest.
-        Assert.IsTrue(style.Contains("--bit-spl-fpn-size:30%"), style);
-        Assert.IsTrue(style.Contains("--bit-spl-fpn-grow:0"), style);
-        Assert.IsFalse(style.Contains("--bit-spl-fpn-size:120px"), style);
-        Assert.IsFalse(style.Contains("--bit-spl-spn-size:"), style);
+        Assert.Contains("--bit-spl-fpn-size:30%", style, style);
+        Assert.Contains("--bit-spl-fpn-grow:0", style, style);
+        Assert.DoesNotContain("--bit-spl-fpn-size:120px", style, style);
+        Assert.DoesNotContain("--bit-spl-spn-size:", style, style);
     }
 
     [TestMethod]
@@ -617,8 +617,8 @@ public class BitSplitterTests : BunitTestContext
 
         var style = component.Find(".bit-spl").GetAttribute("style")!;
 
-        Assert.IsTrue(style.Contains("--bit-spl-fpn-size:60%"), style);
-        Assert.IsFalse(style.Contains("--bit-spl-fpn-size:30%"), style);
+        Assert.Contains("--bit-spl-fpn-size:60%", style, style);
+        Assert.DoesNotContain("--bit-spl-fpn-size:30%", style, style);
     }
 
     [TestMethod]
@@ -630,12 +630,12 @@ public class BitSplitterTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance.SetPercent(70));
 
         Assert.AreEqual(70d, component.Instance.Percent);
-        Assert.IsTrue(component.Find(".bit-spl").GetAttribute("style")!.Contains("--bit-spl-fpn-size:70%"));
+        Assert.Contains("--bit-spl-fpn-size:70%", component.Find(".bit-spl").GetAttribute("style")!);
 
         await component.InvokeAsync(() => component.Instance.ResetSize());
 
         Assert.IsNull(component.Instance.Percent);
-        Assert.IsTrue(component.Find(".bit-spl").GetAttribute("style")!.Contains("--bit-spl-fpn-size:25%"));
+        Assert.Contains("--bit-spl-fpn-size:25%", component.Find(".bit-spl").GetAttribute("style")!);
     }
 
     [TestMethod,
@@ -861,12 +861,12 @@ public class BitSplitterTests : BunitTestContext
         });
 
         await component.InvokeAsync(() => component.Instance.SetPercent(70));
-        Assert.IsTrue(component.Find(".bit-spl").GetAttribute("style")!.Contains("--bit-spl-fpn-size:70%"));
+        Assert.Contains("--bit-spl-fpn-size:70%", component.Find(".bit-spl").GetAttribute("style")!);
 
         await component.InvokeAsync(() => component.Instance.ResetSize());
 
         Assert.IsNull(component.Instance.Percent);
-        Assert.IsTrue(component.Find(".bit-spl").GetAttribute("style")!.Contains("--bit-spl-fpn-size:150px"));
+        Assert.Contains("--bit-spl-fpn-size:150px", component.Find(".bit-spl").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1053,12 +1053,12 @@ public class BitSplitterTests : BunitTestContext
         // expectation would be contained in any style at all, so it is asserted as the absence of both.
         if (expectedStyle.Length == 0)
         {
-            Assert.IsFalse(style.Contains("visibility:"), style);
-            Assert.IsFalse(style.Contains("display:"), style);
+            Assert.DoesNotContain("visibility:", style, style);
+            Assert.DoesNotContain("display:", style, style);
         }
         else
         {
-            Assert.IsTrue(style.Contains(expectedStyle), style);
+            Assert.Contains(expectedStyle, style, style);
         }
     }
 
@@ -1075,7 +1075,7 @@ public class BitSplitterTests : BunitTestContext
         var style = component.Find(".bit-spl").GetAttribute("style");
 
         Assert.IsNotNull(style);
-        Assert.IsTrue(style.Contains("--bit-spl-fpn-size:33.3333%"));
+        Assert.Contains("--bit-spl-fpn-size:33.3333%", style);
     }
 
     [TestMethod]
@@ -1099,12 +1099,12 @@ public class BitSplitterTests : BunitTestContext
         Assert.AreEqual(15, ReadOption(options, "KeyboardStep"));
         Assert.AreEqual(25, ReadOption(options, "DragStep"));
         Assert.AreEqual(40, ReadOption(options, "SnapSize"));
-        Assert.AreEqual(true, ReadOption(options, "LazyResize"));
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(ReadOption(options, "LazyResize")));
         // The reset was turned off, nothing listens for the frames of a drag, and the double-click is
         // wanted whether or not it also resets the splitter.
-        Assert.AreEqual(false, ReadOption(options, "ResetOnDoubleClick"));
-        Assert.AreEqual(false, ReadOption(options, "NotifyResize"));
-        Assert.AreEqual(true, ReadOption(options, "NotifyDoubleClick"));
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(ReadOption(options, "ResetOnDoubleClick")));
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(ReadOption(options, "NotifyResize")));
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(ReadOption(options, "NotifyDoubleClick")));
 
         Assert.IsFalse(component.Instance.Collapsed);
     }
@@ -1143,7 +1143,7 @@ public class BitSplitterTests : BunitTestContext
         var update = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.Splitter.update");
 
         Assert.AreEqual("spl-1", update.Arguments[0]);
-        Assert.AreEqual(true, ReadOption(update.Arguments[1]!, "Vertical"));
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(ReadOption(update.Arguments[1]!, "Vertical")));
     }
 
     [TestMethod]
@@ -1225,7 +1225,7 @@ public class BitSplitterTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance.Collapse());
         await component.InvokeAsync(() => component.Instance.Expand());
 
-        CollectionAssert.AreEqual(new[] { true, false }, collapsing);
+        Assert.AreSequenceEqual(new[] { true, false }, collapsing);
     }
 
     [TestMethod]
@@ -1245,7 +1245,7 @@ public class BitSplitterTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance.HandleToggleCollapse());
         await component.InvokeAsync(() => component.Instance.HandleRestore(null, true));
 
-        CollectionAssert.AreEqual(new[]
+        Assert.AreSequenceEqual(new[]
         {
             BitSplitterCollapseReason.Method,
             BitSplitterCollapseReason.Gutter,
@@ -1351,7 +1351,7 @@ public class BitSplitterTests : BunitTestContext
         });
 
         // Asking for the control on a splitter whose panel does not fold offers the reader nothing.
-        Assert.AreEqual(0, component.FindAll(".bit-spl-cbt").Count);
+        Assert.IsEmpty(component.FindAll(".bit-spl-cbt"));
 
         component.Render(parameters =>
         {
@@ -1359,7 +1359,7 @@ public class BitSplitterTests : BunitTestContext
             parameters.Add(p => p.ShowCollapseButton, true);
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-spl-cbt").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-spl-cbt"));
 
         component.Render(parameters =>
         {
@@ -1367,7 +1367,7 @@ public class BitSplitterTests : BunitTestContext
             parameters.Add(p => p.ShowCollapseButton, false);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-spl-cbt").Count);
+        Assert.IsEmpty(component.FindAll(".bit-spl-cbt"));
     }
 
     [TestMethod,
@@ -1383,7 +1383,7 @@ public class BitSplitterTests : BunitTestContext
             parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-spl-cbt").Count);
+        Assert.IsEmpty(component.FindAll(".bit-spl-cbt"));
     }
 
     [TestMethod]
@@ -1416,7 +1416,7 @@ public class BitSplitterTests : BunitTestContext
 
         // Where it is in the DOM is what lets the JavaScript side tell a press meant for it from a drag of
         // the gutter it covers.
-        Assert.AreEqual(1, component.FindAll(".bit-spl-gtr > .bit-spl-cbt").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-spl-gtr > .bit-spl-cbt"));
     }
 
     [TestMethod]
@@ -1430,8 +1430,8 @@ public class BitSplitterTests : BunitTestContext
             parameters.Add(p => p.GutterTemplate, (RenderFragment)(builder => builder.AddMarkupContent(0, "<span class=\"custom-gutter\"></span>")));
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-spl-gtr .custom-gutter").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-spl-cbt").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-spl-gtr .custom-gutter"));
+        Assert.ContainsSingle(component.FindAll(".bit-spl-cbt"));
     }
 
     [TestMethod,
@@ -1556,7 +1556,7 @@ public class BitSplitterTests : BunitTestContext
         Assert.IsFalse(component.Instance.Collapsed);
 
         // It is the gutter offering the fold, whichever of the two ways in the reader took.
-        CollectionAssert.AreEqual(new[] { BitSplitterCollapseReason.Gutter, BitSplitterCollapseReason.Gutter }, reasons);
+        Assert.AreSequenceEqual(new[] { BitSplitterCollapseReason.Gutter, BitSplitterCollapseReason.Gutter }, reasons);
     }
 
     [TestMethod]
@@ -1567,7 +1567,7 @@ public class BitSplitterTests : BunitTestContext
             parameters.Add(p => p.GutterHitSize, 36);
         });
 
-        Assert.IsTrue(component.Find(".bit-spl").GetAttribute("style")!.Contains("--bit-spl-hit-size:36px"));
+        Assert.Contains("--bit-spl-hit-size:36px", component.Find(".bit-spl").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1578,7 +1578,7 @@ public class BitSplitterTests : BunitTestContext
             parameters.Add(p => p.GutterHitSize, -36);
         });
 
-        Assert.IsTrue(component.Find(".bit-spl").GetAttribute("style")!.Contains("--bit-spl-hit-size:0px"));
+        Assert.Contains("--bit-spl-hit-size:0px", component.Find(".bit-spl").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1586,7 +1586,7 @@ public class BitSplitterTests : BunitTestContext
     {
         var style = RenderComponent<BitSplitter>().Find(".bit-spl").GetAttribute("style") ?? string.Empty;
 
-        Assert.IsFalse(style.Contains("--bit-spl-hit-size"));
+        Assert.DoesNotContain("--bit-spl-hit-size", style);
     }
 
     [TestMethod]
@@ -1629,10 +1629,10 @@ public class BitSplitterTests : BunitTestContext
 
         var options = SetupOptions();
 
-        Assert.AreEqual(true, ReadOption(options, "Vertical"));
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(ReadOption(options, "Vertical")));
         Assert.AreEqual(30d, ReadOption(options, "Percent"));
         Assert.AreEqual("a-key", ReadOption(options, "PersistKey"));
-        Assert.AreEqual(true, ReadOption(options, "PersistSession"));
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(ReadOption(options, "PersistSession")));
     }
 
     [TestMethod,
@@ -1681,7 +1681,7 @@ public class BitSplitterTests : BunitTestContext
         });
 
         // Read-only and disabled are the same thing to the drag engine; only the look of them differs.
-        Assert.AreEqual(true, ReadOption(SetupOptions(), "Disabled"));
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(ReadOption(SetupOptions(), "Disabled")));
     }
 
     [TestMethod]
@@ -1723,7 +1723,7 @@ public class BitSplitterTests : BunitTestContext
 
         // The drag wrote over the very properties the style attribute declares the parameters in, so they are handed
         // over too - a render producing the same attribute again would not put them back.
-        CollectionAssert.AreEqual(new string?[] { "150px", "0", null, null }, (string?[])sync.Arguments[2]!);
+        Assert.AreSequenceEqual(new string?[] { "150px", "0", null, null }, (string?[])sync.Arguments[2]!);
     }
 
     [TestMethod]
@@ -1744,7 +1744,7 @@ public class BitSplitterTests : BunitTestContext
         var sync = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Splitter.sync");
 
         Assert.IsNull(sync.Arguments[1]);
-        CollectionAssert.AreEqual(new string?[] { "30%", "0", null, null }, (string?[])sync.Arguments[2]!);
+        Assert.AreSequenceEqual(new string?[] { "30%", "0", null, null }, (string?[])sync.Arguments[2]!);
     }
 
     [TestMethod]
@@ -1765,7 +1765,7 @@ public class BitSplitterTests : BunitTestContext
         var sync = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Splitter.sync");
 
         Assert.IsNull(sync.Arguments[1]);
-        CollectionAssert.AreEqual(new string?[] { "120px", "0", "200px", "1" }, (string?[])sync.Arguments[2]!);
+        Assert.AreSequenceEqual(new string?[] { "120px", "0", "200px", "1" }, (string?[])sync.Arguments[2]!);
     }
 
     [TestMethod]
@@ -1831,8 +1831,8 @@ public class BitSplitterTests : BunitTestContext
         var options = SetupOptions();
 
         // The snap that closes a panel and the shortcut that folds it both point at the panel that folds.
-        Assert.AreEqual(true, ReadOption(options, "Collapsible"));
-        Assert.AreEqual(true, ReadOption(options, "CollapseSecond"));
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(ReadOption(options, "Collapsible")));
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(ReadOption(options, "CollapseSecond")));
     }
 
     [TestMethod]
@@ -1853,7 +1853,7 @@ public class BitSplitterTests : BunitTestContext
 
         var update = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.Splitter.update");
 
-        Assert.AreEqual(true, ReadOption(update.Arguments[1]!, "CollapseSecond"));
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(ReadOption(update.Arguments[1]!, "CollapseSecond")));
     }
 
     [TestMethod,
@@ -1926,7 +1926,7 @@ public class BitSplitterTests : BunitTestContext
         // are about.
         Assert.IsTrue(root.ClassList.Contains("bit-spl-col"));
         Assert.IsTrue(root.ClassList.Contains("bit-spl-cse"));
-        Assert.IsTrue(root.GetAttribute("style")!.Contains("--bit-spl-col-size:8px"));
+        Assert.Contains("--bit-spl-col-size:8px", root.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -2039,7 +2039,7 @@ public class BitSplitterTests : BunitTestContext
         await component.Instance.DisposeAsync();
         await component.Instance.DisposeAsync();
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Splitter.dispose"));
+        Assert.ContainsSingle(i => i.Identifier == "BitBlazorUI.Splitter.dispose", Context.JSInterop.Invocations);
     }
 
     [TestMethod]
@@ -2056,7 +2056,7 @@ public class BitSplitterTests : BunitTestContext
 
         Assert.AreEqual("the-splitter", root.Id);
         Assert.IsTrue(root.ClassList.Contains("custom-class"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin:1px");
+        Assert.Contains("margin:1px", root.GetAttribute("style")!);
     }
 
     // Everything the drag engine is driven with reaches it as one object, so what a test asks about is the

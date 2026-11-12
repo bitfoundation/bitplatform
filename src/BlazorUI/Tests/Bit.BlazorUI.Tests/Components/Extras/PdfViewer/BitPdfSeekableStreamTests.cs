@@ -40,22 +40,22 @@ public class BitPdfSeekableStreamTests
         Assert.AreEqual(expected.Version, actual.Version);
         Assert.AreEqual(expected.PageCount, actual.PageCount);
         Assert.AreEqual(expected.Metadata.Title, actual.Metadata.Title);
-        CollectionAssert.AreEqual(expected.PageLabels.ToArray(), actual.PageLabels.ToArray());
-        CollectionAssert.AreEqual(expected.Warnings.ToArray(), actual.Warnings.ToArray());
-        Assert.AreEqual(expected.Attachments.Count, actual.Attachments.Count);
+        Assert.AreSequenceEqual(expected.PageLabels.ToArray(), actual.PageLabels.ToArray());
+        Assert.AreSequenceEqual(expected.Warnings.ToArray(), actual.Warnings.ToArray());
+        Assert.HasCount(expected.Attachments.Count, actual.Attachments);
         for (int i = 0; i < actual.Attachments.Count; i++)
-            CollectionAssert.AreEqual(expected.Attachments[i].Content, actual.Attachments[i].Content);
+            Assert.AreSequenceEqual(expected.Attachments[i].Content, actual.Attachments[i].Content);
         for (int i = 0; i < actual.PageCount; i++)
         {
-            CollectionAssert.AreEqual(expected.Pages[i].GetContentBytes(), actual.Pages[i].GetContentBytes());
+            Assert.AreSequenceEqual(expected.Pages[i].GetContentBytes(), actual.Pages[i].GetContentBytes());
             Assert.AreEqual(expected.Pages[i].ExtractText(), actual.Pages[i].ExtractText());
             Assert.AreEqual(new BitPdfHtmlRenderer(expected.Pages[i], expected.XRef).Render(),
                 new BitPdfHtmlRenderer(actual.Pages[i], actual.XRef).Render());
             Assert.AreEqual(JsonSerializer.Serialize(new BitPdfCanvasRenderer(expected.Pages[i], expected.XRef).Render()),
                 JsonSerializer.Serialize(new BitPdfCanvasRenderer(actual.Pages[i], actual.XRef).Render()));
         }
-        Assert.IsTrue(input.SeekCount > 0);
-        Assert.IsTrue(source.PeakBytes <= 16 * 1024 * 1024);
+        Assert.IsGreaterThan(0, input.SeekCount);
+        Assert.IsLessThanOrEqualTo(16 * 1024 * 1024, source.PeakBytes);
         Assert.IsFalse(source.TryGetContiguous());
     }
 
@@ -69,13 +69,13 @@ public class BitPdfSeekableStreamTests
         {
             var cursor = source.CreateStream(index * 101, 100);
             Assert.IsFalse(cursor is BitPdfStream);
-            CollectionAssert.AreEqual(bytes.AsSpan(index * 101, 100).ToArray(), cursor.GetBytes());
+            Assert.AreSequenceEqual(bytes.AsSpan(index * 101, 100).ToArray(), cursor.GetBytes());
             cursor.Reset();
             Assert.AreEqual(bytes[index * 101], cursor.GetByte());
             Assert.AreEqual(index * 101 + 1, cursor.Pos);
-        }));
+        }, TestContext.CancellationToken));
         await Task.WhenAll(tasks);
-        CollectionAssert.AreEqual(bytes, await source.ReadAllAsync());
+        Assert.AreSequenceEqual(bytes, await source.ReadAllAsync(TestContext.CancellationToken));
         Assert.AreEqual(1, input.MaximumConcurrentReads);
         Assert.IsFalse(source.TryGetContiguous());
     }
@@ -91,19 +91,19 @@ public class BitPdfSeekableStreamTests
         using (var copy = source.Window(10, 4))
         {
             Assert.AreEqual(12, source.AccountedBytes);
-            CollectionAssert.AreEqual(new byte[] { 10, 11, 12, 13 }, copy.Bytes);
+            Assert.AreSequenceEqual(new byte[] { 10, 11, 12, 13 }, copy.Bytes);
             Assert.Throws<IOException>(() => source.Window(16, 4));
-            CollectionAssert.AreEqual(new byte[] { 0, 1, 2, 3 }, first.Bytes);
+            Assert.AreSequenceEqual(new byte[] { 0, 1, 2, 3 }, first.Bytes);
         }
         second.Dispose();
         using (var third = source.Window(16, 4))
-            CollectionAssert.AreEqual(new byte[] { 16, 17, 18, 19 }, third.Bytes);
+            Assert.AreSequenceEqual(new byte[] { 16, 17, 18, 19 }, third.Bytes);
         using (var fourth = source.Window(24, 4))
-            CollectionAssert.AreEqual(new byte[] { 24, 25, 26, 27 }, fourth.Bytes);
+            Assert.AreSequenceEqual(new byte[] { 24, 25, 26, 27 }, fourth.Bytes);
         Assert.AreEqual(12, source.PeakBytes);
         await source.DisposeAsync();
         Assert.AreEqual(4, source.AccountedBytes); // caller still holds the first block
-        CollectionAssert.AreEqual(new byte[] { 0, 1, 2, 3 }, first.Bytes);
+        Assert.AreSequenceEqual(new byte[] { 0, 1, 2, 3 }, first.Bytes);
         first.Dispose();
         first.Dispose();
         Assert.AreEqual(0, source.AccountedBytes);
@@ -129,7 +129,7 @@ public class BitPdfSeekableStreamTests
         input.FailRead = false;
         cancellation.Cancel();
         Assert.Throws<OperationCanceledException>(() => source.CreateStream().GetByte());
-        Assert.AreEqual(0, document.Warnings.Count);
+        Assert.IsEmpty(document.Warnings);
     }
 
     [TestMethod]
@@ -152,11 +152,11 @@ public class BitPdfSeekableStreamTests
 
             var syncError = Assert.Throws<IOException>(() => source.CreateStream().GetBytes());
             Assert.AreSame(failure, syncError.InnerException);
-            var asyncError = await Assert.ThrowsAsync<IOException>(() => source.ReadAllAsync());
+            var asyncError = await Assert.ThrowsAsync<IOException>(() => source.ReadAllAsync(TestContext.CancellationToken));
             Assert.AreSame(failure, asyncError.InnerException);
 
             input.Failure = null;
-            CollectionAssert.AreEqual(bytes, await source.ReadAllAsync());
+            Assert.AreSequenceEqual(bytes, await source.ReadAllAsync(TestContext.CancellationToken));
         }
     }
 
@@ -164,15 +164,15 @@ public class BitPdfSeekableStreamTests
     public async Task SeekableSourceShouldPreserveProviderCancellationAndDisposalSignals()
     {
         foreach (string operation in new[] { "length", "seek", "read" })
-        foreach (var signal in new Exception[] { new OperationCanceledException(), new ObjectDisposedException("provider") })
-        {
-            var input = new FaultingProviderStream(TestPdf.HelloWorld(), operation);
-            await using var source = new PdfSeekableSourceAccess(input);
-            input.Failure = signal;
+            foreach (var signal in new Exception[] { new OperationCanceledException(), new ObjectDisposedException("provider") })
+            {
+                var input = new FaultingProviderStream(TestPdf.HelloWorld(), operation);
+                await using var source = new PdfSeekableSourceAccess(input);
+                input.Failure = signal;
 
-            Assert.AreSame(signal, Assert.Throws<Exception>(() => source.CreateStream().GetBytes()));
-            Assert.AreSame(signal, await Assert.ThrowsAsync<Exception>(() => source.ReadAllAsync()));
-        }
+                Assert.AreSame(signal, Assert.Throws<Exception>(() => source.CreateStream().GetBytes()));
+                Assert.AreSame(signal, await Assert.ThrowsAsync<Exception>(() => source.ReadAllAsync(TestContext.CancellationToken)));
+            }
     }
 
     [TestMethod]
@@ -215,11 +215,11 @@ public class BitPdfSeekableStreamTests
         {
             if (Interlocked.Increment(ref reads) != 1) return;
             started.TrySetResult();
-            if (!release.Wait(TimeSpan.FromSeconds(5))) throw new IOException("Test read timed out.");
+            if (!release.Wait(TimeSpan.FromSeconds(5), TestContext.CancellationToken)) throw new IOException("Test read timed out.");
         };
         await using var source = new PdfSeekableSourceAccess(input, cacheSize: 8, blockSize: 4);
         var fill = Task.Run(() => source.Window(0, 4));
-        await started.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        await started.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
         Assert.AreEqual(4, source.AccountedBytes);
         var copy = Task.Run(() => source.Window(6, 4));
         try
@@ -276,7 +276,7 @@ public class BitPdfSeekableStreamTests
         Assert.ThrowsExactly<ObjectDisposedException>(() => raw.GetByte());
         Assert.ThrowsExactly<ObjectDisposedException>(() => BitPdfStreamDecoder.Decode(raw));
         Assert.AreEqual(reads, input.ReadCount);
-        Assert.AreEqual(0, xref.Warnings.Count);
+        Assert.IsEmpty(xref.Warnings);
         Assert.AreEqual(1, input.DisposeCount);
     }
 
@@ -290,7 +290,10 @@ public class BitPdfSeekableStreamTests
     {
         using var input = new PdfTrackingStream([])
         {
-            Readable = readable, Seekable = seekable, LengthOverride = length, PositionOverride = position,
+            Readable = readable,
+            Seekable = seekable,
+            LengthOverride = length,
+            PositionOverride = position,
         };
         Assert.Throws<ArgumentException>(() => new PdfSeekableSourceAccess(input));
     }
@@ -321,6 +324,8 @@ public class BitPdfSeekableStreamTests
             return await base.ReadAsync(buffer, cancellationToken);
         }
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }
 
 // Reflection exercises the actual signed Extras backend without adding a public

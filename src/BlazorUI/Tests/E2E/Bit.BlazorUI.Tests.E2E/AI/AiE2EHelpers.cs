@@ -89,7 +89,7 @@ internal static class AiE2EHelpers
         await Assertions.Expect(icon).ToHaveClassAsync(new System.Text.RegularExpressions.Regex($@"(^|\s)bit-icon-ai--{glyphName}(\s|$)"));
 
         var (family, content) = await icon.GlyphAsync();
-        StringAssert.Contains(family, AiGlyphFontFamily, $"The {glyphName} glyph is drawn from the AI font.");
+        Assert.Contains(AiGlyphFontFamily, family, $"The {glyphName} glyph is drawn from the AI font.");
         Assert.IsFalse(content is "none" or "normal" or "\"\"" or "", $"The {glyphName} glyph draws a character, was {content}.");
     }
 

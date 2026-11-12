@@ -123,13 +123,13 @@ public class BitAiImagePartViewTests : BitAiTestBase
         Assert.AreEqual("-1", component.Find("img.bit-aiipv-img").GetAttribute("tabindex"));
 
         var focus = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"];
-        Assert.HasCount(1, focus);
+        Assert.ContainsSingle(focus);
         Assert.AreNotEqual(component.Instance.RootElement.Id, ((Microsoft.AspNetCore.Components.ElementReference)focus[0].Arguments[0]!).Id);
 
         // Rendered again, the image keeps the focus where it is.
         component.Render(p => p.Add(c => c.Class, "again"));
 
-        Assert.HasCount(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
     }
 
     [TestMethod]
@@ -253,7 +253,7 @@ public class BitAiImagePartViewTests : BitAiTestBase
 
         // The blank pixel stands in for it, which fetches nothing and so is shown under every policy.
         Assert.IsFalse(component.Markup.Contains("javascript:", StringComparison.OrdinalIgnoreCase));
-        StringAssert.StartsWith(component.Find("img.bit-aiipv-img").GetAttribute("src"), "data:image/gif;base64,");
+        Assert.StartsWith("data:image/gif;base64,", component.Find("img.bit-aiipv-img").GetAttribute("src"));
     }
 
     [TestMethod]
@@ -276,7 +276,7 @@ public class BitAiImagePartViewTests : BitAiTestBase
 
         var placeholder = asked.Find("button.bit-acb");
         Assert.IsTrue(placeholder.ClassList.Contains("c-placeholder"));
-        StringAssert.Contains(placeholder.GetAttribute("style"), "margin: 1px");
+        Assert.Contains("margin: 1px", placeholder.GetAttribute("style")!);
 
         // The app's icon classes beside the glyph's.
         var icon = asked.Find("button.bit-acb .bit-acb-ico");
@@ -337,7 +337,7 @@ public class BitAiImagePartViewTests : BitAiTestBase
 
         Assert.IsTrue(root.ClassList.Contains("custom-class"));
         Assert.IsTrue(root.ClassList.Contains("c-root"));
-        StringAssert.Contains(root.GetAttribute("style"), "color: red");
+        Assert.Contains("color: red", root.GetAttribute("style")!);
         Assert.IsTrue(component.Find(".bit-aiipv-img").ClassList.Contains("c-img"));
         Assert.AreEqual("margin: 1px", component.Find(".bit-aiipv-img").GetAttribute("style"));
         Assert.IsTrue(component.Find(".bit-aiipv-cap").ClassList.Contains("c-cap"));
@@ -362,7 +362,7 @@ public class BitAiImagePartViewTests : BitAiTestBase
         }
         else
         {
-            StringAssert.Contains(style, expected);
+            Assert.Contains(expected, style);
         }
     }
 

@@ -800,7 +800,7 @@ public class BitTextTests : BunitTestContext
 
         var element = component.Find("div");
 
-        StringAssert.Contains(element.GetAttribute("class"), "bit-txt-clp");
+        Assert.Contains("bit-txt-clp", element.GetAttribute("class")!);
         Assert.AreEqual($"-webkit-line-clamp:{lineClamp};line-clamp:{lineClamp}", element.GetAttribute("style"));
     }
 
@@ -835,7 +835,7 @@ public class BitTextTests : BunitTestContext
 
         var element = component.Find("div");
 
-        StringAssert.Contains(element.GetAttribute("class"), "bit-txt-clp");
+        Assert.Contains("bit-txt-clp", element.GetAttribute("class")!);
         Assert.AreEqual("-webkit-line-clamp:3;line-clamp:3", element.GetAttribute("style"));
 
         component.Render(parameters =>
@@ -1311,7 +1311,7 @@ public class BitTextTests : BunitTestContext
             parameters.AddChildContent("this content has nowhere to go");
         });
 
-        Assert.IsFalse(component.Markup.Contains("this content has nowhere to go"));
+        Assert.DoesNotContain("this content has nowhere to go", component.Markup);
     }
 
     [TestMethod]
@@ -1387,41 +1387,41 @@ public class BitTextTests : BunitTestContext
 
         var cascaded = component.Find("section");
         var cssClass = cascaded.GetAttribute("class");
-        StringAssert.Contains(cssClass, "bit-txt-body2");
-        StringAssert.Contains(cssClass, "bit-txt-fwb");
-        StringAssert.Contains(cssClass, "bit-txt-itl");
-        StringAssert.Contains(cssClass, "bit-txt-clp");
-        StringAssert.Contains(cssClass, "bit-txt-pws");
-        StringAssert.Contains(cssClass, "bit-txt-mno");
-        StringAssert.Contains(cssClass, "bit-txt-tmb");
-        StringAssert.Contains(cssClass, "bit-txt-suc");
-        StringAssert.Contains(cssClass, "bit-txt-sfg");
-        StringAssert.Contains(cssClass, "bit-txt-grd");
-        StringAssert.Contains(cssClass, "cascaded");
+        Assert.Contains("bit-txt-body2", cssClass!);
+        Assert.Contains("bit-txt-fwb", cssClass);
+        Assert.Contains("bit-txt-itl", cssClass);
+        Assert.Contains("bit-txt-clp", cssClass);
+        Assert.Contains("bit-txt-pws", cssClass);
+        Assert.Contains("bit-txt-mno", cssClass);
+        Assert.Contains("bit-txt-tmb", cssClass);
+        Assert.Contains("bit-txt-suc", cssClass);
+        Assert.Contains("bit-txt-sfg", cssClass);
+        Assert.Contains("bit-txt-grd", cssClass);
+        Assert.Contains("cascaded", cssClass);
         Assert.AreEqual("fr", cascaded.GetAttribute("lang"));
         Assert.AreEqual("4", cascaded.GetAttribute("aria-level"));
         Assert.AreEqual("heading", cascaded.GetAttribute("role"));
         // The style the cascade fills in is built the same way the component's own is, in the order it registers it.
         var cascadedStyle = cascaded.GetAttribute("style");
-        StringAssert.Contains(cascadedStyle, "text-align:center");
-        StringAssert.Contains(cascadedStyle, "background-image:linear-gradient(red, blue)");
-        StringAssert.Contains(cascadedStyle, "line-clamp:2");
+        Assert.Contains("text-align:center", cascadedStyle!);
+        Assert.Contains("background-image:linear-gradient(red, blue)", cascadedStyle);
+        Assert.Contains("line-clamp:2", cascadedStyle);
 
         // Everything the text set for itself is kept, and only what it left unset is filled in from the cascade.
         var own = component.Find("article");
         var ownClass = own.GetAttribute("class");
-        StringAssert.Contains(ownClass, "bit-txt-h3");
-        StringAssert.Contains(ownClass, "bit-txt-fwl");
-        StringAssert.Contains(ownClass, "bit-txt-itl");
-        StringAssert.Contains(ownClass, "bit-txt-tms");
-        StringAssert.Contains(ownClass, "bit-txt-err");
-        StringAssert.Contains(ownClass, "bit-txt-pws");
+        Assert.Contains("bit-txt-h3", ownClass!);
+        Assert.Contains("bit-txt-fwl", ownClass);
+        Assert.Contains("bit-txt-itl", ownClass);
+        Assert.Contains("bit-txt-tms", ownClass);
+        Assert.Contains("bit-txt-err", ownClass);
+        Assert.Contains("bit-txt-pws", ownClass);
         Assert.AreEqual("de", own.GetAttribute("lang"));
         Assert.AreEqual("2", own.GetAttribute("aria-level"));
 
         var ownStyle = own.GetAttribute("style");
-        StringAssert.Contains(ownStyle, "text-align:end");
-        StringAssert.Contains(ownStyle, "background-image:linear-gradient(green, yellow)");
+        Assert.Contains("text-align:end", ownStyle!);
+        Assert.Contains("background-image:linear-gradient(green, yellow)", ownStyle);
     }
 
     // Element renders the anchor and the href, not being a parameter of the text, is splatted onto it.

@@ -66,8 +66,8 @@ public sealed class OrderConvergenceTests
             zoe.Arrange([ids[1]], BinkArrangement.BringToFront);
             await exchange();
 
-            CollectionAssert.AreEqual(Order(alex), Order(zoe));
-            CollectionAssert.AreEquivalent(new[] { ids[0], ids[1] }, Order(alex)[2..]);
+            Assert.AreSequenceEqual(Order(alex), Order(zoe));
+            Assert.AreSequenceEqual(new[] { ids[0], ids[1] }, Order(alex)[2..], Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         }
     }
 
@@ -82,7 +82,7 @@ public sealed class OrderConvergenceTests
             zoe.Arrange([target], BinkArrangement.SendToBack);
             await exchange();
 
-            CollectionAssert.AreEqual(Order(alex), Order(zoe));
+            Assert.AreSequenceEqual(Order(alex), Order(zoe));
             int at = Array.IndexOf(Order(alex), target);
             Assert.IsTrue(at is 0 or 4, "It is at the front or the back, as one of the two moves left it.");
         }
@@ -103,7 +103,7 @@ public sealed class OrderConvergenceTests
             await exchange();
 
             Assert.AreEqual(alex.GetLayerOf(target)!.Id, zoe.GetLayerOf(target)!.Id);
-            CollectionAssert.AreEqual(Order(alex), Order(zoe));
+            Assert.AreSequenceEqual(Order(alex), Order(zoe));
         }
     }
 
@@ -142,7 +142,7 @@ public sealed class OrderConvergenceTests
             Assert.IsTrue(history.Undo());
             await exchange();
 
-            CollectionAssert.AreEqual(Order(alex), Order(zoe));
+            Assert.AreSequenceEqual(Order(alex), Order(zoe));
             // Undo returns the element to its old key, the bottom one, which the concurrent send-to-back happened to
             // pick too: the two share it and their ids decide, the same way on both sides.
             Assert.IsLessThanOrEqualTo(1, Array.IndexOf(Order(alex), ids[0]));
@@ -160,7 +160,7 @@ public sealed class OrderConvergenceTests
             zoe.AddElement(Stroke(7));
             await exchange();
 
-            CollectionAssert.AreEqual(Order(alex), Order(zoe));
+            Assert.AreSequenceEqual(Order(alex), Order(zoe));
             Assert.AreEqual(5, alex.ElementCount);
         }
     }
@@ -175,12 +175,12 @@ public sealed class OrderConvergenceTests
         await using var sa = new BinkCollaborationSession(alex, ta, "alex");
         await using var sz = new BinkCollaborationSession(zoe, tz, "zoe");
 
-        await sz.RequestSnapshotAsync();
+        await sz.RequestSnapshotAsync(TestContext.CancellationToken);
         await ta.DeliverAsync(Assert.ContainsSingle(tz.Sent));
         await tz.DeliverAsync(Assert.ContainsSingle(ta.Sent.Where(m => m.Kind == BinkCollaborationMessageKind.Snapshot)));
 
-        CollectionAssert.AreEqual(alex.Layers[0].Keys.ToArray(), zoe.Layers[0].Keys.ToArray());
-        CollectionAssert.AreEqual(Order(alex), Order(zoe));
+        Assert.AreSequenceEqual(alex.Layers[0].Keys.ToArray(), zoe.Layers[0].Keys.ToArray());
+        Assert.AreSequenceEqual(Order(alex), Order(zoe));
     }
 
     [TestMethod]
@@ -236,7 +236,7 @@ public sealed class OrderConvergenceTests
                 Assert.AreEqual(LayerOrder(docs[0]), LayerOrder(docs[p]), $"layers, participant {p}");
                 for (int l = 0; l < docs[0].Layers.Count; l++)
                 {
-                    CollectionAssert.AreEqual(docs[0].Layers[l].Elements.Select(e => e.Id).ToArray(), docs[p].Layers[l].Elements.Select(e => e.Id).ToArray(), $"layer {l}, participant {p}");
+                    Assert.AreSequenceEqual(docs[0].Layers[l].Elements.Select(e => e.Id).ToArray(), docs[p].Layers[l].Elements.Select(e => e.Id).ToArray(), $"layer {l}, participant {p}");
                 }
             }
         }
@@ -260,7 +260,7 @@ public sealed class OrderConvergenceTests
             zoe.Arrange([top], BinkArrangement.SendToBack);
             await exchange();
 
-            CollectionAssert.AreEqual(Order(alex), Order(zoe));
+            Assert.AreSequenceEqual(Order(alex), Order(zoe));
             Assert.AreEqual(top, Order(alex)[0]);
         }
     }
@@ -296,7 +296,7 @@ public sealed class OrderConvergenceTests
         var zoe = new BinkDocument();
         await using var sa = new BinkCollaborationSession(alex, hub.CreateClient(), "alex");
         await using var sz = new BinkCollaborationSession(zoe, hub.CreateClient(), "zoe");
-        await sz.RequestSnapshotAsync();
+        await sz.RequestSnapshotAsync(TestContext.CancellationToken);
         await Task.Yield();
         Assert.AreEqual(LayerOrder(alex), LayerOrder(zoe));
 
@@ -320,7 +320,7 @@ public sealed class OrderConvergenceTests
         Assert.ThrowsExactly<InvalidOperationException>(() => alex.Apply(new BinkBatchOperation([new BinkReorderElementOperation(x, alex.Layers[0].Id, null), new BinkRemoveElementOperation(Guid.NewGuid())])));
         alex.Apply(sent!, BinkChangeOrigin.Remote);
 
-        CollectionAssert.AreEqual(Order(alex), Order(zoe));
+        Assert.AreSequenceEqual(Order(alex), Order(zoe));
     }
 
     [TestMethod]
@@ -338,7 +338,7 @@ public sealed class OrderConvergenceTests
             zoe.Arrange([x], BinkArrangement.BringToFront);
             await exchange();
 
-            CollectionAssert.AreEqual(Order(alex), Order(zoe));
+            Assert.AreSequenceEqual(Order(alex), Order(zoe));
         }
     }
 
@@ -359,7 +359,7 @@ public sealed class OrderConvergenceTests
             await exchange();
 
             Assert.IsTrue(alex.ContainsElement(x));
-            CollectionAssert.AreEqual(Order(alex), Order(zoe));
+            Assert.AreSequenceEqual(Order(alex), Order(zoe));
         }
     }
 
@@ -485,12 +485,9 @@ public sealed class OrderConvergenceTests
         Assert.AreEqual(5002, document.ElementCount);
 
         string longest = new('V', BinkOrderKey.MaxLength - 2);
-        Assert.ThrowsExactly<InvalidOperationException>(() =>
-        {
-            string? key = "a0" + longest[..^1] + "U";
-            string? next = "a0" + longest;
-            for (int i = 0; i < 100; i++) next = BinkOrderKey.Between(key, next);
-        });
+        string key = "a0" + longest[..^1] + "U";
+        string next = "a0" + longest;
+        Assert.ThrowsExactly<InvalidOperationException>(() => BinkOrderKey.Between(key, next));
     }
 
     [TestMethod]
@@ -502,7 +499,7 @@ public sealed class OrderConvergenceTests
 
         document.Apply(new BinkReorderElementOperation(ids[2], document.Layers[0].Id, 0), BinkChangeOrigin.Remote);
 
-        CollectionAssert.AreEqual(new[] { ids[2], ids[0], ids[1] }, Order(document));
+        Assert.AreSequenceEqual(new[] { ids[2], ids[0], ids[1] }, Order(document));
     }
 
     [TestMethod]
@@ -513,11 +510,11 @@ public sealed class OrderConvergenceTests
         document.AddLayer("Second");
 
         string plain = BinkSerializer.Serialize(document);
-        StringAssert.DoesNotMatch(plain, new System.Text.RegularExpressions.Regex("elementKeys"), "A file's order is its list; it carries no keys unless asked.");
-        CollectionAssert.AreEqual(Order(document), Order(BinkSerializer.Deserialize(plain)));
+        Assert.DoesNotMatchRegex(new System.Text.RegularExpressions.Regex("elementKeys"), plain, "A file's order is its list; it carries no keys unless asked.");
+        Assert.AreSequenceEqual(Order(document), Order(BinkSerializer.Deserialize(plain)));
 
         BinkDocument keyed = BinkSerializer.Deserialize(BinkSerializer.Serialize(document, new BinkSerializerOptions { IncludeOrderKeys = true }));
-        CollectionAssert.AreEqual(document.Layers[0].Keys.ToArray(), keyed.Layers[0].Keys.ToArray());
+        Assert.AreSequenceEqual(document.Layers[0].Keys.ToArray(), keyed.Layers[0].Keys.ToArray());
         Assert.AreEqual(document.OrderKeyOf(document.Layers[1].Id), keyed.OrderKeyOf(keyed.Layers[1].Id));
     }
 
@@ -533,7 +530,7 @@ public sealed class OrderConvergenceTests
 
         BinkDocument read = BinkSerializer.Deserialize(swapped);
 
-        CollectionAssert.AreEqual(Order(document), Order(read));
+        Assert.AreSequenceEqual(Order(document), Order(read));
         for (int i = 1; i < read.Layers[0].Keys.Count; i++) Assert.IsLessThan(0, string.CompareOrdinal(read.Layers[0].Keys[i - 1], read.Layers[0].Keys[i]));
     }
 
@@ -547,4 +544,6 @@ public sealed class OrderConvergenceTests
 
         Assert.AreEqual(stroke.Id, Order(document)[0]);
     }
+
+    public TestContext TestContext { get; set; }
 }

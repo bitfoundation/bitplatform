@@ -45,8 +45,10 @@ public class MicroPdf417Tests
         {
             using var image = symbol.Render(scale: 3);
             var result = Decode(image, still: false, BbBarcodeFormat.All);
+            var expectedValue = BbBarcodeFormat.MicroPdf417;
+            var actualValue = result?.Format;
 
-            Assert.AreEqual(BbBarcodeFormat.MicroPdf417, result?.Format, symbol.Id);
+            Assert.AreEqual(expectedValue, actualValue, symbol.Id);
         }
     }
 
@@ -145,7 +147,9 @@ public class MicroPdf417Tests
         using var inverted = ImageTransforms.Invert(rendered);
 
         Assert.IsNull(Decode(inverted, still: false), "Live settings do not look for inverted symbols.");
-        Assert.AreEqual(symbol.Expected, Decode(inverted, still: true)?.Text);
+        var expectedValue = symbol.Expected;
+        var actualValue = Decode(inverted, still: true)?.Text;
+        Assert.AreEqual(expectedValue, actualValue);
     }
 
     [TestMethod]
@@ -158,8 +162,10 @@ public class MicroPdf417Tests
         Blot(image, x: (4 * 3) + (40 * 3), y: (4 * 3) + (10 * 3 * 2), width: 17 * 3, height: 2 * 3 * 2, dark: true);
 
         var result = Decode(image, still: false);
+        var expectedValue = symbol.Expected;
+        var actualValue = result?.Text;
 
-        Assert.AreEqual(symbol.Expected, result?.Text);
+        Assert.AreEqual(expectedValue, actualValue);
         Assert.IsGreaterThan(0, result!.Metadata!.ErrorsCorrected ?? 0, "The blot should have cost error correction something.");
     }
 
@@ -224,8 +230,10 @@ public class MicroPdf417Tests
     {
         using var matrix = MicroPdf417Encoder.Encode(content, columns);
         using var image = SyntheticImage.FromMatrix(matrix, scale: 3);
+        var expectedValue = content;
+        var actualValue = Decode(image, still: false)?.Text;
 
-        Assert.AreEqual(content, Decode(image, still: false)?.Text);
+        Assert.AreEqual(expectedValue, actualValue);
     }
 
     // "0109501101530003" and "17260101": a GTIN and an expiry date, the GS1 element string of a healthcare label.
@@ -244,7 +252,8 @@ public class MicroPdf417Tests
 
         Assert.IsNotNull(result);
         Assert.AreEqual("010950110153000317260101", result.Text);
-        Assert.IsTrue(result.Metadata?.IsGs1);
+        var actualValue = result.Metadata?.IsGs1;
+        Assert.IsTrue(actualValue);
         Assert.IsTrue(result.TryGetGs1(out var elements));
         Assert.AreEqual("(01)09501101530003(17)260101", elements.ToBracketedString());
 

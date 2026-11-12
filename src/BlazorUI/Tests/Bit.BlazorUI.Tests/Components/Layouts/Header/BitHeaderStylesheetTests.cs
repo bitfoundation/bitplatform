@@ -18,18 +18,18 @@ public class BitHeaderStylesheetTests
         // An explicit Color or Size publishes these only while it is set, so they are read before the variable, which
         // only restyles the default an unset one stands for: the plain page surface and the medium spacing.
         // The colors are read per variant, the variant's own tier of each public variable ahead of the shared one.
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-hdr-bg, var(--bit-Header-fill-background, var(--bit-Header-background, #{$clr-bg-pri})));");
-        StringAssert.Contains(stylesheet, "color: var(--bit-hdr-on, var(--bit-Header-fill-color, var(--bit-Header-color, #{$clr-fg-pri})));");
-        StringAssert.Contains(stylesheet, "color: var(--bit-hdr-fg, var(--bit-Header-outline-color, var(--bit-Header-color, #{$clr-fg-pri})));");
-        StringAssert.Contains(stylesheet, "var(--bit-hdr-brd, var(--bit-Header-outline-border-color, var(--bit-Header-border-color, #{$clr-brd-pri})));");
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-hdr-bg-dis, var(--bit-Header-fill-disabled-background, var(--bit-Header-disabled-background, #{$clr-bg-pri})));");
-        StringAssert.Contains(stylesheet, "color: var(--bit-hdr-fg-dis, var(--bit-Header-text-disabled-color, var(--bit-Header-disabled-color, #{$clr-fg-dis})));");
-        StringAssert.Contains(stylesheet, "$hdr-pad-y: var(--bit-hdr-pad-y, var(--bit-Header-padding-block, #{spacing(1)}));");
-        StringAssert.Contains(stylesheet, "$hdr-pad-x: var(--bit-hdr-pad-x, var(--bit-Header-padding-inline, #{spacing(3)}));");
+        Assert.Contains("background-color: var(--bit-hdr-bg, var(--bit-Header-fill-background, var(--bit-Header-background, #{$clr-bg-pri})));", stylesheet);
+        Assert.Contains("color: var(--bit-hdr-on, var(--bit-Header-fill-color, var(--bit-Header-color, #{$clr-fg-pri})));", stylesheet);
+        Assert.Contains("color: var(--bit-hdr-fg, var(--bit-Header-outline-color, var(--bit-Header-color, #{$clr-fg-pri})));", stylesheet);
+        Assert.Contains("var(--bit-hdr-brd, var(--bit-Header-outline-border-color, var(--bit-Header-border-color, #{$clr-brd-pri})));", stylesheet);
+        Assert.Contains("background-color: var(--bit-hdr-bg-dis, var(--bit-Header-fill-disabled-background, var(--bit-Header-disabled-background, #{$clr-bg-pri})));", stylesheet);
+        Assert.Contains("color: var(--bit-hdr-fg-dis, var(--bit-Header-text-disabled-color, var(--bit-Header-disabled-color, #{$clr-fg-dis})));", stylesheet);
+        Assert.Contains("$hdr-pad-y: var(--bit-hdr-pad-y, var(--bit-Header-padding-block, #{spacing(1)}));", stylesheet);
+        Assert.Contains("$hdr-pad-x: var(--bit-hdr-pad-x, var(--bit-Header-padding-inline, #{spacing(3)}));", stylesheet);
 
         // The size classes publish their paddings bare, so they win over the variables.
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-hdr-sm {"), "--bit-hdr-pad-y: #{spacing(0.5)};");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-hdr-lg {"), "--bit-hdr-pad-x: #{spacing(4)};");
+        Assert.Contains("--bit-hdr-pad-y: #{spacing(0.5)};", SourceFiles.GetScssBlock(stylesheet, "\n.bit-hdr-sm {"));
+        Assert.Contains("--bit-hdr-pad-x: #{spacing(4)};", SourceFiles.GetScssBlock(stylesheet, "\n.bit-hdr-lg {"));
 
         Assert.IsFalse(Regex.IsMatch(stylesheet, @"var\(--bit-Header-[a-z-]+, var\(--bit-hdr-"), "A public variable is read before the parameter it restyles the default of.");
     }
@@ -55,8 +55,7 @@ public class BitHeaderStylesheetTests
         // every filled one.
         foreach (var name in names)
         {
-            StringAssert.Contains(block, $"var(--bit-Header-{variant}-{name}, var(--bit-Header-{name}, ",
-                                  $"{selector} does not read --bit-Header-{variant}-{name} ahead of --bit-Header-{name}.");
+            Assert.Contains($"var(--bit-Header-{variant}-{name}, var(--bit-Header-{name}, ", block, $"{selector} does not read --bit-Header-{variant}-{name} ahead of --bit-Header-{name}.");
         }
 
         // A variant reads a shared variable only right behind its own twin, and never the tier of another variant.
@@ -66,7 +65,7 @@ public class BitHeaderStylesheetTests
                        $"{selector} reads the variables of another variant.");
 
         // The divider of a Bordered header is drawn by its variant, never by a rule every variant shares.
-        Assert.IsFalse(stylesheet.Contains("\n.bit-hdr-brd {"), "A rule of every variant draws the divider.");
+        Assert.DoesNotContain("\n.bit-hdr-brd {", stylesheet, "A rule of every variant draws the divider.");
     }
 
     [TestMethod]
@@ -79,7 +78,7 @@ public class BitHeaderStylesheetTests
         // and the classes - declared further down at the same weight - still win on the root that carries them.
         foreach (var property in new[] { "--bit-hdr-bg", "--bit-hdr-on", "--bit-hdr-fg", "--bit-hdr-brd", "--bit-hdr-bg-dis", "--bit-hdr-fg-dis", "--bit-hdr-pad-y", "--bit-hdr-pad-x" })
         {
-            StringAssert.Contains(root, $"{property}: initial;");
+            Assert.Contains($"{property}: initial;", root);
         }
     }
 
@@ -91,9 +90,9 @@ public class BitHeaderStylesheetTests
         // The text of an Outline or Text header is read on the page rather than over the role's fill, so it takes the
         // role's text color - a secondary or a warning main is picked to fill a surface and is under 3:1 as text on white -
         // while the border and the fill keep the main.
-        StringAssert.Contains(roles, "--bit-hdr-fg: #{role-text($role, $tokens)};");
-        StringAssert.Contains(roles, "--bit-hdr-brd: #{role($tokens, main)};");
-        StringAssert.Contains(roles, "--bit-hdr-bg: #{role($tokens, main)};");
+        Assert.Contains("--bit-hdr-fg: #{role-text($role, $tokens)};", roles);
+        Assert.Contains("--bit-hdr-brd: #{role($tokens, main)};", roles);
+        Assert.Contains("--bit-hdr-bg: #{role($tokens, main)};", roles);
     }
 
     private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Layouts", "Header", "BitHeader.scss");

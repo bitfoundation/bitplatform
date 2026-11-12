@@ -9,7 +9,7 @@ namespace Bit.Bsqlite.EntityFrameworkCore.Tests.Migrations;
 /// </summary>
 [DbContext(typeof(ProductContext))]
 [Migration("20260101000000_InitialCreate")]
-public sealed class InitialCreate : Migration
+internal sealed class InitialCreate : Migration
 {
     protected override void Up(MigrationBuilder migrationBuilder)
     {

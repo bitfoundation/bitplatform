@@ -102,7 +102,7 @@ public class BitSwiperBrowserTests : PerformanceTestBase
 
         var lefts = await Probe(probe).EvaluateAsync<double[]>(
             "el => [...el.querySelectorAll('.bit-swpi')].slice(0, 2).map(i => i.getBoundingClientRect().left)");
-        Assert.IsTrue(lefts[1] < lefts[0], "the second item is laid out to the left of the first one");
+        Assert.IsLessThan(lefts[0], lefts[1], "the second item is laid out to the left of the first one");
 
         await Next(probe).ClickAsync();
         await ExpectAt(probe, 1);

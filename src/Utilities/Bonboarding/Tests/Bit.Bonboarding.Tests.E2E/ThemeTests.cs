@@ -100,7 +100,7 @@ public sealed class ThemeTests : BonboardingTest
         await page.Keyboard.PressAsync("Tab");
         var outline = await page.EvaluateAsync<string>("() => { const s = getComputedStyle(document.activeElement); return s.outlineStyle + ' ' + s.outlineWidth; }");
 
-        StringAssert.StartsWith(outline, "solid", $"The focused control's outline is '{outline}'.");
+        Assert.StartsWith("solid", outline, $"The focused control's outline is '{outline}'.");
     }
 
     [TestMethod]

@@ -44,7 +44,7 @@ public class McpStorageLabTests
         Assert.IsFalse(plan.IsFirstChoice);
         Assert.AreEqual("Unavailable", Candidate(plan, "opfs").Status);
         Assert.Contains("unavailable", Candidate(plan, "opfs").Explanation!);
-        Assert.IsTrue(plan.Log.Any(line => line.StartsWith("Warning:", StringComparison.Ordinal) && line.Contains("opfs", StringComparison.Ordinal)),
+        Assert.Contains(line => line.StartsWith("Warning:", StringComparison.Ordinal) && line.Contains("opfs", StringComparison.Ordinal), plan.Log,
             "A fallback is logged as a warning naming what was rejected.");
     }
 
@@ -63,7 +63,7 @@ public class McpStorageLabTests
 
         Assert.IsTrue(accepted.Opens);
         Assert.AreEqual("in-memory", accepted.Provider);
-        Assert.IsTrue(accepted.Notes.Any(note => note.Contains("does not survive a reload", StringComparison.Ordinal)));
+        Assert.Contains(note => note.Contains("does not survive a reload", StringComparison.Ordinal), accepted.Notes);
         Assert.Contains(".AllowNonPersistentFallback()", accepted.Configuration);
     }
 
@@ -74,7 +74,7 @@ public class McpStorageLabTests
 
         Assert.IsTrue(plan.Opens);
         Assert.AreEqual("in-memory", plan.Provider);
-        Assert.IsTrue(plan.Notes.Any(note => note.Contains("never quietly substituted", StringComparison.Ordinal)), "A lone candidate is strict.");
+        Assert.Contains(note => note.Contains("never quietly substituted", StringComparison.Ordinal), plan.Notes, "A lone candidate is strict.");
     }
 
     [TestMethod]
@@ -89,8 +89,8 @@ public class McpStorageLabTests
         Assert.AreEqual("indexeddb", plan.BindingAfter);
         Assert.AreEqual("NotAttempted", plan.Migration!.Outcome, "KeepExisting moves nothing.");
         Assert.Contains("BetterProviderAvailable", Candidate(plan, "opfs").Explanation!);
-        Assert.IsTrue(plan.Log.Any(line => line.StartsWith("Information:", StringComparison.Ordinal) && line.Contains("KeepExisting", StringComparison.Ordinal)));
-        Assert.IsTrue(plan.Notes.Any(note => note.Contains("AutomaticOnOpen", StringComparison.Ordinal)), "The note names the mode that would move it.");
+        Assert.Contains(line => line.StartsWith("Information:", StringComparison.Ordinal) && line.Contains("KeepExisting", StringComparison.Ordinal), plan.Log);
+        Assert.Contains(note => note.Contains("AutomaticOnOpen", StringComparison.Ordinal), plan.Notes, "The note names the mode that would move it.");
     }
 
     [TestMethod]
@@ -100,7 +100,7 @@ public class McpStorageLabTests
 
         Assert.AreEqual("indexeddb", plan.Provider);
         Assert.AreEqual("NotAttempted", plan.Migration!.Outcome);
-        Assert.IsTrue(plan.Notes.Any(note => note.Contains("BsqliteStorageMigrator.MigrateAsync", StringComparison.Ordinal)));
+        Assert.Contains(note => note.Contains("BsqliteStorageMigrator.MigrateAsync", StringComparison.Ordinal), plan.Notes);
     }
 
     [TestMethod]
@@ -131,7 +131,7 @@ public class McpStorageLabTests
         Assert.AreEqual("indexeddb", plan.BindingAfter, "The migrator leaves the binding untouched.");
         Assert.AreEqual("Failed", plan.Migration!.Outcome);
         Assert.Contains("bytes free", plan.Migration.Error!);
-        Assert.IsTrue(plan.Log.Any(line => line.StartsWith("Warning:", StringComparison.Ordinal) && line.Contains("BsqliteQuotaExceededException", StringComparison.Ordinal)));
+        Assert.Contains(line => line.StartsWith("Warning:", StringComparison.Ordinal) && line.Contains("BsqliteQuotaExceededException", StringComparison.Ordinal), plan.Log);
     }
 
     [TestMethod]
@@ -144,7 +144,7 @@ public class McpStorageLabTests
         Assert.AreEqual("opfs", plan.Provider);
         Assert.AreEqual("Migrated", plan.Migration!.Outcome);
         Assert.IsFalse(plan.Migration.Copied);
-        Assert.IsTrue(plan.Notes.Any(note => note.Contains("without copying anything", StringComparison.Ordinal)));
+        Assert.Contains(note => note.Contains("without copying anything", StringComparison.Ordinal), plan.Notes);
     }
 
     [TestMethod]
@@ -156,7 +156,7 @@ public class McpStorageLabTests
         Assert.Contains("will not open an empty", plan.Error!);
         Assert.AreEqual("Unavailable", Candidate(plan, "opfs").Status);
         Assert.AreEqual("opfs", plan.BindingAfter, "The binding still points at the data.");
-        Assert.IsTrue(plan.Notes.Any(note => note.Contains("Admin.DeleteAsync", StringComparison.Ordinal)));
+        Assert.Contains(note => note.Contains("Admin.DeleteAsync", StringComparison.Ordinal), plan.Notes);
     }
 
     [TestMethod]
@@ -168,7 +168,7 @@ public class McpStorageLabTests
         Assert.AreEqual("NotRegistered", Candidate(plan, "indexeddb").Status);
         Assert.IsFalse(Candidate(plan, "indexeddb").Registered);
         Assert.IsNull(Candidate(plan, "indexeddb").Rank, "It is the binding, not a candidate.");
-        Assert.IsTrue(plan.Notes.Any(note => note.Contains("Register it again", StringComparison.Ordinal)));
+        Assert.Contains(note => note.Contains("Register it again", StringComparison.Ordinal), plan.Notes);
     }
 
     [TestMethod]
@@ -178,7 +178,7 @@ public class McpStorageLabTests
 
         Assert.AreEqual("indexeddb", plan.Provider);
         Assert.AreEqual("NotRegistered", Candidate(plan, "opfs").Status);
-        Assert.IsTrue(plan.Notes.Any(note => note.Contains("AddStorageProvider<BsqliteOpfsStorageProvider>()", StringComparison.Ordinal)));
+        Assert.Contains(note => note.Contains("AddStorageProvider<BsqliteOpfsStorageProvider>()", StringComparison.Ordinal), plan.Notes);
     }
 
     [TestMethod]
@@ -204,7 +204,7 @@ public class McpStorageLabTests
         var plan = await PlanAsync(new() { ["nonPersistent"] = "opfs" });
 
         Assert.IsTrue(Candidate(plan, "opfs").Persistent);
-        Assert.IsTrue(plan.Notes.Any(note => note.Contains("first-party backend", StringComparison.Ordinal)));
+        Assert.Contains(note => note.Contains("first-party backend", StringComparison.Ordinal), plan.Notes);
     }
 
     [TestMethod]

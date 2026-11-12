@@ -49,7 +49,7 @@ public sealed class ResilienceTests : BonboardingTest
         await page.Locator("[data-bonboarding-anchor='reveal']").FocusAsync();
         await page.Keyboard.PressAsync("Tab");
         await page.Keyboard.PressAsync("Shift+Tab");
-        StringAssert.Contains(await FocusedAsync(page), "Reveal the panel");
+        Assert.Contains("Reveal the panel", await FocusedAsync(page));
         await page.Keyboard.PressAsync("Enter");
 
         await WaitForStepAsync(page, "There it is");
@@ -165,7 +165,7 @@ public sealed class ResilienceTests : BonboardingTest
         await page.Keyboard.PressAsync("ArrowRight");
         await WaitForStepAsync(page, "Create a project");
 
-        var visible =await page.Locator("[data-bonboarding-anchor='new-project']:visible").BoundingBoxAsync();
+        var visible = await page.Locator("[data-bonboarding-anchor='new-project']:visible").BoundingBoxAsync();
         var spotlight = await BoxOfAsync(page, ".bit-bonboarding-spotlight");
         AssertNear(visible!.X - 8, spotlight.X, 1.5, "The spotlight's left edge");
         AssertNear(visible.Width + 16, spotlight.Width, 1.5, "The spotlight's width");

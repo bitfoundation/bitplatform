@@ -32,8 +32,8 @@ public sealed class MaskContourTests
     public void ASquareHasOneClosedOutlineAlongItsEdge()
     {
         using var mask = Square(20, new Rectangle(5, 5, 10, 10));
-        var curves = MaskContours.Trace(mask);
-        Assert.HasCount(1, curves);
+        var curves = MaskContours.Trace(mask, cancellationToken: TestContext.CancellationToken);
+        Assert.ContainsSingle(curves);
         var outline = curves[0];
         // Half way between the last covered pixel centre and the first uncovered one: the pixel edge.
         Assert.AreEqual(5f, outline.Min(p => p.X), 0.01f);
@@ -53,7 +53,7 @@ public sealed class MaskContourTests
             for (var x = 0; x < 10; x++) mask[x, y] = 255;
             mask[10, y] = 64;
         }
-        var curve = MaskContours.Trace(mask).Single();
+        var curve = MaskContours.Trace(mask, cancellationToken: TestContext.CancellationToken).Single();
         var right = curve.Where(p => p.Y > 1 && p.Y < 3).Max(p => p.X);
         // From 255 at the centre 9.5 to 64 at 10.5, coverage reaches 128 two thirds of the way.
         Assert.AreEqual(9.5f + (255 - 128) / (255f - 64), right, 0.01f);
@@ -64,7 +64,7 @@ public sealed class MaskContourTests
     {
         using var mask = Square(30, new Rectangle(5, 5, 20, 20));
         for (var y = 12; y < 18; y++) for (var x = 12; x < 18; x++) mask[x, y] = 0;
-        var curves = MaskContours.Trace(mask);
+        var curves = MaskContours.Trace(mask, cancellationToken: TestContext.CancellationToken);
         Assert.HasCount(2, curves);
         var areas = curves.Select(SignedArea).OrderBy(a => a).ToArray();
         Assert.IsLessThan(0f, areas[0], "the hole turns anticlockwise");
@@ -79,7 +79,7 @@ public sealed class MaskContourTests
         using var mask = MaskBuffer.Create(6, 6);
         mask[2, 2] = 255;
         mask[3, 3] = 255;
-        var curves = MaskContours.Trace(mask);
+        var curves = MaskContours.Trace(mask, cancellationToken: TestContext.CancellationToken);
         Assert.HasCount(2, curves);
         foreach (var curve in curves) Assert.IsGreaterThan(0f, SignedArea(curve));
     }
@@ -88,9 +88,9 @@ public sealed class MaskContourTests
     public void AnEmptyOrFullMaskHasTheObviousOutlines()
     {
         using var empty = MaskBuffer.Create(10, 10);
-        Assert.IsEmpty(MaskContours.Trace(empty));
+        Assert.IsEmpty(MaskContours.Trace(empty, cancellationToken: TestContext.CancellationToken));
         using var full = MaskBuffer.Create(10, 10, 255);
-        var curve = MaskContours.Trace(full).Single();
+        var curve = MaskContours.Trace(full, cancellationToken: TestContext.CancellationToken).Single();
         Assert.AreEqual(0.5f, curve.Min(p => p.X), 0.51f, "the image's edge closes the outline");
     }
 
@@ -100,8 +100,10 @@ public sealed class MaskContourTests
         using var noise = MaskBuffer.Create(200, 200);
         var random = new Random(3);
         for (var i = 0; i < noise.Values.Length; i++) noise.Values[i] = (byte)(random.Next(2) * 255);
-        var curves = MaskContours.Trace(noise, maxPoints: 5000);
+        var curves = MaskContours.Trace(noise, maxPoints: 5000, cancellationToken: TestContext.CancellationToken);
         Assert.IsLessThanOrEqualTo(5000, curves.Sum(c => c.Length));
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => MaskContours.Trace(noise, threshold: 0));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => MaskContours.Trace(noise, threshold: 0, cancellationToken: TestContext.CancellationToken));
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

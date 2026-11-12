@@ -42,7 +42,8 @@ public class ScannerInterfaceTests : BbScannerTest
         var body = await session.Page.TextContentAsync("body");
         Assert.IsNotNull(body);
         Assert.Contains("not found", body, StringComparison.OrdinalIgnoreCase);
-        Assert.AreEqual("404", (await session.Page.TextContentAsync("h1"))?.Trim());
+        var actualValue = (await session.Page.TextContentAsync("h1"))?.Trim();
+        Assert.AreEqual("404", actualValue);
         Assert.IsEmpty(session.PageErrors);
     }
 
@@ -89,7 +90,7 @@ public class ScannerInterfaceTests : BbScannerTest
 
         // The symbology by its written name and the value, not the enum member.
         var values = await session.ResultValuesAsync();
-        Assert.IsTrue(values.Any(v => announcement.Contains(v, StringComparison.Ordinal)), $"'{announcement}' announced none of the values read.");
+        Assert.Contains(v => announcement.Contains(v, StringComparison.Ordinal), values, $"'{announcement}' announced none of the values read.");
         Assert.DoesNotContain("QrCode:", announcement);
     }
 
@@ -153,7 +154,7 @@ public class ScannerInterfaceTests : BbScannerTest
         var reticle = await ControlBoxAsync(session, ".bit-bbscanner__reticle");
         var cornerBox = await corner.BoundingBoxAsync();
         Assert.IsNotNull(cornerBox);
-        Assert.IsTrue(cornerBox.X + cornerBox.Width > reticle.X + (reticle.Width / 2), "The reticle did not mirror in a right-to-left document.");
+        Assert.IsGreaterThan(reticle.X + (reticle.Width / 2), cornerBox.X + cornerBox.Width, "The reticle did not mirror in a right-to-left document.");
 
         Assert.IsEmpty(session.PageErrors);
     }
@@ -171,7 +172,7 @@ public class ScannerInterfaceTests : BbScannerTest
         Assert.IsFalse(overflows, "The page scrolled sideways on a 360 pixel viewport.");
 
         var scanner = await ControlBoxAsync(session, ".bit-bbscanner");
-        Assert.IsTrue(scanner.Width <= 361, $"The scanner was {scanner.Width} pixels wide in a 360 pixel viewport.");
+        Assert.IsLessThanOrEqualTo(361, scanner.Width, $"The scanner was {scanner.Width} pixels wide in a 360 pixel viewport.");
 
         // The control bar wraps rather than spilling out of the viewfinder.
         var controlsFit = await session.Page.EvaluateAsync<bool>(
@@ -241,8 +242,9 @@ public class ScannerInterfaceTests : BbScannerTest
         }
 
         var values = await session.ResultValuesAsync();
-        Assert.AreEqual(2, values.Count);
-        foreach (var v in values) { Assert.AreEqual(FakeCameraVideo.QrPayload, v); };
+        Assert.HasCount(2, values);
+        foreach (var v in values) { Assert.AreEqual(FakeCameraVideo.QrPayload, v); }
+        ;
     }
 
     [TestMethod]

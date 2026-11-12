@@ -25,12 +25,12 @@ public class BitOtpInputPrerenderTests
             [nameof(BitOtpInput.Separator)] = "-",
         });
 
-        Assert.AreEqual(4, Regex.Matches(html, "bit-otp-inp").Count);
-        Assert.AreEqual(3, Regex.Matches(html, "bit-otp-sep").Count);
-        StringAssert.Contains(html, "Verification code");
-        StringAssert.Contains(html, "value=\"1\"");
-        StringAssert.Contains(html, "value=\"2\"");
-        StringAssert.Contains(html, "role=\"group\"");
+        Assert.HasCount(4, Regex.Matches(html, "bit-otp-inp"));
+        Assert.HasCount(3, Regex.Matches(html, "bit-otp-sep"));
+        Assert.Contains("Verification code", html);
+        Assert.Contains("value=\"1\"", html);
+        Assert.Contains("value=\"2\"", html);
+        Assert.Contains("role=\"group\"", html);
     }
 
     [TestMethod]
@@ -44,8 +44,8 @@ public class BitOtpInputPrerenderTests
         });
 
         // A plain form posts the whole code as one named field, which a static page has to carry as well.
-        StringAssert.Contains(html, "type=\"hidden\"");
-        StringAssert.Contains(html, "name=\"otp\"");
-        StringAssert.Contains(html, "value=\"1234\"");
+        Assert.Contains("type=\"hidden\"", html);
+        Assert.Contains("name=\"otp\"", html);
+        Assert.Contains("value=\"1234\"", html);
     }
 }

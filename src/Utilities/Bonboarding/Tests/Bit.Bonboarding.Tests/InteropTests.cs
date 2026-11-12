@@ -27,12 +27,12 @@ public class InteropTests : BunitContext
             NullLogger<BonboardingInterop>.Instance);
 
         var callbacks = new CountingCallbacks();
-        await interop.AttachAsync("s", callbacks);
+        await interop.AttachAsync("s", callbacks, TestContext.CancellationToken);
 
-        await interop.ActivateStepAsync(Activation("s"));
+        await interop.ActivateStepAsync(Activation("s"), TestContext.CancellationToken);
         var first = LastActivationId(module);
 
-        await interop.ActivateStepAsync(Activation("s"));
+        await interop.ActivateStepAsync(Activation("s"), TestContext.CancellationToken);
         var second = LastActivationId(module);
 
         Assert.AreNotEqual(first, second);
@@ -52,7 +52,7 @@ public class InteropTests : BunitContext
         Assert.AreEqual(2, callbacks.Count);
 
         // Once the step is deactivated, nothing it raised applies any more.
-        await interop.DeactivateStepAsync("s");
+        await interop.DeactivateStepAsync("s", TestContext.CancellationToken);
         await interop.OnAdvanceTriggered("s", second);
 
         Assert.AreEqual(2, callbacks.Count);
@@ -78,15 +78,15 @@ public class InteropTests : BunitContext
 
         // The circuit dropped mid-call: the listener never reached the browser.
         watch.SetException(new JSDisconnectedException("The circuit is gone."));
-        await Assert.ThrowsExactlyAsync<JSDisconnectedException>(() => interop.WatchStorageAsync("bit-bonboarding:", _ => ValueTask.CompletedTask).AsTask());
+        await Assert.ThrowsExactlyAsync<JSDisconnectedException>(() => interop.WatchStorageAsync("bit-bonboarding:", _ => ValueTask.CompletedTask, TestContext.CancellationToken).AsTask());
 
         // The store tries again on its next read, and this time it gets there.
         watch.SetVoidResult();
-        await interop.WatchStorageAsync("bit-bonboarding:", _ => ValueTask.CompletedTask);
+        await interop.WatchStorageAsync("bit-bonboarding:", _ => ValueTask.CompletedTask, TestContext.CancellationToken);
         Assert.HasCount(2, module.Invocations["watchStorage"]);
 
         // Once in place, one listener serves every watcher.
-        await interop.WatchStorageAsync("other:", _ => ValueTask.CompletedTask);
+        await interop.WatchStorageAsync("other:", _ => ValueTask.CompletedTask, TestContext.CancellationToken);
         Assert.HasCount(2, module.Invocations["watchStorage"]);
     }
 
@@ -123,4 +123,6 @@ public class InteropTests : BunitContext
             return ValueTask.CompletedTask;
         }
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

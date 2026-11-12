@@ -33,7 +33,7 @@ public class BitCountryPickerE2ETests : E2ETestBase
         await Expect(callout).ToBeVisibleAsync();
         await Expect(callout.Locator(".bit-cnp-srch")).ToBeFocusedAsync();
         await Expect(callout.Locator("[role=listbox]")).ToBeVisibleAsync();
-        Assert.IsTrue(await callout.Locator("[role=option]").CountAsync() > 200);
+        Assert.IsGreaterThan(200, await callout.Locator("[role=option]").CountAsync());
         await Expect(field).ToHaveAttributeAsync("aria-controls", (await callout.Locator("[role=listbox]").GetAttributeAsync("id"))!);
 
         // Positioned under the field, as wide as it.
@@ -41,7 +41,7 @@ public class BitCountryPickerE2ETests : E2ETestBase
         await callout.EvaluateAsync("el => Promise.all(el.getAnimations({ subtree: true }).map(a => a.finished.catch(() => null)))");
         var fieldBox = (await field.BoundingBoxAsync())!;
         var calloutBox = (await callout.BoundingBoxAsync())!;
-        Assert.IsTrue(calloutBox.Y >= fieldBox.Y + fieldBox.Height - 2, $"callout at {calloutBox.Y}, field bottom {fieldBox.Y + fieldBox.Height}");
+        Assert.IsGreaterThanOrEqualTo(fieldBox.Y + fieldBox.Height - 2, calloutBox.Y, $"callout at {calloutBox.Y}, field bottom {fieldBox.Y + fieldBox.Height}");
         Assert.AreEqual(fieldBox.Width, calloutBox.Width, 2);
     }
 
@@ -113,7 +113,7 @@ public class BitCountryPickerE2ETests : E2ETestBase
         await Expect(Root("cnp-required")).ToHaveClassAsync(HasClass("bit-cnp-req"));
         await Expect(Field("cnp-required")).ToHaveAttributeAsync("aria-required", "true");
         var asterisk = await Root("cnp-required").Locator("> label").EvaluateAsync<string>("l => getComputedStyle(l, '::after').content");
-        StringAssert.Contains(asterisk, "*");
+        Assert.Contains("*", asterisk);
 
         var description = Root("cnp-description").Locator(".bit-cnp-des");
         await Expect(description).ToHaveTextAsync("Where you have lived.");
@@ -169,7 +169,7 @@ public class BitCountryPickerE2ETests : E2ETestBase
 
         var callout = await OpenCalloutAsync("cnp-countries");
         var titles = await callout.Locator("[role=option]").EvaluateAllAsync<string[]>("os => os.map(o => o.title)");
-        CollectionAssert.AreEqual(new[] { "Canada", "Germany", "Japan", "Brazil", "Australia" }, titles);
+        Assert.AreSequenceEqual(new[] { "Canada", "Germany", "Japan", "Brazil", "Australia" }, titles);
     }
 
     [TestMethod]
@@ -281,7 +281,7 @@ public class BitCountryPickerE2ETests : E2ETestBase
 
         callout = await OpenCalloutAsync("cnp-search");
         await Expect(callout.Locator(".bit-cnp-srch")).ToHaveValueAsync("");
-        Assert.IsTrue(await callout.Locator("[role=option]").CountAsync() > 200);
+        Assert.IsGreaterThan(200, await callout.Locator("[role=option]").CountAsync());
     }
 
     [TestMethod]
@@ -521,7 +521,7 @@ public class BitCountryPickerE2ETests : E2ETestBase
         // The error is written above the description.
         var errorBox = (await error.BoundingBoxAsync())!;
         var descriptionBox = (await Root("cnp-error").Locator(".bit-cnp-des").BoundingBoxAsync())!;
-        Assert.IsTrue(errorBox.Y < descriptionBox.Y);
+        Assert.IsLessThan(descriptionBox.Y, errorBox.Y);
 
         await Expect(Root("cnp-error-template").Locator(".bit-cnp-erm .custom-error")).ToHaveTextAsync("Templated error");
         await Expect(Root("cnp-error-template")).ToHaveClassAsync(HasClass("bit-inv"));
@@ -669,7 +669,7 @@ public class BitCountryPickerE2ETests : E2ETestBase
         var callout = await OpenCalloutAsync("cnp-maxheight");
         var scroller = callout.Locator(".bit-cnp-scn");
         var height = await scroller.EvaluateAsync<double>("s => s.getBoundingClientRect().height");
-        Assert.IsTrue(height <= 200.5, $"The list is {height}px tall.");
+        Assert.IsLessThanOrEqualTo(200.5, height, $"The list is {height}px tall.");
         Assert.IsTrue(await scroller.EvaluateAsync<bool>("s => s.scrollHeight > s.clientHeight"));
     }
 
@@ -945,16 +945,16 @@ public class BitCountryPickerE2ETests : E2ETestBase
         var option = callout.Locator("[role=option]").First;
         var flagBox = (await option.Locator(".bit-cnp-flg").BoundingBoxAsync())!;
         var nameBox = (await option.Locator(".bit-cnp-inm").BoundingBoxAsync())!;
-        Assert.IsTrue(flagBox.X > nameBox.X, "The flag sits at the right of the name.");
+        Assert.IsGreaterThan(nameBox.X, flagBox.X, "The flag sits at the right of the name.");
         await Page.Keyboard.PressAsync("Escape");
 
         // Inherited from the page, the field reads right to left too.
         var field = Field("cnp-rtl-inherited");
         var fieldFlag = (await field.Locator(".bit-cnp-flg").BoundingBoxAsync())!;
         var fieldText = (await field.Locator(".bit-cnp-txt").BoundingBoxAsync())!;
-        Assert.IsTrue(fieldFlag.X > fieldText.X, "The flag of the field sits at the right of its name.");
+        Assert.IsGreaterThan(fieldText.X, fieldFlag.X, "The flag of the field sits at the right of its name.");
         var caret = (await field.Locator(".bit-cnp-car").BoundingBoxAsync())!;
-        Assert.IsTrue(caret.X < fieldText.X, "The caret sits at the left end.");
+        Assert.IsLessThan(fieldText.X, caret.X, "The caret sits at the left end.");
     }
 
     [TestMethod]
@@ -1063,9 +1063,9 @@ public class BitCountryPickerE2ETests : E2ETestBase
         var response = await Page.APIRequest.GetAsync($"{BaseUrl}{Route}");
         var html = await response.TextAsync();
 
-        StringAssert.Contains(html, "id=\"cnp-basic\"");
-        StringAssert.Contains(html, "Select a country");
-        StringAssert.Contains(html, "role=\"combobox\"");
+        Assert.Contains("id=\"cnp-basic\"", html);
+        Assert.Contains("Select a country", html);
+        Assert.Contains("role=\"combobox\"", html);
     }
 
     [TestMethod]

@@ -1,4 +1,4 @@
-using System.Reflection;
+﻿using System.Reflection;
 
 namespace Bit.Bmotion.Tests.Mcp.Services;
 
@@ -31,8 +31,7 @@ public class PropertyCatalogTests
             .Select(property => char.ToLowerInvariant(property.Name[0]) + property.Name[1..])
             .ToArray();
 
-        CollectionAssert.AreEquivalent(expected, catalog.Select(entry => entry.Name).ToArray(),
-                                       "The catalog and Bm.To(...) have drifted apart.");
+        Assert.AreSequenceEqual(expected, catalog.Select(entry => entry.Name).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, "The catalog and Bm.To(...) have drifted apart.");
     }
 
     /// <summary>
@@ -47,14 +46,14 @@ public class PropertyCatalogTests
 
         var undescribed = catalog.Where(entry => entry.Category == "Other").Select(entry => entry.Name).ToArray();
 
-        Assert.AreEqual(0, undescribed.Length,
+        Assert.IsEmpty(undescribed,
                         $"Not described in BmotionPropertyCatalog: {string.Join(", ", undescribed)}.");
 
         foreach (var entry in catalog)
         {
-            CollectionAssert.Contains(KnownCategories, entry.Category, $"'{entry.Name}' has category '{entry.Category}'.");
+            Assert.Contains(entry.Category, KnownCategories, $"'{entry.Name}' has category '{entry.Category}'.");
             Assert.AreNotEqual(string.Empty, entry.Css.Trim(), $"'{entry.Name}' names no CSS.");
-            StringAssert.Contains(entry.Example, entry.Name, $"'{entry.Name}' has example '{entry.Example}'.");
+            Assert.Contains(entry.Name, entry.Example, $"'{entry.Name}' has example '{entry.Example}'.");
             Assert.AreNotEqual(string.Empty, entry.ValueType.Trim());
         }
     }
@@ -75,7 +74,7 @@ public class PropertyCatalogTests
                              $"IsFrameLoopOnlyProperty says {BmotionPropertyCatalog.IsFrameLoopOnlyProperty(entry.Name)}")
             .ToArray();
 
-        Assert.AreEqual(0, disagreements.Length, string.Join("; ", disagreements));
+        Assert.IsEmpty(disagreements, string.Join("; ", disagreements));
     }
 
     [TestMethod]
@@ -124,7 +123,7 @@ public class PropertyCatalogTests
 
         var frameLoopOnly = catalog.Where(entry => entry.PlayedByBrowser is false).Select(entry => entry.Name).ToArray();
 
-        CollectionAssert.AreEqual(new[] { "d" }, frameLoopOnly);
+        Assert.AreSequenceEqual(new[] { "d" }, frameLoopOnly);
 
         var d = catalog.Single(entry => entry.Name == "d");
 
@@ -162,7 +161,7 @@ public class PropertyCatalogTests
 
             // A shape exactly when the browser plays it, and only the two shapes there are.
             Assert.AreEqual(entry.PlayedByBrowser, entry.BrowserPlayback is not null, $"'{entry.Name}' has a shape it was not played in.");
-            if (entry.BrowserPlayback is { } shape) CollectionAssert.Contains(new[] { "Timeline", "Recorded" }, shape);
+            if (entry.BrowserPlayback is { } shape) Assert.Contains(shape, new[] { "Timeline", "Recorded" });
 
             // The compositor is a part of the browser: nothing runs there that the browser was not handed.
             Assert.IsFalse(entry.CompositorEligible && entry.PlayedByBrowser is false, $"'{entry.Name}' is on a compositor it never reached.");
@@ -181,7 +180,7 @@ public class PropertyCatalogTests
         var lastTransform = Array.FindLastIndex(catalog, entry => entry.Category == "Transform");
         var firstOther = Array.FindIndex(catalog, entry => entry.Category != "Transform");
 
-        Assert.IsTrue(lastTransform < firstOther, "The categories are interleaved.");
+        Assert.IsLessThan(firstOther, lastTransform, "The categories are interleaved.");
     }
 
     /// <summary>The probe runs once per process; it must not be paid for on every call.</summary>
@@ -198,7 +197,7 @@ public class PropertyCatalogTests
 
         Assert.IsNotNull(props.X);
         Assert.IsNotNull(props.Opacity);
-        CollectionAssert.AreEqual(new[] { "wobbliness" }, unknown);
+        Assert.AreSequenceEqual(new[] { "wobbliness" }, unknown);
     }
 
     [TestMethod]
@@ -206,7 +205,7 @@ public class PropertyCatalogTests
     {
         BmotionPropertyCatalog.BuildTarget([" x ", "\"opacity\"", "BACKGROUNDCOLOR"], out var unknown);
 
-        Assert.AreEqual(0, unknown.Length, $"Rejected: {string.Join(", ", unknown)}.");
+        Assert.IsEmpty(unknown, $"Rejected: {string.Join(", ", unknown)}.");
     }
 
     /// <summary>
@@ -218,7 +217,7 @@ public class PropertyCatalogTests
     {
         BmotionPropertyCatalog.BuildTarget(["css", "cssVars"], out var unknown);
 
-        CollectionAssert.AreEquivalent(new[] { "css", "cssVars" }, unknown);
+        Assert.AreSequenceEqual(new[] { "css", "cssVars" }, unknown, Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -226,7 +225,7 @@ public class PropertyCatalogTests
     {
         BmotionPropertyCatalog.BuildTarget([], out var unknown);
 
-        Assert.AreEqual(0, unknown.Length);
+        Assert.IsEmpty(unknown);
     }
 
     [TestMethod]
@@ -234,9 +233,9 @@ public class PropertyCatalogTests
     {
         var (reason, remedies) = BmotionPropertyCatalog.ExplainPlayback(["x", "opacity"], new BmTween(), BmotionPlaybackPath.Timeline);
 
-        StringAssert.Contains(reason, "Blazor Server");
-        StringAssert.Contains(reason, "two keyframes");
-        Assert.AreEqual(0, remedies.Length);
+        Assert.Contains("Blazor Server", reason);
+        Assert.Contains("two keyframes", reason);
+        Assert.IsEmpty(remedies);
     }
 
     /// <summary>
@@ -253,8 +252,8 @@ public class PropertyCatalogTests
     {
         var (reason, _) = BmotionPropertyCatalog.ExplainPlayback([property], new BmTween(), BmotionPlaybackPath.Timeline);
 
-        StringAssert.Contains(reason, replacement, $"'{property}' was not pointed at {replacement}.");
-        StringAssert.Contains(reason, "compositor");
+        Assert.Contains(replacement, reason, $"'{property}' was not pointed at {replacement}.");
+        Assert.Contains("compositor", reason);
     }
 
     [TestMethod]
@@ -262,9 +261,9 @@ public class PropertyCatalogTests
     {
         var (reason, remedies) = BmotionPropertyCatalog.ExplainPlayback(["x"], new BmTween { Duration = 0 }, BmotionPlaybackPath.Instant);
 
-        StringAssert.Contains(reason, "no duration");
-        StringAssert.Contains(reason, "every runtime");
-        Assert.IsTrue(remedies.Any(remedy => remedy.Contains("duration", StringComparison.OrdinalIgnoreCase)));
+        Assert.Contains("no duration", reason);
+        Assert.Contains("every runtime", reason);
+        Assert.Contains(remedy => remedy.Contains("duration", StringComparison.OrdinalIgnoreCase), remedies);
     }
 
     [TestMethod]
@@ -274,8 +273,8 @@ public class PropertyCatalogTests
 
         var (reason, remedies) = BmotionPropertyCatalog.ExplainPlayback(["x"], transition, BmotionPlaybackPath.FrameLoop);
 
-        StringAssert.Contains(reason, "Reverse");
-        Assert.IsTrue(remedies.Any(remedy => remedy.Contains("Mirror", StringComparison.Ordinal)));
+        Assert.Contains("Reverse", reason);
+        Assert.Contains(remedy => remedy.Contains("Mirror", StringComparison.Ordinal), remedies);
     }
 
     /// <summary>A Reverse with a count is recorded, not left to the frame loop - and Loop is what makes it a timeline.</summary>
@@ -286,8 +285,8 @@ public class PropertyCatalogTests
 
         var (reason, remedies) = BmotionPropertyCatalog.ExplainPlayback(["x"], transition, BmotionPlaybackPath.Recorded);
 
-        StringAssert.Contains(reason, "Reverse");
-        Assert.IsTrue(remedies.Any(remedy => remedy.Contains("Loop", StringComparison.Ordinal)));
+        Assert.Contains("Reverse", reason);
+        Assert.Contains(remedy => remedy.Contains("Loop", StringComparison.Ordinal), remedies);
     }
 
     [TestMethod]
@@ -297,8 +296,8 @@ public class PropertyCatalogTests
 
         var (reason, remedies) = BmotionPropertyCatalog.ExplainPlayback(["x"], transition, BmotionPlaybackPath.Recorded);
 
-        StringAssert.Contains(reason, "waits between iterations");
-        Assert.IsTrue(remedies.Any(remedy => remedy.Contains("delay", StringComparison.OrdinalIgnoreCase)));
+        Assert.Contains("waits between iterations", reason);
+        Assert.Contains(remedy => remedy.Contains("delay", StringComparison.OrdinalIgnoreCase), remedies);
     }
 
     [TestMethod]
@@ -306,9 +305,9 @@ public class PropertyCatalogTests
     {
         var (reason, _) = BmotionPropertyCatalog.ExplainPlayback(["x"], new BmInertia(), BmotionPlaybackPath.Recorded);
 
-        StringAssert.Contains(reason, "recording");
-        StringAssert.Contains(reason, "more keyframes");
-        StringAssert.Contains(reason, "Blazor Server");
+        Assert.Contains("recording", reason);
+        Assert.Contains("more keyframes", reason);
+        Assert.Contains("Blazor Server", reason);
     }
 
     /// <summary>
@@ -320,7 +319,7 @@ public class PropertyCatalogTests
     {
         var (reason, _) = BmotionPropertyCatalog.ExplainPlayback(["offsetPath"], new BmTween(), BmotionPlaybackPath.Recorded, ["offsetPath"]);
 
-        StringAssert.Contains(reason, "offsetPath is a value the browser does not interpolate");
+        Assert.Contains("offsetPath is a value the browser does not interpolate", reason);
     }
 
     [TestMethod]
@@ -330,8 +329,8 @@ public class PropertyCatalogTests
 
         var (reason, remedies) = BmotionPropertyCatalog.ExplainPlayback(["x"], transition, BmotionPlaybackPath.FrameLoop);
 
-        StringAssert.Contains(reason, "OnUpdate");
-        Assert.AreNotEqual(0, remedies.Length);
+        Assert.Contains("OnUpdate", reason);
+        Assert.IsNotEmpty(remedies);
     }
 
     [TestMethod]
@@ -339,8 +338,8 @@ public class PropertyCatalogTests
     {
         var (reason, remedies) = BmotionPropertyCatalog.ExplainPlayback(["d"], new BmTween(), BmotionPlaybackPath.FrameLoop);
 
-        StringAssert.Contains(reason, "SVG geometry attribute");
-        Assert.AreNotEqual(0, remedies.Length);
+        Assert.Contains("SVG geometry attribute", reason);
+        Assert.IsNotEmpty(remedies);
     }
 
     [TestMethod]
@@ -350,9 +349,9 @@ public class PropertyCatalogTests
 
         var (reason, remedies) = BmotionPropertyCatalog.ExplainPlayback(["x"], transition, BmotionPlaybackPath.FrameLoop);
 
-        StringAssert.Contains(reason, "12 seconds");
-        StringAssert.Contains(reason, "10 seconds");
-        Assert.IsTrue(remedies.Any(remedy => remedy.Contains("forever", StringComparison.Ordinal)));
+        Assert.Contains("12 seconds", reason);
+        Assert.Contains("10 seconds", reason);
+        Assert.Contains(remedy => remedy.Contains("forever", StringComparison.Ordinal), remedies);
     }
 
     /// <summary>
@@ -364,8 +363,8 @@ public class PropertyCatalogTests
     {
         var (reason, remedies) = BmotionPropertyCatalog.ExplainPlayback(["x"], new BmTween { Duration = 0.3 }, BmotionPlaybackPath.FrameLoop);
 
-        StringAssert.Contains(reason, "worth reporting");
-        Assert.AreNotEqual(0, remedies.Length);
+        Assert.Contains("worth reporting", reason);
+        Assert.IsNotEmpty(remedies);
     }
 
     [TestMethod]

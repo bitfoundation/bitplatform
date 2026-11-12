@@ -68,7 +68,7 @@ public class AsyncLifecycleTests
 
         // A later animation of the same property, started without the token.
         await cut.InvokeAsync(async () =>
-            await cut.Instance.AnimateAsync(Bm.To(backgroundColor: "#ff0000"), Bm.Tween(1, ease: BmEase.Linear)));
+            await cut.Instance.AnimateAsync(Bm.To(backgroundColor: "#ff0000"), Bm.Tween(1, ease: BmEase.Linear), TestContext.CancellationToken));
         await ctx.RunFramesAsync(416, 600);
         var whenCancelled = State(ctx, "box").StringValues["backgroundColor"];
 
@@ -140,4 +140,6 @@ public class AsyncLifecycleTests
 
         AssertNothingHappenedAfterTheUnmount(ctx);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

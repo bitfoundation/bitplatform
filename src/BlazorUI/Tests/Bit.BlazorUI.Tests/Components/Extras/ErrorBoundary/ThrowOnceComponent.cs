@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Bit.BlazorUI.Tests.Components.Extras.ErrorBoundary;
 
-public class ThrowOnceComponent : ComponentBase
+internal class ThrowOnceComponent : ComponentBase
 {
     private static int _counter;
 

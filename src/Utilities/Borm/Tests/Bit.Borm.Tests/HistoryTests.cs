@@ -118,7 +118,7 @@ public class HistoryTests : ComponentTestBase
 
         await state.UndoAsync();
 
-        Assert.AreEqual(true, data["company"]);
+        Assert.IsTrue((bool?)data["company"]);
         Assert.AreEqual("NL123", data["vat"]);
     }
 
@@ -146,9 +146,9 @@ public class HistoryTests : ComponentTestBase
         var (first, second) = (invoice.Lines[0], invoice.Lines[1]);
 
         state.MoveArrayItem("Lines", 0, 1);
-        CollectionAssert.AreEqual(new[] { second, first }, invoice.Lines);
+        Assert.AreSequenceEqual(new[] { second, first }, invoice.Lines);
         await state.UndoAsync();
-        CollectionAssert.AreEqual(new[] { first, second }, invoice.Lines);
+        Assert.AreSequenceEqual(new[] { first, second }, invoice.Lines);
 
         state.RemoveArrayItem("Lines", 0);
         Assert.AreEqual(0m, invoice.Total);
@@ -158,7 +158,7 @@ public class HistoryTests : ComponentTestBase
 
         state.ClearArrayItems("Lines");
         await state.UndoAsync();
-        CollectionAssert.AreEqual(new[] { first, second }, invoice.Lines);
+        Assert.AreSequenceEqual(new[] { first, second }, invoice.Lines);
 
         await state.RedoAsync();
         Assert.IsEmpty(invoice.Lines);
@@ -169,14 +169,14 @@ public class HistoryTests : ComponentTestBase
     {
         var (state, _) = Form();
         await state.SubmitAsync(_ => Task.CompletedTask);
-        Assert.HasCount(1, state.MessagesFor("name"));
+        Assert.ContainsSingle(state.MessagesFor("name"));
 
         state.SetValue("name", "Ada");
         await state.ValidateFieldAsync("name");
         Assert.IsEmpty(state.MessagesFor("name"));
 
         await state.UndoAsync();
-        Assert.HasCount(1, state.MessagesFor("name"));
+        Assert.ContainsSingle(state.MessagesFor("name"));
     }
 
     [TestMethod]
@@ -233,7 +233,7 @@ public class HistoryTests : ComponentTestBase
         undo().Click();
 
         cut.WaitForAssertion(() => Assert.IsFalse(data.TryGetValue("name", out var v) && v is not null));
-        StringAssert.Contains(cut.Find(".bit-borm-form__actions [aria-live]").TextContent, "Undone: Full name");
+        Assert.Contains("Undone: Full name", cut.Find(".bit-borm-form__actions [aria-live]").TextContent);
         Assert.IsNull(cut.FindAll("button").Single(b => b.TextContent == "Redo").GetAttribute("aria-disabled"));
     }
 

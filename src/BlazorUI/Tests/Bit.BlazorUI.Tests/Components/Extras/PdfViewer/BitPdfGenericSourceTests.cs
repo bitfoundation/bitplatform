@@ -37,17 +37,19 @@ public class BitPdfGenericSourceTests
 
         Assert.AreEqual(expected.Version, actual.Version);
         Assert.AreEqual(expected.PageCount, actual.PageCount);
-        Assert.AreEqual(expected.Metadata?.Title, actual.Metadata?.Title);
-        CollectionAssert.AreEqual(expected.Warnings.ToArray(), actual.Warnings.ToArray());
-        Assert.AreEqual(expected.Attachments.Count, actual.Attachments.Count);
+        var expectedValue = expected.Metadata?.Title;
+        var actualValue = actual.Metadata?.Title;
+        Assert.AreEqual(expectedValue, actualValue);
+        Assert.AreSequenceEqual(expected.Warnings.ToArray(), actual.Warnings.ToArray());
+        Assert.HasCount(expected.Attachments.Count, actual.Attachments);
         for (int i = 0; i < expected.Attachments.Count; i++)
         {
-            CollectionAssert.AreEqual(expected.Attachments[i].Content, actual.Attachments[i].Content);
+            Assert.AreSequenceEqual(expected.Attachments[i].Content, actual.Attachments[i].Content);
         }
         for (int i = 0; i < actual.PageCount; i++)
         {
             var page = actual.Pages[i];
-            CollectionAssert.AreEqual(expected.Pages[i].GetContentBytes(), page.GetContentBytes());
+            Assert.AreSequenceEqual(expected.Pages[i].GetContentBytes(), page.GetContentBytes());
             Assert.AreEqual(expected.Pages[i].ExtractText(), page.ExtractText());
             Assert.AreEqual(new BitPdfHtmlRenderer(expected.Pages[i], expected.XRef).Render(),
                 new BitPdfHtmlRenderer(page, actual.XRef).Render());
@@ -55,8 +57,8 @@ public class BitPdfGenericSourceTests
                 JsonSerializer.Serialize(new BitPdfCanvasRenderer(page, actual.XRef).Render()));
         }
 
-        Assert.IsTrue(source.Views.Count > 0);
-        Assert.IsTrue(source.Windows.Count > 0);
+        Assert.IsNotEmpty(source.Views);
+        Assert.IsNotEmpty(source.Windows);
         Assert.IsTrue(source.Windows.All(window => window is not BitPdfStream));
         // One document reader borrows the first block once. Per-object readers
         // would repeatedly ask for it during stream-boundary parsing.
@@ -88,9 +90,9 @@ public class BitPdfGenericSourceTests
         var stream = parser.GetObj() as BitPdfStream;
         Assert.IsNotNull(stream);
         Assert.AreSame(decoded, stream.Buffer);
-        CollectionAssert.AreEqual("abc"u8.ToArray(), stream.GetBytes());
+        Assert.AreSequenceEqual("abc"u8.ToArray(), stream.GetBytes());
         Assert.AreEqual(42d, parser.GetObj());
-        Assert.AreEqual(originalReads, source.Views.Count);
+        Assert.HasCount(originalReads, source.Views);
     }
 
     [TestMethod]
@@ -103,9 +105,9 @@ public class BitPdfGenericSourceTests
         Assert.IsNotNull(font.Type3);
         var glyph = font.Type3.GetGlyphProcedure(65);
         Assert.IsNotNull(glyph);
-        StringAssert.Contains(Encoding.ASCII.GetString(glyph.GetBytes()), "600 700 re f");
-        StringAssert.Contains(document.Pages[0].ExtractText(), "A");
-        StringAssert.Contains(new BitPdfHtmlRenderer(document.Pages[0], document.XRef).Render(), "data:image/png;base64,");
+        Assert.Contains("600 700 re f", Encoding.ASCII.GetString(glyph.GetBytes()));
+        Assert.Contains("A", document.Pages[0].ExtractText());
+        Assert.Contains("data:image/png;base64,", new BitPdfHtmlRenderer(document.Pages[0], document.XRef).Render());
     }
 
     [TestMethod]
@@ -141,8 +143,8 @@ public class BitPdfGenericSourceTests
             null, [typeof(BitPdfBaseStream)], null)!;
         var parser = (BitPdfContentParser)ctor.Invoke([stream]);
         var operations = parser.Parse();
-        Assert.AreEqual(1, operations.Count);
-        CollectionAssert.AreEqual("x EI yz??"u8.ToArray(), (byte[])operations[0].Operands[1]!);
+        Assert.ContainsSingle(operations);
+        Assert.AreSequenceEqual("x EI yz??"u8.ToArray(), (byte[])operations[0].Operands[1]!);
     }
 
     [TestMethod]

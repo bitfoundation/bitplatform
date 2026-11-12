@@ -31,7 +31,7 @@ public class BitAiJsonViewE2ETests : E2ETestBase
         // The root, tags and address are open; geo, two levels down, starts collapsed with its entry count.
         await Expect(Toggles("jsv-basic")).ToHaveCountAsync(4);
         var expanded = await Toggles("jsv-basic").EvaluateAllAsync<string[]>("bs => bs.map(b => b.getAttribute('aria-expanded'))");
-        CollectionAssert.AreEqual(new[] { "true", "true", "true", "false" }, expanded);
+        Assert.AreSequenceEqual(new[] { "true", "true", "true", "false" }, expanded);
         await Expect(Toggle("jsv-basic", "geo")).ToHaveTextAsync("\"geo\": { 1 }");
         await Expect(Toggle("jsv-basic", "tags")).ToHaveTextAsync("\"tags\": [");
         await Expect(Toggles("jsv-basic").First).ToHaveAttributeAsync("type", "button");
@@ -45,10 +45,10 @@ public class BitAiJsonViewE2ETests : E2ETestBase
         // Every row is a line of its own, and the entries of an open container are indented under it.
         await Expect(root.Locator(".bit-aijsv-row").First).ToHaveCSSAsync("display", "block");
         var group = root.Locator(".bit-aijsv-grp").First;
-        Assert.IsTrue(AiE2EHelpers.ParsePx(await group.EvaluateAsync<string>("e => getComputedStyle(e).paddingInlineStart")) > 0, "The entries are indented.");
+        Assert.IsGreaterThan(0, AiE2EHelpers.ParsePx(await group.EvaluateAsync<string>("e => getComputedStyle(e).paddingInlineStart")), "The entries are indented.");
         var rootRow = await root.Locator(":scope > .bit-aijsv-row").First.RectAsync();
         var nameRow = await group.Locator(":scope > .bit-aijsv-row").First.Locator(".bit-aijsv-key").RectAsync();
-        Assert.IsTrue(nameRow.Left > rootRow.Left, "The entries start further in than the brace of their container.");
+        Assert.IsGreaterThan(rootRow.Left, nameRow.Left, "The entries start further in than the brace of their container.");
 
         // The tree is set in the monospaced family of the theme.
         var mono = await root.EvaluateAsync<string>(
@@ -238,8 +238,8 @@ public class BitAiJsonViewE2ETests : E2ETestBase
         // The chevron sits on the side the row starts from, before the key.
         var icon = await chevron.RectAsync();
         var key = await closed.Locator(".bit-aijsv-key").RectAsync();
-        if (rtl) Assert.IsTrue(icon.Left >= key.Right - 1, "The chevron is to the right of the key.");
-        else Assert.IsTrue(icon.Right <= key.Left + 1, "The chevron is to the left of the key.");
+        if (rtl) Assert.IsGreaterThanOrEqualTo(key.Right - 1, icon.Left, "The chevron is to the right of the key.");
+        else Assert.IsLessThanOrEqualTo(key.Left + 1, icon.Right, "The chevron is to the left of the key.");
     }
 
     [TestMethod]
@@ -250,7 +250,7 @@ public class BitAiJsonViewE2ETests : E2ETestBase
         var chevron = Toggles("jsv-basic").First.Locator("i.bit-aijsv-tic");
         await Expect(chevron).ToHaveCSSAsync("transition-property", "transform");
         var full = AiE2EHelpers.ParseSeconds(await chevron.EvaluateAsync<string>("e => getComputedStyle(e).transitionDuration"));
-        Assert.IsTrue(full >= 0.05, $"The chevron turns over a visible time, was {full}s.");
+        Assert.IsGreaterThanOrEqualTo(0.05, full, $"The chevron turns over a visible time, was {full}s.");
 
         // Reduced, the turn is as good as instant (the motion tokens collapse to a hair above zero).
         await Page.EmulateMediaAsync(new() { ReducedMotion = ReducedMotion.Reduce });

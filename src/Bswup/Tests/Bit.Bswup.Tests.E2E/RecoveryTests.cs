@@ -29,8 +29,8 @@ public class RecoveryTests : BswupTest
         Assert.IsTrue(finished.FirstInstall, "forceRefresh did not remove the registration.");
 
         var names = await Page.EvaluateAsync<string[]>("() => caches.keys()");
-        CollectionAssert.Contains(names, "my-app-data", "forceRefresh deleted a cache the app owns.");
-        CollectionAssert.Contains(names, bucket);
+        Assert.Contains("my-app-data", names, "forceRefresh deleted a cache the app owns.");
+        Assert.Contains(bucket, names);
     }
 
     [TestMethod]
@@ -39,7 +39,7 @@ public class RecoveryTests : BswupTest
         AllowConsoleError("progress handler");
 
         await InstallAsync();
-        Assert.AreEqual(1, (await BswupCacheNamesAsync()).Length);
+        Assert.ContainsSingle(await BswupCacheNamesAsync());
 
         await Session.SetOptionsAsync(new { worker = "cleanup" });
         await Page.EvaluateAsync("() => { BitBswup.checkForUpdate(); }");
@@ -54,7 +54,7 @@ public class RecoveryTests : BswupTest
         // Nothing is answered from a Bswup cache any more: a formerly precached asset goes to the server.
         await Session.ClearRequestsAsync();
         Assert.AreEqual(200, (await FetchAsync(AppUrl("_content/Bit.Bswup.Tests.Harness/harness-extra.json"))).Status);
-        Assert.IsTrue((await Session.RequestsAsync()).Any(r => r.Path.EndsWith("harness-extra.json", StringComparison.Ordinal)),
+        Assert.Contains(r => r.Path.EndsWith("harness-extra.json", StringComparison.Ordinal), await Session.RequestsAsync(),
             "A formerly precached asset was still answered without the server.");
 
         // Later loads stay quiet - no reload loop, no caches - while the page still references bit-bswup.js.
@@ -65,7 +65,7 @@ public class RecoveryTests : BswupTest
         await WaitForInteractiveAsync();
         await ExpectLoadsAsync(3);
         await AssertNoFurtherReloadAsync(3);
-        Assert.AreEqual(0, (await BswupCacheNamesAsync()).Length);
+        Assert.IsEmpty(await BswupCacheNamesAsync());
     }
 
     [TestMethod]

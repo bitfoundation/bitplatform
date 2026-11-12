@@ -35,7 +35,7 @@ public class BitFullCalendarMobileE2ETests : E2ETestBase
         await Expect(Cal.Locator(".bit-bfc-view-tabs")).ToHaveCSSAsync("flex-wrap", "wrap");
         Assert.IsTrue(await header.EvaluateAsync<bool>("e => e.scrollWidth <= e.clientWidth + 1"), "the toolbar fits the phone's width");
         var calendarWidth = (await Cal.BoundingBoxAsync())!.Width;
-        Assert.IsTrue(calendarWidth <= 390, $"the calendar fits the screen ({calendarWidth}px)");
+        Assert.IsLessThanOrEqualTo(390, calendarWidth, $"the calendar fits the screen ({calendarWidth}px)");
         // the filters share a row of their own
         await Expect(Cal.Locator(".bit-bfc-filter-row")).ToHaveCSSAsync("flex-basis", "100%");
     }
@@ -76,11 +76,11 @@ public class BitFullCalendarMobileE2ETests : E2ETestBase
         await SwitchViewAsync("Year");
 
         var columns = await Cal.Locator(".bit-bfc-year").EvaluateAsync<string>("e => getComputedStyle(e).gridTemplateColumns");
-        Assert.AreEqual(1, columns.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length, $"one column ({columns})");
+        Assert.ContainsSingle(columns.Split(' ', StringSplitOptions.RemoveEmptyEntries), $"one column ({columns})");
         var january = (await Cal.Locator(".bit-bfc-year-month").Nth(0).BoundingBoxAsync())!;
         var february = (await Cal.Locator(".bit-bfc-year-month").Nth(1).BoundingBoxAsync())!;
         Assert.AreEqual(january.X, february.X, 1);
-        Assert.IsTrue(february.Y > january.Y + january.Height - 1, "February sits under January");
+        Assert.IsGreaterThan(january.Y + january.Height - 1, february.Y, "February sits under January");
     }
 
     [TestMethod]
@@ -93,7 +93,7 @@ public class BitFullCalendarMobileE2ETests : E2ETestBase
         await Expect(dialog.Locator("h3")).ToHaveTextAsync("Add New Event");
         var box = (await dialog.BoundingBoxAsync())!;
         Assert.IsTrue(box.X >= 0 && box.X + box.Width <= 390, $"the dialog fits the width ({box.X}, {box.Width})");
-        Assert.IsTrue(box.Height <= 844 * 0.9 + 1, "and 90% of the height, scrolling inside");
+        Assert.IsLessThanOrEqualTo(844 * 0.9 + 1, box.Height, "and 90% of the height, scrolling inside");
         await dialog.GetByRole(AriaRole.Button, new() { Name = "Cancel" }).TapAsync();
         await Expect(dialog).ToHaveCountAsync(0);
 

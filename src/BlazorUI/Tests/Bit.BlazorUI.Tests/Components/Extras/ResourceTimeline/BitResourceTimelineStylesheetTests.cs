@@ -24,11 +24,11 @@ public partial class BitResourceTimelineStylesheetTests
 
         var documented = DocumentedVariables(stylesheet);
 
-        Assert.AreEqual(28, documented.Length, "The stylesheet does not document the 28 public variables.");
+        Assert.HasCount(28, documented, "The stylesheet does not document the 28 public variables.");
 
         foreach (var name in documented)
         {
-            StringAssert.Contains(SourceFiles.StripScssComments(stylesheet), $"var({name}, ", $"{name} is documented but never read with a fallback.");
+            Assert.Contains($"var({name}, ", SourceFiles.StripScssComments(stylesheet), $"{name} is documented but never read with a fallback.");
         }
     }
 
@@ -44,7 +44,7 @@ public partial class BitResourceTimelineStylesheetTests
 
         foreach (var name in read)
         {
-            CollectionAssert.Contains(documented, name, $"{name} is read but not documented in the header.");
+            Assert.Contains(name, documented, $"{name} is read but not documented in the header.");
         }
     }
 
@@ -63,9 +63,7 @@ public partial class BitResourceTimelineStylesheetTests
         var themeColors = ThemeColor().Matches(facade).ToDictionary(m => m.Groups[1].Value, m => m.Groups[2].Value);
 
         // The script reads each color it hands the engine off a probe inside the root, by the key of the colors option.
-        CollectionAssert.AreEquivalent(typeof(BitResourceTimelineColors).GetProperties().Select(p => JsonNamingPolicy.CamelCase.ConvertName(p.Name)).ToArray(),
-                                       themeColors.Keys.ToArray(),
-                                       "The theme colors of the script are not the colors of BitResourceTimelineColors.");
+        Assert.AreSequenceEqual(typeof(BitResourceTimelineColors).GetProperties().Select(p => JsonNamingPolicy.CamelCase.ConvertName(p.Name)).ToArray(), themeColors.Keys.ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, "The theme colors of the script are not the colors of BitResourceTimelineColors.");
 
         // So each private variable it reads is resolved on the root from a public one (or the theme token behind it), and
         // the root resolves nothing the script does not read.
@@ -73,8 +71,8 @@ public partial class BitResourceTimelineStylesheetTests
         var root = SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-rtm {");
         var declared = Regex.Matches(root, @"(--bit-rtm-thm-[a-z-]+):\s*([^;]+);").ToDictionary(m => m.Groups[1].Value, m => m.Groups[2].Value);
 
-        CollectionAssert.AreEquivalent(themeColors.Values.ToArray(), declared.Keys.ToArray());
-        CollectionAssert.AreEquivalent(ThemePublicVariables.Keys.ToArray(), declared.Keys.ToArray(), "A theme color has no public variable pinned below.");
+        Assert.AreSequenceEqual(themeColors.Values.ToArray(), declared.Keys.ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
+        Assert.AreSequenceEqual(ThemePublicVariables.Keys.ToArray(), declared.Keys.ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, "A theme color has no public variable pinned below.");
 
         foreach (var (variable, value) in declared)
         {
@@ -124,8 +122,7 @@ public partial class BitResourceTimelineStylesheetTests
         Assert.IsTrue(rendered.Contains("bit-rtm") && rendered.Contains("bit-rtm-srf"), "The classes of the markup and the scripts were not found.");
 
         // A part drawn unstyled, or a rule for a part nothing renders any more.
-        CollectionAssert.AreEquivalent(rendered.Order(StringComparer.Ordinal).ToArray(), styled.Order(StringComparer.Ordinal).ToArray(),
-                                       $"Rendered only: {string.Join(", ", rendered.Except(styled))}; styled only: {string.Join(", ", styled.Except(rendered))}");
+        Assert.AreSequenceEqual(rendered.Order(StringComparer.Ordinal).ToArray(), styled.Order(StringComparer.Ordinal).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, $"Rendered only: {string.Join(", ", rendered.Except(styled))}; styled only: {string.Join(", ", styled.Except(rendered))}");
     }
 
     [TestMethod]
@@ -133,7 +130,7 @@ public partial class BitResourceTimelineStylesheetTests
     {
         var components = SourceFiles.StripScssComments(SourceFiles.Read("Bit.BlazorUI.Extras", "Styles", "extra-components.scss"));
 
-        StringAssert.Contains(components, "Components/ResourceTimeline/BitResourceTimeline.scss", "The Extras stylesheet does not import the stylesheet of the timeline.");
+        Assert.Contains("Components/ResourceTimeline/BitResourceTimeline.scss", components, "The Extras stylesheet does not import the stylesheet of the timeline.");
     }
 
     [TestMethod]
@@ -141,7 +138,7 @@ public partial class BitResourceTimelineStylesheetTests
     {
         var disabled = SourceFiles.GetScssBlock(SourceFiles.StripScssComments(ReadStylesheet()), "\n.bit-rtm.bit-dis {");
 
-        StringAssert.Contains(disabled, "opacity: $opa-dis;");
+        Assert.Contains("opacity: $opa-dis;", disabled);
     }
 
     private static string[] DocumentedVariables(string stylesheet)

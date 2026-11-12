@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Bit.Borm.Tests;
 
-public sealed class Application
+internal sealed class Application
 {
     public string Name { get; set; } = "";
     public string Password { get; set; } = "";
@@ -64,7 +64,7 @@ public class DraftTests
         Assert.IsEmpty(result.Skipped);
         Assert.AreEqual("Ada", fresh.Name);
         Assert.AreEqual(AccountType.Business, fresh.Kind);
-        CollectionAssert.AreEqual(new[] { Days.Monday, Days.Wednesday }, fresh.Availability);
+        Assert.AreSequenceEqual(new[] { Days.Monday, Days.Wednesday }, fresh.Availability);
         Assert.AreEqual(new DateOnly(2026, 11, 2), fresh.Start);
         Assert.AreEqual(new DateTimeOffset(2026, 11, 2, 9, 30, 0, TimeSpan.FromHours(2)), fresh.Callback);
         Assert.HasCount(2, fresh.Lines);
@@ -89,7 +89,7 @@ public class DraftTests
         Assert.DoesNotContain("4111", json);
 
         var withSensitive = BormDraft.Serialize(state, new BormDraftOptions { IncludeSensitive = true });
-        StringAssert.Contains(withSensitive, "hunter2");
+        Assert.Contains("hunter2", withSensitive);
     }
 
     [TestMethod]
@@ -128,7 +128,7 @@ public class DraftTests
 
         var result = BormDraft.Restore(state, draft);
 
-        CollectionAssert.AreEquivalent(new[] { "Nickname", "Start", "Lines[3].Product" }, result.Skipped.ToArray());
+        Assert.AreSequenceEqual(new[] { "Nickname", "Start", "Lines[3].Product" }, result.Skipped.ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         Assert.IsEmpty(state.MessagesFor("Start"));
         Assert.AreEqual("Ada", state.GetValue("Name"));
     }
@@ -143,7 +143,7 @@ public class DraftTests
         var result = BormDraft.Restore(state, """{"format":"borm-draft","values":{},"rows":{"Lines":2000000000}}""");
 
         Assert.HasCount(BormDraft.MaxRows, model.Lines);
-        CollectionAssert.Contains(result.Skipped.ToArray(), "Lines");
+        Assert.Contains("Lines", result.Skipped.ToArray());
         Assert.IsLessThan(30_000, clock.ElapsedMilliseconds);
     }
 
@@ -165,9 +165,9 @@ public class DraftTests
         Assert.AreEqual(9_000, state.ArrayCount("Orders[0].Lines"));
         // What is left of the bound once the orders and the first order's lines are counted - not another 9,000.
         Assert.AreEqual(BormDraft.MaxRows - 3 - 9_000, state.ArrayCount("Orders[1].Lines"));
-        CollectionAssert.Contains(result.Skipped.ToArray(), "Orders[1].Lines");
+        Assert.Contains("Orders[1].Lines", result.Skipped.ToArray());
         // The draft has no sixth order, and its lines are not filled into a list that belongs to nothing.
-        CollectionAssert.Contains(result.Skipped.ToArray(), "Orders[5].Lines");
+        Assert.Contains("Orders[5].Lines", result.Skipped.ToArray());
     }
 
     [TestMethod]
@@ -197,7 +197,10 @@ public class DraftTests
             .Build();
         var source = new BormState(form, new BormDictionaryDataAccessor(new Dictionary<string, object?>
         {
-            ["plan"] = "team", ["seats"] = 12L, ["country"] = "NL", ["city"] = "ams"
+            ["plan"] = "team",
+            ["seats"] = 12L,
+            ["country"] = "NL",
+            ["city"] = "ams"
         }));
 
         var target = new Dictionary<string, object?>();
@@ -234,12 +237,14 @@ public class DraftTests
             .Build();
         var state = new BormState(form, new BormDictionaryDataAccessor(new Dictionary<string, object?>
         {
-            ["ship"] = false, ["address"] = "kept while hidden", ["pin"] = "1234"
+            ["ship"] = false,
+            ["address"] = "kept while hidden",
+            ["pin"] = "1234"
         }));
 
         Assert.IsTrue(state.Snapshot().ContainsKey("address"));
         var payload = state.Snapshot(new BormSnapshotOptions { ExcludeHidden = true, ExcludeSensitive = true });
-        CollectionAssert.AreEquivalent(new[] { "ship" }, payload.Keys.ToArray());
+        Assert.AreSequenceEqual(new[] { "ship" }, payload.Keys.ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -251,14 +256,15 @@ public class DraftTests
             .Build();
         var state = new BormState(form, new BormDictionaryDataAccessor(new Dictionary<string, object?>
         {
-            ["name"] = "Ada", ["codes"] = new List<object?> { "111111", "222222" }
+            ["name"] = "Ada",
+            ["codes"] = new List<object?> { "111111", "222222" }
         }));
 
         var draft = BormDraft.Serialize(state);
 
         Assert.DoesNotContain("111111", draft);
         Assert.DoesNotContain("codes", draft);
-        CollectionAssert.AreEquivalent(new[] { "name" }, state.Snapshot(new BormSnapshotOptions { ExcludeSensitive = true }).Keys.ToArray());
+        Assert.AreSequenceEqual(new[] { "name" }, state.Snapshot(new BormSnapshotOptions { ExcludeSensitive = true }).Keys.ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -274,11 +280,11 @@ public class DraftTests
 
         var payload = state.Snapshot(new BormSnapshotOptions { ExcludeSensitive = true });
 
-        CollectionAssert.AreEquivalent(new[] { "users[0].login" }, payload.Keys.ToArray());
+        Assert.AreSequenceEqual(new[] { "users[0].login" }, payload.Keys.ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         Assert.IsTrue(state.Snapshot(new BormSnapshotOptions()).ContainsKey("users"));
         var draft = BormDraft.Serialize(state);
         Assert.DoesNotContain("hunter2", draft);
-        StringAssert.Contains(draft, "\"users[0].login\":\"ada\"");
+        Assert.Contains("\"users[0].login\":\"ada\"", draft);
     }
 
     [TestMethod]
@@ -310,14 +316,14 @@ public class AutosaveAndGuardTests : ComponentTestBase
         await cut.InvokeAsync(() => state.SetValue("name", "Ad"));
         await cut.InvokeAsync(() => state.SetValue("name", "Ada"));
         // Polled: the component renders nothing, so there is no render for bUnit's waits to follow.
-        for (var waited = 0; saved.Count == 0 && waited < 5_000; waited += 20) await Task.Delay(20);
-        Assert.HasCount(1, saved);
-        StringAssert.Contains(saved[0], "\"Ada\"");
+        for (var waited = 0; saved.Count == 0 && waited < 5_000; waited += 20) await Task.Delay(20, TestContext.CancellationToken);
+        Assert.ContainsSingle(saved);
+        Assert.Contains("\"Ada\"", saved[0]);
 
         // Put back to how it opened: nothing unsaved, so nothing to save.
         await cut.InvokeAsync(() => state.SetValue("name", null));
-        await Task.Delay(100);
-        Assert.HasCount(1, saved);
+        await Task.Delay(100, TestContext.CancellationToken);
+        Assert.ContainsSingle(saved);
     }
 
     [TestMethod]
@@ -334,7 +340,7 @@ public class AutosaveAndGuardTests : ComponentTestBase
         await cut.InvokeAsync(() => state.SetValue("name", "Ada"));
         await cut.InvokeAsync(async () => await cut.Instance.DisposeAsync());
 
-        Assert.HasCount(1, saved);
+        Assert.ContainsSingle(saved);
     }
 
     [TestMethod]
@@ -355,7 +361,7 @@ public class AutosaveAndGuardTests : ComponentTestBase
 
         state.SetValue("name", "Ada");
         navigation.NavigateTo("/elsewhere");
-        Assert.HasCount(1, asked);
+        Assert.ContainsSingle(asked);
         Assert.AreEqual(BormDefaultMessageProvider.Instance.Get(BormMessageKeys.UnsavedChanges), asked[0]);
         Assert.EndsWith("/clean", navigation.Uri);
 
@@ -363,4 +369,6 @@ public class AutosaveAndGuardTests : ComponentTestBase
         navigation.NavigateTo("/elsewhere");
         Assert.EndsWith("/elsewhere", navigation.Uri);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

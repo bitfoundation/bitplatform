@@ -44,11 +44,11 @@ public class EraserRegressionTests(TestContext output)
             context.Line(eraser, new Vector2(x, 80), new Vector2(x, 120), 6);
         }
         output.WriteLine($"fragments: {context.Document.ElementCount}, points {context.Document.TotalPointCount}");
-        Assert.IsTrue(context.Document.ElementCount < 200, $"{context.Document.ElementCount} fragments");
+        Assert.IsLessThan(200, context.Document.ElementCount, $"{context.Document.ElementCount} fragments");
         foreach (BinkElement e in context.Document.AllElements)
         {
             BinkStroke s = Assert.IsExactInstanceOfType<BinkStroke>(e);
-            Assert.IsTrue(s.Points.Count > 0, "an empty fragment survived erasing");
+            Assert.IsGreaterThan(0, s.Points.Count, "an empty fragment survived erasing");
         }
     }
 
@@ -64,7 +64,7 @@ public class EraserRegressionTests(TestContext output)
         bool changed = BinkStrokeEditor.EraseSegments(stroke, [new Vector2(200, 100)], 12f, fragments);
         output.WriteLine($"changed={changed} fragments={fragments.Count} " + string.Join(" | ", fragments.Select(f => f.Bounds.ToString())));
         Assert.IsTrue(changed, "erasing the middle of a two-point stroke did nothing");
-        Assert.AreEqual(2, fragments.Count);
+        Assert.HasCount(2, fragments);
     }
 
     [TestMethod]
@@ -80,7 +80,7 @@ public class EraserRegressionTests(TestContext output)
         output.WriteLine($"changed={changed} fragments={fragments.Count} " + string.Join(" | ", fragments.Select(f => f.Bounds.ToString())));
         Assert.IsTrue(changed);
         Assert.ContainsSingle(fragments);
-        Assert.IsTrue(fragments[0].Bounds.Width > 300, $"most of the stroke should survive but only {fragments[0].Bounds.Width} units remain");
+        Assert.IsGreaterThan(300, fragments[0].Bounds.Width, $"most of the stroke should survive but only {fragments[0].Bounds.Width} units remain");
     }
 
     [TestMethod]
@@ -100,9 +100,9 @@ public class EraserRegressionTests(TestContext output)
 
         var pieces = context.Document.AllElements.Cast<BinkStroke>().OrderBy(e => e.Bounds.Left).ToList();
         output.WriteLine("pieces: " + string.Join(" | ", pieces.Select(f => $"{f.Bounds.Left:0}..{f.Bounds.Right:0}")));
-        Assert.AreEqual(2, pieces.Count);
+        Assert.HasCount(2, pieces);
         float gap = pieces[1].Bounds.Left - pieces[0].Bounds.Right;
-        Assert.IsTrue(gap > 10f, $"the eraser left a gap of only {gap} units");
+        Assert.IsGreaterThan(10f, gap, $"the eraser left a gap of only {gap} units");
         Assert.IsTrue(pieces[0].Bounds.Left < 60f && pieces[1].Bounds.Right > 540f, "the ends of the line were lost");
     }
 
@@ -116,8 +116,14 @@ public class EraserRegressionTests(TestContext output)
 
         static BinkInputSample S(int id, BinkPointerPhase phase, float x, float y) => new()
         {
-            PointerId = id, Kind = BinkPointerKind.Touch, Phase = phase, X = x, Y = y, Pressure = 0.5f,
-            Buttons = phase == BinkPointerPhase.Up ? 0 : 1, IsPrimary = id == 1,
+            PointerId = id,
+            Kind = BinkPointerKind.Touch,
+            Phase = phase,
+            X = x,
+            Y = y,
+            Pressure = 0.5f,
+            Buttons = phase == BinkPointerPhase.Up ? 0 : 1,
+            IsPrimary = id == 1,
         };
 
         Assert.IsTrue(eraser.OnPointerDown(context, S(1, BinkPointerPhase.Down, 200, 100)));

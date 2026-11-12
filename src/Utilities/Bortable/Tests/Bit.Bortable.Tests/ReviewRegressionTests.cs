@@ -27,8 +27,9 @@ public class ReviewRegressionTests : BortableTestContext
         // The first drag's last position and its end arrive late, on Blazor Server, after the second one started.
         Assert.AreEqual(-1, await Renderer.Dispatcher.InvokeAsync(() => Zone(list).OverAsync(3, first.Drag)));
         await Renderer.Dispatcher.InvokeAsync(() => Zone(list).EndAsync("drop", first.Drag));
+        var actualValue = Coordinator.Context?.Item;
 
-        Assert.AreEqual("B", Coordinator.Context?.Item, "The second drag is still in progress.");
+        Assert.AreEqual("B", actualValue, "The second drag is still in progress.");
         Assert.AreSequenceEqual(["A", "B", "C"], items);
 
         Assert.AreEqual(1, await Renderer.Dispatcher.InvokeAsync(() => Zone(list).OverAsync(3, second.Drag)));
@@ -125,7 +126,7 @@ public class ReviewRegressionTests : BortableTestContext
         Assert.IsTrue(back.Dragging);
         Assert.AreEqual("P", back.List);
         Assert.AreSequenceEqual(["X"], target);
-        CollectionAssert.AreEqual(new[] { "A", "B", "C" }, palette);
+        Assert.AreSequenceEqual(new[] { "A", "B", "C" }, palette);
     }
 
     [TestMethod]

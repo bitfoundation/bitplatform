@@ -24,7 +24,7 @@ public class TourSessionTests
         await using var harness = new BonboardingHarness();
         harness.WithElements("#a", "#b");
 
-        var session = await harness.Service.StartAsync(Tour(Step("a", "#a"), Step("b", "#b")));
+        var session = await harness.Service.StartAsync(Tour(Step("a", "#a"), Step("b", "#b")), cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(BonboardingTourStatus.Running, session.Status);
         Assert.AreEqual("a", session.CurrentStep!.Id);
@@ -40,20 +40,20 @@ public class TourSessionTests
         await using var harness = new BonboardingHarness();
         harness.WithElements("#a", "#b", "#c");
 
-        var session = await harness.Service.StartAsync(Tour(Step("a", "#a"), Step("b", "#b"), Step("c", "#c")));
+        var session = await harness.Service.StartAsync(Tour(Step("a", "#a"), Step("b", "#b"), Step("c", "#c")), cancellationToken: TestContext.CancellationToken);
 
-        await session.NextAsync();
+        await session.NextAsync(TestContext.CancellationToken);
         Assert.AreEqual("b", session.CurrentStep!.Id);
         Assert.IsFalse(session.IsFirstStep);
 
-        await session.NextAsync();
+        await session.NextAsync(TestContext.CancellationToken);
         Assert.AreEqual("c", session.CurrentStep!.Id);
         Assert.IsTrue(session.IsLastStep);
 
-        await session.PreviousAsync();
+        await session.PreviousAsync(TestContext.CancellationToken);
         Assert.AreEqual("b", session.CurrentStep!.Id);
 
-        await session.PreviousAsync();
+        await session.PreviousAsync(TestContext.CancellationToken);
         Assert.AreEqual("a", session.CurrentStep!.Id);
         Assert.IsTrue(session.IsFirstStep);
     }
@@ -64,8 +64,8 @@ public class TourSessionTests
         await using var harness = new BonboardingHarness();
         harness.WithElements("#a");
 
-        var session = await harness.Service.StartAsync(Tour(Step("a", "#a")));
-        await session.NextAsync();
+        var session = await harness.Service.StartAsync(Tour(Step("a", "#a")), cancellationToken: TestContext.CancellationToken);
+        await session.NextAsync(TestContext.CancellationToken);
 
         Assert.AreEqual(BonboardingTourStatus.Completed, session.Status);
         Assert.AreEqual(BonboardingTourEndReason.Completed, session.EndReason);
@@ -79,8 +79,8 @@ public class TourSessionTests
         await using var harness = new BonboardingHarness();
         harness.WithElements("#a", "#b");
 
-        var session = await harness.Service.StartAsync(Tour(Step("a", "#a"), Step("b", "#b")));
-        await session.PreviousAsync();
+        var session = await harness.Service.StartAsync(Tour(Step("a", "#a"), Step("b", "#b")), cancellationToken: TestContext.CancellationToken);
+        await session.PreviousAsync(TestContext.CancellationToken);
 
         Assert.AreEqual("a", session.CurrentStep!.Id);
         Assert.AreEqual(BonboardingTourStatus.Running, session.Status);
@@ -92,8 +92,8 @@ public class TourSessionTests
         await using var harness = new BonboardingHarness();
         harness.WithElements("#a", "#b", "#c");
 
-        var session = await harness.Service.StartAsync(Tour(Step("a", "#a"), Step("b", "#b"), Step("c", "#c")));
-        await session.GoToAsync("c");
+        var session = await harness.Service.StartAsync(Tour(Step("a", "#a"), Step("b", "#b"), Step("c", "#c")), cancellationToken: TestContext.CancellationToken);
+        await session.GoToAsync("c", TestContext.CancellationToken);
 
         Assert.AreEqual("c", session.CurrentStep!.Id);
     }
@@ -104,14 +104,14 @@ public class TourSessionTests
         await using var harness = new BonboardingHarness();
         harness.WithElements("#a");
 
-        var session = await harness.Service.StartAsync(Tour(Step("a", "#a")));
+        var session = await harness.Service.StartAsync(Tour(Step("a", "#a")), cancellationToken: TestContext.CancellationToken);
 
         // A typo in the calling code is that code's problem, not a reason to end the user's tour.
-        var thrown = Assert.ThrowsExactly<BonboardingException>(() => session.GoToAsync("nope"));
+        var thrown = Assert.ThrowsExactly<BonboardingException>(() => session.GoToAsync("nope", TestContext.CancellationToken));
         Assert.AreEqual("nope", thrown.StepId);
 
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => session.GoToAsync(5));
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => session.GoToAsync(-1));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => session.GoToAsync(5, TestContext.CancellationToken));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => session.GoToAsync(-1, TestContext.CancellationToken));
 
         Assert.AreEqual(BonboardingTourStatus.Running, session.Status);
         Assert.AreEqual("a", session.CurrentStep!.Id);
@@ -128,8 +128,8 @@ public class TourSessionTests
         var a = Step("a", "#a");
         a.ResolveNext = _ => ValueTask.FromResult<string?>("nope");
 
-        var session = await harness.Service.StartAsync(Tour(a, Step("b")));
-        await session.NextAsync();
+        var session = await harness.Service.StartAsync(Tour(a, Step("b")), cancellationToken: TestContext.CancellationToken);
+        await session.NextAsync(TestContext.CancellationToken);
 
         Assert.AreEqual(BonboardingTourStatus.Failed, session.Status);
         Assert.IsInstanceOfType<BonboardingException>(session.Error);
@@ -141,13 +141,13 @@ public class TourSessionTests
         await using var harness = new BonboardingHarness();
         harness.WithElements("#a");
 
-        var skipped = await harness.Service.StartAsync(Tour(Step("a", "#a")));
-        await skipped.SkipAsync();
+        var skipped = await harness.Service.StartAsync(Tour(Step("a", "#a")), cancellationToken: TestContext.CancellationToken);
+        await skipped.SkipAsync(TestContext.CancellationToken);
         Assert.AreEqual(BonboardingTourStatus.Skipped, skipped.Status);
 
         var dismissed = await harness.Service.StartAsync(
-            new BonboardingTourDefinition { Id = "other", Steps = [Step("a", "#a")] });
-        await dismissed.DismissAsync();
+            new BonboardingTourDefinition { Id = "other", Steps = [Step("a", "#a")] }, cancellationToken: TestContext.CancellationToken);
+        await dismissed.DismissAsync(TestContext.CancellationToken);
         Assert.AreEqual(BonboardingTourStatus.Dismissed, dismissed.Status);
     }
 
@@ -162,14 +162,14 @@ public class TourSessionTests
         var hidden = Step("b", "#b");
         hidden.When = _ => ValueTask.FromResult(false);
 
-        var session = await harness.Service.StartAsync(Tour(Step("a", "#a"), hidden, Step("c", "#c")));
+        var session = await harness.Service.StartAsync(Tour(Step("a", "#a"), hidden, Step("c", "#c")), cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(2, session.DisplayCount);
 
-        await session.NextAsync();
+        await session.NextAsync(TestContext.CancellationToken);
         Assert.AreEqual("c", session.CurrentStep!.Id);
 
-        await session.PreviousAsync();
+        await session.PreviousAsync(TestContext.CancellationToken);
         Assert.AreEqual("a", session.CurrentStep!.Id);
     }
 
@@ -189,12 +189,12 @@ public class TourSessionTests
             return ValueTask.CompletedTask;
         };
 
-        var session = await harness.Service.StartAsync(Tour(first, conditional, Step("c", "#c")));
+        var session = await harness.Service.StartAsync(Tour(first, conditional, Step("c", "#c")), cancellationToken: TestContext.CancellationToken);
 
         // The gate is closed while the first step is showing.
         Assert.AreEqual(2, session.DisplayCount);
 
-        await session.NextAsync();
+        await session.NextAsync(TestContext.CancellationToken);
 
         Assert.AreEqual("b", session.CurrentStep!.Id);
         Assert.AreEqual(3, session.DisplayCount);
@@ -209,7 +209,7 @@ public class TourSessionTests
         var step = Step("a", "#a");
         step.When = _ => ValueTask.FromResult(false);
 
-        var session = await harness.Service.StartAsync(Tour(step));
+        var session = await harness.Service.StartAsync(Tour(step), cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(BonboardingTourStatus.Completed, session.Status);
     }
@@ -225,8 +225,8 @@ public class TourSessionTests
         var fork = Step("a", "#a");
         fork.ResolveNext = _ => ValueTask.FromResult<string?>("c");
 
-        var session = await harness.Service.StartAsync(Tour(fork, Step("b", "#b"), Step("c", "#c")));
-        await session.NextAsync();
+        var session = await harness.Service.StartAsync(Tour(fork, Step("b", "#b"), Step("c", "#c")), cancellationToken: TestContext.CancellationToken);
+        await session.NextAsync(TestContext.CancellationToken);
 
         Assert.AreEqual("c", session.CurrentStep!.Id);
     }
@@ -240,9 +240,9 @@ public class TourSessionTests
         var fork = Step("a", "#a");
         fork.ResolveNext = _ => ValueTask.FromResult<string?>("c");
 
-        var session = await harness.Service.StartAsync(Tour(fork, Step("b", "#b"), Step("c", "#c")));
-        await session.NextAsync();
-        await session.PreviousAsync();
+        var session = await harness.Service.StartAsync(Tour(fork, Step("b", "#b"), Step("c", "#c")), cancellationToken: TestContext.CancellationToken);
+        await session.NextAsync(TestContext.CancellationToken);
+        await session.PreviousAsync(TestContext.CancellationToken);
 
         // Back from c must land on a, the step actually visited, not on b.
         Assert.AreEqual("a", session.CurrentStep!.Id);
@@ -257,8 +257,8 @@ public class TourSessionTests
         var fork = Step("a", "#a");
         fork.ResolveNext = _ => ValueTask.FromResult<string?>(BonboardingTourDefinition.EndStepId);
 
-        var session = await harness.Service.StartAsync(Tour(fork, Step("b", "#b")));
-        await session.NextAsync();
+        var session = await harness.Service.StartAsync(Tour(fork, Step("b", "#b")), cancellationToken: TestContext.CancellationToken);
+        await session.NextAsync(TestContext.CancellationToken);
 
         Assert.AreEqual(BonboardingTourStatus.Completed, session.Status);
     }
@@ -272,7 +272,7 @@ public class TourSessionTests
         var fork = Step("a", "#a");
         fork.ResolveNext = _ => ValueTask.FromResult<string?>(null);
 
-        var session = await harness.Service.StartAsync(Tour(fork));
+        var session = await harness.Service.StartAsync(Tour(fork), cancellationToken: TestContext.CancellationToken);
 
         Assert.IsFalse(session.IsLastStep);
     }
@@ -289,13 +289,13 @@ public class TourSessionTests
         var gated = Step("a", "#a");
         gated.CanAdvance = _ => ValueTask.FromResult(allow);
 
-        var session = await harness.Service.StartAsync(Tour(gated, Step("b", "#b")));
+        var session = await harness.Service.StartAsync(Tour(gated, Step("b", "#b")), cancellationToken: TestContext.CancellationToken);
 
-        await session.NextAsync();
+        await session.NextAsync(TestContext.CancellationToken);
         Assert.AreEqual("a", session.CurrentStep!.Id);
 
         allow = true;
-        await session.NextAsync();
+        await session.NextAsync(TestContext.CancellationToken);
         Assert.AreEqual("b", session.CurrentStep!.Id);
     }
 
@@ -308,8 +308,8 @@ public class TourSessionTests
         var step = Step("a", "#a");
         step.OnBeforeLeave = _ => throw new InvalidOperationException("validation failed");
 
-        var session = await harness.Service.StartAsync(Tour(step, Step("b", "#b")));
-        await session.NextAsync();
+        var session = await harness.Service.StartAsync(Tour(step, Step("b", "#b")), cancellationToken: TestContext.CancellationToken);
+        await session.NextAsync(TestContext.CancellationToken);
 
         Assert.AreEqual(BonboardingTourStatus.Failed, session.Status);
         Assert.AreEqual("validation failed", session.Error!.Message);
@@ -325,7 +325,7 @@ public class TourSessionTests
         var step = Step("a", "#late");
         step.MissingTarget = BonboardingMissingTargetBehavior.Wait;
 
-        var session = await harness.Service.StartAsync(Tour(step));
+        var session = await harness.Service.StartAsync(Tour(step), cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(BonboardingTourStatus.Waiting, session.Status);
         Assert.IsTrue(session.IsWaiting);
@@ -346,7 +346,7 @@ public class TourSessionTests
         var missing = Step("a", "#gone");
         missing.MissingTarget = BonboardingMissingTargetBehavior.Skip;
 
-        var session = await harness.Service.StartAsync(Tour(missing, Step("b", "#b")));
+        var session = await harness.Service.StartAsync(Tour(missing, Step("b", "#b")), cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual("b", session.CurrentStep!.Id);
         Assert.Contains(BonboardingEventKind.StepSkipped, harness.Events.Kinds);
@@ -360,7 +360,7 @@ public class TourSessionTests
         var missing = Step("a", "#gone");
         missing.MissingTarget = BonboardingMissingTargetBehavior.Center;
 
-        var session = await harness.Service.StartAsync(Tour(missing));
+        var session = await harness.Service.StartAsync(Tour(missing), cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(BonboardingTourStatus.Running, session.Status);
         Assert.AreEqual("a", session.CurrentStep!.Id);
@@ -378,7 +378,7 @@ public class TourSessionTests
         var missing = Step("a", "#gone");
         missing.MissingTarget = BonboardingMissingTargetBehavior.Fail;
 
-        var session = await harness.Service.StartAsync(Tour(missing));
+        var session = await harness.Service.StartAsync(Tour(missing), cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(BonboardingTourStatus.Failed, session.Status);
         Assert.IsInstanceOfType<BonboardingException>(session.Error);
@@ -394,7 +394,7 @@ public class TourSessionTests
         missing.MissingTarget = BonboardingMissingTargetBehavior.Wait;
         missing.WaitTimeoutBehavior = BonboardingMissingTargetBehavior.Skip;
 
-        var session = await harness.Service.StartAsync(Tour(missing, Step("b", "#b")));
+        var session = await harness.Service.StartAsync(Tour(missing, Step("b", "#b")), cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual(BonboardingTourStatus.Waiting, session.Status);
 
         await harness.Interop.TimeOutWaitAsync(session.Id);
@@ -412,7 +412,7 @@ public class TourSessionTests
         missing.MissingTarget = BonboardingMissingTargetBehavior.Wait;
         missing.WaitTimeoutBehavior = BonboardingMissingTargetBehavior.Wait;
 
-        var session = await harness.Service.StartAsync(Tour(missing));
+        var session = await harness.Service.StartAsync(Tour(missing), cancellationToken: TestContext.CancellationToken);
         await harness.Interop.TimeOutWaitAsync(session.Id);
 
         // Waiting again would hang forever, so the timeout degrades to skipping.
@@ -428,7 +428,7 @@ public class TourSessionTests
         var step = Step("a", "#a");
         step.MissingTarget = BonboardingMissingTargetBehavior.Wait;
 
-        var session = await harness.Service.StartAsync(Tour(step));
+        var session = await harness.Service.StartAsync(Tour(step), cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual(BonboardingTourStatus.Running, session.Status);
 
         await harness.Interop.LoseTargetAsync(session.Id);
@@ -448,7 +448,7 @@ public class TourSessionTests
         missing.WaitTimeoutBehavior = BonboardingMissingTargetBehavior.Center;
         missing.OnShown = _ => { shown++; return ValueTask.CompletedTask; };
 
-        var session = (BonboardingTourSession)await harness.Service.StartAsync(Tour(missing));
+        var session = (BonboardingTourSession)await harness.Service.StartAsync(Tour(missing), cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual(BonboardingTourStatus.Waiting, session.Status);
         var activations = harness.Interop.Activations.Count;
 
@@ -460,7 +460,7 @@ public class TourSessionTests
         Assert.Contains(BonboardingEventKind.StepShown, harness.Events.Kinds);
 
         // The browser is handed the step again, without a target, so it keeps the card placed.
-        Assert.AreEqual(activations + 1, harness.Interop.Activations.Count);
+        Assert.HasCount(activations + 1, harness.Interop.Activations);
         Assert.AreEqual(BonboardingTargetKind.None, harness.Interop.LastActivation!.Target.Kind);
     }
 
@@ -475,13 +475,13 @@ public class TourSessionTests
         step.MissingTarget = BonboardingMissingTargetBehavior.Wait;
         step.OnShown = _ => { shown++; return ValueTask.CompletedTask; };
 
-        var session = await harness.Service.StartAsync(Tour(step));
+        var session = await harness.Service.StartAsync(Tour(step), cancellationToken: TestContext.CancellationToken);
         var activations = harness.Interop.Activations.Count;
 
         await harness.Interop.LoseTargetAsync(session.Id);
 
         // The browser stopped watching when it reported the loss, so it has to be asked to wait.
-        Assert.AreEqual(activations + 1, harness.Interop.Activations.Count);
+        Assert.HasCount(activations + 1, harness.Interop.Activations);
         Assert.IsTrue(harness.Interop.LastActivation!.WaitForTarget);
 
         await harness.Interop.AppearAsync(session.Id, "#a");
@@ -501,7 +501,7 @@ public class TourSessionTests
         step.MissingTarget = BonboardingMissingTargetBehavior.Skip;
         step.CanAdvance = _ => ValueTask.FromResult(false);
 
-        var session = await harness.Service.StartAsync(Tour(step, Step("b")));
+        var session = await harness.Service.StartAsync(Tour(step, Step("b")), cancellationToken: TestContext.CancellationToken);
 
         await harness.Interop.LoseTargetAsync(session.Id);
 
@@ -518,7 +518,7 @@ public class TourSessionTests
         var step = Step("a", "#a");
         step.MissingTarget = BonboardingMissingTargetBehavior.Center;
 
-        var session = (BonboardingTourSession)await harness.Service.StartAsync(Tour(step));
+        var session = (BonboardingTourSession)await harness.Service.StartAsync(Tour(step), cancellationToken: TestContext.CancellationToken);
 
         await harness.Interop.LoseTargetAsync(session.Id);
 
@@ -535,12 +535,12 @@ public class TourSessionTests
         await using var harness = new BonboardingHarness();
         harness.WithElements("#a", "#b");
 
-        var session = await harness.Service.StartAsync(Tour(Step("a", "#a"), Step("b", "#b")));
+        var session = await harness.Service.StartAsync(Tour(Step("a", "#a"), Step("b", "#b")), cancellationToken: TestContext.CancellationToken);
         var activations = harness.Interop.Activations.Count;
 
         // Removed by a re-render that no observer reported.
         harness.Interop.ExistingSelectors.Remove("#a");
-        await session.RefreshAsync();
+        await session.RefreshAsync(TestContext.CancellationToken);
 
         Assert.AreEqual(BonboardingTourStatus.Waiting, session.Status, "The default behaviour waits for the target to come back.");
         Assert.AreEqual(BonboardingWaitReason.Target, session.WaitReason);
@@ -555,7 +555,7 @@ public class TourSessionTests
         harness.WithElements("#b");
         harness.Interop.InvalidSelectors.Add("#a[");
 
-        var session = await harness.Service.StartAsync(Tour(Step("a", "#a["), Step("b", "#b")));
+        var session = await harness.Service.StartAsync(Tour(Step("a", "#a["), Step("b", "#b")), cancellationToken: TestContext.CancellationToken);
 
         // The default is to wait, then skip: an unparseable selector skips at once.
         Assert.AreEqual("b", session.CurrentStep!.Id);
@@ -571,7 +571,7 @@ public class TourSessionTests
         var step = Step("a", "button:has(");
         step.MissingTarget = BonboardingMissingTargetBehavior.Fail;
 
-        var session = await harness.Service.StartAsync(Tour(step));
+        var session = await harness.Service.StartAsync(Tour(step), cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(BonboardingTourStatus.Failed, session.Status);
         Assert.Contains("not a valid CSS selector", session.Error!.Message);
@@ -587,7 +587,7 @@ public class TourSessionTests
         var interactive = Step("a", "#a");
         interactive.AdvanceOn = BonboardingAdvanceTrigger.TargetClick;
 
-        var session = await harness.Service.StartAsync(Tour(interactive, Step("b", "#b")));
+        var session = await harness.Service.StartAsync(Tour(interactive, Step("b", "#b")), cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(BonboardingInteractionMode.TargetOnly, session.CurrentOptions!.Interaction);
         Assert.AreEqual("target", harness.Interop.LastActivation!.Interaction);
@@ -608,7 +608,7 @@ public class TourSessionTests
         interactive.AdvanceOn = BonboardingAdvanceTrigger.TargetClick;
         interactive.CanAdvance = _ => new ValueTask<bool>(decision.Task);
 
-        var session = await harness.Service.StartAsync(Tour(interactive, Step("b", "#b"), Step("c", "#c")));
+        var session = await harness.Service.StartAsync(Tour(interactive, Step("b", "#b"), Step("c", "#c")), cancellationToken: TestContext.CancellationToken);
 
         // The user clicks the target twice while the first advance is still being decided.
         var first = harness.Interop.TriggerAdvanceAsync(session.Id);
@@ -631,7 +631,7 @@ public class TourSessionTests
         interactive.AdvanceOn = BonboardingAdvanceTrigger.TargetClick;
         interactive.CanAdvance = _ => ValueTask.FromResult(allowed);
 
-        var session = await harness.Service.StartAsync(Tour(interactive, Step("b", "#b")));
+        var session = await harness.Service.StartAsync(Tour(interactive, Step("b", "#b")), cancellationToken: TestContext.CancellationToken);
 
         await harness.Interop.TriggerAdvanceAsync(session.Id);
         Assert.AreEqual("a", session.CurrentStep!.Id);
@@ -651,7 +651,7 @@ public class TourSessionTests
         step.AdvanceOn = BonboardingAdvanceTrigger.TargetClick;
         step.Interaction = BonboardingInteractionMode.Free;
 
-        var session = await harness.Service.StartAsync(Tour(step));
+        var session = await harness.Service.StartAsync(Tour(step), cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(BonboardingInteractionMode.Free, session.CurrentOptions!.Interaction);
     }
@@ -662,7 +662,7 @@ public class TourSessionTests
         await using var harness = new BonboardingHarness();
         harness.WithElements("#a");
 
-        var session = await harness.Service.StartAsync(Tour(Step("a", "#a")));
+        var session = await harness.Service.StartAsync(Tour(Step("a", "#a")), cancellationToken: TestContext.CancellationToken);
         await harness.Interop.PressKeyAsync(session.Id, "Escape");
 
         Assert.AreEqual(BonboardingTourStatus.Dismissed, session.Status);
@@ -677,7 +677,7 @@ public class TourSessionTests
         var step = Step("a", "#a");
         step.CloseOnEscape = false;
 
-        var session = await harness.Service.StartAsync(Tour(step));
+        var session = await harness.Service.StartAsync(Tour(step), cancellationToken: TestContext.CancellationToken);
         await harness.Interop.PressKeyAsync(session.Id, "Escape");
 
         Assert.AreEqual(BonboardingTourStatus.Running, session.Status);
@@ -690,7 +690,7 @@ public class TourSessionTests
         harness.WithElements("#a", "#b");
 
         var tour = Tour(Step("a", "#a"), Step("b", "#b"));
-        var session = await harness.Service.StartAsync(tour);
+        var session = await harness.Service.StartAsync(tour, cancellationToken: TestContext.CancellationToken);
 
         await harness.Interop.PressKeyAsync(session.Id, "ArrowRight");
         Assert.AreEqual("b", session.CurrentStep!.Id);
@@ -698,7 +698,7 @@ public class TourSessionTests
         await harness.Interop.PressKeyAsync(session.Id, "ArrowLeft");
         Assert.AreEqual("a", session.CurrentStep!.Id);
 
-        await session.DismissAsync();
+        await session.DismissAsync(TestContext.CancellationToken);
 
         var rtlTour = new BonboardingTourDefinition
         {
@@ -707,7 +707,7 @@ public class TourSessionTests
             Steps = [Step("a", "#a"), Step("b", "#b")],
         };
 
-        var rtl = await harness.Service.StartAsync(rtlTour);
+        var rtl = await harness.Service.StartAsync(rtlTour, cancellationToken: TestContext.CancellationToken);
         await harness.Interop.PressKeyAsync(rtl.Id, "ArrowLeft");
 
         Assert.AreEqual("b", rtl.CurrentStep!.Id);
@@ -719,11 +719,11 @@ public class TourSessionTests
         await using var harness = new BonboardingHarness();
         harness.WithElements("#a");
 
-        var session = await harness.Service.StartAsync(Tour(Step("a", "#a")));
+        var session = await harness.Service.StartAsync(Tour(Step("a", "#a")), cancellationToken: TestContext.CancellationToken);
         await harness.Interop.ClickOverlayAsync(session.Id);
         Assert.AreEqual(BonboardingTourStatus.Running, session.Status);
 
-        await session.DismissAsync();
+        await session.DismissAsync(TestContext.CancellationToken);
 
         var closable = new BonboardingTourDefinition
         {
@@ -732,7 +732,7 @@ public class TourSessionTests
             Steps = [Step("a", "#a")],
         };
 
-        var second = await harness.Service.StartAsync(closable);
+        var second = await harness.Service.StartAsync(closable, cancellationToken: TestContext.CancellationToken);
         await harness.Interop.ClickOverlayAsync(second.Id);
 
         Assert.AreEqual(BonboardingTourStatus.Dismissed, second.Status);
@@ -758,8 +758,8 @@ public class TourSessionTests
         var step = Step("a", "#a");
         step.Actions = [action];
 
-        var session = await harness.Service.StartAsync(Tour(step, Step("b", "#b"), Step("c", "#c")));
-        await session.InvokeActionAsync(action);
+        var session = await harness.Service.StartAsync(Tour(step, Step("b", "#b"), Step("c", "#c")), cancellationToken: TestContext.CancellationToken);
+        await session.InvokeActionAsync(action, TestContext.CancellationToken);
 
         Assert.IsTrue(clicked);
         Assert.AreEqual("c", session.CurrentStep!.Id);
@@ -787,10 +787,10 @@ public class TourSessionTests
         var step = Step("a", "#a");
         step.Actions = [action];
 
-        var session = await harness.Service.StartAsync(Tour(step));
+        var session = await harness.Service.StartAsync(Tour(step), cancellationToken: TestContext.CancellationToken);
 
-        var first = session.InvokeActionAsync(action);
-        var second = session.InvokeActionAsync(action);
+        var first = session.InvokeActionAsync(action, TestContext.CancellationToken);
+        var second = session.InvokeActionAsync(action, TestContext.CancellationToken);
 
         release.SetResult();
         await Task.WhenAll(first, second);
@@ -798,7 +798,7 @@ public class TourSessionTests
         Assert.AreEqual(1, runs, "A handler that creates something must not run once per impatient click.");
 
         // Once it has finished, the same button is a new request again.
-        await session.InvokeActionAsync(action);
+        await session.InvokeActionAsync(action, TestContext.CancellationToken);
         Assert.AreEqual(2, runs);
     }
 
@@ -817,15 +817,15 @@ public class TourSessionTests
             OnClick = context =>
             {
                 captured = context.Session;
-                return new ValueTask(context.Session.DismissAsync());
+                return new ValueTask(context.Session.DismissAsync(TestContext.CancellationToken));
             },
         };
 
         var step = Step("a", "#a");
         step.Actions = [action];
 
-        var session = await harness.Service.StartAsync(Tour(step, Step("b", "#b")));
-        await session.InvokeActionAsync(action);
+        var session = await harness.Service.StartAsync(Tour(step, Step("b", "#b")), cancellationToken: TestContext.CancellationToken);
+        await session.InvokeActionAsync(action, TestContext.CancellationToken);
 
         Assert.AreSame(session, captured);
         Assert.AreEqual(BonboardingTourStatus.Dismissed, session.Status);
@@ -839,14 +839,14 @@ public class TourSessionTests
         await using var harness = new BonboardingHarness();
         harness.WithElements("#a", "#b");
 
-        var session = await harness.Service.StartAsync(Tour(Step("a", "#a"), Step("b", "#b")));
-        await session.NextAsync();
+        var session = await harness.Service.StartAsync(Tour(Step("a", "#a"), Step("b", "#b")), cancellationToken: TestContext.CancellationToken);
+        await session.NextAsync(TestContext.CancellationToken);
 
-        await session.PauseAsync();
+        await session.PauseAsync(TestContext.CancellationToken);
         Assert.AreEqual(BonboardingTourStatus.Paused, session.Status);
         Assert.IsFalse(session.IsActive);
 
-        await session.ResumeAsync();
+        await session.ResumeAsync(TestContext.CancellationToken);
         Assert.AreEqual(BonboardingTourStatus.Running, session.Status);
         Assert.AreEqual("b", session.CurrentStep!.Id);
     }
@@ -857,10 +857,10 @@ public class TourSessionTests
         await using var harness = new BonboardingHarness();
         harness.WithElements("#a");
 
-        var session = await harness.Service.StartAsync(Tour(Step("a", "#a")));
-        await session.PauseAsync();
+        var session = await harness.Service.StartAsync(Tour(Step("a", "#a")), cancellationToken: TestContext.CancellationToken);
+        await session.PauseAsync(TestContext.CancellationToken);
 
-        await harness.Service.StopAllAsync();
+        await harness.Service.StopAllAsync(cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(BonboardingTourStatus.Cancelled, session.Status);
     }
@@ -873,13 +873,13 @@ public class TourSessionTests
         await using var harness = new BonboardingHarness();
         harness.WithElements("#a");
 
-        var session = await harness.Service.StartAsync(Tour(Step("a", "#a")));
+        var session = await harness.Service.StartAsync(Tour(Step("a", "#a")), cancellationToken: TestContext.CancellationToken);
         Assert.ContainsSingle(harness.Interop.AttachedSessions);
 
-        await session.CompleteAsync();
+        await session.CompleteAsync(TestContext.CancellationToken);
 
         Assert.IsEmpty(harness.Interop.AttachedSessions);
-        Assert.IsTrue(harness.Interop.DeactivateCount > 0);
+        Assert.IsGreaterThan(0, harness.Interop.DeactivateCount);
         Assert.AreEqual(1, harness.Interop.DetachCount);
     }
 
@@ -890,10 +890,10 @@ public class TourSessionTests
         harness.WithElements("#a", "#b", "#c", "#d");
 
         var session = await harness.Service.StartAsync(
-            Tour(Step("a", "#a"), Step("b", "#b"), Step("c", "#c"), Step("d", "#d")));
+            Tour(Step("a", "#a"), Step("b", "#b"), Step("c", "#c"), Step("d", "#d")), cancellationToken: TestContext.CancellationToken);
 
         // Three simultaneous clicks on Next, as an impatient user produces.
-        await Task.WhenAll(session.NextAsync(), session.NextAsync(), session.NextAsync());
+        await Task.WhenAll(session.NextAsync(TestContext.CancellationToken), session.NextAsync(TestContext.CancellationToken), session.NextAsync(TestContext.CancellationToken));
 
         Assert.AreEqual("d", session.CurrentStep!.Id);
         Assert.AreEqual(BonboardingTourStatus.Running, session.Status);
@@ -905,12 +905,12 @@ public class TourSessionTests
         await using var harness = new BonboardingHarness();
         harness.WithElements("#a", "#b");
 
-        var session = await harness.Service.StartAsync(Tour(Step("a", "#a"), Step("b", "#b")));
-        await session.DismissAsync();
+        var session = await harness.Service.StartAsync(Tour(Step("a", "#a"), Step("b", "#b")), cancellationToken: TestContext.CancellationToken);
+        await session.DismissAsync(TestContext.CancellationToken);
 
-        await session.NextAsync();
-        await session.PreviousAsync();
-        await session.RefreshAsync();
+        await session.NextAsync(TestContext.CancellationToken);
+        await session.PreviousAsync(TestContext.CancellationToken);
+        await session.RefreshAsync(TestContext.CancellationToken);
 
         Assert.AreEqual(BonboardingTourStatus.Dismissed, session.Status);
         Assert.IsNull(session.CurrentStep);
@@ -922,9 +922,9 @@ public class TourSessionTests
         await using var harness = new BonboardingHarness();
         harness.WithElements("#a");
 
-        var first = await harness.Service.StartAsync(Tour(Step("a", "#a")));
+        var first = await harness.Service.StartAsync(Tour(Step("a", "#a")), cancellationToken: TestContext.CancellationToken);
         var second = await harness.Service.StartAsync(
-            new BonboardingTourDefinition { Id = "second", Steps = [Step("a", "#a")] });
+            new BonboardingTourDefinition { Id = "second", Steps = [Step("a", "#a")] }, cancellationToken: TestContext.CancellationToken);
 
         Assert.IsFalse(first.IsActive);
         Assert.IsTrue(second.IsActive);
@@ -939,14 +939,14 @@ public class TourSessionTests
 
         var tour = Tour(Step("a", "#a"));
 
-        var first = await harness.Service.StartAsync(tour);
-        await first.CompleteAsync();
+        var first = await harness.Service.StartAsync(tour, cancellationToken: TestContext.CancellationToken);
+        await first.CompleteAsync(TestContext.CancellationToken);
 
         // Ended sessions are discarded rather than kept for the lifetime of the circuit.
         Assert.IsNull(harness.Service.FindSession(tour.Id));
         Assert.IsEmpty(harness.Service.Sessions);
 
-        var second = await harness.Service.RestartAsync(tour);
+        var second = await harness.Service.RestartAsync(tour, TestContext.CancellationToken);
 
         Assert.AreSame(second, harness.Service.FindSession(tour.Id));
         Assert.ContainsSingle(harness.Service.Sessions);
@@ -958,14 +958,14 @@ public class TourSessionTests
         await using var harness = new BonboardingHarness();
         harness.WithElements("#a");
 
-        var first = await harness.Service.StartAsync(Tour(Step("a", "#a")));
+        var first = await harness.Service.StartAsync(Tour(Step("a", "#a")), cancellationToken: TestContext.CancellationToken);
         var second = await harness.Service.StartAsync(
             new BonboardingTourDefinition { Id = "second", Steps = [Step("a", "#a")] },
-            new BonboardingStartOptions { StopOthers = false });
+            new BonboardingStartOptions { StopOthers = false }, TestContext.CancellationToken);
 
         Assert.IsTrue(first.IsActive);
         Assert.IsTrue(second.IsActive);
-        Assert.AreEqual(2, harness.Interop.AttachedSessions.Count);
+        Assert.HasCount(2, harness.Interop.AttachedSessions);
     }
 
     [TestMethod]
@@ -983,13 +983,13 @@ public class TourSessionTests
         {
             Id = "first",
             Steps = [Step("a", "#a")],
-            OnEnded = async _ => followUpSession = await harness.Service.StartAsync(followUp, new BonboardingStartOptions { StopOthers = false }),
+            OnEnded = async _ => followUpSession = await harness.Service.StartAsync(followUp, new BonboardingStartOptions { StopOthers = false }, TestContext.CancellationToken),
         };
 
-        await harness.Service.StartAsync(first);
+        await harness.Service.StartAsync(first, cancellationToken: TestContext.CancellationToken);
 
-        var startSecond = harness.Service.StartAsync(new BonboardingTourDefinition { Id = "second", Steps = [Step("a", "#a")] });
-        var finished = await Task.WhenAny(startSecond, Task.Delay(TimeSpan.FromSeconds(5)));
+        var startSecond = harness.Service.StartAsync(new BonboardingTourDefinition { Id = "second", Steps = [Step("a", "#a")] }, cancellationToken: TestContext.CancellationToken);
+        var finished = await Task.WhenAny(startSecond, Task.Delay(TimeSpan.FromSeconds(5), TestContext.CancellationToken));
 
         Assert.AreSame(startSecond, finished, "StartAsync hung on its own gate.");
 
@@ -997,7 +997,7 @@ public class TourSessionTests
         Assert.IsTrue(second.IsActive);
         Assert.IsNotNull(followUpSession);
         Assert.IsTrue(followUpSession.IsActive);
-        Assert.AreEqual(2, harness.Service.Sessions.Count);
+        Assert.HasCount(2, harness.Service.Sessions);
     }
 
     [TestMethod]
@@ -1012,8 +1012,8 @@ public class TourSessionTests
         // The first start is stuck reading saved progress, so its session is Idle: the window a
         // double click on a "take the tour" button lands in. The second start finds it there and
         // queues up to cancel it before starting its own session.
-        var first = harness.Service.StartAsync(tour);
-        var second = harness.Service.StartAsync(tour);
+        var first = harness.Service.StartAsync(tour, cancellationToken: TestContext.CancellationToken);
+        var second = harness.Service.StartAsync(tour, cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual(1, store.PendingReads);
         Assert.IsFalse(second.IsCompleted);
 
@@ -1027,11 +1027,11 @@ public class TourSessionTests
         Assert.ContainsSingle(harness.Interop.AttachedSessions);
 
         // Ending the survivor must not resurrect anything.
-        await sessions[1].CompleteAsync();
+        await sessions[1].CompleteAsync(TestContext.CancellationToken);
 
         Assert.IsNull(harness.Service.Active);
         Assert.IsEmpty(harness.Interop.AttachedSessions);
-        Assert.IsTrue((await harness.Store.GetAsync(tour.Id))!.Completed);
+        Assert.IsTrue((await harness.Store.GetAsync(tour.Id, TestContext.CancellationToken))!.Completed);
     }
 
     [TestMethod]
@@ -1041,13 +1041,13 @@ public class TourSessionTests
         await using var harness = new BonboardingHarness(configureServices: services => services.AddSingleton<IBonboardingStore>(store));
         harness.WithElements("#a");
 
-        var starting = harness.Service.StartAsync(Tour(Step("a", "#a")));
+        var starting = harness.Service.StartAsync(Tour(Step("a", "#a")), cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual(1, store.PendingReads);
 
         // Completed would write a completed record for a tour the user never went through; a
         // session that was only starting when the stop arrived can only be cancelled. The stop
         // queues behind the start, so the store is released before either is awaited.
-        var stopping = harness.Service.StopAllAsync(BonboardingTourEndReason.Completed);
+        var stopping = harness.Service.StopAllAsync(BonboardingTourEndReason.Completed, TestContext.CancellationToken);
         Assert.IsFalse(stopping.IsCompleted);
 
         store.Open();
@@ -1057,7 +1057,8 @@ public class TourSessionTests
         Assert.AreEqual(BonboardingTourStatus.Cancelled, session.Status);
         Assert.IsEmpty(harness.Service.Sessions);
         Assert.IsEmpty(harness.Interop.AttachedSessions);
-        Assert.IsFalse((await harness.Store.GetAsync("test-tour"))?.Completed ?? false);
+        var actualValue = (await harness.Store.GetAsync("test-tour", TestContext.CancellationToken))?.Completed ?? false;
+        Assert.IsFalse(actualValue);
     }
 
     // ---- Focus --------------------------------------------------------------
@@ -1074,13 +1075,13 @@ public class TourSessionTests
         var tour = Tour(Step("a", "#a"), free, Step("c", "#c"));
         tour.TrapFocus = true;
 
-        var session = await harness.Service.StartAsync(tour);
+        var session = await harness.Service.StartAsync(tour, cancellationToken: TestContext.CancellationToken);
         Assert.IsTrue(harness.Interop.LastActivation!.TrapFocus);
 
-        await session.NextAsync();
+        await session.NextAsync(TestContext.CancellationToken);
         Assert.IsFalse(harness.Interop.LastActivation!.TrapFocus);
 
-        await session.NextAsync();
+        await session.NextAsync(TestContext.CancellationToken);
         Assert.IsTrue(harness.Interop.LastActivation!.TrapFocus);
     }
 
@@ -1090,16 +1091,16 @@ public class TourSessionTests
         await using var harness = new BonboardingHarness();
         harness.WithElements("#a", "#b");
 
-        var session = (BonboardingTourSession)await harness.Service.StartAsync(Tour(Step("a", "#a"), Step("b", "#b")));
+        var session = (BonboardingTourSession)await harness.Service.StartAsync(Tour(Step("a", "#a"), Step("b", "#b")), cancellationToken: TestContext.CancellationToken);
 
         await session.FocusPopoverAsync();
-        await session.NextAsync();
+        await session.NextAsync(TestContext.CancellationToken);
         await session.FocusPopoverAsync();
 
         Assert.AreEqual(1, harness.Interop.CaptureFocusCount);
         Assert.AreEqual(2, harness.Interop.FocusPopoverCount);
 
-        await session.CompleteAsync();
+        await session.CompleteAsync(TestContext.CancellationToken);
 
         Assert.AreEqual(1, harness.Interop.RestoreFocusCount);
     }
@@ -1111,10 +1112,10 @@ public class TourSessionTests
         harness.WithElements("#a");
 
         var tour = new BonboardingTourDefinition { Id = "no-restore", RestoreFocus = false, Steps = [Step("a", "#a")] };
-        var session = (BonboardingTourSession)await harness.Service.StartAsync(tour);
+        var session = (BonboardingTourSession)await harness.Service.StartAsync(tour, cancellationToken: TestContext.CancellationToken);
 
         await session.FocusPopoverAsync();
-        await session.CompleteAsync();
+        await session.CompleteAsync(TestContext.CancellationToken);
 
         Assert.AreEqual(0, harness.Interop.RestoreFocusCount);
     }
@@ -1130,7 +1131,7 @@ public class TourSessionTests
         var step = Step("a", "#a");
         step.AdditionalTargets = [BonboardingStepTarget.Css("#extra")];
 
-        var session = await harness.Service.StartAsync(Tour(step));
+        var session = await harness.Service.StartAsync(Tour(step), cancellationToken: TestContext.CancellationToken);
 
         var activation = harness.Interop.LastActivation!;
         Assert.IsNotNull(activation.AdditionalTargets);
@@ -1149,7 +1150,7 @@ public class TourSessionTests
         var step = Step("a");
         step.Target = BonboardingStepTarget.Dynamic(_ => BonboardingStepTarget.Css("#chosen"));
 
-        var session = await harness.Service.StartAsync(Tour(step));
+        var session = await harness.Service.StartAsync(Tour(step), cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual("#chosen", harness.Interop.LastActivation!.Target.Selector);
         Assert.IsTrue(session.HasTarget);
@@ -1163,7 +1164,7 @@ public class TourSessionTests
         var step = Step("a");
         step.Target = BonboardingStepTarget.Dynamic(_ => (BonboardingStepTarget?)null);
 
-        var session = await harness.Service.StartAsync(Tour(step));
+        var session = await harness.Service.StartAsync(Tour(step), cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(BonboardingTourStatus.Running, session.Status);
         Assert.AreEqual(BonboardingTargetKind.None, harness.Interop.LastActivation!.Target.Kind);
@@ -1180,7 +1181,7 @@ public class TourSessionTests
         var step = Step("a");
         step.Target = BonboardingStepTarget.Anchor("create");
 
-        var session = await harness.Service.StartAsync(Tour(step));
+        var session = await harness.Service.StartAsync(Tour(step), cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual("[data-bonboarding-anchor=\"create\"]", harness.Interop.LastActivation!.Target.Selector);
         Assert.IsTrue(session.HasTarget);
@@ -1194,9 +1195,9 @@ public class TourSessionTests
         await using var harness = new BonboardingHarness();
         harness.WithElements("#a", "#b");
 
-        var session = await harness.Service.StartAsync(Tour(Step("a", "#a"), Step("b", "#b")));
-        await session.NextAsync();
-        await session.CompleteAsync();
+        var session = await harness.Service.StartAsync(Tour(Step("a", "#a"), Step("b", "#b")), cancellationToken: TestContext.CancellationToken);
+        await session.NextAsync(TestContext.CancellationToken);
+        await session.CompleteAsync(TestContext.CancellationToken);
 
         var kinds = harness.Events.Kinds;
 
@@ -1210,7 +1211,7 @@ public class TourSessionTests
         Assert.AreEqual("test-tour", completed.Tour.Id);
 
         // Step durations are what make funnel analysis possible.
-        Assert.IsTrue(harness.Events.Events.Any(e => e.Kind == BonboardingEventKind.StepLeft && e.Duration is not null));
+        Assert.Contains(e => e.Kind == BonboardingEventKind.StepLeft && e.Duration is not null, harness.Events.Events);
     }
 
     [TestMethod]
@@ -1219,14 +1220,15 @@ public class TourSessionTests
         await using var harness = new BonboardingHarness();
         harness.WithElements("#a", "#b");
 
-        var session = await harness.Service.StartAsync(Tour(Step("a", "#a"), Step("b", "#b")));
-        await session.NextAsync();
+        var session = await harness.Service.StartAsync(Tour(Step("a", "#a"), Step("b", "#b")), cancellationToken: TestContext.CancellationToken);
+        await session.NextAsync(TestContext.CancellationToken);
 
         // Next on the last step is what a Done button does: the step is left, and the tour completes.
-        await session.NextAsync();
+        await session.NextAsync(TestContext.CancellationToken);
 
         Assert.AreEqual(BonboardingTourStatus.Completed, session.Status);
-        Assert.AreEqual(1, harness.Events.Events.Count(e => e.Kind == BonboardingEventKind.StepLeft && e.Step?.Id == "b"));
+        var actualValue = harness.Events.Events.Count(e => e.Kind == BonboardingEventKind.StepLeft && e.Step?.Id == "b");
+        Assert.AreEqual(1, actualValue);
         Assert.AreEqual(BonboardingEventKind.TourCompleted, harness.Events.Kinds[^1]);
     }
 
@@ -1238,7 +1240,7 @@ public class TourSessionTests
 
         harness.Service.EventRaised += (_, _) => throw new InvalidOperationException("analytics is down");
 
-        var session = await harness.Service.StartAsync(Tour(Step("a", "#a")));
+        var session = await harness.Service.StartAsync(Tour(Step("a", "#a")), cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(BonboardingTourStatus.Running, session.Status);
     }
@@ -1251,7 +1253,7 @@ public class TourSessionTests
         await using var harness = new BonboardingHarness();
         harness.Interop.IsAvailable = false;
 
-        var session = await harness.Service.StartAsync(Tour(Step("a", "#a"), Step("b", "#b")));
+        var session = await harness.Service.StartAsync(Tour(Step("a", "#a"), Step("b", "#b")), cancellationToken: TestContext.CancellationToken);
 
         // No DOM means no measurement, but the engine still advances so a prerendered pass is
         // harmless rather than fatal.
@@ -1259,7 +1261,7 @@ public class TourSessionTests
         Assert.IsNull(session.Placement);
         Assert.IsEmpty(harness.Interop.Activations);
 
-        await session.NextAsync();
+        await session.NextAsync(TestContext.CancellationToken);
         Assert.AreEqual("b", session.CurrentStep!.Id);
     }
 
@@ -1283,16 +1285,18 @@ public class TourSessionTests
         var tour = Tour(Step("a", "#a"), b, Step("c", "#c"));
         tour.OnStepChanged = args => { changes.Add(args); return ValueTask.CompletedTask; };
 
-        var session = await harness.Service.StartAsync(tour);
-        await session.NextAsync();
+        var session = await harness.Service.StartAsync(tour, cancellationToken: TestContext.CancellationToken);
+        await session.NextAsync(TestContext.CancellationToken);
 
         Assert.AreEqual("c", session.CurrentStep!.Id);
-        CollectionAssert.AreEqual(new[] { "a", "c" }, session.History.ToArray());
+        Assert.AreSequenceEqual(new[] { "a", "c" }, session.History.ToArray());
+        var actualValue = harness.Events.Events.Any(e => e.Kind == BonboardingEventKind.StepLeft && e.Step?.Id == "b");
 
         // The skipped step never reached the screen: it reports no time on it, and the step after
         // it says the user came from the one they actually saw.
-        Assert.IsFalse(harness.Events.Events.Any(e => e.Kind == BonboardingEventKind.StepLeft && e.Step?.Id == "b"));
-        Assert.AreEqual("a", changes[^1].PreviousStep?.Id);
+        Assert.IsFalse(actualValue);
+        var actualValue1 = changes[^1].PreviousStep?.Id;
+        Assert.AreEqual("a", actualValue1);
         Assert.AreEqual(BonboardingStepChangeReason.Next, changes[^1].Reason);
 
         // Its show hook did run, so its leave hook runs too, to undo whatever the show hook opened.
@@ -1300,7 +1304,7 @@ public class TourSessionTests
         Assert.AreEqual(1, bLeft);
 
         // Back goes to the step the user saw, without trying the skipped one again.
-        await session.PreviousAsync();
+        await session.PreviousAsync(TestContext.CancellationToken);
         Assert.AreEqual("a", session.CurrentStep!.Id);
         Assert.AreEqual(1, bPrepared);
     }
@@ -1318,13 +1322,13 @@ public class TourSessionTests
         var tour = Tour(a, Step("b", "#b"));
         tour.OnStepChanged = args => { changes.Add(args); return ValueTask.CompletedTask; };
 
-        var session = await harness.Service.StartAsync(tour);
+        var session = await harness.Service.StartAsync(tour, cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual("b", session.CurrentStep!.Id);
-        Assert.HasCount(1, changes);
+        Assert.ContainsSingle(changes);
         Assert.IsNull(changes[0].PreviousStep);
         Assert.AreEqual(BonboardingStepChangeReason.Start, changes[0].Reason);
-        CollectionAssert.AreEqual(new[] { "b" }, session.History.ToArray());
+        Assert.AreSequenceEqual(new[] { "b" }, session.History.ToArray());
     }
 
     [TestMethod]
@@ -1336,12 +1340,12 @@ public class TourSessionTests
         var a = Step("a", "#a");
         a.MissingTarget = BonboardingMissingTargetBehavior.Skip;
 
-        var session = await harness.Service.StartAsync(Tour(a, Step("b", "#b")));
-        await session.NextAsync();
+        var session = await harness.Service.StartAsync(Tour(a, Step("b", "#b")), cancellationToken: TestContext.CancellationToken);
+        await session.NextAsync(TestContext.CancellationToken);
 
         // The first step's target goes away while the user is on the second one.
         harness.Interop.ExistingSelectors.Remove("#a");
-        await session.PreviousAsync();
+        await session.PreviousAsync(TestContext.CancellationToken);
 
         // Nothing to go back to: the user lands on a step that can be shown, not on one that cannot.
         Assert.AreEqual("b", session.CurrentStep!.Id);
@@ -1359,13 +1363,13 @@ public class TourSessionTests
         var a = Step("a", "#a");
         a.OnBeforeLeave = _ => { left++; return ValueTask.CompletedTask; };
 
-        var session = await harness.Service.StartAsync(Tour(a, Step("b")));
-        await session.PreviousAsync();
+        var session = await harness.Service.StartAsync(Tour(a, Step("b")), cancellationToken: TestContext.CancellationToken);
+        await session.PreviousAsync(TestContext.CancellationToken);
 
         Assert.AreEqual("a", session.CurrentStep!.Id);
         Assert.AreEqual(0, left);
         Assert.DoesNotContain(BonboardingEventKind.StepLeft, harness.Events.Kinds);
-        CollectionAssert.AreEqual(new[] { "a" }, session.History.ToArray());
+        Assert.AreSequenceEqual(new[] { "a" }, session.History.ToArray());
     }
 
     [TestMethod]
@@ -1382,16 +1386,16 @@ public class TourSessionTests
         b.OnBeforeShow = _ => { shown++; return ValueTask.CompletedTask; };
         b.OnBeforeLeave = context => { context.State["hide-a"] = true; return ValueTask.CompletedTask; };
 
-        var session = await harness.Service.StartAsync(Tour(a, b));
-        await session.NextAsync();
-        await session.PreviousAsync();
+        var session = await harness.Service.StartAsync(Tour(a, b), cancellationToken: TestContext.CancellationToken);
+        await session.NextAsync(TestContext.CancellationToken);
+        await session.PreviousAsync(TestContext.CancellationToken);
 
         // The leave hook took away the only step behind. Its hooks have run, so rather than leave
         // the step half torn down it is shown again, with its history intact.
         Assert.AreEqual("b", session.CurrentStep!.Id);
         Assert.AreEqual(BonboardingTourStatus.Running, session.Status);
         Assert.AreEqual(2, shown);
-        CollectionAssert.AreEqual(new[] { "a", "b" }, session.History.ToArray());
+        Assert.AreSequenceEqual(new[] { "a", "b" }, session.History.ToArray());
     }
 
     [TestMethod]
@@ -1403,12 +1407,12 @@ public class TourSessionTests
         var a = Step("a", "#a");
         a.CanAdvance = async context =>
         {
-            await context.Session.DismissAsync();
+            await context.Session.DismissAsync(TestContext.CancellationToken);
             return true;
         };
 
-        var session = await harness.Service.StartAsync(Tour(a, Step("b", "#b")));
-        await session.NextAsync().WaitAsync(TimeSpan.FromSeconds(10));
+        var session = await harness.Service.StartAsync(Tour(a, Step("b", "#b")), cancellationToken: TestContext.CancellationToken);
+        await session.NextAsync(TestContext.CancellationToken).WaitAsync(TimeSpan.FromSeconds(10), TestContext.CancellationToken);
 
         Assert.AreEqual(BonboardingTourStatus.Dismissed, session.Status);
     }
@@ -1420,9 +1424,9 @@ public class TourSessionTests
         harness.WithElements("#a", "#b");
 
         var a = Step("a", "#a");
-        a.OnShown = context => new ValueTask(Task.Run(() => context.Session.NextAsync()));
+        a.OnShown = context => new ValueTask(Task.Run(() => context.Session.NextAsync(TestContext.CancellationToken), TestContext.CancellationToken));
 
-        var session = await harness.Service.StartAsync(Tour(a, Step("b", "#b"))).WaitAsync(TimeSpan.FromSeconds(10));
+        var session = await harness.Service.StartAsync(Tour(a, Step("b", "#b")), cancellationToken: TestContext.CancellationToken).WaitAsync(TimeSpan.FromSeconds(10), TestContext.CancellationToken);
 
         Assert.AreEqual("b", session.CurrentStep!.Id);
     }
@@ -1445,8 +1449,8 @@ public class TourSessionTests
             background = Task.Run(async () =>
             {
                 await go.Task;
-                await context.Session.NextAsync();
-            });
+                await context.Session.NextAsync(TestContext.CancellationToken);
+            }, TestContext.CancellationToken);
 
             return ValueTask.CompletedTask;
         };
@@ -1454,12 +1458,12 @@ public class TourSessionTests
         a.OnShown = async context =>
         {
             go.SetResult();
-            await Task.Delay(200);
+            await Task.Delay(200, TestContext.CancellationToken);
             seenWhileShowing = context.Session.CurrentStep?.Id;
         };
 
-        var session = await harness.Service.StartAsync(Tour(a, Step("b", "#b")));
-        await background!.WaitAsync(TimeSpan.FromSeconds(10));
+        var session = await harness.Service.StartAsync(Tour(a, Step("b", "#b")), cancellationToken: TestContext.CancellationToken);
+        await background!.WaitAsync(TimeSpan.FromSeconds(10), TestContext.CancellationToken);
 
         // The background Next queued behind the transition that was still showing step a, instead
         // of running inside it.
@@ -1477,7 +1481,7 @@ public class TourSessionTests
         var a = Step("a", "#gone");
         a.MissingTarget = BonboardingMissingTargetBehavior.Skip;
 
-        var session = await harness.Service.StartAsync(Tour(a, Step("b", "#b")));
+        var session = await harness.Service.StartAsync(Tour(a, Step("b", "#b")), cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual("b", session.CurrentStep!.Id);
 
@@ -1485,7 +1489,7 @@ public class TourSessionTests
         // transition starts, to the step that replaces it.
         var store = (TokenRecordingStore)harness.Store;
         Assert.IsNotEmpty(store.Writes);
-        Assert.IsFalse(store.Writes.Any(write => write.Cancelled));
+        Assert.DoesNotContain(write => write.Cancelled, store.Writes);
         Assert.AreEqual("b", store.Writes[^1].Record.CurrentStepId);
     }
 
@@ -1501,11 +1505,11 @@ public class TourSessionTests
         var step = Step("a", "#a");
         step.Placement = BonboardingPlacement.Bottom;
 
-        var session = await harness.Service.StartAsync(Tour(step));
+        var session = await harness.Service.StartAsync(Tour(step), cancellationToken: TestContext.CancellationToken);
         var assumed = session.Placement!.Value.ArrowOffset;
 
         harness.Interop.PopoverRadius = 30;
-        await session.RefreshAsync();
+        await session.RefreshAsync(TestContext.CancellationToken);
         var measured = session.Placement!.Value.ArrowOffset;
 
         // The inset is the corner radius plus half the arrow; unmeasured, the default stylesheet's.
@@ -1521,7 +1525,7 @@ public class TourSessionTests
         await using var harness = new BonboardingHarness();
         harness.WithElements("#a");
 
-        var session = await harness.Service.StartAsync(Tour(Step("a", "#a")));
+        var session = await harness.Service.StartAsync(Tour(Step("a", "#a")), cancellationToken: TestContext.CancellationToken);
 
         Assert.IsTrue(session.IsActive);
         Assert.IsNull(harness.Service.GetTour("test-tour"));
@@ -1534,14 +1538,16 @@ public class TourSessionTests
         await using var harness = new BonboardingHarness();
         harness.WithElements("#a");
 
-        await harness.Store.SetAsync(new BonboardingRecord { TourId = "test-tour", Version = 1, Completed = true });
+        await harness.Store.SetAsync(new BonboardingRecord { TourId = "test-tour", Version = 1, Completed = true }, TestContext.CancellationToken);
 
         var tour = Tour(Step("a", "#a"));
         tour.Version = 2;
         tour.Persist = false;
 
-        await harness.Service.StartAsync(tour, new BonboardingStartOptions { Force = true });
+        await harness.Service.StartAsync(tour, new BonboardingStartOptions { Force = true }, TestContext.CancellationToken);
 
-        Assert.IsNull(await harness.Service.GetRecordAsync("test-tour"));
+        Assert.IsNull(await harness.Service.GetRecordAsync("test-tour", TestContext.CancellationToken));
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

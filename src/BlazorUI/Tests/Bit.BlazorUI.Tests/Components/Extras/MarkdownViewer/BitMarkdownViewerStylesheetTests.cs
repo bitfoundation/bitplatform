@@ -24,7 +24,7 @@ public partial class BitMarkdownViewerStylesheetTests
 
         foreach (var name in documented)
         {
-            StringAssert.Contains(stylesheet, $"var({name}, ", $"{name} is documented but never read with a fallback.");
+            Assert.Contains($"var({name}, ", stylesheet, $"{name} is documented but never read with a fallback.");
         }
     }
 
@@ -38,7 +38,7 @@ public partial class BitMarkdownViewerStylesheetTests
 
         foreach (var name in read)
         {
-            CollectionAssert.Contains(documented, name, $"{name} is read but not documented in the header.");
+            Assert.Contains(name, documented, $"{name} is read but not documented in the header.");
         }
     }
 
@@ -56,7 +56,7 @@ public partial class BitMarkdownViewerStylesheetTests
         var documented = DocumentedVariables(ReadStylesheet()).Order().ToArray();
         var listed = DemoVariable().Matches(ReadDemo()).Select(m => m.Groups[1].Value).Distinct().Order().ToArray();
 
-        CollectionAssert.AreEqual(documented, listed, "The demo page's CSS variables table and the stylesheet header disagree.");
+        Assert.AreSequenceEqual(documented, listed, "The demo page's CSS variables table and the stylesheet header disagree.");
     }
 
     [TestMethod]
@@ -65,13 +65,13 @@ public partial class BitMarkdownViewerStylesheetTests
         var stylesheet = ReadStylesheet();
 
         // One boundary, written once and used by every element rule, including the reset.
-        StringAssert.Contains(stylesheet, "$_own: ':not(:where(:is(.bit-mdv-tpl, .math) *:not(.bit-mdv-tpl .bit-mdv, .bit-mdv-tpl .bit-mdv *)))';");
-        StringAssert.Contains(stylesheet, "@include own('*:not(.bit-mdv, .bit-mdv-alert-icon, .bit-mdv-alert-icon *)') {\n        all: revert;");
+        Assert.Contains("$_own: ':not(:where(:is(.bit-mdv-tpl, .math) *:not(.bit-mdv-tpl .bit-mdv, .bit-mdv-tpl .bit-mdv *)))';", stylesheet);
+        Assert.Contains("@include own('*:not(.bit-mdv, .bit-mdv-alert-icon, .bit-mdv-alert-icon *)') {\n        all: revert;", stylesheet);
 
         // A bare descendant rule would reach into a template and restyle the components drawn there.
         Assert.IsFalse(Regex.IsMatch(SourceFiles.StripScssComments(stylesheet), @"^\s+(\*|a|p|pre|code|table|h[1-6]|ul|ol|li)\s*[,{]", RegexOptions.Multiline),
                        "An element is styled with a bare descendant rule, which reaches a template's output.");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-mdv {"), ".bit-mdv-tpl {\n        display: contents;");
+        Assert.Contains(".bit-mdv-tpl {\n        display: contents;", SourceFiles.GetScssBlock(stylesheet, "\n.bit-mdv {"));
     }
 
     [TestMethod]
@@ -79,10 +79,10 @@ public partial class BitMarkdownViewerStylesheetTests
     {
         var stylesheet = ReadStylesheet();
 
-        StringAssert.Contains(stylesheet, "text-decoration-line: var(--bit-MarkdownViewer-link-decoration, underline);");
+        Assert.Contains("text-decoration-line: var(--bit-MarkdownViewer-link-decoration, underline);", stylesheet);
         // The titles of the alerts are read on the page, so they take the role foregrounds rather than the fills.
-        StringAssert.Contains(stylesheet, "var(--bit-MarkdownViewer-warning-color, #{$clr-wrn-fg})");
-        Assert.IsFalse(stylesheet.Contains("color: $clr-wrn;"), "An alert title is painted in the warning fill, which is not legible on the page.");
+        Assert.Contains("var(--bit-MarkdownViewer-warning-color, #{$clr-wrn-fg})", stylesheet);
+        Assert.DoesNotContain("color: $clr-wrn;", stylesheet, "An alert title is painted in the warning fill, which is not legible on the page.");
     }
 
     [TestMethod]
@@ -91,11 +91,11 @@ public partial class BitMarkdownViewerStylesheetTests
         var stylesheet = ReadStylesheet();
         var forced = SourceFiles.GetScssBlock(stylesheet, "\n@media (forced-colors: active) {");
 
-        StringAssert.Contains(forced, "outline: $shp-border-width solid transparent;");
-        StringAssert.Contains(forced, "background-color: Mark;");
+        Assert.Contains("outline: $shp-border-width solid transparent;", forced);
+        Assert.Contains("background-color: Mark;", forced);
 
         // The rule is a border, which forced colors keep, rather than a background, which they paint over.
-        StringAssert.Contains(stylesheet, "border-top: var(--bit-MarkdownViewer-rule-thickness, 0.25em) $shp-border-style var(--bit-MarkdownViewer-rule-color, #{$clr-brd-pri});");
+        Assert.Contains("border-top: var(--bit-MarkdownViewer-rule-thickness, 0.25em) $shp-border-style var(--bit-MarkdownViewer-rule-color, #{$clr-brd-pri});", stylesheet);
     }
 
     [TestMethod]
@@ -104,7 +104,7 @@ public partial class BitMarkdownViewerStylesheetTests
         var stylesheet = ReadStylesheet();
 
         // Links, code blocks, interactive task boxes, table scroll regions and the summaries of the collapsible containers.
-        Assert.AreEqual(5, Regex.Matches(stylesheet, @"&:focus-visible \{\n\s+@include focus-ring;").Count);
+        Assert.HasCount(5, Regex.Matches(stylesheet, @"&:focus-visible \{\n\s+@include focus-ring;"));
     }
 
     private static string[] DocumentedVariables(string stylesheet)

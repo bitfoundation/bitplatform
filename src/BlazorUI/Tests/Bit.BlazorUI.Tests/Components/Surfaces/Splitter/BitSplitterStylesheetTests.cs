@@ -25,8 +25,7 @@ public class BitSplitterStylesheetTests
         var read = PublicVariableRead.Matches(stylesheet).Select(m => m.Groups[1].Value).ToHashSet(StringComparer.Ordinal);
         var documented = DocumentedVariable.Matches(stylesheet).Select(m => m.Groups[1].Value).ToHashSet(StringComparer.Ordinal);
 
-        CollectionAssert.AreEquivalent(documented.Order().ToArray(), read.Order().ToArray(),
-            "The --bit-Splitter-* variables the stylesheet reads and the ones its header comment documents have drifted apart.");
+        Assert.AreSequenceEqual(documented.Order().ToArray(), read.Order().ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, "The --bit-Splitter-* variables the stylesheet reads and the ones its header comment documents have drifted apart.");
     }
 
     [TestMethod]
@@ -36,7 +35,7 @@ public class BitSplitterStylesheetTests
         // below it: a declaration on the splitter would shadow them all.
         var declared = PublicVariableDeclaration.Matches(ReadStylesheet()).Select(m => m.Groups[1].Value).ToArray();
 
-        CollectionAssert.AreEqual(Array.Empty<string>(), declared);
+        Assert.AreSequenceEqual(Array.Empty<string>(), declared);
     }
 
     [TestMethod]
@@ -48,7 +47,7 @@ public class BitSplitterStylesheetTests
 
         foreach (var name in new[] { "fpn-size", "fpn-grow", "fpn-max", "fpn-min", "spn-size", "spn-grow", "spn-max", "spn-min", "col-size" })
         {
-            StringAssert.Contains(root, $"--bit-spl-{name}: initial;");
+            Assert.Contains($"--bit-spl-{name}: initial;", root);
         }
     }
 
@@ -61,7 +60,7 @@ public class BitSplitterStylesheetTests
                               .Distinct()
                               .ToArray();
 
-        CollectionAssert.AreEqual(Array.Empty<string>(), unprefixed);
+        Assert.AreSequenceEqual(Array.Empty<string>(), unprefixed);
     }
 
     [TestMethod]
@@ -71,8 +70,8 @@ public class BitSplitterStylesheetTests
         // the public one.
         var root = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-spl {");
 
-        StringAssert.Contains(root, "--bit-spl-gtr-size: var(--bit-Splitter-gutter-size, #{spacing(1.25)});");
-        StringAssert.Contains(root, "--bit-spl-hit-size: var(--bit-Splitter-gutter-hit-size, #{spacing(3)});");
+        Assert.Contains("--bit-spl-gtr-size: var(--bit-Splitter-gutter-size, #{spacing(1.25)});", root);
+        Assert.Contains("--bit-spl-hit-size: var(--bit-Splitter-gutter-hit-size, #{spacing(3)});", root);
     }
 
     [TestMethod]
@@ -81,7 +80,7 @@ public class BitSplitterStylesheetTests
         var stylesheet = ReadStylesheet();
         var coarse = SourceFiles.GetScssBlock(stylesheet, "@media (pointer: coarse) {");
 
-        StringAssert.Contains(coarse, "--bit-spl-hit-size: var(--bit-Splitter-gutter-hit-size, #{spacing(5.5)});");
+        Assert.Contains("--bit-spl-hit-size: var(--bit-Splitter-gutter-hit-size, #{spacing(5.5)});", coarse);
     }
 
     [TestMethod]
@@ -90,8 +89,8 @@ public class BitSplitterStylesheetTests
         // The button is drawn 1.75 spacing units across the gutter; the part answering a press reaches out to 3.
         var button = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-spl-cbt {");
 
-        StringAssert.Contains(button, "&::before {");
-        StringAssert.Contains(button, "calc((spacing(1.75) - spacing(3)) / 2)");
+        Assert.Contains("&::before {", button);
+        Assert.Contains("calc((spacing(1.75) - spacing(3)) / 2)", button);
     }
 
     [TestMethod]
@@ -101,7 +100,7 @@ public class BitSplitterStylesheetTests
         // the secondary foreground has that floor over the gutter, the primary stroke does not.
         var grip = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-spl-gti {");
 
-        StringAssert.Contains(grip, "var(--bit-Splitter-gutter-indicator-color, #{$clr-fg-sec})");
+        Assert.Contains("var(--bit-Splitter-gutter-indicator-color, #{$clr-fg-sec})", grip);
     }
 
     [TestMethod]
@@ -120,7 +119,7 @@ public class BitSplitterStylesheetTests
                                   .Where(line => descendant.IsMatch(line))
                                   .ToArray();
 
-        CollectionAssert.AreEqual(Array.Empty<string>(), offending);
+        Assert.AreSequenceEqual(Array.Empty<string>(), offending);
 
         // Nesting a part's block inside a state's block compiles to the same descendant selector.
         var parents = new System.Collections.Generic.Stack<string>();
@@ -143,7 +142,7 @@ public class BitSplitterStylesheetTests
             }
         }
 
-        CollectionAssert.AreEqual(Array.Empty<string>(), nested);
+        Assert.AreSequenceEqual(Array.Empty<string>(), nested);
     }
 
     [TestMethod]
@@ -157,12 +156,11 @@ public class BitSplitterStylesheetTests
         foreach (var selector in new[] { "\n:where(.bit-spl) > .bit-spl-pnl {", "\n:where(.bit-spl) > .bit-spl-fpn {", "\n:where(.bit-spl) > .bit-spl-spn {",
                                          "\n:where(.bit-spl-vrt) > .bit-spl-pnl {", "\n:where(.bit-spl-vrt) > .bit-spl-fpn {", "\n:where(.bit-spl-vrt) > .bit-spl-spn {" })
         {
-            StringAssert.Contains(stylesheet, selector);
+            Assert.Contains(selector, stylesheet);
         }
 
         // The column ties with the row, so it has to come after it to swap the axes.
-        Assert.IsTrue(stylesheet.IndexOf("\n:where(.bit-spl-vrt) > .bit-spl-pnl {", StringComparison.Ordinal)
-                    > stylesheet.IndexOf("\n:where(.bit-spl) > .bit-spl-spn {", StringComparison.Ordinal));
+        Assert.IsGreaterThan(stylesheet.IndexOf("\n:where(.bit-spl) > .bit-spl-spn {", StringComparison.Ordinal), stylesheet.IndexOf("\n:where(.bit-spl-vrt) > .bit-spl-pnl {", StringComparison.Ordinal));
 
         Assert.IsFalse(stylesheet.Contains(":where(.bit-spl > ", StringComparison.Ordinal), "A panel limit costs no specificity at all again.");
         Assert.IsFalse(stylesheet.Contains(":where(.bit-spl-vrt > ", StringComparison.Ordinal), "A panel limit costs no specificity at all again.");
@@ -181,7 +179,7 @@ public class BitSplitterStylesheetTests
         // A finger lifting off the gutter would otherwise leave it in its hover color until the next tap elsewhere.
         var rules = SourceFiles.GetScssRules(ReadStylesheet()).Where(r => r.Header.Contains(":hover", StringComparison.Ordinal)).ToArray();
 
-        Assert.IsTrue(rules.Length > 0);
+        Assert.IsNotEmpty(rules);
 
         foreach (var rule in rules)
         {
@@ -198,7 +196,7 @@ public class BitSplitterStylesheetTests
         var stylesheet = ReadStylesheet();
         var rule = ".bit-spl:not(.bit-spl-vrt):not([dir=\"rtl\"]):dir(rtl) > .bit-spl-gtr > .bit-spl-cbt > .bit-spl-cbd {\n    scale: -1 1;";
 
-        StringAssert.Contains(stylesheet, rule);
+        Assert.Contains(rule, stylesheet);
 
         // A browser without :dir() drops every selector of a list that holds it, so the rule stands on its own.
         var start = stylesheet.IndexOf(rule, StringComparison.Ordinal);
@@ -236,8 +234,8 @@ public class BitSplitterStylesheetTests
         var hover = stylesheet.IndexOf("    :where(.bit-spl:not(.bit-spl-rdo, .bit-dis, .bit-spl-col:not(.bit-spl-cpb))) > .bit-spl-gtr:hover {", StringComparison.Ordinal);
         var drag = stylesheet.IndexOf("\n.bit-spl-drg > .bit-spl-gtr {", StringComparison.Ordinal);
 
-        Assert.IsTrue(hover >= 0, "The gutter's hover rule has changed shape.");
-        Assert.IsTrue(drag > hover, "The drag rule has to come after the hover rule it ties with.");
+        Assert.IsGreaterThanOrEqualTo(0, hover, "The gutter's hover rule has changed shape.");
+        Assert.IsGreaterThan(hover, drag, "The drag rule has to come after the hover rule it ties with.");
     }
 
     // Whether one of the blocks a rule sits in is the hover query - or the forced-colors one, which only repaints what

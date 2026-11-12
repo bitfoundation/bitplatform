@@ -304,8 +304,8 @@ public class BitDirResolvedBrowserTests : PerformanceTestBase
 
         var orders = await Page.EvaluateAsync<string[]>($"() => [...document.querySelectorAll('{set} [data-probe={probe}] {part}')].map(e => getComputedStyle(e).order)");
 
-        Assert.IsTrue(orders.Length > 0, $"{probe}: no AM/PM segment in {set}.");
-        CollectionAssert.AreEqual(Enumerable.Repeat(expected, orders.Length).ToArray(), orders, $"{probe} in {set}: {string.Join(", ", orders)}");
+        Assert.IsNotEmpty(orders, $"{probe}: no AM/PM segment in {set}.");
+        Assert.AreSequenceEqual(Enumerable.Repeat(expected, orders.Length).ToArray(), orders, $"{probe} in {set}: {string.Join(", ", orders)}");
     }
 
     // The drawer is docked to the edge its Start placement names in the direction it reads - the left reading left to
@@ -345,7 +345,7 @@ public class BitDirResolvedBrowserTests : PerformanceTestBase
         }
         else
         {
-            await Task.Delay(1000);
+            await Task.Delay(1000, TestContext.CancellationToken);
             Assert.AreEqual("true", await Page.Locator("#open").TextContentAsync());
         }
     }
@@ -401,7 +401,7 @@ public class BitDirResolvedBrowserTests : PerformanceTestBase
 
         Assert.AreEqual(expectPan, moved, $"The map {(moved ? "was" : "was not")} panned ({context}).");
         Assert.AreEqual(read["markerCentre"], read["popupCentre"], 2, $"The popup is not centred over its marker ({context}).");
-        Assert.IsTrue(read["popupBottom"] < read["markerBottom"], $"The popup is not above its marker ({context}).");
+        Assert.IsLessThan(read["markerBottom"], read["popupBottom"], $"The popup is not above its marker ({context}).");
 
         var placement = $"popup {read["popupLeft"]}..{read["popupRight"]} x {read["popupTop"]}..{read["popupBottom"]} in {read["frameLeft"]}..{read["frameRight"]} x {read["frameTop"]}..{read["frameBottom"]}; {context}";
 
@@ -418,8 +418,8 @@ public class BitDirResolvedBrowserTests : PerformanceTestBase
         }
         else if (marker is "wide")
         {
-            Assert.IsTrue(read["popupRight"] - read["popupLeft"] > read["frameRight"] - read["frameLeft"], $"The popup is not wider than the map ({placement}).");
-            Assert.IsTrue(read["popupTop"] >= read["frameTop"] + margin - 1.5, $"The popup is not brought in at the top ({placement}).");
+            Assert.IsGreaterThan(read["frameRight"] - read["frameLeft"], read["popupRight"] - read["popupLeft"], $"The popup is not wider than the map ({placement}).");
+            Assert.IsGreaterThanOrEqualTo(read["frameTop"] + margin - 1.5, read["popupTop"], $"The popup is not brought in at the top ({placement}).");
 
             if (rtl) Assert.AreEqual(read["frameRight"] - margin, read["popupRight"], 1.5, $"The pan does not bring in the popup's right edge ({placement}).");
             else Assert.AreEqual(read["frameLeft"] + margin, read["popupLeft"], 1.5, $"The pan does not bring in the popup's left edge ({placement}).");
@@ -494,6 +494,6 @@ public class BitDirResolvedBrowserTests : PerformanceTestBase
             return reads == expected ? null : $"{probe} reads {reads}, expected {expected}";
         }).Where(message => message is not null).ToArray();
 
-        Assert.AreEqual(0, wrong.Length, $"{where}:\n{string.Join("\n", wrong)}");
+        Assert.IsEmpty(wrong, $"{where}:\n{string.Join("\n", wrong)}");
     }
 }

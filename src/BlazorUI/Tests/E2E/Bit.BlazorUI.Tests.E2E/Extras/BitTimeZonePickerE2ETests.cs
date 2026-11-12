@@ -29,7 +29,7 @@ public class BitTimeZonePickerE2ETests : E2ETestBase
         var callout = await OpenCalloutAsync("tzp-basic");
         await Expect(callout.Locator(".bit-tzp-srch")).ToBeFocusedAsync();
         await Expect(callout.Locator("[role=listbox]")).ToHaveAttributeAsync("aria-label", "Time zones");
-        Assert.IsTrue(await callout.Locator("[role=option]").CountAsync() > 300);
+        Assert.IsGreaterThan(300, await callout.Locator("[role=option]").CountAsync());
 
         await callout.Locator(".bit-tzp-srch").FillAsync("Tokyo");
         var option = callout.Locator("[role=option]").First;
@@ -60,9 +60,9 @@ public class BitTimeZonePickerE2ETests : E2ETestBase
             var sign = o[3] == '-' ? -1 : 1;
             return sign * (int.Parse(o.Substring(4, 2)) * 60 + int.Parse(o.Substring(7, 2)));
         }).ToArray();
-        CollectionAssert.AreEqual(minutes.OrderBy(m => m).ToArray(), minutes);
-        StringAssert.StartsWith(offsets[0], "UTC-1");
-        StringAssert.StartsWith(offsets[^1], "UTC+1");
+        Assert.AreSequenceEqual(minutes.OrderBy(m => m).ToArray(), minutes);
+        Assert.StartsWith("UTC-1", offsets[0]);
+        Assert.StartsWith("UTC+1", offsets[^1]);
     }
 
     [TestMethod]
@@ -132,7 +132,7 @@ public class BitTimeZonePickerE2ETests : E2ETestBase
 
         await Expect(Root("tzp-required")).ToHaveClassAsync(HasClass("bit-tzp-req"));
         await Expect(Field("tzp-required")).ToHaveAttributeAsync("aria-required", "true");
-        StringAssert.Contains(await Root("tzp-required").Locator("> label").EvaluateAsync<string>("l => getComputedStyle(l, '::after').content"), "*");
+        Assert.Contains("*", await Root("tzp-required").Locator("> label").EvaluateAsync<string>("l => getComputedStyle(l, '::after').content"));
 
         await Expect(Field("tzp-description")).ToHaveAccessibleDescriptionAsync("Where the office is.");
         await Expect(Root("tzp-label-template").Locator("label .custom-label")).ToHaveTextAsync("Templated label");
@@ -170,12 +170,12 @@ public class BitTimeZonePickerE2ETests : E2ETestBase
 
         var callout = await OpenCalloutAsync("tzp-offices");
         var names = await callout.Locator("[role=option] .bit-tzp-inm").EvaluateAllAsync<string[]>("os => os.map(o => o.textContent)");
-        CollectionAssert.AreEqual(new[] { "New York", "London", "Berlin", "Tehran", "Singapore" }, names);
+        Assert.AreSequenceEqual(new[] { "New York", "London", "Berlin", "Tehran", "Singapore" }, names);
         await Page.Keyboard.PressAsync("Escape");
 
         callout = await OpenCalloutAsync("tzp-europe");
         var ids = await callout.Locator("[role=option] .bit-tzp-inm").CountAsync();
-        Assert.IsTrue(ids > 30);
+        Assert.IsGreaterThan(30, ids);
         await Expect(callout.Locator("[role=option][title*='Tokyo']")).ToHaveCountAsync(0);
     }
 
@@ -246,7 +246,7 @@ public class BitTimeZonePickerE2ETests : E2ETestBase
         await Expect(callout.Locator("[role=option] .bit-tzp-ofs").First).ToHaveTextAsync(new Regex(@"^UTC\+05:"));
         await Expect(callout.Locator("[role=option] .bit-tzp-ofs").Last).ToHaveTextAsync(new Regex(@"^UTC\+05:"));
         var offsets = await callout.Locator("[role=option] .bit-tzp-ofs").EvaluateAllAsync<string[]>("os => os.map(o => o.textContent)");
-        Assert.IsTrue(offsets.Length > 2);
+        Assert.IsGreaterThan(2, offsets.Length);
         Assert.IsTrue(offsets.All(o => o.StartsWith("UTC+05:", StringComparison.Ordinal)), string.Join(", ", offsets));
         await Expect(Root("tzp-search").Locator(".bit-tzp-lvr")).ToHaveTextAsync(new Regex($@"^{offsets.Length} time zones found"));
 
@@ -649,7 +649,7 @@ public class BitTimeZonePickerE2ETests : E2ETestBase
         {
             var text = (await Field(id).Locator(".bit-tzp-txt").BoundingBoxAsync())!;
             var caret = (await Field(id).Locator(".bit-tzp-car").BoundingBoxAsync())!;
-            Assert.IsTrue(caret.X < text.X, $"{id}: the caret sits at the left end.");
+            Assert.IsLessThan(text.X, caret.X, $"{id}: the caret sits at the left end.");
         }
 
         var callout = await OpenCalloutAsync("tzp-rtl");
@@ -657,7 +657,7 @@ public class BitTimeZonePickerE2ETests : E2ETestBase
         var option = callout.Locator("[role=option]").First;
         var name = (await option.Locator(".bit-tzp-inm").BoundingBoxAsync())!;
         var country = (await option.Locator(".bit-tzp-icn").BoundingBoxAsync())!;
-        Assert.IsTrue(name.X > country.X, "The place reads before its country, from the right.");
+        Assert.IsGreaterThan(country.X, name.X, "The place reads before its country, from the right.");
     }
 
     [TestMethod]
@@ -705,12 +705,12 @@ public class BitTimeZonePickerE2ETests : E2ETestBase
         // (and an app shell's top bar), with the label beside it.
         var close = callout.Locator(".bit-tzp-cls");
         var closeBox = (await close.BoundingBoxAsync())!;
-        Assert.IsTrue(closeBox.Y >= 47, $"The close button sits under the notch ({closeBox.Y}px).");
+        Assert.IsGreaterThanOrEqualTo(47, closeBox.Y, $"The close button sits under the notch ({closeBox.Y}px).");
         var label = (await callout.Locator(".bit-tzp-rlb").BoundingBoxAsync())!;
-        Assert.IsTrue(label.Y >= 47, $"The label sits under the notch ({label.Y}px).");
+        Assert.IsGreaterThanOrEqualTo(47, label.Y, $"The label sits under the notch ({label.Y}px).");
 
         var list = (await callout.Locator(".bit-tzp-scn").BoundingBoxAsync())!;
-        Assert.IsTrue(list.Y + list.Height <= 700 - 34 + 1, $"The list runs under the home indicator (it ends at {list.Y + list.Height}px).");
+        Assert.IsLessThanOrEqualTo(700 - 34 + 1, list.Y + list.Height, $"The list runs under the home indicator (it ends at {list.Y + list.Height}px).");
 
         await close.ClickAsync();
         await Expect(Field("tzp-responsive")).ToHaveAttributeAsync("aria-expanded", "false");
@@ -760,7 +760,7 @@ public class BitTimeZonePickerE2ETests : E2ETestBase
 
         var callout = await OpenCalloutAsync("tzp-maxheight");
         var height = await callout.Locator(".bit-tzp-scn").EvaluateAsync<double>("s => s.getBoundingClientRect().height");
-        Assert.IsTrue(height <= 200.5, $"The list is {height}px tall.");
+        Assert.IsLessThanOrEqualTo(200.5, height, $"The list is {height}px tall.");
     }
 
     [TestMethod]
@@ -901,9 +901,9 @@ public class BitTimeZonePickerE2ETests : E2ETestBase
         var response = await Page.APIRequest.GetAsync($"{BaseUrl}{Route}");
         var html = await response.TextAsync();
 
-        StringAssert.Contains(html, "id=\"tzp-basic\"");
-        StringAssert.Contains(html, "Select a time zone");
-        StringAssert.Contains(html, "UTC&#x2B;09:00");
+        Assert.Contains("id=\"tzp-basic\"", html);
+        Assert.Contains("Select a time zone", html);
+        Assert.Contains("UTC&#x2B;09:00", html);
     }
 
     [TestMethod]

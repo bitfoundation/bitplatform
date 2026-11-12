@@ -44,7 +44,7 @@ public class BdndKeyBindingsTests
 
         var error = Assert.ThrowsExactly<ArgumentException>(() => manager.KeyBindings = new BdndKeyBindings { Down = ["ArrowDown", "Escape"] });
 
-        StringAssert.Contains(error.Message, "\"Escape\"");
+        Assert.Contains("\"Escape\"", error.Message);
         Assert.AreSame(BdndKeyBindings.Default, manager.KeyBindings);
     }
 
@@ -80,7 +80,7 @@ public class BdndKeyBindingsTests
         var error = Assert.ThrowsExactly<ArgumentException>(() => manager.KeyBindings = new BdndKeyBindings { Down = ["ArrowDown", tab] });
         Assert.ThrowsExactly<ArgumentException>(() => manager.KeyBindings = new BdndKeyBindings { PickUp = [tab] });
 
-        StringAssert.Contains(error.Message, "Tab");
+        Assert.Contains("Tab", error.Message);
         Assert.AreSame(BdndKeyBindings.Default, manager.KeyBindings);
     }
 
@@ -118,12 +118,12 @@ public class BdndKeyBindingsTests
 
         manager.KeyBindings = new BdndKeyBindings { Drop = ["d"] };
 
-        StringAssert.Contains(manager.InstructionsText, "D to drop");
+        Assert.Contains("D to drop", manager.InstructionsText);
         Assert.AreNotEqual(before, manager.InstructionsId);
 
         manager.KeyBindings = BdndKeyBindings.Default;
         Assert.AreEqual(before, manager.InstructionsId);
-        StringAssert.Contains(manager.InstructionsText, "Space or Enter to drop");
+        Assert.Contains("Space or Enter to drop", manager.InstructionsText);
     }
 
     [TestMethod]

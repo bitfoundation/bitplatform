@@ -25,7 +25,7 @@ public class BitMessageTests : BunitTestContext
     // The auto-dismiss callback fires off the render loop, so there is no render for WaitForAssertion to
     // hang its re-check on. The condition is polled from the test thread instead - which is only safe for a
     // flag the test owns: a FindAll polled from here can race bUnit rebuilding the markup and cache a stale DOM.
-    private static void WaitUntil(Func<bool> condition, int timeoutMilliseconds = 5000)
+    private static async global::System.Threading.Tasks.Task WaitUntil(Func<bool> condition, int timeoutMilliseconds = 5000, global::System.Threading.CancellationToken cancellationToken = default)
     {
         var stopwatch = Stopwatch.StartNew();
 
@@ -33,7 +33,7 @@ public class BitMessageTests : BunitTestContext
         {
             if (condition()) return;
 
-            Thread.Sleep(20);
+            await global::System.Threading.Tasks.Task.Delay(20, cancellationToken);
         }
     }
 
@@ -56,11 +56,11 @@ public class BitMessageTests : BunitTestContext
         Assert.IsFalse(root.ClassList.Contains("bit-msg-inf"));
         Assert.IsFalse(root.ClassList.Contains("bit-msg-md"));
 
-        Assert.HasCount(1, component.FindAll(".bit-msg-rct"));
-        Assert.HasCount(1, component.FindAll(".bit-msg-con"));
-        Assert.HasCount(1, component.FindAll(".bit-msg-ict"));
-        Assert.HasCount(1, component.FindAll(".bit-msg-cnc"));
-        Assert.HasCount(1, component.FindAll(".bit-msg-cnw"));
+        Assert.ContainsSingle(component.FindAll(".bit-msg-rct"));
+        Assert.ContainsSingle(component.FindAll(".bit-msg-con"));
+        Assert.ContainsSingle(component.FindAll(".bit-msg-ict"));
+        Assert.ContainsSingle(component.FindAll(".bit-msg-cnc"));
+        Assert.ContainsSingle(component.FindAll(".bit-msg-cnw"));
         Assert.AreEqual("Hello", component.Find(".bit-msg-cnt").TextContent.Trim());
 
         // Nothing optional renders on its own.
@@ -238,7 +238,7 @@ public class BitMessageTests : BunitTestContext
 
         var style = component.Find(".bit-msg").GetAttribute("style");
 
-        StringAssert.Contains(style, $"--bit-msg-justifycontent:{expectedValue}");
+        Assert.Contains($"--bit-msg-justifycontent:{expectedValue}", style!);
     }
 
     [TestMethod,
@@ -264,7 +264,7 @@ public class BitMessageTests : BunitTestContext
         }
         else
         {
-            StringAssert.Contains(style, $"--bit-msg-alignitems:{expectedValue}");
+            Assert.Contains($"--bit-msg-alignitems:{expectedValue}", style);
         }
     }
 
@@ -280,7 +280,7 @@ public class BitMessageTests : BunitTestContext
             parameters.Add(p => p.Elevation, elevation);
         });
 
-        StringAssert.Contains(component.Find(".bit-msg").GetAttribute("style"), $"--bit-msg-boxshadow:var(--bit-shd-{elevation})");
+        Assert.Contains($"--bit-msg-boxshadow:var(--bit-shd-{elevation})", component.Find(".bit-msg").GetAttribute("style")!);
     }
 
     [TestMethod,
@@ -299,7 +299,7 @@ public class BitMessageTests : BunitTestContext
 
         var style = component.Find(".bit-msg").GetAttribute("style") ?? string.Empty;
 
-        Assert.IsFalse(style.Contains("--bit-msg-boxshadow"));
+        Assert.DoesNotContain("--bit-msg-boxshadow", style);
     }
 
 
@@ -367,7 +367,7 @@ public class BitMessageTests : BunitTestContext
             parameters.Add(p => p.IconTemplate, "<span class='custom-icon'>*</span>");
         });
 
-        Assert.HasCount(1, component.FindAll(".bit-msg-ict .custom-icon"));
+        Assert.ContainsSingle(component.FindAll(".bit-msg-ict .custom-icon"));
         Assert.IsEmpty(component.FindAll(".bit-msg-ico"));
     }
 
@@ -470,7 +470,7 @@ public class BitMessageTests : BunitTestContext
         var title = component.Find(".bit-msg-ttl");
 
         Assert.AreEqual("markup", title.TextContent.Trim());
-        Assert.HasCount(1, title.QuerySelectorAll("b"));
+        Assert.ContainsSingle(title.QuerySelectorAll("b"));
     }
 
     [TestMethod]
@@ -656,7 +656,7 @@ public class BitMessageTests : BunitTestContext
             parameters.Add(p => p.Dismissible, true);
         });
 
-        Assert.HasCount(1, component.FindAll(".bit-msg-dmb"));
+        Assert.ContainsSingle(component.FindAll(".bit-msg-dmb"));
     }
 
     [TestMethod]
@@ -688,7 +688,7 @@ public class BitMessageTests : BunitTestContext
         component.Find(".bit-msg-dmb").Click();
 
         Assert.AreEqual(1, dismissCount);
-        Assert.HasCount(1, component.FindAll(".bit-msg"));
+        Assert.ContainsSingle(component.FindAll(".bit-msg"));
     }
 
     [TestMethod]
@@ -752,7 +752,7 @@ public class BitMessageTests : BunitTestContext
 
         component.Render(parameters => parameters.Add(p => p.Dismissed, false));
 
-        Assert.HasCount(1, component.FindAll(".bit-msg"));
+        Assert.ContainsSingle(component.FindAll(".bit-msg"));
     }
 
     [TestMethod]
@@ -772,7 +772,7 @@ public class BitMessageTests : BunitTestContext
         component.Find(".bit-msg-dmb").Click();
 
         Assert.AreEqual(1, dismissCount);
-        Assert.HasCount(1, component.FindAll(".bit-msg"));
+        Assert.ContainsSingle(component.FindAll(".bit-msg"));
     }
 
     [TestMethod]
@@ -1073,7 +1073,7 @@ public class BitMessageTests : BunitTestContext
         });
 
         Assert.IsTrue(component.Find(".bit-msg-cnt").ClassList.Contains("bit-msg-clp"));
-        StringAssert.Contains(component.Find(".bit-msg").GetAttribute("style"), "--bit-msg-maxlines:3");
+        Assert.Contains("--bit-msg-maxlines:3", component.Find(".bit-msg").GetAttribute("style")!);
     }
 
     [TestMethod,
@@ -1121,7 +1121,7 @@ public class BitMessageTests : BunitTestContext
             parameters.AddChildContent(LongText);
         });
 
-        Assert.HasCount(1, component.FindAll(".bit-msg-exb"));
+        Assert.ContainsSingle(component.FindAll(".bit-msg-exb"));
         Assert.IsTrue(component.Find(".bit-msg-cnt").ClassList.Contains("bit-msg-clp"));
     }
 
@@ -1167,7 +1167,7 @@ public class BitMessageTests : BunitTestContext
             parameters.AddChildContent(LongText);
         });
 
-        StringAssert.Contains(component.Find(".bit-msg").GetAttribute("style"), "--bit-msg-maxlines:3");
+        Assert.Contains("--bit-msg-maxlines:3", component.Find(".bit-msg").GetAttribute("style")!);
 
         component.Render(parameters =>
         {
@@ -1176,7 +1176,7 @@ public class BitMessageTests : BunitTestContext
             parameters.AddChildContent(LongText);
         });
 
-        StringAssert.Contains(component.Find(".bit-msg").GetAttribute("style"), "--bit-msg-maxlines:5");
+        Assert.Contains("--bit-msg-maxlines:5", component.Find(".bit-msg").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1429,7 +1429,7 @@ public class BitMessageTests : BunitTestContext
 
 
     [TestMethod]
-    public void BitMessageShouldAutoDismissAfterTheGivenTime()
+    public async global::System.Threading.Tasks.Task BitMessageShouldAutoDismissAfterTheGivenTime()
     {
         var dismissCount = 0;
 
@@ -1439,7 +1439,7 @@ public class BitMessageTests : BunitTestContext
             parameters.Add(p => p.OnDismiss, () => dismissCount++);
         });
 
-        WaitUntil(() => dismissCount == 1);
+        await WaitUntil(() => dismissCount == 1, cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(1, dismissCount);
     }
@@ -1459,7 +1459,7 @@ public class BitMessageTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitMessageShouldNotAutoDismissWhileItIsDisabled()
+    public async global::System.Threading.Tasks.Task BitMessageShouldNotAutoDismissWhileItIsDisabled()
     {
         // A turned-off message has its dismiss button turned off with it, so the countdown that would dismiss
         // it on the reader's behalf has no business running either.
@@ -1472,13 +1472,13 @@ public class BitMessageTests : BunitTestContext
             parameters.Add(p => p.OnDismiss, () => dismissCount++);
         });
 
-        Thread.Sleep(300);
+        await global::System.Threading.Tasks.Task.Delay(300, TestContext.CancellationToken);
 
         Assert.AreEqual(0, dismissCount);
     }
 
     [TestMethod]
-    public void BitMessageShouldArmTheCountdownOnceItIsEnabledAgain()
+    public async global::System.Threading.Tasks.Task BitMessageShouldArmTheCountdownOnceItIsEnabledAgain()
     {
         var dismissCount = 0;
 
@@ -1491,7 +1491,7 @@ public class BitMessageTests : BunitTestContext
 
         component.Render(parameters => parameters.Add(p => p.Disabled, false));
 
-        WaitUntil(() => dismissCount == 1);
+        await WaitUntil(() => dismissCount == 1, cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(1, dismissCount);
     }
@@ -1540,7 +1540,7 @@ public class BitMessageTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitMessageShouldHoldTheAutoDismissCountdownWhileThePointerIsOverIt()
+    public async global::System.Threading.Tasks.Task BitMessageShouldHoldTheAutoDismissCountdownWhileThePointerIsOverIt()
     {
         var dismissCount = 0;
 
@@ -1558,18 +1558,18 @@ public class BitMessageTests : BunitTestContext
         component.Render(parameters => parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(600)));
 
         // Well past the countdown, but the pointer is holding it.
-        Thread.Sleep(1500);
+        await global::System.Threading.Tasks.Task.Delay(1500, TestContext.CancellationToken);
         Assert.AreEqual(0, dismissCount);
 
         component.Find(".bit-msg").PointerLeave(_mousePointer);
 
-        WaitUntil(() => dismissCount == 1);
+        await WaitUntil(() => dismissCount == 1, cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(1, dismissCount);
     }
 
     [TestMethod]
-    public void BitMessageShouldNotLetATouchHoldTheAutoDismissCountdown()
+    public async global::System.Threading.Tasks.Task BitMessageShouldNotLetATouchHoldTheAutoDismissCountdown()
     {
         var dismissCount = 0;
 
@@ -1583,13 +1583,13 @@ public class BitMessageTests : BunitTestContext
         // never taken back: a touch that could hold the countdown would hold it for good.
         component.Find(".bit-msg").PointerEnter(_touchPointer);
 
-        WaitUntil(() => dismissCount == 1);
+        await WaitUntil(() => dismissCount == 1, cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(1, dismissCount);
     }
 
     [TestMethod]
-    public void BitMessageShouldNotLetATouchLetGoOfAHeldAutoDismissCountdown()
+    public async global::System.Threading.Tasks.Task BitMessageShouldNotLetATouchLetGoOfAHeldAutoDismissCountdown()
     {
         var dismissCount = 0;
 
@@ -1608,13 +1608,13 @@ public class BitMessageTests : BunitTestContext
         // The touch was never allowed to take the hold, so it is not allowed to give it back either.
         component.Find(".bit-msg").PointerLeave(_touchPointer);
 
-        Thread.Sleep(900);
+        await global::System.Threading.Tasks.Task.Delay(900, TestContext.CancellationToken);
 
         Assert.AreEqual(0, dismissCount);
 
         component.Find(".bit-msg").PointerLeave(_mousePointer);
 
-        WaitUntil(() => dismissCount == 1);
+        await WaitUntil(() => dismissCount == 1, cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(1, dismissCount);
     }
@@ -1635,7 +1635,7 @@ public class BitMessageTests : BunitTestContext
         // the page has nothing left to dismiss.
         await Context.DisposeComponentsAsync();
 
-        Thread.Sleep(1600);
+        await global::System.Threading.Tasks.Task.Delay(1600, TestContext.CancellationToken);
 
         Assert.AreEqual(0, dismissCount);
     }
@@ -1669,7 +1669,7 @@ public class BitMessageTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitMessageShouldNotAutoDismissAfterBeingDismissedByHand()
+    public async global::System.Threading.Tasks.Task BitMessageShouldNotAutoDismissAfterBeingDismissedByHand()
     {
         var dismissCount = 0;
 
@@ -1684,13 +1684,13 @@ public class BitMessageTests : BunitTestContext
 
         Assert.AreEqual(1, dismissCount);
 
-        Thread.Sleep(1600);
+        await global::System.Threading.Tasks.Task.Delay(1600, TestContext.CancellationToken);
 
         Assert.AreEqual(1, dismissCount);
     }
 
     [TestMethod]
-    public void BitMessageShouldNotReviveTheCountdownAfterAManualDismiss()
+    public async global::System.Threading.Tasks.Task BitMessageShouldNotReviveTheCountdownAfterAManualDismiss()
     {
         var dismissCount = 0;
 
@@ -1707,13 +1707,13 @@ public class BitMessageTests : BunitTestContext
         // A parameter set after the dismiss must not start the countdown over.
         component.Render(parameters => parameters.Add(p => p.Color, BitColor.Warning));
 
-        Thread.Sleep(1600);
+        await global::System.Threading.Tasks.Task.Delay(1600, TestContext.CancellationToken);
 
         Assert.AreEqual(1, dismissCount);
     }
 
     [TestMethod]
-    public void BitMessageShouldNotRestartTheCountdownOnAnUnrelatedRerender()
+    public async global::System.Threading.Tasks.Task BitMessageShouldNotRestartTheCountdownOnAnUnrelatedRerender()
     {
         var dismissCount = 0;
 
@@ -1728,20 +1728,20 @@ public class BitMessageTests : BunitTestContext
         // pushing the callback out of reach of the wait below.
         for (var i = 0; i < 3; i++)
         {
-            Thread.Sleep(500);
+            await global::System.Threading.Tasks.Task.Delay(500, TestContext.CancellationToken);
             component.Render(parameters => parameters.Add(p => p.Class, $"round-{i}"));
         }
 
         // The wait has to give up before a countdown restarted by the last parameter set could run out - a whole
         // countdown after it - or that one would be found as well and nothing would be told apart. It still leaves
         // the countdown armed by the first render well over a second to be late in.
-        WaitUntil(() => dismissCount == 1, 1800);
+        await WaitUntil(() => dismissCount == 1, 1800, cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(1, dismissCount, "the countdown was expected to run out on the time it was first armed with");
     }
 
     [TestMethod]
-    public void BitMessageShouldRearmTheCountdownWhenTheAutoDismissTimeChanges()
+    public async global::System.Threading.Tasks.Task BitMessageShouldRearmTheCountdownWhenTheAutoDismissTimeChanges()
     {
         var dismissCount = 0;
 
@@ -1755,7 +1755,7 @@ public class BitMessageTests : BunitTestContext
 
         component.Render(parameters => parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(100)));
 
-        WaitUntil(() => dismissCount == 1);
+        await WaitUntil(() => dismissCount == 1, cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(1, dismissCount);
     }
@@ -1778,11 +1778,11 @@ public class BitMessageTests : BunitTestContext
 
         // A cancelled dismissal is not a dismissal: the message stays, and nobody is told it went.
         Assert.AreEqual(0, dismissCount);
-        Assert.HasCount(1, component.FindAll(".bit-msg"));
+        Assert.ContainsSingle(component.FindAll(".bit-msg"));
     }
 
     [TestMethod]
-    public void BitMessageShouldGiveARefusedCountdownItsTimeOverAgain()
+    public async global::System.Threading.Tasks.Task BitMessageShouldGiveARefusedCountdownItsTimeOverAgain()
     {
         // A refused countdown has still spent all of its time, so leaving it dead would leave the message
         // standing there with an exhausted bar and nothing behind it. It is wound back up instead.
@@ -1800,15 +1800,15 @@ public class BitMessageTests : BunitTestContext
             });
         });
 
-        WaitUntil(() => attempts >= 2);
+        await WaitUntil(() => attempts >= 2, cancellationToken: TestContext.CancellationToken);
 
-        Assert.IsTrue(attempts >= 2, $"the countdown was expected to come round again, but it ran {attempts} time(s)");
-        Assert.HasCount(1, component.FindAll(".bit-msg"));
-        Assert.HasCount(1, component.FindAll(".bit-msg-prb"));
+        Assert.IsGreaterThanOrEqualTo(2, attempts, $"the countdown was expected to come round again, but it ran {attempts} time(s)");
+        Assert.ContainsSingle(component.FindAll(".bit-msg"));
+        Assert.ContainsSingle(component.FindAll(".bit-msg-prb"));
     }
 
     [TestMethod]
-    public void BitMessageShouldLeaveTheCountdownAloneWhenAPressOfTheButtonIsRefused()
+    public async global::System.Threading.Tasks.Task BitMessageShouldLeaveTheCountdownAloneWhenAPressOfTheButtonIsRefused()
     {
         // Refusing the button the reader pressed says nothing about the countdown, which keeps the time it has
         // left and takes the message away when it runs out.
@@ -1831,7 +1831,7 @@ public class BitMessageTests : BunitTestContext
 
         Assert.IsFalse(dismissed);
 
-        WaitUntil(() => dismissed);
+        await WaitUntil(() => dismissed, cancellationToken: TestContext.CancellationToken);
 
         Assert.IsTrue(dismissed, "the countdown was expected to survive the refused press of the button");
     }
@@ -1870,7 +1870,7 @@ public class BitMessageTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitMessageShouldReportWhatTheCountdownDid()
+    public async global::System.Threading.Tasks.Task BitMessageShouldReportWhatTheCountdownDid()
     {
         BitMessageDismissReason? reason = null;
 
@@ -1881,7 +1881,7 @@ public class BitMessageTests : BunitTestContext
             parameters.Add<BitMessageDismissArgs>(p => p.OnDismissing, args => reason = args.Reason);
         });
 
-        WaitUntil(() => reason is not null);
+        await WaitUntil(() => reason is not null, cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(BitMessageDismissReason.AutoDismiss, reason);
     }
@@ -1903,7 +1903,7 @@ public class BitMessageTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitMessageShouldHoldTheCountdownThroughItsPublicApi()
+    public async global::System.Threading.Tasks.Task BitMessageShouldHoldTheCountdownThroughItsPublicApi()
     {
         var dismissCount = 0;
 
@@ -1919,13 +1919,13 @@ public class BitMessageTests : BunitTestContext
         // short countdown armed by the render could run out before the test thread gets to the hold on a slow agent.
         component.Render(parameters => parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(150)));
 
-        Thread.Sleep(400);
+        await global::System.Threading.Tasks.Task.Delay(400, TestContext.CancellationToken);
 
         Assert.AreEqual(0, dismissCount);
 
         component.Instance.ResumeAutoDismiss();
 
-        WaitUntil(() => dismissCount == 1);
+        await WaitUntil(() => dismissCount == 1, cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(1, dismissCount);
     }
@@ -1952,7 +1952,7 @@ public class BitMessageTests : BunitTestContext
         // short countdown armed by the render could run out before the test thread gets to the hold on a slow agent.
         component.Render(parameters => parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(150)));
 
-        Thread.Sleep(400);
+        await global::System.Threading.Tasks.Task.Delay(400, TestContext.CancellationToken);
 
         // A message in a background tab keeps its countdown for when it is looked at, and its bar holds with it.
         Assert.AreEqual(0, dismissCount);
@@ -1960,7 +1960,7 @@ public class BitMessageTests : BunitTestContext
 
         await visibility._VisibilityChanged(false);
 
-        WaitUntil(() => dismissCount == 1);
+        await WaitUntil(() => dismissCount == 1, cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(1, dismissCount);
     }
@@ -1986,13 +1986,13 @@ public class BitMessageTests : BunitTestContext
         // short countdown armed by the render could run out before the test thread gets to the hold on a slow agent.
         component.Render(parameters => parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(150)));
 
-        Thread.Sleep(400);
+        await global::System.Threading.Tasks.Task.Delay(400, TestContext.CancellationToken);
 
         Assert.AreEqual(0, dismissCount);
 
         await visibility._WindowFocusChanged(false);
 
-        WaitUntil(() => dismissCount == 1);
+        await WaitUntil(() => dismissCount == 1, cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(1, dismissCount);
     }
@@ -2013,7 +2013,7 @@ public class BitMessageTests : BunitTestContext
 
         await visibility._VisibilityChanged(true);
 
-        WaitUntil(() => dismissCount == 1);
+        await WaitUntil(() => dismissCount == 1, cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(1, dismissCount);
     }
@@ -2039,20 +2039,20 @@ public class BitMessageTests : BunitTestContext
         // short countdown armed by the render could run out before the test thread gets to the hold on a slow agent.
         component.Render(parameters => parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(150)));
 
-        Thread.Sleep(400);
+        await global::System.Threading.Tasks.Task.Delay(400, TestContext.CancellationToken);
 
         Assert.AreEqual(0, dismissCount);
 
         // No visibility change is coming to let go of it, so turning the parameter off has to.
         component.Render(parameters => parameters.Add(p => p.PauseOnPageHidden, false));
 
-        WaitUntil(() => dismissCount == 1);
+        await WaitUntil(() => dismissCount == 1, cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(1, dismissCount);
     }
 
     [TestMethod]
-    public void BitMessageShouldStartHeldInAPageThatIsAlreadyHidden()
+    public async global::System.Threading.Tasks.Task BitMessageShouldStartHeldInAPageThatIsAlreadyHidden()
     {
         var visibility = new BitPageVisibility(new PageStateJsRuntime("""{"hidden":true,"blurred":false}"""));
         Context.Services.AddSingleton(visibility);
@@ -2066,14 +2066,14 @@ public class BitMessageTests : BunitTestContext
             parameters.Add(p => p.OnDismiss, () => dismissCount++);
         });
 
-        Thread.Sleep(400);
+        await global::System.Threading.Tasks.Task.Delay(400, TestContext.CancellationToken);
 
         // No visibilitychange is coming for a tab that was already in the background when the message was shown.
         Assert.AreEqual(0, dismissCount);
     }
 
     [TestMethod]
-    public void BitMessageShouldHoldTheCountdownUntilThePageHasAnswered()
+    public async global::System.Threading.Tasks.Task BitMessageShouldHoldTheCountdownUntilThePageHasAnswered()
     {
         var js = new PageStateJsRuntime("""{"hidden":false,"blurred":false}""")
         {
@@ -2090,20 +2090,20 @@ public class BitMessageTests : BunitTestContext
             parameters.Add(p => p.OnDismiss, () => dismissCount++);
         });
 
-        Thread.Sleep(400);
+        await global::System.Threading.Tasks.Task.Delay(400, TestContext.CancellationToken);
 
         // The page could already be hidden, so the countdown does not run behind a reader who may not be there.
         Assert.AreEqual(0, dismissCount);
 
         js.Gate.SetResult();
 
-        WaitUntil(() => dismissCount == 1);
+        await WaitUntil(() => dismissCount == 1, cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(1, dismissCount);
     }
 
     [TestMethod]
-    public void BitMessageShouldBeHeldByARetriedPageVisibilityInitWithoutRenderingAgain()
+    public async global::System.Threading.Tasks.Task BitMessageShouldBeHeldByARetriedPageVisibilityInitWithoutRenderingAgain()
     {
         var js = new PageStateJsRuntime("""{"hidden":true,"blurred":false}""")
         {
@@ -2124,14 +2124,14 @@ public class BitMessageTests : BunitTestContext
         // and still hears of the hidden page it then reads.
         js.Failure = null;
 
-        Thread.Sleep(3500);
+        await global::System.Threading.Tasks.Task.Delay(3500, TestContext.CancellationToken);
 
         Assert.AreEqual(0, dismissCount);
         Assert.AreEqual(2, js.InitCount);
     }
 
     [TestMethod]
-    public void BitMessageShouldCountDownAsUsualWhenThePageVisibilityScriptFails()
+    public async global::System.Threading.Tasks.Task BitMessageShouldCountDownAsUsualWhenThePageVisibilityScriptFails()
     {
         var visibility = new BitPageVisibility(new PageStateJsRuntime(new JSException("BitBlazorUI.PageVisibility is not defined")));
         Context.Services.AddSingleton(visibility);
@@ -2146,13 +2146,13 @@ public class BitMessageTests : BunitTestContext
             parameters.Add(p => p.OnDismiss, () => dismissCount++);
         });
 
-        WaitUntil(() => dismissCount == 1);
+        await WaitUntil(() => dismissCount == 1, cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(1, dismissCount);
     }
 
     [TestMethod]
-    public void BitMessageShouldCountDownAsUsualWithoutThePageVisibilityService()
+    public async global::System.Threading.Tasks.Task BitMessageShouldCountDownAsUsualWithoutThePageVisibilityService()
     {
         var dismissCount = 0;
 
@@ -2164,7 +2164,7 @@ public class BitMessageTests : BunitTestContext
             parameters.Add(p => p.OnDismiss, () => dismissCount++);
         });
 
-        WaitUntil(() => dismissCount == 1);
+        await WaitUntil(() => dismissCount == 1, cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(1, dismissCount);
     }
@@ -2181,9 +2181,9 @@ public class BitMessageTests : BunitTestContext
             parameters.Add(p => p.AutoDismissTime, TimeSpan.FromSeconds(30));
         });
 
-        Assert.HasCount(1, component.FindAll(".bit-msg-prg"));
+        Assert.ContainsSingle(component.FindAll(".bit-msg-prg"));
         // The bar is the countdown drawn out, so its animation lasts exactly as long as the countdown does.
-        StringAssert.Contains(component.Find(".bit-msg-prb").GetAttribute("style"), "animation-duration:30000ms");
+        Assert.Contains("animation-duration:30000ms", component.Find(".bit-msg-prb").GetAttribute("style")!);
         Assert.AreEqual("true", component.Find(".bit-msg-prg").GetAttribute("aria-hidden"));
     }
 
@@ -2241,12 +2241,12 @@ public class BitMessageTests : BunitTestContext
 
         Assert.IsTrue(component.Find(".bit-msg-prg").ClassList.Contains("cls-prg"));
         Assert.IsTrue(component.Find(".bit-msg-prb").ClassList.Contains("cls-prb"));
-        StringAssert.Contains(component.Find(".bit-msg-prg").GetAttribute("style"), "height:6px");
+        Assert.Contains("height:6px", component.Find(".bit-msg-prg").GetAttribute("style")!);
 
         // The custom style is spliced onto the duration rather than replacing it.
         var barStyle = component.Find(".bit-msg-prb").GetAttribute("style");
-        StringAssert.Contains(barStyle, "animation-duration:30000ms");
-        StringAssert.Contains(barStyle, "background-color:red");
+        Assert.Contains("animation-duration:30000ms", barStyle!);
+        Assert.Contains("background-color:red", barStyle);
     }
 
 
@@ -2534,12 +2534,12 @@ public class BitMessageTests : BunitTestContext
         if (expectedStyle.Length == 0)
         {
             // A visible message says nothing about its visibility, whatever else its style carries.
-            Assert.IsFalse(style.Contains("visibility:hidden"));
-            Assert.IsFalse(style.Contains("display:none"));
+            Assert.DoesNotContain("visibility:hidden", style);
+            Assert.DoesNotContain("display:none", style);
         }
         else
         {
-            Assert.IsTrue(style.Contains(expectedStyle));
+            Assert.Contains(expectedStyle, style);
         }
     }
 
@@ -2554,7 +2554,7 @@ public class BitMessageTests : BunitTestContext
 
         var root = component.Find(".bit-msg");
 
-        StringAssert.Contains(root.GetAttribute("style"), "color:red");
+        Assert.Contains("color:red", root.GetAttribute("style")!);
         Assert.IsTrue(root.ClassList.Contains("custom-class"));
     }
 
@@ -2637,21 +2637,21 @@ public class BitMessageTests : BunitTestContext
             parameters.AddChildContent(LongText);
         });
 
-        StringAssert.Contains(component.Find(".bit-msg").GetAttribute("style"), "padding:1rem");
-        StringAssert.Contains(component.Find(".bit-msg-rct").GetAttribute("style"), "margin:1px");
-        StringAssert.Contains(component.Find(".bit-msg-con").GetAttribute("style"), "margin:2px");
-        StringAssert.Contains(component.Find(".bit-msg-ict").GetAttribute("style"), "margin:3px");
-        StringAssert.Contains(component.Find(".bit-msg-ico").GetAttribute("style"), "font-size:1rem");
-        StringAssert.Contains(component.Find(".bit-msg-ilb").GetAttribute("style"), "color:green");
-        StringAssert.Contains(component.Find(".bit-msg-cnc").GetAttribute("style"), "margin:4px");
-        StringAssert.Contains(component.Find(".bit-msg-cnw").GetAttribute("style"), "margin:5px");
-        StringAssert.Contains(component.Find(".bit-msg-ttl").GetAttribute("style"), "color:red");
-        StringAssert.Contains(component.Find(".bit-msg-cnt").GetAttribute("style"), "color:blue");
-        StringAssert.Contains(component.Find(".bit-msg-act").GetAttribute("style"), "gap:1rem");
-        StringAssert.Contains(component.Find(".bit-msg-exb").GetAttribute("style"), "margin:6px");
-        StringAssert.Contains(component.Find(".bit-msg-exi").GetAttribute("style"), "font-size:2rem");
-        StringAssert.Contains(component.Find(".bit-msg-dmb").GetAttribute("style"), "margin:7px");
-        StringAssert.Contains(component.Find(".bit-msg-dmi").GetAttribute("style"), "font-size:3rem");
+        Assert.Contains("padding:1rem", component.Find(".bit-msg").GetAttribute("style")!);
+        Assert.Contains("margin:1px", component.Find(".bit-msg-rct").GetAttribute("style")!);
+        Assert.Contains("margin:2px", component.Find(".bit-msg-con").GetAttribute("style")!);
+        Assert.Contains("margin:3px", component.Find(".bit-msg-ict").GetAttribute("style")!);
+        Assert.Contains("font-size:1rem", component.Find(".bit-msg-ico").GetAttribute("style")!);
+        Assert.Contains("color:green", component.Find(".bit-msg-ilb").GetAttribute("style")!);
+        Assert.Contains("margin:4px", component.Find(".bit-msg-cnc").GetAttribute("style")!);
+        Assert.Contains("margin:5px", component.Find(".bit-msg-cnw").GetAttribute("style")!);
+        Assert.Contains("color:red", component.Find(".bit-msg-ttl").GetAttribute("style")!);
+        Assert.Contains("color:blue", component.Find(".bit-msg-cnt").GetAttribute("style")!);
+        Assert.Contains("gap:1rem", component.Find(".bit-msg-act").GetAttribute("style")!);
+        Assert.Contains("margin:6px", component.Find(".bit-msg-exb").GetAttribute("style")!);
+        Assert.Contains("font-size:2rem", component.Find(".bit-msg-exi").GetAttribute("style")!);
+        Assert.Contains("margin:7px", component.Find(".bit-msg-dmb").GetAttribute("style")!);
+        Assert.Contains("font-size:3rem", component.Find(".bit-msg-dmi").GetAttribute("style")!);
     }
 
     [TestMethod,
@@ -2704,7 +2704,7 @@ public class BitMessageTests : BunitTestContext
      };
 
     [TestMethod]
-    public void BitMessageShouldAutoDismissWhenOnlyTheDismissedBindingOwnsIt()
+    public async global::System.Threading.Tasks.Task BitMessageShouldAutoDismissWhenOnlyTheDismissedBindingOwnsIt()
     {
         // Dismissing does something here without a button being involved: the binding takes the message off the
         // page, so the countdown has somewhere to go and must run.
@@ -2720,7 +2720,7 @@ public class BitMessageTests : BunitTestContext
         // A binding is not a reason to offer a button - it is the outside that dismisses this message.
         Assert.IsEmpty(component.FindAll(".bit-msg-dmb"));
 
-        WaitUntil(() => isDismissed);
+        await WaitUntil(() => isDismissed, cancellationToken: TestContext.CancellationToken);
 
         Assert.IsTrue(isDismissed);
     }
@@ -2775,7 +2775,7 @@ public class BitMessageTests : BunitTestContext
         // The live region arrives first and the text lands in it on the render that follows, which is the whole
         // point: a region that appears with its text already in it is a change of nothing to announce.
         Assert.AreEqual(2, component.RenderCount);
-        Assert.HasCount(1, component.FindAll(".bit-msg-cnc"));
+        Assert.ContainsSingle(component.FindAll(".bit-msg-cnc"));
         Assert.AreEqual("Hello", component.Find(".bit-msg-cnt").TextContent.Trim());
         Assert.AreEqual("Saved", component.Find(".bit-msg-ttl").TextContent.Trim());
     }
@@ -2825,7 +2825,7 @@ public class BitMessageTests : BunitTestContext
             parameters.AddChildContent("Hello");
         });
 
-        Assert.HasCount(1, component.FindAll(".bit-msg-cnc"));
+        Assert.ContainsSingle(component.FindAll(".bit-msg-cnc"));
         Assert.IsEmpty(component.FindAll(".bit-msg-cnt"));
 
         paint.SetVoidResult();
@@ -2995,12 +2995,12 @@ public class BitMessageTests : BunitTestContext
         component.Find(".bit-msg-dmb").Click();
         component.Render(parameters => parameters.Add(p => p.Dismissed, false));
 
-        Assert.AreEqual(focusCount + 1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+        Assert.HasCount(focusCount + 1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
     }
 
 
     [TestMethod]
-    public void BitMessageShouldKeepTheCountdownHeldWhileTheFocusIsStillInsideIt()
+    public async global::System.Threading.Tasks.Task BitMessageShouldKeepTheCountdownHeldWhileTheFocusIsStillInsideIt()
     {
         var dismissCount = 0;
 
@@ -3021,13 +3021,13 @@ public class BitMessageTests : BunitTestContext
         // Letting go of one of the reasons to hold the countdown is not letting go of the others.
         component.Find(".bit-msg").PointerLeave(_mousePointer);
 
-        Thread.Sleep(400);
+        await global::System.Threading.Tasks.Task.Delay(400, TestContext.CancellationToken);
 
         Assert.AreEqual(0, dismissCount);
 
         component.Find(".bit-msg").FocusOut();
 
-        WaitUntil(() => dismissCount == 1);
+        await WaitUntil(() => dismissCount == 1, cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(1, dismissCount);
     }
@@ -3108,7 +3108,7 @@ public class BitMessageTests : BunitTestContext
 
 
     [TestMethod]
-    public void BitMessageShouldNotCarryAStaleHoldIntoTheNextShowing()
+    public async global::System.Threading.Tasks.Task BitMessageShouldNotCarryAStaleHoldIntoTheNextShowing()
     {
         var dismissCount = 0;
 
@@ -3136,7 +3136,7 @@ public class BitMessageTests : BunitTestContext
             parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(150));
         });
 
-        WaitUntil(() => dismissCount == 2);
+        await WaitUntil(() => dismissCount == 2, cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(2, dismissCount);
     }
@@ -3166,12 +3166,12 @@ public class BitMessageTests : BunitTestContext
             parameters.AddChildContent(LongText);
         });
 
-        Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Message.observeOverflow"]);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Message.observeOverflow"]);
 
         // A multiline message without a cap has nothing folded away, so there is nothing to watch.
         component.Render(parameters => parameters.Add(p => p.Multiline, true));
 
-        Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Message.dispose"]);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Message.dispose"]);
     }
 
     [TestMethod]
@@ -3192,7 +3192,7 @@ public class BitMessageTests : BunitTestContext
         });
 
         // Until the browser has measured, the expander is rendered as it always was.
-        Assert.HasCount(1, component.FindAll(".bit-msg-exb"));
+        Assert.ContainsSingle(component.FindAll(".bit-msg-exb"));
 
         component.InvokeAsync(() => component.Instance._OnOverflowChange(false));
 
@@ -3200,7 +3200,7 @@ public class BitMessageTests : BunitTestContext
 
         component.InvokeAsync(() => component.Instance._OnOverflowChange(true));
 
-        Assert.HasCount(1, component.FindAll(".bit-msg-exb"));
+        Assert.ContainsSingle(component.FindAll(".bit-msg-exb"));
     }
 
     [TestMethod]
@@ -3238,13 +3238,13 @@ public class BitMessageTests : BunitTestContext
 
         component.Render(parameters => parameters.Add(p => p.Dismissed, true));
 
-        Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Message.dispose"]);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Message.dispose"]);
 
         component.Render(parameters => parameters.Add(p => p.Dismissed, false));
 
         // The message is a new element, measured from scratch: the expander is back until it is.
         Assert.HasCount(2, Context.JSInterop.Invocations["BitBlazorUI.Message.observeOverflow"]);
-        Assert.HasCount(1, component.FindAll(".bit-msg-exb"));
+        Assert.ContainsSingle(component.FindAll(".bit-msg-exb"));
     }
 
     [TestMethod]
@@ -3283,7 +3283,7 @@ public class BitMessageTests : BunitTestContext
 
         component.Render(parameters => parameters.Add(p => p.Id, "second"));
 
-        Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Message.observeOverflow"]);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Message.observeOverflow"]);
         Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Message.dispose"]);
     }
 
@@ -3300,7 +3300,7 @@ public class BitMessageTests : BunitTestContext
 
         component.Render(parameters => parameters.Add(p => p.Truncate, false));
 
-        Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Message.dispose"]);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Message.dispose"]);
         Assert.IsEmpty(component.FindAll(".bit-msg-exb"));
     }
 
@@ -3315,7 +3315,7 @@ public class BitMessageTests : BunitTestContext
 
         var invocation = Context.JSInterop.Invocations["BitBlazorUI.Message.observeOverflow"].Single();
 
-        Assert.AreEqual(true, invocation.Arguments[3]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(invocation.Arguments[3]));
     }
 
     [TestMethod,
@@ -3359,7 +3359,7 @@ public class BitMessageTests : BunitTestContext
 
         Assert.IsTrue(component.Find(".bit-msg-cnt").ClassList.Contains("bit-msg-mcn"));
         Assert.IsFalse(component.Find(".bit-msg-cnw").ClassList.Contains("bit-msg-cwi"));
-        Assert.HasCount(1, component.FindAll(".bit-msg-mac"));
+        Assert.ContainsSingle(component.FindAll(".bit-msg-mac"));
         Assert.IsEmpty(component.FindAll(".bit-msg-exb"));
 
         // Given the room again, it goes back to one line.
@@ -3367,7 +3367,7 @@ public class BitMessageTests : BunitTestContext
 
         Assert.IsFalse(component.Find(".bit-msg-cnt").ClassList.Contains("bit-msg-mcn"));
         Assert.IsEmpty(component.FindAll(".bit-msg-mac"));
-        Assert.HasCount(1, component.FindAll(".bit-msg-act"));
+        Assert.ContainsSingle(component.FindAll(".bit-msg-act"));
     }
 
     [TestMethod]
@@ -3401,8 +3401,8 @@ public class BitMessageTests : BunitTestContext
         var invocations = Context.JSInterop.Invocations["BitBlazorUI.Message.observeOverflow"];
 
         Assert.HasCount(2, invocations);
-        Assert.AreEqual(false, invocations[0].Arguments[3]);
-        Assert.AreEqual(true, invocations[1].Arguments[3]);
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(invocations[0].Arguments[3]));
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(invocations[1].Arguments[3]));
     }
 
     [TestMethod]
@@ -3455,13 +3455,13 @@ public class BitMessageTests : BunitTestContext
         // The key handler hears every Escape pressed inside the message, so the browser is asked to tell it which
         // are its own for as long as it claims the key at all.
         var watches = Context.JSInterop.Invocations["BitBlazorUI.Utils.watchEscapeClaim"];
-        Assert.HasCount(1, watches);
+        Assert.ContainsSingle(watches);
         Assert.AreEqual(component.Instance.UniqueId, watches[0].Arguments[0]);
         Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.unwatchEscapeClaim"]);
 
         component.Render(parameters => parameters.Add(p => p.DismissOnEscape, false));
 
-        Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.unwatchEscapeClaim"]);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.unwatchEscapeClaim"]);
         Assert.IsFalse(component.Find(".bit-msg").HasAttribute("data-bit-esc"));
     }
 
@@ -3496,7 +3496,7 @@ public class BitMessageTests : BunitTestContext
         component.Find(".bit-msg").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
         Assert.AreEqual(0, dismissCount);
-        Assert.HasCount(1, component.FindAll(".bit-msg"));
+        Assert.ContainsSingle(component.FindAll(".bit-msg"));
 
         // ...and the verdict is spent with it: the next press, which the browser says is the message's own, dismisses.
         component.InvokeAsync(() => component.Instance._OnEscapeVerdict(false));
@@ -3518,7 +3518,7 @@ public class BitMessageTests : BunitTestContext
 
         await Context.DisposeComponentsAsync();
 
-        Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.unwatchEscapeClaim"]);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.unwatchEscapeClaim"]);
     }
 
     [TestMethod]
@@ -3538,4 +3538,5 @@ public class BitMessageTests : BunitTestContext
 
         await Context.DisposeComponentsAsync();
     }
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; } = null!;
 }

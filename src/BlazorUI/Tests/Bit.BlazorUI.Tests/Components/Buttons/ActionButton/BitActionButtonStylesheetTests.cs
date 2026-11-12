@@ -20,8 +20,8 @@ public partial class BitActionButtonStylesheetTests
         var documented = DocumentedVariable().Matches(stylesheet).Select(m => m.Groups[1].Value).Distinct().ToArray();
         var read = ReadVariable().Matches(stylesheet).Select(m => m.Groups[1].Value).Distinct().ToArray();
 
-        Assert.IsTrue(documented.Length > 0, "The stylesheet documents no public variable.");
-        CollectionAssert.AreEquivalent(documented, read, "The variables the header documents are not the ones the stylesheet reads.");
+        Assert.IsNotEmpty(documented, "The stylesheet documents no public variable.");
+        Assert.AreSequenceEqual(documented, read, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, "The variables the header documents are not the ones the stylesheet reads.");
 
         Assert.IsFalse(DeclaredVariable().IsMatch(SourceFiles.StripScssComments(stylesheet)), "A public --bit-ActionButton-* variable is declared, which stops it inheriting.");
     }
@@ -33,29 +33,29 @@ public partial class BitActionButtonStylesheetTests
 
         // An explicit Size publishes these, so they are read before the variable, which only restyles the medium
         // action button an unset one stands for.
-        StringAssert.Contains(stylesheet, "padding: var(--bit-acb-padding, var(--bit-ActionButton-padding, #{$siz-ctrl-pad-y-md} #{$siz-ctrl-pad-x-sm}));");
-        StringAssert.Contains(stylesheet, "min-height: var(--bit-acb-min-height, var(--bit-ActionButton-min-height, #{$siz-ctrl-md}));");
-        StringAssert.Contains(stylesheet, "font-size: var(--bit-acb-fontsize, var(--bit-ActionButton-font-size, #{$tg-fs-sm}));");
-        StringAssert.Contains(stylesheet, "font-size: var(--bit-acb-ico-size, var(--bit-ActionButton-icon-size, #{$siz-icon-md}));");
-        StringAssert.Contains(stylesheet, "padding: var(--bit-acb-pad-y, var(--bit-ActionButton-padding, #{$siz-ctrl-pad-y-md}));");
+        Assert.Contains("padding: var(--bit-acb-padding, var(--bit-ActionButton-padding, #{$siz-ctrl-pad-y-md} #{$siz-ctrl-pad-x-sm}));", stylesheet);
+        Assert.Contains("min-height: var(--bit-acb-min-height, var(--bit-ActionButton-min-height, #{$siz-ctrl-md}));", stylesheet);
+        Assert.Contains("font-size: var(--bit-acb-fontsize, var(--bit-ActionButton-font-size, #{$tg-fs-sm}));", stylesheet);
+        Assert.Contains("font-size: var(--bit-acb-ico-size, var(--bit-ActionButton-icon-size, #{$siz-icon-md}));", stylesheet);
+        Assert.Contains("padding: var(--bit-acb-pad-y, var(--bit-ActionButton-padding, #{$siz-ctrl-pad-y-md}));", stylesheet);
 
         // So does an explicit Color, for every color it paints - the disabled icon and focus ring included.
-        StringAssert.Contains(stylesheet, "--bit-acb-ico: var(--bit-acb-clr-ico, var(--bit-ActionButton-icon-color, #{$clr-pri}));");
+        Assert.Contains("--bit-acb-ico: var(--bit-acb-clr-ico, var(--bit-ActionButton-icon-color, #{$clr-pri}));", stylesheet);
         // The hover and press states set the variable the rule at rest paints from, never the color itself. The label is
         // still read on the page there, so under a Color it takes the role's text color while the icon moves through the
         // role's hover and press colors.
-        StringAssert.Contains(stylesheet, "--bit-acb-sfg: var(--bit-acb-clr-fg, var(--bit-ActionButton-hover-color, #{$clr-pri-hover}));");
-        StringAssert.Contains(stylesheet, "--bit-acb-sfg: var(--bit-acb-clr-fg, var(--bit-ActionButton-active-color, #{$clr-pri-active}));");
-        StringAssert.Contains(stylesheet, "--bit-acb-ico: var(--bit-acb-clr-hover, var(--bit-ActionButton-hover-color, #{$clr-pri-hover}));");
-        StringAssert.Contains(stylesheet, "--bit-acb-ico: var(--bit-acb-clr-active, var(--bit-ActionButton-active-color, #{$clr-pri-active}));");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n    .bit-acb-#{$role} {"), "--bit-acb-clr-fg: #{role-text($role, $tokens)};");
-        StringAssert.Contains(stylesheet, "focus-ring-own(var(--bit-acb-clr-focus, var(--bit-ActionButton-focus-color)))");
-        StringAssert.Contains(stylesheet, "--bit-acb-ico: var(--bit-acb-clr-dis-text, var(--bit-ActionButton-disabled-color, #{$clr-pri-dis-text}));");
+        Assert.Contains("--bit-acb-sfg: var(--bit-acb-clr-fg, var(--bit-ActionButton-hover-color, #{$clr-pri-hover}));", stylesheet);
+        Assert.Contains("--bit-acb-sfg: var(--bit-acb-clr-fg, var(--bit-ActionButton-active-color, #{$clr-pri-active}));", stylesheet);
+        Assert.Contains("--bit-acb-ico: var(--bit-acb-clr-hover, var(--bit-ActionButton-hover-color, #{$clr-pri-hover}));", stylesheet);
+        Assert.Contains("--bit-acb-ico: var(--bit-acb-clr-active, var(--bit-ActionButton-active-color, #{$clr-pri-active}));", stylesheet);
+        Assert.Contains("--bit-acb-clr-fg: #{role-text($role, $tokens)};", SourceFiles.GetScssBlock(stylesheet, "\n    .bit-acb-#{$role} {"));
+        Assert.Contains("focus-ring-own(var(--bit-acb-clr-focus, var(--bit-ActionButton-focus-color)))", stylesheet);
+        Assert.Contains("--bit-acb-ico: var(--bit-acb-clr-dis-text, var(--bit-ActionButton-disabled-color, #{$clr-pri-dis-text}));", stylesheet);
 
         // What a Color does not paint stays the variable's: the neutral text, at rest and disabled, and the backgrounds.
-        StringAssert.Contains(stylesheet, "color: var(--bit-acb-sfg, var(--bit-ActionButton-color, #{$clr-fg-pri}));");
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-acb-sbg, var(--bit-ActionButton-background, transparent));");
-        StringAssert.Contains(stylesheet, "color: var(--bit-ActionButton-disabled-color, #{$clr-fg-dis});");
+        Assert.Contains("color: var(--bit-acb-sfg, var(--bit-ActionButton-color, #{$clr-fg-pri}));", stylesheet);
+        Assert.Contains("background-color: var(--bit-acb-sbg, var(--bit-ActionButton-background, transparent));", stylesheet);
+        Assert.Contains("color: var(--bit-ActionButton-disabled-color, #{$clr-fg-dis});", stylesheet);
 
         Assert.IsFalse(Regex.IsMatch(stylesheet, @"var\(--bit-ActionButton-[a-z-]+, var\(--bit-acb-"), "A public variable is read before the parameter it restyles the default of.");
     }
@@ -73,7 +73,7 @@ public partial class BitActionButtonStylesheetTests
                                          // The colors the hover and press states move, which a nested action button must not inherit either.
                                          "--bit-acb-sfg", "--bit-acb-sbg" })
         {
-            StringAssert.Contains(root, $"{property}: initial;");
+            Assert.Contains($"{property}: initial;", root);
         }
     }
 

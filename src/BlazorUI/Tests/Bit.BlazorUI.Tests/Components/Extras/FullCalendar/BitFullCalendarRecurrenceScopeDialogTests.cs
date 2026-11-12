@@ -81,7 +81,7 @@ public class BitFullCalendarRecurrenceScopeDialogTests : BunitTestContext
         component.Find(".bit-bfc-event-badge").Click();
         component.Find(".bit-bfc-dialog-footer .bit-bfc-btn-danger").Click();
 
-        Assert.AreEqual(0, component.FindAll(Scope).Count, "only an occurrence of a series asks which part is meant");
+        Assert.IsEmpty(component.FindAll(Scope), "only an occurrence of a series asks which part is meant");
     }
 
     [TestMethod]
@@ -104,7 +104,7 @@ public class BitFullCalendarRecurrenceScopeDialogTests : BunitTestContext
 
         // It sits on an overlay of its own, on top of the details dialog.
         Assert.IsTrue(dialog.ParentElement!.ClassList.Contains("bit-bfc-overlay"));
-        Assert.AreEqual(2, component.FindAll(".bit-bfc-dialog").Count);
+        Assert.HasCount(2, component.FindAll(".bit-bfc-dialog"));
     }
 
     [TestMethod]
@@ -123,7 +123,7 @@ public class BitFullCalendarRecurrenceScopeDialogTests : BunitTestContext
         OpenDelete(component);
 
         var radios = Radios(component);
-        Assert.AreEqual(2, radios.Count);
+        Assert.HasCount(2, radios);
         Assert.IsTrue(radios[0].HasAttribute("checked"));
         Assert.IsFalse(radios[1].HasAttribute("checked"));
 
@@ -131,9 +131,8 @@ public class BitFullCalendarRecurrenceScopeDialogTests : BunitTestContext
         Assert.IsFalse(string.IsNullOrEmpty(radios[0].GetAttribute("name")));
         Assert.AreEqual(radios[0].GetAttribute("name"), radios[1].GetAttribute("name"));
 
-        CollectionAssert.AreEqual(
-            new[] { "This event", "All events in the series" },
-            component.FindAll($"{Scope} .bit-bfc-scope-option").Select(o => o.TextContent.Trim()).ToArray());
+        Assert.AreSequenceEqual(
+            new[] { "This event", "All events in the series" }, component.FindAll($"{Scope} .bit-bfc-scope-option").Select(o => o.TextContent.Trim()).ToArray());
         Assert.IsTrue(component.FindAll($"{Scope} .bit-bfc-scope-option").All(o => o.TagName == "LABEL"), "a click on the text checks the radio");
     }
 
@@ -144,7 +143,7 @@ public class BitFullCalendarRecurrenceScopeDialogTests : BunitTestContext
         OpenDelete(component);
 
         var buttons = component.FindAll($"{Scope} .bit-bfc-dialog-footer button");
-        CollectionAssert.AreEqual(new[] { "Cancel", "OK" }, buttons.Select(b => b.TextContent.Trim()).ToArray());
+        Assert.AreSequenceEqual(new[] { "Cancel", "OK" }, buttons.Select(b => b.TextContent.Trim()).ToArray());
         Assert.IsTrue(buttons.All(b => b.GetAttribute("type") == "button"));
         Assert.IsTrue(buttons[1].ClassList.Contains("bit-bfc-btn-primary"));
     }
@@ -163,12 +162,10 @@ public class BitFullCalendarRecurrenceScopeDialogTests : BunitTestContext
         OpenDelete(component);
 
         Assert.AreEqual("Remove a repeating meeting", component.Find($"{Scope} h3").TextContent.Trim());
-        CollectionAssert.AreEqual(
-            new[] { "Only this one", "Every one" },
-            component.FindAll($"{Scope} .bit-bfc-scope-option").Select(o => o.TextContent.Trim()).ToArray());
-        CollectionAssert.AreEqual(
-            new[] { "Keep", "Go" },
-            component.FindAll($"{Scope} .bit-bfc-dialog-footer button").Select(b => b.TextContent.Trim()).ToArray());
+        Assert.AreSequenceEqual(
+            new[] { "Only this one", "Every one" }, component.FindAll($"{Scope} .bit-bfc-scope-option").Select(o => o.TextContent.Trim()).ToArray());
+        Assert.AreSequenceEqual(
+            new[] { "Keep", "Go" }, component.FindAll($"{Scope} .bit-bfc-dialog-footer button").Select(b => b.TextContent.Trim()).ToArray());
     }
 
     [TestMethod]
@@ -194,12 +191,12 @@ public class BitFullCalendarRecurrenceScopeDialogTests : BunitTestContext
 
         OpenDelete(component);
 
-        Assert.AreEqual(before + 2, Context.JSInterop.Invocations["BitBlazorUI.FullCalendar.setupDialog"].Count, "the details dialog and the prompt on top of it");
+        Assert.HasCount(before + 2, Context.JSInterop.Invocations["BitBlazorUI.FullCalendar.setupDialog"], "the details dialog and the prompt on top of it");
 
         var teardowns = Context.JSInterop.Invocations["BitBlazorUI.FullCalendar.teardownDialog"].Count;
         component.Find($"{Scope} .bit-bfc-dialog-footer .bit-bfc-btn:not(.bit-bfc-btn-primary)").Click();
 
-        Assert.AreEqual(teardowns + 1, Context.JSInterop.Invocations["BitBlazorUI.FullCalendar.teardownDialog"].Count);
+        Assert.HasCount(teardowns + 1, Context.JSInterop.Invocations["BitBlazorUI.FullCalendar.teardownDialog"]);
     }
 
     #endregion
@@ -221,11 +218,11 @@ public class BitFullCalendarRecurrenceScopeDialogTests : BunitTestContext
         component.Find($"{Scope} .bit-bfc-btn-primary").Click();
 
         // Back on "this event": the date is skipped and the series stays.
-        Assert.AreEqual(1, changes.Count);
+        Assert.ContainsSingle(changes);
         Assert.AreEqual(BitFullCalendarChangeKind.Edit, changes[0].Kind);
-        Assert.AreEqual(1, component.Instance.State.AllEvents.Count);
-        Assert.AreEqual(2, component.FindAll(".bit-bfc-event-badge").Count);
-        Assert.AreEqual(0, component.FindAll(Scope).Count);
+        Assert.ContainsSingle(component.Instance.State.AllEvents);
+        Assert.HasCount(2, component.FindAll(".bit-bfc-event-badge"));
+        Assert.IsEmpty(component.FindAll(Scope));
     }
 
     [TestMethod]
@@ -237,8 +234,8 @@ public class BitFullCalendarRecurrenceScopeDialogTests : BunitTestContext
         Radios(component)[1].Change(true);
         component.Find($"{Scope} .bit-bfc-btn-primary").Click();
 
-        Assert.AreEqual(0, component.FindAll(Scope).Count);
-        Assert.AreEqual(1, component.FindAll("select[id^='bfc-repeat-']").Count, "the whole series is edited through its rule");
+        Assert.IsEmpty(component.FindAll(Scope));
+        Assert.ContainsSingle(component.FindAll("select[id^='bfc-repeat-']"), "the whole series is edited through its rule");
     }
 
     [TestMethod]
@@ -283,9 +280,9 @@ public class BitFullCalendarRecurrenceScopeDialogTests : BunitTestContext
 
         component.Find(Scope).ParentElement!.Click();
 
-        Assert.AreEqual(0, component.FindAll(Scope).Count);
-        Assert.AreEqual(1, component.FindAll(".bit-bfc-dialog").Count, "the details dialog stays open");
-        Assert.AreEqual(0, changes.Count);
+        Assert.IsEmpty(component.FindAll(Scope));
+        Assert.ContainsSingle(component.FindAll(".bit-bfc-dialog"), "the details dialog stays open");
+        Assert.IsEmpty(changes);
     }
 
     [TestMethod]
@@ -303,7 +300,7 @@ public class BitFullCalendarRecurrenceScopeDialogTests : BunitTestContext
             // The dialog stops the click before it reaches any handler, which is exactly the point.
         }
 
-        Assert.AreEqual(1, component.FindAll(Scope).Count);
+        Assert.ContainsSingle(component.FindAll(Scope));
     }
 
     [TestMethod]
@@ -321,8 +318,8 @@ public class BitFullCalendarRecurrenceScopeDialogTests : BunitTestContext
         // A modified Escape is left to the surface the calendar sits in.
         component.Find(Scope).KeyDown(new KeyboardEventArgs { Key = "Escape", ShiftKey = shift, CtrlKey = ctrl, AltKey = alt, MetaKey = meta });
 
-        Assert.AreEqual(closes ? 0 : 1, component.FindAll(Scope).Count);
-        Assert.AreEqual(1, component.FindAll(".bit-bfc-dialog:not(.bit-bfc-scope-dialog)").Count, "the details dialog stays either way");
+        Assert.HasCount(closes ? 0 : 1, component.FindAll(Scope));
+        Assert.ContainsSingle(component.FindAll(".bit-bfc-dialog:not(.bit-bfc-scope-dialog)"), "the details dialog stays either way");
     }
 
     [TestMethod]
@@ -334,8 +331,8 @@ public class BitFullCalendarRecurrenceScopeDialogTests : BunitTestContext
         component.Find(Scope).KeyDown(new KeyboardEventArgs { Key = "Enter" });
         component.Find(Scope).KeyDown(new KeyboardEventArgs { Key = "Tab" });
 
-        Assert.AreEqual(1, component.FindAll(Scope).Count);
-        Assert.AreEqual(3, component.FindAll(".bit-bfc-event-badge").Count);
+        Assert.ContainsSingle(component.FindAll(Scope));
+        Assert.HasCount(3, component.FindAll(".bit-bfc-event-badge"));
     }
 
     #endregion

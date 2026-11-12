@@ -17,7 +17,7 @@ namespace Boilerplate.Tests.Features.Identity;
 [TestClass, TestCategory("IntegrationTest")]
 public class PersonalDataExportTests
 {
-    public required TestContext TestContext { get; set; }
+    public required global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 
     /// <summary>
     /// The whole path as a user drives it. The picture matters because it is the one part that is not a database row:

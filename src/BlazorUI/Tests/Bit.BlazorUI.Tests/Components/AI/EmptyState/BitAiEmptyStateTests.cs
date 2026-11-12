@@ -36,7 +36,7 @@ public class BitAiEmptyStateTests : BitAiTestBase
             .AddChildContent("<em class=\"custom\">Custom</em>"));
 
         Assert.IsNotNull(component.Find(".bit-aiems-bdy > em.custom"));
-        Assert.IsFalse(component.Find(".bit-aiems-bdy").TextContent.Contains("unused"));
+        Assert.DoesNotContain("unused", component.Find(".bit-aiems-bdy").TextContent);
     }
 
     [TestMethod]
@@ -92,7 +92,7 @@ public class BitAiEmptyStateTests : BitAiTestBase
 
         buttons[1].Click();
 
-        CollectionAssert.AreEqual(new[] { "Explain a concept" }, chosen);
+        Assert.AreSequenceEqual(new[] { "Explain a concept" }, chosen);
     }
 
     [TestMethod]
@@ -124,9 +124,9 @@ public class BitAiEmptyStateTests : BitAiTestBase
             .Add(c => c.Styles, new() { Root = "color: red;", Icon = "color: orange;", Title = "color: green;", Body = "color: blue;", Suggestions = "color: purple;" }));
 
         Assert.IsTrue(component.Find(".bit-aiems").ClassList.Contains("custom-root"));
-        StringAssert.Contains(component.Find(".bit-aiems").GetAttribute("style"), "color: red;");
+        Assert.Contains("color: red;", component.Find(".bit-aiems").GetAttribute("style")!);
         Assert.IsTrue(component.Find(".bit-aiems-ico").ClassList.Contains("custom-icon"));
-        StringAssert.Contains(component.Find(".bit-aiems-ico").GetAttribute("style"), "color: orange;");
+        Assert.Contains("color: orange;", component.Find(".bit-aiems-ico").GetAttribute("style")!);
         Assert.IsTrue(component.Find(".bit-aiems-ttl").ClassList.Contains("custom-title"));
         Assert.AreEqual("color: green;", component.Find(".bit-aiems-ttl").GetAttribute("style"));
         Assert.IsTrue(component.Find(".bit-aiems-bdy").ClassList.Contains("custom-body"));
@@ -146,7 +146,7 @@ public class BitAiEmptyStateTests : BitAiTestBase
         var root = component.Find(".bit-aiems");
 
         Assert.IsTrue(root.ClassList.Contains("custom-class"));
-        StringAssert.Contains(root.GetAttribute("style"), "color: tomato;");
+        Assert.Contains("color: tomato;", root.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -165,7 +165,7 @@ public class BitAiEmptyStateTests : BitAiTestBase
         }
         else
         {
-            StringAssert.Contains(style, expectedStyle);
+            Assert.Contains(expectedStyle, style!);
         }
     }
 

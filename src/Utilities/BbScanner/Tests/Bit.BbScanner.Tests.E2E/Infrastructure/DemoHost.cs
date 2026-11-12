@@ -5,7 +5,7 @@
 /// once for the whole run. The demo keeps no state on the server (each page runs in the browser on
 /// WebAssembly), and every test opens a browser of its own, so sharing the process shares nothing.
 /// </summary>
-public sealed class DemoHost : IAsyncDisposable
+internal sealed class DemoHost : IAsyncDisposable
 {
     private readonly ChildProcess? _process;
 

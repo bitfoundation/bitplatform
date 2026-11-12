@@ -76,17 +76,17 @@ public class BelemetrySettingsTests
     public void Server_AddsAspNetCoreSourcesAndMeters()
     {
         var server = TestHost.CreateSettings(webHost: true);
-        CollectionAssert.Contains(server.TraceSources, "Microsoft.AspNetCore");
-        CollectionAssert.Contains(server.Meters, "Microsoft.AspNetCore.Hosting");
-        CollectionAssert.Contains(server.Meters, "Microsoft.AspNetCore.Server.Kestrel");
+        Assert.Contains("Microsoft.AspNetCore", server.TraceSources);
+        Assert.Contains("Microsoft.AspNetCore.Hosting", server.Meters);
+        Assert.Contains("Microsoft.AspNetCore.Server.Kestrel", server.Meters);
 
         var hybrid = TestHost.CreateSettings();
-        CollectionAssert.DoesNotContain(hybrid.TraceSources, "Microsoft.AspNetCore");
+        Assert.DoesNotContain("Microsoft.AspNetCore", hybrid.TraceSources);
 
         var defaults = new BelemetrySettings(new BelemetryOptions(), new BelemetryHostDetection(false));
-        CollectionAssert.AreEqual(new[] { "System.Net.Http", "Microsoft.AspNetCore.Components*", "Bit.Belemetry.*" }, defaults.TraceSources);
+        Assert.AreSequenceEqual(new[] { "System.Net.Http", "Microsoft.AspNetCore.Components*", "Bit.Belemetry.*" }, defaults.TraceSources);
         Assert.IsTrue(BelemetrySettings.Matches("Bit.Belemetry.EntityFrameworkCore", defaults.TraceSources), "The instrumentation packages need no configuration.");
-        CollectionAssert.AreEqual(new[] { "System.Net.Http", "Microsoft.AspNetCore.Components*", "System.Runtime" }, defaults.Meters);
+        Assert.AreSequenceEqual(new[] { "System.Net.Http", "Microsoft.AspNetCore.Components*", "System.Runtime" }, defaults.Meters);
     }
 
     [TestMethod]
@@ -183,7 +183,7 @@ public class BelemetrySettingsTests
             o.AddSentryExporter("https://explicit@o1.ingest.sentry.io/2");
             o.AddSentryExporter(s => s.Release = "web@1");
         });
-        CollectionAssert.AreEqual(new[] { "https://explicit@o1.ingest.sentry.io/2", envDsn }, configured.SentryExporters.Select(s => s.Options.Dsn).ToArray());
+        Assert.AreSequenceEqual(new[] { "https://explicit@o1.ingest.sentry.io/2", envDsn }, configured.SentryExporters.Select(s => s.Options.Dsn).ToArray());
         Assert.AreEqual("1", configured.SentryExporters[1].Dsn.ProjectId, "Parsed once, here.");
 
         Assert.IsEmpty(TestHost.CreateSettings(o => o.AddSentryExporter()).SentryExporters, "Without the variables nothing fills it in.");
@@ -202,8 +202,8 @@ public class BelemetrySettingsTests
 
         Assert.AreEqual("43", settings.SentryExporters.Single().Dsn.ProjectId);
         var warning = settings.StartupWarnings.Single();
-        StringAssert.Contains(warning, "Sentry exporter #0");
-        StringAssert.Contains(warning, "DSN is invalid");
+        Assert.Contains("Sentry exporter #0", warning);
+        Assert.Contains("DSN is invalid", warning);
         Assert.DoesNotContain("abc", warning, "The key stays out of the logs.");
     }
 
@@ -264,7 +264,7 @@ public class BelemetrySettingsTests
         Assert.AreEqual(BelemetryOtlpProtocol.HttpJson, settings.OtlpExporters[1].Protocol, "Only an unset protocol comes from the environment.");
 
         Assert.HasCount(2, settings.AzureMonitorExporters);
-        StringAssert.Contains(settings.AzureMonitorExporters[0].ConnectionString, "99999999");
+        Assert.Contains("99999999", settings.AzureMonitorExporters[0].ConnectionString!);
         Assert.AreEqual(ConnectionString, settings.AzureMonitorExporters[1].ConnectionString);
     }
 
@@ -337,9 +337,9 @@ public class BelemetrySettingsTests
 
         var json = BelemetryBrowserConfigFactory.ToJson(BelemetryBrowserConfigFactory.Create(settings));
         Assert.DoesNotContain("pw-7f3a", json);
-        StringAssert.Contains(json, "\"endpoint\":\"https://collector.example.com/\"");
+        Assert.Contains("\"endpoint\":\"https://collector.example.com/\"", json);
         var warning = settings.StartupWarnings.Single();
-        StringAssert.Contains(warning, "user info");
+        Assert.Contains("user info", warning);
         Assert.DoesNotContain("pw-7f3a", warning);
     }
 
@@ -351,7 +351,7 @@ public class BelemetrySettingsTests
 
         var settings = TestHost.CreateSettings(o => o.UseEnvironmentVariables = true);
         Assert.AreEqual(BelemetryOtlpProtocol.HttpProtobuf, settings.OtlpExporters.Single().Protocol);
-        StringAssert.Contains(settings.StartupWarnings.Single(), "http/thrift");
+        Assert.Contains("http/thrift", settings.StartupWarnings.Single());
     }
 
     [TestMethod]
@@ -380,6 +380,6 @@ public class BelemetrySettingsTests
 
         var settings = TestHost.CreateSettings(o => o.UseEnvironmentVariables = true);
         Assert.IsEmpty(settings.OtlpExporters);
-        Assert.IsTrue(settings.HasExporters is false);
+        Assert.IsFalse(settings.HasExporters);
     }
 }

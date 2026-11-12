@@ -107,11 +107,11 @@ public class BitFullCalendarDialogTemplateTests : BunitTestContext
         dialog.InvokeAsync(() => dialog.Instance._OnEscapeVerdict(true));
         component.Find(".bit-bfc-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
-        Assert.AreEqual(1, component.FindAll(".bit-bfc-dialog .location").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-bfc-dialog .location"));
 
         component.Find(".bit-bfc-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
-        Assert.AreEqual(0, component.FindAll(".bit-bfc-dialog").Count);
+        Assert.IsEmpty(component.FindAll(".bit-bfc-dialog"));
     }
 
     [TestMethod]
@@ -125,11 +125,11 @@ public class BitFullCalendarDialogTemplateTests : BunitTestContext
         dialog.InvokeAsync(() => dialog.Instance._OnEscapeVerdict(true));
         component.Find(".bit-bfc-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
-        Assert.AreEqual(1, component.FindAll(".bit-bfc-dialog .set-location").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-bfc-dialog .set-location"));
 
         component.Find(".bit-bfc-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
-        Assert.AreEqual(0, component.FindAll(".bit-bfc-dialog").Count);
+        Assert.IsEmpty(component.FindAll(".bit-bfc-dialog"));
     }
 
     [TestMethod]

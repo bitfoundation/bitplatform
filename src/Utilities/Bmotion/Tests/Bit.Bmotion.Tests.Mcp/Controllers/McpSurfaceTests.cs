@@ -42,7 +42,7 @@ public class McpSurfaceTests
     {
         var names = ToolNames;
 
-        CollectionAssert.AreEquivalent(names.Distinct().ToArray(), names, "A tool name is registered twice.");
+        Assert.AreSequenceEqual(names.Distinct().ToArray(), names, Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, "A tool name is registered twice.");
 
         foreach (var tool in Catalog.Tools)
         {
@@ -50,7 +50,7 @@ public class McpSurfaceTests
             Assert.IsTrue(Regex.IsMatch(tool.Name, "^[A-Za-z0-9_-]{1,64}$"), $"'{tool.Name}' is not a legal MCP tool name.");
 
             // The description is the entire basis on which a model chooses a tool.
-            Assert.IsTrue(tool.Description.Length > 60,
+            Assert.IsGreaterThan(60, tool.Description.Length,
                           $"'{tool.Name}' has a {tool.Description.Length}-character description, which is too little to choose it by.");
         }
     }
@@ -60,7 +60,7 @@ public class McpSurfaceTests
     {
         // The prose is checked for tool names with the library's own members left out (GetBmotionService), so a tool
         // named like one of them would pass unchecked - and an agent could not tell which of the two it is told to call.
-        foreach (var name in ToolNames) Assert.IsFalse(LibraryMembers.Contains(name), $"'{name}' is also a member of Bit.Bmotion.");
+        foreach (var name in ToolNames) Assert.DoesNotContain(name, LibraryMembers, $"'{name}' is also a member of Bit.Bmotion.");
     }
 
     /// <summary>
@@ -91,7 +91,7 @@ public class McpSurfaceTests
 
         var mentioned = ToolNames.Count(name => overview.Contains(name, StringComparison.Ordinal));
 
-        Assert.IsTrue(mentioned <= ToolNames.Length / 2,
+        Assert.IsLessThanOrEqualTo(ToolNames.Length / 2, mentioned,
                       $"The overview names {mentioned} of {ToolNames.Length} tools, which is a tool directory - " +
                       "and every client already has one from tools/list.");
     }
@@ -119,18 +119,18 @@ public class McpSurfaceTests
     {
         var prompts = RenderEveryPrompt();
 
-        Assert.AreEqual(Catalog.Prompts.Length, prompts.Count);
-        Assert.AreNotEqual(0, prompts.Count);
+        Assert.HasCount(Catalog.Prompts.Length, prompts);
+        Assert.IsNotEmpty(prompts);
 
         foreach (var (name, text) in prompts)
         {
-            Assert.IsTrue(text.Length > 500, $"The '{name}' prompt is only {text.Length} characters.");
+            Assert.IsGreaterThan(500, text.Length, $"The '{name}' prompt is only {text.Length} characters.");
 
             // A workflow is an order of calls; a prompt that names no tool is just prose.
             Assert.IsTrue(ToolReference.IsMatch(text), $"The '{name}' prompt names no tool to call.");
 
             // The argument it was given has to reach the text, or the prompt ignores its input.
-            StringAssert.Contains(text, "SENTINEL", $"The '{name}' prompt dropped one of its arguments.");
+            Assert.Contains("SENTINEL", text, $"The '{name}' prompt dropped one of its arguments.");
         }
     }
 
@@ -159,11 +159,11 @@ public class McpSurfaceTests
     {
         var uris = Catalog.Resources.Select(resource => resource.Name).ToArray();
 
-        CollectionAssert.AreEquivalent(uris.Distinct().ToArray(), uris, "A resource URI is registered twice.");
+        Assert.AreSequenceEqual(uris.Distinct().ToArray(), uris, Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, "A resource URI is registered twice.");
 
         foreach (var uri in uris)
         {
-            StringAssert.StartsWith(uri, "bmotion://", $"'{uri}' is not under this server's scheme.");
+            Assert.StartsWith("bmotion://", uri, $"'{uri}' is not under this server's scheme.");
         }
     }
 
@@ -183,8 +183,7 @@ public class McpSurfaceTests
         var guide = McpResources.Guide();
         var readme = BmotionSourceCatalog.Readme;
 
-        StringAssert.StartsWith(guide, readme[..Math.Min(readme.Length, McpController.MaxDocumentLength)],
-                                "The guide resource does not read as the README.");
+        Assert.StartsWith(readme[..Math.Min(readme.Length, McpController.MaxDocumentLength)], guide, "The guide resource does not read as the README.");
         Assert.IsTrue(readme.Length <= McpController.MaxDocumentLength
                       || guide.Contains("[truncated at line ", StringComparison.Ordinal),
                       $"The guide resource hands out all {guide.Length} characters of the README unbounded.");
@@ -219,37 +218,37 @@ public class McpSurfaceTests
 
         if (BmotionSourceCatalog.Readme.Length <= McpController.MaxDocumentLength) Assert.Inconclusive("The README fits within the bound in this build.");
 
-        StringAssert.Contains(guide, "bmotion://guide/", "The cut guide does not name the resource that reads the rest.");
+        Assert.Contains("bmotion://guide/", guide, "The cut guide does not name the resource that reads the rest.");
 
         foreach (var section in BmotionSourceCatalog.GuideSections)
         {
-            StringAssert.Contains(guide, section.Heading, $"The cut guide never names its '{section.Heading}' section.");
+            Assert.Contains(section.Heading, guide, $"The cut guide never names its '{section.Heading}' section.");
         }
     }
 
     [TestMethod]
     public async Task Resources_EachOne_RendersSomethingReadable()
     {
-        Assert.IsTrue(McpResources.ApiList().Length > 500);
-        StringAssert.StartsWith(McpResources.ApiList(), "# Bit.Bmotion public API");
+        Assert.IsGreaterThan(500, McpResources.ApiList().Length);
+        Assert.StartsWith("# Bit.Bmotion public API", McpResources.ApiList());
 
-        StringAssert.Contains(McpResources.ApiType("BmSpring"), "# BmSpring");
-        StringAssert.Contains(McpResources.ApiType("BmSpring"), "Stiffness");
+        Assert.Contains("# BmSpring", McpResources.ApiType("BmSpring"));
+        Assert.Contains("Stiffness", McpResources.ApiType("BmSpring"));
 
         var properties = await McpResources.Properties();
 
-        StringAssert.Contains(properties, "| Property | Category |");
-        StringAssert.Contains(properties, "`opacity`");
+        Assert.Contains("| Property | Category |", properties);
+        Assert.Contains("`opacity`", properties);
 
         var easings = await McpResources.Easings();
 
-        StringAssert.Contains(easings, "`BmEase.Linear`");
+        Assert.Contains("`BmEase.Linear`", easings);
 
         var recipes = McpResources.Recipes();
 
         foreach (var recipe in BmotionRecipeCatalog.All)
         {
-            StringAssert.Contains(recipes, recipe.Title, $"The recipes resource omits '{recipe.Id}'.");
+            Assert.Contains(recipe.Title, recipes, $"The recipes resource omits '{recipe.Id}'.");
         }
     }
 
@@ -260,15 +259,15 @@ public class McpSurfaceTests
     [TestMethod]
     public void Resources_AskedForWhatIsNotThere_ExplainRatherThanThrow()
     {
-        StringAssert.Contains(McpResources.GuideSection("Teleportation"), "no section called");
-        StringAssert.Contains(McpResources.ApiType("Teleporter"), "no public type called");
-        StringAssert.Contains(McpResources.Source("nowhere.razor"), "No source file at");
+        Assert.Contains("no section called", McpResources.GuideSection("Teleportation"));
+        Assert.Contains("no public type called", McpResources.ApiType("Teleporter"));
+        Assert.Contains("No source file at", McpResources.Source("nowhere.razor"));
 
         var setup = McpResources.Setup("maui");
 
         foreach (var mode in BmotionSetupGuide.RenderModes)
         {
-            StringAssert.Contains(setup, mode);
+            Assert.Contains(mode, setup);
         }
     }
 
@@ -329,7 +328,7 @@ public class McpSurfaceTests
             .Where(name => names.Contains(name) is false && LibraryMembers.Contains(name) is false)
             .ToArray();
 
-        Assert.AreEqual(0, dangling.Length, $"{where} names tools this server does not expose: {string.Join(", ", dangling)}.");
+        Assert.IsEmpty(dangling, $"{where} names tools this server does not expose: {string.Join(", ", dangling)}.");
     }
 
     /// <summary>

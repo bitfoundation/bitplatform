@@ -1,10 +1,6 @@
 namespace Boilerplate.Tests.E2E.Infrastructure.Services;
 
-/// <summary>
-/// The app's AI chat panel (AppAiChatPanel.razor), driven the way a user drives it. Every app in
-/// <see cref="DeployedApps"/> renders the same component, so one page object serves web, Android and Windows alike.
-/// </summary>
-public sealed class AiChatPanel
+internal sealed class AiChatPanel
 {
     /// <summary>How long a model call plus however many tools it runs gets, over a real connection.</summary>
     private static readonly TimeSpan AnswerTimeout = TimeSpan.FromMinutes(3);

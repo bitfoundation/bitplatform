@@ -63,7 +63,7 @@ public class RepeaterPagingTests : ComponentTestBase
 
         cut.Find(".bit-borm-btn--add").Click();
 
-        Assert.HasCount(1, Shown(cut));
+        Assert.ContainsSingle(Shown(cut));
         Assert.AreEqual("26–26 of 26", cut.Find(".bit-borm-array__range").TextContent);
     }
 
@@ -77,7 +77,7 @@ public class RepeaterPagingTests : ComponentTestBase
 
         await cut.InvokeAsync(() => state.SubmitAsync(_ => Task.CompletedTask));
 
-        StringAssert.Contains(cut.Find(".bit-borm-array__elsewhere").TextContent, "1 line on another page needs attention.");
+        Assert.Contains("1 line on another page needs attention.", cut.Find(".bit-borm-array__elsewhere").TextContent);
 
         // What the error summary's link and focus-the-first-error do: the row's page comes first.
         await cut.InvokeAsync(async () => await state.FocusAsync("lines[40].product"));

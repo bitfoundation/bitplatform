@@ -87,7 +87,7 @@ public class BitAiArtifactViewE2ETests : E2ETestBase
 
         // Scripts, forms and popups, but never the same origin: that is what keeps the page around it out of reach.
         var sandbox = await frame.GetAttributeAsync("sandbox");
-        CollectionAssert.AreEquivalent(new[] { "allow-scripts", "allow-forms", "allow-popups" }, sandbox!.Split(' ', StringSplitOptions.RemoveEmptyEntries));
+        Assert.AreSequenceEqual(new[] { "allow-scripts", "allow-forms", "allow-popups" }, sandbox!.Split(' ', StringSplitOptions.RemoveEmptyEntries), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         Assert.IsTrue(await frame.EvaluateAsync<bool>("f => f.sandbox.contains('allow-scripts') && !f.sandbox.contains('allow-same-origin')"));
 
         var page = Page.FrameLocator("#atv-html iframe.bit-aiatv-frm");
@@ -106,7 +106,7 @@ public class BitAiArtifactViewE2ETests : E2ETestBase
         var frameBox = await frame.BoundingBoxAsync();
         var bodyBox = await Body("atv-html").BoundingBoxAsync();
         Assert.AreEqual(bodyBox!.Width, frameBox!.Width, 1.5);
-        Assert.IsTrue(frameBox.Height > 100, $"The frame is tall enough to read, was {frameBox.Height}.");
+        Assert.IsGreaterThan(100, frameBox.Height, $"The frame is tall enough to read, was {frameBox.Height}.");
     }
 
     [TestMethod]
@@ -332,19 +332,19 @@ public class BitAiArtifactViewE2ETests : E2ETestBase
         var download = await Page.RunAndWaitForDownloadAsync(() => button.ClickAsync());
         Assert.AreEqual(fileName, download.SuggestedFilename);
 
-        var saved = await File.ReadAllTextAsync((await download.PathAsync())!);
+        var saved = await File.ReadAllTextAsync((await download.PathAsync())!, TestContext.CancellationToken);
         if (text is not null)
         {
             Assert.AreEqual(text, saved);
         }
         else if (id == "atv-svg")
         {
-            StringAssert.StartsWith(saved, "<svg xmlns=\"http://www.w3.org/2000/svg\"");
+            Assert.StartsWith("<svg xmlns=\"http://www.w3.org/2000/svg\"", saved);
         }
         else
         {
-            StringAssert.StartsWith(saved, "<!doctype html>");
-            StringAssert.Contains(saved, "document.getElementById('ran').textContent = 'ran';");
+            Assert.StartsWith("<!doctype html>", saved);
+            Assert.Contains("document.getElementById('ran').textContent = 'ran';", saved);
         }
     }
 
@@ -355,7 +355,7 @@ public class BitAiArtifactViewE2ETests : E2ETestBase
 
         var latest = await Page.RunAndWaitForDownloadAsync(() => DownloadButton("atv-versions").ClickAsync());
         Assert.AreEqual("pricing-ts.ts", latest.SuggestedFilename);
-        Assert.AreEqual("export const price = (quantity: number) => quantity * (quantity >= 10 ? 9 : 10);", await File.ReadAllTextAsync((await latest.PathAsync())!));
+        Assert.AreEqual("export const price = (quantity: number) => quantity * (quantity >= 10 ? 9 : 10);", await File.ReadAllTextAsync((await latest.PathAsync())!, TestContext.CancellationToken));
 
         var callout = await OpenVersionsAsync("atv-versions");
         await callout.GetByRole(AriaRole.Option, new() { Name = "Version 2", Exact = true }).ClickAsync();
@@ -363,7 +363,7 @@ public class BitAiArtifactViewE2ETests : E2ETestBase
 
         var earlier = await Page.RunAndWaitForDownloadAsync(() => DownloadButton("atv-versions").ClickAsync());
         Assert.AreEqual("pricing-ts-v2.ts", earlier.SuggestedFilename);
-        Assert.AreEqual("export const price = (quantity: number) => quantity * 10;", await File.ReadAllTextAsync((await earlier.PathAsync())!));
+        Assert.AreEqual("export const price = (quantity: number) => quantity * 10;", await File.ReadAllTextAsync((await earlier.PathAsync())!, TestContext.CancellationToken));
     }
 
     // ---------- streamed through a session ----------
@@ -393,8 +393,8 @@ public class BitAiArtifactViewE2ETests : E2ETestBase
 
         // The text arrived a slice at a time, not in one piece at the end.
         var lengths = (await Page.TextLengthsAsync("atv-stream")).Where(l => l > 0).ToArray();
-        Assert.IsTrue(lengths.Length >= 3, $"The document grew in steps: {string.Join(",", lengths)}.");
-        CollectionAssert.AreEqual(lengths.OrderBy(l => l).ToArray(), lengths, $"The document only grew: {string.Join(",", lengths)}.");
+        Assert.IsGreaterThanOrEqualTo(3, lengths.Length, $"The document grew in steps: {string.Join(",", lengths)}.");
+        Assert.AreSequenceEqual(lengths.OrderBy(l => l).ToArray(), lengths, $"The document only grew: {string.Join(",", lengths)}.");
 
         // A finished first draft has a single version, so there is nothing to pick between.
         await Expect(VersionDropdown("atv-stream")).ToHaveCountAsync(0);
@@ -428,7 +428,7 @@ public class BitAiArtifactViewE2ETests : E2ETestBase
 
         var download = await Page.RunAndWaitForDownloadAsync(() => DownloadButton("atv-stream").ClickAsync());
         Assert.AreEqual("project-readme-v1.md", download.SuggestedFilename);
-        Assert.AreEqual("# Bit.BlazorUI.AI\n\nThe AI components of bit BlazorUI.\n", await File.ReadAllTextAsync((await download.PathAsync())!));
+        Assert.AreEqual("# Bit.BlazorUI.AI\n\nThe AI components of bit BlazorUI.\n", await File.ReadAllTextAsync((await download.PathAsync())!, TestContext.CancellationToken));
     }
 
     // ---------- full screen ----------
@@ -463,7 +463,7 @@ public class BitAiArtifactViewE2ETests : E2ETestBase
         var viewport = await ViewportAsync();
         var (left, top, right, bottom) = await Panel("atv-full").RectAsync();
         Assert.AreEqual(left, top, 1, "The inset is the same on every side.");
-        Assert.IsTrue(left > 0, $"There is room around the panel, was {left}.");
+        Assert.IsGreaterThan(0, left, $"There is room around the panel, was {left}.");
         Assert.AreEqual(viewport[0] - left, right, 1.5);
         Assert.AreEqual(viewport[1] - top, bottom, 1.5);
         var onTop = await Page.EvaluateAsync<bool>(
@@ -625,7 +625,7 @@ public class BitAiArtifactViewE2ETests : E2ETestBase
         var expandedHeight = (await frame.BoundingBoxAsync())!.Height;
         var bodyHeight = (await Body("atv-full-html").BoundingBoxAsync())!.Height;
         Assert.AreEqual(bodyHeight, expandedHeight, 1.5);
-        Assert.IsTrue(expandedHeight > inlineHeight, $"The frame fills the full-screen panel: {inlineHeight} -> {expandedHeight}.");
+        Assert.IsGreaterThan(inlineHeight, expandedHeight, $"The frame fills the full-screen panel: {inlineHeight} -> {expandedHeight}.");
 
         await ExpandButton("atv-full-html").ClickAsync();
         await Expect(Root("atv-full-html")).Not.ToHaveClassAsync(Expanded);
@@ -682,9 +682,9 @@ public class BitAiArtifactViewE2ETests : E2ETestBase
         var panel = await Panel(id).RectAsync();
 
         // The glyph of the kind starts the row on the right, the full-screen toggle ends it on the left.
-        Assert.IsTrue(icon.Left >= title.Right - 1, "The glyph is to the right of the title.");
-        Assert.IsTrue(expand.Right <= title.Left + 1, "The toggle is to the left of the title.");
-        Assert.IsTrue(panel.Right - icon.Right < icon.Left - panel.Left, "The glyph sits on the right edge.");
+        Assert.IsGreaterThanOrEqualTo(title.Right - 1, icon.Left, "The glyph is to the right of the title.");
+        Assert.IsLessThanOrEqualTo(title.Left + 1, expand.Right, "The toggle is to the left of the title.");
+        Assert.IsLessThan(icon.Left - panel.Left, panel.Right - icon.Right, "The glyph sits on the right edge.");
     }
 
     // ---------- public variables ----------
@@ -714,7 +714,7 @@ public class BitAiArtifactViewE2ETests : E2ETestBase
         await Expect(body).ToHaveCSSAsync("max-height", "60px");
         var scroll = await body.ScrollStateAsync();
         Assert.AreEqual(60, scroll.ClientHeight, 1);
-        Assert.IsTrue(scroll.Height > scroll.ClientHeight, "The body scrolls.");
+        Assert.IsGreaterThan(scroll.ClientHeight, scroll.Height, "The body scrolls.");
 
         // Expanded: the inset around the panel and the overlay behind it.
         await ExpandButton("atv-vars").ClickAsync();

@@ -126,9 +126,9 @@ public class BitOtpInputE2ETests : E2ETestBase
         var response = await Page.APIRequest.GetAsync($"{BaseUrl}{Url}");
         var html = await response.TextAsync();
 
-        StringAssert.Contains(html, "id=\"otp-basic\"");
-        StringAssert.Contains(html, "bit-otp-inp");
-        StringAssert.Contains(html, "id=\"status\">Loading<");
+        Assert.Contains("id=\"otp-basic\"", html);
+        Assert.Contains("bit-otp-inp", html);
+        Assert.Contains("id=\"status\">Loading<", html);
 
         await OpenAsync(Url);
         await Expect(Inputs("otp-basic")).ToHaveCountAsync(5);
@@ -159,7 +159,7 @@ public class BitOtpInputE2ETests : E2ETestBase
         await Expect(Box("otp-autofocus", 2)).ToBeFocusedAsync();
         await Page.Keyboard.TypeAsync("3");
         await Expect(Box("otp-autofocus", 3)).ToBeFocusedAsync();
-        CollectionAssert.AreEqual(new[] { "1", "2", "3", "", "" }, await ValuesAsync("otp-autofocus"));
+        Assert.AreSequenceEqual(new[] { "1", "2", "3", "", "" }, await ValuesAsync("otp-autofocus"));
     }
 
 
@@ -221,16 +221,16 @@ public class BitOtpInputE2ETests : E2ETestBase
         await Expect(Box("otp-noshift", 1)).ToHaveValueAsync("");
         await Expect(Box("otp-noshift", 1)).ToBeFocusedAsync();
         await Expect(Text("noshift-value")).ToHaveTextAsync("[1345]");
-        CollectionAssert.AreEqual(new[] { "1", "", "3", "4", "5" }, await ValuesAsync("otp-noshift"));
+        Assert.AreSequenceEqual(new[] { "1", "", "3", "4", "5" }, await ValuesAsync("otp-noshift"));
 
         await StartTypingAsync("otp-autoshift", 1);
         await Page.Keyboard.PressAsync("Delete");
         await Expect(Text("autoshift-value")).ToHaveTextAsync("[1345]");
-        CollectionAssert.AreEqual(new[] { "1", "3", "4", "5", "" }, await ValuesAsync("otp-autoshift"));
+        Assert.AreSequenceEqual(new[] { "1", "3", "4", "5", "" }, await ValuesAsync("otp-autoshift"));
 
         await Page.Keyboard.PressAsync("Backspace");
         await Expect(Text("autoshift-value")).ToHaveTextAsync("[145]");
-        CollectionAssert.AreEqual(new[] { "1", "4", "5", "", "" }, await ValuesAsync("otp-autoshift"));
+        Assert.AreSequenceEqual(new[] { "1", "4", "5", "", "" }, await ValuesAsync("otp-autoshift"));
     }
 
     [TestMethod]
@@ -379,7 +379,7 @@ public class BitOtpInputE2ETests : E2ETestBase
         await Page.Keyboard.PressAsync("Delete");
         await Page.Keyboard.PressAsync("ArrowRight");
         await Expect(Box("otp-readonly", 2)).ToBeFocusedAsync();
-        CollectionAssert.AreEqual(new[] { "1", "2", "3", "4", "5" }, await ValuesAsync("otp-readonly"));
+        Assert.AreSequenceEqual(new[] { "1", "2", "3", "4", "5" }, await ValuesAsync("otp-readonly"));
         await Expect(Text("readonly-changes")).ToHaveTextAsync("0");
     }
 
@@ -411,7 +411,7 @@ public class BitOtpInputE2ETests : E2ETestBase
         var root = Root("otp-visibility");
         await Page.ClickAsync("#btn-vis-hidden");
         await Expect(root).ToHaveCSSAsync("visibility", "hidden");
-        Assert.IsTrue((await BoxOfAsync(root)).Height > 20);
+        Assert.IsGreaterThan(20, (await BoxOfAsync(root)).Height);
         await Page.ClickAsync("#btn-vis-collapsed");
         await Expect(root).ToHaveCSSAsync("display", "none");
         await Page.ClickAsync("#btn-vis-visible");
@@ -427,7 +427,7 @@ public class BitOtpInputE2ETests : E2ETestBase
         await Page.ClickAsync("#btn-change-params");
         await Expect(Inputs("otp-rerender")).ToHaveCountAsync(6);
         await Expect(Page.Locator("#otp-rerender .bit-otp-lbl")).ToHaveTextAsync("Second label");
-        CollectionAssert.AreEqual(new[] { "1", "2", "3", "4", "", "" }, await ValuesAsync("otp-rerender"));
+        Assert.AreSequenceEqual(new[] { "1", "2", "3", "4", "", "" }, await ValuesAsync("otp-rerender"));
         await Expect(Box("otp-rerender", 5)).ToHaveAttributeAsync("aria-label", "6 of 6");
 
         await StartTypingAsync("otp-rerender", 4);
@@ -463,7 +463,7 @@ public class BitOtpInputE2ETests : E2ETestBase
         {
             await Expect(Box("otp-required", i)).ToHaveAttributeAsync("required", "");
         }
-        StringAssert.StartsWith(await Page.Locator("#otp-required .bit-otp-lbl").EvaluateAsync<string>("el => getComputedStyle(el, '::after').content"), "\"*\"");
+        Assert.StartsWith("\"*\"", await Page.Locator("#otp-required .bit-otp-lbl").EvaluateAsync<string>("el => getComputedStyle(el, '::after').content"));
     }
 
     [TestMethod]
@@ -563,7 +563,7 @@ public class BitOtpInputE2ETests : E2ETestBase
         await Expect(Box("otp-mask", 1)).ToHaveValueAsync("●");
         await Expect(Text("mask-value")).ToHaveTextAsync("[12]");
 
-        CollectionAssert.AreEqual(Enumerable.Repeat("🔒", 5).ToArray(), await ValuesAsync("otp-mask-emoji"));
+        Assert.AreSequenceEqual(Enumerable.Repeat("🔒", 5).ToArray(), await ValuesAsync("otp-mask-emoji"));
     }
 
 
@@ -677,7 +677,7 @@ public class BitOtpInputE2ETests : E2ETestBase
         await Expect(Root("otp-reversed")).ToHaveClassAsync(HasClass("bit-otp-rvs"));
         var first = await BoxOfAsync(Box("otp-reversed", 0));
         var last = await BoxOfAsync(Box("otp-reversed", 4));
-        Assert.IsTrue(first.X > last.X, "The first character is on the right.");
+        Assert.IsGreaterThan(last.X, first.X, "The first character is on the right.");
 
         await StartTypingAsync("otp-reversed");
         await TypeCodeAsync("otp-reversed", "12");
@@ -711,7 +711,7 @@ public class BitOtpInputE2ETests : E2ETestBase
 
         var reversedFirst = await BoxOfAsync(Box("otp-vertical-reversed", 0));
         var reversedLast = await BoxOfAsync(Box("otp-vertical-reversed", 4));
-        Assert.IsTrue(reversedFirst.Y > reversedLast.Y, "Vertical and Reversed puts the first character at the bottom.");
+        Assert.IsGreaterThan(reversedLast.Y, reversedFirst.Y, "Vertical and Reversed puts the first character at the bottom.");
     }
 
     [TestMethod]
@@ -725,7 +725,7 @@ public class BitOtpInputE2ETests : E2ETestBase
         var last = await BoxOfAsync(Box("otp-fullwidth", 5));
         Assert.AreEqual(container.X + container.Width, last.X + last.Width, 1.5);
         Assert.AreEqual(first.Width, last.Width, 1);
-        Assert.IsTrue(first.Width > 40, $"The boxes grew to share the row ({first.Width}px).");
+        Assert.IsGreaterThan(40, first.Width, $"The boxes grew to share the row ({first.Width}px).");
     }
 
 
@@ -740,7 +740,7 @@ public class BitOtpInputE2ETests : E2ETestBase
         await Expect(Page.Locator("#otp-merged .bit-otp-iwr")).ToHaveCSSAsync("column-gap", "0px");
         var first = await BoxOfAsync(Box("otp-merged", 0));
         var second = await BoxOfAsync(Box("otp-merged", 1));
-        Assert.IsTrue(second.X - (first.X + first.Width) <= 0.5, "No gap between glued boxes.");
+        Assert.IsLessThanOrEqualTo(0.5, second.X - (first.X + first.Width), "No gap between glued boxes.");
         await Expect(Box("otp-merged", 0)).ToHaveClassAsync(HasClass("bit-otp-gst"));
         await Expect(Box("otp-merged", 5)).ToHaveClassAsync(HasClass("bit-otp-gnd"));
         await Expect(Box("otp-merged", 2)).Not.ToHaveClassAsync(new Regex("bit-otp-g(st|nd)"));
@@ -754,7 +754,7 @@ public class BitOtpInputE2ETests : E2ETestBase
 
         var top = await BoxOfAsync(Box("otp-merged-vertical", 0));
         var below = await BoxOfAsync(Box("otp-merged-vertical", 1));
-        Assert.IsTrue(below.Y - (top.Y + top.Height) <= 0.5, "Glued along the block axis.");
+        Assert.IsLessThanOrEqualTo(0.5, below.Y - (top.Y + top.Height), "Glued along the block axis.");
     }
 
 
@@ -770,7 +770,7 @@ public class BitOtpInputE2ETests : E2ETestBase
 
         await PasteAsync(Box("otp-paste", 3), pasted);
         await Expect(Text("paste-value")).ToHaveTextAsync($"[{expected}]");
-        CollectionAssert.AreEqual(expected.Select(c => c.ToString()).ToArray(), await ValuesAsync("otp-paste"));
+        Assert.AreSequenceEqual(expected.Select(c => c.ToString()).ToArray(), await ValuesAsync("otp-paste"));
         await Expect(Text("paste-events")).ToHaveTextAsync("1");
         await Expect(Text("paste-index")).ToHaveTextAsync("3");
         await Expect(Box("otp-paste", 5)).ToBeFocusedAsync();
@@ -802,7 +802,7 @@ public class BitOtpInputE2ETests : E2ETestBase
 
         await PasteAsync(Box("otp-sequential-paste", 4), "12");
         await Expect(Text("sequential-paste-value")).ToHaveTextAsync("[12]");
-        CollectionAssert.AreEqual(new[] { "1", "2", "", "", "", "" }, await ValuesAsync("otp-sequential-paste"));
+        Assert.AreSequenceEqual(new[] { "1", "2", "", "", "", "" }, await ValuesAsync("otp-sequential-paste"));
         await Expect(Box("otp-sequential-paste", 2)).ToBeFocusedAsync();
     }
 
@@ -815,7 +815,7 @@ public class BitOtpInputE2ETests : E2ETestBase
         // one box and an input event raised, which reaches the component past the clipboard handler.
         await Box("otp-paste", 2).FillAsync("12 34 56");
         await Expect(Text("paste-value")).ToHaveTextAsync("[123456]");
-        CollectionAssert.AreEqual(new[] { "1", "2", "3", "4", "5", "6" }, await ValuesAsync("otp-paste"));
+        Assert.AreSequenceEqual(new[] { "1", "2", "3", "4", "5", "6" }, await ValuesAsync("otp-paste"));
         await Expect(Box("otp-paste", 5)).ToBeFocusedAsync();
 
         // A chunk that holds nothing the Type accepts is refused as a whole and reported.
@@ -851,7 +851,7 @@ public class BitOtpInputE2ETests : E2ETestBase
         var cut = await ClipboardAsync(Box("otp-copy", 4), "cut");
         Assert.AreEqual("A1B2C3", cut.Data);
         await Expect(Text("copy-value")).ToHaveTextAsync("[]");
-        CollectionAssert.AreEqual(Enumerable.Repeat("", 6).ToArray(), await ValuesAsync("otp-copy"));
+        Assert.AreSequenceEqual(Enumerable.Repeat("", 6).ToArray(), await ValuesAsync("otp-copy"));
         await Expect(Box("otp-copy", 0)).ToBeFocusedAsync();
     }
 
@@ -886,7 +886,7 @@ public class BitOtpInputE2ETests : E2ETestBase
 
         await Page.ClickAsync("#btn-set-oneway");
         await Expect(Box("otp-oneway", 4)).ToHaveValueAsync("5");
-        CollectionAssert.AreEqual(new[] { "9", "8", "7", "6", "5" }, await ValuesAsync("otp-oneway"));
+        Assert.AreSequenceEqual(new[] { "9", "8", "7", "6", "5" }, await ValuesAsync("otp-oneway"));
     }
 
     [TestMethod]
@@ -900,16 +900,16 @@ public class BitOtpInputE2ETests : E2ETestBase
 
         await Page.ClickAsync("#btn-set-twoway");
         await Expect(Box("otp-twoway", 4)).ToHaveValueAsync("1");
-        CollectionAssert.AreEqual(new[] { "5", "4", "3", "2", "1" }, await ValuesAsync("otp-twoway"));
+        Assert.AreSequenceEqual(new[] { "5", "4", "3", "2", "1" }, await ValuesAsync("otp-twoway"));
 
         // A longer code loses what the boxes cannot hold, and the binding follows what is shown.
         await Page.ClickAsync("#btn-set-twoway-long");
         await Expect(Text("twoway-value")).ToHaveTextAsync("[12345]");
-        CollectionAssert.AreEqual(new[] { "1", "2", "3", "4", "5" }, await ValuesAsync("otp-twoway"));
+        Assert.AreSequenceEqual(new[] { "1", "2", "3", "4", "5" }, await ValuesAsync("otp-twoway"));
 
         await Page.ClickAsync("#btn-clear-twoway");
         await Expect(Box("otp-twoway", 0)).ToHaveValueAsync("");
-        CollectionAssert.AreEqual(Enumerable.Repeat("", 5).ToArray(), await ValuesAsync("otp-twoway"));
+        Assert.AreSequenceEqual(Enumerable.Repeat("", 5).ToArray(), await ValuesAsync("otp-twoway"));
     }
 
 
@@ -1035,7 +1035,7 @@ public class BitOtpInputE2ETests : E2ETestBase
         var bar = Page.Locator("#otp-loading .bit-otp-ldr");
         await Expect(bar).ToBeVisibleAsync();
         await Expect(bar).ToHaveAttributeAsync("aria-hidden", "true");
-        StringAssert.Contains(await bar.EvaluateAsync<string>("el => getComputedStyle(el, '::after').animationName"), "bit-otp-ldr-anm");
+        Assert.Contains("bit-otp-ldr-anm", await bar.EvaluateAsync<string>("el => getComputedStyle(el, '::after').animationName"));
         await Expect(Group("otp-loading")).ToHaveAttributeAsync("aria-busy", "true");
         await Expect(Box("otp-loading", 0)).ToHaveAttributeAsync("readonly", "");
         await Expect(status).ToHaveTextAsync("Checking the code...");
@@ -1181,7 +1181,7 @@ public class BitOtpInputE2ETests : E2ETestBase
     {
         await OpenAsync(Url);
 
-        StringAssert.Contains(await ComputedStyleAsync("#otp-style", "box-shadow"), "rgb(0, 255, 255)");
+        Assert.Contains("rgb(0, 255, 255)", await ComputedStyleAsync("#otp-style", "box-shadow"));
         await Expect(Root("otp-style")).ToHaveCSSAsync("margin-left", "16px");
         await Expect(Root("otp-class")).ToHaveClassAsync(HasClass("custom-class"));
     }
@@ -1289,7 +1289,7 @@ public class BitOtpInputE2ETests : E2ETestBase
         await Expect(Root("otp-rtl")).ToHaveAttributeAsync("dir", "rtl");
         var first = await BoxOfAsync(Box("otp-rtl", 0));
         var last = await BoxOfAsync(Box("otp-rtl", 4));
-        Assert.IsTrue(first.X > last.X, "The first character is on the right.");
+        Assert.IsGreaterThan(last.X, first.X, "The first character is on the right.");
 
         await StartTypingAsync("otp-rtl");
         await TypeCodeAsync("otp-rtl", "12");
@@ -1304,7 +1304,7 @@ public class BitOtpInputE2ETests : E2ETestBase
 
         var reversedFirst = await BoxOfAsync(Box("otp-rtl-reversed", 0));
         var reversedLast = await BoxOfAsync(Box("otp-rtl-reversed", 4));
-        Assert.IsTrue(reversedFirst.X < reversedLast.X, "Reversed in RTL puts the first character on the left.");
+        Assert.IsLessThan(reversedLast.X, reversedFirst.X, "Reversed in RTL puts the first character on the left.");
 
         var sepFirst = await BoxOfAsync(Box("otp-rtl-sep", 2));
         var separator = await BoxOfAsync(Page.Locator("#otp-rtl-sep .bit-otp-sep"));
@@ -1318,7 +1318,7 @@ public class BitOtpInputE2ETests : E2ETestBase
         await OpenAsync(Url);
 
         await Expect(Root("otp-rtl-inherited")).Not.ToHaveClassAsync(HasClass("bit-rtl"));
-        Assert.IsTrue((await BoxOfAsync(Box("otp-rtl-inherited", 0))).X > (await BoxOfAsync(Box("otp-rtl-inherited", 4))).X);
+        Assert.IsGreaterThan((await BoxOfAsync(Box("otp-rtl-inherited", 4))).X, (await BoxOfAsync(Box("otp-rtl-inherited", 0))).X);
 
         await StartTypingAsync("otp-rtl-inherited", 1);
         await Page.Keyboard.PressAsync("ArrowLeft");
@@ -1335,15 +1335,15 @@ public class BitOtpInputE2ETests : E2ETestBase
     {
         await OpenAsync(Url);
 
-        Assert.IsTrue(MaxSeconds(await ComputedStyleAsync("#otp-motion .bit-otp-inp", "transition-duration")) > 0.01);
+        Assert.IsGreaterThan(0.01, MaxSeconds(await ComputedStyleAsync("#otp-motion .bit-otp-inp", "transition-duration")));
 
         await Page.EmulateMediaAsync(new() { ReducedMotion = ReducedMotion.Reduce });
         var reduced = await ComputedStyleAsync("#otp-motion .bit-otp-inp", "transition-duration");
-        Assert.IsTrue(MaxSeconds(reduced) < 0.011, reduced);
+        Assert.IsLessThan(0.011, MaxSeconds(reduced), reduced);
 
         await Expect(Root("otp-motion-force")).ToHaveClassAsync(HasClass("bit-fam"));
         var forced = await ComputedStyleAsync("#otp-motion-force .bit-otp-inp", "transition-duration");
-        Assert.IsTrue(MaxSeconds(forced) > 0.01, forced);
+        Assert.IsGreaterThan(0.01, MaxSeconds(forced), forced);
     }
 
     private static double MaxSeconds(string durations) =>

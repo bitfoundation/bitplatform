@@ -20,11 +20,11 @@ public partial class BitRichTextEditorStylesheetTests
 
         var documented = DocumentedVariables(stylesheet);
 
-        Assert.AreEqual(33, documented.Length, "The stylesheet does not document the thirty-three public variables.");
+        Assert.HasCount(33, documented, "The stylesheet does not document the thirty-three public variables.");
 
         foreach (var name in documented)
         {
-            StringAssert.Contains(stylesheet, $"var({name}, ", $"{name} is documented but never read with a fallback.");
+            Assert.Contains($"var({name}, ", stylesheet, $"{name} is documented but never read with a fallback.");
         }
     }
 
@@ -38,7 +38,7 @@ public partial class BitRichTextEditorStylesheetTests
 
         foreach (var name in read)
         {
-            CollectionAssert.Contains(documented, name, $"{name} is read but not documented in the header.");
+            Assert.Contains(name, documented, $"{name} is read but not documented in the header.");
         }
     }
 
@@ -56,8 +56,8 @@ public partial class BitRichTextEditorStylesheetTests
         var body = SourceFiles.StripScssComments(ReadStylesheet());
 
         Assert.IsFalse(HexColor().IsMatch(body), "A literal color is hard-coded instead of read from a theme token.");
-        Assert.IsFalse(body.Contains("Consolas"), "A literal monospace stack is used instead of $tg-font-family-mono.");
-        Assert.IsFalse(body.Contains("z-index: 9999"), "A literal z-index is used instead of a z-index token.");
+        Assert.DoesNotContain("Consolas", body, "A literal monospace stack is used instead of $tg-font-family-mono.");
+        Assert.DoesNotContain("z-index: 9999", body, "A literal z-index is used instead of a z-index token.");
         Assert.IsFalse(LiteralFontWeight().IsMatch(body), "A literal font weight is used instead of the weight ramp.");
     }
 
@@ -76,7 +76,7 @@ public partial class BitRichTextEditorStylesheetTests
 
         // Clip cuts the corners like hidden but makes no scroll container, which is what lets a StickyToolbar stick
         // to the page rather than to this frame.
-        StringAssert.Contains(root, "overflow: clip;");
+        Assert.Contains("overflow: clip;", root);
     }
 
     [TestMethod]
@@ -84,8 +84,8 @@ public partial class BitRichTextEditorStylesheetTests
     {
         var sticky = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-rte-stk > .bit-rte-tlb {");
 
-        StringAssert.Contains(sticky, "position: sticky;");
-        StringAssert.Contains(sticky, "top: var(--bit-RichTextEditor-toolbar-sticky-offset, 0);");
+        Assert.Contains("position: sticky;", sticky);
+        Assert.Contains("top: var(--bit-RichTextEditor-toolbar-sticky-offset, 0);", sticky);
     }
 
     [TestMethod]
@@ -93,8 +93,8 @@ public partial class BitRichTextEditorStylesheetTests
     {
         var fullScreen = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-rte-fsc .bit-rte-edt,");
 
-        StringAssert.Contains(fullScreen, "max-height: none;");
-        StringAssert.Contains(SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-rte-fsc {"), "z-index: $zindex-modal;");
+        Assert.Contains("max-height: none;", fullScreen);
+        Assert.Contains("z-index: $zindex-modal;", SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-rte-fsc {"));
     }
 
     [TestMethod]
@@ -102,9 +102,9 @@ public partial class BitRichTextEditorStylesheetTests
     {
         var forced = SourceFiles.GetScssBlock(ReadStylesheet(), "\n@media (forced-colors: active) {");
 
-        StringAssert.Contains(forced, "background: Highlight;");
-        StringAssert.Contains(forced, "background: Mark;");
-        StringAssert.Contains(forced, "color: GrayText;");
+        Assert.Contains("background: Highlight;", forced);
+        Assert.Contains("background: Mark;", forced);
+        Assert.Contains("color: GrayText;", forced);
     }
 
     [TestMethod]
@@ -112,10 +112,10 @@ public partial class BitRichTextEditorStylesheetTests
     {
         var stylesheet = ReadStylesheet();
 
-        StringAssert.Contains(stylesheet, "$rte-focus: var(--bit-RichTextEditor-focus-color, #{$clr-pri-focus});");
-        StringAssert.Contains(stylesheet, "$rte-focus-ring: focus-ring-color($rte-focus);");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-rte-btn {"), "@include focus-ring-own($rte-focus-ring);");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-rte-edt {"), "@include rte-inset-ring;");
+        Assert.Contains("$rte-focus: var(--bit-RichTextEditor-focus-color, #{$clr-pri-focus});", stylesheet);
+        Assert.Contains("$rte-focus-ring: focus-ring-color($rte-focus);", stylesheet);
+        Assert.Contains("@include focus-ring-own($rte-focus-ring);", SourceFiles.GetScssBlock(stylesheet, "\n.bit-rte-btn {"));
+        Assert.Contains("@include rte-inset-ring;", SourceFiles.GetScssBlock(stylesheet, "\n.bit-rte-edt {"));
     }
 
     [TestMethod]
@@ -123,9 +123,9 @@ public partial class BitRichTextEditorStylesheetTests
     {
         var handle = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-rte-resize-handle {");
 
-        StringAssert.Contains(handle, "background: $clr-pri;");
-        StringAssert.Contains(handle, "touch-action: none;");
-        StringAssert.Contains(handle, "z-index: calc(#{$zindex-modal} + 1);");
+        Assert.Contains("background: $clr-pri;", handle);
+        Assert.Contains("touch-action: none;", handle);
+        Assert.Contains("z-index: calc(#{$zindex-modal} + 1);", handle);
     }
 
     private static string[] DocumentedVariables(string stylesheet)

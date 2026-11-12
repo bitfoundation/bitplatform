@@ -92,7 +92,7 @@ public class BitAiConversationStreamProcessorTests
         processor.EndGeneration();
 
         var message = Assert.ContainsSingle(conversation.Messages);
-        Assert.AreEqual(2, message.Parts.Count);
+        Assert.HasCount(2, message.Parts);
         Assert.IsExactInstanceOfType<BitAiReasoningPart>(message.Parts[0]);
         Assert.AreEqual("The answer is 4.", message.GetText());
     }
@@ -201,11 +201,11 @@ public class BitAiConversationStreamProcessorTests
         processor.Apply(new BitAiCitationEvent(new BitAiCitation("c3", source)));
 
         var message = conversation.Messages[0];
-        Assert.AreEqual(3, message.Citations.Count);
+        Assert.HasCount(3, message.Citations);
         Assert.AreEqual(1, message.Citations[0].Number);
         Assert.AreEqual(2, message.Citations[1].Number);
         Assert.AreEqual(1, message.Citations[2].Number);
-        Assert.AreEqual(2, message.GetSources().Count);
+        Assert.HasCount(2, message.GetSources());
     }
 
     [TestMethod]
@@ -265,7 +265,7 @@ public class BitAiConversationStreamProcessorTests
 
         var run = conversation.FindRun("r1")!;
         Assert.AreEqual("Researcher", run.AgentName);
-        Assert.AreEqual(2, run.Steps.Count);
+        Assert.HasCount(2, run.Steps);
         Assert.AreEqual(BitAiAgentStepStatus.Completed, run.Steps[0].Status);
         Assert.AreEqual("8 results", run.Steps[0].Summary);
         Assert.AreEqual(BitAiAgentRunStatus.Completed, run.Status);
@@ -291,7 +291,7 @@ public class BitAiConversationStreamProcessorTests
         processor.Apply(new BitAiToolCallStartedEvent("call_3", "search"));
 
         var run = conversation.FindRun("r1")!;
-        CollectionAssert.AreEqual(new[] { "call_1", "call_2" }, run.Steps[0].ToolCallIds.ToArray());
+        Assert.AreSequenceEqual(new[] { "call_1", "call_2" }, run.Steps[0].ToolCallIds.ToArray());
         Assert.IsEmpty(run.Steps[1].ToolCallIds);
     }
 
@@ -558,7 +558,7 @@ public class BitAiConversationStreamProcessorTests
         processor.Apply(new BitAiTextDeltaEvent("side") { PartId = "p1" });
 
         var message = conversation.Messages[0];
-        Assert.AreEqual(2, message.Parts.Count);
+        Assert.HasCount(2, message.Parts);
         Assert.AreEqual("left side", message.FindPart<BitAiTextPart>("p1")!.Text);
         Assert.AreEqual("right ", message.FindPart<BitAiTextPart>("p2")!.Text);
     }
@@ -644,7 +644,7 @@ public class BitAiConversationStreamProcessorTests
         processor.Apply(new BitAiAgentStepStartedEvent("run1", "a"));
         processor.Apply(new BitAiAgentStepCompletedEvent("run1", "a"));
 
-        Assert.IsTrue(changes >= 2, "A planned step changing must notify observers of the run.");
+        Assert.IsGreaterThanOrEqualTo(2, changes, "A planned step changing must notify observers of the run.");
         Assert.AreEqual(0.5, run.Progress);
     }
 
@@ -659,7 +659,7 @@ public class BitAiConversationStreamProcessorTests
         processor.Apply(new BitAiAgentPlanEvent("run1", [new BitAiAgentPlanStep("a", "A"), new BitAiAgentPlanStep("b", "B")]));
 
         var steps = conversation.Runs["run1"].Steps;
-        CollectionAssert.AreEqual(new[] { "a", "b" }, steps.Select(s => s.StepId).ToArray());
+        Assert.AreSequenceEqual(new[] { "a", "b" }, steps.Select(s => s.StepId).ToArray());
         Assert.AreEqual(BitAiAgentStepStatus.Completed, steps[0].Status);
     }
 

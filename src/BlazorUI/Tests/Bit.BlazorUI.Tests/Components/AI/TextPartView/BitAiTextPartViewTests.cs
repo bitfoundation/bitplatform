@@ -52,7 +52,7 @@ public class BitAiTextPartViewTests : BitAiTestBase
 
         Assert.IsTrue(root.ClassList.Contains("custom-class"));
         Assert.IsTrue(root.ClassList.Contains("c-root"));
-        StringAssert.Contains(root.GetAttribute("style"), "color: red");
+        Assert.Contains("color: red", root.GetAttribute("style")!);
         Assert.IsTrue(component.Find(".bit-aismd").ClassList.Contains("c-smd"));
         Assert.IsTrue(component.Find(".bit-aimdv-par").ClassList.Contains("c-par"));
     }
@@ -100,7 +100,7 @@ public class BitAiTextPartViewTests : BitAiTestBase
         var marker = component.FindComponent<BitAiCitationMarker>();
 
         Assert.AreEqual("Sky", marker.Instance.Citation.Source.Title);
-        Assert.IsFalse(component.Find(".bit-aimdv-par").TextContent.Contains("[1]"));
+        Assert.DoesNotContain("[1]", component.Find(".bit-aimdv-par").TextContent);
     }
 
     // The markers of one offset are each inserted in front of the one before it, so they are woven from the highest number
@@ -116,8 +116,8 @@ public class BitAiTextPartViewTests : BitAiTestBase
         var component = RenderComponent<BitAiTextPartView>(p => p.Add(c => c.Part, part).Add(c => c.Message, message));
 
         var markers = component.FindComponents<BitAiCitationMarker>();
-        CollectionAssert.AreEqual(new int?[] { 1, 2 }, markers.Select(m => m.Instance.Citation.Number).ToArray());
-        CollectionAssert.AreEqual(new[] { "Sky", "Weather" }, markers.Select(m => m.Instance.Citation.Source.Title).ToArray());
+        Assert.AreSequenceEqual(new int?[] { 1, 2 }, markers.Select(m => m.Instance.Citation.Number).ToArray());
+        Assert.AreSequenceEqual(new[] { "Sky", "Weather" }, markers.Select(m => m.Instance.Citation.Source.Title).ToArray());
     }
 
     // The text is woven once per change of the part or its citations, compared by version; a view handed another part, or
@@ -138,8 +138,8 @@ public class BitAiTextPartViewTests : BitAiTestBase
         Assert.AreEqual("The first answer.", component.Find(".bit-aimdv-par").TextContent);
 
         component.Render(p => p.Add(c => c.Part, second).Add(c => c.Message, message));
-        StringAssert.StartsWith(component.Find(".bit-aimdv-par").TextContent, "The second answer.");
-        Assert.HasCount(1, component.FindComponents<BitAiCitationMarker>());
+        Assert.StartsWith("The second answer.", component.Find(".bit-aimdv-par").TextContent);
+        Assert.ContainsSingle(component.FindComponents<BitAiCitationMarker>());
 
         // Off, the marker the text was woven with goes: left in, it would be drawn as the literal "[1]".
         component.Render(p => p
@@ -167,9 +167,9 @@ public class BitAiTextPartViewTests : BitAiTestBase
 
         var code = component.Find("code.bit-aimdv-cod");
 
-        StringAssert.Contains(code.TextContent, "dotnet build");
-        Assert.IsFalse(code.TextContent.Contains("[1]"));
-        Assert.HasCount(1, component.FindComponents<BitAiCitationMarker>());
+        Assert.Contains("dotnet build", code.TextContent);
+        Assert.DoesNotContain("[1]", code.TextContent);
+        Assert.ContainsSingle(component.FindComponents<BitAiCitationMarker>());
     }
 
     [TestMethod]

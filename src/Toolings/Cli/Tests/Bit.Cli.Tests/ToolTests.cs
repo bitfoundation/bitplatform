@@ -61,11 +61,11 @@ public class ToolTests
         Assert.AreEqual(ToolState.Outdated, older.Status.State);
         Assert.IsTrue(older.Needed);
         Assert.AreEqual("Update the Aspire CLI to 13.6.0", older.Action!.Title);
-        CollectionAssert.AreEqual(new[] { "tool", "update", "--global", "Aspire.Cli", "--version", "13.6.0" }, older.Action.Commands[0].Arguments.ToArray());
+        Assert.AreSequenceEqual(new[] { "tool", "update", "--global", "Aspire.Cli", "--version", "13.6.0" }, older.Action.Commands[0].Arguments.ToArray());
 
         host.Runner.NotFound("aspire");
         var missing = (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "aspire");
-        CollectionAssert.AreEqual(new[] { "tool", "install", "--global", "Aspire.Cli", "--version", "13.6.0" }, missing.Action!.Commands[0].Arguments.ToArray());
+        Assert.AreSequenceEqual(new[] { "tool", "install", "--global", "Aspire.Cli", "--version", "13.6.0" }, missing.Action!.Commands[0].Arguments.ToArray());
 
         host.Runner.On("aspire", "--version", 0, "13.7.0+1a2b3c4");
         Assert.AreEqual(ToolState.Installed, (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "aspire").Status.State);
@@ -81,13 +81,13 @@ public class ToolTests
         host.Runner.On("aspire", "--version", 0, "13.5.2+5b4c1f0");
 
         host.Runner.Executables["aspire"] = Path.Combine(host.Home, ".dotnet", "tools", "aspire");
-        CollectionAssert.AreEqual(new[] { "tool", "update", "--global", "Aspire.Cli", "--version", "13.6.0" }, (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "aspire").Action!.Commands.Single().Arguments.ToArray());
+        Assert.AreSequenceEqual(new[] { "tool", "update", "--global", "Aspire.Cli", "--version", "13.6.0" }, (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "aspire").Action!.Commands.Single().Arguments.ToArray());
 
         host.Runner.Executables["aspire"] = script;
         var aspire = (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "aspire");
 
         Assert.AreEqual(script, aspire.Action!.Commands.Single().FileName, "dotnet tool update would leave the aspire that comes first on PATH as it is.");
-        CollectionAssert.AreEqual(new[] { "update", "--self", "--channel", "stable" }, aspire.Action.Commands.Single().Arguments.ToArray());
+        Assert.AreSequenceEqual(new[] { "update", "--self", "--channel", "stable" }, aspire.Action.Commands.Single().Arguments.ToArray());
 
         var steps = new StepRunner(host.Services);
         await new ToolInstaller(host.Services, steps).InstallAsync([aspire], new ToolContext(host.Environment, host.Runner, needs, PackageManagers.Detect(host.Environment, host.Runner)), CancellationToken.None);
@@ -172,7 +172,7 @@ public class ToolTests
         async Task<ToolCheck> DockerOn(string? distribution) => (await ToolCatalog.CheckAsync(new ToolContext(host.Environment, host.Runner, needs, PackageManagers.Detect(host.Environment, host.Runner) with { Distribution = distribution }), CancellationToken.None)).Single(c => c.Tool.Id == "docker");
 
         var arch = (await DockerOn("arch")).Action!;
-        CollectionAssert.AreEqual(new[] { "pacman -Syu --noconfirm --needed docker docker-buildx", "usermod -aG docker jane", "systemctl enable --now docker" }, arch.Commands.Select(c => c.CommandLine).ToArray(), "A stale package database fails the download, and the daemon has to run for the user.");
+        Assert.AreSequenceEqual(new[] { "pacman -Syu --noconfirm --needed docker docker-buildx", "usermod -aG docker jane", "systemctl enable --now docker" }, arch.Commands.Select(c => c.CommandLine).ToArray(), "A stale package database fails the download, and the daemon has to run for the user.");
         Assert.AreEqual("Sign out and back in so your user can run docker without sudo.", arch.AfterInstall);
 
         host.Runner.Executables.Remove("pacman");
@@ -203,11 +203,11 @@ public class ToolTests
         var withoutMachine = (await CheckAsync(host, new ToolNeeds { Aspire = true })).Single(c => c.Tool.Id == "docker");
         Assert.AreEqual(ToolState.NotRunning, withoutMachine.Status.State);
         Assert.AreEqual("Start Podman", withoutMachine.Action!.Title);
-        CollectionAssert.AreEqual(new[] { "machine", "init", "--now" }, withoutMachine.Action.Commands[^1].Arguments.ToArray());
+        Assert.AreSequenceEqual(new[] { "machine", "init", "--now" }, withoutMachine.Action.Commands[^1].Arguments.ToArray());
 
         host.Runner.On("podman", "machine inspect", 0, "[{}]");
         var stopped = (await CheckAsync(host, new ToolNeeds { Aspire = true })).Single(c => c.Tool.Id == "docker");
-        CollectionAssert.AreEqual(new[] { "machine", "start" }, stopped.Action!.Commands[^1].Arguments.ToArray());
+        Assert.AreSequenceEqual(new[] { "machine", "start" }, stopped.Action!.Commands[^1].Arguments.ToArray());
     }
 
     [TestMethod]
@@ -220,8 +220,8 @@ public class ToolTests
 
         var install = (await CheckAsync(host, new ToolNeeds { Aspire = true })).Single(c => c.Tool.Id == "docker").Action!;
         Assert.AreEqual("Install Colima and Docker", install.Title);
-        CollectionAssert.AreEqual(new[] { "install", "colima", "docker", "docker-buildx" }, install.Commands[0].Arguments.ToArray());
-        StringAssert.Contains(install.Commands[^1].Arguments[1], "services start colima");
+        Assert.AreSequenceEqual(new[] { "install", "colima", "docker", "docker-buildx" }, install.Commands[0].Arguments.ToArray());
+        Assert.Contains("services start colima", install.Commands[^1].Arguments[1]);
 
         host.Runner.On("docker", "--version", 0, "Docker version 28.5.1");
         host.Runner.Executables["colima"] = "/opt/homebrew/bin/colima";
@@ -250,16 +250,15 @@ public class ToolTests
         await new ToolInstaller(host.Services, steps).InstallAsync([checks.Single(c => c.Tool.Id == "homebrew"), node], context, CancellationToken.None);
 
         var reports = string.Join(" | ", steps.Reports.Select(r => $"{r.Id}: {r.Result.Status} {r.Result.Title}"));
-        Assert.IsTrue(host.Runner.Calls.Any(c => c.FileName == "/opt/homebrew/bin/brew" && c.Arguments.SequenceEqual(["install", "node"])), reports);
-        Assert.IsFalse(steps.Reports.Any(r => r.Result.Title == "Install Node.js yourself"), reports);
+        Assert.Contains(c => c.FileName == "/opt/homebrew/bin/brew" && c.Arguments.SequenceEqual(["install", "node"]), host.Runner.Calls, reports);
+        Assert.DoesNotContain(r => r.Result.Title == "Install Node.js yourself", steps.Reports, reports);
     }
 
     [TestMethod]
+    [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
+    [System.Runtime.Versioning.UnsupportedOSPlatform("windows")]
     public async Task Homebrew_Should_RunTheInstallerItDownloads()
     {
-        if (OperatingSystem.IsWindows())
-            return;
-
         using var host = new TestHost(HostOs.MacOS);
         var install = ToolCatalog.Find("homebrew")!.PlanInstall(new ToolContext(host.Environment, host.Runner, new ToolNeeds(), new PackageManagers()), ToolStatus.Missing())!.Commands.Single();
         var bin = Directory.CreateDirectory(Path.Combine(host.Root, "bin")).FullName;
@@ -269,13 +268,13 @@ public class ToolTests
 
         File.WriteAllText(curl, "#!/bin/sh\nprintf '#!/bin/bash\\necho installed by the downloaded script\\n'\n");
         File.SetUnixFileMode(curl, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
-        var installed = await runner.RunAsync(spec);
+        var installed = await runner.RunAsync(spec, TestContext.CancellationToken);
 
         Assert.IsTrue(installed.Succeeded, installed.Output);
-        StringAssert.Contains(installed.Output, "installed by the downloaded script");
+        Assert.Contains("installed by the downloaded script", installed.Output);
 
         File.WriteAllText(curl, "#!/bin/sh\nexit 22\n");
-        Assert.IsFalse((await runner.RunAsync(spec)).Succeeded, "A download that fails fails the step.");
+        Assert.IsFalse((await runner.RunAsync(spec, TestContext.CancellationToken)).Succeeded, "A download that fails fails the step.");
     }
 
     [TestMethod]
@@ -288,11 +287,11 @@ public class ToolTests
 
         var withAspire = await CheckAsync(host, new ToolNeeds { Aspire = true });
         Assert.IsTrue(withAspire.Single(c => c.Tool.Id == "docker").Needed);
-        Assert.IsTrue(withAspire.Any(c => c.Tool.Id == "aspire"));
+        Assert.Contains(c => c.Tool.Id == "aspire", withAspire);
 
         var withoutAspire = await CheckAsync(host, new ToolNeeds { Aspire = false });
         Assert.IsFalse(withoutAspire.Single(c => c.Tool.Id == "docker").Needed);
-        Assert.IsFalse(withoutAspire.Any(c => c.Tool.Id == "aspire"));
+        Assert.DoesNotContain(c => c.Tool.Id == "aspire", withoutAspire);
     }
 
     [TestMethod]
@@ -304,7 +303,7 @@ public class ToolTests
 
         var checks = await CheckAsync(host, new ToolNeeds { Aspire = true, Platforms = new HashSet<Platform> { Platform.Web, Platform.Android } });
 
-        Assert.IsFalse(checks.Any(c => c.Tool.Id is "long-paths" or "wsl" or "xcode" or "homebrew"));
+        Assert.DoesNotContain(c => c.Tool.Id is "long-paths" or "wsl" or "xcode" or "homebrew", checks);
     }
 
     [TestMethod]
@@ -321,13 +320,13 @@ public class ToolTests
         var first = new StepRunner(host.Services);
         await new ToolInstaller(host.Services, first).InstallAsync(checks, context, CancellationToken.None);
 
-        CollectionAssert.AreEqual(new[] { "dev-cert", "aspire" }, first.Reports.Select(r => r.Id).ToArray());
+        Assert.AreSequenceEqual(new[] { "dev-cert", "aspire" }, first.Reports.Select(r => r.Id).ToArray());
 
         var sdk = new ToolCheck(ToolCatalog.Find("dotnet-sdk")!, ToolStatus.Missing(), true, "", new ToolAction { ToolId = "dotnet-sdk", Title = "Install the .NET SDK", Commands = [new ProcessSpec { FileName = "dotnet-install" }] }, null);
         var afterSdk = new StepRunner(host.Services);
         await new ToolInstaller(host.Services, afterSdk).InstallAsync([sdk, .. checks], context, CancellationToken.None);
 
-        CollectionAssert.AreEqual(new[] { "dotnet-sdk", "aspire", "dev-cert" }, afterSdk.Reports.Select(r => r.Id).ToArray());
+        Assert.AreSequenceEqual(new[] { "dotnet-sdk", "aspire", "dev-cert" }, afterSdk.Reports.Select(r => r.Id).ToArray());
     }
 
     [TestMethod]
@@ -336,7 +335,7 @@ public class ToolTests
         using var host = new TestHost(HostOs.Linux);
         AllInstalled(host.Runner);
 
-        Assert.IsFalse((await CheckAsync(host, new ToolNeeds())).Single(c => c.Tool.Id == "nuget-org").Status.IsSatisfied is false);
+        Assert.AreNotEqual(false, (await CheckAsync(host, new ToolNeeds())).Single(c => c.Tool.Id == "nuget-org").Status.IsSatisfied);
 
         host.Runner.On("dotnet", "nuget list source", 0, NuGetSources("company", "Enabled", "https://packages.contoso.com/v3/index.json"));
         var missing = (await CheckAsync(host, new ToolNeeds())).Single(c => c.Tool.Id == "nuget-org").Action!;
@@ -345,7 +344,7 @@ public class ToolTests
 
         host.Runner.On("dotnet", "nuget list source", 0, NuGetSources("NuGet official package source", "Disabled"));
         var disabled = (await CheckAsync(host, new ToolNeeds())).Single(c => c.Tool.Id == "nuget-org").Action!;
-        CollectionAssert.AreEqual(new[] { "nuget", "enable", "source", "NuGet official package source" }, disabled.Commands.Single().Arguments.ToArray());
+        Assert.AreSequenceEqual(new[] { "nuget", "enable", "source", "NuGet official package source" }, disabled.Commands.Single().Arguments.ToArray());
 
         host.Runner.On("dotnet", "nuget list source", 1, "dotnet isn't here yet");
         Assert.IsTrue((await CheckAsync(host, new ToolNeeds())).Single(c => c.Tool.Id == "nuget-org").Status.IsSatisfied);
@@ -364,7 +363,7 @@ public class ToolTests
 
         Assert.AreEqual(Elevation.Admin, wsl.Elevation);
         Assert.HasCount(2, wsl.Commands);
-        CollectionAssert.Contains(wsl.Commands[0].Arguments.ToArray(), "/featurename:VirtualMachinePlatform");
+        Assert.Contains("/featurename:VirtualMachinePlatform", wsl.Commands[0].Arguments.ToArray());
         CollectionAssert.IsSubsetOf(new[] { "install", "--id", "Microsoft.WSL", "--exact" }, wsl.Commands[1].Arguments.ToArray());
 
         host.Runner.Executables.Remove("winget");
@@ -384,7 +383,7 @@ public class ToolTests
         host.Runner.On("wsl", "--status", 1);
 
         var dockerInstalled = await CheckAsync(host, new ToolNeeds { Aspire = true });
-        Assert.IsFalse(dockerInstalled.Any(c => c.Tool.Id == "wsl"));
+        Assert.DoesNotContain(c => c.Tool.Id == "wsl", dockerInstalled);
 
         host.Runner.NotFound("docker");
         var dockerMissing = await CheckAsync(host, new ToolNeeds { Aspire = true });
@@ -464,8 +463,10 @@ public class ToolTests
         Assert.IsNull(net11.Set("framework", "net11.0"));
 
         Assert.AreEqual(TemplateRequirements.Embedded.Sdk, TemplateRequirements.Embedded.For(net11).Sdk);
-        Assert.AreEqual("10.0", TemplateRequirements.Embedded.For(net10).Sdk?.Channel);
-        Assert.IsFalse(TemplateRequirements.Embedded.For(net10).Sdk?.Pinned);
+        var actualValue = TemplateRequirements.Embedded.For(net10).Sdk?.Channel;
+        Assert.AreEqual("10.0", actualValue);
+        var actualValue1 = TemplateRequirements.Embedded.For(net10).Sdk?.Pinned;
+        Assert.IsFalse(actualValue1);
         Assert.AreEqual(TemplateRequirements.Embedded.For(net10).Sdk, TemplateRequirements.Embedded.For(new TemplateSelection(TemplateManifest.Embedded)).Sdk);
     }
 
@@ -481,9 +482,9 @@ public class ToolTests
         var package = (await CheckAsync(mac, new ToolNeeds { Sdk = sdk })).Single(c => c.Tool.Id == "dotnet-sdk").Action!;
 
         Assert.AreEqual(Elevation.Sudo, package.Elevation);
-        StringAssert.Contains(package.Commands[0].CommandLine, "https://builds.dotnet.microsoft.com/dotnet/Sdk/11.0.100-rc.1.26425.128/dotnet-sdk-11.0.100-rc.1.26425.128-osx-x64.pkg");
-        StringAssert.Contains(package.Commands[0].CommandLine, "pkgutil --check-signature");
-        StringAssert.Contains(package.Commands[0].CommandLine, "installer -pkg");
+        Assert.Contains("https://builds.dotnet.microsoft.com/dotnet/Sdk/11.0.100-rc.1.26425.128/dotnet-sdk-11.0.100-rc.1.26425.128-osx-x64.pkg", package.Commands[0].CommandLine);
+        Assert.Contains("pkgutil --check-signature", package.Commands[0].CommandLine);
+        Assert.Contains("installer -pkg", package.Commands[0].CommandLine);
 
         using var linux = new TestHost(HostOs.Linux);
         AllInstalled(linux.Runner);
@@ -493,14 +494,14 @@ public class ToolTests
         var system = (await CheckAsync(linux, new ToolNeeds { Sdk = sdk })).Single(c => c.Tool.Id == "dotnet-sdk").Action!;
 
         Assert.AreEqual(Elevation.Sudo, system.Elevation);
-        StringAssert.Contains(system.Commands[0].CommandLine, "https://dot.net/v1/dotnet-install.sh");
-        StringAssert.Contains(system.Commands[0].CommandLine, $"--version '11.0.100-rc.1.26425.128' --install-dir '{systemRoot}'");
+        Assert.Contains("https://dot.net/v1/dotnet-install.sh", system.Commands[0].CommandLine);
+        Assert.Contains($"--version '11.0.100-rc.1.26425.128' --install-dir '{systemRoot}'", system.Commands[0].CommandLine);
 
         linux.Runner.Executables["dotnet"] = Path.Combine(DotnetRoot(Path.Combine(linux.Home, ".dotnet")), "dotnet");
         var user = (await CheckAsync(linux, new ToolNeeds { Sdk = sdk })).Single(c => c.Tool.Id == "dotnet-sdk").Action!;
 
         Assert.AreEqual(Elevation.None, user.Elevation);
-        StringAssert.Contains(user.Commands[0].CommandLine, $"--install-dir '{Path.Combine(linux.Home, ".dotnet")}'");
+        Assert.Contains($"--install-dir '{Path.Combine(linux.Home, ".dotnet")}'", user.Commands[0].CommandLine);
     }
 
     [TestMethod]
@@ -521,10 +522,10 @@ public class ToolTests
         var shell = OperatingSystem.IsWindows()
             ? new ProcessSpec { FileName = "powershell.exe", Arguments = ["-NoProfile", "-NonInteractive", "-Command", "[System.Management.Automation.Language.Parser]::ParseInput($env:FOLLOW_UP, [ref]$null, [ref]$null).EndBlock.Statements[0].PipelineElements[0].CommandElements | ForEach-Object { if ($_ -is [System.Management.Automation.Language.StringConstantExpressionAst]) { $_.Value } elseif ($_ -is [System.Management.Automation.Language.CommandParameterAst]) { $_.Extent.Text } else { 'expanded ' + $_.Extent.Text } }"] }
             : new ProcessSpec { FileName = "/bin/sh", Arguments = ["-c", "eval \"set -- $FOLLOW_UP\"; for word in \"$@\"; do printf '%s\\n' \"$word\"; done"] };
-        var words = await new ProcessRunner(CliEnvironment.FromProcess(), CliLog.None).RunAsync(shell with { Environment = new Dictionary<string, string?> { ["FOLLOW_UP"] = followUp } });
+        var words = await new ProcessRunner(CliEnvironment.FromProcess(), CliLog.None).RunAsync(shell with { Environment = new Dictionary<string, string?> { ["FOLLOW_UP"] = followUp } }, TestContext.CancellationToken);
         string[] expected = OperatingSystem.IsWindows() ? [command.FileName, .. command.Arguments] : ["sudo", command.FileName, .. command.Arguments];
 
-        CollectionAssert.AreEqual(expected, words.OutputLines.ToArray(), followUp);
+        Assert.AreSequenceEqual(expected, words.OutputLines.ToArray(), followUp);
     }
 
     [TestMethod]
@@ -561,7 +562,7 @@ public class ToolTests
         Assert.IsNull((await CheckAsync(host, needs)).Single(c => c.Tool.Id == "dotnet-sdk").Action, "The snap's links end at the snap program, whose folder isn't a dotnet root.");
 
         host.Runner.Executables["dotnet"] = Path.Combine(bin, "dotnet");
-        StringAssert.Contains((await CheckAsync(host, needs)).Single(c => c.Tool.Id == "dotnet-sdk").Action!.Commands[0].CommandLine, $"--install-dir '{root}'");
+        Assert.Contains($"--install-dir '{root}'", (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "dotnet-sdk").Action!.Commands[0].CommandLine);
     }
 
     [TestMethod]
@@ -579,8 +580,8 @@ public class ToolTests
         var git = checks.Single(c => c.Tool.Id == "git").Action!;
 
         Assert.AreEqual(Elevation.Sudo, node.Elevation);
-        StringAssert.Contains(node.Commands[0].CommandLine, "deb.nodesource.com");
-        CollectionAssert.AreEqual(new[] { "/usr/bin/node", "/usr/bin/npm", "/usr/bin/npx" }, node.InstalledExecutables.ToArray());
+        Assert.Contains("deb.nodesource.com", node.Commands[0].CommandLine);
+        Assert.AreSequenceEqual(new[] { "/usr/bin/node", "/usr/bin/npm", "/usr/bin/npx" }, node.InstalledExecutables.ToArray());
         Assert.AreEqual("apt-get install -y git", git.Commands[1].CommandLine);
     }
 
@@ -597,15 +598,14 @@ public class ToolTests
 
         await new ToolInstaller(host.Services, new StepRunner(host.Services)).InstallAsync([git], new ToolContext(host.Environment, host.Runner, needs, PackageManagers.Detect(host.Environment, host.Runner)), CancellationToken.None);
 
-        CollectionAssert.AreEqual(new[] { "-n", "/usr/bin/apt-get", "install", "-y", "git" }, host.Runner.Calls.Last(c => c.FileName is "sudo").Arguments.ToArray());
+        Assert.AreSequenceEqual(new[] { "-n", "/usr/bin/apt-get", "install", "-y", "git" }, host.Runner.Calls.Last(c => c.FileName is "sudo").Arguments.ToArray());
     }
 
     [TestMethod]
+    [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
+    [System.Runtime.Versioning.UnsupportedOSPlatform("windows")]
     public async Task NodeSource_Should_FailWhenItsSetupScriptCantBeDownloaded()
     {
-        if (OperatingSystem.IsWindows())
-            return;
-
         using var host = new TestHost(HostOs.Linux, new Dictionary<string, string> { ["PATH"] = "/usr/bin:/bin" });
         AllInstalled(host.Runner);
         host.Runner.Executables["apt-get"] = "/usr/bin/apt-get";
@@ -616,7 +616,7 @@ public class ToolTests
         File.WriteAllText(curl, "#!/bin/sh\necho 'curl: (6) Could not resolve host: deb.nodesource.com' >&2\nexit 6\n");
         File.SetUnixFileMode(curl, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
 
-        var result = await new ProcessRunner(host.Environment, CliLog.None).RunAsync(setup with { Environment = new Dictionary<string, string?> { ["PATH"] = $"{bin}:/usr/bin:/bin" } });
+        var result = await new ProcessRunner(host.Environment, CliLog.None).RunAsync(setup with { Environment = new Dictionary<string, string?> { ["PATH"] = $"{bin}:/usr/bin:/bin" } }, TestContext.CancellationToken);
 
         Assert.IsFalse(result.Succeeded, "apt-get would install the distribution's own, older Node.js next.");
     }
@@ -659,8 +659,8 @@ public class ToolTests
 
         Assert.AreEqual("Update Node.js to the LTS version with nvm", nvm.Title);
         Assert.AreEqual(Elevation.None, nvm.Elevation);
-        StringAssert.Contains(nvm.Commands.Single().CommandLine, "/nvm.sh' >/dev/null 2>&1; nvm install --lts && nvm alias default 'lts/*'");
-        StringAssert.Contains(nvm.PathProbe!.CommandLine, "nvm which default");
+        Assert.Contains("/nvm.sh' >/dev/null 2>&1; nvm install --lts && nvm alias default 'lts/*'", nvm.Commands.Single().CommandLine);
+        Assert.Contains("nvm which default", nvm.PathProbe!.CommandLine);
 
         host.Runner.Executables["node"] = "/home/me/.volta/bin/node";
         var volta = (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "node").Action!;
@@ -670,8 +670,8 @@ public class ToolTests
         host.Runner.Executables["node"] = "/home/me/.local/state/fnm_multishells/123_456/bin/node";
         var fnm = (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "node").Action!;
 
-        CollectionAssert.AreEqual(new[] { "fnm install --lts", "fnm default lts-latest" }, fnm.Commands.Select(c => c.CommandLine).ToArray());
-        StringAssert.Contains(fnm.PathProbe!.CommandLine, "--using=lts-latest");
+        Assert.AreSequenceEqual(new[] { "fnm install --lts", "fnm default lts-latest" }, fnm.Commands.Select(c => c.CommandLine).ToArray());
+        Assert.Contains("--using=lts-latest", fnm.PathProbe!.CommandLine);
     }
 
     [TestMethod]
@@ -689,7 +689,7 @@ public class ToolTests
         var action = (await CheckAsync(host, new ToolNeeds { NodeMajor = 24 })).Single(c => c.Tool.Id == "node").Action!;
 
         Assert.AreEqual(Elevation.Admin, action.Elevation);
-        CollectionAssert.AreEqual(new[] { "nvm install lts", "nvm use lts" }, action.Commands.Select(c => c.CommandLine).ToArray());
+        Assert.AreSequenceEqual(new[] { "nvm install lts", "nvm use lts" }, action.Commands.Select(c => c.CommandLine).ToArray());
     }
 
     [TestMethod]
@@ -722,15 +722,14 @@ public class ToolTests
         await new ToolInstaller(host.Services, steps).InstallAsync([node], new ToolContext(host.Environment, host.Runner, needs, PackageManagers.Detect(host.Environment, host.Runner)), CancellationToken.None);
 
         Assert.IsFalse(steps.AnyFailed);
-        CollectionAssert.Contains(host.Environment.GetVariable("PATH")!.Split(Path.PathSeparator), installed);
+        Assert.Contains(installed, host.Environment.GetVariable("PATH")!.Split(Path.PathSeparator));
     }
 
     [TestMethod]
+    [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
+    [System.Runtime.Versioning.UnsupportedOSPlatform("windows")]
     public async Task TheNodeAPackageManagerInstalls_Should_ComeBeforeAnOlderOneOnThePath()
     {
-        if (OperatingSystem.IsWindows())
-            return;
-
         using var host = new TestHost(HostOs.Linux, new Dictionary<string, string> { ["PATH"] = "/usr/bin" });
         AllInstalled(host.Runner);
         host.Runner.On("node", "--version", 0, "v22.23.3");
@@ -759,7 +758,7 @@ public class ToolTests
         Assert.AreEqual(StepStatus.Warning, result.Status);
         Assert.AreEqual("/usr/local/bin/node comes first on PATH", result.Detail);
         Assert.AreEqual(links, path[0]);
-        CollectionAssert.Contains(path, "/usr/local/bin");
+        Assert.Contains("/usr/local/bin", path);
         Assert.AreEqual(installed[1], File.ResolveLinkTarget(Path.Combine(links, "npm"), returnFinalTarget: false)!.FullName);
     }
 
@@ -784,15 +783,15 @@ public class ToolTests
         Assert.AreEqual("Install Podman", docker.Title);
         Assert.AreEqual(Elevation.None, docker.Elevation, "Podman installs for the user, so it needs no administrator prompt of its own.");
         CollectionAssert.IsSubsetOf(new[] { "install", "--id", "Podman.CLI", "--silent" }, docker.Commands[0].Arguments.ToArray());
-        CollectionAssert.Contains(docker.Commands[1].Arguments.ToArray(), @"HKCU\Software\Microsoft\Windows\CurrentVersion\Run");
-        StringAssert.Contains(docker.Commands[1].Arguments[^2], "machine init --now", "Signing in creates the machine when there is none yet.");
-        CollectionAssert.AreEqual(new[] { "machine", "init", "--now" }, docker.Commands[2].Arguments.ToArray());
-        StringAssert.EndsWith(docker.Commands[2].FileName, @"Programs\Podman\podman.exe");
+        Assert.Contains(@"HKCU\Software\Microsoft\Windows\CurrentVersion\Run", docker.Commands[1].Arguments.ToArray());
+        Assert.Contains("machine init --now", docker.Commands[1].Arguments[^2], "Signing in creates the machine when there is none yet.");
+        Assert.AreSequenceEqual(new[] { "machine", "init", "--now" }, docker.Commands[2].Arguments.ToArray());
+        Assert.EndsWith(@"Programs\Podman\podman.exe", docker.Commands[2].FileName);
 
         host.Runner.On("wsl", "--status", 1);
         var afterWsl = (await CheckAsync(host, new ToolNeeds { Aspire = true })).Single(c => c.Tool.Id == "docker").Action!;
-        Assert.IsFalse(afterWsl.Commands.Any(c => c.Arguments.FirstOrDefault() is "machine"), "WSL needs a restart before Podman can create its machine.");
-        StringAssert.Contains(afterWsl.AfterInstall, "next sign in");
+        Assert.DoesNotContain(c => c.Arguments.FirstOrDefault() is "machine", afterWsl.Commands, "WSL needs a restart before Podman can create its machine.");
+        Assert.Contains("next sign in", afterWsl.AfterInstall!);
         host.Runner.On("wsl", "--status", 0);
         Assert.IsTrue(docker.Optional, "A project that runs without its containers doesn't fail on a missing container runtime.");
         Assert.IsFalse((await CheckAsync(host, new ToolNeeds { Aspire = true, ContainersRequired = true })).Single(c => c.Tool.Id == "docker").Action!.Optional);
@@ -803,10 +802,10 @@ public class ToolTests
         var preview = (await CheckAsync(host, new ToolNeeds { Sdk = new SdkRequirement("11.0.100-rc.1.26425.128", "disable") })).Single(c => c.Tool.Id == "dotnet-sdk").Action!;
 
         Assert.AreEqual(Elevation.Admin, preview.Elevation);
-        StringAssert.Contains(stable.Commands[0].CommandLine, "winget install --id Microsoft.DotNet.SDK.11 --exact --version '11.0.100'");
-        StringAssert.Contains(preview.Commands[0].CommandLine, "winget install --id Microsoft.DotNet.SDK.Preview --exact --version '11.0.100-rc.1.26425.128'");
-        StringAssert.Contains(preview.Commands[0].CommandLine, "dotnet-install.ps1");
-        StringAssert.Contains(preview.Commands[0].CommandLine, @"-InstallDir 'C:\Program Files\dotnet'");
+        Assert.Contains("winget install --id Microsoft.DotNet.SDK.11 --exact --version '11.0.100'", stable.Commands[0].CommandLine);
+        Assert.Contains("winget install --id Microsoft.DotNet.SDK.Preview --exact --version '11.0.100-rc.1.26425.128'", preview.Commands[0].CommandLine);
+        Assert.Contains("dotnet-install.ps1", preview.Commands[0].CommandLine);
+        Assert.Contains(@"-InstallDir 'C:\Program Files\dotnet'", preview.Commands[0].CommandLine);
     }
 
     [TestMethod]
@@ -836,15 +835,15 @@ public class ToolTests
             {
                 using var stream = new FileStream(log, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
                 using var reader = new StreamReader(stream);
-                await reader.ReadToEndAsync();
+                await reader.ReadToEndAsync(TestContext.CancellationToken);
             }
 
-            await Task.Delay(5);
+            await Task.Delay(5, TestContext.CancellationToken);
         }
 
         var lines = File.ReadAllLines(log);
         Assert.AreEqual("== Print a lot", lines[0]);
-        Assert.AreEqual(201, lines.Length, string.Join(Environment.NewLine, lines.Take(5)));
+        Assert.HasCount(201, lines, string.Join(Environment.NewLine, lines.Take(5)));
         Assert.AreEqual("line 200", lines[^1].Trim());
         Directory.Delete(directory, recursive: true);
     }
@@ -886,13 +885,13 @@ public class ToolTests
 
         var script = ToolInstaller.BuildWindowsScript(actions, @"C:\Temp\install.log", @"C:\Temp\results.json", @"C:\Temp\cancel");
 
-        StringAssert.Contains(script, "& 'reg.exe' 'add' 'HKLM\\SYSTEM\\x' '/d' 'it''s 1'");
-        StringAssert.Contains(script, "$results['long-paths'] = $code");
-        StringAssert.Contains(script, "$results['node'] = $code");
-        StringAssert.Contains(script, "@(0, 3010) -contains $code");
-        StringAssert.Contains(script, "Start-BitWatchdog 1800");
-        StringAssert.Contains(script, "$cancelPath = 'C:\\Temp\\cancel'");
-        StringAssert.Contains(script, "Set-Content -LiteralPath 'C:\\Temp\\results.json'");
+        Assert.Contains("& 'reg.exe' 'add' 'HKLM\\SYSTEM\\x' '/d' 'it''s 1'", script);
+        Assert.Contains("$results['long-paths'] = $code", script);
+        Assert.Contains("$results['node'] = $code", script);
+        Assert.Contains("@(0, 3010) -contains $code", script);
+        Assert.Contains("Start-BitWatchdog 1800", script);
+        Assert.Contains("$cancelPath = 'C:\\Temp\\cancel'", script);
+        Assert.Contains("Set-Content -LiteralPath 'C:\\Temp\\results.json'", script);
         Assert.IsFalse(script.Contains("Push-Location", StringComparison.Ordinal));
     }
 
@@ -940,19 +939,19 @@ public class ToolTests
             File.WriteAllBytes(scriptPath, script);
 
             using var process = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("powershell.exe", $"-NoProfile -NonInteractive -EncodedCommand {ToolInstaller.EncodeBootstrap(scriptPath, script)}") { UseShellExecute = false, CreateNoWindow = true })!;
-            await process.WaitForExitAsync().WaitAsync(TimeSpan.FromMinutes(2));
+            await process.WaitForExitAsync(TestContext.CancellationToken).WaitAsync(TimeSpan.FromMinutes(2), TestContext.CancellationToken);
             return File.ReadAllText(results);
         }
 
         var timed = await RunAsync(Action("quick", "exit 0", 60), Action("slow", "ping -n 60 127.0.0.1 >nul", 3));
 
-        StringAssert.Contains(timed, "\"quick\":  0");
-        StringAssert.Contains(timed, $"\"slow\":  {ToolInstaller.TimedOutCode}");
+        Assert.Contains("\"quick\":  0", timed);
+        Assert.Contains($"\"slow\":  {ToolInstaller.TimedOutCode}", timed);
 
         File.WriteAllText(cancel, "cancel");
         var cancelled = await RunAsync(Action("skipped", "exit 0", 60));
 
-        StringAssert.Contains(cancelled, $"\"skipped\":  {ToolInstaller.CancelledCode}");
+        Assert.Contains($"\"skipped\":  {ToolInstaller.CancelledCode}", cancelled);
 
         var original = System.Text.Encoding.UTF8.GetBytes(ToolInstaller.BuildWindowsScript([Action("quick", "exit 0", 60)], log, results, cancel));
         File.WriteAllBytes(scriptPath, original);
@@ -962,7 +961,7 @@ public class ToolTests
 
         using (var tampered = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("powershell.exe", $"-NoProfile -NonInteractive -EncodedCommand {bootstrap}") { UseShellExecute = false, CreateNoWindow = true })!)
         {
-            await tampered.WaitForExitAsync().WaitAsync(TimeSpan.FromMinutes(1));
+            await tampered.WaitForExitAsync(TestContext.CancellationToken).WaitAsync(TimeSpan.FromMinutes(1), TestContext.CancellationToken);
             Assert.AreEqual(87, tampered.ExitCode);
         }
 
@@ -976,9 +975,9 @@ public class ToolTests
         var script = System.Text.Encoding.UTF8.GetBytes("Write-Output 'hi'");
         var bootstrap = System.Text.Encoding.Unicode.GetString(Convert.FromBase64String(ToolInstaller.EncodeBootstrap(@"C:\Temp\it's\install.ps1", script)));
 
-        StringAssert.Contains(bootstrap, @"[IO.File]::ReadAllBytes('C:\Temp\it''s\install.ps1')");
-        StringAssert.Contains(bootstrap, Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(script)));
-        StringAssert.Contains(bootstrap, "exit 87");
+        Assert.Contains(@"[IO.File]::ReadAllBytes('C:\Temp\it''s\install.ps1')", bootstrap);
+        Assert.Contains(Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(script)), bootstrap);
+        Assert.Contains("exit 87", bootstrap);
         Assert.DoesNotContain("ExecutionPolicy", bootstrap);
     }
 
@@ -993,12 +992,12 @@ public class ToolTests
         var hypervisor = (await CheckAsync(host, android)).Single(c => c.Tool.Id == "hypervisor-platform");
         Assert.IsTrue(hypervisor.Needed);
         Assert.AreEqual(Elevation.Admin, hypervisor.Action!.Elevation);
-        CollectionAssert.Contains(hypervisor.Action.Commands[0].Arguments.ToArray(), "/featurename:HypervisorPlatform");
+        Assert.Contains("/featurename:HypervisorPlatform", hypervisor.Action.Commands[0].Arguments.ToArray());
 
         host.Runner.On("powershell", "-NoProfile -NonInteractive -Command (Get-CimInstance Win32_OptionalFeature", 0, "1\r\n");
         Assert.IsTrue((await CheckAsync(host, android)).Single(c => c.Tool.Id == "hypervisor-platform").Status.IsSatisfied);
 
-        Assert.IsFalse((await CheckAsync(host, new ToolNeeds())).Any(c => c.Tool.Id == "hypervisor-platform"));
+        Assert.DoesNotContain(c => c.Tool.Id == "hypervisor-platform", await CheckAsync(host, new ToolNeeds()));
     }
 
 
@@ -1011,7 +1010,7 @@ public class ToolTests
         var maui = await CheckAsync(host, new ToolNeeds { Platforms = new HashSet<Platform> { Platform.Web, Platform.Android } });
         Assert.IsFalse(maui.Single(c => c.Tool.Id == "developer-mode").Needed);
 
-        Assert.IsFalse((await CheckAsync(host, new ToolNeeds())).Any(c => c.Tool.Id == "developer-mode"));
+        Assert.DoesNotContain(c => c.Tool.Id == "developer-mode", await CheckAsync(host, new ToolNeeds()));
     }
 
     [TestMethod]
@@ -1026,7 +1025,7 @@ public class ToolTests
         Assert.IsTrue(python.Needed);
         Assert.AreEqual("apt-get install -y python3", python.Action!.Commands[1].CommandLine);
 
-        Assert.IsFalse((await CheckAsync(host, new ToolNeeds())).Any(c => c.Tool.Id == "python"));
+        Assert.DoesNotContain(c => c.Tool.Id == "python", await CheckAsync(host, new ToolNeeds()));
     }
 
     [TestMethod]
@@ -1063,7 +1062,7 @@ public class ToolTests
 
         var inCi = await CheckAsync(ci, new ToolNeeds { Aspire = true });
 
-        Assert.IsFalse(inCi.Any(c => c.Tool.Id is "docker" or "aspire" or "wsl"), string.Join(", ", inCi.Select(c => c.Tool.Id)));
+        Assert.DoesNotContain(c => c.Tool.Id is "docker" or "aspire" or "wsl", inCi, string.Join(", ", inCi.Select(c => c.Tool.Id)));
         Assert.IsTrue(inCi.Single(c => c.Tool.Id == "dev-cert").Needed);
 
         using var local = new TestHost(HostOs.Linux);
@@ -1080,7 +1079,7 @@ public class ToolTests
         AllInstalled(windowsCi.Runner);
         windowsCi.Runner.On("dotnet", "dev-certs", 1);
 
-        Assert.IsFalse((await CheckAsync(windowsCi, new ToolNeeds { Aspire = true })).Any(c => c.Tool.Id is "dev-cert" or "docker" or "wsl" or "aspire"));
+        Assert.DoesNotContain(c => c.Tool.Id is "dev-cert" or "docker" or "wsl" or "aspire", await CheckAsync(windowsCi, new ToolNeeds { Aspire = true }));
     }
 
     [TestMethod]
@@ -1092,12 +1091,12 @@ public class ToolTests
         host.Runner.Executables["sudo"] = "/usr/bin/sudo";
         host.Runner.NotFound("gh");
 
-        Assert.IsFalse((await CheckAsync(host, new ToolNeeds())).Any(c => c.Tool.Id == "gh"));
+        Assert.DoesNotContain(c => c.Tool.Id == "gh", await CheckAsync(host, new ToolNeeds()));
 
         var gh = (await CheckAsync(host, new ToolNeeds { GitHubRepo = true })).Single(c => c.Tool.Id == "gh");
 
         Assert.IsTrue(gh.Needed);
-        CollectionAssert.Contains(gh.Action!.Commands.Select(c => c.CommandLine).ToList(), "apt-get install -y gh");
+        Assert.Contains("apt-get install -y gh", gh.Action!.Commands.Select(c => c.CommandLine).ToList());
     }
 
     [TestMethod]
@@ -1166,7 +1165,7 @@ public class ToolTests
         Assert.AreEqual(StepStatus.Succeeded, result.Status);
         Assert.AreEqual("for some clients", result.Detail);
         Assert.IsNull(result.FollowUp);
-        StringAssert.Contains(host.Output, "SSL_CERT_DIR");
+        Assert.Contains("SSL_CERT_DIR", host.Output);
     }
 
     private static async Task<IReadOnlyList<ToolCheck>> CheckAsync(TestHost host, ToolNeeds needs)
@@ -1199,4 +1198,6 @@ public class ToolTests
         runner.Executables["code"] = typeof(ToolTests).Assembly.Location;
         runner.Executables["brew"] = "/opt/homebrew/bin/brew";
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

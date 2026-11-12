@@ -58,7 +58,7 @@ public class ComponentTests : BunitContext
     [TestMethod]
     public async Task Renders_The_Popover_For_The_Active_Step()
     {
-        await BonboardingService.StartAsync(Tour(Step("a", "Create a project"), Step("b", "Second")));
+        await BonboardingService.StartAsync(Tour(Step("a", "Create a project"), Step("b", "Second")), cancellationToken: TestContext.CancellationToken);
 
         var cut = Render<BonboardingRoot>();
 
@@ -70,7 +70,7 @@ public class ComponentTests : BunitContext
     [TestMethod]
     public async Task Gives_The_Dialog_Correct_Accessible_Semantics()
     {
-        await BonboardingService.StartAsync(Tour(Step("a", "Create a project")));
+        await BonboardingService.StartAsync(Tour(Step("a", "Create a project")), cancellationToken: TestContext.CancellationToken);
 
         var cut = Render<BonboardingRoot>();
         var dialog = cut.Find(".bit-bonboarding-popover");
@@ -94,7 +94,7 @@ public class ComponentTests : BunitContext
         var step = Step("a");
         step.Interaction = BonboardingInteractionMode.TargetOnly;
 
-        await BonboardingService.StartAsync(Tour(step));
+        await BonboardingService.StartAsync(Tour(step), cancellationToken: TestContext.CancellationToken);
 
         var cut = Render<BonboardingRoot>();
 
@@ -107,7 +107,7 @@ public class ComponentTests : BunitContext
         var step = Step("a", title: null);
         step.Title = null;
 
-        await BonboardingService.StartAsync(Tour(step));
+        await BonboardingService.StartAsync(Tour(step), cancellationToken: TestContext.CancellationToken);
 
         var cut = Render<BonboardingRoot>();
         var dialog = cut.Find(".bit-bonboarding-popover");
@@ -120,7 +120,7 @@ public class ComponentTests : BunitContext
     [TestMethod]
     public async Task Announces_Each_Step_In_A_Live_Region()
     {
-        var session = await BonboardingService.StartAsync(Tour(Step("a", "First"), Step("b", "Second")));
+        var session = await BonboardingService.StartAsync(Tour(Step("a", "First"), Step("b", "Second")), cancellationToken: TestContext.CancellationToken);
 
         var cut = Render<BonboardingRoot>();
         var live = cut.Find(".bit-bonboarding-live");
@@ -129,7 +129,7 @@ public class ComponentTests : BunitContext
         Assert.Contains("Step 1 of 2", live.TextContent);
         Assert.Contains("First", live.TextContent);
 
-        await cut.InvokeAsync(() => session.NextAsync());
+        await cut.InvokeAsync(() => session.NextAsync(TestContext.CancellationToken));
 
         Assert.Contains("Step 2 of 2", cut.Find(".bit-bonboarding-live").TextContent);
     }
@@ -139,7 +139,7 @@ public class ComponentTests : BunitContext
     [TestMethod]
     public async Task The_Next_Button_Advances_The_Tour()
     {
-        var session = await BonboardingService.StartAsync(Tour(Step("a"), Step("b")));
+        var session = await BonboardingService.StartAsync(Tour(Step("a"), Step("b")), cancellationToken: TestContext.CancellationToken);
 
         var cut = Render<BonboardingRoot>();
         await cut.Find("[data-bonboarding-action='next']").ClickAsync(new());
@@ -151,12 +151,12 @@ public class ComponentTests : BunitContext
     [TestMethod]
     public async Task The_Back_Button_Only_Appears_After_The_First_Step()
     {
-        var session = await BonboardingService.StartAsync(Tour(Step("a"), Step("b")));
+        var session = await BonboardingService.StartAsync(Tour(Step("a"), Step("b")), cancellationToken: TestContext.CancellationToken);
 
         var cut = Render<BonboardingRoot>();
         Assert.IsEmpty(cut.FindAll("[data-bonboarding-action='previous']"));
 
-        await cut.InvokeAsync(() => session.NextAsync());
+        await cut.InvokeAsync(() => session.NextAsync(TestContext.CancellationToken));
         await cut.Find("[data-bonboarding-action='previous']").ClickAsync(new());
 
         Assert.AreEqual("a", session.CurrentStep!.Id);
@@ -165,12 +165,12 @@ public class ComponentTests : BunitContext
     [TestMethod]
     public async Task The_Forward_Button_Reads_Done_On_The_Last_Step()
     {
-        var session = await BonboardingService.StartAsync(Tour(Step("a"), Step("b")));
+        var session = await BonboardingService.StartAsync(Tour(Step("a"), Step("b")), cancellationToken: TestContext.CancellationToken);
 
         var cut = Render<BonboardingRoot>();
         Assert.AreEqual("Next", cut.Find("[data-bonboarding-action='next']").TextContent);
 
-        await cut.InvokeAsync(() => session.NextAsync());
+        await cut.InvokeAsync(() => session.NextAsync(TestContext.CancellationToken));
 
         Assert.AreEqual("Done", cut.Find("[data-bonboarding-action='next']").TextContent);
         // Skipping is meaningless once there is nothing left to skip.
@@ -180,7 +180,7 @@ public class ComponentTests : BunitContext
     [TestMethod]
     public async Task The_Close_Button_Dismisses_The_Tour()
     {
-        var session = await BonboardingService.StartAsync(Tour(Step("a")));
+        var session = await BonboardingService.StartAsync(Tour(Step("a")), cancellationToken: TestContext.CancellationToken);
 
         var cut = Render<BonboardingRoot>();
         await cut.Find("[data-bonboarding-action='close']").ClickAsync(new());
@@ -192,7 +192,7 @@ public class ComponentTests : BunitContext
     [TestMethod]
     public async Task The_Skip_Button_Ends_The_Tour_As_Skipped()
     {
-        var session = await BonboardingService.StartAsync(Tour(Step("a"), Step("b")));
+        var session = await BonboardingService.StartAsync(Tour(Step("a"), Step("b")), cancellationToken: TestContext.CancellationToken);
 
         var cut = Render<BonboardingRoot>();
         await cut.Find("[data-bonboarding-action='skip']").ClickAsync(new());
@@ -218,7 +218,7 @@ public class ComponentTests : BunitContext
             },
         ];
 
-        var session = await BonboardingService.StartAsync(Tour(step, Step("b"), Step("c")));
+        var session = await BonboardingService.StartAsync(Tour(step, Step("b"), Step("c")), cancellationToken: TestContext.CancellationToken);
 
         var cut = Render<BonboardingRoot>();
         await cut.Find("[data-bonboarding-action='designer']").ClickAsync(new());
@@ -242,7 +242,7 @@ public class ComponentTests : BunitContext
             },
         ];
 
-        await BonboardingService.StartAsync(Tour(step, Step("b")));
+        await BonboardingService.StartAsync(Tour(step, Step("b")), cancellationToken: TestContext.CancellationToken);
 
         var cut = Render<BonboardingRoot>();
         var click = cut.Find("[data-bonboarding-action='create']").ClickAsync(new());
@@ -275,7 +275,7 @@ public class ComponentTests : BunitContext
         step.ValidationMessage = "Give the project a name first.";
         step.CanAdvance = _ => ValueTask.FromResult(false);
 
-        await BonboardingService.StartAsync(Tour(step, Step("b")));
+        await BonboardingService.StartAsync(Tour(step, Step("b")), cancellationToken: TestContext.CancellationToken);
 
         var cut = Render<BonboardingRoot>();
         Assert.IsEmpty(cut.FindAll(".bit-bonboarding-validation"));
@@ -296,7 +296,7 @@ public class ComponentTests : BunitContext
             new BonboardingStepAction { Id = "locked", Label = "Locked", IsDisabled = _ => true },
         ];
 
-        await BonboardingService.StartAsync(Tour(step));
+        await BonboardingService.StartAsync(Tour(step), cancellationToken: TestContext.CancellationToken);
 
         var cut = Render<BonboardingRoot>();
 
@@ -308,14 +308,14 @@ public class ComponentTests : BunitContext
     [TestMethod]
     public async Task Renders_Progress_Dots_With_A_Readable_Fallback()
     {
-        var session = await BonboardingService.StartAsync(Tour(Step("a"), Step("b"), Step("c")));
+        var session = await BonboardingService.StartAsync(Tour(Step("a"), Step("b"), Step("c")), cancellationToken: TestContext.CancellationToken);
 
         var cut = Render<BonboardingRoot>();
 
-        Assert.AreEqual(3, cut.FindAll(".bit-bonboarding-dot").Count);
+        Assert.HasCount(3, cut.FindAll(".bit-bonboarding-dot"));
         Assert.AreEqual("current", cut.FindAll(".bit-bonboarding-dot")[0].GetAttribute("data-bonboarding-state"));
 
-        await cut.InvokeAsync(() => session.NextAsync());
+        await cut.InvokeAsync(() => session.NextAsync(TestContext.CancellationToken));
 
         var dots = cut.FindAll(".bit-bonboarding-dot");
         Assert.AreEqual("done", dots[0].GetAttribute("data-bonboarding-state"));
@@ -329,10 +329,10 @@ public class ComponentTests : BunitContext
         var tour = Tour(Step("a"), Step("b"), Step("c"));
         tour.Progress = BonboardingProgressStyle.Bar;
 
-        var session = await BonboardingService.StartAsync(tour);
+        var session = await BonboardingService.StartAsync(tour, cancellationToken: TestContext.CancellationToken);
 
         var cut = Render<BonboardingRoot>();
-        await cut.InvokeAsync(() => session.NextAsync());
+        await cut.InvokeAsync(() => session.NextAsync(TestContext.CancellationToken));
 
         var bar = cut.Find("[role='progressbar']");
         Assert.AreEqual("2", bar.GetAttribute("aria-valuenow"));
@@ -346,7 +346,7 @@ public class ComponentTests : BunitContext
         var tour = Tour(Step("a"), Step("b"));
         tour.Progress = BonboardingProgressStyle.None;
 
-        await BonboardingService.StartAsync(tour);
+        await BonboardingService.StartAsync(tour, cancellationToken: TestContext.CancellationToken);
 
         var cut = Render<BonboardingRoot>();
 
@@ -359,7 +359,7 @@ public class ComponentTests : BunitContext
     [TestMethod]
     public async Task A_Blocked_Step_Renders_One_Full_Screen_Blocker()
     {
-        await BonboardingService.StartAsync(Tour(Step("a")));
+        await BonboardingService.StartAsync(Tour(Step("a")), cancellationToken: TestContext.CancellationToken);
 
         var cut = Render<BonboardingRoot>();
 
@@ -372,12 +372,12 @@ public class ComponentTests : BunitContext
         var step = Step("a");
         step.Interaction = BonboardingInteractionMode.TargetOnly;
 
-        await BonboardingService.StartAsync(Tour(step));
+        await BonboardingService.StartAsync(Tour(step), cancellationToken: TestContext.CancellationToken);
 
         var cut = Render<BonboardingRoot>();
 
         // Four rectangles surrounding the spotlight, leaving the target clickable.
-        Assert.AreEqual(4, cut.FindAll(".bit-bonboarding-blocker").Count);
+        Assert.HasCount(4, cut.FindAll(".bit-bonboarding-blocker"));
     }
 
     [TestMethod]
@@ -386,7 +386,7 @@ public class ComponentTests : BunitContext
         var step = Step("a");
         step.Interaction = BonboardingInteractionMode.Free;
 
-        await BonboardingService.StartAsync(Tour(step));
+        await BonboardingService.StartAsync(Tour(step), cancellationToken: TestContext.CancellationToken);
 
         var cut = Render<BonboardingRoot>();
 
@@ -399,7 +399,7 @@ public class ComponentTests : BunitContext
         var tour = Tour(Step("a"));
         tour.CloseOnOverlayClick = true;
 
-        var session = await BonboardingService.StartAsync(tour);
+        var session = await BonboardingService.StartAsync(tour, cancellationToken: TestContext.CancellationToken);
 
         var cut = Render<BonboardingRoot>();
         await cut.Find(".bit-bonboarding-blocker").ClickAsync(new());
@@ -410,7 +410,7 @@ public class ComponentTests : BunitContext
     [TestMethod]
     public async Task A_Targetless_Step_Renders_A_Flat_Overlay_And_No_Spotlight()
     {
-        await BonboardingService.StartAsync(Tour(Step("a", "Welcome", selector: null)));
+        await BonboardingService.StartAsync(Tour(Step("a", "Welcome", selector: null)), cancellationToken: TestContext.CancellationToken);
 
         var cut = Render<BonboardingRoot>();
 
@@ -427,7 +427,7 @@ public class ComponentTests : BunitContext
         tour.ZIndex = 12345;
         tour.OverlayOpacity = 0.4;
 
-        await BonboardingService.StartAsync(tour);
+        await BonboardingService.StartAsync(tour, cancellationToken: TestContext.CancellationToken);
 
         var cut = Render<BonboardingRoot>();
         var style = cut.Find(".bit-bonboarding-root").GetAttribute("style")!;
@@ -445,7 +445,7 @@ public class ComponentTests : BunitContext
         tour.Theme = BonboardingTheme.Dark;
         tour.Direction = BonboardingDirection.RightToLeft;
 
-        await BonboardingService.StartAsync(tour);
+        await BonboardingService.StartAsync(tour, cancellationToken: TestContext.CancellationToken);
 
         var cut = Render<BonboardingRoot>();
         var root = cut.Find(".bit-bonboarding-root");
@@ -460,7 +460,7 @@ public class ComponentTests : BunitContext
         var tour = Tour(Step("a"));
         tour.PopoverClass = "tour-class";
 
-        await BonboardingService.StartAsync(tour);
+        await BonboardingService.StartAsync(tour, cancellationToken: TestContext.CancellationToken);
 
         var cut = Render<BonboardingRoot>(parameters => parameters
             .Add(p => p.Class, "app-class")
@@ -481,7 +481,7 @@ public class ComponentTests : BunitContext
         var step = Step("a", selector: "#late");
         step.MissingTarget = BonboardingMissingTargetBehavior.Wait;
 
-        var session = await BonboardingService.StartAsync(Tour(step));
+        var session = await BonboardingService.StartAsync(Tour(step), cancellationToken: TestContext.CancellationToken);
 
         var cut = Render<BonboardingRoot>();
         Assert.IsNotNull(cut.Find(".bit-bonboarding-waiting"));
@@ -502,7 +502,7 @@ public class ComponentTests : BunitContext
         step.MissingTarget = BonboardingMissingTargetBehavior.Wait;
         step.WaitTimeout = TimeSpan.Zero;
 
-        var session = await BonboardingService.StartAsync(Tour(step));
+        var session = await BonboardingService.StartAsync(Tour(step), cancellationToken: TestContext.CancellationToken);
 
         var cut = Render<BonboardingRoot>();
 
@@ -518,7 +518,7 @@ public class ComponentTests : BunitContext
         var step = Step("a", selector: "#late");
         step.MissingTarget = BonboardingMissingTargetBehavior.Wait;
 
-        var session = await BonboardingService.StartAsync(Tour(step));
+        var session = await BonboardingService.StartAsync(Tour(step), cancellationToken: TestContext.CancellationToken);
         var cut = Render<BonboardingRoot>();
 
         // The element often appears because the user does something (opens the menu it lives in), so the
@@ -541,7 +541,7 @@ public class ComponentTests : BunitContext
         step.Route = "settings/*";
 
         // A wildcard route is a constraint: the user has to get there, so nothing may stand in the way.
-        var session = await BonboardingService.StartAsync(Tour(step));
+        var session = await BonboardingService.StartAsync(Tour(step), cancellationToken: TestContext.CancellationToken);
         var cut = Render<BonboardingRoot>();
 
         Assert.AreEqual(BonboardingWaitReason.Route, session.WaitReason);
@@ -563,7 +563,7 @@ public class ComponentTests : BunitContext
         var step = Step("a");
         step.Route = "workspace";
 
-        var session = await BonboardingService.StartAsync(Tour(step));
+        var session = await BonboardingService.StartAsync(Tour(step), cancellationToken: TestContext.CancellationToken);
         var cut = Render<BonboardingRoot>();
         Assert.IsNotNull(cut.Find(".bit-bonboarding-blocker"));
 
@@ -587,7 +587,7 @@ public class ComponentTests : BunitContext
         var localizer = new CountingLocalizer();
         Services.AddSingleton<IBonboardingLocalizer>(localizer);
 
-        var session = await BonboardingService.StartAsync(Tour(Step("a", "Create a project"), Step("b")));
+        var session = await BonboardingService.StartAsync(Tour(Step("a", "Create a project"), Step("b")), cancellationToken: TestContext.CancellationToken);
         var cut = Render<BonboardingRoot>();
         var content = cut.FindComponent<BonboardingPopoverContent>();
 
@@ -607,7 +607,7 @@ public class ComponentTests : BunitContext
         Assert.AreEqual(lookups, localizer.Calls, "Nor was its text looked up again.");
 
         // A real change still renders.
-        await cut.InvokeAsync(() => session.NextAsync());
+        await cut.InvokeAsync(() => session.NextAsync(TestContext.CancellationToken));
         Assert.IsGreaterThan(contentRenders, content.RenderCount);
     }
 
@@ -629,7 +629,7 @@ public class ComponentTests : BunitContext
     [TestMethod]
     public async Task A_Template_Replaces_The_Popover_Contents()
     {
-        await BonboardingService.StartAsync(Tour(Step("a", "Ignored")));
+        await BonboardingService.StartAsync(Tour(Step("a", "Ignored")), cancellationToken: TestContext.CancellationToken);
 
         RenderFragment<BonboardingStepRenderContext> template = context => builder =>
         {
@@ -651,7 +651,7 @@ public class ComponentTests : BunitContext
     [TestMethod]
     public async Task A_Template_Still_Leaves_The_Dialog_Named_After_The_Step()
     {
-        await BonboardingService.StartAsync(Tour(Step("a", "Create a project")));
+        await BonboardingService.StartAsync(Tour(Step("a", "Create a project")), cancellationToken: TestContext.CancellationToken);
 
         RenderFragment<BonboardingStepRenderContext> template = context => builder =>
             builder.AddMarkupContent(0, "<p class=\"custom\">No heading here</p>");
@@ -672,7 +672,7 @@ public class ComponentTests : BunitContext
         var step = Step("a", "Create a project");
         step.Header = _ => builder => builder.AddMarkupContent(0, "<div class=\"own-header\">Mine</div>");
 
-        await BonboardingService.StartAsync(Tour(step));
+        await BonboardingService.StartAsync(Tour(step), cancellationToken: TestContext.CancellationToken);
 
         var cut = Render<BonboardingRoot>();
         var dialog = cut.Find("[role='dialog']");
@@ -690,7 +690,7 @@ public class ComponentTests : BunitContext
     [TestMethod]
     public async Task Unstyled_Drops_The_Built_In_Popover_Class()
     {
-        await BonboardingService.StartAsync(Tour(Step("a")));
+        await BonboardingService.StartAsync(Tour(Step("a")), cancellationToken: TestContext.CancellationToken);
 
         var cut = Render<BonboardingRoot>(parameters => parameters.Add(p => p.Unstyled, true));
 
@@ -707,7 +707,7 @@ public class ComponentTests : BunitContext
         var tour = Tour(step);
         tour.Template = _ => builder => builder.AddMarkupContent(0, "<span class=\"from-tour\">tour</span>");
 
-        await BonboardingService.StartAsync(tour);
+        await BonboardingService.StartAsync(tour, cancellationToken: TestContext.CancellationToken);
 
         var cut = Render<BonboardingRoot>();
 
@@ -725,7 +725,7 @@ public class ComponentTests : BunitContext
         var tour = BonboardingService.GetTour("declared");
 
         Assert.IsNotNull(tour);
-        CollectionAssert.AreEqual(new[] { "one", "two", "three" }, tour!.Steps.Select(step => step.Id).ToArray());
+        Assert.AreSequenceEqual(new[] { "one", "two", "three" }, tour!.Steps.Select(step => step.Id).ToArray());
         Assert.AreEqual("Second", tour.Steps[1].Title);
         Assert.AreEqual(BonboardingPlacement.Right, tour.Steps[1].Placement);
         Assert.AreEqual("[data-bonboarding-anchor=\"create\"]", BonboardingTargetDescriptor.From(tour.Steps[0].Target).Selector);
@@ -740,12 +740,12 @@ public class ComponentTests : BunitContext
         var cut = Render<DeclarativeTourHarness>();
         var tour = cut.FindComponent<BonboardingTour>().Instance;
 
-        await cut.InvokeAsync(() => tour.StartAsync());
+        await cut.InvokeAsync(() => tour.StartAsync(cancellationToken: TestContext.CancellationToken));
 
         Assert.IsTrue(tour.IsRunning);
         Assert.AreEqual("one", tour.Session!.CurrentStep!.Id);
 
-        await cut.InvokeAsync(() => tour.StopAsync());
+        await cut.InvokeAsync(() => tour.StopAsync(cancellationToken: TestContext.CancellationToken));
 
         Assert.IsFalse(tour.IsRunning);
     }
@@ -757,15 +757,15 @@ public class ComponentTests : BunitContext
 
         var cut = Render<ToggleableTourHarness>();
         var tour = cut.FindComponent<BonboardingTour>().Instance;
-        var session = await cut.InvokeAsync(() => tour.StartAsync());
+        var session = await cut.InvokeAsync(() => tour.StartAsync(cancellationToken: TestContext.CancellationToken));
 
         // Navigating to the next page of a multi-page tour tears the declaring markup down.
         cut.Render(parameters => parameters.Add(p => p.Show, false));
 
         Assert.IsTrue(session.IsActive);
-        CollectionAssert.AreEqual(new[] { "one", "two", "three" }, session.Tour.Steps.Select(step => step.Id).ToArray());
+        Assert.AreSequenceEqual(new[] { "one", "two", "three" }, session.Tour.Steps.Select(step => step.Id).ToArray());
 
-        await session.NextAsync();
+        await session.NextAsync(TestContext.CancellationToken);
         Assert.AreEqual("two", session.CurrentStep!.Id);
     }
 
@@ -778,13 +778,13 @@ public class ComponentTests : BunitContext
         cut.Render(parameters => parameters.Add(p => p.ShowSecond, true));
 
         var tour = BonboardingService.GetTour("toggleable");
-        CollectionAssert.AreEqual(new[] { "one", "two", "three" }, tour!.Steps.Select(step => step.Id).ToArray());
+        Assert.AreSequenceEqual(new[] { "one", "two", "three" }, tour!.Steps.Select(step => step.Id).ToArray());
     }
 
     [TestMethod]
     public async Task An_Auto_Started_Tour_Waits_For_The_Tour_The_User_Is_Taking()
     {
-        var taking = await BonboardingService.StartAsync(Tour(Step("a"), Step("b")));
+        var taking = await BonboardingService.StartAsync(Tour(Step("a"), Step("b")), cancellationToken: TestContext.CancellationToken);
 
         Render<BonboardingTour>(parameters => parameters
             .Add(tour => tour.Id, "page-tour")
@@ -800,9 +800,10 @@ public class ComponentTests : BunitContext
         Assert.AreEqual(BonboardingTourStatus.Running, taking.Status, "An automatic start never interrupts the user.");
         Assert.AreSame(taking, BonboardingService.Active);
 
-        await taking.DismissAsync();
+        await taking.DismissAsync(TestContext.CancellationToken);
+        var actualValue = BonboardingService.Active?.Tour.Id;
 
-        Assert.AreEqual("page-tour", BonboardingService.Active?.Tour.Id);
+        Assert.AreEqual("page-tour", actualValue);
         Assert.AreEqual(BonboardingTourStatus.Running, BonboardingService.Active!.Status);
     }
 
@@ -828,7 +829,7 @@ public class ComponentTests : BunitContext
     [TestMethod]
     public async Task A_Host_With_An_Explicit_Session_Claims_It_From_The_Ambient_Host()
     {
-        var session = await BonboardingService.StartAsync(Tour(Step("a", "Claimed")));
+        var session = await BonboardingService.StartAsync(Tour(Step("a", "Claimed")), cancellationToken: TestContext.CancellationToken);
 
         var ambient = Render<BonboardingRoot>();
         Assert.IsNotEmpty(ambient.FindAll(".bit-bonboarding-popover"));
@@ -854,7 +855,7 @@ public class ComponentTests : BunitContext
         var tour = Tour(Step("a"));
         tour.Theme = BonboardingTheme.Light;
 
-        await BonboardingService.StartAsync(tour);
+        await BonboardingService.StartAsync(tour, cancellationToken: TestContext.CancellationToken);
 
         var cut = Render<BonboardingRoot>(parameters => parameters.Add(p => p.Theme, BonboardingTheme.Dark));
 
@@ -866,13 +867,13 @@ public class ComponentTests : BunitContext
     [TestMethod]
     public async Task Disposing_The_Host_Unsubscribes_From_The_Session()
     {
-        var session = await BonboardingService.StartAsync(Tour(Step("a"), Step("b")));
+        var session = await BonboardingService.StartAsync(Tour(Step("a"), Step("b")), cancellationToken: TestContext.CancellationToken);
 
         var cut = Render<BonboardingRoot>();
         await cut.Instance.DisposeAsync();
 
         // Nothing should throw or re-render after the host is gone.
-        await session.NextAsync();
+        await session.NextAsync(TestContext.CancellationToken);
 
         Assert.AreEqual("b", session.CurrentStep!.Id);
     }
@@ -880,19 +881,19 @@ public class ComponentTests : BunitContext
     [TestMethod]
     public async Task Registers_The_Popover_Element_With_The_Browser_Layer()
     {
-        await BonboardingService.StartAsync(Tour(Step("a")));
+        await BonboardingService.StartAsync(Tour(Step("a")), cancellationToken: TestContext.CancellationToken);
 
         Render<BonboardingRoot>();
 
         Assert.IsNotNull(_interop.Popover);
         Assert.IsTrue(_interop.TrapFocus);
-        Assert.IsTrue(_interop.FocusPopoverCount > 0);
+        Assert.IsGreaterThan(0, _interop.FocusPopoverCount);
     }
 
     [TestMethod]
     public async Task Focus_Moves_Into_The_Popover_Only_Once_It_Has_Been_Placed()
     {
-        var session = await BonboardingService.StartAsync(Tour(Step("a"), Step("b", selector: "#b")));
+        var session = await BonboardingService.StartAsync(Tour(Step("a"), Step("b", selector: "#b")), cancellationToken: TestContext.CancellationToken);
 
         var cut = Render<BonboardingRoot>();
         var focusedOnFirstStep = _interop.FocusPopoverCount;
@@ -904,7 +905,7 @@ public class ComponentTests : BunitContext
         var measured = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         _interop.DuringActivation = _ => measured.Task;
 
-        var next = session.NextAsync();
+        var next = session.NextAsync(TestContext.CancellationToken);
 
         cut.WaitForAssertion(() =>
         {
@@ -929,11 +930,11 @@ public class ComponentTests : BunitContext
     {
         var cut = Render<CallbackTourHarness>();
         var tour = cut.FindComponent<BonboardingTour>().Instance;
-        var session = await cut.InvokeAsync(() => tour.StartAsync());
+        var session = await cut.InvokeAsync(() => tour.StartAsync(cancellationToken: TestContext.CancellationToken));
 
         // Off the renderer, as a timer or a background service would drive it. The callback
         // re-renders its owner, which the renderer only allows on its own dispatcher.
-        await Task.Run(() => session.NextAsync());
+        await Task.Run(() => session.NextAsync(TestContext.CancellationToken), TestContext.CancellationToken);
 
         Assert.IsNull(session.Error);
         Assert.AreEqual("two", session.CurrentStep!.Id);
@@ -948,7 +949,7 @@ public class ComponentTests : BunitContext
         cut.Render(parameters => parameters.Add(p => p.ShowAdvanced, true));
 
         var tour = BonboardingService.GetTour("ordered");
-        CollectionAssert.AreEqual(new[] { "intro", "advanced", "finish" }, tour!.Steps.Select(step => step.Id).ToArray());
+        Assert.AreSequenceEqual(new[] { "intro", "advanced", "finish" }, tour!.Steps.Select(step => step.Id).ToArray());
     }
 
     [TestMethod]
@@ -958,7 +959,7 @@ public class ComponentTests : BunitContext
         tour.Progress = BonboardingProgressStyle.Text;
         tour.Labels = new BonboardingLabels { ProgressFormat = "{0 of {1}", StepAnnouncementFormat = "Step {0}. {2" };
 
-        await BonboardingService.StartAsync(tour);
+        await BonboardingService.StartAsync(tour, cancellationToken: TestContext.CancellationToken);
         var cut = Render<BonboardingRoot>();
 
         Assert.AreEqual("1 of 1", cut.Find(".bit-bonboarding-progress-text").TextContent);
@@ -972,11 +973,11 @@ public class ComponentTests : BunitContext
         step.Interaction = BonboardingInteractionMode.TargetOnly;
         step.MissingTarget = BonboardingMissingTargetBehavior.Center;
 
-        await BonboardingService.StartAsync(Tour(step));
+        await BonboardingService.StartAsync(Tour(step), cancellationToken: TestContext.CancellationToken);
         var cut = Render<BonboardingRoot>();
 
         var blockers = cut.FindAll(".bit-bonboarding-blocker");
-        Assert.HasCount(1, blockers);
+        Assert.ContainsSingle(blockers);
         Assert.AreEqual("inset:0", blockers[0].GetAttribute("style"));
     }
 
@@ -986,19 +987,21 @@ public class ComponentTests : BunitContext
         var cut = Render<BonboardingRoot>();
         var tour = Tour(Step("a", "Welcome"));
 
-        var first = await cut.InvokeAsync(() => BonboardingService.StartAsync(tour));
+        var first = await cut.InvokeAsync(() => BonboardingService.StartAsync(tour, cancellationToken: TestContext.CancellationToken));
         cut.WaitForAssertion(() => Assert.Contains("Welcome", cut.Find(".bit-bonboarding-live").TextContent));
 
-        await cut.InvokeAsync(() => first.DismissAsync());
+        await cut.InvokeAsync(() => first.DismissAsync(TestContext.CancellationToken));
         cut.WaitForAssertion(() => Assert.AreEqual(string.Empty, cut.Find(".bit-bonboarding-live").TextContent.Trim()));
 
-        await cut.InvokeAsync(() => BonboardingService.StartAsync(tour));
+        await cut.InvokeAsync(() => BonboardingService.StartAsync(tour, cancellationToken: TestContext.CancellationToken));
         cut.WaitForAssertion(() => Assert.Contains("Welcome", cut.Find(".bit-bonboarding-live").TextContent));
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }
 
 /// <summary>Markup fixture for the declarative component tests.</summary>
-public sealed class DeclarativeTourHarness : ComponentBase
+internal sealed class DeclarativeTourHarness : ComponentBase
 {
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
@@ -1030,7 +1033,7 @@ public sealed class DeclarativeTourHarness : ComponentBase
 }
 
 /// <summary>Markup fixture whose tour, or one of its steps, can be removed and rendered again.</summary>
-public sealed class ToggleableTourHarness : ComponentBase
+internal sealed class ToggleableTourHarness : ComponentBase
 {
     [Parameter] public bool Show { get; set; } = true;
 
@@ -1073,7 +1076,7 @@ public sealed class ToggleableTourHarness : ComponentBase
 }
 
 /// <summary>Markup fixture whose tour reports step changes through an <see cref="EventCallback"/>.</summary>
-public sealed class CallbackTourHarness : ComponentBase
+internal sealed class CallbackTourHarness : ComponentBase
 {
     public int StepChanges { get; private set; }
 
@@ -1100,7 +1103,7 @@ public sealed class CallbackTourHarness : ComponentBase
 }
 
 /// <summary>Markup fixture with a step that only renders later and pins its position with Order.</summary>
-public sealed class OrderedTourHarness : ComponentBase
+internal sealed class OrderedTourHarness : ComponentBase
 {
     [Parameter] public bool ShowAdvanced { get; set; }
 

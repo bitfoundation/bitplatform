@@ -20,7 +20,7 @@ public class SpringDriverTests
         Assert.IsTrue(values.All(double.IsFinite), "a heavily damped spring produced non-finite values");
         Assert.IsTrue(values.All(v => v is >= 0 and <= 100 + 1e-9), "an overdamped spring overshot");
         for (int i = 1; i < values.Count; i++)
-            Assert.IsTrue(values[i] >= values[i - 1] - 1e-9, $"frame {i}: an overdamped spring went backwards");
+            Assert.IsGreaterThanOrEqualTo(values[i - 1] - 1e-9, values[i], $"frame {i}: an overdamped spring went backwards");
     }
 
     [TestMethod]
@@ -63,7 +63,7 @@ public class SpringDriverTests
         var driver = new BmotionSpringDriver(0, 100, config, v =>
         {
             // Allow a tiny floating-point tolerance
-            Assert.IsTrue(v >= prevValue - 1e-6, $"Overshoot detected: {v} < {prevValue}");
+            Assert.IsGreaterThanOrEqualTo(prevValue - 1e-6, v, $"Overshoot detected: {v} < {prevValue}");
             prevValue = v;
         });
 
@@ -74,7 +74,7 @@ public class SpringDriverTests
             if (driver.Tick(ts)) break;
         }
 
-        Assert.IsTrue(prevValue > 0, "Spring never moved");
+        Assert.IsGreaterThan(0, prevValue, "Spring never moved");
     }
 
     [TestMethod]
@@ -139,7 +139,7 @@ public class SpringDriverTests
         var seeking = new BmotionSpringDriver(0, 100, new BmotionTransitionConfig { Stiffness = 170, Damping = damping, Delay = -seconds }, sought.Add);
         seeking.Tick(5_000);
 
-        CollectionAssert.AreEqual(played, sought);
+        Assert.AreSequenceEqual(played, sought);
     }
 
     [TestMethod]
@@ -152,8 +152,8 @@ public class SpringDriverTests
         var driver = new BmotionSpringDriver(0, 100, new BmotionTransitionConfig { Stiffness = 100, Damping = 0, Delay = delay }, _ => applied++);
 
         Assert.IsFalse(driver.Tick(0));
-        Assert.IsTrue(applied >= (int)(BmotionFastForward.MaxMs / BmotionFastForward.FrameMs), $"only {applied} frames were applied");
-        Assert.IsTrue(applied <= BmotionFastForward.MaxFrames + 1, $"{applied} frames were applied");
+        Assert.IsGreaterThanOrEqualTo((int)(BmotionFastForward.MaxMs / BmotionFastForward.FrameMs), applied, $"only {applied} frames were applied");
+        Assert.IsLessThanOrEqualTo(BmotionFastForward.MaxFrames + 1, applied, $"{applied} frames were applied");
     }
 
     // ── Cancel ────────────────────────────────────────────────────────────────
@@ -179,7 +179,7 @@ public class SpringDriverTests
         // completion is guaranteed (Complete() is the operation that writes the end value).
         Assert.IsTrue(done);
         // A cancelled Tick must exit before applying, so no new value is emitted after Cancel().
-        Assert.AreEqual(emittedBeforeCancel, values.Count);
+        Assert.HasCount(emittedBeforeCancel, values);
     }
 
     // ── Initial velocity ──────────────────────────────────────────────────────
@@ -200,7 +200,7 @@ public class SpringDriverTests
         driver.Tick(0);
         driver.Tick(16);
 
-        Assert.IsTrue(values[1] > values[0], "Spring with positive velocity should move toward target immediately");
+        Assert.IsGreaterThan(values[0], values[1], "Spring with positive velocity should move toward target immediately");
     }
 
     // ── Repeat ────────────────────────────────────────────────────────────────
@@ -320,7 +320,7 @@ public class SpringDriverTests
 
         int ticks = RunUntilComplete(driver);
 
-        Assert.IsTrue(ticks > 0, "Spring with non-positive Mass never terminated");
+        Assert.IsGreaterThan(0, ticks, "Spring with non-positive Mass never terminated");
         Assert.AreEqual(100.0, lastValue, 1e-2);
     }
 
@@ -342,7 +342,7 @@ public class SpringDriverTests
 
         int ticks = RunUntilComplete(driver);
 
-        Assert.IsTrue(ticks > 0, "Spring with non-positive rest thresholds never terminated");
+        Assert.IsGreaterThan(0, ticks, "Spring with non-positive rest thresholds never terminated");
         Assert.AreEqual(100.0, lastValue, 1e-1);
     }
 

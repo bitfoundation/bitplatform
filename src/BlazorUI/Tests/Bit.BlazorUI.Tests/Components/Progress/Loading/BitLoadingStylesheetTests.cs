@@ -43,7 +43,7 @@ public class BitLoadingStylesheetTests
         var read = all.SelectMany(s => Regex.Matches(s.Content, @"var\((--bit-Loading-[\w-]+)").Select(m => m.Groups[1].Value))
                       .ToHashSet();
 
-        CollectionAssert.AreEquivalent(documented.Order().ToArray(), read.Order().ToArray());
+        Assert.AreSequenceEqual(documented.Order().ToArray(), read.Order().ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -68,8 +68,8 @@ public class BitLoadingStylesheetTests
         {
             var stylesheet = all.Single(s => s.Content.Contains($".bit-ldn-{loader}-ccn {{")).Content;
 
-            StringAssert.Contains(stylesheet, $"\n.bit-ldn-{loader} {{\n    --bit-ldn-stroke-authored:");
-            StringAssert.Contains(stylesheet, "var(--bit-ldn-thickness)");
+            Assert.Contains($"\n.bit-ldn-{loader} {{\n    --bit-ldn-stroke-authored:", stylesheet);
+            Assert.Contains("var(--bit-ldn-thickness)", stylesheet);
         }
     }
 
@@ -78,9 +78,9 @@ public class BitLoadingStylesheetTests
     {
         var @base = ReadStylesheets().Single(s => s.Name == "BitLoading.scss").Content;
 
-        StringAssert.Contains(@base, "@media (forced-colors: active)");
-        StringAssert.Contains(@base, "--bit-ldn-color: CanvasText;");
-        StringAssert.Contains(@base, "forced-color-adjust: none;");
+        Assert.Contains("@media (forced-colors: active)", @base);
+        Assert.Contains("--bit-ldn-color: CanvasText;", @base);
+        Assert.Contains("forced-color-adjust: none;", @base);
     }
 
     [TestMethod]
@@ -94,9 +94,9 @@ public class BitLoadingStylesheetTests
         // of its own, which a sized inline loader does not carry, so bit-ldn-inl must not set either. It is the default
         // of an unsized loader rather than a size it was given, so it is read after the public variables.
         Assert.IsGreaterThan(@base.IndexOf("\n.bit-ldn {", StringComparison.Ordinal), unsized);
-        StringAssert.DoesNotMatch(@base, new Regex(@"\.bit-ldn-inl \{[^}]*--bit-ldn-(sz|lfs)"));
-        StringAssert.Contains(@base, "--bit-ldn-size: var(--bit-ldn-sz, var(--bit-Loading-size, var(--bit-ldn-sz-def, 64px)));");
-        StringAssert.Contains(@base, "font-size: var(--bit-ldn-lfs, var(--bit-Loading-label-font-size, var(--bit-ldn-lfs-def, #{$tg-fs-sm})));");
+        Assert.DoesNotMatchRegex(new Regex(@"\.bit-ldn-inl \{[^}]*--bit-ldn-(sz|lfs)"), @base);
+        Assert.Contains("--bit-ldn-size: var(--bit-ldn-sz, var(--bit-Loading-size, var(--bit-ldn-sz-def, 64px)));", @base);
+        Assert.Contains("font-size: var(--bit-ldn-lfs, var(--bit-Loading-label-font-size, var(--bit-ldn-lfs-def, #{$tg-fs-sm})));", @base);
     }
 
     [TestMethod]
@@ -106,14 +106,14 @@ public class BitLoadingStylesheetTests
 
         // Color/CustomColor, Size/CustomSize, Thickness and Speed publish these only while they are set (inline, or
         // through a size class), so they are read before the variable, which only restyles the default.
-        StringAssert.Contains(@base, "--bit-ldn-color: var(--bit-ldn-clr, var(--bit-Loading-color, #{$clr-pri}));");
-        StringAssert.Contains(@base, "--bit-ldn-size: var(--bit-ldn-sz, var(--bit-Loading-size, ");
-        StringAssert.Contains(@base, "--bit-ldn-thickness: var(--bit-ldn-stroke, var(--bit-Loading-thickness, var(--bit-ldn-stroke-authored)));");
-        StringAssert.Contains(@base, "calc(#{$mot-loop-factor} / var(--bit-ldn-spd, var(--bit-Loading-speed, 1)))");
-        StringAssert.Contains(@base, "font-size: var(--bit-ldn-lfs, var(--bit-Loading-label-font-size, ");
+        Assert.Contains("--bit-ldn-color: var(--bit-ldn-clr, var(--bit-Loading-color, #{$clr-pri}));", @base);
+        Assert.Contains("--bit-ldn-size: var(--bit-ldn-sz, var(--bit-Loading-size, ", @base);
+        Assert.Contains("--bit-ldn-thickness: var(--bit-ldn-stroke, var(--bit-Loading-thickness, var(--bit-ldn-stroke-authored)));", @base);
+        Assert.Contains("calc(#{$mot-loop-factor} / var(--bit-ldn-spd, var(--bit-Loading-speed, 1)))", @base);
+        Assert.Contains("font-size: var(--bit-ldn-lfs, var(--bit-Loading-label-font-size, ", @base);
 
         // A custom size scales the label from the size it was given, which is a choice as well.
-        StringAssert.Contains(@base, "\n.bit-ldn-csz {\n    --bit-ldn-lfs: clamp(");
+        Assert.Contains("\n.bit-ldn-csz {\n    --bit-ldn-lfs: clamp(", @base);
 
         foreach (var (name, stylesheet) in ReadStylesheets())
         {
@@ -131,7 +131,7 @@ public class BitLoadingStylesheetTests
         // down at the same weight - and the style attribute still win on the root that carries them.
         foreach (var property in new[] { "--bit-ldn-clr", "--bit-ldn-sz", "--bit-ldn-lfs", "--bit-ldn-stroke", "--bit-ldn-spd", "--bit-ldn-sz-def", "--bit-ldn-lfs-def" })
         {
-            StringAssert.Contains(root, $"{property}: initial;");
+            Assert.Contains($"{property}: initial;", root);
         }
     }
 
@@ -140,7 +140,7 @@ public class BitLoadingStylesheetTests
     {
         var @base = ReadStylesheets().Single(s => s.Name == "BitLoading.scss").Content;
 
-        StringAssert.Contains(@base, ".bit-ldn-inl > .bit-ldn-lbl {\n    font-family: inherit;\n}");
+        Assert.Contains(".bit-ldn-inl > .bit-ldn-lbl {\n    font-family: inherit;\n}", @base);
     }
 
     [TestMethod]
@@ -166,8 +166,8 @@ public class BitLoadingStylesheetTests
 
         // The class Dir renders is read on the drawing's parent only, so a loader nested in one that reads the other way
         // keeps its own direction.
-        StringAssert.Contains(stylesheet, $"\n.bit-ldn-{loader}-ccn:is(:dir(rtl), .bit-ldn-{loader}.bit-rtl > *) {{");
-        Assert.IsFalse(stylesheet.Contains($".bit-rtl .bit-ldn-{loader}-ccn"), "The class must not reach the drawing of a nested loader.");
+        Assert.Contains($"\n.bit-ldn-{loader}-ccn:is(:dir(rtl), .bit-ldn-{loader}.bit-rtl > *) {{", stylesheet);
+        Assert.DoesNotContain($".bit-rtl .bit-ldn-{loader}-ccn", stylesheet, "The class must not reach the drawing of a nested loader.");
     }
 
     private static (string Name, string Content)[] ReadStylesheets()

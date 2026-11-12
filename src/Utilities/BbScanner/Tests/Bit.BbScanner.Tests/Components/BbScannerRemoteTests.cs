@@ -28,7 +28,7 @@ public class BbScannerRemoteTests : BunitContext
     [TestMethod]
     [DataRow("Server")]
     [DataRow("WebView")]
-    public void An_interactive_renderer_that_is_not_webassembly_opens_the_camera_and_reads_its_frames(string renderer)
+    public async global::System.Threading.Tasks.Task An_interactive_renderer_that_is_not_webassembly_opens_the_camera_and_reads_its_frames(string renderer)
     {
         Interactive(renderer);
         _page.Frame = FrameWithQrCode("REMOTE-FRAME", centreX: FrameWidth / 2, centreY: FrameHeight / 2);
@@ -40,11 +40,11 @@ public class BbScannerRemoteTests : BunitContext
             .Add(p => p.OnScan, r => scans.Add(r))
             .Add(p => p.OnStatusChanged, s => statuses.Add(s)));
 
-        WaitUntil(() => Assert.HasCount(1, scans));
+        await WaitUntil(() => Assert.ContainsSingle(scans), cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual("REMOTE-FRAME", scans[0].Text);
         Assert.AreEqual(BbScannerStatus.Scanning, scanner.Instance.Status);
-        CollectionAssert.Contains(statuses, BbScannerStatus.Scanning);
+        Assert.Contains(BbScannerStatus.Scanning, statuses);
         Assert.AreEqual("./_content/Bit.BbScanner/bit-bbscanner.js", _page.ImportedPath);
         Assert.AreEqual((FrameWidth, FrameHeight), _page.Configured);
         // A page across a network keeps a watchdog on the camera it opened; one behind a WebView goes away with .NET.
@@ -52,7 +52,7 @@ public class BbScannerRemoteTests : BunitContext
     }
 
     [TestMethod]
-    public void Only_the_searched_region_crosses_and_results_come_back_in_the_frame_coordinates()
+    public async global::System.Threading.Tasks.Task Only_the_searched_region_crosses_and_results_come_back_in_the_frame_coordinates()
     {
         Interactive("Server");
         _page.Frame = FrameWithQrCode("REGION", centreX: FrameWidth / 2, centreY: FrameHeight / 2);
@@ -63,7 +63,7 @@ public class BbScannerRemoteTests : BunitContext
             .Add(p => p.Region, BbScanRegion.CenteredSquare(0.7))
             .Add(p => p.OnScan, r => scanned = r));
 
-        WaitUntil(() => Assert.IsNotNull(scanned));
+        await WaitUntil(() => Assert.IsNotNull(scanned), cancellationToken: TestContext.CancellationToken);
 
         // A square of 0.7 of the shorter side, centred: 336 pixels of a 640 by 480 frame. It is grabbed with the poll
         // that finds it waiting, rather than asked for in a round trip of its own.
@@ -82,7 +82,7 @@ public class BbScannerRemoteTests : BunitContext
     }
 
     [TestMethod]
-    public void A_symbol_outside_the_searched_region_is_not_read()
+    public async global::System.Threading.Tasks.Task A_symbol_outside_the_searched_region_is_not_read()
     {
         Interactive("Server");
         _page.Frame = FrameWithQrCode("OUTSIDE", centreX: 70, centreY: 70);
@@ -93,12 +93,12 @@ public class BbScannerRemoteTests : BunitContext
             .Add(p => p.Region, BbScanRegion.CenteredSquare(0.5))
             .Add(p => p.OnScan, _ => scans++));
 
-        WaitUntil(() => Assert.IsGreaterThanOrEqualTo(3, _page.Grabs.Count));
+        await WaitUntil(() => Assert.IsGreaterThanOrEqualTo(3, _page.Grabs.Count), cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual(0, scans);
     }
 
     [TestMethod]
-    public void A_frame_call_that_times_out_is_asked_again_rather_than_faulting_the_scanner()
+    public async global::System.Threading.Tasks.Task A_frame_call_that_times_out_is_asked_again_rather_than_faulting_the_scanner()
     {
         Interactive("Server");
         _page.Frame = FrameWithQrCode("AFTER-A-BLIP", centreX: FrameWidth / 2, centreY: FrameHeight / 2);
@@ -116,14 +116,14 @@ public class BbScannerRemoteTests : BunitContext
             .Add(p => p.OnError, e => error = e)
             .Add(p => p.OnScan, r => scanned = r));
 
-        WaitUntil(() => Assert.IsNotNull(scanned));
+        await WaitUntil(() => Assert.IsNotNull(scanned), cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual("AFTER-A-BLIP", scanned!.Text);
         Assert.IsNull(error);
         Assert.AreEqual(BbScannerStatus.Scanning, scanner.Instance.Status);
     }
 
     [TestMethod]
-    public void A_camera_whose_opening_was_answered_into_a_dropped_connection_is_taken_up()
+    public async global::System.Threading.Tasks.Task A_camera_whose_opening_was_answered_into_a_dropped_connection_is_taken_up()
     {
         Interactive("Server");
 
@@ -133,13 +133,13 @@ public class BbScannerRemoteTests : BunitContext
 
         var scanner = Render<BbScanner>(parameters => parameters.Add(p => p.OnError, e => error = e));
 
-        WaitUntil(() => Assert.AreEqual(BbScannerStatus.Scanning, scanner.Instance.Status));
+        await WaitUntil(() => Assert.AreEqual(BbScannerStatus.Scanning, scanner.Instance.Status), cancellationToken: TestContext.CancellationToken);
         Assert.IsNull(error);
         Assert.AreEqual(640, scanner.Instance.Camera!.Width);
     }
 
     [TestMethod]
-    public void Attaching_that_times_out_on_the_first_render_is_tried_again_rather_than_given_up()
+    public async global::System.Threading.Tasks.Task Attaching_that_times_out_on_the_first_render_is_tried_again_rather_than_given_up()
     {
         Interactive("Server");
 
@@ -149,13 +149,13 @@ public class BbScannerRemoteTests : BunitContext
 
         var scanner = Render<BbScanner>();
 
-        WaitUntil(() => Assert.AreEqual(BbScannerStatus.Scanning, scanner.Instance.Status));
+        await WaitUntil(() => Assert.AreEqual(BbScannerStatus.Scanning, scanner.Instance.Status), cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual(3, _page.Count("attachRoot"));
         Assert.AreEqual(1, _page.Count("start"));
     }
 
     [TestMethod]
-    public void A_camera_that_resizes_as_soon_as_it_opens_is_resized_for()
+    public async global::System.Threading.Tasks.Task A_camera_that_resizes_as_soon_as_it_opens_is_resized_for()
     {
         Interactive("Server");
 
@@ -165,10 +165,14 @@ public class BbScannerRemoteTests : BunitContext
 
         var scanner = Render<BbScanner>(parameters => parameters.Add(p => p.OnCameraChanged, c => cameras.Add(c)));
 
-        WaitUntil(() => Assert.AreEqual(480, scanner.Instance.Camera?.Width));
+        await WaitUntil(() =>
+        {
+            var actualValue = scanner.Instance.Camera?.Width;
+            Assert.AreEqual(480, actualValue);
+        }, cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual((480, 640), scanner.Instance.ProcessingSize);
-        WaitUntil(() => Assert.AreEqual((480, 640), _page.Configured));
-        WaitUntil(() => Assert.AreEqual(640, cameras.Last().Height));
+        await WaitUntil(() => Assert.AreEqual((480, 640), _page.Configured), cancellationToken: TestContext.CancellationToken);
+        await WaitUntil(() => Assert.AreEqual(640, cameras.Last().Height), cancellationToken: TestContext.CancellationToken);
     }
 
     [TestMethod]
@@ -184,10 +188,10 @@ public class BbScannerRemoteTests : BunitContext
 
         // The encoded bytes are whatever the application holds; the page decodes them.
         var encoded = new byte[600 * 1024];
-        var results = await scanner.InvokeAsync(() => scanner.Instance.ScanImageAsync(encoded, "image/png"));
+        var results = await scanner.InvokeAsync(() => scanner.Instance.ScanImageAsync(encoded, "image/png", cancellationToken: TestContext.CancellationToken));
 
         Assert.AreEqual("HANDED-OVER", results.Single().Text);
-        CollectionAssert.AreEqual(new[] { 256 * 1024, 256 * 1024, 88 * 1024 }, _page.StagedParts.ToArray(), "Sent in parts, none of them large.");
+        Assert.AreSequenceEqual(new[] { 256 * 1024, 256 * 1024, 88 * 1024 }, _page.StagedParts.ToArray(), "Sent in parts, none of them large.");
         Assert.IsLessThanOrEqualTo(30 * 1024, _page.LargestSlice);
         Assert.AreEqual(1, _page.Count("releasePrepared"), "The page is told it can wipe what was read.");
     }
@@ -221,7 +225,7 @@ public class BbScannerRemoteTests : BunitContext
     }
 
     [TestMethod]
-    public void A_refused_permission_prompt_is_classified_from_the_message_the_page_sends()
+    public async global::System.Threading.Tasks.Task A_refused_permission_prompt_is_classified_from_the_message_the_page_sends()
     {
         Interactive("Server");
         _page.StartFailure = new JSException("NotAllowedError: Permission denied\nat open (bit-bbscanner.js:1:1)");
@@ -229,43 +233,43 @@ public class BbScannerRemoteTests : BunitContext
 
         var scanner = Render<BbScanner>(parameters => parameters.Add(p => p.OnError, e => error = e));
 
-        WaitUntil(() => Assert.IsNotNull(error));
+        await WaitUntil(() => Assert.IsNotNull(error), cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual(BbScannerErrorKind.PermissionDenied, error!.Kind);
         Assert.IsGreaterThanOrEqualTo(1, _page.Count("stop"), "A camera the page may have attached before failing is released.");
     }
 
     [TestMethod]
-    public void A_camera_that_ends_is_reported_lost_and_released()
+    public async global::System.Threading.Tasks.Task A_camera_that_ends_is_reported_lost_and_released()
     {
         Interactive("Server");
         BbScannerException? error = null;
         var scanner = Render<BbScanner>(parameters => parameters.Add(p => p.OnError, e => error = e));
-        WaitUntil(() => Assert.AreEqual(BbScannerStatus.Scanning, scanner.Instance.Status));
+        await WaitUntil(() => Assert.AreEqual(BbScannerStatus.Scanning, scanner.Instance.Status), cancellationToken: TestContext.CancellationToken);
 
         _page.Ended = true;
 
         // The status turns Faulted before OnError is raised, so the error is what is waited for.
-        WaitUntil(() => Assert.IsNotNull(error));
+        await WaitUntil(() => Assert.IsNotNull(error), cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual(BbScannerStatus.Faulted, scanner.Instance.Status);
         Assert.AreEqual(BbScannerErrorKind.CameraUnavailable, error!.Kind);
         Assert.IsGreaterThanOrEqualTo(1, _page.Count("stop"));
     }
 
     [TestMethod]
-    public void A_camera_the_page_closed_while_the_circuit_was_away_is_opened_again()
+    public async global::System.Threading.Tasks.Task A_camera_the_page_closed_while_the_circuit_was_away_is_opened_again()
     {
         Interactive("Server");
         BbScannerException? error = null;
         var scanner = Render<BbScanner>(parameters => parameters.Add(p => p.OnError, e => error = e));
-        WaitUntil(() => Assert.AreEqual(BbScannerStatus.Scanning, scanner.Instance.Status));
+        await WaitUntil(() => Assert.AreEqual(BbScannerStatus.Scanning, scanner.Instance.Status), cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual(1, _page.Count("start"));
 
         // What the watchdog leaves behind: the camera ended, and the poll says it was an interruption.
         _page.Ended = true;
         _page.Interrupted = true;
 
-        WaitUntil(() => Assert.AreEqual(2, _page.Count("start")));
-        WaitUntil(() => Assert.AreEqual(BbScannerStatus.Scanning, scanner.Instance.Status));
+        await WaitUntil(() => Assert.AreEqual(2, _page.Count("start")), cancellationToken: TestContext.CancellationToken);
+        await WaitUntil(() => Assert.AreEqual(BbScannerStatus.Scanning, scanner.Instance.Status), cancellationToken: TestContext.CancellationToken);
         Assert.IsNull(error, "An interruption is recovered from, not reported.");
     }
 
@@ -274,7 +278,7 @@ public class BbScannerRemoteTests : BunitContext
     {
         Interactive("Server");
         var scanner = Render<BbScanner>();
-        WaitUntil(() => Assert.AreEqual(BbScannerStatus.Scanning, scanner.Instance.Status));
+        await WaitUntil(() => Assert.AreEqual(BbScannerStatus.Scanning, scanner.Instance.Status), cancellationToken: TestContext.CancellationToken);
 
         await scanner.InvokeAsync(() => scanner.Instance.StopAsync());
         Assert.AreEqual(BbScannerStatus.Stopped, scanner.Instance.Status);
@@ -289,7 +293,7 @@ public class BbScannerRemoteTests : BunitContext
     {
         Interactive("Server");
         var scanner = Render<BbScanner>();
-        WaitUntil(() => Assert.AreEqual(BbScannerStatus.Scanning, scanner.Instance.Status));
+        await WaitUntil(() => Assert.AreEqual(BbScannerStatus.Scanning, scanner.Instance.Status), cancellationToken: TestContext.CancellationToken);
 
         Assert.IsTrue(await scanner.InvokeAsync(() => scanner.Instance.SetTorchAsync(true)));
         Assert.IsTrue(scanner.Instance.IsTorchOn);
@@ -313,7 +317,7 @@ public class BbScannerRemoteTests : BunitContext
     /// Waits for an assertion to pass. The frame loop runs on the renderer's dispatcher while the test thread waits, and
     /// most of what it does renders nothing, so this polls rather than waiting for a render as bUnit's WaitFor does.
     /// </summary>
-    private static void WaitUntil(Action assertion)
+    private static async global::System.Threading.Tasks.Task WaitUntil(Action assertion, global::System.Threading.CancellationToken cancellationToken = default)
     {
         var deadline = DateTime.UtcNow + Wait;
         while (true)
@@ -325,7 +329,7 @@ public class BbScannerRemoteTests : BunitContext
             }
             catch (AssertFailedException) when (DateTime.UtcNow < deadline)
             {
-                Thread.Sleep(20);
+                await global::System.Threading.Tasks.Task.Delay(20, cancellationToken);
             }
         }
     }
@@ -345,4 +349,6 @@ public class BbScannerRemoteTests : BunitContext
 
         return frame.Pixels[..(FrameWidth * FrameHeight)].ToArray();
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

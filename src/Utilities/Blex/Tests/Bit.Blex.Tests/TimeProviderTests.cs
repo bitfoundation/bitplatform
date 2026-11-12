@@ -6,7 +6,7 @@ namespace Bit.Blex.Tests;
 
 /// <summary>A store that stamps its actions with the manager's clock, the way an app would.</summary>
 [BlexStoreAttribute(Name = "stamps")]
-public partial class StampStore
+internal partial class StampStore
 {
     [BlexStateAttribute] private DateTimeOffset _savedAt;
 
@@ -60,11 +60,11 @@ public class TimeProviderTests
         Assert.AreEqual(0, harness.Store.DebouncedBodyRuns);
 
         time.Advance(TimeSpan.FromMilliseconds(1));
-        await Task.WhenAll(first, second).WaitAsync(TimeSpan.FromSeconds(5));
+        await Task.WhenAll(first, second).WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
 
         Assert.AreEqual(1, harness.Store.DebouncedBodyRuns);
         Assert.AreEqual("bl", harness.Store.Last);
-        CollectionAssert.AreEqual(new[] { "TypeAhead" }, harness.Log.Names.ToArray());
+        Assert.AreSequenceEqual(new[] { "TypeAhead" }, harness.Log.Names.ToArray());
     }
 
     [TestMethod]
@@ -77,16 +77,16 @@ public class TimeProviderTests
 
         var storage = new SignallingStorage();
         var persistor = new BlexStatePersistor(manager, storage, new BlexPersistenceOptions { DebounceInterval = TimeSpan.FromMilliseconds(300) });
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
 
         settings.SetTheme("dark");
         time.Advance(TimeSpan.FromMilliseconds(299));
         Assert.IsFalse(storage.Data.ContainsKey("blex:settings"));
 
         time.Advance(TimeSpan.FromMilliseconds(1));
-        await storage.Written.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        await storage.Written.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
 
-        StringAssert.Contains(storage.Data["blex:settings"], "dark");
+        Assert.Contains("dark", storage.Data["blex:settings"]);
     }
 
     [TestMethod]
@@ -103,7 +103,7 @@ public class TimeProviderTests
             DebounceInterval = TimeSpan.FromMilliseconds(300),
             DebounceMaxDelay = TimeSpan.FromMilliseconds(500),
         });
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
 
         // A steady stream that never leaves 300 ms of quiet: only the cap gets a write out.
         settings.SetTheme("a");
@@ -113,9 +113,9 @@ public class TimeProviderTests
         Assert.IsFalse(storage.Data.ContainsKey("blex:settings"));
 
         settings.SetTheme("c");
-        await storage.Written.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        await storage.Written.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
 
-        StringAssert.Contains(storage.Data["blex:settings"], "\"c\"");
+        Assert.Contains("\"c\"", storage.Data["blex:settings"]);
     }
 
     [TestMethod]
@@ -136,8 +136,8 @@ public class TimeProviderTests
         counter.Increment();
         Assert.ThrowsExactly<InvalidOperationException>(failing.Boom);
 
-        CollectionAssert.AreEqual(new[] { now }, stamps);
-        CollectionAssert.AreEqual(new[] { now }, failures);
+        Assert.AreSequenceEqual(new[] { now }, stamps);
+        Assert.AreSequenceEqual(new[] { now }, failures);
     }
 
     [TestMethod]
@@ -183,4 +183,6 @@ public class TimeProviderTests
     [TestMethod]
     public void The_clock_cannot_be_unset()
         => Assert.ThrowsExactly<ArgumentNullException>(() => new BlexManager().TimeProvider = null!);
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

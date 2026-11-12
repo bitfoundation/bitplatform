@@ -132,7 +132,7 @@ public class TransitionConfigTests
         };
 
         Assert.IsNotNull(config.Properties);
-        Assert.AreEqual(2, config.Properties.Count);
+        Assert.HasCount(2, config.Properties);
         Assert.AreEqual(0.1, config.Properties["opacity"].Duration);
         Assert.AreEqual(BmotionTransitionType.Spring, config.Properties["transform"].Type);
         Assert.AreEqual(300, config.Properties["transform"].Stiffness);
@@ -161,7 +161,7 @@ public class TransitionConfigTests
         var config = new BmotionTransitionConfig { EaseCubicBezier = [0.25, 0.1, 0.25, 1.0] };
 
         Assert.IsNotNull(config.EaseCubicBezier);
-        Assert.AreEqual(4, config.EaseCubicBezier.Length);
+        Assert.HasCount(4, config.EaseCubicBezier);
         Assert.AreEqual(0.25, config.EaseCubicBezier[0]);
     }
 
@@ -233,11 +233,11 @@ public class TransitionConfigTests
         Assert.AreEqual(original.Duration, clone.Duration);
         Assert.AreEqual(original.Delay, clone.Delay);
         Assert.AreEqual(original.Ease, clone.Ease);
-        CollectionAssert.AreEqual(original.EaseCubicBezier, clone.EaseCubicBezier);
+        Assert.AreSequenceEqual(original.EaseCubicBezier, clone.EaseCubicBezier);
         Assert.AreEqual(original.Repeat, clone.Repeat);
         Assert.AreEqual(original.RepeatType, clone.RepeatType);
         Assert.AreEqual(original.RepeatDelay, clone.RepeatDelay);
-        CollectionAssert.AreEqual(original.Times, clone.Times);
+        Assert.AreSequenceEqual(original.Times, clone.Times);
         Assert.AreEqual(original.Stiffness, clone.Stiffness);
         Assert.AreEqual(original.Damping, clone.Damping);
         Assert.AreEqual(original.Mass, clone.Mass);
@@ -256,7 +256,7 @@ public class TransitionConfigTests
         Assert.AreEqual(original.DelayChildren, clone.DelayChildren);
         // Properties is deep-copied: equal contents but an independent dictionary instance.
         Assert.AreNotSame(original.Properties, clone.Properties);
-        Assert.AreEqual(original.Properties!.Count, clone.Properties!.Count);
+        Assert.HasCount(original.Properties!.Count, clone.Properties!);
         Assert.AreEqual(original.Properties["opacity"].Duration, clone.Properties["opacity"].Duration);
         Assert.AreNotSame(original.Properties["opacity"], clone.Properties["opacity"]);
     }

@@ -46,7 +46,7 @@ public class RoundElevenReviewTests : BunitContext
 
         pane.Click(new MouseEventArgs { ClientX = 340, ClientY = 20 });
 
-        CollectionAssert.AreEqual(dropped, NodeRenders(cut), "the click after a drop rendered nodes again");
+        Assert.AreSequenceEqual(dropped, NodeRenders(cut), "the click after a drop rendered nodes again");
     }
 
     [TestMethod]
@@ -65,7 +65,7 @@ public class RoundElevenReviewTests : BunitContext
         await up;
 
         var rendered = NodeRenders(cut).Zip(dragged, (after, before) => after > before).ToArray();
-        CollectionAssert.AreEqual(new[] { false, false, true }, rendered);
+        Assert.AreSequenceEqual(new[] { false, false, true }, rendered);
     }
 
     [TestMethod]
@@ -82,7 +82,7 @@ public class RoundElevenReviewTests : BunitContext
         pane.PointerUp(At(10, 210));
         pane.Click(new MouseEventArgs { ClientX = 10, ClientY = 210 });
 
-        CollectionAssert.AreEqual(new[] { "b" }, nodeClicks);
+        Assert.AreSequenceEqual(new[] { "b" }, nodeClicks);
         Assert.AreEqual(0, paneClicks);
 
         // And a click that really is on the pane is the pane's.
@@ -90,7 +90,7 @@ public class RoundElevenReviewTests : BunitContext
         pane.PointerUp(At(600, 600));
         pane.Click(new MouseEventArgs { ClientX = 600, ClientY = 600 });
         Assert.AreEqual(1, paneClicks);
-        Assert.HasCount(1, nodeClicks);
+        Assert.ContainsSingle(nodeClicks);
     }
 
     [TestMethod]
@@ -301,7 +301,7 @@ public class RoundElevenReviewTests : BunitContext
     [TestMethod]
     public void AMalformedPathKeepsWhatWasReadAndStops()
     {
-        CollectionAssert.AreEqual(new[] { (0.0, 0.0), (5.0, 5.0) }, BlowSvgExport.PointsOf("M0 0 L5 5 L x").ToArray());
+        Assert.AreSequenceEqual(new[] { (0.0, 0.0), (5.0, 5.0) }, BlowSvgExport.PointsOf("M0 0 L5 5 L x").ToArray());
         Assert.IsEmpty(BlowSvgExport.PointsOf("10 20 L5 5"));
     }
 
@@ -313,31 +313,33 @@ public class RoundElevenReviewTests : BunitContext
     [DataRow(1e160, 20)]
     [DataRow(double.NaN, 600)]
     [DataRow(1e300, 600)]
-    public void AForceLayoutStartingFromPositionsThatAreNotNumbersEnds(double bad, int count)
+    public async Task AForceLayoutStartingFromPositionsThatAreNotNumbersEnds(double bad, int count)
     {
         var nodes = Enumerable.Range(0, count).Select(i => new BlowNode { Id = $"n{i}", Width = 100, Height = 40, Position = new(i * 10, i * 5) }).ToList();
         nodes[3].Position = new(bad, 0);
         nodes[7].Position = new(0, -bad);
         var edges = Enumerable.Range(1, count - 1).Select(i => new BlowEdge { Id = $"e{i}", Source = $"n{(i - 1) / 2}", Target = $"n{i}" }).ToList();
 
-        var task = Task.Run(() => BlowLayout.Force(nodes, edges, new BlowForceLayoutOptions { StartFromCurrentPositions = true, Iterations = 60 }));
-        Assert.IsTrue(task.Wait(TimeSpan.FromSeconds(30)), "the layout never ended");
+        var task = Task.Run(() => BlowLayout.Force(nodes, edges, new BlowForceLayoutOptions { StartFromCurrentPositions = true, Iterations = 60 }), TestContext.CancellationToken);
+        await task.WaitAsync(TimeSpan.FromSeconds(30), TestContext.CancellationToken);
 
         Assert.IsTrue(nodes.All(n => double.IsFinite(n.Position.X) && double.IsFinite(n.Position.Y)), "a position is not a number");
     }
 
     [TestMethod]
-    public void APinnedNodeWithAPositionThatIsNotANumberIsLeftAloneAndTheRestStillLayOut()
+    public async Task APinnedNodeWithAPositionThatIsNotANumberIsLeftAloneAndTheRestStillLayOut()
     {
         var nodes = Enumerable.Range(0, 30).Select(i => new BlowNode { Id = $"n{i}", Width = 100, Height = 40 }).ToList();
         nodes[0].Position = new(double.NaN, 1e200);
         var edges = Enumerable.Range(1, 29).Select(i => new BlowEdge { Id = $"e{i}", Source = $"n{(i - 1) / 2}", Target = $"n{i}" }).ToList();
 
-        var task = Task.Run(() => BlowLayout.Force(nodes, edges, new BlowForceLayoutOptions { IsPinned = n => n.Id == "n0" }));
-        Assert.IsTrue(task.Wait(TimeSpan.FromSeconds(30)), "the layout never ended");
+        var task = Task.Run(() => BlowLayout.Force(nodes, edges, new BlowForceLayoutOptions { IsPinned = n => n.Id == "n0" }), TestContext.CancellationToken);
+        await task.WaitAsync(TimeSpan.FromSeconds(30), TestContext.CancellationToken);
 
         Assert.IsTrue(double.IsNaN(nodes[0].Position.X), "the pinned node was moved");
         Assert.IsTrue(nodes.Skip(1).All(n => double.IsFinite(n.Position.X) && double.IsFinite(n.Position.Y)));
         Assert.IsGreaterThan(20, nodes.Skip(1).Select(n => n.Position).Distinct().Count(), "the others did not lay out");
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

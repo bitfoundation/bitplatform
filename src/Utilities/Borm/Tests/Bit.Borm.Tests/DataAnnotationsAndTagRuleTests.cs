@@ -152,7 +152,7 @@ public class ComboboxDiagnosticTests
     }
 }
 
-public class BookingRequest : IValidatableObject
+internal class BookingRequest : IValidatableObject
 {
     [Required] public string Reference { get; set; } = "";
     public DateOnly Start { get; set; }

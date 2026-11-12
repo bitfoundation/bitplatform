@@ -23,7 +23,7 @@ namespace Bit.Bsqlite.Tests.E2E.Infrastructure;
 /// library from there, so the tests can prove that no module is reached by a root-relative URL.
 /// </para>
 /// </remarks>
-public sealed class AssetHost : IAsyncDisposable
+internal sealed class AssetHost : IAsyncDisposable
 {
     private readonly WebApplication _app;
 

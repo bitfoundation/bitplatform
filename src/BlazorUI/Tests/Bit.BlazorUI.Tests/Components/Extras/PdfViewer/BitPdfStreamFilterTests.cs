@@ -39,7 +39,7 @@ public class BitPdfStreamFilterTests
     {
         byte[] decoded = Decode(BitPdfEngineTestFile.Zlib(Sample), "/Filter /FlateDecode");
 
-        CollectionAssert.AreEqual(Sample, decoded);
+        Assert.AreSequenceEqual(Sample, decoded);
     }
 
     [TestMethod]
@@ -47,7 +47,7 @@ public class BitPdfStreamFilterTests
     {
         byte[] decoded = Decode(BitPdfEngineTestFile.RawDeflate(Sample), "/Filter /FlateDecode");
 
-        CollectionAssert.AreEqual(Sample, decoded);
+        Assert.AreSequenceEqual(Sample, decoded);
     }
 
     [TestMethod]
@@ -55,7 +55,7 @@ public class BitPdfStreamFilterTests
     {
         byte[] decoded = Decode(BitPdfEngineTestFile.Zlib(Sample), "/Filter [/Fl]");
 
-        CollectionAssert.AreEqual(Sample, decoded);
+        Assert.AreSequenceEqual(Sample, decoded);
     }
 
     [TestMethod]
@@ -67,8 +67,8 @@ public class BitPdfStreamFilterTests
 
         byte[] decoded = Decode(truncated, "/Filter /FlateDecode");
 
-        Assert.IsTrue(decoded.Length > 0, "The bytes inflated before the cut are kept.");
-        CollectionAssert.AreEqual(input[..decoded.Length], decoded);
+        Assert.IsNotEmpty(decoded, "The bytes inflated before the cut are kept.");
+        Assert.AreSequenceEqual(input[..decoded.Length], decoded);
     }
 
     [TestMethod]
@@ -79,7 +79,7 @@ public class BitPdfStreamFilterTests
 
         byte[] decoded = Decode(zlib, "/Filter /FlateDecode");
 
-        CollectionAssert.AreEqual(Sample, decoded);
+        Assert.AreSequenceEqual(Sample, decoded);
     }
 
     [TestMethod]
@@ -87,7 +87,7 @@ public class BitPdfStreamFilterTests
     {
         byte[] decoded = Decode(Encoding.ASCII.GetBytes("this is not deflate data at all"), "/Filter /FlateDecode");
 
-        Assert.AreEqual(0, decoded.Length);
+        Assert.IsEmpty(decoded);
     }
 
     [TestMethod]
@@ -105,7 +105,7 @@ public class BitPdfStreamFilterTests
 
         byte[] decoded = Decode(encoded, "/Filter /FlateDecode /DecodeParms << /Predictor 15 /Columns 4 >>");
 
-        CollectionAssert.AreEqual(pixels, decoded);
+        Assert.AreSequenceEqual(pixels, decoded);
     }
 
     [TestMethod]
@@ -117,7 +117,7 @@ public class BitPdfStreamFilterTests
 
         byte[] decoded = Decode(encoded, "/Filter /FlateDecode /DecodeParms << /Predictor 12 /Colors 3 /Columns 2 /BitsPerComponent 8 >>");
 
-        CollectionAssert.AreEqual(pixels, decoded);
+        Assert.AreSequenceEqual(pixels, decoded);
     }
 
     [TestMethod]
@@ -128,7 +128,7 @@ public class BitPdfStreamFilterTests
 
         byte[] decoded = Decode(encoded, "/Filter /FlateDecode /DecodeParms << /Predictor 2 /Colors 3 /Columns 4 >>");
 
-        CollectionAssert.AreEqual(pixels, decoded);
+        Assert.AreSequenceEqual(pixels, decoded);
     }
 
     [TestMethod]
@@ -136,8 +136,8 @@ public class BitPdfStreamFilterTests
     {
         byte[] encoded = BitPdfEngineTestFile.Zlib(Sample);
 
-        CollectionAssert.AreEqual(Sample, Decode(encoded, "/Filter /FlateDecode /DecodeParms << /Predictor 1 >>"));
-        CollectionAssert.AreEqual(Sample, Decode(encoded, "/Filter /FlateDecode /DecodeParms null"));
+        Assert.AreSequenceEqual(Sample, Decode(encoded, "/Filter /FlateDecode /DecodeParms << /Predictor 1 >>"));
+        Assert.AreSequenceEqual(Sample, Decode(encoded, "/Filter /FlateDecode /DecodeParms null"));
     }
 
     // ----- ASCIIHexDecode -----
@@ -164,7 +164,7 @@ public class BitPdfStreamFilterTests
         // PDF 32000-1 §7.4.2: "the final digit shall be assumed to be 0".
         byte[] decoded = Decode(Encoding.ASCII.GetBytes("414>"), "/Filter /ASCIIHexDecode");
 
-        CollectionAssert.AreEqual(new byte[] { 0x41, 0x40 }, decoded);
+        Assert.AreSequenceEqual(new byte[] { 0x41, 0x40 }, decoded);
     }
 
     // ----- ASCII85Decode -----
@@ -173,8 +173,8 @@ public class BitPdfStreamFilterTests
     public void Ascii85DecodeShouldDecodeAKnownVector()
     {
         // The classic Wikipedia/Adobe vector: "Man " -> "9jqo^", "sure." -> "F*2M7/c".
-        CollectionAssert.AreEqual(Encoding.ASCII.GetBytes("Man "), Decode(Encoding.ASCII.GetBytes("9jqo^~>"), "/Filter /ASCII85Decode"));
-        CollectionAssert.AreEqual(Encoding.ASCII.GetBytes("sure."), Decode(Encoding.ASCII.GetBytes("F*2M7/c~>"), "/Filter /A85"));
+        Assert.AreSequenceEqual(Encoding.ASCII.GetBytes("Man "), Decode(Encoding.ASCII.GetBytes("9jqo^~>"), "/Filter /ASCII85Decode"));
+        Assert.AreSequenceEqual(Encoding.ASCII.GetBytes("sure."), Decode(Encoding.ASCII.GetBytes("F*2M7/c~>"), "/Filter /A85"));
     }
 
     [TestMethod]
@@ -182,7 +182,7 @@ public class BitPdfStreamFilterTests
     {
         byte[] decoded = Decode(Encoding.ASCII.GetBytes("z 9jq\no^\r\nz~>"), "/Filter /ASCII85Decode");
 
-        CollectionAssert.AreEqual(new byte[] { 0, 0, 0, 0, (byte)'M', (byte)'a', (byte)'n', (byte)' ', 0, 0, 0, 0 }, decoded);
+        Assert.AreSequenceEqual(new byte[] { 0, 0, 0, 0, (byte)'M', (byte)'a', (byte)'n', (byte)' ', 0, 0, 0, 0 }, decoded);
     }
 
     [TestMethod]
@@ -196,7 +196,7 @@ public class BitPdfStreamFilterTests
         byte[] data = Noise(length, seed: length);
         byte[] encoded = Encoding.ASCII.GetBytes(BitPdfEngineTestFile.Ascii85(data));
 
-        CollectionAssert.AreEqual(data, Decode(encoded, "/Filter /ASCII85Decode"));
+        Assert.AreSequenceEqual(data, Decode(encoded, "/Filter /ASCII85Decode"));
     }
 
     // ----- LZWDecode -----
@@ -221,7 +221,7 @@ public class BitPdfStreamFilterTests
 
         byte[] decoded = Decode(BitPdfEngineTestFile.Lzw(data), "/Filter /LZWDecode");
 
-        CollectionAssert.AreEqual(data, decoded);
+        Assert.AreSequenceEqual(data, decoded);
     }
 
     [TestMethod]
@@ -232,7 +232,7 @@ public class BitPdfStreamFilterTests
 
         byte[] decoded = Decode(BitPdfEngineTestFile.Lzw(data), "/Filter /LZWDecode");
 
-        CollectionAssert.AreEqual(data, decoded);
+        Assert.AreSequenceEqual(data, decoded);
     }
 
     [TestMethod]
@@ -242,7 +242,7 @@ public class BitPdfStreamFilterTests
 
         byte[] decoded = Decode(BitPdfEngineTestFile.Lzw(data, earlyChange: 0), "/Filter /LZWDecode /DecodeParms << /EarlyChange 0 >>");
 
-        CollectionAssert.AreEqual(data, decoded);
+        Assert.AreSequenceEqual(data, decoded);
     }
 
     [TestMethod]
@@ -253,7 +253,7 @@ public class BitPdfStreamFilterTests
 
         byte[] decoded = Decode(encoded, "/Filter /LZWDecode /DecodeParms << /Predictor 12 /Columns 8 >>");
 
-        CollectionAssert.AreEqual(pixels, decoded);
+        Assert.AreSequenceEqual(pixels, decoded);
     }
 
     [TestMethod]
@@ -300,7 +300,7 @@ public class BitPdfStreamFilterTests
 
         byte[] decoded = Decode(Encoding.ASCII.GetBytes(encoded), "/Filter [/ASCIIHexDecode /FlateDecode]");
 
-        CollectionAssert.AreEqual(Sample, decoded);
+        Assert.AreSequenceEqual(Sample, decoded);
     }
 
     [TestMethod]
@@ -313,7 +313,7 @@ public class BitPdfStreamFilterTests
         byte[] decoded = Decode(Encoding.ASCII.GetBytes(encoded),
             "/Filter [/ASCII85Decode /FlateDecode] /DecodeParms [null << /Predictor 12 /Columns 5 >>]");
 
-        CollectionAssert.AreEqual(pixels, decoded);
+        Assert.AreSequenceEqual(pixels, decoded);
     }
 
     [TestMethod]
@@ -324,7 +324,7 @@ public class BitPdfStreamFilterTests
 
         byte[] decoded = Decode(Encoding.ASCII.GetBytes(encoded), "/Filter [/AHx /A85 /LZW]");
 
-        CollectionAssert.AreEqual(Sample, decoded);
+        Assert.AreSequenceEqual(Sample, decoded);
     }
 
     [TestMethod]
@@ -332,7 +332,7 @@ public class BitPdfStreamFilterTests
     {
         byte[] decoded = Decode(Sample, "/Filter /NoSuchDecode");
 
-        CollectionAssert.AreEqual(Sample, decoded);
+        Assert.AreSequenceEqual(Sample, decoded);
     }
 
     [TestMethod]
@@ -368,9 +368,9 @@ public class BitPdfStreamFilterTests
 
         var document = BitPdfDocument.Load(BitPdfEngineTestFile.SinglePage(data, entries));
 
-        CollectionAssert.AreEqual(content, document.Pages[0].GetContentBytes());
+        Assert.AreSequenceEqual(content, document.Pages[0].GetContentBytes());
         Assert.AreEqual("Filtered text", document.Pages[0].ExtractText().Trim());
-        StringAssert.Contains(new BitPdfHtmlRenderer(document.Pages[0], document.XRef).Render(), "Filtered text");
+        Assert.Contains("Filtered text", new BitPdfHtmlRenderer(document.Pages[0], document.XRef).Render());
     }
 
     [TestMethod]
@@ -416,7 +416,7 @@ public class BitPdfStreamFilterTests
 
         Assert.AreEqual(4, document.PageCount);
         var html = document.Pages.Select(p => new BitPdfHtmlRenderer(p, document.XRef).Render()).ToList();
-        StringAssert.Contains(html[1], "Page two");
+        Assert.Contains("Page two", html[1]);
         Assert.AreEqual("Page two", document.Pages[1].ExtractText().Trim());
         // Data that does not inflate decodes to nothing, so the page has no text - and no exception.
         Assert.AreEqual(string.Empty, document.Pages[0].ExtractText());
@@ -433,7 +433,7 @@ public class BitPdfStreamFilterTests
 
         byte[] decoded = Decode(data, "/Filter /FlateDecode /DecodeParms << /Predictor 12 /Columns 100 >>");
 
-        Assert.AreEqual(0, decoded.Length);
+        Assert.IsEmpty(decoded);
     }
 
     [TestMethod]
@@ -445,7 +445,7 @@ public class BitPdfStreamFilterTests
 
         byte[] decoded = Decode(BitPdfEngineTestFile.Zlib(predicted), "/Filter /FlateDecode /DecodeParms << /Predictor 12 /Columns 4 >>");
 
-        CollectionAssert.AreEqual(pixels, decoded);
+        Assert.AreSequenceEqual(pixels, decoded);
     }
 
     // BitPdfPredictor.Apply computed the row length in int, which this /DecodeParms wraps to
@@ -477,6 +477,6 @@ public class BitPdfStreamFilterTests
 
         byte[] decoded = Decode(data, "/Filter /FlateDecode " + parms);
 
-        Assert.AreEqual(0, decoded.Length);
+        Assert.IsEmpty(decoded);
     }
 }

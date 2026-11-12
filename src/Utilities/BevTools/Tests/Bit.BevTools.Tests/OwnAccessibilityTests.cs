@@ -66,7 +66,7 @@ public class OwnAccessibilityTests : BunitContext
         var parent = Session.Components.All.Single(r => r.Type == typeof(ParentComponent));
         panel.InvokeAsync(() => panel.Instance.SelectComponent(parent.InstanceId));
         var tabs = panel.FindAll("[role=tab]").Select(t => t.Id!.Replace("bev-tab-", "", StringComparison.Ordinal)).ToList();
-        Assert.IsTrue(tabs.Count >= 14);
+        Assert.IsGreaterThanOrEqualTo(14, tabs.Count);
         var unnamed = new List<string>();
         foreach (var tab in tabs)
         {
@@ -129,7 +129,7 @@ public class OwnAccessibilityTests : BunitContext
         Assert.AreEqual("bev-palette-item-0", input.GetAttribute("aria-activedescendant"));
         Assert.AreEqual("listbox", panel.Find("#bev-palette-list").GetAttribute("role"));
         var options = panel.FindAll("[role=option]");
-        Assert.IsTrue(options.Count > 1);
+        Assert.IsGreaterThan(1, options.Count);
         Assert.AreEqual("true", options[0].GetAttribute("aria-selected"));
     }
 

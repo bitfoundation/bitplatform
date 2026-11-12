@@ -42,7 +42,7 @@ public class AuthoringTests
 
         var codes = Codes(Tour(Step("a"), Step("a"), blank, Step(BonboardingTourDefinition.EndStepId)), BonboardingValidationSeverity.Error);
 
-        CollectionAssert.AreEquivalent(new[] { "duplicate-step-id", "blank-step-id", "reserved-step-id" }, codes);
+        Assert.AreSequenceEqual(new[] { "duplicate-step-id", "blank-step-id", "reserved-step-id" }, codes, Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -57,7 +57,7 @@ public class AuthoringTests
 
         var issues = Tour(step).Validate();
 
-        CollectionAssert.AreEquivalent(new[] { "goto-unknown-step", "goto-without-target" }, issues.Select(issue => issue.Code).ToArray());
+        Assert.AreSequenceEqual(new[] { "goto-unknown-step", "goto-without-target" }, issues.Select(issue => issue.Code).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         Assert.IsTrue(issues.All(issue => issue.StepId == "a"));
         Assert.Contains("'nope'", issues.First(issue => issue.Code == "goto-unknown-step").Message);
     }
@@ -83,9 +83,8 @@ public class AuthoringTests
 
         var codes = Codes(Tour(stuck, blocked, untargeted, absolute, dim), BonboardingValidationSeverity.Warning);
 
-        CollectionAssert.AreEquivalent(
-            new[] { "no-way-forward", "advance-on-blocked", "advance-on-without-target", "absolute-route", "overlay-opacity-out-of-range" },
-            codes);
+        Assert.AreSequenceEqual(
+            new[] { "no-way-forward", "advance-on-blocked", "advance-on-without-target", "absolute-route", "overlay-opacity-out-of-range" }, codes, Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -119,7 +118,7 @@ public class AuthoringTests
         var step = Step("a");
         step.Actions = [new BonboardingStepAction { Label = "Go", Effect = BonboardingStepActionEffect.GoTo, TargetStepId = "nope" }];
 
-        var error = await Assert.ThrowsExactlyAsync<BonboardingException>(() => harness.Service.StartAsync(Tour(step, Step("a"))));
+        var error = await Assert.ThrowsExactlyAsync<BonboardingException>(() => harness.Service.StartAsync(Tour(step, Step("a")), cancellationToken: TestContext.CancellationToken));
 
         Assert.Contains("'nope'", error.Message);
         Assert.Contains("more than one step with the id 'a'", error.Message);
@@ -136,7 +135,7 @@ public class AuthoringTests
         var dim = Step("a");
         dim.OverlayOpacity = 2;
 
-        var session = await harness.Service.StartAsync(Tour(dim));
+        var session = await harness.Service.StartAsync(Tour(dim), cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(BonboardingTourStatus.Running, session.Status);
     }
@@ -157,16 +156,16 @@ public class AuthoringTests
             return ValueTask.FromResult(named);
         };
 
-        var session = await harness.Service.StartAsync(Tour(step, Step("done")));
+        var session = await harness.Service.StartAsync(Tour(step, Step("done")), cancellationToken: TestContext.CancellationToken);
 
-        await session.NextAsync();
+        await session.NextAsync(TestContext.CancellationToken);
 
         Assert.AreEqual("name", session.CurrentStep!.Id);
         Assert.AreEqual("Give the project a name first.", session.ValidationMessage, "The hook's own reason wins over the step's.");
         Assert.Contains(BonboardingEventKind.AdvanceBlocked, harness.Events.Kinds);
 
         named = true;
-        await session.NextAsync();
+        await session.NextAsync(TestContext.CancellationToken);
 
         Assert.AreEqual("done", session.CurrentStep!.Id);
         Assert.IsNull(session.ValidationMessage);
@@ -181,8 +180,8 @@ public class AuthoringTests
         step.ValidationMessage = "Pick a plan to continue.";
         step.CanAdvance = _ => ValueTask.FromResult(false);
 
-        var session = await harness.Service.StartAsync(Tour(step));
-        await session.NextAsync();
+        var session = await harness.Service.StartAsync(Tour(step), cancellationToken: TestContext.CancellationToken);
+        await session.NextAsync(TestContext.CancellationToken);
 
         Assert.AreEqual("Pick a plan to continue.", session.ValidationMessage);
     }
@@ -196,12 +195,12 @@ public class AuthoringTests
         step.ValidationMessage = "Not yet.";
         step.CanAdvance = _ => ValueTask.FromResult(false);
 
-        var session = await harness.Service.StartAsync(Tour(Step("a"), step));
-        await session.NextAsync();
-        await session.NextAsync();
+        var session = await harness.Service.StartAsync(Tour(Step("a"), step), cancellationToken: TestContext.CancellationToken);
+        await session.NextAsync(TestContext.CancellationToken);
+        await session.NextAsync(TestContext.CancellationToken);
         Assert.AreEqual("Not yet.", session.ValidationMessage);
 
-        await session.PreviousAsync();
+        await session.PreviousAsync(TestContext.CancellationToken);
 
         Assert.AreEqual("a", session.CurrentStep!.Id);
         Assert.IsNull(session.ValidationMessage);
@@ -218,17 +217,17 @@ public class AuthoringTests
         create.ShowNext = false;
         create.AdvanceOnSignal = "project-created";
 
-        var session = await harness.Service.StartAsync(Tour(create, Step("next")));
+        var session = await harness.Service.StartAsync(Tour(create, Step("next")), cancellationToken: TestContext.CancellationToken);
 
-        Assert.IsFalse(await harness.Service.SignalAsync("something-else"));
-        Assert.IsFalse(await harness.Service.SignalAsync("Project-Created"), "Signals are compared ordinally.");
+        Assert.IsFalse(await harness.Service.SignalAsync("something-else", TestContext.CancellationToken));
+        Assert.IsFalse(await harness.Service.SignalAsync("Project-Created", TestContext.CancellationToken), "Signals are compared ordinally.");
         Assert.AreEqual("create", session.CurrentStep!.Id);
 
-        Assert.IsTrue(await harness.Service.SignalAsync("project-created"));
+        Assert.IsTrue(await harness.Service.SignalAsync("project-created", TestContext.CancellationToken));
         Assert.AreEqual("next", session.CurrentStep!.Id);
 
         // Not remembered: raised again, nothing waits for it.
-        Assert.IsFalse(await harness.Service.SignalAsync("project-created"));
+        Assert.IsFalse(await harness.Service.SignalAsync("project-created", TestContext.CancellationToken));
         Assert.AreEqual("next", session.CurrentStep!.Id);
     }
 
@@ -242,9 +241,9 @@ public class AuthoringTests
         create.ValidationMessage = "Save with a name.";
         create.CanAdvance = _ => ValueTask.FromResult(false);
 
-        var session = await harness.Service.StartAsync(Tour(create, Step("next")));
+        var session = await harness.Service.StartAsync(Tour(create, Step("next")), cancellationToken: TestContext.CancellationToken);
 
-        Assert.IsFalse(await harness.Service.SignalAsync("saved"));
+        Assert.IsFalse(await harness.Service.SignalAsync("saved", TestContext.CancellationToken));
         Assert.AreEqual("create", session.CurrentStep!.Id);
         Assert.AreEqual("Save with a name.", session.ValidationMessage);
     }
@@ -257,9 +256,11 @@ public class AuthoringTests
         var last = Step("last");
         last.AdvanceOnSignal = "done";
 
-        var session = await harness.Service.StartAsync(Tour(Step("first"), last), new BonboardingStartOptions { StartAtStepId = "last" });
+        var session = await harness.Service.StartAsync(Tour(Step("first"), last), new BonboardingStartOptions { StartAtStepId = "last" }, TestContext.CancellationToken);
 
-        Assert.IsTrue(await harness.Service.SignalAsync("done"));
+        Assert.IsTrue(await harness.Service.SignalAsync("done", TestContext.CancellationToken));
         Assert.AreEqual(BonboardingTourStatus.Completed, session.Status);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

@@ -14,27 +14,27 @@ public class BitAiGenerativeSchemaTests
 {
     public enum Tone { Calm, Urgent }
 
-    public sealed record Line(string Text, double Amount)
+    internal sealed record Line(string Text, double Amount)
     {
         [Description("Whether the line is taxed.")]
         public bool Taxed { get; init; }
     }
 
     [Description("A folder that can hold folders.")]
-    public sealed class Folder
+    internal sealed class Folder
     {
         [Required] public string Name { get; set; } = string.Empty;
         public List<Folder> Children { get; set; } = [];
         public Folder? Parent { get; set; }
     }
 
-    public sealed class Trap
+    internal sealed class Trap
     {
         public string Label { get; set; } = string.Empty;
         public Action? OnFire { get; set; }
     }
 
-    public sealed class Reflective
+    internal sealed class Reflective
     {
         public Type? Kind { get; set; }
     }
@@ -75,7 +75,7 @@ public class BitAiGenerativeSchemaTests
         Assert.IsFalse(items.GetProperty("additionalProperties").GetBoolean());
 
         var tones = Props(component).GetProperty("Tones");
-        CollectionAssert.AreEqual(new[] { "Calm", "Urgent" }, tones.GetProperty("items").GetProperty("enum").EnumerateArray().Select(e => e.GetString()).ToArray());
+        Assert.AreSequenceEqual(new[] { "Calm", "Urgent" }, tones.GetProperty("items").GetProperty("enum").EnumerateArray().Select(e => e.GetString()).ToArray());
     }
 
     [TestMethod]
@@ -86,7 +86,7 @@ public class BitAiGenerativeSchemaTests
         var folder = Props(component).GetProperty("Attachments");
         Assert.AreEqual("object", folder.GetProperty("type").GetString());
         Assert.AreEqual("A folder that can hold folders.", folder.GetProperty("description").GetString());
-        CollectionAssert.AreEqual(new[] { "Name" }, folder.GetProperty("required").EnumerateArray().Select(e => e.GetString()).ToArray());
+        Assert.AreSequenceEqual(new[] { "Name" }, folder.GetProperty("required").EnumerateArray().Select(e => e.GetString()).ToArray());
 
         var children = folder.GetProperty("properties").GetProperty("Children");
         Assert.AreEqual("array", children.GetProperty("type").GetString());
@@ -126,7 +126,7 @@ public class BitAiGenerativeSchemaTests
         var component = new BitAiGenerativeUiRegistry().Register<InvoiceCard>("invoice");
 
         var tone = Props(component).GetProperty("Tone");
-        CollectionAssert.AreEqual(new[] { "Calm", "Urgent" }, tone.GetProperty("enum").EnumerateArray().Select(e => e.GetString()).ToArray());
+        Assert.AreSequenceEqual(new[] { "Calm", "Urgent" }, tone.GetProperty("enum").EnumerateArray().Select(e => e.GetString()).ToArray());
         Assert.DoesNotContain("Tone", component.Schema.GetProperty("required").EnumerateArray().Select(e => e.GetString()));
     }
 
@@ -135,7 +135,7 @@ public class BitAiGenerativeSchemaTests
     {
         var component = new BitAiGenerativeUiRegistry().Register<InvoiceCard>("invoice");
 
-        CollectionAssert.AreEqual(new[] { "Customer" }, component.Schema.GetProperty("required").EnumerateArray().Select(e => e.GetString()).ToArray());
+        Assert.AreSequenceEqual(new[] { "Customer" }, component.Schema.GetProperty("required").EnumerateArray().Select(e => e.GetString()).ToArray());
         Assert.AreEqual("Shows an invoice.", component.Description);
         Assert.IsNull(component.FindProperty("TenantKey"));
         Assert.IsFalse(Props(component).TryGetProperty("TenantKey", out _));
@@ -160,7 +160,7 @@ public class BitAiGenerativeSchemaTests
 
         var result = BitAiGenerativePropsBinder.Bind(component, JsonDocument.Parse("""{"customer":"Ada","trap":{"label":"x"}}""").RootElement);
         Assert.IsFalse(result.Parameters.ContainsKey("Trap"));
-        CollectionAssert.AreEqual(new[] { "trap" }, result.IgnoredProperties.ToArray());
+        Assert.AreSequenceEqual(new[] { "trap" }, result.IgnoredProperties.ToArray());
     }
 
     [TestMethod]

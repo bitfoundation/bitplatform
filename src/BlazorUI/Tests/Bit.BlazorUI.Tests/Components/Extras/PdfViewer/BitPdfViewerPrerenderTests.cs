@@ -44,7 +44,7 @@ public class BitPdfViewerPrerenderTests : BunitTestContext
         Assert.IsNotNull(document.QuerySelector(".bit-pdv-page-loading"));
         Assert.IsNull(document.QuerySelector(".bit-pdv-error"));
         Assert.AreEqual(0, document.QuerySelectorAll(".bit-pdv-page[data-page]").Length);
-        Assert.AreEqual(0, errors.Count, string.Join("; ", errors));
+        Assert.IsEmpty(errors, string.Join("; ", errors));
     }
 
     [TestMethod]
@@ -59,13 +59,14 @@ public class BitPdfViewerPrerenderTests : BunitTestContext
         }, services => services.AddSingleton(new HttpClient(handler)));
 
         var pages = Parse(html).QuerySelectorAll(".bit-pdv-page").ToArray();
-        Assert.AreEqual(3, pages.Length);
-        StringAssert.Contains(pages[0].TextContent, "Range page 1");
+        Assert.HasCount(3, pages);
+        Assert.Contains("Range page 1", pages[0].TextContent);
         Assert.IsNull(pages[0].QuerySelector(".bit-pdv-page-placeholder"));
         Assert.IsTrue(pages.Skip(1).All(p => p.QuerySelector(".bit-pdv-page-placeholder") is not null));
-        Assert.IsTrue(handler.Requests.All(r => r?.StartsWith("bytes=", StringComparison.Ordinal) is true));
-        Assert.IsTrue(handler.LastBody!.Reads < 10);
-        Assert.AreEqual(0, errors.Count, string.Join("; ", errors));
+        var actualValue = handler.Requests.All(r => r?.StartsWith("bytes=", StringComparison.Ordinal) is true);
+        Assert.IsTrue(actualValue);
+        Assert.IsLessThan(10, handler.LastBody!.Reads);
+        Assert.IsEmpty(errors, string.Join("; ", errors));
     }
 
     [TestMethod]
@@ -78,17 +79,17 @@ public class BitPdfViewerPrerenderTests : BunitTestContext
 
         var pages = Parse(html).QuerySelectorAll(".bit-pdv-page").ToArray();
 
-        Assert.AreEqual(3, pages.Length);
+        Assert.HasCount(3, pages);
         Assert.IsNull(pages[0].QuerySelector(".bit-pdv-page-placeholder"));
-        StringAssert.Contains(pages[0].TextContent.Replace(" ", ""), "Page1");
+        Assert.Contains("Page1", pages[0].TextContent.Replace(" ", ""));
 
         // The pages not drawn yet are placeholders already of their page's size, so the ones drawn later as they
         // scroll into view take the place they had and nothing below them moves.
         foreach (var page in pages.Skip(1))
         {
             Assert.IsNotNull(page.QuerySelector(".bit-pdv-page-placeholder"));
-            StringAssert.Contains(page.GetAttribute("style"), "width:");
-            StringAssert.Contains(page.GetAttribute("style"), "height:");
+            Assert.Contains("width:", page.GetAttribute("style")!);
+            Assert.Contains("height:", page.GetAttribute("style")!);
             Assert.AreEqual(pages[0].GetAttribute("style"), page.GetAttribute("style"));
         }
     }
@@ -108,7 +109,7 @@ public class BitPdfViewerPrerenderTests : BunitTestContext
 
         Assert.IsNotNull(document.QuerySelector(".bit-pdv-page-loading"));
         Assert.IsNull(document.QuerySelector(".bit-pdv-error"));
-        Assert.AreEqual(0, errors.Count);
+        Assert.IsEmpty(errors);
     }
 
     [TestMethod]
@@ -128,7 +129,7 @@ public class BitPdfViewerPrerenderTests : BunitTestContext
 
         Assert.IsNotNull(document.QuerySelector(".bit-pdv-page-loading"));
         Assert.IsNull(document.QuerySelector(".bit-pdv-error"));
-        Assert.AreEqual(0, errors.Count);
+        Assert.IsEmpty(errors);
     }
 
     [TestMethod]
@@ -143,7 +144,7 @@ public class BitPdfViewerPrerenderTests : BunitTestContext
             [nameof(BitPdfViewer.OnError)] = EventCallback.Factory.Create<string?>(this, errors.Add),
         });
 
-        var finished = await Task.WhenAny(render, Task.Delay(TimeSpan.FromSeconds(10)));
+        var finished = await Task.WhenAny(render, Task.Delay(TimeSpan.FromSeconds(10), TestContext.CancellationToken));
         Assert.AreSame(render, finished, "The prerender waited for a password nobody can enter.");
 
         var document = Parse(await render);
@@ -151,7 +152,7 @@ public class BitPdfViewerPrerenderTests : BunitTestContext
         Assert.IsNotNull(document.QuerySelector(".bit-pdv-page-loading"));
         Assert.IsNull(document.QuerySelector("[role='dialog']"));
         Assert.IsNull(document.QuerySelector(".bit-pdv-error"));
-        Assert.AreEqual(0, errors.Count);
+        Assert.IsEmpty(errors);
     }
 
     [TestMethod]
@@ -175,7 +176,7 @@ public class BitPdfViewerPrerenderTests : BunitTestContext
             [nameof(BitPdfViewer.OnError)] = EventCallback.Factory.Create<string?>(this, errors.Add),
         });
 
-        var finished = await Task.WhenAny(render, Task.Delay(TimeSpan.FromSeconds(10)));
+        var finished = await Task.WhenAny(render, Task.Delay(TimeSpan.FromSeconds(10), TestContext.CancellationToken));
         Assert.AreSame(render, finished, "The stream prerender waited for a password nobody can enter.");
 
         var document = Parse(await render);
@@ -183,7 +184,7 @@ public class BitPdfViewerPrerenderTests : BunitTestContext
         Assert.IsNotNull(document.QuerySelector(".bit-pdv-page-loading"));
         Assert.IsNull(document.QuerySelector("[role='dialog']"));
         Assert.IsNull(document.QuerySelector(".bit-pdv-error"));
-        Assert.AreEqual(0, errors.Count);
+        Assert.IsEmpty(errors);
         Assert.AreEqual(1, factories);
         Assert.AreEqual(1, input.DisposeCount);
     }
@@ -205,7 +206,7 @@ public class BitPdfViewerPrerenderTests : BunitTestContext
         });
 
         component.WaitForAssertion(() => Assert.IsNotNull(component.Find(".bit-pdv-error")));
-        Assert.AreEqual(1, errors.Count);
+        Assert.ContainsSingle(errors);
         Assert.AreEqual(1, handler.Requests);
     }
 
@@ -219,4 +220,6 @@ public class BitPdfViewerPrerenderTests : BunitTestContext
             throw new HttpRequestException("The server cannot reach this URL.");
         }
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

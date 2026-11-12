@@ -70,7 +70,7 @@ public class LazyLoadingTests
             {
                 var definition = property.GetValue(null);
                 Assert.AreSame(definition, property.GetValue(null), $"{table.Name}.Indexes.{property.Name}");
-                Assert.IsTrue(described.Any(index => ReferenceEquals(index, definition)), $"{table.Name}.Indexes.{property.Name} is not the descriptor's.");
+                Assert.Contains(index => ReferenceEquals(index, definition), described, $"{table.Name}.Indexes.{property.Name} is not the descriptor's.");
             }
         }
     }
@@ -78,17 +78,19 @@ public class LazyLoadingTests
     [TestMethod]
     public async Task An_index_may_be_named_after_the_generated_members()
     {
-        await using var db = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions().AddTable(GeneratedNames.Table));
+        await using var db = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions().AddTable(GeneratedNames.Table), TestContext.CancellationToken);
         var rows = db.GetTable(GeneratedNames.Table);
 
         rows.Insert(new GeneratedNames { Id = 1, Kind = "a", Rank = 2, Flag = true, Priority = 5 });
         rows.Insert(new GeneratedNames { Id = 2, Kind = "b", Rank = 1, Flag = false, Priority = 7 });
 
         Assert.AreEqual(1, rows.Lookup(GeneratedNames.Indexes.Descriptor, "a").Single().Id);
-        CollectionAssert.AreEqual(new[] { 2, 1 }, rows.OrderBy(GeneratedNames.Indexes.Table).Select(row => row.Id).ToArray());
+        Assert.AreSequenceEqual(new[] { 2, 1 }, rows.OrderBy(GeneratedNames.Indexes.Table).Select(row => row.Id).ToArray());
         Assert.AreEqual(1, rows.Lookup(GeneratedNames.Indexes.__BlazeTable, true).Single().Id);
         Assert.AreEqual(2, rows.Lookup(GeneratedNames.Indexes.@event, 7).Single().Id);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }
 
 /// <summary>
@@ -96,7 +98,7 @@ public class LazyLoadingTests
 /// which the generator has to escape.
 /// </summary>
 [BlazeDbTable("generated-names")]
-public partial class GeneratedNames
+internal partial class GeneratedNames
 {
     [BlazeDbKey] public int Id { get; set; }
 

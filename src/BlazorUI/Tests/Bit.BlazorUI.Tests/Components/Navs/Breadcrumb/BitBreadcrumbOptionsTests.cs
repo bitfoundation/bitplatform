@@ -19,10 +19,10 @@ public class BitBreadcrumbOptionsTests : BunitTestContext
 
         var items = component.FindAll(".bit-brc-icn .bit-brc-itm, .bit-brc-icn .bit-brc-nii");
 
-        CollectionAssert.AreEqual(new[] { "Option 1", "Option 2", "Option 3" }, items.Select(i => i.TextContent.Trim()).ToArray());
+        Assert.AreSequenceEqual(new[] { "Option 1", "Option 2", "Option 3" }, items.Select(i => i.TextContent.Trim()).ToArray());
         Assert.AreEqual("page", component.Find(".bit-brc-sel").GetAttribute("aria-current"));
         // The options only render their hidden markers, the breadcrumb renders the visible items.
-        Assert.AreEqual(3, component.FindAll("[data-bit-brc-opt]").Count);
+        Assert.HasCount(3, component.FindAll("[data-bit-brc-opt]"));
     }
 
     [TestMethod]
@@ -75,7 +75,7 @@ public class BitBreadcrumbOptionsTests : BunitTestContext
             parameters.AddChildContent<BitBreadcrumbOption>(p => p.Add(o => o.Text, "Option 2"));
         });
 
-        Assert.AreEqual(1, component.FindAll("button.bit-brc-itm").Count);
+        Assert.ContainsSingle(component.FindAll("button.bit-brc-itm"));
 
         component.Find("button.bit-brc-itm").Click();
 
@@ -105,7 +105,7 @@ public class BitBreadcrumbOptionsTests : BunitTestContext
             parameters.AddChildContent<BitBreadcrumbOption>(p => p.Add(o => o.Text, "Option 2").Add(o => o.Href, "/option-2").Add(o => o.IsSelected, true));
         });
 
-        Assert.AreEqual(1, component.FindAll("a.bit-brc-itm").Count);
+        Assert.ContainsSingle(component.FindAll("a.bit-brc-itm"));
 
         var current = component.Find(".bit-brc-nii");
 
@@ -120,13 +120,12 @@ public class BitBreadcrumbOptionsTests : BunitTestContext
         var component = RenderComponent<BitBreadcrumbOptionsOrderTest>(
             parameters => parameters.Add(p => p.ShowMiddle, true));
 
-        Assert.AreEqual(3, component.FindAll(".bit-brc-itm").Count);
+        Assert.HasCount(3, component.FindAll(".bit-brc-itm"));
 
         // An option that leaves the markup unregisters itself, and the trail is left without its step.
         component.Render(parameters => parameters.Add(p => p.ShowMiddle, false));
 
-        CollectionAssert.AreEqual(new[] { "First", "Last" },
-            component.FindAll(".bit-brc-itm").Select(i => i.TextContent.Trim()).ToArray());
+        Assert.AreSequenceEqual(new[] { "First", "Last" }, component.FindAll(".bit-brc-itm").Select(i => i.TextContent.Trim()).ToArray());
     }
 
     [TestMethod]
@@ -143,12 +142,12 @@ public class BitBreadcrumbOptionsTests : BunitTestContext
             parameters.AddChildContent<BitBreadcrumbOption>(p => p.Add(o => o.Text, "Option 4").Add(o => o.IsSelected, true));
         });
 
-        CollectionAssert.AreEqual(new[] { "Option 1", "Option 4" }, GetItemTexts(component));
+        Assert.AreSequenceEqual(new[] { "Option 1", "Option 4" }, GetItemTexts(component));
 
         component.Find(".bit-brc-obt").Click();
 
-        CollectionAssert.AreEqual(new[] { "Option 1", "Option 2", "Option 3", "Option 4" }, GetItemTexts(component));
-        Assert.AreEqual(0, component.FindAll(".bit-brc-obt").Count);
+        Assert.AreSequenceEqual(new[] { "Option 1", "Option 2", "Option 3", "Option 4" }, GetItemTexts(component));
+        Assert.IsEmpty(component.FindAll(".bit-brc-obt"));
     }
 
     [TestMethod]
@@ -166,11 +165,11 @@ public class BitBreadcrumbOptionsTests : BunitTestContext
 
         var trail = component.FindAll(".bit-brc-icn .bit-brc-itm, .bit-brc-icn .bit-brc-nii");
 
-        CollectionAssert.AreEqual(new[] { "Option 1", "Option 4" }, trail.Select(i => i.TextContent.Trim()).ToArray());
+        Assert.AreSequenceEqual(new[] { "Option 1", "Option 4" }, trail.Select(i => i.TextContent.Trim()).ToArray());
 
         var overflow = component.FindAll(".bit-brc-cal .bit-brc-ofi");
 
-        CollectionAssert.AreEqual(new[] { "Option 2", "Option 3" }, overflow.Select(i => i.TextContent.Trim()).ToArray());
+        Assert.AreSequenceEqual(new[] { "Option 2", "Option 3" }, overflow.Select(i => i.TextContent.Trim()).ToArray());
     }
 
     private static string[] GetItemTexts(IRenderedComponent<BitBreadcrumb<BitBreadcrumbOption>> component)

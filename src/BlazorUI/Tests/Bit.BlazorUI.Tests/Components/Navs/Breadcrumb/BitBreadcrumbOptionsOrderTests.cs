@@ -19,19 +19,19 @@ public class BitBreadcrumbOptionsOrderTests : BunitTestContext
 
         var component = RenderComponent<BitBreadcrumbOptionsOrderTest>(parameters => parameters.Add(p => p.ShowMiddle, false));
 
-        CollectionAssert.AreEqual(new[] { "First", "Last" }, GetItemTexts(component));
+        Assert.AreSequenceEqual(new[] { "First", "Last" }, GetItemTexts(component));
 
         component.Render(parameters => parameters.Add(p => p.ShowMiddle, true));
 
         handler.SetResult(GetMarkerIds(component));
 
-        component.WaitForAssertion(() => CollectionAssert.AreEqual(new[] { "First", "Middle", "Last" }, GetItemTexts(component)));
+        component.WaitForAssertion(() => Assert.AreSequenceEqual(new[] { "First", "Middle", "Last" }, GetItemTexts(component)));
 
         component.Render(parameters => parameters.Add(p => p.ShowMiddle, false));
 
         handler.SetResult(GetMarkerIds(component));
 
-        component.WaitForAssertion(() => CollectionAssert.AreEqual(new[] { "First", "Last" }, GetItemTexts(component)));
+        component.WaitForAssertion(() => Assert.AreSequenceEqual(new[] { "First", "Last" }, GetItemTexts(component)));
     }
 
     private static string[] GetItemTexts(IRenderedComponent<BitBreadcrumbOptionsOrderTest> component)

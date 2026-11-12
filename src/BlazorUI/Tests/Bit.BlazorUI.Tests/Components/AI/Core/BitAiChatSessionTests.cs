@@ -22,9 +22,9 @@ public class BitAiChatSessionTests
             new BitAiMessageCompletedEvent());
 
         await using var session = Create(transport);
-        await session.SubmitAsync("hello");
+        await session.SubmitAsync("hello", cancellationToken: TestContext.CancellationToken);
 
-        Assert.AreEqual(2, session.Conversation.Messages.Count);
+        Assert.HasCount(2, session.Conversation.Messages);
         Assert.AreEqual("hello", session.Conversation.Messages[0].GetText());
         Assert.AreEqual("Hi there", session.Conversation.Messages[1].GetText());
         Assert.IsFalse(session.IsGenerating);
@@ -34,7 +34,7 @@ public class BitAiChatSessionTests
     public async Task TheFirstUserMessageBecomesTheConversationTitle()
     {
         await using var session = Create(new BitAiFakeTransport(new BitAiMessageCompletedEvent()));
-        await session.SubmitAsync("Explain quantum tunnelling in plain English");
+        await session.SubmitAsync("Explain quantum tunnelling in plain English", cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual("Explain quantum tunnelling in plain English", session.Conversation.Title);
     }
@@ -45,12 +45,12 @@ public class BitAiChatSessionTests
         var transport = new BitAiFakeTransport(new BitAiMessageCompletedEvent());
         await using var session = Create(transport);
 
-        await session.SubmitAsync("first");
-        await session.SubmitAsync("second");
+        await session.SubmitAsync("first", cancellationToken: TestContext.CancellationToken);
+        await session.SubmitAsync("second", cancellationToken: TestContext.CancellationToken);
 
-        Assert.AreEqual(2, transport.Requests.Count);
+        Assert.HasCount(2, transport.Requests);
         Assert.ContainsSingle(transport.Requests[0].Messages);
-        Assert.AreEqual(3, transport.Requests[1].Messages.Count);
+        Assert.HasCount(3, transport.Requests[1].Messages);
     }
 
     [TestMethod]
@@ -83,14 +83,14 @@ public class BitAiChatSessionTests
             ]);
 
         await using var session = Create(transport, registry);
-        await session.SubmitAsync("what is 2 plus 3");
+        await session.SubmitAsync("what is 2 plus 3", cancellationToken: TestContext.CancellationToken);
 
         var assistant = session.Conversation.Messages[^1];
         var call = Assert.IsExactInstanceOfType<BitAiToolCallPart>(assistant.Parts[0]);
         Assert.AreEqual(BitAiToolCallStatus.Completed, call.Status);
         Assert.AreEqual(5, call.Result!.Value!.Value.GetProperty("sum").GetInt32());
         Assert.AreEqual("The sum is 5.", assistant.GetText());
-        Assert.AreEqual(2, transport.Requests.Count);
+        Assert.HasCount(2, transport.Requests);
     }
 
     // A reply is not finished while the tools it asked for run: it stays in generation from the first request to the
@@ -127,11 +127,11 @@ public class BitAiChatSessionTests
             if (transport.Requests.Count < 2 && session.Conversation.Messages is [_, { IsBusy: false }]) finishedEarly = true;
         };
 
-        var assistant = await session.SubmitAsync("look it up");
+        var assistant = await session.SubmitAsync("look it up", cancellationToken: TestContext.CancellationToken);
 
         Assert.IsFalse(finishedEarly);
         Assert.AreEqual(BitAiMessageStatus.Complete, assistant!.Status);
-        Assert.AreEqual(2, transport.Requests.Count);
+        Assert.HasCount(2, transport.Requests);
     }
 
     // Whatever the transport said as it stopped for the call, the reply waits with it: it is still being generated.
@@ -157,7 +157,7 @@ public class BitAiChatSessionTests
         BitAiToolCallPart? awaiting = null;
         session.ApprovalRequested += call => awaiting = call;
 
-        var turn = session.SubmitAsync("clean up");
+        var turn = session.SubmitAsync("clean up", cancellationToken: TestContext.CancellationToken);
         await WaitFor(() => awaiting is not null);
 
         var assistant = session.Conversation.Messages[^1];
@@ -205,7 +205,7 @@ public class BitAiChatSessionTests
             }
         };
 
-        await session.SubmitAsync("search");
+        await session.SubmitAsync("search", cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual("Search the docs", described);
     }
@@ -232,7 +232,7 @@ public class BitAiChatSessionTests
             : [new BitAiTextDeltaEvent("See the guide."), new BitAiMessageCompletedEvent()]);
 
         await using var session = Create(transport, registry);
-        var assistant = await session.SubmitAsync("where is it documented");
+        var assistant = await session.SubmitAsync("where is it documented", cancellationToken: TestContext.CancellationToken);
 
         var citation = Assert.ContainsSingle(assistant!.Citations);
         Assert.AreEqual("Reference Guide", citation.Source.Title);
@@ -251,7 +251,7 @@ public class BitAiChatSessionTests
         await using var session = Create(transport, new BitAiToolRegistry(),
             new BitAiChatSessionOptions { Pacing = null, MaxToolRoundtrips = 1 });
 
-        await session.SubmitAsync("go");
+        await session.SubmitAsync("go", cancellationToken: TestContext.CancellationToken);
 
         var call = Assert.IsExactInstanceOfType<BitAiToolCallPart>(session.Conversation.Messages[^1].Parts[0]);
         Assert.AreEqual(BitAiToolCallStatus.Failed, call.Status);
@@ -274,7 +274,7 @@ public class BitAiChatSessionTests
         await using var session = Create(transport, registry,
             new BitAiChatSessionOptions { Pacing = null, MaxToolRoundtrips = 1 });
 
-        await session.SubmitAsync("search");
+        await session.SubmitAsync("search", cancellationToken: TestContext.CancellationToken);
 
         var call = Assert.IsExactInstanceOfType<BitAiToolCallPart>(session.Conversation.Messages[^1].Parts[0]);
         var error = call.Result!.Error!;
@@ -313,7 +313,7 @@ public class BitAiChatSessionTests
         BitAiToolCallPart? awaiting = null;
         session.ApprovalRequested += call => awaiting = call;
 
-        var turn = session.SubmitAsync("clean up");
+        var turn = session.SubmitAsync("clean up", cancellationToken: TestContext.CancellationToken);
 
         await WaitFor(() => awaiting is not null);
         Assert.IsFalse(executed);
@@ -351,7 +351,7 @@ public class BitAiChatSessionTests
         BitAiToolCallPart? awaiting = null;
         session.ApprovalRequested += call => awaiting = call;
 
-        var turn = session.SubmitAsync("clean up");
+        var turn = session.SubmitAsync("clean up", cancellationToken: TestContext.CancellationToken);
         await WaitFor(() => awaiting is not null);
         session.Approve("c1", BitAiApprovalDecision.Rejected);
         await turn;
@@ -367,4 +367,6 @@ public class BitAiChatSessionTests
         while (!condition() && DateTime.UtcNow < deadline) await Task.Delay(5);
         Assert.IsTrue(condition(), "The expected condition was not reached in time.");
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

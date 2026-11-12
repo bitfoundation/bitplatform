@@ -21,7 +21,7 @@ public class BrouterLinkTests : BunitTestContext
         cut.WaitForAssertion(() =>
         {
             var anchor = cut.Find("[data-testid=link]");
-            StringAssert.Contains(anchor.GetAttribute("class") ?? "", "active");
+            Assert.Contains("active", anchor.GetAttribute("class") ?? "");
             Assert.AreEqual("page", anchor.GetAttribute("aria-current"));
         });
     }
@@ -37,7 +37,7 @@ public class BrouterLinkTests : BunitTestContext
         cut.WaitForAssertion(() =>
         {
             var anchor = cut.Find("[data-testid=link]");
-            StringAssert.Contains(anchor.GetAttribute("class") ?? "", "active");
+            Assert.Contains("active", anchor.GetAttribute("class") ?? "");
         });
     }
 
@@ -55,7 +55,7 @@ public class BrouterLinkTests : BunitTestContext
         {
             var anchor = cut.Find("[data-testid=link]");
             var cls = anchor.GetAttribute("class") ?? "";
-            Assert.IsFalse(cls.Contains("active"), $"expected not active, got class='{cls}'");
+            Assert.DoesNotContain("active", cls, $"expected not active, got class='{cls}'");
             Assert.IsNull(anchor.GetAttribute("aria-current"));
         });
     }
@@ -75,7 +75,7 @@ public class BrouterLinkTests : BunitTestContext
         {
             var anchor = cut.Find("[data-testid=link]");
             var cls = anchor.GetAttribute("class") ?? "";
-            Assert.IsFalse(cls.Contains("active"), $"expected not active, got class='{cls}'");
+            Assert.DoesNotContain("active", cls, $"expected not active, got class='{cls}'");
             Assert.IsNull(anchor.GetAttribute("aria-current"));
         });
     }
@@ -91,7 +91,7 @@ public class BrouterLinkTests : BunitTestContext
         cut.WaitForAssertion(() =>
         {
             var anchor = cut.Find("[data-testid=link]");
-            StringAssert.Contains(anchor.GetAttribute("class") ?? "", "active");
+            Assert.Contains("active", anchor.GetAttribute("class") ?? "");
             Assert.AreEqual("page", anchor.GetAttribute("aria-current"));
         });
     }
@@ -110,7 +110,7 @@ public class BrouterLinkTests : BunitTestContext
         cut.WaitForAssertion(() =>
         {
             var cls = cut.Find("[data-testid=link]").GetAttribute("class") ?? "";
-            Assert.IsFalse(cls.Contains("active"), $"expected not active, got class='{cls}'");
+            Assert.DoesNotContain("active", cls, $"expected not active, got class='{cls}'");
         });
 
         // Now navigate to the exact path; the link should activate.
@@ -119,7 +119,7 @@ public class BrouterLinkTests : BunitTestContext
         cut.WaitForAssertion(() =>
         {
             var cls = cut.Find("[data-testid=link]").GetAttribute("class") ?? "";
-            StringAssert.Contains(cls, "active");
+            Assert.Contains("active", cls);
         });
     }
 
@@ -139,7 +139,7 @@ public class BrouterLinkTests : BunitTestContext
         cut.WaitForAssertion(() =>
         {
             var cls = cut.Find("[data-testid=link]").GetAttribute("class") ?? "";
-            StringAssert.Contains(cls, "active");
+            Assert.Contains("active", cls);
         });
     }
 
@@ -171,9 +171,9 @@ public class BrouterLinkTests : BunitTestContext
 
         cut.WaitForAssertion(() =>
         {
-            Assert.IsTrue(changes.Count > 0, "expected the click to trigger a navigation");
-            StringAssert.EndsWith(changes[^1].Location, "/users");
-            StringAssert.EndsWith(nav.Uri, "/users");
+            Assert.IsNotEmpty(changes, "expected the click to trigger a navigation");
+            Assert.EndsWith("/users", changes[^1].Location);
+            Assert.EndsWith("/users", nav.Uri);
             // The actual replace flag isn't carried on LocationChangedEventArgs, but History
             // does record it. nav.History is documented and the last entry is ours.
             Assert.IsTrue(nav.History.Last().Options.ReplaceHistoryEntry,
@@ -212,9 +212,9 @@ public class BrouterLinkTests : BunitTestContext
         // Non-primary click (middle button) must also fall through.
         anchor.Click(new MouseEventArgs { Button = 1 });
 
-        Assert.AreEqual(0, changes.Count,
+        Assert.IsEmpty(changes,
             "modified or non-primary clicks must not trigger a replace navigation");
-        StringAssert.EndsWith(nav.Uri, "/start");
+        Assert.EndsWith("/start", nav.Uri);
     }
 
     [TestMethod]
@@ -232,8 +232,8 @@ public class BrouterLinkTests : BunitTestContext
         var jsInvocations = Context!.JSInterop.Invocations;
         cut.WaitForState(() => jsInvocations.Count(i => i.Identifier == "wireConditionalPreventDefault") == 3);
 
-        Assert.AreEqual(1, jsInvocations.Count(i => i.Identifier == "import"),
-            "all Replace links should reuse the scope-shared bit-brouter.js module instead of importing per link");
+        Assert.ContainsSingle(i => i.Identifier == "import",
+jsInvocations, "all Replace links should reuse the scope-shared bit-brouter.js module instead of importing per link");
     }
 
     private void SetupReplaceJsModule()

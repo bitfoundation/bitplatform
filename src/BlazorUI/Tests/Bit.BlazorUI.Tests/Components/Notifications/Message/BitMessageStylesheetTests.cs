@@ -19,8 +19,8 @@ public class BitMessageStylesheetTests
 
         // The two variants drop the fill and leave the text on the page's own surface, so it reads the role's fg - the
         // shade meant to be read there, which for a background or border role is its on color (BitColorRoleMapsTests).
-        StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, variant), $"--bit-msg-fg: var(--bit-msg-clr-txt, var(--bit-Message-{name}-color, var(--bit-Message-color, #{{$clr-inf-fg}})));");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n    .bit-msg-#{$role} {"), "--bit-msg-clr-txt: #{role($tokens, fg)};");
+        Assert.Contains($"--bit-msg-fg: var(--bit-msg-clr-txt, var(--bit-Message-{name}-color, var(--bit-Message-color, #{{$clr-inf-fg}})));", SourceFiles.GetScssDeclarations(stylesheet, variant));
+        Assert.Contains("--bit-msg-clr-txt: #{role($tokens, fg)};", SourceFiles.GetScssBlock(stylesheet, "\n    .bit-msg-#{$role} {"));
     }
 
     [TestMethod]
@@ -29,7 +29,7 @@ public class BitMessageStylesheetTests
         var roles = SourceFiles.GetScssBlock(ReadStylesheet(), "\n    .bit-msg-#{$role} {");
 
         // A role's main is picked to be a fill; a background role's main as text on the page is the page itself.
-        Assert.IsFalse(roles.Contains("--bit-msg-clr-txt: #{role($tokens, main)};"), "The unfilled text is the role's main.");
+        Assert.DoesNotContain("--bit-msg-clr-txt: #{role($tokens, main)};", roles, "The unfilled text is the role's main.");
     }
 
     [TestMethod,
@@ -42,8 +42,8 @@ public class BitMessageStylesheetTests
         // The tint is a faint wash of the role, picked to keep the fg text above it readable. Only the two unfilled
         // variants render it, so each writes it itself, reading its own background ahead of the shared one.
         var tinted = SourceFiles.GetScssDeclarations(SourceFiles.GetScssBlock(stylesheet, variant), "&.bit-msg-tnt {");
-        StringAssert.Contains(tinted, $"--bit-msg-bg: var(--bit-msg-clr-tint, var(--bit-Message-{name}-background, var(--bit-Message-background, #{{$clr-inf-tint}})));");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n    .bit-msg-#{$role} {"), "--bit-msg-clr-tint: #{role($tokens, tint)};");
+        Assert.Contains($"--bit-msg-bg: var(--bit-msg-clr-tint, var(--bit-Message-{name}-background, var(--bit-Message-background, #{{$clr-inf-tint}})));", tinted);
+        Assert.Contains("--bit-msg-clr-tint: #{role($tokens, tint)};", SourceFiles.GetScssBlock(stylesheet, "\n    .bit-msg-#{$role} {"));
     }
 
     [TestMethod]
@@ -53,18 +53,18 @@ public class BitMessageStylesheetTests
 
         // An explicit Size publishes these, so they are read before the variable, which only restyles the medium
         // message an unset one stands for.
-        StringAssert.Contains(stylesheet, "font-size: var(--bit-msg-fontsize, var(--bit-Message-font-size, #{$tg-fs-sm}));");
-        StringAssert.Contains(stylesheet, "font-size: var(--bit-msg-ico-fontsize, var(--bit-Message-icon-size, #{$siz-icon-md}));");
-        StringAssert.Contains(stylesheet, "height: var(--bit-msg-track-size, var(--bit-Message-progress-height, #{$siz-track-md}));");
+        Assert.Contains("font-size: var(--bit-msg-fontsize, var(--bit-Message-font-size, #{$tg-fs-sm}));", stylesheet);
+        Assert.Contains("font-size: var(--bit-msg-ico-fontsize, var(--bit-Message-icon-size, #{$siz-icon-md}));", stylesheet);
+        Assert.Contains("height: var(--bit-msg-track-size, var(--bit-Message-progress-height, #{$siz-track-md}));", stylesheet);
 
         // So does an explicit Color, for every color its role paints; the transparent background of Outline and Text is
         // the variable's alone.
         var fill = SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-msg-fil {");
-        StringAssert.Contains(fill, "--bit-msg-fg: var(--bit-msg-clr, var(--bit-Message-fill-color, var(--bit-Message-color, #{$clr-inf-text})));");
-        StringAssert.Contains(fill, "--bit-msg-bg: var(--bit-msg-clr-bg, var(--bit-Message-fill-background, var(--bit-Message-background, #{$clr-inf})));");
-        StringAssert.Contains(fill, "--bit-msg-brd: var(--bit-msg-clr-bg, var(--bit-Message-fill-border-color, var(--bit-Message-border-color, #{$clr-inf})));");
-        StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-msg-otl {"), "--bit-msg-bg: var(--bit-Message-outline-background, var(--bit-Message-background, transparent));");
-        StringAssert.Contains(stylesheet, "--bit-msg-focus: var(--bit-msg-clr-focus, var(--bit-Message-focus-color, #{$clr-inf-focus}));");
+        Assert.Contains("--bit-msg-fg: var(--bit-msg-clr, var(--bit-Message-fill-color, var(--bit-Message-color, #{$clr-inf-text})));", fill);
+        Assert.Contains("--bit-msg-bg: var(--bit-msg-clr-bg, var(--bit-Message-fill-background, var(--bit-Message-background, #{$clr-inf})));", fill);
+        Assert.Contains("--bit-msg-brd: var(--bit-msg-clr-bg, var(--bit-Message-fill-border-color, var(--bit-Message-border-color, #{$clr-inf})));", fill);
+        Assert.Contains("--bit-msg-bg: var(--bit-Message-outline-background, var(--bit-Message-background, transparent));", SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-msg-otl {"));
+        Assert.Contains("--bit-msg-focus: var(--bit-msg-clr-focus, var(--bit-Message-focus-color, #{$clr-inf-focus}));", stylesheet);
 
         Assert.IsFalse(Regex.IsMatch(stylesheet, @"var\(--bit-Message-[a-z-]+, var\(--bit-msg-"), "A public variable is read before the parameter it restyles the default of.");
     }
@@ -82,8 +82,7 @@ public class BitMessageStylesheetTests
         // from the other two on :root - a neutral hairline around the outlined messages without a border on every filled one.
         foreach (var name in new[] { "color", "background", "border-color" })
         {
-            StringAssert.Contains(block, $"var(--bit-Message-{variant}-{name}, var(--bit-Message-{name}, ",
-                                  $"{selector} does not read --bit-Message-{variant}-{name} ahead of --bit-Message-{name}.");
+            Assert.Contains($"var(--bit-Message-{variant}-{name}, var(--bit-Message-{name}, ", block, $"{selector} does not read --bit-Message-{variant}-{name} ahead of --bit-Message-{name}.");
         }
 
         // A variant reads a shared color variable only right behind its own twin, and never the tier of another variant.
@@ -105,7 +104,7 @@ public class BitMessageStylesheetTests
                                          "--bit-msg-margin", "--bit-msg-fontsize", "--bit-msg-ico-margin", "--bit-msg-ico-fontsize",
                                          "--bit-msg-btn-size", "--bit-msg-btn-icosize", "--bit-msg-act-maxheight", "--bit-msg-track-size" })
         {
-            StringAssert.Contains(root, $"{property}: initial;");
+            Assert.Contains($"{property}: initial;", root);
         }
     }
 

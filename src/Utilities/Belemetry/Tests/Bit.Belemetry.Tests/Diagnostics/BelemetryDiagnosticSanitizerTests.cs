@@ -73,7 +73,7 @@ public class BelemetryDiagnosticSanitizerTests
         Assert.AreEqual("2026-11-04T10:00:00.0000000+00:00", tree["at"]);
         Assert.AreEqual(BelemetryDiagnosticSanitizer.Unsupported, tree["owner"], "An object is never serialized.");
         Assert.AreEqual("REDACTED", tree["apiKey"]);
-        CollectionAssert.AreEqual(new object[] { "a", "b" }, ((List<object?>)tree["tags"]!).ToArray());
+        Assert.AreSequenceEqual(new object[] { "a", "b" }, ((List<object?>)tree["tags"]!).ToArray());
         Assert.AreEqual("[email]", ((Dictionary<string, object?>)tree["nested"]!)["email"]);
         Assert.AreEqual(1, counters.Omissions);
     }
@@ -113,7 +113,7 @@ public class BelemetryDiagnosticSanitizerTests
         counters = new BelemetrySanitizeCounters();
         var big = Enumerable.Range(0, 3).ToDictionary(i => "k" + i, i => (object?)new string('x', 4000));
         tree = sanitizer.Tree(big, new BelemetrySnapshotOptions { MaxBytes = 300, MaxStringLength = 100 }, ref counters);
-        Assert.IsTrue(tree.Values.Any(v => Equals(v, BelemetryDiagnosticSanitizer.Truncated)), "The byte budget stops the tree.");
+        Assert.Contains(v => Equals(v, BelemetryDiagnosticSanitizer.Truncated), tree.Values, "The byte budget stops the tree.");
     }
 
     [TestMethod]

@@ -29,7 +29,7 @@ public class BitFullCalendarPrerenderTests : BunitTestContext
         });
 
         // The app fetches the events of the range the calendar reports, the way the OnDateChange docs suggest.
-        StringAssert.Contains(html, "Loaded for 2031-06-01");
+        Assert.Contains("Loaded for 2031-06-01", html);
     }
 
     [TestMethod]
@@ -41,7 +41,7 @@ public class BitFullCalendarPrerenderTests : BunitTestContext
             [nameof(RangeLoadingHost.View)] = BitFullCalendarView.Week,
         });
 
-        StringAssert.Contains(html, "Loaded for 2031-06-15");
+        Assert.Contains("Loaded for 2031-06-15", html);
     }
 
     [TestMethod]
@@ -50,7 +50,7 @@ public class BitFullCalendarPrerenderTests : BunitTestContext
         // JavaScript cannot be called before the page is interactive; the interactive render reports the range again.
         var html = await Prerenderer.RenderAsync<JsCallingHost>();
 
-        StringAssert.Contains(html, "bit-bfc");
+        Assert.Contains("bit-bfc", html);
     }
 
     [TestMethod]
@@ -60,7 +60,7 @@ public class BitFullCalendarPrerenderTests : BunitTestContext
         // the server; the page still renders, and the interactive render reports the range again.
         var html = await Prerenderer.RenderAsync<FailingHost>();
 
-        StringAssert.Contains(html, "bit-bfc");
+        Assert.Contains("bit-bfc", html);
     }
 
     [TestMethod]
@@ -68,8 +68,8 @@ public class BitFullCalendarPrerenderTests : BunitTestContext
     {
         var host = RenderComponent<RangeLoadingHost>(parameters => parameters.Add(p => p.View, BitFullCalendarView.Week));
 
-        host.WaitForAssertion(() => StringAssert.Contains(host.Markup, "Loaded for 2031-06-15"));
-        Assert.AreEqual(1, host.Instance.Ranges.Count);
+        host.WaitForAssertion(() => Assert.Contains("Loaded for 2031-06-15", host.Markup));
+        Assert.ContainsSingle(host.Instance.Ranges);
         Assert.AreEqual(BitFullCalendarView.Week, host.Instance.Ranges[0].View);
     }
 
@@ -88,7 +88,7 @@ public class BitFullCalendarPrerenderTests : BunitTestContext
         // Neither a re-render nor the after-render pass reports it a second time.
         component.Render(parameters => parameters.Add(p => p.IsLoading, true));
 
-        Assert.AreEqual(1, ranges.Count);
+        Assert.ContainsSingle(ranges);
         Assert.AreEqual(new DateTime(2031, 6, 1), ranges[0].Start);
     }
 

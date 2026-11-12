@@ -22,7 +22,7 @@ public class ServerPipelineHostingTests
         await using var factory = new HarnessHostFactory(Modes.Ssr, serverPipeline: true);
         var marker = Guid.NewGuid().ToString("N");
 
-        using var response = await factory.CreateClient().GetAsync($"/test-api/server-telemetry?marker={marker}");
+        using var response = await factory.CreateClient().GetAsync($"/test-api/server-telemetry?marker={marker}", TestContext.CancellationToken);
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 
         var span = await Eventually.WaitAsync(
@@ -72,15 +72,16 @@ public class ServerPipelineHostingTests
     {
         await using var factory = new HarnessHostFactory(Modes.Ssr, serverPipeline: true);
 
-        using var response = await factory.CreateClient().GetAsync($"/test-api/server-telemetry?marker={Guid.NewGuid():N}");
+        using var response = await factory.CreateClient().GetAsync($"/test-api/server-telemetry?marker={Guid.NewGuid():N}", TestContext.CancellationToken);
         await Eventually.WaitAsync(() => factory.Collector.Snapshot().Requests.Count >= 2 ? factory.Collector : null, _exportTimeout, () => Describe(factory.Collector));
-        await Task.Delay(TimeSpan.FromSeconds(2));
+        await Task.Delay(TimeSpan.FromSeconds(2), TestContext.CancellationToken);
 
         var spans = factory.Collector.Snapshot().Spans;
         // The exporter's own HttpClient calls run suppressed, and the receiver's server spans are filtered out by the
         // harness's processor - otherwise every export would be exported by the next one, forever.
-        Assert.IsFalse(spans.Any(s => s.Scope == "System.Net.Http"), $"An export was traced: {string.Join(", ", spans.Select(s => s.Name))}");
-        Assert.IsFalse(spans.Any(s => (s.Attributes.GetValueOrDefault("url.path") ?? s.Attributes.GetValueOrDefault("http.route"))?.StartsWith(HarnessCollectorFilter.CollectorPath, StringComparison.Ordinal) is true),
+        Assert.DoesNotContain(s => s.Scope == "System.Net.Http", spans, $"An export was traced: {string.Join(", ", spans.Select(s => s.Name))}");
+        var actualValue = spans.Any(s => (s.Attributes.GetValueOrDefault("url.path") ?? s.Attributes.GetValueOrDefault("http.route"))?.StartsWith(HarnessCollectorFilter.CollectorPath, StringComparison.Ordinal) is true);
+        Assert.IsFalse(actualValue,
             "A request to the receiver was exported.");
     }
 
@@ -94,14 +95,14 @@ public class ServerPipelineHostingTests
         await using var factory = new HarnessHostFactory(mode);
         using var client = factory.CreateClient();
 
-        using (var page = await client.GetAsync("/")) Assert.AreEqual(HttpStatusCode.OK, page.StatusCode);
-        using (var telemetry = await client.GetAsync($"/test-api/server-telemetry?marker={Guid.NewGuid():N}")) Assert.AreEqual(HttpStatusCode.OK, telemetry.StatusCode);
+        using (var page = await client.GetAsync("/", TestContext.CancellationToken)) Assert.AreEqual(HttpStatusCode.OK, page.StatusCode);
+        using (var telemetry = await client.GetAsync($"/test-api/server-telemetry?marker={Guid.NewGuid():N}", TestContext.CancellationToken)) Assert.AreEqual(HttpStatusCode.OK, telemetry.StatusCode);
 
         // Several flush intervals (500 ms), and a metrics interval (2 s).
-        await Task.Delay(TimeSpan.FromSeconds(3));
+        await Task.Delay(TimeSpan.FromSeconds(3), TestContext.CancellationToken);
 
         var received = factory.Collector.Snapshot();
-        Assert.AreEqual(0, received.Requests.Count, $"The server exported with CollectDotnetTelemetry off. {Describe(factory.Collector)}");
+        Assert.IsEmpty(received.Requests, $"The server exported with CollectDotnetTelemetry off. {Describe(factory.Collector)}");
     }
 
     private static string Describe(HarnessCollector collector)
@@ -111,4 +112,6 @@ public class ServerPipelineHostingTests
                $"logs [{string.Join(" | ", all.Logs.Select(l => l.Body).Take(20))}], metrics [{string.Join(", ", all.Metrics.Select(m => m.Name).Distinct())}], " +
                $"envelopes [{string.Join(", ", all.Envelopes.Select(e => e.Name).Distinct())}].";
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

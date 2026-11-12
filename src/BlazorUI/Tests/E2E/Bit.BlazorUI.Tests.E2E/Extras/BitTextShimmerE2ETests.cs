@@ -34,13 +34,13 @@ public class BitTextShimmerE2ETests : E2ETestBase
         await Expect(shimmer).ToHaveCSSAsync("-webkit-text-fill-color", "rgba(0, 0, 0, 0)");
         await Expect(shimmer).ToHaveCSSAsync("background-clip", "text");
         await Expect(shimmer).ToHaveCSSAsync("display", "inline-block");
-        StringAssert.StartsWith(await ComputedStyleAsync("#tsh-basic", "background-image"), "linear-gradient(90deg");
+        Assert.StartsWith("linear-gradient(90deg", await ComputedStyleAsync("#tsh-basic", "background-image"));
 
         // The resting color is the tertiary foreground of the theme, painted under the band too.
         var baseColor = await ResolveColorAsync("var(--bit-clr-fg-ter)");
         await Expect(shimmer).ToHaveCSSAsync("color", baseColor);
         await Expect(shimmer).ToHaveCSSAsync("background-color", baseColor);
-        StringAssert.Contains(await ComputedStyleAsync("#tsh-basic", "background-image"), await ResolveColorAsync("var(--bit-clr-fg-pri)"));
+        Assert.Contains(await ResolveColorAsync("var(--bit-clr-fg-pri)"), await ComputedStyleAsync("#tsh-basic", "background-image"));
 
         var animation = await AnimationAsync("#tsh-basic");
         Assert.IsNotNull(animation);
@@ -222,7 +222,7 @@ public class BitTextShimmerE2ETests : E2ETestBase
         var image = await ComputedStyleAsync($"#{id}", "background-image");
         if (spread.EndsWith("px") && spread != "0px")
         {
-            StringAssert.Contains(image, $"50% - {spread}");
+            Assert.Contains($"50% - {spread}", image);
         }
     }
 
@@ -250,7 +250,7 @@ public class BitTextShimmerE2ETests : E2ETestBase
     {
         await OpenAsync(Route);
 
-        StringAssert.StartsWith(await ComputedStyleAsync($"#{id}", "background-image"), $"linear-gradient({gradientAngle}");
+        Assert.StartsWith($"linear-gradient({gradientAngle}", await ComputedStyleAsync($"#{id}", "background-image"));
     }
 
     // ---------- content ----------
@@ -407,7 +407,7 @@ public class BitTextShimmerE2ETests : E2ETestBase
         await Page.Locator("#btn-toggle-paused").ClickAsync();
         await Expect(shimmer).ToHaveCSSAsync("animation-play-state", "running");
         var resumed = (await AnimationAsync("#tsh-paused"))!.Value.GetProperty("current").GetDouble();
-        Assert.IsTrue(resumed >= heldAt - 0.01, $"The sweep carries on from {heldAt}, was {resumed}.");
+        Assert.IsGreaterThanOrEqualTo(heldAt - 0.01, resumed, $"The sweep carries on from {heldAt}, was {resumed}.");
         await WaitForBackgroundToMoveAsync("#tsh-paused");
     }
 
@@ -470,7 +470,7 @@ public class BitTextShimmerE2ETests : E2ETestBase
             """)).JsonValueAsync<double[]>())[0];
         await Expect(shimmer).Not.ToHaveClassAsync(HasClass("bit-tsh-sta"));
         await Expect(shimmer).ToHaveCSSAsync("animation-name", "bit-tsh-anim");
-        Assert.IsTrue(restarted < 1000, $"The sweeps start from the beginning, the time was {restarted}.");
+        Assert.IsLessThan(1000, restarted, $"The sweeps start from the beginning, the time was {restarted}.");
 
         // A static shimmer is drawn in its own BaseColor.
         await Expect(Page.Locator("#tsh-static-base")).ToHaveCSSAsync("color", "rgb(10, 20, 30)");
@@ -586,14 +586,14 @@ public class BitTextShimmerE2ETests : E2ETestBase
     {
         await OpenAsync(Route);
 
-        StringAssert.Contains(await ComputedStyleAsync("#tsh-cas-gradient", "background-image"), "rgb(11, 22, 33)");
+        Assert.Contains("rgb(11, 22, 33)", await ComputedStyleAsync("#tsh-cas-gradient", "background-image"));
         Assert.AreEqual("H4", await TagAsync("#tsh-cas-gradient"));
         Assert.AreEqual("H4", await TagAsync("#tsh-cas-color-element"));
 
         await Expect(Page.Locator("#tsh-cas-own-color")).ToHaveClassAsync(HasClass("bit-tsh-err"));
         var image = await ComputedStyleAsync("#tsh-cas-own-color", "background-image");
-        StringAssert.Contains(image, await ResolveColorAsync("var(--bit-clr-err)"));
-        Assert.IsFalse(image.Contains("rgb(11, 22, 33)"), image);
+        Assert.Contains(await ResolveColorAsync("var(--bit-clr-err)"), image);
+        Assert.DoesNotContain("rgb(11, 22, 33)", image, image);
     }
 
     // ---------- color ----------
@@ -625,7 +625,7 @@ public class BitTextShimmerE2ETests : E2ETestBase
 
         var expected = await ResolveColorAsync($"var({token})");
         Assert.AreEqual(expected, await ResolveColorInAsync(id, "var(--bit-tsh-gradient-clr)"));
-        StringAssert.Contains(await ComputedStyleAsync(id, "background-image"), expected);
+        Assert.Contains(expected, await ComputedStyleAsync(id, "background-image"));
 
         // The text still rests in the dim foreground.
         await Expect(Page.Locator(id)).ToHaveCSSAsync("color", await ResolveColorAsync("var(--bit-clr-fg-ter)"));
@@ -638,11 +638,11 @@ public class BitTextShimmerE2ETests : E2ETestBase
 
         await Expect(Page.Locator("#tsh-ocean")).ToHaveCSSAsync("color", "rgb(100, 116, 139)");
         await Expect(Page.Locator("#tsh-ocean")).ToHaveCSSAsync("background-color", "rgb(100, 116, 139)");
-        StringAssert.Contains(await ComputedStyleAsync("#tsh-ocean", "background-image"), "rgb(34, 211, 238)");
+        Assert.Contains("rgb(34, 211, 238)", await ComputedStyleAsync("#tsh-ocean", "background-image"));
 
         // GradientColor wins over Color.
         await Expect(Page.Locator("#tsh-gradient-wins")).ToHaveClassAsync(HasClass("bit-tsh-err"));
-        StringAssert.Contains(await ComputedStyleAsync("#tsh-gradient-wins", "background-image"), "rgb(1, 2, 3)");
+        Assert.Contains("rgb(1, 2, 3)", await ComputedStyleAsync("#tsh-gradient-wins", "background-image"));
     }
 
     [TestMethod]
@@ -657,7 +657,7 @@ public class BitTextShimmerE2ETests : E2ETestBase
 
         await Expect(shimmer).ToHaveClassAsync(HasClass("bit-tsh-suc"));
         await Expect(shimmer).Not.ToHaveClassAsync(HasClass("bit-tsh-pri"));
-        StringAssert.Contains(await ComputedStyleAsync("#tsh-color-runtime", "background-image"), await ResolveColorAsync("var(--bit-clr-suc)"));
+        Assert.Contains(await ResolveColorAsync("var(--bit-clr-suc)"), await ComputedStyleAsync("#tsh-color-runtime", "background-image"));
     }
 
     // ---------- style, class, variables ----------
@@ -698,8 +698,8 @@ public class BitTextShimmerE2ETests : E2ETestBase
         var shimmer = Page.Locator("#tsh-var");
         await Expect(shimmer).ToHaveCSSAsync("color", "rgb(5, 6, 7)");
         var image = await ComputedStyleAsync("#tsh-var", "background-image");
-        StringAssert.Contains(image, "rgb(255, 105, 180)");
-        StringAssert.StartsWith(image, "linear-gradient(105deg");
+        Assert.Contains("rgb(255, 105, 180)", image);
+        Assert.StartsWith("linear-gradient(105deg", image);
         Assert.AreEqual("2em", await CustomPropertyAsync("#tsh-var", "--bit-tsh-spread"));
 
         var animation = (await AnimationAsync("#tsh-var"))!.Value;
@@ -715,9 +715,9 @@ public class BitTextShimmerE2ETests : E2ETestBase
 
         await Expect(Page.Locator("#tsh-var-own")).ToHaveCSSAsync("color", "rgb(9, 9, 9)");
         var image = await ComputedStyleAsync("#tsh-var-own", "background-image");
-        StringAssert.Contains(image, "rgb(0, 191, 255)");
-        Assert.IsFalse(image.Contains("rgb(255, 105, 180)"), image);
-        StringAssert.StartsWith(image, "linear-gradient(95deg");
+        Assert.Contains("rgb(0, 191, 255)", image);
+        Assert.DoesNotContain("rgb(255, 105, 180)", image, image);
+        Assert.StartsWith("linear-gradient(95deg", image);
         Assert.AreEqual("22px", await CustomPropertyAsync("#tsh-var-own", "--bit-tsh-spread"));
 
         var animation = (await AnimationAsync("#tsh-var-own"))!.Value;
@@ -731,10 +731,10 @@ public class BitTextShimmerE2ETests : E2ETestBase
     {
         await OpenAsync(Route);
 
-        StringAssert.Contains(await ComputedStyleAsync("#tsh-var-nested-outer", "background-image"), "rgb(0, 128, 0)");
+        Assert.Contains("rgb(0, 128, 0)", await ComputedStyleAsync("#tsh-var-nested-outer", "background-image"));
         var inner = await ComputedStyleAsync("#tsh-var-nested-inner", "background-image");
-        StringAssert.Contains(inner, "rgb(255, 105, 180)");
-        Assert.IsFalse(inner.Contains("rgb(0, 128, 0)"), inner);
+        Assert.Contains("rgb(255, 105, 180)", inner);
+        Assert.DoesNotContain("rgb(0, 128, 0)", inner, inner);
     }
 
     // ---------- accessibility & base ----------
@@ -776,7 +776,7 @@ public class BitTextShimmerE2ETests : E2ETestBase
         await Page.Locator("#btn-visibility").ClickAsync();
         await Expect(Page.Locator("#visibility-state")).ToHaveTextAsync("Hidden");
         await Expect(shimmer).ToHaveCSSAsync("visibility", "hidden");
-        Assert.IsTrue((await shimmer.BoundingBoxAsync())!.Height > 0, "A hidden shimmer keeps its room.");
+        Assert.IsGreaterThan(0, (await shimmer.BoundingBoxAsync())!.Height, "A hidden shimmer keeps its room.");
 
         await Page.Locator("#btn-visibility").ClickAsync();
         await Expect(Page.Locator("#visibility-state")).ToHaveTextAsync("Collapsed");
@@ -810,10 +810,10 @@ public class BitTextShimmerE2ETests : E2ETestBase
         var html = await response.TextAsync();
 
         Assert.IsTrue(response.Ok);
-        StringAssert.Matches(html, new Regex(@"<p id=""tsh-basic""[^>]*class=""[^""]*\bbit-tsh\b[^>]*>Thinking about your question\.\.\.</p>"));
-        StringAssert.Matches(html, new Regex(@"<h1 id=""tsh-h1"""));
-        StringAssert.Contains(html, "--bit-tsh-spread:95px");
-        StringAssert.Contains(html, "<span id=\"status\">Loading</span>");
+        Assert.MatchesRegex(new Regex(@"<p id=""tsh-basic""[^>]*class=""[^""]*\bbit-tsh\b[^>]*>Thinking about your question\.\.\.</p>"), html);
+        Assert.MatchesRegex(new Regex(@"<h1 id=""tsh-h1"""), html);
+        Assert.Contains("--bit-tsh-spread:95px", html);
+        Assert.Contains("<span id=\"status\">Loading</span>", html);
     }
 
     [TestMethod]

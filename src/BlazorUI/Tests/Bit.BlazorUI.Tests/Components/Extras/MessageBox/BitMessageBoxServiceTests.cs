@@ -37,9 +37,9 @@ public class BitMessageBoxServiceTests : BunitTestContext
 
         container.WaitForAssertion(() =>
         {
-            Assert.AreEqual(1, container.FindAll(".bit-mdl .bit-msb").Count);
-            Assert.IsTrue(container.Markup.Contains("The title"));
-            Assert.IsTrue(container.Markup.Contains("The body"));
+            Assert.ContainsSingle(container.FindAll(".bit-mdl .bit-msb"));
+            Assert.Contains("The title", container.Markup);
+            Assert.Contains("The body", container.Markup);
         });
 
         container.Find(".bit-msb-ftr .bit-btn").Click();
@@ -54,7 +54,7 @@ public class BitMessageBoxServiceTests : BunitTestContext
 
         var showing = MessageBoxService.Show("The title", "The body");
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-msb")));
 
         var dialog = container.Find("[role='dialog']");
         var titleId = container.Find(".bit-msb-ttl").Id;
@@ -73,9 +73,9 @@ public class BitMessageBoxServiceTests : BunitTestContext
     {
         var container = RenderComponent<BitModalContainer>();
 
-        var showing = MessageBoxService.Show(new BitMessageBoxParameters { Body = "Only a body." });
+        var showing = MessageBoxService.Show(new BitMessageBoxParameters { Body = "Only a body." }, TestContext.CancellationToken);
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-msb")));
 
         var dialog = container.Find("[role='dialog']");
 
@@ -97,9 +97,9 @@ public class BitMessageBoxServiceTests : BunitTestContext
             Title = "The title",
             Body = "The body",
             HeaderTemplate = builder => builder.AddMarkupContent(0, "<div class=\"custom-header\"></div>")
-        });
+        }, TestContext.CancellationToken);
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".custom-header").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".custom-header")));
 
         var dialog = container.Find("[role=dialog]");
 
@@ -123,9 +123,9 @@ public class BitMessageBoxServiceTests : BunitTestContext
             Body = "Delete this file?",
             Buttons = BitMessageBoxButtons.YesNo,
             PrimaryButtonColor = BitColor.Error
-        });
+        }, TestContext.CancellationToken);
 
-        container.WaitForAssertion(() => Assert.AreEqual(2, container.FindAll(".bit-msb-ftr .bit-btn").Count));
+        container.WaitForAssertion(() => Assert.HasCount(2, container.FindAll(".bit-msb-ftr .bit-btn")));
 
         var buttons = container.FindAll(".bit-msb-ftr .bit-btn");
         Assert.IsTrue(buttons[0].ClassList.Contains("bit-btn-err"));
@@ -143,7 +143,7 @@ public class BitMessageBoxServiceTests : BunitTestContext
 
         var showing = MessageBoxService.ShowError("Error", "It went wrong.");
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll("[role='alertdialog']").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll("[role='alertdialog']")));
 
         container.Find(".bit-msb-ftr .bit-btn").Click();
 
@@ -157,10 +157,10 @@ public class BitMessageBoxServiceTests : BunitTestContext
 
         var showing = MessageBoxService.ShowInfo("Info", "Worth knowing.");
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll("[role='dialog']").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll("[role='dialog']")));
 
-        Assert.AreEqual(0, container.FindAll("[role='alertdialog']").Count);
-        Assert.AreEqual(1, container.FindAll(".bit-msb-ico.bit-icon--Info").Count);
+        Assert.IsEmpty(container.FindAll("[role='alertdialog']"));
+        Assert.ContainsSingle(container.FindAll(".bit-msb-ico.bit-icon--Info"));
 
         container.Find(".bit-msb-ftr .bit-btn").Click();
 
@@ -174,14 +174,14 @@ public class BitMessageBoxServiceTests : BunitTestContext
 
         var showing = MessageBoxService.ShowSuccess("Success", "It worked.");
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb-ico.bit-icon--Completed").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-msb-ico.bit-icon--Completed")));
 
         container.Find(".bit-msb-ftr .bit-btn").Click();
         await showing;
 
         showing = MessageBoxService.ShowWarning("Warning", "Careful.");
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb-ico.bit-icon--Warning").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-msb-ico.bit-icon--Warning")));
 
         container.Find(".bit-msb-ftr .bit-btn").Click();
         await showing;
@@ -194,7 +194,7 @@ public class BitMessageBoxServiceTests : BunitTestContext
 
         var showing = MessageBoxService.Show("Title", "Body", BitMessageBoxButtons.YesNoCancel);
 
-        container.WaitForAssertion(() => Assert.AreEqual(3, container.FindAll(".bit-msb-ftr .bit-btn").Count));
+        container.WaitForAssertion(() => Assert.HasCount(3, container.FindAll(".bit-msb-ftr .bit-btn")));
 
         container.FindAll(".bit-msb-ftr .bit-btn")[1].Click();
 
@@ -208,7 +208,7 @@ public class BitMessageBoxServiceTests : BunitTestContext
 
         var showing = MessageBoxService.Show("Title", "Body", BitMessageBoxButtons.OkCancel);
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-msb")));
 
         container.Find(".bit-msb-hdr .bit-btn").Click();
 
@@ -222,14 +222,14 @@ public class BitMessageBoxServiceTests : BunitTestContext
 
         var showing = MessageBoxService.Show("Title", "Body");
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-msb")));
 
         container.Find(".bit-msb-ftr .bit-btn").Click();
 
         await showing;
 
-        container.WaitForAssertion(() => Assert.AreEqual(0, container.FindAll(".bit-msb").Count));
-        Assert.AreEqual(0, ModalService.OpenModals.Count);
+        container.WaitForAssertion(() => Assert.IsEmpty(container.FindAll(".bit-msb")));
+        Assert.IsEmpty(ModalService.OpenModals);
     }
 
     [TestMethod]
@@ -239,7 +239,7 @@ public class BitMessageBoxServiceTests : BunitTestContext
 
         var confirming = MessageBoxService.Confirm("Title", "Body");
 
-        container.WaitForAssertion(() => Assert.AreEqual(2, container.FindAll(".bit-msb-ftr .bit-btn").Count));
+        container.WaitForAssertion(() => Assert.HasCount(2, container.FindAll(".bit-msb-ftr .bit-btn")));
 
         container.FindAll(".bit-msb-ftr .bit-btn")[0].Click();
 
@@ -253,7 +253,7 @@ public class BitMessageBoxServiceTests : BunitTestContext
 
         var confirming = MessageBoxService.Confirm("Title", "Body");
 
-        container.WaitForAssertion(() => Assert.AreEqual(2, container.FindAll(".bit-msb-ftr .bit-btn").Count));
+        container.WaitForAssertion(() => Assert.HasCount(2, container.FindAll(".bit-msb-ftr .bit-btn")));
 
         container.FindAll(".bit-msb-ftr .bit-btn")[1].Click();
 
@@ -267,7 +267,7 @@ public class BitMessageBoxServiceTests : BunitTestContext
 
         var confirming = MessageBoxService.Confirm("Title", "Body");
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-msb")));
 
         container.Find(".bit-msb-hdr .bit-btn").Click();
 
@@ -284,7 +284,7 @@ public class BitMessageBoxServiceTests : BunitTestContext
         container.WaitForAssertion(() =>
         {
             var texts = container.FindAll(".bit-msb-ftr .bit-btn-prt").Select(b => b.TextContent).ToArray();
-            CollectionAssert.AreEqual(new[] { "Yes", "No" }, texts);
+            Assert.AreSequenceEqual(new[] { "Yes", "No" }, texts);
         });
 
         container.FindAll(".bit-msb-ftr .bit-btn")[0].Click();
@@ -309,9 +309,9 @@ public class BitMessageBoxServiceTests : BunitTestContext
             NoText = "Nope",
             CloseButtonTitle = "Dismiss",
             Dir = BitDir.Rtl
-        });
+        }, TestContext.CancellationToken);
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-msb")));
 
         var root = container.Find(".bit-msb");
 
@@ -322,7 +322,7 @@ public class BitMessageBoxServiceTests : BunitTestContext
         Assert.AreEqual("Dismiss", container.Find(".bit-msb-hdr .bit-btn").GetAttribute("title"));
 
         var texts = container.FindAll(".bit-msb-ftr .bit-btn-prt").Select(b => b.TextContent).ToArray();
-        CollectionAssert.AreEqual(new[] { "Sure", "Nope" }, texts);
+        Assert.AreSequenceEqual(new[] { "Sure", "Nope" }, texts);
 
         container.FindAll(".bit-msb-ftr .bit-btn")[0].Click();
 
@@ -339,9 +339,9 @@ public class BitMessageBoxServiceTests : BunitTestContext
             Title = "Title",
             Body = "Body",
             Modal = new BitModalParameters { IsAlert = true }
-        });
+        }, TestContext.CancellationToken);
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll("[role='alertdialog']").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll("[role='alertdialog']")));
 
         container.Find(".bit-msb-ftr .bit-btn").Click();
 
@@ -366,8 +366,8 @@ public class BitMessageBoxServiceTests : BunitTestContext
 
         container.WaitForAssertion(() =>
         {
-            Assert.AreEqual(1, container.FindAll("[role='alertdialog']").Count);
-            Assert.AreEqual(1, container.FindAll(".bit-msb-ico.bit-icon--WarningSolid").Count);
+            Assert.ContainsSingle(container.FindAll("[role='alertdialog']"));
+            Assert.ContainsSingle(container.FindAll(".bit-msb-ico.bit-icon--WarningSolid"));
         });
 
         container.Find(".bit-msb-ftr .bit-btn").Click();
@@ -385,12 +385,12 @@ public class BitMessageBoxServiceTests : BunitTestContext
             Title = "Title",
             Body = "Body",
             Buttons = BitMessageBoxButtons.None
-        });
+        }, TestContext.CancellationToken);
 
         container.WaitForAssertion(() =>
         {
-            Assert.AreEqual(1, container.FindAll(".bit-msb").Count);
-            Assert.AreEqual(0, container.FindAll(".bit-msb-ftr").Count);
+            Assert.ContainsSingle(container.FindAll(".bit-msb"));
+            Assert.IsEmpty(container.FindAll(".bit-msb-ftr"));
         });
 
         // Dismissed rather than answered, which is what the None set is for.
@@ -412,14 +412,14 @@ public class BitMessageBoxServiceTests : BunitTestContext
             Body = "Body",
             OnBeforeResult = EventCallback.Factory.Create<BitMessageBoxBeforeResultArgs>(
                                 this, args => args.Cancel = refuse)
-        });
+        }, TestContext.CancellationToken);
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-msb")));
 
         container.Find(".bit-msb-ftr .bit-btn").Click();
 
         // Refused, so the box is still on the screen and the caller is still waiting for its answer.
-        Assert.AreEqual(1, container.FindAll(".bit-msb").Count);
+        Assert.ContainsSingle(container.FindAll(".bit-msb"));
         Assert.IsFalse(showing.IsCompleted);
 
         refuse = false;
@@ -446,19 +446,19 @@ public class BitMessageBoxServiceTests : BunitTestContext
                                     seen.Add(args.Result);
                                     args.Cancel = args.Result is BitMessageBoxResult.None;
                                 })
-        });
+        }, TestContext.CancellationToken);
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-msb")));
 
         container.Find(".bit-msb-hdr .bit-btn").Click();
 
-        Assert.AreEqual(1, container.FindAll(".bit-msb").Count);
+        Assert.ContainsSingle(container.FindAll(".bit-msb"));
         Assert.IsFalse(showing.IsCompleted);
 
         container.Find(".bit-msb-ftr .bit-btn").Click();
 
         Assert.AreEqual(BitMessageBoxResult.Ok, await showing);
-        CollectionAssert.AreEqual(new[] { BitMessageBoxResult.None, BitMessageBoxResult.Ok }, seen);
+        Assert.AreSequenceEqual(new[] { BitMessageBoxResult.None, BitMessageBoxResult.Ok }, seen);
     }
 
     [TestMethod]
@@ -468,7 +468,7 @@ public class BitMessageBoxServiceTests : BunitTestContext
 
         var confirming = MessageBoxService.Confirm("Publish", "Publish these changes?");
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll("[role='alertdialog']").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll("[role='alertdialog']")));
 
         container.Find(".bit-msb-ftr .bit-btn").Click();
 
@@ -476,7 +476,7 @@ public class BitMessageBoxServiceTests : BunitTestContext
 
         var asking = MessageBoxService.Show("Save", "Save the changes?", BitMessageBoxButtons.YesNo);
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll("[role='alertdialog']").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll("[role='alertdialog']")));
 
         container.Find(".bit-msb-ftr .bit-btn").Click();
 
@@ -492,11 +492,11 @@ public class BitMessageBoxServiceTests : BunitTestContext
         {
             Title = "Publish",
             Modal = new BitModalParameters { IsAlert = false }
-        });
+        }, TestContext.CancellationToken);
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll("[role='dialog']").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll("[role='dialog']")));
 
-        Assert.AreEqual(0, container.FindAll("[role='alertdialog']").Count);
+        Assert.IsEmpty(container.FindAll("[role='alertdialog']"));
 
         container.Find(".bit-msb-ftr .bit-btn").Click();
 
@@ -512,13 +512,13 @@ public class BitMessageBoxServiceTests : BunitTestContext
 
         var showing = MessageBoxService.Show(new BitMessageBoxParameters { Title = "Title", Body = "Body" }, cts.Token);
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-msb")));
 
         cts.Cancel();
 
         Assert.AreEqual(BitMessageBoxResult.None, await showing);
 
-        container.WaitForAssertion(() => Assert.AreEqual(0, container.FindAll(".bit-msb").Count));
+        container.WaitForAssertion(() => Assert.IsEmpty(container.FindAll(".bit-msb")));
     }
 
     [TestMethod]
@@ -535,13 +535,13 @@ public class BitMessageBoxServiceTests : BunitTestContext
             Modal = new BitModalParameters { CanClose = () => Task.FromResult(false) }
         }, cts.Token);
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-msb")));
 
         cts.Cancel();
 
         Assert.IsFalse(await confirming);
 
-        container.WaitForAssertion(() => Assert.AreEqual(0, container.FindAll(".bit-msb").Count));
+        container.WaitForAssertion(() => Assert.IsEmpty(container.FindAll(".bit-msb")));
     }
 
     [TestMethod]
@@ -552,7 +552,7 @@ public class BitMessageBoxServiceTests : BunitTestContext
         var result = await MessageBoxService.Show(new BitMessageBoxParameters { Title = "Title" }, new System.Threading.CancellationToken(canceled: true));
 
         Assert.AreEqual(BitMessageBoxResult.None, result);
-        Assert.AreEqual(0, container.FindAll(".bit-msb").Count);
+        Assert.IsEmpty(container.FindAll(".bit-msb"));
     }
 
     [TestMethod]
@@ -578,23 +578,23 @@ public class BitMessageBoxServiceTests : BunitTestContext
             ShowCloseButton = false,
             Classes = new() { Root = "custom-root" },
             Styles = new() { Root = "margin:1px" },
-        });
+        }, TestContext.CancellationToken);
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-msb")));
 
         var root = container.Find(".bit-msb");
 
         Assert.IsTrue(root.ClassList.Contains("custom-root"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin:1px");
+        Assert.Contains("margin:1px", root.GetAttribute("style")!);
         Assert.AreEqual("H2", container.Find(".bit-msb-ttl").TagName);
         Assert.AreEqual("Warning", container.Find(".bit-msb-ict").GetAttribute("aria-label"));
         Assert.IsTrue(container.Find(".bit-msb-ico").ClassList.Contains("bit-icon--Lightbulb"));
-        Assert.AreEqual(0, container.FindAll(".bit-msb-hdr .bit-btn").Count);
+        Assert.IsEmpty(container.FindAll(".bit-msb-hdr .bit-btn"));
 
         var buttons = container.FindAll(".bit-msb-ftr .bit-btn");
         var texts = buttons.Select(b => b.TextContent.Trim()).ToArray();
 
-        CollectionAssert.AreEqual(new[] { "Later", "No", "Yes" }, texts);
+        Assert.AreSequenceEqual(new[] { "Later", "No", "Yes" }, texts);
         Assert.IsTrue(buttons.All(b => b.ClassList.Contains("bit-btn-sec")));
         // The focus lands on the button the showing named rather than on the affirmative one.
         Assert.IsTrue(buttons[0].HasAttribute("autofocus"));
@@ -615,18 +615,18 @@ public class BitMessageBoxServiceTests : BunitTestContext
             Color = BitColor.Error,
             HideIcon = true,
             FooterTemplate = builder => builder.AddMarkupContent(0, "<div class=\"custom-footer\"></div>"),
-        });
+        }, TestContext.CancellationToken);
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".custom-footer").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".custom-footer")));
 
-        Assert.AreEqual(0, container.FindAll(".bit-msb-ict").Count);
-        Assert.AreEqual(0, container.FindAll(".bit-msb-ftr .bit-btn").Count);
+        Assert.IsEmpty(container.FindAll(".bit-msb-ict"));
+        Assert.IsEmpty(container.FindAll(".bit-msb-ftr .bit-btn"));
 
         // The close button is the only way left to end it, and it is wired to close the modal too.
         container.Find(".bit-msb-hdr .bit-btn").Click();
 
         Assert.AreEqual(BitMessageBoxResult.None, await showing);
-        container.WaitForAssertion(() => Assert.AreEqual(0, container.FindAll(".bit-msb").Count));
+        container.WaitForAssertion(() => Assert.IsEmpty(container.FindAll(".bit-msb")));
     }
 
     [TestMethod]
@@ -636,7 +636,7 @@ public class BitMessageBoxServiceTests : BunitTestContext
 
         var showing = MessageBoxService.Show("Title", "Body", BitMessageBoxButtons.OkCancel);
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-msb")));
 
         // A dialog that interrupts puts the focus inside itself: on the affirmative button by default.
         Assert.IsTrue(container.FindAll(".bit-msb-ftr .bit-btn")[0].HasAttribute("autofocus"));
@@ -644,11 +644,11 @@ public class BitMessageBoxServiceTests : BunitTestContext
         container.FindAll(".bit-msb-ftr .bit-btn")[0].Click();
         await showing;
 
-        showing = MessageBoxService.Show(new BitMessageBoxParameters { Title = "Title", Body = "Body", AutoFocus = false });
+        showing = MessageBoxService.Show(new BitMessageBoxParameters { Title = "Title", Body = "Body", AutoFocus = false }, TestContext.CancellationToken);
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-msb")));
 
-        Assert.AreEqual(0, container.FindAll(".bit-msb .bit-btn[autofocus]").Count);
+        Assert.IsEmpty(container.FindAll(".bit-msb .bit-btn[autofocus]"));
 
         container.Find(".bit-msb-ftr .bit-btn").Click();
         await showing;
@@ -665,12 +665,12 @@ public class BitMessageBoxServiceTests : BunitTestContext
     {
         var container = RenderComponent<BitModalContainer>();
 
-        var showing = MessageBoxService.Show(new BitMessageBoxParameters { Title = "Title", Body = "Body", Buttons = buttons, Color = color });
+        var showing = MessageBoxService.Show(new BitMessageBoxParameters { Title = "Title", Body = "Body", Buttons = buttons, Color = color }, TestContext.CancellationToken);
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-msb")));
 
-        Assert.AreEqual(isAlert ? 1 : 0, container.FindAll("[role='alertdialog']").Count);
-        Assert.AreEqual(isAlert ? 0 : 1, container.FindAll("[role='dialog']").Count);
+        Assert.HasCount(isAlert ? 1 : 0, container.FindAll("[role='alertdialog']"));
+        Assert.HasCount(isAlert ? 0 : 1, container.FindAll("[role='dialog']"));
 
         container.Find(".bit-msb .bit-btn").Click();
 
@@ -681,13 +681,13 @@ public class BitMessageBoxServiceTests : BunitTestContext
     public async Task BitMessageBoxServiceShouldShowAPersistentMessageBoxOnceAContainerMounts()
     {
         // No container yet: a persistent showing waits for one rather than answering with nothing.
-        var showing = MessageBoxService.Show(new BitMessageBoxParameters { Title = "Title", Body = "Body", Persistent = true });
+        var showing = MessageBoxService.Show(new BitMessageBoxParameters { Title = "Title", Body = "Body", Persistent = true }, TestContext.CancellationToken);
 
         Assert.IsFalse(showing.IsCompleted);
 
         var container = RenderComponent<BitModalContainer>();
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-msb")));
 
         container.Find(".bit-msb-ftr .bit-btn").Click();
 
@@ -699,9 +699,9 @@ public class BitMessageBoxServiceTests : BunitTestContext
     {
         var container = RenderComponent<BitModalContainer>();
 
-        var showing = MessageBoxService.Show(new BitMessageBoxParameters { Title = "Only a title." });
+        var showing = MessageBoxService.Show(new BitMessageBoxParameters { Title = "Only a title." }, TestContext.CancellationToken);
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-msb")));
 
         var dialog = container.Find("[role='dialog']");
 
@@ -712,4 +712,6 @@ public class BitMessageBoxServiceTests : BunitTestContext
 
         await showing;
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

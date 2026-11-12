@@ -73,11 +73,11 @@ public partial class McpOracleTests
         // The one exported type left out is the class the Razor compiler makes of _Imports.razor; leaving
         // out anything else would hide a real type from every agent.
         var skipped = exported.Where(type => type.Name.StartsWith('_')).Select(type => type.Name).ToArray();
-        CollectionAssert.AreEquivalent(new[] { "_Imports" }, skipped);
+        Assert.AreSequenceEqual(new[] { "_Imports" }, skipped, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
         var expected = exported.Where(type => type.Name.StartsWith('_') is false).Select(BortableApiCatalog.FriendlyName).ToArray();
 
-        CollectionAssert.AreEquivalent(expected, BortableApiCatalog.Types.Select(type => type.Name).ToArray());
+        Assert.AreSequenceEqual(expected, BortableApiCatalog.Types.Select(type => type.Name).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -120,7 +120,7 @@ public partial class McpOracleTests
             }
         }
 
-        CollectionAssert.AreEquivalent(members.Keys.ToArray(), documented.ToArray(), "Every parameter of the component, and nothing else, should be in the README's table.");
+        Assert.AreSequenceEqual(members.Keys.ToArray(), documented.ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, "Every parameter of the component, and nothing else, should be in the README's table.");
     }
 
     [TestMethod]
@@ -137,7 +137,7 @@ public partial class McpOracleTests
             Assert.AreEqual(row.Groups["type"].Value, member.Type, row.Groups["name"].Value);
         }
 
-        CollectionAssert.AreEquivalent(members.Keys.ToArray(), rows.Select(row => row.Groups["name"].Value).ToArray());
+        Assert.AreSequenceEqual(members.Keys.ToArray(), rows.Select(row => row.Groups["name"].Value).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -148,7 +148,7 @@ public partial class McpOracleTests
             var section = BortableSourceCatalog.GetGuideSection(type.Name)!;
             var values = ValueRowRegex().Matches(section).Select(match => match.Groups["name"].Value).ToArray();
 
-            CollectionAssert.AreEquivalent(Enum.GetNames(type), values, type.Name);
+            Assert.AreSequenceEqual(Enum.GetNames(type), values, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, type.Name);
         }
     }
 
@@ -163,7 +163,7 @@ public partial class McpOracleTests
 
         var named = PropertyNameRegex().Matches(css).Select(match => match.Value).Distinct(StringComparer.Ordinal).ToArray();
 
-        CollectionAssert.AreEquivalent(named, BortableThemeCatalog.Properties.Select(property => property.Name).ToArray());
+        Assert.AreSequenceEqual(named, BortableThemeCatalog.Properties.Select(property => property.Name).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
         var declared = DeclarationRegex().Matches(css).ToDictionary(match => match.Groups["name"].Value, match => match.Groups["value"].Value.Trim(), StringComparer.Ordinal);
 
@@ -218,8 +218,7 @@ public partial class McpOracleTests
             Assert.AreEqual(double.Parse(percent.Groups["percent"].Value, CultureInfo.InvariantCulture) / 100, alpha, 1e-9, property.Name);
         }
 
-        CollectionAssert.AreEquivalent(BortableThemeCatalog.Properties.Select(property => property.Name).ToArray(),
-            rows.Select(row => row.Groups["name"].Value).ToArray(), "Every custom property of the stylesheet, and nothing else, should be in the README's table.");
+        Assert.AreSequenceEqual(BortableThemeCatalog.Properties.Select(property => property.Name).ToArray(), rows.Select(row => row.Groups["name"].Value).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, "Every custom property of the stylesheet, and nothing else, should be in the README's table.");
     }
 
     [TestMethod]
@@ -229,11 +228,11 @@ public partial class McpOracleTests
         var classes = ClassRegex().Matches(css).Select(match => match.Groups["name"].Value).Distinct(StringComparer.Ordinal).ToArray();
 
         Assert.IsGreaterThan(8, classes.Length);
-        CollectionAssert.AreEquivalent(classes, BortableStylesheetClasses.Classes.Select(cssClass => cssClass.Name).ToArray());
+        Assert.AreSequenceEqual(classes, BortableStylesheetClasses.Classes.Select(cssClass => cssClass.Name).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
         var rows = ReadmeClassRowRegex().Matches(BortableSourceCatalog.GetGuideSection("Drag-state classes")!).ToArray();
 
-        CollectionAssert.AreEquivalent(classes, rows.Select(row => row.Groups["name"].Value).ToArray(), "The README's table of classes should name exactly the stylesheet's.");
+        Assert.AreSequenceEqual(classes, rows.Select(row => row.Groups["name"].Value).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, "The README's table of classes should name exactly the stylesheet's.");
 
         foreach (var row in rows)
         {
@@ -276,9 +275,9 @@ public partial class McpOracleTests
         var move = await McpDragLabTests.InspectAsync("""{ "lists": [{ "id": "a", "group": "g", "items": ["A", "B"] }, { "id": "b", "group": "g", "items": ["X"] }], "drag": { "item": "A", "to": "b", "index": 1 } }""");
         var clone = await McpDragLabTests.InspectAsync("""{ "lists": [{ "id": "a", "group": "g", "pull": "clone", "cloneSuffix": "+", "items": ["A", "B"] }, { "id": "b", "group": "g", "items": ["X"] }], "drag": { "item": "A", "to": "b", "index": 1 } }""");
 
-        CollectionAssert.AreEqual(within, Completion(reorder), "within a list");
-        CollectionAssert.AreEqual(across.Select(clause => $"{clause.Event}:{(clause.Source ? "a" : "b")}").ToArray(), Completion(move, withList: true), "across lists");
-        CollectionAssert.AreEqual(across.Where(clause => clause.UnlessClone is false).Select(clause => $"{clause.Event}:{(clause.Source ? "a" : "b")}").ToArray(), Completion(clone, withList: true), "a clone");
+        Assert.AreSequenceEqual(within, Completion(reorder), "within a list");
+        Assert.AreSequenceEqual(across.Select(clause => $"{clause.Event}:{(clause.Source ? "a" : "b")}").ToArray(), Completion(move, withList: true), "across lists");
+        Assert.AreSequenceEqual(across.Where(clause => clause.UnlessClone is false).Select(clause => $"{clause.Event}:{(clause.Source ? "a" : "b")}").ToArray(), Completion(clone, withList: true), "a clone");
 
         static string Sentence(string text, string start)
         {
@@ -312,7 +311,7 @@ public partial class McpOracleTests
             if (fenced is false && HeadingRegex().Match(line) is { Success: true } match) headings.Add(match.Groups["text"].Value.Trim());
         }
 
-        CollectionAssert.AreEqual(headings, BortableSourceCatalog.GuideSections.Select(section => section.Heading).ToArray());
+        Assert.AreSequenceEqual(headings, BortableSourceCatalog.GuideSections.Select(section => section.Heading).ToArray());
         Assert.HasCount(BortableSourceCatalog.GuideSections.Length, BortableSourceCatalog.GuideSections.Select(section => section.Key).Distinct(StringComparer.Ordinal), "Every section needs a key of its own.");
     }
 
@@ -332,16 +331,15 @@ public partial class McpOracleTests
             ("GetBortableSourceFile", "?path=Demo/Client/Pages/Shared.razor", new() { ["path"] = "Demo/Client/Pages/Shared.razor" }),
         ];
 
-        CollectionAssert.AreEquivalent(McpSurfaceTests.ExpectedTools, calls.Select(call => call.Tool).ToArray(),
-            "The HTTP mirror is being exercised for a different set of tools than the server publishes.");
+        Assert.AreSequenceEqual(McpSurfaceTests.ExpectedTools, calls.Select(call => call.Tool).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, "The HTTP mirror is being exercised for a different set of tools than the server publishes.");
 
         foreach (var (tool, query, arguments) in calls)
         {
-            using var response = await http.GetAsync($"/api/mcp/{tool}{query}");
+            using var response = await http.GetAsync($"/api/mcp/{tool}{query}", TestContext.CancellationToken);
 
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, tool);
 
-            var body = await response.Content.ReadAsStringAsync();
+            var body = await response.Content.ReadAsStringAsync(TestContext.CancellationToken);
 
             if (tool is "SearchBortable" or "InspectBortableDrag")
             {
@@ -360,7 +358,7 @@ public partial class McpOracleTests
 
         var json = """{ "lists": [{ "id": "a", "group": "g", "items": ["A"] }, { "id": "b", "group": "g", "put": false, "items": [] }], "drag": { "item": "A", "to": "b" } }""";
 
-        var body = JsonNode.Parse(await http.GetStringAsync($"/api/mcp/InspectBortableDrag?json={Uri.EscapeDataString(json)}"))!.AsObject();
+        var body = JsonNode.Parse(await http.GetStringAsync($"/api/mcp/InspectBortableDrag?json={Uri.EscapeDataString(json)}", TestContext.CancellationToken))!.AsObject();
 
         Assert.IsTrue(body["valid"]!.GetValue<bool>());
         Assert.IsFalse(body["changed"]!.GetValue<bool>());
@@ -430,4 +428,6 @@ public partial class McpOracleTests
 
     [GeneratedRegex(@"^#{2,4} (?<text>.+)$")]
     private static partial Regex HeadingRegex();
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

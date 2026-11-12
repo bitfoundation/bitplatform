@@ -97,7 +97,7 @@ public class ReviewRegressionTests
     {
         await using var db = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions()
             .AddTable(PersonTable.Descriptor)
-            .AddMigration(1, d => d.GetTable(PersonTable.Descriptor).Insert(new Person(1, "Migrated", 1))));
+            .AddMigration(1, d => d.GetTable(PersonTable.Descriptor).Insert(new Person(1, "Migrated", 1))), TestContext.CancellationToken);
         var tables = new List<string>();
         db.Changed += (_, e) => tables.AddRange(e.Changes.Select(c => c.Table));
 
@@ -108,7 +108,7 @@ public class ReviewRegressionTests
             db.SetUserVersion(3);
         });
 
-        CollectionAssert.AreEqual(new[] { "people" }, tables);
+        Assert.AreSequenceEqual(new[] { "people" }, tables);
     }
 
     [TestMethod]
@@ -148,7 +148,7 @@ public class ReviewRegressionTests
         var comparer = new SwitchableComparer();
         var descriptor = Switchable(comparer);
         var storage = new BlazeDbInMemoryStorage();
-        var db = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { Storage = storage, FlushInterval = TimeSpan.FromHours(1) }.AddTable(descriptor));
+        var db = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { Storage = storage, FlushInterval = TimeSpan.FromHours(1) }.AddTable(descriptor), TestContext.CancellationToken);
         var table = db.GetTable(descriptor);
         table.Insert(new Person(1, "Committed", 10));
         table.Insert(new Person(2, "Committed", 20));
@@ -160,11 +160,11 @@ public class ReviewRegressionTests
         comparer.Refuse = false;
 
         var refused = Assert.ThrowsExactly<BlazeDbException>(() => table.Insert(new Person(3, "Refused", 30)));
-        StringAssert.Contains(refused.Message, "reopen");
-        await Assert.ThrowsExactlyAsync<BlazeDbException>(async () => await db.CheckpointAsync());
+        Assert.Contains("reopen", refused.Message);
+        await Assert.ThrowsExactlyAsync<BlazeDbException>(async () => await db.CheckpointAsync(TestContext.CancellationToken));
         await db.DisposeAsync(); // still flushes what did commit
 
-        await using var reopened = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { Storage = storage }.AddTable(descriptor));
+        await using var reopened = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { Storage = storage }.AddTable(descriptor), TestContext.CancellationToken);
         var recovered = reopened.GetTable(descriptor);
         Assert.AreEqual(new Person(1, "Committed", 10), recovered.Get(1), "The write the undo could not take back never reached storage.");
         Assert.AreEqual(2, recovered.Count);
@@ -176,7 +176,7 @@ public class ReviewRegressionTests
         var comparer = new SwitchableComparer();
         var descriptor = Switchable(comparer);
         var storage = new BlazeDbInMemoryStorage();
-        var db = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { Storage = storage, FlushInterval = TimeSpan.FromHours(1) }.AddTable(descriptor));
+        var db = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { Storage = storage, FlushInterval = TimeSpan.FromHours(1) }.AddTable(descriptor), TestContext.CancellationToken);
         var table = db.GetTable(descriptor);
         table.Insert(new Person(1, "Committed", 10));   // buffered, not yet flushed
 
@@ -187,7 +187,9 @@ public class ReviewRegressionTests
         await Assert.ThrowsExactlyAsync<InvalidOperationException>(async () => await db.DisposeAsync());
         comparer.Refuse = false;
 
-        await using var reopened = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { Storage = storage }.AddTable(descriptor));
+        await using var reopened = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { Storage = storage }.AddTable(descriptor), TestContext.CancellationToken);
         Assert.AreEqual(new Person(1, "Committed", 10), reopened.GetTable(descriptor).Get(1), "The final flush ran despite the failed undo.");
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

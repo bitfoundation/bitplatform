@@ -8,7 +8,7 @@ public enum OrderPriority
 
 /// <summary>Every shape an action can take, for the typed descriptors and dispatch by name.</summary>
 [BlexStoreAttribute(Name = "orders")]
-public partial class OrderBookStore
+internal partial class OrderBookStore
 {
     [BlexStateAttribute] private string[] _lines = [];
     [BlexStateAttribute] private int _units;
@@ -75,7 +75,7 @@ public partial class OrderBookStore
 
 /// <summary>A store whose name contains the '/' that separates it from the action name.</summary>
 [BlexStoreAttribute(Name = "admin/users")]
-public partial class AdminUsersStore
+internal partial class AdminUsersStore
 {
     [BlexStateAttribute] private int _invited;
 
@@ -83,14 +83,14 @@ public partial class AdminUsersStore
     private void OnInvite(int count) => Invited += count;
 }
 
-public sealed record Parcel(string Name, int Quantity);
+internal sealed record Parcel(string Name, int Quantity);
 
 /// <summary>
 /// An action taking one object, actions with optional parameters, and actions that call another
 /// store's action from inside their own body.
 /// </summary>
 [BlexStoreAttribute(Name = "shipments")]
-public partial class ShipmentStore
+internal partial class ShipmentStore
 {
     private readonly OrderBookStore? _orders;
 

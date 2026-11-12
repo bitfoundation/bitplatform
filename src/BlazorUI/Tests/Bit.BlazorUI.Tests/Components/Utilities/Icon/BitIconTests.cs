@@ -943,9 +943,9 @@ public class BitIconTests : BunitTestContext
 
         var style = component.Find("i").GetAttribute("style");
 
-        StringAssert.Contains(style, "font-size:2rem");
-        StringAssert.Contains(style, "--bit-ico-rotate:45deg");
-        StringAssert.Contains(style, "--bit-ico-anm-dur:2s");
+        Assert.Contains("font-size:2rem", style!);
+        Assert.Contains("--bit-ico-rotate:45deg", style);
+        Assert.Contains("--bit-ico-anm-dur:2s", style);
     }
 
     [TestMethod]
@@ -1408,7 +1408,7 @@ public class BitIconTests : BunitTestContext
     {
         var component = RenderComponent<BitIcon>();
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.registerPreventKeys"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.registerPreventKeys"]);
     }
 
     [TestMethod]
@@ -1426,7 +1426,7 @@ public class BitIconTests : BunitTestContext
 
         // The listener stays on the element and reads the key list on every event, so re-registering it
         // on every render would be a round trip per render for nothing.
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.registerPreventKeys"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.registerPreventKeys"]);
     }
 
     [TestMethod]
@@ -1444,8 +1444,8 @@ public class BitIconTests : BunitTestContext
 
         var invocations = Context.JSInterop.Invocations["BitBlazorUI.Utils.registerPreventKeys"];
 
-        Assert.AreEqual(2, invocations.Count);
-        Assert.AreEqual(0, ((string[])invocations[1].Arguments[1]!).Length);
+        Assert.HasCount(2, invocations);
+        Assert.IsEmpty(((string[])invocations[1].Arguments[1]!));
     }
 
     [TestMethod]
@@ -1462,7 +1462,7 @@ public class BitIconTests : BunitTestContext
         // installed and never let it be tried again. The failure itself only costs the page-scroll prevention.
         component.Render(parameters => parameters.Add(p => p.Color, BitColor.Error));
 
-        Assert.AreEqual(2, Context.JSInterop.Invocations["BitBlazorUI.Utils.registerPreventKeys"].Count);
+        Assert.HasCount(2, Context.JSInterop.Invocations["BitBlazorUI.Utils.registerPreventKeys"]);
     }
 
     [TestMethod]
@@ -1476,7 +1476,7 @@ public class BitIconTests : BunitTestContext
         var invocation = Context.JSInterop.VerifyInvoke("BitBlazorUI.Utils.registerPreventKeys");
 
         Assert.AreEqual(component.Instance.RootElement, invocation.Arguments[0]);
-        CollectionAssert.AreEquivalent(new[] { " ", "Spacebar" }, (string[])invocation.Arguments[1]!);
+        Assert.AreSequenceEqual(new[] { " ", "Spacebar" }, (string[])invocation.Arguments[1]!, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -1639,7 +1639,7 @@ public class BitIconTests : BunitTestContext
         });
 
         Assert.IsFalse(component.Find("i").ClassList.Contains("bit-ico-itr"));
-        Assert.IsFalse((component.Find("i").GetAttribute("style") ?? "").Contains("--bit-ico-anm-itr"));
+        Assert.DoesNotContain("--bit-ico-anm-itr", (component.Find("i").GetAttribute("style") ?? ""));
     }
 
     [TestMethod]
@@ -1735,7 +1735,7 @@ public class BitIconTests : BunitTestContext
 
         var invocations = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"];
 
-        Assert.AreEqual(1, invocations.Count);
+        Assert.ContainsSingle(invocations);
         Assert.AreEqual(component.Instance.RootElement, invocations[0].Arguments[0]);
         Assert.AreEqual(preventScroll, invocations[0].Arguments[1]);
     }

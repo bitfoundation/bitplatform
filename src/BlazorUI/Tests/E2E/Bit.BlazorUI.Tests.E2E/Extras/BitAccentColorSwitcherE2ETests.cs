@@ -29,11 +29,11 @@ public class BitAccentColorSwitcherE2ETests : E2ETestBase
         var html = await (await Page.APIRequest.GetAsync($"{BaseUrl}{Route}")).TextAsync();
 
         var root = html.IndexOf("id=\"acs-basic\"", StringComparison.Ordinal);
-        Assert.IsTrue(root > 0, "The switcher is not in the prerendered HTML.");
+        Assert.IsGreaterThan(0, root, "The switcher is not in the prerendered HTML.");
         var markup = html[root..html.IndexOf("</div>", root, StringComparison.Ordinal)];
-        Assert.AreEqual(6, Regex.Matches(markup, "class=\"bit-acs-swt").Count);
-        StringAssert.Contains(markup, "aria-pressed=\"true\"");
-        StringAssert.Contains(html, "<span id=\"status\">Loading</span>");
+        Assert.HasCount(6, Regex.Matches(markup, "class=\"bit-acs-swt"));
+        Assert.Contains("aria-pressed=\"true\"", markup);
+        Assert.Contains("<span id=\"status\">Loading</span>", html);
 
         await OpenAsync(Route);
         await Expect(Swatches("acs-basic")).ToHaveCountAsync(6);
@@ -303,7 +303,7 @@ public class BitAccentColorSwitcherE2ETests : E2ETestBase
 
         var first = await swatches.First.BoundingBoxAsync();
         var last = await swatches.Last.BoundingBoxAsync();
-        Assert.IsTrue(first!.X > last!.X, $"first at {first.X}, last at {last.X}");
+        Assert.IsGreaterThan(last!.X, first!.X, $"first at {first.X}, last at {last.X}");
 
         // What the switcher sets itself wins over what is cascaded; what it does not set - the Config - is still filled in.
         var own = Swatches("acs-params-own");
@@ -353,7 +353,7 @@ public class BitAccentColorSwitcherE2ETests : E2ETestBase
         }
 
         await Expect(swatches.Nth(1)).ToHaveCSSAsync("cursor", "default");
-        Assert.IsTrue(double.Parse(await ComputedStyleAsync("#acs-disabled .bit-acs-swt", "opacity"), CultureInfo.InvariantCulture) < 1);
+        Assert.IsLessThan(1, double.Parse(await ComputedStyleAsync("#acs-disabled .bit-acs-swt", "opacity"), CultureInfo.InvariantCulture));
 
         await swatches.Nth(1).ClickAsync(new() { Force = true });
         await root.DispatchEventAsync("click");
@@ -421,8 +421,9 @@ public class BitAccentColorSwitcherE2ETests : E2ETestBase
         var accented = await SettledBackgroundAsync("#probe-button");
 
         var stored = await Page.EvaluateAsync<string?>("() => localStorage.getItem('bit-accent-color')");
-        StringAssert.Contains(stored?.ToLowerInvariant() ?? string.Empty, "6750a4");
-        Assert.IsTrue((await Page.Context.CookiesAsync()).Any(c => c.Name == "bit-accent-color"), "The accent cookie was not written.");
+        var expectedValue = stored?.ToLowerInvariant() ?? string.Empty;
+        Assert.Contains("6750a4", expectedValue);
+        Assert.Contains(c => c.Name == "bit-accent-color", await Page.Context.CookiesAsync(), "The accent cookie was not written.");
 
         // The None strategy leaves the document untouched before first paint.
         await Expect(Page.Locator("html")).Not.ToHaveAttributeAsync("bit-accent", new Regex(".*"));
@@ -437,7 +438,7 @@ public class BitAccentColorSwitcherE2ETests : E2ETestBase
         await Swatches("acs-persist").Nth(0).ClickAsync();
         await Expect(Page.Locator("#probe-button")).ToHaveCSSAsync("background-color", DefaultPrimary);
         Assert.IsNull(await Page.EvaluateAsync<string?>("() => localStorage.getItem('bit-accent-color')"));
-        Assert.IsFalse((await Page.Context.CookiesAsync()).Any(c => c.Name == "bit-accent-color"));
+        Assert.DoesNotContain(c => c.Name == "bit-accent-color", await Page.Context.CookiesAsync());
 
         await ReloadAsync();
         await Expect(Swatches("acs-persist").Nth(0)).ToHaveAttributeAsync("aria-pressed", "true");
@@ -486,9 +487,9 @@ public class BitAccentColorSwitcherE2ETests : E2ETestBase
         var html = await (await Page.APIRequest.GetAsync($"{BaseUrl}/e2e/accent-color-switcher/seed")).TextAsync();
 
         var swatches = Regex.Matches(html, "<button[^>]*class=\"bit-acs-swt[^>]*>").Select(m => m.Value).ToArray();
-        Assert.AreEqual(6, swatches.Length);
-        StringAssert.Contains(swatches[2], "aria-pressed=\"true\"");
-        StringAssert.Contains(swatches[0], "aria-pressed=\"false\"");
+        Assert.HasCount(6, swatches);
+        Assert.Contains("aria-pressed=\"true\"", swatches[2]);
+        Assert.Contains("aria-pressed=\"false\"", swatches[0]);
 
         await OpenAsync("/e2e/accent-color-switcher/seed");
 
@@ -503,8 +504,8 @@ public class BitAccentColorSwitcherE2ETests : E2ETestBase
         var html = await (await Page.APIRequest.GetAsync($"{BaseUrl}/e2e/accent-color-switcher/stored-css")).TextAsync();
         var head = html[..html.IndexOf("</head>", StringComparison.Ordinal)];
 
-        StringAssert.Contains(head, "<script nonce=\"e2e-nonce\">");
-        StringAssert.Contains(head, "<style nonce=\"e2e-nonce\">");
+        Assert.Contains("<script nonce=\"e2e-nonce\">", head);
+        Assert.Contains("<style nonce=\"e2e-nonce\">", head);
 
         // The None strategy emits nothing at all.
         var none = await (await Page.APIRequest.GetAsync($"{BaseUrl}/e2e/accent-color-switcher/persist")).TextAsync();
@@ -520,7 +521,7 @@ public class BitAccentColorSwitcherE2ETests : E2ETestBase
 
         await Expect(Page.Locator("#acs-forced")).ToHaveClassAsync(HasClass("bit-fam"));
         var full = await TransitionSecondsAsync("#acs-basic .bit-acs-swt");
-        Assert.IsTrue(full > 0.05, $"The swatch has no hover transition to collapse ({full}s).");
+        Assert.IsGreaterThan(0.05, full, $"The swatch has no hover transition to collapse ({full}s).");
 
         await Page.EmulateMediaAsync(new() { ReducedMotion = ReducedMotion.Reduce });
 

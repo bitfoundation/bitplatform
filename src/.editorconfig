@@ -118,6 +118,22 @@ csharp_space_between_method_call_empty_parameter_list_parentheses = false
 csharp_preserve_single_line_statements = true
 csharp_preserve_single_line_blocks = true
 ###############################
+# Public production contracts  #
+###############################
+# These production sources are compile-linked into tests. Their public types are not test classes.
+[BlazorUI/Demo/**/*.cs]
+dotnet_diagnostic.MSTEST0004.severity = none
+[Utilities/Bheadless/Demo/**/*.cs]
+dotnet_diagnostic.MSTEST0004.severity = none
+[Utilities/Bsqlite/Demo/**/*.cs]
+dotnet_diagnostic.MSTEST0004.severity = none
+[Utilities/Bsqlite/Bit.Bsqlite.Testing/**/*.cs]
+dotnet_diagnostic.MSTEST0004.severity = none
+[Utilities/Bsqlite/Bit.Bsqlite.Testing/*.cs]
+dotnet_diagnostic.MSTEST0004.severity = none
+[Utilities/Belemetry/Tests/Bit.Belemetry.Tests.Harness.Web/Collector/CollectedRecords.cs]
+dotnet_diagnostic.MSTEST0004.severity = none
+###############################
 # VB Coding Conventions       #
 ###############################
 [*.vb]

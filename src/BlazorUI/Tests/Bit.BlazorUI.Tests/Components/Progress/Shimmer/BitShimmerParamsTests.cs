@@ -31,8 +31,8 @@ public class BitShimmerParamsTests : BunitTestContext
     [TestMethod]
     public void BitShimmerParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitShimmer)}", BitShimmerParams.ParamName);
-        Assert.AreEqual("BitParams.BitShimmer", BitShimmerParams.ParamName);
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitShimmer)}", new BitShimmerParams().Name);
+        Assert.AreEqual("BitParams.BitShimmer", new BitShimmerParams().Name);
     }
 
     [TestMethod]

@@ -33,14 +33,14 @@ public class BitAiInlinePerformanceTests
         foreach (var complete in new[] { true, false })
         {
             var elapsed = BestOf(2, () => BitAiInlineParser.Parse(text, isComplete: complete));
-            Assert.IsTrue(elapsed < TimeSpan.FromSeconds(1), $"'{pattern}' x 50,000 (complete: {complete}) took {elapsed.TotalMilliseconds:F0}ms.");
+            Assert.IsLessThan(TimeSpan.FromSeconds(1), elapsed, $"'{pattern}' x 50,000 (complete: {complete}) took {elapsed.TotalMilliseconds:F0}ms.");
         }
 
         if (!pattern.Contains('<')) return;
 
         var options = new BitAiMarkdownOptions { AllowRawHtml = true };
         var html = BestOf(2, () => BitAiInlineParser.Parse(text, options));
-        Assert.IsTrue(html < TimeSpan.FromSeconds(1), $"'{pattern}' x 50,000 with raw HTML took {html.TotalMilliseconds:F0}ms.");
+        Assert.IsLessThan(TimeSpan.FromSeconds(1), html, $"'{pattern}' x 50,000 with raw HTML took {html.TotalMilliseconds:F0}ms.");
     }
 
     [TestMethod]
@@ -65,9 +65,8 @@ public class BitAiInlinePerformanceTests
         // slack on the linear side and three on the quadratic one, and the fixed allowance absorbs
         // timer noise on very short runs.
         var limit = smallTime * 80 + TimeSpan.FromMilliseconds(20);
-        Assert.IsTrue(
-            largeTime < limit,
-            $"'{pattern}': {smallTime.TotalMilliseconds:F1}ms for 6,250 repetitions but {largeTime.TotalMilliseconds:F1}ms for 100,000.");
+        Assert.IsLessThan(
+limit, largeTime, $"'{pattern}': {smallTime.TotalMilliseconds:F1}ms for 6,250 repetitions but {largeTime.TotalMilliseconds:F1}ms for 100,000.");
     }
 
     // With raw HTML on, an opening tag takes its whole element when the text closes it. Looked for from every opening tag
@@ -87,9 +86,8 @@ public class BitAiInlinePerformanceTests
 
         // As in ParsingTimeGrowsLinearlyWithTheInput: sixteen times the input, sixteen times the cost when linear.
         var limit = smallTime * 80 + TimeSpan.FromMilliseconds(20);
-        Assert.IsTrue(
-            largeTime < limit,
-            $"'{pattern}': {smallTime.TotalMilliseconds:F1}ms for 6,250 repetitions but {largeTime.TotalMilliseconds:F1}ms for 100,000.");
+        Assert.IsLessThan(
+limit, largeTime, $"'{pattern}': {smallTime.TotalMilliseconds:F1}ms for 6,250 repetitions but {largeTime.TotalMilliseconds:F1}ms for 100,000.");
     }
 
     [TestMethod]
@@ -107,7 +105,7 @@ public class BitAiInlinePerformanceTests
             List<BitAiMarkdownInline> inlines = [];
             var elapsed = BestOf(1, () => inlines = BitAiInlineParser.Parse(source));
 
-            Assert.IsTrue(elapsed < TimeSpan.FromSeconds(1), $"Took {elapsed.TotalMilliseconds:F0}ms.");
+            Assert.IsLessThan(TimeSpan.FromSeconds(1), elapsed, $"Took {elapsed.TotalMilliseconds:F0}ms.");
             Assert.IsInRange(0, 33, Depth(inlines));
         }
     }

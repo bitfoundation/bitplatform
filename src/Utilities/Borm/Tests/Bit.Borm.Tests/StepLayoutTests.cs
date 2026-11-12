@@ -71,7 +71,7 @@ public class StepLayoutTests : ComponentTestBase
         Assert.AreEqual(1, state.CurrentStepIndex);
         var address = cut.FindAll("[role=tab]")[1];
         Assert.AreEqual("1", address.QuerySelector(".bit-borm-tabs__badge")!.TextContent);
-        StringAssert.Contains(address.TextContent, "1 problem to fix");
+        Assert.Contains("1 problem to fix", address.TextContent);
         // A hidden tab is never the reason a submit fails.
         Assert.IsEmpty(state.MessagesFor("vat"));
     }

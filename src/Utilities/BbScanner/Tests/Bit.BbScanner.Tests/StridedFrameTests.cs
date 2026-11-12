@@ -51,9 +51,10 @@ public class StridedFrameTests
 
         var result = decoder.Decode(pixels, image.Width, image.Height, stride, format, suppressDuplicates: false);
         var packed = decoder.Decode(Spread(image, format, 0, out _), image.Width, image.Height, format, suppressDuplicates: false);
+        var actualValue = result?.Text;
 
-        Assert.AreEqual("STRIDED ROWS", result?.Text);
-        CollectionAssert.AreEqual(packed!.Corners.ToArray(), result!.Corners.ToArray());
+        Assert.AreEqual("STRIDED ROWS", actualValue);
+        Assert.AreSequenceEqual(packed!.Corners.ToArray(), result!.Corners.ToArray());
     }
 
     [TestMethod]
@@ -76,8 +77,9 @@ public class StridedFrameTests
 
         // Without its last row's padding the window is shorter than stride times height; it still holds every pixel.
         var result = decoder.Decode(window[..((stride * (image.Height - 1)) + (image.Width * 4))], image.Width, image.Height, stride, BbPixelFormat.Rgba32);
+        var actualValue = result?.Text;
 
-        Assert.AreEqual("WINDOW", result?.Text);
+        Assert.AreEqual("WINDOW", actualValue);
     }
 
     [TestMethod]
@@ -104,9 +106,10 @@ public class StridedFrameTests
         var result = decoder.Decode(pixels, framed.Width, framed.Height, stride, BbPixelFormat.Rgb24);
         using var packedDecoder = new BbBarcodeDecoder(new BbScannerOptions { Region = BbScanRegion.CenteredSquare(0.6) });
         var packed = packedDecoder.Decode(Spread(framed, BbPixelFormat.Rgb24, 0, out _), framed.Width, framed.Height, BbPixelFormat.Rgb24);
+        var actualValue = result?.Text;
 
-        Assert.AreEqual("REGION", result?.Text);
-        CollectionAssert.AreEqual(packed!.Corners.ToArray(), result!.Corners.ToArray(), "Corners are in the frame's coordinates, whatever its stride.");
+        Assert.AreEqual("REGION", actualValue);
+        Assert.AreSequenceEqual(packed!.Corners.ToArray(), result!.Corners.ToArray(), "Corners are in the frame's coordinates, whatever its stride.");
     }
 
     [TestMethod]
@@ -130,7 +133,8 @@ public class StridedFrameTests
         using var image = SyntheticImage.FromMatrix(QrEncoder.Encode("PACKED"), scale: 4);
         var pixels = Spread(image, BbPixelFormat.Rgba32, 0, out _);
         using var decoder = new BbBarcodeDecoder();
+        var actualValue = decoder.Decode(pixels, image.Width, image.Height, 0, BbPixelFormat.Rgba32)?.Text;
 
-        Assert.AreEqual("PACKED", decoder.Decode(pixels, image.Width, image.Height, 0, BbPixelFormat.Rgba32)?.Text);
+        Assert.AreEqual("PACKED", actualValue);
     }
 }

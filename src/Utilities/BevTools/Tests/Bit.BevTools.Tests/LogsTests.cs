@@ -40,7 +40,7 @@ public class LogsTests
             Assert.AreEqual("OrdersLoaded", log.EventName);
             Assert.AreEqual("Loaded 3 orders for Ada in 12.3 ms", log.Message);
             Assert.AreEqual("Loaded {Count} orders for {Customer} in {ElapsedMs:0.0} ms", log.MessageTemplate);
-            CollectionAssert.AreEqual(new[] { "Count", "Customer", "ElapsedMs" }, log.Properties.Select(p => p.Key).ToArray());
+            Assert.AreSequenceEqual(new[] { "Count", "Customer", "ElapsedMs" }, log.Properties.Select(p => p.Key).ToArray());
             Assert.AreEqual("3", log.Properties[0].Value);
             Assert.AreEqual("\"Ada\"", log.Properties[1].Value);
 
@@ -189,7 +189,7 @@ public class LogsTests
             Assert.IsNull(log.Message);
             Assert.IsNull(log.MessageTemplate);
             Assert.AreEqual(BevRedactor.HiddenValue, log.Text);
-            StringAssert.Contains(Assert.ContainsSingle(session.Errors.Snapshot()).Message, BevRedactor.HiddenValue);
+            Assert.Contains(BevRedactor.HiddenValue, Assert.ContainsSingle(session.Errors.Snapshot()).Message);
             Assert.DoesNotContain(email, BevSessionExporter.ToJson(session), StringComparison.Ordinal);
             Assert.DoesNotContain(email, BevSessionExporter.ToMarkdownReport(session), StringComparison.Ordinal);
         }
@@ -214,7 +214,7 @@ public class LogsTests
             Assert.HasCount(20, log.Properties, "only the first are listed");
             Assert.AreEqual(string.Join(" ", names), log.MessageTemplate, "the template is read past them");
             Assert.DoesNotContain("hunter2", log.Message!, StringComparison.Ordinal);
-            StringAssert.EndsWith(log.Message, "21 «redacted»");
+            Assert.EndsWith("21 «redacted»", log.Message);
         }
     }
 
@@ -250,7 +250,7 @@ public class LogsTests
 
             var log = Assert.ContainsSingle(session.Logs.Snapshot());
             Assert.DoesNotContain("internal-margin", log.Message!, StringComparison.Ordinal);
-            StringAssert.Contains(log.Message, "for Ada");
+            Assert.Contains("for Ada", log.Message!);
         }
     }
 
@@ -294,7 +294,7 @@ public class LogsTests
             Assert.AreEqual(error.Id, log.ErrorId);
             Assert.AreEqual(error.TimelineEventId, log.TimelineEventId, "one timeline row, the error's");
             Assert.AreEqual(typeof(InvalidOperationException).FullName, log.ExceptionType);
-            StringAssert.Contains(log.ExceptionMessage, "System.TimeoutException: db timeout");
+            Assert.Contains("System.TimeoutException: db timeout", log.ExceptionMessage!);
         }
     }
 
@@ -317,7 +317,7 @@ public class LogsTests
             var warning = session.Timeline.Find(logs[0].TimelineEventId)!;
             Assert.AreEqual("log:circuit", warning.Category, "the warning's timeline row is the one Blazor's warnings always had");
             Assert.AreEqual(errors[0].Id, logs[1].ErrorId);
-            Assert.AreEqual(2, session.Timeline.Snapshot().Length, "no second row per entry");
+            Assert.HasCount(2, session.Timeline.Snapshot(), "no second row per entry");
         }
     }
 
@@ -391,7 +391,7 @@ public class LogsTests
     }
 
     [TestMethod]
-    public void Work_that_left_the_dispatcher_belongs_to_the_session_whose_event_it_descends_from()
+    public async global::System.Threading.Tasks.Task Work_that_left_the_dispatcher_belongs_to_the_session_whose_event_it_descends_from()
     {
         var (session, scope, factory) = Create();
         using (scope)
@@ -410,7 +410,7 @@ public class LogsTests
             try
             {
                 // After an await with ConfigureAwait(false) inside a library: no dispatcher, the activity flowed along.
-                Task.Run(() => factory.CreateLogger("Microsoft.EntityFrameworkCore.Database.Command").LogInformation("Executed DbCommand ({Elapsed}ms)", 3)).Wait();
+                await Task.Run(() => factory.CreateLogger("Microsoft.EntityFrameworkCore.Database.Command").LogInformation("Executed DbCommand ({Elapsed}ms)", 3), TestContext.CancellationToken).WaitAsync(TestContext.CancellationToken);
             }
             finally
             {
@@ -445,8 +445,8 @@ public class LogsTests
             Assert.IsTrue(json.GetProperty("options").GetProperty("trackLogs").GetBoolean());
 
             var report = BevSessionExporter.ToMarkdownReport(session);
-            StringAssert.Contains(report, "## Logged warnings and errors (1 of 2 entries)");
-            StringAssert.Contains(report, "`warn` Shop.Payments: Retrying 2");
+            Assert.Contains("## Logged warnings and errors (1 of 2 entries)", report);
+            Assert.Contains("`warn` Shop.Payments: Retrying 2", report);
         }
     }
 
@@ -477,7 +477,7 @@ public class LogsTests
 
             session.Diagnostics.Evaluate(force: true);
             var finding = Assert.ContainsSingle(f => f.Diagnostic.RuleId == "log.flood", session.Diagnostics.Findings).Diagnostic;
-            StringAssert.Contains(finding.Title, "Shop.Products: \"Rendering product {Id}\" logged 30 times");
+            Assert.Contains("Shop.Products: \"Rendering product {Id}\" logged 30 times", finding.Title);
             Assert.AreEqual(BevDiagnosticSeverity.Warning, finding.Severity);
             Assert.IsNotEmpty(finding.RelatedEventIds!);
         }
@@ -525,6 +525,8 @@ public class LogsTests
             return "value";
         }
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }
 
 /// <summary>Components that log, through a real renderer.</summary>
@@ -565,13 +567,13 @@ public class LogsPanelTests : BunitContext
 
         var panel = Render<BevToolsPanel>();
         await panel.InvokeAsync(() => panel.FindAll(".bev-tab").First(t => t.TextContent.Trim().StartsWith("Logs", StringComparison.Ordinal)).Click());
-        StringAssert.Contains(panel.Markup, "Loading row 1042");
+        Assert.Contains("Loading row 1042", panel.Markup);
         await panel.InvokeAsync(() => panel.FindAll(".bev-body tbody tr.bev-row").First().Click());
-        StringAssert.Contains(panel.Markup, "Loading row {Id}");
-        StringAssert.Contains(panel.Markup, "LoggingRow.OnInitializedAsync via LoggingRowService.Load");
+        Assert.Contains("Loading row {Id}", panel.Markup);
+        Assert.Contains("LoggingRow.OnInitializedAsync via LoggingRowService.Load", panel.Markup);
 
         await panel.InvokeAsync(() => panel.FindAll(".bev-segmented button").First(b => b.TextContent == "Categories").Click());
-        StringAssert.Contains(panel.Markup, typeof(LoggingRowService).FullName!);
+        Assert.Contains(typeof(LoggingRowService).FullName!, panel.Markup);
     }
 
     [TestMethod]
@@ -589,21 +591,21 @@ public class LogsPanelTests : BunitContext
         await panel.InvokeAsync(() => panel.FindAll(".bev-tab").First(t => t.TextContent.Trim().StartsWith("Logs", StringComparison.Ordinal)).Click());
         await panel.InvokeAsync(() => panel.FindAll(".bev-segmented button").First(b => b.TextContent == "Database").Click());
         await panel.InvokeAsync(() => panel.FindAll(".bev-body tbody tr.bev-row").First().QuerySelector("button")!.Click());
-        StringAssert.Contains(panel.Markup, "Show every entry");
+        Assert.Contains("Show every entry", panel.Markup);
 
         await panel.InvokeAsync(() => panel.FindAll(".bev-segmented button").First(b => b.TextContent == "Categories").Click());
-        StringAssert.Contains(panel.Markup, "Shop.Other", "every category, not only the command's");
+        Assert.Contains("Shop.Other", panel.Markup, "every category, not only the command's");
         await panel.InvokeAsync(() => panel.FindAll(".bev-segmented button").First(b => b.TextContent == "Entries").Click());
         Assert.DoesNotContain("Show every entry", panel.Markup, StringComparison.Ordinal);
     }
 }
 
-public sealed class LoggingRowService(ILogger<LoggingRowService> logger)
+internal sealed class LoggingRowService(ILogger<LoggingRowService> logger)
 {
     public void Load(int id) => logger.LogInformation("Loading row {Id}", id);
 }
 
-public sealed class LoggingRow : ComponentBase
+internal sealed class LoggingRow : ComponentBase
 {
     [Parameter] public int Id { get; set; }
 

@@ -36,7 +36,7 @@ public class RelayRevocationTests
         await using Participant carol = await Participant.OverSignalRAsync(host, "doc", "carol", 3);
         await AssertEventuallyAsync(() => alice.Provider.IsSynced && bob.Provider.IsSynced && carol.Provider.IsSynced, "everyone connected");
         await AssertEventuallyAsync(() => connections.GetConnections("doc").Count == 3, "every connection is listed");
-        CollectionAssert.AreEquivalent(new[] { "alice", "bob", "carol" }, connections.GetConnections("doc").Select(connection => connection.UserId).ToArray());
+        Assert.AreSequenceEqual(new[] { "alice", "bob", "carol" }, connections.GetConnections("doc").Select(connection => connection.UserId).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
         alice.Text.Insert(0, "shared ");
         await AssertEventuallyAsync(() => bob.Body == "shared " && carol.Body == "shared ", "everyone edits together until revoked");
@@ -46,13 +46,13 @@ public class RelayRevocationTests
         await AssertEventuallyAsync(() => bob.Denied == 1, "the revoked client must be told");
         Assert.AreEqual("Removed from the document.", bob.DeniedWith);
         Assert.AreEqual(BcrdtConnectionStatus.Faulted, bob.Provider.Status);
-        CollectionAssert.AreEquivalent(new[] { "alice", "carol" }, connections.GetConnections("doc").Select(connection => connection.UserId).ToArray(), "a refused connection is taken off the list at once");
+        Assert.AreSequenceEqual(new[] { "alice", "carol" }, connections.GetConnections("doc").Select(connection => connection.UserId).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, "a refused connection is taken off the list at once");
         Assert.AreEqual(0, await connections.RevokeAsync("doc", connection => connection.UserId == "bob"), "revoking twice does nothing");
 
         alice.Text.Insert(7, "still");
         bob.Text.Insert(0, "too late ");
         await AssertEventuallyAsync(() => carol.Body == "shared still", "the others go on editing");
-        await Task.Delay(QuietPeriod);
+        await Task.Delay(QuietPeriod, TestContext.CancellationToken);
         Assert.AreEqual("shared still", alice.Body, "nothing the revoked client wrote reaches anyone");
         Assert.AreEqual("too late shared ", bob.Body, "and nothing more reaches it");
         Assert.AreEqual(0, alice.Denied + carol.Denied);
@@ -104,10 +104,10 @@ public class RelayRevocationTests
 
         alice.Text.Insert(7, "still");
         await AssertEventuallyAsync(() => carol.Body == "shared still", "the others go on editing");
-        await Task.Delay(QuietPeriod);
+        await Task.Delay(QuietPeriod, TestContext.CancellationToken);
         Assert.AreEqual("shared still", alice.Body);
         Assert.AreEqual("shared ", bob.Body, "nothing more reaches a revoked client");
-        CollectionAssert.AreEquivalent(new[] { "alice", "carol" }, connections.GetConnections("doc").Select(connection => connection.UserId).ToArray());
+        Assert.AreSequenceEqual(new[] { "alice", "carol" }, connections.GetConnections("doc").Select(connection => connection.UserId).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
         await alice.DisposeAsync();
         await bob.DisposeAsync();
@@ -153,17 +153,17 @@ public class RelayRevocationTests
         alice.Text.Insert(7, "still");
         bob.Text.Insert(0, "too late ");
         await AssertEventuallyAsync(
-            async () => await documentHost.ReadAsync("doc", doc => doc.GetText("body").ToString()) == "shared still",
+            async () => await documentHost.ReadAsync("doc", doc => doc.GetText("body").ToString(), TestContext.CancellationToken) == "shared still",
             "the host goes on taking the others' changes");
         await AssertEventuallyAsync(() => carol.Body == "shared still", "and the others go on editing");
-        await Task.Delay(QuietPeriod);
-        Assert.AreEqual("shared still", await documentHost.ReadAsync("doc", doc => doc.GetText("body").ToString()), "nothing the revoked client wrote is kept");
+        await Task.Delay(QuietPeriod, TestContext.CancellationToken);
+        Assert.AreEqual("shared still", await documentHost.ReadAsync("doc", doc => doc.GetText("body").ToString(), TestContext.CancellationToken), "nothing the revoked client wrote is kept");
         Assert.AreEqual("too late shared ", bob.Body, "and nothing more reaches it");
 
         // A refusal that comes from the host takes the connection off the list too.
         Assert.AreEqual(1, await documentHost.RevokeAsync("doc", connection => connection.UserId == "carol"));
         await AssertEventuallyAsync(() => carol.Denied == 1, "a client the host revokes is told");
-        CollectionAssert.AreEquivalent(new[] { "alice" }, connections.GetConnections("doc").Select(connection => connection.UserId).ToArray());
+        Assert.AreSequenceEqual(new[] { "alice" }, connections.GetConnections("doc").Select(connection => connection.UserId).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -195,21 +195,21 @@ public class RelayRevocationTests
             () => aliceOnOne.Provider.IsSynced && aliceOnTwo.Provider.IsSynced && bobOnOne.Provider.IsSynced && bobOnTwo.Provider.IsSynced,
             "everyone connected");
         await AssertEventuallyAsync(() => connections.GetConnections("one").Count == 2 && connections.GetConnections("two").Count == 2, "every connection is listed");
-        CollectionAssert.AreEquivalent(new[] { "one", "two" }, connections.Documents.ToArray());
+        Assert.AreSequenceEqual(new[] { "one", "two" }, connections.Documents.ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         Assert.HasCount(2, connections.GetConnections("one").Select(connection => connection.Relay).Distinct(), "one document, two relays");
 
         Assert.AreEqual(2, await connections.RevokeAsync((documentId, connection) => connection.UserId == "bob"));
 
         await AssertEventuallyAsync(() => bobOnOne.Denied == 1 && bobOnTwo.Denied == 1, "both of bob's connections are told");
-        CollectionAssert.AreEquivalent(new[] { "alice", "alice" }, connections.Documents.SelectMany(connections.GetConnections).Select(connection => connection.UserId).ToArray());
+        Assert.AreSequenceEqual(new[] { "alice", "alice" }, connections.Documents.SelectMany(connections.GetConnections).Select(connection => connection.UserId).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
         aliceOnOne.Text.Insert(0, "one");
         aliceOnTwo.Text.Insert(0, "two");
         await AssertEventuallyAsync(
-            async () => await documentHost.ReadAsync("one", doc => doc.GetText("body").ToString()) == "one" &&
-                await documentHost.ReadAsync("two", doc => doc.GetText("body").ToString()) == "two",
+            async () => await documentHost.ReadAsync("one", doc => doc.GetText("body").ToString(), TestContext.CancellationToken) == "one" &&
+                await documentHost.ReadAsync("two", doc => doc.GetText("body").ToString(), TestContext.CancellationToken) == "two",
             "alice goes on editing both");
-        await Task.Delay(QuietPeriod);
+        await Task.Delay(QuietPeriod, TestContext.CancellationToken);
         Assert.AreEqual("", bobOnOne.Body);
         Assert.AreEqual("", bobOnTwo.Body);
     }
@@ -242,7 +242,7 @@ public class RelayRevocationTests
         await AssertEventuallyAsync(() => bob.Body == "hello", "a reader still receives changes");
 
         bob.Text.Insert(0, "X");
-        await Task.Delay(QuietPeriod);
+        await Task.Delay(QuietPeriod, TestContext.CancellationToken);
         Assert.AreEqual("hello", alice.Body, "nothing it writes reaches anyone");
         Assert.AreEqual(BcrdtConnectionStatus.Synced, bob.Provider.Status);
         Assert.AreEqual(connected, bob.Connections, "and it stayed connected throughout");
@@ -283,13 +283,13 @@ public class RelayRevocationTests
         if (hosted)
         {
             await AssertEventuallyAsync(
-                async () => await documentHost.ReadAsync("doc", doc => doc.GetText("body").ToString()) == "kept",
+                async () => await documentHost.ReadAsync("doc", doc => doc.GetText("body").ToString(), TestContext.CancellationToken) == "kept",
                 "the host takes the writer's change");
         }
 
-        await Task.Delay(QuietPeriod);
+        await Task.Delay(QuietPeriod, TestContext.CancellationToken);
         Assert.AreEqual("kept", alice.Body, "a narrowed connection's change reaches nobody");
-        if (hosted) Assert.AreEqual("kept", await documentHost.ReadAsync("doc", doc => doc.GetText("body").ToString()), "and the host does not apply it");
+        if (hosted) Assert.AreEqual("kept", await documentHost.ReadAsync("doc", doc => doc.GetText("body").ToString(), TestContext.CancellationToken), "and the host does not apply it");
 
         BcrdtSyncMessage relayed = await RawSocket.ReceiveAsync(mallory, BcrdtSyncMessageKind.Update);
         using var seen = new BcrdtDocument();
@@ -306,7 +306,7 @@ public class RelayRevocationTests
         services.AddBitBcrdtRelayConnections();
 
         using ServiceProvider provider = services.BuildServiceProvider();
-        Assert.HasCount(1, provider.GetServices<BcrdtRelayConnections>());
+        Assert.ContainsSingle(provider.GetServices<BcrdtRelayConnections>());
         Assert.AreSame(provider.GetRequiredService<BcrdtRelayConnections>(), provider.GetRequiredService<BcrdtRelayConnections>());
     }
 
@@ -329,7 +329,7 @@ public class RelayRevocationTests
         var clock = Stopwatch.StartNew();
         while (!condition())
         {
-            Assert.IsTrue(clock.Elapsed < Patience, because);
+            Assert.IsLessThan(Patience, clock.Elapsed, because);
             await Task.Delay(10);
         }
     }
@@ -339,7 +339,7 @@ public class RelayRevocationTests
         var clock = Stopwatch.StartNew();
         while (!await condition())
         {
-            Assert.IsTrue(clock.Elapsed < Patience, because);
+            Assert.IsLessThan(Patience, clock.Elapsed, because);
             await Task.Delay(10);
         }
     }
@@ -501,4 +501,6 @@ public class RelayRevocationTests
             }
         }
     }
+
+    public TestContext TestContext { get; set; }
 }

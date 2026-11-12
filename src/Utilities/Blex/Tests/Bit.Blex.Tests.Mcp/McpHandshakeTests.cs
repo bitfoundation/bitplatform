@@ -48,7 +48,7 @@ public class McpHandshakeTests
         var instructions = McpTestHost.Client.ServerInstructions;
 
         Assert.AreEqual(BlexServerInstructions.Text, instructions);
-        StringAssert.Contains(instructions!, BlexServerInstructions.BlexVersion);
+        Assert.Contains(BlexServerInstructions.BlexVersion, instructions!);
     }
 
     [TestMethod]
@@ -65,15 +65,17 @@ public class McpHandshakeTests
     [TestMethod]
     public async Task Instructions_only_name_tools_that_exist()
     {
-        var tools = (await McpTestHost.Client.ListToolsAsync()).Select(tool => tool.Name).ToHashSet(StringComparer.Ordinal);
+        var tools = (await McpTestHost.Client.ListToolsAsync(cancellationToken: TestContext.CancellationToken)).Select(tool => tool.Name).ToHashSet(StringComparer.Ordinal);
 
         var mentioned = ToolNames.MentionedIn(McpTestHost.Client.ServerInstructions!).ToArray();
 
-        Assert.IsTrue(mentioned.Length >= 5, "The instructions name almost no tools - the working rules are what they are for.");
+        Assert.IsGreaterThanOrEqualTo(5, mentioned.Length, "The instructions name almost no tools - the working rules are what they are for.");
 
         foreach (var name in mentioned)
         {
-            Assert.IsTrue(tools.Contains(name), $"The server instructions tell the model to call '{name}', which this server does not expose.");
+            Assert.Contains(name, tools, $"The server instructions tell the model to call '{name}', which this server does not expose.");
         }
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

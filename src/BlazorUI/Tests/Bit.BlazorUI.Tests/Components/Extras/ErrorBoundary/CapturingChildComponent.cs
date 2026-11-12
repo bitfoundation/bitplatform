@@ -8,7 +8,7 @@ namespace Bit.BlazorUI.Tests.Components.Extras.ErrorBoundary;
 /// Reaches the boundary it sits inside through the cascade rather than through a reference, which is
 /// how anything inside a <see cref="BitErrorBoundary"/> hands it an exception the renderer never saw.
 /// </summary>
-public class CapturingChildComponent : ComponentBase
+internal class CapturingChildComponent : ComponentBase
 {
     [CascadingParameter] public BitErrorBoundary? Boundary { get; set; }
 

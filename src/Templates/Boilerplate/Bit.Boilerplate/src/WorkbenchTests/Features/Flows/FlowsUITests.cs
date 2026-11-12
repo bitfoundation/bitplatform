@@ -120,7 +120,7 @@ public class FlowsUITests : FlowPageTest
 
         await OpenBoard(flow.Id, 2);
 
-        await Server.ReviewHost.EditAsync(WorkbenchReviewDocument.Id, document => document.GetMap("flows").Delete(flow.Id));
+        await Server.ReviewHost.EditAsync(WorkbenchReviewDocument.Id, document => document.GetMap("flows").Delete(flow.Id), TestContext.CancellationToken);
 
         await Expect(Page.GetByText(WorkbenchStrings.FlowNotFound)).ToBeVisibleAsync();
         await Expect(Page.Locator("main.board")).ToHaveCountAsync(0);
@@ -143,7 +143,7 @@ public class FlowsUITests : FlowPageTest
         var id = Guid.NewGuid().ToString("N")[..16];
         var name = Unique("Nothing here yet");
 
-        await Server.ReviewHost.EditAsync(WorkbenchReviewDocument.Id, document => WorkbenchReviewDocument.SaveFlow(document.GetMap("flows"), id, name, [], []));
+        await Server.ReviewHost.EditAsync(WorkbenchReviewDocument.Id, document => WorkbenchReviewDocument.SaveFlow(document.GetMap("flows"), id, name, [], []), TestContext.CancellationToken);
 
         await OpenBoard(id, 0);
 
@@ -516,7 +516,7 @@ public class FlowsUITests : FlowPageTest
             {
                 flows.Delete(key);
             }
-        });
+        }, TestContext.CancellationToken);
 
         await OpenFlowsPage();
 

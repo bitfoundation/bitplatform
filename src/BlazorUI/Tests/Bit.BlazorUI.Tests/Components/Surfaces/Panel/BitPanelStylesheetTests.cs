@@ -59,8 +59,8 @@ public class BitPanelStylesheetTests
         var read = Regex.Matches(GetRules(stylesheet), @"var\((--bit-Panel-[A-Za-z-]+)").Select(m => m.Groups[1].Value).Distinct().Order().ToArray();
         var documented = Regex.Matches(GetHeader(stylesheet), @"(--bit-Panel-[A-Za-z-]+)").Select(m => m.Groups[1].Value).Distinct().Order().ToArray();
 
-        CollectionAssert.AreEqual(_publicVariables.Order().ToArray(), read);
-        CollectionAssert.AreEqual(read, documented);
+        Assert.AreSequenceEqual(_publicVariables.Order().ToArray(), read);
+        Assert.AreSequenceEqual(read, documented);
     }
 
     // The ZIndex parameter writes the two layers on the root as private variables, the overlay takes the public one
@@ -70,9 +70,9 @@ public class BitPanelStylesheetTests
     {
         var rules = GetRules(ReadStylesheet());
 
-        StringAssert.Contains(GetRule(rules, ""), "--bit-pnl-zin-pub: calc(var(--bit-Panel-z-index) + 1);");
-        StringAssert.Contains(GetRule(rules, "ovl"), "z-index: var(--bit-pnl-zin-ovl, var(--bit-Panel-z-index, #{$zindex-overlay}));");
-        StringAssert.Contains(GetRule(rules, "cnt"), "z-index: var(--bit-pnl-zin-cnt, var(--bit-pnl-zin-pub, #{$zindex-callout}));");
+        Assert.Contains("--bit-pnl-zin-pub: calc(var(--bit-Panel-z-index) + 1);", GetRule(rules, ""));
+        Assert.Contains("z-index: var(--bit-pnl-zin-ovl, var(--bit-Panel-z-index, #{$zindex-overlay}));", GetRule(rules, "ovl"));
+        Assert.Contains("z-index: var(--bit-pnl-zin-cnt, var(--bit-pnl-zin-pub, #{$zindex-callout}));", GetRule(rules, "cnt"));
     }
 
     [TestMethod]
@@ -83,8 +83,8 @@ public class BitPanelStylesheetTests
         // Any transform - an identity one included - makes the open panel the containing block of its fixed
         // descendants, which lays a panel or a dialog opened from inside it out against the panel. Its visibility is
         // inherited rather than set, so a panel whose Visibility is Hidden stays hidden while it is open.
-        StringAssert.Contains(open, "transform: none;");
-        StringAssert.Contains(open, "visibility: inherit;");
+        Assert.Contains("transform: none;", open);
+        Assert.Contains("visibility: inherit;", open);
     }
 
     // The panel is hidden while it is closed rather than only translated off the screen, which is what keeps its
@@ -94,9 +94,9 @@ public class BitPanelStylesheetTests
     {
         var rules = GetRules(ReadStylesheet());
 
-        StringAssert.Contains(GetRule(rules, "cnt"), "visibility: hidden;");
-        StringAssert.Contains(GetRule(rules, "ovl"), "visibility: hidden;");
-        StringAssert.Contains(GetRule(rules, "ovl-opn"), "visibility: inherit;");
+        Assert.Contains("visibility: hidden;", GetRule(rules, "cnt"));
+        Assert.Contains("visibility: hidden;", GetRule(rules, "ovl"));
+        Assert.Contains("visibility: inherit;", GetRule(rules, "ovl-opn"));
     }
 
     [TestMethod,
@@ -111,11 +111,11 @@ public class BitPanelStylesheetTests
     {
         var rule = GetRule(GetRules(ReadStylesheet()), edge);
 
-        StringAssert.Contains(rule, $"transform: {transform};");
+        Assert.Contains($"transform: {transform};", rule);
 
         // The size along the axis the panel slides on is the public variable's, capped so a strip of the page shows.
-        StringAssert.Contains(rule, $"{axis}: var(--bit-Panel-size, fit-content);");
-        StringAssert.Contains(rule, $"max-{axis}: var(--bit-pnl-max, 85%);");
+        Assert.Contains($"{axis}: var(--bit-Panel-size, fit-content);", rule);
+        Assert.Contains($"max-{axis}: var(--bit-pnl-max, 85%);", rule);
     }
 
     // The logical pair follows the direction through the factor, which the physical pair never reads.
@@ -126,7 +126,7 @@ public class BitPanelStylesheetTests
 
         foreach (var edge in new[] { "left", "right", "top", "bottom" })
         {
-            Assert.IsFalse(GetRule(rules, edge).Contains("--bit-pnl-transform-factor"), $"{edge} follows the direction, so it no longer stays on the side it is named for.");
+            Assert.DoesNotContain("--bit-pnl-transform-factor", GetRule(rules, edge), $"{edge} follows the direction, so it no longer stays on the side it is named for.");
         }
     }
 
@@ -146,12 +146,12 @@ public class BitPanelStylesheetTests
 
         foreach (var inset in insets.Split(','))
         {
-            StringAssert.Contains(rule, $"var(--bit-pnl-sa-{inset})", $"{edge} does not make room for the {inset} inset.");
+            Assert.Contains($"var(--bit-pnl-sa-{inset})", rule, $"{edge} does not make room for the {inset} inset.");
 
-            StringAssert.Contains(GetRule(rules, ""), $"    --bit-pnl-sa-{inset}: env(safe-area-inset-{inset}, 0px);");
+            Assert.Contains($"    --bit-pnl-sa-{inset}: env(safe-area-inset-{inset}, 0px);", GetRule(rules, ""));
 
             // A panel laid out inside a box of the page touches no device edge.
-            StringAssert.Contains(GetRule(rules, "abs"), $"    --bit-pnl-sa-{inset}: 0px;");
+            Assert.Contains($"    --bit-pnl-sa-{inset}: 0px;", GetRule(rules, "abs"));
         }
     }
 
@@ -160,7 +160,7 @@ public class BitPanelStylesheetTests
     [TestMethod]
     public void BitPanelLaidOutInABoxShouldLeaveThePaddingOfTheContainerToTheConsumer()
     {
-        StringAssert.DoesNotMatch(ReadStylesheet(), new Regex(@"\.bit-pnl-cnt\s*\{\s*padding"));
+        Assert.DoesNotMatchRegex(new Regex(@"\.bit-pnl-cnt\s*\{\s*padding"), ReadStylesheet());
     }
 
     // A contained panel stays out of the way of the clicks its container keeps while the panel is closed, and clips
@@ -170,10 +170,10 @@ public class BitPanelStylesheetTests
     {
         var rule = GetRule(GetRules(ReadStylesheet()), "abs");
 
-        StringAssert.Contains(rule, "position: absolute;");
-        StringAssert.Contains(rule, "overflow: clip;");
-        StringAssert.Contains(rule, "pointer-events: none;");
-        StringAssert.Contains(rule, "> .bit-pnl-ovl,\n    > .bit-pnl-cnt {\n        position: absolute;\n        pointer-events: auto;");
+        Assert.Contains("position: absolute;", rule);
+        Assert.Contains("overflow: clip;", rule);
+        Assert.Contains("pointer-events: none;", rule);
+        Assert.Contains("> .bit-pnl-ovl,\n    > .bit-pnl-cnt {\n        position: absolute;\n        pointer-events: auto;", rule);
     }
 
     // The direction is read off the layout as well as off the class Dir renders: the one so a panel given no
@@ -184,7 +184,7 @@ public class BitPanelStylesheetTests
     {
         var stylesheet = ReadStylesheet();
 
-        StringAssert.Contains(stylesheet, "    &:is(.bit-rtl, :dir(rtl)) {\n        --bit-pnl-transform-factor: -1;\n    }");
+        Assert.Contains("    &:is(.bit-rtl, :dir(rtl)) {\n        --bit-pnl-transform-factor: -1;\n    }", stylesheet);
     }
 
     // The full-size panel takes the whole of the screen, which also lifts the cap and leaves no page edge to draw.
@@ -193,12 +193,12 @@ public class BitPanelStylesheetTests
     {
         var rule = GetRule(GetRules(ReadStylesheet()), "fsz");
 
-        StringAssert.Contains(rule, "width: 100%;");
-        StringAssert.Contains(rule, "height: 100%;");
-        StringAssert.Contains(rule, "max-width: 100%;");
-        StringAssert.Contains(rule, "max-height: 100%;");
-        StringAssert.Contains(rule, "border: none;");
-        StringAssert.Contains(rule, "border-radius: 0;");
+        Assert.Contains("width: 100%;", rule);
+        Assert.Contains("height: 100%;", rule);
+        Assert.Contains("max-width: 100%;", rule);
+        Assert.Contains("max-height: 100%;", rule);
+        Assert.Contains("border: none;", rule);
+        Assert.Contains("border-radius: 0;", rule);
     }
 
     // A panel given a header, a footer or a close button moves the scrolling from the panel to its body, so the
@@ -208,14 +208,14 @@ public class BitPanelStylesheetTests
     {
         var rules = GetRules(ReadStylesheet());
 
-        StringAssert.Contains(GetRule(rules, "cnt"), "overflow: auto;");
-        StringAssert.Contains(GetRule(rules, "cnt"), "overscroll-behavior: contain;");
-        StringAssert.Contains(GetRule(rules, "sec"), "overflow: hidden;");
-        StringAssert.Contains(GetRule(rules, "sec"), "flex-direction: column;");
-        StringAssert.Contains(GetRule(rules, "bdy"), "overflow: hidden auto;");
-        StringAssert.Contains(GetRule(rules, "bdy"), "overscroll-behavior: contain;");
-        StringAssert.Contains(GetRule(rules, "hcn"), "flex-shrink: 0;");
-        StringAssert.Contains(GetRule(rules, "ftr"), "flex-shrink: 0;");
+        Assert.Contains("overflow: auto;", GetRule(rules, "cnt"));
+        Assert.Contains("overscroll-behavior: contain;", GetRule(rules, "cnt"));
+        Assert.Contains("overflow: hidden;", GetRule(rules, "sec"));
+        Assert.Contains("flex-direction: column;", GetRule(rules, "sec"));
+        Assert.Contains("overflow: hidden auto;", GetRule(rules, "bdy"));
+        Assert.Contains("overscroll-behavior: contain;", GetRule(rules, "bdy"));
+        Assert.Contains("flex-shrink: 0;", GetRule(rules, "hcn"));
+        Assert.Contains("flex-shrink: 0;", GetRule(rules, "ftr"));
     }
 
     [TestMethod]
@@ -223,9 +223,9 @@ public class BitPanelStylesheetTests
     {
         var rules = GetRules(ReadStylesheet());
 
-        StringAssert.Contains(GetRule(rules, "hcn"), "padding: var(--bit-Panel-padding, #{$spa-dialog}) var(--bit-Panel-padding, #{$spa-dialog}) 0;");
-        StringAssert.Contains(GetRule(rules, "bdy"), "padding: var(--bit-Panel-padding, #{$spa-dialog});");
-        StringAssert.Contains(GetRule(rules, "ftr"), "padding: 0 var(--bit-Panel-padding, #{$spa-dialog}) var(--bit-Panel-padding, #{$spa-dialog});");
+        Assert.Contains("padding: var(--bit-Panel-padding, #{$spa-dialog}) var(--bit-Panel-padding, #{$spa-dialog}) 0;", GetRule(rules, "hcn"));
+        Assert.Contains("padding: var(--bit-Panel-padding, #{$spa-dialog});", GetRule(rules, "bdy"));
+        Assert.Contains("padding: 0 var(--bit-Panel-padding, #{$spa-dialog}) var(--bit-Panel-padding, #{$spa-dialog});", GetRule(rules, "ftr"));
     }
 
     [TestMethod]
@@ -233,10 +233,10 @@ public class BitPanelStylesheetTests
     {
         var rule = GetRule(GetRules(ReadStylesheet()), "hdr");
 
-        StringAssert.Contains(rule, "font-size: var(--bit-Panel-header-font-size, #{$tg-fs-xl});");
-        StringAssert.Contains(rule, "font-weight: var(--bit-Panel-header-font-weight, #{$tg-fw-semibold});");
+        Assert.Contains("font-size: var(--bit-Panel-header-font-size, #{$tg-fs-xl});", rule);
+        Assert.Contains("font-weight: var(--bit-Panel-header-font-weight, #{$tg-fw-semibold});", rule);
         // A title of one line sits level with the close button beside it.
-        StringAssert.Contains(rule, "min-height: $siz-ctrl-md;");
+        Assert.Contains("min-height: $siz-ctrl-md;", rule);
     }
 
     [TestMethod]
@@ -244,19 +244,19 @@ public class BitPanelStylesheetTests
     {
         var rule = GetRule(GetRules(ReadStylesheet()), "cls");
 
-        StringAssert.Contains(rule, "&:focus-visible {\n        @include focus-ring;");
-        StringAssert.Contains(rule, "border-radius: $shp-radius-button;");
-        StringAssert.Contains(rule, "font-size: $siz-icon-md;");
-        StringAssert.Contains(rule, "margin-inline-start: auto;");
+        Assert.Contains("&:focus-visible {\n        @include focus-ring;", rule);
+        Assert.Contains("border-radius: $shp-radius-button;", rule);
+        Assert.Contains("font-size: $siz-icon-md;", rule);
+        Assert.Contains("margin-inline-start: auto;", rule);
 
         // The states move the variables the button is painted from rather than its colors, so a close button the
         // app paints through Classes keeps that paint under the pointer and while it is pressed.
-        StringAssert.Contains(rule, "color: var(--bit-pnl-cls-clr, inherit);");
-        StringAssert.Contains(rule, "background-color: var(--bit-pnl-cls-bg, transparent);");
-        StringAssert.Contains(rule, "&:hover:not(:disabled) {\n            --bit-pnl-cls-clr:");
-        StringAssert.Contains(rule, "&:active:not(:disabled) {\n        --bit-pnl-cls-clr:");
+        Assert.Contains("color: var(--bit-pnl-cls-clr, inherit);", rule);
+        Assert.Contains("background-color: var(--bit-pnl-cls-bg, transparent);", rule);
+        Assert.Contains("&:hover:not(:disabled) {\n            --bit-pnl-cls-clr:", rule);
+        Assert.Contains("&:active:not(:disabled) {\n        --bit-pnl-cls-clr:", rule);
 
-        StringAssert.Contains(rule, "&:disabled {\n        cursor: default;\n        opacity: $opa-dis;");
+        Assert.Contains("&:disabled {\n        cursor: default;\n        opacity: $opa-dis;", rule);
     }
 
     // The two transitions read the motion tokens, so a preset or reduced motion re-times the slide: the opening
@@ -266,12 +266,12 @@ public class BitPanelStylesheetTests
     {
         var rules = GetRules(ReadStylesheet());
 
-        StringAssert.Contains(GetRule(rules, "cnt"), "transition: transform $mot-duration $mot-easing-accelerate,");
-        StringAssert.Contains(GetRule(rules, "cnt"), "visibility 0s linear $mot-duration;");
-        StringAssert.Contains(GetRule(rules, "opn"), "transition: transform $mot-duration $mot-easing-decelerate,");
-        StringAssert.Contains(GetRule(rules, "opn"), "visibility 0s linear 0s;");
-        StringAssert.Contains(GetRule(rules, "ovl"), "transition: opacity $mot-duration-short $mot-easing-accelerate, visibility 0s linear $mot-duration-short;");
-        StringAssert.Contains(GetRule(rules, "ovl-opn"), "transition: opacity $mot-duration $mot-easing-decelerate, visibility 0s linear 0s;");
+        Assert.Contains("transition: transform $mot-duration $mot-easing-accelerate,", GetRule(rules, "cnt"));
+        Assert.Contains("visibility 0s linear $mot-duration;", GetRule(rules, "cnt"));
+        Assert.Contains("transition: transform $mot-duration $mot-easing-decelerate,", GetRule(rules, "opn"));
+        Assert.Contains("visibility 0s linear 0s;", GetRule(rules, "opn"));
+        Assert.Contains("transition: opacity $mot-duration-short $mot-easing-accelerate, visibility 0s linear $mot-duration-short;", GetRule(rules, "ovl"));
+        Assert.Contains("transition: opacity $mot-duration $mot-easing-decelerate, visibility 0s linear 0s;", GetRule(rules, "ovl-opn"));
 
         Assert.IsFalse(Regex.IsMatch(rules, @"\b(ease|ease-in|ease-out|ease-in-out)\b|cubic-bezier"), "A transition hard-codes its easing instead of reading the motion token.");
     }
@@ -282,9 +282,9 @@ public class BitPanelStylesheetTests
     {
         var rules = GetRules(ReadStylesheet());
 
-        Assert.IsFalse(GetRule(rules, "ovl").Contains("background"), "The plain overlay darkens the page it is meant to be read against.");
-        StringAssert.Contains(GetRule(rules, "ovl"), "backdrop-filter: var(--bit-Panel-overlay-backdrop-filter, none);");
-        StringAssert.Contains(GetRule(rules, "ovl-mfl"), "background-color: var(--bit-Panel-overlay-background, #{$clr-bg-overlay});");
+        Assert.DoesNotContain("background", GetRule(rules, "ovl"), "The plain overlay darkens the page it is meant to be read against.");
+        Assert.Contains("backdrop-filter: var(--bit-Panel-overlay-backdrop-filter, none);", GetRule(rules, "ovl"));
+        Assert.Contains("background-color: var(--bit-Panel-overlay-background, #{$clr-bg-overlay});", GetRule(rules, "ovl-mfl"));
     }
 
     // A forced-colors mode throws away the shadow and the tint of the overlay, so the rule on the side the panel
@@ -296,8 +296,8 @@ public class BitPanelStylesheetTests
 
         var forced = Regex.Match(rules, @"@media \(forced-colors: active\) \{.*?\n\}", RegexOptions.Singleline).Value;
 
-        StringAssert.Contains(forced, ".bit-pnl-cnt {");
-        StringAssert.Contains(forced, "--bit-pnl-edge: #{$shp-border-width} #{$shp-border-style} CanvasText;");
+        Assert.Contains(".bit-pnl-cnt {", forced);
+        Assert.Contains("--bit-pnl-edge: #{$shp-border-width} #{$shp-border-style} CanvasText;", forced);
     }
 
     /// <summary>

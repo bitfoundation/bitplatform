@@ -16,10 +16,10 @@ public class BitAiJsonViewStylesheetTests
         var rules = SourceFiles.GetScssRules(Read());
 
         var chevron = rules.Single(rule => rule.Ancestors.Count == 0 && rule.Header == ".bit-aijsv-tic");
-        CollectionAssert.Contains(chevron.Declarations.ToArray(), "transition: transform $mot-duration-short $mot-easing");
+        Assert.Contains("transition: transform $mot-duration-short $mot-easing", chevron.Declarations.ToArray());
 
         var open = rules.Single(rule => rule.Ancestors.Count == 0 && rule.Header == ".bit-aijsv-top");
-        CollectionAssert.AreEqual(new[] { "transform: rotate(90deg)" }, open.Declarations.ToArray());
+        Assert.AreSequenceEqual(new[] { "transform: rotate(90deg)" }, open.Declarations.ToArray());
 
         var mirrors = rules.Where(rule => Selectors(rule).Any(s => s.Contains(".bit-aijsv-tic") && (s.Contains(":dir(rtl)") || s.Contains(".bit-rtl"))))
                            .ToArray();
@@ -28,7 +28,7 @@ public class BitAiJsonViewStylesheetTests
 
         foreach (var mirror in mirrors)
         {
-            CollectionAssert.AreEqual(new[] { "scale: -1 1" }, mirror.Declarations.ToArray(), mirror.Header);
+            Assert.AreSequenceEqual(new[] { "scale: -1 1" }, mirror.Declarations.ToArray(), mirror.Header);
         }
     }
 

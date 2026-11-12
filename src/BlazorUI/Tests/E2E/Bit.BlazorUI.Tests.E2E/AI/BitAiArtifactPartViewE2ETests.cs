@@ -117,12 +117,12 @@ public class BitAiArtifactPartViewE2ETests : E2ETestBase
 
         var icon = await View("apv-rtl").Locator(".bit-aiatv-ico").RectAsync();
         var title = await View("apv-rtl").Locator(".bit-aiatv-ttl").RectAsync();
-        Assert.IsTrue(icon.Left >= title.Right - 1, "The glyph of the kind is to the right of the title.");
+        Assert.IsGreaterThanOrEqualTo(title.Right - 1, icon.Left, "The glyph of the kind is to the right of the title.");
 
         await Expect(Root("apv-rtl-missing")).ToHaveAttributeAsync("dir", "rtl");
         await Expect(Placeholder("apv-rtl-missing")).ToHaveCSSAsync("direction", "rtl");
         var tagIcon = await Placeholder("apv-rtl-missing").Locator("i").First.RectAsync();
         var tagText = await Placeholder("apv-rtl-missing").GetByText("Artifact").RectAsync();
-        Assert.IsTrue(tagIcon.Left >= tagText.Right - 1, "The glyph of the placeholder is to the right of its text.");
+        Assert.IsGreaterThanOrEqualTo(tagText.Right - 1, tagIcon.Left, "The glyph of the placeholder is to the right of its text.");
     }
 }

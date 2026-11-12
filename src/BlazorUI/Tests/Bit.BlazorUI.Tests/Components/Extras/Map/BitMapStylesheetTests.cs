@@ -46,13 +46,13 @@ public class BitMapStylesheetTests
 
         var read = Regex.Matches(stylesheet, @"var\((--bit-Map-[a-z-]+)").Select(m => m.Groups[1].Value).Distinct().ToArray();
 
-        CollectionAssert.AreEquivalent(PublicVariables, read);
+        Assert.AreSequenceEqual(PublicVariables, read, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
         foreach (var variable in PublicVariables)
         {
             Assert.IsFalse(Regex.IsMatch(stylesheet, $@"^\s*{variable}\s*:", RegexOptions.Multiline), $"{variable} is declared, so it no longer inherits.");
             Assert.IsTrue(Regex.IsMatch(stylesheet, $@"var\({variable}, [^)]"), $"{variable} is read without a fallback.");
-            StringAssert.Contains(stylesheet, $"//   {variable} ", $"{variable} is missing from the header of the stylesheet.");
+            Assert.Contains($"//   {variable} ", stylesheet, $"{variable} is missing from the header of the stylesheet.");
         }
     }
 
@@ -63,7 +63,7 @@ public class BitMapStylesheetTests
 
         var listed = Regex.Matches(demo, @"Name = ""(--bit-Map-[a-z-]+)""").Select(m => m.Groups[1].Value).ToArray();
 
-        CollectionAssert.AreEquivalent(PublicVariables, listed);
+        Assert.AreSequenceEqual(PublicVariables, listed, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     // The controls the map draws itself are drawn with the ring every control of the library uses (WCAG 2.4.7).
@@ -75,8 +75,8 @@ public class BitMapStylesheetTests
     {
         var block = ReadBlock(selector);
 
-        StringAssert.Contains(block, "&:focus-visible {");
-        StringAssert.Contains(block, "@include focus-ring;");
+        Assert.Contains("&:focus-visible {", block);
+        Assert.Contains("@include focus-ring;", block);
     }
 
     // WCAG 2.5.8: the popup's close button sits right against its content, so it gets the 24px minimum target.
@@ -85,8 +85,8 @@ public class BitMapStylesheetTests
     {
         var block = ReadBlock(".bit-map-popup-close");
 
-        StringAssert.Contains(block, "min-width: rem2(24px);");
-        StringAssert.Contains(block, "min-height: rem2(24px);");
+        Assert.Contains("min-width: rem2(24px);", block);
+        Assert.Contains("min-height: rem2(24px);", block);
     }
 
     // The anchor is moved by the point a provider projects, which is in pixels from the container's top-left corner in
@@ -123,8 +123,8 @@ public class BitMapStylesheetTests
         var stylesheet = ReadStylesheet();
 
         // The shared ring turns on the spinner tokens (BitSpinnerRingStylesheetTests pins the mixin itself).
-        StringAssert.Contains(ReadBlock(".bit-map-status-spinner"), "@include spinner-ring(");
-        StringAssert.Contains(ReadBlock(".bit-map-gesture-hint"), "$mot-duration $mot-easing");
+        Assert.Contains("@include spinner-ring(", ReadBlock(".bit-map-status-spinner"));
+        Assert.Contains("$mot-duration $mot-easing", ReadBlock(".bit-map-gesture-hint"));
         Assert.DoesNotContain("prefers-reduced-motion", stylesheet);
     }
 
@@ -145,11 +145,11 @@ public class BitMapStylesheetTests
     {
         var block = ReadBlock(".bit-map-probe");
 
-        StringAssert.Contains(block, "color: var(--bit-Map-cluster-color, ");
-        StringAssert.Contains(block, "background-color: var(--bit-Map-cluster-background, ");
-        StringAssert.Contains(block, "border: 0 solid var(--bit-Map-cluster-border-color, ");
-        StringAssert.Contains(block, "fill: var(--bit-Map-marker-color, ");
-        StringAssert.Contains(block, "stroke: var(--bit-Map-vector-color, ");
+        Assert.Contains("color: var(--bit-Map-cluster-color, ", block);
+        Assert.Contains("background-color: var(--bit-Map-cluster-background, ", block);
+        Assert.Contains("border: 0 solid var(--bit-Map-cluster-border-color, ", block);
+        Assert.Contains("fill: var(--bit-Map-marker-color, ", block);
+        Assert.Contains("stroke: var(--bit-Map-vector-color, ", block);
     }
 
 
@@ -161,13 +161,13 @@ public class BitMapStylesheetTests
     {
         var stylesheet = ReadStylesheet();
 
-        StringAssert.Contains(stylesheet, ".leaflet-tile-pane,\n    .bit-map-ol-tiles {\n        filter: var(--bit-Map-tile-filter, none);");
-        Assert.AreEqual(1, Regex.Matches(stylesheet, @"var\(--bit-Map-tile-filter").Count);
+        Assert.Contains(".leaflet-tile-pane,\n    .bit-map-ol-tiles {\n        filter: var(--bit-Map-tile-filter, none);", stylesheet);
+        Assert.ContainsSingle(Regex.Matches(stylesheet, @"var\(--bit-Map-tile-filter"));
 
         var openLayers = SourceFiles.Read("Bit.BlazorUI.Extras", "Components", "Map", "Providers", "BitMapOpenLayers.ts");
 
-        Assert.AreEqual(3, Regex.Matches(openLayers, @"_tileClassName\b").Count, "Both the base layer and the tile overlays must render into the filtered canvas.");
-        StringAssert.Contains(openLayers, "_tileClassName = 'ol-layer bit-map-ol-tiles'");
+        Assert.HasCount(3, Regex.Matches(openLayers, @"_tileClassName\b"), "Both the base layer and the tile overlays must render into the filtered canvas.");
+        Assert.Contains("_tileClassName = 'ol-layer bit-map-ol-tiles'", openLayers);
     }
 
     // The script half of the probe: every provider draws a marker without an icon as the same themed pin, and resolves a
@@ -184,8 +184,8 @@ public class BitMapStylesheetTests
     {
         var script = SourceFiles.Read("Bit.BlazorUI.Extras", "Components", "Map", "Providers", file);
 
-        Assert.AreEqual(1, Regex.Matches(script, @"opts = BitMapHelpers\.withDefaultIcon\(id, opts\);").Count);
-        Assert.AreEqual(5, Regex.Matches(script, @"style = BitMapHelpers\.resolvePathStyle\(id, style\);").Count);
+        Assert.ContainsSingle(Regex.Matches(script, @"opts = BitMapHelpers\.withDefaultIcon\(id, opts\);"));
+        Assert.HasCount(5, Regex.Matches(script, @"style = BitMapHelpers\.resolvePathStyle\(id, style\);"));
         Assert.IsFalse(script.Contains("hexToRgba", StringComparison.Ordinal), "A hex-only parser misreads every other CSS color.");
     }
 

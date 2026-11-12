@@ -109,6 +109,6 @@ public class NotificationIsolationTests
         store.Increment();
 
         Assert.AreSequenceEqual([1, 2], observed);
-        Assert.AreEqual(2, errors.Count);
+        Assert.HasCount(2, errors);
     }
 }

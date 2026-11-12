@@ -27,16 +27,18 @@ public class HarnessHostingTests
 
         foreach (var file in _bswupFiles)
         {
-            using var response = await client.GetAsync($"{appPath}_content/Bit.Bswup/{file}");
+            using var response = await client.GetAsync($"{appPath}_content/Bit.Bswup/{file}", TestContext.CancellationToken);
 
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, $"{file} was not served.");
-            Assert.AreEqual(file.EndsWith(".css", StringComparison.Ordinal) ? "text/css" : "text/javascript", response.Content.Headers.ContentType?.MediaType,
+            var expectedValue = file.EndsWith(".css", StringComparison.Ordinal) ? "text/css" : "text/javascript";
+            var actualValue = response.Content.Headers.ContentType?.MediaType;
+            Assert.AreEqual(expectedValue, actualValue,
                 $"{file} was answered by something other than the static asset.");
 
-            var content = await response.Content.ReadAsStringAsync();
+            var content = await response.Content.ReadAsStringAsync(TestContext.CancellationToken);
             if (file.EndsWith(".js", StringComparison.Ordinal))
             {
-                StringAssert.Matches(content, new Regex(@"version[""']\]\s*=\s*[""']\d+\.\d+\.\d+"), $"{file} declares no version.");
+                Assert.MatchesRegex(new Regex(@"version[""']\]\s*=\s*[""']\d+\.\d+\.\d+"), content, $"{file} declares no version.");
             }
         }
     }
@@ -50,8 +52,8 @@ public class HarnessHostingTests
         using var client = HarnessHostFactory.Shared(mode).CreateSessionClient();
 
         var manifest = await PrecacheManifest.LoadAsync(client, appPath);
-        Assert.IsTrue(manifest.Precached().Any(asset => asset.Url.StartsWith("_framework/", StringComparison.Ordinal)), "The manifest lists no framework files.");
-        Assert.IsTrue(manifest.Precached().Any(asset => asset.Url == "_content/Bit.Bswup/bit-bswup.js"), "The manifest does not list the Bswup page script.");
+        Assert.Contains(asset => asset.Url.StartsWith("_framework/", StringComparison.Ordinal), manifest.Precached(), "The manifest lists no framework files.");
+        Assert.Contains(asset => asset.Url == "_content/Bit.Bswup/bit-bswup.js", manifest.Precached(), "The manifest does not list the Bswup page script.");
 
         // The harness writes each session's script-tag options into the standalone app's index.html, so that one file
         // is served with other bytes than the build hashed - by design of the harness, not a deployment problem.
@@ -59,7 +61,7 @@ public class HarnessHostingTests
             ? await manifest.VerifyServedAsync(client, appPath, @"^index\.html$")
             : await manifest.VerifyServedAsync(client, appPath);
 
-        Assert.AreEqual(0, problems.Count, string.Join(Environment.NewLine, problems));
+        Assert.IsEmpty(problems, string.Join(Environment.NewLine, problems));
     }
 
     [TestMethod]
@@ -70,15 +72,15 @@ public class HarnessHostingTests
     public async Task The_host_document_leaves_starting_Blazor_to_Bswup(string mode)
     {
         using var client = HarnessHostFactory.Shared(mode).CreateSessionClient();
-        var html = await client.GetStringAsync("/");
+        var html = await client.GetStringAsync("/", TestContext.CancellationToken);
 
         var blazor = Regex.Match(html, @"<script src=""_framework/blazor\.web\.js""[^>]*>");
         Assert.IsTrue(blazor.Success, "The document does not load blazor.web.js.");
-        StringAssert.Contains(blazor.Value, "autostart=\"false\"");
+        Assert.Contains("autostart=\"false\"", blazor.Value);
 
         var bswup = html.IndexOf("_content/Bit.Bswup/bit-bswup.js", StringComparison.Ordinal);
-        Assert.IsTrue(bswup > blazor.Index, "bit-bswup.js has to come after the Blazor script it starts.");
-        Assert.IsTrue(html.IndexOf("_content/Bit.Bswup/bit-bswup.progress.js", StringComparison.Ordinal) > bswup);
+        Assert.IsGreaterThan(blazor.Index, bswup, "bit-bswup.js has to come after the Blazor script it starts.");
+        Assert.IsGreaterThan(bswup, html.IndexOf("_content/Bit.Bswup/bit-bswup.progress.js", StringComparison.Ordinal));
     }
 
     [TestMethod]
@@ -86,24 +88,24 @@ public class HarnessHostingTests
     {
         using var client = HarnessHostFactory.Shared(Modes.WebAssembly).CreateSessionClient();
 
-        var defaults = BswupElement(await client.GetStringAsync("/"));
-        StringAssert.Contains(defaults, "data-bit-bswup-config=\"true\"");
-        StringAssert.Contains(defaults, "data-bit-bswup-auto-reload=\"true\"");
-        StringAssert.Contains(defaults, "data-bit-bswup-show-assets=\"false\"");
-        StringAssert.Contains(defaults, "data-bit-bswup-show-on-update=\"true\"");
-        StringAssert.Contains(defaults, "data-bit-bswup-app-container=\"#app\"");
-        StringAssert.Contains(defaults, "data-bit-bswup-handler=\"harnessBswupHandler\"");
+        var defaults = BswupElement(await client.GetStringAsync("/", TestContext.CancellationToken));
+        Assert.Contains("data-bit-bswup-config=\"true\"", defaults);
+        Assert.Contains("data-bit-bswup-auto-reload=\"true\"", defaults);
+        Assert.Contains("data-bit-bswup-show-assets=\"false\"", defaults);
+        Assert.Contains("data-bit-bswup-show-on-update=\"true\"", defaults);
+        Assert.Contains("data-bit-bswup-app-container=\"#app\"", defaults);
+        Assert.Contains("data-bit-bswup-handler=\"harnessBswupHandler\"", defaults);
 
         await HarnessHostFactory.SetOptionsAsync(client, new { progress = new { autoReload = false, showAssets = true, hideApp = true, autoHide = true, showOnUpdate = false } });
-        var html = await client.GetStringAsync("/");
+        var html = await client.GetStringAsync("/", TestContext.CancellationToken);
         var configured = BswupElement(html);
 
-        StringAssert.Contains(configured, "data-bit-bswup-auto-reload=\"false\"");
-        StringAssert.Contains(configured, "data-bit-bswup-show-assets=\"true\"");
-        StringAssert.Contains(configured, "data-bit-bswup-hide-app=\"true\"");
-        StringAssert.Contains(configured, "data-bit-bswup-auto-hide=\"true\"");
-        StringAssert.Contains(configured, "data-bit-bswup-show-on-update=\"false\"");
-        StringAssert.Matches(html, new Regex(@"id=""bit-bswup-assets""[^>]*display:\s*block"));
+        Assert.Contains("data-bit-bswup-auto-reload=\"false\"", configured);
+        Assert.Contains("data-bit-bswup-show-assets=\"true\"", configured);
+        Assert.Contains("data-bit-bswup-hide-app=\"true\"", configured);
+        Assert.Contains("data-bit-bswup-auto-hide=\"true\"", configured);
+        Assert.Contains("data-bit-bswup-show-on-update=\"false\"", configured);
+        Assert.MatchesRegex(new Regex(@"id=""bit-bswup-assets""[^>]*display:\s*block"), html);
 
         // The component works under a strict CSP and when rendered interactively because it emits no script.
         Assert.IsFalse(ScriptInsideSplash(html), "BswupProgress emitted an inline script.");
@@ -113,18 +115,18 @@ public class HarnessHostingTests
     public async Task The_update_button_is_rendered_outside_the_splash_overlay()
     {
         using var client = HarnessHostFactory.Shared(Modes.WebAssembly).CreateSessionClient();
-        var html = await client.GetStringAsync("/");
+        var html = await client.GetStringAsync("/", TestContext.CancellationToken);
 
         var splashEnd = html.IndexOf("id=\"bit-bswup-error-retry\"", StringComparison.Ordinal);
         var button = Regex.Match(html, @"<button id=""bit-bswup-reload""[^>]*>");
         Assert.IsTrue(button.Success, "The update button is not rendered.");
-        StringAssert.Contains(button.Value, "type=\"button\"");
-        StringAssert.Contains(button.Value, "display: none");
+        Assert.Contains("type=\"button\"", button.Value);
+        Assert.Contains("display: none", button.Value);
 
         // Everything between the retry button (the splash's last element) and the update button closes the splash.
         var between = html[splashEnd..button.Index];
-        Assert.AreEqual(3, Regex.Matches(between, "</div>").Count, "The update button is nested inside #bit-bswup.");
-        StringAssert.Contains(html, "id=\"bit-bswup-reload-status\" role=\"status\"");
+        Assert.HasCount(3, Regex.Matches(between, "</div>"), "The update button is nested inside #bit-bswup.");
+        Assert.Contains("id=\"bit-bswup-reload-status\" role=\"status\"", html);
     }
 
     [TestMethod]
@@ -136,11 +138,11 @@ public class HarnessHostingTests
         using var client = HarnessHostFactory.Shared(mode).CreateSessionClient();
 
         // The status line is rendered by the harness root itself, so it is in every prerendered document.
-        StringAssert.Contains(await client.GetStringAsync("/"), "id=\"status\"", "The document is not prerendered to begin with.");
+        Assert.Contains("id=\"status\"", await client.GetStringAsync("/", TestContext.CancellationToken), "The document is not prerendered to begin with.");
 
-        var shell = await client.GetStringAsync("/?no-prerender=true");
+        var shell = await client.GetStringAsync("/?no-prerender=true", TestContext.CancellationToken);
         Assert.IsFalse(shell.Contains("id=\"status\"", StringComparison.Ordinal), "The noPrerenderQuery document carries one request's prerendered output.");
-        StringAssert.Contains(shell, "<!--Blazor:");
+        Assert.Contains("<!--Blazor:", shell);
     }
 
     [TestMethod]
@@ -148,13 +150,13 @@ public class HarnessHostingTests
     {
         using var client = HarnessHostFactory.Shared(Modes.WebAssembly).CreateSessionClient();
 
-        using var response = await client.GetAsync("/standalone/counter");
+        using var response = await client.GetAsync("/standalone/counter", TestContext.CancellationToken);
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
-        var html = await response.Content.ReadAsStringAsync();
+        var html = await response.Content.ReadAsStringAsync(TestContext.CancellationToken);
 
-        StringAssert.Contains(html, "<base href=\"/standalone/\" />");
-        StringAssert.Matches(html, new Regex(@"<script src=""_framework/blazor\.webassembly\.js"" autostart=""false"">"));
-        StringAssert.Matches(html, new Regex(@"<script src=""_content/Bit\.Bswup/bit-bswup\.js"" scope=""/standalone/"">"));
+        Assert.Contains("<base href=\"/standalone/\" />", html);
+        Assert.MatchesRegex(new Regex(@"<script src=""_framework/blazor\.webassembly\.js"" autostart=""false"">"), html);
+        Assert.MatchesRegex(new Regex(@"<script src=""_content/Bit\.Bswup/bit-bswup\.js"" scope=""/standalone/"">"), html);
     }
 
     [TestMethod]
@@ -163,18 +165,18 @@ public class HarnessHostingTests
         using var client = HarnessHostFactory.Shared(Modes.WebAssembly).CreateSessionClient();
 
         await HarnessHostFactory.SetOptionsAsync(client, new { workerSettings = new { errorTolerance = "strict", prohibitedUrls = new[] { new Dictionary<string, string> { ["$regex"] = @"\/admin\/", ["flags"] = "i" } } } });
-        var first = await client.GetStringAsync("/service-worker.js");
+        var first = await client.GetStringAsync("/service-worker.js", TestContext.CancellationToken);
 
-        StringAssert.Contains(first, "self.errorTolerance = \"strict\";");
-        StringAssert.Contains(first, "self.prohibitedUrls = [new RegExp(\"\\\\/admin\\\\/\", \"i\")];");
-        StringAssert.EndsWith(first.TrimEnd(), "self.importScripts('_content/Bit.Bswup/bit-bswup.sw.js');");
+        Assert.Contains("self.errorTolerance = \"strict\";", first);
+        Assert.Contains("self.prohibitedUrls = [new RegExp(\"\\\\/admin\\\\/\", \"i\")];", first);
+        Assert.EndsWith("self.importScripts('_content/Bit.Bswup/bit-bswup.sw.js');", first.TrimEnd());
 
-        using (var publish = await client.PutAsJsonAsync("/_harness/version", new { version = 2 })) publish.EnsureSuccessStatusCode();
-        Assert.AreNotEqual(first, await client.GetStringAsync("/service-worker.js"), "A new release left the worker script byte-identical, so no browser would find the update.");
-        StringAssert.EndsWith((await PrecacheManifest.LoadAsync(client, "/")).Version, "-h2");
+        using (var publish = await client.PutAsJsonAsync("/_harness/version", new { version = 2 }, cancellationToken: TestContext.CancellationToken)) publish.EnsureSuccessStatusCode();
+        Assert.AreNotEqual(first, await client.GetStringAsync("/service-worker.js", TestContext.CancellationToken), "A new release left the worker script byte-identical, so no browser would find the update.");
+        Assert.EndsWith("-h2", (await PrecacheManifest.LoadAsync(client, "/")).Version);
 
         await HarnessHostFactory.SetOptionsAsync(client, new { worker = "cleanup" });
-        StringAssert.EndsWith((await client.GetStringAsync("/service-worker.js")).TrimEnd(), "self.importScripts('_content/Bit.Bswup/bit-bswup.sw-cleanup.js');");
+        Assert.EndsWith("self.importScripts('_content/Bit.Bswup/bit-bswup.sw-cleanup.js');", (await client.GetStringAsync("/service-worker.js", TestContext.CancellationToken)).TrimEnd());
     }
 
     private static string BswupElement(string html)
@@ -190,4 +192,6 @@ public class HarnessHostingTests
         var end = html.IndexOf("<button id=\"bit-bswup-reload\"", StringComparison.Ordinal);
         return start >= 0 && end > start && html[start..end].Contains("<script", StringComparison.Ordinal);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

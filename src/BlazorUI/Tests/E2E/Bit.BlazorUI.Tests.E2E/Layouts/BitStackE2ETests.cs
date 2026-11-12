@@ -26,9 +26,9 @@ public class BitStackE2ETests : E2ETestBase
         var response = await Page.APIRequest.GetAsync($"{BaseUrl}/e2e/stack");
         var html = await response.TextAsync();
 
-        StringAssert.Contains(html, "id=\"basic-row\"");
-        StringAssert.Contains(html, "flex-direction:row");
-        StringAssert.Contains(html, "<span id=\"status\">Loading</span>");
+        Assert.Contains("id=\"basic-row\"", html);
+        Assert.Contains("flex-direction:row", html);
+        Assert.Contains("<span id=\"status\">Loading</span>", html);
     }
 
     [TestMethod]
@@ -49,14 +49,15 @@ public class BitStackE2ETests : E2ETestBase
         // Reversed flips the painted order and packs from the far edge.
         await Expect(Page.Locator("#basic-col-rev")).ToHaveCSSAsync("flex-direction", "column-reverse");
         AssertClose((await BoxAsync("#basic-col-rev")).Bottom, (await BoxAsync("#bcr-1")).Bottom, "column-reverse: 1 at the bottom");
-        Assert.IsTrue((await BoxAsync("#bcr-3")).Y < (await BoxAsync("#bcr-1")).Y, "column-reverse: 3 above 1");
+        Assert.IsLessThan((await BoxAsync("#bcr-1")).Y, (await BoxAsync("#bcr-3")).Y, "column-reverse: 3 above 1");
 
         await Expect(Page.Locator("#basic-row-rev")).ToHaveCSSAsync("flex-direction", "row-reverse");
         AssertClose((await BoxAsync("#basic-row-rev")).Right, (await BoxAsync("#brr-1")).Right, "row-reverse: 1 at the right");
-        Assert.IsTrue((await BoxAsync("#brr-3")).X < (await BoxAsync("#brr-1")).X, "row-reverse: 3 left of 1");
+        Assert.IsLessThan((await BoxAsync("#brr-1")).X, (await BoxAsync("#brr-3")).X, "row-reverse: 3 left of 1");
 
         // The source order is untouched.
-        Assert.AreEqual("123", await Page.Locator("#basic-row-rev").InnerTextAsync().ContinueWith(t => t.Result.Replace("\n", "").Replace(" ", "")));
+        var sourceOrder = await Page.Locator("#basic-row-rev").InnerTextAsync();
+        Assert.AreEqual("123", sourceOrder.Replace("\n", "").Replace(" ", ""));
     }
 
     [TestMethod]
@@ -207,7 +208,7 @@ public class BitStackE2ETests : E2ETestBase
         var one = await BoxAsync("#wr-1");
         var four = await BoxAsync("#wr-4");
         AssertClose(one.X, four.X, "item 4 starts the second row");
-        Assert.IsTrue(four.Y > one.Bottom, "the second row is below the first");
+        Assert.IsGreaterThan(one.Bottom, four.Y, "the second row is below the first");
         AssertClose(one.Y, (await BoxAsync("#wr-3")).Y, "three items per row");
 
         // Without Wrap the children stay on one line and overflow.
@@ -263,7 +264,7 @@ public class BitStackE2ETests : E2ETestBase
         await Expect(Page.Locator("#wrap-stack")).ToHaveCSSAsync("flex-wrap", "wrap-reverse");
         var host = await BoxAsync("#wrap-host");
         AssertClose(host.Bottom, (await BoxAsync("#wr-1")).Bottom, "the first row at the bottom");
-        Assert.IsTrue((await BoxAsync("#wr-4")).Bottom < (await BoxAsync("#wr-1")).Y, "the second row above it");
+        Assert.IsLessThan((await BoxAsync("#wr-1")).Y, (await BoxAsync("#wr-4")).Bottom, "the second row above it");
     }
 
     [TestMethod]
@@ -372,8 +373,12 @@ public class BitStackE2ETests : E2ETestBase
         // HorizontalXs=true, Sm=false, Md=true, Lg=false, Xl=true, Xxl=false, all reversed.
         var expected = new Dictionary<string, string>
         {
-            ["xs"] = "row-reverse", ["sm"] = "column-reverse", ["md"] = "row-reverse",
-            ["lg"] = "column-reverse", ["xl"] = "row-reverse", ["xxl"] = "column-reverse"
+            ["xs"] = "row-reverse",
+            ["sm"] = "column-reverse",
+            ["md"] = "row-reverse",
+            ["lg"] = "column-reverse",
+            ["xl"] = "row-reverse",
+            ["xxl"] = "column-reverse"
         };
 
         foreach (var (name, width) in Breakpoints)
@@ -495,8 +500,8 @@ public class BitStackE2ETests : E2ETestBase
         var g1 = await BoxAsync("#gc-1");
         var g2 = await BoxAsync("#gc-2");
         AssertClose((await BoxAsync("#grow-content")).Right, (await BoxAsync("#gc-3")).Right, "the row is filled");
-        Assert.IsTrue(g1.W > 60 + Tolerance, "the children grew");
-        Assert.IsTrue(g2.W > g1.W + Tolerance, "the longer child stays longer");
+        Assert.IsGreaterThan(60 + Tolerance, g1.W, "the children grew");
+        Assert.IsGreaterThan(g1.W + Tolerance, g2.W, "the longer child stays longer");
 
         await Expect(Page.Locator("#equal-content")).ToHaveClassAsync(HasClass("bit-stc-eqc"));
         foreach (var id in new[] { "#ec-1", "#ec-2", "#ec-3" })
@@ -511,12 +516,12 @@ public class BitStackE2ETests : E2ETestBase
         await OpenAsync("/e2e/stack");
 
         var squeezedHost = await BoxAsync("#squeezed");
-        Assert.IsTrue((await BoxAsync("#sq-8")).Right <= squeezedHost.Right + Tolerance, "squeezed to fit");
-        Assert.IsTrue((await BoxAsync("#sq-1")).W < 50, "squeezed below 50px");
+        Assert.IsLessThanOrEqualTo(squeezedHost.Right + Tolerance, (await BoxAsync("#sq-8")).Right, "squeezed to fit");
+        Assert.IsLessThan(50, (await BoxAsync("#sq-1")).W, "squeezed below 50px");
 
         await Expect(Page.Locator("#no-shrink-content")).ToHaveClassAsync(HasClass("bit-stc-nsc"));
         AssertClose(50, (await BoxAsync("#ns-1")).W, "kept at 50px");
-        Assert.IsTrue((await BoxAsync("#ns-8")).Right > (await BoxAsync("#no-shrink-content")).Right, "overflows");
+        Assert.IsGreaterThan((await BoxAsync("#no-shrink-content")).Right, (await BoxAsync("#ns-8")).Right, "overflows");
     }
 
     [TestMethod]
@@ -569,7 +574,7 @@ public class BitStackE2ETests : E2ETestBase
         var g2 = await BoxAsync("#fi-g2");
         var g3 = await BoxAsync("#fi-g3");
         AssertClose(600, g1.W + g2.W + g3.W, "the row is filled");
-        Assert.IsTrue(g2.W > g1.W + 20, "the longer content gets more");
+        Assert.IsGreaterThan(g1.W + 20, g2.W, "the longer content gets more");
 
         foreach (var id in new[] { "#fi-b1", "#fi-b2", "#fi-b3" })
         {
@@ -590,10 +595,10 @@ public class BitStackE2ETests : E2ETestBase
         await Expect(Page.Locator("#fi-shrink3")).ToHaveCSSAsync("flex-shrink", "3");
 
         // Without Shrinkable the nested stack keeps the floor of its content; with it, it shrinks into the row.
-        Assert.IsTrue((await BoxAsync("#fi-not-shrinkable")).W >= 600 - Tolerance, "the content floor holds");
+        Assert.IsGreaterThanOrEqualTo(600 - Tolerance, (await BoxAsync("#fi-not-shrinkable")).W, "the content floor holds");
         await Expect(Page.Locator("#fi-shrinkable")).ToHaveCSSAsync("min-width", "0px");
         AssertClose(220, (await BoxAsync("#fi-shrinkable")).W, "Shrinkable shrinks to what is left");
-        Assert.IsTrue((await BoxAsync("#fi-shrinkable-fixed")).Right <= 300 + (await BoxAsync("#fi-shrinkable")).X + Tolerance);
+        Assert.IsLessThanOrEqualTo(300 + (await BoxAsync("#fi-shrinkable")).X + Tolerance, (await BoxAsync("#fi-shrinkable-fixed")).Right);
     }
 
     [TestMethod]
@@ -672,8 +677,8 @@ public class BitStackE2ETests : E2ETestBase
 
         var box = await BoxAsync("#el-inline");
         var line = await BoxAsync("#inline-line");
-        Assert.IsTrue(box.W < 200, $"sized by its content, not the full width ({box.W})");
-        Assert.IsTrue(box.X > line.X + 20, "it sits after the text that precedes it");
+        Assert.IsLessThan(200, box.W, $"sized by its content, not the full width ({box.W})");
+        Assert.IsGreaterThan(line.X + 20, box.X, "it sits after the text that precedes it");
     }
 
     [TestMethod]
@@ -779,7 +784,7 @@ public class BitStackE2ETests : E2ETestBase
         await Expect(row).ToHaveAttributeAsync("dir", "rtl");
         await Expect(row).ToHaveClassAsync(HasClass("bit-rtl"));
         AssertClose((await BoxAsync("#rtl-row")).Right, (await BoxAsync("#rr-1")).Right, "Rtl: item 1 at the right");
-        Assert.IsTrue((await BoxAsync("#rr-2")).X < (await BoxAsync("#rr-1")).X, "Rtl: item 2 to its left");
+        Assert.IsLessThan((await BoxAsync("#rr-1")).X, (await BoxAsync("#rr-2")).X, "Rtl: item 2 to its left");
 
         AssertClose((await BoxAsync("#rtl-row-rev")).X, (await BoxAsync("#rrr-1")).X, "Rtl reversed: item 1 at the left");
 
@@ -821,7 +826,7 @@ public class BitStackE2ETests : E2ETestBase
 
     private static void AssertClose(double expected, double actual, string what)
     {
-        Assert.IsTrue(Math.Abs(expected - actual) <= Tolerance, $"{what}: expected {expected}, got {actual}");
+        Assert.IsLessThanOrEqualTo(Tolerance, Math.Abs(expected - actual), $"{what}: expected {expected}, got {actual}");
     }
 
     private sealed record Box(double X, double Y, double W, double H)

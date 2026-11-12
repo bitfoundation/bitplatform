@@ -128,7 +128,7 @@ public sealed class LazyLoadingTests : BunitContext
             return ValueTask.FromResult(true);
         };
 
-        await runtime.Service.StartAsync(tour);
+        await runtime.Service.StartAsync(tour, cancellationToken: TestContext.CancellationToken);
 
         Assert.AreSame(marker, seen);
         Assert.Contains(BonboardingEventKind.TourStarted, observer.Kinds);
@@ -146,10 +146,10 @@ public sealed class LazyLoadingTests : BunitContext
             .BuildServiceProvider();
 
         var runtime = BonboardingRuntime.Of(app);
-        await store.SetAsync(new BonboardingRecord { TourId = "kept" });
+        await store.SetAsync(new BonboardingRecord { TourId = "kept" }, TestContext.CancellationToken);
 
         Assert.AreSame(localizer, runtime.Localizer);
-        Assert.IsNotNull(await runtime.Service.GetRecordAsync("kept"), "The record was read from the registered store, not the browser.");
+        Assert.IsNotNull(await runtime.Service.GetRecordAsync("kept", TestContext.CancellationToken), "The record was read from the registered store, not the browser.");
     }
 
     [TestMethod]
@@ -173,7 +173,7 @@ public sealed class LazyLoadingTests : BunitContext
             return ValueTask.FromResult(true);
         };
 
-        await service.StartAsync(tour);
+        await service.StartAsync(tour, cancellationToken: TestContext.CancellationToken);
 
         Assert.AreSame(components.ServiceProvider.GetRequiredService<ScopedMarker>(), seen);
     }
@@ -220,10 +220,11 @@ public sealed class LazyLoadingTests : BunitContext
         Assert.AreEqual("Exports moved", beacon.Find("button.bit-bonboarding-beacon").GetAttribute("aria-label"));
         checklist.WaitForAssertion(() => Assert.AreEqual("0 of 1 done", checklist.Find(".bit-bonboarding-checklist-count").TextContent));
 
-        await root.InvokeAsync(() => service.StartAsync(Tour("welcome")));
+        await root.InvokeAsync(() => service.StartAsync(Tour("welcome"), cancellationToken: TestContext.CancellationToken));
 
         root.WaitForAssertion(() => Assert.AreEqual("Welcome, step one", root.Find(".bit-bonboarding-title").TextContent));
-        Assert.AreEqual("welcome", service.Active?.Tour.Id);
+        var actualValue = service.Active?.Tour.Id;
+        Assert.AreEqual("welcome", actualValue);
 
         // The beacon steps aside for a tour started through that same service.
         beacon.WaitForAssertion(() => Assert.IsEmpty(beacon.FindAll("button.bit-bonboarding-beacon")));
@@ -293,4 +294,6 @@ public sealed class LazyLoadingTests : BunitContext
     }
 
     private sealed class ScopedMarker;
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

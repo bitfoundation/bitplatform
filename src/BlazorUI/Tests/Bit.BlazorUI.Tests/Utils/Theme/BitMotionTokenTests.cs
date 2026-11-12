@@ -31,8 +31,7 @@ public sealed class BitMotionTokenTests
             offenders.AddRange(FullMotionToken.Matches(stylesheet).Select(m => $"{Path.GetFileName(file)}: {m.Value}"));
         }
 
-        CollectionAssert.AreEqual(Array.Empty<string>(), offenders.ToArray(),
-            $"Read the unreduced durations through $mot-duration-full / -short-full / -long-full: {string.Join(", ", offenders)}");
+        Assert.AreSequenceEqual(Array.Empty<string>(), offenders.ToArray(), $"Read the unreduced durations through $mot-duration-full / -short-full / -long-full: {string.Join(", ", offenders)}");
     }
 
     [TestMethod]
@@ -41,12 +40,12 @@ public sealed class BitMotionTokenTests
         // Each falls back to its plain token, for a consumer theme that declares only the plain ones by hand.
         var scss = SourceFiles.ReadThemeStylesheet("theme-variables.scss");
 
-        StringAssert.Contains(scss, "$mot-duration-full: var(--bit-mot-duration-full, var(--bit-mot-duration));");
-        StringAssert.Contains(scss, "$mot-duration-short-full: var(--bit-mot-duration-short-full, var(--bit-mot-duration-short));");
-        StringAssert.Contains(scss, "$mot-duration-long-full: var(--bit-mot-duration-long-full, var(--bit-mot-duration-long));");
-        StringAssert.Contains(scss, "$mot-duration-spinner-full: var(--bit-mot-duration-spinner-full, var(--bit-mot-duration-spinner));");
-        StringAssert.Contains(scss, "$mot-easing-spinner-full: var(--bit-mot-easing-spinner-full, var(--bit-mot-easing-spinner));");
-        StringAssert.Contains(scss, "$mot-loop-factor-full: var(--bit-mot-loop-factor-full, var(--bit-mot-loop-factor, 1));");
+        Assert.Contains("$mot-duration-full: var(--bit-mot-duration-full, var(--bit-mot-duration));", scss);
+        Assert.Contains("$mot-duration-short-full: var(--bit-mot-duration-short-full, var(--bit-mot-duration-short));", scss);
+        Assert.Contains("$mot-duration-long-full: var(--bit-mot-duration-long-full, var(--bit-mot-duration-long));", scss);
+        Assert.Contains("$mot-duration-spinner-full: var(--bit-mot-duration-spinner-full, var(--bit-mot-duration-spinner));", scss);
+        Assert.Contains("$mot-easing-spinner-full: var(--bit-mot-easing-spinner-full, var(--bit-mot-easing-spinner));", scss);
+        Assert.Contains("$mot-loop-factor-full: var(--bit-mot-loop-factor-full, var(--bit-mot-loop-factor, 1));", scss);
     }
 
     [TestMethod]
@@ -66,9 +65,9 @@ public sealed class BitMotionTokenTests
 
         foreach (var (plain, reduced, full) in Aliases)
         {
-            StringAssert.Contains(aliasing.Value, $"{plain}: var({reduced},var({full}))");
-            StringAssert.Contains(forced.Value, $"{reduced}: initial", ".bit-fam does not withdraw the reduction.");
-            StringAssert.Contains(forced.Value, $"{plain}: var({reduced},var({full}))", ".bit-fam does not substitute the aliases again.");
+            Assert.Contains($"{plain}: var({reduced},var({full}))", aliasing.Value);
+            Assert.Contains($"{reduced}: initial", forced.Value, ".bit-fam does not withdraw the reduction.");
+            Assert.Contains($"{plain}: var({reduced},var({full}))", forced.Value, ".bit-fam does not substitute the aliases again.");
         }
     }
 
@@ -83,14 +82,13 @@ public sealed class BitMotionTokenTests
         var query = Regex.Match(css, @"@media ?\(prefers-reduced-motion: ?reduce\) ?\{:root\{(?<body>--bit-mot-[^}]*)\}\}");
 
         Assert.IsTrue(query.Success, "The reduced-motion query of the motion tokens is no longer a :root rule of its own.");
-        CollectionAssert.AreEquivalent(Aliases.Select(a => a.Reduced).ToArray(),
-            Regex.Matches(query.Groups["body"].Value, @"(--bit-[a-z-]+):").Select(m => m.Groups[1].Value).ToArray());
-        StringAssert.Contains(query.Groups["body"].Value, "--bit-mot-duration-reduced: 0.01ms");
-        StringAssert.Contains(query.Groups["body"].Value, "--bit-mot-duration-spinner-reduced: 4s");
-        StringAssert.Contains(query.Groups["body"].Value, "--bit-mot-easing-spinner-reduced: linear");
-        StringAssert.Contains(query.Groups["body"].Value, "--bit-mot-loop-factor-reduced: 3");
+        Assert.AreSequenceEqual(Aliases.Select(a => a.Reduced).ToArray(), Regex.Matches(query.Groups["body"].Value, @"(--bit-[a-z-]+):").Select(m => m.Groups[1].Value).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
+        Assert.Contains("--bit-mot-duration-reduced: 0.01ms", query.Groups["body"].Value);
+        Assert.Contains("--bit-mot-duration-spinner-reduced: 4s", query.Groups["body"].Value);
+        Assert.Contains("--bit-mot-easing-spinner-reduced: linear", query.Groups["body"].Value);
+        Assert.Contains("--bit-mot-loop-factor-reduced: 3", query.Groups["body"].Value);
 
-        Assert.IsTrue(Regex.Match(css, @"(?<![\w-])\.bit-fam\{").Index > query.Index, ".bit-fam must come after the query to win on the root element.");
+        Assert.IsGreaterThan(query.Index, Regex.Match(css, @"(?<![\w-])\.bit-fam\{").Index, ".bit-fam must come after the query to win on the root element.");
     }
 
     [TestMethod]
@@ -106,7 +104,7 @@ public sealed class BitMotionTokenTests
                                      .Select(m => $"{Path.GetFileName(file)}: {m.Value}"))
             .ToArray();
 
-        CollectionAssert.AreEqual(Array.Empty<string>(), declared, $"Declared outside motion.fluent.scss: {string.Join(", ", declared)}");
+        Assert.AreSequenceEqual(Array.Empty<string>(), declared, $"Declared outside motion.fluent.scss: {string.Join(", ", declared)}");
     }
 
     private static readonly (string Plain, string Reduced, string Full)[] Aliases =

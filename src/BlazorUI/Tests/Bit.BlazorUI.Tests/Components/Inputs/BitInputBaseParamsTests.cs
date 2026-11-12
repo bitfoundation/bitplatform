@@ -76,7 +76,7 @@ public class BitInputBaseParamsTests : BunitTestContext
         // an unset one carries nothing.
         var declared = typeof(BitInputBaseParams<string>).GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
 
-        CollectionAssert.AreEquivalent(new[] { nameof(BitInputBaseParams<string>.ReadOnly), nameof(BitInputBaseParams<string>.Required) }, declared.Select(p => p.Name).ToArray());
+        Assert.AreSequenceEqual(new[] { nameof(BitInputBaseParams<string>.ReadOnly), nameof(BitInputBaseParams<string>.Required) }, declared.Select(p => p.Name).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         Assert.IsTrue(declared.All(p => p.PropertyType == typeof(bool?)));
     }
 }

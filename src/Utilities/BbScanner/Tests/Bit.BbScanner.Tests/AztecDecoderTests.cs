@@ -42,7 +42,9 @@ public class AztecDecoderTests
         Assert.IsNotNull(result, $"{(compact ? "compact" : "full range")} {layers}");
         Assert.AreEqual(BbBarcodeFormat.Aztec, result.Format);
         Assert.AreEqual(content, result.Text);
-        StringAssert.StartsWith(result.Metadata?.SymbolVersion, compact ? "Compact" : "Full range");
+        var expectedValue = result.Metadata?.SymbolVersion;
+        var actualValue = compact ? "Compact" : "Full range";
+        Assert.StartsWith(actualValue, expectedValue);
     }
 
     [TestMethod]
@@ -70,8 +72,9 @@ public class AztecDecoderTests
         using var matrix = AztecEncoder.Encode("Seen at an angle", compact: true, layers: 3);
         using var image = SyntheticImage.FromMatrix(matrix, scale: 4);
         using var tilted = ImageTransforms.Tilt(image, 35);
+        var actualValue = Decode(tilted, BbScannerOptions.ForStillImages())?.Text;
 
-        Assert.AreEqual("Seen at an angle", Decode(tilted, BbScannerOptions.ForStillImages())?.Text);
+        Assert.AreEqual("Seen at an angle", actualValue);
     }
 
     [TestMethod]
@@ -82,8 +85,10 @@ public class AztecDecoderTests
         using var image = SyntheticImage.FromMatrix(matrix, scale: 3);
         using var tilted = ImageTransforms.Tilt(image, 30);
         using var rotated = ImageTransforms.Rotate(tilted, 23);
+        var expectedValue = content;
+        var actualValue = Decode(rotated, BbScannerOptions.ForStillImages())?.Text;
 
-        Assert.AreEqual(content, Decode(rotated, BbScannerOptions.ForStillImages())?.Text);
+        Assert.AreEqual(expectedValue, actualValue);
     }
 
     [TestMethod]
@@ -94,7 +99,8 @@ public class AztecDecoderTests
         using var inverted = ImageTransforms.Invert(image);
 
         Assert.IsNull(Decode(inverted, new BbScannerOptions { AllowInverted = false }));
-        Assert.AreEqual("ON A PHONE SCREEN", Decode(inverted, new BbScannerOptions { AllowInverted = true })?.Text);
+        var actualValue = Decode(inverted, new BbScannerOptions { AllowInverted = true })?.Text;
+        Assert.AreEqual("ON A PHONE SCREEN", actualValue);
     }
 
     [TestMethod]
@@ -110,8 +116,9 @@ public class AztecDecoderTests
 
         using var image = SyntheticImage.FromMatrix(matrix, scale: 4);
         var result = Decode(image);
+        var actualValue = result?.Text;
 
-        Assert.AreEqual("DAMAGED BUT READABLE", result?.Text);
+        Assert.AreEqual("DAMAGED BUT READABLE", actualValue);
         Assert.IsGreaterThan(0, result!.Metadata!.ErrorsCorrected ?? 0);
     }
 
@@ -171,7 +178,8 @@ public class AztecDecoderTests
         using var image = SyntheticImage.FromMatrix(matrix, scale: 4);
 
         Assert.IsNull(Decode(image, formats: BbBarcodeFormat.All & ~BbBarcodeFormat.Aztec));
-        Assert.AreEqual("FORMATS", Decode(image, formats: BbBarcodeFormat.All)?.Text);
+        var actualValue = Decode(image, formats: BbBarcodeFormat.All)?.Text;
+        Assert.AreEqual("FORMATS", actualValue);
         Assert.IsTrue(BbBarcodeFormat.AllMatrix.HasFlag(BbBarcodeFormat.Aztec));
     }
 
@@ -214,7 +222,7 @@ public class AztecDecoderTests
         using var decoder = new BbBarcodeDecoder(new BbScannerOptions { Formats = BbBarcodeFormat.Aztec, DuplicateSuppressionWindow = TimeSpan.Zero });
         var values = decoder.DecodeAll(sheet.View, maxSymbols: 4).Select(r => r.Text).Order().ToList();
 
-        CollectionAssert.AreEqual(new[] { "LEFT TICKET", "RIGHT TICKET" }, values);
+        Assert.AreSequenceEqual(new[] { "LEFT TICKET", "RIGHT TICKET" }, values);
     }
     [TestMethod]
     public void ReedSolomonNeverClaimsToCorrectMoreThanItsCheckCodewordsAllow()
@@ -405,8 +413,10 @@ public class AztecDecoderTests
         var content = new string('A', 304) + "Z";
         using var symbol = AztecEncoder.Encode(content, compact: false, layers: 23);
         using var image = SyntheticImage.FromMatrix(symbol, 3);
+        var expectedValue = content;
+        var actualValue = Decode(image, BbScannerOptions.ForStillImages())?.Text;
 
-        Assert.AreEqual(content, Decode(image, BbScannerOptions.ForStillImages())?.Text);
+        Assert.AreEqual(expectedValue, actualValue);
     }
     [TestMethod]
     [DataRow("aztec-compact-1")]
@@ -455,9 +465,10 @@ public class AztecDecoderTests
         using var grid = symbol.ToMatrix();
         using var rendered = SyntheticImage.FromMatrix(grid, 4);
         var read = Decode(rendered, BbScannerOptions.ForStillImages());
-        Assert.AreEqual("170", read?.Text);
+        var actualValue = read?.Text;
+        Assert.AreEqual("170", actualValue);
         Assert.AreEqual("Rune", read!.Metadata!.SymbolVersion);
-        CollectionAssert.AreEqual(new byte[] { 170 }, read.RawBytes.ToArray());
+        Assert.AreSequenceEqual(new byte[] { 170 }, read.RawBytes.ToArray());
 
         // The same core with data around it, where a compact symbol's first layer would be, is not a rune: it is a
         // compact symbol whose mode message does not decode.

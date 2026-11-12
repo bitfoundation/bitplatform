@@ -1,4 +1,4 @@
-using Bit.Bmotion.Tests.TestInfra;
+﻿using Bit.Bmotion.Tests.TestInfra;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 
@@ -88,7 +88,7 @@ public class ReducedMotionTests
 
         // An explicit transition passed to the imperative API must still be reduced (the transform
         // snaps) instead of bypassing ShouldReduceMotion() and running the full 1s tween.
-        await cut.InvokeAsync(async () => await cut.Instance.AnimateAsync(Bm.To(x: 100), Bm.Tween(1.0)));
+        await cut.InvokeAsync(async () => await cut.Instance.AnimateAsync(Bm.To(x: 100), Bm.Tween(1.0), TestContext.CancellationToken));
 
         ctx.Engine.ComputeFrame(0);
         ctx.Engine.ComputeFrame(16);
@@ -96,4 +96,6 @@ public class ReducedMotionTests
         var el = ctx.Engine.GetDiagnostics().Single(d => d.Id == "box");
         Assert.AreEqual(100.0, el.Transforms["x"], "reduced motion must snap the transform, not animate it");
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

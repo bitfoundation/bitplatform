@@ -24,7 +24,7 @@ public class DuplicateStoreNameTests
         var error = Assert.ContainsSingle(errors);
         Assert.AreEqual("register", error.Source);
         Assert.Contains("counter", error.Detail!);
-        Assert.AreEqual(2, manager.Stores.Count); // still registered; the app keeps working
+        Assert.HasCount(2, manager.Stores); // still registered; the app keeps working
     }
 
     [TestMethod]

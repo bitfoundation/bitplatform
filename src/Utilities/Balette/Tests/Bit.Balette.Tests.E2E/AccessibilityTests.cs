@@ -159,5 +159,5 @@ public sealed class AccessibilityTests : BaletteTest
     }
 
     private static void AssertSequence(string[] expected, string[] actual)
-        => CollectionAssert.AreEqual(expected, actual, $"expected [{string.Join(", ", expected)}], got [{string.Join(", ", actual)}]");
+        => Assert.AreSequenceEqual(expected, actual, $"expected [{string.Join(", ", expected)}], got [{string.Join(", ", actual)}]");
 }

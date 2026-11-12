@@ -43,8 +43,8 @@ public class BitDataGridDetailE2ETests : BitDataGridE2ETestBase
         var nested = "nested-Acme";
         await Expect(Table(nested)).ToHaveAccessibleNameAsync("Products of Acme");
         await ExpectColumnAsync(nested, 1, "Laptop", "Lamp", "Cookbook");
-        Assert.IsTrue((await BoxAsync(DetailRows(Id).First)).Y > (await BoxAsync(DataRow(Id, 0))).Y);
-        Assert.IsTrue((await BoxAsync(DetailRows(Id).First)).Y < (await BoxAsync(DataRow(Id, 1))).Y);
+        Assert.IsGreaterThan((await BoxAsync(DataRow(Id, 0))).Y, (await BoxAsync(DetailRows(Id).First)).Y);
+        Assert.IsLessThan((await BoxAsync(DataRow(Id, 1))).Y, (await BoxAsync(DetailRows(Id).First)).Y);
         // The parent's rows stay its own: the nested rows are not counted among them.
         await Expect(DataRows(Id)).ToHaveCountAsync(3);
 

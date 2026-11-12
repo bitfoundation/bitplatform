@@ -61,11 +61,11 @@ public class SamplesHostingTests
     public async Task The_home_page_is_prerendered_with_the_browser_config(string sample)
     {
         using var client = SampleHostFactories.CreateClient(sample);
-        using var response = await client.GetAsync("/");
+        using var response = await client.GetAsync("/", TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
-        var html = await response.Content.ReadAsStringAsync();
-        StringAssert.Contains(html, "<h1>Belemetry samples</h1>");
+        var html = await response.Content.ReadAsStringAsync(TestContext.CancellationToken);
+        Assert.Contains("<h1>Belemetry samples</h1>", html);
 
         using var config = RenderedHtml.BrowserConfig(html);
         Assert.IsNotNull(config, "The sample does not render <BelemetryScript />.");
@@ -85,9 +85,10 @@ public class SamplesHostingTests
 
         foreach (var asset in new[] { "/_content/Bit.Belemetry/bit-belemetry.js", "/_content/Bit.Belemetry.Samples.Core/samples.js" })
         {
-            using var response = await client.GetAsync(asset);
+            using var response = await client.GetAsync(asset, TestContext.CancellationToken);
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, asset);
-            Assert.AreEqual("text/javascript", response.Content.Headers.ContentType?.MediaType, asset);
+            Assert.IsNotNull(response.Content.Headers.ContentType);
+            Assert.AreEqual("text/javascript", response.Content.Headers.ContentType.MediaType, asset);
         }
     }
 
@@ -98,9 +99,11 @@ public class SamplesHostingTests
     public async Task The_fetch_target_answers(string sample)
     {
         using var client = SampleHostFactories.CreateClient(sample);
-        using var response = await client.GetAsync("/api/weather");
+        using var response = await client.GetAsync("/api/weather", TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
     }
+
+    public TestContext TestContext { get; set; }
 }
 #endif

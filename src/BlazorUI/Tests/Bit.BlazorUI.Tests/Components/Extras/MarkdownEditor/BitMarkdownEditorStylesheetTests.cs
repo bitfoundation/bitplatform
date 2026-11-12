@@ -20,11 +20,11 @@ public partial class BitMarkdownEditorStylesheetTests
 
         var documented = DocumentedVariables(stylesheet);
 
-        Assert.AreEqual(34, documented.Length, "The stylesheet does not document the thirty-four public variables.");
+        Assert.HasCount(34, documented, "The stylesheet does not document the thirty-four public variables.");
 
         foreach (var name in documented)
         {
-            StringAssert.Contains(stylesheet, $"var({name}, ", $"{name} is documented but never read with a fallback.");
+            Assert.Contains($"var({name}, ", stylesheet, $"{name} is documented but never read with a fallback.");
         }
     }
 
@@ -38,7 +38,7 @@ public partial class BitMarkdownEditorStylesheetTests
 
         foreach (var name in read)
         {
-            CollectionAssert.Contains(documented, name, $"{name} is read but not documented in the header.");
+            Assert.Contains(name, documented, $"{name} is read but not documented in the header.");
         }
     }
 
@@ -55,12 +55,12 @@ public partial class BitMarkdownEditorStylesheetTests
     {
         var root = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-mde {");
 
-        Assert.IsFalse(root.Contains("overflow"), "The root clips its children, which cuts a toolbar menu off at the bottom of a short editor.");
+        Assert.DoesNotContain("overflow", root, "The root clips its children, which cuts a toolbar menu off at the bottom of a short editor.");
 
         // The parts that paint a background round the corners they share with the root instead.
-        StringAssert.Contains(ReadStylesheet(), ".bit-mde > .bit-mde-tlb:first-child,");
-        StringAssert.Contains(ReadStylesheet(), "border-start-start-radius: inherit;");
-        StringAssert.Contains(ReadStylesheet(), "border-end-end-radius: inherit;");
+        Assert.Contains(".bit-mde > .bit-mde-tlb:first-child,", ReadStylesheet());
+        Assert.Contains("border-start-start-radius: inherit;", ReadStylesheet());
+        Assert.Contains("border-end-end-radius: inherit;", ReadStylesheet());
     }
 
     [TestMethod]
@@ -68,13 +68,13 @@ public partial class BitMarkdownEditorStylesheetTests
     {
         var stylesheet = ReadStylesheet();
 
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-mde-bdy {"), "flex-wrap: wrap;");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-mde-pne {"), "flex: 1 1 var(--bit-MarkdownEditor-pane-min-width, 18rem);");
+        Assert.Contains("flex-wrap: wrap;", SourceFiles.GetScssBlock(stylesheet, "\n.bit-mde-bdy {"));
+        Assert.Contains("flex: 1 1 var(--bit-MarkdownEditor-pane-min-width, 18rem);", SourceFiles.GetScssBlock(stylesheet, "\n.bit-mde-pne {"));
 
         // The textarea fills its pane by flex, since a wrapped body leaves a percentage height unresolved.
         var textArea = SourceFiles.GetScssBlock(stylesheet, "\n.bit-mde-txa {");
-        StringAssert.Contains(textArea, "flex: 1 1 auto;");
-        Assert.IsFalse(textArea.Contains("height: 100%"), "The textarea still fills its pane by a percentage height.");
+        Assert.Contains("flex: 1 1 auto;", textArea);
+        Assert.DoesNotContain("height: 100%", textArea, "The textarea still fills its pane by a percentage height.");
     }
 
     [TestMethod]
@@ -102,18 +102,18 @@ public partial class BitMarkdownEditorStylesheetTests
         // The root sets the theme's family at the regular weight, which the label, the status bar and the preview
         // inherit.
         var root = SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-mde {");
-        StringAssert.Contains(root, "font-family: $tg-font-family;");
-        StringAssert.Contains(root, "font-weight: $tg-fw-regular;");
+        Assert.Contains("font-family: $tg-font-family;", root);
+        Assert.Contains("font-weight: $tg-fw-regular;", root);
 
         // A <button> or an <input> does not inherit a font, so each of the editor's own takes the root's.
         foreach (var control in new[] { ".bit-mde-btn", ".bit-mde-fni", ".bit-mde-fnb", ".bit-mde-hcl" })
         {
-            StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, $"\n{control} {{"), "font-family: inherit;", $"{control} keeps the browser's control font.");
+            Assert.Contains("font-family: inherit;", SourceFiles.GetScssDeclarations(stylesheet, $"\n{control} {{"), $"{control} keeps the browser's control font.");
         }
 
         foreach (var control in new[] { ".bit-mde-btn", ".bit-mde-fni", ".bit-mde-fnb" })
         {
-            StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, $"\n{control} {{"), "font-weight: inherit;", $"{control} keeps the browser's control weight.");
+            Assert.Contains("font-weight: inherit;", SourceFiles.GetScssDeclarations(stylesheet, $"\n{control} {{"), $"{control} keeps the browser's control weight.");
         }
     }
 
@@ -122,8 +122,8 @@ public partial class BitMarkdownEditorStylesheetTests
     {
         var help = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-mde-hcr {");
 
-        StringAssert.Contains(help, "font-size: $tg-dialog-title-font-size;");
-        StringAssert.Contains(help, "font-weight: $tg-dialog-title-font-weight;");
+        Assert.Contains("font-size: $tg-dialog-title-font-size;", help);
+        Assert.Contains("font-weight: $tg-dialog-title-font-weight;", help);
     }
 
     [TestMethod]
@@ -131,12 +131,11 @@ public partial class BitMarkdownEditorStylesheetTests
     {
         var autoHeight = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-mde-ahg .bit-mde-bdy {");
 
-        StringAssert.Contains(autoHeight, "resize: none;");
-        StringAssert.Contains(autoHeight, "height: auto;");
+        Assert.Contains("resize: none;", autoHeight);
+        Assert.Contains("height: auto;", autoHeight);
 
         // Full-screen comes after it, so a full-screen editor still fills the viewport.
-        Assert.IsTrue(ReadStylesheet().IndexOf("\n.bit-mde-fsc .bit-mde-bdy {", System.StringComparison.Ordinal) >
-                      ReadStylesheet().IndexOf("\n.bit-mde-ahg .bit-mde-bdy {", System.StringComparison.Ordinal));
+        Assert.IsGreaterThan(ReadStylesheet().IndexOf("\n.bit-mde-ahg .bit-mde-bdy {", System.StringComparison.Ordinal), ReadStylesheet().IndexOf("\n.bit-mde-fsc .bit-mde-bdy {", System.StringComparison.Ordinal));
     }
 
     [TestMethod]
@@ -145,11 +144,11 @@ public partial class BitMarkdownEditorStylesheetTests
         var stylesheet = ReadStylesheet();
 
         var sticky = SourceFiles.GetScssBlock(stylesheet, "\n.bit-mde-stk > .bit-mde-tlb {");
-        StringAssert.Contains(sticky, "position: sticky;");
-        StringAssert.Contains(sticky, "top: var(--bit-MarkdownEditor-toolbar-sticky-offset, 0);");
+        Assert.Contains("position: sticky;", sticky);
+        Assert.Contains("top: var(--bit-MarkdownEditor-toolbar-sticky-offset, 0);", sticky);
 
         // Full-screen gives the editor the viewport, so there is nothing to stick to there.
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-mde-fsc.bit-mde-stk > .bit-mde-tlb {"), "position: static;");
+        Assert.Contains("position: static;", SourceFiles.GetScssBlock(stylesheet, "\n.bit-mde-fsc.bit-mde-stk > .bit-mde-tlb {"));
     }
 
     [TestMethod]
@@ -157,9 +156,9 @@ public partial class BitMarkdownEditorStylesheetTests
     {
         var forced = SourceFiles.GetScssBlock(ReadStylesheet(), "\n@media (forced-colors: active) {");
 
-        StringAssert.Contains(forced, "background: Highlight;");
-        StringAssert.Contains(forced, "color: GrayText;");
-        StringAssert.Contains(forced, "background: CanvasText;");
+        Assert.Contains("background: Highlight;", forced);
+        Assert.Contains("color: GrayText;", forced);
+        Assert.Contains("background: CanvasText;", forced);
     }
 
     [TestMethod]
@@ -167,10 +166,10 @@ public partial class BitMarkdownEditorStylesheetTests
     {
         var stylesheet = ReadStylesheet();
 
-        StringAssert.Contains(stylesheet, "$mde-focus: var(--bit-MarkdownEditor-focus-color, #{$clr-pri-focus});");
-        StringAssert.Contains(stylesheet, "$mde-focus-ring: focus-ring-color($mde-focus);");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-mde-btn {"), "@include focus-ring-own($mde-focus-ring);");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-mde-txa {"), "@include mde-inset-ring;");
+        Assert.Contains("$mde-focus: var(--bit-MarkdownEditor-focus-color, #{$clr-pri-focus});", stylesheet);
+        Assert.Contains("$mde-focus-ring: focus-ring-color($mde-focus);", stylesheet);
+        Assert.Contains("@include focus-ring-own($mde-focus-ring);", SourceFiles.GetScssBlock(stylesheet, "\n.bit-mde-btn {"));
+        Assert.Contains("@include mde-inset-ring;", SourceFiles.GetScssBlock(stylesheet, "\n.bit-mde-txa {"));
     }
 
     [TestMethod]
@@ -180,8 +179,8 @@ public partial class BitMarkdownEditorStylesheetTests
         // border edge in would lose that side: it is drawn inside the divider instead.
         var split = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-mde-split .bit-mde-ppn {");
 
-        StringAssert.Contains(split, "margin-block-start: calc(-1 * #{$shp-border-width});");
-        StringAssert.Contains(split, "@include focus-ring-inset($mde-focus, $offset: $shp-border-width);");
+        Assert.Contains("margin-block-start: calc(-1 * #{$shp-border-width});", split);
+        Assert.Contains("@include focus-ring-inset($mde-focus, $offset: $shp-border-width);", split);
     }
 
     [TestMethod]
@@ -191,8 +190,8 @@ public partial class BitMarkdownEditorStylesheetTests
         // or a long text runs on under the body's clipped edge instead of scrolling.
         var pane = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-mde-pne {");
 
-        StringAssert.Contains(pane, "max-height: 100%;");
-        StringAssert.Contains(pane, "overflow: auto;");
+        Assert.Contains("max-height: 100%;", pane);
+        Assert.Contains("overflow: auto;", pane);
     }
 
     private static string[] DocumentedVariables(string stylesheet)

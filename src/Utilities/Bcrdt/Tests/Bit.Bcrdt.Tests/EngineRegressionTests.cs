@@ -120,7 +120,7 @@ public class EngineRegressionTests
         text.Observe((e, _) => observed.AddRange(e.Delta));
         text.InsertEmbed(1, new byte[] { 1, 2, 3 });
 
-        Assert.AreEqual(2, observed.Count);
+        Assert.HasCount(2, observed);
         Assert.AreEqual(BcrdtDeltaKind.Retain, observed[0].Kind);
         Assert.AreEqual(BcrdtDeltaKind.Insert, observed[1].Kind);
         Assert.IsExactInstanceOfType<byte[]>(observed[1].Content);
@@ -264,7 +264,7 @@ public class EngineRegressionTests
         peer.ApplyUpdate(doc.EncodeStateAsUpdate());
 
         Assert.AreEqual(BcrdtConvergenceHarness.Describe(doc), BcrdtConvergenceHarness.Describe(peer));
-        Assert.AreEqual(2, ((IReadOnlyList<object?>)array[0]!).Count);
+        Assert.HasCount(2, (IReadOnlyList<object?>)array[0]!);
     }
 
     [TestMethod]
@@ -377,7 +377,7 @@ public class EngineRegressionTests
         text.Delete(2, 1);
 
         Assert.AreEqual("abef", text.ToString());
-        Assert.AreEqual(3, doc.Store.GetClientStructs(1)!.Count);
+        Assert.HasCount(3, doc.Store.GetClientStructs(1)!);
     }
 
     [TestMethod]

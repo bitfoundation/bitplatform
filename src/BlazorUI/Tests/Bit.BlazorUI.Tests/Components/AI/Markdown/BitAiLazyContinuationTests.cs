@@ -24,7 +24,7 @@ public class BitAiLazyContinuationTests
     {
         var document = BitAiMarkdownSpec.Parse("- a\n$$\nx\n$$");
 
-        Assert.AreEqual(2, document.Blocks.Count);
+        Assert.HasCount(2, document.Blocks);
         Assert.AreEqual("x", Assert.IsExactInstanceOfType<BitAiMathBlock>(document.Blocks[1]).Expression);
     }
 
@@ -33,7 +33,7 @@ public class BitAiLazyContinuationTests
     {
         var document = BitAiMarkdownSpec.Parse("- a\n| x | y |\n|---|---|\n| 1 | 2 |");
 
-        Assert.AreEqual(2, document.Blocks.Count);
+        Assert.HasCount(2, document.Blocks);
         Assert.IsExactInstanceOfType<BitAiTableBlock>(document.Blocks[1]);
     }
 
@@ -42,7 +42,7 @@ public class BitAiLazyContinuationTests
     {
         var document = BitAiMarkdownSpec.Parse("- a\n<div>\nx\n</div>", new BitAiMarkdownOptions { AllowRawHtml = true });
 
-        Assert.AreEqual(2, document.Blocks.Count);
+        Assert.HasCount(2, document.Blocks);
         Assert.IsExactInstanceOfType<BitAiHtmlBlock>(document.Blocks[1]);
     }
 
@@ -58,8 +58,8 @@ public class BitAiLazyContinuationTests
     {
         var document = BitAiMarkdownSpec.Parse("- a\n - b\n\n  text");
 
-        Assert.AreEqual(2, document.Blocks.Count);
-        Assert.AreEqual(2, Assert.IsExactInstanceOfType<BitAiListBlock>(document.Blocks[0]).Items.Count);
+        Assert.HasCount(2, document.Blocks);
+        Assert.HasCount(2, Assert.IsExactInstanceOfType<BitAiListBlock>(document.Blocks[0]).Items);
         Assert.AreEqual("text", BitAiMarkdownSpec.Text(document.Blocks[1]));
     }
 
@@ -69,14 +69,14 @@ public class BitAiLazyContinuationTests
         var list = Assert.IsExactInstanceOfType<BitAiListBlock>(Assert.ContainsSingle(BitAiMarkdownSpec.Parse("- a\n\n  continued\n\n  more").Blocks));
         var item = Assert.ContainsSingle(list.Items);
 
-        CollectionAssert.AreEqual(new[] { "a", "continued", "more" }, item.Blocks.Select(BitAiMarkdownSpec.Text).ToArray());
+        Assert.AreSequenceEqual(new[] { "a", "continued", "more" }, item.Blocks.Select(BitAiMarkdownSpec.Text).ToArray());
     }
 
     [TestMethod]
     public void SeveralBlankLinesBetweenItemsKeepOneList()
     {
         var list = Assert.IsExactInstanceOfType<BitAiListBlock>(Assert.ContainsSingle(BitAiMarkdownSpec.Parse("- a\n\n\n- b").Blocks));
-        Assert.AreEqual(2, list.Items.Count);
+        Assert.HasCount(2, list.Items);
         Assert.IsTrue(list.IsLoose);
     }
 
@@ -89,7 +89,7 @@ public class BitAiLazyContinuationTests
     {
         var document = BitAiMarkdownSpec.Parse(source);
 
-        Assert.AreEqual(2, document.Blocks.Count);
+        Assert.HasCount(2, document.Blocks);
         Assert.IsExactInstanceOfType<BitAiQuoteBlock>(document.Blocks[0]);
         Assert.IsExactInstanceOfType(document.Blocks[1], following);
     }

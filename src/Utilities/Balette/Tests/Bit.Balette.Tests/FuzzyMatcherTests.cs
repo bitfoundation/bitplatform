@@ -15,7 +15,7 @@ public class FuzzyMatcherTests
     {
         var r = _m.Match(query, text);
         Assert.IsTrue(r.Matched);
-        Assert.AreEqual(query.Length, r.Positions.Length);
+        Assert.HasCount(query.Length, r.Positions);
     }
 
     [TestMethod]
@@ -40,7 +40,7 @@ public class FuzzyMatcherTests
     {
         var boundary = _m.Match("op", "Open Project");   // O...P at word starts
         var mid = _m.Match("op", "Scoop it");             // o,p inside a word
-        Assert.IsTrue(boundary.Score > mid.Score);
+        Assert.IsGreaterThan(mid.Score, boundary.Score);
     }
 
     [TestMethod]
@@ -48,7 +48,7 @@ public class FuzzyMatcherTests
     {
         var consecutive = _m.Match("set", "Settings");
         var gapped = _m.Match("set", "Sort elements today");
-        Assert.IsTrue(consecutive.Score > gapped.Score);
+        Assert.IsGreaterThan(gapped.Score, consecutive.Score);
     }
 
     [TestMethod]
@@ -56,7 +56,7 @@ public class FuzzyMatcherTests
     {
         var camel = _m.Match("fb", "fooBar");
         var plain = _m.Match("fb", "foobar");
-        Assert.IsTrue(camel.Score > plain.Score);
+        Assert.IsGreaterThan(plain.Score, camel.Score);
     }
 
     [TestMethod]
@@ -76,7 +76,7 @@ public class FuzzyMatcherTests
         Assert.IsTrue(r.Matched);
         for (var i = 1; i < r.Positions.Length; i++)
         {
-            Assert.IsTrue(r.Positions[i] > r.Positions[i - 1]);
+            Assert.IsGreaterThan(r.Positions[i - 1], r.Positions[i]);
         }
     }
 
@@ -136,7 +136,7 @@ public class CommandMatcherExtensionsTests
         var keywordHit = BaletteCmd.New("Appearance").Keywords("dark mode").Build();
         var a = _m.Match(titleHit, "dark")!;
         var b = _m.Match(keywordHit, "dark")!;
-        Assert.IsTrue(a.Score > b.Score);
+        Assert.IsGreaterThan(b.Score, a.Score);
         Assert.IsNotEmpty(a.TitlePositions);
         Assert.IsEmpty(b.TitlePositions);
     }

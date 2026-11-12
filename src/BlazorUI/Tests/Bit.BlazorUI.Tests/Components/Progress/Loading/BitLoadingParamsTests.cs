@@ -25,7 +25,7 @@ public class BitLoadingParamsTests
     public void BitLoadingParamsShouldHaveCorrectParamName()
     {
         // The family shares one cascade, named after the base rather than after any one loader.
-        Assert.AreEqual($"{nameof(BitParams)}.BitLoading", BitLoadingParams.ParamName);
+        Assert.AreEqual($"{nameof(BitParams)}.BitLoading", new BitLoadingParams().Name);
     }
 
     [TestMethod]

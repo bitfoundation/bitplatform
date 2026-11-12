@@ -210,18 +210,18 @@ public class BitLayoutTests : BunitTestContext
             parameters.Add<RenderFragment>(p => p.Main, builder => builder.AddMarkupContent(1, "<div>Main</div>"));
         });
 
-        StringAssert.Contains(component.Find(".bit-lyt-mcn").GetAttribute("style")!, "width:calc(100% - 250px)");
+        Assert.Contains("width:calc(100% - 250px)", component.Find(".bit-lyt-mcn").GetAttribute("style")!);
         Assert.IsFalse(component.Find(".bit-lyt-nmn").HasAttribute("style"));
 
         // The width moves from the room the main content reserves to the panel itself, and back.
         component.Render(parameters => parameters.Add(p => p.FullHeightPanels, true));
 
         Assert.IsFalse(component.Find(".bit-lyt-mcn").HasAttribute("style"));
-        StringAssert.Contains(component.Find(".bit-lyt-nmn").GetAttribute("style")!, "width:250px");
+        Assert.Contains("width:250px", component.Find(".bit-lyt-nmn").GetAttribute("style")!);
 
         component.Render(parameters => parameters.Add(p => p.FullHeightPanels, false));
 
-        StringAssert.Contains(component.Find(".bit-lyt-mcn").GetAttribute("style")!, "width:calc(100% - 250px)");
+        Assert.Contains("width:calc(100% - 250px)", component.Find(".bit-lyt-mcn").GetAttribute("style")!);
         Assert.IsFalse(component.Find(".bit-lyt-nmn").HasAttribute("style"));
     }
 
@@ -235,7 +235,7 @@ public class BitLayoutTests : BunitTestContext
             parameters.Add<RenderFragment>(p => p.Main, builder => builder.AddMarkupContent(1, "<div>Main</div>"));
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-lyt-nmn").Count);
+        Assert.IsEmpty(component.FindAll(".bit-lyt-nmn"));
     }
 
     [TestMethod]
@@ -254,13 +254,13 @@ public class BitLayoutTests : BunitTestContext
             parameters.Add<RenderFragment>(p => p.Footer, builder => builder.AddMarkupContent(4, "<div>Footer</div>"));
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-lyt-hdr").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-lyt-nmn").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-lyt-asd").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-lyt-ftr").Count);
+        Assert.IsEmpty(component.FindAll(".bit-lyt-hdr"));
+        Assert.IsEmpty(component.FindAll(".bit-lyt-nmn"));
+        Assert.IsEmpty(component.FindAll(".bit-lyt-asd"));
+        Assert.IsEmpty(component.FindAll(".bit-lyt-ftr"));
 
         // The main section is the one landmark a page is expected to have exactly one of, so it stays.
-        Assert.AreEqual(1, component.FindAll(".bit-lyt-mcn").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-lyt-mcn"));
     }
 
     [TestMethod]
@@ -268,11 +268,11 @@ public class BitLayoutTests : BunitTestContext
     {
         var component = RenderComponent<BitLayout>();
 
-        Assert.AreEqual(0, component.FindAll(".bit-lyt-hdr").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-lyt-nmn").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-lyt-asd").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-lyt-ftr").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-lyt-skp").Count);
+        Assert.IsEmpty(component.FindAll(".bit-lyt-hdr"));
+        Assert.IsEmpty(component.FindAll(".bit-lyt-nmn"));
+        Assert.IsEmpty(component.FindAll(".bit-lyt-asd"));
+        Assert.IsEmpty(component.FindAll(".bit-lyt-ftr"));
+        Assert.IsEmpty(component.FindAll(".bit-lyt-skp"));
     }
 
     [TestMethod]
@@ -302,7 +302,7 @@ public class BitLayoutTests : BunitTestContext
             parameters.Add<RenderFragment>(p => p.Main, builder => builder.AddMarkupContent(1, "<div>Main</div>"));
         });
 
-        StringAssert.Contains(component.Find(".bit-lyt-mcn").GetAttribute("style")!, "width:calc(100% - 250px)");
+        Assert.Contains("width:calc(100% - 250px)", component.Find(".bit-lyt-mcn").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -317,7 +317,7 @@ public class BitLayoutTests : BunitTestContext
             parameters.Add<RenderFragment>(p => p.Aside, builder => builder.AddMarkupContent(2, "<div>Aside</div>"));
         });
 
-        StringAssert.Contains(component.Find(".bit-lyt-mcn").GetAttribute("style")!, "width:calc(100% - 400px)");
+        Assert.Contains("width:calc(100% - 400px)", component.Find(".bit-lyt-mcn").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -334,7 +334,7 @@ public class BitLayoutTests : BunitTestContext
         });
 
         // Only the aside is left to reserve room for.
-        StringAssert.Contains(component.Find(".bit-lyt-mcn").GetAttribute("style")!, "width:calc(100% - 150px)");
+        Assert.Contains("width:calc(100% - 150px)", component.Find(".bit-lyt-mcn").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -381,8 +381,8 @@ public class BitLayoutTests : BunitTestContext
 
         // The panels are columns of their own here, so the width goes to them and the main content has
         // nothing left to reserve for them.
-        StringAssert.Contains(component.Find(".bit-lyt-nmn").GetAttribute("style")!, "width:250px");
-        StringAssert.Contains(component.Find(".bit-lyt-asd").GetAttribute("style")!, "width:150px");
+        Assert.Contains("width:250px", component.Find(".bit-lyt-nmn").GetAttribute("style")!);
+        Assert.Contains("width:150px", component.Find(".bit-lyt-asd").GetAttribute("style")!);
 
         var mainStyle = component.Find(".bit-lyt-mcn").GetAttribute("style");
 
@@ -405,7 +405,7 @@ public class BitLayoutTests : BunitTestContext
         // to a rail or slide out of the flow on its own terms.
         Assert.IsFalse(component.Find(".bit-lyt-nmn").HasAttribute("style"));
         Assert.IsFalse(component.Find(".bit-lyt-asd").HasAttribute("style"));
-        StringAssert.Contains(component.Find(".bit-lyt-mcn").GetAttribute("style")!, "width:calc(100% - 400px)");
+        Assert.Contains("width:calc(100% - 400px)", component.Find(".bit-lyt-mcn").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -424,10 +424,10 @@ public class BitLayoutTests : BunitTestContext
         var navStyle = component.Find(".bit-lyt-nmn").GetAttribute("style")!;
         var asideStyle = component.Find(".bit-lyt-asd").GetAttribute("style")!;
 
-        StringAssert.Contains(navStyle, "width:250px");
-        StringAssert.Contains(navStyle, "background: yellow");
-        StringAssert.Contains(asideStyle, "width:150px");
-        StringAssert.Contains(asideStyle, "background: teal");
+        Assert.Contains("width:250px", navStyle);
+        Assert.Contains("background: yellow", navStyle);
+        Assert.Contains("width:150px", asideStyle);
+        Assert.Contains("background: teal", asideStyle);
     }
 
     [TestMethod]
@@ -460,11 +460,11 @@ public class BitLayoutTests : BunitTestContext
 
         // A page may hold only one main landmark, so the nested one gives that up - and nothing else.
         Assert.AreEqual("DIV", mainContent.TagName);
-        Assert.AreEqual(0, component.FindAll("main").Count);
+        Assert.IsEmpty(component.FindAll("main"));
         Assert.AreEqual("inner-main", mainContent.Id);
         Assert.AreEqual("-1", mainContent.GetAttribute("tabindex"));
         Assert.IsTrue(mainContent.ClassList.Contains("custom-mcn"));
-        StringAssert.Contains(mainContent.GetAttribute("style")!, "padding: 4px");
+        Assert.Contains("padding: 4px", mainContent.GetAttribute("style")!);
         Assert.AreEqual("http://localhost/#inner-main", component.Find(".bit-lyt-skp").GetAttribute("href"));
     }
 
@@ -501,8 +501,8 @@ public class BitLayoutTests : BunitTestContext
 
         // The heights are handed down as custom properties, so the header height is also readable by the
         // sticky panels that pin themselves at that offset.
-        StringAssert.Contains(style, "--bit-lyt-hdr-h:64px");
-        StringAssert.Contains(style, "--bit-lyt-ftr-h:40px");
+        Assert.Contains("--bit-lyt-hdr-h:64px", style);
+        Assert.Contains("--bit-lyt-ftr-h:40px", style);
     }
 
     [TestMethod]
@@ -516,8 +516,8 @@ public class BitLayoutTests : BunitTestContext
 
         var style = component.Find(".bit-lyt").GetAttribute("style")!;
 
-        StringAssert.Contains(style, "--bit-lyt-gap:1rem");
-        StringAssert.Contains(style, "--bit-lyt-pad:16px 24px");
+        Assert.Contains("--bit-lyt-gap:1rem", style);
+        Assert.Contains("--bit-lyt-pad:16px 24px", style);
     }
 
     [TestMethod]
@@ -528,7 +528,7 @@ public class BitLayoutTests : BunitTestContext
             parameters.Add(p => p.ZIndex, 5);
         });
 
-        StringAssert.Contains(component.Find(".bit-lyt").GetAttribute("style")!, "--bit-lyt-zin:5");
+        Assert.Contains("--bit-lyt-zin:5", component.Find(".bit-lyt").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -625,7 +625,7 @@ public class BitLayoutTests : BunitTestContext
 
         // The focus goes along with the scroll, so the next Tab carries on from the content.
         Assert.AreEqual("app-main", invocation.Arguments[0]);
-        Assert.AreEqual(true, invocation.Arguments[1]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(invocation.Arguments[1]));
     }
 
     [TestMethod]
@@ -728,7 +728,7 @@ public class BitLayoutTests : BunitTestContext
 
         var root = component.Find(".bit-lyt");
 
-        Assert.AreEqual(0, component.FindAll(".bit-lyt-hdr").Count);
+        Assert.IsEmpty(component.FindAll(".bit-lyt-hdr"));
         Assert.IsTrue(root.ClassList.Contains("bit-lyt-nhd"));
     }
 
@@ -788,14 +788,14 @@ public class BitLayoutTests : BunitTestContext
         Assert.IsTrue(aside.ClassList.Contains("custom-aside"));
         Assert.IsTrue(footer.ClassList.Contains("custom-footer"));
 
-        StringAssert.Contains(root.GetAttribute("style")!, "color: red");
-        StringAssert.Contains(skip.GetAttribute("style")!, "font-weight: bold");
-        StringAssert.Contains(header.GetAttribute("style")!, "tomato");
-        StringAssert.Contains(main.GetAttribute("style")!, "height: 10rem");
-        StringAssert.Contains(nav.GetAttribute("style")!, "yellow");
-        StringAssert.Contains(mainContent.GetAttribute("style")!, "padding: 4px");
-        StringAssert.Contains(aside.GetAttribute("style")!, "teal");
-        StringAssert.Contains(footer.GetAttribute("style")!, "blue");
+        Assert.Contains("color: red", root.GetAttribute("style")!);
+        Assert.Contains("font-weight: bold", skip.GetAttribute("style")!);
+        Assert.Contains("tomato", header.GetAttribute("style")!);
+        Assert.Contains("height: 10rem", main.GetAttribute("style")!);
+        Assert.Contains("yellow", nav.GetAttribute("style")!);
+        Assert.Contains("padding: 4px", mainContent.GetAttribute("style")!);
+        Assert.Contains("teal", aside.GetAttribute("style")!);
+        Assert.Contains("blue", footer.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -811,8 +811,8 @@ public class BitLayoutTests : BunitTestContext
 
         var style = component.Find(".bit-lyt-mcn").GetAttribute("style")!;
 
-        StringAssert.Contains(style, "width:calc(100% - 250px)");
-        StringAssert.Contains(style, "padding: 4px");
+        Assert.Contains("width:calc(100% - 250px)", style);
+        Assert.Contains("padding: 4px", style);
     }
 
     [TestMethod]
@@ -871,7 +871,7 @@ public class BitLayoutTests : BunitTestContext
         var root = component.Find(".bit-lyt");
 
         Assert.IsTrue(root.ClassList.Contains("custom-class"));
-        StringAssert.Contains(root.GetAttribute("style")!, "color: red");
+        Assert.Contains("color: red", root.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -909,11 +909,11 @@ public class BitLayoutTests : BunitTestContext
 
         var firstStyle = layouts[0].GetAttribute("style")!;
 
-        StringAssert.Contains(firstStyle, "--bit-lyt-gap:1rem");
-        StringAssert.Contains(firstStyle, "--bit-lyt-pad:2rem");
-        StringAssert.Contains(firstStyle, "--bit-lyt-hdr-h:64px");
-        StringAssert.Contains(firstStyle, "--bit-lyt-ftr-h:40px");
-        StringAssert.Contains(firstStyle, "--bit-lyt-zin:7");
+        Assert.Contains("--bit-lyt-gap:1rem", firstStyle);
+        Assert.Contains("--bit-lyt-pad:2rem", firstStyle);
+        Assert.Contains("--bit-lyt-hdr-h:64px", firstStyle);
+        Assert.Contains("--bit-lyt-ftr-h:40px", firstStyle);
+        Assert.Contains("--bit-lyt-zin:7", firstStyle);
 
         Assert.AreEqual("Cascaded skip", layouts[0].QuerySelector(".bit-lyt-skp")!.TextContent.Trim());
         Assert.AreEqual("Cascaded nav", layouts[0].QuerySelector(".bit-lyt-nmn")!.GetAttribute("aria-label"));
@@ -921,15 +921,15 @@ public class BitLayoutTests : BunitTestContext
 
         // The cascaded widths go to the panels themselves, since the cascaded FullHeightPanels makes them
         // columns of their own, and the cascaded Nested keeps the main section from being a landmark.
-        StringAssert.Contains(layouts[0].QuerySelector(".bit-lyt-nmn")!.GetAttribute("style")!, "width:200px");
-        StringAssert.Contains(layouts[0].QuerySelector(".bit-lyt-asd")!.GetAttribute("style")!, "width:100px");
+        Assert.Contains("width:200px", layouts[0].QuerySelector(".bit-lyt-nmn")!.GetAttribute("style")!);
+        Assert.Contains("width:100px", layouts[0].QuerySelector(".bit-lyt-asd")!.GetAttribute("style")!);
         Assert.AreEqual("DIV", layouts[0].QuerySelector(".bit-lyt-mcn")!.TagName);
 
         // The second one sets its own values, which the cascading parameters must not overwrite.
         Assert.IsFalse(layouts[1].ClassList.Contains("bit-lyt-brd"));
         Assert.IsTrue(layouts[1].ClassList.Contains("bit-lyt-flh"));
-        StringAssert.Contains(layouts[1].GetAttribute("style")!, "--bit-lyt-gap:2rem");
-        StringAssert.Contains(layouts[1].GetAttribute("style")!, "--bit-lyt-zin:3");
+        Assert.Contains("--bit-lyt-gap:2rem", layouts[1].GetAttribute("style")!);
+        Assert.Contains("--bit-lyt-zin:3", layouts[1].GetAttribute("style")!);
         Assert.AreEqual("Own skip", layouts[1].QuerySelector(".bit-lyt-skp")!.TextContent.Trim());
         Assert.AreEqual("Own nav", layouts[1].QuerySelector(".bit-lyt-nmn")!.GetAttribute("aria-label"));
         Assert.AreEqual("Cascaded aside", layouts[1].QuerySelector(".bit-lyt-asd")!.GetAttribute("aria-label"));

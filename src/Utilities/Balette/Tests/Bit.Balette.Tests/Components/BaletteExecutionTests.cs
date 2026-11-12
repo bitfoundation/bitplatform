@@ -195,7 +195,7 @@ public class BaletteExecutionTests : BunitContext
         await Press(cut, "Enter");
         await Press(cut, "Enter", ctrl: true);
 
-        CollectionAssert.AreEquivalent(new[] { "person:Ada", "person:Grace" }, applied!.Select(c => c.Id).ToArray());
+        Assert.AreSequenceEqual(new[] { "person:Ada", "person:Grace" }, applied!.Select(c => c.Id).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     // ---- Prompts and expected errors ----------------------------------------------------------------------------
@@ -249,7 +249,7 @@ public class BaletteExecutionTests : BunitContext
         // Nothing caps the input: the query matches no command, but the source searches it and the handler gets it whole.
         Assert.IsGreaterThan(BaletteQuery.MaxLength, question.Length);
         Assert.IsNull(cut.Find("[data-balette=input]").GetAttribute("maxlength"));
-        cut.WaitForAssertion(() => CollectionAssert.AreEquivalent(new[] { "feedback", "answer" }, ItemIds(cut)));
+        cut.WaitForAssertion(() => Assert.AreSequenceEqual(new[] { "feedback", "answer" }, ItemIds(cut), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder));
         Assert.AreEqual(question, asked);
 
         await cut.InvokeAsync(() => cut.Instance.OnKeyDown("Home", false, false, false, false));

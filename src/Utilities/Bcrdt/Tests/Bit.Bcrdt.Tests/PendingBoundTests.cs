@@ -1,4 +1,4 @@
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Diagnostics;
 using Bit.Bcrdt.Server;
 
@@ -96,7 +96,7 @@ public class PendingBoundTests
         Assert.IsLessThanOrEqualTo(4096 + 512, reader.Store.PendingUpdate?.Length ?? 0);
 
         reader.ApplyUpdate(author.EncodeStateAsUpdate(reader.GetStateVector()));
-        CollectionAssert.AreEqual(author.GetArray("items").ToArray(), reader.GetArray("items").ToArray());
+        Assert.AreSequenceEqual(author.GetArray("items").ToArray(), reader.GetArray("items").ToArray());
     }
 
     [TestMethod]
@@ -136,7 +136,7 @@ public class PendingBoundTests
         BcrdtInMemoryTransport rawTransport = network.CreateTransport("room");
         ConcurrentQueue<BcrdtSyncMessage> heard = new();
         rawTransport.MessageReceived += message => heard.Enqueue(BcrdtSyncProtocol.Decode(message.ToArray()));
-        await rawTransport.ConnectAsync();
+        await rawTransport.ConnectAsync(TestContext.CancellationToken);
 
         await using BcrdtSyncProvider provider = await Task.Run(() => new BcrdtSyncProvider(doc, network.CreateTransport("room"), null, new BcrdtSyncProviderOptions
         {
@@ -144,14 +144,14 @@ public class PendingBoundTests
             HandshakeTimeout = TimeSpan.FromMilliseconds(50),
             SyncAwareness = false,
         }));
-        await provider.ConnectAsync();
+        await provider.ConnectAsync(TestContext.CancellationToken);
         Assert.IsTrue(await EventuallyAsync(() => provider.Status == BcrdtConnectionStatus.Synced), "nobody answers, so it settles alone");
         heard.Clear();
 
         (BcrdtDocument author, _, byte[] second) = TwoUpdates(2, length: 4000);
         using (author)
         {
-            await rawTransport.SendAsync(BcrdtSyncProtocol.EncodeUpdate(second));
+            await rawTransport.SendAsync(BcrdtSyncProtocol.EncodeUpdate(second), TestContext.CancellationToken);
 
             Assert.IsTrue(
                 await EventuallyAsync(() => heard.Any(message => message.Kind == BcrdtSyncMessageKind.SyncStep1)),
@@ -165,21 +165,21 @@ public class PendingBoundTests
     {
         await using var host = new BcrdtDocumentHost(new BcrdtDocumentHostOptions { MaxPendingSize = 1024 });
         var connection = new RecordingConnection();
-        using BcrdtHostSession session = await host.JoinAsync("bounded", connection);
+        using BcrdtHostSession session = await host.JoinAsync("bounded", connection, TestContext.CancellationToken);
 
         (BcrdtDocument author, byte[] first, byte[] second) = TwoUpdates(2, length: 4000);
         using (author)
         {
             Assert.IsTrue(await session.ReceiveAsync(BcrdtSyncProtocol.EncodeUpdate(second)));
 
-            Assert.IsTrue(await host.ReadAsync("bounded", doc => doc.PendingDiscards == 1 && !doc.HasPendingUpdates));
-            Assert.IsTrue(
-                connection.Sent.Select(message => BcrdtSyncProtocol.Decode(message)).Any(message => message.Kind == BcrdtSyncMessageKind.SyncStep1),
+            Assert.IsTrue(await host.ReadAsync("bounded", doc => doc.PendingDiscards == 1 && !doc.HasPendingUpdates, TestContext.CancellationToken));
+            Assert.Contains(
+                message => message.Kind == BcrdtSyncMessageKind.SyncStep1, connection.Sent.Select(message => BcrdtSyncProtocol.Decode(message)),
                 "the sender holds what the change builds on, so it is asked");
 
             Assert.IsTrue(await session.ReceiveAsync(BcrdtSyncProtocol.EncodeUpdate(first)));
             Assert.IsTrue(await session.ReceiveAsync(BcrdtSyncProtocol.EncodeUpdate(second)));
-            Assert.AreEqual(author.GetText("body").ToString(), await host.ReadAsync("bounded", doc => doc.GetText("body").ToString()));
+            Assert.AreEqual(author.GetText("body").ToString(), await host.ReadAsync("bounded", doc => doc.GetText("body").ToString(), TestContext.CancellationToken));
         }
     }
 
@@ -189,8 +189,8 @@ public class PendingBoundTests
         await using var host = new BcrdtDocumentHost(new BcrdtDocumentHostOptions { MaxPendingSize = 1024 });
         var flooder = new RecordingConnection("flooder");
         var bystander = new RecordingConnection("bystander");
-        using BcrdtHostSession flooding = await host.JoinAsync("bounded", flooder);
-        using BcrdtHostSession waiting = await host.JoinAsync("bounded", bystander);
+        using BcrdtHostSession flooding = await host.JoinAsync("bounded", flooder, TestContext.CancellationToken);
+        using BcrdtHostSession waiting = await host.JoinAsync("bounded", bystander, TestContext.CancellationToken);
         bystander.Sent.Clear();
 
         (BcrdtDocument author, _, byte[] second) = TwoUpdates(2, length: 4000);
@@ -198,9 +198,9 @@ public class PendingBoundTests
         {
             Assert.IsTrue(await flooding.ReceiveAsync(BcrdtSyncProtocol.EncodeUpdate(second)));
 
-            Assert.IsTrue(await host.ReadAsync("bounded", doc => doc.PendingDiscards == 1));
-            Assert.IsTrue(
-                bystander.Sent.Select(message => BcrdtSyncProtocol.Decode(message)).Any(message => message.Kind == BcrdtSyncMessageKind.SyncStep1),
+            Assert.IsTrue(await host.ReadAsync("bounded", doc => doc.PendingDiscards == 1, TestContext.CancellationToken));
+            Assert.Contains(
+                message => message.Kind == BcrdtSyncMessageKind.SyncStep1, bystander.Sent.Select(message => BcrdtSyncProtocol.Decode(message)),
                 "what was discarded may have come from any connection, so every one is asked");
         }
     }
@@ -232,4 +232,6 @@ public class PendingBoundTests
 
         public void Refuse(string reason) { }
     }
+
+    public TestContext TestContext { get; set; }
 }

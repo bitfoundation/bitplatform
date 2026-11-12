@@ -62,7 +62,7 @@ public class WaitlistTests
     public async Task AVisitor_Should_JoinConfirmAndLeave()
     {
         using var joined = await Join("ana@example.com");
-        var result = await joined.Content.ReadFromJsonAsync(LandingJsonContext.Default.WaitlistJoinResult);
+        var result = await joined.Content.ReadFromJsonAsync(LandingJsonContext.Default.WaitlistJoinResult, TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.OK, joined.StatusCode);
         Assert.IsTrue(result!.ConfirmationSent);
@@ -72,12 +72,12 @@ public class WaitlistTests
         Assert.Contains("/waitlist/unsubscribe?token=", email.Body);
         Assert.IsTrue(confirm.Success, email.Body);
 
-        using var page = await client.GetAsync(new Uri(confirm.Groups[1].Value).PathAndQuery);
+        using var page = await client.GetAsync(new Uri(confirm.Groups[1].Value).PathAndQuery, TestContext.CancellationToken);
         Assert.AreEqual(HttpStatusCode.OK, page.StatusCode, "The link in the email opens a page.");
 
         var token = confirm.Groups[2].Value;
         using var confirmed = await Post("api/waitlist/confirm", new WaitlistTokenRequest(token));
-        Assert.IsTrue((await confirmed.Content.ReadFromJsonAsync(LandingJsonContext.Default.WaitlistConfirmResult))!.Confirmed);
+        Assert.IsTrue((await confirmed.Content.ReadFromJsonAsync(LandingJsonContext.Default.WaitlistConfirmResult, TestContext.CancellationToken))!.Confirmed);
 
         using var left = await Post("api/waitlist/unsubscribe", new WaitlistTokenRequest(token));
         Assert.AreEqual(HttpStatusCode.NoContent, left.StatusCode);
@@ -88,7 +88,7 @@ public class WaitlistTests
     {
         (await Join("ben@example.com")).Dispose();
         (await Join("ben@example.com")).Dispose();
-        Assert.HasCount(1, emails.To("ben@example.com"));
+        Assert.ContainsSingle(emails.To("ben@example.com"));
 
         clock.Now += TimeSpan.FromMinutes(11);
         (await Join("ben@example.com")).Dispose();
@@ -101,8 +101,8 @@ public class WaitlistTests
         using var honeypot = await Join("bot@example.com", website: "https://spam.example");
         using var tooFast = await Join("fast@example.com", elapsedMilliseconds: 300);
 
-        Assert.IsTrue((await honeypot.Content.ReadFromJsonAsync(LandingJsonContext.Default.WaitlistJoinResult))!.ConfirmationSent);
-        Assert.IsTrue((await tooFast.Content.ReadFromJsonAsync(LandingJsonContext.Default.WaitlistJoinResult))!.ConfirmationSent);
+        Assert.IsTrue((await honeypot.Content.ReadFromJsonAsync(LandingJsonContext.Default.WaitlistJoinResult, TestContext.CancellationToken))!.ConfirmationSent);
+        Assert.IsTrue((await tooFast.Content.ReadFromJsonAsync(LandingJsonContext.Default.WaitlistJoinResult, TestContext.CancellationToken))!.ConfirmationSent);
         Assert.IsEmpty(emails.To("bot@example.com"));
         Assert.IsEmpty(emails.To("fast@example.com"));
     }
@@ -178,4 +178,6 @@ public class WaitlistTests
     }
 
     private static string NextVisitor() => $"203.0.113.{Interlocked.Increment(ref visitors)}";
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

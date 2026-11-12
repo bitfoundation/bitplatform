@@ -490,14 +490,14 @@ public class BitAiToolCallViewE2ETests : E2ETestBase
         await WaitForChevronAsync("tcv-ltr", 1, 0);
         var (ltrLeft, _, _, _) = await Page.Locator("#tcv-ltr .bit-aitcv-chv").RectAsync();
         var (ltrTitleLeft, _, _, _) = await Title("tcv-ltr").RectAsync();
-        Assert.IsTrue(ltrLeft < ltrTitleLeft, "In left-to-right text the chevron leads the title from the left.");
+        Assert.IsLessThan(ltrTitleLeft, ltrLeft, "In left-to-right text the chevron leads the title from the left.");
 
         foreach (var id in new[] { "tcv-rtl", "tcv-rtl-inherited" })
         {
             await WaitForChevronAsync(id, -1, 0);
             var (_, _, right, _) = await Page.Locator($"#{id} .bit-aitcv-chv").RectAsync();
             var (_, _, titleRight, _) = await Title(id).RectAsync();
-            Assert.IsTrue(right > titleRight, $"{id}: in right-to-left text the chevron leads the title from the right.");
+            Assert.IsGreaterThan(titleRight, right, $"{id}: in right-to-left text the chevron leads the title from the right.");
         }
 
         await Expect(Card("tcv-rtl")).ToHaveAttributeAsync("dir", "rtl");
@@ -538,7 +538,7 @@ public class BitAiToolCallViewE2ETests : E2ETestBase
         await OpenAsync(Route);
 
         var chevron = Page.Locator("#tcv-ltr .bit-aitcv-chv");
-        Assert.IsTrue(Seconds(await chevron.EvaluateAsync<string>("e => getComputedStyle(e).transitionDuration")) > 0.05,
+        Assert.IsGreaterThan(0.05, Seconds(await chevron.EvaluateAsync<string>("e => getComputedStyle(e).transitionDuration")),
                       "The chevron turns over a transition.");
 
         await Page.EmulateMediaAsync(new() { ReducedMotion = ReducedMotion.Reduce });

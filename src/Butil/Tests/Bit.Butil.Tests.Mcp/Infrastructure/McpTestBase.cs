@@ -120,7 +120,7 @@ public abstract partial class McpTestBase
         }
         catch (JsonException exception)
         {
-            throw new AssertFailedException($"{tool} answers with data, so its text block has to be the JSON of it: {exception.Message}\n{text}");
+            throw new JsonException($"{tool} answers with data, so its text block has to be the JSON of it: {exception.Message}\n{text}", exception);
         }
 
         return content.ValueKind is JsonValueKind.Object && content.TryGetProperty("result", out var wrapped)
@@ -171,17 +171,17 @@ public abstract partial class McpTestBase
     /// resolves every name it is passed to the same inspection and then adds what the whole set
     /// demands together, so asking it about one name is the single-API answer with nothing dropped.
     /// </summary>
-    protected async Task<ApiInspection> InspectAsync(string name)
+    private protected async Task<ApiInspection> InspectAsync(string name)
     {
         var plan = await CallStructuredAsync<FeaturePlan>("PlanButilFeature", new { apis = name });
 
-        Assert.HasCount(1, plan.Apis, $"PlanButilFeature('{name}') resolved to {plan.Apis.Length} APIs rather than one.");
+        Assert.ContainsSingle(plan.Apis, $"PlanButilFeature('{name}') resolved to {plan.Apis.Length} APIs rather than one.");
 
         return plan.Apis[0];
     }
 
     /// <summary>The documentation index, which is also the browser-support matrix.</summary>
-    protected async Task<DocsIndexRow[]> DocsIndexAsync()
+    private protected async Task<DocsIndexRow[]> DocsIndexAsync()
     {
         var rows = DocsIndexRow.ParseAll(Text(await CallAsync("GetButilDocsPage")));
 

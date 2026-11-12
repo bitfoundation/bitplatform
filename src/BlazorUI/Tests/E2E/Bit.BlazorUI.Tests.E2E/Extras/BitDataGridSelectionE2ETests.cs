@@ -249,7 +249,7 @@ public class BitDataGridSelectionE2ETests : BitDataGridE2ETestBase
 
         await Expect(LiveRegion(id)).ToContainTextAsync("2 rows copied to the clipboard");
         var copied = await CopiedAsync();
-        Assert.AreEqual(1, copied.Length);
+        Assert.ContainsSingle(copied);
         // The header line names the exported columns only: the template column has no value to write.
         Assert.AreEqual("ID\tName\tStock\r\n1\tLaptop\t5\r\n4\tLamp\t30\r\n", copied[0]);
     }
@@ -293,7 +293,7 @@ public class BitDataGridSelectionE2ETests : BitDataGridE2ETestBase
         await Page.Keyboard.PressAsync("ArrowDown");
         await ExpectFocusedAsync(Cell("grid-no-copy", 1, 2));
 
-        Assert.AreEqual(0, (await CopiedAsync()).Length);
+        Assert.IsEmpty(await CopiedAsync());
     }
 
     [TestMethod]
@@ -409,8 +409,8 @@ public class BitDataGridSelectionE2ETests : BitDataGridE2ETestBase
         var header = await BoxAsync(HeaderRow(id));
         var cell = await BoxAsync(Cell(id, 19, 2));
         var view = await BoxAsync(Viewport(id));
-        Assert.IsTrue(cell.Y >= header.Y + header.Height - 1, $"The focused cell (y {cell.Y}) is under the header (bottom {header.Y + header.Height}).");
-        Assert.IsTrue(cell.Y + cell.Height <= view.Y + view.Height + 1, "The focused cell is below the viewport.");
+        Assert.IsGreaterThanOrEqualTo(header.Y + header.Height - 1, cell.Y, $"The focused cell (y {cell.Y}) is under the header (bottom {header.Y + header.Height}).");
+        Assert.IsLessThanOrEqualTo(view.Y + view.Height + 1, cell.Y + cell.Height, "The focused cell is below the viewport.");
     }
 
     [TestMethod]

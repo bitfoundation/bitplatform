@@ -7,7 +7,7 @@
 /// shares nothing for them. The live page does go through the server, whose document host keeps a replica of every
 /// live document, but each live test uses a room of its own, so no test ever meets another's document.
 /// </summary>
-public sealed class DemoHost : IAsyncDisposable
+internal sealed class DemoHost : IAsyncDisposable
 {
     private readonly ChildProcess? _process;
 

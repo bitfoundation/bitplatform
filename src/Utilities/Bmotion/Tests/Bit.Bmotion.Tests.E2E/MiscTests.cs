@@ -29,7 +29,7 @@ public sealed class MiscTests : BmotionPageTest
         await WaitForStateAsync("#mv-x", "s => Math.abs(s.x - 200) < 0.5");
         await WaitForStateAsync("#mv-opacity", "s => Math.abs(s.opacity - 1) < 0.01");
         if (FrameLoop)
-            Assert.IsTrue(samples.Any(s => s.X is > 5 and < 195), "The value jumped instead of animating.");
+            Assert.Contains(s => s.X is > 5 and < 195, samples, "The value jumped instead of animating.");
     }
 
     [TestMethod]
@@ -41,8 +41,8 @@ public sealed class MiscTests : BmotionPageTest
         await WaitForStateAsync("#mv-spring", "s => Math.abs(s.x - 100) < 1", timeout: 10_000);
         if (FrameLoop)
         {
-            Assert.IsTrue(samples.Any(s => s.X is > 5 and < 95), "The follower jumped instead of springing.");
-            Assert.IsTrue(samples.Max(s => s.X) > 101, "An underdamped follower should overshoot.");
+            Assert.Contains(s => s.X is > 5 and < 95, samples, "The follower jumped instead of springing.");
+            Assert.IsGreaterThan(101, samples.Max(s => s.X), "An underdamped follower should overshoot.");
         }
     }
 
@@ -84,17 +84,19 @@ public sealed class MiscTests : BmotionPageTest
         // The identifiers BmotionInterop invokes on the module, from its source, against the bundle the host
         // actually serves (minified in Release) - a rename on either side, or an export the bundler dropped,
         // fails here instead of as a silent no-op in an app.
-        var source = await File.ReadAllTextAsync(RepoLayout.InteropSource());
+        var source = await File.ReadAllTextAsync(RepoLayout.InteropSource(), TestContext.CancellationToken);
         var invoked = Regex.Matches(source, @"Invoke(?:Void)?Async(?:<[^>]+>)?\(\s*""([A-Za-z_][A-Za-z0-9_]*)""")
             .Select(m => m.Groups[1].Value)
             .Where(name => name is not "import")
             .Distinct()
             .ToArray();
-        Assert.IsTrue(invoked.Length > 20, $"Found only {invoked.Length} invoked identifiers - did the interop's shape change?");
+        Assert.IsGreaterThan(20, invoked.Length, $"Found only {invoked.Length} invoked identifiers - did the interop's shape change?");
 
         var exported = await Page.EvaluateAsync<string[]>(
             "async () => Object.keys(await import('./_content/Bit.Bmotion/bit-bmotion.js'))");
 
         CollectionAssert.IsSubsetOf(invoked, exported, $"Missing exports: {string.Join(", ", invoked.Except(exported))}");
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

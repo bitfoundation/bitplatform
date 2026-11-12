@@ -103,7 +103,7 @@ public class BitAccordionTests : BunitTestContext
             parameters.Add(p => p.Description, "description-value");
         });
 
-        Assert.AreEqual(0, com.FindAll(".bit-acd-ttl").Count);
+        Assert.IsEmpty(com.FindAll(".bit-acd-ttl"));
         Assert.AreEqual("description-value", com.Find(".bit-acd-des").TextContent);
     }
 
@@ -126,7 +126,7 @@ public class BitAccordionTests : BunitTestContext
             parameters.Add(p => p.Title, "title");
         });
 
-        Assert.AreEqual(0, com.FindAll(".bit-acd-des").Count);
+        Assert.IsEmpty(com.FindAll(".bit-acd-des"));
     }
 
     [TestMethod]
@@ -190,9 +190,13 @@ public class BitAccordionTests : BunitTestContext
 
         var expanderIconWrapper = com.Find(".bit-acd-eiw");
         var content = com.Find(".bit-acd-con");
+        var expectedValue = defaultIsExpanded;
+        var actualValue = expanderIconWrapper?.ClassName?.Contains("bit-ico--r180");
 
-        Assert.AreEqual(defaultIsExpanded, expanderIconWrapper?.ClassName?.Contains("bit-ico--r180"));
-        Assert.AreEqual(defaultIsExpanded, content?.ClassName?.Contains("bit-acd-cex"));
+        Assert.AreEqual(expectedValue, actualValue);
+        var expectedValue1 = defaultIsExpanded;
+        var actualValue2 = content?.ClassName?.Contains("bit-acd-cex");
+        Assert.AreEqual(expectedValue1, actualValue2);
     }
 
     [TestMethod]
@@ -242,7 +246,7 @@ public class BitAccordionTests : BunitTestContext
         com.Find(".bit-acd-hdr").Click();
         com.Find(".bit-acd-hdr").Click();
 
-        Assert.AreEqual(2, values.Count);
+        Assert.HasCount(2, values);
         Assert.IsTrue(values[0]);
         Assert.IsFalse(values[1]);
     }
@@ -305,8 +309,8 @@ public class BitAccordionTests : BunitTestContext
         Assert.AreEqual("template-value", com.Find(".bit-acd-ttl").TextContent);
         Assert.AreEqual("tpl", com.Find(".bit-acd-ttl").FirstElementChild!.Id);
         Assert.AreEqual("description-value", com.Find(".bit-acd-des").TextContent);
-        Assert.AreEqual(1, com.FindAll(".bit-acd-ico").Count);
-        Assert.AreEqual(1, com.FindAll(".bit-acd-eiw").Count);
+        Assert.ContainsSingle(com.FindAll(".bit-acd-ico"));
+        Assert.ContainsSingle(com.FindAll(".bit-acd-eiw"));
     }
 
     [TestMethod]
@@ -319,7 +323,7 @@ public class BitAccordionTests : BunitTestContext
         });
 
         Assert.AreEqual("header-template", com.Find(".bit-acd-hdr").TextContent);
-        Assert.AreEqual(0, com.FindAll(".bit-acd-ttl").Count);
+        Assert.IsEmpty(com.FindAll(".bit-acd-ttl"));
     }
 
     [TestMethod]
@@ -611,7 +615,7 @@ public class BitAccordionTests : BunitTestContext
             parameters.Add(p => p.HideExpanderIcon, hideExpanderIcon);
         });
 
-        Assert.AreEqual(hideExpanderIcon ? 0 : 1, com.FindAll(".bit-acd-eiw").Count);
+        Assert.HasCount(hideExpanderIcon ? 0 : 1, com.FindAll(".bit-acd-eiw"));
     }
 
     [TestMethod,
@@ -687,7 +691,7 @@ public class BitAccordionTests : BunitTestContext
     {
         var com = RenderComponent<BitAccordion>();
 
-        Assert.AreEqual(0, com.FindAll(".bit-acd-ico").Count);
+        Assert.IsEmpty(com.FindAll(".bit-acd-ico"));
     }
 
 
@@ -714,7 +718,7 @@ public class BitAccordionTests : BunitTestContext
     {
         var com = RenderComponent<BitAccordion>();
 
-        Assert.AreEqual(0, com.FindAll(".bit-acd-act").Count);
+        Assert.IsEmpty(com.FindAll(".bit-acd-act"));
     }
 
 
@@ -812,7 +816,7 @@ public class BitAccordionTests : BunitTestContext
         var root = com.Find(".bit-acd");
 
         Assert.IsTrue(root.ClassList.Contains("bit-acd-mxh"));
-        Assert.IsTrue(root.GetAttribute("style")!.Contains("--bit-acd-max-h:10rem"));
+        Assert.Contains("--bit-acd-max-h:10rem", root.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -823,7 +827,7 @@ public class BitAccordionTests : BunitTestContext
         var root = com.Find(".bit-acd");
 
         Assert.IsFalse(root.ClassList.Contains("bit-acd-mxh"));
-        Assert.IsFalse((root.GetAttribute("style") ?? string.Empty).Contains("--bit-acd-max-h"));
+        Assert.DoesNotContain("--bit-acd-max-h", (root.GetAttribute("style") ?? string.Empty));
     }
 
     [TestMethod,
@@ -838,7 +842,7 @@ public class BitAccordionTests : BunitTestContext
             parameters.Add(p => p.TransitionDuration, duration);
         });
 
-        Assert.IsTrue(com.Find(".bit-acd").GetAttribute("style")!.Contains(expected));
+        Assert.Contains(expected, com.Find(".bit-acd").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -846,7 +850,7 @@ public class BitAccordionTests : BunitTestContext
     {
         var com = RenderComponent<BitAccordion>();
 
-        Assert.IsFalse((com.Find(".bit-acd").GetAttribute("style") ?? string.Empty).Contains("--bit-acd-dur-full"));
+        Assert.DoesNotContain("--bit-acd-dur-full", (com.Find(".bit-acd").GetAttribute("style") ?? string.Empty));
     }
 
 
@@ -912,13 +916,13 @@ public class BitAccordionTests : BunitTestContext
 
         Assert.IsTrue(com.Find(".bit-acd").ClassList.Contains("bit-acd-exp"));
         Assert.AreEqual(1, expanded);
-        Assert.AreEqual(1, changes.Count);
+        Assert.ContainsSingle(changes);
         Assert.IsTrue(changes[0]);
 
         await com.InvokeAsync(() => com.Instance.Expand());
 
         Assert.AreEqual(1, expanded);
-        Assert.AreEqual(1, changes.Count);
+        Assert.ContainsSingle(changes);
     }
 
     [TestMethod]
@@ -1135,7 +1139,7 @@ public class BitAccordionTests : BunitTestContext
             });
         });
 
-        Assert.IsTrue(com.Find(".bit-acd").GetAttribute("style")!.Contains("color: red;"));
+        Assert.Contains("color: red;", com.Find(".bit-acd").GetAttribute("style")!);
         Assert.AreEqual("color: blue;", com.Find(".bit-acd-hwr").GetAttribute("style"));
         Assert.AreEqual("color: green;", com.Find(".bit-acd-hed").GetAttribute("style"));
         Assert.AreEqual("color: yellow;", com.Find(".bit-acd-hdr").GetAttribute("style"));
@@ -1166,8 +1170,8 @@ public class BitAccordionTests : BunitTestContext
 
         var style = com.Find(".bit-acd-eic").GetAttribute("style")!;
 
-        Assert.IsTrue(style.Contains("color: teal"));
-        Assert.IsTrue(style.Contains("font-size: 2rem"));
+        Assert.Contains("color: teal", style);
+        Assert.Contains("font-size: 2rem", style);
         Assert.IsTrue(style.Contains(';'));
     }
 
@@ -1182,7 +1186,7 @@ public class BitAccordionTests : BunitTestContext
 
         var root = com.Find(".bit-acd");
 
-        Assert.IsTrue(root.GetAttribute("style")!.Contains("color: red;"));
+        Assert.Contains("color: red;", root.GetAttribute("style")!);
         Assert.IsTrue(root.ClassList.Contains("custom-class"));
     }
 
@@ -1227,8 +1231,8 @@ public class BitAccordionTests : BunitTestContext
             parameters.Add(p => p.HeaderTemplate, _ => "header");
         });
 
-        Assert.AreEqual(0, com.FindAll(".bit-acd-eiw").Count);
-        Assert.AreEqual(0, com.FindAll(".bit-acd-ttl").Count);
+        Assert.IsEmpty(com.FindAll(".bit-acd-eiw"));
+        Assert.IsEmpty(com.FindAll(".bit-acd-ttl"));
     }
 
     [TestMethod]
@@ -1255,8 +1259,8 @@ public class BitAccordionTests : BunitTestContext
 
         var style = com.Find(".bit-acd").GetAttribute("style")!;
 
-        Assert.IsTrue(style.Contains("--bit-acd-max-h:10rem"));
-        Assert.IsTrue(style.Contains("--bit-acd-dur-full:250ms"));
+        Assert.Contains("--bit-acd-max-h:10rem", style);
+        Assert.Contains("--bit-acd-dur-full:250ms", style);
     }
 
     [TestMethod]
@@ -1327,7 +1331,7 @@ public class BitAccordionTests : BunitTestContext
         });
 
         var headers = com.FindAll(".bit-acd-hdr");
-        Assert.AreEqual(2, headers.Count);
+        Assert.HasCount(2, headers);
 
         headers[1].Click();
 
@@ -1398,7 +1402,7 @@ public class BitAccordionTests : BunitTestContext
 
         var headings = com.FindAll(".bit-acd-hed");
 
-        Assert.AreEqual(2, headings.Count);
+        Assert.HasCount(2, headings);
         Assert.AreEqual("3", headings[0].GetAttribute("aria-level"));
         Assert.AreEqual("4", headings[1].GetAttribute("aria-level"));
     }
@@ -1473,13 +1477,13 @@ public class BitAccordionTests : BunitTestContext
             }));
         });
 
-        Assert.AreEqual(1, com.FindAll(".bit-acd-hed").Count);
+        Assert.ContainsSingle(com.FindAll(".bit-acd-hed"));
 
         com.Find(".bit-acd-hdr").Click();
 
         var headings = com.FindAll(".bit-acd-hed");
 
-        Assert.AreEqual(2, headings.Count);
+        Assert.HasCount(2, headings);
         Assert.AreEqual("4", headings[1].GetAttribute("aria-level"));
     }
 
@@ -1498,7 +1502,7 @@ public class BitAccordionTests : BunitTestContext
         com.Find(".bit-acd-hdr").Click();
         com.Find(".bit-acd-hdr").Click();
 
-        Assert.AreEqual(2, args.Count);
+        Assert.HasCount(2, args);
         Assert.IsTrue(args[0].IsExpanding);
         Assert.IsFalse(args[1].IsExpanding);
         Assert.IsTrue(args.TrueForAll(a => a.Reason == BitAccordionToggleReason.Click));
@@ -1823,7 +1827,7 @@ public class BitAccordionTests : BunitTestContext
         var wrapper = com.Find(".bit-acd-eiw");
 
         Assert.AreEqual(defaultIsExpanded ? "expanded-expander" : "collapsed-expander", wrapper.TextContent);
-        Assert.AreEqual(0, com.FindAll(".bit-acd-eic").Count);
+        Assert.IsEmpty(com.FindAll(".bit-acd-eic"));
 
         // The rest of the header is exactly where it was.
         Assert.AreEqual("title-value", com.Find(".bit-acd-ttl").TextContent);
@@ -1863,8 +1867,8 @@ public class BitAccordionTests : BunitTestContext
             parameters.Add(p => p.ExpanderTemplate, _ => "expander-template");
         });
 
-        Assert.AreEqual(0, com.FindAll(".bit-acd-eiw").Count);
-        Assert.IsFalse(com.Find(".bit-acd-hdr").TextContent.Contains("expander-template"));
+        Assert.IsEmpty(com.FindAll(".bit-acd-eiw"));
+        Assert.DoesNotContain("expander-template", com.Find(".bit-acd-hdr").TextContent);
     }
 
     [TestMethod]
@@ -1877,7 +1881,7 @@ public class BitAccordionTests : BunitTestContext
         });
 
         Assert.AreEqual("header-template", com.Find(".bit-acd-hdr").TextContent);
-        Assert.AreEqual(0, com.FindAll(".bit-acd-eiw").Count);
+        Assert.IsEmpty(com.FindAll(".bit-acd-eiw"));
     }
 
     [TestMethod]
@@ -2092,8 +2096,8 @@ public class BitAccordionTests : BunitTestContext
             parameters.Add(p => p.Styles, new() { Spinner = "color: red;" });
         });
 
-        Assert.AreEqual(0, com.FindAll(".bit-acd-spn").Count);
-        Assert.AreEqual(1, com.FindAll(".bit-acd-eic").Count);
+        Assert.IsEmpty(com.FindAll(".bit-acd-spn"));
+        Assert.ContainsSingle(com.FindAll(".bit-acd-eic"));
 
         var toggling = com.InvokeAsync(() => com.Instance.Toggle());
 
@@ -2102,14 +2106,14 @@ public class BitAccordionTests : BunitTestContext
         Assert.AreEqual("true", spinner.GetAttribute("aria-hidden"));
         Assert.IsTrue(spinner.ClassList.Contains("custom-spinner"));
         Assert.AreEqual("color: red;", spinner.GetAttribute("style"));
-        Assert.AreEqual(0, com.FindAll(".bit-acd-eic").Count);
+        Assert.IsEmpty(com.FindAll(".bit-acd-eic"));
 
         gate.SetResult();
 
         await toggling;
 
-        Assert.AreEqual(0, com.FindAll(".bit-acd-spn").Count);
-        Assert.AreEqual(1, com.FindAll(".bit-acd-eic").Count);
+        Assert.IsEmpty(com.FindAll(".bit-acd-spn"));
+        Assert.ContainsSingle(com.FindAll(".bit-acd-eic"));
     }
 
     [TestMethod]
@@ -2120,15 +2124,15 @@ public class BitAccordionTests : BunitTestContext
             parameters.Add(p => p.HideExpanderIcon, true);
         });
 
-        Assert.AreEqual(0, com.FindAll(".bit-acd-eiw").Count);
+        Assert.IsEmpty(com.FindAll(".bit-acd-eiw"));
 
         com.Render(parameters => parameters.Add(p => p.Busy, true));
 
-        Assert.AreEqual(1, com.FindAll(".bit-acd-eiw > .bit-acd-spn").Count);
+        Assert.ContainsSingle(com.FindAll(".bit-acd-eiw > .bit-acd-spn"));
 
         com.Render(parameters => parameters.Add(p => p.Busy, false));
 
-        Assert.AreEqual(0, com.FindAll(".bit-acd-eiw").Count);
+        Assert.IsEmpty(com.FindAll(".bit-acd-eiw"));
     }
 
     [TestMethod]
@@ -2458,7 +2462,7 @@ public class BitAccordionTests : BunitTestContext
 
         Assert.AreEqual("until-found", content.GetAttribute("hidden"));
         Assert.IsTrue(content.ClassList.Contains("bit-acd-huf"));
-        Assert.IsTrue(com.Markup.Contains("onbeforematch"));
+        Assert.Contains("onbeforematch", com.Markup);
     }
 
     [TestMethod]
@@ -2470,7 +2474,7 @@ public class BitAccordionTests : BunitTestContext
 
         Assert.IsFalse(content.HasAttribute("hidden"));
         Assert.IsFalse(content.ClassList.Contains("bit-acd-huf"));
-        Assert.IsFalse(com.Markup.Contains("onbeforematch"));
+        Assert.DoesNotContain("onbeforematch", com.Markup);
     }
 
     [TestMethod]
@@ -2496,7 +2500,7 @@ public class BitAccordionTests : BunitTestContext
             parameters.Add(p => p.ChildContent, "<span class=\"body\">Body</span>");
         });
 
-        Assert.AreEqual(1, com.FindAll(".body").Count);
+        Assert.ContainsSingle(com.FindAll(".body"));
     }
 
     [TestMethod]
@@ -2667,7 +2671,7 @@ public class BitAccordionTests : BunitTestContext
         Assert.IsFalse(content.HasAttribute("hidden"));
         Assert.IsFalse(content.ClassList.Contains("bit-acd-huf"));
         Assert.IsTrue(content.ClassList.Contains("bit-acd-cco"));
-        Assert.IsFalse(com.Markup.Contains("onbeforematch"));
+        Assert.DoesNotContain("onbeforematch", com.Markup);
     }
 
     [TestMethod]
@@ -2798,7 +2802,7 @@ public class BitAccordionTests : BunitTestContext
         var revealing = com.Find(".bit-acd-con").TriggerEventAsync("onbeforematch", System.EventArgs.Empty);
 
         Assert.IsTrue(com.Find(".bit-acd-con").ClassList.Contains("bit-acd-huf"));
-        Assert.IsTrue(com.Markup.Contains("onbeforematch"));
+        Assert.Contains("onbeforematch", com.Markup);
 
         // The toggle in flight is refused, so the reveal then asks for itself - and is let through.
         gate.SetResult();
@@ -2807,7 +2811,7 @@ public class BitAccordionTests : BunitTestContext
         await revealing;
 
         com.WaitForAssertion(() => Assert.IsTrue(com.Instance.IsExpanded));
-        CollectionAssert.AreEqual(new[] { BitAccordionToggleReason.Method, BitAccordionToggleReason.Reveal }, reasons);
+        Assert.AreSequenceEqual(new[] { BitAccordionToggleReason.Method, BitAccordionToggleReason.Reveal }, reasons);
     }
 
     [TestMethod]
@@ -2860,7 +2864,7 @@ public class BitAccordionTests : BunitTestContext
 
         Assert.IsFalse(content.HasAttribute("hidden"));
         Assert.IsFalse(content.ClassList.Contains("bit-acd-huf"));
-        Assert.IsFalse(com.Markup.Contains("onbeforematch"));
+        Assert.DoesNotContain("onbeforematch", com.Markup);
     }
 
 
@@ -2872,7 +2876,7 @@ public class BitAccordionTests : BunitTestContext
 
         var accordions = component.FindComponents<BitAccordion>();
 
-        Assert.AreEqual(5, accordions.Count);
+        Assert.HasCount(5, accordions);
 
         // The first one takes everything from the cascading parameters.
         var first = accordions[0];
@@ -2886,9 +2890,9 @@ public class BitAccordionTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("bit-acd-mxh"));
         Assert.IsTrue(root.ClassList.Contains("bit-acd-nbd"));
         Assert.IsTrue(root.ClassList.Contains("bit-acd-lg"));
-        StringAssert.Contains(root.GetAttribute("style")!, "margin:1px");
-        StringAssert.Contains(root.GetAttribute("style")!, "--bit-acd-max-h:10rem");
-        StringAssert.Contains(root.GetAttribute("style")!, "--bit-acd-dur-full:150ms");
+        Assert.Contains("margin:1px", root.GetAttribute("style")!);
+        Assert.Contains("--bit-acd-max-h:10rem", root.GetAttribute("style")!);
+        Assert.Contains("--bit-acd-dur-full:150ms", root.GetAttribute("style")!);
         Assert.IsTrue(root.QuerySelector(".bit-acd-ttl")!.ClassList.Contains("cascaded-title"));
         Assert.AreEqual("2", root.QuerySelector(".bit-acd-hed")!.GetAttribute("aria-level"));
         Assert.IsTrue(root.QuerySelector(".bit-acd-eic")!.ClassList.Contains("bit-icon--Add"));
@@ -2915,17 +2919,17 @@ public class BitAccordionTests : BunitTestContext
         Assert.AreEqual("region", own.QuerySelector(".bit-acd-con")!.GetAttribute("role"));
 
         // LazyContent holds the first render of the body back.
-        Assert.AreEqual(0, accordions[3].FindAll(".lazy-body").Count);
+        Assert.IsEmpty(accordions[3].FindAll(".lazy-body"));
 
         // UnmountOnCollapse drops the body on the collapse, and the expander is gone.
         var unmounted = accordions[4];
 
-        Assert.AreEqual(1, unmounted.FindAll(".unmounted-body").Count);
-        Assert.AreEqual(0, unmounted.FindAll(".bit-acd-eiw").Count);
+        Assert.ContainsSingle(unmounted.FindAll(".unmounted-body"));
+        Assert.IsEmpty(unmounted.FindAll(".bit-acd-eiw"));
 
         unmounted.Find(".bit-acd-hdr").Click();
 
-        Assert.AreEqual(0, unmounted.FindAll(".unmounted-body").Count);
+        Assert.IsEmpty(unmounted.FindAll(".unmounted-body"));
     }
 
     [TestMethod]

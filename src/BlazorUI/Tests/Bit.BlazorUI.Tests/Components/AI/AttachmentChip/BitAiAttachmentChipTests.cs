@@ -30,7 +30,7 @@ public class BitAiAttachmentChipTests : BitAiTestBase
         Assert.IsTrue(root.ClassList.Contains("root-class"));
         Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
         Assert.AreEqual("rtl", root.GetAttribute("dir"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin: 1px");
+        Assert.Contains("margin: 1px", root.GetAttribute("style")!);
         Assert.IsNotNull(chip.Find(".bit-aiach > .bit-tag.bit-aiach-tag"));
         Assert.IsTrue(chip.Find(".bit-aiach-thm").ClassList.Contains("thumb-class"));
     }
@@ -104,21 +104,21 @@ public class BitAiAttachmentChipTests : BitAiTestBase
 
     // The remove button that was pressed goes with its chip, so a row of chips hands the focus on to the next one with it.
     [TestMethod]
-    public void FocusAsyncFocusesTheRemoveButtonOfAChipThatHasOne()
+    public async global::System.Threading.Tasks.Task FocusAsyncFocusesTheRemoveButtonOfAChipThatHasOne()
     {
         var removable = RenderComponent<BitAiAttachmentChip>(p => p
             .Add(c => c.Attachment, Attachment())
             .Add(c => c.OnRemove, _ => { }));
 
-        removable.InvokeAsync(() => removable.Instance.FocusAsync().AsTask()).Wait();
+        await removable.InvokeAsync(() => removable.Instance.FocusAsync().AsTask()).WaitAsync(TestContext.CancellationToken);
 
         Context.JSInterop.VerifyFocusAsyncInvoke();
 
         var plain = RenderComponent<BitAiAttachmentChip>(p => p.Add(c => c.Attachment, Attachment()));
 
-        plain.InvokeAsync(() => plain.Instance.FocusAsync().AsTask()).Wait();
+        await plain.InvokeAsync(() => plain.Instance.FocusAsync().AsTask()).WaitAsync(TestContext.CancellationToken);
 
-        Assert.HasCount(1, Context.JSInterop.Invocations.Where(i => i.Identifier.EndsWith(".focus", StringComparison.Ordinal)));
+        Assert.ContainsSingle(Context.JSInterop.Invocations.Where(i => i.Identifier.EndsWith(".focus", StringComparison.Ordinal)));
     }
 
     [TestMethod]
@@ -137,4 +137,6 @@ public class BitAiAttachmentChipTests : BitAiTestBase
 
         Assert.AreEqual(0, removed);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

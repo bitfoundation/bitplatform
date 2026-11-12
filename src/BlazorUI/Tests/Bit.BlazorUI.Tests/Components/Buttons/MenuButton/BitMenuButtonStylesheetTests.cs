@@ -19,38 +19,38 @@ public partial class BitMenuButtonStylesheetTests
 
         // An explicit Size publishes these, on the root and on the callout, so they are read before the variable,
         // which only restyles the medium menu button an unset one stands for.
-        StringAssert.Contains(stylesheet, "var(--bit-mnb-font-size, var(--bit-MenuButton-font-size, #{$tg-fs-sm}))");
-        StringAssert.Contains(stylesheet, "var(--bit-mnb-min-height, var(--bit-MenuButton-min-height, #{$siz-ctrl-md}))");
-        StringAssert.Contains(stylesheet, "var(--bit-mnb-min-height, var(--bit-MenuButton-chevron-width, var(--bit-MenuButton-min-height, #{$siz-ctrl-md})))");
-        StringAssert.Contains(stylesheet, "var(--bit-mnb-padding, var(--bit-MenuButton-padding, #{$siz-ctrl-pad-y-md} #{$siz-ctrl-pad-x-sm}))");
-        StringAssert.Contains(stylesheet, "var(--bit-mnb-pad-y, var(--bit-MenuButton-padding, #{$siz-ctrl-pad-y-md}))");
-        StringAssert.Contains(stylesheet, "var(--bit-mnb-icon-size, var(--bit-MenuButton-icon-size, #{$siz-icon-md}))");
-        StringAssert.Contains(stylesheet, "var(--bit-mnb-item-height, var(--bit-MenuButton-item-min-height, #{$siz-item-md}))");
-        StringAssert.Contains(stylesheet, "var(--bit-mnb-item-padding, var(--bit-MenuButton-item-padding, #{$siz-ctrl-pad-y-md} #{$siz-ctrl-pad-x-sm}))");
+        Assert.Contains("var(--bit-mnb-font-size, var(--bit-MenuButton-font-size, #{$tg-fs-sm}))", stylesheet);
+        Assert.Contains("var(--bit-mnb-min-height, var(--bit-MenuButton-min-height, #{$siz-ctrl-md}))", stylesheet);
+        Assert.Contains("var(--bit-mnb-min-height, var(--bit-MenuButton-chevron-width, var(--bit-MenuButton-min-height, #{$siz-ctrl-md})))", stylesheet);
+        Assert.Contains("var(--bit-mnb-padding, var(--bit-MenuButton-padding, #{$siz-ctrl-pad-y-md} #{$siz-ctrl-pad-x-sm}))", stylesheet);
+        Assert.Contains("var(--bit-mnb-pad-y, var(--bit-MenuButton-padding, #{$siz-ctrl-pad-y-md}))", stylesheet);
+        Assert.Contains("var(--bit-mnb-icon-size, var(--bit-MenuButton-icon-size, #{$siz-icon-md}))", stylesheet);
+        Assert.Contains("var(--bit-mnb-item-height, var(--bit-MenuButton-item-min-height, #{$siz-item-md}))", stylesheet);
+        Assert.Contains("var(--bit-mnb-item-padding, var(--bit-MenuButton-item-padding, #{$siz-ctrl-pad-y-md} #{$siz-ctrl-pad-x-sm}))", stylesheet);
 
         // So does an explicit Color, for every color the role paints - the toggled header, the divider and the
         // focus ring and check mark of the items included.
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-mnb-clr, var(--bit-MenuButton-fill-background, var(--bit-MenuButton-background, #{$clr-pri})));");
-        StringAssert.Contains(stylesheet, "color: var(--bit-mnb-clr-txt, var(--bit-MenuButton-fill-color, var(--bit-MenuButton-color, #{$clr-pri-text})));");
+        Assert.Contains("background-color: var(--bit-mnb-clr, var(--bit-MenuButton-fill-background, var(--bit-MenuButton-background, #{$clr-pri})));", stylesheet);
+        Assert.Contains("color: var(--bit-mnb-clr-txt, var(--bit-MenuButton-fill-color, var(--bit-MenuButton-color, #{$clr-pri-text})));", stylesheet);
         // The hover and press states of the two halves set the variables the rules at rest paint from, never the
         // colors themselves, so the state's value is read ahead of the rest value it stands in for. The colors of the states
         // are resolved per variant on the root the halves inherit them from, the role ahead of the variant's own variable.
-        StringAssert.Contains(stylesheet, "--bit-mnb-hlf-sbg: var(--bit-mnb-hov-bg);");
-        StringAssert.Contains(stylesheet, "--bit-mnb-hov-bg: var(--bit-mnb-clr-hover, var(--bit-MenuButton-fill-hover-background, var(--bit-MenuButton-hover-background, #{$clr-pri-hover})));");
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-mnb-hlf-sbg, var(--bit-mnb-clr-dark, var(--bit-MenuButton-toggled-background, #{$clr-pri-dark})));");
-        StringAssert.Contains(stylesheet, "--bit-mnb-sbr: var(--bit-mnb-hov-bg);");
-        StringAssert.Contains(stylesheet, "--bit-mnb-dis-clr: var(--bit-mnb-clr-dis-text, var(--bit-MenuButton-disabled-color, #{$clr-pri-dis-text}));");
-        StringAssert.Contains(stylesheet, "--bit-mnb-clr-spb: var(--bit-mnb-clr-txt, var(--bit-MenuButton-fill-divider-color, var(--bit-MenuButton-divider-color, var(--bit-MenuButton-fill-color, var(--bit-MenuButton-color, #{$clr-pri-text})))));");
-        StringAssert.Contains(stylesheet, "focus-ring-own(var(--bit-mnb-clr-focus, var(--bit-MenuButton-focus-color)))");
-        StringAssert.Contains(stylesheet, "var(--bit-mnb-clr-focus, var(--bit-MenuButton-item-focus-color, #{$clr-pri-focus}))");
-        StringAssert.Contains(stylesheet, "color: var(--bit-mnb-clr-fg, var(--bit-MenuButton-item-checked-color, #{$clr-pri}));");
+        Assert.Contains("--bit-mnb-hlf-sbg: var(--bit-mnb-hov-bg);", stylesheet);
+        Assert.Contains("--bit-mnb-hov-bg: var(--bit-mnb-clr-hover, var(--bit-MenuButton-fill-hover-background, var(--bit-MenuButton-hover-background, #{$clr-pri-hover})));", stylesheet);
+        Assert.Contains("background-color: var(--bit-mnb-hlf-sbg, var(--bit-mnb-clr-dark, var(--bit-MenuButton-toggled-background, #{$clr-pri-dark})));", stylesheet);
+        Assert.Contains("--bit-mnb-sbr: var(--bit-mnb-hov-bg);", stylesheet);
+        Assert.Contains("--bit-mnb-dis-clr: var(--bit-mnb-clr-dis-text, var(--bit-MenuButton-disabled-color, #{$clr-pri-dis-text}));", stylesheet);
+        Assert.Contains("--bit-mnb-clr-spb: var(--bit-mnb-clr-txt, var(--bit-MenuButton-fill-divider-color, var(--bit-MenuButton-divider-color, var(--bit-MenuButton-fill-color, var(--bit-MenuButton-color, #{$clr-pri-text})))));", stylesheet);
+        Assert.Contains("focus-ring-own(var(--bit-mnb-clr-focus, var(--bit-MenuButton-focus-color)))", stylesheet);
+        Assert.Contains("var(--bit-mnb-clr-focus, var(--bit-MenuButton-item-focus-color, #{$clr-pri-focus}))", stylesheet);
+        Assert.Contains("color: var(--bit-mnb-clr-fg, var(--bit-MenuButton-item-checked-color, #{$clr-pri}));", stylesheet);
 
         // And an explicit Background, over the callout's own background.
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-mnb-cal-bg, var(--bit-MenuButton-callout-background, #{$clr-bg-pri}));");
+        Assert.Contains("background-color: var(--bit-mnb-cal-bg, var(--bit-MenuButton-callout-background, #{$clr-bg-pri}));", stylesheet);
 
         // What a Color does not paint stays the variables' alone: the transparent background of Outline and Text.
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-MenuButton-outline-background, var(--bit-MenuButton-background, transparent));");
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-MenuButton-text-background, var(--bit-MenuButton-background, transparent));");
+        Assert.Contains("background-color: var(--bit-MenuButton-outline-background, var(--bit-MenuButton-background, transparent));", stylesheet);
+        Assert.Contains("background-color: var(--bit-MenuButton-text-background, var(--bit-MenuButton-background, transparent));", stylesheet);
 
         Assert.IsFalse(PublicBeforePrivate().IsMatch(SourceFiles.StripScssComments(stylesheet)), "A public variable is read before the parameter it restyles the default of.");
     }
@@ -69,7 +69,7 @@ public partial class BitMenuButtonStylesheetTests
 
         foreach (var name in new[] { "hov-fg", "hov-bg", "act-fg", "act-bg" })
         {
-            StringAssert.Contains(states, $"--bit-mnb-{name}: ", $"{selector} does not resolve --bit-mnb-{name} on the halves.");
+            Assert.Contains($"--bit-mnb-{name}: ", states, $"{selector} does not resolve --bit-mnb-{name} on the halves.");
         }
 
         // Each variant reads a tier of its own ahead of every shared color variable of the button, so a theme can set
@@ -79,8 +79,7 @@ public partial class BitMenuButtonStylesheetTests
                                      "hover-color", "hover-background", "active-color", "active-background",
                                      "disabled-background", "disabled-border-color", "divider-color" })
         {
-            StringAssert.Contains(block, $"var(--bit-MenuButton-{variant}-{name}, var(--bit-MenuButton-{name}, ",
-                                  $"{selector} does not read --bit-MenuButton-{variant}-{name} ahead of --bit-MenuButton-{name}.");
+            Assert.Contains($"var(--bit-MenuButton-{variant}-{name}, var(--bit-MenuButton-{name}, ", block, $"{selector} does not read --bit-MenuButton-{variant}-{name} ahead of --bit-MenuButton-{name}.");
         }
 
         // A variant reads a shared color variable only right behind its own twin, and never the tier of another variant.
@@ -110,23 +109,23 @@ public partial class BitMenuButtonStylesheetTests
                                          "--bit-mnb-clr-dis-text", "--bit-mnb-font-size", "--bit-mnb-min-height", "--bit-mnb-icon-size",
                                          "--bit-mnb-item-height", "--bit-mnb-pad-y", "--bit-mnb-padding", "--bit-mnb-item-padding" })
         {
-            StringAssert.Contains(unset, $"{property}: initial;");
+            Assert.Contains($"{property}: initial;", unset);
         }
 
         // The callout is a sibling of the root rather than a descendant of it and carries the classes again, so it
         // resets them too - and the Background class it alone carries.
-        StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-mnb {"), "@include bit-mnb-unset-published;");
+        Assert.Contains("@include bit-mnb-unset-published;", SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-mnb {"));
 
         // The colors the hover and press states move start out unset on the element they are painted on - the root's
         // border, each half of the button, each item - so a nested menu button never inherits the outer one's state.
-        StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-mnb {"), "--bit-mnb-sbr: initial;");
-        StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-mnb-opb,\n.bit-mnb-chb {"), "--bit-mnb-hlf-sfg: initial;");
-        StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-mnb-opb,\n.bit-mnb-chb {"), "--bit-mnb-hlf-sbg: initial;");
-        StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-mnb-itm {"), "--bit-mnb-itm-sbg: initial;");
+        Assert.Contains("--bit-mnb-sbr: initial;", SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-mnb {"));
+        Assert.Contains("--bit-mnb-hlf-sfg: initial;", SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-mnb-opb,\n.bit-mnb-chb {"));
+        Assert.Contains("--bit-mnb-hlf-sbg: initial;", SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-mnb-opb,\n.bit-mnb-chb {"));
+        Assert.Contains("--bit-mnb-itm-sbg: initial;", SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-mnb-itm {"));
 
         var callout = SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-mnb-cal {");
-        StringAssert.Contains(callout, "@include bit-mnb-unset-published;");
-        StringAssert.Contains(callout, "--bit-mnb-cal-bg: initial;");
+        Assert.Contains("@include bit-mnb-unset-published;", callout);
+        Assert.Contains("--bit-mnb-cal-bg: initial;", callout);
     }
 
     [TestMethod,
@@ -140,13 +139,13 @@ public partial class BitMenuButtonStylesheetTests
         // the role's text color: a secondary or a warning main is picked to fill a surface and is under 3:1 as text on
         // white. So is the glyph of a checked item, which sits on the callout.
         var block = SourceFiles.GetScssDeclarations(stylesheet, $"\n{selector} {{");
-        StringAssert.Contains(block, $"color: var(--bit-mnb-clr-fg, var(--bit-MenuButton-{variant}-color, var(--bit-MenuButton-color, #{{$clr-pri}})));");
-        StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-mnb-ick {"), "color: var(--bit-mnb-clr-fg, var(--bit-MenuButton-item-checked-color, #{$clr-pri}));");
+        Assert.Contains($"color: var(--bit-mnb-clr-fg, var(--bit-MenuButton-{variant}-color, var(--bit-MenuButton-color, #{{$clr-pri}})));", block);
+        Assert.Contains("color: var(--bit-mnb-clr-fg, var(--bit-MenuButton-item-checked-color, #{$clr-pri}));", SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-mnb-ick {"));
 
         // Only the label: the divider keeps the role's main.
-        StringAssert.Contains(block, $"--bit-mnb-clr-spb: var(--bit-mnb-clr, var(--bit-MenuButton-{variant}-divider-color, ");
+        Assert.Contains($"--bit-mnb-clr-spb: var(--bit-mnb-clr, var(--bit-MenuButton-{variant}-divider-color, ", block);
 
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n    .bit-mnb-#{$role} {"), "--bit-mnb-clr-fg: #{role-text($role, $tokens)};");
+        Assert.Contains("--bit-mnb-clr-fg: #{role-text($role, $tokens)};", SourceFiles.GetScssBlock(stylesheet, "\n    .bit-mnb-#{$role} {"));
     }
 
     private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Buttons", "MenuButton", "BitMenuButton.scss");

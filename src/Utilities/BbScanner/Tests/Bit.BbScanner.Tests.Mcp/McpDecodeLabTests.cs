@@ -23,7 +23,7 @@ public class McpDecodeLabTests
         foreach (var attempt in report.Attempts!)
         {
             Assert.IsTrue(attempt.Decoded, attempt.Options);
-            Assert.AreEqual(true, attempt.Matches, attempt.Options);
+            Assert.IsTrue(attempt.Matches, attempt.Options);
             Assert.AreEqual("QrCode", attempt.Format);
             Assert.HasCount(4, attempt.Corners!, "A matrix code reports its four corners.");
             Assert.AreEqual("M", attempt.Metadata!["ErrorCorrectionLevel"]);
@@ -81,7 +81,7 @@ public class McpDecodeLabTests
         var still = report.Attempts!.Single(attempt => attempt.Options == "still");
 
         Assert.IsTrue(still.Decoded);
-        Assert.IsTrue(report.Notes.Any(note => note.Contains("30 degrees", StringComparison.Ordinal)), string.Join(" | ", report.Notes));
+        Assert.Contains(note => note.Contains("30 degrees", StringComparison.Ordinal), report.Notes, string.Join(" | ", report.Notes));
     }
 
     [TestMethod]
@@ -89,7 +89,7 @@ public class McpDecodeLabTests
     {
         var report = await InspectAsync(new() { ["format"] = "QrCode", ["text"] = "BLURRED", ["moduleSize"] = 6, ["blur"] = 1.0 });
 
-        Assert.IsTrue(report.Attempts!.Any(attempt => attempt.Decoded));
+        Assert.Contains(attempt => attempt.Decoded, report.Attempts!);
         Assert.AreEqual(1.0, report.Blur);
     }
 
@@ -100,7 +100,7 @@ public class McpDecodeLabTests
 
         Assert.IsTrue(report.Encoded);
         Assert.IsTrue(report.Attempts!.All(attempt => attempt.Decoded && attempt.Matches == true));
-        Assert.IsFalse(report.Notes.Any(note => note.Contains("does not create its PDF417 reader", StringComparison.Ordinal)));
+        Assert.DoesNotContain(note => note.Contains("does not create its PDF417 reader", StringComparison.Ordinal), report.Notes);
     }
 
     [TestMethod]
@@ -119,7 +119,7 @@ public class McpDecodeLabTests
         var report = await InspectAsync(new() { ["format"] = "dotcode" });
 
         Assert.IsFalse(report.Encoded);
-        Assert.IsTrue(report.Notes.Any(note => note.Contains("QrCode", StringComparison.Ordinal)));
+        Assert.Contains(note => note.Contains("QrCode", StringComparison.Ordinal), report.Notes);
     }
 
     [TestMethod]
@@ -156,7 +156,7 @@ public class McpDecodeLabTests
         var report = await InspectAsync(new() { ["format"] = "QrCode", ["text"] = new string('7', 1_000), ["moduleSize"] = 4 });
 
         Assert.IsTrue(report.Encoded, report.Error);
-        Assert.IsTrue(report.Attempts!.Any(attempt => attempt.Decoded));
+        Assert.Contains(attempt => attempt.Decoded, report.Attempts!);
     }
 
     internal static Task<BbScannerDecodeReportDto> InspectAsync(Dictionary<string, object?> arguments)

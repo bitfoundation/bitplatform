@@ -256,7 +256,7 @@ public class BitMenuButtonTests : BunitTestContext
         });
 
         var icons = com.FindAll(".bit-mnb-opb .bit-icon--Add");
-        Assert.AreEqual(0, icons.Count);
+        Assert.IsEmpty(icons);
     }
 
     [TestMethod]
@@ -326,10 +326,10 @@ public class BitMenuButtonTests : BunitTestContext
         var operatorButton = com.Find(".bit-mnb-opb");
         operatorButton.Click();
 
-        Assert.IsTrue(toggledValue == true);
+        Assert.IsTrue(toggledValue);
 
         operatorButton.Click();
-        Assert.IsTrue(toggledValue == false);
+        Assert.IsFalse(toggledValue);
     }
 
     [TestMethod]
@@ -366,8 +366,8 @@ public class BitMenuButtonTests : BunitTestContext
 
         var itemButtons = com.FindAll(".bit-mnb-itm");
 
-        Assert.AreEqual(stickyItems.Count - 1, itemButtons.Count);
-        Assert.IsFalse(itemButtons.Any(b => b.TextContent.Contains("Item B")));
+        Assert.HasCount(stickyItems.Count - 1, itemButtons);
+        Assert.DoesNotContain(b => b.TextContent.Contains("Item B"), itemButtons);
     }
 
     [TestMethod]
@@ -380,7 +380,7 @@ public class BitMenuButtonTests : BunitTestContext
         });
 
         var selectedButtons = com.FindAll(".bit-mnb-sel");
-        Assert.AreEqual(0, selectedButtons.Count);
+        Assert.IsEmpty(selectedButtons);
     }
 
     [TestMethod]
@@ -400,11 +400,11 @@ public class BitMenuButtonTests : BunitTestContext
 
         var separators = com.FindAll(".bit-mnb-isp");
 
-        Assert.AreEqual(1, separators.Count);
+        Assert.ContainsSingle(separators);
         Assert.AreEqual("separator", separators[0].GetAttribute("role"));
 
         var itemButtons = com.FindAll(".bit-mnb-itm");
-        Assert.AreEqual(2, itemButtons.Count);
+        Assert.HasCount(2, itemButtons);
     }
 
     [TestMethod]
@@ -494,12 +494,13 @@ public class BitMenuButtonTests : BunitTestContext
         Assert.AreEqual("https://bitplatform.dev", anchor.GetAttribute("href"));
         Assert.AreEqual("_blank", anchor.GetAttribute("target"));
         Assert.AreEqual("noopener", anchor.GetAttribute("rel"));
-        Assert.AreEqual("(opens in a new tab)", anchor.QuerySelector(".bit-mnb-nth")?.TextContent);
+        var actualValue = anchor.QuerySelector(".bit-mnb-nth")?.TextContent;
+        Assert.AreEqual("(opens in a new tab)", actualValue);
         Assert.AreEqual("the title", anchor.GetAttribute("title"));
         Assert.AreEqual("menuitem", anchor.GetAttribute("role"));
 
         var buttons = com.FindAll("button.bit-mnb-itm");
-        Assert.AreEqual(1, buttons.Count);
+        Assert.ContainsSingle(buttons);
     }
 
     [TestMethod]
@@ -578,8 +579,8 @@ public class BitMenuButtonTests : BunitTestContext
         var spinners = com.FindAll(".bit-mnb-spn");
         var icons = com.FindAll(".bit-mnb-opb .bit-icon--Add");
 
-        Assert.AreEqual(isLoading ? 1 : 0, spinners.Count);
-        Assert.AreEqual(isLoading ? 0 : 1, icons.Count);
+        Assert.HasCount(isLoading ? 1 : 0, spinners);
+        Assert.HasCount(isLoading ? 0 : 1, icons);
     }
 
     [TestMethod]
@@ -680,7 +681,7 @@ public class BitMenuButtonTests : BunitTestContext
 
         Assert.AreEqual("Group", header.TextContent.Trim());
         Assert.AreEqual("presentation", header.GetAttribute("role"));
-        Assert.AreEqual(1, com.FindAll(".bit-mnb-itm").Count);
+        Assert.ContainsSingle(com.FindAll(".bit-mnb-itm"));
     }
 
     [TestMethod]
@@ -741,7 +742,7 @@ public class BitMenuButtonTests : BunitTestContext
         Assert.AreEqual("menuitem", menuItems[2].GetAttribute("role"));
         Assert.IsNull(menuItems[2].GetAttribute("aria-checked"));
 
-        Assert.AreEqual(3, com.FindAll(".bit-mnb-ick").Count);
+        Assert.HasCount(3, com.FindAll(".bit-mnb-ick"));
     }
 
     [TestMethod]
@@ -752,7 +753,7 @@ public class BitMenuButtonTests : BunitTestContext
             parameters.Add(p => p.Items, items);
         });
 
-        Assert.AreEqual(0, com.FindAll(".bit-mnb-ick").Count);
+        Assert.IsEmpty(com.FindAll(".bit-mnb-ick"));
     }
 
     [TestMethod]
@@ -836,7 +837,7 @@ public class BitMenuButtonTests : BunitTestContext
             parameters.Add(p => p.Items, items);
         });
 
-        Assert.AreEqual(0, com.FindAll(".bit-mnb-dsc").Count);
+        Assert.IsEmpty(com.FindAll(".bit-mnb-dsc"));
         Assert.IsNull(com.Find(".bit-mnb-opb").GetAttribute("aria-describedby"));
     }
 
@@ -891,7 +892,7 @@ public class BitMenuButtonTests : BunitTestContext
         var callout = com.Find(".bit-mnb-cal");
 
         Assert.IsTrue(callout.ClassList.Contains("bit-mnb-mxh"));
-        StringAssert.Contains(callout.GetAttribute("style"), "--bit-MenuButton-callout-max-height:10rem");
+        Assert.Contains("--bit-MenuButton-callout-max-height:10rem", callout.GetAttribute("style")!);
     }
 
     [TestMethod,
@@ -1133,7 +1134,7 @@ public class BitMenuButtonTests : BunitTestContext
         tcs.SetResult();
 
         com.WaitForAssertion(() => Assert.IsFalse(com.Instance.IsLoading));
-        com.WaitForAssertion(() => Assert.AreEqual(0, com.FindAll(".bit-mnb-spn").Count));
+        com.WaitForAssertion(() => Assert.IsEmpty(com.FindAll(".bit-mnb-spn")));
     }
 
     [TestMethod]
@@ -1194,13 +1195,13 @@ public class BitMenuButtonTests : BunitTestContext
         // the abandoned first run is gone, but the second one is still in flight and still loading
         Assert.AreEqual(2, clickCount);
         Assert.IsTrue(com.Instance.IsLoading);
-        CollectionAssert.AreEqual(new List<bool> { true }, loadingStates);
+        Assert.AreSequenceEqual(new List<bool> { true }, loadingStates);
 
         secondTcs.SetResult();
         await secondClick;
 
         Assert.IsFalse(com.Instance.IsLoading);
-        CollectionAssert.AreEqual(new List<bool> { true, false }, loadingStates);
+        Assert.AreSequenceEqual(new List<bool> { true, false }, loadingStates);
     }
 
     [TestMethod]
@@ -1248,7 +1249,7 @@ public class BitMenuButtonTests : BunitTestContext
 
         // The class (and with it the click guard) applies at once; only the spinner waits for the delay.
         Assert.IsTrue(com.Find(".bit-mnb").ClassList.Contains("bit-mnb-lod"));
-        Assert.AreEqual(0, com.FindAll(".bit-mnb-spn").Count);
+        Assert.IsEmpty(com.FindAll(".bit-mnb-spn"));
     }
 
     [TestMethod]
@@ -1268,7 +1269,7 @@ public class BitMenuButtonTests : BunitTestContext
             }));
         });
 
-        Assert.AreEqual(0, com.FindAll(".bit-mnb-spn").Count);
+        Assert.IsEmpty(com.FindAll(".bit-mnb-spn"));
         Assert.AreEqual("Working", com.Find(".custom-loading").TextContent);
     }
 
@@ -1326,11 +1327,11 @@ public class BitMenuButtonTests : BunitTestContext
             parameters.Add(p => p.Items, items);
         });
 
-        Assert.AreEqual(2, com.FindAll(".bit-mnb-itm").Count);
+        Assert.HasCount(2, com.FindAll(".bit-mnb-itm"));
 
         com.Render(parameters => parameters.Add(p => p.Items, new List<BitMenuButtonItem>()));
 
-        Assert.AreEqual(0, com.FindAll(".bit-mnb-itm").Count);
+        Assert.IsEmpty(com.FindAll(".bit-mnb-itm"));
     }
 
     [TestMethod]
@@ -1343,12 +1344,12 @@ public class BitMenuButtonTests : BunitTestContext
             parameters.Add(p => p.Items, live);
         });
 
-        Assert.AreEqual(0, com.FindAll(".bit-mnb-itm").Count);
+        Assert.IsEmpty(com.FindAll(".bit-mnb-itm"));
 
         live.Add(new BitMenuButtonItem { Text = "Item A", Key = "A" });
         com.Render();
 
-        Assert.AreEqual(1, com.FindAll(".bit-mnb-itm").Count);
+        Assert.ContainsSingle(com.FindAll(".bit-mnb-itm"));
     }
 
     [TestMethod]
@@ -1394,9 +1395,9 @@ public class BitMenuButtonTests : BunitTestContext
 
         var marks = com.FindAll(".bit-mnb-ick");
 
-        Assert.AreEqual(3, marks.Count);
-        Assert.IsTrue(marks[0].ClassList.Any(c => c.Contains("StatusCircleInner")));
-        Assert.IsTrue(marks[2].ClassList.Any(c => c.Contains("Accept")));
+        Assert.HasCount(3, marks);
+        Assert.Contains(c => c.Contains("StatusCircleInner"), marks[0].ClassList);
+        Assert.Contains(c => c.Contains("Accept"), marks[2].ClassList);
     }
 
     [TestMethod]
@@ -1531,8 +1532,8 @@ public class BitMenuButtonTests : BunitTestContext
 
         Assert.IsTrue(com.Find(".bit-mnb").ClassList.Contains("bit-mnb-ion"));
         Assert.IsNotNull(com.Find(".bit-mnb-opb .bit-icon--More"));
-        Assert.AreEqual(0, com.FindAll(".bit-mnb-opb .bit-mnb-btx").Count);
-        Assert.AreEqual(0, com.FindAll(".bit-mnb-chv").Count);
+        Assert.IsEmpty(com.FindAll(".bit-mnb-opb .bit-mnb-btx"));
+        Assert.IsEmpty(com.FindAll(".bit-mnb-chv"));
 
         // The button has no text left, so what says what it does is its name and its popup semantics.
         var operatorButton = com.Find(".bit-mnb-opb");
@@ -1552,7 +1553,7 @@ public class BitMenuButtonTests : BunitTestContext
             parameters.Add(p => p.Split, true);
         });
 
-        Assert.AreEqual(0, com.FindAll(".bit-mnb-opb .bit-mnb-btx").Count);
+        Assert.IsEmpty(com.FindAll(".bit-mnb-opb .bit-mnb-btx"));
         // The chevron half is the only way into the menu of a split button, so it stays whatever the header does.
         Assert.IsNotNull(com.Find(".bit-mnb-chb .bit-mnb-chv"));
     }
@@ -1567,7 +1568,7 @@ public class BitMenuButtonTests : BunitTestContext
             parameters.Add(p => p.IconOnly, true);
         });
 
-        Assert.AreEqual(0, com.FindAll(".bit-mnb-opb .bit-mnb-btx").Count);
+        Assert.IsEmpty(com.FindAll(".bit-mnb-opb .bit-mnb-btx"));
     }
 
     [TestMethod]
@@ -1586,7 +1587,7 @@ public class BitMenuButtonTests : BunitTestContext
         var toggle = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
 
         Assert.AreEqual(com.Find(".bit-mnb").Id, toggle.Arguments[^2]);
-        Assert.IsFalse((com.Find(".bit-mnb-cal").GetAttribute("style") ?? "").Contains("--bit-MenuButton-"));
+        Assert.DoesNotContain("--bit-MenuButton-", (com.Find(".bit-mnb-cal").GetAttribute("style") ?? ""));
     }
 
     [TestMethod,
@@ -1654,7 +1655,7 @@ public class BitMenuButtonTests : BunitTestContext
         // The toggled look is the button's alone, so the root names the style it has without it for the chain the
         // callout is relocated into to copy instead.
         var root = com.Find(".bit-mnb");
-        StringAssert.Contains(root.GetAttribute("style"), "--bit-MenuButton-background:green");
+        Assert.Contains("--bit-MenuButton-background:green", root.GetAttribute("style")!);
         Assert.AreEqual("--bit-MenuButton-callout-background:red", root.GetAttribute("data-bit-popup-style"));
 
         com.Find(".bit-mnb-opb").Click();
@@ -1683,7 +1684,7 @@ public class BitMenuButtonTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
         Assert.IsTrue(root.ClassList.Contains("bit-fam"));
         Assert.AreEqual("rtl", root.GetAttribute("dir"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin: 1px;");
+        Assert.Contains("margin: 1px;", root.GetAttribute("style")!);
 
         // The callout is a sibling of the root, so the direction and the animation opt-out are written on it as well.
         Assert.AreEqual("rtl", callout.GetAttribute("dir"));
@@ -1712,7 +1713,7 @@ public class BitMenuButtonTests : BunitTestContext
         }
         else
         {
-            StringAssert.Contains(style, expectedStyle);
+            Assert.Contains(expectedStyle, style);
         }
     }
 
@@ -1878,7 +1879,7 @@ public class BitMenuButtonTests : BunitTestContext
         var item = com.Find(".bit-mnb-itm");
 
         Assert.IsTrue(item.ClassList.Contains("item-class"));
-        StringAssert.Contains(item.GetAttribute("style"), "color: red;");
+        Assert.Contains("color: red;", item.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1945,7 +1946,7 @@ public class BitMenuButtonTests : BunitTestContext
             var element = com.Find(selector);
 
             Assert.IsTrue(element.ClassList.Contains(cssClass), $"{selector} lacks {cssClass}.");
-            StringAssert.Contains(element.GetAttribute("style"), style, $"{selector} lacks the style {style}.");
+            Assert.Contains(style, element.GetAttribute("style")!, $"{selector} lacks the style {style}.");
         }
 
         AssertPart(".bit-mnb-opb .bit-mnb-ico", "c-icon", "color: red;");
@@ -1966,7 +1967,7 @@ public class BitMenuButtonTests : BunitTestContext
         AssertPart(".bit-mnb-ovl", "c-overlay", "color: brown;");
 
         // the wrapper is every row that is an item, never the header or the separator
-        Assert.AreEqual(2, com.FindAll("li.c-wrapper").Count);
+        Assert.HasCount(2, com.FindAll("li.c-wrapper"));
     }
 
     [TestMethod]
@@ -2013,7 +2014,7 @@ public class BitMenuButtonTests : BunitTestContext
 
         await com.Instance.FocusAsync();
 
-        Assert.HasCount(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
     }
 
     [TestMethod]
@@ -2024,12 +2025,12 @@ public class BitMenuButtonTests : BunitTestContext
             parameters.Add(p => p.Items, items);
         });
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.MenuButtons.setup"));
+        Assert.ContainsSingle(i => i.Identifier == "BitBlazorUI.MenuButtons.setup", Context.JSInterop.Invocations);
 
         await Context.DisposeComponentsAsync();
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Callouts.clear"));
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.MenuButtons.dispose"));
+        Assert.ContainsSingle(i => i.Identifier == "BitBlazorUI.Callouts.clear", Context.JSInterop.Invocations);
+        Assert.ContainsSingle(i => i.Identifier == "BitBlazorUI.MenuButtons.dispose", Context.JSInterop.Invocations);
     }
 
     [TestMethod]
@@ -2052,7 +2053,7 @@ public class BitMenuButtonTests : BunitTestContext
 
         var disposal = Context.DisposeComponentsAsync();
 
-        Assert.HasCount(1, dispose.Invocations);
+        Assert.ContainsSingle(dispose.Invocations);
         Assert.AreSame(menuButton, reference.Value);
 
         dispose.SetVoidResult();
@@ -2114,7 +2115,7 @@ public class BitMenuButtonTests : BunitTestContext
 
         var disposal = Context.DisposeComponentsAsync();
 
-        Assert.HasCount(1, disposeSubmenu.Invocations);
+        Assert.ContainsSingle(disposeSubmenu.Invocations);
         Assert.AreSame(submenu, reference.Value);
 
         disposeSubmenu.SetVoidResult();
@@ -2151,7 +2152,7 @@ public class BitMenuButtonTests : BunitTestContext
         disposeSubmenu.SetVoidResult();
         await disposal;
 
-        Assert.HasCount(1, disposeSubmenu.Invocations);
+        Assert.ContainsSingle(disposeSubmenu.Invocations);
     }
 
     [TestMethod]
@@ -2186,17 +2187,17 @@ public class BitMenuButtonTests : BunitTestContext
         });
 
         Assert.AreEqual("Group", com.Find(".bit-mnb-ihd").TextContent.Trim());
-        Assert.AreEqual(1, com.FindAll(".bit-mnb-isp").Count);
+        Assert.ContainsSingle(com.FindAll(".bit-mnb-isp"));
 
         var menuItems = com.FindAll(".bit-mnb-itm");
 
-        Assert.AreEqual(3, menuItems.Count);
+        Assert.HasCount(3, menuItems);
         Assert.AreEqual("Open", menuItems[0].QuerySelector(".bit-mnb-btx")!.TextContent.Trim());
         Assert.IsTrue(menuItems[0].QuerySelector(".bit-mnb-iic")!.ClassList.Contains("bit-icon--OpenFile"));
         Assert.AreEqual("Open a file", menuItems[0].GetAttribute("title"));
         Assert.AreEqual("Ctrl+O", menuItems[0].QuerySelector(".bit-mnb-isc")!.TextContent.Trim());
         Assert.IsTrue(menuItems[0].ClassList.Contains("open-item"));
-        StringAssert.Contains(menuItems[0].GetAttribute("style"), "color: red;");
+        Assert.Contains("color: red;", menuItems[0].GetAttribute("style")!);
         Assert.IsTrue(menuItems[1].HasAttribute("disabled"));
         Assert.AreEqual("A", menuItems[2].TagName);
         Assert.AreEqual("https://bitplatform.dev", menuItems[2].GetAttribute("href"));

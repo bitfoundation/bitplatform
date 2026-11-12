@@ -41,8 +41,7 @@ public class SearchTests : McpTestBase
         var first = answer.Replace("\r\n", "\n", StringComparison.Ordinal).Split('\n')
             .First(line => line.StartsWith("## ", StringComparison.Ordinal));
 
-        StringAssert.Contains(first, expected,
-            $"'{query}' should lead with {expected}; it led with '{first[3..]}'. The whole answer:\n{answer}");
+        Assert.Contains(expected, first, $"'{query}' should lead with {expected}; it led with '{first[3..]}'. The whole answer:\n{answer}");
     }
 
     /// <summary>
@@ -184,7 +183,7 @@ public class SearchTests : McpTestBase
     {
         using var scope = Assert.Scope();
 
-        StringAssert.Contains(await HitBlockAsync("gauge", "BitChart"), "\nMatches: Gauge", "A keyword hit does not name the keyword.");
+        Assert.Contains("\nMatches: Gauge", await HitBlockAsync("gauge", "BitChart"), "A keyword hit does not name the keyword.");
         Assert.DoesNotContain("\nMatches: ", await HitBlockAsync("chart", "BitChart"), "A hit names keywords for a term its own name holds.");
     }
 
@@ -234,7 +233,7 @@ public class SearchTests : McpTestBase
         {
             var tool = call[..call.IndexOf('(', StringComparison.Ordinal)];
 
-            CollectionAssert.Contains(ToolNames, tool, $"A hit points at '{tool}', which this server does not publish.");
+            Assert.Contains(tool, ToolNames, $"A hit points at '{tool}', which this server does not publish.");
         }
     }
 
@@ -273,7 +272,7 @@ public class SearchTests : McpTestBase
 
         using var scope = Assert.Scope();
 
-        StringAssert.Contains(rows, "## Public members", $"The call a hit names for {name}.{section} does not answer with its row.");
+        Assert.Contains("## Public members", rows, $"The call a hit names for {name}.{section} does not answer with its row.");
         Assert.DoesNotContain("has no section", rows, $"The call a hit names for {name}.{section} does not resolve.");
     }
 
@@ -290,8 +289,8 @@ public class SearchTests : McpTestBase
 
         using var scope = Assert.Scope();
 
-        Assert.IsFalse(titles.Any(title => title.Contains('(', StringComparison.Ordinal)), $"A hit is titled by a signature: {string.Join(" / ", titles)}");
-        CollectionAssert.AllItemsAreUnique(titles, "A member is a hit once per overload.");
+        Assert.DoesNotContain(title => title.Contains('(', StringComparison.Ordinal), titles, $"A hit is titled by a signature: {string.Join(" / ", titles)}");
+        Assert.AreAllDistinct(titles, "A member is a hit once per overload.");
     }
 
     /// <summary>
@@ -305,24 +304,24 @@ public class SearchTests : McpTestBase
 
         // A parameter, which is what an agent is looking for once it has picked the component.
         var parameter = await CallAsync("SearchBitBlazorUI", new { query = "AutoLoading", limit = 8 });
-        StringAssert.Contains(parameter, "BitButton.AutoLoading");
+        Assert.Contains("BitButton.AutoLoading", parameter);
 
         // A chapter of the theming reference, which no component owns.
         var theming = await CallAsync("SearchBitBlazorUI", new { query = "design tokens", limit = 8 });
-        StringAssert.Contains(theming, "GetBitBlazorUIThemingGuide");
+        Assert.Contains("GetBitBlazorUIThemingGuide", theming);
 
         // The setup guide, which is what "how do I install this" has to reach.
         var setup = await CallAsync("SearchBitBlazorUI", new { query = "register services stylesheet script", limit = 8 });
-        StringAssert.Contains(setup, "GetBitBlazorUISetupGuide");
+        Assert.Contains("GetBitBlazorUISetupGuide", setup);
 
         // A component's public custom property, which is the half of its look no parameter reaches.
         var variable = await CallAsync("SearchBitBlazorUI", new { query = "--bit-ActionButton-hover-background", limit = 8 });
-        StringAssert.Contains(variable, "--bit-ActionButton-hover-background");
+        Assert.Contains("--bit-ActionButton-hover-background", variable);
 
         // A preset one package adds to another package's type, which is stored nowhere near the
         // type it is written on and so has to be indexed under the name it is read by.
         var preset = await CallAsync("SearchBitBlazorUI", new { query = "material dark preset", limit = 8 });
-        StringAssert.Contains(preset, "BitThemePresets.MaterialDark");
+        Assert.Contains("BitThemePresets.MaterialDark", preset);
     }
 
     /// <summary>A search that finds nothing, or that has no word left to search for, says what to try instead.</summary>
@@ -332,11 +331,11 @@ public class SearchTests : McpTestBase
         using var scope = Assert.Scope();
 
         var nothing = await CallAsync("SearchBitBlazorUI", new { query = "quantum flux capacitor", limit = 5 });
-        StringAssert.Contains(nothing, "GetBitBlazorUIComponent", "An empty result does not say where to go next.");
+        Assert.Contains("GetBitBlazorUIComponent", nothing, "An empty result does not say where to go next.");
 
         // A query made entirely of words this index drops means something different from a query
         // that matched nothing, and it is answered differently.
         var stopWords = await CallAsync("SearchBitBlazorUI", new { query = "the a of how", limit = 5 });
-        StringAssert.Contains(stopWords, "no searchable term");
+        Assert.Contains("no searchable term", stopWords);
     }
 }

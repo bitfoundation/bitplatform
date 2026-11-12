@@ -74,8 +74,9 @@ public class LifecycleTests : BortableTestContext
         await DragOverAsync(list, 3);
         // No drop or dragend: the browser lost it (e.g. the element was re-created mid-drag).
         await DragStartAsync(list, "B");
+        var actualValue = Coordinator.Context?.Item;
 
-        Assert.AreEqual("B", Coordinator.Context?.Item);
+        Assert.AreEqual("B", actualValue);
         Assert.AreEqual("B", LabelsWithClass(list, "bit-bortable-ghost"));
 
         await DragOverAsync(list, 3);
@@ -121,8 +122,10 @@ public class LifecycleTests : BortableTestContext
         Assert.AreSequenceEqual(["A", "B", "C"], items);
         Assert.AreEqual("Start:L1 Change:L1 ItemsChanged:L1 End:L1 Start:L1", Sequence(log));
         Assert.IsTrue(log[3].Args!.Canceled);
-        Assert.AreEqual("B", Coordinator.Context?.Item);
-        Assert.AreEqual(1, Coordinator.Context?.OldIndex);
+        var actualValue = Coordinator.Context?.Item;
+        Assert.AreEqual("B", actualValue);
+        var actualValue1 = Coordinator.Context?.OldIndex;
+        Assert.AreEqual(1, actualValue1);
     }
 
     [TestMethod]
@@ -140,7 +143,8 @@ public class LifecycleTests : BortableTestContext
         // A drag started meanwhile must not wait for the save: its dragover, drop and dragend would all be lost.
         var next = DragStartAsync(list, "B");
         Assert.IsTrue(next.IsCompleted);
-        Assert.AreEqual("B", Coordinator.Context?.Item);
+        var actualValue = Coordinator.Context?.Item;
+        Assert.AreEqual("B", actualValue);
         await DragOverAsync(list, 3);
 
         saving.SetResult();

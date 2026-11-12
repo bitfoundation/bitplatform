@@ -86,8 +86,7 @@ public sealed class BitComponentStatePaintTests
             }
         }
 
-        CollectionAssert.AreEqual(Array.Empty<string>(), offenders,
-            $"A state rule paints a part directly, which outranks an app's class on it; move a private variable the rule at rest paints from instead:{Environment.NewLine}{string.Join(Environment.NewLine, offenders)}");
+        Assert.AreSequenceEqual(Array.Empty<string>(), offenders, $"A state rule paints a part directly, which outranks an app's class on it; move a private variable the rule at rest paints from instead:{Environment.NewLine}{string.Join(Environment.NewLine, offenders)}");
     }
 
     // Whether a state rule written for this one selector would paint over an app's class: it names an interaction state,

@@ -112,7 +112,7 @@ public class BelemetryDbCommandInterceptorTests
             traceId = parent.TraceId.ToHexString();
             context.Blogs.Add(new Blog { Title = "first" });
             context.SaveChanges();
-            Assert.HasCount(1, context.Blogs.Where(b => b.Title == "first").ToList());
+            Assert.ContainsSingle(context.Blogs.Where(b => b.Title == "first").ToList());
             Assert.AreSame(parent, Activity.Current, "Every command span was stopped and the parent restored.");
         }
 
@@ -131,8 +131,8 @@ public class BelemetryDbCommandInterceptorTests
             Assert.AreEqual(traceId, span.TraceId);
             Assert.IsNotNull(span.Scope.Version);
         }
-        CollectionAssert.Contains(spans.Select(s => s.Attributes.GetString("efcore.command.source")).ToArray(), "SaveChanges");
-        CollectionAssert.Contains(spans.Select(s => s.Attributes.GetString("efcore.command.source")).ToArray(), "LinqQuery");
+        Assert.Contains("SaveChanges", spans.Select(s => s.Attributes.GetString("efcore.command.source")).ToArray());
+        Assert.Contains("LinqQuery", spans.Select(s => s.Attributes.GetString("efcore.command.source")).ToArray());
     }
 
     [TestMethod]
@@ -144,9 +144,9 @@ public class BelemetryDbCommandInterceptorTests
         await host.ResetAsync();
 
         context.Blogs.Add(new Blog { Title = "async" });
-        await context.SaveChangesAsync();
-        _ = await context.Blogs.CountAsync();
-        _ = await context.Blogs.ToListAsync();
+        await context.SaveChangesAsync(TestContext.CancellationToken);
+        _ = await context.Blogs.CountAsync(TestContext.CancellationToken);
+        _ = await context.Blogs.ToListAsync(TestContext.CancellationToken);
         Assert.IsNull(Activity.Current);
 
         var spans = await host.FlushAsync();
@@ -168,9 +168,9 @@ public class BelemetryDbCommandInterceptorTests
             Assert.IsNotNull(parent);
             parentSpanId = parent.SpanId.ToHexString();
             context.Blogs.Add(new Blog { Title = "composite" });
-            await context.SaveChangesAsync();
-            _ = await context.Blogs.ToListAsync();
-            await Assert.ThrowsExactlyAsync<SqliteException>(() => context.Database.ExecuteSqlRawAsync("SELECT * FROM missing"));
+            await context.SaveChangesAsync(TestContext.CancellationToken);
+            _ = await context.Blogs.ToListAsync(TestContext.CancellationToken);
+            await Assert.ThrowsExactlyAsync<SqliteException>(() => context.Database.ExecuteSqlRawAsync("SELECT * FROM missing", TestContext.CancellationToken));
             _ = context.Blogs.Count();
             Assert.AreSame(parent, Activity.Current, "No span is left current after the commands.");
         }
@@ -178,7 +178,7 @@ public class BelemetryDbCommandInterceptorTests
         var spans = await host.FlushAsync();
         Assert.IsGreaterThanOrEqualTo(4, spans.Count, "Every command ended its span, async ones included.");
         Assert.IsTrue(spans.All(s => s.ParentSpanId == parentSpanId), "Every span is parented to the request.");
-        Assert.AreEqual(1, spans.Count(s => s.Status == BelemetryStatusCode.Error));
+        Assert.ContainsSingle(s => s.Status == BelemetryStatusCode.Error, spans);
     }
 
     [TestMethod]
@@ -192,7 +192,7 @@ public class BelemetryDbCommandInterceptorTests
         _ = context.Blogs.Where(b => b.Id > 0).ToList();
 
         var span = (await host.FlushAsync()).Single();
-        StringAssert.Contains(span.Attributes.GetString("db.query.text"), "SELECT");
+        Assert.Contains("SELECT", span.Attributes.GetString("db.query.text")!);
     }
 
     [TestMethod]
@@ -208,7 +208,7 @@ public class BelemetryDbCommandInterceptorTests
         _ = context.Blogs.ToList();
 
         var spans = await host.FlushAsync();
-        Assert.HasCount(1, spans);
+        Assert.ContainsSingle(spans);
         Assert.AreEqual("LinqQuery", spans[0].Attributes.GetString("efcore.command.source"));
     }
 
@@ -221,7 +221,7 @@ public class BelemetryDbCommandInterceptorTests
         await host.ResetAsync();
 
         Assert.ThrowsExactly<SqliteException>(() => context.Database.ExecuteSqlRaw("SELECT * FROM missing"));
-        await Assert.ThrowsExactlyAsync<SqliteException>(() => context.Database.ExecuteSqlRawAsync("SELECT * FROM missing"));
+        await Assert.ThrowsExactlyAsync<SqliteException>(() => context.Database.ExecuteSqlRawAsync("SELECT * FROM missing", TestContext.CancellationToken));
         Assert.IsNull(Activity.Current, "The span is stopped even when the command fails.");
 
         var spans = await host.FlushAsync();
@@ -230,7 +230,7 @@ public class BelemetryDbCommandInterceptorTests
         {
             Assert.AreEqual(BelemetryStatusCode.Error, span.Status);
             Assert.AreEqual("Microsoft.Data.Sqlite.SqliteException", span.Attributes.GetString("error.type"));
-            StringAssert.Contains(span.StatusMessage, "missing");
+            Assert.Contains("missing", span.StatusMessage!);
             Assert.AreEqual("ExecuteSqlRaw", span.Attributes.GetString("efcore.command.source"));
         }
     }
@@ -267,4 +267,6 @@ public class BelemetryDbCommandInterceptorTests
         Assert.AreEqual(((string?)null, (int?)null), BelemetryDbCommandInterceptor.ParseServer("/var/lib/app/app.db"));
         Assert.AreEqual(((string?)null, (int?)null), BelemetryDbCommandInterceptor.ParseServer(""));
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

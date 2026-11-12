@@ -174,7 +174,7 @@ public partial class BitFullCalendarE2ETests
         var scroll = await Tl.Locator(".bit-bfc-tl-scroll").EvaluateAsync<double[]>("e => [e.scrollLeft, e.scrollWidth - e.clientWidth]");
         var (scrollLeft, maxScroll) = (scroll[0], scroll[1]);
         Assert.AreEqual(Math.Min(14 * 96, maxScroll), scrollLeft, 2);
-        Assert.IsTrue(scrollLeft > 768, "it moved on from the start-of-day hour (8:00)");
+        Assert.IsGreaterThan(768, scrollLeft, "it moved on from the start-of-day hour (8:00)");
 
         await SwitchViewAsync(Tl, "Month");
         await Page.Locator("#btn-tl-scroll-14").ClickAsync();

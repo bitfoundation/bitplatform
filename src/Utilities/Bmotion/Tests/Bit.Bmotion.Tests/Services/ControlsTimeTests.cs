@@ -1,4 +1,4 @@
-using Bit.Bmotion.Tests.TestInfra;
+﻿using Bit.Bmotion.Tests.TestInfra;
 
 namespace Bit.Bmotion.Tests.Services;
 
@@ -34,13 +34,13 @@ public class ControlsTimeTests
         await using var _ = engine;
         interop.SelectorResolver = _ => ["a", "b", "c"];
 
-        var staggered = await service.AnimateAsync(".item", Bm.To(x: 100), Bm.Tween(0.5), Bm.Stagger(0.1));
+        var staggered = await service.AnimateAsync(".item", Bm.To(x: 100), Bm.Tween(0.5), Bm.Stagger(0.1), TestContext.CancellationToken);
         Assert.AreEqual(0.7, staggered.Duration, 1e-9, "the last element starts 0.2 s in and plays 0.5 s");
 
-        var repeated = await service.AnimateAsync("#r", Bm.To(x: 100), Bm.Tween(0.5, delay: 0.1, repeat: 2));
+        var repeated = await service.AnimateAsync("#r", Bm.To(x: 100), Bm.Tween(0.5, delay: 0.1, repeat: 2), cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual(1.6, repeated.Duration, 1e-9, "a delay and three plays");
 
-        var forever = await service.AnimateAsync("#f", Bm.To(x: 100), Bm.Tween(0.5, repeat: BmRepeat.Forever));
+        var forever = await service.AnimateAsync("#f", Bm.To(x: 100), Bm.Tween(0.5, repeat: BmRepeat.Forever), cancellationToken: TestContext.CancellationToken);
         Assert.IsTrue(double.IsPositiveInfinity(forever.Duration));
         Assert.AreEqual(0, forever.Progress, "no finite length, no progress");
     }
@@ -53,19 +53,19 @@ public class ControlsTimeTests
         var (service, engine, _) = Create();
         await using var __ = engine;
 
-        var controls = await service.AnimateAsync("#box", Bm.To(x: 100), Bm.Tween(10));
+        var controls = await service.AnimateAsync("#box", Bm.To(x: 100), Bm.Tween(10), cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual(BmPlaybackState.Running, controls.State);
 
         controls.Pause();
         Assert.AreEqual(BmPlaybackState.Paused, controls.State);
         double held = controls.Time;
-        await Task.Delay(30);
+        await Task.Delay(30, TestContext.CancellationToken);
         Assert.AreEqual(held, controls.Time, "a paused playhead doesn't move");
 
         controls.Play();
         Assert.AreEqual(BmPlaybackState.Running, controls.State);
-        await Task.Delay(30);
-        Assert.IsTrue(controls.Time > held, "and moves again once played");
+        await Task.Delay(30, TestContext.CancellationToken);
+        Assert.IsGreaterThan(held, controls.Time, "and moves again once played");
     }
 
     [TestMethod]
@@ -74,9 +74,9 @@ public class ControlsTimeTests
         var (service, engine, interop) = Create();
         await using var _ = engine;
 
-        var controls = await service.AnimateAsync("#box", Bm.To(x: 100), Bm.Tween(0.4));
+        var controls = await service.AnimateAsync("#box", Bm.To(x: 100), Bm.Tween(0.4), cancellationToken: TestContext.CancellationToken);
         interop.FinishWaapi();
-        await controls.WhenCompleteAsync().WaitAsync(Timeout);
+        await controls.WhenCompleteAsync().WaitAsync(Timeout, TestContext.CancellationToken);
 
         Assert.AreEqual(BmPlaybackState.Finished, controls.State);
         Assert.AreEqual(0.4, controls.Time, 1e-9);
@@ -89,10 +89,10 @@ public class ControlsTimeTests
         var (service, engine, _) = Create();
         await using var __ = engine;
 
-        var controls = await service.AnimateAsync("#box", Bm.To(x: 100), Bm.Tween(10));
+        var controls = await service.AnimateAsync("#box", Bm.To(x: 100), Bm.Tween(10), cancellationToken: TestContext.CancellationToken);
         controls.Stop();
         double stoppedAt = controls.Time;
-        await Task.Delay(20);
+        await Task.Delay(20, TestContext.CancellationToken);
 
         Assert.AreEqual(BmPlaybackState.Stopped, controls.State);
         Assert.AreEqual(stoppedAt, controls.Time);
@@ -107,7 +107,7 @@ public class ControlsTimeTests
         await using var _ = engine;
         engine.RegisterElement("box", null); // kept registered past Stop, to read where it was left
 
-        var controls = await service.AnimateAsync("#box", Bm.To(x: 100), Bm.Tween(1, BmEase.Linear));
+        var controls = await service.AnimateAsync("#box", Bm.To(x: 100), Bm.Tween(1, BmEase.Linear), cancellationToken: TestContext.CancellationToken);
         controls.Pause();
         int plays = interop.CountOf("playWaapiAnimation");
 
@@ -133,9 +133,9 @@ public class ControlsTimeTests
         var (service, engine, interop) = Create(inProcess);
         await using var _ = engine;
 
-        var controls = await service.AnimateAsync("#box", Bm.To(x: 100), Bm.Tween(1, BmEase.Linear));
+        var controls = await service.AnimateAsync("#box", Bm.To(x: 100), Bm.Tween(1, BmEase.Linear), cancellationToken: TestContext.CancellationToken);
         interop.FinishWaapi();
-        await controls.WhenCompleteAsync().WaitAsync(Timeout);
+        await controls.WhenCompleteAsync().WaitAsync(Timeout, TestContext.CancellationToken);
 
         controls.Seek(0.25);
 
@@ -161,9 +161,9 @@ public class ControlsTimeTests
         for (int i = 0; inProcess && i <= 80 && !controls.WhenCompleteAsync().IsCompleted; i++)
         {
             engine.ComputeFrame(i * 16);
-            await Task.Delay(1);
+            await Task.Delay(1, TestContext.CancellationToken);
         }
-        await controls.WhenCompleteAsync().WaitAsync(Timeout);
+        await controls.WhenCompleteAsync().WaitAsync(Timeout, TestContext.CancellationToken);
         Assert.AreEqual(BmPlaybackState.Finished, controls.State);
     }
 
@@ -173,9 +173,9 @@ public class ControlsTimeTests
         var (service, engine, interop) = Create();
         await using var _ = engine;
 
-        var controls = await service.AnimateAsync("#box", Bm.To(x: 100), Bm.Tween(1));
+        var controls = await service.AnimateAsync("#box", Bm.To(x: 100), Bm.Tween(1), cancellationToken: TestContext.CancellationToken);
         interop.FinishWaapi();
-        await controls.WhenCompleteAsync().WaitAsync(Timeout);
+        await controls.WhenCompleteAsync().WaitAsync(Timeout, TestContext.CancellationToken);
         int plays = interop.CountOf("playWaapiAnimation");
 
         controls.Play();
@@ -193,9 +193,9 @@ public class ControlsTimeTests
         interop.WebAnimationsSupported = false;
         engine.RegisterElement("box", new Dictionary<string, object?> { ["x"] = 20.0 });
 
-        var controls = await service.AnimateAsync("#box", Bm.To(x: 120), Bm.Tween(1, BmEase.Linear));
+        var controls = await service.AnimateAsync("#box", Bm.To(x: 120), Bm.Tween(1, BmEase.Linear), cancellationToken: TestContext.CancellationToken);
         for (int i = 0; i <= 50; i++) engine.ComputeFrame(i * 16);
-        Assert.IsTrue(X(engine) > 60, "it has moved on");
+        Assert.IsGreaterThan(60, X(engine), "it has moved on");
 
         controls.Seek(0.25);
         engine.ComputeFrame(2000);
@@ -213,7 +213,7 @@ public class ControlsTimeTests
         engine.RegisterElement("box", new Dictionary<string, object?> { ["x"] = 0.0 });
         var spring = Bm.Spring(stiffness: 100, damping: 10);
 
-        var controls = await service.AnimateAsync("#box", Bm.To(x: 100), spring);
+        var controls = await service.AnimateAsync("#box", Bm.To(x: 100), spring, cancellationToken: TestContext.CancellationToken);
         controls.Seek(0.3);
         engine.ComputeFrame(0);
         double sought = X(engine);
@@ -223,14 +223,14 @@ public class ControlsTimeTests
         var driver = new BmotionSpringDriver(0, 100, spring.ToConfig(), reference.Add);
         for (double t = 0; t <= 300 + 1e-9; t += 1000.0 / 60) driver.Tick(t);
         Assert.AreEqual(reference[^1], sought, 2, "where the spring would be 0.3 s in");
-        Assert.IsTrue(sought > 30, "it doesn't start from rest");
+        Assert.IsGreaterThan(30, sought, "it doesn't start from rest");
     }
 
     [TestMethod]
     public void SeekRejectsNonFiniteTimes()
     {
         var (service, engine, _) = Create();
-        var controls = service.AnimateAsync("#box", Bm.To(x: 100), Bm.Tween(1)).AsTask().GetAwaiter().GetResult();
+        var controls = service.AnimateAsync("#box", Bm.To(x: 100), Bm.Tween(1), cancellationToken: TestContext.CancellationToken).AsTask().GetAwaiter().GetResult();
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => controls.Seek(double.NaN));
         _ = engine;
     }
@@ -247,7 +247,7 @@ public class ControlsTimeTests
             .Add("#box", Bm.To(x: 100), Bm.Tween(1, BmEase.Linear))
             .Add("#box", Bm.To(x: 200), Bm.Tween(1, BmEase.Linear));
 
-        var controls = await service.RunAsync(sequence);
+        var controls = await service.RunAsync(sequence, TestContext.CancellationToken);
         Assert.AreEqual(2, controls.Duration, 1e-9);
 
         controls.Seek(1.5);
@@ -257,8 +257,10 @@ public class ControlsTimeTests
         var play = interop.ArgsOf("playWaapiAnimation").Last();
         Assert.AreEqual(-500.0, (double)((Dictionary<string, object?>)play[3]!)["delay"]!, 1e-9);
         var keyframes = (Dictionary<string, object>[])play[2]!;
-        StringAssert.Contains((string)keyframes[0]["transform"], "100px", "from where the first step ended");
-        StringAssert.Contains((string)keyframes[^1]["transform"], "200px");
+        Assert.Contains("100px", (string)keyframes[0]["transform"], "from where the first step ended");
+        Assert.Contains("200px", (string)keyframes[^1]["transform"]);
         Assert.AreEqual(1.5, controls.Time, 0.1, "and plays on from there");
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

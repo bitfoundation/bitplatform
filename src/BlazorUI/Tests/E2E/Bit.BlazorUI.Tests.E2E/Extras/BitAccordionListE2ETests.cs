@@ -95,7 +95,7 @@ public class BitAccordionListE2ETests : E2ETestBase
         await Header("acl-basic", 0).ClickAsync();
         await ExpectExpandedSetAsync("acl-basic", 0);
         await Expect(Panel("acl-basic", 0)).ToHaveTextAsync("General body");
-        Assert.IsTrue((await Panel("acl-basic", 0).BoundingBoxAsync())!.Height > 10);
+        Assert.IsGreaterThan(10, (await Panel("acl-basic", 0).BoundingBoxAsync())!.Height);
 
         await Header("acl-basic", 1).ClickAsync();
         await ExpectExpandedSetAsync("acl-basic", 1);
@@ -211,7 +211,7 @@ public class BitAccordionListE2ETests : E2ETestBase
         // The leading icon sits before the title.
         var icon = await Item("acl-icon-items", 0).Locator("i.bit-acd-ico").BoundingBoxAsync();
         var title = await Item("acl-icon-items", 0).Locator(".bit-acd-ttl").BoundingBoxAsync();
-        Assert.IsTrue(icon!.X < title!.X);
+        Assert.IsLessThan(title!.X, icon!.X);
     }
 
     [TestMethod]
@@ -252,11 +252,11 @@ public class BitAccordionListE2ETests : E2ETestBase
         await Expect(Item("acl-icon-start", 0)).ToHaveClassAsync(HasClass("bit-acd-sei"));
         var expander = await Item("acl-icon-start", 0).Locator(".bit-acd-eiw").BoundingBoxAsync();
         var title = await Item("acl-icon-start", 0).Locator(".bit-acd-ttl").BoundingBoxAsync();
-        Assert.IsTrue(expander!.X < title!.X, "The expander leads.");
+        Assert.IsLessThan(title!.X, expander!.X, "The expander leads.");
 
         var endExpander = await Item("acl-basic", 0).Locator(".bit-acd-eiw").BoundingBoxAsync();
         var endTitle = await Item("acl-basic", 0).Locator(".bit-acd-ttl").BoundingBoxAsync();
-        Assert.IsTrue(endExpander!.X > endTitle!.X, "By default it ends the header.");
+        Assert.IsGreaterThan(endTitle!.X, endExpander!.X, "By default it ends the header.");
     }
 
     [TestMethod]
@@ -680,7 +680,7 @@ public class BitAccordionListE2ETests : E2ETestBase
         await Page.EmulateMediaAsync(new() { ReducedMotion = ReducedMotion.Reduce });
 
         var reduced = ParseSeconds(await ComputedStyleAsync("#acl-dur-1500 > .bit-acl-itm > .bit-acd .bit-acd-cnt", "transition-duration"));
-        Assert.IsTrue(reduced < 0.01, $"Reduced motion collapses the duration, was {reduced}s.");
+        Assert.IsLessThan(0.01, reduced, $"Reduced motion collapses the duration, was {reduced}s.");
         await Expect(Item("acl-dur-forced", 0).Locator(".bit-acd-cnt")).ToHaveCSSAsync("transition-duration", "0.4s");
     }
 
@@ -1040,7 +1040,7 @@ public class BitAccordionListE2ETests : E2ETestBase
 
         var smallFont = ParsePx(await ComputedStyleAsync("#acl-size-small .bit-acd-ttl", "font-size"));
         var largeFont = ParsePx(await ComputedStyleAsync("#acl-size-large .bit-acd-ttl", "font-size"));
-        Assert.IsTrue(smallFont < largeFont, $"{smallFont} < {largeFont}");
+        Assert.IsLessThan(largeFont, smallFont, $"{smallFont} < {largeFont}");
     }
 
     // ---------- style, class, variables ----------
@@ -1163,8 +1163,8 @@ public class BitAccordionListE2ETests : E2ETestBase
         var icon = await Item(list, 0).Locator(".bit-acd-ico").BoundingBoxAsync();
         var title = await Item(list, 0).Locator(".bit-acd-ttl").BoundingBoxAsync();
         var expander = await Item(list, 0).Locator(".bit-acd-eiw").BoundingBoxAsync();
-        Assert.IsTrue(icon!.X > title!.X, "The leading icon is on the right.");
-        Assert.IsTrue(expander!.X < title.X, "The expander is on the left.");
+        Assert.IsGreaterThan(title!.X, icon!.X, "The leading icon is on the right.");
+        Assert.IsLessThan(title.X, expander!.X, "The expander is on the left.");
 
         await Header(list, 0).ClickAsync();
         await ExpectExpandedAsync(list, 0, true);
@@ -1189,10 +1189,10 @@ public class BitAccordionListE2ETests : E2ETestBase
         var html = await response.TextAsync();
 
         Assert.IsTrue(response.Ok);
-        StringAssert.Contains(html, "<div id=\"acl-basic\" class=\"bit-acl\">");
-        StringAssert.Matches(html, new Regex(@"aria-expanded=""false"" aria-controls=""[^""]+-cnt"""));
-        StringAssert.Matches(html, new Regex(@"<div id=""acl-default-key"".*?aria-expanded=""true""", RegexOptions.Singleline));
-        StringAssert.Contains(html, "<span id=\"status\">Loading</span>");
+        Assert.Contains("<div id=\"acl-basic\" class=\"bit-acl\">", html);
+        Assert.MatchesRegex(new Regex(@"aria-expanded=""false"" aria-controls=""[^""]+-cnt"""), html);
+        Assert.MatchesRegex(new Regex(@"<div id=""acl-default-key"".*?aria-expanded=""true""", RegexOptions.Singleline), html);
+        Assert.Contains("<span id=\"status\">Loading</span>", html);
     }
 
     [TestMethod]

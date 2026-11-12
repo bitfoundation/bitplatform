@@ -28,7 +28,7 @@ public class BitAiChatTests : BitAiTestBase
         Assert.IsNotNull(component.Find(".bit-aicht > .bit-aimsl"));
         Assert.IsNotNull(component.Find(".bit-aimsl .bit-aiems"));
         Assert.IsNotNull(component.Find(".bit-aicht > .bit-aicht-ftr > .bit-aicht-ftc"));
-        Assert.HasCount(1, component.FindComponents<BitAiPromptInput>());
+        Assert.ContainsSingle(component.FindComponents<BitAiPromptInput>());
 
         // Pinned to the newest message, so there is nowhere for the scroll button to go.
         Assert.IsEmpty(component.FindAll(".bit-aistl"));
@@ -46,7 +46,7 @@ public class BitAiChatTests : BitAiTestBase
 
         var component = RenderComponent<BitAiChat>(p => p.Add(c => c.Session, session));
 
-        Assert.HasCount(1, component.FindAll("article.bit-aicms"));
+        Assert.ContainsSingle(component.FindAll("article.bit-aicms"));
 
         var added = session.Conversation.AddMessage(BitAiRole.Assistant, "a");
 
@@ -112,7 +112,7 @@ public class BitAiChatTests : BitAiTestBase
 
         component.Find(".bit-aiems-sgs > button").Click();
 
-        component.WaitForAssertion(() => CollectionAssert.AreEqual(new[] { "Plan a trip" }, submitted));
+        component.WaitForAssertion(() => Assert.AreSequenceEqual(new[] { "Plan a trip" }, submitted));
         Assert.IsEmpty(session.Conversation.Messages);
 
         await session.DisposeAsync();
@@ -136,7 +136,7 @@ public class BitAiChatTests : BitAiTestBase
 
         component.WaitForAssertion(() =>
         {
-            Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.AiPromptInput.focus"]);
+            Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.AiPromptInput.focus"]);
             Assert.IsTrue(session.IsGenerating);
         });
 
@@ -204,7 +204,7 @@ public class BitAiChatTests : BitAiTestBase
         Assert.IsTrue(list.Instance.IsPinned);
 
         // The button is gone, and the focus with it: the composer takes it rather than the page.
-        component.WaitForAssertion(() => Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.AiPromptInput.focus"]));
+        component.WaitForAssertion(() => Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.AiPromptInput.focus"]));
 
         await session.DisposeAsync();
     }
@@ -224,11 +224,11 @@ public class BitAiChatTests : BitAiTestBase
         session.Stop();
         session.Stop();
         session.Stop();
-        await Task.Delay(250);
+        await Task.Delay(250, TestContext.CancellationToken);
         Assert.AreEqual(renders, component.RenderCount);
 
         // A turn starting and ending does: the composer offers Stop while it is in flight, and Send again after it.
-        var turn = session.SubmitAsync("go");
+        var turn = session.SubmitAsync("go", cancellationToken: TestContext.CancellationToken);
 
         component.WaitForAssertion(() => Assert.IsNotNull(component.Find(".bit-aicht-ftc button[title='Stop']")));
 
@@ -313,7 +313,7 @@ public class BitAiChatTests : BitAiTestBase
 
         Assert.AreSame(supplied, component.Instance.ActiveSession);
         // A disposed session starts no turn.
-        Assert.IsNull(await owned.SubmitAsync("go"));
+        Assert.IsNull(await owned.SubmitAsync("go", cancellationToken: TestContext.CancellationToken));
 
         component.Render(p => p.Add(c => c.Session, null));
 
@@ -353,7 +353,7 @@ public class BitAiChatTests : BitAiTestBase
             .Add(c => c.Styles, new() { Root = "color: red;", Footer = "color: green;", FooterColumn = "color: blue;" }));
 
         Assert.IsTrue(component.Find(".bit-aicht").ClassList.Contains("custom-root"));
-        StringAssert.Contains(component.Find(".bit-aicht").GetAttribute("style"), "color: red;");
+        Assert.Contains("color: red;", component.Find(".bit-aicht").GetAttribute("style")!);
         Assert.IsTrue(component.Find(".bit-aicht-ftr").ClassList.Contains("custom-footer"));
         Assert.AreEqual("color: green;", component.Find(".bit-aicht-ftr").GetAttribute("style"));
         Assert.IsTrue(component.Find(".bit-aicht-ftc").ClassList.Contains("custom-column"));
@@ -375,7 +375,7 @@ public class BitAiChatTests : BitAiTestBase
         var root = component.Find(".bit-aicht");
 
         Assert.IsTrue(root.ClassList.Contains("custom-class"));
-        StringAssert.Contains(root.GetAttribute("style"), "color: tomato;");
+        Assert.Contains("color: tomato;", root.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -396,7 +396,7 @@ public class BitAiChatTests : BitAiTestBase
         }
         else
         {
-            StringAssert.Contains(style, expectedStyle);
+            Assert.Contains(expectedStyle, style!);
         }
     }
 
@@ -438,4 +438,6 @@ public class BitAiChatTests : BitAiTestBase
             yield return new BitAiMessageCompletedEvent();
         }
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

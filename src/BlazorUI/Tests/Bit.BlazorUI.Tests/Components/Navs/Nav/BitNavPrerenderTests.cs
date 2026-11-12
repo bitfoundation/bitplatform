@@ -50,7 +50,8 @@ public class BitNavPrerenderTests
 
         // The branch that holds the selected option is opened, otherwise the selection would be out of sight.
         var branch = selected[0].Closest("ul")!;
-        Assert.IsFalse(branch.GetAttribute("style")?.Contains("display:none") is true);
+        var hidden = branch.GetAttribute("style")?.Contains("display:none");
+        Assert.AreNotEqual(true, hidden);
     }
 
     [TestMethod]

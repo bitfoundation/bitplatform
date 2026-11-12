@@ -19,7 +19,7 @@ public class TimelineTests
 
             Assert.AreSequenceEqual(ids.OrderBy(x => x), ids);
             var snapshot = session.Timeline.Snapshot();
-            Assert.AreEqual(50, snapshot.Length);
+            Assert.HasCount(50, snapshot);
             Assert.AreEqual("e70", snapshot[0].Title);
             Assert.AreEqual("e119", snapshot[^1].Title);
             Assert.IsNull(session.Timeline.Find(ids[0]));
@@ -53,7 +53,7 @@ public class TimelineTests
             long id;
             using (session.TimelineApi.BeginActivity("test", "work"))
             {
-                await Task.Delay(20);
+                await Task.Delay(20, TestContext.CancellationToken);
                 id = session.Timeline.Snapshot()[^1].Id;
             }
 
@@ -85,9 +85,11 @@ public class TimelineTests
             var v1 = session.Version;
             session.Timeline.Clear();
             var v2 = session.Version;
-            Assert.IsTrue(v1 > v0);
-            Assert.IsTrue(v2 > v1);
+            Assert.IsGreaterThan(v0, v1);
+            Assert.IsGreaterThan(v1, v2);
             Assert.AreEqual(0, session.Timeline.Count);
         }
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

@@ -146,7 +146,7 @@ public class CanvasBehaviourTests : BunitContext
 
         cut.Find(".bit-blow").Wheel(new WheelEventArgs { DeltaY = -100, MetaKey = true });
 
-        Assert.IsTrue(cut.Instance.GetZoom() > before);
+        Assert.IsGreaterThan(before, cut.Instance.GetZoom());
     }
 
     [TestMethod]
@@ -158,7 +158,7 @@ public class CanvasBehaviourTests : BunitContext
 
         cut.Find(".bit-blow").Wheel(new WheelEventArgs { DeltaY = -100, CtrlKey = true });
 
-        Assert.IsTrue(cut.Instance.GetZoom() > before);
+        Assert.IsGreaterThan(before, cut.Instance.GetZoom());
     }
 
     [TestMethod]
@@ -169,7 +169,7 @@ public class CanvasBehaviourTests : BunitContext
 
         cut.Find(".bit-blow").Wheel(new WheelEventArgs { DeltaY = -100 });
 
-        Assert.IsTrue(cut.Instance.GetZoom() > before);
+        Assert.IsGreaterThan(before, cut.Instance.GetZoom());
     }
 
     // ---- select nodes on drag ----
@@ -311,7 +311,7 @@ public class CanvasBehaviourTests : BunitContext
         var wideWidth = double.Parse(wide.Find(".bit-blow-edge-label-bg").GetAttribute("width")!,
             System.Globalization.CultureInfo.InvariantCulture);
 
-        Assert.IsTrue(wideWidth > narrowWidth);
+        Assert.IsGreaterThan(narrowWidth, wideWidth);
     }
 
     [TestMethod]
@@ -334,9 +334,16 @@ public class CanvasBehaviourTests : BunitContext
     {
         var edge = new BlowEdge
         {
-            Id = "e", Source = "a", Target = "b", Label = "x",
-            LabelShowBg = false, LabelStyle = "fill:red", LabelBgStyle = "fill:blue",
-            LabelBgPaddingX = 9, LabelBgPaddingY = 8, LabelBgBorderRadius = 7,
+            Id = "e",
+            Source = "a",
+            Target = "b",
+            Label = "x",
+            LabelShowBg = false,
+            LabelStyle = "fill:red",
+            LabelBgStyle = "fill:blue",
+            LabelBgPaddingX = 9,
+            LabelBgPaddingY = 8,
+            LabelBgBorderRadius = 7,
         };
 
         var clone = edge.Clone();
@@ -364,7 +371,7 @@ public class CanvasBehaviourTests : BunitContext
         var narrow = BlowTextMetrics.EstimateWidth("iiii");
         var wide = BlowTextMetrics.EstimateWidth("mmmm");
 
-        Assert.IsTrue(wide > narrow * 2);
+        Assert.IsGreaterThan(narrow * 2, wide);
     }
 
     [TestMethod]
@@ -604,7 +611,7 @@ public class CanvasBehaviourTests : BunitContext
         await cut.InvokeAsync(() => cut.Instance.RestoreAsync(snapshot));
 
         // The bound lists keep their identity, so a caller holding them sees the restore.
-        Assert.AreEqual(2, nodes.Count);
+        Assert.HasCount(2, nodes);
         Assert.ContainsSingle(edges);
         Assert.IsNull(cut.Instance.GetNode("extra"));
     }

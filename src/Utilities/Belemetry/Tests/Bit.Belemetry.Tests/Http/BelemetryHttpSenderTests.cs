@@ -49,7 +49,7 @@ public class BelemetryHttpSenderTests
         Assert.AreEqual("Basic abc", sent.Message.Headers.GetValues("Authorization").Single());
         Assert.AreEqual("en", sent.Message.Content.Headers.GetValues("Content-Language").Single(), "Content headers go on the content.");
         Assert.IsEmpty(sent.Message.Content.Headers.ContentEncoding);
-        CollectionAssert.AreEqual(request.Body, sent.Body);
+        Assert.AreSequenceEqual(request.Body, sent.Body);
     }
 
     [TestMethod]
@@ -68,7 +68,7 @@ public class BelemetryHttpSenderTests
         using var input = new GZipStream(new MemoryStream(sent.Body), CompressionMode.Decompress);
         using var output = new MemoryStream();
         input.CopyTo(output);
-        CollectionAssert.AreEqual(request.Body, output.ToArray());
+        Assert.AreSequenceEqual(request.Body, output.ToArray());
     }
 
     [TestMethod]
@@ -115,7 +115,7 @@ public class BelemetryHttpSenderTests
 
         handler.Requests.Clear();
         Assert.AreEqual(BelemetrySendOutcome.Failed, await sender.SendAsync(exporter, LogsRequest(exporter), retry: false, CancellationToken.None));
-        Assert.HasCount(1, handler.Requests);
+        Assert.ContainsSingle(handler.Requests);
     }
 
     [TestMethod]
@@ -130,7 +130,7 @@ public class BelemetryHttpSenderTests
         var result = await sender.SendWithResultAsync(exporter, LogsRequest(exporter), retry: true, revocations.Mark(BelemetryFeatures.Logs), CancellationToken.None);
 
         Assert.AreEqual(BelemetrySendOutcome.Withdrawn, result.Outcome);
-        Assert.HasCount(1, handler.Requests, "Consent was revoked while it waited: it may hold records of the revoked feature.");
+        Assert.ContainsSingle(handler.Requests, "Consent was revoked while it waited: it may hold records of the revoked feature.");
 
         handler.Requests.Clear();
         var mark = revocations.Mark(BelemetryFeatures.Logs);
@@ -164,7 +164,7 @@ public class BelemetryHttpSenderTests
         handler.Enqueue(HttpStatusCode.ServiceUnavailable, r =>
         {
             r.Headers.RetryAfter = new RetryConditionHeaderValue(TimeSpan.FromSeconds(30));
-            _ = Task.Delay(100).ContinueWith(_ => revocations.Revoke(BelemetryFeatures.Logs), TaskScheduler.Default);
+            _ = Task.Delay(100, TestContext.CancellationToken).ContinueWith(_ => revocations.Revoke(BelemetryFeatures.Logs), TaskScheduler.Default);
         });
         using var sender = CreateSender(handler);
         var exporter = Otlp();
@@ -174,7 +174,7 @@ public class BelemetryHttpSenderTests
 
         Assert.AreEqual(BelemetrySendOutcome.Withdrawn, result.Outcome);
         Assert.IsLessThan(TimeSpan.FromSeconds(10), watch.Elapsed, "A withdrawn request must not hold the export lock for its Retry-After.");
-        Assert.HasCount(1, handler.Requests);
+        Assert.ContainsSingle(handler.Requests);
     }
 
     [TestMethod]
@@ -185,7 +185,7 @@ public class BelemetryHttpSenderTests
         handler.Enqueue(HttpStatusCode.ServiceUnavailable, r =>
         {
             r.Headers.RetryAfter = new RetryConditionHeaderValue(TimeSpan.FromSeconds(1));
-            _ = Task.Delay(100).ContinueWith(_ => revocations.Revoke(BelemetryFeatures.Interactions), TaskScheduler.Default);
+            _ = Task.Delay(100, TestContext.CancellationToken).ContinueWith(_ => revocations.Revoke(BelemetryFeatures.Interactions), TaskScheduler.Default);
         });
         using var sender = CreateSender(handler);
         var exporter = Otlp();
@@ -208,8 +208,8 @@ public class BelemetryHttpSenderTests
         var exporter = Otlp();
 
         Assert.AreEqual(BelemetrySendOutcome.Rejected, await sender.SendAsync(exporter, LogsRequest(exporter), retry: true, CancellationToken.None));
-        Assert.HasCount(1, handler.Requests);
-        Assert.IsTrue(_diagnostics.Any(d => d.Contains("dropped")));
+        Assert.ContainsSingle(handler.Requests);
+        Assert.Contains(d => d.Contains("dropped"), _diagnostics);
     }
 
     [TestMethod]
@@ -233,7 +233,7 @@ public class BelemetryHttpSenderTests
         using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(100));
 
         Assert.AreEqual(BelemetrySendOutcome.Failed, await sender.SendAsync(exporter, LogsRequest(exporter), retry: true, cts.Token));
-        Assert.HasCount(1, handler.Requests, "The default 1 s backoff was interrupted by the cancellation.");
+        Assert.ContainsSingle(handler.Requests, "The default 1 s backoff was interrupted by the cancellation.");
     }
 
     [TestMethod]
@@ -257,8 +257,8 @@ public class BelemetryHttpSenderTests
         var exporter = Otlp();
 
         Assert.AreEqual(BelemetrySendOutcome.Rejected, await sender.SendAsync(exporter, LogsRequest(exporter), retry: true, CancellationToken.None));
-        Assert.HasCount(1, handler.Requests);
-        StringAssert.Contains(warnings.Single(), "rejected the request with 500", "Data loss the app's owner can act on is a warning.");
+        Assert.ContainsSingle(handler.Requests);
+        Assert.Contains("rejected the request with 500", warnings.Single(), "Data loss the app's owner can act on is a warning.");
     }
 
     [TestMethod]
@@ -272,9 +272,9 @@ public class BelemetryHttpSenderTests
 
         Assert.AreEqual(BelemetrySendOutcome.Rejected, await sender.SendAsync(exporter, LogsRequest(exporter), retry: true, CancellationToken.None));
 
-        StringAssert.Contains(_diagnostics.Single(), "otlp: http://collector.test:4318/v1/logs answered 503; will retry.");
-        StringAssert.Contains(warnings.Single(), "otlp: http://collector.test:4318/v1/logs rejected the request with 400");
-        Assert.IsFalse(_diagnostics.Concat(warnings).Any(m => m.Contains("pw-7f3a", StringComparison.Ordinal)), string.Join(" | ", _diagnostics.Concat(warnings)));
+        Assert.Contains("otlp: http://collector.test:4318/v1/logs answered 503; will retry.", _diagnostics.Single());
+        Assert.Contains("otlp: http://collector.test:4318/v1/logs rejected the request with 400", warnings.Single());
+        Assert.DoesNotContain(m => m.Contains("pw-7f3a", StringComparison.Ordinal), _diagnostics.Concat(warnings), string.Join(" | ", _diagnostics.Concat(warnings)));
     }
 
     [TestMethod]
@@ -357,7 +357,7 @@ public class BelemetryHttpSenderTests
         Assert.AreEqual(BelemetrySendOutcome.Delivered, result.Outcome);
         Assert.AreEqual(3, result.Delivered);
         Assert.AreEqual(2, result.Rejected);
-        StringAssert.Contains(warnings.Single(), "rejected 2 of its items for good");
+        Assert.Contains("rejected 2 of its items for good", warnings.Single());
 
         // Nothing to retry: the request is "delivered", but the refused items are not.
         handler.Enqueue((HttpStatusCode)206, r => r.Content = new StringContent("""{"itemsReceived":5,"itemsAccepted":4,"errors":[{"index":1,"statusCode":400}]}"""));
@@ -475,7 +475,7 @@ public class BelemetryHttpSenderTests
         var outcome = await sender.SendAsync(exporter, request, retry: false, CancellationToken.None);
 
         Assert.AreEqual(BelemetrySendOutcome.Failed, outcome);
-        Assert.HasCount(1, handler.Requests, "A request that does not shrink gets no extra attempt.");
+        Assert.ContainsSingle(handler.Requests, "A request that does not shrink gets no extra attempt.");
     }
 
     [TestMethod]
@@ -588,7 +588,7 @@ public class BelemetryHttpSenderTests
         // Length-prefixed message: compressed flag, big-endian length, then the very protobuf the HTTP exporter sends.
         Assert.AreEqual(0, sent.Body[0]);
         Assert.AreEqual(request.Body.Length, (sent.Body[1] << 24) | (sent.Body[2] << 16) | (sent.Body[3] << 8) | sent.Body[4]);
-        CollectionAssert.AreEqual(request.Body, sent.Body[5..]);
+        Assert.AreSequenceEqual(request.Body, sent.Body[5..]);
     }
 
     [TestMethod]
@@ -612,7 +612,7 @@ public class BelemetryHttpSenderTests
         using var input = new GZipStream(new MemoryStream(sent.Body[5..]), CompressionMode.Decompress);
         using var output = new MemoryStream();
         input.CopyTo(output);
-        CollectionAssert.AreEqual(request.Body, output.ToArray());
+        Assert.AreSequenceEqual(request.Body, output.ToArray());
     }
 
     [TestMethod]
@@ -643,8 +643,8 @@ public class BelemetryHttpSenderTests
         else
         {
             Assert.AreEqual(BelemetrySendOutcome.Rejected, outcome);
-            Assert.HasCount(1, handler.Requests);
-            Assert.IsTrue(_diagnostics.Any(d => d.Contains("nope really")), "The grpc-message is decoded into the diagnostic.");
+            Assert.ContainsSingle(handler.Requests);
+            Assert.Contains(d => d.Contains("nope really"), _diagnostics, "The grpc-message is decoded into the diagnostic.");
         }
     }
 
@@ -691,7 +691,7 @@ public class BelemetryHttpSenderTests
         var batch = new BelemetryBatch(Records.Resource(), [Records.Span()], [Records.Log()], Tests.Otlp.OtlpProtobufConformanceTests.MetricsSample());
 
         var requests = exporter.CreateRequests(batch).ToList();
-        CollectionAssert.AreEqual(new[] { "http://collector.test:4318/v1/traces", "http://metrics.test/ingest" }, requests.Select(r => r.Url).ToArray());
+        Assert.AreSequenceEqual(new[] { "http://collector.test:4318/v1/traces", "http://metrics.test/ingest" }, requests.Select(r => r.Url).ToArray());
         Assert.IsTrue(requests.All(r => r.ContentType == "application/json"));
         using var doc = JsonDocument.Parse(requests[0].Body);
         Assert.IsTrue(doc.RootElement.TryGetProperty("resourceSpans", out _));
@@ -706,4 +706,6 @@ public class BelemetryHttpSenderTests
             return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
         }
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

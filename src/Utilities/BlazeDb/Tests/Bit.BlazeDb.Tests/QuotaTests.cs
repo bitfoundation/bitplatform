@@ -118,13 +118,13 @@ public class QuotaTests
         var (db, todos) = await OpenAsync(storage);
         await using var owned = db;
         Fill(todos, 5);
-        await db.FlushAsync();
+        await db.FlushAsync(TestContext.CancellationToken);
 
-        var quota = await db.GetStorageQuotaAsync();
+        var quota = await db.GetStorageQuotaAsync(TestContext.CancellationToken);
 
         Assert.IsNotNull(quota);
         Assert.AreEqual(10_000, quota!.Value.QuotaBytes);
-        Assert.IsTrue(quota.Value.UsageBytes > 0);
+        Assert.IsGreaterThan(0, quota.Value.UsageBytes);
         Assert.IsTrue(quota.Value.UsedFraction is > 0 and < 1);
     }
 
@@ -135,10 +135,10 @@ public class QuotaTests
         {
             Storage = new BlazeDbInMemoryStorage(),
             FlushInterval = TimeSpan.FromHours(1),
-        }.AddTable(TodoItem.Table));
+        }.AddTable(TodoItem.Table), TestContext.CancellationToken);
         await using var owned = db;
 
-        Assert.IsNull(await db.GetStorageQuotaAsync());
+        Assert.IsNull(await db.GetStorageQuotaAsync(TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -150,8 +150,8 @@ public class QuotaTests
 
         Fill(todos, 100);
 
-        var ex = await Assert.ThrowsExactlyAsync<BlazeDbStorageQuotaExceededException>(async () => await db.FlushAsync());
-        Assert.IsTrue(ex.RequiredBytes > 0);
+        var ex = await Assert.ThrowsExactlyAsync<BlazeDbStorageQuotaExceededException>(async () => await db.FlushAsync(TestContext.CancellationToken));
+        Assert.IsGreaterThan(0, ex.RequiredBytes);
         Assert.AreEqual(4_000, ex.Quota.QuotaBytes);
 
         // Disposal flushes one last time; give it room so the test ends on the assertion above
@@ -167,7 +167,7 @@ public class QuotaTests
         await using var owned = db;
         Fill(todos, 100);
 
-        await Assert.ThrowsExactlyAsync<BlazeDbStorageQuotaExceededException>(async () => await db.FlushAsync());
+        await Assert.ThrowsExactlyAsync<BlazeDbStorageQuotaExceededException>(async () => await db.FlushAsync(TestContext.CancellationToken));
 
         // The engine degraded rather than failing the application: reads and writes still work.
         Assert.AreEqual(100, todos.Count);
@@ -184,10 +184,10 @@ public class QuotaTests
         var (db, todos) = await OpenAsync(storage);
         await using var owned = db;
         Fill(todos, 100);
-        await Assert.ThrowsExactlyAsync<BlazeDbStorageQuotaExceededException>(async () => await db.FlushAsync());
+        await Assert.ThrowsExactlyAsync<BlazeDbStorageQuotaExceededException>(async () => await db.FlushAsync(TestContext.CancellationToken));
 
         storage.QuotaBytes = 10_000_000;
-        await db.FlushAsync();
+        await db.FlushAsync(TestContext.CancellationToken);
 
         // Nothing was dropped on the way: a reopen sees every row.
         await db.DisposeAsync();
@@ -195,7 +195,7 @@ public class QuotaTests
         {
             Storage = storage,
             FlushInterval = TimeSpan.FromHours(1),
-        }.AddTable(TodoItem.Table));
+        }.AddTable(TodoItem.Table), TestContext.CancellationToken);
         await using var owned2 = reopened;
         Assert.AreEqual(100, reopened.GetTable(TodoItem.Table).Count);
     }
@@ -209,7 +209,7 @@ public class QuotaTests
         await using var owned = db;
         Fill(todos, 100);
 
-        await Assert.ThrowsExactlyAsync<BlazeDbStorageQuotaExceededException>(async () => await db.FlushAsync());
+        await Assert.ThrowsExactlyAsync<BlazeDbStorageQuotaExceededException>(async () => await db.FlushAsync(TestContext.CancellationToken));
 
         Assert.IsNotNull(reported);
         Assert.AreEqual(4_000, reported!.Value.QuotaBytes);
@@ -227,19 +227,19 @@ public class QuotaTests
         Fill(todos, 100);
 
         // The background flusher would retry every tick; the application hears about it once.
-        await Assert.ThrowsExactlyAsync<BlazeDbStorageQuotaExceededException>(async () => await db.FlushAsync());
-        await Assert.ThrowsExactlyAsync<BlazeDbStorageQuotaExceededException>(async () => await db.FlushAsync());
+        await Assert.ThrowsExactlyAsync<BlazeDbStorageQuotaExceededException>(async () => await db.FlushAsync(TestContext.CancellationToken));
+        await Assert.ThrowsExactlyAsync<BlazeDbStorageQuotaExceededException>(async () => await db.FlushAsync(TestContext.CancellationToken));
         Assert.AreEqual(1, reports);
 
         // Space is freed, the flush succeeds, and a later refusal is a new episode. (The limit is
         // lowered again here, which real quotas do not do; refreshing the estimate through the
         // database is what makes the engine see it.)
         storage.QuotaBytes = long.MaxValue;
-        await db.FlushAsync();
+        await db.FlushAsync(TestContext.CancellationToken);
         storage.QuotaBytes = storage.UsageBytes + 100;
-        await db.GetStorageQuotaAsync();
+        await db.GetStorageQuotaAsync(TestContext.CancellationToken);
         Fill(todos, 100);
-        await Assert.ThrowsExactlyAsync<BlazeDbStorageQuotaExceededException>(async () => await db.FlushAsync());
+        await Assert.ThrowsExactlyAsync<BlazeDbStorageQuotaExceededException>(async () => await db.FlushAsync(TestContext.CancellationToken));
         Assert.AreEqual(2, reports);
 
         storage.QuotaBytes = long.MaxValue;
@@ -250,7 +250,7 @@ public class QuotaTests
     {
         var storage = new QuotaLimitedStorage { QuotaBytes = 1_000_000 };
         // Unrelated origin data, which counts toward the browser's estimate just the same.
-        await storage.WriteAtomicAsync("other-origin-data", new byte[970_000]);
+        await storage.WriteAtomicAsync("other-origin-data", new byte[970_000], TestContext.CancellationToken);
 
         var (db, todos) = await OpenAsync(storage, o => o.QuotaReserveBytes = 25_000);
         await using var owned = db;
@@ -260,7 +260,7 @@ public class QuotaTests
         // between the flush and the limit. The bytes would physically fit; they would just leave
         // less than the reserve behind.
         using var tx = db.BeginTransaction();
-        await Assert.ThrowsExactlyAsync<BlazeDbStorageQuotaExceededException>(async () => await db.FlushAsync());
+        await Assert.ThrowsExactlyAsync<BlazeDbStorageQuotaExceededException>(async () => await db.FlushAsync(TestContext.CancellationToken));
 
         tx.Rollback();
         storage.QuotaBytes = long.MaxValue;
@@ -280,20 +280,20 @@ public class QuotaTests
         for (var i = 0; i < 400; i++)
         {
             todos.Upsert(new TodoItem { Id = id, Title = new string('y', 200) });
-            await db.FlushAsync();
+            await db.FlushAsync(TestContext.CancellationToken);
         }
 
         Assert.AreEqual(1, todos.Count);
-        Assert.IsTrue(storage.UsageBytes < 100_000, $"usage was {storage.UsageBytes}");
+        Assert.IsLessThan(100_000, storage.UsageBytes, $"usage was {storage.UsageBytes}");
 
         // Everything is durable: reopening replays what compaction left behind.
-        await db.FlushAsync();
+        await db.FlushAsync(TestContext.CancellationToken);
         await db.DisposeAsync();
         var reopened = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions
         {
             Storage = storage,
             FlushInterval = TimeSpan.FromHours(1),
-        }.AddTable(TodoItem.Table));
+        }.AddTable(TodoItem.Table), TestContext.CancellationToken);
         await using var owned2 = reopened;
         Assert.AreEqual(1, reopened.GetTable(TodoItem.Table).Count);
     }
@@ -313,14 +313,14 @@ public class QuotaTests
         for (var i = 0; i < 150; i++)
         {
             todos.Upsert(new TodoItem { Id = id, Title = new string('y', 200) });
-            await db.FlushAsync();
+            await db.FlushAsync(TestContext.CancellationToken);
         }
         var logSize = storage.UsageBytes;
-        Assert.IsTrue(logSize > 30_000, $"log was {logSize} bytes");
+        Assert.IsGreaterThan(30_000, logSize, $"log was {logSize} bytes");
 
         // Room for the log one and a half times over: a snapshot fits, a copy of the log does not.
         storage.QuotaBytes = logSize + logSize / 2;
-        await db.GetStorageQuotaAsync();
+        await db.GetStorageQuotaAsync(TestContext.CancellationToken);
 
         // Appending one more record needs the log twice. With an open transaction compaction cannot
         // run, so the only correct answer is a deliberate refusal - never a QuotaExceededError
@@ -328,13 +328,13 @@ public class QuotaTests
         todos.Upsert(new TodoItem { Id = id, Title = "once more" });
         using (var tx = db.BeginTransaction())
         {
-            await Assert.ThrowsExactlyAsync<BlazeDbStorageQuotaExceededException>(async () => await db.FlushAsync());
+            await Assert.ThrowsExactlyAsync<BlazeDbStorageQuotaExceededException>(async () => await db.FlushAsync(TestContext.CancellationToken));
             tx.Rollback();
         }
 
         // Without the transaction the engine compacts the log into a snapshot and the flush lands.
-        await db.FlushAsync();
-        Assert.IsTrue(storage.UsageBytes < logSize / 2, $"usage after compaction was {storage.UsageBytes}");
+        await db.FlushAsync(TestContext.CancellationToken);
+        Assert.IsLessThan(logSize / 2, storage.UsageBytes, $"usage after compaction was {storage.UsageBytes}");
         Assert.AreEqual("once more", todos.Get(id)!.Title);
         storage.QuotaBytes = long.MaxValue;
     }
@@ -349,10 +349,12 @@ public class QuotaTests
         for (var i = 0; i < 20; i++)
         {
             todos.Insert(new TodoItem { Id = Guid.NewGuid(), Title = "row" });
-            await db.FlushAsync();
+            await db.FlushAsync(TestContext.CancellationToken);
         }
 
         // The estimate is cached and only refreshed after enough bytes have gone by.
-        Assert.IsTrue(storage.EstimateCalls < 20, $"expected caching, saw {storage.EstimateCalls} estimate calls");
+        Assert.IsLessThan(20, storage.EstimateCalls, $"expected caching, saw {storage.EstimateCalls} estimate calls");
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

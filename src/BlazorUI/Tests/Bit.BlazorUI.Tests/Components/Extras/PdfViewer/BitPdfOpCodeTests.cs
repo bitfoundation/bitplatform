@@ -85,14 +85,12 @@ public class BitPdfOpCodeTests
         {
             if (code is >= BitPdfOpCode.FillGray and <= BitPdfOpCode.StrokeColorN)
             {
-                Assert.IsTrue(colorCodes.Contains(code),
-                    $"{code} sits inside the FillGray..StrokeColorN colour block but no colour keyword resolves to it.");
+                Assert.Contains(code, colorCodes, $"{code} sits inside the FillGray..StrokeColorN colour block but no colour keyword resolves to it.");
             }
 
             if (code is >= BitPdfOpCode.BeginText and <= BitPdfOpCode.NextLineShowTextSpacing)
             {
-                Assert.IsTrue(textCodes.Contains(code),
-                    $"{code} sits inside the BeginText..NextLineShowTextSpacing text block but no text keyword resolves to it.");
+                Assert.Contains(code, textCodes, $"{code} sits inside the BeginText..NextLineShowTextSpacing text block but no text keyword resolves to it.");
             }
         }
     }

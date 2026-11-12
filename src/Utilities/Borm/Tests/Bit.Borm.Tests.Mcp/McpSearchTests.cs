@@ -88,7 +88,7 @@ public partial class McpSearchTests
         {
             var result = await McpCall.StructuredAsync<BormSearchResultDto>("SearchBorm", new() { ["query"] = query, ["limit"] = 50 });
 
-            Assert.IsFalse(result.Hits.Any(hit => hit.Kind == "Guide section" && hit.Title is "MCP server" or "Documentation" or "The demo"), query);
+            Assert.DoesNotContain(hit => hit.Kind == "Guide section" && hit.Title is "MCP server" or "Documentation" or "The demo", result.Hits, query);
         }
     }
 
@@ -110,7 +110,7 @@ public partial class McpSearchTests
 
         Assert.AreEqual("/per-row-conditions", page.Context);
         Assert.AreEqual("GetBormSourceFile(path: \"Demo/Client/Pages/PerRowConditionsDemo.razor\")", page.Tool);
-        Assert.IsFalse(result.Hits.Any(hit => hit.Title.EndsWith("PerRowConditionsDemo.razor", StringComparison.Ordinal)), "The page's file should not be listed a second time under its path.");
+        Assert.DoesNotContain(hit => hit.Title.EndsWith("PerRowConditionsDemo.razor", StringComparison.Ordinal), result.Hits, "The page's file should not be listed a second time under its path.");
     }
 
     [TestMethod]
@@ -121,8 +121,8 @@ public partial class McpSearchTests
         var shows = await McpCall.StructuredAsync<BormSearchResultDto>("SearchBorm", new() { ["query"] = "field shows", ["limit"] = 12 });
         var dropdown = await McpCall.StructuredAsync<BormSearchResultDto>("SearchBorm", new() { ["query"] = "dropdown", ["limit"] = 12 });
 
-        Assert.IsTrue(shows.Hits.Any(hit => hit.Title.Contains("VisibleWhen", StringComparison.Ordinal)), string.Join(" | ", shows.Hits.Select(hit => hit.Title)));
-        Assert.IsTrue(dropdown.Hits.Any(hit => hit.Title.Contains("Select", StringComparison.Ordinal)), string.Join(" | ", dropdown.Hits.Select(hit => hit.Title)));
+        Assert.Contains(hit => hit.Title.Contains("VisibleWhen", StringComparison.Ordinal), shows.Hits, string.Join(" | ", shows.Hits.Select(hit => hit.Title)));
+        Assert.Contains(hit => hit.Title.Contains("Select", StringComparison.Ordinal), dropdown.Hits, string.Join(" | ", dropdown.Hits.Select(hit => hit.Title)));
     }
 
     [TestMethod]
@@ -190,7 +190,7 @@ public partial class McpSearchTests
             Assert.IsTrue(match.Success, $"'{call}' is not a call a caller can make verbatim.");
 
             var tool = match.Groups["tool"].Value;
-            CollectionAssert.Contains(McpSurfaceTests.ExpectedTools, tool, $"'{call}' names a tool that does not exist.");
+            Assert.Contains(tool, McpSurfaceTests.ExpectedTools, $"'{call}' names a tool that does not exist.");
 
             var arguments = match.Groups["name"].Success
                 ? new Dictionary<string, object?> { [match.Groups["name"].Value] = match.Groups["value"].Value }

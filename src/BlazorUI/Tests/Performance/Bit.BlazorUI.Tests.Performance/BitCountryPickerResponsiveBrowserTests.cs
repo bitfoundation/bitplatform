@@ -62,7 +62,7 @@ public class BitCountryPickerResponsiveBrowserTests : PerformanceTestBase
         var box = await panel.BoundingBoxAsync();
 
         Assert.IsNotNull(box);
-        Assert.IsTrue(box.Width < ViewportWidth, $"The panel is {box.Width}px wide, the whole width of the screen.");
+        Assert.IsLessThan(ViewportWidth, box.Width, $"The panel is {box.Width}px wide, the whole width of the screen.");
         Assert.AreEqual(0, box.X, 1, $"The panel starts at {box.X}px rather than against the left edge.");
         Assert.AreEqual("rtl", await panel.EvaluateAsync<string>("p => getComputedStyle(p).direction"));
     }

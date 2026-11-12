@@ -4,3 +4,5 @@ global using Bit.Bmage;
 global using Bit.Bmage.Demo.Server.Dtos;
 global using Bit.Bmage.Demo.Server.Services;
 global using Bit.Bmage.Demo.Server.Controllers;
+
+[assembly: global::Microsoft.VisualStudio.TestTools.UnitTesting.DoNotParallelizeAttribute]

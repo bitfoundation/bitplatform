@@ -17,7 +17,7 @@ public class McpSearchToolTests
     {
         var result = await SearchAsync(query, 5);
 
-        Assert.IsTrue(result.Hits.Any(hit => hit.Title.Contains(expected, StringComparison.OrdinalIgnoreCase)),
+        Assert.Contains(hit => hit.Title.Contains(expected, StringComparison.OrdinalIgnoreCase), result.Hits,
             $"'{query}' did not put anything about '{expected}' in its top 5: {string.Join(" | ", result.Hits.Select(hit => hit.Title))}");
     }
 
@@ -35,8 +35,10 @@ public class McpSearchToolTests
         foreach (var limit in new[] { 1, 3, 6 })
         {
             var result = await SearchAsync(query, limit);
+            var expectedValue = expected;
+            var actualValue = result.Hits.FirstOrDefault()?.Title;
 
-            Assert.AreEqual(expected, result.Hits.FirstOrDefault()?.Title,
+            Assert.AreEqual(expectedValue, actualValue,
                 $"'{query}' (limit {limit}) ranked first: {string.Join(" | ", result.Hits.Select(hit => hit.Title))}");
         }
     }
@@ -50,9 +52,11 @@ public class McpSearchToolTests
         // "T" of every generic member. Neither says what the question is about.
         var result = await SearchAsync(query, 5);
         var titles = string.Join(" | ", result.Hits.Select(hit => hit.Title));
+        var expectedValue = expected;
+        var actualValue = result.Hits.FirstOrDefault()?.Title.ToLowerInvariant() ?? string.Empty;
 
-        Assert.Contains(expected, result.Hits.FirstOrDefault()?.Title.ToLowerInvariant() ?? string.Empty, $"'{query}' ranked first: {titles}");
-        Assert.IsFalse(result.Hits.Any(hit => hit.Title == "Why Blex" || hit.Title.Contains("<T>", StringComparison.Ordinal)), $"'{query}': {titles}");
+        Assert.Contains(expectedValue, actualValue, $"'{query}' ranked first: {titles}");
+        Assert.DoesNotContain(hit => hit.Title == "Why Blex" || hit.Title.Contains("<T>", StringComparison.Ordinal), result.Hits, $"'{query}': {titles}");
     }
 
     [TestMethod]
@@ -65,7 +69,7 @@ public class McpSearchToolTests
         // Deconstruct names every property it has, so it answers a question about any one of them first.
         var result = await SearchAsync(query, 50);
 
-        Assert.IsFalse(result.Hits.Any(IsObjectPlumbing), $"'{query}': {string.Join(" | ", result.Hits.Select(hit => hit.Title))}");
+        Assert.DoesNotContain(IsObjectPlumbing, result.Hits, $"'{query}': {string.Join(" | ", result.Hits.Select(hit => hit.Title))}");
     }
 
     /// <summary>
@@ -85,7 +89,7 @@ public class McpSearchToolTests
         // A Fluxor or Redux user asks for reducers; Blex calls them actions.
         var result = await SearchAsync("reducer", 10);
 
-        Assert.IsTrue(result.Hits.Any(hit => hit.Title == "Actions"), "A query for 'reducer' did not find the Actions page.");
+        Assert.Contains(hit => hit.Title == "Actions", result.Hits, "A query for 'reducer' did not find the Actions page.");
     }
 
     [TestMethod]
@@ -93,7 +97,7 @@ public class McpSearchToolTests
     {
         var result = await SearchAsync("store", 30);
 
-        Assert.IsTrue(result.Hits.Length > 10);
+        Assert.IsGreaterThan(10, result.Hits.Length);
 
         foreach (var hit in result.Hits)
         {
@@ -107,11 +111,11 @@ public class McpSearchToolTests
     {
         var result = await SearchAsync("state", 3);
 
-        Assert.AreEqual(3, result.Hits.Length);
+        Assert.HasCount(3, result.Hits);
         Assert.IsTrue(result.HasMore);
 
         var clamped = await SearchAsync("state", 500);
-        Assert.IsTrue(clamped.Hits.Length <= 50);
+        Assert.IsLessThanOrEqualTo(50, clamped.Hits.Length);
     }
 
     [TestMethod]
@@ -119,8 +123,8 @@ public class McpSearchToolTests
     {
         var result = await SearchAsync("how do I", 5);
 
-        Assert.AreEqual(0, result.Hits.Length);
-        StringAssert.Contains(result.Message!, "nothing to rank by");
+        Assert.IsEmpty(result.Hits);
+        Assert.Contains("nothing to rank by", result.Message!);
     }
 
     [TestMethod]
@@ -128,9 +132,9 @@ public class McpSearchToolTests
     {
         var result = await SearchAsync("xylophone", 5);
 
-        Assert.AreEqual(0, result.Hits.Length);
+        Assert.IsEmpty(result.Hits);
         Assert.IsNotNull(result.Message);
-        CollectionAssert.AreEqual(new[] { "xylophone" }, result.Terms);
+        Assert.AreSequenceEqual(new[] { "xylophone" }, result.Terms);
     }
 
     private static Task<BlexSearchResultDto> SearchAsync(string query, int limit)

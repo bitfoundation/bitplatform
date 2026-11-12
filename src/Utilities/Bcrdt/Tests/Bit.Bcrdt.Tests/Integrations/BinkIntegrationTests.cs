@@ -124,7 +124,7 @@ public class BinkIntegrationTests
         b.Drawing.AddElement(Rectangle(100, 100));
         SyncAll(a, b);
 
-        Assert.AreEqual(1, a.Drawing.Layers.Count, "Both drew into the same layer.");
+        Assert.ContainsSingle(a.Drawing.Layers, "Both drew into the same layer.");
         Assert.AreEqual(2, a.Drawing.ElementCount);
         AssertConverged("fresh drawings", a, b);
     }
@@ -144,7 +144,7 @@ public class BinkIntegrationTests
         using var b = new Replica(2);
         Sync(a.Doc, b.Doc);
         AssertConverged("joined", a, b);
-        Assert.AreEqual(2, b.Drawing.Layers.Count);
+        Assert.HasCount(2, b.Drawing.Layers);
         Assert.AreEqual("Plan", b.Drawing.Metadata["title"]);
         Assert.AreEqual(0, b.Transactions, "Joining writes nothing.");
     }
@@ -247,9 +247,8 @@ public class BinkIntegrationTests
         SyncAll(a, b);
 
         AssertConverged("reorders", a, b);
-        CollectionAssert.AreEqual(
-            new[] { elements[3].Id, elements[2].Id, elements[0].Id },
-            a.Drawing.GetLayer(layer).Elements.Select(static element => element.Id).ToArray());
+        Assert.AreSequenceEqual(
+            new[] { elements[3].Id, elements[2].Id, elements[0].Id }, a.Drawing.GetLayer(layer).Elements.Select(static element => element.Id).ToArray());
         Assert.AreEqual(top.Id, a.Drawing.Layers[0].Id);
         Assert.AreEqual(elements[1].Id, a.Drawing.GetLayer(top.Id).Elements.Single().Id);
     }
@@ -270,7 +269,7 @@ public class BinkIntegrationTests
         SyncAll(a, b);
 
         AssertConverged("layer removed", a, b);
-        Assert.AreEqual(1, b.Drawing.Layers.Count);
+        Assert.ContainsSingle(b.Drawing.Layers);
         Assert.AreEqual(1, b.Drawing.ElementCount);
         Assert.AreEqual("Base", b.Drawing.Layers[0].Name);
         Assert.AreEqual(0.5f, b.Drawing.Layers[0].Opacity);
@@ -501,7 +500,7 @@ public class BinkIntegrationTests
         Sync(other, a.Doc);
 
         Assert.IsFalse(a.Drawing.ContainsElement(broken));
-        Assert.AreEqual(1, reasons.Count, string.Join('\n', reasons));
+        Assert.ContainsSingle(reasons, string.Join('\n', reasons));
         Assert.AreEqual(7f, a.Drawing.GetElement(box.Id).Transform.M31, "The rest of the change still applies.");
         Assert.AreEqual(1, a.Transactions, "Nothing is written back over it.");
     }
@@ -529,7 +528,7 @@ public class BinkIntegrationTests
         BcrdtBinkParticipant ana = b.Participants.Single();
         Assert.AreEqual("Ana", ana.Collaborator.User.Name);
         Assert.AreEqual(new Vector2(12.5f, 40), ana.Cursor);
-        CollectionAssert.AreEqual(new[] { box.Id }, ana.Selection.ToArray());
+        Assert.AreSequenceEqual(new[] { box.Id }, ana.Selection.ToArray());
 
         a.PublishCursor(null);
         network.Flush();

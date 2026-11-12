@@ -97,12 +97,12 @@ public class BitCascadingValueOfTTests : BunitTestContext
         list.AddIf(true, (BitCascadingValue<int>?)null);
         list.AddIf(true, (BitCascadingValue<int?>)BitCascadingValue.Lazy<int?>(() => { calls++; return 5; }, "Five"));
 
-        Assert.AreEqual(4, list.Count);
+        Assert.HasCount(4, list);
         Assert.AreSame(typed, list.Find<int>("One"));
         Assert.AreSame(text, list.Find<string>("Two"));
         Assert.IsNotNull(list.Find<double>("Three"));
         Assert.IsNotNull(list.Find<int?>("Five"));
-        Assert.IsFalse(list.Any(item => item.ValueType.IsGenericType && item.ValueType.GetGenericTypeDefinition() == typeof(BitCascadingValue<>)));
+        Assert.DoesNotContain(item => item.ValueType.IsGenericType && item.ValueType.GetGenericTypeDefinition() == typeof(BitCascadingValue<>), list);
         Assert.AreEqual(0, calls);
     }
 
@@ -117,7 +117,7 @@ public class BitCascadingValueOfTTests : BunitTestContext
                                                        .Where(p => p.Length == 1)
                                                        .ToList();
 
-        Assert.AreEqual(1, overloads.Count);
+        Assert.ContainsSingle(overloads);
         Assert.AreEqual(typeof(int), overloads[0][0].ParameterType);
     }
 

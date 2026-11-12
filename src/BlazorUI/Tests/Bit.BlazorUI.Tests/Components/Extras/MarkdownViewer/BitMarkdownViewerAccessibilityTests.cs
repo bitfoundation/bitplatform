@@ -35,8 +35,8 @@ public class BitMarkdownViewerAccessibilityTests : BunitTestContext
         Assert.AreEqual("/docs/guide?tab=2#install", component.Find(".bit-mdv-anchor").GetAttribute("href"));
         Assert.AreEqual("/docs/guide?tab=2#install", links.Single(a => a.TextContent == "install").GetAttribute("href"));
         Assert.AreEqual("/other", links.Single(a => a.TextContent == "elsewhere").GetAttribute("href"));
-        StringAssert.StartsWith(component.Find(".footnote-ref a").GetAttribute("href"), "/docs/guide?tab=2#");
-        StringAssert.StartsWith(component.Find(".footnote-backref").GetAttribute("href"), "/docs/guide?tab=2#");
+        Assert.StartsWith("/docs/guide?tab=2#", component.Find(".footnote-ref a").GetAttribute("href"));
+        Assert.StartsWith("/docs/guide?tab=2#", component.Find(".footnote-backref").GetAttribute("href"));
     }
 
     [TestMethod]
@@ -147,7 +147,7 @@ public class BitMarkdownViewerAccessibilityTests : BunitTestContext
 
         component.Render(parameters => parameters.Add(p => p.HeadingLevelOffset, 2));
 
-        Assert.AreEqual(1, component.FindAll(".bit-mdv h3").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-mdv h3"));
     }
 
     [TestMethod]
@@ -291,7 +291,7 @@ public class BitMarkdownViewerAccessibilityTests : BunitTestContext
 
         Assert.IsTrue(component.FindAll(".bit-mdv li").All(li => li.GetAttribute("dir") == "auto"));
         Assert.IsTrue(component.FindAll(".bit-mdv th, .bit-mdv td").All(cell => cell.GetAttribute("dir") == "auto"));
-        Assert.AreEqual(4, component.FindAll(".bit-mdv th, .bit-mdv td").Count);
+        Assert.HasCount(4, component.FindAll(".bit-mdv th, .bit-mdv td"));
         Assert.AreEqual("auto", component.Find(".bit-mdv .markdown-alert-title").GetAttribute("dir"));
     }
 
@@ -320,7 +320,7 @@ public class BitMarkdownViewerAccessibilityTests : BunitTestContext
             parameters.Add(p => p.Dir, dir);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-mdv h1[dir], .bit-mdv p[dir], .bit-mdv ul[dir]").Count);
+        Assert.IsEmpty(component.FindAll(".bit-mdv h1[dir], .bit-mdv p[dir], .bit-mdv ul[dir]"));
     }
 
     [TestMethod]
@@ -404,7 +404,7 @@ public class BitMarkdownViewerAccessibilityTests : BunitTestContext
             parameters.Add(p => p.Pipeline, new BitMarkdownPipelineBuilder().UseTexts(new BitMarkdownTexts { NewTab = "" }).Build());
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-mdv-new-tab").Count);
+        Assert.IsEmpty(component.FindAll(".bit-mdv-new-tab"));
     }
 
     [TestMethod]
@@ -419,8 +419,8 @@ public class BitMarkdownViewerAccessibilityTests : BunitTestContext
             parameters.Add(p => p.Pipeline, BitMarkdownPipelines.GitHub);
         });
 
-        StringAssert.Contains(component.Find(".bit-mdv-new-tab").GetAttribute("style"), "clip-path:inset(50%)");
-        StringAssert.Contains(component.Find(".bit-mdv .footnotes .bit-mdv-sr-only").GetAttribute("style"), "clip-path:inset(50%)");
+        Assert.Contains("clip-path:inset(50%)", component.Find(".bit-mdv-new-tab").GetAttribute("style")!);
+        Assert.Contains("clip-path:inset(50%)", component.Find(".bit-mdv .footnotes .bit-mdv-sr-only").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -453,7 +453,7 @@ public class BitMarkdownViewerAccessibilityTests : BunitTestContext
             });
         });
 
-        CollectionAssert.AreEqual(new[] { "/docs/page#install", "/other" }, urls);
+        Assert.AreSequenceEqual(new[] { "/docs/page#install", "/other" }, urls);
     }
 
     [TestMethod]
@@ -634,8 +634,8 @@ public class BitMarkdownViewerAccessibilityTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("own-class"));
         Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
         Assert.AreEqual("rtl", root.GetAttribute("dir"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin:1px");
-        StringAssert.Contains(root.GetAttribute("style"), "visibility:hidden");
+        Assert.Contains("margin:1px", root.GetAttribute("style")!);
+        Assert.Contains("visibility:hidden", root.GetAttribute("style")!);
     }
 
     [TestMethod,
@@ -663,7 +663,7 @@ public class BitMarkdownViewerAccessibilityTests : BunitTestContext
             parameters.Add(p => p.Visibility, BitVisibility.Collapsed);
         });
 
-        StringAssert.Contains(component.Find(".bit-mdv").GetAttribute("style"), "display:none");
+        Assert.Contains("display:none", component.Find(".bit-mdv").GetAttribute("style")!);
     }
 
     [TestMethod]

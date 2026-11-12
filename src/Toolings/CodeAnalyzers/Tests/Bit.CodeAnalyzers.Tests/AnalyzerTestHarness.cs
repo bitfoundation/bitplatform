@@ -46,7 +46,7 @@ internal static class AnalyzerTestHarness
         var document = CreateDocument(source);
         var diagnostics = await RunAnalyzer(document, analyzer);
 
-        Assert.HasCount(1, diagnostics, "The source must have exactly one diagnostic to fix.");
+        Assert.ContainsSingle(diagnostics, "The source must have exactly one diagnostic to fix.");
 
         var action = await GetCodeAction(codeFixProvider, document, diagnostics[0]);
 
@@ -78,7 +78,7 @@ internal static class AnalyzerTestHarness
 
         await codeFixProvider.RegisterCodeFixesAsync(new CodeFixContext(document, diagnostic, (action, _) => actions.Add(action), CancellationToken.None));
 
-        Assert.HasCount(1, actions);
+        Assert.ContainsSingle(actions);
 
         return actions[0];
     }

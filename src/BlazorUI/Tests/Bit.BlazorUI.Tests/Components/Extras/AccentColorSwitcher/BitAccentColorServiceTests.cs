@@ -127,8 +127,7 @@ public class BitAccentColorServiceTests : BunitTestContext
         await service.ApplyAsync("rebeccapurple");
 
         Assert.AreEqual(BitAccentColorPresets.Blue, service.ActiveAccent);
-        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.AccentColor.apply"),
-            "A value that is not hex never reaches BitThemeFactory, nor the stores.");
+        Assert.DoesNotContain(i => i.Identifier == "BitBlazorUI.AccentColor.apply", Context.JSInterop.Invocations, "A value that is not hex never reaches BitThemeFactory, nor the stores.");
     }
 
     [TestMethod]
@@ -180,9 +179,9 @@ public class BitAccentColorServiceTests : BunitTestContext
         await service.ApplyAsync(BitAccentColorPresets.Blue);
 
         Assert.AreEqual(BitAccentColorPresets.Blue, service.ActiveAccent);
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.AccentColor.apply"));
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.AccentColor.clear"),
-            "The packaged primary reproduces the packaged palette, so the overrides, the attribute and the stores are cleared instead of ~280 properties being pushed across interop.");
+        Assert.ContainsSingle(i => i.Identifier == "BitBlazorUI.AccentColor.apply", Context.JSInterop.Invocations);
+        Assert.ContainsSingle(i => i.Identifier == "BitBlazorUI.AccentColor.clear",
+Context.JSInterop.Invocations, "The packaged primary reproduces the packaged palette, so the overrides, the attribute and the stores are cleared instead of ~280 properties being pushed across interop.");
     }
 
     [TestMethod,
@@ -207,7 +206,7 @@ public class BitAccentColorServiceTests : BunitTestContext
         {
             var css = apply.Arguments[1] as string;
             Assert.IsNotNull(css, "StoredCss keeps a snapshot of the generated palette for the inline head script to inject pre-paint.");
-            StringAssert.Contains(css, "--bit-clr-pri:");
+            Assert.Contains("--bit-clr-pri:", css);
         }
         else
         {
@@ -227,7 +226,7 @@ public class BitAccentColorServiceTests : BunitTestContext
         await service.ApplyAsync(BitAccentColorPresets.Purple);
 
         var apply = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.AccentColor.apply");
-        Assert.AreEqual(true, apply.Arguments[3]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(apply.Arguments[3]));
         Assert.AreEqual((int)BitAccentColorPersistence.Cookie, apply.Arguments[4]);
     }
 
@@ -316,8 +315,7 @@ public class BitAccentColorServiceTests : BunitTestContext
         await service.InitializeAsync(new BitAccentColorConfig { Persistence = BitAccentColorPersistence.All });
 
         Assert.AreEqual(BitAccentColorPresets.Green, service.ActiveAccent);
-        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.AccentColor.getPersisted"),
-            "The app-owned copy outranks the web stores, which may lag behind it; they are not even read.");
+        Assert.DoesNotContain(i => i.Identifier == "BitBlazorUI.AccentColor.getPersisted", Context.JSInterop.Invocations, "The app-owned copy outranks the web stores, which may lag behind it; they are not even read.");
     }
 
     [TestMethod,
@@ -379,7 +377,7 @@ public class BitAccentColorServiceTests : BunitTestContext
         await service.ApplyAsync(BitAccentColorPresets.Purple);
 
         Assert.AreEqual(BitAccentColorPresets.Purple, service.ActiveAccent);
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.AccentColor.apply"));
+        Assert.ContainsSingle(i => i.Identifier == "BitBlazorUI.AccentColor.apply", Context.JSInterop.Invocations);
     }
 
     private sealed class FakeStore : IBitAccentColorStore

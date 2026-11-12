@@ -121,8 +121,8 @@ public class BitChoiceGroupItemContentTests : BunitTestContext
 
         var labels = component.FindAll(".bit-chg-itl");
 
-        StringAssert.Contains(labels[0].TextContent, "[0]");
-        StringAssert.Contains(labels[1].TextContent, "$10 - ");
+        Assert.Contains("[0]", labels[0].TextContent);
+        Assert.Contains("$10 - ", labels[1].TextContent);
     }
 
     [TestMethod]
@@ -142,7 +142,7 @@ public class BitChoiceGroupItemContentTests : BunitTestContext
         var label = component.Find(".bit-chg-itl");
 
         Assert.AreEqual("Free", component.Find(".suffix-class").TextContent);
-        StringAssert.EndsWith(label.TextContent.Trim(), "Free");
+        Assert.EndsWith("Free", label.TextContent.Trim());
     }
 
     [TestMethod]
@@ -162,8 +162,8 @@ public class BitChoiceGroupItemContentTests : BunitTestContext
 
         var labels = component.FindAll(".bit-chg-itl");
 
-        StringAssert.Contains(labels[0].TextContent, "[0]");
-        StringAssert.Contains(labels[1].TextContent, "$10");
+        Assert.Contains("[0]", labels[0].TextContent);
+        Assert.Contains("$10", labels[1].TextContent);
     }
 
     [TestMethod]

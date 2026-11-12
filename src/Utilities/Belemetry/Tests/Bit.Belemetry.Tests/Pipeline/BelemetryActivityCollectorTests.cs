@@ -63,7 +63,7 @@ public class BelemetryActivityCollectorTests
         Assert.AreEqual("GET /orders", span.Name);
         Assert.AreEqual(BelemetrySpanKind.Client, span.Kind);
         Assert.AreEqual(BelemetryTime.ToUnixNano(startUtc), span.StartTimeUnixNano);
-        Assert.IsTrue(span.EndTimeUnixNano >= span.StartTimeUnixNano);
+        Assert.IsGreaterThanOrEqualTo(span.StartTimeUnixNano, span.EndTimeUnixNano);
         Assert.AreEqual(source.Name, span.Scope.Name);
         Assert.AreEqual("4.5.6", span.Scope.Version);
         Assert.AreEqual(BelemetryFeatures.Traces, span.Feature);
@@ -71,12 +71,12 @@ public class BelemetryActivityCollectorTests
         Assert.AreEqual("GET", span.Attributes["http.request.method"]);
         Assert.AreEqual(503L, span.Attributes["http.response.status_code"]);
         Assert.AreEqual(0.5, span.Attributes["ratio"]);
-        Assert.AreEqual(false, span.Attributes["ok"]);
-        CollectionAssert.AreEqual(new[] { "a", "b" }, (string[])span.Attributes["list"]!);
+        Assert.IsFalse((bool?)span.Attributes["ok"]);
+        Assert.AreSequenceEqual(new[] { "a", "b" }, (string[])span.Attributes["list"]!);
 
         Assert.AreEqual("retry", span.Events.Single().Name);
         Assert.AreEqual(2L, span.Events[0].Attributes["attempt"]);
-        Assert.IsTrue(span.Events[0].TimeUnixNano > 0);
+        Assert.IsGreaterThan(0, span.Events[0].TimeUnixNano);
 
         var link = span.Links.Single();
         Assert.AreEqual(Records.LinkTraceId, link.TraceId);
@@ -213,7 +213,7 @@ public class BelemetryActivityCollectorTests
         }
 
         await host.FlushAsync();
-        CollectionAssert.AreEquivalent(expected, host.Memory.Spans.Select(s => s.SpanId).ToList());
+        Assert.AreSequenceEqual(expected, host.Memory.Spans.Select(s => s.SpanId).ToList(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         Assert.IsTrue(expected.Count is > 50 and < 150);
     }
 

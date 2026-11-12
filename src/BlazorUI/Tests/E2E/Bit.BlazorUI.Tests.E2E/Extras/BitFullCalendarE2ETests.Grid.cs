@@ -179,16 +179,16 @@ public partial class BitFullCalendarE2ETests
 
         var a = (await first.BoundingBoxAsync())!;
         var b = (await second.BoundingBoxAsync())!;
-        Assert.IsTrue(b.X > a.X + 1, "the later card is offset");
+        Assert.IsGreaterThan(a.X + 1, b.X, "the later card is offset");
         Assert.AreEqual(a.X + a.Width, b.X + b.Width, 2, "both cards reach the column edge");
-        Assert.IsTrue(b.X < a.X + a.Width, "the cards overlap");
+        Assert.IsLessThan(a.X + a.Width, b.X, "the cards overlap");
 
         await Page.Locator("#btn-layout-stack").ClickAsync();
         await Expect(cal.Locator(".bit-bfc-event-stack-item-side-by-side")).ToHaveCountAsync(2);
         a = (await first.BoundingBoxAsync())!;
         b = (await second.BoundingBoxAsync())!;
         Assert.AreEqual(a.Width, b.Width, 2, "equal lanes");
-        Assert.IsTrue(b.X >= a.X + a.Width - 2, "side by side, no overlap");
+        Assert.IsGreaterThanOrEqualTo(a.X + a.Width - 2, b.X, "side by side, no overlap");
 
         await Page.Locator("#btn-layout-overlap").ClickAsync();
         await Expect(cal.Locator(".bit-bfc-event-stack-item-side-by-side")).ToHaveCountAsync(0);

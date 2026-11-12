@@ -131,7 +131,7 @@ public class SamplesBrowserTests
         }
 
         var download = await page.RunAndWaitForDownloadAsync(() => page.ClickAsync("#process-download"));
-        StringAssert.Matches(download.SuggestedFilename, new Regex(@"^bmage-sample\.(webp|jpg)$"));
+        Assert.MatchesRegex(new Regex(@"^bmage-sample\.(webp|jpg)$"), download.SuggestedFilename);
 
         await AssertNoErrorsAsync(page, errors);
     }

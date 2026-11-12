@@ -35,7 +35,7 @@ public class BitAiServerDrivenChatTests
             new BitAiMessageCompletedEvent());
 
         await using var session = new BitAiChatSession(transport, null, ServerTools);
-        await session.SubmitAsync("clear");
+        await session.SubmitAsync("clear", cancellationToken: TestContext.CancellationToken);
 
         var call = session.Conversation.Messages[1].FindToolCall("c1")!;
         Assert.AreSame(definition, call.Definition);
@@ -56,7 +56,7 @@ public class BitAiServerDrivenChatTests
             new BitAiMessageCompletedEvent());
 
         await using var session = new BitAiChatSession(transport, null, ServerTools, registry);
-        await session.SubmitAsync("find");
+        await session.SubmitAsync("find", cancellationToken: TestContext.CancellationToken);
 
         Assert.AreSame(sent, session.Conversation.Messages[1].FindToolCall("c1")!.Definition);
     }
@@ -70,21 +70,21 @@ public class BitAiServerDrivenChatTests
         var decided = new List<(string Id, BitAiApprovalDecision Decision)>();
         session.ApprovalDecided += (call, decision) => decided.Add((call.ToolCallId, decision));
 
-        var turn = session.SubmitAsync("clear");
+        var turn = session.SubmitAsync("clear", cancellationToken: TestContext.CancellationToken);
         await WaitFor(() => session.Conversation.Messages.Count == 2
                             && session.Conversation.Messages[1].FindToolCall("c1") is { Status: BitAiToolCallStatus.AwaitingApproval });
 
         Assert.IsTrue(session.Approve("c1", BitAiApprovalDecision.Approved));
         await turn;
 
-        Assert.AreEqual(1, transport.Responses.Count);
+        Assert.ContainsSingle(transport.Responses);
         Assert.AreEqual("c1", transport.Responses[0].ToolCallId);
         Assert.AreEqual("clear_files", transport.Responses[0].ToolName);
         Assert.AreEqual(BitAiApprovalDecision.Approved, transport.Responses[0].Decision);
         Assert.AreEqual(session.Conversation.ConversationId, transport.Responses[0].ConversationId);
         Assert.AreEqual(session.Conversation.Messages[1].MessageId, transport.Responses[0].MessageId);
 
-        CollectionAssert.AreEqual(new[] { ("c1", BitAiApprovalDecision.Approved) }, decided);
+        Assert.AreSequenceEqual(new[] { ("c1", BitAiApprovalDecision.Approved) }, decided);
 
         var call = session.Conversation.Messages[1].FindToolCall("c1")!;
         Assert.AreEqual(BitAiToolCallStatus.Completed, call.Status);
@@ -109,13 +109,13 @@ public class BitAiServerDrivenChatTests
         var decided = 0;
         session.ApprovalDecided += (_, _) => decided++;
 
-        var turn = session.SubmitAsync("delete");
+        var turn = session.SubmitAsync("delete", cancellationToken: TestContext.CancellationToken);
         await WaitFor(() => awaiting is not null);
 
         session.Approve("c1", BitAiApprovalDecision.Approved);
         await turn;
 
-        Assert.AreEqual(0, transport.Responses.Count);
+        Assert.IsEmpty(transport.Responses);
         Assert.AreEqual(1, decided);
         Assert.AreEqual(BitAiToolCallStatus.Completed, awaiting!.Status);
     }
@@ -126,7 +126,7 @@ public class BitAiServerDrivenChatTests
         var transport = new HoldingTransport { FailToReceive = true };
         await using var session = new BitAiChatSession(transport, null, ServerTools);
 
-        var turn = session.SubmitAsync("clear");
+        var turn = session.SubmitAsync("clear", cancellationToken: TestContext.CancellationToken);
         await WaitFor(() => session.Conversation.Messages.Count == 2
                             && session.Conversation.Messages[1].FindToolCall("c1") is { Status: BitAiToolCallStatus.AwaitingApproval });
 
@@ -148,7 +148,7 @@ public class BitAiServerDrivenChatTests
         var transport = new HoldingTransport { AllowApproveAlways = false };
         await using var session = new BitAiChatSession(transport, null, ServerTools);
 
-        var turn = session.SubmitAsync("clear");
+        var turn = session.SubmitAsync("clear", cancellationToken: TestContext.CancellationToken);
         await WaitFor(() => session.Conversation.Messages.Count == 2
                             && session.Conversation.Messages[1].FindToolCall("c1") is { Status: BitAiToolCallStatus.AwaitingApproval });
 
@@ -172,7 +172,7 @@ public class BitAiServerDrivenChatTests
         message.MergeMetadata(new BitAiGenerationMetadata { ModelId = "m" });
 
         var extra = message.Metadata!.Extra!;
-        Assert.AreEqual(3, extra.Count);
+        Assert.HasCount(3, extra);
         Assert.AreEqual(1, extra["a"]);
         Assert.AreEqual(3, extra["b"]);
         Assert.AreEqual(4, extra["c"]);
@@ -231,13 +231,13 @@ public class BitAiServerDrivenChatTests
             new BitAiMessageCompletedEvent());
 
         await using var session = new BitAiChatSession(transport, null, ServerTools);
-        await session.SubmitAsync("go");
+        await session.SubmitAsync("go", cancellationToken: TestContext.CancellationToken);
 
         var reply = session.Conversation.Messages[1];
-        CollectionAssert.AreEqual(new[] { "Show more", "Undo it" }, reply.FollowUps!.ToArray());
+        Assert.AreSequenceEqual(new[] { "Show more", "Undo it" }, reply.FollowUps!.ToArray());
 
         var restored = BitAiConversationSerializer.FromJson(BitAiConversationSerializer.ToJson(session.Conversation));
-        CollectionAssert.AreEqual(new[] { "Show more", "Undo it" }, restored.Messages[1].FollowUps!.ToArray());
+        Assert.AreSequenceEqual(new[] { "Show more", "Undo it" }, restored.Messages[1].FollowUps!.ToArray());
 
         reply.SetFollowUps([]);
         Assert.IsNull(reply.FollowUps);
@@ -250,11 +250,11 @@ public class BitAiServerDrivenChatTests
         var transport = new InterruptibleTransport();
         await using var session = new BitAiChatSession(transport, null, new() { Pacing = null });
 
-        var first = session.SubmitAsync("first");
+        var first = session.SubmitAsync("first", cancellationToken: TestContext.CancellationToken);
         await WaitFor(() => transport.Started == 1);
 
-        Assert.IsNull(await session.SubmitAsync("second"));
-        Assert.AreEqual(2, session.Conversation.Messages.Count);
+        Assert.IsNull(await session.SubmitAsync("second", cancellationToken: TestContext.CancellationToken));
+        Assert.HasCount(2, session.Conversation.Messages);
 
         session.Stop();
         await first;
@@ -266,17 +266,17 @@ public class BitAiServerDrivenChatTests
         var transport = new InterruptibleTransport();
         await using var session = new BitAiChatSession(transport, null, new() { Pacing = null, InterruptOnSubmit = true });
 
-        var first = session.SubmitAsync("first");
+        var first = session.SubmitAsync("first", cancellationToken: TestContext.CancellationToken);
         await WaitFor(() => transport.Started == 1 && session.Conversation.Messages.Count == 2);
 
-        var second = await session.SubmitAsync("second");
+        var second = await session.SubmitAsync("second", cancellationToken: TestContext.CancellationToken);
         var stopped = await first;
 
         Assert.IsNotNull(second);
         Assert.AreEqual(BitAiMessageStatus.Cancelled, stopped!.Status);
         Assert.AreEqual(BitAiMessageStatus.Complete, second.Status);
         Assert.AreEqual("answer to second", second.GetText());
-        Assert.AreEqual(4, session.Conversation.Messages.Count);
+        Assert.HasCount(4, session.Conversation.Messages);
         Assert.AreEqual("second", session.Conversation.Messages[2].GetText());
         Assert.IsFalse(session.IsGenerating);
     }
@@ -287,7 +287,7 @@ public class BitAiServerDrivenChatTests
         var transport = new HoldingTransport();
         await using var session = new BitAiChatSession(transport, null, ServerTools);
 
-        var turn = session.SubmitAsync("clear");
+        var turn = session.SubmitAsync("clear", cancellationToken: TestContext.CancellationToken);
         await WaitFor(() => session.Conversation.Messages.Count == 2
                             && session.Conversation.Messages[1].FindToolCall("c1") is { Status: BitAiToolCallStatus.AwaitingApproval });
 
@@ -298,7 +298,7 @@ public class BitAiServerDrivenChatTests
         var call = session.Conversation.Messages[1].FindToolCall("c1")!;
         Assert.AreEqual(BitAiToolCallStatus.Cancelled, call.Status);
         Assert.IsFalse(session.Approve("c1", BitAiApprovalDecision.Approved));
-        Assert.AreEqual(0, transport.Responses.Count);
+        Assert.IsEmpty(transport.Responses);
     }
 
     [TestMethod]
@@ -307,7 +307,7 @@ public class BitAiServerDrivenChatTests
         var transport = new HoldingTransport { FailAfterDelivering = true };
         await using var session = new BitAiChatSession(transport, null, ServerTools);
 
-        var turn = session.SubmitAsync("clear");
+        var turn = session.SubmitAsync("clear", cancellationToken: TestContext.CancellationToken);
         await WaitFor(() => session.Conversation.Messages.Count == 2
                             && session.Conversation.Messages[1].FindToolCall("c1") is { Status: BitAiToolCallStatus.AwaitingApproval });
 
@@ -316,7 +316,7 @@ public class BitAiServerDrivenChatTests
         await WaitFor(() => transport.SendFailed);
 
         // The failure of the send is handled on a continuation of its own: give it the time to have run.
-        await Task.Delay(100);
+        await Task.Delay(100, TestContext.CancellationToken);
 
         var call = session.Conversation.Messages[1].FindToolCall("c1")!;
         Assert.AreEqual(BitAiToolCallStatus.Completed, call.Status);
@@ -341,7 +341,7 @@ public class BitAiServerDrivenChatTests
         BitAiToolDefinition? asked = null;
         session.ApprovalRequested += call => asked = call.Definition;
 
-        var turn = session.SubmitAsync("delete");
+        var turn = session.SubmitAsync("delete", cancellationToken: TestContext.CancellationToken);
         await WaitFor(() => asked is not null);
 
         session.Approve("c1", BitAiApprovalDecision.Approved);
@@ -371,11 +371,11 @@ public class BitAiServerDrivenChatTests
         message.MergeMetadata(new BitAiGenerationMetadata { Extra = new Dictionary<string, object?> { ["a"] = 1, ["b"] = 2 } });
         message.MergeMetadata(new BitAiGenerationMetadata { Extra = new Dictionary<string, object?> { ["a"] = null } });
 
-        CollectionAssert.AreEqual(new[] { "b" }, message.Metadata!.Extra!.Keys.ToArray());
+        Assert.AreSequenceEqual(new[] { "b" }, message.Metadata!.Extra!.Keys.ToArray());
 
         message.MergeMetadata(new BitAiGenerationMetadata { Extra = new Dictionary<string, object?>() });
 
-        Assert.AreEqual(0, message.Metadata!.Extra!.Count);
+        Assert.IsEmpty(message.Metadata!.Extra!);
     }
 
     [TestMethod]
@@ -388,11 +388,12 @@ public class BitAiServerDrivenChatTests
         message.MergeMetadata(new BitAiGenerationMetadata { Extra = new Dictionary<string, object?> { ["model"] = "b" } });
 
         var extra = message.Metadata!.Extra!;
-        Assert.AreEqual(1, extra.Count);
+        Assert.ContainsSingle(extra);
         Assert.AreEqual("b", extra["MODEL"]);
     }
 
     [TestMethod]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MSTEST0067", Justification = "The synchronous completion event is deliberately held open while an interrupting turn starts.")]
     public async Task AnInterruptingPromptIsAppendedOnlyOnceTheTurnItStopsHasReportedItsEnd()
     {
         var transport = new InterruptibleTransport();
@@ -408,14 +409,14 @@ public class BitAiServerDrivenChatTests
             seen.Add(session.Conversation.Messages.Count);
         };
 
-        var first = session.SubmitAsync("first");
+        var first = session.SubmitAsync("first", cancellationToken: TestContext.CancellationToken);
         await WaitFor(() => transport.Started == 1 && session.Conversation.Messages.Count == 2);
 
-        await session.SubmitAsync("second");
+        await session.SubmitAsync("second", cancellationToken: TestContext.CancellationToken);
         await first;
 
         Assert.AreEqual(2, seen[0]);
-        Assert.AreEqual(4, session.Conversation.Messages.Count);
+        Assert.HasCount(4, session.Conversation.Messages);
     }
 
     [TestMethod]
@@ -424,12 +425,12 @@ public class BitAiServerDrivenChatTests
         var transport = new InterruptibleTransport();
         await using var session = new BitAiChatSession(transport, null, new() { Pacing = null, InterruptOnSubmit = true });
 
-        var first = session.SubmitAsync("first");
+        var first = session.SubmitAsync("first", cancellationToken: TestContext.CancellationToken);
         await WaitFor(() => transport.Started == 1 && session.Conversation.Messages.Count == 2);
 
         Assert.IsNull(await session.SubmitAsync("second", cancellationToken: new CancellationToken(true)));
         Assert.IsTrue(session.IsGenerating);
-        Assert.AreEqual(2, session.Conversation.Messages.Count);
+        Assert.HasCount(2, session.Conversation.Messages);
 
         session.Stop();
         Assert.AreEqual(BitAiMessageStatus.Cancelled, (await first)!.Status);
@@ -441,19 +442,19 @@ public class BitAiServerDrivenChatTests
         var transport = new StubbornTransport();
         await using var session = new BitAiChatSession(transport, null, new() { Pacing = null, InterruptOnSubmit = true });
 
-        var first = session.SubmitAsync("first");
+        var first = session.SubmitAsync("first", cancellationToken: TestContext.CancellationToken);
         await WaitFor(() => session.Conversation.Messages.Count == 2 && session.Conversation.Messages[1].GetText() == "working");
 
         // The turn is stopped, but its stream does not listen: the submission waits on it until it is cancelled itself.
         using var cts = new CancellationTokenSource();
         var second = session.SubmitAsync("second", cancellationToken: cts.Token);
-        await Task.Delay(50);
+        await Task.Delay(50, TestContext.CancellationToken);
         Assert.IsFalse(second.IsCompleted);
 
         cts.Cancel();
 
-        Assert.IsNull(await second.WaitAsync(TimeSpan.FromSeconds(10)));
-        Assert.AreEqual(2, session.Conversation.Messages.Count);
+        Assert.IsNull(await second.WaitAsync(TimeSpan.FromSeconds(10), TestContext.CancellationToken));
+        Assert.HasCount(2, session.Conversation.Messages);
 
         transport.Release.TrySetResult();
         await first;
@@ -465,14 +466,14 @@ public class BitAiServerDrivenChatTests
         var transport = new InterruptibleTransport();
         await using var session = new BitAiChatSession(transport, null, new() { Pacing = null, InterruptOnSubmit = true });
 
-        var first = session.SubmitAsync("first");
+        var first = session.SubmitAsync("first", cancellationToken: TestContext.CancellationToken);
         await WaitFor(() => transport.Started == 1 && session.Conversation.Messages.Count == 2);
 
         // What a follow-up or a suggestion sends: a second click on it must not stop the turn the first one started.
         var submitIfIdle = typeof(BitAiChatSession).GetMethod("SubmitIfIdleAsync", BindingFlags.Instance | BindingFlags.NonPublic)!;
         Assert.IsNull(await (Task<BitAiMessage?>)submitIfIdle.Invoke(session, ["first"])!);
         Assert.IsTrue(session.IsGenerating);
-        Assert.AreEqual(2, session.Conversation.Messages.Count);
+        Assert.HasCount(2, session.Conversation.Messages);
 
         session.Stop();
         await first;
@@ -487,7 +488,7 @@ public class BitAiServerDrivenChatTests
         }
     }
 
-    public sealed record ProductRef(string Id, int Quantity);
+    internal sealed record ProductRef(string Id, int Quantity);
 
     // The deadline only bounds a failing run; a passing one returns as soon as the condition holds.
     private static async Task WaitFor(Func<bool> condition, int timeoutMs = 10_000)
@@ -611,4 +612,6 @@ public class BitAiServerDrivenChatTests
             yield return new BitAiMessageCompletedEvent();
         }
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

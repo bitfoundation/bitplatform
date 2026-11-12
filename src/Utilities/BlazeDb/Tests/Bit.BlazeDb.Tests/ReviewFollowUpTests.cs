@@ -50,7 +50,7 @@ public class ReviewFollowUpTests
             }
             // A handler waiting on a write made on another thread: that write must neither wait for this
             // handler to finish nor have its notification - and its handler's failure - delivered here.
-            var task = Task.Run(() => people.Insert(new Person(2, "Second", 2)));
+            var task = Task.Run(() => people.Insert(new Person(2, "Second", 2)), TestContext.CancellationToken);
             second = task;
             secondFinished = SpinWait.SpinUntil(() => task.IsCompleted, TimeSpan.FromSeconds(10));
         };
@@ -68,7 +68,7 @@ public class ReviewFollowUpTests
     {
         var descriptor = Switchable(new SwitchableComparer());
         var byAge = (BlazeDbOrderedIndexDefinition<Person, int>)descriptor.Indexes[0];
-        await using var db = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions().AddTable(descriptor));
+        await using var db = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions().AddTable(descriptor), TestContext.CancellationToken);
         var people = db.GetTable(descriptor);
         people.InsertMany(Enumerable.Range(1, 10).Select(i => new Person(i, $"P{i}", i * 10)));
 
@@ -76,8 +76,7 @@ public class ReviewFollowUpTests
         people.InsertMany(people.Scan().Select(p => p with { Id = p.Id + 1000 }));
 
         Assert.AreEqual(20, people.Count);
-        CollectionAssert.AreEqual(new[] { 11, 21, 31, 41, 51, 60, 70, 80, 90, 100 },
-            people.OrderBy(byAge).Where(p => p.Id <= 10).Select(p => p.Age).ToArray());
+        Assert.AreSequenceEqual(new[] { 11, 21, 31, 41, 51, 60, 70, 80, 90, 100 }, people.OrderBy(byAge).Where(p => p.Id <= 10).Select(p => p.Age).ToArray());
         Assert.IsEmpty(db.VerifyIntegrity());
     }
 
@@ -117,7 +116,7 @@ public class ReviewFollowUpTests
     {
         var comparer = new SwitchableComparer();
         var descriptor = Switchable(comparer);
-        var db = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { Storage = new BlazeDbInMemoryStorage(), FlushInterval = TimeSpan.FromHours(1) }.AddTable(descriptor));
+        var db = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { Storage = new BlazeDbInMemoryStorage(), FlushInterval = TimeSpan.FromHours(1) }.AddTable(descriptor), TestContext.CancellationToken);
         var table = db.GetTable(descriptor);
         table.Insert(new Person(1, "Committed", 10));
 
@@ -131,9 +130,9 @@ public class ReviewFollowUpTests
 
         // The undo failure is not lost: it is why the database now refuses writes, and exports.
         var refused = Assert.ThrowsExactly<BlazeDbException>(() => table.Insert(new Person(2, "Refused", 20)));
-        StringAssert.Contains(refused.InnerException!.Message, "comparer refuses");
-        var export = await Assert.ThrowsExactlyAsync<BlazeDbException>(async () => await db.ExportAsync(new MemoryStream()));
-        StringAssert.Contains(export.Message, "Reopen");
+        Assert.Contains("comparer refuses", refused.InnerException!.Message);
+        var export = await Assert.ThrowsExactlyAsync<BlazeDbException>(async () => await db.ExportAsync(new MemoryStream(), TestContext.CancellationToken));
+        Assert.Contains("Reopen", export.Message);
         await db.DisposeAsync();
     }
 
@@ -142,7 +141,7 @@ public class ReviewFollowUpTests
     {
         var comparer = new SwitchableComparer();
         var descriptor = Switchable(comparer);
-        await using var db = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions().AddTable(descriptor));
+        await using var db = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions().AddTable(descriptor), TestContext.CancellationToken);
         var table = db.GetTable(descriptor);
         table.Insert(new Person(1, "Committed", 10));
 
@@ -163,7 +162,7 @@ public class ReviewFollowUpTests
         Assert.AreEqual(2, table.Count, "With nothing to reopen from, the database goes on taking writes.");
         var issue = db.VerifyIntegrity().Single();
         Assert.AreEqual("switchable", issue.Table);
-        StringAssert.Contains(issue.Description, "comparer refuses");
+        Assert.Contains("comparer refuses", issue.Description);
     }
 
     [TestMethod]
@@ -171,7 +170,7 @@ public class ReviewFollowUpTests
     {
         var comparer = new SwitchableComparer();
         var descriptor = Switchable(comparer);
-        await using var db = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions().AddTable(descriptor));
+        await using var db = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions().AddTable(descriptor), TestContext.CancellationToken);
         var table = db.GetTable(descriptor);
         table.Insert(new Person(1, "Committed", 10));
         var reported = 0;
@@ -194,7 +193,7 @@ public class ReviewFollowUpTests
         comparer.Refuse = false;
 
         var refused = Assert.ThrowsExactly<BlazeDbException>(txn.Commit);
-        StringAssert.Contains(refused.InnerException!.Message, "comparer refuses");
+        Assert.Contains("comparer refuses", refused.InnerException!.Message);
         Assert.AreEqual(new Person(1, "Committed", 10), table.Get(1), "The failed unit's write was rolled back, not committed.");
         Assert.AreEqual(0, reported);
         txn.Dispose(); // over already: does nothing
@@ -205,7 +204,7 @@ public class ReviewFollowUpTests
     {
         var comparer = new SwitchableComparer();
         var descriptor = Switchable(comparer);
-        await using var db = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions().AddTable(PersonTable.Descriptor).AddTable(descriptor));
+        await using var db = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions().AddTable(PersonTable.Descriptor).AddTable(descriptor), TestContext.CancellationToken);
         var people = db.GetTable(PersonTable.Descriptor);
         var switchable = db.GetTable(descriptor);
         switchable.Insert(new Person(1, "Committed", 10));
@@ -223,6 +222,7 @@ public class ReviewFollowUpTests
     }
 
     [TestMethod]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MSTEST0067", Justification = "The synchronous query selector deliberately overlaps a commit before its first evaluation finishes.")]
     public async Task A_Live_Query_Does_Not_Miss_A_Commit_Made_While_It_Starts()
     {
         await using var db = await TestDb.OpenInMemoryAsync();
@@ -235,8 +235,8 @@ public class ReviewFollowUpTests
             var count = table.Count;
             // Another thread commits while the first run is under way. Whether its write lands before the
             // live query listens or after it, the result has to end up counting it.
-            writer ??= Task.Run(() => people.Insert(new Person(2, "Second", 2)));
-            writer.Wait(TimeSpan.FromMilliseconds(200));
+            writer ??= Task.Run(() => people.Insert(new Person(2, "Second", 2)), TestContext.CancellationToken);
+            writer.Wait(TimeSpan.FromMilliseconds(200), TestContext.CancellationToken);
             return count;
         });
         await writer!;
@@ -247,7 +247,7 @@ public class ReviewFollowUpTests
     [TestMethod]
     public async Task A_Database_Subscriber_Is_Never_Handed_Part_Of_A_Commit()
     {
-        await using var db = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions().AddTable(PersonTable.Descriptor).AddTable(Others));
+        await using var db = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions().AddTable(PersonTable.Descriptor).AddTable(Others), TestContext.CancellationToken);
         var people = db.GetTable(PersonTable.Descriptor);
         var others = db.GetTable(Others);
         var received = new List<BlazeDbChangedEventArgs>();
@@ -290,7 +290,7 @@ public class ReviewFollowUpTests
 
         var error = await Assert.ThrowsExactlyAsync<InvalidOperationException>(async () =>
         {
-            await foreach (var person in BlazeDbQuery<int, Person>.From(people).ExecuteAsync(batchSize: 100))
+            await foreach (var person in BlazeDbQuery<int, Person>.From(people).ExecuteAsync(batchSize: 100, TestContext.CancellationToken))
             {
                 // What other code may do while the body awaits: an insert, which a scan cannot go on past.
                 await Task.Yield();
@@ -298,7 +298,7 @@ public class ReviewFollowUpTests
             }
         });
 
-        StringAssert.Contains(error.Message, "people");
+        Assert.Contains("people", error.Message);
         Assert.IsNotNull(error.InnerException);
     }
 
@@ -309,7 +309,7 @@ public class ReviewFollowUpTests
         await using (var source = await TestDb.OpenInMemoryAsync())
         {
             source.GetTable(PersonTable.Descriptor).Insert(new Person(1, "Ada", 36));
-            await source.ExportAsync(export);
+            await source.ExportAsync(export, TestContext.CancellationToken);
         }
         var bytes = export.ToArray();
 
@@ -324,9 +324,11 @@ public class ReviewFollowUpTests
         foreach (var file in new[] { prefixed, new MemoryStream(framed, 5, bytes.Length, writable: false, publiclyVisible: true) })
         {
             var storage = new BlazeDbInMemoryStorage();
-            await BlazeDbDatabase.ImportAsync(file, storage);
-            await using var restored = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { Storage = storage }.AddTable(PersonTable.Descriptor));
+            await BlazeDbDatabase.ImportAsync(file, storage, TestContext.CancellationToken);
+            await using var restored = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { Storage = storage }.AddTable(PersonTable.Descriptor), TestContext.CancellationToken);
             Assert.AreEqual(new Person(1, "Ada", 36), restored.GetTable(PersonTable.Descriptor).Get(1));
         }
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

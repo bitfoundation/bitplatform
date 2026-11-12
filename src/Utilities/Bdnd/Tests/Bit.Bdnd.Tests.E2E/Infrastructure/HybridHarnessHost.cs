@@ -8,7 +8,7 @@ namespace Bit.Bdnd.Tests.E2E.Infrastructure;
 /// Protocol: the host opens WebView2's debugging port, and Playwright attaches to it like to any Chromium. The page
 /// it drives is the one inside the app window, with the Blazor Hybrid renderer running out of the browser's process.
 /// </summary>
-public sealed class HybridHarnessHost : IAsyncDisposable
+internal sealed class HybridHarnessHost : IAsyncDisposable
 {
     /// <summary>The origin BlazorWebView serves the app from.</summary>
     public const string AppOrigin = "https://0.0.0.1";
@@ -165,7 +165,7 @@ public sealed class HybridHarnessHost : IAsyncDisposable
 /// The hybrid app every <c>HybridHostingTests</c> test drives: one window, started on first use. A failed start is
 /// remembered, so the rest of the class fails fast instead of waiting out the startup timeout once per test.
 /// </summary>
-public static class HybridSession
+internal static class HybridSession
 {
     private static Lazy<Task<HybridHarnessHost>> _host = new(HybridHarnessHost.StartAsync);
 

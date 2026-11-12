@@ -7,5 +7,5 @@
 internal static class AssertSequence
 {
     public static void AreEqual<T>(IEnumerable<T> expected, IEnumerable<T> actual)
-        => CollectionAssert.AreEqual(expected.ToArray(), actual.ToArray());
+        => Assert.AreSequenceEqual(expected.ToArray(), actual.ToArray());
 }

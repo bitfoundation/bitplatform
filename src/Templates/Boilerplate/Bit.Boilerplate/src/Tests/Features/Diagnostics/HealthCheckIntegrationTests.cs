@@ -459,7 +459,7 @@ public partial class HealthCheckIntegrationTests
 
         Assert.AreEqual(expectedStatus, report.Entries["aiEmbedding"].Status);
         Assert.IsNotNull(embeddedValues);
-        Assert.HasCount(1, embeddedValues);
+        Assert.ContainsSingle(embeddedValues);
     }
 
     private sealed class ScriptedChatClient : IChatClient

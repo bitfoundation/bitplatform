@@ -27,10 +27,10 @@ public class BitButtonGroupPrerenderTests
             [nameof(BitButtonGroup<BitButtonGroupItem>.AutoFocus)] = true,
         });
 
-        StringAssert.Contains(html, "role=\"radiogroup\"");
-        StringAssert.Contains(html, "aria-checked=\"true\"");
-        StringAssert.Contains(html, "bit-btg-chk");
-        StringAssert.Contains(html, "tabindex=\"0\"");
-        StringAssert.Contains(html, "autofocus");
+        Assert.Contains("role=\"radiogroup\"", html);
+        Assert.Contains("aria-checked=\"true\"", html);
+        Assert.Contains("bit-btg-chk", html);
+        Assert.Contains("tabindex=\"0\"", html);
+        Assert.Contains("autofocus", html);
     }
 }

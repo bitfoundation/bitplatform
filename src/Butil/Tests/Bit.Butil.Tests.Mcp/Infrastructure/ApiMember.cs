@@ -5,4 +5,4 @@
 // or dropped on the server has to fail a test instead of quietly flowing through a shared type.
 // Only the fields the suite asserts on are declared; unknown ones are ignored by the deserializer.
 
-public sealed record ApiMember(string Name, string Kind, string? Type, string? Signature, string? Default, string? Summary, string? Remarks);
+internal sealed record ApiMember(string Name, string Kind, string? Type, string? Signature, string? Default, string? Summary, string? Remarks);

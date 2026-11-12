@@ -40,13 +40,13 @@ public class BrowserLifecycleTests
         await using BcrdtCollaborationService peer = CreateClient(new SwitchableNetwork(network));
         var browser = new FakeBrowser();
         await using var lifecycle = new BcrdtBrowserLifecycle(client, browser, null);
-        await lifecycle.StartAsync();
+        await lifecycle.StartAsync(TestContext.CancellationToken);
 
-        BcrdtCollaborativeDocument waiting = await client.OpenAsync("shared");
-        BcrdtCollaborativeDocument stopped = await client.OpenAsync("stopped");
-        BcrdtCollaborativeDocument remote = await peer.OpenAsync("shared");
+        BcrdtCollaborativeDocument waiting = await client.OpenAsync("shared", cancellationToken: TestContext.CancellationToken);
+        BcrdtCollaborativeDocument stopped = await client.OpenAsync("stopped", cancellationToken: TestContext.CancellationToken);
+        BcrdtCollaborativeDocument remote = await peer.OpenAsync("shared", cancellationToken: TestContext.CancellationToken);
         await WaitUntilAsync(() => waiting.ConnectionStatus == BcrdtConnectionStatus.Reconnecting);
-        await stopped.DisconnectAsync();
+        await stopped.DisconnectAsync(TestContext.CancellationToken);
         await WaitUntilAsync(() => stopped.ConnectionStatus == BcrdtConnectionStatus.Disconnected);
 
         waiting.Text("body").Insert(0, "typed offline");
@@ -66,16 +66,16 @@ public class BrowserLifecycleTests
         await using BcrdtCollaborationService client = CreateClient(link);
         var browser = new FakeBrowser();
         await using var lifecycle = new BcrdtBrowserLifecycle(client, browser, null);
-        await lifecycle.StartAsync();
+        await lifecycle.StartAsync(TestContext.CancellationToken);
 
-        BcrdtCollaborativeDocument document = await client.OpenAsync("shared");
+        BcrdtCollaborativeDocument document = await client.OpenAsync("shared", cancellationToken: TestContext.CancellationToken);
         await WaitUntilAsync(() => document.ConnectionStatus == BcrdtConnectionStatus.Reconnecting);
         int before = link.Attempts;
 
         // The browser was wrong: the link is still down.
         await browser.RaiseAsync(BcrdtBrowserSignal.Online);
         await WaitUntilAsync(() => document.ConnectionStatus == BcrdtConnectionStatus.Reconnecting);
-        await Task.Delay(100);
+        await Task.Delay(100, TestContext.CancellationToken);
 
         Assert.AreEqual(before + 1, link.Attempts);
         Assert.AreEqual(BcrdtConnectionStatus.Reconnecting, document.ConnectionStatus);
@@ -91,10 +91,10 @@ public class BrowserLifecycleTests
         await using var lifecycle = new BcrdtBrowserLifecycle(client, browser, null);
         var changes = new List<bool>();
         lifecycle.OnlineChanged += changes.Add;
-        await lifecycle.StartAsync();
+        await lifecycle.StartAsync(TestContext.CancellationToken);
 
         Assert.IsFalse(lifecycle.IsOnline);
-        BcrdtCollaborativeDocument document = await client.OpenAsync("shared");
+        BcrdtCollaborativeDocument document = await client.OpenAsync("shared", cancellationToken: TestContext.CancellationToken);
         await WaitUntilAsync(() => document.ConnectionStatus == BcrdtConnectionStatus.Reconnecting);
         int before = link.Attempts;
 
@@ -107,7 +107,7 @@ public class BrowserLifecycleTests
         await browser.RaiseAsync(BcrdtBrowserSignal.Online);
         await WaitUntilAsync(() => document.IsSynced);
 
-        CollectionAssert.AreEqual(new[] { false, true, false, true }, changes);
+        Assert.AreSequenceEqual(new[] { false, true, false, true }, changes);
         Assert.IsTrue(lifecycle.IsOnline);
 
         // Back in front after the connection dropped while hidden: no waiting for the backoff either.
@@ -126,15 +126,15 @@ public class BrowserLifecycleTests
         await using BcrdtCollaborationService client = CreateClient(link);
         var browser = new FakeBrowser();
         await using var lifecycle = new BcrdtBrowserLifecycle(client, browser, new BcrdtBrowserLifecycleOptions { ReconnectWhenOnline = false });
-        await lifecycle.StartAsync();
+        await lifecycle.StartAsync(TestContext.CancellationToken);
 
-        BcrdtCollaborativeDocument document = await client.OpenAsync("shared");
+        BcrdtCollaborativeDocument document = await client.OpenAsync("shared", cancellationToken: TestContext.CancellationToken);
         await WaitUntilAsync(() => document.ConnectionStatus == BcrdtConnectionStatus.Reconnecting);
         int before = link.Attempts;
 
         link.Up = true;
         await browser.RaiseAsync(BcrdtBrowserSignal.Online);
-        await Task.Delay(100);
+        await Task.Delay(100, TestContext.CancellationToken);
 
         Assert.AreEqual(before, link.Attempts);
         Assert.AreEqual(BcrdtConnectionStatus.Reconnecting, document.ConnectionStatus);
@@ -153,14 +153,14 @@ public class BrowserLifecycleTests
             AfterFlush = async _ =>
             {
                 Interlocked.Increment(ref afterFlushes);
-                BcrdtStoredDocument stored = await store.LoadAsync("notes");
+                BcrdtStoredDocument stored = await store.LoadAsync("notes", TestContext.CancellationToken);
                 seenByAfterFlush = stored.Update is null ? null : Text(stored.Update);
             },
         });
-        await lifecycle.StartAsync();
+        await lifecycle.StartAsync(TestContext.CancellationToken);
 
-        BcrdtCollaborativeDocument notes = await client.OpenAsync("notes");
-        BcrdtCollaborativeDocument other = await client.OpenAsync("other");
+        BcrdtCollaborativeDocument notes = await client.OpenAsync("notes", cancellationToken: TestContext.CancellationToken);
+        BcrdtCollaborativeDocument other = await client.OpenAsync("other", cancellationToken: TestContext.CancellationToken);
         notes.Text("body").Insert(0, "saved before the page went away");
         other.Text("body").Insert(0, "and this");
 
@@ -173,7 +173,7 @@ public class BrowserLifecycleTests
         await Task.WhenAll(first, second, third);
 
         Assert.AreEqual("and what came after: saved before the page went away", seenByAfterFlush);
-        Assert.AreEqual("and this", Text((await store.LoadAsync("other")).Update!));
+        Assert.AreEqual("and this", Text((await store.LoadAsync("other", TestContext.CancellationToken)).Update!));
         Assert.AreEqual(2, afterFlushes);
 
         await browser.RaiseAsync(BcrdtBrowserSignal.PageHide);
@@ -187,7 +187,7 @@ public class BrowserLifecycleTests
         var browser = new FakeBrowser { HoldSubscription = new TaskCompletionSource() };
         var lifecycle = new BcrdtBrowserLifecycle(client, browser, null);
 
-        ValueTask starting = lifecycle.StartAsync();
+        ValueTask starting = lifecycle.StartAsync(TestContext.CancellationToken);
         await lifecycle.DisposeAsync();
         browser.HoldSubscription.SetResult();
         await starting;
@@ -207,9 +207,9 @@ public class BrowserLifecycleTests
         });
         var errors = new List<Exception>();
         lifecycle.Error += errors.Add;
-        await lifecycle.StartAsync();
+        await lifecycle.StartAsync(TestContext.CancellationToken);
 
-        BcrdtCollaborativeDocument document = await client.OpenAsync("doc");
+        BcrdtCollaborativeDocument document = await client.OpenAsync("doc", cancellationToken: TestContext.CancellationToken);
         document.Text("body").Insert(0, "refused");
         await browser.RaiseAsync(BcrdtBrowserSignal.Hidden);
 
@@ -226,12 +226,12 @@ public class BrowserLifecycleTests
         await using BcrdtCollaborationService peer = CreateClient(new SwitchableNetwork(network));
         var browser = new FakeBrowser();
         await using var lifecycle = new BcrdtBrowserLifecycle(client, browser, null);
-        await lifecycle.StartAsync();
+        await lifecycle.StartAsync(TestContext.CancellationToken);
 
         BcrdtCollaborativeDocument mine = await client.OpenAsync(
-            "shared", new BcrdtOpenDocumentOptions { User = new BcrdtCollaboratorInfo("ada", "Ada", "#ff0000") });
+            "shared", new BcrdtOpenDocumentOptions { User = new BcrdtCollaboratorInfo("ada", "Ada", "#ff0000") }, TestContext.CancellationToken);
         BcrdtCollaborativeDocument theirs = await peer.OpenAsync(
-            "shared", new BcrdtOpenDocumentOptions { User = new BcrdtCollaboratorInfo("grace", "Grace", "#00ff00") });
+            "shared", new BcrdtOpenDocumentOptions { User = new BcrdtCollaboratorInfo("grace", "Grace", "#00ff00") }, TestContext.CancellationToken);
         await WaitUntilAsync(() => theirs.Presence.Others.Any(other => other.User.Name == "Ada"));
 
         await browser.RaiseAsync(BcrdtBrowserSignal.PageHide);
@@ -251,7 +251,7 @@ public class BrowserLifecycleTests
         var unasked = new FakeBrowser { PersistGranted = true };
         await using (var lifecycle = new BcrdtBrowserLifecycle(client, unasked, null))
         {
-            await lifecycle.StartAsync();
+            await lifecycle.StartAsync(TestContext.CancellationToken);
             Assert.IsNull(lifecycle.IsStoragePersistent);
             Assert.AreEqual(0, unasked.PersistRequests);
         }
@@ -259,8 +259,8 @@ public class BrowserLifecycleTests
         var asked = new FakeBrowser { PersistGranted = true };
         await using (var lifecycle = new BcrdtBrowserLifecycle(client, asked, new BcrdtBrowserLifecycleOptions { RequestPersistentStorage = true }))
         {
-            await lifecycle.StartAsync();
-            await lifecycle.StartAsync();
+            await lifecycle.StartAsync(TestContext.CancellationToken);
+            await lifecycle.StartAsync(TestContext.CancellationToken);
             Assert.IsTrue(lifecycle.IsStoragePersistent);
             Assert.AreEqual(1, asked.PersistRequests);
             Assert.AreEqual(1, asked.Subscriptions);
@@ -276,7 +276,7 @@ public class BrowserLifecycleTests
         var browser = new FakeBrowser { IsAvailable = false };
         await using var lifecycle = new BcrdtBrowserLifecycle(client, browser, new BcrdtBrowserLifecycleOptions { RequestPersistentStorage = true });
 
-        await lifecycle.StartAsync();
+        await lifecycle.StartAsync(TestContext.CancellationToken);
 
         Assert.IsFalse(lifecycle.IsStarted);
         Assert.AreEqual(0, browser.Subscriptions);
@@ -297,7 +297,7 @@ public class BrowserLifecycleTests
         Assert.AreSame(lifecycle, scope.ServiceProvider.GetRequiredService<BcrdtBrowserLifecycle>());
 
         // The test host is no browser, so the lifecycle stays out of it - a call into JavaScript would throw here.
-        await lifecycle.StartAsync();
+        await lifecycle.StartAsync(TestContext.CancellationToken);
         Assert.IsFalse(lifecycle.IsStarted);
         Assert.IsNull(lifecycle.IsStoragePersistent);
     }
@@ -309,9 +309,9 @@ public class BrowserLifecycleTests
         await using BcrdtCollaborationService client = CreateClient(link);
         var browser = new FakeBrowser();
         var lifecycle = new BcrdtBrowserLifecycle(client, browser, null);
-        await lifecycle.StartAsync();
+        await lifecycle.StartAsync(TestContext.CancellationToken);
 
-        BcrdtCollaborativeDocument document = await client.OpenAsync("shared");
+        BcrdtCollaborativeDocument document = await client.OpenAsync("shared", cancellationToken: TestContext.CancellationToken);
         await WaitUntilAsync(() => document.ConnectionStatus == BcrdtConnectionStatus.Reconnecting);
         await lifecycle.DisposeAsync();
         int before = link.Attempts;
@@ -321,7 +321,7 @@ public class BrowserLifecycleTests
 
         Assert.AreEqual(0, browser.Subscriptions);
         Assert.AreEqual(before, link.Attempts);
-        await Assert.ThrowsExactlyAsync<ObjectDisposedException>(async () => await lifecycle.StartAsync());
+        await Assert.ThrowsExactlyAsync<ObjectDisposedException>(async () => await lifecycle.StartAsync(TestContext.CancellationToken));
     }
 
     private static string Text(byte[] update)
@@ -494,4 +494,6 @@ public class BrowserLifecycleTests
         public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object?[]? args) =>
             throw new InvalidOperationException($"JavaScript was called ({identifier}) outside a browser.");
     }
+
+    public TestContext TestContext { get; set; }
 }

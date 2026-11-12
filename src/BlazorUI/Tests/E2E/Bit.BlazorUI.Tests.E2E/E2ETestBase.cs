@@ -129,7 +129,7 @@ public abstract class E2ETestBase
         }
 
         IBrowser browser;
-        await _browserLock.WaitAsync();
+        await _browserLock.WaitAsync(TestContext.CancellationToken);
         try
         {
             if (_idleBrowsers.TryPop(out var idle) is false)
@@ -308,7 +308,7 @@ public abstract class E2ETestBase
         {
             var answered = Page.EvaluateAsync("() => new Promise(resolve => setTimeout(resolve))");
 
-            await Task.WhenAny(answered, Task.Delay(TimeSpan.FromSeconds(5)));
+            await Task.WhenAny(answered, Task.Delay(TimeSpan.FromSeconds(5), TestContext.CancellationToken));
 
             if (answered.IsCompleted)
             {
@@ -440,7 +440,7 @@ public abstract class E2ETestBase
     {
         var errors = await GetServerErrorsAsync();
 
-        Assert.AreEqual(0, errors.Count, $"The host logged {errors.Count} error(s):{Environment.NewLine}{string.Join(Environment.NewLine, errors)}");
+        Assert.IsEmpty(errors, $"The host logged {errors.Count} error(s):{Environment.NewLine}{string.Join(Environment.NewLine, errors)}");
     }
 
     /// <summary>
@@ -448,7 +448,7 @@ public abstract class E2ETestBase
     /// (a component's root, or a section of the page: <c>#color</c>), once every animation that ends has ended, but for
     /// those the suppressions let through. <see cref="E2EAxe"/> has the policy a scan and its suppressions follow.
     /// </summary>
-    protected Task AssertNoAxeViolationsAsync(string scope, params AxeSuppression[] suppressions)
+    private protected Task AssertNoAxeViolationsAsync(string scope, params AxeSuppression[] suppressions)
     {
         return E2EAxe.AssertNoViolationsAsync(Page, scope, suppressions);
     }

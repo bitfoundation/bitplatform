@@ -128,7 +128,7 @@ public class BatchAndResetTests
 
         store.Increment(); // nested relative to the in-flight async action
 
-        Assert.IsTrue(notifications >= 2, $"expected the nested action to notify, got {notifications}");
+        Assert.IsGreaterThanOrEqualTo(2, notifications, $"expected the nested action to notify, got {notifications}");
         await task;
     }
 }

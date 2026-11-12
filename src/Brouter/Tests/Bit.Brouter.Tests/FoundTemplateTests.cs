@@ -23,7 +23,7 @@ public class FoundTemplateTests : BunitTestContext
             // The page itself was rendered by the built-in RouteView from the supplied RouteData,
             // binding the {id:int} route value to the [Parameter] property - Brouter did not
             // instantiate the component itself.
-            StringAssert.StartsWith(cut.Find("[data-testid=discovered]").TextContent, "id:42");
+            Assert.StartsWith("id:42", cut.Find("[data-testid=discovered]").TextContent);
         });
     }
 
@@ -54,7 +54,7 @@ public class FoundTemplateTests : BunitTestContext
         {
             Assert.AreEqual("content", cut.Find("[data-testid=content-route]").TextContent);
             // No page type exists for a Content route, so the Found template must not have run.
-            Assert.AreEqual(0, cut.FindAll("[data-testid=found-page-type]").Count);
+            Assert.IsEmpty(cut.FindAll("[data-testid=found-page-type]"));
         });
     }
 
@@ -69,7 +69,7 @@ public class FoundTemplateTests : BunitTestContext
         cut.WaitForAssertion(() =>
         {
             Assert.AreEqual("nf:/definitely-missing", cut.Find("[data-testid=not-found]").TextContent);
-            Assert.AreEqual(0, cut.FindAll("[data-testid=found-page-type]").Count);
+            Assert.IsEmpty(cut.FindAll("[data-testid=found-page-type]"));
         });
     }
 
@@ -89,7 +89,7 @@ public class FoundTemplateTests : BunitTestContext
         {
             Assert.AreEqual(nameof(HandComponentPage), cut.Find("[data-testid=found-page-type]").TextContent);
             // The previous page was unrendered along with its Found wrapper.
-            Assert.AreEqual(0, cut.FindAll("[data-testid=discovered]").Count);
+            Assert.IsEmpty(cut.FindAll("[data-testid=discovered]"));
         });
     }
 
@@ -168,7 +168,7 @@ public class FoundTemplateTests : BunitTestContext
         cut.WaitForAssertion(() =>
         {
             Assert.AreEqual("denied", cut.Find("[data-testid=not-authorized]").TextContent);
-            Assert.AreEqual(0, cut.FindAll("[data-testid=secure]").Count);
+            Assert.IsEmpty(cut.FindAll("[data-testid=secure]"));
         });
     }
 }

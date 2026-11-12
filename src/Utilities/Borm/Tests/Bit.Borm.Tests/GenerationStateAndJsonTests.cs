@@ -14,7 +14,7 @@ public class SchemaGeneratorTests
         Assert.IsTrue(form.FindField("FirstName")!.Required);
         Assert.AreEqual(BormFieldType.Email, form.FindField("Email")!.Type);
         Assert.AreEqual(BormFieldType.Select, form.FindField("AccountType")!.Type);
-        Assert.AreEqual(2, form.FindField("AccountType")!.Options.Count);
+        Assert.HasCount(2, form.FindField("AccountType")!.Options);
         Assert.AreEqual(BormFieldType.Object, form.FindField("Address")!.Type);
         Assert.AreEqual(BormFieldType.Array, form.FindField("Items")!.Type);
         Assert.IsNotNull(form.FindField("Items")!.ItemTemplate);
@@ -47,7 +47,7 @@ public class FormBuilderTests
         Assert.AreEqual("Register", form.Title);
         Assert.AreEqual(BormFieldType.Integer, form.FindField("Age")!.Type);
         Assert.AreEqual(BormFieldType.Select, form.FindField("AccountType")!.Type);
-        Assert.AreEqual(2, form.FindField("AccountType")!.Options.Count);
+        Assert.HasCount(2, form.FindField("AccountType")!.Options);
     }
 
     [TestMethod]
@@ -63,7 +63,7 @@ public class FormBuilderTests
         Assert.IsTrue(form.IsWizard);
         Assert.AreEqual(BormFieldType.Object, form.FindField("address")!.Type);
         Assert.AreEqual(BormFieldType.Array, form.FindField("items")!.Type);
-        Assert.AreEqual(2, form.FindField("items")!.ItemTemplate!.Children.Count);
+        Assert.HasCount(2, form.FindField("items")!.ItemTemplate!.Children);
     }
 }
 
@@ -132,7 +132,7 @@ public class FormStateTests
             .Checkbox("subscribe", f => f.Default(true))
             .Build();
         var state = new BormState(form, new BormDictionaryDataAccessor());
-        Assert.AreEqual(true, state.GetValue("subscribe"));
+        Assert.IsTrue((bool?)state.GetValue("subscribe"));
     }
 }
 
@@ -183,7 +183,7 @@ public class JsonSchemaTests
         var exported = BormJsonSchemaExporter.Export(original);
         var reimported = BormJsonSchemaImporter.Import(exported);
 
-        Assert.AreEqual(original.Fields.Count, reimported.Fields.Count);
+        Assert.HasCount(original.Fields.Count, reimported.Fields);
         Assert.AreEqual(BormFieldType.Email, reimported.FindField("email")!.Type);
         Assert.AreEqual(BormFieldType.Select, reimported.FindField("role")!.Type);
         Assert.IsTrue(reimported.FindField("name")!.Required);

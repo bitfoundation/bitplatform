@@ -32,12 +32,12 @@ public partial class BitFullCalendarE2ETests
 
         await Badge(Page.Locator("#motion-cal"), "l1").ClickAsync();
         var reduced = Seconds(await Dialog(Page.Locator("#motion-cal")).EvaluateAsync<string>("e => getComputedStyle(e).animationDuration"));
-        Assert.IsTrue(reduced < 0.02, $"the dialog's entrance collapses under reduced motion ({reduced}s)");
+        Assert.IsLessThan(0.02, reduced, $"the dialog's entrance collapses under reduced motion ({reduced}s)");
         await PressEscapeAsync();
 
         await Badge(Page.Locator("#motion-fam-cal"), "l1").ClickAsync();
         var forced = Seconds(await Dialog(Page.Locator("#motion-fam-cal")).EvaluateAsync<string>("e => getComputedStyle(e).animationDuration"));
-        Assert.IsTrue(forced > 0.05, $"ForceAnimation keeps the dialog's entrance ({forced}s)");
+        Assert.IsGreaterThan(0.05, forced, $"ForceAnimation keeps the dialog's entrance ({forced}s)");
     }
 
     [TestMethod]
@@ -120,8 +120,8 @@ public partial class BitFullCalendarE2ETests
         var html = await response.TextAsync();
 
         Assert.IsTrue(response.Ok);
-        StringAssert.Contains(html, "Loaded Jul 1");
-        StringAssert.Contains(html, "id=\"loaded\">2025-07-01|2025-07-31|5");
+        Assert.Contains("Loaded Jul 1", html);
+        Assert.Contains("id=\"loaded\">2025-07-01|2025-07-31|5", html);
     }
 
     [TestMethod]
@@ -162,9 +162,9 @@ public partial class BitFullCalendarE2ETests
                 """));
         }
 
-        CollectionAssert.AreEqual(new[] { "Previous", "Next", "Events", "Month", "Filter events by color", "Filter events by person in current view", "Add Event", "Settings", "grid" }, stops.Where(s => s != "scroller").Take(9).ToArray(), string.Join(" > ", stops));
-        Assert.AreEqual(1, stops.Count(s => s == "grid"), "the month grid is one tab stop");
-        Assert.AreEqual(1, stops.Count(s => s == "e4"), "a multi-day event is one stop per week row it runs across");
+        Assert.AreSequenceEqual(new[] { "Previous", "Next", "Events", "Month", "Filter events by color", "Filter events by person in current view", "Add Event", "Settings", "grid" }, stops.Where(s => s != "scroller").Take(9).ToArray(), string.Join(" > ", stops));
+        Assert.ContainsSingle(s => s == "grid", stops, "the month grid is one tab stop");
+        Assert.ContainsSingle(s => s == "e4", stops, "a multi-day event is one stop per week row it runs across");
         CollectionAssert.IsSubsetOf(new[] { "e6", "e1", "e2", "e3", "e4", "e5", "e7" }, stops);
     }
 

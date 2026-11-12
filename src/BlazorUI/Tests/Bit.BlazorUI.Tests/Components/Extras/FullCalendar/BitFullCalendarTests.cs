@@ -99,8 +99,8 @@ public class BitFullCalendarTests : BunitTestContext
         var component = RenderCalendar();
 
         Assert.IsFalse(component.Find(".bit-bfc").ClassList.Contains("bit-bfc-readonly"));
-        Assert.AreEqual(1, component.FindAll(AddButtonSelector).Count);
-        Assert.IsTrue(component.FindAll(".bit-bfc-cell-add-hint").Count > 0);
+        Assert.ContainsSingle(component.FindAll(AddButtonSelector));
+        Assert.IsNotEmpty(component.FindAll(".bit-bfc-cell-add-hint"));
     }
 
     [TestMethod]
@@ -109,8 +109,8 @@ public class BitFullCalendarTests : BunitTestContext
         var component = RenderCalendar(readOnly: true);
 
         Assert.IsTrue(component.Find(".bit-bfc").ClassList.Contains("bit-bfc-readonly"));
-        Assert.AreEqual(0, component.FindAll(AddButtonSelector).Count);
-        Assert.AreEqual(0, component.FindAll(".bit-bfc-cell-add-hint").Count);
+        Assert.IsEmpty(component.FindAll(AddButtonSelector));
+        Assert.IsEmpty(component.FindAll(".bit-bfc-cell-add-hint"));
     }
 
     [TestMethod]
@@ -119,9 +119,9 @@ public class BitFullCalendarTests : BunitTestContext
         var component = RenderCalendar(readOnly: true);
 
         // Everything that does not modify events has to survive read-only.
-        Assert.AreEqual(5, component.FindAll(".bit-bfc-view-tab").Count);
+        Assert.HasCount(5, component.FindAll(".bit-bfc-view-tab"));
         Assert.IsNotNull(component.Find(".bit-bfc-header-left"));
-        Assert.IsTrue(component.FindAll(".bit-bfc-header-right .bit-bfc-dropdown").Count > 0);
+        Assert.IsNotEmpty(component.FindAll(".bit-bfc-header-right .bit-bfc-dropdown"));
     }
 
     [TestMethod]
@@ -143,7 +143,7 @@ public class BitFullCalendarTests : BunitTestContext
         component.Find(".bit-bfc-month-cell").Click();
 
         // The add/edit dialog is the only one carrying form fields.
-        Assert.AreEqual(0, component.FindAll(".bit-bfc-field").Count);
+        Assert.IsEmpty(component.FindAll(".bit-bfc-field"));
     }
 
     [TestMethod]
@@ -153,7 +153,7 @@ public class BitFullCalendarTests : BunitTestContext
 
         component.Find(".bit-bfc-month-cell").Click();
 
-        Assert.IsTrue(component.FindAll(".bit-bfc-field").Count > 0);
+        Assert.IsNotEmpty(component.FindAll(".bit-bfc-field"));
     }
 
     [TestMethod]
@@ -185,16 +185,16 @@ public class BitFullCalendarTests : BunitTestContext
     {
         var editable = RenderCalendar();
         editable.Find(".bit-bfc-event-badge").Click();
-        Assert.AreEqual(1, editable.FindAll(".bit-bfc-dialog-footer .bit-bfc-btn-danger").Count);
-        Assert.AreEqual(3, editable.FindAll(".bit-bfc-dialog-footer button").Count);
+        Assert.ContainsSingle(editable.FindAll(".bit-bfc-dialog-footer .bit-bfc-btn-danger"));
+        Assert.HasCount(3, editable.FindAll(".bit-bfc-dialog-footer button"));
 
         var readOnly = RenderCalendar(readOnly: true);
         readOnly.Find(".bit-bfc-event-badge").Click();
 
         // The details stay readable; only the mutating actions go, leaving Close on its own.
         Assert.IsNotNull(readOnly.Find(".bit-bfc-dialog"));
-        Assert.AreEqual(0, readOnly.FindAll(".bit-bfc-dialog-footer .bit-bfc-btn-danger").Count);
-        Assert.AreEqual(1, readOnly.FindAll(".bit-bfc-dialog-footer button").Count);
+        Assert.IsEmpty(readOnly.FindAll(".bit-bfc-dialog-footer .bit-bfc-btn-danger"));
+        Assert.ContainsSingle(readOnly.FindAll(".bit-bfc-dialog-footer button"));
     }
 
     [TestMethod]
@@ -211,16 +211,16 @@ public class BitFullCalendarTests : BunitTestContext
         // Details footer while editable: Edit, Delete, Close.
         component.FindAll(".bit-bfc-dialog-footer button")[0].Click();
         // The edit dialog opens on top of the details dialog, and it owns the only Save button.
-        Assert.AreEqual(2, component.FindAll(".bit-bfc-dialog").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-bfc-dialog-footer .bit-bfc-btn-primary").Count);
+        Assert.HasCount(2, component.FindAll(".bit-bfc-dialog"));
+        Assert.ContainsSingle(component.FindAll(".bit-bfc-dialog-footer .bit-bfc-btn-primary"));
 
         // Read-only arrives while the form is open: every entry point only checks read-only when it
         // opens the dialog, so the open form has to close itself instead of staying live.
         component.Render(parameters => parameters.Add(p => p.ReadOnly, true));
 
-        Assert.AreEqual(1, component.FindAll(".bit-bfc-dialog").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-bfc-dialog-footer .bit-bfc-btn-primary").Count);
-        Assert.AreEqual(0, changes.Count);
+        Assert.ContainsSingle(component.FindAll(".bit-bfc-dialog"));
+        Assert.IsEmpty(component.FindAll(".bit-bfc-dialog-footer .bit-bfc-btn-primary"));
+        Assert.IsEmpty(changes);
     }
 
     [TestMethod]
@@ -244,11 +244,11 @@ public class BitFullCalendarTests : BunitTestContext
     public void BitFullCalendarReadOnlyShouldRemoveTheResizeHandles()
     {
         var editable = RenderCalendar(defaultView: BitFullCalendarView.Day);
-        Assert.AreEqual(2, editable.FindAll(".bit-bfc-resize-handle").Count);
+        Assert.HasCount(2, editable.FindAll(".bit-bfc-resize-handle"));
 
         var readOnly = RenderCalendar(readOnly: true, defaultView: BitFullCalendarView.Day);
 
-        Assert.AreEqual(0, readOnly.FindAll(".bit-bfc-resize-handle").Count);
+        Assert.IsEmpty(readOnly.FindAll(".bit-bfc-resize-handle"));
         Assert.AreEqual("false", readOnly.Find(".bit-bfc-event-block").GetAttribute("draggable"));
     }
 
@@ -266,13 +266,13 @@ public class BitFullCalendarTests : BunitTestContext
         var block = component.FindComponent<BitFcEventBlock>().Instance;
         await component.InvokeAsync(() => block.OnResizeStart("bottom"));
         await component.InvokeAsync(() => block.OnResizeMove("bottom", 60));
-        Assert.AreEqual(1, component.FindAll(".bit-bfc-resize-preview").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-bfc-resize-preview"));
 
         // Read-only lands mid-gesture: the preview goes away and the gesture is cancelled outright.
         component.Render(parameters => parameters.Add(p => p.ReadOnly, true));
         Assert.AreSame(block, component.FindComponent<BitFcEventBlock>().Instance);
         await component.InvokeAsync(() => block.OnResizeMove("bottom", 90));
-        Assert.AreEqual(0, component.FindAll(".bit-bfc-resize-preview").Count);
+        Assert.IsEmpty(component.FindAll(".bit-bfc-resize-preview"));
 
         // Read-only switched back off before the pointer is released: the cancelled gesture must not
         // pick up again, so neither the remaining moves nor the release may change the event.
@@ -280,15 +280,15 @@ public class BitFullCalendarTests : BunitTestContext
         await component.InvokeAsync(() => block.OnResizeMove("bottom", 120));
         await component.InvokeAsync(block.OnResizeEnd);
 
-        Assert.AreEqual(0, changes.Count);
-        Assert.AreEqual(0, component.FindAll(".bit-bfc-resize-preview").Count);
+        Assert.IsEmpty(changes);
+        Assert.IsEmpty(component.FindAll(".bit-bfc-resize-preview"));
 
         // A brand new gesture still resizes: cancelling must not wedge the block.
         await component.InvokeAsync(() => block.OnResizeStart("bottom"));
         await component.InvokeAsync(() => block.OnResizeMove("bottom", 60));
         await component.InvokeAsync(block.OnResizeEnd);
 
-        Assert.AreEqual(1, changes.Count);
+        Assert.ContainsSingle(changes);
         Assert.AreEqual(BitFullCalendarChangeSource.Resize, changes[0].Source);
     }
 
@@ -308,25 +308,25 @@ public class BitFullCalendarTests : BunitTestContext
         var block = component.FindComponent<BitFcTimelineEventBlock>().Instance;
         await component.InvokeAsync(() => block.OnResizeStart("end"));
         await component.InvokeAsync(() => block.OnResizeMove("end", 200));
-        Assert.AreEqual(1, component.FindAll(".bit-bfc-resize-preview").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-bfc-resize-preview"));
 
         component.Render(parameters => parameters.Add(p => p.ReadOnly, true));
         Assert.AreSame(block, component.FindComponent<BitFcTimelineEventBlock>().Instance);
         await component.InvokeAsync(() => block.OnResizeMove("end", 240));
-        Assert.AreEqual(0, component.FindAll(".bit-bfc-resize-preview").Count);
+        Assert.IsEmpty(component.FindAll(".bit-bfc-resize-preview"));
 
         component.Render(parameters => parameters.Add(p => p.ReadOnly, false));
         await component.InvokeAsync(() => block.OnResizeMove("end", 280));
         await component.InvokeAsync(block.OnResizeEnd);
 
-        Assert.AreEqual(0, changes.Count);
-        Assert.AreEqual(0, component.FindAll(".bit-bfc-resize-preview").Count);
+        Assert.IsEmpty(changes);
+        Assert.IsEmpty(component.FindAll(".bit-bfc-resize-preview"));
 
         await component.InvokeAsync(() => block.OnResizeStart("end"));
         await component.InvokeAsync(() => block.OnResizeMove("end", 200));
         await component.InvokeAsync(block.OnResizeEnd);
 
-        Assert.AreEqual(1, changes.Count);
+        Assert.ContainsSingle(changes);
         Assert.AreEqual(BitFullCalendarChangeSource.Resize, changes[0].Source);
     }
 
@@ -335,14 +335,14 @@ public class BitFullCalendarTests : BunitTestContext
     {
         var editable = RenderCalendar(defaultView: BitFullCalendarView.Day, resources: true, defaultMode: BitFullCalendarMode.Timeline);
         Assert.AreEqual("button", editable.Find(".bit-bfc-tl-cell-slot").GetAttribute("role"));
-        Assert.IsTrue(editable.FindAll(".bit-bfc-cell-add-hint").Count > 0);
+        Assert.IsNotEmpty(editable.FindAll(".bit-bfc-cell-add-hint"));
 
         var readOnly = RenderCalendar(readOnly: true, defaultView: BitFullCalendarView.Day, resources: true, defaultMode: BitFullCalendarMode.Timeline);
 
         var slot = readOnly.Find(".bit-bfc-tl-cell-slot");
         Assert.IsNull(slot.GetAttribute("role"));
         Assert.IsNull(slot.GetAttribute("tabindex"));
-        Assert.AreEqual(0, readOnly.FindAll(".bit-bfc-cell-add-hint").Count);
+        Assert.IsEmpty(readOnly.FindAll(".bit-bfc-cell-add-hint"));
         Assert.AreEqual("false", readOnly.Find(".bit-bfc-timeline-event").GetAttribute("draggable"));
     }
 
@@ -350,7 +350,7 @@ public class BitFullCalendarTests : BunitTestContext
     public void BitFullCalendarShouldRestoreTheAffordancesWhenReadOnlyIsTurnedOff()
     {
         var component = RenderCalendar(readOnly: true);
-        Assert.AreEqual(0, component.FindAll(AddButtonSelector).Count);
+        Assert.IsEmpty(component.FindAll(AddButtonSelector));
 
         component.Render(parameters =>
         {
@@ -358,7 +358,7 @@ public class BitFullCalendarTests : BunitTestContext
             parameters.Add(p => p.ReadOnly, false);
         });
 
-        Assert.AreEqual(1, component.FindAll(AddButtonSelector).Count);
+        Assert.ContainsSingle(component.FindAll(AddButtonSelector));
         Assert.AreEqual("true", component.Find(".bit-bfc-event-badge").GetAttribute("draggable"));
         Assert.IsFalse(component.Find(".bit-bfc").ClassList.Contains("bit-bfc-readonly"));
     }
@@ -374,7 +374,7 @@ public class BitFullCalendarTests : BunitTestContext
 
         var labels = component.FindAll(".bit-bfc-view-tab").Select(t => t.TextContent.Trim()).ToArray();
 
-        CollectionAssert.AreEqual(new[] { "Day", "Week", "Month", "Year", "Agenda" }, labels);
+        Assert.AreSequenceEqual(new[] { "Day", "Week", "Month", "Year", "Agenda" }, labels);
     }
 
     [TestMethod]
@@ -384,7 +384,7 @@ public class BitFullCalendarTests : BunitTestContext
 
         var labels = component.FindAll(".bit-bfc-view-tab").Select(t => t.TextContent.Trim()).ToArray();
 
-        CollectionAssert.AreEqual(new[] { "Agenda", "Week" }, labels);
+        Assert.AreSequenceEqual(new[] { "Agenda", "Week" }, labels);
     }
 
     [TestMethod]
@@ -392,7 +392,7 @@ public class BitFullCalendarTests : BunitTestContext
     {
         var component = RenderCalendar(views: [BitFullCalendarView.Month]);
 
-        Assert.AreEqual(0, component.FindAll(".bit-bfc-view-tabs").Count);
+        Assert.IsEmpty(component.FindAll(".bit-bfc-view-tabs"));
         Assert.IsNotNull(component.Find(".bit-bfc-month"));
     }
 
@@ -519,11 +519,11 @@ public class BitFullCalendarTests : BunitTestContext
     public void BitFullCalendarViewsShouldHideTheModeTabsWhenNoViewSupportsTheTimeline()
     {
         var withTimeline = RenderCalendar(resources: true);
-        Assert.AreEqual(1, withTimeline.FindAll(".bit-bfc-mode-tabs").Count);
+        Assert.ContainsSingle(withTimeline.FindAll(".bit-bfc-mode-tabs"));
 
         var withoutTimeline = RenderCalendar(views: [BitFullCalendarView.Year, BitFullCalendarView.Agenda], resources: true);
 
-        Assert.AreEqual(0, withoutTimeline.FindAll(".bit-bfc-mode-tabs").Count);
+        Assert.IsEmpty(withoutTimeline.FindAll(".bit-bfc-mode-tabs"));
     }
 
     [TestMethod]
@@ -547,14 +547,14 @@ public class BitFullCalendarTests : BunitTestContext
         var labels = component.FindAll(".bit-bfc-view-tab").Select(t => t.TextContent.Trim()).ToArray();
 
         // Agenda is allowed but the timeline cannot lay it out, so only the supported ones remain.
-        CollectionAssert.AreEqual(new[] { "Week", "Day" }, labels);
+        Assert.AreSequenceEqual(new[] { "Week", "Day" }, labels);
     }
 
     [TestMethod]
     public void BitFullCalendarViewsShouldReactToALaterChange()
     {
         var component = RenderCalendar();
-        Assert.AreEqual(5, component.FindAll(".bit-bfc-view-tab").Count);
+        Assert.HasCount(5, component.FindAll(".bit-bfc-view-tab"));
 
         component.Render(parameters =>
         {
@@ -562,7 +562,7 @@ public class BitFullCalendarTests : BunitTestContext
             parameters.Add(p => p.Views, [BitFullCalendarView.Day, BitFullCalendarView.Week]);
         });
 
-        Assert.AreEqual(2, component.FindAll(".bit-bfc-view-tab").Count);
+        Assert.HasCount(2, component.FindAll(".bit-bfc-view-tab"));
         Assert.AreEqual(BitFullCalendarView.Day, component.Instance.View);
     }
 
@@ -689,7 +689,7 @@ public class BitFullCalendarTests : BunitTestContext
 
         // Not even for a moment: the views synced ahead of the bound view must not hand the binding
         // the view the state started on.
-        CollectionAssert.AreEqual(new List<BitFullCalendarView>(), pushed, "the binding was handed a view it never asked for");
+        Assert.AreSequenceEqual(new List<BitFullCalendarView>(), pushed, "the binding was handed a view it never asked for");
         Assert.AreEqual(0, raised, "applying the bound value is not a change the user made");
     }
 
@@ -822,8 +822,8 @@ public class BitFullCalendarTests : BunitTestContext
             new BitFullCalendarSettings { VisibleStartHour = 8, VisibleEndHour = 18 },
             BitFullCalendarView.Day);
 
-        Assert.AreEqual(10, component.FindAll(".bit-bfc-hour-row").Count);
-        Assert.AreEqual(10, component.FindAll(".bit-bfc-time-slot-label").Count);
+        Assert.HasCount(10, component.FindAll(".bit-bfc-hour-row"));
+        Assert.HasCount(10, component.FindAll(".bit-bfc-time-slot-label"));
     }
 
     [TestMethod]
@@ -831,7 +831,7 @@ public class BitFullCalendarTests : BunitTestContext
     {
         var component = RenderCalendar(defaultView: BitFullCalendarView.Day);
 
-        Assert.AreEqual(24, component.FindAll(".bit-bfc-hour-row").Count);
+        Assert.HasCount(24, component.FindAll(".bit-bfc-hour-row"));
     }
 
     [TestMethod]
@@ -841,15 +841,15 @@ public class BitFullCalendarTests : BunitTestContext
             new BitFullCalendarSettings { VisibleStartHour = 8, VisibleEndHour = 10 },
             BitFullCalendarView.Day);
         // Two hours × (one leading slot + one trailing slot).
-        Assert.AreEqual(2, half.FindAll(".bit-bfc-hour-slot").Count);
-        Assert.AreEqual(2, half.FindAll(".bit-bfc-hour-row-half").Count);
+        Assert.HasCount(2, half.FindAll(".bit-bfc-hour-slot"));
+        Assert.HasCount(2, half.FindAll(".bit-bfc-hour-row-half"));
 
         var quarter = RenderWithSettings(
             new BitFullCalendarSettings { VisibleStartHour = 8, VisibleEndHour = 10, SlotDurationMinutes = 15 },
             BitFullCalendarView.Day);
 
-        Assert.AreEqual(2, quarter.FindAll(".bit-bfc-hour-slot").Count);
-        Assert.AreEqual(6, quarter.FindAll(".bit-bfc-hour-row-half").Count);
+        Assert.HasCount(2, quarter.FindAll(".bit-bfc-hour-slot"));
+        Assert.HasCount(6, quarter.FindAll(".bit-bfc-hour-row-half"));
     }
 
     [TestMethod]
@@ -859,15 +859,15 @@ public class BitFullCalendarTests : BunitTestContext
             new BitFullCalendarSettings { VisibleStartHour = 8, VisibleEndHour = 12, SlotDurationMinutes = 60 },
             BitFullCalendarView.Day);
 
-        Assert.AreEqual(4, component.FindAll(".bit-bfc-hour-slot").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-bfc-hour-row-half").Count);
+        Assert.HasCount(4, component.FindAll(".bit-bfc-hour-slot"));
+        Assert.IsEmpty(component.FindAll(".bit-bfc-hour-row-half"));
     }
 
     [TestMethod]
     public void BitFullCalendarShouldNotRenderTheNowIndicatorOnAnotherDay()
     {
         var today = RenderCalendar(defaultView: BitFullCalendarView.Day);
-        Assert.AreEqual(1, today.FindAll(".bit-bfc-timeline").Count);
+        Assert.ContainsSingle(today.FindAll(".bit-bfc-timeline"));
 
         var otherDay = RenderComponent<BitFullCalendar>(parameters =>
         {
@@ -876,7 +876,7 @@ public class BitFullCalendarTests : BunitTestContext
             parameters.Add(p => p.DefaultDate, Today.AddDays(3));
         });
 
-        Assert.AreEqual(0, otherDay.FindAll(".bit-bfc-timeline").Count, "\"now\" only exists on today's column");
+        Assert.IsEmpty(otherDay.FindAll(".bit-bfc-timeline"), "\"now\" only exists on today's column");
     }
 
     [TestMethod]
@@ -886,7 +886,7 @@ public class BitFullCalendarTests : BunitTestContext
             new BitFullCalendarSettings { ShowCurrentTimeIndicator = false },
             BitFullCalendarView.Day);
 
-        Assert.AreEqual(0, component.FindAll(".bit-bfc-timeline").Count);
+        Assert.IsEmpty(component.FindAll(".bit-bfc-timeline"));
     }
 
     #endregion
@@ -899,7 +899,7 @@ public class BitFullCalendarTests : BunitTestContext
         var component = RenderWithSettings(
             new BitFullCalendarSettings { HiddenDays = [DayOfWeek.Saturday, DayOfWeek.Sunday] });
 
-        Assert.AreEqual(5, component.FindAll(".bit-bfc-month-header-cell").Count);
+        Assert.HasCount(5, component.FindAll(".bit-bfc-month-header-cell"));
         Assert.AreEqual(0, component.FindAll(".bit-bfc-month-cell").Count % 5);
     }
 
@@ -910,8 +910,8 @@ public class BitFullCalendarTests : BunitTestContext
             new BitFullCalendarSettings { HiddenDays = [DayOfWeek.Saturday, DayOfWeek.Sunday] },
             BitFullCalendarView.Week);
 
-        Assert.AreEqual(5, component.FindAll(".bit-bfc-week-header-day").Count);
-        Assert.AreEqual(5, component.FindAll(".bit-bfc-week-day-col").Count);
+        Assert.HasCount(5, component.FindAll(".bit-bfc-week-header-day"));
+        Assert.HasCount(5, component.FindAll(".bit-bfc-week-day-col"));
     }
 
     [TestMethod]
@@ -919,7 +919,7 @@ public class BitFullCalendarTests : BunitTestContext
     {
         var component = RenderCalendar();
 
-        Assert.AreEqual(7, component.FindAll(".bit-bfc-month-header-cell").Count);
+        Assert.HasCount(7, component.FindAll(".bit-bfc-month-header-cell"));
     }
 
     [TestMethod]
@@ -934,12 +934,12 @@ public class BitFullCalendarTests : BunitTestContext
     public void BitFullCalendarShouldRenderWeekNumbersOnlyWhenAskedTo()
     {
         var without = RenderCalendar();
-        Assert.AreEqual(0, without.FindAll(".bit-bfc-weeknum-cell").Count);
+        Assert.IsEmpty(without.FindAll(".bit-bfc-weeknum-cell"));
 
         var with = RenderWithSettings(new BitFullCalendarSettings { ShowWeekNumbers = true });
 
         // One rail cell per rendered week row.
-        Assert.IsTrue(with.FindAll(".bit-bfc-weeknum-cell").Count >= 4);
+        Assert.IsGreaterThanOrEqualTo(4, with.FindAll(".bit-bfc-weeknum-cell").Count);
     }
 
     [TestMethod]
@@ -982,8 +982,8 @@ public class BitFullCalendarTests : BunitTestContext
         });
 
         // The timed event owns the only block on the hour grid; the all-day one sits above it.
-        Assert.AreEqual(1, component.FindAll(".bit-bfc-event-block").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-bfc-multiday-row .bit-bfc-event-badge").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-bfc-event-block"));
+        Assert.ContainsSingle(component.FindAll(".bit-bfc-multiday-row .bit-bfc-event-badge"));
         Assert.IsTrue(component.Find(".bit-bfc-multiday-row .bit-bfc-event-badge").ClassList.Contains("bit-bfc-event-allday"));
     }
 
@@ -998,7 +998,7 @@ public class BitFullCalendarTests : BunitTestContext
 
         var badge = component.Find(".bit-bfc-multiday-row .bit-bfc-event-badge");
         Assert.AreEqual("All day", badge.QuerySelector(".bit-bfc-event-badge-time")!.TextContent.Trim());
-        StringAssert.Contains(badge.GetAttribute("aria-label"), "All day");
+        Assert.Contains("All day", badge.GetAttribute("aria-label")!);
     }
 
     [TestMethod]
@@ -1033,13 +1033,13 @@ public class BitFullCalendarTests : BunitTestContext
         });
 
         // The calendar itself stays editable...
-        Assert.AreEqual(1, component.FindAll(AddButtonSelector).Count);
+        Assert.ContainsSingle(component.FindAll(AddButtonSelector));
         // ...but this event cannot be dragged or acted on.
         Assert.AreEqual("false", component.Find(".bit-bfc-event-badge").GetAttribute("draggable"));
 
         component.Find(".bit-bfc-event-badge").Click();
-        Assert.AreEqual(0, component.FindAll(".bit-bfc-dialog-footer .bit-bfc-btn-danger").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-bfc-dialog-footer button").Count);
+        Assert.IsEmpty(component.FindAll(".bit-bfc-dialog-footer .bit-bfc-btn-danger"));
+        Assert.ContainsSingle(component.FindAll(".bit-bfc-dialog-footer button"));
     }
 
     [TestMethod]
@@ -1055,7 +1055,7 @@ public class BitFullCalendarTests : BunitTestContext
             parameters.Add(p => p.DefaultView, BitFullCalendarView.Day);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-bfc-resize-handle").Count);
+        Assert.IsEmpty(component.FindAll(".bit-bfc-resize-handle"));
     }
 
     #endregion
@@ -1111,7 +1111,7 @@ public class BitFullCalendarTests : BunitTestContext
             parameters.Add(p => p.MaxDate, Today.AddDays(2));
         });
 
-        Assert.IsTrue(component.FindAll(".bit-bfc-month-cell.bit-bfc-out-of-range").Count > 0);
+        Assert.IsNotEmpty(component.FindAll(".bit-bfc-month-cell.bit-bfc-out-of-range"));
     }
 
     #endregion
@@ -1143,11 +1143,11 @@ public class BitFullCalendarTests : BunitTestContext
         });
 
         var cellCount = threeSlots.FindAll(".bit-bfc-month-cell").Count;
-        Assert.AreEqual(cellCount * 3, threeSlots.FindAll(".bit-bfc-month-event-slot").Count);
-        Assert.AreEqual(cellCount * 5, fiveSlots.FindAll(".bit-bfc-month-event-slot").Count);
+        Assert.HasCount(cellCount * 3, threeSlots.FindAll(".bit-bfc-month-event-slot"));
+        Assert.HasCount(cellCount * 5, fiveSlots.FindAll(".bit-bfc-month-event-slot"));
         // Three of five shown leaves a "+2 more" affordance; all five leaves none.
-        Assert.AreEqual(1, threeSlots.FindAll(".bit-bfc-month-more").Count);
-        Assert.AreEqual(0, fiveSlots.FindAll(".bit-bfc-month-more").Count);
+        Assert.ContainsSingle(threeSlots.FindAll(".bit-bfc-month-more"));
+        Assert.IsEmpty(fiveSlots.FindAll(".bit-bfc-month-more"));
     }
 
     #endregion
@@ -1168,7 +1168,7 @@ public class BitFullCalendarTests : BunitTestContext
         var root = component.Find(".bit-bfc");
         Assert.AreEqual("my-calendar", root.Id);
         Assert.IsTrue(root.ClassList.Contains("custom-class"));
-        StringAssert.Contains(root.GetAttribute("style"), "--bit-bfc-height:400px");
+        Assert.Contains("--bit-bfc-height:400px", root.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1180,7 +1180,7 @@ public class BitFullCalendarTests : BunitTestContext
             parameters.Add(p => p.Visibility, BitVisibility.Collapsed);
         });
 
-        StringAssert.Contains(component.Find(".bit-bfc").GetAttribute("style"), "display:none");
+        Assert.Contains("display:none", component.Find(".bit-bfc").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1236,7 +1236,7 @@ public class BitFullCalendarTests : BunitTestContext
         Assert.IsInstanceOfType<GregorianCalendar>(component.Instance.State.Culture.DateTimeFormat.Calendar);
         Assert.AreEqual(anchor.ToString("Y", gregorian), component.Find(".bit-bfc-header-title").TextContent.Trim());
         Assert.AreNotEqual(anchor.ToString("Y", hijri), component.Find(".bit-bfc-header-title").TextContent.Trim());
-        Assert.AreEqual(31, component.FindAll(".bit-bfc-month-cell:not(.other-month)").Count);
+        Assert.HasCount(31, component.FindAll(".bit-bfc-month-cell:not(.other-month)"));
     }
 
     [TestMethod]
@@ -1249,7 +1249,7 @@ public class BitFullCalendarTests : BunitTestContext
         });
 
         Assert.IsTrue(component.Instance.State.ReadOnly);
-        Assert.AreEqual(0, component.FindAll(AddButtonSelector).Count);
+        Assert.IsEmpty(component.FindAll(AddButtonSelector));
     }
 
     #endregion
@@ -1266,7 +1266,7 @@ public class BitFullCalendarTests : BunitTestContext
             parameters.Add(p => p.OnDateChange, EventCallback.Factory.Create<BitFullCalendarDateChangeEventArgs>(this, ranges.Add));
         });
 
-        Assert.AreEqual(1, ranges.Count, "consumers need the first range to fetch the events for it");
+        Assert.ContainsSingle(ranges, "consumers need the first range to fetch the events for it");
         Assert.AreEqual(BitFullCalendarView.Month, ranges[0].View);
         Assert.AreEqual(1, ranges[0].Start.Day);
     }
@@ -1322,11 +1322,11 @@ public class BitFullCalendarTests : BunitTestContext
     {
         var component = RenderCalendar();
         component.Find(".bit-bfc-event-badge").Click();
-        Assert.AreEqual(1, component.FindAll(".bit-bfc-dialog").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-bfc-dialog"));
 
         component.Find(".bit-bfc-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
-        Assert.AreEqual(0, component.FindAll(".bit-bfc-dialog").Count);
+        Assert.IsEmpty(component.FindAll(".bit-bfc-dialog"));
     }
 
     [TestMethod]
@@ -1334,11 +1334,11 @@ public class BitFullCalendarTests : BunitTestContext
     {
         var component = RenderCalendar();
         component.Find(".bit-bfc-month-cell").Click();
-        Assert.IsTrue(component.FindAll(".bit-bfc-field").Count > 0);
+        Assert.IsNotEmpty(component.FindAll(".bit-bfc-field"));
 
         component.Find(".bit-bfc-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
-        Assert.AreEqual(0, component.FindAll(".bit-bfc-field").Count);
+        Assert.IsEmpty(component.FindAll(".bit-bfc-field"));
     }
 
     // The dialogs claim the Escape they close on (data-bit-esc, read by Utils.claimEscape), so a surface the calendar
@@ -1369,7 +1369,7 @@ public class BitFullCalendarTests : BunitTestContext
         component.WaitForAssertion(() => Assert.IsTrue(component.Find(".bit-bfc-dialog-footer .bit-bfc-btn-primary").HasAttribute("disabled")));
         Assert.AreEqual("claim", component.Find(".bit-bfc-dialog").GetAttribute("data-bit-esc"));
         component.Find(".bit-bfc-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
-        Assert.AreEqual(1, component.FindAll(".bit-bfc-dialog").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-bfc-dialog"));
 
         gate.SetResult();
         await save;
@@ -1387,7 +1387,7 @@ public class BitFullCalendarTests : BunitTestContext
         component.FindAll(".bit-bfc-dialog-footer .bit-bfc-btn")[0].Click();
 
         var dialogs = component.FindAll(".bit-bfc-dialog");
-        Assert.AreEqual(2, dialogs.Count);
+        Assert.HasCount(2, dialogs);
         Assert.IsNull(dialogs[0].GetAttribute("data-bit-esc"), "the details dialog leaves the key to the edit overlay");
         Assert.AreEqual("claim", dialogs[1].GetAttribute("data-bit-esc"), "the edit overlay claims the key it closes on");
     }
@@ -1404,7 +1404,7 @@ public class BitFullCalendarTests : BunitTestContext
 
         component.Find(".bit-bfc-scope-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
-        Assert.AreEqual(0, component.FindAll(".bit-bfc-scope-dialog").Count);
+        Assert.IsEmpty(component.FindAll(".bit-bfc-scope-dialog"));
         Assert.AreEqual("claim", component.Find(".bit-bfc-dialog").GetAttribute("data-bit-esc"));
     }
 
@@ -1429,7 +1429,7 @@ public class BitFullCalendarTests : BunitTestContext
         component.WaitForAssertion(() => Assert.IsTrue(component.Find(".bit-bfc-dialog-footer .bit-bfc-btn-danger").HasAttribute("disabled")));
         Assert.AreEqual("claim", component.Find(".bit-bfc-dialog").GetAttribute("data-bit-esc"));
         component.Find(".bit-bfc-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
-        Assert.AreEqual(1, component.FindAll(".bit-bfc-dialog").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-bfc-dialog"));
 
         gate.SetResult();
         await delete;
@@ -1447,7 +1447,7 @@ public class BitFullCalendarTests : BunitTestContext
         component.Find(".bit-bfc-dialog .bit-bfc-agenda-item").Click();
 
         var dialogs = component.FindAll(".bit-bfc-dialog");
-        Assert.AreEqual(2, dialogs.Count);
+        Assert.HasCount(2, dialogs);
         Assert.IsNull(dialogs[0].GetAttribute("data-bit-esc"), "the event list leaves the key to the details overlay");
         Assert.AreEqual("claim", dialogs[1].GetAttribute("data-bit-esc"), "the details overlay claims the key it closes on");
     }
@@ -1469,7 +1469,7 @@ public class BitFullCalendarTests : BunitTestContext
 
         component.FindAll(".bit-bfc-dtp")[0].KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
-        Assert.AreEqual(0, component.FindAll(".bit-bfc-dtp-panel").Count);
+        Assert.IsEmpty(component.FindAll(".bit-bfc-dtp-panel"));
         Assert.IsNull(component.FindAll(".bit-bfc-dtp")[0].GetAttribute("data-bit-esc"));
         Assert.AreEqual("claim", component.Find(".bit-bfc-dialog").GetAttribute("data-bit-esc"), "the dialog is still open and claims the next press");
     }
@@ -1479,7 +1479,7 @@ public class BitFullCalendarTests : BunitTestContext
     {
         var without = RenderCalendar();
         without.Find(".bit-bfc-month-cell").Click();
-        Assert.AreEqual(0, without.FindAll("select[id^='bfc-resource-']").Count);
+        Assert.IsEmpty(without.FindAll("select[id^='bfc-resource-']"));
 
         var with = RenderCalendar(resources: true);
         with.Find(".bit-bfc-month-cell").Click();
@@ -1503,7 +1503,7 @@ public class BitFullCalendarTests : BunitTestContext
         component.Find("input[id^='bfc-title-']").Change("Planning");
         component.Find(".bit-bfc-dialog-footer .bit-bfc-btn-primary").Click();
 
-        Assert.AreEqual(1, changes.Count);
+        Assert.ContainsSingle(changes);
         Assert.AreEqual(BitFullCalendarChangeKind.Add, changes[0].Kind);
         Assert.AreEqual("Planning", changes[0].Event.Title);
     }
@@ -1523,8 +1523,8 @@ public class BitFullCalendarTests : BunitTestContext
         component.Find("input[id^='bfc-title-']").Change("Planning");
         component.Find(".bit-bfc-dialog-footer .bit-bfc-btn-primary").Click();
 
-        Assert.AreEqual(0, changes.Count);
-        Assert.IsTrue(component.FindAll(".bit-bfc-field-error").Count > 0);
+        Assert.IsEmpty(changes);
+        Assert.IsNotEmpty(component.FindAll(".bit-bfc-field-error"));
     }
 
     #endregion
@@ -1539,8 +1539,8 @@ public class BitFullCalendarTests : BunitTestContext
             BitFullCalendarView.Day);
 
         var slots = component.FindAll(".bit-bfc-hour-slot, .bit-bfc-hour-row-half");
-        Assert.AreEqual(8, slots.Count);
-        Assert.AreEqual(1, slots.Count(s => s.GetAttribute("tabindex") == "0"), "a grid must not flood the tab order");
+        Assert.HasCount(8, slots);
+        Assert.ContainsSingle(s => s.GetAttribute("tabindex") == "0", slots, "a grid must not flood the tab order");
         Assert.AreEqual(7, slots.Count(s => s.GetAttribute("tabindex") == "-1"));
     }
 
@@ -1598,8 +1598,8 @@ public class BitFullCalendarTests : BunitTestContext
             BitFullCalendarView.Week);
 
         var slots = component.FindAll(".bit-bfc-hour-slot, .bit-bfc-hour-row-half");
-        Assert.AreEqual(7 * 4, slots.Count);
-        Assert.AreEqual(1, slots.Count(s => s.GetAttribute("tabindex") == "0"));
+        Assert.HasCount(7 * 4, slots);
+        Assert.ContainsSingle(s => s.GetAttribute("tabindex") == "0", slots);
     }
 
     [TestMethod]
@@ -1626,8 +1626,8 @@ public class BitFullCalendarTests : BunitTestContext
         var component = RenderCalendar();
 
         var hints = component.FindAll(".bit-bfc-cell-add-hint-month");
-        Assert.IsTrue(hints.Count > 20);
-        Assert.AreEqual(1, hints.Count(h => h.GetAttribute("tabindex") == "0"));
+        Assert.IsGreaterThan(20, hints.Count);
+        Assert.ContainsSingle(h => h.GetAttribute("tabindex") == "0", hints);
     }
 
     [TestMethod]
@@ -1688,7 +1688,7 @@ public class BitFullCalendarTests : BunitTestContext
 
         component.Find(".bit-bfc-event-block").KeyDown(new KeyboardEventArgs { Key = "ArrowDown", AltKey = true });
 
-        Assert.AreEqual(1, changes.Count);
+        Assert.ContainsSingle(changes);
         Assert.AreEqual(BitFullCalendarChangeSource.Drag, changes[0].Source);
         Assert.AreEqual(Today.AddHours(9).AddMinutes(30), changes[0].Event.StartDate);
         Assert.AreEqual(Today.AddHours(10).AddMinutes(30), changes[0].Event.EndDate);
@@ -1702,7 +1702,7 @@ public class BitFullCalendarTests : BunitTestContext
 
         component.Find(".bit-bfc-event-block").KeyDown(new KeyboardEventArgs { Key = "ArrowDown", ShiftKey = true });
 
-        Assert.AreEqual(1, changes.Count);
+        Assert.ContainsSingle(changes);
         Assert.AreEqual(BitFullCalendarChangeSource.Resize, changes[0].Source);
         Assert.AreEqual(Today.AddHours(9), changes[0].Event.StartDate, "a resize leaves the start alone");
         Assert.AreEqual(Today.AddHours(10).AddMinutes(30), changes[0].Event.EndDate);
@@ -1725,7 +1725,7 @@ public class BitFullCalendarTests : BunitTestContext
 
         component.Find(".bit-bfc-event-block").KeyDown(new KeyboardEventArgs { Key = "ArrowUp", ShiftKey = true });
 
-        Assert.AreEqual(0, changes.Count, "one slot is already the minimum length");
+        Assert.IsEmpty(changes, "one slot is already the minimum length");
     }
 
     [TestMethod]
@@ -1751,8 +1751,8 @@ public class BitFullCalendarTests : BunitTestContext
         // touching today is exactly what makes the move the first real conflict.
         component.FindAll(".bit-bfc-event-block")[0].KeyDown(new KeyboardEventArgs { Key = "ArrowDown", AltKey = true });
 
-        Assert.AreEqual(0, changes.Count);
-        CollectionAssert.AreEqual(new[] { BitFullCalendarChangeRefusal.Overlap }, refusals.ToArray());
+        Assert.IsEmpty(changes);
+        Assert.AreSequenceEqual(new[] { BitFullCalendarChangeRefusal.Overlap }, refusals.ToArray());
     }
 
     // A save of the built-in dialog passes through the same rules a drop does, and is reported the same way: the
@@ -1796,9 +1796,9 @@ public class BitFullCalendarTests : BunitTestContext
 
         SaveEventOneThroughTheDialog(component);
 
-        Assert.AreEqual(0, changes.Count);
+        Assert.IsEmpty(changes);
         Assert.AreEqual("This time range is already taken on that resource.", component.Find(".bit-bfc-dialog-footer [role=alert]").TextContent.Trim());
-        CollectionAssert.AreEqual(new[] { BitFullCalendarChangeRefusal.Overlap }, refusals.ToArray());
+        Assert.AreSequenceEqual(new[] { BitFullCalendarChangeRefusal.Overlap }, refusals.ToArray());
         // the reason is shown once, where the user is looking - not again as the calendar's notice behind the dialog
         Assert.AreEqual(string.Empty, component.Find(".bit-bfc-toast-region").TextContent.Trim());
     }
@@ -1812,8 +1812,8 @@ public class BitFullCalendarTests : BunitTestContext
 
         SaveEventOneThroughTheDialog(component);
 
-        Assert.AreEqual(1, changes.Count);
-        Assert.AreEqual(0, refusals.Count);
+        Assert.ContainsSingle(changes);
+        Assert.IsEmpty(refusals);
     }
 
     [TestMethod]
@@ -1835,7 +1835,7 @@ public class BitFullCalendarTests : BunitTestContext
 
         SaveEventOneThroughTheDialog(component);
 
-        Assert.AreEqual(0, refusals.Count, "the app refused it itself, through OnChanging");
+        Assert.IsEmpty(refusals, "the app refused it itself, through OnChanging");
         Assert.IsNotNull(SaveChangesButton(component), "the dialog stays open on what was typed");
     }
 
@@ -1856,7 +1856,7 @@ public class BitFullCalendarTests : BunitTestContext
 
         component.Find(".bit-bfc-event-block").KeyDown(new KeyboardEventArgs { Key = "ArrowDown", AltKey = true });
 
-        Assert.AreEqual(0, changes.Count);
+        Assert.IsEmpty(changes);
     }
 
     [TestMethod]
@@ -1867,7 +1867,7 @@ public class BitFullCalendarTests : BunitTestContext
 
         component.Find(".bit-bfc-event-badge").KeyDown(new KeyboardEventArgs { Key = "ArrowRight", AltKey = true });
 
-        Assert.AreEqual(1, changes.Count);
+        Assert.ContainsSingle(changes);
         Assert.AreEqual(Today.AddDays(1).AddHours(9), changes[0].Event.StartDate);
     }
 
@@ -1879,7 +1879,7 @@ public class BitFullCalendarTests : BunitTestContext
 
         component.Find(".bit-bfc-event-block").KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });
 
-        Assert.AreEqual(0, changes.Count, "the modifier is what turns an arrow into an edit");
+        Assert.IsEmpty(changes, "the modifier is what turns an arrow into an edit");
     }
 
     #endregion
@@ -1890,11 +1890,11 @@ public class BitFullCalendarTests : BunitTestContext
     /// Every slot of the rendered time grid, re-queried on each call: running a handler re-renders
     /// the component, which invalidates the handler ids an earlier query captured.
     /// </summary>
-    private static IReadOnlyList<AngleSharp.Dom.IElement>Slots(IRenderedComponent<BitFullCalendar> component)
+    private static IReadOnlyList<AngleSharp.Dom.IElement> Slots(IRenderedComponent<BitFullCalendar> component)
         => component.FindAll(".bit-bfc-hour-slot, .bit-bfc-hour-row-half");
 
     /// <summary>The slots of one week-view day column, re-queried for the same reason.</summary>
-    private static IReadOnlyList<AngleSharp.Dom.IElement>ColumnSlots(IRenderedComponent<BitFullCalendar> component, int columnIndex)
+    private static IReadOnlyList<AngleSharp.Dom.IElement> ColumnSlots(IRenderedComponent<BitFullCalendar> component, int columnIndex)
         => component.FindAll($".bit-bfc-week-day-col:nth-of-type({columnIndex + 1}) .bit-bfc-hour-slot, .bit-bfc-week-day-col:nth-of-type({columnIndex + 1}) .bit-bfc-hour-row-half");
 
     [TestMethod]
@@ -1931,7 +1931,7 @@ public class BitFullCalendarTests : BunitTestContext
         Slots(component)[3].MouseEnter();
         Slots(component)[3].MouseUp();
 
-        Assert.AreEqual(1, drafts.Count);
+        Assert.ContainsSingle(drafts);
         Assert.AreEqual(Today.AddHours(8), drafts[0]!.StartDate);
         Assert.AreEqual(Today.AddHours(10), drafts[0]!.EndDate);
     }
@@ -1952,7 +1952,7 @@ public class BitFullCalendarTests : BunitTestContext
         Slots(component)[1].MouseEnter();
         Slots(component)[1].MouseUp();
 
-        Assert.AreEqual(1, drafts.Count);
+        Assert.ContainsSingle(drafts);
         Assert.AreEqual(Today.AddHours(8).AddMinutes(30), drafts[0]!.StartDate);
         Assert.AreEqual(Today.AddHours(10), drafts[0]!.EndDate);
     }
@@ -1972,11 +1972,11 @@ public class BitFullCalendarTests : BunitTestContext
         Slots(component)[0].MouseDown();
         Slots(component)[0].MouseUp();
 
-        Assert.AreEqual(0, drafts.Count, "a press and release on one slot is a click, not a range");
+        Assert.IsEmpty(drafts, "a press and release on one slot is a click, not a range");
 
         Slots(component)[0].Click();
 
-        Assert.AreEqual(1, drafts.Count);
+        Assert.ContainsSingle(drafts);
         Assert.AreEqual(Today.AddHours(8).AddMinutes(30), drafts[0]!.EndDate, "a click still covers one slot");
     }
 
@@ -1990,7 +1990,7 @@ public class BitFullCalendarTests : BunitTestContext
         Slots(component)[0].MouseDown();
         Slots(component)[2].MouseEnter();
 
-        Assert.AreEqual(0, component.FindAll(".bit-bfc-slot-selected").Count);
+        Assert.IsEmpty(component.FindAll(".bit-bfc-slot-selected"));
     }
 
     [TestMethod]
@@ -2006,7 +2006,7 @@ public class BitFullCalendarTests : BunitTestContext
         Slots(component)[0].MouseDown();
         Slots(component)[2].MouseEnter();
 
-        Assert.AreEqual(0, component.FindAll(".bit-bfc-slot-selected").Count);
+        Assert.IsEmpty(component.FindAll(".bit-bfc-slot-selected"));
     }
 
     [TestMethod]
@@ -2049,13 +2049,13 @@ public class BitFullCalendarTests : BunitTestContext
             parameters.Add(p => p.DefaultView, BitFullCalendarView.Agenda);
         });
 
-        Assert.AreEqual(2, component.FindAll(".bit-bfc-agenda-item").Count);
+        Assert.HasCount(2, component.FindAll(".bit-bfc-agenda-item"));
 
         component.Find(".bit-bfc-agenda-search input").Input("Zainab");
 
         var items = component.FindAll(".bit-bfc-agenda-item");
-        Assert.AreEqual(1, items.Count);
-        StringAssert.Contains(items[0].TextContent, "Standup");
+        Assert.ContainsSingle(items);
+        Assert.Contains("Standup", items[0].TextContent);
     }
 
     [TestMethod]
@@ -2102,7 +2102,7 @@ public class BitFullCalendarTests : BunitTestContext
         });
 
         // One badge per day of the visible month grid from the start date onwards.
-        Assert.IsTrue(component.FindAll(".bit-bfc-event-badge").Count > 5);
+        Assert.IsGreaterThan(5, component.FindAll(".bit-bfc-event-badge").Count);
         Assert.IsTrue(component.Instance.State.Events.All(e => e.IsOccurrence));
     }
 
@@ -2148,7 +2148,7 @@ public class BitFullCalendarTests : BunitTestContext
         badge.Click();
 
         // Edit and Delete ask which part of the series they mean, so they are offered next to Close.
-        Assert.AreEqual(3, component.FindAll(".bit-bfc-dialog-footer button").Count);
+        Assert.HasCount(3, component.FindAll(".bit-bfc-dialog-footer button"));
     }
 
     [TestMethod]
@@ -2159,7 +2159,7 @@ public class BitFullCalendarTests : BunitTestContext
         Assert.AreEqual("false", component.Find(".bit-bfc-event-badge").GetAttribute("draggable"));
         component.Find(".bit-bfc-event-badge").Click();
 
-        Assert.AreEqual(1, component.FindAll(".bit-bfc-dialog-footer button").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-bfc-dialog-footer button"));
     }
 
     [TestMethod]
@@ -2173,20 +2173,20 @@ public class BitFullCalendarTests : BunitTestContext
 
         var state = component.Instance.State;
         var master = state.AllEvents.Single(e => e.Id == "series");
-        CollectionAssert.AreEqual(new[] { new DateTime(2024, 6, 11) }, master.Recurrence!.ExceptionDates!.ToArray());
+        Assert.AreSequenceEqual(new[] { new DateTime(2024, 6, 11) }, master.Recurrence!.ExceptionDates!.ToArray());
         var detached = state.AllEvents.Single(e => e.Id != "series");
         Assert.AreEqual(new DateTime(2024, 6, 12, 9, 0, 0), detached.StartDate);
         Assert.IsNull(detached.Recurrence);
         Assert.IsNull(detached.SeriesId);
 
-        Assert.AreEqual(2, changes.Count, "the master's skipped date and the new one-off");
+        Assert.HasCount(2, changes, "the master's skipped date and the new one-off");
         Assert.AreEqual(BitFullCalendarChangeKind.Edit, changes[0].Kind);
         Assert.AreEqual(BitFullCalendarChangeKind.Add, changes[1].Kind);
         Assert.IsTrue(changes.All(c => c.Source == BitFullCalendarChangeSource.Drag));
     }
 
     [TestMethod]
-    public void BitFullCalendarShouldDetachAnOccurrenceDroppedElsewhere()
+    public async global::System.Threading.Tasks.Task BitFullCalendarShouldDetachAnOccurrenceDroppedElsewhere()
     {
         var changes = new List<BitFullCalendarChangeEventArgs>();
         var component = RenderSeries(changes);
@@ -2194,12 +2194,12 @@ public class BitFullCalendarTests : BunitTestContext
 
         var occurrence = state.Events.Single(e => e.OccurrenceDate == new DateTime(2024, 6, 12));
         state.StartDrag(occurrence);
-        component.InvokeAsync(() => Notifier(component).HandleDropAsync(new DateTime(2024, 6, 20))).Wait();
+        await component.InvokeAsync(() => Notifier(component).HandleDropAsync(new DateTime(2024, 6, 20))).WaitAsync(TestContext.CancellationToken);
 
         Assert.IsFalse(state.IsDragging);
-        Assert.AreEqual(3, state.Events.Count, "two occurrences left in the series and the one moved out of it");
-        Assert.IsTrue(state.Events.Any(e => e.StartDate == new DateTime(2024, 6, 20, 9, 0, 0) && e.IsOccurrence is false));
-        Assert.AreEqual(2, changes.Count);
+        Assert.HasCount(3, state.Events, "two occurrences left in the series and the one moved out of it");
+        Assert.Contains(e => e.StartDate == new DateTime(2024, 6, 20, 9, 0, 0) && e.IsOccurrence is false, state.Events);
+        Assert.HasCount(2, changes);
     }
 
     [TestMethod]
@@ -2226,7 +2226,7 @@ public class BitFullCalendarTests : BunitTestContext
         component.FindAll(".bit-bfc-event-badge")[1].KeyDown(new KeyboardEventArgs { Key = "ArrowRight", AltKey = true });
 
         var state = component.Instance.State;
-        Assert.AreEqual(1, state.AllEvents.Count);
+        Assert.ContainsSingle(state.AllEvents);
         Assert.IsNull(state.AllEvents[0].Recurrence!.ExceptionDates, "the skipped date is taken back");
         Assert.IsFalse(component.Find(".bit-bfc-body").HasAttribute("data-bit-bfc-moved-from"), "a move that never happened hands no focus on");
     }
@@ -2248,10 +2248,10 @@ public class BitFullCalendarTests : BunitTestContext
         component.Find(".bit-bfc-scope-dialog .bit-bfc-btn-primary").Click();
 
         var master = component.Instance.State.AllEvents.Single();
-        CollectionAssert.AreEqual(new[] { new DateTime(2024, 6, 11) }, master.Recurrence!.ExceptionDates!.ToArray());
-        Assert.AreEqual(2, component.FindAll(".bit-bfc-event-badge").Count);
+        Assert.AreSequenceEqual(new[] { new DateTime(2024, 6, 11) }, master.Recurrence!.ExceptionDates!.ToArray());
+        Assert.HasCount(2, component.FindAll(".bit-bfc-event-badge"));
 
-        Assert.AreEqual(1, changes.Count);
+        Assert.ContainsSingle(changes);
         Assert.AreEqual(BitFullCalendarChangeKind.Edit, changes[0].Kind);
         Assert.AreEqual("series", changes[0].Event.Id);
         Assert.IsNull(changes[0].OldEvent!.Recurrence!.ExceptionDates, "the snapshot keeps the rule as it was");
@@ -2268,9 +2268,9 @@ public class BitFullCalendarTests : BunitTestContext
         component.FindAll(".bit-bfc-scope-dialog input[type=radio]")[1].Change(true);
         component.Find(".bit-bfc-scope-dialog .bit-bfc-btn-primary").Click();
 
-        Assert.AreEqual(0, component.Instance.State.AllEvents.Count);
-        Assert.AreEqual(0, component.FindAll(".bit-bfc-event-badge").Count);
-        Assert.AreEqual(1, changes.Count);
+        Assert.IsEmpty(component.Instance.State.AllEvents);
+        Assert.IsEmpty(component.FindAll(".bit-bfc-event-badge"));
+        Assert.ContainsSingle(changes);
         Assert.AreEqual(BitFullCalendarChangeKind.Delete, changes[0].Kind);
         Assert.AreEqual("series", changes[0].Event.Id);
     }
@@ -2285,10 +2285,10 @@ public class BitFullCalendarTests : BunitTestContext
         component.Find(".bit-bfc-dialog-footer .bit-bfc-btn-danger").Click();
         component.Find(".bit-bfc-scope-dialog .bit-bfc-dialog-footer .bit-bfc-btn:not(.bit-bfc-btn-primary)").Click();
 
-        Assert.AreEqual(0, component.FindAll(".bit-bfc-scope-dialog").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-bfc-dialog").Count, "the details dialog stays open");
-        Assert.AreEqual(0, changes.Count);
-        Assert.AreEqual(3, component.FindAll(".bit-bfc-event-badge").Count);
+        Assert.IsEmpty(component.FindAll(".bit-bfc-scope-dialog"));
+        Assert.ContainsSingle(component.FindAll(".bit-bfc-dialog"), "the details dialog stays open");
+        Assert.IsEmpty(changes);
+        Assert.HasCount(3, component.FindAll(".bit-bfc-event-badge"));
     }
 
     [TestMethod]
@@ -2302,16 +2302,16 @@ public class BitFullCalendarTests : BunitTestContext
         component.Find(".bit-bfc-scope-dialog .bit-bfc-btn-primary").Click();
 
         // The one-off it becomes has no rule to edit.
-        Assert.AreEqual(0, component.FindAll("select[id^='bfc-repeat-']").Count);
+        Assert.IsEmpty(component.FindAll("select[id^='bfc-repeat-']"));
 
         component.Find("input[id^='bfc-title-']").Change("Moved standup");
         component.Find(".bit-bfc-dialog-footer .bit-bfc-btn-primary").Click();
 
         var events = component.Instance.State.AllEvents;
-        Assert.AreEqual(2, events.Count);
+        Assert.HasCount(2, events);
 
         var master = events.Single(e => e.Id == "series");
-        CollectionAssert.AreEqual(new[] { new DateTime(2024, 6, 11) }, master.Recurrence!.ExceptionDates!.ToArray());
+        Assert.AreSequenceEqual(new[] { new DateTime(2024, 6, 11) }, master.Recurrence!.ExceptionDates!.ToArray());
 
         var detached = events.Single(e => e.Id != "series");
         Assert.AreEqual("Moved standup", detached.Title);
@@ -2320,10 +2320,9 @@ public class BitFullCalendarTests : BunitTestContext
         Assert.IsNull(detached.SeriesId);
         Assert.IsFalse(detached.IsReadOnly);
 
-        CollectionAssert.AreEqual(
-            new[] { BitFullCalendarChangeKind.Edit, BitFullCalendarChangeKind.Add },
-            changes.Select(c => c.Kind).ToArray());
-        Assert.AreEqual(3, component.FindAll(".bit-bfc-event-badge").Count);
+        Assert.AreSequenceEqual(
+            new[] { BitFullCalendarChangeKind.Edit, BitFullCalendarChangeKind.Add }, changes.Select(c => c.Kind).ToArray());
+        Assert.HasCount(3, component.FindAll(".bit-bfc-event-badge"));
     }
 
     [TestMethod]
@@ -2350,9 +2349,9 @@ public class BitFullCalendarTests : BunitTestContext
         Assert.AreEqual(BitFullCalendarRecurrenceFrequency.Daily, master.Recurrence!.Frequency);
         Assert.AreEqual(2, master.Recurrence.Interval);
         Assert.AreEqual(3, master.Recurrence.Count);
-        CollectionAssert.AreEqual(new[] { new DateTime(2024, 6, 10) }, master.Recurrence.ExceptionDates!.ToArray());
+        Assert.AreSequenceEqual(new[] { new DateTime(2024, 6, 10) }, master.Recurrence.ExceptionDates!.ToArray());
 
-        Assert.AreEqual(1, changes.Count);
+        Assert.ContainsSingle(changes);
         Assert.AreEqual(BitFullCalendarChangeKind.Edit, changes[0].Kind);
     }
 
@@ -2376,23 +2375,23 @@ public class BitFullCalendarTests : BunitTestContext
 
         // Picking a week of the month starts from the start date's own weekday.
         var pressed = component.FindAll(".bit-bfc-repeat-day[aria-pressed='true']");
-        Assert.AreEqual(1, pressed.Count);
+        Assert.ContainsSingle(pressed);
         Assert.AreEqual(dayNames.GetDayName(DayOfWeek.Monday), pressed[0].GetAttribute("aria-label"));
 
         component.FindAll(".bit-bfc-repeat-day").Single(b => b.GetAttribute("aria-label") == dayNames.GetDayName(DayOfWeek.Tuesday)).Click();
         component.FindAll(".bit-bfc-repeat-day").Single(b => b.GetAttribute("aria-label") == dayNames.GetDayName(DayOfWeek.Monday)).Click();
         component.Find(".bit-bfc-dialog-footer .bit-bfc-btn-primary").Click();
 
-        Assert.AreEqual(1, changes.Count);
+        Assert.ContainsSingle(changes);
         var rule = changes[0].Event.Recurrence;
         Assert.IsNotNull(rule);
         Assert.AreEqual(BitFullCalendarRecurrenceFrequency.Monthly, rule.Frequency);
         Assert.AreEqual(BitFullCalendarWeekOfMonth.Third, rule.WeekOfMonth);
-        CollectionAssert.AreEqual(new[] { DayOfWeek.Tuesday }, rule.DaysOfWeek!.ToArray());
+        Assert.AreSequenceEqual(new[] { DayOfWeek.Tuesday }, rule.DaysOfWeek!.ToArray());
         Assert.IsNull(rule.Count);
         Assert.IsNull(rule.Until);
 
-        Assert.IsTrue(component.Instance.State.Events.Any(e => e.IsOccurrence && e.StartDate.Date == new DateTime(2024, 6, 18)));
+        Assert.Contains(e => e.IsOccurrence && e.StartDate.Date == new DateTime(2024, 6, 18), component.Instance.State.Events);
     }
 
     [TestMethod]
@@ -2413,8 +2412,8 @@ public class BitFullCalendarTests : BunitTestContext
         component.Find("input[id^='bfc-count-']").Change("0");
         component.Find(".bit-bfc-dialog-footer .bit-bfc-btn-primary").Click();
 
-        Assert.AreEqual(0, changes.Count);
-        Assert.IsTrue(component.FindAll(".bit-bfc-field-error").Count > 0);
+        Assert.IsEmpty(changes);
+        Assert.IsNotEmpty(component.FindAll(".bit-bfc-field-error"));
     }
 
     [TestMethod]
@@ -2443,7 +2442,7 @@ public class BitFullCalendarTests : BunitTestContext
 
         component.FindAll(".bit-bfc-event-badge")[1].Click();
 
-        Assert.AreEqual(1, clicked.Count);
+        Assert.ContainsSingle(clicked);
         Assert.AreEqual("series", clicked[0].SeriesId);
         Assert.AreEqual(start.AddDays(1), clicked[0].OccurrenceDate);
     }
@@ -2473,8 +2472,8 @@ public class BitFullCalendarTests : BunitTestContext
         component.Find("input[id^='bfc-title-']").Change("Conflicting");
         component.Find(".bit-bfc-dialog-footer .bit-bfc-btn-primary").Click();
 
-        Assert.AreEqual(0, changes.Count);
-        Assert.IsTrue(component.FindAll(".bit-bfc-field-error").Count > 0);
+        Assert.IsEmpty(changes);
+        Assert.IsNotEmpty(component.FindAll(".bit-bfc-field-error"));
     }
 
     [TestMethod]
@@ -2499,8 +2498,8 @@ public class BitFullCalendarTests : BunitTestContext
         component.Find("input[id^='bfc-title-']").Change("Too early");
         component.Find(".bit-bfc-dialog-footer .bit-bfc-btn-primary").Click();
 
-        Assert.AreEqual(0, changes.Count);
-        Assert.IsTrue(component.FindAll(".bit-bfc-field-error").Count > 0);
+        Assert.IsEmpty(changes);
+        Assert.IsNotEmpty(component.FindAll(".bit-bfc-field-error"));
     }
 
     [TestMethod]
@@ -2513,7 +2512,7 @@ public class BitFullCalendarTests : BunitTestContext
         // Both pickers report the range through their trigger button, so the rendered text is what
         // the form is holding. Moving the start has to take the end with it, not shorten the event.
         var triggersBefore = component.FindAll(".bit-bfc-dtp-trigger");
-        Assert.AreEqual(2, triggersBefore.Count);
+        Assert.HasCount(2, triggersBefore);
 
         // Open the start picker and pick the first day of the rendered grid that is not the start
         // itself: on a day the grid opens with (a Sunday that is the 1st), that one would move nothing.
@@ -2536,7 +2535,7 @@ public class BitFullCalendarTests : BunitTestContext
     {
         var component = RenderCalendar();
 
-        Assert.AreEqual(1, component.FindAll(".bit-bfc-header").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-bfc-header"));
     }
 
     [TestMethod]
@@ -2548,11 +2547,11 @@ public class BitFullCalendarTests : BunitTestContext
             parameters.Add(p => p.HideHeader, true);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-bfc-header").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-bfc-view-tabs").Count);
-        Assert.AreEqual(0, component.FindAll(AddButtonSelector).Count);
+        Assert.IsEmpty(component.FindAll(".bit-bfc-header"));
+        Assert.IsEmpty(component.FindAll(".bit-bfc-view-tabs"));
+        Assert.IsEmpty(component.FindAll(AddButtonSelector));
         // The grid itself is untouched.
-        Assert.AreEqual(1, component.FindAll(".bit-bfc-month").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-bfc-month"));
     }
 
     [TestMethod]
@@ -2561,8 +2560,8 @@ public class BitFullCalendarTests : BunitTestContext
         var component = RenderCalendar();
 
         var tabs = component.FindAll(".bit-bfc-view-tab");
-        Assert.AreEqual(5, tabs.Count);
-        Assert.AreEqual(1, tabs.Count(t => t.GetAttribute("tabindex") == "0"));
+        Assert.HasCount(5, tabs);
+        Assert.ContainsSingle(t => t.GetAttribute("tabindex") == "0", tabs);
         Assert.AreEqual("true", tabs.Single(t => t.GetAttribute("tabindex") == "0").GetAttribute("aria-selected"));
     }
 
@@ -2600,7 +2599,7 @@ public class BitFullCalendarTests : BunitTestContext
     {
         var component = RenderCalendar(defaultView: BitFullCalendarView.Day);
 
-        Assert.AreEqual(0, component.FindAll(".bit-bfc-slot-off").Count);
+        Assert.IsEmpty(component.FindAll(".bit-bfc-slot-off"));
     }
 
     [TestMethod]
@@ -2624,7 +2623,7 @@ public class BitFullCalendarTests : BunitTestContext
         });
 
         var slots = component.FindAll(".bit-bfc-hour-slot");
-        Assert.AreEqual(10, slots.Count);
+        Assert.HasCount(10, slots);
         // 08:00 and 17:00 fall outside the 09:00-17:00 window; the eight hours between them do not.
         Assert.AreEqual(2, slots.Count(s => s.ClassList.Contains("bit-bfc-slot-off")));
     }
@@ -2648,7 +2647,7 @@ public class BitFullCalendarTests : BunitTestContext
         });
 
         var slots = component.FindAll(".bit-bfc-hour-slot");
-        Assert.AreEqual(10, slots.Count);
+        Assert.HasCount(10, slots);
         Assert.AreEqual(10, slots.Count(s => s.ClassList.Contains("bit-bfc-slot-off")));
     }
 
@@ -2659,7 +2658,7 @@ public class BitFullCalendarTests : BunitTestContext
 
         // Every rendered week contributes its Saturday and Sunday.
         var cells = component.FindAll(".bit-bfc-month-cell");
-        Assert.IsTrue(cells.Count(c => c.ClassList.Contains("bit-bfc-day-off")) >= 8);
+        Assert.IsGreaterThanOrEqualTo(8, cells.Count(c => c.ClassList.Contains("bit-bfc-day-off")));
     }
 
     [TestMethod]
@@ -2702,8 +2701,8 @@ public class BitFullCalendarTests : BunitTestContext
             parameters.Add(p => p.Settings, new BitFullCalendarSettings { FirstDayOfWeek = DayOfWeek.Sunday, FixedWeekCount = true });
         });
 
-        Assert.AreEqual(28, natural.FindAll(".bit-bfc-month-cell").Count);
-        Assert.AreEqual(42, padded.FindAll(".bit-bfc-month-cell").Count);
+        Assert.HasCount(28, natural.FindAll(".bit-bfc-month-cell"));
+        Assert.HasCount(42, padded.FindAll(".bit-bfc-month-cell"));
     }
 
     [TestMethod]
@@ -2724,16 +2723,14 @@ public class BitFullCalendarTests : BunitTestContext
             parameters.Add(p => p.Settings, new BitFullCalendarSettings { ShowNonCurrentDates = false });
         });
 
-        Assert.AreEqual(0, shown.FindAll(".bit-bfc-month-cell-blank").Count);
+        Assert.IsEmpty(shown.FindAll(".bit-bfc-month-cell-blank"));
         // The blanked cells hold their columns open, so the grid keeps its shape.
-        Assert.AreEqual(
-            shown.FindAll(".bit-bfc-month-cell").Count,
-            blanked.FindAll(".bit-bfc-month-cell").Count);
-        Assert.IsTrue(blanked.FindAll(".bit-bfc-month-cell-blank").Count > 0);
+        Assert.HasCount(
+            shown.FindAll(".bit-bfc-month-cell").Count, blanked.FindAll(".bit-bfc-month-cell"));
+        Assert.IsNotEmpty(blanked.FindAll(".bit-bfc-month-cell-blank"));
         // A blanked cell offers neither the add affordance nor a day number.
-        Assert.AreEqual(
-            blanked.FindAll(".bit-bfc-month-cell").Count - blanked.FindAll(".bit-bfc-month-cell-blank").Count,
-            blanked.FindAll(".bit-bfc-month-cell-day").Count);
+        Assert.HasCount(
+            blanked.FindAll(".bit-bfc-month-cell").Count - blanked.FindAll(".bit-bfc-month-cell-blank").Count, blanked.FindAll(".bit-bfc-month-cell-day"));
     }
 
     [TestMethod]
@@ -2745,13 +2742,11 @@ public class BitFullCalendarTests : BunitTestContext
         var workWeek = RenderWithSettings(
             new BitFullCalendarSettings { HiddenDays = [DayOfWeek.Saturday, DayOfWeek.Sunday] });
 
-        Assert.AreEqual(
-            full.FindAll(".bit-bfc-month-cell").Count / 7,
-            full.FindAll(".bit-bfc-month-cell-last-col").Count);
+        Assert.HasCount(
+            full.FindAll(".bit-bfc-month-cell").Count / 7, full.FindAll(".bit-bfc-month-cell-last-col"));
 
-        Assert.AreEqual(
-            workWeek.FindAll(".bit-bfc-month-cell").Count / 5,
-            workWeek.FindAll(".bit-bfc-month-cell-last-col").Count);
+        Assert.HasCount(
+            workWeek.FindAll(".bit-bfc-month-cell").Count / 5, workWeek.FindAll(".bit-bfc-month-cell-last-col"));
     }
 
     #endregion
@@ -2763,7 +2758,7 @@ public class BitFullCalendarTests : BunitTestContext
     {
         var component = RenderCalendar();
 
-        Assert.AreEqual(0, component.FindAll(".bit-bfc-navlink").Count);
+        Assert.IsEmpty(component.FindAll(".bit-bfc-navlink"));
     }
 
     [TestMethod]
@@ -2772,7 +2767,7 @@ public class BitFullCalendarTests : BunitTestContext
         var component = RenderWithSettings(new BitFullCalendarSettings { NavLinks = true });
 
         var dayLinks = component.FindAll(".bit-bfc-month-cell-day.bit-bfc-navlink");
-        Assert.IsTrue(dayLinks.Count > 0);
+        Assert.IsNotEmpty(dayLinks);
 
         dayLinks[10].Click();
 
@@ -2804,7 +2799,7 @@ public class BitFullCalendarTests : BunitTestContext
         var component = RenderWithSettings(new BitFullCalendarSettings { NavLinks = true, ShowWeekNumbers = true });
 
         var weekLinks = component.FindAll(".bit-bfc-weeknum-cell.bit-bfc-navlink");
-        Assert.IsTrue(weekLinks.Count > 0);
+        Assert.IsNotEmpty(weekLinks);
 
         weekLinks[1].Click();
 
@@ -2819,7 +2814,7 @@ public class BitFullCalendarTests : BunitTestContext
             BitFullCalendarView.Week);
 
         var headers = component.FindAll(".bit-bfc-week-header-day-link");
-        Assert.AreEqual(7, headers.Count);
+        Assert.HasCount(7, headers);
 
         headers[3].Click();
 
@@ -2839,7 +2834,7 @@ public class BitFullCalendarTests : BunitTestContext
         var tooltip = badge.GetAttribute("title");
 
         Assert.IsFalse(string.IsNullOrWhiteSpace(tooltip));
-        StringAssert.Contains(tooltip!, "Standup");
+        Assert.Contains("Standup", tooltip!);
     }
 
     [TestMethod]
@@ -2856,8 +2851,8 @@ public class BitFullCalendarTests : BunitTestContext
 
         var tooltip = component.Find(".bit-bfc-event-badge").GetAttribute("title")!;
 
-        StringAssert.Contains(tooltip, "All day");
-        Assert.IsFalse(tooltip.Contains("00:00 - 00:00"));
+        Assert.Contains("All day", tooltip);
+        Assert.DoesNotContain("00:00 - 00:00", tooltip);
     }
 
     [TestMethod]
@@ -2880,7 +2875,7 @@ public class BitFullCalendarTests : BunitTestContext
             .Select(t => t.TextContent.Trim())
             .ToList();
 
-        CollectionAssert.AreEqual(new[] { "Holiday", "Morning", "Afternoon" }, titles);
+        Assert.AreSequenceEqual(new[] { "Holiday", "Morning", "Afternoon" }, titles);
     }
 
     [TestMethod]
@@ -2901,8 +2896,8 @@ public class BitFullCalendarTests : BunitTestContext
         var anchor = component.Find(".bit-bfc-event-stack-item").GetAttribute("style")!;
         var block = component.Find(".bit-bfc-event-block").GetAttribute("style")!;
 
-        StringAssert.Contains(anchor, BitFullCalendarHelpers.HourHeightVariableName);
-        StringAssert.Contains(block, BitFullCalendarHelpers.HourHeightVariableName);
+        Assert.Contains(BitFullCalendarHelpers.HourHeightVariableName, anchor);
+        Assert.Contains(BitFullCalendarHelpers.HourHeightVariableName, block);
     }
 
     [TestMethod]
@@ -2916,21 +2911,21 @@ public class BitFullCalendarTests : BunitTestContext
         });
 
         // The initial range is reported once, so a consumer can fetch the events it needs.
-        Assert.AreEqual(1, ranges.Count);
+        Assert.ContainsSingle(ranges);
 
         // "Today" while today is already on screen lands on the range that was just reported.
         component.Instance.GoToToday();
-        Assert.AreEqual(1, ranges.Count);
+        Assert.ContainsSingle(ranges);
 
         component.Instance.NavigateNext();
-        Assert.AreEqual(2, ranges.Count);
+        Assert.HasCount(2, ranges);
     }
 
     [TestMethod]
     public void BitFullCalendarShouldTintTodaysWeekColumn()
     {
         var thisWeek = RenderCalendar(defaultView: BitFullCalendarView.Week);
-        Assert.AreEqual(1, thisWeek.FindAll(".bit-bfc-week-day-col.bit-bfc-today-col").Count);
+        Assert.ContainsSingle(thisWeek.FindAll(".bit-bfc-week-day-col.bit-bfc-today-col"));
 
         var anotherWeek = RenderComponent<BitFullCalendar>(parameters =>
         {
@@ -2939,7 +2934,7 @@ public class BitFullCalendarTests : BunitTestContext
             parameters.Add(p => p.DefaultDate, Today.AddDays(30));
         });
 
-        Assert.AreEqual(0, anotherWeek.FindAll(".bit-bfc-today-col").Count);
+        Assert.IsEmpty(anotherWeek.FindAll(".bit-bfc-today-col"));
     }
 
     [TestMethod]
@@ -2971,14 +2966,14 @@ public class BitFullCalendarTests : BunitTestContext
         component.Find(".bit-bfc-event-badge").Click();
 
         var labels = component.FindAll(".bit-bfc-event-detail-label").Select(l => l.TextContent.Trim()).ToList();
-        CollectionAssert.Contains(labels, "Repeats");
+        Assert.Contains("Repeats", labels);
 
         var summary = component.FindAll(".bit-bfc-event-detail-value")
             .Select(v => v.TextContent.Trim())
             .Single(v => v.StartsWith("Weekly", StringComparison.Ordinal));
 
-        StringAssert.Contains(summary, "every 2");
-        StringAssert.Contains(summary, "6 times");
+        Assert.Contains("every 2", summary);
+        Assert.Contains("6 times", summary);
     }
 
     [TestMethod]
@@ -2989,7 +2984,7 @@ public class BitFullCalendarTests : BunitTestContext
         component.Find(".bit-bfc-event-badge").Click();
 
         var labels = component.FindAll(".bit-bfc-event-detail-label").Select(l => l.TextContent.Trim()).ToList();
-        CollectionAssert.DoesNotContain(labels, "Repeats");
+        Assert.DoesNotContain("Repeats", labels);
     }
 
     [TestMethod]
@@ -3008,7 +3003,7 @@ public class BitFullCalendarTests : BunitTestContext
 
         var columns = component.FindAll(".bit-bfc-week-day-col");
         var inert = columns.Where(c => c.ClassList.Contains("bit-bfc-out-of-range")).ToList();
-        Assert.IsTrue(inert.Count > 0, "the week has to contain at least one unreachable day for this test");
+        Assert.IsNotEmpty(inert, "the week has to contain at least one unreachable day for this test");
 
         foreach (var column in inert)
         {
@@ -3029,4 +3024,6 @@ public class BitFullCalendarTests : BunitTestContext
 
         public override DateTimeOffset GetUtcNow() => new(DateTime.SpecifyKind(localNow, DateTimeKind.Utc));
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

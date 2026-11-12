@@ -1,4 +1,4 @@
-using System.Diagnostics.Metrics;
+﻿using System.Diagnostics.Metrics;
 using Bit.BlazeDb;
 using Bit.BlazeDb.Storage;
 
@@ -60,50 +60,50 @@ public class PersistenceHardeningTests
     public async Task Opening_For_Writing_Removes_Generations_The_Manifest_No_Longer_Names()
     {
         var storage = new BlazeDbInMemoryStorage();
-        await using (var db = await BlazeDbDatabase.OpenAsync(Options(storage)))
+        await using (var db = await BlazeDbDatabase.OpenAsync(Options(storage), TestContext.CancellationToken))
         {
             db.GetTable(PersonTable.Descriptor).Insert(new Person(1, "Ada", 36));
-            await db.CheckpointAsync();
+            await db.CheckpointAsync(TestContext.CancellationToken);
         }
         var current = storage.FileNames.ToHashSet();
 
         // What a tab closed between a checkpoint's new manifest and the deletion of the old generation leaves.
-        await storage.WriteAtomicAsync("snapshot-0123abcd-1.blz", new byte[] { 1, 2, 3 });
-        await storage.WriteAtomicAsync("wal-0123abcd-1.blz", new byte[] { 4, 5, 6 });
-        await storage.WriteAtomicAsync("wal-7.blz", new byte[] { 7 });
+        await storage.WriteAtomicAsync("snapshot-0123abcd-1.blz", new byte[] { 1, 2, 3 }, TestContext.CancellationToken);
+        await storage.WriteAtomicAsync("wal-0123abcd-1.blz", new byte[] { 4, 5, 6 }, TestContext.CancellationToken);
+        await storage.WriteAtomicAsync("wal-7.blz", new byte[] { 7 }, TestContext.CancellationToken);
         // Not a file the engine writes: left alone.
-        await storage.WriteAtomicAsync("notes.txt", new byte[] { 8 });
+        await storage.WriteAtomicAsync("notes.txt", new byte[] { 8 }, TestContext.CancellationToken);
 
         // A replica never deletes anything.
-        await using (var replica = await BlazeDbDatabase.OpenAsync(Options(storage, readOnly: true)))
+        await using (var replica = await BlazeDbDatabase.OpenAsync(Options(storage, readOnly: true), TestContext.CancellationToken))
         {
-            Assert.IsTrue(storage.FileNames.Contains("wal-7.blz"));
+            Assert.Contains("wal-7.blz", storage.FileNames);
         }
 
-        await using (var db = await BlazeDbDatabase.OpenAsync(Options(storage)))
+        await using (var db = await BlazeDbDatabase.OpenAsync(Options(storage), TestContext.CancellationToken))
         {
             Assert.AreEqual("Ada", db.GetTable(PersonTable.Descriptor).Get(1)!.Name);
         }
 
-        CollectionAssert.AreEquivalent(current.Append("notes.txt").ToList(), storage.FileNames.ToList());
+        Assert.AreSequenceEqual(current.Append("notes.txt").ToList(), storage.FileNames.ToList(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
     public async Task A_Storage_That_Runs_Out_Of_Room_Is_Compacted_And_The_Flush_Succeeds()
     {
         var storage = new RefusingStorage();
-        await using var db = await BlazeDbDatabase.OpenAsync(Options(storage));
+        await using var db = await BlazeDbDatabase.OpenAsync(Options(storage), TestContext.CancellationToken);
         var people = db.GetTable(PersonTable.Descriptor);
         people.Insert(new Person(1, "Ada", 36));
 
         // The append is refused, but the checkpoint that follows writes the commit into a snapshot.
         storage.RefuseAppends = true;
-        await db.FlushAsync();
+        await db.FlushAsync(TestContext.CancellationToken);
         storage.RefuseAppends = false;
 
         Assert.IsNull(db.LastBackgroundError);
         await db.DisposeAsync();
-        await using var reopened = await BlazeDbDatabase.OpenAsync(Options(storage));
+        await using var reopened = await BlazeDbDatabase.OpenAsync(Options(storage), TestContext.CancellationToken);
         Assert.AreEqual("Ada", reopened.GetTable(PersonTable.Descriptor).Get(1)!.Name);
     }
 
@@ -114,19 +114,19 @@ public class PersistenceHardeningTests
         var pressure = 0;
         var options = Options(storage);
         options.OnQuotaPressure = _ => pressure++;
-        await using var db = await BlazeDbDatabase.OpenAsync(options);
+        await using var db = await BlazeDbDatabase.OpenAsync(options, TestContext.CancellationToken);
         db.GetTable(PersonTable.Descriptor).Insert(new Person(1, "Ada", 36));
 
         storage.RefuseAppends = storage.RefuseWrites = true;
-        await Assert.ThrowsExactlyAsync<BlazeDbStorageQuotaExceededException>(async () => await db.FlushAsync());
-        await Assert.ThrowsExactlyAsync<BlazeDbStorageQuotaExceededException>(async () => await db.FlushAsync());
+        await Assert.ThrowsExactlyAsync<BlazeDbStorageQuotaExceededException>(async () => await db.FlushAsync(TestContext.CancellationToken));
+        await Assert.ThrowsExactlyAsync<BlazeDbStorageQuotaExceededException>(async () => await db.FlushAsync(TestContext.CancellationToken));
         Assert.AreEqual(1, pressure);
 
         // Nothing was lost: once there is room, the buffered commit reaches storage.
         storage.RefuseAppends = storage.RefuseWrites = false;
-        await db.FlushAsync();
+        await db.FlushAsync(TestContext.CancellationToken);
         await db.DisposeAsync();
-        await using var reopened = await BlazeDbDatabase.OpenAsync(Options(storage));
+        await using var reopened = await BlazeDbDatabase.OpenAsync(Options(storage), TestContext.CancellationToken);
         Assert.AreEqual("Ada", reopened.GetTable(PersonTable.Descriptor).Get(1)!.Name);
     }
 
@@ -134,19 +134,19 @@ public class PersistenceHardeningTests
     public async Task A_Replica_Can_Tell_That_The_Writer_Checkpointed_Since_It_Loaded()
     {
         var storage = new BlazeDbInMemoryStorage();
-        await using var writer = await BlazeDbDatabase.OpenAsync(Options(storage));
+        await using var writer = await BlazeDbDatabase.OpenAsync(Options(storage), TestContext.CancellationToken);
         writer.GetTable(PersonTable.Descriptor).Insert(new Person(1, "Ada", 36));
-        await writer.CheckpointAsync();
+        await writer.CheckpointAsync(TestContext.CancellationToken);
 
-        await using var replica = await BlazeDbDatabase.OpenAsync(Options(storage, readOnly: true));
-        Assert.IsFalse(await replica.HasNewerGenerationAsync());
+        await using var replica = await BlazeDbDatabase.OpenAsync(Options(storage, readOnly: true), TestContext.CancellationToken);
+        Assert.IsFalse(await replica.HasNewerGenerationAsync(TestContext.CancellationToken));
 
         writer.GetTable(PersonTable.Descriptor).Insert(new Person(2, "Grace", 45));
-        await writer.CheckpointAsync();
-        Assert.IsTrue(await replica.HasNewerGenerationAsync());
+        await writer.CheckpointAsync(TestContext.CancellationToken);
+        Assert.IsTrue(await replica.HasNewerGenerationAsync(TestContext.CancellationToken));
 
-        await replica.ReloadAsync();
-        Assert.IsFalse(await replica.HasNewerGenerationAsync());
+        await replica.ReloadAsync(TestContext.CancellationToken);
+        Assert.IsFalse(await replica.HasNewerGenerationAsync(TestContext.CancellationToken));
         Assert.AreEqual(2, replica.GetTable(PersonTable.Descriptor).Count);
     }
 
@@ -172,15 +172,15 @@ public class PersistenceHardeningTests
         try
         {
             using (var storage = new BlazeDbFileStorage(directory))
-            await using (var db = await BlazeDbDatabase.OpenAsync(Options(storage)))
+            await using (var db = await BlazeDbDatabase.OpenAsync(Options(storage), TestContext.CancellationToken))
             {
                 db.GetTable(PersonTable.Descriptor).Insert(new Person(1, "Ada", 36));
-                await db.FlushAsync();
-                await db.CheckpointAsync();
+                await db.FlushAsync(TestContext.CancellationToken);
+                await db.CheckpointAsync(TestContext.CancellationToken);
                 db.GetTable(PersonTable.Descriptor).Insert(new Person(2, "Grace", 45));
             }
             using var reopenedStorage = new BlazeDbFileStorage(directory);
-            await using var reopened = await BlazeDbDatabase.OpenAsync(Options(reopenedStorage));
+            await using var reopened = await BlazeDbDatabase.OpenAsync(Options(reopenedStorage), TestContext.CancellationToken);
             Assert.AreEqual(2, reopened.GetTable(PersonTable.Descriptor).Count);
         }
         finally
@@ -188,6 +188,8 @@ public class PersistenceHardeningTests
             Directory.Delete(directory, recursive: true);
         }
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }
 
 /// <summary>
@@ -255,7 +257,7 @@ public class DiagnosticsTests
         {
             Storage = storage,
             FlushInterval = TimeSpan.FromHours(1),
-        }.AddTable(PersonTable.Descriptor)))
+        }.AddTable(PersonTable.Descriptor), TestContext.CancellationToken))
         {
             var people = db.GetTable(PersonTable.Descriptor);
             people.Insert(new Person(1, "Ada", 36));
@@ -275,12 +277,12 @@ public class DiagnosticsTests
             Assert.AreEqual(2, recorder["blazedb.commits"]);
             Assert.AreEqual(1, recorder["blazedb.rollbacks"]);
 
-            await db.FlushAsync();
+            await db.FlushAsync(TestContext.CancellationToken);
             Assert.AreEqual(1, recorder["blazedb.wal.flushes"]);
-            Assert.IsTrue(recorder["blazedb.wal.flushed_bytes"] > 0);
+            Assert.IsGreaterThan(0, recorder["blazedb.wal.flushed_bytes"]);
             Assert.AreEqual(1, recorder["blazedb.wal.flush.duration"]);
 
-            await db.CheckpointAsync();
+            await db.CheckpointAsync(TestContext.CancellationToken);
             Assert.AreEqual(1, recorder["blazedb.checkpoints"]);
             Assert.AreEqual(1, recorder["blazedb.checkpoint.duration"]);
             Assert.AreEqual(1, recorder["blazedb.checkpoint.snapshot_bytes"]);
@@ -293,7 +295,7 @@ public class DiagnosticsTests
         {
             Storage = storage,
             FlushInterval = TimeSpan.FromHours(1),
-        }.AddTable(PersonTable.Descriptor)))
+        }.AddTable(PersonTable.Descriptor), TestContext.CancellationToken))
         {
         }
         Assert.AreEqual(recoveriesBefore + 1, recorder["blazedb.recovery.duration"]);
@@ -310,23 +312,25 @@ public class DiagnosticsTests
         {
             Storage = storage,
             FlushInterval = TimeSpan.FromHours(1),
-        }.AddTable(PersonTable.Descriptor));
+        }.AddTable(PersonTable.Descriptor), TestContext.CancellationToken);
         db.GetTable(PersonTable.Descriptor).Insert(new Person(1, "Secret name", 36));
 
         storage.RefuseAppends = storage.RefuseWrites = true;
-        await Assert.ThrowsExactlyAsync<BlazeDbStorageQuotaExceededException>(async () => await db.FlushAsync());
+        await Assert.ThrowsExactlyAsync<BlazeDbStorageQuotaExceededException>(async () => await db.FlushAsync(TestContext.CancellationToken));
 
         Assert.AreEqual(1, recorder["blazedb.quota.refusals"]);
         var operations = recorder.FailureTags
             .Select(tags => (string?)tags.Single(t => t.Key == "blazedb.operation").Value)
             .ToList();
-        CollectionAssert.AreEquivalent(new[] { "flush", "checkpoint" }, operations);
+        Assert.AreSequenceEqual(new[] { "flush", "checkpoint" }, operations, Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         foreach (var tags in recorder.FailureTags)
         {
-            CollectionAssert.AreEquivalent(new[] { "blazedb.operation", "error.type" }, tags.Select(t => t.Key).ToList());
+            Assert.AreSequenceEqual(new[] { "blazedb.operation", "error.type" }, tags.Select(t => t.Key).ToList(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
             Assert.AreEqual(typeof(BlazeDbStorageQuotaExceededException).FullName, tags.Single(t => t.Key == "error.type").Value);
         }
 
         storage.RefuseAppends = storage.RefuseWrites = false;
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

@@ -38,7 +38,7 @@ public class BelemetryComponentsTests
         using var config = JsonDocument.Parse(ConfigJson(markup));
         Assert.AreEqual("belemetry-tests", config.RootElement.GetProperty("service").GetProperty("name").GetString());
         Assert.AreEqual(4095, config.RootElement.GetProperty("features").GetInt32());
-        StringAssert.Contains(markup, "<script type=\"module\" src=\"_content/Bit.Belemetry/bit-belemetry.js\"></script>");
+        Assert.Contains("<script type=\"module\" src=\"_content/Bit.Belemetry/bit-belemetry.js\"></script>", markup);
         Assert.DoesNotContain("nonce", markup);
     }
 
@@ -51,8 +51,8 @@ public class BelemetryComponentsTests
             .Add(c => c.Nonce, "abc\"def")
             .Add(c => c.Src, "_content/Bit.Belemetry/bit-belemetry.123.js?v=1&x=\"y\"")).Markup;
 
-        Assert.AreEqual(2, Regex.Matches(markup, "nonce=\"abc&quot;def\"").Count, markup);
-        StringAssert.Contains(markup, "src=\"_content/Bit.Belemetry/bit-belemetry.123.js?v=1&amp;x=&quot;y&quot;\"");
+        Assert.HasCount(2, Regex.Matches(markup, "nonce=\"abc&quot;def\""), markup);
+        Assert.Contains("src=\"_content/Bit.Belemetry/bit-belemetry.123.js?v=1&amp;x=&quot;y&quot;\"", markup);
     }
 
     [TestMethod]
@@ -68,7 +68,7 @@ public class BelemetryComponentsTests
 
         var markup = context.Render<BelemetryScript>().Markup;
 
-        Assert.AreEqual(2, Regex.Matches(markup, "</script>", RegexOptions.IgnoreCase).Count, "Only the two real script elements close.");
+        Assert.HasCount(2, Regex.Matches(markup, "</script>", RegexOptions.IgnoreCase), "Only the two real script elements close.");
         Assert.DoesNotContain("<script>alert", markup);
         Assert.DoesNotContain("<!--", markup);
 
@@ -161,8 +161,8 @@ public class BelemetryComponentsTests
         context.Render<BelemetryInitializer>();
         await context.Services.GetRequiredService<BelemetryJsBridge>().StartAsync();
 
-        Assert.HasCount(1, module.Invocations["start"]);
-        Assert.HasCount(1, module.Invocations["attachDotNet"]);
+        Assert.ContainsSingle(module.Invocations["start"]);
+        Assert.ContainsSingle(module.Invocations["attachDotNet"]);
         Assert.AreEqual("direct", ((JsonElement)module.Invocations["start"][0].Arguments[0]!).GetProperty("transport").GetString());
     }
 
@@ -190,8 +190,7 @@ public class BelemetryComponentsTests
             }
 
             var routes = pageViews.GetProperty("routes").EnumerateArray().Select(e => e.GetString()).ToArray();
-            CollectionAssert.AreEqual(started ? new[] { "/orders/{id:int}" } : context.Services.GetRequiredService<BelemetrySettings>().PageRoutes.ToArray(), routes,
-                                      started ? "A started script has its page's discovered routes (a server rendered it, Auto): only the configured ones are added."
+            Assert.AreSequenceEqual(started ? new[] { "/orders/{id:int}" } : context.Services.GetRequiredService<BelemetrySettings>().PageRoutes.ToArray(), routes, started ? "A started script has its page's discovered routes (a server rendered it, Auto): only the configured ones are added."
                                               : "A script started here needs the discovered routes too.");
         }
     }

@@ -1,4 +1,4 @@
-namespace Bit.Bmotion.Tests.Mcp.Services;
+﻿namespace Bit.Bmotion.Tests.Mcp.Services;
 
 /// <summary>
 /// The review pass that closes the loop after an agent writes Bmotion markup.
@@ -112,8 +112,7 @@ public class CodeReviewTests
     [TestMethod]
     public void Review_EveryDeclaredRule_HasMarkupThatProvokesIt()
     {
-        CollectionAssert.AreEquivalent(BmotionCodeReview.Rules, Offenders.Keys.ToArray(),
-                                       "The rule list and the offending samples have drifted apart.");
+        Assert.AreSequenceEqual(BmotionCodeReview.Rules, Offenders.Keys.ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, "The rule list and the offending samples have drifted apart.");
     }
 
     [TestMethod]
@@ -123,7 +122,7 @@ public class CodeReviewTests
         {
             var review = BmotionCodeReview.Review(code);
 
-            Assert.IsTrue(review.Findings.Any(finding => finding.Rule == rule),
+            Assert.Contains(finding => finding.Rule == rule, review.Findings,
                           $"'{rule}' did not fire. It reported instead: " +
                           $"{string.Join(", ", review.Findings.Select(finding => finding.Rule).DefaultIfEmpty("nothing"))}.");
         }
@@ -140,7 +139,7 @@ public class CodeReviewTests
             {
                 Assert.AreNotEqual(string.Empty, finding.Message.Trim(), $"'{finding.Rule}' reported an empty message.");
                 Assert.AreNotEqual(string.Empty, finding.Fix.Trim(), $"'{finding.Rule}' reported no correction.");
-                CollectionAssert.Contains(new[] { "Error", "Warning", "Suggestion" }, finding.Severity);
+                Assert.Contains(finding.Severity, new[] { "Error", "Warning", "Suggestion" });
 
                 Assert.IsNotNull(finding.Line, $"'{finding.Rule}' (on the '{rule}' sample) mapped to no line.");
                 Assert.IsTrue(finding.Line >= 1 && finding.Line <= lineCount,
@@ -253,15 +252,14 @@ public class CodeReviewTests
                 """,
         };
 
-        CollectionAssert.AreEquivalent(Offenders.Keys.ToArray(), clean.Keys.ToArray(),
-                                       "Every rule needs a correct form here as well as an offender: a rule with " +
+        Assert.AreSequenceEqual(Offenders.Keys.ToArray(), clean.Keys.ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, "Every rule needs a correct form here as well as an offender: a rule with " +
                                        "no false-positive case is a rule nothing keeps honest.");
 
         foreach (var (rule, code) in clean)
         {
             var review = BmotionCodeReview.Review(code);
 
-            Assert.IsFalse(review.Findings.Any(finding => finding.Rule == rule),
+            Assert.DoesNotContain(finding => finding.Rule == rule, review.Findings,
                            $"'{rule}' fired on markup that gets it right:\n{code}");
         }
     }
@@ -280,7 +278,7 @@ public class CodeReviewTests
             </Bmotion>
             """;
 
-        Assert.IsTrue(BmotionCodeReview.Review(code).Findings.Any(finding => finding.Rule == "animate-without-initial"),
+        Assert.Contains(finding => finding.Rule == "animate-without-initial", BmotionCodeReview.Review(code).Findings,
                       "An underscore outside the Animate value silenced the rule.");
     }
 
@@ -309,7 +307,7 @@ public class CodeReviewTests
 
         Assert.AreEqual(1, finding.Line);
         Assert.StartsWith("ConfigureBmotionServices(", finding.Fix, StringComparison.Ordinal);
-        Assert.IsFalse(BmotionCodeReview.Review(clean).Findings.Any(entry => entry.Rule == "reduced-motion-not-configured"));
+        Assert.DoesNotContain(entry => entry.Rule == "reduced-motion-not-configured", BmotionCodeReview.Review(clean).Findings);
     }
 
     [TestMethod]
@@ -346,8 +344,7 @@ public class CodeReviewTests
             _ => 2
         }).ToArray();
 
-        CollectionAssert.AreEqual(order.OrderBy(rank => rank).ToArray(), order,
-                                  $"Reported in the order: {string.Join(", ", findings.Select(f => f.Severity))}.");
+        Assert.AreSequenceEqual(order.OrderBy(rank => rank).ToArray(), order, $"Reported in the order: {string.Join(", ", findings.Select(f => f.Severity))}.");
     }
 
     [TestMethod]
@@ -373,7 +370,7 @@ public class CodeReviewTests
             </Bmotion>
             """);
 
-        Assert.AreNotEqual(0, suggestion.Findings.Length, "The sample no longer provokes the Suggestion it is here for.");
+        Assert.IsNotEmpty(suggestion.Findings, "The sample no longer provokes the Suggestion it is here for.");
         Assert.IsTrue(suggestion.Findings.All(finding => finding.Severity == "Suggestion"));
         Assert.IsTrue(suggestion.Passed);
     }
@@ -394,7 +391,7 @@ public class CodeReviewTests
 
         var review = BmotionCodeReview.Review(code);
 
-        Assert.AreEqual(0, review.Findings.Length,
+        Assert.IsEmpty(review.Findings,
                         $"Reported: {string.Join(", ", review.Findings.Select(finding => $"{finding.Rule}@{finding.Line}"))}.");
         Assert.IsTrue(review.Passed);
     }
@@ -412,8 +409,8 @@ public class CodeReviewTests
         var review = BmotionCodeReview.Review(code);
 
         Assert.IsTrue(review.Passed);
-        Assert.AreEqual(0, review.Findings.Length);
-        CollectionAssert.AreEqual(BmotionCodeReview.Rules, review.RulesApplied);
+        Assert.IsEmpty(review.Findings);
+        Assert.AreSequenceEqual(BmotionCodeReview.Rules, review.RulesApplied);
     }
 
     [TestMethod]
@@ -421,7 +418,7 @@ public class CodeReviewTests
     {
         foreach (var code in Offenders.Values)
         {
-            CollectionAssert.AreEqual(BmotionCodeReview.Rules, BmotionCodeReview.Review(code).RulesApplied);
+            Assert.AreSequenceEqual(BmotionCodeReview.Rules, BmotionCodeReview.Review(code).RulesApplied);
         }
     }
 
@@ -438,7 +435,7 @@ public class CodeReviewTests
             .Findings.Where(finding => finding.Rule == "frame-loop-only-properties")
             .ToArray();
 
-        Assert.AreEqual(1, findings.Length, "The same property was reported for both ends of the animation.");
+        Assert.ContainsSingle(findings, "The same property was reported for both ends of the animation.");
     }
 
     /// <summary>
@@ -460,7 +457,7 @@ public class CodeReviewTests
             .Findings.Where(finding => finding.Rule.StartsWith("frame-loop-only", StringComparison.Ordinal))
             .ToArray();
 
-        Assert.AreEqual(0, reported.Length, string.Join(" | ", reported.Select(finding => finding.Message)));
+        Assert.IsEmpty(reported, string.Join(" | ", reported.Select(finding => finding.Message)));
     }
 
     /// <summary>
@@ -488,9 +485,9 @@ public class CodeReviewTests
 
         Assert.IsNotNull(finding, "A transition OnUpdate was not reported.");
         Assert.AreEqual(2, finding.Line);
-        StringAssert.Contains(finding.Message, "OnUpdate");
+        Assert.Contains("OnUpdate", finding.Message);
 
-        Assert.IsFalse(BmotionCodeReview.Review(component).Findings.Any(entry => entry.Rule == "frame-loop-only-transition"),
+        Assert.DoesNotContain(entry => entry.Rule == "frame-loop-only-transition", BmotionCodeReview.Review(component).Findings,
                        "The component's OnUpdate parameter was reported as a transition callback.");
     }
 
@@ -511,7 +508,7 @@ public class CodeReviewTests
         var finding = BmotionCodeReview.Review(tooLong).Findings.SingleOrDefault(entry => entry.Rule == "frame-loop-only-transition");
 
         Assert.IsNotNull(finding, "A 12-second recording was not reported.");
-        StringAssert.Contains(finding.Message, "12 seconds");
+        Assert.Contains("12 seconds", finding.Message);
 
         foreach (var fine in new[]
         {
@@ -521,7 +518,7 @@ public class CodeReviewTests
             """<Bmotion Animate="Bm.To(x: 100)" Transition="Bm.Tween(4, repeat: BmRepeat.Mirror())"><div /></Bmotion>""",
         })
         {
-            Assert.IsFalse(BmotionCodeReview.Review(fine).Findings.Any(entry => entry.Rule == "frame-loop-only-transition"),
+            Assert.DoesNotContain(entry => entry.Rule == "frame-loop-only-transition", BmotionCodeReview.Review(fine).Findings,
                            $"Reported as frame-loop-only:\n{fine}");
         }
     }
@@ -535,7 +532,7 @@ public class CodeReviewTests
     {
         var code = $"""<Bmotion Animate="Bm.To(x: 100)" Transition="Bm.Tween(1, repeat: {repeat})"><div /></Bmotion>""";
 
-        Assert.IsTrue(BmotionCodeReview.Review(code).Findings.Any(entry => entry.Rule == "frame-loop-only-transition"),
+        Assert.Contains(entry => entry.Rule == "frame-loop-only-transition", BmotionCodeReview.Review(code).Findings,
                       $"'{repeat}' was not recognised as repeating forever.");
     }
 
@@ -560,7 +557,7 @@ public class CodeReviewTests
             """,
         })
         {
-            Assert.IsFalse(BmotionCodeReview.Review(code).Findings.Any(finding => finding.Rule == "animate-without-initial"),
+            Assert.DoesNotContain(finding => finding.Rule == "animate-without-initial", BmotionCodeReview.Review(code).Findings,
                            $"An Initial was demanded of:\n{code}");
         }
     }
@@ -575,7 +572,7 @@ public class CodeReviewTests
             </Bmotion>
             """;
 
-        Assert.IsFalse(BmotionCodeReview.Review(code).Findings.Any(finding => finding.Rule == "component-as-animated-root"));
+        Assert.DoesNotContain(finding => finding.Rule == "component-as-animated-root", BmotionCodeReview.Review(code).Findings);
     }
 
     [TestMethod]
@@ -590,7 +587,7 @@ public class CodeReviewTests
             var review = BmotionCodeReview.Review(code);
 
             Assert.IsNotNull(review.Findings);
-            CollectionAssert.AreEqual(BmotionCodeReview.Rules, review.RulesApplied);
+            Assert.AreSequenceEqual(BmotionCodeReview.Rules, review.RulesApplied);
         }
     }
 
@@ -603,7 +600,6 @@ public class CodeReviewTests
         var fromWindows = BmotionCodeReview.Review(windows);
         var fromUnix = BmotionCodeReview.Review(unix);
 
-        CollectionAssert.AreEqual(fromUnix.Findings.Select(finding => $"{finding.Rule}@{finding.Line}").ToArray(),
-                                  fromWindows.Findings.Select(finding => $"{finding.Rule}@{finding.Line}").ToArray());
+        Assert.AreSequenceEqual(fromUnix.Findings.Select(finding => $"{finding.Rule}@{finding.Line}").ToArray(), fromWindows.Findings.Select(finding => $"{finding.Rule}@{finding.Line}").ToArray());
     }
 }

@@ -28,8 +28,8 @@ public class ShippedConfigurationTests
         var report = BswupServiceWorkerInspector.Inspect(BswupSourceCatalog.GetSourceFile(path));
 
         Assert.IsTrue(report.ImportsBswup, $"{path} does not import the engine");
-        Assert.AreEqual(0, report.Problems.Length, $"{path}:\n{string.Join("\n", report.Problems)}");
-        Assert.AreEqual(0, report.Warnings.Length, $"{path}:\n{string.Join("\n", report.Warnings)}");
+        Assert.IsEmpty(report.Problems, $"{path}:\n{string.Join("\n", report.Problems)}");
+        Assert.IsEmpty(report.Warnings, $"{path}:\n{string.Join("\n", report.Warnings)}");
     }
 
     [TestMethod]
@@ -40,7 +40,7 @@ public class ShippedConfigurationTests
 
         var late = report.Settings.Where(setting => setting.AfterImport).Select(setting => setting.Name).ToArray();
 
-        Assert.AreEqual(0, late.Length, $"{path}: assigned after importScripts and silently ignored: {string.Join(", ", late)}");
+        Assert.IsEmpty(late, $"{path}: assigned after importScripts and silently ignored: {string.Join(", ", late)}");
     }
 
     [TestMethod]
@@ -51,7 +51,7 @@ public class ShippedConfigurationTests
 
         var unknown = report.Settings.Where(setting => setting.Recognized is false).Select(setting => setting.Name).ToArray();
 
-        Assert.AreEqual(0, unknown.Length, $"{path}: not read by the engine: {string.Join(", ", unknown)}");
+        Assert.IsEmpty(unknown, $"{path}: not read by the engine: {string.Join(", ", unknown)}");
     }
 
     [TestMethod]
@@ -64,8 +64,7 @@ public class ShippedConfigurationTests
         var development = Settings($"{directory}/service-worker.js");
         var published = Settings($"{directory}/service-worker.published.js");
 
-        CollectionAssert.AreEquivalent(development.Keys.ToArray(), published.Keys.ToArray(),
-            $"{directory}: the two files assign different settings");
+        Assert.AreSequenceEqual(development.Keys.ToArray(), published.Keys.ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, $"{directory}: the two files assign different settings");
 
         foreach (var (name, value) in development)
         {
@@ -104,9 +103,9 @@ public class ShippedConfigurationTests
 
         // The MCP server and its HTTP mirror belong to the server; a controlled tab opening them
         // must not be answered with the cached app shell.
-        StringAssert.Contains(handled, @"\/api\/");
-        StringAssert.Contains(handled, "mcp");
-        StringAssert.Contains(handled, "sitemap");
+        Assert.Contains(@"\/api\/", handled);
+        Assert.Contains("mcp", handled);
+        Assert.Contains("sitemap", handled);
     }
 
     [TestMethod]
@@ -125,14 +124,14 @@ public class ShippedConfigurationTests
 
                 var report = BswupServiceWorkerInspector.Inspect(BswupSourceCatalog.GetSourceFile(file));
 
-                Assert.AreEqual(0, report.Problems.Length, $"{model} hands out {file}:\n{string.Join("\n", report.Problems)}");
+                Assert.IsEmpty(report.Problems, $"{model} hands out {file}:\n{string.Join("\n", report.Problems)}");
 
                 inspected++;
             }
 
             // A guide that stopped shipping worker files - or started heading them differently -
             // would otherwise pass here having reviewed nothing.
-            Assert.IsTrue(inspected > 0, $"the {model} guide hands out no service-worker file");
+            Assert.IsGreaterThan(0, inspected, $"the {model} guide hands out no service-worker file");
         }
     }
 

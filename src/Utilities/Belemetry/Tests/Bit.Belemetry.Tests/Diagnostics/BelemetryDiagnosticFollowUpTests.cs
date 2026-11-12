@@ -52,10 +52,10 @@ public class BelemetryDiagnosticFollowUpTests
         var boundary = DiagnosticsTestHost.Thrown(() => new InvalidOperationException("The widget could not render"));
         host.Factory.CreateLogger("Microsoft.AspNetCore.Components.Web.ErrorBoundary").LogWarning(boundary, "Caught by an error boundary");
 
-        var capture = await host.Diagnostics.CaptureAsync(new() { Exception = boundary, Reason = "error-boundary" });
+        var capture = await host.Diagnostics.CaptureAsync(new() { Exception = boundary, Reason = "error-boundary" }, TestContext.CancellationToken);
 
         Assert.AreEqual("error-boundary", capture.Subject!.Exception!.Origin);
-        Assert.HasCount(1, capture.Events.Where(e => e.Exception is not null));
+        Assert.ContainsSingle(capture.Events.Where(e => e.Exception is not null));
         Assert.AreEqual(1, capture.ExceptionGroups.Single().Count);
     }
 
@@ -68,32 +68,56 @@ public class BelemetryDiagnosticFollowUpTests
         var start = BelemetryTime.NowUnixNano() - 2_000_000_000;
         var browser = new BelemetryDiagnosticEvent
         {
-            Sequence = 1, TimeUnixNano = start, Category = BelemetryDiagnosticCategories.Http, Name = "GET", Severity = BelemetrySeverity.Error,
-            Outcome = BelemetryDiagnosticOutcome.Failure, Source = BelemetryDiagnosticSource.Browser, TraceId = trace, SpanId = "b7ad6b7169203331",
+            Sequence = 1,
+            TimeUnixNano = start,
+            Category = BelemetryDiagnosticCategories.Http,
+            Name = "GET",
+            Severity = BelemetrySeverity.Error,
+            Outcome = BelemetryDiagnosticOutcome.Failure,
+            Source = BelemetryDiagnosticSource.Browser,
+            TraceId = trace,
+            SpanId = "b7ad6b7169203331",
             Attributes = new Dictionary<string, object?> { ["url.template"] = "https://shop.test/api/fail", [BelemetrySemanticConventions.HttpResponseStatusCode] = 500L },
         };
         var server = new BelemetryDiagnosticEvent
         {
-            Sequence = 7, TimeUnixNano = start + 1_000_000, Category = BelemetryDiagnosticCategories.Http, Name = "GET", Severity = BelemetrySeverity.Error,
-            Outcome = BelemetryDiagnosticOutcome.Failure, Source = BelemetryDiagnosticSource.Dotnet, TraceId = trace, SpanId = "00f067aa0ba902b7", ParentSpanId = "b7ad6b7169203331",
+            Sequence = 7,
+            TimeUnixNano = start + 1_000_000,
+            Category = BelemetryDiagnosticCategories.Http,
+            Name = "GET",
+            Severity = BelemetrySeverity.Error,
+            Outcome = BelemetryDiagnosticOutcome.Failure,
+            Source = BelemetryDiagnosticSource.Dotnet,
+            TraceId = trace,
+            SpanId = "00f067aa0ba902b7",
+            ParentSpanId = "b7ad6b7169203331",
             Route = "/api/fail",
         };
         var failure = new BelemetryDiagnosticEvent
         {
-            Sequence = 8, TimeUnixNano = start + 1_500_000_000, Category = BelemetryDiagnosticCategories.Exception, Name = "exception",
-            Severity = BelemetrySeverity.Error, Outcome = BelemetryDiagnosticOutcome.Failure, Source = BelemetryDiagnosticSource.Dotnet,
+            Sequence = 8,
+            TimeUnixNano = start + 1_500_000_000,
+            Category = BelemetryDiagnosticCategories.Exception,
+            Name = "exception",
+            Severity = BelemetrySeverity.Error,
+            Outcome = BelemetryDiagnosticOutcome.Failure,
+            Source = BelemetryDiagnosticSource.Dotnet,
             Exception = new BelemetryDiagnosticException { Type = "System.InvalidOperationException", Fingerprint = "f" },
         };
         var capture = new BelemetryDiagnosticCapture(new BelemetryCaptureContent
         {
-            Id = "0123456789abcdef", CreatedAt = DateTimeOffset.UtcNow, Trigger = new(BelemetryCaptureTriggerKind.Manual, "test"),
-            Options = new BelemetryDiagnosticsOptions(), Events = [browser, server, failure], Subject = failure,
+            Id = "0123456789abcdef",
+            CreatedAt = DateTimeOffset.UtcNow,
+            Trigger = new(BelemetryCaptureTriggerKind.Manual, "test"),
+            Options = new BelemetryDiagnosticsOptions(),
+            Events = [browser, server, failure],
+            Subject = failure,
         });
 
         var report = capture.Report;
 
         Assert.AreEqual("GET https://shop.test/api/fail 500", Assert.ContainsSingle(report.FailedRequests).Text);
-        Assert.AreEqual(1, report.Findings.Count(f => f.Text.StartsWith("The request", StringComparison.Ordinal)));
+        Assert.ContainsSingle(f => f.Text.StartsWith("The request", StringComparison.Ordinal), report.Findings);
     }
 
     [TestMethod]
@@ -105,26 +129,45 @@ public class BelemetryDiagnosticFollowUpTests
         var start = BelemetryTime.NowUnixNano() - 2_000_000_000;
         BelemetryDiagnosticEvent Request(long sequence, string span, string url) => new()
         {
-            Sequence = sequence, TimeUnixNano = start + sequence, Category = BelemetryDiagnosticCategories.Http, Name = "GET", Severity = BelemetrySeverity.Error,
-            Outcome = BelemetryDiagnosticOutcome.Failure, Source = BelemetryDiagnosticSource.Dotnet, TraceId = trace, SpanId = span, ParentSpanId = "53995c3f42cd8ad8",
+            Sequence = sequence,
+            TimeUnixNano = start + sequence,
+            Category = BelemetryDiagnosticCategories.Http,
+            Name = "GET",
+            Severity = BelemetrySeverity.Error,
+            Outcome = BelemetryDiagnosticOutcome.Failure,
+            Source = BelemetryDiagnosticSource.Dotnet,
+            TraceId = trace,
+            SpanId = span,
+            ParentSpanId = "53995c3f42cd8ad8",
             Attributes = new Dictionary<string, object?> { ["url.template"] = url, [BelemetrySemanticConventions.HttpResponseStatusCode] = 503L },
         };
         var failure = new BelemetryDiagnosticEvent
         {
-            Sequence = 9, TimeUnixNano = start + 1_000_000, Category = BelemetryDiagnosticCategories.Exception, Name = "exception",
-            Severity = BelemetrySeverity.Error, Outcome = BelemetryDiagnosticOutcome.Failure, Source = BelemetryDiagnosticSource.Dotnet, TraceId = trace,
+            Sequence = 9,
+            TimeUnixNano = start + 1_000_000,
+            Category = BelemetryDiagnosticCategories.Exception,
+            Name = "exception",
+            Severity = BelemetrySeverity.Error,
+            Outcome = BelemetryDiagnosticOutcome.Failure,
+            Source = BelemetryDiagnosticSource.Dotnet,
+            TraceId = trace,
             Exception = new BelemetryDiagnosticException { Type = "System.InvalidOperationException", Fingerprint = "f" },
         };
         var capture = new BelemetryDiagnosticCapture(new BelemetryCaptureContent
         {
-            Id = "0123456789abcdef", CreatedAt = DateTimeOffset.UtcNow, Trigger = new(BelemetryCaptureTriggerKind.Manual, "test"),
+            Id = "0123456789abcdef",
+            CreatedAt = DateTimeOffset.UtcNow,
+            Trigger = new(BelemetryCaptureTriggerKind.Manual, "test"),
             Options = new BelemetryDiagnosticsOptions(),
-            Events = [Request(1, "1111111111111111", "https://api.test/orders"), Request(2, "2222222222222222", "https://api.test/stock"), failure], Subject = failure,
+            Events = [Request(1, "1111111111111111", "https://api.test/orders"), Request(2, "2222222222222222", "https://api.test/stock"), failure],
+            Subject = failure,
         });
 
         var report = capture.Report;
 
-        CollectionAssert.AreEqual(new[] { "GET https://api.test/orders 503", "GET https://api.test/stock 503" }, report.FailedRequests.Select(r => r.Text).ToArray());
+        Assert.AreSequenceEqual(new[] { "GET https://api.test/orders 503", "GET https://api.test/stock 503" }, report.FailedRequests.Select(r => r.Text).ToArray());
         Assert.AreEqual(2, report.Findings.Count(f => f.Text.EndsWith("failed in the same trace.", StringComparison.Ordinal)));
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

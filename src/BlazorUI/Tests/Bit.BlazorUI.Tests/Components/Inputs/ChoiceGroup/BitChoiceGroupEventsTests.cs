@@ -57,7 +57,7 @@ public class BitChoiceGroupEventsTests : BunitTestContext
         component.FindAll(".bit-chg-icn input")[0].Click();
         component.FindAll(".bit-chg-icn input")[0].Click();
 
-        CollectionAssert.AreEqual(new[] { "A", "A" }, clicks.ToArray());
+        Assert.AreSequenceEqual(new[] { "A", "A" }, clicks.ToArray());
     }
 
     [TestMethod]
@@ -75,7 +75,7 @@ public class BitChoiceGroupEventsTests : BunitTestContext
 
         component.FindAll(".bit-chg-icn input")[1].Click();
 
-        Assert.AreEqual(0, clicks.Count);
+        Assert.IsEmpty(clicks);
     }
 
     [TestMethod]

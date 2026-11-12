@@ -91,7 +91,7 @@ public class ProfileComparisonTests : BunitContext
         Assert.AreEqual(typeName, BevRenderProfile.TypeKey(typeName));
         var elapsed = System.Diagnostics.Stopwatch.GetElapsedTime(start);
 
-        Assert.IsTrue(elapsed.TotalMilliseconds < 1000, $"normalizing a 200,000 character type name took {elapsed.TotalMilliseconds:0} ms");
+        Assert.IsLessThan(1000, elapsed.TotalMilliseconds, $"normalizing a 200,000 character type name took {elapsed.TotalMilliseconds:0} ms");
         Assert.AreEqual("Dictionary`2[[System.String],[App.Item]]",
             BevRenderProfile.TypeKey("Dictionary`2[[System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[App.Item, App,   Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"));
     }
@@ -164,7 +164,7 @@ public class ProfileComparisonTests : BunitContext
         var warning = Assert.ContainsSingle(result.Warnings);
         Assert.DoesNotContain("\n", warning, StringComparison.Ordinal);
         var markdown = result.ToMarkdown();
-        Assert.IsFalse(markdown.Split('\n').Any(line => line.StartsWith("No regressions", StringComparison.Ordinal) || line.StartsWith("![", StringComparison.Ordinal)), markdown);
+        Assert.DoesNotContain(line => line.StartsWith("No regressions", StringComparison.Ordinal) || line.StartsWith("![", StringComparison.Ordinal), markdown.Split('\n'), markdown);
     }
 
     [TestMethod]
@@ -218,7 +218,7 @@ public class ProfileComparisonTests : BunitContext
         cut.Render(p => p.Add(c => c.ShowChild, false));
         Session.Components.Refresh(force: true);
         Session.Components.Refresh(force: true);
-        Assert.IsFalse(Session.Components.All.Any(r => r.Type == typeof(ChildComponent)), "the disposed child was let go");
+        Assert.DoesNotContain(r => r.Type == typeof(ChildComponent), Session.Components.All, "the disposed child was let go");
 
         using var json = JsonDocument.Parse(BevSessionExporter.ToJson(Session, new BevSessionExportOptions { Sections = new HashSet<string> { "profile" } }));
         var profile = json.RootElement.GetProperty("profile");
@@ -240,7 +240,7 @@ public class ProfileComparisonTests : BunitContext
         var gone = Assert.ContainsSingle(Session.Components.GoneTotals());
         Assert.AreEqual(0, gone.RendersSinceBaseline);
         Assert.AreEqual(4, gone.Renders, "its renders over the whole session are kept: the first, one before the first reset, two after");
-        Assert.IsFalse(BevRenderProfile.Of(Session).Types.Any(t => t.DisplayName == "ChildComponent"));
+        Assert.DoesNotContain(t => t.DisplayName == "ChildComponent", BevRenderProfile.Of(Session).Types);
         Session.Components.ClearDisposed();
         Assert.IsEmpty(Session.Components.GoneTotals());
     }

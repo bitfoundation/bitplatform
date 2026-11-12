@@ -131,6 +131,6 @@ public class BitInfiniteScrollingBrowserTests : PerformanceTestBase
     {
         var items = await List().EvaluateAsync<int[]>("el => [...el.querySelectorAll('.row')].map(r => +r.dataset.item)");
 
-        CollectionAssert.AreEqual(Enumerable.Range(0, 50).ToArray(), items);
+        Assert.AreSequenceEqual(Enumerable.Range(0, 50).ToArray(), items);
     }
 }

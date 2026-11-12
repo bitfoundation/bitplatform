@@ -35,7 +35,7 @@ public partial class ChatbotCostLimitsTests
 
         await chatbot.ProcessNewMessage(new AiChatMessage { Content = new string('a', AiChatMessage.MaxContentLength) }, httpContext.User, TestContext.CancellationToken);
 
-        Assert.HasCount(1, chatClient.ReceivedConversations, "A message of exactly AiChatMessage.MaxContentLength must still reach the model.");
+        Assert.ContainsSingle(chatClient.ReceivedConversations, "A message of exactly AiChatMessage.MaxContentLength must still reach the model.");
     }
 
     [TestMethod]

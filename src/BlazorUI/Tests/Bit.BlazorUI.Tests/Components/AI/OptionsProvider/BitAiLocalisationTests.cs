@@ -50,7 +50,7 @@ public class BitAiLocalisationTests : BitAiTestBase
     {
         var badge = RenderComponent<BitAiAgentStatusBadge>(p => p.Add(c => c.Status, BitAiAgentRunStatus.Completed));
 
-        StringAssert.Contains(badge.Markup, "Fertig");
+        Assert.Contains("Fertig", badge.Markup);
     }
 
     [TestMethod]
@@ -63,10 +63,10 @@ public class BitAiLocalisationTests : BitAiTestBase
         Assert.AreEqual("Absenden", submit.TextContent.Trim());
 
         submit.Click();
-        StringAssert.Contains(form.Find(".bit-aifrm-fld").TextContent, "City fehlt.");
+        Assert.Contains("City fehlt.", form.Find(".bit-aifrm-fld").TextContent);
 
         form.Render(p => p.Add(c => c.Submitted, true));
-        StringAssert.Contains(form.Find(".bit-aifrm-sbm").TextContent, "Gesendet");
+        Assert.Contains("Gesendet", form.Find(".bit-aifrm-sbm").TextContent);
     }
 
     [TestMethod]

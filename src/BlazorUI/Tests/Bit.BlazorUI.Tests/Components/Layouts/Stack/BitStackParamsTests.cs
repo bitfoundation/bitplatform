@@ -28,8 +28,8 @@ public class BitStackParamsTests : BunitTestContext
     [TestMethod]
     public void BitStackParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitStack)}", BitStackParams.ParamName);
-        Assert.AreEqual("BitParams.BitStack", BitStackParams.ParamName);
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitStack)}", new BitStackParams().Name);
+        Assert.AreEqual("BitParams.BitStack", new BitStackParams().Name);
     }
 
     [TestMethod]
@@ -53,7 +53,7 @@ public class BitStackParamsTests : BunitTestContext
                                          .ToArray();
 
         // Guards the guard: a reflection walk that found nothing would let every parameter through in silence.
-        Assert.IsTrue(parameters.Length > 10, $"Only {parameters.Length} parameters were found on {nameof(BitStack)}.");
+        Assert.IsGreaterThan(10, parameters.Length, $"Only {parameters.Length} parameters were found on {nameof(BitStack)}.");
 
         foreach (var name in parameters)
         {
@@ -99,7 +99,7 @@ public class BitStackParamsTests : BunitTestContext
         Assert.AreEqual("NAV", stack.TagName);
         Assert.IsTrue(stack.ClassList.Contains("bit-stc-sm"));
         Assert.IsFalse(stack.ClassList.Contains("bit-stc-lg"));
-        StringAssert.Contains(stack.GetAttribute("style")!, "padding:1rem");
+        Assert.Contains("padding:1rem", stack.GetAttribute("style")!);
     }
 
     // Gives every property of the params object a value of its own type, and hands back what each of them was given
@@ -139,7 +139,7 @@ public class BitStackParamsTests : BunitTestContext
     {
         var type = component.GetType();
 
-        Assert.IsTrue(expected.Count > 10, $"Only {expected.Count} cascading parameters were found on {type.Name}.");
+        Assert.IsGreaterThan(10, expected.Count, $"Only {expected.Count} cascading parameters were found on {type.Name}.");
 
         foreach (var (name, value) in expected)
         {

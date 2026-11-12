@@ -17,7 +17,7 @@ public class BitMarkdownEditorPrerenderTests : BunitTestContext
             [nameof(BitMarkdownEditorLegacy.Value)] = "# Title & <b>body</b>",
         });
 
-        StringAssert.Contains(html, "<textarea class=\"bit-mde-txa\"># Title &amp; &lt;b&gt;body&lt;/b&gt;</textarea>");
+        Assert.Contains("<textarea class=\"bit-mde-txa\"># Title &amp; &lt;b&gt;body&lt;/b&gt;</textarea>", html);
     }
 
     [TestMethod]
@@ -28,7 +28,7 @@ public class BitMarkdownEditorPrerenderTests : BunitTestContext
             [nameof(BitMarkdownEditorLegacy.DefaultValue)] = "hello",
         });
 
-        StringAssert.Contains(html, "<textarea class=\"bit-mde-txa\">hello</textarea>");
+        Assert.Contains("<textarea class=\"bit-mde-txa\">hello</textarea>", html);
     }
 
     [TestMethod]

@@ -14,10 +14,13 @@ public class LambdaNamesTests
     public void A_lambda_that_calls_one_component_method_is_named_after_it()
     {
         var page = new OrdersPage();
+        var actualValue = BevLambdaTargets.CalledMethod(page.LoadSlowly.Method)?.Name;
 
-        Assert.AreEqual("Load", BevLambdaTargets.CalledMethod(page.LoadSlowly.Method)?.Name, "captures this");
-        Assert.AreEqual("Load", BevLambdaTargets.CalledMethod(page.LoadWith(7).Method)?.Name, "a closure over a local");
-        Assert.AreEqual("LoadAsync", BevLambdaTargets.CalledMethod(page.LoadAwaited.Method)?.Name, "an async lambda, through its state machine");
+        Assert.AreEqual("Load", actualValue, "captures this");
+        var actualValue1 = BevLambdaTargets.CalledMethod(page.LoadWith(7).Method)?.Name;
+        Assert.AreEqual("Load", actualValue1, "a closure over a local");
+        var actualValue2 = BevLambdaTargets.CalledMethod(page.LoadAwaited.Method)?.Name;
+        Assert.AreEqual("LoadAsync", actualValue2, "an async lambda, through its state machine");
         Assert.AreEqual("OrdersPage.Load (lambda)", BevEventCallbacks.Method(page.LoadSlowly));
     }
 
@@ -68,7 +71,7 @@ public class LambdaNamesTests
         Assert.AreEqual("BoundBox (@bind)", BevLambdaTargets.DescribeEventHandler(typeof(BoundBox).FullName!, withSetter.Method.Name));
     }
 
-    public sealed class BoundBox
+    internal sealed class BoundBox
     {
         public string? Query { get; set; }
 
@@ -85,8 +88,10 @@ public class LambdaNamesTests
         var order = page.Row(1001).Method;
         var customer = page.Row("ada").Method;
         Assert.AreEqual(order.Name, customer.Name, "precondition: the compiler gave both the same name");
-        Assert.AreEqual("Open", BevLambdaTargets.CalledMethod(order)?.Name, "the method itself is known exactly");
-        Assert.AreEqual("Show", BevLambdaTargets.CalledMethod(customer)?.Name);
+        var actualValue = BevLambdaTargets.CalledMethod(order)?.Name;
+        Assert.AreEqual("Open", actualValue, "the method itself is known exactly");
+        var actualValue1 = BevLambdaTargets.CalledMethod(customer)?.Name;
+        Assert.AreEqual("Show", actualValue1);
         Assert.AreEqual("lambda in OrdersPage.Row", BevLambdaTargets.DescribeEventHandler(type, order.Name), "by name alone it could be either");
 
         // A base class's lambda runs under the derived type's name, and the derived type has one of the same name.
@@ -120,20 +125,20 @@ public class LambdaNamesTests
         Assert.AreEqual(0, BevLambdaTargets.CachedCount);
     }
 
-    public sealed class OrdersApi
+    internal sealed class OrdersApi
     {
         public void Delete(int id) => _ = id;
     }
 
     // Handler is the first method of both, so both lambdas are <Handler>b__0_0.
-    public class OrderListBase : ComponentBase
+    internal class OrderListBase : ComponentBase
     {
         public virtual Action Handler() => () => Delete();
 
         protected void Delete() => StateHasChanged();
     }
 
-    public sealed class SpecialOrderList : OrderListBase
+    internal sealed class SpecialOrderList : OrderListBase
     {
         public override Action Handler() => () => Archive();
 

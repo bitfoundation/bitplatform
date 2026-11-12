@@ -28,8 +28,8 @@ public class BitImageE2ETests : E2ETestBase
 
         // Prerendered, the image is shown as the browser draws it, before any circuit exists. Its src comes last,
         // after everything that says how it is fetched (see BitImage.GetImageAttributes).
-        StringAssert.Matches(html, new Regex("id=\"img-basic\" class=\"bit-img\"><img alt=\"A landscape picture\" title=\"Hover title\" class=\"[^\"]*bit-img-vis bit-img-nat[^\"]*\" src=\"samples/image-landscape.svg\""));
-        StringAssert.Contains(html, "<span id=\"status\">Loading</span>");
+        Assert.MatchesRegex(new Regex("id=\"img-basic\" class=\"bit-img\"><img alt=\"A landscape picture\" title=\"Hover title\" class=\"[^\"]*bit-img-vis bit-img-nat[^\"]*\" src=\"samples/image-landscape.svg\""), html);
+        Assert.Contains("<span id=\"status\">Loading</span>", html);
 
         await OpenAsync(Path);
 
@@ -195,7 +195,7 @@ public class BitImageE2ETests : E2ETestBase
         await Expect(Page.Locator("#img-rounded")).ToHaveCSSAsync("overflow", "hidden");
 
         await Expect(Page.Locator("#img-circular")).ToHaveClassAsync(HasClass("bit-img-cir"));
-        Assert.IsTrue(Px(await ComputedStyleAsync("#img-circular", "border-top-left-radius")) >= 64);
+        Assert.IsGreaterThanOrEqualTo(64, Px(await ComputedStyleAsync("#img-circular", "border-top-left-radius")));
 
         // Circular wins over Rounded.
         await Expect(Page.Locator("#img-circular-rounded")).Not.ToHaveClassAsync(HasClass("bit-img-rnd"));
@@ -328,7 +328,7 @@ public class BitImageE2ETests : E2ETestBase
         await Expect(placeholder).ToBeVisibleAsync();
         await Expect(placeholder).ToHaveAttributeAsync("aria-hidden", "true");
         await Expect(placeholder).ToHaveAttributeAsync("alt", "");
-        StringAssert.StartsWith(await placeholder.EvaluateAsync<string>("el => getComputedStyle(el).filter"), "blur(");
+        Assert.StartsWith("blur(", await placeholder.EvaluateAsync<string>("el => getComputedStyle(el).filter"));
         // It fills the frame, scaled up a little so the blur leaves no soft edge inside it.
         Assert.AreEqual(120, await placeholder.EvaluateAsync<int>("el => el.offsetWidth"));
         Assert.AreEqual(60, await placeholder.EvaluateAsync<int>("el => el.offsetHeight"));
@@ -377,10 +377,10 @@ public class BitImageE2ETests : E2ETestBase
         force.SetResult();
 
         await Expect(Page.Locator("#img-fade img")).ToHaveClassAsync(HasClass("bit-img-fde"));
-        Assert.IsTrue(Seconds(await ComputedStyleAsync("#img-fade img", "animation-duration")) < 0.001, "Under reduced motion the fade is instant.");
+        Assert.IsLessThan(0.001, Seconds(await ComputedStyleAsync("#img-fade img", "animation-duration")), "Under reduced motion the fade is instant.");
 
         await Expect(Page.Locator("#img-fade-force")).ToHaveClassAsync(HasClass("bit-fam"));
-        Assert.IsTrue(Seconds(await ComputedStyleAsync("#img-fade-force img", "animation-duration")) > 0.05, "ForceAnimation restores the fade.");
+        Assert.IsGreaterThan(0.05, Seconds(await ComputedStyleAsync("#img-fade-force img", "animation-duration")), "ForceAnimation restores the fade.");
     }
 
     [TestMethod]
@@ -440,8 +440,8 @@ public class BitImageE2ETests : E2ETestBase
         var srcset = Page.Locator("#img-srcset-small img");
         await Expect(srcset).ToHaveAttributeAsync("srcset", "samples/image-landscape.svg 200w, samples/image-wide.svg 400w");
         await Expect(srcset).ToHaveAttributeAsync("sizes", "100px");
-        StringAssert.Matches(await CurrentSrcAsync(srcset), new Regex("image-(landscape|wide)\\.svg$"), "A srcset candidate, not the Src fallback.");
-        StringAssert.EndsWith(await CurrentSrcAsync(Page.Locator("#img-srcset-large img")), "image-wide.svg", "Laid out at 380px, the 400w candidate.");
+        Assert.MatchesRegex(new Regex("image-(landscape|wide)\\.svg$"), await CurrentSrcAsync(srcset), "A srcset candidate, not the Src fallback.");
+        Assert.EndsWith("image-wide.svg", await CurrentSrcAsync(Page.Locator("#img-srcset-large img")), "Laid out at 380px, the 400w candidate.");
 
         var picture = Page.Locator("#img-sources picture.bit-img-pic");
         await Expect(picture).ToHaveCSSAsync("display", "contents");
@@ -451,11 +451,11 @@ public class BitImageE2ETests : E2ETestBase
         await Expect(picture.Locator("source").Nth(0)).ToHaveAttributeAsync("type", "image/x-e2e-unsupported");
 
         // The unsupported type is skipped and the first matching media wins.
-        StringAssert.EndsWith(await CurrentSrcAsync(Page.Locator("#img-sources img")), "image-portrait.svg");
+        Assert.EndsWith("image-portrait.svg", await CurrentSrcAsync(Page.Locator("#img-sources img")));
 
         // No source matches (and a source without a srcset is not rendered): the Src is used.
         await Expect(Page.Locator("#img-sources-nomatch source")).ToHaveCountAsync(1);
-        StringAssert.EndsWith(await CurrentSrcAsync(Page.Locator("#img-sources-nomatch img")), "image-square.svg");
+        Assert.EndsWith("image-square.svg", await CurrentSrcAsync(Page.Locator("#img-sources-nomatch img")));
     }
 
     [TestMethod]
@@ -717,7 +717,7 @@ public class BitImageE2ETests : E2ETestBase
         await OpenAsync(Path);
 
         await Expect(Page.Locator("#img-hidden")).ToHaveCSSAsync("visibility", "hidden");
-        Assert.IsTrue((await Page.Locator("#img-hidden").BoundingBoxAsync())!.Height > 0);
+        Assert.IsGreaterThan(0, (await Page.Locator("#img-hidden").BoundingBoxAsync())!.Height);
         await Expect(Page.Locator("#img-collapsed")).ToHaveCSSAsync("display", "none");
     }
 

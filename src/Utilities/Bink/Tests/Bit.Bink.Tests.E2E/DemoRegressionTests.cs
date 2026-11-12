@@ -82,7 +82,7 @@ public sealed class DemoRegressionTests : BinkTest
 
         Assert.AreEqual(1, await ElementCountAsync(page), "the typed text was not kept");
         Assert.AreEqual(0, await page.Locator("textarea.bit-bink-text-editor").CountAsync(), "the text editor is still open");
-        lock (errors) Assert.AreEqual(0, errors.Count, string.Join(Environment.NewLine, errors));
+        lock (errors) Assert.IsEmpty(errors, string.Join(Environment.NewLine, errors));
     }
 
     [TestMethod]
@@ -302,7 +302,7 @@ public sealed class DemoRegressionTests : BinkTest
 
         bool[] requests = await page.EvaluateAsync<bool[]>("() => window.binkContextRequests");
         Assert.IsNotEmpty(requests, "no canvas layer asked for a context");
-        Assert.IsFalse(requests.Any(desynchronized => desynchronized), "a canvas layer asked for a desynchronized context");
+        Assert.DoesNotContain(desynchronized => desynchronized, requests, "a canvas layer asked for a desynchronized context");
     }
 
     [TestMethod]
@@ -357,7 +357,7 @@ public sealed class DemoRegressionTests : BinkTest
         }
         catch (PlaywrightException ex)
         {
-            Assert.Fail($"{failure} ({ex.Message.Split('\n')[0]})");
+            throw new global::System.InvalidOperationException($"{failure} ({ex.Message.Split('\n')[0]})", ex);
         }
     }
 }

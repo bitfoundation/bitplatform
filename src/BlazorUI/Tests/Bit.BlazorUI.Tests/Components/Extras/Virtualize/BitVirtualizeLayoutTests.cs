@@ -64,8 +64,8 @@ public class BitVirtualizeLayoutTests : BunitTestContext
         var component = RenderGrid(100, 3, 100);
 
         // 34 rows of 100px; 3 rows in view plus 3 rows of overscan, of 3 items each.
-        StringAssert.Contains(component.Find(".bit-vir-spc").GetAttribute("style"), "height:3400px");
-        CollectionAssert.AreEqual(Enumerable.Range(0, 18).ToArray(), RenderedIndices(component));
+        Assert.Contains("height:3400px", component.Find(".bit-vir-spc").GetAttribute("style")!);
+        Assert.AreSequenceEqual(Enumerable.Range(0, 18).ToArray(), RenderedIndices(component));
     }
 
     [TestMethod]
@@ -78,9 +78,9 @@ public class BitVirtualizeLayoutTests : BunitTestContext
         var style = component.Find("[data-bit-vir-index='4']").GetAttribute("style");
 
         Assert.AreEqual(100, TranslateOf(style));
-        StringAssert.Contains(style, "height:100px");
-        StringAssert.Contains(style, "inset-inline-start:calc(100% / 3 * 1)");
-        StringAssert.Contains(style, "width:calc(100% / 3)");
+        Assert.Contains("height:100px", style!);
+        Assert.Contains("inset-inline-start:calc(100% / 3 * 1)", style);
+        Assert.Contains("width:calc(100% / 3)", style);
     }
 
     [TestMethod]
@@ -92,10 +92,10 @@ public class BitVirtualizeLayoutTests : BunitTestContext
 
         var style = component.Find("[data-bit-vir-index='3']").GetAttribute("style");
 
-        StringAssert.Contains(style, "inset-inline-start:100px");
-        StringAssert.Contains(style, "inset-block-start:calc(100% / 2 * 1)");
-        StringAssert.Contains(style, "height:calc(100% / 2)");
-        StringAssert.Contains(component.Find(".bit-vir-spc").GetAttribute("style"), "width:5000px");
+        Assert.Contains("inset-inline-start:100px", style!);
+        Assert.Contains("inset-block-start:calc(100% / 2 * 1)", style);
+        Assert.Contains("height:calc(100% / 2)", style);
+        Assert.Contains("width:5000px", component.Find(".bit-vir-spc").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -108,7 +108,7 @@ public class BitVirtualizeLayoutTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance._Scroll(1000, 300));
 
         // Rows 10-12 in view, rows 7-15 rendered.
-        CollectionAssert.AreEqual(Enumerable.Range(21, 27).ToArray(), RenderedIndices(component));
+        Assert.AreSequenceEqual(Enumerable.Range(21, 27).ToArray(), RenderedIndices(component));
     }
 
     [TestMethod]
@@ -118,8 +118,8 @@ public class BitVirtualizeLayoutTests : BunitTestContext
 
         var component = RenderGrid(10, 4, 100);
 
-        CollectionAssert.AreEqual(Enumerable.Range(0, 10).ToArray(), RenderedIndices(component));
-        StringAssert.Contains(component.Find(".bit-vir-spc").GetAttribute("style"), "height:300px");
+        Assert.AreSequenceEqual(Enumerable.Range(0, 10).ToArray(), RenderedIndices(component));
+        Assert.Contains("height:300px", component.Find(".bit-vir-spc").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -208,15 +208,15 @@ public class BitVirtualizeLayoutTests : BunitTestContext
         });
 
         // 10 rows estimated at 50px.
-        StringAssert.Contains(component.Find(".bit-vir-spc").GetAttribute("style"), "height:500px");
+        Assert.Contains("height:500px", component.Find(".bit-vir-spc").GetAttribute("style")!);
 
         await component.InvokeAsync(() => component.Instance._ItemsMeasured([0, 1, 2], [80d, 120d, 60d]));
-        StringAssert.Contains(component.Find(".bit-vir-spc").GetAttribute("style"), "height:570px");
+        Assert.Contains("height:570px", component.Find(".bit-vir-spc").GetAttribute("style")!);
         Assert.AreEqual(120, TranslateOf(component.Find("[data-bit-vir-index='3']").GetAttribute("style")));
 
         // The tallest item shrinks: the row follows the next tallest instead of keeping the old size.
         await component.InvokeAsync(() => component.Instance._ItemsMeasured([1], [40d]));
-        StringAssert.Contains(component.Find(".bit-vir-spc").GetAttribute("style"), "height:530px");
+        Assert.Contains("height:530px", component.Find(".bit-vir-spc").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -226,13 +226,13 @@ public class BitVirtualizeLayoutTests : BunitTestContext
 
         var component = RenderGrid(100, 1, 100);
 
-        StringAssert.Contains(component.Find(".bit-vir-spc").GetAttribute("style"), "height:10000px");
-        Assert.IsFalse(component.Find("[data-bit-vir-index='1']").GetAttribute("style")!.Contains("calc("));
+        Assert.Contains("height:10000px", component.Find(".bit-vir-spc").GetAttribute("style")!);
+        Assert.DoesNotContain("calc(", component.Find("[data-bit-vir-index='1']").GetAttribute("style")!);
 
         component.Render(p => p.Add(x => x.Lanes, 4));
 
-        StringAssert.Contains(component.Find(".bit-vir-spc").GetAttribute("style"), "height:2500px");
-        StringAssert.Contains(component.Find("[data-bit-vir-index='1']").GetAttribute("style"), "width:calc(100% / 4)");
+        Assert.Contains("height:2500px", component.Find(".bit-vir-spc").GetAttribute("style")!);
+        Assert.Contains("width:calc(100% / 4)", component.Find("[data-bit-vir-index='1']").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -243,8 +243,8 @@ public class BitVirtualizeLayoutTests : BunitTestContext
         var component = RenderGrid(100, 1, 100, p => p.Add(x => x.MinLaneSize, 220f));
 
         // 1000px holds 4 lanes of at least 220px; 25 rows of 100px.
-        StringAssert.Contains(component.Find("[data-bit-vir-index='1']").GetAttribute("style"), "width:calc(100% / 4)");
-        StringAssert.Contains(component.Find(".bit-vir-spc").GetAttribute("style"), "height:2500px");
+        Assert.Contains("width:calc(100% / 4)", component.Find("[data-bit-vir-index='1']").GetAttribute("style")!);
+        Assert.Contains("height:2500px", component.Find(".bit-vir-spc").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -255,11 +255,11 @@ public class BitVirtualizeLayoutTests : BunitTestContext
         var component = RenderGrid(100, 1, 100, p => p.Add(x => x.MinLaneSize, 220f));
 
         await component.InvokeAsync(() => component.Instance._Scroll(0, 300, -1, 500));
-        StringAssert.Contains(component.Find(".bit-vir-spc").GetAttribute("style"), "height:5000px");
+        Assert.Contains("height:5000px", component.Find(".bit-vir-spc").GetAttribute("style")!);
 
         // Narrower than a single lane still has one.
         await component.InvokeAsync(() => component.Instance._Scroll(0, 300, -1, 100));
-        StringAssert.Contains(component.Find(".bit-vir-spc").GetAttribute("style"), "height:10000px");
+        Assert.Contains("height:10000px", component.Find(".bit-vir-spc").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -271,18 +271,18 @@ public class BitVirtualizeLayoutTests : BunitTestContext
 
         // A width that is not a number of pixels leaves the 4 lanes of the measured 1000px alone.
         await component.InvokeAsync(() => component.Instance._Scroll(0, 300, -1, double.PositiveInfinity));
-        StringAssert.Contains(component.Find("[data-bit-vir-index='1']").GetAttribute("style"), "width:calc(100% / 4)");
+        Assert.Contains("width:calc(100% / 4)", component.Find("[data-bit-vir-index='1']").GetAttribute("style")!);
 
         // An absurd one yields no more lanes than one window renders.
         await component.InvokeAsync(() => component.Instance._Scroll(0, 300, -1, 1e12));
-        StringAssert.Contains(component.Find("[data-bit-vir-index='1']").GetAttribute("style"), "width:calc(100% / 1000)");
-        Assert.IsTrue(RenderedIndices(component).Length <= 1_000);
+        Assert.Contains("width:calc(100% / 1000)", component.Find("[data-bit-vir-index='1']").GetAttribute("style")!);
+        Assert.IsLessThanOrEqualTo(1_000, RenderedIndices(component).Length);
 
         // Scrolled, the row in view is rendered whole, with no more behind it than one window: the bound a huge
         // overscan has too.
         await component.InvokeAsync(() => component.Instance._Scroll(200, 300, -1, 1e12));
         var rendered = RenderedIndices(component);
-        Assert.IsTrue(rendered.Length <= 2_000);
+        Assert.IsLessThanOrEqualTo(2_000, rendered.Length);
         CollectionAssert.IsSubsetOf(Enumerable.Range(2_000, 1_000).ToArray(), rendered);
     }
 
@@ -293,7 +293,7 @@ public class BitVirtualizeLayoutTests : BunitTestContext
 
         var component = RenderGrid(100, 2, 100, p => p.Add(x => x.MinLaneSize, 220f));
 
-        StringAssert.Contains(component.Find("[data-bit-vir-index='1']").GetAttribute("style"), "width:calc(100% / 2)");
+        Assert.Contains("width:calc(100% / 2)", component.Find("[data-bit-vir-index='1']").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -303,9 +303,9 @@ public class BitVirtualizeLayoutTests : BunitTestContext
 
         var component = RenderGrid(5_000, int.MaxValue, 100);
 
-        StringAssert.Contains(component.Find("[data-bit-vir-index='1']").GetAttribute("style"), "width:calc(100% / 1000)");
-        StringAssert.Contains(component.Find(".bit-vir-spc").GetAttribute("style"), "height:500px");
-        Assert.IsTrue(RenderedIndices(component).Length <= 2_000);
+        Assert.Contains("width:calc(100% / 1000)", component.Find("[data-bit-vir-index='1']").GetAttribute("style")!);
+        Assert.Contains("height:500px", component.Find(".bit-vir-spc").GetAttribute("style")!);
+        Assert.IsLessThanOrEqualTo(2_000, RenderedIndices(component).Length);
     }
 
     [TestMethod]
@@ -313,7 +313,7 @@ public class BitVirtualizeLayoutTests : BunitTestContext
     {
         var component = RenderGrid(100, 2, 100, p => p.Add(x => x.MinLaneSize, 220f));
 
-        StringAssert.Contains(component.Find("[data-bit-vir-index='1']").GetAttribute("style"), "width:calc(100% / 2)");
+        Assert.Contains("width:calc(100% / 2)", component.Find("[data-bit-vir-index='1']").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -328,7 +328,7 @@ public class BitVirtualizeLayoutTests : BunitTestContext
         component.Render(p => p.Add(x => x.Lanes, 4));
 
         // Item 20 is now in row 5: the render carries the scroll that keeps it first in view.
-        StringAssert.StartsWith(component.Find(".bit-vir-spc").GetAttribute("data-bit-vir-scroll"), "o:250:");
+        Assert.StartsWith("o:250:", component.Find(".bit-vir-spc").GetAttribute("data-bit-vir-scroll"));
         Assert.AreEqual(20, RenderedIndices(component).First(i => i >= 20));
     }
 
@@ -339,7 +339,7 @@ public class BitVirtualizeLayoutTests : BunitTestContext
 
         var component = RenderGrid(100, 0, 100);
 
-        StringAssert.Contains(component.Find(".bit-vir-spc").GetAttribute("style"), "height:10000px");
+        Assert.Contains("height:10000px", component.Find(".bit-vir-spc").GetAttribute("style")!);
     }
 
 
@@ -352,9 +352,9 @@ public class BitVirtualizeLayoutTests : BunitTestContext
         var component = RenderGrid(10, 1, 50, p => p.Add(x => x.Gap, 10f));
 
         // 10 items of 50px and the 9 gaps between them.
-        StringAssert.Contains(component.Find(".bit-vir-spc").GetAttribute("style"), "height:590px");
+        Assert.Contains("height:590px", component.Find(".bit-vir-spc").GetAttribute("style")!);
         Assert.AreEqual(120, TranslateOf(component.Find("[data-bit-vir-index='2']").GetAttribute("style")));
-        StringAssert.Contains(component.Find("[data-bit-vir-index='2']").GetAttribute("style"), "height:50px");
+        Assert.Contains("height:50px", component.Find("[data-bit-vir-index='2']").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -369,7 +369,7 @@ public class BitVirtualizeLayoutTests : BunitTestContext
 
         // 1200px is the start of item 20 (5 in view, 3 of overscan on each side).
         await component.InvokeAsync(() => component.Instance._Scroll(1200, 300));
-        CollectionAssert.AreEqual(Enumerable.Range(17, 11).ToArray(), RenderedIndices(component));
+        Assert.AreSequenceEqual(Enumerable.Range(17, 11).ToArray(), RenderedIndices(component));
     }
 
     [TestMethod]
@@ -383,8 +383,8 @@ public class BitVirtualizeLayoutTests : BunitTestContext
 
         // The second row, in the second lane: 2 gaps of 8px are shared out by the 3 lanes.
         Assert.AreEqual(108, TranslateOf(style));
-        StringAssert.Contains(style, "inset-inline-start:calc((100% - 16px) / 3 * 1 + 8px)");
-        StringAssert.Contains(style, "width:calc((100% - 16px) / 3)");
+        Assert.Contains("inset-inline-start:calc((100% - 16px) / 3 * 1 + 8px)", style!);
+        Assert.Contains("width:calc((100% - 16px) / 3)", style);
     }
 
     [TestMethod]
@@ -399,11 +399,11 @@ public class BitVirtualizeLayoutTests : BunitTestContext
             p.Add(x => x.Gap, 40f);
         });
 
-        StringAssert.Contains(component.Find("[data-bit-vir-index='1']").GetAttribute("style"), "width:calc((100% - 120px) / 4)");
+        Assert.Contains("width:calc((100% - 120px) / 4)", component.Find("[data-bit-vir-index='1']").GetAttribute("style")!);
 
         component.Render(p => p.Add(x => x.Gap, 41f));
 
-        StringAssert.Contains(component.Find("[data-bit-vir-index='1']").GetAttribute("style"), "width:calc((100% - 82px) / 3)");
+        Assert.Contains("width:calc((100% - 82px) / 3)", component.Find("[data-bit-vir-index='1']").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -419,11 +419,11 @@ public class BitVirtualizeLayoutTests : BunitTestContext
         });
 
         // 10 items estimated at 50px, 9 gaps.
-        StringAssert.Contains(component.Find(".bit-vir-spc").GetAttribute("style"), "height:590px");
+        Assert.Contains("height:590px", component.Find(".bit-vir-spc").GetAttribute("style")!);
 
         await component.InvokeAsync(() => component.Instance._ItemsMeasured([0], [80d]));
 
-        StringAssert.Contains(component.Find(".bit-vir-spc").GetAttribute("style"), "height:620px");
+        Assert.Contains("height:620px", component.Find(".bit-vir-spc").GetAttribute("style")!);
         Assert.AreEqual(90, TranslateOf(component.Find("[data-bit-vir-index='1']").GetAttribute("style")));
     }
 
@@ -457,8 +457,8 @@ public class BitVirtualizeLayoutTests : BunitTestContext
         // The class and the style are appended to the component's own, ...
         Assert.IsTrue(item.ClassList.Contains("bit-vir-itm"));
         Assert.IsTrue(item.ClassList.Contains("own-class"));
-        StringAssert.Contains(item.GetAttribute("style"), "translateY(50px)");
-        StringAssert.Contains(item.GetAttribute("style"), "color:red");
+        Assert.Contains("translateY(50px)", item.GetAttribute("style")!);
+        Assert.Contains("color:red", item.GetAttribute("style")!);
 
         // ... the role overrides the ItemRole, and what the component relies on is left to it.
         Assert.AreEqual("presentation", component.Find("[data-bit-vir-index='2']").GetAttribute("role"));
@@ -497,7 +497,7 @@ public class BitVirtualizeLayoutTests : BunitTestContext
         component.Render(p => p.Add(x => x.ScrollerSelector, ".page"));
 
         var setups = Context.JSInterop.Invocations[SetupFn];
-        Assert.AreEqual(2, setups.Count);
+        Assert.HasCount(2, setups);
         Assert.AreEqual(".page", setups[1].Arguments[5]);
     }
 
@@ -510,11 +510,11 @@ public class BitVirtualizeLayoutTests : BunitTestContext
 
         // The list starts 200px into the 300px viewport: only its first 100px show, so 2 items plus the overscan.
         await component.InvokeAsync(() => component.Instance._Scroll(-200, 300));
-        CollectionAssert.AreEqual(Enumerable.Range(0, 5).ToArray(), RenderedIndices(component));
+        Assert.AreSequenceEqual(Enumerable.Range(0, 5).ToArray(), RenderedIndices(component));
 
         // Entirely below the viewport: the first item stands ready.
         await component.InvokeAsync(() => component.Instance._Scroll(-5000, 300));
-        CollectionAssert.AreEqual(Enumerable.Range(0, 4).ToArray(), RenderedIndices(component));
+        Assert.AreSequenceEqual(Enumerable.Range(0, 4).ToArray(), RenderedIndices(component));
     }
 
     [TestMethod]
@@ -534,7 +534,7 @@ public class BitVirtualizeLayoutTests : BunitTestContext
         });
 
         Assert.AreEqual("3:row3", component.Find("[data-bit-vir-index='3']").TextContent);
-        Assert.IsFalse(component.Markup.Contains("plain"));
+        Assert.DoesNotContain("plain", component.Markup);
     }
 
     [TestMethod]

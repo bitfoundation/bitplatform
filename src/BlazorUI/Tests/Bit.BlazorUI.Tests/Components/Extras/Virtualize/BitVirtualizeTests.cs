@@ -74,11 +74,11 @@ public class BitVirtualizeTests : BunitTestContext
             parameters.Add(p => p.ItemTemplate, itemTemplate);
         });
 
-        Assert.IsTrue(component.Markup.Contains("bit-vir"));
-        Assert.IsTrue(component.Markup.Contains("bit-vir-spc"));
-        Assert.IsTrue(component.Markup.Contains("Item 0"));
-        Assert.IsTrue(component.Markup.Contains("Item 1"));
-        Assert.IsFalse(component.Markup.Contains("Item 999"));
+        Assert.Contains("bit-vir", component.Markup);
+        Assert.Contains("bit-vir-spc", component.Markup);
+        Assert.Contains("Item 0", component.Markup);
+        Assert.Contains("Item 1", component.Markup);
+        Assert.DoesNotContain("Item 999", component.Markup);
     }
 
     [TestMethod]
@@ -89,7 +89,7 @@ public class BitVirtualizeTests : BunitTestContext
         var component = RenderList(extra: p => p.Add(x => x.OverscanCount, 2));
 
         // 300px / 50px = items 0..5 in view, plus 2 overscan items after them.
-        CollectionAssert.AreEqual(Enumerable.Range(0, 8).ToArray(), RenderedIndices(component));
+        Assert.AreSequenceEqual(Enumerable.Range(0, 8).ToArray(), RenderedIndices(component));
     }
 
     [TestMethod]
@@ -101,7 +101,7 @@ public class BitVirtualizeTests : BunitTestContext
             parameters.Add(p => p.ChildContent, item => builder => builder.AddContent(0, $"Child {item}"));
         });
 
-        Assert.IsTrue(component.Markup.Contains("Child 0"));
+        Assert.Contains("Child 0", component.Markup);
     }
 
     [TestMethod]
@@ -135,7 +135,7 @@ public class BitVirtualizeTests : BunitTestContext
         // inset-inline-start makes the items lay out from the right in RTL, unlike a physical translateX.
         var second = component.Find("[data-bit-vir-index='1']");
         Assert.AreEqual("inset-inline-start:50px;width:50px", second.GetAttribute("style"));
-        Assert.IsTrue(component.Find(".bit-vir-blk").GetAttribute("style")!.StartsWith("inset-inline-start:"));
+        Assert.StartsWith("inset-inline-start:", component.Find(".bit-vir-blk").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -159,7 +159,7 @@ public class BitVirtualizeTests : BunitTestContext
         // browser's max-element-size limit; items are direct children of that block.
         var block = component.Find(".bit-vir-spc > .bit-vir-blk");
         Assert.IsNotNull(block);
-        Assert.IsTrue(block.GetAttribute("style")!.Contains("translateY"));
+        Assert.Contains("translateY", block.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -173,7 +173,7 @@ public class BitVirtualizeTests : BunitTestContext
         });
 
         Assert.AreEqual("No data", component.Find(".bit-vir-emp").TextContent);
-        Assert.AreEqual(0, component.FindAll(".bit-vir-spc").Count);
+        Assert.IsEmpty(component.FindAll(".bit-vir-spc"));
     }
 
     [TestMethod]
@@ -230,7 +230,7 @@ public class BitVirtualizeTests : BunitTestContext
         });
 
         var children = component.Find(".bit-vir").Children;
-        CollectionAssert.AreEqual(new[] { "H", "E", "F" }, children.Select(c => c.TextContent).ToArray());
+        Assert.AreSequenceEqual(new[] { "H", "E", "F" }, children.Select(c => c.TextContent).ToArray());
     }
 
     [TestMethod]
@@ -244,7 +244,7 @@ public class BitVirtualizeTests : BunitTestContext
 
         var root = component.Find(".bit-vir");
         Assert.IsTrue(root.ClassList.Contains("custom-class"));
-        Assert.IsTrue(root.GetAttribute("style")!.Contains("height:100px"));
+        Assert.Contains("height:100px", root.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -280,7 +280,7 @@ public class BitVirtualizeTests : BunitTestContext
             p.Add(x => x.Styles, new BitVirtualizeClassStyles { Root = "color:red", Header = "color:green", Footer = "color:blue", Item = "color:gray", Sticky = "color:pink" });
         });
 
-        Assert.IsTrue(component.Find(".bit-vir").GetAttribute("style")!.Contains("color:red"));
+        Assert.Contains("color:red", component.Find(".bit-vir").GetAttribute("style")!);
         Assert.AreEqual("color:green", component.Find(".bit-vir-hdr").GetAttribute("style"));
         Assert.AreEqual("color:blue", component.Find(".bit-vir-ftr").GetAttribute("style"));
         // The part style is appended to the positioning style, never replacing it.
@@ -518,12 +518,12 @@ public class BitVirtualizeTests : BunitTestContext
         var component = RenderList(100_000, 50);
 
         await component.InvokeAsync(() => component.Instance._Scroll(0, 50_000_000));
-        Assert.IsTrue(RenderedIndices(component).Length <= 1_000);
+        Assert.IsLessThanOrEqualTo(1_000, RenderedIndices(component).Length);
 
         var before = RenderedIndices(component).Length;
         await component.InvokeAsync(() => component.Instance._Scroll(0, double.PositiveInfinity));
         await component.InvokeAsync(() => component.Instance._Scroll(double.NaN, 300));
-        Assert.AreEqual(before, RenderedIndices(component).Length);
+        Assert.HasCount(before, RenderedIndices(component));
     }
 
     [TestMethod]
@@ -536,7 +536,7 @@ public class BitVirtualizeTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance._Scroll(1_000_000, 300));
 
         var rendered = RenderedIndices(component);
-        Assert.IsTrue(rendered.Length <= 2_000);
+        Assert.IsLessThanOrEqualTo(2_000, rendered.Length);
         CollectionAssert.IsSubsetOf(Enumerable.Range(20_000, 6).ToArray(), rendered);
     }
 
@@ -559,7 +559,7 @@ public class BitVirtualizeTests : BunitTestContext
         Assert.AreEqual("1", kept.GetAttribute("aria-posinset"));
         Assert.AreEqual(-3000 + 150, TranslateOf(kept.GetAttribute("style")));
         Assert.AreEqual(0, RenderedIndices(component)[0]);
-        CollectionAssert.AreEqual(RenderedIndices(component).OrderBy(i => i).ToArray(), RenderedIndices(component));
+        Assert.AreSequenceEqual(RenderedIndices(component).OrderBy(i => i).ToArray(), RenderedIndices(component));
         Assert.AreEqual("-1", component.Find(".bit-vir").GetAttribute("tabindex"));
     }
 
@@ -575,7 +575,7 @@ public class BitVirtualizeTests : BunitTestContext
 
         var rendered = RenderedIndices(component);
         Assert.AreEqual(99, rendered[^1]);
-        Assert.AreEqual(1, rendered.Count(i => i == 99));
+        Assert.ContainsSingle(i => i == 99, rendered);
         Assert.AreEqual("0", component.Find("[data-bit-vir-index='99']").GetAttribute("tabindex"));
     }
 
@@ -596,13 +596,13 @@ public class BitVirtualizeTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance._Scroll(30_000, 300));
 
         // Still cached, so still kept.
-        Assert.AreEqual(1, component.FindAll("[data-bit-vir-index='0']").Count);
+        Assert.ContainsSingle(component.FindAll("[data-bit-vir-index='0']"));
         Assert.AreEqual("-1", component.Find(".bit-vir").GetAttribute("tabindex"));
 
         // A refresh drops the cache: the item is gone, so the root must be tabbable again.
         await component.InvokeAsync(() => component.Instance.RefreshDataAsync());
 
-        Assert.AreEqual(0, component.FindAll("[data-bit-vir-index='0']").Count);
+        Assert.IsEmpty(component.FindAll("[data-bit-vir-index='0']"));
         Assert.AreEqual("0", component.Find(".bit-vir").GetAttribute("tabindex"));
     }
 
@@ -639,8 +639,8 @@ public class BitVirtualizeTests : BunitTestContext
 
         var setup = Calls(SetupFn)[0];
         Assert.AreEqual(component.Instance.UniqueId, setup.Arguments[0]);
-        Assert.AreEqual(true, setup.Arguments[2]);  // horizontal
-        Assert.AreEqual(false, setup.Arguments[3]); // dynamic
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(setup.Arguments[2]));  // horizontal
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(setup.Arguments[3])); // dynamic
         Assert.AreEqual(40d, setup.Arguments[4]);   // one fixed item of movement may be coalesced
     }
 
@@ -666,7 +666,7 @@ public class BitVirtualizeTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance._Scroll(1000, 300));
 
         // Items 20..25 are in view; 2 overscan items on each side.
-        CollectionAssert.AreEqual(Enumerable.Range(18, 10).ToArray(), RenderedIndices(component));
+        Assert.AreSequenceEqual(Enumerable.Range(18, 10).ToArray(), RenderedIndices(component));
         Assert.AreEqual("transform:translateY(900px)", component.Find(".bit-vir-blk").GetAttribute("style"));
         Assert.AreEqual("transform:translateY(100px);height:50px", component.Find("[data-bit-vir-index='20']").GetAttribute("style"));
     }
@@ -691,12 +691,12 @@ public class BitVirtualizeTests : BunitTestContext
 
         // A partially scrolled item still counts; the range grew by the item peeking in at the bottom.
         Assert.AreEqual((20, 27), ranges[^1]);
-        Assert.AreEqual(count + 1, ranges.Count);
+        Assert.HasCount(count + 1, ranges);
 
         await component.InvokeAsync(() => component.Instance._Scroll(1011, 300));
 
         // An unchanged range is not reported again.
-        Assert.AreEqual(count + 1, ranges.Count);
+        Assert.HasCount(count + 1, ranges);
     }
 
     [TestMethod]
@@ -752,8 +752,8 @@ public class BitVirtualizeTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance.ScrollToIndexAsync(60));
 
         // Rendered without waiting for the browser to report the new scroll position.
-        Assert.AreEqual(1, component.FindAll("[data-bit-vir-index='60']").Count);
-        Assert.AreEqual(false, Calls(ScrollToOffsetFn)[^1].Arguments[2]);
+        Assert.ContainsSingle(component.FindAll("[data-bit-vir-index='60']"));
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(Calls(ScrollToOffsetFn)[^1].Arguments[2]));
     }
 
     [TestMethod]
@@ -766,9 +766,9 @@ public class BitVirtualizeTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance.ScrollToIndexAsync(60, smooth: true));
 
         Assert.AreEqual(3000, LastScrollToOffset());
-        Assert.AreEqual(true, Calls(ScrollToOffsetFn)[^1].Arguments[2]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(Calls(ScrollToOffsetFn)[^1].Arguments[2]));
         // The window follows the browser as it animates, instead of jumping ahead.
-        Assert.AreEqual(0, component.FindAll("[data-bit-vir-index='60']").Count);
+        Assert.IsEmpty(component.FindAll("[data-bit-vir-index='60']"));
     }
 
     [TestMethod]
@@ -801,15 +801,15 @@ public class BitVirtualizeTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance.ScrollToEndAsync());
 
         var toEnd = Calls(ScrollToEdgeFn)[^1];
-        Assert.AreEqual(true, toEnd.Arguments[1]);
-        Assert.AreEqual(false, toEnd.Arguments[2]);
-        Assert.AreEqual(1, component.FindAll("[data-bit-vir-index='99']").Count);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(toEnd.Arguments[1]));
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(toEnd.Arguments[2]));
+        Assert.ContainsSingle(component.FindAll("[data-bit-vir-index='99']"));
 
         await component.InvokeAsync(() => component.Instance.ScrollToStartAsync(smooth: true));
 
         var toStart = Calls(ScrollToEdgeFn)[^1];
-        Assert.AreEqual(false, toStart.Arguments[1]);
-        Assert.AreEqual(true, toStart.Arguments[2]);
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(toStart.Arguments[1]));
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(toStart.Arguments[2]));
     }
 
     [TestMethod]
@@ -820,7 +820,7 @@ public class BitVirtualizeTests : BunitTestContext
         var component = RenderList(100, 50, p => p.Add(x => x.InitialIndex, 30));
 
         Assert.AreEqual(1500, LastScrollToOffset());
-        Assert.AreEqual(1, component.FindAll("[data-bit-vir-index='30']").Count);
+        Assert.ContainsSingle(component.FindAll("[data-bit-vir-index='30']"));
     }
 
     [TestMethod]
@@ -836,7 +836,7 @@ public class BitVirtualizeTests : BunitTestContext
             parameters.Add(p => p.ItemTemplate, itemTemplate);
         });
 
-        Assert.AreEqual(0, Calls(ScrollToOffsetFn).Count);
+        Assert.IsEmpty(Calls(ScrollToOffsetFn));
 
         component.Render(p => p.Add(x => x.Items, Enumerable.Range(0, 100).ToArray()));
 
@@ -857,12 +857,12 @@ public class BitVirtualizeTests : BunitTestContext
         });
 
         await component.InvokeAsync(() => component.Instance.ScrollToIndexAsync(50));
-        Assert.AreEqual(0, Calls(ScrollToOffsetFn).Count);
+        Assert.IsEmpty(Calls(ScrollToOffsetFn));
 
         component.Render(p => p.Add(x => x.Items, Enumerable.Range(0, 100).ToArray()));
 
         // The explicit request wins over the InitialIndex, and is applied only once.
-        Assert.AreEqual(1, Calls(ScrollToOffsetFn).Count);
+        Assert.ContainsSingle(Calls(ScrollToOffsetFn));
         Assert.AreEqual(2500, LastScrollToOffset());
     }
 
@@ -879,8 +879,8 @@ public class BitVirtualizeTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance.ScrollToEndAsync());
         await component.InvokeAsync(() => component.Instance.RefreshDataAsync());
 
-        Assert.AreEqual(0, Calls(ScrollToOffsetFn).Count);
-        Assert.AreEqual(0, Calls(ScrollToEdgeFn).Count);
+        Assert.IsEmpty(Calls(ScrollToOffsetFn));
+        Assert.IsEmpty(Calls(ScrollToEdgeFn));
     }
 
 
@@ -912,7 +912,7 @@ public class BitVirtualizeTests : BunitTestContext
 
         var indices = RenderedIndices(component);
         Assert.AreEqual(999_999, indices[^1]);
-        Assert.IsTrue(indices.Length <= 12, $"rendered {indices.Length} items");
+        Assert.IsLessThanOrEqualTo(12, indices.Length, $"rendered {indices.Length} items");
 
         // The last item's bottom lands exactly on the bottom of the spacer.
         var block = TranslateOf(component.Find(".bit-vir-blk").GetAttribute("style"));
@@ -933,7 +933,7 @@ public class BitVirtualizeTests : BunitTestContext
         var expectedFirst = (int)((56_000_000 - 300) / 2d / 56);
         var indices = RenderedIndices(component);
         Assert.IsTrue(indices.Contains(expectedFirst));
-        Assert.IsTrue(indices.Length <= 12, $"rendered {indices.Length} items");
+        Assert.IsLessThanOrEqualTo(12, indices.Length, $"rendered {indices.Length} items");
 
         // The item at the virtual scroll offset is placed at the real one (the top of the viewport).
         var block = TranslateOf(component.Find(".bit-vir-blk").GetAttribute("style"));
@@ -942,7 +942,7 @@ public class BitVirtualizeTests : BunitTestContext
         Assert.AreEqual((10_000_000 - 300) / 2d, block + item + intoItem, 0.02);
 
         // Fewer real pixels of movement are coalesced, since each moves the list further.
-        Assert.IsTrue(Convert.ToDouble(Calls(UpdateFn)[^1].Arguments[3], CultureInfo.InvariantCulture) < 56);
+        Assert.IsLessThan(56, Convert.ToDouble(Calls(UpdateFn)[^1].Arguments[3], CultureInfo.InvariantCulture));
     }
 
 
@@ -1087,8 +1087,8 @@ public class BitVirtualizeTests : BunitTestContext
         });
 
         // The initial state, reported once.
-        CollectionAssert.AreEqual(new[] { true }, starts);
-        CollectionAssert.AreEqual(new[] { false }, ends);
+        Assert.AreSequenceEqual(new[] { true }, starts);
+        Assert.AreSequenceEqual(new[] { false }, ends);
 
         await component.InvokeAsync(() => component.Instance._Scroll(1000, 300));
         await component.InvokeAsync(() => component.Instance._Scroll(1200, 300));
@@ -1096,8 +1096,8 @@ public class BitVirtualizeTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance._Scroll(0, 300));
 
         // Only the changes are reported.
-        CollectionAssert.AreEqual(new[] { true, false, true }, starts);
-        CollectionAssert.AreEqual(new[] { false, true, false }, ends);
+        Assert.AreSequenceEqual(new[] { true, false, true }, starts);
+        Assert.AreSequenceEqual(new[] { false, true, false }, ends);
     }
 
     [TestMethod]
@@ -1113,7 +1113,7 @@ public class BitVirtualizeTests : BunitTestContext
         });
 
         // The start the list opens away from is never reported.
-        CollectionAssert.AreEqual(new[] { false }, starts);
+        Assert.AreSequenceEqual(new[] { false }, starts);
     }
 
     [TestMethod]
@@ -1150,12 +1150,12 @@ public class BitVirtualizeTests : BunitTestContext
         // The newest items turn out taller than estimated, which grows the list past the viewport until it is re-pinned.
         await component.InvokeAsync(() => component.Instance._ItemsMeasured([97, 98, 99], [80, 80, 80]));
 
-        CollectionAssert.AreEqual(new[] { true }, ends);
+        Assert.AreSequenceEqual(new[] { true }, ends);
 
         // The user scrolls up to read the history.
         await component.InvokeAsync(() => component.Instance._Scroll(1000, 300));
 
-        CollectionAssert.AreEqual(new[] { true, false }, ends);
+        Assert.AreSequenceEqual(new[] { true, false }, ends);
     }
 
     [TestMethod]
@@ -1178,8 +1178,8 @@ public class BitVirtualizeTests : BunitTestContext
         // Measurements settling before the browser reports the scroll must not pull the list back to its end.
         await component.InvokeAsync(() => component.Instance._ItemsMeasured([0, 1, 2], [80, 80, 80]));
 
-        CollectionAssert.AreEqual(new[] { false, true }, starts);
-        CollectionAssert.AreEqual(new[] { true, false }, ends);
+        Assert.AreSequenceEqual(new[] { false, true }, starts);
+        Assert.AreSequenceEqual(new[] { true, false }, ends);
     }
 
     [TestMethod]
@@ -1199,8 +1199,8 @@ public class BitVirtualizeTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance.ScrollToIndexAsync(99, smooth: true));
         component.Render(p => p.Add(x => x.Items, Enumerable.Range(0, 100).ToArray()));
 
-        CollectionAssert.AreEqual(new[] { false }, starts);
-        CollectionAssert.AreEqual(new[] { true }, ends);
+        Assert.AreSequenceEqual(new[] { false }, starts);
+        Assert.AreSequenceEqual(new[] { true }, ends);
     }
 
     [TestMethod]
@@ -1246,8 +1246,8 @@ public class BitVirtualizeTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance._Scroll(4700, 300, -1, -1, 100, 80));
         await component.InvokeAsync(() => component.Instance._Scroll(4780, 300, -1, -1, 100, 80));
 
-        CollectionAssert.AreEqual(new[] { true, false }, starts);
-        CollectionAssert.AreEqual(new[] { false, true }, ends);
+        Assert.AreSequenceEqual(new[] { true, false }, starts);
+        Assert.AreSequenceEqual(new[] { false, true }, ends);
     }
 
     [TestMethod]
@@ -1333,7 +1333,7 @@ public class BitVirtualizeTests : BunitTestContext
         });
 
         Assert.AreEqual("height:10000px", component.Find(".bit-vir-spc").GetAttribute("style"));
-        CollectionAssert.AreEqual(new[] { 0, 1, 2 }, RenderedIndices(component));
+        Assert.AreSequenceEqual(new[] { 0, 1, 2 }, RenderedIndices(component));
     }
 
     [TestMethod]
@@ -1345,7 +1345,7 @@ public class BitVirtualizeTests : BunitTestContext
 
         component.Render(p => p.Add(x => x.Items, null));
 
-        Assert.AreEqual(0, component.FindAll(".bit-vir-itm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-vir-itm"));
         Assert.AreEqual("Nothing", component.Find(".bit-vir-emp").TextContent);
     }
 
@@ -1380,8 +1380,8 @@ public class BitVirtualizeTests : BunitTestContext
 
         // Reversed (chat) mode anchors to the (real) bottom on first render, footer included.
         var call = Calls(ScrollToEdgeFn)[^1];
-        Assert.AreEqual(true, call.Arguments[1]);
-        Assert.AreEqual(0, Calls(ScrollToOffsetFn).Count);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(call.Arguments[1]));
+        Assert.IsEmpty(Calls(ScrollToOffsetFn));
     }
 
     [TestMethod]
@@ -1395,8 +1395,8 @@ public class BitVirtualizeTests : BunitTestContext
             p.Add(x => x.InitialIndex, 10);
         });
 
-        Assert.AreEqual(1, Calls(ScrollToEdgeFn).Count);
-        Assert.AreEqual(0, Calls(ScrollToOffsetFn).Count);
+        Assert.ContainsSingle(Calls(ScrollToEdgeFn));
+        Assert.IsEmpty(Calls(ScrollToOffsetFn));
     }
 
     [TestMethod]
@@ -1412,12 +1412,12 @@ public class BitVirtualizeTests : BunitTestContext
             parameters.Add(p => p.ItemTemplate, itemTemplate);
         });
 
-        Assert.AreEqual(0, Calls(ScrollToEdgeFn).Count);
+        Assert.IsEmpty(Calls(ScrollToEdgeFn));
 
         // Messages loaded asynchronously by the parent.
         component.Render(p => p.Add(x => x.Items, Enumerable.Range(0, 100).ToArray()));
 
-        Assert.AreEqual(1, Calls(ScrollToEdgeFn).Count);
+        Assert.ContainsSingle(Calls(ScrollToEdgeFn));
     }
 
     [TestMethod]
@@ -1440,8 +1440,8 @@ public class BitVirtualizeTests : BunitTestContext
         list.Add(100);
         component.Render(p => p.Add(x => x.Items, list));
 
-        Assert.AreEqual(edgeCalls + 1, Calls(ScrollToEdgeFn).Count);
-        Assert.AreEqual(1, component.FindAll("[data-bit-vir-index='100']").Count);
+        Assert.HasCount(edgeCalls + 1, Calls(ScrollToEdgeFn));
+        Assert.ContainsSingle(component.FindAll("[data-bit-vir-index='100']"));
     }
 
     [TestMethod]
@@ -1466,8 +1466,8 @@ public class BitVirtualizeTests : BunitTestContext
         list.Add(100);
         component.Render(p => p.Add(x => x.Items, list));
 
-        Assert.AreEqual(edgeCalls, Calls(ScrollToEdgeFn).Count);
-        Assert.AreEqual(offsetCalls, Calls(ScrollToOffsetFn).Count);
+        Assert.HasCount(edgeCalls, Calls(ScrollToEdgeFn));
+        Assert.HasCount(offsetCalls, Calls(ScrollToOffsetFn));
     }
 
     [TestMethod]
@@ -1493,7 +1493,7 @@ public class BitVirtualizeTests : BunitTestContext
         list.Add(100);
         component.Render(p => p.Add(x => x.Items, list));
 
-        Assert.AreEqual(offsetCalls, Calls(ScrollToOffsetFn).Count);
+        Assert.HasCount(offsetCalls, Calls(ScrollToOffsetFn));
     }
 
     [TestMethod]
@@ -1556,7 +1556,7 @@ public class BitVirtualizeTests : BunitTestContext
         // E.g. a soft keyboard opened: the same offset is now 100px short of the end.
         await component.InvokeAsync(() => component.Instance._Scroll(4700, 200));
 
-        Assert.AreEqual(edgeCalls + 1, Calls(ScrollToEdgeFn).Count);
+        Assert.HasCount(edgeCalls + 1, Calls(ScrollToEdgeFn));
     }
 
     [TestMethod]
@@ -1635,7 +1635,7 @@ public class BitVirtualizeTests : BunitTestContext
 
         component.Render(p => p.Add(x => x.Items, Enumerable.Range(-10, 110).ToArray()));
 
-        Assert.AreEqual(0, Calls(ScrollToOffsetFn).Count);
+        Assert.IsEmpty(Calls(ScrollToOffsetFn));
         Assert.AreEqual("Item -10", component.Find("[data-bit-vir-index='0']").TextContent);
     }
 
@@ -1655,7 +1655,7 @@ public class BitVirtualizeTests : BunitTestContext
         component.Render(p => p.Add(x => x.Items, new[] { "z", "a", "b", "c" }));
 
         // Keyed by identity, every row renders its own item at its new index.
-        CollectionAssert.AreEqual(new[] { "z", "a", "b", "c" }, component.FindAll(".bit-vir-itm").Select(e => e.TextContent).ToArray());
+        Assert.AreSequenceEqual(new[] { "z", "a", "b", "c" }, component.FindAll(".bit-vir-itm").Select(e => e.TextContent).ToArray());
         Assert.AreEqual("2", component.FindAll(".bit-vir-itm").Single(e => e.TextContent == "b").GetAttribute("data-bit-vir-index"));
     }
 
@@ -1726,7 +1726,7 @@ public class BitVirtualizeTests : BunitTestContext
 
         // The render that moves the items carries the scroll correction, so the browser applies both in one frame.
         var adjustment = RenderedScroll(component);
-        StringAssert.StartsWith(adjustment, "d:100:");
+        Assert.StartsWith("d:100:", adjustment);
 
         // Items below the first visible one do not move what is in view.
         await component.InvokeAsync(() => component.Instance._ItemsMeasured([22], [150d]));
@@ -1746,7 +1746,7 @@ public class BitVirtualizeTests : BunitTestContext
         // It turns out 20px shorter: item 21 and everything after it would move up 20px, so the scroll follows them.
         await component.InvokeAsync(() => component.Instance._ItemsMeasured([20], [30d]));
 
-        StringAssert.StartsWith(RenderedScroll(component), "d:-20:");
+        Assert.StartsWith("d:-20:", RenderedScroll(component));
     }
 
     [TestMethod]
@@ -1881,7 +1881,7 @@ public class BitVirtualizeTests : BunitTestContext
         // Once the target has been measured, later measurements do not pull the viewport back.
         var calls = Calls(ScrollToOffsetFn).Count;
         await component.InvokeAsync(() => component.Instance._ItemsMeasured([51], [100d]));
-        Assert.AreEqual(calls, Calls(ScrollToOffsetFn).Count);
+        Assert.HasCount(calls, Calls(ScrollToOffsetFn));
     }
 
     [TestMethod]
@@ -1932,7 +1932,7 @@ public class BitVirtualizeTests : BunitTestContext
         component.Render(p => p.Add(x => x.Dynamic, false));
 
         Assert.AreEqual("height:5000px", component.Find(".bit-vir-spc").GetAttribute("style"));
-        Assert.IsTrue(Calls(UpdateFn).Count >= 2);
+        Assert.IsGreaterThanOrEqualTo(2, Calls(UpdateFn).Count);
     }
 
     [TestMethod]
@@ -1959,12 +1959,12 @@ public class BitVirtualizeTests : BunitTestContext
 
         var component = RenderList(100, 50, p => p.Add(x => x.Horizontal, true));
         component.Render(p => p.Add(x => x.Class, "unrelated"));
-        Assert.AreEqual(0, Calls(UpdateFn).Count);
+        Assert.IsEmpty(Calls(UpdateFn));
 
         // An RTL horizontal list reads and writes its scroll position mirrored.
         component.Render(p => p.Add(x => x.Dir, BitDir.Rtl));
 
-        Assert.AreEqual(1, Calls(UpdateFn).Count);
+        Assert.ContainsSingle(Calls(UpdateFn));
     }
 
     [TestMethod]
@@ -1974,11 +1974,11 @@ public class BitVirtualizeTests : BunitTestContext
 
         var fixedList = RenderList(100, 50);
         fixedList.Render(p => p.Add(x => x.Class, "x"));
-        Assert.AreEqual(0, Calls(SyncFn).Count);
+        Assert.IsEmpty(Calls(SyncFn));
 
         var dynamicList = RenderList(100, 50, p => p.Add(x => x.Dynamic, true));
         dynamicList.Render(p => p.Add(x => x.Class, "x"));
-        Assert.IsTrue(Calls(SyncFn).Any(c => (string)c.Arguments[0]! == dynamicList.Instance.UniqueId));
+        Assert.Contains(c => (string)c.Arguments[0]! == dynamicList.Instance.UniqueId, Calls(SyncFn));
     }
 
 
@@ -2070,13 +2070,13 @@ public class BitVirtualizeTests : BunitTestContext
         SetupViewport(300);
 
         var component = RenderList(100, 50);
-        Assert.AreEqual(0, component.FindAll(".bit-vir-stk").Count);
+        Assert.IsEmpty(component.FindAll(".bit-vir-stk"));
 
         component.Render(p => p.Add(x => x.IsStickyItem, i => i % 10 == 0));
         Assert.AreEqual("Item 0", component.Find(".bit-vir-stk").TextContent);
 
         component.Render(p => p.Add(x => x.IsStickyItem, null));
-        Assert.AreEqual(0, component.FindAll(".bit-vir-stk").Count);
+        Assert.IsEmpty(component.FindAll(".bit-vir-stk"));
     }
 
     [TestMethod]
@@ -2101,7 +2101,7 @@ public class BitVirtualizeTests : BunitTestContext
 
         var component = RenderList(100, 50, p => p.Add(x => x.IsStickyItem, i => i == 50));
 
-        Assert.AreEqual(0, component.FindAll(".bit-vir-stk").Count);
+        Assert.IsEmpty(component.FindAll(".bit-vir-stk"));
     }
 
 
@@ -2153,9 +2153,9 @@ public class BitVirtualizeTests : BunitTestContext
 
         component.WaitForAssertion(() =>
         {
-            Assert.IsTrue(component.Markup.Contains("Item 0"));
-            Assert.IsTrue(component.Markup.Contains("Item 1"));
-            Assert.IsTrue(component.Markup.Contains("Item 2"));
+            Assert.Contains("Item 0", component.Markup);
+            Assert.Contains("Item 1", component.Markup);
+            Assert.Contains("Item 2", component.Markup);
         });
 
         static ValueTask<BitVirtualizeItemsProviderResult<int>> provider(BitVirtualizeItemsProviderRequest request)
@@ -2228,7 +2228,7 @@ public class BitVirtualizeTests : BunitTestContext
 
         _ = component.InvokeAsync(() => component.Instance._Scroll(2000, 300));
 
-        Assert.AreEqual(0, component.FindAll(".bit-vir-itm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-vir-itm"));
     }
 
     [TestMethod]
@@ -2248,7 +2248,7 @@ public class BitVirtualizeTests : BunitTestContext
 
         // A late response to the superseded request is ignored.
         await component.InvokeAsync(() => provider.Complete(1));
-        Assert.AreEqual(0, component.FindAll("[data-bit-vir-index='40']").Count);
+        Assert.IsEmpty(component.FindAll("[data-bit-vir-index='40']"));
 
         await component.InvokeAsync(() => provider.Complete(2));
         Assert.AreEqual("Item 400", component.Find("[data-bit-vir-index='400']").TextContent);
@@ -2269,7 +2269,7 @@ public class BitVirtualizeTests : BunitTestContext
 
         _ = component.InvokeAsync(() => component.Instance._Scroll(0, 300));
 
-        Assert.AreEqual(requests, provider.Requests.Count);
+        Assert.HasCount(requests, provider.Requests);
         Assert.AreEqual("Item 0", component.Find("[data-bit-vir-index='0']").TextContent);
     }
 
@@ -2285,7 +2285,7 @@ public class BitVirtualizeTests : BunitTestContext
         provider.Total = 3;
         _ = component.InvokeAsync(() => component.Instance.RefreshDataAsync());
 
-        Assert.AreEqual(2, provider.Requests.Count);
+        Assert.HasCount(2, provider.Requests);
 
         await component.InvokeAsync(() => provider.Complete(1));
 
@@ -2304,7 +2304,7 @@ public class BitVirtualizeTests : BunitTestContext
 
         await component.InvokeAsync(() => provider.Complete(0));
 
-        Assert.AreEqual(0, component.FindAll(".bit-vir-ldg").Count);
+        Assert.IsEmpty(component.FindAll(".bit-vir-ldg"));
         Assert.AreEqual("Item 0", component.Find("[data-bit-vir-index='0']").TextContent);
     }
 
@@ -2396,7 +2396,7 @@ public class BitVirtualizeTests : BunitTestContext
             p.Add(x => x.ItemsProvider, provider.Provide);
         });
 
-        Assert.AreEqual(1, provider.Requests.Count);
+        Assert.ContainsSingle(provider.Requests);
 
         await component.InvokeAsync(() => provider.Complete(0));
 
@@ -2453,7 +2453,7 @@ public class BitVirtualizeTests : BunitTestContext
 
         // A zero item size is treated as 1px; a negative overscan as none.
         Assert.AreEqual("height:100px", component.Find(".bit-vir-spc").GetAttribute("style"));
-        Assert.AreEqual(100, RenderedIndices(component).Length);
+        Assert.HasCount(100, RenderedIndices(component));
 
         var dynamicList = RenderList(100, 50, p =>
         {

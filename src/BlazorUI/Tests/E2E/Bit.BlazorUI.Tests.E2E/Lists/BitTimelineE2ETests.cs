@@ -45,10 +45,10 @@ public class BitTimelineE2ETests : E2ETestBase
         var response = await Page.APIRequest.GetAsync($"{BaseUrl}/e2e/timeline");
         var html = await response.TextAsync();
 
-        StringAssert.Contains(html, "<ol id=\"items-basic\"");
-        StringAssert.Contains(html, "id=\"custom-basic\"");
-        StringAssert.Contains(html, "bit-tln-dot");
-        StringAssert.Contains(html, "<span id=\"status\">Loading</span>");
+        Assert.Contains("<ol id=\"items-basic\"", html);
+        Assert.Contains("id=\"custom-basic\"", html);
+        Assert.Contains("bit-tln-dot", html);
+        Assert.Contains("<span id=\"status\">Loading</span>", html);
     }
 
     [TestMethod]
@@ -72,17 +72,17 @@ public class BitTimelineE2ETests : E2ETestBase
         var dots = await DotsAsync(id);
         Assert.IsTrue(dots.All(d => Math.Abs(d.X - dots[0].X) <= Tolerance), "the dots on one vertical line");
         Assert.IsTrue(dots[1].Y > dots[0].Bottom && dots[2].Y > dots[1].Bottom, "one under the other");
-        Assert.IsTrue((await BoxAsync($"#{id} > li >> nth=1", ".bit-tln-pcn .bit-tln-ttx")).Right <= dots[1].X, "primary before the line");
-        Assert.IsTrue((await BoxAsync($"#{id} > li >> nth=1", ".bit-tln-scn .bit-tln-ttx")).X >= dots[1].Right, "secondary after the line");
+        Assert.IsLessThanOrEqualTo(dots[1].X, (await BoxAsync($"#{id} > li >> nth=1", ".bit-tln-pcn .bit-tln-ttx")).Right, "primary before the line");
+        Assert.IsGreaterThanOrEqualTo(dots[1].Right, (await BoxAsync($"#{id} > li >> nth=1", ".bit-tln-scn .bit-tln-ttx")).X, "secondary after the line");
 
         // Horizontal: the dots on one y, the primary text above them, the secondary below.
         var h = $"{api}-basic-h";
         await Expect(Page.Locator($"#{h}")).ToHaveClassAsync(HasClass("bit-tln-hrz"));
         var hDots = await DotsAsync(h);
         Assert.IsTrue(hDots.All(d => Math.Abs(d.Y - hDots[0].Y) <= Tolerance), "the dots on one horizontal line");
-        Assert.IsTrue(hDots[1].X > hDots[0].Right, "side by side");
-        Assert.IsTrue((await BoxAsync($"#{h} > li >> nth=1", ".bit-tln-pcn .bit-tln-ttx")).Bottom <= hDots[1].Y, "primary above the line");
-        Assert.IsTrue((await BoxAsync($"#{h} > li >> nth=1", ".bit-tln-scn .bit-tln-ttx")).Y >= hDots[1].Bottom, "secondary below the line");
+        Assert.IsGreaterThan(hDots[0].Right, hDots[1].X, "side by side");
+        Assert.IsLessThanOrEqualTo(hDots[1].Y, (await BoxAsync($"#{h} > li >> nth=1", ".bit-tln-pcn .bit-tln-ttx")).Bottom, "primary above the line");
+        Assert.IsGreaterThanOrEqualTo(hDots[1].Bottom, (await BoxAsync($"#{h} > li >> nth=1", ".bit-tln-scn .bit-tln-ttx")).Y, "secondary below the line");
     }
 
     [TestMethod]
@@ -174,16 +174,16 @@ public class BitTimelineE2ETests : E2ETestBase
             alternate.Add(await PrimaryAfterTheLineAsync($"{api}-alternate", i));
             alternateReversed.Add(await PrimaryAfterTheLineAsync($"{api}-alternate-reversed", i));
         }
-        CollectionAssert.AreEqual(new[] { false, true, false, true }, alternate, "alternate zig-zags");
-        CollectionAssert.AreEqual(new[] { true, false, true, false }, alternateReversed, "alternate & reversed starts on the other side");
+        Assert.AreSequenceEqual(new[] { false, true, false, true }, alternate, "alternate zig-zags");
+        Assert.AreSequenceEqual(new[] { true, false, true, false }, alternateReversed, "alternate & reversed starts on the other side");
 
         // Horizontal: reversed puts the primary below the line, alternate every second one.
         var hDot = await BoxAsync($"#{api}-reversed-h > li >> nth=0", ".bit-tln-dot");
-        Assert.IsTrue((await BoxAsync($"#{api}-reversed-h > li >> nth=0", ".bit-tln-pcn .bit-tln-ttx")).Y >= hDot.Bottom, "horizontal reversed: primary below");
+        Assert.IsGreaterThanOrEqualTo(hDot.Bottom, (await BoxAsync($"#{api}-reversed-h > li >> nth=0", ".bit-tln-pcn .bit-tln-ttx")).Y, "horizontal reversed: primary below");
         var aDot0 = await BoxAsync($"#{api}-alternate-h > li >> nth=0", ".bit-tln-dot");
         var aDot1 = await BoxAsync($"#{api}-alternate-h > li >> nth=1", ".bit-tln-dot");
-        Assert.IsTrue((await BoxAsync($"#{api}-alternate-h > li >> nth=0", ".bit-tln-pcn .bit-tln-ttx")).Bottom <= aDot0.Y, "horizontal alternate: first above");
-        Assert.IsTrue((await BoxAsync($"#{api}-alternate-h > li >> nth=1", ".bit-tln-pcn .bit-tln-ttx")).Y >= aDot1.Bottom, "horizontal alternate: second below");
+        Assert.IsLessThanOrEqualTo(aDot0.Y, (await BoxAsync($"#{api}-alternate-h > li >> nth=0", ".bit-tln-pcn .bit-tln-ttx")).Bottom, "horizontal alternate: first above");
+        Assert.IsGreaterThanOrEqualTo(aDot1.Bottom, (await BoxAsync($"#{api}-alternate-h > li >> nth=1", ".bit-tln-pcn .bit-tln-ttx")).Y, "horizontal alternate: second below");
     }
 
     [TestMethod]
@@ -197,12 +197,12 @@ public class BitTimelineE2ETests : E2ETestBase
         var id = $"{api}-reverse-order";
         await Expect(Page.Locator($"#{id}")).ToHaveClassAsync(HasClass("bit-tln-rvo"));
         await Expect(Page.Locator($"#{id}")).ToHaveCSSAsync("flex-direction", "column-reverse");
-        Assert.IsTrue((await BoxAsync($"#{id} > li >> nth=3")).Y < (await BoxAsync($"#{id} > li >> nth=0")).Y, "the last item painted on top");
+        Assert.IsLessThan((await BoxAsync($"#{id} > li >> nth=0")).Y, (await BoxAsync($"#{id} > li >> nth=3")).Y, "the last item painted on top");
         await Expect(Page.Locator($"#{id} > li .bit-tln-pcn")).ToHaveTextAsync(new[] { "A1", "A2", "A3", "A4" });
 
         var h = $"{api}-reverse-order-h";
         await Expect(Page.Locator($"#{h}")).ToHaveCSSAsync("flex-direction", "row-reverse");
-        Assert.IsTrue((await BoxAsync($"#{h} > li >> nth=3")).X < (await BoxAsync($"#{h} > li >> nth=0")).X, "horizontal: the last item painted first");
+        Assert.IsLessThan((await BoxAsync($"#{h} > li >> nth=0")).X, (await BoxAsync($"#{h} > li >> nth=3")).X, "horizontal: the last item painted first");
     }
 
     [TestMethod]
@@ -245,11 +245,11 @@ public class BitTimelineE2ETests : E2ETestBase
 
         await Expect(Page.Locator($"#{api}-line-dashed")).ToHaveClassAsync(HasClass("bit-tln-ldd"));
         await Expect(Page.Locator($"#{api}-line-dotted")).ToHaveClassAsync(HasClass("bit-tln-ldt"));
-        StringAssert.Contains(solid, "100%");
-        StringAssert.Contains(dashed, "8px");
-        StringAssert.Contains(dashed, "14px");
-        StringAssert.Contains(dotted, "2px");
-        StringAssert.Contains(dotted, "6px");
+        Assert.Contains("100%", solid);
+        Assert.Contains("8px", dashed);
+        Assert.Contains("14px", dashed);
+        Assert.Contains("2px", dotted);
+        Assert.Contains("6px", dotted);
         Assert.AreNotEqual(solid, dashed);
         Assert.AreNotEqual(dashed, dotted);
 
@@ -299,17 +299,17 @@ public class BitTimelineE2ETests : E2ETestBase
         var primary = await BoxAsync($"#{api}-line-start > li >> nth=0", ".bit-tln-pcn");
         var secondary = await BoxAsync($"#{api}-line-start > li >> nth=0", ".bit-tln-scn");
         AssertClose(item.X, divider.X, "the line at the start edge");
-        Assert.IsTrue(primary.X >= divider.Right - Tolerance, "the contents after it");
-        Assert.IsTrue(secondary.Y >= primary.Bottom - Tolerance, "the secondary stacked under the primary");
+        Assert.IsGreaterThanOrEqualTo(divider.Right - Tolerance, primary.X, "the contents after it");
+        Assert.IsGreaterThanOrEqualTo(primary.Bottom - Tolerance, secondary.Y, "the secondary stacked under the primary");
 
         await Expect(Page.Locator($"#{api}-line-end")).ToHaveClassAsync(HasClass("bit-tln-lpe"));
         var endItem = await BoxAsync($"#{api}-line-end > li >> nth=0");
         var endDivider = await BoxAsync($"#{api}-line-end > li >> nth=0", ".bit-tln-dvd");
         AssertClose(endItem.Right, endDivider.Right, "the line at the end edge");
-        Assert.IsTrue((await BoxAsync($"#{api}-line-end > li >> nth=0", ".bit-tln-pcn")).Right <= endDivider.X + Tolerance, "the contents before it");
+        Assert.IsLessThanOrEqualTo(endDivider.X + Tolerance, (await BoxAsync($"#{api}-line-end > li >> nth=0", ".bit-tln-pcn")).Right, "the contents before it");
 
         var hDivider = await BoxAsync($"#{api}-line-start-h > li >> nth=0", ".bit-tln-dvd");
-        Assert.IsTrue((await BoxAsync($"#{api}-line-start-h > li >> nth=0", ".bit-tln-pcn")).Y >= hDivider.Bottom - Tolerance, "horizontal: the line above the contents");
+        Assert.IsGreaterThanOrEqualTo(hDivider.Bottom - Tolerance, (await BoxAsync($"#{api}-line-start-h > li >> nth=0", ".bit-tln-pcn")).Y, "horizontal: the line above the contents");
     }
 
     [TestMethod]
@@ -518,7 +518,7 @@ public class BitTimelineE2ETests : E2ETestBase
         }
 
         // The divider class sets the line color the divider paints with.
-        StringAssert.Contains(await PseudoAsync($"#{id} > li:first-child .bit-tln-dvd", "::after", "background-image"), "rgb(6, 7, 8)");
+        Assert.Contains("rgb(6, 7, 8)", await PseudoAsync($"#{id} > li:first-child .bit-tln-dvd", "::after", "background-image"));
 
         // The item's own Class and Style.
         await Expect(first).ToHaveClassAsync(HasClass("tl-entry-class"));
@@ -541,7 +541,7 @@ public class BitTimelineE2ETests : E2ETestBase
         Assert.IsTrue(await PrimaryAfterTheLineAsync($"{api}-rtl-inherited", 0), "inherited: the primary on the right of the line");
 
         var h = $"{api}-rtl-h";
-        Assert.IsTrue((await BoxAsync($"#{h} > li >> nth=0")).X > (await BoxAsync($"#{h} > li >> nth=1")).X, "horizontal: the first item at the right");
+        Assert.IsGreaterThan((await BoxAsync($"#{h} > li >> nth=1")).X, (await BoxAsync($"#{h} > li >> nth=0")).X, "horizontal: the first item at the right");
     }
 
     [TestMethod]
@@ -610,7 +610,7 @@ public class BitTimelineE2ETests : E2ETestBase
         await Expect(Item("items-vars", 0).Locator(".bit-tln-ico")).ToHaveCSSAsync("font-size", "21px");
 
         var divider = "#items-vars > li:first-child .bit-tln-dvd";
-        StringAssert.Contains(await PseudoAsync(divider, "::after", "background-image"), "rgb(0, 128, 0)");
+        Assert.Contains("rgb(0, 128, 0)", await PseudoAsync(divider, "::after", "background-image"));
         Assert.AreEqual("5px", await PseudoAsync(divider, "::after", "width"));
         await Expect(Page.Locator(divider)).ToHaveCSSAsync("padding-left", "13px");
         await Expect(Item("items-vars", 2).Locator(".bit-tln-pcn")).ToHaveCSSAsync("padding-top", "11px");
@@ -732,7 +732,7 @@ public class BitTimelineE2ETests : E2ETestBase
 
     private static void AssertClose(double expected, double actual, string what)
     {
-        Assert.IsTrue(Math.Abs(expected - actual) <= Tolerance, $"{what}: expected {expected}, got {actual}");
+        Assert.IsLessThanOrEqualTo(Tolerance, Math.Abs(expected - actual), $"{what}: expected {expected}, got {actual}");
     }
 
     private sealed record Box(double X, double Y, double W, double H)

@@ -33,10 +33,10 @@ public class TimelineAccessTests : BunitContext
         var order = Session.Timeline.Record(new BevToolsEvent { Kind = BevToolsEventKind.StateChange, Category = "orders", Title = "Order placed", Data = new Dictionary<string, object?> { ["items"] = new List<string> { "opaque-item" } } });
 
         await cut.InvokeAsync(() => cut.Instance.SelectEvent(render));
-        cut.WaitForAssertion(() => StringAssert.Contains(cut.Find(".bev-kv").TextContent, "changedState: _counter: 0 → 1"));
+        cut.WaitForAssertion(() => Assert.Contains("changedState: _counter: 0 → 1", cut.Find(".bev-kv").TextContent));
 
         await cut.InvokeAsync(() => cut.Instance.SelectEvent(order));
-        cut.WaitForAssertion(() => StringAssert.Contains(cut.Find(".bev-kv").TextContent, "items:"));
+        cut.WaitForAssertion(() => Assert.Contains("items:", cut.Find(".bev-kv").TextContent));
         Assert.DoesNotContain("opaque-item", cut.Markup, StringComparison.Ordinal);
     }
 }

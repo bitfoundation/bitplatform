@@ -168,7 +168,7 @@ public class DiagnosticsRulesTests
             session.Diagnostics.Evaluate(force: true);
             var again = Assert.ContainsSingle(f => f.Diagnostic.RuleId == "error.repeated", session.Diagnostics.Findings);
             Assert.AreSame(first, again);
-            Assert.IsTrue(again.LastSeen >= again.FirstSeen);
+            Assert.IsGreaterThanOrEqualTo(again.FirstSeen, again.LastSeen);
             Assert.Contains("occurred 3 times", again.Diagnostic.Title);
             Assert.ContainsSingle(e => e.Kind == BevToolsEventKind.Diagnostic && e.Category == "diagnostic:error.repeated", session.Timeline.Snapshot());
         }
@@ -278,7 +278,7 @@ public class DiagnosticsRulesTests
             }
 
             var fingerprints = session.Diagnostics.Findings.Where(f => f.Diagnostic.RuleId == rule.Id).Select(f => f.Diagnostic.EffectiveFingerprint).ToList();
-            Assert.IsTrue(session.Diagnostics.Findings.Length <= 5);
+            Assert.IsLessThanOrEqualTo(5, session.Diagnostics.Findings.Length);
             Assert.Contains("test.occurrence:steady", fingerprints);
             Assert.Contains("test.occurrence:11", fingerprints);
             Assert.DoesNotContain("test.occurrence:0", fingerprints);
@@ -311,7 +311,7 @@ public class DiagnosticsRulesTests
             }
 
             Assert.Contains(f => f.Diagnostic.RuleId == "di.captive", session.Diagnostics.Findings);
-            Assert.AreEqual(1, session.Timeline.Snapshot().Count(e => e.Category == "diagnostic:di.captive"), "re-reporting is not news");
+            Assert.ContainsSingle(e => e.Category == "diagnostic:di.captive", session.Timeline.Snapshot(), "re-reporting is not news");
         }
     }
 
@@ -345,11 +345,11 @@ public class DiagnosticsRulesTests
             session.Diagnostics.Evaluate(force: true);
 
             var burst = Assert.ContainsSingle(f => f.Diagnostic.RuleId == "http.burst", session.Diagnostics.Findings).Diagnostic;
-            StringAssert.StartsWith(burst.Title, "GET /api/products?q: 4 requests");
-            StringAssert.Contains(burst.Evidence, "oninput → FilterBar.OnQuery");
-            StringAssert.Contains(burst.Evidence, "3 started while the previous one was still running");
+            Assert.StartsWith("GET /api/products?q: 4 requests", burst.Title);
+            Assert.Contains("oninput → FilterBar.OnQuery", burst.Evidence);
+            Assert.Contains("3 started while the previous one was still running", burst.Evidence);
             Assert.AreEqual(BevDiagnosticSeverity.Warning, burst.Severity);
-            StringAssert.Contains(burst.Suggestion, "cancel the superseded request");
+            Assert.Contains("cancel the superseded request", burst.Suggestion!);
         }
     }
 

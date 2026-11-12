@@ -9,7 +9,7 @@ public enum Priority
 
 /// <summary>Exercises the source generator across the supported type surface.</summary>
 [BlazeDbTable("todos")]
-public partial class TodoItem
+internal partial class TodoItem
 {
     [BlazeDbKey]
     public Guid Id { get; set; }
@@ -51,7 +51,7 @@ public partial class TodoItem
 
 /// <summary>Exercises explicit field numbers and a string key.</summary>
 [BlazeDbTable]
-public partial class Setting
+internal partial class Setting
 {
     [BlazeDbField(5)]
     [BlazeDbKey]
@@ -66,7 +66,7 @@ public partial class Setting
 [BlazeDbCompoundIndex("TenantEmail", nameof(TenantId), nameof(Email), Unique = true)]
 [BlazeDbCompoundOrderedIndex("TenantCreated", nameof(TenantId), nameof(CreatedAt))]
 [BlazeDbCompoundOrderedIndex("TenantUsername", nameof(TenantId), nameof(Username))]
-public partial class Account
+internal partial class Account
 {
     [BlazeDbKey]
     public int Id { get; set; }
@@ -92,7 +92,7 @@ public partial class Account
 /// index-only property - computed, indexed, never stored.
 /// </summary>
 [BlazeDbTable("contacts")]
-public partial record Contact([property: BlazeDbKey] int Id, string Name, [property: BlazeDbOrderedIndex] DateOnly Birthday)
+internal partial record Contact([property: BlazeDbKey] int Id, string Name, [property: BlazeDbOrderedIndex] DateOnly Birthday)
 {
     public string? Nickname { get; init; }
 
@@ -102,7 +102,7 @@ public partial record Contact([property: BlazeDbKey] int Id, string Name, [prope
 
 /// <summary>A class whose get-only properties are set through its constructor, and the newer scalar and collection types.</summary>
 [BlazeDbTable("measurements")]
-public partial class Measurement
+internal partial class Measurement
 {
     public Measurement(Guid id, TimeOnly at, Half value)
     {
@@ -141,7 +141,7 @@ public partial class Measurement
 /// again in the initializer, which the compiler insists on without [SetsRequiredMembers].
 /// </summary>
 [BlazeDbTable("required-gadgets")]
-public partial class RequiredGadget
+internal partial class RequiredGadget
 {
     public RequiredGadget(int id, string name)
     {
@@ -158,7 +158,7 @@ public partial class RequiredGadget
 /// <summary>Index-only computed properties, alone and inside a compound index.</summary>
 [BlazeDbTable("emails")]
 [BlazeDbCompoundIndex("DomainUser", nameof(Domain), nameof(User))]
-public partial class EmailAddress
+internal partial class EmailAddress
 {
     [BlazeDbKey]
     public int Id { get; set; }

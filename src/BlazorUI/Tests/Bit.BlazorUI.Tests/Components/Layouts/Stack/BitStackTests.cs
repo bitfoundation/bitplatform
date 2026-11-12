@@ -266,8 +266,8 @@ public class BitStackTests : BunitTestContext
 
         var style = component.Find(".bit-stc").GetAttribute("style");
 
-        StringAssert.Contains(style, "display:inline-flex");
-        StringAssert.EndsWith(style, "display:none");
+        Assert.Contains("display:inline-flex", style!);
+        Assert.EndsWith("display:none", style);
     }
 
     [TestMethod,
@@ -675,7 +675,7 @@ public class BitStackTests : BunitTestContext
         // The length itself belongs to the theme, so the component only points the gap at the token
         // the class of the step declares.
         Assert.IsTrue(root.ClassList.Contains(expectedClass));
-        StringAssert.Contains(root.GetAttribute("style")!, "gap:var(--bit-stc-size)");
+        Assert.Contains("gap:var(--bit-stc-size)", root.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -700,7 +700,7 @@ public class BitStackTests : BunitTestContext
         // The class of the step is still handed out - it only declares a token - but the explicit
         // length is the more specific of the two and is what the gap reads.
         Assert.IsTrue(root.ClassList.Contains("bit-stc-lg"));
-        StringAssert.Contains(root.GetAttribute("style")!, "gap:3rem");
+        Assert.Contains("gap:3rem", root.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -718,7 +718,7 @@ public class BitStackTests : BunitTestContext
         var root = component.Find(".bit-stc");
 
         Assert.IsTrue(root.ClassList.Contains("bit-stc-sm"));
-        StringAssert.Contains(root.GetAttribute("style")!, "gap:var(--bit-stc-size)");
+        Assert.Contains("gap:var(--bit-stc-size)", root.GetAttribute("style")!);
     }
 
     [TestMethod,
@@ -941,8 +941,8 @@ public class BitStackTests : BunitTestContext
 
         // One is whether the stack may be squeezed at all and the other is how far it may be squeezed
         // once it is, so neither of them is the other one written differently and both are written out.
-        StringAssert.Contains(style, "flex-shrink:0");
-        StringAssert.Contains(style, "min-width:0;min-height:0");
+        Assert.Contains("flex-shrink:0", style);
+        Assert.Contains("min-width:0;min-height:0", style);
     }
 
     [TestMethod,
@@ -1162,7 +1162,7 @@ public class BitStackTests : BunitTestContext
         // The sizing of an inline stack is handed back through a class, so an explicit size - here a
         // fitted width, which is written onto the element - still outranks it.
         Assert.IsTrue(root.ClassList.Contains("bit-stc-inl"));
-        StringAssert.Contains(root.GetAttribute("style")!, "width:fit-content");
+        Assert.Contains("width:fit-content", root.GetAttribute("style")!);
     }
 
     [TestMethod,
@@ -1467,7 +1467,7 @@ public class BitStackTests : BunitTestContext
             parameters.Add(p => p.Alignment, BitAlignment.Center);
         });
 
-        Assert.IsFalse(component.Find(".bit-stc").GetAttribute("style")!.Contains("align-self"));
+        Assert.DoesNotContain("align-self", component.Find(".bit-stc").GetAttribute("style")!);
     }
 
     [TestMethod,
@@ -1877,8 +1877,8 @@ public class BitStackTests : BunitTestContext
 
         // A stack that never changes direction keeps it inline, where nothing in a stylesheet reaches it.
         Assert.IsFalse(root.ClassList.Contains("bit-stc-rsp"));
-        StringAssert.Contains(root.GetAttribute("style")!, "flex-direction:column");
-        Assert.IsFalse(root.GetAttribute("style")!.Contains("--bit-stc-dir"));
+        Assert.Contains("flex-direction:column", root.GetAttribute("style")!);
+        Assert.DoesNotContain("--bit-stc-dir", root.GetAttribute("style")!);
     }
 
     [TestMethod,
@@ -1910,9 +1910,9 @@ public class BitStackTests : BunitTestContext
         // The direction moves off the element and into a custom property the stylesheet reads, since an
         // inline flex-direction would outrank every media query.
         Assert.IsTrue(root.ClassList.Contains("bit-stc-rsp"));
-        Assert.IsFalse(style.Contains("flex-direction"));
-        StringAssert.Contains(style, "--bit-stc-dir:column");
-        StringAssert.Contains(style, $"--bit-stc-dir-{breakpoint}:row");
+        Assert.DoesNotContain("flex-direction", style);
+        Assert.Contains("--bit-stc-dir:column", style);
+        Assert.Contains($"--bit-stc-dir-{breakpoint}:row", style);
     }
 
     [TestMethod]
@@ -1928,11 +1928,11 @@ public class BitStackTests : BunitTestContext
 
         // The stylesheet chains every breakpoint that was not asked for to the one below it, which is
         // what carries a value upwards, so declaring them all here would defeat that chain.
-        StringAssert.Contains(style, "--bit-stc-dir:row");
-        StringAssert.Contains(style, "--bit-stc-dir-md:column");
-        Assert.IsFalse(style.Contains("--bit-stc-dir-xs"));
-        Assert.IsFalse(style.Contains("--bit-stc-dir-sm"));
-        Assert.IsFalse(style.Contains("--bit-stc-dir-lg"));
+        Assert.Contains("--bit-stc-dir:row", style);
+        Assert.Contains("--bit-stc-dir-md:column", style);
+        Assert.DoesNotContain("--bit-stc-dir-xs", style);
+        Assert.DoesNotContain("--bit-stc-dir-sm", style);
+        Assert.DoesNotContain("--bit-stc-dir-lg", style);
     }
 
     [TestMethod]
@@ -1947,8 +1947,8 @@ public class BitStackTests : BunitTestContext
         var style = component.Find(".bit-stc").GetAttribute("style")!;
 
         // A reversed stack is reversed at every width, so the suffix belongs to every value of the chain.
-        StringAssert.Contains(style, "--bit-stc-dir:column-reverse");
-        StringAssert.Contains(style, "--bit-stc-dir-md:row-reverse");
+        Assert.Contains("--bit-stc-dir:column-reverse", style);
+        Assert.Contains("--bit-stc-dir-md:row-reverse", style);
     }
 
     [TestMethod]
@@ -1966,7 +1966,7 @@ public class BitStackTests : BunitTestContext
         var root = component.Find(".bit-stc");
 
         Assert.IsTrue(root.ClassList.Contains("bit-stc-rsp"));
-        StringAssert.Contains(root.GetAttribute("style")!, "--bit-stc-dir-sm:row");
+        Assert.Contains("--bit-stc-dir-sm:row", root.GetAttribute("style")!);
 
         component.Render(parameters =>
         {
@@ -1977,7 +1977,7 @@ public class BitStackTests : BunitTestContext
 
         // Taking the last per breakpoint direction away hands the direction back to the element.
         Assert.IsFalse(root.ClassList.Contains("bit-stc-rsp"));
-        StringAssert.Contains(root.GetAttribute("style")!, "flex-direction:column");
+        Assert.Contains("flex-direction:column", root.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1995,12 +1995,12 @@ public class BitStackTests : BunitTestContext
         // The two alignments move off the element for the same reason the direction does, and each declared
         // direction resolves them itself: the base is a column, where spreading the children out is what the
         // vertical one does and what the horizontal one cannot, and at md the stack is a row and they swap.
-        Assert.IsFalse(style.Contains("align-items:"));
-        Assert.IsFalse(style.Contains("justify-content:"));
-        StringAssert.Contains(style, "--bit-stc-ai:initial");
-        StringAssert.Contains(style, "--bit-stc-jc:center");
-        StringAssert.Contains(style, "--bit-stc-ai-md:center");
-        StringAssert.Contains(style, "--bit-stc-jc-md:space-between");
+        Assert.DoesNotContain("align-items:", style);
+        Assert.DoesNotContain("justify-content:", style);
+        Assert.Contains("--bit-stc-ai:initial", style);
+        Assert.Contains("--bit-stc-jc:center", style);
+        Assert.Contains("--bit-stc-ai-md:center", style);
+        Assert.Contains("--bit-stc-jc-md:space-between", style);
     }
 
     [TestMethod]
@@ -2015,8 +2015,8 @@ public class BitStackTests : BunitTestContext
 
         // There is nothing for the breakpoints to resolve, and an empty chain is what the stylesheet already
         // falls back from to the start edge of both axes.
-        Assert.IsFalse(style.Contains("--bit-stc-ai"));
-        Assert.IsFalse(style.Contains("--bit-stc-jc"));
+        Assert.DoesNotContain("--bit-stc-ai", style);
+        Assert.DoesNotContain("--bit-stc-jc", style);
     }
 
     [TestMethod]
@@ -2033,9 +2033,9 @@ public class BitStackTests : BunitTestContext
         // Lining the children up on their first line of text says nothing about the axis they are laid out
         // along, so the value the column below md is laid out by has to be undone at md rather than carried
         // up the chain - which is what the initial value of a custom property is for.
-        StringAssert.Contains(style, "--bit-stc-ai:baseline");
-        StringAssert.Contains(style, "--bit-stc-ai-md:initial");
-        StringAssert.Contains(style, "--bit-stc-jc-md:initial");
+        Assert.Contains("--bit-stc-ai:baseline", style);
+        Assert.Contains("--bit-stc-ai-md:initial", style);
+        Assert.Contains("--bit-stc-jc-md:initial", style);
     }
 
     [TestMethod]
@@ -2053,10 +2053,10 @@ public class BitStackTests : BunitTestContext
 
         // The chain runs the other way round here: the base is a row, where the horizontal axis is the one the
         // children are laid out along, and from lg the stack is a column and the pair swaps over.
-        StringAssert.Contains(style, "--bit-stc-ai:center");
-        StringAssert.Contains(style, "--bit-stc-jc:space-between");
-        StringAssert.Contains(style, "--bit-stc-ai-lg:initial");
-        StringAssert.Contains(style, "--bit-stc-jc-lg:center");
+        Assert.Contains("--bit-stc-ai:center", style);
+        Assert.Contains("--bit-stc-jc:space-between", style);
+        Assert.Contains("--bit-stc-ai-lg:initial", style);
+        Assert.Contains("--bit-stc-jc-lg:center", style);
     }
 
     [TestMethod]
@@ -2074,10 +2074,10 @@ public class BitStackTests : BunitTestContext
         // Baseline means something across the children and nothing along them, so the specific value is what the
         // column below md is laid out by across it, and at md - where it lands on the axis they are laid out
         // along - it steps aside for the shorthand rather than silencing it.
-        StringAssert.Contains(style, "--bit-stc-ai:baseline");
-        StringAssert.Contains(style, "--bit-stc-jc:center");
-        StringAssert.Contains(style, "--bit-stc-ai-md:center");
-        StringAssert.Contains(style, "--bit-stc-jc-md:center");
+        Assert.Contains("--bit-stc-ai:baseline", style);
+        Assert.Contains("--bit-stc-jc:center", style);
+        Assert.Contains("--bit-stc-ai-md:center", style);
+        Assert.Contains("--bit-stc-jc-md:center", style);
     }
 
     [TestMethod]
@@ -2093,10 +2093,10 @@ public class BitStackTests : BunitTestContext
 
         // The stylesheet chains the breakpoints that were not asked for to the one below them, exactly as it
         // does for the direction, so declaring them here would defeat that chain.
-        StringAssert.Contains(style, "--bit-stc-ai-sm:center");
-        StringAssert.Contains(style, "--bit-stc-jc-sm:center");
-        Assert.IsFalse(style.Contains("--bit-stc-ai-xs"));
-        Assert.IsFalse(style.Contains("--bit-stc-jc-md"));
+        Assert.Contains("--bit-stc-ai-sm:center", style);
+        Assert.Contains("--bit-stc-jc-sm:center", style);
+        Assert.DoesNotContain("--bit-stc-ai-xs", style);
+        Assert.DoesNotContain("--bit-stc-jc-md", style);
     }
 
     [TestMethod]
@@ -2110,10 +2110,10 @@ public class BitStackTests : BunitTestContext
         var style = component.Find(".bit-stc").GetAttribute("style")!;
 
         // A stack that never changes direction keeps its alignments inline, where nothing can reach them.
-        StringAssert.Contains(style, "align-items:center");
-        StringAssert.Contains(style, "justify-content:center");
-        Assert.IsFalse(style.Contains("--bit-stc-ai"));
-        Assert.IsFalse(style.Contains("--bit-stc-jc"));
+        Assert.Contains("align-items:center", style);
+        Assert.Contains("justify-content:center", style);
+        Assert.DoesNotContain("--bit-stc-ai", style);
+        Assert.DoesNotContain("--bit-stc-jc", style);
     }
 
     [TestMethod]
@@ -2124,7 +2124,7 @@ public class BitStackTests : BunitTestContext
             parameters.Add(p => p.HorizontalAlign, BitAlignment.End);
         });
 
-        StringAssert.Contains(component.Find(".bit-stc").GetAttribute("style")!, "align-items:flex-end");
+        Assert.Contains("align-items:flex-end", component.Find(".bit-stc").GetAttribute("style")!);
 
         component.Render(parameters =>
         {
@@ -2134,9 +2134,9 @@ public class BitStackTests : BunitTestContext
         var style = component.Find(".bit-stc").GetAttribute("style")!;
 
         // Being given a per breakpoint direction is what hands the alignments over to the stylesheet.
-        Assert.IsFalse(style.Contains("align-items:"));
-        StringAssert.Contains(style, "--bit-stc-ai:flex-end");
-        StringAssert.Contains(style, "--bit-stc-jc-md:flex-end");
+        Assert.DoesNotContain("align-items:", style);
+        Assert.Contains("--bit-stc-ai:flex-end", style);
+        Assert.Contains("--bit-stc-jc-md:flex-end", style);
     }
 
     [TestMethod]
@@ -2148,8 +2148,8 @@ public class BitStackTests : BunitTestContext
 
         // A stack that keeps the same spacing at every width keeps its gap inline, where nothing reaches it.
         Assert.IsFalse(root.ClassList.Contains("bit-stc-rsg"));
-        StringAssert.Contains(root.GetAttribute("style")!, ";gap:var(--bit-stc-dgap)");
-        Assert.IsFalse(root.GetAttribute("style")!.Contains("--bit-stc-gap"));
+        Assert.Contains(";gap:var(--bit-stc-dgap)", root.GetAttribute("style")!);
+        Assert.DoesNotContain("--bit-stc-gap", root.GetAttribute("style")!);
     }
 
     [TestMethod,
@@ -2181,9 +2181,9 @@ public class BitStackTests : BunitTestContext
         // The gap moves off the element and into a custom property the stylesheet reads, since an inline
         // gap would outrank every media query, and the base of the chain is what a stack falls back to.
         Assert.IsTrue(root.ClassList.Contains("bit-stc-rsg"));
-        Assert.IsFalse(style.Contains(";gap:"));
-        StringAssert.Contains(style, "--bit-stc-gap:var(--bit-stc-dgap)");
-        StringAssert.Contains(style, $"--bit-stc-gap-{breakpoint}:2rem");
+        Assert.DoesNotContain(";gap:", style);
+        Assert.Contains("--bit-stc-gap:var(--bit-stc-dgap)", style);
+        Assert.Contains($"--bit-stc-gap-{breakpoint}:2rem", style);
     }
 
     [TestMethod]
@@ -2199,11 +2199,11 @@ public class BitStackTests : BunitTestContext
 
         // The stylesheet chains every breakpoint that was not asked for to the one below it, exactly as it
         // does for the direction, so declaring them all here would defeat that chain.
-        StringAssert.Contains(style, "--bit-stc-gap:0.5rem");
-        StringAssert.Contains(style, "--bit-stc-gap-md:3rem");
-        Assert.IsFalse(style.Contains("--bit-stc-gap-xs"));
-        Assert.IsFalse(style.Contains("--bit-stc-gap-sm"));
-        Assert.IsFalse(style.Contains("--bit-stc-gap-lg"));
+        Assert.Contains("--bit-stc-gap:0.5rem", style);
+        Assert.Contains("--bit-stc-gap-md:3rem", style);
+        Assert.DoesNotContain("--bit-stc-gap-xs", style);
+        Assert.DoesNotContain("--bit-stc-gap-sm", style);
+        Assert.DoesNotContain("--bit-stc-gap-lg", style);
     }
 
     [TestMethod]
@@ -2220,7 +2220,7 @@ public class BitStackTests : BunitTestContext
         // The base of the chain is resolved exactly as an inline gap is, so a sized stack that changes its
         // spacing at a breakpoint still follows the spacing scale of the theme at every width below it.
         Assert.IsTrue(root.ClassList.Contains("bit-stc-lg"));
-        StringAssert.Contains(root.GetAttribute("style")!, "--bit-stc-gap:var(--bit-stc-size)");
+        Assert.Contains("--bit-stc-gap:var(--bit-stc-size)", root.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -2237,9 +2237,9 @@ public class BitStackTests : BunitTestContext
 
         // The two axes are written onto the element, so each of them still replaces whatever the chain
         // resolves to on its own axis at every width.
-        StringAssert.Contains(style, "--bit-stc-gap-md:3rem");
-        StringAssert.Contains(style, "column-gap:2rem");
-        StringAssert.Contains(style, "row-gap:0.5rem");
+        Assert.Contains("--bit-stc-gap-md:3rem", style);
+        Assert.Contains("column-gap:2rem", style);
+        Assert.Contains("row-gap:0.5rem", style);
     }
 
     [TestMethod]
@@ -2257,8 +2257,8 @@ public class BitStackTests : BunitTestContext
         var root = component.Find(".bit-stc");
 
         Assert.IsTrue(root.ClassList.Contains("bit-stc-rsg"));
-        Assert.IsFalse(root.GetAttribute("style")!.Contains(";gap:"));
-        StringAssert.Contains(root.GetAttribute("style")!, "--bit-stc-gap-sm:2rem");
+        Assert.DoesNotContain(";gap:", root.GetAttribute("style")!);
+        Assert.Contains("--bit-stc-gap-sm:2rem", root.GetAttribute("style")!);
 
         component.Render(parameters =>
         {
@@ -2269,7 +2269,7 @@ public class BitStackTests : BunitTestContext
 
         // Taking the last per breakpoint gap away hands the gap back to the element.
         Assert.IsFalse(root.ClassList.Contains("bit-stc-rsg"));
-        StringAssert.Contains(root.GetAttribute("style")!, ";gap:var(--bit-stc-dgap)");
+        Assert.Contains(";gap:var(--bit-stc-dgap)", root.GetAttribute("style")!);
     }
 
     [TestMethod,
@@ -2304,11 +2304,11 @@ public class BitStackTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("bit-stc-rshg"));
         Assert.IsTrue(root.ClassList.Contains("bit-stc-rsg"));
         Assert.IsFalse(root.ClassList.Contains("bit-stc-rsvg"));
-        Assert.IsFalse(style.Contains(";gap:"));
-        Assert.IsFalse(style.Contains("column-gap:"));
-        StringAssert.Contains(style, "--bit-stc-gap:var(--bit-stc-dgap)");
-        StringAssert.Contains(style, "--bit-stc-hgap:var(--bit-stc-dgap)");
-        StringAssert.Contains(style, $"--bit-stc-hgap-{breakpoint}:2rem");
+        Assert.DoesNotContain(";gap:", style);
+        Assert.DoesNotContain("column-gap:", style);
+        Assert.Contains("--bit-stc-gap:var(--bit-stc-dgap)", style);
+        Assert.Contains("--bit-stc-hgap:var(--bit-stc-dgap)", style);
+        Assert.Contains($"--bit-stc-hgap-{breakpoint}:2rem", style);
     }
 
     [TestMethod,
@@ -2340,10 +2340,10 @@ public class BitStackTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("bit-stc-rsvg"));
         Assert.IsTrue(root.ClassList.Contains("bit-stc-rsg"));
         Assert.IsFalse(root.ClassList.Contains("bit-stc-rshg"));
-        Assert.IsFalse(style.Contains(";gap:"));
-        Assert.IsFalse(style.Contains("row-gap:"));
-        StringAssert.Contains(style, "--bit-stc-vgap:var(--bit-stc-dgap)");
-        StringAssert.Contains(style, $"--bit-stc-vgap-{breakpoint}:2rem");
+        Assert.DoesNotContain(";gap:", style);
+        Assert.DoesNotContain("row-gap:", style);
+        Assert.Contains("--bit-stc-vgap:var(--bit-stc-dgap)", style);
+        Assert.Contains($"--bit-stc-vgap-{breakpoint}:2rem", style);
     }
 
     [TestMethod]
@@ -2363,9 +2363,9 @@ public class BitStackTests : BunitTestContext
         // straight onto the element, where it keeps replacing the shorthand at every width.
         Assert.IsTrue(root.ClassList.Contains("bit-stc-rshg"));
         Assert.IsFalse(root.ClassList.Contains("bit-stc-rsvg"));
-        StringAssert.Contains(style, "--bit-stc-hgap:1rem");
-        StringAssert.Contains(style, "--bit-stc-hgap-md:3rem");
-        StringAssert.Contains(style, "row-gap:0.5rem");
+        Assert.Contains("--bit-stc-hgap:1rem", style);
+        Assert.Contains("--bit-stc-hgap-md:3rem", style);
+        Assert.Contains("row-gap:0.5rem", style);
     }
 
     [TestMethod]
@@ -2381,12 +2381,12 @@ public class BitStackTests : BunitTestContext
 
         // The stylesheet chains every breakpoint that was not asked for to the one below it, exactly as the two
         // chains above it do, so declaring them all here would defeat that chain.
-        StringAssert.Contains(style, "--bit-stc-hgap-md:3rem");
-        StringAssert.Contains(style, "--bit-stc-vgap-lg:0.5rem");
-        Assert.IsFalse(style.Contains("--bit-stc-hgap-xs"));
-        Assert.IsFalse(style.Contains("--bit-stc-hgap-lg"));
-        Assert.IsFalse(style.Contains("--bit-stc-vgap-md"));
-        Assert.IsFalse(style.Contains("--bit-stc-vgap-xxl"));
+        Assert.Contains("--bit-stc-hgap-md:3rem", style);
+        Assert.Contains("--bit-stc-vgap-lg:0.5rem", style);
+        Assert.DoesNotContain("--bit-stc-hgap-xs", style);
+        Assert.DoesNotContain("--bit-stc-hgap-lg", style);
+        Assert.DoesNotContain("--bit-stc-vgap-md", style);
+        Assert.DoesNotContain("--bit-stc-vgap-xxl", style);
     }
 
     [TestMethod]
@@ -2406,9 +2406,9 @@ public class BitStackTests : BunitTestContext
         // which reads none of it back, nothing is written at all.
         Assert.IsTrue(root.ClassList.Contains("bit-stc-rsvg"));
         Assert.IsFalse(root.ClassList.Contains("bit-stc-rshg"));
-        StringAssert.Contains(style, "--bit-stc-vgap-md:3rem");
-        StringAssert.Contains(style, "--bit-stc-vgap-lg:0.5rem");
-        Assert.IsFalse(style.Contains("--bit-stc-hgap"));
+        Assert.Contains("--bit-stc-vgap-md:3rem", style);
+        Assert.Contains("--bit-stc-vgap-lg:0.5rem", style);
+        Assert.DoesNotContain("--bit-stc-hgap", style);
     }
 
     [TestMethod]
@@ -2431,14 +2431,14 @@ public class BitStackTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("bit-stc-rsg"));
         Assert.IsTrue(root.ClassList.Contains("bit-stc-rshg"));
         Assert.IsTrue(root.ClassList.Contains("bit-stc-rsvg"));
-        StringAssert.Contains(style, "--bit-stc-gap:0.5rem");
-        StringAssert.Contains(style, "--bit-stc-gap-md:1rem");
-        StringAssert.Contains(style, "--bit-stc-hgap:0.5rem");
-        StringAssert.Contains(style, "--bit-stc-hgap-md:1rem");
-        StringAssert.Contains(style, "--bit-stc-hgap-lg:3rem");
-        StringAssert.Contains(style, "--bit-stc-vgap:0.5rem");
-        StringAssert.Contains(style, "--bit-stc-vgap-xs:0.25rem");
-        StringAssert.Contains(style, "--bit-stc-vgap-md:1rem");
+        Assert.Contains("--bit-stc-gap:0.5rem", style);
+        Assert.Contains("--bit-stc-gap-md:1rem", style);
+        Assert.Contains("--bit-stc-hgap:0.5rem", style);
+        Assert.Contains("--bit-stc-hgap-md:1rem", style);
+        Assert.Contains("--bit-stc-hgap-lg:3rem", style);
+        Assert.Contains("--bit-stc-vgap:0.5rem", style);
+        Assert.Contains("--bit-stc-vgap-xs:0.25rem", style);
+        Assert.Contains("--bit-stc-vgap-md:1rem", style);
     }
 
     [TestMethod]
@@ -2457,12 +2457,12 @@ public class BitStackTests : BunitTestContext
         // The shorthand takes the row length first and the column one second, and an axis chain drives a longhand
         // that only accepts one of them, so each of them is handed the half that belongs to it. The whitespace
         // inside a function belongs to the length it is part of and never separates the two.
-        StringAssert.Contains(style, "--bit-stc-gap:1rem 2rem");
-        StringAssert.Contains(style, "--bit-stc-hgap:2rem");
-        StringAssert.Contains(style, "--bit-stc-hgap-md:calc(1rem + 2px)");
-        StringAssert.Contains(style, "--bit-stc-hgap-lg:3rem");
-        StringAssert.Contains(style, "--bit-stc-vgap:1rem");
-        StringAssert.Contains(style, "--bit-stc-vgap-md:clamp(4px, 1vw, 16px)");
+        Assert.Contains("--bit-stc-gap:1rem 2rem", style);
+        Assert.Contains("--bit-stc-hgap:2rem", style);
+        Assert.Contains("--bit-stc-hgap-md:calc(1rem + 2px)", style);
+        Assert.Contains("--bit-stc-hgap-lg:3rem", style);
+        Assert.Contains("--bit-stc-vgap:1rem", style);
+        Assert.Contains("--bit-stc-vgap-md:clamp(4px, 1vw, 16px)", style);
     }
 
     [TestMethod]
@@ -2480,8 +2480,8 @@ public class BitStackTests : BunitTestContext
         // The base of the axis chain is resolved from the same place the base of the shorthand chain is, so a
         // sized stack stays on the spacing scale of the theme on both axes at every width it did not name.
         Assert.IsTrue(root.ClassList.Contains("bit-stc-lg"));
-        StringAssert.Contains(style, "--bit-stc-gap:var(--bit-stc-size)");
-        StringAssert.Contains(style, "--bit-stc-hgap:var(--bit-stc-size)");
+        Assert.Contains("--bit-stc-gap:var(--bit-stc-size)", style);
+        Assert.Contains("--bit-stc-hgap:var(--bit-stc-size)", style);
     }
 
     [TestMethod]
@@ -2492,7 +2492,7 @@ public class BitStackTests : BunitTestContext
         var root = component.Find(".bit-stc");
 
         Assert.IsFalse(root.ClassList.Contains("bit-stc-rshg"));
-        StringAssert.Contains(root.GetAttribute("style")!, ";gap:var(--bit-stc-dgap)");
+        Assert.Contains(";gap:var(--bit-stc-dgap)", root.GetAttribute("style")!);
 
         component.Render(parameters =>
         {
@@ -2503,8 +2503,8 @@ public class BitStackTests : BunitTestContext
 
         Assert.IsTrue(root.ClassList.Contains("bit-stc-rshg"));
         Assert.IsTrue(root.ClassList.Contains("bit-stc-rsg"));
-        Assert.IsFalse(root.GetAttribute("style")!.Contains(";gap:"));
-        StringAssert.Contains(root.GetAttribute("style")!, "--bit-stc-hgap-sm:2rem");
+        Assert.DoesNotContain(";gap:", root.GetAttribute("style")!);
+        Assert.Contains("--bit-stc-hgap-sm:2rem", root.GetAttribute("style")!);
 
         component.Render(parameters =>
         {
@@ -2517,7 +2517,7 @@ public class BitStackTests : BunitTestContext
         // element, since neither of them has anything left to answer to the width of the window with.
         Assert.IsFalse(root.ClassList.Contains("bit-stc-rshg"));
         Assert.IsFalse(root.ClassList.Contains("bit-stc-rsg"));
-        StringAssert.Contains(root.GetAttribute("style")!, ";gap:var(--bit-stc-dgap)");
+        Assert.Contains(";gap:var(--bit-stc-dgap)", root.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -2533,7 +2533,7 @@ public class BitStackTests : BunitTestContext
         // A stack may change the spacing of one axis without changing its direction.
         Assert.IsTrue(root.ClassList.Contains("bit-stc-rsvg"));
         Assert.IsFalse(root.ClassList.Contains("bit-stc-rsp"));
-        StringAssert.Contains(root.GetAttribute("style")!, "flex-direction:column");
+        Assert.Contains("flex-direction:column", root.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -2550,7 +2550,7 @@ public class BitStackTests : BunitTestContext
         // the direction into the stylesheet along with it.
         Assert.IsTrue(root.ClassList.Contains("bit-stc-rsg"));
         Assert.IsFalse(root.ClassList.Contains("bit-stc-rsp"));
-        StringAssert.Contains(root.GetAttribute("style")!, "flex-direction:column");
+        Assert.Contains("flex-direction:column", root.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -2576,8 +2576,8 @@ public class BitStackTests : BunitTestContext
 
         // A stack that answers the same way at every width keeps its wrapping off the stylesheet entirely.
         Assert.IsFalse(root.ClassList.Contains("bit-stc-rswrp"));
-        Assert.IsFalse(root.GetAttribute("style")!.Contains("--bit-stc-wrap"));
-        Assert.IsFalse(root.GetAttribute("style")!.Contains("flex-wrap"));
+        Assert.DoesNotContain("--bit-stc-wrap", root.GetAttribute("style")!);
+        Assert.DoesNotContain("flex-wrap", root.GetAttribute("style")!);
     }
 
     [TestMethod,
@@ -2609,9 +2609,9 @@ public class BitStackTests : BunitTestContext
         // The wrapping moves off the element and into a custom property the stylesheet reads, since an inline
         // flex-wrap would outrank every media query, and the base of the chain is what a stack falls back to.
         Assert.IsTrue(root.ClassList.Contains("bit-stc-rswrp"));
-        Assert.IsFalse(style.Contains("flex-wrap:"));
-        StringAssert.Contains(style, "--bit-stc-wrap:nowrap");
-        StringAssert.Contains(style, $"--bit-stc-wrap-{breakpoint}:wrap");
+        Assert.DoesNotContain("flex-wrap:", style);
+        Assert.Contains("--bit-stc-wrap:nowrap", style);
+        Assert.Contains($"--bit-stc-wrap-{breakpoint}:wrap", style);
     }
 
     [TestMethod]
@@ -2627,8 +2627,8 @@ public class BitStackTests : BunitTestContext
 
         // Wrap is the base of the chain, exactly as Horizontal is the base of the direction one, so a row that
         // wraps until md and holds its single line from there is those two and nothing in between.
-        StringAssert.Contains(style, "--bit-stc-wrap:wrap");
-        StringAssert.Contains(style, "--bit-stc-wrap-md:nowrap");
+        Assert.Contains("--bit-stc-wrap:wrap", style);
+        Assert.Contains("--bit-stc-wrap-md:nowrap", style);
     }
 
     [TestMethod]
@@ -2643,10 +2643,10 @@ public class BitStackTests : BunitTestContext
 
         // The stylesheet chains every breakpoint that was not asked for to the one below it, which is what
         // carries a value upwards, so declaring them all here would defeat that chain.
-        StringAssert.Contains(style, "--bit-stc-wrap-md:wrap");
-        Assert.IsFalse(style.Contains("--bit-stc-wrap-xs"));
-        Assert.IsFalse(style.Contains("--bit-stc-wrap-sm"));
-        Assert.IsFalse(style.Contains("--bit-stc-wrap-lg"));
+        Assert.Contains("--bit-stc-wrap-md:wrap", style);
+        Assert.DoesNotContain("--bit-stc-wrap-xs", style);
+        Assert.DoesNotContain("--bit-stc-wrap-sm", style);
+        Assert.DoesNotContain("--bit-stc-wrap-lg", style);
     }
 
     [TestMethod]
@@ -2663,9 +2663,9 @@ public class BitStackTests : BunitTestContext
 
         // Which way round a stack wraps is the same answer at every width it wraps at, exactly as a reversed
         // stack is reversed at every width, and a breakpoint that does not wrap has no way round to state.
-        StringAssert.Contains(style, "--bit-stc-wrap:wrap-reverse");
-        StringAssert.Contains(style, "--bit-stc-wrap-md:wrap-reverse");
-        StringAssert.Contains(style, "--bit-stc-wrap-lg:nowrap");
+        Assert.Contains("--bit-stc-wrap:wrap-reverse", style);
+        Assert.Contains("--bit-stc-wrap-md:wrap-reverse", style);
+        Assert.Contains("--bit-stc-wrap-lg:nowrap", style);
     }
 
     [TestMethod]
@@ -2700,8 +2700,8 @@ public class BitStackTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("bit-stc-rswrp"));
         Assert.IsFalse(root.ClassList.Contains("bit-stc-rsp"));
         Assert.IsFalse(root.ClassList.Contains("bit-stc-rsg"));
-        StringAssert.Contains(root.GetAttribute("style")!, "flex-direction:column");
-        StringAssert.Contains(root.GetAttribute("style")!, ";gap:var(--bit-stc-dgap)");
+        Assert.Contains("flex-direction:column", root.GetAttribute("style")!);
+        Assert.Contains(";gap:var(--bit-stc-dgap)", root.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -2715,7 +2715,7 @@ public class BitStackTests : BunitTestContext
         var root = component.Find(".bit-stc");
 
         Assert.IsFalse(root.ClassList.Contains("bit-stc-rswrp"));
-        StringAssert.Contains(root.GetAttribute("style")!, "flex-wrap:wrap");
+        Assert.Contains("flex-wrap:wrap", root.GetAttribute("style")!);
 
         component.Render(parameters =>
         {
@@ -2725,9 +2725,9 @@ public class BitStackTests : BunitTestContext
         root = component.Find(".bit-stc");
 
         Assert.IsTrue(root.ClassList.Contains("bit-stc-rswrp"));
-        Assert.IsFalse(root.GetAttribute("style")!.Contains("flex-wrap:"));
-        StringAssert.Contains(root.GetAttribute("style")!, "--bit-stc-wrap:wrap");
-        StringAssert.Contains(root.GetAttribute("style")!, "--bit-stc-wrap-sm:nowrap");
+        Assert.DoesNotContain("flex-wrap:", root.GetAttribute("style")!);
+        Assert.Contains("--bit-stc-wrap:wrap", root.GetAttribute("style")!);
+        Assert.Contains("--bit-stc-wrap-sm:nowrap", root.GetAttribute("style")!);
 
         component.Render(parameters =>
         {
@@ -2738,7 +2738,7 @@ public class BitStackTests : BunitTestContext
 
         // Taking the last per breakpoint wrap away hands the wrapping back to the element.
         Assert.IsFalse(root.ClassList.Contains("bit-stc-rswrp"));
-        StringAssert.Contains(root.GetAttribute("style")!, "flex-wrap:wrap");
+        Assert.Contains("flex-wrap:wrap", root.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -2752,16 +2752,16 @@ public class BitStackTests : BunitTestContext
         // even though the cascaded Gap is the more specific of the two and wins the gap itself.
         Assert.IsTrue(stacks[0].ClassList.Contains("cascaded"));
         Assert.IsTrue(stacks[0].ClassList.Contains("bit-stc-lg"));
-        StringAssert.Contains(stacks[0].GetAttribute("style")!, "flex-direction:row");
-        StringAssert.Contains(stacks[0].GetAttribute("style")!, "gap:3rem");
-        StringAssert.Contains(stacks[0].GetAttribute("style")!, "padding:1rem");
-        StringAssert.Contains(stacks[0].GetAttribute("style")!, "flex-wrap:wrap");
-        StringAssert.Contains(stacks[0].GetAttribute("style")!, "flex-shrink:3");
+        Assert.Contains("flex-direction:row", stacks[0].GetAttribute("style")!);
+        Assert.Contains("gap:3rem", stacks[0].GetAttribute("style")!);
+        Assert.Contains("padding:1rem", stacks[0].GetAttribute("style")!);
+        Assert.Contains("flex-wrap:wrap", stacks[0].GetAttribute("style")!);
+        Assert.Contains("flex-shrink:3", stacks[0].GetAttribute("style")!);
 
         // The second one sets its own gap, which the cascading parameters must not overwrite.
         Assert.IsTrue(stacks[1].ClassList.Contains("cascaded"));
-        StringAssert.Contains(stacks[1].GetAttribute("style")!, "gap:5rem");
-        Assert.IsFalse(stacks[1].GetAttribute("style")!.Contains("3rem"));
+        Assert.Contains("gap:5rem", stacks[1].GetAttribute("style")!);
+        Assert.DoesNotContain("3rem", stacks[1].GetAttribute("style")!);
 
         // The third one takes the parameters that describe a stack as a child of another one, and the
         // cascaded per breakpoint direction moves its direction into the stylesheet.
@@ -2772,19 +2772,19 @@ public class BitStackTests : BunitTestContext
         Assert.IsTrue(stacks[2].ClassList.Contains("bit-stc-nsc"));
         Assert.IsTrue(stacks[2].ClassList.Contains("bit-stc-inl"));
         Assert.AreEqual("SECTION", stacks[2].TagName);
-        StringAssert.Contains(stacks[2].GetAttribute("style")!, "display:inline-flex");
-        StringAssert.Contains(stacks[2].GetAttribute("style")!, "flex-grow:2");
-        StringAssert.Contains(stacks[2].GetAttribute("style")!, "flex-shrink:0");
-        StringAssert.Contains(stacks[2].GetAttribute("style")!, "flex-basis:0");
-        StringAssert.Contains(stacks[2].GetAttribute("style")!, "align-self:flex-end");
-        StringAssert.Contains(stacks[2].GetAttribute("style")!, "order:-1");
-        StringAssert.Contains(stacks[2].GetAttribute("style")!, "--bit-stc-dir-md:row");
+        Assert.Contains("display:inline-flex", stacks[2].GetAttribute("style")!);
+        Assert.Contains("flex-grow:2", stacks[2].GetAttribute("style")!);
+        Assert.Contains("flex-shrink:0", stacks[2].GetAttribute("style")!);
+        Assert.Contains("flex-basis:0", stacks[2].GetAttribute("style")!);
+        Assert.Contains("align-self:flex-end", stacks[2].GetAttribute("style")!);
+        Assert.Contains("order:-1", stacks[2].GetAttribute("style")!);
+        Assert.Contains("--bit-stc-dir-md:row", stacks[2].GetAttribute("style")!);
 
         // A cascaded alignment is resolved per breakpoint exactly as one set on the stack itself is: the
         // cascaded direction of md is a row, where placing the children on the horizontal axis is what
         // justify-content does, and the column below it is laid out by align-items.
-        StringAssert.Contains(stacks[2].GetAttribute("style")!, "--bit-stc-ai:center");
-        StringAssert.Contains(stacks[2].GetAttribute("style")!, "--bit-stc-jc-md:center");
+        Assert.Contains("--bit-stc-ai:center", stacks[2].GetAttribute("style")!);
+        Assert.Contains("--bit-stc-jc-md:center", stacks[2].GetAttribute("style")!);
 
         // The fourth one takes the rest of what describes the stack itself. The two alignments are resolved
         // from the direction it was cascaded, exactly as they would be had it set them itself: a column is
@@ -2794,36 +2794,36 @@ public class BitStackTests : BunitTestContext
         // The cascaded wrap is what decides which of the two fills it gets, exactly as one set on the stack would.
         Assert.IsTrue(stacks[3].ClassList.Contains("bit-stc-fcr"));
         Assert.IsTrue(stacks[3].ClassList.Contains("bit-stc-rsg"));
-        StringAssert.Contains(stacks[3].GetAttribute("style")!, "flex-direction:column-reverse");
-        StringAssert.Contains(stacks[3].GetAttribute("style")!, "--bit-stc-gap:1rem");
-        StringAssert.Contains(stacks[3].GetAttribute("style")!, "--bit-stc-gap-md:3rem");
-        StringAssert.Contains(stacks[3].GetAttribute("style")!, "column-gap:2rem");
-        StringAssert.Contains(stacks[3].GetAttribute("style")!, "row-gap:0.5rem");
-        StringAssert.Contains(stacks[3].GetAttribute("style")!, "align-items:center");
-        StringAssert.Contains(stacks[3].GetAttribute("style")!, "justify-content:flex-end");
-        StringAssert.Contains(stacks[3].GetAttribute("style")!, "align-content:space-evenly");
-        StringAssert.Contains(stacks[3].GetAttribute("style")!, "flex-grow:1");
-        StringAssert.Contains(stacks[3].GetAttribute("style")!, "min-width:0;min-height:0");
-        StringAssert.Contains(stacks[3].GetAttribute("style")!, "flex-wrap:wrap-reverse");
-        StringAssert.Contains(stacks[3].GetAttribute("style")!, "width:auto;height:auto");
-        StringAssert.Contains(stacks[3].GetAttribute("style")!, "width:fit-content;height:fit-content");
+        Assert.Contains("flex-direction:column-reverse", stacks[3].GetAttribute("style")!);
+        Assert.Contains("--bit-stc-gap:1rem", stacks[3].GetAttribute("style")!);
+        Assert.Contains("--bit-stc-gap-md:3rem", stacks[3].GetAttribute("style")!);
+        Assert.Contains("column-gap:2rem", stacks[3].GetAttribute("style")!);
+        Assert.Contains("row-gap:0.5rem", stacks[3].GetAttribute("style")!);
+        Assert.Contains("align-items:center", stacks[3].GetAttribute("style")!);
+        Assert.Contains("justify-content:flex-end", stacks[3].GetAttribute("style")!);
+        Assert.Contains("align-content:space-evenly", stacks[3].GetAttribute("style")!);
+        Assert.Contains("flex-grow:1", stacks[3].GetAttribute("style")!);
+        Assert.Contains("min-width:0;min-height:0", stacks[3].GetAttribute("style")!);
+        Assert.Contains("flex-wrap:wrap-reverse", stacks[3].GetAttribute("style")!);
+        Assert.Contains("width:auto;height:auto", stacks[3].GetAttribute("style")!);
+        Assert.Contains("width:fit-content;height:fit-content", stacks[3].GetAttribute("style")!);
 
         // The fifth one takes the breakpoints of the two chains, each of which only declares what it was
         // given and leaves the stylesheet to carry every other breakpoint up from the one below it.
         Assert.IsTrue(stacks[4].ClassList.Contains("cascaded"));
         Assert.IsTrue(stacks[4].ClassList.Contains("bit-stc-rsp"));
         Assert.IsTrue(stacks[4].ClassList.Contains("bit-stc-rsg"));
-        StringAssert.Contains(stacks[4].GetAttribute("style")!, "--bit-stc-dir-xs:column");
-        StringAssert.Contains(stacks[4].GetAttribute("style")!, "--bit-stc-dir-sm:row");
-        StringAssert.Contains(stacks[4].GetAttribute("style")!, "--bit-stc-dir-lg:column");
-        StringAssert.Contains(stacks[4].GetAttribute("style")!, "--bit-stc-dir-xl:row");
-        StringAssert.Contains(stacks[4].GetAttribute("style")!, "--bit-stc-dir-xxl:column");
-        StringAssert.Contains(stacks[4].GetAttribute("style")!, "--bit-stc-gap-xs:0.25rem");
-        StringAssert.Contains(stacks[4].GetAttribute("style")!, "--bit-stc-gap-sm:0.5rem");
-        StringAssert.Contains(stacks[4].GetAttribute("style")!, "--bit-stc-gap-lg:1.5rem");
-        StringAssert.Contains(stacks[4].GetAttribute("style")!, "--bit-stc-gap-xl:2rem");
-        StringAssert.Contains(stacks[4].GetAttribute("style")!, "--bit-stc-gap-xxl:2.5rem");
-        Assert.IsFalse(stacks[4].GetAttribute("style")!.Contains("--bit-stc-gap-md"));
+        Assert.Contains("--bit-stc-dir-xs:column", stacks[4].GetAttribute("style")!);
+        Assert.Contains("--bit-stc-dir-sm:row", stacks[4].GetAttribute("style")!);
+        Assert.Contains("--bit-stc-dir-lg:column", stacks[4].GetAttribute("style")!);
+        Assert.Contains("--bit-stc-dir-xl:row", stacks[4].GetAttribute("style")!);
+        Assert.Contains("--bit-stc-dir-xxl:column", stacks[4].GetAttribute("style")!);
+        Assert.Contains("--bit-stc-gap-xs:0.25rem", stacks[4].GetAttribute("style")!);
+        Assert.Contains("--bit-stc-gap-sm:0.5rem", stacks[4].GetAttribute("style")!);
+        Assert.Contains("--bit-stc-gap-lg:1.5rem", stacks[4].GetAttribute("style")!);
+        Assert.Contains("--bit-stc-gap-xl:2rem", stacks[4].GetAttribute("style")!);
+        Assert.Contains("--bit-stc-gap-xxl:2.5rem", stacks[4].GetAttribute("style")!);
+        Assert.DoesNotContain("--bit-stc-gap-md", stacks[4].GetAttribute("style")!);
 
         // The sixth one takes the breakpoints of the two per axis chains. Each of them is handed out on its own,
         // both of them drag the shorthand into the stylesheet along with them, and the base of each is the
@@ -2832,33 +2832,33 @@ public class BitStackTests : BunitTestContext
         Assert.IsTrue(stacks[5].ClassList.Contains("bit-stc-rsg"));
         Assert.IsTrue(stacks[5].ClassList.Contains("bit-stc-rshg"));
         Assert.IsTrue(stacks[5].ClassList.Contains("bit-stc-rsvg"));
-        StringAssert.Contains(stacks[5].GetAttribute("style")!, "--bit-stc-gap:var(--bit-stc-dgap)");
-        StringAssert.Contains(stacks[5].GetAttribute("style")!, "--bit-stc-hgap:var(--bit-stc-dgap)");
-        StringAssert.Contains(stacks[5].GetAttribute("style")!, "--bit-stc-hgap-xs:0.25rem");
-        StringAssert.Contains(stacks[5].GetAttribute("style")!, "--bit-stc-hgap-sm:0.5rem");
-        StringAssert.Contains(stacks[5].GetAttribute("style")!, "--bit-stc-hgap-lg:1.5rem");
-        StringAssert.Contains(stacks[5].GetAttribute("style")!, "--bit-stc-hgap-xl:2rem");
-        StringAssert.Contains(stacks[5].GetAttribute("style")!, "--bit-stc-hgap-xxl:2.5rem");
-        Assert.IsFalse(stacks[5].GetAttribute("style")!.Contains("--bit-stc-hgap-md"));
-        StringAssert.Contains(stacks[5].GetAttribute("style")!, "--bit-stc-vgap:var(--bit-stc-dgap)");
-        StringAssert.Contains(stacks[5].GetAttribute("style")!, "--bit-stc-vgap-xs:0.125rem");
-        StringAssert.Contains(stacks[5].GetAttribute("style")!, "--bit-stc-vgap-md:0.75rem");
-        StringAssert.Contains(stacks[5].GetAttribute("style")!, "--bit-stc-vgap-lg:1rem");
-        StringAssert.Contains(stacks[5].GetAttribute("style")!, "--bit-stc-vgap-xl:1.25rem");
-        StringAssert.Contains(stacks[5].GetAttribute("style")!, "--bit-stc-vgap-xxl:1.5rem");
-        Assert.IsFalse(stacks[5].GetAttribute("style")!.Contains("--bit-stc-vgap-sm"));
+        Assert.Contains("--bit-stc-gap:var(--bit-stc-dgap)", stacks[5].GetAttribute("style")!);
+        Assert.Contains("--bit-stc-hgap:var(--bit-stc-dgap)", stacks[5].GetAttribute("style")!);
+        Assert.Contains("--bit-stc-hgap-xs:0.25rem", stacks[5].GetAttribute("style")!);
+        Assert.Contains("--bit-stc-hgap-sm:0.5rem", stacks[5].GetAttribute("style")!);
+        Assert.Contains("--bit-stc-hgap-lg:1.5rem", stacks[5].GetAttribute("style")!);
+        Assert.Contains("--bit-stc-hgap-xl:2rem", stacks[5].GetAttribute("style")!);
+        Assert.Contains("--bit-stc-hgap-xxl:2.5rem", stacks[5].GetAttribute("style")!);
+        Assert.DoesNotContain("--bit-stc-hgap-md", stacks[5].GetAttribute("style")!);
+        Assert.Contains("--bit-stc-vgap:var(--bit-stc-dgap)", stacks[5].GetAttribute("style")!);
+        Assert.Contains("--bit-stc-vgap-xs:0.125rem", stacks[5].GetAttribute("style")!);
+        Assert.Contains("--bit-stc-vgap-md:0.75rem", stacks[5].GetAttribute("style")!);
+        Assert.Contains("--bit-stc-vgap-lg:1rem", stacks[5].GetAttribute("style")!);
+        Assert.Contains("--bit-stc-vgap-xl:1.25rem", stacks[5].GetAttribute("style")!);
+        Assert.Contains("--bit-stc-vgap-xxl:1.5rem", stacks[5].GetAttribute("style")!);
+        Assert.DoesNotContain("--bit-stc-vgap-sm", stacks[5].GetAttribute("style")!);
 
         // The seventh one takes the breakpoints of the wrap chain, which only declares what it was given exactly as
         // the chains above it do, and the cascaded way round belongs to the base and to every breakpoint that wraps.
         Assert.IsTrue(stacks[6].ClassList.Contains("cascaded"));
         Assert.IsTrue(stacks[6].ClassList.Contains("bit-stc-rswrp"));
-        Assert.IsFalse(stacks[6].GetAttribute("style")!.Contains("flex-wrap:"));
-        StringAssert.Contains(stacks[6].GetAttribute("style")!, "--bit-stc-wrap:wrap-reverse");
-        StringAssert.Contains(stacks[6].GetAttribute("style")!, "--bit-stc-wrap-xs:wrap-reverse");
-        StringAssert.Contains(stacks[6].GetAttribute("style")!, "--bit-stc-wrap-sm:nowrap");
-        StringAssert.Contains(stacks[6].GetAttribute("style")!, "--bit-stc-wrap-lg:wrap-reverse");
-        StringAssert.Contains(stacks[6].GetAttribute("style")!, "--bit-stc-wrap-xl:nowrap");
-        StringAssert.Contains(stacks[6].GetAttribute("style")!, "--bit-stc-wrap-xxl:wrap-reverse");
-        Assert.IsFalse(stacks[6].GetAttribute("style")!.Contains("--bit-stc-wrap-md"));
+        Assert.DoesNotContain("flex-wrap:", stacks[6].GetAttribute("style")!);
+        Assert.Contains("--bit-stc-wrap:wrap-reverse", stacks[6].GetAttribute("style")!);
+        Assert.Contains("--bit-stc-wrap-xs:wrap-reverse", stacks[6].GetAttribute("style")!);
+        Assert.Contains("--bit-stc-wrap-sm:nowrap", stacks[6].GetAttribute("style")!);
+        Assert.Contains("--bit-stc-wrap-lg:wrap-reverse", stacks[6].GetAttribute("style")!);
+        Assert.Contains("--bit-stc-wrap-xl:nowrap", stacks[6].GetAttribute("style")!);
+        Assert.Contains("--bit-stc-wrap-xxl:wrap-reverse", stacks[6].GetAttribute("style")!);
+        Assert.DoesNotContain("--bit-stc-wrap-md", stacks[6].GetAttribute("style")!);
     }
 }

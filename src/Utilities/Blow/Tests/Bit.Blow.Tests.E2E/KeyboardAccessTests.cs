@@ -52,7 +52,7 @@ public sealed class KeyboardAccessTests : BlowTest
         await page.Keyboard.PressAsync("Enter");
         await page.Keyboard.PressAsync("Escape");
         await Expect(Live(page)).ToContainTextAsync("Connection cancelled.");
-        CollectionAssert.AreEquivalent(before, await IdsAsync(page, "edge"));
+        Assert.AreSequenceEqual(before, await IdsAsync(page, "edge"), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -109,12 +109,12 @@ public sealed class KeyboardAccessTests : BlowTest
         var display = Node(page, "out");
         await Expect(display).ToHaveClassAsync(new System.Text.RegularExpressions.Regex(@"\bbit-blow-error\b"));
         var badge = await display.EvaluateAsync<string>("el => getComputedStyle(el, '::after').content");
-        StringAssert.Contains(badge, "!", "the error has no badge");
+        Assert.Contains("!", badge, "the error has no badge");
         await Expect(page.Locator(".bit-blow-node[data-id=\"out\"] .bit-blow-handle-error")).ToHaveCountAsync(1);
 
         var description = await display.EvaluateAsync<string>(
             "el => el.getAttribute('aria-describedby').split(' ').map(id => document.getElementById(id).textContent).join(' ')");
-        StringAssert.StartsWith(description, "Error: ");
+        Assert.StartsWith("Error: ", description);
     }
 
     [TestMethod]
@@ -129,7 +129,7 @@ public sealed class KeyboardAccessTests : BlowTest
 
         await EventuallyAsync(async () => await page.EvaluateAsync<string?>("() => document.activeElement?.dataset?.id") == "out",
             "the found node took focus");
-        CollectionAssert.AreEqual(new[] { "out" }, await SelectedNodesAsync(page));
+        Assert.AreSequenceEqual(new[] { "out" }, await SelectedNodesAsync(page));
     }
 
     [TestMethod]

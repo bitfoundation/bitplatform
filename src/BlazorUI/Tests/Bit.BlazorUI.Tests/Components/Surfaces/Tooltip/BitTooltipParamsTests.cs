@@ -52,8 +52,8 @@ public class BitTooltipParamsTests : BunitTestContext
     {
         var @params = new BitTooltipParams();
 
-        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitTooltip)}", BitTooltipParams.ParamName);
-        Assert.AreEqual("BitParams.BitTooltip", BitTooltipParams.ParamName);
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitTooltip)}", new BitTooltipParams().Name);
+        Assert.AreEqual("BitParams.BitTooltip", new BitTooltipParams().Name);
         Assert.IsInstanceOfType<IBitComponentParams>(@params);
         Assert.AreEqual(BitTooltipParams.ParamName, @params.Name);
     }
@@ -74,7 +74,7 @@ public class BitTooltipParamsTests : BunitTestContext
                                         .Where(n => typeof(BitTooltipParams).GetProperty(n) is null)
                                         .ToList();
 
-        CollectionAssert.AreEqual(new List<string>(), missing, string.Join(", ", missing));
+        Assert.AreSequenceEqual(new List<string>(), missing, string.Join(", ", missing));
     }
 
     [TestMethod]
@@ -155,7 +155,7 @@ public class BitTooltipParamsTests : BunitTestContext
 
         foreach (var declaration in new[] { "margin: 1px;", "--bit-ttp-offset:12px", "--bit-ttp-arrow-size:9px", "--bit-ttp-max-width:8rem", "--bit-ttp-zindex:42" })
         {
-            StringAssert.Contains(style, declaration);
+            Assert.Contains(declaration, style);
         }
 
         Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("cascaded-wrapper"));
@@ -175,7 +175,7 @@ public class BitTooltipParamsTests : BunitTestContext
 
         Assert.IsTrue(wrapper.ClassList.Contains("bit-ttp-end"));
         Assert.IsTrue(wrapper.ClassList.Contains("bit-ttp-atp"));
-        Assert.AreEqual(0, component.FindAll(".bit-ttp-arw").Count);
+        Assert.IsEmpty(component.FindAll(".bit-ttp-arw"));
     }
 
     [TestMethod]
@@ -300,14 +300,14 @@ public class BitTooltipParamsTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("bit-ttp-itr"));
 
         var style = root.GetAttribute("style")!;
-        StringAssert.Contains(style, "--bit-ttp-offset:4px");
-        Assert.IsFalse(style.Contains("--bit-ttp-offset:12px"));
+        Assert.Contains("--bit-ttp-offset:4px", style);
+        Assert.DoesNotContain("--bit-ttp-offset:12px", style);
 
         Assert.AreEqual(component.Find(".bit-ttp-ctn").Id, root.GetAttribute("aria-describedby"));
         Assert.IsNull(root.GetAttribute("aria-labelledby"));
 
         Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-btm"));
-        Assert.AreEqual(1, component.FindAll(".bit-ttp-arw").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-ttp-arw"));
     }
 
     [TestMethod]
@@ -317,11 +317,11 @@ public class BitTooltipParamsTests : BunitTestContext
 
         var root = component.Find(".bit-ttp");
 
-        CollectionAssert.AreEquivalent(new[] { "bit-ttp", "bit-ttp-itr" }, root.ClassList.ToArray());
+        Assert.AreSequenceEqual(new[] { "bit-ttp", "bit-ttp-itr" }, root.ClassList.ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         Assert.IsTrue(string.IsNullOrEmpty(root.GetAttribute("style")));
         Assert.AreEqual("bit-ttp-wrp bit-ttp-top bit-ttp-ahc", component.Find(".bit-ttp-wrp").ClassName.Trim());
         Assert.AreEqual(component.Find(".bit-ttp-ctn").Id, root.GetAttribute("aria-describedby"));
-        Assert.AreEqual(1, component.FindAll(".bit-ttp-arw").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-ttp-arw"));
         Assert.AreEqual("Tip", component.Find(".bit-ttp-ctn").TextContent);
     }
 }

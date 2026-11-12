@@ -67,7 +67,7 @@ public class BitAiRendererBoundaryE2ETests : E2ETestBase
                  + parseFloat(cs.borderLeftWidth) + parseFloat(cs.borderRightWidth);
         }");
         Assert.AreEqual(held, tagRight - tagLeft, 1, "The tag is as wide as its text.");
-        Assert.IsTrue(tagRight - tagLeft < boxRight - boxLeft - 1, "The tag is not stretched across the line.");
+        Assert.IsLessThan(boxRight - boxLeft - 1, tagRight - tagLeft, "The tag is not stretched across the line.");
 
         // Nothing else of the page went down with it; and a render of the page, which tries the content again, keeps
         // the notice for content that still fails.
@@ -78,7 +78,7 @@ public class BitAiRendererBoundaryE2ETests : E2ETestBase
         Assert.IsFalse(await IsCircuitDeadAsync());
 
         var errors = await GetServerErrorsAsync();
-        Assert.IsFalse(errors.Any(e => e.Contains("series are missing", StringComparison.Ordinal)), string.Join(Environment.NewLine, errors));
+        Assert.DoesNotContain(e => e.Contains("series are missing", StringComparison.Ordinal), errors, string.Join(Environment.NewLine, errors));
     }
 
     [TestMethod]
@@ -200,7 +200,7 @@ public class BitAiRendererBoundaryE2ETests : E2ETestBase
         await Expect(rtl).ToHaveClassAsync(HasClass("bit-rtl"));
         var (_, _, iconRight, _) = await rtl.Locator(".bit-tag-icn").RectAsync();
         var (_, _, textRight, _) = await rtl.Locator(".bit-tag-tex").RectAsync();
-        Assert.IsTrue(iconRight > textRight, "Right to left, the glyph leads the label from the right.");
+        Assert.IsGreaterThan(textRight, iconRight, "Right to left, the glyph leads the label from the right.");
         var (_, _, rtlRight, _) = await rtl.RectAsync();
         var (_, _, tagRight, _) = await rtl.Locator(".bit-tag").RectAsync();
         Assert.AreEqual(rtlRight, tagRight, 1.5, "Right to left, the tag starts at the right of its block.");

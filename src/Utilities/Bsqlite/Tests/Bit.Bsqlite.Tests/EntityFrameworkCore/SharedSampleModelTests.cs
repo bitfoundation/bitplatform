@@ -45,7 +45,7 @@ public sealed class SharedSampleModelTests
             .ThenInclude(l => l.Product)
             .SingleAsync(o => o.Number == "SO-1042", Ct);
         Assert.AreEqual(OrderStatus.Shipped, order.Status);
-        Assert.AreEqual(2, order.Lines.Count);
+        Assert.HasCount(2, order.Lines);
         Assert.Contains(l => l.Product!.Sku == "TL-100", order.Lines);
     }
 }

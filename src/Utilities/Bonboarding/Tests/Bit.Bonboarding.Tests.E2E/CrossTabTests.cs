@@ -45,7 +45,7 @@ public sealed class CrossTabTests : BonboardingTest
         await Assertions.Expect(second.Locator(".bit-bonboarding-root")).ToHaveCountAsync(0);
 
         var record = await second.EvaluateAsync<string>("() => localStorage.getItem('bit-bonboarding-demo:welcome')");
-        StringAssert.Contains(record, "\"dismissed\":true");
+        Assert.Contains("\"dismissed\":true", record);
     }
 
     [TestMethod]

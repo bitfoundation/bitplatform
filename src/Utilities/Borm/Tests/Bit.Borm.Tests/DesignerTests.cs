@@ -38,8 +38,8 @@ public class DesignerTests : ComponentTestBase
         Assert.AreEqual("Edit Text", cut.Find(".bit-borm-designer__select").GetAttribute("aria-label"));
         Assert.AreEqual("text1", cut.Find("#designer_p_Name").GetAttribute("value"));
         Assert.IsNotNull(cut.Find("#designer_v_text1"));
-        StringAssert.Contains(cut.Find(".bit-borm-designer__fields [aria-live]").TextContent, "Added Text.");
-        StringAssert.Contains(cut.Find(".bit-borm-designer__json-text").GetAttribute("value"), "\"text1\"");
+        Assert.Contains("Added Text.", cut.Find(".bit-borm-designer__fields [aria-live]").TextContent);
+        Assert.Contains("\"text1\"", cut.Find(".bit-borm-designer__json-text").GetAttribute("value")!);
     }
 
     [TestMethod]
@@ -58,7 +58,7 @@ public class DesignerTests : ComponentTestBase
         Assert.IsTrue(field.Required);
         Assert.AreEqual(40, field.MaxLength);
         Assert.IsInstanceOfType<BormExpressionCondition>(field.VisibleWhen);
-        StringAssert.Contains(cut.Find("label[for=designer_v_text1]").TextContent, "Full name");
+        Assert.Contains("Full name", cut.Find("label[for=designer_v_text1]").TextContent);
     }
 
     [TestMethod]
@@ -69,7 +69,7 @@ public class DesignerTests : ComponentTestBase
 
         cut.Find("#designer_p_Options").Change("nl = Netherlands\nde = Germany\nfr");
 
-        CollectionAssert.AreEqual(new[] { "Netherlands", "Germany", "fr" }, last()!.Fields.Single().Options.Select(o => o.Label).ToArray());
+        Assert.AreSequenceEqual(new[] { "Netherlands", "Germany", "fr" }, last()!.Fields.Single().Options.Select(o => o.Label).ToArray());
         Assert.HasCount(4, cut.FindAll("#designer_v_select1 option"));
     }
 
@@ -82,8 +82,8 @@ public class DesignerTests : ComponentTestBase
 
         cut.Find("#designer_p_Computed").Change("{number1} *");
 
-        StringAssert.Contains(cut.Find("#designer_p_Computed_error").TextContent, "This does not read:");
-        StringAssert.Contains(cut.Find(".bit-borm-designer__preview [role=alert]").TextContent, "This does not read:");
+        Assert.Contains("This does not read:", cut.Find("#designer_p_Computed_error").TextContent);
+        Assert.Contains("This does not read:", cut.Find(".bit-borm-designer__preview [role=alert]").TextContent);
         Assert.AreSame(before, last());
     }
 
@@ -110,15 +110,15 @@ public class DesignerTests : ComponentTestBase
         Add(cut, "Phone");
 
         cut.FindAll("button").Single(b => b.GetAttribute("aria-label") == "Move Phone up").Click();
-        CollectionAssert.AreEqual(new[] { "text1", "tel1", "email1" }, last()!.Fields.Select(f => f.Name).ToArray());
-        StringAssert.Contains(cut.Find(".bit-borm-designer__fields [aria-live]").TextContent, "Phone is now number 2 of 3.");
+        Assert.AreSequenceEqual(new[] { "text1", "tel1", "email1" }, last()!.Fields.Select(f => f.Name).ToArray());
+        Assert.Contains("Phone is now number 2 of 3.", cut.Find(".bit-borm-designer__fields [aria-live]").TextContent);
 
         cut.FindAll("button").Single(b => b.GetAttribute("aria-label") == "Duplicate Email").Click();
         Assert.AreEqual("email2", last()!.Fields[3].Name);
 
         cut.FindAll("button").Single(b => b.GetAttribute("aria-label") == "Delete Text").Click();
-        CollectionAssert.AreEqual(new[] { "tel1", "email1", "email2" }, last()!.Fields.Select(f => f.Name).ToArray());
-        StringAssert.Contains(cut.Find(".bit-borm-designer__fields [aria-live]").TextContent, "Deleted Text.");
+        Assert.AreSequenceEqual(new[] { "tel1", "email1", "email2" }, last()!.Fields.Select(f => f.Name).ToArray());
+        Assert.Contains("Deleted Text.", cut.Find(".bit-borm-designer__fields [aria-live]").TextContent);
         // The field that took the deleted one's place is the one chosen now.
         Assert.AreEqual("tel1", cut.Find("#designer_p_Name").GetAttribute("value"));
     }
@@ -141,7 +141,7 @@ public class DesignerTests : ComponentTestBase
         var built = last()!;
         Assert.IsNotNull(built.FindField("country")!.OptionsProvider);
         Assert.IsNotNull(built.FindField("vat")!.VisibleWhen);
-        CollectionAssert.AreEqual(new[] { "country", "vat", "date1" }, built.Steps.Single().Fields.ToArray());
+        Assert.AreSequenceEqual(new[] { "country", "vat", "date1" }, built.Steps.Single().Fields.ToArray());
     }
 
     [TestMethod]
@@ -169,7 +169,7 @@ public class DesignerTests : ComponentTestBase
         Assert.AreEqual("stars", built.FindField("rating")!.CustomRenderer);
         Assert.AreEqual(BormFieldType.Search, built.FindField("query")!.Type);
         Assert.AreEqual(20, built.FindField("query")!.MaxLength);
-        StringAssert.Contains(cut.FindAll(".bit-borm-designer__meta")[0].TextContent, "Nested fields");
+        Assert.Contains("Nested fields", cut.FindAll(".bit-borm-designer__meta")[0].TextContent);
 
         // Its kind is shown for what it is and cannot be changed; what the panel does show still can be.
         Assert.IsTrue(cut.Find("#designer_p_Kind").HasAttribute("disabled"));
@@ -193,6 +193,6 @@ public class DesignerTests : ComponentTestBase
 
         cut.Find(".bit-borm-designer__json-text").Change("{ not json");
         cut.FindAll("button").Single(b => b.TextContent == "Load this JSON").Click();
-        StringAssert.Contains(cut.Find(".bit-borm-designer__json [role=alert]").TextContent, "That JSON could not be read:");
+        Assert.Contains("That JSON could not be read:", cut.Find(".bit-borm-designer__json [role=alert]").TextContent);
     }
 }

@@ -181,7 +181,7 @@ public class BitDropdownOptionsE2ETests : BitDropdownE2ETestBase
 
         await Expect(Option(callout, "Option 001")).ToBeFocusedAsync();
         var rendered = await Options(callout).CountAsync();
-        Assert.IsTrue(rendered < 80, $"Only a window of the 300 options is rendered, was {rendered}.");
+        Assert.IsLessThan(80, rendered, $"Only a window of the 300 options is rendered, was {rendered}.");
 
         // Aimed again until the last option is in: the list measures its rows again as each window of them lands, which
         // changes how tall it is - on a loaded host after this scroll as well as before it - and a scroll aimed once at

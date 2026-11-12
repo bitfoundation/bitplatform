@@ -28,7 +28,7 @@ public abstract class HarnessTest
     protected abstract string BaseUrl { get; }
 
     /// <summary>The receiver the host under test exports to.</summary>
-    protected abstract CollectorClient Collector { get; }
+    private protected abstract CollectorClient Collector { get; }
 
     /// <summary>The <c>BELEMETRY_E2E_HOSTS</c> name of the host, to skip unselected suites.</summary>
     protected abstract string HostName { get; }
@@ -97,7 +97,7 @@ public abstract class HarnessTest
         Page.WaitForFunctionAsync("() => !!(window.BitBelemetry && window.BitBelemetry.getContext().sessionId)", null, new() { Timeout = 90_000 });
 
     /// <summary>The script's current context: consent, session, pseudo id and user id.</summary>
-    protected async Task<BrowserContextInfo> ContextAsync()
+    private protected async Task<BrowserContextInfo> ContextAsync()
     {
         await WaitForScriptAsync();
         return await Page.EvaluateAsync<BrowserContextInfo>("() => window.BitBelemetry.getContext()");
@@ -117,7 +117,7 @@ public abstract class HarnessTest
 
     // A settable class rather than a positional record: Playwright materializes evaluate results through a
     // parameterless constructor.
-    public sealed class BrowserContextInfo
+    internal sealed class BrowserContextInfo
     {
         public int Consent { get; set; }
 

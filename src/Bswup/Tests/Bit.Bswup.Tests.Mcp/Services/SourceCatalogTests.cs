@@ -16,8 +16,8 @@ public class SourceCatalogTests
     [TestMethod]
     public void Readme_IsEmbeddedAndReadable()
     {
-        Assert.IsTrue(BswupSourceCatalog.Readme.Length > 1000, "the README resource did not make it into the assembly");
-        StringAssert.Contains(BswupSourceCatalog.Readme, "bit Bswup");
+        Assert.IsGreaterThan(1000, BswupSourceCatalog.Readme.Length, "the README resource did not make it into the assembly");
+        Assert.Contains("bit Bswup", BswupSourceCatalog.Readme);
     }
 
     [TestMethod]
@@ -25,8 +25,8 @@ public class SourceCatalogTests
     {
         var headings = BswupSourceCatalog.GuideSections.Select(section => section.Heading).ToArray();
 
-        CollectionAssert.Contains(headings, "JavaScript API");
-        CollectionAssert.Contains(headings, "Backing out of Bswup (the cleanup worker)");
+        Assert.Contains("JavaScript API", headings);
+        Assert.Contains("Backing out of Bswup (the cleanup worker)", headings);
         Assert.IsTrue(BswupSourceCatalog.GuideSections.All(section => section.Level is 2 or 3));
         Assert.IsTrue(BswupSourceCatalog.GuideSections.All(section => section.Lines > 0));
     }
@@ -51,7 +51,7 @@ public class SourceCatalogTests
         var section = BswupSourceCatalog.GetGuideSection("JavaScript API");
 
         Assert.IsNotNull(section);
-        StringAssert.StartsWith(section, "## JavaScript API");
+        Assert.StartsWith("## JavaScript API", section);
     }
 
     [TestMethod]
@@ -59,8 +59,7 @@ public class SourceCatalogTests
     {
         var section = BswupSourceCatalog.GetGuideSection("JavaScript API");
 
-        StringAssert.Contains(section, "### Polling for updates",
-            "a reader asking for a section expects what is nested under it");
+        Assert.Contains("### Polling for updates", section!, "a reader asking for a section expects what is nested under it");
     }
 
     [TestMethod]
@@ -82,7 +81,7 @@ public class SourceCatalogTests
         var section = BswupSourceCatalog.GetGuideSection(heading);
 
         Assert.IsNotNull(section, heading);
-        StringAssert.StartsWith(section, "## JavaScript API");
+        Assert.StartsWith("## JavaScript API", section);
     }
 
     [TestMethod]
@@ -140,7 +139,7 @@ public class SourceCatalogTests
         // Each of these is quoted in a tool description or a prompt as something a caller can ask
         // for by name, so a glob that stops matching it turns advice into a dead end.
         Assert.IsNotNull(BswupSourceCatalog.GetSourceFile(path), $"'{path}' is not embedded");
-        Assert.IsTrue(BswupSourceCatalog.SourceFiles.Any(file => file.Path == path), $"'{path}' is not listed");
+        Assert.Contains(file => file.Path == path, BswupSourceCatalog.SourceFiles, $"'{path}' is not listed");
     }
 
     [TestMethod]
@@ -151,7 +150,7 @@ public class SourceCatalogTests
         var worker = BswupSourceCatalog.GetSourceFile("Library/Scripts/bit-bswup.sw.ts");
 
         Assert.IsNotNull(worker);
-        StringAssert.Contains(worker, "DEFAULT_ASSETS_INCLUDE");
+        Assert.Contains("DEFAULT_ASSETS_INCLUDE", worker);
     }
 
     [TestMethod]
@@ -174,13 +173,13 @@ public class SourceCatalogTests
     [TestMethod]
     public void SourceFiles_AreEachReadableAndDescribed()
     {
-        Assert.IsTrue(BswupSourceCatalog.SourceFiles.Length > 20, "the embedded source globs matched almost nothing");
+        Assert.IsGreaterThan(20, BswupSourceCatalog.SourceFiles.Length, "the embedded source globs matched almost nothing");
 
         foreach (var file in BswupSourceCatalog.SourceFiles)
         {
             Assert.IsNotNull(BswupSourceCatalog.GetSourceFile(file.Path), file.Path);
-            CollectionAssert.Contains(new[] { "Library", "Demo", "Sample" }, file.Kind, file.Path);
-            Assert.IsTrue(file.Lines > 0, file.Path);
+            Assert.Contains(file.Kind, new[] { "Library", "Demo", "Sample" }, file.Path);
+            Assert.IsGreaterThan(0, file.Lines, file.Path);
         }
     }
 
@@ -189,8 +188,7 @@ public class SourceCatalogTests
     {
         var kinds = BswupSourceCatalog.SourceFiles.Select(file => file.Kind).ToArray();
 
-        CollectionAssert.AreEqual(kinds.OrderBy(kind => kind, StringComparer.Ordinal).ToArray(), kinds,
-            "the listing is meant to read as three groups");
+        Assert.AreSequenceEqual(kinds.OrderBy(kind => kind, StringComparer.Ordinal).ToArray(), kinds, "the listing is meant to read as three groups");
     }
 
     [TestMethod]
@@ -215,8 +213,8 @@ public class SourceCatalogTests
         var client = BswupSourceCatalog.SourceFiles.Single(file => file.Path == "Sample/FullSample/Client/Program.cs");
         var host = BswupSourceCatalog.SourceFiles.Single(file => file.Path == "Sample/FullSample/Server/Program.cs");
 
-        StringAssert.Contains(client.Description!, "client project");
-        StringAssert.Contains(host.Description!, "host project");
+        Assert.Contains("client project", client.Description!);
+        Assert.Contains("host project", host.Description!);
     }
 
     [TestMethod]
@@ -233,7 +231,7 @@ public class SourceCatalogTests
             Assert.IsFalse(file.Path.EndsWith("_Imports.razor", StringComparison.OrdinalIgnoreCase), file.Path);
         }
 
-        Assert.IsTrue(BswupSourceCatalog.SourceFiles.Length < 30,
+        Assert.IsLessThan(30, BswupSourceCatalog.SourceFiles.Length,
             $"the listing is back to a directory dump: {BswupSourceCatalog.SourceFiles.Length} files");
     }
 
@@ -242,7 +240,7 @@ public class SourceCatalogTests
     {
         foreach (var file in BswupSourceCatalog.SourceFiles.Where(file => file.Description is not null))
         {
-            Assert.IsTrue(file.Description!.Length <= 220, $"{file.Path}: a description is one line, not the whole comment");
+            Assert.IsLessThanOrEqualTo(220, file.Description!.Length, $"{file.Path}: a description is one line, not the whole comment");
             Assert.IsFalse(file.Description.Contains('\n'), file.Path);
         }
     }

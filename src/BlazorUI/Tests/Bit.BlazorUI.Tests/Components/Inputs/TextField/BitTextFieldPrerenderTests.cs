@@ -26,13 +26,13 @@ public class BitTextFieldPrerenderTests
             [nameof(BitTextField.ErrorMessage)] = "Taken.",
         });
 
-        StringAssert.Contains(html, "bit-tfl-inp");
-        StringAssert.Contains(html, "value=\"ada@example.com\"");
-        StringAssert.Contains(html, "name=\"email\"");
-        StringAssert.Contains(html, "Email");
-        StringAssert.Contains(html, "15/32");
-        StringAssert.Contains(html, "bit-tfl-cbt");
-        StringAssert.Contains(html, "Taken.");
+        Assert.Contains("bit-tfl-inp", html);
+        Assert.Contains("value=\"ada@example.com\"", html);
+        Assert.Contains("name=\"email\"", html);
+        Assert.Contains("Email", html);
+        Assert.Contains("15/32", html);
+        Assert.Contains("bit-tfl-cbt", html);
+        Assert.Contains("Taken.", html);
     }
 
     [TestMethod]
@@ -52,9 +52,9 @@ public class BitTextFieldPrerenderTests
             [nameof(BitTextField.Value)] = "hello",
         });
 
-        StringAssert.Contains(html, "<textarea");
-        StringAssert.Contains(html, "bit-tfl-mla");
-        StringAssert.Contains(html, "bit-tfl-gho");
-        StringAssert.Contains(html, "https://");
+        Assert.Contains("<textarea", html);
+        Assert.Contains("bit-tfl-mla", html);
+        Assert.Contains("bit-tfl-gho", html);
+        Assert.Contains("https://", html);
     }
 }

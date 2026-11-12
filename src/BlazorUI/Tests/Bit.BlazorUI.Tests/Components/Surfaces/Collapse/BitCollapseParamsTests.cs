@@ -54,8 +54,8 @@ public class BitCollapseParamsTests : BunitTestContext
     [TestMethod]
     public void BitCollapseParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitCollapse)}", BitCollapseParams.ParamName);
-        Assert.AreEqual("BitParams.BitCollapse", BitCollapseParams.ParamName);
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitCollapse)}", new BitCollapseParams().Name);
+        Assert.AreEqual("BitParams.BitCollapse", new BitCollapseParams().Name);
     }
 
     [TestMethod]
@@ -109,11 +109,11 @@ public class BitCollapseParamsTests : BunitTestContext
         var root = component.Find(".bit-col");
         var style = root.GetAttribute("style") ?? string.Empty;
 
-        Assert.IsTrue(style.Contains("--bit-col-dur-full:450ms"));
-        Assert.IsTrue(style.Contains("--bit-col-del-full:50ms"));
-        Assert.IsTrue(style.Contains("--bit-col-eas:linear"));
-        Assert.IsTrue(style.Contains("--bit-col-csz:3rem"));
-        Assert.IsTrue(style.Contains("outline: 1px solid red;"));
+        Assert.Contains("--bit-col-dur-full:450ms", style);
+        Assert.Contains("--bit-col-del-full:50ms", style);
+        Assert.Contains("--bit-col-eas:linear", style);
+        Assert.Contains("--bit-col-csz:3rem", style);
+        Assert.Contains("outline: 1px solid red;", style);
         Assert.AreEqual("color: blue;", component.Find(".bit-col-con").GetAttribute("style"));
 
         // A cascaded CollapsedSize is a peek like one set on the collapse itself.
@@ -129,7 +129,7 @@ public class BitCollapseParamsTests : BunitTestContext
             CollapseDuration = 200,
         }, builder => builder.AddAttribute(1, nameof(BitCollapse.Expanded), true));
 
-        Assert.IsTrue((component.Find(".bit-col").GetAttribute("style") ?? string.Empty).Contains("--bit-col-dur-full:900ms"));
+        Assert.Contains("--bit-col-dur-full:900ms", (component.Find(".bit-col").GetAttribute("style") ?? string.Empty));
     }
 
     [TestMethod]
@@ -138,7 +138,7 @@ public class BitCollapseParamsTests : BunitTestContext
         var component = RenderWithParams(new BitCollapseParams { LazyRender = true });
 
         // A cascaded LazyRender keeps the content of a collapse that was never opened out of the DOM.
-        Assert.IsFalse(component.Find(".bit-col-wrp").InnerHtml.Contains("Hello"));
+        Assert.DoesNotContain("Hello", component.Find(".bit-col-wrp").InnerHtml);
     }
 
     [TestMethod]
@@ -175,14 +175,14 @@ public class BitCollapseParamsTests : BunitTestContext
             NoAnimation = true,
         }, builder => builder.AddAttribute(1, nameof(BitCollapse.Expanded), true));
 
-        Assert.IsTrue(component.Find(".bit-col-wrp").InnerHtml.Contains("Hello"));
+        Assert.Contains("Hello", component.Find(".bit-col-wrp").InnerHtml);
 
         var collapse = component.FindComponent<BitCollapse>();
 
         collapse.Render(parameters => parameters.Add(p => p.Expanded, false));
 
         // NoAnimation ends the close at once, so the unmount only waits for the render that follows it.
-        component.WaitForAssertion(() => Assert.IsFalse(component.Find(".bit-col-wrp").InnerHtml.Contains("Hello")),
+        component.WaitForAssertion(() => Assert.DoesNotContain("Hello", component.Find(".bit-col-wrp").InnerHtml),
                                    TimeSpan.FromSeconds(2));
     }
 
@@ -213,8 +213,8 @@ public class BitCollapseParamsTests : BunitTestContext
 
         Assert.IsTrue(root.ClassList.Contains("cascaded-collapsed"));
         Assert.IsFalse(root.ClassList.Contains("cascaded-expanded"));
-        StringAssert.Contains(root.GetAttribute("style"), "width:5px");
-        Assert.IsFalse(root.GetAttribute("style")!.Contains("width:3px"));
+        Assert.Contains("width:5px", root.GetAttribute("style")!);
+        Assert.DoesNotContain("width:3px", root.GetAttribute("style")!);
 
         component.FindComponent<BitCollapse>().Render(parameters => parameters.Add(p => p.Expanded, true));
 
@@ -222,7 +222,7 @@ public class BitCollapseParamsTests : BunitTestContext
 
         Assert.IsTrue(root.ClassList.Contains("cascaded-expanded"));
         Assert.IsFalse(root.ClassList.Contains("cascaded-collapsed"));
-        StringAssert.Contains(root.GetAttribute("style"), "width:3px");
+        Assert.Contains("width:3px", root.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -274,7 +274,7 @@ public class BitCollapseParamsTests : BunitTestContext
 
         Assert.IsTrue(root.ClassList.Contains("cascaded-class"));
         Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
-        Assert.IsTrue((root.GetAttribute("style") ?? string.Empty).Contains("margin: 4px;"));
+        Assert.Contains("margin: 4px;", (root.GetAttribute("style") ?? string.Empty));
     }
 
     [TestMethod]
@@ -299,8 +299,8 @@ public class BitCollapseParamsTests : BunitTestContext
         // Direct parameters win over the cascaded ones, false included.
         Assert.IsTrue(root.ClassList.Contains("bit-col-tbg"));
         Assert.IsFalse(root.ClassList.Contains("bit-col-sbg"));
-        Assert.IsTrue(style.Contains("--bit-col-dur-full:900ms"));
-        Assert.IsFalse(style.Contains("--bit-col-dur-full:450ms"));
+        Assert.Contains("--bit-col-dur-full:900ms", style);
+        Assert.DoesNotContain("--bit-col-dur-full:450ms", style);
         Assert.IsFalse(root.ClassList.Contains("bit-col-npd"));
 
         // What the collapse left unset is still filled in from the cascade.

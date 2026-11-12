@@ -24,10 +24,10 @@ public class BitBasicListE2ETests : E2ETestBase
         var response = await Page.APIRequest.GetAsync($"{BaseUrl}/e2e/basic-list");
         var html = await response.TextAsync();
 
-        StringAssert.Contains(html, "id=\"basic\"");
-        StringAssert.Contains(html, "Name: <strong>Person 10</strong>");
-        StringAssert.Contains(html, "bit-bsl-itm");
-        StringAssert.Contains(html, "<span id=\"status\">Loading</span>");
+        Assert.Contains("id=\"basic\"", html);
+        Assert.Contains("Name: <strong>Person 10</strong>", html);
+        Assert.Contains("bit-bsl-itm", html);
+        Assert.Contains("<span id=\"status\">Loading</span>", html);
     }
 
     [TestMethod]
@@ -70,13 +70,13 @@ public class BitBasicListE2ETests : E2ETestBase
 
         var list = Page.Locator("#header-footer");
         var children = await list.Locator("> *").EvaluateAllAsync<string[]>("els => els.map(e => e.className)");
-        StringAssert.StartsWith(children[0], "bit-bsl-hdr");
-        StringAssert.StartsWith(children[^1], "bit-bsl-ftr");
+        Assert.StartsWith("bit-bsl-hdr", children[0]);
+        Assert.StartsWith("bit-bsl-ftr", children[^1]);
         await Expect(Page.Locator("#list-header")).ToHaveTextAsync("People (10)");
 
         // Both scroll with the rows: the footer comes into view at the end.
         var root = await BoxAsync("#header-footer");
-        Assert.IsTrue((await BoxAsync("#list-footer")).Y > root.Bottom, "the footer starts below the visible rows");
+        Assert.IsGreaterThan(root.Bottom, (await BoxAsync("#list-footer")).Y, "the footer starts below the visible rows");
         await ScrollAsync("#header-footer", 2000);
         root = await BoxAsync("#header-footer");
         var footer = await BoxAsync("#list-footer");
@@ -173,13 +173,13 @@ public class BitBasicListE2ETests : E2ETestBase
 
         // The scroll range is sized from ItemSize.
         var scrollHeight = await list.EvaluateAsync<double>("el => el.scrollHeight");
-        Assert.IsTrue(Math.Abs(scrollHeight - 2000 * 40) < 200, $"scroll range {scrollHeight}");
+        Assert.IsLessThan(200, Math.Abs(scrollHeight - 2000 * 40), $"scroll range {scrollHeight}");
 
         // A real wheel scroll brings new rows in and drops the first ones.
         await ScrollAsync("#virtualize", 4000);
         await Expect(list.Locator("[data-id='100']")).ToBeVisibleAsync();
         await Expect(list.Locator("[data-id='0']")).ToHaveCountAsync(0);
-        Assert.IsTrue(await list.GetByRole(AriaRole.Listitem).CountAsync() < 40, "still only a window");
+        Assert.IsLessThan(40, await list.GetByRole(AriaRole.Listitem).CountAsync(), "still only a window");
 
         // A jump to the middle of the range renders the rows there.
         await list.EvaluateAsync("el => el.scrollTop = 40000");
@@ -204,7 +204,7 @@ public class BitBasicListE2ETests : E2ETestBase
 
         var three = await Page.Locator("#virtualize [role=listitem]").CountAsync();
         var ten = await Page.Locator("#virtualize-overscan [role=listitem]").CountAsync();
-        Assert.IsTrue(ten >= three + 10, $"OverscanCount 10 renders more rows ({ten}) than 3 ({three})");
+        Assert.IsGreaterThanOrEqualTo(three + 10, ten, $"OverscanCount 10 renders more rows ({ten}) than 3 ({three})");
     }
 
     [TestMethod]
@@ -231,7 +231,7 @@ public class BitBasicListE2ETests : E2ETestBase
         await Expect(list.Locator(".bsl-placeholder")).ToHaveCountAsync(0);
         var start = int.Parse((await Page.Locator("#provider-last").InnerTextAsync()).Split(':')[0]);
         Assert.IsTrue(start is > 400 and <= 500, $"the request starts around the visible index ({start})");
-        Assert.IsTrue(int.Parse(await Page.Locator("#provider-calls").InnerTextAsync()) > callsBefore);
+        Assert.IsGreaterThan(callsBefore, int.Parse(await Page.Locator("#provider-calls").InnerTextAsync()));
 
         // RefreshDataAsync asks the provider again.
         var callsAfter = int.Parse(await Page.Locator("#provider-calls").InnerTextAsync());
@@ -261,7 +261,7 @@ public class BitBasicListE2ETests : E2ETestBase
 
         await Expect(list.Locator("[data-id='500']")).ToBeVisibleAsync();
         var calls = int.Parse(await Page.Locator("#provider-calls").InnerTextAsync()) - before;
-        Assert.IsTrue(calls < 20, $"the requests were debounced ({calls} calls for 20 regions)");
+        Assert.IsLessThan(20, calls, $"the requests were debounced ({calls} calls for 20 regions)");
     }
 
     [TestMethod]
@@ -331,7 +331,7 @@ public class BitBasicListE2ETests : E2ETestBase
         await list.EvaluateAsync("el => el.scrollTop = el.scrollHeight");
         await list.Locator("button.bit-bsl-lmb").ClickAsync();
         await Expect(Page.Locator("#virtualized-load-more-count")).ToHaveTextAsync("40");
-        Assert.IsTrue(await list.GetByRole(AriaRole.Listitem).CountAsync() < 40, "still only a window of the loaded rows");
+        Assert.IsLessThan(40, await list.GetByRole(AriaRole.Listitem).CountAsync(), "still only a window of the loaded rows");
     }
 
     [TestMethod]
@@ -383,7 +383,7 @@ public class BitBasicListE2ETests : E2ETestBase
         var second = await BoxAsync("#horizontal [role=listitem] >> nth=1");
         AssertClose(first.Right, second.X, "side by side");
         AssertClose(first.Y, second.Y, "on one line");
-        Assert.IsTrue(await list.EvaluateAsync<double>("el => el.scrollWidth") > 900, "it scrolls sideways");
+        Assert.IsGreaterThan(900, await list.EvaluateAsync<double>("el => el.scrollWidth"), "it scrolls sideways");
 
         // Styles.Items lays the rows out as a grid.
         await Expect(Page.Locator("#grid-items > .bit-bsl-itm")).ToHaveCSSAsync("display", "grid");
@@ -405,11 +405,11 @@ public class BitBasicListE2ETests : E2ETestBase
         AssertClose(300, (await BoxAsync("#full-height")).H, "FullHeight");
 
         var fit = await BoxAsync("#fit-size");
-        Assert.IsTrue(fit.W < 200, $"FitSize width follows the content ({fit.W})");
-        Assert.IsTrue(fit.H < 200, $"FitSize height follows the content ({fit.H})");
-        Assert.IsTrue((await BoxAsync("#fit-width")).W < 200, "FitWidth");
+        Assert.IsLessThan(200, fit.W, $"FitSize width follows the content ({fit.W})");
+        Assert.IsLessThan(200, fit.H, $"FitSize height follows the content ({fit.H})");
+        Assert.IsLessThan(200, (await BoxAsync("#fit-width")).W, "FitWidth");
         await Expect(Page.Locator("#fit-width")).ToHaveCSSAsync("height", "500px");
-        Assert.IsTrue((await BoxAsync("#fit-height")).H < 200, "FitHeight");
+        Assert.IsLessThan(200, (await BoxAsync("#fit-height")).H, "FitHeight");
         AssertClose(500, (await BoxAsync("#fit-height")).W, "FitHeight keeps the width");
     }
 
@@ -645,7 +645,7 @@ public class BitBasicListE2ETests : E2ETestBase
         await Page.Keyboard.PressAsync("Shift+Tab");
         await Page.Keyboard.PressAsync("Tab");
         await Expect(Page.Locator("#vars")).ToBeFocusedAsync();
-        StringAssert.Contains(await ComputedStyleAsync("#vars", "box-shadow"), "rgb(25, 26, 27)");
+        Assert.Contains("rgb(25, 26, 27)", await ComputedStyleAsync("#vars", "box-shadow"));
     }
 
     [TestMethod]
@@ -658,7 +658,7 @@ public class BitBasicListE2ETests : E2ETestBase
         var list = await BoxAsync("#rtl");
         var first = await BoxAsync("#rtl [role=listitem] >> nth=0");
         AssertClose(list.Right, first.Right, "the first row at the right");
-        Assert.IsTrue((await BoxAsync("#rtl [role=listitem] >> nth=1")).Right <= first.X + Tolerance, "the second to its left");
+        Assert.IsLessThanOrEqualTo(first.X + Tolerance, (await BoxAsync("#rtl [role=listitem] >> nth=1")).Right, "the second to its left");
 
         AssertClose((await BoxAsync("#rtl-inherited")).Right, (await BoxAsync("#rtl-inherited [role=listitem] >> nth=0")).Right, "inherited");
     }
@@ -720,7 +720,7 @@ public class BitBasicListE2ETests : E2ETestBase
 
     private static void AssertClose(double expected, double actual, string what)
     {
-        Assert.IsTrue(Math.Abs(expected - actual) <= Tolerance, $"{what}: expected {expected}, got {actual}");
+        Assert.IsLessThanOrEqualTo(Tolerance, Math.Abs(expected - actual), $"{what}: expected {expected}, got {actual}");
     }
 
     private sealed record Box(double X, double Y, double W, double H)

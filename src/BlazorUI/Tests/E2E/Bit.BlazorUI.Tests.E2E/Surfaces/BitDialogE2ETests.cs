@@ -345,7 +345,7 @@ public class BitDialogE2ETests : E2ETestBase
 
         // The message takes over the top spacing a header would otherwise have given it.
         var marginTop = await ComputedStyleAsync("#noheader-dialog .bit-dlg-msg", "margin-top");
-        Assert.IsTrue(double.Parse(marginTop.Replace("px", ""), System.Globalization.CultureInfo.InvariantCulture) > 0, marginTop);
+        Assert.IsGreaterThan(0, double.Parse(marginTop.Replace("px", ""), System.Globalization.CultureInfo.InvariantCulture), marginTop);
     }
 
     // ---------- Header and footer ----------
@@ -365,7 +365,7 @@ public class BitDialogE2ETests : E2ETestBase
 
         var titleBox = await BoxAsync(Part("subtitle-dialog", ".bit-dlg-ttl"));
         var subtitleBox = await BoxAsync(subtitle);
-        Assert.IsTrue(subtitleBox.Y >= titleBox.Y + titleBox.Height - 1, "The subtitle sits under the title.");
+        Assert.IsGreaterThanOrEqualTo(titleBox.Y + titleBox.Height - 1, subtitleBox.Y, "The subtitle sits under the title.");
     }
 
     [TestMethod]
@@ -392,7 +392,7 @@ public class BitDialogE2ETests : E2ETestBase
 
         var bodyBox = await BoxAsync(Part("footer-dialog", ".bit-dlg-scr-cnt"));
         var footerBox = await BoxAsync(Part("footer-dialog", ".bit-dlg-ftr"));
-        Assert.IsTrue(footerBox.Y >= bodyBox.Y + bodyBox.Height - 1, "The footer sits under the body.");
+        Assert.IsGreaterThanOrEqualTo(bodyBox.Y + bodyBox.Height - 1, footerBox.Y, "The footer sits under the body.");
 
         await Page.Locator("#footer-not-now").ClickAsync();
         await Expect(Page.Locator("#footer-open")).ToHaveTextAsync("False");
@@ -526,7 +526,7 @@ public class BitDialogE2ETests : E2ETestBase
 
         await Expect(Page.Locator("#prevented")).ToHaveTextAsync("OverlayClick");
         var records = await WaitForRecordedSurfaceAsync("bit-dlg-pvn");
-        Assert.IsTrue(records.Any(r => Has(r, "bit-dlg-prv") && Has(r, "bit-dlg-pva") && r.EndsWith("|bit-dlg-prevented-animation-a")), string.Join(" ; ", records));
+        Assert.Contains(r => Has(r, "bit-dlg-prv") && Has(r, "bit-dlg-pva") && r.EndsWith("|bit-dlg-prevented-animation-a"), records, string.Join(" ; ", records));
         await Expect(container).ToHaveClassAsync(HasClass("bit-dlg-pvn"));
         await Expect(container).ToHaveCSSAsync("animation-name", "none");
         await Expect(Page.Locator("#blocking-open")).ToHaveTextAsync("True");
@@ -554,7 +554,7 @@ public class BitDialogE2ETests : E2ETestBase
 
         await Expect(Page.Locator("#prevented")).ToHaveTextAsync("Escape,Escape");
         var records = await WaitForRecordedSurfaceAsync("bit-dlg-pvb");
-        Assert.IsTrue(records.Any(r => Has(r, "bit-dlg-pvb") && r.EndsWith("|bit-dlg-prevented-animation-b")), string.Join(" ; ", records));
+        Assert.Contains(r => Has(r, "bit-dlg-pvb") && r.EndsWith("|bit-dlg-prevented-animation-b"), records, string.Join(" ; ", records));
     }
 
     [TestMethod]
@@ -650,7 +650,7 @@ public class BitDialogE2ETests : E2ETestBase
         await Page.Keyboard.PressAsync("Escape");
 
         var records = await WaitForRecordedSurfaceAsync("bit-dlg-prv");
-        Assert.IsTrue(records.Any(r => Has(r, "bit-dlg-prv") && r.Split('|')[1] == "solid"), string.Join(" ; ", records));
+        Assert.Contains(r => Has(r, "bit-dlg-prv") && r.Split('|')[1] == "solid", records, string.Join(" ; ", records));
     }
 
     [TestMethod]
@@ -892,7 +892,7 @@ public class BitDialogE2ETests : E2ETestBase
             "end" => area.X + area.Width - (box.X + box.Width),
             _ => Math.Abs(box.X + box.Width / 2 - (area.X + area.Width / 2))
         };
-        Assert.IsTrue(x <= tolerance, $"horizontal {horizontal}: area {area.X},{area.Width} box {box.X},{box.Width}");
+        Assert.IsLessThanOrEqualTo(tolerance, x, $"horizontal {horizontal}: area {area.X},{area.Width} box {box.X},{box.Width}");
 
         var y = vertical switch
         {
@@ -900,7 +900,7 @@ public class BitDialogE2ETests : E2ETestBase
             "end" => area.Y + area.Height - (box.Y + box.Height),
             _ => Math.Abs(box.Y + box.Height / 2 - (area.Y + area.Height / 2))
         };
-        Assert.IsTrue(y <= tolerance, $"vertical {vertical}: area {area.Y},{area.Height} box {box.Y},{box.Height}");
+        Assert.IsLessThanOrEqualTo(tolerance, y, $"vertical {vertical}: area {area.Y},{area.Height} box {box.Y},{box.Height}");
     }
 
     // ---------- Scroll ----------
@@ -1392,7 +1392,7 @@ public class BitDialogE2ETests : E2ETestBase
         }
 
         var all = await icon.GetAttributeAsync("class");
-        Assert.IsFalse(all!.Contains("bit-icon--"), all);
+        Assert.DoesNotContain("bit-icon--", all!, all);
     }
 
     // ---------- Size ----------
@@ -1448,7 +1448,7 @@ public class BitDialogE2ETests : E2ETestBase
         await OpenAsync(PagePath);
         await OpenDialogAsync("btn-minheight-open", "minheight-dialog");
 
-        Assert.IsTrue((await BoxAsync(Container("minheight-dialog"))).Height >= 299);
+        Assert.IsGreaterThanOrEqualTo(299, (await BoxAsync(Container("minheight-dialog"))).Height);
     }
 
     [TestMethod]
@@ -1470,7 +1470,7 @@ public class BitDialogE2ETests : E2ETestBase
         }
         else
         {
-            Assert.IsTrue(box.Width < area.Width - 50);
+            Assert.IsLessThan(area.Width - 50, box.Width);
         }
 
         if (tall)
@@ -1480,7 +1480,7 @@ public class BitDialogE2ETests : E2ETestBase
         }
         else
         {
-            Assert.IsTrue(box.Height < area.Height - 50);
+            Assert.IsLessThan(area.Height - 50, box.Height);
         }
     }
 
@@ -1685,11 +1685,11 @@ public class BitDialogE2ETests : E2ETestBase
 
         var close = await BoxAsync(Part("rtl-dialog", ".bit-dlg-cls"));
         var title = await BoxAsync(Part("rtl-dialog", ".bit-dlg-ttl"));
-        Assert.IsTrue(close.X < title.X, "The close button sits on the left of the title.");
+        Assert.IsLessThan(title.X, close.X, "The close button sits on the left of the title.");
 
         var ok = await BoxAsync(Part("rtl-dialog", ".bit-dlg-okb"));
         var cancel = await BoxAsync(Part("rtl-dialog", ".bit-dlg-cnb"));
-        Assert.IsTrue(ok.X > cancel.X, "Ok comes first, on the right.");
+        Assert.IsGreaterThan(cancel.X, ok.X, "Ok comes first, on the right.");
     }
 
     [TestMethod]
@@ -1700,11 +1700,11 @@ public class BitDialogE2ETests : E2ETestBase
 
         var close = await BoxAsync(Part("basic-dialog", ".bit-dlg-cls"));
         var title = await BoxAsync(Part("basic-dialog", ".bit-dlg-ttl"));
-        Assert.IsTrue(close.X > title.X);
+        Assert.IsGreaterThan(title.X, close.X);
 
         var ok = await BoxAsync(Part("basic-dialog", ".bit-dlg-okb"));
         var cancel = await BoxAsync(Part("basic-dialog", ".bit-dlg-cnb"));
-        Assert.IsTrue(ok.X < cancel.X);
+        Assert.IsLessThan(cancel.X, ok.X);
     }
 
     [TestMethod]
@@ -1802,8 +1802,8 @@ public class BitDialogE2ETests : E2ETestBase
     {
         var response = await Page.APIRequest.GetAsync($"{BaseUrl}/e2e/dialog/prerender");
         var html = await response.TextAsync();
-        StringAssert.Contains(html, "Prerendered dialog");
-        StringAssert.Contains(html, "bit-dlg-ctn");
+        Assert.Contains("Prerendered dialog", html);
+        Assert.Contains("bit-dlg-ctn", html);
 
         await OpenAsync("/e2e/dialog/prerender");
 

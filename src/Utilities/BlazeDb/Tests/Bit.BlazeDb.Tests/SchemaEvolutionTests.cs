@@ -51,7 +51,7 @@ public class SchemaEvolutionTests
             Assert.ThrowsExactly<BlazeDbException>(() => db.GetTable(TodoItem.Table));
 
             db.GetTable(PersonTable.Descriptor).Insert(new Person(2, "Grace", 45));
-            await db.CheckpointAsync();
+            await db.CheckpointAsync(TestContext.CancellationToken);
             db.GetTable(PersonTable.Descriptor).Insert(new Person(3, "Alan", 41));
         }
         Assert.IsNull(storage.FindFile("wal", 1)); // The checkpoint really did replace the log.
@@ -91,7 +91,7 @@ public class SchemaEvolutionTests
 
         // And the table is a normal one from here on: writes are journaled and survive.
         todos.Insert(Todo("after"));
-        await reopened.FlushAsync();
+        await reopened.FlushAsync(TestContext.CancellationToken);
         await using var third = await OpenAsync(storage, PersonTable.Descriptor, TodoItem.Table);
         Assert.AreEqual(2, third.GetTable(TodoItem.Table).Count);
     }
@@ -103,19 +103,21 @@ public class SchemaEvolutionTests
         await using var writer = await OpenAsync(storage, PersonTable.Descriptor, TodoItem.Table);
         writer.GetTable(TodoItem.Table).Insert(Todo("x"));
         writer.GetTable(PersonTable.Descriptor).Insert(new Person(1, "Ada", 36));
-        await writer.FlushAsync();
+        await writer.FlushAsync(TestContext.CancellationToken);
 
         await using var replica = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions
         {
             Storage = storage,
             ReadOnly = true,
-        }.AddTable(PersonTable.Descriptor));
+        }.AddTable(PersonTable.Descriptor), TestContext.CancellationToken);
         Assert.AreSequenceEqual(["todos"], replica.UnregisteredTables);
         Assert.AreEqual(1, replica.GetTable(PersonTable.Descriptor).Count);
 
-        await writer.CheckpointAsync();
-        await replica.ReloadAsync();
+        await writer.CheckpointAsync(TestContext.CancellationToken);
+        await replica.ReloadAsync(TestContext.CancellationToken);
         Assert.AreSequenceEqual(["todos"], replica.UnregisteredTables);
         Assert.AreEqual(1, replica.GetTable(PersonTable.Descriptor).Count);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

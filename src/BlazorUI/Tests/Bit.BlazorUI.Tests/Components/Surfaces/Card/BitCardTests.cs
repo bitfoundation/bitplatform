@@ -22,7 +22,7 @@ public class BitCardTests : BunitTestContext
 
         var card = component.Find(".bit-crd");
         Assert.IsNotNull(card);
-        Assert.IsTrue(card.OuterHtml.Contains("Hello Card"));
+        Assert.Contains("Hello Card", card.OuterHtml);
     }
 
     [TestMethod]
@@ -52,9 +52,9 @@ public class BitCardTests : BunitTestContext
         });
 
         // The plain card keeps the padded box it has always been: the content is a direct child of the root.
-        Assert.AreEqual(0, component.FindAll(".bit-crd-mai").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-crd-bdy").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-crd-hdr").Count);
+        Assert.IsEmpty(component.FindAll(".bit-crd-mai"));
+        Assert.IsEmpty(component.FindAll(".bit-crd-bdy"));
+        Assert.IsEmpty(component.FindAll(".bit-crd-hdr"));
     }
 
     #region Background & Border
@@ -279,7 +279,7 @@ public class BitCardTests : BunitTestContext
         });
 
         var card = component.Find(".bit-crd");
-        Assert.IsTrue(card.GetAttribute("style")!.Contains($"width:{width}"));
+        Assert.Contains($"width:{width}", card.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -294,7 +294,7 @@ public class BitCardTests : BunitTestContext
         });
 
         var card = component.Find(".bit-crd");
-        Assert.IsTrue(card.GetAttribute("style")!.Contains($"height:{height}"));
+        Assert.Contains($"height:{height}", card.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -308,8 +308,8 @@ public class BitCardTests : BunitTestContext
 
         var card = component.Find(".bit-crd");
         var style = card.GetAttribute("style")!;
-        Assert.IsTrue(style.Contains("width:300px"));
-        Assert.IsTrue(style.Contains("height:200px"));
+        Assert.Contains("width:300px", style);
+        Assert.Contains("height:200px", style);
     }
 
     [TestMethod]
@@ -335,10 +335,10 @@ public class BitCardTests : BunitTestContext
 
         var style = component.Find(".bit-crd").GetAttribute("style")!;
 
-        Assert.IsTrue(style.Contains("min-width:10rem"));
-        Assert.IsTrue(style.Contains("max-width:20rem"));
-        Assert.IsTrue(style.Contains("min-height:5rem"));
-        Assert.IsTrue(style.Contains("max-height:15rem"));
+        Assert.Contains("min-width:10rem", style);
+        Assert.Contains("max-width:20rem", style);
+        Assert.Contains("min-height:5rem", style);
+        Assert.Contains("max-height:15rem", style);
     }
 
     #endregion
@@ -491,7 +491,7 @@ public class BitCardTests : BunitTestContext
 
         Assert.IsTrue(card.ClassList.Contains("bit-crd-sct"));
         Assert.AreEqual("Card title", component.Find(".bit-crd-ttl").TextContent);
-        Assert.AreEqual(1, component.FindAll(".bit-crd-mai").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-crd-mai"));
     }
 
     [TestMethod]
@@ -514,8 +514,8 @@ public class BitCardTests : BunitTestContext
             parameters.Add(p => p.Subtitle, "Subtitle");
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-crd-hdr").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-crd-ttl").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-crd-hdr"));
+        Assert.IsEmpty(component.FindAll(".bit-crd-ttl"));
         Assert.AreEqual("Subtitle", component.Find(".bit-crd-sub").TextContent);
     }
 
@@ -552,7 +552,7 @@ public class BitCardTests : BunitTestContext
         var slot = component.Find(".bit-crd-hic");
 
         Assert.AreEqual("DIV", slot.TagName);
-        Assert.AreEqual(1, component.FindAll(".bit-crd-hic .custom-avatar").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-crd-hic .custom-avatar"));
         Assert.IsNull(slot.GetAttribute("aria-hidden"));
         Assert.AreEqual("Title", component.Find(".bit-crd-ttl").TextContent);
         Assert.AreEqual("Subtitle", component.Find(".bit-crd-sub").TextContent);
@@ -569,7 +569,7 @@ public class BitCardTests : BunitTestContext
 
         var slot = component.Find(".bit-crd-hic");
 
-        Assert.AreEqual(1, component.FindAll(".bit-crd-hic").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-crd-hic"));
         Assert.IsFalse(slot.ClassList.Contains("bit-icon--Album"));
         Assert.AreEqual("Avatar", slot.TextContent);
     }
@@ -585,7 +585,7 @@ public class BitCardTests : BunitTestContext
         var card = component.Find(".bit-crd");
 
         Assert.IsTrue(card.ClassList.Contains("bit-crd-sct"));
-        Assert.AreEqual(1, component.FindAll(".bit-crd-mai > .bit-crd-hdr > .bit-crd-hic").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-crd-mai > .bit-crd-hdr > .bit-crd-hic"));
     }
 
     [TestMethod]
@@ -602,8 +602,8 @@ public class BitCardTests : BunitTestContext
             }));
         });
 
-        Assert.AreEqual(1, component.FindAll(".custom-header").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-crd-hic").Count);
+        Assert.ContainsSingle(component.FindAll(".custom-header"));
+        Assert.IsEmpty(component.FindAll(".bit-crd-hic"));
     }
 
     [TestMethod]
@@ -622,9 +622,9 @@ public class BitCardTests : BunitTestContext
             }));
         });
 
-        Assert.AreEqual(1, component.FindAll(".custom-header").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-crd-ttl").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-crd-sub").Count);
+        Assert.ContainsSingle(component.FindAll(".custom-header"));
+        Assert.IsEmpty(component.FindAll(".bit-crd-ttl"));
+        Assert.IsEmpty(component.FindAll(".bit-crd-sub"));
     }
 
     [TestMethod]
@@ -641,7 +641,7 @@ public class BitCardTests : BunitTestContext
             }));
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-crd-act .act-btn").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-crd-act .act-btn"));
     }
 
     [TestMethod]
@@ -788,7 +788,7 @@ public class BitCardTests : BunitTestContext
 
         Assert.AreEqual("/images/a.png", image.GetAttribute("src"));
         Assert.AreEqual(string.Empty, image.GetAttribute("alt"));
-        Assert.AreEqual(1, component.FindAll(".bit-crd-cvr").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-crd-cvr"));
     }
 
     [TestMethod]
@@ -812,7 +812,7 @@ public class BitCardTests : BunitTestContext
             parameters.Add(p => p.ImageHeight, "9rem");
         });
 
-        Assert.IsTrue(component.Find(".bit-crd").GetAttribute("style")!.Contains("--bit-crd-img-height:9rem"));
+        Assert.Contains("--bit-crd-img-height:9rem", component.Find(".bit-crd").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -874,8 +874,8 @@ public class BitCardTests : BunitTestContext
             }));
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-crd-sct > .bit-crd-cvr > .bit-crd-img").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-crd-sct > .bit-crd-mai > .bit-crd-ftr > .ftr-btn").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-crd-sct > .bit-crd-cvr > .bit-crd-img"));
+        Assert.ContainsSingle(component.FindAll(".bit-crd-sct > .bit-crd-mai > .bit-crd-ftr > .ftr-btn"));
     }
 
     [TestMethod]
@@ -888,7 +888,7 @@ public class BitCardTests : BunitTestContext
             parameters.Add(p => p.CoverWidth, "8rem");
         });
 
-        Assert.IsTrue(component.Find(".bit-crd").GetAttribute("style")!.Contains("--bit-crd-cvr-width:8rem"));
+        Assert.Contains("--bit-crd-cvr-width:8rem", component.Find(".bit-crd").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -903,7 +903,7 @@ public class BitCardTests : BunitTestContext
         var card = component.Find(".bit-crd");
 
         Assert.IsTrue(card.ClassList.Contains("bit-crd-cra"));
-        Assert.IsTrue(card.GetAttribute("style")!.Contains("--bit-crd-cvr-ratio:16 / 9"));
+        Assert.Contains("--bit-crd-cvr-ratio:16 / 9", card.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -917,7 +917,8 @@ public class BitCardTests : BunitTestContext
         var card = component.Find(".bit-crd");
 
         Assert.IsFalse(card.ClassList.Contains("bit-crd-cra"));
-        Assert.IsFalse(card.GetAttribute("style")?.Contains("--bit-crd-cvr-ratio") ?? false);
+        var actualValue = card.GetAttribute("style")?.Contains("--bit-crd-cvr-ratio") ?? false;
+        Assert.IsFalse(actualValue);
     }
 
     [TestMethod]
@@ -934,7 +935,7 @@ public class BitCardTests : BunitTestContext
 
         Assert.IsTrue(card.ClassList.Contains("bit-crd-cra"));
         Assert.IsFalse(card.ClassList.Contains("bit-crd-sct"));
-        Assert.AreEqual(0, component.FindAll(".bit-crd-cvr").Count);
+        Assert.IsEmpty(component.FindAll(".bit-crd-cvr"));
     }
 
     [TestMethod]
@@ -946,7 +947,7 @@ public class BitCardTests : BunitTestContext
             parameters.Add(p => p.ImagePosition, "top");
         });
 
-        Assert.IsTrue(component.Find(".bit-crd").GetAttribute("style")!.Contains("--bit-crd-img-position:top"));
+        Assert.Contains("--bit-crd-img-position:top", component.Find(".bit-crd").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -957,7 +958,7 @@ public class BitCardTests : BunitTestContext
             parameters.Add(p => p.ImageUrl, "/img.png");
         });
 
-        Assert.IsFalse((component.Find(".bit-crd").GetAttribute("style") ?? string.Empty).Contains("--bit-crd-img-position"));
+        Assert.DoesNotContain("--bit-crd-img-position", (component.Find(".bit-crd").GetAttribute("style") ?? string.Empty));
     }
 
     [TestMethod]
@@ -973,7 +974,7 @@ public class BitCardTests : BunitTestContext
         var card = component.Find(".bit-crd");
 
         Assert.IsFalse(card.ClassList.Contains("bit-crd-sct"));
-        Assert.AreEqual(0, component.FindAll(".bit-crd-cvr").Count);
+        Assert.IsEmpty(component.FindAll(".bit-crd-cvr"));
     }
 
     [TestMethod]
@@ -990,8 +991,8 @@ public class BitCardTests : BunitTestContext
             }));
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-crd-cvr .custom-cover").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-crd-img").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-crd-cvr .custom-cover"));
+        Assert.IsEmpty(component.FindAll(".bit-crd-img"));
     }
 
     [TestMethod]
@@ -1003,7 +1004,7 @@ public class BitCardTests : BunitTestContext
             parameters.AddChildContent("<span class=\"inner\">body</span>");
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-crd-bdy .inner").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-crd-bdy .inner"));
     }
 
     [TestMethod]
@@ -1014,7 +1015,7 @@ public class BitCardTests : BunitTestContext
             parameters.Add(p => p.Title, "Title");
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-crd-bdy").Count);
+        Assert.IsEmpty(component.FindAll(".bit-crd-bdy"));
     }
 
     [TestMethod]
@@ -1026,8 +1027,8 @@ public class BitCardTests : BunitTestContext
             parameters.Add(p => p.ImageUrl, "/images/a.png");
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-crd-cvr").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-crd-mai").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-crd-cvr"));
+        Assert.IsEmpty(component.FindAll(".bit-crd-mai"));
     }
 
     [TestMethod]
@@ -1044,7 +1045,7 @@ public class BitCardTests : BunitTestContext
         });
 
         Assert.IsTrue(component.Find(".bit-crd").ClassList.Contains("bit-crd-sct"));
-        Assert.AreEqual(1, component.FindAll(".bit-crd-ftr .ftr-btn").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-crd-ftr .ftr-btn"));
     }
 
     [TestMethod]
@@ -1116,7 +1117,7 @@ public class BitCardTests : BunitTestContext
         var floating = component.Find(".bit-crd-fac");
 
         // It floats over the whole surface, so it hangs off the root rather than off the column of parts.
-        Assert.AreEqual(1, component.FindAll(".bit-crd > .bit-crd-fac").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-crd > .bit-crd-fac"));
         Assert.AreEqual("star", floating.TextContent);
     }
 
@@ -1133,9 +1134,9 @@ public class BitCardTests : BunitTestContext
         var card = component.Find(".bit-crd");
 
         Assert.IsFalse(card.ClassList.Contains("bit-crd-sct"));
-        Assert.AreEqual(0, component.FindAll(".bit-crd-mai").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-crd-bdy").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-crd > .inner").Count);
+        Assert.IsEmpty(component.FindAll(".bit-crd-mai"));
+        Assert.IsEmpty(component.FindAll(".bit-crd-bdy"));
+        Assert.ContainsSingle(component.FindAll(".bit-crd > .inner"));
     }
 
     [TestMethod]
@@ -1151,8 +1152,8 @@ public class BitCardTests : BunitTestContext
         var card = component.Find(".bit-crd");
 
         Assert.IsTrue(card.ClassList.Contains("bit-crd-sct"));
-        Assert.AreEqual(1, component.FindAll(".bit-crd > .bit-crd-fac").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-crd-mai .bit-crd-fac").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-crd > .bit-crd-fac"));
+        Assert.IsEmpty(component.FindAll(".bit-crd-mai .bit-crd-fac"));
     }
 
     [TestMethod]
@@ -1180,7 +1181,7 @@ public class BitCardTests : BunitTestContext
             parameters.Add(p => p.Title, "Title");
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-crd-fac").Count);
+        Assert.IsEmpty(component.FindAll(".bit-crd-fac"));
     }
 
     #endregion
@@ -1204,7 +1205,7 @@ public class BitCardTests : BunitTestContext
         });
 
         Assert.IsTrue(component.Find(".bit-crd").ClassList.Contains("bit-crd-sct"));
-        Assert.AreEqual(1, component.FindAll(".bit-crd-bdy .inner").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-crd-bdy .inner"));
     }
 
     [TestMethod]
@@ -1226,8 +1227,8 @@ public class BitCardTests : BunitTestContext
         var card = component.Find(".bit-crd");
 
         Assert.IsTrue(card.ClassList.Contains("bit-crd-sct"));
-        Assert.AreEqual(1, component.FindAll(".bit-crd-hic").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-crd-bdy .content").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-crd-hic"));
+        Assert.ContainsSingle(component.FindAll(".bit-crd-bdy .content"));
     }
 
     [TestMethod]
@@ -1241,7 +1242,7 @@ public class BitCardTests : BunitTestContext
 
         var card = component.Find(".bit-crd");
         Assert.IsTrue(card.ClassList.Contains("bit-crd-int"));
-        Assert.AreEqual(1, component.FindAll("button.bit-crd-lnk").Count);
+        Assert.ContainsSingle(component.FindAll("button.bit-crd-lnk"));
     }
 
     [TestMethod]
@@ -1255,7 +1256,7 @@ public class BitCardTests : BunitTestContext
         component.Render(parameters => parameters.Add(p => p.OnClick, default(EventCallback<MouseEventArgs>)));
 
         Assert.IsFalse(component.Find(".bit-crd").ClassList.Contains("bit-crd-int"));
-        Assert.AreEqual(0, component.FindAll(".bit-crd-lnk").Count);
+        Assert.IsEmpty(component.FindAll(".bit-crd-lnk"));
     }
 
     [TestMethod]
@@ -1271,7 +1272,7 @@ public class BitCardTests : BunitTestContext
         component.Render(parameters => parameters.Add(p => p.Href, (string?)null));
 
         Assert.IsFalse(component.Find(".bit-crd").ClassList.Contains("bit-crd-int"));
-        Assert.AreEqual(0, component.FindAll(".bit-crd-lnk").Count);
+        Assert.IsEmpty(component.FindAll(".bit-crd-lnk"));
     }
 
     #endregion
@@ -1292,12 +1293,12 @@ public class BitCardTests : BunitTestContext
         Assert.IsTrue(card.ClassList.Contains("bit-crd-ldg"));
         Assert.IsTrue(card.ClassList.Contains("bit-crd-sct"));
         Assert.AreEqual("true", card.GetAttribute("aria-busy"));
-        Assert.AreEqual(1, component.FindAll(".bit-crd-bdy .bit-crd-skl").Count);
-        Assert.AreEqual(0, component.FindAll(".inner").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-crd-bdy .bit-crd-skl"));
+        Assert.IsEmpty(component.FindAll(".inner"));
 
         // The card draws its own placeholder bars rather than rendering another component of the library.
-        Assert.AreEqual(3, component.FindAll(".bit-crd-skl .bit-crd-skb").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-crd-skl .bit-smr").Count);
+        Assert.HasCount(3, component.FindAll(".bit-crd-skl .bit-crd-skb"));
+        Assert.IsEmpty(component.FindAll(".bit-crd-skl .bit-smr"));
         Assert.AreEqual("true", component.Find(".bit-crd-skl").GetAttribute("aria-hidden"));
     }
 
@@ -1327,8 +1328,8 @@ public class BitCardTests : BunitTestContext
             }));
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-crd-bdy .custom-loading").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-crd-skl").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-crd-bdy .custom-loading"));
+        Assert.IsEmpty(component.FindAll(".bit-crd-skl"));
     }
 
     [TestMethod]
@@ -1346,8 +1347,8 @@ public class BitCardTests : BunitTestContext
 
         Assert.IsFalse(card.ClassList.Contains("bit-crd-ldg"));
         Assert.IsNull(card.GetAttribute("aria-busy"));
-        Assert.AreEqual(1, component.FindAll(".inner").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-crd-skl").Count);
+        Assert.ContainsSingle(component.FindAll(".inner"));
+        Assert.IsEmpty(component.FindAll(".bit-crd-skl"));
     }
 
     #endregion
@@ -1441,7 +1442,7 @@ public class BitCardTests : BunitTestContext
 
         Assert.IsTrue(card.ClassList.Contains("bit-crd-scb"));
         Assert.IsFalse(card.ClassList.Contains("bit-crd-sct"));
-        Assert.AreEqual(0, component.FindAll(".bit-crd-bdy").Count);
+        Assert.IsEmpty(component.FindAll(".bit-crd-bdy"));
     }
 
     [TestMethod]
@@ -1476,7 +1477,7 @@ public class BitCardTests : BunitTestContext
 
         Assert.AreEqual("BUTTON", button.TagName);
         Assert.AreEqual("button", button.GetAttribute("type"));
-        Assert.AreEqual(1, component.FindAll(".bit-crd > button.bit-crd-lnk").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-crd > button.bit-crd-lnk"));
         Assert.IsNull(card.GetAttribute("role"));
         Assert.IsNull(card.GetAttribute("tabindex"));
         Assert.IsNull(button.GetAttribute("tabindex"));
@@ -1619,7 +1620,7 @@ public class BitCardTests : BunitTestContext
 
         Assert.AreEqual("option", card.GetAttribute("role"));
         Assert.AreEqual("0", card.GetAttribute("tabindex"));
-        Assert.AreEqual(0, component.FindAll(".bit-crd-lnk").Count);
+        Assert.IsEmpty(component.FindAll(".bit-crd-lnk"));
     }
 
     [TestMethod]
@@ -1666,7 +1667,7 @@ public class BitCardTests : BunitTestContext
 
         Assert.IsFalse(card.HasAttribute("role"));
         Assert.IsNull(card.GetAttribute("tabindex"));
-        Assert.AreEqual(1, component.FindAll(".bit-crd > button.bit-crd-lnk").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-crd > button.bit-crd-lnk"));
     }
 
     [TestMethod]
@@ -1691,7 +1692,7 @@ public class BitCardTests : BunitTestContext
         Assert.AreEqual("0", card.GetAttribute("tabindex"));
         Assert.IsNull(card.GetAttribute("aria-pressed"));
         Assert.IsNull(card.GetAttribute("aria-selected"));
-        Assert.AreEqual(0, component.FindAll(".bit-crd-lnk").Count);
+        Assert.IsEmpty(component.FindAll(".bit-crd-lnk"));
     }
 
     [TestMethod]
@@ -2081,7 +2082,7 @@ public class BitCardTests : BunitTestContext
     {
         var component = RenderComponent<BitCard>();
 
-        Assert.AreEqual(0, component.FindAll(".bit-crd-lnk").Count);
+        Assert.IsEmpty(component.FindAll(".bit-crd-lnk"));
     }
 
     [TestMethod]
@@ -2202,7 +2203,7 @@ public class BitCardTests : BunitTestContext
 
         var link = component.Find(".bit-crd-lnk");
 
-        Assert.AreEqual(0, component.FindAll(".bit-crd-ttl").Count);
+        Assert.IsEmpty(component.FindAll(".bit-crd-ttl"));
         Assert.AreEqual("crd", link.GetAttribute("aria-labelledby"));
         Assert.IsNull(link.GetAttribute("aria-describedby"));
     }
@@ -2265,9 +2266,9 @@ public class BitCardTests : BunitTestContext
 
         var rel = component.Find(".bit-crd-lnk").GetAttribute("rel")!;
 
-        Assert.IsTrue(rel.Contains("nofollow"));
-        Assert.IsTrue(rel.Contains("noreferrer"));
-        Assert.IsFalse(rel.Contains("noopener"));
+        Assert.Contains("nofollow", rel);
+        Assert.Contains("noreferrer", rel);
+        Assert.DoesNotContain("noopener", rel);
     }
 
     [TestMethod]
@@ -2283,8 +2284,8 @@ public class BitCardTests : BunitTestContext
 
         var rel = component.Find(".bit-crd-lnk").GetAttribute("rel")!;
 
-        Assert.IsTrue(rel.Contains("nofollow"));
-        Assert.IsTrue(rel.Contains("noopener"));
+        Assert.Contains("nofollow", rel);
+        Assert.Contains("noopener", rel);
     }
 
     [TestMethod]
@@ -2783,12 +2784,12 @@ public class BitCardTests : BunitTestContext
 
         if (expected.HasValue())
         {
-            Assert.IsTrue(style.Contains(expected));
+            Assert.Contains(expected, style);
         }
         else
         {
-            Assert.IsFalse(style.Contains("visibility:hidden"));
-            Assert.IsFalse(style.Contains("display:none"));
+            Assert.DoesNotContain("visibility:hidden", style);
+            Assert.DoesNotContain("display:none", style);
         }
     }
 
@@ -2860,7 +2861,7 @@ public class BitCardTests : BunitTestContext
         var card = component.Find(".bit-crd");
 
         Assert.IsTrue(card.ClassList.Contains("custom-class"));
-        Assert.IsTrue(card.GetAttribute("style")!.Contains("color: red"));
+        Assert.Contains("color: red", card.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -2945,7 +2946,7 @@ public class BitCardTests : BunitTestContext
             });
         });
 
-        Assert.IsTrue(component.Find(".bit-crd").GetAttribute("style")!.Contains("color:red"));
+        Assert.Contains("color:red", component.Find(".bit-crd").GetAttribute("style")!);
         Assert.AreEqual("color:navy", component.Find(".bit-crd-lnk").GetAttribute("style"));
         Assert.AreEqual("color:crimson", component.Find(".bit-crd-fac").GetAttribute("style"));
         Assert.AreEqual("color:orange", component.Find(".bit-crd-cvr").GetAttribute("style"));
@@ -2976,7 +2977,7 @@ public class BitCardTests : BunitTestContext
         Assert.AreEqual("color:red", skeleton.GetAttribute("style"));
 
         var bars = component.FindAll(".bit-crd-skb");
-        Assert.AreEqual(3, bars.Count);
+        Assert.HasCount(3, bars);
         foreach (var bar in bars)
         {
             Assert.IsTrue(bar.ClassList.Contains("c-bar"));
@@ -2996,13 +2997,13 @@ public class BitCardTests : BunitTestContext
 
         var card = component.Find(".bit-crd");
         Assert.IsTrue(card.ClassList.Contains("c-selected"));
-        Assert.IsTrue(card.GetAttribute("style")!.Contains("color:hotpink"));
+        Assert.Contains("color:hotpink", card.GetAttribute("style")!);
 
         component.Render(parameters => parameters.Add(p => p.Selected, false));
 
         card = component.Find(".bit-crd");
         Assert.IsFalse(card.ClassList.Contains("c-selected"));
-        Assert.IsFalse((card.GetAttribute("style") ?? string.Empty).Contains("color:hotpink"));
+        Assert.DoesNotContain("color:hotpink", (card.GetAttribute("style") ?? string.Empty));
     }
 
     #endregion
@@ -3075,8 +3076,8 @@ public class BitCardTests : BunitTestContext
         Assert.IsTrue(card.ClassList.Contains("bit-crd-bpr"));
 
         var style = card.GetAttribute("style")!;
-        Assert.IsTrue(style.Contains("width:20rem"));
-        Assert.IsTrue(style.Contains("max-width:30rem"));
+        Assert.Contains("width:20rem", style);
+        Assert.Contains("max-width:30rem", style);
     }
 
     [TestMethod]
@@ -3162,7 +3163,7 @@ public class BitCardTests : BunitTestContext
         var card = component.Find(".bit-crd");
 
         Assert.IsTrue(card.ClassList.Contains("bit-crd-cra"));
-        Assert.IsTrue(card.GetAttribute("style")!.Contains("--bit-crd-cvr-ratio:4 / 3"));
+        Assert.Contains("--bit-crd-cvr-ratio:4 / 3", card.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -3187,7 +3188,7 @@ public class BitCardTests : BunitTestContext
         var card = component.Find(".bit-crd");
 
         Assert.IsTrue(card.ClassList.Contains("bit-crd-rev"));
-        Assert.IsTrue(card.GetAttribute("style")!.Contains("--bit-crd-img-position:top"));
+        Assert.Contains("--bit-crd-img-position:top", card.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -3267,7 +3268,7 @@ public class BitCardTests : BunitTestContext
         Assert.IsTrue(cards[0].ClassList.Contains("bit-crd-sct"));
         Assert.AreEqual("true", cards[0].GetAttribute("aria-busy"));
         Assert.AreEqual(1, cards[0].QuerySelectorAll(".cascaded-placeholder").Length);
-        Assert.IsFalse(cards[0].TextContent.Contains("Loaded"));
+        Assert.DoesNotContain("Loaded", cards[0].TextContent);
 
         // A card that set Loading itself keeps it, whatever the cascade says.
         Assert.IsFalse(cards[1].ClassList.Contains("bit-crd-ldg"));
@@ -3351,7 +3352,7 @@ public class BitCardTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance.FocusAsync());
 
         // The link is what a reader lands on, so it is what takes the focus: one call, and nothing thrown.
-        Assert.AreEqual(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
     }
 
     [TestMethod]
@@ -3367,6 +3368,6 @@ public class BitCardTests : BunitTestContext
 
         await card.InvokeAsync(() => card.Instance.FocusAsync());
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
     }
 }

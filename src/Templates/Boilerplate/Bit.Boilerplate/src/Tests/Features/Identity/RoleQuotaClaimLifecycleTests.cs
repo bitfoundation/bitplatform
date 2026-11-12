@@ -47,8 +47,7 @@ public class RoleQuotaClaimLifecycleTests
 
         var values = await ReadQuotaValues(server, roleId);
 
-        Assert.HasCount(1, values,
-            $"A single-valued claim must not accumulate rows - every reader (and the roles page) treats mx-p-s as one number, so a second row makes the effective quota depend on row order. Found: [{string.Join(", ", values)}].");
+        Assert.ContainsSingle(values, $"A single-valued claim must not accumulate rows - every reader (and the roles page) treats mx-p-s as one number, so a second row makes the effective quota depend on row order. Found: [{string.Join(", ", values)}].");
 
         Assert.AreEqual("5", values[0],
             "The surviving row must carry the NEW value. Zero rows would mean the insert was lost while the delete landed, which the endpoint still reports as 200.");
@@ -71,8 +70,7 @@ public class RoleQuotaClaimLifecycleTests
 
         await roleManagementController.AddClaims(roleId, [Quota("3")], TestContext.CancellationToken);
 
-        Assert.HasCount(1, await ReadQuotaValues(server, roleId),
-            "Arrange check: the quota has to be there before removing it proves anything.");
+        Assert.ContainsSingle(await ReadQuotaValues(server, roleId), "Arrange check: the quota has to be there before removing it proves anything.");
 
         await roleManagementController.DeleteClaims(roleId, [Quota("3")], TestContext.CancellationToken);
 

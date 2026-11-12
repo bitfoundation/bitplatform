@@ -5,6 +5,8 @@
 /// navigation, redirects it, or parks awaiting a simulated confirmation dialog - plus a log of
 /// every lock callback it received (label:kind:details).
 /// </summary>
+[System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MSTEST0004",
+    Justification = "Public Razor test-host parameter properties require this state type to be public.")]
 public class NavigationLockState
 {
     /// <summary>While true, the probe cancels every deactivating/renavigating navigation.</summary>

@@ -61,7 +61,7 @@ public class BitDataGridBrowserTests : PerformanceTestBase
 
         // The prices are every multiple of 0.01 below 1,000 once each, so the dearest row comes first.
         var first = await Page.Locator(RenderedRows).First.TextContentAsync();
-        StringAssert.Contains(first, "999.99", $"The first row after the descending sort by price is '{first}'.");
+        Assert.Contains("999.99", first!, $"The first row after the descending sort by price is '{first}'.");
         AssertWithinThreshold(sortTime, ChangeThreshold, $"Sort time for {LargeCount} rows");
     }
 
@@ -78,7 +78,7 @@ public class BitDataGridBrowserTests : PerformanceTestBase
         RecordInteraction("filter", LargeCount, filterTime, browser);
 
         var first = await Page.Locator(RenderedRows).First.TextContentAsync();
-        StringAssert.Contains(first, "Category 07", $"The first row after the filter is '{first}'.");
+        Assert.Contains("Category 07", first!, $"The first row after the filter is '{first}'.");
         AssertWithinThreshold(filterTime, ChangeThreshold, $"Filter time for {LargeCount} rows");
     }
 
@@ -96,7 +96,7 @@ public class BitDataGridBrowserTests : PerformanceTestBase
         RecordBrowserTiming("scrollToEnd", LargeCount, browser);
 
         var rendered = await Page.Locator(RenderedRows).CountAsync();
-        Assert.IsTrue(rendered < 500, $"The virtualized grid has {rendered} rows in the DOM after the scroll.");
+        Assert.IsLessThan(500, rendered, $"The virtualized grid has {rendered} rows in the DOM after the scroll.");
         AssertWithinThreshold(browser.Duration, ScrollThreshold, $"Scroll to the end of {LargeCount} rows");
     }
 

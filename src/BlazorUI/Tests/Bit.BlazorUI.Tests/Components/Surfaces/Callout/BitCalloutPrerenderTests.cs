@@ -25,12 +25,12 @@ public class BitCalloutPrerenderTests
             [nameof(BitCallout.ChildContent)] = _content,
         });
 
-        StringAssert.Contains(html, "class=\"trigger\"");
-        StringAssert.Contains(html, "aria-expanded=\"false\"");
-        StringAssert.Contains(html, "display:none");
-        Assert.IsFalse(html.Contains("bit-clo-ocl"));
+        Assert.Contains("class=\"trigger\"", html);
+        Assert.Contains("aria-expanded=\"false\"", html);
+        Assert.Contains("display:none", html);
+        Assert.DoesNotContain("bit-clo-ocl", html);
         // The content is in the page from the first render, so a reader without a runtime still has it.
-        StringAssert.Contains(html, "class=\"body\"");
+        Assert.Contains("class=\"body\"", html);
     }
 
     [TestMethod]
@@ -43,12 +43,12 @@ public class BitCalloutPrerenderTests
             [nameof(BitCallout.DefaultIsOpen)] = true,
         });
 
-        StringAssert.Contains(html, "bit-clo-opn");
-        StringAssert.Contains(html, "bit-clo-ocl");
-        StringAssert.Contains(html, "aria-expanded=\"true\"");
-        StringAssert.Contains(html, "display:block");
+        Assert.Contains("bit-clo-opn", html);
+        Assert.Contains("bit-clo-ocl", html);
+        Assert.Contains("aria-expanded=\"true\"", html);
+        Assert.Contains("display:block", html);
         // The Escape is claimed from the render that opens the callout, ahead of any round trip.
-        StringAssert.Contains(html, "data-bit-esc=\"claim\"");
+        Assert.Contains("data-bit-esc=\"claim\"", html);
     }
 
     [TestMethod]
@@ -61,8 +61,8 @@ public class BitCalloutPrerenderTests
             [nameof(BitCallout.LazyRender)] = true,
         });
 
-        StringAssert.Contains(html, "bit-clo-cal");
-        Assert.IsFalse(html.Contains("class=\"body\""));
+        Assert.Contains("bit-clo-cal", html);
+        Assert.DoesNotContain("class=\"body\"", html);
     }
 
     [TestMethod]
@@ -78,8 +78,8 @@ public class BitCalloutPrerenderTests
             [nameof(BitCallout.Disabled)] = true,
         });
 
-        StringAssert.Contains(html, "bit-dis");
-        Assert.IsFalse(html.Contains("bit-clo-ocl"));
-        StringAssert.Contains(html, "aria-expanded=\"false\"");
+        Assert.Contains("bit-dis", html);
+        Assert.DoesNotContain("bit-clo-ocl", html);
+        Assert.Contains("aria-expanded=\"false\"", html);
     }
 }

@@ -21,9 +21,9 @@ public class RemoveTests
 
         Assert.AreEqual($"Delete {folder} and everything in it?", prompter.Prompts.Single().Question);
         Assert.AreEqual("no", prompter.Prompts.Single().Preselected.Single());
-        StringAssert.Contains(host.Output, "Nothing was changed.");
+        Assert.Contains("Nothing was changed.", host.Output);
         Assert.IsTrue(File.Exists(Path.Combine(folder, "Contoso.Web.slnf")));
-        Assert.IsFalse(host.Runner.Calls.Any(c => c.FileName is "dotnet"));
+        Assert.DoesNotContain(c => c.FileName is "dotnet", host.Runner.Calls);
     }
 
     [TestMethod]
@@ -34,9 +34,9 @@ public class RemoveTests
 
         Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("remove", folder));
 
-        StringAssert.Contains(host.FlatOutput, "Pass --yes");
+        Assert.Contains("Pass --yes", host.FlatOutput);
         Assert.IsTrue(File.Exists(Path.Combine(folder, "Contoso.Web.slnf")));
-        Assert.IsFalse(host.Runner.Calls.Any(c => c.FileName is "dotnet"));
+        Assert.DoesNotContain(c => c.FileName is "dotnet", host.Runner.Calls);
     }
 
     [TestMethod]
@@ -50,8 +50,8 @@ public class RemoveTests
 
         Assert.IsFalse(Directory.Exists(folder));
         Assert.IsTrue(Directory.Exists(host.WorkingDirectory));
-        Assert.IsFalse(host.Runner.Calls.Any(c => c.FileName is "dotnet" && c.Arguments.FirstOrDefault() is "build-server"));
-        StringAssert.Contains(host.FlatOutput, "Removed Contoso");
+        Assert.DoesNotContain(c => c.FileName is "dotnet" && c.Arguments.FirstOrDefault() is "build-server", host.Runner.Calls);
+        Assert.Contains("Removed Contoso", host.FlatOutput);
     }
 
     [TestMethod]
@@ -83,7 +83,7 @@ public class RemoveTests
 
         Assert.AreEqual(0, await host.RunAsync("remove", folder));
         Assert.AreEqual($"Delete {folder} and everything in it?", prompter.Prompts[^1].Question);
-        Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments.FirstOrDefault() is "rev-list"));
+        Assert.DoesNotContain(c => c.Arguments.FirstOrDefault() is "rev-list", host.Runner.Calls);
         Assert.IsTrue(File.Exists(Path.Combine(folder, "Contoso.Web.slnf")));
     }
 
@@ -110,7 +110,7 @@ public class RemoveTests
         using var host = new TestHost(HostOs.Linux);
 
         Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("remove", host.WorkingDirectory, "--yes"));
-        StringAssert.Contains(host.Output, "isn't a bit Boilerplate project folder");
+        Assert.Contains("isn't a bit Boilerplate project folder", host.Output);
 
         var solution = Path.Combine(host.WorkingDirectory, "Bit.slnx");
         File.WriteAllText(solution, "<Solution />");
@@ -132,7 +132,7 @@ public class RemoveTests
         Assert.AreEqual(0, await host.RunAsync("remove", folder, "--yes"), host.Output);
 
         Assert.IsFalse(Directory.Exists(folder));
-        StringAssert.Contains(host.FlatOutput, "Removed Contoso");
+        Assert.Contains("Removed Contoso", host.FlatOutput);
     }
 
     [TestMethod]
@@ -153,7 +153,7 @@ public class RemoveTests
 
             Assert.IsTrue(Directory.Exists(folder));
             Assert.IsEmpty(Directory.EnumerateFileSystemEntries(folder));
-            StringAssert.Contains(host.FlatOutput, $"stays, empty, while cmd ({terminal.Id}) is in it");
+            Assert.Contains($"stays, empty, while cmd ({terminal.Id}) is in it", host.FlatOutput);
             Assert.IsFalse(terminal.HasExited);
         }
         finally
@@ -186,7 +186,7 @@ public class RemoveTests
 
             Assert.IsFalse(Directory.Exists(folder));
             Assert.IsTrue(node.WaitForExit(TimeSpan.FromSeconds(10)));
-            StringAssert.Contains(host.FlatOutput, $"Stopped MSBuild process {node.Id}");
+            Assert.Contains($"Stopped MSBuild process {node.Id}", host.FlatOutput);
         }
         finally
         {
@@ -211,12 +211,12 @@ public class RemoveTests
         {
             while (File.Exists(Path.Combine(folder, "Contoso.Web.slnf")))
             {
-                await Task.Delay(100);
+                await Task.Delay(100, TestContext.CancellationToken);
             }
 
-            await Task.Delay(TimeSpan.FromSeconds(2));
+            await Task.Delay(TimeSpan.FromSeconds(2), TestContext.CancellationToken);
             Stop(terminal);
-        });
+        }, TestContext.CancellationToken);
 
         try
         {
@@ -224,7 +224,7 @@ public class RemoveTests
             await leaving;
 
             Assert.IsFalse(Directory.Exists(folder));
-            Assert.IsFalse(host.FlatOutput.Contains("stays, empty"), host.Output);
+            Assert.DoesNotContain("stays, empty", host.FlatOutput, host.Output);
         }
         finally
         {
@@ -244,8 +244,8 @@ public class RemoveTests
             inTerminal.Runner.On("git", "rev-parse", 128, "fatal: not a git repository");
 
             Assert.AreEqual(0, await inTerminal.RunAsync("remove", folder, "--yes"), inTerminal.Output);
-            StringAssert.Contains(inTerminal.FlatOutput, "this terminal is still in it");
-            StringAssert.Contains(inTerminal.FlatOutput, $"stays, empty, while this terminal is in it. Run cd {ProcessSpec.ShellQuote(Path.GetDirectoryName(Path.TrimEndingDirectorySeparator(folder))!, HostOs.Windows)}, then delete the folder.");
+            Assert.Contains("this terminal is still in it", inTerminal.FlatOutput);
+            Assert.Contains($"stays, empty, while this terminal is in it. Run cd {ProcessSpec.ShellQuote(Path.GetDirectoryName(Path.TrimEndingDirectorySeparator(folder))!, HostOs.Windows)}, then delete the folder.", inTerminal.FlatOutput);
             return;
         }
 
@@ -261,7 +261,7 @@ public class RemoveTests
             Environment = { [TerminalFolderVariable] = project }
         })!;
 
-        var output = terminal.StandardOutput.ReadToEndAsync();
+        var output = terminal.StandardOutput.ReadToEndAsync(TestContext.CancellationToken);
 
         try
         {
@@ -301,7 +301,7 @@ public class RemoveTests
 
             Assert.IsFalse(Directory.Exists(folder));
             Assert.IsTrue(holder.WaitForExit(TimeSpan.FromSeconds(10)));
-            StringAssert.Contains(host.FlatOutput, $"Stopped {name} process {holder.Id}");
+            Assert.Contains($"Stopped {name} process {holder.Id}", host.FlatOutput);
         }
         finally
         {
@@ -331,7 +331,7 @@ public class RemoveTests
 
             Assert.IsFalse(Directory.Exists(folder));
             Assert.IsTrue(build.WaitForExit(TimeSpan.FromSeconds(10)));
-            StringAssert.Contains(host.FlatOutput, "after stopping cmd (");
+            Assert.Contains("after stopping cmd (", host.FlatOutput);
         }
         finally
         {
@@ -358,7 +358,7 @@ public class RemoveTests
 
             Assert.IsTrue(File.Exists(held));
             Assert.IsFalse(holder.HasExited);
-            StringAssert.Contains(host.FlatOutput, $"In use by cmd ({holder.Id})");
+            Assert.Contains($"In use by cmd ({holder.Id})", host.FlatOutput);
         }
         finally
         {
@@ -390,8 +390,8 @@ public class RemoveTests
             Assert.IsFalse(Directory.Exists(folder));
             Assert.IsTrue(aspire.WaitForExit(TimeSpan.FromSeconds(10)));
             Assert.IsTrue(watch.WaitForExit(TimeSpan.FromSeconds(10)));
-            StringAssert.Contains(host.FlatOutput, $"Stopped aspire process {aspire.Id}");
-            StringAssert.Contains(host.FlatOutput, $"Stopped dotnet process {watch.Id}");
+            Assert.Contains($"Stopped aspire process {aspire.Id}", host.FlatOutput);
+            Assert.Contains($"Stopped dotnet process {watch.Id}", host.FlatOutput);
         }
         finally
         {
@@ -466,4 +466,6 @@ public class RemoveTests
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         File.WriteAllText(path, content);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

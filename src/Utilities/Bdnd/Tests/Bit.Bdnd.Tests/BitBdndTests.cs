@@ -26,7 +26,7 @@ public class BitBdndTests
         // every BdndProvider creates its own manager
         var services = new ServiceCollection().AddBitBdndServices();
 
-        Assert.IsFalse(services.Any(d => d.ServiceType == typeof(BdndDragDropManager)));
+        Assert.DoesNotContain(d => d.ServiceType == typeof(BdndDragDropManager), services);
     }
 
     [TestMethod]

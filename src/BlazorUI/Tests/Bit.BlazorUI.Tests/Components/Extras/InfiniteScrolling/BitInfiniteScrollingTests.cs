@@ -69,9 +69,9 @@ public class BitInfiniteScrollingTests : BunitTestContext
 
         component.WaitForAssertion(() =>
         {
-            Assert.IsTrue(component.Markup.Contains("Item 0"));
-            Assert.IsTrue(component.Markup.Contains("Item 1"));
-            Assert.IsTrue(component.Markup.Contains("Item 2"));
+            Assert.Contains("Item 0", component.Markup);
+            Assert.Contains("Item 1", component.Markup);
+            Assert.Contains("Item 2", component.Markup);
         });
     }
 
@@ -88,7 +88,7 @@ public class BitInfiniteScrollingTests : BunitTestContext
             parameters.Add(p => p.EmptyTemplate, builder => builder.AddContent(0, "No data"));
         });
 
-        component.WaitForAssertion(() => Assert.IsTrue(component.Markup.Contains("No data")));
+        component.WaitForAssertion(() => Assert.Contains("No data", component.Markup));
 
         ValueTask<IEnumerable<int>> emptyProvider(BitInfiniteScrollingItemsProviderRequest _)
         {
@@ -109,7 +109,7 @@ public class BitInfiniteScrollingTests : BunitTestContext
 
         component.WaitForAssertion(() =>
         {
-            Assert.IsTrue(component.Markup.Contains("Nothing here"));
+            Assert.Contains("Nothing here", component.Markup);
             Assert.IsFalse(component.Instance.HasMore);
         });
     }
@@ -125,7 +125,7 @@ public class BitInfiniteScrollingTests : BunitTestContext
             parameters.Add(p => p.ItemTemplate, ItemTemplate());
         });
 
-        Assert.IsFalse(component.Markup.Contains("There is no item"));
+        Assert.DoesNotContain("There is no item", component.Markup);
     }
 
     [TestMethod]
@@ -143,7 +143,7 @@ public class BitInfiniteScrollingTests : BunitTestContext
             parameters.Add(p => p.Preload, true);
         });
 
-        component.WaitForAssertion(() => Assert.IsTrue(component.Markup.Contains("Custom Loading")));
+        component.WaitForAssertion(() => Assert.Contains("Custom Loading", component.Markup));
 
         tcs.TrySetResult(new List<int>());
     }
@@ -163,7 +163,7 @@ public class BitInfiniteScrollingTests : BunitTestContext
 
         component.WaitForAssertion(() =>
         {
-            Assert.IsTrue(component.Markup.Contains("Fetching..."));
+            Assert.Contains("Fetching...", component.Markup);
             Assert.AreEqual("true", component.Find(".bit-isc").GetAttribute("aria-busy"));
             Assert.IsTrue(component.Instance.IsLoading);
         });
@@ -192,9 +192,9 @@ public class BitInfiniteScrollingTests : BunitTestContext
 
         component.WaitForAssertion(() =>
         {
-            Assert.AreEqual(1, counts.Count);
+            Assert.ContainsSingle(counts);
             Assert.AreEqual(7, counts[0]);
-            Assert.AreEqual(7, component.Instance.Items.Count);
+            Assert.HasCount(7, component.Instance.Items);
         });
     }
 
@@ -210,15 +210,15 @@ public class BitInfiniteScrollingTests : BunitTestContext
             parameters.Add(p => p.Preload, true);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(5, component.Instance.Items.Count));
+        component.WaitForAssertion(() => Assert.HasCount(5, component.Instance.Items));
 
         await component.InvokeAsync(() => component.Instance.LoadMoreAsync());
 
         component.WaitForAssertion(() =>
         {
-            Assert.AreEqual(8, component.Instance.Items.Count);
+            Assert.HasCount(8, component.Instance.Items);
             Assert.IsFalse(component.Instance.HasMore);
-            Assert.IsTrue(component.Markup.Contains("That is all"));
+            Assert.Contains("That is all", component.Markup);
         });
     }
 
@@ -262,22 +262,22 @@ public class BitInfiniteScrollingTests : BunitTestContext
             parameters.Add(p => p.Preload, true);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(5, component.Instance.Items.Count));
+        component.WaitForAssertion(() => Assert.HasCount(5, component.Instance.Items));
 
         await component.InvokeAsync(() => component.Instance.LoadMoreAsync());
 
         component.WaitForAssertion(() =>
         {
             // The second page is narrowed down to the three items that are still allowed.
-            CollectionAssert.AreEqual(new List<int> { 5, 3 }, counts);
-            Assert.AreEqual(8, component.Instance.Items.Count);
+            Assert.AreSequenceEqual(new List<int> { 5, 3 }, counts);
+            Assert.HasCount(8, component.Instance.Items);
             Assert.IsFalse(component.Instance.HasMore);
         });
 
         await component.InvokeAsync(() => component.Instance.LoadMoreAsync());
 
-        Assert.AreEqual(8, component.Instance.Items.Count);
-        Assert.AreEqual(2, counts.Count);
+        Assert.HasCount(8, component.Instance.Items);
+        Assert.HasCount(2, counts);
     }
 
     [TestMethod]
@@ -294,7 +294,7 @@ public class BitInfiniteScrollingTests : BunitTestContext
 
         component.WaitForAssertion(() =>
         {
-            CollectionAssert.AreEqual(new List<int> { 0, 1, 2, 3 }, component.Instance.Items.ToList());
+            Assert.AreSequenceEqual(new List<int> { 0, 1, 2, 3 }, component.Instance.Items.ToList());
             Assert.IsFalse(component.Instance.HasMore);
         });
     }
@@ -313,7 +313,7 @@ public class BitInfiniteScrollingTests : BunitTestContext
 
         component.WaitForAssertion(() =>
         {
-            Assert.IsTrue(component.Markup.Contains("It failed"));
+            Assert.Contains("It failed", component.Markup);
             Assert.AreEqual("Try again", component.Find(".bit-isc-btn").TextContent.Trim());
             Assert.IsNotNull(component.Instance.Error);
         });
@@ -343,8 +343,8 @@ public class BitInfiniteScrollingTests : BunitTestContext
         component.WaitForAssertion(() =>
         {
             Assert.IsNull(component.Instance.Error);
-            Assert.AreEqual(3, component.Instance.Items.Count);
-            Assert.IsTrue(component.Markup.Contains("Item 1"));
+            Assert.HasCount(3, component.Instance.Items);
+            Assert.Contains("Item 1", component.Markup);
         });
     }
 
@@ -361,8 +361,8 @@ public class BitInfiniteScrollingTests : BunitTestContext
 
         component.WaitForAssertion(() =>
         {
-            Assert.IsTrue(component.Markup.Contains("Error: kaboom"));
-            Assert.AreEqual(0, component.FindAll(".bit-isc-btn").Count);
+            Assert.Contains("Error: kaboom", component.Markup);
+            Assert.IsEmpty(component.FindAll(".bit-isc-btn"));
         });
     }
 
@@ -379,7 +379,11 @@ public class BitInfiniteScrollingTests : BunitTestContext
             parameters.Add(p => p.Preload, true);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual("nope", handled?.Message));
+        component.WaitForAssertion(() =>
+        {
+            var actualValue = handled?.Message;
+            Assert.AreEqual("nope", actualValue);
+        });
     }
 
     [TestMethod]
@@ -398,13 +402,13 @@ public class BitInfiniteScrollingTests : BunitTestContext
             parameters.Add(p => p.OnEnd, EventCallback.Factory.Create(this, () => ended = true));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, pages.Count));
+        component.WaitForAssertion(() => Assert.ContainsSingle(pages));
 
         await component.InvokeAsync(() => component.Instance.LoadMoreAsync());
 
         component.WaitForAssertion(() =>
         {
-            CollectionAssert.AreEqual(new List<int> { 5, 3 }, pages);
+            Assert.AreSequenceEqual(new List<int> { 5, 3 }, pages);
             Assert.IsTrue(ended);
         });
     }
@@ -423,7 +427,7 @@ public class BitInfiniteScrollingTests : BunitTestContext
 
         component.WaitForAssertion(() =>
         {
-            Assert.AreEqual(5, component.Instance.Items.Count);
+            Assert.HasCount(5, component.Instance.Items);
             Assert.AreEqual("More please", component.Find(".bit-isc-btn").TextContent.Trim());
         });
     }
@@ -439,11 +443,11 @@ public class BitInfiniteScrollingTests : BunitTestContext
             parameters.Add(p => p.Manual, true);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(5, component.Instance.Items.Count));
+        component.WaitForAssertion(() => Assert.HasCount(5, component.Instance.Items));
 
         component.Find(".bit-isc-btn").Click();
 
-        component.WaitForAssertion(() => Assert.AreEqual(10, component.Instance.Items.Count));
+        component.WaitForAssertion(() => Assert.HasCount(10, component.Instance.Items));
     }
 
     [TestMethod]
@@ -457,9 +461,9 @@ public class BitInfiniteScrollingTests : BunitTestContext
             parameters.Add(p => p.Preload, true);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(5, component.Instance.Items.Count));
+        component.WaitForAssertion(() => Assert.HasCount(5, component.Instance.Items));
 
-        Assert.AreEqual(0, component.FindAll(".bit-isc-btn").Count);
+        Assert.IsEmpty(component.FindAll(".bit-isc-btn"));
     }
 
     [TestMethod]
@@ -475,16 +479,16 @@ public class BitInfiniteScrollingTests : BunitTestContext
             parameters.Add(p => p.PageSize, 10);
         });
 
-        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.InfiniteScrolling.reobserve"));
+        Assert.DoesNotContain(i => i.Identifier == "BitBlazorUI.InfiniteScrolling.reobserve", Context.JSInterop.Invocations);
 
         await component.InvokeAsync(() => component.Instance._LoadMoreItems());
 
-        Assert.AreEqual(10, component.Instance.Items.Count);
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.InfiniteScrolling.reobserve"));
+        Assert.HasCount(10, component.Instance.Items);
+        Assert.ContainsSingle(i => i.Identifier == "BitBlazorUI.InfiniteScrolling.reobserve", Context.JSInterop.Invocations);
 
         await component.InvokeAsync(() => component.Instance._LoadMoreItems());
 
-        Assert.AreEqual(20, component.Instance.Items.Count);
+        Assert.HasCount(20, component.Instance.Items);
         Assert.AreEqual(2, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.InfiniteScrolling.reobserve"));
     }
 
@@ -500,10 +504,10 @@ public class BitInfiniteScrollingTests : BunitTestContext
             parameters.Add(p => p.AutoLoadLimit, 2);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(5, component.Instance.Items.Count));
+        component.WaitForAssertion(() => Assert.HasCount(5, component.Instance.Items));
 
         // One page in, the list still loads on its own.
-        Assert.AreEqual(0, component.FindAll(".bit-isc-btn").Count);
+        Assert.IsEmpty(component.FindAll(".bit-isc-btn"));
         Assert.AreNotEqual("display:none", component.Find(".bit-isc-lst").GetAttribute("style"));
 
         await component.InvokeAsync(() => component.Instance._LoadMoreItems());
@@ -511,16 +515,16 @@ public class BitInfiniteScrollingTests : BunitTestContext
         // Two pages in, the sentinel is retired and the button takes over.
         component.WaitForAssertion(() =>
         {
-            Assert.AreEqual(10, component.Instance.Items.Count);
+            Assert.HasCount(10, component.Instance.Items);
             Assert.AreEqual("Load more", component.Find(".bit-isc-btn").TextContent.Trim());
             Assert.AreEqual("display:none", component.Find(".bit-isc-lst").GetAttribute("style"));
         });
 
-        Assert.AreEqual(false, Context.JSInterop.Invocations["BitBlazorUI.InfiniteScrolling.setup"].Last().Arguments[7]);
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(Context.JSInterop.Invocations["BitBlazorUI.InfiniteScrolling.setup"].Last().Arguments[7]));
 
         component.Find(".bit-isc-btn").Click();
 
-        component.WaitForAssertion(() => Assert.AreEqual(15, component.Instance.Items.Count));
+        component.WaitForAssertion(() => Assert.HasCount(15, component.Instance.Items));
     }
 
     [TestMethod]
@@ -535,22 +539,22 @@ public class BitInfiniteScrollingTests : BunitTestContext
             parameters.Add(p => p.AutoLoadLimit, 1);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll(".bit-isc-btn").Count));
+        component.WaitForAssertion(() => Assert.ContainsSingle(component.FindAll(".bit-isc-btn")));
 
         await component.InvokeAsync(() => component.Instance.RefreshDataAsync());
 
         // The refresh loads one page again, which uses up the limit again - the count did not carry over.
         component.WaitForAssertion(() =>
         {
-            Assert.AreEqual(5, component.Instance.Items.Count);
-            Assert.AreEqual(1, component.FindAll(".bit-isc-btn").Count);
+            Assert.HasCount(5, component.Instance.Items);
+            Assert.ContainsSingle(component.FindAll(".bit-isc-btn"));
         });
 
         component.Render(parameters => parameters.Add(p => p.AutoLoadLimit, 3));
 
         // A higher limit hands the loading back to the sentinel.
-        Assert.AreEqual(0, component.FindAll(".bit-isc-btn").Count);
-        Assert.AreEqual(true, Context.JSInterop.Invocations["BitBlazorUI.InfiniteScrolling.setup"].Last().Arguments[7]);
+        Assert.IsEmpty(component.FindAll(".bit-isc-btn"));
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(Context.JSInterop.Invocations["BitBlazorUI.InfiniteScrolling.setup"].Last().Arguments[7]));
     }
 
     [TestMethod]
@@ -566,8 +570,8 @@ public class BitInfiniteScrollingTests : BunitTestContext
 
         component.WaitForAssertion(() =>
         {
-            Assert.AreEqual(5, component.Instance.Items.Count);
-            Assert.AreEqual(1, component.FindAll(".bit-isc-btn").Count);
+            Assert.HasCount(5, component.Instance.Items);
+            Assert.ContainsSingle(component.FindAll(".bit-isc-btn"));
         });
     }
 
@@ -587,17 +591,17 @@ public class BitInfiniteScrollingTests : BunitTestContext
             parameters.Add(p => p.Preload, true);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.Items.Count));
+        component.WaitForAssertion(() => Assert.HasCount(2, component.Instance.Items));
 
         await component.InvokeAsync(() => component.Instance.LoadMoreAsync());
 
-        component.WaitForAssertion(() => Assert.AreEqual(4, component.Instance.Items.Count));
+        component.WaitForAssertion(() => Assert.HasCount(4, component.Instance.Items));
 
         await component.InvokeAsync(() => component.Instance.RefreshDataAsync());
 
         component.WaitForAssertion(() =>
         {
-            Assert.AreEqual(2, component.Instance.Items.Count);
+            Assert.HasCount(2, component.Instance.Items);
             Assert.AreEqual(0, component.Instance.Items[0]);
             Assert.AreEqual(3, calls);
         });
@@ -632,7 +636,7 @@ public class BitInfiniteScrollingTests : BunitTestContext
 
         component.WaitForAssertion(() =>
         {
-            Assert.AreEqual(2, component.Instance.Items.Count);
+            Assert.HasCount(2, component.Instance.Items);
             Assert.AreEqual(7, component.Instance.Items[0]);
             Assert.IsFalse(component.Instance.IsLoading);
         });
@@ -654,13 +658,13 @@ public class BitInfiniteScrollingTests : BunitTestContext
             parameters.Add(p => p.Preload, true);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.Items.Count));
+        component.WaitForAssertion(() => Assert.HasCount(2, component.Instance.Items));
 
         await component.InvokeAsync(() => component.Instance.AppendItemsAsync(new[] { 9 }));
 
         component.WaitForAssertion(() =>
         {
-            Assert.AreEqual(3, component.Instance.Items.Count);
+            Assert.HasCount(3, component.Instance.Items);
             Assert.AreEqual(9, component.Instance.Items[2]);
             Assert.AreEqual(1, calls);
         });
@@ -676,13 +680,13 @@ public class BitInfiniteScrollingTests : BunitTestContext
             parameters.Add(p => p.Preload, true);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.Items.Count));
+        component.WaitForAssertion(() => Assert.HasCount(2, component.Instance.Items));
 
         await component.InvokeAsync(() => component.Instance.PrependItemsAsync(new[] { 4 }));
 
         component.WaitForAssertion(() =>
         {
-            Assert.AreEqual(3, component.Instance.Items.Count);
+            Assert.HasCount(3, component.Instance.Items);
             Assert.AreEqual(4, component.Instance.Items[0]);
         });
     }
@@ -699,13 +703,13 @@ public class BitInfiniteScrollingTests : BunitTestContext
             parameters.Add(p => p.Preload, true);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.Items.Count));
+        component.WaitForAssertion(() => Assert.HasCount(2, component.Instance.Items));
 
         await component.InvokeAsync(() => component.Instance.LoadMoreAsync());
 
         component.WaitForAssertion(() =>
         {
-            CollectionAssert.AreEqual(new List<int> { 2, 3, 0, 1 }, component.Instance.Items.ToList());
+            Assert.AreSequenceEqual(new List<int> { 2, 3, 0, 1 }, component.Instance.Items.ToList());
             Assert.IsTrue(component.Find(".bit-isc").ClassList.Contains("bit-isc-rev"));
         });
     }
@@ -730,7 +734,7 @@ public class BitInfiniteScrollingTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance.LoadMoreAsync());
 
         Assert.AreEqual(0, calls);
-        Assert.AreEqual(0, component.Instance.Items.Count);
+        Assert.IsEmpty(component.Instance.Items);
     }
 
     [TestMethod]
@@ -745,7 +749,7 @@ public class BitInfiniteScrollingTests : BunitTestContext
             parameters.Add(p => p.Preload, true);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.Items.Count));
+        component.WaitForAssertion(() => Assert.HasCount(2, component.Instance.Items));
 
         var first = MakeProvider(1);
         var second = MakeProvider(1);
@@ -756,7 +760,7 @@ public class BitInfiniteScrollingTests : BunitTestContext
             parameters.Add(p => p.ItemsProvider, second);
         });
 
-        Assert.AreEqual(2, component.Instance.Items.Count);
+        Assert.HasCount(2, component.Instance.Items);
 
         // A new delegate instance over the very same method, the way a lambda written in a parent's markup
         // is handed over again on every render of that parent.
@@ -783,7 +787,7 @@ public class BitInfiniteScrollingTests : BunitTestContext
 
         component.WaitForAssertion(() =>
         {
-            Assert.AreEqual(2, component.Instance.Items.Count);
+            Assert.HasCount(2, component.Instance.Items);
             Assert.AreEqual(11, component.Instance.Items[0]);
         });
 
@@ -812,11 +816,11 @@ public class BitInfiniteScrollingTests : BunitTestContext
         {
             var root = component.Find(".bit-isc");
             Assert.IsTrue(root.ClassList.Contains("custom-root"));
-            Assert.IsTrue(root.GetAttribute("style")!.Contains("color:red"));
+            Assert.Contains("color:red", root.GetAttribute("style")!);
 
             var end = component.Find(".bit-isc-end");
             Assert.IsTrue(end.ClassList.Contains("custom-end"));
-            Assert.IsTrue(end.GetAttribute("style")!.Contains("color:blue"));
+            Assert.Contains("color:blue", end.GetAttribute("style")!);
 
             Assert.IsTrue(component.Find(".bit-isc-lst").ClassList.Contains("custom-last"));
         });
@@ -860,8 +864,8 @@ public class BitInfiniteScrollingTests : BunitTestContext
             Assert.IsTrue(last.ClassList.Contains("sentinel"));
 
             var style = last.GetAttribute("style")!;
-            Assert.IsTrue(style.Contains("height:64px"));
-            Assert.IsTrue(style.Contains("opacity:0.5"));
+            Assert.Contains("height:64px", style);
+            Assert.Contains("opacity:0.5", style);
         });
     }
 
@@ -884,7 +888,7 @@ public class BitInfiniteScrollingTests : BunitTestContext
 
         Assert.AreEqual("the-list", root.Id);
         Assert.IsTrue(root.ClassList.Contains("custom-class"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin: 1px");
+        Assert.Contains("margin: 1px", root.GetAttribute("style")!);
         Assert.AreEqual("list", root.GetAttribute("data-test"));
     }
 
@@ -909,7 +913,7 @@ public class BitInfiniteScrollingTests : BunitTestContext
         }
         else
         {
-            StringAssert.Contains(style, expectedStyle);
+            Assert.Contains(expectedStyle, style);
         }
     }
 
@@ -929,9 +933,9 @@ public class BitInfiniteScrollingTests : BunitTestContext
         // manual mode's button is not offered, and the observer is set up without anything to watch.
         Assert.IsTrue(component.Find(".bit-isc").ClassList.Contains("bit-dis"));
         Assert.AreEqual("display:none", component.Find(".bit-isc-lst").GetAttribute("style"));
-        Assert.AreEqual(0, component.FindAll(".bit-isc-btn").Count);
-        Assert.AreEqual(false, Context.JSInterop.VerifyInvoke("BitBlazorUI.InfiniteScrolling.setup").Arguments[7]);
-        Assert.AreEqual(0, component.Instance.Items.Count);
+        Assert.IsEmpty(component.FindAll(".bit-isc-btn"));
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(Context.JSInterop.VerifyInvoke("BitBlazorUI.InfiniteScrolling.setup").Arguments[7]));
+        Assert.IsEmpty(component.Instance.Items);
     }
 
     [TestMethod]
@@ -947,7 +951,7 @@ public class BitInfiniteScrollingTests : BunitTestContext
             parameters.Add(p => p.LoadMoreTemplate, builder => builder.AddMarkupContent(0, "<span class=\"own-more\">Fetch the rest</span>"));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(5, component.Instance.Items.Count));
+        component.WaitForAssertion(() => Assert.HasCount(5, component.Instance.Items));
 
         var button = component.Find(".bit-isc-btn");
 
@@ -966,7 +970,7 @@ public class BitInfiniteScrollingTests : BunitTestContext
             parameters.Add(p => p.Preload, true);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".own-item").Count));
+        component.WaitForAssertion(() => Assert.HasCount(3, component.FindAll(".own-item")));
 
         Assert.AreEqual("Child 2", component.FindAll(".own-item")[2].TextContent);
     }
@@ -984,7 +988,7 @@ public class BitInfiniteScrollingTests : BunitTestContext
 
         component.WaitForAssertion(() => Assert.IsFalse(component.Instance.HasMore));
 
-        Assert.AreEqual(0, component.FindAll(".bit-isc-end").Count);
+        Assert.IsEmpty(component.FindAll(".bit-isc-end"));
 
         component.Render(parameters => parameters.Add(p => p.EndTemplate, builder => builder.AddMarkupContent(0, "<span class=\"own-end\">Fin</span>")));
 
@@ -1089,8 +1093,8 @@ public class BitInfiniteScrollingTests : BunitTestContext
         Assert.AreEqual("window", invocation.Arguments[1]);
         Assert.AreEqual(0.5m, invocation.Arguments[4]);
         Assert.AreEqual("200px", invocation.Arguments[5]);
-        Assert.AreEqual(false, invocation.Arguments[6]);
-        Assert.AreEqual(true, invocation.Arguments[7]);
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(invocation.Arguments[6]));
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(invocation.Arguments[7]));
     }
 
     [TestMethod]
@@ -1103,12 +1107,12 @@ public class BitInfiniteScrollingTests : BunitTestContext
             parameters.Add(p => p.RootMargin, "100px");
         });
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.InfiniteScrolling.setup"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.InfiniteScrolling.setup"]);
 
         component.Render(parameters => parameters.Add(p => p.RootMargin, "300px"));
 
         var invocations = Context.JSInterop.Invocations["BitBlazorUI.InfiniteScrolling.setup"];
-        Assert.AreEqual(2, invocations.Count);
+        Assert.HasCount(2, invocations);
         Assert.AreEqual("300px", invocations.Last().Arguments[5]);
     }
 
@@ -1122,7 +1126,7 @@ public class BitInfiniteScrollingTests : BunitTestContext
 
         var invocation = Context.JSInterop.VerifyInvoke("BitBlazorUI.InfiniteScrolling.setup");
 
-        Assert.AreEqual(false, invocation.Arguments[7]);
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(invocation.Arguments[7]));
         Assert.AreEqual("display:none", component.Find(".bit-isc-lst").GetAttribute("style"));
     }
 
@@ -1136,11 +1140,11 @@ public class BitInfiniteScrollingTests : BunitTestContext
             parameters.Add(p => p.PageSize, 5);
         });
 
-        Assert.AreEqual(0, component.Instance.Items.Count);
+        Assert.IsEmpty(component.Instance.Items);
 
         component.Render(parameters => parameters.Add(p => p.ItemsProvider, PagedProvider(20)));
 
-        component.WaitForAssertion(() => Assert.AreEqual(5, component.Instance.Items.Count));
+        component.WaitForAssertion(() => Assert.HasCount(5, component.Instance.Items));
     }
 
     [TestMethod]
@@ -1157,10 +1161,10 @@ public class BitInfiniteScrollingTests : BunitTestContext
 
         var invocations = Context.JSInterop.Invocations["BitBlazorUI.InfiniteScrolling.scrollTo"];
 
-        Assert.AreEqual(2, invocations.Count);
-        Assert.AreEqual(false, invocations.First().Arguments[1]);
-        Assert.AreEqual(true, invocations.Last().Arguments[1]);
-        Assert.AreEqual(true, invocations.Last().Arguments[2]);
+        Assert.HasCount(2, invocations);
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(invocations.First().Arguments[1]));
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(invocations.Last().Arguments[1]));
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(invocations.Last().Arguments[2]));
     }
 
     [TestMethod]
@@ -1203,7 +1207,7 @@ public class BitInfiniteScrollingTests : BunitTestContext
 
         component.WaitForAssertion(() => Context.JSInterop.VerifyInvoke("BitBlazorUI.InfiniteScrolling.scrollTo"));
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.InfiniteScrolling.setup"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.InfiniteScrolling.setup"]);
 
         // Held open, so what has run by the time the scroll is restored can be told apart from what runs after.
         var restore = Context.JSInterop.SetupVoid("BitBlazorUI.InfiniteScrolling.restoreScroll", _ => true);
@@ -1215,19 +1219,18 @@ public class BitInfiniteScrollingTests : BunitTestContext
         component.WaitForAssertion(() => Assert.AreEqual(1, restore.Invocations.Count));
 
         Context.JSInterop.VerifyInvoke("BitBlazorUI.InfiniteScrolling.prepareScroll");
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.InfiniteScrolling.setup"].Count,
-                        "The rebuild drops the geometry before the scroll is restored from it.");
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.InfiniteScrolling.setup"], "The rebuild drops the geometry before the scroll is restored from it.");
 
         await component.InvokeAsync(() => restore.SetVoidResult());
 
         component.WaitForAssertion(() =>
         {
-            Assert.AreEqual(10, component.Instance.Items.Count);
-            Assert.AreEqual(2, Context.JSInterop.Invocations["BitBlazorUI.InfiniteScrolling.setup"].Count);
+            Assert.HasCount(10, component.Instance.Items);
+            Assert.HasCount(2, Context.JSInterop.Invocations["BitBlazorUI.InfiniteScrolling.setup"]);
         });
 
         // The rebuilt instance does not watch the sentinel of a list that now waits for its button.
-        Assert.AreEqual(false, Context.JSInterop.Invocations["BitBlazorUI.InfiniteScrolling.setup"].Last().Arguments[7]);
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(Context.JSInterop.Invocations["BitBlazorUI.InfiniteScrolling.setup"].Last().Arguments[7]));
     }
 
     [TestMethod]
@@ -1245,7 +1248,7 @@ public class BitInfiniteScrollingTests : BunitTestContext
 
         component.WaitForAssertion(() =>
         {
-            Assert.AreEqual(3, component.Instance.Items.Count);
+            Assert.HasCount(3, component.Instance.Items);
             Assert.IsTrue(component.Instance.HasMore);
         });
     }
@@ -1265,9 +1268,9 @@ public class BitInfiniteScrollingTests : BunitTestContext
 
         component.WaitForAssertion(() =>
         {
-            Assert.AreEqual(5, component.Instance.Items.Count);
+            Assert.HasCount(5, component.Instance.Items);
             Assert.IsFalse(component.Instance.HasMore);
-            Assert.IsTrue(component.Markup.Contains("That is all"));
+            Assert.Contains("That is all", component.Markup);
         });
     }
 
@@ -1287,7 +1290,7 @@ public class BitInfiniteScrollingTests : BunitTestContext
 
         component.WaitForAssertion(() =>
         {
-            Assert.AreEqual(0, component.Instance.Items.Count);
+            Assert.IsEmpty(component.Instance.Items);
             Assert.IsFalse(component.Instance.HasMore);
         });
     }
@@ -1317,7 +1320,7 @@ public class BitInfiniteScrollingTests : BunitTestContext
             parameters.Add(p => p.Preload, true);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(5, component.Instance.Items.Count));
+        component.WaitForAssertion(() => Assert.HasCount(5, component.Instance.Items));
 
         Assert.IsNull(component.Instance.TotalCount);
     }
@@ -1343,7 +1346,7 @@ public class BitInfiniteScrollingTests : BunitTestContext
         component.WaitForAssertion(() =>
         {
             Assert.AreEqual(2, requests);
-            Assert.AreEqual(5, component.Instance.Items.Count);
+            Assert.HasCount(5, component.Instance.Items);
         });
     }
 
@@ -1367,7 +1370,7 @@ public class BitInfiniteScrollingTests : BunitTestContext
         component.Render(parameters => parameters.Add(p => p.LoadingMessage, "Working..."));
 
         Assert.AreEqual(1, requests);
-        Assert.AreEqual(5, component.Instance.Items.Count);
+        Assert.HasCount(5, component.Instance.Items);
     }
 
     [TestMethod]
@@ -1385,7 +1388,7 @@ public class BitInfiniteScrollingTests : BunitTestContext
             parameters.Add(p => p.Preload, true);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(5, component.Instance.Items.Count));
+        component.WaitForAssertion(() => Assert.HasCount(5, component.Instance.Items));
 
         Assert.AreEqual(1, requests);
     }
@@ -1401,13 +1404,13 @@ public class BitInfiniteScrollingTests : BunitTestContext
             parameters.Add(p => p.Preload, true);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(5, component.Instance.Items.Count));
+        component.WaitForAssertion(() => Assert.HasCount(5, component.Instance.Items));
 
         await component.InvokeAsync(() => component.Instance.SetItemsAsync([100, 200]));
 
-        CollectionAssert.AreEqual(new List<int> { 100, 200 }, component.Instance.Items.ToList());
-        Assert.IsTrue(component.Markup.Contains("Item 100"));
-        Assert.IsFalse(component.Markup.Contains("Item 0"));
+        Assert.AreSequenceEqual(new List<int> { 100, 200 }, component.Instance.Items.ToList());
+        Assert.Contains("Item 100", component.Markup);
+        Assert.DoesNotContain("Item 0", component.Markup);
     }
 
     [TestMethod]
@@ -1421,19 +1424,19 @@ public class BitInfiniteScrollingTests : BunitTestContext
             parameters.Add(p => p.Preload, true);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.Instance.Items.Count));
+        component.WaitForAssertion(() => Assert.HasCount(3, component.Instance.Items));
 
         var removed = false;
         await component.InvokeAsync(async () => removed = await component.Instance.RemoveItemAsync(1));
 
         Assert.IsTrue(removed);
-        CollectionAssert.AreEqual(new List<int> { 0, 2 }, component.Instance.Items.ToList());
+        Assert.AreSequenceEqual(new List<int> { 0, 2 }, component.Instance.Items.ToList());
 
         var missing = true;
         await component.InvokeAsync(async () => missing = await component.Instance.RemoveItemAsync(99));
 
         Assert.IsFalse(missing);
-        Assert.AreEqual(2, component.Instance.Items.Count);
+        Assert.HasCount(2, component.Instance.Items);
     }
 
     [TestMethod]
@@ -1486,11 +1489,11 @@ public class BitInfiniteScrollingTests : BunitTestContext
             parameters.Add(p => p.Preload, true);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.Items.Count));
+        component.WaitForAssertion(() => Assert.HasCount(2, component.Instance.Items));
 
         await component.InvokeAsync(() => component.Instance.AppendItemsAsync([7, 8, 9]));
 
-        CollectionAssert.AreEqual(new List<int> { 0, 1, 7 }, component.Instance.Items.ToList());
+        Assert.AreSequenceEqual(new List<int> { 0, 1, 7 }, component.Instance.Items.ToList());
         Assert.IsFalse(component.Instance.HasMore);
     }
 
@@ -1506,12 +1509,12 @@ public class BitInfiniteScrollingTests : BunitTestContext
             parameters.Add(p => p.Preload, true);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.Items.Count));
+        component.WaitForAssertion(() => Assert.HasCount(2, component.Instance.Items));
 
         await component.InvokeAsync(() => component.Instance.PrependItemsAsync([7, 8, 9]));
 
         // The surplus goes from the start of what was just written, so the items that were on screen stay.
-        CollectionAssert.AreEqual(new List<int> { 9, 0, 1 }, component.Instance.Items.ToList());
+        Assert.AreSequenceEqual(new List<int> { 9, 0, 1 }, component.Instance.Items.ToList());
         Assert.IsFalse(component.Instance.HasMore);
     }
 
@@ -1531,7 +1534,7 @@ public class BitInfiniteScrollingTests : BunitTestContext
         component.WaitForAssertion(() =>
         {
             // The newest end of a reversed list is its bottom, so the oldest of the page is what is dropped.
-            CollectionAssert.AreEqual(new List<int> { 2, 3, 4 }, component.Instance.Items.ToList());
+            Assert.AreSequenceEqual(new List<int> { 2, 3, 4 }, component.Instance.Items.ToList());
             Assert.IsFalse(component.Instance.HasMore);
         });
     }
@@ -1555,8 +1558,8 @@ public class BitInfiniteScrollingTests : BunitTestContext
             // The sentinel is thin along the scroll axis and spans the cross axis, which is the other way
             // around in the horizontal mode - and there the flex line is what stretches it.
             var style = component.Find(".bit-isc-lst").GetAttribute("style")!;
-            Assert.IsTrue(style.Contains("width:1px"));
-            Assert.IsTrue(style.Contains("height:auto"));
+            Assert.Contains("width:1px", style);
+            Assert.Contains("height:auto", style);
         });
     }
 
@@ -1573,7 +1576,7 @@ public class BitInfiniteScrollingTests : BunitTestContext
             parameters.Add(p => p.Preload, true);
         });
 
-        component.WaitForAssertion(() => Assert.IsTrue(component.Find(".bit-isc-lst").GetAttribute("style")!.Contains("width:48px")));
+        component.WaitForAssertion(() => Assert.Contains("width:48px", component.Find(".bit-isc-lst").GetAttribute("style")!));
     }
 
     [TestMethod]
@@ -1586,7 +1589,7 @@ public class BitInfiniteScrollingTests : BunitTestContext
             parameters.Add(p => p.Horizontal, true);
         });
 
-        Assert.AreEqual(true, Context.JSInterop.VerifyInvoke("BitBlazorUI.InfiniteScrolling.setup").Arguments[6]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(Context.JSInterop.VerifyInvoke("BitBlazorUI.InfiniteScrolling.setup").Arguments[6]));
     }
 
     [TestMethod]
@@ -1598,13 +1601,13 @@ public class BitInfiniteScrollingTests : BunitTestContext
             parameters.Add(p => p.ItemTemplate, ItemTemplate());
         });
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.InfiniteScrolling.setup"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.InfiniteScrolling.setup"]);
 
         component.Render(parameters => parameters.Add(p => p.Horizontal, true));
 
         var invocations = Context.JSInterop.Invocations["BitBlazorUI.InfiniteScrolling.setup"];
-        Assert.AreEqual(2, invocations.Count);
-        Assert.AreEqual(true, invocations.Last().Arguments[6]);
+        Assert.HasCount(2, invocations);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(invocations.Last().Arguments[6]));
     }
 
     [TestMethod]
@@ -1634,16 +1637,16 @@ public class BitInfiniteScrollingTests : BunitTestContext
             parameters.Add(p => p.Preload, true);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.Instance.Items.Count));
+        component.WaitForAssertion(() => Assert.HasCount(3, component.Instance.Items));
 
-        Assert.AreEqual(0, component.FindAll(".bit-isc-itm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-isc-itm"));
 
         component.Render(parameters => parameters.Add(p => p.ItemKey, (Func<int, object>)(item => item)));
 
         component.WaitForAssertion(() =>
         {
-            Assert.AreEqual(3, component.FindAll(".bit-isc-itm").Count);
-            Assert.IsTrue(component.Markup.Contains("Item 2"));
+            Assert.HasCount(3, component.FindAll(".bit-isc-itm"));
+            Assert.Contains("Item 2", component.Markup);
         });
     }
 
@@ -1679,7 +1682,7 @@ public class BitInfiniteScrollingTests : BunitTestContext
 
         var invocation = Context.JSInterop.VerifyInvoke("BitBlazorUI.InfiniteScrolling.scrollToOffset");
         Assert.AreEqual(120d, invocation.Arguments[1]);
-        Assert.AreEqual(true, invocation.Arguments[2]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(invocation.Arguments[2]));
 
         var offset = 0d;
         await component.InvokeAsync(async () => offset = await component.Instance.GetScrollOffsetAsync());
@@ -1759,7 +1762,7 @@ public class BitInfiniteScrollingTests : BunitTestContext
             parameters.Add(p => p.PageSize, 3);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.Instance.Items.Count));
+        component.WaitForAssertion(() => Assert.HasCount(3, component.Instance.Items));
 
         var load = component.InvokeAsync(() => component.Instance.LoadMoreAsync());
 
@@ -1803,7 +1806,7 @@ public class BitInfiniteScrollingTests : BunitTestContext
 
         component.WaitForAssertion(() => Assert.AreEqual("Retry", component.Find(".bit-isc-btn").TextContent.Trim()));
 
-        var click = Task.Run(() => component.Find(".bit-isc-btn").Click());
+        var click = Task.Run(() => component.Find(".bit-isc-btn").Click(), TestContext.CancellationToken);
 
         // The error is cleared as soon as the retry starts, but the button that started it keeps its place
         // and its label until that retry is over.
@@ -1822,8 +1825,8 @@ public class BitInfiniteScrollingTests : BunitTestContext
 
         component.WaitForAssertion(() =>
         {
-            Assert.AreEqual(3, component.Instance.Items.Count);
-            Assert.AreEqual(0, component.FindAll(".bit-isc-btn").Count);
+            Assert.HasCount(3, component.Instance.Items);
+            Assert.IsEmpty(component.FindAll(".bit-isc-btn"));
         });
     }
 
@@ -1851,7 +1854,7 @@ public class BitInfiniteScrollingTests : BunitTestContext
 
         component.WaitForAssertion(() => Assert.AreEqual("Retry", component.Find(".bit-isc-btn").TextContent.Trim()));
 
-        var click = Task.Run(() => component.Find(".bit-isc-btn").Click());
+        var click = Task.Run(() => component.Find(".bit-isc-btn").Click(), TestContext.CancellationToken);
 
         component.WaitForAssertion(() => Assert.IsTrue(component.Instance.IsLoading));
 
@@ -1866,7 +1869,7 @@ public class BitInfiniteScrollingTests : BunitTestContext
 
         await click;
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.Instance.Items.Count));
+        component.WaitForAssertion(() => Assert.HasCount(3, component.Instance.Items));
     }
 
     [TestMethod]
@@ -1884,13 +1887,13 @@ public class BitInfiniteScrollingTests : BunitTestContext
             parameters.Add(p => p.Preload, true);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.Items.Count));
+        component.WaitForAssertion(() => Assert.HasCount(2, component.Instance.Items));
 
         Assert.AreEqual(0, ends);
 
         await component.InvokeAsync(() => component.Instance.AppendItemsAsync([9]));
 
-        Assert.AreEqual(3, component.Instance.Items.Count);
+        Assert.HasCount(3, component.Instance.Items);
         Assert.AreEqual(1, ends);
     }
 
@@ -1909,9 +1912,9 @@ public class BitInfiniteScrollingTests : BunitTestContext
 
         component.WaitForAssertion(() =>
         {
-            Assert.AreEqual(0, component.Instance.Items.Count);
+            Assert.IsEmpty(component.Instance.Items);
             Assert.IsFalse(component.Instance.HasMore);
-            Assert.IsTrue(component.Markup.Contains("Nothing here"));
+            Assert.Contains("Nothing here", component.Markup);
         });
     }
 
@@ -1928,7 +1931,7 @@ public class BitInfiniteScrollingTests : BunitTestContext
 
         component.WaitForAssertion(() =>
         {
-            Assert.AreEqual(0, component.Instance.Items.Count);
+            Assert.IsEmpty(component.Instance.Items);
             Assert.IsFalse(component.Instance.HasMore);
         });
 
@@ -1936,7 +1939,7 @@ public class BitInfiniteScrollingTests : BunitTestContext
         // a range that does not exist.
         await component.InvokeAsync(() => component.Instance.AppendItemsAsync([1, 2]));
 
-        Assert.AreEqual(0, component.Instance.Items.Count);
+        Assert.IsEmpty(component.Instance.Items);
     }
 
     [TestMethod]
@@ -1967,7 +1970,7 @@ public class BitInfiniteScrollingTests : BunitTestContext
         // the check below would pass before what it guards against (the late page landing) could happen.
         await component.InvokeAsync(release.SetResult);
 
-        component.WaitForAssertion(() => CollectionAssert.AreEqual(new List<int> { 50, 60 }, component.Instance.Items.ToList()));
+        component.WaitForAssertion(() => Assert.AreSequenceEqual(new List<int> { 50, 60 }, component.Instance.Items.ToList()));
     }
 
     [TestMethod]
@@ -2006,7 +2009,7 @@ public class BitInfiniteScrollingTests : BunitTestContext
 
         var disposal = Context.DisposeComponentsAsync();
 
-        Assert.HasCount(1, dispose.Invocations);
+        Assert.ContainsSingle(dispose.Invocations);
         Assert.AreSame(infiniteScrolling, reference.Value);
 
         dispose.SetVoidResult();
@@ -2048,7 +2051,7 @@ public class BitInfiniteScrollingTests : BunitTestContext
 
         await component.Instance.DisposeAsync();
 
-        tcs.TrySetCanceled();
+        tcs.TrySetCanceled(TestContext.CancellationToken);
     }
 
     [TestMethod]
@@ -2088,13 +2091,13 @@ public class BitInfiniteScrollingTests : BunitTestContext
             parameters.Add(p => p.Preload, true);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.Instance.Items.Count));
+        component.WaitForAssertion(() => Assert.HasCount(3, component.Instance.Items));
 
         Assert.IsTrue(component.Instance.HasMore);
 
         await component.InvokeAsync(() => component.Instance.LoadMoreAsync());
 
-        Assert.AreEqual(6, component.Instance.Items.Count);
+        Assert.HasCount(6, component.Instance.Items);
         Assert.IsTrue(component.Instance.HasMore);
     }
 
@@ -2111,11 +2114,11 @@ public class BitInfiniteScrollingTests : BunitTestContext
             parameters.Add(p => p.EmptyMessage, "Nothing here");
         });
 
-        Assert.IsFalse(component.Markup.Contains("Nothing here"));
+        Assert.DoesNotContain("Nothing here", component.Markup);
 
         await component.InvokeAsync(() => component.Instance.RefreshDataAsync());
 
-        Assert.IsTrue(component.Markup.Contains("Nothing here"));
+        Assert.Contains("Nothing here", component.Markup);
     }
 
     [TestMethod]
@@ -2149,7 +2152,7 @@ public class BitInfiniteScrollingTests : BunitTestContext
             parameters.Add(p => p.Preload, true);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.Items.Count));
+        component.WaitForAssertion(() => Assert.HasCount(2, component.Instance.Items));
 
         // The list is filled to its cap by hand, and then taken back below it by hand as well.
         await component.InvokeAsync(() => component.Instance.AppendItemsAsync([7]));
@@ -2179,9 +2182,9 @@ public class BitInfiniteScrollingTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance.SetItemsAsync([1, 2]));
 
         Assert.IsNull(component.Instance.Error);
-        Assert.IsFalse(component.Markup.Contains("It failed"));
-        Assert.IsFalse(component.Markup.Contains("bit-isc-btn"));
-        Assert.IsTrue(component.Markup.Contains("Item 1"));
+        Assert.DoesNotContain("It failed", component.Markup);
+        Assert.DoesNotContain("bit-isc-btn", component.Markup);
+        Assert.Contains("Item 1", component.Markup);
     }
 
     [TestMethod]
@@ -2200,7 +2203,7 @@ public class BitInfiniteScrollingTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance.AppendItemsAsync([1]));
 
         Assert.IsNull(component.Instance.Error);
-        Assert.IsFalse(component.Markup.Contains("It failed"));
+        Assert.DoesNotContain("It failed", component.Markup);
     }
 
     [TestMethod]
@@ -2219,6 +2222,8 @@ public class BitInfiniteScrollingTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance.PrependItemsAsync([1]));
 
         Assert.IsNull(component.Instance.Error);
-        Assert.IsFalse(component.Markup.Contains("It failed"));
+        Assert.DoesNotContain("It failed", component.Markup);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

@@ -79,7 +79,7 @@ public class BitAiTransportEndToEndTests
         await using var app = await Host(chatClient, MapSse);
 
         await using var session = new BitAiChatSession(Sse(app), null, Options);
-        await session.SubmitAsync("hi");
+        await session.SubmitAsync("hi", cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual("Hello from the server", session.Conversation.Messages[1].GetText());
         Assert.AreEqual(BitAiMessageStatus.Complete, session.Conversation.Messages[1].Status);
@@ -93,9 +93,10 @@ public class BitAiTransportEndToEndTests
         await using var app = await Host(chatClient, MapSse);
 
         await using var session = new BitAiChatSession(Sse(app), null, Options);
-        await session.SubmitAsync("hi");
+        await session.SubmitAsync("hi", cancellationToken: TestContext.CancellationToken);
+        var actualValue = session.LastError?.Code;
 
-        Assert.AreEqual("server_error", session.LastError?.Code);
+        Assert.AreEqual("server_error", actualValue);
         Assert.IsFalse(session.LastError!.Message.Contains("secret", StringComparison.Ordinal));
     }
 
@@ -104,7 +105,7 @@ public class BitAiTransportEndToEndTests
     {
         await using var app = await Host(new BitAiFakeChatClient(), MapSse);
 
-        using var response = await app.GetTestClient().PostAsync("/api/ai/chat", new StringContent("{\"nope\":1}", Encoding.UTF8, "application/json"));
+        using var response = await app.GetTestClient().PostAsync("/api/ai/chat", new StringContent("{\"nope\":1}", Encoding.UTF8, "application/json"), TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -115,7 +116,7 @@ public class BitAiTransportEndToEndTests
         await using var app = await Host(new BitAiFakeChatClient(), MapSse);
 
         using var response = await app.GetTestClient().PostAsync("/api/ai/chat",
-            new StringContent("""{"messages":[{"messageId":"m","parts":[{"partId":"p","kind":"tool-call","toolCallId":"","toolName":"x"}]}]}""", Encoding.UTF8, "application/json"));
+            new StringContent("""{"messages":[{"messageId":"m","parts":[{"partId":"p","kind":"tool-call","toolCallId":"","toolName":"x"}]}]}""", Encoding.UTF8, "application/json"), TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -127,9 +128,10 @@ public class BitAiTransportEndToEndTests
             a.MapBitAiSse("/api/ai/chat", (_, _, _) => throw new InvalidOperationException("No IChatClient: secret")));
 
         await using var session = new BitAiChatSession(Sse(app), null, Options);
-        await session.SubmitAsync("hi");
+        await session.SubmitAsync("hi", cancellationToken: TestContext.CancellationToken);
+        var actualValue = session.LastError?.Code;
 
-        Assert.AreEqual("server_error", session.LastError?.Code);
+        Assert.AreEqual("server_error", actualValue);
         Assert.IsFalse(session.LastError!.Message.Contains("secret", StringComparison.Ordinal));
     }
 
@@ -140,16 +142,16 @@ public class BitAiTransportEndToEndTests
         await using var app = await Host(new BitAiFakeChatClient(), a => a.MapPost("/api/ai/chat", async http =>
         {
             http.Response.ContentType = "text/html";
-            await http.Response.WriteAsync("<html><body>Sign in</body></html>");
+            await http.Response.WriteAsync("<html><body>Sign in</body></html>", TestContext.CancellationToken);
         }));
 
         var transport = Sse(app);
         var failure = await Assert.ThrowsExactlyAsync<HttpRequestException>(async () =>
         {
-            await foreach (var _ in transport.StreamAsync(new BitAiRequest([]))) { }
+            await foreach (var _ in transport.StreamAsync(new BitAiRequest([]), TestContext.CancellationToken)) { }
         });
 
-        StringAssert.Contains(failure.Message, "text/html");
+        Assert.Contains("text/html", failure.Message);
     }
 
     [TestMethod]
@@ -162,11 +164,11 @@ public class BitAiTransportEndToEndTests
                 "data: {\"type\":\"text.delta\",\"delta\":\"a\"}\n\n" +
                 "event: hologram\ndata: {\"type\":\"hologram\",\"beam\":1}\n\n" +
                 ": a comment\n\n" +
-                "data: {\"type\":\"text.delta\",\"delta\":\"b\"}\n\n");
+                "data: {\"type\":\"text.delta\",\"delta\":\"b\"}\n\n", TestContext.CancellationToken);
         }));
 
         await using var session = new BitAiChatSession(Sse(app), null, Options);
-        await session.SubmitAsync("hi");
+        await session.SubmitAsync("hi", cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual("ab", session.Conversation.Messages[1].GetText());
         Assert.IsNull(session.LastError);
@@ -196,7 +198,7 @@ public class BitAiTransportEndToEndTests
 
         var client = app.GetTestClient();
         var events = new List<BitAiEvent>();
-        await foreach (var evt in Sse(app).StreamAsync(new BitAiRequest([])))
+        await foreach (var evt in Sse(app).StreamAsync(new BitAiRequest([]), TestContext.CancellationToken))
         {
             events.Add(evt);
             if (evt is not BitAiToolApprovalRequestedEvent) continue;
@@ -205,7 +207,7 @@ public class BitAiTransportEndToEndTests
             using var answer = await client.PostAsync("/api/ai/chat/approvals", new StringContent(
                 BitAiWireSerializer.SerializeApproval(new BitAiApprovalResponse("t1", "delete_file", BitAiApprovalDecision.Approved)),
                 Encoding.UTF8,
-                "application/json"));
+                "application/json"), TestContext.CancellationToken);
             Assert.AreEqual(HttpStatusCode.NoContent, answer.StatusCode);
 
             waiting.SetResult();
@@ -223,7 +225,7 @@ public class BitAiTransportEndToEndTests
         using var answer = await app.GetTestClient().PostAsync("/api/ai/chat/approvals", new StringContent(
             BitAiWireSerializer.SerializeApproval(new BitAiApprovalResponse("t1", "delete_file", BitAiApprovalDecision.Approved)),
             Encoding.UTF8,
-            "application/json"));
+            "application/json"), TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.NotFound, answer.StatusCode);
     }
@@ -241,10 +243,10 @@ public class BitAiTransportEndToEndTests
         var body = path.EndsWith("approvals", StringComparison.Ordinal)
             ? BitAiWireSerializer.SerializeApproval(new BitAiApprovalResponse("t1", "delete_file", BitAiApprovalDecision.Approved))
             : """{"messages":[{"messageId":"m1","parts":[{"partId":"p1","kind":"text","text":"hi"}]}]}""";
-        using var response = await app.GetTestClient().PostAsync(path, new StringContent(body, Encoding.UTF8, contentType));
+        using var response = await app.GetTestClient().PostAsync(path, new StringContent(body, Encoding.UTF8, contentType), TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.UnsupportedMediaType, response.StatusCode);
-        Assert.AreEqual(0, chatClient.Messages.Count, "The model was never called.");
+        Assert.IsEmpty(chatClient.Messages, "The model was never called.");
     }
 
     [TestMethod]
@@ -253,9 +255,10 @@ public class BitAiTransportEndToEndTests
         await using var app = await Host(new BitAiFakeChatClient(), a => a.MapBitAiSse("/api/ai/chat", (_, _, _) => Unwritable()));
 
         await using var session = new BitAiChatSession(Sse(app), null, Options);
-        await session.SubmitAsync("hi");
+        await session.SubmitAsync("hi", cancellationToken: TestContext.CancellationToken);
+        var actualValue = session.LastError?.Code;
 
-        Assert.AreEqual("server_error", session.LastError?.Code);
+        Assert.AreEqual("server_error", actualValue);
         Assert.AreEqual("Before", session.Conversation.Messages[1].GetText());
     }
 
@@ -286,7 +289,7 @@ public class BitAiTransportEndToEndTests
         await using var connection = await Connect(app);
 
         await using var session = new BitAiChatSession(new BitAiSignalRTransport(connection), null, Options);
-        await session.SubmitAsync("hi");
+        await session.SubmitAsync("hi", cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual("Hello over SignalR", session.Conversation.Messages[1].GetText());
         Assert.AreEqual(BitAiMessageStatus.Complete, session.Conversation.Messages[1].Status);
@@ -300,9 +303,10 @@ public class BitAiTransportEndToEndTests
         await using var connection = await Connect(app);
 
         await using var session = new BitAiChatSession(new BitAiSignalRTransport(connection), null, Options);
-        await session.SubmitAsync("hi");
+        await session.SubmitAsync("hi", cancellationToken: TestContext.CancellationToken);
+        var actualValue = session.LastError?.Code;
 
-        Assert.AreEqual("server_error", session.LastError?.Code);
+        Assert.AreEqual("server_error", actualValue);
         Assert.IsFalse(session.LastError!.Message.Contains("secret", StringComparison.Ordinal));
     }
 
@@ -313,9 +317,10 @@ public class BitAiTransportEndToEndTests
         await using var connection = await Connect(app);
 
         await using var session = new BitAiChatSession(new BitAiSignalRTransport(connection), null, Options);
-        await session.SubmitAsync("hi");
+        await session.SubmitAsync("hi", cancellationToken: TestContext.CancellationToken);
+        var actualValue = session.LastError?.Code;
 
-        Assert.AreEqual("server_error", session.LastError?.Code);
+        Assert.AreEqual("server_error", actualValue);
         Assert.IsFalse(session.LastError!.Message.Contains("secret", StringComparison.Ordinal));
     }
 
@@ -335,9 +340,10 @@ public class BitAiTransportEndToEndTests
         await using var connection = await Connect(app);
 
         await using var session = new BitAiChatSession(new BitAiSignalRTransport(connection), null, Options);
-        await session.SubmitAsync("hi");
+        await session.SubmitAsync("hi", cancellationToken: TestContext.CancellationToken);
+        var actualValue = session.LastError?.Code;
 
-        Assert.AreEqual("server_error", session.LastError?.Code);
+        Assert.AreEqual("server_error", actualValue);
         Assert.AreEqual("Before", session.Conversation.Messages[1].GetText());
     }
 
@@ -351,16 +357,16 @@ public class BitAiTransportEndToEndTests
 
         var transport = new BitAiSignalRTransport(owner);
         var events = new List<BitAiEvent>();
-        await foreach (var evt in transport.StreamAsync(new BitAiRequest([])))
+        await foreach (var evt in transport.StreamAsync(new BitAiRequest([]), TestContext.CancellationToken))
         {
             events.Add(evt);
             if (evt is not BitAiToolApprovalRequestedEvent) continue;
 
-            Assert.IsFalse(await other.InvokeAsync<bool>(BitAiHub.ApprovalMethodName, decision), "Another connection cannot decide the call.");
-            await Assert.ThrowsAsync<HubException>(() => other.InvokeAsync<bool>(BitAiHub.ApprovalMethodName, System.Text.Json.JsonSerializer.SerializeToElement(new { nope = 1 })));
+            Assert.IsFalse(await other.InvokeAsync<bool>(BitAiHub.ApprovalMethodName, decision, TestContext.CancellationToken), "Another connection cannot decide the call.");
+            await Assert.ThrowsAsync<HubException>(() => other.InvokeAsync<bool>(BitAiHub.ApprovalMethodName, System.Text.Json.JsonSerializer.SerializeToElement(new { nope = 1 }), TestContext.CancellationToken));
 
-            Assert.IsTrue(await owner.InvokeAsync<bool>(BitAiHub.ApprovalMethodName, decision));
-            Assert.IsFalse(await owner.InvokeAsync<bool>(BitAiHub.ApprovalMethodName, decision), "A call is decided once.");
+            Assert.IsTrue(await owner.InvokeAsync<bool>(BitAiHub.ApprovalMethodName, decision, TestContext.CancellationToken));
+            Assert.IsFalse(await owner.InvokeAsync<bool>(BitAiHub.ApprovalMethodName, decision, TestContext.CancellationToken), "A call is decided once.");
         }
 
         Assert.AreEqual("Deleted after approved", events.OfType<BitAiToolResultEvent>().Single().Outcome.GetDisplayText());
@@ -450,4 +456,6 @@ public class BitAiTransportEndToEndTests
         protected override IAsyncEnumerable<BitAiEvent> StreamAsync(BitAiRequest request, CancellationToken cancellationToken) =>
             HeldCall(approvals, cancellationToken);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

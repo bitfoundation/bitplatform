@@ -59,14 +59,14 @@ public class BitRichTextEditorAccessibilityTests : BunitTestContext
 
         var surface = component.Find(".bit-rte-edt");
 
-        Assert.AreEqual(0, component.FindAll(".bit-rte-lbl").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rte-lbl"));
         Assert.IsFalse(surface.HasAttribute("aria-required"));
         Assert.IsFalse(surface.HasAttribute("aria-invalid"));
         Assert.IsFalse(surface.HasAttribute("aria-disabled"));
     }
 
     [TestMethod]
-    public void BitRichTextEditorShouldReportAnInvalidFieldOfItsEditForm()
+    public async global::System.Threading.Tasks.Task BitRichTextEditorShouldReportAnInvalidFieldOfItsEditForm()
     {
         var model = new FormModel();
         var editContext = new EditContext(model);
@@ -84,11 +84,11 @@ public class BitRichTextEditorAccessibilityTests : BunitTestContext
 
         Assert.IsFalse(component.Find(".bit-rte").ClassList.Contains("bit-inv"));
 
-        component.InvokeAsync(() =>
+        await component.InvokeAsync(() =>
         {
             messages.Add(FieldIdentifier.Create(() => model.Body), "The body is required.");
             editContext.NotifyValidationStateChanged();
-        }).Wait();
+        }).WaitAsync(TestContext.CancellationToken);
 
         component.WaitForAssertion(() =>
         {
@@ -96,11 +96,11 @@ public class BitRichTextEditorAccessibilityTests : BunitTestContext
             Assert.AreEqual("true", component.Find(".bit-rte-edt").GetAttribute("aria-invalid"));
         });
 
-        component.InvokeAsync(() =>
+        await component.InvokeAsync(() =>
         {
             messages.Clear();
             editContext.NotifyValidationStateChanged();
-        }).Wait();
+        }).WaitAsync(TestContext.CancellationToken);
 
         component.WaitForAssertion(() =>
         {
@@ -110,7 +110,7 @@ public class BitRichTextEditorAccessibilityTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitRichTextEditorCountShouldDescribeTheSurfaceWithoutReadingItselfOut()
+    public async global::System.Threading.Tasks.Task BitRichTextEditorCountShouldDescribeTheSurfaceWithoutReadingItselfOut()
     {
         var component = RenderComponent<BitRichTextEditor>(parameters =>
         {
@@ -130,17 +130,17 @@ public class BitRichTextEditorAccessibilityTests : BunitTestContext
         Assert.AreEqual("status", limit.GetAttribute("role"));
         Assert.AreEqual("", limit.TextContent);
 
-        component.InvokeAsync(() => component.Instance._OnFactsChanged(new BitRichTextEditorContentFacts(true, false, 5, 1))).Wait();
+        await component.InvokeAsync(() => component.Instance._OnFactsChanged(new BitRichTextEditorContentFacts(true, false, 5, 1))).WaitAsync(TestContext.CancellationToken);
 
         Assert.AreEqual("limit reached", component.Find(".bit-rte-cnt-over").TextContent);
     }
 
     [TestMethod]
-    public void BitRichTextEditorShouldDescribeTheSurfaceByItsError()
+    public async global::System.Threading.Tasks.Task BitRichTextEditorShouldDescribeTheSurfaceByItsError()
     {
         var component = RenderComponent<BitRichTextEditor>();
 
-        component.InvokeAsync(() => component.Instance._OnClientError("invalid-image", "image-unsupported-type", "Bad image.", null)).Wait();
+        await component.InvokeAsync(() => component.Instance._OnClientError("invalid-image", "image-unsupported-type", "Bad image.", null)).WaitAsync(TestContext.CancellationToken);
 
         var error = component.Find(".bit-rte-err");
         Assert.AreEqual("alert", error.GetAttribute("role"));
@@ -168,7 +168,7 @@ public class BitRichTextEditorAccessibilityTests : BunitTestContext
     {
         var component = RenderComponent<BitRichTextEditor>(parameters => parameters.Add(p => p.Description, "Help."));
 
-        Assert.AreEqual(0, component.FindAll(".bit-rte-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rte-erm"));
         Assert.AreEqual("", component.Find(".bit-rte-ann").TextContent);
 
         component.Render(parameters => parameters.Add(p => p.ErrorMessage, "Refused."));
@@ -190,7 +190,7 @@ public class BitRichTextEditorAccessibilityTests : BunitTestContext
 
         component.Render(parameters => parameters.Add(p => p.ErrorMessage, (string?)null));
 
-        Assert.AreEqual(0, component.FindAll(".bit-rte-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rte-erm"));
         Assert.IsFalse(component.Find(".bit-rte").ClassList.Contains("bit-inv"));
         Assert.IsFalse(component.Find(".bit-rte-edt").HasAttribute("aria-invalid"));
     }
@@ -202,7 +202,7 @@ public class BitRichTextEditorAccessibilityTests : BunitTestContext
 
         Assert.IsTrue(component.Find(".bit-rte").ClassList.Contains("bit-inv"));
         Assert.AreEqual("true", component.Find(".bit-rte-edt").GetAttribute("aria-invalid"));
-        Assert.AreEqual(0, component.FindAll(".bit-rte-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rte-erm"));
     }
 
     [TestMethod]
@@ -215,12 +215,12 @@ public class BitRichTextEditorAccessibilityTests : BunitTestContext
 
         // A pointer click (detail 1): the surface that held the caret is hidden, so the source view takes the focus.
         await ButtonByLabel(component, "HTML source view").ClickAsync(new MouseEventArgs { Detail = 1 });
-        Assert.AreEqual(1, component.FindAll(".bit-rte-src").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-rte-src"));
         component.WaitForAssertion(() => Context.JSInterop.VerifyInvoke("Blazor._internal.domWrapper.focus"));
 
         // And back: the text takes it again.
         await ButtonByLabel(component, "HTML source view").ClickAsync(new MouseEventArgs { Detail = 1 });
-        Assert.AreEqual(0, component.FindAll(".bit-rte-src").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rte-src"));
         component.WaitForAssertion(() => Context.JSInterop.VerifyInvoke(RestoreFocus));
     }
 
@@ -232,8 +232,8 @@ public class BitRichTextEditorAccessibilityTests : BunitTestContext
         // A click raised by Enter or Space reports no click count.
         await ButtonByLabel(component, "HTML source view").ClickAsync(new MouseEventArgs { Detail = 0 });
 
-        Assert.AreEqual(1, component.FindAll(".bit-rte-src").Count);
-        Assert.AreEqual(0, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+        Assert.ContainsSingle(component.FindAll(".bit-rte-src"));
+        Assert.IsEmpty(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
     }
 
     [TestMethod]
@@ -241,8 +241,8 @@ public class BitRichTextEditorAccessibilityTests : BunitTestContext
     {
         var component = RenderComponent<BitRichTextEditor>(parameters => parameters.Add(p => p.Toolbar, BitRichTextEditorToolbar.Color));
 
-        Assert.AreEqual(2, component.FindAll(".bit-rte-tlb input[type=color]").Count);
-        Assert.AreEqual(0, component.FindAll("button[aria-label='Text color']").Count);
+        Assert.HasCount(2, component.FindAll(".bit-rte-tlb input[type=color]"));
+        Assert.IsEmpty(component.FindAll("button[aria-label='Text color']"));
     }
 
     [TestMethod]
@@ -257,7 +257,7 @@ public class BitRichTextEditorAccessibilityTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance._OnSelectionChanged(new BitRichTextEditorSelectionState { ForeColor = "#dc2626" }));
 
         var toggle = ButtonByLabel(component, "Text color");
-        Assert.AreEqual(0, component.FindAll(".bit-rte-tlb input[type=color]").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rte-tlb input[type=color]"));
         Assert.AreEqual("false", toggle.GetAttribute("aria-expanded"));
 
         await toggle.ClickAsync(new());
@@ -269,7 +269,7 @@ public class BitRichTextEditorAccessibilityTests : BunitTestContext
         Assert.AreEqual("true", ButtonByLabel(component, "Text color").GetAttribute("aria-expanded"));
 
         var swatches = component.FindAll(".bit-rte-swatch");
-        Assert.AreEqual(2, swatches.Count);
+        Assert.HasCount(2, swatches);
         // Named by its name, or by its value when it has none; the color under the caret is the pressed one.
         Assert.AreEqual("Blue", swatches[0].GetAttribute("aria-label"));
         Assert.AreEqual("false", swatches[0].GetAttribute("aria-pressed"));
@@ -285,7 +285,7 @@ public class BitRichTextEditorAccessibilityTests : BunitTestContext
         var apply = Context.JSInterop.VerifyInvoke("BitBlazorUI.RichTextEditor.applyColor");
         Assert.AreEqual("fore", apply.Arguments[1]);
         Assert.AreEqual("#2563eb", apply.Arguments[2]);
-        Assert.AreEqual(0, component.FindAll(".bit-rte-bar").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rte-bar"));
         component.WaitForAssertion(() => Context.JSInterop.VerifyInvoke(RestoreFocus));
     }
 
@@ -306,49 +306,49 @@ public class BitRichTextEditorAccessibilityTests : BunitTestContext
 
         await component.Find(".bit-rte-swatch").KeyDownAsync(new KeyboardEventArgs { Key = "Escape" });
 
-        Assert.AreEqual(0, component.FindAll(".bit-rte-bar").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rte-bar"));
     }
 
     [TestMethod]
     [DataRow(BitRichTextEditorToolbar.Image, 1, "Image inserted. Select an image and use the image button to describe it.")]
     [DataRow(BitRichTextEditorToolbar.Inline, 3, "3 images inserted.")]
-    public void BitRichTextEditorDroppedImagesShouldBeAnnouncedWithWhereToDescribeThem(BitRichTextEditorToolbar toolbar, int count, string expected)
+    public async global::System.Threading.Tasks.Task BitRichTextEditorDroppedImagesShouldBeAnnouncedWithWhereToDescribeThem(BitRichTextEditorToolbar toolbar, int count, string expected)
     {
         var component = RenderComponent<BitRichTextEditor>(parameters => parameters.Add(p => p.Toolbar, toolbar));
 
-        component.InvokeAsync(() => component.Instance._OnImagesInserted(count)).Wait();
+        await component.InvokeAsync(() => component.Instance._OnImagesInserted(count)).WaitAsync(TestContext.CancellationToken);
 
         Assert.AreEqual(expected, component.Find(".bit-rte-ann").TextContent);
     }
 
     [TestMethod]
-    public void BitRichTextEditorShouldAnnounceATickedTask()
+    public async global::System.Threading.Tasks.Task BitRichTextEditorShouldAnnounceATickedTask()
     {
         var component = RenderComponent<BitRichTextEditor>();
 
         var announcer = component.Find(".bit-rte-ann");
         Assert.AreEqual("status", announcer.GetAttribute("role"));
 
-        component.InvokeAsync(() => component.Instance._OnTaskToggled(true)).Wait();
+        await component.InvokeAsync(() => component.Instance._OnTaskToggled(true)).WaitAsync(TestContext.CancellationToken);
         Assert.AreEqual("Task checked", component.Find(".bit-rte-ann").TextContent);
 
-        component.InvokeAsync(() => component.Instance._OnTaskToggled(false)).Wait();
+        await component.InvokeAsync(() => component.Instance._OnTaskToggled(false)).WaitAsync(TestContext.CancellationToken);
         Assert.AreEqual("Task unchecked", component.Find(".bit-rte-ann").TextContent);
 
         // The same message twice in a row still changes the live region, so it is spoken again.
-        component.InvokeAsync(() => component.Instance._OnTaskToggled(false)).Wait();
-        StringAssert.StartsWith(component.Find(".bit-rte-ann").TextContent, "Task unchecked");
+        await component.InvokeAsync(() => component.Instance._OnTaskToggled(false)).WaitAsync(TestContext.CancellationToken);
+        Assert.StartsWith("Task unchecked", component.Find(".bit-rte-ann").TextContent);
         Assert.AreNotEqual("Task unchecked", component.Find(".bit-rte-ann").TextContent);
     }
 
     [TestMethod]
-    public void BitRichTextEditorRemoveLinkShouldOnlyBeEnabledInsideALink()
+    public async global::System.Threading.Tasks.Task BitRichTextEditorRemoveLinkShouldOnlyBeEnabledInsideALink()
     {
         var component = RenderComponent<BitRichTextEditor>(parameters => parameters.Add(p => p.Toolbar, BitRichTextEditorToolbar.Link));
 
         Assert.IsTrue(ButtonByLabel(component, "Remove link").HasAttribute("disabled"));
 
-        component.InvokeAsync(() => component.Instance._OnSelectionChanged(new BitRichTextEditorSelectionState { InLink = true })).Wait();
+        await component.InvokeAsync(() => component.Instance._OnSelectionChanged(new BitRichTextEditorSelectionState { InLink = true })).WaitAsync(TestContext.CancellationToken);
 
         Assert.IsFalse(ButtonByLabel(component, "Remove link").HasAttribute("disabled"));
     }
@@ -359,7 +359,7 @@ public class BitRichTextEditorAccessibilityTests : BunitTestContext
         var component = RenderComponent<BitRichTextEditor>(parameters => parameters.Add(p => p.Toolbar, BitRichTextEditorToolbar.AllExtended));
 
         var buttons = component.FindAll(".bit-rte-tlb button");
-        Assert.IsTrue(buttons.Count > 30);
+        Assert.IsGreaterThan(30, buttons.Count);
 
         foreach (var button in buttons)
         {
@@ -369,7 +369,7 @@ public class BitRichTextEditorAccessibilityTests : BunitTestContext
         var glyphs = component.FindAll(".bit-rte-tlb svg");
 
         // The glyphs are inline SVGs, so the loop below cannot pass by finding none.
-        Assert.IsTrue(glyphs.Count > 0);
+        Assert.IsNotEmpty(glyphs);
 
         foreach (var svg in glyphs)
         {
@@ -396,7 +396,7 @@ public class BitRichTextEditorAccessibilityTests : BunitTestContext
         var field = input is null ? component.Find(".bit-rte-bar input[type=number]") : component.Find($".bit-rte-bar input[aria-label='{input}']");
         await field.KeyDownAsync(new KeyboardEventArgs { Key = "Escape" });
 
-        Assert.AreEqual(0, component.FindAll(".bit-rte-bar").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rte-bar"));
         component.WaitForAssertion(() => Context.JSInterop.VerifyInvoke(RestoreFocus));
     }
 
@@ -410,7 +410,7 @@ public class BitRichTextEditorAccessibilityTests : BunitTestContext
         // Not a text field: the checkbox has no key handler of its own, the panel answers for it.
         await component.Find(".bit-rte-bar input[type=checkbox]").KeyDownAsync(new KeyboardEventArgs { Key = "Escape" });
 
-        Assert.AreEqual(0, component.FindAll(".bit-rte-bar").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rte-bar"));
     }
 
     [TestMethod]
@@ -443,7 +443,7 @@ public class BitRichTextEditorAccessibilityTests : BunitTestContext
         }));
         await ButtonByLabel(component, "Insert or edit link").ClickAsync(new());
 
-        Assert.AreEqual(0, component.FindAll(".bit-rte-bar a").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rte-bar a"));
     }
 
     [TestMethod]
@@ -474,7 +474,7 @@ public class BitRichTextEditorAccessibilityTests : BunitTestContext
 
         await component.FindAll(".bit-rte-bar button").First(b => b.TextContent.Trim() == "Close").ClickAsync(new());
 
-        Assert.AreEqual(0, component.FindAll(".bit-rte-bar").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rte-bar"));
         component.WaitForAssertion(() => Context.JSInterop.VerifyInvoke(RestoreFocus));
     }
 
@@ -502,7 +502,7 @@ public class BitRichTextEditorAccessibilityTests : BunitTestContext
 
         await panel.KeyDownAsync(new KeyboardEventArgs { Key = "Escape" });
 
-        Assert.AreEqual(0, component.FindAll(".bit-rte-emoji-panel").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rte-emoji-panel"));
         component.WaitForAssertion(() => Context.JSInterop.VerifyInvoke(RestoreFocus));
     }
 
@@ -519,7 +519,7 @@ public class BitRichTextEditorAccessibilityTests : BunitTestContext
 
         await filter.KeyDownAsync(new KeyboardEventArgs { Key = "Escape" });
 
-        Assert.AreEqual(0, component.FindAll(".bit-rte-slash").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rte-slash"));
         component.WaitForAssertion(() => Context.JSInterop.VerifyInvoke(RestoreFocus));
     }
 
@@ -541,17 +541,17 @@ public class BitRichTextEditorAccessibilityTests : BunitTestContext
             parameters.Add(p => p.ColorPalette, [new("#fff3a3", "Soft yellow")]);
         });
 
-        Assert.AreEqual(0, component.FindAll("[data-bit-esc]").Count);
+        Assert.IsEmpty(component.FindAll("[data-bit-esc]"));
 
         await ButtonByLabel(component, toggle).ClickAsync(new());
 
         var claimed = component.Find("[data-bit-esc]");
-        Assert.IsTrue(claimed.Id!.EndsWith($"-{panel}-panel"), claimed.Id);
+        Assert.EndsWith($"-{panel}-panel", claimed.Id!, claimed.Id);
         Assert.AreEqual("claim", claimed.GetAttribute("data-bit-esc"));
 
         await claimed.KeyDownAsync(new KeyboardEventArgs { Key = "Escape" });
 
-        Assert.AreEqual(0, component.FindAll("[data-bit-esc]").Count);
+        Assert.IsEmpty(component.FindAll("[data-bit-esc]"));
     }
 
     [TestMethod]
@@ -559,7 +559,7 @@ public class BitRichTextEditorAccessibilityTests : BunitTestContext
     {
         var component = RenderComponent<BitRichTextEditor>();
 
-        Assert.AreEqual(0, component.FindAll("[data-bit-esc]").Count);
+        Assert.IsEmpty(component.FindAll("[data-bit-esc]"));
 
         await component.InvokeAsync(() => component.Instance._OnHelpRequested());
 
@@ -567,7 +567,7 @@ public class BitRichTextEditorAccessibilityTests : BunitTestContext
 
         await component.Find(".bit-rte-help-scroll").KeyDownAsync(new KeyboardEventArgs { Key = "Escape" });
 
-        Assert.AreEqual(0, component.FindAll("[data-bit-esc]").Count);
+        Assert.IsEmpty(component.FindAll("[data-bit-esc]"));
     }
 
     [TestMethod]
@@ -575,7 +575,7 @@ public class BitRichTextEditorAccessibilityTests : BunitTestContext
     {
         var component = RenderComponent<BitRichTextEditor>();
 
-        Assert.AreEqual(0, component.FindAll("[data-bit-esc]").Count);
+        Assert.IsEmpty(component.FindAll("[data-bit-esc]"));
 
         await component.InvokeAsync(() => component.Instance._OnSlashTrigger());
 
@@ -584,7 +584,7 @@ public class BitRichTextEditorAccessibilityTests : BunitTestContext
 
         await filter.KeyDownAsync(new KeyboardEventArgs { Key = "Escape" });
 
-        Assert.AreEqual(0, component.FindAll("[data-bit-esc]").Count);
+        Assert.IsEmpty(component.FindAll("[data-bit-esc]"));
     }
 
     [TestMethod]
@@ -655,7 +655,7 @@ public class BitRichTextEditorAccessibilityTests : BunitTestContext
             parameters.Add(p => p.KeyboardShortcuts, new Dictionary<string, string> { ["ctrl+shift+1"] = "h1", ["ctrl+b"] = "strikeThrough" });
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-rte-help").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rte-help"));
 
         await component.InvokeAsync(() => component.Instance._OnHelpRequested());
 
@@ -677,7 +677,7 @@ public class BitRichTextEditorAccessibilityTests : BunitTestContext
 
         await component.Find(".bit-rte-help-scroll").KeyDownAsync(new KeyboardEventArgs { Key = "Escape" });
 
-        Assert.AreEqual(0, component.FindAll(".bit-rte-help").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rte-help"));
         component.WaitForAssertion(() => Context.JSInterop.VerifyInvoke(RestoreFocus));
     }
 
@@ -689,9 +689,9 @@ public class BitRichTextEditorAccessibilityTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance._OnHelpRequested());
 
         var actions = component.FindAll(".bit-rte-help-tbl tbody th").Select(th => th.TextContent).ToList();
-        CollectionAssert.Contains(actions, "Move to the toolbar");
-        CollectionAssert.DoesNotContain(actions, "Bold");
-        CollectionAssert.DoesNotContain(actions, "Paste as plain text");
+        Assert.Contains("Move to the toolbar", actions);
+        Assert.DoesNotContain("Bold", actions);
+        Assert.DoesNotContain("Paste as plain text", actions);
     }
 
     [TestMethod]
@@ -701,7 +701,7 @@ public class BitRichTextEditorAccessibilityTests : BunitTestContext
             parameters.Add(p => p.Toolbar, BitRichTextEditorToolbar.Link | BitRichTextEditorToolbar.Help));
 
         await ButtonByLabel(component, "Insert or edit link").ClickAsync(new());
-        Assert.AreEqual(1, component.FindAll(".bit-rte-bar").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-rte-bar"));
 
         var help = ButtonByLabel(component, "Keyboard shortcuts");
         Assert.AreEqual("Alt+0", help.GetAttribute("aria-keyshortcuts"));
@@ -709,13 +709,13 @@ public class BitRichTextEditorAccessibilityTests : BunitTestContext
 
         await help.ClickAsync(new());
 
-        Assert.AreEqual(0, component.FindAll(".bit-rte-bar").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rte-bar"));
         help = ButtonByLabel(component, "Keyboard shortcuts");
         Assert.AreEqual("true", help.GetAttribute("aria-expanded"));
         Assert.AreEqual(component.Find(".bit-rte-help").Id, help.GetAttribute("aria-controls"));
 
         await help.ClickAsync(new());
-        Assert.AreEqual(0, component.FindAll(".bit-rte-help").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rte-help"));
     }
 
     [TestMethod]
@@ -736,4 +736,6 @@ public class BitRichTextEditorAccessibilityTests : BunitTestContext
     {
         public string? Body { get; set; }
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

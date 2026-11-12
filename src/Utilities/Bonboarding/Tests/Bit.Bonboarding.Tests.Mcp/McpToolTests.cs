@@ -200,14 +200,18 @@ public class McpToolTests
     {
         var analysis = await McpCall.StructuredAsync<BonboardingPlacementAnalysisDto>("InspectBonboardingPlacement", new()
         {
-            ["targetX"] = 1200, ["targetY"] = 20, ["targetWidth"] = 60, ["targetHeight"] = 30, ["placement"] = "Right"
+            ["targetX"] = 1200,
+            ["targetY"] = 20,
+            ["targetWidth"] = 60,
+            ["targetHeight"] = 30,
+            ["placement"] = "Right"
         });
 
         Assert.AreEqual("Right", analysis.Requested);
         Assert.AreEqual("Left", analysis.Side);
         Assert.IsFalse(analysis.UsedPreferred);
         Assert.AreEqual(0, analysis.Overflow);
-        Assert.IsTrue(analysis.Notes.Any(note => note.Contains("flipped", StringComparison.Ordinal)));
+        Assert.Contains(note => note.Contains("flipped", StringComparison.Ordinal), analysis.Notes);
     }
 
     [TestMethod]
@@ -215,7 +219,10 @@ public class McpToolTests
     {
         var analysis = await McpCall.StructuredAsync<BonboardingPlacementAnalysisDto>("InspectBonboardingPlacement", new()
         {
-            ["targetX"] = 0, ["targetY"] = 0, ["targetWidth"] = 0, ["targetHeight"] = 0
+            ["targetX"] = 0,
+            ["targetY"] = 0,
+            ["targetWidth"] = 0,
+            ["targetHeight"] = 0
         });
 
         Assert.AreEqual("Center", analysis.Side);
@@ -229,12 +236,18 @@ public class McpToolTests
     {
         var analysis = await McpCall.StructuredAsync<BonboardingPlacementAnalysisDto>("InspectBonboardingPlacement", new()
         {
-            ["targetX"] = 100, ["targetY"] = 100, ["targetWidth"] = 50, ["targetHeight"] = 50,
-            ["popoverWidth"] = 400, ["popoverHeight"] = 900, ["viewportWidth"] = 360, ["viewportHeight"] = 640
+            ["targetX"] = 100,
+            ["targetY"] = 100,
+            ["targetWidth"] = 50,
+            ["targetHeight"] = 50,
+            ["popoverWidth"] = 400,
+            ["popoverHeight"] = 900,
+            ["viewportWidth"] = 360,
+            ["viewportHeight"] = 640
         });
 
         Assert.IsGreaterThan(0, analysis.Overflow);
-        Assert.IsTrue(analysis.Notes.Any(note => note.Contains("larger than the area", StringComparison.Ordinal)));
+        Assert.Contains(note => note.Contains("larger than the area", StringComparison.Ordinal), analysis.Notes);
     }
 
     [TestMethod]
@@ -242,7 +255,11 @@ public class McpToolTests
     {
         var kebab = await McpCall.StructuredAsync<BonboardingPlacementAnalysisDto>("InspectBonboardingPlacement", new()
         {
-            ["targetX"] = 500, ["targetY"] = 300, ["targetWidth"] = 100, ["targetHeight"] = 40, ["placement"] = "bottom-start"
+            ["targetX"] = 500,
+            ["targetY"] = 300,
+            ["targetWidth"] = 100,
+            ["targetHeight"] = 40,
+            ["placement"] = "bottom-start"
         });
 
         Assert.AreEqual("BottomStart", kebab.Requested);
@@ -250,11 +267,16 @@ public class McpToolTests
 
         var bad = await McpCall.StructuredAsync<BonboardingPlacementAnalysisDto>("InspectBonboardingPlacement", new()
         {
-            ["targetX"] = 500, ["targetY"] = 300, ["targetWidth"] = 100, ["targetHeight"] = 40, ["placement"] = "Sideways", ["fallbacks"] = "Top, Nowhere"
+            ["targetX"] = 500,
+            ["targetY"] = 300,
+            ["targetWidth"] = 100,
+            ["targetHeight"] = 40,
+            ["placement"] = "Sideways",
+            ["fallbacks"] = "Top, Nowhere"
         });
 
         Assert.AreEqual("Auto", bad.Requested);
-        Assert.IsTrue(bad.Notes.Any(note => note.Contains("'Sideways' is not a placement", StringComparison.Ordinal)));
-        Assert.IsTrue(bad.Notes.Any(note => note.Contains("'Nowhere'", StringComparison.Ordinal)));
+        Assert.Contains(note => note.Contains("'Sideways' is not a placement", StringComparison.Ordinal), bad.Notes);
+        Assert.Contains(note => note.Contains("'Nowhere'", StringComparison.Ordinal), bad.Notes);
     }
 }

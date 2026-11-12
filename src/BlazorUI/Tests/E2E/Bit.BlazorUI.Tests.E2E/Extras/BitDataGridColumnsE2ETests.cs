@@ -134,7 +134,7 @@ public class BitDataGridColumnsE2ETests : BitDataGridE2ETestBase
         await Resizer("grid-resize", 4).DblClickAsync();
         await UntilAsync(async () => await WidthAsync("grid-resize", 4) < 200, "The double-click did not shrink Supplier to its content.");
         var fitted = await WidthAsync("grid-resize", 4);
-        Assert.IsTrue(fitted > 40, $"Supplier was fitted to {fitted}px, narrower than its values.");
+        Assert.IsGreaterThan(40, fitted, $"Supplier was fitted to {fitted}px, narrower than its values.");
 
         // Fitting it again leaves it as it is.
         await Resizer("grid-resize", 4).DblClickAsync();
@@ -165,7 +165,7 @@ public class BitDataGridColumnsE2ETests : BitDataGridE2ETestBase
         await Resizer(id, 1).DblClickAsync();
         await UntilAsync(async () => await WidthAsync(id, 1) < 190, "The double-click did not shrink the column to its header.");
         var title = await BoxAsync(label.Locator(".bit-dtg-htitle"));
-        Assert.IsTrue(await WidthAsync(id, 1) < title.Width + 50, "The fitted column is not as narrow as its header.");
+        Assert.IsLessThan(title.Width + 50, await WidthAsync(id, 1), "The fitted column is not as narrow as its header.");
         Assert.IsFalse(await label.EvaluateAsync<bool>("el => el.scrollWidth > el.clientWidth"), "The fitted column clips its sort hint.");
 
         await label.ClickAsync();

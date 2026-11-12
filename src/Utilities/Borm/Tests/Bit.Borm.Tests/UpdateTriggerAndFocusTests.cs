@@ -61,7 +61,7 @@ public class UpdateTriggerTests : BunitContext
             Assert.AreEqual("value", updates, $"{owner}: its input handler does not leave the value to the browser");
         }
 
-        Assert.AreEqual(6, InputHandlers(view).Count, "one per control written as the user types; the change-driven field has none");
+        Assert.HasCount(6, InputHandlers(view), "one per control written as the user types; the change-driven field has none");
     }
 
     /// <summary>
@@ -177,7 +177,7 @@ public class UpdateTriggerTests : BunitContext
         // Nothing has landed yet: every keystroke superseded the one before it.
         Assert.IsNull(state.GetValue("q"));
 
-        await Task.Delay(300);
+        await Task.Delay(300, TestContext.CancellationToken);
         Assert.AreEqual("abc", state.GetValue("q"));
     }
 
@@ -194,6 +194,8 @@ public class UpdateTriggerTests : BunitContext
 
         Assert.AreEqual(7d, state.GetValue("volume"));
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }
 
 [TestClass]

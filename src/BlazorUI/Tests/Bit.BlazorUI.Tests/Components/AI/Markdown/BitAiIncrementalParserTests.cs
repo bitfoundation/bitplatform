@@ -21,7 +21,7 @@ public class BitAiIncrementalParserTests
             var incremental = parser.Parse(prefix, isComplete: false);
             var oneShot = BitAiMarkdownParser.Parse(prefix, isComplete: false);
 
-            Assert.AreEqual(oneShot.Blocks.Count, incremental.Blocks.Count);
+            Assert.HasCount(oneShot.Blocks.Count, incremental.Blocks);
             for (var i = 0; i < oneShot.Blocks.Count; i++)
             {
                 Assert.AreEqual(oneShot.Blocks[i].GetType(), incremental.Blocks[i].GetType());
@@ -35,7 +35,7 @@ public class BitAiIncrementalParserTests
         var parser = new BitAiIncrementalMarkdownParser();
         parser.Parse("First paragraph.\n\nSecond paragraph.\n\nthird\n", isComplete: false);
 
-        Assert.IsTrue(parser.StableLength > 0, "Text before the last confirmed boundary should become stable.");
+        Assert.IsGreaterThan(0, parser.StableLength, "Text before the last confirmed boundary should become stable.");
         Assert.AreEqual(2, parser.StableBlockCount);
     }
 
@@ -55,7 +55,7 @@ public class BitAiIncrementalParserTests
         var document = parser.Parse("- one\n\n- two\n\n- three\n", isComplete: false);
 
         Assert.ContainsSingle(document.Blocks);
-        Assert.AreEqual(3, Assert.IsExactInstanceOfType<BitAiListBlock>(document.Blocks[0]).Items.Count);
+        Assert.HasCount(3, Assert.IsExactInstanceOfType<BitAiListBlock>(document.Blocks[0]).Items);
     }
 
     [TestMethod]
@@ -63,7 +63,7 @@ public class BitAiIncrementalParserTests
     {
         var parser = new BitAiIncrementalMarkdownParser();
         parser.Parse("First.\n\nSecond.\n\n", isComplete: false);
-        Assert.IsTrue(parser.StableLength > 0);
+        Assert.IsGreaterThan(0, parser.StableLength);
 
         var document = parser.Parse("Completely different.", isComplete: false);
 
@@ -86,9 +86,8 @@ public class BitAiIncrementalParserTests
         for (var length = 200; length <= source.Length; length += 200) BitAiMarkdownParser.Parse(source[..length], null, false);
         var oneShotTime = stopwatch.Elapsed;
 
-        Assert.IsTrue(
-            incrementalTime < oneShotTime,
-            $"Incremental parsing took {incrementalTime.TotalMilliseconds:F1}ms " +
+        Assert.IsLessThan(
+oneShotTime, incrementalTime, $"Incremental parsing took {incrementalTime.TotalMilliseconds:F1}ms " +
             $"against {oneShotTime.TotalMilliseconds:F1}ms for repeated full parses.");
     }
 }

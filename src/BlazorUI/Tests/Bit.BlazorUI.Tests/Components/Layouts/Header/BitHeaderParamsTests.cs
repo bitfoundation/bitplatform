@@ -32,8 +32,8 @@ public class BitHeaderParamsTests : BunitTestContext
     [TestMethod]
     public void BitHeaderParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitHeader)}", BitHeaderParams.ParamName);
-        Assert.AreEqual("BitParams.BitHeader", BitHeaderParams.ParamName);
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitHeader)}", new BitHeaderParams().Name);
+        Assert.AreEqual("BitParams.BitHeader", new BitHeaderParams().Name);
     }
 
     [TestMethod]
@@ -57,7 +57,7 @@ public class BitHeaderParamsTests : BunitTestContext
                                           .ToArray();
 
         // Guards the guard: a reflection walk that found nothing would let every parameter through in silence.
-        Assert.IsTrue(parameters.Length > 10, $"Only {parameters.Length} parameters were found on {nameof(BitHeader)}.");
+        Assert.IsGreaterThan(10, parameters.Length, $"Only {parameters.Length} parameters were found on {nameof(BitHeader)}.");
 
         foreach (var name in parameters)
         {
@@ -101,7 +101,7 @@ public class BitHeaderParamsTests : BunitTestContext
         var header = component.Find(".bit-hdr");
 
         // Its own height, size and Hidden stand, the cascaded ones never overwrite them.
-        StringAssert.Contains(header.GetAttribute("style")!, "height:40px");
+        Assert.Contains("height:40px", header.GetAttribute("style")!);
         Assert.IsTrue(header.ClassList.Contains("bit-hdr-sm"));
         Assert.IsFalse(header.ClassList.Contains("bit-hdr-lg"));
         Assert.IsFalse(header.ClassList.Contains("bit-hdr-hdn"));
@@ -147,7 +147,7 @@ public class BitHeaderParamsTests : BunitTestContext
     {
         var type = component.GetType();
 
-        Assert.IsTrue(expected.Count > 10, $"Only {expected.Count} cascading parameters were found on {type.Name}.");
+        Assert.IsGreaterThan(10, expected.Count, $"Only {expected.Count} cascading parameters were found on {type.Name}.");
 
         foreach (var (name, value) in expected)
         {

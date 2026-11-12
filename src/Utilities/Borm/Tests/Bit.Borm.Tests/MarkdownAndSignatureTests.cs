@@ -46,15 +46,15 @@ public partial class MarkdownAndSignatureTests : ComponentTestBase
             See [the docs](https://bitplatform.dev/borm) or ~~old~~.
             """);
 
-        StringAssert.Contains(html, "<h3>Release notes</h3>");
-        StringAssert.Contains(html, "<p>Fixed <strong>two</strong> bugs and made <em>one</em> thing <code>faster</code>.<br>Second line.</p>");
-        StringAssert.Contains(html, "<ul><li>one</li><li>two</li></ul>");
-        StringAssert.Contains(html, "<ol><li>first</li><li>second</li></ol>");
-        StringAssert.Contains(html, "<blockquote><p>quoted</p></blockquote>");
-        StringAssert.Contains(html, "<hr>");
-        StringAssert.Contains(html, "<pre><code>&lt;code&gt; &amp; more</code></pre>");
-        StringAssert.Contains(html, "<a href=\"https://bitplatform.dev/borm\" rel=\"nofollow noopener noreferrer\">the docs</a>");
-        StringAssert.Contains(html, "<del>old</del>");
+        Assert.Contains("<h3>Release notes</h3>", html);
+        Assert.Contains("<p>Fixed <strong>two</strong> bugs and made <em>one</em> thing <code>faster</code>.<br>Second line.</p>", html);
+        Assert.Contains("<ul><li>one</li><li>two</li></ul>", html);
+        Assert.Contains("<ol><li>first</li><li>second</li></ol>", html);
+        Assert.Contains("<blockquote><p>quoted</p></blockquote>", html);
+        Assert.Contains("<hr>", html);
+        Assert.Contains("<pre><code>&lt;code&gt; &amp; more</code></pre>", html);
+        Assert.Contains("<a href=\"https://bitplatform.dev/borm\" rel=\"nofollow noopener noreferrer\">the docs</a>", html);
+        Assert.Contains("<del>old</del>", html);
         OnlyItsOwnElements(html);
     }
 
@@ -89,7 +89,7 @@ public partial class MarkdownAndSignatureTests : ComponentTestBase
         BormMarkdown.ToHtml(string.Concat(Enumerable.Repeat("[a](", 10_000)));
         BormMarkdown.ToHtml(new string('>', 20_000) + " deep");
         BormMarkdown.ToHtml(string.Concat(Enumerable.Repeat("**_~~`", 10_000)));
-        Assert.IsTrue(clock.Elapsed < TimeSpan.FromSeconds(2), $"took {clock.Elapsed}");
+        Assert.IsLessThan(TimeSpan.FromSeconds(2), clock.Elapsed, $"took {clock.Elapsed}");
     }
 
     [TestMethod]
@@ -99,10 +99,10 @@ public partial class MarkdownAndSignatureTests : ComponentTestBase
         var html = BormMarkdown.ToHtml(new string('[', 200_000) + "](javascript:x)");
         BormMarkdown.ToHtml(string.Concat(Enumerable.Repeat("[", 100_000)) + "](" + new string('a', 100_000) + ")");
 
-        Assert.IsTrue(clock.Elapsed < TimeSpan.FromSeconds(2), $"took {clock.Elapsed}");
+        Assert.IsLessThan(TimeSpan.FromSeconds(2), clock.Elapsed, $"took {clock.Elapsed}");
         Assert.DoesNotContain("href", html);
         // A link that is one still is.
-        StringAssert.Contains(BormMarkdown.ToHtml("[[a](javascript:x) [b](https://x.y)"), "<a href=\"https://x.y\"");
+        Assert.Contains("<a href=\"https://x.y\"", BormMarkdown.ToHtml("[[a](javascript:x) [b](https://x.y)"));
     }
 
     [TestMethod]
@@ -112,8 +112,8 @@ public partial class MarkdownAndSignatureTests : ComponentTestBase
         BormMarkdown.ToHtml(string.Concat(Enumerable.Repeat("[a](x", 40_000)) + ")");
         BormMarkdown.ToHtml(string.Concat(Enumerable.Repeat("[a](https://x", 20_000)) + new string(' ', 100_000) + ")");
 
-        Assert.IsTrue(clock.Elapsed < TimeSpan.FromSeconds(2), $"took {clock.Elapsed}");
-        StringAssert.Contains(BormMarkdown.ToHtml("[a](  https://x.y  )"), "<a href=\"https://x.y\"");
+        Assert.IsLessThan(TimeSpan.FromSeconds(2), clock.Elapsed, $"took {clock.Elapsed}");
+        Assert.Contains("<a href=\"https://x.y\"", BormMarkdown.ToHtml("[a](  https://x.y  )"));
         Assert.DoesNotContain("href", BormMarkdown.ToHtml("[a](https://x y)"));
     }
 
@@ -143,7 +143,7 @@ public partial class MarkdownAndSignatureTests : ComponentTestBase
         Assert.IsFalse(cut.Find("#borm_notes_preview").HasAttribute("hidden"));
         Assert.AreEqual("<p>Hello <strong>world</strong></p>", cut.Find("#borm_notes_preview").InnerHtml.Trim());
         Assert.AreEqual("true", cut.FindAll("button").Single(b => b.TextContent.Trim() == "Hide preview").GetAttribute("aria-expanded"));
-        StringAssert.Contains(cut.Find(".bit-borm-review").InnerHtml, "<strong>world</strong>");
+        Assert.Contains("<strong>world</strong>", cut.Find(".bit-borm-review").InnerHtml);
 
         var back = BormJsonSchemaImporter.Import(BormJsonSchemaExporter.Export(form));
         Assert.AreEqual(BormFieldType.Markdown, back.Fields[0].Type);
@@ -156,8 +156,8 @@ public partial class MarkdownAndSignatureTests : ComponentTestBase
 
         Assert.IsTrue(BormSignature.IsImage(value));
         var svg = BormSignature.ToSvg(value)!;
-        StringAssert.Contains(svg, "viewBox='0 0 46 26'");
-        StringAssert.Contains(svg, "d='M8 8L18 18L28 8M38 13L38.5 13'");
+        Assert.Contains("viewBox='0 0 46 26'", svg);
+        Assert.Contains("d='M8 8L18 18L28 8M38 13L38.5 13'", svg);
         Assert.IsNull(BormSignature.FromStrokes([]));
     }
 
@@ -166,7 +166,7 @@ public partial class MarkdownAndSignatureTests : ComponentTestBase
     {
         var svg = BormSignature.ToSvg(BormSignature.FromTypedName("Ada <script>alert(1)</script>"))!;
 
-        StringAssert.Contains(svg, "Ada &lt;script&gt;alert(1)&lt;/script&gt;");
+        Assert.Contains("Ada &lt;script&gt;alert(1)&lt;/script&gt;", svg);
         Assert.DoesNotContain("<script", svg, StringComparison.Ordinal);
         Assert.IsNull(BormSignature.FromTypedName("   "));
     }
@@ -214,12 +214,12 @@ public partial class MarkdownAndSignatureTests : ComponentTestBase
         pad.PointerUp(new PointerEventArgs { OffsetX = 40, OffsetY = 30 });
 
         Assert.IsTrue(BormSignature.IsImage(data["sign"] as string));
-        Assert.HasCount(1, cut.FindAll(".bit-borm-signature__pad path"));
-        StringAssert.Contains(cut.Find(".bit-borm-review img").GetAttribute("alt"), "Signature: signature");
+        Assert.ContainsSingle(cut.FindAll(".bit-borm-signature__pad path"));
+        Assert.Contains("Signature: signature", cut.Find(".bit-borm-review img").GetAttribute("alt")!);
 
         cut.FindAll("button").Single(b => b.TextContent.Trim() == "Type it instead").Click();
         cut.Find(".bit-borm-signature__typed").Change("Ada Lovelace");
-        StringAssert.Contains(BormSignature.ToSvg(data["sign"] as string)!, ">Ada Lovelace</text>");
+        Assert.Contains(">Ada Lovelace</text>", BormSignature.ToSvg(data["sign"] as string)!);
 
         cut.FindAll("button").Single(b => b.TextContent.Trim() == "Clear").Click();
         Assert.IsNull(data["sign"]);

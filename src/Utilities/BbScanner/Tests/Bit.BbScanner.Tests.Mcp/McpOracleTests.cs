@@ -45,7 +45,7 @@ public partial class McpOracleTests
             .Select(format => format.ToString())
             .ToArray();
 
-        CollectionAssert.AreEqual(singles, BbScannerFormatCatalog.Formats.Select(format => format.Name).ToArray());
+        Assert.AreSequenceEqual(singles, BbScannerFormatCatalog.Formats.Select(format => format.Name).ToArray());
 
         var defaults = new BbScannerOptions();
 
@@ -79,7 +79,7 @@ public partial class McpOracleTests
 
         var indexed = BbScannerApiCatalog.Types.Select(type => type.Name).ToHashSet(StringComparer.Ordinal);
 
-        CollectionAssert.AreEquivalent(exported.ToArray(), indexed.ToArray());
+        Assert.AreSequenceEqual(exported.ToArray(), indexed.ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -110,7 +110,7 @@ public partial class McpOracleTests
         var declared = DeclaredPropertyRegex().Matches(css).Select(match => match.Groups["name"].Value).Distinct(StringComparer.Ordinal).ToArray();
 
         Assert.IsGreaterThan(10, declared.Length);
-        CollectionAssert.AreEquivalent(declared, BbScannerStylesheetClasses.Properties.Select(property => property.Name).ToArray());
+        Assert.AreSequenceEqual(declared, BbScannerStylesheetClasses.Properties.Select(property => property.Name).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -129,7 +129,7 @@ public partial class McpOracleTests
             if (fenced is false && HeadingRegex().Match(line) is { Success: true } match) headings.Add(match.Groups["text"].Value.Trim());
         }
 
-        CollectionAssert.AreEqual(headings, BbScannerSourceCatalog.GuideSections.Select(section => section.Heading).ToArray());
+        Assert.AreSequenceEqual(headings, BbScannerSourceCatalog.GuideSections.Select(section => section.Heading).ToArray());
         Assert.HasCount(BbScannerSourceCatalog.GuideSections.Length, BbScannerSourceCatalog.GuideSections.Select(section => section.Key).Distinct(StringComparer.Ordinal), "Every section needs a key of its own.");
     }
 
@@ -162,16 +162,15 @@ public partial class McpOracleTests
             ("GetBbScannerSourceFile", "?path=Demo/Client/Pages/Scan.razor", new() { ["path"] = "Demo/Client/Pages/Scan.razor" }),
         ];
 
-        CollectionAssert.AreEquivalent(McpSurfaceTests.ExpectedTools, calls.Select(call => call.Tool).ToArray(),
-            "The HTTP mirror is being exercised for a different set of tools than the server publishes.");
+        Assert.AreSequenceEqual(McpSurfaceTests.ExpectedTools, calls.Select(call => call.Tool).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, "The HTTP mirror is being exercised for a different set of tools than the server publishes.");
 
         foreach (var (tool, query, arguments) in calls)
         {
-            using var response = await http.GetAsync($"/api/mcp/{tool}{query}");
+            using var response = await http.GetAsync($"/api/mcp/{tool}{query}", TestContext.CancellationToken);
 
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, tool);
 
-            var body = await response.Content.ReadAsStringAsync();
+            var body = await response.Content.ReadAsStringAsync(TestContext.CancellationToken);
 
             if (tool is "SearchBbScanner" or "InspectBbScannerSymbol")
             {
@@ -191,4 +190,6 @@ public partial class McpOracleTests
 
     [GeneratedRegex(@"^#{2,4} (?<text>.+)$")]
     private static partial Regex HeadingRegex();
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

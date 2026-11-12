@@ -10,7 +10,7 @@ public interface IAppOpener
     Task<IPage?> TryOpen(AppTestBase test, App app);
 }
 
-public sealed class WebAppOpener : IAppOpener
+internal sealed class WebAppOpener : IAppOpener
 {
     public async Task<IPage?> TryOpen(AppTestBase test, App app)
     {
@@ -20,7 +20,7 @@ public sealed class WebAppOpener : IAppOpener
     }
 }
 
-public sealed class WindowsAppOpener : IAppOpener
+internal sealed class WindowsAppOpener : IAppOpener
 {
     public async Task<IPage?> TryOpen(AppTestBase test, App app)
     {
@@ -37,7 +37,7 @@ public sealed class WindowsAppOpener : IAppOpener
     }
 }
 
-public sealed class AndroidChromeAppOpener : IAppOpener
+internal sealed class AndroidChromeAppOpener : IAppOpener
 {
     public async Task<IPage?> TryOpen(AppTestBase test, App app)
     {
@@ -49,7 +49,7 @@ public sealed class AndroidChromeAppOpener : IAppOpener
     }
 }
 
-public sealed class AndroidAppOpener : IAppOpener
+internal sealed class AndroidAppOpener : IAppOpener
 {
     public async Task<IPage?> TryOpen(AppTestBase test, App app)
     {

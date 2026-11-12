@@ -89,10 +89,10 @@ public class BitTagsInputE2ETests : E2ETestBase
         var html = await response.TextAsync();
 
         Assert.IsTrue(response.Ok);
-        StringAssert.Contains(html, "id=\"tgi-tags-placeholder\"");
-        StringAssert.Contains(html, "bit-tgi-tag");
-        StringAssert.Contains(html, ">blazor<");
-        StringAssert.Contains(html, ">Loading<");
+        Assert.Contains("id=\"tgi-tags-placeholder\"", html);
+        Assert.Contains("bit-tgi-tag", html);
+        Assert.Contains(">blazor<", html);
+        Assert.Contains(">Loading<", html);
 
         await OpenAsync(Route);
         await Expect(Tags("tgi-tags-placeholder")).ToHaveTextAsync(["blazor"]);
@@ -127,7 +127,7 @@ public class BitTagsInputE2ETests : E2ETestBase
         var before = Px(await CssAsync(root.Locator(".bit-tgi-cnt"), "min-height"));
         await Page.ClickAsync("#btn-runtime-size");
         await Expect(root).ToHaveClassAsync(HasClass("bit-tgi-lg"));
-        Assert.IsTrue(Px(await CssAsync(root.Locator(".bit-tgi-cnt"), "min-height")) > before);
+        Assert.IsGreaterThan(before, Px(await CssAsync(root.Locator(".bit-tgi-cnt"), "min-height")));
 
         await Expect(root.Locator(".bit-tgi-dbt")).ToHaveCountAsync(3);
         await Page.ClickAsync("#btn-runtime-readonly");
@@ -302,7 +302,7 @@ public class BitTagsInputE2ETests : E2ETestBase
         await Expect(Input("tgi-label")).ToHaveAttributeAsync("aria-required", "true");
         await Expect(Input("tgi-label")).ToHaveAccessibleNameAsync(new Regex("^Tags"));
         var asterisk = await label.EvaluateAsync<string>("el => getComputedStyle(el, '::after').content");
-        StringAssert.Contains(asterisk, "*");
+        Assert.Contains("*", asterisk);
 
         await label.ClickAsync();
         await Expect(Input("tgi-label")).ToBeFocusedAsync();
@@ -1136,14 +1136,14 @@ public class BitTagsInputE2ETests : E2ETestBase
         await Expect(prefix).ToHaveTextAsync("To:");
         var prefixBox = await BoxAsync(prefix);
         var tagBox = await BoxAsync(Tags("tgi-prefix").First);
-        Assert.IsTrue(prefixBox.X + prefixBox.Width <= tagBox.X + 0.5, "The prefix is not before the tags.");
+        Assert.IsLessThanOrEqualTo(tagBox.X + 0.5, prefixBox.X + prefixBox.Width, "The prefix is not before the tags.");
         await Expect(Input("tgi-prefix")).ToHaveAccessibleDescriptionAsync(new Regex("To:"));
 
         var suffix = Root("tgi-suffix").Locator(".bit-tgi-suf");
         await Expect(suffix).ToHaveTextAsync("cm");
         var suffixBox = await BoxAsync(suffix);
         var inputBox = await BoxAsync(Input("tgi-suffix"));
-        Assert.IsTrue(inputBox.X + inputBox.Width <= suffixBox.X + 0.5, "The suffix is not after the input.");
+        Assert.IsLessThanOrEqualTo(suffixBox.X + 0.5, inputBox.X + inputBox.Width, "The suffix is not after the input.");
         await Expect(Input("tgi-suffix")).ToHaveAccessibleDescriptionAsync(new Regex("cm"));
 
         await AddAsync("tgi-suffix", "12a");
@@ -1438,7 +1438,7 @@ public class BitTagsInputE2ETests : E2ETestBase
         }
 
         Assert.AreEqual(unset, colors["pri"], "Unset is not primary.");
-        Assert.IsTrue(colors.Values.Distinct().Count() >= 12, string.Join(", ", colors.Select(c => $"{c.Key}={c.Value}")));
+        Assert.IsGreaterThanOrEqualTo(12, colors.Values.Distinct().Count(), string.Join(", ", colors.Select(c => $"{c.Key}={c.Value}")));
     }
 
     [TestMethod]
@@ -1465,17 +1465,14 @@ public class BitTagsInputE2ETests : E2ETestBase
         await Expect(Root($"tgi-size-{smaller}")).ToHaveClassAsync(HasClass($"bit-tgi-{smaller}"));
         await Expect(Root($"tgi-size-{larger}")).ToHaveClassAsync(HasClass($"bit-tgi-{larger}"));
 
-        Assert.IsTrue(Px(await CssAsync(Root($"tgi-size-{larger}").Locator(".bit-tgi-cnt"), "min-height")) >
-                      Px(await CssAsync(Root($"tgi-size-{smaller}").Locator(".bit-tgi-cnt"), "min-height")), "field height");
-        Assert.IsTrue(Px(await CssAsync(Root($"tgi-size-{larger}"), "font-size")) >
-                      Px(await CssAsync(Root($"tgi-size-{smaller}"), "font-size")), "field font size");
-        Assert.IsTrue((await BoxAsync(Root($"tgi-size-{larger}").Locator(".bit-tgi-cnt"))).Height >
-                      (await BoxAsync(Root($"tgi-size-{smaller}").Locator(".bit-tgi-cnt"))).Height, "field box");
+        Assert.IsGreaterThan(Px(await CssAsync(Root($"tgi-size-{smaller}").Locator(".bit-tgi-cnt"), "min-height")), Px(await CssAsync(Root($"tgi-size-{larger}").Locator(".bit-tgi-cnt"), "min-height")), "field height");
+        Assert.IsGreaterThan(Px(await CssAsync(Root($"tgi-size-{smaller}"), "font-size")), Px(await CssAsync(Root($"tgi-size-{larger}"), "font-size")), "field font size");
+        Assert.IsGreaterThan((await BoxAsync(Root($"tgi-size-{smaller}").Locator(".bit-tgi-cnt"))).Height, (await BoxAsync(Root($"tgi-size-{larger}").Locator(".bit-tgi-cnt"))).Height, "field box");
 
         // The chips step up with the field from medium to large; small and medium share the small chip.
         var smallTag = Px(await CssAsync(Tags($"tgi-size-{smaller}").First, "font-size"));
         var largeTag = Px(await CssAsync(Tags($"tgi-size-{larger}").First, "font-size"));
-        if (larger == "lg") Assert.IsTrue(largeTag > smallTag, "tag font size");
+        if (larger == "lg") Assert.IsGreaterThan(smallTag, largeTag, "tag font size");
         else Assert.AreEqual(smallTag, largeTag, "tag font size");
     }
 
@@ -1612,7 +1609,7 @@ public class BitTagsInputE2ETests : E2ETestBase
         await Expect(tag).ToHaveCSSAsync("font-size", "15px");
         await Expect(tag).ToHaveCSSAsync("min-height", "30px");
         await Expect(Tags("tgi-vars").Nth(1)).ToHaveCSSAsync("max-width", "120px");
-        Assert.IsTrue((await BoxAsync(Tags("tgi-vars").Nth(1))).Width <= 120.5);
+        Assert.IsLessThanOrEqualTo(120.5, (await BoxAsync(Tags("tgi-vars").Nth(1))).Width);
         await Expect(root.Locator(".bit-tgi-dsi").First).ToHaveCSSAsync("font-size", "13px");
         await Expect(root.Locator(".bit-tgi-cbt")).ToHaveCSSAsync("color", "rgb(34, 35, 36)");
     }
@@ -1663,7 +1660,7 @@ public class BitTagsInputE2ETests : E2ETestBase
 
         var first = await BoxAsync(Tag("tgi-rtl", "one"));
         var second = await BoxAsync(Tag("tgi-rtl", "two"));
-        Assert.IsTrue(first.X > second.X, "The first tag is not on the right.");
+        Assert.IsGreaterThan(second.X, first.X, "The first tag is not on the right.");
 
         await Input("tgi-rtl").FocusAsync();
         await Page.Keyboard.PressAsync("ArrowLeft");
@@ -1688,7 +1685,7 @@ public class BitTagsInputE2ETests : E2ETestBase
         await Expect(Root("tgi-rtl-inherited")).Not.ToHaveClassAsync(HasClass("bit-rtl"));
         var first = await BoxAsync(Tag("tgi-rtl-inherited", "one"));
         var second = await BoxAsync(Tag("tgi-rtl-inherited", "two"));
-        Assert.IsTrue(first.X > second.X, "The first tag is not on the right.");
+        Assert.IsGreaterThan(second.X, first.X, "The first tag is not on the right.");
 
         await Input("tgi-rtl-inherited").FocusAsync();
         await Page.Keyboard.PressAsync("ArrowRight");
@@ -1715,15 +1712,15 @@ public class BitTagsInputE2ETests : E2ETestBase
         await OpenAsync(Route);
 
         var field = Root("tgi-motion").Locator(".bit-tgi-cnt");
-        StringAssert.StartsWith(await CssAsync(field, "transition-duration"), "0.1s");
+        Assert.StartsWith("0.1s", await CssAsync(field, "transition-duration"));
 
         await Page.EmulateMediaAsync(new() { ReducedMotion = ReducedMotion.Reduce });
 
         await Expect(field).Not.ToHaveCSSAsync("transition-duration", new Regex("^0\\.1s"));
         var reduced = (await CssAsync(field, "transition-duration")).Split(',')[0].Trim();
-        Assert.IsTrue(double.Parse(reduced.TrimEnd('s'), CultureInfo.InvariantCulture) < 0.001, reduced);
+        Assert.IsLessThan(0.001, double.Parse(reduced.TrimEnd('s'), CultureInfo.InvariantCulture), reduced);
 
         await Expect(Root("tgi-motion-forced")).ToHaveClassAsync(HasClass("bit-fam"));
-        StringAssert.StartsWith(await CssAsync(Root("tgi-motion-forced").Locator(".bit-tgi-cnt"), "transition-duration"), "0.1s");
+        Assert.StartsWith("0.1s", await CssAsync(Root("tgi-motion-forced").Locator(".bit-tgi-cnt"), "transition-duration"));
     }
 }

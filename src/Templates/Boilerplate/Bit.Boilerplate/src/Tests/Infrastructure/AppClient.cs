@@ -3,12 +3,7 @@ using Boilerplate.Shared.Infrastructure.Services.Contracts;
 
 namespace Boilerplate.Tests.Infrastructure;
 
-/// <summary>
-/// The app as a client of the api, without its UI: one per user a test needs (See
-/// <see cref="AppTestServer.CreateAppClient"/>). What it creates calls the api anonymously until <see cref="AuthManager"/>
-/// signs a user in, and as that user from then on.
-/// </summary>
-public sealed class AppClient : IAsyncDisposable
+internal sealed class AppClient : IAsyncDisposable
 {
     private readonly AsyncServiceScope scope;
 

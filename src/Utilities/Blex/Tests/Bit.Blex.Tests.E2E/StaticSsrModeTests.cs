@@ -41,7 +41,7 @@ public class StaticSsrModeTests : HarnessTest
 
         var requests = await BlexModuleRequestsAsync();
 
-        Assert.AreEqual(0, requests.Length, $"Static rendering requested Blex modules: {string.Join(", ", requests.Select(r => r.Url))}");
+        Assert.IsEmpty(requests, $"Static rendering requested Blex modules: {string.Join(", ", requests.Select(r => r.Url))}");
     }
 
     [TestMethod]

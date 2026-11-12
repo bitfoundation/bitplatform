@@ -4,7 +4,7 @@ using Bit.Blex.Testing;
 namespace Bit.Blex.Tests;
 
 /// <summary>A hand-written store whose name ignores the instance key, so it cannot be scoped.</summary>
-public sealed class FixedNameStore : BlexStoreBase
+internal sealed class FixedNameStore : BlexStoreBase
 {
     public override string Name => "fixed";
 
@@ -89,7 +89,7 @@ public class ScopedStoreTests
 
         Assert.AreEqual(1, left.Store.Count);
         Assert.AreEqual(5, right.Store.Count);
-        CollectionAssert.AreEqual(new[] { "counter:left/Add", "counter:right/Add" }, log.QualifiedNames.ToArray());
+        Assert.AreSequenceEqual(new[] { "counter:left/Add", "counter:right/Add" }, log.QualifiedNames.ToArray());
 
         var tree = manager.CaptureGlobalState();
         Assert.AreEqual(1, tree["counter:left"]!["Count"]!.GetValue<int>());
@@ -104,7 +104,7 @@ public class ScopedStoreTests
         using var b = manager.CreateScope(new CounterStore());
 
         Assert.AreNotEqual(a.Store.Name, b.Store.Name);
-        StringAssert.StartsWith(a.Store.Name, "counter:");
+        Assert.StartsWith("counter:", a.Store.Name);
     }
 
     [TestMethod]
@@ -126,10 +126,10 @@ public class ScopedStoreTests
         Assert.IsNull(manager.GetStore("failing:x"));
 
         // Disposing the store cancels its in-flight effects; without that this would never complete.
-        await watch.WaitAsync(TimeSpan.FromSeconds(5));
+        await watch.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
         Assert.IsNull(scope.Store.WatchError);
-        CollectionAssert.AreEqual(new[] { "failing:x" }, registered);
-        CollectionAssert.AreEqual(new[] { "failing:x" }, unregistered);
+        Assert.AreSequenceEqual(new[] { "failing:x" }, registered);
+        Assert.AreSequenceEqual(new[] { "failing:x" }, unregistered);
     }
 
     [TestMethod]
@@ -199,7 +199,7 @@ public class ScopedStoreTests
         var storage = new GatedStorage();
         storage.Data["blex:settings:dialog"] = """{"Theme":"dark","FontSize":20}""";
         var persistor = new BlexStatePersistor(manager, storage);
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
 
         using var scope = manager.CreateScope(new SettingsStore(), "dialog");
         await persistor.FlushAsync();
@@ -209,7 +209,7 @@ public class ScopedStoreTests
 
         scope.Store.SetTheme("blue");
         await persistor.FlushAsync();
-        StringAssert.Contains(storage.Data["blex:settings:dialog"], "blue");
+        Assert.Contains("blue", storage.Data["blex:settings:dialog"]);
     }
 
     [TestMethod]
@@ -219,7 +219,7 @@ public class ScopedStoreTests
         var storage = new GatedStorage();
         storage.Data["blex:settings:dialog"] = """{"Theme":"dark","FontSize":20}""";
         var persistor = new BlexStatePersistor(manager, storage);
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
 
         storage.ReadGate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         using var scope = manager.CreateScope(new SettingsStore(), "dialog");
@@ -236,7 +236,7 @@ public class ScopedStoreTests
 
         scope.Store.SetTheme("after");
         await persistor.FlushAsync();
-        CollectionAssert.AreEqual(new[] { "blex:settings:dialog" }, storage.Writes);
+        Assert.AreSequenceEqual(new[] { "blex:settings:dialog" }, storage.Writes);
     }
 
     [TestMethod]
@@ -255,7 +255,7 @@ public class ScopedStoreTests
         var (start, scope) = await dispatcher.InvokeAsync(() =>
         {
             storage.ReadGate = startupRead;
-            var started = persistor.StartAsync();   // reading "settings"
+            var started = persistor.StartAsync(TestContext.CancellationToken);   // reading "settings"
 
             // Its stored state is read past the end of the startup read.
             storage.ReadGate = lateRead;
@@ -272,14 +272,14 @@ public class ScopedStoreTests
         // Queued behind the rest of the startup read, so it runs once that has gone as far as it can on its own.
         startupRead.SetResult();
         await dispatcher.InvokeAsync(lateRead.TrySetResult);
-        await start.WaitAsync(TimeSpan.FromSeconds(5));
+        await start.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
         await persistor.FlushAsync();
 
         // Announced any earlier, "chosen" would be dropped with the save the store held back, or overwritten by
         // the stored "dark" landing after it.
         Assert.AreEqual("dark", themeAnnounced, "Hydration was announced before the store's stored state was read.");
         Assert.AreEqual("chosen", scope.Store.Theme);
-        StringAssert.Contains(storage.Data["blex:settings:dialog"], "chosen");
+        Assert.Contains("chosen", storage.Data["blex:settings:dialog"]);
         scope.Dispose();
     }
 
@@ -298,7 +298,7 @@ public class ScopedStoreTests
 
         var startupRead = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         storage.ReadGate = startupRead;
-        var start = persistor.StartAsync();   // reading "settings"
+        var start = persistor.StartAsync(TestContext.CancellationToken);   // reading "settings"
 
         // Nothing stored for it, and storage answers at once: it is read before its registration returns.
         storage.ReadGate = null;
@@ -308,7 +308,7 @@ public class ScopedStoreTests
         await start;
 
         // A callback that saw HasHydrated already true would expect what it dispatches to be saved.
-        CollectionAssert.AreEqual(new[] { ("settings:dialog", false), ("settings", false) }, reported);
+        Assert.AreSequenceEqual(new[] { ("settings:dialog", false), ("settings", false) }, reported);
     }
 
     [TestMethod]
@@ -318,7 +318,7 @@ public class ScopedStoreTests
         var storage = new GatedStorage();
         storage.Data["blex:settings:doc"] = """{"Theme":"dark"}""";
         var persistor = new BlexStatePersistor(manager, storage);
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
 
         var firstRead = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         storage.ReadGate = firstRead;
@@ -332,7 +332,7 @@ public class ScopedStoreTests
         firstRead.SetResult();
         var deadline = DateTime.UtcNow.AddSeconds(5);
         while (storage.ReadsStarted < 2 && DateTime.UtcNow < deadline)
-            await Task.Delay(5);
+            await Task.Delay(5, TestContext.CancellationToken);
         Assert.AreEqual(2, storage.ReadsStarted);
 
         second.Store.SetTheme("early");
@@ -349,7 +349,7 @@ public class ScopedStoreTests
         var manager = new BlexManager();
         var storage = new GatedStorage();
         var persistor = new BlexStatePersistor(manager, storage, new BlexPersistenceOptions { DebounceInterval = TimeSpan.FromHours(1) });
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
 
         var scope = manager.CreateScope(new SettingsStore(), "dialog");
         await persistor.FlushAsync();
@@ -359,7 +359,7 @@ public class ScopedStoreTests
         scope.Dispose();
         await persistor.FlushAsync();
 
-        StringAssert.Contains(storage.Data["blex:settings:dialog"], "last words");
+        Assert.Contains("last words", storage.Data["blex:settings:dialog"]);
     }
 
     [TestMethod]
@@ -368,7 +368,7 @@ public class ScopedStoreTests
         var manager = new BlexManager();
         var storage = new GatedStorage();
         var persistor = new BlexStatePersistor(manager, storage);
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
 
         using (var first = manager.CreateScope(new SettingsStore(), "doc-7"))
         {
@@ -390,13 +390,13 @@ public class ScopedStoreTests
         var storage = new GatedStorage();
         storage.Data["blex:settings:dialog"] = """{"Theme":"dark"}""";
         var persistor = new BlexStatePersistor(manager, storage, new BlexPersistenceOptions { SkipHydration = true });
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
 
         using var scope = manager.CreateScope(new SettingsStore(), "dialog");
         await persistor.FlushAsync();
         Assert.AreEqual("light", scope.Store.Theme);
 
-        await persistor.RehydrateAsync();
+        await persistor.RehydrateAsync(TestContext.CancellationToken);
         Assert.AreEqual("dark", scope.Store.Theme);
     }
 
@@ -408,12 +408,12 @@ public class ScopedStoreTests
         storage.Data["blex:settings:dialog"] = """{"Theme":"dark"}""";
         var rehydrated = new List<string>();
         var persistor = new BlexStatePersistor(manager, storage, new BlexPersistenceOptions { OnRehydrated = (name, _) => rehydrated.Add(name) });
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
 
         using var scope = manager.CreateScope(new SettingsStore(), "dialog");
         await persistor.FlushAsync();
 
-        CollectionAssert.AreEqual(new[] { "settings:dialog" }, rehydrated);
+        Assert.AreSequenceEqual(new[] { "settings:dialog" }, rehydrated);
     }
 
     [TestMethod]
@@ -424,7 +424,7 @@ public class ScopedStoreTests
         manager.OnError = errors.Add;
         var storage = new GatedStorage();
         var persistor = new BlexStatePersistor(manager, storage);
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
 
         storage.FailReads = true;
         using var scope = manager.CreateScope(new SettingsStore(), "dialog");
@@ -436,16 +436,16 @@ public class ScopedStoreTests
         Assert.IsEmpty(storage.Writes, "Nothing could be read, so nothing may be written over it.");
 
         storage.FailReads = false;
-        await persistor.RehydrateAsync();
+        await persistor.RehydrateAsync(TestContext.CancellationToken);
         await persistor.FlushAsync();
 
         // Storage had nothing for it after all, so the change held back is written now...
-        StringAssert.Contains(storage.Data["blex:settings:dialog"], "held");
+        Assert.Contains("held", storage.Data["blex:settings:dialog"]);
 
         // ...and so is every change after it.
         scope.Store.SetTheme("after");
         await persistor.FlushAsync();
-        StringAssert.Contains(storage.Data["blex:settings:dialog"], "after");
+        Assert.Contains("after", storage.Data["blex:settings:dialog"]);
     }
 
     [TestMethod]
@@ -459,19 +459,19 @@ public class ScopedStoreTests
             DebounceInterval = TimeSpan.FromHours(1),
             OnRehydrated = (_, _) => hydrated.TrySetResult(),
         });
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
 
         storage.ReadGate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var scope = manager.CreateScope(new SettingsStore(), "doc-9");
         scope.Store.SetTheme("typed early");
         storage.ReadGate.SetResult();
-        await hydrated.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        await hydrated.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
 
         // Closed straight away: what was typed still reaches storage, which had nothing to overwrite.
         scope.Dispose();
         await persistor.FlushAsync();
 
-        StringAssert.Contains(storage.Data["blex:settings:doc-9"], "typed early");
+        Assert.Contains("typed early", storage.Data["blex:settings:doc-9"]);
     }
 
     [TestMethod]
@@ -482,7 +482,7 @@ public class ScopedStoreTests
         storage.Data["blex:settings:dialog"] = """{"Theme":"dark"}""";
         var rehydrated = new List<string>();
         var persistor = new BlexStatePersistor(manager, storage, new BlexPersistenceOptions { OnRehydrated = (name, _) => rehydrated.Add(name) });
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
 
         storage.ReadGate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var scope = manager.CreateScope(new SettingsStore(), "dialog");
@@ -502,7 +502,7 @@ public class ScopedStoreTests
         var storage = new GatedStorage();
         storage.Data["blex:settings:dialog"] = """{"Theme":"dark"}""";
         var persistor = new BlexStatePersistor(manager, storage);
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
 
         storage.ReadGate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var appliedOn = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -516,7 +516,7 @@ public class ScopedStoreTests
         // The read completes on the thread pool; the state must still land on the dispatcher.
         storage.ReadGate.SetResult();
 
-        Assert.AreEqual(dispatcher.ThreadId, await appliedOn.Task.WaitAsync(TimeSpan.FromSeconds(5)));
+        Assert.AreEqual(dispatcher.ThreadId, await appliedOn.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken));
         Assert.AreEqual("dark", scope.Store.Theme);
         scope.Dispose();
     }
@@ -528,7 +528,7 @@ public class ScopedStoreTests
         var storage = new GatedStorage();
         storage.Data["blex:settings:1"] = """{"Theme":"another session's"}""";
         var persistor = new BlexStatePersistor(manager, storage);
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
 
         using var scope = manager.CreateScope(new SettingsStore());
         await persistor.FlushAsync();
@@ -596,4 +596,6 @@ public class ScopedStoreTests
 
         public void Dispose() => _queue.CompleteAdding();
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

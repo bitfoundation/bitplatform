@@ -63,22 +63,22 @@ public partial class BitPdfRangeViewerTests
 
         try
         {
-            await requested.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            await requested.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
             Assert.AreEqual(sidebar, component.Instance.Sidebar);
             Assert.IsFalse(component.Instance.HasOutline);
             Assert.IsFalse(component.Instance.HasLayers);
-            CollectionAssert.AreEqual(new[] { sidebar }, changed);
+            Assert.AreSequenceEqual(new[] { sidebar }, changed);
         }
         finally { resume.TrySetResult(); }
 
-        if (empty) await closed.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        if (empty) await closed.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
         component.WaitForAssertion(() =>
         {
-            CollectionAssert.AreEqual(empty ? new[] { sidebar, BitPdfSidebar.None } : new[] { sidebar }, changed);
+            Assert.AreSequenceEqual(empty ? new[] { sidebar, BitPdfSidebar.None } : new[] { sidebar }, changed);
             Assert.AreEqual(empty ? BitPdfSidebar.None : sidebar, component.Instance.Sidebar);
             Assert.AreEqual(!empty, component.Instance.HasOutline);
             Assert.AreEqual(!empty, component.Instance.HasLayers);
-            Assert.AreEqual(0, errors.Count, string.Join("; ", errors));
+            Assert.IsEmpty(errors, string.Join("; ", errors));
         }, TimeSpan.FromSeconds(5));
     }
 
@@ -97,22 +97,22 @@ public partial class BitPdfRangeViewerTests
         component.WaitForPages(3);
         if (persistent)
         {
-            await reported.Task.WaitAsync(TimeSpan.FromSeconds(5));
-            Assert.AreEqual(1, errors.Count);
+            await reported.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
+            Assert.ContainsSingle(errors);
             Assert.AreEqual(3, handler.Failures);
             Assert.IsFalse(component.Instance.HasOutline);
             Assert.IsFalse(component.Instance.HasLayers);
             await component.InvokeAsync(() => component.Render());
             Assert.AreEqual(3, handler.Failures, "A render must not start an unbounded background retry loop.");
             handler.FailuresRemaining = 0;
-            await component.InvokeAsync(() => component.Instance.LoadDocumentDetailsAsync());
+            await component.InvokeAsync(() => component.Instance.LoadDocumentDetailsAsync(TestContext.CancellationToken));
         }
         component.WaitForAssertion(() =>
         {
             Assert.IsTrue(component.Instance.HasOutline);
             Assert.IsTrue(component.Instance.HasLayers);
             Assert.AreEqual(persistent ? 3 : 1, handler.Failures);
-            Assert.AreEqual(persistent ? 1 : 0, errors.Count);
+            Assert.HasCount(persistent ? 1 : 0, errors);
         }, TimeSpan.FromSeconds(5));
     }
 
@@ -131,19 +131,19 @@ public partial class BitPdfRangeViewerTests
         handler.FailuresRemaining = persistent ? 10 : 1;
         await component.InvokeAsync(() => thumbnail ? component.Instance.EnsureThumbsRendered([2]) : component.Instance.EnsurePagesRendered([2]));
         Assert.AreEqual(persistent ? 3 : 1, handler.Failures);
-        Assert.AreEqual(persistent ? 1 : 0, errors.Count, string.Join("; ", errors));
-        Assert.AreEqual(0, component.Instance.FailedPages.Count, "Transport outages must not become permanent page failures.");
+        Assert.HasCount(persistent ? 1 : 0, errors, string.Join("; ", errors));
+        Assert.IsEmpty(component.Instance.FailedPages, "Transport outages must not become permanent page failures.");
         int requests = handler.Requests.Count;
         await component.InvokeAsync(() => thumbnail ? component.Instance.EnsureThumbsRendered([2]) : component.Instance.EnsurePagesRendered([2]));
-        Assert.AreEqual(requests, handler.Requests.Count);
+        Assert.HasCount(requests, handler.Requests);
         if (persistent)
         {
             handler.FailuresRemaining = 0;
-            await Task.Delay(2100);
+            await Task.Delay(2100, TestContext.CancellationToken);
             await component.InvokeAsync(() => thumbnail ? component.Instance.EnsureThumbsRendered([2]) : component.Instance.EnsurePagesRendered([2]));
-            Assert.IsTrue(handler.Requests.Count > requests, "The pump must retry a recovered endpoint after the cooldown.");
-            Assert.AreEqual(1, errors.Count);
-            Assert.AreEqual(0, component.Instance.FailedPages.Count);
+            Assert.IsGreaterThan(requests, handler.Requests.Count, "The pump must retry a recovered endpoint after the cooldown.");
+            Assert.ContainsSingle(errors);
+            Assert.IsEmpty(component.Instance.FailedPages);
         }
         Assert.IsNull(component.Instance.GetBytes());
         Assert.IsTrue(handler.Requests.All(r => r is not null));
@@ -162,15 +162,15 @@ public partial class BitPdfRangeViewerTests
         int requests = handler.Requests.Count;
         handler.Pause = new(TaskCreationOptions.RunContinuationsAsynchronously);
         await component.InvokeAsync(() => thumbnail ? component.Instance.EnsureThumbsRendered([2]) : component.Instance.EnsurePagesRendered([2]));
-        Assert.AreEqual(requests + 1, handler.Requests.Count, "HttpClient.Timeout must not be retried automatically.");
-        Assert.AreEqual(1, errors.Count);
-        Assert.AreEqual(0, component.Instance.FailedPages.Count);
+        Assert.HasCount(requests + 1, handler.Requests, "HttpClient.Timeout must not be retried automatically.");
+        Assert.ContainsSingle(errors);
+        Assert.IsEmpty(component.Instance.FailedPages);
         handler.Pause.SetResult();
-        await Task.Delay(2100);
+        await Task.Delay(2100, TestContext.CancellationToken);
         await component.InvokeAsync(() => thumbnail ? component.Instance.EnsureThumbsRendered([2]) : component.Instance.EnsurePagesRendered([2]));
-        Assert.IsTrue(handler.Requests.Count > requests + 1);
-        Assert.AreEqual(1, errors.Count);
-        Assert.AreEqual(0, component.Instance.FailedPages.Count);
+        Assert.IsGreaterThan(requests + 1, handler.Requests.Count);
+        Assert.ContainsSingle(errors);
+        Assert.IsEmpty(component.Instance.FailedPages);
     }
 
     [TestMethod]
@@ -188,13 +188,13 @@ public partial class BitPdfRangeViewerTests
             .Add(v => v.RenderMode, mode)
             .Add(v => v.OnPageRendered, (int _) => rendered++).Add(v => v.OnError, errors.Add));
         component.WaitForAssertion(() => Assert.AreEqual(1, rendered, string.Join("; ", errors)));
-        Assert.AreEqual(0, errors.Count);
-        Assert.AreEqual(0, component.Instance.FailedPages.Count);
+        Assert.IsEmpty(errors);
+        Assert.IsEmpty(component.Instance.FailedPages);
         Assert.IsNull(component.Instance.GetBytes(), "Unused resources must not cause buffered fallback.");
         string? extracted = null;
-        await component.InvokeAsync(async () => extracted = await component.Instance.ExtractPageTextAsync(1));
-        StringAssert.Contains(extracted!, "Used form");
-        Assert.IsTrue(handler.Requests.Count < 12, string.Join(",", handler.Requests));
+        await component.InvokeAsync(async () => extracted = await component.Instance.ExtractPageTextAsync(1, TestContext.CancellationToken));
+        Assert.Contains("Used form", extracted!);
+        Assert.IsLessThan(12, handler.Requests.Count, string.Join(",", handler.Requests));
     }
 
     [TestMethod]
@@ -221,19 +221,19 @@ public partial class BitPdfRangeViewerTests
             var print = component.InvokeAsync(() => component.Instance.Print());
             component.WaitForAssertion(() =>
             {
-                Assert.IsTrue(paint.Invocations.Any(invocation => JsonSerializer.SerializeToElement(invocation.Arguments[1], jsonOptions)
-                    .EnumerateArray().Any(page => page.GetProperty("page").GetInt32() == 3)));
+                Assert.Contains(invocation => JsonSerializer.SerializeToElement(invocation.Arguments[1], jsonOptions)
+                    .EnumerateArray().Any(page => page.GetProperty("page").GetInt32() == 3), paint.Invocations);
                 Assert.AreEqual("false", component.Find(".bit-pdv-surface").GetAttribute("aria-busy"));
                 Assert.IsFalse(print.IsCompleted, "Print must still await the held canvas paint.");
             }, TimeSpan.FromSeconds(5));
             handler.Problem = "changed";
-            await Assert.ThrowsAsync<IOException>(() => component.InvokeAsync(async () => { await component.Instance.GetBytesAsync(); }));
-            await print.WaitAsync(TimeSpan.FromSeconds(3));
+            await Assert.ThrowsAsync<IOException>(() => component.InvokeAsync(async () => { await component.Instance.GetBytesAsync(TestContext.CancellationToken); }));
+            await print.WaitAsync(TimeSpan.FromSeconds(3), TestContext.CancellationToken);
             Assert.AreEqual(0, component.Instance.SearchMatchCount);
             Assert.AreEqual(0, component.Instance.SearchMatchIndex);
             Assert.AreEqual(0, component.Instance.PageCount);
-            Assert.AreEqual(1, errors.Count);
-            Assert.AreEqual(0, Context.InvocationsOf("BitBlazorUI.PdfViewer.print").Count);
+            Assert.ContainsSingle(errors);
+            Assert.IsEmpty(Context.InvocationsOf("BitBlazorUI.PdfViewer.print"));
 
             // A new public print request must reach the host callback. This pins
             // release of the busy guard without reading the viewer's private state.

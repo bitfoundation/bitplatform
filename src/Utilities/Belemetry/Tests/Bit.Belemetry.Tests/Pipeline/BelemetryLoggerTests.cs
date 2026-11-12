@@ -42,7 +42,7 @@ public class BelemetryLoggerTests
         Assert.AreEqual("Shipped", log.Attributes["log.event.name"]);
         Assert.IsFalse(log.Attributes.Contains("{OriginalFormat}"));
         Assert.IsFalse(log.Attributes.Contains("log.record.template"));
-        Assert.IsTrue(log.TimeUnixNano > 0);
+        Assert.IsGreaterThan(0, log.TimeUnixNano);
         Assert.AreEqual(log.TimeUnixNano, log.ObservedTimeUnixNano);
 
         Assert.AreEqual(BelemetrySeverity.Warn, logs[1].Severity);
@@ -118,7 +118,7 @@ public class BelemetryLoggerTests
         Assert.AreEqual(BelemetrySeverity.Warn, logs[0].Severity);
         Assert.AreEqual(typeof(InvalidOperationException).FullName, logs[0].Attributes["exception.type"]);
         Assert.AreEqual("bad state", logs[0].Attributes["exception.message"]);
-        StringAssert.Contains((string)logs[0].Attributes["exception.stacktrace"]!, nameof(Throw));
+        Assert.Contains(nameof(Throw), (string)logs[0].Attributes["exception.stacktrace"]!);
         Assert.IsTrue(logs[0].HasException);
 
         Assert.AreEqual(BelemetryFeatures.Errors, logs[1].Feature);

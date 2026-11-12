@@ -82,8 +82,8 @@ public class BitResourceTimelineTests : BunitTestContext
     {
         component.WaitForAssertion(() =>
         {
-            Assert.AreEqual(count, Calls(WhenRenderedFn).Count);
-            Assert.AreEqual(0, component.FindAll(".bit-rtm-ldg").Count);
+            Assert.HasCount(count, Calls(WhenRenderedFn));
+            Assert.IsEmpty(component.FindAll(".bit-rtm-ldg"));
         }, TimeSpan.FromSeconds(5));
     }
 
@@ -114,7 +114,7 @@ public class BitResourceTimelineTests : BunitTestContext
         {
             if (await Renderer.Dispatcher.InvokeAsync(condition)) return;
 
-            await Task.Delay(10);
+            await Task.Delay(10, TestContext.CancellationToken);
         }
 
         Assert.Fail("The expected state was never reached.");
@@ -145,7 +145,7 @@ public class BitResourceTimelineTests : BunitTestContext
 
         Assert.AreEqual("DIV", root.TagName);
         Assert.AreEqual(string.Empty, viewport.TextContent.Trim());
-        Assert.AreEqual(0, component.FindAll(".bit-rtm-cnr, .bit-rtm-rov, .bit-rtm-tov, .bit-rtm-ldg").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rtm-cnr, .bit-rtm-rov, .bit-rtm-tov, .bit-rtm-ldg"));
     }
 
     [TestMethod]
@@ -164,8 +164,8 @@ public class BitResourceTimelineTests : BunitTestContext
         Assert.AreEqual(component.Instance.UniqueId, root.Id);
         Assert.IsTrue(root.ClassList.Contains("custom-class"));
         Assert.IsTrue(root.ClassList.Contains("custom-root"));
-        StringAssert.Contains(root.GetAttribute("style"), "color:red");
-        StringAssert.Contains(root.GetAttribute("style"), "margin:1px");
+        Assert.Contains("color:red", root.GetAttribute("style")!);
+        Assert.Contains("margin:1px", root.GetAttribute("style")!);
 
         component.Render(p => p.Add(x => x.Id, "planner"));
 
@@ -188,7 +188,7 @@ public class BitResourceTimelineTests : BunitTestContext
         }
         else
         {
-            StringAssert.Contains(style, expectedStyle);
+            Assert.Contains(expectedStyle, style);
         }
     }
 
@@ -274,20 +274,20 @@ public class BitResourceTimelineTests : BunitTestContext
         var component = RenderTimeline(p => p.Add(x => x.Options, new BitResourceTimelineOptions { Editable = true }));
 
         var shortcuts = component.Find(".bit-rtm-vpt").GetAttribute("aria-keyshortcuts")!;
-        StringAssert.Contains(shortcuts, "Alt+ArrowLeft");
-        StringAssert.Contains(shortcuts, "Alt+Shift+ArrowUp");
+        Assert.Contains("Alt+ArrowLeft", shortcuts);
+        Assert.Contains("Alt+Shift+ArrowUp", shortcuts);
 
         // Options that leave Editable (and AllowDelete) unset keep what is in force, as the engine merges them.
         component.Render(p => p.Add(x => x.Options, new BitResourceTimelineOptions { AllowDelete = true }));
         component.Render(p => p.Add(x => x.Options, new BitResourceTimelineOptions()));
 
         shortcuts = component.Find(".bit-rtm-vpt").GetAttribute("aria-keyshortcuts")!;
-        StringAssert.Contains(shortcuts, "Alt+ArrowLeft");
-        StringAssert.Contains(shortcuts, "Delete");
+        Assert.Contains("Alt+ArrowLeft", shortcuts);
+        Assert.Contains("Delete", shortcuts);
 
         component.Render(p => p.Add(x => x.Options, new BitResourceTimelineOptions { Editable = false }));
 
-        Assert.IsFalse(component.Find(".bit-rtm-vpt").GetAttribute("aria-keyshortcuts")!.Contains("Alt+"));
+        Assert.DoesNotContain("Alt+", component.Find(".bit-rtm-vpt").GetAttribute("aria-keyshortcuts")!);
     }
 
     [TestMethod]
@@ -392,7 +392,7 @@ public class BitResourceTimelineTests : BunitTestContext
             }
             else
             {
-                StringAssert.Contains(element.GetAttribute("style"), style, selector);
+                Assert.Contains(style, element.GetAttribute("style")!, selector);
             }
         }
     }
@@ -450,7 +450,7 @@ public class BitResourceTimelineTests : BunitTestContext
             builder.CloseComponent();
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, Calls(WhenRenderedFn).Count), TimeSpan.FromSeconds(5));
+        component.WaitForAssertion(() => Assert.ContainsSingle(Calls(WhenRenderedFn)), TimeSpan.FromSeconds(5));
 
         Assert.AreEqual("true", component.Find(".bit-rtm").GetAttribute("aria-busy"));
     }
@@ -479,8 +479,8 @@ public class BitResourceTimelineTests : BunitTestContext
         Assert.AreSame(component.Instance, Arg<DotNetObjectReference<BitResourceTimeline>>(setup, 2).Value);
         Assert.AreSame(options, setup.Arguments[3]);
         Assert.AreSame(texts, setup.Arguments[4]);
-        Assert.AreEqual(true, setup.Arguments[5]);
-        Assert.AreEqual(6, setup.Arguments.Count);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(setup.Arguments[5]));
+        Assert.HasCount(6, setup.Arguments);
     }
 
     [TestMethod]
@@ -492,7 +492,7 @@ public class BitResourceTimelineTests : BunitTestContext
 
         Assert.AreEqual("Resource timeline", texts.AriaLabel);
         Assert.AreEqual("Bar is locked", texts.BarLocked);
-        Assert.AreEqual(false, Calls(SetupFn).Single().Arguments[5]);
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(Calls(SetupFn).Single().Arguments[5]));
     }
 
     [TestMethod]
@@ -507,13 +507,13 @@ public class BitResourceTimelineTests : BunitTestContext
             p.Add(x => x.TooltipTemplate, a => b => b.AddContent(0, a.Id));
         });
 
-        Assert.AreEqual(1, Calls(SetupFn).Count);
+        Assert.ContainsSingle(Calls(SetupFn));
         Assert.AreEqual(1, Context.JSInterop.Invocations.Count, string.Join(", ", Context.JSInterop.Invocations.Select(i => i.Identifier)));
-        Assert.AreEqual(0, component.FindAll(".bit-rtm-ldg").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rtm-ldg"));
 
         component.Render(p => p.Add(x => x.Options, new BitResourceTimelineOptions()));
 
-        Assert.AreEqual(0, Calls(SetOptionsFn).Count);
+        Assert.IsEmpty(Calls(SetOptionsFn));
     }
 
     [TestMethod]
@@ -528,11 +528,11 @@ public class BitResourceTimelineTests : BunitTestContext
         var order = Context.JSInterop.Invocations.Select(i => i.Identifier).ToList();
 
         Assert.IsInstanceOfType<ElementReference>(Calls(EnableResourceTemplateFn).Single().Arguments[1]);
-        Assert.AreEqual(1, Calls(EnableTooltipTemplateFn).Single().Arguments.Count);
+        Assert.ContainsSingle(Calls(EnableTooltipTemplateFn).Single().Arguments);
         // The renderer leaves the labels to the overlay and the engine reports its rows from the very first load.
-        Assert.IsTrue(order.IndexOf(SetupFn) < order.IndexOf(EnableResourceTemplateFn));
-        Assert.IsTrue(order.IndexOf(EnableResourceTemplateFn) < order.IndexOf(SetDataFn));
-        Assert.IsTrue(order.IndexOf(EnableTooltipTemplateFn) < order.IndexOf(SetDataFn));
+        Assert.IsLessThan(order.IndexOf(EnableResourceTemplateFn), order.IndexOf(SetupFn));
+        Assert.IsLessThan(order.IndexOf(SetDataFn), order.IndexOf(EnableResourceTemplateFn));
+        Assert.IsLessThan(order.IndexOf(SetDataFn), order.IndexOf(EnableTooltipTemplateFn));
     }
 
     [TestMethod]
@@ -540,10 +540,10 @@ public class BitResourceTimelineTests : BunitTestContext
     {
         RenderLoaded();
 
-        Assert.AreEqual(0, Calls(EnableResourceTemplateFn).Count);
-        Assert.AreEqual(0, Calls(EnableTooltipTemplateFn).Count);
-        Assert.AreEqual(0, Calls(DisableResourceTemplateFn).Count);
-        Assert.AreEqual(0, Calls(DisableTooltipTemplateFn).Count);
+        Assert.IsEmpty(Calls(EnableResourceTemplateFn));
+        Assert.IsEmpty(Calls(EnableTooltipTemplateFn));
+        Assert.IsEmpty(Calls(DisableResourceTemplateFn));
+        Assert.IsEmpty(Calls(DisableTooltipTemplateFn));
     }
 
     [TestMethod]
@@ -561,14 +561,14 @@ public class BitResourceTimelineTests : BunitTestContext
         {
             // The overlay of the template is in the markup by the time the engine is handed it.
             Assert.IsInstanceOfType<ElementReference>(Calls(EnableResourceTemplateFn).Single().Arguments[1]);
-            Assert.AreEqual(1, Calls(EnableTooltipTemplateFn).Count);
+            Assert.ContainsSingle(Calls(EnableTooltipTemplateFn));
         }, TimeSpan.FromSeconds(5));
 
         // Rendering again with the same templates tells the engine nothing new.
         component.Render(p => p.Add(x => x.LoadingMinDurationMs, 0));
 
-        Assert.AreEqual(1, Calls(EnableResourceTemplateFn).Count);
-        Assert.AreEqual(1, Calls(EnableTooltipTemplateFn).Count);
+        Assert.ContainsSingle(Calls(EnableResourceTemplateFn));
+        Assert.ContainsSingle(Calls(EnableTooltipTemplateFn));
     }
 
     [TestMethod]
@@ -589,11 +589,11 @@ public class BitResourceTimelineTests : BunitTestContext
         component.WaitForAssertion(() =>
         {
             // The engine draws the resource labels and its own tooltip again.
-            Assert.AreEqual(1, Calls(DisableResourceTemplateFn).Count);
-            Assert.AreEqual(1, Calls(DisableTooltipTemplateFn).Count);
+            Assert.ContainsSingle(Calls(DisableResourceTemplateFn));
+            Assert.ContainsSingle(Calls(DisableTooltipTemplateFn));
         }, TimeSpan.FromSeconds(5));
 
-        Assert.AreEqual(0, component.FindAll(".bit-rtm-rov").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rtm-rov"));
     }
 
 
@@ -605,7 +605,7 @@ public class BitResourceTimelineTests : BunitTestContext
     {
         var component = RenderLoaded();
 
-        Assert.AreEqual(0, Calls(SetOptionsFn).Count, "Nothing changed since setup.");
+        Assert.IsEmpty(Calls(SetOptionsFn), "Nothing changed since setup.");
 
         var options = new BitResourceTimelineOptions { BarHeight = 8 };
         component.Render(p => p.Add(x => x.Options, options));
@@ -614,20 +614,20 @@ public class BitResourceTimelineTests : BunitTestContext
         Assert.AreEqual(component.Instance.UniqueId, call.Arguments[0]);
         Assert.AreSame(options, call.Arguments[1]);
         Assert.AreEqual("Resource timeline", Arg<BitResourceTimelineTexts>(call, 2).AriaLabel);
-        Assert.AreEqual(false, call.Arguments[3]);
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(call.Arguments[3]));
 
         // The same instances again change nothing.
         component.Render(p => p.Add(x => x.Options, options));
-        Assert.AreEqual(1, Calls(SetOptionsFn).Count);
+        Assert.ContainsSingle(Calls(SetOptionsFn));
 
         var texts = new BitResourceTimelineTexts { BarLocked = "Gesperrt" };
         component.Render(p => p.Add(x => x.Texts, texts));
-        Assert.AreEqual(2, Calls(SetOptionsFn).Count);
+        Assert.HasCount(2, Calls(SetOptionsFn));
         Assert.AreSame(texts, Calls(SetOptionsFn)[1].Arguments[2]);
 
         component.Render(p => p.Add(x => x.Disabled, true));
-        Assert.AreEqual(3, Calls(SetOptionsFn).Count);
-        Assert.AreEqual(true, Calls(SetOptionsFn)[2].Arguments[3]);
+        Assert.HasCount(3, Calls(SetOptionsFn));
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(Calls(SetOptionsFn)[2].Arguments[3]));
         Assert.AreSame(options, Calls(SetOptionsFn)[2].Arguments[1]);
         Assert.AreSame(texts, Calls(SetOptionsFn)[2].Arguments[2]);
 
@@ -638,11 +638,11 @@ public class BitResourceTimelineTests : BunitTestContext
             p.Add(x => x.Texts, new BitResourceTimelineTexts());
             p.Add(x => x.Disabled, false);
         });
-        Assert.AreEqual(4, Calls(SetOptionsFn).Count);
-        Assert.AreEqual(false, Calls(SetOptionsFn)[3].Arguments[3]);
+        Assert.HasCount(4, Calls(SetOptionsFn));
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(Calls(SetOptionsFn)[3].Arguments[3]));
 
         // A configuration change is not a data change.
-        Assert.AreEqual(1, Calls(SetDataFn).Count);
+        Assert.ContainsSingle(Calls(SetDataFn));
     }
 
     [TestMethod]
@@ -659,7 +659,7 @@ public class BitResourceTimelineTests : BunitTestContext
         await component.InvokeAsync(() => setOptions.Fail(new JSException("setOptions failed")));
 
         Assert.IsInstanceOfType<JSException>(await unhandled);
-        Assert.AreEqual(1, Calls(SetOptionsFn).Count);
+        Assert.ContainsSingle(Calls(SetOptionsFn));
 
         // The failed configuration was not recorded as applied, so a later pass sends the same instance again. bUnit
         // rethrows the failure of the first pass from the next render.
@@ -667,12 +667,12 @@ public class BitResourceTimelineTests : BunitTestContext
         Assert.ThrowsExactly<JSException>(() => component.Render(p => p.Add(x => x.AriaLabel, "Another render of the parent")));
         component.Render(p => p.Add(x => x.AriaLabel, "And another"));
 
-        Assert.AreEqual(2, Calls(SetOptionsFn).Count);
+        Assert.HasCount(2, Calls(SetOptionsFn));
         Assert.AreSame(options, Calls(SetOptionsFn)[1].Arguments[1]);
 
         // Once applied, it is not sent again.
         component.Render(p => p.Add(x => x.AriaLabel, "And one more"));
-        Assert.AreEqual(2, Calls(SetOptionsFn).Count);
+        Assert.HasCount(2, Calls(SetOptionsFn));
     }
 
     [TestMethod]
@@ -684,7 +684,7 @@ public class BitResourceTimelineTests : BunitTestContext
         options.BarHeight = 12;
         component.Render(p => p.Add(x => x.Options, options));
 
-        Assert.AreEqual(0, Calls(SetOptionsFn).Count);
+        Assert.IsEmpty(Calls(SetOptionsFn));
     }
 
     [TestMethod]
@@ -725,9 +725,9 @@ public class BitResourceTimelineTests : BunitTestContext
         WaitForLoads(component, 1);
 
         var sent = Calls(SetOptionsFn);
-        Assert.AreEqual(1, sent.Count, "The Options and the Disabled state set while the engine was starting were never sent to it.");
+        Assert.ContainsSingle(sent, "The Options and the Disabled state set while the engine was starting were never sent to it.");
         Assert.AreSame(options, sent[0].Arguments[1]);
-        Assert.AreEqual(true, sent[0].Arguments[3]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(sent[0].Arguments[3]));
     }
 
 
@@ -749,8 +749,8 @@ public class BitResourceTimelineTests : BunitTestContext
         Assert.AreEqual(3_600_000L, setData.Arguments[3]);
         Assert.AreSame(config.Allocations, setData.Arguments[4]);
         Assert.AreEqual(component.Instance.UniqueId, Calls(WhenRenderedFn).Single().Arguments[0]);
-        Assert.AreEqual(0, Calls(BeginDataFn).Count);
-        Assert.AreEqual(0, Calls(BeginWindowedFn).Count);
+        Assert.IsEmpty(Calls(BeginDataFn));
+        Assert.IsEmpty(Calls(BeginWindowedFn));
     }
 
     [TestMethod]
@@ -777,13 +777,13 @@ public class BitResourceTimelineTests : BunitTestContext
         component.Render(p => p.Add(x => x.Config, config));
         component.Render(p => p.Add(x => x.AriaLabel, "Another render of the parent"));
 
-        Assert.AreEqual(1, Calls(SetDataFn).Count);
+        Assert.ContainsSingle(Calls(SetDataFn));
 
         var next = SampleConfig();
         component.Render(p => p.Add(x => x.Config, next));
         WaitForLoads(component, 2);
 
-        Assert.AreEqual(2, Calls(SetDataFn).Count);
+        Assert.HasCount(2, Calls(SetDataFn));
         Assert.AreSame(next.Allocations, Calls(SetDataFn)[1].Arguments[4]);
     }
 
@@ -801,16 +801,16 @@ public class BitResourceTimelineTests : BunitTestContext
         // The data it held is gone from the calls about bars too: nothing asks the engine about them any more.
         Assert.IsEmpty(await ResolveAsync(component, "a1"));
         Assert.IsFalse(await component.InvokeAsync(() => component.Instance.ScrollToAllocationAsync("a1")));
-        Assert.AreEqual(0, Calls(GetSelectedBarIdsFn).Count);
-        Assert.AreEqual(0, Calls(ScrollToAllocationFn).Count);
+        Assert.IsEmpty(Calls(GetSelectedBarIdsFn));
+        Assert.IsEmpty(Calls(ScrollToAllocationFn));
 
         // Another render without a Config clears nothing again, and a Config assigned again loads.
         component.Render(p => p.Add(x => x.AriaLabel, "Another render of the parent"));
-        Assert.AreEqual(1, Calls(ClearDataFn).Count);
+        Assert.ContainsSingle(Calls(ClearDataFn));
 
         component.Render(p => p.Add(x => x.Config, config));
         WaitForLoads(component, 2);
-        Assert.AreEqual(2, Calls(SetDataFn).Count);
+        Assert.HasCount(2, Calls(SetDataFn));
     }
 
     [TestMethod]
@@ -836,7 +836,7 @@ public class BitResourceTimelineTests : BunitTestContext
         await WaitUntil(() => Calls(ClearDataFn).Count == 2);
 
         component.Render(p => p.Add(x => x.AriaLabel, "Yet another render of the parent"));
-        Assert.AreEqual(2, Calls(ClearDataFn).Count);
+        Assert.HasCount(2, Calls(ClearDataFn));
     }
 
     [TestMethod]
@@ -861,7 +861,7 @@ public class BitResourceTimelineTests : BunitTestContext
         append.SetException(new JSException("append failed"));
 
         await WaitUntil(() => Calls(ClearDataFn).Count == 1);
-        Assert.AreEqual(0, Calls(EndDataFn).Count);
+        Assert.IsEmpty(Calls(EndDataFn));
     }
 
     [TestMethod]
@@ -878,17 +878,17 @@ public class BitResourceTimelineTests : BunitTestContext
         component.Render(p => p.Add(x => x.LoadAllocationsAsync, load));
         WaitForLoads(component, 2);
 
-        Assert.AreEqual(1, Calls(BeginWindowedFn).Count);
-        Assert.AreEqual(1, Calls(ApplyAllocationWindowFn).Count);
+        Assert.ContainsSingle(Calls(BeginWindowedFn));
+        Assert.ContainsSingle(Calls(ApplyAllocationWindowFn));
 
         // Another render with the same delegate loads nothing.
         component.Render(p => p.Add(x => x.AriaLabel, "Another render of the parent"));
-        Assert.AreEqual(1, Calls(BeginWindowedFn).Count);
+        Assert.ContainsSingle(Calls(BeginWindowedFn));
 
         component.Render(p => p.Add(x => x.LoadAllocationsAsync, null));
         WaitForLoads(component, 3);
 
-        Assert.AreEqual(2, Calls(SetDataFn).Count);
+        Assert.HasCount(2, Calls(SetDataFn));
         Assert.AreSame(config.Allocations, Calls(SetDataFn)[1].Arguments[4]);
     }
 
@@ -909,7 +909,7 @@ public class BitResourceTimelineTests : BunitTestContext
         setData.SetVoidResult();
         WaitForLoads(component, 1);
 
-        Assert.AreEqual(1, Calls(SetDataFn).Count);
+        Assert.ContainsSingle(Calls(SetDataFn));
     }
 
     [TestMethod]
@@ -922,9 +922,9 @@ public class BitResourceTimelineTests : BunitTestContext
 
         await component.InvokeAsync(() => component.Instance.ReloadAsync());
 
-        Assert.AreEqual(2, Calls(SetDataFn).Count);
+        Assert.HasCount(2, Calls(SetDataFn));
         Assert.AreSame(config.Allocations, Calls(SetDataFn)[1].Arguments[4]);
-        Assert.AreEqual(2, Calls(WhenRenderedFn).Count);
+        Assert.HasCount(2, Calls(WhenRenderedFn));
 
         // The bar added in place resolves now.
         Assert.AreSame(config.Allocations[1], (await ResolveAsync(component, "a2")).Single());
@@ -942,13 +942,13 @@ public class BitResourceTimelineTests : BunitTestContext
         // Until the new data and the map of its ids are in place, a call about bars acts on nothing: an upsert would land
         // in the map of the data on its way out, and in the engine between the two loads.
         await component.InvokeAsync(() => component.Instance.UpsertAllocationsAsync([Allocation("a2", "r1", 0, 60_000)]));
-        Assert.AreEqual(0, Calls(UpsertAllocationsFn).Count);
+        Assert.IsEmpty(Calls(UpsertAllocationsFn));
 
         setData.SetVoidResult();
         WaitForLoads(component, 2);
 
         await component.InvokeAsync(() => component.Instance.UpsertAllocationsAsync([Allocation("a2", "r1", 0, 60_000)]));
-        Assert.AreEqual(1, Calls(UpsertAllocationsFn).Count);
+        Assert.ContainsSingle(Calls(UpsertAllocationsFn));
     }
 
     [TestMethod]
@@ -970,7 +970,7 @@ public class BitResourceTimelineTests : BunitTestContext
         setData.SetVoidResult();
         await reload;
 
-        Assert.AreEqual(2, Calls(SetDataFn).Count, "The reload asked for during a load of the same Config was dropped.");
+        Assert.HasCount(2, Calls(SetDataFn), "The reload asked for during a load of the same Config was dropped.");
     }
 
     [TestMethod]
@@ -980,13 +980,13 @@ public class BitResourceTimelineTests : BunitTestContext
 
         var component = RenderComponent<BitResourceTimeline>();
 
-        Assert.AreEqual(1, Calls(SetupFn).Count);
-        Assert.AreEqual(0, Calls(SetDataFn).Count);
+        Assert.ContainsSingle(Calls(SetupFn));
+        Assert.IsEmpty(Calls(SetDataFn));
 
         component.Render(p => p.Add(x => x.Config, SampleConfig()));
 
         WaitForLoads(component, 1);
-        Assert.AreEqual(1, Calls(SetDataFn).Count);
+        Assert.ContainsSingle(Calls(SetDataFn));
     }
 
     [TestMethod]
@@ -1005,18 +1005,18 @@ public class BitResourceTimelineTests : BunitTestContext
         Assert.AreEqual(5, begin.Arguments[4]);
 
         var batches = Calls(AppendAllocationsFn).Select(c => Arg<IReadOnlyList<BitResourceTimelineAllocation>>(c, 1)).ToList();
-        CollectionAssert.AreEqual(new[] { 2, 2, 1 }, batches.Select(b => b.Count).ToArray());
-        CollectionAssert.AreEqual(config.Allocations, batches.SelectMany(b => b).ToList());
+        Assert.AreSequenceEqual(new[] { 2, 2, 1 }, batches.Select(b => b.Count).ToArray());
+        Assert.AreSequenceEqual(config.Allocations, batches.SelectMany(b => b).ToList());
 
         Assert.AreEqual(component.Instance.UniqueId, Calls(EndDataFn).Single().Arguments[0]);
-        Assert.AreEqual(0, Calls(SetDataFn).Count);
+        Assert.IsEmpty(Calls(SetDataFn));
 
         var order = Context.JSInterop.Invocations.Select(i => i.Identifier).ToList();
-        Assert.IsTrue(order.LastIndexOf(AppendAllocationsFn) < order.IndexOf(EndDataFn));
-        Assert.IsTrue(order.IndexOf(EndDataFn) < order.IndexOf(WhenRenderedFn));
+        Assert.IsLessThan(order.IndexOf(EndDataFn), order.LastIndexOf(AppendAllocationsFn));
+        Assert.IsLessThan(order.IndexOf(WhenRenderedFn), order.IndexOf(EndDataFn));
 
         // Every streamed bar resolves to the app's instance.
-        CollectionAssert.AreEqual(config.Allocations, (await ResolveAsync(component, "a1", "a2", "a3", "a4", "a5")).ToList());
+        Assert.AreSequenceEqual(config.Allocations, (await ResolveAsync(component, "a1", "a2", "a3", "a4", "a5")).ToList());
     }
 
     [TestMethod, DataRow(0), DataRow(-1), DataRow(5), DataRow(10_000)]
@@ -1027,10 +1027,10 @@ public class BitResourceTimelineTests : BunitTestContext
 
         RenderLoaded(p => p.Add(x => x.LoadBatchSize, batchSize), config);
 
-        Assert.AreEqual(1, Calls(SetDataFn).Count);
-        Assert.AreEqual(0, Calls(BeginDataFn).Count);
-        Assert.AreEqual(0, Calls(AppendAllocationsFn).Count);
-        Assert.AreEqual(0, Calls(EndDataFn).Count);
+        Assert.ContainsSingle(Calls(SetDataFn));
+        Assert.IsEmpty(Calls(BeginDataFn));
+        Assert.IsEmpty(Calls(AppendAllocationsFn));
+        Assert.IsEmpty(Calls(EndDataFn));
     }
 
 
@@ -1057,8 +1057,8 @@ public class BitResourceTimelineTests : BunitTestContext
         Assert.AreSame(config.Resources, begin.Arguments[1]);
         Assert.AreEqual(0L, begin.Arguments[2]);
         Assert.AreEqual(3_600_000L, begin.Arguments[3]);
-        Assert.AreEqual(0, Calls(SetDataFn).Count);
-        Assert.AreEqual(0, Calls(BeginDataFn).Count);
+        Assert.IsEmpty(Calls(SetDataFn));
+        Assert.IsEmpty(Calls(BeginDataFn));
 
         Assert.AreEqual(component.Instance.UniqueId, Calls(GetVisibleWindowFn).Single().Arguments[0]);
 
@@ -1090,8 +1090,8 @@ public class BitResourceTimelineTests : BunitTestContext
         }));
 
         Assert.AreEqual(0, asked);
-        Assert.AreEqual(0, Calls(ApplyAllocationWindowFn).Count);
-        Assert.AreEqual(1, Calls(WhenRenderedFn).Count);
+        Assert.IsEmpty(Calls(ApplyAllocationWindowFn));
+        Assert.ContainsSingle(Calls(WhenRenderedFn));
     }
 
     [TestMethod]
@@ -1112,7 +1112,7 @@ public class BitResourceTimelineTests : BunitTestContext
             return Task.FromResult(result);
         }), config);
 
-        Assert.AreEqual(1, (await ResolveAsync(component, "a2")).Count);
+        Assert.ContainsSingle((await ResolveAsync(component, "a2")));
 
         await component.InvokeAsync(() => component.Instance._RequestAllocationWindow(1, 3_000_000, 7_200_000, WindowSession()));
 
@@ -1127,7 +1127,7 @@ public class BitResourceTimelineTests : BunitTestContext
         // The loaded bars are exactly the new window's: a1 lies outside it, and a2, though its old position overlaps
         // the window, is no longer in what the app returned for it (deleted, or moved away) - both are forgotten.
         var resolved = await ResolveAsync(component, "a1", "a2", "a3");
-        Assert.AreEqual(1, resolved.Count);
+        Assert.ContainsSingle(resolved);
         Assert.AreSame(later, resolved[0]);
     }
 
@@ -1168,7 +1168,7 @@ public class BitResourceTimelineTests : BunitTestContext
 
         // The old fetch reaches neither the engine nor the bars the component resolves, though its id is higher than
         // the new load's initial window.
-        Assert.AreEqual(2, Calls(ApplyAllocationWindowFn).Count);
+        Assert.HasCount(2, Calls(ApplyAllocationWindowFn));
         Assert.AreEqual(secondSession, Calls(ApplyAllocationWindowFn)[1].Arguments[5]);
         Assert.AreEqual("current3", (await ResolveAsync(component, "stale", "current3")).Single().Id);
 
@@ -1206,13 +1206,13 @@ public class BitResourceTimelineTests : BunitTestContext
         // The superseded fetch answering first is dropped all the same.
         older.SetResult([Allocation("old", "r1", 0, 60_000)]);
         await first;
-        Assert.AreEqual(1, Calls(ApplyAllocationWindowFn).Count);
+        Assert.ContainsSingle(Calls(ApplyAllocationWindowFn));
 
         newer.SetResult([Allocation("new", "r1", 0, 60_000)]);
         await second;
 
         // The window of the superseded request never reaches the engine, nor the bars the component resolves.
-        CollectionAssert.AreEqual(new long[] { 0, 2 }, Calls(ApplyAllocationWindowFn).Select(c => (long)c.Arguments[1]!).ToArray());
+        Assert.AreSequenceEqual(new long[] { 0, 2 }, Calls(ApplyAllocationWindowFn).Select(c => (long)c.Arguments[1]!).ToArray());
         Assert.AreEqual("new", (await ResolveAsync(component, "old", "new")).Single().Id);
         Assert.AreEqual(3, asked);
     }
@@ -1242,7 +1242,7 @@ public class BitResourceTimelineTests : BunitTestContext
         component.Render(p => p.Add(x => x.Config, SampleConfig()));
         WaitForLoads(component, 1);
 
-        Assert.AreEqual(2, Calls(BeginWindowedFn).Count);
+        Assert.HasCount(2, Calls(BeginWindowedFn));
         Assert.AreNotEqual(firstSession, WindowSession());
         Assert.AreEqual(WindowSession(), Calls(ApplyAllocationWindowFn).Single().Arguments[5]);
 
@@ -1250,8 +1250,8 @@ public class BitResourceTimelineTests : BunitTestContext
         slow.SetResult([Allocation("stale", "r1", 0, 60_000)]);
         await component.InvokeAsync(() => component.Instance.ReloadAsync());
 
-        Assert.AreEqual(2, Calls(ApplyAllocationWindowFn).Count);
-        Assert.IsFalse(Calls(ApplyAllocationWindowFn).Any(c => (long)c.Arguments[5]! == firstSession));
+        Assert.HasCount(2, Calls(ApplyAllocationWindowFn));
+        Assert.DoesNotContain(c => (long)c.Arguments[5]! == firstSession, Calls(ApplyAllocationWindowFn));
         Assert.AreEqual("current3", (await ResolveAsync(component, "stale", "current2", "current3")).Single().Id);
     }
 
@@ -1279,7 +1279,7 @@ public class BitResourceTimelineTests : BunitTestContext
         // loading overlay goes with it.
         component.Render(p => p.Add(x => x.Config, null));
         await WaitUntil(() => Calls(ClearDataFn).Count == 1);
-        component.WaitForAssertion(() => Assert.AreEqual(0, component.FindAll(".bit-rtm-ldg").Count));
+        component.WaitForAssertion(() => Assert.IsEmpty(component.FindAll(".bit-rtm-ldg")));
 
         // The fetch answers only now, and a Config is assigned again: what the fetch returned reaches neither the engine
         // nor the bars the component resolves, and the cleared load never finishes.
@@ -1316,7 +1316,7 @@ public class BitResourceTimelineTests : BunitTestContext
             component.InvokeAsync(() => component.Instance._RequestAllocationWindow(1, 0, 3_600_000, WindowSession())));
 
         WaitForLoads(component, 2);
-        Assert.AreEqual(2, Calls(BeginWindowedFn).Count);
+        Assert.HasCount(2, Calls(BeginWindowedFn));
         Assert.AreEqual("w3", (await ResolveAsync(component, "w1", "w2", "w3")).Single().Id);
     }
 
@@ -1327,7 +1327,7 @@ public class BitResourceTimelineTests : BunitTestContext
 
         await component.InvokeAsync(() => component.Instance._RequestAllocationWindow(1, 0, 1_000, 1));
 
-        Assert.AreEqual(0, Calls(ApplyAllocationWindowFn).Count);
+        Assert.IsEmpty(Calls(ApplyAllocationWindowFn));
     }
 
 
@@ -1345,7 +1345,7 @@ public class BitResourceTimelineTests : BunitTestContext
         {
             await component.Instance.ClearSelectionAsync();
             Assert.AreEqual(0, await component.Instance.GetPixelsPerHourAsync());
-            Assert.AreEqual(0, (await component.Instance.GetSelectedBarsAsync()).Count);
+            Assert.IsEmpty((await component.Instance.GetSelectedBarsAsync()));
             Assert.IsFalse(await component.Instance.GoToTodayAsync());
             Assert.IsFalse(await component.Instance.PanByDaysAsync(1));
             await component.Instance.RemoveAllocationsAsync(["a1"]);
@@ -1384,8 +1384,8 @@ public class BitResourceTimelineTests : BunitTestContext
 
         Assert.AreEqual(80, zoom);
         Assert.IsFalse(scrolled);
-        Assert.AreEqual(0, Calls(ScrollToAllocationFn).Count);
-        Assert.AreEqual(0, Calls(SelectBarsFn).Count);
+        Assert.IsEmpty(Calls(ScrollToAllocationFn));
+        Assert.IsEmpty(Calls(SelectBarsFn));
     }
 
     [TestMethod]
@@ -1445,12 +1445,12 @@ public class BitResourceTimelineTests : BunitTestContext
 
         var select = Calls(SelectBarsFn).Single();
         Assert.AreEqual(id, select.Arguments[0]);
-        CollectionAssert.AreEqual(new[] { "a1" }, Arg<IReadOnlyList<string>>(select, 1).ToArray());
-        Assert.AreEqual(true, select.Arguments[2]);
+        Assert.AreSequenceEqual(new[] { "a1" }, Arg<IReadOnlyList<string>>(select, 1).ToArray());
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(select.Arguments[2]));
 
         void AssertCall(string identifier, int index, params object?[] arguments)
         {
-            CollectionAssert.AreEqual(arguments, Calls(identifier)[index].Arguments.ToArray(), identifier);
+            Assert.AreSequenceEqual(arguments, Calls(identifier)[index].Arguments.ToArray(), identifier);
         }
     }
 
@@ -1468,11 +1468,11 @@ public class BitResourceTimelineTests : BunitTestContext
             await component.Instance.SelectAsync(null!);
         });
 
-        Assert.AreEqual(0, Calls(ScrollToAllocationFn).Count);
-        Assert.AreEqual(0, Calls(ScrollToResourceFn).Count);
-        Assert.AreEqual(0, Calls(RemoveAllocationsFn).Count);
-        Assert.AreEqual(0, Calls(UpsertAllocationsFn).Count);
-        Assert.AreEqual(0, Calls(SelectBarsFn).Count);
+        Assert.IsEmpty(Calls(ScrollToAllocationFn));
+        Assert.IsEmpty(Calls(ScrollToResourceFn));
+        Assert.IsEmpty(Calls(RemoveAllocationsFn));
+        Assert.IsEmpty(Calls(UpsertAllocationsFn));
+        Assert.IsEmpty(Calls(SelectBarsFn));
     }
 
     [TestMethod]
@@ -1496,7 +1496,7 @@ public class BitResourceTimelineTests : BunitTestContext
         Assert.AreSame(replacement, resolved[0]);
         Assert.AreSame(extra, resolved[1]);
         // The Config is not changed.
-        Assert.AreEqual(1, config.Allocations.Count);
+        Assert.ContainsSingle(config.Allocations);
     }
 
     [TestMethod]
@@ -1512,7 +1512,7 @@ public class BitResourceTimelineTests : BunitTestContext
         var component = RenderLoaded(config: config);
 
         Assert.AreSame(config.Allocations[0], (await ResolveAsync(component, "a1")).Single());
-        Assert.AreEqual(0, (await ResolveAsync(component, "a2", "a3")).Count);
+        Assert.IsEmpty((await ResolveAsync(component, "a2", "a3")));
 
         // An upsert's invalid copy of an id leaves the valid one in place too.
         await component.InvokeAsync(() => component.Instance.UpsertAllocationsAsync([Allocation("a1", "r1", 90_000, 30_000)]));
@@ -1529,9 +1529,9 @@ public class BitResourceTimelineTests : BunitTestContext
 
         var remove = Calls(RemoveAllocationsFn).Single();
         Assert.AreEqual(component.Instance.UniqueId, remove.Arguments[0]);
-        CollectionAssert.AreEqual(new[] { "a1", "unknown" }, Arg<IReadOnlyList<string>>(remove, 1).ToArray());
+        Assert.AreSequenceEqual(new[] { "a1", "unknown" }, Arg<IReadOnlyList<string>>(remove, 1).ToArray());
 
-        Assert.AreEqual(0, (await ResolveAsync(component, "a1")).Count);
+        Assert.IsEmpty((await ResolveAsync(component, "a1")));
     }
 
     [TestMethod]
@@ -1550,14 +1550,14 @@ public class BitResourceTimelineTests : BunitTestContext
 
         WaitForLoads(component, 2);
         Assert.AreSame(config.Allocations, Calls(SetDataFn)[1].Arguments[4]);
-        Assert.AreEqual(0, (await ResolveAsync(component, "a2")).Count);
+        Assert.IsEmpty((await ResolveAsync(component, "a2")));
 
         await Assert.ThrowsExactlyAsync<JSException>(() =>
             component.InvokeAsync(() => component.Instance.RemoveAllocationsAsync(["a1"])));
 
         WaitForLoads(component, 3);
-        Assert.AreEqual(3, Calls(SetDataFn).Count);
-        Assert.AreEqual(1, (await ResolveAsync(component, "a1")).Count);
+        Assert.HasCount(3, Calls(SetDataFn));
+        Assert.ContainsSingle((await ResolveAsync(component, "a1")));
     }
 
     [TestMethod]
@@ -1569,7 +1569,7 @@ public class BitResourceTimelineTests : BunitTestContext
 
         var select = Calls(SelectBarsFn).Single();
         Assert.AreEqual(component.Instance.UniqueId, select.Arguments[0]);
-        Assert.AreEqual(false, select.Arguments[2]);
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(select.Arguments[2]));
     }
 
     [TestMethod]
@@ -1582,7 +1582,7 @@ public class BitResourceTimelineTests : BunitTestContext
 
         var selected = await ResolveAsync(component, "a2", "unknown", "a1");
 
-        Assert.AreEqual(2, selected.Count);
+        Assert.HasCount(2, selected);
         Assert.AreSame(config.Allocations[1], selected[0]);
         Assert.AreSame(config.Allocations[0], selected[1]);
         Assert.AreEqual(component.Instance.UniqueId, Calls(GetSelectedBarIdsFn).Single().Arguments[0]);
@@ -1738,7 +1738,7 @@ public class BitResourceTimelineTests : BunitTestContext
         });
 
         Assert.IsFalse(allowed);
-        Assert.AreEqual(2, seen!.Count);
+        Assert.HasCount(2, seen!);
         Assert.AreSame(config.Allocations[0], seen[0].Allocation);
         Assert.AreSame(config.Allocations[1], seen[1].Allocation);
         Assert.IsTrue(seen.All(c => c.Kind == BitResourceTimelineAllocationChangeKind.Resize));
@@ -1889,8 +1889,8 @@ public class BitResourceTimelineTests : BunitTestContext
         await component.InvokeAsync(async () => deleted = await component.Instance._OnAllocationsDeleting(["a1"]));
 
         Assert.IsFalse(deleted);
-        CollectionAssert.AreEqual(new[] { "a1" }, asked.Single().ToArray());
-        Assert.AreEqual(1, (await ResolveAsync(component, "a1")).Count);
+        Assert.AreSequenceEqual(new[] { "a1" }, asked.Single().ToArray());
+        Assert.ContainsSingle((await ResolveAsync(component, "a1")));
 
         answer = true;
         await component.InvokeAsync(async () => deleted = await component.Instance._OnAllocationsDeleting(["a1"]));
@@ -1908,7 +1908,7 @@ public class BitResourceTimelineTests : BunitTestContext
         await component.InvokeAsync(async () => deleted = await component.Instance._OnAllocationsDeleting(["a1"]));
 
         Assert.IsTrue(deleted);
-        Assert.AreEqual(0, (await ResolveAsync(component, "a1")).Count);
+        Assert.IsEmpty((await ResolveAsync(component, "a1")));
     }
 
     [TestMethod]
@@ -1943,7 +1943,7 @@ public class BitResourceTimelineTests : BunitTestContext
         // end after it starts, one of an unknown resource - and an invalid copy of an id does not replace the valid one.
         Assert.AreSame(pasted, created!.Single());
         Assert.AreSame(pasted, (await ResolveAsync(component, "c1")).Single());
-        Assert.AreEqual(0, (await ResolveAsync(component, "c2", "c3")).Count);
+        Assert.IsEmpty((await ResolveAsync(component, "c2", "c3")));
     }
 
     [TestMethod]
@@ -2086,9 +2086,9 @@ public class BitResourceTimelineTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance._OnSelectionUpdated(["a2", "unknown", "a1"]));
         await component.InvokeAsync(() => component.Instance._OnSelectionUpdated([]));
 
-        Assert.AreEqual(2, selections.Count);
-        CollectionAssert.AreEqual(new[] { config.Allocations[1], config.Allocations[0] }, selections[0]);
-        Assert.AreEqual(0, selections[1].Length);
+        Assert.HasCount(2, selections);
+        Assert.AreSequenceEqual(new[] { config.Allocations[1], config.Allocations[0] }, selections[0]);
+        Assert.IsEmpty(selections[1]);
     }
 
     [TestMethod]
@@ -2130,7 +2130,7 @@ public class BitResourceTimelineTests : BunitTestContext
         Assert.IsFalse(args.ShiftKey);
         Assert.IsFalse(args.MetaKey);
         Assert.IsTrue(args.AltKey);
-        Assert.AreEqual(0, args.OverflowAllocations.Count);
+        Assert.IsEmpty(args.OverflowAllocations);
     }
 
     [TestMethod]
@@ -2147,7 +2147,7 @@ public class BitResourceTimelineTests : BunitTestContext
 
         Assert.IsNotNull(args);
         Assert.IsNull(args.Allocation);
-        Assert.AreEqual(2, args.OverflowAllocations.Count);
+        Assert.HasCount(2, args.OverflowAllocations);
         Assert.AreSame(config.Allocations[0], args.OverflowAllocations[0]);
         Assert.AreSame(config.Allocations[1], args.OverflowAllocations[1]);
         Assert.AreEqual(BitResourceTimelineHitArea.TimeAxis, args.Area);
@@ -2270,7 +2270,7 @@ public class BitResourceTimelineTests : BunitTestContext
         var component = RenderTimeline(p => p.Add(x => x.ResourceTemplate,
             ctx => b => b.AddMarkupContent(0, $"<span class=\"tpl\">{ctx.Resource.Name}</span>")));
 
-        Assert.AreEqual(0, component.FindAll(".bit-rtm-rrw").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rtm-rrw"));
 
         await component.InvokeAsync(() => component.Instance._OnResourceRowsChanged(Json("""
             [
@@ -2280,19 +2280,19 @@ public class BitResourceTimelineTests : BunitTestContext
             """)));
 
         var rows = component.FindAll(".bit-rtm-rov > .bit-rtm-roi > .bit-rtm-rrw");
-        Assert.AreEqual(2, rows.Count);
+        Assert.HasCount(2, rows);
         Assert.AreEqual("Group", rows[0].QuerySelector(".bit-rtm-rct > .tpl")!.TextContent);
         Assert.AreEqual("Resource 1", rows[1].QuerySelector(".bit-rtm-rct > .tpl")!.TextContent);
 
         // The group row gets an expand/collapse button; the leaf does not.
         Assert.IsNotNull(rows[0].QuerySelector(".bit-rtm-tgl"));
         Assert.IsNull(rows[1].QuerySelector(".bit-rtm-tgl"));
-        Assert.AreEqual(1, component.FindAll(".bit-rtm-tgl").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-rtm-tgl"));
 
         // A report of other rows replaces them.
         await component.InvokeAsync(() => component.Instance._OnResourceRowsChanged(Json("[]")));
 
-        Assert.AreEqual(0, component.FindAll(".bit-rtm-rrw").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rtm-rrw"));
     }
 
     [TestMethod]
@@ -2303,7 +2303,7 @@ public class BitResourceTimelineTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance._OnResourceRowsChanged(Json(GroupRows)));
         await component.InvokeAsync(() => component.Instance._OnResourceRowsChanged(Json("{\"id\":\"r1\"}")));
 
-        Assert.AreEqual(0, component.FindAll(".bit-rtm-rrw").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rtm-rrw"));
     }
 
     [TestMethod]
@@ -2388,7 +2388,7 @@ public class BitResourceTimelineTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance._OnResourceRowsChanged(Json(GroupRows)));
 
         var toggles = component.FindAll(".bit-rtm-tgl");
-        Assert.AreEqual(2, toggles.Count);
+        Assert.HasCount(2, toggles);
 
         Assert.AreEqual("button", toggles[0].GetAttribute("type"));
         Assert.AreEqual("true", toggles[0].GetAttribute("aria-expanded"));
@@ -2444,7 +2444,7 @@ public class BitResourceTimelineTests : BunitTestContext
         var toggleGroup = typeof(BitResourceTimeline).GetMethod("ToggleGroupAsync", BindingFlags.Instance | BindingFlags.NonPublic)!;
         await component.InvokeAsync(() => (Task)toggleGroup.Invoke(component.Instance, ["grp"])!);
 
-        Assert.AreEqual(0, Calls(ToggleGroupFn).Count);
+        Assert.IsEmpty(Calls(ToggleGroupFn));
     }
 
     [TestMethod, DataRow("fa-IR"), DataRow("ar-SA")]
@@ -2511,13 +2511,13 @@ public class BitResourceTimelineTests : BunitTestContext
 
         await component.InvokeAsync(() => component.Instance._OnResourceAxisResized(220));
 
-        StringAssert.Contains(component.Find(".bit-rtm-rov").GetAttribute("style"), "width:220px");
-        StringAssert.Contains(component.Find(".bit-rtm-cnr").GetAttribute("style"), "width:220px");
+        Assert.Contains("width:220px", component.Find(".bit-rtm-rov").GetAttribute("style")!);
+        Assert.Contains("width:220px", component.Find(".bit-rtm-cnr").GetAttribute("style")!);
         Assert.AreEqual(220, widths.Single());
 
         // The same width again still tells the app the resize was committed.
         await component.InvokeAsync(() => component.Instance._OnResourceAxisResized(220));
-        CollectionAssert.AreEqual(new[] { 220, 220 }, widths);
+        Assert.AreSequenceEqual(new[] { 220, 220 }, widths);
     }
 
 
@@ -2538,7 +2538,7 @@ public class BitResourceTimelineTests : BunitTestContext
 
         var component = RenderLoaded(p => p.Add(x => x.TooltipTemplate, template), config);
 
-        Assert.AreEqual(0, component.FindAll(".bit-rtm-tov").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rtm-tov"));
 
         await component.InvokeAsync(() => component.Instance._OnBarHover("a1", 100, 200));
 
@@ -2549,11 +2549,11 @@ public class BitResourceTimelineTests : BunitTestContext
 
         // The pointer leaves the bar, or moves onto one the component does not hold.
         await component.InvokeAsync(() => component.Instance._OnBarHover(null, 0, 0));
-        Assert.AreEqual(0, component.FindAll(".bit-rtm-tov").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rtm-tov"));
 
         await component.InvokeAsync(() => component.Instance._OnBarHover("a1", 100, 200));
         await component.InvokeAsync(() => component.Instance._OnBarHover("unknown", 0, 0));
-        Assert.AreEqual(0, component.FindAll(".bit-rtm-tov").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rtm-tov"));
     }
 
     [TestMethod]
@@ -2573,7 +2573,7 @@ public class BitResourceTimelineTests : BunitTestContext
         // A render for anything else leaves the placed overlay where it is, and nothing hovered places nothing.
         component.Render();
         await component.InvokeAsync(() => component.Instance._OnBarHover(null, 0, 0));
-        Assert.AreEqual(1, Calls(PlaceTooltipOverlayFn).Count);
+        Assert.ContainsSingle(Calls(PlaceTooltipOverlayFn));
 
         await component.InvokeAsync(() => component.Instance._OnBarHover("a1", 300, 40));
         await WaitUntil(() => Calls(PlaceTooltipOverlayFn).Count == 2);
@@ -2595,7 +2595,7 @@ public class BitResourceTimelineTests : BunitTestContext
 
         var dispose = Calls(DisposeFn).Single();
         Assert.AreEqual(component.Instance.UniqueId, dispose.Arguments[0]);
-        Assert.AreEqual(1, dispose.Arguments.Count);
+        Assert.ContainsSingle(dispose.Arguments);
 
         // The reference the engine calls back through is released after the engine is gone.
         Assert.ThrowsExactly<ObjectDisposedException>(() => _ = reference.Value);
@@ -2609,7 +2609,7 @@ public class BitResourceTimelineTests : BunitTestContext
         await DisposeTimelineAsync(component);
         await DisposeTimelineAsync(component);
 
-        Assert.AreEqual(1, Calls(DisposeFn).Count);
+        Assert.ContainsSingle(Calls(DisposeFn));
     }
 
     [TestMethod]
@@ -2620,7 +2620,7 @@ public class BitResourceTimelineTests : BunitTestContext
         // The renderer tears the component down; the mocked script lets DisposeAsync complete.
         await Context.DisposeAsync();
 
-        Assert.AreEqual(1, Calls(DisposeFn).Count);
+        Assert.ContainsSingle(Calls(DisposeFn));
 
         // The test cleanup disposes a context of its own.
         Context = new BunitContext();
@@ -2643,13 +2643,13 @@ public class BitResourceTimelineTests : BunitTestContext
 
         // The setup returns after the component is gone: nothing more is sent to an engine nobody tears down again.
         await component.InvokeAsync(() => setup.Return(Layout()));
-        await Task.Delay(50);
+        await Task.Delay(50, TestContext.CancellationToken);
         await component.InvokeAsync(() => { });
 
-        Assert.AreEqual(0, Calls(EnableResourceTemplateFn).Count);
-        Assert.AreEqual(0, Calls(EnableTooltipTemplateFn).Count);
-        Assert.AreEqual(0, Calls(SetDataFn).Count);
-        Assert.AreEqual(1, Calls(DisposeFn).Count);
+        Assert.IsEmpty(Calls(EnableResourceTemplateFn));
+        Assert.IsEmpty(Calls(EnableTooltipTemplateFn));
+        Assert.IsEmpty(Calls(SetDataFn));
+        Assert.ContainsSingle(Calls(DisposeFn));
         Assert.ThrowsExactly<ObjectDisposedException>(() => _ = reference.Value);
     }
 
@@ -2667,10 +2667,10 @@ public class BitResourceTimelineTests : BunitTestContext
 
         // The rest of the load is skipped rather than pushed into an engine that no longer exists (and releasing the
         // gate of the load afterwards does not throw either).
-        await Task.Delay(100);
+        await Task.Delay(100, TestContext.CancellationToken);
         await component.InvokeAsync(() => { });
 
-        Assert.AreEqual(0, Calls(WhenRenderedFn).Count);
+        Assert.IsEmpty(Calls(WhenRenderedFn));
     }
 
     [TestMethod]
@@ -2688,12 +2688,12 @@ public class BitResourceTimelineTests : BunitTestContext
         await DisposeTimelineAsync(component);
         append.SetVoidResult();
 
-        await Task.Delay(100);
+        await Task.Delay(100, TestContext.CancellationToken);
         await component.InvokeAsync(() => { });
 
-        Assert.AreEqual(1, Calls(AppendAllocationsFn).Count);
-        Assert.AreEqual(0, Calls(EndDataFn).Count);
-        Assert.AreEqual(0, Calls(WhenRenderedFn).Count);
+        Assert.ContainsSingle(Calls(AppendAllocationsFn));
+        Assert.IsEmpty(Calls(EndDataFn));
+        Assert.IsEmpty(Calls(WhenRenderedFn));
     }
 
     [TestMethod]
@@ -2797,7 +2797,7 @@ public class BitResourceTimelineTests : BunitTestContext
                                                    .Select(m => m.Name)
                                                    .Order(StringComparer.Ordinal)
                                                    .ToArray();
-        CollectionAssert.AreEqual(callbacks, invoked.Order(StringComparer.Ordinal).ToArray());
+        Assert.AreSequenceEqual(callbacks, invoked.Order(StringComparer.Ordinal).ToArray());
 
         Assert.IsEmpty(raised, string.Join(", ", raised));
         Assert.AreEqual(1, fetches);
@@ -2826,7 +2826,7 @@ public class BitResourceTimelineTests : BunitTestContext
         {
             await component.Instance.ClearSelectionAsync();
             Assert.AreEqual(0, await component.Instance.GetPixelsPerHourAsync());
-            Assert.AreEqual(0, (await component.Instance.GetSelectedBarsAsync()).Count);
+            Assert.IsEmpty((await component.Instance.GetSelectedBarsAsync()));
             Assert.IsFalse(await component.Instance.GoToTodayAsync());
             Assert.IsFalse(await component.Instance.PanByDaysAsync(1));
             await component.Instance.RemoveAllocationsAsync(["a1"]);
@@ -2869,7 +2869,7 @@ public class BitResourceTimelineTests : BunitTestContext
 
         // The renderer disposing the prerendered component afterwards runs its teardown, which the runtime of a real
         // prerender refuses (IsRuntimeInvalid) and the lazy loader skips for a script never loaded (bit-lazy: teardown).
-        CollectionAssert.AreEqual(new[] { DisposeFn }, runtime.Calls, string.Join(", ", runtime.Calls));
+        Assert.AreSequenceEqual(new[] { DisposeFn }, runtime.Calls, string.Join(", ", runtime.Calls));
         AssertShell(html);
     }
 
@@ -2884,21 +2884,21 @@ public class BitResourceTimelineTests : BunitTestContext
 
     private static void AssertShell(string html)
     {
-        StringAssert.Contains(html, "class=\"bit-rtm");
-        StringAssert.Contains(html, "class=\"bit-rtm-vpt");
-        StringAssert.Contains(html, "role=\"application\"");
-        StringAssert.Contains(html, "aria-label=\"Flight plan\"");
-        StringAssert.Contains(html, "aria-keyshortcuts=\"" + BaseShortcuts + "\"");
+        Assert.Contains("class=\"bit-rtm", html);
+        Assert.Contains("class=\"bit-rtm-vpt", html);
+        Assert.Contains("role=\"application\"", html);
+        Assert.Contains("aria-label=\"Flight plan\"", html);
+        Assert.Contains("aria-keyshortcuts=\"" + BaseShortcuts + "\"", html);
         // The corner and the overlay keep the room of the default layout until the engine reports its own.
-        StringAssert.Contains(html, "Corner;");
-        StringAssert.Contains(html, "width:150px;height:60px");
-        StringAssert.Contains(html, "top:60px;width:150px");
+        Assert.Contains("Corner;", html);
+        Assert.Contains("width:150px;height:60px", html);
+        Assert.Contains("top:60px;width:150px", html);
 
         // No row is reported, no bar hovered and no data loading before the engine runs.
-        Assert.IsFalse(html.Contains("Row "), html);
-        Assert.IsFalse(html.Contains("Tip "), html);
-        Assert.IsFalse(html.Contains("bit-rtm-ldg"), html);
-        Assert.IsFalse(html.Contains("aria-busy"), html);
+        Assert.DoesNotContain("Row ", html, html);
+        Assert.DoesNotContain("Tip ", html, html);
+        Assert.DoesNotContain("bit-rtm-ldg", html, html);
+        Assert.DoesNotContain("aria-busy", html, html);
     }
 
     private sealed class RecordingJsRuntime : IJSRuntime
@@ -2940,7 +2940,7 @@ public class BitResourceTimelineTests : BunitTestContext
                                            m => m.Groups[2].Value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
 
         Assert.IsGreaterThanOrEqualTo(30, calls.Count, "The calls of BitResourceTimelineJsRuntimeExtensions were not found.");
-        CollectionAssert.AreEquivalent(functions.Keys.ToArray(), calls.Keys.ToArray(), "A function of the facade is not called from .NET, or a call names no function of it.");
+        Assert.AreSequenceEqual(functions.Keys.ToArray(), calls.Keys.ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, "A function of the facade is not called from .NET, or a call names no function of it.");
 
         foreach (var (name, arguments) in calls)
         {
@@ -2948,7 +2948,7 @@ public class BitResourceTimelineTests : BunitTestContext
 
             Assert.AreEqual("id", arguments[0], $"{name} is not called with the id of the component first.");
             Assert.IsTrue(parameters[0].StartsWith("id: string", StringComparison.Ordinal), $"{name} does not take the id of the component first.");
-            Assert.AreEqual(parameters.Length, arguments.Length, $"{name} takes {parameters.Length} arguments and is called with {arguments.Length}.");
+            Assert.HasCount(parameters.Length, arguments, $"{name} takes {parameters.Length} arguments and is called with {arguments.Length}.");
         }
     }
 
@@ -2973,4 +2973,6 @@ public class BitResourceTimelineTests : BunitTestContext
             (CultureInfo.DefaultThreadCurrentCulture, CultureInfo.DefaultThreadCurrentUICulture) = (defaultCulture, defaultUICulture);
         }
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

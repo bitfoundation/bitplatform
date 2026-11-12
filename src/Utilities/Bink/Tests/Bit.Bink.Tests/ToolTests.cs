@@ -140,7 +140,7 @@ public class EraserToolTests
         Assert.AreEqual(2, context.Document.ElementCount);
         BinkRect first = context.Document.Layers[0].Elements[0].Bounds;
         BinkRect second = context.Document.Layers[0].Elements[1].Bounds;
-        Assert.IsTrue(first.Right < second.Left, "the two fragments should sit on either side of the erased gap");
+        Assert.IsLessThan(second.Left, first.Right, "the two fragments should sit on either side of the erased gap");
     }
 
     [TestMethod]
@@ -161,7 +161,7 @@ public class EraserToolTests
         var tool = new BinkEraserTool { Mode = BinkEraserMode.Stroke, Radius = 30f };
         context.Line(tool, new Vector2(0, 20), new Vector2(400, 140), 40);
 
-        Assert.IsTrue(context.Document.ElementCount < 3);
+        Assert.IsLessThan(3, context.Document.ElementCount);
         Assert.AreEqual(1, context.History.UndoCount);
 
         context.History.Undo();
@@ -193,7 +193,7 @@ public class EraserToolTests
         var tool = new BinkEraserTool { Mode = BinkEraserMode.Stroke, Radius = 6f };
         context.Gesture(tool, BinkPointerKind.Mouse, (10, 100, 0.5f), (210, 100, 0.5f), (210, 100, 0.5f));
 
-        Assert.IsTrue(context.Document.ElementCount <= 1, $"the sweep should have erased nearly every line but {context.Document.ElementCount} remain");
+        Assert.IsLessThanOrEqualTo(1, context.Document.ElementCount, $"the sweep should have erased nearly every line but {context.Document.ElementCount} remain");
     }
 }
 
@@ -302,7 +302,7 @@ public class SelectToolTests
         context.Line(tool, corner, corner + new Vector2(100, 60), 20);
 
         BinkRect after = context.Document.GetElement(shape.Id).Bounds;
-        Assert.IsTrue(after.Width > bounds.Width * 1.5f, $"expected the element to grow from {bounds.Width} but it is {after.Width}");
+        Assert.IsGreaterThan(bounds.Width * 1.5f, after.Width, $"expected the element to grow from {bounds.Width} but it is {after.Width}");
     }
 
     [TestMethod]
@@ -395,7 +395,7 @@ public class PanToolTests
         tool.OnPointerMove(context, new BinkInputSample { PointerId = 1, Kind = BinkPointerKind.Touch, Phase = BinkPointerPhase.Move, X = 150, Y = 200, Buttons = 1, Timestamp = 16 });
         tool.OnPointerMove(context, new BinkInputSample { PointerId = 2, Kind = BinkPointerKind.Touch, Phase = BinkPointerPhase.Move, X = 350, Y = 200, Buttons = 1, Timestamp = 16 });
 
-        Assert.IsTrue(context.Viewport.Zoom > 1.5f, $"pinching apart should zoom in but zoom is {context.Viewport.Zoom}");
+        Assert.IsGreaterThan(1.5f, context.Viewport.Zoom, $"pinching apart should zoom in but zoom is {context.Viewport.Zoom}");
     }
 }
 

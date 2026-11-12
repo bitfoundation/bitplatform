@@ -19,7 +19,7 @@ public class InspectorTests
         var cut = ctx.Render<BmotionInspector>(ps => ps.Add(p => p.RefreshMs, 60_000));
 
         Assert.AreEqual("No elements registered.", cut.Find(".bm-insp-empty").TextContent);
-        StringAssert.Contains(cut.Find(".bm-insp-count").TextContent, "0 el");
+        Assert.Contains("0 el", cut.Find(".bm-insp-count").TextContent);
     }
 
     [TestMethod]
@@ -35,11 +35,11 @@ public class InspectorTests
 
         var cut = ctx.Render<BmotionInspector>(ps => ps.Add(p => p.RefreshMs, 50));
 
-        cut.WaitForAssertion(() => Assert.AreEqual(2, cut.FindAll(".bm-insp-el").Count), Refresh);
+        cut.WaitForAssertion(() => Assert.HasCount(2, cut.FindAll(".bm-insp-el")), Refresh);
 
         var ids = cut.FindAll(".bm-insp-id").Select(e => e.TextContent).ToArray();
-        CollectionAssert.AreEquivalent(new[] { "idle", "busy" }, ids);
-        StringAssert.Contains(cut.Find(".bm-insp-count").TextContent, "2 el · 1 active");
+        Assert.AreSequenceEqual(new[] { "idle", "busy" }, ids, Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
+        Assert.Contains("2 el · 1 active", cut.Find(".bm-insp-count").TextContent);
 
         var busy = cut.FindAll(".bm-insp-el").Single(e => e.QuerySelector(".bm-insp-id")!.TextContent == "busy");
         Assert.IsTrue(busy.ClassList.Contains("live"));
@@ -49,7 +49,7 @@ public class InspectorTests
         var idle = cut.FindAll(".bm-insp-el").Single(e => e.QuerySelector(".bm-insp-id")!.TextContent == "idle");
         Assert.IsFalse(idle.ClassList.Contains("live"));
         var chips = idle.QuerySelectorAll(".bm-insp-chip").Select(c => c.TextContent.Trim()).ToArray();
-        CollectionAssert.AreEquivalent(new[] { "x 10", "opacity 0.5" }, chips);
+        Assert.AreSequenceEqual(new[] { "x 10", "opacity 0.5" }, chips, Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -62,7 +62,7 @@ public class InspectorTests
 
         var cut = ctx.Render<BmotionInspector>(ps => ps.Add(p => p.RefreshMs, 50));
 
-        cut.WaitForAssertion(() => StringAssert.Contains(cut.Find(".bm-insp-count").TextContent, "1 el · 1 active"), Refresh);
+        cut.WaitForAssertion(() => Assert.Contains("1 el · 1 active", cut.Find(".bm-insp-count").TextContent), Refresh);
         var busy = cut.Find(".bm-insp-el");
         Assert.IsTrue(busy.ClassList.Contains("live"));
         var badge = busy.QuerySelector(".bm-insp-badge")!;
@@ -76,12 +76,12 @@ public class InspectorTests
         using var ctx = new BmotionTestContext();
         var cut = ctx.Render<BmotionInspector>(ps => ps.Add(p => p.StartOpen, false).Add(p => p.RefreshMs, 60_000));
 
-        Assert.AreEqual(0, cut.FindAll(".bm-insp-body").Count, "StartOpen=false starts collapsed");
+        Assert.IsEmpty(cut.FindAll(".bm-insp-body"), "StartOpen=false starts collapsed");
         Assert.IsTrue(cut.Find(".bm-inspector").ClassList.Contains("closed"));
 
         cut.Find(".bm-insp-bar").Click();
 
-        Assert.AreEqual(1, cut.FindAll(".bm-insp-body").Count);
+        Assert.ContainsSingle(cut.FindAll(".bm-insp-body"));
         Assert.IsTrue(cut.Find(".bm-inspector").ClassList.Contains("open"));
     }
 }

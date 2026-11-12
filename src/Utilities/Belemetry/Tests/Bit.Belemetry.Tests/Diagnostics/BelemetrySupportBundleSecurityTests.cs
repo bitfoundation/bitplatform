@@ -27,9 +27,9 @@ public class BelemetrySupportBundleSecurityTests
         host.Host.Pipeline.Enqueue(span);
         host.Diagnostics.Record("checkout", new Dictionary<string, object?> { ["apiKey"] = "sk-live-123", ["note"] = jwt });
 
-        var capture = await host.Diagnostics.CaptureAsync();
+        var capture = await host.Diagnostics.CaptureAsync(cancellationToken: TestContext.CancellationToken);
         capture.Confirm();
-        var text = AllText(await capture.ExportAsync());
+        var text = AllText(await capture.ExportAsync(TestContext.CancellationToken));
 
         foreach (var secret in new[] { jwt, "jane@example.com", "hunter2", "4111 1111 1111 1111", "secret-token", "jane:pw", "session=abc", "cvv", "sk-live-123" })
         {
@@ -43,7 +43,7 @@ public class BelemetrySupportBundleSecurityTests
         await using var host = DiagnosticsTestHost.Create();
         host.Factory.CreateLogger("App").LogError(DiagnosticsTestHost.Thrown(() => new InvalidOperationException("<script>alert(1)</script> [click](javascript:alert(1)) `code` | col")), "x");
 
-        var capture = await host.Diagnostics.CaptureAsync(new() { Description = "<img src=x onerror=alert(1)>" });
+        var capture = await host.Diagnostics.CaptureAsync(new() { Description = "<img src=x onerror=alert(1)>" }, TestContext.CancellationToken);
         var markdown = capture.ToMarkdown();
 
         // Inside a code span a Markdown viewer shows text literally (CommonMark); everywhere else no markup may survive.
@@ -51,10 +51,10 @@ public class BelemetrySupportBundleSecurityTests
         Assert.DoesNotContain("<script>", outsideCode);
         Assert.DoesNotContain("<img", outsideCode);
         Assert.DoesNotContain("](javascript:", outsideCode);
-        Assert.IsFalse(markdown.Split('\n').Any(line => line.Count(c => c == '`') % 2 != 0), "A backtick in a value cannot break out of its code span.");
+        Assert.DoesNotContain(line => line.Count(c => c == '`') % 2 != 0, markdown.Split('\n'), "A backtick in a value cannot break out of its code span.");
 
         capture.Confirm();
-        using var zip = new ZipArchive(new MemoryStream(await capture.ExportAsync()));
+        using var zip = new ZipArchive(new MemoryStream(await capture.ExportAsync(TestContext.CancellationToken)));
         var json = new StreamReader(zip.GetEntry("timeline.json")!.Open()).ReadToEnd();
         Assert.DoesNotContain("<script>", json, "JSON is written with HTML-sensitive characters escaped.");
     }
@@ -62,20 +62,20 @@ public class BelemetrySupportBundleSecurityTests
     [TestMethod]
     public async Task AReader_RejectsWhatIsNotABundle()
     {
-        Assert.IsFalse((await BelemetrySupportBundle.ReadAsync(new MemoryStream("not a zip"u8.ToArray()))).IsValid);
+        Assert.IsFalse((await BelemetrySupportBundle.ReadAsync(new MemoryStream("not a zip"u8.ToArray()), TestContext.CancellationToken)).IsValid);
 
-        var noManifest = await BelemetrySupportBundle.ReadAsync(Zip(("report.json", "{}")));
+        var noManifest = await BelemetrySupportBundle.ReadAsync(Zip(("report.json", "{}")), TestContext.CancellationToken);
         Assert.IsFalse(noManifest.IsValid);
         Assert.Contains("no manifest.json", noManifest.Errors.Single());
 
-        var wrongFormat = await BelemetrySupportBundle.ReadAsync(Zip(("manifest.json", """{"format":"other","schemaVersion":1}""")));
+        var wrongFormat = await BelemetrySupportBundle.ReadAsync(Zip(("manifest.json", """{"format":"other","schemaVersion":1}""")), TestContext.CancellationToken);
         Assert.Contains("format", wrongFormat.Errors.Single());
 
-        var newer = await BelemetrySupportBundle.ReadAsync(Zip(("manifest.json", """{"format":"bit-belemetry-support-bundle","schemaVersion":99}""")));
+        var newer = await BelemetrySupportBundle.ReadAsync(Zip(("manifest.json", """{"format":"bit-belemetry-support-bundle","schemaVersion":99}""")), TestContext.CancellationToken);
         Assert.IsFalse(newer.IsValid);
         Assert.Contains("newer than this reader", newer.Errors.Single());
 
-        var malformed = await BelemetrySupportBundle.ReadAsync(Zip(("manifest.json", "{ not json")));
+        var malformed = await BelemetrySupportBundle.ReadAsync(Zip(("manifest.json", "{ not json")), TestContext.CancellationToken);
         Assert.IsFalse(malformed.IsValid);
     }
 
@@ -84,15 +84,15 @@ public class BelemetrySupportBundleSecurityTests
     {
         await using var host = DiagnosticsTestHost.Create();
         host.Factory.CreateLogger("App").LogError(DiagnosticsTestHost.Thrown(() => new InvalidOperationException("e")), "e");
-        var capture = await host.Diagnostics.CaptureAsync();
+        var capture = await host.Diagnostics.CaptureAsync(cancellationToken: TestContext.CancellationToken);
         capture.Confirm();
 
-        var files = Unzip(await capture.ExportAsync());
+        var files = Unzip(await capture.ExportAsync(TestContext.CancellationToken));
         files["report.md"] = "# Everything is fine";
-        var read = await BelemetrySupportBundle.ReadAsync(Zip(files.Select(p => (p.Key, p.Value)).ToArray()));
+        var read = await BelemetrySupportBundle.ReadAsync(Zip(files.Select(p => (p.Key, p.Value)).ToArray()), TestContext.CancellationToken);
 
         Assert.IsFalse(read.IsValid);
-        Assert.IsTrue(read.Errors.Any(e => e.Contains("'report.md' does not match its SHA-256")));
+        Assert.Contains(e => e.Contains("'report.md' does not match its SHA-256"), read.Errors);
     }
 
     [TestMethod]
@@ -100,18 +100,18 @@ public class BelemetrySupportBundleSecurityTests
     {
         await using var host = DiagnosticsTestHost.Create();
         host.Factory.CreateLogger("App").LogError(DiagnosticsTestHost.Thrown(() => new InvalidOperationException("e")), "e");
-        var capture = await host.Diagnostics.CaptureAsync();
+        var capture = await host.Diagnostics.CaptureAsync(cancellationToken: TestContext.CancellationToken);
         capture.Confirm();
 
         // Dropping the checksum would otherwise let a changed file through unverified.
-        var files = Unzip(await capture.ExportAsync());
+        var files = Unzip(await capture.ExportAsync(TestContext.CancellationToken));
         var manifest = System.Text.Json.Nodes.JsonNode.Parse(files["manifest.json"])!;
         manifest["files"]!.AsArray().Single(f => (string?)f!["name"] == "timeline.json")!.AsObject().Remove("sha256");
         files["manifest.json"] = manifest.ToJsonString();
-        var read = await BelemetrySupportBundle.ReadAsync(Zip(files.Select(p => (p.Key, p.Value)).ToArray()));
+        var read = await BelemetrySupportBundle.ReadAsync(Zip(files.Select(p => (p.Key, p.Value)).ToArray()), TestContext.CancellationToken);
 
         Assert.IsFalse(read.IsValid);
-        Assert.IsTrue(read.Errors.Any(e => e.Contains("'timeline.json' without its SHA-256")), string.Join("; ", read.Errors));
+        Assert.Contains(e => e.Contains("'timeline.json' without its SHA-256"), read.Errors, string.Join("; ", read.Errors));
         Assert.IsEmpty(read.Events, "An unverified file is not read.");
         Assert.IsFalse(read.Files.ContainsKey("timeline.json"));
     }
@@ -122,12 +122,12 @@ public class BelemetrySupportBundleSecurityTests
         var manifest = """{"format":"bit-belemetry-support-bundle","schemaVersion":1,"files":[]}""";
         var report = """{"schemaVersion":1,"title":"t","summary":"s"}""";
 
-        var arrays = await BelemetrySupportBundle.ReadAsync(Zip(("manifest.json", manifest), ("report.json", report), ("timeline.json", "[]"), ("exceptions.json", "42")));
+        var arrays = await BelemetrySupportBundle.ReadAsync(Zip(("manifest.json", manifest), ("report.json", report), ("timeline.json", "[]"), ("exceptions.json", "42")), TestContext.CancellationToken);
         Assert.IsTrue(arrays.IsValid, string.Join("; ", arrays.Errors));
         Assert.IsEmpty(arrays.Events);
         Assert.IsEmpty(arrays.ExceptionGroups);
 
-        var notAnObject = await BelemetrySupportBundle.ReadAsync(Zip(("manifest.json", "[1]")));
+        var notAnObject = await BelemetrySupportBundle.ReadAsync(Zip(("manifest.json", "[1]")), TestContext.CancellationToken);
         Assert.IsFalse(notAnObject.IsValid);
         Assert.Contains("not a JSON object", notAnObject.Errors.Single());
     }
@@ -137,12 +137,12 @@ public class BelemetrySupportBundleSecurityTests
     {
         var manifest = """{"format":"bit-belemetry-support-bundle","schemaVersion":1,"files":[]}""";
 
-        var traversal = await BelemetrySupportBundle.ReadAsync(Zip(("manifest.json", manifest), ("../evil.json", "{}"), ("report.json", """{"schemaVersion":1,"title":"t","summary":"s"}""")));
-        Assert.IsTrue(traversal.Errors.Any(e => e.Contains("not allowed")));
+        var traversal = await BelemetrySupportBundle.ReadAsync(Zip(("manifest.json", manifest), ("../evil.json", "{}"), ("report.json", """{"schemaVersion":1,"title":"t","summary":"s"}""")), TestContext.CancellationToken);
+        Assert.Contains(e => e.Contains("not allowed"), traversal.Errors);
 
-        var unknown = await BelemetrySupportBundle.ReadAsync(Zip(("manifest.json", manifest), ("payload.exe", "MZ"), ("report.json", """{"schemaVersion":1,"title":"t","summary":"s"}""")));
+        var unknown = await BelemetrySupportBundle.ReadAsync(Zip(("manifest.json", manifest), ("payload.exe", "MZ"), ("report.json", """{"schemaVersion":1,"title":"t","summary":"s"}""")), TestContext.CancellationToken);
         Assert.IsTrue(unknown.IsValid, string.Join("; ", unknown.Errors));
-        Assert.IsTrue(unknown.Warnings.Single().Contains("payload.exe"));
+        Assert.Contains("payload.exe", unknown.Warnings.Single());
         Assert.IsFalse(unknown.Files.ContainsKey("payload.exe"));
 
         // 64 MiB of zeros compresses to a few KiB: the read stops at the entry limit instead of inflating it.
@@ -158,7 +158,7 @@ public class BelemetrySupportBundleSecurityTests
             m.Write(Encoding.UTF8.GetBytes(manifest));
         }
         bomb.Position = 0;
-        var read = await BelemetrySupportBundle.ReadAsync(bomb);
+        var read = await BelemetrySupportBundle.ReadAsync(bomb, TestContext.CancellationToken);
         Assert.IsFalse(read.IsValid);
         Assert.IsLessThan(1024 * 1024, bomb.Length, "The archive itself is small.");
     }
@@ -227,4 +227,6 @@ public class BelemetrySupportBundleSecurityTests
         stream.Position = 0;
         return stream;
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

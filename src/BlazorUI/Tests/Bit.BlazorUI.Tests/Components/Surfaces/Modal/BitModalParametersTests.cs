@@ -36,7 +36,7 @@ public class BitModalParametersTests
                                                    .Where(p => p.CanWrite && _mergedApart.Contains(p.Name) is false)
                                                    .ToArray();
 
-        Assert.IsTrue(properties.Length > 30);
+        Assert.IsGreaterThan(30, properties.Length);
 
         var second = new BitModalParameters();
         foreach (var property in properties)
@@ -104,7 +104,7 @@ public class BitModalParametersTests
 
         await merged.OnEscapeKeyDown.InvokeAsync(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs());
 
-        CollectionAssert.AreEqual(new[] { "first", "second" }, order);
+        Assert.AreSequenceEqual(new[] { "first", "second" }, order);
     }
 
     [TestMethod]
@@ -148,9 +148,9 @@ public class BitModalParametersTests
 
         var merged = BitModalParameters.Merge(first, second)!;
 
-        Assert.AreEqual(true, merged.Blocking);   // first wins
-        Assert.AreEqual(true, merged.FullWidth);  // only set on first
-        Assert.AreEqual(true, merged.FullHeight); // only set on second
+        Assert.IsTrue(merged.Blocking);   // first wins
+        Assert.IsTrue(merged.FullWidth);  // only set on first
+        Assert.IsTrue(merged.FullHeight); // only set on second
     }
 
     [TestMethod]
@@ -175,8 +175,8 @@ public class BitModalParametersTests
 
         var merged = BitModalParameters.Merge(first, second)!;
 
-        Assert.AreEqual(true, merged.NoScrollLock);
-        Assert.AreEqual(false, merged.AriaModal);
+        Assert.IsTrue(merged.NoScrollLock);
+        Assert.IsFalse(merged.AriaModal);
     }
 
     [TestMethod]
@@ -225,7 +225,7 @@ public class BitModalParametersTests
             new BitModalParameters { HtmlAttributes = null! },
             new BitModalParameters { HtmlAttributes = null! })!;
         Assert.IsNotNull(bothNull.HtmlAttributes);
-        Assert.AreEqual(0, bothNull.HtmlAttributes.Count);
+        Assert.IsEmpty(bothNull.HtmlAttributes);
     }
 
     [TestMethod]
@@ -243,10 +243,10 @@ public class BitModalParametersTests
 
         var merged = BitModalParameters.Merge(first, second)!;
 
-        Assert.AreEqual(true, merged.NoAutoFocus);        // first wins
-        Assert.AreEqual(true, merged.NoDismissOnEscape);  // only set on second
-        Assert.AreEqual(true, merged.NoFocusTrap);        // only set on second
-        Assert.AreEqual(true, merged.NoRestoreFocus);     // only set on second
+        Assert.IsTrue(merged.NoAutoFocus);        // first wins
+        Assert.IsTrue(merged.NoDismissOnEscape);  // only set on second
+        Assert.IsTrue(merged.NoFocusTrap);        // only set on second
+        Assert.IsTrue(merged.NoRestoreFocus);     // only set on second
         Assert.AreEqual("Cascaded label", merged.AriaLabel);
     }
 
@@ -296,7 +296,7 @@ public class BitModalParametersTests
 
         await merged.OnOpen.InvokeAsync();
 
-        CollectionAssert.AreEqual(new[] { "open-first", "open-second" }, order);
+        Assert.AreSequenceEqual(new[] { "open-first", "open-second" }, order);
     }
 
     [TestMethod]
@@ -338,7 +338,7 @@ public class BitModalParametersTests
             nameof(BitModal.Disabled), nameof(BitModal.Style), nameof(BitModal.Visibility)
         }.Where(n => carried.Contains(n) is false));
 
-        CollectionAssert.AreEqual(new List<string>(), missing, string.Join(", ", missing));
+        Assert.AreSequenceEqual(new List<string>(), missing, string.Join(", ", missing));
     }
 
     [TestMethod]
@@ -388,9 +388,8 @@ public class BitModalParametersTests
         await merged.OnDismiss.InvokeAsync(new Microsoft.AspNetCore.Components.Web.MouseEventArgs());
         await merged.OnOverlayClick.InvokeAsync(new Microsoft.AspNetCore.Components.Web.MouseEventArgs());
 
-        CollectionAssert.AreEqual(
-            new[] { "dismiss-first", "dismiss-second", "overlay-first", "overlay-second" },
-            order);
+        Assert.AreSequenceEqual(
+            new[] { "dismiss-first", "dismiss-second", "overlay-first", "overlay-second" }, order);
     }
 
     [TestMethod]
@@ -415,7 +414,7 @@ public class BitModalParametersTests
 
         Assert.AreEqual("first", merged.HeaderText);           // first wins
         Assert.AreEqual("first-close", merged.CloseButtonTitle); // only set on first
-        Assert.AreEqual(true, merged.ShowCloseButton);           // only set on first
+        Assert.IsTrue(merged.ShowCloseButton);           // only set on first
         Assert.AreEqual("second-footer", merged.FooterText);     // only set on second
         Assert.AreEqual("Cancel", merged.CloseIconName);         // only set on second
         Assert.AreEqual(BitVisibility.Hidden, merged.Visibility);
@@ -444,13 +443,13 @@ public class BitModalParametersTests
         var merged = BitModalParameters.Merge(first, second)!;
 
         Assert.AreEqual(BitPosition.TopRight, merged.Position); // first wins
-        Assert.AreEqual(true, merged.AbsolutePosition);
-        Assert.AreEqual(true, merged.Draggable);
-        Assert.AreEqual(true, merged.ModeFull);
-        Assert.AreEqual(true, merged.Modeless);
-        Assert.AreEqual(true, merged.NoBorder);
-        Assert.AreEqual(true, merged.FullSize);
-        Assert.AreEqual(true, merged.AutoToggleScroll);
+        Assert.IsTrue(merged.AbsolutePosition);
+        Assert.IsTrue(merged.Draggable);
+        Assert.IsTrue(merged.ModeFull);
+        Assert.IsTrue(merged.Modeless);
+        Assert.IsTrue(merged.NoBorder);
+        Assert.IsTrue(merged.FullSize);
+        Assert.IsTrue(merged.AutoToggleScroll);
         Assert.AreEqual("#handle", merged.DragElementSelector);
     }
 

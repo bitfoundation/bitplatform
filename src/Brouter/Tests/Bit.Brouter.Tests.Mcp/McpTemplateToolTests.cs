@@ -26,7 +26,7 @@ public class McpTemplateToolTests
     {
         var analysis = await AnalyzeAsync(template);
 
-        Assert.AreEqual(1, analysis.Routes.Length, $"One template came back as {analysis.Routes.Length} routes.");
+        Assert.ContainsSingle(analysis.Routes, $"One template came back as {analysis.Routes.Length} routes.");
 
         return analysis.Routes[0];
     }
@@ -51,8 +51,8 @@ public class McpTemplateToolTests
     {
         var inspection = await InspectAsync("/users/{id:int}");
 
-        CollectionAssert.AreEqual(new[] { "id" }, inspection.ParameterNames);
-        Assert.AreEqual(2, inspection.Segments!.Length);
+        Assert.AreSequenceEqual(new[] { "id" }, inspection.ParameterNames);
+        Assert.HasCount(2, inspection.Segments!);
 
         var literal = inspection.Segments[0];
         Assert.AreEqual("Literal", literal.Kind);
@@ -60,13 +60,13 @@ public class McpTemplateToolTests
 
         var parameter = inspection.Segments[1];
         Assert.AreEqual("Parameter", parameter.Kind);
-        CollectionAssert.AreEqual(new[] { "int" }, parameter.Constraints);
+        Assert.AreSequenceEqual(new[] { "int" }, parameter.Constraints);
         Assert.IsFalse(parameter.IsOptional);
         Assert.IsNull(parameter.DefaultValue);
 
         // A literal is the most specific thing a segment can be, a parameter less so - that ordering
         // is what ranks two routes that both match.
-        Assert.IsTrue(literal.Specificity > parameter.Specificity);
+        Assert.IsGreaterThan(parameter.Specificity, literal.Specificity);
         Assert.AreEqual(inspection.Segments.Sum(segment => segment.Specificity), inspection.Specificity);
     }
 
@@ -76,13 +76,13 @@ public class McpTemplateToolTests
         var inspection = await InspectAsync("/files/{name}.{ext?}");
 
         Assert.IsTrue(inspection.IsValid);
-        CollectionAssert.AreEqual(new[] { "name", "ext" }, inspection.ParameterNames);
+        Assert.AreSequenceEqual(new[] { "name", "ext" }, inspection.ParameterNames);
 
         var complex = inspection.Segments!.Last();
         Assert.AreEqual("Complex", complex.Kind);
-        CollectionAssert.AreEqual(new[] { "name", "ext" }, complex.ParameterNames);
+        Assert.AreSequenceEqual(new[] { "name", "ext" }, complex.ParameterNames);
 
-        Assert.IsTrue(inspection.Notes!.Any(note => note.Contains("right-to-left", StringComparison.Ordinal)),
+        Assert.Contains(note => note.Contains("right-to-left", StringComparison.Ordinal), inspection.Notes!,
             "A complex segment's matching order is exactly the surprise the notes exist for.");
     }
 
@@ -95,10 +95,10 @@ public class McpTemplateToolTests
 
         var catchAll = inspection.Segments!.Last();
         Assert.AreEqual("CatchAll", catchAll.Kind);
-        CollectionAssert.AreEqual(new[] { "path" }, catchAll.ParameterNames);
-        CollectionAssert.AreEqual(new[] { "nonfile" }, catchAll.Constraints);
+        Assert.AreSequenceEqual(new[] { "path" }, catchAll.ParameterNames);
+        Assert.AreSequenceEqual(new[] { "nonfile" }, catchAll.Constraints);
 
-        Assert.IsTrue(inspection.Notes!.Any(note => note.Contains("must be the last segment", StringComparison.Ordinal)));
+        Assert.Contains(note => note.Contains("must be the last segment", StringComparison.Ordinal), inspection.Notes!);
     }
 
     [TestMethod]
@@ -109,7 +109,7 @@ public class McpTemplateToolTests
         var parameter = inspection.Segments!.Last();
         Assert.AreEqual("Index", parameter.DefaultValue);
 
-        Assert.IsTrue(inspection.Notes!.Any(note => note.Contains("binds \"Index\"", StringComparison.Ordinal)),
+        Assert.Contains(note => note.Contains("binds \"Index\"", StringComparison.Ordinal), inspection.Notes!,
             "The note that says what a default actually does is missing.");
     }
 
@@ -121,7 +121,7 @@ public class McpTemplateToolTests
         var inspection = await InspectAsync("/{a?}/{b}");
 
         Assert.IsTrue(inspection.IsValid);
-        Assert.IsTrue(inspection.Notes!.Any(note => note.Contains("matches as required", StringComparison.Ordinal)),
+        Assert.Contains(note => note.Contains("matches as required", StringComparison.Ordinal), inspection.Notes!,
             "A middle optional was not flagged.");
     }
 
@@ -131,9 +131,9 @@ public class McpTemplateToolTests
         var inspection = await InspectAsync("/c/chain/{v:int:min(1):max(5)}");
 
         var parameter = inspection.Segments!.Last();
-        CollectionAssert.AreEqual(new[] { "int", "min(1)", "max(5)" }, parameter.Constraints);
+        Assert.AreSequenceEqual(new[] { "int", "min(1)", "max(5)" }, parameter.Constraints);
 
-        Assert.IsTrue(inspection.Notes!.Any(note => note.Contains("last TYPE constraint", StringComparison.Ordinal)));
+        Assert.Contains(note => note.Contains("last TYPE constraint", StringComparison.Ordinal), inspection.Notes!);
     }
 
     [TestMethod]
@@ -144,7 +144,7 @@ public class McpTemplateToolTests
         var inspection = await InspectAsync("/p/{value:slug}");
 
         Assert.IsTrue(inspection.IsValid, $"The app's custom 'slug' constraint did not resolve: {inspection.Error}");
-        CollectionAssert.AreEqual(new[] { "slug" }, inspection.Segments!.Last().Constraints);
+        Assert.AreSequenceEqual(new[] { "slug" }, inspection.Segments!.Last().Constraints);
     }
 
     [TestMethod]
@@ -154,7 +154,7 @@ public class McpTemplateToolTests
 
         Assert.IsFalse(inspection.IsValid);
         Assert.IsNotNull(inspection.Error);
-        StringAssert.Contains(inspection.Error, "nosuchconstraint");
+        Assert.Contains("nosuchconstraint", inspection.Error);
     }
 
     [TestMethod]
@@ -173,7 +173,7 @@ public class McpTemplateToolTests
 
             Assert.IsFalse(inspection.IsValid, $"'{template}' was reported as valid.");
             Assert.IsNotNull(inspection.Error);
-            StringAssert.Contains(inspection.Error.ToLowerInvariant(), expected.ToLowerInvariant(),
+            Assert.Contains(expected.ToLowerInvariant(), inspection.Error.ToLowerInvariant(),
                 $"'{template}' came back with an unhelpful error: {inspection.Error}");
         }
     }
@@ -186,7 +186,7 @@ public class McpTemplateToolTests
         var inspection = await InspectAsync(string.Empty);
 
         Assert.IsTrue(inspection.IsValid);
-        Assert.AreEqual(0, inspection.Segments!.Length);
+        Assert.IsEmpty(inspection.Segments!);
     }
 
     [TestMethod]
@@ -199,16 +199,15 @@ public class McpTemplateToolTests
             /{*path}
             """);
 
-        Assert.AreEqual(4, analysis.Routes.Length);
+        Assert.HasCount(4, analysis.Routes);
         Assert.IsTrue(analysis.Routes.All(route => route.IsValid));
 
         // Most specific first: a literal beats a constrained parameter, which beats a bare one,
         // which beats a catch-all.
-        CollectionAssert.AreEqual(
-            new[] { "/users/new", "/users/{id:int}", "/users/{id}", "/{*path}" },
-            analysis.Routes.Select(route => route.Template).ToArray());
+        Assert.AreSequenceEqual(
+            new[] { "/users/new", "/users/{id:int}", "/users/{id}", "/{*path}" }, analysis.Routes.Select(route => route.Template).ToArray());
 
-        CollectionAssert.AreEqual(new int?[] { 1, 2, 3, 4 }, analysis.Routes.Select(route => route.MatchOrder).ToArray());
+        Assert.AreSequenceEqual(new int?[] { 1, 2, 3, 4 }, analysis.Routes.Select(route => route.MatchOrder).ToArray());
 
         // What a set is asked about is how its templates relate. The detail of one of them is a
         // further call away, on whichever template the ranking turned out to make interesting.
@@ -229,7 +228,7 @@ public class McpTemplateToolTests
         Assert.IsNotNull(route.Segments, "A single template came back without the detail the call is for.");
         Assert.IsNull(route.MatchOrder, "A single template was given a rank among no other templates.");
         Assert.IsNull(route.Shape, "A single template came back with a comparison key and nothing to compare it to.");
-        Assert.AreEqual(0, analysis.Ambiguous.Length);
+        Assert.IsEmpty(analysis.Ambiguous);
     }
 
     [TestMethod]
@@ -237,10 +236,10 @@ public class McpTemplateToolTests
     {
         var analysis = await AnalyzeAsync("/users/{id}\n/users/{userId}");
 
-        Assert.AreEqual(1, analysis.Ambiguous.Length);
-        CollectionAssert.AreEquivalent(new[] { "/users/{id}", "/users/{userId}" }, analysis.Ambiguous[0]);
+        Assert.ContainsSingle(analysis.Ambiguous);
+        Assert.AreSequenceEqual(new[] { "/users/{id}", "/users/{userId}" }, analysis.Ambiguous[0], Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
-        Assert.IsTrue(analysis.Notes.Any(note => note.Contains("registration order", StringComparison.Ordinal)),
+        Assert.Contains(note => note.Contains("registration order", StringComparison.Ordinal), analysis.Notes,
             "The analysis reports the collision without saying what the router does about it.");
     }
 
@@ -251,7 +250,7 @@ public class McpTemplateToolTests
         // absent - the router keeps them apart, so this must not report them as a collision.
         var analysis = await AnalyzeAsync("/x/{page}\n/x/{page=1}");
 
-        Assert.AreEqual(0, analysis.Ambiguous.Length);
+        Assert.IsEmpty(analysis.Ambiguous);
     }
 
     [TestMethod]
@@ -259,7 +258,7 @@ public class McpTemplateToolTests
     {
         var analysis = await AnalyzeAsync("/ok\n/broken/{id\n/also-ok");
 
-        Assert.AreEqual(3, analysis.Routes.Length);
+        Assert.HasCount(3, analysis.Routes);
         Assert.AreEqual(2, analysis.Routes.Count(route => route.IsValid));
 
         var broken = analysis.Routes.Single(route => route.IsValid is false);
@@ -269,7 +268,7 @@ public class McpTemplateToolTests
         // Sorted last: a route that cannot register never wins anything.
         Assert.AreEqual(3, broken.MatchOrder);
 
-        Assert.IsTrue(analysis.Notes.Any(note => note.Contains("never registers", StringComparison.Ordinal)));
+        Assert.Contains(note => note.Contains("never registers", StringComparison.Ordinal), analysis.Notes);
     }
 
     [TestMethod]
@@ -279,9 +278,8 @@ public class McpTemplateToolTests
         // tear one valid template into two invalid ones and blame the caller for it.
         var analysis = await AnalyzeAsync("/a/{id:range(1,10)}; /b/{code:length(2,4)}, /c\n/d");
 
-        CollectionAssert.AreEquivalent(
-            new[] { "/a/{id:range(1,10)}", "/b/{code:length(2,4)}", "/c", "/d" },
-            analysis.Routes.Select(route => route.Template).ToArray());
+        Assert.AreSequenceEqual(
+            new[] { "/a/{id:range(1,10)}", "/b/{code:length(2,4)}", "/c", "/d" }, analysis.Routes.Select(route => route.Template).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
         Assert.IsTrue(analysis.Routes.All(route => route.IsValid));
     }
@@ -298,9 +296,9 @@ public class McpTemplateToolTests
 
         Assert.IsTrue(route.IsValid);
         Assert.AreEqual(string.Empty, route.Template);
-        Assert.AreEqual(0, route.Segments!.Length);
+        Assert.IsEmpty(route.Segments!);
 
-        Assert.IsTrue(analysis.Notes.Any(note => note.Contains("index route", StringComparison.Ordinal)),
+        Assert.Contains(note => note.Contains("index route", StringComparison.Ordinal), analysis.Notes,
             "Nothing in the answer says what the empty template is.");
     }
 
@@ -311,14 +309,14 @@ public class McpTemplateToolTests
 
         var analysis = await AnalyzeAsync(pasted);
 
-        Assert.AreEqual(200, analysis.Routes.Length, "The number of analyzed templates is capped at 200.");
+        Assert.HasCount(200, analysis.Routes, "The number of analyzed templates is capped at 200.");
 
         // A cut table analyzed silently would read as a clean bill of health for routes nothing
         // ever looked at - above all for ambiguity, which only means anything over a whole table.
         Assert.IsTrue(analysis.IsPartial, "A cut route table came back with nothing saying it was cut.");
         Assert.AreEqual(500, analysis.SubmittedTemplateCount);
         Assert.AreEqual(200, analysis.AnalyzedTemplateCount);
-        StringAssert.Contains(analysis.Notes[0], "INCOMPLETE", "The truncation has to be the first thing the notes say.");
+        Assert.Contains("INCOMPLETE", analysis.Notes[0], "The truncation has to be the first thing the notes say.");
     }
 
     [TestMethod]
@@ -345,13 +343,13 @@ public class McpTemplateToolTests
                               .Distinct(StringComparer.Ordinal)
                               .ToArray();
 
-        Assert.IsTrue(templates.Length > 30, $"Only {templates.Length} route templates were found in the demo's route table.");
+        Assert.IsGreaterThan(30, templates.Length, $"Only {templates.Length} route templates were found in the demo's route table.");
 
         var analysis = await AnalyzeAsync(string.Join('\n', templates));
 
         var invalid = analysis.Routes.Where(route => route.IsValid is false).ToArray();
 
-        Assert.AreEqual(0, invalid.Length,
+        Assert.IsEmpty(invalid,
             $"Templates the running site routes by were reported invalid: {string.Join(", ", invalid.Select(route => $"'{route.Template}' ({route.Error})"))}");
     }
 }

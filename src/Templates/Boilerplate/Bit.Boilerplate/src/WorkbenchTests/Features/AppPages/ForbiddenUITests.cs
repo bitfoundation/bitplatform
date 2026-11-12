@@ -15,7 +15,7 @@ public class ForbiddenUITests : AppViewPageTest
 
     private ILocator Figures => View().GetByText(AppStrings.TotalProducts, new() { Exact = true });
 
-    protected override Task<WorkbenchTestServer> ServerToTest => HasAgent ? withAgent.Value : withoutAgent.Value;
+    private protected override Task<WorkbenchTestServer> ServerToTest => HasAgent ? withAgent.Value : withoutAgent.Value;
 
     private static Task<WorkbenchTestServer> StartServer(bool isDevMode)
     {

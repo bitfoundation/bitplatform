@@ -30,7 +30,7 @@ public class BitScrollablePaneE2ETests : E2ETestBase
         Assert.IsTrue(response.Ok);
         Assert.IsTrue(Regex.IsMatch(html, "id=\"scp-basic\"[^>]*style=\"height:10rem\""), "The pane is not prerendered with its height.");
         Assert.IsTrue(Regex.IsMatch(html, "id=\"scp-focus\"[^>]*role=\"region\""), "The named pane is not prerendered as a region.");
-        StringAssert.Contains(html, "<span id=\"status\">Loading</span>");
+        Assert.Contains("<span id=\"status\">Loading</span>", html);
     }
 
     [TestMethod]
@@ -71,11 +71,11 @@ public class BitScrollablePaneE2ETests : E2ETestBase
         Near(fitText.Width, fit.Width, "FitSize width");
         await Expect(El("scp-fit")).ToHaveAttributeAsync("style", new Regex("width:fit-content"));
         await Expect(El("scp-fitw")).ToHaveAttributeAsync("style", new Regex("width:fit-content"));
-        Assert.IsTrue((await BoxAsync(El("scp-fith"))).Height < 100, "FitHeight does not win over the Height written before it.");
+        Assert.IsLessThan(100, (await BoxAsync(El("scp-fith"))).Height, "FitHeight does not win over the Height written before it.");
 
-        Assert.IsTrue((await BoxAsync(El("scp-auto"))).Width > 100, "AutoSize does not win over the Width.");
-        Assert.IsTrue((await BoxAsync(El("scp-autow"))).Width > 100, "AutoWidth does not win over the Width.");
-        Assert.IsTrue((await BoxAsync(El("scp-autoh"))).Height > 10, "AutoHeight does not win over the Height.");
+        Assert.IsGreaterThan(100, (await BoxAsync(El("scp-auto"))).Width, "AutoSize does not win over the Width.");
+        Assert.IsGreaterThan(100, (await BoxAsync(El("scp-autow"))).Width, "AutoWidth does not win over the Width.");
+        Assert.IsGreaterThan(10, (await BoxAsync(El("scp-autoh"))).Height, "AutoHeight does not win over the Height.");
     }
 
     [TestMethod]
@@ -99,7 +99,7 @@ public class BitScrollablePaneE2ETests : E2ETestBase
         }
         else if (scrollable)
         {
-            Assert.IsTrue(await ScrollTopAsync(pane) > 0);
+            Assert.IsGreaterThan(0, await ScrollTopAsync(pane));
             await WheelOverAsync(pane, 0, -200);
             await PollAsync(() => ScrollTopAsync(pane), top => top == 0, "the wheel did not scroll it back");
         }
@@ -194,7 +194,7 @@ public class BitScrollablePaneE2ETests : E2ETestBase
         await El("scp-sbw-none").ExpectScrollbarWidthAsync("none");
         await El("scp-sbw-auto").ExpectScrollbarWidthAsync("auto");
         await El("scp-sbw-none").EvaluateAsync("el => el.scrollTop = 20");
-        Assert.IsTrue(await ScrollTopAsync(El("scp-sbw-none")) > 0, "A hidden scrollbar stops the pane from scrolling.");
+        Assert.IsGreaterThan(0, await ScrollTopAsync(El("scp-sbw-none")), "A hidden scrollbar stops the pane from scrolling.");
 
         await Expect(El("scp-sbc")).ToHaveCSSAsync("scrollbar-color", "rgb(255, 0, 0) rgb(0, 0, 255)");
         await Expect(El("scp-gut-stable")).ToHaveCSSAsync("scrollbar-gutter", "stable");
@@ -210,7 +210,7 @@ public class BitScrollablePaneE2ETests : E2ETestBase
         var pane = El("scp-modern");
         await Expect(pane).ToHaveClassAsync(HasClass("bit-scp-mod"));
         await Expect(pane).ToHaveClassAsync(HasClass("bit-scp-ahs"));
-        Assert.IsTrue((await StyleAsync(pane, "--bit-scp-sbc")).Trim().Length > 0, "The Modern thumb color is not resolved.");
+        Assert.IsGreaterThan(0, (await StyleAsync(pane, "--bit-scp-sbc")).Trim().Length, "The Modern thumb color is not resolved.");
 
         await Expect(pane).ToHaveAttributeAsync("data-bit-scp-idle", "");
 
@@ -234,7 +234,7 @@ public class BitScrollablePaneE2ETests : E2ETestBase
         await Expect(pane).ToHaveClassAsync(HasClass("bit-scp-fad"));
         await Expect(pane).ToHaveAttributeAsync("data-bit-scp-fb", "");
         await Expect(pane).Not.ToHaveAttributeAsync("data-bit-scp-ft", new Regex(".*"));
-        StringAssert.Contains(await StyleAsync(pane, "mask-image"), "linear-gradient");
+        Assert.Contains("linear-gradient", await StyleAsync(pane, "mask-image"));
 
         await pane.EvaluateAsync("el => el.scrollTop = 80");
         await Expect(pane).ToHaveAttributeAsync("data-bit-scp-ft", "");
@@ -251,7 +251,7 @@ public class BitScrollablePaneE2ETests : E2ETestBase
         await horizontal.EvaluateAsync("el => el.scrollLeft = el.scrollWidth");
         await Expect(horizontal).ToHaveAttributeAsync("data-bit-scp-fl", "");
         await Expect(horizontal).Not.ToHaveAttributeAsync("data-bit-scp-fr", new Regex(".*"));
-        StringAssert.Contains(await StyleAsync(horizontal, "mask-image"), "48px");
+        Assert.Contains("48px", await StyleAsync(horizontal, "mask-image"));
     }
 
     [TestMethod]
@@ -343,7 +343,7 @@ public class BitScrollablePaneE2ETests : E2ETestBase
 
         await Expect(El("th-top")).ToHaveTextAsync("400");
         var reports = int.Parse((await El("th-scrolls").TextContentAsync())!, CultureInfo.InvariantCulture);
-        Assert.IsTrue(reports <= 6, $"{reports} reports for 20 frames of scrolling with a 500ms throttle.");
+        Assert.IsLessThanOrEqualTo(6, reports, $"{reports} reports for 20 frames of scrolling with a 500ms throttle.");
     }
 
     [TestMethod]
@@ -460,7 +460,7 @@ public class BitScrollablePaneE2ETests : E2ETestBase
         await El("btn-smooth-instant").ClickAsync();
         await PollAsync(() => ScrollTopAsync(pane), top => top == 0, "the instant move never happened");
 
-        CollectionAssert.AreEqual(new[] { "smooth", "instant" }, await ReadScrollBehaviorsAsync());
+        Assert.AreSequenceEqual(new[] { "smooth", "instant" }, await ReadScrollBehaviorsAsync());
     }
 
     [TestMethod]
@@ -475,7 +475,7 @@ public class BitScrollablePaneE2ETests : E2ETestBase
         var max = await El("scp-smooth").EvaluateAsync<double>("el => el.scrollHeight - el.clientHeight");
         await PollAsync(() => ScrollTopAsync(El("scp-smooth")), top => Math.Abs(top - max) < 1, "the move never happened");
 
-        CollectionAssert.AreEqual(new[] { "instant" }, await ReadScrollBehaviorsAsync());
+        Assert.AreSequenceEqual(new[] { "instant" }, await ReadScrollBehaviorsAsync());
     }
 
     [TestMethod]
@@ -654,7 +654,7 @@ public class BitScrollablePaneE2ETests : E2ETestBase
             await Page.Mouse.UpAsync();
 
             var release = await Page.EvaluateAsync<double[]>("() => [window.__e2eFlick.gap, window.__e2eFlick.left, window.__e2eFlick.window]");
-            Assert.IsTrue(release[0] >= 0, "The pane heard no drag released.");
+            Assert.IsGreaterThanOrEqualTo(0, release[0], "The pane heard no drag released.");
 
             if (release[0] > release[2])
             {
@@ -697,8 +697,8 @@ public class BitScrollablePaneE2ETests : E2ETestBase
         Assert.AreEqual("rgb(255, 0, 0)", (await StyleAsync(pane, "--bit-scp-sbc")).Trim());
         Assert.AreEqual("2px", (await StyleAsync(pane, "--bit-scp-sbr")).Trim());
         Assert.AreEqual("rgb(0, 0, 255)", (await StyleAsync(pane, "--bit-scp-sbt")).Trim());
-        StringAssert.Contains(await StyleAsync(pane, "mask-image"), "9px");
-        StringAssert.Contains(await StyleAsync(El("scp-var-wins"), "mask-image"), "25px");
+        Assert.Contains("9px", await StyleAsync(pane, "mask-image"));
+        Assert.Contains("25px", await StyleAsync(El("scp-var-wins"), "mask-image"));
 
         await pane.FocusAsync();
         await Page.Keyboard.PressAsync("ArrowDown");
@@ -771,7 +771,7 @@ public class BitScrollablePaneE2ETests : E2ETestBase
         await OpenAsync(Url);
 
         await Expect(El("scp-vis-hidden")).ToHaveCSSAsync("visibility", "hidden");
-        Assert.IsTrue((await BoxAsync(El("scp-vis-hidden"))).Height > 0);
+        Assert.IsGreaterThan(0, (await BoxAsync(El("scp-vis-hidden"))).Height);
         await Expect(El("scp-vis-collapsed")).ToHaveCSSAsync("display", "none");
     }
 
@@ -863,7 +863,7 @@ public class BitScrollablePaneE2ETests : E2ETestBase
 
     private static void Near(double expected, double actual, string what, double tolerance = 1.5)
     {
-        Assert.IsTrue(Math.Abs(expected - actual) <= tolerance, $"{what}: expected {expected}, got {actual}.");
+        Assert.IsLessThanOrEqualTo(tolerance, Math.Abs(expected - actual), $"{what}: expected {expected}, got {actual}.");
     }
 
     private async Task<T> PollAsync<T>(Func<Task<T>> read, Func<T, bool> done, string message)

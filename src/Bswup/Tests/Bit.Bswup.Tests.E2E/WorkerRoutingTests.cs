@@ -26,7 +26,7 @@ public class WorkerRoutingTests : BswupTest
 
         Assert.AreEqual(403, outcome.Status, outcome.ToString());
         Assert.AreEqual("This URL is prohibited!", outcome.Text);
-        Assert.IsFalse((await Session.RequestsAsync()).Any(r => r.Path.Contains("harness-extra", StringComparison.Ordinal)), "The prohibited request reached the server.");
+        Assert.DoesNotContain(r => r.Path.Contains("harness-extra", StringComparison.Ordinal), await Session.RequestsAsync(), "The prohibited request reached the server.");
     }
 
     [TestMethod]
@@ -46,8 +46,8 @@ public class WorkerRoutingTests : BswupTest
         Assert.AreEqual(200, (await FetchAsync(AppUrl("_content/Bit.Bswup.Tests.Harness/harness.js"))).Status);
 
         var requests = await Session.RequestsAsync();
-        Assert.IsTrue(requests.Any(r => r.Path.EndsWith("harness-extra.json", StringComparison.Ordinal)), "The server-handled URL was answered without the server.");
-        Assert.IsFalse(requests.Any(r => r.Path.EndsWith("harness.js", StringComparison.Ordinal)), "A cached asset reached the server.");
+        Assert.Contains(r => r.Path.EndsWith("harness-extra.json", StringComparison.Ordinal), requests, "The server-handled URL was answered without the server.");
+        Assert.DoesNotContain(r => r.Path.EndsWith("harness.js", StringComparison.Ordinal), requests, "A cached asset reached the server.");
     }
 
     [TestMethod]
@@ -63,7 +63,7 @@ public class WorkerRoutingTests : BswupTest
         await WaitForInteractiveAsync();
 
         var documents = (await Session.RequestsAsync()).Where(r => r.Destination == "document").Select(r => r.Path).ToArray();
-        CollectionAssert.AreEqual(new[] { "/privacy" }, documents, $"Documents requested: {string.Join(", ", documents)}");
+        Assert.AreSequenceEqual(new[] { "/privacy" }, documents, $"Documents requested: {string.Join(", ", documents)}");
     }
 
     [TestMethod]
@@ -78,7 +78,7 @@ public class WorkerRoutingTests : BswupTest
         var response = await Page.GotoAsync(AppUrl(ExtraAsset));
 
         Assert.AreEqual(200, response!.Status);
-        StringAssert.Contains(await response.TextAsync(), "\"alphabet\"");
+        Assert.Contains("\"alphabet\"", await response.TextAsync());
     }
 
     [TestMethod]

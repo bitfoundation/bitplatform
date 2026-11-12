@@ -28,9 +28,8 @@ public class GraphValidatorTests
             [new() { Id = "e", Source = "a", Target = "ghost" }, new() { Id = "e", Source = "a", Target = "a" }]);
 
         Assert.IsFalse(result.IsValid);
-        CollectionAssert.AreEquivalent(
-            new[] { BlowValidationCodes.DuplicateNodeId, BlowValidationCodes.DuplicateEdgeId, BlowValidationCodes.MissingEdgeEndpoint, BlowValidationCodes.MissingParentNode },
-            Codes(result));
+        Assert.AreSequenceEqual(
+            new[] { BlowValidationCodes.DuplicateNodeId, BlowValidationCodes.DuplicateEdgeId, BlowValidationCodes.MissingEdgeEndpoint, BlowValidationCodes.MissingParentNode }, Codes(result), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         Assert.AreEqual("child", result.Issues.Single(i => i.Code == BlowValidationCodes.MissingParentNode).NodeId);
     }
 
@@ -42,7 +41,7 @@ public class GraphValidatorTests
             []);
 
         var cyclic = result.Issues.Where(i => i.Code == BlowValidationCodes.ParentCycle).Select(i => i.NodeId).ToArray();
-        CollectionAssert.AreEquivalent(new[] { "a", "b", "c", "self" }, cyclic);
+        Assert.AreSequenceEqual(new[] { "a", "b", "c", "self" }, cyclic, Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -78,7 +77,7 @@ public class GraphValidatorTests
         Assert.AreEqual(BlowValidationCodes.TooFewConnections, issue.Code);
         Assert.AreEqual(BlowValidationSeverity.Error, issue.Severity);
         Assert.AreEqual("x", issue.PortId);
-        StringAssert.Contains(issue.Message, "'X'");
+        Assert.Contains("'X'", issue.Message);
     }
 
     [TestMethod]
@@ -98,7 +97,7 @@ public class GraphValidatorTests
 
         var result = Validate(nodes, edges);
 
-        CollectionAssert.AreEquivalent(new[] { BlowValidationCodes.TooManyConnections, BlowValidationCodes.IncompatibleTypes }, Codes(result));
+        Assert.AreSequenceEqual(new[] { BlowValidationCodes.TooManyConnections, BlowValidationCodes.IncompatibleTypes }, Codes(result), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         Assert.AreEqual("1", result.Issues.Single(i => i.Code == BlowValidationCodes.IncompatibleTypes).EdgeId);
     }
 
@@ -112,14 +111,11 @@ public class GraphValidatorTests
             BlowValidationRules.NoIsolatedNodes(),
             BlowValidationRules.AllReachableFrom(n => n.Type == "input"));
 
-        var result = validator.Validate(nodes, edges);
+        var result = validator.Validate(nodes, edges, TestContext.CancellationToken);
 
-        CollectionAssert.AreEquivalent(new[] { "a", "b" },
-            result.Issues.Where(i => i.Code == BlowValidationCodes.Cycle).Select(i => i.NodeId).ToArray());
-        CollectionAssert.AreEquivalent(new[] { "start", "lonely" },
-            result.Issues.Where(i => i.Code == BlowValidationCodes.IsolatedNode).Select(i => i.NodeId).ToArray());
-        CollectionAssert.AreEquivalent(new[] { "a", "b", "lonely" },
-            result.Issues.Where(i => i.Code == BlowValidationCodes.UnreachableNode).Select(i => i.NodeId).ToArray());
+        Assert.AreSequenceEqual(new[] { "a", "b" }, result.Issues.Where(i => i.Code == BlowValidationCodes.Cycle).Select(i => i.NodeId).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
+        Assert.AreSequenceEqual(new[] { "start", "lonely" }, result.Issues.Where(i => i.Code == BlowValidationCodes.IsolatedNode).Select(i => i.NodeId).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
+        Assert.AreSequenceEqual(new[] { "a", "b", "lonely" }, result.Issues.Where(i => i.Code == BlowValidationCodes.UnreachableNode).Select(i => i.NodeId).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         Assert.IsFalse(result.IsValid, "a cycle is an error by default");
     }
 
@@ -132,13 +128,13 @@ public class GraphValidatorTests
             .Add(BlowValidationRules.ForNodes("unnamed", n => n.Label is null ? $"{n.Id} has no name." : null, BlowValidationSeverity.Warning))
             .Add(BlowValidationRules.ForEdges("into-done", (e, s, t) => t.Label == "Done" && s.Label is null ? "Only named steps may finish." : null));
 
-        var result = validator.Validate(nodes, edges);
+        var result = validator.Validate(nodes, edges, TestContext.CancellationToken);
 
         Assert.AreEqual(BlowValidationSeverity.Warning, result.SeverityOf(nodes[0]));
         Assert.AreEqual(BlowValidationSeverity.Error, result.SeverityOf(edges[0]));
         Assert.IsNull(result.SeverityOf(nodes[1]));
-        Assert.HasCount(1, result.ForNode("task"));
-        Assert.HasCount(1, result.ForEdge("e"));
+        Assert.ContainsSingle(result.ForNode("task"));
+        Assert.ContainsSingle(result.ForEdge("e"));
     }
 
     [TestMethod]
@@ -148,7 +144,7 @@ public class GraphValidatorTests
             ? [new BlowValidationIssue("too-big", BlowValidationSeverity.Info, "Keep it small.")]
             : []);
 
-        var result = validator.Validate([new() { Id = "a" }, new() { Id = "b" }], []);
+        var result = validator.Validate([new() { Id = "a" }, new() { Id = "b" }], [], TestContext.CancellationToken);
 
         Assert.IsTrue(result.IsValid, "an info issue is not an error");
         Assert.AreEqual("too-big", result.Issues.Single().Code);
@@ -161,7 +157,7 @@ public class GraphValidatorTests
         var validator = BlowGraphValidator.CreateDefault();
         validator.MaxIssues = 100;
 
-        var result = validator.Validate(nodes, []);
+        var result = validator.Validate(nodes, [], TestContext.CancellationToken);
 
         Assert.HasCount(100, result.Issues);
         Assert.IsTrue(result.IsTruncated);
@@ -176,4 +172,6 @@ public class GraphValidatorTests
         Assert.ThrowsExactly<OperationCanceledException>(() =>
             BlowGraphValidator.CreateDefault().Validate([new() { Id = "a" }], [], cts.Token));
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

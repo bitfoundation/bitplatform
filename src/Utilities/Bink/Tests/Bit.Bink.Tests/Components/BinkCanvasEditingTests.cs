@@ -1,4 +1,4 @@
-using System.Numerics;
+﻿using System.Numerics;
 using Bunit;
 
 namespace Bit.Bink.Tests.Components;
@@ -60,7 +60,7 @@ public sealed class BinkCanvasEditingTests : BunitContext
 
         Assert.AreEqual(3, canvas.Instance.CurrentDocument.ElementCount);
         Guid copy = canvas.Instance.Selection.Ids.Single();
-        Assert.IsFalse(ids.Contains(copy));
+        Assert.DoesNotContain(copy, ids);
         Assert.IsGreaterThan(canvas.Instance.CurrentDocument.GetElement(ids[0]).Bounds.Left, canvas.Instance.CurrentDocument.GetElement(copy).Bounds.Left);
         Assert.AreEqual(1, canvas.Instance.History.UndoCount - 2, "The duplicate is one undo step.");
     }
@@ -72,14 +72,14 @@ public sealed class BinkCanvasEditingTests : BunitContext
         canvas.InvokeAsync(() => canvas.Instance.Selection.Set(ids[0]));
 
         Key(canvas, "]", ctrl: true);
-        CollectionAssert.AreEqual(new[] { ids[1], ids[0], ids[2] }, Order(canvas));
+        Assert.AreSequenceEqual(new[] { ids[1], ids[0], ids[2] }, Order(canvas));
         // Shift turns ] into } on most layouts; both spell "to the front".
         Key(canvas, "}", ctrl: true, shift: true);
-        CollectionAssert.AreEqual(new[] { ids[1], ids[2], ids[0] }, Order(canvas));
+        Assert.AreSequenceEqual(new[] { ids[1], ids[2], ids[0] }, Order(canvas));
         Key(canvas, "{", ctrl: true, shift: true);
-        CollectionAssert.AreEqual(new[] { ids[0], ids[1], ids[2] }, Order(canvas));
+        Assert.AreSequenceEqual(new[] { ids[0], ids[1], ids[2] }, Order(canvas));
         Key(canvas, "[", ctrl: true);
-        CollectionAssert.AreEqual(new[] { ids[0], ids[1], ids[2] }, Order(canvas), "Already at the back.");
+        Assert.AreSequenceEqual(new[] { ids[0], ids[1], ids[2] }, Order(canvas), "Already at the back.");
     }
 
     [TestMethod]
@@ -169,7 +169,7 @@ public sealed class BinkCanvasEditingTests : BunitContext
         Assert.AreEqual(0, canvas.Instance.Paste(payload));
 
         Assert.AreEqual(2, canvas.Instance.CurrentDocument.ElementCount);
-        CollectionAssert.AreEqual(ids, Order(canvas));
+        Assert.AreSequenceEqual(ids, Order(canvas));
     }
 
     [TestMethod]
@@ -240,7 +240,7 @@ public sealed class BinkCanvasEditingTests : BunitContext
 
         JSRuntimeInvocation first = JSInterop.Invocations.Last(i => i.Identifier == "execute" && Equals(i.Arguments[1], "document"));
         byte[] firstBytes = Assert.IsInstanceOfType<byte[]>(first.Arguments[2]);
-        Assert.AreEqual((int)first.Arguments[3]! * 4, firstBytes.Length);
+        Assert.HasCount((int)first.Arguments[3]! * 4, firstBytes);
 
         int frames = JSInterop.Invocations.Count(i => i.Identifier == "execute" && Equals(i.Arguments[1], "document"));
         canvas.InvokeAsync(() => canvas.Instance.Refresh());
@@ -262,7 +262,7 @@ public sealed class BinkCanvasEditingTests : BunitContext
         canvas.WaitForAssertion(() =>
         {
             byte[] latest = (byte[])JSInterop.Invocations.Last(i => i.Identifier == "execute" && Equals(i.Arguments[1], "document")).Arguments[2]!;
-            Assert.AreEqual(first.Length, latest.Length, "After a loss the stroke is defined in full again.");
+            Assert.HasCount(first.Length, latest, "After a loss the stroke is defined in full again.");
             Assert.AreNotSame(first, latest);
         });
     }

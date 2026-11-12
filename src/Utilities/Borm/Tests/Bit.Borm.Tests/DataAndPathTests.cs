@@ -9,7 +9,7 @@ public class FormPathTests
     public void Parses_dotted_and_indexed_paths()
     {
         var segments = BormPath.Parse("items[2].product");
-        Assert.AreEqual(3, segments.Count);
+        Assert.HasCount(3, segments);
         Assert.AreEqual("items", segments[0].Name);
         Assert.IsTrue(segments[1].IsIndex);
         Assert.AreEqual(2, segments[1].Index);

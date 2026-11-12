@@ -6,7 +6,7 @@ using Bit.Blex.Generators;
 namespace Bit.Blex.Tests.Generators;
 
 /// <summary>Drives <see cref="BlexGenerator"/> over an in-memory compilation.</summary>
-public static class GeneratorTestHelper
+internal static class GeneratorTestHelper
 {
     private static readonly ImmutableArray<MetadataReference> References = BuildReferences();
 
@@ -27,7 +27,7 @@ public static class GeneratorTestHelper
         return references.ToImmutable();
     }
 
-    public sealed record RunResult(
+    internal sealed record RunResult(
         ImmutableArray<Diagnostic> GeneratorDiagnostics,
         ImmutableArray<Diagnostic> CompilationDiagnostics,
         IReadOnlyDictionary<string, string> GeneratedSources)

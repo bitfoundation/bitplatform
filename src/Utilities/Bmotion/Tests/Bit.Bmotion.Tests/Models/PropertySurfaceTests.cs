@@ -1,4 +1,4 @@
-namespace Bit.Bmotion.Tests.Models;
+﻿namespace Bit.Bmotion.Tests.Models;
 
 /// <summary>Tests for the wider animatable property surface (plan item 2.4).</summary>
 [TestClass]
@@ -33,9 +33,9 @@ public class PropertySurfaceTests
     public void InitialStyle_EmitsDashCaseForExtendedProps()
     {
         var css = Bm.To(top: "20px", gap: "2rem", css: new() { ["letterSpacing"] = "0.1em" }).ToCssStyleString();
-        StringAssert.Contains(css, "top:20px;");
-        StringAssert.Contains(css, "gap:2rem;");
-        StringAssert.Contains(css, "letter-spacing:0.1em;");
+        Assert.Contains("top:20px;", css);
+        Assert.Contains("gap:2rem;", css);
+        Assert.Contains("letter-spacing:0.1em;", css);
     }
 
     [TestMethod]

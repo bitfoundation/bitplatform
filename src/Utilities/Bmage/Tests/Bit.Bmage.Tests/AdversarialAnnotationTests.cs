@@ -59,10 +59,10 @@ public sealed class AdversarialAnnotationTests
         {
             var scaled = annotation.ForScale(scale).GetBounds();
             var tolerance = (float)(Math.Max(bounds.Width, bounds.Height) * scale * 0.02) + 1.5f;
-            Assert.IsTrue(Math.Abs(scaled.X - bounds.X * scale) <= tolerance, $"{kind} at {scale}x: X {scaled.X} vs {bounds.X * scale}");
-            Assert.IsTrue(Math.Abs(scaled.Y - bounds.Y * scale) <= tolerance, $"{kind} at {scale}x: Y {scaled.Y} vs {bounds.Y * scale}");
-            Assert.IsTrue(Math.Abs(scaled.Width - bounds.Width * scale) <= tolerance, $"{kind} at {scale}x: width {scaled.Width} vs {bounds.Width * scale}");
-            Assert.IsTrue(Math.Abs(scaled.Height - bounds.Height * scale) <= tolerance, $"{kind} at {scale}x: height {scaled.Height} vs {bounds.Height * scale}");
+            Assert.IsLessThanOrEqualTo(tolerance, Math.Abs(scaled.X - bounds.X * scale), $"{kind} at {scale}x: X {scaled.X} vs {bounds.X * scale}");
+            Assert.IsLessThanOrEqualTo(tolerance, Math.Abs(scaled.Y - bounds.Y * scale), $"{kind} at {scale}x: Y {scaled.Y} vs {bounds.Y * scale}");
+            Assert.IsLessThanOrEqualTo(tolerance, Math.Abs(scaled.Width - bounds.Width * scale), $"{kind} at {scale}x: width {scaled.Width} vs {bounds.Width * scale}");
+            Assert.IsLessThanOrEqualTo(tolerance, Math.Abs(scaled.Height - bounds.Height * scale), $"{kind} at {scale}x: height {scaled.Height} vs {bounds.Height * scale}");
         }
     }
 
@@ -184,7 +184,7 @@ public sealed class AdversarialAnnotationTests
 
         var expected = new Vector2(fullCentre!.Value.X * (float)scale, fullCentre.Value.Y * (float)scale);
         var drift = Vector2.Distance(expected, proxyCentre!.Value);
-        Assert.IsTrue(drift <= 2.0f, $"{kind}: annotation centre drifted {drift:0.00}px between full and proxy rendering");
+        Assert.IsLessThanOrEqualTo(2.0f, drift, $"{kind}: annotation centre drifted {drift:0.00}px between full and proxy rendering");
     }
 
     private static Vector2? MarkedCentre(ImageBuffer image)
@@ -217,8 +217,8 @@ public sealed class AdversarialAnnotationTests
                 var annotation = Create(kind).Translate(dx, dy);
                 var document = ImageDocument.Create(new Size(64, 48)).AddAnnotation(annotation);
                 using var canvasImage = ImageBuffer.Create(64, 48, Rgba32.White);
-                var ex = Capture.Exception(() => new DocumentRenderer().RenderAnnotations(document, canvasImage));
-                Assert.IsTrue(ex is null, $"{kind} at offset ({dx},{dy}) threw {ex?.GetType().Name}: {ex?.Message}");
+                var ex = Capture.Exception(() => new DocumentRenderer().RenderAnnotations(document, canvasImage, cancellationToken: TestContext.CancellationToken));
+                Assert.IsNull(ex, $"{kind} at offset ({dx},{dy}) threw {ex?.GetType().Name}: {ex?.Message}");
             }
         }
     }
@@ -247,11 +247,11 @@ public sealed class AdversarialAnnotationTests
         {
             var document = ImageDocument.Create(new Size(32, 32)).AddAnnotation(annotation);
             using var image = ImageBuffer.Create(32, 32, Rgba32.White);
-            var ex = Capture.Exception(() => new DocumentRenderer().RenderAnnotations(document, image));
-            Assert.IsTrue(ex is null, $"{annotation.Kind} ({annotation.GetBounds()}) threw {ex?.GetType().Name}: {ex?.Message}");
+            var ex = Capture.Exception(() => new DocumentRenderer().RenderAnnotations(document, image, cancellationToken: TestContext.CancellationToken));
+            Assert.IsNull(ex, $"{annotation.Kind} ({annotation.GetBounds()}) threw {ex?.GetType().Name}: {ex?.Message}");
             // Degenerate geometry must also survive being scaled for a proxy.
             var scaledEx = Capture.Exception(() => annotation.ForScale(0.5).GetBounds());
-            Assert.IsTrue(scaledEx is null, $"{annotation.Kind} threw {scaledEx?.GetType().Name} when scaled");
+            Assert.IsNull(scaledEx, $"{annotation.Kind} threw {scaledEx?.GetType().Name} when scaled");
         }
     }
 
@@ -268,7 +268,7 @@ public sealed class AdversarialAnnotationTests
         Assert.IsExactInstanceOfType<StepAnnotation>(order[1]);
 
         using var image = ImageBuffer.Create(32, 32, Rgba32.White);
-        new DocumentRenderer().RenderAnnotations(document, image);
+        new DocumentRenderer().RenderAnnotations(document, image, cancellationToken: TestContext.CancellationToken);
         // The step marker must still be visible on top of the redaction.
         Assert.AreNotEqual(Rgba32.Black, image[16, 16]);
     }
@@ -289,14 +289,14 @@ public sealed class AdversarialAnnotationTests
             .AddAnnotation(new RedactionAnnotation { Rectangle = new RectangleF(8, 8, 32, 32), Mode = mode, Strength = 32 });
 
         using var result = secret.Clone();
-        new DocumentRenderer().RenderAnnotations(document, result);
+        new DocumentRenderer().RenderAnnotations(document, result, cancellationToken: TestContext.CancellationToken);
 
         // Inside the redacted area the fine pattern must be gone: neighbouring pixels should no longer alternate.
         var alternations = 0;
         for (var y = 12; y < 36; y++)
             for (var x = 12; x < 35; x++)
                 if (result[x, y] != result[x + 1, y]) alternations++;
-        Assert.IsTrue(alternations < 40, $"{mode} left {alternations} pixel transitions inside the redacted region");
+        Assert.IsLessThan(40, alternations, $"{mode} left {alternations} pixel transitions inside the redacted region");
     }
 
     /// <summary>
@@ -323,7 +323,7 @@ public sealed class AdversarialAnnotationTests
             var scaled = (RedactionAnnotation)redaction.ForScale(scale) with { Rectangle = redaction.Rectangle };
             var document = ImageDocument.Create(secret.Size).AddAnnotation(scaled);
             using var result = secret.Clone();
-            new DocumentRenderer().RenderAnnotations(document, result);
+            new DocumentRenderer().RenderAnnotations(document, result, cancellationToken: TestContext.CancellationToken);
 
             // The pattern steps from black to white; anything near that step between neighbours is a leak.
             var largestStep = 0;
@@ -349,10 +349,10 @@ public sealed class AdversarialAnnotationTests
 
         document = document.BringToFront(ids[0]).SendToBack(ids[3]).BringToFront(ids[5]).SendToBack(ids[5]);
 
-        Assert.AreEqual(6, document.Annotations.Count);
-        Assert.AreEqual(6, document.Annotations.Select(a => a.Id).Distinct().Count());
+        Assert.HasCount(6, document.Annotations);
+        Assert.HasCount(6, document.Annotations.Select(a => a.Id).Distinct());
         foreach (var id in ids) Assert.IsNotNull(document.FindAnnotation(id));
-        Assert.AreEqual(6, document.GetRenderOrder().Count);
+        Assert.HasCount(6, document.GetRenderOrder());
     }
 
     [TestMethod]
@@ -407,7 +407,7 @@ public sealed class AdversarialAnnotationTests
         var document = ImageDocument.Create(new Size(100, 100)).AddAnnotation(bar with { Rotation = 90f });
 
         using var image = ImageBuffer.Create(100, 100, Rgba32.White);
-        new DocumentRenderer().RenderAnnotations(document, image);
+        new DocumentRenderer().RenderAnnotations(document, image, cancellationToken: TestContext.CancellationToken);
 
         var centre = MarkedCentre(image);
         Assert.IsNotNull(centre);
@@ -421,6 +421,8 @@ public sealed class AdversarialAnnotationTests
                 if (image[x, y] != Rgba32.White) painted.Add((x, y));
         var width = painted.Max(p => p.X) - painted.Min(p => p.X);
         var height = painted.Max(p => p.Y) - painted.Min(p => p.Y);
-        Assert.IsTrue(height > width, $"rotated bar rendered {width}x{height}, so the rotation was not applied");
+        Assert.IsGreaterThan(width, height, $"rotated bar rendered {width}x{height}, so the rotation was not applied");
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

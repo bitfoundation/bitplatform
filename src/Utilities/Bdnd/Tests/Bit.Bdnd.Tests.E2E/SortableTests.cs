@@ -29,13 +29,13 @@ public sealed class SortableTests : BdndTest
         var target = new Point(third.Centre.X, third.Y + third.Height * 0.75);
         const string Reordered = "Order: Review the PR, Ship the release, Write the docs, Celebrate, Sleep";
         await HoverUntilAsync(page, target, async () => await order.TextContentAsync() == Reordered, "the list reordered");
-        CollectionAssert.AreEqual(new[] { "2", "3", "1", "4", "5" }, await CardOrderAsync(page), "the cards on screen");
+        Assert.AreSequenceEqual(new[] { "2", "3", "1", "4", "5" }, await CardOrderAsync(page), "the cards on screen");
 
         // Dropped on the card it now sits under, it stays there.
         await DragToAsync(page, target);
         await Expect(first).ToHaveCSSAsync("opacity", "1");
         await Expect(order).ToHaveTextAsync(Reordered);
-        CollectionAssert.AreEqual(new[] { "2", "3", "1", "4", "5" }, await CardOrderAsync(page), "the cards after the drop");
+        Assert.AreSequenceEqual(new[] { "2", "3", "1", "4", "5" }, await CardOrderAsync(page), "the cards after the drop");
     }
 
     [TestMethod]
@@ -52,7 +52,7 @@ public sealed class SortableTests : BdndTest
         // sees DidDrop false and puts the card back.
         await DragToAsync(page, new Point(card.Right + 200, card.Centre.Y));
         await Expect(order).ToHaveTextAsync("Order: Alpha, Bravo, Charlie, Delta, Echo");
-        CollectionAssert.AreEqual(new[] { "1", "2", "3", "4", "5" }, await CardOrderAsync(page), "the cards after the cancel");
+        Assert.AreSequenceEqual(new[] { "1", "2", "3", "4", "5" }, await CardOrderAsync(page), "the cards after the cancel");
         await Expect(Card(page, 1)).ToHaveCSSAsync("opacity", "1");
     }
 

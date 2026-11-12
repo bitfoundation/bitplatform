@@ -54,7 +54,7 @@ public class BitCountryPickerPrerenderTests
 
         // The list stays out of the document until the first opening, and the overlay off the page.
         Assert.AreEqual(0, document.QuerySelectorAll("button.bit-cnp-itm").Length);
-        StringAssert.Contains(document.QuerySelector(".bit-cnp-ovl")!.GetAttribute("style"), "display:none");
+        Assert.Contains("display:none", document.QuerySelector(".bit-cnp-ovl")!.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -104,11 +104,11 @@ public class BitCountryPickerPrerenderTests
         Assert.AreEqual(label.Id, field.GetAttribute("aria-labelledby"));
 
         var describedBy = field.GetAttribute("aria-describedby")!;
-        StringAssert.Contains(describedBy, document.QuerySelector(".bit-cnp-erm")!.Id);
-        StringAssert.Contains(describedBy, document.QuerySelector(".bit-cnp-des")!.Id);
+        Assert.Contains(document.QuerySelector(".bit-cnp-erm")!.Id!, describedBy);
+        Assert.Contains(document.QuerySelector(".bit-cnp-des")!.Id!, describedBy);
         Assert.AreEqual("true", field.GetAttribute("aria-invalid"));
         Assert.AreEqual("true", field.GetAttribute("aria-required"));
-        StringAssert.Contains(document.QuerySelector(".bit-cnp-erm")!.TextContent, "We do not ship there.");
+        Assert.Contains("We do not ship there.", document.QuerySelector(".bit-cnp-erm")!.TextContent);
     }
 
     [TestMethod]

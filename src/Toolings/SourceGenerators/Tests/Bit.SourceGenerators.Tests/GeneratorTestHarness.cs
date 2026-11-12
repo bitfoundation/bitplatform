@@ -115,7 +115,7 @@ internal sealed class GeneratorRun
     public string Source(string hintNameFragment)
     {
         var matches = Result.GeneratedSources.Where(s => s.HintName.Contains(hintNameFragment, StringComparison.Ordinal)).ToArray();
-        Assert.HasCount(1, matches, $"Expected one generated source named like '{hintNameFragment}'.{Environment.NewLine}{AllSources}");
+        Assert.ContainsSingle(matches, $"Expected one generated source named like '{hintNameFragment}'.{Environment.NewLine}{AllSources}");
         return matches[0].SourceText.ToString();
     }
 

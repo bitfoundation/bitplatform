@@ -30,17 +30,17 @@ public class StorageTests
         var user = "alice";
         await using var harness = BrowserStoreHarness(options => options.StorageScope = (_, _) => ValueTask.FromResult<string?>(user));
 
-        var alice = await harness.Service.StartAsync(Tour());
-        await alice.CompleteAsync();
+        var alice = await harness.Service.StartAsync(Tour(), cancellationToken: TestContext.CancellationToken);
+        await alice.CompleteAsync(TestContext.CancellationToken);
 
         Assert.IsTrue(harness.Interop.Storage.ContainsKey("bit-bonboarding:@alice/shared"), "The key says whose progress it is.");
 
         user = "bob";
-        Assert.IsFalse(await harness.Service.IsCompletedAsync("shared"), "Bob has not taken the tour.");
-        Assert.IsNotNull(await harness.Service.StartOnceAsync(Tour()));
+        Assert.IsFalse(await harness.Service.IsCompletedAsync("shared", TestContext.CancellationToken), "Bob has not taken the tour.");
+        Assert.IsNotNull(await harness.Service.StartOnceAsync(Tour(), cancellationToken: TestContext.CancellationToken));
 
         user = "alice";
-        Assert.IsTrue(await harness.Service.IsCompletedAsync("shared"));
+        Assert.IsTrue(await harness.Service.IsCompletedAsync("shared", TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -49,13 +49,13 @@ public class StorageTests
         var user = "1";
         await using var harness = BrowserStoreHarness(options => options.StorageScope = (_, _) => ValueTask.FromResult<string?>(user));
 
-        await (await harness.Service.StartAsync(Tour())).CompleteAsync();
+        await (await harness.Service.StartAsync(Tour(), cancellationToken: TestContext.CancellationToken)).CompleteAsync(TestContext.CancellationToken);
 
         user = "12";
-        await harness.Service.ResetAllAsync();
+        await harness.Service.ResetAllAsync(TestContext.CancellationToken);
 
         user = "1";
-        Assert.IsTrue(await harness.Service.IsCompletedAsync("shared"), "Resetting user 12 left user 1 alone.");
+        Assert.IsTrue(await harness.Service.IsCompletedAsync("shared", TestContext.CancellationToken), "Resetting user 12 left user 1 alone.");
     }
 
     [TestMethod]
@@ -64,16 +64,16 @@ public class StorageTests
         string? user = null;
         await using var harness = BrowserStoreHarness(options => options.StorageScope = (_, _) => ValueTask.FromResult(user));
 
-        await (await harness.Service.StartAsync(Tour("device"))).CompleteAsync();
+        await (await harness.Service.StartAsync(Tour("device"), cancellationToken: TestContext.CancellationToken)).CompleteAsync(TestContext.CancellationToken);
         user = "alice";
-        await (await harness.Service.StartAsync(Tour("personal"))).CompleteAsync();
+        await (await harness.Service.StartAsync(Tour("personal"), cancellationToken: TestContext.CancellationToken)).CompleteAsync(TestContext.CancellationToken);
 
-        await harness.Service.ResetAllAsync();
+        await harness.Service.ResetAllAsync(TestContext.CancellationToken);
         Assert.IsTrue(harness.Interop.Storage.ContainsKey("bit-bonboarding:device"));
         Assert.IsFalse(harness.Interop.Storage.ContainsKey("bit-bonboarding:@alice/personal"));
 
         user = null;
-        await harness.Service.ResetAllAsync();
+        await harness.Service.ResetAllAsync(TestContext.CancellationToken);
         Assert.IsFalse(harness.Interop.Storage.ContainsKey("bit-bonboarding:device"));
     }
 
@@ -82,7 +82,7 @@ public class StorageTests
     {
         await using var harness = BrowserStoreHarness(options => options.StorageScope = (_, _) => throw new InvalidOperationException("No auth state."));
 
-        await (await harness.Service.StartAsync(Tour())).CompleteAsync();
+        await (await harness.Service.StartAsync(Tour(), cancellationToken: TestContext.CancellationToken)).CompleteAsync(TestContext.CancellationToken);
 
         Assert.IsTrue(harness.Interop.Storage.ContainsKey("bit-bonboarding:shared"));
     }
@@ -94,7 +94,7 @@ public class StorageTests
     {
         await using var harness = BrowserStoreHarness();
 
-        var session = await harness.Service.StartAsync(Tour());
+        var session = await harness.Service.StartAsync(Tour(), cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual(BonboardingTourStatus.Running, session.Status);
 
         var dismissed = new BonboardingRecord { TourId = "shared", Dismissed = true, CurrentStepId = "a", UpdatedAt = DateTimeOffset.UtcNow };
@@ -102,9 +102,9 @@ public class StorageTests
 
         Assert.AreEqual(BonboardingTourStatus.Cancelled, session.Status);
 
-        var record = await harness.Service.GetRecordAsync("shared");
+        var record = await harness.Service.GetRecordAsync("shared", TestContext.CancellationToken);
         Assert.IsTrue(record!.Dismissed, "The other tab's decision stands; cancelling wrote nothing.");
-        Assert.IsTrue(await harness.Service.IsClosedAsync("shared"));
+        Assert.IsTrue(await harness.Service.IsClosedAsync("shared", TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -112,13 +112,13 @@ public class StorageTests
     {
         await using var harness = BrowserStoreHarness();
 
-        var session = await harness.Service.StartAsync(Tour());
+        var session = await harness.Service.StartAsync(Tour(), cancellationToken: TestContext.CancellationToken);
 
         var progress = new BonboardingRecord { TourId = "shared", CurrentStepId = "b", CurrentIndex = 1 };
         await harness.Interop.ChangeStorageInAnotherTabAsync("bit-bonboarding:shared", Json(progress));
 
         Assert.AreEqual(BonboardingTourStatus.Running, session.Status);
-        Assert.AreEqual("b", (await harness.Service.GetRecordAsync("shared"))!.CurrentStepId, "The cached copy was dropped.");
+        Assert.AreEqual("b", (await harness.Service.GetRecordAsync("shared", TestContext.CancellationToken))!.CurrentStepId, "The cached copy was dropped.");
     }
 
     [TestMethod]
@@ -126,11 +126,11 @@ public class StorageTests
     {
         await using var harness = BrowserStoreHarness();
 
-        await (await harness.Service.StartAsync(Tour())).CompleteAsync();
-        var replay = await harness.Service.StartAsync(Tour(), new BonboardingStartOptions { Force = true });
+        await (await harness.Service.StartAsync(Tour(), cancellationToken: TestContext.CancellationToken)).CompleteAsync(TestContext.CancellationToken);
+        var replay = await harness.Service.StartAsync(Tour(), new BonboardingStartOptions { Force = true }, TestContext.CancellationToken);
 
         // The other tab writes progress of its own; the completion it carries is the old, sticky one.
-        var old = (await harness.Service.GetRecordAsync("shared"))! with { CurrentStepId = "b", Dismissed = false };
+        var old = (await harness.Service.GetRecordAsync("shared", TestContext.CancellationToken))! with { CurrentStepId = "b", Dismissed = false };
         await harness.Interop.ChangeStorageInAnotherTabAsync("bit-bonboarding:shared", Json(old));
 
         Assert.AreEqual(BonboardingTourStatus.Running, replay.Status);
@@ -145,13 +145,13 @@ public class StorageTests
         harness.Services.GetRequiredService<BonboardingGuidanceRegistry>().ChecklistChanged += (_, id) => raised.Add(id);
 
         // Read once, so a stale copy would be cached.
-        Assert.IsEmpty(await harness.Service.GetCompletedChecklistItemsAsync("start"));
+        Assert.IsEmpty(await harness.Service.GetCompletedChecklistItemsAsync("start", TestContext.CancellationToken));
 
         var ticked = new BonboardingRecord { TourId = "checklist:start", Data = new Dictionary<string, string> { ["invite"] = "2026-10-25T09:00:00Z" } };
         await harness.Interop.ChangeStorageInAnotherTabAsync("bit-bonboarding:checklist:start", Json(ticked));
 
-        CollectionAssert.AreEqual(new[] { "start" }, raised);
-        CollectionAssert.AreEqual(new[] { "invite" }, (await harness.Service.GetCompletedChecklistItemsAsync("start")).ToArray());
+        Assert.AreSequenceEqual(new[] { "start" }, raised);
+        Assert.AreSequenceEqual(new[] { "invite" }, (await harness.Service.GetCompletedChecklistItemsAsync("start", TestContext.CancellationToken)).ToArray());
     }
 
     [TestMethod]
@@ -159,12 +159,12 @@ public class StorageTests
     {
         await using var harness = BrowserStoreHarness();
 
-        await (await harness.Service.StartAsync(Tour())).CompleteAsync();
-        Assert.IsTrue(await harness.Service.IsCompletedAsync("shared"));
+        await (await harness.Service.StartAsync(Tour(), cancellationToken: TestContext.CancellationToken)).CompleteAsync(TestContext.CancellationToken);
+        Assert.IsTrue(await harness.Service.IsCompletedAsync("shared", TestContext.CancellationToken));
 
         await harness.Interop.ChangeStorageInAnotherTabAsync(null, null);
 
-        Assert.IsFalse(await harness.Service.IsCompletedAsync("shared"));
+        Assert.IsFalse(await harness.Service.IsCompletedAsync("shared", TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -172,7 +172,7 @@ public class StorageTests
     {
         await using var harness = BrowserStoreHarness(options => options.StorageScope = (_, _) => ValueTask.FromResult<string?>("alice"));
 
-        var session = await harness.Service.StartAsync(Tour());
+        var session = await harness.Service.StartAsync(Tour(), cancellationToken: TestContext.CancellationToken);
 
         var bobs = new BonboardingRecord { TourId = "shared", Dismissed = true };
         await harness.Interop.ChangeStorageInAnotherTabAsync("bit-bonboarding:@bob/shared", Json(bobs));
@@ -185,10 +185,12 @@ public class StorageTests
     {
         await using var harness = BrowserStoreHarness(options => options.StorageLocation = BonboardingStorageLocation.Session);
 
-        var session = await harness.Service.StartAsync(Tour());
+        var session = await harness.Service.StartAsync(Tour(), cancellationToken: TestContext.CancellationToken);
 
         await harness.Interop.ChangeStorageInAnotherTabAsync("bit-bonboarding:shared", Json(new BonboardingRecord { TourId = "shared", Dismissed = true }));
 
         Assert.AreEqual(BonboardingTourStatus.Running, session.Status);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

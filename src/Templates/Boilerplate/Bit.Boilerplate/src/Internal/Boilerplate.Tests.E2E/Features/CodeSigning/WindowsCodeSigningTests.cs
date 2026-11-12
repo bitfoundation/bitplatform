@@ -127,7 +127,7 @@ public partial class WindowsCodeSigningTests : AppTestBase
                 await using var packaged = entry.Open();
                 await using var local = File.OpenRead(Path.Combine(installed.Folder, file));
 
-                Assert.AreSequenceEqual(await SHA256.HashDataAsync(packaged), await SHA256.HashDataAsync(local),
+                Assert.AreSequenceEqual(await SHA256.HashDataAsync(packaged, TestContext.CancellationToken), await SHA256.HashDataAsync(local, TestContext.CancellationToken),
                     $"The installed {file} of {installed.AppId} is not the one in its attested release.");
             }
         }

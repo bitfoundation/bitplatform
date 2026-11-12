@@ -80,7 +80,7 @@ public class PagePickingPanelTests : BunitContext
         var location = (BevDomLocation)arguments[1]!;
         Assert.AreEqual(child.InstanceId, location.InstanceId);
         Assert.AreEqual("#c", location.Path[^1].Kind, "a path ends on the component's container comment");
-        Assert.AreEqual(events, Session.Timeline.Snapshot().Length, "BevTools' own keyboard navigation was recorded as application activity");
+        Assert.HasCount(events, Session.Timeline.Snapshot(), "BevTools' own keyboard navigation was recorded as application activity");
     }
 
     [TestMethod]
@@ -133,7 +133,7 @@ public class PagePickingPanelTests : BunitContext
 
         var (_, arguments) = _calls.Single(c => c.Method == "highlight");
         Assert.AreEqual(child.InstanceId, ((BevDomLocation)arguments[1]!).InstanceId);
-        StringAssert.Contains(System.Text.Json.JsonSerializer.Serialize(arguments[2], new System.Text.Json.JsonSerializerOptions(System.Text.Json.JsonSerializerDefaults.Web)), "\"scroll\":true");
+        Assert.Contains("\"scroll\":true", System.Text.Json.JsonSerializer.Serialize(arguments[2], new System.Text.Json.JsonSerializerOptions(System.Text.Json.JsonSerializerDefaults.Web)));
         panel.WaitForAssertion(() => Assert.Contains("does not match", panel.Find(".bev-notification").TextContent, StringComparison.Ordinal));
     }
 
@@ -151,7 +151,7 @@ public class PagePickingPanelTests : BunitContext
         panel.WaitForAssertion(() => Assert.Contains(c => c.Method == "flash", _calls), TimeSpan.FromSeconds(5));
         // Serialized as Blazor serializes interop arguments: what the hub reads.
         var items = System.Text.Json.JsonSerializer.Serialize(_calls.First(c => c.Method == "flash").Arguments[1], new System.Text.Json.JsonSerializerOptions(System.Text.Json.JsonSerializerDefaults.Web));
-        StringAssert.Contains(items, "\"name\":\"ParentComponent\"");
+        Assert.Contains("\"name\":\"ParentComponent\"", items);
 
         // A panel rendered later reads the preference back.
         var restored = RenderPanel("{\"flash\":true}");

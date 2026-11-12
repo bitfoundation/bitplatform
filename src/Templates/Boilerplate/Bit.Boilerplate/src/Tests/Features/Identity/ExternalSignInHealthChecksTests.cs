@@ -60,7 +60,7 @@ public class ExternalSignInHealthChecksTests
         var result = await RunEntraIdCheck(handler, clientSecret: "test-secret");
 
         Assert.AreEqual(HealthStatus.Degraded, result.Status);
-        Assert.HasCount(1, handler.Requests, "The token endpoint must not be asked when the tenant is unknown.");
+        Assert.ContainsSingle(handler.Requests, "The token endpoint must not be asked when the tenant is unknown.");
     }
 
     [TestMethod]
@@ -73,7 +73,7 @@ public class ExternalSignInHealthChecksTests
         var result = await RunEntraIdCheck(handler, clientSecret: "test-secret");
 
         Assert.AreEqual(HealthStatus.Degraded, result.Status);
-        Assert.HasCount(1, handler.Requests, "The secret must not be posted to the discovered token endpoint.");
+        Assert.ContainsSingle(handler.Requests, "The secret must not be posted to the discovered token endpoint.");
     }
 
     [TestMethod]
@@ -84,7 +84,7 @@ public class ExternalSignInHealthChecksTests
         var result = await RunEntraIdCheck(handler, clientSecret: null);
 
         Assert.AreEqual(HealthStatus.Healthy, result.Status);
-        Assert.HasCount(1, handler.Requests);
+        Assert.ContainsSingle(handler.Requests);
     }
 
     [TestMethod]

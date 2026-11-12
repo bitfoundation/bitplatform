@@ -56,7 +56,7 @@ public class BitCountryPickerValidationMessageTests : BunitTestContext
         });
 
         // Nothing is shown before the form has anything to say.
-        Assert.AreEqual(0, component.FindAll(".bit-cnp-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-cnp-erm"));
         Assert.IsNull(component.Find("button.bit-cnp-fld").GetAttribute("aria-describedby"));
 
         component.Find("form").Submit();
@@ -76,11 +76,13 @@ public class BitCountryPickerValidationMessageTests : BunitTestContext
         component.Find("button.bit-cnp-fld").Click();
         component.FindAll("button.bit-cnp-itm")[3].Click();
 
-        Assert.AreEqual("DE", model.Country?.Iso2);
+        var selectedCountry = model.Country;
+        Assert.IsNotNull(selectedCountry);
+        Assert.AreEqual("DE", selectedCountry.Iso2);
 
         component.WaitForAssertion(() =>
         {
-            Assert.AreEqual(0, component.FindAll(".bit-cnp-erm").Count);
+            Assert.IsEmpty(component.FindAll(".bit-cnp-erm"));
             Assert.IsNull(component.Find("button.bit-cnp-fld").GetAttribute("aria-describedby"));
         });
 
@@ -133,7 +135,7 @@ public class BitCountryPickerValidationMessageTests : BunitTestContext
 
         // The field is marked as before, and the message stays where the page puts it.
         Assert.AreEqual("true", component.Find("button.bit-cnp-fld").GetAttribute("aria-invalid"));
-        Assert.AreEqual(0, component.FindAll(".bit-cnp-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-cnp-erm"));
         Assert.IsNull(component.Find("button.bit-cnp-fld").GetAttribute("aria-describedby"));
     }
 
@@ -152,7 +154,7 @@ public class BitCountryPickerValidationMessageTests : BunitTestContext
 
         component.InvokeAsync(() => editContext.Validate());
 
-        Assert.AreEqual(1, component.FindAll(".bit-cnp-erm").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-cnp-erm"));
         Assert.AreEqual("We do not ship there yet.", component.Find(".bit-cnp-erm").TextContent.Trim());
 
         // Once the app takes its message back, the EditContext's takes the line.
@@ -183,7 +185,7 @@ public class BitCountryPickerValidationMessageTests : BunitTestContext
         component.InvokeAsync(() => editContext.Validate());
 
         Assert.AreEqual("Not shipped", component.Find(".bit-cnp-erm b").TextContent);
-        Assert.IsFalse(component.Find(".bit-cnp-erm").TextContent.Contains(RequiredMessage));
+        Assert.DoesNotContain(RequiredMessage, component.Find(".bit-cnp-erm").TextContent);
     }
 
     [TestMethod]
@@ -199,7 +201,7 @@ public class BitCountryPickerValidationMessageTests : BunitTestContext
 
         // A submit validates every field at once; the field that takes the focus says what is wrong with it instead.
         Assert.AreEqual(RequiredMessage, component.Find(".bit-cnp-erm").TextContent.Trim());
-        Assert.IsFalse(component.Find(".bit-cnp-lvr").TextContent.Contains(RequiredMessage));
+        Assert.DoesNotContain(RequiredMessage, component.Find(".bit-cnp-lvr").TextContent);
     }
 
     [TestMethod]
@@ -221,7 +223,7 @@ public class BitCountryPickerValidationMessageTests : BunitTestContext
         // What the page pointed the field at stays first, then what is wrong with the value, then the description.
         var ids = component.Find("button.bit-cnp-fld").GetAttribute("aria-describedby")!.Split(' ');
 
-        Assert.AreEqual(3, ids.Length);
+        Assert.HasCount(3, ids);
         Assert.AreEqual("page-hint", ids[0]);
         Assert.AreEqual(component.Find(".bit-cnp-erm").Id, ids[1]);
         Assert.AreEqual(component.Find(".bit-cnp-des").Id, ids[2]);
@@ -242,11 +244,11 @@ public class BitCountryPickerValidationMessageTests : BunitTestContext
 
         component.InvokeAsync(() => editContext.Validate());
 
-        Assert.AreEqual(1, component.FindAll(".bit-cnp-erm").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-cnp-erm"));
 
         component.Render(parameters => parameters.Add(p => p.NoValidate, true));
 
-        Assert.AreEqual(0, component.FindAll(".bit-cnp-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-cnp-erm"));
         Assert.IsNull(component.Find("button.bit-cnp-fld").GetAttribute("aria-describedby"));
     }
 
@@ -262,8 +264,8 @@ public class BitCountryPickerValidationMessageTests : BunitTestContext
         component.InvokeAsync(() => editContext.Validate());
 
         // The model has a message, but the picker has no member of it the message could belong to.
-        Assert.IsTrue(editContext.GetValidationMessages().Any());
-        Assert.AreEqual(0, component.FindAll(".bit-cnp-erm").Count);
+        Assert.IsNotEmpty(editContext.GetValidationMessages());
+        Assert.IsEmpty(component.FindAll(".bit-cnp-erm"));
     }
 
     [TestMethod]

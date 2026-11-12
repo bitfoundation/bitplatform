@@ -27,7 +27,7 @@ public class GraphAlgorithmTests
         var result = BlowGraphAlgorithms.TopologicalSort(nodes, edges);
 
         Assert.IsTrue(result.IsAcyclic);
-        CollectionAssert.AreEqual(new[] { "a", "b", "c", "d" }, Ids(result.Order));
+        Assert.AreSequenceEqual(new[] { "a", "b", "c", "d" }, Ids(result.Order));
     }
 
     [TestMethod]
@@ -35,7 +35,7 @@ public class GraphAlgorithmTests
     {
         var result = BlowGraphAlgorithms.TopologicalSort(Nodes("x", "y", "z"), []);
 
-        CollectionAssert.AreEqual(new[] { "x", "y", "z" }, Ids(result.Order));
+        Assert.AreSequenceEqual(new[] { "x", "y", "z" }, Ids(result.Order));
     }
 
     [TestMethod]
@@ -47,8 +47,8 @@ public class GraphAlgorithmTests
         var result = BlowGraphAlgorithms.TopologicalSort(nodes, edges);
 
         Assert.IsFalse(result.IsAcyclic);
-        CollectionAssert.AreEqual(new[] { "start" }, Ids(result.Order));
-        CollectionAssert.AreEqual(new[] { "a", "b", "after" }, Ids(result.Unordered));
+        Assert.AreSequenceEqual(new[] { "start" }, Ids(result.Order));
+        Assert.AreSequenceEqual(new[] { "a", "b", "after" }, Ids(result.Unordered));
     }
 
     [TestMethod]
@@ -67,8 +67,8 @@ public class GraphAlgorithmTests
         var cycles = BlowGraphAlgorithms.FindCycles(nodes, edges);
 
         Assert.HasCount(2, cycles);
-        CollectionAssert.AreEquivalent(new[] { "a", "b", "c" }, Ids(cycles.Single(c => c.Count == 3)));
-        CollectionAssert.AreEqual(new[] { "e" }, Ids(cycles.Single(c => c.Count == 1)));
+        Assert.AreSequenceEqual(new[] { "a", "b", "c" }, Ids(cycles.Single(c => c.Count == 3)), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
+        Assert.AreSequenceEqual(new[] { "e" }, Ids(cycles.Single(c => c.Count == 1)));
     }
 
     [TestMethod]
@@ -80,9 +80,9 @@ public class GraphAlgorithmTests
         var components = BlowGraphAlgorithms.StronglyConnectedComponents(nodes, edges);
 
         Assert.HasCount(2, components);
-        CollectionAssert.AreEquivalent(new[] { "a", "b", "c", "d" }, components.SelectMany(Ids).ToArray());
+        Assert.AreSequenceEqual(new[] { "a", "b", "c", "d" }, components.SelectMany(Ids).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         // Reverse topological order: the downstream component first.
-        CollectionAssert.AreEquivalent(new[] { "c", "d" }, Ids(components[0]));
+        Assert.AreSequenceEqual(new[] { "c", "d" }, Ids(components[0]), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -96,7 +96,7 @@ public class GraphAlgorithmTests
         edges.Add(new BlowEdge { Id = "back", Source = $"n{depth - 1}", Target = "n0" });
         var graph = new BlowGraphIndex(nodes, edges);
 
-        Assert.HasCount(1, BlowGraphAlgorithms.StronglyConnectedComponents(graph));
+        Assert.ContainsSingle(BlowGraphAlgorithms.StronglyConnectedComponents(graph));
         Assert.IsTrue(BlowGraphAlgorithms.HasCycle(graph));
         Assert.HasCount(depth - 1, BlowGraphAlgorithms.GetDescendants(graph, "n0"));
         Assert.HasCount(depth, BlowGraphAlgorithms.ShortestPath(graph, "n0", $"n{depth - 1}")!);
@@ -113,9 +113,9 @@ public class GraphAlgorithmTests
         var components = BlowGraphAlgorithms.ConnectedComponents(nodes, edges);
 
         Assert.HasCount(3, components);
-        CollectionAssert.AreEqual(new[] { "a", "b", "c" }, Ids(components[0]));
-        CollectionAssert.AreEqual(new[] { "x", "y" }, Ids(components[1]));
-        CollectionAssert.AreEqual(new[] { "lonely" }, Ids(components[2]));
+        Assert.AreSequenceEqual(new[] { "a", "b", "c" }, Ids(components[0]));
+        Assert.AreSequenceEqual(new[] { "x", "y" }, Ids(components[1]));
+        Assert.AreSequenceEqual(new[] { "lonely" }, Ids(components[2]));
     }
 
     [TestMethod]
@@ -125,8 +125,8 @@ public class GraphAlgorithmTests
         var edges = Edges("a>b", "b>c", "c>a", "a>d");
         var graph = new BlowGraphIndex(nodes, edges);
 
-        CollectionAssert.AreEqual(new[] { "b", "d", "c" }, Ids(BlowGraphAlgorithms.GetDescendants(graph, "a")));
-        CollectionAssert.AreEqual(new[] { "c", "b" }, Ids(BlowGraphAlgorithms.GetAncestors(graph, "a")));
+        Assert.AreSequenceEqual(new[] { "b", "d", "c" }, Ids(BlowGraphAlgorithms.GetDescendants(graph, "a")));
+        Assert.AreSequenceEqual(new[] { "c", "b" }, Ids(BlowGraphAlgorithms.GetAncestors(graph, "a")));
     }
 
     [TestMethod]
@@ -134,11 +134,9 @@ public class GraphAlgorithmTests
     {
         var graph = new BlowGraphIndex(Nodes("a", "b", "c"), Edges("a>b", "b>c"));
 
-        CollectionAssert.AreEqual(new[] { "b" },
-            Ids(BlowGraphAlgorithms.Traverse(graph, "a", BlowTraversalDirection.Outgoing, maxDepth: 1)));
+        Assert.AreSequenceEqual(new[] { "b" }, Ids(BlowGraphAlgorithms.Traverse(graph, "a", BlowTraversalDirection.Outgoing, maxDepth: 1)));
         // Ignoring direction, outgoing edges are followed before incoming ones.
-        CollectionAssert.AreEqual(new[] { "c", "a" },
-            Ids(BlowGraphAlgorithms.Traverse(graph, "b", BlowTraversalDirection.Both)));
+        Assert.AreSequenceEqual(new[] { "c", "a" }, Ids(BlowGraphAlgorithms.Traverse(graph, "b", BlowTraversalDirection.Both)));
     }
 
     [TestMethod]
@@ -168,7 +166,7 @@ public class GraphAlgorithmTests
         var nodes = Nodes("a", "b", "c", "d");
         var edges = Edges("a>b", "b>c", "c>d", "a>d");
 
-        CollectionAssert.AreEqual(new[] { "a", "d" }, Ids(BlowGraphAlgorithms.ShortestPath(nodes, edges, "a", "d")!));
+        Assert.AreSequenceEqual(new[] { "a", "d" }, Ids(BlowGraphAlgorithms.ShortestPath(nodes, edges, "a", "d")!));
     }
 
     [TestMethod]
@@ -178,8 +176,7 @@ public class GraphAlgorithmTests
         var edges = Edges("a>b", "b>c", "c>d", "a>d");
         double Weight(BlowEdge e) => e.Id == "a>d" ? 10 : 1;
 
-        CollectionAssert.AreEqual(new[] { "a", "b", "c", "d" },
-            Ids(BlowGraphAlgorithms.ShortestPath(nodes, edges, "a", "d", Weight)!));
+        Assert.AreSequenceEqual(new[] { "a", "b", "c", "d" }, Ids(BlowGraphAlgorithms.ShortestPath(nodes, edges, "a", "d", Weight)!));
     }
 
     [TestMethod]
@@ -193,7 +190,7 @@ public class GraphAlgorithmTests
     public void NoPathIsNull()
     {
         Assert.IsNull(BlowGraphAlgorithms.ShortestPath(Nodes("a", "b"), Edges("b>a"), "a", "b"));
-        CollectionAssert.AreEqual(new[] { "a" }, Ids(BlowGraphAlgorithms.ShortestPath(Nodes("a"), [], "a", "a")!));
+        Assert.AreSequenceEqual(new[] { "a" }, Ids(BlowGraphAlgorithms.ShortestPath(Nodes("a"), [], "a", "a")!));
     }
 
     // ---- shape ----
@@ -203,10 +200,10 @@ public class GraphAlgorithmTests
     {
         var graph = new BlowGraphIndex(Nodes("in", "mid", "out", "alone", "orphan"), Edges("in>mid", "mid>out", "orphan>out"));
 
-        CollectionAssert.AreEqual(new[] { "in", "alone", "orphan" }, Ids(BlowGraphAlgorithms.GetRoots(graph)));
-        CollectionAssert.AreEqual(new[] { "out", "alone" }, Ids(BlowGraphAlgorithms.GetLeaves(graph)));
-        CollectionAssert.AreEqual(new[] { "alone" }, Ids(BlowGraphAlgorithms.GetIsolatedNodes(graph)));
-        CollectionAssert.AreEqual(new[] { "alone", "orphan" }, Ids(BlowGraphAlgorithms.GetUnreachable(graph, ["in"])));
+        Assert.AreSequenceEqual(new[] { "in", "alone", "orphan" }, Ids(BlowGraphAlgorithms.GetRoots(graph)));
+        Assert.AreSequenceEqual(new[] { "out", "alone" }, Ids(BlowGraphAlgorithms.GetLeaves(graph)));
+        Assert.AreSequenceEqual(new[] { "alone" }, Ids(BlowGraphAlgorithms.GetIsolatedNodes(graph)));
+        Assert.AreSequenceEqual(new[] { "alone", "orphan" }, Ids(BlowGraphAlgorithms.GetUnreachable(graph, ["in"])));
     }
 
     [TestMethod]
@@ -250,8 +247,8 @@ public class GraphAlgorithmTests
         Assert.AreSame(first, graph.GetNode("a"));
         Assert.HasCount(2, graph.Nodes);
         Assert.HasCount(2, graph.Edges);
-        CollectionAssert.AreEqual(new[] { "x" }, graph.DanglingEdges.Select(e => e.Id).ToArray());
-        Assert.HasCount(1, graph.Outgoing("a"));
+        Assert.AreSequenceEqual(new[] { "x" }, graph.DanglingEdges.Select(e => e.Id).ToArray());
+        Assert.ContainsSingle(graph.Outgoing("a"));
     }
 
     [TestMethod]

@@ -42,8 +42,8 @@ public class BitMediaQueryParamsTests : BunitTestContext
     [TestMethod]
     public void BitMediaQueryParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitMediaQuery)}", BitMediaQueryParams.ParamName);
-        Assert.AreEqual("BitParams.BitMediaQuery", BitMediaQueryParams.ParamName);
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitMediaQuery)}", new BitMediaQueryParams().Name);
+        Assert.AreEqual("BitParams.BitMediaQuery", new BitMediaQueryParams().Name);
     }
 
     [TestMethod]
@@ -108,8 +108,8 @@ public class BitMediaQueryParamsTests : BunitTestContext
     {
         var component = RenderWithParams(new BitMediaQueryParams { ScreenQuery = BitScreenQuery.Md, DefaultMatched = true });
 
-        Assert.AreEqual(1, component.FindAll(".matched").Count);
-        Assert.AreEqual(0, component.FindAll(".notmatched").Count);
+        Assert.ContainsSingle(component.FindAll(".matched"));
+        Assert.IsEmpty(component.FindAll(".notmatched"));
         Assert.IsTrue(component.FindComponent<BitMediaQuery>().Instance.IsMatched);
     }
 
@@ -121,8 +121,8 @@ public class BitMediaQueryParamsTests : BunitTestContext
             builder.AddAttribute(1, nameof(BitMediaQuery.DefaultMatched), false);
         });
 
-        Assert.AreEqual(0, component.FindAll(".matched").Count);
-        Assert.AreEqual(1, component.FindAll(".notmatched").Count);
+        Assert.IsEmpty(component.FindAll(".matched"));
+        Assert.ContainsSingle(component.FindAll(".notmatched"));
     }
 
     [TestMethod]
@@ -130,8 +130,8 @@ public class BitMediaQueryParamsTests : BunitTestContext
     {
         var component = RenderWithParams(new BitMediaQueryParams { ScreenQuery = BitScreenQuery.Md, NoWrapper = true });
 
-        Assert.AreEqual(0, component.FindAll(".bit-mdq").Count);
-        Assert.AreEqual(1, component.FindAll(".notmatched").Count);
+        Assert.IsEmpty(component.FindAll(".bit-mdq"));
+        Assert.ContainsSingle(component.FindAll(".notmatched"));
         Assert.IsNull(LastSetup().Arguments[1]);
     }
 
@@ -143,7 +143,7 @@ public class BitMediaQueryParamsTests : BunitTestContext
             builder.AddAttribute(1, nameof(BitMediaQuery.NoWrapper), false);
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-mdq").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-mdq"));
     }
 
     [TestMethod]
@@ -161,7 +161,7 @@ public class BitMediaQueryParamsTests : BunitTestContext
 
         Assert.IsTrue(root.ClassList.Contains("cascaded-class"));
         Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
-        StringAssert.Contains(root.GetAttribute("style"), "color: red");
+        Assert.Contains("color: red", root.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -180,8 +180,8 @@ public class BitMediaQueryParamsTests : BunitTestContext
         Assert.IsNull(instance.Query);
         Assert.IsNull(instance.ScreenQuery);
         Assert.IsFalse(instance.NoWrapper);
-        Assert.AreEqual(1, component.FindAll(".bit-mdq").Count);
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.MediaQuery.dispose"));
+        Assert.ContainsSingle(component.FindAll(".bit-mdq"));
+        Assert.ContainsSingle(i => i.Identifier == "BitBlazorUI.MediaQuery.dispose", Context.JSInterop.Invocations);
     }
 
     [TestMethod]
@@ -237,7 +237,7 @@ public class BitMediaQueryParamsTests : BunitTestContext
         Assert.IsNull(instance.ScreenQuery);
         Assert.IsFalse(instance.DefaultMatched);
         Assert.IsFalse(instance.NoWrapper);
-        Assert.AreEqual(1, component.FindAll(".bit-mdq").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-mdq"));
     }
 
     [TestMethod]

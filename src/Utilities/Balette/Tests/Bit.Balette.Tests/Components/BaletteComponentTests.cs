@@ -61,7 +61,7 @@ public class BaletteComponentTests : BunitContext
         cut.WaitForAssertion(() =>
         {
             Assert.AreEqual("true", cut.Find("dialog").GetAttribute("data-open"));
-            Assert.AreEqual(3, cut.FindAll("[data-balette=item]").Count);
+            Assert.HasCount(3, cut.FindAll("[data-balette=item]"));
             var headings = cut.FindAll("[data-balette=group-heading]").Select(h => h.TextContent.Trim()).ToList();
             Assert.Contains("Navigation", headings);
             Assert.Contains("Preferences", headings);
@@ -111,7 +111,7 @@ public class BaletteComponentTests : BunitContext
 
         var cut = RenderPalette();
         await cut.InvokeAsync(() => _service.OpenAsync());
-        cut.WaitForAssertion(() => Assert.AreEqual(2, cut.FindAll("[data-balette=item]").Count));
+        cut.WaitForAssertion(() => Assert.HasCount(2, cut.FindAll("[data-balette=item]")));
 
         Assert.AreEqual("First", cut.Find("[data-active=true] .bit-balette-item-title").TextContent.Trim());
 
@@ -129,7 +129,7 @@ public class BaletteComponentTests : BunitContext
         _service.Register(BaletteCmd.New("A").Priority(10), BaletteCmd.New("B"), BaletteCmd.New("C").Priority(-10));
         var cut = RenderPalette();
         await cut.InvokeAsync(() => _service.OpenAsync());
-        cut.WaitForAssertion(() => Assert.AreEqual(3, cut.FindAll("[data-balette=item]").Count));
+        cut.WaitForAssertion(() => Assert.HasCount(3, cut.FindAll("[data-balette=item]")));
 
         await cut.InvokeAsync(() => cut.Instance.OnKeyDown("ArrowUp", false, false, false, false));
         Assert.AreEqual("C", cut.Find("[data-active=true] .bit-balette-item-title").TextContent.Trim());
@@ -141,7 +141,7 @@ public class BaletteComponentTests : BunitContext
         _service.Register(BaletteCmd.Page("Theme", BaletteCmd.New("Light"), BaletteCmd.New("Dark")), BaletteCmd.New("Other"));
         var cut = RenderPalette();
         await cut.InvokeAsync(() => _service.OpenAsync());
-        cut.WaitForAssertion(() => Assert.AreEqual(2, cut.FindAll("[data-balette=item]").Count));
+        cut.WaitForAssertion(() => Assert.HasCount(2, cut.FindAll("[data-balette=item]")));
 
         // Find "Theme" wherever it is listed rather than relying on the order.
         var items = cut.FindAll("[data-balette=item]");
@@ -165,7 +165,7 @@ public class BaletteComponentTests : BunitContext
         cut.WaitForAssertion(() =>
         {
             Assert.IsEmpty(cut.FindAll("[data-balette=breadcrumbs]"));
-            Assert.AreEqual(2, cut.FindAll("[data-balette=item]").Count);
+            Assert.HasCount(2, cut.FindAll("[data-balette=item]"));
         });
     }
 
@@ -297,12 +297,12 @@ public class BaletteComponentTests : BunitContext
 
         var cut = RenderPalette();
         await cut.InvokeAsync(() => _service.OpenAsync(pageCommandId: "labels"));
-        cut.WaitForAssertion(() => Assert.AreEqual(3, cut.FindAll("[data-balette=item]").Count));
+        cut.WaitForAssertion(() => Assert.HasCount(3, cut.FindAll("[data-balette=item]")));
 
         await cut.InvokeAsync(() => cut.Instance.OnKeyDown("Enter", false, false, false, false)); // toggle Bug
         await cut.InvokeAsync(() => cut.Instance.OnKeyDown("ArrowDown", false, false, false, false));
         await cut.InvokeAsync(() => cut.Instance.OnKeyDown("Enter", false, false, false, false)); // toggle Feature
-        cut.WaitForAssertion(() => Assert.AreEqual(2, cut.FindAll("[data-checked=true]").Count));
+        cut.WaitForAssertion(() => Assert.HasCount(2, cut.FindAll("[data-checked=true]")));
 
         await cut.InvokeAsync(() => cut.Instance.OnKeyDown("Enter", true, false, false, false)); // Ctrl+Enter
         Assert.IsNotNull(submitted);
@@ -347,7 +347,7 @@ public class BaletteComponentTests : BunitContext
         _service.Register(BaletteCmd.Action("Ping", _ => Task.FromResult(BaletteCommandResult.KeepOpen)).Group("Tools"), BaletteCmd.New("Other").Group("Tools"));
         var cut = RenderPalette();
         await cut.InvokeAsync(() => _service.OpenAsync());
-        cut.WaitForAssertion(() => Assert.AreEqual(2, cut.FindAll("[data-balette=item]").Count));
+        cut.WaitForAssertion(() => Assert.HasCount(2, cut.FindAll("[data-balette=item]")));
 
         var items = cut.FindAll("[data-balette=item]");
         var pingIndex = items.ToList().FindIndex(i => i.TextContent.Contains("Ping"));
@@ -427,11 +427,11 @@ public class BaletteComponentTests : BunitContext
         var cut = Render<Balette>(p => p.Add(x => x.OnQueryChanged, q => queries.Add(q)));
         cut.Instance.SlowSearchThreshold = TimeSpan.Zero;
         await cut.InvokeAsync(() => _service.OpenAsync());
-        cut.WaitForAssertion(() => Assert.AreEqual(3, cut.FindAll("[data-balette=item]").Count));
+        cut.WaitForAssertion(() => Assert.HasCount(3, cut.FindAll("[data-balette=item]")));
 
         await cut.InvokeAsync(() => cut.Find("[data-balette=input]").Input("g"));
         await cut.InvokeAsync(() => cut.Find("[data-balette=input]").Input("ga"));
-        Assert.AreEqual(3, cut.FindAll("[data-balette=item]").Count); // not searched (nor re-rendered) before the paint
+        Assert.HasCount(3, cut.FindAll("[data-balette=item]")); // not searched (nor re-rendered) before the paint
 
         await cut.InvokeAsync(paint.SetVoidResult);
         cut.WaitForAssertion(() => AssertSequence.AreEqual(["Gamma"], cut.FindAll("[data-balette=item] .bit-balette-item-title").Select(t => t.TextContent.Trim())));
@@ -449,7 +449,7 @@ public class BaletteComponentTests : BunitContext
         var cut = RenderPalette();
         cut.Instance.SlowSearchThreshold = TimeSpan.Zero;
         await cut.InvokeAsync(() => _service.OpenAsync());
-        cut.WaitForAssertion(() => Assert.AreEqual(2, cut.FindAll("[data-balette=item]").Count));
+        cut.WaitForAssertion(() => Assert.HasCount(2, cut.FindAll("[data-balette=item]")));
 
         await cut.InvokeAsync(() => cut.Find("[data-balette=input]").Input("bet"));
         await cut.InvokeAsync(() => cut.Instance.OnKeyDown("Enter", false, false, false, false));
@@ -465,14 +465,14 @@ public class BaletteComponentTests : BunitContext
         var cut = RenderPalette();
         cut.Instance.SlowSearchThreshold = TimeSpan.Zero;
         await cut.InvokeAsync(() => _service.OpenAsync());
-        cut.WaitForAssertion(() => Assert.AreEqual(2, cut.FindAll("[data-balette=item]").Count));
+        cut.WaitForAssertion(() => Assert.HasCount(2, cut.FindAll("[data-balette=item]")));
 
         await cut.InvokeAsync(() => cut.Find("[data-balette=input]").Input("bet"));
         await cut.InvokeAsync(() => _service.CloseAsync());
         cut.WaitForAssertion(() => Assert.AreEqual("false", cut.Find("dialog").GetAttribute("data-open")));
 
         await cut.InvokeAsync(() => _service.OpenAsync());
-        cut.WaitForAssertion(() => Assert.AreEqual(2, cut.FindAll("[data-balette=item]").Count));
+        cut.WaitForAssertion(() => Assert.HasCount(2, cut.FindAll("[data-balette=item]")));
     }
 
     [TestMethod]
@@ -515,7 +515,7 @@ public class BaletteComponentTests : BunitContext
         _service.Register(BaletteCmd.New("A").Priority(10), BaletteCmd.New("B"));
         var cut = Render<Balette>(p => p.Add(x => x.VimBindings, false));
         await cut.InvokeAsync(() => _service.OpenAsync());
-        cut.WaitForAssertion(() => Assert.AreEqual(2, cut.FindAll("[data-balette=item]").Count));
+        cut.WaitForAssertion(() => Assert.HasCount(2, cut.FindAll("[data-balette=item]")));
 
         await cut.InvokeAsync(() => cut.Instance.OnKeyDown("j", true, false, false, false));
         Assert.AreEqual("A", cut.Find("[data-active=true] .bit-balette-item-title").TextContent.Trim());
@@ -568,7 +568,7 @@ public class BaletteComponentTests : BunitContext
         _service.Register(BaletteCmd.New("Alpha").Group("G"), BaletteCmd.New("Beta").Group("G"));
         var cut = RenderPalette();
         await cut.InvokeAsync(() => _service.OpenAsync());
-        cut.WaitForAssertion(() => Assert.AreEqual(2, cut.FindAll("[data-balette=item]").Count));
+        cut.WaitForAssertion(() => Assert.HasCount(2, cut.FindAll("[data-balette=item]")));
 
         // Browsers send key "P" (upper-case) when Shift is held.
         await cut.InvokeAsync(() => cut.Instance.OnKeyDown("P", true, true, false, false));
@@ -600,10 +600,10 @@ public class BaletteComponentTests : BunitContext
         _service.Register(BaletteCmd.New("Anything"));
         var cut = RenderPalette();
 
-        await Task.Run(() => _service.OpenAsync());
+        await Task.Run(() => _service.OpenAsync(), TestContext.CancellationToken);
         cut.WaitForAssertion(() => Assert.AreEqual("true", cut.Find("dialog").GetAttribute("data-open")));
 
-        await Task.Run(() => _service.CloseAsync());
+        await Task.Run(() => _service.CloseAsync(), TestContext.CancellationToken);
         cut.WaitForAssertion(() => Assert.AreEqual("false", cut.Find("dialog").GetAttribute("data-open")));
     }
 
@@ -615,7 +615,7 @@ public class BaletteComponentTests : BunitContext
             BaletteCmd.Action("Word wrap", _ => Task.FromResult(BaletteCommandResult.KeepOpen)).Group("Tools"));
         var cut = RenderPalette();
         await cut.InvokeAsync(() => _service.OpenAsync());
-        cut.WaitForAssertion(() => Assert.AreEqual(2, cut.FindAll("[data-balette=item]").Count));
+        cut.WaitForAssertion(() => Assert.HasCount(2, cut.FindAll("[data-balette=item]")));
 
         await cut.InvokeAsync(() => cut.Instance.OnKeyDown("ArrowDown", false, false, false, false));
         await cut.InvokeAsync(() => cut.Instance.OnKeyDown("Enter", false, false, false, false));
@@ -637,7 +637,7 @@ public class BaletteComponentTests : BunitContext
             BaletteCmd.New("Other"));
         var cut = RenderPalette();
         await cut.InvokeAsync(() => _service.OpenAsync());
-        cut.WaitForAssertion(() => Assert.AreEqual(2, cut.FindAll("[data-balette=item]").Count));
+        cut.WaitForAssertion(() => Assert.HasCount(2, cut.FindAll("[data-balette=item]")));
 
         await cut.InvokeAsync(() => cut.Instance.OnKeyDown("Enter", false, false, false, false));
         cut.WaitForAssertion(() => Assert.Contains("permanently deletes", cut.Find("[data-balette=toast]").TextContent));
@@ -724,11 +724,11 @@ public class BaletteComponentTests : BunitContext
     public void Changed_vim_bindings_and_toggle_shortcut_reach_the_browser_layer()
     {
         var cut = Render<Balette>(p => p.Add(x => x.VimBindings, false));
-        cut.WaitForAssertion(() => Assert.IsTrue(_jsHandle.Invocations.Any(i => i.Identifier == "isMac")));
+        cut.WaitForAssertion(() => Assert.Contains(i => i.Identifier == "isMac", _jsHandle.Invocations));
 
         cut.Render(p => p.Add(x => x.VimBindings, true).Add(x => x.ToggleShortcut, "Ctrl+Shift+P"));
 
-        Assert.AreEqual(true, _jsHandle.Invocations.Single(i => i.Identifier == "setVimBindings").Arguments[0]);
+        Assert.IsTrue((bool?)_jsHandle.Invocations.Single(i => i.Identifier == "setVimBindings").Arguments[0]);
         var toggles = (IEnumerable<string>)_jsHandle.Invocations.Single(i => i.Identifier == "setToggleShortcuts").Arguments[0]!;
         Assert.Contains("ctrl+shift+p", toggles);
     }
@@ -756,7 +756,7 @@ public class BaletteComponentTests : BunitContext
         _service.Register(BaletteCmd.New("A").Group("One"), BaletteCmd.New("B").Group("Two"));
         var cut = Render<Balette>(p => p.Add(x => x.Virtualize, true));
         await cut.InvokeAsync(() => _service.OpenAsync());
-        cut.WaitForAssertion(() => Assert.AreEqual(2, cut.FindAll("[data-balette=item]").Count));
+        cut.WaitForAssertion(() => Assert.HasCount(2, cut.FindAll("[data-balette=item]")));
 
         await cut.InvokeAsync(() => cut.Instance.OnKeyDown("End", false, false, false, false));
 
@@ -796,4 +796,6 @@ public class BaletteComponentTests : BunitContext
         await cut.InvokeAsync(() => cut.Instance.SetQueryAsync("save"));
         Assert.AreEqual("save", cut.Find("[data-balette=input]").GetAttribute("value"), "a query set from code still reaches the box");
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

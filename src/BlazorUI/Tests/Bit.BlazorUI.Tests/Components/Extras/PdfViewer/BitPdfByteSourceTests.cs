@@ -63,10 +63,10 @@ public class BitPdfByteSourceTests
         var source = new BitPdfMemoryByteSource(original);
         var cursor = source.CreateStream(1);
         byte[] copied = cursor.GetBytes(10);
-        CollectionAssert.AreEqual(new byte[] { 20, 30 }, copied);
+        Assert.AreSequenceEqual(new byte[] { 20, 30 }, copied);
         copied[0] = 77;
         Assert.AreEqual(20, source.GetMemory(1, 1).Span[0]);
-        Assert.IsTrue(cursor.GetBytes(10).Length == 0);
+        Assert.IsEmpty(cursor.GetBytes(10));
         Assert.AreEqual(-1, cursor.GetByte());
     }
 
@@ -77,7 +77,7 @@ public class BitPdfByteSourceTests
         var source = new BitPdfMemoryByteSource(original);
         var view = source.GetMemory(1, 2);
 
-        CollectionAssert.AreEqual(new byte[] { 20, 30 }, view.ToArray());
+        Assert.AreSequenceEqual(new byte[] { 20, 30 }, view.ToArray());
         // Pin the existing borrowed-buffer contract; this is not permission to
         // mutate a document while parsing it.
         original[1] = 42;
@@ -117,13 +117,13 @@ public class BitPdfByteSourceTests
         Assert.AreEqual(1, first.Pos);
         Assert.AreEqual(20, first.GetByte());
         Assert.AreEqual(20, second.GetByte());
-        CollectionAssert.AreEqual(new byte[] { 30 }, first.GetBytes(10));
+        Assert.AreSequenceEqual(new byte[] { 30 }, first.GetBytes(10));
         Assert.AreEqual(-1, first.GetByte());
         first.Reset();
         Assert.AreEqual(20, first.GetByte());
 
         // Absolute range reads historically clamp to the buffer, not the window.
-        CollectionAssert.AreEqual(original, first.GetByteRange(-1, 99));
+        Assert.AreSequenceEqual(original, first.GetByteRange(-1, 99));
         Assert.AreEqual(2, first.Pos);
         var sub = first.MakeSubStream(2, 1, dict);
         Assert.AreEqual(30, sub.GetByte());
@@ -144,7 +144,7 @@ public class BitPdfByteSourceTests
             Assert.AreEqual(i & 255, reader.ReadByte(i));
         }
         Assert.AreEqual(-1, reader.ReadByte(source.Length));
-        Assert.IsTrue(source.Views.Count < 10, "Sequential scanning must use bounded block access.");
+        Assert.IsLessThan(10, source.Views.Count, "Sequential scanning must use bounded block access.");
         foreach (var view in source.Views)
         {
             Assert.IsTrue(view.Length > 0 && view.Length <= 64 * 1024);
@@ -166,7 +166,7 @@ public class BitPdfByteSourceTests
         Assert.ThrowsExactly<InvalidOperationException>(() => reader.ReadByte(100000));
         int requestsAfterFailure = source.Views.Count;
         Assert.AreEqual(10, reader.ReadByte(10));
-        Assert.AreEqual(requestsAfterFailure, source.Views.Count);
+        Assert.HasCount(requestsAfterFailure, source.Views);
         Assert.AreEqual(100000 & 255, reader.ReadByte(100000));
     }
 
@@ -180,7 +180,7 @@ public class BitPdfByteSourceTests
         Assert.AreEqual(-1, reader.ReadByte(int.MaxValue));
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => reader.ReadByte(int.MinValue));
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => reader.ReadByte(-1));
-        Assert.AreEqual(1, source.Views.Count);
+        Assert.ContainsSingle(source.Views);
 
         var empty = new BitPdfByteSourceReader(new CountingSource(0));
         Assert.AreEqual(-1, empty.ReadByte(0));
@@ -213,7 +213,7 @@ public class BitPdfByteSourceTests
         }
         foreach (var view in source.Views)
         {
-            Assert.IsTrue(view.Length <= 64 * 1024 + keyword.Length - 1);
+            Assert.IsLessThanOrEqualTo(64 * 1024 + keyword.Length - 1, view.Length);
             Assert.IsTrue(view.Start >= 0 && view.Length <= source.Length - view.Start);
         }
     }

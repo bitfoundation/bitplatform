@@ -1,4 +1,4 @@
-using Bit.Bmotion.Tests.TestInfra;
+﻿using Bit.Bmotion.Tests.TestInfra;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 
@@ -34,7 +34,7 @@ public class TransformTemplateTests
             .Add(p => p.ChildContent, Div));
 
         var style = cut.Find("div").GetAttribute("style") ?? "";
-        Assert.IsTrue(style.Contains("translate(-50%, -50%)"),
+        Assert.Contains("translate(-50%, -50%)", style,
             $"the very first painted frame must already be templated; got: {style}");
     }
 
@@ -48,7 +48,7 @@ public class TransformTemplateTests
             .Add(p => p.ChildContent, Div));
 
         var style = cut.Find("div").GetAttribute("style") ?? "";
-        Assert.IsTrue(style.Contains("transform:translate(40px,0px)"), $"got: {style}");
+        Assert.Contains("transform:translate(40px,0px)", style, $"got: {style}");
     }
 
     // ── The engine's live values ──────────────────────────────────────────────
@@ -65,7 +65,7 @@ public class TransformTemplateTests
 
         var transform = ctx.Engine.GetCurrentTransformString("box");
         Assert.IsNotNull(transform);
-        StringAssert.StartsWith(transform, "translate(-50%, -50%)");
+        Assert.StartsWith("translate(-50%, -50%)", transform);
     }
 
     [TestMethod]
@@ -91,7 +91,7 @@ public class TransformTemplateTests
         Assert.IsNotNull(seenComponents);
         Assert.AreEqual(40, seenComponents!.GetValueOrDefault("x"));
         Assert.AreEqual(2, seenComponents.GetValueOrDefault("scale"));
-        StringAssert.Contains(seenGenerated!, "translate(40px,0px)");
+        Assert.Contains("translate(40px,0px)", seenGenerated!);
     }
 
     [TestMethod]
@@ -147,6 +147,6 @@ public class TransformTemplateTests
 
         cut.Render(ps => ps.Add(p => p.TransformTemplate, _centred));
 
-        StringAssert.StartsWith(ctx.Engine.GetCurrentTransformString("box")!, "translate(-50%, -50%)");
+        Assert.StartsWith("translate(-50%, -50%)", ctx.Engine.GetCurrentTransformString("box")!);
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace Bit.Borm.Tests;
 
-public class OrderModel
+internal class OrderModel
 {
     public string FirstName { get; set; } = "";
     public string LastName { get; set; } = "";
@@ -10,7 +10,7 @@ public class OrderModel
     public decimal TotalWithTax { get; set; }
 }
 
-public class OrderLine
+internal class OrderLine
 {
     public int Quantity { get; set; } = 1;
     public decimal UnitPrice { get; set; }

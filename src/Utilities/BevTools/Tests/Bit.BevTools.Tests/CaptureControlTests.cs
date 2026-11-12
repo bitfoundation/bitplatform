@@ -76,12 +76,12 @@ public class CaptureControlTests : BunitContext
         using var client = new HttpClient(handler);
 
         Session.PauseCapture();
-        var response = await client.GetAsync("https://example.test/paused");
+        var response = await client.GetAsync("https://example.test/paused", TestContext.CancellationToken);
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
         Assert.IsEmpty(Session.Http.Snapshot());
 
         Session.ResumeCapture();
-        await client.GetAsync("https://example.test/resumed");
+        await client.GetAsync("https://example.test/resumed", TestContext.CancellationToken);
         Assert.Contains("resumed", Assert.ContainsSingle(Session.Http.Snapshot()).Url, StringComparison.Ordinal);
     }
 
@@ -152,7 +152,7 @@ public class CaptureControlTests : BunitContext
         Assert.IsEmpty(Session.Http.Snapshot());
         Assert.DoesNotContain(e => e.Kind is BevToolsEventKind.Http or BevToolsEventKind.Error, Session.Timeline.Snapshot());
         var errors = Session.Errors.Snapshot();
-        Assert.AreEqual(2, errors.Length);
+        Assert.HasCount(2, errors);
         var status = Assert.ContainsSingle(e => e.ExceptionType == "HttpStatus500", errors);
         Assert.StartsWith("GET /api/items?token=", status.Message, StringComparison.Ordinal);
         Assert.DoesNotContain("s3cr3t", status.Message, StringComparison.Ordinal);
@@ -206,7 +206,7 @@ public class CaptureControlTests : BunitContext
         Assert.IsTrue(child.IsDisposed);
     }
 
-    public sealed class ClickCallback : ComponentBase
+    internal sealed class ClickCallback : ComponentBase
     {
         public Action? OnClicked { get; set; }
 
@@ -227,4 +227,6 @@ public class CaptureControlTests : BunitContext
     {
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) => Task.FromException<HttpResponseMessage>(exception);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

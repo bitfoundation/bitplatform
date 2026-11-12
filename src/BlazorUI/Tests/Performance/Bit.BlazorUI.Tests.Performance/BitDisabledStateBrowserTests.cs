@@ -80,7 +80,7 @@ public class BitDisabledStateBrowserTests : PerformanceTestBase
         Assert.IsTrue(disabled.RootIsDisabled, $"{part}: the root of the disabled component has no bit-dis class. {disabled}");
         if (NavigableWhileDisabled.Contains(part) is false)
         {
-            Assert.IsTrue(disabled.DisabledCount + disabled.AriaDisabledCount > 0,
+            Assert.IsGreaterThan(0, disabled.DisabledCount + disabled.AriaDisabledCount,
                           $"{part}: the disabled component says it is disabled nowhere in its controls. {disabled}");
         }
 
@@ -96,7 +96,7 @@ public class BitDisabledStateBrowserTests : PerformanceTestBase
         }
         else if (disabled.DisabledCount > 0)
         {
-            Assert.IsTrue(enabled.DisabledCount < disabled.DisabledCount,
+            Assert.IsLessThan(disabled.DisabledCount, enabled.DisabledCount,
                           $"{part}: enabling the component left its {disabled.DisabledCount} disabled controls disabled. {enabled}");
         }
 
@@ -119,7 +119,7 @@ public class BitDisabledStateBrowserTests : PerformanceTestBase
         var audit = await Audit();
         AssertPaired(part, "enabled", audit);
         Assert.IsFalse(audit.RootIsDisabled, $"{part}: the root of the enabled component has the bit-dis class. {audit}");
-        Assert.IsTrue(audit.DisabledCount > 0, $"{part}: the enabled component disables no control of its own here. {audit}");
+        Assert.IsGreaterThan(0, audit.DisabledCount, $"{part}: the enabled component disables no control of its own here. {audit}");
 
         AssertNoErrors(part);
     }
@@ -215,13 +215,13 @@ public class BitDisabledStateBrowserTests : PerformanceTestBase
         await OpenPage("pdfviewer", disabled: true);
 
         var inert = Page.Locator("[data-case-root] [inert]");
-        Assert.IsTrue(await inert.CountAsync() > 0, "A disabled PDF viewer has no inert region.");
+        Assert.IsGreaterThan(0, await inert.CountAsync(), "A disabled PDF viewer has no inert region.");
 
         await Toggle("Enabled");
         await Expect(inert).ToHaveCountAsync(0);
 
         await Toggle("Disabled");
-        Assert.IsTrue(await inert.CountAsync() > 0, "The PDF viewer lost its inert regions after a round trip.");
+        Assert.IsGreaterThan(0, await inert.CountAsync(), "The PDF viewer lost its inert regions after a round trip.");
 
         AssertNoErrors("pdfviewer");
     }
@@ -274,17 +274,17 @@ public class BitDisabledStateBrowserTests : PerformanceTestBase
     private void AssertPaired(string part, string state, AuditResult audit)
     {
         Assert.IsTrue(audit.RootFound, $"{part} ({state}): no element carries the data-case-root splatted onto the component.");
-        Assert.AreEqual(0, audit.Unpaired.Length,
+        Assert.IsEmpty(audit.Unpaired,
                         $"{part} ({state}): these controls are disabled without aria-disabled=\"true\":\n{string.Join("\n", audit.Unpaired)}");
-        Assert.AreEqual(0, audit.NotMatchingDisabled.Length,
+        Assert.IsEmpty(audit.NotMatchingDisabled,
                         $"{part} ({state}): these controls carry the disabled attribute but do not match :disabled:\n{string.Join("\n", audit.NotMatchingDisabled)}");
-        Assert.AreEqual(0, audit.NonNative.Length,
+        Assert.IsEmpty(audit.NonNative,
                         $"{part} ({state}): these elements carry the disabled attribute, which HTML defines on the form controls only:\n{string.Join("\n", audit.NonNative)}");
     }
 
     private void AssertNoErrors(string part)
     {
-        Assert.AreEqual(0, _errors.Count, $"{part}: the page logged errors:\n{string.Join("\n", _errors)}");
+        Assert.IsEmpty(_errors, $"{part}: the page logged errors:\n{string.Join("\n", _errors)}");
     }
 
     // The disabled state of the whole document but the test's own controls: a relocated popup sits outside the case.

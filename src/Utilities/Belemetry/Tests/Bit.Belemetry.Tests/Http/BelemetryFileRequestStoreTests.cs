@@ -42,9 +42,9 @@ public class BelemetryFileRequestStoreTests
         await store.SaveAsync(request, CancellationToken.None);
 
         var files = StoredFiles();
-        Assert.HasCount(1, files);
-        StringAssert.EndsWith(files[0], $"-{request.Id}.blmreq");
-        Assert.IsFalse(files.Any(f => f.EndsWith(".tmp", StringComparison.Ordinal)), "The temp file is renamed into place.");
+        Assert.ContainsSingle(files);
+        Assert.EndsWith($"-{request.Id}.blmreq", files[0]);
+        Assert.DoesNotContain(f => f.EndsWith(".tmp", StringComparison.Ordinal), files, "The temp file is renamed into place.");
         var json = File.ReadAllText(files[0]);
         Assert.DoesNotContain("secret", json, "Headers (API keys) are never written to disk.");
         Assert.DoesNotContain("headers", json);
@@ -57,7 +57,7 @@ public class BelemetryFileRequestStoreTests
         Assert.AreEqual(request.ContentType, loaded.ContentType);
         Assert.AreEqual("gzip", loaded.ContentEncoding);
         Assert.IsNull(loaded.Headers);
-        CollectionAssert.AreEqual(request.Body, loaded.Body);
+        Assert.AreSequenceEqual(request.Body, loaded.Body);
         Assert.AreEqual(request.Time, loaded.Time);
     }
 
@@ -75,7 +75,7 @@ public class BelemetryFileRequestStoreTests
 
         var loaded = await store.LoadAsync(2, CancellationToken.None);
 
-        CollectionAssert.AreEqual(new[] { oldest.Id, middle.Id }, loaded.Select(r => r.Id).ToArray());
+        Assert.AreSequenceEqual(new[] { oldest.Id, middle.Id }, loaded.Select(r => r.Id).ToArray());
         Assert.HasCount(3, StoredFiles(), "Loading does not remove anything.");
     }
 
@@ -129,7 +129,7 @@ public class BelemetryFileRequestStoreTests
         var third = Request(now, bodySize: 30_000);
 
         await store.SaveAsync(first, CancellationToken.None);
-        Assert.HasCount(1, StoredFiles(), "A single request under the 64 KB floor is kept.");
+        Assert.ContainsSingle(StoredFiles(), "A single request under the 64 KB floor is kept.");
 
         await store.SaveAsync(second, CancellationToken.None);
         await store.SaveAsync(third, CancellationToken.None);
@@ -150,7 +150,7 @@ public class BelemetryFileRequestStoreTests
         var loaded = await store.LoadAsync(10, CancellationToken.None);
 
         Assert.AreEqual(fresh.Id, loaded.Single().Id);
-        Assert.HasCount(1, StoredFiles(), "The expired file is deleted.");
+        Assert.ContainsSingle(StoredFiles(), "The expired file is deleted.");
     }
 
     [TestMethod]
@@ -159,11 +159,11 @@ public class BelemetryFileRequestStoreTests
         var store = CreateStore();
         await store.SaveAsync(Request(), CancellationToken.None);
         var corrupt = Path.Combine(_directory, "000000000000001-corrupt.blmreq");
-        await File.WriteAllTextAsync(corrupt, "{ not json");
+        await File.WriteAllTextAsync(corrupt, "{ not json", TestContext.CancellationToken);
 
         var loaded = await store.LoadAsync(10, CancellationToken.None);
 
-        Assert.HasCount(1, loaded);
+        Assert.ContainsSingle(loaded);
         Assert.IsFalse(File.Exists(corrupt));
     }
 
@@ -174,7 +174,7 @@ public class BelemetryFileRequestStoreTests
         var request = Request();
         var json = JsonSerializer.Serialize(request, BelemetryJsonContext.Default.BelemetryHttpRequest)
             .Replace("\"body\"", "\"headers\":{\"x-api-key\":\"stale\"},\"body\"", StringComparison.Ordinal);
-        StringAssert.Contains(json, "stale");
+        Assert.Contains("stale", json);
         File.WriteAllText(Path.Combine(_directory, $"{request.Time:D15}-{request.Id}.blmreq"), json);
 
         var loaded = (await CreateStore().LoadAsync(10, CancellationToken.None)).Single();
@@ -189,8 +189,8 @@ public class BelemetryFileRequestStoreTests
 
         Assert.AreEqual("bit-belemetry", Path.GetFileName(Path.GetDirectoryName(directory)));
         var leaf = Path.GetFileName(directory);
-        Assert.IsFalse(leaf.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0, leaf);
-        StringAssert.StartsWith(leaf, "My");
+        Assert.IsLessThan(0, leaf.IndexOfAny(Path.GetInvalidFileNameChars()), leaf);
+        Assert.StartsWith("My", leaf);
     }
 
     [TestMethod]
@@ -227,7 +227,7 @@ public class BelemetryFileRequestStoreTests
         Assert.AreEqual("otlp", stored.Exporter);
         Assert.AreEqual("http://collector.test:4318/v1/logs", stored.Url);
         Assert.IsNull(stored.Headers);
-        Assert.IsFalse(StoredFiles().Any(f => File.ReadAllText(f).Contains("key-1", StringComparison.Ordinal)), "The API key is not on disk.");
+        Assert.DoesNotContain(f => File.ReadAllText(f).Contains("key-1", StringComparison.Ordinal), StoredFiles(), "The API key is not on disk.");
 
         // The key is rotated while the request waits: the replay uses the exporter's current one.
         pipeline.Settings.OtlpExporters[0].Headers["x-api-key"] = "key-2";
@@ -236,7 +236,7 @@ public class BelemetryFileRequestStoreTests
         await pipeline.Exporters.RetryStoredAsync(persistenceAllowed: true, CancellationToken.None);
 
         Assert.HasCount(4, handler.Requests);
-        CollectionAssert.AreEqual(stored.Body, handler.Requests[3].Body);
+        Assert.AreSequenceEqual(stored.Body, handler.Requests[3].Body);
         Assert.AreEqual("key-2", handler.Requests[3].Message.Headers.GetValues("x-api-key").Single());
         Assert.IsEmpty(StoredFiles());
     }
@@ -291,7 +291,7 @@ public class BelemetryFileRequestStoreTests
         await pipeline.Exporters.RetryStoredAsync(persistenceAllowed: true, CancellationToken.None);
 
         // One attempt at the backend that is down, and the other backend's backlog all the same.
-        CollectionAssert.AreEqual(new[] { "down.test", "up.test", "up.test" }, sent);
+        Assert.AreSequenceEqual(new[] { "down.test", "up.test", "up.test" }, sent);
         var left = await store.LoadAsync(10, CancellationToken.None);
         Assert.IsTrue(left.Count == 2 && left.All(r => r.Url.StartsWith("http://down.test", StringComparison.Ordinal)), string.Join(" | ", left.Select(r => r.Url)));
     }
@@ -377,7 +377,7 @@ public class BelemetryFileRequestStoreTests
         pipeline.Enqueue(Records.Log());
         await pipeline.FlushAsync(false, CancellationToken.None);
 
-        Assert.HasCount(1, handler.Requests, "A request from before a revoke may hold the revoked feature's records: it is not retried.");
+        Assert.ContainsSingle(handler.Requests, "A request from before a revoke may hold the revoked feature's records: it is not retried.");
         Assert.IsEmpty(StoredFiles(), "Nor is it stored after the revoke cleared the store.");
     }
 
@@ -440,7 +440,7 @@ public class BelemetryFileRequestStoreTests
 
         await pipeline.Exporters.RetryStoredAsync(persistenceAllowed: true, CancellationToken.None);
 
-        Assert.HasCount(1, handler.Requests, "A revoke clears the stored requests: the pass does not send the rest of them.");
+        Assert.ContainsSingle(handler.Requests, "A revoke clears the stored requests: the pass does not send the rest of them.");
     }
 
     /// <summary>Answers 503 for one host and 200 for the others, recording the hosts it was sent to.</summary>
@@ -452,4 +452,6 @@ public class BelemetryFileRequestStoreTests
             return Task.FromResult(new HttpResponseMessage(request.RequestUri.Host == down ? HttpStatusCode.ServiceUnavailable : HttpStatusCode.OK) { Content = new ByteArrayContent([]) });
         }
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

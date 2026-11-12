@@ -50,7 +50,7 @@ public class BitTimePickerResponsiveE2ETests : E2ETestBase
 
         // Its parts grow to finger size.
         var spin = callout.Locator("button[aria-label='Increase hour']");
-        Assert.IsTrue((await spin.BoundingBoxAsync())!.Height >= 40, "The spin buttons of the sheet are finger sized.");
+        Assert.IsGreaterThanOrEqualTo(40, (await spin.BoundingBoxAsync())!.Height, "The spin buttons of the sheet are finger sized.");
 
         await spin.TapAsync();
         await Expect(Page.Locator("#responsive-value")).ToHaveTextAsync("01:00:00");
@@ -134,7 +134,7 @@ public class BitTimePickerResponsiveE2ETests : E2ETestBase
         var field = (await Page.Locator("#basic .bit-tpc-icn").BoundingBoxAsync())!;
         var box = (await callout.BoundingBoxAsync())!;
         Assert.IsTrue(box.Y >= field.Y + field.Height - 2 || box.Y + box.Height <= field.Y + 2, "The callout opens against the field.");
-        Assert.IsTrue(box.Width < 390, "A callout that is not responsive is not a full-width sheet.");
+        Assert.IsLessThan(390, box.Width, "A callout that is not responsive is not a full-width sheet.");
 
         await callout.Locator("button[aria-label='Increase hour']").TapAsync();
         await Expect(Page.Locator("#basic-value")).ToHaveTextAsync("01:00:00");

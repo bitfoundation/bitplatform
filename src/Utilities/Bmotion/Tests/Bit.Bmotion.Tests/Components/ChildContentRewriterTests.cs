@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.Extensions.DependencyInjection;
@@ -100,7 +100,7 @@ public class ChildContentRewriterTests
         Assert.AreEqual("custom-id", attrs["id"]);
         // single merged style (motion first so the author's declarations win), no duplicate
         Assert.AreEqual("opacity:0;color:red;", attrs["style"]);
-        Assert.AreEqual(2, attrs.Count);
+        Assert.HasCount(2, attrs);
     }
 
     [TestMethod]
@@ -218,8 +218,8 @@ public class ChildContentRewriterTests
 
         Assert.IsTrue(injected);
         var markup = MarkupOf(frames, count);
-        StringAssert.Contains(markup, "<div class=\"box\" id=\"bm-test\" style=\"opacity:0;\">");
-        StringAssert.Contains(markup, "<span>hi</span>"); // inner tags untouched
+        Assert.Contains("<div class=\"box\" id=\"bm-test\" style=\"opacity:0;\">", markup);
+        Assert.Contains("<span>hi</span>", markup); // inner tags untouched
     }
 
     [TestMethod]
@@ -238,8 +238,8 @@ public class ChildContentRewriterTests
         Assert.AreEqual("my-id", seenId);
         Assert.AreEqual("color:red;", seenStyle);
         var markup = MarkupOf(frames, count);
-        StringAssert.Contains(markup, "id=\"my-id\"");
-        StringAssert.Contains(markup, "style=\"opacity:0;color:red;\"");
+        Assert.Contains("id=\"my-id\"", markup);
+        Assert.Contains("style=\"opacity:0;color:red;\"", markup);
         Assert.AreEqual(1, markup.Split("style=").Length - 1, "style attribute must not be duplicated");
         Assert.AreEqual(1, markup.Split("id=\"").Length - 1, "id attribute must not be duplicated");
     }
@@ -253,8 +253,8 @@ public class ChildContentRewriterTests
 
         // The FIRST root element (the svg) is the target, exactly like the element-frame path.
         var markup = MarkupOf(frames, count);
-        StringAssert.Contains(markup, "<svg viewBox=\"0 0 10 10\" id=\"bm-test\" pathLength=\"1\">");
-        StringAssert.Contains(markup, "<path d=\"M0 0L10 10\" />"); // inner path untouched
+        Assert.Contains("<svg viewBox=\"0 0 10 10\" id=\"bm-test\" pathLength=\"1\">", markup);
+        Assert.Contains("<path d=\"M0 0L10 10\" />", markup); // inner path untouched
     }
 
     [TestMethod]
@@ -341,7 +341,7 @@ public class ChildContentRewriterTests
         var captureIndex = -1;
         for (var i = 0; i < count; i++)
             if (frames[i].FrameType == RenderTreeFrameType.ElementReferenceCapture) { captureIndex = i; break; }
-        Assert.IsTrue(captureIndex > 0, "capture frame missing");
+        Assert.IsGreaterThan(0, captureIndex, "capture frame missing");
         Assert.AreSame(capture, frames[captureIndex].ElementReferenceCaptureAction);
         // All attribute frames (author + injected) must precede the capture frame.
         for (var i = captureIndex + 1; i < count; i++)
@@ -363,7 +363,7 @@ public class ChildContentRewriterTests
         {
             renderer.Edits.Clear();
             await renderer.Dispatcher.InvokeAsync(component.Toggle);
-            CollectionAssert.AreEqual(new[] { expected }, renderer.Edits, string.Join(", ", renderer.Edits));
+            Assert.AreSequenceEqual(new[] { expected }, renderer.Edits, string.Join(", ", renderer.Edits));
         }
     }
 

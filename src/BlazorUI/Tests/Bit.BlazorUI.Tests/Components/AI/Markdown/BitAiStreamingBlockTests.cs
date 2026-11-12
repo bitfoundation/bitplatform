@@ -13,7 +13,7 @@ public class BitAiStreamingBlockTests
     {
         var list = Assert.IsExactInstanceOfType<BitAiListBlock>(BitAiMarkdownSpec.Parse(source, complete: false).Blocks[0]);
 
-        Assert.AreEqual(3, list.Items.Count);
+        Assert.HasCount(3, list.Items);
         Assert.IsFalse(list.Items[0].Blocks[0].IsOpen);
         Assert.IsFalse(list.Items[1].Blocks[0].IsOpen);
         Assert.IsTrue(list.Items[2].Blocks[0].IsOpen);
@@ -28,7 +28,7 @@ public class BitAiStreamingBlockTests
         BitAiMarkdownSpec.AssertIncrementalMatches(source);
 
         var document = BitAiMarkdownSpec.Parse(source);
-        Assert.AreEqual(3, document.Blocks.Count);
+        Assert.HasCount(3, document.Blocks);
         Assert.IsFalse(document.Blocks[0].IsOpen);
     }
 
@@ -85,7 +85,7 @@ public class BitAiStreamingBlockTests
     {
         var table = Assert.IsExactInstanceOfType<BitAiTableBlock>(BitAiMarkdownSpec.Parse("| a | b | c |\n| --- | --- | :", complete: false).Blocks[0]);
         Assert.HasCount(3, table.Header);
-        CollectionAssert.AreEqual(new[] { BitAiColumnAlignment.None, BitAiColumnAlignment.None, BitAiColumnAlignment.Left }, table.Alignments);
+        Assert.AreSequenceEqual(new[] { BitAiColumnAlignment.None, BitAiColumnAlignment.None, BitAiColumnAlignment.Left }, table.Alignments);
 
         // So is the header row under a paragraph line, which the table interrupts.
         var document = BitAiMarkdownSpec.Parse("Compare them:\n| a | b |\n| --- | :", complete: false);

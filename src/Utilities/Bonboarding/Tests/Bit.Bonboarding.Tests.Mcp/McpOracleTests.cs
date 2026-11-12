@@ -29,9 +29,14 @@ public partial class McpOracleTests
 
                 var analysis = await McpCall.StructuredAsync<BonboardingPlacementAnalysisDto>("InspectBonboardingPlacement", new()
                 {
-                    ["targetX"] = target.X, ["targetY"] = target.Y, ["targetWidth"] = target.Width, ["targetHeight"] = target.Height,
-                    ["popoverWidth"] = popover.Width, ["popoverHeight"] = popover.Height,
-                    ["placement"] = placement.ToString(), ["rightToLeft"] = rtl
+                    ["targetX"] = target.X,
+                    ["targetY"] = target.Y,
+                    ["targetWidth"] = target.Width,
+                    ["targetHeight"] = target.Height,
+                    ["popoverWidth"] = popover.Width,
+                    ["popoverHeight"] = popover.Height,
+                    ["placement"] = placement.ToString(),
+                    ["rightToLeft"] = rtl
                 });
 
                 // What BonboardingTourSession.ApplyGeometry builds: the target grown by the spotlight padding.
@@ -72,7 +77,7 @@ public partial class McpOracleTests
         var declared = DeclarationRegex().Matches(root).Select(match => match.Groups[1].Value).ToArray();
 
         Assert.IsGreaterThan(30, declared.Length);
-        CollectionAssert.AreEqual(declared, BonboardingThemeCatalog.Variables.Select(variable => variable.Name).ToArray());
+        Assert.AreSequenceEqual(declared, BonboardingThemeCatalog.Variables.Select(variable => variable.Name).ToArray());
     }
 
     [TestMethod]
@@ -102,7 +107,7 @@ public partial class McpOracleTests
         var systemDeclarations = VariableDeclarationRegex().Matches(system).Select(match => $"{match.Groups[1].Value}:{match.Groups[2].Value.Trim()}").ToArray();
 
         Assert.IsGreaterThan(10, darkDeclarations.Length);
-        CollectionAssert.AreEqual(darkDeclarations, systemDeclarations, "The dark palette and the one a dark system gets have drifted apart.");
+        Assert.AreSequenceEqual(darkDeclarations, systemDeclarations, "The dark palette and the one a dark system gets have drifted apart.");
     }
 
     private static string RuleBody(string css, string selector)
@@ -130,16 +135,15 @@ public partial class McpOracleTests
             ("GetBonboardingSourceFile", "?path=Demo/Client/Pages/Home.razor", new() { ["path"] = "Demo/Client/Pages/Home.razor" }),
         ];
 
-        CollectionAssert.AreEquivalent(McpSurfaceTests.ExpectedTools, calls.Select(call => call.Tool).ToArray(),
-            "The HTTP mirror is being exercised for a different set of tools than the server publishes.");
+        Assert.AreSequenceEqual(McpSurfaceTests.ExpectedTools, calls.Select(call => call.Tool).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, "The HTTP mirror is being exercised for a different set of tools than the server publishes.");
 
         foreach (var (tool, query, arguments) in calls)
         {
-            using var response = await http.GetAsync($"/api/mcp/{tool}{query}");
+            using var response = await http.GetAsync($"/api/mcp/{tool}{query}", TestContext.CancellationToken);
 
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, tool);
 
-            var body = await response.Content.ReadAsStringAsync();
+            var body = await response.Content.ReadAsStringAsync(TestContext.CancellationToken);
 
             if (tool is "SearchBonboarding" or "InspectBonboardingPlacement")
             {
@@ -156,4 +160,6 @@ public partial class McpOracleTests
 
     [GeneratedRegex(@"^\s*(--bit-bonboarding-[a-z0-9-]+)\s*:\s*([^;]+);", RegexOptions.Multiline)]
     private static partial Regex VariableDeclarationRegex();
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

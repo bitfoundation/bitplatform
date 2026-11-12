@@ -7,20 +7,20 @@ namespace Bit.Bcrdt.Tests.Integrations;
 
 public enum BormTicketPriority { Low, Normal, High }
 
-public sealed class BormTicketAddress
+internal sealed class BormTicketAddress
 {
     public string City { get; set; } = "";
     public string Street { get; set; } = "";
 }
 
-public sealed class BormTicketLine
+internal sealed class BormTicketLine
 {
     public string Product { get; set; } = "";
     public int Quantity { get; set; }
     [DataType(DataType.MultilineText)] public string Notes { get; set; } = "";
 }
 
-public sealed class BormTicket
+internal sealed class BormTicket
 {
     public string Title { get; set; } = "";
     [DataType(DataType.MultilineText)] public string Description { get; set; } = "";
@@ -121,13 +121,13 @@ public class BormBindingTests
         Assert.AreEqual(BormTicketPriority.High, second.Model.Priority);
         Assert.AreEqual(new DateOnly(2026, 11, 30), second.Model.Due);
         Assert.AreEqual("Oslo", second.Model.Address.City);
-        CollectionAssert.AreEqual(new[] { "Toner", "Paper" }, second.Model.Lines.Select(l => l.Product).ToArray());
+        Assert.AreSequenceEqual(new[] { "Toner", "Paper" }, second.Model.Lines.Select(l => l.Product).ToArray());
         Assert.AreEqual("black", second.Model.Lines[0].Notes);
         Assert.AreEqual("", second.Model.Secret);
 
         seeded.Secret = "";
         Assert.AreEqual(Json(seeded), Json(second.Model));
-        Assert.IsFalse(second.State.TouchedFields.Count > 0, "what arrives is not something the user touched");
+        Assert.IsEmpty(second.State.TouchedFields, "what arrives is not something the user touched");
     }
 
     [TestMethod]
@@ -145,8 +145,8 @@ public class BormBindingTests
         first.State.SetValue("Estimate", 8);
         Sync(a, b);
 
-        Assert.AreEqual(1, changedKeys.Count);
-        CollectionAssert.AreEqual(new[] { "Estimate" }, changedKeys[0].ToArray());
+        Assert.ContainsSingle(changedKeys);
+        Assert.AreSequenceEqual(new[] { "Estimate" }, changedKeys[0].ToArray());
         Assert.AreEqual(8, second.Model.Estimate);
     }
 
@@ -292,16 +292,16 @@ public class BormBindingTests
         int at = first.State.InsertArrayItem(first.Lines, "Lines", 1);
         first.State.SetValue($"Lines[{at}].Product", "X");
         Sync(a, b);
-        CollectionAssert.AreEqual(new[] { "A", "X", "B", "C" }, second.Model.Lines.Select(l => l.Product).ToArray());
+        Assert.AreSequenceEqual(new[] { "A", "X", "B", "C" }, second.Model.Lines.Select(l => l.Product).ToArray());
 
         second.State.MoveArrayItem("Lines", 3, 0);
         Sync(a, b);
-        CollectionAssert.AreEqual(new[] { "C", "A", "X", "B" }, first.Model.Lines.Select(l => l.Product).ToArray());
+        Assert.AreSequenceEqual(new[] { "C", "A", "X", "B" }, first.Model.Lines.Select(l => l.Product).ToArray());
 
         BormTicketLine moved = first.Model.Lines[0];
         first.State.RemoveArrayItem("Lines", 2);
         Sync(a, b);
-        CollectionAssert.AreEqual(new[] { "C", "A", "B" }, second.Model.Lines.Select(l => l.Product).ToArray());
+        Assert.AreSequenceEqual(new[] { "C", "A", "B" }, second.Model.Lines.Select(l => l.Product).ToArray());
         Assert.AreSame(moved, first.Model.Lines[0], "a row keeps its object across moves");
 
         BcrdtMap holder = a.GetMap("ticket").GetMap("Lines")!;
@@ -322,8 +322,8 @@ public class BormBindingTests
         first.State.MoveArrayItem("Lines", 3, 0);
 
         string[] changed = [.. rows.Keys.Where(id => !Equals(before[id], rows.GetMap(id)!.Get("$order")))];
-        Assert.HasCount(1, changed, "the rows that kept their relative order keep their keys");
-        CollectionAssert.AreEqual(new[] { "D", "A", "B", "C" }, first.Model.Lines.Select(l => l.Product).ToArray());
+        Assert.ContainsSingle(changed, "the rows that kept their relative order keep their keys");
+        Assert.AreSequenceEqual(new[] { "D", "A", "B", "C" }, first.Model.Lines.Select(l => l.Product).ToArray());
     }
 
     [TestMethod]
@@ -342,7 +342,7 @@ public class BormBindingTests
 
         foreach (Replica replica in new[] { first, second })
         {
-            CollectionAssert.AreEqual(new[] { "New", "A", "B" }, replica.Model.Lines.Select(l => l.Product).ToArray());
+            Assert.AreSequenceEqual(new[] { "New", "A", "B" }, replica.Model.Lines.Select(l => l.Product).ToArray());
             Assert.AreEqual(7, replica.Model.Lines[2].Quantity);
             Assert.AreEqual(0, replica.Model.Lines[1].Quantity);
         }
@@ -364,7 +364,7 @@ public class BormBindingTests
 
         foreach (Replica replica in new[] { first, second })
         {
-            CollectionAssert.AreEqual(new[] { "B", "C", "A" }, replica.Model.Lines.Select(l => l.Product).ToArray());
+            Assert.AreSequenceEqual(new[] { "B", "C", "A" }, replica.Model.Lines.Select(l => l.Product).ToArray());
             Assert.AreEqual("keep me", replica.Model.Lines[2].Notes);
             Assert.AreEqual(4, replica.Model.Lines[2].Quantity);
         }
@@ -389,11 +389,11 @@ public class BormBindingTests
 
         Assert.AreEqual(Json(first.Model), Json(second.Model));
         string[] products = [.. first.Model.Lines.Select(l => l.Product)];
-        CollectionAssert.DoesNotContain(products, "A");
-        CollectionAssert.Contains(products, "B edited");
-        CollectionAssert.Contains(products, "from a");
-        CollectionAssert.Contains(products, "from b");
-        Assert.AreEqual(3, products.Length);
+        Assert.DoesNotContain("A", products);
+        Assert.Contains("B edited", products);
+        Assert.Contains("from a", products);
+        Assert.Contains("from b", products);
+        Assert.HasCount(3, products);
     }
 
     [TestMethod]
@@ -410,8 +410,8 @@ public class BormBindingTests
         Sync(a, b);
 
         Assert.AreEqual(Json(first.Model), Json(second.Model));
-        Assert.AreEqual(3, first.Model.Lines.Count);
-        CollectionAssert.AreEquivalent(new[] { "A", "B", "C" }, first.Model.Lines.Select(l => l.Product).ToArray());
+        Assert.HasCount(3, first.Model.Lines);
+        Assert.AreSequenceEqual(new[] { "A", "B", "C" }, first.Model.Lines.Select(l => l.Product).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
         // A move is a write of the row's order key: one of the two won, and there is nothing to tidy.
         Assert.AreEqual(3, a.GetMap("ticket").GetMap("Lines")!.GetMap("rows")!.Count);
@@ -447,7 +447,7 @@ public class BormBindingTests
         Assert.AreEqual(0, localUpdatesB, "applying a change writes nothing back");
         Assert.AreEqual(4, localUpdatesA);
         Assert.AreEqual(Json(first.Model), Json(second.Model));
-        Assert.IsTrue(fieldChangesB > 0);
+        Assert.IsGreaterThan(0, fieldChangesB);
 
         // Writing what the document already holds is no change.
         first.State.SetValue("Title", "one");
@@ -646,7 +646,7 @@ public class BormBindingTests
         Assert.AreEqual("Ada", editor.Collaborator.User.Name);
         Assert.AreEqual("Lines[1].Notes", editor.Path);
         Assert.AreEqual("Ada", second.Binding.EditorsOf("Lines[1].Notes").Single().User.Name);
-        Assert.IsTrue(changes > 0);
+        Assert.IsGreaterThan(0, changes);
 
         // The editor is named by row, so the path follows the row on every replica.
         second.State.InsertArrayItem(second.Lines, "Lines", 0);
@@ -656,7 +656,7 @@ public class BormBindingTests
 
         first.Binding.EndEditing();
         network.Flush();
-        Assert.AreEqual(0, second.Binding.Editors.Count);
+        Assert.IsEmpty(second.Binding.Editors);
     }
 
     [TestMethod]
@@ -705,7 +705,7 @@ public class BormBindingTests
         }
         catch (Exception ex)
         {
-            throw new AssertFailedException(
+            throw new InvalidOperationException(
                 $"Seed {seed} diverged. Last operations:\n{string.Join("\n", history.TakeLast(20))}", ex);
         }
         finally

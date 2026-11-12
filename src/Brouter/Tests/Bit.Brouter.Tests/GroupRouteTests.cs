@@ -56,7 +56,7 @@ public class GroupRouteTests : BunitTestContext
             // Redirected by the group's guard before the URL ever committed.
             Assert.IsNotNull(cut.Find("[data-testid=public]"));
             Assert.IsTrue(nav.Uri.EndsWith("/public", StringComparison.Ordinal));
-            Assert.AreEqual(0, cut.FindAll("[data-testid=admin-b]").Count);
+            Assert.IsEmpty(cut.FindAll("[data-testid=admin-b]"));
         });
     }
 

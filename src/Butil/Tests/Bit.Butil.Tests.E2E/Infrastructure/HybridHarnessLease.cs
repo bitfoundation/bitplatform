@@ -1,4 +1,4 @@
-using Microsoft.Playwright;
+﻿using Microsoft.Playwright;
 
 namespace Bit.Butil.Tests.E2E.Infrastructure;
 
@@ -7,7 +7,7 @@ namespace Bit.Butil.Tests.E2E.Infrastructure;
 /// the page's storage is cleared before the next one gets it; navigating to the harness route then reloads the
 /// page, which gives the test a fresh DI scope and a fresh <c>WebViewJSRuntime</c>.
 /// </summary>
-public sealed class HybridHarnessLease : IHarnessLease
+internal sealed class HybridHarnessLease : IHarnessLease
 {
     private readonly HybridHostPool _pool;
     private readonly HybridHarnessHost _host;

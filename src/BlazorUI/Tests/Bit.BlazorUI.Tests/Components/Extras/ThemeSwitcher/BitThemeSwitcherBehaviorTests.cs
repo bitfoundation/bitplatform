@@ -60,16 +60,14 @@ public class BitThemeSwitcherBehaviorTests : BunitTestContext
         var component = RenderComponent<BitThemeSwitcher>();
 
         var items = Items(component);
-        CollectionAssert.AreEqual(
-            BitThemeSwitcher.DefaultDesignSystems.Select(i => i.Text).ToArray(),
-            items.Select(i => i.TextContent.Trim()).ToArray());
+        Assert.AreSequenceEqual(
+            BitThemeSwitcher.DefaultDesignSystems.Select(i => i.Text).ToArray(), items.Select(i => i.TextContent.Trim()).ToArray());
 
         // The item's AriaLabel falls back to its Text.
-        CollectionAssert.AreEqual(
-            new[] { "Fluent", "Fluent 2", "Material", "Cupertino" },
-            items.Select(i => i.GetAttribute("aria-label")).ToArray());
+        Assert.AreSequenceEqual(
+            new[] { "Fluent", "Fluent 2", "Material", "Cupertino" }, items.Select(i => i.GetAttribute("aria-label")).ToArray());
 
-        Assert.AreEqual(1, items.Count(i => i.GetAttribute("aria-selected") == "true"));
+        Assert.ContainsSingle(i => i.GetAttribute("aria-selected") == "true", items);
         Assert.AreEqual("true", items[0].GetAttribute("aria-selected"), "the first item is the fallback until the theme is read back");
     }
 
@@ -170,7 +168,7 @@ public class BitThemeSwitcherBehaviorTests : BunitTestContext
         var buttons = component.FindAll(".bit-ths-csb");
 
         // The pair the stylesheet picks one of, so the loop below cannot pass by finding none.
-        Assert.AreEqual(2, buttons.Count);
+        Assert.HasCount(2, buttons);
 
         foreach (var button in buttons)
         {
@@ -484,8 +482,8 @@ public class BitThemeSwitcherBehaviorTests : BunitTestContext
         component.Find(".bit-ths-lgt").Click();
         component.Find(".bit-ths-drk").Click();
 
-        Assert.AreEqual(2, Context.JSInterop.Invocations["BitBlazorUI.Theme.toggleDarkLightWithin"].Count);
-        CollectionAssert.AreEqual(new[] { BitThemePresets.CupertinoDark, BitThemePresets.CupertinoDark }, changed);
+        Assert.HasCount(2, Context.JSInterop.Invocations["BitBlazorUI.Theme.toggleDarkLightWithin"]);
+        Assert.AreSequenceEqual(new[] { BitThemePresets.CupertinoDark, BitThemePresets.CupertinoDark }, changed);
     }
 
     #endregion
@@ -506,7 +504,7 @@ public class BitThemeSwitcherBehaviorTests : BunitTestContext
 
         var buttons = component.FindAll(".bit-ths-csb");
 
-        Assert.AreEqual(2, buttons.Count);
+        Assert.HasCount(2, buttons);
 
         foreach (var button in buttons)
         {
@@ -647,16 +645,16 @@ public class BitThemeSwitcherBehaviorTests : BunitTestContext
             });
         });
 
-        Assert.IsTrue(component.Find(".bit-ths-dds").GetAttribute("style")!.Contains("min-width:9rem"));
+        Assert.Contains("min-width:9rem", component.Find(".bit-ths-dds").GetAttribute("style")!);
 
         var light = component.Find(".bit-ths-lgt");
-        Assert.IsTrue(light.GetAttribute("style")!.Contains("outline-style:dotted"));
-        Assert.IsFalse(component.Find(".bit-ths-drk").GetAttribute("style")!.Contains("outline-style:dotted"));
+        Assert.Contains("outline-style:dotted", light.GetAttribute("style")!);
+        Assert.DoesNotContain("outline-style:dotted", component.Find(".bit-ths-drk").GetAttribute("style")!);
         Assert.IsFalse(component.Find(".bit-ths-drk").ClassList.Contains("custom-lgt"));
 
         var icons = component.FindAll(".bit-ths-csb i");
 
-        Assert.AreEqual(2, icons.Count);
+        Assert.HasCount(2, icons);
 
         foreach (var icon in icons)
         {
@@ -678,7 +676,7 @@ public class BitThemeSwitcherBehaviorTests : BunitTestContext
 
         var root = component.Find(".bit-ths");
         Assert.IsTrue(root.ClassList.Contains("header-switcher"));
-        Assert.IsTrue(root.GetAttribute("style")!.Contains("padding:0.5rem"));
+        Assert.Contains("padding:0.5rem", root.GetAttribute("style")!);
         Assert.AreEqual("theme-switcher", root.Id);
     }
 
@@ -692,7 +690,7 @@ public class BitThemeSwitcherBehaviorTests : BunitTestContext
             parameters.Add(p => p.Visibility, BitVisibility.Collapsed);
         });
 
-        Assert.IsTrue(component.Find(".bit-ths").GetAttribute("style")!.Contains("display:none"));
+        Assert.Contains("display:none", component.Find(".bit-ths").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -707,8 +705,8 @@ public class BitThemeSwitcherBehaviorTests : BunitTestContext
         });
 
         var style = component.Find(".bit-ths").GetAttribute("style")!;
-        StringAssert.Contains(style, "visibility:hidden");
-        StringAssert.Contains(style, "gap:2rem");
+        Assert.Contains("visibility:hidden", style);
+        Assert.Contains("gap:2rem", style);
     }
 
     #endregion
@@ -794,8 +792,8 @@ public class BitThemeSwitcherBehaviorTests : BunitTestContext
             [nameof(BitThemeSwitcher.NoDesignSystem)] = true,
         });
 
-        Assert.IsFalse(html.Contains("bit-ths-dds"));
-        StringAssert.Contains(html, "bit-ths-csb");
+        Assert.DoesNotContain("bit-ths-dds", html);
+        Assert.Contains("bit-ths-csb", html);
     }
 
     #endregion

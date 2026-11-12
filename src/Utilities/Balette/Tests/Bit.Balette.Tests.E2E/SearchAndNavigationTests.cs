@@ -38,7 +38,7 @@ public sealed class SearchAndNavigationTests : BaletteTest
         await ExpectFirstItemAsync(page, "navigation.settings");
         await ExpectActiveAsync(page, "navigation.settings");
         int filtered = await Items(page).CountAsync();
-        Assert.IsTrue(filtered < all, $"typing did not filter the list ({filtered} of {all} rows left)");
+        Assert.IsLessThan(all, filtered, $"typing did not filter the list ({filtered} of {all} rows left)");
 
         // The rows follow every keystroke, the ones that narrow and the ones that widen.
         await page.Keyboard.PressAsync("Backspace");
@@ -80,7 +80,7 @@ public sealed class SearchAndNavigationTests : BaletteTest
             }
             """);
         TestContext.WriteLine("segments (left, right, middle): " + string.Join(" | ", segments.Select(s => string.Join(", ", s.Select(v => v.ToString("0.#"))))));
-        Assert.AreEqual(4, segments.Length, "the title is not split into mark / text / mark / text");
+        Assert.HasCount(4, segments, "the title is not split into mark / text / mark / text");
         for (int i = 1; i < segments.Length; i++)
         {
             AssertInRange(segments[i][0] - segments[i - 1][1], -2.5, 1.5, $"the gap between segment {i} and segment {i + 1}");
@@ -116,7 +116,7 @@ public sealed class SearchAndNavigationTests : BaletteTest
         var page = await OpenAsync("/");
         await OpenPaletteAsync(page);
         var ids = await ItemIdsAsync(page);
-        Assert.IsTrue(ids.Length > 10, $"the empty query lists only {ids.Length} rows");
+        Assert.IsGreaterThan(10, ids.Length, $"the empty query lists only {ids.Length} rows");
 
         await ExpectActiveAsync(page, ids[0]);
         await page.Keyboard.PressAsync("ArrowDown");
@@ -152,7 +152,7 @@ public sealed class SearchAndNavigationTests : BaletteTest
         await page.Keyboard.PressAsync("End");
         await ExpectActiveAsync(page, ids[^1]);
         await WaitForActiveRowInViewAsync(page);
-        Assert.IsTrue(await page.EvaluateAsync<double>("() => document.querySelector('[data-balette=\"list\"]').scrollTop") > 0, "the list did not scroll to the last row");
+        Assert.IsGreaterThan(0, await page.EvaluateAsync<double>("() => document.querySelector('[data-balette=\"list\"]').scrollTop"), "the list did not scroll to the last row");
 
         await page.Keyboard.PressAsync("Home");
         await ExpectActiveAsync(page, ids[0]);

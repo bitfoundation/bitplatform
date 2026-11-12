@@ -58,7 +58,7 @@ public class BitTimeZonePickerValidationMessageTests : BunitTestContext
         });
 
         // Nothing is shown before the form has anything to say.
-        Assert.AreEqual(0, component.FindAll(".bit-tzp-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tzp-erm"));
         Assert.IsNull(component.Find("button.bit-tzp-fld").GetAttribute("aria-describedby"));
 
         component.Find("form").Submit();
@@ -82,7 +82,7 @@ public class BitTimeZonePickerValidationMessageTests : BunitTestContext
 
         component.WaitForAssertion(() =>
         {
-            Assert.AreEqual(0, component.FindAll(".bit-tzp-erm").Count);
+            Assert.IsEmpty(component.FindAll(".bit-tzp-erm"));
             Assert.IsNull(component.Find("button.bit-tzp-fld").GetAttribute("aria-describedby"));
         });
 
@@ -135,7 +135,7 @@ public class BitTimeZonePickerValidationMessageTests : BunitTestContext
 
         // The field is marked as before, and the message stays where the page puts it.
         Assert.AreEqual("true", component.Find("button.bit-tzp-fld").GetAttribute("aria-invalid"));
-        Assert.AreEqual(0, component.FindAll(".bit-tzp-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tzp-erm"));
         Assert.IsNull(component.Find("button.bit-tzp-fld").GetAttribute("aria-describedby"));
     }
 
@@ -154,7 +154,7 @@ public class BitTimeZonePickerValidationMessageTests : BunitTestContext
 
         component.InvokeAsync(() => editContext.Validate());
 
-        Assert.AreEqual(1, component.FindAll(".bit-tzp-erm").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-tzp-erm"));
         Assert.AreEqual("We have no office there yet.", component.Find(".bit-tzp-erm").TextContent.Trim());
 
         // Once the app takes its message back, the EditContext's takes the line.
@@ -185,7 +185,7 @@ public class BitTimeZonePickerValidationMessageTests : BunitTestContext
         component.InvokeAsync(() => editContext.Validate());
 
         Assert.AreEqual("No office", component.Find(".bit-tzp-erm b").TextContent);
-        Assert.IsFalse(component.Find(".bit-tzp-erm").TextContent.Contains(RequiredMessage));
+        Assert.DoesNotContain(RequiredMessage, component.Find(".bit-tzp-erm").TextContent);
     }
 
     [TestMethod]
@@ -201,7 +201,7 @@ public class BitTimeZonePickerValidationMessageTests : BunitTestContext
 
         // A submit validates every field at once; the field that takes the focus says what is wrong with it instead.
         Assert.AreEqual(RequiredMessage, component.Find(".bit-tzp-erm").TextContent.Trim());
-        Assert.IsFalse(component.Find(".bit-tzp-lvr").TextContent.Contains(RequiredMessage));
+        Assert.DoesNotContain(RequiredMessage, component.Find(".bit-tzp-lvr").TextContent);
     }
 
     [TestMethod]
@@ -223,7 +223,7 @@ public class BitTimeZonePickerValidationMessageTests : BunitTestContext
         // What the page pointed the field at stays first, then what is wrong with the value, then the description.
         var ids = component.Find("button.bit-tzp-fld").GetAttribute("aria-describedby")!.Split(' ');
 
-        Assert.AreEqual(3, ids.Length);
+        Assert.HasCount(3, ids);
         Assert.AreEqual("page-hint", ids[0]);
         Assert.AreEqual(component.Find(".bit-tzp-erm").Id, ids[1]);
         Assert.AreEqual(component.Find(".bit-tzp-des").Id, ids[2]);
@@ -244,11 +244,11 @@ public class BitTimeZonePickerValidationMessageTests : BunitTestContext
 
         component.InvokeAsync(() => editContext.Validate());
 
-        Assert.AreEqual(1, component.FindAll(".bit-tzp-erm").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-tzp-erm"));
 
         component.Render(parameters => parameters.Add(p => p.NoValidate, true));
 
-        Assert.AreEqual(0, component.FindAll(".bit-tzp-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tzp-erm"));
         Assert.IsNull(component.Find("button.bit-tzp-fld").GetAttribute("aria-describedby"));
     }
 
@@ -264,8 +264,8 @@ public class BitTimeZonePickerValidationMessageTests : BunitTestContext
         component.InvokeAsync(() => editContext.Validate());
 
         // The model has a message, but the picker has no member of it the message could belong to.
-        Assert.IsTrue(editContext.GetValidationMessages().Any());
-        Assert.AreEqual(0, component.FindAll(".bit-tzp-erm").Count);
+        Assert.IsNotEmpty(editContext.GetValidationMessages());
+        Assert.IsEmpty(component.FindAll(".bit-tzp-erm"));
     }
 
     [TestMethod]

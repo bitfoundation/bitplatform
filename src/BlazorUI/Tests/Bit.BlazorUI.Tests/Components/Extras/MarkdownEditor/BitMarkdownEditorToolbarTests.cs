@@ -131,7 +131,7 @@ public class BitMarkdownEditorToolbarTests : BunitTestContext
         Assert.AreEqual("item:2", shortcuts["ctrl+s"]);
         Assert.AreEqual("item:3", shortcuts["f2"]);
         Assert.AreEqual("item:5", shortcuts["alt+e"]);
-        Assert.AreEqual(5, shortcuts.Count);
+        Assert.HasCount(5, shortcuts);
     }
 
     [TestMethod]
@@ -177,7 +177,7 @@ public class BitMarkdownEditorToolbarTests : BunitTestContext
         Assert.AreEqual(1, owner.Handled);
 
         var menus = component.FindAll(".bit-mde-ddm");
-        Assert.AreEqual(2, menus.Count);
+        Assert.HasCount(2, menus);
         Assert.AreNotEqual(menus[0].Id, menus[1].Id);
         Assert.AreEqual(menus[1].Id, component.FindAll("[aria-haspopup=menu]")[1].GetAttribute("aria-controls"));
     }
@@ -224,11 +224,11 @@ public class BitMarkdownEditorToolbarTests : BunitTestContext
         var rows = component.FindAll("[role=dialog] dl > div");
         var text = component.Find("[role=dialog] dl").TextContent;
 
-        StringAssert.Contains(text, "Save draft");
-        StringAssert.Contains(text, "Ctrl+S");
-        StringAssert.Contains(text, "Section");
-        StringAssert.Contains(text, "Ctrl+Shift+H");
-        Assert.AreEqual(1, System.Text.RegularExpressions.Regex.Matches(text, "Bold").Count);
-        Assert.IsTrue(rows.Count > 2);
+        Assert.Contains("Save draft", text);
+        Assert.Contains("Ctrl+S", text);
+        Assert.Contains("Section", text);
+        Assert.Contains("Ctrl+Shift+H", text);
+        Assert.ContainsSingle(System.Text.RegularExpressions.Regex.Matches(text, "Bold"));
+        Assert.IsGreaterThan(2, rows.Count);
     }
 }

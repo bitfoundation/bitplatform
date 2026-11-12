@@ -148,7 +148,7 @@ public class TranslationTests : ComponentTestBase
         Assert.AreEqual(Translated.Get("fr", BormMessageKeys.SeverityError), cut.Find(".bit-borm-message--error").GetAttribute("data-severity"));
 
         // Another language rewrites the form's words at once, and a rule's verdict when it is next given.
-        cut.InvokeAsync(() => state.Language = "ja").Wait();
+        await cut.InvokeAsync(() => state.Language = "ja").WaitAsync(TestContext.CancellationToken);
         Assert.AreEqual(Translated.Get("ja", BormMessageKeys.Submit), cut.Find("button[type=submit]").TextContent.Trim());
         await cut.InvokeAsync(() => state.ValidateAsync().AsTask());
         Assert.AreEqual(Translated.Get("ja", BormMessageKeys.Required), cut.Find(".bit-borm-message--error").TextContent);
@@ -228,7 +228,7 @@ public class TranslationTests : ComponentTestBase
         var data = new BormDictionaryDataAccessor(new Dictionary<string, object?> { ["name"] = "Grace" });
         var validator = new BormValidator { Language = "ru" };
 
-        var messages = await validator.ValidateAsync(form, data, Translating());
+        var messages = await validator.ValidateAsync(form, data, Translating(), cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(Translated.Get("ru", BormMessageKeys.MaxLength, 3), messages.Single().Message);
     }
@@ -293,4 +293,6 @@ public class TranslationTests : ComponentTestBase
         Assert.Contains(h => h.TextContent == Translated.Get("it", BormMessageKeys.DesignerAdd), cut.FindAll(".bit-borm-designer__heading"));
         Assert.Contains(Translated.Get("it", BormMessageKeys.DesignerProperty("title")), cut.Markup, StringComparison.Ordinal);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

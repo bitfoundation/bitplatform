@@ -69,8 +69,8 @@ public class SnapshotTests
         int snapshotSize = snapshot.Encode().Length;
         int documentSize = doc.EncodeStateAsUpdate().Length;
 
-        Assert.IsTrue(
-            snapshotSize < 200,
+        Assert.IsLessThan(
+            200, snapshotSize,
             $"A snapshot of a {documentSize} byte document took {snapshotSize} bytes; it should name a " +
             "moment rather than copy the content.");
     }

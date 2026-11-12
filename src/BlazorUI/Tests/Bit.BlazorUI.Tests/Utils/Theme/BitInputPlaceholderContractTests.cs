@@ -53,8 +53,8 @@ public sealed class BitInputPlaceholderContractTests
         var mixin = SourceFiles.GetScssBlock(functions, "@mixin input-placeholder($color)");
         var declarations = SourceFiles.GetScssDeclarations(mixin, "&::placeholder");
 
-        StringAssert.Contains(declarations, "opacity: 1;", "Firefox dims a placeholder with an opacity of its own, which the mixin has to reset.");
-        StringAssert.Contains(declarations, "color: $color;");
+        Assert.Contains("opacity: 1;", declarations, "Firefox dims a placeholder with an opacity of its own, which the mixin has to reset.");
+        Assert.Contains("color: $color;", declarations);
     }
 
     [TestMethod]
@@ -65,8 +65,7 @@ public sealed class BitInputPlaceholderContractTests
             .Select(Path.GetFileName)
             .ToArray();
 
-        Assert.AreEqual(0, offenders.Length,
-            "A component stylesheet writes a ::placeholder rule of its own; paint it with @include input-placeholder(...) from " +
+        Assert.IsEmpty(offenders, "A component stylesheet writes a ::placeholder rule of its own; paint it with @include input-placeholder(...) from " +
             "functions.scss, which also resets the opacity Firefox dims it with: " + string.Join(", ", offenders));
     }
 
@@ -89,10 +88,9 @@ public sealed class BitInputPlaceholderContractTests
             offenders.Add(Path.GetFileName(markup));
         }
 
-        Assert.IsTrue(checkedCount > 10, $"Only {checkedCount} component files render a placeholder; the scan no longer finds the inputs.");
+        Assert.IsGreaterThan(10, checkedCount, $"Only {checkedCount} component files render a placeholder; the scan no longer finds the inputs.");
 
-        Assert.AreEqual(0, offenders.Count,
-            "A component renders an input with a placeholder that its stylesheet leaves to the browser's grey, which is not " +
+        Assert.IsEmpty(offenders, "A component renders an input with a placeholder that its stylesheet leaves to the browser's grey, which is not " +
             "derived from the theme and misses 4.5:1 on most surfaces; paint it with @include input-placeholder(...): " +
             string.Join(", ", offenders));
     }
@@ -133,8 +131,7 @@ public sealed class BitInputPlaceholderContractTests
             }
         }
 
-        Assert.AreEqual(0, offenders.Count,
-            "A placeholder is held to the 4.5:1 of text, which only the secondary foreground clears on every surface; " +
+        Assert.IsEmpty(offenders, "A placeholder is held to the 4.5:1 of text, which only the secondary foreground clears on every surface; " +
             "the tertiary one misses it on bg-ter: " + string.Join("; ", offenders));
     }
 
@@ -159,8 +156,7 @@ public sealed class BitInputPlaceholderContractTests
             }
         }
 
-        Assert.AreEqual(0, offenders.Count,
-            "A stylesheet paints a placeholder but never with its disabled color, so the hint of an empty disabled field " +
+        Assert.IsEmpty(offenders, "A stylesheet paints a placeholder but never with its disabled color, so the hint of an empty disabled field " +
             "stays at full contrast and reads as live; include input-placeholder(...) in the disabled state too: " +
             string.Join(", ", offenders));
     }

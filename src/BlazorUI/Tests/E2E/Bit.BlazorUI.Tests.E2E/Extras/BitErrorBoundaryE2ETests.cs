@@ -25,8 +25,8 @@ public class BitErrorBoundaryE2ETests : E2ETestBase
     {
         var html = await (await Page.APIRequest.GetAsync($"{BaseUrl}{Route}")).TextAsync();
 
-        StringAssert.Contains(html, "id=\"basic-content\"");
-        StringAssert.Contains(html, "id=\"basic-throw\"");
+        Assert.Contains("id=\"basic-content\"", html);
+        Assert.Contains("id=\"basic-throw\"", html);
         Assert.IsFalse(html.Contains("class=\"bit-erb", StringComparison.Ordinal), "A boundary that caught nothing rendered an error UI.");
 
         await OpenAsync(Route);
@@ -158,7 +158,7 @@ public class BitErrorBoundaryE2ETests : E2ETestBase
         if (IsChromium)
         {
             var clipboard = await Page.EvaluateAsync<string>("() => navigator.clipboard.readText()");
-            StringAssert.Contains(clipboard, "System.InvalidOperationException: Boom");
+            Assert.Contains("System.InvalidOperationException: Boom", clipboard);
         }
 
         // The message is up for a moment only.
@@ -489,7 +489,7 @@ public class BitErrorBoundaryE2ETests : E2ETestBase
         // The footer row reads right to left: its first button is the rightmost one.
         var first = await root.Locator(".bit-erb-ftr button").First.BoundingBoxAsync();
         var last = await root.Locator(".bit-erb-ftr button").Last.BoundingBoxAsync();
-        Assert.IsTrue(first!.X > last!.X, $"first button at {first.X}, last at {last.X}");
+        Assert.IsGreaterThan(last!.X, first!.X, $"first button at {first.X}, last at {last.X}");
     }
 
     [TestMethod]
@@ -505,7 +505,7 @@ public class BitErrorBoundaryE2ETests : E2ETestBase
 
         var first = await root.Locator(".bit-erb-ftr button").First.BoundingBoxAsync();
         var last = await root.Locator(".bit-erb-ftr button").Last.BoundingBoxAsync();
-        Assert.IsTrue(first!.X > last!.X, $"first button at {first.X}, last at {last.X}");
+        Assert.IsGreaterThan(last!.X, first!.X, $"first button at {first.X}, last at {last.X}");
     }
 
     [TestMethod]
@@ -551,23 +551,23 @@ public class BitErrorBoundaryE2ETests : E2ETestBase
         await Expect(Page.Locator("#erb-logged")).ToBeVisibleAsync();
 
         var errors = await GetServerErrorsAsync();
-        Assert.IsFalse(errors.Any(e => e.Contains("Boom", StringComparison.Ordinal)), string.Join(Environment.NewLine, errors));
+        Assert.DoesNotContain(e => e.Contains("Boom", StringComparison.Ordinal), errors, string.Join(Environment.NewLine, errors));
         Assert.IsFalse(await IsCircuitDeadAsync());
 
         if (IsWasm)
         {
-            Assert.AreEqual(1, ConsoleErrors.Count, string.Join(Environment.NewLine, ConsoleErrors));
-            StringAssert.Contains(ConsoleErrors[0], "Microsoft.AspNetCore.Components.Web.ErrorBoundary");
-            StringAssert.Contains(ConsoleErrors[0], "Boom 2");
+            Assert.ContainsSingle(ConsoleErrors, string.Join(Environment.NewLine, ConsoleErrors));
+            Assert.Contains("Microsoft.AspNetCore.Components.Web.ErrorBoundary", ConsoleErrors[0]);
+            Assert.Contains("Boom 2", ConsoleErrors[0]);
         }
         else
         {
-            Assert.AreEqual(0, ConsoleErrors.Count, string.Join(Environment.NewLine, ConsoleErrors));
+            Assert.IsEmpty(ConsoleErrors, string.Join(Environment.NewLine, ConsoleErrors));
 
             // The logged boundary's exception is a warning of the host; the NoLogging one's is nowhere.
             var logs = await GetServerWarningsAndErrorsAsync();
-            Assert.AreEqual(1, logs.Count(l => l.Contains("Boom 2", StringComparison.Ordinal)), string.Join(Environment.NewLine, logs));
-            Assert.IsFalse(logs.Any(l => l.Contains("Boom 1", StringComparison.Ordinal)), string.Join(Environment.NewLine, logs));
+            Assert.ContainsSingle(l => l.Contains("Boom 2", StringComparison.Ordinal), logs, string.Join(Environment.NewLine, logs));
+            Assert.DoesNotContain(l => l.Contains("Boom 1", StringComparison.Ordinal), logs, string.Join(Environment.NewLine, logs));
         }
     }
 

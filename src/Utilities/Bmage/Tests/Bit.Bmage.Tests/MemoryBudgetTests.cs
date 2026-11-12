@@ -125,7 +125,7 @@ public sealed class MemoryBudgetTests
             return encoded;
         }, $"{i}.png")).ToList();
 
-        var result = await processor.ProcessBatchAsync(items, ImagePipeline.Create().MaxSize(32, 32), new BatchOptions { MaxConcurrency = 3, ExportOptions = ImageExportOptions.Png });
+        var result = await processor.ProcessBatchAsync(items, ImagePipeline.Create().MaxSize(32, 32), new BatchOptions { MaxConcurrency = 3, ExportOptions = ImageExportOptions.Png }, TestContext.CancellationToken);
 
         Assert.AreEqual(12, result.SuccessCount);
         Assert.IsLessThanOrEqualTo(3, mostAtOnce, $"{mostAtOnce} files were being read at once with three workers.");
@@ -141,13 +141,13 @@ public sealed class MemoryBudgetTests
         var items = Enumerable.Range(0, 15).Select(i => new BatchItem(encoded, $"{i}.png"));
 
         var names = new List<string?>();
-        await foreach (var result in processor.ProcessBatchStreamAsync(items, ImagePipeline.Create().Grayscale(), new BatchOptions { MaxConcurrency = 4, ExportOptions = ImageExportOptions.Png }))
+        await foreach (var result in processor.ProcessBatchStreamAsync(items, ImagePipeline.Create().Grayscale(), new BatchOptions { MaxConcurrency = 4, ExportOptions = ImageExportOptions.Png }, TestContext.CancellationToken))
         {
             Assert.IsTrue(result.IsSuccess, result.Error?.Message);
             names.Add(result.FileName);
         }
 
-        CollectionAssert.AreEquivalent(Enumerable.Range(0, 15).Select(i => $"{i}.png").ToList(), names);
+        Assert.AreSequenceEqual(Enumerable.Range(0, 15).Select(i => $"{i}.png").ToList(), names, Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -159,7 +159,7 @@ public sealed class MemoryBudgetTests
 
         var count = 0;
         await foreach (var result in processor.ProcessBatchStreamAsync(Produce(), ImagePipeline.Create().Invert(),
-            new BatchOptions { ExportOptions = ImageExportOptions.Png, Progress = new Inline<BatchProgress>(p => totals.Add(p.Total)) }))
+            new BatchOptions { ExportOptions = ImageExportOptions.Png, Progress = new Inline<BatchProgress>(p => totals.Add(p.Total)) }, TestContext.CancellationToken))
         {
             Assert.IsTrue(result.IsSuccess);
             count++;
@@ -186,7 +186,7 @@ public sealed class MemoryBudgetTests
 
         await Assert.ThrowsExactlyAsync<InvalidDataException>(async () =>
         {
-            await foreach (var _ in processor.ProcessBatchStreamAsync(Broken(), ImagePipeline.Create())) { }
+            await foreach (var _ in processor.ProcessBatchStreamAsync(Broken(), ImagePipeline.Create(), cancellationToken: TestContext.CancellationToken)) { }
         });
 
         async IAsyncEnumerable<BatchItem> Broken()
@@ -209,7 +209,7 @@ public sealed class MemoryBudgetTests
             return new ValueTask<ReadOnlyMemory<byte>>(encoded);
         }));
 
-        await foreach (var _ in processor.ProcessBatchStreamAsync(items, ImagePipeline.Create(), new BatchOptions { MaxConcurrency = 2 }))
+        await foreach (var _ in processor.ProcessBatchStreamAsync(items, ImagePipeline.Create(), new BatchOptions { MaxConcurrency = 2 }, TestContext.CancellationToken))
             break;
 
         Assert.IsLessThan(10, Volatile.Read(ref loaded), "Breaking out of the stream left the batch running.");
@@ -231,7 +231,7 @@ public sealed class MemoryBudgetTests
             MaxConcurrency = 8,
             MaxMemoryBytes = perImage * 2 + perImage / 2,
             ExportOptions = ImageExportOptions.Png,
-        });
+        }, TestContext.CancellationToken);
 
         Assert.AreEqual(12, result.SuccessCount);
         Assert.IsLessThanOrEqualTo(2, tracker.MostAtOnce, $"{tracker.MostAtOnce} images ran at once in a budget for two.");
@@ -244,7 +244,7 @@ public sealed class MemoryBudgetTests
         var encoded = await Png(300, 300);
         var items = Enumerable.Range(0, 3).Select(i => new BatchItem(encoded, $"{i}")).ToList();
 
-        var result = await processor.ProcessBatchAsync(items, ImagePipeline.Create(), new BatchOptions { MaxMemoryBytes = 1, MaxConcurrency = 3 });
+        var result = await processor.ProcessBatchAsync(items, ImagePipeline.Create(), new BatchOptions { MaxMemoryBytes = 1, MaxConcurrency = 3 }, TestContext.CancellationToken);
 
         Assert.AreEqual(3, result.SuccessCount);
     }
@@ -316,4 +316,6 @@ public sealed class MemoryBudgetTests
             }
         }
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

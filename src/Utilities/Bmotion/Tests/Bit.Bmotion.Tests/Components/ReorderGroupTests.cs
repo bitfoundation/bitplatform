@@ -58,16 +58,16 @@ public class ReorderGroupTests
             .Add(p => p.Items, new List<string> { "a", "b", "c" })
             .Add(p => p.ChildContent, Row));
 
-        CollectionAssert.AreEqual(new[] { "a", "b", "c" }, RowTexts(cut));
+        Assert.AreSequenceEqual(new[] { "a", "b", "c" }, RowTexts(cut));
         var ids = RowIds(cut);
-        Assert.AreEqual(3, ids.Distinct().Count(), "each row gets its own engine id");
+        Assert.HasCount(3, ids.Distinct(), "each row gets its own engine id");
         foreach (var id in ids)
         {
             var flags = (IReadOnlyDictionary<string, object?>)ctx.Interop.Calls
                 .Last(c => c.Method == "attachEventListeners" && (string?)c.Args[0] == id).Args[1]!;
-            Assert.AreEqual(true, flags["drag"]);
+            Assert.IsTrue((bool?)flags["drag"]);
             Assert.AreEqual("y", flags["dragAxis"], "the default axis is vertical");
-            Assert.AreEqual(true, flags["dragAutoScroll"], "a row carried to the edge of its scroller scrolls it");
+            Assert.IsTrue((bool?)flags["dragAutoScroll"], "a row carried to the edge of its scroller scrolls it");
         }
     }
 
@@ -106,9 +106,9 @@ public class ReorderGroupTests
         // The release settles the row into its new slot on the frame loop; the commit follows it.
         await DragRow(ctx, cut, ids[0], 60);
 
-        cut.WaitForAssertion(() => CollectionAssert.AreEqual(new[] { "b", "a", "c" }, committed));
+        cut.WaitForAssertion(() => Assert.AreSequenceEqual(new[] { "b", "a", "c" }, committed));
         Assert.AreEqual(1, reorders);
-        CollectionAssert.AreEqual(new[] { "b", "a", "c" }, RowTexts(cut), "the rows re-render in the committed order");
+        Assert.AreSequenceEqual(new[] { "b", "a", "c" }, RowTexts(cut), "the rows re-render in the committed order");
     }
 
     [TestMethod]
@@ -127,7 +127,7 @@ public class ReorderGroupTests
         await cut.InvokeAsync(() => { });
 
         Assert.IsFalse(changed);
-        CollectionAssert.AreEqual(new[] { "a", "b", "c" }, RowTexts(cut));
+        Assert.AreSequenceEqual(new[] { "a", "b", "c" }, RowTexts(cut));
     }
 
     [TestMethod]
@@ -144,7 +144,7 @@ public class ReorderGroupTests
         // "c" (centre 125) dragged 110px up: past b's (75) and a's (25) slot centres.
         await DragRow(ctx, cut, ids[2], -110);
 
-        cut.WaitForAssertion(() => CollectionAssert.AreEqual(new[] { "c", "a", "b" }, items));
+        cut.WaitForAssertion(() => Assert.AreSequenceEqual(new[] { "c", "a", "b" }, items));
     }
 
     [TestMethod]
@@ -181,7 +181,7 @@ public class ReorderGroupTests
             .Add(p => p.ChildContent, Row));
 
         var attached = ctx.Interop.ArgsOf("attachReorderKeys");
-        CollectionAssert.AreEquivalent(RowIds(cut), attached.Select(a => (string)a[0]!).ToArray());
+        Assert.AreSequenceEqual(RowIds(cut), attached.Select(a => (string)a[0]!).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         Assert.IsTrue(attached.All(a => (string)a[1]! == "y"), "vertical: up and down");
     }
 
@@ -217,16 +217,16 @@ public class ReorderGroupTests
         Assert.IsNull(committed, "nothing is committed while the item is held");
         await Settle(ctx, cut.InvokeAsync(() => keys.OnReorderDrop(ids[0])));
 
-        cut.WaitForAssertion(() => CollectionAssert.AreEqual(new[] { "b", "c", "a" }, committed));
-        CollectionAssert.AreEqual(new[] { "b", "c", "a" }, RowTexts(cut));
-        CollectionAssert.AreEqual(new[]
+        cut.WaitForAssertion(() => Assert.AreSequenceEqual(new[] { "b", "c", "a" }, committed));
+        Assert.AreSequenceEqual(new[] { "b", "c", "a" }, RowTexts(cut));
+        Assert.AreSequenceEqual(new[]
         {
             "Picked up, position 1 of 3. Arrow keys move it, Space drops it, Escape cancels.",
             "Position 2 of 3.",
             "Position 3 of 3.",
             "Dropped at position 3 of 3.",
         }, Announced(ctx));
-        cut.WaitForAssertion(() => Assert.AreEqual(ids[0], ctx.Interop.ArgsOf("focusElement").LastOrDefault()?[0], "focus stays on the moved item"));
+        cut.WaitForAssertion(() => Assert.AreEqual(ids[0], ctx.Interop.ArgsOf("focusElement").LastOrDefault()[0], "focus stays on the moved item"));
     }
 
     [TestMethod]
@@ -247,7 +247,7 @@ public class ReorderGroupTests
         await Settle(ctx, cut.InvokeAsync(() => keys.OnReorderCancel(ids[1])));
 
         Assert.IsFalse(changed);
-        CollectionAssert.AreEqual(new[] { "a", "b", "c" }, RowTexts(cut));
+        Assert.AreSequenceEqual(new[] { "a", "b", "c" }, RowTexts(cut));
         Assert.AreEqual("Cancelled, back at position 2 of 3.", Announced(ctx)[^1]);
         // Picking up again works: the cancelled session is over.
         Assert.IsTrue(await cut.InvokeAsync(() => keys.OnReorderPickUp(ids[1])));
@@ -286,13 +286,13 @@ public class ReorderGroupTests
         var dragStart = cut.InvokeAsync(row.OnPointerDown_Drag);
 
         measured.SetResult();
-        Assert.IsTrue(await pickUp.WaitAsync(TimeSpan.FromSeconds(10)));
-        await dragStart.WaitAsync(TimeSpan.FromSeconds(10));
+        Assert.IsTrue(await pickUp.WaitAsync(TimeSpan.FromSeconds(10), TestContext.CancellationToken));
+        await dragStart.WaitAsync(TimeSpan.FromSeconds(10), TestContext.CancellationToken);
         await cut.InvokeAsync(() => row.SetDragPosition(0, 60));
         await cut.InvokeAsync(row.OnDragMove);
         await Settle(ctx, cut.InvokeAsync(() => row.OnPointerUp_Drag(0, 0)));
 
-        cut.WaitForAssertion(() => CollectionAssert.AreEqual(new[] { "b", "a", "c" }, committed));
+        cut.WaitForAssertion(() => Assert.AreSequenceEqual(new[] { "b", "a", "c" }, committed));
         Assert.AreEqual("Cancelled, back at position 3 of 3.", Announced(ctx)[^1], "the held item went back first");
     }
 
@@ -328,7 +328,7 @@ public class ReorderGroupTests
 
         cut.Render(ps => ps.Add(p => p.Keyboard, false));
 
-        cut.WaitForAssertion(() => CollectionAssert.AreEquivalent(ids, ctx.Interop.ArgsOf("detachReorderKeys").Select(a => (string)a[0]!).ToArray()));
+        cut.WaitForAssertion(() => Assert.AreSequenceEqual(ids, ctx.Interop.ArgsOf("detachReorderKeys").Select(a => (string)a[0]!).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder));
         Assert.AreEqual("Cancelled, back at position 1 of 3.", Announced(ctx)[^1]);
 
         cut.Render(ps => ps.Add(p => p.Keyboard, true));
@@ -349,7 +349,7 @@ public class ReorderGroupTests
         await cut.InvokeAsync(() => KeysOf(ctx, ids[0]).OnReorderPickUp(ids[0]));
         await cut.InvokeAsync(() => KeysOf(ctx, ids[0]).OnReorderMove(ids[0], 1));
 
-        CollectionAssert.AreEqual(new[] { "a: PickedUp 1/2", "a: Moved 2/2" }, Announced(ctx));
+        Assert.AreSequenceEqual(new[] { "a: PickedUp 1/2", "a: Moved 2/2" }, Announced(ctx));
     }
 
     // ── Grids ─────────────────────────────────────────────────────────────────
@@ -385,7 +385,7 @@ public class ReorderGroupTests
         var release = cut.InvokeAsync(() => row.OnPointerUp_Drag(0, 0));
         await Settle(ctx, release);
 
-        cut.WaitForAssertion(() => CollectionAssert.AreEqual(new[] { "2", "3", "4", "5", "1", "6" }, committed));
+        cut.WaitForAssertion(() => Assert.AreSequenceEqual(new[] { "2", "3", "4", "5", "1", "6" }, committed));
     }
 
     [TestMethod]
@@ -407,6 +407,8 @@ public class ReorderGroupTests
         await cut.InvokeAsync(() => keys.OnReorderMoveRow(ids[5], -1));
         await Settle(ctx, cut.InvokeAsync(() => keys.OnReorderDrop(ids[5])));
 
-        cut.WaitForAssertion(() => CollectionAssert.AreEqual(new[] { "1", "2", "6", "3", "4", "5" }, committed));
+        cut.WaitForAssertion(() => Assert.AreSequenceEqual(new[] { "1", "2", "6", "3", "4", "5" }, committed));
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

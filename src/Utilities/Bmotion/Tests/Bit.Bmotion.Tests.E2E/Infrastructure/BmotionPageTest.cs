@@ -41,13 +41,13 @@ public abstract class BmotionPageTest
 
     protected IPage Page { get; private set; } = default!;
 
-    protected WebHarnessHost Host { get; private set; } = default!;
+    private protected WebHarnessHost Host { get; private set; } = default!;
 
     /// <summary>The harness route a fixture drives, e.g. "basics".</summary>
     protected abstract string Route { get; }
 
     /// <summary>The library options the fixture's host runs with.</summary>
-    protected virtual HarnessProfile Profile => HarnessProfile.Default;
+    private protected virtual HarnessProfile Profile => HarnessProfile.Default;
 
     /// <summary>A render mode for this fixture's pages other than the run's (<c>?mode=</c>), e.g. "ssr".</summary>
     protected virtual string? RenderMode => null;
@@ -144,11 +144,11 @@ public abstract class BmotionPageTest
         {
             await Assertions.Expect(Event(name)).ToHaveCountAsync(count, new() { Timeout = timeout });
         }
-        catch (PlaywrightException)
+        catch (PlaywrightException exception)
         {
             var actual = await Event(name).CountAsync();
-            throw new AssertFailedException($"Expected '{name}' {count} time(s) within {timeout} ms on {RunHost}, saw it {actual} time(s). " +
-                                            $"The log: [{string.Join(", ", await LoggedAsync())}]");
+            throw new TimeoutException($"Expected '{name}' {count} time(s) within {timeout} ms on {RunHost}, saw it {actual} time(s). " +
+                                       $"The log: [{string.Join(", ", await LoggedAsync())}]", exception);
         }
     }
 
@@ -161,7 +161,7 @@ public abstract class BmotionPageTest
     // ── Motion ───────────────────────────────────────────────────────────────────
 
     /// <summary>What the element matching <paramref name="selector"/> looks like right now.</summary>
-    protected async Task<MotionState> ProbeAsync(string selector)
+    private protected async Task<MotionState> ProbeAsync(string selector)
     {
         var json = await Page.EvaluateAsync<JsonElement>($"sel => ({MotionState.ProbeFunction})(sel)", selector);
         return MotionState.From(json) ?? throw new AssertFailedException($"No element matches '{selector}'.");
@@ -179,15 +179,15 @@ public abstract class BmotionPageTest
                 $"sel => {{ const s = ({MotionState.ProbeFunction})(sel); return !!s && ({predicate})(s); }}",
                 selector, new() { Timeout = timeout, PollingInterval = null });
         }
-        catch (TimeoutException)
+        catch (TimeoutException exception)
         {
             var last = await Page.EvaluateAsync<JsonElement>($"sel => ({MotionState.ProbeFunction})(sel)", selector);
-            throw new AssertFailedException($"'{selector}' never satisfied `{predicate}` within {timeout} ms on {RunHost}. Last state: {MotionState.From(last)?.ToString() ?? "(no element)"}");
+            throw new TimeoutException($"'{selector}' never satisfied `{predicate}` within {timeout} ms on {RunHost}. Last state: {MotionState.From(last)?.ToString() ?? "(no element)"}", exception);
         }
     }
 
     /// <summary>Samples the element once per animation frame for <paramref name="milliseconds"/>, each sample stamped with its time.</summary>
-    protected async Task<IReadOnlyList<MotionState>> SampleAsync(string selector, int milliseconds)
+    private protected async Task<IReadOnlyList<MotionState>> SampleAsync(string selector, int milliseconds)
     {
         var samples = await Page.EvaluateAsync<JsonElement>($$"""
             async ([sel, ms]) => {
@@ -215,7 +215,7 @@ public abstract class BmotionPageTest
     /// meaningful against the former. A frame sampled twice is kept once. Unlike <see cref="SampleAsync"/>, no round
     /// trip can starve it, so nothing between two frames is missed.
     /// </summary>
-    protected async Task<IReadOnlyList<MotionState>> SampleOnTheTimelineAsync(string selector, int milliseconds)
+    private protected async Task<IReadOnlyList<MotionState>> SampleOnTheTimelineAsync(string selector, int milliseconds)
     {
         var json = await Page.EvaluateAsync<System.Text.Json.JsonElement>("""
             async ([sel, ms]) => {
@@ -243,7 +243,7 @@ public abstract class BmotionPageTest
     /// Waits until the element stops moving - the same state on two probes <paramref name="quietMs"/> apart - and
     /// returns that state.
     /// </summary>
-    protected async Task<MotionState> WaitForRestAsync(string selector, int quietMs = 250, int timeout = DefaultTimeout)
+    private protected async Task<MotionState> WaitForRestAsync(string selector, int quietMs = 250, int timeout = DefaultTimeout)
     {
         var deadline = DateTime.UtcNow.AddMilliseconds(timeout);
         var previous = await ProbeAsync(selector);
@@ -265,7 +265,7 @@ public abstract class BmotionPageTest
     /// Whether x jumped from 0 to <paramref name="target"/> instead of animating: every frame at one end or the
     /// other - however long the change took to land - and the last at the target.
     /// </summary>
-    protected static bool Snapped(IReadOnlyList<MotionState> samples, double target)
+    private protected static bool Snapped(IReadOnlyList<MotionState> samples, double target)
         => samples.Count > 0
            && samples.All(s => Math.Abs(s.X) < 0.5 || Math.Abs(s.X - target) < 0.5)
            && Math.Abs(samples[^1].X - target) < 0.5;

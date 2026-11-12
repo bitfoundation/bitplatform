@@ -6,7 +6,7 @@ namespace Boilerplate.Tests.E2E.Infrastructure;
 /// <see cref="DeployedApiClientProvider"/>'s live MCP session and database connections are closed.
 /// </summary>
 [TestClass]
-public partial class TestsAssemblyCleanup
+public static partial class TestsAssemblyCleanup
 {
     /// <summary>MSTest awaits a Task-returning cleanup, so nothing here blocks on a disposal.</summary>
     [AssemblyCleanup]

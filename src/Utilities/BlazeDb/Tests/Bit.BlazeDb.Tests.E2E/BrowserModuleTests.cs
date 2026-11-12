@@ -53,7 +53,7 @@ public class BrowserModuleTests : BlazeDbTest
             }
             """);
 
-        CollectionAssert.AreEqual(new[] { "null", "first", "abcd", "null", "first", "true" }, result);
+        Assert.AreSequenceEqual(new[] { "null", "first", "abcd", "null", "first", "true" }, result);
     }
 
     [TestMethod]
@@ -86,7 +86,7 @@ public class BrowserModuleTests : BlazeDbTest
             }
             """);
 
-        CollectionAssert.AreEqual(new[] { "null", "second", "abcd", "null", "true", "true" }, result);
+        Assert.AreSequenceEqual(new[] { "null", "second", "abcd", "null", "true", "true" }, result);
     }
 
     [TestMethod]
@@ -145,7 +145,7 @@ public class BrowserModuleTests : BlazeDbTest
             """);
 
         // A 128-bit tag on top of the plaintext; a flipped bit or another file's associated data fails authentication.
-        CollectionAssert.AreEqual(new[] { "secret row", "16", "OperationError", "OperationError" }, result);
+        Assert.AreSequenceEqual(new[] { "secret row", "16", "OperationError", "OperationError" }, result);
     }
 
     [TestMethod]
@@ -178,8 +178,8 @@ public class BrowserModuleTests : BlazeDbTest
 
         await replica.WaitForFunctionAsync("() => window.__heard.length > 0", null, new PageWaitForFunctionOptions { Timeout = 10_000 });
 
-        CollectionAssert.AreEqual(new[] { 7 }, await replica.EvaluateAsync<int[]>("() => window.__heard"));
-        CollectionAssert.AreEqual(Array.Empty<int>(), await writer.EvaluateAsync<int[]>("() => window.__heard"));
+        Assert.AreSequenceEqual(new[] { 7 }, await replica.EvaluateAsync<int[]>("() => window.__heard"));
+        Assert.AreSequenceEqual(Array.Empty<int>(), await writer.EvaluateAsync<int[]>("() => window.__heard"));
         Assert.IsTrue(await writer.EvaluateAsync<bool>("async () => (await import('./_content/Bit.BlazeDb/bit-blazedb-tabs.js')).isSupported()"));
     }
 }

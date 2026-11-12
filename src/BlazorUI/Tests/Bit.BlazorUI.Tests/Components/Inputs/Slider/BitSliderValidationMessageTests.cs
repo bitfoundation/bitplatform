@@ -32,7 +32,7 @@ public class BitSliderValidationMessageTests : BunitTestContext
         var component = RenderComponent<BitSliderValidationTest>(parameters => parameters.Add(p => p.ShowValidationMessage, true));
 
         // Nothing is shown before the form has anything to say.
-        Assert.AreEqual(0, component.FindAll(".bit-sld-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-sld-erm"));
         Assert.IsNull(component.Find(".bit-sld-inp").GetAttribute("aria-describedby"));
 
         component.Find("form").Submit();
@@ -50,7 +50,7 @@ public class BitSliderValidationMessageTests : BunitTestContext
         component.Find(".bit-sld-inp").Input("5");
 
         Assert.AreEqual(5, component.Instance.TestModel.Days);
-        Assert.AreEqual(0, component.FindAll(".bit-sld-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-sld-erm"));
         Assert.IsNull(component.Find(".bit-sld-inp").GetAttribute("aria-describedby"));
 
         component.Find("form").Submit();
@@ -68,7 +68,7 @@ public class BitSliderValidationMessageTests : BunitTestContext
         // The pair is one field, so it has one line, and both ends of it are described by that line.
         var error = component.Find(".bit-sld-erm");
 
-        Assert.AreEqual(1, component.FindAll(".bit-sld-erm").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-sld-erm"));
         Assert.AreEqual(BandMessage, error.TextContent.Trim());
         Assert.AreEqual(error.Id, component.Find(".bit-sld-inp-lwr").GetAttribute("aria-describedby"));
         Assert.AreEqual(error.Id, component.Find(".bit-sld-inp-upr").GetAttribute("aria-describedby"));
@@ -76,7 +76,7 @@ public class BitSliderValidationMessageTests : BunitTestContext
         // Every move of a thumb is reported, so the line goes as soon as the pair is wide enough.
         component.Find(".bit-sld-inp-upr").Input("8");
 
-        Assert.AreEqual(0, component.FindAll(".bit-sld-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-sld-erm"));
         Assert.IsNull(component.Find(".bit-sld-inp-lwr").GetAttribute("aria-describedby"));
         Assert.IsNull(component.Find(".bit-sld-inp-upr").GetAttribute("aria-describedby"));
 
@@ -129,7 +129,7 @@ public class BitSliderValidationMessageTests : BunitTestContext
 
         // The slider is marked as before, and the message stays where the page puts it.
         Assert.AreEqual("true", component.Find(".bit-sld-inp").GetAttribute("aria-invalid"));
-        Assert.AreEqual(0, component.FindAll(".bit-sld-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-sld-erm"));
         Assert.IsNull(component.Find(".bit-sld-inp").GetAttribute("aria-describedby"));
     }
 
@@ -148,7 +148,7 @@ public class BitSliderValidationMessageTests : BunitTestContext
 
         component.InvokeAsync(() => editContext.Validate());
 
-        Assert.AreEqual(1, component.FindAll(".bit-sld-erm").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-sld-erm"));
         Assert.AreEqual("Your plan allows three days at most.", component.Find(".bit-sld-erm").TextContent.Trim());
 
         // Once the app takes its message back, the EditContext's takes the line.
@@ -183,7 +183,7 @@ public class BitSliderValidationMessageTests : BunitTestContext
         var labelId = component.Find(".bit-sld-inp").GetAttribute("aria-describedby");
 
         Assert.AreEqual("Unavailable", component.Find(".bit-sld-erm b").TextContent);
-        Assert.IsFalse(component.Find(".bit-sld-erm").TextContent.Contains(RangeMessage));
+        Assert.DoesNotContain(RangeMessage, component.Find(".bit-sld-erm").TextContent);
         Assert.AreEqual("The schedule service is unavailable.", component.Find($"#{labelId}").TextContent);
     }
 
@@ -211,7 +211,7 @@ public class BitSliderValidationMessageTests : BunitTestContext
 
         // The messages do not wire a slider for a live region of its own either.
         Assert.AreEqual(RangeMessage, plain.Find(".bit-sld-erm").TextContent.Trim());
-        Assert.AreEqual(0, plain.FindAll("[role=status]").Count);
+        Assert.IsEmpty(plain.FindAll("[role=status]"));
     }
 
     [TestMethod]
@@ -233,7 +233,7 @@ public class BitSliderValidationMessageTests : BunitTestContext
         // What the page pointed the thumb at stays first, then what is wrong with the value, then the description.
         var ids = component.Find(".bit-sld-inp").GetAttribute("aria-describedby")!.Split(' ');
 
-        Assert.AreEqual(3, ids.Length);
+        Assert.HasCount(3, ids);
         Assert.AreEqual("page-hint", ids[0]);
         Assert.AreEqual(component.Find(".bit-sld-erm").Id, ids[1]);
         Assert.AreEqual("Days you work from the office.", component.Find($"#{ids[2]}").TextContent);
@@ -292,11 +292,11 @@ public class BitSliderValidationMessageTests : BunitTestContext
 
         component.InvokeAsync(() => editContext.Validate());
 
-        Assert.AreEqual(1, component.FindAll(".bit-sld-erm").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-sld-erm"));
 
         component.Render(parameters => parameters.Add(p => p.NoValidate, true));
 
-        Assert.AreEqual(0, component.FindAll(".bit-sld-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-sld-erm"));
         Assert.IsNull(component.Find(".bit-sld-inp").GetAttribute("aria-describedby"));
     }
 
@@ -312,8 +312,8 @@ public class BitSliderValidationMessageTests : BunitTestContext
         component.InvokeAsync(() => editContext.Validate());
 
         // The model has a message, but the slider has no member of it the message could belong to.
-        Assert.IsTrue(editContext.GetValidationMessages().Any());
-        Assert.AreEqual(0, component.FindAll(".bit-sld-erm").Count);
+        Assert.IsNotEmpty(editContext.GetValidationMessages());
+        Assert.IsEmpty(component.FindAll(".bit-sld-erm"));
     }
 
     [TestMethod]
@@ -338,8 +338,8 @@ public class BitSliderValidationMessageTests : BunitTestContext
         component.InvokeAsync(() => editContext.Validate());
 
         // The two ends are two properties rather than one field, so the band's message belongs to neither of them.
-        Assert.IsTrue(editContext.GetValidationMessages().Any());
-        Assert.AreEqual(0, component.FindAll(".bit-sld-erm").Count);
+        Assert.IsNotEmpty(editContext.GetValidationMessages());
+        Assert.IsEmpty(component.FindAll(".bit-sld-erm"));
     }
 
     [TestMethod]

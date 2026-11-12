@@ -351,7 +351,8 @@ public class BitIconInfoTests
         var result = BitIconInfo.From(icon, "Add");
 
         Assert.AreSame(icon, result);
-        Assert.AreEqual("bi bi-house", result?.GetCssClasses());
+        var actualValue = result?.GetCssClasses();
+        Assert.AreEqual("bi bi-house", actualValue);
     }
 
     // Null BaseClass and Prefix Tests
@@ -512,7 +513,7 @@ public class BitIconInfoTests
         Assert.AreNotEqual(BitIconInfo.Bit("Add"), BitIconInfo.Bit("Remove"));
         Assert.AreNotEqual(BitIconInfo.Bit("Add"), BitIconInfo.Bi("add"));
         Assert.AreNotEqual(BitIconInfo.Ms("home"), BitIconInfo.Ms("house"));
-        Assert.AreNotEqual<BitIconInfo?>(null, BitIconInfo.Bit("Add"));
+        Assert.IsNotNull(BitIconInfo.Bit("Add"));
     }
 
     [TestMethod]

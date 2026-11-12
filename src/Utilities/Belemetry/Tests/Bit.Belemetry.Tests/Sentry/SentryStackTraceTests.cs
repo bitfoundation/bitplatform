@@ -43,7 +43,7 @@ public class SentryStackTraceTests
     {
         var actual = frames.Select(Row).ToList();
         Assert.HasCount(expected.Length, actual, string.Join(" | ", actual.Select(r => string.Join(", ", r))));
-        for (var i = 0; i < expected.Length; i++) CollectionAssert.AreEqual(expected[i], actual[i], $"frame {i}: {string.Join(", ", actual[i])}");
+        for (var i = 0; i < expected.Length; i++) Assert.AreSequenceEqual(expected[i], actual[i], $"frame {i}: {string.Join(", ", actual[i])}");
     }
 
     [TestMethod]
@@ -171,9 +171,8 @@ public class SentryStackTraceTests
 
         Assert.AreEqual("System.InvalidOperationException", chain[0].Type);
         Assert.AreEqual("outer failed", chain[0].Message);
-        CollectionAssert.AreEqual(
-            new[] { "System.Threading.Tasks.Task.Run", "Shop.Orders.<>c.<Start>b__4_0", "Shop.Orders..ctor", "Shop.Orders.Load", "Shop.Orders.RunAsync", "Shop.Orders.Outer" },
-            chain[0].Frames.Select(f => f.Module + "." + f.Function).ToArray());
+        Assert.AreSequenceEqual(
+            new[] { "System.Threading.Tasks.Task.Run", "Shop.Orders.<>c.<Start>b__4_0", "Shop.Orders..ctor", "Shop.Orders.Load", "Shop.Orders.RunAsync", "Shop.Orders.Outer" }, chain[0].Frames.Select(f => f.Module + "." + f.Function).ToArray());
         Assert.IsFalse(chain[0].Frames[0].InApp, "Framework code.");
         Assert.IsTrue(chain[0].Frames[1].InApp);
         var outer = chain[0].Frames[^1];
@@ -183,7 +182,7 @@ public class SentryStackTraceTests
 
         Assert.AreEqual("System.ArgumentException", chain[1].Type);
         Assert.AreEqual("inner failed", chain[1].Message);
-        CollectionAssert.AreEqual(new[] { "Outer", "Inner" }, chain[1].Frames.Select(f => f.Function).ToArray());
+        Assert.AreSequenceEqual(new[] { "Outer", "Inner" }, chain[1].Frames.Select(f => f.Function).ToArray());
         Assert.AreEqual("Orders.cs", chain[1].Frames[0].FileName, "A Windows path too.");
         Assert.AreEqual(12, chain[1].Frames[1].Line);
     }
@@ -212,9 +211,9 @@ public class SentryStackTraceTests
         var chain = SentryStackTrace.ParseDotnet(text);
         Assert.HasCount(2, chain);
         Assert.AreEqual("System.AggregateException", chain[0].Type);
-        CollectionAssert.AreEqual(new[] { "Outer" }, chain[0].Frames.Select(f => f.Function).ToArray());
+        Assert.AreSequenceEqual(new[] { "Outer" }, chain[0].Frames.Select(f => f.Function).ToArray());
         Assert.AreEqual("a", chain[1].Message);
-        CollectionAssert.AreEqual(new[] { "A" }, chain[1].Frames.Select(f => f.Function).ToArray());
+        Assert.AreSequenceEqual(new[] { "A" }, chain[1].Frames.Select(f => f.Function).ToArray());
     }
 
     [TestMethod]
@@ -249,9 +248,9 @@ public class SentryStackTraceTests
         var chain = SentryStackTrace.ParseDotnet(text);
         Assert.HasCount(2, chain);
         Assert.AreEqual("Validation failed:\nat least one item is required", chain[0].Message!.ReplaceLineEndings("\n"));
-        CollectionAssert.AreEqual(new[] { "Save" }, chain[0].Frames.Select(f => f.Function).ToArray());
+        Assert.AreSequenceEqual(new[] { "Save" }, chain[0].Frames.Select(f => f.Function).ToArray());
         Assert.AreEqual("empty", chain[1].Message);
-        CollectionAssert.AreEqual(new[] { "Check" }, chain[1].Frames.Select(f => f.Function).ToArray());
+        Assert.AreSequenceEqual(new[] { "Check" }, chain[1].Frames.Select(f => f.Function).ToArray());
 
         // A frame without the method's metadata (NativeAOT) starts the frames all the same.
         var aot = SentryStackTrace.ParseDotnet("System.Exception: boom\n   at App!<BaseAddress>+0x1a2b\n   at App!<BaseAddress>+0x3c4d").Single();
@@ -313,17 +312,17 @@ public class SentryStackTraceTests
         Assert.IsTrue(complete, "The JIT has every frame's method.");
 
         // Grouping sees the same frames from the object and from the text: an async method is the method it was written as.
-        CollectionAssert.AreEqual(text.Select(f => f.Module + "." + f.Function).ToArray(), frames.Select(f => f.Module + "." + f.Function).ToArray());
+        Assert.AreSequenceEqual(text.Select(f => f.Module + "." + f.Function).ToArray(), frames.Select(f => f.Module + "." + f.Function).ToArray());
         Assert.AreEqual(typeof(Thrower).FullName!.Replace('+', '.') + ".Fail", frames[^1].Module + "." + frames[^1].Function);
-        Assert.IsTrue(frames.Any(f => f.Function == nameof(Thrower.RunAsync)));
+        Assert.Contains(f => f.Function == nameof(Thrower.RunAsync), frames);
 
         var own = frames.Where(f => f.Module?.StartsWith("Bit.Belemetry.Tests", StringComparison.Ordinal) is true).ToList();
         Assert.IsNotEmpty(own);
         foreach (var frame in own)
         {
             Assert.IsTrue(frame.InApp);
-            StringAssert.Matches(frame.FunctionId, new Regex("^0x[0-9a-f]+$"));
-            StringAssert.Matches(frame.InstructionAddress, new Regex("^0x[0-9a-f]+$"));
+            Assert.MatchesRegex(new Regex("^0x[0-9a-f]+$"), frame.FunctionId);
+            Assert.MatchesRegex(new Regex("^0x[0-9a-f]+$"), frame.InstructionAddress);
             Assert.AreEqual(typeof(Thrower).Assembly.Location, frame.DebugImage!.CodeFile);
         }
 
@@ -348,9 +347,9 @@ public class SentryStackTraceTests
 
         var frames = SentryStackTrace.FromException(exception).Frames;
         var text = SentryStackTrace.ParseDotnet(exception.ToString()).Single().Frames;
-        CollectionAssert.AreEqual(text.Select(f => f.Module + "." + f.Function).ToArray(), frames.Select(f => f.Module + "." + f.Function).ToArray());
-        Assert.IsTrue(frames.Any(f => f.Function!.StartsWith("<" + nameof(Thrower.RunLambdaAsync) + ">b__", StringComparison.Ordinal)), string.Join(" | ", frames.Select(f => f.Module + "." + f.Function)));
-        Assert.IsFalse(frames.Any(f => f.Function == "MoveNext"));
+        Assert.AreSequenceEqual(text.Select(f => f.Module + "." + f.Function).ToArray(), frames.Select(f => f.Module + "." + f.Function).ToArray());
+        Assert.Contains(f => f.Function!.StartsWith("<" + nameof(Thrower.RunLambdaAsync) + ">b__", StringComparison.Ordinal), frames, string.Join(" | ", frames.Select(f => f.Module + "." + f.Function)));
+        Assert.DoesNotContain(f => f.Function == "MoveNext", frames);
     }
 
     [TestMethod]

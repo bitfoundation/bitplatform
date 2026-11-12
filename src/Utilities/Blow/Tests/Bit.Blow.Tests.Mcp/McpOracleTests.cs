@@ -87,7 +87,7 @@ public partial class McpOracleTests
 
         var indexed = BlowApiCatalog.Types.Select(type => type.Name).ToHashSet(StringComparer.Ordinal);
 
-        CollectionAssert.AreEquivalent(exported.ToArray(), indexed.ToArray());
+        Assert.AreSequenceEqual(exported.ToArray(), indexed.ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -187,8 +187,8 @@ public partial class McpOracleTests
         var report = await McpFlowLabTests.InspectAsync(json);
 
         Assert.IsLessThan(300, report.Bounds!.X + report.Bounds.Y);
-        Assert.IsTrue(report.Problems!.Any(problem => problem.Code == BlowErrorCode.ParentCycle));
-        Assert.IsTrue(report.Notes.Any(note => note.Contains("parent cycle", StringComparison.Ordinal)));
+        Assert.Contains(problem => problem.Code == BlowErrorCode.ParentCycle, report.Problems!);
+        Assert.Contains(note => note.Contains("parent cycle", StringComparison.Ordinal), report.Notes);
     }
 
     /// <summary>A flat flow with some of everything the report counts: every built-in node type, custom ones, every edge type, sizes given and not.</summary>
@@ -228,7 +228,7 @@ public partial class McpOracleTests
 
         var declared = DeclarationRegex().Matches(css).Select(match => match.Groups["name"].Value).Distinct(StringComparer.Ordinal).ToArray();
 
-        CollectionAssert.AreEquivalent(declared, BlowThemeCatalog.Properties.Select(property => property.Name).ToArray());
+        Assert.AreSequenceEqual(declared, BlowThemeCatalog.Properties.Select(property => property.Name).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
         foreach (var property in BlowThemeCatalog.Properties)
         {
@@ -254,7 +254,7 @@ public partial class McpOracleTests
         var system = Copies(".bit-blow.bit-blow-system");
 
         Assert.IsNotEmpty(dark);
-        CollectionAssert.AreEquivalent(dark.ToArray(), system.ToArray());
+        Assert.AreSequenceEqual(dark.ToArray(), system.ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -304,7 +304,7 @@ public partial class McpOracleTests
             if (fenced is false && HeadingRegex().Match(line) is { Success: true } match) headings.Add(match.Groups["text"].Value.Trim());
         }
 
-        CollectionAssert.AreEqual(headings, BlowSourceCatalog.GuideSections.Select(section => section.Heading).ToArray());
+        Assert.AreSequenceEqual(headings, BlowSourceCatalog.GuideSections.Select(section => section.Heading).ToArray());
         Assert.HasCount(BlowSourceCatalog.GuideSections.Length, BlowSourceCatalog.GuideSections.Select(section => section.Key).Distinct(StringComparer.Ordinal), "Every section needs a key of its own.");
     }
 
@@ -350,16 +350,15 @@ public partial class McpOracleTests
             ("GetBlowSourceFile", "?path=Demo/Client/Pages/CustomNodes.razor", new() { ["path"] = "Demo/Client/Pages/CustomNodes.razor" }),
         ];
 
-        CollectionAssert.AreEquivalent(McpSurfaceTests.ExpectedTools, calls.Select(call => call.Tool).ToArray(),
-            "The HTTP mirror is being exercised for a different set of tools than the server publishes.");
+        Assert.AreSequenceEqual(McpSurfaceTests.ExpectedTools, calls.Select(call => call.Tool).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, "The HTTP mirror is being exercised for a different set of tools than the server publishes.");
 
         foreach (var (tool, query, arguments) in calls)
         {
-            using var response = await http.GetAsync($"/api/mcp/{tool}{query}");
+            using var response = await http.GetAsync($"/api/mcp/{tool}{query}", TestContext.CancellationToken);
 
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, tool);
 
-            var body = await response.Content.ReadAsStringAsync();
+            var body = await response.Content.ReadAsStringAsync(TestContext.CancellationToken);
 
             if (tool is "SearchBlow" or "InspectBlowFlow")
             {
@@ -385,4 +384,6 @@ public partial class McpOracleTests
 
     [GeneratedRegex(@"^#{2,4} (?<text>.+)$")]
     private static partial Regex HeadingRegex();
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

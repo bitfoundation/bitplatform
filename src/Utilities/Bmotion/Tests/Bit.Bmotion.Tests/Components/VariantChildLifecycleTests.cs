@@ -80,13 +80,13 @@ public class VariantChildLifecycleTests
         var log = new Log();
         var cut = RenderParent(ctx, Children(["child"], log));
 
-        Assert.AreEqual(1, log.Started.Count, "the inherited enter must raise OnAnimationStart");
+        Assert.ContainsSingle(log.Started, "the inherited enter must raise OnAnimationStart");
         Assert.AreEqual(1.0, log.Started[0]!.Opacity!.Last, "with the variant it plays");
-        lock (log.Completed) Assert.AreEqual(0, log.Completed.Count, "nothing has finished yet");
+        lock (log.Completed) Assert.IsEmpty(log.Completed, "nothing has finished yet");
 
         await ctx.FinishWaapiAsync("child");
 
-        cut.WaitForAssertion(() => { lock (log.Completed) Assert.AreEqual(1, log.Completed.Count); });
+        cut.WaitForAssertion(() => { lock (log.Completed) Assert.ContainsSingle(log.Completed); });
         lock (log.Completed) Assert.AreEqual(1.0, log.Completed[0]!.Opacity!.Last);
     }
 
@@ -97,16 +97,16 @@ public class VariantChildLifecycleTests
         var log = new Log();
         var cut = RenderParent(ctx, Children(["child"], log));
         await ctx.FinishWaapiAsync();
-        cut.WaitForAssertion(() => { lock (log.Completed) Assert.AreEqual(1, log.Completed.Count); });
+        cut.WaitForAssertion(() => { lock (log.Completed) Assert.ContainsSingle(log.Completed); });
 
         cut.Render(ps => ps.Add(p => p.State, "hidden"));
 
-        Assert.AreEqual(2, log.Started.Count, "the label change must raise OnAnimationStart again");
+        Assert.HasCount(2, log.Started, "the label change must raise OnAnimationStart again");
         Assert.AreEqual(0.0, log.Started[1]!.Opacity!.Last);
 
         await ctx.FinishWaapiAsync("child");
 
-        cut.WaitForAssertion(() => { lock (log.Completed) Assert.AreEqual(2, log.Completed.Count); });
+        cut.WaitForAssertion(() => { lock (log.Completed) Assert.HasCount(2, log.Completed); });
         lock (log.Completed) Assert.AreEqual(0.0, log.Completed[1]!.Opacity!.Last);
     }
 
@@ -135,9 +135,7 @@ public class VariantChildLifecycleTests
         var transition = Bm.Tween(0.3, staggerChildren: 0.2);
         var cut = RenderParent(ctx, Children(["a", "b", "c"]), transition);
 
-        CollectionAssert.AreEqual(new[] { 0.0, 200.0, 400.0 },
-            new[] { "a", "b", "c" }.Select(id => Math.Round(DelayOf(PlaysFor(ctx, id).Single()), 6)).ToArray(),
-            "the baseline cascade staggers every child");
+        Assert.AreSequenceEqual(new[] { 0.0, 200.0, 400.0 }, new[] { "a", "b", "c" }.Select(id => Math.Round(DelayOf(PlaysFor(ctx, id).Single()), 6)).ToArray(), "the baseline cascade staggers every child");
 
         // "a" leaves the list, then the label changes: the cascade is only the children still there.
         cut.Render(ps => ps.Add(p => p.ChildContent, Children(["b", "c"])));

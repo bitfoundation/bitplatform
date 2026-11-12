@@ -113,7 +113,7 @@ public class BitDropdownSearchE2ETests : BitDropdownE2ETestBase
         await Expect(highlight).ToHaveTextAsync("an");
         await Expect(Option(callout, "Banana").Locator(".bit-drp-itx")).ToHaveTextAsync("Banana");
         Assert.AreNotEqual("rgba(0, 0, 0, 0)", await StyleAsync(highlight, "background-color"), "The match is painted in the accent.");
-        Assert.IsTrue((await BoxAsync(highlight)).X > (await BoxAsync(Option(callout, "Banana").Locator(".bit-drp-itx"))).X, "The second and third letters are the ones painted.");
+        Assert.IsGreaterThan((await BoxAsync(Option(callout, "Banana").Locator(".bit-drp-itx"))).X, (await BoxAsync(highlight)).X, "The second and third letters are the ones painted.");
 
         await Expect(Root("dd-search-auto").Locator(".bit-drp-lvr")).ToHaveTextAsync("2 hits");
 

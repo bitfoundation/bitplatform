@@ -22,10 +22,10 @@ public class BitBasicListStylesheetTests : BunitTestContext
     {
         var stylesheet = ReadStylesheet();
 
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-bsl {"), "height: var(--bit-BasicList-height, #{spacing(62.5)});");
+        Assert.Contains("height: var(--bit-BasicList-height, #{spacing(62.5)});", SourceFiles.GetScssBlock(stylesheet, "\n.bit-bsl {"));
 
         // A row of items is as tall as its items are, so the horizontal class drops the height of the base class.
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-bsl-hrz {"), "height: unset;");
+        Assert.Contains("height: unset;", SourceFiles.GetScssBlock(stylesheet, "\n.bit-bsl-hrz {"));
 
         var component = RenderComponent<BitBasicList<string>>(parameters =>
         {
@@ -43,26 +43,26 @@ public class BitBasicListStylesheetTests : BunitTestContext
 
         // The one rule that paints is the one at rest, reading a state variable ahead of the public one; each state
         // only moves the variable, so a class the app hands the button keeps its paint under the pointer.
-        StringAssert.Contains(block, "--bit-bsl-lmb-sfg: initial;");
-        StringAssert.Contains(block, "--bit-bsl-lmb-sbg: initial;");
-        StringAssert.Contains(block, "color: var(--bit-bsl-lmb-sfg, var(--bit-BasicList-load-more-color, #{$clr-pri}));");
-        StringAssert.Contains(block, "background-color: var(--bit-bsl-lmb-sbg, var(--bit-BasicList-load-more-background, transparent));");
+        Assert.Contains("--bit-bsl-lmb-sfg: initial;", block);
+        Assert.Contains("--bit-bsl-lmb-sbg: initial;", block);
+        Assert.Contains("color: var(--bit-bsl-lmb-sfg, var(--bit-BasicList-load-more-color, #{$clr-pri}));", block);
+        Assert.Contains("background-color: var(--bit-bsl-lmb-sbg, var(--bit-BasicList-load-more-background, transparent));", block);
 
         var hover = SourceFiles.GetScssBlock(block, "&:hover {");
 
-        StringAssert.Contains(hover, "--bit-bsl-lmb-sfg: var(--bit-BasicList-load-more-hover-color, #{$clr-pri-hover});");
-        StringAssert.Contains(hover, "--bit-bsl-lmb-sbg: var(--bit-BasicList-load-more-hover-background, #{$clr-bg-pri-hover});");
+        Assert.Contains("--bit-bsl-lmb-sfg: var(--bit-BasicList-load-more-hover-color, #{$clr-pri-hover});", hover);
+        Assert.Contains("--bit-bsl-lmb-sbg: var(--bit-BasicList-load-more-hover-background, #{$clr-bg-pri-hover});", hover);
         Assert.IsFalse(Regex.IsMatch(hover, @"\n\s*(?:color|background(?:-color)?)\s*:"), "The hover rule paints the button instead of moving its variables.");
 
         // A pressed button falls back to its hover background, so an app that restyles the hover alone is not left
         // with the default flash while the pointer is down.
         var active = SourceFiles.GetScssBlock(block, "&:active {");
 
-        StringAssert.Contains(active, "--bit-bsl-lmb-sbg: var(--bit-BasicList-load-more-active-background, var(--bit-BasicList-load-more-hover-background, #{$clr-bg-pri-active}));");
+        Assert.Contains("--bit-bsl-lmb-sbg: var(--bit-BasicList-load-more-active-background, var(--bit-BasicList-load-more-hover-background, #{$clr-bg-pri-active}));", active);
         Assert.IsFalse(Regex.IsMatch(active, @"\n\s*(?:color|background(?:-color)?)\s*:"), "The active rule paints the button instead of moving its variables.");
 
         // A disabled button is read before anything else and paints directly, as every disabled state does.
-        StringAssert.Contains(SourceFiles.GetScssBlock(block, "&:disabled {"), "color: var(--bit-BasicList-disabled-color, #{$clr-fg-dis});");
+        Assert.Contains("color: var(--bit-BasicList-disabled-color, #{$clr-fg-dis});", SourceFiles.GetScssBlock(block, "&:disabled {"));
     }
 
     [TestMethod]
@@ -103,11 +103,10 @@ public class BitBasicListStylesheetTests : BunitTestContext
 
         // One ring from the shared mixin, sized and colored by the public variables, for the loading content and the
         // busy LoadMore button alike.
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-bsl-spn {"),
-                              "@include spinner-ring(var(--bit-BasicList-spinner-size, #{$siz-icon-md}), var(--bit-BasicList-spinner-color, #{$clr-pri}), $clr-brd-sec);");
+        Assert.Contains("@include spinner-ring(var(--bit-BasicList-spinner-size, #{$siz-icon-md}), var(--bit-BasicList-spinner-color, #{$clr-pri}), $clr-brd-sec);", SourceFiles.GetScssBlock(stylesheet, "\n.bit-bsl-spn {"));
 
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-bsl-ldt {"), "color: var(--bit-BasicList-loading-color, #{$clr-fg-sec});");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-bsl-ldc {"), "padding: var(--bit-BasicList-loading-padding, #{spacing(2)});");
+        Assert.Contains("color: var(--bit-BasicList-loading-color, #{$clr-fg-sec});", SourceFiles.GetScssBlock(stylesheet, "\n.bit-bsl-ldt {"));
+        Assert.Contains("padding: var(--bit-BasicList-loading-padding, #{spacing(2)});", SourceFiles.GetScssBlock(stylesheet, "\n.bit-bsl-ldc {"));
 
         var component = RenderComponent<BitBasicList<string>>(parameters =>
         {
@@ -128,8 +127,8 @@ public class BitBasicListStylesheetTests : BunitTestContext
 
         // The shared ring is a box-shadow outside the box, which the scrolling region clips, so the button's is drawn
         // inside the element instead; both read the same public focus color.
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-bsl-lmb {"), "@include focus-ring-inset(var(--bit-BasicList-focus-color, #{$clr-pri-focus})");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-bsl {"), "@include focus-ring-own(var(--bit-BasicList-focus-color));");
+        Assert.Contains("@include focus-ring-inset(var(--bit-BasicList-focus-color, #{$clr-pri-focus})", SourceFiles.GetScssBlock(stylesheet, "\n.bit-bsl-lmb {"));
+        Assert.Contains("@include focus-ring-own(var(--bit-BasicList-focus-color));", SourceFiles.GetScssBlock(stylesheet, "\n.bit-bsl {"));
     }
 
     [TestMethod]
@@ -152,11 +151,11 @@ public class BitBasicListStylesheetTests : BunitTestContext
                               .ToArray();
 
         // Guards the guard: a header that documents nothing would let every variable through in silence.
-        Assert.IsTrue(documented.Length >= 15, $"The header documents only {documented.Length} variables.");
+        Assert.IsGreaterThanOrEqualTo(15, documented.Length, $"The header documents only {documented.Length} variables.");
 
         foreach (var name in documented)
         {
-            StringAssert.Contains(code, $"var({name}", $"{name} is documented but never read.");
+            Assert.Contains($"var({name}", code, $"{name} is documented but never read.");
         }
 
         // And nothing is read that the header does not document.
@@ -164,7 +163,7 @@ public class BitBasicListStylesheetTests : BunitTestContext
 
         var undocumented = read.Where(n => documented.Contains(n) is false).ToArray();
 
-        Assert.AreEqual(0, undocumented.Length, $"Read but not documented: {string.Join(", ", undocumented)}.");
+        Assert.IsEmpty(undocumented, $"Read but not documented: {string.Join(", ", undocumented)}.");
     }
 
     private static ICollection<string> Items(int count) => Enumerable.Range(1, count).Select(i => $"Item {i}").ToList();

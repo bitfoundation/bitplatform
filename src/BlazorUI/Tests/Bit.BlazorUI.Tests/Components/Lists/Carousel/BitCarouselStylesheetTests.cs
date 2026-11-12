@@ -18,17 +18,17 @@ public class BitCarouselStylesheetTests
 
         // An explicit Color, Accent or Size publishes these only while it is set, so they are read before the variable,
         // which only restyles the default an unset one stands for.
-        StringAssert.Contains(stylesheet, "$csl-clr: var(--bit-csl-clr, var(--bit-Carousel-dot-current-color, #{$clr-pri}));");
-        StringAssert.Contains(stylesheet, "$csl-clr-hover: var(--bit-csl-clr-hover, var(--bit-Carousel-dot-current-hover-color, #{$clr-pri-hover}));");
-        StringAssert.Contains(stylesheet, "$csl-btn: var(--bit-csl-btn, var(--bit-Carousel-button-color, #{$clr-fg-pri}));");
-        StringAssert.Contains(stylesheet, "$csl-btn-hover: var(--bit-csl-btn-hover, var(--bit-Carousel-button-hover-color, #{$clr-fg-pri-hover}));");
-        StringAssert.Contains(stylesheet, "--bit-csl-focus: var(--bit-csl-fcs, var(--bit-Carousel-focus-color));");
-        StringAssert.Contains(stylesheet, "--bit-csl-dotsz: var(--bit-csl-dot-size, var(--bit-Carousel-dot-size, #{spacing(1.25)}));");
-        StringAssert.Contains(stylesheet, "font-size: var(--bit-csl-btn-size, var(--bit-Carousel-button-size, calc(#{$siz-icon-md} * 1.5)));");
-        StringAssert.Contains(stylesheet, "font-size: var(--bit-csl-ppb-size, #{$siz-icon-md});");
+        Assert.Contains("$csl-clr: var(--bit-csl-clr, var(--bit-Carousel-dot-current-color, #{$clr-pri}));", stylesheet);
+        Assert.Contains("$csl-clr-hover: var(--bit-csl-clr-hover, var(--bit-Carousel-dot-current-hover-color, #{$clr-pri-hover}));", stylesheet);
+        Assert.Contains("$csl-btn: var(--bit-csl-btn, var(--bit-Carousel-button-color, #{$clr-fg-pri}));", stylesheet);
+        Assert.Contains("$csl-btn-hover: var(--bit-csl-btn-hover, var(--bit-Carousel-button-hover-color, #{$clr-fg-pri-hover}));", stylesheet);
+        Assert.Contains("--bit-csl-focus: var(--bit-csl-fcs, var(--bit-Carousel-focus-color));", stylesheet);
+        Assert.Contains("--bit-csl-dotsz: var(--bit-csl-dot-size, var(--bit-Carousel-dot-size, #{spacing(1.25)}));", stylesheet);
+        Assert.Contains("font-size: var(--bit-csl-btn-size, var(--bit-Carousel-button-size, calc(#{$siz-icon-md} * 1.5)));", stylesheet);
+        Assert.Contains("font-size: var(--bit-csl-ppb-size, #{$siz-icon-md});", stylesheet);
 
         // The role classes publish the focus color bare, so it wins over the variable.
-        StringAssert.Contains(stylesheet, "--bit-csl-fcs: #{role($tokens, focus)};");
+        Assert.Contains("--bit-csl-fcs: #{role($tokens, focus)};", stylesheet);
 
         // The one private value read after a public variable is the spacing the dots row works out from the resolved
         // dot size, which is only the default of a gap no parameter sets.
@@ -45,7 +45,7 @@ public class BitCarouselStylesheetTests
         // the same weight - still win on the root that carries them.
         foreach (var property in new[] { "--bit-csl-clr", "--bit-csl-clr-hover", "--bit-csl-btn", "--bit-csl-btn-hover", "--bit-csl-fcs", "--bit-csl-dot-size", "--bit-csl-btn-size", "--bit-csl-ppb-size" })
         {
-            StringAssert.Contains(root, $"{property}: initial;");
+            Assert.Contains($"{property}: initial;", root);
         }
     }
 

@@ -102,7 +102,7 @@ public class NumericKeyframesDriverTests
         // only completion is guaranteed.
         Assert.IsTrue(done);
         // A cancelled Tick must exit before applying, so no new value is emitted after Cancel().
-        Assert.AreEqual(logCountAfterFirstTick, log.Count);
+        Assert.HasCount(logCountAfterFirstTick, log);
     }
 
     // ── Repeat / Mirror ───────────────────────────────────────────────────────
@@ -314,7 +314,7 @@ public class ColorKeyframesDriverTests
         // only completion is guaranteed.
         Assert.IsTrue(done);
         // Nothing may be emitted after Cancel(): a late frame would overwrite the frozen color.
-        Assert.AreEqual(emittedAfterFirstTick, emitted.Count);
+        Assert.HasCount(emittedAfterFirstTick, emitted);
     }
 
     // ── Mirror repeat ─────────────────────────────────────────────────────────

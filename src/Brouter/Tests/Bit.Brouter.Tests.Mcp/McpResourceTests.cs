@@ -21,14 +21,14 @@ public class McpResourceTests
     public async Task Every_documentation_page_is_listed_as_something_a_person_can_click()
     {
         // The templates alone are unusable in a picker: nothing on the wire says which slugs exist.
-        var resources = await McpTestHost.Client.ListResourcesAsync();
+        var resources = await McpTestHost.Client.ListResourcesAsync(cancellationToken: TestContext.CancellationToken);
         var uris = resources.Select(resource => resource.Uri).ToArray();
 
         foreach (var page in DocsCatalog.AllPages)
         {
             var slug = page.Slug.Length == 0 ? "overview" : page.Slug;
 
-            CollectionAssert.Contains(uris, $"brouter://docs/{slug}", $"The '{page.Title}' page is not listed as a resource.");
+            Assert.Contains($"brouter://docs/{slug}", uris, $"The '{page.Title}' page is not listed as a resource.");
         }
 
         foreach (var resource in resources)
@@ -42,23 +42,22 @@ public class McpResourceTests
     [TestMethod]
     public async Task The_whole_guide_the_api_and_the_constraints_are_listed_alongside_the_pages()
     {
-        var uris = (await McpTestHost.Client.ListResourcesAsync()).Select(resource => resource.Uri).ToArray();
+        var uris = (await McpTestHost.Client.ListResourcesAsync(cancellationToken: TestContext.CancellationToken)).Select(resource => resource.Uri).ToArray();
 
         foreach (var uri in new[] { "brouter://guide", "brouter://api", "brouter://constraints" })
         {
-            CollectionAssert.Contains(uris, uri);
+            Assert.Contains(uri, uris);
         }
     }
 
     [TestMethod]
     public async Task The_templated_resources_cover_the_catalogs_too_big_to_enumerate()
     {
-        var templates = await McpTestHost.Client.ListResourceTemplatesAsync();
+        var templates = await McpTestHost.Client.ListResourceTemplatesAsync(cancellationToken: TestContext.CancellationToken);
         var uris = templates.Select(template => template.UriTemplate).ToArray();
 
-        CollectionAssert.AreEquivalent(
-            new[] { "brouter://guide/{heading}", "brouter://api/{typeName}", "brouter://docs/{slug}", "brouter://source/{path}" },
-            uris);
+        Assert.AreSequenceEqual(
+            new[] { "brouter://guide/{heading}", "brouter://api/{typeName}", "brouter://docs/{slug}", "brouter://source/{path}" }, uris, Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
         foreach (var template in templates)
         {
@@ -70,7 +69,7 @@ public class McpResourceTests
     public async Task A_source_file_is_served_as_text_rather_than_as_markdown()
     {
         // It is source, not prose: a client that renders Markdown would eat its indentation.
-        var template = (await McpTestHost.Client.ListResourceTemplatesAsync())
+        var template = (await McpTestHost.Client.ListResourceTemplatesAsync(cancellationToken: TestContext.CancellationToken))
                        .Single(t => t.UriTemplate == "brouter://source/{path}");
 
         Assert.AreEqual("text/plain", template.MimeType);
@@ -80,11 +79,11 @@ public class McpResourceTests
     public async Task Every_listed_resource_can_actually_be_read()
     {
         // A listed URI that does not resolve is the one failure a browsing person cannot work around.
-        foreach (var resource in await McpTestHost.Client.ListResourcesAsync())
+        foreach (var resource in await McpTestHost.Client.ListResourcesAsync(cancellationToken: TestContext.CancellationToken))
         {
             var text = await ReadAsync(resource.Uri);
 
-            Assert.IsTrue(text.Length > 100, $"'{resource.Uri}' answered with {text.Length} characters.");
+            Assert.IsGreaterThan(100, text.Length, $"'{resource.Uri}' answered with {text.Length} characters.");
             Assert.IsFalse(text.StartsWith("No documentation page", StringComparison.Ordinal), $"'{resource.Uri}' is listed but does not resolve.");
             Assert.IsFalse(text.Contains("could not be rendered", StringComparison.Ordinal), $"'{resource.Uri}' could not be rendered.");
         }
@@ -94,17 +93,17 @@ public class McpResourceTests
     public async Task Each_templated_resource_resolves_a_real_key()
     {
         var guide = await ReadAsync("brouter://guide/Async%20guards");
-        StringAssert.StartsWith(guide, "## Async guards");
+        Assert.StartsWith("## Async guards", guide);
 
         var api = await ReadAsync("brouter://api/BrouterOptions");
-        StringAssert.StartsWith(api, "# BrouterOptions");
-        StringAssert.Contains(api, "CaseSensitive");
+        Assert.StartsWith("# BrouterOptions", api);
+        Assert.Contains("CaseSensitive", api);
 
         var source = await ReadAsync("brouter://source/Demo%2FClient%2FAppRouter.razor");
-        StringAssert.Contains(source, "<Broute");
+        Assert.Contains("<Broute", source);
 
         var docs = await ReadAsync("brouter://docs/guards");
-        StringAssert.Contains(docs, "# Guards");
+        Assert.Contains("# Guards", docs);
     }
 
     [TestMethod]
@@ -114,7 +113,7 @@ public class McpResourceTests
         var listed = await ReadAsync("brouter://docs/guards");
         var page = await McpCall.TextAsync("GetBrouterDocsPage", new() { ["slug"] = "guards" });
 
-        StringAssert.Contains(page, listed, "The docs resource and the docs tool are handing out different text for the same slug.");
+        Assert.Contains(listed, page, "The docs resource and the docs tool are handing out different text for the same slug.");
     }
 
     [TestMethod]
@@ -134,10 +133,10 @@ public class McpResourceTests
     {
         // A read that fails outright tells a browsing person nothing; a resource that explains itself
         // is the same courtesy the tools extend.
-        StringAssert.Contains(await ReadAsync("brouter://docs/nope"), "No documentation page has the slug 'nope'");
-        StringAssert.Contains(await ReadAsync("brouter://guide/nope"), "no section called 'nope'");
-        StringAssert.Contains(await ReadAsync("brouter://api/nope"), "no public type called 'nope'");
-        StringAssert.Contains(await ReadAsync("brouter://source/nope"), "No source file at 'nope'");
+        Assert.Contains("No documentation page has the slug 'nope'", await ReadAsync("brouter://docs/nope"));
+        Assert.Contains("no section called 'nope'", await ReadAsync("brouter://guide/nope"));
+        Assert.Contains("no public type called 'nope'", await ReadAsync("brouter://api/nope"));
+        Assert.Contains("No source file at 'nope'", await ReadAsync("brouter://source/nope"));
     }
 
     [TestMethod]
@@ -145,10 +144,10 @@ public class McpResourceTests
     {
         var api = await ReadAsync("brouter://api/Broute");
 
-        StringAssert.Contains(api, "# Broute (Component)");
-        StringAssert.Contains(api, "## Parameter", "The parameters are not grouped under their own heading.");
-        StringAssert.Contains(api, "**Path**");
-        StringAssert.Contains(api, "`bool`", "Member types are not being rendered.");
+        Assert.Contains("# Broute (Component)", api);
+        Assert.Contains("## Parameter", api, "The parameters are not grouped under their own heading.");
+        Assert.Contains("**Path**", api);
+        Assert.Contains("`bool`", api, "Member types are not being rendered.");
     }
 
     [TestMethod]
@@ -156,9 +155,9 @@ public class McpResourceTests
     {
         var constraints = await ReadAsync("brouter://constraints");
 
-        StringAssert.Contains(constraints, "| Constraint | Category | Rule | Passes | Fails |");
-        StringAssert.Contains(constraints, "`{value:int}`");
-        StringAssert.Contains(constraints, "`{value:slug}`", "The app's own custom constraint is missing from the table.");
+        Assert.Contains("| Constraint | Category | Rule | Passes | Fails |", constraints);
+        Assert.Contains("`{value:int}`", constraints);
+        Assert.Contains("`{value:slug}`", constraints, "The app's own custom constraint is missing from the table.");
     }
 
     private static async Task<string> ReadAsync(string uri)
@@ -171,4 +170,6 @@ public class McpResourceTests
 
         return text;
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

@@ -45,8 +45,7 @@ public sealed class BitThemeModelCoverageTests
 
         var emitted = BitThemeUtilities.ToCssVariables(theme);
 
-        Assert.AreEqual(leafCount, emitted.Count,
-            $"The BitTheme model exposes {leafCount} settable string tokens but " +
+        Assert.HasCount(leafCount, emitted, $"The BitTheme model exposes {leafCount} settable string tokens but " +
             $"BitThemeMapper.MapToCssVariables emitted {emitted.Count} CSS variables. Every token must map " +
             "to exactly one unique CSS variable. If you added a token, add the matching addCssVar(...) entry " +
             "(and the null-coalesce in BitThemeMapper.Merge). A shortfall also occurs when two tokens map to " +
@@ -109,8 +108,7 @@ public sealed class BitThemeModelCoverageTests
         var nullBranches = new List<string>();
         Walk(root, root.GetType().Name, visited, nullBranches);
 
-        Assert.AreEqual(0, nullBranches.Count,
-            $"Null branches found after {scenario}; extend BitThemeSerialization.EnsureNestedObjects to " +
+        Assert.IsEmpty(nullBranches, $"Null branches found after {scenario}; extend BitThemeSerialization.EnsureNestedObjects to " +
             $"initialize them:\n  {string.Join("\n  ", nullBranches)}");
 
         static void Walk(object obj, string path, HashSet<object> visited, List<string> nullBranches)

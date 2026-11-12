@@ -198,11 +198,11 @@ public class BitDateRangePickerTests : BunitTestContext
 
         if (showGoToToday)
         {
-            Assert.AreEqual(1, goToTodayBtnElms.Count);
+            Assert.ContainsSingle(goToTodayBtnElms);
         }
         else
         {
-            Assert.AreEqual(0, goToTodayBtnElms.Count);
+            Assert.IsEmpty(goToTodayBtnElms);
         }
     }
 
@@ -235,7 +235,7 @@ public class BitDateRangePickerTests : BunitTestContext
         });
 
         // A standalone calendar is not in a callout, so there is nothing for the button to close.
-        Assert.HasCount(0, component.FindAll("button[aria-label='Close date range picker']"));
+        Assert.IsEmpty(component.FindAll("button[aria-label='Close date range picker']"));
     }
 
     [TestMethod]
@@ -275,11 +275,11 @@ public class BitDateRangePickerTests : BunitTestContext
 
         if (highlightCurrentMonth)
         {
-            Assert.AreEqual(1, currentMonthCells.Count);
+            Assert.ContainsSingle(currentMonthCells);
         }
         else
         {
-            Assert.AreEqual(0, currentMonthCells.Count);
+            Assert.IsEmpty(currentMonthCells);
         }
     }
 
@@ -300,11 +300,11 @@ public class BitDateRangePickerTests : BunitTestContext
 
         if (highlightSelectedMonth)
         {
-            Assert.AreEqual(1, selectedMonthCells.Count);
+            Assert.ContainsSingle(selectedMonthCells);
         }
         else
         {
-            Assert.AreEqual(0, selectedMonthCells.Count);
+            Assert.IsEmpty(selectedMonthCells);
         }
     }
 
@@ -1324,7 +1324,7 @@ public class BitDateRangePickerTests : BunitTestContext
         var days = component.FindAll(".bit-dtrp-dbt");
 
         // With the week pinned to start on Sunday, the very first rendered cell is a disabled weekend day.
-        Assert.IsTrue(days.Count(d => d.HasAttribute("disabled")) > 0);
+        Assert.Contains(d => d.HasAttribute("disabled"), days);
         Assert.IsTrue(days[0].HasAttribute("disabled"));
     }
 
@@ -1360,7 +1360,7 @@ public class BitDateRangePickerTests : BunitTestContext
 
         var days = component.FindAll(".bit-dtrp-dbt");
 
-        Assert.IsTrue(days.Count(d => d.HasAttribute("disabled")) > 0);
+        Assert.Contains(d => d.HasAttribute("disabled"), days);
         Assert.IsTrue(days.All(d => d.HasAttribute("disabled") is false || int.Parse(d.TextContent.Trim()) % 2 == 0));
     }
 
@@ -1394,7 +1394,7 @@ public class BitDateRangePickerTests : BunitTestContext
             parameters.Add(p => p.HighlightedDates, new[] { highlightedDate });
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-dtrp-dhl").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-dtrp-dhl"));
     }
 
     [TestMethod]
@@ -1409,7 +1409,7 @@ public class BitDateRangePickerTests : BunitTestContext
 
         var fridays = component.FindAll(".custom-day");
 
-        Assert.IsTrue(fridays.Count >= 4);
+        Assert.IsGreaterThanOrEqualTo(4, fridays.Count);
     }
 
     [TestMethod]
@@ -1447,13 +1447,13 @@ public class BitDateRangePickerTests : BunitTestContext
 
         if (showOutsideDays)
         {
-            Assert.AreEqual(0, emptyCells.Count);
-            Assert.IsTrue(outsideDays.Count > 0);
+            Assert.IsEmpty(emptyCells);
+            Assert.IsNotEmpty(outsideDays);
         }
         else
         {
-            Assert.IsTrue(emptyCells.Count > 0);
-            Assert.AreEqual(0, outsideDays.Count);
+            Assert.IsNotEmpty(emptyCells);
+            Assert.IsEmpty(outsideDays);
         }
     }
 
@@ -1477,11 +1477,11 @@ public class BitDateRangePickerTests : BunitTestContext
 
         if (fixedWeeks)
         {
-            Assert.AreEqual(6, rows.Count);
+            Assert.HasCount(6, rows);
         }
         else
         {
-            Assert.IsTrue(rows.Count < 6);
+            Assert.IsLessThan(6, rows.Count);
         }
     }
 
@@ -1519,8 +1519,8 @@ public class BitDateRangePickerTests : BunitTestContext
         });
 
         // The day picker must always stay visible.
-        Assert.AreEqual(1, component.FindAll(".bit-dtrp-dwp").Count);
-        Assert.AreEqual(isMonthPickerVisible ? 1 : 0, component.FindAll(".bit-dtrp-mwp").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-dtrp-dwp"));
+        Assert.HasCount(isMonthPickerVisible ? 1 : 0, component.FindAll(".bit-dtrp-mwp"));
     }
 
     [TestMethod]
@@ -1535,9 +1535,9 @@ public class BitDateRangePickerTests : BunitTestContext
         });
 
         // Hiding the month picker must not take the day picker or the time picker down with it.
-        Assert.AreEqual(1, component.FindAll(".bit-dtrp-dwp").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-dtrp-twp").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-dtrp-mwp").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-dtrp-dwp"));
+        Assert.ContainsSingle(component.FindAll(".bit-dtrp-twp"));
+        Assert.IsEmpty(component.FindAll(".bit-dtrp-mwp"));
     }
 
     [TestMethod]
@@ -1633,9 +1633,9 @@ public class BitDateRangePickerTests : BunitTestContext
 
         // The field was just clicked, so it is in view, and a focus that scrolled to it would scroll a sticky
         // header's container back to where the header sits in the flow.
-        Assert.AreEqual(1, focused.Count);
+        Assert.ContainsSingle(focused);
         Assert.AreEqual(input, ((ElementReference)focused[0].Arguments[0]!).Id);
-        Assert.AreEqual(true, focused[0].Arguments[1]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(focused[0].Arguments[1]));
     }
 
     [TestMethod]
@@ -1655,9 +1655,9 @@ public class BitDateRangePickerTests : BunitTestContext
         var focused = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].ToList();
 
         // Opened from anywhere on the page, so the field may well be out of view: the focus is what brings it there.
-        Assert.AreEqual(1, focused.Count);
+        Assert.ContainsSingle(focused);
         Assert.AreEqual(input, ((ElementReference)focused[0].Arguments[0]!).Id);
-        Assert.AreEqual(false, focused[0].Arguments[1]);
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(focused[0].Arguments[1]));
     }
 
     [TestMethod]
@@ -1777,7 +1777,7 @@ public class BitDateRangePickerTests : BunitTestContext
         Assert.IsTrue(startCell.HasAttribute("disabled"));
 
         var enabledDays = component.FindAll(".bit-dtrp-dbt").Count(d => d.HasAttribute("disabled") is false);
-        Assert.IsTrue(enabledDays > 0);
+        Assert.IsGreaterThan(0, enabledDays);
     }
 
     [TestMethod]
@@ -1808,17 +1808,17 @@ public class BitDateRangePickerTests : BunitTestContext
 
         // No start date yet, so hovering must not preview anything.
         days[10].PointerEnter();
-        Assert.AreEqual(0, component.FindAll(".bit-dtrp-dhr").Count);
+        Assert.IsEmpty(component.FindAll(".bit-dtrp-dhr"));
 
         component.FindAll(".bit-dtrp-dbt")[10].Click();
         component.FindAll(".bit-dtrp-dbt")[14].PointerEnter();
 
         // The four days between the start date (exclusive) and the hovered one (inclusive).
-        Assert.AreEqual(4, component.FindAll(".bit-dtrp-dhr").Count);
+        Assert.HasCount(4, component.FindAll(".bit-dtrp-dhr"));
 
         // Closing the range clears the preview.
         component.FindAll(".bit-dtrp-dbt")[14].Click();
-        Assert.AreEqual(0, component.FindAll(".bit-dtrp-dhr").Count);
+        Assert.IsEmpty(component.FindAll(".bit-dtrp-dhr"));
     }
 
     [TestMethod]
@@ -1942,7 +1942,7 @@ public class BitDateRangePickerTests : BunitTestContext
 
         var tabbableDays = component.FindAll(".bit-dtrp-dbt").Where(d => d.GetAttribute("tabindex") == "0").ToList();
 
-        Assert.AreEqual(1, tabbableDays.Count);
+        Assert.ContainsSingle(tabbableDays);
     }
 
     [TestMethod]
@@ -2085,7 +2085,7 @@ public class BitDateRangePickerTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-dtrp-prc").Count);
+        Assert.IsEmpty(component.FindAll(".bit-dtrp-prc"));
     }
 
     [TestMethod]
@@ -2107,7 +2107,7 @@ public class BitDateRangePickerTests : BunitTestContext
         var buttons = component.FindAll(".bit-dtrp-prb");
 
         Assert.AreEqual("Quick ranges", container.GetAttribute("aria-label"));
-        Assert.AreEqual(2, buttons.Count);
+        Assert.HasCount(2, buttons);
         Assert.AreEqual("Today", buttons[0].TextContent.Trim());
         Assert.IsFalse(buttons[0].HasAttribute("disabled"));
         Assert.IsTrue(buttons[1].HasAttribute("disabled"));
@@ -2241,7 +2241,7 @@ public class BitDateRangePickerTests : BunitTestContext
 
         component.Find(".bit-dtrp-prb").Click();
 
-        Assert.IsTrue(component.Find(".bit-dtrp-pkt, .bit-dtrp-ptb").TextContent.Contains(MonthTitle(2024, 3)));
+        Assert.Contains(MonthTitle(2024, 3), component.Find(".bit-dtrp-pkt, .bit-dtrp-ptb").TextContent);
     }
 
     [TestMethod]
@@ -2319,7 +2319,7 @@ public class BitDateRangePickerTests : BunitTestContext
         Assert.AreEqual(1, closed);
 
         // The focus is already on whatever it was moved to, so it is not pulled back onto the field.
-        Assert.AreEqual(before, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+        Assert.HasCount(before, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
     }
 
     [TestMethod]
@@ -2462,7 +2462,7 @@ public class BitDateRangePickerTests : BunitTestContext
 
         var titles = component.FindAll(".bit-dtrp-dwp .bit-dtrp-pkt, .bit-dtrp-dwp .bit-dtrp-ptb");
 
-        Assert.AreEqual(2, titles.Count);
+        Assert.HasCount(2, titles);
         Assert.AreEqual(MonthTitle(2024, 3), titles[0].TextContent.Trim());
         Assert.AreEqual(MonthTitle(2024, 4), titles[1].TextContent.Trim());
     }
@@ -2477,7 +2477,7 @@ public class BitDateRangePickerTests : BunitTestContext
             parameters.Add(p => p.MonthCount, 7);
         });
 
-        Assert.AreEqual(3, component.FindAll(".bit-dtrp-dwp").Count);
+        Assert.HasCount(3, component.FindAll(".bit-dtrp-dwp"));
     }
 
     [TestMethod]
@@ -2490,8 +2490,8 @@ public class BitDateRangePickerTests : BunitTestContext
             parameters.Add(p => p.MonthCount, 3);
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-dtrp-dwp [title='Go to previous month']").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-dtrp-dwp [title='Go to next month']").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-dtrp-dwp [title='Go to previous month']"));
+        Assert.ContainsSingle(component.FindAll(".bit-dtrp-dwp [title='Go to next month']"));
     }
 
     [TestMethod]
@@ -2528,10 +2528,10 @@ public class BitDateRangePickerTests : BunitTestContext
 
         var ids = component.FindAll(".bit-dtrp-dbt").Select(d => d.GetAttribute("id")).ToList();
 
-        Assert.AreEqual(0, component.FindAll(".bit-dtrp-dbo").Count);
-        Assert.AreEqual(ids.Count, ids.Distinct().Count());
+        Assert.IsEmpty(component.FindAll(".bit-dtrp-dbo"));
+        Assert.HasCount(ids.Count, ids.Distinct());
         // Every day of March and of April, and nothing else.
-        Assert.AreEqual(61, ids.Count);
+        Assert.HasCount(61, ids);
     }
 
     [TestMethod]
@@ -2786,8 +2786,8 @@ public class BitDateRangePickerTests : BunitTestContext
             });
         });
 
-        Assert.AreEqual(7, component.FindAll(".custom-week-day").Count);
-        Assert.AreEqual(1, component.FindAll(".custom-week-numbers").Count);
+        Assert.HasCount(7, component.FindAll(".custom-week-day"));
+        Assert.ContainsSingle(component.FindAll(".custom-week-numbers"));
     }
 
     [TestMethod]
@@ -3323,7 +3323,7 @@ public class BitDateRangePickerTests : BunitTestContext
         });
 
         // A range holding only an end date is still a value, so it must be clearable too.
-        Assert.AreEqual(1, component.FindAll(".bit-dtrp-clr").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-dtrp-clr"));
     }
 
     [TestMethod]
@@ -3342,8 +3342,8 @@ public class BitDateRangePickerTests : BunitTestContext
             Assert.IsFalse(string.IsNullOrEmpty(button.GetAttribute("title")));
         }
 
-        Assert.AreEqual(1, component.FindAll("[aria-label='Increase start hour']").Count);
-        Assert.AreEqual(1, component.FindAll("[aria-label='Decrease end minute']").Count);
+        Assert.ContainsSingle(component.FindAll("[aria-label='Increase start hour']"));
+        Assert.ContainsSingle(component.FindAll("[aria-label='Decrease end minute']"));
     }
 
     [TestMethod]
@@ -3356,10 +3356,10 @@ public class BitDateRangePickerTests : BunitTestContext
             parameters.Add(p => p.ShowTimePicker, true);
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-dtrp-tin[aria-label='Start hour']").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-dtrp-tin[aria-label='Start minute']").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-dtrp-tin[aria-label='End hour']").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-dtrp-tin[aria-label='End minute']").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-dtrp-tin[aria-label='Start hour']"));
+        Assert.ContainsSingle(component.FindAll(".bit-dtrp-tin[aria-label='Start minute']"));
+        Assert.ContainsSingle(component.FindAll(".bit-dtrp-tin[aria-label='End hour']"));
+        Assert.ContainsSingle(component.FindAll(".bit-dtrp-tin[aria-label='End minute']"));
     }
 
     [TestMethod]
@@ -3374,8 +3374,8 @@ public class BitDateRangePickerTests : BunitTestContext
             parameters.Add(p => p.EndTimeDecreaseMinuteTitle, "Fewer end minutes");
         });
 
-        Assert.AreEqual(1, component.FindAll("[aria-label='More start hours']").Count);
-        Assert.AreEqual(1, component.FindAll("[aria-label='Fewer end minutes']").Count);
+        Assert.ContainsSingle(component.FindAll("[aria-label='More start hours']"));
+        Assert.ContainsSingle(component.FindAll("[aria-label='Fewer end minutes']"));
     }
 
     [TestMethod]
@@ -3480,7 +3480,7 @@ public class BitDateRangePickerTests : BunitTestContext
         });
 
         // The clear button would silently do nothing in ReadOnly, so it is not rendered at all.
-        Assert.AreEqual(0, component.FindAll(".bit-dtrp-clr").Count);
+        Assert.IsEmpty(component.FindAll(".bit-dtrp-clr"));
     }
 
     [TestMethod]
@@ -3557,8 +3557,8 @@ public class BitDateRangePickerTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-dtrp-dwp [aria-label='Go to previous month']").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-dtrp-dwp [aria-label='Go to next month']").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-dtrp-dwp [aria-label='Go to previous month']"));
+        Assert.ContainsSingle(component.FindAll(".bit-dtrp-dwp [aria-label='Go to next month']"));
     }
 
     [TestMethod]
@@ -3617,7 +3617,7 @@ public class BitDateRangePickerTests : BunitTestContext
         component.Find("button[title$='change year']").Click();
 
         // The year picker has to realign its range to contain the year it opens on.
-        Assert.IsTrue(component.FindAll(".bit-dtrp-pkb").Any(b => b.TextContent.Trim() == "2036"));
+        Assert.Contains(b => b.TextContent.Trim() == "2036", component.FindAll(".bit-dtrp-pkb"));
     }
 
     [TestMethod]
@@ -3852,11 +3852,11 @@ public class BitDateRangePickerTests : BunitTestContext
         // are different mistakes, so they no longer share the one message.
         component.Find(".bit-dtrp-inp").Change("nonsense");
         component.Find("form").Submit();
-        Assert.IsTrue(component.FindAll(".validation-message").Any(m => m.TextContent == "not a range"));
+        Assert.Contains(m => m.TextContent == "not a range", component.FindAll(".validation-message"));
 
         component.Find(".bit-dtrp-inp").Change("2026-01-01 - 2026-01-05");
         component.Find("form").Submit();
-        Assert.IsTrue(component.FindAll(".validation-message").Any(m => m.TextContent == "outside the range"));
+        Assert.Contains(m => m.TextContent == "outside the range", component.FindAll(".validation-message"));
 
         component.Find(".bit-dtrp-inp").Change("2026-01-12 - 2026-01-15");
         component.Find("form").Submit();
@@ -3946,7 +3946,7 @@ public class BitDateRangePickerTests : BunitTestContext
 
         // The callout is shown and positioned from the JS side, so an IsOpen pushed in through the
         // parameter has to reach it too - otherwise the picker reports itself open while nothing appears.
-        Assert.IsTrue(after > before);
+        Assert.IsGreaterThan(before, after);
     }
 
     [TestMethod]
@@ -3970,7 +3970,7 @@ public class BitDateRangePickerTests : BunitTestContext
         // An open pushed in from the outside measures the width available exactly as a click on the field
         // does - the width reported here being a phone's - so the extra months are dropped instead of being laid
         // out side by side past the edge of a viewport that cannot hold them.
-        Assert.AreEqual(1, component.FindAll(".bit-dtrp-dwp .bit-dtrp-pkt, .bit-dtrp-dwp .bit-dtrp-ptb").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-dtrp-dwp .bit-dtrp-pkt, .bit-dtrp-dwp .bit-dtrp-ptb"));
     }
 
     [TestMethod]
@@ -4021,7 +4021,7 @@ public class BitDateRangePickerTests : BunitTestContext
 
         Assert.IsNull(value);
         Assert.AreEqual(1, cleared);
-        Assert.AreEqual(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
     }
 
     [TestMethod]
@@ -4034,8 +4034,7 @@ public class BitDateRangePickerTests : BunitTestContext
 
         // The autofocus attribute is not honored for an interactively rendered input, so the focus is
         // placed from the first render instead - which reaches the DOM as a focus interop call.
-        Assert.IsTrue(Context.JSInterop.Invocations
-                             .Any(i => i.Identifier.Contains("focus", StringComparison.OrdinalIgnoreCase)));
+        Assert.Contains(i => i.Identifier.Contains("focus", StringComparison.OrdinalIgnoreCase), Context.JSInterop.Invocations);
     }
 
     [TestMethod]
@@ -4068,8 +4067,8 @@ public class BitDateRangePickerTests : BunitTestContext
         // moved on from both the field and it - which only works if the toggle is asked to.
         var toggle = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
 
-        Assert.AreEqual(true, toggle.Arguments[28]); // trapFocus
-        Assert.AreEqual(true, toggle.Arguments[29]); // dismissOnFocusLeave
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(toggle.Arguments[28])); // trapFocus
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(toggle.Arguments[29])); // dismissOnFocusLeave
     }
 
     [TestMethod]
@@ -4082,7 +4081,7 @@ public class BitDateRangePickerTests : BunitTestContext
 
         // Standalone there is no dialog and no overlay, so the focus is free to leave the way it leaves any
         // other part of the page: the callout is never toggled, and nothing is trapped.
-        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.Callouts.toggle"));
+        Assert.DoesNotContain(i => i.Identifier == "BitBlazorUI.Callouts.toggle", Context.JSInterop.Invocations);
     }
 
     [TestMethod,
@@ -4159,7 +4158,7 @@ public class BitDateRangePickerTests : BunitTestContext
         Assert.AreEqual(highlightToday, component.FindAll(".bit-dtrp-dtd").Count > 0);
 
         // Whether today is painted or not, it is still the current date as far as a screen reader is concerned.
-        Assert.AreEqual(1, component.FindAll(".bit-dtrp-dbt[aria-current=\"date\"]").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-dtrp-dbt[aria-current=\"date\"]"));
     }
 
     [TestMethod]
@@ -4183,11 +4182,15 @@ public class BitDateRangePickerTests : BunitTestContext
         days[14].Click();
 
         // The half-picked range is reported too: the callback follows the picks, not the completed value.
-        Assert.AreEqual(2, reported.Count);
-        Assert.IsNotNull(reported[0]?.StartDate);
-        Assert.IsNull(reported[0]?.EndDate);
-        Assert.IsNotNull(reported[1]?.StartDate);
-        Assert.IsNotNull(reported[1]?.EndDate);
+        Assert.HasCount(2, reported);
+        var actualValue = reported[0]?.StartDate;
+        Assert.IsNotNull(actualValue);
+        var actualValue1 = reported[0]?.EndDate;
+        Assert.IsNull(actualValue1);
+        var actualValue2 = reported[1]?.StartDate;
+        Assert.IsNotNull(actualValue2);
+        var actualValue3 = reported[1]?.EndDate;
+        Assert.IsNotNull(actualValue3);
     }
 
     [TestMethod]
@@ -4211,12 +4214,12 @@ public class BitDateRangePickerTests : BunitTestContext
         // 2026-01-10 is a Saturday, so it is blocked rather than out of bounds.
         component.Find(".bit-dtrp-inp").Change("2026-01-10 - 2026-01-13");
         component.Find("form").Submit();
-        Assert.IsTrue(component.FindAll(".validation-message").Any(m => m.TextContent == "not available"));
+        Assert.Contains(m => m.TextContent == "not available", component.FindAll(".validation-message"));
 
         // 2027 is past MaxDate, and the bounds are a different mistake from a blocked day.
         component.Find(".bit-dtrp-inp").Change("2027-01-12 - 2027-01-13");
         component.Find("form").Submit();
-        Assert.IsTrue(component.FindAll(".validation-message").Any(m => m.TextContent == "outside the range"));
+        Assert.Contains(m => m.TextContent == "outside the range", component.FindAll(".validation-message"));
     }
 
     [TestMethod]
@@ -4232,8 +4235,8 @@ public class BitDateRangePickerTests : BunitTestContext
         });
 
         var months = component.FindAll(".bit-dtrp-mwp .bit-dtrp-pkb");
-        Assert.AreEqual(12, months.Count);
-        Assert.AreEqual(1, months.Count(m => m.GetAttribute("tabindex") == "0"));
+        Assert.HasCount(12, months);
+        Assert.ContainsSingle(m => m.GetAttribute("tabindex") == "0", months);
         Assert.IsTrue(months.All(m => string.IsNullOrEmpty(m.Id) is false));
     }
 
@@ -4283,8 +4286,8 @@ public class BitDateRangePickerTests : BunitTestContext
         component.FindAll(".bit-dtrp-mwp .bit-dtrp-nbt")[0].Click();
 
         var years = component.FindAll(".bit-dtrp-mwp .bit-dtrp-pkb");
-        Assert.AreEqual(12, years.Count);
-        Assert.AreEqual(1, years.Count(y => y.GetAttribute("tabindex") == "0"));
+        Assert.HasCount(12, years);
+        Assert.ContainsSingle(y => y.GetAttribute("tabindex") == "0", years);
     }
 
     [TestMethod]
@@ -4422,10 +4425,16 @@ public class BitDateRangePickerTests : BunitTestContext
         component.Find(".bit-dtrp-apb").Click();
 
         Assert.IsFalse(component.Instance.IsOpen);
-        Assert.IsNotNull(value?.StartDate);
-        Assert.IsNotNull(value?.EndDate);
-        Assert.AreEqual(value?.StartDate, applied?.StartDate);
-        Assert.AreEqual(value?.EndDate, applied?.EndDate);
+        var actualValue = value?.StartDate;
+        Assert.IsNotNull(actualValue);
+        var actualValue1 = value?.EndDate;
+        Assert.IsNotNull(actualValue1);
+        var expectedValue = value?.StartDate;
+        var actualValue2 = applied?.StartDate;
+        Assert.AreEqual(expectedValue, actualValue2);
+        var expectedValue3 = value?.EndDate;
+        var actualValue4 = applied?.EndDate;
+        Assert.AreEqual(expectedValue3, actualValue4);
     }
 
     [TestMethod]
@@ -4453,15 +4462,21 @@ public class BitDateRangePickerTests : BunitTestContext
         component.Find(".bit-dtrp-wrp").Click();
         component.FindAll(".bit-dtrp-dbt:not(.bit-dtrp-dbo)")[9].Click();
         component.FindAll(".bit-dtrp-dbt:not(.bit-dtrp-dbo)")[14].Click();
+        var expectedValue = original.StartDate;
+        var actualValue = value?.StartDate;
 
         // The picks reach the value as they are made, which is what the calendar itself reads.
-        Assert.AreNotEqual(original.StartDate, value?.StartDate);
+        Assert.AreNotEqual(expectedValue, actualValue);
 
         component.Find(".bit-dtrp-cnb").Click();
 
         Assert.AreEqual(1, cancelled);
-        Assert.AreEqual(original.StartDate, value?.StartDate);
-        Assert.AreEqual(original.EndDate, value?.EndDate);
+        var expectedValue1 = original.StartDate;
+        var actualValue2 = value?.StartDate;
+        Assert.AreEqual(expectedValue1, actualValue2);
+        var expectedValue3 = original.EndDate;
+        var actualValue4 = value?.EndDate;
+        Assert.AreEqual(expectedValue3, actualValue4);
     }
 
     [TestMethod]
@@ -4490,9 +4505,13 @@ public class BitDateRangePickerTests : BunitTestContext
 
         // Escape is a dismissal like any other, so it discards the transaction rather than committing it.
         component.Find(".bit-dtrp-cac").KeyDown(Key.Escape);
+        var expectedValue = original.StartDate;
+        var actualValue = value?.StartDate;
 
-        Assert.AreEqual(original.StartDate, value?.StartDate);
-        Assert.AreEqual(original.EndDate, value?.EndDate);
+        Assert.AreEqual(expectedValue, actualValue);
+        var expectedValue1 = original.EndDate;
+        var actualValue2 = value?.EndDate;
+        Assert.AreEqual(expectedValue1, actualValue2);
     }
 
     [TestMethod]
@@ -4522,9 +4541,13 @@ public class BitDateRangePickerTests : BunitTestContext
         component.Find(".bit-dtrp-wrp").Click();
         component.FindAll(".bit-dtrp-dbt:not(.bit-dtrp-dbo)")[20].Click();
         component.Find(".bit-dtrp-cnb").Click();
+        var expectedValue = applied.StartDate;
+        var actualValue = value?.StartDate;
 
-        Assert.AreEqual(applied.StartDate, value?.StartDate);
-        Assert.AreEqual(applied.EndDate, value?.EndDate);
+        Assert.AreEqual(expectedValue, actualValue);
+        var expectedValue1 = applied.EndDate;
+        var actualValue2 = value?.EndDate;
+        Assert.AreEqual(expectedValue1, actualValue2);
     }
 
     [TestMethod]
@@ -4543,14 +4566,14 @@ public class BitDateRangePickerTests : BunitTestContext
 
         // The start date alone is picked and the keyboard has not moved yet, so there is nothing
         // between it and the focused day to preview.
-        Assert.AreEqual(0, component.FindAll(".bit-dtrp-dhr").Count);
+        Assert.IsEmpty(component.FindAll(".bit-dtrp-dhr"));
 
         var focused = component.FindAll(".bit-dtrp-dbt").Single(d => d.GetAttribute("tabindex") == "0");
         focused.KeyDown(Key.Right);
         component.FindAll(".bit-dtrp-dbt").Single(d => d.GetAttribute("tabindex") == "0").KeyDown(Key.Right);
 
         // Two days past the start date: the pointer is not involved, so this is the keyboard's own preview.
-        Assert.AreEqual(2, component.FindAll(".bit-dtrp-dhr").Count);
+        Assert.HasCount(2, component.FindAll(".bit-dtrp-dhr"));
     }
 
     [TestMethod]
@@ -4568,8 +4591,8 @@ public class BitDateRangePickerTests : BunitTestContext
         // A strip of months would otherwise read every one of its titles out on every navigation.
         var titles = component.FindAll(".bit-dtrp-pkt, .bit-dtrp-dwp .bit-dtrp-ptb");
 
-        Assert.IsTrue(titles.Count > 1);
-        Assert.AreEqual(1, titles.Count(t => t.GetAttribute("aria-live") is not null));
+        Assert.IsGreaterThan(1, titles.Count);
+        Assert.ContainsSingle(t => t.GetAttribute("aria-live") is not null, titles);
     }
 
     [TestMethod]
@@ -4593,7 +4616,7 @@ public class BitDateRangePickerTests : BunitTestContext
         // end date back to the start day.
         var enabled = component.FindAll(".bit-dtrp-dbt").Where(d => d.HasAttribute("disabled") is false).ToList();
 
-        Assert.AreEqual(1, enabled.Count);
+        Assert.ContainsSingle(enabled);
         Assert.AreEqual("12", enabled[0].TextContent.Trim());
     }
 
@@ -4621,7 +4644,7 @@ public class BitDateRangePickerTests : BunitTestContext
                                .Select(d => d.TextContent.Trim())
                                .ToList();
 
-        CollectionAssert.AreEqual(new[] { "9", "10", "11", "12", "13", "14", "15" }, enabled);
+        Assert.AreSequenceEqual(new[] { "9", "10", "11", "12", "13", "14", "15" }, enabled);
     }
 
     [TestMethod]
@@ -4647,7 +4670,7 @@ public class BitDateRangePickerTests : BunitTestContext
                                .Select(d => d.TextContent.Trim())
                                .ToList();
 
-        CollectionAssert.AreEqual(new[] { "9", "10", "11", "12" }, enabled);
+        Assert.AreSequenceEqual(new[] { "9", "10", "11", "12" }, enabled);
     }
 
     [TestMethod]
@@ -4676,10 +4699,10 @@ public class BitDateRangePickerTests : BunitTestContext
         // ... and the root keeps everything it was given.
         var root = component.Find(".bit-dtrp").GetAttribute("style");
         Assert.IsNotNull(root);
-        StringAssert.Contains(root, "margin: 1rem");
-        StringAssert.Contains(root, "--bit-DateRangePicker-color: red");
-        StringAssert.Contains(root, "--bit-DateRangePicker-day-size:3rem");
-        StringAssert.Contains(root, "--bit-DateRangePicker-range-radius: 0");
+        Assert.Contains("margin: 1rem", root);
+        Assert.Contains("--bit-DateRangePicker-color: red", root);
+        Assert.Contains("--bit-DateRangePicker-day-size:3rem", root);
+        Assert.Contains("--bit-DateRangePicker-range-radius: 0", root);
     }
 
     [TestMethod]
@@ -4748,9 +4771,9 @@ public class BitDateRangePickerTests : BunitTestContext
 
         // A focus() brings the field into view, and a field it scrolled the page to after the callout was placed
         // against it would be moved out from under the callout - which the scroll then dismisses.
-        Assert.IsTrue(focus >= 0);
-        Assert.IsTrue(toggle >= 0);
-        Assert.IsTrue(focus < toggle);
+        Assert.IsGreaterThanOrEqualTo(0, focus);
+        Assert.IsGreaterThanOrEqualTo(0, toggle);
+        Assert.IsLessThan(toggle, focus);
     }
 
     // ── The field and its chrome ──────────────────────────────────────────────
@@ -4849,7 +4872,7 @@ public class BitDateRangePickerTests : BunitTestContext
 
         Assert.IsTrue(root.ClassList.Contains("bit-dtrp-foc"));
         Assert.IsTrue(root.ClassList.Contains("custom-focused"));
-        StringAssert.Contains(root.GetAttribute("style"), "outline: 1px;");
+        Assert.Contains("outline: 1px;", root.GetAttribute("style")!);
         Assert.AreEqual(1, focusIn);
 
         component.Find(".bit-dtrp-inp").Focus();
@@ -4863,7 +4886,7 @@ public class BitDateRangePickerTests : BunitTestContext
         Assert.AreEqual(1, focusOut);
         Assert.IsFalse(root.ClassList.Contains("bit-dtrp-foc"));
         Assert.IsFalse(root.ClassList.Contains("custom-focused"));
-        Assert.IsFalse((root.GetAttribute("style") ?? string.Empty).Contains("outline: 1px;"));
+        Assert.DoesNotContain("outline: 1px;", (root.GetAttribute("style") ?? string.Empty));
     }
 
     [TestMethod]
@@ -4969,7 +4992,7 @@ public class BitDateRangePickerTests : BunitTestContext
         }
         else
         {
-            StringAssert.Contains(style, expectedStyle);
+            Assert.Contains(expectedStyle, style);
         }
     }
 
@@ -4987,7 +5010,7 @@ public class BitDateRangePickerTests : BunitTestContext
 
         Assert.AreEqual("stay-picker", root.Id);
         Assert.IsTrue(root.ClassList.Contains("custom-class"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin: 1px;");
+        Assert.Contains("margin: 1px;", root.GetAttribute("style")!);
     }
 
     [TestMethod,
@@ -5096,7 +5119,7 @@ public class BitDateRangePickerTests : BunitTestContext
             parameters.Add(p => p.YearCellTemplate, y => $"<span class=\"year-cell\">{y}</span>");
         });
 
-        Assert.AreEqual(component.FindAll(".bit-dtrp-dbt").Count, component.FindAll(".bit-dtrp-dbt .day-cell").Count);
+        Assert.HasCount(component.FindAll(".bit-dtrp-dbt").Count, component.FindAll(".bit-dtrp-dbt .day-cell"));
         Assert.AreEqual("15", component.Find(".bit-dtrp-dbt[tabindex='0'] .day-cell").TextContent);
         Assert.HasCount(12, component.FindAll(".bit-dtrp-mwp .month-cell"));
         Assert.AreEqual("1", component.FindAll(".bit-dtrp-mwp .month-cell")[0].TextContent);
@@ -5163,7 +5186,7 @@ public class BitDateRangePickerTests : BunitTestContext
         toggle.Click();
 
         // The overlay takes the day picker's place rather than sitting beside it.
-        Assert.HasCount(1, component.FindAll(".bit-dtrp-mwp"));
+        Assert.ContainsSingle(component.FindAll(".bit-dtrp-mwp"));
         Assert.IsEmpty(component.FindAll(".bit-dtrp-dwp"));
     }
 
@@ -5201,7 +5224,7 @@ public class BitDateRangePickerTests : BunitTestContext
 
         show.Click();
 
-        Assert.HasCount(1, component.FindAll(".bit-dtrp-twp"));
+        Assert.ContainsSingle(component.FindAll(".bit-dtrp-twp"));
 
         var hide = component.Find("button[aria-label='Hide the clock']");
 
@@ -5273,14 +5296,14 @@ public class BitDateRangePickerTests : BunitTestContext
         Assert.IsTrue(start.ClassList.Contains("custom-start"));
         Assert.IsTrue(start.ClassList.Contains("custom-ends"));
         Assert.IsTrue(start.ClassList.Contains("custom-day"));
-        StringAssert.Contains(start.GetAttribute("style"), "color: red;");
-        StringAssert.Contains(start.GetAttribute("style"), "font-weight: bold;");
-        StringAssert.Contains(start.GetAttribute("style"), "padding: 1px;");
+        Assert.Contains("color: red;", start.GetAttribute("style")!);
+        Assert.Contains("font-weight: bold;", start.GetAttribute("style")!);
+        Assert.Contains("padding: 1px;", start.GetAttribute("style")!);
 
         Assert.IsTrue(end.ClassList.Contains("custom-end"));
         Assert.IsTrue(end.ClassList.Contains("custom-ends"));
-        StringAssert.Contains(end.GetAttribute("style"), "color: blue;");
-        StringAssert.Contains(end.GetAttribute("style"), "font-weight: bold;");
+        Assert.Contains("color: blue;", end.GetAttribute("style")!);
+        Assert.Contains("font-weight: bold;", end.GetAttribute("style")!);
 
         // The four days between the tenth and the fifteenth.
         Assert.HasCount(4, between);
@@ -5289,7 +5312,7 @@ public class BitDateRangePickerTests : BunitTestContext
         Assert.IsTrue(between.All(b => b.ClassList.Contains("custom-ends") is false));
 
         Assert.IsTrue(today.ClassList.Contains("custom-today"));
-        StringAssert.Contains(today.GetAttribute("style"), "color: gray;");
+        Assert.Contains("color: gray;", today.GetAttribute("style")!);
         Assert.IsFalse(today.ClassList.Contains("custom-between"));
     }
 
@@ -5344,8 +5367,8 @@ public class BitDateRangePickerTests : BunitTestContext
         Assert.IsTrue(preset.ClassList.Contains("custom-march"));
         Assert.IsFalse(preset.ClassList.Contains("custom-selected-preset"));
         // The style of every preset comes first, the preset's own after it.
-        StringAssert.Contains(preset.GetAttribute("style"), "padding: 1px;");
-        StringAssert.Contains(preset.GetAttribute("style"), "color: red");
+        Assert.Contains("padding: 1px;", preset.GetAttribute("style")!);
+        Assert.Contains("color: red", preset.GetAttribute("style")!);
 
         preset.Click();
 
@@ -5435,16 +5458,16 @@ public class BitDateRangePickerTests : BunitTestContext
 
         component.Find(".bit-dtrp-inp").Change("nonsense");
 
-        CollectionAssert.AreEqual(new[] { "The Stay field is not valid." }, editContext.GetValidationMessages().ToArray());
+        Assert.AreSequenceEqual(new[] { "The Stay field is not valid." }, editContext.GetValidationMessages().ToArray());
 
         // 2026-01-10 is a Saturday: readable, but a day the calendar blocks.
         component.Find(".bit-dtrp-inp").Change("2026-01-10 - 2026-01-13");
 
-        CollectionAssert.AreEqual(new[] { "The Stay field contains a date that is not available." }, editContext.GetValidationMessages().ToArray());
+        Assert.AreSequenceEqual(new[] { "The Stay field contains a date that is not available." }, editContext.GetValidationMessages().ToArray());
 
         component.Find(".bit-dtrp-inp").Change("2027-01-12 - 2027-01-13");
 
-        CollectionAssert.AreEqual(new[] { "The Stay field is out of the allowed range." }, editContext.GetValidationMessages().ToArray());
+        Assert.AreSequenceEqual(new[] { "The Stay field is out of the allowed range." }, editContext.GetValidationMessages().ToArray());
         Assert.IsNull(model.Value);
 
         component.Find(".bit-dtrp-inp").Change("2026-01-12 - 2026-01-13");
@@ -5493,7 +5516,7 @@ public class BitDateRangePickerTests : BunitTestContext
 
         var disposal = Context.DisposeComponentsAsync();
 
-        Assert.HasCount(1, swipesDispose.Invocations);
+        Assert.ContainsSingle(swipesDispose.Invocations);
         Assert.AreSame(picker, reference.Value);
 
         swipesDispose.SetVoidResult();
@@ -5620,9 +5643,9 @@ public class BitDateRangePickerTests : BunitTestContext
 
         // An initial IsOpen opens onto the state a click opens onto: the day grid with the time picker beside it,
         // rather than the time picker alone.
-        Assert.AreEqual(1, component.FindAll(".bit-dtrp-dwp").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-dtrp-twp").Count);
-        Assert.IsTrue(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.Utils.getBodyWidth"));
+        Assert.ContainsSingle(component.FindAll(".bit-dtrp-dwp"));
+        Assert.ContainsSingle(component.FindAll(".bit-dtrp-twp"));
+        Assert.Contains(i => i.Identifier == "BitBlazorUI.Utils.getBodyWidth", Context.JSInterop.Invocations);
     }
 
     [TestMethod]
@@ -5637,7 +5660,7 @@ public class BitDateRangePickerTests : BunitTestContext
         });
 
         // The extra months are dropped instead of being laid out side by side past the edge of the viewport.
-        Assert.AreEqual(1, component.FindAll(".bit-dtrp-dwp").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-dtrp-dwp"));
     }
 
     [TestMethod]
@@ -5656,6 +5679,6 @@ public class BitDateRangePickerTests : BunitTestContext
             Assert.IsFalse(input.HasAttribute("blazor:onfocus"));
         }
 
-        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.Utils.selectText"));
+        Assert.DoesNotContain(i => i.Identifier == "BitBlazorUI.Utils.selectText", Context.JSInterop.Invocations);
     }
 }

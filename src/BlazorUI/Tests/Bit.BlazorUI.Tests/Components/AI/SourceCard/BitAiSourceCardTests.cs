@@ -25,7 +25,7 @@ public class BitAiSourceCardTests : BitAiTestBase
         Assert.IsTrue(root.FirstElementChild!.ClassList.Contains("bit-crd"));
         Assert.AreEqual("3", component.Find(".bit-aisrc-idx").TextContent);
         Assert.AreEqual("Docs", component.Find(".bit-aisrc-ttl").TextContent);
-        StringAssert.Contains(component.Find(".bit-aisrc-sit").TextContent, "Microsoft Learn");
+        Assert.Contains("Microsoft Learn", component.Find(".bit-aisrc-sit").TextContent);
     }
 
     [TestMethod]
@@ -72,8 +72,8 @@ public class BitAiSourceCardTests : BitAiTestBase
 
         Assert.AreEqual("https://learn.microsoft.com/aspnet", link.GetAttribute("href"));
         Assert.AreEqual("_blank", link.GetAttribute("target"));
-        StringAssert.Contains(link.GetAttribute("rel"), "noopener");
-        StringAssert.Contains(link.GetAttribute("rel"), "noreferrer");
+        Assert.Contains("noopener", link.GetAttribute("rel")!);
+        Assert.Contains("noreferrer", link.GetAttribute("rel")!);
     }
 
     [TestMethod]
@@ -133,7 +133,7 @@ public class BitAiSourceCardTests : BitAiTestBase
 
         Assert.HasCount(shown ? 1 : 0, component.FindAll("img.bit-aisrc-fav"));
         Assert.IsEmpty(component.FindAll("button.bit-acb"));
-        StringAssert.Contains(component.Find(".bit-aisrc-sit").TextContent, "example.com");
+        Assert.Contains("example.com", component.Find(".bit-aisrc-sit").TextContent);
     }
 
     [TestMethod]
@@ -160,7 +160,8 @@ public class BitAiSourceCardTests : BitAiTestBase
             BitAiImageMode.ClickToLoad => BitAiImagePolicy.ClickToLoad,
             BitAiImageMode.Block => BitAiImagePolicy.Block,
             _ => BitAiImagePolicy.Allow,
-        }) with { AllowDataImages = allowDataImages };
+        }) with
+        { AllowDataImages = allowDataImages };
         var source = new BitAiCitationSource("s1", "Docs") { Url = "https://example.com", IconUrl = "data:image/png;base64,iVBORw0KGgo=" };
 
         var component = RenderComponent<BitAiSourceCard>(p => p
@@ -216,7 +217,7 @@ public class BitAiSourceCardTests : BitAiTestBase
         var root = component.Find(".bit-aisrc");
 
         Assert.IsTrue(root.ClassList.Contains("custom-class"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin: 1px");
+        Assert.Contains("margin: 1px", root.GetAttribute("style")!);
     }
 
     [TestMethod,
@@ -237,7 +238,7 @@ public class BitAiSourceCardTests : BitAiTestBase
         }
         else
         {
-            StringAssert.Contains(style, expected);
+            Assert.Contains(expected, style!);
         }
     }
 
@@ -268,7 +269,7 @@ public class BitAiSourceCardTests : BitAiTestBase
             .Add(c => c.Styles, new() { Root = "color: red", Site = "color: blue" }));
 
         Assert.IsTrue(component.Find(".bit-aisrc").ClassList.Contains("c-root"));
-        StringAssert.Contains(component.Find(".bit-aisrc").GetAttribute("style"), "color: red");
+        Assert.Contains("color: red", component.Find(".bit-aisrc").GetAttribute("style")!);
         Assert.IsTrue(component.Find(".bit-crd").ClassList.Contains("c-card"));
         Assert.IsTrue(component.Find(".bit-aisrc-idx").ClassList.Contains("c-index"));
         Assert.IsTrue(component.Find(".bit-aisrc-ttl").ClassList.Contains("c-title"));
@@ -294,7 +295,7 @@ public class BitAiSourceCardTests : BitAiTestBase
     [TestMethod]
     public void BitAiSourceCardParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual("BitParams.BitAiSourceCard", BitAiSourceCardParams.ParamName);
+        Assert.AreEqual("BitParams.BitAiSourceCard", new BitAiSourceCardParams().Name);
         Assert.AreEqual(BitAiSourceCardParams.ParamName, new BitAiSourceCardParams().Name);
     }
 }

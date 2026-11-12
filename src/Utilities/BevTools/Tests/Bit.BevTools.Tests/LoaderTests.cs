@@ -33,7 +33,7 @@ public class LoaderTests : BunitContext
 
         Assert.IsNull(Services.GetService<BevToolsSession>());
         Assert.IsInstanceOfType<BevToolsActivatorHook>(Services.GetService<IComponentActivator>());
-        Assert.IsTrue(Services.GetServices<IHttpMessageHandlerBuilderFilter>().Any(f => f is BevToolsHttpHookFilter));
+        Assert.Contains(f => f is BevToolsHttpHookFilter, Services.GetServices<IHttpMessageHandlerBuilderFilter>());
 
         var cut = RenderHost();
 
@@ -83,7 +83,7 @@ public class LoaderTests : BunitContext
 
         var session = cut.Instance.Session;
         Assert.IsNotNull(session.Registry.ServiceGraph);
-        Assert.IsTrue(session.Registry.ServiceGraph.Services.Any(s => s.ServiceType == typeof(LoaderTestService)));
+        Assert.Contains(s => s.ServiceType == typeof(LoaderTestService), session.Registry.ServiceGraph.Services);
         Assert.AreEqual(BevCapabilityStatus.Available, session.Capabilities.Single(c => c.Area == "DI" && c.Name.StartsWith("Registrations", StringComparison.Ordinal)).Status);
     }
 
@@ -96,12 +96,12 @@ public class LoaderTests : BunitContext
         var cut = RenderHost();
         var client = cut.Instance.Services.GetRequiredService<HttpClient>();
 
-        Assert.AreEqual(HttpStatusCode.NotFound, (await client.GetAsync("before")).StatusCode);
+        Assert.AreEqual(HttpStatusCode.NotFound, (await client.GetAsync("before", TestContext.CancellationToken)).StatusCode);
         await Renderer.Dispatcher.InvokeAsync(() => cut.Instance.Loader.OpenAsync());
         var session = cut.Instance.Session;
         using (session.UseAmbient())
         {
-            await client.GetAsync("after");
+            await client.GetAsync("after", TestContext.CancellationToken);
         }
 
         Assert.AreEqual(2, transport.Calls);
@@ -122,7 +122,7 @@ public class LoaderTests : BunitContext
         var session = cut.Instance.Session;
         using (session.UseAmbient())
         {
-            await Services.GetRequiredService<IHttpClientFactory>().CreateClient("api").GetAsync("https://example.com/items");
+            await Services.GetRequiredService<IHttpClientFactory>().CreateClient("api").GetAsync("https://example.com/items", TestContext.CancellationToken);
         }
 
         Assert.AreEqual(1, session.Http.Count);
@@ -143,7 +143,7 @@ public class LoaderTests : BunitContext
         var session = cut.Instance.Session;
         using (session.UseAmbient())
         {
-            await client.GetAsync("items");
+            await client.GetAsync("items", TestContext.CancellationToken);
         }
 
         Assert.AreEqual(BevHttpClientAttachment.InPipeline, session.Attachment!.HttpClient, "the factory's pipeline records through the loader's hook already");
@@ -205,9 +205,9 @@ public class LoaderTests : BunitContext
         var session = BitBevTools.Attach(scope.ServiceProvider);
 
         Assert.IsTrue(session.Attachment!.FactoryClientsHooked);
-        Assert.IsTrue(session.Registry.ServiceGraph!.Services.Any(s => s.ServiceType == typeof(LoaderTestService)));
+        Assert.Contains(s => s.ServiceType == typeof(LoaderTestService), session.Registry.ServiceGraph!.Services);
         Assert.AreEqual(BevCapabilityStatus.Available, session.Capabilities.Single(c => c.Area == "DI" && c.Name.StartsWith("Registrations", StringComparison.Ordinal)).Status);
-        StringAssert.Contains(session.Capabilities.Single(c => c.Area == "Network" && c.Name == "HTTP requests").Explanation, "IHttpClientFactory clients go through the handlers Bit.BevTools.Loader added");
+        Assert.Contains("IHttpClientFactory clients go through the handlers Bit.BevTools.Loader added", session.Capabilities.Single(c => c.Area == "Network" && c.Name == "HTTP requests").Explanation);
         session.Dispose();
     }
 
@@ -224,9 +224,9 @@ public class LoaderTests : BunitContext
         var loader = scope.ServiceProvider.GetRequiredService<BevToolsLoader>();
 
         Assert.IsFalse(context.TryAddServices(mismatched, new ServiceCollection(), out var reason));
-        StringAssert.Contains(reason, "reference the same version of both packages");
+        Assert.Contains("reference the same version of both packages", reason);
         Assert.IsFalse(await loader.OpenAsync());
-        StringAssert.Contains(loader.Problem, "reference the same version of both packages");
+        Assert.Contains("reference the same version of both packages", loader.Problem!);
     }
 
     [TestMethod]
@@ -240,7 +240,7 @@ public class LoaderTests : BunitContext
         var loader = scope.ServiceProvider.GetRequiredService<BevToolsLoader>();
 
         Assert.IsFalse(await loader.OpenAsync());
-        StringAssert.Contains(loader.Problem, "boom");
+        Assert.Contains("boom", loader.Problem!);
         Assert.IsFalse(loader.IsActive);
     }
 
@@ -256,7 +256,7 @@ public class LoaderTests : BunitContext
         var session = BitBevTools.Attach(scope.ServiceProvider);
 
         Assert.AreEqual(BevHttpClientAttachment.Transient, session.Attachment!.HttpClient);
-        StringAssert.Contains(session.Capabilities.Single(c => c.Area == "Network" && c.Name == "HTTP requests").Explanation, "BevToolsHttpHookHandler");
+        Assert.Contains("BevToolsHttpHookHandler", session.Capabilities.Single(c => c.Area == "Network" && c.Name == "HTTP requests").Explanation);
         session.Dispose();
     }
 
@@ -299,7 +299,7 @@ public class LoaderTests : BunitContext
         Assert.IsEmpty(cut.FindAll(".bev-root"));
         Assert.IsFalse(await loader.IsAuthorizedAsync());
         Assert.IsFalse(await Renderer.Dispatcher.InvokeAsync(() => loader.OpenAsync()));
-        StringAssert.Contains(loader.Problem, "did not accept");
+        Assert.Contains("did not accept", loader.Problem!);
         Assert.IsEmpty(cut.FindAll(".bev-root"));
 
         accepted = true;
@@ -308,7 +308,7 @@ public class LoaderTests : BunitContext
 
         accepted = false;
         Assert.IsFalse(await Renderer.Dispatcher.InvokeAsync(() => loader.OpenAsync()));
-        StringAssert.Contains(loader.Problem, "did not accept");
+        Assert.Contains("did not accept", loader.Problem);
         cut.WaitForAssertion(() => Assert.IsEmpty(cut.FindAll(".bev-root")));
     }
 
@@ -365,10 +365,10 @@ public class LoaderTests : BunitContext
         var development = new ServiceCollection().AddSingleton<IHostEnvironment>(new StubEnvironment("Development")).AddBitBevToolsLoaderServices();
         var production = new ServiceCollection().AddSingleton<IHostEnvironment>(new StubEnvironment("Production")).AddBitBevToolsLoaderServices();
 
-        Assert.IsTrue(development.Any(d => d.ServiceType == typeof(BevToolsSession)));
-        Assert.IsFalse(production.Any(d => d.ServiceType == typeof(BevToolsSession)));
-        Assert.IsTrue(production.Any(d => d.ServiceType == typeof(BevToolsActivatorHook)));
-        StringAssert.Contains(Context(production).StartupDecision, "Production");
+        Assert.Contains(d => d.ServiceType == typeof(BevToolsSession), development);
+        Assert.DoesNotContain(d => d.ServiceType == typeof(BevToolsSession), production);
+        Assert.Contains(d => d.ServiceType == typeof(BevToolsActivatorHook), production);
+        Assert.Contains("Production", Context(production).StartupDecision);
     }
 
     [TestMethod]
@@ -377,8 +377,8 @@ public class LoaderTests : BunitContext
         var services = new ServiceCollection().AddBitBevToolsServices(o => o.Enabled = true).AddBitBevToolsLoaderServices();
 
         Assert.IsTrue(Context(services).RegisteredAtStartup);
-        StringAssert.Contains(Context(services).StartupDecision, "AddBitBevToolsServices");
-        Assert.IsFalse(services.Any(d => d.ServiceType == typeof(BevToolsActivatorHook)));
+        Assert.Contains("AddBitBevToolsServices", Context(services).StartupDecision);
+        Assert.DoesNotContain(d => d.ServiceType == typeof(BevToolsActivatorHook), services);
     }
 
     [TestMethod]
@@ -388,8 +388,8 @@ public class LoaderTests : BunitContext
             .AddBitBevToolsLoaderServices(o => o.RegisterAtStartup = false)
             .AddBitBevToolsLoaderServices(o => o.AllowInMultiUserHost = true);
 
-        Assert.AreEqual(1, services.Count(d => d.ServiceType == typeof(BevToolsLoaderContext)));
-        Assert.AreEqual(1, services.Count(d => d.ServiceType == typeof(BevToolsActivatorHook)));
+        Assert.ContainsSingle(d => d.ServiceType == typeof(BevToolsLoaderContext), services);
+        Assert.ContainsSingle(d => d.ServiceType == typeof(BevToolsActivatorHook), services);
         Assert.IsTrue(Context(services).Options.AllowInMultiUserHost);
     }
 
@@ -422,7 +422,7 @@ public class LoaderTests : BunitContext
 
         Assert.IsFalse(loader.CanOpen);
         Assert.IsFalse(await loader.OpenAsync());
-        StringAssert.Contains(loader.Problem, "AllowInMultiUserHost");
+        Assert.Contains("AllowInMultiUserHost", loader.Problem!);
         Assert.IsNull(RuntimeAttachment.Resolve(scope.ServiceProvider));
     }
 
@@ -465,7 +465,7 @@ public class LoaderTests : BunitContext
 
         Assert.IsFalse(loader.CanOpen);
         Assert.IsFalse(await loader.OpenAsync());
-        StringAssert.Contains(loader.Problem, "Authorize");
+        Assert.Contains("Authorize", loader.Problem!);
         Assert.IsNull(RuntimeAttachment.Resolve(scope.ServiceProvider));
     }
 
@@ -493,7 +493,7 @@ public class LoaderTests : BunitContext
         Assert.IsTrue(loader.CanOpen, "the policy allows it; the callback is what refuses");
         Assert.IsFalse(await loader.IsAuthorizedAsync());
         Assert.IsFalse(await loader.OpenAsync());
-        StringAssert.Contains(loader.Problem, throws ? "threw InvalidOperationException" : "did not accept");
+        Assert.Contains(throws ? "threw InvalidOperationException" : "did not accept", loader.Problem!);
         Assert.IsFalse(loader.Problem!.Contains("no user", StringComparison.Ordinal), "the refused user is not shown what the callback threw");
         Assert.AreEqual(2, asked, "asked again on open, never answered from a cache");
         Assert.IsNull(RuntimeAttachment.Resolve(scope.ServiceProvider));
@@ -528,8 +528,9 @@ public class LoaderTests : BunitContext
         Assert.IsFalse(await loader.OpenAsync());
         var entry = logs.Entries.Single();
         Assert.AreEqual(LogLevel.Warning, entry.Level);
-        Assert.AreEqual("no user", entry.Exception?.Message);
-        StringAssert.Contains(loader.Problem, "(logged)");
+        var actualValue = entry.Exception?.Message;
+        Assert.AreEqual("no user", actualValue);
+        Assert.Contains("(logged)", loader.Problem!);
     }
 
     [TestMethod]
@@ -547,7 +548,7 @@ public class LoaderTests : BunitContext
         var loader = scope.ServiceProvider.GetRequiredService<BevToolsLoader>();
 
         Assert.IsFalse(await loader.OpenAsync());
-        StringAssert.Contains(loader.Problem, "Authorize threw InvalidOperationException");
+        Assert.Contains("Authorize threw InvalidOperationException", loader.Problem!);
         Assert.IsFalse(loader.Problem!.Contains("(logged)", StringComparison.Ordinal), loader.Problem);
     }
 
@@ -571,8 +572,8 @@ public class LoaderTests : BunitContext
         var loader = scope.ServiceProvider.GetRequiredService<BevToolsLoader>();
 
         Assert.IsFalse(await loader.OpenAsync());
-        StringAssert.Contains(loader.Problem, "Bit.BevTools failed before asking");
-        StringAssert.Contains(loader.Problem, "boom");
+        Assert.Contains("Bit.BevTools failed before asking", loader.Problem!);
+        Assert.Contains("boom", loader.Problem);
         Assert.IsFalse(loader.Problem!.Contains("Authorize threw", StringComparison.Ordinal), loader.Problem);
         Assert.AreEqual(0, asked, "a refusal: the callback is not asked outside BevTools' own work");
     }
@@ -610,7 +611,7 @@ public class LoaderTests : BunitContext
         var on = BitBevTools.Attach(second.ServiceProvider, o => o.Enabled = true);
 
         Assert.IsFalse(off.IsEnabled);
-        StringAssert.Contains(off.Registry.EnabledReason, "serves many users");
+        Assert.Contains("serves many users", off.Registry.EnabledReason);
         Assert.IsTrue(on.IsEnabled);
         on.Dispose();
     }
@@ -756,10 +757,12 @@ public class LoaderTests : BunitContext
     {
         public LoaderTestService Service { get; } = service;
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }
 
 /// <summary>An app's layout as it uses the loader: its own components, a way to open BevTools, and the loader's panel.</summary>
-public class LoaderHost : ComponentBase
+internal class LoaderHost : ComponentBase
 {
     [Inject] public BevToolsLoader Loader { get; set; } = default!;
 

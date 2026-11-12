@@ -214,7 +214,7 @@ public class AccessibilityTests : BunitContext
         Render([slow]).Find(".bit-blow").KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });
         Render([fast]).Find(".bit-blow").KeyDown(new KeyboardEventArgs { Key = "ArrowDown", ShiftKey = true });
 
-        Assert.IsTrue(fast.Position.Y > slow.Position.Y);
+        Assert.IsGreaterThan(slow.Position.Y, fast.Position.Y);
     }
 
     [TestMethod]

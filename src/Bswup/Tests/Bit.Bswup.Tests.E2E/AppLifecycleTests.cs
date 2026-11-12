@@ -32,17 +32,17 @@ public abstract class AppLifecycleTests : BswupTest
         var finished = events.Single(e => e.Type == "DOWNLOAD_FINISHED");
         Assert.IsTrue(finished.FirstInstall, $"downloadFinished was not a first install: {string.Join(", ", events.Select(e => e.ToString()))}");
         Assert.AreEqual(100, events.Where(e => e.Type == "DOWNLOAD_PROGRESS").Max(e => e.Percent) ?? 0, 0.001);
-        Assert.IsFalse(events.Any(e => e.Type == "ERROR"), $"The install reported errors: {string.Join(", ", events.Where(e => e.Type == "ERROR"))}");
+        Assert.DoesNotContain(e => e.Type == "ERROR", events, $"The install reported errors: {string.Join(", ", events.Where(e => e.Type == "ERROR"))}");
 
         var manifest = await Session.ManifestAsync(AppPath);
         var bucket = BucketName(manifest.Version);
-        CollectionAssert.AreEqual(new[] { bucket }, await BswupCacheNamesAsync());
+        Assert.AreSequenceEqual(new[] { bucket }, await BswupCacheNamesAsync());
 
         var expected = PrecacheKeys(manifest);
         var cached = await EventuallyAsync(() => CachedUrlsAsync(bucket), urls => expected.All(urls.Contains), $"every manifest asset in {bucket}");
 
         var workerScripts = cached.Where(url => url.Contains("service-worker.js", StringComparison.Ordinal) || url.Contains("bit-bswup.sw", StringComparison.Ordinal)).ToArray();
-        Assert.AreEqual(0, workerScripts.Length, $"Service-worker scripts were precached: {string.Join(", ", workerScripts)}");
+        Assert.IsEmpty(workerScripts, $"Service-worker scripts were precached: {string.Join(", ", workerScripts)}");
 
         if (UsesProgressComponent)
         {
@@ -73,12 +73,12 @@ public abstract class AppLifecycleTests : BswupTest
         var requests = await Session.RequestsAsync();
 
         var downloaded = requests.Where(r => assetPaths.Contains(r.Path)).ToArray();
-        Assert.AreEqual(0, downloaded.Length, $"A later visit downloaded cached assets again: {string.Join(", ", downloaded.Select(r => r.ToString()))}");
+        Assert.IsEmpty(downloaded, $"A later visit downloaded cached assets again: {string.Join(", ", downloaded.Select(r => r.ToString()))}");
 
         if (NavigationsReachServer is false)
         {
             var documents = requests.Where(r => r.Destination == "document").ToArray();
-            Assert.AreEqual(0, documents.Length, $"The navigation was not answered from the cache: {string.Join(", ", documents.Select(r => r.ToString()))}");
+            Assert.IsEmpty(documents, $"The navigation was not answered from the cache: {string.Join(", ", documents.Select(r => r.ToString()))}");
         }
     }
 
@@ -141,7 +141,7 @@ public abstract class AppLifecycleTests : BswupTest
 
         // Unchanged hashed assets move to the new bucket instead of being downloaded again.
         var redownloaded = (await Session.RequestsAsync()).Where(r => r.Path.EndsWith(".wasm", StringComparison.OrdinalIgnoreCase)).ToArray();
-        Assert.AreEqual(0, redownloaded.Length, $"The update downloaded unchanged assets: {string.Join(", ", redownloaded.Select(r => r.ToString()))}");
+        Assert.IsEmpty(redownloaded, $"The update downloaded unchanged assets: {string.Join(", ", redownloaded.Select(r => r.ToString()))}");
 
         // Hash-less assets are refreshed on every update: the new version's copy is the one cached.
         AllowNetworkErrors();
@@ -173,7 +173,7 @@ public abstract class AppLifecycleTests : BswupTest
         await Page.EvaluateAsync("() => BitBswup.checkForUpdate()");
 
         await WaitForEventAsync("UPDATE_CHECK_FAILED");
-        Assert.IsFalse((await EventsAsync()).Any(e => e.Type == "ERROR"), "A failed update check was reported as an install error.");
+        Assert.DoesNotContain(e => e.Type == "ERROR", await EventsAsync(), "A failed update check was reported as an install error.");
         if (UsesProgressComponent)
         {
             await Expect(Page.Locator("#bit-bswup-error")).ToBeHiddenAsync();
@@ -201,7 +201,7 @@ public abstract class AppLifecycleTests : BswupTest
 
         var failedAsset = (await EventsAsync()).FirstOrDefault(e => e.Type == "ERROR" && e.Reason == "fetch");
         Assert.IsNotNull(failedAsset, "The failing asset itself was not reported.");
-        StringAssert.Contains(failedAsset.Url, "harness-extra.json");
+        Assert.Contains("harness-extra.json", failedAsset.Url!);
 
         Assert.IsFalse(await IsControlledAsync(), "An aborted install ended up controlling the page.");
         await EventuallyAsync(() => BswupCacheNamesAsync(), names => names.Length == 0, "the partially filled bucket to be discarded");
@@ -233,7 +233,7 @@ public abstract class AppLifecycleTests : BswupTest
         var manifest = await Session.ManifestAsync(AppPath);
         var key = PrecacheKeys(manifest).Single(url => url.Contains("harness-extra.json", StringComparison.Ordinal));
         var bucket = BucketName(manifest.Version);
-        CollectionAssert.DoesNotContain(await CachedUrlsAsync(bucket), key);
+        Assert.DoesNotContain(key, await CachedUrlsAsync(bucket));
 
         await Session.ClearFaultsAsync();
         var extra = await FetchAsync(AppUrl("_content/Bit.Bswup.Tests.Harness/harness-extra.json"));
@@ -250,7 +250,7 @@ public abstract class AppLifecycleTests : BswupTest
     /// Waits for every manifest asset to be in its bucket. The page starts before the post-start top-up has
     /// finished, and a test that changes the deployment right away would otherwise race it.
     /// </summary>
-    protected Task WaitForPrecacheAsync(HarnessSession.AssetsManifest manifest)
+    private protected Task WaitForPrecacheAsync(HarnessSession.AssetsManifest manifest)
     {
         var expected = PrecacheKeys(manifest);
         return EventuallyAsync(() => CachedUrlsAsync(BucketName(manifest.Version)), urls => expected.All(urls.Contains), "the precache to complete");

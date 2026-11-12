@@ -24,7 +24,8 @@ public sealed class DemoPagesTests : BortableTest
         var problems = TrackProblems(page, BaseUrl);
 
         var response = await GotoAsync(page, path);
-        Assert.AreEqual(200, response?.Status, $"{path} answered {response?.Status}");
+        var actualValue = response?.Status;
+        Assert.AreEqual(200, actualValue, $"{path} answered {response?.Status}");
         await WaitForListsAsync(page);
         await Expect(page.Locator("h1").First).ToBeVisibleAsync();
 
@@ -36,7 +37,7 @@ public sealed class DemoPagesTests : BortableTest
             Assert.IsTrue(await page.EvaluateAsync<bool>(
                 "() => [...document.querySelectorAll('[data-bortable-list]')].every(l => getComputedStyle(l).position === 'relative')"),
                 $"{path} has {lists} list(s) but bit-bortable.css is not applied to them");
-            Assert.IsTrue(await page.Locator($"{ListSelector} > [data-bortable-item]").CountAsync() > 0, $"{path} shows no items");
+            Assert.IsGreaterThan(0, await page.Locator($"{ListSelector} > [data-bortable-item]").CountAsync(), $"{path} shows no items");
         }
 
         // Every sample of the page is followed by a "View code" panel of its own, outside the sample's frame, which
@@ -69,7 +70,7 @@ public sealed class DemoPagesTests : BortableTest
                 {
                     var name = await panel.Locator(".demo-code__file").Nth(j).TextContentAsync();
                     var source = await code.Nth(j).TextContentAsync() ?? "";
-                    Assert.IsTrue(source.Length > 100, $"{path}, sample {i + 1}: {name} shows a source of only {source.Length} characters");
+                    Assert.IsGreaterThan(100, source.Length, $"{path}, sample {i + 1}: {name} shows a source of only {source.Length} characters");
                     Assert.IsGreaterThan(0, await code.Nth(j).Locator("[class^='tok-']").CountAsync(), $"{path}, sample {i + 1}: {name} is not coloured");
                     Assert.DoesNotContain("bb-card", source, $"{path}, sample {i + 1}: {name} carries the page around the sample");
                     sources.Add(source);
@@ -80,7 +81,7 @@ public sealed class DemoPagesTests : BortableTest
                 await Expect(toggle).ToHaveTextAsync(new Regex("View code"));
             }
             // The page's lists are declared in its samples' code.
-            if (lists > 0) Assert.IsTrue(sources.Any(s => s.Contains("<Bortable", StringComparison.Ordinal)), $"the code of {path} declares none of its lists");
+            if (lists > 0) Assert.Contains(s => s.Contains("<Bortable", StringComparison.Ordinal), sources, $"the code of {path} declares none of its lists");
         }
         await WaitForQuietAsync(page);
 
@@ -105,9 +106,9 @@ public sealed class DemoPagesTests : BortableTest
         await Expect(panels.Nth(1).Locator(".demo-code__file")).ToHaveTextAsync(["FormBuilder.razor"]);
         var first = await panels.Nth(0).Locator(".demo-code__pre > code").TextContentAsync() ?? "";
         var second = await panels.Nth(1).Locator(".demo-code__pre > code").TextContentAsync() ?? "";
-        StringAssert.Contains(first, "Id=\"clone-source\"", "the first panel is not the clone source's code");
+        Assert.Contains("Id=\"clone-source\"", first, "the first panel is not the clone source's code");
         Assert.DoesNotContain("clone-palette", first, "the first panel shows the second sample's code too");
-        StringAssert.Contains(second, "Id=\"clone-palette\"", "the second panel is not the palette's code");
+        Assert.Contains("Id=\"clone-palette\"", second, "the second panel is not the palette's code");
         Assert.DoesNotContain("clone-source", second, "the second panel shows the first sample's code too");
     }
 
@@ -121,9 +122,9 @@ public sealed class DemoPagesTests : BortableTest
         await Expect(page.Locator(".demo-code__file")).ToHaveTextAsync(["NestedTree.razor", "NestedList.razor", "NestedItem.cs"]);
         var code = page.Locator(".demo-code__pre > code");
         await Expect(code).ToHaveCountAsync(3);
-        StringAssert.Contains(await code.Nth(0).TextContentAsync(), "<NestedList");
-        StringAssert.Contains(await code.Nth(1).TextContentAsync(), "<Bortable");
-        StringAssert.Contains(await code.Nth(2).TextContentAsync(), "class NestedItem");
+        Assert.Contains("<NestedList", (await code.Nth(0).TextContentAsync())!);
+        Assert.Contains("<Bortable", (await code.Nth(1).TextContentAsync())!);
+        Assert.Contains("class NestedItem", (await code.Nth(2).TextContentAsync())!);
 
         // Each file is coloured in its own language: the component's markup as Razor, the model as C#.
         Assert.IsGreaterThan(0, await code.Nth(1).Locator(".tok-type", new() { HasText = "Bortable" }).CountAsync(), "the component tag is not coloured");
@@ -136,8 +137,9 @@ public sealed class DemoPagesTests : BortableTest
         var page = await (await NewContextAsync()).NewPageAsync();
 
         var response = await GotoAsync(page, "/no-such-page");
+        var actualValue = response?.Status;
 
-        Assert.AreEqual(404, response?.Status);
+        Assert.AreEqual(404, actualValue);
         await WaitForListsAsync(page);
         await Expect(page.Locator("h1")).ToHaveTextAsync("404");
         await Expect(page.Locator(".bb-header")).ToBeVisibleAsync();
@@ -154,7 +156,7 @@ public sealed class DemoPagesTests : BortableTest
         // references released) and the next page's set up, all in the same WebAssembly instance.
         var links = page.Locator(".bb-docs-sidebar .bb-docs-section a");
         int count = await links.CountAsync();
-        Assert.IsTrue(count > 10, $"the sidebar offers only {count} demos");
+        Assert.IsGreaterThan(10, count, $"the sidebar offers only {count} demos");
         for (int i = 1; i < count; i++)
         {
             var href = await links.Nth(i).GetAttributeAsync("href");

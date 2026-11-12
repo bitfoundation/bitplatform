@@ -94,8 +94,8 @@ public class NetworkEndpointsTests : BunitContext
 
             var finding = Assert.ContainsSingle(f => f.Diagnostic.RuleId == "http.per-item", session.Diagnostics.Findings).Diagnostic;
             Assert.AreEqual("GET /api/orders/{id}: one request per item (25 ids)", finding.Title);
-            StringAssert.Contains(finding.Evidence, "25 requests for 25 different ids within 96 ms");
-            StringAssert.Contains(finding.Evidence, "not inside a UI event");
+            Assert.Contains("25 requests for 25 different ids within 96 ms", finding.Evidence);
+            Assert.Contains("not inside a UI event", finding.Evidence);
             Assert.AreEqual(BevDiagnosticSeverity.Warning, finding.Severity);
             Assert.DoesNotContain(f => f.Diagnostic.RuleId == "http.burst", session.Diagnostics.Findings);
         }
@@ -152,7 +152,14 @@ public class NetworkEndpointsTests : BunitContext
     {
         static BevHttpRecord Sized(string url, long? bytes, int? status = 200, string? error = null) => new()
         {
-            Id = 1, StartedAt = DateTimeOffset.UtcNow, Method = "GET", Url = url, StatusCode = status, DurationMs = 5, ResponseBytes = bytes, Error = error,
+            Id = 1,
+            StartedAt = DateTimeOffset.UtcNow,
+            Method = "GET",
+            Url = url,
+            StatusCode = status,
+            DurationMs = 5,
+            ResponseBytes = bytes,
+            Error = error,
         };
 
         Assert.AreEqual(300, BevHttpEndpoints.Summarize([Sized("/a/1", 100), Sized("/a/2", 200)]).Single().ResponseBytes);
@@ -176,8 +183,14 @@ public class NetworkEndpointsTests : BunitContext
             {
                 session.Http.Add(new BevHttpRecord
                 {
-                    Id = session.Http.NextId(), StartedAt = start.AddMilliseconds(i * 150), Method = "GET", Url = "/api/orders/" + typed[i], StatusCode = 200, DurationMs = 40,
-                    TriggerEventId = 100 + i, TriggerDescription = "oninput → OrderLookup.OnInput",
+                    Id = session.Http.NextId(),
+                    StartedAt = start.AddMilliseconds(i * 150),
+                    Method = "GET",
+                    Url = "/api/orders/" + typed[i],
+                    StatusCode = 200,
+                    DurationMs = 40,
+                    TriggerEventId = 100 + i,
+                    TriggerDescription = "oninput → OrderLookup.OnInput",
                 });
             }
 
@@ -185,8 +198,14 @@ public class NetworkEndpointsTests : BunitContext
             {
                 session.Http.Add(new BevHttpRecord
                 {
-                    Id = session.Http.NextId(), StartedAt = start.AddMilliseconds(i * 5), Method = "GET", Url = "/api/customers/" + (500 + i), StatusCode = 200, DurationMs = 40,
-                    TriggerEventId = 900, TriggerDescription = "onclick → Customers.Load (lambda)",
+                    Id = session.Http.NextId(),
+                    StartedAt = start.AddMilliseconds(i * 5),
+                    Method = "GET",
+                    Url = "/api/customers/" + (500 + i),
+                    StatusCode = 200,
+                    DurationMs = 40,
+                    TriggerEventId = 900,
+                    TriggerDescription = "onclick → Customers.Load (lambda)",
                 });
             }
 
@@ -194,7 +213,7 @@ public class NetworkEndpointsTests : BunitContext
 
             var burst = Assert.ContainsSingle(f => f.Diagnostic.RuleId == "http.burst", session.Diagnostics.Findings).Diagnostic;
             Assert.StartsWith("GET /api/orders/{id}: 5 requests", burst.Title);
-            StringAssert.Contains(burst.Evidence, "for different ids, each from its own UI event");
+            Assert.Contains("for different ids, each from its own UI event", burst.Evidence);
             var perItem = Assert.ContainsSingle(f => f.Diagnostic.RuleId == "http.per-item", session.Diagnostics.Findings).Diagnostic;
             Assert.AreEqual("GET /api/customers/{id}: one request per item (6 ids)", perItem.Title);
         }
@@ -236,7 +255,7 @@ public class NetworkEndpointsTests : BunitContext
         panel.Find("button[aria-label='Refresh captured data']").Click();
 
         panel.FindAll("thead th[aria-sort] button").Single(b => b.TextContent.StartsWith("Status", StringComparison.Ordinal)).Click();
-        CollectionAssert.AreEqual(new[] { "ERR", "500", "200" }, panel.FindAll("tbody tr.bev-row").Select(r => r.QuerySelectorAll("td")[3].TextContent.Trim()).ToArray());
+        Assert.AreSequenceEqual(new[] { "ERR", "500", "200" }, panel.FindAll("tbody tr.bev-row").Select(r => r.QuerySelectorAll("td")[3].TextContent.Trim()).ToArray());
 
         panel.FindAll(".bev-segmented button").Single(b => b.TextContent == "Endpoints").Click();
         panel.FindAll("tbody tr.bev-row button").First().Click();
@@ -245,7 +264,7 @@ public class NetworkEndpointsTests : BunitContext
         Assert.IsNull(Session.Ui.Network.Endpoint);
         Session.Http.Add(Request("https://shop.test/api/products", 200, 4, DateTimeOffset.UtcNow, Session.Http.NextId()));
         panel.Find("button[aria-label='Refresh captured data']").Click();
-        Assert.HasCount(1, panel.FindAll("tbody tr.bev-row"), "new requests show, not \"No request matches\"");
+        Assert.ContainsSingle(panel.FindAll("tbody tr.bev-row"), "new requests show, not \"No request matches\"");
     }
 
     [TestMethod]

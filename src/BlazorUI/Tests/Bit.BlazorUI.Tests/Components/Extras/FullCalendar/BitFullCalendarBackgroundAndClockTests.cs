@@ -79,7 +79,7 @@ public class BitFullCalendarBackgroundAndClockTests : BunitTestContext
         component.Render(p => p.Add(x => x.TimeProvider, new FixedTimeProvider(Anchor.AddMonths(1).AddHours(11))));
 
         Assert.AreEqual(Anchor.AddMonths(1), component.Instance.State.SelectedDate);
-        component.WaitForAssertion(() => Assert.IsTrue(ranges.Any(r => r.Start <= Anchor.AddMonths(1) && r.End >= Anchor.AddMonths(1))));
+        component.WaitForAssertion(() => Assert.Contains(r => r.Start <= Anchor.AddMonths(1) && r.End >= Anchor.AddMonths(1), ranges));
     }
 
     [TestMethod]
@@ -106,8 +106,8 @@ public class BitFullCalendarBackgroundAndClockTests : BunitTestContext
         var component = RenderCalendar();
         var state = component.Instance.State;
 
-        CollectionAssert.AreEquivalent(new[] { "1", "upkeep" }, state.Events.Select(e => e.Id).ToArray());
-        CollectionAssert.AreEquivalent(new[] { "lunch", "holiday" }, state.BackgroundEvents.Select(e => e.Id).ToArray());
+        Assert.AreSequenceEqual(new[] { "1", "upkeep" }, state.Events.Select(e => e.Id).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
+        Assert.AreSequenceEqual(new[] { "lunch", "holiday" }, state.BackgroundEvents.Select(e => e.Id).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -130,7 +130,7 @@ public class BitFullCalendarBackgroundAndClockTests : BunitTestContext
         Assert.AreEqual("Holiday", label.TextContent.Trim());
 
         // Neither is an event card the keyboard or the pointer could pick up.
-        Assert.IsFalse(component.FindAll("[data-bit-bfc-event]").Any(e => e.GetAttribute("data-bit-bfc-event") is "lunch" or "holiday"));
+        Assert.DoesNotContain(e => e.GetAttribute("data-bit-bfc-event") is "lunch" or "holiday", component.FindAll("[data-bit-bfc-event]"));
     }
 
     [TestMethod]
@@ -141,7 +141,7 @@ public class BitFullCalendarBackgroundAndClockTests : BunitTestContext
         var covered = component.FindAll("[role=button][aria-label]")
                                .Where(s => s.GetAttribute("aria-label")!.EndsWith(", Lunch", StringComparison.Ordinal))
                                .ToList();
-        Assert.AreEqual(2, covered.Count, "12:00 and 12:30 lie under the lunch band");
+        Assert.HasCount(2, covered, "12:00 and 12:30 lie under the lunch band");
     }
 
     [TestMethod]
@@ -150,8 +150,8 @@ public class BitFullCalendarBackgroundAndClockTests : BunitTestContext
         var component = RenderCalendar();
 
         var tinted = component.FindAll(".bit-bfc-bg-event-day");
-        Assert.AreEqual(1, tinted.Count, "the timed lunch break has no clock axis to be drawn on in the month grid");
-        StringAssert.Contains(tinted[0].TextContent, "Holiday");
+        Assert.ContainsSingle(tinted, "the timed lunch break has no clock axis to be drawn on in the month grid");
+        Assert.Contains("Holiday", tinted[0].TextContent);
     }
 
     [TestMethod]
@@ -273,8 +273,8 @@ public class BitFullCalendarBackgroundAndClockTests : BunitTestContext
     {
         var component = RenderCalendar();
 
-        Assert.AreEqual(1, component.FindAll(".bit-bfc-toast-container [role=alert]").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-bfc-toast-container [role=status]").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-bfc-toast-container [role=alert]"));
+        Assert.ContainsSingle(component.FindAll(".bit-bfc-toast-container [role=status]"));
     }
 
     #endregion

@@ -61,14 +61,11 @@ public sealed class BitResponsivePanelSafeAreaContractTests
 
         foreach (var edge in new[] { "top", "bottom" })
         {
-            StringAssert.Contains(mixin, $"$device-{edge}: (env(safe-area-inset-{edge}, 0px), env(safe-area-max-inset-{edge}, 0px))",
-                $"The device insets the {edge} edge defaults to are not the inset of the device and the maximum it reports for it.");
+            Assert.Contains($"$device-{edge}: (env(safe-area-inset-{edge}, 0px), env(safe-area-max-inset-{edge}, 0px))", mixin, $"The device insets the {edge} edge defaults to are not the inset of the device and the maximum it reports for it.");
         }
 
-        StringAssert.Contains(mixin, "--bit-#{$prefix}-sa-top: max(var(--bit-AppShell-safe-area-top, 0px), #{$device-top});",
-            "The top edge is not inset by the largest of the safe area of an app shell and the insets of the device.");
-        StringAssert.Contains(mixin, "--bit-callout-sa-bottom: max(var(--bit-AppShell-safe-area-bottom, 0px), #{$device-bottom});",
-            "The bottom edge is not inset by the largest of the safe area of an app shell and the insets of the device.");
+        Assert.Contains("--bit-#{$prefix}-sa-top: max(var(--bit-AppShell-safe-area-top, 0px), #{$device-top});", mixin, "The top edge is not inset by the largest of the safe area of an app shell and the insets of the device.");
+        Assert.Contains("--bit-callout-sa-bottom: max(var(--bit-AppShell-safe-area-bottom, 0px), #{$device-bottom});", mixin, "The bottom edge is not inset by the largest of the safe area of an app shell and the insets of the device.");
     }
 
     [TestMethod]
@@ -78,9 +75,9 @@ public sealed class BitResponsivePanelSafeAreaContractTests
         var property = Normalize(SourceFiles.GetScssBlock(general, "@property --bit-callout-sa-bottom", "--bit-callout-sa-bottom is not registered."));
 
         // A length is what Callouts.position reads resolved, env() included; and only the panel that names it has it.
-        StringAssert.Contains(property, "syntax: \"<length>\";");
-        StringAssert.Contains(property, "inherits: false;");
-        StringAssert.Contains(property, "initial-value: 0px;");
+        Assert.Contains("syntax: \"<length>\";", property);
+        Assert.Contains("inherits: false;", property);
+        Assert.Contains("initial-value: 0px;", property);
     }
 
     [TestMethod]
@@ -88,8 +85,7 @@ public sealed class BitResponsivePanelSafeAreaContractTests
     {
         var position = SourceFiles.Read("Bit.BlazorUI", "Scripts", "Callouts.ts");
 
-        StringAssert.Contains(position, "getPropertyValue('--bit-callout-sa-bottom')",
-            "Callouts.position does not read the safe area a panel names for the bottom of the screen.");
+        Assert.Contains("getPropertyValue('--bit-callout-sa-bottom')", position, "Callouts.position does not read the safe area a panel names for the bottom of the screen.");
         Assert.IsTrue(Regex.IsMatch(position, @"keyboardUp\s*\?\s*0\s*:"),
             "Callouts.position keeps the bottom safe area while the on-screen keyboard covers the bottom edge.");
         Assert.IsTrue(Regex.IsMatch(position, @"bottomGap\s*=\s*Math\.max\(10,\s*bottomSafeArea\(\)\)"),
@@ -115,8 +111,8 @@ public sealed class BitResponsivePanelSafeAreaContractTests
         // The Extras package publishes the insets of the device in variables an app adjusts them for the whole package with.
         if (project == "Bit.BlazorUI.Extras")
         {
-            StringAssert.Contains(include, "$device-top: ($bit-env-inset-top, $bit-env-max-inset-top)", $"{path} reads the top inset past the variables of the package.");
-            StringAssert.Contains(include, "$device-bottom: ($bit-env-inset-bottom, $bit-env-max-inset-bottom)", $"{path} reads the bottom inset past the variables of the package.");
+            Assert.Contains("$device-top: ($bit-env-inset-top, $bit-env-max-inset-top)", include, $"{path} reads the top inset past the variables of the package.");
+            Assert.Contains("$device-bottom: ($bit-env-inset-bottom, $bit-env-max-inset-bottom)", include, $"{path} reads the bottom inset past the variables of the package.");
         }
 
         // Read once, in the mixin, so a later fix to what the inset is made of reaches every panel.
@@ -135,8 +131,7 @@ public sealed class BitResponsivePanelSafeAreaContractTests
             : rules.SingleOrDefault(r => Normalize(r.Header) == band && r.Ancestors.SequenceEqual([$".bit-{prefix}-res", "@include lt-sm"]));
 
         Assert.IsNotNull(surface, $"{band} is not declared in the lt-sm block of .bit-{prefix}-res in {path}.");
-        CollectionAssert.Contains(surface.Declarations.Select(Normalize).ToList(), $"border-top: var(--bit-{prefix}-sa-top) solid transparent",
-            $"{path} does not draw the safe area at the top as the border of the surface of its panel.");
+        Assert.Contains($"border-top: var(--bit-{prefix}-sa-top) solid transparent", surface.Declarations.Select(Normalize).ToList(), $"{path} does not draw the safe area at the top as the border of the surface of its panel.");
 
         // A padding is replaced by any a consumer writes on the element, and moves nothing placed against its box.
         var padded = rules.Where(r => r.Ancestors.Take(2).SequenceEqual([$".bit-{prefix}-res", "@include lt-sm"]) || r == panel)
@@ -144,7 +139,7 @@ public sealed class BitResponsivePanelSafeAreaContractTests
                           .Where(d => d.StartsWith("padding", StringComparison.Ordinal) && d.Contains($"--bit-{prefix}-sa-", StringComparison.Ordinal))
                           .ToArray();
 
-        Assert.AreEqual(0, padded.Length, $"{path} pads its panel by a safe area: {string.Join("; ", padded)}");
+        Assert.IsEmpty(padded, $"{path} pads its panel by a safe area: {string.Join("; ", padded)}");
     }
 
     [TestMethod]
@@ -174,17 +169,16 @@ public sealed class BitResponsivePanelSafeAreaContractTests
         // moved by it. Every absolutely positioned part of the stylesheet, at any depth, is either one laid out against
         // the dial or one the panel moves down by the safe area itself.
         Assert.AreEqual("ctp", prefix, $"{path} draws its band on a part no rule of this test accounts for.");
-        Assert.IsTrue(rules.Any(r => r.Ancestors.Count == 0 && r.Header == ".bit-ctp-clk" && r.Declarations.Contains("position: relative")),
-            "The dial is not the box its parts are placed against.");
+        Assert.Contains(r => r.Ancestors.Count == 0 && r.Header == ".bit-ctp-clk" && r.Declarations.Contains("position: relative"), rules, "The dial is not the box its parts are placed against.");
 
         var parts = rules.Where(r => r.Declarations.Contains("position: absolute")).Select(r => r.Header).Distinct().ToArray();
         var unaccounted = parts.Except(CircularTimePickerDialParts).Except([".bit-ctp-cbn"]).ToArray();
 
-        Assert.AreEqual(0, unaccounted.Length, $"{path} places parts absolutely that may sit under the safe area: {string.Join(", ", unaccounted)}");
+        Assert.IsEmpty(unaccounted, $"{path} places parts absolutely that may sit under the safe area: {string.Join(", ", unaccounted)}");
 
         var close = rules.SingleOrDefault(r => r.Header == ".bit-ctp-cbn" && r.Ancestors.SequenceEqual([".bit-ctp-res", "@include lt-sm"]));
         Assert.IsNotNull(close, "The close button of the panel is not restyled for it.");
-        CollectionAssert.Contains(close.Declarations.ToList(), "top: var(--bit-ctp-sa-top)", "The close button is laid over the corner of the container, under the safe area there.");
+        Assert.Contains("top: var(--bit-ctp-sa-top)", close.Declarations.ToList(), "The close button is laid over the corner of the container, under the safe area there.");
     }
 
     [TestMethod]
@@ -207,12 +201,11 @@ public sealed class BitResponsivePanelSafeAreaContractTests
             })
             .ToArray();
 
-        Assert.IsTrue(panels.Length >= covered.Count, $"Only {panels.Length} stylesheets draw a responsive panel; the scan no longer finds them.");
+        Assert.IsGreaterThanOrEqualTo(covered.Count, panels.Length, $"Only {panels.Length} stylesheets draw a responsive panel; the scan no longer finds them.");
 
         var missing = panels.Where(key => covered.Contains(key) is false).ToArray();
 
-        Assert.AreEqual(0, missing.Length,
-            "A stylesheet draws a responsive panel that is not pinned here; make it name the safe areas of the edges of the " +
+        Assert.IsEmpty(missing, "A stylesheet draws a responsive panel that is not pinned here; make it name the safe areas of the edges of the " +
             "screen it runs to through responsive-panel-safe-area and add it to Panels: " + string.Join(", ", missing));
 
         static string Key(string project, string path) => $"{project}/{path.Replace('\\', '/')}";

@@ -49,7 +49,7 @@ public class BitAiCitationMarkerE2ETests : E2ETestBase
         var marker = await Marker("cmk-basic").RectAsync();
         Assert.AreEqual(claim.Right, marker.Left, 6, "The marker follows the claim.");
         Assert.IsTrue(marker.Top < claim.Bottom && marker.Bottom > claim.Top, "The marker is on the line of the claim.");
-        Assert.IsTrue((marker.Top + marker.Bottom) / 2 < (claim.Top + claim.Bottom) / 2, "The marker is raised as a superscript.");
+        Assert.IsLessThan((claim.Top + claim.Bottom) / 2, (marker.Top + marker.Bottom) / 2, "The marker is raised as a superscript.");
 
         // The chip at rest is the tint of the primary role with its foreground.
         await Expect(Marker("cmk-basic")).ToHaveCSSAsync("background-color", await Page.ResolveColorAsync("var(--bit-clr-pri-tint)"));
@@ -211,7 +211,7 @@ public class BitAiCitationMarkerE2ETests : E2ETestBase
         // Each marker closes the sentence it supports.
         var before = await markers.Nth(0).EvaluateAsync<string>(
             "e => { let n = e.previousSibling; while (n && (n.nodeType === Node.COMMENT_NODE || !n.textContent.trim())) n = n.previousSibling; return n ? n.textContent : ''; }");
-        StringAssert.EndsWith(before.TrimEnd(), "on the server.");
+        Assert.EndsWith("on the server.", before.TrimEnd());
 
         var list = message.Locator(".bit-aisrl");
         await Expect(list.Locator(".bit-aisrc-idx")).ToHaveTextAsync(["1", "2"]);

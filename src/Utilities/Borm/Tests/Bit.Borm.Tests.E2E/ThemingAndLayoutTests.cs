@@ -148,7 +148,7 @@ public sealed class ThemingAndLayoutTests : BormTest
         var first = await BoxOfAsync(Control(wide, "FirstName"));
         var last = await BoxOfAsync(Control(wide, "LastName"));
         Assert.AreEqual(first.Y, last.Y, 1, "first and last name are not on one row");
-        Assert.IsTrue(last.X > first.X + first.Width, "the last name is not to the right of the first");
+        Assert.IsGreaterThan(first.X + first.Width, last.X, "the last name is not to the right of the first");
 
         // A field spanning both columns is as wide as the two of them together.
         var bio = await BoxOfAsync(Control(wide, "Bio"));
@@ -157,7 +157,7 @@ public sealed class ThemingAndLayoutTests : BormTest
         var narrow = await OpenAsync("/layout", DefaultContextOptions(width: 600));
         first = await BoxOfAsync(Control(narrow, "FirstName"));
         last = await BoxOfAsync(Control(narrow, "LastName"));
-        Assert.IsTrue(last.Y > first.Y + first.Height, "on a narrow screen the last name is not below the first");
+        Assert.IsGreaterThan(first.Y + first.Height, last.Y, "on a narrow screen the last name is not below the first");
         Assert.AreEqual(first.X, last.X, 1, "on a narrow screen the fields are not in one column");
         Assert.AreEqual(first.Width, last.Width, 1, "on a narrow screen the fields are not the same width");
         Assert.IsTrue(await narrow.EvaluateAsync<bool>("() => document.documentElement.scrollWidth <= document.documentElement.clientWidth"),

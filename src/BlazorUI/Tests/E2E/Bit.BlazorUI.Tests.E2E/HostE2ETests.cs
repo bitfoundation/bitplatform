@@ -22,7 +22,7 @@ public class HostE2ETests : E2ETestBase
 
         var routes = await Page.Locator("#pages a").EvaluateAllAsync<string[]>("links => links.map(a => a.getAttribute('href'))");
 
-        Assert.IsTrue(routes.Length > 0, "The host lists no E2E page.");
+        Assert.IsNotEmpty(routes, "The host lists no E2E page.");
 
         // A few pages show images from made-up hosts (images.e2e.test, other.e2e.test), which their own tests answer
         // through Page.RouteAsync. Unanswered here, each would log a failed request - or not, depending on whether the
@@ -108,7 +108,7 @@ public class HostE2ETests : E2ETestBase
         await OpenAsync("/");
         CheckLeaving(previous);
 
-        Assert.AreEqual(0, failures.Count, string.Join(Environment.NewLine, failures));
+        Assert.IsEmpty(failures, string.Join(Environment.NewLine, failures));
     }
 
     // Whether the circuit of the page on screen has lost its connection at some point: Blazor adds its reconnect UI to

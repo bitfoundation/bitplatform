@@ -44,7 +44,7 @@ public class PersistenceTests
         var settings = new SettingsStore();
         manager.Register(settings);
         var persistor = new BlexStatePersistor(manager, storage);
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
 
         settings.SetTheme("dark");
 
@@ -60,7 +60,7 @@ public class PersistenceTests
         var counter = new CounterStore();
         manager.Register(counter);
         var persistor = new BlexStatePersistor(manager, storage);
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
 
         counter.Increment();
 
@@ -78,7 +78,7 @@ public class PersistenceTests
         manager.Register(settings);
         var persistor = new BlexStatePersistor(manager, storage);
 
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
 
         Assert.AreEqual("dark", settings.Theme);
         Assert.AreEqual(20, settings.FontSize);
@@ -96,7 +96,7 @@ public class PersistenceTests
         manager.Register(settings);
         var persistor = new BlexStatePersistor(manager, storage);
 
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
 
         Assert.AreEqual("dark", settings.Theme);
         Assert.IsEmpty(seen); // restoration must not dispatch
@@ -110,12 +110,12 @@ public class PersistenceTests
         var settings = new SettingsStore();
         manager.Register(settings);
         var persistor = new BlexStatePersistor(manager, storage);
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
 
         settings.SetTheme("dark");
         Assert.IsTrue(storage.Data.ContainsKey("blex:settings"));
 
-        await persistor.ClearAsync();
+        await persistor.ClearAsync(TestContext.CancellationToken);
         Assert.IsFalse(storage.Data.ContainsKey("blex:settings"));
     }
 
@@ -127,10 +127,12 @@ public class PersistenceTests
         var settings = new SettingsStore();
         manager.Register(settings);
         var persistor = new BlexStatePersistor(manager, storage, new BlexPersistenceOptions { KeyPrefix = "app." });
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
 
         settings.SetTheme("dark");
 
         Assert.IsTrue(storage.Data.ContainsKey("app.settings"));
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

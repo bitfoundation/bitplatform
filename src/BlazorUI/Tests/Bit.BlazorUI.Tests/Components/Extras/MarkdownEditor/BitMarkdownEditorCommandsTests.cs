@@ -284,7 +284,7 @@ public class BitMarkdownEditorCommandsTests
         var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.Table, "", 0, 0);
 
         Assert.IsTrue(result.Handled);
-        StringAssert.StartsWith(result.Text, "| Column 1 | Column 2 |");
+        Assert.StartsWith("| Column 1 | Column 2 |", result.Text);
         Assert.AreEqual("Column 1", result.Text[result.SelectionStart..result.SelectionEnd]);
     }
 
@@ -505,8 +505,8 @@ public class BitMarkdownEditorCommandsTests
         const string text = "## a **bold** b";
         var formats = BitMarkdownEditorCommands.DetectActiveFormats(text, 8, 8);
 
-        Assert.IsTrue(formats.Contains(BitMarkdownEditorCommand.Bold));
-        Assert.IsTrue(formats.Contains(BitMarkdownEditorCommand.Heading2));
+        Assert.Contains(BitMarkdownEditorCommand.Bold, formats);
+        Assert.Contains(BitMarkdownEditorCommand.Heading2, formats);
     }
 
     [TestMethod]
@@ -514,7 +514,7 @@ public class BitMarkdownEditorCommandsTests
     {
         var formats = BitMarkdownEditorCommands.DetectActiveFormats("*italic*", 0, 8);
 
-        Assert.IsTrue(formats.Contains(BitMarkdownEditorCommand.Italic));
+        Assert.Contains(BitMarkdownEditorCommand.Italic, formats);
     }
 
     [TestMethod]
@@ -523,13 +523,13 @@ public class BitMarkdownEditorCommandsTests
         // The delimiters sit outside the selection, which is what toggling italic unwraps.
         var italic = BitMarkdownEditorCommands.DetectActiveFormats("*italic*", 1, 7);
 
-        Assert.IsTrue(italic.Contains(BitMarkdownEditorCommand.Italic));
+        Assert.Contains(BitMarkdownEditorCommand.Italic, italic);
 
         // The single '*' either side of a bold selection belongs to '**', not to italic.
         var bold = BitMarkdownEditorCommands.DetectActiveFormats("**bold**", 2, 6);
 
-        Assert.IsTrue(bold.Contains(BitMarkdownEditorCommand.Bold));
-        Assert.IsFalse(bold.Contains(BitMarkdownEditorCommand.Italic));
+        Assert.Contains(BitMarkdownEditorCommand.Bold, bold);
+        Assert.DoesNotContain(BitMarkdownEditorCommand.Italic, bold);
     }
 
     [TestMethod]
@@ -537,8 +537,8 @@ public class BitMarkdownEditorCommandsTests
     {
         var formats = BitMarkdownEditorCommands.DetectActiveFormats("- [ ] task", 8, 8);
 
-        Assert.IsTrue(formats.Contains(BitMarkdownEditorCommand.TaskList));
-        Assert.IsFalse(formats.Contains(BitMarkdownEditorCommand.UnorderedList));
+        Assert.Contains(BitMarkdownEditorCommand.TaskList, formats);
+        Assert.DoesNotContain(BitMarkdownEditorCommand.UnorderedList, formats);
     }
 
     [TestMethod]
@@ -546,7 +546,7 @@ public class BitMarkdownEditorCommandsTests
     {
         var formats = BitMarkdownEditorCommands.DetectActiveFormats("plain text", 3, 3);
 
-        Assert.AreEqual(0, formats.Count);
+        Assert.IsEmpty(formats);
     }
 
     [TestMethod]
@@ -556,8 +556,8 @@ public class BitMarkdownEditorCommandsTests
         // rebased on that slice, so the detection has to hold for a bare line too.
         var formats = BitMarkdownEditorCommands.DetectActiveFormats("> **quoted**", 5, 5);
 
-        Assert.IsTrue(formats.Contains(BitMarkdownEditorCommand.Quote));
-        Assert.IsTrue(formats.Contains(BitMarkdownEditorCommand.Bold));
+        Assert.Contains(BitMarkdownEditorCommand.Quote, formats);
+        Assert.Contains(BitMarkdownEditorCommand.Bold, formats);
     }
 
     [TestMethod]
@@ -752,15 +752,15 @@ public class BitMarkdownEditorCommandsTests
     public void DetectActiveFormatsShouldTellSubscriptFromStrikethrough()
     {
         var strike = BitMarkdownEditorCommands.DetectActiveFormats("~~gone~~", 4, 4);
-        Assert.IsTrue(strike.Contains(BitMarkdownEditorCommand.Strikethrough));
-        Assert.IsFalse(strike.Contains(BitMarkdownEditorCommand.Subscript));
+        Assert.Contains(BitMarkdownEditorCommand.Strikethrough, strike);
+        Assert.DoesNotContain(BitMarkdownEditorCommand.Subscript, strike);
 
         var sub = BitMarkdownEditorCommands.DetectActiveFormats("H~2~O", 3, 3);
-        Assert.IsTrue(sub.Contains(BitMarkdownEditorCommand.Subscript));
-        Assert.IsFalse(sub.Contains(BitMarkdownEditorCommand.Strikethrough));
+        Assert.Contains(BitMarkdownEditorCommand.Subscript, sub);
+        Assert.DoesNotContain(BitMarkdownEditorCommand.Strikethrough, sub);
 
         var sup = BitMarkdownEditorCommands.DetectActiveFormats("x^2^", 3, 3);
-        Assert.IsTrue(sup.Contains(BitMarkdownEditorCommand.Superscript));
+        Assert.Contains(BitMarkdownEditorCommand.Superscript, sup);
     }
 
     [TestMethod]
@@ -879,8 +879,8 @@ public class BitMarkdownEditorCommandsTests
     {
         var italic = BitMarkdownEditorCommands.DetectActiveFormats("an *emphatic* word", 6, 6);
 
-        Assert.IsTrue(italic.Contains(BitMarkdownEditorCommand.Italic));
-        Assert.IsFalse(italic.Contains(BitMarkdownEditorCommand.Bold));
+        Assert.Contains(BitMarkdownEditorCommand.Italic, italic);
+        Assert.DoesNotContain(BitMarkdownEditorCommand.Bold, italic);
     }
 
     [TestMethod]
@@ -888,8 +888,8 @@ public class BitMarkdownEditorCommandsTests
     {
         var bold = BitMarkdownEditorCommands.DetectActiveFormats("a **strong** word", 6, 6);
 
-        Assert.IsTrue(bold.Contains(BitMarkdownEditorCommand.Bold));
-        Assert.IsFalse(bold.Contains(BitMarkdownEditorCommand.Italic));
+        Assert.Contains(BitMarkdownEditorCommand.Bold, bold);
+        Assert.DoesNotContain(BitMarkdownEditorCommand.Italic, bold);
     }
 
     [TestMethod]
@@ -897,8 +897,8 @@ public class BitMarkdownEditorCommandsTests
     {
         var both = BitMarkdownEditorCommands.DetectActiveFormats("***loud***", 5, 5);
 
-        Assert.IsTrue(both.Contains(BitMarkdownEditorCommand.Bold));
-        Assert.IsTrue(both.Contains(BitMarkdownEditorCommand.Italic));
+        Assert.Contains(BitMarkdownEditorCommand.Bold, both);
+        Assert.Contains(BitMarkdownEditorCommand.Italic, both);
     }
 
     [TestMethod]
@@ -989,12 +989,12 @@ public class BitMarkdownEditorCommandsTests
         };
 
         var bold = BitMarkdownEditorCommands.DetectActiveFormats("a __strong__ word", 6, 6, options);
-        Assert.IsTrue(bold.Contains(BitMarkdownEditorCommand.Bold));
-        Assert.IsFalse(bold.Contains(BitMarkdownEditorCommand.Italic));
+        Assert.Contains(BitMarkdownEditorCommand.Bold, bold);
+        Assert.DoesNotContain(BitMarkdownEditorCommand.Italic, bold);
 
         var italic = BitMarkdownEditorCommands.DetectActiveFormats("an _emphatic_ word", 6, 6, options);
-        Assert.IsTrue(italic.Contains(BitMarkdownEditorCommand.Italic));
-        Assert.IsFalse(italic.Contains(BitMarkdownEditorCommand.Bold));
+        Assert.Contains(BitMarkdownEditorCommand.Italic, italic);
+        Assert.DoesNotContain(BitMarkdownEditorCommand.Bold, italic);
     }
 
     private const string Table =
@@ -1293,7 +1293,7 @@ public class BitMarkdownEditorCommandsTests
         var next = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.Indent, forward.Text, forward.SelectionStart, forward.SelectionEnd);
 
         Assert.IsTrue(next.Text.StartsWith("| Name | Age |", System.StringComparison.Ordinal), "the row was indented instead");
-        Assert.AreEqual(4, next.Text.TrimEnd('\n').Split('\n').Length, "walking past the last cell adds a row");
+        Assert.HasCount(4, next.Text.TrimEnd('\n').Split('\n'), "walking past the last cell adds a row");
 
         var back = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.Outdent, forward.Text, forward.SelectionStart, forward.SelectionEnd);
         Assert.AreEqual(Table, back.Text);

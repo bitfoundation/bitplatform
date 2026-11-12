@@ -91,7 +91,7 @@ public class BitChoiceGroupParamsTests : BunitTestContext
                                                                                 .Where(n => typeof(BitChoiceGroupParams).GetProperty(n) is null)
                                                                                 .ToArray();
 
-        Assert.AreEqual(0, missing.Length, $"{nameof(BitChoiceGroupParams)} is missing: {string.Join(", ", missing)}");
+        Assert.IsEmpty(missing, $"{nameof(BitChoiceGroupParams)} is missing: {string.Join(", ", missing)}");
     }
 
     [TestMethod]
@@ -338,8 +338,8 @@ public class BitChoiceGroupParamsTests : BunitTestContext
         var root = component.Find(".bit-chg");
 
         Assert.IsTrue(root.ClassList.Contains("custom-root"));
-        Assert.IsTrue(root.GetAttribute("style")!.Contains("color: red;"));
-        Assert.IsTrue(root.GetAttribute("style")!.Contains("--bit-chg-gap:1rem"));
+        Assert.Contains("color: red;", root.GetAttribute("style")!);
+        Assert.Contains("--bit-chg-gap:1rem", root.GetAttribute("style")!);
         Assert.IsTrue(component.Find(".bit-chg-itl").ClassList.Contains("custom-item-label"));
     }
 
@@ -369,7 +369,7 @@ public class BitChoiceGroupParamsTests : BunitTestContext
         Assert.AreEqual("Base label", root.GetAttribute("aria-label"));
         Assert.AreEqual("test-id", root.GetAttribute("id"));
         Assert.IsTrue(root.ClassList.Contains("base-class"));
-        Assert.IsTrue(root.GetAttribute("style")!.Contains("background: blue;"));
+        Assert.Contains("background: blue;", root.GetAttribute("style")!);
         Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
     }
 

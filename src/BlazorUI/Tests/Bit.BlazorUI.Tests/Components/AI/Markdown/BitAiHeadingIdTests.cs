@@ -21,7 +21,7 @@ public class BitAiHeadingIdTests
     public void RepeatedHeadingsAreNumbered()
     {
         var document = BitAiMarkdownSpec.Parse("## A\n\n## A\n\n## A\n\n## A 2");
-        CollectionAssert.AreEqual(new[] { "bit-ai-h-a", "bit-ai-h-a-2", "bit-ai-h-a-3", "bit-ai-h-a-2-2" }, document.Blocks.Select(Id).ToArray());
+        Assert.AreSequenceEqual(new[] { "bit-ai-h-a", "bit-ai-h-a-2", "bit-ai-h-a-3", "bit-ai-h-a-2-2" }, document.Blocks.Select(Id).ToArray());
     }
 
     [TestMethod]
@@ -38,7 +38,7 @@ public class BitAiHeadingIdTests
     public void SetextHeadingsAreNumberedToo()
     {
         var document = BitAiMarkdownSpec.Parse("A\n===\n\nA\n---");
-        CollectionAssert.AreEqual(new[] { "bit-ai-h-a", "bit-ai-h-a-2" }, document.Blocks.Select(Id).ToArray());
+        Assert.AreSequenceEqual(new[] { "bit-ai-h-a", "bit-ai-h-a-2" }, document.Blocks.Select(Id).ToArray());
     }
 
     [TestMethod]

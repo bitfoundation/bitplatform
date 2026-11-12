@@ -91,9 +91,9 @@ public class BitTextFieldE2ETests : E2ETestBase
         var response = await Page.APIRequest.GetAsync($"{BaseUrl}{Url}");
         var html = await response.TextAsync();
 
-        StringAssert.Contains(html, "id=\"tf-basic\"");
-        StringAssert.Contains(html, "class=\"bit-tfl");
-        StringAssert.Contains(html, "id=\"status\">Loading<");
+        Assert.Contains("id=\"tf-basic\"", html);
+        Assert.Contains("class=\"bit-tfl", html);
+        Assert.Contains("id=\"status\">Loading<", html);
 
         await OpenAsync(Url);
         await Expect(Root("tf-basic")).ToHaveClassAsync(HasClass("bit-tfl"));
@@ -310,7 +310,7 @@ public class BitTextFieldE2ETests : E2ETestBase
 
         var frame = await BoxAsync(Page.Locator("#tf-description .bit-tfl-fgp"));
         var under = await BoxAsync(description);
-        Assert.IsTrue(under.Y >= frame.Y + frame.Height - 1, "The description sits under the frame.");
+        Assert.IsGreaterThanOrEqualTo(frame.Y + frame.Height - 1, under.Y, "The description sits under the frame.");
     }
 
     [TestMethod]
@@ -377,7 +377,7 @@ public class BitTextFieldE2ETests : E2ETestBase
         var notFull = await BoxAsync(Root("tf-notfullwidth"));
 
         Assert.AreEqual(container.Width, full.Width, 1);
-        Assert.IsTrue(notFull.Width < container.Width - 50, $"An inline field sizes to its content ({notFull.Width} of {container.Width}).");
+        Assert.IsLessThan(container.Width - 50, notFull.Width, $"An inline field sizes to its content ({notFull.Width} of {container.Width}).");
     }
 
     [TestMethod]
@@ -405,7 +405,7 @@ public class BitTextFieldE2ETests : E2ETestBase
 
         var root = Root("tf-visibility");
         var height = await HeightAsync(root);
-        Assert.IsTrue(height > 20);
+        Assert.IsGreaterThan(20, height);
 
         await Page.ClickAsync("#btn-vis-hidden");
         await Expect(root).ToHaveCSSAsync("visibility", "hidden");
@@ -452,12 +452,12 @@ public class BitTextFieldE2ETests : E2ETestBase
 
         var label = await BoxAsync(Page.Locator("#tf-underlined .bit-tfl-lbl"));
         var frame = await BoxAsync(Page.Locator("#tf-underlined .bit-tfl-fgp"));
-        Assert.IsTrue(label.X + label.Width <= frame.X + 1, "The label sits before the input on its row.");
+        Assert.IsLessThanOrEqualTo(frame.X + 1, label.X + label.Width, "The label sits before the input on its row.");
         Assert.AreEqual(label.Y + label.Height / 2, frame.Y + frame.Height / 2, 4);
 
         var defaultLabel = await BoxAsync(Page.Locator("#tf-default-variant .bit-tfl-lbl"));
         var defaultFrame = await BoxAsync(Page.Locator("#tf-default-variant .bit-tfl-fgp"));
-        Assert.IsTrue(defaultLabel.Y + defaultLabel.Height <= defaultFrame.Y + 1, "The default variant puts the label above.");
+        Assert.IsLessThanOrEqualTo(defaultFrame.Y + 1, defaultLabel.Y + defaultLabel.Height, "The default variant puts the label above.");
     }
 
     [TestMethod]
@@ -538,7 +538,7 @@ public class BitTextFieldE2ETests : E2ETestBase
 
         var tall = await HeightAsync(Input("tf-rows"));
         var single = await HeightAsync(Input("tf-multiline"));
-        Assert.IsTrue(tall > single * 3, $"Ten rows ({tall}px) are much taller than one ({single}px).");
+        Assert.IsGreaterThan(single * 3, tall, $"Ten rows ({tall}px) are much taller than one ({single}px).");
     }
 
     [TestMethod]
@@ -571,7 +571,7 @@ public class BitTextFieldE2ETests : E2ETestBase
         var input = Input("tf-autoheight-rows");
         var floor = await HeightAsync(input);
         var oneRow = await HeightAsync(Input("tf-autoheight"));
-        Assert.IsTrue(floor > oneRow * 2, $"Four rows ({floor}px) are the starting height, not one ({oneRow}px).");
+        Assert.IsGreaterThan(oneRow * 2, floor, $"Four rows ({floor}px) are the starting height, not one ({oneRow}px).");
 
         await input.ClickAsync();
         for (var i = 0; i < 8; i++)
@@ -652,7 +652,7 @@ public class BitTextFieldE2ETests : E2ETestBase
         await Page.Mouse.MoveAsync(box.X + box.Width - 3, box.Y + box.Height + 80, new() { Steps = 8 });
         await Page.Mouse.UpAsync();
 
-        Assert.IsTrue(await HeightAsync(input) > box.Height + 50, "The textarea grew with the drag.");
+        Assert.IsGreaterThan(box.Height + 50, await HeightAsync(input), "The textarea grew with the drag.");
     }
 
     [TestMethod]
@@ -860,7 +860,7 @@ public class BitTextFieldE2ETests : E2ETestBase
 
         var input = await BoxAsync(Input("tf-icon-end"));
         var iconBox = await BoxAsync(icon);
-        Assert.IsTrue(iconBox.X >= input.X + input.Width - 1, "The icon trails the input.");
+        Assert.IsGreaterThanOrEqualTo(input.X + input.Width - 1, iconBox.X, "The icon trails the input.");
     }
 
     [TestMethod]
@@ -870,7 +870,7 @@ public class BitTextFieldE2ETests : E2ETestBase
 
         var input = await BoxAsync(Input("tf-icon-start"));
         var icon = await BoxAsync(Page.Locator("#tf-icon-start .bit-tfl-ico"));
-        Assert.IsTrue(icon.X + icon.Width <= input.X + 1, "The icon leads the input.");
+        Assert.IsLessThanOrEqualTo(input.X + 1, icon.X + icon.Width, "The icon leads the input.");
         await Expect(Page.Locator("#tf-icon-start .bit-tfl-ico")).ToHaveClassAsync(HasClass("bit-icon--Search"));
     }
 
@@ -883,14 +883,14 @@ public class BitTextFieldE2ETests : E2ETestBase
         await Expect(prefix).ToHaveTextAsync("https://");
         var prefixBox = await BoxAsync(prefix);
         var input = await BoxAsync(Input("tf-prefix"));
-        Assert.IsTrue(prefixBox.X + prefixBox.Width <= input.X + 1, "The prefix leads the input.");
+        Assert.IsLessThanOrEqualTo(input.X + 1, prefixBox.X + prefixBox.Width, "The prefix leads the input.");
         Assert.AreEqual(await ResolveAsync("background-color", "var(--bit-clr-bg-sec)"), await ComputedStyleAsync("#tf-prefix .bit-tfl-pre", "background-color"));
 
         var suffix = Page.Locator("#tf-suffix .bit-tfl-suf");
         await Expect(suffix).ToHaveTextAsync(".com");
         var suffixBox = await BoxAsync(suffix);
         var suffixInput = await BoxAsync(Input("tf-suffix"));
-        Assert.IsTrue(suffixBox.X >= suffixInput.X + suffixInput.Width - 1, "The suffix trails the input.");
+        Assert.IsGreaterThanOrEqualTo(suffixInput.X + suffixInput.Width - 1, suffixBox.X, "The suffix trails the input.");
 
         await Input("tf-prefix").PressSequentiallyAsync("bitplatform.dev");
         await BlurAsync();
@@ -1561,7 +1561,7 @@ public class BitTextFieldE2ETests : E2ETestBase
         var counter = await BoxAsync(Page.Locator("#tf-count-desc .bit-tfl-cnt"));
 
         Assert.AreEqual(description.Y + description.Height / 2, counter.Y + counter.Height / 2, 4);
-        Assert.IsTrue(counter.X > description.X + description.Width - 1, "The counter sits at the end of the row.");
+        Assert.IsGreaterThan(description.X + description.Width - 1, counter.X, "The counter sits at the end of the row.");
     }
 
     [TestMethod]
@@ -1626,12 +1626,12 @@ public class BitTextFieldE2ETests : E2ETestBase
 
         var prefix = await BoxAsync(Page.Locator("#tf-tpl-prefix .tpl-prefix"));
         var prefixInput = await BoxAsync(Input("tf-tpl-prefix"));
-        Assert.IsTrue(prefix.X + prefix.Width <= prefixInput.X + 1);
+        Assert.IsLessThanOrEqualTo(prefixInput.X + 1, prefix.X + prefix.Width);
         await Expect(Page.Locator("#tf-tpl-prefix .bit-tfl-pre")).ToHaveCountAsync(0);
 
         var suffix = await BoxAsync(Page.Locator("#tf-tpl-suffix .tpl-suffix"));
         var suffixInput = await BoxAsync(Input("tf-tpl-suffix"));
-        Assert.IsTrue(suffix.X >= suffixInput.X + suffixInput.Width - 1);
+        Assert.IsGreaterThanOrEqualTo(suffixInput.X + suffixInput.Width - 1, suffix.X);
     }
 
     [TestMethod]
@@ -2050,17 +2050,17 @@ public class BitTextFieldE2ETests : E2ETestBase
         switch (placement)
         {
             case "top":
-                Assert.IsTrue(label.Y + label.Height <= frame.Y + 1, "above");
+                Assert.IsLessThanOrEqualTo(frame.Y + 1, label.Y + label.Height, "above");
                 break;
             case "bottom":
-                Assert.IsTrue(label.Y >= frame.Y + frame.Height - 1, "below");
+                Assert.IsGreaterThanOrEqualTo(frame.Y + frame.Height - 1, label.Y, "below");
                 break;
             case "start":
-                Assert.IsTrue(label.X + label.Width <= frame.X + 1, "before");
+                Assert.IsLessThanOrEqualTo(frame.X + 1, label.X + label.Width, "before");
                 Assert.AreEqual(label.Y + label.Height / 2, frame.Y + frame.Height / 2, 4);
                 break;
             case "end":
-                Assert.IsTrue(label.X >= frame.X + frame.Width - 1, "after");
+                Assert.IsGreaterThanOrEqualTo(frame.X + frame.Width - 1, label.X, "after");
                 Assert.AreEqual(label.Y + label.Height / 2, frame.Y + frame.Height / 2, 4);
                 break;
         }
@@ -2080,7 +2080,7 @@ public class BitTextFieldE2ETests : E2ETestBase
         var label = await BoxAsync(Page.Locator("#tf-lp-und-top .bit-tfl-lbl"));
         var frame = await BoxAsync(Page.Locator("#tf-lp-und-top .bit-tfl-fgp"));
 
-        Assert.IsTrue(label.Y + label.Height <= frame.Y + 1, "The label is stacked above the input.");
+        Assert.IsLessThanOrEqualTo(frame.Y + 1, label.Y + label.Height, "The label is stacked above the input.");
         await ExpectNoAttributeAsync(Page.Locator("#tf-lp-und-top .bit-tfl-lbl"), "title");
     }
 
@@ -2095,7 +2095,7 @@ public class BitTextFieldE2ETests : E2ETestBase
         var spinner = Page.Locator("#tf-loading .bit-tfl-lod .bit-tfl-spn");
         await Expect(spinner).ToBeVisibleAsync();
         await Expect(spinner).ToHaveAttributeAsync("aria-hidden", "true");
-        StringAssert.Contains(await ComputedStyleAsync("#tf-loading .bit-tfl-spn", "animation-name"), "bit-spin");
+        Assert.Contains("bit-spin", await ComputedStyleAsync("#tf-loading .bit-tfl-spn", "animation-name"));
         await Expect(Input("tf-loading")).ToHaveAttributeAsync("aria-busy", "true");
         await Expect(Page.Locator("#tf-loading [role=status]")).ToHaveTextAsync("Loading");
 
@@ -2240,7 +2240,7 @@ public class BitTextFieldE2ETests : E2ETestBase
         var footer = Page.Locator("#tf-errmsg-all .bit-tfl-ftr");
         var messageBox = await BoxAsync(message);
         var footerBox = await BoxAsync(footer);
-        Assert.IsTrue(messageBox.Y + messageBox.Height <= footerBox.Y + 1, "The message sits above the footer.");
+        Assert.IsLessThanOrEqualTo(footerBox.Y + 1, messageBox.Y + messageBox.Height, "The message sits above the footer.");
 
         var errorId = await message.GetAttributeAsync("id");
         var descriptionId = await Page.Locator("#tf-errmsg-all .bit-tfl-des").GetAttributeAsync("id");
@@ -2472,7 +2472,7 @@ public class BitTextFieldE2ETests : E2ETestBase
     {
         await OpenAsync(Url);
 
-        StringAssert.Contains(await ComputedStyleAsync("#tf-style", "box-shadow"), "rgb(0, 255, 255)");
+        Assert.Contains("rgb(0, 255, 255)", await ComputedStyleAsync("#tf-style", "box-shadow"));
         await Expect(Root("tf-style")).ToHaveCSSAsync("margin-left", "16px");
         await Expect(Root("tf-class")).ToHaveClassAsync(HasClass("custom-class"));
     }
@@ -2657,15 +2657,15 @@ public class BitTextFieldE2ETests : E2ETestBase
         var input = await BoxAsync(Input("tf-rtl"));
         var icon = await BoxAsync(Page.Locator("#tf-rtl .bit-tfl-ico"));
         var prefix = await BoxAsync(Page.Locator("#tf-rtl .bit-tfl-pre"));
-        Assert.IsTrue(icon.X + icon.Width <= input.X + 1, "RTL: the trailing icon is on the left.");
-        Assert.IsTrue(prefix.X >= input.X + input.Width - 1, "RTL: the prefix is on the right.");
+        Assert.IsLessThanOrEqualTo(input.X + 1, icon.X + icon.Width, "RTL: the trailing icon is on the left.");
+        Assert.IsGreaterThanOrEqualTo(input.X + input.Width - 1, prefix.X, "RTL: the prefix is on the right.");
 
         // The label text starts at the right edge, and the counter sits at the left end of the footer.
         var frame = await BoxAsync(Page.Locator("#tf-rtl .bit-tfl-fgp"));
         var labelText = await BoxAsync(Page.Locator("#tf-rtl .bit-tfl-ltx"));
         Assert.AreEqual(frame.X + frame.Width, labelText.X + labelText.Width, 20);
         var counter = await BoxAsync(Page.Locator("#tf-rtl .bit-tfl-cnt"));
-        Assert.IsTrue(counter.X < frame.X + 40, "The counter is at the inline end, the left.");
+        Assert.IsLessThan(frame.X + 40, counter.X, "The counter is at the inline end, the left.");
     }
 
     [TestMethod]
@@ -2679,8 +2679,8 @@ public class BitTextFieldE2ETests : E2ETestBase
         var input = await BoxAsync(Input("tf-rtl-inherited"));
         var icon = await BoxAsync(Page.Locator("#tf-rtl-inherited .bit-tfl-ico"));
         var prefix = await BoxAsync(Page.Locator("#tf-rtl-inherited .bit-tfl-pre"));
-        Assert.IsTrue(icon.X + icon.Width <= input.X + 1, "The icon is on the left.");
-        Assert.IsTrue(prefix.X >= input.X + input.Width - 1, "The prefix is on the right.");
+        Assert.IsLessThanOrEqualTo(input.X + 1, icon.X + icon.Width, "The icon is on the left.");
+        Assert.IsGreaterThanOrEqualTo(input.X + input.Width - 1, prefix.X, "The prefix is on the right.");
     }
 
     [TestMethod]
@@ -2690,7 +2690,7 @@ public class BitTextFieldE2ETests : E2ETestBase
 
         var label = await BoxAsync(Page.Locator("#tf-rtl-und .bit-tfl-lbl"));
         var frame = await BoxAsync(Page.Locator("#tf-rtl-und .bit-tfl-fgp"));
-        Assert.IsTrue(label.X >= frame.X + frame.Width - 1, "The label sits to the right of the input.");
+        Assert.IsGreaterThanOrEqualTo(frame.X + frame.Width - 1, label.X, "The label sits to the right of the input.");
     }
 
 
@@ -2702,16 +2702,16 @@ public class BitTextFieldE2ETests : E2ETestBase
         await OpenAsync(Url);
 
         var normal = await ComputedStyleAsync("#tf-motion .bit-tfl-fgp", "transition-duration");
-        Assert.IsTrue(MaxSeconds(normal) > 0.01, $"The frame cross-fades by default ({normal}).");
+        Assert.IsGreaterThan(0.01, MaxSeconds(normal), $"The frame cross-fades by default ({normal}).");
 
         await Page.EmulateMediaAsync(new() { ReducedMotion = ReducedMotion.Reduce });
 
         var reduced = await ComputedStyleAsync("#tf-motion .bit-tfl-fgp", "transition-duration");
-        Assert.IsTrue(MaxSeconds(reduced) < 0.011, $"The frame snaps under reduced motion ({reduced}).");
+        Assert.IsLessThan(0.011, MaxSeconds(reduced), $"The frame snaps under reduced motion ({reduced}).");
 
         await Expect(Root("tf-motion-force")).ToHaveClassAsync(HasClass("bit-fam"));
         var forced = await ComputedStyleAsync("#tf-motion-force .bit-tfl-fgp", "transition-duration");
-        Assert.IsTrue(MaxSeconds(forced) > 0.01, $"ForceAnimation keeps the full duration ({forced}).");
+        Assert.IsGreaterThan(0.01, MaxSeconds(forced), $"ForceAnimation keeps the full duration ({forced}).");
     }
 
     private static double MaxSeconds(string durations) =>

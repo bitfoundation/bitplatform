@@ -7,7 +7,7 @@ namespace Bit.Bdnd.Tests.Components;
 public class BdndProviderTests : BdndComponentTestBase
 {
     /// <summary>Captures the manager a provider cascades.</summary>
-    public sealed class ManagerProbe : ComponentBase
+    internal sealed class ManagerProbe : ComponentBase
     {
         [CascadingParameter] public BdndDragDropManager? Manager { get; set; }
     }

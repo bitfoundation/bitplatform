@@ -1,4 +1,4 @@
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Diagnostics;
 
 namespace Bit.Butil.Tests.E2E.Infrastructure;
@@ -7,7 +7,7 @@ namespace Bit.Butil.Tests.E2E.Infrastructure;
 /// A process the suite starts and owns: its output is drained (a full pipe would stall it) into a bounded
 /// buffer that failure messages quote, and disposing kills the whole process tree.
 /// </summary>
-public sealed class ChildProcess : IAsyncDisposable
+internal sealed class ChildProcess : IAsyncDisposable
 {
     private const int KeptOutputLines = 200;
 

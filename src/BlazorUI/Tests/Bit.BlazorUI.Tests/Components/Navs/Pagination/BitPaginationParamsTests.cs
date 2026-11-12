@@ -53,8 +53,8 @@ public class BitPaginationParamsTests : BunitTestContext
     [TestMethod]
     public void BitPaginationParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitPagination)}", BitPaginationParams.ParamName);
-        Assert.AreEqual("BitParams.BitPagination", BitPaginationParams.ParamName);
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitPagination)}", new BitPaginationParams().Name);
+        Assert.AreEqual("BitParams.BitPagination", new BitPaginationParams().Name);
     }
 
     [TestMethod]
@@ -77,7 +77,7 @@ public class BitPaginationParamsTests : BunitTestContext
                                               .Where(n => baseParameters.Contains(n) is false && _notCascaded.Contains(n) is false)
                                               .ToList();
 
-        Assert.IsTrue(parameters.Count > 0);
+        Assert.IsNotEmpty(parameters);
 
         foreach (var name in parameters)
         {
@@ -128,7 +128,7 @@ public class BitPaginationParamsTests : BunitTestContext
         var roots = component.FindAll(".bit-pgn");
 
         // A false the pagination wrote for itself is a choice, not an absence the cascade may fill in.
-        Assert.AreEqual(2, roots.Count);
+        Assert.HasCount(2, roots);
         Assert.AreEqual(1, roots[0].QuerySelectorAll(".bit-pgn-btn[aria-current='page']").Length);
 
         // What it left unset still comes from the cascade: no page buttons, and a next button that loops around.
@@ -158,7 +158,7 @@ public class BitPaginationParamsTests : BunitTestContext
 
         Assert.AreEqual("cascaded-id", root.Id);
         Assert.IsTrue(root.ClassList.Contains("cascaded"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin:1px");
+        Assert.Contains("margin:1px", root.GetAttribute("style")!);
         Assert.AreEqual("rtl", root.GetAttribute("dir"));
         Assert.AreEqual("Results pages", root.GetAttribute("aria-label"));
         Assert.IsTrue(root.ClassList.Contains("bit-dis"));
@@ -166,7 +166,7 @@ public class BitPaginationParamsTests : BunitTestContext
         // Every native control of a disabled pagination says so both ways.
         var buttons = component.FindAll("button");
 
-        Assert.IsTrue(buttons.Count > 0);
+        Assert.IsNotEmpty(buttons);
         Assert.IsTrue(buttons.All(b => b.HasAttribute("disabled") && b.GetAttribute("aria-disabled") == "true"));
     }
 

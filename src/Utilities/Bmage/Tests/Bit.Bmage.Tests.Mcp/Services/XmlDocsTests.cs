@@ -28,7 +28,7 @@ public class XmlDocsTests
     {
         var summary = BmageXmlDocs.GetSummary("T:Bit.Bmage.Pipeline.ImagePipeline")!;
 
-        StringAssert.Contains(summary, "ImagePipeline.ExecuteAsync");
+        Assert.Contains("ImagePipeline.ExecuteAsync", summary);
         Assert.IsFalse(summary.Contains("M:", StringComparison.Ordinal), summary);
         Assert.IsFalse(summary.Contains('\n'), "A single paragraph kept the source's line wrapping.");
     }
@@ -43,8 +43,8 @@ public class XmlDocsTests
 
         var remarks = BmageXmlDocs.GetRemarks("M:Bit.Bmage.BitBmageBlazor.AddBitBmageServices(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{Bit.Bmage.BitBmageOptions})")!;
 
-        StringAssert.Contains(remarks, "\n\n", "The remarks' paragraphs ran together.");
-        StringAssert.Contains(remarks, "Interactive Server");
+        Assert.Contains("\n\n", remarks, "The remarks' paragraphs ran together.");
+        Assert.Contains("Interactive Server", remarks);
     }
 
     [TestMethod]

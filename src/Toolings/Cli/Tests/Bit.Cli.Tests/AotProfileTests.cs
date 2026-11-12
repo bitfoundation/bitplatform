@@ -54,7 +54,7 @@ public class AotProfileTests
 
         var read = AotProfile.Read(profile.ToArray());
 
-        CollectionAssert.AreEqual(profile.Methods.Select(m => m.Key).ToList(), read.Methods.Select(m => m.Key).ToList());
+        Assert.AreSequenceEqual(profile.Methods.Select(m => m.Key).ToList(), read.Methods.Select(m => m.Key).ToList());
     }
 
     [TestMethod]
@@ -64,7 +64,7 @@ public class AotProfileTests
         var main = new AotProfileMethod(new AotProfileClass(App, ".Program"), "Main", 1, "void(string[])");
 
         Assert.AreEqual(1, profile.AddRange([main, main with { Class = new AotProfileClass(App, ".Program") }]));
-        Assert.HasCount(1, profile.Methods);
+        Assert.ContainsSingle(profile.Methods);
     }
 
     [TestMethod]
@@ -149,9 +149,9 @@ public class AotProfileTests
         var outside = ProfileCollector.ServeStatic(root, new Uri("http://localhost:5000/%2E%2E/secret.txt"), document: false);
 
         Assert.AreEqual((200, "application/wasm"), (wasm.Status, wasm.ContentType));
-        CollectionAssert.AreEqual(new byte[] { 0, 97, 115, 109 }, wasm.Body);
+        Assert.AreSequenceEqual(new byte[] { 0, 97, 115, 109 }, wasm.Body);
         Assert.AreEqual(200, page.Status);
-        StringAssert.Contains(Encoding.UTF8.GetString(page.Body), "Blazor.start();");
+        Assert.Contains("Blazor.start();", Encoding.UTF8.GetString(page.Body));
         Assert.AreEqual(404, missing.Status);
         Assert.AreEqual(404, outside.Status);
     }
@@ -192,7 +192,7 @@ public class AotProfileTests
         using var host = new TestHost();
 
         Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("aot-profile"));
-        StringAssert.Contains(host.Output, "No project here");
+        Assert.Contains("No project here", host.Output);
     }
 
     [TestMethod]
@@ -207,7 +207,7 @@ public class AotProfileTests
 
         Assert.AreEqual(CliApp.ExitFailed, await host.RunAsync("aot-profile", "--browser", browser, "-p:InvariantGlobalization=true", "-p:RunAOTCompilation=true"));
 
-        StringAssert.Contains(host.FlatOutput, "error CS1002");
+        Assert.Contains("error CS1002", host.FlatOutput);
         var arguments = host.Runner.Calls.Single().Arguments.ToList();
         Assert.IsGreaterThan(arguments.IndexOf("-p:RunAOTCompilation=true"), arguments.IndexOf("-p:RunAOTCompilation=false"));
         CollectionAssert.IsSubsetOf(AotProfileRun.ProfilerProperties.Select(p => $"-p:{p}").ToList(), arguments);
@@ -230,7 +230,7 @@ public class AotProfileTests
         Assert.AreEqual(CliApp.ExitFailed, await host.RunAsync("aot-profile", "--browser", browser));
 
         Assert.AreEqual(Path.TrimEndingDirectorySeparator(Path.GetTempPath()), Path.GetDirectoryName(work), "Others can own a shared parent folder in the temp folder.");
-        StringAssert.StartsWith(Path.GetFileName(work), "bit-aot-profile-");
+        Assert.StartsWith("bit-aot-profile-", Path.GetFileName(work));
         Assert.IsFalse(Directory.Exists(work));
     }
 
@@ -242,7 +242,7 @@ public class AotProfileTests
 
         Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("aot-profile", "--step", "press the button"));
 
-        StringAssert.Contains(host.Output, "isn't a step");
+        Assert.Contains("isn't a step", host.Output);
         Assert.IsEmpty(host.Runner.Calls);
     }
 
@@ -257,7 +257,7 @@ public class AotProfileTests
 
         Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("aot-profile", "--browser", browser, "--include", "Bit.Cli.Tests", "--include", "Bit.Bmage"), host.Output);
 
-        StringAssert.Contains(host.FlatOutput, "--include Bit.Bmage: the app has no assembly by that name.");
+        Assert.Contains("--include Bit.Bmage: the app has no assembly by that name.", host.FlatOutput);
     }
 
     [TestMethod]
@@ -274,8 +274,8 @@ public class AotProfileTests
 
         Assert.AreEqual(0, await host.RunAsync("aot-profile", "--browser", browser.Executable), host.Output);
 
-        StringAssert.Contains(host.FlatOutput, "/sign-out reloads the app");
-        StringAssert.Contains(host.FlatOutput, "Used the app 2 pages");
+        Assert.Contains("/sign-out reloads the app", host.FlatOutput);
+        Assert.Contains("Used the app 2 pages", host.FlatOutput);
         Assert.IsTrue(File.Exists(Path.Combine(host.WorkingDirectory, "App.Client.aotprofile")));
     }
 
@@ -292,11 +292,11 @@ public class AotProfileTests
 
         var run = host.RunAsync("aot-profile", "--browser", browser.Executable, "--step", "click:#sign-out", "--step", "wait:1");
 
-        Assert.AreSame(run, await Task.WhenAny(run, Task.Delay(TimeSpan.FromMinutes(1))), "aot-profile keeps running the step that reloads the app.");
+        Assert.AreSame(run, await Task.WhenAny(run, Task.Delay(TimeSpan.FromMinutes(1), TestContext.CancellationToken)), "aot-profile keeps running the step that reloads the app.");
         Assert.AreEqual(0, await run, host.Output);
         Assert.AreEqual(1, browser.Clicks);
-        StringAssert.Contains(host.FlatOutput, "click:#sign-out reloads the app");
-        StringAssert.Contains(host.FlatOutput, "Used the app 1 page, 1 step");
+        Assert.Contains("click:#sign-out reloads the app", host.FlatOutput);
+        Assert.Contains("Used the app 1 page, 1 step", host.FlatOutput);
     }
 
     [TestMethod]
@@ -322,7 +322,7 @@ public class AotProfileTests
             }
             catch (IOException)
             {
-                await Task.Delay(100);
+                await Task.Delay(100, TestContext.CancellationToken);
             }
         }
 
@@ -568,9 +568,11 @@ public class AotProfileTests
             return null;
         }
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }
 
-public static class ProfileSamples
+internal static class ProfileSamples
 {
     [UnmanagedCallersOnly]
     public static int Callback(int value, nint context) => value + (int)context;
@@ -581,6 +583,6 @@ public static class ProfileSamples
 
     public static class Nested
     {
-        public sealed class Inner;
+        internal sealed class Inner;
     }
 }

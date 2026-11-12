@@ -1,4 +1,4 @@
-using System.Numerics;
+﻿using System.Numerics;
 using Bunit;
 
 namespace Bit.Bink.Tests;
@@ -33,15 +33,15 @@ public sealed class GroupingTests
         Guid? group = document.GroupElements([ids[0], ids[2]]);
 
         Assert.IsNotNull(group);
-        CollectionAssert.AreEqual(new[] { group.Value }, Groups(document, ids[0]).ToArray());
-        CollectionAssert.AreEqual(new[] { group.Value }, Groups(document, ids[2]).ToArray());
+        Assert.AreSequenceEqual(new[] { group.Value }, Groups(document, ids[0]).ToArray());
+        Assert.AreSequenceEqual(new[] { group.Value }, Groups(document, ids[2]).ToArray());
         Assert.IsEmpty(Groups(document, ids[1]));
         Assert.AreEqual(1, history.UndoCount);
         Assert.AreEqual("Group", history.UndoLabel);
 
         Assert.IsTrue(history.Undo());
         Assert.IsTrue(ids.All(id => Groups(document, id).Count == 0));
-        CollectionAssert.AreEqual(ids, Order(document), "Undo puts the stacking order back too.");
+        Assert.AreSequenceEqual(ids, Order(document), "Undo puts the stacking order back too.");
     }
 
     [TestMethod]
@@ -50,7 +50,7 @@ public sealed class GroupingTests
         (BinkDocument document, List<Guid> ids) = Row(5);
         document.GroupElements([ids[0], ids[2], ids[4]]);
         // Nothing is sandwiched between members, and members keep their order relative to each other.
-        CollectionAssert.AreEqual(new[] { ids[1], ids[3], ids[0], ids[2], ids[4] }, Order(document));
+        Assert.AreSequenceEqual(new[] { ids[1], ids[3], ids[0], ids[2], ids[4] }, Order(document));
     }
 
     [TestMethod]
@@ -70,11 +70,11 @@ public sealed class GroupingTests
         Guid inner = document.GroupElements([ids[0], ids[1]])!.Value;
         Guid outer = document.GroupElements(ids)!.Value;
 
-        CollectionAssert.AreEqual(new[] { inner, outer }, Groups(document, ids[0]).ToArray());
-        CollectionAssert.AreEqual(new[] { outer }, Groups(document, ids[2]).ToArray());
+        Assert.AreSequenceEqual(new[] { inner, outer }, Groups(document, ids[0]).ToArray());
+        Assert.AreSequenceEqual(new[] { outer }, Groups(document, ids[2]).ToArray());
 
         Assert.IsTrue(document.UngroupElements(ids));
-        CollectionAssert.AreEqual(new[] { inner }, Groups(document, ids[0]).ToArray(), "Only the outer group is dissolved.");
+        Assert.AreSequenceEqual(new[] { inner }, Groups(document, ids[0]).ToArray(), "Only the outer group is dissolved.");
         Assert.IsEmpty(Groups(document, ids[2]));
 
         Assert.IsTrue(document.UngroupElements(ids));
@@ -89,8 +89,8 @@ public sealed class GroupingTests
         Guid outer = document.GroupElements(ids)!.Value;
         Guid inner = document.GroupElements([ids[0], ids[1]])!.Value;
 
-        CollectionAssert.AreEqual(new[] { inner, outer }, Groups(document, ids[0]).ToArray());
-        CollectionAssert.AreEqual(new[] { outer }, Groups(document, ids[2]).ToArray());
+        Assert.AreSequenceEqual(new[] { inner, outer }, Groups(document, ids[0]).ToArray());
+        Assert.AreSequenceEqual(new[] { outer }, Groups(document, ids[2]).ToArray());
     }
 
     [TestMethod]
@@ -109,9 +109,9 @@ public sealed class GroupingTests
         Guid first = document.GroupElements([ids[0], ids[1]])!.Value;
         Guid second = document.GroupElements([ids[1], ids[2]])!.Value;
 
-        CollectionAssert.AreEqual(new[] { first }, Groups(document, ids[0]).ToArray());
-        CollectionAssert.AreEqual(new[] { second }, Groups(document, ids[1]).ToArray(), "Groups never overlap without nesting.");
-        CollectionAssert.AreEqual(new[] { second }, Groups(document, ids[2]).ToArray());
+        Assert.AreSequenceEqual(new[] { first }, Groups(document, ids[0]).ToArray());
+        Assert.AreSequenceEqual(new[] { second }, Groups(document, ids[1]).ToArray(), "Groups never overlap without nesting.");
+        Assert.AreSequenceEqual(new[] { second }, Groups(document, ids[2]).ToArray());
     }
 
     [TestMethod]
@@ -121,10 +121,10 @@ public sealed class GroupingTests
         Guid inner = document.GroupElements([ids[0], ids[1]])!.Value;
         Guid outer = document.GroupElements([ids[0], ids[1], ids[2]])!.Value;
 
-        CollectionAssert.AreEquivalent(new[] { ids[0], ids[1], ids[2] }, BinkDocumentQuery.ExpandToGroups(document, [ids[0]]).ToArray());
-        CollectionAssert.AreEquivalent(new[] { ids[0], ids[1] }, BinkDocumentQuery.ExpandToGroups(document, [ids[0]], outer).ToArray());
-        CollectionAssert.AreEquivalent(new[] { ids[0] }, BinkDocumentQuery.ExpandToGroups(document, [ids[0]], inner).ToArray());
-        CollectionAssert.AreEquivalent(new[] { ids[3] }, BinkDocumentQuery.ExpandToGroups(document, [ids[3]], outer).ToArray());
+        Assert.AreSequenceEqual(new[] { ids[0], ids[1], ids[2] }, BinkDocumentQuery.ExpandToGroups(document, [ids[0]]).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
+        Assert.AreSequenceEqual(new[] { ids[0], ids[1] }, BinkDocumentQuery.ExpandToGroups(document, [ids[0]], outer).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
+        Assert.AreSequenceEqual(new[] { ids[0] }, BinkDocumentQuery.ExpandToGroups(document, [ids[0]], inner).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
+        Assert.AreSequenceEqual(new[] { ids[3] }, BinkDocumentQuery.ExpandToGroups(document, [ids[3]], outer).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         Assert.AreEqual(outer, BinkDocumentQuery.GetSelectionGroup(document.GetElement(ids[2])));
         Assert.IsNull(BinkDocumentQuery.GetSelectionGroup(document.GetElement(ids[2]), outer));
     }
@@ -144,7 +144,7 @@ public sealed class GroupingTests
         document.UpdateLayer(hidden.Id, p => p with { IsVisible = false });
         document.SetLocked([b.Id], true);
 
-        CollectionAssert.AreEqual(new[] { a.Id }, BinkDocumentQuery.ExpandToGroups(document, [a.Id]).ToArray());
+        Assert.AreSequenceEqual(new[] { a.Id }, BinkDocumentQuery.ExpandToGroups(document, [a.Id]).ToArray());
     }
 
     [TestMethod]
@@ -193,8 +193,8 @@ public sealed class GroupingTests
         document.SetLocked([ids[2]], true);
 
         BinkDocument loaded = BinkSerializer.Deserialize(BinkSerializer.Serialize(document));
-        CollectionAssert.AreEqual(new[] { inner, outer }, loaded.GetElement(ids[0]).GroupIds.ToArray());
-        CollectionAssert.AreEqual(new[] { outer }, loaded.GetElement(ids[2]).GroupIds.ToArray());
+        Assert.AreSequenceEqual(new[] { inner, outer }, loaded.GetElement(ids[0]).GroupIds.ToArray());
+        Assert.AreSequenceEqual(new[] { outer }, loaded.GetElement(ids[2]).GroupIds.ToArray());
         Assert.IsTrue(loaded.GetElement(ids[2]).IsLocked);
         Assert.IsFalse(loaded.GetElement(ids[0]).IsLocked);
     }
@@ -206,7 +206,7 @@ public sealed class GroupingTests
         string Doc(string groups) => $$"""{"format":"bink","version":1,"layers":[{"elements":[{"type":"rect","rect":[0,0,10,10],"groups":{{groups}}}]}]}""";
 
         BinkDocument loaded = BinkSerializer.Deserialize(Doc($"""["{id}", 5, "nope", "{id}", "{Guid.Empty}"]"""));
-        CollectionAssert.AreEqual(new[] { id }, loaded.AllElements.Single().GroupIds.ToArray());
+        Assert.AreSequenceEqual(new[] { id }, loaded.AllElements.Single().GroupIds.ToArray());
 
         string deep = "[" + string.Join(",", Enumerable.Range(0, BinkElement.MaxGroupDepth + 1).Select(_ => $"\"{Guid.NewGuid()}\"")) + "]";
         Assert.IsFalse(BinkSerializer.TryDeserialize(Doc(deep), out _, out string? error));
@@ -219,7 +219,7 @@ public sealed class GroupingTests
         var groups = new List<Guid> { Guid.NewGuid() };
         var shape = new BinkRectangleShape(new BinkRect(0, 0, 10, 10)) { GroupIds = groups };
         groups.Add(Guid.NewGuid());
-        Assert.HasCount(1, shape.GroupIds);
+        Assert.ContainsSingle(shape.GroupIds);
         Assert.ThrowsExactly<ArgumentException>(() => shape with { GroupIds = Enumerable.Range(0, BinkElement.MaxGroupDepth + 1).Select(_ => Guid.NewGuid()).ToArray() });
     }
 
@@ -235,15 +235,17 @@ public sealed class GroupingTests
 
         Assert.IsTrue(document.SetLocked([ids[0]], true));
         Assert.AreEqual(1, history.UndoCount);
-        CollectionAssert.AreEqual(new[] { ids[1] }, selection.Ids.ToArray(), "Locking drops the element from the selection.");
+        Assert.AreSequenceEqual(new[] { ids[1] }, selection.Ids.ToArray(), "Locking drops the element from the selection.");
 
         Assert.IsNull(BinkDocumentQuery.HitTest(document, new Vector2(30, 30)));
-        Assert.AreEqual(ids[0], BinkDocumentQuery.HitTest(document, new Vector2(30, 30), includeLocked: true)?.Id);
-        Assert.IsFalse(BinkDocumentQuery.FindInRect(document, new BinkRect(-10, -10, 500, 100)).Any(e => e.Id == ids[0]));
+        var expectedValue = ids[0];
+        var actualValue = BinkDocumentQuery.HitTest(document, new Vector2(30, 30), includeLocked: true)?.Id;
+        Assert.AreEqual(expectedValue, actualValue);
+        Assert.DoesNotContain(e => e.Id == ids[0], BinkDocumentQuery.FindInRect(document, new BinkRect(-10, -10, 500, 100)));
         selection.Set(ids[0]);
         Assert.IsTrue(selection.IsEmpty);
         selection.SelectAll();
-        CollectionAssert.AreEqual(new[] { ids[1] }, selection.Ids.ToArray());
+        Assert.AreSequenceEqual(new[] { ids[1] }, selection.Ids.ToArray());
 
         Assert.IsFalse(document.SetLocked([ids[0]], true), "Already locked.");
         Assert.IsTrue(history.Undo());
@@ -277,7 +279,7 @@ public sealed class GroupingTests
         var selection = new BinkSelection(document);
         selection.Set(BinkDocumentQuery.ExpandToGroups(document, [ids[0]]));
         Guid[] selected = [.. selection.Ids];
-        CollectionAssert.AreEquivalent(new[] { ids[0], ids[1] }, selected);
+        Assert.AreSequenceEqual(new[] { ids[0], ids[1] }, selected, Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
         IReadOnlyList<BinkElement> copies = document.DuplicateElements(selected, new Vector2(0, 200));
         Assert.AreEqual(copies[0].GroupIds.Single(), copies[1].GroupIds.Single(), "The copies are a group of their own.");
@@ -312,8 +314,8 @@ public sealed class GroupingTests
         // The two selectable members, grouped while the third is locked: the new group goes inside the old one.
         Guid inner = document.GroupElements([ids[0], ids[1]])!.Value;
 
-        CollectionAssert.AreEqual(new[] { inner, outer }, Groups(document, ids[0]).ToArray());
-        CollectionAssert.AreEqual(new[] { outer }, Groups(document, ids[2]).ToArray());
+        Assert.AreSequenceEqual(new[] { inner, outer }, Groups(document, ids[0]).ToArray());
+        Assert.AreSequenceEqual(new[] { outer }, Groups(document, ids[2]).ToArray());
     }
 
     [TestMethod]
@@ -325,7 +327,7 @@ public sealed class GroupingTests
         BinkDocument document = BinkSerializer.Deserialize(json);
         BinkElement unknown = document.AllElements.Single();
         Assert.IsInstanceOfType<BinkUnknownElement>(unknown);
-        Assert.HasCount(1, unknown.GroupIds);
+        Assert.ContainsSingle(unknown.GroupIds);
 
         // Its saved form is the text it was read from, so a change to it would be lost on save and on the wire.
         Assert.IsFalse(document.SetLocked([unknown.Id], false));
@@ -380,7 +382,7 @@ public sealed class GroupSelectToolTests
         var tool = new BinkSelectTool();
 
         Click(context, tool, 130, 130, 1000);
-        CollectionAssert.AreEquivalent(new[] { ids[0], ids[1], ids[2] }, context.Selection.Ids.ToArray());
+        Assert.AreSequenceEqual(new[] { ids[0], ids[1], ids[2] }, context.Selection.Ids.ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         Assert.Contains("group of 3 elements", context.Announcements[^1]);
 
         context.Line(tool, new Vector2(330, 130), new Vector2(330, 230));
@@ -397,23 +399,23 @@ public sealed class GroupSelectToolTests
         Click(context, tool, 130, 130, 1000);
         Click(context, tool, 130, 130, 1200);
         Assert.AreEqual(outer, tool.FocusedGroup);
-        CollectionAssert.AreEquivalent(new[] { ids[0], ids[1] }, context.Selection.Ids.ToArray(), "One level down is the inner group.");
+        Assert.AreSequenceEqual(new[] { ids[0], ids[1] }, context.Selection.Ids.ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, "One level down is the inner group.");
 
         Click(context, tool, 130, 130, 1400);
         Click(context, tool, 130, 130, 1600);
         Assert.AreEqual(inner, tool.FocusedGroup);
-        CollectionAssert.AreEqual(new[] { ids[0] }, context.Selection.Ids.ToArray());
+        Assert.AreSequenceEqual(new[] { ids[0] }, context.Selection.Ids.ToArray());
 
         // Inside the outer group, a click on its other member picks that member alone.
         Assert.IsTrue(tool.OnKeyDown(context, new BinkToolKeyEvent("Escape", false, false, false)));
         Assert.AreEqual(outer, tool.FocusedGroup);
-        CollectionAssert.AreEquivalent(new[] { ids[0], ids[1] }, context.Selection.Ids.ToArray());
+        Assert.AreSequenceEqual(new[] { ids[0], ids[1] }, context.Selection.Ids.ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         Click(context, tool, 330, 130, 3000);
-        CollectionAssert.AreEqual(new[] { ids[2] }, context.Selection.Ids.ToArray());
+        Assert.AreSequenceEqual(new[] { ids[2] }, context.Selection.Ids.ToArray());
 
         Assert.IsTrue(tool.OnKeyDown(context, new BinkToolKeyEvent("Escape", false, false, false)));
         Assert.IsNull(tool.FocusedGroup);
-        CollectionAssert.AreEquivalent(new[] { ids[0], ids[1], ids[2] }, context.Selection.Ids.ToArray());
+        Assert.AreSequenceEqual(new[] { ids[0], ids[1], ids[2] }, context.Selection.Ids.ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -438,7 +440,7 @@ public sealed class GroupSelectToolTests
 
         Click(context, tool, 430, 130, 5000);
         Assert.IsNull(tool.FocusedGroup);
-        CollectionAssert.AreEqual(new[] { ids[3] }, context.Selection.Ids.ToArray());
+        Assert.AreSequenceEqual(new[] { ids[3] }, context.Selection.Ids.ToArray());
     }
 
     [TestMethod]
@@ -447,7 +449,7 @@ public sealed class GroupSelectToolTests
         using TestToolContext context = WithGroup(out List<Guid> ids, out _, out _);
         var tool = new BinkSelectTool();
         context.Line(tool, new Vector2(80, 80), new Vector2(180, 180));
-        CollectionAssert.AreEquivalent(new[] { ids[0], ids[1], ids[2] }, context.Selection.Ids.ToArray());
+        Assert.AreSequenceEqual(new[] { ids[0], ids[1], ids[2] }, context.Selection.Ids.ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -462,7 +464,7 @@ public sealed class GroupSelectToolTests
 
         tool.OnPointerDown(context, Sample(BinkPointerPhase.Down, 230, 130, 5000) with { Shift = true });
         tool.OnPointerUp(context, Sample(BinkPointerPhase.Up, 230, 130, 5050) with { Shift = true });
-        CollectionAssert.AreEqual(new[] { ids[3] }, context.Selection.Ids.ToArray());
+        Assert.AreSequenceEqual(new[] { ids[3] }, context.Selection.Ids.ToArray());
         Assert.StartsWith("Deselected group of 3 elements", context.Announcements[^1]);
     }
 
@@ -475,7 +477,7 @@ public sealed class GroupSelectToolTests
         Assert.AreEqual(3, context.Selection.Count);
         Assert.Contains("1 of 2: group of 3 elements", context.Announcements[^1]);
         Assert.IsTrue(tool.OnKeyDown(context, new BinkToolKeyEvent("Tab", false, false, false)));
-        CollectionAssert.AreEqual(new[] { ids[3] }, context.Selection.Ids.ToArray());
+        Assert.AreSequenceEqual(new[] { ids[3] }, context.Selection.Ids.ToArray());
         Assert.IsTrue(tool.OnKeyDown(context, new BinkToolKeyEvent("Tab", false, false, false)));
         Assert.AreEqual(3, context.Selection.Count, "Wraps around to the group.");
     }
@@ -571,12 +573,12 @@ public sealed class BinkCanvasGroupingTests : BunitContext
 
         Key(canvas, "l", ctrl: true);
         Key(canvas, "a", ctrl: true);
-        CollectionAssert.AreEqual(new[] { ids[2] }, canvas.Instance.Selection.Ids.ToArray(), "Select all skips locked elements.");
+        Assert.AreSequenceEqual(new[] { ids[2] }, canvas.Instance.Selection.Ids.ToArray(), "Select all skips locked elements.");
 
         int unlocked = 0;
         canvas.InvokeAsync(() => unlocked = canvas.Instance.UnlockAll());
         Assert.AreEqual(2, unlocked);
-        Assert.IsFalse(document.AllElements.Any(e => e.IsLocked));
+        Assert.DoesNotContain(e => e.IsLocked, document.AllElements);
     }
 
     [TestMethod]

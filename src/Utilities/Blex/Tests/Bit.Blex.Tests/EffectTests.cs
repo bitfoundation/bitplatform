@@ -71,6 +71,6 @@ public class EffectTests
 
         await store.Load("hello");
 
-        Assert.IsTrue(raised >= 2); // at least loading=true and loading=false
+        Assert.IsGreaterThanOrEqualTo(2, raised); // at least loading=true and loading=false
     }
 }

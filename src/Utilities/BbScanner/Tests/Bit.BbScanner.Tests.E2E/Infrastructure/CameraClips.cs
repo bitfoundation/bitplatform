@@ -4,7 +4,7 @@
 /// The Y4M clips the fake camera plays, written once per run into a directory of their own and deleted when
 /// the run ends. See <see cref="FakeCameraVideo"/> for what is in them.
 /// </summary>
-public sealed class CameraClips : IDisposable
+internal sealed class CameraClips : IDisposable
 {
     private CameraClips(string directory) => Directory = directory;
 

@@ -21,12 +21,12 @@ public class McpControllerTests
     {
         var guide = _mcp.GetBelemetrySetupGuide(host);
 
-        StringAssert.Contains(guide, "AddBitBelemetryServices");
-        StringAssert.Contains(guide, "dotnet add package Bit.Belemetry");
+        Assert.Contains("AddBitBelemetryServices", guide);
+        Assert.Contains("dotnet add package Bit.Belemetry", guide);
 
         // Static SSR pages have no interactive root to host the initializer; every other host needs it.
-        if (host != "static-ssr") StringAssert.Contains(guide, "BelemetryInitializer");
-        if (host != "hybrid" && host != "standalone-wasm") StringAssert.Contains(guide, "<BelemetryScript />");
+        if (host != "static-ssr") Assert.Contains("BelemetryInitializer", guide);
+        if (host != "hybrid" && host != "standalone-wasm") Assert.Contains("<BelemetryScript />", guide);
     }
 
     [TestMethod]
@@ -34,21 +34,21 @@ public class McpControllerTests
     {
         var guide = _mcp.GetBelemetrySetupGuide("web-app");
 
-        StringAssert.Contains(guide, "### Samples/Wasm/Bit.Belemetry.Samples.Wasm.Client/Program.cs");
+        Assert.Contains("### Samples/Wasm/Bit.Belemetry.Samples.Wasm.Client/Program.cs", guide);
         Assert.IsFalse(guide.Contains("[Truncated", StringComparison.Ordinal), "The guide does not fit in one answer.");
-        StringAssert.Contains(guide, BelemetrySourceCatalog.GetSource("Demo/Client/Routes.razor")!.Trim());
+        Assert.Contains(BelemetrySourceCatalog.GetSource("Demo/Client/Routes.razor")!.Trim(), guide);
     }
 
     [TestMethod]
     public void SetupGuide_AcceptsCommonSpellings_AndNamesTheHostsForAnUnknownOne()
     {
-        StringAssert.Contains(_mcp.GetBelemetrySetupGuide("MAUI"), "Blazor Hybrid");
-        StringAssert.Contains(_mcp.GetBelemetrySetupGuide("wasm"), "InteractiveWebAssembly");
+        Assert.Contains("Blazor Hybrid", _mcp.GetBelemetrySetupGuide("MAUI"));
+        Assert.Contains("InteractiveWebAssembly", _mcp.GetBelemetrySetupGuide("wasm"));
 
         var unknown = _mcp.GetBelemetrySetupGuide("winui");
 
-        StringAssert.Contains(unknown, "not a known host");
-        StringAssert.Contains(unknown, "standalone-wasm");
+        Assert.Contains("not a known host", unknown);
+        Assert.Contains("standalone-wasm", unknown);
     }
 
     [TestMethod]
@@ -90,11 +90,11 @@ public class McpControllerTests
 
         Assert.AreEqual("Component", script.Kind);
         Assert.IsTrue(script.Members.All(m => m.Kind == "Parameter"));
-        Assert.IsTrue(script.Members.Any(m => m.Name == "Nonce"));
+        Assert.Contains(m => m.Name == "Nonce", script.Members);
 
         var registration = _mcp.GetBelemetryApiDetails("Belemetry").Details!;
 
-        StringAssert.StartsWith(registration.Members.Single(m => m.Name == "AddBitBelemetryServices").Signature!, "(this IServiceCollection services");
+        Assert.StartsWith("(this IServiceCollection services", registration.Members.Single(m => m.Name == "AddBitBelemetryServices").Signature!);
     }
 
     [TestMethod]
@@ -103,7 +103,7 @@ public class McpControllerTests
         var result = _mcp.GetBelemetryApiDetails("OtlpOptions");
 
         Assert.IsNull(result.Details);
-        StringAssert.Contains(result.Message!, "BelemetryOtlpExporterOptions");
+        Assert.Contains("BelemetryOtlpExporterOptions", result.Message!);
     }
 
     [TestMethod]
@@ -113,15 +113,15 @@ public class McpControllerTests
 
         var setup = result.Files.Single(f => f.Path == "Client/BelemetrySetup.cs").Content;
 
-        StringAssert.Contains(setup, "options.Consent.Default = BelemetryFeatures.None;");
-        StringAssert.Contains(setup, "options.AddOtlpExporter(\"https://otel.example.com\"");
-        StringAssert.Contains(setup, "options.AddConsoleExporter();");
+        Assert.Contains("options.Consent.Default = BelemetryFeatures.None;", setup);
+        Assert.Contains("options.AddOtlpExporter(\"https://otel.example.com\"", setup);
+        Assert.Contains("options.AddConsoleExporter();", setup);
 
-        Assert.IsTrue(result.Files.Any(f => f.Path == "Client/Program.cs" && f.Content.Contains("AddBitBelemetryServices(BelemetrySetup.Configure)")));
-        Assert.IsTrue(result.Files.Any(f => f.Path == "Server/Program.cs" && f.Content.Contains("AddBitBelemetryServices(BelemetrySetup.Configure)")));
-        Assert.IsTrue(result.Files.Any(f => f.Content.Contains("<BelemetryScript />")));
-        Assert.IsTrue(result.Files.Any(f => f.Content.Contains("<BelemetryInitializer />")));
-        Assert.IsTrue(result.Files.Any(f => f.Path.EndsWith("ConsentBanner.razor", StringComparison.Ordinal)));
+        Assert.Contains(f => f.Path == "Client/Program.cs" && f.Content.Contains("AddBitBelemetryServices(BelemetrySetup.Configure)"), result.Files);
+        Assert.Contains(f => f.Path == "Server/Program.cs" && f.Content.Contains("AddBitBelemetryServices(BelemetrySetup.Configure)"), result.Files);
+        Assert.Contains(f => f.Content.Contains("<BelemetryScript />"), result.Files);
+        Assert.Contains(f => f.Content.Contains("<BelemetryInitializer />"), result.Files);
+        Assert.Contains(f => f.Path.EndsWith("ConsentBanner.razor", StringComparison.Ordinal), result.Files);
     }
 
     [TestMethod]
@@ -132,11 +132,11 @@ public class McpControllerTests
             var result = _mcp.GenerateBelemetryConfiguration(host, "otlp,azure,sentry,console", "opt-in", "Diagnostics,PageViews", "Relay");
             var code = string.Join("\n", result.Files.Select(f => f.Content));
 
-            StringAssert.Contains(code, "options.AddSentryExporter(", $"{host}: the Sentry exporter asked for was not generated.");
+            Assert.Contains("options.AddSentryExporter(", code, $"{host}: the Sentry exporter asked for was not generated.");
 
             var review = _mcp.ReviewBelemetryConfiguration(code);
 
-            Assert.IsFalse(review.Findings.Any(f => f.Severity is "error" or "warning"),
+            Assert.DoesNotContain(f => f.Severity is "error" or "warning", review.Findings,
                            $"{host}: {string.Join("; ", review.Findings.Select(f => $"{f.Rule} {f.Message}"))}");
         }
     }
@@ -148,11 +148,11 @@ public class McpControllerTests
 
         var setup = result.Files.Single(f => f.Path == "BelemetrySetup.cs").Content;
 
-        StringAssert.Contains(setup, "options.Features = BelemetryFeatures.Errors | BelemetryFeatures.Analytics;");
-        Assert.IsTrue(result.Notes.Any(n => n.Contains("datadog", StringComparison.Ordinal)));
-        Assert.IsTrue(result.Notes.Any(n => n.Contains("maybe", StringComparison.Ordinal)));
-        Assert.IsTrue(result.Notes.Any(n => n.Contains("Clicks", StringComparison.Ordinal)));
-        Assert.IsTrue(result.Notes.Any(n => n.Contains("sideways", StringComparison.Ordinal)));
+        Assert.Contains("options.Features = BelemetryFeatures.Errors | BelemetryFeatures.Analytics;", setup);
+        Assert.Contains(n => n.Contains("datadog", StringComparison.Ordinal), result.Notes);
+        Assert.Contains(n => n.Contains("maybe", StringComparison.Ordinal), result.Notes);
+        Assert.Contains(n => n.Contains("Clicks", StringComparison.Ordinal), result.Notes);
+        Assert.Contains(n => n.Contains("sideways", StringComparison.Ordinal), result.Notes);
     }
 
     [TestMethod]
@@ -161,7 +161,7 @@ public class McpControllerTests
         var result = _mcp.GenerateBelemetryConfiguration("server", string.Join(",", Enumerable.Range(0, 1000).Select(i => "x" + i)));
 
         Assert.IsEmpty(result.Files);
-        StringAssert.StartsWith(result.Notes.Single(), "Not generated");
+        Assert.StartsWith("Not generated", result.Notes.Single());
     }
 
     [TestMethod]
@@ -169,8 +169,8 @@ public class McpControllerTests
     {
         var result = _mcp.GenerateBelemetryConfiguration("hybrid");
 
-        Assert.IsTrue(result.Files.Any(f => f.Content.Contains("OnSleep") && f.Content.Contains("FlushAsync")));
-        Assert.IsFalse(result.Files.Any(f => f.Content.Contains("<BelemetryScript")));
+        Assert.Contains(f => f.Content.Contains("OnSleep") && f.Content.Contains("FlushAsync"), result.Files);
+        Assert.DoesNotContain(f => f.Content.Contains("<BelemetryScript"), result.Files);
     }
 
     [TestMethod]
@@ -178,9 +178,9 @@ public class McpControllerTests
     {
         var text = _mcp.LookupBelemetryConventions("web_vital");
 
-        StringAssert.Contains(text, "browser.web_vital");
-        StringAssert.Contains(text, "(CLAUDE.md contracts)");
-        StringAssert.Contains(text, "BelemetrySemanticConventions.WebVitalName");
+        Assert.Contains("browser.web_vital", text);
+        Assert.Contains("(CLAUDE.md contracts)", text);
+        Assert.Contains("BelemetrySemanticConventions.WebVitalName", text);
     }
 
     [TestMethod]
@@ -188,45 +188,45 @@ public class McpControllerTests
     {
         var text = _mcp.LookupBelemetryConventions(null);
 
-        StringAssert.Contains(text, "Feature bits");
-        StringAssert.Contains(text, "Storage keys");
+        Assert.Contains("Feature bits", text);
+        Assert.Contains("Storage keys", text);
     }
 
     [TestMethod]
     public void Conventions_NothingMatching_SaysSo()
     {
-        StringAssert.Contains(_mcp.LookupBelemetryConventions("zzqqxx"), "Nothing in the reference tables matches");
+        Assert.Contains("Nothing in the reference tables matches", _mcp.LookupBelemetryConventions("zzqqxx"));
     }
 
     [TestMethod]
     public void SourceFile_ListsReadsAndSlices()
     {
-        StringAssert.Contains(_mcp.GetBelemetrySourceFile(), "Demo/Client/Pages/ConsentPage.razor");
+        Assert.Contains("Demo/Client/Pages/ConsentPage.razor", _mcp.GetBelemetrySourceFile());
 
         var program = _mcp.GetBelemetrySourceFile("Demo\\Server\\Program.cs");
 
-        StringAssert.Contains(program, "MapOtlpReceiver");
+        Assert.Contains("MapOtlpReceiver", program);
 
         var firstTwo = _mcp.GetBelemetrySourceFile("Demo/Server/Program.cs", 1, 2);
 
-        Assert.AreEqual(2, firstTwo.Split('\n').Length);
+        Assert.HasCount(2, firstTwo.Split('\n'));
 
-        StringAssert.Contains(_mcp.GetBelemetrySourceFile("Demo/Client/Pages"), "is not a single file");
-        StringAssert.Contains(_mcp.GetBelemetrySourceFile("nothing/here.cs"), "No embedded file matches");
+        Assert.Contains("is not a single file", _mcp.GetBelemetrySourceFile("Demo/Client/Pages"));
+        Assert.Contains("No embedded file matches", _mcp.GetBelemetrySourceFile("nothing/here.cs"));
     }
 
     [TestMethod]
     public void SourceFile_ReadsTheReadme_WholeOrBySection()
     {
-        StringAssert.StartsWith(_mcp.GetBelemetrySourceFile("README.md"), "# bit Belemetry");
-        StringAssert.Contains(_mcp.GetBelemetrySourceFile("README.md", 1, 3), "bit Belemetry");
+        Assert.StartsWith("# bit Belemetry", _mcp.GetBelemetrySourceFile("README.md"));
+        Assert.Contains("bit Belemetry", _mcp.GetBelemetrySourceFile("README.md", 1, 3));
 
         var exporters = _mcp.GetBelemetrySourceFile("README.md#exporters");
 
-        StringAssert.StartsWith(exporters, "## Exporters");
-        StringAssert.Contains(exporters, "### OTLP");
+        Assert.StartsWith("## Exporters", exporters);
+        Assert.Contains("### OTLP", exporters);
 
-        StringAssert.Contains(_mcp.GetBelemetrySourceFile("README.md#no-such-section"), "has no section");
+        Assert.Contains("has no section", _mcp.GetBelemetrySourceFile("README.md#no-such-section"));
     }
 
     [TestMethod]
@@ -234,16 +234,16 @@ public class McpControllerTests
     {
         var consent = _mcp.SearchBelemetry("consent banner");
 
-        Assert.IsTrue(consent.Any(hit => hit.Kind == "page" && hit.Location == "/consent"));
+        Assert.Contains(hit => hit.Kind == "page" && hit.Location == "/consent", consent);
 
         var api = _mcp.SearchBelemetry("BelemetryOtlpExporterOptions", 3);
 
         Assert.AreEqual("api", api[0].Kind);
-        StringAssert.Contains(api[0].FollowUp, "GetBelemetryApiDetails");
+        Assert.Contains("GetBelemetryApiDetails", api[0].FollowUp);
 
-        Assert.IsTrue(_mcp.SearchBelemetry("storage keys localStorage").Any(hit => hit.Kind == "convention"));
-        Assert.IsTrue(_mcp.SearchBelemetry("offline persistence").Any(hit => hit.Kind == "guide"));
-        Assert.AreEqual(0, _mcp.SearchBelemetry("   ").Length);
+        Assert.Contains(hit => hit.Kind == "convention", _mcp.SearchBelemetry("storage keys localStorage"));
+        Assert.Contains(hit => hit.Kind == "guide", _mcp.SearchBelemetry("offline persistence"));
+        Assert.IsEmpty(_mcp.SearchBelemetry("   "));
     }
 
     [TestMethod]
@@ -251,11 +251,11 @@ public class McpControllerTests
     {
         var catalog = _mcp.GetMcpCatalog();
 
-        Assert.AreEqual(7, catalog.Tools.Length);
+        Assert.HasCount(7, catalog.Tools);
 
         var generator = catalog.Tools.Single(t => t.Name == nameof(McpController.GenerateBelemetryConfiguration));
 
-        CollectionAssert.AreEqual(new[] { "host", "exporters", "consent", "features", "transport" }, generator.Parameters.Select(p => p.Name).ToArray());
+        Assert.AreSequenceEqual(new[] { "host", "exporters", "consent", "features", "transport" }, generator.Parameters.Select(p => p.Name).ToArray());
         Assert.IsTrue(generator.Parameters[0].Required);
         Assert.IsFalse(generator.Parameters[1].Required);
         Assert.IsTrue(catalog.Tools.All(t => t.Parameters.All(p => string.IsNullOrWhiteSpace(p.Description) is false)));

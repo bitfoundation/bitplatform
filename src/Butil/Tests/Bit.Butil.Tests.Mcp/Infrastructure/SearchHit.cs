@@ -5,4 +5,4 @@
 // or dropped on the server has to fail a test instead of quietly flowing through a shared type.
 // Only the fields the suite asserts on are declared; unknown ones are ignored by the deserializer.
 
-public sealed record SearchHit(string Kind, string Title, string? Context, string Tool, string Snippet);
+internal sealed record SearchHit(string Kind, string Title, string? Context, string Tool, string Snippet);

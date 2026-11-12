@@ -104,7 +104,7 @@ public sealed class ColorAdjustmentTests
         // Only clipped highlights and black: no mid-tone to say what grey is.
         using var image = ImageBuffer.Create(4, 4, new Rgba32(255, 255, 255));
         image[0, 0] = Rgba32.Black;
-        Assert.IsNull(new AutoWhiteBalanceOperation().Measure(image));
+        Assert.IsNull(new AutoWhiteBalanceOperation().Measure(image, TestContext.CancellationToken));
         using var output = new AutoWhiteBalanceOperation().Apply(image, OperationContext.Default.WithMutation(false));
         Assert.AreEqual(0, TestImages.MaxChannelDifference(image, output));
         Assert.IsTrue(new AutoWhiteBalanceOperation(0).IsIdentity);
@@ -161,7 +161,7 @@ public sealed class ColorAdjustmentTests
     {
         var hsl = new HslAdjustment();
         Assert.IsTrue(hsl.IsIdentity);
-        Assert.AreEqual(0, hsl.Shifts.Count());
+        Assert.IsEmpty(hsl.Shifts);
     }
 
     [TestMethod]
@@ -244,7 +244,7 @@ public sealed class ColorAdjustmentTests
     public void StopsAreOrderedAndInterpolated()
     {
         var map = new GradientMapOperation([(1f, Rgba32.White), (0f, Rgba32.Black), (0.5f, new Rgba32(255, 0, 0))]);
-        CollectionAssert.AreEqual(new[] { 0f, 0.5f, 1f }, map.Stops.Select(s => s.Offset).ToArray());
+        Assert.AreSequenceEqual(new[] { 0f, 0.5f, 1f }, map.Stops.Select(s => s.Offset).ToArray());
         AssertClose(new Rgba32(255, 0, 0), Apply(map, new Rgba32(128, 128, 128)), 2);
         var half = new GradientMapOperation([(0f, Rgba32.Black), (1f, Rgba32.Black)], amount: 0.5f);
         AssertClose(new Rgba32(100, 100, 100), Apply(half, new Rgba32(200, 200, 200)), 1);
@@ -289,4 +289,6 @@ public sealed class ColorAdjustmentTests
             Assert.AreEqual(0, TestImages.MaxChannelDifference(one, many), operation.Name);
         }
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

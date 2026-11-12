@@ -86,13 +86,17 @@ public class QueryTests
         var db = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions
         {
             FlushInterval = TimeSpan.FromHours(1),
-        }.AddTable(Account.Table));
+        }.AddTable(Account.Table), TestContext.CancellationToken);
         await using var _ = db;
         var accounts = db.GetTable(Account.Table);
 
         Account Make(int id, int? slot) => new()
         {
-            Id = id, Username = "u" + id, Email = $"u{id}@x", TenantId = 1, Slot = slot,
+            Id = id,
+            Username = "u" + id,
+            Email = $"u{id}@x",
+            TenantId = 1,
+            Slot = slot,
         };
         accounts.Insert(Make(1, 5));
         accounts.Insert(Make(2, null));
@@ -202,7 +206,7 @@ public class QueryTests
             keepId = keep.Id;
             todos.Insert(keep);
             todos.Insert(Make("other", done: false, day: 5));
-            await db.CheckpointAsync();
+            await db.CheckpointAsync(TestContext.CancellationToken);
             todos.Insert(Make("later", done: true, day: 7));
         }
 
@@ -338,7 +342,7 @@ public class QueryTests
         var db = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions
         {
             FlushInterval = TimeSpan.FromHours(1),
-        }.AddTable(Account.Table));
+        }.AddTable(Account.Table), TestContext.CancellationToken);
         await using var _ = db;
         var accounts = db.GetTable(Account.Table);
         accounts.Insert(new Account { Id = 1, Username = "u1", Email = "u1@x", TenantId = 1, Slot = 5 });
@@ -350,4 +354,6 @@ public class QueryTests
             new[] { 1, 2 },
             BlazeDbQuery<int, Account>.From(accounts).UseIndexBoxed(Account.Indexes.Slot, new object?[] { 5, null }).Execute(a => a.Id).Order());
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

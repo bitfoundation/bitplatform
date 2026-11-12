@@ -1,11 +1,11 @@
-using System.Text;
+﻿using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Bit.Blex.Tests;
 
 /// <summary>A second persistent store, to show one store's protector failure does not hold the others back.</summary>
 [BlexStoreAttribute(Name = "drafts", Persist = true)]
-public partial class DraftsStore
+internal partial class DraftsStore
 {
     [BlexStateAttribute] private string _text = "";
 
@@ -108,17 +108,17 @@ public class PersistenceProtectionTests
         var (store, manager, _) = App();
         await using (var persistor = new BlexStatePersistor(manager, storage, new() { Protector = protector }))
         {
-            await persistor.StartAsync();
+            await persistor.StartAsync(TestContext.CancellationToken);
             store.SetTheme("dark");
             await persistor.FlushAsync();
         }
 
-        StringAssert.StartsWith(storage.Data["blex:settings"], "sealed:");
+        Assert.StartsWith("sealed:", storage.Data["blex:settings"]);
         Assert.DoesNotContain("dark", storage.Data["blex:settings"], "nothing readable in storage");
 
         var (reloaded, nextManager, errors) = App();
         await using var next = new BlexStatePersistor(nextManager, storage, new() { Protector = protector });
-        await next.StartAsync();
+        await next.StartAsync(TestContext.CancellationToken);
 
         Assert.AreEqual("dark", reloaded.Theme);
         Assert.IsEmpty(errors);
@@ -132,11 +132,11 @@ public class PersistenceProtectionTests
 
         var (store, manager, errors) = App();
         await using var persistor = new BlexStatePersistor(manager, storage, new() { Protector = new SealingProtector() });
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
 
         Assert.AreEqual("light", store.Theme, "a value the protector cannot vouch for is never applied");
         Assert.IsFalse(storage.Data.ContainsKey("blex:settings"));
-        Assert.HasCount(1, errors);
+        Assert.ContainsSingle(errors);
     }
 
     [TestMethod]
@@ -144,19 +144,19 @@ public class PersistenceProtectionTests
     {
         var storage = new Storage();
         var protector = new SealingProtector();
-        storage.Data["blex:settings"] = await protector.ProtectAsync("settings", """{"Theme":"dark"}""");
-        storage.Data["blex:drafts"] = await protector.ProtectAsync("drafts", """{"Text":"hello"}""");
+        storage.Data["blex:settings"] = await protector.ProtectAsync("settings", """{"Theme":"dark"}""", TestContext.CancellationToken);
+        storage.Data["blex:drafts"] = await protector.ProtectAsync("drafts", """{"Text":"hello"}""", TestContext.CancellationToken);
         protector.UnavailableFor = "settings";   // this key cannot be reached right now
 
         var (store, manager, errors) = App();
         var drafts = new DraftsStore();
         manager.Register(drafts);
         await using var persistor = new BlexStatePersistor(manager, storage, new() { Protector = protector });
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
 
         Assert.AreEqual("hello", drafts.Text, "the other stores hydrate");
         Assert.AreEqual("light", store.Theme);
-        Assert.HasCount(1, errors);
+        Assert.ContainsSingle(errors);
 
         var kept = storage.Data["blex:settings"];
         store.SetTheme("dim");
@@ -164,7 +164,7 @@ public class PersistenceProtectionTests
         Assert.AreEqual(kept, storage.Data["blex:settings"], "nothing overwrites the value that could not be read");
 
         protector.UnavailableFor = null;
-        await persistor.RehydrateAsync();
+        await persistor.RehydrateAsync(TestContext.CancellationToken);
         Assert.AreEqual("dark", store.Theme);
 
         store.SetTheme("dim");
@@ -177,18 +177,18 @@ public class PersistenceProtectionTests
     {
         var storage = new Storage();
         var protector = new SealingProtector();
-        storage.Data["blex:settings"] = await protector.ProtectAsync("settings", """{"Theme":"dark"}""");
+        storage.Data["blex:settings"] = await protector.ProtectAsync("settings", """{"Theme":"dark"}""", TestContext.CancellationToken);
         protector.TimesOut = true;   // its own timeout: nobody cancelled the hydration
 
         var (store, manager, errors) = App();
         await using var persistor = new BlexStatePersistor(manager, storage, new() { Protector = protector });
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
 
-        Assert.HasCount(1, errors, "reported, and the app starts");
+        Assert.ContainsSingle(errors, "reported, and the app starts");
         Assert.IsTrue(storage.Data.ContainsKey("blex:settings"));
 
         protector.TimesOut = false;
-        await persistor.RehydrateAsync();
+        await persistor.RehydrateAsync(TestContext.CancellationToken);
         Assert.AreEqual("dark", store.Theme);
     }
 
@@ -199,19 +199,19 @@ public class PersistenceProtectionTests
         var protector = new SealingProtector();
         var (store, manager, errors) = App();
         await using var persistor = new BlexStatePersistor(manager, storage, new() { Protector = protector });
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
 
         protector.FailToProtect = true;
         store.SetTheme("dark");
         await persistor.FlushAsync();
 
         Assert.IsFalse(storage.Data.ContainsKey("blex:settings"));
-        Assert.HasCount(1, errors);
+        Assert.ContainsSingle(errors);
 
         protector.FailToProtect = false;
         store.SetTheme("dim");
         await persistor.FlushAsync();
-        StringAssert.StartsWith(storage.Data["blex:settings"], "sealed:");
+        Assert.StartsWith("sealed:", storage.Data["blex:settings"]);
     }
 
     [TestMethod]
@@ -227,11 +227,11 @@ public class PersistenceProtectionTests
         await using var provider = services.BuildServiceProvider();
 
         var persistor = provider.GetRequiredService<BlexStatePersistor>();
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
         provider.GetRequiredService<SettingsStore>().SetTheme("dark");
         await persistor.FlushAsync();
 
-        StringAssert.StartsWith(storage.Data["blex:settings"], "sealed:");
+        Assert.StartsWith("sealed:", storage.Data["blex:settings"]);
     }
 
     [TestMethod]
@@ -241,9 +241,9 @@ public class PersistenceProtectionTests
         var protector = new SealingProtector();
         var (store, manager, errors) = App();
         await using var persistor = new BlexStatePersistor(manager, storage, new() { Protector = protector, SyncAcrossTabs = true });
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
 
-        storage.WriteFromAnotherTab("blex:settings", await protector.ProtectAsync("settings", """{"Theme":"dark"}"""));
+        storage.WriteFromAnotherTab("blex:settings", await protector.ProtectAsync("settings", """{"Theme":"dark"}""", TestContext.CancellationToken));
         await persistor.FlushAsync();
         Assert.AreEqual("dark", store.Theme);
 
@@ -251,7 +251,7 @@ public class PersistenceProtectionTests
         await persistor.FlushAsync();
         Assert.AreEqual("dark", store.Theme, "rejected");
         Assert.IsTrue(storage.Data.ContainsKey("blex:settings"), "the other tab's value is left for it to judge");
-        Assert.HasCount(1, errors);
+        Assert.ContainsSingle(errors);
     }
 
 
@@ -262,7 +262,7 @@ public class PersistenceProtectionTests
         var protector = new SealingProtector();
         var (store, manager, errors) = App();
         await using var persistor = new BlexStatePersistor(manager, storage, new() { Protector = protector });
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
 
         // A scope closes with an edit still debounced -- its save is queued as the store unregisters -- and opens
         // again at once. Protecting is asynchronous, so that write is still on its way when the new instance
@@ -276,4 +276,6 @@ public class PersistenceProtectionTests
         Assert.AreEqual("dark", reopened.Theme, "hydrated from the save queued before it registered");
         Assert.IsEmpty(errors);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

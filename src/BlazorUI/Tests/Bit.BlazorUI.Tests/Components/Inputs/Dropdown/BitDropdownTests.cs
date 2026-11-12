@@ -59,7 +59,7 @@ public class BitDropdownTests : BunitTestContext
         });
 
         Assert.AreEqual(isResponsiveModeEnabled, component.Find(".bit-drp-cal").ClassList.Contains("bit-drp-res"));
-        Assert.AreEqual(isResponsiveModeEnabled ? 1 : 0, component.FindAll(".bit-drp-rlc").Count);
+        Assert.HasCount(isResponsiveModeEnabled ? 1 : 0, component.FindAll(".bit-drp-rlc"));
 
         // Whether the callout opens as a panel on a narrow screen is the script's decision, made from the mode it is
         // handed with every toggle.
@@ -176,7 +176,7 @@ public class BitDropdownTests : BunitTestContext
 
         if (isMultiSelect)
         {
-            Assert.AreEqual(items.FindAll(i => i.ItemType == BitDropdownItemType.Normal).Count, component.FindAll(".bit-drp-iwr").Count);
+            Assert.HasCount(items.FindAll(i => i.ItemType == BitDropdownItemType.Normal).Count, component.FindAll(".bit-drp-iwr"));
         }
         else
         {
@@ -201,16 +201,16 @@ public class BitDropdownTests : BunitTestContext
             parameters.Add(p => p.MultiSelect, isMultiSelect);
         });
 
-        Assert.AreEqual(items.FindAll(i => i.ItemType == BitDropdownItemType.Header).Count, component.FindAll(".bit-drp-ihd").Count);
-        Assert.AreEqual(items.FindAll(i => i.ItemType == BitDropdownItemType.Divider).Count, component.FindAll(".bit-drp-sep").Count);
+        Assert.HasCount(items.FindAll(i => i.ItemType == BitDropdownItemType.Header).Count, component.FindAll(".bit-drp-ihd"));
+        Assert.HasCount(items.FindAll(i => i.ItemType == BitDropdownItemType.Divider).Count, component.FindAll(".bit-drp-sep"));
 
         if (isMultiSelect)
         {
-            Assert.AreEqual(items.FindAll(i => i.ItemType == BitDropdownItemType.Normal).Count, component.FindAll(".bit-drp-iwr").Count);
+            Assert.HasCount(items.FindAll(i => i.ItemType == BitDropdownItemType.Normal).Count, component.FindAll(".bit-drp-iwr"));
         }
         else
         {
-            Assert.AreEqual(items.FindAll(i => i.ItemType == BitDropdownItemType.Normal).Count, component.FindAll(".bit-drp-itm").Count);
+            Assert.HasCount(items.FindAll(i => i.ItemType == BitDropdownItemType.Normal).Count, component.FindAll(".bit-drp-itm"));
         }
     }
 
@@ -585,7 +585,7 @@ public class BitDropdownTests : BunitTestContext
             expectedResult = initialValuesCount + 1;
         }
 
-        Assert.AreEqual(expectedResult, _bitDropdownValues.Count());
+        Assert.HasCount(expectedResult, _bitDropdownValues);
     }
 
     [TestMethod,
@@ -841,7 +841,7 @@ public class BitDropdownTests : BunitTestContext
         var searchBox = component.FindAll(".bit-drp-cal .bit-drp-sb");
         if (showSearchBox)
         {
-            Assert.AreEqual(1, searchBox.Count);
+            Assert.ContainsSingle(searchBox);
 
             var searchInput = component.Find(".bit-drp-sin");
             var inputPlaceholder = searchInput.GetAttribute("placeholder");
@@ -850,7 +850,7 @@ public class BitDropdownTests : BunitTestContext
         }
         else
         {
-            Assert.AreEqual(0, searchBox.Count);
+            Assert.IsEmpty(searchBox);
         }
     }
 
@@ -879,7 +879,7 @@ public class BitDropdownTests : BunitTestContext
 
         var drpItems = component.FindAll(isMultiSelect ? ".bit-drp-iwr" : ".bit-drp-itm");
 
-        Assert.AreEqual(items.Count, drpItems.Count);
+        Assert.HasCount(items.Count, drpItems);
 
         var searchInput = component.Find(".bit-drp-sin");
         searchInput.Input(search);
@@ -887,13 +887,13 @@ public class BitDropdownTests : BunitTestContext
         var itemCount = string.IsNullOrEmpty(search) ? items.Count : items.Count(item => item.Text?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false);
         // bUnit v2 removed auto-refreshing FindAll collections, so re-query after the DOM changes.
         drpItems = component.FindAll(isMultiSelect ? ".bit-drp-iwr" : ".bit-drp-itm");
-        Assert.AreEqual(itemCount, drpItems.Count);
+        Assert.HasCount(itemCount, drpItems);
 
         if (string.IsNullOrEmpty(search) is false)
         {
             searchInput.Input(string.Empty);
             drpItems = component.FindAll(isMultiSelect ? ".bit-drp-iwr" : ".bit-drp-itm");
-            Assert.AreEqual(items.Count, drpItems.Count);
+            Assert.HasCount(items.Count, drpItems);
         }
     }
 
@@ -921,7 +921,7 @@ public class BitDropdownTests : BunitTestContext
 
         var drpItems = component.FindAll(isMultiSelect ? ".bit-drp-iwr" : ".bit-drp-itm");
 
-        Assert.AreEqual(items.Count, drpItems.Count);
+        Assert.HasCount(items.Count, drpItems);
 
         var searchInput = component.Find(".bit-drp-sin");
 
@@ -929,14 +929,14 @@ public class BitDropdownTests : BunitTestContext
         searchInput.Input(search);
         // bUnit v2 removed auto-refreshing FindAll collections, so re-query after the DOM changes.
         drpItems = component.FindAll(isMultiSelect ? ".bit-drp-iwr" : ".bit-drp-itm");
-        Assert.AreEqual(items.Count, drpItems.Count);
+        Assert.HasCount(items.Count, drpItems);
 
         // Filtering happens on the change event instead.
         searchInput.Change(search);
 
         var itemCount = string.IsNullOrEmpty(search) ? items.Count : items.Count(item => item.Text?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false);
         drpItems = component.FindAll(isMultiSelect ? ".bit-drp-iwr" : ".bit-drp-itm");
-        Assert.AreEqual(itemCount, drpItems.Count);
+        Assert.HasCount(itemCount, drpItems);
     }
 
     [TestMethod,
@@ -964,7 +964,7 @@ public class BitDropdownTests : BunitTestContext
 
         var drpItems = component.FindAll(isMultiSelect ? ".bit-drp-iwr" : ".bit-drp-itm");
 
-        Assert.AreEqual(items.Count, drpItems.Count);
+        Assert.HasCount(items.Count, drpItems);
 
         var comboInput = component.Find(".bit-drp-inp");
         comboInput.Input(search);
@@ -972,13 +972,13 @@ public class BitDropdownTests : BunitTestContext
         var itemCount = string.IsNullOrEmpty(search) ? items.Count : items.Count(item => item.Text?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false);
         // bUnit v2 removed auto-refreshing FindAll collections, so re-query after the DOM changes.
         drpItems = component.FindAll(isMultiSelect ? ".bit-drp-iwr" : ".bit-drp-itm");
-        Assert.AreEqual(itemCount, drpItems.Count);
+        Assert.HasCount(itemCount, drpItems);
 
         if (string.IsNullOrEmpty(search) is false)
         {
             comboInput.Input(string.Empty);
             drpItems = component.FindAll(isMultiSelect ? ".bit-drp-iwr" : ".bit-drp-itm");
-            Assert.AreEqual(items.Count, drpItems.Count);
+            Assert.HasCount(items.Count, drpItems);
         }
     }
 
@@ -1006,7 +1006,7 @@ public class BitDropdownTests : BunitTestContext
 
         var drpItems = component.FindAll(isMultiSelect ? ".bit-drp-iwr" : ".bit-drp-itm");
 
-        Assert.AreEqual(items.Count, drpItems.Count);
+        Assert.HasCount(items.Count, drpItems);
 
         var comboInput = component.Find(".bit-drp-inp");
 
@@ -1016,7 +1016,7 @@ public class BitDropdownTests : BunitTestContext
         var itemCount = string.IsNullOrEmpty(search) ? items.Count : items.Count(item => item.Text?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false);
         // bUnit v2 removed auto-refreshing FindAll collections, so re-query after the DOM changes.
         drpItems = component.FindAll(isMultiSelect ? ".bit-drp-iwr" : ".bit-drp-itm");
-        Assert.AreEqual(itemCount, drpItems.Count);
+        Assert.HasCount(itemCount, drpItems);
     }
 
     [TestMethod,
@@ -1446,7 +1446,7 @@ public class BitDropdownTests : BunitTestContext
         }
 
         // An empty class is left out of the callout's class list rather than joined into it.
-        Assert.IsFalse(component.Find(".bit-drp-cal").GetAttribute("class")!.Contains("  "));
+        Assert.DoesNotContain("  ", component.Find(".bit-drp-cal").GetAttribute("class")!);
     }
 
     [TestMethod]
@@ -1486,10 +1486,10 @@ public class BitDropdownTests : BunitTestContext
         // ... and the root keeps everything it was given.
         var root = component.Find(".bit-drp").GetAttribute("style");
         Assert.IsNotNull(root);
-        StringAssert.Contains(root, "margin:1rem");
-        StringAssert.Contains(root, "--bit-Dropdown-accent-color:red");
-        StringAssert.Contains(root, "--bit-Dropdown-item-height:3rem");
-        StringAssert.Contains(root, "--bit-Dropdown-callout-radius:1rem");
+        Assert.Contains("margin:1rem", root);
+        Assert.Contains("--bit-Dropdown-accent-color:red", root);
+        Assert.Contains("--bit-Dropdown-item-height:3rem", root);
+        Assert.Contains("--bit-Dropdown-callout-radius:1rem", root);
     }
 
     [TestMethod]
@@ -1554,7 +1554,7 @@ public class BitDropdownTests : BunitTestContext
         comboInput.Input("app");
 
         var drpItems = component.FindAll(".bit-drp-itm");
-        Assert.AreEqual(1, drpItems.Count);
+        Assert.ContainsSingle(drpItems);
         Assert.AreEqual("Apple", drpItems[0].TextContent.Trim());
     }
 
@@ -1575,12 +1575,12 @@ public class BitDropdownTests : BunitTestContext
         var callout = component.Find(".bit-drp-cal");
         callout.KeyDown(new KeyboardEventArgs { Key = "a", CtrlKey = true });
 
-        Assert.AreEqual(items.Count, component.FindAll(".bit-drp-iwr.bit-drp-chd").Count);
+        Assert.HasCount(items.Count, component.FindAll(".bit-drp-iwr.bit-drp-chd"));
 
         // A second Ctrl+A clears the selection, since every item is selected already.
         callout.KeyDown(new KeyboardEventArgs { Key = "a", CtrlKey = true });
 
-        Assert.AreEqual(0, component.FindAll(".bit-drp-iwr.bit-drp-chd").Count);
+        Assert.IsEmpty(component.FindAll(".bit-drp-iwr.bit-drp-chd"));
     }
 
     [TestMethod]
@@ -1600,11 +1600,11 @@ public class BitDropdownTests : BunitTestContext
 
         // Unselecting an item that is not selected must be a no-op instead of selecting it.
         await component.InvokeAsync(() => component.Instance.UnselectItem(items[1]));
-        Assert.AreEqual(1, values!.Length);
+        Assert.ContainsSingle(values!);
         Assert.AreEqual(items[0].Value, values[0]);
 
         await component.InvokeAsync(() => component.Instance.UnselectItem(items[0]));
-        Assert.AreEqual(0, values!.Length);
+        Assert.IsEmpty(values!);
     }
 
     [TestMethod]
@@ -1707,7 +1707,7 @@ public class BitDropdownTests : BunitTestContext
             parameters.Add(p => p.Items, BitDropdownTests.GetShortDropdownItems());
         });
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Callouts.toggle"));
+        Assert.ContainsSingle(i => i.Identifier == "BitBlazorUI.Callouts.toggle", Context.JSInterop.Invocations);
     }
 
     [TestMethod]
@@ -1752,7 +1752,7 @@ public class BitDropdownTests : BunitTestContext
         comboInput.Input("New Item");
         comboInput.KeyDown(new KeyboardEventArgs { Key = "Enter" });
 
-        Assert.AreEqual(1, component.Instance.SelectedItems.Count);
+        Assert.ContainsSingle(component.Instance.SelectedItems);
         Assert.AreEqual("New Item", component.Instance.SelectedItems[0].Text);
 
         // Selecting a normal item afterwards rebuilds the selection from Items; the dynamic item is
@@ -1760,9 +1760,9 @@ public class BitDropdownTests : BunitTestContext
         component.Find(".bit-drp-wrp").Click();
         component.Find(".bit-drp-iwr button").Click();
 
-        Assert.AreEqual(2, component.Instance.SelectedItems.Count);
-        Assert.IsTrue(component.Instance.SelectedItems.Any(i => i.Text == "New Item"));
-        Assert.IsTrue(component.Instance.SelectedItems.Any(i => i.Value == items[0].Value));
+        Assert.HasCount(2, component.Instance.SelectedItems);
+        Assert.Contains(i => i.Text == "New Item", component.Instance.SelectedItems);
+        Assert.Contains(i => i.Value == items[0].Value, component.Instance.SelectedItems);
     }
 
     [TestMethod,
@@ -1939,7 +1939,7 @@ public class BitDropdownTests : BunitTestContext
 
         Assert.AreEqual(disabled is false, component.FindAll(".bit-drp-crb").Count > 0);
         Assert.AreEqual(disabled, display.HasAttribute("id"));
-        Assert.AreEqual(disabled ? 0 : 1, hiddenName.Count);
+        Assert.HasCount(disabled ? 0 : 1, hiddenName);
     }
 
     [TestMethod]
@@ -2011,7 +2011,7 @@ public class BitDropdownTests : BunitTestContext
         var headers = component.FindAll(".bit-drp-ihd");
         var options = component.FindAll("[role=option]");
 
-        Assert.AreEqual(2, headers.Count);
+        Assert.HasCount(2, headers);
         Assert.IsTrue(headers[0].GetAttribute("id").HasValue());
         Assert.AreNotEqual(headers[0].GetAttribute("id"), headers[1].GetAttribute("id"));
 
@@ -2059,11 +2059,11 @@ public class BitDropdownTests : BunitTestContext
         // only restates the term.
         component.Find(".bit-drp-inp").Input("app");
 
-        CollectionAssert.AreEqual(new[] { "app" }, searches);
+        Assert.AreSequenceEqual(new[] { "app" }, searches);
 
         component.Find(".bit-drp-inp").Change("app");
 
-        CollectionAssert.AreEqual(new[] { "app" }, searches);
+        Assert.AreSequenceEqual(new[] { "app" }, searches);
     }
 
     [TestMethod]
@@ -2082,15 +2082,15 @@ public class BitDropdownTests : BunitTestContext
 
         var comboInput = component.Find(".bit-drp-inp");
         comboInput.Input("app");
-        Assert.AreEqual(1, component.FindAll(".bit-drp-itm").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-drp-itm"));
 
         // Escape abandons the term, which has to reach the filtering (and its subscribers) rather than
         // only blanking the input: an ItemsProvider would otherwise keep serving the abandoned term.
         comboInput.KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
-        Assert.AreEqual(4, component.FindAll(".bit-drp-itm").Count);
+        Assert.HasCount(4, component.FindAll(".bit-drp-itm"));
         Assert.IsTrue(component.Find(".bit-drp-inp").GetAttribute("value").HasNoValue());
-        CollectionAssert.AreEqual(new string?[] { "app", null }, searches);
+        Assert.AreSequenceEqual(new string?[] { "app", null }, searches);
     }
 
     [TestMethod,
@@ -2109,7 +2109,7 @@ public class BitDropdownTests : BunitTestContext
 
         // The wrapper of a header, and not the header element itself, is the direct child of the
         // scroll container, so it is the one that carries the class the sticky rule applies to.
-        Assert.AreEqual(2, component.FindAll(".bit-drp-ihw").Count);
+        Assert.HasCount(2, component.FindAll(".bit-drp-ihw"));
         Assert.AreEqual(stickyHeaders, component.Find(".bit-drp-cal").ClassList.Contains("bit-drp-sth"));
     }
 
@@ -2150,8 +2150,7 @@ public class BitDropdownTests : BunitTestContext
             parameters.Add(p => p.Values, new[] { "v-bro", "f-app" });
         });
 
-        CollectionAssert.AreEqual(new[] { "Broccoli", "Apple" },
-                                  component.Instance.SelectedItems.Select(i => i.Text).ToArray());
+        Assert.AreSequenceEqual(new[] { "Broccoli", "Apple" }, component.Instance.SelectedItems.Select(i => i.Text).ToArray());
 
         Assert.AreEqual("Broccoli, Apple", component.Find(".bit-drp-tdp").InnerHtml);
     }
@@ -2175,8 +2174,7 @@ public class BitDropdownTests : BunitTestContext
         options[3].Click();
         options[0].Click();
 
-        CollectionAssert.AreEqual(new[] { "Broccoli", "Apple" },
-                                  component.Instance.SelectedItems.Select(i => i.Text).ToArray());
+        Assert.AreSequenceEqual(new[] { "Broccoli", "Apple" }, component.Instance.SelectedItems.Select(i => i.Text).ToArray());
     }
 
     [TestMethod]
@@ -2193,7 +2191,7 @@ public class BitDropdownTests : BunitTestContext
             parameters.Add(p => p.DefaultValues, Array.Empty<string>());
         });
 
-        Assert.AreEqual(2, component.FindAll(".bit-drp-ihd").Count);
+        Assert.HasCount(2, component.FindAll(".bit-drp-ihd"));
 
         // Broccoli is the only item of the Vegetables group, so hiding it leaves that header naming nothing.
         component.Render(parameters =>
@@ -2206,12 +2204,12 @@ public class BitDropdownTests : BunitTestContext
 
         var headers = component.FindAll(".bit-drp-ihd");
 
-        Assert.AreEqual(1, headers.Count);
+        Assert.ContainsSingle(headers);
         Assert.AreEqual("Fruits", headers[0].TextContent);
 
         // The divider between the two groups now has the Vegetables side missing, so it separates
         // nothing and goes with the header it framed.
-        Assert.AreEqual(0, component.FindAll(".bit-drp-sep").Count);
+        Assert.IsEmpty(component.FindAll(".bit-drp-sep"));
     }
 
     [TestMethod]
@@ -2233,7 +2231,7 @@ public class BitDropdownTests : BunitTestContext
             parameters.Add(p => p.DefaultValues, Array.Empty<string>());
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-drp-sep").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-drp-sep"));
 
         // Hiding the only item above the divider would leave the list opening with a rule.
         component.Render(parameters =>
@@ -2244,8 +2242,8 @@ public class BitDropdownTests : BunitTestContext
             parameters.Add(p => p.Values, new[] { "f-app" });
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-drp-sep").Count);
-        Assert.AreEqual(1, component.FindAll("[role=option]").Count);
+        Assert.IsEmpty(component.FindAll(".bit-drp-sep"));
+        Assert.ContainsSingle(component.FindAll("[role=option]"));
     }
 
     [TestMethod]
@@ -2271,8 +2269,8 @@ public class BitDropdownTests : BunitTestContext
         option.Click();
         option.Click();
 
-        CollectionAssert.AreEqual(new[] { "f-app", "f-app" }, selected.ToArray());
-        CollectionAssert.AreEqual(new[] { "f-app" }, deselected.ToArray());
+        Assert.AreSequenceEqual(new[] { "f-app", "f-app" }, selected.ToArray());
+        Assert.AreSequenceEqual(new[] { "f-app" }, deselected.ToArray());
     }
 
     [TestMethod]
@@ -2311,13 +2309,13 @@ public class BitDropdownTests : BunitTestContext
         wrapper.KeyDown(new KeyboardEventArgs { Key = "ArrowDown", AltKey = true });
 
         Assert.IsTrue(component.Instance.IsOpen);
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Dropdowns.focusItem"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Dropdowns.focusItem"]);
 
         // The plain ArrowDown keeps opening the popup with the focus on the selected (or first) option.
         wrapper.KeyDown(new KeyboardEventArgs { Key = "ArrowUp", AltKey = true });
         wrapper.KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Dropdowns.focusItem"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Dropdowns.focusItem"]);
     }
 
     // The combobox role belongs on the element the keyboard lands on, which is the field itself only
@@ -2383,7 +2381,7 @@ public class BitDropdownTests : BunitTestContext
         component.Find(".bit-drp-clr").Click();
 
         Assert.IsTrue(component.Find(".bit-drp-inp").GetAttribute("value").HasNoValue());
-        Assert.AreEqual(4, component.FindAll(".bit-drp-itm").Count);
+        Assert.HasCount(4, component.FindAll(".bit-drp-itm"));
     }
 
     [TestMethod]
@@ -2404,7 +2402,7 @@ public class BitDropdownTests : BunitTestContext
         // Without the folding an unaccented term finds nothing, which is exactly what makes a search
         // box useless to anyone typing on a keyboard that has no accented keys.
         component.Find(".bit-drp-sin").Change("Jose");
-        Assert.AreEqual(0, component.FindAll(".bit-drp-itm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-drp-itm"));
 
         component.Render(parameters =>
         {
@@ -2415,7 +2413,7 @@ public class BitDropdownTests : BunitTestContext
         });
 
         var options = component.FindAll(".bit-drp-itm");
-        Assert.AreEqual(1, options.Count);
+        Assert.ContainsSingle(options);
         Assert.AreEqual("José", options[0].TextContent.Trim());
 
         // Folding keeps one character per character, so the highlighted range still lines up with the
@@ -2425,7 +2423,7 @@ public class BitDropdownTests : BunitTestContext
         component.Find(".bit-drp-sin").Change("Muller");
 
         options = component.FindAll(".bit-drp-itm");
-        Assert.AreEqual(1, options.Count);
+        Assert.ContainsSingle(options);
         Assert.AreEqual("Müller", options[0].TextContent.Trim());
     }
 
@@ -2454,7 +2452,7 @@ public class BitDropdownTests : BunitTestContext
         component.Find(".bit-drp-sin").Change("Peche");
 
         var options = component.FindAll(".bit-drp-itm");
-        Assert.AreEqual(1, options.Count);
+        Assert.ContainsSingle(options);
         Assert.AreEqual("Pêche 🍑", options[0].TextContent.Trim());
     }
 
@@ -2475,7 +2473,7 @@ public class BitDropdownTests : BunitTestContext
         component.Find(".bit-drp-wrp").KeyDown(new KeyboardEventArgs { Key = "Enter" });
 
         Assert.IsTrue(component.Instance.IsOpen);
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Dropdowns.focusItem"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Dropdowns.focusItem"]);
     }
 
     [TestMethod]
@@ -2502,7 +2500,7 @@ public class BitDropdownTests : BunitTestContext
         });
 
         Assert.IsTrue(component.Instance.IsOpen);
-        Assert.AreEqual(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
     }
 
     [TestMethod]
@@ -2525,8 +2523,8 @@ public class BitDropdownTests : BunitTestContext
         component.Find(".bit-drp-sbc").Click();
 
         Assert.IsTrue(component.Instance.IsOpen);
-        Assert.AreEqual(0, component.FindAll(".bit-drp-sbc").Count);
-        Assert.IsTrue(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count > 0);
+        Assert.IsEmpty(component.FindAll(".bit-drp-sbc"));
+        Assert.IsNotEmpty(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
     }
 
     [TestMethod]
@@ -2548,7 +2546,7 @@ public class BitDropdownTests : BunitTestContext
 
         component.Find(".bit-drp-cal").KeyDown(new KeyboardEventArgs { Key = "Escape" });
         Assert.IsFalse(component.Instance.IsOpen);
-        Assert.AreEqual(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
 
         // The move never happened, so there is no focus event of its own to swallow: the next focus is
         // the user coming in, and it opens the callout.
@@ -2584,7 +2582,7 @@ public class BitDropdownTests : BunitTestContext
 
         var focused = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].ToList();
 
-        Assert.AreEqual(1, focused.Count);
+        Assert.ContainsSingle(focused);
         Assert.AreEqual(component.Instance.SearchInputElement!.Value.Id, ((ElementReference)focused[0].Arguments[0]!).Id);
     }
 
@@ -2605,7 +2603,7 @@ public class BitDropdownTests : BunitTestContext
 
         var focused = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].ToList();
 
-        Assert.AreEqual(1, focused.Count);
+        Assert.ContainsSingle(focused);
         focused[0].Arguments[0].ShouldBeElementReferenceTo(component.Find(".bit-drp-sin"));
     }
 
@@ -2629,9 +2627,9 @@ public class BitDropdownTests : BunitTestContext
 
         // The input is part of the field just clicked, so it is in view, and a focus that scrolled to it would
         // scroll a sticky header's container back to where the header sits in the flow.
-        Assert.AreEqual(1, focused.Count);
+        Assert.ContainsSingle(focused);
         Assert.AreEqual(input, ((ElementReference)focused[0].Arguments[0]!).Id);
-        Assert.AreEqual(true, focused[0].Arguments[1]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(focused[0].Arguments[1]));
     }
 
     [TestMethod]
@@ -2655,7 +2653,7 @@ public class BitDropdownTests : BunitTestContext
 
         var focused = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].ToList();
 
-        Assert.AreEqual(1, focused.Count);
+        Assert.ContainsSingle(focused);
         Assert.AreEqual(component.Instance.SearchInputElement!.Value.Id, ((ElementReference)focused[0].Arguments[0]!).Id);
     }
 
@@ -2685,7 +2683,7 @@ public class BitDropdownTests : BunitTestContext
 
         var focused = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].ToList();
 
-        Assert.AreEqual(1, focused.Count);
+        Assert.ContainsSingle(focused);
         focused[0].Arguments[0].ShouldBeElementReferenceTo(component.Find(".bit-drp-sin"));
     }
 
@@ -2742,10 +2740,9 @@ public class BitDropdownTests : BunitTestContext
         // it: the ones naming existing items select them, the rest become new (dynamic) items.
         component.Find(".bit-drp-inp").Input("Apple, Cherry, Banana");
 
-        CollectionAssert.AreEqual(
-            new[] { "Apple", "Cherry", "Banana" },
-            component.Instance.SelectedItems.Select(i => i.Text).ToArray());
-        CollectionAssert.AreEqual(new[] { "Cherry" }, added.Select(i => i.Text).ToArray());
+        Assert.AreSequenceEqual(
+            new[] { "Apple", "Cherry", "Banana" }, component.Instance.SelectedItems.Select(i => i.Text).ToArray());
+        Assert.AreSequenceEqual(new[] { "Cherry" }, added.Select(i => i.Text).ToArray());
 
         // The committed terms must leave the input, or the leftover text would filter the next pick.
         Assert.IsTrue(component.Find(".bit-drp-inp").GetAttribute("value").HasNoValue());
@@ -2769,8 +2766,8 @@ public class BitDropdownTests : BunitTestContext
         var watch = System.Diagnostics.Stopwatch.StartNew();
         component.Find(".bit-drp-inp").Input(string.Join(',', Enumerable.Range(0, 1_500).Select(i => $"t{i}")));
 
-        Assert.IsTrue(watch.Elapsed < TimeSpan.FromSeconds(5), $"the paste took {watch.Elapsed}");
-        Assert.AreEqual(1_500, component.Instance.SelectedItems.Count);
+        Assert.IsLessThan(TimeSpan.FromSeconds(5), watch.Elapsed, $"the paste took {watch.Elapsed}");
+        Assert.HasCount(1_500, component.Instance.SelectedItems);
     }
 
     [TestMethod]
@@ -2822,12 +2819,12 @@ public class BitDropdownTests : BunitTestContext
 
         Assert.IsTrue(component.Instance.IsOpen);
         var invocations = Context.JSInterop.Invocations["BitBlazorUI.Dropdowns.focusItem"];
-        Assert.AreEqual(1, invocations.Count);
+        Assert.ContainsSingle(invocations);
         Assert.AreEqual("selected", invocations[^1].Arguments[1]);
 
         // The callout is only toggled once for the two events: a second toggle would hide what the
         // focus just opened.
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Callouts.toggle"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Callouts.toggle"]);
 
         // A click that comes long after the focus (with the callout dismissed in between) opens the
         // callout itself again, so the note the focus left cannot outlive the interaction it belongs to.
@@ -2874,7 +2871,7 @@ public class BitDropdownTests : BunitTestContext
         multi.FindAll("[role=option]")[0].Click();
 
         Assert.IsFalse(multi.Instance.IsOpen);
-        Assert.AreEqual(1, multi.Instance.SelectedItems.Count);
+        Assert.ContainsSingle(multi.Instance.SelectedItems);
     }
 
     [TestMethod]
@@ -2962,7 +2959,8 @@ public class BitDropdownTests : BunitTestContext
         // A term that names an item the list already has selects that item instead of creating a
         // second one that only looks like it.
         Assert.AreEqual("f-ora", component.Instance.Value);
-        Assert.AreEqual("Orange", component.Instance.SelectedItem?.Text);
+        var actualValue = component.Instance.SelectedItem?.Text;
+        Assert.AreEqual("Orange", actualValue);
     }
 
     [TestMethod]
@@ -3011,7 +3009,7 @@ public class BitDropdownTests : BunitTestContext
         // ...while the list is only filtered once the debounce elapses, which is the whole point of
         // configuring one. Applying the term as it was typed used to leave the rate limit governing
         // nothing but the OnSearch callback and the ItemsProvider.
-        Assert.AreEqual(4, component.FindAll(".bit-drp-itm").Count);
+        Assert.HasCount(4, component.FindAll(".bit-drp-itm"));
     }
 
     [TestMethod]
@@ -3050,18 +3048,18 @@ public class BitDropdownTests : BunitTestContext
         });
 
         await component.InvokeAsync(() => component.Instance.SelectItem(items[1]));
-        Assert.AreEqual(1, component.Instance.SelectedItems.Count);
+        Assert.ContainsSingle(component.Instance.SelectedItems);
 
         // An item that is already selected is left alone: picking it again would unselect it, which
         // is what UnselectItem is for.
         await component.InvokeAsync(() => component.Instance.SelectItem(items[1]));
-        Assert.AreEqual(1, component.Instance.SelectedItems.Count);
+        Assert.ContainsSingle(component.Instance.SelectedItems);
 
         await component.InvokeAsync(() => component.Instance.SelectItem(items[2]));
-        Assert.AreEqual(2, component.Instance.SelectedItems.Count);
+        Assert.HasCount(2, component.Instance.SelectedItems);
 
         await component.InvokeAsync(() => component.Instance.UnselectItem(items[1]));
-        Assert.AreEqual(1, component.Instance.SelectedItems.Count);
+        Assert.ContainsSingle(component.Instance.SelectedItems);
         Assert.AreEqual("f-ban", component.Instance.SelectedItems[0].Value);
     }
 
@@ -3089,12 +3087,13 @@ public class BitDropdownTests : BunitTestContext
 
         // A custom template renders whatever it likes, so the generated id its items point at (and the
         // hidden state) have to land on the wrapper, or the reference dangles on a missing element.
-        Assert.AreEqual(2, headers.Count);
+        Assert.HasCount(2, headers);
         Assert.IsTrue(headers[0].GetAttribute("id").HasValue());
         Assert.AreEqual(headers[0].GetAttribute("id"), options[0].GetAttribute("aria-describedby"));
+        var actualValue = headers[1].GetAttribute("style")?.Contains("display:none") is true;
 
         // A hidden header names nothing, so it is not rendered and its items are left without a group.
-        Assert.IsTrue(headers[1].GetAttribute("style")?.Contains("display:none") is true);
+        Assert.IsTrue(actualValue);
         Assert.IsFalse(options[1].HasAttribute("aria-describedby"));
     }
 
@@ -3121,8 +3120,8 @@ public class BitDropdownTests : BunitTestContext
         comboInput.Input("New Item");
         comboInput.KeyDown(new KeyboardEventArgs { Key = "Enter" });
 
-        Assert.AreEqual(1, added.Count);
-        Assert.AreEqual(1, component.Instance.SelectedItems.Count);
+        Assert.ContainsSingle(added);
+        Assert.ContainsSingle(component.Instance.SelectedItems);
 
         // The limit is reached, so the second item is refused - and a refused selection is not an item
         // that was added, however much it was typed.
@@ -3132,8 +3131,8 @@ public class BitDropdownTests : BunitTestContext
         comboInput.Input("Another Item");
         comboInput.KeyDown(new KeyboardEventArgs { Key = "Enter" });
 
-        Assert.AreEqual(1, added.Count);
-        Assert.AreEqual(1, component.Instance.SelectedItems.Count);
+        Assert.ContainsSingle(added);
+        Assert.ContainsSingle(component.Instance.SelectedItems);
     }
 
     [TestMethod]
@@ -3153,14 +3152,14 @@ public class BitDropdownTests : BunitTestContext
 
         // The limit stops the select all halfway, which is as far as it can go.
         component.Find(".bit-drp-sab").Click();
-        Assert.AreEqual(2, component.Instance.SelectedItems.Count);
+        Assert.HasCount(2, component.Instance.SelectedItems);
         Assert.AreEqual("mixed", component.Find(".bit-drp-sab").GetAttribute("aria-checked"));
 
         // It can never reach "all selected", so without this the item would be a control that does
         // nothing at all from here on; clearing is the only move left, and the list below it says the
         // same thing, since every unselected item is disabled while the limit holds.
         component.Find(".bit-drp-sab").Click();
-        Assert.AreEqual(0, component.Instance.SelectedItems.Count);
+        Assert.IsEmpty(component.Instance.SelectedItems);
     }
 
     [TestMethod]
@@ -3177,7 +3176,7 @@ public class BitDropdownTests : BunitTestContext
 
         component.Find(".bit-drp-wrp").Click();
 
-        Assert.AreEqual(2, component.FindAll(".bit-drp-ihd").Count);
+        Assert.HasCount(2, component.FindAll(".bit-drp-ihd"));
 
         component.Find(".bit-drp-sin").Input("app");
 
@@ -3186,19 +3185,19 @@ public class BitDropdownTests : BunitTestContext
         // stays, and every option still points at the header that names it.
         var headers = component.FindAll(".bit-drp-ihd");
         var options = component.FindAll("[role=option]");
-        Assert.AreEqual(1, headers.Count);
+        Assert.ContainsSingle(headers);
         Assert.AreEqual("Fruits", headers[0].TextContent.Trim());
-        Assert.AreEqual(1, options.Count);
+        Assert.ContainsSingle(options);
         Assert.AreEqual(headers[0].GetAttribute("id"), options[0].GetAttribute("aria-describedby"));
 
         // The other group has nothing left under it, and the divider between the two has lost the
         // items on one of its sides, so neither is left standing for nothing.
-        Assert.AreEqual(0, component.FindAll(".bit-drp-sep").Count);
+        Assert.IsEmpty(component.FindAll(".bit-drp-sep"));
 
         // Clearing the term brings the whole list back, groups and all.
         component.Find(".bit-drp-sin").Input(string.Empty);
-        Assert.AreEqual(2, component.FindAll(".bit-drp-ihd").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-drp-sep").Count);
+        Assert.HasCount(2, component.FindAll(".bit-drp-ihd"));
+        Assert.ContainsSingle(component.FindAll(".bit-drp-sep"));
     }
 
     [TestMethod]
@@ -3217,9 +3216,9 @@ public class BitDropdownTests : BunitTestContext
         component.Find(".bit-drp-sin").Input("zzz");
 
         // Nothing matched, so the callout says so instead of showing the group names of an empty list.
-        Assert.AreEqual(0, component.FindAll(".bit-drp-ihd").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-drp-sep").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-drp-emp").Count);
+        Assert.IsEmpty(component.FindAll(".bit-drp-ihd"));
+        Assert.IsEmpty(component.FindAll(".bit-drp-sep"));
+        Assert.ContainsSingle(component.FindAll(".bit-drp-emp"));
     }
 
     [TestMethod]
@@ -3286,7 +3285,7 @@ public class BitDropdownTests : BunitTestContext
         component.Find(".bit-drp-wrp").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
         Assert.IsFalse(component.Instance.IsOpen);
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Dropdowns.reclaimFocus"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Dropdowns.reclaimFocus"]);
     }
 
     [TestMethod]
@@ -3304,7 +3303,7 @@ public class BitDropdownTests : BunitTestContext
 
         component.Find(".bit-drp-inp").Input("app");
         Assert.IsTrue(component.Instance.IsOpen);
-        Assert.AreEqual(1, component.FindAll(".bit-drp-itm").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-drp-itm"));
 
         // Tab closes the list, which discards the term that never became a selection; the change event
         // the browser raises on the blur arrives after that and restates the term. Taking it would put the
@@ -3315,12 +3314,12 @@ public class BitDropdownTests : BunitTestContext
         component.Find(".bit-drp-inp").Change("app");
 
         Assert.IsTrue(component.Find(".bit-drp-inp").GetAttribute("value").HasNoValue());
-        CollectionAssert.AreEqual(new string?[] { "app", null }, searches);
+        Assert.AreSequenceEqual(new string?[] { "app", null }, searches);
 
         component.Find(".bit-drp-wrp").Click();
 
         Assert.IsTrue(component.Instance.IsOpen);
-        Assert.AreEqual(4, component.FindAll(".bit-drp-itm").Count);
+        Assert.HasCount(4, component.FindAll(".bit-drp-itm"));
     }
 
     [TestMethod]
@@ -3338,15 +3337,15 @@ public class BitDropdownTests : BunitTestContext
         });
 
         component.Find(".bit-drp-wrp").Click();
-        Assert.AreEqual(1, component.FindAll(".bit-drp-sab").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-drp-sab"));
 
         // A search that matched nothing leaves the item with nothing to select, so it goes with the
         // list instead of topping the empty state with a control that cannot do anything at all.
         component.Find(".bit-drp-sin").Input("zzz");
-        Assert.AreEqual(0, component.FindAll(".bit-drp-sab").Count);
+        Assert.IsEmpty(component.FindAll(".bit-drp-sab"));
 
         component.Find(".bit-drp-sin").Input(string.Empty);
-        Assert.AreEqual(1, component.FindAll(".bit-drp-sab").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-drp-sab"));
     }
 
     [TestMethod]
@@ -3436,8 +3435,8 @@ public class BitDropdownTests : BunitTestContext
 
         // The template draws the content of the chip; the remove button is still rendered after it, so
         // a chip stays removable however it is drawn.
-        Assert.IsTrue(chip.TextContent.Contains("[Apple]"));
-        Assert.AreEqual(1, component.FindAll(".bit-drp-crb").Count);
+        Assert.Contains("[Apple]", chip.TextContent);
+        Assert.ContainsSingle(component.FindAll(".bit-drp-crb"));
     }
 
     [TestMethod]
@@ -3453,7 +3452,7 @@ public class BitDropdownTests : BunitTestContext
             parameters.Add(p => p.Items, GetShortDropdownItems());
         });
 
-        Assert.AreEqual(1, component.Instance.SelectedItems.Count);
+        Assert.ContainsSingle(component.Instance.SelectedItems);
 
         // The selection is looked up in a set built from Values, which a parameter set has to rebuild:
         // a consumer that mutates the same collection instead of replacing it would otherwise keep
@@ -3466,7 +3465,7 @@ public class BitDropdownTests : BunitTestContext
             parameters.Add(p => p.Items, GetShortDropdownItems());
         });
 
-        Assert.AreEqual(2, component.Instance.SelectedItems.Count);
+        Assert.HasCount(2, component.Instance.SelectedItems);
     }
 
     [TestMethod]
@@ -3575,7 +3574,7 @@ public class BitDropdownTests : BunitTestContext
 
         // The default equality of the value type is case sensitive, so a value that only differs in case
         // names no item at all.
-        Assert.AreEqual(0, component.Instance.SelectedItems.Count);
+        Assert.IsEmpty(component.Instance.SelectedItems);
         Assert.IsNull(component.Instance.SelectedItem);
 
         component.Render(parameters =>
@@ -3584,10 +3583,11 @@ public class BitDropdownTests : BunitTestContext
             parameters.Add(p => p.Items, items);
             parameters.Add(p => p.ValueComparer, StringComparer.OrdinalIgnoreCase);
         });
+        var actualValue = component.Instance.SelectedItem?.Text;
 
         // A comparer of your own is what a value arriving from a form, a query string or a fresh fetch
         // needs to be recognized as the item it names.
-        Assert.AreEqual("Apple", component.Instance.SelectedItem?.Text);
+        Assert.AreEqual("Apple", actualValue);
     }
 
     [TestMethod]
@@ -3605,8 +3605,8 @@ public class BitDropdownTests : BunitTestContext
 
         // The set the selection is looked up in has to answer exactly what a scan of Values would, so
         // the fast path is built with the same comparer as every other comparison.
-        Assert.AreEqual(2, component.Instance.SelectedItems.Count);
-        CollectionAssert.AreEqual(new[] { "Apple", "Broccoli" }, component.Instance.SelectedItems.Select(i => i.Text).ToArray());
+        Assert.HasCount(2, component.Instance.SelectedItems);
+        Assert.AreSequenceEqual(new[] { "Apple", "Broccoli" }, component.Instance.SelectedItems.Select(i => i.Text).ToArray());
 
         var options = component.FindAll("[role=option]");
         Assert.AreEqual("true", options[0].GetAttribute("aria-selected"));
@@ -3632,7 +3632,7 @@ public class BitDropdownTests : BunitTestContext
         component.Find(".bit-drp-wrp").Click();
 
         // Nothing is typed yet, so there is nothing Enter would take and nothing to point at.
-        Assert.AreEqual(0, component.FindAll(".bit-drp-ctg").Count);
+        Assert.IsEmpty(component.FindAll(".bit-drp-ctg"));
         Assert.IsFalse(component.Find(".bit-drp-inp").HasAttribute("aria-activedescendant"));
 
         component.Find(".bit-drp-inp").Input("b");
@@ -3666,7 +3666,7 @@ public class BitDropdownTests : BunitTestContext
         // Without AutoSelectFirstMatch only a term that names an item exactly commits to anything, so a
         // partial one points at nothing...
         component.Find(".bit-drp-inp").Input("ban");
-        Assert.AreEqual(0, component.FindAll(".bit-drp-ctg").Count);
+        Assert.IsEmpty(component.FindAll(".bit-drp-ctg"));
 
         // ...while the full name of an item is a commit that stands, and is shown as one.
         component.Find(".bit-drp-inp").Input("Banana");
@@ -3770,7 +3770,7 @@ public class BitDropdownTests : BunitTestContext
 
         component.Find(".bit-drp-wrp").Click();
 
-        Assert.AreEqual(0, component.FindAll(".bit-drp-sin").Count);
+        Assert.IsEmpty(component.FindAll(".bit-drp-sin"));
         Assert.IsNull(component.Instance.SearchInputElement);
 
         // The same key press that opens a non-combo dropdown onto its search box.
@@ -3809,7 +3809,7 @@ public class BitDropdownTests : BunitTestContext
 
         var comboInput = component.Find(".bit-drp-inp");
 
-        Assert.AreEqual(1, component.FindAll(".bit-drp-inp").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-drp-inp"));
         Assert.AreEqual(component.Find(".bit-drp-lbl").GetAttribute("id"), comboInput.GetAttribute("aria-labelledby"));
         Assert.IsFalse(component.Find(".bit-drp-wrp").HasAttribute("aria-labelledby"));
     }
@@ -3861,7 +3861,7 @@ public class BitDropdownTests : BunitTestContext
             parameters.Add(p => p.Values, new[] { "f-app" });
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-drp-chp").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-drp-chp"));
         Assert.AreEqual("Apple", component.Find(".bit-drp-tdp").TextContent.Trim());
     }
 
@@ -3880,7 +3880,7 @@ public class BitDropdownTests : BunitTestContext
         component.Find(".bit-drp-wrp").Click();
 
         // Nothing is typed, so there is nothing to create out of.
-        Assert.AreEqual(0, component.FindAll(".bit-drp-dyn").Count);
+        Assert.IsEmpty(component.FindAll(".bit-drp-dyn"));
 
         component.Find(".bit-drp-inp").Input("Kiwi");
 
@@ -3893,11 +3893,11 @@ public class BitDropdownTests : BunitTestContext
 
         // The empty state is not shown beside it: a list that says "no results" while offering to create
         // the very thing that was searched for contradicts itself.
-        Assert.AreEqual(0, component.FindAll(".bit-drp-emp").Count);
+        Assert.IsEmpty(component.FindAll(".bit-drp-emp"));
 
         // A term that names an existing item is a selection rather than a creation, so the offer goes.
         component.Find(".bit-drp-inp").Input("Apple");
-        Assert.AreEqual(0, component.FindAll(".bit-drp-dyn").Count);
+        Assert.IsEmpty(component.FindAll(".bit-drp-dyn"));
     }
 
     [TestMethod]
@@ -3925,8 +3925,8 @@ public class BitDropdownTests : BunitTestContext
         // selected, and the term it was created from is gone from the input along with the row itself.
         Assert.IsNotNull(added);
         Assert.AreEqual("Kiwi", added!.Text);
-        CollectionAssert.AreEqual(new[] { "Kiwi" }, component.Instance.Values!.ToArray());
-        Assert.AreEqual(0, component.FindAll(".bit-drp-dyn").Count);
+        Assert.AreSequenceEqual(new[] { "Kiwi" }, component.Instance.Values!.ToArray());
+        Assert.IsEmpty(component.FindAll(".bit-drp-dyn"));
 
         // A multi select callout stays open so the next term can be typed right away.
         Assert.IsTrue(component.Instance.IsOpen);
@@ -3971,7 +3971,7 @@ public class BitDropdownTests : BunitTestContext
 
         // The selection limit leaves no room for another item, so the row would offer an addition the
         // commit refuses.
-        Assert.AreEqual(0, component.FindAll(".bit-drp-dyn").Count);
+        Assert.IsEmpty(component.FindAll(".bit-drp-dyn"));
 
         // A term that names one of the selections already is the same story from the other side.
         component.Render(parameters =>
@@ -3984,7 +3984,7 @@ public class BitDropdownTests : BunitTestContext
         });
 
         component.Find(".bit-drp-inp").Input("apple");
-        Assert.AreEqual(0, component.FindAll(".bit-drp-dyn").Count);
+        Assert.IsEmpty(component.FindAll(".bit-drp-dyn"));
     }
 
     [TestMethod]
@@ -4003,7 +4003,7 @@ public class BitDropdownTests : BunitTestContext
         component.Find(".bit-drp-wrp").Click();
         component.Find(".bit-drp-inp").Input("Kiwi");
 
-        Assert.AreEqual(0, component.FindAll(".bit-drp-dyn").Count);
+        Assert.IsEmpty(component.FindAll(".bit-drp-dyn"));
     }
 
     [TestMethod]
@@ -4026,12 +4026,12 @@ public class BitDropdownTests : BunitTestContext
         component.Find(".bit-drp-inp").Input("app");
 
         Assert.IsTrue(component.Instance.IsOpen);
-        Assert.AreEqual(1, component.FindAll(".bit-drp-itm").Count);
-        CollectionAssert.AreEqual(new[] { "app" }, searches);
+        Assert.ContainsSingle(component.FindAll(".bit-drp-itm"));
+        Assert.AreSequenceEqual(new[] { "app" }, searches);
 
         // The commit of the very term the input handler already searched for reports nothing new.
         component.Find(".bit-drp-inp").Change("app");
-        CollectionAssert.AreEqual(new[] { "app" }, searches);
+        Assert.AreSequenceEqual(new[] { "app" }, searches);
     }
 
     [TestMethod]
@@ -4108,7 +4108,7 @@ public class BitDropdownTests : BunitTestContext
         // Whether the arrow keys wrap around is decided where the focus is actually moved, which is the
         // JS side, so the parameter has to be part of every call that moves it.
         var invocations = Context.JSInterop.Invocations["BitBlazorUI.Dropdowns.focusItem"];
-        Assert.AreEqual(false, invocations[^1].Arguments[6]);
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(invocations[^1].Arguments[6]));
 
         component.Render(parameters =>
         {
@@ -4119,7 +4119,7 @@ public class BitDropdownTests : BunitTestContext
         component.Find(".bit-drp-wrp").KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });
 
         invocations = Context.JSInterop.Invocations["BitBlazorUI.Dropdowns.focusItem"];
-        Assert.AreEqual(true, invocations[^1].Arguments[6]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(invocations[^1].Arguments[6]));
     }
 
     [TestMethod]
@@ -4154,7 +4154,7 @@ public class BitDropdownTests : BunitTestContext
 
         // With one, the key belongs to the search box - the keydown listener of Dropdowns.ts hands it
         // back to it - so the component must not move the focus away from the field being typed into.
-        Assert.AreEqual(countBefore, Context.JSInterop.Invocations["BitBlazorUI.Dropdowns.focusItem"].Count);
+        Assert.HasCount(countBefore, Context.JSInterop.Invocations["BitBlazorUI.Dropdowns.focusItem"]);
     }
 
     [TestMethod]
@@ -4176,7 +4176,7 @@ public class BitDropdownTests : BunitTestContext
         // drop it from the term the next characters go on building.
         Assert.IsTrue(component.Instance.IsOpen);
         Assert.AreEqual("b", component.Find(".bit-drp-sin").GetAttribute("value"));
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Dropdowns.focusItem"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Dropdowns.focusItem"]);
 
         // The box takes the focus with the caret behind that character, so the browser types the rest of
         // the term into it natively rather than in front of what is already there.
@@ -4207,9 +4207,9 @@ public class BitDropdownTests : BunitTestContext
 
         var root = component.Find(".bit-drp").GetAttribute("style");
         Assert.IsNotNull(root);
-        StringAssert.Contains(root, "margin:1rem");
-        StringAssert.Contains(root, "--bit-Dropdown-overlay-background:rgba(0,0,0,.4)");
-        StringAssert.Contains(root, "--bit-Dropdown-accent-color:red");
+        Assert.Contains("margin:1rem", root);
+        Assert.Contains("--bit-Dropdown-overlay-background:rgba(0,0,0,.4)", root);
+        Assert.Contains("--bit-Dropdown-accent-color:red", root);
     }
 
     [TestMethod]
@@ -4228,7 +4228,7 @@ public class BitDropdownTests : BunitTestContext
         component.Find(".bit-drp-wrp").Click();
 
         // Nothing typed yet, so the full list under the search box needs no explaining.
-        Assert.AreEqual(0, component.FindAll(".bit-drp-shn").Count);
+        Assert.IsEmpty(component.FindAll(".bit-drp-shn"));
 
         component.Find(".bit-drp-sin").Input("a");
 
@@ -4236,7 +4236,7 @@ public class BitDropdownTests : BunitTestContext
         // nothing to do with what was typed - so it is said, on the screen and to a screen reader alike.
         Assert.AreEqual("Type 2 more characters to search", component.Find(".bit-drp-shn").TextContent.Trim());
         Assert.AreEqual("Type 2 more characters to search", component.Find(".bit-drp-lvr").TextContent.Trim());
-        Assert.AreEqual(4, component.FindAll("[role=option]").Count);
+        Assert.HasCount(4, component.FindAll("[role=option]"));
 
         component.Find(".bit-drp-sin").Input("ap");
 
@@ -4245,7 +4245,7 @@ public class BitDropdownTests : BunitTestContext
         component.Find(".bit-drp-sin").Input("app");
 
         // The term filters the list now, so the hint gives way to the result count.
-        Assert.AreEqual(0, component.FindAll(".bit-drp-shn").Count);
+        Assert.IsEmpty(component.FindAll(".bit-drp-shn"));
         Assert.AreEqual("1 result available", component.Find(".bit-drp-lvr").TextContent.Trim());
     }
 
@@ -4308,7 +4308,7 @@ public class BitDropdownTests : BunitTestContext
 
         // Apple, Orange and Banana match, but Apple is already selected and HideSelectedItems takes it
         // out of the list - so counting it would announce a result nobody can reach.
-        Assert.AreEqual(2, component.FindAll("[role=option]").Count);
+        Assert.HasCount(2, component.FindAll("[role=option]"));
         Assert.AreEqual("2 results available", component.Find(".bit-drp-lvr").TextContent.Trim());
     }
 
@@ -4379,22 +4379,22 @@ public class BitDropdownTests : BunitTestContext
         });
 
         component.Find(".bit-drp-wrp").Click();
-        Assert.AreEqual(0, component.FindAll(".bit-drp-sbc").Count);
+        Assert.IsEmpty(component.FindAll(".bit-drp-sbc"));
 
         component.Find(".bit-drp-sin").Input("ap");
 
         // The search itself waits for the input to be committed here, but the parts that describe the
         // field - the clear button and the too-short hint - are about what is in it, so they follow the
         // typing. The list is untouched, since no term has been applied yet.
-        Assert.AreEqual(1, component.FindAll(".bit-drp-sbc").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-drp-sbc"));
         Assert.AreEqual("Type 1 more character to search", component.Find(".bit-drp-shn").TextContent.Trim());
-        Assert.AreEqual(4, component.FindAll("[role=option]").Count);
+        Assert.HasCount(4, component.FindAll("[role=option]"));
 
         component.Find(".bit-drp-sbc").Click();
 
         // Clearing an uncommitted term only empties the input: there is no search behind it to re-run.
-        Assert.AreEqual(0, component.FindAll(".bit-drp-sbc").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-drp-shn").Count);
+        Assert.IsEmpty(component.FindAll(".bit-drp-sbc"));
+        Assert.IsEmpty(component.FindAll(".bit-drp-shn"));
         Assert.IsNull(component.Find(".bit-drp-sin").GetAttribute("value"));
     }
 
@@ -4414,15 +4414,15 @@ public class BitDropdownTests : BunitTestContext
         component.Find(".bit-drp-wrp").Click();
         component.Find(".bit-drp-sin").Change("app");
 
-        Assert.AreEqual(1, component.FindAll("[role=option]").Count);
-        CollectionAssert.AreEqual(new[] { "app" }, searches);
+        Assert.ContainsSingle(component.FindAll("[role=option]"));
+        Assert.AreSequenceEqual(new[] { "app" }, searches);
 
         component.Find(".bit-drp-sbc").Click();
 
         // A term that was applied is a search to take back, so the list comes back and the callback is
         // told about it - which is what tells an ItemsProvider to stop serving the abandoned term.
-        Assert.AreEqual(4, component.FindAll("[role=option]").Count);
-        CollectionAssert.AreEqual(new string?[] { "app", null }, searches);
+        Assert.HasCount(4, component.FindAll("[role=option]"));
+        Assert.AreSequenceEqual(new string?[] { "app", null }, searches);
     }
 
     [TestMethod]
@@ -4476,7 +4476,7 @@ public class BitDropdownTests : BunitTestContext
 
         // The item the list shows as unavailable is not one a commit may take, so it is not marked as
         // the one Enter is about to select either.
-        Assert.AreEqual(0, component.FindAll(".bit-drp-ctg").Count);
+        Assert.IsEmpty(component.FindAll(".bit-drp-ctg"));
         Assert.IsNull(comboInput.GetAttribute("aria-activedescendant"));
 
         comboInput.KeyDown(new KeyboardEventArgs { Key = "Enter" });
@@ -4553,7 +4553,7 @@ public class BitDropdownTests : BunitTestContext
         // A list the consumer adds to in place keeps its reference, so the item of an already selected
         // value would otherwise never reach the trigger.
         Assert.AreEqual("Banana", component.Find(".bit-drp-tdp").TextContent.Trim());
-        Assert.AreEqual(2, component.FindAll("[role=option]").Count);
+        Assert.HasCount(2, component.FindAll("[role=option]"));
     }
 
     [TestMethod]
@@ -4779,12 +4779,12 @@ public class BitDropdownTests : BunitTestContext
         comboInput.FocusIn();
 
         // An empty input has nothing to select.
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.selectText"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.selectText"]);
 
         comboInput.Input("ban");
         component.Find(".bit-drp-inp").FocusIn();
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.selectText"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.selectText"]);
     }
 
     [TestMethod]
@@ -4803,7 +4803,7 @@ public class BitDropdownTests : BunitTestContext
         comboInput.Input("ban");
         component.Find(".bit-drp-inp").FocusIn();
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.selectText"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.selectText"]);
     }
 
     [TestMethod]
@@ -4849,7 +4849,7 @@ public class BitDropdownTests : BunitTestContext
         // collection at all - which must be an empty window rather than a crash.
         await component.InvokeAsync(() => component.Instance.RefreshItemsAsync());
 
-        Assert.AreEqual(0, component.FindAll("[role=option]").Count);
+        Assert.IsEmpty(component.FindAll("[role=option]"));
     }
 
     [TestMethod]
@@ -4891,7 +4891,7 @@ public class BitDropdownTests : BunitTestContext
 
         Assert.IsTrue(component.Find(".bit-drp").ClassList.Contains("bit-inv"));
         Assert.AreEqual("true", component.Find(".bit-drp-wrp").GetAttribute("aria-invalid"));
-        Assert.AreEqual(0, component.FindAll(".bit-drp-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-drp-erm"));
         Assert.IsFalse(component.Find(".bit-drp-wrp").HasAttribute("aria-describedby"));
 
         // The flag on its own has nothing to say, unless a label gives it something.
@@ -5055,7 +5055,7 @@ public class BitDropdownTests : BunitTestContext
 
         await component.InvokeAsync(() => component.Instance.ClearAsync());
 
-        Assert.AreEqual(0, values.Count);
+        Assert.IsEmpty(values);
         Assert.AreEqual(1, cleared);
     }
 
@@ -5076,7 +5076,7 @@ public class BitDropdownTests : BunitTestContext
 
         await component.InvokeAsync(() => component.Instance.ClearAsync());
 
-        Assert.AreEqual(1, values.Count);
+        Assert.ContainsSingle(values);
     }
 
     [TestMethod]
@@ -5400,7 +5400,8 @@ public class BitDropdownTests : BunitTestContext
         var dropdown = component.Find(".bit-drp");
 
         Assert.IsTrue(dropdown.ClassList.Contains("custom-root"));
-        Assert.IsTrue(dropdown.GetAttribute("style")?.Contains("color: red;"));
+        var actualValue = dropdown.GetAttribute("style")?.Contains("color: red;");
+        Assert.IsTrue(actualValue);
     }
 
     [TestMethod]
@@ -5424,8 +5425,8 @@ public class BitDropdownTests : BunitTestContext
 
         Assert.AreEqual("Pre", component.Find(".bit-drp-wrp .my-prefix").TextContent);
         Assert.AreEqual("Suf", component.Find(".bit-drp-wrp .my-suffix").TextContent);
-        Assert.AreEqual(0, component.FindAll(".bit-drp-pre").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-drp-suf").Count);
+        Assert.IsEmpty(component.FindAll(".bit-drp-pre"));
+        Assert.IsEmpty(component.FindAll(".bit-drp-suf"));
     }
 
     [TestMethod]
@@ -5441,13 +5442,13 @@ public class BitDropdownTests : BunitTestContext
 
         // Nothing selected: the placeholder template draws the display, and is handed the dropdown itself.
         Assert.AreEqual("Pick?", component.Find(".bit-drp-tdp .my-placeholder").TextContent);
-        Assert.AreEqual(0, component.FindAll(".bit-drp-tdp .my-text").Count);
+        Assert.IsEmpty(component.FindAll(".bit-drp-tdp .my-text"));
 
         component.FindAll("[role=option]")[1].Click();
 
         // Something selected: the text template draws it instead.
         Assert.AreEqual("Orange!", component.Find(".bit-drp-tdp .my-text").TextContent);
-        Assert.AreEqual(0, component.FindAll(".bit-drp-tdp .my-placeholder").Count);
+        Assert.IsEmpty(component.FindAll(".bit-drp-tdp .my-placeholder"));
     }
 
     [TestMethod]
@@ -5504,8 +5505,8 @@ public class BitDropdownTests : BunitTestContext
         Assert.AreEqual(1, loading.QuerySelectorAll(".bit-drp-spn").Length);
         Assert.AreEqual("Fetching", loading.TextContent.Trim());
         // The trigger shows the busy state in place of its caret.
-        Assert.AreEqual(1, component.FindAll(".bit-drp-wrp .bit-drp-icn .bit-drp-spn").Count);
-        Assert.AreEqual(0, component.FindAll("[role=option]").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-drp-wrp .bit-drp-icn .bit-drp-spn"));
+        Assert.IsEmpty(component.FindAll("[role=option]"));
 
         component.Render(parameters => parameters.Add(p => p.LoadingTemplate, (RenderFragment)(builder => builder.AddMarkupContent(0, "<i class=\"my-loading\">wait</i>"))));
 
@@ -5565,9 +5566,8 @@ public class BitDropdownTests : BunitTestContext
             parameters.Add(p => p.ItemTemplate, (BitDropdownItem<string> item) => builder => builder.AddMarkupContent(0, $"<b class=\"my-item\">{item.Text!.ToUpperInvariant()}</b>"));
         });
 
-        CollectionAssert.AreEqual(new[] { "APPLE", "ORANGE", "BANANA", "BROCCOLI" },
-                                  component.FindAll("[role=option] .my-item").Select(e => e.TextContent).ToArray());
-        Assert.AreEqual(0, component.FindAll(".bit-drp-itx").Count);
+        Assert.AreSequenceEqual(new[] { "APPLE", "ORANGE", "BANANA", "BROCCOLI" }, component.FindAll("[role=option] .my-item").Select(e => e.TextContent).ToArray());
+        Assert.IsEmpty(component.FindAll(".bit-drp-itx"));
 
         // The template is what the option holds, and picking it still selects the item it was drawn for.
         component.FindAll("[role=option]")[2].Click();
@@ -5587,7 +5587,7 @@ public class BitDropdownTests : BunitTestContext
 
         // The default glyph, on the items and on the select all row alike.
         Assert.IsTrue(component.FindAll(".bit-drp-chm").All(i => i.ClassList.Contains("bit-icon--Accept")));
-        Assert.AreEqual(5, component.FindAll(".bit-drp-chm").Count);
+        Assert.HasCount(5, component.FindAll(".bit-drp-chm"));
         Assert.AreEqual("Everything", component.Find(".bit-drp-sab .bit-drp-itx").TextContent.Trim());
 
         component.Render(parameters => parameters.Add(p => p.ItemCheckIconName, "CheckMark"));
@@ -5647,7 +5647,7 @@ public class BitDropdownTests : BunitTestContext
         var toggle = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
         Assert.AreEqual(BitDropDirection.TopAndBottom, toggle.Arguments[8]);
         // The callout takes the width of the dropdown unless asked to keep its own.
-        Assert.AreEqual(true, toggle.Arguments[14]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(toggle.Arguments[14]));
 
         component.Find(".bit-drp-cal").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
@@ -5661,7 +5661,7 @@ public class BitDropdownTests : BunitTestContext
 
         toggle = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
         Assert.AreEqual(BitDropDirection.All, toggle.Arguments[8]);
-        Assert.AreEqual(false, toggle.Arguments[14]);
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(toggle.Arguments[14]));
     }
 
     [TestMethod]
@@ -5730,15 +5730,15 @@ public class BitDropdownTests : BunitTestContext
         component.Find(".bit-drp-wrp").Click();
         component.Find(".bit-drp-sin").Input("app");
 
-        Assert.AreEqual(1, component.FindAll("[role=option]").Count);
+        Assert.ContainsSingle(component.FindAll("[role=option]"));
 
         component.Find("[role=option]").Click();
 
-        Assert.AreEqual(1, component.Instance.SelectedItems.Count);
+        Assert.ContainsSingle(component.Instance.SelectedItems);
 
         // The callout stays open after a multi select pick, so without the clearing the next item has to be
         // found through the filter left over from the previous one.
-        Assert.AreEqual(autoClearSearch ? 4 : 1, component.FindAll("[role=option]").Count);
+        Assert.HasCount(autoClearSearch ? 4 : 1, component.FindAll("[role=option]"));
         Assert.AreEqual(autoClearSearch, component.Find(".bit-drp-sin").GetAttribute("value").HasNoValue());
     }
 
@@ -5774,7 +5774,7 @@ public class BitDropdownTests : BunitTestContext
 
         var options = component.FindAll("[role=option]");
 
-        CollectionAssert.AreEqual(new[] { "Apple", "Orange", "Banana" }, options.Select(o => o.TextContent.Trim()).ToArray());
+        Assert.AreSequenceEqual(new[] { "Apple", "Orange", "Banana" }, options.Select(o => o.TextContent.Trim()).ToArray());
         Assert.AreEqual("true", options[1].GetAttribute("aria-disabled"));
         Assert.IsTrue(options[0].QuerySelector(".bit-drp-iic")!.ClassList.Contains("bit-icon--Emoji"));
 
@@ -5803,8 +5803,8 @@ public class BitDropdownTests : BunitTestContext
 
         Assert.AreEqual("fruit-field", root.Id);
         Assert.IsTrue(root.ClassList.Contains("custom-class"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin: 1px;");
-        StringAssert.Contains(root.GetAttribute("style"), "visibility:hidden");
+        Assert.Contains("margin: 1px;", root.GetAttribute("style")!);
+        Assert.Contains("visibility:hidden", root.GetAttribute("style")!);
         Assert.AreEqual("root", root.GetAttribute("data-test"));
     }
 
@@ -5878,7 +5878,7 @@ public class BitDropdownTests : BunitTestContext
         {
             Assert.IsTrue(root.ClassList.Contains(cssClass), $"{cssClass} is missing.");
         }
-        StringAssert.Contains(root.GetAttribute("style"), "width:fit-content");
+        Assert.Contains("width:fit-content", root.GetAttribute("style")!);
 
         // The callout is rendered outside the root, so it carries the read-only marker of its own.
         Assert.IsTrue(component.Find(".bit-drp-cal").ClassList.Contains("bit-drp-rol"));
@@ -5890,22 +5890,60 @@ public class BitDropdownTests : BunitTestContext
     {
         var classes = new BitDropdownClassStyles
         {
-            Label = "c-label", Container = "c-container", TextContainer = "c-text", ClearButton = "c-clear", CaretDownIcon = "c-caret",
-            Overlay = "c-overlay", Callout = "c-callout", SearchBoxContainer = "c-search", SearchBoxIconContainer = "c-search-icon-container",
-            SearchBoxIcon = "c-search-icon", SearchBoxInput = "c-search-input", ScrollContainer = "c-scroll", ItemButton = "c-item",
-            ItemText = "c-item-text", ItemIcon = "c-item-icon", ItemHeader = "c-item-header", ItemDivider = "c-item-divider",
-            PrefixContainer = "c-prefix-container", Prefix = "c-prefix", SuffixContainer = "c-suffix-container", Suffix = "c-suffix",
-            DescriptionContainer = "c-description-container", Description = "c-description", ErrorMessageContainer = "c-error-container", ErrorMessage = "c-error",
+            Label = "c-label",
+            Container = "c-container",
+            TextContainer = "c-text",
+            ClearButton = "c-clear",
+            CaretDownIcon = "c-caret",
+            Overlay = "c-overlay",
+            Callout = "c-callout",
+            SearchBoxContainer = "c-search",
+            SearchBoxIconContainer = "c-search-icon-container",
+            SearchBoxIcon = "c-search-icon",
+            SearchBoxInput = "c-search-input",
+            ScrollContainer = "c-scroll",
+            ItemButton = "c-item",
+            ItemText = "c-item-text",
+            ItemIcon = "c-item-icon",
+            ItemHeader = "c-item-header",
+            ItemDivider = "c-item-divider",
+            PrefixContainer = "c-prefix-container",
+            Prefix = "c-prefix",
+            SuffixContainer = "c-suffix-container",
+            Suffix = "c-suffix",
+            DescriptionContainer = "c-description-container",
+            Description = "c-description",
+            ErrorMessageContainer = "c-error-container",
+            ErrorMessage = "c-error",
         };
 
         var styles = new BitDropdownClassStyles
         {
-            Label = "--s: label;", Container = "--s: container;", TextContainer = "--s: text;", ClearButton = "--s: clear;", CaretDownIcon = "--s: caret;",
-            Overlay = "--s: overlay;", Callout = "--s: callout;", SearchBoxContainer = "--s: search;", SearchBoxIconContainer = "--s: search-icon-container;",
-            SearchBoxIcon = "--s: search-icon;", SearchBoxInput = "--s: search-input;", ScrollContainer = "--s: scroll;", ItemButton = "--s: item;",
-            ItemText = "--s: item-text;", ItemIcon = "--s: item-icon;", ItemHeader = "--s: item-header;", ItemDivider = "--s: item-divider;",
-            PrefixContainer = "--s: prefix-container;", Prefix = "--s: prefix;", SuffixContainer = "--s: suffix-container;", Suffix = "--s: suffix;",
-            DescriptionContainer = "--s: description-container;", Description = "--s: description;", ErrorMessageContainer = "--s: error-container;", ErrorMessage = "--s: error;",
+            Label = "--s: label;",
+            Container = "--s: container;",
+            TextContainer = "--s: text;",
+            ClearButton = "--s: clear;",
+            CaretDownIcon = "--s: caret;",
+            Overlay = "--s: overlay;",
+            Callout = "--s: callout;",
+            SearchBoxContainer = "--s: search;",
+            SearchBoxIconContainer = "--s: search-icon-container;",
+            SearchBoxIcon = "--s: search-icon;",
+            SearchBoxInput = "--s: search-input;",
+            ScrollContainer = "--s: scroll;",
+            ItemButton = "--s: item;",
+            ItemText = "--s: item-text;",
+            ItemIcon = "--s: item-icon;",
+            ItemHeader = "--s: item-header;",
+            ItemDivider = "--s: item-divider;",
+            PrefixContainer = "--s: prefix-container;",
+            Prefix = "--s: prefix;",
+            SuffixContainer = "--s: suffix-container;",
+            Suffix = "--s: suffix;",
+            DescriptionContainer = "--s: description-container;",
+            Description = "--s: description;",
+            ErrorMessageContainer = "--s: error-container;",
+            ErrorMessage = "--s: error;",
         };
 
         var items = GetDropdownItems();
@@ -5931,7 +5969,7 @@ public class BitDropdownTests : BunitTestContext
             var element = component.Find(selector);
 
             Assert.IsTrue(element.ClassList.Contains(cssClass), $"{selector} lacks {cssClass}.");
-            StringAssert.Contains(element.GetAttribute("style") ?? string.Empty, style, $"{selector} lacks {style}.");
+            Assert.Contains(style, element.GetAttribute("style") ?? string.Empty, $"{selector} lacks {style}.");
         }
 
         AssertPart(".bit-drp-lbl", "c-label", "--s: label;");
@@ -5966,18 +6004,36 @@ public class BitDropdownTests : BunitTestContext
     {
         var classes = new BitDropdownClassStyles
         {
-            ItemWrapper = "c-wrapper", ItemButton = "c-item", ItemCheckBox = "c-check-box", ItemCheckIcon = "c-check-icon",
-            Chips = "c-chip", OverflowChip = "c-overflow", ChipsRemoveButton = "c-chip-remove", ChipsRemoveIcon = "c-chip-remove-icon",
-            SelectAllContainer = "c-select-all", SelectAllButton = "c-select-all-button", SelectAllCheckBox = "c-select-all-box",
-            SelectAllCheckIcon = "c-select-all-icon", SelectAllText = "c-select-all-text",
+            ItemWrapper = "c-wrapper",
+            ItemButton = "c-item",
+            ItemCheckBox = "c-check-box",
+            ItemCheckIcon = "c-check-icon",
+            Chips = "c-chip",
+            OverflowChip = "c-overflow",
+            ChipsRemoveButton = "c-chip-remove",
+            ChipsRemoveIcon = "c-chip-remove-icon",
+            SelectAllContainer = "c-select-all",
+            SelectAllButton = "c-select-all-button",
+            SelectAllCheckBox = "c-select-all-box",
+            SelectAllCheckIcon = "c-select-all-icon",
+            SelectAllText = "c-select-all-text",
         };
 
         var styles = new BitDropdownClassStyles
         {
-            ItemWrapper = "--s: wrapper;", ItemButton = "--s: item;", ItemCheckBox = "--s: check-box;", ItemCheckIcon = "--s: check-icon;",
-            Chips = "--s: chip;", OverflowChip = "--s: overflow;", ChipsRemoveButton = "--s: chip-remove;", ChipsRemoveIcon = "--s: chip-remove-icon;",
-            SelectAllContainer = "--s: select-all;", SelectAllButton = "--s: select-all-button;", SelectAllCheckBox = "--s: select-all-box;",
-            SelectAllCheckIcon = "--s: select-all-icon;", SelectAllText = "--s: select-all-text;",
+            ItemWrapper = "--s: wrapper;",
+            ItemButton = "--s: item;",
+            ItemCheckBox = "--s: check-box;",
+            ItemCheckIcon = "--s: check-icon;",
+            Chips = "--s: chip;",
+            OverflowChip = "--s: overflow;",
+            ChipsRemoveButton = "--s: chip-remove;",
+            ChipsRemoveIcon = "--s: chip-remove-icon;",
+            SelectAllContainer = "--s: select-all;",
+            SelectAllButton = "--s: select-all-button;",
+            SelectAllCheckBox = "--s: select-all-box;",
+            SelectAllCheckIcon = "--s: select-all-icon;",
+            SelectAllText = "--s: select-all-text;",
         };
 
         var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
@@ -5997,7 +6053,7 @@ public class BitDropdownTests : BunitTestContext
             var element = component.Find(selector);
 
             Assert.IsTrue(element.ClassList.Contains(cssClass), $"{selector} lacks {cssClass}.");
-            StringAssert.Contains(element.GetAttribute("style") ?? string.Empty, style, $"{selector} lacks {style}.");
+            Assert.Contains(style, element.GetAttribute("style") ?? string.Empty, $"{selector} lacks {style}.");
         }
 
         AssertPart(".bit-drp-iwr:not(.bit-drp-sac)", "c-wrapper", "--s: wrapper;");
@@ -6076,7 +6132,7 @@ public class BitDropdownTests : BunitTestContext
 
         var icons = component.FindAll(".bit-drp-iic");
 
-        Assert.AreEqual(2, icons.Count);
+        Assert.HasCount(2, icons);
         Assert.IsTrue(icons[0].ClassList.Contains("bit-icon--Emoji"));
         Assert.IsTrue(icons[1].ClassList.Contains("bi-egg"));
         Assert.IsFalse(icons[1].ClassList.Contains("bit-icon--Emoji"));
@@ -6101,7 +6157,7 @@ public class BitDropdownTests : BunitTestContext
         component.Find(".bit-drp-wrp").Click();
         component.Find(".bit-drp-sin").Input(term);
 
-        CollectionAssert.AreEqual(expected.Split(','), component.FindAll("[role=option]").Select(o => o.TextContent.Trim()).ToArray());
+        Assert.AreSequenceEqual(expected.Split(','), component.FindAll("[role=option]").Select(o => o.TextContent.Trim()).ToArray());
     }
 
     [TestMethod]
@@ -6120,14 +6176,14 @@ public class BitDropdownTests : BunitTestContext
         component.Find(".bit-drp-wrp").Click();
         component.Find(".bit-drp-sin").Input("v-");
 
-        CollectionAssert.AreEqual(new[] { "Broccoli" }, component.FindAll("[role=option]").Select(o => o.TextContent.Trim()).ToArray());
+        Assert.AreSequenceEqual(new[] { "Broccoli" }, component.FindAll("[role=option]").Select(o => o.TextContent.Trim()).ToArray());
 
         // The highlight follows the built-in text matching, which a term matched on the value does not satisfy.
-        Assert.AreEqual(0, component.FindAll(".bit-drp-hlt").Count);
+        Assert.IsEmpty(component.FindAll(".bit-drp-hlt"));
 
         component.Find(".bit-drp-sin").Input("f-b");
 
-        CollectionAssert.AreEqual(new[] { "Banana" }, component.FindAll("[role=option]").Select(o => o.TextContent.Trim()).ToArray());
+        Assert.AreSequenceEqual(new[] { "Banana" }, component.FindAll("[role=option]").Select(o => o.TextContent.Trim()).ToArray());
     }
 
     [TestMethod]
@@ -6144,7 +6200,7 @@ public class BitDropdownTests : BunitTestContext
         component.Find(".bit-drp-sin").Input("nan");
 
         // Off by default: the text is rendered whole.
-        Assert.AreEqual(0, component.FindAll(".bit-drp-hlt").Count);
+        Assert.IsEmpty(component.FindAll(".bit-drp-hlt"));
         Assert.AreEqual("Banana", component.Find(".bit-drp-itx").TextContent);
 
         component.Render(parameters => parameters.Add(p => p.HighlightSearch, true));
@@ -6170,7 +6226,7 @@ public class BitDropdownTests : BunitTestContext
         component.Find(".bit-drp-inp").Input("Kiwi");
 
         Assert.AreEqual("New: Kiwi", component.Find(".bit-drp-dyn .my-dynamic").TextContent);
-        Assert.AreEqual(0, component.FindAll(".bit-drp-dyn .bit-drp-itx").Count);
+        Assert.IsEmpty(component.FindAll(".bit-drp-dyn .bit-drp-itx"));
     }
 
     [TestMethod]
@@ -6183,7 +6239,7 @@ public class BitDropdownTests : BunitTestContext
 
         await component.Instance.DisposeAsync();
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Dropdowns.dispose"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Dropdowns.dispose"]);
     }
 
     private static List<BitDropdownItem<string>> GetDropdownItemsWithDisabled() => new()

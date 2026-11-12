@@ -133,10 +133,10 @@ public class SubmissionLifecycleTests
     }
 
     [TestMethod]
-    public void Reset_forgets_how_the_last_submit_ended()
+    public async global::System.Threading.Tasks.Task Reset_forgets_how_the_last_submit_ended()
     {
         var state = Form();
-        state.SubmitAsync().Wait();
+        await state.SubmitAsync().WaitAsync(TestContext.CancellationToken);
         Assert.AreEqual(BormSubmitOutcome.Invalid, state.SubmitOutcome);
 
         state.Reset();
@@ -181,6 +181,8 @@ public class SubmissionLifecycleTests
         Assert.IsFalse(await state.SubmitAsync((_, _) => Task.CompletedTask, (_, t) => { token = t; return Task.CompletedTask; }));
         Assert.IsTrue(token.CanBeCanceled);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }
 
 /// <summary>Server errors in the shape a validation response actually arrives in.</summary>

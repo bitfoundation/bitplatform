@@ -105,7 +105,7 @@ public abstract class HarnessTest
         page.EvaluateAsync<string?>("key => localStorage.getItem(key)", key);
 
     /// <summary>The URLs of every Bit.Blex JS module request the page made, with their response statuses.</summary>
-    protected async Task<ModuleRequest[]> BlexModuleRequestsAsync() =>
+    private protected async Task<ModuleRequest[]> BlexModuleRequestsAsync() =>
         await Page.EvaluateAsync<ModuleRequest[]>("""
             () => performance.getEntriesByType('resource')
                 .filter(e => /bit-blex-[a-z]+(\.[a-z0-9]+)?\.js/i.test(e.name))
@@ -114,7 +114,7 @@ public abstract class HarnessTest
 
     // A settable class rather than a positional record: Playwright materializes evaluate results through a
     // parameterless constructor.
-    public sealed class ModuleRequest
+    internal sealed class ModuleRequest
     {
         public string Url { get; set; } = string.Empty;
 

@@ -53,8 +53,8 @@ public class BitTagParamsTests : BunitTestContext
     [TestMethod]
     public void BitTagParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitTag)}", BitTagParams.ParamName);
-        Assert.AreEqual("BitParams.BitTag", BitTagParams.ParamName);
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitTag)}", new BitTagParams().Name);
+        Assert.AreEqual("BitParams.BitTag", new BitTagParams().Name);
     }
 
     [TestMethod]
@@ -192,7 +192,7 @@ public class BitTagParamsTests : BunitTestContext
         Assert.AreEqual("Own", component.Find(".bit-tag-tex").TextContent);
         // A bool written as false by the tag opts it out of the cascaded true.
         Assert.IsFalse(root.ClassList.Contains("bit-tag-nwr"));
-        Assert.AreEqual(1, component.FindAll(".bit-tag-sic").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-tag-sic"));
         Assert.AreEqual("Own dismiss", component.Find(".bit-tag-cls").GetAttribute("aria-label"));
         // What the tag left unset is still filled in from the cascade.
         Assert.IsTrue(root.ClassList.Contains("bit-tag-rvs"));
@@ -221,7 +221,7 @@ public class BitTagParamsTests : BunitTestContext
 
         Assert.IsTrue(root.ClassList.Contains("bit-dis"));
         Assert.IsTrue(root.ClassList.Contains("cascaded-root"));
-        StringAssert.Contains(root.GetAttribute("style")!, "margin: 1px;");
+        Assert.Contains("margin: 1px;", root.GetAttribute("style")!);
         Assert.IsTrue(component.Find("button.bit-tag-cnt").HasAttribute("disabled"));
         Assert.IsTrue(component.Find(".bit-tag-cls").HasAttribute("disabled"));
 
@@ -367,7 +367,7 @@ public class BitTagParamsTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("cascaded"));
         Assert.AreEqual("cascaded-id", root.Id);
         Assert.AreEqual("yes", root.GetAttribute("data-cascaded"));
-        StringAssert.Contains(root.GetAttribute("style")!, "visibility:hidden");
+        Assert.Contains("visibility:hidden", root.GetAttribute("style")!);
 
         // The name of a plain tag is carried as hidden text and its tab index on the root, cascaded or not.
         Assert.AreEqual("Pinned to the top", component.Find(".bit-tag-vhd").TextContent);
@@ -393,7 +393,7 @@ public class BitTagParamsTests : BunitTestContext
         Assert.AreEqual(plain.Find(".bit-tag").ClassName, root.ClassName);
         Assert.AreEqual(plain.Find(".bit-tag").GetAttribute("style"), root.GetAttribute("style"));
         Assert.AreEqual("Design", component.Find(".bit-tag-tex").TextContent);
-        Assert.AreEqual(0, component.FindAll(".bit-tag-cls").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tag-cls"));
 
         Assert.IsNull(instance.Color);
         Assert.IsNull(instance.Size);

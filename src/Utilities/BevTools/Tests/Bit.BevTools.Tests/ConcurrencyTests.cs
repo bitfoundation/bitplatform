@@ -29,7 +29,7 @@ public class ConcurrencyTests
 
         Assert.AreEqual(0, errors);
         Assert.AreEqual(1000, buffer.Count);
-        Assert.AreEqual(1000, buffer.ToArray().Distinct().Count());
+        Assert.HasCount(1000, buffer.ToArray().Distinct());
     }
 
     [TestMethod]
@@ -65,7 +65,7 @@ public class ConcurrencyTests
             Assert.AreEqual(2000, session.Timeline.Count);
             var ids = session.Timeline.Snapshot().Select(e => e.Id).ToList();
             Assert.AreSequenceEqual(ids.OrderBy(x => x), ids);
-            Assert.IsTrue(session.Errors.TotalOccurrences == 40);
+            Assert.AreEqual(40, session.Errors.TotalOccurrences);
         }
     }
 

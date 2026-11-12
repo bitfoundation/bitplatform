@@ -27,7 +27,7 @@ public class ServiceTests
     [TestMethod]
     public async Task TheRating_Should_BeLookedUpOnlyForTheSamplesOwnApps()
     {
-        using var unknown = await client.GetAsync("api/store-listing/1234567890");
+        using var unknown = await client.GetAsync("api/store-listing/1234567890", TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.NotFound, unknown.StatusCode);
         Assert.DoesNotContain(uri => uri.Query.Contains("1234567890", StringComparison.Ordinal), appStore.Requests, "An id no sample has never reaches Apple.");
@@ -38,8 +38,8 @@ public class ServiceTests
             return;
         }
 
-        var first = await client.GetFromJsonAsync($"api/store-listing/{appleAppId}", LandingJsonContext.Default.StoreListing);
-        var second = await client.GetFromJsonAsync($"api/store-listing/{appleAppId}", LandingJsonContext.Default.StoreListing);
+        var first = await client.GetFromJsonAsync($"api/store-listing/{appleAppId}", LandingJsonContext.Default.StoreListing, TestContext.CancellationToken);
+        var second = await client.GetFromJsonAsync($"api/store-listing/{appleAppId}", LandingJsonContext.Default.StoreListing, TestContext.CancellationToken);
 
         Assert.AreEqual(1280, first!.RatingCount);
         Assert.AreEqual(4.7, second!.AverageRating);
@@ -106,7 +106,7 @@ public class ServiceTests
     {
         await Assert.ThrowsExactlyAsync<WebSocketException>(() => Connect("https://attacker.example"));
 
-        using var plain = await client.GetAsync("api/chat");
+        using var plain = await client.GetAsync("api/chat", TestContext.CancellationToken);
         Assert.AreEqual(HttpStatusCode.BadRequest, plain.StatusCode, "The chat only speaks WebSocket.");
     }
 
@@ -121,10 +121,10 @@ public class ServiceTests
         using var request = new HttpRequestMessage(HttpMethod.Get, url);
         request.Headers.Host = "evil.example";
 
-        using var response = await productionClient.SendAsync(request);
+        using var response = await productionClient.SendAsync(request, TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);
-        Assert.DoesNotContain("evil.example", await response.Content.ReadAsStringAsync());
+        Assert.DoesNotContain("evil.example", await response.Content.ReadAsStringAsync(TestContext.CancellationToken));
         Assert.IsEmpty(log.Errors, string.Join(Environment.NewLine, log.Errors));
     }
 
@@ -191,4 +191,6 @@ public class ServiceTests
                 return frames;
         }
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

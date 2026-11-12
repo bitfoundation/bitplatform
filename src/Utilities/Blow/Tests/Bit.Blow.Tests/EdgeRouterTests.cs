@@ -57,8 +57,8 @@ public class EdgeRouterTests : BunitContext
             (request.Source, request.SourceSide, request.Target, request.TargetSide));
 
         // The nodes near it, its own two included; not the one far away.
-        CollectionAssert.AreEquivalent(
-            new[] { nodes[0].GetRect(), nodes[1].GetRect(), nodes[2].GetRect() }, request.Obstacles.ToArray());
+        Assert.AreSequenceEqual(
+            new[] { nodes[0].GetRect(), nodes[1].GetRect(), nodes[2].GetRect() }, request.Obstacles.ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -143,10 +143,10 @@ public class EdgeRouterTests : BunitContext
 
         var svg = XDocument.Parse(cut.Instance.ToSvg());
         XNamespace ns = "http://www.w3.org/2000/svg";
-        Assert.IsTrue(svg.Descendants(ns + "path").Any(p => (string?)p.Attribute("d") == "M1 2L3 4"), "the export did not use the router");
+        Assert.Contains(p => (string?)p.Attribute("d") == "M1 2L3 4", svg.Descendants(ns + "path"), "the export did not use the router");
 
         // And on its own, with a router in its options.
         var alone = XDocument.Parse(BlowSvgExport.ToSvg(Nodes(), edges, new BlowSvgExportOptions { Routing = router }));
-        Assert.IsTrue(alone.Descendants(ns + "path").Any(p => (string?)p.Attribute("d") == "M1 2L3 4"));
+        Assert.Contains(p => (string?)p.Attribute("d") == "M1 2L3 4", alone.Descendants(ns + "path"));
     }
 }

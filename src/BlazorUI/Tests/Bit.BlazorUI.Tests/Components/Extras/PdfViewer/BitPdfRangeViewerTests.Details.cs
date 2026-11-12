@@ -33,7 +33,7 @@ public partial class BitPdfRangeViewerTests
             file.Stream(13, new byte[200000], "/Type /EmbeddedFile");
             file.Stream(14, "small attachment", "/Type /EmbeddedFile");
         });
-        Assert.AreEqual(2, BitPdfDocument.Load(bytes).Attachments.Count);
+        Assert.HasCount(2, BitPdfDocument.Load(bytes).Attachments);
         using var handler = new RangeHandler(bytes);
         Services.AddSingleton(new HttpClient(handler));
         var errors = new List<string>();
@@ -42,14 +42,14 @@ public partial class BitPdfRangeViewerTests
         component.WaitForPages(1);
 
         await component.InvokeAsync(() => component.Instance.ShowSidebar(BitPdfSidebar.Attachments));
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.Attachments.Count));
-        Assert.AreEqual(1, component.Instance.Attachments.Count);
+        component.WaitForAssertion(() => Assert.ContainsSingle(component.Instance.Attachments));
+        Assert.ContainsSingle(component.Instance.Attachments);
         Assert.AreEqual("small.txt", component.Instance.Attachments[0].Name);
-        Assert.AreEqual(0, errors.Count, string.Join("; ", errors));
+        Assert.IsEmpty(errors, string.Join("; ", errors));
         int requests = handler.Requests.Count;
         await component.InvokeAsync(() => component.Instance.ShowSidebar(BitPdfSidebar.None));
         await component.InvokeAsync(() => component.Instance.ShowSidebar(BitPdfSidebar.Attachments));
-        Assert.AreEqual(requests, handler.Requests.Count);
+        Assert.HasCount(requests, handler.Requests);
     }
 
     [TestMethod]
@@ -78,15 +78,15 @@ public partial class BitPdfRangeViewerTests
         component.WaitForAssertion(() => Assert.IsNotNull(component.Instance.Metadata));
 
         Assert.IsNotNull(component.Instance.Metadata);
-        Assert.AreEqual(0, component.Instance.FormFields.Count);
-        Assert.AreEqual(0, component.Instance.StructureTree.Count);
-        Assert.AreEqual(0, component.Instance.Attachments.Count);
-        Assert.AreEqual(0, errors.Count, string.Join("; ", errors));
+        Assert.IsEmpty(component.Instance.FormFields);
+        Assert.IsEmpty(component.Instance.StructureTree);
+        Assert.IsEmpty(component.Instance.Attachments);
+        Assert.IsEmpty(errors, string.Join("; ", errors));
 
-        await component.InvokeAsync(() => component.Instance.LoadDocumentDetailsAsync());
-        Assert.AreEqual(1, component.Instance.FormFields.Count);
-        Assert.AreEqual(1, component.Instance.StructureTree.Count);
-        Assert.AreEqual(1, component.Instance.Attachments.Count);
+        await component.InvokeAsync(() => component.Instance.LoadDocumentDetailsAsync(TestContext.CancellationToken));
+        Assert.ContainsSingle(component.Instance.FormFields);
+        Assert.ContainsSingle(component.Instance.StructureTree);
+        Assert.ContainsSingle(component.Instance.Attachments);
     }
 
     [TestMethod]
@@ -106,10 +106,10 @@ public partial class BitPdfRangeViewerTests
         component.WaitForPages(2);
 
         await component.InvokeAsync(() => component.Instance.GoToPage(2));
-        Assert.IsTrue(component.Instance.FailedPages.Contains(2));
-        Assert.AreEqual(1, errors.Count);
+        Assert.Contains(2, component.Instance.FailedPages);
+        Assert.ContainsSingle(errors);
         await component.InvokeAsync(() => component.Instance.GoToPage(2));
-        Assert.AreEqual(1, errors.Count);
+        Assert.ContainsSingle(errors);
     }
 
     [TestMethod]
@@ -132,8 +132,8 @@ public partial class BitPdfRangeViewerTests
             Assert.AreEqual("false", component.Find(".bit-pdv-surface").GetAttribute("aria-busy"));
         }, TimeSpan.FromSeconds(20));
         Assert.IsNull(component.Instance.GetBytes(), "A valid large resource array must remain in Range mode.");
-        Assert.AreEqual(0, errors.Count, string.Join("; ", errors));
-        Assert.AreEqual(0, component.Instance.FailedPages.Count);
+        Assert.IsEmpty(errors, string.Join("; ", errors));
+        Assert.IsEmpty(component.Instance.FailedPages);
     }
 
     [TestMethod]
@@ -154,11 +154,11 @@ public partial class BitPdfRangeViewerTests
         component.WaitForPages(3);
 
         var results = await component.InvokeAsync(() => Task.WhenAll(
-            component.Instance.RenderPageHtmlAsync(2), component.Instance.RenderPageHtmlAsync(3)));
+            component.Instance.RenderPageHtmlAsync(2, TestContext.CancellationToken), component.Instance.RenderPageHtmlAsync(3, TestContext.CancellationToken)));
 
-        StringAssert.Contains(results[0], "Range page 2");
-        StringAssert.Contains(results[1], "Range page 3");
-        Assert.AreEqual(0, errors.Count, string.Join("; ", errors));
+        Assert.Contains("Range page 2", results[0]);
+        Assert.Contains("Range page 3", results[1]);
+        Assert.IsEmpty(errors, string.Join("; ", errors));
     }
 
     [TestMethod]
@@ -176,16 +176,17 @@ public partial class BitPdfRangeViewerTests
             .Add(v => v.OnError, errors.Add));
         component.WaitForPages(1);
 
-        string actual = await component.InvokeAsync(() => component.Instance.ExtractPageTextAsync(1));
-        string html = await component.InvokeAsync(() => component.Instance.RenderPageHtmlAsync(1));
+        string actual = await component.InvokeAsync(() => component.Instance.ExtractPageTextAsync(1, TestContext.CancellationToken));
+        string html = await component.InvokeAsync(() => component.Instance.RenderPageHtmlAsync(1, TestContext.CancellationToken));
 
         Assert.AreEqual(expected, actual);
         Assert.IsFalse(string.IsNullOrEmpty(html));
         Assert.AreEqual(2, prompts);
         Assert.AreEqual(0, progress);
         Assert.IsNull(component.Instance.GetBytes());
-        Assert.AreEqual(0, errors.Count, string.Join("; ", errors));
-        Assert.IsTrue(handler.Requests.All(r => r?.StartsWith("bytes=", StringComparison.Ordinal) is true));
+        Assert.IsEmpty(errors, string.Join("; ", errors));
+        var actualValue = handler.Requests.All(r => r?.StartsWith("bytes=", StringComparison.Ordinal) is true);
+        Assert.IsTrue(actualValue);
     }
 
     private static byte[] Pdf(string catalogExtra, string pageExtra, Action<BitPdfEngineTestFile>? write = null, string? resources = null)

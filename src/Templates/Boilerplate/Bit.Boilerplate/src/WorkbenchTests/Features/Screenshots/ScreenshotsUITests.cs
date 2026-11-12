@@ -93,7 +93,7 @@ public class ScreenshotsUITests : ReviewPageTest
         using var client = Server.CreateClient();
         client.Timeout = TimeSpan.FromMinutes(2);
 
-        var untouched = await client.GetByteArrayAsync("api/screenshots/pos-dashboard?device=iphone-se");
+        var untouched = await client.GetByteArrayAsync("api/screenshots/pos-dashboard?device=iphone-se", TestContext.CancellationToken);
 
         await OpenWorkbench("pos-dashboard", "?device=iphone-se");
 
@@ -201,9 +201,9 @@ public class ScreenshotsUITests : ReviewPageTest
 
         foreach (var entry in archive.Entries)
         {
-            await using var stream = await entry.OpenAsync();
+            await using var stream = await entry.OpenAsync(TestContext.CancellationToken);
             using var png = new MemoryStream();
-            await stream.CopyToAsync(png);
+            await stream.CopyToAsync(png, TestContext.CancellationToken);
 
             Assert.AreEqual(750, PngInfo.Read(png.ToArray()).Width);
         }

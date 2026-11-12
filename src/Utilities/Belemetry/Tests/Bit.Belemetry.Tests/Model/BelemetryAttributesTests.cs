@@ -12,7 +12,7 @@ public class BelemetryAttributesTests
         var utc = new DateTime(2026, 1, 2, 3, 4, 5, DateTimeKind.Utc);
 
         Assert.AreEqual("s", BelemetryAttributes.Normalize("s"));
-        Assert.AreEqual(true, BelemetryAttributes.Normalize(true));
+        Assert.IsTrue((bool?)BelemetryAttributes.Normalize(true));
         Assert.AreEqual(5L, BelemetryAttributes.Normalize(5L));
         Assert.AreEqual(5L, BelemetryAttributes.Normalize(5));
         Assert.AreEqual(5L, BelemetryAttributes.Normalize((short)5));
@@ -36,14 +36,14 @@ public class BelemetryAttributesTests
 
         var bytes = new byte[] { 1 };
         Assert.AreSame(bytes, BelemetryAttributes.Normalize(bytes));
-        CollectionAssert.AreEqual(new[] { "a" }, (string[])BelemetryAttributes.Normalize(new[] { "a" })!);
-        CollectionAssert.AreEqual(new[] { 1L }, (long[])BelemetryAttributes.Normalize(new[] { 1L })!);
-        CollectionAssert.AreEqual(new[] { 1.5 }, (double[])BelemetryAttributes.Normalize(new[] { 1.5 })!);
-        CollectionAssert.AreEqual(new[] { true }, (bool[])BelemetryAttributes.Normalize(new[] { true })!);
-        CollectionAssert.AreEqual(new[] { 1L, 2L }, (long[])BelemetryAttributes.Normalize(new[] { 1, 2 })!);
-        CollectionAssert.AreEqual(new[] { 0.5 }, (double[])BelemetryAttributes.Normalize(new[] { 0.5f })!);
-        CollectionAssert.AreEqual(new[] { "x", "y" }, (string[])BelemetryAttributes.Normalize(new List<string> { "x", "y" })!);
-        CollectionAssert.AreEqual(new[] { "1", "true" }, (string[])BelemetryAttributes.Normalize(new List<object> { 1, true })!);
+        Assert.AreSequenceEqual(new[] { "a" }, (string[])BelemetryAttributes.Normalize(new[] { "a" })!);
+        Assert.AreSequenceEqual(new[] { 1L }, (long[])BelemetryAttributes.Normalize(new[] { 1L })!);
+        Assert.AreSequenceEqual(new[] { 1.5 }, (double[])BelemetryAttributes.Normalize(new[] { 1.5 })!);
+        Assert.AreSequenceEqual(new[] { true }, (bool[])BelemetryAttributes.Normalize(new[] { true })!);
+        Assert.AreSequenceEqual(new[] { 1L, 2L }, (long[])BelemetryAttributes.Normalize(new[] { 1, 2 })!);
+        Assert.AreSequenceEqual(new[] { 0.5 }, (double[])BelemetryAttributes.Normalize(new[] { 0.5f })!);
+        Assert.AreSequenceEqual(new[] { "x", "y" }, (string[])BelemetryAttributes.Normalize(new List<string> { "x", "y" })!);
+        Assert.AreSequenceEqual(new[] { "1", "true" }, (string[])BelemetryAttributes.Normalize(new List<object> { 1, true })!);
         Assert.AreEqual("custom", BelemetryAttributes.Normalize(new Custom()));
     }
 
@@ -68,11 +68,11 @@ public class BelemetryAttributesTests
         attributes.Set("a", 2);
         Assert.AreEqual(2, attributes.Count);
         Assert.AreEqual(2L, attributes["a"]);
-        CollectionAssert.AreEqual(new[] { "a", "b" }, attributes.Select(kv => kv.Key).ToArray(), "Replacing keeps the position.");
+        Assert.AreSequenceEqual(new[] { "a", "b" }, attributes.Select(kv => kv.Key).ToArray(), "Replacing keeps the position.");
 
         attributes.SetIfAbsent("a", 3).SetIfAbsent("c", true);
         Assert.AreEqual(2L, attributes["a"]);
-        Assert.AreEqual(true, attributes["c"]);
+        Assert.IsTrue((bool?)attributes["c"]);
 
         attributes.Set("b", null);
         Assert.IsFalse(attributes.Contains("b"));

@@ -57,8 +57,8 @@ public class BitImageParamsTests : BunitTestContext
     [TestMethod]
     public void BitImageParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitImage)}", BitImageParams.ParamName);
-        Assert.AreEqual("BitParams.BitImage", BitImageParams.ParamName);
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitImage)}", new BitImageParams().Name);
+        Assert.AreEqual("BitParams.BitImage", new BitImageParams().Name);
     }
 
     [TestMethod]
@@ -135,10 +135,10 @@ public class BitImageParamsTests : BunitTestContext
 
         var style = component.Find(".bit-img").GetAttribute("style");
 
-        StringAssert.Contains(style, "width:10rem");
+        Assert.Contains("width:10rem", style!);
         // A bare number is a pixel count whichever way it arrives.
-        StringAssert.Contains(style, "height:80px");
-        StringAssert.Contains(style, "aspect-ratio:4/3");
+        Assert.Contains("height:80px", style);
+        Assert.Contains("aspect-ratio:4/3", style);
     }
 
     [TestMethod]
@@ -157,7 +157,7 @@ public class BitImageParamsTests : BunitTestContext
         Assert.IsTrue(image.ClassList.Contains("bit-img-ccv"));
         Assert.IsTrue(image.ClassList.Contains("bit-img-lan"));
         Assert.IsFalse(image.ClassList.Contains("bit-img-por"));
-        StringAssert.Contains(image.GetAttribute("style"), "object-position:top");
+        Assert.Contains("object-position:top", image.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -226,10 +226,10 @@ public class BitImageParamsTests : BunitTestContext
         Assert.IsTrue(component.Find(".bit-img-tpl").ClassList.Contains("loading-class"));
         Assert.IsTrue(component.Find(".bit-img-ovl").ClassList.Contains("content-class"));
 
-        StringAssert.Contains(component.Find(".bit-img").GetAttribute("style"), "margin:1rem");
-        StringAssert.Contains(component.Find(".bit-img-img").GetAttribute("style"), "padding:1rem");
-        StringAssert.Contains(component.Find(".bit-img-tpl").GetAttribute("style"), "color:red");
-        StringAssert.Contains(component.Find(".bit-img-ovl").GetAttribute("style"), "color:blue");
+        Assert.Contains("margin:1rem", component.Find(".bit-img").GetAttribute("style")!);
+        Assert.Contains("padding:1rem", component.Find(".bit-img-img").GetAttribute("style")!);
+        Assert.Contains("color:red", component.Find(".bit-img-tpl").GetAttribute("style")!);
+        Assert.Contains("color:blue", component.Find(".bit-img-ovl").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -256,8 +256,8 @@ public class BitImageParamsTests : BunitTestContext
         Assert.IsTrue(frame.ClassList.Contains("bit-dis"));
         Assert.AreEqual("rtl", frame.GetAttribute("dir"));
         Assert.AreEqual("cascaded-id", frame.Id);
-        StringAssert.Contains(frame.GetAttribute("style"), "color: red;");
-        StringAssert.Contains(frame.GetAttribute("style"), "visibility:hidden");
+        Assert.Contains("color: red;", frame.GetAttribute("style")!);
+        Assert.Contains("visibility:hidden", frame.GetAttribute("style")!);
         Assert.AreEqual("yes", frame.GetAttribute("data-cascaded"));
 
         // The label and the tab index name and reach the img, as the parameters of the same names do.
@@ -295,7 +295,7 @@ public class BitImageParamsTests : BunitTestContext
         // A false written by the image is a decision, so the cascaded true does not turn the shape on.
         Assert.IsFalse(frame.ClassList.Contains("bit-img-cir"));
         Assert.IsFalse(frame.ClassList.Contains("bit-img-shd"));
-        StringAssert.Contains(frame.GetAttribute("style"), "width:20rem");
+        Assert.Contains("width:20rem", frame.GetAttribute("style")!);
         Assert.IsTrue(image.ClassList.Contains("bit-img-cnt"));
         Assert.IsFalse(image.ClassList.Contains("bit-img-cvr"));
         Assert.AreEqual("eager", image.GetAttribute("loading"));

@@ -44,7 +44,7 @@ public sealed partial class BitItemPropertyReadersContractTests
     [DataRow(typeof(BitDataGridColumn<>))]
     public void TheScanShouldFindTheKnownReaders(Type component)
     {
-        Assert.IsTrue(FindReaders().Any(r => r.Type == component), $"{component.Name} reads its items by name but the scan did not find it.");
+        Assert.Contains(r => r.Type == component, FindReaders(), $"{component.Name} reads its items by name but the scan did not find it.");
     }
 
     // Every generic type declared (in any of its partial files) in a source file that reads an item's property by name.

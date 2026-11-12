@@ -21,7 +21,7 @@ public sealed class DragTests : BmotionPageTest
         await ExpectEventAsync("free:start");
         await ExpectEventAsync("free:end");
         // Once per pointer move on WebAssembly; on Blazor Server the moves are coalesced to one per frame.
-        Assert.IsTrue(await Event("free:move").CountAsync() >= 1, "OnDrag should fire while the pointer moves.");
+        Assert.IsGreaterThanOrEqualTo(1, await Event("free:move").CountAsync(), "OnDrag should fire while the pointer moves.");
         await WaitForStateAsync("#free", "s => Math.abs(s.x - 80) < 1 && Math.abs(s.y - 30) < 1");
     }
 
@@ -254,8 +254,8 @@ public sealed class DragTests : BmotionPageTest
         // its speed reaches the bound moving and the bounce spring carries it a little past before it settles.
         var furthest = samples.Max(s => s.X);
         var trace = string.Join(" ", samples.Where((_, i) => i % 3 == 0).Select(s => $"{s.Time:0}:{s.X:0.#}"));
-        Assert.IsTrue(furthest > 151, $"It braked to a stop at the bound instead of bouncing off it (furthest {furthest:0.##}): {trace}");
-        Assert.IsTrue(furthest < 150 + 60, $"It flew {furthest - 150:0.##}px past the bound: {trace}");
+        Assert.IsGreaterThan(151, furthest, $"It braked to a stop at the bound instead of bouncing off it (furthest {furthest:0.##}): {trace}");
+        Assert.IsLessThan(150 + 60, furthest, $"It flew {furthest - 150:0.##}px past the bound: {trace}");
         var rest = await WaitForRestAsync("#bounce");
         Assert.AreEqual(150, rest.X, 0.5, "and it settles on the bound");
     }
@@ -286,6 +286,6 @@ public sealed class DragTests : BmotionPageTest
         await ExpectEventAsync("momentum:end");
         // Wherever the throw ends, it ends on a multiple of 100 inside [0, 300] - and a flick goes somewhere.
         var rest = await WaitForRestAsync("#momentum");
-        Assert.IsTrue(new[] { 100.0, 200, 300 }.Any(v => Math.Abs(rest.X - v) < 0.5), $"Came to rest off the grid: {rest}");
+        Assert.Contains(v => Math.Abs(rest.X - v) < 0.5, new[] { 100.0, 200, 300 }, $"Came to rest off the grid: {rest}");
     }
 }

@@ -25,7 +25,7 @@ namespace Bit.Bswup.Tests.Mcp.TestInfra;
 /// cannot be pushed over the limit by the class that ran before it.
 /// </para>
 /// </summary>
-public sealed class McpTestServer : IAsyncDisposable
+internal sealed class McpTestServer : IAsyncDisposable
 {
     private readonly BswupApp _app;
     private readonly HttpClientTransport _transport;
@@ -87,7 +87,7 @@ public sealed class McpTestServer : IAsyncDisposable
     {
         var result = await CallAsync(tool, arguments);
 
-        Assert.IsTrue(result.IsError is not true, $"'{tool}' answered with an error: {TextOf(result)}");
+        Assert.AreNotEqual(true, result.IsError, $"'{tool}' answered with an error: {TextOf(result)}");
 
         return TextOf(result);
     }
@@ -116,7 +116,7 @@ public sealed class McpTestServer : IAsyncDisposable
     {
         var result = await Mcp.ReadResourceAsync(uri);
 
-        Assert.IsTrue(result.Contents.Count > 0, $"'{uri}' returned no contents.");
+        Assert.IsNotEmpty(result.Contents, $"'{uri}' returned no contents.");
 
         return string.Join("\n", result.Contents.OfType<TextResourceContents>().Select(content => content.Text));
     }

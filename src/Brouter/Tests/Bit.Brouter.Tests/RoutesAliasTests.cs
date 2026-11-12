@@ -40,13 +40,13 @@ public class RoutesAliasTests : BunitTestContext
     public void Setting_both_ChildContent_and_Routes_on_Brouter_throws()
     {
         var ex = Assert.ThrowsExactly<InvalidOperationException>(() => RenderComponent<RoutesConflictBrouterHost>());
-        StringAssert.Contains(ex.Message, "Routes is an alias");
+        Assert.Contains("Routes is an alias", ex.Message);
     }
 
     [TestMethod]
     public void Setting_both_ChildContent_and_Routes_on_Broute_throws()
     {
         var ex = Assert.ThrowsExactly<InvalidOperationException>(() => RenderComponent<RoutesConflictBrouteHost>());
-        StringAssert.Contains(ex.Message, "Routes is an alias");
+        Assert.Contains("Routes is an alias", ex.Message);
     }
 }

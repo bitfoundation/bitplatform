@@ -27,7 +27,7 @@ public sealed class LiveQueryTests : BsqliteTest
             }
             """);
 
-        CollectionAssert.Contains(tables, "product");
+        Assert.Contains("product", tables);
     }
 
     /// <summary>
@@ -108,7 +108,7 @@ public sealed class LiveQueryTests : BsqliteTest
             }
             """);
 
-        CollectionAssert.AreEqual(new[] { "child", "parent" }, tables);
+        Assert.AreSequenceEqual(new[] { "child", "parent" }, tables);
     }
 
     [TestMethod]
@@ -133,7 +133,7 @@ public sealed class LiveQueryTests : BsqliteTest
                 """);
 
             await ExecAsync(first, "INSERT INTO product (name) VALUES ('CrossTab')");
-            CollectionAssert.Contains(await notified, "product");
+            Assert.Contains("product", await notified);
         }
         finally
         {

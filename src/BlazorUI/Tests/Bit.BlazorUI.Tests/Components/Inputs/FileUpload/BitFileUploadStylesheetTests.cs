@@ -21,30 +21,30 @@ public class BitFileUploadStylesheetTests
 
         // An explicit Size publishes these, so they are read before the variable, which only restyles the medium
         // file upload an unset one stands for.
-        StringAssert.Contains(stylesheet, "var(--bit-upl-lbl-height, var(--bit-FileUpload-label-min-height, #{$siz-ctrl-md}))");
-        StringAssert.Contains(stylesheet, "var(--bit-upl-lbl-fontsize, var(--bit-FileUpload-label-font-size, #{$tg-fs-sm}))");
-        StringAssert.Contains(stylesheet, "var(--bit-upl-lbl-padding, var(--bit-FileUpload-label-padding, ");
-        StringAssert.Contains(stylesheet, "var(--bit-upl-ico-fontsize, var(--bit-FileUpload-label-icon-size, #{$siz-icon-md}))");
-        StringAssert.Contains(stylesheet, "var(--bit-upl-itm-fontsize, var(--bit-FileUpload-item-font-size, #{$tg-fs-sm}))");
-        StringAssert.Contains(stylesheet, "var(--bit-upl-prv-size, var(--bit-FileUpload-preview-size, #{spacing(5)}))");
-        StringAssert.Contains(stylesheet, "var(--bit-upl-btn-size, var(--bit-FileUpload-action-size, #{$siz-ctrl-md}))");
+        Assert.Contains("var(--bit-upl-lbl-height, var(--bit-FileUpload-label-min-height, #{$siz-ctrl-md}))", stylesheet);
+        Assert.Contains("var(--bit-upl-lbl-fontsize, var(--bit-FileUpload-label-font-size, #{$tg-fs-sm}))", stylesheet);
+        Assert.Contains("var(--bit-upl-lbl-padding, var(--bit-FileUpload-label-padding, ", stylesheet);
+        Assert.Contains("var(--bit-upl-ico-fontsize, var(--bit-FileUpload-label-icon-size, #{$siz-icon-md}))", stylesheet);
+        Assert.Contains("var(--bit-upl-itm-fontsize, var(--bit-FileUpload-item-font-size, #{$tg-fs-sm}))", stylesheet);
+        Assert.Contains("var(--bit-upl-prv-size, var(--bit-FileUpload-preview-size, #{spacing(5)}))", stylesheet);
+        Assert.Contains("var(--bit-upl-btn-size, var(--bit-FileUpload-action-size, #{$siz-ctrl-md}))", stylesheet);
 
         // So does an explicit Color, for every color it paints - the drag state and the tints included. The browse
         // button's rest rules read the variables its hover and press states set first, so the states move the
         // variables rather than outranking an app's class with paint of their own.
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-upl-lbl-sbg, var(--bit-upl-clr, var(--bit-FileUpload-fill-label-background, var(--bit-FileUpload-label-background, #{$clr-pri}))));");
-        StringAssert.Contains(stylesheet, "color: var(--bit-upl-lbl-sfg, var(--bit-upl-clr-txt, var(--bit-FileUpload-fill-label-color, var(--bit-FileUpload-label-color, #{$clr-pri-text}))));");
-        StringAssert.Contains(stylesheet, "--bit-upl-lbl-sbg: var(--bit-upl-clr-hover, var(--bit-FileUpload-fill-label-hover-background, var(--bit-FileUpload-label-hover-background, #{$clr-pri-hover})));");
-        StringAssert.Contains(stylesheet, "var(--bit-upl-clr-hover, var(--bit-FileUpload-outline-label-hover-background, var(--bit-FileUpload-label-hover-background, #{$clr-pri-hover})))");
-        StringAssert.Contains(stylesheet, "var(--bit-upl-clr-hover, var(--bit-FileUpload-drop-background, #{$clr-pri-hover}))");
-        StringAssert.Contains(stylesheet, "var(--bit-upl-clr-tint-8, var(--bit-FileUpload-drop-area-hover-background, #{translucent($clr-pri, 8%)}))");
-        StringAssert.Contains(stylesheet, "var(--bit-upl-clr-tint-10, var(--bit-FileUpload-action-hover-background, #{translucent($clr-pri, 10%)}))");
-        StringAssert.Contains(stylesheet, "var(--bit-upl-clr, var(--bit-FileUpload-progress-color, #{$clr-pri}))");
-        StringAssert.Contains(stylesheet, "focus-ring-own(var(--bit-upl-clr-focus, var(--bit-FileUpload-focus-color)))");
+        Assert.Contains("background-color: var(--bit-upl-lbl-sbg, var(--bit-upl-clr, var(--bit-FileUpload-fill-label-background, var(--bit-FileUpload-label-background, #{$clr-pri}))));", stylesheet);
+        Assert.Contains("color: var(--bit-upl-lbl-sfg, var(--bit-upl-clr-txt, var(--bit-FileUpload-fill-label-color, var(--bit-FileUpload-label-color, #{$clr-pri-text}))));", stylesheet);
+        Assert.Contains("--bit-upl-lbl-sbg: var(--bit-upl-clr-hover, var(--bit-FileUpload-fill-label-hover-background, var(--bit-FileUpload-label-hover-background, #{$clr-pri-hover})));", stylesheet);
+        Assert.Contains("var(--bit-upl-clr-hover, var(--bit-FileUpload-outline-label-hover-background, var(--bit-FileUpload-label-hover-background, #{$clr-pri-hover})))", stylesheet);
+        Assert.Contains("var(--bit-upl-clr-hover, var(--bit-FileUpload-drop-background, #{$clr-pri-hover}))", stylesheet);
+        Assert.Contains("var(--bit-upl-clr-tint-8, var(--bit-FileUpload-drop-area-hover-background, #{translucent($clr-pri, 8%)}))", stylesheet);
+        Assert.Contains("var(--bit-upl-clr-tint-10, var(--bit-FileUpload-action-hover-background, #{translucent($clr-pri, 10%)}))", stylesheet);
+        Assert.Contains("var(--bit-upl-clr, var(--bit-FileUpload-progress-color, #{$clr-pri}))", stylesheet);
+        Assert.Contains("focus-ring-own(var(--bit-upl-clr-focus, var(--bit-FileUpload-focus-color)))", stylesheet);
 
         // What a Color does not paint - the transparent fill of Outline and Text - stays the variable's alone.
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-upl-lbl-sbg, var(--bit-FileUpload-outline-label-background, var(--bit-FileUpload-label-background, transparent)));");
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-upl-lbl-sbg, var(--bit-FileUpload-text-label-background, var(--bit-FileUpload-label-background, transparent)));");
+        Assert.Contains("background-color: var(--bit-upl-lbl-sbg, var(--bit-FileUpload-outline-label-background, var(--bit-FileUpload-label-background, transparent)));", stylesheet);
+        Assert.Contains("background-color: var(--bit-upl-lbl-sbg, var(--bit-FileUpload-text-label-background, var(--bit-FileUpload-label-background, transparent)));", stylesheet);
 
         Assert.IsFalse(Regex.IsMatch(stylesheet, @"var\(--bit-FileUpload-[a-z-]+, var\(--bit-upl-"), "A public variable is read before the parameter it restyles the default of.");
     }
@@ -63,8 +63,7 @@ public class BitFileUploadStylesheetTests
         foreach (var name in new[] { "label-color", "label-background", "label-border-color", "label-hover-color", "label-hover-background",
                                      "label-active-background", "disabled-background", "disabled-border-color" })
         {
-            StringAssert.Contains(block, $"var(--bit-FileUpload-{variant}-{name}, var(--bit-FileUpload-{name}, ",
-                                  $"{selector} does not read --bit-FileUpload-{variant}-{name} ahead of --bit-FileUpload-{name}.");
+            Assert.Contains($"var(--bit-FileUpload-{variant}-{name}, var(--bit-FileUpload-{name}, ", block, $"{selector} does not read --bit-FileUpload-{variant}-{name} ahead of --bit-FileUpload-{name}.");
         }
 
         Assert.IsFalse(Regex.IsMatch(block, $@"var\(--bit-FileUpload-(?!{variant}-)(?:fill|outline|text)-"),
@@ -72,15 +71,14 @@ public class BitFileUploadStylesheetTests
 
         // The ShowDropArea panel, drawn the same in every variant, reads the disabled colors its variant resolved - on the
         // label itself, never on the root, so a public variable set on Styles.Label still reaches it.
-        StringAssert.DoesNotMatch(SourceFiles.GetScssDeclarations(stylesheet, $"\n{selector} {{"), new Regex(@"--bit-upl-dis-(bg|brd)\s*:"),
-                                  $"{selector} resolves the disabled colors on the root, out of reach of the label's own style.");
+        Assert.DoesNotMatchRegex(new Regex(@"--bit-upl-dis-(bg|brd)\s*:"), SourceFiles.GetScssDeclarations(stylesheet, $"\n{selector} {{"), $"{selector} resolves the disabled colors on the root, out of reach of the label's own style.");
         var label = SourceFiles.GetScssDeclarations(block, ".bit-upl-lbl {");
-        StringAssert.Contains(label, "--bit-upl-dis-bg: ");
-        StringAssert.Contains(label, "--bit-upl-dis-brd: ");
+        Assert.Contains("--bit-upl-dis-bg: ", label);
+        Assert.Contains("--bit-upl-dis-brd: ", label);
 
         var dropArea = SourceFiles.GetScssBlock(stylesheet, "\n.bit-upl.bit-upl-dra {");
-        StringAssert.Contains(dropArea, "border-color: var(--bit-upl-dis-brd, #{$clr-brd-dis});");
-        StringAssert.Contains(dropArea, "background-color: var(--bit-upl-dis-bg, #{$clr-bg-dis});");
+        Assert.Contains("border-color: var(--bit-upl-dis-brd, #{$clr-brd-dis});", dropArea);
+        Assert.Contains("background-color: var(--bit-upl-dis-bg, #{$clr-bg-dis});", dropArea);
     }
 
     [TestMethod]
@@ -97,16 +95,16 @@ public class BitFileUploadStylesheetTests
                                          "--bit-upl-lbl-padding", "--bit-upl-bab-height", "--bit-upl-bab-padding", "--bit-upl-itm-fontsize",
                                          "--bit-upl-fs-fontsize", "--bit-upl-prv-size", "--bit-upl-btn-size", "--bit-upl-ico-fontsize" })
         {
-            StringAssert.Contains(root, $"{property}: initial;");
+            Assert.Contains($"{property}: initial;", root);
         }
 
-        Assert.IsTrue(stylesheet.IndexOf("\n.bit-upl {", StringComparison.Ordinal) < stylesheet.IndexOf(".bit-upl-#{$role} {", StringComparison.Ordinal), "The role classes come before the root that resets them.");
-        Assert.IsTrue(stylesheet.IndexOf("\n.bit-upl {", StringComparison.Ordinal) < stylesheet.IndexOf("\n.bit-upl-md {", StringComparison.Ordinal), "The size classes come before the root that resets them.");
+        Assert.IsLessThan(stylesheet.IndexOf(".bit-upl-#{$role} {", StringComparison.Ordinal), stylesheet.IndexOf("\n.bit-upl {", StringComparison.Ordinal), "The role classes come before the root that resets them.");
+        Assert.IsLessThan(stylesheet.IndexOf("\n.bit-upl-md {", StringComparison.Ordinal), stylesheet.IndexOf("\n.bit-upl {", StringComparison.Ordinal), "The size classes come before the root that resets them.");
 
         // The tints are published by the role classes, so they are unset along with the rest of an unset Color.
         var roles = SourceFiles.GetScssBlock(stylesheet, ".bit-upl-#{$role} {");
-        StringAssert.Contains(roles, "--bit-upl-clr-tint-8: #{translucent(role($tokens, main), 8%)};");
-        StringAssert.Contains(roles, "--bit-upl-clr-tint-10: #{translucent(role($tokens, main), 10%)};");
+        Assert.Contains("--bit-upl-clr-tint-8: #{translucent(role($tokens, main), 8%)};", roles);
+        Assert.Contains("--bit-upl-clr-tint-10: #{translucent(role($tokens, main), 10%)};", roles);
     }
 
     [TestMethod]
@@ -117,15 +115,15 @@ public class BitFileUploadStylesheetTests
         // The label of an Outline or Text browse button, the batch buttons and a paused file's status line sit on the
         // page rather than on the role's fill, so they are drawn in the role's text color: a secondary or a warning main
         // is picked to fill a surface and is under 3:1 as text on white.
-        StringAssert.Contains(stylesheet, "color: var(--bit-upl-lbl-sfg, var(--bit-upl-clr-fg, var(--bit-FileUpload-outline-label-color, var(--bit-FileUpload-label-color, #{$clr-pri}))));");
-        StringAssert.Contains(stylesheet, "color: var(--bit-upl-lbl-sfg, var(--bit-upl-clr-fg, var(--bit-FileUpload-text-label-color, var(--bit-FileUpload-label-color, #{$clr-pri}))));");
-        StringAssert.Contains(stylesheet, "color: var(--bit-upl-clr-fg, var(--bit-FileUpload-batch-action-color, #{$clr-pri}));");
-        StringAssert.Contains(stylesheet, "color: var(--bit-upl-clr-fg, var(--bit-FileUpload-paused-color, #{$clr-pri}));");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, ".bit-upl-#{$role} {"), "--bit-upl-clr-fg: #{role-text($role, $tokens)};");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-upl.bit-inv:not(.bit-dis) {"), "--bit-upl-clr-fg: #{$clr-err-fg};");
+        Assert.Contains("color: var(--bit-upl-lbl-sfg, var(--bit-upl-clr-fg, var(--bit-FileUpload-outline-label-color, var(--bit-FileUpload-label-color, #{$clr-pri}))));", stylesheet);
+        Assert.Contains("color: var(--bit-upl-lbl-sfg, var(--bit-upl-clr-fg, var(--bit-FileUpload-text-label-color, var(--bit-FileUpload-label-color, #{$clr-pri}))));", stylesheet);
+        Assert.Contains("color: var(--bit-upl-clr-fg, var(--bit-FileUpload-batch-action-color, #{$clr-pri}));", stylesheet);
+        Assert.Contains("color: var(--bit-upl-clr-fg, var(--bit-FileUpload-paused-color, #{$clr-pri}));", stylesheet);
+        Assert.Contains("--bit-upl-clr-fg: #{role-text($role, $tokens)};", SourceFiles.GetScssBlock(stylesheet, ".bit-upl-#{$role} {"));
+        Assert.Contains("--bit-upl-clr-fg: #{$clr-err-fg};", SourceFiles.GetScssBlock(stylesheet, "\n.bit-upl.bit-inv:not(.bit-dis) {"));
 
         // Only the text: the outline, the drop area's icon and the progress bar keep the role's main.
-        StringAssert.Contains(stylesheet, "border-color: var(--bit-upl-lbl-sbr, var(--bit-upl-clr, var(--bit-FileUpload-outline-label-border-color, ");
-        StringAssert.Contains(stylesheet, "color: var(--bit-upl-clr, var(--bit-FileUpload-drop-area-icon-color, #{$clr-pri}));");
+        Assert.Contains("border-color: var(--bit-upl-lbl-sbr, var(--bit-upl-clr, var(--bit-FileUpload-outline-label-border-color, ", stylesheet);
+        Assert.Contains("color: var(--bit-upl-clr, var(--bit-FileUpload-drop-area-icon-color, #{$clr-pri}));", stylesheet);
     }
 }

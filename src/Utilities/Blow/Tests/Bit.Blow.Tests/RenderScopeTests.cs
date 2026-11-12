@@ -58,10 +58,10 @@ public class RenderScopeTests : BunitContext
 
         await cut.InvokeAsync(() => cut.Instance.SetViewport(new BlowViewport(40, 30, 1.5)));
 
-        CollectionAssert.AreEqual(nodes, Counts<BlowNodeRenderer>(cut));
-        CollectionAssert.AreEqual(edges, Counts<BlowEdgeRenderer>(cut));
-        CollectionAssert.AreEqual(handles, Counts<BlowHandle>(cut));
-        StringAssert.Contains(cut.Find(".bit-blow-viewport").GetAttribute("style"), "translate(40px, 30px) scale(1.5)");
+        Assert.AreSequenceEqual(nodes, Counts<BlowNodeRenderer>(cut));
+        Assert.AreSequenceEqual(edges, Counts<BlowEdgeRenderer>(cut));
+        Assert.AreSequenceEqual(handles, Counts<BlowHandle>(cut));
+        Assert.Contains("translate(40px, 30px) scale(1.5)", cut.Find(".bit-blow-viewport").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -102,11 +102,11 @@ public class RenderScopeTests : BunitContext
         pane.PointerMove(new PointerEventArgs { PointerId = 1, ClientX = 380, ClientY = 40 });
 
         // Starting the drag selects the node: that re-renders everything, once.
-        CollectionAssert.AreEqual(new[] { true, true, true }, Rendered(before, started));
-        CollectionAssert.AreEqual(new[] { true, true }, Rendered(edgesBefore, edgesStarted));
+        Assert.AreSequenceEqual(new[] { true, true, true }, Rendered(before, started));
+        Assert.AreSequenceEqual(new[] { true, true }, Rendered(edgesBefore, edgesStarted));
         // Each move re-renders the node being moved, and the edge attached to it - nothing else.
-        CollectionAssert.AreEqual(new[] { false, false, true }, Rendered(started, Counts<BlowNodeRenderer>(cut)));
-        CollectionAssert.AreEqual(new[] { false, true }, Rendered(edgesStarted, Counts<BlowEdgeRenderer>(cut)));
+        Assert.AreSequenceEqual(new[] { false, false, true }, Rendered(started, Counts<BlowNodeRenderer>(cut)));
+        Assert.AreSequenceEqual(new[] { false, true }, Rendered(edgesStarted, Counts<BlowEdgeRenderer>(cut)));
         Assert.AreEqual(new BlowXYPosition(380, 40), cut.Instance.GetNode("c")!.Position);
     }
 
@@ -126,8 +126,8 @@ public class RenderScopeTests : BunitContext
 
         // The node shows it is no longer being dragged; nothing else in the graph changed, so nothing else renders.
         Assert.AreEqual(1, stops);
-        CollectionAssert.AreEqual(new[] { false, false, true }, Rendered(dragged, Counts<BlowNodeRenderer>(cut)));
-        CollectionAssert.AreEqual(new[] { false, false }, Rendered(edges, Counts<BlowEdgeRenderer>(cut)));
+        Assert.AreSequenceEqual(new[] { false, false, true }, Rendered(dragged, Counts<BlowNodeRenderer>(cut)));
+        Assert.AreSequenceEqual(new[] { false, false }, Rendered(edges, Counts<BlowEdgeRenderer>(cut)));
         Assert.DoesNotContain("dragging", cut.FindAll(".bit-blow-node")[2].ClassList);
         Assert.AreEqual(new BlowXYPosition(340, 20), cut.Instance.GetNode("c")!.Position);
     }
@@ -154,9 +154,9 @@ public class RenderScopeTests : BunitContext
 
         cut.Find(".bit-blow").PointerMove(new PointerEventArgs { PointerId = 1, ClientX = 150, ClientY = 150 });
 
-        CollectionAssert.AreEqual(before, Counts<BlowNodeRenderer>(cut));
-        CollectionAssert.AreEqual(handles, Counts<BlowHandle>(cut));
-        Assert.HasCount(1, cut.FindAll(".bit-blow-connectionline"));
+        Assert.AreSequenceEqual(before, Counts<BlowNodeRenderer>(cut));
+        Assert.AreSequenceEqual(handles, Counts<BlowHandle>(cut));
+        Assert.ContainsSingle(cut.FindAll(".bit-blow-connectionline"));
     }
 
     [TestMethod]
@@ -192,7 +192,7 @@ public class RenderScopeTests : BunitContext
 
         await cut.InvokeAsync(() => cut.Instance.ZoomTo(2));
 
-        StringAssert.Contains(cut.Find(".bit-blow-node-toolbar").GetAttribute("style"), "scale(0.5)");
+        Assert.Contains("scale(0.5)", cut.Find(".bit-blow-node-toolbar").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -219,7 +219,7 @@ public class RenderScopeTests : BunitContext
 
         cut.InvokeAsync(() => cut.Instance.Refresh(remeasure: false));
 
-        CollectionAssert.AreEqual(new[] { true, true, true }, Rendered(before, Counts<BlowNodeRenderer>(cut)));
+        Assert.AreSequenceEqual(new[] { true, true, true }, Rendered(before, Counts<BlowNodeRenderer>(cut)));
     }
 
     [TestMethod]

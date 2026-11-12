@@ -19,12 +19,12 @@ public class BitDropdownE2ETests : BitDropdownE2ETestBase
         var html = await response.TextAsync();
 
         Assert.IsTrue(response.Ok);
-        StringAssert.Contains(html, "id=\"dd-single\"");
-        StringAssert.Contains(html, "bit-drp-wrp");
-        StringAssert.Contains(html, "role=\"combobox\"");
-        StringAssert.Contains(html, "Select an item");
+        Assert.Contains("id=\"dd-single\"", html);
+        Assert.Contains("bit-drp-wrp", html);
+        Assert.Contains("role=\"combobox\"", html);
+        Assert.Contains("Select an item", html);
         // The status line is still the prerendered one: the dropdown is in the HTML before any circuit exists.
-        StringAssert.Contains(html, "<span id=\"status\">Loading</span>");
+        Assert.Contains("<span id=\"status\">Loading</span>", html);
 
         await OpenAsync(Url);
 
@@ -185,7 +185,7 @@ public class BitDropdownE2ETests : BitDropdownE2ETestBase
 
         var labelId = await label.GetAttributeAsync("id");
         var labelledBy = await Trigger("dd-single").GetAttributeAsync("aria-labelledby");
-        StringAssert.StartsWith(labelledBy, labelId);
+        Assert.StartsWith(labelId, labelledBy);
 
         await label.ClickAsync();
 
@@ -688,7 +688,7 @@ public class BitDropdownE2ETests : BitDropdownE2ETestBase
         await ScriptClickAsync("#btn-m-focus");
 
         await Expect(Trigger("dd-methods")).ToBeFocusedAsync();
-        Assert.IsTrue(await Page.EvaluateAsync<double>("() => window.scrollY") > 0, "A plain FocusAsync scrolls the field into view.");
+        Assert.IsGreaterThan(0, await Page.EvaluateAsync<double>("() => window.scrollY"), "A plain FocusAsync scrolls the field into view.");
     }
 
     [TestMethod]
@@ -768,7 +768,7 @@ public class BitDropdownE2ETests : BitDropdownE2ETestBase
 
         await Page.Locator("#btn-vis-hidden").ClickAsync();
         await Expect(root).ToHaveCSSAsync("visibility", "hidden");
-        Assert.IsTrue((await BoxAsync(root)).Height > 0, "A hidden dropdown keeps its room.");
+        Assert.IsGreaterThan(0, (await BoxAsync(root)).Height, "A hidden dropdown keeps its room.");
 
         await Page.Locator("#btn-vis-collapsed").ClickAsync();
         await Expect(root).ToHaveCSSAsync("display", "none");
@@ -788,7 +788,7 @@ public class BitDropdownE2ETests : BitDropdownE2ETestBase
 
         var posted = await Page.EvaluateAsync<string[]>("() => new FormData(document.getElementById('native-form')).getAll('fruit')");
 
-        CollectionAssert.AreEqual(new[] { "f-app", "v-car" }, posted);
+        Assert.AreSequenceEqual(new[] { "f-app", "v-car" }, posted);
     }
 
     [TestMethod]

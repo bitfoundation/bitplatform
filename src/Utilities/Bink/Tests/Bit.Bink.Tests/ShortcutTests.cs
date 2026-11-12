@@ -1,4 +1,4 @@
-using System.Numerics;
+﻿using System.Numerics;
 using Bunit;
 
 namespace Bit.Bink.Tests;
@@ -90,7 +90,7 @@ public sealed class ShortcutTests : BunitContext
 
         canvas.WaitForAssertion(() => Assert.Contains(i => i.Identifier == "attach", module.Invocations));
         var options = (BinkInteropOptions)module.Invocations.First(i => i.Identifier == "attach").Arguments[2]!;
-        CollectionAssert.AreEqual(new[] { "Ctrl+A", "Delete" }, options.DisabledShortcuts);
+        Assert.AreSequenceEqual(new[] { "Ctrl+A", "Delete" }, options.DisabledShortcuts);
 
         int sent = module.Invocations.Count(i => i.Identifier == "setOptions");
         canvas.Render(p => p.Add(c => c.Height, "320px"));

@@ -1,4 +1,4 @@
-using System.Numerics;
+﻿using System.Numerics;
 
 namespace Bit.Bink.Tests;
 
@@ -28,15 +28,15 @@ public sealed class EditingFeatureTests
         using var history = new BinkHistoryManager(document);
 
         Assert.IsTrue(document.Arrange([ids[3], ids[1]], BinkArrangement.BringToFront));
-        CollectionAssert.AreEqual(new[] { ids[0], ids[2], ids[4], ids[5], ids[1], ids[3] }, Order(document));
+        Assert.AreSequenceEqual(new[] { ids[0], ids[2], ids[4], ids[5], ids[1], ids[3] }, Order(document));
         Assert.AreEqual(1, history.UndoCount, "An arrangement is one undo step.");
 
         Assert.IsTrue(document.Arrange([ids[5], ids[4]], BinkArrangement.SendToBack));
-        CollectionAssert.AreEqual(new[] { ids[4], ids[5], ids[0], ids[2], ids[1], ids[3] }, Order(document));
+        Assert.AreSequenceEqual(new[] { ids[4], ids[5], ids[0], ids[2], ids[1], ids[3] }, Order(document));
 
         Assert.IsTrue(history.Undo());
         Assert.IsTrue(history.Undo());
-        CollectionAssert.AreEqual(ids, Order(document));
+        Assert.AreSequenceEqual(ids, Order(document));
     }
 
     [TestMethod]
@@ -56,10 +56,10 @@ public sealed class EditingFeatureTests
     {
         (BinkDocument document, List<Guid> ids) = Stack(5);
         Assert.IsTrue(document.Arrange([ids[0], ids[1]], BinkArrangement.BringForward));
-        CollectionAssert.AreEqual(new[] { ids[2], ids[0], ids[1], ids[3], ids[4] }, Order(document));
+        Assert.AreSequenceEqual(new[] { ids[2], ids[0], ids[1], ids[3], ids[4] }, Order(document));
 
         Assert.IsTrue(document.Arrange([ids[4], ids[1]], BinkArrangement.SendBackward));
-        CollectionAssert.AreEqual(new[] { ids[2], ids[1], ids[0], ids[4], ids[3] }, Order(document));
+        Assert.AreSequenceEqual(new[] { ids[2], ids[1], ids[0], ids[4], ids[3] }, Order(document));
     }
 
     [TestMethod]
@@ -76,7 +76,7 @@ public sealed class EditingFeatureTests
         Assert.IsTrue(document.Arrange([a.Id, c.Id], BinkArrangement.BringToFront));
         Assert.AreEqual(document.Layers[0].Id, document.GetLayerOf(a.Id)!.Id);
         Assert.AreEqual(top.Id, document.GetLayerOf(c.Id)!.Id);
-        CollectionAssert.AreEqual(new[] { b.Id, a.Id }, Order(document));
+        Assert.AreSequenceEqual(new[] { b.Id, a.Id }, Order(document));
     }
 
     [TestMethod]
@@ -93,7 +93,7 @@ public sealed class EditingFeatureTests
         Assert.AreEqual(document.GetElement(ids[0]).Bounds.Left + 10, copies[0].Bounds.Left, 0.001f);
         Assert.AreEqual(document.GetElement(ids[0]).Bounds.Top + 20, copies[0].Bounds.Top, 0.001f);
         Assert.AreEqual(document.GetElement(ids[2]).Bounds.Left + 10, copies[1].Bounds.Left, 0.001f);
-        CollectionAssert.AreEqual(new[] { copies[0].Id, copies[1].Id }, Order(document).TakeLast(2).ToList());
+        Assert.AreSequenceEqual(new[] { copies[0].Id, copies[1].Id }, Order(document).TakeLast(2).ToList());
 
         Assert.AreEqual(1, history.UndoCount);
         Assert.IsTrue(history.Undo());
@@ -146,7 +146,7 @@ public sealed class EditingFeatureTests
         string saved = BinkSerializer.Serialize(document);
         Assert.IsTrue(BinkClipboard.IsPayload(saved));
         Assert.IsTrue(BinkClipboard.TryDeserialize(saved, out IReadOnlyList<BinkElement> pasted, out _));
-        Assert.AreEqual(document.Layers[0].Count, pasted.Count);
+        Assert.HasCount(document.Layers[0].Count, pasted);
     }
 
     [TestMethod]
@@ -164,7 +164,7 @@ public sealed class EditingFeatureTests
         Vector2[] lasso = [new(0, 0), new(100, 0), new(100, 100), new(0, 100)];
 
         List<BinkElement> found = BinkDocumentQuery.FindInPolygon(document, lasso);
-        CollectionAssert.AreEquivalent(new[] { inside.Id, box.Id }, found.Select(e => e.Id).ToList());
+        Assert.AreSequenceEqual(new[] { inside.Id, box.Id }, found.Select(e => e.Id).ToList(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
         // Touching is enough at zero coverage.
         Assert.Contains(grazed, BinkDocumentQuery.FindInPolygon(document, lasso, coverage: 0f));
@@ -194,7 +194,7 @@ public sealed class EditingFeatureTests
 
         // A loop around the word that passes close to the line above it.
         context.Gesture(tool, BinkPointerKind.Mouse, (95, 95, 0.5f), (170, 95, 0.5f), (175, 120, 0.5f), (170, 145, 0.5f), (95, 145, 0.5f), (90, 100, 0.5f));
-        CollectionAssert.AreEqual(new[] { word.Id }, context.Selection.Ids.ToList());
+        Assert.AreSequenceEqual(new[] { word.Id }, context.Selection.Ids.ToList());
         Assert.IsEmpty(tool.Lasso);
     }
 
@@ -284,8 +284,16 @@ public sealed class EditingFeatureTests
         for (int i = 1; i <= 60; i++) points.Add((100 + i * 2, 120, 0.5f));
         BinkInputSample Sample(int index, BinkPointerPhase phase) => new()
         {
-            PointerId = 1, Kind = BinkPointerKind.Mouse, Phase = phase, X = points[index].Item1, Y = points[index].Item2,
-            Pressure = 0.5f, Timestamp = index * 8, Buttons = phase == BinkPointerPhase.Up ? 0 : 1, IsPrimary = true, Alt = true,
+            PointerId = 1,
+            Kind = BinkPointerKind.Mouse,
+            Phase = phase,
+            X = points[index].Item1,
+            Y = points[index].Item2,
+            Pressure = 0.5f,
+            Timestamp = index * 8,
+            Buttons = phase == BinkPointerPhase.Up ? 0 : 1,
+            IsPrimary = true,
+            Alt = true,
         };
         tool.OnPointerDown(context, Sample(0, BinkPointerPhase.Down));
         for (int i = 1; i < points.Count - 1; i++) tool.OnPointerMove(context, Sample(i, BinkPointerPhase.Move));
@@ -320,7 +328,7 @@ public sealed class EditingFeatureTests
         tool.OnKeyDown(context, new BinkToolKeyEvent("Escape", false, false, false));
 
         Assert.AreEqual(1, context.Document.ElementCount);
-        CollectionAssert.AreEqual(new[] { box.Id }, context.Selection.Ids.ToList());
+        Assert.AreSequenceEqual(new[] { box.Id }, context.Selection.Ids.ToList());
         Assert.IsFalse(context.History.CanUndo);
     }
 
@@ -340,7 +348,13 @@ public sealed class EditingFeatureTests
         Vector2 to = center + Vector2.Transform(handle - center, Matrix3x2.CreateRotation(angle));
         BinkInputSample Sample(Vector2 p, BinkPointerPhase phase) => new()
         {
-            PointerId = 1, Kind = BinkPointerKind.Mouse, Phase = phase, X = p.X, Y = p.Y, Buttons = phase == BinkPointerPhase.Up ? 0 : 1, Shift = true,
+            PointerId = 1,
+            Kind = BinkPointerKind.Mouse,
+            Phase = phase,
+            X = p.X,
+            Y = p.Y,
+            Buttons = phase == BinkPointerPhase.Up ? 0 : 1,
+            Shift = true,
         };
         Assert.IsTrue(tool.OnPointerDown(context, Sample(handle, BinkPointerPhase.Down)));
         tool.OnPointerMove(context, Sample(to, BinkPointerPhase.Move));

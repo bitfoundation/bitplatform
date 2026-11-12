@@ -19,15 +19,15 @@ public class BitChartParamsTests : BunitTestContext
 
         var charts = component.FindAll(".bit-cht");
 
-        Assert.AreEqual(4, charts.Count);
+        Assert.HasCount(4, charts);
 
         // The first chart takes everything from the cascading parameters.
         var first = charts[0];
         Assert.IsTrue(first.ClassList.Contains("cascaded"));
         Assert.IsTrue(first.ClassList.Contains("cascaded-root"));
-        StringAssert.Contains(first.GetAttribute("style"), "height:200px");
-        StringAssert.Contains(first.GetAttribute("style"), "width:50%");
-        StringAssert.Contains(first.GetAttribute("style"), "--bit-Chart-grid-color: red");
+        Assert.Contains("height:200px", first.GetAttribute("style")!);
+        Assert.Contains("width:50%", first.GetAttribute("style")!);
+        Assert.Contains("--bit-Chart-grid-color: red", first.GetAttribute("style")!);
         Assert.AreEqual("Shared title", first.QuerySelector("svg")!.GetAttribute("aria-label"));
         Assert.IsNull(first.QuerySelector("table"), "GenerateTable=false is cascaded");
         Assert.IsNotNull(first.QuerySelector(".cascaded-legend"));
@@ -40,16 +40,16 @@ public class BitChartParamsTests : BunitTestContext
         Assert.IsTrue(second.ClassList.Contains("own-root"));
         Assert.IsFalse(second.ClassList.Contains("cascaded"));
         Assert.IsFalse(second.ClassList.Contains("cascaded-root"));
-        StringAssert.Contains(second.GetAttribute("style"), "height:120px");
+        Assert.Contains("height:120px", second.GetAttribute("style")!);
         Assert.AreEqual("Own legend", second.QuerySelector(".bit-cht-lgd")!.GetAttribute("aria-label"));
         Assert.IsNotNull(second.QuerySelector("table"));
         Assert.AreEqual(0, second.QuerySelectorAll(".bit-cht-data rect").Length, "its own Line type draws no bars");
 
         // The third one has no data, so the cascaded empty-state text shows.
-        StringAssert.Contains(charts[2].QuerySelector(".bit-cht-nodata")!.TextContent, "Nothing yet");
+        Assert.Contains("Nothing yet", charts[2].QuerySelector(".bit-cht-nodata")!.TextContent);
 
         // The fourth one is loading, and says so with the cascaded label.
-        StringAssert.Contains(charts[3].QuerySelector(".bit-cht-ldg")!.TextContent, "Cascaded loading");
+        Assert.Contains("Cascaded loading", charts[3].QuerySelector(".bit-cht-ldg")!.TextContent);
     }
 
     // What makes one chart the one it is: its data and config, its description, whether it is loading, and its callbacks.
@@ -103,8 +103,8 @@ public class BitChartParamsTests : BunitTestContext
     [TestMethod]
     public void BitChartParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitChart)}", BitChartParams.ParamName);
-        Assert.AreEqual("BitParams.BitChart", BitChartParams.ParamName);
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitChart)}", new BitChartParams().Name);
+        Assert.AreEqual("BitParams.BitChart", new BitChartParams().Name);
     }
 
     [TestMethod]
@@ -142,10 +142,10 @@ public class BitChartParamsTests : BunitTestContext
         };
 
         var loading = RenderWithParams(chartParams, builder => builder.AddAttribute(1, nameof(BitChart.IsLoading), true));
-        Assert.AreEqual(1, loading.FindAll(".bit-cht-ldg .cascaded-loading").Count);
+        Assert.ContainsSingle(loading.FindAll(".bit-cht-ldg .cascaded-loading"));
 
         var empty = RenderWithParams(chartParams);
-        Assert.AreEqual(1, empty.FindAll(".bit-cht-nodata .cascaded-nodata").Count);
+        Assert.ContainsSingle(empty.FindAll(".bit-cht-nodata .cascaded-nodata"));
     }
 
     [TestMethod]
@@ -159,11 +159,11 @@ public class BitChartParamsTests : BunitTestContext
             });
         });
 
-        Assert.AreEqual(5, component.FindAll("table tbody tr").Count);
+        Assert.HasCount(5, component.FindAll("table tbody tr"));
 
         var columns = RenderWithParams(new BitChartParams { MaxTableColumns = 4 }, builder => builder.AddAttribute(1, nameof(BitChart.Data), LongSeries(20)));
 
-        Assert.AreEqual(4, columns.FindAll("table tbody td").Count);
+        Assert.HasCount(4, columns.FindAll("table tbody td"));
     }
 
     [TestMethod]
@@ -178,8 +178,8 @@ public class BitChartParamsTests : BunitTestContext
 
         var hint = component.Find($"#{component.Find("svg").GetAttribute("aria-describedby")!.Split(' ')[0]}").TextContent;
 
-        StringAssert.Contains(hint, "Cascaded navigation hint.");
-        StringAssert.Contains(hint, "Cascaded zoom hint.");
+        Assert.Contains("Cascaded navigation hint.", hint);
+        Assert.Contains("Cascaded zoom hint.", hint);
     }
 
     [TestMethod]
@@ -192,7 +192,7 @@ public class BitChartParamsTests : BunitTestContext
 
         component.FindAll(".bit-cht-data > g")[0].MouseEnter();
 
-        Assert.AreEqual(1, component.FindAll(".bit-cht-tt-custom .cascaded-tt").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-cht-tt-custom .cascaded-tt"));
     }
 
     [TestMethod]
@@ -210,12 +210,12 @@ public class BitChartParamsTests : BunitTestContext
             builder.AddAttribute(3, nameof(BitChart.NavigationHint), "Own hint.");
         });
 
-        Assert.AreEqual(7, component.FindAll("table tbody td").Count);
+        Assert.HasCount(7, component.FindAll("table tbody td"));
 
         var hint = component.Find($"#{component.Find("svg").GetAttribute("aria-describedby")!.Split(' ')[0]}").TextContent;
 
-        StringAssert.Contains(hint, "Own hint.");
-        Assert.IsFalse(hint.Contains("Cascaded navigation hint."));
+        Assert.Contains("Own hint.", hint);
+        Assert.DoesNotContain("Cascaded navigation hint.", hint);
 
         // An own null is a value too: it turns the hint off against a cascaded one.
         var silent = RenderWithParams(new BitChartParams { NavigationHint = "Cascaded navigation hint." }, builder =>
@@ -236,8 +236,8 @@ public class BitChartParamsTests : BunitTestContext
 
         // The defaults of a chart on its own: a line chart, full width, with its table and its English hint.
         Assert.AreEqual(0, root.QuerySelectorAll(".bit-cht-data rect").Length);
-        StringAssert.Contains(root.GetAttribute("style"), "width:100%");
+        Assert.Contains("width:100%", root.GetAttribute("style")!);
         Assert.IsNotNull(root.QuerySelector("table"));
-        StringAssert.Contains(root.TextContent, "arrow");
+        Assert.Contains("arrow", root.TextContent);
     }
 }

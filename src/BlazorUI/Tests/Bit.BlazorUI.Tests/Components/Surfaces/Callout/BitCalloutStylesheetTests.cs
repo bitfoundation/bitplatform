@@ -34,7 +34,7 @@ public class BitCalloutStylesheetTests
 
         foreach (var variable in PublicVariables)
         {
-            Assert.IsTrue(stylesheet.Contains($"var({variable}, "), $"{variable} is never read with a fallback.");
+            Assert.Contains($"var({variable}, ", stylesheet, $"{variable} is never read with a fallback.");
             Assert.IsFalse(Regex.IsMatch(stylesheet, $@"(^|[\s;{{]){Regex.Escape(variable)}\s*:", RegexOptions.Multiline), $"{variable} is declared, which stops it from inheriting.");
         }
 
@@ -53,7 +53,7 @@ public class BitCalloutStylesheetTests
 
         var documented = Regex.Matches(demo, @"Name = ""(--bit-Callout-[a-z-]+)""").Select(m => m.Groups[1].Value).ToArray();
 
-        CollectionAssert.AreEquivalent(PublicVariables, documented);
+        Assert.AreSequenceEqual(PublicVariables, documented, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -62,19 +62,19 @@ public class BitCalloutStylesheetTests
         var stylesheet = ReadStylesheet();
 
         // The beak is a sibling of the callout, so both include the one block the surface variables resolve in.
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-clo-cal {"), "@include clo-surface-vars;");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-clo-arw {"), "@include clo-surface-vars;");
+        Assert.Contains("@include clo-surface-vars;", SourceFiles.GetScssBlock(stylesheet, "\n.bit-clo-cal {"));
+        Assert.Contains("@include clo-surface-vars;", SourceFiles.GetScssBlock(stylesheet, "\n.bit-clo-arw {"));
 
         foreach (var selector in new[] { "\n.bit-clo-cal {", "\n.bit-clo-arw {" })
         {
             var block = SourceFiles.GetScssBlock(stylesheet, selector);
 
-            StringAssert.Contains(block, "background-color: var(--bit-clo-bg);");
-            StringAssert.Contains(block, "border: var(--bit-clo-brd-w) $shp-border-style var(--bit-clo-brd-c);");
+            Assert.Contains("background-color: var(--bit-clo-bg);", block);
+            Assert.Contains("border: var(--bit-clo-brd-w) $shp-border-style var(--bit-clo-brd-c);", block);
         }
 
         // ArrowSize is written inline as the private variable, which wins over the one a theme sets.
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-clo-arw {"), "width: var(--bit-clo-arw-siz, var(--bit-Callout-arrow-size, #{spacing(1.5)}));");
+        Assert.Contains("width: var(--bit-clo-arw-siz, var(--bit-Callout-arrow-size, #{spacing(1.5)}));", SourceFiles.GetScssBlock(stylesheet, "\n.bit-clo-arw {"));
     }
 
     [TestMethod]
@@ -84,11 +84,11 @@ public class BitCalloutStylesheetTests
 
         // Background and Border repaint the private variables on the element itself, after the block that resolves
         // them from the public ones, so a value inherited from :root does not undo the parameter.
-        Assert.IsTrue(stylesheet.IndexOf("\n.bit-clo-cal {", System.StringComparison.Ordinal) < stylesheet.IndexOf("\n.bit-clo-bsg {", System.StringComparison.Ordinal));
+        Assert.IsLessThan(stylesheet.IndexOf("\n.bit-clo-bsg {", System.StringComparison.Ordinal), stylesheet.IndexOf("\n.bit-clo-cal {", System.StringComparison.Ordinal));
 
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-clo-bsg {"), "--bit-clo-bg: #{$clr-bg-sec};");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-clo-brd {"), "--bit-clo-brd-w: var(--bit-Callout-border-width, #{$shp-border-width});");
-        StringAssert.Contains(stylesheet, "&.bit-clo-nsh {\n        box-shadow: none;");
+        Assert.Contains("--bit-clo-bg: #{$clr-bg-sec};", SourceFiles.GetScssBlock(stylesheet, "\n.bit-clo-bsg {"));
+        Assert.Contains("--bit-clo-brd-w: var(--bit-Callout-border-width, #{$shp-border-width});", SourceFiles.GetScssBlock(stylesheet, "\n.bit-clo-brd {"));
+        Assert.Contains("&.bit-clo-nsh {\n        box-shadow: none;", stylesheet);
     }
 
     [TestMethod]
@@ -97,7 +97,7 @@ public class BitCalloutStylesheetTests
         var stylesheet = ReadStylesheet();
 
         // Forced colors strip the elevation, which is all that tells a borderless callout apart from the page.
-        StringAssert.Contains(stylesheet, "@media (forced-colors: active) {\n    .bit-clo-cal,\n    .bit-clo-arw {\n        border-color: CanvasText;");
+        Assert.Contains("@media (forced-colors: active) {\n    .bit-clo-cal,\n    .bit-clo-arw {\n        border-color: CanvasText;", stylesheet);
     }
 
     private static string ReadStylesheet()

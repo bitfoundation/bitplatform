@@ -136,8 +136,12 @@ public sealed class ShapeRecognitionTests
     [TestMethod]
     public void A_loop_that_overshoots_or_falls_short_of_its_start_still_closes()
     {
-        Assert.AreEqual(BinkShapeKind.Ellipse, BinkShapeRecognizer.Recognize(Ellipse(new(100, 100), 60, 40, sweep: 1.12f))?.Kind);
-        Assert.AreEqual(BinkShapeKind.Ellipse, BinkShapeRecognizer.Recognize(Ellipse(new(100, 100), 60, 40, sweep: 0.94f))?.Kind);
+        var overshot = BinkShapeRecognizer.Recognize(Ellipse(new(100, 100), 60, 40, sweep: 1.12f));
+        var undershot = BinkShapeRecognizer.Recognize(Ellipse(new(100, 100), 60, 40, sweep: 0.94f));
+        Assert.IsNotNull(overshot);
+        Assert.IsNotNull(undershot);
+        Assert.AreEqual(BinkShapeKind.Ellipse, overshot.Kind);
+        Assert.AreEqual(BinkShapeKind.Ellipse, undershot.Kind);
     }
 
     [TestMethod]
@@ -157,8 +161,12 @@ public sealed class ShapeRecognitionTests
         Vector2 far = new(3_000_000f, 3_000_000f);
         Vector2[] box = [.. Box.Select(p => p + far)];
 
-        Assert.AreEqual(BinkShapeKind.Rectangle, BinkShapeRecognizer.Recognize(Box)?.Kind);
-        Assert.AreEqual(BinkShapeKind.Rectangle, BinkShapeRecognizer.Recognize(box)?.Kind);
+        var nearResult = BinkShapeRecognizer.Recognize(Box);
+        var farResult = BinkShapeRecognizer.Recognize(box);
+        Assert.IsNotNull(nearResult);
+        Assert.IsNotNull(farResult);
+        Assert.AreEqual(BinkShapeKind.Rectangle, nearResult.Kind);
+        Assert.AreEqual(BinkShapeKind.Rectangle, farResult.Kind);
     }
 
     [TestMethod]
@@ -265,9 +273,11 @@ public sealed class ShapeRecognitionTests
         BinkShapeRecognition? a = BinkShapeRecognizer.Recognize(sparse);
         BinkShapeRecognition? b = BinkShapeRecognizer.Recognize(dense);
 
-        Assert.AreEqual(BinkShapeKind.Rectangle, a?.Kind);
-        Assert.AreEqual(BinkShapeKind.Rectangle, b?.Kind);
-        Assert.AreEqual(a!.Frame.Width, b!.Frame.Width, 3f);
+        Assert.IsNotNull(a);
+        Assert.IsNotNull(b);
+        Assert.AreEqual(BinkShapeKind.Rectangle, a.Kind);
+        Assert.AreEqual(BinkShapeKind.Rectangle, b.Kind);
+        Assert.AreEqual(a.Frame.Width, b.Frame.Width, 3f);
     }
 
     [TestMethod]
@@ -281,11 +291,21 @@ public sealed class ShapeRecognitionTests
             {
                 float wobble = size * 0.012f;
                 Vector2 o = new(100, 100);
-                Assert.AreEqual(BinkShapeKind.Rectangle, BinkShapeRecognizer.Recognize(Trace([o, o + new Vector2(size, 0), o + new Vector2(size, size * 0.6f), o + new Vector2(0, size * 0.6f)], true, wobble: wobble, seed: seed))?.Kind, $"rectangle {seed} {size}");
-                Assert.AreEqual(BinkShapeKind.Ellipse, BinkShapeRecognizer.Recognize(Ellipse(o, size / 2, size / 3, wobble: wobble, seed: seed))?.Kind, $"ellipse {seed} {size}");
-                Assert.AreEqual(BinkShapeKind.Triangle, BinkShapeRecognizer.Recognize(Trace([o, o + new Vector2(size, size * 0.2f), o + new Vector2(size * 0.3f, size)], true, wobble: wobble, seed: seed))?.Kind, $"triangle {seed} {size}");
-                Assert.AreEqual(BinkShapeKind.Line, BinkShapeRecognizer.Recognize(Trace([o, o + new Vector2(size, size * 0.7f)], false, perSide: 50, wobble: wobble, seed: seed))?.Kind, $"line {seed} {size}");
-                Assert.AreEqual(BinkShapeKind.Arrow, BinkShapeRecognizer.Recognize(Trace([o, o + new Vector2(size, 0), o + new Vector2(size * 0.85f, -size * 0.1f)], false, perSide: 30, wobble: wobble, seed: seed))?.Kind, $"one-barbed arrow {seed} {size}");
+                var rectangle = BinkShapeRecognizer.Recognize(Trace([o, o + new Vector2(size, 0), o + new Vector2(size, size * 0.6f), o + new Vector2(0, size * 0.6f)], true, wobble: wobble, seed: seed));
+                Assert.IsNotNull(rectangle, $"rectangle {seed} {size}");
+                Assert.AreEqual(BinkShapeKind.Rectangle, rectangle.Kind, $"rectangle {seed} {size}");
+                var ellipse = BinkShapeRecognizer.Recognize(Ellipse(o, size / 2, size / 3, wobble: wobble, seed: seed));
+                Assert.IsNotNull(ellipse, $"ellipse {seed} {size}");
+                Assert.AreEqual(BinkShapeKind.Ellipse, ellipse.Kind, $"ellipse {seed} {size}");
+                var triangle = BinkShapeRecognizer.Recognize(Trace([o, o + new Vector2(size, size * 0.2f), o + new Vector2(size * 0.3f, size)], true, wobble: wobble, seed: seed));
+                Assert.IsNotNull(triangle, $"triangle {seed} {size}");
+                Assert.AreEqual(BinkShapeKind.Triangle, triangle.Kind, $"triangle {seed} {size}");
+                var line = BinkShapeRecognizer.Recognize(Trace([o, o + new Vector2(size, size * 0.7f)], false, perSide: 50, wobble: wobble, seed: seed));
+                Assert.IsNotNull(line, $"line {seed} {size}");
+                Assert.AreEqual(BinkShapeKind.Line, line.Kind, $"line {seed} {size}");
+                var arrow = BinkShapeRecognizer.Recognize(Trace([o, o + new Vector2(size, 0), o + new Vector2(size * 0.85f, -size * 0.1f)], false, perSide: 30, wobble: wobble, seed: seed));
+                Assert.IsNotNull(arrow, $"one-barbed arrow {seed} {size}");
+                Assert.AreEqual(BinkShapeKind.Arrow, arrow.Kind, $"one-barbed arrow {seed} {size}");
             }
         }
     }
@@ -327,8 +347,9 @@ public sealed class ShapeRecognitionTests
 
         BinkShapeRecognition? result = BinkShapeRecognizer.Recognize(Trace(corners, closed: true, wobble: 0.3f), options);
 
-        Assert.AreEqual(BinkShapeKind.Rectangle, result?.Kind);
-        Assert.AreEqual(0f, result!.Rotation, "Straightened.");
+        Assert.IsNotNull(result);
+        Assert.AreEqual(BinkShapeKind.Rectangle, result.Kind);
+        Assert.AreEqual(0f, result.Rotation, "Straightened.");
         Assert.AreEqual(200f, result.Frame.Width, 4f, "Not squared.");
         Assert.AreEqual(170f, result.Frame.Height, 4f);
     }
@@ -339,14 +360,16 @@ public sealed class ShapeRecognitionTests
         // A box turned 45 degrees has its corners at the middles of its bounds' sides, as a diamond does, but a
         // diamond of those bounds is a square: it fitted badly, and an ellipse used to win over it.
         BinkShapeRecognition? turned = BinkShapeRecognizer.Recognize(Trace([new(121, 0), new(200, 79), new(79, 200), new(0, 121)], closed: true, wobble: 0.3f));
-        Assert.AreEqual(BinkShapeKind.Rectangle, turned?.Kind);
+        Assert.IsNotNull(turned);
+        Assert.AreEqual(BinkShapeKind.Rectangle, turned.Kind);
 
         var regularOnly = new BinkShapeRecognizerOptions { Kinds = new HashSet<BinkShapeKind> { BinkShapeKind.Polygon, BinkShapeKind.Rectangle, BinkShapeKind.Diamond } };
         Assert.IsNotNull(BinkShapeRecognizer.Recognize(Trace([new(121, 0), new(200, 79), new(79, 200), new(0, 121)], closed: true, wobble: 0.3f), regularOnly));
 
         // One slanted side: four corners, but not a rectangle.
         BinkShapeRecognition? slanted = BinkShapeRecognizer.Recognize(Trace([new(0, 0), new(200, 44), new(200, 120), new(0, 76)], closed: true, wobble: 0.3f));
-        Assert.AreEqual(BinkShapeKind.Polygon, slanted?.Kind);
+        Assert.IsNotNull(slanted);
+        Assert.AreEqual(BinkShapeKind.Polygon, slanted.Kind);
     }
 
     [TestMethod]

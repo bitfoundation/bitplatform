@@ -36,7 +36,9 @@ public partial class BitPdfRangeEngineTests
         await using var source = await RangeAccess.Open(http, 16 * 1024 * 1024, 65536);
         var actual = await source.Load(password);
         Assert.AreEqual(expected.PageCount, actual.PageCount);
-        Assert.AreEqual(expected.PageCount, actual.Pages.Count);
+        // Enumerating range-backed pages can require asynchronous reads; this check only measures their count.
+        var actualPageCount = actual.Pages.Count;
+        Assert.AreEqual(expected.PageCount, actualPageCount);
         for (int i = 0; i < actual.PageCount; i++)
         {
             int page = i;
@@ -47,15 +49,15 @@ public partial class BitPdfRangeEngineTests
         }
         Assert.AreEqual(expected.Metadata.Title, await source.Run(actual, d => d.Metadata.Title));
         AssertOutline(expected.Outline, await source.Run(actual, d => d.Outline));
-        CollectionAssert.AreEqual(expected.PageLabels.ToArray(), await source.Run(actual, d => d.PageLabels.ToArray()));
+        Assert.AreSequenceEqual(expected.PageLabels.ToArray(), await source.Run(actual, d => d.PageLabels.ToArray()));
         Assert.AreEqual(expected.Attachments.Count, await source.Run(actual, d => d.Attachments.Count));
         Assert.AreEqual(expected.FormFields.Count, await source.Run(actual, d => d.FormFields.Count));
-        Assert.IsTrue(source.Int("PeakBytes") <= 16 * 1024 * 1024);
+        Assert.IsLessThanOrEqualTo(16 * 1024 * 1024, source.Int("PeakBytes"));
     }
 
     private static void AssertOutline(IReadOnlyList<BitPdfOutlineItem> expected, IReadOnlyList<BitPdfOutlineItem> actual)
     {
-        Assert.AreEqual(expected.Count, actual.Count);
+        Assert.HasCount(expected.Count, actual);
         for (int i = 0; i < expected.Count; i++)
         {
             Assert.AreEqual(expected[i].Title, actual[i].Title);
@@ -94,8 +96,8 @@ public partial class BitPdfRangeEngineTests
         using var http = new HttpClient(handler);
         await using var source = await RangeAccess.Open(http, 1024 * 1024, 65536);
         var document = await source.Load();
-        StringAssert.Contains(await source.Run(document, d => d.Pages[0].ExtractText()), "Middle stream");
-        Assert.IsTrue(handler.Requests.Contains("bytes=65536-196607"), string.Join(",", handler.Requests));
+        Assert.Contains("Middle stream", await source.Run(document, d => d.Pages[0].ExtractText()));
+        Assert.Contains("bytes=65536-196607", handler.Requests, string.Join(",", handler.Requests));
     }
 
     [TestMethod]
@@ -108,7 +110,7 @@ public partial class BitPdfRangeEngineTests
         Assert.AreEqual("Middle title", await source.Run(document, d => d.Metadata.Title));
         int requests = handler.Requests.Count;
         Assert.AreEqual("Middle title", await source.Run(document, d => d.Metadata.Title));
-        Assert.AreEqual(requests, handler.Requests.Count);
+        Assert.HasCount(requests, handler.Requests);
     }
 
     [TestMethod]
@@ -179,8 +181,8 @@ public partial class BitPdfRangeEngineTests
         var ranges = await source.Run(document, d => (List<(int Offset, int Length)>)typeof(BitPdfXRef)
             .GetMethod("HintRanges", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
             .Invoke(d.XRef, [1, d.PageCount, 262144])!);
-        if (staleLength) Assert.AreEqual(0, ranges.Count);
-        else Assert.IsTrue(ranges.Count > 0, "The independently generated page/shared hints should be usable.");
+        if (staleLength) Assert.IsEmpty(ranges);
+        else Assert.IsNotEmpty(ranges, "The independently generated page/shared hints should be usable.");
         Assert.AreEqual(2, document.PageCount);
         Assert.AreEqual(400d, document.Pages[1].Width);
     }
@@ -198,7 +200,7 @@ public partial class BitPdfRangeEngineTests
         int original = stream.Pos;
         using ((IDisposable)typeof(BitPdfDocument).GetMethod("BeginPartialAttempt", flags)!.Invoke(document, null)!)
         {
-            Assert.IsTrue(stream.GetByte() >= 0);
+            Assert.IsGreaterThanOrEqualTo(0, stream.GetByte());
             Assert.AreNotEqual(original, stream.Pos);
         }
         Assert.AreEqual(original, stream.Pos);
@@ -269,7 +271,7 @@ public partial class BitPdfRangeEngineTests
         await using var source = await RangeAccess.Open(http, 16777216, 65536);
         var error = await Assert.ThrowsAsync<System.Reflection.TargetInvocationException>(() => source.Load());
         Assert.IsInstanceOfType<System.IO.IOException>(error.InnerException);
-        StringAssert.Contains(error.InnerException!.Message, "complete-file recovery");
-        Assert.AreEqual(1, handler.Requests.Count);
+        Assert.Contains("complete-file recovery", error.InnerException!.Message);
+        Assert.ContainsSingle(handler.Requests);
     }
 }

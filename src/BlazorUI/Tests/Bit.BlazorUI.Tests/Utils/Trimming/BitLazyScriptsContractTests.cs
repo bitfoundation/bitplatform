@@ -50,7 +50,7 @@ public sealed partial class BitLazyScriptsContractTests
             }
         }
 
-        Assert.AreEqual(0, problems.Count, $"These modules are not their pieces behind the imports of what they use: {string.Join(", ", problems)}");
+        Assert.IsEmpty(problems, $"These modules are not their pieces behind the imports of what they use: {string.Join(", ", problems)}");
     }
 
     [TestMethod]
@@ -58,7 +58,7 @@ public sealed partial class BitLazyScriptsContractTests
     {
         foreach (var package in Assets.Value)
         {
-            StringAssert.EndsWith(package.ScriptPrologue, $"(BitBlazorUI.$bundles || (BitBlazorUI.$bundles = {{}}))[\"{package.PackageId}\"] = true;\n", package.PackageId);
+            Assert.EndsWith($"(BitBlazorUI.$bundles || (BitBlazorUI.$bundles = {{}}))[\"{package.PackageId}\"] = true;\n", package.ScriptPrologue, package.PackageId);
         }
     }
 
@@ -75,15 +75,15 @@ public sealed partial class BitLazyScriptsContractTests
             }
 
             // What it boots: every script acting on the page without being called, and nothing called.
-            CollectionAssert.AreEquivalent(package.ScriptModules.Where(m => m.Always || m.Markup.Count > 0).ToList(), booting, package.PackageId);
+            Assert.AreSequenceEqual(package.ScriptModules.Where(m => m.Always || m.Markup.Count > 0).ToList(), booting, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, package.PackageId);
 
             Assert.AreEqual(AssetComposer.BootModuleText(package.ScriptBoot!, booting),
                             File.ReadAllText(SourceFiles.GetPath(package.PackageId, "wwwroot", package.ScriptBoot!), Encoding.UTF8),
                             $"{package.PackageId}'s boot module is not what a trimmed publish writes for every script it boots.");
 
             var initializer = File.ReadAllText(SourceFiles.GetPath(package.PackageId, "wwwroot", package.ScriptInitializer!), Encoding.UTF8);
-            StringAssert.Contains(initializer, $"import(\"./{Path.GetFileName(package.ScriptBoot!)}\")");
-            StringAssert.Contains(initializer, $"window.BitBlazorUI.$bundles[\"{package.PackageId}\"] ? undefined", "The initializer boots beside the package's bundle too.");
+            Assert.Contains($"import(\"./{Path.GetFileName(package.ScriptBoot!)}\")", initializer);
+            Assert.Contains($"window.BitBlazorUI.$bundles[\"{package.PackageId}\"] ? undefined", initializer, "The initializer boots beside the package's bundle too.");
             Assert.AreEqual($"{package.PackageId}.lib.module.js", Path.GetFileName(package.ScriptInitializer), "Blazor imports an initializer by the package's name only.");
         }
     }
@@ -106,8 +106,7 @@ public sealed partial class BitLazyScriptsContractTests
     {
         // An app publishing none of the modules turns the feature switch off (Bit.BlazorUI.targets), and ILLink removes the
         // map off it, by the instructions each assembly embeds beside the map (Bit.BlazorUI.Assets.targets).
-        StringAssert.Contains(File.ReadAllText(SourceFiles.GetPath("Bit.BlazorUI", "buildTransitive", "Bit.BlazorUI.targets")),
-                              "<RuntimeHostConfigurationOption Include=\"Bit.BlazorUI.IncludeScriptModules\" Value=\"false\" Trim=\"true\" />");
+        Assert.Contains("<RuntimeHostConfigurationOption Include=\"Bit.BlazorUI.IncludeScriptModules\" Value=\"false\" Trim=\"true\" />", File.ReadAllText(SourceFiles.GetPath("Bit.BlazorUI", "buildTransitive", "Bit.BlazorUI.targets")));
 
         foreach (var package in Packages)
         {
@@ -149,7 +148,7 @@ public sealed partial class BitLazyScriptsContractTests
             }
         }
 
-        Assert.AreEqual(0, problems.Count, string.Join("; ", problems));
+        Assert.IsEmpty(problems, string.Join("; ", problems));
     }
 
     [TestMethod]
@@ -174,7 +173,7 @@ public sealed partial class BitLazyScriptsContractTests
             }
         }
 
-        Assert.AreEqual(0, problems.Count, string.Join(Environment.NewLine, problems));
+        Assert.IsEmpty(problems, string.Join(Environment.NewLine, problems));
     }
 
     [TestMethod]
@@ -191,7 +190,7 @@ public sealed partial class BitLazyScriptsContractTests
                            .Select(x => $"{x.Module.Id}: {x.Teardown}")
                            .ToList();
 
-        Assert.AreEqual(0, unused.Count, $"No .NET code calls these teardowns: {string.Join(", ", unused)}");
+        Assert.IsEmpty(unused, $"No .NET code calls these teardowns: {string.Join(", ", unused)}");
     }
 
     private static IEnumerable<string> ReadUserStrings(string path)

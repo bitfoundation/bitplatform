@@ -33,9 +33,9 @@ public class BitDataGridTreeE2ETests : BitDataGridE2ETestBase
         await ExpectNamesAsync(Id, AllRows);
 
         var levels = await DataRows(Id).EvaluateAllAsync<string[]>("rows => rows.map(r => r.getAttribute('aria-level'))");
-        CollectionAssert.AreEqual(new[] { "1", "2", "3", "3", "2", "1", "2", "1" }, levels);
+        Assert.AreSequenceEqual(new[] { "1", "2", "3", "3", "2", "1", "2", "1" }, levels);
         var expanded = await DataRows(Id).EvaluateAllAsync<string?[]>("rows => rows.map(r => r.getAttribute('aria-expanded'))");
-        CollectionAssert.AreEqual(new string?[] { "true", "true", null, null, null, "true", null, null }, expanded);
+        Assert.AreSequenceEqual(new string?[] { "true", "true", null, null, null, "true", null, null }, expanded);
 
         await Expect(TreeToggle(Id, 0)).ToHaveAccessibleNameAsync("Toggle children");
         await Expect(TreeToggle(Id, 2)).ToHaveCountAsync(0);

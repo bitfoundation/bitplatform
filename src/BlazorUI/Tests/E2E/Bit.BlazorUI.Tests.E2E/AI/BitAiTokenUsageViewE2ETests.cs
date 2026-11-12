@@ -185,11 +185,11 @@ public class BitAiTokenUsageViewE2ETests : E2ETestBase
         {
             var tokens = await Tokens(id).RectAsync();
             var cost = await Cost(id).RectAsync();
-            Assert.IsTrue(tokens.Left > cost.Left, $"{id}: the tokens lead from the right.");
+            Assert.IsGreaterThan(cost.Left, tokens.Left, $"{id}: the tokens lead from the right.");
         }
 
         var ltrTokens = await Tokens("tuv-ltr").RectAsync();
         var ltrCost = await Cost("tuv-ltr").RectAsync();
-        Assert.IsTrue(ltrTokens.Left < ltrCost.Left, "Left to right, the tokens lead from the left.");
+        Assert.IsLessThan(ltrCost.Left, ltrTokens.Left, "Left to right, the tokens lead from the left.");
     }
 }

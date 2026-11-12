@@ -20,11 +20,11 @@ public partial class BitAppShellStylesheetTests
 
         var documented = DocumentedVariables(stylesheet);
 
-        Assert.AreEqual(11, documented.Length, "The stylesheet does not document the eleven public variables.");
+        Assert.HasCount(11, documented, "The stylesheet does not document the eleven public variables.");
 
         foreach (var name in documented)
         {
-            StringAssert.Contains(stylesheet, $"var({name}, ", $"{name} is documented but never read with a fallback.");
+            Assert.Contains($"var({name}, ", stylesheet, $"{name} is documented but never read with a fallback.");
         }
     }
 
@@ -38,7 +38,7 @@ public partial class BitAppShellStylesheetTests
 
         foreach (var name in read)
         {
-            CollectionAssert.Contains(documented, name, $"{name} is read but not documented in the header.");
+            Assert.Contains(name, documented, $"{name} is read but not documented in the header.");
         }
     }
 
@@ -56,16 +56,16 @@ public partial class BitAppShellStylesheetTests
         var stylesheet = ReadStylesheet();
 
         var root = SourceFiles.GetScssBlock(stylesheet, "\n.bit-ash {");
-        StringAssert.Contains(root, "--bit-ash-inset-top: var(--bit-AppShell-safe-area-top, #{$bit-env-inset-top});");
-        StringAssert.Contains(root, "--bit-ash-inset-start: var(--bit-AppShell-safe-area-start, #{$bit-env-inset-inline-start});");
+        Assert.Contains("--bit-ash-inset-top: var(--bit-AppShell-safe-area-top, #{$bit-env-inset-top});", root);
+        Assert.Contains("--bit-ash-inset-start: var(--bit-AppShell-safe-area-start, #{$bit-env-inset-inline-start});", root);
 
         var stable = SourceFiles.GetScssBlock(stylesheet, "\n.bit-ash-sin {");
-        StringAssert.Contains(stable, "--bit-ash-inset-bottom: var(--bit-AppShell-safe-area-bottom, #{$bit-env-max-inset-bottom});");
-        StringAssert.Contains(stable, "--bit-ash-inset-end: var(--bit-AppShell-safe-area-end, #{$bit-env-max-inset-inline-end});");
+        Assert.Contains("--bit-ash-inset-bottom: var(--bit-AppShell-safe-area-bottom, #{$bit-env-max-inset-bottom});", stable);
+        Assert.Contains("--bit-ash-inset-end: var(--bit-AppShell-safe-area-end, #{$bit-env-max-inset-inline-end});", stable);
 
         // The flags that take an edge away come after both, so they win over a safe area the page set too.
-        Assert.IsTrue(stylesheet.IndexOf("\n.bit-ash-nin {", System.StringComparison.Ordinal) > stylesheet.IndexOf("\n.bit-ash-sin {", System.StringComparison.Ordinal));
-        Assert.IsTrue(stylesheet.IndexOf("\n.bit-ash-nit {", System.StringComparison.Ordinal) > stylesheet.IndexOf("\n.bit-ash-nin {", System.StringComparison.Ordinal));
+        Assert.IsGreaterThan(stylesheet.IndexOf("\n.bit-ash-sin {", System.StringComparison.Ordinal), stylesheet.IndexOf("\n.bit-ash-nin {", System.StringComparison.Ordinal));
+        Assert.IsGreaterThan(stylesheet.IndexOf("\n.bit-ash-nin {", System.StringComparison.Ordinal), stylesheet.IndexOf("\n.bit-ash-nit {", System.StringComparison.Ordinal));
     }
 
     [TestMethod]
@@ -73,15 +73,14 @@ public partial class BitAppShellStylesheetTests
     {
         var stylesheet = ReadStylesheet();
 
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-ash {"), "background-color: var(--bit-AppShell-background, #{$clr-bg-pri});");
+        Assert.Contains("background-color: var(--bit-AppShell-background, #{$clr-bg-pri});", SourceFiles.GetScssBlock(stylesheet, "\n.bit-ash {"));
 
         // The foreground comes with the background, so the text is never left to a page color that does not read on it.
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-ash {"), "color: var(--bit-AppShell-color, #{$clr-fg-pri});");
+        Assert.Contains("color: var(--bit-AppShell-color, #{$clr-fg-pri});", SourceFiles.GetScssBlock(stylesheet, "\n.bit-ash {"));
 
         foreach (var (rule, edge) in new[] { ("top", "top"), ("bottom", "bottom"), ("left", "start"), ("right", "end") })
         {
-            StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, $"\n.bit-ash-{rule} {{"),
-                                  $"background-color: var(--bit-AppShell-inset-{edge}-background, var(--bit-AppShell-inset-background, var(--bit-AppShell-background, #{{$clr-bg-pri}})));");
+            Assert.Contains($"background-color: var(--bit-AppShell-inset-{edge}-background, var(--bit-AppShell-inset-background, var(--bit-AppShell-background, #{{$clr-bg-pri}})));", SourceFiles.GetScssBlock(stylesheet, $"\n.bit-ash-{rule} {{"));
         }
     }
 
@@ -90,16 +89,16 @@ public partial class BitAppShellStylesheetTests
     {
         var print = SourceFiles.GetScssBlock(ReadStylesheet(), "\n@media print {");
 
-        StringAssert.Contains(SourceFiles.GetScssBlock(print, "\n    .bit-ash {"), "height: auto;");
-        StringAssert.Contains(SourceFiles.GetScssBlock(print, "\n    .bit-ash {"), "--bit-ash-inset-top: 0px;");
-        StringAssert.Contains(SourceFiles.GetScssBlock(print, "\n    .bit-ash-fsc {"), "position: static;");
-        StringAssert.Contains(print, ".bit-ash-main {\n        overflow: visible !important;");
-        StringAssert.Contains(print, "display: none;");
+        Assert.Contains("height: auto;", SourceFiles.GetScssBlock(print, "\n    .bit-ash {"));
+        Assert.Contains("--bit-ash-inset-top: 0px;", SourceFiles.GetScssBlock(print, "\n    .bit-ash {"));
+        Assert.Contains("position: static;", SourceFiles.GetScssBlock(print, "\n    .bit-ash-fsc {"));
+        Assert.Contains(".bit-ash-main {\n        overflow: visible !important;", print);
+        Assert.Contains("display: none;", print);
 
         // The theme's colors go back to the page on paper: a dark theme's foreground is near-white, and a printout
         // leaves the background it was chosen against out by default.
-        StringAssert.Contains(SourceFiles.GetScssBlock(print, "\n    .bit-ash {"), "color: inherit;");
-        StringAssert.Contains(SourceFiles.GetScssBlock(print, "\n    .bit-ash {"), "background-color: transparent;");
+        Assert.Contains("color: inherit;", SourceFiles.GetScssBlock(print, "\n    .bit-ash {"));
+        Assert.Contains("background-color: transparent;", SourceFiles.GetScssBlock(print, "\n    .bit-ash {"));
     }
 
     [TestMethod]
@@ -108,8 +107,8 @@ public partial class BitAppShellStylesheetTests
         var root = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-ash {");
 
         // 100%, never none: none also takes away the reader's own text size and zoom in some engines.
-        StringAssert.Contains(root, "-webkit-text-size-adjust: 100%;");
-        StringAssert.Contains(root, "\n    text-size-adjust: 100%;");
+        Assert.Contains("-webkit-text-size-adjust: 100%;", root);
+        Assert.Contains("\n    text-size-adjust: 100%;", root);
     }
 
     private static string[] DocumentedVariables(string stylesheet)

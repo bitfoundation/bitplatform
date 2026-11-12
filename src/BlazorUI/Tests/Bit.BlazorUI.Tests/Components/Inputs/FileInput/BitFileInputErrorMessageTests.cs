@@ -33,7 +33,7 @@ public class BitFileInputErrorMessageTests : BunitTestContext
         Assert.AreEqual("true", button.GetAttribute("aria-invalid"));
 
         // Right under the button and ahead of the hint, the order the button reads the two out in.
-        Assert.AreEqual(1, component.FindAll(".bit-fin-lbl + .bit-fin-erm + .bit-fin-dsc").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-fin-lbl + .bit-fin-erm + .bit-fin-dsc"));
         Assert.AreEqual($"{error.Id} {component.Find(".bit-fin-dsc").Id}", button.GetAttribute("aria-describedby"));
 
         component.Render(parameters => parameters.Add(p => p.ErrorMessage, (string?)null));
@@ -41,7 +41,7 @@ public class BitFileInputErrorMessageTests : BunitTestContext
         Assert.IsFalse(component.Find(".bit-fin").ClassList.Contains("bit-inv"));
         Assert.IsNull(component.Find(".bit-fin-lbl").GetAttribute("aria-invalid"));
         Assert.AreEqual(component.Find(".bit-fin-dsc").Id, component.Find(".bit-fin-lbl").GetAttribute("aria-describedby"));
-        Assert.AreEqual(0, component.FindAll(".bit-fin-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-fin-erm"));
     }
 
     [TestMethod]
@@ -54,11 +54,11 @@ public class BitFileInputErrorMessageTests : BunitTestContext
         Assert.IsFalse(component.Find(".bit-fin").ClassList.Contains("bit-inv"));
         Assert.IsNull(button.GetAttribute("aria-invalid"));
         Assert.IsNull(button.GetAttribute("aria-describedby"));
-        Assert.AreEqual(0, component.FindAll(".bit-fin-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-fin-erm"));
 
         // A file input that is never wired for an error message carries the selection region alone.
-        Assert.AreEqual(0, component.FindAll(".bit-fin-vhd").Count);
-        Assert.AreEqual(1, component.FindAll("[role=status]").Count);
+        Assert.IsEmpty(component.FindAll(".bit-fin-vhd"));
+        Assert.ContainsSingle(component.FindAll("[role=status]"));
     }
 
     [TestMethod]
@@ -73,7 +73,7 @@ public class BitFileInputErrorMessageTests : BunitTestContext
 
         Assert.IsTrue(component.Find(".bit-fin").ClassList.Contains("bit-inv"));
         Assert.AreEqual("true", button.GetAttribute("aria-invalid"));
-        Assert.AreEqual(0, component.FindAll(".bit-fin-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-fin-erm"));
         Assert.IsNull(button.GetAttribute("aria-describedby"));
 
         component.Render(parameters => parameters.Add(p => p.Invalid, false));
@@ -109,7 +109,7 @@ public class BitFileInputErrorMessageTests : BunitTestContext
             parameters.Add(p => p.ErrorMessage, "Uploads are paused.");
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-fin-lbl").Count);
+        Assert.IsEmpty(component.FindAll(".bit-fin-lbl"));
         Assert.AreEqual("Uploads are paused.", component.Find(".bit-fin-erm").TextContent.Trim());
         Assert.IsTrue(component.Find(".bit-fin").ClassList.Contains("bit-inv"));
         Assert.AreEqual("Uploads are paused.", component.Find(ErrorRegion).TextContent.Trim());
@@ -127,7 +127,7 @@ public class BitFileInputErrorMessageTests : BunitTestContext
         var error = component.Find(".bit-fin-erm");
 
         Assert.AreEqual("Quota reached", error.QuerySelector(".custom-error")!.TextContent);
-        Assert.IsFalse(error.TextContent.Contains("the plain text"));
+        Assert.DoesNotContain("the plain text", error.TextContent);
         Assert.IsTrue(component.Find(".bit-fin").ClassList.Contains("bit-inv"));
         Assert.AreEqual("true", component.Find(".bit-fin-lbl").GetAttribute("aria-invalid"));
 
@@ -158,7 +158,7 @@ public class BitFileInputErrorMessageTests : BunitTestContext
 
         Assert.AreEqual("the plain text", component.Find(ErrorRegion).TextContent.Trim());
         Assert.AreEqual(component.Find(".bit-fin-erm").Id, component.Find(".bit-fin-lbl").GetAttribute("aria-describedby"));
-        Assert.AreEqual(0, component.FindAll("span.bit-fin-vhd").Count);
+        Assert.IsEmpty(component.FindAll("span.bit-fin-vhd"));
     }
 
     [TestMethod, DataRow(""), DataRow("  ")]
@@ -285,7 +285,7 @@ public class BitFileInputErrorMessageTests : BunitTestContext
 
         var button = component.Find(".bit-fin-lbl");
 
-        Assert.AreEqual(1, component.Find(".bit-fin").GetAttribute("class")!.Split(' ').Count(c => c == "bit-inv"));
+        Assert.ContainsSingle(c => c == "bit-inv", component.Find(".bit-fin").GetAttribute("class")!.Split(' '));
         Assert.AreEqual("true", button.GetAttribute("aria-invalid"));
         Assert.AreEqual(component.Find(".bit-fin-erm").Id, button.GetAttribute("aria-describedby"));
 
@@ -294,7 +294,7 @@ public class BitFileInputErrorMessageTests : BunitTestContext
 
         Assert.IsTrue(component.Find(".bit-fin").ClassList.Contains("bit-inv"));
         Assert.AreEqual("true", component.Find(".bit-fin-lbl").GetAttribute("aria-invalid"));
-        Assert.AreEqual(0, component.FindAll(".bit-fin-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-fin-erm"));
         Assert.IsNull(component.Find(".bit-fin-lbl").GetAttribute("aria-describedby"));
     }
 }

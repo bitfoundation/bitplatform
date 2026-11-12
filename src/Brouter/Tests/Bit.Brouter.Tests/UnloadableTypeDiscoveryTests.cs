@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.Loader;
@@ -25,7 +25,7 @@ public class UnloadableTypeDiscoveryTests : BunitTestContext
     {
         var routes = BrouteScanner.Discover(fixture, null);
 
-        CollectionAssert.AreEquivalent(new[] { "/before", "/after" }, routes.Select(r => r.Template).ToArray());
+        Assert.AreSequenceEqual(new[] { "/before", "/after" }, routes.Select(r => r.Template).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -41,7 +41,7 @@ public class UnloadableTypeDiscoveryTests : BunitTestContext
         Assert.HasCount(2, report.Failures);
         foreach (var failure in report.Failures)
         {
-            StringAssert.Contains(failure.Message, MissingAssemblyName);
+            Assert.Contains(MissingAssemblyName, failure.Message);
         }
     }
 
@@ -51,9 +51,9 @@ public class UnloadableTypeDiscoveryTests : BunitTestContext
         var loadable = Assert.ThrowsExactly<ReflectionTypeLoadException>(() => fixture.GetTypes()).Types.OfType<Type>().ToArray();
         var failures = new List<Exception>();
 
-        CollectionAssert.AreEquivalent(loadable, BrouteScanner.GetLoadableTypes(fixture.ManifestModule, failures));
-        Assert.IsFalse(loadable.Any(t => t.Name == "DerivedPage"));
-        StringAssert.Contains(failures.Single().Message, MissingAssemblyName);
+        Assert.AreSequenceEqual(loadable, BrouteScanner.GetLoadableTypes(fixture.ManifestModule, failures), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
+        Assert.DoesNotContain(t => t.Name == "DerivedPage", loadable);
+        Assert.Contains(MissingAssemblyName, failures.Single().Message);
     }
 
     [TestMethod]
@@ -67,8 +67,8 @@ public class UnloadableTypeDiscoveryTests : BunitTestContext
         cut.Render(p => p.Add(b => b.AdditionalAssemblies, [typeof(DiscoveryHost).Assembly]));
 
         var (warning, exception) = logger.Warnings.Single();
-        StringAssert.Contains(warning, "Bit.Brouter.Tests.UnloadableTypes");
-        StringAssert.Contains(warning, MissingAssemblyName);
+        Assert.Contains("Bit.Brouter.Tests.UnloadableTypes", warning);
+        Assert.Contains(MissingAssemblyName, warning);
         // The failures themselves ride along, inner exceptions and all.
         Assert.HasCount(2, Assert.IsInstanceOfType<AggregateException>(exception).InnerExceptions);
     }

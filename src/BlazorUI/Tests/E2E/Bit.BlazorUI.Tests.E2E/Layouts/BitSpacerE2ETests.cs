@@ -18,9 +18,9 @@ public class BitSpacerE2ETests : E2ETestBase
         var response = await Page.APIRequest.GetAsync($"{BaseUrl}/e2e/spacer");
         var html = await response.TextAsync();
 
-        StringAssert.Contains(html, "id=\"basic-spacer\"");
-        StringAssert.Contains(html, "bit-spc");
-        StringAssert.Contains(html, "Status: <span id=\"status\">Loading</span>");
+        Assert.Contains("id=\"basic-spacer\"", html);
+        Assert.Contains("bit-spc", html);
+        Assert.Contains("Status: <span id=\"status\">Loading</span>", html);
     }
 
     [TestMethod]
@@ -254,7 +254,7 @@ public class BitSpacerE2ETests : E2ETestBase
 
         var styled = Page.Locator("#style-spacer");
         await Expect(styled).ToHaveCSSAsync("background-color", "rgb(255, 99, 71)");
-        Assert.IsTrue((await BoxAsync("#style-spacer")).W >= 64 - Tolerance, "min-width:4rem holds");
+        Assert.IsGreaterThanOrEqualTo(64 - Tolerance, (await BoxAsync("#style-spacer")).W, "min-width:4rem holds");
 
         await Expect(Page.Locator("#class-spacer")).ToHaveClassAsync(HasClass("spc-custom"));
         await Expect(Page.Locator("#class-spacer")).ToHaveCSSAsync("background-color", "rgb(0, 128, 0)");
@@ -358,7 +358,7 @@ public class BitSpacerE2ETests : E2ETestBase
 
     private static void AssertClose(double expected, double actual, string what)
     {
-        Assert.IsTrue(Math.Abs(expected - actual) <= Tolerance, $"{what}: expected {expected}, got {actual}");
+        Assert.IsLessThanOrEqualTo(Tolerance, Math.Abs(expected - actual), $"{what}: expected {expected}, got {actual}");
     }
 
     private sealed record Box(double X, double Y, double W, double H)

@@ -3,7 +3,7 @@ using Microsoft.Playwright.TestAdapter;
 namespace Boilerplate.Tests.Infrastructure;
 
 [DoNotParallelize]
-public class AppPageTest : PageTest
+public abstract class AppPageTest : PageTest
 {
     /// <summary>
     /// How long anything in this suite waits before giving up. Set on the context rather than the page so that pages
@@ -48,7 +48,7 @@ public class AppPageTest : PageTest
     /// <see cref="NewBrowserContext(Uri)"/> pointed at <paramref name="server"/>'s api, as <see cref="AppTestServer.Start"/>
     /// points the first browser.
     /// </summary>
-    protected Task<IBrowserContext> NewBrowserContext(AppTestServer server) => NewBrowserContext(server.ApiAppAddress);
+    private protected Task<IBrowserContext> NewBrowserContext(AppTestServer server) => NewBrowserContext(server.ApiAppAddress);
 
     /// <summary>
     /// Opens a second browser - an isolated context, i.e. its own storage and its own session - already carrying this

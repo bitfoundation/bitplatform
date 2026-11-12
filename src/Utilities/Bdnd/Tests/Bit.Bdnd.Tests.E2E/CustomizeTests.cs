@@ -106,7 +106,7 @@ public sealed partial class CustomizeTests : BdndTest
         await page.Mouse.UpAsync();
         await WaitForQuietAsync(page);
 
-        Assert.AreEqual(drags, (await DragStartsAsync(page.MainFrame)).Length, "a press in the field started a drag");
+        Assert.HasCount(drags, await DragStartsAsync(page.MainFrame), "a press in the field started a drag");
         Assert.IsGreaterThan(5, await field.EvaluateAsync<int>("f => f.selectionEnd - f.selectionStart"), "the press selected the field's text");
         await Expect(bin).ToHaveTextAsync("Dropped: whole");
     }
@@ -160,7 +160,7 @@ public sealed partial class CustomizeTests : BdndTest
             // suffix and its data, and set the effects the source allows.
             var start = (await DragStartsAsync(page.MainFrame)).Last();
             Assert.IsNotNull(start.Tag, "the dragstart carries no library tag: " + string.Join(", ", start.Types));
-            StringAssert.Matches(start.Tag, TagPattern());
+            Assert.MatchesRegex(TagPattern(), start.Tag);
             Assert.AreEqual(start.Tag["application/x-bit-bdnd-".Length..], start.TagData, "the tag's data is not the source's id");
             Assert.AreEqual(effect, start.EffectAllowed, "effectAllowed at dragstart");
             tags.Add(start.Tag);

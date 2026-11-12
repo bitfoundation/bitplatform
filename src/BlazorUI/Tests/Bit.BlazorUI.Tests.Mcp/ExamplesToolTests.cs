@@ -21,9 +21,9 @@ public class ExamplesToolTests : McpTestBase
 
         using var scope = Assert.Scope();
 
-        StringAssert.StartsWith(answer, "# BitButton examples");
-        StringAssert.Contains(answer, "```razor", "The answer carries no Razor at all.");
-        StringAssert.Contains(answer, "<BitButton", "The Razor does not use the component it documents.");
+        Assert.StartsWith("# BitButton examples", answer);
+        Assert.Contains("```razor", answer, "The answer carries no Razor at all.");
+        Assert.Contains("<BitButton", answer, "The Razor does not use the component it documents.");
 
         // A section per feature, each with its own heading.
         Assert.IsGreaterThan(5, answer.Split("\n## ", StringSplitOptions.None).Length, "The answer collapsed to a single section.");
@@ -36,8 +36,8 @@ public class ExamplesToolTests : McpTestBase
 
         using var scope = Assert.Scope();
 
-        StringAssert.Contains(answer, "## Loading");
-        StringAssert.Contains(answer, "IsLoading");
+        Assert.Contains("## Loading", answer);
+        Assert.Contains("IsLoading", answer);
         Assert.DoesNotContain("## Basic", answer, "A named section brought its neighbours with it.");
     }
 
@@ -48,8 +48,8 @@ public class ExamplesToolTests : McpTestBase
 
         using var scope = Assert.Scope();
 
-        StringAssert.Contains(answer, "```razor");
-        StringAssert.Contains(answer, "```csharp", "The C# behind the example is missing, so the Razor cannot be compiled from it.");
+        Assert.Contains("```razor", answer);
+        Assert.Contains("```csharp", answer, "The C# behind the example is missing, so the Razor cannot be compiled from it.");
     }
 
     [TestMethod]
@@ -61,8 +61,8 @@ public class ExamplesToolTests : McpTestBase
 
         // The tabs of a multi-API component are the same sections in a different API, so returning
         // all of them is the same code three times over.
-        StringAssert.Contains(answer, "multi-API component");
-        StringAssert.Contains(answer, "## Item · ");
+        Assert.Contains("multi-API component", answer);
+        Assert.Contains("## Item · ", answer);
         Assert.DoesNotContain("## Custom · ", answer, "The Custom tab came back uninvited.");
     }
 
@@ -78,13 +78,13 @@ public class ExamplesToolTests : McpTestBase
         using var scope = Assert.Scope();
 
         Assert.DoesNotContain("multi-API component", answer);
-        StringAssert.Contains(answer, "## Line · ");
-        StringAssert.Contains(answer, "## Bar · ", "Only the first feature tab was answered.");
+        Assert.Contains("## Line · ", answer);
+        Assert.Contains("## Bar · ", answer, "Only the first feature tab was answered.");
 
         // A feature tab is still reachable by name, like an API tab is.
         var legend = await CallAsync("GetBitBlazorUIComponentExamples", new { name = "BitChart", example = "Legend" });
 
-        StringAssert.Contains(legend, "## Legend · ");
+        Assert.Contains("## Legend · ", legend);
         Assert.DoesNotContain("## Line · ", legend);
     }
 
@@ -97,8 +97,8 @@ public class ExamplesToolTests : McpTestBase
 
         using var scope = Assert.Scope();
 
-        StringAssert.Contains(answer, "## Option · ");
-        StringAssert.Contains(answer, "<BitDropdownOption");
+        Assert.Contains("## Option · ", answer);
+        Assert.Contains("<BitDropdownOption", answer);
     }
 
     [TestMethod]
@@ -112,15 +112,14 @@ public class ExamplesToolTests : McpTestBase
 
         // Cut between sections rather than mid-sample: half a code block is not a smaller answer,
         // it is a wrong one.
-        StringAssert.EndsWith(answer.TrimEnd(), ".");
-        StringAssert.Contains(answer, "GetBitBlazorUIComponentExamples(name: \"BitDropdown\", example:",
-            "The truncation notice does not say how to get the rest.");
+        Assert.EndsWith(".", answer.TrimEnd());
+        Assert.Contains("GetBitBlazorUIComponentExamples(name: \"BitDropdown\", example:", answer, "The truncation notice does not say how to get the rest.");
 
         var notice = answer[answer.LastIndexOf("Stopped here", StringComparison.Ordinal)..];
         var remaining = notice[(notice.IndexOf(": ", StringComparison.Ordinal) + 2)..].TrimEnd('.', '\n', '\r')
             .Split(", ", StringSplitOptions.RemoveEmptyEntries);
 
-        Assert.AreEqual(remaining.Length, remaining.Distinct(StringComparer.Ordinal).Count(),
+        Assert.HasCount(remaining.Length, remaining.Distinct(StringComparer.Ordinal),
             "The list of what was left out repeats itself.");
     }
 

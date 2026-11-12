@@ -66,7 +66,7 @@ public class LayoutRoutingReviewTests : BunitContext
         await cut.InvokeAsync(() => cut.Instance.SetCollapsedAsync(nodes[3], false));  // inner, while g is collapsed
 
         Assert.IsTrue(nodes[4].Hidden, "a child of a group inside a collapsed group came out on its own");
-        CollectionAssert.AreEqual(new[] { "outside", "g" }, cut.FindAll(".bit-blow-node").Select(e => e.GetAttribute("data-id")).ToArray());
+        Assert.AreSequenceEqual(new[] { "outside", "g" }, cut.FindAll(".bit-blow-node").Select(e => e.GetAttribute("data-id")).ToArray());
 
         // Expanding g now brings inner's children back with it, inner no longer being collapsed.
         await cut.InvokeAsync(() => cut.Instance.SetCollapsedAsync(nodes[1], false));
@@ -97,7 +97,7 @@ public class LayoutRoutingReviewTests : BunitContext
         await cut.InvokeAsync(() => cut.Instance.SetCollapsedAsync(nodes[1], true));
 
         var ids = cut.Find(".bit-blow-node[data-id='g']").GetAttribute("aria-describedby")!.Split(' ');
-        StringAssert.StartsWith(cut.Find($"[id='{ids[0]}']").TextContent, "Collapsed. 1 incoming connection.");
+        Assert.StartsWith("Collapsed. 1 incoming connection.", cut.Find($"[id='{ids[0]}']").TextContent);
     }
 
     // ---- layout from the canvas ----
@@ -239,7 +239,7 @@ public class LayoutRoutingReviewTests : BunitContext
 
         Assert.HasCount(2, paths, "the edge drawn to the collapsed group is missing from the image");
         var canvasRouted = cut.Find(".bit-blow-edge[data-id='routed'] .bit-blow-edge-path").GetAttribute("d");
-        CollectionAssert.Contains(paths, canvasRouted, "the exported route differs from the one on screen");
+        Assert.Contains(canvasRouted, paths, "the exported route differs from the one on screen");
     }
 
     // ---- run states ----

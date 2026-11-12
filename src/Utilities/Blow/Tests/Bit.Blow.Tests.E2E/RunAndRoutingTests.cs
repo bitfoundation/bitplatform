@@ -33,10 +33,10 @@ public sealed class RunAndRoutingTests : BlowTest
 
         // The failure is shown by shape as well as colour, and read with the node.
         var badge = await Node(page, "enrich").EvaluateAsync<string>("el => getComputedStyle(el, '::before').content");
-        StringAssert.Contains(badge, "✕");
+        Assert.Contains("✕", badge);
         var description = await Node(page, "enrich").EvaluateAsync<string>(
             "el => el.getAttribute('aria-describedby').split(' ').map(id => document.getElementById(id).textContent).join(' ')");
-        StringAssert.StartsWith(description, "Failed: The enrichment service timed out");
+        Assert.StartsWith("Failed: The enrichment service timed out", description);
     }
 
     [TestMethod]
@@ -129,11 +129,11 @@ public sealed class RunAndRoutingTests : BlowTest
         await WaitForEdgesAnchoredAsync(page);
 
         var href = await page.Locator("a[download=\"routing.svg\"]").GetAttributeAsync("href");
-        StringAssert.StartsWith(href, "data:image/svg+xml;base64,");
+        Assert.StartsWith("data:image/svg+xml;base64,", href);
         var svg = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(href!["data:image/svg+xml;base64,".Length..]));
         var doc = System.Xml.Linq.XDocument.Parse(svg);
         XNamespaceCheck(doc);
-        StringAssert.Contains(svg, ">Transform</text>");
+        Assert.Contains(">Transform</text>", svg);
     }
 
     private static void XNamespaceCheck(System.Xml.Linq.XDocument doc)

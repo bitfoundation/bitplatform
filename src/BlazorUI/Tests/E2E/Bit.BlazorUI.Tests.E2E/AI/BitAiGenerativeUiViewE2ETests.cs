@@ -168,7 +168,7 @@ public class BitAiGenerativeUiViewE2ETests : E2ETestBase
         await Expect(diagnostics).ToHaveCSSAsync("flex-wrap", "wrap");
         var card = await root.Locator(":scope > .bit-aiguv-cnt").RectAsync();
         var row = await diagnostics.RectAsync();
-        Assert.IsTrue(row.Top >= card.Bottom, "The diagnostics are under the component.");
+        Assert.IsGreaterThanOrEqualTo(card.Bottom, row.Top, "The diagnostics are under the component.");
 
         // Off by default: the same part with the parameter unset says nothing.
         await Expect(Card(Root("guv-no-diagnostics"))).ToBeVisibleAsync();
@@ -203,6 +203,6 @@ public class BitAiGenerativeUiViewE2ETests : E2ETestBase
         await Expect(tag).ToHaveCSSAsync("direction", "rtl");
         var icon = await tag.Locator("i").First.RectAsync();
         var text = await tag.Locator(".bit-tag-tex").RectAsync();
-        Assert.IsTrue(icon.Left >= text.Right - 1, "The warning glyph is to the right of the name.");
+        Assert.IsGreaterThanOrEqualTo(text.Right - 1, icon.Left, "The warning glyph is to the right of the name.");
     }
 }

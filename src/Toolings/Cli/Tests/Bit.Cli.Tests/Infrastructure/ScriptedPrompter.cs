@@ -2,7 +2,7 @@
 
 namespace Bit.Cli.Tests.Infrastructure;
 
-public sealed class ScriptedPrompter : IPrompter
+internal sealed class ScriptedPrompter : IPrompter
 {
     private readonly List<(string Question, object Answer)> answers = [];
 
@@ -77,5 +77,5 @@ public sealed class ScriptedPrompter : IPrompter
         return partial.Count == 1 ? partial[0].index : throw new InvalidOperationException($"'{wanted}' matches {partial.Count} of: {string.Join(" | ", labels)}");
     }
 
-    public sealed record Prompt(string Question, IReadOnlyList<string> Choices, IReadOnlyList<string> Preselected);
+    internal sealed record Prompt(string Question, IReadOnlyList<string> Choices, IReadOnlyList<string> Preselected);
 }

@@ -31,9 +31,9 @@ public class JsonSchemaImportTests
 
         var home = form.FindField("home")!;
         Assert.AreEqual(BormFieldType.Object, home.Type);
-        Assert.AreEqual(2, home.Children.Count);
+        Assert.HasCount(2, home.Children);
         Assert.IsTrue(home.Children.Single(c => c.Name == "city").Required);
-        Assert.AreEqual(2, form.FindField("work")!.Children.Count);
+        Assert.HasCount(2, form.FindField("work")!.Children);
     }
 
     [TestMethod]
@@ -70,7 +70,7 @@ public class JsonSchemaImportTests
         var form = BormJsonSchemaImporter.Import(json);
 
         Assert.AreEqual("Merged", form.Title);
-        Assert.AreEqual(3, form.Fields.Count);
+        Assert.HasCount(3, form.Fields);
         Assert.IsTrue(form.FindField("id")!.Required);
         Assert.IsTrue(form.FindField("name")!.Required);
         Assert.AreEqual(2, form.FindField("name")!.MinLength);
@@ -102,13 +102,13 @@ public class JsonSchemaImportTests
         var validator = new BormValidator();
 
         data.SetValue("count", 0);
-        Assert.IsNotEmpty(await validator.ValidateAsync(form, data));
+        Assert.IsNotEmpty(await validator.ValidateAsync(form, data, cancellationToken: TestContext.CancellationToken));
 
         data.SetValue("count", 1);
-        Assert.IsEmpty(await validator.ValidateAsync(form, data));
+        Assert.IsEmpty(await validator.ValidateAsync(form, data, cancellationToken: TestContext.CancellationToken));
 
         data.SetValue("count", 10);
-        Assert.IsNotEmpty(await validator.ValidateAsync(form, data));
+        Assert.IsNotEmpty(await validator.ValidateAsync(form, data, cancellationToken: TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -129,7 +129,7 @@ public class JsonSchemaImportTests
         data.SetValue("quantity", 7);
         data.SetValue("tags", new List<object?> { "a", "a" });
 
-        var messages = await new BormValidator().ValidateAsync(form, data);
+        var messages = await new BormValidator().ValidateAsync(form, data, cancellationToken: TestContext.CancellationToken);
 
         Assert.Contains(m => m.FieldPath == "quantity", messages);
         Assert.Contains(m => m.FieldPath == "tags", messages);
@@ -188,10 +188,10 @@ public class JsonSchemaImportTests
         var validator = new BormValidator();
 
         // No card, no obligation.
-        Assert.IsEmpty(await validator.ValidateAsync(form, data));
+        Assert.IsEmpty(await validator.ValidateAsync(form, data, cancellationToken: TestContext.CancellationToken));
 
         data.SetValue("creditCard", "4111111111111111");
-        var messages = await validator.ValidateAsync(form, data);
+        var messages = await validator.ValidateAsync(form, data, cancellationToken: TestContext.CancellationToken);
         Assert.Contains(m => m.FieldPath == "billingAddress", messages);
     }
 
@@ -217,12 +217,12 @@ public class JsonSchemaImportTests
         var validator = new BormValidator();
 
         data.SetValue("kind", "business");
-        var business = await validator.ValidateAsync(form, data);
+        var business = await validator.ValidateAsync(form, data, cancellationToken: TestContext.CancellationToken);
         Assert.Contains(m => m.FieldPath == "companyName", business);
         Assert.DoesNotContain(m => m.FieldPath == "nickname", business);
 
         data.SetValue("kind", "personal");
-        var personal = await validator.ValidateAsync(form, data);
+        var personal = await validator.ValidateAsync(form, data, cancellationToken: TestContext.CancellationToken);
         Assert.Contains(m => m.FieldPath == "nickname", personal);
         Assert.DoesNotContain(m => m.FieldPath == "companyName", personal);
     }
@@ -262,7 +262,7 @@ public class JsonSchemaImportTests
         var vat = form.FindField("vat")!;
         var group = Assert.IsExactInstanceOfType<BormConditionGroup>(vat.DisabledWhen);
         Assert.AreEqual(BormConditionLogic.Or, group.Logic);
-        Assert.AreEqual(2, group.Conditions.Count);
+        Assert.HasCount(2, group.Conditions);
     }
 
     [TestMethod]
@@ -283,7 +283,7 @@ public class JsonSchemaImportTests
         var form = BormJsonSchemaImporter.Import(json);
 
         Assert.IsTrue(form.IsWizard);
-        Assert.AreEqual(2, form.Steps.Count);
+        Assert.HasCount(2, form.Steps);
         Assert.AreEqual("First", form.Steps[0].Title);
         Assert.IsNotNull(form.Steps[1].VisibleWhen);
     }
@@ -297,6 +297,8 @@ public class JsonSchemaImportTests
         Assert.IsTrue(BormJsonSchemaImporter.TryImport("""{"type":"object","properties":{}}""", out var form, out _));
         Assert.IsEmpty(form.Fields);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }
 
 [TestClass]
@@ -330,7 +332,7 @@ public class JsonSchemaRoundTripTests
         Assert.AreEqual(original.Title, reimported.Title);
         Assert.AreEqual(original.Description, reimported.Description);
         Assert.AreEqual(2, reimported.Columns);
-        Assert.AreEqual(original.Fields.Count, reimported.Fields.Count);
+        Assert.HasCount(original.Fields.Count, reimported.Fields);
 
         var customer = reimported.FindField("customer")!;
         Assert.IsTrue(customer.Required);
@@ -364,7 +366,7 @@ public class JsonSchemaRoundTripTests
         Assert.IsTrue(address.Children.Single(c => c.Name == "city").Required);
 
         Assert.IsTrue(reimported.IsWizard);
-        Assert.AreEqual(2, reimported.Steps.Count);
+        Assert.HasCount(2, reimported.Steps);
         Assert.AreEqual("Who", reimported.Steps[0].Title);
         Assert.AreSequenceEqual(["customer", "kind"], reimported.Steps[0].Fields);
         Assert.IsNotNull(reimported.Steps[1].VisibleWhen);
@@ -376,12 +378,12 @@ public class JsonSchemaRoundTripTests
         var original = BormSchemaGenerator.Generate<RegistrationModel>();
         var reimported = BormJsonSchemaImporter.Import(BormJsonSchemaExporter.Export(original));
 
-        Assert.AreEqual(original.Fields.Count, reimported.Fields.Count);
+        Assert.HasCount(original.Fields.Count, reimported.Fields);
         Assert.AreEqual(BormFieldType.Email, reimported.FindField("Email")!.Type);
         Assert.AreEqual(BormFieldType.Select, reimported.FindField("AccountType")!.Type);
         Assert.AreEqual(BormFieldType.Object, reimported.FindField("Address")!.Type);
         Assert.AreEqual(BormFieldType.Array, reimported.FindField("Items")!.Type);
-        Assert.AreEqual(2, reimported.FindField("Items")!.ItemTemplate!.Children.Count);
+        Assert.HasCount(2, reimported.FindField("Items")!.ItemTemplate!.Children);
     }
 
     [TestMethod]

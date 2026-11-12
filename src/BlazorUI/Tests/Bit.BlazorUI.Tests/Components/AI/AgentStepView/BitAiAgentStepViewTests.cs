@@ -215,8 +215,8 @@ public class BitAiAgentStepViewTests : BitAiTestBase
 
         var chips = component.FindAll(".bit-aiasv-tls > .bit-aiasv-tli .bit-tag");
         Assert.HasCount(2, chips);
-        StringAssert.Contains(chips[0].TextContent, "search_docs");
-        StringAssert.Contains(chips[1].TextContent, "call_unknown");
+        Assert.Contains("search_docs", chips[0].TextContent);
+        Assert.Contains("call_unknown", chips[1].TextContent);
         Assert.AreEqual("search_docs", chips[0].GetAttribute("title"));
         Assert.AreEqual("call_unknown", chips[1].GetAttribute("title"));
         // The wrench is no glyph of the core font, so the icon also carries the class of the package's own font.
@@ -282,7 +282,7 @@ public class BitAiAgentStepViewTests : BitAiTestBase
 
         Assert.IsTrue(root.ClassList.Contains("custom-class"));
         Assert.IsTrue(root.ClassList.Contains("bit-dis"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin: 1px");
+        Assert.Contains("margin: 1px", root.GetAttribute("style")!);
     }
 
     [TestMethod,
@@ -303,7 +303,7 @@ public class BitAiAgentStepViewTests : BitAiTestBase
         }
         else
         {
-            StringAssert.Contains(style, expected);
+            Assert.Contains(expected, style!);
         }
     }
 
@@ -336,7 +336,7 @@ public class BitAiAgentStepViewTests : BitAiTestBase
             .Add(c => c.Styles, new() { Root = "color: red", Body = "color: blue" }));
 
         Assert.IsTrue(component.Find(".bit-aiasv").ClassList.Contains("c-root"));
-        StringAssert.Contains(component.Find(".bit-aiasv").GetAttribute("style"), "color: red");
+        Assert.Contains("color: red", component.Find(".bit-aiasv").GetAttribute("style")!);
         Assert.AreEqual("color: blue", component.Find(".bit-aiasv-bdy").GetAttribute("style"));
         Assert.IsTrue(component.Find(".bit-aiasv-mrk").ClassList.Contains("c-marker"));
         Assert.IsTrue(component.Find(".bit-aiasv-ttl").ClassList.Contains("c-title"));
@@ -363,7 +363,7 @@ public class BitAiAgentStepViewTests : BitAiTestBase
     [TestMethod]
     public void BitAiAgentStepViewParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual("BitParams.BitAiAgentStepView", BitAiAgentStepViewParams.ParamName);
+        Assert.AreEqual("BitParams.BitAiAgentStepView", new BitAiAgentStepViewParams().Name);
         Assert.AreEqual(BitAiAgentStepViewParams.ParamName, new BitAiAgentStepViewParams().Name);
     }
 }

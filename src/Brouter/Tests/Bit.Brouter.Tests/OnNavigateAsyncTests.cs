@@ -25,7 +25,7 @@ public class OnNavigateAsyncTests : BunitTestContext
         cut.WaitForAssertion(() =>
         {
             Assert.IsNotNull(cut.Find("[data-testid=discovered]"));
-            Assert.IsTrue(cut.Find("[data-testid=discovered]").TextContent.Contains("id:7"));
+            Assert.Contains("id:7", cut.Find("[data-testid=discovered]").TextContent);
         });
     }
 
@@ -40,7 +40,7 @@ public class OnNavigateAsyncTests : BunitTestContext
         cut.WaitForAssertion(() =>
         {
             Assert.IsNotNull(cut.Find("[data-testid=discovered]"));
-            Assert.IsTrue(cut.Instance.HookPaths.Contains("/discovered/3"));
+            Assert.Contains("/discovered/3", cut.Instance.HookPaths);
         });
     }
 
@@ -53,6 +53,6 @@ public class OnNavigateAsyncTests : BunitTestContext
         var cut = RenderComponent<OnNavigateHost>();
         cut.WaitForAssertion(() => cut.Find("[data-testid=home]"));
 
-        Assert.IsTrue(cut.Instance.HookRuns >= 1);
+        Assert.IsGreaterThanOrEqualTo(1, cut.Instance.HookRuns);
     }
 }

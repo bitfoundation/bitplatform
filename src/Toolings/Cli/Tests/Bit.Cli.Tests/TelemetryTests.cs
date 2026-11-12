@@ -67,8 +67,8 @@ public class TelemetryTests
         var telemetry = CliTelemetry.Start(decision, host.Environment, host.Services.Settings, "translate", longRunning: false, writer);
         telemetry.Complete(0);
 
-        StringAssert.Contains(writer.ToString(), "\"name\":\"bit translate\"");
-        StringAssert.Contains(writer.ToString(), "bit.command");
+        Assert.Contains("\"name\":\"bit translate\"", writer.ToString());
+        Assert.Contains("bit.command", writer.ToString());
     }
 
     [TestMethod]
@@ -101,12 +101,12 @@ public class TelemetryTests
         var root = activities.Single(a => a.DisplayName == "bit new");
         var tags = root.TagObjects.Select(t => t.Key).ToList();
 
-        CollectionAssert.Contains(tags, TelemetryFields.ErrorCode);
-        CollectionAssert.Contains(tags, TelemetryFields.OsType);
-        CollectionAssert.DoesNotContain(tags, "bit.project.name");
-        CollectionAssert.DoesNotContain(tags, "file.path");
-        CollectionAssert.DoesNotContain(tags, TelemetryFields.Platforms);
-        CollectionAssert.DoesNotContain(tags, TelemetryFields.TemplatePrefix + "database");
+        Assert.Contains(TelemetryFields.ErrorCode, tags);
+        Assert.Contains(TelemetryFields.OsType, tags);
+        Assert.DoesNotContain("bit.project.name", tags);
+        Assert.DoesNotContain("file.path", tags);
+        Assert.DoesNotContain(TelemetryFields.Platforms, tags);
+        Assert.DoesNotContain(TelemetryFields.TemplatePrefix + "database", tags);
     }
 
     [TestMethod]
@@ -156,9 +156,9 @@ public class TelemetryTests
         var eventTags = exception.Tags.ToDictionary(t => t.Key, t => t.Value?.ToString());
 
         Assert.AreEqual("System.IO.IOException", eventTags[TelemetryFields.ExceptionType]);
-        StringAssert.StartsWith(eventTags[TelemetryFields.ExceptionMessage], "HResult 0x");
-        StringAssert.Contains(eventTags[TelemetryFields.ExceptionStackTrace], "System.UnauthorizedAccessException");
-        StringAssert.Contains(eventTags[TelemetryFields.ProblemId], "System.IO.IOException at ");
+        Assert.StartsWith("HResult 0x", eventTags[TelemetryFields.ExceptionMessage]);
+        Assert.Contains("System.UnauthorizedAccessException", eventTags[TelemetryFields.ExceptionStackTrace]!);
+        Assert.Contains("System.IO.IOException at ", eventTags[TelemetryFields.ProblemId]!);
         Assert.AreEqual(ActivityStatusCode.Error, root.Status);
 
         var stepActivity = activities.Single(a => a.DisplayName == "restore");
@@ -234,7 +234,7 @@ public class TelemetryTests
                 ? new ProcessSpec { FileName = "cmd.exe", Arguments = ["/c", "echo [%APPLICATIONINSIGHTS_STATSBEAT_DISABLED%]"] }
                 : new ProcessSpec { FileName = "sh", Arguments = ["-c", "echo [$APPLICATIONINSIGHTS_STATSBEAT_DISABLED]"] };
 
-            var result = runner.RunAsync(spec).GetAwaiter().GetResult();
+            var result = runner.RunAsync(spec, TestContext.CancellationToken).GetAwaiter().GetResult();
 
             Assert.IsTrue(result.Succeeded);
             Assert.IsFalse(result.Output.Contains("[true]", StringComparison.Ordinal), result.Output);
@@ -252,4 +252,6 @@ public class TelemetryTests
         var telemetry = CliTelemetry.Start(decision, host.Environment, host.Services.Settings, "new", longRunning: false, TextWriter.Null, tracing => tracing.AddInMemoryExporter(activities));
         return (activities, telemetry);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

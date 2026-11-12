@@ -48,7 +48,7 @@ public class AppQueryStringCollectionTests
     [DataRow("?a=1&a=2&a=3")]
     public void Parse_Should_NotThrow_OnAnyRepetitionShape(string query)
     {
-        Assert.HasCount(1, AppQueryStringCollection.Parse(query));
+        Assert.ContainsSingle(AppQueryStringCollection.Parse(query));
     }
 
     /// <summary>

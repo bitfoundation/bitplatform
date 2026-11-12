@@ -77,7 +77,7 @@ public class BitDatePickerLookE2ETests : BitDatePickersE2ETestBase
 
         // The unset picker publishes no color class of its own.
         var classes = await Page.Locator("#dp-color-none").GetAttributeAsync("class");
-        Assert.IsFalse(Colors.Any(c => classes!.Split(' ').Contains($"bit-dtp-{c.Suffix}")), classes);
+        Assert.DoesNotContain(c => classes!.Split(' ').Contains($"bit-dtp-{c.Suffix}"), Colors, classes);
     }
 
     [TestMethod]
@@ -191,11 +191,11 @@ public class BitDatePickerLookE2ETests : BitDatePickersE2ETestBase
 
         var startIcon = await BoxAsync(Page.Locator("#dp-iconstart .bit-dtp-ico"));
         var startInput = await BoxAsync(Input("dp-iconstart"));
-        Assert.IsTrue(startIcon.X < startInput.X, "The icon leads the input.");
+        Assert.IsLessThan(startInput.X, startIcon.X, "The icon leads the input.");
 
         var endIcon = await BoxAsync(Page.Locator("#dp-color-none .bit-dtp-ico"));
         var endInput = await BoxAsync(Input("dp-color-none"));
-        Assert.IsTrue(endIcon.X > endInput.X, "By default the icon follows the input.");
+        Assert.IsGreaterThan(endInput.X, endIcon.X, "By default the icon follows the input.");
     }
 
     [TestMethod]
@@ -425,7 +425,7 @@ public class BitDatePickerLookE2ETests : BitDatePickersE2ETestBase
 
         var icon = await BoxAsync(root.Locator(".bit-dtp-ico"));
         var input = await BoxAsync(Input("dp-rtl"));
-        Assert.IsTrue(icon.X < input.X, "Right to left, the icon at the end of the field is on its left.");
+        Assert.IsLessThan(input.X, icon.X, "Right to left, the icon at the end of the field is on its left.");
 
         var pid = await OpenPickerAsync("dp-rtl");
         await Expect(Callout(pid)).ToHaveAttributeAsync("dir", "rtl");
@@ -437,7 +437,7 @@ public class BitDatePickerLookE2ETests : BitDatePickersE2ETestBase
 
         var day = await BoxAsync(Day(pid, Today));
         var next = await BoxAsync(Day(pid, 2024, 6, 13));
-        Assert.IsTrue(next.X < day.X, "The days of a week run from right to left.");
+        Assert.IsLessThan(day.X, next.X, "The days of a week run from right to left.");
 
         await Expect(Day(pid, Today)).ToBeFocusedAsync();
         await Page.Keyboard.PressAsync("ArrowRight");
@@ -505,16 +505,16 @@ public class BitDatePickerLookE2ETests : BitDatePickersE2ETestBase
         await OpenAsync(Route);
 
         var normal = await PickerIdAsync("dp-motion");
-        Assert.IsTrue(Seconds(await StyleOfAsync(Callout(normal), "animation-duration")) >= 0.1, "The callout animates in.");
+        Assert.IsGreaterThanOrEqualTo(0.1, Seconds(await StyleOfAsync(Callout(normal), "animation-duration")), "The callout animates in.");
 
         await Page.EmulateMediaAsync(new() { ReducedMotion = ReducedMotion.Reduce });
 
         var reduced = await OpenPickerAsync("dp-motion");
-        Assert.IsTrue(Seconds(await StyleOfAsync(Callout(reduced), "animation-duration")) < 0.001, "Reduced motion collapses the entry animation.");
+        Assert.IsLessThan(0.001, Seconds(await StyleOfAsync(Callout(reduced), "animation-duration")), "Reduced motion collapses the entry animation.");
         await Page.Keyboard.PressAsync("Escape");
 
         var forced = await OpenPickerAsync("dp-motion-force");
         await Expect(Page.Locator("#dp-motion-force")).ToHaveClassAsync(HasClass("bit-fam"));
-        Assert.IsTrue(Seconds(await StyleOfAsync(Callout(forced), "animation-duration")) >= 0.1, "ForceAnimation brings the animation back.");
+        Assert.IsGreaterThanOrEqualTo(0.1, Seconds(await StyleOfAsync(Callout(forced), "animation-duration")), "ForceAnimation brings the animation back.");
     }
 }

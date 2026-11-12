@@ -102,10 +102,10 @@ public class PrerenderTests
 
         var style = StyleOf(RenderFadeUp(ctx));
 
-        StringAssert.StartsWith(style, "opacity:1;;--bm-a:");
-        StringAssert.Contains(style, "bm-transform-2 500ms linear 0ms 1 normal backwards");
-        StringAssert.Contains(style, "bm-opacity-2 500ms linear 0ms 1 normal backwards");
-        StringAssert.Contains(style, ";--bm-transform-0:translate(0px,20px);--bm-transform-1:none");
+        Assert.StartsWith("opacity:1;;--bm-a:", style);
+        Assert.Contains("bm-transform-2 500ms linear 0ms 1 normal backwards", style);
+        Assert.Contains("bm-opacity-2 500ms linear 0ms 1 normal backwards", style);
+        Assert.Contains(";--bm-transform-0:translate(0px,20px);--bm-transform-1:none", style);
         Assert.IsTrue(style!.EndsWith(';'), "the consumer's style is appended straight after");
     }
 
@@ -132,7 +132,7 @@ public class PrerenderTests
         var style = StyleOf(RenderFadeUp(ctx));
 
         // The OS preference is left to the stylesheet's media query: transforms snap, opacity fades.
-        StringAssert.Contains(style, ";--bm-ar:bm-opacity-2 500ms linear 0ms 1 normal backwards");
+        Assert.Contains(";--bm-ar:bm-opacity-2 500ms linear 0ms 1 normal backwards", style!);
     }
 
     [TestMethod]
@@ -152,7 +152,7 @@ public class PrerenderTests
                 b.CloseElement();
             })));
 
-        StringAssert.EndsWith(StyleOf(cut), ";color:red");
+        Assert.EndsWith(";color:red", StyleOf(cut));
     }
 
     [TestMethod]
@@ -193,10 +193,10 @@ public class PrerenderTests
 
         var items = cut.FindAll("li").Select(li => li.GetAttribute("style")!).ToArray();
         // Radiating from the last child needs the full child count, known only once all have mounted.
-        StringAssert.Contains(items[0], " 200ms 1 normal backwards");
-        StringAssert.Contains(items[1], " 100ms 1 normal backwards");
-        StringAssert.Contains(items[2], " 0ms 1 normal backwards");
-        StringAssert.StartsWith(items[0], "opacity:1;");
+        Assert.Contains(" 200ms 1 normal backwards", items[0]);
+        Assert.Contains(" 100ms 1 normal backwards", items[1]);
+        Assert.Contains(" 0ms 1 normal backwards", items[2]);
+        Assert.StartsWith("opacity:1;", items[0]);
     }
 
     [TestMethod]
@@ -313,8 +313,8 @@ public class PrerenderTests
         });
 
         var second = cut.FindAll("li")[1].GetAttribute("style")!;
-        StringAssert.Contains(second, "--bm-af:bm-opacity-2 300ms ease-out 100ms");
-        StringAssert.Contains(second, "--bm-ar:bm-opacity-2 300ms ease-out 0ms");
+        Assert.Contains("--bm-af:bm-opacity-2 300ms ease-out 100ms", second);
+        Assert.Contains("--bm-ar:bm-opacity-2 300ms ease-out 0ms", second);
     }
 
     // ── The runtime taking over ────────────────────────────────────────────────
@@ -366,10 +366,10 @@ public class PrerenderTests
 
         var style = StyleOf(RenderFadeUp(ctx));
 
-        StringAssert.Contains(style, "bm-opacity-2 500ms linear -200ms 1 normal backwards");
+        Assert.Contains("bm-opacity-2 500ms linear -200ms 1 normal backwards", style!);
         Assert.IsFalse(ctx.Interop.WasCalled("playWaapiAnimation"));
         // How far in the animation is gets read off the prerendered markup it replaces.
-        CollectionAssert.AreEqual(new[] { "bm-prerendered" }, ctx.Interop.PrerenderedAnimationQueries);
+        Assert.AreSequenceEqual(new[] { "bm-prerendered" }, ctx.Interop.PrerenderedAnimationQueries);
     }
 
     [TestMethod]
@@ -388,11 +388,11 @@ public class PrerenderTests
             .Add(p => p.Animate, Bm.To(opacity: 1))
             .Add(p => p.Transition, Bm.Tween(0.5, ease: BmEase.Linear))
             .Add(p => p.ChildContent, StyledDiv("color:red")));
-        StringAssert.Contains(StyleOf(cut), "--bm-a:");
+        Assert.Contains("--bm-a:", StyleOf(cut)!);
 
         // An unchanged attribute isn't written again, so the animation keeps playing...
         cut.Render(ps => ps.Add(p => p.ChildContent, StyledDiv("color:red")));
-        StringAssert.Contains(StyleOf(cut), "--bm-a:");
+        Assert.Contains("--bm-a:", StyleOf(cut)!);
 
         // ...but a rewritten one must not restart it from where it was at the first render.
         cut.Render(ps => ps.Add(p => p.ChildContent, StyledDiv("color:blue")));
@@ -487,7 +487,7 @@ public class PrerenderTests
 
         // One element was prerendered at rest; the second is new and enters.
         var styles = cut.FindAll("div").Select(d => d.GetAttribute("style")).ToArray();
-        CollectionAssert.AreEqual(new[] { "opacity:1;", "opacity:0;" }, styles);
+        Assert.AreSequenceEqual(new[] { "opacity:1;", "opacity:0;" }, styles);
     }
 
     [TestMethod]

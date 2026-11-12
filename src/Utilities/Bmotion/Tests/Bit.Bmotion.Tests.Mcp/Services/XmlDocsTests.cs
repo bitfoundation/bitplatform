@@ -1,4 +1,4 @@
-namespace Bit.Bmotion.Tests.Mcp.Services;
+﻿namespace Bit.Bmotion.Tests.Mcp.Services;
 
 /// <summary>
 /// The XML documentation reader. It is the only source of prose in the API reference, and it is
@@ -49,7 +49,7 @@ public class XmlDocsTests
             .Where(text => text is not null)
             .ToArray();
 
-        Assert.AreNotEqual(0, texts.Length);
+        Assert.IsNotEmpty(texts);
 
         foreach (var text in texts)
         {
@@ -70,8 +70,8 @@ public class XmlDocsTests
     {
         var summary = BmotionXmlDocs.GetSummary($"T:{typeof(BmotionPresenceGroup<>).FullName}")!;
 
-        StringAssert.Contains(summary, "BmotionPresenceGroup.ChildContent");
-        StringAssert.Contains(summary, "BmotionPresenceGroup.Items");
+        Assert.Contains("BmotionPresenceGroup.ChildContent", summary);
+        Assert.Contains("BmotionPresenceGroup.Items", summary);
         Assert.IsFalse(summary.Contains("`1", StringComparison.Ordinal), $"An arity marker reached the reader: {summary}");
     }
 
@@ -89,7 +89,7 @@ public class XmlDocsTests
             .Where(text => text is not null)
             .ToArray();
 
-        Assert.AreNotEqual(0, texts.Length, "Nothing in the library is documented, so the XML file was not loaded.");
+        Assert.IsNotEmpty(texts, "Nothing in the library is documented, so the XML file was not loaded.");
 
         foreach (var text in texts)
         {
@@ -110,7 +110,7 @@ public class XmlDocsTests
         var summary = BmotionXmlDocs.GetSummary($"P:{typeof(Bit.Bmotion.Bmotion).FullName}.{nameof(Bit.Bmotion.Bmotion.Inherit)}");
 
         Assert.IsNotNull(summary);
-        StringAssert.Contains(summary, "\n\n", $"The paragraph break was flattened away:\n{summary}");
+        Assert.Contains("\n\n", summary, $"The paragraph break was flattened away:\n{summary}");
     }
 
     [TestMethod]
@@ -124,6 +124,6 @@ public class XmlDocsTests
             .Where((line, index) => index > 0 && line.Length > 0 && char.IsLower(line[0]))
             .ToArray();
 
-        Assert.AreEqual(0, brokenSentences.Length, $"The summary is still wrapped:\n{summary}");
+        Assert.IsEmpty(brokenSentences, $"The summary is still wrapped:\n{summary}");
     }
 }

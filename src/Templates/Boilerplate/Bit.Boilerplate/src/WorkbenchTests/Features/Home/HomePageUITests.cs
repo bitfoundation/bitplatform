@@ -78,7 +78,7 @@ public class HomePageUITests : WorkbenchPageTest
 
         await Context.RouteAsync(url => url.Contains("/api/thumbnails/", StringComparison.Ordinal), async route =>
         {
-            await Task.Delay(300);
+            await Task.Delay(300, TestContext.CancellationToken);
             await route.ContinueAsync();
         });
 

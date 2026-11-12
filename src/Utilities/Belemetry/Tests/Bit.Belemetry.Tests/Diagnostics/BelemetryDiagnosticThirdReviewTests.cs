@@ -20,7 +20,7 @@ public class BelemetryDiagnosticThirdReviewTests
         Assert.HasCount(2, recorded);
         Assert.AreEqual(recorded[0].Exception!.Fingerprint, recorded[1].Exception!.Fingerprint, "One group.");
 
-        var capture = await host.Diagnostics.CaptureAsync(new() { Exception = first });
+        var capture = await host.Diagnostics.CaptureAsync(new() { Exception = first }, TestContext.CancellationToken);
 
         Assert.AreEqual(recorded[0].Sequence, capture.Subject!.Sequence, "The occurrence that logged this object, not the latest of its group.");
         Assert.AreEqual("Order 10423 failed", capture.Subject.Exception!.Message);
@@ -52,16 +52,17 @@ public class BelemetryDiagnosticThirdReviewTests
         var logger = host.Factory.CreateLogger("App");
         for (var i = 0; i < 50; i++) logger.LogWarning("Step {Step} is slow", i);
         logger.LogError(DiagnosticsTestHost.Thrown(() => new InvalidOperationException("kept")), "failure");
-        for (var i = 0; i < 5; i++) await host.Diagnostics.RecordSnapshotAsync("step-" + i);
+        for (var i = 0; i < 5; i++) await host.Diagnostics.RecordSnapshotAsync("step-" + i, TestContext.CancellationToken);
 
-        var capture = await host.Diagnostics.CaptureAsync(new() { IncludeSnapshots = true });
+        var capture = await host.Diagnostics.CaptureAsync(new() { IncludeSnapshots = true }, TestContext.CancellationToken);
         capture.Confirm();
-        using var zip = new ZipArchive(new MemoryStream(await capture.ExportAsync()));
+        using var zip = new ZipArchive(new MemoryStream(await capture.ExportAsync(TestContext.CancellationToken)));
 
         Assert.IsLessThanOrEqualTo(64L * 1024, zip.Entries.Sum(e => e.Length), "Every file of the bundle, the snapshots included.");
-        Assert.AreEqual("kept", capture.Subject?.Exception?.Message, "The failure is kept.");
+        var actualValue = capture.Subject?.Exception?.Message;
+        Assert.AreEqual("kept", actualValue, "The failure is kept.");
         Assert.IsTrue(capture.Dropped.ContainsKey("snapshot_size_limit"));
-        Assert.IsTrue(capture.MissingEvidence.Any(m => m.Contains("snapshots were left out at the bundle size limit")));
+        Assert.Contains(m => m.Contains("snapshots were left out at the bundle size limit"), capture.MissingEvidence);
         Assert.IsNotEmpty(capture.Snapshots, "As many as fit stay.");
     }
 
@@ -74,7 +75,7 @@ public class BelemetryDiagnosticThirdReviewTests
             s.AddBitBelemetrySnapshotProvider<CooperativeSnapshot>();
         });
 
-        var capture = await host.Diagnostics.CaptureAsync(new() { IncludeSnapshots = true });
+        var capture = await host.Diagnostics.CaptureAsync(new() { IncludeSnapshots = true }, TestContext.CancellationToken);
 
         var blocking = capture.Snapshots.Single(s => s.Name == "blocking");
         Assert.AreEqual(BelemetrySnapshotStatus.TimedOut, blocking.Status, "It returned, but only after the timeout.");
@@ -88,9 +89,9 @@ public class BelemetryDiagnosticThirdReviewTests
         await using var host = DiagnosticsTestHost.Create(configureServices: s => s.AddSingleton<IBelemetryComponentContextProvider, HangingProvider>());
         host.Factory.CreateLogger("App").LogError(DiagnosticsTestHost.Thrown(() => new InvalidOperationException("e")), "e");
 
-        var capture = await host.Diagnostics.CaptureAsync().AsTask().WaitAsync(TimeSpan.FromSeconds(30));
+        var capture = await host.Diagnostics.CaptureAsync(cancellationToken: TestContext.CancellationToken).AsTask().WaitAsync(TimeSpan.FromSeconds(30), TestContext.CancellationToken);
 
-        Assert.IsTrue(capture.MissingEvidence.Any(m => m.Contains("'hanging' timed out")), string.Join("; ", capture.MissingEvidence));
+        Assert.Contains(m => m.Contains("'hanging' timed out"), capture.MissingEvidence, string.Join("; ", capture.MissingEvidence));
     }
 
     [TestMethod]
@@ -151,4 +152,6 @@ public class BelemetryDiagnosticThirdReviewTests
     {
         public bool IsExcluded(string componentType) => componentType.StartsWith("Tool.", StringComparison.Ordinal);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

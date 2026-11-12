@@ -45,7 +45,7 @@ public class BitFullCalendarBrowserTests : PerformanceTestBase
         RecordInteraction("renderMonth", EventCount, renderTime, browser);
 
         var cells = await Page.Locator("#perf-calendar .bit-bfc-month-cell").CountAsync();
-        Assert.IsTrue(cells >= 35, $"The month view has {cells} day cells.");
+        Assert.IsGreaterThanOrEqualTo(35, cells, $"The month view has {cells} day cells.");
         AssertWithinThreshold(browser.Duration, RenderThreshold, $"Month view render of {EventCount} events");
     }
 
@@ -64,7 +64,7 @@ public class BitFullCalendarBrowserTests : PerformanceTestBase
 
         // A slot of the day on every resource's row.
         var slots = await Page.Locator(January).CountAsync();
-        Assert.IsTrue(slots >= ResourceCount, $"The timeline has {slots} slots of January 31, for {ResourceCount} resources.");
+        Assert.IsGreaterThanOrEqualTo(ResourceCount, slots, $"The timeline has {slots} slots of January 31, for {ResourceCount} resources.");
         AssertWithinThreshold(browser.Duration, RenderThreshold, $"Timeline month render of {EventCount} events");
     }
 

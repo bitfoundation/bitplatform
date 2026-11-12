@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
@@ -66,7 +66,7 @@ public class PrerenderMountTests
     {
         var html = await PrerenderAsync<InitialMountHost>("http://localhost/home");
 
-        StringAssert.Contains(html, "im-content");
+        Assert.Contains("im-content", html);
     }
 
     [TestMethod]
@@ -74,7 +74,7 @@ public class PrerenderMountTests
     {
         var html = await PrerenderAsync<InitialMountNestedHost>("http://localhost/docs/guide/intro");
 
-        StringAssert.Contains(html, "im-content");
+        Assert.Contains("im-content", html);
     }
 
     [TestMethod]
@@ -82,7 +82,7 @@ public class PrerenderMountTests
     {
         var html = await PrerenderAsync<InitialMountWrappedHost>("http://localhost/home");
 
-        StringAssert.Contains(html, "im-content");
+        Assert.Contains("im-content", html);
     }
 
     [TestMethod]
@@ -94,7 +94,7 @@ public class PrerenderMountTests
         // the prerenderer to wait for it - fired detached, this prerenders as an empty router.
         var html = await PrerenderAsync<InitialMountDeepWrappedHost>("http://localhost/home");
 
-        StringAssert.Contains(html, "im-content");
+        Assert.Contains("im-content", html);
     }
 
     [TestMethod]
@@ -102,7 +102,7 @@ public class PrerenderMountTests
     {
         var html = await PrerenderAsync<InitialMountHost>("http://localhost/no-such-page");
 
-        Assert.IsFalse(html.Contains("im-content"), "an unmatched URL must not emit routed content");
-        Assert.IsFalse(html.Contains("im-other"), "an unmatched URL must not emit routed content");
+        Assert.DoesNotContain("im-content", html, "an unmatched URL must not emit routed content");
+        Assert.DoesNotContain("im-other", html, "an unmatched URL must not emit routed content");
     }
 }

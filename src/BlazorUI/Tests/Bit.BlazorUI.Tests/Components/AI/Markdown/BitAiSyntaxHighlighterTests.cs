@@ -39,8 +39,8 @@ public class BitAiSyntaxHighlighterTests
 
         foreach (var token in tokens)
         {
-            Assert.IsTrue(token.Start >= position, "Tokens must be ordered and must not overlap.");
-            Assert.IsTrue(token.Start + token.Length <= code.Length, "Tokens must stay inside the source.");
+            Assert.IsGreaterThanOrEqualTo(position, token.Start, "Tokens must be ordered and must not overlap.");
+            Assert.IsLessThanOrEqualTo(code.Length, token.Start + token.Length, "Tokens must stay inside the source.");
             position = token.Start + token.Length;
         }
     }
@@ -52,8 +52,8 @@ public class BitAiSyntaxHighlighterTests
         var tokens = BitAiSyntaxHighlighter.Highlight(code, "json");
 
         // A quoted key is a property, quotes and all; a quoted value is a string.
-        CollectionAssert.AreEqual(new[] { "\"name\"", "\"age\"" }, Texts(code, tokens, BitAiTokenKind.Property));
-        CollectionAssert.AreEqual(new[] { "\"Ada\"" }, Texts(code, tokens, BitAiTokenKind.String));
+        Assert.AreSequenceEqual(new[] { "\"name\"", "\"age\"" }, Texts(code, tokens, BitAiTokenKind.Property));
+        Assert.AreSequenceEqual(new[] { "\"Ada\"" }, Texts(code, tokens, BitAiTokenKind.String));
         Assert.Contains(t => t.Kind is BitAiTokenKind.Number, tokens);
     }
 
@@ -63,8 +63,8 @@ public class BitAiSyntaxHighlighterTests
         const string code = "{\n  \"name\" : \"bit\",\n  \"count\":\t3,\n  \"flags\": { \"on\": true, \"list\": [\"a\", \"b\"] }\n}";
         var tokens = BitAiSyntaxHighlighter.Highlight(code, "json");
 
-        CollectionAssert.AreEqual(new[] { "\"name\"", "\"count\"", "\"flags\"", "\"on\"", "\"list\"" }, Texts(code, tokens, BitAiTokenKind.Property));
-        CollectionAssert.AreEqual(new[] { "\"bit\"", "\"a\"", "\"b\"" }, Texts(code, tokens, BitAiTokenKind.String));
+        Assert.AreSequenceEqual(new[] { "\"name\"", "\"count\"", "\"flags\"", "\"on\"", "\"list\"" }, Texts(code, tokens, BitAiTokenKind.Property));
+        Assert.AreSequenceEqual(new[] { "\"bit\"", "\"a\"", "\"b\"" }, Texts(code, tokens, BitAiTokenKind.String));
     }
 
     [TestMethod]
@@ -75,8 +75,8 @@ public class BitAiSyntaxHighlighterTests
     {
         var tokens = BitAiSyntaxHighlighter.Highlight(code, language);
 
-        CollectionAssert.Contains(Texts(code, tokens, BitAiTokenKind.Property), key);
-        CollectionAssert.DoesNotContain(Texts(code, tokens, BitAiTokenKind.String), key);
+        Assert.Contains(key, Texts(code, tokens, BitAiTokenKind.Property));
+        Assert.DoesNotContain(key, Texts(code, tokens, BitAiTokenKind.String));
     }
 
     [TestMethod]
@@ -91,7 +91,7 @@ public class BitAiSyntaxHighlighterTests
     {
         var tokens = BitAiSyntaxHighlighter.Highlight(code, language);
 
-        CollectionAssert.Contains(Texts(code, tokens, BitAiTokenKind.String), value);
+        Assert.Contains(value, Texts(code, tokens, BitAiTokenKind.String));
         Assert.IsEmpty(Texts(code, tokens, BitAiTokenKind.Property).Where(t => t.StartsWith('"')).ToArray());
     }
 
@@ -99,7 +99,7 @@ public class BitAiSyntaxHighlighterTests
     public void YamlAndCssBareKeysAreStillProperties()
     {
         const string yaml = "name: bit\ncount: 3";
-        CollectionAssert.AreEqual(new[] { "name", "count" }, Texts(yaml, BitAiSyntaxHighlighter.Highlight(yaml, "yaml"), BitAiTokenKind.Property));
+        Assert.AreSequenceEqual(new[] { "name", "count" }, Texts(yaml, BitAiSyntaxHighlighter.Highlight(yaml, "yaml"), BitAiTokenKind.Property));
 
         const string css = ".a { color: red; margin-top: 0 }";
         CollectionAssert.IsSubsetOf(new[] { "color", "top" }, Texts(css, BitAiSyntaxHighlighter.Highlight(css, "css"), BitAiTokenKind.Property));

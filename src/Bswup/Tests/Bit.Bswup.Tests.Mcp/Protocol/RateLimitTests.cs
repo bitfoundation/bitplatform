@@ -43,7 +43,7 @@ public class RateLimitTests
         // shares one bucket, which is also what happens behind a proxy.
         for (int request = 1; request <= PermitLimit; request++)
         {
-            var response = await _client.GetAsync("/api/mcp/GetBswupJsApi?name=version");
+            var response = await _client.GetAsync("/api/mcp/GetBswupJsApi?name=version", _.CancellationToken);
 
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, $"request {request} of the window was rejected");
         }
@@ -55,7 +55,7 @@ public class RateLimitTests
     [TestMethod]
     public async Task AGetPastTheLimit_IsRefusedWith429()
     {
-        var response = await _client.GetAsync("/api/mcp/GetBswupJsApi?name=version");
+        var response = await _client.GetAsync("/api/mcp/GetBswupJsApi?name=version", TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.TooManyRequests, response.StatusCode);
     }
@@ -63,9 +63,9 @@ public class RateLimitTests
     [TestMethod]
     public async Task APostPastTheLimit_IsRefusedWith429RatherThanAnAntiforgeryFailure()
     {
-        var mirror = await _client.PostAsJsonAsync("/api/mcp/InspectBswupServiceWorker", new { script = ServiceWorkerFixtures.Clean });
+        var mirror = await _client.PostAsJsonAsync("/api/mcp/InspectBswupServiceWorker", new { script = ServiceWorkerFixtures.Clean }, cancellationToken: TestContext.CancellationToken);
 
-        Assert.AreEqual(HttpStatusCode.TooManyRequests, mirror.StatusCode, await mirror.Content.ReadAsStringAsync());
+        Assert.AreEqual(HttpStatusCode.TooManyRequests, mirror.StatusCode, await mirror.Content.ReadAsStringAsync(TestContext.CancellationToken));
 
         var mcp = new HttpRequestMessage(HttpMethod.Post, "/mcp")
         {
@@ -74,15 +74,15 @@ public class RateLimitTests
 
         mcp.Headers.Accept.ParseAdd("application/json, text/event-stream");
 
-        var response = await _client.SendAsync(mcp);
+        var response = await _client.SendAsync(mcp, TestContext.CancellationToken);
 
-        Assert.AreEqual(HttpStatusCode.TooManyRequests, response.StatusCode, await response.Content.ReadAsStringAsync());
+        Assert.AreEqual(HttpStatusCode.TooManyRequests, response.StatusCode, await response.Content.ReadAsStringAsync(TestContext.CancellationToken));
     }
 
     [TestMethod]
     public async Task ARefusalSaysHowLongToWait()
     {
-        var response = await _client.GetAsync("/api/mcp/GetBswupJsApi?name=version");
+        var response = await _client.GetAsync("/api/mcp/GetBswupJsApi?name=version", TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.TooManyRequests, response.StatusCode);
         Assert.IsTrue(response.Headers.TryGetValues("Retry-After", out var values), "a throttled client is told nothing about when to come back");
@@ -92,20 +92,21 @@ public class RateLimitTests
     [TestMethod]
     public async Task ARefusalIsASmallMachineReadableBody_NotTheSites404Page()
     {
-        var response = await _client.GetAsync("/api/mcp/GetBswupJsApi?name=version");
-        var body = await response.Content.ReadAsStringAsync();
+        var response = await _client.GetAsync("/api/mcp/GetBswupJsApi?name=version", TestContext.CancellationToken);
+        var body = await response.Content.ReadAsStringAsync(TestContext.CancellationToken);
+        var actualValue = response.Content.Headers.ContentType?.MediaType;
 
-        Assert.AreEqual("application/json", response.Content.Headers.ContentType?.MediaType);
-        Assert.IsTrue(body.Length < 500, $"the refusal came back as {body.Length} characters");
+        Assert.AreEqual("application/json", actualValue);
+        Assert.IsLessThan(500, body.Length, $"the refusal came back as {body.Length} characters");
         Assert.IsFalse(body.Contains("<!DOCTYPE", StringComparison.OrdinalIgnoreCase), "the refusal was re-executed through the app");
-        StringAssert.Contains(body, "too_many_requests");
-        StringAssert.Contains(body, PermitLimit.ToString());
+        Assert.Contains("too_many_requests", body);
+        Assert.Contains(PermitLimit.ToString(), body);
     }
 
     [TestMethod]
     public async Task TheSitesOwnRoutesAreNotInTheWindow()
     {
-        var sitemap = await _client.GetAsync("/sitemap.xml");
+        var sitemap = await _client.GetAsync("/sitemap.xml", TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.OK, sitemap.StatusCode);
     }
@@ -115,4 +116,6 @@ public class RateLimitTests
         protected override void ConfigureWebHost(IWebHostBuilder builder)
             => builder.ConfigureLogging(logging => logging.SetMinimumLevel(LogLevel.Warning));
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

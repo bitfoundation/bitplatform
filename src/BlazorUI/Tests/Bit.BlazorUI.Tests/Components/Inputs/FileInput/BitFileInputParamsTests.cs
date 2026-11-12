@@ -53,8 +53,8 @@ public class BitFileInputParamsTests : BunitTestContext
     [TestMethod]
     public void BitFileInputParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitFileInput)}", BitFileInputParams.ParamName);
-        Assert.AreEqual("BitParams.BitFileInput", BitFileInputParams.ParamName);
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitFileInput)}", new BitFileInputParams().Name);
+        Assert.AreEqual("BitParams.BitFileInput", new BitFileInputParams().Name);
     }
 
     [TestMethod]
@@ -100,7 +100,7 @@ public class BitFileInputParamsTests : BunitTestContext
 
         foreach (var name in paramsProperties)
         {
-            Assert.IsTrue(componentParameters.Contains(name), $"BitFileInputParams.{name} is no parameter of the component.");
+            Assert.Contains(name, componentParameters, $"BitFileInputParams.{name} is no parameter of the component.");
         }
     }
 
@@ -126,7 +126,7 @@ public class BitFileInputParamsTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("bit-fin-txt"));
         Assert.IsTrue(root.ClassList.Contains("bit-fin-dzn"));
         Assert.IsTrue(root.ClassList.Contains("cascaded-root"));
-        StringAssert.Contains(root.GetAttribute("style"), "--s: root;");
+        Assert.Contains("--s: root;", root.GetAttribute("style")!);
         Assert.IsTrue(label.ClassList.Contains("cascaded-label"));
         Assert.AreEqual("--s: label;", label.GetAttribute("style"));
         Assert.IsTrue(component.Find(".bit-fin-dzi").ClassList.Contains("cascaded-dzi"));
@@ -190,7 +190,7 @@ public class BitFileInputParamsTests : BunitTestContext
         Assert.AreEqual("rtl", root.GetAttribute("dir"));
         Assert.IsTrue(root.ClassList.Contains("bit-dis"));
         Assert.IsTrue(root.ClassList.Contains("cascaded"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin: 1px;");
+        Assert.Contains("margin: 1px;", root.GetAttribute("style")!);
         Assert.AreEqual("cascaded-id", root.Id);
         Assert.AreEqual("yes", root.GetAttribute("data-cascaded"));
         Assert.IsTrue(button.HasAttribute("disabled"));

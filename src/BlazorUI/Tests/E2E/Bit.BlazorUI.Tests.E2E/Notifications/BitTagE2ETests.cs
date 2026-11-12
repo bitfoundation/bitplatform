@@ -19,11 +19,23 @@ public class BitTagE2ETests : E2ETestBase
 
     private static readonly Dictionary<string, string> OnTokens = new()
     {
-        ["pri"] = "--bit-clr-pri-text", ["sec"] = "--bit-clr-sec-text", ["ter"] = "--bit-clr-ter-text", ["inf"] = "--bit-clr-inf-text",
-        ["suc"] = "--bit-clr-suc-text", ["wrn"] = "--bit-clr-wrn-text", ["swr"] = "--bit-clr-swr-text", ["err"] = "--bit-clr-err-text",
-        ["pbg"] = "--bit-clr-fg-pri", ["sbg"] = "--bit-clr-fg-pri", ["tbg"] = "--bit-clr-fg-pri",
-        ["pfg"] = "--bit-clr-bg-pri", ["sfg"] = "--bit-clr-bg-pri", ["tfg"] = "--bit-clr-bg-pri",
-        ["pbr"] = "--bit-clr-fg-pri", ["sbr"] = "--bit-clr-fg-pri", ["tbr"] = "--bit-clr-fg-pri",
+        ["pri"] = "--bit-clr-pri-text",
+        ["sec"] = "--bit-clr-sec-text",
+        ["ter"] = "--bit-clr-ter-text",
+        ["inf"] = "--bit-clr-inf-text",
+        ["suc"] = "--bit-clr-suc-text",
+        ["wrn"] = "--bit-clr-wrn-text",
+        ["swr"] = "--bit-clr-swr-text",
+        ["err"] = "--bit-clr-err-text",
+        ["pbg"] = "--bit-clr-fg-pri",
+        ["sbg"] = "--bit-clr-fg-pri",
+        ["tbg"] = "--bit-clr-fg-pri",
+        ["pfg"] = "--bit-clr-bg-pri",
+        ["sfg"] = "--bit-clr-bg-pri",
+        ["tfg"] = "--bit-clr-bg-pri",
+        ["pbr"] = "--bit-clr-fg-pri",
+        ["sbr"] = "--bit-clr-fg-pri",
+        ["tbr"] = "--bit-clr-fg-pri",
     };
 
     private static Regex Any => new(".*");
@@ -39,8 +51,8 @@ public class BitTagE2ETests : E2ETestBase
     {
         var html = await Page.PrerenderedHtmlAsync($"{BaseUrl}/e2e/tag");
 
-        StringAssert.Contains(html, "id=\"basic-tag\"");
-        StringAssert.Contains(html, "Basic tag");
+        Assert.Contains("id=\"basic-tag\"", html);
+        Assert.Contains("Basic tag", html);
 
         await OpenAsync("/e2e/tag");
         await Expect(Page.Locator("#basic-tag .bit-tag-tex")).ToHaveTextAsync("Basic tag");
@@ -100,13 +112,13 @@ public class BitTagE2ETests : E2ETestBase
         var chip = await ComputedStyleAsync("#shape-default", "border-top-left-radius");
         await Expect(Root("shape-rounded")).ToHaveClassAsync(HasClass("bit-tag-rnd"));
         await Expect(Root("shape-rounded")).ToHaveCSSAsync("border-top-left-radius", chip);
-        Assert.IsTrue(NotificationsE2EHelpers.Px(chip) > 0, "The default is the theme's chip corner.");
+        Assert.IsGreaterThan(0, NotificationsE2EHelpers.Px(chip), "The default is the theme's chip corner.");
 
         foreach (var id in new[] { "shape-pill", "shape-circle" })
         {
             await Expect(Root(id)).ToHaveClassAsync(HasClass("bit-tag-cir"));
             var height = (await Root(id).BoxAsync()).Height;
-            Assert.IsTrue(NotificationsE2EHelpers.Px(await ComputedStyleAsync($"#{id}", "border-top-left-radius")) >= height / 2, $"{id} is a pill.");
+            Assert.IsGreaterThanOrEqualTo(height / 2, NotificationsE2EHelpers.Px(await ComputedStyleAsync($"#{id}", "border-top-left-radius")), $"{id} is a pill.");
         }
 
         await Expect(Root("shape-square")).ToHaveClassAsync(HasClass("bit-tag-sqr"));
@@ -142,12 +154,12 @@ public class BitTagE2ETests : E2ETestBase
         var leading = Page.Locator("#icon-leading .bit-tag-icn");
         await Expect(leading).ToHaveClassAsync(HasClass("bit-icon--Calendar"));
         await Expect(leading).ToHaveAttributeAsync("aria-hidden", "true");
-        Assert.IsTrue((await leading.BoxAsync()).Right <= (await Page.Locator("#icon-leading .bit-tag-lbl").BoxAsync()).Left + 0.5);
+        Assert.IsLessThanOrEqualTo((await Page.Locator("#icon-leading .bit-tag-lbl").BoxAsync()).Left + 0.5, (await leading.BoxAsync()).Right);
         Assert.AreEqual(await ComputedStyleAsync("#icon-leading", "font-size"), await ComputedStyleAsync("#icon-leading .bit-tag-icn", "font-size"), "The glyph is sized to the text.");
 
         var trailing = Page.Locator("#icon-trailing .bit-tag-sci");
         await Expect(trailing).ToHaveClassAsync(HasClass("bit-icon--ChevronDown"));
-        Assert.IsTrue((await trailing.BoxAsync()).Left >= (await Page.Locator("#icon-trailing .bit-tag-lbl").BoxAsync()).Right - 0.5);
+        Assert.IsGreaterThanOrEqualTo((await Page.Locator("#icon-trailing .bit-tag-lbl").BoxAsync()).Right - 0.5, (await trailing.BoxAsync()).Left);
 
         await Expect(Root("icon-reversed")).ToHaveClassAsync(HasClass("bit-tag-rvs"));
         var icon = await Page.Locator("#icon-reversed .bit-tag-icn").BoxAsync();
@@ -155,7 +167,7 @@ public class BitTagE2ETests : E2ETestBase
         var secondary = await Page.Locator("#icon-reversed .bit-tag-sci").BoxAsync();
         var dismiss = await Dismiss("icon-reversed").BoxAsync();
         Assert.IsTrue(icon.Left >= label.Right - 0.5 && secondary.Right <= label.Left + 0.5, "Reversed mirrors the content.");
-        Assert.IsTrue(dismiss.Right <= secondary.Left + 0.5, "Reversed puts the dismiss button first.");
+        Assert.IsLessThanOrEqualTo(secondary.Left + 0.5, dismiss.Right, "Reversed puts the dismiss button first.");
     }
 
     [TestMethod]
@@ -168,14 +180,14 @@ public class BitTagE2ETests : E2ETestBase
         await Expect(image).ToHaveAttributeAsync("alt", "");
         await Expect(image).ToHaveCSSAsync("width", "16px");
         await Expect(image).ToHaveCSSAsync("height", "16px");
-        Assert.IsTrue(NotificationsE2EHelpers.Px(await ComputedStyleAsync("#img-plain img", "border-top-left-radius")) >= 8);
+        Assert.IsGreaterThanOrEqualTo(8, NotificationsE2EHelpers.Px(await ComputedStyleAsync("#img-plain img", "border-top-left-radius")));
         await Expect(Page.Locator("#img-alt img")).ToHaveAttributeAsync("alt", "Assigned to Annie");
 
         var text = await Page.Locator("#img-secondary .bit-tag-tex").BoxAsync();
         var second = await Page.Locator("#img-secondary .bit-tag-stx").BoxAsync();
-        Assert.IsTrue(second.Top >= text.Bottom - 0.5, "The secondary text is on a line of its own.");
+        Assert.IsGreaterThanOrEqualTo(text.Bottom - 0.5, second.Top, "The secondary text is on a line of its own.");
         await Expect(Page.Locator("#img-secondary .bit-tag-tex")).ToHaveCSSAsync("font-weight", "600");
-        Assert.IsTrue(NotificationsE2EHelpers.Px(await ComputedStyleAsync("#img-secondary .bit-tag-stx", "font-size")) < NotificationsE2EHelpers.Px(await ComputedStyleAsync("#img-secondary .bit-tag-tex", "font-size")));
+        Assert.IsLessThan(NotificationsE2EHelpers.Px(await ComputedStyleAsync("#img-secondary .bit-tag-tex", "font-size")), NotificationsE2EHelpers.Px(await ComputedStyleAsync("#img-secondary .bit-tag-stx", "font-size")));
         await Expect(Page.Locator("#img-secondary .bit-tag-stx")).ToHaveCSSAsync("font-weight", "400");
     }
 
@@ -216,10 +228,10 @@ public class BitTagE2ETests : E2ETestBase
         await Expect(Page.Locator("#dismissed")).ToHaveTextAsync("Design");
 
         var keys = await Page.EvaluateAsync<string[]>("() => window.__tagKeys");
-        CollectionAssert.Contains(keys, "Delete:true");
-        CollectionAssert.Contains(keys, "Backspace:true");
-        CollectionAssert.Contains(keys, "a:false");
-        CollectionAssert.Contains(keys, "Enter:false");
+        Assert.Contains("Delete:true", keys);
+        Assert.Contains("Backspace:true", keys);
+        Assert.Contains("a:false", keys);
+        Assert.Contains("Enter:false", keys);
     }
 
     [TestMethod]
@@ -374,7 +386,7 @@ public class BitTagE2ETests : E2ETestBase
         var check = Page.Locator("#sel-bound .bit-tag-sic");
         await Expect(check).ToHaveClassAsync(HasClass("bit-icon--Accept"));
         await Expect(check).ToHaveAttributeAsync("aria-hidden", "true");
-        Assert.IsTrue((await check.BoxAsync()).Right <= (await Page.Locator("#sel-bound .bit-tag-lbl").BoxAsync()).Left + 0.5, "The checkmark leads the tag.");
+        Assert.IsLessThanOrEqualTo((await Page.Locator("#sel-bound .bit-tag-lbl").BoxAsync()).Left + 0.5, (await check.BoxAsync()).Right, "The checkmark leads the tag.");
 
         // Selected outline: the tint of the role, with the role's foreground read on it - the primary main drops under
         // 4.5:1 there.
@@ -491,8 +503,8 @@ public class BitTagE2ETests : E2ETestBase
         var icon = await Page.Locator("#tpl-prefix .bit-tag-icn").BoxAsync();
         var secondary = await Page.Locator("#tpl-prefix .bit-tag-sci").BoxAsync();
         var suffix = await Page.Locator("#tpl-suffix-mark").BoxAsync();
-        Assert.IsTrue(prefix.Right <= icon.Left + 0.5, "The prefix is ahead of the icon.");
-        Assert.IsTrue(suffix.Left >= secondary.Right - 0.5, "The suffix is after the trailing glyph.");
+        Assert.IsLessThanOrEqualTo(icon.Left + 0.5, prefix.Right, "The prefix is ahead of the icon.");
+        Assert.IsGreaterThanOrEqualTo(secondary.Right - 0.5, suffix.Left, "The suffix is after the trailing glyph.");
         await Expect(Page.Locator("#tpl-prefix > button #tpl-suffix-mark")).ToHaveCountAsync(1);
     }
 
@@ -503,7 +515,7 @@ public class BitTagE2ETests : E2ETestBase
 
         var wrapped = await Root("wrap-default").BoxAsync();
         var single = await Root("wrap-nowrap").BoxAsync();
-        Assert.IsTrue(wrapped.Height > single.Height + 5, "A tag wraps by default.");
+        Assert.IsGreaterThan(single.Height + 5, wrapped.Height, "A tag wraps by default.");
 
         await Expect(Root("wrap-nowrap")).ToHaveClassAsync(HasClass("bit-tag-nwr"));
         await Expect(Page.Locator("#wrap-nowrap .bit-tag-tex")).ToHaveCSSAsync("text-overflow", "ellipsis");
@@ -518,7 +530,7 @@ public class BitTagE2ETests : E2ETestBase
 
         var trailingTag = await Root("wrap-full-trailing").BoxAsync();
         var trailing = await Page.Locator("#wrap-full-trailing .bit-tag-sci").BoxAsync();
-        Assert.IsTrue(trailingTag.Right - trailing.Right < 20, "The trailing glyph is pushed to the end.");
+        Assert.IsLessThan(20, trailingTag.Right - trailing.Right, "The trailing glyph is pushed to the end.");
     }
 
     [TestMethod]
@@ -686,7 +698,7 @@ public class BitTagE2ETests : E2ETestBase
             Assert.IsTrue(values[0] < values[1] && values[1] < values[2], $"The {what} grows with the size ({string.Join(", ", values)}).");
         }
 
-        Assert.IsTrue((await Dismiss("size-Medium").BoxAsync()).Width >= 24, "From Medium up the dismiss button meets the 24px target.");
+        Assert.IsGreaterThanOrEqualTo(24, (await Dismiss("size-Medium").BoxAsync()).Width, "From Medium up the dismiss button meets the 24px target.");
     }
 
     [TestMethod]
@@ -747,8 +759,8 @@ public class BitTagE2ETests : E2ETestBase
             var icon = await Page.Locator($"#{id} .bit-tag-icn").BoxAsync();
             var label = await Page.Locator($"#{id} .bit-tag-lbl").BoxAsync();
             var dismiss = await Dismiss(id).BoxAsync();
-            Assert.IsTrue(icon.Left >= label.Right - 0.5, $"{id}: the icon is on the right.");
-            Assert.IsTrue(dismiss.Right <= label.Left + 0.5, $"{id}: the dismiss button is on the left.");
+            Assert.IsGreaterThanOrEqualTo(label.Right - 0.5, icon.Left, $"{id}: the icon is on the right.");
+            Assert.IsLessThanOrEqualTo(label.Left + 0.5, dismiss.Right, $"{id}: the dismiss button is on the left.");
         }
 
         var rIcon = await Page.Locator("#rtl-reversed .bit-tag-icn").BoxAsync();
@@ -758,7 +770,7 @@ public class BitTagE2ETests : E2ETestBase
 
         var lIcon = await Page.Locator("#ltr-tag .bit-tag-icn").BoxAsync();
         var lLabel = await Page.Locator("#ltr-tag .bit-tag-lbl").BoxAsync();
-        Assert.IsTrue(lIcon.Right <= lLabel.Left + 0.5);
+        Assert.IsLessThanOrEqualTo(lLabel.Left + 0.5, lIcon.Right);
     }
 
     [TestMethod]
@@ -797,7 +809,7 @@ public class BitTagE2ETests : E2ETestBase
         await Expect(content).ToBeFocusedAsync();
         await Expect(content).ToHaveCSSAsync("outline-color", "rgb(255, 0, 255)");
 
-        Assert.IsTrue((await Root("cv-long").BoxAsync()).Width <= 150.5, "The max-width variable caps the tag.");
+        Assert.IsLessThanOrEqualTo(150.5, (await Root("cv-long").BoxAsync()).Width, "The max-width variable caps the tag.");
         await Expect(Page.Locator("#cv-parts .bit-tag-stx")).ToHaveCSSAsync("font-size", "9px");
         await Expect(Page.Locator("#cv-parts .bit-tag-icn")).ToHaveCSSAsync("font-size", "21px");
         await Expect(Page.Locator("#cv-parts .bit-tag-dsi")).ToHaveCSSAsync("font-size", "21px");

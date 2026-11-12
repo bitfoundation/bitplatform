@@ -70,13 +70,15 @@ public sealed class SqliteTableNamesTests
 
     // A run of */ /* used to backtrack exponentially: at this length the old patterns ran for hours.
     [TestMethod]
-    public void MatchesRepeatedCommentsInLinearTime()
+    public async Task MatchesRepeatedCommentsInLinearTime()
     {
         var sql = "/*" + string.Concat(Enumerable.Repeat("*//*", 2_000));
 
         var check = Task.Run(() => (BsqliteTableNames.LooksLikeWrite(sql), BsqliteTableNames.LooksLikeSchemaChange(sql)));
 
-        Assert.IsTrue(check.Wait(TimeSpan.FromSeconds(5)), "The write and schema-change patterns backtracked.");
-        Assert.AreEqual((false, false), check.Result);
+        var result = await check.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
+        Assert.AreEqual((false, false), result);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

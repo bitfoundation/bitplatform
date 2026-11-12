@@ -117,7 +117,7 @@ public class BitDropMenuTests : BunitTestContext
             parameters.Add(p => p.NoChevron, true);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-drm-chv").Count);
+        Assert.IsEmpty(component.FindAll(".bit-drm-chv"));
     }
 
     [TestMethod]
@@ -130,18 +130,18 @@ public class BitDropMenuTests : BunitTestContext
         });
 
         var overlay = component.Find(".bit-drm-ovl");
-        Assert.IsTrue(overlay.GetAttribute("style").Contains("display:none"));
+        Assert.Contains("display:none", overlay.GetAttribute("style")!);
 
         var button = component.Find(".bit-drm-btn");
         button.Click();
 
         overlay = component.Find(".bit-drm-ovl");
-        Assert.IsTrue(overlay.GetAttribute("style").Contains("display:block"));
+        Assert.Contains("display:block", overlay.GetAttribute("style")!);
 
         overlay.Click();
 
         overlay = component.Find(".bit-drm-ovl");
-        Assert.IsTrue(overlay.GetAttribute("style").Contains("display:none"));
+        Assert.Contains("display:none", overlay.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -194,7 +194,7 @@ public class BitDropMenuTests : BunitTestContext
 
         button.Click();
 
-        Assert.IsTrue(component.Find(".bit-drm-ovl").GetAttribute("style").Contains("display:none"));
+        Assert.Contains("display:none", component.Find(".bit-drm-ovl").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -214,11 +214,11 @@ public class BitDropMenuTests : BunitTestContext
         Assert.AreEqual("true", button.GetAttribute("aria-disabled"));
         Assert.IsTrue(component.Find(".bit-drm").ClassList.Contains("bit-drm-ldg"));
         Assert.IsNotNull(component.Find(".bit-drm-spn"));
-        Assert.AreEqual(0, component.FindAll(".bit-drm-icn").Count);
+        Assert.IsEmpty(component.FindAll(".bit-drm-icn"));
 
         button.Click();
 
-        Assert.IsTrue(component.Find(".bit-drm-ovl").GetAttribute("style").Contains("display:none"));
+        Assert.Contains("display:none", component.Find(".bit-drm-ovl").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -240,9 +240,9 @@ public class BitDropMenuTests : BunitTestContext
 
         var markup = component.Markup;
 
-        Assert.IsTrue(markup.Contains("data-val-test=\"bit\""));
-        Assert.IsTrue(markup.Contains("bit-drm"));
-        Assert.IsTrue(markup.Contains("Body"));
+        Assert.Contains("data-val-test=\"bit\"", markup);
+        Assert.Contains("bit-drm", markup);
+        Assert.Contains("Body", markup);
     }
 
     [TestMethod]
@@ -696,7 +696,7 @@ public class BitDropMenuTests : BunitTestContext
         var callout = component.Find(".bit-drm-cal");
 
         Assert.IsTrue(callout.ClassList.Contains("bit-drm-mxh"));
-        Assert.IsTrue(callout.GetAttribute("style")!.Contains("--bit-DropMenu-callout-max-height:10rem"));
+        Assert.Contains("--bit-DropMenu-callout-max-height:10rem", callout.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -756,9 +756,9 @@ public class BitDropMenuTests : BunitTestContext
         });
 
         Assert.IsNotNull(component.Find(".tmpl"));
-        Assert.AreEqual(0, component.FindAll(".bit-drm-icn").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-drm-txt").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-drm-chv").Count);
+        Assert.IsEmpty(component.FindAll(".bit-drm-icn"));
+        Assert.IsEmpty(component.FindAll(".bit-drm-txt"));
+        Assert.IsEmpty(component.FindAll(".bit-drm-chv"));
     }
 
     [TestMethod]
@@ -771,8 +771,8 @@ public class BitDropMenuTests : BunitTestContext
             parameters.Add(p => p.ChildContent, (RenderFragment)(b => b.AddMarkupContent(0, @"<div class=""from-child""></div>")));
         });
 
-        Assert.AreEqual(1, component.FindAll(".from-body").Count);
-        Assert.AreEqual(0, component.FindAll(".from-child").Count);
+        Assert.ContainsSingle(component.FindAll(".from-body"));
+        Assert.IsEmpty(component.FindAll(".from-child"));
     }
 
     [TestMethod]
@@ -808,9 +808,9 @@ public class BitDropMenuTests : BunitTestContext
         Assert.IsTrue(component.Find(".bit-drm-ovl").ClassList.Contains("cls-overlay"));
         Assert.IsTrue(component.Find(".bit-drm-cal").ClassList.Contains("cls-callout"));
 
-        Assert.IsTrue(component.Find(".bit-drm").GetAttribute("style")!.Contains("color:red"));
-        Assert.IsTrue(component.Find(".bit-drm-btn").GetAttribute("style")!.Contains("color:blue"));
-        Assert.IsTrue(component.Find(".bit-drm-cal").GetAttribute("style")!.Contains("color:green"));
+        Assert.Contains("color:red", component.Find(".bit-drm").GetAttribute("style")!);
+        Assert.Contains("color:blue", component.Find(".bit-drm-btn").GetAttribute("style")!);
+        Assert.Contains("color:green", component.Find(".bit-drm-cal").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -830,7 +830,7 @@ public class BitDropMenuTests : BunitTestContext
 
         root = component.Find(".bit-drm");
         Assert.IsTrue(root.ClassList.Contains("cls-opened"));
-        Assert.IsTrue(root.GetAttribute("style")!.Contains("color:gold"));
+        Assert.Contains("color:gold", root.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -933,7 +933,7 @@ public class BitDropMenuTests : BunitTestContext
         });
 
         Assert.AreEqual("true", component.Find(".bit-drm-btn").GetAttribute("aria-expanded"));
-        Assert.IsTrue(component.Find(".bit-drm-ovl").GetAttribute("style").Contains("display:block"));
+        Assert.Contains("display:block", component.Find(".bit-drm-ovl").GetAttribute("style")!);
 
         component.Find(".bit-drm-ovl").Click();
 
@@ -981,7 +981,7 @@ public class BitDropMenuTests : BunitTestContext
         // The arrow keys open the callout, and their default behavior - scrolling the page - is not
         // something a Blazor keydown handler can suppress per key from within itself.
         Assert.AreEqual(component.Find(".bit-drm-btn").Id, setup.Arguments[0]);
-        CollectionAssert.AreEqual(new[] { "ArrowDown", "ArrowUp" }, (string[])setup.Arguments[1]!);
+        Assert.AreSequenceEqual(new[] { "ArrowDown", "ArrowUp" }, (string[])setup.Arguments[1]!);
     }
 
     [TestMethod]
@@ -1583,9 +1583,9 @@ public class BitDropMenuTests : BunitTestContext
 
         var style = component.Find(".bit-drm-cal").GetAttribute("style")!;
 
-        Assert.IsTrue(style.Contains("--bit-DropMenu-callout-width:16rem"));
-        Assert.IsTrue(style.Contains("--bit-DropMenu-callout-min-width:8rem"));
-        Assert.IsTrue(style.Contains("--bit-DropMenu-callout-max-width:24rem"));
+        Assert.Contains("--bit-DropMenu-callout-width:16rem", style);
+        Assert.Contains("--bit-DropMenu-callout-min-width:8rem", style);
+        Assert.Contains("--bit-DropMenu-callout-max-width:24rem", style);
     }
 
     [TestMethod]
@@ -1838,7 +1838,7 @@ public class BitDropMenuTests : BunitTestContext
 
         // A focus that scrolled the button into view would scroll a sticky header's container, and the
         // scroll dismisses the callout the click just opened.
-        Assert.AreEqual(true, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Single().Arguments[1]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Single().Arguments[1]));
     }
 
     [TestMethod]
@@ -2317,12 +2317,12 @@ public class BitDropMenuTests : BunitTestContext
         Assert.AreEqual(component.Find(".bit-drm").Id, toggle.Arguments[1]);
         Assert.AreEqual(component.Find(".bit-drm-cal").Id, toggle.Arguments[3]);
         Assert.AreEqual(component.Find(".bit-drm-ovl").Id, toggle.Arguments[5]);
-        Assert.AreEqual(true, toggle.Arguments[6]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(toggle.Arguments[6]));
         Assert.AreEqual(BitResponsiveMode.Panel, toggle.Arguments[7]);
         Assert.AreEqual(BitDropDirection.All, toggle.Arguments[8]);
-        Assert.AreEqual(true, toggle.Arguments[9]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(toggle.Arguments[9]));
         // MatchWidth is applied after the callout is measured, which is what makes it win over Width.
-        Assert.AreEqual(true, toggle.Arguments[14]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(toggle.Arguments[14]));
     }
 
     [TestMethod]
@@ -2445,9 +2445,9 @@ public class BitDropMenuTests : BunitTestContext
         });
 
         Assert.IsTrue(component.Find(".bit-drm-spn").ClassList.Contains("cls-spinner"));
-        Assert.IsTrue(component.Find(".bit-drm-spn").GetAttribute("style")!.Contains("color:olive"));
+        Assert.Contains("color:olive", component.Find(".bit-drm-spn").GetAttribute("style")!);
         Assert.IsTrue(component.Find(".bit-drm-ovl").ClassList.Contains("cls-overlay"));
-        Assert.IsTrue(component.Find(".bit-drm-ovl").GetAttribute("style")!.Contains("color:navy"));
+        Assert.Contains("color:navy", component.Find(".bit-drm-ovl").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -2466,12 +2466,12 @@ public class BitDropMenuTests : BunitTestContext
 
         // The callout lives at the end of the body while it is open and every registration is keyed by
         // its id, so a drop menu that goes away without unwinding them leaves both behind.
-        Assert.AreEqual(1, Context.JSInterop.Invocations
-            .Count(i => i.Identifier == "BitBlazorUI.Callouts.clear" && (string)i.Arguments[0]! == calloutId));
-        Assert.AreEqual(1, Context.JSInterop.Invocations
-            .Count(i => i.Identifier == "BitBlazorUI.Utils.disposePreventDefaultKeys" && (string)i.Arguments[0]! == buttonId));
-        Assert.AreEqual(1, Context.JSInterop.Invocations
-            .Count(i => i.Identifier == "BitBlazorUI.Swipes.dispose" && (string)i.Arguments[0]! == calloutId));
+        Assert.ContainsSingle(i => i.Identifier == "BitBlazorUI.Callouts.clear" && (string)i.Arguments[0]! == calloutId, Context.JSInterop.Invocations
+);
+        Assert.ContainsSingle(i => i.Identifier == "BitBlazorUI.Utils.disposePreventDefaultKeys" && (string)i.Arguments[0]! == buttonId, Context.JSInterop.Invocations
+);
+        Assert.ContainsSingle(i => i.Identifier == "BitBlazorUI.Swipes.dispose" && (string)i.Arguments[0]! == calloutId, Context.JSInterop.Invocations
+);
 
         // The keyboard handling of the callout is only registered while it is open, so a drop menu disposed
         // closed has none of it to release.
@@ -2492,8 +2492,8 @@ public class BitDropMenuTests : BunitTestContext
 
         await component.Instance.DisposeAsync();
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations
-            .Count(i => i.Identifier == "BitBlazorUI.Callouts.disposeKeyboard" && (string)i.Arguments[0]! == calloutId));
+        Assert.ContainsSingle(i => i.Identifier == "BitBlazorUI.Callouts.disposeKeyboard" && (string)i.Arguments[0]! == calloutId, Context.JSInterop.Invocations
+);
     }
 
     [TestMethod]
@@ -2514,12 +2514,12 @@ public class BitDropMenuTests : BunitTestContext
         {
             // The expected style of a visible drop menu is no style at all, which Contains reports for
             // any style there is, so the two hiding declarations are ruled out by name instead.
-            Assert.IsFalse(style.Contains("visibility:hidden"));
-            Assert.IsFalse(style.Contains("display:none"));
+            Assert.DoesNotContain("visibility:hidden", style);
+            Assert.DoesNotContain("display:none", style);
         }
         else
         {
-            Assert.IsTrue(style.Contains(expectedStyle));
+            Assert.Contains(expectedStyle, style);
         }
     }
 
@@ -2527,7 +2527,7 @@ public class BitDropMenuTests : BunitTestContext
     [TestMethod]
     public void BitDropMenuParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitDropMenu)}", BitDropMenuParams.ParamName);
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitDropMenu)}", new BitDropMenuParams().Name);
 
         var @params = new BitDropMenuParams();
 
@@ -2569,7 +2569,7 @@ public class BitDropMenuTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("bit-drm-lg"));
         Assert.IsTrue(root.ClassList.Contains("bit-drm-otl"));
         Assert.IsTrue(root.ClassList.Contains("bit-drm-flw"));
-        Assert.AreEqual(0, component.FindAll(".bit-drm-chv").Count);
+        Assert.IsEmpty(component.FindAll(".bit-drm-chv"));
         Assert.IsTrue(component.Find(".bit-drm-icn").ClassList.Contains("bit-icon--Add"));
         Assert.AreEqual("Cascaded title", component.Find(".bit-drm-btn").GetAttribute("title"));
 
@@ -2722,7 +2722,7 @@ public class BitDropMenuTests : BunitTestContext
         var root = component.Find(".bit-drm");
 
         Assert.IsTrue(root.ClassList.Contains("cascaded-root"));
-        Assert.IsTrue(root.GetAttribute("style")!.Contains("color:red"));
+        Assert.Contains("color:red", root.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -2743,10 +2743,10 @@ public class BitDropMenuTests : BunitTestContext
         // The root keeps all of what was written for it, the public variables included.
         var rootStyle = component.Find(".bit-drm").GetAttribute("style")!;
 
-        Assert.IsTrue(rootStyle.Contains("color:blue"));
-        Assert.IsTrue(rootStyle.Contains("--bit-DropMenu-callout-background: pink"));
-        Assert.IsTrue(rootStyle.Contains("--bit-DropMenu-radius:0"));
-        Assert.IsTrue(rootStyle.Contains("--bit-DropMenu-callout-radius:2px"));
+        Assert.Contains("color:blue", rootStyle);
+        Assert.Contains("--bit-DropMenu-callout-background: pink", rootStyle);
+        Assert.Contains("--bit-DropMenu-radius:0", rootStyle);
+        Assert.Contains("--bit-DropMenu-callout-radius:2px", rootStyle);
 
         // Nothing of it is copied onto the callout or the overlay, which write only what the component composes
         // for them: the sizing parameters, then Styles.Callout, and the display of the overlay.
@@ -2772,14 +2772,14 @@ public class BitDropMenuTests : BunitTestContext
             parameters.Add(p => p.Styles, new BitDropMenuClassStyles { Opened = "--bit-DropMenu-callout-shadow:none" });
         });
 
-        Assert.IsFalse((component.Find(".bit-drm").GetAttribute("style") ?? "").Contains("--bit-DropMenu-callout-shadow:none"));
+        Assert.DoesNotContain("--bit-DropMenu-callout-shadow:none", (component.Find(".bit-drm").GetAttribute("style") ?? ""));
         Assert.IsNull(component.Find(".bit-drm-cal").GetAttribute("style"));
 
         component.Find(".bit-drm-btn").Click();
 
         // Styles.Opened lands on the root while the callout is open, which is where Callouts.ts reads it from for
         // the relocated callout; the callout itself is left without a style of its own.
-        Assert.IsTrue(component.Find(".bit-drm").GetAttribute("style")!.Contains("--bit-DropMenu-callout-shadow:none"));
+        Assert.Contains("--bit-DropMenu-callout-shadow:none", component.Find(".bit-drm").GetAttribute("style")!);
         Assert.IsNull(component.Find(".bit-drm-cal").GetAttribute("style"));
 
         var toggle = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
@@ -2889,8 +2889,8 @@ public class BitDropMenuTests : BunitTestContext
 
         Assert.AreEqual("false", component.Find(".bit-drm-btn").GetAttribute("aria-expanded"));
         Assert.AreEqual(1, CountKeyboardDisposals());
-        Assert.AreEqual(false, Context.JSInterop.Invocations["BitBlazorUI.Callouts.disposeKeyboard"].Single().Arguments[1]);
-        Assert.AreEqual(1, KeyboardSetups().Count());
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(Context.JSInterop.Invocations["BitBlazorUI.Callouts.disposeKeyboard"].Single().Arguments[1]));
+        Assert.ContainsSingle(KeyboardSetups());
         Assert.AreEqual(0, CountPieceByPieceKeyboardCalls());
     }
 
@@ -2914,7 +2914,7 @@ public class BitDropMenuTests : BunitTestContext
         var setup = KeyboardSetups().Single();
         Assert.AreEqual("focusIn", KeyboardMode(setup));
         Assert.AreEqual(component.Find(".bit-drm").Id, setup.Arguments[4]);
-        Assert.AreEqual(false, FocusesCallout(setup));
+        Assert.IsFalse(FocusesCallout(setup));
 
         component.Find(".bit-drm").MouseLeave();
         component.WaitForAssertion(() => Assert.AreEqual("false", component.Find(".bit-drm-btn").GetAttribute("aria-expanded")));
@@ -2940,9 +2940,9 @@ public class BitDropMenuTests : BunitTestContext
         // The switch takes the watch on the focus going in back, and the narrowed Escape, the Tab key and the
         // focus go over with it, all in the one call the key costs.
         var taken = KeyboardSetups().Last();
-        Assert.AreEqual(2, KeyboardSetups().Count());
+        Assert.HasCount(2, KeyboardSetups());
         Assert.AreEqual("tabOut", KeyboardMode(taken));
-        Assert.AreEqual(true, FocusesCallout(taken));
+        Assert.IsTrue(FocusesCallout(taken));
         Assert.AreEqual(0, CountPieceByPieceKeyboardCalls());
     }
 
@@ -2963,7 +2963,7 @@ public class BitDropMenuTests : BunitTestContext
         component.Find(".bit-drm").MouseEnter();
         component.Find(".bit-drm-btn").KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });
 
-        Assert.AreEqual(2, KeyboardSetups().Count());
+        Assert.HasCount(2, KeyboardSetups());
 
         // Escape closes the callout while the call is still on its way: the release goes after it, so the JS side
         // ends up with nothing registered.
@@ -2974,17 +2974,17 @@ public class BitDropMenuTests : BunitTestContext
 
         // bUnit records the invocations grouped by identifier, not in call order, so the order is read off the counts:
         // the two setups were all there before the Escape, and the release did not send another one.
-        Assert.AreEqual(2, KeyboardSetups().Count());
+        Assert.HasCount(2, KeyboardSetups());
 
         takeOver.SetVoidResult();
 
         // The call coming back registers nothing more, and the next opening starts over from nothing registered.
-        Assert.AreEqual(2, KeyboardSetups().Count());
+        Assert.HasCount(2, KeyboardSetups());
 
         component.Find(".bit-drm").MouseLeave();
         component.Find(".bit-drm").MouseEnter();
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, KeyboardSetups().Count()));
+        component.WaitForAssertion(() => Assert.HasCount(3, KeyboardSetups()));
         Assert.AreEqual("focusIn", KeyboardMode(KeyboardSetups().Last()));
         Assert.AreEqual(0, CountPieceByPieceKeyboardCalls());
     }
@@ -3002,9 +3002,9 @@ public class BitDropMenuTests : BunitTestContext
 
         // The second key asks for the focus alone: nothing is registered again.
         var again = KeyboardSetups().Last();
-        Assert.AreEqual(2, KeyboardSetups().Count());
+        Assert.HasCount(2, KeyboardSetups());
         Assert.IsNull(KeyboardMode(again));
-        Assert.AreEqual(true, FocusesCallout(again));
+        Assert.IsTrue(FocusesCallout(again));
     }
 
     [TestMethod]
@@ -3022,20 +3022,20 @@ public class BitDropMenuTests : BunitTestContext
         // Each switch is one call, which takes the previous mode back on the JS side; a parameter changing moves
         // no focus.
         Assert.AreEqual("focusTrap", KeyboardMode(KeyboardSetups().Last()));
-        Assert.AreEqual(false, FocusesCallout(KeyboardSetups().Last()));
+        Assert.IsFalse(FocusesCallout(KeyboardSetups().Last()));
         Assert.AreEqual(1, CountFocusTrapSetups());
 
         component.Render(parameters => parameters.Add(p => p.TrapFocus, false));
 
         Assert.AreEqual("tabOut", KeyboardMode(KeyboardSetups().Last()));
         Assert.AreEqual(2, CountTabOutSetups());
-        Assert.AreEqual(3, KeyboardSetups().Count());
+        Assert.HasCount(3, KeyboardSetups());
         Assert.AreEqual(0, CountPieceByPieceKeyboardCalls());
 
         // A parameter change that switches nothing sends nothing.
         component.Render(parameters => parameters.Add(p => p.Text, "Other"));
 
-        Assert.AreEqual(3, KeyboardSetups().Count());
+        Assert.HasCount(3, KeyboardSetups());
     }
 
     [TestMethod]
@@ -3119,12 +3119,12 @@ public class BitDropMenuTests : BunitTestContext
             parameters.AddChildContent("<div class=\"lazy-content\">Body</div>");
         });
 
-        Assert.AreEqual(0, component.FindAll(".lazy-content").Count);
+        Assert.IsEmpty(component.FindAll(".lazy-content"));
 
         component.Find(".bit-drm-btn").Click();
 
         // The callout is placed against its content, so it is only shown once the render put the content in.
-        Assert.AreEqual(1, component.FindAll(".lazy-content").Count);
+        Assert.ContainsSingle(component.FindAll(".lazy-content"));
         Assert.AreEqual("true", component.Find(".bit-drm-btn").GetAttribute("aria-expanded"));
         Assert.AreEqual(1, CountCalloutToggles());
         Assert.AreEqual(1, opened);
@@ -3132,7 +3132,7 @@ public class BitDropMenuTests : BunitTestContext
         component.Find(".bit-drm-ovl").Click();
 
         // Once rendered, the content stays, so whatever state it holds survives the close.
-        Assert.AreEqual(1, component.FindAll(".lazy-content").Count);
+        Assert.ContainsSingle(component.FindAll(".lazy-content"));
         Assert.AreEqual("false", component.Find(".bit-drm-btn").GetAttribute("aria-expanded"));
     }
 
@@ -3145,7 +3145,7 @@ public class BitDropMenuTests : BunitTestContext
             parameters.AddChildContent("<div class=\"eager-content\">Body</div>");
         });
 
-        Assert.AreEqual(1, component.FindAll(".eager-content").Count);
+        Assert.ContainsSingle(component.FindAll(".eager-content"));
     }
 
     [TestMethod]
@@ -3160,7 +3160,7 @@ public class BitDropMenuTests : BunitTestContext
 
         component.Render(parameters => parameters.Add(p => p.IsOpen, true));
 
-        Assert.AreEqual(1, component.FindAll(".lazy-content").Count);
+        Assert.ContainsSingle(component.FindAll(".lazy-content"));
         Assert.AreEqual(1, CountCalloutToggles());
     }
 

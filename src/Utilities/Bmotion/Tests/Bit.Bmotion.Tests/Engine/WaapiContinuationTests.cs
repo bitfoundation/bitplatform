@@ -84,7 +84,7 @@ public class WaapiContinuationTests
         engine.ComputeFrame(500_100);
         Assert.AreEqual(100, State(engine).Transforms["x"], 1e-9, "it lands exactly on its target");
         Assert.IsTrue(completion.Task.IsCompleted);
-        Assert.IsFalse(completion.Task.Result, "partly superseded, so it settles as superseded, not completed");
+        Assert.IsFalse(await completion.Task, "partly superseded, so it settles as superseded, not completed");
     }
 
     [TestMethod]
@@ -148,7 +148,7 @@ public class WaapiContinuationTests
 
         Assert.AreEqual(50, engine.GetState("el")!.TransformsAfter(durationMs / 4)["x"], 0.5);
         Assert.AreEqual(100, engine.GetState("el")!.TransformsAfter(durationMs * 2)["x"], 1e-9);
-        StringAssert.Contains(engine.GetTransformStringAfter("el", durationMs / 4)!, "50");
+        Assert.Contains("50", engine.GetTransformStringAfter("el", durationMs / 4)!);
     }
 
     [TestMethod]

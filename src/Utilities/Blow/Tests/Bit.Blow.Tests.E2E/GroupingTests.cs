@@ -61,7 +61,7 @@ public sealed class GroupingTests : BlowTest
 
         await ButtonStartingWith(page, "↶ Undo").ClickAsync();
         await WaitForQuietAsync(page);
-        CollectionAssert.AreEquivalent(before, await IdsAsync(page), "one undo did not take the whole edit back");
+        Assert.AreSequenceEqual(before, await IdsAsync(page), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, "one undo did not take the whole edit back");
     }
 
     [TestMethod]

@@ -43,8 +43,8 @@ public class NotFoundTests
     [DynamicData(nameof(MissingPages))]
     public async Task AMissingPage_Should_Answer404InTheLayoutItBelongsTo(string path, string layout)
     {
-        using var response = await client.GetAsync(path);
-        var html = await response.Content.ReadAsStringAsync();
+        using var response = await client.GetAsync(path, TestContext.CancellationToken);
+        var html = await response.Content.ReadAsStringAsync(TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
         Assert.AreEqual(1, Regex.Count(html, "class=\"lp-site "), $"{path} renders more than one layout");
@@ -78,4 +78,6 @@ public class NotFoundTests
         Assert.AreEqual(HttpStatusCode.MovedPermanently, response.StatusCode, from);
         Assert.AreEqual(to, new Uri(server.Address, response.Headers.Location!).AbsolutePath, from);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

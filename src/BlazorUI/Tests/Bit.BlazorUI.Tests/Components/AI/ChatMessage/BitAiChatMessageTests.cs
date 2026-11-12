@@ -34,7 +34,7 @@ public class BitAiChatMessageTests : BitAiTestBase
         var assistant = RenderComponent<BitAiChatMessage>(p => p.Add(c => c.Message, Assistant(new BitAiTextPart("hi"))));
 
         Assert.IsTrue(assistant.Find("article.bit-aicms").ClassList.Contains("bit-aicms-ast"));
-        StringAssert.Contains(assistant.Find(".bit-aicms-bdy").TextContent, "hi");
+        Assert.Contains("hi", assistant.Find(".bit-aicms-bdy").TextContent);
         Assert.IsEmpty(assistant.FindAll(".bit-aicms-bbl"));
     }
 
@@ -60,7 +60,7 @@ public class BitAiChatMessageTests : BitAiTestBase
 
         var component = RenderComponent<BitAiChatMessage>(p => p.Add(c => c.Message, message));
 
-        Assert.HasCount(1, component.FindComponents<BitAiThinkingIndicator>());
+        Assert.ContainsSingle(component.FindComponents<BitAiThinkingIndicator>());
         Assert.AreEqual("true", component.Find("article").GetAttribute("aria-busy"));
     }
 
@@ -74,7 +74,7 @@ public class BitAiChatMessageTests : BitAiTestBase
 
         var component = RenderComponent<BitAiChatMessage>(p => p.Add(c => c.Message, message));
 
-        StringAssert.Contains(component.Markup, "Searching the web");
+        Assert.Contains("Searching the web", component.Markup);
     }
 
     [TestMethod]
@@ -93,7 +93,7 @@ public class BitAiChatMessageTests : BitAiTestBase
         component.WaitForAssertion(() =>
         {
             Assert.IsEmpty(component.FindComponents<BitAiThinkingIndicator>());
-            StringAssert.Contains(component.Markup, "The answer");
+            Assert.Contains("The answer", component.Markup);
         }, TimeSpan.FromSeconds(2));
 
         processor.Apply(new BitAiStatusEvent("Running search"));
@@ -121,7 +121,7 @@ public class BitAiChatMessageTests : BitAiTestBase
         component.WaitForAssertion(() =>
         {
             Assert.IsEmpty(component.FindComponents<BitAiThinkingIndicator>());
-            StringAssert.Contains(component.Markup, "The answer");
+            Assert.Contains("The answer", component.Markup);
         }, TimeSpan.FromSeconds(2));
     }
 
@@ -140,7 +140,7 @@ public class BitAiChatMessageTests : BitAiTestBase
 
         component.WaitForAssertion(() =>
         {
-            Assert.HasCount(1, component.FindComponents<BitAiThinkingIndicator>());
+            Assert.ContainsSingle(component.FindComponents<BitAiThinkingIndicator>());
             Assert.IsNull(component.FindComponent<BitAiThinkingIndicator>().Instance.Label);
         }, TimeSpan.FromSeconds(2));
 
@@ -156,10 +156,10 @@ public class BitAiChatMessageTests : BitAiTestBase
         var message = processor.BeginGeneration();
         processor.Apply(new BitAiMessageStartedEvent());
         processor.Apply(new BitAiPartStartedEvent(BitAiMessagePartKinds.Markdown) { PartId = "p1" });
-        Assert.HasCount(1, message.Parts);
+        Assert.ContainsSingle(message.Parts);
 
         var component = RenderComponent<BitAiChatMessage>(p => p.Add(c => c.Message, message));
-        Assert.HasCount(1, component.FindComponents<BitAiThinkingIndicator>());
+        Assert.ContainsSingle(component.FindComponents<BitAiThinkingIndicator>());
 
         // The first text reaching the part changes no structure of the message, and still takes the indicator away.
         processor.Apply(new BitAiTextDeltaEvent("Hello") { PartId = "p1" });
@@ -167,7 +167,7 @@ public class BitAiChatMessageTests : BitAiTestBase
         component.WaitForAssertion(() =>
         {
             Assert.IsEmpty(component.FindComponents<BitAiThinkingIndicator>());
-            StringAssert.Contains(component.Markup, "Hello");
+            Assert.Contains("Hello", component.Markup);
         }, TimeSpan.FromSeconds(2));
     }
 
@@ -235,7 +235,7 @@ public class BitAiChatMessageTests : BitAiTestBase
         var component = RenderComponent<BitAiChatMessage>(p => p.Add(c => c.Message, message));
 
         Assert.IsNotNull(component.Find("[role=alert]"));
-        StringAssert.Contains(component.Markup, "rate limited");
+        Assert.Contains("rate limited", component.Markup);
     }
 
     // Ported from MessageRenderingTests.CitedSourcesAreListedUnderTheMessage.
@@ -250,8 +250,8 @@ public class BitAiChatMessageTests : BitAiTestBase
 
         var component = RenderComponent<BitAiChatMessage>(p => p.Add(c => c.Message, message));
 
-        Assert.HasCount(1, component.FindComponents<BitAiSourceList>());
-        StringAssert.Contains(component.Markup, "Reference Guide");
+        Assert.ContainsSingle(component.FindComponents<BitAiSourceList>());
+        Assert.Contains("Reference Guide", component.Markup);
     }
 
     [TestMethod]
@@ -264,8 +264,8 @@ public class BitAiChatMessageTests : BitAiTestBase
         var component = RenderComponent<BitAiChatMessage>(p => p.Add(c => c.Message, message));
 
         // The one list is the part's, drawn where the part sits, rather than a second one under the message.
-        Assert.HasCount(1, component.FindComponents<BitAiSourceList>());
-        Assert.HasCount(1, component.FindComponents<BitAiMessagePartView>().Where(v => v.Instance.Part is BitAiSourcesPart).ToList());
+        Assert.ContainsSingle(component.FindComponents<BitAiSourceList>());
+        Assert.ContainsSingle(component.FindComponents<BitAiMessagePartView>().Where(v => v.Instance.Part is BitAiSourcesPart).ToList());
     }
 
     // Ported from MessageRenderingTests.MessagePartsAreDispatchedByKind.
@@ -280,9 +280,9 @@ public class BitAiChatMessageTests : BitAiTestBase
         var component = RenderComponent<BitAiChatMessage>(p => p.Add(c => c.Message, message));
 
         Assert.HasCount(3, component.FindComponents<BitAiMessagePartView>());
-        Assert.HasCount(1, component.FindComponents<BitAiReasoningPartView>());
-        Assert.HasCount(1, component.FindComponents<BitAiToolCallView>());
-        StringAssert.Contains(component.Markup, "answer");
+        Assert.ContainsSingle(component.FindComponents<BitAiReasoningPartView>());
+        Assert.ContainsSingle(component.FindComponents<BitAiToolCallView>());
+        Assert.Contains("answer", component.Markup);
     }
 
     // Ported from MessageRenderingTests.ARegisteredPartRendererReplacesTheBuiltInOne.
@@ -315,7 +315,7 @@ public class BitAiChatMessageTests : BitAiTestBase
 
         part.Append("streamed in");
 
-        component.WaitForAssertion(() => StringAssert.Contains(component.Markup, "streamed in"), TimeSpan.FromSeconds(2));
+        component.WaitForAssertion(() => Assert.Contains("streamed in", component.Markup), TimeSpan.FromSeconds(2));
     }
 
     [TestMethod]
@@ -357,7 +357,7 @@ public class BitAiChatMessageTests : BitAiTestBase
 
         message.SetStatus(BitAiMessageStatus.Complete);
 
-        component.WaitForAssertion(() => Assert.HasCount(1, component.FindComponents<BitAiMessageActions>()));
+        component.WaitForAssertion(() => Assert.ContainsSingle(component.FindComponents<BitAiMessageActions>()));
     }
 
     [TestMethod]
@@ -372,7 +372,7 @@ public class BitAiChatMessageTests : BitAiTestBase
             .Add(c => c.Message, User("hello"))
             .Add(c => c.Session, session));
 
-        Assert.HasCount(1, with.FindComponents<BitAiCopyButton>());
+        Assert.ContainsSingle(with.FindComponents<BitAiCopyButton>());
         Assert.AreEqual("Edit", with.Find(".bit-aicms-act button[title='Edit']").GetAttribute("aria-label"));
     }
 
@@ -436,7 +436,7 @@ public class BitAiChatMessageTests : BitAiTestBase
 
         component.Find("button[title='Edit']").Click();
 
-        component.WaitForAssertion(() => Assert.HasCount(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]));
+        component.WaitForAssertion(() => Assert.ContainsSingle(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]));
 
         component.FindAll(".bit-aicms-eda button")[0].Click();
 
@@ -466,7 +466,7 @@ public class BitAiChatMessageTests : BitAiTestBase
 
         component.Find(".bit-aicms-edt").KeyDown(new KeyboardEventArgs { Key = "Escape", ShiftKey = true });
 
-        Assert.HasCount(1, component.FindAll(".bit-aicms-edt"));
+        Assert.ContainsSingle(component.FindAll(".bit-aicms-edt"));
 
         component.Render(p => p.Add(c => c.Disabled, true));
 
@@ -474,7 +474,7 @@ public class BitAiChatMessageTests : BitAiTestBase
 
         component.Find(".bit-aicms-edt").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
-        Assert.HasCount(1, component.FindAll(".bit-aicms-edt"));
+        Assert.ContainsSingle(component.FindAll(".bit-aicms-edt"));
 
         component.Render(p => p.Add(c => c.Disabled, false));
         component.Find(".bit-aicms-edt").KeyDown(new KeyboardEventArgs { Key = "Escape" });
@@ -503,7 +503,7 @@ public class BitAiChatMessageTests : BitAiTestBase
         component.Find("button[title='Edit']").Click();
         component.Find(".bit-aicms-edt textarea").Input("hello again");
 
-        var turn = session.SubmitAsync("one more question");
+        var turn = session.SubmitAsync("one more question", cancellationToken: TestContext.CancellationToken);
 
         component.WaitForAssertion(() => Assert.AreEqual("true", component.FindAll(".bit-aicms-eda button")[1].GetAttribute("aria-disabled")), TimeSpan.FromSeconds(2));
         idle.WaitForAssertion(() => Assert.AreEqual("true", idle.Find("button[title='Edit']").GetAttribute("aria-disabled")), TimeSpan.FromSeconds(2));
@@ -542,7 +542,7 @@ public class BitAiChatMessageTests : BitAiTestBase
 
         save.Click();
 
-        Assert.HasCount(1, component.FindAll(".bit-aicms-edt"));
+        Assert.ContainsSingle(component.FindAll(".bit-aicms-edt"));
         Assert.AreEqual("hello", message.GetText());
         Assert.ContainsSingle(session.Conversation.Messages);
     }
@@ -559,7 +559,7 @@ public class BitAiChatMessageTests : BitAiTestBase
             .Add(c => c.Message, message)
             .Add(c => c.Session, session));
 
-        Assert.HasCount(1, component.FindComponents<BitAiAttachmentChip>());
+        Assert.ContainsSingle(component.FindComponents<BitAiAttachmentChip>());
         Assert.IsEmpty(component.FindAll(".bit-aicms-bbl"));
         Assert.IsEmpty(component.FindComponents<BitAiCopyButton>());
 
@@ -648,7 +648,7 @@ public class BitAiChatMessageTests : BitAiTestBase
 
         message.SetStatus(BitAiMessageStatus.Complete);
 
-        component.WaitForAssertion(() => Assert.HasCount(1, component.FindAll(".bit-aicms-fup")));
+        component.WaitForAssertion(() => Assert.ContainsSingle(component.FindAll(".bit-aicms-fup")));
         var group = component.Find(".bit-aicms-fup");
         Assert.AreEqual("group", group.GetAttribute("role"));
         Assert.AreEqual(BitAiStrings.Default.FollowUps, group.GetAttribute("aria-label"));
@@ -705,14 +705,14 @@ public class BitAiChatMessageTests : BitAiTestBase
             .Add(c => c.Message, message)
             .AddCascadingValue(new BitAiUiOptions { ToolCallDisplay = _ => BitAiToolCallDisplay.Hidden }));
 
-        Assert.HasCount(1, component.FindComponents<BitAiThinkingIndicator>());
+        Assert.ContainsSingle(component.FindComponents<BitAiThinkingIndicator>());
         Assert.IsEmpty(component.FindAll(".bit-aitcv"));
 
         // A failure is the reader's to see whatever the options say, so the reply has something to show.
         call.SetResult(BitAiToolOutcome.Failure(new BitAiError("down")));
 
         component.WaitForAssertion(() => Assert.IsEmpty(component.FindComponents<BitAiThinkingIndicator>()));
-        Assert.HasCount(1, component.FindAll(".bit-aitcv"));
+        Assert.ContainsSingle(component.FindAll(".bit-aitcv"));
     }
 
     [TestMethod]
@@ -721,7 +721,7 @@ public class BitAiChatMessageTests : BitAiTestBase
         var linger = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         await using var session = new BitAiChatSession(new LingeringTransport(linger.Task), null, new() { Pacing = null });
 
-        var turn = session.SubmitAsync("go");
+        var turn = session.SubmitAsync("go", cancellationToken: TestContext.CancellationToken);
         await WaitForAsync(() => session.Conversation.Messages.Count == 2
                                  && session.Conversation.Messages[1] is { IsBusy: false, FollowUps: not null });
 
@@ -736,7 +736,7 @@ public class BitAiChatMessageTests : BitAiTestBase
         linger.SetResult();
         await turn;
 
-        component.WaitForAssertion(() => Assert.HasCount(1, component.FindAll(".bit-aicms-fup")), TimeSpan.FromSeconds(2));
+        component.WaitForAssertion(() => Assert.ContainsSingle(component.FindAll(".bit-aicms-fup")), TimeSpan.FromSeconds(2));
     }
 
     [TestMethod]
@@ -748,7 +748,7 @@ public class BitAiChatMessageTests : BitAiTestBase
             .Add(c => c.Message, message)
             .AddCascadingValue(new BitAiUiOptions { ToolCallDisplay = _ => BitAiToolCallDisplay.Hidden }));
 
-        Assert.HasCount(1, component.FindAll(".bit-aimpv"));
+        Assert.ContainsSingle(component.FindAll(".bit-aimpv"));
         Assert.IsEmpty(component.FindAll(".bit-aitcv"));
     }
 
@@ -798,7 +798,7 @@ public class BitAiChatMessageTests : BitAiTestBase
             .Add(c => c.Styles, new() { Root = "color: red;", Bubble = "color: green;", Actions = "color: blue;" }));
 
         Assert.IsTrue(component.Find(".bit-aicms").ClassList.Contains("custom-root"));
-        StringAssert.Contains(component.Find(".bit-aicms").GetAttribute("style"), "color: red;");
+        Assert.Contains("color: red;", component.Find(".bit-aicms").GetAttribute("style")!);
         Assert.IsTrue(component.Find(".bit-aicms-bbl").ClassList.Contains("custom-bubble"));
         Assert.AreEqual("color: green;", component.Find(".bit-aicms-bbl").GetAttribute("style"));
         Assert.IsTrue(component.Find(".bit-aicms-act").ClassList.Contains("custom-actions"));
@@ -817,7 +817,7 @@ public class BitAiChatMessageTests : BitAiTestBase
         var root = component.Find(".bit-aicms");
 
         Assert.IsTrue(root.ClassList.Contains("custom-class"));
-        StringAssert.Contains(root.GetAttribute("style"), "color: tomato;");
+        Assert.Contains("color: tomato;", root.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -838,7 +838,7 @@ public class BitAiChatMessageTests : BitAiTestBase
         }
         else
         {
-            StringAssert.Contains(style, expectedStyle);
+            Assert.Contains(expectedStyle, style!);
         }
     }
 
@@ -868,4 +868,6 @@ public class BitAiChatMessageTests : BitAiTestBase
             await Task.CompletedTask;
         }
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

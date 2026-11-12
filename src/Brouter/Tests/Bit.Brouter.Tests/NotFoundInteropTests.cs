@@ -28,7 +28,7 @@ public class NotFoundInteropTests : BunitTestContext
             // The route content is replaced by the inline fallback; the URL stays on /a because
             // the resource at this URL is what is missing, mirroring the built-in router.
             Assert.IsNotNull(cut.Find("[data-testid=nf-inline]"));
-            Assert.AreEqual(0, cut.FindAll("[data-testid=a]").Count);
+            Assert.IsEmpty(cut.FindAll("[data-testid=a]"));
             Assert.IsTrue(nav.Uri.EndsWith("/a", StringComparison.Ordinal));
             Assert.AreEqual(1, cut.Instance.NotFoundHookCount);
             Assert.AreEqual("/a", cut.Instance.LastNotFoundPath);

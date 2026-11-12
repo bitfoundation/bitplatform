@@ -44,14 +44,14 @@ public class BitModalExitTests : BunitTestContext
 
         await com.InvokeAsync(() => com.Instance.Close());
 
-        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations[WaitForAnimations].Count));
+        com.WaitForAssertion(() => Assert.ContainsSingle(Context.JSInterop.Invocations[WaitForAnimations]));
 
         // Closed already: out of the tab order, out of the reading order, and reported dismissed.
         var root = com.Find(".bit-mdl");
         Assert.IsTrue(root.ClassList.Contains("bit-mdl-lvg"));
         Assert.IsTrue(root.HasAttribute("inert"));
         Assert.AreEqual("true", root.GetAttribute("aria-hidden"));
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.restoreFocus"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.restoreFocus"]);
 
         // Still in the page, so a focus the browser has not moved out of it yet counts as lost.
         Assert.AreEqual(root.Id, Context.JSInterop.Invocations["BitBlazorUI.Utils.restoreFocus"][0].Arguments[2]);
@@ -59,7 +59,7 @@ public class BitModalExitTests : BunitTestContext
 
         await com.InvokeAsync(() => animation.SetVoidResult());
 
-        com.WaitForAssertion(() => Assert.AreEqual(0, com.FindAll(".bit-mdl").Count));
+        com.WaitForAssertion(() => Assert.IsEmpty(com.FindAll(".bit-mdl")));
     }
 
     [TestMethod]
@@ -120,19 +120,19 @@ public class BitModalExitTests : BunitTestContext
             parameters.Add(p => p.Draggable, true);
         });
 
-        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.DragDrop.setup"].Count));
+        com.WaitForAssertion(() => Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.DragDrop.setup"]));
 
         await com.InvokeAsync(() => com.Instance.Close());
 
-        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations[WaitForAnimations].Count));
+        com.WaitForAssertion(() => Assert.ContainsSingle(Context.JSInterop.Invocations[WaitForAnimations]));
 
         // Taking the drag handlers away puts the Modal back where it was laid out, which is not where it is to fade.
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.DragDrop.remove"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.DragDrop.remove"]);
 
         await com.InvokeAsync(() => animation.SetVoidResult());
 
-        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.DragDrop.remove"].Count));
-        com.WaitForAssertion(() => Assert.AreEqual(0, com.FindAll(".bit-mdl").Count));
+        com.WaitForAssertion(() => Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.DragDrop.remove"]));
+        com.WaitForAssertion(() => Assert.IsEmpty(com.FindAll(".bit-mdl")));
     }
 
     [TestMethod]
@@ -142,8 +142,8 @@ public class BitModalExitTests : BunitTestContext
 
         com.Render(parameters => parameters.Add(p => p.IsOpen, false));
 
-        Assert.AreEqual(0, com.FindAll(".bit-mdl").Count);
-        Assert.AreEqual(0, Context.JSInterop.Invocations[WaitForAnimations].Count);
+        Assert.IsEmpty(com.FindAll(".bit-mdl"));
+        Assert.IsEmpty(Context.JSInterop.Invocations[WaitForAnimations]);
     }
 
     [TestMethod]
@@ -160,15 +160,15 @@ public class BitModalExitTests : BunitTestContext
             OnDismiss = EventCallback.Factory.Create<MouseEventArgs>(this, () => dismissed++),
         });
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-mdl").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-mdl")));
 
         await modalRef.Close();
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations[WaitForAnimations].Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(Context.JSInterop.Invocations[WaitForAnimations]));
 
         // The service is done with it: closed, no longer one of the open modals - only still on its way out.
         Assert.IsTrue(modalRef.IsClosed);
-        Assert.AreEqual(0, ModalService.OpenModals.Count);
+        Assert.IsEmpty(ModalService.OpenModals);
         var root = container.Find(".bit-mdl");
         Assert.IsTrue(root.ClassList.Contains("bit-mdl-lvg"));
         Assert.IsTrue(root.HasAttribute("inert"));
@@ -178,7 +178,7 @@ public class BitModalExitTests : BunitTestContext
 
         await container.InvokeAsync(() => animation.SetVoidResult());
 
-        container.WaitForAssertion(() => Assert.AreEqual(0, container.FindAll(".bit-mdl").Count));
+        container.WaitForAssertion(() => Assert.IsEmpty(container.FindAll(".bit-mdl")));
     }
 
     [TestMethod]
@@ -195,7 +195,7 @@ public class BitModalExitTests : BunitTestContext
             OnDismiss = EventCallback.Factory.Create<MouseEventArgs>(this, () => dismissed++),
         });
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-mdl").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-mdl")));
 
         _ = container.PressEscape();
 
@@ -206,8 +206,8 @@ public class BitModalExitTests : BunitTestContext
 
         await container.InvokeAsync(() => animation.SetVoidResult());
 
-        container.WaitForAssertion(() => Assert.AreEqual(0, container.FindAll(".bit-mdl").Count));
-        Assert.AreEqual(1, Context.JSInterop.Invocations[WaitForAnimations].Count);
+        container.WaitForAssertion(() => Assert.IsEmpty(container.FindAll(".bit-mdl")));
+        Assert.ContainsSingle(Context.JSInterop.Invocations[WaitForAnimations]);
         Assert.AreEqual(1, dismissed);
     }
 
@@ -230,20 +230,20 @@ public class BitModalExitTests : BunitTestContext
 
             var modalRef = await ModalService.Show<TestModalContent>();
 
-            container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-mdl").Count));
+            container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-mdl")));
 
             await modalRef.Close();
 
-            container.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations[WaitForAnimations].Count));
+            container.WaitForAssertion(() => Assert.ContainsSingle(Context.JSInterop.Invocations[WaitForAnimations]));
 
-            await Task.Delay(TimeSpan.FromSeconds(2));
+            await Task.Delay(TimeSpan.FromSeconds(2), TestContext.CancellationToken);
 
             // Still playing its way out: the modal, not the container's deadline, says when it is out of the way.
             Assert.IsTrue(container.Find(".bit-mdl").ClassList.Contains("bit-mdl-lvg"));
 
             await container.InvokeAsync(() => animation.SetVoidResult());
 
-            container.WaitForAssertion(() => Assert.AreEqual(0, container.FindAll(".bit-mdl").Count));
+            container.WaitForAssertion(() => Assert.IsEmpty(container.FindAll(".bit-mdl")));
         }
         finally
         {
@@ -263,17 +263,17 @@ public class BitModalExitTests : BunitTestContext
             OnDismiss = EventCallback.Factory.Create<MouseEventArgs>(this, () => dismissed++),
         });
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-mdl").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-mdl")));
 
         await modalRef.Close();
 
         // A container that cascades by hand rather than through RenderModals hands the modal no BitModalExit, so it
         // has no way of hearing that the modal played its way out: the modal goes at once, and the application
         // closing it is still not reported as a dismissal.
-        container.WaitForAssertion(() => Assert.AreEqual(0, container.FindAll(".bit-mdl").Count));
+        container.WaitForAssertion(() => Assert.IsEmpty(container.FindAll(".bit-mdl")));
         Assert.AreEqual(0, dismissed);
-        Assert.AreEqual(0, Context.JSInterop.Invocations[WaitForAnimations].Count);
-        Assert.AreEqual(0, ModalService.OpenModals.Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations[WaitForAnimations]);
+        Assert.IsEmpty(ModalService.OpenModals);
     }
 
     // A container that cascades by hand instead of rendering through RenderModals: it can cascade the reference and
@@ -322,17 +322,17 @@ public class BitModalExitTests : BunitTestContext
             OnDismiss = EventCallback.Factory.Create<MouseEventArgs>(this, () => dismissed++),
         });
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".template-modal .bit-mdl").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".template-modal .bit-mdl")));
         Assert.AreEqual("false", container.Find(".template-modal").GetAttribute("data-closed"));
 
         await modalRef.Close();
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations[WaitForAnimations].Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(Context.JSInterop.Invocations[WaitForAnimations]));
 
         // A container of an app's own hears the modal out the way the built-in one does, once it renders it through
         // RenderModals: closed, no longer one of the open modals, still in the page on its way out.
         Assert.IsTrue(modalRef.IsClosed);
-        Assert.AreEqual(0, ModalService.OpenModals.Count);
+        Assert.IsEmpty(ModalService.OpenModals);
         var root = container.Find(".template-modal .bit-mdl");
         Assert.IsTrue(root.ClassList.Contains("bit-mdl-lvg"));
         Assert.IsTrue(root.HasAttribute("inert"));
@@ -345,7 +345,7 @@ public class BitModalExitTests : BunitTestContext
 
         await container.InvokeAsync(() => animation.SetVoidResult());
 
-        container.WaitForAssertion(() => Assert.AreEqual(0, container.FindAll(".template-modal").Count));
+        container.WaitForAssertion(() => Assert.IsEmpty(container.FindAll(".template-modal")));
     }
 
     [TestMethod]
@@ -362,7 +362,7 @@ public class BitModalExitTests : BunitTestContext
         await AssertTheModalsAfterOneThatLeavesAreKept(container);
 
         // The markup around each modal is keyed with it, so it went with the modal that left.
-        Assert.AreEqual(2, container.FindAll(".template-modal").Count);
+        Assert.HasCount(2, container.FindAll(".template-modal"));
     }
 
     private async Task AssertTheModalsAfterOneThatLeavesAreKept<TContainer>(IRenderedComponent<TContainer> container) where TContainer : IComponent
@@ -376,16 +376,16 @@ public class BitModalExitTests : BunitTestContext
                 new Dictionary<string, object> { { nameof(TestModalStateContent.Log), log } }));
         }
 
-        container.WaitForAssertion(() => Assert.AreEqual(3, container.FindAll(".bit-mdl").Count));
+        container.WaitForAssertion(() => Assert.HasCount(3, container.FindAll(".bit-mdl")));
 
         await modalRefs[0].Close();
 
-        container.WaitForAssertion(() => Assert.AreEqual(2, container.FindAll(".bit-mdl").Count));
+        container.WaitForAssertion(() => Assert.HasCount(2, container.FindAll(".bit-mdl")));
 
         // Each modal is keyed by its id, so the one that left takes nothing of the others with it: neither of them
         // is built again in the place it moved up to.
-        Assert.AreEqual(1, logs[1].Count);
-        Assert.AreEqual(1, logs[2].Count);
+        Assert.ContainsSingle(logs[1]);
+        Assert.ContainsSingle(logs[2]);
     }
 
     [TestMethod]
@@ -406,11 +406,11 @@ public class BitModalExitTests : BunitTestContext
         // so neither it nor its content is handed anything again.
         var other = await ModalService.Show<TestModalContent>();
 
-        container.WaitForAssertion(() => Assert.AreEqual(2, container.FindAll(".bit-mdl").Count));
+        container.WaitForAssertion(() => Assert.HasCount(2, container.FindAll(".bit-mdl")));
 
         await other.Close();
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-mdl").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-mdl")));
 
         Assert.AreEqual(parametersSetCount, content.ParametersSetCount);
     }
@@ -462,7 +462,7 @@ public class BitModalExitTests : BunitTestContext
         var staying = await ModalService.Show<TestModalContent>(new BitModalParameters { CloseOnNavigation = false });
         var leaving = await ModalService.Show<TestModalContent>();
 
-        container.WaitForAssertion(() => Assert.AreEqual(2, container.FindAll(".bit-mdl").Count));
+        container.WaitForAssertion(() => Assert.HasCount(2, container.FindAll(".bit-mdl")));
 
         Services.GetRequiredService<NavigationManager>().NavigateTo("/elsewhere");
 
@@ -505,16 +505,18 @@ public class BitModalExitTests : BunitTestContext
 
         var modalRef = await ModalService.Show(content);
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".inner").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".inner")));
 
         var inner = container.FindComponents<BitModal>()[1];
         await container.InvokeAsync(() => inner.Instance.Close());
         await container.InvokeAsync(() => animation.SetVoidResult());
 
         // The inner Modal closing is not the service modal leaving: that one stays open and on the screen.
-        container.WaitForAssertion(() => Assert.AreEqual(0, container.FindAll(".inner").Count));
+        container.WaitForAssertion(() => Assert.IsEmpty(container.FindAll(".inner")));
         Assert.IsFalse(modalRef.IsClosed);
-        Assert.AreEqual(1, container.FindAll(".bit-mdl").Count);
-        Assert.AreEqual(1, ModalService.OpenModals.Count);
+        Assert.ContainsSingle(container.FindAll(".bit-mdl"));
+        Assert.ContainsSingle(ModalService.OpenModals);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

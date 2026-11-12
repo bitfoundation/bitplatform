@@ -244,21 +244,21 @@ public class PubSubServiceTests
 
         var subscriber = Task.Run(() =>
         {
-            start.SignalAndWait();
+            start.SignalAndWait(TestContext.CancellationToken);
             foreach (var target in survivingTargets)
             {
                 pubSub.Subscribe(Message, target.HandleAsync);
             }
-        });
+        }, TestContext.CancellationToken);
 
         var unsubscriber = Task.Run(() =>
         {
-            start.SignalAndWait();
+            start.SignalAndWait(TestContext.CancellationToken);
             foreach (var unsubscribe in unsubscribes)
             {
                 unsubscribe();
             }
-        });
+        }, TestContext.CancellationToken);
 
         await Task.WhenAll(subscriber, unsubscriber);
 
@@ -304,11 +304,11 @@ public class PubSubServiceTests
 
             // The continuation runs on the thread pool; give it a turn, then force the finalizers that raise
             // UnobservedTaskException for any task that faulted without being observed.
-            await Task.Delay(200);
+            await Task.Delay(200, TestContext.CancellationToken);
             GC.Collect();
             GC.WaitForPendingFinalizers();
             GC.Collect();
-            await Task.Delay(200);
+            await Task.Delay(200, TestContext.CancellationToken);
         }
         finally
         {
@@ -365,4 +365,6 @@ public class PubSubServiceTests
             return Task.CompletedTask;
         }
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

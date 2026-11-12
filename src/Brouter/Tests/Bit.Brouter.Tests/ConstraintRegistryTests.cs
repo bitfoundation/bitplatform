@@ -20,7 +20,7 @@ public class ConstraintRegistryTests
 
         var result = BrouterTemplateParser.ParseTemplate("/posts/{name:slug}", registry);
 
-        Assert.AreEqual(1, result.TemplateSegments[1].Constraints.Length);
+        Assert.ContainsSingle(result.TemplateSegments[1].Constraints);
         Assert.AreEqual("slug", result.TemplateSegments[1].Constraints[0].Name);
     }
 
@@ -31,7 +31,7 @@ public class ConstraintRegistryTests
 
         var result = BrouterTemplateParser.ParseTemplate("/users/{id:int}", registry);
 
-        Assert.AreEqual(1, result.TemplateSegments[1].Constraints.Length);
+        Assert.ContainsSingle(result.TemplateSegments[1].Constraints);
     }
 
     [TestMethod]

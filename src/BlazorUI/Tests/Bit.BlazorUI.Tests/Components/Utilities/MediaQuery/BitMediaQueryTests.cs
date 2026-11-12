@@ -64,8 +64,8 @@ public class BitMediaQueryTests : BunitTestContext
             parameters.Add(p => p.NotMatched, Markup("<div class=\"notmatched\">NotMatched</div>"));
         });
 
-        Assert.AreEqual(0, component.FindAll(".matched").Count);
-        Assert.AreEqual(1, component.FindAll(".notmatched").Count);
+        Assert.IsEmpty(component.FindAll(".matched"));
+        Assert.ContainsSingle(component.FindAll(".notmatched"));
     }
 
     [TestMethod]
@@ -79,8 +79,8 @@ public class BitMediaQueryTests : BunitTestContext
             parameters.Add(p => p.NotMatched, Markup("<div class=\"notmatched\">NotMatched</div>"));
         });
 
-        Assert.AreEqual(1, component.FindAll(".matched").Count);
-        Assert.AreEqual(0, component.FindAll(".notmatched").Count);
+        Assert.ContainsSingle(component.FindAll(".matched"));
+        Assert.IsEmpty(component.FindAll(".notmatched"));
         Assert.IsTrue(component.Instance.IsMatched);
     }
 
@@ -97,7 +97,7 @@ public class BitMediaQueryTests : BunitTestContext
             parameters.Add(p => p.NotMatched, Markup("<div class=\"notmatched\">NotMatched</div>"));
         });
 
-        Assert.AreEqual(1, component.FindAll(".matched").Count);
+        Assert.HasCount(1, component.FindAll(".matched"));
         Assert.IsTrue(component.Instance.IsMatched);
 
         var invocation = Context.JSInterop.VerifyInvoke("BitBlazorUI.MediaQuery.matchNow");
@@ -118,7 +118,7 @@ public class BitMediaQueryTests : BunitTestContext
             parameters.Add(p => p.NotMatched, Markup("<div class=\"notmatched\">NotMatched</div>"));
         });
 
-        Assert.AreEqual(1, component.FindAll(".notmatched").Count);
+        Assert.HasCount(1, component.FindAll(".notmatched"));
         Assert.IsFalse(component.Instance.IsMatched);
 
         // The custom query is asked as setup asks it: normalized, and ahead of any ScreenQuery.
@@ -139,7 +139,7 @@ public class BitMediaQueryTests : BunitTestContext
             parameters.Add(p => p.Matched, Markup("<div class=\"matched\">Matched</div>"));
         });
 
-        Assert.AreEqual(1, component.FindAll(".matched").Count);
+        Assert.HasCount(1, component.FindAll(".matched"));
     }
 
     [TestMethod]
@@ -180,13 +180,13 @@ public class BitMediaQueryTests : BunitTestContext
 
         component.InvokeAsync(() => component.Instance._OnMatchChange(true).AsTask()).GetAwaiter().GetResult();
 
-        Assert.AreEqual(1, component.FindAll(".matched").Count);
-        Assert.AreEqual(0, component.FindAll(".notmatched").Count);
+        Assert.ContainsSingle(component.FindAll(".matched"));
+        Assert.IsEmpty(component.FindAll(".notmatched"));
 
         component.InvokeAsync(() => component.Instance._OnMatchChange(false).AsTask()).GetAwaiter().GetResult();
 
-        Assert.AreEqual(0, component.FindAll(".matched").Count);
-        Assert.AreEqual(1, component.FindAll(".notmatched").Count);
+        Assert.IsEmpty(component.FindAll(".matched"));
+        Assert.ContainsSingle(component.FindAll(".notmatched"));
     }
 
     [TestMethod]
@@ -198,11 +198,11 @@ public class BitMediaQueryTests : BunitTestContext
             parameters.AddChildContent("<div class=\"child\">Child</div>");
         });
 
-        Assert.AreEqual(0, component.FindAll(".child").Count);
+        Assert.IsEmpty(component.FindAll(".child"));
 
         component.InvokeAsync(() => component.Instance._OnMatchChange(true).AsTask()).GetAwaiter().GetResult();
 
-        Assert.AreEqual(1, component.FindAll(".child").Count);
+        Assert.ContainsSingle(component.FindAll(".child"));
     }
 
     [TestMethod]
@@ -217,8 +217,8 @@ public class BitMediaQueryTests : BunitTestContext
 
         component.InvokeAsync(() => component.Instance._OnMatchChange(true).AsTask()).GetAwaiter().GetResult();
 
-        Assert.AreEqual(1, component.FindAll(".matched").Count);
-        Assert.AreEqual(0, component.FindAll(".child").Count);
+        Assert.ContainsSingle(component.FindAll(".matched"));
+        Assert.IsEmpty(component.FindAll(".child"));
     }
 
     [TestMethod]
@@ -232,12 +232,12 @@ public class BitMediaQueryTests : BunitTestContext
             parameters.Add(p => p.Matched, Markup("<div class=\"matched\">Matched</div>"));
         });
 
-        Assert.AreEqual(0, component.FindAll(".matched").Count);
+        Assert.IsEmpty(component.FindAll(".matched"));
         Assert.AreEqual(string.Empty, component.Find(".bit-mdq").InnerHtml.Trim());
 
         component.InvokeAsync(() => component.Instance._OnMatchChange(true).AsTask()).GetAwaiter().GetResult();
 
-        Assert.AreEqual(1, component.FindAll(".matched").Count);
+        Assert.ContainsSingle(component.FindAll(".matched"));
     }
 
 
@@ -272,14 +272,14 @@ public class BitMediaQueryTests : BunitTestContext
             parameters.AddChildContent("<div class=\"child\">Child</div>");
         });
 
-        Assert.AreEqual(1, component.FindAll(".tpl").Count);
-        Assert.AreEqual(0, component.FindAll(".notmatched").Count);
+        Assert.ContainsSingle(component.FindAll(".tpl"));
+        Assert.IsEmpty(component.FindAll(".notmatched"));
 
         component.InvokeAsync(() => component.Instance._OnMatchChange(true).AsTask()).GetAwaiter().GetResult();
 
-        Assert.AreEqual(1, component.FindAll(".tpl").Count);
-        Assert.AreEqual(0, component.FindAll(".matched").Count);
-        Assert.AreEqual(0, component.FindAll(".child").Count);
+        Assert.ContainsSingle(component.FindAll(".tpl"));
+        Assert.IsEmpty(component.FindAll(".matched"));
+        Assert.IsEmpty(component.FindAll(".child"));
     }
 
     [TestMethod]
@@ -293,7 +293,7 @@ public class BitMediaQueryTests : BunitTestContext
                 builder.AddMarkupContent(0, $"<div class=\"tpl\">{matched}</div>")));
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-mdq").Count);
+        Assert.IsEmpty(component.FindAll(".bit-mdq"));
         Assert.AreEqual("False", component.Find(".tpl").TextContent);
     }
 
@@ -347,7 +347,7 @@ public class BitMediaQueryTests : BunitTestContext
 
         component.InvokeAsync(() => component.Instance._OnMatchChange(true).AsTask()).GetAwaiter().GetResult();
 
-        CollectionAssert.AreEqual(new[] { true }, reported);
+        Assert.AreSequenceEqual(new[] { true }, reported);
     }
 
     [TestMethod]
@@ -368,7 +368,7 @@ public class BitMediaQueryTests : BunitTestContext
 
         component.InvokeAsync(() => component.Instance._OnMatchChange(false).AsTask()).GetAwaiter().GetResult();
 
-        Assert.IsTrue(component.RenderCount > renderCount);
+        Assert.IsGreaterThan(renderCount, component.RenderCount);
     }
 
     [TestMethod]
@@ -443,8 +443,8 @@ public class BitMediaQueryTests : BunitTestContext
             parameters.Add(p => p.NotMatched, Markup("<div class=\"notmatched\">NotMatched</div>"));
         });
 
-        Assert.AreEqual(1, component.FindAll(".matched").Count);
-        Assert.AreEqual(0, component.FindAll(".notmatched").Count);
+        Assert.ContainsSingle(component.FindAll(".matched"));
+        Assert.IsEmpty(component.FindAll(".notmatched"));
     }
 
     [TestMethod]
@@ -593,7 +593,7 @@ public class BitMediaQueryTests : BunitTestContext
         // is left alone rather than torn down and built again.
         component.Render(parameters => parameters.Add(p => p.Query, "(max-width: 600px)"));
 
-        Assert.AreEqual(1, Setups(Context.JSInterop).Count);
+        Assert.ContainsSingle(Setups(Context.JSInterop));
     }
 
     [TestMethod]
@@ -607,7 +607,7 @@ public class BitMediaQueryTests : BunitTestContext
 
         component.Render();
 
-        Assert.AreEqual(1, Setups(Context.JSInterop).Count);
+        Assert.ContainsSingle(Setups(Context.JSInterop));
     }
 
     [TestMethod]
@@ -625,7 +625,7 @@ public class BitMediaQueryTests : BunitTestContext
         });
 
         var setups = Setups(Context.JSInterop);
-        Assert.AreEqual(2, setups.Count);
+        Assert.HasCount(2, setups);
         Assert.AreEqual("(max-width: 900px)", setups[1].Arguments[QueryArg]);
     }
 
@@ -643,7 +643,7 @@ public class BitMediaQueryTests : BunitTestContext
         // The effective query of a ScreenQuery is resolved on the JS side from the live theme
         // breakpoints, so setup is re-invoked on every render (JS reuses the listener when the
         // resolved expression is unchanged).
-        Assert.AreEqual(2, Setups(Context.JSInterop).Count);
+        Assert.HasCount(2, Setups(Context.JSInterop));
     }
 
     [TestMethod]
@@ -661,7 +661,7 @@ public class BitMediaQueryTests : BunitTestContext
         });
 
         var setups = Setups(Context.JSInterop);
-        Assert.AreEqual(2, setups.Count);
+        Assert.HasCount(2, setups);
         Assert.AreEqual("Md", setups[0].Arguments[ScreenQueryArg]);
         Assert.AreEqual("(max-width: 600px)", setups[1].Arguments[QueryArg]);
         Assert.IsNull(setups[1].Arguments[ScreenQueryArg]);
@@ -685,10 +685,10 @@ public class BitMediaQueryTests : BunitTestContext
         // The element is where the focus is kept across a flip, so the JS side is told the new id -
         // under the same key and without a teardown, since the query itself has not changed.
         var setups = Setups(Context.JSInterop);
-        Assert.AreEqual(2, setups.Count);
+        Assert.HasCount(2, setups);
         Assert.AreEqual("second-id", setups[1].Arguments[ElementIdArg]);
         Assert.AreEqual(component.Instance.UniqueId, setups[1].Arguments[KeyArg]);
-        Assert.AreEqual(0, Disposals(Context.JSInterop).Count);
+        Assert.IsEmpty(Disposals(Context.JSInterop));
     }
 
     [TestMethod]
@@ -706,7 +706,7 @@ public class BitMediaQueryTests : BunitTestContext
             parameters.Add(p => p.Class, "another-class");
         });
 
-        Assert.AreEqual(1, Setups(Context.JSInterop).Count);
+        Assert.ContainsSingle(Setups(Context.JSInterop));
     }
 
     [TestMethod]
@@ -724,7 +724,7 @@ public class BitMediaQueryTests : BunitTestContext
         });
 
         var setups = Setups(Context.JSInterop);
-        Assert.AreEqual(2, setups.Count);
+        Assert.HasCount(2, setups);
         Assert.IsNull(setups[0].Arguments[ElementIdArg]);
         Assert.AreEqual("late-id", setups[1].Arguments[ElementIdArg]);
     }
@@ -779,7 +779,7 @@ public class BitMediaQueryTests : BunitTestContext
         // The element is the themed scope the breakpoints are read from, and a ScreenQuery re-invokes
         // setup on every render, so the scope follows the id without a teardown in between.
         var setups = Setups(Context.JSInterop);
-        Assert.AreEqual(2, setups.Count);
+        Assert.HasCount(2, setups);
         Assert.AreEqual("first-id", setups[0].Arguments[ElementIdArg]);
         Assert.AreEqual("second-id", setups[1].Arguments[ElementIdArg]);
         Assert.AreEqual(component.Instance.UniqueId, setups[1].Arguments[KeyArg]);
@@ -807,7 +807,7 @@ public class BitMediaQueryTests : BunitTestContext
         });
 
         var setups = Setups(Context.JSInterop);
-        Assert.AreEqual(2, setups.Count);
+        Assert.HasCount(2, setups);
         Assert.AreEqual("(max-width: 900px)", setups[1].Arguments[QueryArg]);
     }
 
@@ -822,13 +822,13 @@ public class BitMediaQueryTests : BunitTestContext
             parameters.AddChildContent("<span>content</span>");
         });
 
-        Assert.AreEqual(1, Setups(Context.JSInterop).Count);
+        Assert.ContainsSingle(Setups(Context.JSInterop));
 
         // A setup the circuit refused is recorded as not done, so a later render with the very same custom query
         // tries again rather than assuming a listener that was never created.
         component.Render();
 
-        Assert.AreEqual(2, Setups(Context.JSInterop).Count);
+        Assert.HasCount(2, Setups(Context.JSInterop));
     }
 
     [TestMethod]
@@ -845,7 +845,7 @@ public class BitMediaQueryTests : BunitTestContext
         // There is nothing left to tear down on a gone circuit, and the renderer must not be handed a failed disposal.
         Context.DisposeComponentsAsync().GetAwaiter().GetResult();
 
-        Assert.AreEqual(1, Disposals(Context.JSInterop).Count);
+        Assert.ContainsSingle(Disposals(Context.JSInterop));
     }
 
     [TestMethod]
@@ -856,7 +856,7 @@ public class BitMediaQueryTests : BunitTestContext
             parameters.AddChildContent("<span>content</span>");
         });
 
-        Assert.AreEqual(0, Setups(Context.JSInterop).Count);
+        Assert.IsEmpty(Setups(Context.JSInterop));
     }
 
     [TestMethod]
@@ -907,7 +907,7 @@ public class BitMediaQueryTests : BunitTestContext
         Context.DisposeComponentsAsync().GetAwaiter().GetResult();
 
         // No listener was ever set up, so there is nothing to tear down on the JS side.
-        Assert.AreEqual(0, Disposals(Context.JSInterop).Count);
+        Assert.IsEmpty(Disposals(Context.JSInterop));
     }
 
     [TestMethod]
@@ -963,7 +963,7 @@ public class BitMediaQueryTests : BunitTestContext
         Assert.IsNotNull(breakpoints);
         // Only the overridden ones are sent; the rest is left to the CSS variables and the defaults,
         // so a provider re-valuing one breakpoint does not flatten the rest of the scale.
-        Assert.AreEqual(2, breakpoints.Count);
+        Assert.HasCount(2, breakpoints);
         Assert.AreEqual("700px", breakpoints["md"]);
         Assert.AreEqual("900px", breakpoints["lg"]);
     }
@@ -1099,7 +1099,7 @@ public class BitMediaQueryTests : BunitTestContext
         var root = component.Find(".bit-mdq");
         Assert.IsTrue(root.ClassList.Contains("custom-class"));
         Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
-        StringAssert.Contains(root.GetAttribute("style"), "color: red");
+        Assert.Contains("color: red", root.GetAttribute("style")!);
         Assert.AreEqual("custom-id", root.Id);
         Assert.AreEqual("rtl", root.GetAttribute("dir"));
     }
@@ -1115,13 +1115,13 @@ public class BitMediaQueryTests : BunitTestContext
             parameters.Add(p => p.NotMatched, Markup("<div class=\"notmatched\">NotMatched</div>"));
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-mdq").Count);
-        Assert.AreEqual(1, component.FindAll(".notmatched").Count);
+        Assert.IsEmpty(component.FindAll(".bit-mdq"));
+        Assert.ContainsSingle(component.FindAll(".notmatched"));
 
         component.InvokeAsync(() => component.Instance._OnMatchChange(true).AsTask()).GetAwaiter().GetResult();
 
-        Assert.AreEqual(0, component.FindAll(".bit-mdq").Count);
-        Assert.AreEqual(1, component.FindAll(".matched").Count);
+        Assert.IsEmpty(component.FindAll(".bit-mdq"));
+        Assert.ContainsSingle(component.FindAll(".matched"));
     }
 
     [TestMethod]
@@ -1152,7 +1152,7 @@ public class BitMediaQueryTests : BunitTestContext
             parameters.AddChildContent("<div id=\"mdq-id\" class=\"child\">Child</div>");
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-mdq").Count);
+        Assert.IsEmpty(component.FindAll(".bit-mdq"));
         Assert.AreEqual("mdq-id", component.Find(".child").Id);
 
         var invocation = Context.JSInterop.VerifyInvoke("BitBlazorUI.MediaQuery.setup");
@@ -1194,7 +1194,7 @@ public class BitMediaQueryTests : BunitTestContext
         // A ScreenQuery re-invokes setup on every render, so the scope the breakpoints are read
         // from follows the toggle instead of staying at what the first setup was told.
         var setups = Setups(Context.JSInterop);
-        Assert.AreEqual(2, setups.Count);
+        Assert.HasCount(2, setups);
         Assert.AreEqual("mdq-id", setups[0].Arguments[ElementIdArg]);
         Assert.IsNull(setups[1].Arguments[ElementIdArg]);
     }
@@ -1224,7 +1224,7 @@ public class BitMediaQueryTests : BunitTestContext
         });
 
         var root = component.Find(".bit-mdq");
-        StringAssert.Contains(root.GetAttribute("style"), "display:none");
+        Assert.Contains("display:none", root.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1318,9 +1318,9 @@ public class BitMediaQueryTests : BunitTestContext
         var root = component.Find(".bit-mdq");
 
         Assert.AreEqual("splatted-id", root.Id);
-        StringAssert.Contains(root.GetAttribute("style"), "margin: 0");
+        Assert.Contains("margin: 0", root.GetAttribute("style")!);
         // Joined with what the component writes itself rather than written over by it.
-        StringAssert.Contains(root.GetAttribute("style"), "visibility:hidden");
+        Assert.Contains("visibility:hidden", root.GetAttribute("style")!);
         Assert.IsTrue(root.ClassList.Contains("splatted-class"));
         Assert.IsTrue(root.ClassList.Contains("bit-mdq"));
         Assert.AreEqual("rtl", root.GetAttribute("dir"));

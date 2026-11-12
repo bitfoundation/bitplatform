@@ -24,10 +24,10 @@ public class BitStickyE2ETests : E2ETestBase
         var response = await Page.APIRequest.GetAsync($"{BaseUrl}{Route}");
         var html = await response.TextAsync();
 
-        StringAssert.Contains(html, "id=\"stk-basic\"");
-        StringAssert.Contains(html, "class=\"bit-stk-top bit-stk e2e-stk-bar\"");
-        StringAssert.Contains(html, "<header id=\"stk-header\" aria-label=\"Section header\" class=\"bit-stk-top bit-stk e2e-stk-bar\"");
-        StringAssert.Contains(html, "id=\"status\">Loading");
+        Assert.Contains("id=\"stk-basic\"", html);
+        Assert.Contains("class=\"bit-stk-top bit-stk e2e-stk-bar\"", html);
+        Assert.Contains("<header id=\"stk-header\" aria-label=\"Section header\" class=\"bit-stk-top bit-stk e2e-stk-bar\"", html);
+        Assert.Contains("id=\"status\">Loading", html);
 
         await OpenAsync(Route);
         await Expect(Page.Locator("#stk-basic")).ToHaveCSSAsync("position", "sticky");
@@ -51,7 +51,7 @@ public class BitStickyE2ETests : E2ETestBase
         // A paragraph that followed it has passed underneath it.
         var paragraph = await Page.Locator("#v-basic p").First.BoundingBoxAsync();
         var bar = await sticky.BoundingBoxAsync();
-        Assert.IsTrue(paragraph!.Y < bar!.Y, "The content did not pass under the bar.");
+        Assert.IsLessThan(bar!.Y, paragraph!.Y, "The content did not pass under the bar.");
     }
 
     [TestMethod]
@@ -440,11 +440,11 @@ public class BitStickyE2ETests : E2ETestBase
         await OpenAsync(Route);
 
         var full = await TransitionMsAsync("#stk-elevate");
-        Assert.IsTrue(full >= 50, $"The shadow does not transition without reduced motion ({full}ms).");
+        Assert.IsGreaterThanOrEqualTo(50, full, $"The shadow does not transition without reduced motion ({full}ms).");
         await Expect(Page.Locator("#stk-elevate")).ToHaveCSSAsync("transition-property", "box-shadow");
 
         await Page.EmulateMediaAsync(new() { ReducedMotion = ReducedMotion.Reduce });
-        Assert.IsTrue(await TransitionMsAsync("#stk-elevate") < 1, "The shadow still transitions under reduced motion.");
+        Assert.IsLessThan(1, await TransitionMsAsync("#stk-elevate"), "The shadow still transitions under reduced motion.");
     }
 
     [TestMethod]
@@ -496,7 +496,7 @@ public class BitStickyE2ETests : E2ETestBase
         await NextFramesAsync();
         var link = (await Page.Locator("#pad-link-5").BoundingBoxAsync())!;
         var bar = (await Page.Locator("#stk-padding").BoundingBoxAsync())!;
-        Assert.IsTrue(link.Y >= bar.Y + bar.Height - 1, $"The focused link ({link.Y}) is under the bar ending at {bar.Y + bar.Height}.");
+        Assert.IsGreaterThanOrEqualTo(bar.Y + bar.Height - 1, link.Y, $"The focused link ({link.Y}) is under the bar ending at {bar.Y + bar.Height}.");
 
         // Turned off, the room is handed back.
         await Page.ClickAsync("#btn-toggle-padding");

@@ -68,8 +68,8 @@ public class BitFullCalendarParamsTests : BunitTestContext
     [TestMethod]
     public void BitFullCalendarParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitFullCalendar)}", BitFullCalendarParams.ParamName);
-        Assert.AreEqual("BitParams.BitFullCalendar", BitFullCalendarParams.ParamName);
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitFullCalendar)}", new BitFullCalendarParams().Name);
+        Assert.AreEqual("BitParams.BitFullCalendar", new BitFullCalendarParams().Name);
     }
 
     [TestMethod]
@@ -93,7 +93,7 @@ public class BitFullCalendarParamsTests : BunitTestContext
                                                 .Where(n => baseParameters.Contains(n) is false && _notCascaded.Contains(n) is false)
                                                 .ToArray();
 
-        Assert.IsTrue(parameters.Length > 0);
+        Assert.IsNotEmpty(parameters);
 
         foreach (var name in parameters)
         {
@@ -158,7 +158,7 @@ public class BitFullCalendarParamsTests : BunitTestContext
                                                       .Where(p => p.Name != nameof(IBitComponentParams.Name))
                                                       .ToArray();
 
-        Assert.IsTrue(properties.Length > 0);
+        Assert.IsNotEmpty(properties);
 
         foreach (var property in properties)
         {
@@ -197,7 +197,7 @@ public class BitFullCalendarParamsTests : BunitTestContext
         Assert.AreEqual("rtl", root.GetAttribute("dir"));
         Assert.IsTrue(root.ClassList.Contains("cascaded"));
         Assert.IsTrue(root.ClassList.Contains("bit-dis"));
-        StringAssert.Contains(root.GetAttribute("style"), "--bit-bfc-height:400px");
+        Assert.Contains("--bit-bfc-height:400px", root.GetAttribute("style")!);
         // A named calendar is a region, and a disabled one is presentation-only, from the cascade as from the markup.
         Assert.AreEqual("region", root.GetAttribute("role"));
         Assert.AreEqual("Team schedule", root.GetAttribute("aria-label"));
@@ -249,9 +249,8 @@ public class BitFullCalendarParamsTests : BunitTestContext
         Assert.AreEqual(BitFullCalendarView.Week, state.View);
         Assert.AreEqual(BitFullCalendarMode.Timeline, state.Mode);
         // The timeline lays out one row per resource, plus the row of the events that have none (the Standup).
-        CollectionAssert.AreEqual(
-            new[] { "Room 1", "Unassigned" },
-            component.FindAll(".bit-bfc-tl-resource-title").Select(t => t.TextContent.Trim()).ToArray());
+        Assert.AreSequenceEqual(
+            new[] { "Room 1", "Unassigned" }, component.FindAll(".bit-bfc-tl-resource-title").Select(t => t.TextContent.Trim()).ToArray());
     }
 
     [TestMethod]
@@ -271,7 +270,7 @@ public class BitFullCalendarParamsTests : BunitTestContext
         Assert.AreEqual(Anchor, state.Today);
         Assert.AreEqual(Anchor, state.SelectedDate.Date);
         // March is the only month in the window, so neither step is offered.
-        Assert.AreEqual(2, component.FindAll(".bit-bfc-date-nav .bit-bfc-btn-nav[aria-disabled='true']").Count);
+        Assert.HasCount(2, component.FindAll(".bit-bfc-date-nav .bit-bfc-btn-nav[aria-disabled='true']"));
     }
 
     [TestMethod]
@@ -282,7 +281,7 @@ public class BitFullCalendarParamsTests : BunitTestContext
             EventColorOptions = [new BitFullCalendarColorOption { Id = "brand", Title = "Brand", Value = "#123456" }],
         });
 
-        StringAssert.Contains(component.Find(".bit-bfc-event-badge").GetAttribute("style"), "#123456");
+        Assert.Contains("#123456", component.Find(".bit-bfc-event-badge").GetAttribute("style")!);
     }
 
     [TestMethod]

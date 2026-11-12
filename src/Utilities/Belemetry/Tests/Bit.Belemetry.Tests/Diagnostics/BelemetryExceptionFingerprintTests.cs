@@ -17,8 +17,7 @@ public class BelemetryExceptionFingerprintTests
     {
         var frames = BelemetryExceptionFingerprint.MeaningfulFrames(DotnetStack);
 
-        CollectionAssert.AreEqual(new[] { "MyApp.Pages.Orders.LoadAsync", "MyApp.Services.OrderApi.GetAsync", "MyApp.Services.OrderApi.Fetch.Send" }, frames.ToArray(),
-            "Application frames only, async state machines, lambdas and local functions named after their method.");
+        Assert.AreSequenceEqual(new[] { "MyApp.Pages.Orders.LoadAsync", "MyApp.Services.OrderApi.GetAsync", "MyApp.Services.OrderApi.Fetch.Send" }, frames.ToArray(), "Application frames only, async state machines, lambdas and local functions named after their method.");
         Assert.AreEqual("MyApp.Pages.Orders.LoadAsync", BelemetryExceptionFingerprint.Anchor(DotnetStack));
     }
 

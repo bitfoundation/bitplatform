@@ -28,8 +28,8 @@ public class BitBreadcrumbAutoCollapseTests : BunitTestContext
 
         // The trail keeps shrinking while it overflows, down to the single item it may not drop.
         component.WaitForAssertion(() => Assert.AreEqual(1, GetRenderedItemCount(component)));
-        Assert.AreEqual(1, component.FindAll(".bit-brc-obt").Count);
-        Assert.AreEqual(3, component.FindAll(".bit-brc-cal .bit-brc-ofi").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-brc-obt"));
+        Assert.HasCount(3, component.FindAll(".bit-brc-cal .bit-brc-ofi"));
     }
 
     [TestMethod]
@@ -45,7 +45,7 @@ public class BitBreadcrumbAutoCollapseTests : BunitTestContext
         });
 
         component.WaitForAssertion(() => Assert.AreEqual(4, GetRenderedItemCount(component)));
-        Assert.AreEqual(0, component.FindAll(".bit-brc-obt").Count);
+        Assert.IsEmpty(component.FindAll(".bit-brc-obt"));
     }
 
     [TestMethod]
@@ -69,7 +69,7 @@ public class BitBreadcrumbAutoCollapseTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance._OnResize(new ContentRect()));
 
         component.WaitForAssertion(() => Assert.AreEqual(4, GetRenderedItemCount(component)));
-        Assert.AreEqual(0, component.FindAll(".bit-brc-obt").Count);
+        Assert.IsEmpty(component.FindAll(".bit-brc-obt"));
     }
 
     [TestMethod]
@@ -142,7 +142,7 @@ public class BitBreadcrumbAutoCollapseTests : BunitTestContext
         // A trail that may flow onto another line has no items that do not fit, so nothing is measured
         // and nothing leaves it, whatever the room of a single line would have been.
         Assert.AreEqual(4, GetRenderedItemCount(component));
-        Assert.AreEqual(0, component.FindAll(".bit-brc-obt").Count);
+        Assert.IsEmpty(component.FindAll(".bit-brc-obt"));
         Assert.AreEqual(0, handler.Invocations.Count);
 
         // Turning the wrapping off hands the trail back to the measurements.
@@ -169,7 +169,7 @@ public class BitBreadcrumbAutoCollapseTests : BunitTestContext
 
         // Only the automatic collapsing stands down; a cap the consumer set is still a cap.
         Assert.AreEqual(2, GetRenderedItemCount(component));
-        Assert.AreEqual(1, component.FindAll(".bit-brc-obt").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-brc-obt"));
     }
 
     [TestMethod]
@@ -192,7 +192,7 @@ public class BitBreadcrumbAutoCollapseTests : BunitTestContext
         // The measurements would put back what the button was pressed to reveal, so they stand down
         // while the trail is expanded even though it no longer fits the room it has.
         component.WaitForAssertion(() => Assert.AreEqual(4, GetRenderedItemCount(component)));
-        Assert.AreEqual(0, component.FindAll(".bit-brc-obt").Count);
+        Assert.IsEmpty(component.FindAll(".bit-brc-obt"));
     }
 
     [TestMethod]
@@ -253,12 +253,12 @@ public class BitBreadcrumbAutoCollapseTests : BunitTestContext
             parameters.Add(p => p.AutoCollapse, true);
         });
 
-        component.WaitForAssertion(() => Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Observers.registerResize"]));
+        component.WaitForAssertion(() => Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Observers.registerResize"]));
         var firstObserverRef = Context.JSInterop.Invocations["BitBlazorUI.Observers.registerResize"][0].Arguments[2];
 
         component.Render(parameters => parameters.Add(p => p.AutoCollapse, false));
 
-        component.WaitForAssertion(() => Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Observers.unregisterResize"]));
+        component.WaitForAssertion(() => Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Observers.unregisterResize"]));
         Assert.AreSame(firstObserverRef, Context.JSInterop.Invocations["BitBlazorUI.Observers.unregisterResize"][0].Arguments[2]);
 
         component.Render(parameters => parameters.Add(p => p.AutoCollapse, true));

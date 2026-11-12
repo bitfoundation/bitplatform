@@ -49,7 +49,7 @@ public class BitFullCalendarChangeNotifierTests
         });
 
         Assert.IsFalse(reported);
-        Assert.AreEqual(1, state.AllEvents.Count, "the event is shown once, not restored on top of the re-synced one");
+        Assert.ContainsSingle(state.AllEvents, "the event is shown once, not restored on top of the re-synced one");
         Assert.AreEqual("1", state.AllEvents.Single().Id);
     }
 
@@ -68,7 +68,7 @@ public class BitFullCalendarChangeNotifierTests
 
         await notifier.TryNotifyAsync(new BitFullCalendarChangeEventArgs { Event = snapshot, OldEvent = snapshot, Kind = BitFullCalendarChangeKind.Delete, Source = BitFullCalendarChangeSource.Dialog });
 
-        Assert.AreEqual(1, state.AllEvents.Count);
+        Assert.ContainsSingle(state.AllEvents);
     }
 
     [TestMethod]
@@ -104,9 +104,8 @@ public class BitFullCalendarChangeNotifierTests
         await Assert.ThrowsExactlyAsync<InvalidOperationException>(
             () => notifier.CommitEditAsync(occurrence, occurrence.StartDate.AddHours(1), occurrence.EndDate.AddHours(1), null, BitFullCalendarChangeSource.Drag));
 
-        CollectionAssert.AreEqual(new[] { BitFullCalendarChangeKind.Edit }, reported, "the skip reached the consumer");
+        Assert.AreSequenceEqual(new[] { BitFullCalendarChangeKind.Edit }, reported, "the skip reached the consumer");
         var master = state.AllEvents.Single(e => e.Id == "series");
-        CollectionAssert.Contains(master.Recurrence!.ExceptionDates!.ToList(), Anchor.AddDays(2),
-                                  "the series keeps the skip the consumer stored, rather than being rolled back under it");
+        Assert.Contains(Anchor.AddDays(2), master.Recurrence!.ExceptionDates!.ToList(), "the series keeps the skip the consumer stored, rather than being rolled back under it");
     }
 }

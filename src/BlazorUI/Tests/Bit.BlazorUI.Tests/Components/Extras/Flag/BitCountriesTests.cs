@@ -11,14 +11,14 @@ public class BitCountriesTests
     [TestMethod]
     public void BitCountriesShouldCarryEveryCountryOfTheTableInAll()
     {
-        Assert.IsTrue(BitCountries.All.Length > 200);
+        Assert.IsGreaterThan(200, BitCountries.All.Length);
 
         var fields = typeof(BitCountries).GetFields(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static)
                                          .Where(f => f.FieldType == typeof(BitCountry))
                                          .Select(f => (BitCountry)f.GetValue(null)!)
                                          .ToArray();
 
-        CollectionAssert.AreEquivalent(fields, BitCountries.All);
+        Assert.AreSequenceEqual(fields, BitCountries.All, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -28,9 +28,9 @@ public class BitCountriesTests
         var iso3 = BitCountries.All.Select(c => c.Iso3).ToArray();
         var names = BitCountries.All.Select(c => c.Name).ToArray();
 
-        Assert.AreEqual(iso2.Length, iso2.Distinct(StringComparer.OrdinalIgnoreCase).Count());
-        Assert.AreEqual(iso3.Length, iso3.Distinct(StringComparer.OrdinalIgnoreCase).Count());
-        Assert.AreEqual(names.Length, names.Distinct(StringComparer.OrdinalIgnoreCase).Count());
+        Assert.HasCount(iso2.Length, iso2.Distinct(StringComparer.OrdinalIgnoreCase));
+        Assert.HasCount(iso3.Length, iso3.Distinct(StringComparer.OrdinalIgnoreCase));
+        Assert.HasCount(names.Length, names.Distinct(StringComparer.OrdinalIgnoreCase));
     }
 
     [TestMethod]
@@ -202,8 +202,12 @@ public class BitCountriesTests
         DataRow(" czechia ", "Czech Republic")]
     public void BitCountriesShouldFindByAnAlternativeName(string alias, string expected)
     {
-        Assert.AreEqual(expected, BitCountries.FindByName(alias)?.Name);
-        Assert.AreEqual(expected, BitCountries.Find(alias)?.Name);
+        var expectedValue = expected;
+        var actualValue = BitCountries.FindByName(alias)?.Name;
+        Assert.AreEqual(expectedValue, actualValue);
+        var expectedValue1 = expected;
+        var actualValue2 = BitCountries.Find(alias)?.Name;
+        Assert.AreEqual(expectedValue1, actualValue2);
     }
 
     [TestMethod,
@@ -218,7 +222,9 @@ public class BitCountriesTests
         DataRow("SaintKittsAndNevis", "Saint Kitts and Nevis")]
     public void BitCountriesShouldIgnoreTheSpellingOfAName(string written, string expected)
     {
-        Assert.AreEqual(expected, BitCountries.FindByName(written)?.Name);
+        var expectedValue = expected;
+        var actualValue = BitCountries.FindByName(written)?.Name;
+        Assert.AreEqual(expectedValue, actualValue);
     }
 
     [TestMethod]
@@ -243,7 +249,7 @@ public class BitCountriesTests
                                                                    .Select(char.ToUpperInvariant)]))
                                  .ToArray();
 
-        Assert.AreEqual(folded.Length, folded.Distinct(StringComparer.Ordinal).Count());
+        Assert.HasCount(folded.Length, folded.Distinct(StringComparer.Ordinal));
     }
 
     [TestMethod]
@@ -328,7 +334,7 @@ public class BitCountriesTests
             if (country.Emoji is null) missing.Add(country.Name);
         }
 
-        CollectionAssert.AreEqual(Array.Empty<string>(), missing);
+        Assert.AreSequenceEqual(Array.Empty<string>(), missing);
     }
 
     [TestMethod]

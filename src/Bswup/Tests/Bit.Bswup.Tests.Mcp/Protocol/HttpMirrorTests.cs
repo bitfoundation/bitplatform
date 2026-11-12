@@ -39,7 +39,7 @@ public class HttpMirrorTests
     {
         foreach (var tool in ToolNames)
         {
-            var response = await _server.Http.GetAsync($"/api/mcp/{tool}");
+            var response = await _server.Http.GetAsync($"/api/mcp/{tool}", TestContext.CancellationToken);
 
             // A tool needing arguments answers 400, which still proves the route is there; only a
             // 404 means the mirror lost it.
@@ -50,10 +50,10 @@ public class HttpMirrorTests
     [TestMethod]
     public async Task ProseTools_AnswerAsText()
     {
-        var response = await _server.Http.GetAsync("/api/mcp/GetBswupSetupGuide?hostingModel=standalone-wasm");
+        var response = await _server.Http.GetAsync("/api/mcp/GetBswupSetupGuide?hostingModel=standalone-wasm", TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
-        StringAssert.Contains(await response.Content.ReadAsStringAsync(), "# Setting Bswup up");
+        Assert.Contains("# Setting Bswup up", await response.Content.ReadAsStringAsync(TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -62,7 +62,7 @@ public class HttpMirrorTests
         var options = await _server.GetJsonAsync("/api/mcp/GetBswupScriptOptions");
 
         Assert.AreEqual(JsonValueKind.Array, options.ValueKind);
-        Assert.IsTrue(options.EnumerateArray().Any(option => option.GetProperty("name").GetString() == "stallTimeout"));
+        Assert.Contains(option => option.GetProperty("name").GetString() == "stallTimeout", options.EnumerateArray());
     }
 
     [TestMethod]
@@ -72,13 +72,13 @@ public class HttpMirrorTests
 
         Assert.IsTrue(hits.GetArrayLength() is > 0 and <= 3);
 
-        var guide = await _server.Http.GetStringAsync("/api/mcp/GetBswupSetupGuide?hostingModel=standalone-wasm");
+        var guide = await _server.Http.GetStringAsync("/api/mcp/GetBswupSetupGuide?hostingModel=standalone-wasm", TestContext.CancellationToken);
 
-        StringAssert.Contains(guide, "## Checklist");
+        Assert.Contains("## Checklist", guide);
 
-        var page = await _server.Http.GetStringAsync("/api/mcp/GetBswupDocsPage?slug=events");
+        var page = await _server.Http.GetStringAsync("/api/mcp/GetBswupDocsPage?slug=events", TestContext.CancellationToken);
 
-        StringAssert.Contains(page, "bit Bswup documentation page: /events");
+        Assert.Contains("bit Bswup documentation page: /events", page);
     }
 
     [TestMethod]
@@ -89,7 +89,7 @@ public class HttpMirrorTests
 
         var problems = string.Join("\n", report.GetProperty("problems").EnumerateArray().Select(problem => problem.GetString()));
 
-        StringAssert.Contains(problems, "AFTER the importScripts line");
+        Assert.Contains("AFTER the importScripts line", problems);
     }
 
     [TestMethod]
@@ -124,10 +124,10 @@ public class HttpMirrorTests
         // The POST form only exists so a bigger input fits; it must not be a second implementation.
         const string script = "self.isPassive = false;\nself.importScripts('_content/Bit.Bswup/bit-bswup.sw.js');";
 
-        var fromQuery = await _server.Http.GetStringAsync($"/api/mcp/InspectBswupServiceWorker?script={Uri.EscapeDataString(script)}");
+        var fromQuery = await _server.Http.GetStringAsync($"/api/mcp/InspectBswupServiceWorker?script={Uri.EscapeDataString(script)}", TestContext.CancellationToken);
 
-        var response = await _server.Http.PostAsJsonAsync("/api/mcp/InspectBswupServiceWorker", new { script });
-        var fromBody = await response.Content.ReadAsStringAsync();
+        var response = await _server.Http.PostAsJsonAsync("/api/mcp/InspectBswupServiceWorker", new { script }, cancellationToken: TestContext.CancellationToken);
+        var fromBody = await response.Content.ReadAsStringAsync(TestContext.CancellationToken);
 
         Assert.AreEqual(fromQuery, fromBody);
     }
@@ -135,7 +135,7 @@ public class HttpMirrorTests
     [TestMethod]
     public async Task PostWithoutTheRequiredProperty_IsRejected()
     {
-        var response = await _server.Http.PostAsJsonAsync("/api/mcp/InspectBswupServiceWorker", new { notScript = "x" });
+        var response = await _server.Http.PostAsJsonAsync("/api/mcp/InspectBswupServiceWorker", new { notScript = "x" }, cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -143,7 +143,7 @@ public class HttpMirrorTests
     [TestMethod]
     public async Task PostWithAScriptPastTheLengthLimit_IsRejected()
     {
-        var response = await _server.Http.PostAsJsonAsync("/api/mcp/InspectBswupServiceWorker", new { script = new string(' ', 64_001) });
+        var response = await _server.Http.PostAsJsonAsync("/api/mcp/InspectBswupServiceWorker", new { script = new string(' ', 64_001) }, cancellationToken: TestContext.CancellationToken);
 
         await AssertRejectedAsync(response, "over the 64000-character limit, so none of it was inspected");
     }
@@ -151,7 +151,7 @@ public class HttpMirrorTests
     [TestMethod]
     public async Task PostWithAssignmentsChainedPastTheLimit_IsRejected()
     {
-        var response = await _server.Http.PostAsJsonAsync("/api/mcp/InspectBswupServiceWorker", new { script = ServiceWorkerFixtures.ChainedAssignments });
+        var response = await _server.Http.PostAsJsonAsync("/api/mcp/InspectBswupServiceWorker", new { script = ServiceWorkerFixtures.ChainedAssignments }, cancellationToken: TestContext.CancellationToken);
 
         await AssertRejectedAsync(response, "chained too deeply");
     }
@@ -164,33 +164,35 @@ public class HttpMirrorTests
     private static async Task AssertRejectedAsync(HttpResponseMessage response, string reason)
     {
         Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);
-        Assert.AreEqual("application/problem+json", response.Content.Headers.ContentType?.MediaType);
+        var actualValue = response.Content.Headers.ContentType?.MediaType;
+        Assert.AreEqual("application/problem+json", actualValue);
 
         var problem = await response.Content.ReadFromJsonAsync<JsonElement>();
 
-        StringAssert.Contains(problem.GetProperty("detail").GetString(), reason);
-        Assert.IsFalse(_server.LoggedExceptions.Any(exception => exception is ToolInputException), "a refused input was logged as a server error");
+        Assert.Contains(reason, problem.GetProperty("detail").GetString()!);
+        Assert.DoesNotContain(exception => exception is ToolInputException, _server.LoggedExceptions, "a refused input was logged as a server error");
     }
 
     [TestMethod]
     public async Task TheSitesOwnRoutesAreNotShadowedByTheApi()
     {
         // /api/... and /mcp are literal routes no page owns, and the site still answers on its own.
-        var sitemap = await _server.Http.GetAsync("/sitemap.xml");
+        var sitemap = await _server.Http.GetAsync("/sitemap.xml", TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.OK, sitemap.StatusCode);
-        Assert.AreEqual("application/xml", sitemap.Content.Headers.ContentType?.MediaType);
+        var actualValue = sitemap.Content.Headers.ContentType?.MediaType;
+        Assert.AreEqual("application/xml", actualValue);
 
-        var xml = await sitemap.Content.ReadAsStringAsync();
+        var xml = await sitemap.Content.ReadAsStringAsync(TestContext.CancellationToken);
 
-        StringAssert.Contains(xml, "<urlset");
-        StringAssert.Contains(xml, "https://bswup.bitplatform.dev/service-worker");
+        Assert.Contains("<urlset", xml);
+        Assert.Contains("https://bswup.bitplatform.dev/service-worker", xml);
     }
 
     [TestMethod]
     public async Task Sitemap_LeavesOutThePagesMarkedNoIndex()
     {
-        var xml = await _server.Http.GetStringAsync("/sitemap.xml");
+        var xml = await _server.Http.GetStringAsync("/sitemap.xml", TestContext.CancellationToken);
 
         foreach (var url in Bit.Bswup.Demo.Client.SiteMetadata.NoIndexUrls)
         {
@@ -201,7 +203,7 @@ public class HttpMirrorTests
     [TestMethod]
     public async Task Sitemap_ListsEveryIndexablePage()
     {
-        var xml = await _server.Http.GetStringAsync("/sitemap.xml");
+        var xml = await _server.Http.GetStringAsync("/sitemap.xml", TestContext.CancellationToken);
 
         var expected = Bit.Bswup.Demo.Client.DocsCatalog.AllPages
             .Select(page => page.Url)
@@ -211,7 +213,9 @@ public class HttpMirrorTests
         {
             var absolute = Bit.Bswup.Demo.Client.SiteMetadata.AbsoluteUrl(url);
 
-            StringAssert.Contains(xml, $"<loc>{absolute}</loc>", url);
+            Assert.Contains($"<loc>{absolute}</loc>", xml, url);
         }
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

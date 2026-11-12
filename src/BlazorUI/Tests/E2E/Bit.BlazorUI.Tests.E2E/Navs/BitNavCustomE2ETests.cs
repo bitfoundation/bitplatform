@@ -125,7 +125,7 @@ public class BitNavCustomE2ETests : E2ETestBase
         var full = (await Nav("cnav-full").BoundingBoxAsync())!;
 
         Assert.AreEqual(container.Width, full.Width, 0.5);
-        Assert.IsTrue(fit.Width < container.Width / 2);
+        Assert.IsLessThan(container.Width / 2, fit.Width);
     }
 
     [TestMethod]

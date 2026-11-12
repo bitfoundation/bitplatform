@@ -3,7 +3,7 @@
 namespace Bit.Brouter.Tests.E2E.Infrastructure;
 
 /// <summary>A browser context of its own against the shared web harness host of one render mode.</summary>
-public sealed class WebSession
+internal sealed class WebSession
 {
     private WebHarnessHost? _host;
     private IBrowserContext? _context;

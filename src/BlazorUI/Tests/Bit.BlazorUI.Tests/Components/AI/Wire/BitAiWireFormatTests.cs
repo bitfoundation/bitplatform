@@ -21,8 +21,8 @@ public class BitAiWireFormatTests
             .Where(t => t.IsSubclassOf(typeof(BitAiEvent)) && !t.IsAbstract)
             .ToHashSet();
 
-        CollectionAssert.AreEquivalent(builtIn.ToArray(), BitAiWireSamples.All.Select(e => e.GetType()).ToArray());
-        Assert.AreEqual(34, builtIn.Count);
+        Assert.AreSequenceEqual(builtIn.ToArray(), BitAiWireSamples.All.Select(e => e.GetType()).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
+        Assert.HasCount(34, builtIn);
     }
 
     [TestMethod]
@@ -59,7 +59,7 @@ public class BitAiWireFormatTests
         {
             using var json = JsonDocument.Parse(BitAiWireSerializer.Serialize(evt));
             Assert.AreEqual(evt.Type, json.RootElement.GetProperty("type").GetString());
-            Assert.AreEqual(1, json.RootElement.EnumerateObject().Count(p => p.Name == "type"), evt.Type);
+            Assert.ContainsSingle(p => p.Name == "type", json.RootElement.EnumerateObject(), evt.Type);
         }
     }
 
@@ -76,7 +76,7 @@ public class BitAiWireFormatTests
         var events = JsonSerializer.Deserialize<List<BitAiEvent?>>(
             """[{"type":"text.delta","delta":"a"},{"type":"from.the.future"},{"type":"text.delta","delta":"b"}]""", options)!;
 
-        Assert.AreEqual(3, events.Count);
+        Assert.HasCount(3, events);
         Assert.AreEqual("a", ((BitAiTextDeltaEvent)events[0]!).Delta);
         Assert.IsNull(events[1]);
         Assert.AreEqual("b", ((BitAiTextDeltaEvent)events[2]!).Delta);
@@ -106,7 +106,7 @@ public class BitAiWireFormatTests
         var before = DateTimeOffset.UtcNow;
         var evt = BitAiWireSerializer.Deserialize("""{"type":"part.completed"}""")!;
 
-        Assert.IsTrue(evt.Timestamp >= before);
+        Assert.IsGreaterThanOrEqualTo(before, evt.Timestamp);
     }
 
     [TestMethod]
@@ -117,7 +117,7 @@ public class BitAiWireFormatTests
         var image = (BitAiImageEvent)BitAiWireSerializer.Deserialize("""{"type":"image","timestamp":"yesterday","url":"https://x/y.png","width":1.5,"height":3e10}""")!;
         var progress = (BitAiToolProgressEvent)BitAiWireSerializer.Deserialize("""{"type":"tool_call.progress","toolCallId":"t1","progress":{"fraction":1e400}}""")!;
 
-        Assert.IsTrue(image.Timestamp >= before);
+        Assert.IsGreaterThanOrEqualTo(before, image.Timestamp);
         Assert.IsNull(image.Width);
         Assert.IsNull(image.Height);
         Assert.IsNull(progress.Progress.Fraction);

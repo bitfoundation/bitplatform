@@ -5,7 +5,7 @@ using Spectre.Console.Testing;
 
 namespace Bit.Cli.Tests.Infrastructure;
 
-public sealed class TestHost : IDisposable
+internal sealed class TestHost : IDisposable
 {
     public TestHost(HostOs? os = null, IDictionary<string, string>? variables = null, IPrompter? prompter = null)
     {

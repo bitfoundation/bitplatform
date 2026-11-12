@@ -95,7 +95,7 @@ public class BitAiModelTests
 
         var removed = conversation.TruncateAfter(first.MessageId);
 
-        Assert.AreEqual(2, removed.Count);
+        Assert.HasCount(2, removed);
         Assert.AreEqual("three", removed[0].GetText());
         Assert.ContainsSingle(conversation.Messages);
     }
@@ -185,7 +185,7 @@ public class BitAiModelTests
         var ids = new List<string>();
         for (var i = 0; i < 500; i++) ids.Add(BitAiId.NewMessageId());
 
-        Assert.AreEqual(500, ids.Distinct(StringComparer.Ordinal).Count());
+        Assert.HasCount(500, ids.Distinct(StringComparer.Ordinal));
         foreach (var id in ids)
         {
             Assert.StartsWith("msg_", id, StringComparison.Ordinal);
@@ -206,7 +206,7 @@ public class BitAiModelTests
         Assert.IsTrue(artifact.Restore(1));
         Assert.AreEqual("v1", artifact.Content);
         Assert.AreEqual(3, artifact.Version);
-        Assert.AreEqual(3, artifact.Versions.Count);
+        Assert.HasCount(3, artifact.Versions);
     }
 
     [TestMethod]
@@ -223,10 +223,10 @@ public class BitAiModelTests
     {
         var attachment = new BitAiAttachment("a", "hello.txt") { Data = "hi"u8.ToArray() };
 
-        await using var stream = await attachment.OpenReadAsync();
+        await using var stream = await attachment.OpenReadAsync(TestContext.CancellationToken);
         using var reader = new StreamReader(stream);
 
-        Assert.AreEqual("hi", await reader.ReadToEndAsync());
+        Assert.AreEqual("hi", await reader.ReadToEndAsync(TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -237,4 +237,6 @@ public class BitAiModelTests
 
         Assert.AreEqual(string.Empty, message.GetText());
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

@@ -21,7 +21,7 @@ internal static class BitPdfViewerTestExtensions
         {
             Assert.AreEqual(count, component.Instance.PageCount);
             Assert.AreEqual("false", component.Find(".bit-pdv-surface").GetAttribute("aria-busy"));
-            Assert.AreEqual(count, component.FindAll(".bit-pdv-pages .bit-pdv-page[data-page]").Count);
+            Assert.HasCount(count, component.FindAll(".bit-pdv-pages .bit-pdv-page[data-page]"));
         });
     }
 

@@ -48,7 +48,7 @@ public class BitAiMessageActionsParamsTests : BitAiTestBase
     [TestMethod]
     public void BitAiMessageActionsParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual("BitParams.BitAiMessageActions", BitAiMessageActionsParams.ParamName);
+        Assert.AreEqual("BitParams.BitAiMessageActions", new BitAiMessageActionsParams().Name);
         Assert.AreEqual(BitAiMessageActionsParams.ParamName, new BitAiMessageActionsParams().Name);
     }
 

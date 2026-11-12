@@ -18,7 +18,7 @@ public class BitChoiceGroupOptionsApiTests : BunitTestContext
 
         var inputs = component.FindAll(".bit-chg-icn input");
 
-        Assert.AreEqual(4, inputs.Count);
+        Assert.HasCount(4, inputs);
         Assert.IsTrue(inputs.All(i => i.HasAttribute("disabled")));
     }
 
@@ -43,7 +43,7 @@ public class BitChoiceGroupOptionsApiTests : BunitTestContext
         var inputs = component.FindAll(".bit-chg-icn input");
         var labels = component.FindAll(".bit-chg-icn label");
 
-        Assert.AreEqual(4, inputs.Select(i => i.Id).Distinct().Count());
+        Assert.HasCount(4, inputs.Select(i => i.Id).Distinct());
 
         for (var i = 0; i < inputs.Count; i++)
         {
@@ -109,14 +109,14 @@ public class BitChoiceGroupOptionsApiTests : BunitTestContext
     {
         var component = RenderComponent<BitChoiceGroupOptionsTest>();
 
-        Assert.AreEqual(4, component.FindAll(".bit-chg-icn").Count);
+        Assert.HasCount(4, component.FindAll(".bit-chg-icn"));
 
         component.Render(parameters => parameters.Add(p => p.ShowSecond, false));
 
-        Assert.AreEqual(3, component.FindAll(".bit-chg-icn").Count);
+        Assert.HasCount(3, component.FindAll(".bit-chg-icn"));
 
         var options = component.FindComponents<BitChoiceGroupOption<string>>();
-        CollectionAssert.AreEqual(new[] { 0, 1, 2 }, options.Select(o => o.Instance.Index).ToArray());
+        Assert.AreSequenceEqual(new[] { 0, 1, 2 }, options.Select(o => o.Instance.Index).ToArray());
     }
 
     private static string? SelectedOptionText(IRenderedComponent<BitChoiceGroupOptionsTest> component)

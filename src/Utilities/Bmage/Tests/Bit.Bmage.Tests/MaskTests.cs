@@ -78,8 +78,8 @@ public sealed class MaskTests
         Assert.AreEqual(0, mask[5, 20]);
         Assert.AreEqual(0, mask[195, 20]);
         // At the edge, the coverage is about half, and it falls monotonically across the transition.
-        Assert.IsTrue(Math.Abs(mask[50, 20] - 128) < 20, $"edge coverage {mask[50, 20]}");
-        for (var x = 30; x < 70; x++) Assert.IsLessThanOrEqualTo(mask[x + 1, 20], mask[x, 20] , $"not monotonic at {x}");
+        Assert.IsLessThan(20, Math.Abs(mask[50, 20] - 128), $"edge coverage {mask[50, 20]}");
+        for (var x = 30; x < 70; x++) Assert.IsLessThanOrEqualTo(mask[x + 1, 20], mask[x, 20], $"not monotonic at {x}");
         // The feather reaches about three standard deviations, not much further.
         Assert.IsTrue(Rectangle.FromLTRB(50 - 20, 0, 150 + 20, 40).Contains(mask.GetBounds()));
     }
@@ -112,7 +112,7 @@ public sealed class MaskTests
 
         Assert.AreEqual(255, mask[5, 5]);
         Assert.AreEqual(0, mask[5, 95]);
-        Assert.IsTrue(Math.Abs(mask[5, 50] - 128) <= 3, $"midpoint {mask[5, 50]}");
+        Assert.IsLessThanOrEqualTo(3, Math.Abs(mask[5, 50] - 128), $"midpoint {mask[5, 50]}");
         for (var y = 10; y < 90; y++) Assert.IsLessThanOrEqualTo(mask[5, y - 1], mask[5, y]);
     }
 
@@ -283,7 +283,7 @@ public sealed class MaskTests
 
         // Inverting 100 gives 155; half way between is 127.5, which rounds to 128 with a coverage of 128/255.
         var p = result[1, 1];
-        Assert.IsTrue(Math.Abs(p.R - 128) <= 1, $"{p}");
+        Assert.IsLessThanOrEqualTo(1, Math.Abs(p.R - 128), $"{p}");
         Assert.AreEqual(255, p.A);
     }
 
@@ -364,7 +364,7 @@ public sealed class MaskTests
         Assert.AreEqual(255, avatar[32, 32].A);
         Assert.AreEqual(0, avatar[0, 0].A);
         Assert.AreEqual(0, avatar[63, 63].A);
-        Assert.IsTrue(avatar[32, 0].A > 0, "The ellipse should reach the middle of the top edge.");
+        Assert.IsGreaterThan(0, avatar[32, 0].A, "The ellipse should reach the middle of the top edge.");
     }
 
     [TestMethod]

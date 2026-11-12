@@ -39,10 +39,10 @@ public sealed class BitMediaQueryScreenQueryContractTests
         var source = ReadTypeScript();
 
         var start = source.IndexOf("private static buildScreenQuery", StringComparison.Ordinal);
-        Assert.IsTrue(start >= 0, "buildScreenQuery is gone from BitMediaQuery.ts; this contract needs to follow it.");
+        Assert.IsGreaterThanOrEqualTo(0, start, "buildScreenQuery is gone from BitMediaQuery.ts; this contract needs to follow it.");
 
         var end = source.IndexOf("private static resolveBreakpoints", StringComparison.Ordinal);
-        Assert.IsTrue(end > start, "resolveBreakpoints no longer follows buildScreenQuery; the slice below would read the wrong code.");
+        Assert.IsGreaterThan(start, end, "resolveBreakpoints no longer follows buildScreenQuery; the slice below would read the wrong code.");
 
         return source[start..end];
     }
@@ -52,10 +52,10 @@ public sealed class BitMediaQueryScreenQueryContractTests
         var source = ReadTypeScript();
 
         var start = source.IndexOf("_defaultBreakpoints", StringComparison.Ordinal);
-        Assert.IsTrue(start >= 0, "_defaultBreakpoints is gone from BitMediaQuery.ts; this contract needs to follow it.");
+        Assert.IsGreaterThanOrEqualTo(0, start, "_defaultBreakpoints is gone from BitMediaQuery.ts; this contract needs to follow it.");
 
         var end = source.IndexOf("};", start, StringComparison.Ordinal);
-        Assert.IsTrue(end > start, "The _defaultBreakpoints table is not an object literal any more.");
+        Assert.IsGreaterThan(start, end, "The _defaultBreakpoints table is not an object literal any more.");
 
         return DefaultBreakpoint.Matches(source[start..end])
                                 .ToDictionary(m => m.Groups["key"].Value, m => m.Groups["value"].Value, StringComparer.Ordinal);
@@ -82,8 +82,7 @@ public sealed class BitMediaQueryScreenQueryContractTests
 
         var missing = Enum.GetNames<BitScreenQuery>().Where(n => cases.Contains(n) is false).ToArray();
 
-        CollectionAssert.AreEqual(Array.Empty<string>(), missing,
-            $"BitScreenQuery members with no case in BitMediaQuery.ts, which resolve to no query and never listen: {string.Join(", ", missing)}");
+        Assert.AreSequenceEqual(Array.Empty<string>(), missing, $"BitScreenQuery members with no case in BitMediaQuery.ts, which resolve to no query and never listen: {string.Join(", ", missing)}");
     }
 
     [TestMethod]
@@ -96,8 +95,7 @@ public sealed class BitMediaQueryScreenQueryContractTests
                             .Where(n => names.Contains(n) is false)
                             .ToArray();
 
-        CollectionAssert.AreEqual(Array.Empty<string>(), extra,
-            $"Cases in BitMediaQuery.ts naming no BitScreenQuery member (a renamed or removed one): {string.Join(", ", extra)}");
+        Assert.AreSequenceEqual(Array.Empty<string>(), extra, $"Cases in BitMediaQuery.ts naming no BitScreenQuery member (a renamed or removed one): {string.Join(", ", extra)}");
     }
 
     [TestMethod]
@@ -118,7 +116,7 @@ public sealed class BitMediaQueryScreenQueryContractTests
             ["xxl"] = BitThemeBreakpointDefaults.Xxl,
         };
 
-        Assert.AreEqual(expected.Count, fallbacks.Count, "The JS fallback table no longer carries one entry per breakpoint.");
+        Assert.HasCount(expected.Count, fallbacks, "The JS fallback table no longer carries one entry per breakpoint.");
 
         foreach (var (key, value) in expected)
         {

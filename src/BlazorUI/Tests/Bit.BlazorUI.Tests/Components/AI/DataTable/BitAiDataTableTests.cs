@@ -22,13 +22,13 @@ public class BitAiDataTableTests : BitAiTestBase
     {
         var table = RenderComponent<BitAiDataTable>(p => p.Add(c => c.Rows, Json("""[{"name":"Ada"},{"name":"Alan","field":"logic"}]""")));
 
-        CollectionAssert.AreEqual(new[] { "Name", "Field" }, table.FindAll("th").Select(th => th.TextContent).ToArray());
+        Assert.AreSequenceEqual(new[] { "Name", "Field" }, table.FindAll("th").Select(th => th.TextContent).ToArray());
         Assert.AreEqual("col", table.Find("th").GetAttribute("scope"));
 
         var rows = table.FindAll("tbody tr");
-        Assert.AreEqual(2, rows.Count);
-        CollectionAssert.AreEqual(new[] { "Ada", "" }, rows[0].QuerySelectorAll("td").Select(td => td.TextContent).ToArray());
-        CollectionAssert.AreEqual(new[] { "Alan", "logic" }, rows[1].QuerySelectorAll("td").Select(td => td.TextContent).ToArray());
+        Assert.HasCount(2, rows);
+        Assert.AreSequenceEqual(new[] { "Ada", "" }, rows[0].QuerySelectorAll("td").Select(td => td.TextContent).ToArray());
+        Assert.AreSequenceEqual(new[] { "Alan", "logic" }, rows[1].QuerySelectorAll("td").Select(td => td.TextContent).ToArray());
     }
 
     [TestMethod]
@@ -36,7 +36,7 @@ public class BitAiDataTableTests : BitAiTestBase
     {
         var table = RenderComponent<BitAiDataTable>(p => p.Add(c => c.Rows, Json("""[{"tags":["a","b"],"n":2.50,"x":null,"ok":true}]""")));
 
-        CollectionAssert.AreEqual(new[] { """["a","b"]""", "2.50", "", "true" }, table.FindAll("td").Select(td => td.TextContent).ToArray());
+        Assert.AreSequenceEqual(new[] { """["a","b"]""", "2.50", "", "true" }, table.FindAll("td").Select(td => td.TextContent).ToArray());
     }
 
     [TestMethod]
@@ -44,8 +44,8 @@ public class BitAiDataTableTests : BitAiTestBase
     {
         var table = RenderComponent<BitAiDataTable>(p => p.Add(c => c.Rows, Json("""{"a":1}""")));
 
-        Assert.AreEqual(0, table.FindAll("th").Count);
-        Assert.AreEqual(0, table.FindAll("tbody tr").Count);
+        Assert.IsEmpty(table.FindAll("th"));
+        Assert.IsEmpty(table.FindAll("tbody tr"));
     }
 
     [TestMethod]
@@ -80,8 +80,8 @@ public class BitAiDataTableTests : BitAiTestBase
 
         table.Render(p => p.Add(c => c.Rows, Json("""[{"a":1},{"a":2,"b":3}]""")));
 
-        Assert.AreEqual(2, table.FindAll("th").Count);
-        Assert.AreEqual(2, table.FindAll("tbody tr").Count);
+        Assert.HasCount(2, table.FindAll("th"));
+        Assert.HasCount(2, table.FindAll("tbody tr"));
     }
 
     // The table is built again only for another element, and another element of the same document is one.
@@ -92,11 +92,11 @@ public class BitAiDataTableTests : BitAiTestBase
         var table = RenderComponent<BitAiDataTable>(p => p.Add(c => c.Rows, document.GetProperty("first")));
 
         table.Render(p => p.Add(c => c.Rows, document.GetProperty("first")));
-        CollectionAssert.AreEqual(new[] { "A" }, table.FindAll("th").Select(h => h.TextContent).ToArray());
+        Assert.AreSequenceEqual(new[] { "A" }, table.FindAll("th").Select(h => h.TextContent).ToArray());
 
         table.Render(p => p.Add(c => c.Rows, document.GetProperty("second")));
-        CollectionAssert.AreEqual(new[] { "B", "C" }, table.FindAll("th").Select(h => h.TextContent).ToArray());
-        Assert.AreEqual(2, table.FindAll("tbody tr").Count);
+        Assert.AreSequenceEqual(new[] { "B", "C" }, table.FindAll("th").Select(h => h.TextContent).ToArray());
+        Assert.HasCount(2, table.FindAll("tbody tr"));
     }
 
     // Telling the rows handed in from the ones built from reads nothing of the latter, whose document the host may have
@@ -111,7 +111,7 @@ public class BitAiDataTableTests : BitAiTestBase
         using var next = JsonDocument.Parse("""[{"b":2}]""");
         table.Render(p => p.Add(c => c.Rows, next.RootElement));
 
-        CollectionAssert.AreEqual(new[] { "B" }, table.FindAll("th").Select(h => h.TextContent).ToArray());
+        Assert.AreSequenceEqual(new[] { "B" }, table.FindAll("th").Select(h => h.TextContent).ToArray());
     }
 
     [TestMethod]
@@ -133,7 +133,7 @@ public class BitAiDataTableTests : BitAiTestBase
         Assert.IsTrue(root.ClassList.Contains("c-root"));
         Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
         Assert.AreEqual("rtl", root.GetAttribute("dir"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin:1px");
+        Assert.Contains("margin:1px", root.GetAttribute("style")!);
         Assert.IsTrue(table.Find(".bit-aidtb > table.bit-aidtb-tbl").ClassList.Contains("c-table"));
         Assert.IsTrue(table.Find("thead tr.bit-aidtb-hrw").ClassList.Contains("c-hrow"));
         Assert.IsTrue(table.Find("th.bit-aidtb-hcl").ClassList.Contains("c-head"));
@@ -153,7 +153,7 @@ public class BitAiDataTableTests : BitAiTestBase
         var style = table.Find(".bit-aidtb").GetAttribute("style");
 
         if (expected is null) Assert.IsTrue(string.IsNullOrEmpty(style));
-        else StringAssert.Contains(style, expected);
+        else Assert.Contains(expected, style!);
     }
 
     [TestMethod]
@@ -175,7 +175,7 @@ public class BitAiDataTableTests : BitAiTestBase
     [TestMethod]
     public void BitAiDataTableParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual("BitParams.BitAiDataTable", BitAiDataTableParams.ParamName);
+        Assert.AreEqual("BitParams.BitAiDataTable", new BitAiDataTableParams().Name);
         Assert.AreEqual(BitAiDataTableParams.ParamName, new BitAiDataTableParams().Name);
     }
 }

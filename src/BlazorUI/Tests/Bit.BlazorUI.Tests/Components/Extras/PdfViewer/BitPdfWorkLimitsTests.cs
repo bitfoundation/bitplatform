@@ -125,8 +125,8 @@ public class BitPdfWorkLimitsTests
         var watch = Stopwatch.StartNew();
         string html = new BitPdfHtmlRenderer(document.Pages[0], document.XRef).Render();
 
-        Assert.IsTrue(watch.Elapsed < TimeSpan.FromSeconds(15), $"rendering took {watch.Elapsed}");
-        StringAssert.Contains(html, "inset:0;background:");
+        Assert.IsLessThan(TimeSpan.FromSeconds(15), watch.Elapsed, $"rendering took {watch.Elapsed}");
+        Assert.Contains("inset:0;background:", html);
     }
 
     [TestMethod]
@@ -159,7 +159,7 @@ public class BitPdfWorkLimitsTests
             file.Obj(21, "<< /Title (Item) /Parent 20 0 R /Dest (missing) >>");
         }, [10, 20, 21]);
 
-        Assert.AreEqual(1, document.Outline.Count);
+        Assert.ContainsSingle(document.Outline);
     }
 
     [TestMethod]
@@ -174,8 +174,8 @@ public class BitPdfWorkLimitsTests
         var watch = Stopwatch.StartNew();
         double[] output = function.Eval([0]);
 
-        Assert.IsTrue(watch.ElapsedMilliseconds < 500, $"evaluating took {watch.ElapsedMilliseconds}ms");
-        Assert.AreEqual(1, output.Length);
+        Assert.IsLessThan(500, watch.ElapsedMilliseconds, $"evaluating took {watch.ElapsedMilliseconds}ms");
+        Assert.ContainsSingle(output);
     }
 
     [TestMethod]
@@ -291,7 +291,7 @@ public class BitPdfWorkLimitsTests
             }
         }
 
-        Assert.IsTrue(watch.ElapsedMilliseconds < 1_000, $"{lookups} lookups took {watch.ElapsedMilliseconds}ms");
+        Assert.IsLessThan(1_000, watch.ElapsedMilliseconds, $"{lookups} lookups took {watch.ElapsedMilliseconds}ms");
         Assert.AreEqual(lookups / 2, mapped);
         Assert.AreEqual("B", map.Lookup(4 * 123 + 1));
         Assert.IsNull(map.Lookup(4 * 123 + 2));

@@ -28,7 +28,7 @@ public class PerformanceMeasurements : DemoTest
         report.AppendLine("## editing tools");
         await RunAsync(page, "Editing tools in this browser", "Run the editing tools", report);
 
-        await File.WriteAllTextAsync(E2EEnvironment.MeasureOutput, report.ToString());
+        await File.WriteAllTextAsync(E2EEnvironment.MeasureOutput, report.ToString(), TestContext.CancellationToken);
         TestContext.WriteLine($"Measurements written to {E2EEnvironment.MeasureOutput}:{Environment.NewLine}{report}");
     }
 

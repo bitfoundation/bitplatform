@@ -35,7 +35,7 @@ public class BitCollapseE2ETests : E2ETestBase
         Assert.IsTrue(Regex.IsMatch(html, "id=\"col-basic\"[^>]*class=\"[^\"]*bit-col-col"), "The closed collapse is not prerendered closed.");
         Assert.IsTrue(Regex.IsMatch(html, "id=\"col-basic-content\"[^>]*inert"), "The closed content is not prerendered inert.");
         Assert.IsTrue(Regex.IsMatch(html, "id=\"col-find-content\"[^>]*hidden=\"until-found\""), "The searchable content is not prerendered hidden-until-found.");
-        StringAssert.Contains(html, "<span id=\"status\">Loading</span>");
+        Assert.Contains("<span id=\"status\">Loading</span>", html);
     }
 
     [TestMethod]
@@ -78,7 +78,7 @@ public class BitCollapseE2ETests : E2ETestBase
 
         var samples = await ReadSamplesAsync();
         var full = (await BoxAsync(Wrapper("col-basic"))).Height;
-        Assert.IsTrue(samples.Count(s => s.Value > 1 && s.Value < full - 1) >= 3, $"[{string.Join(", ", samples.Select(s => s.Value))}] full {full}");
+        Assert.IsGreaterThanOrEqualTo(3, samples.Count(s => s.Value > 1 && s.Value < full - 1), $"[{string.Join(", ", samples.Select(s => s.Value))}] full {full}");
     }
 
     [TestMethod]
@@ -175,11 +175,11 @@ public class BitCollapseE2ETests : E2ETestBase
             fills.Add(await StyleAsync(El($"col-bg-{name}"), "background-color"));
         }
 
-        Assert.AreEqual(4, fills.Distinct().Count(), string.Join(" | ", fills));
+        Assert.HasCount(4, fills.Distinct(), string.Join(" | ", fills));
         Assert.AreEqual(Transparent, fills[3]);
         Assert.AreEqual(fills[0], await StyleAsync(El("col-bg-unset"), "background-color"));
 
-        Assert.IsTrue(Px(await StyleAsync(Wrapper("col-bg-unset"), "padding-top")) > 0);
+        Assert.IsGreaterThan(0, Px(await StyleAsync(Wrapper("col-bg-unset"), "padding-top")));
         await Expect(El("col-bg-transparent")).ToHaveClassAsync(HasClass("bit-col-npd"));
         await Expect(Wrapper("col-bg-transparent")).ToHaveCSSAsync("padding-top", "0px");
         Near((await BoxAsync(El("col-bg-transparent"))).X, (await BoxAsync(El("col-nopad-text"))).X, "the content touches the edge");
@@ -214,8 +214,8 @@ public class BitCollapseE2ETests : E2ETestBase
         var padding = Px(await StyleAsync(Wrapper("col-hor"), "padding-left"));
         Near(text.Width + 2 * padding, full, "the width of the content");
         var samples = await ReadSamplesAsync();
-        Assert.IsTrue(samples.Count(s => s.Value > 1 && s.Value < full - 1) >= 3, $"[{string.Join(", ", samples.Select(s => s.Value))}]");
-        Assert.IsTrue((await BoxAsync(root)).Height > 10);
+        Assert.IsGreaterThanOrEqualTo(3, samples.Count(s => s.Value > 1 && s.Value < full - 1), $"[{string.Join(", ", samples.Select(s => s.Value))}]");
+        Assert.IsGreaterThan(10, (await BoxAsync(root)).Height);
     }
 
     [TestMethod]
@@ -250,10 +250,10 @@ public class BitCollapseE2ETests : E2ETestBase
 
         await El("btn-peek").ClickAsync();
         await WaitForFullHeightAsync("col-peek");
-        Assert.IsTrue((await BoxAsync(root)).Height > 150);
+        Assert.IsGreaterThan(150, (await BoxAsync(root)).Height);
 
         // A fade on the trailing edge of a closed peek, and a sideways peek is a width.
-        StringAssert.Contains(await StyleAsync(Content("col-peek-fade"), "mask-image"), "linear-gradient");
+        Assert.Contains("linear-gradient", await StyleAsync(Content("col-peek-fade"), "mask-image"));
         Near(48, (await BoxAsync(El("col-peek-fade"))).Height, "a 3rem peek");
         Near(80, (await BoxAsync(El("col-peek-hor"))).Width, "an 80px sideways peek");
     }
@@ -279,8 +279,8 @@ public class BitCollapseE2ETests : E2ETestBase
         var changed = samples.First(s => s.Expanded);
         var opened = samples.First(s => s.Value > 0.5);
         var reached = samples.First(s => s.Value >= full - 0.5);
-        Assert.IsTrue(opened.Time - changed.Time >= 150, $"The delay was {opened.Time - changed.Time}ms.");
-        Assert.IsTrue(reached.Time - changed.Time >= 700, $"The track opened in {reached.Time - changed.Time}ms.");
+        Assert.IsGreaterThanOrEqualTo(150, opened.Time - changed.Time, $"The delay was {opened.Time - changed.Time}ms.");
+        Assert.IsGreaterThanOrEqualTo(700, reached.Time - changed.Time, $"The track opened in {reached.Time - changed.Time}ms.");
     }
 
     [TestMethod]
@@ -322,9 +322,9 @@ public class BitCollapseE2ETests : E2ETestBase
         await Page.EmulateMediaAsync(new() { ReducedMotion = ReducedMotion.Reduce });
         await OpenAsync(Url);
 
-        Assert.IsTrue(ToMs(await StyleAsync(El("col-theme"), "transition-duration")) < 0.1);
-        Assert.IsTrue(ToMs(await StyleAsync(El("col-slow"), "transition-duration")) < 0.1, "A Duration does not follow reduced motion.");
-        Assert.IsTrue(ToMs(await StyleAsync(El("col-slow"), "transition-delay")) < 0.1, "A Delay does not follow reduced motion.");
+        Assert.IsLessThan(0.1, ToMs(await StyleAsync(El("col-theme"), "transition-duration")));
+        Assert.IsLessThan(0.1, ToMs(await StyleAsync(El("col-slow"), "transition-duration")), "A Duration does not follow reduced motion.");
+        Assert.IsLessThan(0.1, ToMs(await StyleAsync(El("col-slow"), "transition-delay")), "A Delay does not follow reduced motion.");
         await Expect(El("col-force")).ToHaveClassAsync(HasClass("bit-fam"));
         Assert.AreEqual(300, ToMs(await StyleAsync(El("col-force"), "transition-duration")), 1);
     }
@@ -344,7 +344,7 @@ public class BitCollapseE2ETests : E2ETestBase
         // Timed from the click, which the 600ms Duration can only start after, rather than from the moment OnExpanding
         // was seen: an expectation can see that one half a second late on a loaded runner, or only once OnExpanded
         // has come as well.
-        Assert.IsTrue(watch.ElapsedMilliseconds >= 550, $"OnExpanded came {watch.ElapsedMilliseconds}ms after the click.");
+        Assert.IsGreaterThanOrEqualTo(550, watch.ElapsedMilliseconds, $"OnExpanded came {watch.ElapsedMilliseconds}ms after the click.");
 
         await El("btn-events").ClickAsync();
         await Expect(El("ev-log")).ToHaveTextAsync("Expanding|Change:True|Expanded|Collapsing|Change:False|Collapsed");
@@ -359,7 +359,7 @@ public class BitCollapseE2ETests : E2ETestBase
         await El("btn-ev-var").ClickAsync();
         await Expect(El("ev-var-gap")).ToHaveTextAsync(new Regex(@"^\d+$"));
         var gap = int.Parse((await El("ev-var-gap").TextContentAsync())!, CultureInfo.InvariantCulture);
-        Assert.IsTrue(gap >= 600, $"OnExpanded came {gap}ms after OnExpanding for a 700ms transition.");
+        Assert.IsGreaterThanOrEqualTo(600, gap, $"OnExpanded came {gap}ms after OnExpanding for a 700ms transition.");
     }
 
     [TestMethod]
@@ -537,7 +537,7 @@ public class BitCollapseE2ETests : E2ETestBase
         Assert.AreEqual(800, ToMs(await StyleAsync(El("col-par-1"), "transition-duration")), 1);
 
         await Expect(El("col-par-own")).Not.ToHaveClassAsync(HasClass("bit-col-npd"));
-        Assert.IsTrue(Px(await StyleAsync(Wrapper("col-par-own"), "padding-top")) > 0);
+        Assert.IsGreaterThan(0, Px(await StyleAsync(Wrapper("col-par-own"), "padding-top")));
         await Expect(El("col-par-own")).ToHaveClassAsync(HasClass("bit-col-sbg"));
     }
 
@@ -613,7 +613,7 @@ public class BitCollapseE2ETests : E2ETestBase
         await OpenAsync(Url);
 
         await Expect(El("col-vis-hidden")).ToHaveCSSAsync("visibility", "hidden");
-        Assert.IsTrue((await BoxAsync(El("col-vis-hidden"))).Height > 0);
+        Assert.IsGreaterThan(0, (await BoxAsync(El("col-vis-hidden"))).Height);
         await Expect(El("col-vis-collapsed")).ToHaveCSSAsync("display", "none");
     }
 
@@ -720,7 +720,7 @@ public class BitCollapseE2ETests : E2ETestBase
 
     private static void Near(double expected, double actual, string what, double tolerance = 1.5)
     {
-        Assert.IsTrue(Math.Abs(expected - actual) <= tolerance, $"{what}: expected {expected}, got {actual}.");
+        Assert.IsLessThanOrEqualTo(tolerance, Math.Abs(expected - actual), $"{what}: expected {expected}, got {actual}.");
     }
 
     private async Task<T> PollAsync<T>(Func<Task<T>> read, Func<T, bool> done, string message)

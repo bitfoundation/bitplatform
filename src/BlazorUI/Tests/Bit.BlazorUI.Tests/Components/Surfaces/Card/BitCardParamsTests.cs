@@ -138,7 +138,7 @@ public class BitCardParamsTests : BunitTestContext
             builder.AddAttribute(2, nameof(BitCard.Footer), (RenderFragment)(b => b.AddContent(0, "Footer")));
         });
 
-        StringAssert.Contains(component.Find(".bit-crd").GetAttribute("style"), "color: red;");
+        Assert.Contains("color: red;", component.Find(".bit-crd").GetAttribute("style")!);
         Assert.AreEqual("color: blue;", component.Find(".bit-crd-mai").GetAttribute("style"));
         Assert.AreEqual("color: green;", component.Find(".bit-crd-hdr").GetAttribute("style"));
         Assert.AreEqual("color: orange;", component.Find(".bit-crd-ttl").GetAttribute("style"));
@@ -191,10 +191,10 @@ public class BitCardParamsTests : BunitTestContext
 
         var style = component.Find(".bit-crd").GetAttribute("style")!;
 
-        StringAssert.Contains(style, "height:10rem");
-        StringAssert.Contains(style, "min-height:5rem");
-        StringAssert.Contains(style, "min-width:6rem");
-        StringAssert.Contains(style, "max-height:20rem");
+        Assert.Contains("height:10rem", style);
+        Assert.Contains("min-height:5rem", style);
+        Assert.Contains("min-width:6rem", style);
+        Assert.Contains("max-height:20rem", style);
     }
 
     [TestMethod]
@@ -209,8 +209,8 @@ public class BitCardParamsTests : BunitTestContext
 
         var style = component.Find(".bit-crd").GetAttribute("style")!;
 
-        StringAssert.Contains(style, "--bit-crd-cvr-width:30%");
-        StringAssert.Contains(style, "--bit-crd-img-height:8rem");
+        Assert.Contains("--bit-crd-cvr-width:30%", style);
+        Assert.Contains("--bit-crd-img-height:8rem", style);
     }
 
     [TestMethod]
@@ -236,7 +236,7 @@ public class BitCardParamsTests : BunitTestContext
             builder.AddAttribute(1, nameof(BitCard.Href), "https://bitplatform.dev");
         });
 
-        StringAssert.Contains(component.Find(".bit-crd-lnk").GetAttribute("rel"), "nofollow");
+        Assert.Contains("nofollow", component.Find(".bit-crd-lnk").GetAttribute("rel")!);
     }
 
     [TestMethod]
@@ -265,7 +265,7 @@ public class BitCardParamsTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
         Assert.IsTrue(root.ClassList.Contains("bit-dis"));
         Assert.IsTrue(root.ClassList.Contains("cascaded"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin: 1px;");
+        Assert.Contains("margin: 1px;", root.GetAttribute("style")!);
 
         // A named card is a group, and a disabled group reports itself as such - whoever named it.
         Assert.AreEqual("Cascaded card", root.GetAttribute("aria-label"));
@@ -297,8 +297,8 @@ public class BitCardParamsTests : BunitTestContext
         // NoShadow written as false by the card opts it out of the cascaded one; what it did not write is filled in.
         Assert.IsFalse(root.ClassList.Contains("bit-crd-nsd"));
         Assert.IsTrue(root.ClassList.Contains("bit-crd-sqr"));
-        StringAssert.Contains(root.GetAttribute("style"), "height:4rem");
-        Assert.IsFalse(root.GetAttribute("style")!.Contains("height:10rem"));
+        Assert.Contains("height:4rem", root.GetAttribute("style")!);
+        Assert.DoesNotContain("height:10rem", root.GetAttribute("style")!);
         Assert.AreEqual("4", component.Find(".bit-crd-ttl").GetAttribute("aria-level"));
         Assert.IsTrue(root.ClassList.Contains("own-root"));
         Assert.IsFalse(root.ClassList.Contains("cascaded-root"));
@@ -310,7 +310,7 @@ public class BitCardParamsTests : BunitTestContext
         var component = RenderWithParams(new BitCardParams { Square = true, Height = "10rem" });
 
         Assert.IsTrue(component.Find(".bit-crd").ClassList.Contains("bit-crd-sqr"));
-        StringAssert.Contains(component.Find(".bit-crd").GetAttribute("style"), "height:10rem");
+        Assert.Contains("height:10rem", component.Find(".bit-crd").GetAttribute("style")!);
 
         component.Render(parameters => parameters.Add(p => p.Parameters, new List<IBitComponentParams> { new BitCardParams() }));
 
@@ -319,7 +319,7 @@ public class BitCardParamsTests : BunitTestContext
         Assert.IsFalse(card.Square);
         Assert.IsNull(card.Height);
         Assert.IsFalse(component.Find(".bit-crd").ClassList.Contains("bit-crd-sqr"));
-        Assert.IsFalse((component.Find(".bit-crd").GetAttribute("style") ?? string.Empty).Contains("height:10rem"));
+        Assert.DoesNotContain("height:10rem", (component.Find(".bit-crd").GetAttribute("style") ?? string.Empty));
     }
 
     [TestMethod]

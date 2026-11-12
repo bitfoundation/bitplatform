@@ -33,9 +33,9 @@ public class BrowserConfigHostingTests
     [DataRow(Modes.AutoNoPrerender)]
     public async Task Every_render_mode_prerenders_the_script_with_a_parsable_config(string mode)
     {
-        using var response = await HarnessHostFactory.Shared(mode).CreateClient().GetAsync("/");
+        using var response = await HarnessHostFactory.Shared(mode).CreateClient().GetAsync("/", TestContext.CancellationToken);
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
-        var html = await response.Content.ReadAsStringAsync();
+        var html = await response.Content.ReadAsStringAsync(TestContext.CancellationToken);
 
         using var config = RenderedHtml.BrowserConfig(html);
         Assert.IsNotNull(config, $"The {mode} response carried no #bit-belemetry-config element.");
@@ -61,8 +61,8 @@ public class BrowserConfigHostingTests
     [DataRow(Modes.Auto)]
     public async Task The_config_reflects_the_options(string mode)
     {
-        using var response = await HarnessHostFactory.Shared(mode).CreateClient().GetAsync("/");
-        using var config = RenderedHtml.BrowserConfig(await response.Content.ReadAsStringAsync())!;
+        using var response = await HarnessHostFactory.Shared(mode).CreateClient().GetAsync("/", TestContext.CancellationToken);
+        using var config = RenderedHtml.BrowserConfig(await response.Content.ReadAsStringAsync(TestContext.CancellationToken))!;
         var root = config.RootElement;
 
         var service = root.GetProperty("service");
@@ -89,15 +89,15 @@ public class BrowserConfigHostingTests
         Assert.AreEqual("http/json", otlp.GetProperty("protocol").GetString());
 
         var azure = exporters.Single(e => e.GetProperty("type").GetString() == "azureMonitor");
-        StringAssert.Contains(azure.GetProperty("connectionString").GetString(), HarnessServiceCollectionExtensions.InstrumentationKey);
+        Assert.Contains(HarnessServiceCollectionExtensions.InstrumentationKey, azure.GetProperty("connectionString").GetString()!);
 
         // A server lists no exporter URL to ignore: its own exports never go through the page, the script recognizes
         // the URLs of the exporters above by itself, and an internal collector's address has no business in a page. A
         // WebAssembly client adds the URLs of its .NET exporters when it starts the script (bit-belemetry-js covers it).
         var ignored = root.GetProperty("dependencies").GetProperty("ignoreUrls").EnumerateArray().Select(u => u.GetString()!).ToList();
-        Assert.IsFalse(ignored.Any(pattern => Regex.IsMatch("http://localhost/test-collector/v1/traces", pattern)),
+        Assert.DoesNotContain(pattern => Regex.IsMatch("http://localhost/test-collector/v1/traces", pattern), ignored,
             $"A server published an exporter URL: {string.Join(", ", ignored)}");
-        Assert.IsFalse(ignored.Any(pattern => Regex.IsMatch("http://localhost/test-collector/v2.1/track", pattern)),
+        Assert.DoesNotContain(pattern => Regex.IsMatch("http://localhost/test-collector/v2.1/track", pattern), ignored,
             $"A server published an exporter URL: {string.Join(", ", ignored)}");
     }
 
@@ -106,21 +106,22 @@ public class BrowserConfigHostingTests
     [DataRow(Modes.Auto)]
     public async Task The_script_module_is_served_as_javascript_with_the_documented_api(string mode)
     {
-        using var response = await HarnessHostFactory.Shared(mode).CreateClient().GetAsync("/_content/Bit.Belemetry/bit-belemetry.js");
+        using var response = await HarnessHostFactory.Shared(mode).CreateClient().GetAsync("/_content/Bit.Belemetry/bit-belemetry.js", TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
-        Assert.AreEqual("text/javascript", response.Content.Headers.ContentType?.MediaType,
+        var actualValue = response.Content.Headers.ContentType?.MediaType;
+        Assert.AreEqual("text/javascript", actualValue,
             "The module URL was answered by something other than the static asset.");
 
-        var script = await response.Content.ReadAsStringAsync();
+        var script = await response.Content.ReadAsStringAsync(TestContext.CancellationToken);
         var exports = ExportedNames(script);
         foreach (var export in new[] { "start", "isStarted", "setConsent", "getConsent", "isConsentDecided", "setUser", "trackEvent", "trackPageView", "trackException", "flush", "getContext", "attachDotNet", "sendRequests" })
         {
-            Assert.IsTrue(exports.Contains(export), $"bit-belemetry.js does not export {export}. Exports: {string.Join(", ", exports)}");
+            Assert.Contains(export, exports, $"bit-belemetry.js does not export {export}. Exports: {string.Join(", ", exports)}");
         }
 
         // The auto-start that makes <BelemetryScript /> work without Blazor.
-        StringAssert.Contains(script, "bit-belemetry-config");
+        Assert.Contains("bit-belemetry-config", script);
     }
 
     [TestMethod]
@@ -130,9 +131,9 @@ public class BrowserConfigHostingTests
         // interactive router knew would answer 404 to a deep link.
         foreach (var path in new[] { "/", "/second", "/third" })
         {
-            using var response = await HarnessHostFactory.Shared(Modes.Ssr).CreateClient().GetAsync(path);
+            using var response = await HarnessHostFactory.Shared(Modes.Ssr).CreateClient().GetAsync(path, TestContext.CancellationToken);
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, path);
-            StringAssert.Contains(await response.Content.ReadAsStringAsync(), $"id=\"page-{(path == "/" ? "home" : path[1..])}\"");
+            Assert.Contains($"id=\"page-{(path == "/" ? "home" : path[1..])}\"", await response.Content.ReadAsStringAsync(TestContext.CancellationToken));
         }
     }
 
@@ -157,4 +158,6 @@ public class BrowserConfigHostingTests
 
         return names;
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

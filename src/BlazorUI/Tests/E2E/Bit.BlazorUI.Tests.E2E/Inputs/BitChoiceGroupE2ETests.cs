@@ -82,9 +82,9 @@ public class BitChoiceGroupE2ETests : E2ETestBase
         var html = await response.TextAsync();
 
         Assert.IsTrue(response.Ok);
-        StringAssert.Contains(html, "id=\"cg-basic\"");
-        StringAssert.Contains(html, "role=\"radiogroup\"");
-        StringAssert.Contains(html, "<span id=\"status\">Loading</span>");
+        Assert.Contains("id=\"cg-basic\"", html);
+        Assert.Contains("role=\"radiogroup\"", html);
+        Assert.Contains("<span id=\"status\">Loading</span>", html);
         Assert.IsTrue(Regex.IsMatch(html, "<input[^>]*checked[^>]*value=\"B\""), "The default value is prerendered checked.");
 
         await OpenAsync(Url);
@@ -122,7 +122,7 @@ public class BitChoiceGroupE2ETests : E2ETestBase
         await OpenAsync(Url);
 
         var names = await Page.Locator("#cg-basic .bit-chg-inp").EvaluateAllAsync<string[]>("els => els.map(e => e.name)");
-        Assert.AreEqual(1, names.Distinct().Count(), "Every radio of the group carries the same name.");
+        Assert.ContainsSingle(names.Distinct(), "Every radio of the group carries the same name.");
 
         await Page.Locator("#btn-before-basic").FocusAsync();
         await Page.Keyboard.PressAsync("Tab");
@@ -331,12 +331,12 @@ public class BitChoiceGroupE2ETests : E2ETestBase
 
         var icon = await BoxOfAsync(Page.Locator("#cg-icons-inline .bit-chg-icw").Nth(0));
         var text = await BoxOfAsync(Text("cg-icons-inline", 0));
-        Assert.IsTrue(icon.X + icon.Width <= text.X + 1, "The icon sits before the text.");
+        Assert.IsLessThanOrEqualTo(text.X + 1, icon.X + icon.Width, "The icon sits before the text.");
         Assert.AreEqual(icon.Y + icon.Height / 2, text.Y + text.Height / 2, 6, "The icon and the text share one line.");
 
         var tileIcon = await BoxOfAsync(Page.Locator("#cg-icons .bit-chg-icw").Nth(0));
         var tileText = await BoxOfAsync(Text("cg-icons", 0));
-        Assert.IsTrue(tileText.Y >= tileIcon.Y + tileIcon.Height - 1, "In a tile the text sits under the icon.");
+        Assert.IsGreaterThanOrEqualTo(tileIcon.Y + tileIcon.Height - 1, tileText.Y, "In a tile the text sits under the icon.");
     }
 
     [TestMethod]
@@ -351,11 +351,11 @@ public class BitChoiceGroupE2ETests : E2ETestBase
         var first = await BoxOfAsync(Item("cg-horizontal", 0));
         var second = await BoxOfAsync(Item("cg-horizontal", 1));
         Assert.AreEqual(first.Y, second.Y, 1, "Horizontal items share a row.");
-        Assert.IsTrue(second.X > first.X);
+        Assert.IsGreaterThan(first.X, second.X);
 
         var v1 = await BoxOfAsync(Item("cg-basic", 0));
         var v2 = await BoxOfAsync(Item("cg-basic", 1));
-        Assert.IsTrue(v2.Y > v1.Y, "Vertical items are stacked.");
+        Assert.IsGreaterThan(v1.Y, v2.Y, "Vertical items are stacked.");
 
         var i1 = await BoxOfAsync(Item("cg-horizontal-icons", 0));
         var i2 = await BoxOfAsync(Item("cg-horizontal-icons", 1));
@@ -495,7 +495,7 @@ public class BitChoiceGroupE2ETests : E2ETestBase
         await Expect(Input("cg-validation", 0)).ToHaveAttributeAsync("required", "");
         await Expect(Input("cg-validation", 0)).ToHaveAttributeAsync("data-input", "radio");
         var asterisk = await StyleOfAsync(Page.Locator("#cg-validation .bit-chg-lbl"), "content", "::after");
-        StringAssert.Contains(asterisk, "*");
+        Assert.Contains("*", asterisk);
 
         await Page.Locator("#btn-submit").ClickAsync();
 
@@ -548,7 +548,7 @@ public class BitChoiceGroupE2ETests : E2ETestBase
 
         var text = await BoxOfAsync(Text("cg-descriptions", 0));
         var line = await BoxOfAsync(description);
-        Assert.IsTrue(line.Y >= text.Y + text.Height - 1, "The description sits under the item text.");
+        Assert.IsGreaterThanOrEqualTo(text.Y + text.Height - 1, line.Y, "The description sits under the item text.");
     }
 
     [TestMethod]
@@ -573,7 +573,7 @@ public class BitChoiceGroupE2ETests : E2ETestBase
         await Expect(ItemLabel("cg-prefix", 1)).ToContainTextAsync("$10 -");
         var prefix = await BoxOfAsync(ItemLabel("cg-prefix", 1).Locator("span").First);
         var text = await BoxOfAsync(Text("cg-prefix", 1));
-        Assert.IsTrue(prefix.X < text.X, "The prefix comes before the text.");
+        Assert.IsLessThan(text.X, prefix.X, "The prefix comes before the text.");
 
         var suffix = ItemLabel("cg-suffix", 2).Locator("span").Last;
         await Expect(suffix).ToHaveTextAsync("$25");
@@ -661,13 +661,13 @@ public class BitChoiceGroupE2ETests : E2ETestBase
 
         var box = await BoxOfAsync(Page.Locator("#fw-box"));
 
-        Assert.IsTrue((await BoxOfAsync(Root("cg-fw-default"))).Width < box.Width - 50, "By default the group hugs its items.");
+        Assert.IsLessThan(box.Width - 50, (await BoxOfAsync(Root("cg-fw-default"))).Width, "By default the group hugs its items.");
 
         await Expect(Root("cg-fw-hor")).ToHaveClassAsync(HasClass("bit-chg-flw"));
         Assert.AreEqual(box.Width, (await BoxOfAsync(Root("cg-fw-hor"))).Width, 1);
         var widths = new List<double>();
         for (var i = 0; i < 4; i++) widths.Add((await BoxOfAsync(Item("cg-fw-hor", i))).Width);
-        Assert.IsTrue(widths.Max() - widths.Min() < 1.5, $"Horizontal full-width items share equal columns ({string.Join(", ", widths)}).");
+        Assert.IsLessThan(1.5, widths.Max() - widths.Min(), $"Horizontal full-width items share equal columns ({string.Join(", ", widths)}).");
 
         var container = await BoxOfAsync(Page.Locator("#cg-fw-start .bit-chg-cnt"));
         var radio = await BoxOfAsync(Radio("cg-fw-start", 0));
@@ -728,7 +728,7 @@ public class BitChoiceGroupE2ETests : E2ETestBase
         Assert.AreNotEqual(await StyleOfAsync(ItemLabel("cg-fill", 1), "background-color"), await StyleOfAsync(ItemLabel("cg-fill", 0), "background-color"));
         var card = await BoxOfAsync(ItemLabel("cg-fill", 0));
         var radio = await BoxOfAsync(Radio("cg-fill", 0));
-        Assert.IsTrue(radio.X > card.X + card.Width / 2, "Fill with Start puts the circle at the far edge of the card.");
+        Assert.IsGreaterThan(card.X + card.Width / 2, radio.X, "Fill with Start puts the circle at the far edge of the card.");
 
         await Expect(ItemLabel("cg-text", 0)).ToHaveCSSAsync("border-top-style", "none");
 
@@ -848,10 +848,10 @@ public class BitChoiceGroupE2ETests : E2ETestBase
 
         var smIcon = await BoxOfAsync(Page.Locator("#cg-size-sm-icons .bit-chg-icw").Nth(0));
         var lgIcon = await BoxOfAsync(Page.Locator("#cg-size-lg-icons .bit-chg-icw").Nth(0));
-        Assert.IsTrue(smIcon.Height < lgIcon.Height, "The tile icons scale.");
+        Assert.IsLessThan(lgIcon.Height, smIcon.Height, "The tile icons scale.");
         var smInline = await BoxOfAsync(Page.Locator("#cg-size-sm-inline .bit-chg-icw").Nth(0));
         var lgInline = await BoxOfAsync(Page.Locator("#cg-size-lg-inline .bit-chg-icw").Nth(0));
-        Assert.IsTrue(smInline.Height < lgInline.Height, "The inline icons scale.");
+        Assert.IsLessThan(lgInline.Height, smInline.Height, "The inline icons scale.");
 
         var wins = await BoxOfAsync(Radio("cg-size-wins", 0));
         Assert.AreEqual(lg.Width, wins.Width, 0.5, "An explicit Size wins over --bit-ChoiceGroup-circle-size.");
@@ -996,11 +996,11 @@ public class BitChoiceGroupE2ETests : E2ETestBase
         await Expect(Root("cg-rtl")).ToHaveClassAsync(HasClass("bit-rtl"));
         var radio = await BoxOfAsync(Radio("cg-rtl", 0));
         var text = await BoxOfAsync(Text("cg-rtl", 0));
-        Assert.IsTrue(radio.X > text.X, "In RTL the circle is to the right of the text.");
+        Assert.IsGreaterThan(text.X, radio.X, "In RTL the circle is to the right of the text.");
 
         var first = await BoxOfAsync(Item("cg-rtl-inherited", 0));
         var second = await BoxOfAsync(Item("cg-rtl-inherited", 1));
-        Assert.IsTrue(first.X > second.X, "Inherited RTL flows the horizontal items from the right.");
+        Assert.IsGreaterThan(second.X, first.X, "Inherited RTL flows the horizontal items from the right.");
         await Expect(Root("cg-rtl-inherited")).Not.ToHaveAttributeAsync("dir", AnyValue);
 
         if (IsWebKit) Assert.Inconclusive("WebKit does not mirror the arrow keys of a radio group in RTL.");
@@ -1097,14 +1097,14 @@ public class BitChoiceGroupE2ETests : E2ETestBase
     {
         await OpenAsync(Url);
 
-        StringAssert.StartsWith(await StyleOfAsync(Radio("cg-motion", 0), "transition-duration", "::after"), "0.2s");
+        Assert.StartsWith("0.2s", await StyleOfAsync(Radio("cg-motion", 0), "transition-duration", "::after"));
 
         await Page.EmulateMediaAsync(new() { ReducedMotion = ReducedMotion.Reduce });
 
         var reduced = await StyleOfAsync(Radio("cg-motion", 0), "transition-duration", "::after");
-        Assert.IsFalse(reduced.StartsWith("0.2s"), $"Reduced motion collapses the dot ({reduced}).");
+        Assert.DoesNotStartWith("0.2s", reduced, $"Reduced motion collapses the dot ({reduced}).");
         await Expect(Root("cg-motion-forced")).ToHaveClassAsync(HasClass("bit-fam"));
-        StringAssert.StartsWith(await StyleOfAsync(Radio("cg-motion-forced", 0), "transition-duration", "::after"), "0.2s");
+        Assert.StartsWith("0.2s", await StyleOfAsync(Radio("cg-motion-forced", 0), "transition-duration", "::after"));
     }
 
     [TestMethod]

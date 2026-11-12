@@ -9,10 +9,10 @@ public class CodeReviewTests
     [TestMethod]
     public void OldNames_AreReported()
     {
-        CollectionAssert.Contains(Rules("builder.Services.AddBelemetryServices();"), "BLM001");
-        CollectionAssert.Contains(Rules("window.Belemetry.getContext()"), "BLM001");
-        CollectionAssert.DoesNotContain(Rules("builder.Services.AddBitBelemetryServices(); BitBelemetry.getContext();"), "BLM001");
-        CollectionAssert.DoesNotContain(Rules("// builder.Services.AddBelemetryServices();"), "BLM001");
+        Assert.Contains("BLM001", Rules("builder.Services.AddBelemetryServices();"));
+        Assert.Contains("BLM001", Rules("window.Belemetry.getContext()"));
+        Assert.DoesNotContain("BLM001", Rules("builder.Services.AddBitBelemetryServices(); BitBelemetry.getContext();"));
+        Assert.DoesNotContain("BLM001", Rules("// builder.Services.AddBelemetryServices();"));
     }
 
     [TestMethod]
@@ -23,9 +23,9 @@ public class CodeReviewTests
         Assert.AreEqual("error", finding.Severity);
         Assert.AreEqual(1, finding.Line);
 
-        CollectionAssert.Contains(Rules("otlp.Endpoint = new Uri(\"https://otel.example.com/v1/logs\");"), "BLM002");
-        CollectionAssert.DoesNotContain(Rules("otlp.TracesEndpoint = new Uri(\"https://otel.example.com/v1/traces\");"), "BLM002");
-        CollectionAssert.DoesNotContain(Rules("// o.AddOtlpExporter(\"http://collector:4318/v1/traces\");"), "BLM002");
+        Assert.Contains("BLM002", Rules("otlp.Endpoint = new Uri(\"https://otel.example.com/v1/logs\");"));
+        Assert.DoesNotContain("BLM002", Rules("otlp.TracesEndpoint = new Uri(\"https://otel.example.com/v1/traces\");"));
+        Assert.DoesNotContain("BLM002", Rules("// o.AddOtlpExporter(\"http://collector:4318/v1/traces\");"));
     }
 
     [TestMethod]
@@ -33,32 +33,32 @@ public class CodeReviewTests
     {
         const string Keyed = "o.AddOtlpExporter(\"https://api.honeycomb.io\", otlp => otlp.Headers[\"x-honeycomb-team\"] = key);";
 
-        CollectionAssert.Contains(Rules(Keyed), "BLM003");
-        CollectionAssert.DoesNotContain(Rules(Keyed + "\no.Browser.Transport = BelemetryBrowserTransport.Relay;"), "BLM003");
-        CollectionAssert.DoesNotContain(Rules(Keyed + "\notlp.IncludeInBrowser = false;"), "BLM003");
-        CollectionAssert.DoesNotContain(Rules("otlp.Headers[\"x-tenant\"] = \"contoso\";"), "BLM003");
+        Assert.Contains("BLM003", Rules(Keyed));
+        Assert.DoesNotContain("BLM003", Rules(Keyed + "\no.Browser.Transport = BelemetryBrowserTransport.Relay;"));
+        Assert.DoesNotContain("BLM003", Rules(Keyed + "\notlp.IncludeInBrowser = false;"));
+        Assert.DoesNotContain("BLM003", Rules("otlp.Headers[\"x-tenant\"] = \"contoso\";"));
     }
 
     [TestMethod]
     public void AConsentDefaultThatGrantsAnalytics_IsReported_ButErrorsIsNot()
     {
-        CollectionAssert.Contains(Rules("o.Consent.Default = BelemetryFeatures.All;"), "BLM004");
-        CollectionAssert.Contains(Rules("o.Consent.Default = BelemetryFeatures.Errors | BelemetryFeatures.PageViews;"), "BLM004");
-        CollectionAssert.DoesNotContain(Rules("o.Consent.Default = BelemetryFeatures.Errors;"), "BLM004");
-        CollectionAssert.DoesNotContain(Rules("o.Consent.Default = BelemetryFeatures.None;"), "BLM004");
+        Assert.Contains("BLM004", Rules("o.Consent.Default = BelemetryFeatures.All;"));
+        Assert.Contains("BLM004", Rules("o.Consent.Default = BelemetryFeatures.Errors | BelemetryFeatures.PageViews;"));
+        Assert.DoesNotContain("BLM004", Rules("o.Consent.Default = BelemetryFeatures.Errors;"));
+        Assert.DoesNotContain("BLM004", Rules("o.Consent.Default = BelemetryFeatures.None;"));
     }
 
     [TestMethod]
     public void AMissingScriptOrInitializer_IsReported_OnlyWhenTheFileItBelongsInIsThere()
     {
-        CollectionAssert.Contains(Rules("<html><head><HeadOutlet /></head></html>"), "BLM005");
-        CollectionAssert.DoesNotContain(Rules("<html><head><BelemetryScript /><HeadOutlet /></head></html>"), "BLM005");
-        CollectionAssert.DoesNotContain(Rules("builder.Services.AddBitBelemetryServices();"), "BLM005");
+        Assert.Contains("BLM005", Rules("<html><head><HeadOutlet /></head></html>"));
+        Assert.DoesNotContain("BLM005", Rules("<html><head><BelemetryScript /><HeadOutlet /></head></html>"));
+        Assert.DoesNotContain("BLM005", Rules("builder.Services.AddBitBelemetryServices();"));
 
-        CollectionAssert.Contains(Rules("<Router AppAssembly=\"typeof(Program).Assembly\" />"), "BLM006");
-        CollectionAssert.DoesNotContain(Rules("<Router AppAssembly=\"typeof(Program).Assembly\" />\n<BelemetryInitializer />"), "BLM006");
+        Assert.Contains("BLM006", Rules("<Router AppAssembly=\"typeof(Program).Assembly\" />"));
+        Assert.DoesNotContain("BLM006", Rules("<Router AppAssembly=\"typeof(Program).Assembly\" />\n<BelemetryInitializer />"));
 
-        CollectionAssert.Contains(Rules("<BelemetryInitializer />\n<BelemetryInitializer />"), "BLM007");
+        Assert.Contains("BLM007", Rules("<BelemetryInitializer />\n<BelemetryInitializer />"));
     }
 
     [TestMethod]
@@ -70,21 +70,21 @@ public class CodeReviewTests
 
         Assert.AreEqual("info", finding.Severity);
         Assert.AreEqual(2, finding.Line);
-        CollectionAssert.DoesNotContain(Rules(Server + "\no.Server.CollectDotnetTelemetry = true;"), "BLM008");
+        Assert.DoesNotContain("BLM008", Rules(Server + "\no.Server.CollectDotnetTelemetry = true;"));
     }
 
     [TestMethod]
     public void TheRemainingRules_FireOnTheirMistakes()
     {
-        CollectionAssert.Contains(Rules("o.AddOtlpExporter(\"/otlp\");"), "BLM009");
-        CollectionAssert.Contains(Rules("o.AddOtlpExporter(\"http://localhost:4317\");"), "BLM010");
-        CollectionAssert.Contains(Rules("o.Browser.CaptureInteractionText = true;"), "BLM011");
-        CollectionAssert.Contains(Rules("o.Privacy.ScrubPatterns = false;"), "BLM012");
-        CollectionAssert.Contains(Rules("o.Browser.SessionSampleRatio = 25;"), "BLM013");
-        CollectionAssert.DoesNotContain(Rules("o.Browser.SessionSampleRatio = 0.25;"), "BLM013");
-        CollectionAssert.Contains(Rules("Belemetry.FlushAsync().GetAwaiter().GetResult();"), "BLM014");
-        CollectionAssert.Contains(Rules("azure.AccessTokenProvider = GetTokenAsync;"), "BLM015");
-        CollectionAssert.Contains(Rules("o.Persistence.Directory = \"wwwroot/telemetry\";"), "BLM016");
+        Assert.Contains("BLM009", Rules("o.AddOtlpExporter(\"/otlp\");"));
+        Assert.Contains("BLM010", Rules("o.AddOtlpExporter(\"http://localhost:4317\");"));
+        Assert.Contains("BLM011", Rules("o.Browser.CaptureInteractionText = true;"));
+        Assert.Contains("BLM012", Rules("o.Privacy.ScrubPatterns = false;"));
+        Assert.Contains("BLM013", Rules("o.Browser.SessionSampleRatio = 25;"));
+        Assert.DoesNotContain("BLM013", Rules("o.Browser.SessionSampleRatio = 0.25;"));
+        Assert.Contains("BLM014", Rules("Belemetry.FlushAsync().GetAwaiter().GetResult();"));
+        Assert.Contains("BLM015", Rules("azure.AccessTokenProvider = GetTokenAsync;"));
+        Assert.Contains("BLM016", Rules("o.Persistence.Directory = \"wwwroot/telemetry\";"));
     }
 
     [TestMethod]
@@ -102,24 +102,24 @@ public class CodeReviewTests
             <BelemetryInitializer />
             """;
 
-        Assert.AreEqual(0, BelemetryCodeReview.Review(Correct).Findings.Length);
+        Assert.IsEmpty(BelemetryCodeReview.Review(Correct).Findings);
 
         var findings = BelemetryCodeReview.Review("o.Consent.Default = BelemetryFeatures.All;\no.AddOtlpExporter(\"http://c:4318/v1/traces\");").Findings;
 
-        CollectionAssert.AreEqual(new int?[] { 1, 2 }, findings.Select(f => f.Line).ToArray());
-        StringAssert.Contains(BelemetryCodeReview.Review("").Summary, "Nothing to review");
+        Assert.AreSequenceEqual(new int?[] { 1, 2 }, findings.Select(f => f.Line).ToArray());
+        Assert.Contains("Nothing to review", BelemetryCodeReview.Review("").Summary);
     }
 
     [TestMethod]
     public void AnOversizedSnippet_IsRefused_AndEachRulesFindingsAreCapped()
     {
         var oversized = BelemetryCodeReview.Review(new string('x', 64 * 1024 + 1));
-        StringAssert.StartsWith(oversized.Summary, "Not reviewed");
+        Assert.StartsWith("Not reviewed", oversized.Summary);
         Assert.IsEmpty(oversized.Findings);
 
         var repeated = BelemetryCodeReview.Review(string.Concat(Enumerable.Repeat("builder.Services.AddBelemetryServices();\n", 500)) + "o.Consent.Default = BelemetryFeatures.All;");
         Assert.HasCount(10, repeated.Findings.Where(f => f.Rule == "BLM001"));
-        CollectionAssert.Contains(repeated.Findings.Select(f => f.Rule).ToArray(), "BLM004", "A flood of one rule's findings does not hide another rule's.");
-        StringAssert.Contains(repeated.Summary, "at most 10");
+        Assert.Contains("BLM004", repeated.Findings.Select(f => f.Rule).ToArray(), "A flood of one rule's findings does not hide another rule's.");
+        Assert.Contains("at most 10", repeated.Summary);
     }
 }

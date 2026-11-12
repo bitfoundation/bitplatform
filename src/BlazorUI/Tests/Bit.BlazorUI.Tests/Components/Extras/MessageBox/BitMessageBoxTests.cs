@@ -21,8 +21,8 @@ public class BitMessageBoxTests : BunitTestContext
             parameters.Add(p => p.Body, "Sample Body");
         });
 
-        Assert.IsTrue(component.Markup.Contains("Sample Title"));
-        Assert.IsTrue(component.Markup.Contains("Sample Body"));
+        Assert.Contains("Sample Title", component.Markup);
+        Assert.Contains("Sample Body", component.Markup);
 
         var okButtonText = component.Find(".bit-msb-ftr .bit-btn-prt");
         Assert.AreEqual("Ok", okButtonText.TextContent);
@@ -109,7 +109,7 @@ public class BitMessageBoxTests : BunitTestContext
         var buttons = component.FindAll(".bit-msb .bit-btn");
 
         // The close button and the two of the set, so the loop below cannot pass by finding none.
-        Assert.AreEqual(3, buttons.Count);
+        Assert.HasCount(3, buttons);
 
         foreach (var button in buttons)
         {
@@ -131,7 +131,7 @@ public class BitMessageBoxTests : BunitTestContext
 
         component.Find(".bit-msb-ftr .bit-btn").Click();
 
-        Assert.AreEqual(0, results.Count);
+        Assert.IsEmpty(results);
         Assert.AreEqual(BitMessageBoxResult.None, component.Instance.Result);
     }
 
@@ -151,7 +151,7 @@ public class BitMessageBoxTests : BunitTestContext
 
         var texts = component.FindAll(".bit-msb-ftr .bit-btn-prt").Select(b => b.TextContent).ToArray();
 
-        CollectionAssert.AreEqual(expected, texts);
+        Assert.AreSequenceEqual(expected, texts);
     }
 
     [TestMethod]
@@ -165,7 +165,7 @@ public class BitMessageBoxTests : BunitTestContext
 
         var texts = component.FindAll(".bit-msb-ftr .bit-btn-prt").Select(b => b.TextContent).ToArray();
 
-        CollectionAssert.AreEqual(new[] { "Cancel", "No", "Yes" }, texts);
+        Assert.AreSequenceEqual(new[] { "Cancel", "No", "Yes" }, texts);
     }
 
     [TestMethod]
@@ -197,7 +197,7 @@ public class BitMessageBoxTests : BunitTestContext
 
         var texts = component.FindAll(".bit-msb-ftr .bit-btn-prt").Select(b => b.TextContent).ToArray();
 
-        CollectionAssert.AreEqual(new[] { "Sure", "Nope", "Later" }, texts);
+        Assert.AreSequenceEqual(new[] { "Sure", "Nope", "Later" }, texts);
     }
 
     [TestMethod,
@@ -216,7 +216,7 @@ public class BitMessageBoxTests : BunitTestContext
 
         component.FindAll(".bit-msb-ftr .bit-btn")[index].Click();
 
-        Assert.AreEqual(1, results.Count);
+        Assert.ContainsSingle(results);
         Assert.AreEqual(expected, results[0]);
         Assert.AreEqual(expected, component.Instance.Result);
     }
@@ -236,7 +236,7 @@ public class BitMessageBoxTests : BunitTestContext
 
         component.Find(".bit-msb-hdr .bit-btn").Click();
 
-        Assert.AreEqual(1, results.Count);
+        Assert.ContainsSingle(results);
         Assert.AreEqual(BitMessageBoxResult.None, results[0]);
         Assert.AreEqual(0, cancelled);
     }
@@ -282,7 +282,7 @@ public class BitMessageBoxTests : BunitTestContext
 
         component.Find(".bit-msb-ftr .bit-btn").Click();
 
-        CollectionAssert.AreEqual(new[] { "ok", "result", "close" }, order);
+        Assert.AreSequenceEqual(new[] { "ok", "result", "close" }, order);
     }
 
 
@@ -299,7 +299,7 @@ public class BitMessageBoxTests : BunitTestContext
         // app's --bit-Button-* variables still restyle them: no role class, only the host default read after those.
         var buttons = component.FindAll(".bit-msb-ftr .bit-btn");
 
-        Assert.AreEqual(2, buttons.Count);
+        Assert.HasCount(2, buttons);
 
         foreach (var button in buttons)
         {
@@ -333,7 +333,7 @@ public class BitMessageBoxTests : BunitTestContext
 
         var buttons = component.FindAll(".bit-msb-ftr .bit-btn");
 
-        Assert.AreEqual(2, buttons.Count);
+        Assert.HasCount(2, buttons);
 
         foreach (var button in buttons)
         {
@@ -353,7 +353,7 @@ public class BitMessageBoxTests : BunitTestContext
 
         var buttons = component.FindAll(".bit-msb-ftr .bit-btn");
 
-        Assert.AreEqual(2, buttons.Count);
+        Assert.HasCount(2, buttons);
 
         foreach (var button in buttons)
         {
@@ -389,7 +389,7 @@ public class BitMessageBoxTests : BunitTestContext
         var buttons = component.FindAll(".bit-msb .bit-btn");
 
         // The close button and the two of the set, so the loop below cannot pass by finding none.
-        Assert.AreEqual(3, buttons.Count);
+        Assert.HasCount(3, buttons);
 
         foreach (var button in buttons)
         {
@@ -405,7 +405,7 @@ public class BitMessageBoxTests : BunitTestContext
             parameters.Add(p => p.Title, "Title");
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-msb-ict").Count);
+        Assert.IsEmpty(component.FindAll(".bit-msb-ict"));
     }
 
     [TestMethod,
@@ -463,7 +463,7 @@ public class BitMessageBoxTests : BunitTestContext
             parameters.Add(p => p.HideIcon, true);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-msb-ict").Count);
+        Assert.IsEmpty(component.FindAll(".bit-msb-ict"));
     }
 
     [TestMethod]
@@ -479,8 +479,8 @@ public class BitMessageBoxTests : BunitTestContext
             }));
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-msb-ict .custom-icon").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-msb-ico").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-msb-ict .custom-icon"));
+        Assert.IsEmpty(component.FindAll(".bit-msb-ico"));
     }
 
     [TestMethod]
@@ -548,7 +548,7 @@ public class BitMessageBoxTests : BunitTestContext
             parameters.Add(p => p.CloseIconName, "Cancel");
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-msb-hdr .bit-btn .bit-icon--Cancel").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-msb-hdr .bit-btn .bit-icon--Cancel"));
     }
 
     [TestMethod]
@@ -560,7 +560,7 @@ public class BitMessageBoxTests : BunitTestContext
             parameters.Add(p => p.ShowCloseButton, false);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-msb-hdr .bit-btn").Count);
+        Assert.IsEmpty(component.FindAll(".bit-msb-hdr .bit-btn"));
     }
 
     [TestMethod]
@@ -572,7 +572,7 @@ public class BitMessageBoxTests : BunitTestContext
             parameters.Add(p => p.ShowCloseButton, false);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-msb-hdr").Count);
+        Assert.IsEmpty(component.FindAll(".bit-msb-hdr"));
     }
 
     [TestMethod]
@@ -583,7 +583,7 @@ public class BitMessageBoxTests : BunitTestContext
             parameters.Add(p => p.Body, "Only a body.");
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-msb-ttl").Count);
+        Assert.IsEmpty(component.FindAll(".bit-msb-ttl"));
     }
 
     [TestMethod]
@@ -629,8 +629,8 @@ public class BitMessageBoxTests : BunitTestContext
             }));
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-msb-bdy .custom-body").Count);
-        Assert.IsFalse(component.Markup.Contains("the string body"));
+        Assert.ContainsSingle(component.FindAll(".bit-msb-bdy .custom-body"));
+        Assert.DoesNotContain("the string body", component.Markup);
     }
 
     [TestMethod]
@@ -641,7 +641,7 @@ public class BitMessageBoxTests : BunitTestContext
             parameters.AddChildContent("<div class=\"custom-body\"></div>");
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-msb-bdy .custom-body").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-msb-bdy .custom-body"));
     }
 
     [TestMethod]
@@ -658,9 +658,9 @@ public class BitMessageBoxTests : BunitTestContext
             }));
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-msb-hdr .custom-header").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-msb-ttl").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-msb-hdr .bit-btn").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-msb-hdr .custom-header"));
+        Assert.IsEmpty(component.FindAll(".bit-msb-ttl"));
+        Assert.IsEmpty(component.FindAll(".bit-msb-hdr .bit-btn"));
     }
 
     [TestMethod]
@@ -677,8 +677,8 @@ public class BitMessageBoxTests : BunitTestContext
             }));
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-msb-ftr .custom-footer").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-msb-ftr .bit-btn").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-msb-ftr .custom-footer"));
+        Assert.IsEmpty(component.FindAll(".bit-msb-ftr .bit-btn"));
     }
 
 
@@ -771,16 +771,16 @@ public class BitMessageBoxTests : BunitTestContext
         });
 
         Assert.IsTrue(component.Find(".bit-msb").ClassList.Contains("custom-root"));
-        Assert.AreEqual(1, component.FindAll(".bit-msb-con.custom-container").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-msb-hdr.custom-header").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-msb-ict.custom-icon-container").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-msb-ico.custom-icon").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-msb-ttl.custom-title").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-msb-bdy.custom-body").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-msb-ftr.custom-footer").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-msb-ftr .custom-ok").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-msb-ftr .custom-cancel").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-msb-hdr .custom-close").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-msb-con.custom-container"));
+        Assert.ContainsSingle(component.FindAll(".bit-msb-hdr.custom-header"));
+        Assert.ContainsSingle(component.FindAll(".bit-msb-ict.custom-icon-container"));
+        Assert.ContainsSingle(component.FindAll(".bit-msb-ico.custom-icon"));
+        Assert.ContainsSingle(component.FindAll(".bit-msb-ttl.custom-title"));
+        Assert.ContainsSingle(component.FindAll(".bit-msb-bdy.custom-body"));
+        Assert.ContainsSingle(component.FindAll(".bit-msb-ftr.custom-footer"));
+        Assert.ContainsSingle(component.FindAll(".bit-msb-ftr .custom-ok"));
+        Assert.ContainsSingle(component.FindAll(".bit-msb-ftr .custom-cancel"));
+        Assert.ContainsSingle(component.FindAll(".bit-msb-hdr .custom-close"));
     }
 
     [TestMethod]
@@ -797,9 +797,9 @@ public class BitMessageBoxTests : BunitTestContext
         });
 
         // The Ok button has a set of its own, so the shared one is not what it uses.
-        Assert.AreEqual(1, component.FindAll(".bit-msb-ftr .custom-ok").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-msb-ftr .custom-ok.custom-action").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-msb-ftr .custom-action").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-msb-ftr .custom-ok"));
+        Assert.IsEmpty(component.FindAll(".bit-msb-ftr .custom-ok.custom-action"));
+        Assert.ContainsSingle(component.FindAll(".bit-msb-ftr .custom-action"));
     }
 
     [TestMethod]
@@ -820,12 +820,12 @@ public class BitMessageBoxTests : BunitTestContext
             });
         });
 
-        Assert.IsTrue(component.Find(".bit-msb").GetAttribute("style")!.Contains("color: red"));
-        Assert.IsTrue(component.Find(".bit-msb-con").GetAttribute("style")!.Contains("color: blue"));
-        Assert.IsTrue(component.Find(".bit-msb-hdr").GetAttribute("style")!.Contains("color: green"));
-        Assert.IsTrue(component.Find(".bit-msb-ttl").GetAttribute("style")!.Contains("color: yellow"));
-        Assert.IsTrue(component.Find(".bit-msb-bdy").GetAttribute("style")!.Contains("color: purple"));
-        Assert.IsTrue(component.Find(".bit-msb-ftr").GetAttribute("style")!.Contains("color: orange"));
+        Assert.Contains("color: red", component.Find(".bit-msb").GetAttribute("style")!);
+        Assert.Contains("color: blue", component.Find(".bit-msb-con").GetAttribute("style")!);
+        Assert.Contains("color: green", component.Find(".bit-msb-hdr").GetAttribute("style")!);
+        Assert.Contains("color: yellow", component.Find(".bit-msb-ttl").GetAttribute("style")!);
+        Assert.Contains("color: purple", component.Find(".bit-msb-bdy").GetAttribute("style")!);
+        Assert.Contains("color: orange", component.Find(".bit-msb-ftr").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -838,10 +838,10 @@ public class BitMessageBoxTests : BunitTestContext
             parameters.Add(p => p.Buttons, BitMessageBoxButtons.None);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-msb-ftr").Count);
+        Assert.IsEmpty(component.FindAll(".bit-msb-ftr"));
 
         // The close button is the only way left to end it, so it is still there.
-        Assert.AreEqual(1, component.FindAll(".bit-msb-hdr .bit-btn").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-msb-hdr .bit-btn"));
     }
 
     [TestMethod]
@@ -858,7 +858,7 @@ public class BitMessageBoxTests : BunitTestContext
             }));
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-msb-ftr .custom-footer").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-msb-ftr .custom-footer"));
     }
 
     [TestMethod]
@@ -874,7 +874,7 @@ public class BitMessageBoxTests : BunitTestContext
 
         component.Find(".bit-msb-hdr .bit-btn").Click();
 
-        CollectionAssert.AreEqual(new[] { BitMessageBoxResult.None }, results);
+        Assert.AreSequenceEqual(new[] { BitMessageBoxResult.None }, results);
     }
 
     [TestMethod]
@@ -885,7 +885,7 @@ public class BitMessageBoxTests : BunitTestContext
             parameters.Add(p => p.Title, "Only a title.");
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-msb-bdy").Count);
+        Assert.IsEmpty(component.FindAll(".bit-msb-bdy"));
     }
 
     [TestMethod]
@@ -935,7 +935,7 @@ public class BitMessageBoxTests : BunitTestContext
 
         await component.InvokeAsync(() => component.Instance.AnswerAsync(BitMessageBoxResult.Yes));
 
-        CollectionAssert.AreEqual(new[] { "yes", "result:Yes", "close" }, order);
+        Assert.AreSequenceEqual(new[] { "yes", "result:Yes", "close" }, order);
         Assert.AreEqual(BitMessageBoxResult.Yes, component.Instance.Result);
     }
 
@@ -952,7 +952,7 @@ public class BitMessageBoxTests : BunitTestContext
 
         await component.InvokeAsync(() => component.Instance.AnswerAsync(BitMessageBoxResult.Ok));
 
-        Assert.AreEqual(0, results.Count);
+        Assert.IsEmpty(results);
     }
 
     [TestMethod]
@@ -968,7 +968,7 @@ public class BitMessageBoxTests : BunitTestContext
 
         await component.InvokeAsync(() => component.Instance.AnswerAsync(BitMessageBoxResult.Ok));
 
-        Assert.AreEqual(0, results.Count);
+        Assert.IsEmpty(results);
         Assert.AreEqual(BitMessageBoxResult.None, component.Instance.Result);
     }
 
@@ -987,7 +987,7 @@ public class BitMessageBoxTests : BunitTestContext
 
         component.Find(".bit-msb-ftr .bit-btn").Click();
 
-        CollectionAssert.AreEqual(new[] { "before", "ok", "result", "close" }, order);
+        Assert.AreSequenceEqual(new[] { "before", "ok", "result", "close" }, order);
         Assert.AreEqual(BitMessageBoxResult.Ok, component.Instance.Result);
     }
 
@@ -1011,7 +1011,7 @@ public class BitMessageBoxTests : BunitTestContext
 
         component.Find(".bit-msb-ftr .bit-btn").Click();
 
-        CollectionAssert.AreEqual(new[] { "before" }, order);
+        Assert.AreSequenceEqual(new[] { "before" }, order);
 
         // A refused answer is not one the message box was given, so it still holds no answer at all.
         Assert.AreEqual(BitMessageBoxResult.None, component.Instance.Result);
@@ -1035,7 +1035,7 @@ public class BitMessageBoxTests : BunitTestContext
 
         component.Find(".bit-msb-hdr .bit-btn").Click();
 
-        CollectionAssert.AreEqual(new[] { BitMessageBoxResult.None }, seen);
+        Assert.AreSequenceEqual(new[] { BitMessageBoxResult.None }, seen);
         Assert.AreEqual(0, closed);
     }
 
@@ -1055,7 +1055,7 @@ public class BitMessageBoxTests : BunitTestContext
 
         component.FindAll(".bit-msb-ftr .bit-btn")[index].Click();
 
-        CollectionAssert.AreEqual(new[] { expected }, seen);
+        Assert.AreSequenceEqual(new[] { expected }, seen);
     }
 
     [TestMethod]
@@ -1088,13 +1088,13 @@ public class BitMessageBoxTests : BunitTestContext
 
         component.Find(".bit-msb-ftr .bit-btn").Click();
 
-        Assert.AreEqual(0, results.Count);
+        Assert.IsEmpty(results);
 
         refuse = false;
 
         component.Find(".bit-msb-ftr .bit-btn").Click();
 
-        CollectionAssert.AreEqual(new[] { BitMessageBoxResult.Ok }, results);
+        Assert.AreSequenceEqual(new[] { BitMessageBoxResult.Ok }, results);
     }
 
     [TestMethod]
@@ -1123,13 +1123,13 @@ public class BitMessageBoxTests : BunitTestContext
         await component.Find(".bit-msb-hdr .bit-btn").ClickAsync(new MouseEventArgs());
 
         Assert.IsTrue(token.IsCancellationRequested);
-        CollectionAssert.AreEqual(new[] { BitMessageBoxResult.None }, results);
+        Assert.AreSequenceEqual(new[] { BitMessageBoxResult.None }, results);
 
         // The answer taken back is never handed over, whatever its guard goes on to decide.
         gate.SetResult();
         await answering;
 
-        CollectionAssert.AreEqual(new[] { BitMessageBoxResult.None }, results);
+        Assert.AreSequenceEqual(new[] { BitMessageBoxResult.None }, results);
     }
 
     [TestMethod]
@@ -1155,12 +1155,12 @@ public class BitMessageBoxTests : BunitTestContext
         // No is an answer rather than a dismissal, so it waits its turn like any other.
         await buttons[1].ClickAsync(new MouseEventArgs());
 
-        Assert.AreEqual(0, results.Count);
+        Assert.IsEmpty(results);
 
         gate.SetResult();
         await answering;
 
-        CollectionAssert.AreEqual(new[] { BitMessageBoxResult.Yes }, results);
+        Assert.AreSequenceEqual(new[] { BitMessageBoxResult.Yes }, results);
     }
 
     [TestMethod]
@@ -1184,7 +1184,7 @@ public class BitMessageBoxTests : BunitTestContext
         // answer, not two.
         await buttons[1].ClickAsync(new MouseEventArgs());
 
-        Assert.AreEqual(0, results.Count);
+        Assert.IsEmpty(results);
 
         gate.SetResult();
 
@@ -1192,7 +1192,7 @@ public class BitMessageBoxTests : BunitTestContext
 
         component.WaitForAssertion(() =>
         {
-            Assert.AreEqual(1, results.Count);
+            Assert.ContainsSingle(results);
             Assert.AreEqual(BitMessageBoxResult.Ok, results[0]);
         });
     }
@@ -1214,9 +1214,9 @@ public class BitMessageBoxTests : BunitTestContext
         // message box that is kept mounted between showings finds it again on every opening.
         var focused = component.FindAll(".bit-msb-ftr .bit-btn[autofocus]");
 
-        Assert.AreEqual(1, focused.Count);
+        Assert.ContainsSingle(focused);
         Assert.AreEqual(component.FindAll(".bit-msb-ftr .bit-btn")[index], focused[0]);
-        Assert.AreEqual(0, component.FindAll(".bit-msb-hdr .bit-btn[autofocus]").Count);
+        Assert.IsEmpty(component.FindAll(".bit-msb-hdr .bit-btn[autofocus]"));
     }
 
     [TestMethod]
@@ -1227,7 +1227,7 @@ public class BitMessageBoxTests : BunitTestContext
             parameters.Add(p => p.Buttons, BitMessageBoxButtons.OkCancel);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-btn[autofocus]").Count);
+        Assert.IsEmpty(component.FindAll(".bit-btn[autofocus]"));
     }
 
     [TestMethod]
@@ -1242,8 +1242,8 @@ public class BitMessageBoxTests : BunitTestContext
             parameters.Add(p => p.ShowCloseButton, true);
         });
 
-        Assert.AreEqual(hasFooterButton ? 0 : 1, component.FindAll(".bit-msb-hdr .bit-btn[autofocus]").Count);
-        Assert.AreEqual(hasFooterButton ? 1 : 0, component.FindAll(".bit-msb-ftr .bit-btn[autofocus]").Count);
+        Assert.HasCount(hasFooterButton ? 0 : 1, component.FindAll(".bit-msb-hdr .bit-btn[autofocus]"));
+        Assert.HasCount(hasFooterButton ? 1 : 0, component.FindAll(".bit-msb-ftr .bit-btn[autofocus]"));
     }
 
     [TestMethod]
@@ -1256,7 +1256,7 @@ public class BitMessageBoxTests : BunitTestContext
             parameters.Add(p => p.FooterTemplate, "<button class=\"custom-footer\"></button>");
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-msb-hdr .bit-btn[autofocus]").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-msb-hdr .bit-btn[autofocus]"));
     }
 
     [TestMethod]
@@ -1330,8 +1330,8 @@ public class BitMessageBoxTests : BunitTestContext
 
         Assert.AreEqual("the-box", root.Id);
         Assert.IsTrue(root.ClassList.Contains("own-class"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin:1px");
-        StringAssert.Contains(root.GetAttribute("style"), "visibility:hidden");
+        Assert.Contains("margin:1px", root.GetAttribute("style")!);
+        Assert.Contains("visibility:hidden", root.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1342,7 +1342,7 @@ public class BitMessageBoxTests : BunitTestContext
             parameters.Add(p => p.Visibility, BitVisibility.Collapsed);
         });
 
-        StringAssert.Contains(component.Find(".bit-msb").GetAttribute("style"), "display:none");
+        Assert.Contains("display:none", component.Find(".bit-msb").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1382,17 +1382,17 @@ public class BitMessageBoxTests : BunitTestContext
             });
         });
 
-        StringAssert.Contains(component.Find(".bit-msb-ict").GetAttribute("style"), "color: red");
-        StringAssert.Contains(component.Find(".bit-msb-ico").GetAttribute("style"), "color: blue");
-        StringAssert.Contains(component.Find(".bit-msb-hdr .bit-spc").GetAttribute("style"), "color: green");
-        StringAssert.Contains(component.Find(".bit-msb-hdr .bit-btn").GetAttribute("style"), "color: yellow");
+        Assert.Contains("color: red", component.Find(".bit-msb-ict").GetAttribute("style")!);
+        Assert.Contains("color: blue", component.Find(".bit-msb-ico").GetAttribute("style")!);
+        Assert.Contains("color: green", component.Find(".bit-msb-hdr .bit-spc").GetAttribute("style")!);
+        Assert.Contains("color: yellow", component.Find(".bit-msb-hdr .bit-btn").GetAttribute("style")!);
 
         var buttons = component.FindAll(".bit-msb-ftr .bit-btn");
 
         // The shared set reaches the button that has none of its own; the Cancel button's own set stands alone.
-        StringAssert.Contains(buttons[0].GetAttribute("style"), "color: purple");
-        StringAssert.Contains(buttons[1].GetAttribute("style"), "color: orange");
-        Assert.IsFalse(buttons[1].GetAttribute("style")!.Contains("color: purple"));
+        Assert.Contains("color: purple", buttons[0].GetAttribute("style")!);
+        Assert.Contains("color: orange", buttons[1].GetAttribute("style")!);
+        Assert.DoesNotContain("color: purple", buttons[1].GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1457,7 +1457,7 @@ public class BitMessageBoxTests : BunitTestContext
         gate.SetResult();
         await answering;
 
-        component.WaitForAssertion(() => Assert.AreEqual(0, component.FindAll(".bit-msb-ftr .bit-btn-ldg").Count));
+        component.WaitForAssertion(() => Assert.IsEmpty(component.FindAll(".bit-msb-ftr .bit-btn-ldg")));
     }
 
     [TestMethod]
@@ -1472,7 +1472,7 @@ public class BitMessageBoxTests : BunitTestContext
 
         var answering = component.Find(".bit-msb-ftr .bit-btn").ClickAsync(new MouseEventArgs());
 
-        Assert.AreEqual(0, component.FindAll(".bit-msb-ftr .bit-btn-ldg").Count);
+        Assert.IsEmpty(component.FindAll(".bit-msb-ftr .bit-btn-ldg"));
 
         gate.SetResult();
         await answering;
@@ -1503,7 +1503,7 @@ public class BitMessageBoxTests : BunitTestContext
         // The cancellation is the message box's own doing, so it is not an error of the click that was taken back.
         await answering;
 
-        CollectionAssert.AreEqual(new[] { BitMessageBoxResult.Cancel }, results);
+        Assert.AreSequenceEqual(new[] { BitMessageBoxResult.Cancel }, results);
         Assert.AreEqual(BitMessageBoxResult.Cancel, component.Instance.Result);
     }
 
@@ -1521,14 +1521,14 @@ public class BitMessageBoxTests : BunitTestContext
         {
             var focused = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].ToList();
 
-            Assert.AreEqual(1, focused.Count);
+            Assert.ContainsSingle(focused);
             Assert.AreEqual(component.FindComponents<BitButton>()[1].Instance.RootElement.Id, ((ElementReference)focused[0].Arguments[0]!).Id);
         });
 
         // A later render does not take it again.
         component.Render(parameters => parameters.Add(p => p.Body, "Changed"));
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
     }
 
     [TestMethod]
@@ -1539,7 +1539,7 @@ public class BitMessageBoxTests : BunitTestContext
             parameters.Add(p => p.Buttons, BitMessageBoxButtons.OkCancel);
         });
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
     }
 
     [TestMethod]
@@ -1562,7 +1562,7 @@ public class BitMessageBoxTests : BunitTestContext
         // render falls back to the primary action, and None (or a set with no action) lands on the close button.
         var focused = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].ToList();
 
-        Assert.AreEqual(1, focused.Count);
+        Assert.ContainsSingle(focused);
         Assert.AreEqual(component.FindComponents<BitButton>()[index].Instance.RootElement.Id, ((ElementReference)focused[0].Arguments[0]!).Id);
     }
 
@@ -1579,7 +1579,7 @@ public class BitMessageBoxTests : BunitTestContext
 
         var focused = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].ToList();
 
-        Assert.AreEqual(1, focused.Count);
+        Assert.ContainsSingle(focused);
         Assert.AreEqual(component.FindComponent<BitButton>().Instance.RootElement.Id, ((ElementReference)focused[0].Arguments[0]!).Id);
     }
 
@@ -1595,7 +1595,7 @@ public class BitMessageBoxTests : BunitTestContext
 
         await component.InvokeAsync(() => component.Instance.FocusAsync().AsTask());
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
     }
 
     [TestMethod]
@@ -1614,7 +1614,7 @@ public class BitMessageBoxTests : BunitTestContext
 
         var focused = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].ToList();
 
-        Assert.AreEqual(1, focused.Count);
+        Assert.ContainsSingle(focused);
         Assert.AreEqual(component.FindComponents<BitButton>()[1].Instance.RootElement.Id, ((ElementReference)focused[0].Arguments[0]!).Id);
     }
 

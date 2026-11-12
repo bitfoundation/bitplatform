@@ -23,8 +23,8 @@ public class BitSeparatorE2ETests : E2ETestBase
         var response = await Page.APIRequest.GetAsync($"{BaseUrl}{Path}");
         var html = await response.TextAsync();
 
-        StringAssert.Contains(html, "id=\"spr-text\" role=\"separator\" aria-labelledby=\"spr-text-cnt\"");
-        StringAssert.Contains(html, "<span id=\"status\">Loading</span>");
+        Assert.Contains("id=\"spr-text\" role=\"separator\" aria-labelledby=\"spr-text-cnt\"", html);
+        Assert.Contains("<span id=\"status\">Loading</span>", html);
 
         await OpenAsync(Path);
         await Expect(Page.Locator("#spr-text")).ToHaveTextAsync("Text");
@@ -113,9 +113,9 @@ public class BitSeparatorE2ETests : E2ETestBase
 
         Assert.AreEqual(60, Math.Round(box!.Height));
         Assert.IsTrue(content!.Y > box.Y && content.Y + content.Height < box.Y + box.Height, "The content sits inside the line.");
-        Assert.IsTrue(Math.Abs(content.Y + content.Height / 2 - (box.Y + box.Height / 2)) < 1.5, "Centered along the line.");
-        Assert.IsTrue(await PseudoHeightAsync("#spr-vertical-content", "::before") > 1);
-        Assert.IsTrue(await PseudoHeightAsync("#spr-vertical-content", "::after") > 1);
+        Assert.IsLessThan(1.5, Math.Abs(content.Y + content.Height / 2 - (box.Y + box.Height / 2)), "Centered along the line.");
+        Assert.IsGreaterThan(1, await PseudoHeightAsync("#spr-vertical-content", "::before"));
+        Assert.IsGreaterThan(1, await PseudoHeightAsync("#spr-vertical-content", "::after"));
     }
 
     [TestMethod]
@@ -126,7 +126,7 @@ public class BitSeparatorE2ETests : E2ETestBase
         var inline = await Page.Locator("#spr-inline").BoundingBoxAsync();
         var fontSize = double.Parse((await ComputedStyleAsync("#inline-text", "font-size")).Replace("px", ""), CultureInfo.InvariantCulture);
 
-        Assert.IsTrue(inline!.Height >= fontSize - 0.5, $"Between runs of text the line is at least 1em ({inline.Height}px).");
+        Assert.IsGreaterThanOrEqualTo(fontSize - 0.5, inline!.Height, $"Between runs of text the line is at least 1em ({inline.Height}px).");
         await Expect(Page.Locator("#spr-inline")).ToHaveCSSAsync("display", "inline-flex");
 
         Assert.AreEqual(120, Math.Round((await Page.Locator("#spr-vertical-container").BoundingBoxAsync())!.Height));
@@ -138,15 +138,15 @@ public class BitSeparatorE2ETests : E2ETestBase
         await OpenAsync(Path);
 
         var auto = await Page.Locator("#spr-vertical-autosize").BoundingBoxAsync();
-        Assert.IsTrue(auto!.Height < 30, $"A vertical AutoSize separator is not stretched to the 60px row ({auto.Height}px).");
+        Assert.IsLessThan(30, auto!.Height, $"A vertical AutoSize separator is not stretched to the 60px row ({auto.Height}px).");
         await Expect(Page.Locator("#spr-vertical-autosize")).ToHaveAttributeAsync("style", new Regex("height:auto;align-self:auto"));
 
         // In a column that centers its items, a plain separator still spans it while an AutoSize one sizes to its content.
         Assert.AreEqual(400, Math.Round((await Page.Locator("#spr-autosize-full").BoundingBoxAsync())!.Width));
         var horizontal = await Page.Locator("#spr-autosize").BoundingBoxAsync();
         var content = await Page.Locator("#spr-autosize > .bit-spr-cnt").BoundingBoxAsync();
-        Assert.IsTrue(horizontal!.Width < 400, $"A horizontal AutoSize separator is not the container's width ({horizontal.Width}px).");
-        Assert.IsTrue(horizontal.Width >= content!.Width);
+        Assert.IsLessThan(400, horizontal!.Width, $"A horizontal AutoSize separator is not the container's width ({horizontal.Width}px).");
+        Assert.IsGreaterThanOrEqualTo(content!.Width, horizontal.Width);
     }
 
     [TestMethod]
@@ -553,7 +553,7 @@ public class BitSeparatorE2ETests : E2ETestBase
         await OpenAsync(Path);
 
         await Expect(Page.Locator("#spr-hidden")).ToHaveCSSAsync("visibility", "hidden");
-        Assert.IsTrue((await Page.Locator("#spr-hidden").BoundingBoxAsync())!.Height > 0);
+        Assert.IsGreaterThan(0, (await Page.Locator("#spr-hidden").BoundingBoxAsync())!.Height);
         await Expect(Page.Locator("#spr-collapsed")).ToHaveCSSAsync("display", "none");
     }
 

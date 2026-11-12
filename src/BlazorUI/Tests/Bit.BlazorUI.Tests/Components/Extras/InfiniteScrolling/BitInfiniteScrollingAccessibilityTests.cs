@@ -54,10 +54,10 @@ public class BitInfiniteScrollingAccessibilityTests : BunitTestContext
             parameters.Add(p => p.Feed, true);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(5, component.FindAll("article").Count));
+        component.WaitForAssertion(() => Assert.HasCount(5, component.FindAll("article")));
 
         Assert.AreEqual("feed", component.Find(".bit-isc > .bit-isc-fed").GetAttribute("role"));
-        Assert.AreEqual(5, component.FindAll(".bit-isc-fed > article").Count);
+        Assert.HasCount(5, component.FindAll(".bit-isc-fed > article"));
 
         var articles = component.FindAll("article");
 
@@ -85,7 +85,7 @@ public class BitInfiniteScrollingAccessibilityTests : BunitTestContext
             parameters.Add(p => p.AriaLabel, "Products");
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(5, component.FindAll("article").Count));
+        component.WaitForAssertion(() => Assert.HasCount(5, component.FindAll("article")));
 
         var root = component.Find(".bit-isc");
         var feed = component.Find(".bit-isc-fed");
@@ -98,7 +98,7 @@ public class BitInfiniteScrollingAccessibilityTests : BunitTestContext
         // The button sits beside the feed, never inside it, where ARIA expects nothing but articles.
         Assert.IsTrue(feed.Children.All(c => c.TagName == "ARTICLE"));
         Assert.AreEqual(0, feed.QuerySelectorAll(".bit-isc-btn").Length);
-        Assert.AreEqual(1, component.FindAll(".bit-isc > .bit-isc-btn").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-isc > .bit-isc-btn"));
     }
 
     [TestMethod]
@@ -115,7 +115,7 @@ public class BitInfiniteScrollingAccessibilityTests : BunitTestContext
             parameters.Add(p => p.ItemAriaLabel, item => item == 1 ? null : $"Post {item}");
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll("article").Count));
+        component.WaitForAssertion(() => Assert.HasCount(3, component.FindAll("article")));
 
         var articles = component.FindAll("article");
 
@@ -137,7 +137,7 @@ public class BitInfiniteScrollingAccessibilityTests : BunitTestContext
             parameters.Add(p => p.Feed, true);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll("article").Count));
+        component.WaitForAssertion(() => Assert.HasCount(3, component.FindAll("article")));
 
         Assert.IsTrue(component.FindAll("article").All(a => a.HasAttribute("aria-label") is false));
     }
@@ -171,7 +171,7 @@ public class BitInfiniteScrollingAccessibilityTests : BunitTestContext
             parameters.Add(p => p.Feed, true);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(5, component.FindAll("article").Count));
+        component.WaitForAssertion(() => Assert.HasCount(5, component.FindAll("article")));
 
         Assert.IsTrue(component.FindAll("article").All(a => a.GetAttribute("aria-setsize") == "50"));
     }
@@ -189,11 +189,10 @@ public class BitInfiniteScrollingAccessibilityTests : BunitTestContext
             parameters.Add(p => p.Feed, true);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(5, component.FindAll("article").Count));
+        component.WaitForAssertion(() => Assert.HasCount(5, component.FindAll("article")));
 
         // A reversed list holds the newest items, so the five it has are the last five of the fifty.
-        CollectionAssert.AreEqual(new[] { "46", "47", "48", "49", "50" },
-                                  component.FindAll("article").Select(a => a.GetAttribute("aria-posinset")).ToArray());
+        Assert.AreSequenceEqual(new[] { "46", "47", "48", "49", "50" }, component.FindAll("article").Select(a => a.GetAttribute("aria-posinset")).ToArray());
     }
 
     [TestMethod]
@@ -211,10 +210,10 @@ public class BitInfiniteScrollingAccessibilityTests : BunitTestContext
             parameters.Add(p => p.Styles, new() { Item = "padding:1px" });
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll("article").Count));
+        component.WaitForAssertion(() => Assert.HasCount(3, component.FindAll("article")));
 
         // The article is the element that carries the key, so no second wrapper is rendered for it.
-        Assert.AreEqual(0, component.FindAll(".bit-isc-itm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-isc-itm"));
         Assert.IsTrue(component.FindAll("article").All(a => a.ClassList.Contains("own-item") && a.GetAttribute("style") == "padding:1px"));
     }
 
@@ -231,9 +230,9 @@ public class BitInfiniteScrollingAccessibilityTests : BunitTestContext
             parameters.Add(p => p.Classes, new() { Item = "own-item" });
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-isc-itm.own-item").Count));
+        component.WaitForAssertion(() => Assert.HasCount(3, component.FindAll(".bit-isc-itm.own-item")));
 
-        Assert.AreEqual(0, component.FindAll("article").Count);
+        Assert.IsEmpty(component.FindAll("article"));
     }
 
     [TestMethod]
@@ -246,7 +245,7 @@ public class BitInfiniteScrollingAccessibilityTests : BunitTestContext
             parameters.Add(p => p.Feed, true);
         });
 
-        Assert.AreEqual(true, Context.JSInterop.VerifyInvoke("BitBlazorUI.InfiniteScrolling.setup").Arguments[8]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(Context.JSInterop.VerifyInvoke("BitBlazorUI.InfiniteScrolling.setup").Arguments[8]));
     }
 
     [TestMethod]
@@ -261,7 +260,7 @@ public class BitInfiniteScrollingAccessibilityTests : BunitTestContext
             parameters.Add(p => p.Feed, true);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(5, component.Instance.Items.Count));
+        component.WaitForAssertion(() => Assert.HasCount(5, component.Instance.Items));
 
         component.Find(".bit-isc-btn").Click();
 
@@ -285,11 +284,11 @@ public class BitInfiniteScrollingAccessibilityTests : BunitTestContext
             parameters.Add(p => p.Manual, true);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(5, component.Instance.Items.Count));
+        component.WaitForAssertion(() => Assert.HasCount(5, component.Instance.Items));
 
         component.Find(".bit-isc-btn").Click();
 
-        component.WaitForAssertion(() => Assert.AreEqual(10, component.Instance.Items.Count));
+        component.WaitForAssertion(() => Assert.HasCount(10, component.Instance.Items));
 
         Context.JSInterop.VerifyNotInvoke("BitBlazorUI.InfiniteScrolling.focusItem");
     }
@@ -404,7 +403,7 @@ public class BitInfiniteScrollingAccessibilityTests : BunitTestContext
             parameters.Add(p => p.Preload, true);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(5, component.Instance.Items.Count));
+        component.WaitForAssertion(() => Assert.HasCount(5, component.Instance.Items));
 
         Assert.AreEqual(string.Empty, component.Find(".bit-isc-sts").TextContent);
     }
@@ -426,7 +425,7 @@ public class BitInfiniteScrollingAccessibilityTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance.AppendItemsAsync([100]));
 
         // The edit is the last thing that happened to the list, so the page before it is not announced again.
-        Assert.AreEqual(6, component.Instance.Items.Count);
+        Assert.HasCount(6, component.Instance.Items);
         Assert.AreEqual("", component.Find(".bit-isc-sts").TextContent);
     }
 
@@ -465,9 +464,9 @@ public class BitInfiniteScrollingAccessibilityTests : BunitTestContext
             parameters.Add(p => p.ErrorTemplate, error => builder => builder.AddMarkupContent(0, $"<p class=\"own-error\">{error.Message}</p>"));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll(".own-error").Count));
+        component.WaitForAssertion(() => Assert.ContainsSingle(component.FindAll(".own-error")));
 
-        Assert.AreEqual(0, component.FindAll("[role=alert]").Count);
+        Assert.IsEmpty(component.FindAll("[role=alert]"));
         Assert.AreEqual("Could not load.", component.Find(".bit-isc-sts").TextContent);
     }
 

@@ -37,7 +37,7 @@ public class ChoiceCollectionTests
     {
         var options = Schema().FindField("Accounts")!.Options.Select(o => o.Value).ToList();
 
-        Assert.AreEqual(Enum.GetNames<AccountType>().Length, options.Count);
+        Assert.HasCount(Enum.GetNames<AccountType>().Length, options);
         Assert.Contains("Business", options);
     }
 

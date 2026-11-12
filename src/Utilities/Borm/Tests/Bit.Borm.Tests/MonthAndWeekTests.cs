@@ -2,7 +2,7 @@
 
 namespace Bit.Borm.Tests;
 
-public sealed class Subscription
+internal sealed class Subscription
 {
     public DateOnly? CardExpiry { get; set; }
     public DateTime DeliveryWeek { get; set; }
@@ -23,27 +23,27 @@ public class MonthAndWeekTests : ComponentTestBase
         .Build();
 
     [TestMethod]
-    public void A_date_typed_month_holds_its_first_day_and_shows_as_the_month()
+    public async global::System.Threading.Tasks.Task A_date_typed_month_holds_its_first_day_and_shows_as_the_month()
     {
         var model = new Subscription();
         var state = new BormState(Typed(), new BormModelDataAccessor(model));
         var context = new BormFieldContext(state, state.Definition.FindField("CardExpiry")!, "CardExpiry");
 
-        context.SetFromStringAsync("2027-09").Wait();
+        await context.SetFromStringAsync("2027-09").WaitAsync(TestContext.CancellationToken);
 
         Assert.AreEqual(new DateOnly(2027, 9, 1), model.CardExpiry);
         Assert.AreEqual("2027-09", context.StringValue);
     }
 
     [TestMethod]
-    public void A_date_typed_week_holds_its_monday_and_shows_as_the_iso_week()
+    public async global::System.Threading.Tasks.Task A_date_typed_week_holds_its_monday_and_shows_as_the_iso_week()
     {
         var model = new Subscription();
         var state = new BormState(Typed(), new BormModelDataAccessor(model));
         var context = new BormFieldContext(state, state.Definition.FindField("DeliveryWeek")!, "DeliveryWeek");
 
         // Week 1 of 2026 begins on Monday 29 December 2025: ISO weeks belong to the year of their Thursday.
-        context.SetFromStringAsync("2026-W01").Wait();
+        await context.SetFromStringAsync("2026-W01").WaitAsync(TestContext.CancellationToken);
 
         Assert.AreEqual(new DateTime(2025, 12, 29), model.DeliveryWeek);
         Assert.AreEqual("2026-W01", context.StringValue);
@@ -69,7 +69,7 @@ public class MonthAndWeekTests : ComponentTestBase
     }
 
     [TestMethod]
-    public void A_schema_only_week_is_the_pickers_text_and_its_range_is_enforced()
+    public async global::System.Threading.Tasks.Task A_schema_only_week_is_the_pickers_text_and_its_range_is_enforced()
     {
         var form = BormBuilder.Create()
             .Field("week", BormFieldType.Week, f => f.Range(new DateOnly(2026, 1, 5), new DateOnly(2026, 3, 30)))
@@ -78,12 +78,12 @@ public class MonthAndWeekTests : ComponentTestBase
         var state = new BormState(form, new BormDictionaryDataAccessor(data));
         var context = new BormFieldContext(state, form.Fields[0], "week");
 
-        context.SetFromStringAsync("2026-w05").Wait();
+        await context.SetFromStringAsync("2026-w05").WaitAsync(TestContext.CancellationToken);
         Assert.AreEqual("2026-W05", data["week"]);
-        Assert.IsTrue(state.ValidateAsync().AsTask().Result);
+        Assert.IsTrue((await state.ValidateAsync().AsTask()));
 
-        context.SetFromStringAsync("2026-W40").Wait();
-        Assert.IsFalse(state.ValidateAsync().AsTask().Result);
+        await context.SetFromStringAsync("2026-W40").WaitAsync(TestContext.CancellationToken);
+        Assert.IsFalse((await state.ValidateAsync().AsTask()));
     }
 
     [TestMethod]
@@ -120,7 +120,9 @@ public class MonthAndWeekTests : ComponentTestBase
     {
         var data = new BormDictionaryDataAccessor(new Dictionary<string, object?> { ["m"] = "2026-02", ["w"] = "2026-W10" });
 
-        Assert.AreEqual(true, BormExpression.Parse("{m} < {w}").Evaluate(data));
+        Assert.IsTrue((bool?)BormExpression.Parse("{m} < {w}").Evaluate(data));
         Assert.AreEqual(2, BormExpression.Parse("month({m})").Evaluate(data));
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

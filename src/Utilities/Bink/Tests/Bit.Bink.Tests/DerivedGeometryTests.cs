@@ -115,7 +115,7 @@ public class DerivedGeometryTests
         }
 
         Assert.AreEqual(1, graph.Reroutes);
-        Assert.IsTrue(graph.MaxDepthSeen > 0, "the derived edit was not reported as nested inside its cause");
+        Assert.IsGreaterThan(0, graph.MaxDepthSeen, "the derived edit was not reported as nested inside its cause");
         Assert.AreEqual(steps + 1, history.UndoCount);
 
         Assert.IsTrue(history.Undo());
@@ -192,7 +192,7 @@ public class DerivedGeometryTests
         // Move the far node down and the endpoints move with it, still on the boxes' edges.
         BinkRect moved = to.Offset(new Vector2(0, 400));
         (Vector2 start2, Vector2 end2) = Route(from, moved);
-        Assert.IsTrue(start2.Y > start.Y, "the connector did not follow the node downwards");
+        Assert.IsGreaterThan(start.Y, start2.Y, "the connector did not follow the node downwards");
         Assert.IsTrue(moved.Contains(end2) || Close(end2, moved), $"the endpoint {end2} left the node {moved}");
         Assert.IsTrue(from.Contains(start2) || Close(start2, from), $"the start {start2} left the node {from}");
 

@@ -31,7 +31,7 @@ public class BitDropMenuStylesheetTests
     {
         var forcedColors = SourceFiles.GetScssBlock(ReadStylesheet(), "\n@media (forced-colors: active) {\n    .bit-drm {");
 
-        StringAssert.Contains(SourceFiles.GetScssDeclarations(forcedColors, selector), declaration);
+        Assert.Contains(declaration, SourceFiles.GetScssDeclarations(forcedColors, selector));
     }
 
     [TestMethod]
@@ -43,8 +43,8 @@ public class BitDropMenuStylesheetTests
 
         var forcedColors = stylesheet.IndexOf("\n@media (forced-colors: active) {\n    .bit-drm {", System.StringComparison.Ordinal);
 
-        Assert.IsTrue(forcedColors > stylesheet.IndexOf("\n.bit-drm-trn {", System.StringComparison.Ordinal));
-        Assert.IsTrue(forcedColors > stylesheet.IndexOf("\n.bit-drm-lg {", System.StringComparison.Ordinal));
+        Assert.IsGreaterThan(stylesheet.IndexOf("\n.bit-drm-trn {", System.StringComparison.Ordinal), forcedColors);
+        Assert.IsGreaterThan(stylesheet.IndexOf("\n.bit-drm-lg {", System.StringComparison.Ordinal), forcedColors);
     }
 
     [TestMethod]
@@ -55,21 +55,21 @@ public class BitDropMenuStylesheetTests
 
         // Each state ranks what an explicit Color paints there first, then the public variables a variant resolved (the
         // -p slots), then the shared variable a drop menu with no Variant reads, then the default look (the -d slots).
-        StringAssert.Contains(root, "--bit-drm-cur-txt: var(--bit-drm-rst-txt, var(--bit-drm-rst-txt-p, var(--bit-DropMenu-color, var(--bit-drm-rst-txt-d))));");
-        StringAssert.Contains(root, "--bit-drm-cur-bg: var(--bit-drm-rst-bg, var(--bit-drm-rst-bg-p, var(--bit-DropMenu-background, var(--bit-drm-rst-bg-d))));");
-        StringAssert.Contains(root, "--bit-drm-cur-bg: var(--bit-drm-hov-bg, var(--bit-drm-hov-bg-p, var(--bit-DropMenu-hover-background, var(--bit-drm-hov-bg-d))));");
-        StringAssert.Contains(root, "--bit-drm-cur-bg: var(--bit-drm-act-bg, var(--bit-drm-act-bg-p, var(--bit-DropMenu-active-background, var(--bit-drm-act-bg-d))));");
-        StringAssert.Contains(root, "@include focus-ring-own(var(--bit-drm-clr-focus, var(--bit-DropMenu-focus-color)));");
+        Assert.Contains("--bit-drm-cur-txt: var(--bit-drm-rst-txt, var(--bit-drm-rst-txt-p, var(--bit-DropMenu-color, var(--bit-drm-rst-txt-d))));", root);
+        Assert.Contains("--bit-drm-cur-bg: var(--bit-drm-rst-bg, var(--bit-drm-rst-bg-p, var(--bit-DropMenu-background, var(--bit-drm-rst-bg-d))));", root);
+        Assert.Contains("--bit-drm-cur-bg: var(--bit-drm-hov-bg, var(--bit-drm-hov-bg-p, var(--bit-DropMenu-hover-background, var(--bit-drm-hov-bg-d))));", root);
+        Assert.Contains("--bit-drm-cur-bg: var(--bit-drm-act-bg, var(--bit-drm-act-bg-p, var(--bit-DropMenu-active-background, var(--bit-drm-act-bg-d))));", root);
+        Assert.Contains("@include focus-ring-own(var(--bit-drm-clr-focus, var(--bit-DropMenu-focus-color)));", root);
 
         // A look that paints no Color in a slot leaves the bare slot unset, so the variable keeps it.
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-drm-otl {"), "--bit-drm-rst-bg: initial;");
+        Assert.Contains("--bit-drm-rst-bg: initial;", SourceFiles.GetScssBlock(stylesheet, "\n.bit-drm-otl {"));
 
         // An explicit Size, Background and Border win over their variables as well.
-        StringAssert.Contains(stylesheet, "min-height: var(--bit-drm-min-height, var(--bit-DropMenu-min-height, #{$siz-ctrl-md}));");
-        StringAssert.Contains(stylesheet, "font-size: var(--bit-drm-font-size, var(--bit-DropMenu-font-size, #{$tg-fs-sm}));");
-        StringAssert.Contains(stylesheet, "font-size: var(--bit-drm-icon-size, var(--bit-DropMenu-icon-size, #{$siz-icon-md}));");
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-drm-cal-bg, var(--bit-DropMenu-callout-background, #{$clr-bg-pri}));");
-        StringAssert.Contains(stylesheet, "border-color: var(--bit-drm-cal-brd, var(--bit-DropMenu-callout-border-color, transparent));");
+        Assert.Contains("min-height: var(--bit-drm-min-height, var(--bit-DropMenu-min-height, #{$siz-ctrl-md}));", stylesheet);
+        Assert.Contains("font-size: var(--bit-drm-font-size, var(--bit-DropMenu-font-size, #{$tg-fs-sm}));", stylesheet);
+        Assert.Contains("font-size: var(--bit-drm-icon-size, var(--bit-DropMenu-icon-size, #{$siz-icon-md}));", stylesheet);
+        Assert.Contains("background-color: var(--bit-drm-cal-bg, var(--bit-DropMenu-callout-background, #{$clr-bg-pri}));", stylesheet);
+        Assert.Contains("border-color: var(--bit-drm-cal-brd, var(--bit-DropMenu-callout-border-color, transparent));", stylesheet);
 
         // Only a -d default slot may sit behind a public variable.
         Assert.IsFalse(Regex.IsMatch(stylesheet, @"var\(--bit-DropMenu-[a-z-]+, var\(--bit-drm-(?![a-z-]+-d\))"), "A public variable is read before the parameter it restyles the default of.");
@@ -93,8 +93,7 @@ public class BitDropMenuStylesheetTests
                                              ("act-txt", "active-color"), ("act-bg", "active-background"), ("act-brd", "active-border-color"),
                                              ("dis-txt", "disabled-color"), ("dis-bg", "disabled-background"), ("dis-brd", "disabled-border-color") })
         {
-            StringAssert.Contains(block, $"--bit-drm-{slot}-p: var(--bit-DropMenu-{variant}-{name}, var(--bit-DropMenu-{name}, ",
-                                  $"{selector} does not publish --bit-DropMenu-{variant}-{name} ahead of --bit-DropMenu-{name}.");
+            Assert.Contains($"--bit-drm-{slot}-p: var(--bit-DropMenu-{variant}-{name}, var(--bit-DropMenu-{name}, ", block, $"{selector} does not publish --bit-DropMenu-{variant}-{name} ahead of --bit-DropMenu-{name}.");
         }
 
         // A variant reads a shared color variable only right behind its own twin, and never the tier of another variant.
@@ -106,8 +105,8 @@ public class BitDropMenuStylesheetTests
         // The root reads each slot right after the Color, and a drop menu with no Variant - which renders no class -
         // reads the shared variable behind it; the slots are reset on every root, so one never leaks into a nested one.
         var root = SourceFiles.GetScssBlock(stylesheet, "\n.bit-drm {");
-        StringAssert.Contains(root, "--bit-drm-cur-brd: var(--bit-drm-rst-brd, var(--bit-drm-rst-brd-p, var(--bit-DropMenu-border-color, var(--bit-drm-rst-brd-d))));");
-        StringAssert.Contains(stylesheet, "dis-txt-p, dis-bg-p, dis-brd-p;");
+        Assert.Contains("--bit-drm-cur-brd: var(--bit-drm-rst-brd, var(--bit-drm-rst-brd-p, var(--bit-DropMenu-border-color, var(--bit-drm-rst-brd-d))));", root);
+        Assert.Contains("dis-txt-p, dis-bg-p, dis-brd-p;", stylesheet);
     }
 
     [TestMethod]
@@ -119,12 +118,12 @@ public class BitDropMenuStylesheetTests
         // role draws it in its text color: a secondary or a warning main is picked to fill a surface and is under 3:1 as
         // text on white, and a background role's main is the page itself. The same role-text every unfilled control reads.
         var roles = SourceFiles.GetScssBlock(stylesheet, "\n    .bit-drm-#{$role} {");
-        StringAssert.Contains(roles, "--bit-drm-clr-flt: #{role-text($role, $tokens)};");
-        StringAssert.DoesNotMatch(roles, new Regex(@"--bit-drm-clr-flt: #\{role\(\$tokens, on\)\}"));
+        Assert.Contains("--bit-drm-clr-flt: #{role-text($role, $tokens)};", roles);
+        Assert.DoesNotMatchRegex(new Regex(@"--bit-drm-clr-flt: #\{role\(\$tokens, on\)\}"), roles);
 
         foreach (var selector in new[] { "\n.bit-drm-otl {", "\n.bit-drm-tex {", "\n.bit-drm-trn {" })
         {
-            StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, selector), "--bit-drm-rst-txt: var(--bit-drm-clr-flt);");
+            Assert.Contains("--bit-drm-rst-txt: var(--bit-drm-clr-flt);", SourceFiles.GetScssDeclarations(stylesheet, selector));
         }
     }
 
@@ -141,17 +140,17 @@ public class BitDropMenuStylesheetTests
                                          "--bit-drm-clr-focus", "--bit-drm-clr-dis", "--bit-drm-clr-dis-text", "--bit-drm-font-size",
                                          "--bit-drm-min-height", "--bit-drm-icon-size", "--bit-drm-pad-y", "--bit-drm-padding" })
         {
-            StringAssert.Contains(root, $"{property}: initial;");
+            Assert.Contains($"{property}: initial;", root);
         }
 
         // The callout starts what Background and Border publish out unset too, ahead of the classes that set them.
         var callout = SourceFiles.GetScssBlock(stylesheet, "\n.bit-drm-cal {");
-        StringAssert.Contains(callout, "--bit-drm-cal-bg: initial;");
-        StringAssert.Contains(callout, "--bit-drm-cal-brd: initial;");
+        Assert.Contains("--bit-drm-cal-bg: initial;", callout);
+        Assert.Contains("--bit-drm-cal-brd: initial;", callout);
 
         var rootAt = stylesheet.IndexOf("\n.bit-drm {", System.StringComparison.Ordinal);
-        Assert.IsTrue(rootAt < stylesheet.IndexOf("\n    .bit-drm-#{$role} {", System.StringComparison.Ordinal), "The color classes are declared ahead of the root that resets them.");
-        Assert.IsTrue(rootAt < stylesheet.IndexOf("\n.bit-drm-md {", System.StringComparison.Ordinal), "The size classes are declared ahead of the root that resets them.");
+        Assert.IsLessThan(stylesheet.IndexOf("\n    .bit-drm-#{$role} {", System.StringComparison.Ordinal), rootAt, "The color classes are declared ahead of the root that resets them.");
+        Assert.IsLessThan(stylesheet.IndexOf("\n.bit-drm-md {", System.StringComparison.Ordinal), rootAt, "The size classes are declared ahead of the root that resets them.");
     }
 
     private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Navs", "DropMenu", "BitDropMenu.scss");

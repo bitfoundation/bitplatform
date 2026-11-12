@@ -24,9 +24,9 @@ public class BitSwipeTrapE2ETests : E2ETestBase
         var response = await Page.APIRequest.GetAsync($"{BaseUrl}{Route}");
         var html = await response.TextAsync();
 
-        StringAssert.Contains(html, "<div id=\"stp-basic\" class=\"bit-stp\">");
-        StringAssert.Contains(html, "aria-keyshortcuts=\"ArrowLeft ArrowRight ArrowUp ArrowDown\"");
-        StringAssert.Contains(html, "id=\"status\">Loading");
+        Assert.Contains("<div id=\"stp-basic\" class=\"bit-stp\">", html);
+        Assert.Contains("aria-keyshortcuts=\"ArrowLeft ArrowRight ArrowUp ArrowDown\"", html);
+        Assert.Contains("id=\"status\">Loading", html);
 
         await OpenAsync(Route);
         await Expect(Page.Locator("#stp-basic")).ToHaveCSSAsync("width", "300px");
@@ -464,7 +464,7 @@ public class BitSwipeTrapE2ETests : E2ETestBase
         await Expect(Page.Locator("#throttle-move")).ToHaveTextAsync(new Regex($@"\|{burst * 3},0\|"));
 
         var moves = int.Parse((await Page.Locator("#throttle-moves").TextContentAsync())!);
-        Assert.IsTrue(moves < burst, $"{moves} of {burst} moves made inside one 200ms throttle window reached .NET.");
+        Assert.IsLessThan(burst, moves, $"{moves} of {burst} moves made inside one 200ms throttle window reached .NET.");
         Assert.AreEqual(2, moves, "The first move of the window goes at once and the latest when it closes, and no other.");
 
         await Page.Mouse.UpAsync();

@@ -40,7 +40,7 @@ public class BitChoiceGroupCustomE2ETests : E2ETestBase
     {
         await Expect(Text(id, 0)).ToHaveTextAsync("Custom A");
         var values = await Page.Locator($"#{id} .bit-chg-inp").EvaluateAllAsync<string[]>("els => els.map(e => e.value)");
-        CollectionAssert.AreEqual(new[] { "A", "B", "C", "D" }, values);
+        Assert.AreSequenceEqual(new[] { "A", "B", "C", "D" }, values);
 
         await Expect(Item(id, 0)).ToHaveAttributeAsync("title", "Tooltip A");
         await Expect(Item(id, 0)).ToHaveClassAsync(HasClass("custom-a"));

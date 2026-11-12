@@ -51,10 +51,10 @@ public class BitTooltipE2ETests : E2ETestBase
         var html = await response.TextAsync();
 
         Assert.IsTrue(response.Ok);
-        StringAssert.Contains(html, "role=\"tooltip\"");
+        Assert.Contains("role=\"tooltip\"", html);
         Assert.IsTrue(Regex.IsMatch(html, "id=\"ttp-basic\"[^>]*aria-describedby=\""), "The description is not prerendered.");
-        StringAssert.Contains(html, "This is the tooltip text");
-        StringAssert.Contains(html, "<span id=\"status\">Loading</span>");
+        Assert.Contains("This is the tooltip text", html);
+        Assert.Contains("<span id=\"status\">Loading</span>", html);
     }
 
     [TestMethod]
@@ -224,7 +224,7 @@ public class BitTooltipE2ETests : E2ETestBase
         var watch = Stopwatch.StartNew();
         await El("ttp-showdelay-anchor").HoverAsync();
         await Expect(Tip("ttp-showdelay")).ToBeVisibleAsync();
-        Assert.IsTrue(watch.ElapsedMilliseconds >= 600, $"Shown after {watch.ElapsedMilliseconds}ms.");
+        Assert.IsGreaterThanOrEqualTo(600, watch.ElapsedMilliseconds, $"Shown after {watch.ElapsedMilliseconds}ms.");
 
         await El("away-delays").HoverAsync();
         await Expect(Tip("ttp-showdelay")).ToBeHiddenAsync();
@@ -234,7 +234,7 @@ public class BitTooltipE2ETests : E2ETestBase
         await Page.Keyboard.PressAsync("Shift+Tab");
         await Expect(El("ttp-showdelay-anchor")).ToBeFocusedAsync();
         await WaitForShownAsync("ttp-showdelay");
-        Assert.IsTrue(watch.ElapsedMilliseconds < ShowDelay, $"The keyboard waited {watch.ElapsedMilliseconds}ms.");
+        Assert.IsLessThan(ShowDelay, watch.ElapsedMilliseconds, $"The keyboard waited {watch.ElapsedMilliseconds}ms.");
     }
 
     [TestMethod]
@@ -251,7 +251,7 @@ public class BitTooltipE2ETests : E2ETestBase
         await El("away-delays").HoverAsync();
         Assert.IsTrue(await Tip("ttp-hidedelay").IsVisibleAsync(), "Hidden without waiting for HideDelay.");
         await Expect(Tip("ttp-hidedelay")).ToBeHiddenAsync();
-        Assert.IsTrue(watch.ElapsedMilliseconds >= 850, $"Hidden after {watch.ElapsedMilliseconds}ms.");
+        Assert.IsGreaterThanOrEqualTo(850, watch.ElapsedMilliseconds, $"Hidden after {watch.ElapsedMilliseconds}ms.");
     }
 
     [TestMethod]
@@ -262,7 +262,7 @@ public class BitTooltipE2ETests : E2ETestBase
         var watch = Stopwatch.StartNew();
         await El("ttp-g1-anchor").HoverAsync();
         await Expect(Tip("ttp-g1")).ToBeVisibleAsync();
-        Assert.IsTrue(watch.ElapsedMilliseconds >= 600, $"The first of the row was shown after {watch.ElapsedMilliseconds}ms.");
+        Assert.IsGreaterThanOrEqualTo(600, watch.ElapsedMilliseconds, $"The first of the row was shown after {watch.ElapsedMilliseconds}ms.");
 
         await El("away-group").HoverAsync();
         await Expect(Tip("ttp-g1")).ToBeHiddenAsync();
@@ -270,7 +270,7 @@ public class BitTooltipE2ETests : E2ETestBase
         watch.Restart();
         await El("ttp-g2-anchor").HoverAsync();
         await WaitForShownAsync("ttp-g2");
-        Assert.IsTrue(watch.ElapsedMilliseconds < ShowDelay, $"The next one waited {watch.ElapsedMilliseconds}ms inside the skip window.");
+        Assert.IsLessThan(ShowDelay, watch.ElapsedMilliseconds, $"The next one waited {watch.ElapsedMilliseconds}ms inside the skip window.");
 
         await El("away-group").HoverAsync();
         await Expect(Tip("ttp-g2")).ToBeHiddenAsync();
@@ -280,7 +280,7 @@ public class BitTooltipE2ETests : E2ETestBase
         watch.Restart();
         await El("ttp-g3-anchor").HoverAsync();
         await WaitForShownAsync("ttp-g3");
-        Assert.IsTrue(watch.ElapsedMilliseconds < ShowDelay, $"A tooltip with a ShowDelay of its own waited {watch.ElapsedMilliseconds}ms.");
+        Assert.IsLessThan(ShowDelay, watch.ElapsedMilliseconds, $"A tooltip with a ShowDelay of its own waited {watch.ElapsedMilliseconds}ms.");
 
         await El("away-group").HoverAsync();
         await Expect(Tip("ttp-g3")).ToBeHiddenAsync();
@@ -288,7 +288,7 @@ public class BitTooltipE2ETests : E2ETestBase
         watch.Restart();
         await El("ttp-g1-anchor").HoverAsync();
         await Expect(Tip("ttp-g1")).ToBeVisibleAsync();
-        Assert.IsTrue(watch.ElapsedMilliseconds >= 600, $"Past the skip window the first one was shown after {watch.ElapsedMilliseconds}ms.");
+        Assert.IsGreaterThanOrEqualTo(600, watch.ElapsedMilliseconds, $"Past the skip window the first one was shown after {watch.ElapsedMilliseconds}ms.");
     }
 
     [TestMethod]
@@ -302,7 +302,7 @@ public class BitTooltipE2ETests : E2ETestBase
         var watch = Stopwatch.StartNew();
         await El("ttp-g2-anchor").HoverAsync();
         await WaitForShownAsync("ttp-g2");
-        Assert.IsTrue(watch.ElapsedMilliseconds < ShowDelay, $"The next tooltip along waited {watch.ElapsedMilliseconds}ms while the reader was reading the row.");
+        Assert.IsLessThan(ShowDelay, watch.ElapsedMilliseconds, $"The next tooltip along waited {watch.ElapsedMilliseconds}ms while the reader was reading the row.");
         await Expect(Tip("ttp-g1")).ToBeHiddenAsync();
     }
 
@@ -464,7 +464,7 @@ public class BitTooltipE2ETests : E2ETestBase
         await Expect(Wrapper("ttp-par-1")).ToHaveClassAsync(HasClass("bit-ttp-btm"));
         await Expect(El("ttp-par-1")).ToHaveClassAsync(HasClass("bit-ttp-pri"));
         await Expect(Arrow("ttp-par-1")).ToHaveCountAsync(0);
-        Assert.IsTrue((await BoxAsync(Tip("ttp-par-1"))).Y > (await BoxAsync(El("ttp-par-1"))).Y);
+        Assert.IsGreaterThan((await BoxAsync(El("ttp-par-1"))).Y, (await BoxAsync(Tip("ttp-par-1"))).Y);
 
         await El("ttp-par-own-anchor").HoverAsync();
         await Expect(Tip("ttp-par-own")).ToBeVisibleAsync();
@@ -498,7 +498,7 @@ public class BitTooltipE2ETests : E2ETestBase
         await Page.EmulateMediaAsync(new() { ReducedMotion = ReducedMotion.Reduce });
         await OpenAsync(Url);
 
-        Assert.IsTrue(ToMs(await StyleAsync(Wrapper("ttp-basic"), "transition-duration")) < 0.1);
+        Assert.IsLessThan(0.1, ToMs(await StyleAsync(Wrapper("ttp-basic"), "transition-duration")));
         await El("ttp-basic-anchor").HoverAsync();
         await Expect(Tip("ttp-basic")).ToBeVisibleAsync();
         await Expect(Wrapper("ttp-basic")).ToHaveCSSAsync("opacity", "1");
@@ -510,7 +510,7 @@ public class BitTooltipE2ETests : E2ETestBase
         await OpenAsync(Url);
 
         await Expect(El("ttp-vis-hidden")).ToHaveCSSAsync("visibility", "hidden");
-        Assert.IsTrue((await BoxAsync(El("ttp-vis-hidden"))).Width > 0);
+        Assert.IsGreaterThan(0, (await BoxAsync(El("ttp-vis-hidden"))).Width);
         await Expect(El("ttp-vis-collapsed")).ToHaveCSSAsync("display", "none");
     }
 
@@ -691,15 +691,15 @@ public class BitTooltipE2ETests : E2ETestBase
         await OpenAsync(ShownUrl);
 
         var capped = await BoxAsync(Tip("tw-max"));
-        Assert.IsTrue(capped.Width <= 181, $"MaxWidth 10rem: {capped.Width}");
-        Assert.IsTrue(capped.Height > 50, "The long text does not wrap.");
+        Assert.IsLessThanOrEqualTo(181, capped.Width, $"MaxWidth 10rem: {capped.Width}");
+        Assert.IsGreaterThan(50, capped.Height, "The long text does not wrap.");
 
         var uncapped = await BoxAsync(Tip("tw-nomax"));
         Assert.IsTrue(uncapped.Width > 250 && uncapped.Height < 40, $"MaxWidth none: {uncapped.Width}x{uncapped.Height}");
 
         Near(400, (await BoxAsync(El("tw-full"))).Width, "FullWidth");
         await Expect(El("tw-full")).ToHaveClassAsync(HasClass("bit-ttp-flw"));
-        Assert.IsTrue((await BoxAsync(El("tw-shrunk"))).Width < 300, "Without FullWidth the root is shrunk to its anchor.");
+        Assert.IsLessThan(300, (await BoxAsync(El("tw-shrunk"))).Width, "Without FullWidth the root is shrunk to its anchor.");
     }
 
     [TestMethod]
@@ -719,7 +719,7 @@ public class BitTooltipE2ETests : E2ETestBase
             if (semantic.Count < 8) semantic.Add(background);
         }
 
-        Assert.AreEqual(8, semantic.Distinct().Count(), string.Join(" | ", semantic));
+        Assert.HasCount(8, semantic.Distinct(), string.Join(" | ", semantic));
         await Expect(El("tc-unset")).Not.ToHaveClassAsync(new Regex(@"bit-ttp-(pri|sec|ter|inf|suc|wrn|swr|err)\b"));
     }
 
@@ -781,7 +781,7 @@ public class BitTooltipE2ETests : E2ETestBase
         await Expect(tip).ToHaveCSSAsync("font-weight", "700");
         await Expect(tip).ToHaveCSSAsync("text-align", "center");
         await Expect(tip).ToHaveCSSAsync("border-top-left-radius", "0px");
-        Assert.IsTrue((await BoxAsync(tip)).Width <= 120 + 28 + 0.5, "The max-width variable does not wrap the text.");
+        Assert.IsLessThanOrEqualTo(120 + 28 + 0.5, (await BoxAsync(tip)).Width, "The max-width variable does not wrap the text.");
         var anchor = await BoxAsync(El("tst-var"));
         Near(anchor.Y - 20, (await BoxAsync(tip)).Y + (await BoxAsync(tip)).Height, "the offset variable");
 
@@ -819,7 +819,7 @@ public class BitTooltipE2ETests : E2ETestBase
 
     private static void Near(double expected, double actual, string what, double tolerance = 1.5)
     {
-        Assert.IsTrue(Math.Abs(expected - actual) <= tolerance, $"{what}: expected {expected}, got {actual}.");
+        Assert.IsLessThanOrEqualTo(tolerance, Math.Abs(expected - actual), $"{what}: expected {expected}, got {actual}.");
     }
 
     private async Task<T> PollAsync<T>(Func<Task<T>> read, Func<T, bool> done, string message)

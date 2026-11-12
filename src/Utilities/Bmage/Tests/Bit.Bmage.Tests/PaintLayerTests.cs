@@ -150,7 +150,7 @@ public sealed class PaintLayerTests
         Assert.IsLessThan(64 * 1024L, history.EstimatedMemory, "twenty strokes of history cost kilobytes");
         Assert.IsGreaterThan(history.Entries[1].EstimatedSize, history.Entries[^1].EstimatedSize, "and more strokes cost more");
         history.Undo();
-        Assert.AreEqual(19, ((PaintLayer)history.Current.Layers[0]).Strokes.Count);
+        Assert.HasCount(19, ((PaintLayer)history.Current.Layers[0]).Strokes);
     }
 
     [TestMethod]
@@ -160,11 +160,12 @@ public sealed class PaintLayerTests
         [
             new PaintStroke([new(5, 5), new(40, 30), new(80, 10)], 14, Red) { Pressures = [0.2f, 1f, 0.6f], Hardness = 0.3f, Opacity = 0.7f },
             new PaintStroke([new(20, 0), new(20, 60)], 5, default) { Erase = true, PressureAffectsSize = false, PressureAffectsOpacity = true },
-        ]) { Name = "Sketch", BlendMode = BlendMode.Overlay };
+        ])
+        { Name = "Sketch", BlendMode = BlendMode.Overlay };
         var json = BmageJson.SerializeObject(layer);
         var back = (PaintLayer)BmageJson.DeserializeObject<Layer>(json);
         Assert.AreEqual(json, BmageJson.SerializeObject(back));
-        CollectionAssert.AreEqual(new[] { 0.2f, 1f, 0.6f }, back.Strokes[0].Pressures!.ToArray());
+        Assert.AreSequenceEqual(new[] { 0.2f, 1f, 0.6f }, back.Strokes[0].Pressures!.ToArray());
 
         using var a = ImageBuffer.Create(90, 60, Rgba32.White);
         using var b = ImageBuffer.Create(90, 60, Rgba32.White);

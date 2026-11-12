@@ -1,4 +1,4 @@
-namespace Bit.Blex.Tests;
+﻿namespace Bit.Blex.Tests;
 
 /// <summary>
 /// <see cref="BlexManager.Transaction(Action)"/>: actions of several stores as one unit -- all of them stand, or none.
@@ -56,7 +56,7 @@ public class TransactionTests
         Assert.AreEqual(1, counter.Count);
         Assert.AreEqual(0, profile.Age);
         Assert.AreEqual("light", settings.Theme);
-        CollectionAssert.AreEquivalent(new[] { "counter", "profile" }, restored, "the store the body left alone is not restored");
+        Assert.AreSequenceEqual(new[] { "counter", "profile" }, restored, Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, "the store the body left alone is not restored");
     }
 
     [TestMethod]
@@ -101,7 +101,7 @@ public class TransactionTests
         var (manager, _, _, settings) = App();
         var storage = new MemoryStorage();
         await using var persistor = new BlexStatePersistor(manager, storage);
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
 
         Assert.ThrowsExactly<InvalidOperationException>(() => manager.Transaction(() =>
         {
@@ -110,7 +110,7 @@ public class TransactionTests
         }));
         await persistor.FlushAsync();
 
-        StringAssert.Contains(storage.Data["blex:settings"], "light", "a reload must not resurrect the half-done change");
+        Assert.Contains("light", storage.Data["blex:settings"], "a reload must not resurrect the half-done change");
     }
 
     [TestMethod]
@@ -163,4 +163,6 @@ public class TransactionTests
 
         Assert.AreEqual((2, 0), (counter.Count, profile.Age));
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

@@ -33,10 +33,10 @@ public class BitPaginationE2ETests : E2ETestBase
         var html = await response.TextAsync();
 
         Assert.IsTrue(response.Ok);
-        StringAssert.Contains(html, "id=\"pg-basic\"");
-        StringAssert.Contains(html, "aria-label=\"Pagination\"");
-        StringAssert.Contains(html, "aria-current=\"page\"");
-        StringAssert.Contains(html, ">Loading<");
+        Assert.Contains("id=\"pg-basic\"", html);
+        Assert.Contains("aria-label=\"Pagination\"", html);
+        Assert.Contains("aria-current=\"page\"", html);
+        Assert.Contains(">Loading<", html);
 
         await OpenAsync(Url);
         Assert.IsFalse(await IsCircuitDeadAsync());
@@ -124,7 +124,7 @@ public class BitPaginationE2ETests : E2ETestBase
 
         var buttons = root.Locator("button");
         var count = await buttons.CountAsync();
-        Assert.IsTrue(count >= 7);
+        Assert.IsGreaterThanOrEqualTo(7, count);
         for (var i = 0; i < count; i++)
         {
             await Expect(buttons.Nth(i)).ToBeDisabledAsync();
@@ -220,15 +220,15 @@ public class BitPaginationE2ETests : E2ETestBase
         await Expect(Root("pg-not-rounded")).Not.ToHaveClassAsync(HasClass("bit-pgn-rnd"));
 
         var page = await BoxAsync(PageButton("pg-rounded", 9));
-        Assert.IsTrue(ParsePx(await PageButton("pg-rounded", 9).EvaluateAsync<string>("el => getComputedStyle(el).borderTopLeftRadius")) >= page.Height / 2);
+        Assert.IsGreaterThanOrEqualTo(page.Height / 2, ParsePx(await PageButton("pg-rounded", 9).EvaluateAsync<string>("el => getComputedStyle(el).borderTopLeftRadius")));
         var pill = Nav("pg-rounded", "Previous page");
         var pillBox = await BoxAsync(pill);
-        Assert.IsTrue(pillBox.Width > pillBox.Height, "A button with a text is wider than it is tall.");
-        Assert.IsTrue(ParsePx(await pill.EvaluateAsync<string>("el => getComputedStyle(el).borderTopLeftRadius")) >= pillBox.Height / 2);
-        Assert.IsTrue(ParsePx(await Root("pg-rounded").Locator(".bit-pgn-elp").First.EvaluateAsync<string>("el => getComputedStyle(el).borderTopLeftRadius")) >= page.Height / 2, "The ellipsis takes the shape too.");
+        Assert.IsGreaterThan(pillBox.Height, pillBox.Width, "A button with a text is wider than it is tall.");
+        Assert.IsGreaterThanOrEqualTo(pillBox.Height / 2, ParsePx(await pill.EvaluateAsync<string>("el => getComputedStyle(el).borderTopLeftRadius")));
+        Assert.IsGreaterThanOrEqualTo(page.Height / 2, ParsePx(await Root("pg-rounded").Locator(".bit-pgn-elp").First.EvaluateAsync<string>("el => getComputedStyle(el).borderTopLeftRadius")), "The ellipsis takes the shape too.");
 
         var square = await BoxAsync(PageButton("pg-not-rounded", 4));
-        Assert.IsTrue(ParsePx(await PageButton("pg-not-rounded", 4).EvaluateAsync<string>("el => getComputedStyle(el).borderTopLeftRadius")) < square.Height / 2);
+        Assert.IsLessThan(square.Height / 2, ParsePx(await PageButton("pg-not-rounded", 4).EvaluateAsync<string>("el => getComputedStyle(el).borderTopLeftRadius")));
     }
 
     [TestMethod]
@@ -361,10 +361,10 @@ public class BitPaginationE2ETests : E2ETestBase
         // Previous reads icon then text, Next text then icon.
         var prevIcon = await BoxAsync(Nav("pg-texts", "Previous page").Locator("i"));
         var prevText = await BoxAsync(Nav("pg-texts", "Previous page").Locator(".bit-pgn-btx"));
-        Assert.IsTrue(prevIcon.X < prevText.X);
+        Assert.IsLessThan(prevText.X, prevIcon.X);
         var nextIcon = await BoxAsync(Nav("pg-texts", "Next page").Locator("i"));
         var nextText = await BoxAsync(Nav("pg-texts", "Next page").Locator(".bit-pgn-btx"));
-        Assert.IsTrue(nextText.X < nextIcon.X);
+        Assert.IsLessThan(nextIcon.X, nextText.X);
     }
 
     [TestMethod]
@@ -555,7 +555,7 @@ public class BitPaginationE2ETests : E2ETestBase
         {
             await Expect(root).Not.ToHaveClassAsync(HasClass("bit-pgn-aln"));
             await Expect(root).ToHaveCSSAsync("display", "inline-flex");
-            Assert.IsTrue((await BoxAsync(root)).Width < container.Width / 2, "Not stretched.");
+            Assert.IsLessThan(container.Width / 2, (await BoxAsync(root)).Width, "Not stretched.");
             return;
         }
 
@@ -815,13 +815,13 @@ public class BitPaginationE2ETests : E2ETestBase
         switch (size)
         {
             case "Small":
-                Assert.IsTrue(heights["Small"] < heights["Medium"]);
+                Assert.IsLessThan(heights["Medium"], heights["Small"]);
                 break;
             case "Medium":
                 Assert.AreEqual(heights["none"], heights["Medium"], 0.5, "An unset Size is the medium one.");
                 break;
             default:
-                Assert.IsTrue(heights["Large"] > heights["Medium"]);
+                Assert.IsGreaterThan(heights["Medium"], heights["Large"]);
                 break;
         }
     }
@@ -941,9 +941,9 @@ public class BitPaginationE2ETests : E2ETestBase
         await Expect(Selected("pg-css-vars-color")).ToHaveCSSAsync("background-color", await ResolveColorAsync("var(--bit-clr-err-dark)"));
 
         var rounded = await BoxAsync(PageButton("pg-css-vars-rounded", 2));
-        Assert.IsTrue(ParsePx(await PageButton("pg-css-vars-rounded", 2).EvaluateAsync<string>("el => getComputedStyle(el).borderTopLeftRadius")) >= rounded.Height / 2);
+        Assert.IsGreaterThanOrEqualTo(rounded.Height / 2, ParsePx(await PageButton("pg-css-vars-rounded", 2).EvaluateAsync<string>("el => getComputedStyle(el).borderTopLeftRadius")));
 
-        Assert.IsTrue((await BoxAsync(PageButton("pg-css-vars-size", 2))).Height < 40, "Size wins over --bit-Pagination-button-size.");
+        Assert.IsLessThan(40, (await BoxAsync(PageButton("pg-css-vars-size", 2))).Height, "Size wins over --bit-Pagination-button-size.");
 
         // The variant's own twin wins over the shared variable.
         await Expect(PageButton("pg-css-vars-twin", 2)).ToHaveCSSAsync("border-top-color", "rgb(1, 2, 3)");
@@ -1011,6 +1011,7 @@ public class BitPaginationE2ETests : E2ETestBase
     // Waits for the pagination to render the given run of pages and gaps.
     private async Task ExpectSequenceAsync(string id, string expected)
     {
+        var timedOut = false;
         try
         {
             await Page.WaitForFunctionAsync(@"([id, expected]) => {
@@ -1024,8 +1025,10 @@ public class BitPaginationE2ETests : E2ETestBase
         }
         catch (TimeoutException)
         {
-            Assert.AreEqual(expected, await SequenceAsync(id), $"The pages of {id}.");
+            timedOut = true;
         }
+
+        if (timedOut) Assert.AreEqual(expected, await SequenceAsync(id), $"The pages of {id}.");
     }
 
     private async Task AssertMirroredAsync(string id, bool rtl)

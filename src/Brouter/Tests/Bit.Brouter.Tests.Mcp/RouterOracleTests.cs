@@ -99,7 +99,7 @@ public class RouterOracleTests
         // moved would have the tool reporting a plausible-looking answer about the wrong thing.
         var inspection = BrouterTemplateInspector.Inspect("/c/{kind}/{value:int}", _constraints);
 
-        CollectionAssert.AreEqual(new[] { "kind", "value" }, inspection.ParameterNames);
+        Assert.AreSequenceEqual(new[] { "kind", "value" }, inspection.ParameterNames);
 
         // The route matched, so the router parsed the same two parameters out of the same template.
         Assert.AreEqual("matched", MatchOutcome("int", "int", "42"));

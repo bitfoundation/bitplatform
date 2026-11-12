@@ -48,7 +48,7 @@ public class ProfilerTests : BunitContext
         cut.InvokeAsync(() => cut.Instance.Refresh());
         Assert.AreEqual(1, parent.RendersSinceBaseline);
         Assert.AreEqual(3, parent.RenderCount);
-        Assert.IsTrue(parent.MaxRenderMsSinceBaseline <= parent.MaxRenderMs);
+        Assert.IsLessThanOrEqualTo(parent.MaxRenderMs, parent.MaxRenderMsSinceBaseline);
         Assert.AreEqual(parent.LastRenderMs, parent.RenderMsSinceBaseline, delta: 1e-6);
     }
 
@@ -201,9 +201,9 @@ public class ProfilerTests : BunitContext
         Assert.AreEqual("of 21 retained renders", panel.FindAll("tbody tr.bev-row").First(r => r.TextContent.Contains("ParentComponent", StringComparison.Ordinal)).QuerySelectorAll("td")[4].GetAttribute("title"));
 
         panel.FindAll("thead th[aria-sort] button").Single(b => b.TextContent.StartsWith("p95", StringComparison.Ordinal)).Click();
-        CollectionAssert.AreEqual(new[] { "TwoChildren", "ParentComponent" }, Order());
+        Assert.AreSequenceEqual(new[] { "TwoChildren", "ParentComponent" }, Order());
         panel.FindAll("thead th[aria-sort] button").Single(b => b.TextContent.StartsWith("Max", StringComparison.Ordinal)).Click();
-        CollectionAssert.AreEqual(new[] { "ParentComponent", "TwoChildren" }, Order());
+        Assert.AreSequenceEqual(new[] { "ParentComponent", "TwoChildren" }, Order());
 
         // After a reset, only the renders since: three of 50 ms.
         panel.Find("button[aria-label='Reset profiler baseline']").Click();
@@ -376,7 +376,7 @@ public class ProfilerTests : BunitContext
             cut.InvokeAsync(() => cut.Instance.Bump());
         }
 
-        Assert.AreEqual(100, child.Renders.Length);
+        Assert.HasCount(100, child.Renders);
         panel.Find("button[aria-label='Refresh captured data']").Click();
         Assert.Contains("of 120 compared renders were forced", panel.Markup, StringComparison.Ordinal);
         var parentCause = Assert.ContainsSingle(r => r.QuerySelector("td")?.TextContent == "ParentRender", panel.FindAll("tr"));

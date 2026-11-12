@@ -50,14 +50,12 @@ public class IdentityRateLimitTests
             }
             catch (TooManyRequestsException)
             {
-                // Control: the endpoint really answered before it started refusing, so this is throttling
-                // rather than the request never getting there.
-                Assert.IsGreaterThan(0, served, "The endpoint must serve some requests before throttling starts.");
-                return;
+                break;
             }
         }
 
-        Assert.Fail($"A burst of {BurstSize} requests against a rate-limited anonymous endpoint was never throttled ({served} served).");
+        Assert.IsGreaterThan(0, served, "The endpoint must serve some requests before throttling starts.");
+        Assert.IsLessThan(BurstSize, served, $"A burst of {BurstSize} requests against a rate-limited anonymous endpoint was never throttled ({served} served).");
     }
 
     /// <summary>

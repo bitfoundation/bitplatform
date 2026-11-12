@@ -169,8 +169,8 @@ public class BitDialogParamsTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("bit-dlg-suc"));
         Assert.IsFalse(root.ClassList.Contains("bit-dlg-err"));
         Assert.AreEqual("Own", component.Find(".bit-dlg-okb").TextContent.Trim());
-        Assert.HasCount(1, component.FindAll(".bit-dlg-cnb"));
-        Assert.HasCount(1, component.FindAll(".bit-dlg-cls"));
+        Assert.ContainsSingle(component.FindAll(".bit-dlg-cnb"));
+        Assert.ContainsSingle(component.FindAll(".bit-dlg-cls"));
         Assert.IsTrue(component.Find(".bit-dlg-doc").ClassList.Contains("bit-dlg-ctr"));
     }
 
@@ -207,8 +207,8 @@ public class BitDialogParamsTests : BunitTestContext
 
         Assert.IsTrue(component.Find(".bit-dlg").ClassList.Contains("cascaded-root"));
         Assert.IsTrue(component.Find(".bit-dlg-ctn").ClassList.Contains("cascaded-container"));
-        StringAssert.Contains(component.Find(".bit-dlg").GetAttribute("style"), "color: red;");
-        StringAssert.Contains(component.Find(".bit-dlg-ttl").GetAttribute("style"), "font-style: italic;");
+        Assert.Contains("color: red;", component.Find(".bit-dlg").GetAttribute("style")!);
+        Assert.Contains("font-style: italic;", component.Find(".bit-dlg-ttl").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -227,10 +227,10 @@ public class BitDialogParamsTests : BunitTestContext
 
         var containers = component.FindAll(".bit-dlg-ctn");
 
-        StringAssert.Contains(containers[0].GetAttribute("style"), "--bit-dlg-wid:30rem;");
-        StringAssert.Contains(containers[0].GetAttribute("style"), "--bit-dlg-mxh:20rem;");
-        StringAssert.Contains(containers[1].GetAttribute("style"), "--bit-dlg-wid:40rem;");
-        StringAssert.Contains(containers[1].GetAttribute("style"), "--bit-dlg-mxh:20rem;");
+        Assert.Contains("--bit-dlg-wid:30rem;", containers[0].GetAttribute("style")!);
+        Assert.Contains("--bit-dlg-mxh:20rem;", containers[0].GetAttribute("style")!);
+        Assert.Contains("--bit-dlg-wid:40rem;", containers[1].GetAttribute("style")!);
+        Assert.Contains("--bit-dlg-mxh:20rem;", containers[1].GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -242,7 +242,7 @@ public class BitDialogParamsTests : BunitTestContext
 
         component.Find(".bit-dlg-ovl").Click();
 
-        Assert.HasCount(1, component.FindAll(".bit-dlg"));
+        Assert.ContainsSingle(component.FindAll(".bit-dlg"));
         Assert.AreEqual("alertdialog", component.Find(".bit-dlg-ctn").GetAttribute("role"));
     }
 
@@ -255,7 +255,7 @@ public class BitDialogParamsTests : BunitTestContext
 
         component.Find(".bit-dlg-ovl").Click();
 
-        Assert.HasCount(1, component.FindAll(".bit-dlg"));
+        Assert.ContainsSingle(component.FindAll(".bit-dlg"));
         Assert.AreEqual("dialog", component.Find(".bit-dlg-ctn").GetAttribute("role"));
     }
 
@@ -325,7 +325,7 @@ public class BitDialogParamsTests : BunitTestContext
             builder.AddAttribute(11, nameof(BitDialog.ChildContent), (RenderFragment)(content => content.AddMarkupContent(0, "<input class=\"marked\" data-autofocus />")));
         }));
 
-        Assert.HasCount(1, component.FindAll("input.marked[data-autofocus]"));
+        Assert.ContainsSingle(component.FindAll("input.marked[data-autofocus]"));
         Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.focusFirstElement"]);
         var focused = (ElementReference)Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"][0].Arguments[0]!;
         Assert.AreEqual(component.Find(".bit-dlg-okb").GetAttribute("blazor:elementReference"), focused.Id);
@@ -474,12 +474,12 @@ public class BitDialogParamsTests : BunitTestContext
 
         var style = component.Find(".bit-dlg-ctn").GetAttribute("style");
 
-        StringAssert.Contains(style, "--bit-dlg-hei:24rem;");
-        StringAssert.Contains(style, "--bit-dlg-mnh:10rem;");
-        StringAssert.Contains(style, "--bit-dlg-mnw:20rem;");
+        Assert.Contains("--bit-dlg-hei:24rem;", style!);
+        Assert.Contains("--bit-dlg-mnh:10rem;", style);
+        Assert.Contains("--bit-dlg-mnw:20rem;", style);
         // A cascaded MaxWidth replaces the theme's ceiling the way one written on the dialog does.
-        StringAssert.Contains(style, "--bit-dlg-mxw:40rem;");
-        Assert.IsFalse(style!.Contains("--bit-Dialog-max-width"));
+        Assert.Contains("--bit-dlg-mxw:40rem;", style);
+        Assert.DoesNotContain("--bit-Dialog-max-width", style!);
     }
 
     [TestMethod]
@@ -515,7 +515,7 @@ public class BitDialogParamsTests : BunitTestContext
         var invocation = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"][0];
 
         Assert.AreEqual(".my-scroller", invocation.Arguments[1]);
-        Assert.AreEqual(true, invocation.Arguments[2]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(invocation.Arguments[2]));
     }
 
     [TestMethod]
@@ -526,7 +526,7 @@ public class BitDialogParamsTests : BunitTestContext
         var containerId = component.Find(".bit-dlg-ctn").GetAttribute("id");
         var setup = Context.JSInterop.Invocations["BitBlazorUI.DragDrop.setup"];
 
-        Assert.HasCount(1, setup);
+        Assert.ContainsSingle(setup);
         Assert.AreEqual($"[id=\"{containerId}\"] > .bit-dlg-hdr", setup[0].Arguments[2]);
     }
 
@@ -590,7 +590,7 @@ public class BitDialogParamsTests : BunitTestContext
 
         Assert.AreEqual("rtl", root.GetAttribute("dir"));
         Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
-        StringAssert.Contains(root.GetAttribute("style"), "z-index: 7;");
+        Assert.Contains("z-index: 7;", root.GetAttribute("style")!);
         Assert.AreEqual("Cascaded", component.Find(".bit-dlg-ctn").GetAttribute("aria-label"));
     }
 
@@ -648,7 +648,7 @@ public class BitDialogParamsTests : BunitTestContext
     }
 
     // A dialog that always opens on its Ok button, which it says in code rather than in the markup of every use.
-    public sealed class OkFirstDialog : BitDialog
+    internal sealed class OkFirstDialog : BitDialog
     {
         protected override void OnParametersSet()
         {

@@ -70,7 +70,7 @@ public class BitAiToolTests
         Assert.IsTrue(tool.Definition.ParametersSchema!.Value.GetProperty("properties").TryGetProperty("CITY", out _));
 
         var arguments = JsonDocument.Parse("""{"CITY":"Oslo","DAYS":2}""").RootElement;
-        var outcome = await tool.InvokeAsync(new BitAiToolInvocation("c1", "get_weather", arguments));
+        var outcome = await tool.InvokeAsync(new BitAiToolInvocation("c1", "get_weather", arguments), TestContext.CancellationToken);
 
         Assert.IsTrue(outcome.IsSuccess);
         Assert.AreEqual("Oslo for 2 days", outcome.Value!.Value.GetProperty("SUMMARY").GetString());
@@ -85,7 +85,7 @@ public class BitAiToolTests
             (args, _) => ValueTask.FromResult<object>(new { summary = $"{args.City} for {args.Days} days" }));
 
         var arguments = JsonDocument.Parse("""{"city":"Oslo","days":2}""").RootElement;
-        var outcome = await tool.InvokeAsync(new BitAiToolInvocation("c1", "get_weather", arguments));
+        var outcome = await tool.InvokeAsync(new BitAiToolInvocation("c1", "get_weather", arguments), TestContext.CancellationToken);
 
         Assert.IsTrue(outcome.IsSuccess);
         Assert.AreEqual("Oslo for 2 days", outcome.Value!.Value.GetProperty("summary").GetString());
@@ -109,13 +109,13 @@ public class BitAiToolTests
         var policy = new BitAiDefaultToolApprovalPolicy();
         var invocation = new BitAiToolInvocation("c1", "t", default);
 
-        Assert.IsFalse(await policy.RequiresApprovalAsync(new BitAiToolDefinition("read"), invocation));
+        Assert.IsFalse(await policy.RequiresApprovalAsync(new BitAiToolDefinition("read"), invocation, TestContext.CancellationToken));
         Assert.IsTrue(await policy.RequiresApprovalAsync(
-            new BitAiToolDefinition("wipe") { Risk = BitAiToolRisk.Destructive }, invocation));
+            new BitAiToolDefinition("wipe") { Risk = BitAiToolRisk.Destructive }, invocation, TestContext.CancellationToken));
         Assert.IsTrue(await policy.RequiresApprovalAsync(
-            new BitAiToolDefinition("send") { RequiresApproval = true }, invocation));
+            new BitAiToolDefinition("send") { RequiresApproval = true }, invocation, TestContext.CancellationToken));
         Assert.IsFalse(await policy.RequiresApprovalAsync(
-            new BitAiToolDefinition("wipe") { Risk = BitAiToolRisk.Destructive, RequiresApproval = false }, invocation));
+            new BitAiToolDefinition("wipe") { Risk = BitAiToolRisk.Destructive, RequiresApproval = false }, invocation, TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -125,9 +125,9 @@ public class BitAiToolTests
         var definition = new BitAiToolDefinition("wipe") { Risk = BitAiToolRisk.Destructive };
         var invocation = new BitAiToolInvocation("c1", "wipe", default);
 
-        Assert.IsTrue(await policy.RequiresApprovalAsync(definition, invocation));
+        Assert.IsTrue(await policy.RequiresApprovalAsync(definition, invocation, TestContext.CancellationToken));
         policy.RememberAlwaysApproved("wipe");
-        Assert.IsFalse(await policy.RequiresApprovalAsync(definition, invocation));
+        Assert.IsFalse(await policy.RequiresApprovalAsync(definition, invocation, TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -150,4 +150,6 @@ public class BitAiToolTests
         Assert.AreEqual("""{"filter":"status = 'archived' <a&b+c>","city":"تهران","path":"C:\\logs","count":3}""",
                         BitAiToolOutcome.Success(value).GetDisplayText());
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

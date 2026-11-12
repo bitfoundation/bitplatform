@@ -40,7 +40,7 @@ public sealed class BitLazyScriptsTests
 
         await js.InvokeVoid("BitBlazorUI.Callouts.toggle", "id");
 
-        CollectionAssert.AreEqual(new[] { "BitBlazorUI.Callouts.toggle" }, js.Calls);
+        Assert.AreSequenceEqual(new[] { "BitBlazorUI.Callouts.toggle" }, js.Calls);
     }
 
     [TestMethod]
@@ -53,7 +53,7 @@ public sealed class BitLazyScriptsTests
         await js.InvokeVoid("BitBlazorUI.Callouts.toggle", "id");
         await js.InvokeVoid("BitBlazorUI.Callouts.reposition");
 
-        CollectionAssert.AreEqual(new[]
+        Assert.AreSequenceEqual(new[]
         {
             $"import {CoreBoot}",
             "import ./_content/Bit.BlazorUI/scripts/modules/Callouts.js",
@@ -74,7 +74,7 @@ public sealed class BitLazyScriptsTests
         await second.InvokeVoid("BitBlazorUI.Callouts.toggle");
 
         // Another circuit's page, which has loaded nothing.
-        CollectionAssert.Contains(second.Calls, "import ./_content/Bit.BlazorUI/scripts/modules/Callouts.js");
+        Assert.Contains("import ./_content/Bit.BlazorUI/scripts/modules/Callouts.js", second.Calls);
     }
 
     [TestMethod]
@@ -85,7 +85,7 @@ public sealed class BitLazyScriptsTests
 
         // A dropdown disposed without ever having opened: nothing to clear, and no script to download for it.
         await js.InvokeVoid("BitBlazorUI.Callouts.clear", "id");
-        Assert.AreEqual(0, js.Calls.Count, string.Join(", ", js.Calls));
+        Assert.IsEmpty(js.Calls, string.Join(", ", js.Calls));
 
         await js.InvokeVoid("BitBlazorUI.Callouts.toggle", "id");
         await js.InvokeVoid("BitBlazorUI.Callouts.clear", "id");
@@ -103,9 +103,9 @@ public sealed class BitLazyScriptsTests
 
         var imports = js.Calls.Where(c => c.StartsWith("import ", StringComparison.Ordinal)).ToList();
         Assert.AreEqual("import ./_content/Bit.BlazorUI.Extras/scripts/modules/BitDataGrid.js", imports.Last());
-        CollectionAssert.Contains(imports, "import ./_content/Bit.BlazorUI.Extras/scripts/bit.blazorui.extras.boot.js");
-        CollectionAssert.Contains(imports, $"import {CoreBoot}");
-        CollectionAssert.Contains(imports, "import ./_content/Bit.BlazorUI/scripts/modules/Utils.Focus.js");
+        Assert.Contains("import ./_content/Bit.BlazorUI.Extras/scripts/bit.blazorui.extras.boot.js", imports);
+        Assert.Contains($"import {CoreBoot}", imports);
+        Assert.Contains("import ./_content/Bit.BlazorUI/scripts/modules/Utils.Focus.js", imports);
         Assert.AreEqual("BitBlazorUI.DataGrid.focusFirst", js.Calls.Last());
     }
 
@@ -118,7 +118,7 @@ public sealed class BitLazyScriptsTests
         await js.InvokeVoid("app.doSomething");
         await js.InvokeVoid("BitBlazorUI.NoSuchScript.fn");
 
-        CollectionAssert.AreEqual(new[] { "app.doSomething", "BitBlazorUI.NoSuchScript.fn" }, js.Calls);
+        Assert.AreSequenceEqual(new[] { "app.doSomething", "BitBlazorUI.NoSuchScript.fn" }, js.Calls);
     }
 
     [TestMethod]
@@ -129,10 +129,10 @@ public sealed class BitLazyScriptsTests
 
         // A lost connection or a 404 during a deploy is not the script broken for the rest of the session.
         await Assert.ThrowsExactlyAsync<JSException>(async () => await js.InvokeVoid("BitBlazorUI.Callouts.toggle", "id"));
-        Assert.AreEqual(0, js.Calls.Count);
+        Assert.IsEmpty(js.Calls);
 
         await js.InvokeVoid("BitBlazorUI.Callouts.toggle", "id");
-        CollectionAssert.AreEqual(new[] { $"import {CoreBoot}", "import ./_content/Bit.BlazorUI/scripts/modules/Callouts.js", "BitBlazorUI.Callouts.toggle" }, js.Calls);
+        Assert.AreSequenceEqual(new[] { $"import {CoreBoot}", "import ./_content/Bit.BlazorUI/scripts/modules/Callouts.js", "BitBlazorUI.Callouts.toggle" }, js.Calls);
     }
 
     [TestMethod]
@@ -159,7 +159,7 @@ public sealed class BitLazyScriptsTests
         await js.FastInvokeVoid("BitBlazorUI.Utils.isRtl");
 
         Assert.IsTrue(rtl);
-        CollectionAssert.AreEqual(new[]
+        Assert.AreSequenceEqual(new[]
         {
             $"import {CoreBoot}",
             "sync BitBlazorUI.Utils.isRtl",
@@ -242,7 +242,7 @@ public sealed class BitLazyScriptsTests
         // Thrown out of OnAfterRenderAsync, a lost connection or a 404 during a deploy would end a Server circuit.
         var tag = context.Render<BitTag>(parameters => parameters.Add(p => p.OnDismiss, EventCallback.Factory.Create<MouseEventArgs>(this, () => { })));
 
-        Assert.IsTrue(context.JSInterop.Invocations.Any(i => i.Identifier == "import"), $"The tag asked for no script: {Invocations(context)}");
+        Assert.Contains(i => i.Identifier == "import", context.JSInterop.Invocations, $"The tag asked for no script: {Invocations(context)}");
         Assert.IsNotNull(tag.Find(".bit-tag"));
     }
 
@@ -260,7 +260,7 @@ public sealed class BitLazyScriptsTests
 
         context.Render<BitTag>();
 
-        Assert.IsFalse(context.JSInterop.Invocations.Any(i => i.Identifier == "import"));
+        Assert.DoesNotContain(i => i.Identifier == "import", context.JSInterop.Invocations);
     }
 
     private class RecordingJsRuntime : IJSRuntime

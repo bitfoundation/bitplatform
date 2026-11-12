@@ -70,7 +70,7 @@ public class RestoreNotificationTests
 
         var storage = new MemoryStorage();
         storage.Data["blex:settings"] = """{"Theme":"dark","FontSize":14}""";
-        await new BlexStatePersistor(manager, storage).StartAsync();
+        await new BlexStatePersistor(manager, storage).StartAsync(TestContext.CancellationToken);
 
         Assert.AreEqual("dark", theme.Value, "The memo still held the value from before hydration.");
     }
@@ -84,7 +84,7 @@ public class RestoreNotificationTests
 
         var storage = new WatchableStorage();
         var persistor = new BlexStatePersistor(manager, storage, new BlexPersistenceOptions { SyncAcrossTabs = true });
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
 
         var seen = new List<string>();
         using var sub = manager.Subscribe(() => settings.Theme, seen.Add);
@@ -93,7 +93,7 @@ public class RestoreNotificationTests
         await persistor.FlushAsync();
 
         Assert.AreEqual("dark", settings.Theme);
-        CollectionAssert.AreEqual(new[] { "dark" }, seen);
+        Assert.AreSequenceEqual(new[] { "dark" }, seen);
     }
 
     [TestMethod]
@@ -154,7 +154,7 @@ public class RestoreNotificationTests
             ["profile"] = new JsonObject { ["Age"] = 9 },
         });
 
-        CollectionAssert.AreEqual(new[] { "counter", "*", "counter", "profile", "*" }, events);
+        Assert.AreSequenceEqual(new[] { "counter", "*", "counter", "profile", "*" }, events);
     }
 
     [TestMethod]
@@ -165,12 +165,12 @@ public class RestoreNotificationTests
         using var second = manager.CreateScope(new SettingsStore(), "b");
         var storage = new MemoryStorage();
         await using var persistor = new BlexStatePersistor(manager, storage);
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
 
         first.Store.RestoreState(new JsonObject { ["Theme"] = "sepia" });
         await persistor.FlushAsync();
 
-        CollectionAssert.AreEqual(new[] { "blex:settings:a" }, storage.Data.Keys.ToArray());
+        Assert.AreSequenceEqual(new[] { "blex:settings:a" }, storage.Data.Keys.ToArray());
     }
 
     [TestMethod]
@@ -215,7 +215,7 @@ public class RestoreNotificationTests
 
         var storage = new MemoryStorage();
         storage.Data["blex:settings"] = """{"Theme":"dark","FontSize":14}""";
-        await new BlexStatePersistor(manager, storage).StartAsync();
+        await new BlexStatePersistor(manager, storage).StartAsync(TestContext.CancellationToken);
 
         settings.SetTheme("blue");
         history.Undo();
@@ -252,4 +252,6 @@ public class RestoreNotificationTests
 
         public Task PersistStateAsync(IReadOnlyDictionary<string, byte[]> state) => Task.CompletedTask;
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

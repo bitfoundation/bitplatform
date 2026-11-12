@@ -51,19 +51,19 @@ public partial class BitPdfRangeSourceTests
         await using var source = await RangeAccess.Open(http, 131072, 65536);
         Assert.AreEqual(200000, source.Int("Length"));
         Assert.AreEqual(65536L, source.Long("FetchedBytes"));
-        Assert.AreEqual(1, handler.Requests.Count);
+        Assert.ContainsSingle(handler.Requests);
         Assert.IsNull(handler.Validators[0]);
         Assert.AreEqual("bytes=0-65535", handler.Requests[0]);
         Assert.AreEqual(handler.Bytes[200], source.Cursor(200, 1).GetByte());
         var missing = Assert.Throws<BitPdfMissingDataException>(() => source.Cursor(150000, 1).GetByte());
         Assert.AreEqual(150000, missing.Offset);
         Assert.AreEqual(1, missing.Length);
-        Assert.AreEqual(1, handler.Requests.Count);
-        await source.Ensure(150000, 1);
+        Assert.ContainsSingle(handler.Requests);
+        await source.Ensure(150000, 1, TestContext.CancellationToken);
         Assert.AreEqual("bytes=131072-196607", handler.Requests[1]);
         Assert.AreEqual(RangeHandler.Tag, handler.Validators[1]);
         Assert.AreEqual(handler.Bytes[150000], source.Cursor(150000, 1).GetByte());
-        Assert.IsTrue(source.Int("PeakBytes") <= 131072);
+        Assert.IsLessThanOrEqualTo(131072, source.Int("PeakBytes"));
     }
 
     [TestMethod]
@@ -74,8 +74,8 @@ public partial class BitPdfRangeSourceTests
         var definition = RangeAccess.DefinitionForTransportTest(32, 8)
             .WithHeaders(new Dictionary<string, string> { ["Authorization"] = "Bearer test" });
         await using var source = await RangeAccess.Open(http, definition);
-        await source.Ensure(80, 8);
-        Assert.AreEqual(2, handler.Authorization.Count);
+        await source.Ensure(80, 8, TestContext.CancellationToken);
+        Assert.HasCount(2, handler.Authorization);
         Assert.IsTrue(handler.Authorization.All(v => v == "Bearer test"));
         Assert.AreEqual(RangeHandler.Tag, handler.Validators[1]);
     }
@@ -94,7 +94,7 @@ public partial class BitPdfRangeSourceTests
         using var handler = new RangeHandler(200) { Problem = problem };
         using var http = new HttpClient(handler);
         await Assert.ThrowsAsync<IOException>(async () => { await using var source = await RangeAccess.Open(http, 32, 8); });
-        Assert.AreEqual(1, handler.Requests.Count);
+        Assert.ContainsSingle(handler.Requests);
     }
 
     [TestMethod]
@@ -107,7 +107,7 @@ public partial class BitPdfRangeSourceTests
         using var http = new HttpClient(handler);
         await using var source = await RangeAccess.Open(http, 32, 8);
         handler.Problem = problem;
-        await Assert.ThrowsAsync<IOException>(() => source.Ensure(80, 8));
+        await Assert.ThrowsAsync<IOException>(() => source.Ensure(80, 8, TestContext.CancellationToken));
         Assert.AreEqual(0, handler.LastBody!.Reads);
         Assert.AreEqual(RangeHandler.Tag, handler.Validators[1]);
         Assert.Throws<IOException>(() => source.Cursor(0, 1).GetByte());
@@ -120,11 +120,11 @@ public partial class BitPdfRangeSourceTests
         using var http = new HttpClient(handler);
         await using var source = await RangeAccess.Open(http, 12, 4);
         using var operation = source.Operation();
-        await source.Ensure(4, 4);
-        await source.Ensure(8, 4);
-        await source.Ensure(12, 4);
-        await Assert.ThrowsAsync<IOException>(() => source.Ensure(16, 4));
-        Assert.AreEqual(4, handler.Requests.Count);
+        await source.Ensure(4, 4, TestContext.CancellationToken);
+        await source.Ensure(8, 4, TestContext.CancellationToken);
+        await source.Ensure(12, 4, TestContext.CancellationToken);
+        await Assert.ThrowsAsync<IOException>(() => source.Ensure(16, 4, TestContext.CancellationToken));
+        Assert.HasCount(4, handler.Requests);
         Assert.AreEqual(12, source.Int("PeakBytes"));
         Assert.AreEqual(handler.Bytes[4], source.Cursor(4, 1).GetByte());
     }
@@ -135,14 +135,14 @@ public partial class BitPdfRangeSourceTests
         using var handler = new RangeHandler(200);
         using var http = new HttpClient(handler);
         await using var source = await RangeAccess.Open(http, 32, 8);
-        await Assert.ThrowsAsync<IOException>(() => source.Ensure(40, 33));
-        Assert.AreEqual(1, handler.Requests.Count);
+        await Assert.ThrowsAsync<IOException>(() => source.Ensure(40, 33, TestContext.CancellationToken));
+        Assert.ContainsSingle(handler.Requests);
         var bytes = await source.ReadAll();
-        CollectionAssert.AreEqual(handler.Bytes, bytes);
+        Assert.AreSequenceEqual(handler.Bytes, bytes);
         bytes[0] ^= 255;
-        await source.Ensure(0, 1);
+        await source.Ensure(0, 1, TestContext.CancellationToken);
         Assert.AreEqual(handler.Bytes[0], source.Cursor(0, 1).GetByte());
-        Assert.IsTrue(source.Int("PeakBytes") <= 32);
+        Assert.IsLessThanOrEqualTo(32, source.Int("PeakBytes"));
     }
 
     [TestMethod]
@@ -152,13 +152,13 @@ public partial class BitPdfRangeSourceTests
         using var http = new HttpClient(handler);
         await using var source = await RangeAccess.Open(http, 32, 8);
         handler.Pause = new(TaskCreationOptions.RunContinuationsAsynchronously);
-        var first = source.Ensure(16, 8);
-        var second = source.Ensure(20, 4);
-        Assert.AreEqual(2, handler.Requests.Count);
+        var first = source.Ensure(16, 8, TestContext.CancellationToken);
+        var second = source.Ensure(20, 4, TestContext.CancellationToken);
+        Assert.HasCount(2, handler.Requests);
         handler.Pause.SetResult();
         await Task.WhenAll(first, second);
-        Assert.AreEqual(2, handler.Requests.Count);
-        Assert.IsTrue(source.Int("PeakBytes") <= 32);
+        Assert.HasCount(2, handler.Requests);
+        Assert.IsLessThanOrEqualTo(32, source.Int("PeakBytes"));
     }
 
     [TestMethod]
@@ -173,11 +173,11 @@ public partial class BitPdfRangeSourceTests
         Assert.IsFalse(cancellation.IsCancellationRequested, "The caller did not cancel the timed-out request.");
         Assert.IsInstanceOfType<TaskCanceledException>(error.InnerException);
         Assert.IsInstanceOfType<TimeoutException>(error.InnerException!.InnerException);
-        Assert.AreEqual(2, handler.Requests.Count, "An HTTP timeout must not repeat the range request.");
+        Assert.HasCount(2, handler.Requests, "An HTTP timeout must not repeat the range request.");
         Assert.AreEqual(8, source.Int("AccountedBytes"));
         Assert.Throws<BitPdfMissingDataException>(() => source.Cursor(80, 1).GetByte());
         handler.Pause.SetResult();
-        await source.Ensure(80, 8);
+        await source.Ensure(80, 8, TestContext.CancellationToken);
         Assert.AreEqual(handler.Bytes[80], source.Cursor(80, 1).GetByte());
     }
 
@@ -190,13 +190,13 @@ public partial class BitPdfRangeSourceTests
         handler.Pause = new(TaskCreationOptions.RunContinuationsAsynchronously);
         using var cancellation = new CancellationTokenSource();
         var first = source.Ensure(80, 8, cancellation.Token);
-        var second = source.Ensure(80, 8);
-        Assert.AreEqual(2, handler.Requests.Count);
+        var second = source.Ensure(80, 8, TestContext.CancellationToken);
+        Assert.HasCount(2, handler.Requests);
         cancellation.Cancel();
         await Assert.ThrowsAsync<OperationCanceledException>(() => first);
         handler.Pause.SetResult();
-        await second.WaitAsync(TimeSpan.FromSeconds(3));
-        Assert.AreEqual(3, handler.Requests.Count);
+        await second.WaitAsync(TimeSpan.FromSeconds(3), TestContext.CancellationToken);
+        Assert.HasCount(3, handler.Requests);
         Assert.AreEqual(handler.Bytes[80], source.Cursor(80, 1).GetByte());
         Assert.AreEqual(16, source.Int("AccountedBytes"));
     }
@@ -208,12 +208,12 @@ public partial class BitPdfRangeSourceTests
         using var http = new HttpClient(handler);
         await using var source = await RangeAccess.Open(http, 32, 8);
         handler.Problem = "short";
-        await Assert.ThrowsAsync<IOException>(() => source.Ensure(80, 8));
+        await Assert.ThrowsAsync<IOException>(() => source.Ensure(80, 8, TestContext.CancellationToken));
         Assert.AreEqual(8, source.Int("AccountedBytes"));
         Assert.Throws<BitPdfMissingDataException>(() => source.Cursor(80, 1).GetByte());
         Assert.AreEqual(handler.Bytes[0], source.Cursor(0, 1).GetByte());
         handler.Problem = null;
-        await source.Ensure(80, 8);
+        await source.Ensure(80, 8, TestContext.CancellationToken);
         Assert.AreEqual(handler.Bytes[80], source.Cursor(80, 1).GetByte());
     }
 
@@ -229,12 +229,12 @@ public partial class BitPdfRangeSourceTests
             for (int i = 1; i < 1030; i++)
             {
                 using var child = source.Operation();
-                await source.Ensure(i % 25 * 8, 8);
+                await source.Ensure(i % 25 * 8, 8, TestContext.CancellationToken);
             }
         });
-        StringAssert.Contains(error.Message, "range-request limit");
-        Assert.IsTrue(handler.Requests.Count <= 1025);
-        Assert.IsTrue(source.Int("PeakBytes") <= 32);
+        Assert.Contains("range-request limit", error.Message);
+        Assert.IsLessThanOrEqualTo(1025, handler.Requests.Count);
+        Assert.IsLessThanOrEqualTo(32, source.Int("PeakBytes"));
     }
 
     [TestMethod]
@@ -253,7 +253,7 @@ public partial class BitPdfRangeSourceTests
         await using var source = await RangeAccess.Open(http, 8, 4);
         await source.EnsureRanges((1, 3), (4, 5));
         Assert.AreEqual("bytes=4-11", handler.Requests[1]);
-        Assert.IsTrue(source.Int("PeakBytes") <= 8);
+        Assert.IsLessThanOrEqualTo(8, source.Int("PeakBytes"));
     }
 
     [TestMethod]
@@ -302,7 +302,7 @@ public partial class BitPdfRangeSourceTests
             else if (requested.To is null && OpenEndedLimit is int limit) to = Math.Min(to, from + limit - 1);
             byte[] data = Bytes[from..(to + 1)];
             if (Problem == "short") data = data[..^1];
-            if (Problem == "extra") data = [..data, 42];
+            if (Problem == "extra") data = [.. data, 42];
             LastBody = new CountingBody(data);
             var response = new HttpResponseMessage(complete ? HttpStatusCode.OK : Problem == "416" ? HttpStatusCode.RequestedRangeNotSatisfiable : HttpStatusCode.PartialContent)
             { Content = new StreamContent(LastBody) };

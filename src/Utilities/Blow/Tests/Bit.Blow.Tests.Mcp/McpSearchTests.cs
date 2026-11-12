@@ -81,7 +81,7 @@ public partial class McpSearchTests
         {
             var result = await McpCall.StructuredAsync<BlowSearchResultDto>("SearchBlow", new() { ["query"] = query, ["limit"] = 50 });
 
-            Assert.IsFalse(result.Hits.Any(hit => hit.Kind == "Guide section" && hit.Title is "MCP server" or "Documentation"), query);
+            Assert.DoesNotContain(hit => hit.Kind == "Guide section" && hit.Title is "MCP server" or "Documentation", result.Hits, query);
         }
     }
 
@@ -104,7 +104,7 @@ public partial class McpSearchTests
         Assert.AreEqual("Example", example.Kind);
         Assert.AreEqual("State & API", example.Context);
         Assert.AreEqual("GetBlowSourceFile(path: \"Demo/Client/Pages/Examples/SaveRestoreExample.razor\")", example.Tool);
-        Assert.IsFalse(result.Hits.Any(hit => hit.Title.EndsWith("SaveRestoreExample.razor", StringComparison.Ordinal)), "The example's file should not be listed a second time under its path.");
+        Assert.DoesNotContain(hit => hit.Title.EndsWith("SaveRestoreExample.razor", StringComparison.Ordinal), result.Hits, "The example's file should not be listed a second time under its path.");
     }
 
     [TestMethod]
@@ -172,7 +172,7 @@ public partial class McpSearchTests
             Assert.IsTrue(match.Success, $"'{call}' is not a call a caller can make verbatim.");
 
             var tool = match.Groups["tool"].Value;
-            CollectionAssert.Contains(McpSurfaceTests.ExpectedTools, tool, $"'{call}' names a tool that does not exist.");
+            Assert.Contains(tool, McpSurfaceTests.ExpectedTools, $"'{call}' names a tool that does not exist.");
 
             var arguments = match.Groups["name"].Success
                 ? new Dictionary<string, object?> { [match.Groups["name"].Value] = match.Groups["value"].Value }

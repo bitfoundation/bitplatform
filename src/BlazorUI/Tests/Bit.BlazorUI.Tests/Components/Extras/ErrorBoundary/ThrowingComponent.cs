@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Bit.BlazorUI.Tests.Components.Extras.ErrorBoundary;
 
-public class ThrowingComponent : ComponentBase
+internal class ThrowingComponent : ComponentBase
 {
     [Parameter] public string Message { get; set; } = string.Empty;
 

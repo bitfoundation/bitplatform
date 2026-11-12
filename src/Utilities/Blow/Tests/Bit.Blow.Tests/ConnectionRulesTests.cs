@@ -180,7 +180,7 @@ public class ConnectionRulesTests
 
         Assert.AreEqual(BlowConnectionRejection.RejectedByRule, Check(nodes, edges, "a", "b", policy));
         Assert.AreEqual(BlowConnectionRejection.Duplicate, Check(nodes, edges, "a", "c", policy));
-        Assert.HasCount(1, asked, "the rule was asked about a connection the built-in rules had already refused");
+        Assert.ContainsSingle(asked, "the rule was asked about a connection the built-in rules had already refused");
     }
 
     [TestMethod]

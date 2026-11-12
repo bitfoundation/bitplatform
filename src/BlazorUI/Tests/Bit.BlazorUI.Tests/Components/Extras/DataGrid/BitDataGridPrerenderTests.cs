@@ -12,7 +12,7 @@ namespace Bit.BlazorUI.Tests.Components.Extras.DataGrid;
 [TestClass]
 public class BitDataGridPrerenderTests : BunitTestContext
 {
-    public class TestRow
+    internal class TestRow
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
@@ -58,16 +58,16 @@ public class BitDataGridPrerenderTests : BunitTestContext
             [nameof(BitDataGrid<TestRow>.ChildContent)] = Columns(),
         });
 
-        StringAssert.Contains(html, "row-0;");
-        StringAssert.Contains(html, $"row-{EstimatedWindow - 1};");
+        Assert.Contains("row-0;", html);
+        Assert.Contains($"row-{EstimatedWindow - 1};", html);
         Assert.AreEqual(EstimatedWindow, RenderedRowCount(html), "only the first window is rendered, not the whole set");
 
         // The first data row comes right after the single header row.
-        StringAssert.Contains(html, "aria-rowindex=\"2\"");
+        Assert.Contains("aria-rowindex=\"2\"", html);
 
         // The rows past the window are reserved by the grid's own spacer, so the scroll height is already the real one
         // whether Virtualize writes its spacer's height inline (before .NET 11) or leaves it to its JS (.NET 11 on).
-        StringAssert.Contains(html, ReservingSpacer(1000 - EstimatedWindow));
+        Assert.Contains(ReservingSpacer(1000 - EstimatedWindow), html);
     }
 
     [TestMethod]
@@ -81,7 +81,7 @@ public class BitDataGridPrerenderTests : BunitTestContext
         });
 
         Assert.AreEqual(EstimatedWindow, RenderedRowCount(html));
-        Assert.IsFalse(html.Contains("bit-dtg-vsp"), "a window holding every row leaves none to reserve");
+        Assert.DoesNotContain("bit-dtg-vsp", html, "a window holding every row leaves none to reserve");
     }
 
     [TestMethod]
@@ -109,10 +109,10 @@ public class BitDataGridPrerenderTests : BunitTestContext
             [nameof(BitDataGrid<TestRow>.ChildContent)] = Columns(),
         });
 
-        StringAssert.Contains(html, "row-0;");
-        StringAssert.Contains(html, $"row-{EstimatedWindow - 1};");
+        Assert.Contains("row-0;", html);
+        Assert.Contains($"row-{EstimatedWindow - 1};", html);
         Assert.AreEqual(EstimatedWindow, RenderedRowCount(html));
-        StringAssert.Contains(html, ReservingSpacer(50 - EstimatedWindow));
+        Assert.Contains(ReservingSpacer(50 - EstimatedWindow), html);
     }
 
     [TestMethod]
@@ -129,15 +129,15 @@ public class BitDataGridPrerenderTests : BunitTestContext
 
         // One read, for the first window only - the same read the non-virtualized server mode already makes
         // before the grid is interactive.
-        Assert.AreEqual(1, requests.Count);
+        Assert.ContainsSingle(requests);
         Assert.AreEqual(0, requests[0].Skip);
         Assert.AreEqual(EstimatedWindow, requests[0].Take);
 
-        StringAssert.Contains(html, "row-0;");
-        StringAssert.Contains(html, $"row-{EstimatedWindow - 1};");
+        Assert.Contains("row-0;", html);
+        Assert.Contains($"row-{EstimatedWindow - 1};", html);
         Assert.AreEqual(EstimatedWindow, RenderedRowCount(html));
-        StringAssert.Contains(html, "aria-rowindex=\"2\"");
-        StringAssert.Contains(html, $"height: {(1000 - EstimatedWindow) * 36}px");
+        Assert.Contains("aria-rowindex=\"2\"", html);
+        Assert.Contains($"height: {(1000 - EstimatedWindow) * 36}px", html);
     }
 
     [TestMethod]
@@ -154,7 +154,7 @@ public class BitDataGridPrerenderTests : BunitTestContext
         });
 
         Assert.AreEqual(0, RenderedRowCount(html));
-        StringAssert.Contains(html, "bit-dtg-placeholder-row");
+        Assert.Contains("bit-dtg-placeholder-row", html);
     }
 
     [TestMethod]
@@ -176,12 +176,12 @@ public class BitDataGridPrerenderTests : BunitTestContext
         component.WaitForAssertion(() =>
         {
             // Virtualize's first window is answered from the rows already read, not read a second time...
-            Assert.AreEqual(1, requests.Count);
+            Assert.ContainsSingle(requests);
             // ...and once Virtualize renders them, the rows rendered in its place are gone rather than doubled.
             var rows = RenderedRows(component.Markup);
-            Assert.IsTrue(rows.Count > 0);
-            Assert.AreEqual(rows.Count, rows.Distinct().Count());
-            Assert.AreEqual(0, component.FindAll(".bit-dtg-placeholder-row").Count);
+            Assert.IsNotEmpty(rows);
+            Assert.HasCount(rows.Count, rows.Distinct());
+            Assert.IsEmpty(component.FindAll(".bit-dtg-placeholder-row"));
         });
     }
 
@@ -200,14 +200,14 @@ public class BitDataGridPrerenderTests : BunitTestContext
         component.WaitForAssertion(() =>
         {
             // Only the rows past the window already read are read again: the two reads never overlap.
-            Assert.AreEqual(2, requests.Count);
+            Assert.HasCount(2, requests);
             Assert.AreEqual(EstimatedWindow, requests[0].Take);
             Assert.AreEqual(EstimatedWindow, requests[1].Skip);
             Assert.IsTrue(requests[1].Take > 0);
 
             var rows = RenderedRows(component.Markup);
             Assert.AreEqual(EstimatedWindow + requests[1].Take, rows.Count);
-            Assert.AreEqual(rows.Count, rows.Distinct().Count());
+            Assert.HasCount(rows.Count, rows.Distinct());
         });
     }
 }

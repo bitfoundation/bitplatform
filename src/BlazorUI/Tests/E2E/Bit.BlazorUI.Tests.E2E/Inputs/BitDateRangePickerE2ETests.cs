@@ -48,10 +48,10 @@ public class BitDateRangePickerE2ETests : BitDatePickersE2ETestBase
         var html = await response.TextAsync();
 
         Assert.IsTrue(response.Ok);
-        StringAssert.Contains(html, "id=\"drp-basic\"");
-        StringAssert.Contains(html, "placeholder=\"Pick a range\"");
-        StringAssert.Contains(html, "value=\"Start: 6/3/2024 - End: 6/5/2024\"");
-        StringAssert.Contains(html, "<span id=\"status\">Loading</span>");
+        Assert.Contains("id=\"drp-basic\"", html);
+        Assert.Contains("placeholder=\"Pick a range\"", html);
+        Assert.Contains("value=\"Start: 6/3/2024 - End: 6/5/2024\"", html);
+        Assert.Contains("<span id=\"status\">Loading</span>", html);
 
         await OpenAsync(Route);
 
@@ -462,7 +462,7 @@ public class BitDateRangePickerE2ETests : BitDatePickersE2ETestBase
         // The presets lead the calendar.
         var presets = await BoxAsync(group);
         var days = await BoxAsync(Callout(pid).Locator(".bit-dtrp-dwp"));
-        Assert.IsTrue(presets.X + presets.Width <= days.X + 1, "The presets stand before the day picker.");
+        Assert.IsLessThanOrEqualTo(days.X + 1, presets.X + presets.Width, "The presets stand before the day picker.");
 
         await week.ClickAsync();
         await Expect(Page.Locator("#presets-value")).ToHaveTextAsync("2024-06-12 00:00 / 2024-06-18 23:59");
@@ -563,12 +563,12 @@ public class BitDateRangePickerE2ETests : BitDatePickersE2ETestBase
         var group = await BoxAsync(Callout(pid).Locator(".bit-dtrp-grp"));
         var callout = await BoxAsync(Callout(pid));
 
-        Assert.IsTrue(actions.Y >= group.Y + group.Height - 1, "The actions follow the calendar.");
+        Assert.IsGreaterThanOrEqualTo(group.Y + group.Height - 1, actions.Y, "The actions follow the calendar.");
         Assert.AreEqual(callout.Y + callout.Height, actions.Y + actions.Height, 2, "The actions close the callout.");
 
         var cancel = await BoxAsync(Callout(pid).Locator(".bit-dtrp-cnb"));
         var apply = await BoxAsync(Callout(pid).Locator(".bit-dtrp-apb"));
-        Assert.IsTrue(cancel.X < apply.X, "Cancel comes before Apply.");
+        Assert.IsLessThan(apply.X, cancel.X, "Cancel comes before Apply.");
     }
 
     [TestMethod]
@@ -818,7 +818,7 @@ public class BitDateRangePickerE2ETests : BitDatePickersE2ETestBase
 
         var first = await BoxAsync(panes.Nth(0));
         var second = await BoxAsync(panes.Nth(1));
-        Assert.IsTrue(second.X >= first.X + first.Width - 1, "The months are laid out side by side.");
+        Assert.IsGreaterThanOrEqualTo(first.X + first.Width - 1, second.X, "The months are laid out side by side.");
 
         await Day(pid, 2024, 6, 28).ClickAsync();
         await Day(pid, 2024, 7, 3).HoverAsync();
@@ -927,8 +927,8 @@ public class BitDateRangePickerE2ETests : BitDatePickersE2ETestBase
         var header = await BoxAsync(Callout(pid).Locator("#tpl-header"));
         var footer = await BoxAsync(Callout(pid).Locator("#tpl-footer"));
         var group = await BoxAsync(Callout(pid).Locator(".bit-dtrp-grp"));
-        Assert.IsTrue(header.Y + header.Height <= group.Y + 1, "The header sits above the calendar.");
-        Assert.IsTrue(footer.Y >= group.Y + group.Height - 1, "The footer sits below the calendar.");
+        Assert.IsLessThanOrEqualTo(group.Y + 1, header.Y + header.Height, "The header sits above the calendar.");
+        Assert.IsGreaterThanOrEqualTo(group.Y + group.Height - 1, footer.Y, "The footer sits below the calendar.");
 
         await Expect(Day(pid, 2024, 6, 20).Locator(".e2e-day-cell[data-day='20']")).ToHaveTextAsync("d20");
         await Expect(MonthCell(pid, 6).Locator(".e2e-month-cell")).ToHaveTextAsync("m6");

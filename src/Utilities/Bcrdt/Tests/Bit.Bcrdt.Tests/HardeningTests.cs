@@ -128,7 +128,7 @@ public class HardeningTests
         Assert.ThrowsExactly<BcrdtFormatException>(() => BcrdtUpdateOperations.Merge(truncated, CollectedRange(7, 1)));
 
         byte[] copy = BcrdtUpdateOperations.Merge(valid);
-        CollectionAssert.AreEqual(valid, copy);
+        Assert.AreSequenceEqual(valid, copy);
         Assert.AreNotSame(valid, copy);
         Assert.IsTrue(BcrdtUpdateOperations.IsEmpty(BcrdtUpdateOperations.Merge()));
     }
@@ -163,7 +163,7 @@ public class HardeningTests
         Assert.ThrowsExactly<BcrdtFormatException>(() => doc.ApplyUpdate(hostile));
         Assert.ThrowsExactly<BcrdtFormatException>(() => doc.ApplyUpdate(CollectedRange(7, 6 + (ulong)BcrdtUpdateCodec.MaxClockGap)));
         Assert.AreEqual(0L, doc.GetStateVector().Get(9));
-        CollectionAssert.AreEqual(state, doc.EncodeStateAsUpdate());
+        Assert.AreSequenceEqual(state, doc.EncodeStateAsUpdate());
 
         doc.ApplyUpdate(CollectedRange(7, 5 + (ulong)BcrdtUpdateCodec.MaxClockGap));
         Assert.AreEqual("abcde", doc.GetText("t").ToString());
@@ -375,7 +375,7 @@ public class HardeningTests
         doc.ApplyUpdate(deletions);
         long allocated = GC.GetAllocatedBytesForCurrentThread() - before;
 
-        CollectionAssert.AreEqual(Enumerable.Range(0, 20_000).Select(i => (object?)(long)(2 * i)).ToList(), doc.GetArray("a").ToArray());
+        Assert.AreSequenceEqual(Enumerable.Range(0, 20_000).Select(i => (object?)(long)(2 * i)).ToList(), doc.GetArray("a").ToArray());
         source.ApplyUpdate(deletions);
         BcrdtConvergenceHarness.AssertStructurallyIdentical(source, doc);
         Assert.IsLessThan(64_000_000L, allocated, $"twenty thousand deletions allocated {allocated:N0} bytes");
@@ -393,9 +393,9 @@ public class HardeningTests
 
         var left = new BcrdtContentAny(values);
         var right = (BcrdtContentAny)left.Splice(offset);
-        CollectionAssert.AreEqual(values[..offset], left.GetContent().ToArray());
-        CollectionAssert.AreEqual(values[offset..], right.GetContent().ToArray());
-        CollectionAssert.AreEqual(values[offset..], Written(right));
+        Assert.AreSequenceEqual(values[..offset], left.GetContent().ToArray());
+        Assert.AreSequenceEqual(values[offset..], right.GetContent().ToArray());
+        Assert.AreSequenceEqual(values[offset..], Written(right));
         Assert.AreEqual(values[offset], right.GetContent()[0]);
         for (int i = 0; i < right.Length; i++) Assert.AreEqual(values[offset + i], right.GetValue(i));
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => right.GetValue(right.Length));
@@ -403,27 +403,27 @@ public class HardeningTests
 
         Assert.IsTrue(right.TryMergeWith(new BcrdtContentAny(100L)));
         Assert.IsTrue(left.TryMergeWith(right));
-        CollectionAssert.AreEqual(values.Append(100L).ToArray(), left.GetContent().ToArray());
-        CollectionAssert.AreEqual(values.Append(100L).ToArray(), Written(left));
+        Assert.AreSequenceEqual(values.Append(100L).ToArray(), left.GetContent().ToArray());
+        Assert.AreSequenceEqual(values.Append(100L).ToArray(), Written(left));
 
         var head = new BcrdtContentAny(values);
         var tail = (BcrdtContentAny)head.Splice(offset);
         IBcrdtContent copy = tail.Copy();
         Assert.IsTrue(head.TryMergeWith(new BcrdtContentAny(-1L)));
         Assert.IsTrue(tail.TryMergeWith(new BcrdtContentAny(100L)));
-        CollectionAssert.AreEqual(values[..offset].Append(-1L).ToArray(), head.GetContent().ToArray());
-        CollectionAssert.AreEqual(values[offset..].Append(100L).ToArray(), tail.GetContent().ToArray());
-        CollectionAssert.AreEqual(values[offset..], copy.GetContent().ToArray());
+        Assert.AreSequenceEqual(values[..offset].Append(-1L).ToArray(), head.GetContent().ToArray());
+        Assert.AreSequenceEqual(values[offset..].Append(100L).ToArray(), tail.GetContent().ToArray());
+        Assert.AreSequenceEqual(values[offset..], copy.GetContent().ToArray());
 
         var whole = new BcrdtContentAny(values);
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => whole.Splice(-1));
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => whole.Splice(101));
         Assert.AreEqual(0, whole.Splice(100).Length);
-        CollectionAssert.AreEqual(values, whole.GetContent().ToArray());
+        Assert.AreSequenceEqual(values, whole.GetContent().ToArray());
 
         var slice = (BcrdtContentAny)new BcrdtContentAny(values).Splice(offset);
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => slice.Splice(slice.Length + 1));
-        CollectionAssert.AreEqual(values[offset..], slice.GetContent().ToArray());
+        Assert.AreSequenceEqual(values[offset..], slice.GetContent().ToArray());
     }
 
     [TestMethod]
@@ -451,7 +451,7 @@ public class HardeningTests
         long allocated = GC.GetAllocatedBytesForCurrentThread() - before;
 
         object?[] expected = [.. Enumerable.Range(0, Half).Select(i => (object?)(long)i), -1L, .. Enumerable.Range(Half, Half).Select(i => (object?)(long)i)];
-        CollectionAssert.AreEqual(expected, read);
+        Assert.AreSequenceEqual(expected, read);
         Assert.IsLessThan((long)read.Length, allocated, $"{read.Length:N0} reads allocated {allocated:N0} bytes");
     }
 
@@ -473,7 +473,7 @@ public class HardeningTests
         GC.WaitForPendingFinalizers();
         GC.Collect();
 
-        CollectionAssert.AreEqual(new object?[] { 0L, 99L }, doc.GetArray("a").ToArray());
+        Assert.AreSequenceEqual(new object?[] { 0L, 99L }, doc.GetArray("a").ToArray());
         Assert.IsFalse(appended.IsAlive, "the first half of the run kept a deleted value alive");
     }
 
@@ -507,7 +507,7 @@ public class HardeningTests
         long allocated = GC.GetAllocatedBytesForCurrentThread() - before;
 
         object?[] expected = [.. values[200..], .. Enumerable.Range(0, 200).Select(i => (object?)(long)-i)];
-        CollectionAssert.AreEqual(expected, run.GetContent().ToArray());
+        Assert.AreSequenceEqual(expected, run.GetContent().ToArray());
         Assert.IsLessThan(8_000_000L, allocated, $"two hundred appends allocated {allocated:N0} bytes");
     }
 
@@ -539,9 +539,9 @@ public class HardeningTests
         doc.ApplyUpdate(update);
         long allocated = GC.GetAllocatedBytesForCurrentThread() - before;
 
-        Assert.HasCount(1, doc.Store.GetClientStructs(7)!);
+        Assert.ContainsSingle(doc.Store.GetClientStructs(7)!);
         if (text) Assert.AreEqual(new string('x', Count), doc.GetText("a").ToString());
-        else CollectionAssert.AreEqual(Enumerable.Range(0, Count).Select(i => (object?)(long)i).ToList(), doc.GetArray("a").ToArray());
+        else Assert.AreSequenceEqual(Enumerable.Range(0, Count).Select(i => (object?)(long)i).ToList(), doc.GetArray("a").ToArray());
         Assert.IsLessThan(400_000_000L, allocated, $"folding {Count:N0} blocks allocated {allocated:N0} bytes");
     }
 
@@ -602,8 +602,8 @@ public class HardeningTests
             if (seen.Count <= 3) array.Push(10 * (long)value!);
         }
 
-        CollectionAssert.AreEqual(new object?[] { 1L, 2L, 3L }, seen.Take(3).ToList());
-        CollectionAssert.AreEqual(new object?[] { 1L, 2L, 3L, 10L, 20L, 30L }, array.ToArray());
+        Assert.AreSequenceEqual(new object?[] { 1L, 2L, 3L }, seen.Take(3).ToList());
+        Assert.AreSequenceEqual(new object?[] { 1L, 2L, 3L, 10L, 20L, 30L }, array.ToArray());
     }
 
     private static object?[] Written(BcrdtContentAny content)
@@ -698,11 +698,11 @@ public class HardeningTests
         using BcrdtDocument doc = Doc(1);
         doc.GetText("t").Insert(0, "small");
         byte[] small = doc.EncodeStateAsUpdate();
-        CollectionAssert.AreEqual(small, BcrdtUpdateOperations.Split(small, 1024).Single());
+        Assert.AreSequenceEqual(small, BcrdtUpdateOperations.Split(small, 1024).Single());
 
         doc.GetMap("m").Set("blob", new byte[10_000]);
         IReadOnlyList<byte[]> parts = BcrdtUpdateOperations.Split(doc.EncodeStateAsUpdate(), 1024);
-        Assert.IsTrue(parts.Any(part => part.Length > 10_000), "one byte array cannot be divided");
+        Assert.Contains(part => part.Length > 10_000, parts, "one byte array cannot be divided");
 
         using BcrdtDocument rebuilt = Doc(2);
         foreach (byte[] part in parts) rebuilt.ApplyUpdate(part);

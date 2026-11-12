@@ -76,12 +76,12 @@ public class BitIconCascadeTests : BunitTestContext
 
         Assert.IsGreaterThan(150, settings.Length);
 
-        CollectionAssert.AreEquivalent(new[] { "Icon", "IconName", "IconUrl" }, Members(nameof(BitButton), "Icon").Select(m => m.Name).ToArray());
-        CollectionAssert.AreEquivalent(new[] { "Icon", "IconName", "IconTemplate" }, Members(nameof(BitDatePicker), "Icon").Select(m => m.Name).ToArray());
-        CollectionAssert.AreEquivalent(new[] { "Icon", "IconName", "IconTemplate" }, Members(nameof(BitErrorBoundary), "Icon").Select(m => m.Name).ToArray());
-        CollectionAssert.AreEquivalent(new[] { "DividerIcon", "DividerIconName", "DividerIconTemplate" }, Members("BitBreadcrumb", "DividerIcon").Select(m => m.Name).ToArray());
-        CollectionAssert.AreEquivalent(new[] { "SelectedIcon", "SelectedIconName", "GetSelectedIcon" }, Members(nameof(BitRating), "SelectedIcon").Select(m => m.Name).ToArray());
-        CollectionAssert.AreEquivalent(new[] { "PresenceIcon", "PresenceIconName", "PresenceIcons", "PresenceIconNames" }, Members(nameof(BitPersona), "PresenceIcon").Select(m => m.Name).ToArray());
+        Assert.AreSequenceEqual(new[] { "Icon", "IconName", "IconUrl" }, Members(nameof(BitButton), "Icon").Select(m => m.Name).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
+        Assert.AreSequenceEqual(new[] { "Icon", "IconName", "IconTemplate" }, Members(nameof(BitDatePicker), "Icon").Select(m => m.Name).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
+        Assert.AreSequenceEqual(new[] { "Icon", "IconName", "IconTemplate" }, Members(nameof(BitErrorBoundary), "Icon").Select(m => m.Name).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
+        Assert.AreSequenceEqual(new[] { "DividerIcon", "DividerIconName", "DividerIconTemplate" }, Members("BitBreadcrumb", "DividerIcon").Select(m => m.Name).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
+        Assert.AreSequenceEqual(new[] { "SelectedIcon", "SelectedIconName", "GetSelectedIcon" }, Members(nameof(BitRating), "SelectedIcon").Select(m => m.Name).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
+        Assert.AreSequenceEqual(new[] { "PresenceIcon", "PresenceIconName", "PresenceIcons", "PresenceIconNames" }, Members(nameof(BitPersona), "PresenceIcon").Select(m => m.Name).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -97,7 +97,7 @@ public class BitIconCascadeTests : BunitTestContext
                                 .Select(t => t.Name)
                                 .ToArray();
 
-        Assert.AreEqual(0, unclosed.Length, $"Add these to TypeArguments: {string.Join(", ", unclosed)}");
+        Assert.IsEmpty(unclosed, $"Add these to TypeArguments: {string.Join(", ", unclosed)}");
     }
 
     [TestMethod]

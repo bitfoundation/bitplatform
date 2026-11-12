@@ -49,7 +49,7 @@ public class BitDropdownResponsiveE2ETests : BitDropdownE2ETestBase
         Assert.AreEqual(390, box.X + box.Width, 1.5, "The panel ends at the right edge of the screen.");
         Assert.AreEqual(0, box.Y, 1.5);
         Assert.AreEqual(844, box.Height, 1.5, "The panel takes the whole height of the screen.");
-        Assert.IsTrue(box.Width < 390, "The panel leaves the page visible beside it.");
+        Assert.IsLessThan(390, box.Width, "The panel leaves the page visible beside it.");
 
         var header = callout.Locator(".bit-drp-rlc");
         await Expect(header).ToBeVisibleAsync();
@@ -80,7 +80,7 @@ public class BitDropdownResponsiveE2ETests : BitDropdownE2ETestBase
         await Expect(Page.Locator("#resp-close-count")).ToHaveTextAsync("1");
 
         await WaitForAnimationsAsync(callout);
-        Assert.IsTrue((await BoxAsync(callout)).X >= 389, "The panel slid out past the right edge.");
+        Assert.IsGreaterThanOrEqualTo(389, (await BoxAsync(callout)).X, "The panel slid out past the right edge.");
     }
 
     [TestMethod]
@@ -343,7 +343,7 @@ public class BitDropdownResponsiveE2ETests : BitDropdownE2ETestBase
 
         // What is in it starts below the notch and ends above the home indicator, which an app shell's bars paint over.
         var header = await BoxAsync(callout.Locator(".bit-drp-rlc"));
-        Assert.IsTrue(header.Y >= 47, $"The header of the panel starts under the notch ({header.Y}px).");
+        Assert.IsGreaterThanOrEqualTo(47, header.Y, $"The header of the panel starts under the notch ({header.Y}px).");
 
         var listBox = await BoxAsync(list);
         Assert.AreEqual(844 - 34, listBox.Y + listBox.Height, 1.5, "The list ends at the home indicator.");
@@ -365,7 +365,7 @@ public class BitDropdownResponsiveE2ETests : BitDropdownE2ETestBase
         await Expect(callout).ToHaveCSSAsync("padding-top", "0px");
 
         var header = await BoxAsync(callout.Locator(".bit-drp-rlc"));
-        Assert.IsTrue(header.Y >= 47, $"The header of the panel starts under the notch ({header.Y}px).");
+        Assert.IsGreaterThanOrEqualTo(47, header.Y, $"The header of the panel starts under the notch ({header.Y}px).");
 
         var listBox = await BoxAsync(list);
         Assert.AreEqual(844 - 34, listBox.Y + listBox.Height, 1.5, "The list ends at the home indicator.");

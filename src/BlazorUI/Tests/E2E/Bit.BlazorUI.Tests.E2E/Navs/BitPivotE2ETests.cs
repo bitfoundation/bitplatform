@@ -41,11 +41,11 @@ public class BitPivotE2ETests : E2ETestBase
         var html = await response.TextAsync();
 
         Assert.IsTrue(response.Ok);
-        StringAssert.Contains(html, "id=\"pv-basic\"");
-        StringAssert.Contains(html, "role=\"tablist\"");
-        StringAssert.Contains(html, "aria-selected=\"true\"");
-        StringAssert.Contains(html, "Pivot #1: File");
-        StringAssert.Contains(html, ">Loading<");
+        Assert.Contains("id=\"pv-basic\"", html);
+        Assert.Contains("role=\"tablist\"", html);
+        Assert.Contains("aria-selected=\"true\"", html);
+        Assert.Contains("Pivot #1: File", html);
+        Assert.Contains(">Loading<", html);
 
         await OpenAsync(Url);
         Assert.IsFalse(await IsCircuitDeadAsync());
@@ -104,12 +104,12 @@ public class BitPivotE2ETests : E2ETestBase
         await Expect(Tab("pv-icons", "Recent").Locator(".bit-pvti-cnr")).ToHaveTextAsync("(12)");
         var icon = await BoxAsync(Tab("pv-icons", "Recent").Locator(".bit-pvti-icn"));
         var text = await BoxAsync(Tab("pv-icons", "Recent").Locator(".bit-pvti-txt"));
-        Assert.IsTrue(icon.X < text.X, "The icon comes before the text.");
+        Assert.IsLessThan(text.X, icon.X, "The icon comes before the text.");
 
         await Expect(Root("pv-stacked")).ToHaveClassAsync(HasClass("bit-pvt-stk"));
         var stackedIcon = await BoxAsync(Tab("pv-stacked", "Home").Locator(".bit-pvti-icn"));
         var stackedText = await BoxAsync(Tab("pv-stacked", "Home").Locator(".bit-pvti-txt"));
-        Assert.IsTrue(stackedIcon.Y + stackedIcon.Height <= stackedText.Y + 1, "Stacked puts the icon above the text.");
+        Assert.IsLessThanOrEqualTo(stackedText.Y + 1, stackedIcon.Y + stackedIcon.Height, "Stacked puts the icon above the text.");
     }
 
     [TestMethod]
@@ -219,17 +219,17 @@ public class BitPivotE2ETests : E2ETestBase
 
         switch (placement)
         {
-            case "Top": Assert.IsTrue(header.Y + header.Height <= panel.Y + 1); break;
-            case "Bottom": Assert.IsTrue(panel.Y + panel.Height <= header.Y + 1); break;
-            case "Start": Assert.IsTrue(header.X + header.Width <= panel.X + 1); break;
-            default: Assert.IsTrue(panel.X + panel.Width <= header.X + 1); break;
+            case "Top": Assert.IsLessThanOrEqualTo(panel.Y + 1, header.Y + header.Height); break;
+            case "Bottom": Assert.IsLessThanOrEqualTo(header.Y + 1, panel.Y + panel.Height); break;
+            case "Start": Assert.IsLessThanOrEqualTo(panel.X + 1, header.X + header.Width); break;
+            default: Assert.IsLessThanOrEqualTo(header.X + 1, panel.X + panel.Width); break;
         }
 
         if (vertical)
         {
             var first = await BoxAsync(Tab(id, "File"));
             var second = await BoxAsync(Tab(id, "Shared"));
-            Assert.IsTrue(second.Y > first.Y, "A vertical header stacks its tabs.");
+            Assert.IsGreaterThan(first.Y, second.Y, "A vertical header stacks its tabs.");
         }
     }
 
@@ -362,7 +362,7 @@ public class BitPivotE2ETests : E2ETestBase
         await Expect(more).ToBeVisibleAsync();
         await Expect(Tab("pv-menu-fluid", "Hotel")).ToBeHiddenAsync();
         var header = await BoxAsync(Root("pv-menu-fluid").Locator("> .bit-pvt-hwr"));
-        Assert.IsTrue(header.Width <= 380, "The header fits the narrow viewport.");
+        Assert.IsLessThanOrEqualTo(380, header.Width, "The header fits the narrow viewport.");
 
         await Page.SetViewportSizeAsync(1280, 720);
         await Expect(more).ToBeHiddenAsync();
@@ -485,15 +485,15 @@ public class BitPivotE2ETests : E2ETestBase
         await Expect(Root("pv-wrap")).ToHaveClassAsync(HasClass("bit-pvt-wrp"));
         await Expect(wrap).ToHaveCSSAsync("flex-wrap", "wrap");
         var tab = await BoxAsync(Tab("pv-wrap", "Alpha"));
-        Assert.IsTrue((await BoxAsync(wrap)).Height > tab.Height * 1.8, "The tabs run onto more lines.");
+        Assert.IsGreaterThan(tab.Height * 1.8, (await BoxAsync(wrap)).Height, "The tabs run onto more lines.");
         var box = await BoxAsync(Page.Locator("#box-wrap"));
         var hotel = await BoxAsync(Tab("pv-wrap", "Hotel"));
-        Assert.IsTrue(hotel.X + hotel.Width <= box.X + box.Width + 1);
+        Assert.IsLessThanOrEqualTo(box.X + box.Width + 1, hotel.X + hotel.Width);
 
         await Expect(Root("pv-none")).ToHaveClassAsync(HasClass("bit-pvt-non"));
         var noneBox = await BoxAsync(Page.Locator("#box-none"));
         var last = await BoxAsync(Tab("pv-none", "Hotel"));
-        Assert.IsTrue(last.X + last.Width > noneBox.X + noneBox.Width, "None lets the tabs overflow.");
+        Assert.IsGreaterThan(noneBox.X + noneBox.Width, last.X + last.Width, "None lets the tabs overflow.");
         await Expect(More("pv-none")).ToHaveCountAsync(0);
     }
 
@@ -1147,8 +1147,8 @@ public class BitPivotE2ETests : E2ETestBase
         var a = await BoxAsync(file);
         var b = await BoxAsync(shared);
         Assert.AreEqual(3, b.X - (a.X + a.Width), 0.5, "Gap wins over --bit-Pivot-gap.");
-        Assert.IsTrue(a.Height < 50, "Size wins over --bit-Pivot-item-height.");
-        Assert.IsTrue(ParsePx(await file.EvaluateAsync<string>("el => getComputedStyle(el).fontSize")) < 18);
+        Assert.IsLessThan(50, a.Height, "Size wins over --bit-Pivot-item-height.");
+        Assert.IsLessThan(18, ParsePx(await file.EvaluateAsync<string>("el => getComputedStyle(el).fontSize")));
     }
 
     [TestMethod]
@@ -1160,7 +1160,7 @@ public class BitPivotE2ETests : E2ETestBase
         await Expect(root).ToHaveAttributeAsync("dir", "rtl");
         await Expect(root).ToHaveClassAsync(HasClass("bit-rtl"));
         var tabs = root.Locator("> .bit-pvt-hwr > [role='tablist'] > [role='tab']");
-        Assert.IsTrue((await BoxAsync(tabs.Nth(0))).X > (await BoxAsync(tabs.Nth(1))).X);
+        Assert.IsGreaterThan((await BoxAsync(tabs.Nth(1))).X, (await BoxAsync(tabs.Nth(0))).X);
 
         await tabs.Nth(0).FocusAsync();
         await Page.Keyboard.PressAsync("ArrowLeft");
@@ -1172,12 +1172,12 @@ public class BitPivotE2ETests : E2ETestBase
         var start = Root("pv-rtl-start");
         var header = await BoxAsync(start.Locator("> .bit-pvt-hwr > [role='tablist']"));
         var panel = await BoxAsync(Panel("pv-rtl-start"));
-        Assert.IsTrue(header.X >= panel.X + panel.Width - 1);
+        Assert.IsGreaterThanOrEqualTo(panel.X + panel.Width - 1, header.X);
 
         // The slide buttons' arrows turn with the header.
         var slideIcon = Root("pv-rtl-slide").Locator(".bit-pvt-snx i");
         await Expect(slideIcon).ToHaveClassAsync(HasClass("bit-ico-frt"));
-        StringAssert.StartsWith(await slideIcon.EvaluateAsync<string>("el => getComputedStyle(el).scale"), "-1");
+        Assert.StartsWith("-1", await slideIcon.EvaluateAsync<string>("el => getComputedStyle(el).scale"));
         await Root("pv-rtl-slide").Locator(".bit-pvt-snx").ClickAsync();
         await Page.WaitForFunctionAsync("() => document.querySelector('#pv-rtl-slide [role=tablist]').scrollLeft < 0");
     }
@@ -1189,7 +1189,7 @@ public class BitPivotE2ETests : E2ETestBase
 
         var root = Root("pv-rtl-inherited");
         await Expect(root).Not.ToHaveClassAsync(HasClass("bit-rtl"));
-        Assert.IsTrue((await BoxAsync(Tab("pv-rtl-inherited", "One"))).X > (await BoxAsync(Tab("pv-rtl-inherited", "Two"))).X);
+        Assert.IsGreaterThan((await BoxAsync(Tab("pv-rtl-inherited", "Two"))).X, (await BoxAsync(Tab("pv-rtl-inherited", "One"))).X);
 
         await Tab("pv-rtl-inherited", "One").FocusAsync();
         await Page.Keyboard.PressAsync("ArrowLeft");
@@ -1197,7 +1197,7 @@ public class BitPivotE2ETests : E2ETestBase
 
         // Left to right the slide arrow is not turned.
         var ltrIcon = Root("pv-slide").Locator(".bit-pvt-snx i");
-        Assert.IsFalse((await ltrIcon.EvaluateAsync<string>("el => getComputedStyle(el).scale")).StartsWith("-1"));
+        Assert.DoesNotStartWith("-1", await ltrIcon.EvaluateAsync<string>("el => getComputedStyle(el).scale"));
     }
 
     [TestMethod]

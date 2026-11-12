@@ -76,7 +76,7 @@ public class BitPanelTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
         });
 
-        Assert.AreEqual(modeless ? 0 : 1, com.FindAll(".bit-pnl-ovl").Count);
+        Assert.HasCount(modeless ? 0 : 1, com.FindAll(".bit-pnl-ovl"));
     }
 
     [TestMethod,
@@ -140,14 +140,14 @@ public class BitPanelTests : BunitTestContext
         });
 
         // Nothing of it is rendered until the first opening either way.
-        Assert.AreEqual(0, com.FindAll(".kept").Count);
+        Assert.IsEmpty(com.FindAll(".kept"));
 
         com.Render(p => p.Add(x => x.IsOpen, true));
-        Assert.AreEqual(1, com.FindAll(".kept").Count);
+        Assert.ContainsSingle(com.FindAll(".kept"));
 
         // Once rendered it stays, so the state the content holds survives the panel closing.
         com.Render(p => p.Add(x => x.IsOpen, false));
-        Assert.AreEqual(1, com.FindAll(".kept").Count);
+        Assert.ContainsSingle(com.FindAll(".kept"));
     }
 
     // A panel builds its content when it opens, so one that has never been opened costs nothing at all.
@@ -160,7 +160,7 @@ public class BitPanelTests : BunitTestContext
             parameters.AddChildContent("<div class=\"body\">Body</div>");
         });
 
-        Assert.AreEqual(0, com.FindAll(".body").Count);
+        Assert.IsEmpty(com.FindAll(".body"));
     }
 
     [TestMethod,
@@ -236,7 +236,7 @@ public class BitPanelTests : BunitTestContext
             parameters.Add(p => p.Size, 320);
         });
 
-        StringAssert.Contains(com.Find(".bit-pnl-cnt").GetAttribute("style"), $"{property}:320px");
+        Assert.Contains($"{property}:320px", com.Find(".bit-pnl-cnt").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -252,7 +252,7 @@ public class BitPanelTests : BunitTestContext
         var container = com.Find(".bit-pnl-cnt");
 
         Assert.IsTrue(container.ClassList.Contains("bit-pnl-fsz"));
-        Assert.IsFalse((container.GetAttribute("style") ?? string.Empty).Contains("320px"));
+        Assert.DoesNotContain("320px", (container.GetAttribute("style") ?? string.Empty));
     }
 
     [TestMethod,
@@ -476,7 +476,7 @@ public class BitPanelTests : BunitTestContext
         com.WaitForAssertion(() => Assert.AreEqual(1, opened));
 
         com.Render(p => p.Add(x => x.IsOpen, false));
-        com.WaitForAssertion(() => CollectionAssert.AreEqual(new[] { true, false }, toggles));
+        com.WaitForAssertion(() => Assert.AreSequenceEqual(new[] { true, false }, toggles));
     }
 
     [TestMethod]
@@ -539,7 +539,7 @@ public class BitPanelTests : BunitTestContext
 
         com.WaitForAssertion(() =>
         {
-            Assert.AreNotEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.unlockScroll"].Count);
+            Assert.IsNotEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.unlockScroll"]);
         });
     }
 
@@ -572,7 +572,7 @@ public class BitPanelTests : BunitTestContext
 
         com.Render(p => p.Add(x => x.IsOpen, true));
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"]);
     }
 
     // A modeless panel leaves the page usable on purpose, so it never holds it.
@@ -585,7 +585,7 @@ public class BitPanelTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
         });
 
-        com.WaitForAssertion(() => Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"].Count));
+        com.WaitForAssertion(() => Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"]));
     }
 
     // A panel out of view carries none of the behaviours that only make sense for one the user can see.
@@ -598,7 +598,7 @@ public class BitPanelTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
         });
 
-        com.WaitForAssertion(() => Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"].Count));
+        com.WaitForAssertion(() => Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"]));
     }
 
     // AutoToggleScroll is the panel holding the scroller itself, so the hold it would else take is stood
@@ -616,10 +616,10 @@ public class BitPanelTests : BunitTestContext
         {
             var toggled = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"][^1];
             Assert.AreEqual("body", toggled.Arguments[1]);
-            Assert.AreEqual(true, toggled.Arguments[2]);
+            Assert.IsTrue(Assert.IsInstanceOfType<bool>(toggled.Arguments[2]));
         });
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"]);
     }
 
     [TestMethod]
@@ -631,14 +631,14 @@ public class BitPanelTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
         });
 
-        com.WaitForAssertion(() => Assert.AreNotEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"].Count));
+        com.WaitForAssertion(() => Assert.IsNotEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"]));
 
         com.Render(p => p.Add(x => x.IsOpen, false));
 
         com.WaitForAssertion(() =>
         {
             var toggled = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"][^1];
-            Assert.AreEqual(false, toggled.Arguments[2]);
+            Assert.IsFalse(Assert.IsInstanceOfType<bool>(toggled.Arguments[2]));
         });
     }
 
@@ -663,7 +663,7 @@ public class BitPanelTests : BunitTestContext
 
         com.Render(p => p.Add(x => x.IsOpen, false));
 
-        com.WaitForAssertion(() => Assert.AreNotEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.stopForwardScroll"].Count));
+        com.WaitForAssertion(() => Assert.IsNotEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.stopForwardScroll"]));
     }
 
     // One holding the page has nothing to forward, and one aimed at no scroller of its own cannot use it:
@@ -677,9 +677,9 @@ public class BitPanelTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
         });
 
-        com.WaitForAssertion(() => Assert.AreNotEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"].Count));
+        com.WaitForAssertion(() => Assert.IsNotEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"]));
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.forwardScroll"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.forwardScroll"]);
     }
 
     // An absolutely positioned panel covers a container of the page rather than the page, so the page it
@@ -693,7 +693,7 @@ public class BitPanelTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
         });
 
-        com.WaitForAssertion(() => Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"].Count));
+        com.WaitForAssertion(() => Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"]));
     }
 
     // A scroller it was pointed at by hand is still held: that is how a contained panel holds the container
@@ -726,7 +726,7 @@ public class BitPanelTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
         });
 
-        com.WaitForAssertion(() => Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.forwardScroll"].Count));
+        com.WaitForAssertion(() => Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.forwardScroll"]));
     }
 
     [TestMethod]
@@ -738,7 +738,7 @@ public class BitPanelTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
         });
 
-        com.WaitForAssertion(() => Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.forwardScroll"].Count));
+        com.WaitForAssertion(() => Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.forwardScroll"]));
     }
 
     // A panel taken off the page while it was open would otherwise leave the page without its scrollbar.
@@ -750,7 +750,7 @@ public class BitPanelTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
         });
 
-        com.WaitForAssertion(() => Assert.AreNotEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"].Count));
+        com.WaitForAssertion(() => Assert.IsNotEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"]));
 
         com.Instance.DisposeAsync().AsTask().GetAwaiter().GetResult();
 
@@ -774,7 +774,7 @@ public class BitPanelTests : BunitTestContext
         // and the root is named to it as the anchor the press lands on.
         Assert.AreEqual("-1", com.Find(".bit-pnl").GetAttribute("tabindex"));
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"]);
 
         var setup = Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"][^1];
         Assert.AreEqual(com.Find(".bit-pnl-cnt").Id, setup.Arguments[0]);
@@ -808,17 +808,17 @@ public class BitPanelTests : BunitTestContext
 
         com.WaitForAssertion(() =>
         {
-            Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"].Count);
-            Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.focusFirstElement"].Count);
-            Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.captureFocusOrigin"].Count);
+            Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"]);
+            Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.focusFirstElement"]);
+            Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.captureFocusOrigin"]);
         });
 
         com.Render(p => p.Add(x => x.IsOpen, false));
 
         com.WaitForAssertion(() =>
         {
-            Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.disposeFocusTrap"].Count);
-            Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.restoreFocusOrigin"].Count);
+            Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.disposeFocusTrap"]);
+            Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.restoreFocusOrigin"]);
         });
     }
 
@@ -833,10 +833,10 @@ public class BitPanelTests : BunitTestContext
 
         com.Render(p => p.Add(x => x.IsOpen, true));
 
-        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.focusFirstElement"].Count));
+        com.WaitForAssertion(() => Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.focusFirstElement"]));
 
         // The page behind a modeless panel is meant to be reached, so the keyboard is left free to go there.
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"]);
     }
 
     [TestMethod]
@@ -851,9 +851,9 @@ public class BitPanelTests : BunitTestContext
 
         com.Render(p => p.Add(x => x.IsOpen, true));
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"].Count);
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.focusFirstElement"].Count);
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.captureFocusOrigin"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"]);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.focusFirstElement"]);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.captureFocusOrigin"]);
     }
 
     // The trap is registered against the open panel, so turning it off while the panel is open has to reach
@@ -866,11 +866,11 @@ public class BitPanelTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
         });
 
-        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"].Count));
+        com.WaitForAssertion(() => Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"]));
 
         com.Render(p => p.Add(x => x.NoFocusTrap, true));
 
-        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.disposeFocusTrap"].Count));
+        com.WaitForAssertion(() => Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.disposeFocusTrap"]));
     }
 
     [TestMethod]
@@ -882,7 +882,7 @@ public class BitPanelTests : BunitTestContext
             parameters.Add(p => p.SwipeTrigger, 0.5m);
         });
 
-        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Swipes.setup"].Count));
+        com.WaitForAssertion(() => Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Swipes.setup"]));
 
         var arguments = Context.JSInterop.Invocations["BitBlazorUI.Swipes.setup"][^1].Arguments;
 
@@ -902,14 +902,14 @@ public class BitPanelTests : BunitTestContext
             parameters.Add(p => p.Placement, BitPlacement.End);
         });
 
-        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Swipes.setup"].Count));
+        com.WaitForAssertion(() => Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Swipes.setup"]));
 
         com.Render(p => p.Add(x => x.Placement, BitPlacement.Top));
 
         com.WaitForAssertion(() =>
         {
-            Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Swipes.dispose"].Count);
-            Assert.AreEqual(2, Context.JSInterop.Invocations["BitBlazorUI.Swipes.setup"].Count);
+            Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Swipes.dispose"]);
+            Assert.HasCount(2, Context.JSInterop.Invocations["BitBlazorUI.Swipes.setup"]);
         });
 
         var arguments = Context.JSInterop.Invocations["BitBlazorUI.Swipes.setup"][^1].Arguments;
@@ -937,7 +937,7 @@ public class BitPanelTests : BunitTestContext
             }
         });
 
-        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Swipes.setup"].Count));
+        com.WaitForAssertion(() => Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Swipes.setup"]));
 
         Assert.AreEqual((decimal)expected, Context.JSInterop.Invocations["BitBlazorUI.Swipes.setup"][^1].Arguments[1]);
     }
@@ -950,7 +950,7 @@ public class BitPanelTests : BunitTestContext
             parameters.Add(p => p.NoSwipe, true);
         });
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Swipes.setup"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Swipes.setup"]);
     }
 
     [TestMethod]
@@ -977,9 +977,9 @@ public class BitPanelTests : BunitTestContext
         Assert.IsTrue(com.Find(".bit-pnl-ovl").ClassList.Contains("custom-overlay"));
         Assert.IsTrue(com.Find(".bit-pnl-cnt").ClassList.Contains("custom-container"));
 
-        StringAssert.Contains(com.Find(".bit-pnl").GetAttribute("style"), "color:red");
-        StringAssert.Contains(com.Find(".bit-pnl-ovl").GetAttribute("style"), "background-color:blue");
-        StringAssert.Contains(com.Find(".bit-pnl-cnt").GetAttribute("style"), "padding:1rem");
+        Assert.Contains("color:red", com.Find(".bit-pnl").GetAttribute("style")!);
+        Assert.Contains("background-color:blue", com.Find(".bit-pnl-ovl").GetAttribute("style")!);
+        Assert.Contains("padding:1rem", com.Find(".bit-pnl-cnt").GetAttribute("style")!);
     }
 
     [TestMethod,
@@ -1044,12 +1044,12 @@ public class BitPanelTests : BunitTestContext
 
         var style = com.Find(".bit-pnl").GetAttribute("style");
 
-        StringAssert.Contains(style, "--bit-pnl-zin-ovl:1310");
-        StringAssert.Contains(style, "--bit-pnl-zin-cnt:1311");
+        Assert.Contains("--bit-pnl-zin-ovl:1310", style!);
+        Assert.Contains("--bit-pnl-zin-cnt:1311", style);
 
         com.Render(p => p.Add(x => x.ZIndex, null));
 
-        Assert.IsFalse((com.Find(".bit-pnl").GetAttribute("style") ?? string.Empty).Contains("--bit-pnl-zin"));
+        Assert.DoesNotContain("--bit-pnl-zin", (com.Find(".bit-pnl").GetAttribute("style") ?? string.Empty));
     }
 
     [TestMethod]
@@ -1069,9 +1069,8 @@ public class BitPanelTests : BunitTestContext
 
         com.Find(".bit-pnl").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
-        CollectionAssert.AreEqual(
-            new[] { BitPanelDismissReason.Overlay, BitPanelDismissReason.Escape },
-            reasons);
+        Assert.AreSequenceEqual(
+            new[] { BitPanelDismissReason.Overlay, BitPanelDismissReason.Escape }, reasons);
     }
 
     [TestMethod]
@@ -1091,9 +1090,8 @@ public class BitPanelTests : BunitTestContext
 
         await com.InvokeAsync(() => com.Instance.Close());
 
-        CollectionAssert.AreEqual(
-            new[] { BitPanelDismissReason.Swipe, BitPanelDismissReason.Programmatic },
-            reasons);
+        Assert.AreSequenceEqual(
+            new[] { BitPanelDismissReason.Swipe, BitPanelDismissReason.Programmatic }, reasons);
     }
 
     // The click that dismissed the panel is handed to the callback, so a consumer never has to reach for the
@@ -1200,9 +1198,9 @@ public class BitPanelTests : BunitTestContext
         com.WaitForAssertion(() =>
         {
             var locked = Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"][^1];
-            Assert.AreEqual(2, locked.Arguments.Count);
+            Assert.HasCount(2, locked.Arguments);
             Assert.IsNotNull(locked.Arguments[0]);
-            StringAssert.Contains(locked.Arguments[0]!.ToString(), "container");
+            Assert.Contains("container", locked.Arguments[0]!.ToString()!);
         });
     }
 
@@ -1217,7 +1215,7 @@ public class BitPanelTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
         });
 
-        com.WaitForAssertion(() => Assert.AreNotEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"].Count));
+        com.WaitForAssertion(() => Assert.IsNotEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"]));
 
         com.Render(p => p.Add(x => x.ScrollerSelector, ".second"));
 
@@ -1225,8 +1223,8 @@ public class BitPanelTests : BunitTestContext
         {
             var invocations = Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"];
 
-            Assert.IsTrue(invocations.Any(i => Equals(i.Arguments[1], ".first")));
-            Assert.AreNotEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.unlockScroll"].Count);
+            Assert.Contains(i => Equals(i.Arguments[1], ".first"), invocations);
+            Assert.IsNotEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.unlockScroll"]);
 
             var locked = invocations[^1];
             Assert.AreEqual(".second", locked.Arguments[1]);
@@ -1245,7 +1243,7 @@ public class BitPanelTests : BunitTestContext
             parameters.Add(p => p.OnTransitionEnd, (bool v) => settled.Add(v));
         });
 
-        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupTransitionEnd"].Count));
+        com.WaitForAssertion(() => Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.setupTransitionEnd"]));
 
         com.Render(p => p.Add(x => x.IsOpen, true));
         await com.InvokeAsync(() => com.Instance._OnTransitionEnd());
@@ -1253,7 +1251,7 @@ public class BitPanelTests : BunitTestContext
         com.Render(p => p.Add(x => x.IsOpen, false));
         await com.InvokeAsync(() => com.Instance._OnTransitionEnd());
 
-        CollectionAssert.AreEqual(new[] { true, false }, settled);
+        Assert.AreSequenceEqual(new[] { true, false }, settled);
     }
 
     // The open sequence makes round trips of its own before it calls OnToggle and OnOpen, and a short transition can
@@ -1273,20 +1271,20 @@ public class BitPanelTests : BunitTestContext
             parameters.Add(p => p.OnTransitionEnd, (bool v) => log.Add($"OnTransitionEnd:{v}"));
         });
 
-        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupTransitionEnd"].Count));
+        com.WaitForAssertion(() => Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.setupTransitionEnd"]));
 
         // The open sequence is held on its round trip to toggle the page's overflow when the transition ends.
         com.Render(p => p.Add(x => x.IsOpen, true));
-        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"].Count));
+        com.WaitForAssertion(() => Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"]));
 
         var transitionEnd = com.InvokeAsync(() => com.Instance._OnTransitionEnd());
 
-        Assert.AreEqual(0, log.Count);
+        Assert.IsEmpty(log);
 
         toggleOverflow.SetResult(0);
         await transitionEnd;
 
-        com.WaitForAssertion(() => CollectionAssert.AreEqual(new[] { "OnToggle:True", "OnOpen", "OnTransitionEnd:True" }, log));
+        com.WaitForAssertion(() => Assert.AreSequenceEqual(new[] { "OnToggle:True", "OnOpen", "OnTransitionEnd:True" }, log));
     }
 
     // The content is only taken out once the panel has finished sliding away with it, so the closing is still
@@ -1301,20 +1299,20 @@ public class BitPanelTests : BunitTestContext
         });
 
         // Nothing of it is rendered until the first opening.
-        Assert.AreEqual(0, com.FindAll(".body").Count);
+        Assert.IsEmpty(com.FindAll(".body"));
 
         com.Render(p => p.Add(x => x.IsOpen, true));
-        Assert.AreEqual(1, com.FindAll(".body").Count);
+        Assert.ContainsSingle(com.FindAll(".body"));
 
         com.Render(p => p.Add(x => x.IsOpen, false));
-        Assert.AreEqual(1, com.FindAll(".body").Count);
+        Assert.ContainsSingle(com.FindAll(".body"));
 
         await com.InvokeAsync(() => com.Instance._OnTransitionEnd());
-        Assert.AreEqual(0, com.FindAll(".body").Count);
+        Assert.IsEmpty(com.FindAll(".body"));
 
         // And the next opening builds it again.
         com.Render(p => p.Add(x => x.IsOpen, true));
-        Assert.AreEqual(1, com.FindAll(".body").Count);
+        Assert.ContainsSingle(com.FindAll(".body"));
     }
 
     // A panel that keeps its content keeps it whatever the page reports about the movement.
@@ -1331,7 +1329,7 @@ public class BitPanelTests : BunitTestContext
         com.Render(p => p.Add(x => x.IsOpen, false));
         await com.InvokeAsync(() => com.Instance._OnTransitionEnd());
 
-        Assert.AreEqual(1, com.FindAll(".body").Count);
+        Assert.ContainsSingle(com.FindAll(".body"));
     }
 
     [TestMethod]
@@ -1344,10 +1342,10 @@ public class BitPanelTests : BunitTestContext
 
         Assert.IsTrue(com.Find(".bit-pnl").ClassList.Contains("bit-rtl"));
 
-        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Swipes.setup"].Count));
+        com.WaitForAssertion(() => Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Swipes.setup"]));
 
         // The gesture has to know the direction too, since the edge the panel slides in from is a logical one.
-        Assert.AreEqual(true, Context.JSInterop.Invocations["BitBlazorUI.Swipes.setup"][^1].Arguments[3]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(Context.JSInterop.Invocations["BitBlazorUI.Swipes.setup"][^1].Arguments[3]));
     }
 
     // A direction given explicitly is passed on as it is, so a left-to-right panel inside a right-to-left page
@@ -1360,9 +1358,9 @@ public class BitPanelTests : BunitTestContext
             parameters.Add(p => p.Dir, BitDir.Ltr);
         });
 
-        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Swipes.setup"].Count));
+        com.WaitForAssertion(() => Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Swipes.setup"]));
 
-        Assert.AreEqual(false, Context.JSInterop.Invocations["BitBlazorUI.Swipes.setup"][^1].Arguments[3]);
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(Context.JSInterop.Invocations["BitBlazorUI.Swipes.setup"][^1].Arguments[3]));
     }
 
     // Auto leaves the direction to the content, which only the browser resolves, so the gesture reads it off
@@ -1377,7 +1375,7 @@ public class BitPanelTests : BunitTestContext
             parameters.Add(p => p.Dir, dir);
         });
 
-        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Swipes.setup"].Count));
+        com.WaitForAssertion(() => Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Swipes.setup"]));
 
         Assert.IsNull(Context.JSInterop.Invocations["BitBlazorUI.Swipes.setup"][^1].Arguments[3]);
     }
@@ -1393,9 +1391,9 @@ public class BitPanelTests : BunitTestContext
             parameters.AddChildContent("<div>Test Content</div>");
         });
 
-        Assert.AreEqual(0, com.FindAll(".bit-pnl-hcn").Count);
-        Assert.AreEqual(0, com.FindAll(".bit-pnl-bdy").Count);
-        Assert.AreEqual(0, com.FindAll(".bit-pnl-ftr").Count);
+        Assert.IsEmpty(com.FindAll(".bit-pnl-hcn"));
+        Assert.IsEmpty(com.FindAll(".bit-pnl-bdy"));
+        Assert.IsEmpty(com.FindAll(".bit-pnl-ftr"));
         Assert.IsFalse(com.Find(".bit-pnl-cnt").ClassList.Contains("bit-pnl-sec"));
     }
 
@@ -1700,12 +1698,12 @@ public class BitPanelTests : BunitTestContext
         Assert.IsTrue(com.Find(".bit-pnl-bdy").ClassList.Contains("custom-body"));
         Assert.IsTrue(com.Find(".bit-pnl-ftr").ClassList.Contains("custom-footer"));
 
-        StringAssert.Contains(com.Find(".bit-pnl-hcn").GetAttribute("style"), "color:red");
-        StringAssert.Contains(com.Find(".bit-pnl-hdr").GetAttribute("style"), "color:blue");
-        StringAssert.Contains(com.Find(".bit-pnl-cls").GetAttribute("style"), "color:green");
-        StringAssert.Contains(com.Find(".bit-pnl-cli").GetAttribute("style"), "color:purple");
-        StringAssert.Contains(com.Find(".bit-pnl-bdy").GetAttribute("style"), "padding:1rem");
-        StringAssert.Contains(com.Find(".bit-pnl-ftr").GetAttribute("style"), "margin:1rem");
+        Assert.Contains("color:red", com.Find(".bit-pnl-hcn").GetAttribute("style")!);
+        Assert.Contains("color:blue", com.Find(".bit-pnl-hdr").GetAttribute("style")!);
+        Assert.Contains("color:green", com.Find(".bit-pnl-cls").GetAttribute("style")!);
+        Assert.Contains("color:purple", com.Find(".bit-pnl-cli").GetAttribute("style")!);
+        Assert.Contains("padding:1rem", com.Find(".bit-pnl-bdy").GetAttribute("style")!);
+        Assert.Contains("margin:1rem", com.Find(".bit-pnl-ftr").GetAttribute("style")!);
     }
 
     // An application shell scrolls a region of its own, so the body of such an app never scrolls and a hold
@@ -1785,7 +1783,7 @@ public class BitPanelTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
         });
 
-        com.WaitForAssertion(() => Assert.AreNotEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"].Count));
+        com.WaitForAssertion(() => Assert.IsNotEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"]));
 
         com.Render(p => p.Add(x => x.ScrollerElement, (ElementReference?)second));
 
@@ -1793,8 +1791,8 @@ public class BitPanelTests : BunitTestContext
         {
             var invocations = Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"];
 
-            Assert.IsTrue(invocations.Any(i => Equals(i.Arguments[1], first)));
-            Assert.AreNotEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.unlockScroll"].Count);
+            Assert.Contains(i => Equals(i.Arguments[1], first), invocations);
+            Assert.IsNotEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.unlockScroll"]);
             Assert.AreEqual(second, invocations[^1].Arguments[1]);
         });
     }
@@ -1810,9 +1808,9 @@ public class BitPanelTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
         });
 
-        com.WaitForAssertion(() => Assert.AreNotEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"].Count));
+        com.WaitForAssertion(() => Assert.IsNotEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"]));
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.captureFocusOrigin"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.captureFocusOrigin"]);
     }
 
     [TestMethod]
@@ -1828,7 +1826,7 @@ public class BitPanelTests : BunitTestContext
 
         com.Render(p => p.Add(x => x.IsOpen, false));
 
-        com.WaitForAssertion(() => Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.restoreFocusOrigin"].Count));
+        com.WaitForAssertion(() => Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.restoreFocusOrigin"]));
     }
 
     // The counterpart of OnOverlayClick for the keyboard: the place to react to a dismissal that was refused.
@@ -2087,7 +2085,7 @@ public class BitPanelTests : BunitTestContext
 
         var root = com.Find(".bit-pnl");
 
-        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupEscapeGuard"].Count));
+        com.WaitForAssertion(() => Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.setupEscapeGuard"]));
 
         var arguments = Context.JSInterop.Invocations["BitBlazorUI.Utils.setupEscapeGuard"].Single().Arguments;
 
@@ -2134,9 +2132,9 @@ public class BitPanelTests : BunitTestContext
         await com.InvokeAsync(() => com.Instance._OnMove(30, 40));
         await com.InvokeAsync(() => com.Instance._OnEnd(50, 60));
 
-        CollectionAssert.AreEqual(new[] { horizontal ? 10m : 20m }, starts);
-        CollectionAssert.AreEqual(new[] { horizontal ? 30m : 40m }, moves);
-        CollectionAssert.AreEqual(new[] { horizontal ? 50m : 60m }, ends);
+        Assert.AreSequenceEqual(new[] { horizontal ? 10m : 20m }, starts);
+        Assert.AreSequenceEqual(new[] { horizontal ? 30m : 40m }, moves);
+        Assert.AreSequenceEqual(new[] { horizontal ? 50m : 60m }, ends);
     }
 
     // The room the scrollbar gave back is what an absolutely positioned panel is pushed down by, so it stays
@@ -2153,7 +2151,7 @@ public class BitPanelTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
         });
 
-        com.WaitForAssertion(() => StringAssert.Contains(com.Find(".bit-pnl").GetAttribute("style"), "top:48px"));
+        com.WaitForAssertion(() => Assert.Contains("top:48px", com.Find(".bit-pnl").GetAttribute("style")!));
     }
 
     // A panel anchored to the screen is positioned against the viewport, which never moved.
@@ -2168,9 +2166,9 @@ public class BitPanelTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
         });
 
-        com.WaitForAssertion(() => Assert.AreNotEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"].Count));
+        com.WaitForAssertion(() => Assert.IsNotEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"]));
 
-        Assert.IsFalse((com.Find(".bit-pnl").GetAttribute("style") ?? string.Empty).Contains("top:"));
+        Assert.DoesNotContain("top:", (com.Find(".bit-pnl").GetAttribute("style") ?? string.Empty));
     }
 
     // The overflow is taken off the scroller the panel was pointed at, as an element where one is to be had.
@@ -2191,7 +2189,7 @@ public class BitPanelTests : BunitTestContext
         {
             var toggled = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"][^1];
             Assert.AreEqual(own, toggled.Arguments[1]);
-            Assert.AreEqual(true, toggled.Arguments[2]);
+            Assert.IsTrue(Assert.IsInstanceOfType<bool>(toggled.Arguments[2]));
         });
     }
 
@@ -2223,26 +2221,26 @@ public class BitPanelTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
         });
 
-        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"].Count));
+        com.WaitForAssertion(() => Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"]));
 
         com.Render(p => p.Add(x => x.AutoToggleScroll, false));
         com.Render(p => p.Add(x => x.IsOpen, false));
 
         com.WaitForAssertion(() =>
         {
-            Assert.AreEqual(2, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"].Count);
-            Assert.AreEqual(false, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"][^1].Arguments[2]);
+            Assert.HasCount(2, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"]);
+            Assert.IsFalse(Assert.IsInstanceOfType<bool>(Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"][^1].Arguments[2]));
         });
 
         // Opened with it off and turned on while open, there was nothing taken, so there is nothing to hand back.
         com.Render(p => p.Add(x => x.IsOpen, true));
-        com.WaitForAssertion(() => Assert.AreNotEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"].Count));
+        com.WaitForAssertion(() => Assert.IsNotEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"]));
 
         com.Render(p => p.Add(x => x.AutoToggleScroll, true));
         com.Render(p => p.Add(x => x.IsOpen, false));
 
-        com.WaitForAssertion(() => Assert.AreNotEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.restoreFocusOrigin"].Count));
-        Assert.AreEqual(2, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"].Count);
+        com.WaitForAssertion(() => Assert.IsNotEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.restoreFocusOrigin"]));
+        Assert.HasCount(2, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"]);
     }
 
     // Everything the panel registered on the page goes with it, under the ids it was registered with.
@@ -2255,7 +2253,7 @@ public class BitPanelTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
         });
 
-        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"].Count));
+        com.WaitForAssertion(() => Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"]));
 
         var rootId = com.Find(".bit-pnl").Id;
         var containerId = com.Find(".bit-pnl-cnt").Id;
@@ -2270,8 +2268,8 @@ public class BitPanelTests : BunitTestContext
 
         // The overflow it took off its scroller is handed back too.
         var toggled = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"][^1];
-        Assert.AreEqual(2, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"].Count);
-        Assert.AreEqual(false, toggled.Arguments[2]);
+        Assert.HasCount(2, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"]);
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(toggled.Arguments[2]));
     }
 
     [TestMethod]
@@ -2282,7 +2280,7 @@ public class BitPanelTests : BunitTestContext
         com.Instance.DisposeAsync().AsTask().GetAwaiter().GetResult();
         com.Instance.DisposeAsync().AsTask().GetAwaiter().GetResult();
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.disposeEscapeGuard"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.disposeEscapeGuard"]);
     }
 
     // A native control rendered disabled writes both attributes, so :disabled and [aria-disabled="true"] each find it.
@@ -2328,7 +2326,7 @@ public class BitPanelTests : BunitTestContext
 
         Assert.AreEqual("the-panel", root.Id);
         Assert.IsTrue(root.ClassList.Contains("custom-class"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin:1px");
+        Assert.Contains("margin:1px", root.GetAttribute("style")!);
         Assert.AreEqual("rtl", root.GetAttribute("dir"));
         Assert.AreEqual("value", root.GetAttribute("data-test"));
 
@@ -2356,7 +2354,7 @@ public class BitPanelTests : BunitTestContext
         }
         else
         {
-            StringAssert.Contains(style, expected);
+            Assert.Contains(expected, style);
         }
     }
 
@@ -2372,7 +2370,7 @@ public class BitPanelTests : BunitTestContext
         });
 
         Assert.AreEqual("Aliased Body", com.Find(".bit-pnl-cnt").TextContent.Trim());
-        Assert.AreEqual(0, com.FindAll(".bit-pnl-bdy").Count);
+        Assert.IsEmpty(com.FindAll(".bit-pnl-bdy"));
     }
 
     [TestMethod]
@@ -2442,7 +2440,7 @@ public class BitPanelTests : BunitTestContext
         com.WaitForAssertion(() =>
         {
             Assert.AreEqual(1, opened);
-            CollectionAssert.AreEqual(new[] { true }, toggles);
+            Assert.AreSequenceEqual(new[] { true }, toggles);
         });
 
         // Opening an open panel is nothing to report again.

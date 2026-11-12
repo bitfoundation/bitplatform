@@ -1,9 +1,9 @@
-using Microsoft.Playwright;
+﻿using Microsoft.Playwright;
 
 namespace Bit.Butil.Tests.E2E.Infrastructure;
 
 /// <summary>A browser context of its own against a shared web host: its own storage, circuit and WebAssembly instance.</summary>
-public sealed class WebHarnessLease : IHarnessLease
+internal sealed class WebHarnessLease : IHarnessLease
 {
     private readonly IBrowserContext _context;
 

@@ -91,7 +91,7 @@ public class NavigateAsyncTests : BunitTestContext
 
         Assert.AreEqual(BrouterNavigationStatus.Failed, outcome.Status);
         Assert.IsInstanceOfType<InvalidOperationException>(outcome.Exception);
-        Assert.IsTrue(outcome.Exception!.Message.Contains("loader exploded"));
+        Assert.Contains("loader exploded", outcome.Exception!.Message);
     }
 
     [TestMethod]

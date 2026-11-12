@@ -30,8 +30,8 @@ public class BitFooterParamsTests : BunitTestContext
     [TestMethod]
     public void BitFooterParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitFooter)}", BitFooterParams.ParamName);
-        Assert.AreEqual("BitParams.BitFooter", BitFooterParams.ParamName);
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitFooter)}", new BitFooterParams().Name);
+        Assert.AreEqual("BitParams.BitFooter", new BitFooterParams().Name);
     }
 
     [TestMethod]
@@ -55,7 +55,7 @@ public class BitFooterParamsTests : BunitTestContext
                                           .ToArray();
 
         // Guards the guard: a reflection walk that found nothing would let every parameter through in silence.
-        Assert.IsTrue(parameters.Length > 10, $"Only {parameters.Length} parameters were found on {nameof(BitFooter)}.");
+        Assert.IsGreaterThan(10, parameters.Length, $"Only {parameters.Length} parameters were found on {nameof(BitFooter)}.");
 
         foreach (var name in parameters)
         {
@@ -100,7 +100,7 @@ public class BitFooterParamsTests : BunitTestContext
         // Hidden written as false by the footer opts it out of the cascaded Hidden, and its own Height stands.
         Assert.IsFalse(footer.ClassList.Contains("bit-ftr-hdn"));
         Assert.IsFalse(footer.HasAttribute("inert"));
-        StringAssert.Contains(footer.GetAttribute("style")!, "height:40px");
+        Assert.Contains("height:40px", footer.GetAttribute("style")!);
 
         // What it left alone still comes from the cascade.
         Assert.IsTrue(footer.ClassList.Contains("bit-ftr-elv"));
@@ -142,7 +142,7 @@ public class BitFooterParamsTests : BunitTestContext
     {
         var type = component.GetType();
 
-        Assert.IsTrue(expected.Count > 10, $"Only {expected.Count} cascading parameters were found on {type.Name}.");
+        Assert.IsGreaterThan(10, expected.Count, $"Only {expected.Count} cascading parameters were found on {type.Name}.");
 
         foreach (var (name, value) in expected)
         {

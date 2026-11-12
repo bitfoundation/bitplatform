@@ -97,7 +97,7 @@ public class DemoPageTests : BlazeDbTest
     {
         using var http = new HttpClient();
 
-        var html = await http.GetStringAsync(BaseUrl + "/todos");
+        var html = await http.GetStringAsync(BaseUrl + "/todos", TestContext.CancellationToken);
 
         Assert.Contains("class=\"bd-boot\"", html);
         Assert.Contains("_framework/blazor.web.js", html);
@@ -112,10 +112,11 @@ public class DemoPageTests : BlazeDbTest
 
         foreach (var module in BrowserModules.All)
         {
-            using var response = await http.GetAsync($"{BaseUrl}/_content/Bit.BlazeDb/{module}.js");
+            using var response = await http.GetAsync($"{BaseUrl}/_content/Bit.BlazeDb/{module}.js", TestContext.CancellationToken);
 
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, module);
-            Assert.Contains("javascript", response.Content.Headers.ContentType?.MediaType ?? string.Empty, module);
+            var actualValue = response.Content.Headers.ContentType?.MediaType ?? string.Empty;
+            Assert.Contains("javascript", actualValue, module);
         }
     }
 }

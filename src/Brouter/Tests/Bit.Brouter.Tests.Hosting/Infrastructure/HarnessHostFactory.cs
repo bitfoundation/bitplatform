@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 namespace Bit.Brouter.Tests.Hosting.Infrastructure;
 
 /// <summary>The harness web host in one render mode, in memory, with every log entry captured.</summary>
-public sealed class HarnessHostFactory(string mode) : WebApplicationFactory<Bit.Brouter.Tests.Harness.Web.Components.App>
+internal sealed class HarnessHostFactory(string mode) : WebApplicationFactory<Bit.Brouter.Tests.Harness.Web.Components.App>
 {
     private static readonly ConcurrentDictionary<string, Lazy<HarnessHostFactory>> _shared = new();
 

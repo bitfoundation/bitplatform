@@ -735,17 +735,17 @@ public class BitStickyTests : BunitTestContext
 
         await component.InvokeAsync(() => component.Instance._OnStuckChange((int)BitStickyEdges.Top));
 
-        CollectionAssert.AreEqual(new List<bool> { true }, stuckStates);
+        Assert.AreSequenceEqual(new List<bool> { true }, stuckStates);
         Assert.IsTrue(component.Instance.IsStuck);
 
         // A repeated report of the same state must not raise the callback again.
         await component.InvokeAsync(() => component.Instance._OnStuckChange((int)BitStickyEdges.Top));
 
-        CollectionAssert.AreEqual(new List<bool> { true }, stuckStates);
+        Assert.AreSequenceEqual(new List<bool> { true }, stuckStates);
 
         await component.InvokeAsync(() => component.Instance._OnStuckChange((int)BitStickyEdges.None));
 
-        CollectionAssert.AreEqual(new List<bool> { true, false }, stuckStates);
+        Assert.AreSequenceEqual(new List<bool> { true, false }, stuckStates);
         Assert.IsFalse(component.Instance.IsStuck);
     }
 
@@ -807,25 +807,25 @@ public class BitStickyTests : BunitTestContext
 
         await component.InvokeAsync(() => component.Instance._OnStuckChange((int)BitStickyEdges.Bottom));
 
-        CollectionAssert.AreEqual(new List<BitStickyEdges> { BitStickyEdges.Bottom }, edges);
-        CollectionAssert.AreEqual(new List<bool> { true }, stuckStates);
+        Assert.AreSequenceEqual(new List<BitStickyEdges> { BitStickyEdges.Bottom }, edges);
+        Assert.AreSequenceEqual(new List<bool> { true }, stuckStates);
 
         // The move from one edge of a pair to the other never stops the element from being stuck, so
         // it is reported here and nowhere else.
         await component.InvokeAsync(() => component.Instance._OnStuckChange((int)BitStickyEdges.Top));
 
-        CollectionAssert.AreEqual(new List<BitStickyEdges> { BitStickyEdges.Bottom, BitStickyEdges.Top }, edges);
-        CollectionAssert.AreEqual(new List<bool> { true }, stuckStates);
+        Assert.AreSequenceEqual(new List<BitStickyEdges> { BitStickyEdges.Bottom, BitStickyEdges.Top }, edges);
+        Assert.AreSequenceEqual(new List<bool> { true }, stuckStates);
 
         // A repeated report of the same edges raises neither of them.
         await component.InvokeAsync(() => component.Instance._OnStuckChange((int)BitStickyEdges.Top));
 
-        Assert.AreEqual(2, edges.Count);
+        Assert.HasCount(2, edges);
 
         await component.InvokeAsync(() => component.Instance._OnStuckChange((int)BitStickyEdges.None));
 
-        CollectionAssert.AreEqual(new List<BitStickyEdges> { BitStickyEdges.Bottom, BitStickyEdges.Top, BitStickyEdges.None }, edges);
-        CollectionAssert.AreEqual(new List<bool> { true, false }, stuckStates);
+        Assert.AreSequenceEqual(new List<BitStickyEdges> { BitStickyEdges.Bottom, BitStickyEdges.Top, BitStickyEdges.None }, edges);
+        Assert.AreSequenceEqual(new List<bool> { true, false }, stuckStates);
     }
 
     [TestMethod]
@@ -850,7 +850,7 @@ public class BitStickyTests : BunitTestContext
 
         // Detaching the detection reports the state it leaves behind, the same way a flip would.
         Assert.IsFalse(component.Instance.IsStuck);
-        CollectionAssert.AreEqual(new List<BitStickyEdges> { BitStickyEdges.Top, BitStickyEdges.None }, edges);
+        Assert.AreSequenceEqual(new List<BitStickyEdges> { BitStickyEdges.Top, BitStickyEdges.None }, edges);
     }
 
     [TestMethod]
@@ -906,7 +906,7 @@ public class BitStickyTests : BunitTestContext
 
         await component.InvokeAsync(() => component.Instance._OnStuckChange((int)BitStickyEdges.Top));
 
-        CollectionAssert.AreEqual(new[] { true }, stuckStates);
+        Assert.AreSequenceEqual(new[] { true }, stuckStates);
 
         component.Render(parameters =>
         {
@@ -916,7 +916,7 @@ public class BitStickyTests : BunitTestContext
 
         Assert.IsFalse(component.Instance.IsStuck);
 
-        CollectionAssert.AreEqual(new[] { true, false }, stuckStates);
+        Assert.AreSequenceEqual(new[] { true, false }, stuckStates);
     }
 
     [TestMethod]
@@ -941,18 +941,18 @@ public class BitStickyTests : BunitTestContext
         Assert.AreEqual("HEADER", stickies[0].TagName);
         Assert.IsTrue(stickies[0].ClassList.Contains("cascaded"));
         Assert.IsTrue(stickies[0].ClassList.Contains("bit-stk-btm"));
-        StringAssert.Contains(stickies[0].GetAttribute("style"), "top: 1rem");
-        StringAssert.Contains(stickies[0].GetAttribute("style"), "z-index: 4");
+        Assert.Contains("top: 1rem", stickies[0].GetAttribute("style")!);
+        Assert.Contains("z-index: 4", stickies[0].GetAttribute("style")!);
 
         // The second one sets its own element, position and z-index, which must not be overwritten.
         Assert.AreEqual("FOOTER", stickies[1].TagName);
         Assert.IsTrue(stickies[1].ClassList.Contains("bit-stk-srt"));
         Assert.IsFalse(stickies[1].ClassList.Contains("bit-stk-btm"));
-        StringAssert.Contains(stickies[1].GetAttribute("style"), "z-index: 9");
+        Assert.Contains("z-index: 9", stickies[1].GetAttribute("style")!);
 
         // What it did not set is still filled in from them.
         Assert.IsTrue(stickies[1].ClassList.Contains("cascaded"));
-        StringAssert.Contains(stickies[1].GetAttribute("style"), "top: 1rem");
+        Assert.Contains("top: 1rem", stickies[1].GetAttribute("style")!);
 
         // The two booleans cascade as well, and an own false is a value the cascade must not overwrite.
         Assert.IsTrue(stickies[0].ClassList.Contains("bit-stk-elv"));
@@ -1078,7 +1078,7 @@ public class BitStickyTests : BunitTestContext
             parameters.Add(p => p.Disabled, false);
         });
 
-        Assert.HasCount(1, Setups());
+        Assert.ContainsSingle(Setups());
 
         component.Render(parameters =>
         {
@@ -1086,8 +1086,8 @@ public class BitStickyTests : BunitTestContext
             parameters.Add(p => p.Disabled, true);
         });
 
-        Assert.HasCount(1, Setups());
-        Assert.HasCount(1, Disposals());
+        Assert.ContainsSingle(Setups());
+        Assert.ContainsSingle(Disposals());
     }
 
     [TestMethod]
@@ -1138,7 +1138,7 @@ public class BitStickyTests : BunitTestContext
             parameters.Add(p => p.Top, "20px");
         });
 
-        Assert.HasCount(1, Setups());
+        Assert.ContainsSingle(Setups());
         Assert.IsEmpty(Refreshes());
     }
 
@@ -1157,7 +1157,7 @@ public class BitStickyTests : BunitTestContext
             parameters.Add(p => p.Top, "20px");
         });
 
-        Assert.HasCount(1, Setups());
+        Assert.ContainsSingle(Setups());
     }
 
     [TestMethod]
@@ -1180,7 +1180,7 @@ public class BitStickyTests : BunitTestContext
             parameters.Add(p => p.Style, "bottom: 2rem");
         });
 
-        Assert.HasCount(1, Setups());
+        Assert.ContainsSingle(Setups());
         Assert.IsEmpty(Refreshes());
     }
 
@@ -1286,7 +1286,7 @@ public class BitStickyTests : BunitTestContext
 
         var id = component.Find("div").Id;
 
-        Assert.HasCount(1, Setups());
+        Assert.ContainsSingle(Setups());
 
         await component.Instance.DisposeAsync();
 
@@ -1298,7 +1298,7 @@ public class BitStickyTests : BunitTestContext
 
         await component.Instance.DisposeAsync();
 
-        Assert.HasCount(1, Disposals());
+        Assert.ContainsSingle(Disposals());
     }
 
     [TestMethod]
@@ -1328,7 +1328,7 @@ public class BitStickyTests : BunitTestContext
 
         var disposal = Context.DisposeComponentsAsync();
 
-        Assert.HasCount(1, dispose.Invocations);
+        Assert.ContainsSingle(dispose.Invocations);
         Assert.AreSame(sticky, reference.Value);
 
         dispose.SetVoidResult();

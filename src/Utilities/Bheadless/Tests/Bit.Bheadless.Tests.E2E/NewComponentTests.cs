@@ -131,7 +131,7 @@ public sealed class NewComponentTests : DemoTest
         await Expect(toast).ToHaveAttributeAsync("data-variant", "success", new() { Timeout = ExpectTimeout });
         await Expect(toast).ToContainTextAsync("Saved 3 changes");
         Assert.AreEqual("0", await toast.EvaluateAsync<string>("t => t.style.getPropertyValue('--bit-bh-toast-index')"));
-        Assert.IsTrue((await toast.EvaluateAsync<string>("t => t.style.getPropertyValue('--bit-bh-toast-height')")).EndsWith("px"));
+        Assert.EndsWith("px", await toast.EvaluateAsync<string>("t => t.style.getPropertyValue('--bit-bh-toast-height')"));
     }
 
     [TestMethod]
@@ -231,7 +231,7 @@ public sealed class NewComponentTests : DemoTest
                 """));
         }
         Assert.IsTrue(landmarks.All(l => l.Length > 0), string.Join(" | ", landmarks));
-        Assert.IsTrue(landmarks.Distinct().Count() > 1, string.Join(" | ", landmarks));
+        Assert.IsGreaterThan(1, landmarks.Distinct().Count(), string.Join(" | ", landmarks));
     }
 
     [TestMethod]

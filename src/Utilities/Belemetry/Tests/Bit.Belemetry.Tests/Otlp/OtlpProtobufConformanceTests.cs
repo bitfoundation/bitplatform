@@ -48,7 +48,7 @@ public class OtlpProtobufConformanceTests
         var bytes = OtlpProtobufSerializer.SerializeTraces(new BelemetryBatch(Records.Resource(), spans: [span, second]));
         var request = ExportTraceServiceRequest.Parser.ParseFrom(bytes);
 
-        Assert.HasCount(1, request.ResourceSpans);
+        Assert.ContainsSingle(request.ResourceSpans);
         var rs = request.ResourceSpans[0];
         Assert.AreEqual("checkout", Attr(rs.Resource.Attributes, "service.name").StringValue);
         Assert.AreEqual("shop", Attr(rs.Resource.Attributes, "service.namespace").StringValue);
@@ -58,12 +58,12 @@ public class OtlpProtobufConformanceTests
         var scope = rs.ScopeSpans[0];
         Assert.AreEqual("System.Net.Http", scope.Scope.Name);
         Assert.AreEqual("10.0.0", scope.Scope.Version);
-        Assert.HasCount(1, scope.Spans);
+        Assert.ContainsSingle(scope.Spans);
 
         var s = scope.Spans[0];
-        CollectionAssert.AreEqual(Records.Hex(Records.TraceId), s.TraceId.ToByteArray());
-        CollectionAssert.AreEqual(Records.Hex(Records.SpanId), s.SpanId.ToByteArray());
-        CollectionAssert.AreEqual(Records.Hex(Records.ParentSpanId), s.ParentSpanId.ToByteArray());
+        Assert.AreSequenceEqual(Records.Hex(Records.TraceId), s.TraceId.ToByteArray());
+        Assert.AreSequenceEqual(Records.Hex(Records.SpanId), s.SpanId.ToByteArray());
+        Assert.AreSequenceEqual(Records.Hex(Records.ParentSpanId), s.ParentSpanId.ToByteArray());
         Assert.AreEqual("vendor=value", s.TraceState);
         Assert.AreEqual("GET /api/orders", s.Name);
         Assert.AreEqual(PbSpan.Types.SpanKind.Client, s.Kind);
@@ -80,21 +80,21 @@ public class OtlpProtobufConformanceTests
         Assert.AreEqual(42L, Attr(s.Attributes, "i").IntValue);
         Assert.AreEqual(-7L, Attr(s.Attributes, "neg").IntValue);
         Assert.AreEqual(1.5, Attr(s.Attributes, "d").DoubleValue);
-        CollectionAssert.AreEqual(new byte[] { 1, 2, 3 }, Attr(s.Attributes, "bytes").BytesValue.ToByteArray());
-        CollectionAssert.AreEqual(new[] { "a", "b" }, Attr(s.Attributes, "sa").ArrayValue.Values.Select(v => v.StringValue).ToArray());
-        CollectionAssert.AreEqual(new[] { 1L, -2L }, Attr(s.Attributes, "la").ArrayValue.Values.Select(v => v.IntValue).ToArray());
-        CollectionAssert.AreEqual(new[] { 0.5, 2.25 }, Attr(s.Attributes, "da").ArrayValue.Values.Select(v => v.DoubleValue).ToArray());
-        CollectionAssert.AreEqual(new[] { true, false }, Attr(s.Attributes, "ba").ArrayValue.Values.Select(v => v.BoolValue).ToArray());
+        Assert.AreSequenceEqual(new byte[] { 1, 2, 3 }, Attr(s.Attributes, "bytes").BytesValue.ToByteArray());
+        Assert.AreSequenceEqual(new[] { "a", "b" }, Attr(s.Attributes, "sa").ArrayValue.Values.Select(v => v.StringValue).ToArray());
+        Assert.AreSequenceEqual(new[] { 1L, -2L }, Attr(s.Attributes, "la").ArrayValue.Values.Select(v => v.IntValue).ToArray());
+        Assert.AreSequenceEqual(new[] { 0.5, 2.25 }, Attr(s.Attributes, "da").ArrayValue.Values.Select(v => v.DoubleValue).ToArray());
+        Assert.AreSequenceEqual(new[] { true, false }, Attr(s.Attributes, "ba").ArrayValue.Values.Select(v => v.BoolValue).ToArray());
         Assert.IsTrue(Attr(s.Attributes, "ba").ArrayValue.Values.All(v => v.ValueCase == AnyValue.ValueOneofCase.BoolValue));
 
-        Assert.HasCount(1, s.Events);
+        Assert.ContainsSingle(s.Events);
         Assert.AreEqual("retry", s.Events[0].Name);
         Assert.AreEqual((ulong)(Records.Start + 100), s.Events[0].TimeUnixNano);
         Assert.AreEqual(2L, Attr(s.Events[0].Attributes, "attempt").IntValue);
 
-        Assert.HasCount(1, s.Links);
-        CollectionAssert.AreEqual(Records.Hex(Records.LinkTraceId), s.Links[0].TraceId.ToByteArray());
-        CollectionAssert.AreEqual(Records.Hex(Records.LinkSpanId), s.Links[0].SpanId.ToByteArray());
+        Assert.ContainsSingle(s.Links);
+        Assert.AreSequenceEqual(Records.Hex(Records.LinkTraceId), s.Links[0].TraceId.ToByteArray());
+        Assert.AreSequenceEqual(Records.Hex(Records.LinkSpanId), s.Links[0].SpanId.ToByteArray());
         Assert.AreEqual("k=v", s.Links[0].TraceState);
         Assert.AreEqual("follows", Attr(s.Links[0].Attributes, "link.kind").StringValue);
 
@@ -109,7 +109,7 @@ public class OtlpProtobufConformanceTests
         Assert.IsNull(other.Spans[0].Status);
 
         // Every field landed in a known field: re-encoding the parsed message reproduces the same bytes.
-        CollectionAssert.AreEqual(bytes, request.ToByteArray());
+        Assert.AreSequenceEqual(bytes, request.ToByteArray());
     }
 
     [TestMethod]
@@ -127,9 +127,8 @@ public class OtlpProtobufConformanceTests
         var request = ExportTraceServiceRequest.Parser.ParseFrom(OtlpProtobufSerializer.SerializeTraces(new BelemetryBatch(Records.Resource(), spans)));
         var decoded = request.ResourceSpans[0].ScopeSpans[0].Spans;
 
-        CollectionAssert.AreEqual(
-            new[] { PbSpan.Types.SpanKind.Internal, PbSpan.Types.SpanKind.Server, PbSpan.Types.SpanKind.Client, PbSpan.Types.SpanKind.Producer, PbSpan.Types.SpanKind.Consumer },
-            decoded.Select(s => s.Kind).ToArray());
+        Assert.AreSequenceEqual(
+            new[] { PbSpan.Types.SpanKind.Internal, PbSpan.Types.SpanKind.Server, PbSpan.Types.SpanKind.Client, PbSpan.Types.SpanKind.Producer, PbSpan.Types.SpanKind.Consumer }, decoded.Select(s => s.Kind).ToArray());
         Assert.IsTrue(decoded.All(s => s.Status.Code == PbStatus.Types.StatusCode.Ok && s.Status.Message == string.Empty));
     }
 
@@ -178,7 +177,7 @@ public class OtlpProtobufConformanceTests
 
         Assert.IsTrue(s.TraceId.IsEmpty);
         Assert.IsTrue(s.ParentSpanId.IsEmpty);
-        CollectionAssert.AreEqual(Records.Hex(Records.SpanId), s.SpanId.ToByteArray());
+        Assert.AreSequenceEqual(Records.Hex(Records.SpanId), s.SpanId.ToByteArray());
     }
 
     [TestMethod]
@@ -208,12 +207,12 @@ public class OtlpProtobufConformanceTests
         Assert.AreEqual(AnyValue.ValueOneofCase.StringValue, r.Body.ValueCase);
         Assert.AreEqual("Order 42 shipped", r.Body.StringValue);
         Assert.AreEqual("order.shipped", r.EventName);
-        CollectionAssert.AreEqual(Records.Hex(Records.TraceId), r.TraceId.ToByteArray());
-        CollectionAssert.AreEqual(Records.Hex(Records.SpanId), r.SpanId.ToByteArray());
+        Assert.AreSequenceEqual(Records.Hex(Records.TraceId), r.TraceId.ToByteArray());
+        Assert.AreSequenceEqual(Records.Hex(Records.SpanId), r.SpanId.ToByteArray());
         Assert.AreEqual(1u, r.Flags);
         Assert.AreEqual(42L, Attr(r.Attributes, "order.id").IntValue);
         Assert.IsTrue(Attr(r.Attributes, "ok").BoolValue);
-        CollectionAssert.AreEqual(new[] { "a", "b" }, Attr(r.Attributes, "tags").ArrayValue.Values.Select(v => v.StringValue).ToArray());
+        Assert.AreSequenceEqual(new[] { "a", "b" }, Attr(r.Attributes, "tags").ArrayValue.Values.Select(v => v.StringValue).ToArray());
 
         var m = scopeLogs.LogRecords[1];
         Assert.AreEqual(SeverityNumber.Unspecified, m.SeverityNumber);
@@ -223,7 +222,7 @@ public class OtlpProtobufConformanceTests
         Assert.IsTrue(m.SpanId.IsEmpty);
         Assert.AreEqual(0UL, m.ObservedTimeUnixNano);
 
-        CollectionAssert.AreEqual(bytes, request.ToByteArray());
+        Assert.AreSequenceEqual(bytes, request.ToByteArray());
     }
 
     [TestMethod]
@@ -235,9 +234,8 @@ public class OtlpProtobufConformanceTests
         var decoded = ExportLogsServiceRequest.Parser.ParseFrom(OtlpProtobufSerializer.SerializeLogs(new BelemetryBatch(Records.Resource(), logs: logs)))
             .ResourceLogs[0].ScopeLogs[0].LogRecords;
 
-        CollectionAssert.AreEqual(
-            new[] { SeverityNumber.Trace, SeverityNumber.Debug, SeverityNumber.Info, SeverityNumber.Warn, SeverityNumber.Error, SeverityNumber.Fatal },
-            decoded.Select(r => r.SeverityNumber).ToArray());
+        Assert.AreSequenceEqual(
+            new[] { SeverityNumber.Trace, SeverityNumber.Debug, SeverityNumber.Info, SeverityNumber.Warn, SeverityNumber.Error, SeverityNumber.Fatal }, decoded.Select(r => r.SeverityNumber).ToArray());
     }
 
     [TestMethod]
@@ -296,8 +294,8 @@ public class OtlpProtobufConformanceTests
         Assert.AreEqual(delta ? 2UL : 5UL, hp.Count);
         Assert.IsTrue(hp.HasSum);
         Assert.AreEqual(delta ? 30.0 : 141.0, hp.Sum);
-        CollectionAssert.AreEqual(delta ? new ulong[] { 0, 2, 0 } : new ulong[] { 1, 3, 1 }, hp.BucketCounts.ToArray());
-        CollectionAssert.AreEqual(new[] { 10.0, 100.0 }, hp.ExplicitBounds.ToArray());
+        Assert.AreSequenceEqual(delta ? new ulong[] { 0, 2, 0 } : new ulong[] { 1, 3, 1 }, hp.BucketCounts.ToArray());
+        Assert.AreSequenceEqual(new[] { 10.0, 100.0 }, hp.ExplicitBounds.ToArray());
         Assert.IsTrue(hp.HasMin && hp.HasMax);
         Assert.AreEqual(delta ? 10.0 : 1.0, hp.Min);
         Assert.AreEqual(delta ? 20.0 : 100.0, hp.Max);
@@ -306,7 +304,7 @@ public class OtlpProtobufConformanceTests
         // A delta export leaves out points without measurements in the interval.
         Assert.AreEqual(!delta, metrics.ContainsKey("idle"));
 
-        CollectionAssert.AreEqual(bytes, request.ToByteArray());
+        Assert.AreSequenceEqual(bytes, request.ToByteArray());
     }
 
     [TestMethod]
@@ -328,7 +326,7 @@ public class OtlpProtobufConformanceTests
         Assert.AreEqual(0UL, hp.Count);
         Assert.IsFalse(hp.HasMin);
         Assert.IsFalse(hp.HasMax);
-        CollectionAssert.AreEqual(new ulong[] { 0, 0 }, hp.BucketCounts.ToArray());
+        Assert.AreSequenceEqual(new ulong[] { 0, 0 }, hp.BucketCounts.ToArray());
     }
 
     [TestMethod]
@@ -399,7 +397,7 @@ public class OtlpProtobufConformanceTests
     internal static AnyValue Attr(RepeatedField<KeyValue> attributes, string key)
     {
         var matches = attributes.Where(a => a.Key == key).ToList();
-        Assert.HasCount(1, matches, $"Attribute '{key}'");
+        Assert.ContainsSingle(matches, $"Attribute '{key}'");
         return matches[0].Value;
     }
 }

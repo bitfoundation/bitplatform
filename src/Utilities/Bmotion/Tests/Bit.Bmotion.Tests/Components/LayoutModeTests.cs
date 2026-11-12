@@ -1,4 +1,4 @@
-using Bit.Bmotion.Tests.TestInfra;
+﻿using Bit.Bmotion.Tests.TestInfra;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 
@@ -104,8 +104,8 @@ public class LayoutModeTests
 
         var hold = ctx.Interop.ArgsOf("measureAndHoldLayout").Single();
         Assert.AreEqual("box", hold[0]);
-        Assert.AreEqual(true, hold[2], "translates, as Position does");
-        Assert.AreEqual(false, hold[3], "but doesn't scale");
+        Assert.IsTrue((bool?)hold[2], "translates, as Position does");
+        Assert.IsFalse((bool?)hold[3], "but doesn't scale");
         Assert.AreEqual(0.5, (double)hold[4]!, 1e-9, "about the same anchor");
         Assert.AreEqual(0.5, (double)hold[5]!, 1e-9);
         Assert.AreEqual(1, ctx.Interop.CountOf("playWaapiFlip"), "the FLIP takes it over");

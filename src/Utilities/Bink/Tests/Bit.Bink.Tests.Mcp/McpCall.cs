@@ -1,6 +1,8 @@
 ﻿using System.Text.Json;
 using ModelContextProtocol.Protocol;
 
+[assembly: global::Microsoft.VisualStudio.TestTools.UnitTesting.DoNotParallelizeAttribute]
+
 namespace Bit.Bink.Tests.Mcp;
 
 /// <summary>

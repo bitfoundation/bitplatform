@@ -33,16 +33,15 @@ public class HttpMirrorTests
             ("GetBrouterSourceFile", "?path=Demo/Client/AppRouter.razor"),
         ];
 
-        CollectionAssert.AreEquivalent(McpToolSurfaceTests.ExpectedTools, calls.Select(call => call.Tool).ToArray(),
-            "The HTTP mirror is being exercised for a different set of tools than the server publishes.");
+        Assert.AreSequenceEqual(McpToolSurfaceTests.ExpectedTools, calls.Select(call => call.Tool).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, "The HTTP mirror is being exercised for a different set of tools than the server publishes.");
 
         foreach (var (tool, query) in calls)
         {
-            var response = await http.GetAsync($"/api/mcp/{tool}{query}");
+            var response = await http.GetAsync($"/api/mcp/{tool}{query}", TestContext.CancellationToken);
 
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, $"GET /api/mcp/{tool} answered {(int)response.StatusCode}.");
 
-            var body = await response.Content.ReadAsStringAsync();
+            var body = await response.Content.ReadAsStringAsync(TestContext.CancellationToken);
 
             Assert.IsFalse(string.IsNullOrWhiteSpace(body), $"GET /api/mcp/{tool} answered with an empty body.");
         }
@@ -51,9 +50,9 @@ public class HttpMirrorTests
         // that is a browser's way in: /api/mcp/GetBrouterApi with no query string is the type list.
         foreach (var tool in new[] { "GetBrouterApi", "GetBrouterDocsPage", "GetBrouterGuideSection", "GetBrouterSourceFile" })
         {
-            var body = await http.GetStringAsync($"/api/mcp/{tool}");
+            var body = await http.GetStringAsync($"/api/mcp/{tool}", TestContext.CancellationToken);
 
-            StringAssert.Contains(body, "# Bit.Brouter", $"GET /api/mcp/{tool} with no argument did not answer with an index.");
+            Assert.Contains("# Bit.Brouter", body, $"GET /api/mcp/{tool} with no argument did not answer with an index.");
         }
     }
 
@@ -62,7 +61,7 @@ public class HttpMirrorTests
     {
         using var http = McpTestHost.CreateHttpClient();
 
-        var overHttp = await http.GetStringAsync("/api/mcp/GetBrouterGuideSection?heading=Async%20guards");
+        var overHttp = await http.GetStringAsync("/api/mcp/GetBrouterGuideSection?heading=Async%20guards", TestContext.CancellationToken);
         var overMcp = await McpCall.TextAsync("GetBrouterGuideSection", new() { ["heading"] = "Async guards" });
 
         Assert.AreEqual(overMcp, overHttp);
@@ -73,7 +72,7 @@ public class HttpMirrorTests
     {
         using var http = McpTestHost.CreateHttpClient();
 
-        using var document = JsonDocument.Parse(await http.GetStringAsync("/api/mcp/InspectBrouterRouteTemplates?templates=/users/{id:int}"));
+        using var document = JsonDocument.Parse(await http.GetStringAsync("/api/mcp/InspectBrouterRouteTemplates?templates=/users/{id:int}", TestContext.CancellationToken));
 
         var route = document.RootElement.GetProperty("routes").EnumerateArray().Single();
 
@@ -105,17 +104,21 @@ public class HttpMirrorTests
         ping.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         ping.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("text/event-stream"));
 
-        var mcp = await http.SendAsync(ping);
+        var mcp = await http.SendAsync(ping, TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.OK, mcp.StatusCode);
-        Assert.AreNotEqual("text/html", mcp.Content.Headers.ContentType?.MediaType,
+        var actualValue = mcp.Content.Headers.ContentType?.MediaType;
+        Assert.AreNotEqual("text/html", actualValue,
             "POST /mcp was answered by the catch-all host page instead of by the MCP endpoint.");
-        StringAssert.Contains(await mcp.Content.ReadAsStringAsync(), "\"jsonrpc\":\"2.0\"");
+        Assert.Contains("\"jsonrpc\":\"2.0\"", await mcp.Content.ReadAsStringAsync(TestContext.CancellationToken));
 
         // While a deep link that nothing else claims still gets the app back, which is what makes
         // every URL a Brouter route rather than a 404.
-        var deepLink = await http.GetAsync("/docs/guards");
+        var deepLink = await http.GetAsync("/docs/guards", TestContext.CancellationToken);
         Assert.AreEqual(HttpStatusCode.OK, deepLink.StatusCode);
-        Assert.AreEqual("text/html", deepLink.Content.Headers.ContentType?.MediaType);
+        var actualValue1 = deepLink.Content.Headers.ContentType?.MediaType;
+        Assert.AreEqual("text/html", actualValue1);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

@@ -22,13 +22,13 @@ public class BitDialogPrerenderTests
             [nameof(BitDialog.Message)] = "This cannot be undone.",
         });
 
-        StringAssert.Contains(html, "bit-dlg");
-        StringAssert.Contains(html, "role=\"dialog\"");
-        StringAssert.Contains(html, "aria-modal=\"true\"");
-        StringAssert.Contains(html, "Delete the file?");
-        StringAssert.Contains(html, "This cannot be undone.");
-        StringAssert.Contains(html, "bit-dlg-okb");
-        StringAssert.Contains(html, "bit-dlg-cnb");
+        Assert.Contains("bit-dlg", html);
+        Assert.Contains("role=\"dialog\"", html);
+        Assert.Contains("aria-modal=\"true\"", html);
+        Assert.Contains("Delete the file?", html);
+        Assert.Contains("This cannot be undone.", html);
+        Assert.Contains("bit-dlg-okb", html);
+        Assert.Contains("bit-dlg-cnb", html);
     }
 
     [TestMethod]
@@ -42,7 +42,7 @@ public class BitDialogPrerenderTests
         });
 
         // A kept-mounted dialog that has never opened is not rendered at all, so a page of them costs nothing.
-        Assert.IsFalse(html.Contains("bit-dlg"));
+        Assert.DoesNotContain("bit-dlg", html);
     }
 
     [TestMethod]
@@ -54,7 +54,7 @@ public class BitDialogPrerenderTests
             [nameof(BitDialog.Title)] = "Welcome",
         });
 
-        StringAssert.Contains(html, "bit-dlg-ctn");
-        StringAssert.Contains(html, "Welcome");
+        Assert.Contains("bit-dlg-ctn", html);
+        Assert.Contains("Welcome", html);
     }
 }

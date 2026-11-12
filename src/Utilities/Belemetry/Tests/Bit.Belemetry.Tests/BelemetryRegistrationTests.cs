@@ -23,14 +23,14 @@ public class BelemetryRegistrationTests
         services.AddBitBelemetryServices();
 
         // Only the options configuration grows; every Belemetry service is registered once.
-        Assert.AreEqual(1, services.Count(d => d.ServiceType == typeof(BelemetryPipeline)));
-        Assert.AreEqual(1, services.Count(d => d.ServiceType == typeof(BelemetrySettings)));
-        Assert.AreEqual(1, services.Count(d => d.ServiceType == typeof(BelemetryHostDetection)));
-        Assert.AreEqual(1, services.Count(d => d.ServiceType == typeof(BelemetryConsentState)));
-        Assert.AreEqual(1, services.Count(d => d.ServiceType == typeof(IBelemetry)));
-        Assert.AreEqual(1, services.Count(d => d.ServiceType == typeof(IBelemetryConsent)));
-        Assert.AreEqual(1, services.Count(d => d.ServiceType == typeof(BelemetryJsBridge)));
-        Assert.AreEqual(1, services.Count(d => d.ServiceType == typeof(ILoggerProvider) && d.ImplementationType == typeof(BelemetryLoggerProvider)));
+        Assert.ContainsSingle(d => d.ServiceType == typeof(BelemetryPipeline), services);
+        Assert.ContainsSingle(d => d.ServiceType == typeof(BelemetrySettings), services);
+        Assert.ContainsSingle(d => d.ServiceType == typeof(BelemetryHostDetection), services);
+        Assert.ContainsSingle(d => d.ServiceType == typeof(BelemetryConsentState), services);
+        Assert.ContainsSingle(d => d.ServiceType == typeof(IBelemetry), services);
+        Assert.ContainsSingle(d => d.ServiceType == typeof(IBelemetryConsent), services);
+        Assert.ContainsSingle(d => d.ServiceType == typeof(BelemetryJsBridge), services);
+        Assert.ContainsSingle(d => d.ServiceType == typeof(ILoggerProvider) && d.ImplementationType == typeof(BelemetryLoggerProvider), services);
         Assert.AreEqual(1, services.Count - count, "Only the second configure callback was added.");
 
         await using var provider = services.BuildServiceProvider();
@@ -38,7 +38,7 @@ public class BelemetryRegistrationTests
         Assert.AreEqual("second", settings.ServiceName, "Callbacks run in registration order.");
         Assert.AreEqual("Staging", settings.Options.Environment, "Earlier callbacks are not lost.");
         Assert.AreSame(settings.Options, provider.GetRequiredService<IOptions<BelemetryOptions>>().Value);
-        Assert.HasCount(1, provider.GetServices<ILoggerProvider>().OfType<BelemetryLoggerProvider>());
+        Assert.ContainsSingle(provider.GetServices<ILoggerProvider>().OfType<BelemetryLoggerProvider>());
     }
 
     [TestMethod]
@@ -80,7 +80,7 @@ public class BelemetryRegistrationTests
 
         var belemetry = scope.ServiceProvider.GetRequiredService<IBelemetry>();
         belemetry.TrackEvent("worker.started");
-        await belemetry.FlushAsync();
+        await belemetry.FlushAsync(TestContext.CancellationToken);
 
         Assert.AreEqual("worker.started", memory.Logs.Single().EventName);
     }
@@ -120,4 +120,6 @@ public class BelemetryRegistrationTests
 
         public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object?[]? args) => throw new InvalidOperationException("No JS while prerendering.");
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

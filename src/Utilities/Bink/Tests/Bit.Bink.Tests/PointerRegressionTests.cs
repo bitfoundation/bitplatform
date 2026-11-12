@@ -37,7 +37,7 @@ public class PointerRegressionTests(TestContext output)
         context.Gesture(tool, BinkPointerKind.Pen, points);
         BinkStroke s = Assert.IsExactInstanceOfType<BinkStroke>(Assert.ContainsSingle(context.Document.AllElements));
         output.WriteLine($"stored {s.Points.Count} of {points.Length} samples");
-        Assert.IsTrue(s.Points.Count > 100);
+        Assert.IsGreaterThan(100, s.Points.Count);
         Assert.IsFalse(s.Geometry.IsEmpty);
     }
 
@@ -59,7 +59,7 @@ public class PointerRegressionTests(TestContext output)
 
         BinkStroke s = Assert.IsExactInstanceOfType<BinkStroke>(Assert.ContainsSingle(context.Document.AllElements));
         output.WriteLine($"bounds {s.Bounds}");
-        Assert.IsTrue(s.Bounds.Right < 400, $"the second pointer leaked into the stroke: {s.Bounds}");
+        Assert.IsLessThan(400, s.Bounds.Right, $"the second pointer leaked into the stroke: {s.Bounds}");
     }
 
     [TestMethod]
@@ -127,6 +127,6 @@ public class PointerRegressionTests(TestContext output)
 
         BinkRect moved = context.Document.GetElement(target.Id).Bounds;
         output.WriteLine($"moved to {moved}");
-        Assert.IsTrue(moved.X > 140f, $"the drag was abandoned by an unrelated cancel: {moved}");
+        Assert.IsGreaterThan(140f, moved.X, $"the drag was abandoned by an unrelated cancel: {moved}");
     }
 }

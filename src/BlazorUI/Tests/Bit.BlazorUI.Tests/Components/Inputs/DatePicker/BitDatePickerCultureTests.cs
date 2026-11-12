@@ -39,7 +39,7 @@ public class BitDatePickerCultureTests : BunitTestContext
         var component = Render(CultureInfo.GetCultureInfo("fa-IR"), Utc(year, month, day));
 
         Assert.Contains(persianYear.ToString(CultureInfo.InvariantCulture), GetMonthTitle(component));
-        CollectionAssert.AreEqual(Enumerable.Range(1, daysInEsfand).Select(d => d.ToString(CultureInfo.InvariantCulture)).ToArray(), GetInMonthDays(component));
+        Assert.AreSequenceEqual(Enumerable.Range(1, daysInEsfand).Select(d => d.ToString(CultureInfo.InvariantCulture)).ToArray(), GetInMonthDays(component));
     }
 
     [TestMethod]

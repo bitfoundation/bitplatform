@@ -23,13 +23,13 @@ public class BitRatingPrerenderTests
             [nameof(BitRating.AutoFocus)] = true,
         });
 
-        Assert.AreEqual(5, Regex.Matches(html, "class=\"bit-rtg-btn").Count);
-        StringAssert.Contains(html, "role=\"radiogroup\"");
-        StringAssert.Contains(html, "Quality");
+        Assert.HasCount(5, Regex.Matches(html, "class=\"bit-rtg-btn"));
+        Assert.Contains("role=\"radiogroup\"", html);
+        Assert.Contains("Quality", html);
         // The fourth item is half filled by the 3.5.
-        StringAssert.Contains(html, "width:50%");
-        StringAssert.Contains(html, "value=\"3.5\"");
-        StringAssert.Contains(html, "autofocus");
+        Assert.Contains("width:50%", html);
+        Assert.Contains("value=\"3.5\"", html);
+        Assert.Contains("autofocus", html);
     }
 
     [TestMethod]
@@ -41,7 +41,7 @@ public class BitRatingPrerenderTests
             [nameof(BitRating.DefaultValue)] = 4.0,
         });
 
-        StringAssert.Contains(html, "role=\"img\"");
-        Assert.IsFalse(html.Contains("role=\"radio\""));
+        Assert.Contains("role=\"img\"", html);
+        Assert.DoesNotContain("role=\"radio\"", html);
     }
 }

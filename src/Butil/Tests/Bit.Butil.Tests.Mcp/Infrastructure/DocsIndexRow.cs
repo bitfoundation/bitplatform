@@ -14,7 +14,7 @@ namespace Bit.Butil.Tests.Mcp.Infrastructure;
 /// which also holds the table's columns to a shape.
 /// </para>
 /// </summary>
-public sealed partial record DocsIndexRow(string Group, string Slug, string Title, string Summary, string[] Services, string Engines, string[] Requires)
+internal sealed partial record DocsIndexRow(string Group, string Slug, string Title, string Summary, string[] Services, string Engines, string[] Requires)
 {
     /// <summary>Every row of the index, with the group heading each one sat under.</summary>
     public static DocsIndexRow[] ParseAll(string markdown)

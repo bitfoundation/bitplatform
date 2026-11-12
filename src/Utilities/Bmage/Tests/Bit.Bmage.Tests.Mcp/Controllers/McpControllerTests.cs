@@ -15,15 +15,15 @@ public class McpControllerTests
     {
         var overview = _controller.GetBmageOverview();
 
-        StringAssert.StartsWith(overview, "# bit Bmage");
-        StringAssert.Contains(overview, BmageServerInstructions.BmageVersion);
-        StringAssert.Contains(overview, "## Packages");
-        StringAssert.Contains(overview, "## Installation");
-        StringAssert.Contains(overview, "## Where it runs");
-        StringAssert.Contains(overview, "AddBitBmageHeadlessServices");
-        StringAssert.Contains(overview, "ImageProcessorFactory.GetAsync()");
-        StringAssert.Contains(overview, "OnAfterRenderAsync");
-        StringAssert.Contains(overview, "bit-bmage-editor.css");
+        Assert.StartsWith("# bit Bmage", overview);
+        Assert.Contains(BmageServerInstructions.BmageVersion, overview);
+        Assert.Contains("## Packages", overview);
+        Assert.Contains("## Installation", overview);
+        Assert.Contains("## Where it runs", overview);
+        Assert.Contains("AddBitBmageHeadlessServices", overview);
+        Assert.Contains("ImageProcessorFactory.GetAsync()", overview);
+        Assert.Contains("OnAfterRenderAsync", overview);
+        Assert.Contains("bit-bmage-editor.css", overview);
         Assert.IsFalse(overview.Contains("was not found in this build", StringComparison.Ordinal), "A README section the overview quotes has been renamed.");
         Assert.IsFalse(overview.Contains("## Table of Contents", StringComparison.Ordinal), "The overview quotes the README's table of contents.");
     }
@@ -40,7 +40,7 @@ public class McpControllerTests
     [DataRow("console", "new ImageProcessor()")]
     public void SetupGuide_AnswersEveryHostingModel_AndItsAliases(string mode, string expected)
     {
-        StringAssert.Contains(_controller.GetBmageSetupGuide(mode), expected);
+        Assert.Contains(expected, _controller.GetBmageSetupGuide(mode));
     }
 
     [TestMethod]
@@ -48,9 +48,9 @@ public class McpControllerTests
     {
         var answer = _controller.GetBmageSetupGuide("electron");
 
-        StringAssert.Contains(answer, "not a known hosting model");
+        Assert.Contains("not a known hosting model", answer);
 
-        foreach (var mode in BmageSetupGuide.RenderModes) StringAssert.Contains(answer, mode);
+        foreach (var mode in BmageSetupGuide.RenderModes) Assert.Contains(mode, answer);
     }
 
     [TestMethod]
@@ -58,14 +58,14 @@ public class McpControllerTests
     {
         var listing = _controller.GetBmageRecipes();
 
-        Assert.AreEqual(BmageRecipeCatalog.All.Length, listing.Length);
+        Assert.HasCount(BmageRecipeCatalog.All.Length, listing);
         Assert.IsTrue(listing.All(recipe => recipe.Code is null && recipe.Notes is null), "The listing carries whole recipes.");
 
         var recipe = _controller.GetBmageRecipe("AVATAR-CROP").Recipe;
 
         Assert.IsNotNull(recipe);
-        StringAssert.Contains(recipe.Code, "SmartCrop(AspectRatio.Square)");
-        StringAssert.Contains(recipe.Notes, "ImageEncodeException");
+        Assert.Contains("SmartCrop(AspectRatio.Square)", recipe.Code!);
+        Assert.Contains("ImageEncodeException", recipe.Notes!);
     }
 
     [TestMethod]
@@ -80,25 +80,25 @@ public class McpControllerTests
         var pipelines = documents.Single(document => document.Name == "pipelines");
 
         Assert.AreEqual("Pipelines", pipelines.Title);
-        CollectionAssert.Contains(pipelines.Sections, "The optimiser");
+        Assert.Contains("The optimiser", pipelines.Sections);
         Assert.IsFalse(string.IsNullOrWhiteSpace(pipelines.Summary));
     }
 
     [TestMethod]
     public void Document_WholeOrOneSection_AndNamesAreForgiving()
     {
-        StringAssert.StartsWith(_controller.GetBmageDocument("docs/pipelines.md"), "# Pipelines");
-        StringAssert.StartsWith(_controller.GetBmageDocument("Pipelines"), "# Pipelines");
-        StringAssert.StartsWith(_controller.GetBmageDocument("overview"), "# bit Bmage");
+        Assert.StartsWith("# Pipelines", _controller.GetBmageDocument("docs/pipelines.md"));
+        Assert.StartsWith("# Pipelines", _controller.GetBmageDocument("Pipelines"));
+        Assert.StartsWith("# bit Bmage", _controller.GetBmageDocument("overview"));
 
         var section = _controller.GetBmageDocument("pipelines", "the OPTIMISER");
 
-        StringAssert.StartsWith(section, "## The optimiser");
+        Assert.StartsWith("## The optimiser", section);
         Assert.IsFalse(section.Contains("## Previewing at another resolution", StringComparison.Ordinal), "The section ran on into the next one.");
 
         // A sub-section is a section too, and a parenthesised aside in a heading is optional.
-        StringAssert.StartsWith(_controller.GetBmageDocument("pipelines", "The six resize modes"), "### The six resize modes");
-        StringAssert.StartsWith(_controller.GetBmageDocument("readme", "MCP server"), "## MCP server (for AI agents)");
+        Assert.StartsWith("### The six resize modes", _controller.GetBmageDocument("pipelines", "The six resize modes"));
+        Assert.StartsWith("## MCP server (for AI agents)", _controller.GetBmageDocument("readme", "MCP server"));
     }
 
     [TestMethod]
@@ -106,13 +106,13 @@ public class McpControllerTests
     {
         var missing = _controller.GetBmageDocument("teleportation");
 
-        StringAssert.Contains(missing, "no Bit.Bmage guide called");
-        StringAssert.Contains(missing, "'troubleshooting'");
+        Assert.Contains("no Bit.Bmage guide called", missing);
+        Assert.Contains("'troubleshooting'", missing);
 
         var section = _controller.GetBmageDocument("formats", "Teleportation");
 
-        StringAssert.Contains(section, "has no section called");
-        StringAssert.Contains(section, "'Quality and size budgets'");
+        Assert.Contains("has no section called", section);
+        Assert.Contains("'Quality and size budgets'", section);
     }
 
     [TestMethod]
@@ -127,10 +127,10 @@ public class McpControllerTests
 
         var enums = _controller.GetBmageApiList("enum");
         Assert.IsTrue(enums.All(type => type.Kind == "Enum"));
-        Assert.IsTrue(enums.Any(type => type.Name == "MetadataPolicy"));
+        Assert.Contains(type => type.Name == "MetadataPolicy", enums);
 
         var annotations = _controller.GetBmageApiList("Bit.Bmage.Annotations");
-        Assert.IsTrue(annotations.Any(type => type.Name == "RedactionAnnotation"));
+        Assert.Contains(type => type.Name == "RedactionAnnotation", annotations);
 
         var export = _controller.GetBmageApiList("Export");
         Assert.IsTrue(export.Any(type => type.Name == "ImageExportOptions") && export.Any(type => type.Name == "ImageExporter"));
@@ -166,18 +166,18 @@ public class McpControllerTests
 
         Assert.IsNotNull(member);
         Assert.IsTrue(member.Members.All(entry => entry.Name == "Cover"));
-        StringAssert.Contains(member.Members[0].Signature, "Anchor anchor = Anchor.Center");
+        Assert.Contains("Anchor anchor = Anchor.Center", member.Members[0].Signature!);
 
         var noMember = _controller.GetBmageApiDetails("ImagePipeline.Teleport");
         Assert.IsNull(noMember.Details);
-        StringAssert.Contains(noMember.Message, "no member called 'Teleport'");
-        StringAssert.Contains(noMember.Message, "MaxSize");
+        Assert.Contains("no member called 'Teleport'", noMember.Message!);
+        Assert.Contains("MaxSize", noMember.Message);
 
         var nearMiss = _controller.GetBmageApiDetails("Exporter");
         Assert.IsNull(nearMiss.Details);
-        StringAssert.Contains(nearMiss.Message, "ImageExporter");
+        Assert.Contains("ImageExporter", nearMiss.Message!);
 
-        StringAssert.Contains(_controller.GetBmageApiDetails("Teleporter").Message, "SearchBmage");
+        Assert.Contains("SearchBmage", _controller.GetBmageApiDetails("Teleporter").Message!);
     }
 
     [TestMethod]
@@ -186,17 +186,17 @@ public class McpControllerTests
         var pages = _controller.GetBmageSourceFiles("Demo page");
 
         Assert.IsTrue(pages.All(file => file.Kind == "Demo page"));
-        Assert.IsTrue(pages.Any(file => file.Path == "Demo/Client/Pages/Avatar.razor" && file.Slug == "avatar"));
+        Assert.Contains(file => file.Path == "Demo/Client/Pages/Avatar.razor" && file.Slug == "avatar", pages);
 
-        Assert.IsTrue(_controller.GetBmageSourceFiles("Host").Any(file => file.Path == "Demo/Server/Program.cs"));
+        Assert.Contains(file => file.Path == "Demo/Server/Program.cs", _controller.GetBmageSourceFiles("Host"));
 
         var slice = _controller.GetBmageSourceFile("Demo/Client/Pages/Avatar.razor", 1, 3);
 
-        StringAssert.StartsWith(slice, "// Demo/Client/Pages/Avatar.razor, lines 1-3 of ");
-        StringAssert.Contains(slice, "@page \"/avatar\"");
+        Assert.StartsWith("// Demo/Client/Pages/Avatar.razor, lines 1-3 of ", slice);
+        Assert.Contains("@page \"/avatar\"", slice);
 
         // Out of range is clamped, and the header says what came back.
-        StringAssert.Contains(_controller.GetBmageSourceFile("Demo/Client/Pages/Avatar.razor", 5000, 6000), "lines ");
+        Assert.Contains("lines ", _controller.GetBmageSourceFile("Demo/Client/Pages/Avatar.razor", 5000, 6000));
     }
 
     [TestMethod]
@@ -204,9 +204,9 @@ public class McpControllerTests
     {
         var answer = _controller.GetBmageSourceFile("Pages/Avatar.razor");
 
-        StringAssert.Contains(answer, "Demo/Client/Pages/Avatar.razor");
+        Assert.Contains("Demo/Client/Pages/Avatar.razor", answer);
 
-        StringAssert.Contains(_controller.GetBmageSourceFile("nowhere.razor"), "GetBmageSourceFiles");
+        Assert.Contains("GetBmageSourceFiles", _controller.GetBmageSourceFile("nowhere.razor"));
     }
 
     [TestMethod]
@@ -218,7 +218,7 @@ public class McpControllerTests
 
         Assert.IsFalse(review.Passed);
         Assert.AreEqual("code-too-long", review.Findings[0].Rule);
-        Assert.IsTrue(review.Findings.Any(finding => finding.Rule == "metadata-preserve-keeps-location"));
+        Assert.Contains(finding => finding.Rule == "metadata-preserve-keeps-location", review.Findings);
     }
 
     [TestMethod]
@@ -229,9 +229,9 @@ public class McpControllerTests
         var cut = McpController.Truncate(text, "Demo/Client/Pages/Avatar.razor");
 
         Assert.IsLessThan(text.Length, cut.Length);
-        StringAssert.Contains(cut, "GetBmageSourceFile(path: \"Demo/Client/Pages/Avatar.razor\", fromLine: ");
+        Assert.Contains("GetBmageSourceFile(path: \"Demo/Client/Pages/Avatar.razor\", fromLine: ", cut);
 
-        StringAssert.Contains(McpController.Truncate(text, document: "pipelines"), "GetBmageDocument(name: \"pipelines\"");
+        Assert.Contains("GetBmageDocument(name: \"pipelines\"", McpController.Truncate(text, document: "pipelines"));
     }
 
     [TestMethod]
@@ -239,13 +239,13 @@ public class McpControllerTests
     {
         var catalog = _controller.GetMcpCatalog();
 
-        Assert.AreEqual(14, catalog.Tools.Length, string.Join(", ", catalog.Tools.Select(tool => tool.Name)));
-        Assert.AreEqual(5, catalog.Prompts.Length);
+        Assert.HasCount(14, catalog.Tools, string.Join(", ", catalog.Tools.Select(tool => tool.Name)));
+        Assert.HasCount(5, catalog.Prompts);
         Assert.IsGreaterThanOrEqualTo(9, catalog.Resources.Length);
 
         var run = catalog.Tools.Single(tool => tool.Name == nameof(McpController.RunBmagePipeline));
 
-        CollectionAssert.Contains(run.Parameters, "pipeline: string");
-        CollectionAssert.Contains(run.Parameters, "maxFileSize?: long?");
+        Assert.Contains("pipeline: string", run.Parameters);
+        Assert.Contains("maxFileSize?: long?", run.Parameters);
     }
 }

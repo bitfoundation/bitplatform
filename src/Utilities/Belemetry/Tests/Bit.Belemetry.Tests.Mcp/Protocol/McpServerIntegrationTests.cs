@@ -34,17 +34,17 @@ public class McpServerIntegrationTests
     [TestMethod]
     public async Task ListTools_ExposesExactlyTheToolsTheAttributesDeclare_AndNoMoreThanSeven()
     {
-        var overTheWire = (await _server.Client.ListToolsAsync()).Select(tool => tool.Name).ToArray();
+        var overTheWire = (await _server.Client.ListToolsAsync(cancellationToken: TestContext.CancellationToken)).Select(tool => tool.Name).ToArray();
         var declared = new McpController().GetMcpCatalog().Tools.Select(tool => tool.Name).ToArray();
 
-        CollectionAssert.AreEquivalent(declared, overTheWire, $"Over the wire: {string.Join(", ", overTheWire.Order())}.");
-        Assert.IsTrue(overTheWire.Length <= 7, "The tool surface is meant to stay small.");
+        Assert.AreSequenceEqual(declared, overTheWire, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, $"Over the wire: {string.Join(", ", overTheWire.Order())}.");
+        Assert.IsLessThanOrEqualTo(7, overTheWire.Length, "The tool surface is meant to stay small.");
     }
 
     [TestMethod]
     public async Task ListTools_EveryTool_ArrivesWithADescriptionAndAnInputSchema()
     {
-        foreach (var tool in await _server.Client.ListToolsAsync())
+        foreach (var tool in await _server.Client.ListToolsAsync(cancellationToken: TestContext.CancellationToken))
         {
             Assert.IsFalse(string.IsNullOrWhiteSpace(tool.Description), $"'{tool.Name}' arrived with no description.");
 
@@ -58,7 +58,7 @@ public class McpServerIntegrationTests
     [TestMethod]
     public async Task ListTools_TheArgumentNames_AreTheOnesTheMethodsDeclare()
     {
-        var tools = (await _server.Client.ListToolsAsync()).ToDictionary(tool => tool.Name, StringComparer.Ordinal);
+        var tools = (await _server.Client.ListToolsAsync(cancellationToken: TestContext.CancellationToken)).ToDictionary(tool => tool.Name, StringComparer.Ordinal);
 
         foreach (var (name, expected) in new Dictionary<string, string[]>(StringComparer.Ordinal)
         {
@@ -96,11 +96,11 @@ public class McpServerIntegrationTests
 
         var called = 0;
 
-        foreach (var tool in await _server.Client.ListToolsAsync())
+        foreach (var tool in await _server.Client.ListToolsAsync(cancellationToken: TestContext.CancellationToken))
         {
-            var result = await _server.Client.CallToolAsync(tool.Name, arguments.GetValueOrDefault(tool.Name) ?? new Dictionary<string, object?>());
+            var result = await _server.Client.CallToolAsync(tool.Name, arguments.GetValueOrDefault(tool.Name) ?? new Dictionary<string, object?>(), cancellationToken: TestContext.CancellationToken);
 
-            Assert.IsFalse(result.IsError is true, $"'{tool.Name}' answered with an error: {Render(result)}");
+            Assert.AreNotEqual(true, result.IsError, $"'{tool.Name}' answered with an error: {Render(result)}");
             Assert.AreNotEqual(string.Empty, Render(result).Trim(), $"'{tool.Name}' answered with empty content.");
 
             called++;
@@ -114,7 +114,7 @@ public class McpServerIntegrationTests
     {
         var result = await _server.Client.CallToolAsync(
             nameof(McpController.ReviewBelemetryConfiguration),
-            new Dictionary<string, object?> { ["code"] = "builder.Services.AddBitBelemetryServices(o =>\n{\n    o.AddOtlpExporter(\"http://localhost:4318/v1/traces\");\n});" });
+            new Dictionary<string, object?> { ["code"] = "builder.Services.AddBitBelemetryServices(o =>\n{\n    o.AddOtlpExporter(\"http://localhost:4318/v1/traces\");\n});" }, cancellationToken: TestContext.CancellationToken);
 
         var findings = Payload(result).GetProperty("findings");
 
@@ -126,28 +126,28 @@ public class McpServerIntegrationTests
     [TestMethod]
     public async Task CallTool_AnUnknownType_NamesWhatDoesExist_InsteadOfFailing()
     {
-        var result = await _server.Client.CallToolAsync(nameof(McpController.GetBelemetryApiDetails), new Dictionary<string, object?> { ["typeName"] = "ConsentOptions" });
+        var result = await _server.Client.CallToolAsync(nameof(McpController.GetBelemetryApiDetails), new Dictionary<string, object?> { ["typeName"] = "ConsentOptions" }, cancellationToken: TestContext.CancellationToken);
 
-        Assert.IsFalse(result.IsError is true);
-        StringAssert.Contains(Render(result), "BelemetryConsentOptions");
+        Assert.AreNotEqual(true, result.IsError);
+        Assert.Contains("BelemetryConsentOptions", Render(result));
     }
 
     [TestMethod]
     public async Task CallTool_AToolThatDoesNotExist_Fails_WithoutTakingTheSessionDown()
     {
         await Assert.ThrowsAsync<ModelContextProtocol.McpException>(
-            () => _server.Client.CallToolAsync("GetBelemetryNothing", new Dictionary<string, object?>()).AsTask());
+            () => _server.Client.CallToolAsync("GetBelemetryNothing", new Dictionary<string, object?>(), cancellationToken: TestContext.CancellationToken).AsTask());
 
-        Assert.AreNotEqual(0, (await _server.Client.ListToolsAsync()).Count);
+        Assert.IsNotEmpty(await _server.Client.ListToolsAsync(cancellationToken: TestContext.CancellationToken));
     }
 
     [TestMethod]
     public async Task ListPrompts_ExposesEveryWorkflow_WithADescription()
     {
-        var prompts = await _server.Client.ListPromptsAsync();
+        var prompts = await _server.Client.ListPromptsAsync(cancellationToken: TestContext.CancellationToken);
         var declared = new McpController().GetMcpCatalog().Prompts.Select(prompt => prompt.Name).ToArray();
 
-        CollectionAssert.AreEquivalent(declared, prompts.Select(prompt => prompt.Name).ToArray());
+        Assert.AreSequenceEqual(declared, prompts.Select(prompt => prompt.Name).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
         foreach (var prompt in prompts)
         {
@@ -158,60 +158,61 @@ public class McpServerIntegrationTests
     [TestMethod]
     public async Task GetPrompt_RendersTheWorkflowWithTheArgumentsItWasGiven()
     {
-        var result = await _server.Client.GetPromptAsync("set_up_belemetry", new Dictionary<string, object?> { ["host"] = "hybrid", ["destination"] = "Honeycomb" });
+        var result = await _server.Client.GetPromptAsync("set_up_belemetry", new Dictionary<string, object?> { ["host"] = "hybrid", ["destination"] = "Honeycomb" }, cancellationToken: TestContext.CancellationToken);
 
         var text = string.Join('\n', result.Messages.Select(message => (message.Content as TextContentBlock)?.Text));
 
-        StringAssert.Contains(text, "hybrid");
-        StringAssert.Contains(text, "Honeycomb");
-        StringAssert.Contains(text, nameof(McpController.ReviewBelemetryConfiguration));
+        Assert.Contains("hybrid", text);
+        Assert.Contains("Honeycomb", text);
+        Assert.Contains(nameof(McpController.ReviewBelemetryConfiguration), text);
 
-        var review = await _server.Client.GetPromptAsync("review_belemetry_setup", new Dictionary<string, object?> { ["code"] = "options.Consent.Default = BelemetryFeatures.All;" });
+        var review = await _server.Client.GetPromptAsync("review_belemetry_setup", new Dictionary<string, object?> { ["code"] = "options.Consent.Default = BelemetryFeatures.All;" }, cancellationToken: TestContext.CancellationToken);
+        var expectedValue = string.Join('\n', review.Messages.Select(message => (message.Content as TextContentBlock)?.Text));
 
-        StringAssert.Contains(string.Join('\n', review.Messages.Select(message => (message.Content as TextContentBlock)?.Text)), "BelemetryFeatures.All");
+        Assert.Contains("BelemetryFeatures.All", expectedValue);
 
-        var banner = await _server.Client.GetPromptAsync("add_consent_banner");
+        var banner = await _server.Client.GetPromptAsync("add_consent_banner", cancellationToken: TestContext.CancellationToken);
 
-        Assert.AreNotEqual(0, banner.Messages.Count);
+        Assert.IsNotEmpty(banner.Messages);
     }
 
     [TestMethod]
     public async Task ListResources_ExposesTheFixedOnes_AndTheTemplatedOne()
     {
-        var resources = await _server.Client.ListResourcesAsync();
-        var templates = await _server.Client.ListResourceTemplatesAsync();
+        var resources = await _server.Client.ListResourcesAsync(cancellationToken: TestContext.CancellationToken);
+        var templates = await _server.Client.ListResourceTemplatesAsync(cancellationToken: TestContext.CancellationToken);
 
         var uris = resources.Select(resource => resource.Uri).Concat(templates.Select(template => template.UriTemplate)).ToArray();
         var declared = new McpController().GetMcpCatalog().Resources.Select(resource => resource.Uri).ToArray();
 
-        CollectionAssert.AreEquivalent(declared, uris, $"Over the wire: {string.Join(", ", uris.Order())}.");
+        Assert.AreSequenceEqual(declared, uris, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, $"Over the wire: {string.Join(", ", uris.Order())}.");
     }
 
     [TestMethod]
     public async Task ReadResource_TheFixedResources_ReturnTheirDocuments()
     {
-        foreach (var resource in await _server.Client.ListResourcesAsync())
+        foreach (var resource in await _server.Client.ListResourcesAsync(cancellationToken: TestContext.CancellationToken))
         {
-            var result = await resource.ReadAsync();
+            var result = await resource.ReadAsync(cancellationToken: TestContext.CancellationToken);
 
             var text = (result.Contents[0] as TextResourceContents)?.Text;
 
             Assert.IsFalse(string.IsNullOrWhiteSpace(text), $"'{resource.Uri}' returned empty text.");
         }
 
-        var conventions = await _server.Client.ReadResourceAsync("belemetry://docs/conventions");
+        var conventions = await _server.Client.ReadResourceAsync("belemetry://docs/conventions", cancellationToken: TestContext.CancellationToken);
 
-        StringAssert.Contains(((TextResourceContents)conventions.Contents[0]).Text!, "web_vital.name");
+        Assert.Contains("web_vital.name", ((TextResourceContents)conventions.Contents[0]).Text!);
     }
 
     [TestMethod]
     public async Task ReadResource_ASourceFilePath_SurvivesUriEscaping()
     {
-        var result = await _server.Client.ReadResourceAsync($"belemetry://source/{Uri.EscapeDataString("Demo/Server/Program.cs")}");
+        var result = await _server.Client.ReadResourceAsync($"belemetry://source/{Uri.EscapeDataString("Demo/Server/Program.cs")}", cancellationToken: TestContext.CancellationToken);
 
         var text = ((TextResourceContents)result.Contents[0]).Text!;
 
-        StringAssert.Contains(text, "MapMcp");
+        Assert.Contains("MapMcp", text);
         Assert.AreEqual(BelemetrySourceCatalog.GetSource("Demo/Server/Program.cs"), text);
     }
 
@@ -227,11 +228,11 @@ public class McpServerIntegrationTests
             (nameof(McpController.GenerateBelemetryConfiguration), new() { ["host"] = "hybrid" }),
         };
 
-        var results = await Task.WhenAll(calls.Select(call => _server.Client.CallToolAsync(call.Tool, call.Arguments).AsTask()));
+        var results = await Task.WhenAll(calls.Select(call => _server.Client.CallToolAsync(call.Tool, call.Arguments, cancellationToken: TestContext.CancellationToken).AsTask()));
 
         for (var i = 0; i < results.Length; i++)
         {
-            Assert.IsFalse(results[i].IsError is true, $"'{calls[i].Tool}' failed under concurrency: {Render(results[i])}");
+            Assert.AreNotEqual(true, results[i].IsError, $"'{calls[i].Tool}' failed under concurrency: {Render(results[i])}");
         }
     }
 
@@ -242,26 +243,27 @@ public class McpServerIntegrationTests
     [TestMethod]
     public async Task HttpMirror_TheSameToolsAreAlsoReachableOverPlainHttp()
     {
-        var catalog = await _server.Http.GetFromJsonAsync<McpCatalogDto>("/api/mcp/GetMcpCatalog");
+        var catalog = await _server.Http.GetFromJsonAsync<McpCatalogDto>("/api/mcp/GetMcpCatalog", TestContext.CancellationToken);
 
         Assert.IsNotNull(catalog);
-        Assert.AreEqual(7, catalog.Tools.Length);
-        Assert.AreEqual(3, catalog.Prompts.Length);
-        Assert.AreEqual(3, catalog.Resources.Length);
+        Assert.HasCount(7, catalog.Tools);
+        Assert.HasCount(3, catalog.Prompts);
+        Assert.HasCount(3, catalog.Resources);
         Assert.IsTrue(catalog.Tools.Single(t => t.Name == nameof(McpController.GetBelemetryApiDetails)).Parameters.Single().Required);
 
-        var details = await _server.Http.GetFromJsonAsync<BelemetryApiDetailsResultDto>("/api/mcp/GetBelemetryApiDetails?typeName=BelemetryConsentOptions");
+        var details = await _server.Http.GetFromJsonAsync<BelemetryApiDetailsResultDto>("/api/mcp/GetBelemetryApiDetails?typeName=BelemetryConsentOptions", TestContext.CancellationToken);
+        var actualValue = details?.Details;
 
-        Assert.IsNotNull(details?.Details);
+        Assert.IsNotNull(actualValue);
         Assert.AreEqual("BelemetryFeatures.None", details.Details.Members.Single(m => m.Name == "Default").Default);
 
-        var review = await _server.Http.GetFromJsonAsync<BelemetryReviewDto>($"/api/mcp/ReviewBelemetryConfiguration?code={Uri.EscapeDataString("o.Consent.Default = BelemetryFeatures.All;")}");
+        var review = await _server.Http.GetFromJsonAsync<BelemetryReviewDto>($"/api/mcp/ReviewBelemetryConfiguration?code={Uri.EscapeDataString("o.Consent.Default = BelemetryFeatures.All;")}", TestContext.CancellationToken);
 
         Assert.AreEqual("BLM004", review!.Findings.Single().Rule);
 
-        var guide = await _server.Http.GetStringAsync("/api/mcp/GetBelemetrySetupGuide?host=hybrid");
+        var guide = await _server.Http.GetStringAsync("/api/mcp/GetBelemetrySetupGuide?host=hybrid", TestContext.CancellationToken);
 
-        StringAssert.Contains(guide, "BelemetryInitializer");
+        Assert.Contains("BelemetryInitializer", guide);
     }
 
     /// <summary>The answer as a client renders it: every text block the call returned.</summary>
@@ -277,4 +279,6 @@ public class McpServerIntegrationTests
 
         return JsonDocument.Parse(Render(result)).RootElement;
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

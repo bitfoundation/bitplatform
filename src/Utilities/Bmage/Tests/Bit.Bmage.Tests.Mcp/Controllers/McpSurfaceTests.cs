@@ -30,12 +30,12 @@ public class McpSurfaceTests
     {
         foreach (var name in new[] { "GetBmageOverview", "SearchBmage", "GetBmageSetupGuide", "GetBmageApiDetails", "GetBmageRecipes", "GetBmageRecipe", "GetBmageDocument", "ReviewBmageCode", "RunBmagePipeline" })
         {
-            CollectionAssert.Contains(ToolNames, name, $"The server has no '{name}' tool.");
+            Assert.Contains(name, ToolNames, $"The server has no '{name}' tool.");
         }
 
         foreach (var name in ToolNames)
         {
-            StringAssert.Contains(name, "Bmage", $"'{name}' does not carry the product word, so it collides with the other bit products on bitplatform.dev/mcp.");
+            Assert.Contains("Bmage", name, $"'{name}' does not carry the product word, so it collides with the other bit products on bitplatform.dev/mcp.");
         }
     }
 
@@ -44,7 +44,7 @@ public class McpSurfaceTests
     {
         var names = ToolNames;
 
-        CollectionAssert.AreEquivalent(names.Distinct().ToArray(), names, "A tool name is registered twice.");
+        Assert.AreSequenceEqual(names.Distinct().ToArray(), names, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, "A tool name is registered twice.");
 
         foreach (var tool in Catalog.Tools)
         {
@@ -60,7 +60,7 @@ public class McpSurfaceTests
     {
         var search = Catalog.Tools.Single(tool => tool.Name == nameof(McpController.SearchBmage));
 
-        StringAssert.StartsWith(search.Description, "Start here.");
+        Assert.StartsWith("Start here.", search.Description);
     }
 
     [TestMethod]
@@ -132,7 +132,7 @@ public class McpSurfaceTests
     {
         var prompts = RenderEveryPrompt();
 
-        Assert.AreEqual(Catalog.Prompts.Length, prompts.Count);
+        Assert.HasCount(Catalog.Prompts.Length, prompts);
         Assert.IsGreaterThanOrEqualTo(4, prompts.Count);
 
         foreach (var (name, text) in prompts)
@@ -145,7 +145,7 @@ public class McpSurfaceTests
 
             foreach (var parameter in method.GetParameters())
             {
-                StringAssert.Contains(text, $"SENTINEL-{parameter.Name}", $"The '{name}' prompt dropped its '{parameter.Name}' argument.");
+                Assert.Contains($"SENTINEL-{parameter.Name}", text, $"The '{name}' prompt dropped its '{parameter.Name}' argument.");
             }
         }
     }
@@ -170,11 +170,11 @@ public class McpSurfaceTests
     {
         var uris = Catalog.Resources.Select(resource => resource.Name).ToArray();
 
-        CollectionAssert.AreEquivalent(uris.Distinct().ToArray(), uris, "A resource URI is registered twice.");
+        Assert.AreSequenceEqual(uris.Distinct().ToArray(), uris, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, "A resource URI is registered twice.");
 
         foreach (var uri in uris)
         {
-            StringAssert.StartsWith(uri, "bmage://", $"'{uri}' is not under this server's scheme.");
+            Assert.StartsWith("bmage://", uri, $"'{uri}' is not under this server's scheme.");
         }
     }
 
@@ -208,46 +208,46 @@ public class McpSurfaceTests
 
         foreach (var recipe in BmageRecipeCatalog.All)
         {
-            StringAssert.Contains(McpResources.Recipe(recipe.Id), recipe.Code!, $"The recipe '{recipe.Id}' reads differently through the resource.");
+            Assert.Contains(recipe.Code!, McpResources.Recipe(recipe.Id), $"The recipe '{recipe.Id}' reads differently through the resource.");
         }
     }
 
     [TestMethod]
     public void Resources_EachOne_RendersSomethingReadable()
     {
-        StringAssert.StartsWith(McpResources.ApiList(), "# Bit.Bmage public API");
-        StringAssert.Contains(McpResources.ApiList(), "## Bit.Bmage.Pipeline (Bit.Bmage)");
-        StringAssert.Contains(McpResources.ApiList(), "**BmageEditor** (Component)");
+        Assert.StartsWith("# Bit.Bmage public API", McpResources.ApiList());
+        Assert.Contains("## Bit.Bmage.Pipeline (Bit.Bmage)", McpResources.ApiList());
+        Assert.Contains("**BmageEditor** (Component)", McpResources.ApiList());
 
-        StringAssert.Contains(McpResources.ApiType("ImagePipeline"), "# ImagePipeline");
-        StringAssert.Contains(McpResources.ApiType("ImagePipeline"), "`using Bit.Bmage.Pipeline;`");
+        Assert.Contains("# ImagePipeline", McpResources.ApiType("ImagePipeline"));
+        Assert.Contains("`using Bit.Bmage.Pipeline;`", McpResources.ApiType("ImagePipeline"));
 
-        StringAssert.Contains(McpResources.Guide(), "# bit Bmage");
+        Assert.Contains("# bit Bmage", McpResources.Guide());
 
         foreach (var recipe in BmageRecipeCatalog.All)
         {
-            StringAssert.Contains(McpResources.Recipes(), recipe.Id, $"The recipes resource omits '{recipe.Id}'.");
+            Assert.Contains(recipe.Id, McpResources.Recipes(), $"The recipes resource omits '{recipe.Id}'.");
         }
 
         foreach (var rule in BmageCodeReview.Catalog)
         {
-            StringAssert.Contains(McpResources.ReviewRules(), $"`{rule.Id}`");
+            Assert.Contains($"`{rule.Id}`", McpResources.ReviewRules());
         }
     }
 
     [TestMethod]
     public void Resources_AskedForWhatIsNotThere_ExplainRatherThanThrow()
     {
-        StringAssert.Contains(McpResources.Document("teleportation"), "no Bit.Bmage guide called");
-        StringAssert.Contains(McpResources.ApiType("Teleporter"), "no public type called");
-        StringAssert.Contains(McpResources.Source("nowhere.razor"), "No source file at");
-        StringAssert.Contains(McpResources.Recipe("teleport"), "no recipe called");
+        Assert.Contains("no Bit.Bmage guide called", McpResources.Document("teleportation"));
+        Assert.Contains("no public type called", McpResources.ApiType("Teleporter"));
+        Assert.Contains("No source file at", McpResources.Source("nowhere.razor"));
+        Assert.Contains("no recipe called", McpResources.Recipe("teleport"));
 
         var setup = McpResources.Setup("electron");
 
         foreach (var mode in BmageSetupGuide.RenderModes)
         {
-            StringAssert.Contains(setup, mode);
+            Assert.Contains(mode, setup);
         }
     }
 
@@ -301,7 +301,7 @@ public class McpSurfaceTests
             {
                 var tool = hit.Tool[..hit.Tool.IndexOf('(', StringComparison.Ordinal)];
 
-                CollectionAssert.Contains(ToolNames, tool, $"The hit '{hit.Title}' for '{query}' sends the agent to '{tool}'.");
+                Assert.Contains(tool, ToolNames, $"The hit '{hit.Title}' for '{query}' sends the agent to '{tool}'.");
             }
         }
     }

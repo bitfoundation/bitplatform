@@ -36,7 +36,7 @@ public sealed class AccessibilityTests : BlowTest
         await DragAsync(page, new Point(source.X + 4, source.Y), target);
         await WaitForQuietAsync(page);
 
-        CollectionAssert.Contains(await IdsAsync(page, "edge"), "bit-blow-3--4", "the press beside the handle did not connect");
+        Assert.Contains("bit-blow-3--4", await IdsAsync(page, "edge"), "the press beside the handle did not connect");
     }
 
     [TestMethod]

@@ -1,4 +1,4 @@
-using Bit.Bmotion.Tests.TestInfra;
+﻿using Bit.Bmotion.Tests.TestInfra;
 
 namespace Bit.Bmotion.Tests.Engine;
 
@@ -37,7 +37,7 @@ public class EngineFrameTests
         engine.ComputeFrame(100);                  // reaches the target
         engine.ComputeFrame(101);                  // settles / resolves the completion batch
 
-        await done.Task.WaitAsync(TimeSpan.FromSeconds(2));
+        await done.Task.WaitAsync(TimeSpan.FromSeconds(2), TestContext.CancellationToken);
         Assert.IsTrue(done.Task.IsCompletedSuccessfully, "a tween that runs to its end completes naturally");
     }
 
@@ -68,11 +68,11 @@ public class EngineFrameTests
         // The interruption settles the superseded batch synchronously - and with false, which is
         // what keeps its OnAnimationComplete from being raised.
         Assert.IsTrue(first.Task.IsCompleted, "a superseded animation must settle, not hang");
-        Assert.IsFalse(first.Task.Result, "a superseded animation must not report a natural completion");
+        Assert.IsFalse(await first.Task, "a superseded animation must not report a natural completion");
 
         engine.ComputeFrame(150);
         engine.ComputeFrame(260); // let the second animation finish
-        await second.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        await second.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
     }
 
     [TestMethod]
@@ -90,7 +90,7 @@ public class EngineFrameTests
 
         engine.ComputeFrame(0);
         engine.ComputeFrame(60); // finishes
-        await done.Task.WaitAsync(TimeSpan.FromSeconds(2));
+        await done.Task.WaitAsync(TimeSpan.FromSeconds(2), TestContext.CancellationToken);
 
         // The element is no longer animating once the tween has settled.
         Assert.IsFalse(engine.GetDiagnostics().Single(d => d.Id == "el").HasActiveAnimations);
@@ -110,4 +110,6 @@ public class EngineFrameTests
         var after = engine.GetDiagnostics().Single(d => d.Id == "el");
         Assert.IsFalse(after.HasActiveAnimations, "Stop() must halt the running driver");
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

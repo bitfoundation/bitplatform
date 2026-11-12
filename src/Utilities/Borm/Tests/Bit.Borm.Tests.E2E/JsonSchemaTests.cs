@@ -88,7 +88,7 @@ public sealed class JsonSchemaTests : BormTest
         Assert.IsNotNull(email);
         Assert.IsNotNull(creditCard);
         Assert.AreEqual(bodyBox.Width, email.Width, 2, "the email (x-colSpan: 2) does not span the form");
-        Assert.IsTrue(creditCard.Width < bodyBox.Width * 0.6, $"the card number ({creditCard.Width}px of {bodyBox.Width}px) is wider than one column");
+        Assert.IsLessThan(bodyBox.Width * 0.6, creditCard.Width, $"the card number ({creditCard.Width}px of {bodyBox.Width}px) is wider than one column");
 
         // x-visibleWhen: the company fields only for a business customer.
         await Expect(Control(page, "companyName")).ToHaveCountAsync(0);
@@ -118,8 +118,8 @@ public sealed class JsonSchemaTests : BormTest
         // Export writes the form back out - steps, their condition and all - and applying the export rebuilds it.
         await page.GetByRole(AriaRole.Button, new() { Name = "Export (round-trip)", Exact = true }).ClickAsync();
         var exported = await Editor(page).InputValueAsync();
-        StringAssert.Contains(exported, "\"x-steps\"", "the export lost the wizard steps");
-        StringAssert.Contains(exported, "\"visibleWhen\"", "the export lost the company step's condition");
+        Assert.Contains("\"x-steps\"", exported, "the export lost the wizard steps");
+        Assert.Contains("\"visibleWhen\"", exported, "the export lost the company step's condition");
 
         await page.GetByRole(AriaRole.Button, new() { Name = "Apply schema", Exact = true }).ClickAsync();
         await Expect(steps).ToHaveTextAsync(["Contact", "Type", "Confirm"]);

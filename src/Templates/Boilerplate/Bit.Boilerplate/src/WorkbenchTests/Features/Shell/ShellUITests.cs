@@ -697,8 +697,10 @@ public class ShellUITests : ShellPageTest
         }
         catch (TimeoutException)
         {
-            Assert.AreEqual(width, shown, 1);
+            // Report the last measured width below instead of the polling timeout.
         }
+
+        Assert.AreEqual(width, shown, 1);
     }
 
     [TestMethod, OnDesktops]
@@ -1325,7 +1327,7 @@ public class ShellUITests : ShellPageTest
 
         await Expect(View().GetByRole(AriaRole.Heading, new() { Name = WorkbenchStrings.ThemeHeading, Level = 2 }).First).ToBeVisibleAsync();
 
-        Assert.HasCount(1, loads, string.Join(Environment.NewLine, loads));
+        Assert.ContainsSingle(loads, string.Join(Environment.NewLine, loads));
     }
 
     [TestMethod, EverySurface]

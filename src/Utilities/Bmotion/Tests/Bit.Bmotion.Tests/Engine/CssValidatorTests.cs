@@ -76,7 +76,7 @@ public class CssValidatorTests
     {
         var quoted = BmotionCssValidator.Quote("red\r\n[info] Admin login ok\u2028\u202Eevil");
 
-        Assert.IsFalse(quoted.Any(c => char.IsControl(c) || c is '\u2028' or '\u202E'));
+        Assert.DoesNotContain(c => char.IsControl(c) || c is '\u2028' or '\u202E', quoted);
         Assert.AreEqual("red\\u000d\\u000a[info] Admin login ok\\u2028\\u202eevil", quoted);
     }
 
@@ -85,8 +85,8 @@ public class CssValidatorTests
     {
         var quoted = BmotionCssValidator.Quote(new string('a', 5_000_000));
 
-        Assert.IsTrue(quoted.Length < 200, quoted);
-        StringAssert.Contains(quoted, "5000000 characters");
+        Assert.IsLessThan(200, quoted.Length, quoted);
+        Assert.Contains("5000000 characters", quoted);
     }
 
     // ── Integration with the component ────────────────────────────────────────

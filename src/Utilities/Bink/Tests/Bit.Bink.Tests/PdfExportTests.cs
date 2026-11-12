@@ -36,7 +36,7 @@ public sealed partial class PdfExportTests
                 int end = Text.IndexOf("\nendobj\n", offset, StringComparison.Ordinal);
                 Objects[i] = Text[(offset + $"{i} 0 obj\n".Length)..end];
             }
-            StringAssert.Contains(Text, $"/Size {count}");
+            Assert.Contains($"/Size {count}", Text);
         }
 
         public byte[] Bytes { get; }
@@ -92,16 +92,16 @@ public sealed partial class PdfExportTests
         Assert.AreEqual(1, result.PageCount);
         Assert.IsTrue(result.IsComplete, "The sample's text is Latin and it has no images.");
         string page = pdf.Find("/Type /Page ").Single().Value;
-        StringAssert.Contains(page, "/MediaBox [0 0 300 225]", "400 by 300 units at three quarters of a point each.");
-        StringAssert.Contains(pdf.Find("/Type /Pages").Single().Value, "/Count 1");
-        StringAssert.Contains(pdf.AllContent, "0.75 0 0 -0.75 0 225 cm", "Document units map to points with y turned down.");
+        Assert.Contains("/MediaBox [0 0 300 225]", page, "400 by 300 units at three quarters of a point each.");
+        Assert.Contains("/Count 1", pdf.Find("/Type /Pages").Single().Value);
+        Assert.Contains("0.75 0 0 -0.75 0 225 cm", pdf.AllContent, "Document units map to points with y turned down.");
     }
 
     [TestMethod]
     public void The_same_document_always_gives_the_same_bytes()
     {
         BinkDocument document = TestData.SampleDocument();
-        CollectionAssert.AreEqual(BinkPdfExporter.Export(document), BinkPdfExporter.Export(document));
+        Assert.AreSequenceEqual(BinkPdfExporter.Export(document), BinkPdfExporter.Export(document));
     }
 
     [TestMethod]
@@ -119,13 +119,13 @@ public sealed partial class PdfExportTests
         var pdf = new Pdf(BinkPdfExporter.Export(document, new BinkPdfExportOptions { Compress = false }));
         string content = pdf.AllContent;
 
-        StringAssert.Contains(content, "1 0 0 rg", "The pen's red fill.");
-        StringAssert.Contains(content, "0 0 1 RG", "The rectangle's blue outline.");
-        StringAssert.Contains(content, "3 w 2 J 0 j 4 M", "Width, square cap and miter join keep PDF's own numbering.");
-        StringAssert.Contains(content, "[6 3] 0 d");
-        StringAssert.Contains(content, " c\n", "Curves stay curves.");
-        Assert.IsTrue(pdf.Find("/Type /ExtGState", "/ca 0.502").Any(), "The half-transparent fill is a graphics state.");
-        Assert.IsTrue(pdf.Find("/Type /ExtGState", "/BM /Multiply").Any(), "The highlighter multiplies.");
+        Assert.Contains("1 0 0 rg", content, "The pen's red fill.");
+        Assert.Contains("0 0 1 RG", content, "The rectangle's blue outline.");
+        Assert.Contains("3 w 2 J 0 j 4 M", content, "Width, square cap and miter join keep PDF's own numbering.");
+        Assert.Contains("[6 3] 0 d", content);
+        Assert.Contains(" c\n", content, "Curves stay curves.");
+        Assert.IsNotEmpty(pdf.Find("/Type /ExtGState", "/ca 0.502"), "The half-transparent fill is a graphics state.");
+        Assert.IsNotEmpty(pdf.Find("/Type /ExtGState", "/BM /Multiply"), "The highlighter multiplies.");
     }
 
     [TestMethod]
@@ -140,7 +140,7 @@ public sealed partial class PdfExportTests
         var pdf = new Pdf(BinkPdfExporter.Export(document));
 
         Assert.ContainsSingle(pdf.Find("/Subtype /Form", "/S /Transparency /I true"));
-        Assert.IsTrue(pdf.Find("/Type /ExtGState", "/ca 0.4 /CA 0.4").Any(), "The group's opacity applies to it as a whole.");
+        Assert.IsNotEmpty(pdf.Find("/Type /ExtGState", "/ca 0.4 /CA 0.4"), "The group's opacity applies to it as a whole.");
     }
 
     [TestMethod]
@@ -158,11 +158,11 @@ public sealed partial class PdfExportTests
         int maskForm = int.Parse(Regex.Match(state.Value, @"/G (\d+) 0 R").Groups[1].Value, CultureInfo.InvariantCulture);
         string mask = pdf.Content(pdf.Objects[maskForm]);
         Assert.StartsWith("1 g\n", mask, "The mask keeps everything...");
-        StringAssert.Contains(mask, "0 g\n", "...except where the eraser passed.");
+        Assert.Contains("0 g\n", mask, "...except where the eraser passed.");
         Assert.DoesNotContain("200 l", mask, "Ink drawn after the eraser is not in the mask.");
 
         string erased = pdf.Find("/Subtype /Form", "/Group << /S /Transparency >>").Single().Value;
-        Assert.AreEqual(1, Regex.Matches(pdf.Content(erased), "\nS\n").Count, "Only the marker line drawn before the eraser is erased.");
+        Assert.ContainsSingle(Regex.Matches(pdf.Content(erased), "\nS\n"), "Only the marker line drawn before the eraser is erased.");
     }
 
     [TestMethod]
@@ -182,14 +182,14 @@ public sealed partial class PdfExportTests
         string name = Regex.Match(pdf.Objects.Values.Single(o => o.Contains("/ExtGState <<", StringComparison.Ordinal)), $@"/(G\d+) {multiply.Key} 0 R").Groups[1].Value;
         int maskForm = int.Parse(Regex.Match(pdf.Find("/SMask << /Type /Mask").Single().Value, @"/G (\d+) 0 R").Groups[1].Value, CultureInfo.InvariantCulture);
         string mask = pdf.Content(pdf.Objects[maskForm]);
-        Assert.AreEqual(2, Regex.Matches(mask, $"/{name} gs\n0.5 g\n").Count, "Both erasers multiply into the mask.");
+        Assert.HasCount(2, Regex.Matches(mask, $"/{name} gs\n0.5 g\n"), "Both erasers multiply into the mask.");
     }
 
     [TestMethod]
     public void A_page_too_large_for_viewers_is_scaled_down_and_a_region_that_is_not_finite_is_refused()
     {
         var pdf = new Pdf(BinkPdfExporter.Export(Page(40_000, 1_000)));
-        StringAssert.Contains(pdf.Find("/Type /Page ").Single().Value, "/MediaBox [0 0 14400 360]");
+        Assert.Contains("/MediaBox [0 0 14400 360]", pdf.Find("/Type /Page ").Single().Value);
 
         // The content is scaled exactly as the page is: a scale rounded to three decimals put the right of a page
         // 70,000 units wide 20 points beyond its edge, and blanked one of 30 million.
@@ -214,8 +214,8 @@ public sealed partial class PdfExportTests
         string content = new Pdf(result.Bytes).AllContent;
 
         Assert.AreEqual(0, result.SkippedTextElements);
-        StringAssert.Contains(content, "(one) Tj");
-        StringAssert.Contains(content, "(twothree) Tj", "A lone carriage return draws nothing, as on the canvas and in SVG.");
+        Assert.Contains("(one) Tj", content);
+        Assert.Contains("(twothree) Tj", content, "A lone carriage return draws nothing, as on the canvas and in SVG.");
     }
 
     [TestMethod]
@@ -228,7 +228,7 @@ public sealed partial class PdfExportTests
 
         var pdf = new Pdf(BinkPdfExporter.Export(document));
 
-        Assert.IsFalse(pdf.Find("/SMask").Any());
+        Assert.IsEmpty(pdf.Find("/SMask"));
     }
 
     [TestMethod]
@@ -250,11 +250,11 @@ public sealed partial class PdfExportTests
         Assert.HasCount(2, pdf.Find("/Subtype /Image", "/ColorSpace /DeviceRGB"), "A picture drawn twice is stored once.");
         KeyValuePair<int, string> masked = pdf.Find("/Subtype /Image", "/Width 4", "/SMask").Single();
         int maskId = int.Parse(Regex.Match(masked.Value, @"/SMask (\d+) 0 R").Groups[1].Value, CultureInfo.InvariantCulture);
-        StringAssert.Contains(pdf.Objects[maskId], "/ColorSpace /DeviceGray");
+        Assert.Contains("/ColorSpace /DeviceGray", pdf.Objects[maskId]);
         Assert.DoesNotContain("/SMask", Pdf.Dictionary(pdf.Find("/Subtype /Image", "/Width 3").Single().Value));
         string content = pdf.AllContent;
-        StringAssert.Contains(content, "60 10 40 20 re W n", "A crop clips to where the picture is drawn...");
-        StringAssert.Contains(content, "80 0 0 -20 40 30 cm", "...and draws the whole picture scaled so the crop fills it.");
+        Assert.Contains("60 10 40 20 re W n", content, "A crop clips to where the picture is drawn...");
+        Assert.Contains("80 0 0 -20 40 30 cm", content, "...and draws the whole picture scaled so the crop fills it.");
     }
 
     /// <summary>
@@ -325,8 +325,8 @@ public sealed partial class PdfExportTests
         var pdf = new Pdf(result.Bytes);
 
         string image = pdf.Find("/Subtype /Image", "/Filter /DCTDecode").Single().Value;
-        StringAssert.Contains(image, "/Width 300 /Height 200 /ColorSpace /DeviceRGB");
-        StringAssert.Contains(image, $"/Length {jpeg.Length}");
+        Assert.Contains("/Width 300 /Height 200 /ColorSpace /DeviceRGB", image);
+        Assert.Contains($"/Length {jpeg.Length}", image);
         Assert.AreEqual(3, result.SkippedImages, "CMYK, remote and WebP pictures are reported, not drawn wrongly.");
         Assert.IsFalse(result.IsComplete);
     }
@@ -341,7 +341,7 @@ public sealed partial class PdfExportTests
         BinkPdfExportResult result = BinkPdfExporter.ExportWithDetails(document);
 
         Assert.AreEqual(1, result.SkippedImages);
-        Assert.IsFalse(new Pdf(result.Bytes).Find("/Subtype /Image").Any());
+        Assert.IsEmpty(new Pdf(result.Bytes).Find("/Subtype /Image"));
     }
 
     [TestMethod]
@@ -357,7 +357,7 @@ public sealed partial class PdfExportTests
 
         string content = new Pdf(BinkPdfExporter.Export(document, new BinkPdfExportOptions { Compress = false })).AllContent;
 
-        StringAssert.Contains(content, "0 150 100 0 0 0 cm", "The stored rows run down the right of the picture, its columns across it.");
+        Assert.Contains("0 150 100 0 0 0 cm", content, "The stored rows run down the right of the picture, its columns across it.");
     }
 
     [TestMethod]
@@ -371,8 +371,8 @@ public sealed partial class PdfExportTests
         string content = new Pdf(BinkPdfExporter.Export(document, new BinkPdfExportOptions { Compress = false })).AllContent;
 
         // The whole picture, 200 by 300, sits 150 above the destination; orientation 8 maps (u, v) to (1 - v, 1 - u).
-        StringAssert.Contains(content, "0 0 200 150 re W n");
-        StringAssert.Contains(content, "0 -300 -200 0 200 150 cm");
+        Assert.Contains("0 0 200 150 re W n", content);
+        Assert.Contains("0 -300 -200 0 200 150 cm", content);
     }
 
     [TestMethod]
@@ -385,7 +385,7 @@ public sealed partial class PdfExportTests
         BinkPdfExportResult result = BinkPdfExporter.ExportWithDetails(document, new BinkPdfExportOptions { MaxImagePixels = 1000 });
 
         Assert.AreEqual(1, result.SkippedImages);
-        Assert.IsFalse(new Pdf(result.Bytes).Find("/Subtype /Image").Any());
+        Assert.IsEmpty(new Pdf(result.Bytes).Find("/Subtype /Image"));
     }
 
     [TestMethod]
@@ -403,14 +403,14 @@ public sealed partial class PdfExportTests
         string content = pdf.AllContent;
 
         Assert.AreEqual(1, result.SkippedTextElements, "The Persian text cannot be set in the standard fonts.");
-        StringAssert.Contains(content, @"(Total \(net\): 5 \200) Tj", "Parentheses are escaped and the euro is WinAnsi's 0x80.");
-        StringAssert.Contains(content, "(second line) Tj");
-        StringAssert.Contains(content, "1 0 0 -1 20 36.4 Tm", "The first baseline sits 0.82 of the size below the top, as in SVG.");
-        StringAssert.Contains(content, "1 0 0 -1 20 61.4 Tm", "Lines are a line height apart.");
-        StringAssert.Contains(content, "1 0 0 -1 -18.4 113.12 Tm", "Right-aligned Courier ends at the origin: four characters of 0.6 em at 16 units.");
-        Assert.IsTrue(pdf.Find("/BaseFont /Helvetica-Bold").Any());
-        Assert.IsTrue(pdf.Find("/BaseFont /Courier ").Any());
-        Assert.IsTrue(pdf.Find("/BaseFont /Times-Italic").Any());
+        Assert.Contains(@"(Total \(net\): 5 \200) Tj", content, "Parentheses are escaped and the euro is WinAnsi's 0x80.");
+        Assert.Contains("(second line) Tj", content);
+        Assert.Contains("1 0 0 -1 20 36.4 Tm", content, "The first baseline sits 0.82 of the size below the top, as in SVG.");
+        Assert.Contains("1 0 0 -1 20 61.4 Tm", content, "Lines are a line height apart.");
+        Assert.Contains("1 0 0 -1 -18.4 113.12 Tm", content, "Right-aligned Courier ends at the origin: four characters of 0.6 em at 16 units.");
+        Assert.IsNotEmpty(pdf.Find("/BaseFont /Helvetica-Bold"));
+        Assert.IsNotEmpty(pdf.Find("/BaseFont /Courier "));
+        Assert.IsNotEmpty(pdf.Find("/BaseFont /Times-Italic"));
     }
 
     [TestMethod]
@@ -422,7 +422,7 @@ public sealed partial class PdfExportTests
 
         string content = new Pdf(BinkPdfExporter.Export(document, new BinkPdfExportOptions { Compress = false })).AllContent;
 
-        StringAssert.Contains(content, "1 0 0 -1 40 44.6 Tm", "Right-aligned: two ems at 30 units end at the origin.");
+        Assert.Contains("1 0 0 -1 40 44.6 Tm", content, "Right-aligned: two ems at 30 units end at the origin.");
     }
 
     [TestMethod]
@@ -432,7 +432,7 @@ public sealed partial class PdfExportTests
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => BinkPdfExporter.Export(Page(), new BinkPdfExportOptions { Scale = 1e-6f }));
 
         var pdf = new Pdf(BinkPdfExporter.Export(Page(), new BinkPdfExportOptions { Scale = 0.01f }));
-        StringAssert.Contains(pdf.Find("/Type /Page ").Single().Value, "/MediaBox [0 0 4 3]");
+        Assert.Contains("/MediaBox [0 0 4 3]", pdf.Find("/Type /Page ").Single().Value);
     }
 
     [TestMethod]
@@ -445,9 +445,9 @@ public sealed partial class PdfExportTests
         var pdf = new Pdf(result.Bytes);
 
         Assert.AreEqual(2, result.PageCount);
-        StringAssert.Contains(pdf.Find("/Type /Pages").Single().Value, "/Count 2");
+        Assert.Contains("/Count 2", pdf.Find("/Type /Pages").Single().Value);
         string[] boxes = [.. pdf.Find("/Type /Page ").Select(p => Regex.Match(p.Value, @"/MediaBox \[[^\]]+\]").Value)];
-        CollectionAssert.AreEqual(new[] { "/MediaBox [0 0 400 300]", "/MediaBox [0 0 200 800]" }, boxes);
+        Assert.AreSequenceEqual(new[] { "/MediaBox [0 0 400 300]", "/MediaBox [0 0 200 800]" }, boxes);
     }
 
     [TestMethod]
@@ -456,11 +456,11 @@ public sealed partial class PdfExportTests
         var pdf = new Pdf(BinkPdfExporter.Export(Page(), new BinkPdfExportOptions { Title = "Plan (ü)", Description = "طرح", Author = "Bink", Language = "fa-IR" }));
 
         string info = pdf.Find("/Producer (Bit.Bink)").Single().Value;
-        StringAssert.Contains(info, "/Title <FEFF0050006C0061006E0020002800FC0029>", "UTF-16, so any character survives.");
-        StringAssert.Contains(info, "/Subject <FEFF06370631062D>");
+        Assert.Contains("/Title <FEFF0050006C0061006E0020002800FC0029>", info, "UTF-16, so any character survives.");
+        Assert.Contains("/Subject <FEFF06370631062D>", info);
         string catalog = pdf.Find("/Type /Catalog").Single().Value;
-        StringAssert.Contains(catalog, "/DisplayDocTitle true");
-        StringAssert.Contains(catalog, "/Lang <FEFF00660061002D00490052>");
+        Assert.Contains("/DisplayDocTitle true", catalog);
+        Assert.Contains("/Lang <FEFF00660061002D00490052>", catalog);
     }
 
     [TestMethod]
@@ -475,8 +475,8 @@ public sealed partial class PdfExportTests
         var pdf = new Pdf(BinkPdfExporter.Export(document, new BinkPdfExportOptions { Region = BinkExportRegion.Selection, SelectedIds = [keep.Id], Padding = 0, Scale = 1, Compress = false }));
 
         BinkRect bounds = keep.Bounds;
-        StringAssert.Contains(pdf.Find("/Type /Page ").Single().Value, $"/MediaBox [0 0 {BinkPdfFile.Number(bounds.Width)} {BinkPdfFile.Number(bounds.Height)}]");
-        Assert.AreEqual(1, Regex.Matches(pdf.AllContent, "\nS\n").Count, "Only the selected shape is drawn.");
+        Assert.Contains($"/MediaBox [0 0 {BinkPdfFile.Number(bounds.Width)} {BinkPdfFile.Number(bounds.Height)}]", pdf.Find("/Type /Page ").Single().Value);
+        Assert.ContainsSingle(Regex.Matches(pdf.AllContent, "\nS\n"), "Only the selected shape is drawn.");
     }
 
     [TestMethod]
@@ -525,7 +525,7 @@ public sealed partial class PdfExportTests
         using var stream = new MemoryStream();
         BinkPdfExportResult result = BinkPdfExporter.Export(document, stream);
 
-        CollectionAssert.AreEqual(result.Bytes, stream.ToArray());
-        CollectionAssert.AreEqual(BinkPdfExporter.Export(document), stream.ToArray());
+        Assert.AreSequenceEqual(result.Bytes, stream.ToArray());
+        Assert.AreSequenceEqual(BinkPdfExporter.Export(document), stream.ToArray());
     }
 }

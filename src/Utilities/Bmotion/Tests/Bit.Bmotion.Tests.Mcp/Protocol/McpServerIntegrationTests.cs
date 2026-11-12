@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using System.Net.Http.Json;
 using ModelContextProtocol.Protocol;
 using Bit.Bmotion.Tests.Mcp.TestInfra;
@@ -65,11 +65,10 @@ public class McpServerIntegrationTests
     [TestMethod]
     public async Task ListTools_ExposesExactlyTheToolsTheAttributesDeclare()
     {
-        var overTheWire = (await Server.Client.ListToolsAsync()).Select(tool => tool.Name).ToArray();
+        var overTheWire = (await Server.Client.ListToolsAsync(cancellationToken: TestContext.CancellationToken)).Select(tool => tool.Name).ToArray();
         var declared = new McpController().GetMcpCatalog().Tools.Select(tool => tool.Name).ToArray();
 
-        CollectionAssert.AreEquivalent(declared, overTheWire,
-                                       $"Over the wire: {string.Join(", ", overTheWire.Order())}.");
+        Assert.AreSequenceEqual(declared, overTheWire, Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, $"Over the wire: {string.Join(", ", overTheWire.Order())}.");
     }
 
     /// <summary>
@@ -79,7 +78,7 @@ public class McpServerIntegrationTests
     [TestMethod]
     public async Task ListTools_EveryTool_ArrivesWithADescriptionAndAnInputSchema()
     {
-        foreach (var tool in await Server.Client.ListToolsAsync())
+        foreach (var tool in await Server.Client.ListToolsAsync(cancellationToken: TestContext.CancellationToken))
         {
             Assert.IsFalse(string.IsNullOrWhiteSpace(tool.Description), $"'{tool.Name}' arrived with no description.");
 
@@ -93,7 +92,7 @@ public class McpServerIntegrationTests
     [TestMethod]
     public async Task ListTools_TheArgumentNames_AreTheOnesTheMethodsDeclare()
     {
-        var tools = (await Server.Client.ListToolsAsync()).ToDictionary(tool => tool.Name, StringComparer.Ordinal);
+        var tools = (await Server.Client.ListToolsAsync(cancellationToken: TestContext.CancellationToken)).ToDictionary(tool => tool.Name, StringComparer.Ordinal);
 
         // One entry per tool - including the ones that take no arguments - so a tool added without
         // updating this map fails the coverage check below instead of going unchecked.
@@ -117,8 +116,7 @@ public class McpServerIntegrationTests
             [nameof(McpController.GetBmotionAnimatableProperties)] = ["filter"],
         };
 
-        CollectionAssert.AreEquivalent(tools.Keys.ToArray(), expectedArguments.Keys.ToArray(),
-                                       "The expected-argument map must cover exactly the tools the server exposes.");
+        Assert.AreSequenceEqual(tools.Keys.ToArray(), expectedArguments.Keys.ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, "The expected-argument map must cover exactly the tools the server exposes.");
 
         foreach (var (name, expected) in expectedArguments)
         {
@@ -128,8 +126,7 @@ public class McpServerIntegrationTests
                 ? properties.EnumerateObject().Select(property => property.Name).ToArray()
                 : [];
 
-            CollectionAssert.AreEquivalent(expected, actual,
-                                           $"'{name}' declares [{string.Join(", ", actual)}] in its schema.");
+            Assert.AreSequenceEqual(expected, actual, Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, $"'{name}' declares [{string.Join(", ", actual)}] in its schema.");
         }
     }
 
@@ -161,27 +158,26 @@ public class McpServerIntegrationTests
             [nameof(McpController.GetBmotionAnimatableProperties)] = new Dictionary<string, object?>(),
         };
 
-        var tools = await Server.Client.ListToolsAsync();
+        var tools = await Server.Client.ListToolsAsync(cancellationToken: TestContext.CancellationToken);
 
         // A new tool must get an entry here - otherwise it would be called with no arguments and a
         // required one would fail for a reason that has nothing to do with the server.
-        CollectionAssert.AreEquivalent(tools.Select(tool => tool.Name).ToArray(), arguments.Keys.ToArray(),
-                                       "The argument map must cover exactly the tools the server exposes.");
+        Assert.AreSequenceEqual(tools.Select(tool => tool.Name).ToArray(), arguments.Keys.ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, "The argument map must cover exactly the tools the server exposes.");
 
         var called = 0;
 
         foreach (var tool in tools)
         {
-            var result = await Server.Client.CallToolAsync(tool.Name, arguments[tool.Name]);
+            var result = await Server.Client.CallToolAsync(tool.Name, arguments[tool.Name], cancellationToken: TestContext.CancellationToken);
 
-            Assert.IsFalse(result.IsError is true, $"'{tool.Name}' answered with an error: {Render(result)}");
-            Assert.AreNotEqual(0, result.Content.Count, $"'{tool.Name}' answered with nothing at all.");
+            Assert.AreNotEqual(true, result.IsError, $"'{tool.Name}' answered with an error: {Render(result)}");
+            Assert.IsNotEmpty(result.Content, $"'{tool.Name}' answered with nothing at all.");
             Assert.AreNotEqual(string.Empty, Render(result).Trim(), $"'{tool.Name}' answered with empty content.");
 
             called++;
         }
 
-        Assert.IsTrue(called >= 15, $"Only {called} tools were called.");
+        Assert.IsGreaterThanOrEqualTo(15, called, $"Only {called} tools were called.");
     }
 
     /// <summary>
@@ -199,17 +195,17 @@ public class McpServerIntegrationTests
                 ["from"] = 0,
                 ["to"] = 100,
                 ["includeSamples"] = true,
-            });
+            }, cancellationToken: TestContext.CancellationToken);
 
-        Assert.IsFalse(result.IsError is true, Render(result));
+        Assert.AreNotEqual(true, result.IsError, Render(result));
 
         // The tool measures however many transitions it is handed, so one measurement arrives as a
         // one-element array rather than as a bare object.
         var payload = Single(result);
 
         Assert.AreEqual("Spring", payload.GetProperty("kind").GetString());
-        Assert.IsTrue(payload.GetProperty("settleSeconds").GetDouble() > 0);
-        Assert.IsTrue(payload.GetProperty("overshootPercent").GetDouble() < 0.5, "A critically damped spring measured as overshooting.");
+        Assert.IsGreaterThan(0, payload.GetProperty("settleSeconds").GetDouble());
+        Assert.IsLessThan(0.5, payload.GetProperty("overshootPercent").GetDouble(), "A critically damped spring measured as overshooting.");
         Assert.AreNotEqual(0, payload.GetProperty("samples").GetArrayLength());
         Assert.IsFalse(string.IsNullOrWhiteSpace(payload.GetProperty("reading").GetString()));
     }
@@ -219,7 +215,7 @@ public class McpServerIntegrationTests
     {
         var result = await Server.Client.CallToolAsync(
             nameof(McpController.SimulateBmotionTransition),
-            new Dictionary<string, object?> { ["transition"] = "tween(0.5, Linear)", ["from"] = 12.5, ["to"] = 87.5 });
+            new Dictionary<string, object?> { ["transition"] = "tween(0.5, Linear)", ["from"] = 12.5, ["to"] = 87.5 }, cancellationToken: TestContext.CancellationToken);
 
         var payload = Single(result);
 
@@ -235,7 +231,7 @@ public class McpServerIntegrationTests
             new Dictionary<string, object?>
             {
                 ["code"] = "@if (show)\n{\n    <Bmotion Exit=\"Bm.To(opacity: 0)\">\n        <div />\n    </Bmotion>\n}",
-            });
+            }, cancellationToken: TestContext.CancellationToken);
 
         var payload = Payload(result);
 
@@ -258,14 +254,14 @@ public class McpServerIntegrationTests
     {
         var result = await Server.Client.CallToolAsync(
             nameof(McpController.SimulateBmotionTransition),
-            new Dictionary<string, object?> { ["transition"] = "swoosh(0.4)" });
+            new Dictionary<string, object?> { ["transition"] = "swoosh(0.4)" }, cancellationToken: TestContext.CancellationToken);
 
-        Assert.IsFalse(result.IsError is true, "A correctable mistake was reported as a failed call.");
+        Assert.AreNotEqual(true, result.IsError, "A correctable mistake was reported as a failed call.");
 
         var payload = Single(result);
 
         Assert.IsFalse(string.IsNullOrWhiteSpace(payload.GetProperty("error").GetString()));
-        StringAssert.Contains(payload.GetProperty("error").GetString()!, "spring");
+        Assert.Contains("spring", payload.GetProperty("error").GetString()!);
     }
 
     [TestMethod]
@@ -273,10 +269,10 @@ public class McpServerIntegrationTests
     {
         var result = await Server.Client.CallToolAsync(
             nameof(McpController.GetBmotionRecipe),
-            new Dictionary<string, object?> { ["id"] = "teleport" });
+            new Dictionary<string, object?> { ["id"] = "teleport" }, cancellationToken: TestContext.CancellationToken);
 
-        Assert.IsFalse(result.IsError is true);
-        StringAssert.Contains(Render(result), "staggered-list");
+        Assert.AreNotEqual(true, result.IsError);
+        Assert.Contains("staggered-list", Render(result));
     }
 
     [TestMethod]
@@ -284,7 +280,7 @@ public class McpServerIntegrationTests
     {
         var result = await Server.Client.CallToolAsync(
             nameof(McpController.SimulateBmotionTransition),
-            new Dictionary<string, object?> { ["transition"] = "tween(0.3)" });
+            new Dictionary<string, object?> { ["transition"] = "tween(0.3)" }, cancellationToken: TestContext.CancellationToken);
 
         var payload = Single(result);
 
@@ -296,22 +292,22 @@ public class McpServerIntegrationTests
     public async Task CallTool_AToolThatDoesNotExist_Fails_WithoutTakingTheSessionDown()
     {
         var error = await Assert.ThrowsAsync<ModelContextProtocol.McpException>(
-            () => Server.Client.CallToolAsync("GetBmotionNothing", new Dictionary<string, object?>()).AsTask());
+            () => Server.Client.CallToolAsync("GetBmotionNothing", new Dictionary<string, object?>(), cancellationToken: TestContext.CancellationToken).AsTask());
 
-        StringAssert.Contains(error.Message, "GetBmotionNothing");
+        Assert.Contains("GetBmotionNothing", error.Message);
 
         // The session is still usable afterwards, which is what makes a bad call recoverable.
-        Assert.AreNotEqual(0, (await Server.Client.ListToolsAsync()).Count);
+        Assert.IsNotEmpty(await Server.Client.ListToolsAsync(cancellationToken: TestContext.CancellationToken));
     }
 
     [TestMethod]
     public async Task ListPrompts_ExposesEveryWorkflow_WithItsArguments()
     {
-        var prompts = await Server.Client.ListPromptsAsync();
+        var prompts = await Server.Client.ListPromptsAsync(cancellationToken: TestContext.CancellationToken);
 
         var declared = new McpController().GetMcpCatalog().Prompts.Select(prompt => prompt.Name).ToArray();
 
-        CollectionAssert.AreEquivalent(declared, prompts.Select(prompt => prompt.Name).ToArray());
+        Assert.AreSequenceEqual(declared, prompts.Select(prompt => prompt.Name).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
         foreach (var prompt in prompts)
         {
@@ -328,22 +324,22 @@ public class McpServerIntegrationTests
             {
                 ["request"] = "the cards should appear one after another",
                 ["renderMode"] = "server",
-            });
+            }, cancellationToken: TestContext.CancellationToken);
 
-        Assert.AreNotEqual(0, result.Messages.Count);
+        Assert.IsNotEmpty(result.Messages);
 
         var text = string.Join('\n', result.Messages.Select(message => (message.Content as TextContentBlock)?.Text));
 
-        StringAssert.Contains(text, "the cards should appear one after another");
-        StringAssert.Contains(text, "server");
-        StringAssert.Contains(text, nameof(McpController.AnalyzeBmotionAnimation));
+        Assert.Contains("the cards should appear one after another", text);
+        Assert.Contains("server", text);
+        Assert.Contains(nameof(McpController.AnalyzeBmotionAnimation), text);
     }
 
     [TestMethod]
     public async Task ListResources_ExposesTheFixedOnes_AndTheTemplatedOnes()
     {
-        var resources = await Server.Client.ListResourcesAsync();
-        var templates = await Server.Client.ListResourceTemplatesAsync();
+        var resources = await Server.Client.ListResourcesAsync(cancellationToken: TestContext.CancellationToken);
+        var templates = await Server.Client.ListResourceTemplatesAsync(cancellationToken: TestContext.CancellationToken);
 
         var uris = resources.Select(resource => resource.Uri)
             .Concat(templates.Select(template => template.UriTemplate))
@@ -351,17 +347,17 @@ public class McpServerIntegrationTests
 
         var declared = new McpController().GetMcpCatalog().Resources.Select(resource => resource.Name).ToArray();
 
-        CollectionAssert.AreEquivalent(declared, uris, $"Over the wire: {string.Join(", ", uris.Order())}.");
+        Assert.AreSequenceEqual(declared, uris, Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, $"Over the wire: {string.Join(", ", uris.Order())}.");
     }
 
     [TestMethod]
     public async Task ReadResource_TheFixedResources_ReturnTheirDocuments()
     {
-        foreach (var resource in await Server.Client.ListResourcesAsync())
+        foreach (var resource in await Server.Client.ListResourcesAsync(cancellationToken: TestContext.CancellationToken))
         {
-            var result = await resource.ReadAsync();
+            var result = await resource.ReadAsync(cancellationToken: TestContext.CancellationToken);
 
-            Assert.AreNotEqual(0, result.Contents.Count, $"'{resource.Uri}' returned nothing.");
+            Assert.IsNotEmpty(result.Contents, $"'{resource.Uri}' returned nothing.");
 
             var text = (result.Contents[0] as TextResourceContents)?.Text;
 
@@ -372,17 +368,17 @@ public class McpServerIntegrationTests
     [TestMethod]
     public async Task ReadResource_ATemplatedResource_ResolvesItsArgument()
     {
-        var guide = await Server.Client.ReadResourceAsync("bmotion://guide/Installation");
+        var guide = await Server.Client.ReadResourceAsync("bmotion://guide/Installation", cancellationToken: TestContext.CancellationToken);
 
-        StringAssert.Contains(((TextResourceContents)guide.Contents[0]).Text!, "## Installation");
+        Assert.Contains("## Installation", ((TextResourceContents)guide.Contents[0]).Text!);
 
-        var type = await Server.Client.ReadResourceAsync("bmotion://api/BmSpring");
+        var type = await Server.Client.ReadResourceAsync("bmotion://api/BmSpring", cancellationToken: TestContext.CancellationToken);
 
-        StringAssert.Contains(((TextResourceContents)type.Contents[0]).Text!, "Stiffness");
+        Assert.Contains("Stiffness", ((TextResourceContents)type.Contents[0]).Text!);
 
-        var setup = await Server.Client.ReadResourceAsync("bmotion://setup/server");
+        var setup = await Server.Client.ReadResourceAsync("bmotion://setup/server", cancellationToken: TestContext.CancellationToken);
 
-        StringAssert.Contains(((TextResourceContents)setup.Contents[0]).Text!, "Blazor Server");
+        Assert.Contains("Blazor Server", ((TextResourceContents)setup.Contents[0]).Text!);
     }
 
     /// <summary>
@@ -393,11 +389,11 @@ public class McpServerIntegrationTests
     [TestMethod]
     public async Task ReadResource_ASourceFilePath_SurvivesUriEscaping()
     {
-        var result = await Server.Client.ReadResourceAsync($"bmotion://source/{Uri.EscapeDataString("Demo/Server/Program.cs")}");
+        var result = await Server.Client.ReadResourceAsync($"bmotion://source/{Uri.EscapeDataString("Demo/Server/Program.cs")}", cancellationToken: TestContext.CancellationToken);
 
         var text = ((TextResourceContents)result.Contents[0]).Text!;
 
-        StringAssert.Contains(text, "MapMcp");
+        Assert.Contains("MapMcp", text);
         Assert.AreEqual(BmotionSourceCatalog.GetSourceFile("Demo/Server/Program.cs"), text);
     }
 
@@ -422,17 +418,17 @@ public class McpServerIntegrationTests
         };
 
         var results = await Task.WhenAll(calls.Select(call =>
-            Server.Client.CallToolAsync(call.Tool, call.Arguments).AsTask()));
+            Server.Client.CallToolAsync(call.Tool, call.Arguments, cancellationToken: TestContext.CancellationToken).AsTask()));
 
         for (int i = 0; i < results.Length; i++)
         {
-            Assert.IsFalse(results[i].IsError is true, $"'{calls[i].Tool}' failed under concurrency: {Render(results[i])}");
+            Assert.AreNotEqual(true, results[i].IsError, $"'{calls[i].Tool}' failed under concurrency: {Render(results[i])}");
         }
 
         // And the same question asked in that crowd still gives the answer it gives alone.
         var alone = await Server.Client.CallToolAsync(
             nameof(McpController.SimulateBmotionTransition),
-            new Dictionary<string, object?> { ["transition"] = "spring(stiffness: 260, damping: 12)" });
+            new Dictionary<string, object?> { ["transition"] = "spring(stiffness: 260, damping: 12)" }, cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(Single(results[0]).GetProperty("settleSeconds").GetDouble(),
                         Single(alone).GetProperty("settleSeconds").GetDouble());
@@ -448,20 +444,20 @@ public class McpServerIntegrationTests
     {
         var http = Server.Http;
 
-        var catalog = await http.GetFromJsonAsync<BmotionMcpCatalogDto>("/api/Mcp/GetMcpCatalog");
+        var catalog = await http.GetFromJsonAsync<BmotionMcpCatalogDto>("/api/Mcp/GetMcpCatalog", TestContext.CancellationToken);
 
         Assert.IsNotNull(catalog);
-        Assert.AreNotEqual(0, catalog.Tools.Length);
+        Assert.IsNotEmpty(catalog.Tools);
 
         var simulations = await http.GetFromJsonAsync<BmotionSimulationDto[]>(
-            "/api/Mcp/SimulateBmotionTransition?transition=spring(stiffness:%20260,%20damping:%2012)");
+            "/api/Mcp/SimulateBmotionTransition?transition=spring(stiffness:%20260,%20damping:%2012)", TestContext.CancellationToken);
 
         Assert.IsNotNull(simulations);
 
         var simulation = simulations.Single();
 
         Assert.AreEqual("Spring", simulation.Kind);
-        Assert.IsTrue(simulation.SettleSeconds > 0);
+        Assert.IsGreaterThan(0, simulation.SettleSeconds);
     }
 
     /// <summary>The answer as a client renders it: every text block the call returned.</summary>
@@ -497,4 +493,6 @@ public class McpServerIntegrationTests
 
         return JsonDocument.Parse(Render(result)).RootElement;
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

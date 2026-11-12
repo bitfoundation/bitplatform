@@ -42,7 +42,7 @@ public class ProtocolTests : BunitContext
         Assert.AreEqual(0, rows[0].GetProperty("depth").GetInt32());
         var child = rows.Single(r => r.GetProperty("name").GetString() == "ChildComponent");
         Assert.AreEqual(1, child.GetProperty("depth").GetInt32());
-        Assert.IsTrue(rows[0].GetProperty("totalMs").GetDouble() >= child.GetProperty("totalMs").GetDouble());
+        Assert.IsGreaterThanOrEqualTo(child.GetProperty("totalMs").GetDouble(), rows[0].GetProperty("totalMs").GetDouble());
         Assert.AreEqual(2, batch.GetProperty("timeline").GetProperty("bars").GetArrayLength());
 
         Assert.AreEqual(0, Ask("batch", new { batchId = 999_999 }).GetProperty("rows").GetArrayLength(), "a batch no sample remembers rendered nothing BevTools still holds");
@@ -70,7 +70,7 @@ public class ProtocolTests : BunitContext
         var again = Ask("snapshot", new { since = version });
 
         Assert.AreEqual(BevSessionExporter.Format, first.GetProperty("session").GetProperty("format").GetString());
-        Assert.IsTrue(first.GetProperty("session").GetProperty("components").GetProperty("items").GetArrayLength() >= 2);
+        Assert.IsGreaterThanOrEqualTo(2, first.GetProperty("session").GetProperty("components").GetProperty("items").GetArrayLength());
         Assert.IsTrue(again.GetProperty("unchanged").GetBoolean());
         Assert.IsFalse(first.GetProperty("session").TryGetProperty("profile", out _), "polls leave the render profile out");
     }
@@ -160,9 +160,9 @@ public class ProtocolTests : BunitContext
         Assert.IsTrue(Session.IsCapturing);
 
         var trace = Ask("export", new { format = "trace" });
-        StringAssert.EndsWith(trace.GetProperty("fileName").GetString(), ".json");
+        Assert.EndsWith(".json", trace.GetProperty("fileName").GetString());
         Assert.AreEqual(BevTraceExporter.Format, JsonDocument.Parse(trace.GetProperty("content").GetString()!).RootElement.GetProperty("otherData").GetProperty("format").GetString());
-        StringAssert.StartsWith(Ask("export", new { format = "markdown" }).GetProperty("content").GetString(), "# BevTools report");
+        Assert.StartsWith("# BevTools report", Ask("export", new { format = "markdown" }).GetProperty("content").GetString());
         Assert.AreEqual("Unknown method 'nope'.", Ask("nope").GetProperty("error").GetString());
     }
 
@@ -186,8 +186,8 @@ public class ProtocolTests : BunitContext
         Session.Diagnostics.Evaluate(force: true);
 
         var events = Session.Timeline.Snapshot().Where(e => e.Category == "websocket").ToList();
-        Assert.AreEqual(1, events.Count(e => e.Title.StartsWith("WebSocket opened", StringComparison.Ordinal)));
-        Assert.AreEqual(1, events.Count(e => e.Title.StartsWith("Large message", StringComparison.Ordinal)), "a large message is reported once, not on every report");
+        Assert.ContainsSingle(e => e.Title.StartsWith("WebSocket opened", StringComparison.Ordinal), events);
+        Assert.ContainsSingle(e => e.Title.StartsWith("Large message", StringComparison.Ordinal), events, "a large message is reported once, not on every report");
         Assert.IsTrue(events.All(e => e.Kind == BevToolsEventKind.Circuit));
         Assert.Contains(f => f.Diagnostic.RuleId == "circuit.large-render-batch", Session.Diagnostics.Findings);
     }
@@ -209,8 +209,8 @@ public class ProtocolTests : BunitContext
         Assert.AreEqual(1, Session.Browser.ReconnectCount);
         Assert.AreEqual("hide", Session.Browser.ReconnectState);
         var states = Session.Timeline.Snapshot().Where(e => e.Category == "reconnect").ToList();
-        CollectionAssert.AreEqual(new[] { "Reconnect show", "Reconnect retrying (attempt 1)", "Reconnect hide" }, states.Select(e => e.Title).ToArray());
-        Assert.IsTrue(states[0].Timestamp <= before.AddSeconds(-2.9), $"{states[0].Timestamp:O} is three seconds before {before:O}");
+        Assert.AreSequenceEqual(new[] { "Reconnect show", "Reconnect retrying (attempt 1)", "Reconnect hide" }, states.Select(e => e.Title).ToArray());
+        Assert.IsLessThanOrEqualTo(before.AddSeconds(-2.9), states[0].Timestamp, $"{states[0].Timestamp:O} is three seconds before {before:O}");
         Assert.IsTrue(states[0].StartTicks < states[1].StartTicks && states[1].StartTicks < states[2].StartTicks, "in the order they happened");
     }
 
@@ -227,7 +227,7 @@ public class ProtocolTests : BunitContext
         Assert.AreEqual(1, Session.Browser.CspViolations);
         Assert.AreEqual(0, Session.Browser.JsErrorCount);
         Assert.AreEqual(1, Session.Browser.EnhancedNavigations);
-        CollectionAssert.AreEquivalent(new[] { "resource", "csp" }, Session.Errors.Snapshot().Select(e => e.Source).ToArray());
+        Assert.AreSequenceEqual(new[] { "resource", "csp" }, Session.Errors.Snapshot().Select(e => e.Source).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         var navigation = Session.Timeline.Snapshot().Single(e => e.Category == "enhanced-navigation");
         Assert.AreEqual(BevToolsEventKind.Navigation, navigation.Kind);
         Assert.IsFalse(navigation.Title.Contains("abc123", StringComparison.Ordinal));
@@ -259,7 +259,7 @@ public class ProtocolTests : BunitContext
         Assert.IsFalse(Session.Errors.Snapshot().Single().ExceptionType.Contains(jwt, StringComparison.Ordinal));
     }
 
-    public sealed class SecretHolder : ComponentBase
+    internal sealed class SecretHolder : ComponentBase
     {
         [Parameter] public string ApiKey { get; set; } = "opaque-api-key";
 
@@ -268,21 +268,21 @@ public class ProtocolTests : BunitContext
         protected override void BuildRenderTree(RenderTreeBuilder builder) => builder.AddContent(0, "holder");
     }
 
-    public sealed class MailSettings
+    internal sealed class MailSettings
     {
         public string Host { get; set; } = "smtp.example.com";
 
         public string Password { get; set; } = "hunter2";
     }
 
-    public sealed class WiringHolder : ComponentBase
+    internal sealed class WiringHolder : ComponentBase
     {
         [Parameter] public Wiring Wiring { get; set; } = new();
 
         protected override void BuildRenderTree(RenderTreeBuilder builder) => builder.AddContent(0, "holder");
     }
 
-    public sealed class Wiring
+    internal sealed class Wiring
     {
         public IConfiguration Configuration { get; set; } = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?> { ["Smtp:Host"] = "smtp.example.com" }).Build();
 

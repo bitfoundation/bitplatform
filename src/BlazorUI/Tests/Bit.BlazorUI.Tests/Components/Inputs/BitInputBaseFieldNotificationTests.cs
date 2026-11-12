@@ -41,7 +41,7 @@ public class BitInputBaseFieldNotificationTests : BunitTestContext
         // the value is still taken and reported; only the field it does not have is left out of the form.
         Assert.AreEqual("typed", changed);
         Assert.IsFalse(editContext.IsModified());
-        Assert.IsFalse(editContext.GetValidationMessages().Any());
+        Assert.IsEmpty(editContext.GetValidationMessages());
     }
 
     [TestMethod]

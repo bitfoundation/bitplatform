@@ -24,13 +24,13 @@ public class BitMenuButtonPrerenderTests
             },
         });
 
-        StringAssert.Contains(html, "bit-mnb-opb");
-        StringAssert.Contains(html, "Actions");
-        StringAssert.Contains(html, "aria-expanded=\"false\"");
-        StringAssert.Contains(html, "role=\"menu\"");
-        StringAssert.Contains(html, "Item A");
-        StringAssert.Contains(html, "Item B");
-        Assert.IsFalse(html.Contains("bit-mnb-omn"));
+        Assert.Contains("bit-mnb-opb", html);
+        Assert.Contains("Actions", html);
+        Assert.Contains("aria-expanded=\"false\"", html);
+        Assert.Contains("role=\"menu\"", html);
+        Assert.Contains("Item A", html);
+        Assert.Contains("Item B", html);
+        Assert.DoesNotContain("bit-mnb-omn", html);
     }
 
     [TestMethod]
@@ -47,7 +47,7 @@ public class BitMenuButtonPrerenderTests
         });
 
         // the selected item is promoted to the header, and left out of the menu
-        StringAssert.Contains(html, "Item B");
+        Assert.Contains("Item B", html);
         Assert.AreEqual(1, CountOf(html, "bit-mnb-itm"));
     }
 

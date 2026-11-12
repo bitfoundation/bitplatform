@@ -21,20 +21,20 @@ public class BitDateRangePickerStylesheetTests
         // An explicit Color publishes the role slots, which the resolution reads before the variables, then the primary
         // role an unset one stands for. The role classes themselves name no variable.
         var resolution = SourceFiles.GetScssBlock(stylesheet, "@mixin dtrp-color-resolution");
-        StringAssert.Contains(resolution, "--bit-dtrp-clr: var(--bit-dtrp-rl-clr, var(--bit-DateRangePicker-color, #{$clr-pri}));");
-        StringAssert.Contains(resolution, "--bit-dtrp-clr-txt: var(--bit-dtrp-rl-txt, var(--bit-DateRangePicker-text-color, #{$clr-pri-text}));");
-        StringAssert.Contains(resolution, "--bit-dtrp-clr-hover: var(--bit-dtrp-rl-hover, var(--bit-DateRangePicker-hover-color, #{$clr-pri-hover}));");
-        StringAssert.Contains(resolution, "--bit-dtrp-clr-active: var(--bit-dtrp-rl-active, var(--bit-DateRangePicker-active-color, #{$clr-pri-active}));");
-        StringAssert.Contains(resolution, "--bit-dtrp-clr-body: var(--bit-dtrp-rl-body, var(--bit-DateRangePicker-range-background, #{$clr-pri-light}));");
-        StringAssert.Contains(resolution, "--bit-dtrp-clr-focus: var(--bit-dtrp-rl-focus, var(--bit-DateRangePicker-focus-color));");
-        Assert.IsFalse(SourceFiles.GetScssBlock(stylesheet, "\n    .bit-dtrp-#{$role} {").Contains("--bit-DateRangePicker-"), "A role class reads a public variable ahead of its own color.");
+        Assert.Contains("--bit-dtrp-clr: var(--bit-dtrp-rl-clr, var(--bit-DateRangePicker-color, #{$clr-pri}));", resolution);
+        Assert.Contains("--bit-dtrp-clr-txt: var(--bit-dtrp-rl-txt, var(--bit-DateRangePicker-text-color, #{$clr-pri-text}));", resolution);
+        Assert.Contains("--bit-dtrp-clr-hover: var(--bit-dtrp-rl-hover, var(--bit-DateRangePicker-hover-color, #{$clr-pri-hover}));", resolution);
+        Assert.Contains("--bit-dtrp-clr-active: var(--bit-dtrp-rl-active, var(--bit-DateRangePicker-active-color, #{$clr-pri-active}));", resolution);
+        Assert.Contains("--bit-dtrp-clr-body: var(--bit-dtrp-rl-body, var(--bit-DateRangePicker-range-background, #{$clr-pri-light}));", resolution);
+        Assert.Contains("--bit-dtrp-clr-focus: var(--bit-dtrp-rl-focus, var(--bit-DateRangePicker-focus-color));", resolution);
+        Assert.DoesNotContain("--bit-DateRangePicker-", SourceFiles.GetScssBlock(stylesheet, "\n    .bit-dtrp-#{$role} {"), "A role class reads a public variable ahead of its own color.");
 
         // So does an explicit Size, for the five sizes a variable restyles.
-        StringAssert.Contains(stylesheet, "var(--bit-dtrp-inp-h, var(--bit-DateRangePicker-input-height, #{$siz-ctrl-md}))");
-        StringAssert.Contains(stylesheet, "var(--bit-dtrp-inp-fs, var(--bit-DateRangePicker-input-font-size, #{$tg-fs-sm}))");
-        StringAssert.Contains(stylesheet, "var(--bit-dtrp-lbl-fs, var(--bit-DateRangePicker-label-font-size, #{$tg-fs-sm}))");
-        StringAssert.Contains(stylesheet, "var(--bit-dtrp-cell-size, var(--bit-DateRangePicker-day-size, #{spacing(3.5)}))");
-        StringAssert.Contains(stylesheet, "var(--bit-dtrp-cell-fs, var(--bit-DateRangePicker-day-font-size, #{$tg-fs-xs}))");
+        Assert.Contains("var(--bit-dtrp-inp-h, var(--bit-DateRangePicker-input-height, #{$siz-ctrl-md}))", stylesheet);
+        Assert.Contains("var(--bit-dtrp-inp-fs, var(--bit-DateRangePicker-input-font-size, #{$tg-fs-sm}))", stylesheet);
+        Assert.Contains("var(--bit-dtrp-lbl-fs, var(--bit-DateRangePicker-label-font-size, #{$tg-fs-sm}))", stylesheet);
+        Assert.Contains("var(--bit-dtrp-cell-size, var(--bit-DateRangePicker-day-size, #{spacing(3.5)}))", stylesheet);
+        Assert.Contains("var(--bit-dtrp-cell-fs, var(--bit-DateRangePicker-day-font-size, #{$tg-fs-xs}))", stylesheet);
 
         Assert.IsFalse(Regex.IsMatch(stylesheet, @"var\(--bit-DateRangePicker-[a-z-]+, var\(--bit-dtrp-"), "A public variable is read before the parameter it restyles the default of.");
         Assert.IsFalse(Regex.IsMatch(stylesheet, @"var\(--bit-dtrp-(inp-h|inp-fs|lbl-fs|cell-size|cell-fs)\)"), "A size the Size publishes is read with no default behind it.");
@@ -53,19 +53,19 @@ public class BitDateRangePickerStylesheetTests
                                          "--bit-dtrp-rl-focus", "--bit-dtrp-inp-h", "--bit-dtrp-inp-fs", "--bit-dtrp-cell-size", "--bit-dtrp-cell-fs",
                                          "--bit-dtrp-lbl-fs" })
         {
-            StringAssert.Contains(resets, $"{property}: initial;");
+            Assert.Contains($"{property}: initial;", resets);
         }
 
         foreach (var element in new[] { "\n.bit-dtrp {", "\n.bit-dtrp-cal {" })
         {
             var declarations = SourceFiles.GetScssDeclarations(stylesheet, element);
-            StringAssert.Contains(declarations, "@include dtrp-parameter-resets;");
-            StringAssert.Contains(declarations, "@include dtrp-color-resolution;");
+            Assert.Contains("@include dtrp-parameter-resets;", declarations);
+            Assert.Contains("@include dtrp-color-resolution;", declarations);
         }
 
         var calloutIndex = stylesheet.IndexOf("\n.bit-dtrp-cal {", System.StringComparison.Ordinal);
-        Assert.IsTrue(calloutIndex < stylesheet.IndexOf("\n    .bit-dtrp-#{$role} {", System.StringComparison.Ordinal), "The role classes come before the callout that resets what they publish.");
-        Assert.IsTrue(calloutIndex < stylesheet.IndexOf("\n.bit-dtrp-sm {", System.StringComparison.Ordinal), "The size classes come before the callout that resets what they publish.");
+        Assert.IsLessThan(stylesheet.IndexOf("\n    .bit-dtrp-#{$role} {", System.StringComparison.Ordinal), calloutIndex, "The role classes come before the callout that resets what they publish.");
+        Assert.IsLessThan(stylesheet.IndexOf("\n.bit-dtrp-sm {", System.StringComparison.Ordinal), calloutIndex, "The size classes come before the callout that resets what they publish.");
     }
 
     [TestMethod]
@@ -74,10 +74,10 @@ public class BitDateRangePickerStylesheetTests
         var stylesheet = ReadStylesheet();
 
         // The message follows the variable the invalid border does, so restyling one restyles the other.
-        StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-dtrp-erm {"), "color: var(--bit-DateRangePicker-invalid-color, #{$clr-err});");
+        Assert.Contains("color: var(--bit-DateRangePicker-invalid-color, #{$clr-err});", SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-dtrp-erm {"));
 
         // Nothing else styles it - the disabled picker dims its own parts by name - so a message gone grey never
         // stops reading as the reason.
-        Assert.AreEqual(1, Regex.Matches(SourceFiles.StripScssComments(stylesheet), @"\.bit-dtrp-erm\b").Count, "Another rule restyles the error message.");
+        Assert.ContainsSingle(Regex.Matches(SourceFiles.StripScssComments(stylesheet), @"\.bit-dtrp-erm\b"), "Another rule restyles the error message.");
     }
 }

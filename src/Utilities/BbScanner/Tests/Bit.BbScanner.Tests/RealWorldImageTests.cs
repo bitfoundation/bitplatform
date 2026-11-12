@@ -228,7 +228,7 @@ public class RealWorldImageTests
         }
 
         var fraction = (double)ink / (binary.Width * binary.Height);
-        Assert.IsTrue(fraction < 0.05, $"Blank noisy paper binarised to {fraction:P1} ink.");
+        Assert.IsLessThan(0.05, fraction, $"Blank noisy paper binarised to {fraction:P1} ink.");
     }
 
     [TestMethod]
@@ -407,10 +407,18 @@ public class RealWorldImageTests
         };
 
         using var decoder = new BbBarcodeDecoder(options);
-        Assert.AreEqual(QrPayload, decoder.Decode(rgba, frame.Width, frame.Height, BbPixelFormat.Rgba32, false)?.Text);
-        Assert.AreEqual(QrPayload, decoder.Decode(bgra, frame.Width, frame.Height, BbPixelFormat.Bgra32, false)?.Text);
-        Assert.AreEqual(QrPayload, decoder.Decode(rgb, frame.Width, frame.Height, BbPixelFormat.Rgb24, false)?.Text);
-        Assert.AreEqual(QrPayload, decoder.Decode(frame.Pixels.ToArray(), frame.Width, frame.Height, BbPixelFormat.Gray8, false)?.Text);
+        var expectedValue = QrPayload;
+        var actualValue = decoder.Decode(rgba, frame.Width, frame.Height, BbPixelFormat.Rgba32, false)?.Text;
+        Assert.AreEqual(expectedValue, actualValue);
+        var expectedValue1 = QrPayload;
+        var actualValue2 = decoder.Decode(bgra, frame.Width, frame.Height, BbPixelFormat.Bgra32, false)?.Text;
+        Assert.AreEqual(expectedValue1, actualValue2);
+        var expectedValue3 = QrPayload;
+        var actualValue4 = decoder.Decode(rgb, frame.Width, frame.Height, BbPixelFormat.Rgb24, false)?.Text;
+        Assert.AreEqual(expectedValue3, actualValue4);
+        var expectedValue5 = QrPayload;
+        var actualValue6 = decoder.Decode(frame.Pixels.ToArray(), frame.Width, frame.Height, BbPixelFormat.Gray8, false)?.Text;
+        Assert.AreEqual(expectedValue5, actualValue6);
     }
 
     [TestMethod]
@@ -483,7 +491,9 @@ public class RealWorldImageTests
             var result = decoder.Decode(frame.View, suppressDuplicates: false);
             if (qr.Width <= width && qr.Height <= height)
             {
-                Assert.AreEqual(QrPayload, result?.Text);
+                var expectedValue = QrPayload;
+                var actualValue = result?.Text;
+                Assert.AreEqual(expectedValue, actualValue);
             }
         }
     }

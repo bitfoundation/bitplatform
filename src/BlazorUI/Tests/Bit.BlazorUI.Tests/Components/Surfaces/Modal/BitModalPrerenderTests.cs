@@ -25,15 +25,15 @@ public class BitModalPrerenderTests
             [nameof(BitModal.ChildContent)] = (RenderFragment)(b => b.AddContent(0, "Hello")),
         });
 
-        StringAssert.Contains(html, "bit-mdl");
-        StringAssert.Contains(html, "bit-mdl-ovl");
-        StringAssert.Contains(html, "Settings");
-        StringAssert.Contains(html, "Hello");
-        StringAssert.Contains(html, "Footer");
-        StringAssert.Contains(html, "bit-mdl-cls");
-        StringAssert.Contains(html, "role=\"dialog\"");
-        StringAssert.Contains(html, "aria-modal=\"true\"");
-        Assert.IsFalse(html.Contains("inert"), "An open Modal is marked inert on the static page.");
+        Assert.Contains("bit-mdl", html);
+        Assert.Contains("bit-mdl-ovl", html);
+        Assert.Contains("Settings", html);
+        Assert.Contains("Hello", html);
+        Assert.Contains("Footer", html);
+        Assert.Contains("bit-mdl-cls", html);
+        Assert.Contains("role=\"dialog\"", html);
+        Assert.Contains("aria-modal=\"true\"", html);
+        Assert.DoesNotContain("inert", html, "An open Modal is marked inert on the static page.");
     }
 
     [TestMethod]
@@ -45,8 +45,8 @@ public class BitModalPrerenderTests
         });
 
         // A closed Modal that was never opened is not in the page at all, kept-mounted or not.
-        Assert.IsFalse(html.Contains("bit-mdl"));
-        Assert.IsFalse(html.Contains("Hello"));
+        Assert.DoesNotContain("bit-mdl", html);
+        Assert.DoesNotContain("Hello", html);
     }
 
     [TestMethod]
@@ -66,7 +66,7 @@ public class BitModalPrerenderTests
             }),
         });
 
-        StringAssert.Contains(html, "bit-mdl-tcr");
-        StringAssert.Contains(html, "aria-label=\"Dismiss\"");
+        Assert.Contains("bit-mdl-tcr", html);
+        Assert.Contains("aria-label=\"Dismiss\"", html);
     }
 }

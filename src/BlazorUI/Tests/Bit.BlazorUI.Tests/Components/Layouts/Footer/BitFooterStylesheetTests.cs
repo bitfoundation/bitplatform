@@ -18,15 +18,15 @@ public class BitFooterStylesheetTests
         // An explicit Color or Size publishes these only while it is set, so they are read before the variable, which
         // only restyles the default an unset one stands for: the plain page surface and the medium spacing.
         // The colors are read per variant, the variant's own tier of each public variable ahead of the shared one.
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-ftr-bg, var(--bit-Footer-fill-background, var(--bit-Footer-background, #{$clr-bg-pri})));");
-        StringAssert.Contains(stylesheet, "color: var(--bit-ftr-on, var(--bit-Footer-fill-color, var(--bit-Footer-color, #{$clr-fg-pri})));");
-        StringAssert.Contains(stylesheet, "color: var(--bit-ftr-fg, var(--bit-Footer-outline-color, var(--bit-Footer-color, #{$clr-fg-pri})));");
-        StringAssert.Contains(stylesheet, "var(--bit-ftr-brd, var(--bit-Footer-outline-border-color, var(--bit-Footer-border-color, #{$clr-brd-pri})));");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-ftr-gut {"), "padding: var(--bit-ftr-padding, var(--bit-Footer-padding, #{spacing(1)} #{spacing(3)}));");
+        Assert.Contains("background-color: var(--bit-ftr-bg, var(--bit-Footer-fill-background, var(--bit-Footer-background, #{$clr-bg-pri})));", stylesheet);
+        Assert.Contains("color: var(--bit-ftr-on, var(--bit-Footer-fill-color, var(--bit-Footer-color, #{$clr-fg-pri})));", stylesheet);
+        Assert.Contains("color: var(--bit-ftr-fg, var(--bit-Footer-outline-color, var(--bit-Footer-color, #{$clr-fg-pri})));", stylesheet);
+        Assert.Contains("var(--bit-ftr-brd, var(--bit-Footer-outline-border-color, var(--bit-Footer-border-color, #{$clr-brd-pri})));", stylesheet);
+        Assert.Contains("padding: var(--bit-ftr-padding, var(--bit-Footer-padding, #{spacing(1)} #{spacing(3)}));", SourceFiles.GetScssBlock(stylesheet, "\n.bit-ftr-gut {"));
 
         // Gap and MaxWidth were already written inline under the private names, read first.
-        StringAssert.Contains(stylesheet, "max-width: var(--bit-ftr-max-width, var(--bit-Footer-max-width, none));");
-        StringAssert.Contains(stylesheet, "gap: var(--bit-ftr-gap, var(--bit-Footer-gap, 0));");
+        Assert.Contains("max-width: var(--bit-ftr-max-width, var(--bit-Footer-max-width, none));", stylesheet);
+        Assert.Contains("gap: var(--bit-ftr-gap, var(--bit-Footer-gap, 0));", stylesheet);
 
         Assert.IsFalse(Regex.IsMatch(stylesheet, @"var\(--bit-Footer-[a-z-]+, var\(--bit-ftr-"), "A public variable is read before the parameter it restyles the default of.");
     }
@@ -52,8 +52,7 @@ public class BitFooterStylesheetTests
         // over every filled one.
         foreach (var name in names)
         {
-            StringAssert.Contains(block, $"var(--bit-Footer-{variant}-{name}, var(--bit-Footer-{name}, ",
-                                  $"{selector} does not read --bit-Footer-{variant}-{name} ahead of --bit-Footer-{name}.");
+            Assert.Contains($"var(--bit-Footer-{variant}-{name}, var(--bit-Footer-{name}, ", block, $"{selector} does not read --bit-Footer-{variant}-{name} ahead of --bit-Footer-{name}.");
         }
 
         // A variant reads a shared color variable only right behind its own twin, and never the tier of another variant.
@@ -63,7 +62,7 @@ public class BitFooterStylesheetTests
                        $"{selector} reads the variables of another variant.");
 
         // The divider of a Bordered footer is drawn by its variant, never by a rule every variant shares.
-        Assert.IsFalse(stylesheet.Contains("\n.bit-ftr-brd {"), "A rule of every variant draws the divider.");
+        Assert.DoesNotContain("\n.bit-ftr-brd {", stylesheet, "A rule of every variant draws the divider.");
     }
 
     [TestMethod]
@@ -77,7 +76,7 @@ public class BitFooterStylesheetTests
         foreach (var property in new[] { "--bit-ftr-bg", "--bit-ftr-on", "--bit-ftr-fg", "--bit-ftr-brd", "--bit-ftr-bg-dis", "--bit-ftr-fg-dis",
                                          "--bit-ftr-padding", "--bit-ftr-gap", "--bit-ftr-max-width", "--bit-ftr-wrap", "--bit-ftr-align", "--bit-ftr-justify" })
         {
-            StringAssert.Contains(root, $"{property}: initial;");
+            Assert.Contains($"{property}: initial;", root);
         }
     }
 
@@ -89,9 +88,9 @@ public class BitFooterStylesheetTests
         // The text of an Outline or Text footer is read on the page rather than over the role's fill, so it takes the
         // role's text color - a secondary or a warning main is picked to fill a surface and is under 3:1 as text on white -
         // while the border and the fill keep the main.
-        StringAssert.Contains(roles, "--bit-ftr-fg: #{role-text($role, $tokens)};");
-        StringAssert.Contains(roles, "--bit-ftr-brd: #{role($tokens, main)};");
-        StringAssert.Contains(roles, "--bit-ftr-bg: #{role($tokens, main)};");
+        Assert.Contains("--bit-ftr-fg: #{role-text($role, $tokens)};", roles);
+        Assert.Contains("--bit-ftr-brd: #{role($tokens, main)};", roles);
+        Assert.Contains("--bit-ftr-bg: #{role($tokens, main)};", roles);
     }
 
     private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Layouts", "Footer", "BitFooter.scss");

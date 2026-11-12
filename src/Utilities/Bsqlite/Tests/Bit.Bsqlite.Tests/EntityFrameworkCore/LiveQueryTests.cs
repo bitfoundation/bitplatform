@@ -75,7 +75,7 @@ public sealed class LiveQueryTests
                 await Task.Delay(1, Ct);
             }
 
-            Assert.AreEqual(i + 1, live.Current!.Count);
+            Assert.HasCount(i + 1, live.Current!);
         }
     }
 

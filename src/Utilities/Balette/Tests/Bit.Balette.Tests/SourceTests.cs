@@ -37,7 +37,7 @@ public class SourceTests
 
         Assert.HasCount(2, results);
         Assert.AreEqual("open", results[0].Id);
-        Assert.IsFalse(results.Any(r => r.Id == "close"));
+        Assert.DoesNotContain(r => r.Id == "close", results);
     }
 
     [TestMethod]

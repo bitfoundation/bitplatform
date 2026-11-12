@@ -2,8 +2,7 @@ using System.Buffers.Binary;
 
 namespace Boilerplate.WorkbenchTests.Infrastructure;
 
-/// <summary>The size and color type a PNG's header declares.</summary>
-public sealed record PngInfo(int Width, int Height, byte ColorType)
+internal sealed record PngInfo(int Width, int Height, byte ColorType)
 {
     /// <summary>Whether the image carries an alpha channel, which the App Store refuses in screenshots.</summary>
     public bool HasAlpha => ColorType is 4 or 6;

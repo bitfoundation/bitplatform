@@ -64,7 +64,7 @@ public class BitAiCopyButtonE2ETests : E2ETestBase
         await Expect(Live("cpb-basic")).ToHaveTextAsync("Copied");
 
         var copied = await Page.EvaluateAsync<string[]>("() => window.__e2eCopied");
-        CollectionAssert.Contains(copied, "Hello from the clipboard");
+        Assert.Contains("Hello from the clipboard", copied);
 
         if (IsChromium)
         {
@@ -127,7 +127,7 @@ public class BitAiCopyButtonE2ETests : E2ETestBase
 
         await Expect(Text("cpb-basic-count")).ToHaveTextAsync("1");
         await Expect(Button("cpb-basic")).ToHaveAttributeAsync("aria-label", "Copied");
-        CollectionAssert.Contains(await Page.EvaluateAsync<string[]>("() => window.__e2eCopied"), "Hello from the clipboard");
+        Assert.Contains("Hello from the clipboard", await Page.EvaluateAsync<string[]>("() => window.__e2eCopied"));
 
         // The hidden textarea it copies through is gone, the focus is back on the button, and the page did not move.
         await Expect(Button("cpb-basic")).ToBeFocusedAsync();
@@ -186,7 +186,7 @@ public class BitAiCopyButtonE2ETests : E2ETestBase
         await Expect(Text("cpb-kb-count")).ToHaveTextAsync("1");
         await Expect(Text("cpb-null-count")).ToHaveTextAsync("0");
         await Expect(Text("cpb-dis-count")).ToHaveTextAsync("0");
-        CollectionAssert.AreEqual(new[] { "Copied with the keyboard" }, (await Page.EvaluateAsync<string[]>("() => window.__e2eCopied")).Distinct().ToArray());
+        Assert.AreSequenceEqual(new[] { "Copied with the keyboard" }, (await Page.EvaluateAsync<string[]>("() => window.__e2eCopied")).Distinct().ToArray());
     }
 
     [TestMethod]
@@ -210,7 +210,7 @@ public class BitAiCopyButtonE2ETests : E2ETestBase
         // The icon and the label sit side by side.
         var icon = await Icon("cpb-label").RectAsync();
         var label = await Page.Locator("#cpb-label .bit-btn-prt").RectAsync();
-        Assert.IsTrue(icon.Right <= label.Left + 1, "The label follows the icon.");
+        Assert.IsLessThanOrEqualTo(label.Left + 1, icon.Right, "The label follows the icon.");
     }
 
     [TestMethod]
@@ -247,7 +247,7 @@ public class BitAiCopyButtonE2ETests : E2ETestBase
         await Expect(Icon("cpb-basic")).ToHaveClassAsync(HasClass("bit-icon--Accept"));
 
         var (family, content) = await Icon("cpb-basic").GlyphAsync();
-        Assert.IsFalse(family.Contains(AiE2EHelpers.AiGlyphFontFamily), "The check mark is a glyph of the core font.");
+        Assert.DoesNotContain(AiE2EHelpers.AiGlyphFontFamily, family, "The check mark is a glyph of the core font.");
         Assert.IsFalse(content is "none" or "normal" or "\"\"" or "", $"The check mark draws a character, was {content}.");
     }
 
@@ -282,7 +282,7 @@ public class BitAiCopyButtonE2ETests : E2ETestBase
 
         var icon = await Icon("cpb-rtl").RectAsync();
         var label = await Page.Locator("#cpb-rtl .bit-btn-prt").RectAsync();
-        Assert.IsTrue(icon.Left >= label.Right - 1, "Right to left, the icon is on the right of the label.");
+        Assert.IsGreaterThanOrEqualTo(label.Right - 1, icon.Left, "Right to left, the icon is on the right of the label.");
         await Expect(Root("cpb-basic")).Not.ToHaveAttributeAsync("dir", new Regex(".*"));
     }
 }

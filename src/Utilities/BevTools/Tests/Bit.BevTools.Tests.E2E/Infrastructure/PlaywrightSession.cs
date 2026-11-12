@@ -11,7 +11,7 @@ namespace Bit.BevTools.Tests.E2E.Infrastructure;
 /// Whatever stops the suite from running at all - no Playwright, no browser - is captured once as
 /// <see cref="Session.Unavailable"/>, so every test reports it without trying the same launch again.
 /// </remarks>
-public static class PlaywrightSession
+internal static class PlaywrightSession
 {
     private static readonly Lazy<Task<Session>> _session = new(StartAsync);
 
@@ -99,7 +99,7 @@ public static class PlaywrightSession
     }
 
     /// <summary>The shared browser, or the reason the suite cannot run.</summary>
-    public sealed record Session(IPlaywright? Playwright, IBrowser? Browser, string? Unavailable)
+    internal sealed record Session(IPlaywright? Playwright, IBrowser? Browser, string? Unavailable)
     {
         public static Session Fail(string reason) => new(null, null, reason);
     }

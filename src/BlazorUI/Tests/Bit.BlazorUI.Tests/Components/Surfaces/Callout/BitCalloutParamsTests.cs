@@ -71,8 +71,8 @@ public class BitCalloutParamsTests : BunitTestContext
     {
         var @params = new BitCalloutParams();
 
-        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitCallout)}", BitCalloutParams.ParamName);
-        Assert.AreEqual("BitParams.BitCallout", BitCalloutParams.ParamName);
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitCallout)}", new BitCalloutParams().Name);
+        Assert.AreEqual("BitParams.BitCallout", new BitCalloutParams().Name);
         Assert.IsInstanceOfType<IBitComponentParams>(@params);
         Assert.AreEqual(BitCalloutParams.ParamName, @params.Name);
     }
@@ -137,12 +137,12 @@ public class BitCalloutParamsTests : BunitTestContext
         Assert.IsTrue(component.Find(".bit-clo-cal").ClassList.Contains("cascaded-content"));
         Assert.IsTrue(component.Find(".bit-clo-ovl").ClassList.Contains("cascaded-overlay"));
 
-        StringAssert.Contains(component.Find(".bit-clo").GetAttribute("style"), "color:red");
-        StringAssert.Contains(component.Find(".bit-clo").GetAttribute("style"), "background:blue");
-        StringAssert.Contains(component.Find(".bit-clo-acn").GetAttribute("style"), "padding:4px");
-        StringAssert.Contains(component.Find(".bit-clo-arw").GetAttribute("style"), "opacity:0.5");
-        StringAssert.Contains(component.Find(".bit-clo-cal").GetAttribute("style"), "margin:2px");
-        StringAssert.Contains(component.Find(".bit-clo-ovl").GetAttribute("style"), "cursor:pointer");
+        Assert.Contains("color:red", component.Find(".bit-clo").GetAttribute("style")!);
+        Assert.Contains("background:blue", component.Find(".bit-clo").GetAttribute("style")!);
+        Assert.Contains("padding:4px", component.Find(".bit-clo-acn").GetAttribute("style")!);
+        Assert.Contains("opacity:0.5", component.Find(".bit-clo-arw").GetAttribute("style")!);
+        Assert.Contains("margin:2px", component.Find(".bit-clo-cal").GetAttribute("style")!);
+        Assert.Contains("cursor:pointer", component.Find(".bit-clo-ovl").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -209,11 +209,11 @@ public class BitCalloutParamsTests : BunitTestContext
         Assert.AreEqual(12, arguments[19]);
         Assert.AreEqual("top", arguments[21]);
         Assert.AreEqual("center", arguments[22]);
-        Assert.AreEqual(true, arguments[23]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(arguments[23]));
         Assert.AreEqual(24, arguments[24]);
         Assert.AreEqual(6, arguments[25]);
         Assert.AreEqual(20, arguments[26]);
-        Assert.AreEqual(true, arguments[27]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(arguments[27]));
     }
 
     [TestMethod]
@@ -233,7 +233,7 @@ public class BitCalloutParamsTests : BunitTestContext
         Assert.AreEqual("rtl", root.GetAttribute("dir"));
         Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
         Assert.IsTrue(root.ClassList.Contains("cascaded"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin:1px");
+        Assert.Contains("margin:1px", root.GetAttribute("style")!);
 
         // The callout is relocated to the body while it is open, so the direction and the name are carried over to it.
         Assert.AreEqual("rtl", callout.GetAttribute("dir"));
@@ -281,8 +281,8 @@ public class BitCalloutParamsTests : BunitTestContext
         component.Find(".bit-clo-ovl").Click();
         Assert.IsFalse(callout.Instance.IsOpen);
 
-        StringAssert.Contains(component.Find(".bit-clo-cal").GetAttribute("style"), "--bit-clo-mxh:8rem");
-        Assert.IsFalse(component.Find(".bit-clo-cal").GetAttribute("style")!.Contains("20rem"));
+        Assert.Contains("--bit-clo-mxh:8rem", component.Find(".bit-clo-cal").GetAttribute("style")!);
+        Assert.DoesNotContain("20rem", component.Find(".bit-clo-cal").GetAttribute("style")!);
         Assert.IsTrue(component.Find(".bit-clo-cal").ClassList.Contains("bit-clo-bsg"));
     }
 
@@ -292,7 +292,7 @@ public class BitCalloutParamsTests : BunitTestContext
         var component = RenderWithParams(new BitCalloutParams { NoShadow = true, Width = "18rem", ShowArrow = true });
 
         Assert.IsTrue(component.Find(".bit-clo-cal").ClassList.Contains("bit-clo-nsh"));
-        Assert.AreEqual(1, component.FindAll(".bit-clo-arw").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-clo-arw"));
 
         component.Render(parameters => parameters.Add(p => p.Parameters, new List<IBitComponentParams> { new BitCalloutParams() }));
 
@@ -303,7 +303,7 @@ public class BitCalloutParamsTests : BunitTestContext
         Assert.IsFalse(callout.ShowArrow);
         Assert.IsFalse(component.Find(".bit-clo-cal").ClassList.Contains("bit-clo-nsh"));
         Assert.IsNull(component.Find(".bit-clo-cal").GetAttribute("style"));
-        Assert.AreEqual(0, component.FindAll(".bit-clo-arw").Count);
+        Assert.IsEmpty(component.FindAll(".bit-clo-arw"));
     }
 
     [TestMethod]

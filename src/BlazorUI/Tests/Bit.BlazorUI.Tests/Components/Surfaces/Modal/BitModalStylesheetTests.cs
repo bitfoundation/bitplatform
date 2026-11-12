@@ -58,8 +58,8 @@ public class BitModalStylesheetTests
         var read = Regex.Matches(GetRules(stylesheet), @"var\((--bit-Modal-[A-Za-z-]+)").Select(m => m.Groups[1].Value).Distinct().Order().ToArray();
         var documented = Regex.Matches(GetHeader(stylesheet), @"(--bit-Modal-[A-Za-z-]+)").Select(m => m.Groups[1].Value).Distinct().Order().ToArray();
 
-        CollectionAssert.AreEqual(_publicVariables.Order().ToArray(), read);
-        CollectionAssert.AreEqual(read, documented);
+        Assert.AreSequenceEqual(_publicVariables.Order().ToArray(), read);
+        Assert.AreSequenceEqual(read, documented);
     }
 
     [TestMethod]
@@ -68,10 +68,10 @@ public class BitModalStylesheetTests
         var rules = GetRules(ReadStylesheet());
 
         // The offset is room inside the layer, and a cap of the consumer's own only ever narrows what that leaves.
-        StringAssert.Contains(GetRule(rules, ""), "box-sizing: border-box;");
-        StringAssert.Contains(GetRule(rules, ""), "padding: var(--bit-Modal-offset, 0px);");
-        StringAssert.Contains(GetRule(rules, "ctn"), "max-width: min(var(--bit-Modal-max-width, 100%), calc(100% - 2 * var(--bit-Modal-offset, 0px)));");
-        StringAssert.Contains(GetRule(rules, "ctn"), "max-height: min(var(--bit-Modal-max-height, 100%), calc(100% - 2 * var(--bit-Modal-offset, 0px)));");
+        Assert.Contains("box-sizing: border-box;", GetRule(rules, ""));
+        Assert.Contains("padding: var(--bit-Modal-offset, 0px);", GetRule(rules, ""));
+        Assert.Contains("max-width: min(var(--bit-Modal-max-width, 100%), calc(100% - 2 * var(--bit-Modal-offset, 0px)));", GetRule(rules, "ctn"));
+        Assert.Contains("max-height: min(var(--bit-Modal-max-height, 100%), calc(100% - 2 * var(--bit-Modal-offset, 0px)));", GetRule(rules, "ctn"));
     }
 
     [TestMethod,
@@ -89,7 +89,7 @@ public class BitModalStylesheetTests
         var match = Regex.Match(rules, $@"[^}}]*\.bit-mdl-{position}:is\(\.bit-rtl, :dir\(rtl\)\)[^{{]*\{{([^}}]*)\}}");
 
         Assert.IsTrue(match.Success, $"{position} is not pinned in a right-to-left layout.");
-        StringAssert.Contains(match.Groups[1].Value, $"justify-content: {justify};");
+        Assert.Contains($"justify-content: {justify};", match.Groups[1].Value);
     }
 
     [TestMethod]
@@ -99,7 +99,7 @@ public class BitModalStylesheetTests
 
         foreach (var position in new[] { "tst", "ten", "cst", "cen", "bst", "ben" })
         {
-            Assert.IsFalse(rules.Contains($".bit-mdl-{position}:is(.bit-rtl, :dir(rtl))"), $"{position} is pinned, so it no longer follows the direction.");
+            Assert.DoesNotContain($".bit-mdl-{position}:is(.bit-rtl, :dir(rtl))", rules, $"{position} is pinned, so it no longer follows the direction.");
         }
     }
 
@@ -110,8 +110,8 @@ public class BitModalStylesheetTests
 
         var forced = Regex.Match(rules, @"@media \(forced-colors: active\) \{.*?\n\}", RegexOptions.Singleline).Value;
 
-        StringAssert.Contains(forced, "border: $shp-border-width $shp-border-style CanvasText;");
-        StringAssert.Contains(forced, ".bit-mdl-cls:focus-visible");
+        Assert.Contains("border: $shp-border-width $shp-border-style CanvasText;", forced);
+        Assert.Contains(".bit-mdl-cls:focus-visible", forced);
     }
 
     [TestMethod]
@@ -119,15 +119,15 @@ public class BitModalStylesheetTests
     {
         var rule = GetRule(GetRules(ReadStylesheet()), "cls");
 
-        StringAssert.Contains(rule, "&:focus-visible {\n        @include focus-ring;");
-        StringAssert.Contains(rule, "border-radius: $shp-radius-button;");
-        StringAssert.Contains(rule, "&:disabled {");
+        Assert.Contains("&:focus-visible {\n        @include focus-ring;", rule);
+        Assert.Contains("border-radius: $shp-radius-button;", rule);
+        Assert.Contains("&:disabled {", rule);
 
         // The glyph is sized off the control icon token, so a preset that resizes control icons resizes it too.
-        StringAssert.Contains(rule, "font-size: $siz-icon-md;");
+        Assert.Contains("font-size: $siz-icon-md;", rule);
 
         // A header that holds nothing but the close button still puts it at the end.
-        StringAssert.Contains(rule, "margin-inline-start: auto;");
+        Assert.Contains("margin-inline-start: auto;", rule);
     }
 
     [TestMethod]
@@ -137,9 +137,9 @@ public class BitModalStylesheetTests
 
         // The header and the footer stay over the scrolling body, so the room they take is kept clear of what the
         // focus scrolls into view (WCAG 2.4.11), and only where each of them is actually rendered.
-        StringAssert.Contains(rule, "&:has(> .bit-mdl-hcn) {\n        scroll-padding-block-start:");
-        StringAssert.Contains(rule, "&:has(> .bit-mdl-fcn) {\n        scroll-padding-block-end:");
-        StringAssert.Contains(rule, "var(--bit-Modal-padding, #{$spa-dialog}) + #{$siz-ctrl-md}");
+        Assert.Contains("&:has(> .bit-mdl-hcn) {\n        scroll-padding-block-start:", rule);
+        Assert.Contains("&:has(> .bit-mdl-fcn) {\n        scroll-padding-block-end:", rule);
+        Assert.Contains("var(--bit-Modal-padding, #{$spa-dialog}) + #{$siz-ctrl-md}", rule);
     }
 
     [TestMethod]
@@ -148,9 +148,9 @@ public class BitModalStylesheetTests
         var rule = GetRule(GetRules(ReadStylesheet()), "fcn");
 
         // Never a literal row / flex-end in a dialog footer: Cupertino stacks its actions full width.
-        StringAssert.Contains(rule, "flex-direction: $layout-dialog-actions-direction;");
-        StringAssert.Contains(rule, "justify-content: $layout-dialog-actions-justify;");
-        StringAssert.Contains(rule, "align-items: $layout-dialog-actions-align;");
+        Assert.Contains("flex-direction: $layout-dialog-actions-direction;", rule);
+        Assert.Contains("justify-content: $layout-dialog-actions-justify;", rule);
+        Assert.Contains("align-items: $layout-dialog-actions-align;", rule);
     }
 
     [TestMethod]
@@ -162,11 +162,11 @@ public class BitModalStylesheetTests
 
         // The pulse collapses to nothing with the motion tokens, so a ring on the untouched duration answers instead -
         // unless the Modal was asked to animate regardless.
-        StringAssert.Contains(reduced, "animation-name: bit-mdl-refuse-ring-a;");
-        StringAssert.Contains(reduced, "animation-name: bit-mdl-refuse-ring-b;");
-        StringAssert.Contains(reduced, "animation-duration: $mot-duration-long-full;");
+        Assert.Contains("animation-name: bit-mdl-refuse-ring-a;", reduced);
+        Assert.Contains("animation-name: bit-mdl-refuse-ring-b;", reduced);
+        Assert.Contains("animation-duration: $mot-duration-long-full;", reduced);
         Assert.IsFalse(Regex.IsMatch(reduced, @"\d+m?s\b"), "The ring hard-codes a duration instead of reading the motion token.");
-        StringAssert.Contains(reduced, ":not(.bit-fam *)");
+        Assert.Contains(":not(.bit-fam *)", reduced);
     }
 
     /// <summary>
@@ -191,9 +191,9 @@ public class BitModalStylesheetTests
         // never a selection - nor, in Firefox, a drag of text an earlier selection reached.
         var handle = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-mdl-nta {");
 
-        StringAssert.Contains(handle, "touch-action: none;");
-        StringAssert.Contains(handle, "-webkit-user-select: none;");
-        StringAssert.Contains(handle, "\n    user-select: none;");
+        Assert.Contains("touch-action: none;", handle);
+        Assert.Contains("-webkit-user-select: none;", handle);
+        Assert.Contains("\n    user-select: none;", handle);
     }
 
     private static string GetHeader(string stylesheet) => stylesheet[..stylesheet.IndexOf("\n.bit-mdl {")];

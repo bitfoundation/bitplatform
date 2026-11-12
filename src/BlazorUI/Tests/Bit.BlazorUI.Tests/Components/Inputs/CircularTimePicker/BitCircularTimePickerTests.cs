@@ -189,8 +189,8 @@ public class BitCircularTimePickerTests : BunitTestContext
         Assert.IsNotNull(component.Find("input.bit-input-hidden"));
 
         // a standalone picker has no callout to dismiss, so it renders neither the overlay nor a close button
-        Assert.AreEqual(0, component.FindAll(".bit-ctp-ovl").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-ctp-cbn").Count);
+        Assert.IsEmpty(component.FindAll(".bit-ctp-ovl"));
+        Assert.IsEmpty(component.FindAll(".bit-ctp-cbn"));
     }
 
     [TestMethod]
@@ -322,7 +322,7 @@ public class BitCircularTimePickerTests : BunitTestContext
         await Press(component, HourAngle(3), OuterRing);
 
         Assert.AreEqual(BitCircularTimePickerView.Minute, component.Instance.View);
-        CollectionAssert.AreEqual(new[] { BitCircularTimePickerView.Minute }, views);
+        Assert.AreSequenceEqual(new[] { BitCircularTimePickerView.Minute }, views);
     }
 
     [TestMethod]
@@ -434,7 +434,7 @@ public class BitCircularTimePickerTests : BunitTestContext
 
         // the minute ring carries the twelve five-minute marks
         var numbers = component.FindAll(".bit-ctp-num");
-        Assert.AreEqual(12, numbers.Count);
+        Assert.HasCount(12, numbers);
         Assert.AreEqual("00", numbers[0].TextContent);
         Assert.AreEqual("55", numbers[11].TextContent);
     }
@@ -478,8 +478,8 @@ public class BitCircularTimePickerTests : BunitTestContext
             parameters.Add(p => p.EditMode, BitCircularTimePickerEditMode.OnlyHours);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-ctp-txt button").Count);
-        Assert.AreEqual(0, component.FindAll("button.bit-ctp-txt").Count);
+        Assert.IsEmpty(component.FindAll(".bit-ctp-txt button"));
+        Assert.IsEmpty(component.FindAll("button.bit-ctp-txt"));
     }
 
     [TestMethod]
@@ -558,7 +558,7 @@ public class BitCircularTimePickerTests : BunitTestContext
                              .OrderBy(h => h)
                              .ToArray();
 
-        CollectionAssert.AreEqual(new[] { 0, 3, 6, 9, 12, 15, 18, 21 }, enabled);
+        Assert.AreSequenceEqual(new[] { 0, 3, 6, 9, 12, 15, 18, 21 }, enabled);
     }
 
     [TestMethod]
@@ -575,7 +575,7 @@ public class BitCircularTimePickerTests : BunitTestContext
                                .Select(n => int.Parse(n.TextContent))
                                .ToArray();
 
-        CollectionAssert.AreEqual(new[] { 0, 15, 30, 45 }, enabled);
+        Assert.AreSequenceEqual(new[] { 0, 15, 30, 45 }, enabled);
     }
 
     // A step as large as the whole ring leaves :00 as its only value, so a press has to round onto it rather
@@ -616,7 +616,7 @@ public class BitCircularTimePickerTests : BunitTestContext
                                .OrderBy(h => h)
                                .ToArray();
 
-        CollectionAssert.AreEqual(new[] { 8, 9, 10, 11, 12, 13, 14, 15, 16, 17 }, enabled);
+        Assert.AreSequenceEqual(new[] { 8, 9, 10, 11, 12, 13, 14, 15, 16, 17 }, enabled);
     }
 
     // A bound outside of a day is a time of day all the same. The dial used to read the parts of it - a MaxTime
@@ -633,7 +633,7 @@ public class BitCircularTimePickerTests : BunitTestContext
 
         var dimmed = component.FindAll(".bit-ctp-num").Where(n => n.ClassList.Contains("bit-ctp-dis")).ToArray();
 
-        Assert.AreEqual(0, dimmed.Length);
+        Assert.IsEmpty(dimmed);
 
         component.Find(".bit-ctp-inp").Input("21:00");
 
@@ -744,7 +744,7 @@ public class BitCircularTimePickerTests : BunitTestContext
                                .Select(n => int.Parse(n.TextContent))
                                .ToArray();
 
-        CollectionAssert.AreEqual(new[] { 30, 35, 40, 45, 50, 55 }, enabled);
+        Assert.AreSequenceEqual(new[] { 30, 35, 40, 45, 50, 55 }, enabled);
     }
 
     [TestMethod]
@@ -761,7 +761,7 @@ public class BitCircularTimePickerTests : BunitTestContext
                                .OrderBy(h => h)
                                .ToArray();
 
-        CollectionAssert.AreEqual(new[] { 9, 10, 11 }, enabled);
+        Assert.AreSequenceEqual(new[] { 9, 10, 11 }, enabled);
     }
 
     [TestMethod]
@@ -775,7 +775,7 @@ public class BitCircularTimePickerTests : BunitTestContext
         var numbers = component.FindAll(".bit-ctp-num");
 
         Assert.AreEqual(23, numbers.Count(n => n.GetAttribute("aria-disabled") == "true"));
-        Assert.AreEqual(1, numbers.Count(n => n.HasAttribute("aria-disabled") is false));
+        Assert.ContainsSingle(n => n.HasAttribute("aria-disabled") is false, numbers);
     }
 
     [TestMethod]
@@ -820,7 +820,7 @@ public class BitCircularTimePickerTests : BunitTestContext
 
         var buttons = component.FindAll("button.bit-ctp-txt");
 
-        Assert.AreEqual(3, buttons.Count);
+        Assert.HasCount(3, buttons);
         Assert.AreEqual("09", buttons[0].TextContent.Trim());
         Assert.AreEqual("30", buttons[1].TextContent.Trim());
         Assert.AreEqual("15", buttons[2].TextContent.Trim());
@@ -838,7 +838,7 @@ public class BitCircularTimePickerTests : BunitTestContext
             parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
         });
 
-        Assert.AreEqual(2, component.FindAll("button.bit-ctp-txt").Count);
+        Assert.HasCount(2, component.FindAll("button.bit-ctp-txt"));
         Assert.AreEqual("09:30", component.Find(".bit-ctp-inp").GetAttribute("value"));
     }
 
@@ -866,7 +866,7 @@ public class BitCircularTimePickerTests : BunitTestContext
         Assert.AreEqual(BitCircularTimePickerView.Second, component.Instance.View);
         Assert.AreEqual(new TimeSpan(15, 20, 45), component.Instance.Value);
 
-        CollectionAssert.AreEqual(new[] { BitCircularTimePickerView.Minute, BitCircularTimePickerView.Second }, views);
+        Assert.AreSequenceEqual(new[] { BitCircularTimePickerView.Minute, BitCircularTimePickerView.Second }, views);
     }
 
     [TestMethod]
@@ -926,7 +926,7 @@ public class BitCircularTimePickerTests : BunitTestContext
                                .Select(n => int.Parse(n.TextContent))
                                .ToArray();
 
-        CollectionAssert.AreEqual(new[] { 0, 15, 30, 45 }, enabled);
+        Assert.AreSequenceEqual(new[] { 0, 15, 30, 45 }, enabled);
     }
 
     [TestMethod]
@@ -959,7 +959,7 @@ public class BitCircularTimePickerTests : BunitTestContext
                                .Select(n => int.Parse(n.TextContent))
                                .ToArray();
 
-        CollectionAssert.AreEqual(new[] { 0, 30 }, enabled);
+        Assert.AreSequenceEqual(new[] { 0, 30 }, enabled);
     }
 
     [TestMethod]
@@ -977,7 +977,7 @@ public class BitCircularTimePickerTests : BunitTestContext
                                .Select(n => int.Parse(n.TextContent))
                                .ToArray();
 
-        CollectionAssert.AreEqual(new[] { 20, 25, 30, 35, 40, 45, 50, 55 }, enabled);
+        Assert.AreSequenceEqual(new[] { 20, 25, 30, 35, 40, 45, 50, 55 }, enabled);
     }
 
     [TestMethod]
@@ -1072,7 +1072,7 @@ public class BitCircularTimePickerTests : BunitTestContext
 
         // the dial cannot stay on a ring the picker no longer carries
         Assert.AreEqual(BitCircularTimePickerView.Hour, component.Instance.View);
-        Assert.AreEqual(2, component.FindAll("button.bit-ctp-txt").Count);
+        Assert.HasCount(2, component.FindAll("button.bit-ctp-txt"));
     }
 
     [TestMethod]
@@ -1153,7 +1153,7 @@ public class BitCircularTimePickerTests : BunitTestContext
         Assert.AreEqual(selected.Id, clock.GetAttribute("aria-activedescendant"));
 
         // the three views share the same numbers, so their options must not share ids either
-        StringAssert.EndsWith(selected.Id, "-s15");
+        Assert.EndsWith("-s15", selected.Id);
     }
 
     #endregion
@@ -1605,7 +1605,7 @@ public class BitCircularTimePickerTests : BunitTestContext
         // The starting value only says where the first change would land, so a dial that refuses the change
         // must not come to rest on it either: the picker is still empty, and no number is pointed at.
         Assert.IsNull(value);
-        Assert.IsFalse(component.FindAll(".bit-ctp-num").Any(n => n.GetAttribute("aria-selected") == "true"));
+        Assert.DoesNotContain(n => n.GetAttribute("aria-selected") == "true", component.FindAll(".bit-ctp-num"));
     }
 
     [TestMethod]
@@ -1822,7 +1822,7 @@ public class BitCircularTimePickerTests : BunitTestContext
 
         var invocations = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"];
 
-        Assert.AreEqual(focusCalls + 1, invocations.Count);
+        Assert.HasCount(focusCalls + 1, invocations);
         Assert.AreNotEqual(component.Instance.InputElement.Id, ((ElementReference)invocations.Last().Arguments[0]!).Id);
     }
 
@@ -1887,8 +1887,8 @@ public class BitCircularTimePickerTests : BunitTestContext
         // moved on from both the field and it - which only works if the toggle is asked to.
         var toggle = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
 
-        Assert.AreEqual(true, toggle.Arguments[28]); // trapFocus
-        Assert.AreEqual(true, toggle.Arguments[29]); // dismissOnFocusLeave
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(toggle.Arguments[28])); // trapFocus
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(toggle.Arguments[29])); // dismissOnFocusLeave
     }
 
     [TestMethod]
@@ -1901,7 +1901,7 @@ public class BitCircularTimePickerTests : BunitTestContext
 
         // Standalone there is no dialog and no overlay, so the focus is free to leave the way it leaves any
         // other part of the page: the callout is never toggled, and nothing is trapped.
-        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.Callouts.toggle"));
+        Assert.DoesNotContain(i => i.Identifier == "BitBlazorUI.Callouts.toggle", Context.JSInterop.Invocations);
     }
 
     [TestMethod]
@@ -1931,7 +1931,7 @@ public class BitCircularTimePickerTests : BunitTestContext
     {
         var component = RenderComponent<BitCircularTimePicker>();
 
-        Assert.AreEqual(0, component.FindAll(".bit-ctp-act").Count);
+        Assert.IsEmpty(component.FindAll(".bit-ctp-act"));
 
         component.Render(parameters =>
         {
@@ -1939,8 +1939,8 @@ public class BitCircularTimePickerTests : BunitTestContext
             parameters.Add(p => p.ShowClearButton, true);
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-ctp-act").Count);
-        Assert.AreEqual(2, component.FindAll(".bit-ctp-abn").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-ctp-act"));
+        Assert.HasCount(2, component.FindAll(".bit-ctp-abn"));
     }
 
     [TestMethod]
@@ -2183,7 +2183,7 @@ public class BitCircularTimePickerTests : BunitTestContext
         Assert.AreEqual("Pick an hour", clock.GetAttribute("aria-label"));
 
         var options = component.FindAll("[role=option]");
-        Assert.AreEqual(24, options.Count);
+        Assert.HasCount(24, options);
 
         var selected = options.Single(o => o.GetAttribute("aria-selected") == "true");
         Assert.AreEqual("09", selected.TextContent);
@@ -2522,17 +2522,17 @@ public class BitCircularTimePickerTests : BunitTestContext
             parameters.Add(p => p.DefaultValue, new TimeSpan(21, 45, 0));
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-ctp-tlb .bit-ctp-apc").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-ctp-apk").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-ctp-tlb .bit-ctp-apc"));
+        Assert.IsEmpty(component.FindAll(".bit-ctp-apk"));
 
         component.Render(parameters => parameters.Add(p => p.AmPmInClock, true));
 
-        Assert.AreEqual(0, component.FindAll(".bit-ctp-tlb .bit-ctp-apc").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-ctp-apk").Count);
+        Assert.IsEmpty(component.FindAll(".bit-ctp-tlb .bit-ctp-apc"));
+        Assert.ContainsSingle(component.FindAll(".bit-ctp-apk"));
 
         // the pair still works, and the half that is on is the one the value is in
         var buttons = component.FindAll(".bit-ctp-apb");
-        Assert.AreEqual(2, buttons.Count);
+        Assert.HasCount(2, buttons);
         Assert.AreEqual("false", buttons[0].GetAttribute("aria-pressed"));
         Assert.IsTrue(buttons[1].ClassList.Contains("bit-ctp-aps"));
     }
@@ -2545,7 +2545,7 @@ public class BitCircularTimePickerTests : BunitTestContext
             parameters.Add(p => p.AmPmInClock, true);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-ctp-apc").Count);
+        Assert.IsEmpty(component.FindAll(".bit-ctp-apc"));
     }
 
     [TestMethod]
@@ -2597,16 +2597,15 @@ public class BitCircularTimePickerTests : BunitTestContext
             });
         });
 
-        Assert.AreEqual(24, component.FindAll(".bit-ctp-num.num").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-ctp-num.sel").Count);
-        Assert.AreEqual(23, component.FindAll(".bit-ctp-num.dis").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-ctp-ptr.ptr").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-ctp-act.act").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-ctp-abn.clr").Count);
+        Assert.HasCount(24, component.FindAll(".bit-ctp-num.num"));
+        Assert.ContainsSingle(component.FindAll(".bit-ctp-num.sel"));
+        Assert.HasCount(23, component.FindAll(".bit-ctp-num.dis"));
+        Assert.ContainsSingle(component.FindAll(".bit-ctp-ptr.ptr"));
+        Assert.ContainsSingle(component.FindAll(".bit-ctp-act.act"));
+        Assert.ContainsSingle(component.FindAll(".bit-ctp-abn.clr"));
 
         // the pointer class must not leak into the style attribute of the hand
-        StringAssert.DoesNotMatch(component.Find(".bit-ctp-ptr").GetAttribute("style") ?? string.Empty,
-                                  new System.Text.RegularExpressions.Regex("ptr"));
+        Assert.DoesNotMatchRegex(new System.Text.RegularExpressions.Regex("ptr"), component.Find(".bit-ctp-ptr").GetAttribute("style") ?? string.Empty);
     }
 
     [TestMethod]
@@ -2620,7 +2619,7 @@ public class BitCircularTimePickerTests : BunitTestContext
             });
         });
 
-        StringAssert.Contains(component.Find(".bit-ctp-ptr").GetAttribute("style"), "opacity:0.5");
+        Assert.Contains("opacity:0.5", component.Find(".bit-ctp-ptr").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -2638,14 +2637,14 @@ public class BitCircularTimePickerTests : BunitTestContext
         var body = component.Find(".bit-ctp-bdy");
 
         Assert.IsTrue(body.ClassList.Contains("bdy"));
-        StringAssert.Contains(body.GetAttribute("style"), "opacity:0.5");
+        Assert.Contains("opacity:0.5", body.GetAttribute("style")!);
 
         // the column the landscape layout sets the toolbar beside: the clock, the meridiem pair where
         // AmPmInClock puts it, and the actions - and the toolbar itself outside of it
-        Assert.AreEqual(1, component.FindAll(".bit-ctp-bdy > .bit-ctp-clk").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-ctp-bdy > .bit-ctp-apk").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-ctp-bdy > .bit-ctp-act").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-ctp-bdy .bit-ctp-tlb").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-ctp-bdy > .bit-ctp-clk"));
+        Assert.ContainsSingle(component.FindAll(".bit-ctp-bdy > .bit-ctp-apk"));
+        Assert.ContainsSingle(component.FindAll(".bit-ctp-bdy > .bit-ctp-act"));
+        Assert.IsEmpty(component.FindAll(".bit-ctp-bdy .bit-ctp-tlb"));
     }
 
     [TestMethod,
@@ -3125,7 +3124,7 @@ public class BitCircularTimePickerTests : BunitTestContext
         Assert.AreEqual(1, closed);
 
         // The focus is already on whatever it was moved to, so it is not pulled back onto the field.
-        Assert.AreEqual(before, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+        Assert.HasCount(before, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
     }
 
     [TestMethod]
@@ -3167,7 +3166,7 @@ public class BitCircularTimePickerTests : BunitTestContext
         // whatever held the focus inside the callout is now hidden, so the field has to take it back
         var invocations = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"];
 
-        Assert.AreEqual(before + 1, invocations.Count);
+        Assert.HasCount(before + 1, invocations);
         Assert.AreEqual(component.Instance.InputElement.Id, ((ElementReference)invocations.Last().Arguments[0]!).Id);
     }
 
@@ -3184,7 +3183,7 @@ public class BitCircularTimePickerTests : BunitTestContext
         // the focus is on its way to the callout being opened in this one's place
         await component.InvokeAsync(() => component.Instance._CloseCalloutBeforeAnotherCalloutIsOpened());
 
-        Assert.AreEqual(before, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+        Assert.HasCount(before, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
     }
 
     [TestMethod]
@@ -3199,11 +3198,11 @@ public class BitCircularTimePickerTests : BunitTestContext
         var invocations = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"];
 
         // the dial, not the field: an opened picker is the one the arrow keys have to move
-        Assert.AreEqual(before + 1, invocations.Count);
+        Assert.HasCount(before + 1, invocations);
         Assert.AreNotEqual(component.Instance.InputElement.Id, ((ElementReference)invocations.Last().Arguments[0]!).Id);
 
         // and brought into view: an open through a parameter may be of a picker the person has to be taken to
-        Assert.AreEqual(false, invocations.Last().Arguments[1]);
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(invocations.Last().Arguments[1]));
     }
 
     [TestMethod]
@@ -3223,7 +3222,7 @@ public class BitCircularTimePickerTests : BunitTestContext
 
         // the dial is in a panel on its way out, so the focus stays where the close left it
         Assert.IsFalse(component.Instance.IsOpen);
-        Assert.AreEqual(before, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+        Assert.HasCount(before, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
     }
 
     [TestMethod]
@@ -3242,8 +3241,8 @@ public class BitCircularTimePickerTests : BunitTestContext
         var invocations = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"];
 
         // the click is what says the picker is in view, so the focus moves without a jump of the page
-        Assert.AreEqual(before + 1, invocations.Count);
-        Assert.AreEqual(true, invocations.Last().Arguments[1]);
+        Assert.HasCount(before + 1, invocations);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(invocations.Last().Arguments[1]));
     }
 
     [TestMethod]
@@ -3279,7 +3278,7 @@ public class BitCircularTimePickerTests : BunitTestContext
 
         Assert.AreEqual(component.Find(".bit-ctp").Id, toggle.Arguments[^2]);
         Assert.AreNotEqual(component.Find(".bit-ctp-wrp").Id, toggle.Arguments[^1]);
-        Assert.IsFalse((component.Find(".bit-ctp-cal").GetAttribute("style") ?? "").Contains("--bit-CircularTimePicker-"));
+        Assert.DoesNotContain("--bit-CircularTimePicker-", (component.Find(".bit-ctp-cal").GetAttribute("style") ?? ""));
     }
 
     [TestMethod]
@@ -3423,9 +3422,8 @@ public class BitCircularTimePickerTests : BunitTestContext
 
         var inner = component.FindAll(".bit-ctp-num.bit-ctp-inn");
 
-        Assert.AreEqual(12, inner.Count);
-        CollectionAssert.AreEqual(new[] { "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12" },
-                                  inner.Select(n => n.TextContent).ToArray());
+        Assert.HasCount(12, inner);
+        Assert.AreSequenceEqual(new[] { "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12" }, inner.Select(n => n.TextContent).ToArray());
 
         // an hour on the inner ring shortens the hand to that radius, one on the outer ring leaves it full length
         Assert.IsTrue(component.Find(".bit-ctp-ptr").ClassList.Contains("bit-ctp-pti"));
@@ -3465,10 +3463,9 @@ public class BitCircularTimePickerTests : BunitTestContext
 
         var numbers = component.FindAll(".bit-ctp-num");
 
-        Assert.AreEqual(12, numbers.Count);
-        Assert.AreEqual(0, component.FindAll(".bit-ctp-inn").Count);
-        CollectionAssert.AreEqual(Enumerable.Range(1, 12).Select(i => i.ToString()).ToArray(),
-                                  numbers.Select(n => n.TextContent).ToArray());
+        Assert.HasCount(12, numbers);
+        Assert.IsEmpty(component.FindAll(".bit-ctp-inn"));
+        Assert.AreSequenceEqual(Enumerable.Range(1, 12).Select(i => i.ToString()).ToArray(), numbers.Select(n => n.TextContent).ToArray());
     }
 
     [TestMethod]
@@ -3498,8 +3495,8 @@ public class BitCircularTimePickerTests : BunitTestContext
             parameters.Add(p => p.IconTemplate, builder => builder.AddMarkupContent(0, "<span class=\"my-icon\"></span>"));
         });
 
-        Assert.AreEqual(1, component.FindAll(".my-icon").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-ctp-ico").Count);
+        Assert.ContainsSingle(component.FindAll(".my-icon"));
+        Assert.IsEmpty(component.FindAll(".bit-ctp-ico"));
     }
 
     [TestMethod]
@@ -3581,7 +3578,7 @@ public class BitCircularTimePickerTests : BunitTestContext
 
         component.Find(".bit-ctp-inp").Input("not a time");
 
-        StringAssert.Contains(component.Find(".validation-message").TextContent, "nope");
+        Assert.Contains("nope", component.Find(".validation-message").TextContent);
     }
 
     [TestMethod]
@@ -3662,9 +3659,9 @@ public class BitCircularTimePickerTests : BunitTestContext
 
         // A focus() brings the field into view, and a field it scrolled the page to after the callout was placed
         // against it would be moved out from under the callout - which the scroll then dismisses.
-        Assert.IsTrue(focus >= 0);
-        Assert.IsTrue(toggle >= 0);
-        Assert.IsTrue(focus < toggle);
+        Assert.IsGreaterThanOrEqualTo(0, focus);
+        Assert.IsGreaterThanOrEqualTo(0, toggle);
+        Assert.IsLessThan(toggle, focus);
     }
 
 
@@ -3752,7 +3749,7 @@ public class BitCircularTimePickerTests : BunitTestContext
 
         Assert.AreEqual("the-id", root.Id);
         Assert.IsTrue(root.ClassList.Contains("the-class"));
-        Assert.IsTrue(root.GetAttribute("style")!.Contains("margin: 1px;"));
+        Assert.Contains("margin: 1px;", root.GetAttribute("style")!);
         Assert.AreEqual("root", root.GetAttribute("data-test"));
 
         // The field keeps an id of its own, which the label and the callout point at.
@@ -3804,7 +3801,7 @@ public class BitCircularTimePickerTests : BunitTestContext
         // Without a label there is nothing for the field to be labelled by.
         var unlabeled = RenderComponent<BitCircularTimePicker>();
 
-        Assert.AreEqual(0, unlabeled.FindAll(".bit-ctp-lbl").Count);
+        Assert.IsEmpty(unlabeled.FindAll(".bit-ctp-lbl"));
         Assert.IsFalse(unlabeled.Find(".bit-ctp-inp").HasAttribute("aria-labelledby"));
     }
 
@@ -3940,12 +3937,12 @@ public class BitCircularTimePickerTests : BunitTestContext
     {
         var component = RenderComponent<BitCircularTimePicker>();
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.CircularTimePicker.setup"));
-        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.CircularTimePicker.dispose"));
+        Assert.ContainsSingle(i => i.Identifier == "BitBlazorUI.CircularTimePicker.setup", Context.JSInterop.Invocations);
+        Assert.DoesNotContain(i => i.Identifier == "BitBlazorUI.CircularTimePicker.dispose", Context.JSInterop.Invocations);
 
         await component.Instance.DisposeAsync();
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.CircularTimePicker.dispose"));
+        Assert.ContainsSingle(i => i.Identifier == "BitBlazorUI.CircularTimePicker.dispose", Context.JSInterop.Invocations);
     }
 
     /// <summary>
@@ -3962,12 +3959,12 @@ public class BitCircularTimePickerTests : BunitTestContext
             [nameof(BitCircularTimePicker.DefaultValue)] = new TimeSpan(10, 30, 0),
         });
 
-        StringAssert.Contains(html, "bit-ctp");
-        StringAssert.Contains(html, "Prerendered");
-        StringAssert.Contains(html, "role=\"combobox\"");
-        StringAssert.Contains(html, "value=\"10:30\"");
-        StringAssert.Contains(html, "role=\"dialog\"");
-        StringAssert.Contains(html, "role=\"listbox\"");
+        Assert.Contains("bit-ctp", html);
+        Assert.Contains("Prerendered", html);
+        Assert.Contains("role=\"combobox\"", html);
+        Assert.Contains("value=\"10:30\"", html);
+        Assert.Contains("role=\"dialog\"", html);
+        Assert.Contains("role=\"listbox\"", html);
     }
 
     #endregion

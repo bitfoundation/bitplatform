@@ -103,7 +103,7 @@ public class GestureRevertTests
         // The hover-out moves scale back and nothing else: the enter keeps playing undisturbed and
         // still reports its completion - retargeting it would have superseded it, completion and all.
         await ctx.RunFramesAsync(416, 1500);
-        await enterCompleted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        await enterCompleted.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
         var settled = State(ctx, "box");
         Assert.IsFalse(settled.HasActiveAnimations);
         Assert.AreEqual(1.0, settled.Transforms["scale"], 1e-6);
@@ -130,7 +130,7 @@ public class GestureRevertTests
         var opacities = await SampleFramesAsync(ctx, "box", s => s.NumericValues["opacity"], 516, 1000);
 
         // Straight from 0.5 up to the sequence's resting frame - never back through its first frame.
-        Assert.IsTrue(opacities.Min() >= 0.5 - 1e-9, $"the fade-in must not replay: {string.Join(", ", opacities)}");
+        Assert.IsGreaterThanOrEqualTo(0.5 - 1e-9, opacities.Min(), $"the fade-in must not replay: {string.Join(", ", opacities)}");
         Assert.AreEqual(1.0, opacities[^1], 1e-9);
     }
 
@@ -236,4 +236,6 @@ public class GestureRevertTests
         await ctx.RunFramesAsync(616, 1000);
         Assert.AreEqual(1.0, State(ctx, "child").NumericValues["opacity"], 1e-6);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

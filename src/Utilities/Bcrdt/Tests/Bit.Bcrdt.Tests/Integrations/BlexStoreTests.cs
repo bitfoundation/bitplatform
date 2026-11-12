@@ -4,7 +4,7 @@ using Bit.Blex;
 
 namespace Bit.Bcrdt.Tests.Integrations;
 
-public sealed record BlexBoard(string Title, IReadOnlyList<string> Cards, long Votes)
+internal sealed record BlexBoard(string Title, IReadOnlyList<string> Cards, long Votes)
 {
     public static BlexBoard Read(BcrdtMap board) => new(
         board.Get<string>("title") ?? "",
@@ -15,7 +15,7 @@ public sealed record BlexBoard(string Title, IReadOnlyList<string> Cards, long V
 }
 
 /// <summary>A hand-written collaborative store: no generator, its actions call <c>Act</c>.</summary>
-public sealed class BlexBoardStore(BcrdtMap board, string name = "board")
+internal sealed class BlexBoardStore(BcrdtMap board, string name = "board")
     : BcrdtBlexStore<BlexBoard>(name, board, () => BlexBoard.Read(board))
 {
     public void Rename(string title) => Act("Rename", () => board.Set("title", title), new BlexActionArg("title", title));
@@ -84,8 +84,8 @@ public class BlexStoreTests
         store.Rename("Q3");
         store.AddCard("Hiring");
 
-        CollectionAssert.AreEqual(new[] { "board/Rename", "board/Add card" }, actions);
-        CollectionAssert.AreEqual(new object?[] { store.Origin, store.Origin }, origins);
+        Assert.AreSequenceEqual(new[] { "board/Rename", "board/Add card" }, actions);
+        Assert.AreSequenceEqual(new object?[] { store.Origin, store.Origin }, origins);
         Assert.AreEqual(new BlexBoard("Q3", ["Hiring"], 0).Describe(), store.State.Describe());
         Assert.AreEqual("Q3", store.SerializeState()["State"]!["title"]!.GetValue<string>());
     }
@@ -106,7 +106,7 @@ public class BlexStoreTests
             Assert.AreSame(scope.Store, manager.GetStore("board:42"));
         }
 
-        CollectionAssert.AreEqual(new[] { "board:42/Vote" }, actions);
+        Assert.AreSequenceEqual(new[] { "board:42/Vote" }, actions);
         Assert.IsNull(manager.GetStore("board:42"));
     }
 
@@ -134,9 +134,9 @@ public class BlexStoreTests
         local.Vote();
         Sync(a, b);
 
-        CollectionAssert.AreEqual(new[] { "board/Remote change", "board/Remote change" }, actions);
-        CollectionAssert.AreEqual(new[] { "Roadmap" }, titles, "a selector fires for what it selects, and only then");
-        CollectionAssert.AreEqual(new long[] { 1 }, votes);
+        Assert.AreSequenceEqual(new[] { "board/Remote change", "board/Remote change" }, actions);
+        Assert.AreSequenceEqual(new[] { "Roadmap" }, titles, "a selector fires for what it selects, and only then");
+        Assert.AreSequenceEqual(new long[] { 1 }, votes);
         Assert.AreEqual(local.State.Describe(), remote.State.Describe());
     }
 
@@ -181,7 +181,7 @@ public class BlexStoreTests
         Sync(a, b);
 
         Assert.AreEqual(1, localUpdatesB);
-        CollectionAssert.AreEqual(new[] { "one", "two", "reply" }, first.State.Cards.ToArray());
+        Assert.AreSequenceEqual(new[] { "one", "two", "reply" }, first.State.Cards.ToArray());
         Assert.AreEqual(first.State.Describe(), second.State.Describe());
     }
 
@@ -205,7 +205,7 @@ public class BlexStoreTests
 
         Assert.AreEqual(first.State.Describe(), second.State.Describe());
         Assert.AreEqual(3, first.State.Votes, "every vote counts");
-        CollectionAssert.AreEquivalent(new[] { "a1", "b1" }, first.State.Cards.ToArray());
+        Assert.AreSequenceEqual(new[] { "a1", "b1" }, first.State.Cards.ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         Assert.AreEqual("From a", second.State.Title);
     }
 
@@ -226,7 +226,7 @@ public class BlexStoreTests
         Assert.AreEqual("Planning", store.State.Title);
         Assert.AreEqual("Planning", doc.GetMap("board").Get("title"));
         Assert.AreEqual(1, updates);
-        CollectionAssert.AreEqual(new[] { "Yes" }, store.State.Cards.ToArray());
+        Assert.AreSequenceEqual(new[] { "Yes" }, store.State.Cards.ToArray());
     }
 
     [TestMethod]
@@ -248,7 +248,7 @@ public class BlexStoreTests
         Sync(a, b);
 
         Assert.AreEqual("Roadmap", remote.State.Title, "a filter cannot take back what a collaborator did");
-        CollectionAssert.AreEqual(new[] { "Roadmap" }, titles);
+        Assert.AreSequenceEqual(new[] { "Roadmap" }, titles);
     }
 
     [TestMethod]
@@ -306,8 +306,8 @@ public class BlexStoreTests
         undo.Undo();
         Sync(a, b);
 
-        CollectionAssert.AreEqual(new[] { "theirs" }, first.State.Cards.ToArray());
-        CollectionAssert.AreEqual(new[] { "theirs" }, second.State.Cards.ToArray());
+        Assert.AreSequenceEqual(new[] { "theirs" }, first.State.Cards.ToArray());
+        Assert.AreSequenceEqual(new[] { "theirs" }, second.State.Cards.ToArray());
     }
 
     [TestMethod]
@@ -385,7 +385,7 @@ public class BlexStoreTests
         }
         catch (Exception ex)
         {
-            throw new AssertFailedException(
+            throw new InvalidOperationException(
                 $"Seed {seed} diverged. Last operations:\n{string.Join("\n", history.TakeLast(20))}", ex);
         }
         finally

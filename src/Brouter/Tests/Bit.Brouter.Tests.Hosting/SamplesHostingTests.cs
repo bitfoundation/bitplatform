@@ -41,10 +41,10 @@ public class SamplesHostingTests
     public async Task The_home_page_is_prerendered(string sample)
     {
         using var client = SampleHostFactories.CreateClient(sample);
-        using var response = await client.GetAsync("/");
+        using var response = await client.GetAsync("/", TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
-        StringAssert.Contains(await response.Content.ReadAsStringAsync(), "<h1>Brouter samples</h1>");
+        Assert.Contains("<h1>Brouter samples</h1>", await response.Content.ReadAsStringAsync(TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -54,11 +54,11 @@ public class SamplesHostingTests
     public async Task A_typed_route_parameter_is_bound_in_the_prerendered_page(string sample)
     {
         using var client = SampleHostFactories.CreateClient(sample);
-        using var response = await client.GetAsync("/counter/1234");
+        using var response = await client.GetAsync("/counter/1234", TestContext.CancellationToken);
 
-        var html = await response.Content.ReadAsStringAsync();
-        StringAssert.Contains(html, "<h1>Counter</h1>");
-        StringAssert.Contains(html, "<dd>1234</dd>");
+        var html = await response.Content.ReadAsStringAsync(TestContext.CancellationToken);
+        Assert.Contains("<h1>Counter</h1>", html);
+        Assert.Contains("<dd>1234</dd>", html);
     }
 
     [TestMethod]
@@ -68,10 +68,11 @@ public class SamplesHostingTests
     public async Task An_unmatched_url_ends_on_the_samples_not_found_route(string sample)
     {
         using var client = SampleHostFactories.CreateClient(sample);
-        using var response = await client.GetAsync("/definitely/not/here");
-
-        Assert.AreEqual("/404", response.RequestMessage?.RequestUri?.AbsolutePath);
-        StringAssert.Contains(await response.Content.ReadAsStringAsync(), "Nothing matched this address.");
+        using var response = await client.GetAsync("/definitely/not/here", TestContext.CancellationToken);
+        Assert.IsNotNull(response.RequestMessage);
+        Assert.IsNotNull(response.RequestMessage.RequestUri);
+        Assert.AreEqual("/404", response.RequestMessage.RequestUri.AbsolutePath);
+        Assert.Contains("Nothing matched this address.", await response.Content.ReadAsStringAsync(TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -81,10 +82,13 @@ public class SamplesHostingTests
     public async Task The_script_module_is_served(string sample)
     {
         using var client = SampleHostFactories.CreateClient(sample);
-        using var response = await client.GetAsync("/_content/Bit.Brouter/bit-brouter.js");
+        using var response = await client.GetAsync("/_content/Bit.Brouter/bit-brouter.js", TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
-        Assert.AreEqual("text/javascript", response.Content.Headers.ContentType?.MediaType);
+        Assert.IsNotNull(response.Content.Headers.ContentType);
+        Assert.AreEqual("text/javascript", response.Content.Headers.ContentType.MediaType);
     }
+
+    public TestContext TestContext { get; set; }
 }
 #endif

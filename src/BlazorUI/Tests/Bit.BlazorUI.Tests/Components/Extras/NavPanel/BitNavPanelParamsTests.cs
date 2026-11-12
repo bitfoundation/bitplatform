@@ -68,7 +68,7 @@ public class BitNavPanelParamsTests : BunitTestContext
     [TestMethod]
     public void BitNavPanelParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual("BitParams.BitNavPanel", BitNavPanelParams.ParamName);
+        Assert.AreEqual("BitParams.BitNavPanel", new BitNavPanelParams().Name);
     }
 
     [TestMethod]
@@ -106,8 +106,9 @@ public class BitNavPanelParamsTests : BunitTestContext
         foreach (var name in own)
         {
             var target = typeof(BitNavPanel<BitNavItem>).GetProperty(name);
+            var actualValue = target?.GetCustomAttribute<ParameterAttribute>();
 
-            Assert.IsNotNull(target?.GetCustomAttribute<ParameterAttribute>(), $"BitNavPanel has no {name} parameter.");
+            Assert.IsNotNull(actualValue, $"BitNavPanel has no {name} parameter.");
         }
     }
 
@@ -144,12 +145,12 @@ public class BitNavPanelParamsTests : BunitTestContext
 
         var style = root.GetAttribute("style");
 
-        StringAssert.Contains(style, "margin:1px");
-        StringAssert.Contains(style, "--bit-npn-w:260px");
-        StringAssert.Contains(style, "--bit-npn-tw:72px");
-        StringAssert.Contains(style, "top:10px");
+        Assert.Contains("margin:1px", style!);
+        Assert.Contains("--bit-npn-w:260px", style);
+        Assert.Contains("--bit-npn-tw:72px", style);
+        Assert.Contains("top:10px", style);
 
-        Assert.AreEqual(1, component.FindAll(".bit-npn-cnt.cascaded-container").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-npn-cnt.cascaded-container"));
         Assert.AreEqual("Schließen", component.Find(".bit-npn-cbn").GetAttribute("aria-label"));
         Assert.AreEqual("Umschalten", component.Find(".bit-npn-tbn").GetAttribute("aria-label"));
         Assert.AreEqual("Suchen", component.Find(".bit-srb input").GetAttribute("placeholder"));
@@ -182,14 +183,14 @@ public class BitNavPanelParamsTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("own"));
         Assert.IsFalse(root.ClassList.Contains("cascaded"));
         Assert.IsFalse(root.ClassList.Contains("bit-npn-fiw"));
-        StringAssert.Contains(root.GetAttribute("style"), "--bit-npn-w:200px");
+        Assert.Contains("--bit-npn-w:200px", root.GetAttribute("style")!);
 
-        Assert.AreEqual(1, component.FindAll(".bit-srb").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-srb"));
         Assert.AreEqual("Own", component.Find(".bit-npn-tbn").GetAttribute("aria-label"));
 
         // A cascaded icon is only a default for a panel that names neither the icon nor the icon name.
-        Assert.AreEqual(0, component.FindAll(".cascaded-icon").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-npn-tbn .bit-icon--GlobalNavButton").Count);
+        Assert.IsEmpty(component.FindAll(".cascaded-icon"));
+        Assert.ContainsSingle(component.FindAll(".bit-npn-tbn .bit-icon--GlobalNavButton"));
     }
 
     [TestMethod]
@@ -201,7 +202,7 @@ public class BitNavPanelParamsTests : BunitTestContext
             ChevronDownIconName = "Add",
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-npn-tbn .cascaded-toggle").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-npn-tbn .cascaded-toggle"));
     }
 
     [TestMethod]
@@ -216,8 +217,8 @@ public class BitNavPanelParamsTests : BunitTestContext
             builder.AddAttribute(2, nameof(BitNavPanel<BitNavItem>.DefaultSelectedItem), items[2]);
         }, items);
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll(".bit-nav-sel").Count));
-        Assert.IsTrue(component.Find(".bit-nav-sel").TextContent.Contains("Settings"));
+        component.WaitForAssertion(() => Assert.ContainsSingle(component.FindAll(".bit-nav-sel")));
+        Assert.Contains("Settings", component.Find(".bit-nav-sel").TextContent);
     }
 
     [TestMethod]
@@ -243,9 +244,9 @@ public class BitNavPanelParamsTests : BunitTestContext
             Footer = builder => builder.AddMarkupContent(0, "<div class=\"cascaded-footer\">Footer</div>"),
         });
 
-        Assert.AreEqual(1, component.FindAll(".cascaded-header").Count);
-        Assert.AreEqual(1, component.FindAll(".cascaded-footer").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-npn-hdr").Count);
+        Assert.ContainsSingle(component.FindAll(".cascaded-header"));
+        Assert.ContainsSingle(component.FindAll(".cascaded-footer"));
+        Assert.IsEmpty(component.FindAll(".bit-npn-hdr"));
     }
 
     [TestMethod]
@@ -263,6 +264,6 @@ public class BitNavPanelParamsTests : BunitTestContext
         var root = component.Find(".bit-npn");
 
         Assert.IsFalse(root.ClassList.Contains("bit-npn-fiw"));
-        Assert.IsFalse((root.GetAttribute("style") ?? string.Empty).Contains("--bit-npn-w"));
+        Assert.DoesNotContain("--bit-npn-w", (root.GetAttribute("style") ?? string.Empty));
     }
 }

@@ -32,10 +32,9 @@ public class SplitTextOrchestrationTests
             .Add(p => p.Stagger, Bm.Stagger(0.1, from: BmStaggerFrom.Last))
             .Add(p => p.OnComplete, EventCallback.Factory.Create(this, () => completions++)));
         var ids = UnitIds(cut);
-        Assert.AreEqual(4, ids.Length);
+        Assert.HasCount(4, ids);
         // The baseline: the cascade runs backwards, so "a" starts - and finishes - last.
-        CollectionAssert.AreEqual(new[] { 300.0, 200.0, 100.0, 0.0 },
-            ids.Select(id => Math.Round((double)TimingOf(ctx, id)["delay"]!, 6)).ToArray());
+        Assert.AreSequenceEqual(new[] { 300.0, 200.0, 100.0, 0.0 }, ids.Select(id => Math.Round((double)TimingOf(ctx, id)["delay"]!, 6)).ToArray());
 
         // Every unit but the first is done: the text as a whole is not.
         foreach (var id in ids.Skip(1)) await ctx.FinishWaapiAsync(id);
@@ -58,7 +57,7 @@ public class SplitTextOrchestrationTests
 
         var reporting = cut.FindComponents<Bmotion>().Select(u => u.Instance.OnAnimationComplete.HasDelegate).ToArray();
 
-        CollectionAssert.AreEqual(new[] { true, false, false, false, false }, reporting);
+        Assert.AreSequenceEqual(new[] { true, false, false, false, false }, reporting);
     }
 
     [TestMethod]
@@ -79,7 +78,7 @@ public class SplitTextOrchestrationTests
         var timings = UnitIds(cut).Select(id => TimingOf(ctx, id)).ToArray();
 
         // The config's 0.7s, with the stagger on top - not the engine's 0.3s default.
-        CollectionAssert.AreEqual(new[] { 700.0, 700.0, 700.0 }, timings.Select(t => (double)t["duration"]!).ToArray());
-        CollectionAssert.AreEqual(new[] { 0.0, 100.0, 200.0 }, timings.Select(t => Math.Round((double)t["delay"]!, 6)).ToArray());
+        Assert.AreSequenceEqual(new[] { 700.0, 700.0, 700.0 }, timings.Select(t => (double)t["duration"]!).ToArray());
+        Assert.AreSequenceEqual(new[] { 0.0, 100.0, 200.0 }, timings.Select(t => Math.Round((double)t["delay"]!, 6)).ToArray());
     }
 }

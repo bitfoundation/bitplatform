@@ -18,11 +18,11 @@ public partial class BitSpinnerRingStylesheetTests
     {
         var mixin = SourceFiles.GetScssBlock(ReadFunctions(), "@mixin spinner-ring(");
 
-        StringAssert.Contains(mixin, "$stroke: $siz-spinner-stroke");
-        StringAssert.Contains(mixin, "border-width: $stroke;");
-        StringAssert.Contains(mixin, "animation: bit-spin $mot-duration-spinner $mot-easing-spinner infinite;");
+        Assert.Contains("$stroke: $siz-spinner-stroke", mixin);
+        Assert.Contains("border-width: $stroke;", mixin);
+        Assert.Contains("animation: bit-spin $mot-duration-spinner $mot-easing-spinner infinite;", mixin);
 
-        StringAssert.Contains(SourceFiles.Read("Bit.BlazorUI", "Styles", "general.scss"), "@keyframes bit-spin {");
+        Assert.Contains("@keyframes bit-spin {", SourceFiles.Read("Bit.BlazorUI", "Styles", "general.scss"));
     }
 
     [TestMethod]
@@ -31,8 +31,8 @@ public partial class BitSpinnerRingStylesheetTests
         var forced = SourceFiles.GetScssBlock(SourceFiles.GetScssBlock(ReadFunctions(), "@mixin spinner-ring("), "@media (forced-colors: active) {");
 
         // Every side would otherwise come back in the one system color, a ring that turns without showing it.
-        StringAssert.Contains(forced, "border-color: GrayText;");
-        StringAssert.Contains(forced, "border-block-start-color: CanvasText;");
+        Assert.Contains("border-color: GrayText;", forced);
+        Assert.Contains("border-block-start-color: CanvasText;", forced);
     }
 
     [TestMethod]
@@ -40,8 +40,8 @@ public partial class BitSpinnerRingStylesheetTests
     {
         var mixin = SourceFiles.GetScssBlock(ReadFunctions(), "@mixin spinner-ring-forced-disabled {");
 
-        StringAssert.Contains(mixin, "border-block-start-color: GrayText;");
-        StringAssert.Contains(mixin, "border-color: Canvas;");
+        Assert.Contains("border-block-start-color: GrayText;", mixin);
+        Assert.Contains("border-color: Canvas;", mixin);
     }
 
     [TestMethod,
@@ -55,7 +55,7 @@ public partial class BitSpinnerRingStylesheetTests
         var forcedDisabled = SourceFiles.GetScssBlock(stylesheet, disabledBlock);
 
         // Everything else in the frame goes GrayText there, so an arc left in CanvasText would read as a live field.
-        StringAssert.Matches(forcedDisabled, SpinnerForcedDisabled());
+        Assert.MatchesRegex(SpinnerForcedDisabled(), forcedDisabled);
     }
 
     [TestMethod]
@@ -74,7 +74,7 @@ public partial class BitSpinnerRingStylesheetTests
             .Select(file => Path.GetRelativePath(SourceFiles.Root, file))
             .ToArray();
 
-        Assert.AreEqual(0, offenders.Length, $"These stylesheets declare their own spinning keyframes instead of including spinner-ring: {string.Join(", ", offenders)}");
+        Assert.IsEmpty(offenders, $"These stylesheets declare their own spinning keyframes instead of including spinner-ring: {string.Join(", ", offenders)}");
     }
 
     private static string ReadFunctions() => SourceFiles.Read("Bit.BlazorUI", "Styles", "functions.scss");

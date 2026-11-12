@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 
 namespace Bit.Butil.Tests.E2E.Infrastructure;
 
@@ -14,7 +14,7 @@ namespace Bit.Butil.Tests.E2E.Infrastructure;
 /// project is found, how a port is reserved and what "ready" means, and keeping one copy is what
 /// stops those from drifting apart.
 /// </remarks>
-public sealed class SampleAppHost : IAsyncDisposable
+internal sealed class SampleAppHost : IAsyncDisposable
 {
     private Process? _process;
 

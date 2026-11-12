@@ -22,20 +22,20 @@ public enum Days
     Wednesday = 4
 }
 
-public class Address
+internal class Address
 {
     [Required] public string Street { get; set; } = "";
     [Required] public string City { get; set; } = "";
     [RegularExpression(@"^\d{5}$")] public string Zip { get; set; } = "";
 }
 
-public class LineItem
+internal class LineItem
 {
     [Required] public string Product { get; set; } = "";
     [Range(1, 100)] public int Quantity { get; set; }
 }
 
-public class RegistrationModel
+internal class RegistrationModel
 {
     [Required, Display(Name = "First name")]
     [StringLength(50, MinimumLength = 2)]
@@ -58,7 +58,7 @@ public class RegistrationModel
 }
 
 /// <summary>Covers the value shapes the converter and the typed accessor have to survive.</summary>
-public class TypedModel
+internal class TypedModel
 {
     public string Name { get; set; } = "";
     public int Count { get; set; }
@@ -78,7 +78,7 @@ public class TypedModel
     public string Summary => $"{Name} x{Count}";
 }
 
-public class SignupModel
+internal class SignupModel
 {
     [Required] public string Email { get; set; } = "";
     [Required] public string Password { get; set; } = "";
@@ -89,7 +89,7 @@ public class SignupModel
     public string? City { get; set; }
 }
 
-public class BookingModel
+internal class BookingModel
 {
     public DateOnly Start { get; set; }
     public DateOnly End { get; set; }

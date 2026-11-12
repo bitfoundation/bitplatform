@@ -38,10 +38,10 @@ public class BitNavBarOptionE2ETests : E2ETestBase
         var response = await Page.APIRequest.GetAsync($"{BaseUrl}{PAGE}");
         var html = await response.TextAsync();
 
-        StringAssert.Contains(html, "id=\"onbr-basic\"");
+        Assert.Contains("id=\"onbr-basic\"", html);
         var start = html.IndexOf("id=\"onbr-default-key\"", StringComparison.Ordinal);
         var bar = html[start..html.IndexOf("</nav>", start, StringComparison.Ordinal)];
-        StringAssert.Matches(bar, new Regex("class=\"bit-nbr-itm bit-nbr-sel\"[^>]*aria-current=\"page\"[^>]*>.*?>Search<", RegexOptions.Singleline));
+        Assert.MatchesRegex(new Regex("class=\"bit-nbr-itm bit-nbr-sel\"[^>]*aria-current=\"page\"[^>]*>.*?>Search<", RegexOptions.Singleline), bar);
     }
 
     [TestMethod]
@@ -186,7 +186,7 @@ public class BitNavBarOptionE2ETests : E2ETestBase
 
         var home = (await Item("onbr-look", "Home").BoundingBoxAsync())!;
         var search = (await Item("onbr-look", "Search").BoundingBoxAsync())!;
-        Assert.IsTrue(search.Y > home.Y, "A vertical rail stacks its options.");
+        Assert.IsGreaterThan(home.Y, search.Y, "A vertical rail stacks its options.");
     }
 
     [TestMethod]
@@ -222,7 +222,7 @@ public class BitNavBarOptionE2ETests : E2ETestBase
         await Expect(Bar("onbr-rtl")).ToHaveAttributeAsync("dir", "rtl");
         var home = (await Item("onbr-rtl", "Home").BoundingBoxAsync())!;
         var search = (await Item("onbr-rtl", "Search").BoundingBoxAsync())!;
-        Assert.IsTrue(home.X > search.X);
+        Assert.IsGreaterThan(search.X, home.X);
         await Item("onbr-rtl", "Home").FocusAsync();
         await Page.Keyboard.PressAsync("ArrowLeft");
         await Expect(Item("onbr-rtl", "Search")).ToBeFocusedAsync();

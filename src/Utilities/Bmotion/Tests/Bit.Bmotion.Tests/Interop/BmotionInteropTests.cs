@@ -50,7 +50,7 @@ public class BmotionInteropTests
         Assert.AreEqual("box", call.Arguments[0]);
         Assert.AreSame(target, call.Arguments[1], "the reference JS calls back through");
         var options = OptionsOf(call, 2);
-        Assert.AreEqual(true, options["once"]);
+        Assert.IsTrue((bool?)options["once"]);
         Assert.AreEqual("0px 0px -20% 0px", options["margin"]);
         Assert.AreEqual(1.0, options["threshold"], "\"all\" lowers to IntersectionObserver's threshold 1");
         Assert.AreEqual("#scroller", options["root"]);
@@ -84,7 +84,7 @@ public class BmotionInteropTests
         await interop.ObserveViewportAsync("box", target, once: true);
 
         var options = OptionsOf(module.VerifyInvoke("observeViewport"), 2);
-        Assert.AreEqual(true, options["once"]);
+        Assert.IsTrue((bool?)options["once"]);
         Assert.AreEqual("0px", options["margin"]);
         Assert.AreEqual(0.0, options["threshold"]);
     }
@@ -101,7 +101,7 @@ public class BmotionInteropTests
 
         Assert.AreEqual(3, rect!.Width);
         var call = module.VerifyInvoke("getBoundingRect");
-        Assert.AreEqual(1, call.Arguments.Count, "the common FLIP path marshals only the element id");
+        Assert.ContainsSingle(call.Arguments, "the common FLIP path marshals only the element id");
         Assert.AreEqual("box", call.Arguments[0]);
     }
 
@@ -116,10 +116,10 @@ public class BmotionInteropTests
         await interop.GetBoundingRectAsync("b", new BmotionMeasureOptions(TrackScroll: false, FixedRoot: true));
 
         var calls = module.Invocations["getBoundingRect"];
-        Assert.AreEqual(true, OptionsOf(calls[0], 1)["trackScroll"]);
-        Assert.AreEqual(false, OptionsOf(calls[0], 1)["fixedRoot"]);
-        Assert.AreEqual(false, OptionsOf(calls[1], 1)["trackScroll"]);
-        Assert.AreEqual(true, OptionsOf(calls[1], 1)["fixedRoot"]);
+        Assert.IsTrue((bool?)OptionsOf(calls[0], 1)["trackScroll"]);
+        Assert.IsFalse((bool?)OptionsOf(calls[0], 1)["fixedRoot"]);
+        Assert.IsFalse((bool?)OptionsOf(calls[1], 1)["trackScroll"]);
+        Assert.IsTrue((bool?)OptionsOf(calls[1], 1)["fixedRoot"]);
     }
 
     [TestMethod]
@@ -145,10 +145,10 @@ public class BmotionInteropTests
         var stops = module.Invocations["stopRafLoop"];
         var key = starts[0].Arguments[0] as string;
         Assert.IsFalse(string.IsNullOrEmpty(key));
-        Assert.IsFalse(key!.All(char.IsAsciiDigit),"a bare counter would collide with another runtime's on the same page");
+        Assert.IsFalse(key!.All(char.IsAsciiDigit), "a bare counter would collide with another runtime's on the same page");
         Assert.AreSame(engine, starts[0].Arguments[1], "the reference JS ticks through");
         Assert.AreEqual(key, stops[0].Arguments[0], "the stop names the engine its start registered");
-        Assert.AreEqual(1, stops[0].Arguments.Count, "the stop needs only the key");
+        Assert.ContainsSingle(stops[0].Arguments, "the stop needs only the key");
         Assert.AreEqual(key, starts[1].Arguments[0], "a restart replaces the registration instead of adding one");
         Assert.AreNotEqual(key, starts[2].Arguments[0], "another engine gets a key of its own");
         Assert.IsNull(stops[1].Arguments[0], "no reference still stops every engine");
@@ -170,7 +170,7 @@ public class BmotionInteropTests
         var unwatch = module.VerifyInvoke("unwatchReducedMotion");
         Assert.AreSame(engine, watch.Arguments[1]);
         Assert.AreEqual(watch.Arguments[0], unwatch.Arguments[0]);
-        Assert.AreEqual(1, unwatch.Arguments.Count);
+        Assert.ContainsSingle(unwatch.Arguments);
     }
 
     [TestMethod]

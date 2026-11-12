@@ -17,7 +17,7 @@ public class GuardAndLoaderTests : BunitTestContext
 
         var cut = RenderComponent<GuardHost>();
 
-        cut.WaitForAssertion(() => StringAssert.EndsWith(nav.Uri, "/login"));
+        cut.WaitForAssertion(() => Assert.EndsWith("/login", nav.Uri));
     }
 
     [TestMethod]
@@ -31,10 +31,10 @@ public class GuardAndLoaderTests : BunitTestContext
 
         cut.WaitForAssertion(() =>
         {
-            StringAssert.EndsWith(nav.Uri, "/admin");
+            Assert.EndsWith("/admin", nav.Uri);
             Assert.IsNotNull(cut.Find("[data-testid=login]"));
         });
-        Assert.AreEqual(0, cut.FindAll("[data-testid=secret]").Count);
+        Assert.IsEmpty(cut.FindAll("[data-testid=secret]"));
     }
 
     [TestMethod]
@@ -181,9 +181,8 @@ public class GuardAndLoaderTests : BunitTestContext
         var cut = RenderComponent<SequentialLoadersHost>();
         cut.WaitForAssertion(() => Assert.IsNotNull(cut.Find("[data-testid=done]")), TimeSpan.FromSeconds(3));
 
-        CollectionAssert.AreEqual(
-            new[] { "parent:start", "parent:end", "child:start" },
-            cut.Instance.Events);
+        Assert.AreSequenceEqual(
+            new[] { "parent:start", "parent:end", "child:start" }, cut.Instance.Events);
     }
 
     [TestMethod]
@@ -216,14 +215,14 @@ public class GuardAndLoaderTests : BunitTestContext
 
         cut.WaitForAssertion(() =>
         {
-            StringAssert.EndsWith(nav.Uri, "/home");
+            Assert.EndsWith("/home", nav.Uri);
             var latest = nav.History.First();
-            StringAssert.EndsWith(latest.Uri, "cancel");
+            Assert.EndsWith("cancel", latest.Uri);
             Assert.AreEqual(NavigationState.Prevented, latest.State);
         });
 
         // The guarded route never rendered, and we stayed on /home.
-        Assert.AreEqual(0, cut.FindAll("[data-testid=cancel]").Count);
+        Assert.IsEmpty(cut.FindAll("[data-testid=cancel]"));
         Assert.IsNotNull(cut.Find("[data-testid=home]"));
     }
 
@@ -242,7 +241,7 @@ public class GuardAndLoaderTests : BunitTestContext
 
         cut.WaitForAssertion(() =>
         {
-            StringAssert.EndsWith(nav.Uri, "/login");
+            Assert.EndsWith("/login", nav.Uri);
             Assert.IsNotNull(cut.Find("[data-testid=login]"));
         });
 

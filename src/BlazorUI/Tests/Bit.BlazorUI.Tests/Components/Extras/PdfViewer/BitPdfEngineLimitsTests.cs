@@ -180,8 +180,8 @@ public class BitPdfEngineLimitsTests
 
         Assert.IsNotNull(function);
         // The one sub-function is the function itself, refused and replaced by the constant 0.
-        CollectionAssert.AreEqual(new double[] { 0 }, function.Eval([0.25]));
-        CollectionAssert.AreEqual(new double[] { 0 }, function.Eval([0.75]));
+        Assert.AreSequenceEqual(new double[] { 0 }, function.Eval([0.25]));
+        Assert.AreSequenceEqual(new double[] { 0 }, function.Eval([0.75]));
     }
 
     [TestMethod]
@@ -194,7 +194,7 @@ public class BitPdfEngineLimitsTests
 
         var function = BitPdfFunction.Create(new BitPdfRef(8, 0), document.XRef)!;
 
-        CollectionAssert.AreEqual(new double[] { 0 }, function.Eval([0.25]));
+        Assert.AreSequenceEqual(new double[] { 0 }, function.Eval([0.25]));
         // x = 0.75 is encoded to 0.5 of the second half: halfway down the ramp from 1 to 0.
         Assert.AreEqual(0.5, function.Eval([0.75])[0], 1e-9);
     }
@@ -213,7 +213,7 @@ public class BitPdfEngineLimitsTests
         Assert.IsNotNull(function);
         // Past the nesting limit the chain is cut off and stands in as 0, so the ramp at the end
         // is never reached from the outermost function.
-        CollectionAssert.AreEqual(new double[] { 0 }, function.Eval([1]));
+        Assert.AreSequenceEqual(new double[] { 0 }, function.Eval([1]));
         // The innermost ones, within the limit of their own, still reach it.
         Assert.AreEqual(1, BitPdfFunction.Create(new BitPdfRef(37, 0), document.XRef)!.Eval([1])[0], 1e-9);
     }
@@ -252,7 +252,7 @@ public class BitPdfEngineLimitsTests
         var function = BitPdfFunction.Create(array, NoRefs.Instance);
 
         Assert.IsNotNull(function);
-        CollectionAssert.AreEqual(new double[] { 0.25, 0.75 }, function.Eval([0.25]));
+        Assert.AreSequenceEqual(new double[] { 0.25, 0.75 }, function.Eval([0.25]));
         Assert.IsNull(BitPdfFunction.Create(new List<object?> { Dict("/FunctionType 9") }, NoRefs.Instance));
         Assert.IsNull(BitPdfFunction.Create(null, NoRefs.Instance));
     }
@@ -266,11 +266,11 @@ public class BitPdfEngineLimitsTests
 
         Assert.AreEqual("BDC", operations[0].Operator);
         var outer = (List<object?>)operations[0].Operands[1]!;
-        Assert.AreEqual(2, outer.Count);
+        Assert.HasCount(2, outer);
         var middle = (List<object?>)outer[0]!;
-        CollectionAssert.AreEqual(new List<object?> { 1d, 2d }, (List<object?>)middle[0]!);
+        Assert.AreSequenceEqual(new List<object?> { 1d, 2d }, (List<object?>)middle[0]!);
         Assert.AreEqual(3d, middle[1]);
-        CollectionAssert.AreEqual(new List<object?> { 4d }, (List<object?>)((BitPdfDict)outer[1]!).Get("K")!);
+        Assert.AreSequenceEqual(new List<object?> { 4d }, (List<object?>)((BitPdfDict)outer[1]!).Get("K")!);
         Assert.AreEqual("EMC", operations[1].Operator);
     }
 
@@ -283,9 +283,9 @@ public class BitPdfEngineLimitsTests
 
         var operations = new BitPdfContentParser(Encoding.ASCII.GetBytes(content)).Parse();
 
-        CollectionAssert.AreEqual(new[] { "BDC", "re", "f" }, operations.Select(o => o.Operator).ToArray());
-        Assert.AreEqual(2, operations[0].Operands.Count);
-        Assert.AreEqual(4, operations[1].Operands.Count);
+        Assert.AreSequenceEqual(new[] { "BDC", "re", "f" }, operations.Select(o => o.Operator).ToArray());
+        Assert.HasCount(2, operations[0].Operands);
+        Assert.HasCount(4, operations[1].Operands);
         Assert.AreEqual(1d, operations[1].Operands[3]);
     }
 
@@ -296,7 +296,7 @@ public class BitPdfEngineLimitsTests
 
         var operations = new BitPdfContentParser(Encoding.ASCII.GetBytes(content)).Parse();
 
-        CollectionAssert.AreEqual(new[] { "re", "f" }, operations.Select(o => o.Operator).ToArray());
+        Assert.AreSequenceEqual(new[] { "re", "f" }, operations.Select(o => o.Operator).ToArray());
     }
 
     // ----- Tiling patterns -----
@@ -329,7 +329,7 @@ public class BitPdfEngineLimitsTests
         const string fill = "/Pattern cs /P1 scn 0 0 120 120 re f ";
 
         int one = CountClips(RenderTiledFills(fill));
-        Assert.IsTrue(one > 3969, $"A single fill was not tiled ({one} clips).");
+        Assert.IsGreaterThan(3969, one, $"A single fill was not tiled ({one} clips).");
 
         int five = CountClips(RenderTiledFills(string.Concat(Enumerable.Repeat(fill, 5))));
 
@@ -353,6 +353,6 @@ public class BitPdfEngineLimitsTests
 
         // A solid fill is one element clipped to the path; a tiled one would clip every one of its cells.
         Assert.AreEqual(1, CountClips(html), "The fill was tiled rather than degraded.");
-        Assert.IsTrue(html.Length < 20000, $"A degraded fill is a handful of elements, not {html.Length} characters.");
+        Assert.IsLessThan(20000, html.Length, $"A degraded fill is a handful of elements, not {html.Length} characters.");
     }
 }

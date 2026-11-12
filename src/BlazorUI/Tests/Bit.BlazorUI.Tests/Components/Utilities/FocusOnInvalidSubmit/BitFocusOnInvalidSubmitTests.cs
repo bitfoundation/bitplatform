@@ -36,7 +36,7 @@ public class BitFocusOnInvalidSubmitTests : BunitTestContext
 
         // Nothing to see and nothing to lay out: a grid or a flex row of fields is left as it is.
         Assert.AreEqual(1, marker.Nodes.Length);
-        Assert.AreEqual(1, component.FindAll("form > span[hidden]").Count);
+        Assert.HasCount(1, component.FindAll("form > span[hidden]"));
         Assert.AreEqual(string.Empty, component.Find("form > span[hidden]").TextContent);
     }
 
@@ -107,7 +107,7 @@ public class BitFocusOnInvalidSubmitTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitFocusOnInvalidSubmitShouldAskForTheFocusAfterAValidationTheAppRequests()
+    public async Task BitFocusOnInvalidSubmitShouldAskForTheFocusAfterAValidationTheAppRequests()
     {
         var model = new FormModel();
         var editContext = new EditContext(model);
@@ -123,13 +123,14 @@ public class BitFocusOnInvalidSubmitTests : BunitTestContext
             }));
         });
 
-        component.InvokeAsync(() => editContext.ValidateAsync()).Wait();
+        await component.InvokeAsync(() => editContext.Validate());
 
         component.WaitForAssertion(() => Assert.AreEqual(1, FocusCalls()));
     }
 
+#if NET11_0_OR_GREATER
     [TestMethod]
-    public void BitFocusOnInvalidSubmitShouldWaitForAnAsyncValidatorToFinish()
+    public async Task BitFocusOnInvalidSubmitShouldWaitForAnAsyncValidatorToFinish()
     {
         var model = new FormModel { Name = "Ada" };
         var editContext = new EditContext(model);
@@ -139,24 +140,24 @@ public class BitFocusOnInvalidSubmitTests : BunitTestContext
         var component = RenderHelper(editContext);
         var marker = component.FindComponent<BitFocusOnInvalidSubmit>();
 
-        var validation = component.InvokeAsync(() => editContext.ValidateAsync());
+        var validation = component.InvokeAsync(() => editContext.ValidateAsync(TestContext.CancellationToken));
 
         // While the validator is still out, there is nothing to look at yet.
-        component.InvokeAsync(() => { }).Wait();
+        await component.InvokeAsync(() => { });
 
         Assert.IsTrue(editContext.IsValidationPending());
         Assert.AreEqual(1, marker.RenderCount);
         Assert.AreEqual(0, FocusCalls());
 
         gate.SetResult();
-        Assert.IsFalse(validation.Result);
+        Assert.IsFalse(await validation);
 
         // Its message is in once the validation is over, and that is when the focus is asked for.
         component.WaitForAssertion(() => Assert.AreEqual(1, FocusCalls()));
     }
 
     [TestMethod]
-    public void BitFocusOnInvalidSubmitShouldLeaveTheFocusInAFieldEditedWhileAValidationRuns()
+    public async Task BitFocusOnInvalidSubmitShouldLeaveTheFocusInAFieldEditedWhileAValidationRuns()
     {
         var model = new FormModel { Name = "Ada" };
         var editContext = new EditContext(model);
@@ -166,22 +167,24 @@ public class BitFocusOnInvalidSubmitTests : BunitTestContext
         var component = RenderHelper(editContext);
         var marker = component.FindComponent<BitFocusOnInvalidSubmit>();
 
-        var validation = component.InvokeAsync(() => editContext.ValidateAsync());
+        var validation = component.InvokeAsync(() => editContext.ValidateAsync(TestContext.CancellationToken));
 
         // The user goes back to a field before the validator answers: they have moved on from the submit.
-        component.InvokeAsync(() => editContext.NotifyFieldChanged(editContext.Field(nameof(FormModel.Name)))).Wait();
+        await component.InvokeAsync(() => editContext.NotifyFieldChanged(editContext.Field(nameof(FormModel.Name))));
 
         gate.SetResult();
-        Assert.IsFalse(validation.Result);
-        component.InvokeAsync(() => { }).Wait();
+        Assert.IsFalse(await validation);
+        await component.InvokeAsync(() => { });
 
-        Assert.IsTrue(editContext.GetValidationMessages().Any());
+        Assert.IsNotEmpty(editContext.GetValidationMessages());
         Assert.AreEqual(1, marker.RenderCount);
         Assert.AreEqual(0, FocusCalls());
     }
 
+#endif
+
     [TestMethod]
-    public void BitFocusOnInvalidSubmitShouldFollowANewEditContext()
+    public async Task BitFocusOnInvalidSubmitShouldFollowANewEditContext()
     {
         var first = new EditContext(new FormModel());
         var second = new EditContext(new FormModel());
@@ -210,19 +213,19 @@ public class BitFocusOnInvalidSubmitTests : BunitTestContext
         var marker = component.FindComponent<BitFocusOnInvalidSubmit>();
         var renders = marker.RenderCount;
 
-        component.InvokeAsync(() => first.ValidateAsync()).Wait();
+        await component.InvokeAsync(() => first.Validate());
 
         // The old one is no longer listened to: nothing is even looked at.
         Assert.AreEqual(renders, marker.RenderCount);
         Assert.AreEqual(0, FocusCalls());
 
-        component.InvokeAsync(() => second.ValidateAsync()).Wait();
+        await component.InvokeAsync(() => second.Validate());
 
         component.WaitForAssertion(() => Assert.AreEqual(1, FocusCalls()));
     }
 
     [TestMethod]
-    public void BitFocusOnInvalidSubmitShouldStopListeningOnceRemoved()
+    public async Task BitFocusOnInvalidSubmitShouldStopListeningOnceRemoved()
     {
         var editContext = new EditContext(new FormModel());
         editContext.EnableDataAnnotationsValidation(Context.Services);
@@ -243,9 +246,9 @@ public class BitFocusOnInvalidSubmitTests : BunitTestContext
             parameters.Add(p => p.ChildContent, (RenderFragment)(_ => { }));
         });
 
-        component.InvokeAsync(() => editContext.ValidateAsync()).Wait();
+        await component.InvokeAsync(() => editContext.Validate());
 
-        Assert.AreEqual(0, component.FindComponents<BitFocusOnInvalidSubmit>().Count);
+        Assert.IsEmpty(component.FindComponents<BitFocusOnInvalidSubmit>());
         Assert.AreEqual(0, FocusCalls());
     }
 
@@ -254,7 +257,7 @@ public class BitFocusOnInvalidSubmitTests : BunitTestContext
     {
         var exception = Assert.Throws<InvalidOperationException>(() => RenderComponent<BitFocusOnInvalidSubmit>());
 
-        StringAssert.Contains(exception.Message, "EditContext");
+        Assert.Contains("EditContext", exception.Message);
     }
 
     private IRenderedComponent<EditForm> RenderForm(FormModel model, Action? onValid = null, Action? onInvalid = null, bool helperFirst = false)
@@ -303,6 +306,7 @@ public class BitFocusOnInvalidSubmitTests : BunitTestContext
         });
     }
 
+#if NET11_0_OR_GREATER
     // A validator that answers the request by registering work that only finishes once the gate opens - a server asked
     // whether a name is taken - and reports the message it found then.
     private static void AddAsyncValidator(EditContext editContext, Task gate, string message)
@@ -316,6 +320,7 @@ public class BitFocusOnInvalidSubmitTests : BunitTestContext
             editContext.NotifyValidationStateChanged();
         });
     }
+#endif
 
     private int FocusCalls() => Context.JSInterop.Invocations.Count(i => i.Identifier == FocusFirstInvalid);
 
@@ -324,4 +329,8 @@ public class BitFocusOnInvalidSubmitTests : BunitTestContext
         [Required]
         public string? Name { get; set; }
     }
+
+#if NET11_0_OR_GREATER
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
+#endif
 }

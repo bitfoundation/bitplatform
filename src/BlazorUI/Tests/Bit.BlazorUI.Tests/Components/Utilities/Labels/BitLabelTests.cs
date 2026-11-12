@@ -763,7 +763,7 @@ public class BitLabelTests : BunitTestContext
 
         var labels = component.FindAll(".bit-lbl");
 
-        Assert.AreEqual(2, labels.Count);
+        Assert.HasCount(2, labels);
 
         // The first label takes everything from the cascading parameters.
         Assert.AreEqual("DIV", labels[0].TagName);

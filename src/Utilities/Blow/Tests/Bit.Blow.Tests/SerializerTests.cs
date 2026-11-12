@@ -112,7 +112,7 @@ public class SerializerTests : BunitContext
         var document = new BlowDocument { Nodes = [node] };
 
         Assert.DoesNotContain("selected", BlowSerializer.Serialize(document));
-        StringAssert.Contains(BlowSerializer.Serialize(document, new BlowSerializerOptions { IncludeSelection = true }), "\"selected\":true");
+        Assert.Contains("\"selected\":true", BlowSerializer.Serialize(document, new BlowSerializerOptions { IncludeSelection = true }));
     }
 
     [TestMethod]
@@ -122,7 +122,7 @@ public class SerializerTests : BunitContext
         try
         {
             System.Globalization.CultureInfo.CurrentCulture = new System.Globalization.CultureInfo("de-DE");
-            StringAssert.Contains(BlowSerializer.Serialize(new BlowDocument { Nodes = [new BlowNode { Id = "a", Position = new(1.5, 2) }] }), "\"x\":1.5");
+            Assert.Contains("\"x\":1.5", BlowSerializer.Serialize(new BlowDocument { Nodes = [new BlowNode { Id = "a", Position = new(1.5, 2) }] }));
         }
         finally
         {
@@ -164,8 +164,8 @@ public class SerializerTests : BunitContext
 
         var ex = Assert.ThrowsExactly<BlowSerializationException>(() => BlowSerializer.Serialize(document));
 
-        StringAssert.Contains(ex.Message, "Node 't'");
-        StringAssert.Contains(ex.Message, nameof(TaskData));
+        Assert.Contains("Node 't'", ex.Message);
+        Assert.Contains(nameof(TaskData), ex.Message);
     }
 
     [TestMethod]
@@ -204,7 +204,7 @@ public class SerializerTests : BunitContext
         Assert.IsNull(result.Document);
         var issue = result.Issues.Single();
         Assert.AreEqual(BlowImportCodes.InvalidJson, issue.Code);
-        StringAssert.Contains(issue.Message, "line 2");
+        Assert.Contains("line 2", issue.Message);
     }
 
     [TestMethod]
@@ -238,7 +238,7 @@ public class SerializerTests : BunitContext
         var options = new BlowSerializerOptions { Limits = { MaxBytes = 1000 } };
         using var stream = new MemoryStream(Encoding.UTF8.GetBytes(new string(' ', 1_000_000)));
 
-        var result = await BlowSerializer.DeserializeAsync(stream, options);
+        var result = await BlowSerializer.DeserializeAsync(stream, options, TestContext.CancellationToken);
 
         Assert.AreEqual(BlowImportCodes.TooLarge, result.Issues.Single().Code);
         Assert.IsLessThan(200_000, stream.Position, "the reader went on reading long after the limit");
@@ -293,17 +293,17 @@ public class SerializerTests : BunitContext
         var result = BlowSerializer.Deserialize(json);
 
         Assert.IsFalse(result.Succeeded);
-        CollectionAssert.AreEqual(new[] { "a", "b" }, result.Document!.Nodes.Select(n => n.Id).ToArray());
-        CollectionAssert.AreEqual(new[] { "f" }, result.Document.Edges.Select(e => e.Id).ToArray());
+        Assert.AreSequenceEqual(new[] { "a", "b" }, result.Document!.Nodes.Select(n => n.Id).ToArray());
+        Assert.AreSequenceEqual(new[] { "f" }, result.Document.Edges.Select(e => e.Id).ToArray());
 
         var located = result.Issues.Select(i => $"{i.Code}@{i.Path}").ToArray();
-        CollectionAssert.Contains(located, "invalid-value@$.nodes[0].position.x");
-        CollectionAssert.Contains(located, "missing-property@$.nodes[1]");
-        CollectionAssert.Contains(located, "invalid-value@$.nodes[2].width");
-        CollectionAssert.Contains(located, "invalid-value@$.nodes[2].sourcePosition");
-        CollectionAssert.Contains(located, "unknown-property@$.nodes[2].shiny");
-        CollectionAssert.Contains(located, "missing-property@$.edges[0]");
-        CollectionAssert.Contains(located, "invalid-value@$.edges[1].type");
+        Assert.Contains("invalid-value@$.nodes[0].position.x", located);
+        Assert.Contains("missing-property@$.nodes[1]", located);
+        Assert.Contains("invalid-value@$.nodes[2].width", located);
+        Assert.Contains("invalid-value@$.nodes[2].sourcePosition", located);
+        Assert.Contains("unknown-property@$.nodes[2].shiny", located);
+        Assert.Contains("missing-property@$.edges[0]", located);
+        Assert.Contains("invalid-value@$.edges[1].type", located);
         Assert.AreEqual(BlowValidationSeverity.Info, result.Issues.Single(i => i.Code == BlowImportCodes.UnknownProperty).Severity);
     }
 
@@ -321,9 +321,9 @@ public class SerializerTests : BunitContext
         Assert.IsTrue(result.Succeeded, "a graph the canvas can draw around is still loaded");
         var located = result.Issues.Select(i => $"{i.Code}@{i.Path}").ToArray();
         // At the node that repeats the id; the first to use it is the one that is fine.
-        CollectionAssert.Contains(located, "duplicate-node-id@$.nodes[1]");
-        CollectionAssert.Contains(located, "missing-edge-endpoint@$.edges[0]");
-        CollectionAssert.Contains(located, "parent-cycle@$.nodes[2]");
+        Assert.Contains("duplicate-node-id@$.nodes[1]", located);
+        Assert.Contains("missing-edge-endpoint@$.edges[0]", located);
+        Assert.Contains("parent-cycle@$.nodes[2]", located);
         Assert.IsTrue(result.Issues.All(i => i.Severity == BlowValidationSeverity.Warning));
     }
 
@@ -358,7 +358,7 @@ public class SerializerTests : BunitContext
         Assert.AreEqual(2, result.Document!.Version);
         Assert.AreEqual("job", result.Document.Nodes[0].Type);
         Assert.AreEqual("Old", result.Document.Metadata!["title"]!.GetValue<string>());
-        StringAssert.Contains(BlowSerializer.Serialize(result.Document, options), "\"version\":2");
+        Assert.Contains("\"version\":2", BlowSerializer.Serialize(result.Document, options));
     }
 
     [TestMethod]
@@ -371,7 +371,7 @@ public class SerializerTests : BunitContext
 
         Assert.IsNull(result.Document);
         Assert.AreEqual(BlowImportCodes.MissingMigration, result.Issues.Single().Code);
-        StringAssert.Contains(result.Issues.Single().Message, "version 1");
+        Assert.Contains("version 1", result.Issues.Single().Message);
     }
 
     [TestMethod]
@@ -383,7 +383,7 @@ public class SerializerTests : BunitContext
         var result = BlowSerializer.Deserialize("""{"format":"bit-blow","schemaVersion":1,"nodes":[],"edges":[]}""", options);
 
         Assert.AreEqual(BlowImportCodes.MigrationFailed, result.Issues.Single().Code);
-        StringAssert.Contains(result.Issues.Single().Message, "bad data");
+        Assert.Contains("bad data", result.Issues.Single().Message);
     }
 
     [TestMethod]
@@ -410,8 +410,8 @@ public class SerializerTests : BunitContext
         var result = await cut.InvokeAsync(() => cut.Instance.LoadJsonAsync(saved));
 
         Assert.IsTrue(result.Succeeded);
-        CollectionAssert.AreEqual(new[] { "a", "b" }, nodes.Select(n => n.Id).ToArray(), "the bound list was not reloaded in place");
-        Assert.HasCount(1, edges);
+        Assert.AreSequenceEqual(new[] { "a", "b" }, nodes.Select(n => n.Id).ToArray(), "the bound list was not reloaded in place");
+        Assert.ContainsSingle(edges);
         Assert.IsTrue(cut.Instance.CanUndo, "the load is an undo step");
     }
 
@@ -426,10 +426,12 @@ public class SerializerTests : BunitContext
         Assert.IsFalse(result.Succeeded);
         Assert.AreEqual("keep", nodes.Single().Id);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }
 
 /// <summary>A node payload, serialized through a source-generated contract as an application would.</summary>
-public sealed class TaskData
+internal sealed class TaskData
 {
     public string Owner { get; set; } = "";
     public int Hours { get; set; }

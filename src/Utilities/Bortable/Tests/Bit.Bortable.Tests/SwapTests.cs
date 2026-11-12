@@ -217,8 +217,8 @@ public class SwapTests : BortableTestContext
 
         Assert.IsNull(over.Target);
         Assert.AreSequenceEqual(["a", "x"], words);
-        CollectionAssert.AreEqual(new object[] { "b" }, source);
-        CollectionAssert.AreEqual(new object[] { 42 }, swap);
+        Assert.AreSequenceEqual(new object[] { "b" }, source);
+        Assert.AreSequenceEqual(new object[] { 42 }, swap);
     }
 
     [TestMethod]

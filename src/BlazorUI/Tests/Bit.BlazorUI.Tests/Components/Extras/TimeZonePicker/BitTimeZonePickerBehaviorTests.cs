@@ -193,7 +193,7 @@ public class BitTimeZonePickerBehaviorTests : BunitTestContext
         // reaches the search through the box's own input event, as a letter typed there does.
         component.Find("button.bit-tzp-fld").KeyDown("t");
 
-        CollectionAssert.AreEqual(new[] { "t" }, Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.Extras.typeInto").Select(i => (string)i.Arguments[1]!).ToArray());
+        Assert.AreSequenceEqual(new[] { "t" }, Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.Extras.typeInto").Select(i => (string)i.Arguments[1]!).ToArray());
 
         component.Find(".bit-tzp-srch").Input("t");
 
@@ -216,7 +216,7 @@ public class BitTimeZonePickerBehaviorTests : BunitTestContext
         component.Find(".bit-tzp-srch").Input("tok");
         component.Find(".bit-tzp-srch").Input("");
 
-        CollectionAssert.AreEqual(new[] { "tok", "" }, searched.Select(s => s ?? "").ToArray());
+        Assert.AreSequenceEqual(new[] { "tok", "" }, searched.Select(s => s ?? "").ToArray());
     }
 
     #endregion
@@ -233,7 +233,7 @@ public class BitTimeZonePickerBehaviorTests : BunitTestContext
         component.Find("button.bit-tzp-fld").Click();
 
         var open = LastToggle();
-        Assert.AreEqual(true, open.Arguments[6]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(open.Arguments[6]));
         Assert.AreEqual(component.Find("button.bit-tzp-fld").Id, open.Arguments[^3]);
 
         // The Tab of the search box is the JS side's to answer, which reports it through OnTabOut.
@@ -357,19 +357,19 @@ public class BitTimeZonePickerBehaviorTests : BunitTestContext
     {
         var component = RenderPicker<string>(parameters => parameters.Add(p => p.Styles, new BitTimeZonePickerClassStyles { Overlay = "opacity:0.5" }));
 
-        StringAssert.Contains(component.Find(".bit-tzp-ovl").GetAttribute("style"), "display:none");
+        Assert.Contains("display:none", component.Find(".bit-tzp-ovl").GetAttribute("style")!);
 
         component.Find("button.bit-tzp-fld").Click();
 
         var style = component.Find(".bit-tzp-ovl").GetAttribute("style")!;
-        StringAssert.Contains(style, "display:block");
+        Assert.Contains("display:block", style);
         // The overlay style is written after the display, so a display of its own would still win.
-        StringAssert.Contains(style, "opacity:0.5");
+        Assert.Contains("opacity:0.5", style);
 
         component.Find(".bit-tzp-ovl").Click();
 
         Assert.IsFalse(component.Instance.IsOpen);
-        StringAssert.Contains(component.Find(".bit-tzp-ovl").GetAttribute("style"), "display:none");
+        Assert.Contains("display:none", component.Find(".bit-tzp-ovl").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -377,17 +377,17 @@ public class BitTimeZonePickerBehaviorTests : BunitTestContext
     {
         var component = RenderPicker<string>();
 
-        Assert.AreEqual(0, component.FindAll("button.bit-tzp-itm").Count);
+        Assert.IsEmpty(component.FindAll("button.bit-tzp-itm"));
 
         component.Find("button.bit-tzp-fld").Click();
 
-        Assert.AreEqual(SevenTimeZones.Count, component.FindAll("button.bit-tzp-itm").Count);
+        Assert.HasCount(SevenTimeZones.Count, component.FindAll("button.bit-tzp-itm"));
 
         component.Find("button.bit-tzp-fld").Click();
 
         // Once rendered the list stays in the document, so the next opening is measured against its real content.
         Assert.IsFalse(component.Instance.IsOpen);
-        Assert.AreEqual(SevenTimeZones.Count, component.FindAll("button.bit-tzp-itm").Count);
+        Assert.HasCount(SevenTimeZones.Count, component.FindAll("button.bit-tzp-itm"));
     }
 
     [TestMethod]
@@ -454,7 +454,7 @@ public class BitTimeZonePickerBehaviorTests : BunitTestContext
 
         Assert.IsFalse(component.Instance.IsOpen);
         Assert.AreEqual("false", component.Find("button.bit-tzp-fld").GetAttribute("aria-expanded"));
-        Assert.AreEqual(false, LastToggle().Arguments[6]);
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(LastToggle().Arguments[6]));
     }
 
     [TestMethod]
@@ -465,7 +465,7 @@ public class BitTimeZonePickerBehaviorTests : BunitTestContext
         component.Render(parameters => parameters.Add(p => p.IsOpen, true));
 
         Assert.AreEqual("true", component.Find("button.bit-tzp-fld").GetAttribute("aria-expanded"));
-        Assert.AreEqual(true, LastToggle().Arguments[6]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(LastToggle().Arguments[6]));
 
         // The list opened from the outside still starts on the selection, so the first Enter picks it rather than nothing.
         var active = component.Find(".bit-tzp-act");
@@ -516,7 +516,8 @@ public class BitTimeZonePickerBehaviorTests : BunitTestContext
 
         Assert.AreEqual("Asia/Tokyo", changed);
         Assert.AreEqual("Tokyo", component.Find(".bit-tzp-txt").TextContent);
-        Assert.AreEqual("Asia/Tokyo", component.Instance.SelectedTimeZone?.Id);
+        var actualValue = component.Instance.SelectedTimeZone?.Id;
+        Assert.AreEqual("Asia/Tokyo", actualValue);
     }
 
     [TestMethod]
@@ -560,7 +561,7 @@ public class BitTimeZonePickerBehaviorTests : BunitTestContext
 
         Assert.AreEqual("Custom display name", component.Find(".bit-tzp-txt").TextContent);
         Assert.IsNull(component.Instance.SelectedTimeZone);
-        Assert.AreEqual(0, component.FindAll(".bit-tzp-fld .bit-tzp-ofs").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tzp-fld .bit-tzp-ofs"));
     }
 
     [TestMethod]
@@ -568,7 +569,7 @@ public class BitTimeZonePickerBehaviorTests : BunitTestContext
     {
         var component = RenderPicker<string>(parameters => parameters.Add(p => p.DefaultValue, "Asia/Tokyo"));
 
-        Assert.AreEqual(0, component.FindAll("input[type=hidden]").Count);
+        Assert.IsEmpty(component.FindAll("input[type=hidden]"));
     }
 
     [TestMethod]
@@ -696,7 +697,7 @@ public class BitTimeZonePickerBehaviorTests : BunitTestContext
 
         Assert.AreEqual("Schließen", close.GetAttribute("aria-label"));
         Assert.AreEqual("Schließen", close.GetAttribute("title"));
-        StringAssert.Contains(close.QuerySelector("i")!.ClassName, "fa-xmark");
+        Assert.Contains("fa-xmark", close.QuerySelector("i")!.ClassName!);
 
         component.Find("button.bit-tzp-fld").Click();
 
@@ -722,7 +723,7 @@ public class BitTimeZonePickerBehaviorTests : BunitTestContext
         Assert.AreEqual("Close", close.GetAttribute("aria-label"));
         Assert.AreEqual("button", close.GetAttribute("type"));
         Assert.AreEqual("true", close.QuerySelector("i")!.GetAttribute("aria-hidden"));
-        StringAssert.Contains(close.QuerySelector("i")!.ClassName, "ChromeClose");
+        Assert.Contains("ChromeClose", close.QuerySelector("i")!.ClassName!);
     }
 
     [TestMethod]
@@ -730,8 +731,8 @@ public class BitTimeZonePickerBehaviorTests : BunitTestContext
     {
         var component = RenderPicker<string>(parameters => parameters.Add(p => p.Label, "Time zone"));
 
-        Assert.AreEqual(0, component.FindAll(".bit-tzp-cls").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-tzp-rlc").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tzp-cls"));
+        Assert.IsEmpty(component.FindAll(".bit-tzp-rlc"));
         Assert.IsFalse(component.Find(".bit-tzp-cal").ClassList.Contains("bit-tzp-res"));
         Assert.IsFalse(component.Find(".bit-tzp-cal").HasAttribute("inert"));
     }
@@ -794,8 +795,8 @@ public class BitTimeZonePickerBehaviorTests : BunitTestContext
         // that would read as a choice - on the root and on the callout that repeats its size and color.
         string[] looks = ["bit-tzp-pri", "bit-tzp-md", "bit-tzp-bpr", "bit-tzp-brp", "bit-tzp-nbd", "bit-tzp-und"];
 
-        Assert.IsFalse(component.Find(".bit-tzp").ClassList.Any(looks.Contains));
-        Assert.IsFalse(component.Find(".bit-tzp-cal").ClassList.Any(looks.Contains));
+        Assert.DoesNotContain<string>(looks.Contains, component.Find(".bit-tzp").ClassList);
+        Assert.DoesNotContain<string>(looks.Contains, component.Find(".bit-tzp-cal").ClassList);
     }
 
     [TestMethod]
@@ -878,7 +879,7 @@ public class BitTimeZonePickerBehaviorTests : BunitTestContext
 
         var root = component.Find(".bit-tzp");
         Assert.IsTrue(root.ClassList.Contains("root-class"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin:1px");
+        Assert.Contains("margin:1px", root.GetAttribute("style")!);
 
         AssertPart(component, ".bit-tzp-lbl", "label-class", "color:red");
         AssertPart(component, ".bit-tzp-fld", "field-class", "color:blue");
@@ -951,13 +952,13 @@ public class BitTimeZonePickerBehaviorTests : BunitTestContext
         component.Find("button.bit-tzp-fld").Click();
         component.Find(".bit-tzp-srch").Input("asia");
 
-        StringAssert.StartsWith(component.Find(".bit-tzp-lvr").TextContent, "3 zonas");
+        Assert.StartsWith("3 zonas", component.Find(".bit-tzp-lvr").TextContent);
 
         component.Find(".bit-tzp-srch").Input("zzzz");
 
         // An empty result is worded by NoResultsMessage, so the wording is never asked for zero.
-        StringAssert.StartsWith(component.Find(".bit-tzp-lvr").TextContent, "Nada");
-        CollectionAssert.AreEqual(new[] { 3 }, counts);
+        Assert.StartsWith("Nada", component.Find(".bit-tzp-lvr").TextContent);
+        Assert.AreSequenceEqual(new[] { 3 }, counts);
     }
 
     [TestMethod]
@@ -1038,7 +1039,7 @@ public class BitTimeZonePickerBehaviorTests : BunitTestContext
 
         Assert.IsTrue(component.Find(".bit-tzp").ClassList.Contains("bit-inv"));
         Assert.AreEqual("true", component.Find("button.bit-tzp-fld").GetAttribute("aria-invalid"));
-        Assert.AreEqual(0, component.FindAll(".bit-tzp-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tzp-erm"));
     }
 
     [TestMethod,
@@ -1055,7 +1056,7 @@ public class BitTimeZonePickerBehaviorTests : BunitTestContext
 
         var style = component.Find(".bit-tzp").GetAttribute("style")!;
 
-        StringAssert.Contains(style, "margin:1px");
+        Assert.Contains("margin:1px", style);
 
         if (expected is null)
         {
@@ -1063,7 +1064,7 @@ public class BitTimeZonePickerBehaviorTests : BunitTestContext
         }
         else
         {
-            StringAssert.Contains(style, expected);
+            Assert.Contains(expected, style);
         }
     }
 
@@ -1187,8 +1188,8 @@ public class BitTimeZonePickerBehaviorTests : BunitTestContext
         Assert.AreEqual(1, closed);
 
         // The JS side is told to take the relocated list off the screen, not left holding it.
-        Assert.AreEqual(false, LastToggle().Arguments[6]);
-        StringAssert.Contains(component.Find(".bit-tzp-ovl").GetAttribute("style"), "display:none");
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(LastToggle().Arguments[6]));
+        Assert.Contains("display:none", component.Find(".bit-tzp-ovl").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1196,7 +1197,7 @@ public class BitTimeZonePickerBehaviorTests : BunitTestContext
     {
         var component = RenderPicker<string>(parameters => parameters.Add(p => p.IsOpen, true));
 
-        Assert.AreEqual(true, LastToggle().Arguments[6]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(LastToggle().Arguments[6]));
 
         // Every render of the page hands the one-way IsOpen down again, which is what keeps it from being set back.
         component.Render(parameters =>
@@ -1207,8 +1208,8 @@ public class BitTimeZonePickerBehaviorTests : BunitTestContext
 
         // The picker cannot set a one-way IsOpen back to false, so the list is hidden instead.
         Assert.IsTrue(component.Instance.IsOpen);
-        Assert.AreEqual(false, LastToggle().Arguments[6]);
-        StringAssert.Contains(component.Find(".bit-tzp-ovl").GetAttribute("style"), "display:none");
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(LastToggle().Arguments[6]));
+        Assert.Contains("display:none", component.Find(".bit-tzp-ovl").GetAttribute("style")!);
         Assert.AreEqual("false", component.Find("button.bit-tzp-fld").GetAttribute("aria-expanded"));
 
         component.Render(parameters =>
@@ -1217,8 +1218,8 @@ public class BitTimeZonePickerBehaviorTests : BunitTestContext
             parameters.Add(p => p.Disabled, false);
         });
 
-        Assert.AreEqual(true, LastToggle().Arguments[6]);
-        StringAssert.Contains(component.Find(".bit-tzp-ovl").GetAttribute("style"), "display:block");
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(LastToggle().Arguments[6]));
+        Assert.Contains("display:block", component.Find(".bit-tzp-ovl").GetAttribute("style")!);
         Assert.AreEqual("true", component.Find("button.bit-tzp-fld").GetAttribute("aria-expanded"));
     }
 
@@ -1241,8 +1242,8 @@ public class BitTimeZonePickerBehaviorTests : BunitTestContext
 
         Assert.IsFalse(isOpen);
         Assert.IsFalse(component.Instance.IsOpen);
-        StringAssert.Contains(component.Find(".bit-tzp-ovl").GetAttribute("style"), "display:none");
-        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.Callouts.toggle" && Equals(i.Arguments[6], true)));
+        Assert.Contains("display:none", component.Find(".bit-tzp-ovl").GetAttribute("style")!);
+        Assert.DoesNotContain(i => i.Identifier == "BitBlazorUI.Callouts.toggle" && Equals(i.Arguments[6], true), Context.JSInterop.Invocations);
     }
 
     [TestMethod]
@@ -1250,18 +1251,18 @@ public class BitTimeZonePickerBehaviorTests : BunitTestContext
     {
         var component = RenderPicker<string>(parameters => parameters.Add(p => p.NoSearchBox, true));
 
-        CollectionAssert.DoesNotContain(LastFieldKeys(), "Enter");
+        Assert.DoesNotContain("Enter", LastFieldKeys());
 
         component.Render(parameters => parameters.Add(p => p.IsOpen, true));
 
         // Enter picks the active time zone of the open list, and the click it would also fire must not reopen it.
-        CollectionAssert.Contains(LastFieldKeys(), "Enter");
-        CollectionAssert.Contains(LastFieldKeys(), "PageDown");
+        Assert.Contains("Enter", LastFieldKeys());
+        Assert.Contains("PageDown", LastFieldKeys());
 
         component.Render(parameters => parameters.Add(p => p.IsOpen, false));
 
         // Enter is the native click that opens the closed field again.
-        CollectionAssert.DoesNotContain(LastFieldKeys(), "Enter");
+        Assert.DoesNotContain("Enter", LastFieldKeys());
     }
 
     [TestMethod]
@@ -1271,11 +1272,11 @@ public class BitTimeZonePickerBehaviorTests : BunitTestContext
 
         component.Find("button.bit-tzp-fld").Click();
 
-        CollectionAssert.Contains(LastFieldKeys(), "Enter");
+        Assert.Contains("Enter", LastFieldKeys());
 
         component.InvokeAsync(() => component.Instance._CloseCalloutBeforeAnotherCalloutIsOpened()).GetAwaiter().GetResult();
 
-        CollectionAssert.DoesNotContain(LastFieldKeys(), "Enter");
+        Assert.DoesNotContain("Enter", LastFieldKeys());
     }
 
     [TestMethod]
@@ -1357,8 +1358,9 @@ public class BitTimeZonePickerBehaviorTests : BunitTestContext
             parameters.Add(p => p.ReferenceDate, January);
             parameters.Add(p => p.Value, "Asia/Tokyo");
         });
+        var actualValue = component.Instance.SelectedTimeZone?.Id;
 
-        Assert.AreEqual("Asia/Tokyo", component.Instance.SelectedTimeZone?.Id);
+        Assert.AreEqual("Asia/Tokyo", actualValue);
 
         timeZones.RemoveAll(z => z.Id == "Asia/Tokyo");
 
@@ -1422,7 +1424,7 @@ public class BitTimeZonePickerBehaviorTests : BunitTestContext
         var part = component.Find(selector);
 
         Assert.IsTrue(part.ClassList.Contains(cssClass), $"{selector} lacks {cssClass}");
-        StringAssert.Contains(part.GetAttribute("style"), style, $"{selector} lacks {style}");
+        Assert.Contains(style, part.GetAttribute("style")!, $"{selector} lacks {style}");
     }
 
     // The keys the field's own listener was last handed: the field's sets are the ones that carry Home, which the

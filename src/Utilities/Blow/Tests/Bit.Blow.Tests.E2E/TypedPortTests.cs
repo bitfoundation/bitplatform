@@ -25,7 +25,7 @@ public sealed class TypedPortTests : BlowTest
         await DragAsync(page, await PortAsync(page, "n3", "value"), await PortAsync(page, "out", "text"));
         await WaitForQuietAsync(page);
 
-        CollectionAssert.AreEquivalent(before, await IdsAsync(page, "edge"), "an incompatible connection was made");
+        Assert.AreSequenceEqual(before, await IdsAsync(page, "edge"), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, "an incompatible connection was made");
         await Expect(page.Locator(".tp-last")).ToContainTextAsync("incompatible types");
         // Screen-reader users hear the same reason.
         await Expect(page.Locator(".bit-blow-a11y-live")).ToContainTextAsync("incompatible types");
@@ -57,7 +57,7 @@ public sealed class TypedPortTests : BlowTest
         await DragAsync(page, await PortAsync(page, "n3", "value"), await PortAsync(page, "op1", "a"));
         await WaitForQuietAsync(page);
 
-        CollectionAssert.AreEquivalent(before, await IdsAsync(page, "edge"));
+        Assert.AreSequenceEqual(before, await IdsAsync(page, "edge"), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         await Expect(page.Locator(".tp-last")).ToContainTextAsync("no free connections");
     }
 
@@ -71,7 +71,7 @@ public sealed class TypedPortTests : BlowTest
         await DragAsync(page, await PortAsync(page, "op1", "result"), await PortAsync(page, "op1", "b"));
         await WaitForQuietAsync(page);
 
-        CollectionAssert.AreEquivalent(before, await IdsAsync(page, "edge"), "a node was wired to itself");
+        Assert.AreSequenceEqual(before, await IdsAsync(page, "edge"), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, "a node was wired to itself");
         await Expect(page.Locator(".tp-last")).ToContainTextAsync("to itself");
     }
 }

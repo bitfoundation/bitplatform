@@ -45,7 +45,7 @@ public class BelemetrySpanExceptionTests
         host.Pipeline.Enqueue(Span());
         await host.FlushAsync();
 
-        CollectionAssert.AreEqual(new[] { "retry" }, EventNames(host.Memory.Spans.Single()));
+        Assert.AreSequenceEqual(new[] { "retry" }, EventNames(host.Memory.Spans.Single()));
     }
 
     [TestMethod]
@@ -77,7 +77,7 @@ public class BelemetrySpanExceptionTests
         host.Consent.Decide(BelemetryFeatures.Traces);
         await host.FlushAsync();
         var held = host.Memory.Spans.Single(s => s.SpanId == "1111111111111111");
-        CollectionAssert.AreEqual(new[] { "retry" }, EventNames(held), "Errors was not granted: the span goes without its exceptions.");
+        Assert.AreSequenceEqual(new[] { "retry" }, EventNames(held), "Errors was not granted: the span goes without its exceptions.");
     }
 
     [TestMethod]
@@ -92,10 +92,11 @@ public class BelemetrySpanExceptionTests
         Assert.IsEmpty(accepted, "Held for a decision on Errors.");
 
         host.Consent.Decide(BelemetryFeatures.Traces | BelemetryFeatures.Errors);
-        CollectionAssert.AreEqual(new object[] { span }, accepted);
+        Assert.AreSequenceEqual(new object[] { span }, accepted);
     }
 
     [TestMethod]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MSTEST0067", Justification = "The synchronous event handler verifies that revocation cannot pass the held pipeline lock.")]
     public async Task ARevoke_WaitsForTheHandlersOfTheRecordAccepted()
     {
         await using var host = TestHost.Create();
@@ -105,8 +106,8 @@ public class BelemetrySpanExceptionTests
         host.Pipeline.RecordAccepted += record =>
         {
             accepted = (BelemetrySpan)record;
-            revoke = Task.Run(() => host.Consent.Decide(BelemetryFeatures.All & ~BelemetryFeatures.Errors));
-            Assert.IsFalse(revoke.Wait(200), "Live Metrics reads the record before a revoke changes it.");
+            revoke = Task.Run(() => host.Consent.Decide(BelemetryFeatures.All & ~BelemetryFeatures.Errors), TestContext.CancellationToken);
+            Assert.IsFalse(revoke.Wait(200, TestContext.CancellationToken), "Live Metrics reads the record before a revoke changes it.");
             eventsSeen = accepted.Events.Count;
         };
 
@@ -114,7 +115,7 @@ public class BelemetrySpanExceptionTests
         await revoke!;
 
         Assert.AreEqual(2, eventsSeen);
-        CollectionAssert.AreEqual(new[] { "retry" }, EventNames(accepted!), "Then the revoke takes the exception off the queued span.");
+        Assert.AreSequenceEqual(new[] { "retry" }, EventNames(accepted!), "Then the revoke takes the exception off the queued span.");
     }
 
     [TestMethod]
@@ -126,7 +127,7 @@ public class BelemetrySpanExceptionTests
         host.Consent.Decide(BelemetryFeatures.Traces | BelemetryFeatures.Errors);
         await host.FlushAsync();
 
-        CollectionAssert.AreEqual(new[] { "retry", "exception" }, EventNames(host.Memory.Spans.Single()));
+        Assert.AreSequenceEqual(new[] { "retry", "exception" }, EventNames(host.Memory.Spans.Single()));
     }
 
     [TestMethod]
@@ -139,7 +140,7 @@ public class BelemetrySpanExceptionTests
         host.Consent.Decide(BelemetryFeatures.All & ~BelemetryFeatures.Errors);
         await host.FlushAsync();
 
-        CollectionAssert.AreEqual(new[] { "retry" }, EventNames(host.Memory.Spans.Single()), "The span stays: its feature is Traces.");
+        Assert.AreSequenceEqual(new[] { "retry" }, EventNames(host.Memory.Spans.Single()), "The span stays: its feature is Traces.");
     }
 
     [TestMethod]
@@ -154,7 +155,7 @@ public class BelemetrySpanExceptionTests
         host.Pipeline.Enqueue(Span());
         await host.FlushAsync();
 
-        CollectionAssert.AreEqual(new[] { "retry" }, EventNames(host.Memory.Spans.Single()));
+        Assert.AreSequenceEqual(new[] { "retry" }, EventNames(host.Memory.Spans.Single()));
     }
 
     [TestMethod]
@@ -168,8 +169,7 @@ public class BelemetrySpanExceptionTests
         await host.FlushAsync();
 
         var exceptions = host.Memory.Spans.Select(s => s.Events.Single(e => e.IsException)).ToArray();
-        CollectionAssert.AreEqual(new[] { false, true, false }, exceptions.Select(e => e.Limited).ToArray(),
-            "A repeat within the duplicate window is not an error record of its own; another exception is.");
+        Assert.AreSequenceEqual(new[] { false, true, false }, exceptions.Select(e => e.Limited).ToArray(), "A repeat within the duplicate window is not an error record of its own; another exception is.");
     }
 
     [TestMethod]
@@ -185,8 +185,7 @@ public class BelemetrySpanExceptionTests
         await host.FlushAsync();
 
         var exceptions = host.Memory.Spans.Select(s => s.Events.Single(e => e.IsException)).ToArray();
-        CollectionAssert.AreEqual(new[] { false, false, true, true }, exceptions.Select(e => e.Limited).ToArray(),
-            "Distinct exceptions take the per-minute tokens one each; past the burst they are not error records of their own.");
+        Assert.AreSequenceEqual(new[] { false, false, true, true }, exceptions.Select(e => e.Limited).ToArray(), "Distinct exceptions take the per-minute tokens one each; past the burst they are not error records of their own.");
     }
 
     [TestMethod]
@@ -271,7 +270,8 @@ public class BelemetrySpanExceptionTests
 
         Assert.IsEmpty(host.Memory.Logs);
         var span = host.Memory.Spans.Single();
-        Assert.IsTrue(span.Events.Single(e => e.IsException).LoggedAs?.IsDropped);
+        var actualValue = span.Events.Single(e => e.IsException).LoggedAs?.IsDropped;
+        Assert.IsTrue(actualValue);
         Assert.AreEqual(3, AzureItems(span), "The span, its other event, and its Exception: the log never left.");
     }
 
@@ -316,7 +316,7 @@ public class BelemetrySpanExceptionTests
         await host.FlushAsync();
 
         var span = host.Memory.Spans.Single();
-        CollectionAssert.AreEqual(new[] { true, false }, span.Events.Select(e => e.Limited).ToArray());
+        Assert.AreSequenceEqual(new[] { true, false }, span.Events.Select(e => e.Limited).ToArray());
         Assert.AreEqual(2, AzureItems(span), "The span and the exception the page did not limit.");
     }
 
@@ -332,7 +332,7 @@ public class BelemetrySpanExceptionTests
         host.Pipeline.Enqueue(Span(), relayed: true);
         await host.FlushAsync();
 
-        CollectionAssert.AreEqual(new[] { "retry" }, EventNames(host.Memory.Spans.Single()), "A page can be anything that speaks the interop protocol.");
+        Assert.AreSequenceEqual(new[] { "retry" }, EventNames(host.Memory.Spans.Single()), "A page can be anything that speaks the interop protocol.");
     }
 
     [TestMethod]
@@ -354,7 +354,7 @@ public class BelemetrySpanExceptionTests
 
         host.Pipeline.Enqueue(Span());
         await host.FlushAsync();
-        Assert.HasCount(1, handler.Requests, "Neither retried nor sent to Azure Monitor.");
+        Assert.ContainsSingle(handler.Requests, "Neither retried nor sent to Azure Monitor.");
 
         // Azure Monitor gets the metrics (the self-telemetry among them); OTLP sends traces only.
         await host.FlushAsync(includeMetrics: true);
@@ -363,4 +363,6 @@ public class BelemetrySpanExceptionTests
         Assert.AreEqual(1, Withdrawn("otlp"));
         Assert.AreEqual(3, Withdrawn("azuremonitor"), "Withdrawn before it was serialized, in the unit of a delivery: the span and its 2 events.");
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

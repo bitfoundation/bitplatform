@@ -289,7 +289,7 @@ public class BitToggleTests : BunitTestContext
         }
         else
         {
-            Assert.AreEqual(0, com.FindAll(".bit-tgl-stx").Count);
+            Assert.IsEmpty(com.FindAll(".bit-tgl-stx"));
         }
     }
 
@@ -439,7 +439,7 @@ public class BitToggleTests : BunitTestContext
 
         Assert.AreEqual(loading, toggle.ClassList.Contains("bit-tgl-ldg"));
         Assert.AreEqual(loading ? "true" : null, button.GetAttribute("aria-busy"));
-        Assert.AreEqual(loading ? 1 : 0, com.FindAll(".bit-tgl-spn").Count);
+        Assert.HasCount(loading ? 1 : 0, com.FindAll(".bit-tgl-spn"));
 
         // the spinner is drawn to the size of the knob it lands in and asks for no geometry of its own, so
         // turning the toggle busy never resizes it
@@ -594,11 +594,11 @@ public class BitToggleTests : BunitTestContext
 
         if (expectedIcon is null)
         {
-            Assert.AreEqual(0, icons.Count);
+            Assert.IsEmpty(icons);
         }
         else
         {
-            Assert.AreEqual(1, icons.Count);
+            Assert.ContainsSingle(icons);
             Assert.IsTrue(icons[0].ClassList.Contains($"bit-icon--{expectedIcon}"));
         }
 
@@ -674,12 +674,12 @@ public class BitToggleTests : BunitTestContext
 
         // Both sides are rendered whichever state the toggle is in, so the side that is not showing still
         // holds its width open and a flip cannot resize the track under the pointer.
-        Assert.AreEqual(1, com.FindAll(".bit-tgl-cno").Count);
+        Assert.ContainsSingle(com.FindAll(".bit-tgl-cno"));
         Assert.AreEqual("OFF", com.Find(".bit-tgl-cnf").TextContent.Trim());
 
         com.Render(parameters => parameters.Add(p => p.Value, true));
 
-        Assert.AreEqual(1, com.FindAll(".bit-tgl-cno").Count);
+        Assert.ContainsSingle(com.FindAll(".bit-tgl-cno"));
         Assert.AreEqual("OFF", com.Find(".bit-tgl-cnf").TextContent.Trim());
     }
 
@@ -688,7 +688,7 @@ public class BitToggleTests : BunitTestContext
     {
         var com = RenderComponent<BitToggle>();
 
-        Assert.AreEqual(0, com.FindAll(".bit-tgl-cnn").Count);
+        Assert.IsEmpty(com.FindAll(".bit-tgl-cnn"));
     }
 
     [TestMethod]
@@ -717,7 +717,7 @@ public class BitToggleTests : BunitTestContext
         });
 
         Assert.AreEqual("TPL", com.Find(".bit-tgl-sta").TextContent.Trim());
-        Assert.AreEqual(0, com.FindAll(".bit-tgl-ico").Count);
+        Assert.IsEmpty(com.FindAll(".bit-tgl-ico"));
         Assert.IsTrue(com.Find(".bit-tgl").ClassList.Contains("bit-tgl-tic"));
     }
 
@@ -742,7 +742,7 @@ public class BitToggleTests : BunitTestContext
             parameters.Add(p => p.ThumbTemplate, (RenderFragment<bool>)(isOn => b => b.AddContent(0, "TPL")));
         });
 
-        Assert.AreEqual(1, com.FindAll(".bit-tgl-spn").Count);
+        Assert.ContainsSingle(com.FindAll(".bit-tgl-spn"));
         Assert.AreEqual(string.Empty, com.Find(".bit-tgl-sta").TextContent.Trim());
     }
 
@@ -1083,7 +1083,7 @@ public class BitToggleTests : BunitTestContext
         var button = com.Find("button");
         var describedBy = button.GetAttribute("aria-describedby")!.Split(' ');
 
-        Assert.AreEqual(2, describedBy.Length);
+        Assert.HasCount(2, describedBy);
         Assert.AreEqual("The state", com.Find($"#{describedBy[0]}").TextContent.Trim());
         Assert.AreEqual(ariaDescription, com.Find($"#{describedBy[1]}").TextContent.Trim());
     }
@@ -1103,8 +1103,8 @@ public class BitToggleTests : BunitTestContext
 
         // the geometry is decided by the icons alone, so it is the same before, during and after the wait
         Assert.IsTrue(com.Find(".bit-tgl").ClassList.Contains("bit-tgl-tic"));
-        Assert.AreEqual(1, com.FindAll(".bit-tgl-spn").Count);
-        Assert.AreEqual(0, com.FindAll(".bit-tgl-ico").Count);
+        Assert.ContainsSingle(com.FindAll(".bit-tgl-spn"));
+        Assert.IsEmpty(com.FindAll(".bit-tgl-ico"));
     }
 
     [TestMethod]
@@ -1120,7 +1120,7 @@ public class BitToggleTests : BunitTestContext
 
         var describedBy = com.Find("button").GetAttribute("aria-describedby")!.Split(' ');
 
-        Assert.AreEqual(3, describedBy.Length);
+        Assert.HasCount(3, describedBy);
         Assert.AreEqual("The state", com.Find($"#{describedBy[0]}").TextContent.Trim());
         Assert.AreEqual("A description", com.Find($"#{describedBy[1]}").TextContent.Trim());
         Assert.AreEqual("an-external-hint", describedBy[2]);
@@ -1202,7 +1202,7 @@ public class BitToggleTests : BunitTestContext
     {
         var com = RenderComponent<BitToggle>();
 
-        Assert.AreEqual(0, com.FindAll(".bit-tgl-des").Count);
+        Assert.IsEmpty(com.FindAll(".bit-tgl-des"));
         Assert.IsFalse(com.Find(".bit-tgl").ClassList.Contains("bit-tgl-hds"));
     }
 
@@ -1235,7 +1235,7 @@ public class BitToggleTests : BunitTestContext
         var describedBy = com.Find("button").GetAttribute("aria-describedby")!.Split(' ');
 
         // the two descriptions are announced in the order they are read on the page
-        Assert.AreEqual(4, describedBy.Length);
+        Assert.HasCount(4, describedBy);
         Assert.AreEqual("The state", com.Find($"#{describedBy[0]}").TextContent.Trim());
         Assert.AreEqual("The visible description", com.Find($"#{describedBy[1]}").TextContent.Trim());
         Assert.AreEqual("The hidden description", com.Find($"#{describedBy[2]}").TextContent.Trim());
@@ -1268,7 +1268,7 @@ public class BitToggleTests : BunitTestContext
         var descriptionElement = com.Find(".bit-tgl-des");
 
         Assert.IsTrue(descriptionElement.ClassList.Contains("description-class"));
-        Assert.IsTrue(descriptionElement.GetAttribute("style")!.Contains("color: red;"));
+        Assert.Contains("color: red;", descriptionElement.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1285,19 +1285,19 @@ public class BitToggleTests : BunitTestContext
             parameters.Add(p => p.OnChange, async (bool _) => await gate.Task);
         });
 
-        Assert.AreEqual(0, com.FindAll(".bit-tgl-spn").Count);
+        Assert.IsEmpty(com.FindAll(".bit-tgl-spn"));
 
         com.Find("button").Click();
 
         // the spinner has to show up while the callback behind the change is still running, not after it
-        com.WaitForAssertion(() => Assert.AreEqual(1, com.FindAll(".bit-tgl-spn").Count));
+        com.WaitForAssertion(() => Assert.ContainsSingle(com.FindAll(".bit-tgl-spn")));
         Assert.IsTrue(com.Find(".bit-tgl").ClassList.Contains("bit-tgl-ldg"));
         Assert.AreEqual("true", com.Find("button").GetAttribute("aria-busy"));
         Assert.AreEqual("true", com.Find("button").GetAttribute("aria-disabled"));
 
         await com.InvokeAsync(gate.SetResult);
 
-        com.WaitForAssertion(() => Assert.AreEqual(0, com.FindAll(".bit-tgl-spn").Count));
+        com.WaitForAssertion(() => Assert.IsEmpty(com.FindAll(".bit-tgl-spn")));
         Assert.IsFalse(com.Find(".bit-tgl").ClassList.Contains("bit-tgl-ldg"));
         Assert.IsTrue(com.Find(".bit-tgl").ClassList.Contains("bit-tgl-chk"));
     }
@@ -1316,12 +1316,12 @@ public class BitToggleTests : BunitTestContext
 
         var toggling = com.InvokeAsync(() => com.Instance.ToggleAsync());
 
-        com.WaitForAssertion(() => Assert.AreEqual(1, com.FindAll(".bit-tgl-spn").Count));
+        com.WaitForAssertion(() => Assert.ContainsSingle(com.FindAll(".bit-tgl-spn")));
 
         await com.InvokeAsync(gate.SetResult);
         await toggling;
 
-        com.WaitForAssertion(() => Assert.AreEqual(0, com.FindAll(".bit-tgl-spn").Count));
+        com.WaitForAssertion(() => Assert.IsEmpty(com.FindAll(".bit-tgl-spn")));
         Assert.IsTrue(com.Find(".bit-tgl").ClassList.Contains("bit-tgl-chk"));
     }
 
@@ -1337,7 +1337,7 @@ public class BitToggleTests : BunitTestContext
         com.Find("button").Click();
 
         // nothing was awaited, so the busy state has nothing to cover and never shows
-        Assert.AreEqual(0, com.FindAll(".bit-tgl-spn").Count);
+        Assert.IsEmpty(com.FindAll(".bit-tgl-spn"));
         Assert.IsFalse(com.Find(".bit-tgl").ClassList.Contains("bit-tgl-ldg"));
         Assert.IsTrue(com.Find(".bit-tgl").ClassList.Contains("bit-tgl-chk"));
     }
@@ -1355,7 +1355,7 @@ public class BitToggleTests : BunitTestContext
         await com.InvokeAsync(() => com.Instance.ToggleAsync());
 
         // the toggle only clears the state it raised itself; the parameter stays the caller's to control
-        Assert.AreEqual(1, com.FindAll(".bit-tgl-spn").Count);
+        Assert.ContainsSingle(com.FindAll(".bit-tgl-spn"));
         Assert.IsTrue(com.Find(".bit-tgl").ClassList.Contains("bit-tgl-ldg"));
     }
 
@@ -1473,8 +1473,8 @@ public class BitToggleTests : BunitTestContext
 
         Assert.IsTrue(root.ClassList.Contains("root-class"));
         Assert.IsTrue(root.ClassList.Contains("checked-class"));
-        Assert.IsTrue(root.GetAttribute("style")!.Contains("color: red;"));
-        Assert.IsTrue(root.GetAttribute("style")!.Contains("color: purple;"));
+        Assert.Contains("color: red;", root.GetAttribute("style")!);
+        Assert.Contains("color: purple;", root.GetAttribute("style")!);
 
         Assert.IsTrue(com.Find(".bit-tgl-lbl").ClassList.Contains("label-class"));
         Assert.IsTrue(com.Find(".bit-tgl-cnt").ClassList.Contains("container-class"));
@@ -1486,15 +1486,15 @@ public class BitToggleTests : BunitTestContext
         Assert.IsTrue(com.Find(".bit-tgl-ico").ClassList.Contains("icon-class"));
         Assert.IsTrue(com.Find(".bit-tgl-stx").ClassList.Contains("text-class"));
 
-        Assert.IsTrue(com.Find(".bit-tgl-lbl").GetAttribute("style")!.Contains("color: green;"));
-        Assert.IsTrue(com.Find(".bit-tgl-cnt").GetAttribute("style")!.Contains("color: blue;"));
-        Assert.IsTrue(com.Find(".bit-tgl-btn").GetAttribute("style")!.Contains("color: yellow;"));
-        Assert.IsTrue(com.Find(".bit-tgl-cnn").GetAttribute("style")!.Contains("color: orange;"));
-        Assert.IsTrue(com.Find(".bit-tgl-cno").GetAttribute("style")!.Contains("color: teal;"));
-        Assert.IsTrue(com.Find(".bit-tgl-cnf").GetAttribute("style")!.Contains("color: olive;"));
-        Assert.IsTrue(com.Find(".bit-tgl-sta").GetAttribute("style")!.Contains("color: pink;"));
-        Assert.IsTrue(com.Find(".bit-tgl-ico").GetAttribute("style")!.Contains("color: brown;"));
-        Assert.IsTrue(com.Find(".bit-tgl-stx").GetAttribute("style")!.Contains("color: gray;"));
+        Assert.Contains("color: green;", com.Find(".bit-tgl-lbl").GetAttribute("style")!);
+        Assert.Contains("color: blue;", com.Find(".bit-tgl-cnt").GetAttribute("style")!);
+        Assert.Contains("color: yellow;", com.Find(".bit-tgl-btn").GetAttribute("style")!);
+        Assert.Contains("color: orange;", com.Find(".bit-tgl-cnn").GetAttribute("style")!);
+        Assert.Contains("color: teal;", com.Find(".bit-tgl-cno").GetAttribute("style")!);
+        Assert.Contains("color: olive;", com.Find(".bit-tgl-cnf").GetAttribute("style")!);
+        Assert.Contains("color: pink;", com.Find(".bit-tgl-sta").GetAttribute("style")!);
+        Assert.Contains("color: brown;", com.Find(".bit-tgl-ico").GetAttribute("style")!);
+        Assert.Contains("color: gray;", com.Find(".bit-tgl-stx").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1511,7 +1511,7 @@ public class BitToggleTests : BunitTestContext
         var spinner = com.Find(".bit-tgl-spn");
 
         Assert.IsTrue(spinner.ClassList.Contains("spinner-class"));
-        Assert.IsTrue(spinner.GetAttribute("style")!.Contains("color: red;"));
+        Assert.Contains("color: red;", spinner.GetAttribute("style")!);
     }
 
     [TestMethod,
@@ -1797,7 +1797,7 @@ public class BitToggleTests : BunitTestContext
 
         var root = com.Find(".bit-tgl");
 
-        Assert.AreEqual(0, com.FindAll(".bit-tgl-erm").Count);
+        Assert.IsEmpty(com.FindAll(".bit-tgl-erm"));
         Assert.IsFalse(root.ClassList.Contains("bit-tgl-her"));
         Assert.IsFalse(root.ClassList.Contains("bit-inv"));
         Assert.IsFalse(com.Find("button").HasAttribute("aria-invalid"));
@@ -1818,7 +1818,7 @@ public class BitToggleTests : BunitTestContext
         Assert.AreEqual("true", com.Find("button").GetAttribute("aria-invalid"));
 
         // the flag says the state was rejected; it does not invent a line saying why
-        Assert.AreEqual(0, com.FindAll(".bit-tgl-erm").Count);
+        Assert.IsEmpty(com.FindAll(".bit-tgl-erm"));
         Assert.IsFalse(root.ClassList.Contains("bit-tgl-her"));
     }
 
@@ -1860,7 +1860,7 @@ public class BitToggleTests : BunitTestContext
         com.Render(parameters => parameters.Add(p => p.ErrorMessageTemplate, (RenderFragment)(builder => builder.AddContent(0, "!"))));
 
         Assert.AreEqual("Invalid input", com.Find("[role=status]").TextContent.Trim());
-        StringAssert.Contains(com.Find("button").GetAttribute("aria-describedby"), com.Find(".bit-tgl-erm").Id);
+        Assert.Contains(com.Find(".bit-tgl-erm").Id!, com.Find("button").GetAttribute("aria-describedby")!);
     }
 
     [TestMethod]
@@ -1916,7 +1916,7 @@ public class BitToggleTests : BunitTestContext
         });
 
         // the flag on its own has nothing to say, and so no live region to say it in
-        Assert.AreEqual(0, com.FindAll("[role=status]").Count);
+        Assert.IsEmpty(com.FindAll("[role=status]"));
         Assert.IsFalse(com.Find("button").HasAttribute("aria-describedby"));
 
         com.Render(parameters => parameters.Add(p => p.ErrorMessageAriaLabel, "مقدار نامعتبر"));
@@ -1952,7 +1952,7 @@ public class BitToggleTests : BunitTestContext
     {
         var com = RenderComponent<BitToggle>(parameters => parameters.Add(p => p.Label, "No live region"));
 
-        Assert.AreEqual(0, com.FindAll("[role=status]").Count);
+        Assert.IsEmpty(com.FindAll("[role=status]"));
     }
 
     [TestMethod]
@@ -1997,7 +1997,7 @@ public class BitToggleTests : BunitTestContext
 
         // what is wrong with the state is read before what the switch is for, which is the order the two
         // lines are rendered in as well
-        CollectionAssert.AreEqual(new[] { stateTextId, errorId, descriptionId }, describedBy);
+        Assert.AreSequenceEqual(new[] { stateTextId, errorId, descriptionId }, describedBy);
     }
 
     [TestMethod]
@@ -2053,7 +2053,7 @@ public class BitToggleTests : BunitTestContext
 
         // the base class already registers the class for a value the EditContext rejected, so the component
         // only adds it for a rejection of its own - two identical classes say nothing the one does not
-        Assert.AreEqual(1, com.Find(".bit-tgl").ClassList.Count(c => c == "bit-inv"));
+        Assert.ContainsSingle(c => c == "bit-inv", com.Find(".bit-tgl").ClassList);
     }
 
     [TestMethod]
@@ -2078,7 +2078,7 @@ public class BitToggleTests : BunitTestContext
 
         var missing = declared.Where(name => carried.Contains(name) is false).ToList();
 
-        Assert.AreEqual(0, missing.Count, "BitToggleParams is missing: " + string.Join(", ", missing));
+        Assert.IsEmpty(missing, "BitToggleParams is missing: " + string.Join(", ", missing));
     }
 
     [TestMethod]
@@ -2177,7 +2177,7 @@ public class BitToggleTests : BunitTestContext
 
         Assert.AreEqual("the-toggle", root.Id);
         Assert.IsTrue(root.ClassList.Contains("custom-class"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin: 1px;");
+        Assert.Contains("margin: 1px;", root.GetAttribute("style")!);
         Assert.AreEqual("root", root.GetAttribute("data-splat"));
     }
 
@@ -2201,7 +2201,7 @@ public class BitToggleTests : BunitTestContext
         }
         else
         {
-            StringAssert.Contains(style, expectedStyle);
+            Assert.Contains(expectedStyle, style);
         }
     }
 

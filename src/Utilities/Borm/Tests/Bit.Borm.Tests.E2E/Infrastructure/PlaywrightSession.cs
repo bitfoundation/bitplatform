@@ -12,7 +12,7 @@ namespace Bit.Borm.Tests.E2E.Infrastructure;
 /// once as <see cref="Session.Unavailable"/>, so every test reports it without waiting out the same
 /// timeout again.
 /// </remarks>
-public static class PlaywrightSession
+internal static class PlaywrightSession
 {
     private static readonly Lazy<Task<Session>> _session = new(StartAsync);
 
@@ -124,7 +124,7 @@ public static class PlaywrightSession
     }
 
     /// <summary>The shared browser and demo, or the reason the suite cannot run.</summary>
-    public sealed record Session(IPlaywright? Playwright, IBrowser? Browser, DemoHost? Host, string? Unavailable)
+    internal sealed record Session(IPlaywright? Playwright, IBrowser? Browser, DemoHost? Host, string? Unavailable)
     {
         public static Session Fail(string reason) => new(null, null, null, reason);
     }

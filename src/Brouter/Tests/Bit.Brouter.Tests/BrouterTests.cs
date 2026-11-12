@@ -18,7 +18,7 @@ public class BrouterTests : BunitTestContext
 
         cut.WaitForAssertion(() => Assert.AreEqual("home", cut.Find("[data-testid=home]").TextContent));
         // Sanity check: the /users route is registered but should NOT render at /home.
-        Assert.AreEqual(0, cut.FindAll("[data-testid=u]").Count);
+        Assert.IsEmpty(cut.FindAll("[data-testid=u]"));
     }
 
     [TestMethod]
@@ -30,7 +30,7 @@ public class BrouterTests : BunitTestContext
         var cut = RenderComponent<SpecificityHost>();
 
         cut.WaitForAssertion(() => Assert.IsNotNull(cut.Find("[data-testid=about]")));
-        cut.WaitForAssertion(() => Assert.AreEqual(0, cut.FindAll("[data-testid=star]").Count));
+        cut.WaitForAssertion(() => Assert.IsEmpty(cut.FindAll("[data-testid=star]")));
     }
 
     [TestMethod]
@@ -79,6 +79,6 @@ public class BrouterTests : BunitTestContext
         // match under strict trailing-slash handling.
         nav.NavigateTo("http://localhost/users/42/");
 
-        cut.WaitForAssertion(() => Assert.AreEqual(0, cut.FindAll("[data-testid=out]").Count));
+        cut.WaitForAssertion(() => Assert.IsEmpty(cut.FindAll("[data-testid=out]")));
     }
 }

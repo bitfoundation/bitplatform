@@ -22,7 +22,8 @@ public sealed class DemoPagesTests : BdndTest
         var page = await NewPageAsync();
 
         var response = await GotoAsync(page, path);
-        Assert.AreEqual(200, response?.Status, $"{path} answered {response?.Status}");
+        var actualValue = response?.Status;
+        Assert.AreEqual(200, actualValue, $"{path} answered {response?.Status}");
         await WaitForInteractiveAsync(page.MainFrame);
 
         // A page with draggables has loaded the library's browser module, and registered every one of them with it:
@@ -65,7 +66,7 @@ public sealed class DemoPagesTests : BdndTest
             {
                 var name = await names.Nth(i).TextContentAsync();
                 var source = await blocks.Nth(i).TextContentAsync() ?? "";
-                Assert.IsTrue(source.Length > 100, $"{path}: {name} shows a source of only {source.Length} characters");
+                Assert.IsGreaterThan(100, source.Length, $"{path}: {name} shows a source of only {source.Length} characters");
                 Assert.IsGreaterThan(0, await blocks.Nth(i).Locator("[class^='tok-']").CountAsync(), $"{path}: {name} is not coloured");
                 if (i == 0) Assert.DoesNotContain("@page", source, $"{path}: the snippet still carries the routing directive");
             }
@@ -102,8 +103,8 @@ public sealed class DemoPagesTests : BdndTest
         await Expect(code).ToHaveCountAsync(1);
         await Expect(page.Locator(".demo-code__file")).ToHaveTextAsync("SingleTarget.razor");
         var source = await code.TextContentAsync() ?? "";
-        StringAssert.Contains(source, "<BdndDropTarget", "the snippet is not the page's markup");
-        StringAssert.Contains(source, "private void HandleDrop(", "the snippet is missing the page's code block");
+        Assert.Contains("<BdndDropTarget", source, "the snippet is not the page's markup");
+        Assert.Contains("private void HandleDrop(", source, "the snippet is missing the page's code block");
         Assert.DoesNotContain("@page", source, "the snippet still carries the routing directive");
         // coloured: the component tag, the keywords and the strings are tokens of their own
         Assert.IsGreaterThan(0, await code.Locator(".tok-type", new() { HasText = "BdndDropTarget" }).CountAsync(), "the component tag is not coloured");
@@ -123,7 +124,7 @@ public sealed class DemoPagesTests : BdndTest
 
         await Expect(page.Locator(".demo-code__file")).ToHaveTextAsync(["Simple.razor", "SortableCard.razor"]);
         var card = page.Locator(".demo-code__pre > code").Nth(1);
-        StringAssert.Contains(await card.TextContentAsync() ?? "", "OnHover", "the second file is not the sortable card");
+        Assert.Contains("OnHover", await card.TextContentAsync() ?? "", "the second file is not the sortable card");
         // the card's parameter is a member, not a type: `@Card.Text`
         Assert.AreEqual(0, await card.Locator(".tok-type", new() { HasTextRegex = new System.Text.RegularExpressions.Regex("^Card$") }).CountAsync(), "the card's Card parameter is coloured as a type");
     }

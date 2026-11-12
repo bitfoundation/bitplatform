@@ -128,7 +128,7 @@ public class BitActionButtonTests : BunitTestContext
         // Icon parameter should take precedence
         Assert.IsTrue(icon.ClassList.Contains("fa-solid"));
         Assert.IsTrue(icon.ClassList.Contains("fa-house"));
-        
+
         // Should not contain IconName classes
         Assert.IsFalse(icon.ClassList.Contains("bit-icon"));
         Assert.IsFalse(icon.ClassList.Contains("bit-icon--AddFriend"));
@@ -208,7 +208,8 @@ public class BitActionButtonTests : BunitTestContext
 
         if (hasTabIndexAttr)
         {
-            Assert.IsTrue(button?.GetAttribute("tabindex")?.Equals("-1"));
+            var actualValue = button?.GetAttribute("tabindex")?.Equals("-1");
+            Assert.IsTrue(actualValue);
         }
 
     }
@@ -245,7 +246,7 @@ public class BitActionButtonTests : BunitTestContext
         var button = component.Find(".bit-acb");
 
         Assert.IsFalse(button.HasAttribute("aria-describedby"));
-        Assert.AreEqual(0, component.FindAll(".bit-acb-dsc").Count);
+        Assert.IsEmpty(component.FindAll(".bit-acb-dsc"));
     }
 
     [TestMethod,
@@ -418,7 +419,7 @@ public class BitActionButtonTests : BunitTestContext
         Assert.AreEqual("true", image.GetAttribute("aria-hidden"));
         Assert.IsTrue(image.ClassList.Contains("custom-icon"));
         Assert.AreEqual("width: 2rem;", image.GetAttribute("style"));
-        Assert.AreEqual(0, component.FindAll(".bit-acb-ico").Count);
+        Assert.IsEmpty(component.FindAll(".bit-acb-ico"));
     }
 
     [TestMethod]
@@ -430,8 +431,8 @@ public class BitActionButtonTests : BunitTestContext
             parameters.Add(p => p.IconUrl, "/images/icon.svg");
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-acb-ico").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-acb-icu").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-acb-ico"));
+        Assert.IsEmpty(component.FindAll(".bit-acb-icu"));
     }
 
     [TestMethod]
@@ -443,8 +444,8 @@ public class BitActionButtonTests : BunitTestContext
             parameters.Add(p => p.IsLoading, true);
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-acb-spn").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-acb-icu").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-acb-spn"));
+        Assert.IsEmpty(component.FindAll(".bit-acb-icu"));
     }
 
     [TestMethod,
@@ -949,8 +950,9 @@ public class BitActionButtonTests : BunitTestContext
         var button = component.Find(".bit-acb");
         var icon = component.Find(".bit-acb-ico");
         var content = component.Find(".bit-acb-con");
+        var actualValue = button.GetAttribute("style")?.Contains(rootStyle);
 
-        Assert.IsTrue(button.GetAttribute("style")?.Contains(rootStyle));
+        Assert.IsTrue(actualValue);
         Assert.AreEqual(iconStyle, icon.GetAttribute("style"));
         Assert.AreEqual(contentStyle, content.GetAttribute("style"));
     }
@@ -1109,8 +1111,7 @@ public class BitActionButtonTests : BunitTestContext
 
         stopwatch.Stop();
 
-        Assert.IsTrue(stopwatch.Elapsed < TimeSpan.FromSeconds(5),
-            $"Rendering {renderCount} BitActionButton instances took {stopwatch.Elapsed}.");
+        Assert.IsLessThan(TimeSpan.FromSeconds(5), stopwatch.Elapsed, $"Rendering {renderCount} BitActionButton instances took {stopwatch.Elapsed}.");
     }
 
     [TestMethod]
@@ -1244,7 +1245,7 @@ public class BitActionButtonTests : BunitTestContext
         var spinners = component.FindAll(".bit-acb-spn");
 
         Assert.IsEmpty(icons);
-        Assert.HasCount(1, spinners);
+        Assert.ContainsSingle(spinners);
     }
 
     [TestMethod]
@@ -1280,7 +1281,7 @@ public class BitActionButtonTests : BunitTestContext
         var spinners = component.FindAll(".bit-acb-spn");
         var icons = component.FindAll(".bit-acb-ico");
 
-        Assert.HasCount(1, spinners);
+        Assert.ContainsSingle(spinners);
         Assert.IsEmpty(icons);
     }
 
@@ -1302,7 +1303,7 @@ public class BitActionButtonTests : BunitTestContext
         component.Render(parameters => parameters.Add(p => p.IsLoading, true));
 
         Assert.IsTrue(button.ClassList.Contains("bit-acb-lod"));
-        Assert.HasCount(1, component.FindAll(".bit-acb-spn"));
+        Assert.ContainsSingle(component.FindAll(".bit-acb-spn"));
     }
 
     [TestMethod]
@@ -1368,7 +1369,8 @@ public class BitActionButtonTests : BunitTestContext
         var spinner = component.Find(".bit-acb-spn");
 
         Assert.IsTrue(spinner.ClassList.Contains(spinnerClass));
-        Assert.IsTrue(spinner.GetAttribute("style")?.Contains(spinnerStyle));
+        var actualValue = spinner.GetAttribute("style")?.Contains(spinnerStyle);
+        Assert.IsTrue(actualValue);
     }
 
     [TestMethod]
@@ -1457,7 +1459,7 @@ public class BitActionButtonTests : BunitTestContext
 
         Assert.AreEqual("true", anchor.GetAttribute("aria-busy"));
         Assert.IsTrue(anchor.ClassList.Contains("bit-acb-lod"));
-        Assert.HasCount(1, component.FindAll(".bit-acb-spn"));
+        Assert.ContainsSingle(component.FindAll(".bit-acb-spn"));
 
         // The href is removed while loading to prevent keyboard-driven navigation.
         Assert.IsFalse(anchor.HasAttribute("href"));
@@ -1537,7 +1539,7 @@ public class BitActionButtonTests : BunitTestContext
         {
             Assert.IsTrue(component.Find(".bit-acb").ClassList.Contains("bit-acb-lod"));
             Assert.AreEqual("true", component.Find(".bit-acb").GetAttribute("aria-busy"));
-            Assert.HasCount(1, component.FindAll(".bit-acb-spn"));
+            Assert.ContainsSingle(component.FindAll(".bit-acb-spn"));
         });
 
         tcs.SetResult();
@@ -1633,13 +1635,13 @@ public class BitActionButtonTests : BunitTestContext
         await firstClick;
 
         Assert.IsTrue(component.Instance.IsLoading);
-        CollectionAssert.AreEqual(new List<bool> { true }, loadingStates);
+        Assert.AreSequenceEqual(new List<bool> { true }, loadingStates);
 
         secondTcs.SetResult();
         await secondClick;
 
         Assert.IsFalse(component.Instance.IsLoading);
-        CollectionAssert.AreEqual(new List<bool> { true, false }, loadingStates);
+        Assert.AreSequenceEqual(new List<bool> { true, false }, loadingStates);
     }
 
     [TestMethod]
@@ -1660,7 +1662,7 @@ public class BitActionButtonTests : BunitTestContext
         tcs.SetResult();
         await clickTask;
 
-        CollectionAssert.AreEqual(new List<bool> { true, false }, loadingStates);
+        Assert.AreSequenceEqual(new List<bool> { true, false }, loadingStates);
     }
 
     [TestMethod]
@@ -1744,7 +1746,7 @@ public class BitActionButtonTests : BunitTestContext
         Assert.AreEqual("true", button.GetAttribute("aria-busy"));
         Assert.IsEmpty(component.FindAll(".bit-acb-spn"));
 
-        component.WaitForAssertion(() => Assert.HasCount(1, component.FindAll(".bit-acb-spn")), TimeSpan.FromSeconds(5));
+        component.WaitForAssertion(() => Assert.ContainsSingle(component.FindAll(".bit-acb-spn")), TimeSpan.FromSeconds(5));
     }
 
     [TestMethod,
@@ -2038,7 +2040,7 @@ public class BitActionButtonTests : BunitTestContext
 
         var invocation = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"];
 
-        Assert.HasCount(1, invocation);
+        Assert.ContainsSingle(invocation);
     }
 
     [TestMethod]
@@ -2060,7 +2062,7 @@ public class BitActionButtonTests : BunitTestContext
         Assert.IsTrue(button.ClassList.Contains("bit-rtl"));
         Assert.IsTrue(button.ClassList.Contains("bit-fam"));
         Assert.AreEqual("rtl", button.GetAttribute("dir"));
-        StringAssert.Contains(button.GetAttribute("style"), "margin: 1px;");
+        Assert.Contains("margin: 1px;", button.GetAttribute("style")!);
     }
 
     [TestMethod,
@@ -2083,7 +2085,7 @@ public class BitActionButtonTests : BunitTestContext
         }
         else
         {
-            StringAssert.Contains(style, expectedStyle);
+            Assert.Contains(expectedStyle, style);
         }
     }
 
@@ -2204,7 +2206,7 @@ public class BitActionButtonTests : BunitTestContext
         // the square of one glyph keeps its shape: the spinner alone is shown, and the label goes to the live region
         Assert.IsEmpty(component.FindAll(".bit-acb-lbl"));
         Assert.IsEmpty(component.FindAll(".bit-acb-con"));
-        Assert.HasCount(1, component.FindAll(".bit-acb-spn"));
+        Assert.ContainsSingle(component.FindAll(".bit-acb-spn"));
         Assert.AreEqual("Saving...", component.Find(".bit-acb-sts").TextContent);
     }
 
@@ -2319,7 +2321,7 @@ public class BitActionButtonTests : BunitTestContext
             parameters.Add(p => p.Disabled, true);
         });
 
-        Assert.HasCount(0, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
+        Assert.IsEmpty(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
     }
 
     [TestMethod,

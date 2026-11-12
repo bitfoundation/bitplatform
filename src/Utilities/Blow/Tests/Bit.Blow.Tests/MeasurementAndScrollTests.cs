@@ -62,7 +62,7 @@ public class MeasurementAndScrollTests : BunitContext
             p.Add(c => c.ConnectionMode, BlowConnectionMode.Loose);
         });
 
-        StringAssert.EndsWith(cut.Find(".bit-blow-edge-path").GetAttribute("d")!, "400,120");
+        Assert.EndsWith("400,120", cut.Find(".bit-blow-edge-path").GetAttribute("d")!);
     }
 
     [TestMethod]
@@ -276,9 +276,9 @@ public class MeasurementAndScrollTests : BunitContext
         // arrived yet - and must arrive shortly afterwards without further input.
         Assert.IsFalse(ended.Task.IsCompleted);
 
-        var finished = await Task.WhenAny(ended.Task, Task.Delay(TimeSpan.FromSeconds(5)));
+        var finished = await Task.WhenAny(ended.Task, Task.Delay(TimeSpan.FromSeconds(5), TestContext.CancellationToken));
         Assert.AreSame(ended.Task, finished);
-        Assert.IsTrue((await ended.Task).Zoom > 1);
+        Assert.IsGreaterThan(1, (await ended.Task).Zoom);
     }
 
     [TestMethod]
@@ -295,12 +295,12 @@ public class MeasurementAndScrollTests : BunitContext
         for (var i = 0; i < 4; i++)
         {
             pane.Wheel(new WheelEventArgs { DeltaY = -100, ClientX = 10, ClientY = 10 });
-            await Task.Delay(60);
+            await Task.Delay(60, TestContext.CancellationToken);
         }
 
         // Four bursts 60ms apart are one gesture, not four.
         Assert.AreEqual(0, ends);
-        await Task.Delay(500);
+        await Task.Delay(500, TestContext.CancellationToken);
         Assert.AreEqual(1, ends);
     }
 
@@ -335,4 +335,6 @@ public class MeasurementAndScrollTests : BunitContext
 
         Assert.AreEqual(1, starts);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

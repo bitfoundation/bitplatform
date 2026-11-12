@@ -173,14 +173,14 @@ public sealed class NativeDragTests : BdndTest
         if (Browser.BrowserType.Name != "webkit")
         {
             var html = await result.Locator("pre").TextContentAsync() ?? "";
-            StringAssert.Contains(html, "href=\"https://react-dnd.github.io/react-dnd\"", "the dropped markup");
-            StringAssert.Contains(html, ">link inside</a>", "the dropped markup");
+            Assert.Contains("href=\"https://react-dnd.github.io/react-dnd\"", html, "the dropped markup");
+            Assert.Contains(">link inside</a>", html, "the dropped markup");
         }
 
         // Nothing followed the link: no navigation, no new tab, and the target is idle again.
         await Expect(bin).ToHaveTextAsync("Drag selected text / a link here");
         Assert.AreEqual(url, page.Url, "the drop navigated the page");
-        Assert.HasCount(1, page.Context.Pages, "the drop opened another page");
+        Assert.ContainsSingle(page.Context.Pages, "the drop opened another page");
         var (count, prevented) = await DropsAsync(page.MainFrame);
         Assert.AreEqual((1, 1), (count, prevented), "the drop reached the page and was kept from the browser");
     }

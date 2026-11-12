@@ -62,7 +62,7 @@ public sealed class SearchFeatureTests : BaletteTest
         // The search icon sits at the right edge of the input row, where a right-to-left line starts.
         var iconRight = await page.Locator(".bit-balette-input-icon").EvaluateAsync<double>("e => e.getBoundingClientRect().right");
         var inputRight = await Input(page).EvaluateAsync<double>("e => e.getBoundingClientRect().right");
-        Assert.IsTrue(iconRight > inputRight, $"the icon ({iconRight}) is not right of the input ({inputRight})");
+        Assert.IsGreaterThan(inputRight, iconRight, $"the icon ({iconRight}) is not right of the input ({inputRight})");
 
         // Back to English, so the page is left as it was found.
         await ReplaceQueryAsync(page, "persian", "english");

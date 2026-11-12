@@ -8,7 +8,7 @@ using Bit.BlazorUI.Build;
 namespace Bit.BlazorUI.Tests.Trimming.Infrastructure;
 
 /// <summary>What a publish produced: its folder, how it ended and what it said.</summary>
-public sealed partial class PublishResult(string directory, int exitCode, string output)
+internal sealed partial class PublishResult(string directory, int exitCode, string output)
 {
     private static readonly Dictionary<string, PackageAssets> Assets = [];
 
@@ -193,8 +193,8 @@ public sealed partial class PublishResult(string directory, int exitCode, string
             else if ($"sha256-{Sha256(path)}" != hash) wrong.Add($"{url} is listed under another file's hash");
         }
 
-        Assert.AreEqual(0, wrong.Count, $"{wrong.Count} entries of service-worker-assets.js are wrong: {string.Join("; ", wrong.Take(5))}");
-        StringAssert.Contains(File.ReadAllText(Path.Combine(WebRoot, clientBasePath, "service-worker.js")), $"/* {ServiceWorkerManifest.VersionMarker}{version} */",
+        Assert.IsEmpty(wrong, $"{wrong.Count} entries of service-worker-assets.js are wrong: {string.Join("; ", wrong.Take(5))}");
+        Assert.Contains($"/* {ServiceWorkerManifest.VersionMarker}{version} */", File.ReadAllText(Path.Combine(WebRoot, clientBasePath, "service-worker.js")),
                               "service-worker.js does not carry the manifest's version, so a browser has no new service worker to install.");
     }
 

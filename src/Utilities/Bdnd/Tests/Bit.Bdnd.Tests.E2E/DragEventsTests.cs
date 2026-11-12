@@ -37,10 +37,10 @@ public sealed class DragEventsTests : BdndTest
         await Expect(today.Locator(".events-chip")).ToHaveTextAsync(["Red"]);
         await Expect(page.Locator(".events-now")).ToHaveTextAsync("Not dragging");
         var log = await Log(page).AllTextContentsAsync();
-        CollectionAssert.Contains(log.ToArray(), "OnDragStart: Red (type \"chip\"), Native - the browser's own drag and drop.");
-        CollectionAssert.Contains(log.ToArray(), "OnLeave: Red left Inbox.");
-        CollectionAssert.Contains(log.ToArray(), "OnEnter: Red is over Today.");
-        CollectionAssert.AreEqual(new[]
+        Assert.Contains("OnDragStart: Red (type \"chip\"), Native - the browser's own drag and drop.", log.ToArray());
+        Assert.Contains("OnLeave: Red left Inbox.", log.ToArray());
+        Assert.Contains("OnEnter: Red is over Today.", log.ToArray());
+        Assert.AreSequenceEqual(new[]
         {
             "OnDrop: Today took Red and published the result \"Red from Inbox to Today\".",
             "OnDragEnd: DidDrop is true, DropResult is \"Red from Inbox to Today\".",
@@ -67,7 +67,7 @@ public sealed class DragEventsTests : BdndTest
 
         await Expect(today.Locator(".events-chip")).ToHaveCountAsync(0);
         await Expect(Log(page).Last).ToHaveTextAsync("OnDragEnd: DidDrop is false, DropResult is null.");
-        Assert.IsFalse((await Log(page).AllTextContentsAsync()).Any(line => line.Contains("Today", StringComparison.Ordinal)),
+        Assert.DoesNotContain(line => line.Contains("Today", StringComparison.Ordinal), await Log(page).AllTextContentsAsync(),
             "a closed tray reported the drag");
     }
 }

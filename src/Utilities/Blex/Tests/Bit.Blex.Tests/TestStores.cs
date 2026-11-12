@@ -5,7 +5,7 @@ using Bit.Blex;
 namespace Bit.Blex.Tests;
 
 [BlexStoreAttribute(Name = "counter")]
-public partial class CounterStore
+internal partial class CounterStore
 {
     [BlexStateAttribute] private int _count;
     [BlexStateAttribute] private string _label = "idle";
@@ -59,7 +59,7 @@ public partial class CounterStore
 }
 
 [BlexStoreAttribute]
-public partial class TodoStore
+internal partial class TodoStore
 {
     [BlexStateAttribute] private List<string> _items = new();
 
@@ -68,7 +68,7 @@ public partial class TodoStore
 }
 
 [BlexStoreAttribute(Name = "settings", Persist = true)]
-public partial class SettingsStore
+internal partial class SettingsStore
 {
     [BlexStateAttribute] private string _theme = "light";
     [BlexStateAttribute] private int _fontSize = 14;
@@ -78,7 +78,7 @@ public partial class SettingsStore
 }
 
 [BlexStoreAttribute(Name = "layout", Persist = true, Version = 2)]
-public partial class LayoutStore
+internal partial class LayoutStore
 {
     [BlexStateAttribute] private string _view = "grid";
 
@@ -87,7 +87,7 @@ public partial class LayoutStore
 }
 
 [BlexStoreAttribute(Name = "data")]
-public partial class DataStore
+internal partial class DataStore
 {
     [BlexStateAttribute] private string _value = "";
     public bool ShouldThrow { get; set; }
@@ -103,7 +103,7 @@ public partial class DataStore
 }
 
 [BlexStoreAttribute(Name = "profile")]
-public partial class ProfileStore
+internal partial class ProfileStore
 {
     [BlexStateAttribute] private string? _userName = "anonymous";
     [BlexStateAttribute] private int _age;
@@ -117,7 +117,7 @@ public partial class ProfileStore
 
 /// <summary>Gated effects for deterministic concurrency tests. Enqueue gates before invoking.</summary>
 [BlexStoreAttribute(Name = "fx")]
-public partial class EffectConcurrencyStore
+internal partial class EffectConcurrencyStore
 {
     [BlexStateAttribute] private string _last = "";
     [BlexStateAttribute] private int _completed;
@@ -226,7 +226,7 @@ public partial class EffectConcurrencyStore
 /// first is still in flight (the default <c>BlexEffectConcurrency.Parallel</c> shape).
 /// </summary>
 [BlexStoreAttribute(Name = "gated")]
-public partial class GatedStore
+internal partial class GatedStore
 {
     [BlexStateAttribute] private int _count;
 
@@ -253,7 +253,7 @@ public partial class GatedStore
 
 /// <summary>Actions and effects that fail on demand, for the action-error hooks.</summary>
 [BlexStoreAttribute(Name = "failing")]
-public partial class FailingStore
+internal partial class FailingStore
 {
     [BlexStateAttribute] private int _value;
 
@@ -307,16 +307,17 @@ public partial class FailingStore
     }
 }
 
-public record Todo(int Id, string Text, bool Done);
+internal record Todo(int Id, string Text, bool Done);
 
 [BlexStoreAttribute(Name = "todos")]
-public partial class EntityTodoStore
+internal partial class EntityTodoStore
 {
     private static readonly BlexEntityAdapter<Todo, int> Adapter = new(t => t.Id);
 
     [BlexStateAttribute] private BlexEntityState<Todo, int> _todos = Adapter.GetInitialState();
 
-    [BlexComputedAttribute] private int ComputeRemaining()
+    [BlexComputedAttribute]
+    private int ComputeRemaining()
     {
         var n = 0;
         foreach (var t in Todos.All)

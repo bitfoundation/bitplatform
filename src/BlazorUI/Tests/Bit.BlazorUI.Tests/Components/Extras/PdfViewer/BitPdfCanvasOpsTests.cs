@@ -28,7 +28,7 @@ public class BitPdfCanvasOpsTests
 
         var renderer = new BitPdfHtmlRenderer(document.Pages[0], document.XRef) { EmitCanvasOps = true };
         string html = renderer.Render();
-        StringAssert.Contains(html, "<canvas data-bit-pdv-canvas width=\"200\" height=\"200\"");
+        Assert.Contains("<canvas data-bit-pdv-canvas width=\"200\" height=\"200\"", html);
         Assert.IsNotNull(renderer.CanvasOpsJson);
         return renderer.CanvasOpsJson!;
     }
@@ -131,7 +131,7 @@ public class BitPdfCanvasOpsTests
 
         using var parsed = JsonDocument.Parse(json);
         var codes = parsed.RootElement.EnumerateArray().Select(op => op[0].GetString()).ToArray();
-        CollectionAssert.AreEqual(new[] { "g", "G", "f" }, codes);
+        Assert.AreSequenceEqual(new[] { "g", "G", "f" }, codes);
     }
 
     [TestMethod]
@@ -143,7 +143,7 @@ public class BitPdfCanvasOpsTests
         string html = renderer.Render();
 
         Assert.IsNull(renderer.CanvasOpsJson);
-        Assert.IsFalse(html.Contains("<canvas"));
+        Assert.DoesNotContain("<canvas", html);
     }
 
     [TestMethod]

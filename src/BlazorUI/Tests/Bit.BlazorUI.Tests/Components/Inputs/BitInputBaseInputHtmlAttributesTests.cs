@@ -50,7 +50,7 @@ public class BitInputBaseInputHtmlAttributesTests : BunitTestContext
 
         Assert.AreEqual("true", input.GetAttribute("aria-invalid"));
         Assert.AreEqual("x", input.GetAttribute("data-test"));
-        Assert.HasCount(1, inputHtmlAttributes);
+        Assert.ContainsSingle(inputHtmlAttributes);
 
         messages.Clear();
         await component.InvokeAsync(editContext.NotifyValidationStateChanged);
@@ -59,7 +59,7 @@ public class BitInputBaseInputHtmlAttributesTests : BunitTestContext
 
         Assert.IsFalse(input.HasAttribute("aria-invalid"));
         Assert.AreEqual("x", input.GetAttribute("data-test"));
-        Assert.HasCount(1, inputHtmlAttributes);
+        Assert.ContainsSingle(inputHtmlAttributes);
     }
 
     // A differently cased name is the same attribute: the field reads it back however the app cased it, rather than
@@ -100,6 +100,6 @@ public class BitInputBaseInputHtmlAttributesTests : BunitTestContext
 
         // A valid field only takes off the aria-invalid it added itself.
         Assert.AreEqual("grammar", component.Find("input").GetAttribute("aria-invalid"));
-        Assert.HasCount(1, inputHtmlAttributes);
+        Assert.ContainsSingle(inputHtmlAttributes);
     }
 }

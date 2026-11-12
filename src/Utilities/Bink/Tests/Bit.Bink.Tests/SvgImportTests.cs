@@ -1,4 +1,4 @@
-using System.Numerics;
+﻿using System.Numerics;
 
 namespace Bit.Bink.Tests;
 
@@ -38,7 +38,7 @@ public sealed class SvgImportTests
 
         var line = (BinkLineShape)result.Elements[3];
         Assert.AreEqual(BinkLineCap.Square, line.Style.LineCap);
-        CollectionAssert.AreEqual(new[] { 4f, 2f }, line.Style.Dash);
+        Assert.AreSequenceEqual(new[] { 4f, 2f }, line.Style.Dash);
 
         Assert.IsFalse(((BinkPolygonShape)result.Elements[4]).IsClosed);
         var polygon = (BinkPolygonShape)result.Elements[5];
@@ -120,10 +120,10 @@ public sealed class SvgImportTests
         Assert.HasCount(3, result.Elements, "Hidden shapes and the use element are left out.");
         Assert.AreEqual(new BinkColor(128, 128, 128), ((BinkRectangleShape)result.Elements[0]).Style.FillColor);
         Assert.AreEqual(BinkColor.Parse("#123456"), ((BinkRectangleShape)result.Elements[1]).Style.FillColor, "The fallback colour of a paint reference is used.");
-        Assert.IsTrue(result.Warnings.Any(w => w.Contains("Gradients")));
-        Assert.IsTrue(result.Warnings.Any(w => w.Contains("stylesheets")));
-        Assert.IsTrue(result.Warnings.Any(w => w.Contains("Filters")));
-        Assert.IsTrue(result.Warnings.Any(w => w.Contains("use elements")));
+        Assert.Contains(w => w.Contains("Gradients"), result.Warnings);
+        Assert.Contains(w => w.Contains("stylesheets"), result.Warnings);
+        Assert.Contains(w => w.Contains("Filters"), result.Warnings);
+        Assert.Contains(w => w.Contains("use elements"), result.Warnings);
     }
 
     [TestMethod]
@@ -141,8 +141,8 @@ public sealed class SvgImportTests
             <image href="data:image/svg+xml;base64,PHN2Zz48L3N2Zz4=" width="10" height="10"/>
             <rect width="10" height="10" onclick="alert(1)"/>
             """);
-        Assert.HasCount(1, result.Elements, "Only the rectangle: scripts, foreign content and images by reference are not imported.");
-        Assert.IsTrue(result.Warnings.Any(w => w.Contains("Images")));
+        Assert.ContainsSingle(result.Elements, "Only the rectangle: scripts, foreign content and images by reference are not imported.");
+        Assert.Contains(w => w.Contains("Images"), result.Warnings);
 
         Assert.IsFalse(BinkSvgImporter.TryImport("<html/>", out _, out error));
         Assert.Contains("root", error!);
@@ -158,7 +158,7 @@ public sealed class SvgImportTests
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"><rect width="10" height="10"/></svg>
             """;
         Assert.IsTrue(BinkSvgImporter.TryImport(svg, out BinkSvgImportResult? result, out string? error), error);
-        Assert.HasCount(1, result!.Elements);
+        Assert.ContainsSingle(result!.Elements);
     }
 
     [TestMethod]
@@ -177,7 +177,7 @@ public sealed class SvgImportTests
     public void Content_hidden_by_a_collapsing_transform_is_not_imported()
     {
         BinkSvgImportResult result = Import("""<rect width="10" height="10" transform="scale(0)"/><g transform="scale(1 0)"><circle r="5"/></g><rect width="4" height="4"/>""");
-        Assert.HasCount(1, result.Elements, "SVG does not render an element whose transform cannot be inverted.");
+        Assert.ContainsSingle(result.Elements, "SVG does not render an element whose transform cannot be inverted.");
         Assert.AreEqual(new BinkRect(0, 0, 4, 4), ((BinkRectangleShape)result.Elements[0]).Rect);
     }
 
@@ -185,7 +185,7 @@ public sealed class SvgImportTests
     public void Numbers_run_together_split_as_path_data_does()
     {
         var polygon = (BinkPolygonShape)Import("""<polygon points="0,0 1.5.5 10-10 .5.5"/>""").Elements.Single();
-        CollectionAssert.AreEqual(new[] { new Vector2(0, 0), new Vector2(1.5f, 0.5f), new Vector2(10, -10), new Vector2(0.5f, 0.5f) }, polygon.Points.ToArray());
+        Assert.AreSequenceEqual(new[] { new Vector2(0, 0), new Vector2(1.5f, 0.5f), new Vector2(10, -10), new Vector2(0.5f, 0.5f) }, polygon.Points.ToArray());
     }
 
     [TestMethod]
@@ -194,8 +194,8 @@ public sealed class SvgImportTests
         string huge = "M0 0" + string.Concat(Enumerable.Repeat(" L1 1", BinkPathElement.MaxSegments + 1));
         BinkSvgImportResult result = BinkSvgImporter.Import($"""<svg xmlns="http://www.w3.org/2000/svg"><path d="{huge}"/><rect width="4" height="4"/></svg>""");
 
-        Assert.HasCount(1, result.Elements, "The rectangle is still imported.");
-        Assert.IsTrue(result.Warnings.Any(w => w.Contains($"{BinkPathElement.MaxSegments} segments")));
+        Assert.ContainsSingle(result.Elements, "The rectangle is still imported.");
+        Assert.Contains(w => w.Contains($"{BinkPathElement.MaxSegments} segments"), result.Warnings);
     }
 
     [TestMethod]

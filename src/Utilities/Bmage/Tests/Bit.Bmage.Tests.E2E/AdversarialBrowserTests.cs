@@ -130,7 +130,7 @@ public class JsModuleContractTests : DemoTest
         Assert.IsTrue(result.GetProperty("isBytes").GetBoolean(), "a memory view only accepts a Uint8Array");
         int[] left = [.. result.GetProperty("left").EnumerateArray().Select(e => e.GetInt32())];
         int[] right = [.. result.GetProperty("right").EnumerateArray().Select(e => e.GetInt32())];
-        CollectionAssert.AreEqual(new[] { 0, 200, 0, 255 }, left);
+        Assert.AreSequenceEqual(new[] { 0, 200, 0, 255 }, left);
         Assert.AreEqual(200, right[0], 2);
         Assert.AreEqual(0, right[1]);
         Assert.AreEqual(128, right[3], 1);

@@ -28,7 +28,7 @@ public sealed class StorageMigratorTests
         await new BsqliteStorageMigrator().MigrateAsync("app.db", source, target, store, Ct);
 
         Assert.IsFalse(await source.Admin.ExistsAsync("app.db", Ct));
-        CollectionAssert.AreEqual(Image, await target.Admin.ExportAsync("app.db", Ct));
+        Assert.AreSequenceEqual(Image, await target.Admin.ExportAsync("app.db", Ct));
         Assert.AreEqual(target.Name, await store.GetProviderNameAsync("app.db", Ct));
     }
 
@@ -84,7 +84,7 @@ public sealed class StorageMigratorTests
             () => new BsqliteStorageMigrator().MigrateAsync("app.db", source, target, store, Ct));
 
         Assert.AreEqual(target.Name, await store.GetProviderNameAsync("app.db", Ct));
-        CollectionAssert.AreEqual(Image, await target.Admin.ExportAsync("app.db", Ct));
+        Assert.AreSequenceEqual(Image, await target.Admin.ExportAsync("app.db", Ct));
     }
 
     /// <summary>A binding store whose writes land and then report a cancellation.</summary>

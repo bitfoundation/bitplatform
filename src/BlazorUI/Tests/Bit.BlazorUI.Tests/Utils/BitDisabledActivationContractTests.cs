@@ -432,7 +432,7 @@ public class BitDisabledActivationContractTests : BunitTestContext
         catch (MissingEventHandlerException) { }
     }
 
-    public class Row
+    internal class Row
     {
         public string? Name { get; set; }
     }

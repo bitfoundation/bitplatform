@@ -69,7 +69,7 @@ public class BitAiTokenUsageViewTests : BitAiTestBase
         var hidden = component.Find(".bit-aituv > .bit-aituv-vhd");
         var lines = hidden.Children.Select(l => l.TextContent.Trim()).ToArray();
 
-        CollectionAssert.AreEqual(new[] { "Input: 1,200", "Output: 300" }, lines);
+        Assert.AreSequenceEqual(new[] { "Input: 1,200", "Output: 300" }, lines);
         Assert.IsTrue(hidden.PreviousElementSibling!.ClassList.Contains("bit-aituv-tok"));
         Assert.IsTrue(hidden.NextElementSibling!.ClassList.Contains("bit-aituv-cst"));
     }
@@ -161,7 +161,7 @@ public class BitAiTokenUsageViewTests : BitAiTestBase
 
         Assert.IsTrue(root.ClassList.Contains("custom-class"));
         Assert.IsTrue(root.ClassList.Contains("bit-dis"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin: 1px");
+        Assert.Contains("margin: 1px", root.GetAttribute("style")!);
     }
 
     [TestMethod,
@@ -182,7 +182,7 @@ public class BitAiTokenUsageViewTests : BitAiTestBase
         }
         else
         {
-            StringAssert.Contains(style, expected);
+            Assert.Contains(expected, style!);
         }
     }
 
@@ -212,7 +212,7 @@ public class BitAiTokenUsageViewTests : BitAiTestBase
             .Add(c => c.Styles, new() { Root = "color: red", Tokens = "color: blue" }));
 
         Assert.IsTrue(component.Find(".bit-aituv").ClassList.Contains("c-root"));
-        StringAssert.Contains(component.Find(".bit-aituv").GetAttribute("style"), "color: red");
+        Assert.Contains("color: red", component.Find(".bit-aituv").GetAttribute("style")!);
         Assert.IsTrue(component.Find(".bit-aituv-tok").ClassList.Contains("c-tokens"));
         Assert.AreEqual("color: blue", component.Find(".bit-aituv-tok").GetAttribute("style"));
         Assert.IsTrue(component.Find(".bit-aituv-cst").ClassList.Contains("c-cost"));
@@ -240,7 +240,7 @@ public class BitAiTokenUsageViewTests : BitAiTestBase
     [TestMethod]
     public void BitAiTokenUsageViewParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual("BitParams.BitAiTokenUsageView", BitAiTokenUsageViewParams.ParamName);
+        Assert.AreEqual("BitParams.BitAiTokenUsageView", new BitAiTokenUsageViewParams().Name);
         Assert.AreEqual(BitAiTokenUsageViewParams.ParamName, new BitAiTokenUsageViewParams().Name);
     }
 }

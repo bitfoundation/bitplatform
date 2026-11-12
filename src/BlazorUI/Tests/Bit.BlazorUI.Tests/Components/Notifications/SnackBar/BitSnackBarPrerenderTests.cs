@@ -25,7 +25,7 @@ public class BitSnackBarPrerenderTests
         });
 
         // An empty host is still on the page, where the items shown once the page is interactive will land.
-        StringAssert.Contains(html, "bit-snb");
-        StringAssert.Contains(html, "bit-snb-tcn");
+        Assert.Contains("bit-snb", html);
+        Assert.Contains("bit-snb-tcn", html);
     }
 }

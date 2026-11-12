@@ -8,6 +8,8 @@ using Bit.Cli.Templates;
 using Bit.Cli.Tests.Infrastructure;
 using Bit.Cli.Tools;
 
+[assembly: global::Microsoft.VisualStudio.TestTools.UnitTesting.DoNotParallelizeAttribute]
+
 namespace Bit.Cli.Tests;
 
 [TestClass]
@@ -33,14 +35,14 @@ public class AdministratorTests
         var result = await session.RunAsync(new ProcessSpec { FileName = "dotnet", Arguments = ["workload", "install", "wasm-tools"], WorkingDirectory = host.WorkingDirectory, OnOutputLine = lines.Add }, CancellationToken.None);
 
         Assert.AreEqual(3, result.ExitCode);
-        CollectionAssert.AreEqual(new[] { "Installing wasm-tools" }, lines);
+        Assert.AreSequenceEqual(new[] { "Installing wasm-tools" }, lines);
         var call = host.Runner.Calls.Single();
         Assert.AreEqual(@"C:\Program Files\dotnet\dotnet.exe", call.FileName);
         Assert.AreEqual(host.WorkingDirectory, call.WorkingDirectory);
         Assert.IsTrue(call.Environment!.ContainsKey("PATH"));
 
         await session.DisposeAsync();
-        Assert.AreEqual(CliApp.ExitOk, await serving.WaitAsync(TimeSpan.FromSeconds(10)));
+        Assert.AreEqual(CliApp.ExitOk, await serving.WaitAsync(TimeSpan.FromSeconds(10), TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -66,16 +68,14 @@ public class AdministratorTests
         Assert.AreEqual(0, next.ExitCode);
 
         await session.DisposeAsync();
-        Assert.AreEqual(CliApp.ExitOk, await serving.WaitAsync(TimeSpan.FromSeconds(10)));
+        Assert.AreEqual(CliApp.ExitOk, await serving.WaitAsync(TimeSpan.FromSeconds(10), TestContext.CancellationToken));
     }
 
     [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
     [System.Runtime.Versioning.SupportedOSPlatform("windows")]
     public async Task TheAndroidSdk_Should_BeInstalledAsAdministratorFromBitsOwnProject()
     {
-        if (OperatingSystem.IsWindows() is false)
-            return;
-
         var sdk = Directory.CreateTempSubdirectory("bit-cli-android-sdk-");
         var security = sdk.GetAccessControl();
         var denied = new FileSystemAccessRule(WindowsIdentity.GetCurrent().User!, FileSystemRights.CreateFiles, AccessControlType.Deny);
@@ -105,15 +105,15 @@ public class AdministratorTests
             Assert.AreEqual(StepStatus.Succeeded, result.Status, result.Detail);
             var call = host.Runner.Calls.Single();
             Assert.IsFalse(call.WorkingDirectory!.StartsWith(directory, StringComparison.OrdinalIgnoreCase), "The project's own build files would run as administrator.");
-            CollectionAssert.Contains(call.Arguments.ToArray(), "-t:InstallAndroidDependencies");
-            CollectionAssert.Contains(call.Arguments.ToArray(), "-noAutoResponse");
-            StringAssert.Contains(installer, "-android</TargetFramework>");
-            StringAssert.Contains(globalJson, "\"10.0.100\"");
+            Assert.Contains("-t:InstallAndroidDependencies", call.Arguments.ToArray());
+            Assert.Contains("-noAutoResponse", call.Arguments.ToArray());
+            Assert.Contains("-android</TargetFramework>", installer!);
+            Assert.Contains("\"10.0.100\"", globalJson!);
             Assert.IsFalse(globalJson!.Contains("paths", StringComparison.Ordinal), globalJson);
             Assert.IsFalse(Directory.Exists(call.WorkingDirectory));
 
             await session.DisposeAsync();
-            Assert.AreEqual(CliApp.ExitOk, await serving.WaitAsync(TimeSpan.FromSeconds(10)));
+            Assert.AreEqual(CliApp.ExitOk, await serving.WaitAsync(TimeSpan.FromSeconds(10), TestContext.CancellationToken));
         }
         finally
         {
@@ -130,7 +130,7 @@ public class AdministratorTests
         var needs = new ToolNeeds { Platforms = new HashSet<Platform> { Platform.Web } };
 
         using var windows = new TestHost(HostOs.Windows, prompter: new ScriptedPrompter());
-        CollectionAssert.AreEqual(new[] { git.Tool.Name }, (await AdministratorNeeds.FindAsync(windows.Services, [git], needs, setup: false, CancellationToken.None)).ToArray());
+        Assert.AreSequenceEqual(new[] { git.Tool.Name }, (await AdministratorNeeds.FindAsync(windows.Services, [git], needs, setup: false, CancellationToken.None)).ToArray());
 
         using var noTerminal = new TestHost(HostOs.Windows);
         Assert.IsEmpty(await AdministratorNeeds.FindAsync(noTerminal.Services, [git], needs, setup: false, CancellationToken.None));
@@ -151,4 +151,6 @@ public class AdministratorTests
 
         return (AdministratorSession.Attach(host.Services, pipe, exited), serving);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

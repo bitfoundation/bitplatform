@@ -8,7 +8,7 @@ namespace Bit.BlazorUI.Tests.Trimming.Infrastructure;
 /// runs: an error on the console, an uncaught exception (a <c>BitBlazorUI.x is undefined</c> of a script the trimming
 /// left out), a request the publish cannot answer.
 /// </summary>
-public sealed partial class BrowserSession : IAsyncDisposable
+internal sealed partial class BrowserSession : IAsyncDisposable
 {
     private readonly IPlaywright _playwright;
     private readonly IBrowser _browser;
@@ -60,7 +60,7 @@ public sealed partial class BrowserSession : IAsyncDisposable
         return new BrowserSession(playwright, browser, await context.NewPageAsync());
     }
 
-    public void AssertNoErrors(string what) => Assert.AreEqual(0, Errors.Count, $"{what} reported errors: {string.Join(" | ", Errors)}");
+    public void AssertNoErrors(string what) => Assert.IsEmpty(Errors, $"{what} reported errors: {string.Join(" | ", Errors)}");
 
     /// <summary>Opens a callout through the given trigger and closes it again with Escape, as the user would.</summary>
     public async Task OpenAndEscapeCalloutAsync(ILocator trigger, string what)
@@ -86,7 +86,7 @@ public sealed partial class BrowserSession : IAsyncDisposable
             return [getComputedStyle(icon).fontFamily, getComputedStyle(icon, '::before').content, String(faces.length)];
         }");
 
-        StringAssert.Contains(glyph[0], "Fabric MDL2 bit BlazorUI AI", $"The copy button's glyph is not drawn with the AI package's font ({glyph[0]}).");
+        Assert.Contains("Fabric MDL2 bit BlazorUI AI", glyph[0], $"The copy button's glyph is not drawn with the AI package's font ({glyph[0]}).");
         Assert.IsFalse(glyph[1] is "none" or "normal" or "" or "\"\"", $"The copy button's glyph is not drawn: {glyph[1]}");
         Assert.AreNotEqual("0", glyph[2], "The AI package's glyph font did not load.");
 
@@ -116,7 +116,7 @@ public sealed partial class BrowserSession : IAsyncDisposable
         }
         catch (TimeoutException)
         {
-            Assert.Fail($"{failure}. Errors so far: {string.Join(" | ", Errors)}");
+            throw new global::System.InvalidOperationException($"{failure}. Errors so far: {string.Join(" | ", Errors)}");
         }
     }
 
@@ -140,7 +140,7 @@ public sealed partial class BrowserSession : IAsyncDisposable
                               .Distinct()
                               .ToList();
 
-        Assert.AreEqual(0, unstyled.Count, $"The page renders classes whose stylesheet the trimmed bundle left out: {string.Join(", ", unstyled)}");
+        Assert.IsEmpty(unstyled, $"The page renders classes whose stylesheet the trimmed bundle left out: {string.Join(", ", unstyled)}");
     }
 
     // The class prefix each component stylesheet names its classes with (btn for BitButton): the one most of its class

@@ -3,6 +3,8 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 
+[assembly: global::Microsoft.VisualStudio.TestTools.UnitTesting.DoNotParallelizeAttribute]
+
 namespace Bit.BlazorUI.Tests.Performance;
 
 /// <summary>
@@ -59,7 +61,7 @@ public class BitAccordionBrowserTests : PerformanceTestBase
         Assert.AreEqual(0, last.Height, 0.5);
 
         var hiddenAt = samples.First(s => s.T > start && s.Hidden is not null).T - start;
-        Assert.IsTrue(hiddenAt >= CloseDuration - Margin, $"hidden=\"until-found\" landed {hiddenAt:0}ms into the close.");
+        Assert.IsGreaterThanOrEqualTo(CloseDuration - Margin, hiddenAt, $"hidden=\"until-found\" landed {hiddenAt:0}ms into the close.");
     }
 
     [TestMethod]
@@ -90,7 +92,7 @@ public class BitAccordionBrowserTests : PerformanceTestBase
         var samples = await ClickAndSample(ParamAccordion, 400);
         var opening = samples.Where(s => s.Collapsed is false).ToList();
 
-        Assert.IsTrue(opening.Count > 0);
+        Assert.IsNotEmpty(opening);
 
         foreach (var sample in opening)
         {
@@ -102,7 +104,7 @@ public class BitAccordionBrowserTests : PerformanceTestBase
             }
         }
 
-        Assert.IsTrue(opening[^1].Height > 0, "The panel is not growing.");
+        Assert.IsGreaterThan(0, opening[^1].Height, "The panel is not growing.");
     }
 
     [TestMethod]
@@ -115,7 +117,7 @@ public class BitAccordionBrowserTests : PerformanceTestBase
         var start = StartOfClose(samples);
 
         var hiddenAt = samples.First(s => s.T > start && s.Hidden is not null).T - start;
-        Assert.IsTrue(hiddenAt < 400, $"hidden=\"until-found\" landed {hiddenAt:0}ms into a close reduced motion collapsed.");
+        Assert.IsLessThan(400, hiddenAt, $"hidden=\"until-found\" landed {hiddenAt:0}ms into a close reduced motion collapsed.");
     }
 
     private async Task Open()

@@ -27,12 +27,12 @@ public class BitDropdownBrowserTests : PerformanceTestBase
     // ── Thresholds ────────────────────────────────────────────────────────────
 
     // Render thresholds (ms) - dropdowns are heavier than simple buttons.
-    private const double RenderThreshold10  = 800;
+    private const double RenderThreshold10 = 800;
     private const double RenderThreshold100 = 3000;
     private const double RenderThreshold500 = 12000;
 
     // Re-render thresholds (ms)
-    private const double ReRenderThreshold10  = 300;
+    private const double ReRenderThreshold10 = 300;
     private const double ReRenderThreshold100 = 1500;
     private const double ReRenderThreshold500 = 6000;
 
@@ -67,7 +67,7 @@ public class BitDropdownBrowserTests : PerformanceTestBase
 
         var browser = await MeasureInBrowserAsync(Page.Locator("#btn-render"), "Rendered");
 
-        var renderTime     = await GetRenderTime();
+        var renderTime = await GetRenderTime();
         var componentCount = await GetComponentCount();
 
         Console.WriteLine($"InitialRender – {count} components: {renderTime:F2} ms (browser {browser.Duration:F2} ms)");
@@ -206,8 +206,8 @@ public class BitDropdownBrowserTests : PerformanceTestBase
         }
 
         // Per-cycle growth in the first 5 cycles vs. the last 20 (cycles 21..40).
-        var firstWindowRate  = (samples[0].HeapMB - baseline)             / 5.0;
-        var lateWindowRate   = (samples[3].HeapMB - samples[2].HeapMB)    / 20.0;
+        var firstWindowRate = (samples[0].HeapMB - baseline) / 5.0;
+        var lateWindowRate = (samples[3].HeapMB - samples[2].HeapMB) / 20.0;
 
         Console.WriteLine($"Per-cycle growth - first 5: {firstWindowRate:F4} MB/cycle, late 20: {lateWindowRate:F4} MB/cycle");
 
@@ -218,8 +218,8 @@ public class BitDropdownBrowserTests : PerformanceTestBase
         // Use an absolute ceiling on the late-window rate: a real leak with 30 components
         // would show 1-3+ MB/cycle sustained. A healthy component contributes near-zero;
         // any observed rate is from GC noise and parallel test activity.
-        Assert.IsTrue(
-            lateWindowRate < 0.75,
+        Assert.IsLessThan(
+            0.75, lateWindowRate,
             $"Late-window per-cycle growth ({lateWindowRate:F4} MB/cycle over cycles 21..40) " +
             $"exceeds 0.75 MB/cycle, indicating a possible memory leak. " +
             $"First-window rate was {firstWindowRate:F4} MB/cycle for reference.");
@@ -231,10 +231,10 @@ public class BitDropdownBrowserTests : PerformanceTestBase
 
     private async Task AssertNoLinearLeak(int count, bool responsive)
     {
-        const int warmupCycles    = 5;
+        const int warmupCycles = 5;
         const int earlyWindowSize = 10;
-        const int lateWindowSize  = 10;
-        const int gapBetween      = 20; // cycles 16..35 sit between the two windows
+        const int lateWindowSize = 10;
+        const int gapBetween = 20; // cycles 16..35 sit between the two windows
 
         // Absolute ceiling: even under GC noise, the late window must not grow more
         // than this many MB. A real leak with 50 components × 10 cycles would produce
@@ -270,7 +270,7 @@ public class BitDropdownBrowserTests : PerformanceTestBase
             await MountAndDismount();
         }
         var afterEarlyMB = await GetServerGCMemoryMB();
-        var earlyGrowth  = afterEarlyMB - afterWarmupMB;
+        var earlyGrowth = afterEarlyMB - afterWarmupMB;
 
         // Gap to let any deferred allocations settle.
         for (int i = 0; i < gapBetween; i++)
@@ -285,7 +285,7 @@ public class BitDropdownBrowserTests : PerformanceTestBase
             await MountAndDismount();
         }
         var afterLateMB = await GetServerGCMemoryMB();
-        var lateGrowth  = afterLateMB - afterGapMB;
+        var lateGrowth = afterLateMB - afterGapMB;
 
         Console.WriteLine($"[responsive={responsive}] heap MB - afterWarmup={afterWarmupMB:F2}, afterEarly={afterEarlyMB:F2}, afterGap={afterGapMB:F2}, afterLate={afterLateMB:F2}");
         Console.WriteLine($"[responsive={responsive}] growth - early {earlyWindowSize} cycles: {earlyGrowth:F2} MB | late {lateWindowSize} cycles: {lateGrowth:F2} MB");
@@ -306,8 +306,8 @@ public class BitDropdownBrowserTests : PerformanceTestBase
         //
         // Ceiling of 10 MB accommodates up to ~10 parallel test processes sharing the
         // host while still catching a real leak (which would exceed 15 MB easily).
-        Assert.IsTrue(
-            lateGrowth <= maxLateGrowthAbsoluteMB,
+        Assert.IsLessThanOrEqualTo(
+            maxLateGrowthAbsoluteMB, lateGrowth,
             $"Late window grew {lateGrowth:F2} MB over {lateWindowSize} cycles of {count} " +
             $"BitDropdown components (responsive={responsive}), exceeding the " +
             $"{maxLateGrowthAbsoluteMB} MB ceiling. This indicates a memory leak.");

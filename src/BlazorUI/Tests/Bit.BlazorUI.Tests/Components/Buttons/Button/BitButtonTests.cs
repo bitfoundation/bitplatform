@@ -84,7 +84,8 @@ public class BitButtonTests : BunitTestContext
 
         if (hasTabIndexAttr)
         {
-            Assert.IsTrue(bitButton?.GetAttribute("tabindex")?.Equals("-1"));
+            var actualValue = bitButton?.GetAttribute("tabindex")?.Equals("-1");
+            Assert.IsTrue(actualValue);
         }
     }
 
@@ -866,7 +867,7 @@ public class BitButtonTests : BunitTestContext
             parameters.AddChildContent("Save");
         });
 
-        Assert.AreEqual(0, com.FindAll("span[role=status]").Count);
+        Assert.IsEmpty(com.FindAll("span[role=status]"));
     }
 
     [TestMethod]
@@ -1145,9 +1146,9 @@ public class BitButtonTests : BunitTestContext
 
         // the state is immediate - the click is already blocked and aria-busy is already rendered
         Assert.AreEqual("true", com.Find(".bit-btn").GetAttribute("aria-busy"));
-        Assert.AreEqual(0, com.FindAll(".bit-btn-spn").Count);
+        Assert.IsEmpty(com.FindAll(".bit-btn-spn"));
 
-        com.WaitForAssertion(() => Assert.AreEqual(1, com.FindAll(".bit-btn-spn").Count), TimeSpan.FromSeconds(5));
+        com.WaitForAssertion(() => Assert.ContainsSingle(com.FindAll(".bit-btn-spn")), TimeSpan.FromSeconds(5));
     }
 
     [TestMethod]
@@ -1167,14 +1168,14 @@ public class BitButtonTests : BunitTestContext
         var click = com.Find(".bit-btn").ClickAsync(new());
 
         // the handler is still running, but the spinner is still being held back by the delay
-        Assert.AreEqual(0, com.FindAll(".bit-btn-spn").Count);
+        Assert.IsEmpty(com.FindAll(".bit-btn-spn"));
 
-        com.WaitForAssertion(() => Assert.AreEqual(1, com.FindAll(".bit-btn-spn").Count), TimeSpan.FromSeconds(5));
+        com.WaitForAssertion(() => Assert.ContainsSingle(com.FindAll(".bit-btn-spn")), TimeSpan.FromSeconds(5));
 
         tsc.SetResult();
         await click;
 
-        Assert.AreEqual(0, com.FindAll(".bit-btn-spn").Count);
+        Assert.IsEmpty(com.FindAll(".bit-btn-spn"));
     }
 
     [TestMethod]
@@ -1190,7 +1191,7 @@ public class BitButtonTests : BunitTestContext
         await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => com.Find(".bit-btn").ClickAsync(new()));
 
         Assert.IsFalse(com.Instance.IsLoading);
-        Assert.AreEqual(0, com.FindAll(".bit-btn-spn").Count);
+        Assert.IsEmpty(com.FindAll(".bit-btn-spn"));
     }
 
     [TestMethod]
@@ -1202,7 +1203,7 @@ public class BitButtonTests : BunitTestContext
             parameters.Add(p => p.FloatOffset, "2rem");
         });
 
-        StringAssert.Contains(com.Find(".bit-btn").GetAttribute("style"), "--bit-Button-float-offset:2rem");
+        Assert.Contains("--bit-Button-float-offset:2rem", com.Find(".bit-btn").GetAttribute("style")!);
     }
 
     [TestMethod,
@@ -1220,7 +1221,7 @@ public class BitButtonTests : BunitTestContext
             parameters.Add(p => p.FloatOffset, offset);
         });
 
-        StringAssert.Contains(com.Find(".bit-btn").GetAttribute("style"), $"--bit-Button-float-offset:{expected}");
+        Assert.Contains($"--bit-Button-float-offset:{expected}", com.Find(".bit-btn").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1307,7 +1308,7 @@ public class BitButtonTests : BunitTestContext
             parameters.Add(p => p.IconUrl, "/images/bit-logo.svg");
         });
 
-        Assert.HasCount(1, com.FindAll(".bit-btn-icn"));
+        Assert.ContainsSingle(com.FindAll(".bit-btn-icn"));
         Assert.IsEmpty(com.FindAll(".bit-btn-icnu"));
     }
 
@@ -1341,7 +1342,7 @@ public class BitButtonTests : BunitTestContext
 
         Assert.IsTrue(com.Find(".bit-btn").ClassList.Contains("bit-btn-ntx"));
         Assert.IsEmpty(com.FindAll(".bit-btn-tcn"));
-        Assert.HasCount(1, com.FindAll(".bit-btn-icn"));
+        Assert.ContainsSingle(com.FindAll(".bit-btn-icn"));
     }
 
     [TestMethod]
@@ -1379,8 +1380,8 @@ public class BitButtonTests : BunitTestContext
             parameters.Add(p => p.SecondaryTemplate, "<span class=\"secondary-template\">S</span>");
         });
 
-        Assert.HasCount(1, com.FindAll(".bit-btn-prt .primary-template"));
-        Assert.HasCount(1, com.FindAll(".bit-btn-sct .secondary-template"));
+        Assert.ContainsSingle(com.FindAll(".bit-btn-prt .primary-template"));
+        Assert.ContainsSingle(com.FindAll(".bit-btn-sct .secondary-template"));
         Assert.IsTrue(com.Find(".bit-btn").ClassList.Contains("bit-btn-hsc"));
     }
 
@@ -1407,14 +1408,14 @@ public class BitButtonTests : BunitTestContext
             parameters.AddChildContent("Click me");
         });
 
-        Assert.HasCount(1, com.FindAll(".custom-loading"));
+        Assert.ContainsSingle(com.FindAll(".custom-loading"));
         Assert.IsEmpty(com.FindAll(".bit-btn-spn"));
-        Assert.HasCount(1, com.FindAll(".bit-btn-hcn"));
+        Assert.ContainsSingle(com.FindAll(".bit-btn-hcn"));
 
         // The template is the visual half of the loading state, like the spinner it replaces, so it is hidden
         // from assistive technologies: the content underneath it is what keeps the button's accessible name.
         Assert.AreEqual("true", com.Find(".bit-btn-ldg").GetAttribute("aria-hidden"));
-        Assert.HasCount(1, com.FindAll(".bit-btn-ldg .custom-loading"));
+        Assert.ContainsSingle(com.FindAll(".bit-btn-ldg .custom-loading"));
     }
 
     [TestMethod,
@@ -1470,7 +1471,7 @@ public class BitButtonTests : BunitTestContext
         tcs.SetResult();
         await clickTask;
 
-        CollectionAssert.AreEqual(new List<bool> { true, false }, loadingStates);
+        Assert.AreSequenceEqual(new List<bool> { true, false }, loadingStates);
     }
 
     [TestMethod]
@@ -1508,13 +1509,13 @@ public class BitButtonTests : BunitTestContext
         // the abandoned first run is gone, but the second one is still in flight and still loading
         Assert.AreEqual(2, clickCount);
         Assert.IsTrue(com.Instance.IsLoading);
-        CollectionAssert.AreEqual(new List<bool> { true }, loadingStates);
+        Assert.AreSequenceEqual(new List<bool> { true }, loadingStates);
 
         secondTcs.SetResult();
         await secondClick;
 
         Assert.IsFalse(com.Instance.IsLoading);
-        CollectionAssert.AreEqual(new List<bool> { true, false }, loadingStates);
+        Assert.AreSequenceEqual(new List<bool> { true, false }, loadingStates);
     }
 
     [TestMethod]
@@ -1537,7 +1538,7 @@ public class BitButtonTests : BunitTestContext
 
         com.Find(".bit-btn").Click();
 
-        CollectionAssert.AreEqual(new List<bool> { false, true }, reported);
+        Assert.AreSequenceEqual(new List<bool> { false, true }, reported);
     }
 
     [TestMethod,
@@ -1613,7 +1614,7 @@ public class BitButtonTests : BunitTestContext
             parameters.Add(p => p.Float, true);
         });
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Draggables.enable"));
+        Assert.ContainsSingle(i => i.Identifier == "BitBlazorUI.Draggables.enable", Context.JSInterop.Invocations);
         Assert.IsTrue(com.Find(".bit-btn").ClassList.Contains("bit-btn-drg"));
 
         // A re-render that changes nothing about the dragging leaves the listeners where they are.
@@ -1622,7 +1623,7 @@ public class BitButtonTests : BunitTestContext
             parameters.Add(p => p.Title, "Move me");
         });
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Draggables.enable"));
+        Assert.ContainsSingle(i => i.Identifier == "BitBlazorUI.Draggables.enable", Context.JSInterop.Invocations);
         Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Draggables.disable"));
 
         com.Render(parameters =>
@@ -1630,7 +1631,7 @@ public class BitButtonTests : BunitTestContext
             parameters.Add(p => p.Draggable, false);
         });
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Draggables.disable"));
+        Assert.ContainsSingle(i => i.Identifier == "BitBlazorUI.Draggables.disable", Context.JSInterop.Invocations);
         Assert.IsFalse(com.Find(".bit-btn").ClassList.Contains("bit-btn-drg"));
     }
 
@@ -1710,7 +1711,7 @@ public class BitButtonTests : BunitTestContext
 
         await com.Instance.FocusAsync();
 
-        Assert.HasCount(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
     }
 
     [TestMethod]
@@ -1772,7 +1773,7 @@ public class BitButtonTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
         Assert.IsTrue(root.ClassList.Contains("bit-fam"));
         Assert.AreEqual("rtl", root.GetAttribute("dir"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin: 1px;");
+        Assert.Contains("margin: 1px;", root.GetAttribute("style")!);
         Assert.AreEqual("2", root.GetAttribute("tabindex"));
     }
 
@@ -1796,7 +1797,7 @@ public class BitButtonTests : BunitTestContext
         }
         else
         {
-            StringAssert.Contains(style, expectedStyle);
+            Assert.Contains(expectedStyle, style);
         }
     }
 
@@ -1878,7 +1879,7 @@ public class BitButtonTests : BunitTestContext
 
         var root = com.Find(".bit-btn");
 
-        Assert.HasCount(1, com.FindAll(".bit-btn-sct .secondary-template"));
+        Assert.ContainsSingle(com.FindAll(".bit-btn-sct .secondary-template"));
         Assert.IsEmpty(com.FindAll(".bit-btn-prt"));
         Assert.IsTrue(root.ClassList.Contains("bit-btn-hsc"));
         Assert.IsFalse(root.ClassList.Contains("bit-btn-ntx"));
@@ -1934,12 +1935,12 @@ public class BitButtonTests : BunitTestContext
             parameters.Add(p => p.Draggable, true);
         });
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Draggables.enable"));
+        Assert.ContainsSingle(i => i.Identifier == "BitBlazorUI.Draggables.enable", Context.JSInterop.Invocations);
         Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Draggables.disable"));
 
         await Context.DisposeComponentsAsync();
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Draggables.disable"));
+        Assert.ContainsSingle(i => i.Identifier == "BitBlazorUI.Draggables.disable", Context.JSInterop.Invocations);
     }
 
     [TestMethod]
@@ -1961,7 +1962,7 @@ public class BitButtonTests : BunitTestContext
 
         var disposal = Context.DisposeComponentsAsync();
 
-        Assert.HasCount(1, disable.Invocations);
+        Assert.ContainsSingle(disable.Invocations);
         Assert.AreSame(button, reference.Value);
 
         disable.SetVoidResult();
@@ -2015,6 +2016,6 @@ public class BitButtonTests : BunitTestContext
             parameters.Add(p => p.AriaHidden, true);
         });
 
-        Assert.HasCount(0, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
+        Assert.IsEmpty(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
     }
 }

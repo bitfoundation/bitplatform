@@ -1,4 +1,4 @@
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 
 namespace Bit.Bmotion.Tests.Mcp.Services;
 
@@ -22,7 +22,7 @@ public class SearchIndexTests
     [DataRow(null)]
     public async Task Search_NothingToSearchFor_IsNoHits(string? query)
     {
-        Assert.AreEqual(0, (await BmotionSearchIndex.SearchAsync(query!, 12)).Length);
+        Assert.IsEmpty(await BmotionSearchIndex.SearchAsync(query!, 12));
     }
 
     /// <summary>
@@ -37,7 +37,7 @@ public class SearchIndexTests
     [DataRow("a an in of")]
     public async Task Search_AQueryMadeOnlyOfNoiseWords_ReturnsNothingRatherThanEverything(string query)
     {
-        Assert.AreEqual(0, (await BmotionSearchIndex.SearchAsync(query, 12)).Length,
+        Assert.IsEmpty(await BmotionSearchIndex.SearchAsync(query, 12),
                         $"'{query}' matched something, which means it would match nearly everything.");
     }
 
@@ -54,7 +54,7 @@ public class SearchIndexTests
     {
         var hits = await BmotionSearchIndex.SearchAsync(query, 12);
 
-        Assert.AreNotEqual(0, hits.Length, $"'{query}' found nothing.");
+        Assert.IsNotEmpty(hits, $"'{query}' found nothing.");
     }
 
     /// <summary>
@@ -85,8 +85,7 @@ public class SearchIndexTests
 
                 var tool = call.Groups["tool"].Value;
 
-                CollectionAssert.Contains(toolNames.ToArray(), tool,
-                                          $"'{hit.Title}' points at '{tool}', which this server does not expose.");
+                Assert.Contains(tool, toolNames.ToArray(), $"'{hit.Title}' points at '{tool}', which this server does not expose.");
 
                 // The single-argument fetches are the ones that can name something that does not
                 // exist; the multi-argument tools take free text and are checked by name only.
@@ -120,7 +119,7 @@ public class SearchIndexTests
             }
         }
 
-        Assert.IsTrue(checkedCalls > 50, $"Only {checkedCalls} hits were checked, which is too few to mean anything.");
+        Assert.IsGreaterThan(50, checkedCalls, $"Only {checkedCalls} hits were checked, which is too few to mean anything.");
     }
 
     [TestMethod]
@@ -134,7 +133,7 @@ public class SearchIndexTests
 
             // A snippet is a window on the body, not the body: the point is to spend a client's
             // context on the shortlist rather than on the answer it has not chosen yet.
-            Assert.IsTrue(hit.Snippet.Length <= 250, $"'{hit.Title}' returned a {hit.Snippet.Length}-character snippet.");
+            Assert.IsLessThanOrEqualTo(250, hit.Snippet.Length, $"'{hit.Title}' returned a {hit.Snippet.Length}-character snippet.");
         }
     }
 
@@ -152,7 +151,7 @@ public class SearchIndexTests
     {
         var hits = await BmotionSearchIndex.SearchAsync(query, 5);
 
-        Assert.AreNotEqual(0, hits.Length, $"'{query}' found nothing.");
+        Assert.IsNotEmpty(hits, $"'{query}' found nothing.");
         Assert.IsTrue(hits[0].Title.EndsWith(expected, StringComparison.Ordinal),
                       $"'{query}' ranked '{hits[0].Title}' first. The rest: " +
                       $"{string.Join(", ", hits.Skip(1).Select(hit => hit.Title))}.");
@@ -167,7 +166,7 @@ public class SearchIndexTests
     {
         var hits = await BmotionSearchIndex.SearchAsync("variant", 10);
 
-        Assert.IsTrue(hits.Any(hit => hit.Title.Equals("Variants", StringComparison.OrdinalIgnoreCase)),
+        Assert.Contains(hit => hit.Title.Equals("Variants", StringComparison.OrdinalIgnoreCase), hits,
                       $"Found: {string.Join(", ", hits.Select(hit => hit.Title))}.");
     }
 
@@ -181,7 +180,7 @@ public class SearchIndexTests
     {
         var hits = await BmotionSearchIndex.SearchAsync("the animation snaps instantly in production on the server", 12);
 
-        Assert.IsTrue(hits.Any(hit => hit.Tool.StartsWith("AnalyzeBmotionAnimation", StringComparison.Ordinal)),
+        Assert.Contains(hit => hit.Tool.StartsWith("AnalyzeBmotionAnimation", StringComparison.Ordinal), hits,
                       $"Found: {string.Join(", ", hits.Select(hit => $"{hit.Title} -> {hit.Tool}"))}.");
     }
 
@@ -190,21 +189,21 @@ public class SearchIndexTests
     {
         var hits = await BmotionSearchIndex.SearchAsync("my spring feels too slow to settle", 12);
 
-        Assert.IsTrue(hits.Any(hit => hit.Tool.StartsWith("SimulateBmotionTransition", StringComparison.Ordinal)),
+        Assert.Contains(hit => hit.Tool.StartsWith("SimulateBmotionTransition", StringComparison.Ordinal), hits,
                       $"Found: {string.Join(", ", hits.Select(hit => $"{hit.Title} -> {hit.Tool}"))}.");
     }
 
     [TestMethod]
     public async Task Search_HonoursTheLimit_AndClampsItToSomethingAClientCanRead()
     {
-        Assert.AreEqual(1, (await BmotionSearchIndex.SearchAsync("spring", 1)).Length);
-        Assert.AreEqual(5, (await BmotionSearchIndex.SearchAsync("spring", 5)).Length);
+        Assert.ContainsSingle(await BmotionSearchIndex.SearchAsync("spring", 1));
+        Assert.HasCount(5, await BmotionSearchIndex.SearchAsync("spring", 5));
 
         // Below one is still one hit, not none and not an exception.
-        Assert.AreEqual(1, (await BmotionSearchIndex.SearchAsync("spring", 0)).Length);
-        Assert.AreEqual(1, (await BmotionSearchIndex.SearchAsync("spring", -10)).Length);
+        Assert.ContainsSingle(await BmotionSearchIndex.SearchAsync("spring", 0));
+        Assert.ContainsSingle(await BmotionSearchIndex.SearchAsync("spring", -10));
 
-        Assert.IsTrue((await BmotionSearchIndex.SearchAsync("spring", 5_000)).Length <= 50);
+        Assert.IsLessThanOrEqualTo(50, (await BmotionSearchIndex.SearchAsync("spring", 5_000)).Length);
     }
 
     [TestMethod]
@@ -213,7 +212,7 @@ public class SearchIndexTests
         var first = await BmotionSearchIndex.SearchAsync("layout shared element", 12);
         var second = await BmotionSearchIndex.SearchAsync("layout shared element", 12);
 
-        CollectionAssert.AreEqual(first.Select(hit => hit.Title).ToArray(), second.Select(hit => hit.Title).ToArray());
+        Assert.AreSequenceEqual(first.Select(hit => hit.Title).ToArray(), second.Select(hit => hit.Title).ToArray());
     }
 
     /// <summary>
@@ -232,9 +231,9 @@ public class SearchIndexTests
         var pastTheCap = await BmotionSearchIndex.SearchAsync(string.Join(' ', filler.Take(16).Append("spring")), 12);
         var pastedFile = await BmotionSearchIndex.SearchAsync(string.Join(' ', filler.Append("spring")), 12);
 
-        Assert.AreNotEqual(0, withinTheCap.Length, "the sixteenth term is still searched for");
-        Assert.AreEqual(0, pastTheCap.Length, "a term past the cap must not be searched for at all");
-        Assert.AreEqual(0, pastedFile.Length, "a pasted file is cut at the same cap, not scanned in full");
+        Assert.IsNotEmpty(withinTheCap, "the sixteenth term is still searched for");
+        Assert.IsEmpty(pastTheCap, "a term past the cap must not be searched for at all");
+        Assert.IsEmpty(pastedFile, "a pasted file is cut at the same cap, not scanned in full");
     }
 
     [TestMethod]
@@ -243,7 +242,7 @@ public class SearchIndexTests
         var plain = await BmotionSearchIndex.SearchAsync("exit animation presence", 8);
         var punctuated = await BmotionSearchIndex.SearchAsync("exit-animation (presence)?", 8);
 
-        CollectionAssert.AreEqual(plain.Select(hit => hit.Title).ToArray(), punctuated.Select(hit => hit.Title).ToArray());
+        Assert.AreSequenceEqual(plain.Select(hit => hit.Title).ToArray(), punctuated.Select(hit => hit.Title).ToArray());
     }
 
     /// <summary>
@@ -258,8 +257,7 @@ public class SearchIndexTests
 
         foreach (var result in results)
         {
-            CollectionAssert.AreEqual(results[0].Select(hit => hit.Title).ToArray(),
-                                      result.Select(hit => hit.Title).ToArray());
+            Assert.AreSequenceEqual(results[0].Select(hit => hit.Title).ToArray(), result.Select(hit => hit.Title).ToArray());
         }
     }
 
@@ -285,11 +283,11 @@ public class SearchIndexTests
             "Guide section", "Recipe", "Animatable property", "Easing preset", "Demo page", "Source file", "Setup guide", "Tool",
         })
         {
-            CollectionAssert.Contains(kinds.ToArray(), promised, $"Nothing of kind '{promised}' was ever found.");
+            Assert.Contains(promised, kinds.ToArray(), $"Nothing of kind '{promised}' was ever found.");
         }
 
         // The API entries are labelled by what they are - "API component", "API parameter", ...
-        Assert.IsTrue(kinds.Any(kind => kind.StartsWith("API ", StringComparison.OrdinalIgnoreCase)),
+        Assert.Contains(kind => kind.StartsWith("API ", StringComparison.OrdinalIgnoreCase), kinds,
                       $"The public API was never reached. Kinds seen: {string.Join(", ", kinds)}.");
     }
 }

@@ -111,10 +111,10 @@ public class BitNavBarE2ETests : E2ETestBase
         var response = await Page.APIRequest.GetAsync($"{BaseUrl}{PAGE}");
         var html = await response.TextAsync();
 
-        StringAssert.Contains(html, "id=\"nbr-basic\"");
-        StringAssert.Contains(html, "aria-label=\"Main\"");
-        StringAssert.Contains(html, "href=\"/e2e/nav-bar/url/home\"");
-        StringAssert.Contains(html, "Status: <span id=\"status\">Loading</span>");
+        Assert.Contains("id=\"nbr-basic\"", html);
+        Assert.Contains("aria-label=\"Main\"", html);
+        Assert.Contains("href=\"/e2e/nav-bar/url/home\"", html);
+        Assert.Contains("Status: <span id=\"status\">Loading</span>", html);
     }
 
     [TestMethod]
@@ -148,11 +148,11 @@ public class BitNavBarE2ETests : E2ETestBase
         for (var i = 1; i < boxes.Count; i++)
         {
             Assert.AreEqual(boxes[0].Y, boxes[i].Y, 1);
-            Assert.IsTrue(boxes[i].X > boxes[i - 1].X + boxes[i - 1].Width - 1);
+            Assert.IsGreaterThan(boxes[i - 1].X + boxes[i - 1].Width - 1, boxes[i].X);
         }
         var icon = await BoxAsync(home.Locator(".bit-nbr-ico"));
         var text0 = await BoxAsync(home.Locator(".bit-nbr-txt"));
-        Assert.IsTrue(icon.Y + icon.Height <= text0.Y + 1, "The icon sits over the text.");
+        Assert.IsLessThanOrEqualTo(text0.Y + 1, icon.Y + icon.Height, "The icon sits over the text.");
         await Expect(bar.Locator("> ul")).ToHaveCSSAsync("justify-content", "space-around");
     }
 
@@ -357,8 +357,8 @@ public class BitNavBarE2ETests : E2ETestBase
 
         var icon = await BoxAsync(home.Locator(".bit-nbr-ico"));
         var text = await BoxAsync(home.Locator(".bit-nbr-txt"));
-        Assert.IsTrue(text.X >= icon.X + icon.Width - 1, "The text follows the icon.");
-        Assert.IsTrue(Math.Abs((icon.Y + icon.Height / 2) - (text.Y + text.Height / 2)) < 4, "Both sit on one line.");
+        Assert.IsGreaterThanOrEqualTo(icon.X + icon.Width - 1, text.X, "The text follows the icon.");
+        Assert.IsLessThan(4, Math.Abs((icon.Y + icon.Height / 2) - (text.Y + text.Height / 2)), "Both sit on one line.");
     }
 
     // ---- Width & Alignment ----
@@ -375,12 +375,12 @@ public class BitNavBarE2ETests : E2ETestBase
         await Expect(Bar("nbr-fit")).ToHaveClassAsync(HasClass("bit-nbr-ftw"));
         await Expect(Bar("nbr-full")).ToHaveClassAsync(HasClass("bit-nbr-flw"));
         Assert.AreEqual(container.Width, full.Width, 0.5);
-        Assert.IsTrue(fit.Width < container.Width / 2, $"A FitWidth bar ({fit.Width}px) takes the room of its items only.");
+        Assert.IsLessThan(container.Width / 2, fit.Width, $"A FitWidth bar ({fit.Width}px) takes the room of its items only.");
 
         // Justified gives every item an equal share, whatever its label.
         await Expect(Bar("nbr-justified")).ToHaveClassAsync(HasClass("bit-nbr-jst"));
         var widths = await Page.Locator("#nbr-justified .bit-nbr-lit").EvaluateAllAsync<double[]>("els => els.map(e => e.getBoundingClientRect().width)");
-        Assert.AreEqual(3, widths.Length);
+        Assert.HasCount(3, widths);
         Assert.AreEqual(widths[0], widths[1], 1);
         Assert.AreEqual(widths[1], widths[2], 1);
     }
@@ -424,15 +424,15 @@ public class BitNavBarE2ETests : E2ETestBase
                 break;
             case "flex-end":
                 Assert.AreEqual(0, endGap, 1);
-                Assert.IsTrue(startGap > 50);
+                Assert.IsGreaterThan(50, startGap);
                 break;
             case "center":
                 Assert.AreEqual(startGap, endGap, 1.5);
-                Assert.IsTrue(startGap > 50);
+                Assert.IsGreaterThan(50, startGap);
                 break;
             default:
                 Assert.AreEqual(startGap, endGap, 1.5);
-                Assert.IsTrue(startGap > 1);
+                Assert.IsGreaterThan(1, startGap);
                 break;
         }
     }
@@ -523,7 +523,7 @@ public class BitNavBarE2ETests : E2ETestBase
 
         // The pill is a pill: fully rounded and wider than tall.
         var box = await BoxAsync(pill);
-        Assert.IsTrue(box.Width > box.Height);
+        Assert.IsGreaterThan(box.Height, box.Width);
         Assert.AreNotEqual("0px", await pill.EvaluateAsync<string>("el => getComputedStyle(el).borderTopLeftRadius"));
 
         await Expect(Item("nbr-pill-filled", "Home").Locator(".bit-nbr-icc")).ToHaveCSSAsync("background-color", await ResolveColorAsync("var(--bit-clr-pri-active)"));
@@ -564,7 +564,7 @@ public class BitNavBarE2ETests : E2ETestBase
         await Expect(Page.Locator("#nbr-squeezed > ul")).ToHaveCSSAsync("overflow-x", "visible");
         var squeezed = (await BoxAsync(Page.Locator("#nbr-squeezed .bit-nbr-itm").First)).Width;
         var scrolled = (await BoxAsync(Page.Locator("#nbr-scroll .bit-nbr-itm").First)).Width;
-        Assert.IsTrue(squeezed < scrolled, $"A squeezed item ({squeezed}px) is narrower than a scrolling one ({scrolled}px).");
+        Assert.IsLessThan(scrolled, squeezed, $"A squeezed item ({squeezed}px) is narrower than a scrolling one ({scrolled}px).");
     }
 
     [TestMethod]
@@ -635,7 +635,7 @@ public class BitNavBarE2ETests : E2ETestBase
         var home = await BoxAsync(Item("nbr-vertical", "Home"));
         var search = await BoxAsync(Item("nbr-vertical", "Search"));
         Assert.AreEqual(home.X, search.X, 1);
-        Assert.IsTrue(search.Y >= home.Y + home.Height - 1);
+        Assert.IsGreaterThanOrEqualTo(home.Y + home.Height - 1, search.Y);
 
         await Item("nbr-vertical", "Home").FocusAsync();
         await Page.Keyboard.PressAsync("ArrowDown");
@@ -658,7 +658,7 @@ public class BitNavBarE2ETests : E2ETestBase
         Assert.AreEqual("matrix(1, 0, 0, 0, 0, 0)", await AfterStyleAsync(Item("nbr-vertical-line", "Search"), "transform"));
         var width = double.Parse((await AfterStyleAsync(line, "width")).Replace("px", ""), CultureInfo.InvariantCulture);
         var height = double.Parse((await AfterStyleAsync(line, "height")).Replace("px", ""), CultureInfo.InvariantCulture);
-        Assert.IsTrue(height > width, "The line runs along the height of the item.");
+        Assert.IsGreaterThan(width, height, "The line runs along the height of the item.");
 
         var flipped = Item("nbr-vertical-line-flip", "Home");
         Assert.AreEqual("0px", await AfterStyleAsync(flipped, "right"));
@@ -725,7 +725,7 @@ public class BitNavBarE2ETests : E2ETestBase
         await Expect(alerts).ToHaveAttributeAsync("aria-label", "Alerts (New alerts)");
         var dot = await BoxAsync(alerts.Locator(".bit-nbr-bdt"));
         Assert.AreEqual(dot.Width, dot.Height, 0.5);
-        Assert.IsTrue(dot.Height < badgeBox.Height);
+        Assert.IsLessThan(badgeBox.Height, dot.Height);
 
         // A dot with no description is not announced at all.
         await Expect(Item("nbr-badge", "Silent")).Not.ToHaveAttributeAsync("aria-label", new Regex(".*"));
@@ -828,9 +828,8 @@ public class BitNavBarE2ETests : E2ETestBase
         await Expect(Item("nbr-keyboard", "Search")).ToBeFocusedAsync();
 
         var keys = await Page.EvaluateAsync<string[]>("() => window.__barKeys");
-        CollectionAssert.AreEqual(
-            new[] { "ArrowRight:true", "ArrowRight:true", "End:true", "ArrowDown:true", "Home:true", "ArrowDown:true", "ArrowUp:true", "Tab:false" },
-            keys);
+        Assert.AreSequenceEqual(
+            new[] { "ArrowRight:true", "ArrowRight:true", "End:true", "ArrowDown:true", "Home:true", "ArrowDown:true", "ArrowUp:true", "Tab:false" }, keys);
 
         // Enter and Space activate the focused item.
         await Page.Keyboard.PressAsync("Enter");
@@ -855,7 +854,7 @@ public class BitNavBarE2ETests : E2ETestBase
         await OpenAsync(PAGE);
 
         var tabIndexes = await Page.Locator("#nbr-single-tab .bit-nbr-itm").EvaluateAllAsync<string[]>("els => els.map(e => e.getAttribute('tabindex'))");
-        CollectionAssert.AreEqual(new[] { "-1", "0", "-1", "-1" }, tabIndexes, "The selected item holds the stop.");
+        Assert.AreSequenceEqual(new[] { "-1", "0", "-1", "-1" }, tabIndexes, "The selected item holds the stop.");
 
         // Tab enters the bar on the stop, and leaves it in one press.
         await Item("nbr-keyboard", "Profile").FocusAsync();
@@ -992,7 +991,7 @@ public class BitNavBarE2ETests : E2ETestBase
             painted.Add(color);
         }
 
-        Assert.IsTrue(painted.Count >= 10, $"The roles paint in distinct colors ({painted.Count} of {Colors.Length}).");
+        Assert.IsGreaterThanOrEqualTo(10, painted.Count, $"The roles paint in distinct colors ({painted.Count} of {Colors.Length}).");
     }
 
     [TestMethod]
@@ -1017,7 +1016,7 @@ public class BitNavBarE2ETests : E2ETestBase
             fills.Add(fill);
         }
 
-        Assert.IsTrue(fills.Count >= 10, $"The roles fill in distinct colors ({fills.Count} of {Colors.Length}).");
+        Assert.IsGreaterThanOrEqualTo(10, fills.Count, $"The roles fill in distinct colors ({fills.Count} of {Colors.Length}).");
     }
 
     // ---- External icons ----
@@ -1204,7 +1203,7 @@ public class BitNavBarE2ETests : E2ETestBase
         await Expect(item).ToBeFocusedAsync();
 
         var shadow = await item.EvaluateAsync<string>("el => getComputedStyle(el).boxShadow");
-        StringAssert.Contains(shadow, "rgb(255, 0, 255)");
+        Assert.Contains("rgb(255, 0, 255)", shadow);
         Assert.AreEqual("none", await Item("nbr-focus-color", "Home").EvaluateAsync<string>("el => getComputedStyle(el).boxShadow"));
 
         // Without the variable the ring is the library's own.
@@ -1213,7 +1212,7 @@ public class BitNavBarE2ETests : E2ETestBase
         await Expect(Item("nbr-keyboard", "Search")).ToBeFocusedAsync();
         var plain = await Item("nbr-keyboard", "Search").EvaluateAsync<string>("el => getComputedStyle(el).boxShadow");
         Assert.AreNotEqual("none", plain);
-        Assert.IsFalse(plain.Contains("rgb(255, 0, 255)"));
+        Assert.DoesNotContain("rgb(255, 0, 255)", plain);
     }
 
     [TestMethod]
@@ -1225,7 +1224,7 @@ public class BitNavBarE2ETests : E2ETestBase
         await Page.Locator("#btn-cycle-visibility").ClickAsync();
         await Expect(Page.Locator("#visibility-state")).ToHaveTextAsync("Hidden");
         await Expect(bar).ToHaveCSSAsync("visibility", "hidden");
-        Assert.IsTrue((await BoxAsync(bar)).Height > 0);
+        Assert.IsGreaterThan(0, (await BoxAsync(bar)).Height);
 
         await Page.Locator("#btn-cycle-visibility").ClickAsync();
         await Expect(bar).ToHaveCSSAsync("display", "none");
@@ -1256,7 +1255,7 @@ public class BitNavBarE2ETests : E2ETestBase
 
         var home = await BoxAsync(Item("nbr-rtl", "Home"));
         var profile = await BoxAsync(Item("nbr-rtl", "Profile"));
-        Assert.IsTrue(home.X > profile.X, "The first item is on the right.");
+        Assert.IsGreaterThan(profile.X, home.X, "The first item is on the right.");
 
         await Item("nbr-rtl", "Home").FocusAsync();
         await Page.Keyboard.PressAsync("ArrowLeft");
@@ -1278,7 +1277,7 @@ public class BitNavBarE2ETests : E2ETestBase
 
         var home = await BoxAsync(Item("nbr-rtl-inherited", "Home"));
         var profile = await BoxAsync(Item("nbr-rtl-inherited", "Profile"));
-        Assert.IsTrue(home.X > profile.X);
+        Assert.IsGreaterThan(profile.X, home.X);
 
         await Item("nbr-rtl-inherited", "Home").FocusAsync();
         await Page.Keyboard.PressAsync("ArrowLeft");
@@ -1426,12 +1425,12 @@ public class BitNavBarE2ETests : E2ETestBase
 
         var item = Item("nbr-motion", "Search");
         var duration = await AfterStyleAsync(item, "transition-duration");
-        Assert.IsTrue(double.Parse(duration.TrimEnd('s'), CultureInfo.InvariantCulture) > 0.01, $"The line moves over a duration ({duration}).");
+        Assert.IsGreaterThan(0.01, double.Parse(duration.TrimEnd('s'), CultureInfo.InvariantCulture), $"The line moves over a duration ({duration}).");
 
         await Page.EmulateMediaAsync(new() { ReducedMotion = ReducedMotion.Reduce });
 
         var reduced = await AfterStyleAsync(item, "transition-duration");
-        Assert.IsTrue(double.Parse(reduced.TrimEnd('s'), CultureInfo.InvariantCulture) < 0.01, $"Reduced motion collapses it ({reduced}).");
+        Assert.IsLessThan(0.01, double.Parse(reduced.TrimEnd('s'), CultureInfo.InvariantCulture), $"Reduced motion collapses it ({reduced}).");
         var forced = await AfterStyleAsync(Item("nbr-motion-force", "Search"), "transition-duration");
         Assert.AreEqual(duration, forced, "ForceAnimation brings it back.");
 

@@ -63,11 +63,13 @@ public class ReorderMeasurementTests
 
         await cut.InvokeAsync(measurement.SetResult);
         await ctx.RunFramesAsync(0, 3000);
-        await press.WaitAsync(TimeSpan.FromSeconds(10));
-        await release.WaitAsync(TimeSpan.FromSeconds(10));
+        await press.WaitAsync(TimeSpan.FromSeconds(10), TestContext.CancellationToken);
+        await release.WaitAsync(TimeSpan.FromSeconds(10), TestContext.CancellationToken);
 
         // "a" (centre 25) was let go 60px down (centre 85, past b's 75): the order catches up.
-        cut.WaitForAssertion(() => CollectionAssert.AreEqual(new[] { "b", "a", "c" }, committed));
+        cut.WaitForAssertion(() => Assert.AreSequenceEqual(new[] { "b", "a", "c" }, committed));
         Assert.IsFalse(ctx.Renderer.UnhandledException.IsCompleted, "nothing may throw along the way");
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

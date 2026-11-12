@@ -29,7 +29,7 @@ public class McpToolTests
     {
         var guides = BsqliteSourceCatalog.Documents.Where(document => document.Kind == "Guide").Select(document => document.Name).ToArray();
 
-        CollectionAssert.AreEqual(new[] { "getting-started", "storage", "live-queries", "architecture", "limits", "extending" }, guides);
+        Assert.AreSequenceEqual(new[] { "getting-started", "storage", "live-queries", "architecture", "limits", "extending" }, guides);
     }
 
     [TestMethod]
@@ -299,7 +299,7 @@ public class McpToolTests
             Assert.Contains("## From the documentation", guide, scenario);
             Assert.DoesNotContain("[truncated", guide, scenario);
 
-            foreach (var tool in ToolNames.MentionedIn(guide)) CollectionAssert.Contains(McpSurfaceTests.ExpectedTools, tool, $"'{scenario}' mentions '{tool}', which is not a tool.");
+            foreach (var tool in ToolNames.MentionedIn(guide)) Assert.Contains(tool, McpSurfaceTests.ExpectedTools, $"'{scenario}' mentions '{tool}', which is not a tool.");
         }
     }
 
@@ -339,7 +339,7 @@ public class McpToolTests
         Assert.Contains("dotnet add package Bit.Bsqlite", wasm);
         Assert.Contains("AddBitBsqliteServices", wasm);
         Assert.Contains("BsqliteSynchronousApiNotSupportedException", wasm);
-        Assert.IsTrue(wasm.Split('\n').Any(line => line.TrimEnd() == "### Where it runs"), "The quoted README section should be demoted under 'From the documentation'.");
+        Assert.Contains(line => line.TrimEnd() == "### Where it runs", wasm.Split('\n'), "The quoted README section should be demoted under 'From the documentation'.");
 
         var auto = await McpCall.TextAsync("GetBsqliteSetupGuide", new() { ["scenario"] = "auto" });
 
@@ -429,7 +429,7 @@ public class McpToolTests
 
         foreach (var answer in answers)
         {
-            Assert.IsFalse(answer.Any(BsqliteText.IsUnsafe), answer);
+            Assert.DoesNotContain(BsqliteText.IsUnsafe, answer, answer);
             Assert.Contains("Warning: forged'", answer);
         }
 

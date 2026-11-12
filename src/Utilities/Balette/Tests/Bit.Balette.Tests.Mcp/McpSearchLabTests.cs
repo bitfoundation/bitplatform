@@ -31,7 +31,7 @@ public class McpSearchLabTests
         Assert.IsTrue(first.Matched);
         Assert.AreEqual(1, first.Order);
         Assert.AreEqual(1, first.Row);
-        CollectionAssert.AreEqual(new[] { 0, 6 }, first.TitlePositions);
+        Assert.AreSequenceEqual(new[] { 0, 6 }, first.TitlePositions);
         Assert.AreEqual("[G]o to [S]ettings", first.HighlightedTitle);
         Assert.AreEqual("title", first.MatchedOn);
         Assert.AreEqual(first.Score, first.Rank, "With priority 0 and no history, the rank is the score.");
@@ -48,7 +48,7 @@ public class McpSearchLabTests
         Assert.AreEqual("Registering commands", report.Results[0].Title);
         Assert.AreEqual("[R]egistering [c]ommands", report.Results[0].HighlightedTitle);
         Assert.AreEqual("fuzzy", report.Terms.Single().Operator);
-        Assert.IsTrue(report.Notes.Any(note => note.Contains("ln(1 + frecency)", StringComparison.Ordinal)));
+        Assert.Contains(note => note.Contains("ln(1 + frecency)", StringComparison.Ordinal), report.Notes);
     }
 
     [TestMethod]
@@ -65,7 +65,7 @@ public class McpSearchLabTests
         Assert.IsTrue(rename.Matched);
         Assert.AreEqual("negate", report.Terms[1].Operator);
         Assert.AreEqual("delete", report.Terms[1].Term);
-        Assert.IsTrue(report.Notes.Any(note => note.Contains("negation", StringComparison.Ordinal)));
+        Assert.Contains(note => note.Contains("negation", StringComparison.Ordinal), report.Notes);
     }
 
     [TestMethod]
@@ -78,14 +78,14 @@ public class McpSearchLabTests
         var exact = await InspectAsync("'to set", commands);
 
         Assert.AreEqual("prefix", prefix.Terms.Single().Operator);
-        CollectionAssert.AreEquivalent(new[] { "Settings", "Set timer" }, Matched(prefix));
+        Assert.AreSequenceEqual(new[] { "Settings", "Set timer" }, Matched(prefix), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         Assert.Contains("no field starts with 'set'", prefix.Results.Single(result => result.Title == "Go to Settings").Reason!);
 
         Assert.AreEqual("suffix", suffix.Terms.Single().Operator);
-        CollectionAssert.AreEquivalent(new[] { "Go to Settings", "Settings" }, Matched(suffix));
+        Assert.AreSequenceEqual(new[] { "Go to Settings", "Settings" }, Matched(suffix), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
         Assert.AreEqual("exact", exact.Terms[0].Operator);
-        CollectionAssert.AreEquivalent(new[] { "Go to Settings" }, Matched(exact));
+        Assert.AreSequenceEqual(new[] { "Go to Settings" }, Matched(exact), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         Assert.HasCount(2, exact.Terms);
     }
 
@@ -131,7 +131,7 @@ public class McpSearchLabTests
         Assert.HasCount(2, wordWrap.Terms!);
         Assert.AreEqual(wordWrap.Score!.Value, wordWrap.Terms!.Sum(term => term.Score!.Value), 0.01, "The command's score is the sum of its terms' scores.");
         Assert.AreEqual("[Word] [wrap]", wordWrap.HighlightedTitle);
-        Assert.IsTrue(report.Notes.Any(note => note.Contains("(AND)", StringComparison.Ordinal)));
+        Assert.Contains(note => note.Contains("(AND)", StringComparison.Ordinal), report.Notes);
     }
 
     [TestMethod]
@@ -175,11 +175,11 @@ public class McpSearchLabTests
         Assert.AreEqual("Introduction", first.Title, "Introduction is the one High-priority command of the first group.");
         Assert.AreEqual(BaletteCommandPriority.High * 1000d, first.Rank!.Value);
         Assert.IsEmpty(report.Terms);
-        Assert.IsTrue(report.Notes.Any(note => note.Contains("priority x 1000", StringComparison.Ordinal)));
+        Assert.Contains(note => note.Contains("priority x 1000", StringComparison.Ordinal), report.Notes);
 
         // The groups come in options.GroupOrder order.
         var groups = report.Results.Where(result => result.Row is not null).OrderBy(result => result.Row).Select(result => result.Group!).Distinct().ToArray();
-        CollectionAssert.AreEqual(BaletteSearchLab.DemoOptions.GroupOrder.Where(groups.Contains).ToArray(), groups);
+        Assert.AreSequenceEqual(BaletteSearchLab.DemoOptions.GroupOrder.Where(groups.Contains).ToArray(), groups);
     }
 
     [TestMethod]
@@ -246,7 +246,7 @@ public class McpSearchLabTests
         var report = await InspectAsync("gs", "[{ not json");
 
         Assert.AreEqual(0, report.Searched);
-        Assert.IsTrue(report.Notes.Any(note => note.Contains("not valid JSON", StringComparison.Ordinal)));
+        Assert.Contains(note => note.Contains("not valid JSON", StringComparison.Ordinal), report.Notes);
     }
 
     [TestMethod]
@@ -257,8 +257,8 @@ public class McpSearchLabTests
         // The '>' mode lists only the commands tagged "command": no navigation, and the toggle among them.
         Assert.IsLessThan(BaletteSearchLab.DemoRegistry.Count, report.Searched);
         Assert.Contains("Word wrap", Matched(report));
-        Assert.IsFalse(report.Results.Any(result => result.Group == "Navigation"));
-        Assert.IsTrue(report.Notes.Any(note => note.Contains("'Commands' mode", StringComparison.Ordinal)));
+        Assert.DoesNotContain(result => result.Group == "Navigation", report.Results);
+        Assert.Contains(note => note.Contains("'Commands' mode", StringComparison.Ordinal), report.Notes);
     }
 
     [TestMethod]
@@ -330,12 +330,12 @@ public class McpSearchLabTests
     public async Task The_limits_are_answered_over_plain_http_too_and_published_in_the_schema()
     {
         using var http = McpTestHost.CreateHttpClient();
-        using var response = await http.GetAsync($"/api/mcp/InspectBaletteSearch?query={new string('s', BaletteQuery.MaxLength + 1)}");
+        using var response = await http.GetAsync($"/api/mcp/InspectBaletteSearch?query={new string('s', BaletteQuery.MaxLength + 1)}", TestContext.CancellationToken);
 
         Assert.AreEqual(System.Net.HttpStatusCode.OK, response.StatusCode);
-        Assert.Contains("BaletteQuery.MaxLength", await response.Content.ReadAsStringAsync());
+        Assert.Contains("BaletteQuery.MaxLength", await response.Content.ReadAsStringAsync(TestContext.CancellationToken));
 
-        var tool = (await McpTestHost.Client.ListToolsAsync()).Single(tool => tool.Name == "InspectBaletteSearch");
+        var tool = (await McpTestHost.Client.ListToolsAsync(cancellationToken: TestContext.CancellationToken)).Single(tool => tool.Name == "InspectBaletteSearch");
         var schema = tool.JsonSchema.GetRawText();
 
         Assert.Contains($"At most {BaletteQuery.MaxLength} characters", schema);
@@ -354,4 +354,6 @@ public class McpSearchLabTests
     }
 
     private static string[] Matched(BaletteSearchInspectionDto report) => [.. report.Results.Where(result => result.Matched).Select(result => result.Title)];
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

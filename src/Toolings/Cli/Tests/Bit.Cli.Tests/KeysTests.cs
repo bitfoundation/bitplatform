@@ -31,8 +31,8 @@ public class KeysTests
         using var imported = ECDsa.Create(new ECParameters { Curve = ECCurve.NamedCurves.nistP256, D = privateKey });
         var derived = imported.ExportParameters(false);
 
-        CollectionAssert.AreEqual(publicKey[1..33], derived.Q.X);
-        CollectionAssert.AreEqual(publicKey[33..], derived.Q.Y);
+        Assert.AreSequenceEqual(publicKey[1..33], derived.Q.X);
+        Assert.AreSequenceEqual(publicKey[33..], derived.Q.Y);
         Assert.AreNotEqual(keys.PublicKey, VapidKeys.Create().PublicKey);
     }
 
@@ -43,8 +43,8 @@ public class KeysTests
 
         Assert.AreEqual(0, await host.RunAsync("keys", "vapid"));
 
-        StringAssert.Contains(host.Output, "Public key");
-        StringAssert.Contains(host.Output, "Private key");
+        Assert.Contains("Public key", host.Output);
+        Assert.Contains("Private key", host.Output);
     }
 
     [TestMethod]
@@ -55,7 +55,7 @@ public class KeysTests
 
         Assert.AreEqual(0, await host.RunAsync("keys", "certificate"));
         var first = AppCertificates.Read(api, AppCertificates.ActiveName)!;
-        StringAssert.Contains(AppCertificates.Subject(first), "OU=Development");
+        Assert.Contains("OU=Development", AppCertificates.Subject(first));
 
         Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("keys", "certificate"));
         Assert.AreEqual(first, AppCertificates.Read(api, AppCertificates.ActiveName));
@@ -66,7 +66,7 @@ public class KeysTests
         Assert.AreNotEqual(first, AppCertificates.Read(api, AppCertificates.ActiveName));
 
         Assert.AreEqual(0, await host.RunAsync("keys", "certificate", "--list", "-o", api));
-        StringAssert.Contains(host.Output, "retired");
+        Assert.Contains("retired", host.Output);
     }
 
     [TestMethod]
@@ -88,7 +88,7 @@ public class KeysTests
 
         Assert.AreEqual(0, await host.RunAsync("keys", "certificate", "--production", "--pfx", "-o", outside));
         var pair = AppCertificates.Read(outside, AppCertificates.ActiveName)!;
-        StringAssert.Contains(AppCertificates.Subject(pair), "OU=Production");
+        Assert.Contains("OU=Production", AppCertificates.Subject(pair));
 
         if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
         {
@@ -120,7 +120,7 @@ public class KeysTests
         }).ToList();
 
         Assert.HasCount(2, bags);
-        Assert.IsTrue(bags.Any(b => b is Pkcs12ShroudedKeyBag));
+        Assert.Contains(b => b is Pkcs12ShroudedKeyBag, bags);
 
         foreach (var bag in bags)
         {
@@ -129,9 +129,9 @@ public class KeysTests
         }
 
         using var certificate = X509CertificateLoader.LoadPkcs12(keystore.Content, keystore.Password);
-        Assert.IsTrue(certificate.NotAfter > DateTime.UtcNow.AddYears(25));
+        Assert.IsGreaterThan(DateTime.UtcNow.AddYears(25), certificate.NotAfter);
         Assert.AreEqual(AndroidKeystore.Fingerprint(certificate), keystore.Sha256Fingerprint);
-        StringAssert.Matches(keystore.Sha256Fingerprint, new System.Text.RegularExpressions.Regex("^([0-9A-F]{2}:){31}[0-9A-F]{2}$"));
+        Assert.MatchesRegex(new System.Text.RegularExpressions.Regex("^([0-9A-F]{2}:){31}[0-9A-F]{2}$"), keystore.Sha256Fingerprint);
     }
 
     [TestMethod]
@@ -153,7 +153,7 @@ public class KeysTests
         Assert.HasCount(2, links);
         var fingerprint = (string)links[1]!["target"]!["sha256_cert_fingerprints"]![0]!;
         Assert.AreEqual("com.contoso.shop", (string)links[1]!["target"]!["package_name"]!);
-        StringAssert.Contains(host.Output, fingerprint);
+        Assert.Contains(fingerprint, host.Output);
 
         Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("keys", "android"));
     }
@@ -215,7 +215,7 @@ public class KeysTests
 
         var error = await Assert.ThrowsAsync<AppleSigningException>(() => new AppleSigning(handler).CreateAppStoreSigningAsync(new AppleApiKey("issuer", "KEY", rsa.ExportPkcs8PrivateKeyPem()), "com.contoso.shop", "Shop", CancellationToken.None));
 
-        StringAssert.Contains(error.Message, ".p8");
+        Assert.Contains(".p8", error.Message);
         Assert.IsEmpty(handler.Requests);
     }
 
@@ -229,7 +229,7 @@ public class KeysTests
 
         var result = await new AppleSigning(apple).CreateAppStoreSigningAsync(apple.Key, "com.contoso.shop", "com.contoso.shop App Store", CancellationToken.None);
 
-        CollectionAssert.AreEqual(new[]
+        Assert.AreSequenceEqual(new[]
         {
             "GET /v1/bundleIds?filter[identifier]=com.contoso.shop&limit=200",
             "POST /v1/bundleIds",
@@ -262,12 +262,12 @@ public class KeysTests
         Assert.AreEqual("IOS_APP_STORE", (string?)profile["attributes"]!["profileType"]);
         Assert.AreEqual("bundleIds", (string?)profile["relationships"]!["bundleId"]!["data"]!["type"]);
         Assert.AreEqual("B1", (string?)profile["relationships"]!["bundleId"]!["data"]!["id"]);
-        Assert.HasCount(1, profile["relationships"]!["certificates"]!["data"]!.AsArray());
+        Assert.ContainsSingle(profile["relationships"]!["certificates"]!["data"]!.AsArray());
         Assert.AreEqual("certificates", (string?)profile["relationships"]!["certificates"]!["data"]![0]!["type"]);
         Assert.AreEqual("C1", (string?)profile["relationships"]!["certificates"]!["data"]![0]!["id"]);
 
         Assert.AreEqual("com.contoso.shop App Store", result.ProfileName);
-        CollectionAssert.AreEqual(FakeAppStoreConnect.ProfileContent, result.Profile);
+        Assert.AreSequenceEqual(FakeAppStoreConnect.ProfileContent, result.Profile);
         Assert.AreEqual("TEAM123456", result.TeamId);
         Assert.AreEqual(apple.NotAfter, result.CertificateExpiry);
         Assert.IsGreaterThanOrEqualTo(20, result.Pkcs12Password.Length);
@@ -276,7 +276,7 @@ public class KeysTests
         Assert.AreEqual(apple.Issued!.Thumbprint, pkcs12.Thumbprint);
         Assert.IsTrue(pkcs12.HasPrivateKey);
         using var privateKey = pkcs12.GetRSAPrivateKey()!;
-        CollectionAssert.AreEqual(csr.PublicKey.GetRSAPublicKey()!.ExportParameters(false).Modulus, privateKey.ExportParameters(false).Modulus);
+        Assert.AreSequenceEqual(csr.PublicKey.GetRSAPublicKey()!.ExportParameters(false).Modulus, privateKey.ExportParameters(false).Modulus);
         Assert.ThrowsExactly<CryptographicException>(() => X509CertificateLoader.LoadPkcs12(result.Pkcs12, "wrong password"));
 
         Assert.IsTrue(Contains(result.Pkcs12, Oid("1.2.840.113549.1.12.1.3")), "TripleDES with SHA1");
@@ -292,8 +292,8 @@ public class KeysTests
 
         var result = await new AppleSigning(apple).CreateAppStoreSigningAsync(apple.Key, "com.contoso.shop", "Shop", CancellationToken.None);
 
-        Assert.IsFalse(apple.Requests.Any(r => r.Line is "POST /v1/bundleIds"));
-        Assert.IsFalse(apple.Requests.Any(r => r.Method == HttpMethod.Delete));
+        Assert.DoesNotContain(r => r.Line is "POST /v1/bundleIds", apple.Requests);
+        Assert.DoesNotContain(r => r.Method == HttpMethod.Delete, apple.Requests);
         Assert.AreEqual("B7", (string?)apple.Body("POST /v1/profiles")["data"]!["relationships"]!["bundleId"]!["data"]!["id"]);
         Assert.AreEqual("SEED123456", result.TeamId);
     }
@@ -312,12 +312,12 @@ public class KeysTests
 
         var error = await Assert.ThrowsAsync<AppleSigningException>(() => new AppleSigning(apple).CreateAppStoreSigningAsync(apple.Key, "com.contoso.shop", "Shop", CancellationToken.None));
 
-        StringAssert.Contains(error.Message, "as many distribution certificates as Apple allows");
-        StringAssert.Contains(error.Message, "You already have a current Distribution certificate");
-        StringAssert.Contains(error.Message, "Apple Distribution: Contoso, expires 2027-03-01, serial 1A2B3C");
-        StringAssert.Contains(error.Message, "iOS Distribution: Contoso, expires 2026-12-24, serial 4D5E6F");
-        StringAssert.Contains(error.Message, $"Revoke one that no build signs with anymore at {AppleSigning.CertificatesPage}");
-        Assert.IsFalse(apple.Requests.Any(r => r.Line.Contains("/v1/profiles", StringComparison.Ordinal)));
+        Assert.Contains("as many distribution certificates as Apple allows", error.Message);
+        Assert.Contains("You already have a current Distribution certificate", error.Message);
+        Assert.Contains("Apple Distribution: Contoso, expires 2027-03-01, serial 1A2B3C", error.Message);
+        Assert.Contains("iOS Distribution: Contoso, expires 2026-12-24, serial 4D5E6F", error.Message);
+        Assert.Contains($"Revoke one that no build signs with anymore at {AppleSigning.CertificatesPage}", error.Message);
+        Assert.DoesNotContain(r => r.Line.Contains("/v1/profiles", StringComparison.Ordinal), apple.Requests);
     }
 
     [TestMethod]
@@ -328,8 +328,8 @@ public class KeysTests
 
         var error = await Assert.ThrowsAsync<AppleSigningException>(() => new AppleSigning(apple).CreateAppStoreSigningAsync(apple.Key, "com.contoso.shop", "Shop", CancellationToken.None));
 
-        StringAssert.Contains(error.Message, "didn't accept the API key");
-        StringAssert.Contains(error.Message, "issuer id");
+        Assert.Contains("didn't accept the API key", error.Message);
+        Assert.Contains("issuer id", error.Message);
     }
 
     [TestMethod]
@@ -340,9 +340,9 @@ public class KeysTests
 
         var error = await Assert.ThrowsAsync<AppleSigningException>(() => new AppleSigning(apple).CreateAppStoreSigningAsync(apple.Key, "com.contoso.shop", "Shop", CancellationToken.None));
 
-        StringAssert.Contains(error.Message, "isn't allowed to register the bundle id com.contoso.shop");
-        StringAssert.Contains(error.Message, "Admin role");
-        StringAssert.Contains(error.Message, "The API key in use does not allow this request");
+        Assert.Contains("isn't allowed to register the bundle id com.contoso.shop", error.Message);
+        Assert.Contains("Admin role", error.Message);
+        Assert.Contains("The API key in use does not allow this request", error.Message);
     }
 
     [TestMethod]
@@ -353,7 +353,7 @@ public class KeysTests
 
         var error = await Assert.ThrowsAsync<AppleSigningException>(() => new AppleSigning(apple).CreateAppStoreSigningAsync(apple.Key, "com.contoso.shop", "Shop", CancellationToken.None));
 
-        StringAssert.Contains(error.Message, "Couldn't create the profile Shop. App Store Connect answered 409: Multiple profiles found");
+        Assert.Contains("Couldn't create the profile Shop. App Store Connect answered 409: Multiple profiles found", error.Message);
         Assert.AreEqual("DELETE /v1/certificates/C1", apple.Requests[^1].Line);
     }
 
@@ -373,18 +373,18 @@ public class KeysTests
         var password = host.Output.Split('\n').Single(l => l.Contains("Password", StringComparison.Ordinal)).Replace("Password", "", StringComparison.Ordinal).Trim();
         using var certificate = X509CertificateLoader.LoadPkcs12FromFile(p12, password);
         Assert.IsTrue(certificate.HasPrivateKey);
-        CollectionAssert.AreEqual(FakeAppStoreConnect.ProfileContent, File.ReadAllBytes(Path.Combine(host.WorkingDirectory, "signing", "com.contoso.shop.mobileprovision")));
+        Assert.AreSequenceEqual(FakeAppStoreConnect.ProfileContent, File.ReadAllBytes(Path.Combine(host.WorkingDirectory, "signing", "com.contoso.shop.mobileprovision")));
         Assert.AreEqual("GET /v1/bundleIds?filter[identifier]=com.contoso.shop&limit=200", apple.Requests[0].Line);
 
         foreach (var text in new[] { "TEAM123456", "APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_BASE64", "APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_PASSWORD", "APPSTORE_API_KEY_ISSUER_ID", "APPSTORE_API_KEY_ID", "APPSTORE_API_KEY_PRIVATE_KEY", "IOS_CODE_SIGN_PROVISION", "variable: com.contoso.shop App Store", "the text of AuthKey_2X9R4HXF34.p8" })
         {
-            StringAssert.Contains(host.Output, text);
+            Assert.Contains(text, host.Output);
         }
 
-        StringAssert.Contains(host.Output, $"  [Convert]::ToBase64String([IO.File]::ReadAllBytes('{p12}'))");
+        Assert.Contains($"  [Convert]::ToBase64String([IO.File]::ReadAllBytes('{p12}'))", host.Output);
 
         Assert.AreEqual(CliApp.ExitUsage, await KeysCommand.AppleAsync(host.Services, new AppleKeysRequest("issuer-id", "2X9R4HXF34", "AuthKey_2X9R4HXF34.p8", null, null, "signing"), CancellationToken.None, apple));
-        StringAssert.Contains(host.FlatOutput, "may be the only copy of a certificate's private key");
+        Assert.Contains("may be the only copy of a certificate's private key", host.FlatOutput);
         Assert.HasCount(5, apple.Requests);
     }
 
@@ -396,7 +396,7 @@ public class KeysTests
 
         Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("keys", "apple", "--issuer-id", "issuer", "--key-id", "KEY", "--private-key", "AuthKey.p8"));
 
-        StringAssert.Contains(host.Output, "--bundle-id");
+        Assert.Contains("--bundle-id", host.Output);
     }
 
     [TestMethod]
@@ -409,9 +409,9 @@ public class KeysTests
 
         Assert.AreEqual(CliApp.ExitFailed, await KeysCommand.AppleAsync(host.Services, new AppleKeysRequest("issuer-id", "KEY", "AuthKey.p8", "com.contoso.shop", null, null), CancellationToken.None, apple));
 
-        StringAssert.Contains(host.Output, "didn't accept the API key");
-        StringAssert.Contains(host.FlatOutput, "bit was creating the App Store signing of com.contoso.shop with the App Store Connect API (https://api.appstoreconnect.apple.com/v1) and the API key KEY");
-        StringAssert.Contains(host.FlatOutput, "App Store provisioning profile (IOS_APP_STORE) \"com.contoso.shop App Store\"");
+        Assert.Contains("didn't accept the API key", host.Output);
+        Assert.Contains("bit was creating the App Store signing of com.contoso.shop with the App Store Connect API (https://api.appstoreconnect.apple.com/v1) and the API key KEY", host.FlatOutput);
+        Assert.Contains("App Store provisioning profile (IOS_APP_STORE) \"com.contoso.shop App Store\"", host.FlatOutput);
         Assert.IsFalse(File.Exists(Path.Combine(host.WorkingDirectory, "com.contoso.shop.p12")));
     }
 
@@ -466,7 +466,8 @@ public class KeysTests
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             Assert.AreEqual("api.appstoreconnect.apple.com", request.RequestUri!.Host);
-            Assert.AreEqual("Bearer", request.Headers.Authorization?.Scheme);
+            var actualValue = request.Headers.Authorization?.Scheme;
+            Assert.AreEqual("Bearer", actualValue);
 
             var line = $"{request.Method} {Uri.UnescapeDataString(request.RequestUri.PathAndQuery)}";
             var body = request.Content is null ? null : JsonNode.Parse(await request.Content.ReadAsStringAsync(cancellationToken));

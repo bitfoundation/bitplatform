@@ -30,8 +30,8 @@ public class BitTimePickerParamsTests : BunitTestContext
     [TestMethod]
     public void BitTimePickerParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitTimePicker)}", BitTimePickerParams.ParamName);
-        Assert.AreEqual("BitParams.BitTimePicker", BitTimePickerParams.ParamName);
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitTimePicker)}", new BitTimePickerParams().Name);
+        Assert.AreEqual("BitParams.BitTimePicker", new BitTimePickerParams().Name);
     }
 
     [TestMethod]
@@ -82,8 +82,8 @@ public class BitTimePickerParamsTests : BunitTestContext
         Assert.AreEqual(15, instance.MinuteStep);
 
         // The cascaded flags reach the markup, not only the instance.
-        Assert.AreEqual(2, component.FindAll(".bit-tpc-abn").Count);
-        Assert.AreEqual(2, component.FindAll(".bit-tpc-bam, .bit-tpc-bpm").Count);
+        Assert.HasCount(2, component.FindAll(".bit-tpc-abn"));
+        Assert.HasCount(2, component.FindAll(".bit-tpc-bam, .bit-tpc-bpm"));
     }
 
     [TestMethod]
@@ -390,7 +390,7 @@ public class BitTimePickerParamsTests : BunitTestContext
         Assert.AreEqual("from-instance", callout.GetAttribute("data-both"));
         Assert.AreEqual("yes", callout.GetAttribute("data-cascaded"));
         // The dictionary is the app's own, so the cascade is merged into a copy of it.
-        Assert.HasCount(1, own);
+        Assert.ContainsSingle(own);
     }
 
     [TestMethod]
@@ -442,7 +442,7 @@ public class BitTimePickerParamsTests : BunitTestContext
 
         var missing = parameters.Where(name => typeof(BitTimePickerParams).GetProperty(name) is null).ToList();
 
-        Assert.AreEqual(0, missing.Count, "BitTimePickerParams is missing: " + string.Join(", ", missing));
+        Assert.IsEmpty(missing, "BitTimePickerParams is missing: " + string.Join(", ", missing));
     }
 
     [TestMethod]
@@ -494,8 +494,8 @@ public class BitTimePickerParamsTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("cascaded-root"));
         Assert.IsTrue(root.ClassList.Contains("bit-dis"));
         Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
-        StringAssert.Contains(root.GetAttribute("style"), "--s: root;");
-        Assert.AreEqual(3, component.FindAll(".bit-tpc-tin").Count);
+        Assert.Contains("--s: root;", root.GetAttribute("style")!);
+        Assert.HasCount(3, component.FindAll(".bit-tpc-tin"));
 
         var hourInput = component.FindAll(".bit-tpc-tin")[0];
         Assert.IsTrue(hourInput.ClassList.Contains("cascaded-hour"));
@@ -515,7 +515,8 @@ public class BitTimePickerParamsTests : BunitTestContext
         Assert.IsNotNull(instance.AllowedHours);
         Assert.IsNotNull(instance.AllowedMinutes);
         Assert.IsNotNull(instance.AllowedSeconds);
-        Assert.AreEqual("my-clock", instance.Icon?.GetCssClasses());
+        var actualValue = instance.Icon?.GetCssClasses();
+        Assert.AreEqual("my-clock", actualValue);
         Assert.AreEqual("ChromeClose", instance.CloseButtonIconName);
         Assert.AreEqual("ChromeClose", instance.ClearButtonIconName);
     }
@@ -533,12 +534,12 @@ public class BitTimePickerParamsTests : BunitTestContext
         var instance = component.FindComponent<BitTimePicker>().Instance;
 
         Assert.AreEqual("bit-tpc", root.GetAttribute("class"));
-        Assert.AreEqual(2, component.FindAll(".bit-tpc-tin").Count);
+        Assert.HasCount(2, component.FindAll(".bit-tpc-tin"));
         Assert.AreEqual(BitTimeFormat.TwentyFourHours, instance.TimeFormat);
         Assert.AreEqual(1, instance.MinuteStep);
         Assert.AreEqual("Clock", instance.CalloutAriaLabel);
         Assert.IsNull(instance.Culture);
-        Assert.AreEqual(0, component.FindAll(".bit-tpc-lbl").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-tpc-act").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tpc-lbl"));
+        Assert.IsEmpty(component.FindAll(".bit-tpc-act"));
     }
 }

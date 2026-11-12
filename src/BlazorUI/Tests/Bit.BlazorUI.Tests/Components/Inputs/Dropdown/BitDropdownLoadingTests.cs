@@ -15,7 +15,7 @@ public class BitDropdownLoadingTests : BunitTestContext
 
         component.Render(parameters => parameters.Add(p => p.IsLoading, false));
 
-        CollectionAssert.AreEqual(new[] { "First", "Last" }, GetSelectedTexts(component));
+        Assert.AreSequenceEqual(new[] { "First", "Last" }, GetSelectedTexts(component));
         Assert.AreEqual("First, Last", GetTriggerText(component));
     }
 

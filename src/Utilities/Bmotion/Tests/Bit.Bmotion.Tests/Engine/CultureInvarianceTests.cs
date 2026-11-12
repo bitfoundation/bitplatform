@@ -67,7 +67,7 @@ public class CultureInvarianceTests
                     b.CloseElement();
                 })));
             var style = cut.Find("div").GetAttribute("style")!;
-            StringAssert.Contains(style, "1.5");
+            Assert.Contains("1.5", style);
             return Task.FromResult(style);
         });
 

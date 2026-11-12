@@ -121,7 +121,7 @@ public partial class BitFullCalendarE2ETests
 
         // the tint of a background band
         var band = await cal.Locator(".bit-bfc-bg-event").First.EvaluateAsync<string>("e => getComputedStyle(e).backgroundColor");
-        StringAssert.Matches(band, new Regex(@"(/ 0\.5\)|, 0\.5\))$"), $"the band takes half of its color: {band}");
+        Assert.MatchesRegex(new Regex(@"(/ 0\.5\)|, 0\.5\))$"), band, $"the band takes half of its color: {band}");
 
         // the month grid: its cells and its week-number rail
         await SwitchViewAsync(cal, "Month");
@@ -145,8 +145,8 @@ public partial class BitFullCalendarE2ETests
             return 0.2126 * parts[0] + 0.7152 * parts[1] + 0.0722 * parts[2];
         }
 
-        Assert.IsTrue(Luminance(dark) < Luminance(light), $"the dark surface ({dark}) is darker than the light one ({light})");
-        Assert.IsTrue(Luminance(await ComputedStyleAsync("#dark-cal", "color")) > Luminance(dark), "light text on the dark surface");
+        Assert.IsLessThan(Luminance(light), Luminance(dark), $"the dark surface ({dark}) is darker than the light one ({light})");
+        Assert.IsGreaterThan(Luminance(dark), Luminance(await ComputedStyleAsync("#dark-cal", "color")), "light text on the dark surface");
         // the native controls inherit the calendar's colors rather than the system's
         Assert.AreEqual(await ComputedStyleAsync("#dark-cal", "color"), await ComputedStyleAsync("#dark-cal .bit-bfc-header-left .bit-bfc-btn", "color"));
         Assert.AreEqual(await ComputedStyleAsync("#light-cal", "color"), await ComputedStyleAsync("#light-cal .bit-bfc-header-left .bit-bfc-btn", "color"));

@@ -74,7 +74,7 @@ public sealed class ParallelProcessingTests
 
         var unsafeOperation = new ThreadRecordingOperation(concurrent: false);
         using (unsafeOperation.Apply(source, new OperationContext(maxDegreeOfParallelism: 8))) { }
-        Assert.AreEqual(1, unsafeOperation.Threads.Count, "A custom operation that did not opt in ran on several threads.");
+        Assert.ContainsSingle(unsafeOperation.Threads, "A custom operation that did not opt in ran on several threads.");
 
         var safeOperation = new ThreadRecordingOperation(concurrent: true);
         // Fused with a built-in stage, which may run concurrently, the run is only as concurrent as its least safe stage.

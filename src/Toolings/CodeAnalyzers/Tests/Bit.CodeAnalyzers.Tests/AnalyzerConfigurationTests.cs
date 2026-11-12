@@ -4,6 +4,8 @@ using Bit.CodeAnalyzers.SystemCodeFixes;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 
+[assembly: global::Microsoft.VisualStudio.TestTools.UnitTesting.DoNotParallelizeAttribute]
+
 namespace Bit.CodeAnalyzers.Tests;
 
 [TestClass]

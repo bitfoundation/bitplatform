@@ -37,9 +37,9 @@ public class DocsPageTests
         Assert.IsFalse(text.Contains("could not be rendered on the server", StringComparison.Ordinal),
             $"'{title}' failed to render outside the router: {text}");
 
-        StringAssert.StartsWith(text, "bit Bswup documentation page: ", title);
-        StringAssert.Contains(text, "# ", $"'{title}' rendered without a single heading - it is probably empty");
-        Assert.IsTrue(text.Length > 400, $"'{title}' rendered to only {text.Length} characters");
+        Assert.StartsWith("bit Bswup documentation page: ", text, title);
+        Assert.Contains("# ", text, $"'{title}' rendered without a single heading - it is probably empty");
+        Assert.IsGreaterThan(400, text.Length, $"'{title}' rendered to only {text.Length} characters");
     }
 
     [TestMethod]
@@ -104,7 +104,7 @@ public class DocsPageTests
     {
         var text = await _server.CallTextAsync("GetBswupDocsPage");
 
-        StringAssert.Contains(text, "bit Bswup documentation page: /");
+        Assert.Contains("bit Bswup documentation page: /", text);
     }
 
     [TestMethod]
@@ -123,8 +123,8 @@ public class DocsPageTests
     {
         var text = await _server.CallTextAsync("GetBswupDocsPage", new { slug = "not-a-page" });
 
-        StringAssert.Contains(text, "No documentation page has the slug 'not-a-page'");
-        StringAssert.Contains(text, "service-worker", "the available slugs have to be in the answer");
+        Assert.Contains("No documentation page has the slug 'not-a-page'", text);
+        Assert.Contains("service-worker", text, "the available slugs have to be in the answer");
     }
 
     [TestMethod]
@@ -142,12 +142,12 @@ public class DocsPageTests
     {
         var settings = await _server.CallTextAsync("GetBswupDocsPage", new { slug = "service-worker" });
 
-        StringAssert.Contains(settings, "assetsInclude");
-        StringAssert.Contains(settings, "externalAssets");
+        Assert.Contains("assetsInclude", settings);
+        Assert.Contains("externalAssets", settings);
 
         var events = await _server.CallTextAsync("GetBswupDocsPage", new { slug = "events" });
 
-        StringAssert.Contains(events, "downloadProgress");
-        StringAssert.Contains(events, "updateReady");
+        Assert.Contains("downloadProgress", events);
+        Assert.Contains("updateReady", events);
     }
 }

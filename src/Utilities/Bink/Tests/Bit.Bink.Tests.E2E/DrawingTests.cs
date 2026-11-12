@@ -20,7 +20,7 @@ public sealed class DrawingTests : BinkTest
         await DrawStrokeAsync(page, (60, 60), (160, 120), (260, 70), (360, 140));
 
         int ink = await CountInkAsync(page);
-        Assert.IsTrue(ink > 500, $"expected the stroke to cover a few hundred pixels but found {ink}");
+        Assert.IsGreaterThan(500, ink, $"expected the stroke to cover a few hundred pixels but found {ink}");
     }
 
     [TestMethod]
@@ -30,15 +30,15 @@ public sealed class DrawingTests : BinkTest
 
         await DrawStrokeAsync(page, (100, 100), (200, 160), (300, 110));
         int afterDraw = await CountInkAsync(page);
-        Assert.IsTrue(afterDraw > 300, $"the stroke covers only {afterDraw} pixels");
+        Assert.IsGreaterThan(300, afterDraw, $"the stroke covers only {afterDraw} pixels");
 
         await page.GetByRole(AriaRole.Button, new() { Name = "Undo", Exact = true }).ClickAsync();
         await page.WaitForTimeoutAsync(200);
-        Assert.IsTrue(await CountInkAsync(page) < afterDraw / 4, "undo did not remove the stroke");
+        Assert.IsLessThan(afterDraw / 4, await CountInkAsync(page), "undo did not remove the stroke");
 
         await page.GetByRole(AriaRole.Button, new() { Name = "Redo", Exact = true }).ClickAsync();
         await page.WaitForTimeoutAsync(200);
-        Assert.IsTrue(await CountInkAsync(page) > afterDraw / 2, "redo did not restore the stroke");
+        Assert.IsGreaterThan(afterDraw / 2, await CountInkAsync(page), "redo did not restore the stroke");
     }
 
     [TestMethod]
@@ -48,7 +48,7 @@ public sealed class DrawingTests : BinkTest
 
         await DrawStrokeAsync(page, (120, 120), (260, 200));
         int afterDraw = await CountInkAsync(page);
-        Assert.IsTrue(afterDraw > 100, $"the stroke covers only {afterDraw} pixels");
+        Assert.IsGreaterThan(100, afterDraw, $"the stroke covers only {afterDraw} pixels");
 
         // Drawing must leave the canvas focused, otherwise its keyboard shortcuts are unreachable for anyone
         // who just used a pen or a mouse.
@@ -58,7 +58,7 @@ public sealed class DrawingTests : BinkTest
         await page.WaitForTimeoutAsync(250);
 
         int after = await CountInkAsync(page);
-        Assert.IsTrue(after < afterDraw / 4, $"the stroke should be gone after undo but {after} of {afterDraw} ink pixels remain");
+        Assert.IsLessThan(afterDraw / 4, after, $"the stroke should be gone after undo but {after} of {afterDraw} ink pixels remain");
     }
 
     [TestMethod]
@@ -87,7 +87,7 @@ public sealed class DrawingTests : BinkTest
             """);
         await page.WaitForTimeoutAsync(400);
 
-        Assert.IsTrue(await CountInkAsync(page) > 500, "the pen stroke should have been drawn");
+        Assert.IsGreaterThan(500, await CountInkAsync(page), "the pen stroke should have been drawn");
         await Expect(page.Locator("text=pen pressure").First).ToBeVisibleAsync();
         await Expect(page.Locator("text=tilt").First).ToBeVisibleAsync();
     }
@@ -142,7 +142,7 @@ public sealed class DrawingTests : BinkTest
             """);
 
         Assert.IsTrue(mass[0] > 0 && mass[1] > 0, $"the stroke was not drawn across the sampled columns ({mass[0]:0.00}, {mass[1]:0.00})");
-        Assert.IsTrue(mass[1] > mass[0] * 1.5, $"pressure did not widen the stroke: light={mass[0]:0.00} heavy={mass[1]:0.00}");
+        Assert.IsGreaterThan(mass[0] * 1.5, mass[1], $"pressure did not widen the stroke: light={mass[0]:0.00} heavy={mass[1]:0.00}");
     }
 
     [TestMethod]
@@ -164,7 +164,7 @@ public sealed class DrawingTests : BinkTest
         await page.WaitForTimeoutAsync(400);
 
         await Expect(editor).ToHaveCountAsync(0);
-        Assert.IsTrue(await CountInkAsync(page) > 20, "the committed text was not drawn");
+        Assert.IsGreaterThan(20, await CountInkAsync(page), "the committed text was not drawn");
         // The text belongs to the drawing, so it reaches assistive technology through the canvas description.
         Assert.Contains("Reviewed", await page.Locator(".bit-bink-visually-hidden").First.InnerTextAsync(), StringComparison.Ordinal);
     }
@@ -244,8 +244,8 @@ public sealed class DrawingTests : BinkTest
         // Sixty moves must not touch the DOM at all. Committing the stroke updates the accessible description,
         // which is one render, not sixty.
         Assert.AreEqual(0, duringDrag, "moving the pointer changed the DOM");
-        Assert.IsTrue(afterCommit > 0, "committing the stroke should have updated the accessible description");
-        Assert.IsTrue(afterCommit < 20, $"committing one stroke caused {afterCommit} DOM mutations");
+        Assert.IsGreaterThan(0, afterCommit, "committing the stroke should have updated the accessible description");
+        Assert.IsLessThan(20, afterCommit, $"committing one stroke caused {afterCommit} DOM mutations");
     }
 
     [TestMethod]

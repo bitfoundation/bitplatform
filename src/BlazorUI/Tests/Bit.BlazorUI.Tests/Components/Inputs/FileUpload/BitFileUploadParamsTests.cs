@@ -95,7 +95,7 @@ public class BitFileUploadParamsTests : BunitTestContext
 
         foreach (var name in paramsProperties)
         {
-            Assert.IsTrue(componentParameters.Contains(name), $"BitFileUploadParams.{name} is no parameter of the component.");
+            Assert.Contains(name, componentParameters, $"BitFileUploadParams.{name} is no parameter of the component.");
         }
     }
 
@@ -266,7 +266,7 @@ public class BitFileUploadParamsTests : BunitTestContext
         Assert.AreEqual("rtl", root.GetAttribute("dir"));
         Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
         Assert.IsTrue(root.ClassList.Contains("cascaded"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin: 1px;");
+        Assert.Contains("margin: 1px;", root.GetAttribute("style")!);
         Assert.AreEqual("cascaded-id", root.Id);
         Assert.AreEqual("yes", root.GetAttribute("data-cascaded"));
         // What the instance wrote for itself is never replaced by the cascade.

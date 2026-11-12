@@ -3,12 +3,12 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Bit.Borm.Tests;
 
-public class CascadingModel
+internal class CascadingModel
 {
     public List<CascadingRow> Rows { get; set; } = [];
 }
 
-public class CascadingRow
+internal class CascadingRow
 {
     public string? Country { get; set; }
     public string? City { get; set; }

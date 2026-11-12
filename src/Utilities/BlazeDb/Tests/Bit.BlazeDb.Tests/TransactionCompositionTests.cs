@@ -31,7 +31,7 @@ public class TransactionCompositionTests
         Assert.IsFalse(people.Contains(3));
         txn.Commit();
         Assert.AreEqual(2, people.Count);
-        Assert.AreEqual(0, db.VerifyIntegrity().Count);
+        Assert.IsEmpty(db.VerifyIntegrity());
     }
 
     [TestMethod]
@@ -69,7 +69,7 @@ public class TransactionCompositionTests
 
         // inner marked a point the earlier rollback undid; reusing it would truncate the wrong writes.
         Assert.ThrowsExactly<InvalidOperationException>(() => txn.RollbackTo(inner));
-        CollectionAssert.AreEquivalent(new[] { 3, 4 }, people.Scan().Select(p => p.Id).ToArray());
+        Assert.AreSequenceEqual(new[] { 3, 4 }, people.Scan().Select(p => p.Id).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -93,7 +93,7 @@ public class TransactionCompositionTests
     public async Task RunInTransaction_Commits_Everything_As_One_Record()
     {
         var storage = new BlazeDbInMemoryStorage();
-        await using (var db = await BlazeDbDatabase.OpenAsync(Persistent(storage)))
+        await using (var db = await BlazeDbDatabase.OpenAsync(Persistent(storage), TestContext.CancellationToken))
         {
             var people = db.GetTable(PersonTable.Descriptor);
             var count = db.RunInTransaction(() =>
@@ -109,7 +109,7 @@ public class TransactionCompositionTests
         // One commit record: both rows replay together from one checksummed record.
         var wal = storage.GetFile(storage.Wal())!;
         Assert.AreEqual(1, CountRecords(wal));
-        await using var reopened = await BlazeDbDatabase.OpenAsync(Persistent(storage));
+        await using var reopened = await BlazeDbDatabase.OpenAsync(Persistent(storage), TestContext.CancellationToken);
         Assert.AreEqual(2, reopened.GetTable(PersonTable.Descriptor).Count);
     }
 
@@ -190,15 +190,15 @@ public class TransactionCompositionTests
             people.Insert(new Person(3, "Outer again", 3));
         });
 
-        CollectionAssert.AreEquivalent(new[] { 1, 3 }, people.Scan().Select(p => p.Id).ToArray());
+        Assert.AreSequenceEqual(new[] { 1, 3 }, people.Scan().Select(p => p.Id).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
     public async Task RunInTransaction_On_A_Replica_Is_Refused()
     {
         var storage = new BlazeDbInMemoryStorage();
-        await (await BlazeDbDatabase.OpenAsync(Persistent(storage))).DisposeAsync();
-        await using var replica = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { Storage = storage, ReadOnly = true }.AddTable(PersonTable.Descriptor));
+        await (await BlazeDbDatabase.OpenAsync(Persistent(storage), TestContext.CancellationToken)).DisposeAsync();
+        await using var replica = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { Storage = storage, ReadOnly = true }.AddTable(PersonTable.Descriptor), TestContext.CancellationToken);
 
         Assert.ThrowsExactly<InvalidOperationException>(() => replica.RunInTransaction(() => { }));
     }
@@ -212,7 +212,7 @@ public class TransactionCompositionTests
         {
             Storage = new BlazeDbInMemoryStorage(),
             FlushInterval = TimeSpan.FromMilliseconds(5),
-        }.AddTable(Account.Table));
+        }.AddTable(Account.Table), TestContext.CancellationToken);
         var accounts = db.GetTable(Account.Table);
         const int Writers = 8;
         const int UnitsPerWriter = 200;
@@ -238,15 +238,17 @@ public class TransactionCompositionTests
                 {
                 }
             }
-        })));
+        }, TestContext.CancellationToken)));
 
         Assert.AreEqual(Writers * UnitsPerWriter * 4 / 5, accounts.Count);
-        Assert.IsFalse(accounts.Scan().Any(a => a.Id < 0));
+        Assert.DoesNotContain(a => a.Id < 0, accounts.Scan());
         for (var writer = 0; writer < Writers; writer++)
         {
             Assert.AreEqual(UnitsPerWriter * 4 / 5, accounts.CountBy(Account.Indexes.TenantId, writer));
         }
-        Assert.AreEqual(0, db.VerifyIntegrity().Count);
-        await db.FlushAsync();
+        Assert.IsEmpty(db.VerifyIntegrity());
+        await db.FlushAsync(TestContext.CancellationToken);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

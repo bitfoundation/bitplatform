@@ -145,7 +145,7 @@ public class BitAiPromptInputE2ETests : E2ETestBase
                 return [standard, legacyKept];
             }
             """);
-        CollectionAssert.AreEqual(new[] { true, true }, defaults, "The Enter of a composition is left to the composition.");
+        Assert.AreSequenceEqual(new[] { true, true }, defaults, "The Enter of a composition is left to the composition.");
 
         // A real Enter after it is the first submission, and it carries the text the composition left.
         await input.FillAsync("ni hao");
@@ -290,7 +290,7 @@ public class BitAiPromptInputE2ETests : E2ETestBase
         // The menu opens above the text, where a composer at the foot of a chat has room for it.
         var menuBox = (await menu.BoundingBoxAsync())!;
         var rootBox = (await Root("pi-menu").BoundingBoxAsync())!;
-        Assert.IsTrue(menuBox.Y + menuBox.Height <= rootBox.Y + 1, "The menu sits above the composer.");
+        Assert.IsLessThanOrEqualTo(rootBox.Y + 1, menuBox.Y + menuBox.Height, "The menu sits above the composer.");
 
         await input.PressAsync("ArrowDown");
         await Expect(input).ToHaveAttributeAsync("aria-activedescendant", "pi-menu-opt-1");
@@ -1165,7 +1165,7 @@ public class BitAiPromptInputE2ETests : E2ETestBase
         await Expect(root).ToHaveCSSAsync("box-shadow", "none");
         await Input("pi-basic").FocusAsync();
         await Expect(root).Not.ToHaveCSSAsync("box-shadow", "none");
-        StringAssert.Contains(await ComputedStyleAsync("#pi-basic", "box-shadow"), "rgb", "The frame draws a ring while the focus is in it.");
+        Assert.Contains("rgb", await ComputedStyleAsync("#pi-basic", "box-shadow"), "The frame draws a ring while the focus is in it.");
 
         // A shadow of its own stays under the ring.
         await Input("pi-style").FocusAsync();
@@ -1216,14 +1216,14 @@ public class BitAiPromptInputE2ETests : E2ETestBase
 
             var input = await Input(id).RectAsync();
             var send = await Send(id).RectAsync();
-            Assert.IsTrue(send.Right <= input.Left + 1, $"#{id}: the send button is on the left of the text.");
+            Assert.IsLessThanOrEqualTo(input.Left + 1, send.Right, $"#{id}: the send button is on the left of the text.");
             await Expect(Input(id)).ToHaveCSSAsync("direction", "rtl");
         }
 
         await Expect(Send("pi-ltr").Locator("i.bit-btn-icn")).ToHaveCSSAsync("transform", "none");
         var ltrInput = await Input("pi-ltr").RectAsync();
         var ltrSend = await Send("pi-ltr").RectAsync();
-        Assert.IsTrue(ltrSend.Left >= ltrInput.Right - 1, "The send button is on the right of the text left to right.");
+        Assert.IsGreaterThanOrEqualTo(ltrInput.Right - 1, ltrSend.Left, "The send button is on the right of the text left to right.");
 
         // The menu opens from the inline start: the right edge, right to left.
         await Input("pi-rtl-menu").FillAsync("/");

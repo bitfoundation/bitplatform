@@ -32,7 +32,7 @@ public class SessionCheckTests
             var loop = Assert.ContainsSingle(f => f.RuleId == "navigation.loop", result.Findings);
             Assert.AreEqual(BevDiagnosticSeverity.Error, loop.Severity);
             Assert.IsTrue(loop.Fails);
-            StringAssert.Contains(result.ToMarkdown(), "**Failed:** 1 failing finding");
+            Assert.Contains("**Failed:** 1 failing finding", result.ToMarkdown());
         }
     }
 
@@ -43,9 +43,9 @@ public class SessionCheckTests
 
         var byDefault = BevSessionCheck.Check(json);
         Assert.IsTrue(byDefault.Failed);
-        Assert.AreEqual(3, byDefault.Findings.Count);
+        Assert.HasCount(3, byDefault.Findings);
         Assert.AreEqual(1, byDefault.DismissedFindings);
-        CollectionAssert.AreEquivalent(new[] { "render.storm", "http.per-item" }, byDefault.Findings.Where(f => f.Fails).Select(f => f.RuleId).ToArray());
+        Assert.AreSequenceEqual(new[] { "render.storm", "http.per-item" }, byDefault.Findings.Where(f => f.Fails).Select(f => f.RuleId).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
         var errorsOnly = BevSessionCheck.Check(json, new BevSessionCheckOptions { FailOn = BevDiagnosticSeverity.Error });
         Assert.IsFalse(errorsOnly.Failed, "the only error was dismissed");
@@ -57,8 +57,8 @@ public class SessionCheckTests
 
         var listOnly = BevSessionCheck.Check(json, new BevSessionCheckOptions { FailOn = null });
         Assert.IsFalse(listOnly.Failed);
-        Assert.AreEqual(3, listOnly.Findings.Count);
-        StringAssert.Contains(listOnly.ToMarkdown(), "render.storm \\| title", "a pipe in a title stays inside its cell");
+        Assert.HasCount(3, listOnly.Findings);
+        Assert.Contains("render.storm \\| title", listOnly.ToMarkdown(), "a pipe in a title stays inside its cell");
     }
 
     [TestMethod]
@@ -78,7 +78,7 @@ public class SessionCheckTests
 
             var strict = BevSessionCheck.Check(json, new BevSessionCheckOptions { FailOnErrors = true });
             Assert.IsTrue(strict.Failed);
-            StringAssert.Contains(strict.ToMarkdown(), "recorded errors");
+            Assert.Contains("recorded errors", strict.ToMarkdown());
         }
     }
 
@@ -88,7 +88,7 @@ public class SessionCheckTests
         Assert.ThrowsExactly<FormatException>(() => BevSessionCheck.Check("not json"));
         Assert.ThrowsExactly<FormatException>(() => BevSessionCheck.Check("""{"format":"something-else"}"""));
         var withoutDiagnostics = Assert.ThrowsExactly<FormatException>(() => BevSessionCheck.Check("""{"format":"bit-bevtools/1","components":{}}"""));
-        StringAssert.Contains(withoutDiagnostics.Message, "no diagnostics section");
+        Assert.Contains("no diagnostics section", withoutDiagnostics.Message);
         Assert.IsTrue(BevSessionCheck.Check(Export(Finding("x.new", "Critical"))).Failed, "a severity this version does not know is looked at, not passed");
         Assert.IsTrue(BevSessionCheck.Check(Export(Finding("x.minus", "-1"))).Failed, "a number is not a severity");
         Assert.IsTrue(BevSessionCheck.Check(Export(Finding("x.flags", "Warning, Error"))).Failed, "nor is a combination");
@@ -98,7 +98,7 @@ public class SessionCheckTests
         var partial = BevSessionCheck.Check(withoutErrors);
         Assert.IsNull(partial.Errors);
         Assert.IsNull(partial.Requests);
-        StringAssert.Contains(partial.ToMarkdown(), "errors not in the export · HTTP requests not in the export");
+        Assert.Contains("errors not in the export · HTTP requests not in the export", partial.ToMarkdown());
     }
 
     [TestMethod]
@@ -115,9 +115,9 @@ public class SessionCheckTests
         Assert.IsTrue(result.Failed);
         Assert.HasCount(3, result.Caveats);
         var markdown = result.ToMarkdown();
-        StringAssert.Contains(markdown, "Capture was paused");
-        StringAssert.Contains(markdown, "Rules disabled in this session, so they reported nothing: render.storm.");
-        StringAssert.Contains(markdown, "Diagnostics.EvaluateWhileClosed was not on");
+        Assert.Contains("Capture was paused", markdown);
+        Assert.Contains("Rules disabled in this session, so they reported nothing: render.storm.", markdown);
+        Assert.Contains("Diagnostics.EvaluateWhileClosed was not on", markdown);
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => result.ToMarkdown(-1));
 
         var (session, scope) = TestHelpers.CreateSession(o => o.Diagnostics.EvaluateWhileClosed = true);
@@ -139,7 +139,7 @@ public class SessionCheckTests
 
             var (code, output, _) = Run("check", export, "--report", report);
             Assert.AreEqual(BevToolsCli.Failed, code);
-            StringAssert.Contains(output, "render.storm");
+            Assert.Contains("render.storm", output);
             Assert.AreEqual(output, File.ReadAllText(report));
 
             Assert.AreEqual(BevToolsCli.Passed, Run("check", export, "--fail-on", "error").Code);
@@ -148,17 +148,17 @@ public class SessionCheckTests
 
             var (badLevel, _, levelError) = Run("check", export, "--fail-on", "1");
             Assert.AreEqual(BevToolsCli.Unusable, badLevel);
-            StringAssert.Contains(levelError, "--fail-on takes info, warning, error or none");
+            Assert.Contains("--fail-on takes info, warning, error or none", levelError);
             Assert.AreEqual(BevToolsCli.Unusable, Run("check", export, "--fail-on", "warning,error").Code, "a combination would be a level above every finding");
             Assert.AreEqual(BevToolsCli.Passed, Run("check", export, "--fail-on", "ERROR").Code);
 
             var (emptyReport, emptyOutput, emptyError) = Run("check", export, "--report", "");
             Assert.AreEqual(BevToolsCli.Unusable, emptyReport, "an unset $GITHUB_STEP_SUMMARY");
             Assert.AreEqual("", emptyOutput, "said before anything is checked");
-            StringAssert.Contains(emptyError, "--report needs a file path");
+            Assert.Contains("--report needs a file path", emptyError);
             var (swallowed, _, swallowedError) = Run("check", export, "--report", "--fail-on-errors");
             Assert.AreEqual(BevToolsCli.Unusable, swallowed, "an option is never another option's value");
-            StringAssert.Contains(swallowedError, "--report needs a value");
+            Assert.Contains("--report needs a value", swallowedError);
             Assert.IsFalse(File.Exists("--fail-on-errors"));
             Assert.AreEqual(BevToolsCli.Passed, Run("check", export, "--help").Code);
             Assert.AreEqual(BevToolsCli.Unusable, Run("check", export, "--frobnicate", "x").Code);
@@ -171,7 +171,7 @@ public class SessionCheckTests
             File.WriteAllText(notAnExport, "{}");
             var (unusable, _, formatError) = Run("check", notAnExport);
             Assert.AreEqual(BevToolsCli.Unusable, unusable);
-            StringAssert.Contains(formatError, "Not a BevTools session export");
+            Assert.Contains("Not a BevTools session export", formatError);
         }
         finally
         {
@@ -195,8 +195,8 @@ public class SessionCheckTests
 
             var (code, output, _) = Run("compare", baseline, current);
             Assert.AreEqual(BevToolsCli.Failed, code);
-            StringAssert.Contains(output, "ProductRow");
-            StringAssert.Contains(output, "renders +8");
+            Assert.Contains("ProductRow", output);
+            Assert.Contains("renders +8", output);
 
             Assert.AreEqual(BevToolsCli.Passed, Run("compare", baseline, current, "--render-change-ratio", "0.1").Code, "8 % is within a 10 % tolerance");
             Assert.AreEqual(BevToolsCli.Passed, Run("compare", baseline, baseline).Code);
@@ -210,11 +210,11 @@ public class SessionCheckTests
             File.WriteAllText(current, Profile(100, 10).Replace("\"maxRenderMs\":1", "\"maxRenderMs\":1,\"allocatedBytes\":307200", StringComparison.Ordinal));
             var allocated = Run("compare", baseline, current);
             Assert.AreEqual(BevToolsCli.Failed, allocated.Code);
-            StringAssert.Contains(allocated.Output, "allocated per render +1 KB (+50 %)");
+            Assert.Contains("allocated per render +1 KB (+50 %)", allocated.Output);
             Assert.AreEqual(BevToolsCli.Passed, Run("compare", baseline, current, "--allocation-change-ratio", "0.6").Code);
             Assert.AreEqual(BevToolsCli.Passed, Run("compare", baseline, current, "--min-allocation-change-bytes", "2048").Code);
             Assert.AreEqual(BevToolsCli.Unusable, Run("compare", baseline, current, "--min-allocation-change-bytes", "-1").Code);
-            StringAssert.Contains(Run("compare", baseline, current, "--format", "json").Output, "\"currentAllocatedBytes\": 307200");
+            Assert.Contains("\"currentAllocatedBytes\": 307200", Run("compare", baseline, current, "--format", "json").Output);
         }
         finally
         {

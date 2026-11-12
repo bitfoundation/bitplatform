@@ -53,7 +53,9 @@ public class HarnessMultiStoreTests
             Assert.IsTrue(failing.WatchIsLoading);
         }
 
-        await watch.WaitAsync(System.TimeSpan.FromSeconds(5));
+        await watch.WaitAsync(System.TimeSpan.FromSeconds(5), TestContext.CancellationToken);
         Assert.IsFalse(failing.WatchIsLoading);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

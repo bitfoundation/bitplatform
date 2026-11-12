@@ -1,4 +1,4 @@
-using System.Numerics;
+﻿using System.Numerics;
 
 namespace Bit.Bink.Tests;
 
@@ -159,8 +159,8 @@ public sealed class PrimitiveTests
         const string data = "M10,10 C20,0 30,0 40,10 Q50,20 60,10 L70,30 Z";
         BinkPathGeometry path = BinkSvgPathData.Parse(data);
         BinkPathGeometry again = BinkSvgPathData.Parse(path.ToSvgPathData());
-        CollectionAssert.AreEqual(path.Verbs.ToArray(), again.Verbs.ToArray());
-        CollectionAssert.AreEqual(path.Coordinates.ToArray(), again.Coordinates.ToArray());
+        Assert.AreSequenceEqual(path.Verbs.ToArray(), again.Verbs.ToArray());
+        Assert.AreSequenceEqual(path.Coordinates.ToArray(), again.Coordinates.ToArray());
     }
 
     [TestMethod]
@@ -180,12 +180,12 @@ public sealed class PrimitiveTests
         Assert.IsFalse(loadedPolyline.IsClosed);
         Assert.IsTrue(loadedPolyline.Smooth && loadedPolyline.EndArrow && !loadedPolyline.StartArrow);
         Assert.AreEqual(4f, loadedPolyline.ArrowSize);
-        CollectionAssert.AreEqual(polyline.Points.ToArray(), loadedPolyline.Points.ToArray());
+        Assert.AreSequenceEqual(polyline.Points.ToArray(), loadedPolyline.Points.ToArray());
         Assert.AreEqual(Filled, loadedPolyline.Style);
-        CollectionAssert.AreEqual(star.Points.ToArray(), ((BinkPolygonShape)loaded.GetElement(star.Id)).Points.ToArray(), new PointComparer());
+        Assert.AreSequenceEqual(star.Points.ToArray(), ((BinkPolygonShape)loaded.GetElement(star.Id)).Points.ToArray(), new PointComparer());
         var loadedPath = (BinkPathElement)loaded.GetElement(path.Id);
         Assert.AreEqual(BinkFillRule.EvenOdd, loadedPath.FillRule);
-        CollectionAssert.AreEqual(path.Path.Verbs.ToArray(), loadedPath.Path.Verbs.ToArray());
+        Assert.AreSequenceEqual(path.Path.Verbs.ToArray(), loadedPath.Path.Verbs.ToArray());
     }
 
     [TestMethod]
@@ -216,9 +216,12 @@ public sealed class PrimitiveTests
         Assert.AreEqual(255, surface.GetPixel(15, 15).R, "The corner outside the diamond stays white.");
     }
 
-    private sealed class PointComparer : System.Collections.IComparer
+    private sealed class PointComparer : IEqualityComparer<Vector2>
     {
-        public int Compare(object? x, object? y) => Vector2.Distance((Vector2)x!, (Vector2)y!) < 0.01f ? 0 : 1;
+        public bool Equals(Vector2 x, Vector2 y) => Vector2.Distance(x, y) < 0.01f;
+
+        // Approximate equality needs a consistent hash; ordered sequence comparison does not use it.
+        public int GetHashCode(Vector2 obj) => 0;
     }
 }
 
@@ -289,7 +292,7 @@ public sealed class PrimitiveToolTests
 
         Click(context, tool, 100, 100, 1000);
         tool.OnPointerMove(context, Sample(BinkPointerPhase.Hover, 180, 120, 1100));
-        Assert.AreEqual(1, tool.Points.Count);
+        Assert.ContainsSingle(tool.Points);
         Click(context, tool, 200, 100, 2000);
         Click(context, tool, 200, 200, 3000);
         Assert.AreEqual(0, context.Document.ElementCount, "Nothing is added until the polyline is finished.");
@@ -298,7 +301,7 @@ public sealed class PrimitiveToolTests
         var shape = (BinkPolygonShape)context.Document.AllElements.Single();
         Assert.IsFalse(shape.IsClosed);
         Assert.IsTrue(shape.EndArrow);
-        CollectionAssert.AreEqual(new[] { new Vector2(100, 100), new Vector2(200, 100), new Vector2(200, 200) }, shape.Points.ToArray());
+        Assert.AreSequenceEqual(new[] { new Vector2(100, 100), new Vector2(200, 100), new Vector2(200, 200) }, shape.Points.ToArray());
         Assert.AreEqual(1, context.History.UndoCount);
         Assert.IsFalse(tool.IsDrawing);
     }
@@ -327,7 +330,7 @@ public sealed class PrimitiveToolTests
         Click(context, tool, 200, 100, 2000);
         Click(context, tool, 300, 100, 3000);
         Assert.IsTrue(tool.OnKeyDown(context, new BinkToolKeyEvent("Backspace", false, false, false)));
-        Assert.AreEqual(2, tool.Points.Count);
+        Assert.HasCount(2, tool.Points);
         Assert.IsTrue(tool.OnKeyDown(context, new BinkToolKeyEvent("Enter", false, false, false)));
         Assert.HasCount(2, ((BinkPolygonShape)context.Document.AllElements.Single()).Points);
 
@@ -347,7 +350,7 @@ public sealed class PrimitiveToolTests
         tool.OnPointerDown(context, Sample(BinkPointerPhase.Down, 120, 110, 2000));
         tool.OnPointerMove(context, Sample(BinkPointerPhase.Move, 250, 160, 2016));
         tool.OnPointerUp(context, Sample(BinkPointerPhase.Up, 260, 160, 2032));
-        CollectionAssert.AreEqual(new[] { new Vector2(100, 100), new Vector2(260, 160) }, tool.Points.ToArray());
+        Assert.AreSequenceEqual(new[] { new Vector2(100, 100), new Vector2(260, 160) }, tool.Points.ToArray());
     }
 
     [TestMethod]

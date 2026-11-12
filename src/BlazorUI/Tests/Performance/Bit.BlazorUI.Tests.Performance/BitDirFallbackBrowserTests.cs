@@ -207,7 +207,7 @@ public class BitDirFallbackBrowserTests : PerformanceTestBase
 
         var (ltr, rtl) = await References();
 
-        Assert.IsTrue(await DropDirAndSettle() > 0, "No :dir() rule was found to drop.");
+        Assert.IsGreaterThan(0, await DropDirAndSettle(), "No :dir() rule was found to drop.");
 
         AssertSet(await Read("#ltr"), ltr, rtl, "ltr", "no direction");
         AssertSet(await Read("#own"), ltr, rtl, "rtl", "Dir=Rtl");
@@ -314,6 +314,6 @@ public class BitDirFallbackBrowserTests : PerformanceTestBase
             return reads == expected[probe] ? null : $"{probe} reads {reads}, expected {expected[probe]}";
         }).Where(message => message is not null).ToArray();
 
-        Assert.AreEqual(0, wrong.Length, $"{where}:\n{string.Join("\n", wrong)}");
+        Assert.IsEmpty(wrong, $"{where}:\n{string.Join("\n", wrong)}");
     }
 }

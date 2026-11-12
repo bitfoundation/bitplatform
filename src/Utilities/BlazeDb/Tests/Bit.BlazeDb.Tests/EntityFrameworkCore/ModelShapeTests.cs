@@ -2,7 +2,7 @@
 
 namespace Bit.BlazeDb.Tests.EntityFrameworkCore;
 
-public sealed class ModelShapesContext(DbContextOptions<ModelShapesContext> options) : DbContext(options)
+internal sealed class ModelShapesContext(DbContextOptions<ModelShapesContext> options) : DbContext(options)
 {
     public DbSet<Contact> Contacts => Set<Contact>();
 
@@ -45,8 +45,8 @@ public class ModelShapeTests
         {
             var engine = context.Database.GetBlazeDb().GetTable(Contact.Table);
             Assert.AreEqual("Augusta", engine.Get(1)!.Name);
-            CollectionAssert.AreEqual(new[] { 1 }, engine.Lookup(Contact.Indexes.Initial, "A").Where(c => c.Id == 1).Select(c => c.Id).ToArray());
-            Assert.AreEqual(0, context.Database.GetBlazeDb().VerifyIntegrity().Count);
+            Assert.AreSequenceEqual(new[] { 1 }, engine.Lookup(Contact.Indexes.Initial, "A").Where(c => c.Id == 1).Select(c => c.Id).ToArray());
+            Assert.IsEmpty(context.Database.GetBlazeDb().VerifyIntegrity());
             context.Database.EnsureDeleted();
         }
     }
@@ -71,7 +71,7 @@ public class ModelShapeTests
 
         using (var context = new ModelShapesContext(options))
         {
-            CollectionAssert.AreEquivalent(new[] { 1, 2, 3 }, context.Measurements.Single(m => m.Id == id).Bins.ToArray());
+            Assert.AreSequenceEqual(new[] { 1, 2, 3 }, context.Measurements.Single(m => m.Id == id).Bins.ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
             context.Database.EnsureDeleted();
         }
     }

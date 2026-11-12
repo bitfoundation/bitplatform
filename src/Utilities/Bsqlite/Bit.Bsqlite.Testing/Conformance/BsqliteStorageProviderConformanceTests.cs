@@ -286,7 +286,7 @@ public abstract class BsqliteStorageProviderConformanceTests : IAsyncDisposable
 
         await admin.ImportAsync(name, image, Ct);
 
-        CollectionAssert.AreEqual(image, await admin.ExportAsync(name, Ct));
+        Assert.AreSequenceEqual(image, await admin.ExportAsync(name, Ct));
     }
 
     /// <summary>
@@ -304,7 +304,7 @@ public abstract class BsqliteStorageProviderConformanceTests : IAsyncDisposable
         var exported = await admin.ExportAsync(name, Ct);
         exported[^1] ^= 0xFF;
 
-        CollectionAssert.AreEqual(image, await admin.ExportAsync(name, Ct));
+        Assert.AreSequenceEqual(image, await admin.ExportAsync(name, Ct));
     }
 
     /// <summary>
@@ -320,7 +320,7 @@ public abstract class BsqliteStorageProviderConformanceTests : IAsyncDisposable
 
         await admin.ImportAsync(name, image, Ct);
 
-        CollectionAssert.AreEqual(image, await admin.ExportAsync(name, Ct));
+        Assert.AreSequenceEqual(image, await admin.ExportAsync(name, Ct));
     }
 
     /// <summary>
@@ -353,7 +353,7 @@ public abstract class BsqliteStorageProviderConformanceTests : IAsyncDisposable
         var replacement = Image(4096, seed: 6);
         await admin.ImportAsync(name, replacement, Ct);
 
-        CollectionAssert.AreEqual(replacement, await admin.ExportAsync(name, Ct));
+        Assert.AreSequenceEqual(replacement, await admin.ExportAsync(name, Ct));
     }
 
     [TestMethod]
@@ -402,7 +402,7 @@ public abstract class BsqliteStorageProviderConformanceTests : IAsyncDisposable
         await admin.ImportAsync(second, secondImage, Ct);
         await admin.DeleteAsync(second, Ct);
 
-        CollectionAssert.AreEqual(firstImage, await admin.ExportAsync(first, Ct));
+        Assert.AreSequenceEqual(firstImage, await admin.ExportAsync(first, Ct));
     }
 
     [TestMethod]

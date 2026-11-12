@@ -1,10 +1,6 @@
 namespace Boilerplate.Tests.E2E.Infrastructure;
 
-/// <summary>
-/// Which API a <see cref="DeployedApiClientProvider.CreateApiClientFor"/> aims its http clients at, and the origin they send as
-/// <c>X-Origin</c> so server-generated links point at the matching app.
-/// </summary>
-public sealed class DeployedApi
+internal sealed class DeployedApi
 {
     public Uri ApiAddress { get; set; } = new(DeployedApps.AdminPanelApi);
 

@@ -26,8 +26,8 @@ public class BitSpacerParamsTests : BunitTestContext
     [TestMethod]
     public void BitSpacerParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitSpacer)}", BitSpacerParams.ParamName);
-        Assert.AreEqual("BitParams.BitSpacer", BitSpacerParams.ParamName);
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitSpacer)}", new BitSpacerParams().Name);
+        Assert.AreEqual("BitParams.BitSpacer", new BitSpacerParams().Name);
     }
 
     [TestMethod]
@@ -51,7 +51,7 @@ public class BitSpacerParamsTests : BunitTestContext
                                           .ToArray();
 
         // Guards the guard: a reflection walk that found nothing would let every parameter through in silence.
-        Assert.IsTrue(parameters.Length >= 8, $"Only {parameters.Length} parameters were found on {nameof(BitSpacer)}.");
+        Assert.IsGreaterThanOrEqualTo(8, parameters.Length, $"Only {parameters.Length} parameters were found on {nameof(BitSpacer)}.");
 
         foreach (var name in parameters)
         {
@@ -95,8 +95,8 @@ public class BitSpacerParamsTests : BunitTestContext
 
         // Its own width and element stand, while the cascaded height it left alone still reaches it.
         Assert.AreEqual("LI", spacer.TagName);
-        StringAssert.Contains(spacer.GetAttribute("style")!, "margin-inline-start:30px");
-        StringAssert.Contains(spacer.GetAttribute("style")!, "margin-block-start:20px");
+        Assert.Contains("margin-inline-start:30px", spacer.GetAttribute("style")!);
+        Assert.Contains("margin-block-start:20px", spacer.GetAttribute("style")!);
     }
 
     // Gives every property of the params object a value of its own type, and hands back what each of them was given
@@ -117,7 +117,7 @@ public class BitSpacerParamsTests : BunitTestContext
         }
 
         // Guards the guard: a reflection walk that found nothing would let every parameter through in silence.
-        Assert.IsTrue(expected.Count >= 8, $"Only {expected.Count} cascading parameters were found on {nameof(BitSpacerParams)}.");
+        Assert.IsGreaterThanOrEqualTo(8, expected.Count, $"Only {expected.Count} cascading parameters were found on {nameof(BitSpacerParams)}.");
 
         return expected;
     }

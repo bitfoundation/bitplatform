@@ -15,15 +15,15 @@ public class BitNavOptionsOrderTests : BunitTestContext
     {
         var component = RenderComponent<BitNavOptionsOrderTest>(parameters => parameters.Add(p => p.ShowMiddle, false));
 
-        CollectionAssert.AreEqual(new[] { "First", "Child1", "Child2", "Last" }, GetItemTexts(component));
+        Assert.AreSequenceEqual(new[] { "First", "Child1", "Child2", "Last" }, GetItemTexts(component));
 
         component.Render(parameters => parameters.Add(p => p.ShowMiddle, true));
 
-        CollectionAssert.AreEqual(new[] { "First", "Child1", "ChildMiddle", "Child2", "Middle", "Last" }, GetItemTexts(component));
+        Assert.AreSequenceEqual(new[] { "First", "Child1", "ChildMiddle", "Child2", "Middle", "Last" }, GetItemTexts(component));
 
         component.Render(parameters => parameters.Add(p => p.ShowMiddle, false));
 
-        CollectionAssert.AreEqual(new[] { "First", "Child1", "Child2", "Last" }, GetItemTexts(component));
+        Assert.AreSequenceEqual(new[] { "First", "Child1", "Child2", "Last" }, GetItemTexts(component));
     }
 
     [TestMethod]
@@ -37,11 +37,11 @@ public class BitNavOptionsOrderTests : BunitTestContext
             p.Add(c => c.AutoReorderOptions, true);
         });
 
-        Assert.AreEqual(6, withReorder.FindAll("[data-bit-nav-opt]").Count);
+        Assert.HasCount(6, withReorder.FindAll("[data-bit-nav-opt]"));
 
         var withoutReorder = RenderComponent<BitNavOptionsOrderTest>(p => p.Add(c => c.ShowMiddle, true));
 
-        Assert.AreEqual(0, withoutReorder.FindAll("[data-bit-nav-opt]").Count);
+        Assert.IsEmpty(withoutReorder.FindAll("[data-bit-nav-opt]"));
     }
 
     [TestMethod]
@@ -76,7 +76,7 @@ public class BitNavOptionsOrderTests : BunitTestContext
                                   .Select(e => e.GetAttribute("data-bit-nav-opt")!)
                                   .ToArray();
 
-        Assert.AreEqual(6, orderedIds.Length);
+        Assert.HasCount(6, orderedIds);
 
         Context.JSInterop.Setup<string[]>("BitBlazorUI.Utils.getChildrenAttributes", _ => true).SetResult(orderedIds);
 
@@ -114,7 +114,7 @@ public class BitNavOptionsOrderTests : BunitTestContext
         component.Render(p => p.Add(c => c.ShowMiddle, true));
         Remember(component);
 
-        CollectionAssert.AreEqual(new[] { "First", "Child1", "ChildMiddle", "Child2", "Middle", "Last" }, GetItemTexts(component));
+        Assert.AreSequenceEqual(new[] { "First", "Child1", "ChildMiddle", "Child2", "Middle", "Last" }, GetItemTexts(component));
 
         // First, Child1 and ChildMiddle were reported, so ChildMiddle moved ahead of Child2; the roots that were
         // not reported keep the order they registered in.
@@ -147,7 +147,7 @@ public class BitNavOptionsOrderTests : BunitTestContext
         });
 
         Assert.IsTrue(component.FindComponent<BitNav<BitNavOption>>().Instance.AutoReorderOptions);
-        Assert.AreEqual(2, component.FindAll("[data-bit-nav-opt]").Count);
+        Assert.HasCount(2, component.FindAll("[data-bit-nav-opt]"));
     }
 
     private static void PressKeyOn(IRenderedComponent<BitNavOptionsOrderTest> component, string text, string key)
@@ -166,7 +166,7 @@ public class BitNavOptionsOrderTests : BunitTestContext
                                        .Select(i => _elementTexts.GetValueOrDefault(((ElementReference)i.Arguments[0]!).Id))
                                        .ToArray();
 
-        CollectionAssert.AreEqual(texts, focused);
+        Assert.AreSequenceEqual(texts, focused);
     }
 
     // The element reference each item rendered, by its text. bUnit writes the id of a captured reference into the

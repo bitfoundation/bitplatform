@@ -31,10 +31,10 @@ public class BitThemeSwitcherE2ETests : E2ETestBase
         var html = await response.TextAsync();
 
         Assert.IsTrue(response.Ok);
-        StringAssert.Contains(html, "id=\"ths-basic\"");
-        StringAssert.Contains(html, "class=\"bit-ths\"");
-        StringAssert.Contains(html, "Turn off light");
-        StringAssert.Contains(html, "<span id=\"status\">Loading</span>");
+        Assert.Contains("id=\"ths-basic\"", html);
+        Assert.Contains("class=\"bit-ths\"", html);
+        Assert.Contains("Turn off light", html);
+        Assert.Contains("<span id=\"status\">Loading</span>", html);
 
         await OpenAsync(Route);
 
@@ -150,7 +150,7 @@ public class BitThemeSwitcherE2ETests : E2ETestBase
         // Material dresses its buttons as pills where Fluent keeps the control corner.
         var materialRadius = await ComputedStyleAsync("#probe-button", "border-top-left-radius");
         Assert.AreNotEqual(fluentRadius, materialRadius);
-        Assert.IsTrue(ParsePx(materialRadius) > ParsePx(fluentRadius), $"{materialRadius} should round more than {fluentRadius}");
+        Assert.IsGreaterThan(ParsePx(fluentRadius), ParsePx(materialRadius), $"{materialRadius} should round more than {fluentRadius}");
 
         await PickDesignSystemAsync("ths-basic", "Fluent");
 
@@ -420,7 +420,7 @@ public class BitThemeSwitcherE2ETests : E2ETestBase
         }
 
         await Expect(root.Locator(".bit-ths-lgt")).ToHaveCSSAsync("cursor", "default");
-        Assert.IsTrue(double.Parse(await ComputedStyleAsync("#ths-disabled .bit-ths-lgt", "opacity"), System.Globalization.CultureInfo.InvariantCulture) < 1);
+        Assert.IsLessThan(1, double.Parse(await ComputedStyleAsync("#ths-disabled .bit-ths-lgt", "opacity"), System.Globalization.CultureInfo.InvariantCulture));
         await Expect(root.Locator(".bit-drp")).ToHaveClassAsync(HasClass("bit-dis"));
 
         // A real click on the disabled toggle, and a click delivered to the root, run nothing of the page's.
@@ -466,7 +466,7 @@ public class BitThemeSwitcherE2ETests : E2ETestBase
         await Expect(Page.Locator("#ths-hidden")).ToBeHiddenAsync();
         var box = await Page.Locator("#ths-hidden").BoundingBoxAsync();
         Assert.IsNotNull(box);
-        Assert.IsTrue(box.Height > 0);
+        Assert.IsGreaterThan(0, box.Height);
 
         await Expect(Page.Locator("#ths-collapsed")).ToHaveCSSAsync("display", "none");
         Assert.IsNull(await Page.Locator("#ths-collapsed").BoundingBoxAsync());
@@ -557,8 +557,9 @@ public class BitThemeSwitcherE2ETests : E2ETestBase
         Assert.AreEqual("material-dark", await Page.EvaluateAsync<string>("() => localStorage.getItem('bit-current-theme')"));
 
         var cookies = await Page.Context.CookiesAsync();
-        Assert.AreEqual("material-dark", cookies.FirstOrDefault(c => c.Name == "bit-theme-preference")?.Value);
-        Assert.IsTrue(cookies.Any(c => c.Name == "bit-theme-pair"), "The pair cookie was not written.");
+        var actualValue = cookies.FirstOrDefault(c => c.Name == "bit-theme-preference")?.Value;
+        Assert.AreEqual("material-dark", actualValue);
+        Assert.Contains(c => c.Name == "bit-theme-pair", cookies, "The pair cookie was not written.");
 
         await ReloadAsync();
 

@@ -34,8 +34,8 @@ public class BitOverlayParamsTests : BunitTestContext
     [TestMethod]
     public void BitOverlayParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitOverlay)}", BitOverlayParams.ParamName);
-        Assert.AreEqual("BitParams.BitOverlay", BitOverlayParams.ParamName);
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitOverlay)}", new BitOverlayParams().Name);
+        Assert.AreEqual("BitParams.BitOverlay", new BitOverlayParams().Name);
     }
 
     [TestMethod]
@@ -99,7 +99,7 @@ public class BitOverlayParamsTests : BunitTestContext
 
         var overlays = component.FindAll(".bit-ovl");
 
-        Assert.AreEqual(2, overlays.Count);
+        Assert.HasCount(2, overlays);
 
         // The first Overlay takes everything from the cascading parameters.
         var first = overlays[0];
@@ -107,7 +107,7 @@ public class BitOverlayParamsTests : BunitTestContext
         {
             Assert.IsTrue(first.ClassList.Contains(cls), cls);
         }
-        StringAssert.Contains(first.GetAttribute("style"), "z-index:7");
+        Assert.Contains("z-index:7", first.GetAttribute("style")!);
 
         // The second one sets its own position, z-index and class, which the cascade must not overwrite.
         var second = overlays[1];
@@ -116,7 +116,7 @@ public class BitOverlayParamsTests : BunitTestContext
         Assert.IsTrue(second.ClassList.Contains("second"));
         Assert.IsFalse(second.ClassList.Contains("cascaded"));
         Assert.IsTrue(second.ClassList.Contains("bit-ovl-mfl"));
-        StringAssert.Contains(second.GetAttribute("style"), "z-index:9");
+        Assert.Contains("z-index:9", second.GetAttribute("style")!);
     }
 
     [TestMethod,
@@ -169,7 +169,7 @@ public class BitOverlayParamsTests : BunitTestContext
         {
             var invocation = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"][0];
             Assert.AreEqual(".app-scroller", invocation.Arguments[1]);
-            Assert.AreEqual(true, invocation.Arguments[2]);
+            Assert.IsTrue(Assert.IsInstanceOfType<bool>(invocation.Arguments[2]));
         });
     }
 

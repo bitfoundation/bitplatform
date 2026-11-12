@@ -64,8 +64,8 @@ public partial class McpOracleTests
                 Assert.AreEqual(ranked[i].Command.Title, byOrder[i].Title, $"{context}, place {i + 1}");
                 Assert.AreEqual(ranked[i].Score, byOrder[i].Score!.Value, 0.001, $"{context}: score of '{byOrder[i].Title}'");
                 Assert.AreEqual(ranked[i].Rank, byOrder[i].Rank!.Value, 0.001, $"{context}: rank of '{byOrder[i].Title}'");
-                CollectionAssert.AreEqual(ranked[i].TitlePositions, byOrder[i].TitlePositions ?? [], $"{context}: title positions of '{byOrder[i].Title}'");
-                CollectionAssert.AreEqual(ranked[i].SubtitlePositions, byOrder[i].SubtitlePositions ?? [], $"{context}: subtitle positions of '{byOrder[i].Title}'");
+                Assert.AreSequenceEqual(ranked[i].TitlePositions, byOrder[i].TitlePositions ?? [], $"{context}: title positions of '{byOrder[i].Title}'");
+                Assert.AreSequenceEqual(ranked[i].SubtitlePositions, byOrder[i].SubtitlePositions ?? [], $"{context}: subtitle positions of '{byOrder[i].Title}'");
                 Assert.AreEqual(ranked[i].MatchedKeyword, byOrder[i].MatchedKeyword, context);
             }
 
@@ -83,10 +83,10 @@ public partial class McpOracleTests
         var state = new DemoState(new NoBrowser());
         var roots = DemoCommands.Global(state).Where(command => command.Parent is null).Select(command => command.Id).ToArray();
 
-        CollectionAssert.AreEquivalent(roots, BaletteSearchLab.DemoRegistry.Select(command => command.Id).ToArray());
+        Assert.AreSequenceEqual(roots, BaletteSearchLab.DemoRegistry.Select(command => command.Id).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
         // Nested pages are flattened into the registry with a parent, so none of their children is a root candidate.
-        Assert.IsFalse(BaletteSearchLab.DemoRegistry.Any(command => command.Id.StartsWith("theme:", StringComparison.Ordinal)));
+        Assert.DoesNotContain(command => command.Id.StartsWith("theme:", StringComparison.Ordinal), BaletteSearchLab.DemoRegistry);
         Assert.IsGreaterThan(0, BaletteSearchLab.DemoOptions.Modes.Count, "The demo's own options, modes included, should be the ones the lab uses.");
     }
 
@@ -99,7 +99,7 @@ public partial class McpOracleTests
         var declared = DeclarationRegex().Matches(root).Select(match => match.Groups["name"].Value).ToArray();
 
         Assert.IsGreaterThan(20, declared.Length);
-        CollectionAssert.AreEqual(declared, BaletteThemeCatalog.Variables.Select(variable => variable.Name).ToArray());
+        Assert.AreSequenceEqual(declared, BaletteThemeCatalog.Variables.Select(variable => variable.Name).ToArray());
     }
 
     [TestMethod]
@@ -113,7 +113,7 @@ public partial class McpOracleTests
         var system = Declarations(RuleBody(":root:not([data-theme=\"light\"]) {"));
         var forcedLight = Declarations(RuleBody("dialog[data-balette=\"dialog\"][data-theme=\"light\"] {"));
 
-        CollectionAssert.AreEquivalent(dark.ToArray(), system.ToArray(), "The prefers-color-scheme block and the data-theme=\"dark\" block differ.");
+        Assert.AreSequenceEqual(dark.ToArray(), system.ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, "The prefers-color-scheme block and the data-theme=\"dark\" block differ.");
 
         foreach (var (name, value) in forcedLight)
         {
@@ -142,7 +142,7 @@ public partial class McpOracleTests
         var catalogued = BaletteThemeCatalog.Hooks.Select(hook => hook.Value).ToArray();
 
         Assert.IsGreaterThan(15, rendered.Length);
-        CollectionAssert.AreEquivalent(rendered, catalogued);
+        Assert.AreSequenceEqual(rendered, catalogued, Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
         // The guide's own list of hooks, in its "Unstyled" section, may leave some out - it may not name one
         // the palette does not render.
@@ -152,7 +152,7 @@ public partial class McpOracleTests
 
         foreach (var hook in GuideHookRegex().Matches(list).Select(match => match.Groups["value"].Value))
         {
-            CollectionAssert.Contains(catalogued, hook, $"The guide names the hook '{hook}', which no shipped component renders.");
+            Assert.Contains(hook, catalogued, $"The guide names the hook '{hook}', which no shipped component renders.");
         }
     }
 
@@ -166,7 +166,7 @@ public partial class McpOracleTests
 
         var indexed = BaletteApiCatalog.Types.Select(type => type.Name).ToHashSet(StringComparer.Ordinal);
 
-        CollectionAssert.AreEquivalent(exported.ToArray(), indexed.ToArray());
+        Assert.AreSequenceEqual(exported.ToArray(), indexed.ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -212,7 +212,7 @@ public partial class McpOracleTests
             if (fenced is false && HeadingRegex().Match(line) is { Success: true } match) headings.Add(match.Groups["text"].Value.Trim());
         }
 
-        CollectionAssert.AreEqual(headings, BaletteSourceCatalog.GuideSections.Select(section => section.Heading).ToArray());
+        Assert.AreSequenceEqual(headings, BaletteSourceCatalog.GuideSections.Select(section => section.Heading).ToArray());
         Assert.HasCount(BaletteSourceCatalog.GuideSections.Length, BaletteSourceCatalog.GuideSections.Select(section => section.Key).Distinct(StringComparer.Ordinal), "Every section needs a key of its own.");
     }
 
@@ -232,16 +232,15 @@ public partial class McpOracleTests
             ("GetBaletteSourceFile", "?path=Demo/Client/Services/DemoCommands.cs", new() { ["path"] = "Demo/Client/Services/DemoCommands.cs" }),
         ];
 
-        CollectionAssert.AreEquivalent(McpSurfaceTests.ExpectedTools, calls.Select(call => call.Tool).ToArray(),
-            "The HTTP mirror is being exercised for a different set of tools than the server publishes.");
+        Assert.AreSequenceEqual(McpSurfaceTests.ExpectedTools, calls.Select(call => call.Tool).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, "The HTTP mirror is being exercised for a different set of tools than the server publishes.");
 
         foreach (var (tool, query, arguments) in calls)
         {
-            using var response = await http.GetAsync($"/api/mcp/{tool}{query}");
+            using var response = await http.GetAsync($"/api/mcp/{tool}{query}", TestContext.CancellationToken);
 
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, tool);
 
-            var body = await response.Content.ReadAsStringAsync();
+            var body = await response.Content.ReadAsStringAsync(TestContext.CancellationToken);
 
             if (tool is "SearchBalette" or "InspectBaletteSearch")
             {
@@ -258,11 +257,11 @@ public partial class McpOracleTests
     {
         using var http = McpTestHost.CreateHttpClient();
 
-        var overHttp = JsonSerializer.Deserialize<BaletteSearchInspectionDto>(await http.GetStringAsync("/api/mcp/InspectBaletteSearch?query=rc"), new JsonSerializerOptions(JsonSerializerDefaults.Web))!;
+        var overHttp = JsonSerializer.Deserialize<BaletteSearchInspectionDto>(await http.GetStringAsync("/api/mcp/InspectBaletteSearch?query=rc", TestContext.CancellationToken), new JsonSerializerOptions(JsonSerializerDefaults.Web))!;
         var overMcp = await McpSearchLabTests.InspectAsync("rc");
 
-        CollectionAssert.AreEqual(overMcp.Results.Select(result => result.Id).ToArray(), overHttp.Results.Select(result => result.Id).ToArray());
-        CollectionAssert.AreEqual(overMcp.Notes, overHttp.Notes);
+        Assert.AreSequenceEqual(overMcp.Results.Select(result => result.Id).ToArray(), overHttp.Results.Select(result => result.Id).ToArray());
+        Assert.AreSequenceEqual(overMcp.Notes, overHttp.Notes);
     }
 
     [TestMethod]
@@ -274,7 +273,7 @@ public partial class McpOracleTests
         var page = FindDemoFile("Client", "Pages", "McpServer.razor");
         if (page is null) Assert.Inconclusive("The demo's McpServer.razor is not next to this build.");
 
-        var markup = await File.ReadAllTextAsync(page);
+        var markup = await File.ReadAllTextAsync(page, TestContext.CancellationToken);
 
         foreach (var tool in McpSurfaceTests.ExpectedTools) Assert.Contains($"<code>{tool}</code>", markup, tool);
         foreach (var prompt in new[] { "add-balette-to-app", "implement-balette-feature", "debug-balette-palette" }) Assert.Contains(prompt, markup, prompt);
@@ -287,11 +286,11 @@ public partial class McpOracleTests
 
         foreach (var link in links)
         {
-            using var response = await http.GetAsync(link);
+            using var response = await http.GetAsync(link, TestContext.CancellationToken);
 
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, link);
 
-            var body = await response.Content.ReadAsStringAsync();
+            var body = await response.Content.ReadAsStringAsync(TestContext.CancellationToken);
 
             Assert.DoesNotContain("has no public type called", body, link);
             Assert.DoesNotContain("No source file at", body, link);
@@ -369,4 +368,6 @@ public partial class McpOracleTests
 
     [GeneratedRegex(@"href=""(?<href>/api/mcp/[^""]+)""")]
     private static partial Regex PageLinkRegex();
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

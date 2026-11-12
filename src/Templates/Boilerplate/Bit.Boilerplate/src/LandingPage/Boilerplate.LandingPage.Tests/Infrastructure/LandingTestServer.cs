@@ -3,7 +3,7 @@ using Boilerplate.LandingPage.Server;
 
 namespace Boilerplate.LandingPage.Tests.Infrastructure;
 
-public sealed class LandingTestServer : IAsyncDisposable
+internal sealed class LandingTestServer : IAsyncDisposable
 {
     private WebApplication? app;
 

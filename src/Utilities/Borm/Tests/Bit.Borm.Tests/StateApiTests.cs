@@ -203,7 +203,7 @@ public class SingleErrorPerFieldTests
 
         await state.ValidateAsync();
 
-        Assert.IsTrue(state.MessagesFor("password").Count > 1);
+        Assert.IsGreaterThan(1, state.MessagesFor("password").Count);
     }
 
     [TestMethod]

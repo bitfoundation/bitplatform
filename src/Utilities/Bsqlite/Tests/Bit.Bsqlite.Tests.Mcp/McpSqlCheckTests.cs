@@ -17,14 +17,14 @@ public class McpSqlCheckTests
     {
         var check = await CheckAsync(null);
 
-        CollectionAssert.AreEqual(BsqliteStorageCatalog.GuardedStatements, check.Statements.Select(statement => statement.Sql).ToArray());
+        Assert.AreSequenceEqual(BsqliteStorageCatalog.GuardedStatements, check.Statements.Select(statement => statement.Sql).ToArray());
 
         foreach (var statement in check.Statements)
         {
-            CollectionAssert.AreEquivalent(new[] { "opfs", "indexeddb", "cache-storage", "in-memory", "file-system" }, statement.Backends.Select(verdict => verdict.Name).ToArray());
+            Assert.AreSequenceEqual(new[] { "opfs", "indexeddb", "cache-storage", "in-memory", "file-system" }, statement.Backends.Select(verdict => verdict.Name).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         }
 
-        Assert.IsTrue(check.Notes.Any(note => note.Contains("Pass sql", StringComparison.Ordinal)));
+        Assert.Contains(note => note.Contains("Pass sql", StringComparison.Ordinal), check.Notes);
     }
 
     [TestMethod]
@@ -67,10 +67,10 @@ public class McpSqlCheckTests
         var statement = check.Statements.Single();
 
         Assert.IsTrue(statement.Backends.All(verdict => verdict.Accepted));
-        CollectionAssert.AreEquivalent(new[] { "Customers", "Orders" }, statement.Tables);
+        Assert.AreSequenceEqual(new[] { "Customers", "Orders" }, statement.Tables, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         Assert.IsFalse(statement.LooksLikeWrite);
         Assert.IsFalse(statement.LooksLikeSchemaChange);
-        Assert.IsTrue(check.Notes.Any(note => note.Contains("re-runs when", StringComparison.Ordinal)));
+        Assert.Contains(note => note.Contains("re-runs when", StringComparison.Ordinal), check.Notes);
     }
 
     [TestMethod]
@@ -82,7 +82,7 @@ public class McpSqlCheckTests
         Assert.IsTrue(write.LooksLikeWrite);
         Assert.IsFalse(write.LooksLikeSchemaChange);
         Assert.IsTrue(ddl.LooksLikeSchemaChange);
-        CollectionAssert.Contains(ddl.Tables, "Products");
+        Assert.Contains("Products", ddl.Tables);
     }
 
     [TestMethod]

@@ -49,7 +49,7 @@ public partial class AndroidThemeAndAccentTests : ThemeAndAccentTestsBase
 
         // Android's WebView writes localStorage to disk lazily; a force-stop within a second of the write loses it,
         // which is not what a user closing the app does.
-        await Task.Delay(TimeSpan.FromSeconds(5));
+        await Task.Delay(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
 
         var (restarted, stop) = await Playwright.LaunchAndroidApp(DeployedApps.AndroidAppIdOf(app)!, clearAppData: false);
         RegisterForCleanup(stop);

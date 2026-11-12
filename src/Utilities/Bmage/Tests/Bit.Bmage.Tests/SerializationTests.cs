@@ -197,7 +197,7 @@ public sealed class SerializationTests
             .Select(type => type.Name)
             .ToArray();
 
-        Assert.AreEqual(0, missing.Length, $"These types cannot be serialised: {string.Join(", ", missing)}.");
+        Assert.IsEmpty(missing, $"These types cannot be serialised: {string.Join(", ", missing)}.");
     }
 
     [TestMethod]
@@ -232,7 +232,7 @@ public sealed class SerializationTests
         var back = BmageJson.DeserializePipeline(json);
 
         Assert.AreEqual(pipeline.ToString(), back.ToString());
-        StringAssert.Contains(json, "\"format\":\"bmage-pipeline\"");
+        Assert.Contains("\"format\":\"bmage-pipeline\"", json);
     }
 
     [TestMethod]
@@ -245,7 +245,7 @@ public sealed class SerializationTests
         Assert.AreEqual("crop", first.GetProperty("type").GetString());
         Assert.AreEqual(30, first.GetProperty("rectangle")[2].GetInt32());
         Assert.AreEqual(0.5f, parsed.RootElement.GetProperty("operations")[1].GetProperty("amount").GetSingle());
-        StringAssert.Contains(json, "\n");
+        Assert.Contains("\n", json);
     }
 
     [TestMethod]
@@ -255,7 +255,7 @@ public sealed class SerializationTests
 
         Assert.ThrowsExactly<NotSupportedException>(() => BmageJson.SerializeObject(annotation));
         var json = BmageJson.SerializeObject(annotation, WithImages());
-        StringAssert.Contains(json, "\"image\":\"stamp\"");
+        Assert.Contains("\"image\":\"stamp\"", json);
         Assert.ThrowsExactly<ImageDocumentFormatException>(() => BmageJson.DeserializeObject<Annotation>(json));
         Assert.ThrowsExactly<ImageDocumentFormatException>(() => BmageJson.DeserializeObject<Annotation>(json, new BmageJsonOptions { ImageResolver = _ => null }));
     }
@@ -275,7 +275,7 @@ public sealed class SerializationTests
         static void AssertRejected(string json, string expected)
         {
             var ex = Assert.ThrowsExactly<ImageDocumentFormatException>(() => BmageJson.DeserializeDocument(json));
-            StringAssert.Contains(ex.Message, expected);
+            Assert.Contains(expected, ex.Message);
         }
     }
 

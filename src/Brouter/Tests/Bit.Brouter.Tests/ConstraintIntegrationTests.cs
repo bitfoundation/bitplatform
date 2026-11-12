@@ -40,6 +40,6 @@ public class ConstraintIntegrationTests : BunitTestContext
 
         var cut = RenderComponent<ConstraintHost>();
 
-        cut.WaitForAssertion(() => Assert.AreEqual(0, cut.FindAll("[data-testid=post]").Count));
+        cut.WaitForAssertion(() => Assert.IsEmpty(cut.FindAll("[data-testid=post]")));
     }
 }

@@ -87,7 +87,7 @@ public class VisitedStepNavigationTests : ComponentTestBase
         var links = cut.FindAll("button.bit-borm-stepper__link");
 
         // Two links: the steps either side of the one being shown, both already walked past.
-        Assert.AreEqual(2, links.Count);
+        Assert.HasCount(2, links);
 
         links[1].Click();
         Assert.AreEqual(2, state.CurrentStepIndex);

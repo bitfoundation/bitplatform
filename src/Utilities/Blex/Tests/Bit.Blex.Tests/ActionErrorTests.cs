@@ -169,7 +169,7 @@ public class ActionErrorTests
         Assert.ThrowsExactly<InvalidOperationException>(store.Boom);
         Assert.ThrowsExactly<InvalidOperationException>(store.Boom);
 
-        Assert.AreEqual(2, middleware.Errors.Count);
+        Assert.HasCount(2, middleware.Errors);
     }
 
     [TestMethod]

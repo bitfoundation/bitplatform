@@ -18,21 +18,21 @@ public class RouteLifecycleTests : BunitTestContext
         var (cut, brouter) = RenderAt<KeepAliveHost>("http://localhost/tl");
         var log = cut.Instance.ProbeLog;
 
-        cut.WaitForAssertion(() => CollectionAssert.Contains(log, "activated:first=True"));
+        cut.WaitForAssertion(() => Assert.Contains("activated:first=True", log));
 
         await cut.InvokeAsync(() => brouter.Navigate("/other"));
         cut.WaitForAssertion(() =>
         {
             // The content was unmounted - but the deactivation (with the Disposing reason) reached
             // the component before teardown, which plain IDisposable can't express.
-            Assert.AreEqual(0, cut.FindAll("[data-testid=probe]").Count);
-            CollectionAssert.Contains(log, "deactivated:Disposing");
+            Assert.IsEmpty(cut.FindAll("[data-testid=probe]"));
+            Assert.Contains("deactivated:Disposing", log);
         });
 
         // Returning creates a fresh instance and a fresh session: first activation again.
         await cut.InvokeAsync(() => brouter.Navigate("/tl"));
         cut.WaitForAssertion(() =>
-            Assert.AreEqual(2, log.FindAll(e => e == "activated:first=True").Count));
+            Assert.HasCount(2, log.FindAll(e => e == "activated:first=True")));
     }
 
     [TestMethod]
@@ -40,7 +40,7 @@ public class RouteLifecycleTests : BunitTestContext
     {
         var (cut, brouter) = RenderAt<KeepAliveHost>("http://localhost/ren/1");
         cut.WaitForAssertion(() =>
-            StringAssert.Contains(cut.Find("[data-testid=lifecycle]").TextContent, "activated:1"));
+            Assert.Contains("activated:1", cut.Find("[data-testid=lifecycle]").TextContent));
 
         await cut.InvokeAsync(() => brouter.Navigate("/ren/2"));
         cut.WaitForAssertion(() =>
@@ -48,9 +48,9 @@ public class RouteLifecycleTests : BunitTestContext
             var el = cut.Find("[data-testid=lifecycle]");
             // Same instance re-bound: no new activation, a renavigation instead - the discrete
             // "the user arrived here again" signal OnInitialized misses on instance reuse.
-            StringAssert.Contains(el.TextContent, "activated:1");
-            StringAssert.Contains(el.TextContent, "renavigations:1");
-            StringAssert.Contains(el.TextContent, "deactivations:0");
+            Assert.Contains("activated:1", el.TextContent);
+            Assert.Contains("renavigations:1", el.TextContent);
+            Assert.Contains("deactivations:0", el.TextContent);
         });
     }
 
@@ -59,7 +59,7 @@ public class RouteLifecycleTests : BunitTestContext
     {
         var (cut, brouter) = RenderAt<KeepAliveHost>("http://localhost/ppl/1");
         cut.WaitForAssertion(() =>
-            StringAssert.Contains(cut.Find("[data-testid=lifecycle]").TextContent, "activated:1"));
+            Assert.Contains("activated:1", cut.Find("[data-testid=lifecycle]").TextContent));
 
         await cut.InvokeAsync(() => brouter.Navigate("/ppl/2"));
         cut.WaitForAssertion(() =>
@@ -68,13 +68,13 @@ public class RouteLifecycleTests : BunitTestContext
             // hides instance 1 (Hidden deactivation) and first-activates instance 2 - never a
             // renavigation.
             var hidden = cut.Find("div[hidden] [data-testid=lifecycle]");
-            StringAssert.Contains(hidden.TextContent, "deactivations:1");
-            StringAssert.Contains(hidden.TextContent, "reasons:Hidden");
-            StringAssert.Contains(hidden.TextContent, "renavigations:0");
+            Assert.Contains("deactivations:1", hidden.TextContent);
+            Assert.Contains("reasons:Hidden", hidden.TextContent);
+            Assert.Contains("renavigations:0", hidden.TextContent);
 
             var visible = cut.FindAll("[data-testid=lifecycle]").Single(e => e.TextContent.Contains("active:True"));
-            StringAssert.Contains(visible.TextContent, "activated:1");
-            StringAssert.Contains(visible.TextContent, "first:1");
+            Assert.Contains("activated:1", visible.TextContent);
+            Assert.Contains("first:1", visible.TextContent);
         });
 
         await cut.InvokeAsync(() => brouter.Navigate("/ppl/1"));
@@ -82,9 +82,9 @@ public class RouteLifecycleTests : BunitTestContext
         {
             // Instance 1 resumes: a repeat activation (not flagged first), still no renavigation.
             var visible = cut.FindAll("[data-testid=lifecycle]").Single(e => e.TextContent.Contains("active:True"));
-            StringAssert.Contains(visible.TextContent, "activated:2");
-            StringAssert.Contains(visible.TextContent, "first:1");
-            StringAssert.Contains(visible.TextContent, "renavigations:0");
+            Assert.Contains("activated:2", visible.TextContent);
+            Assert.Contains("first:1", visible.TextContent);
+            Assert.Contains("renavigations:0", visible.TextContent);
         });
     }
 
@@ -93,15 +93,15 @@ public class RouteLifecycleTests : BunitTestContext
     {
         var (cut, brouter) = RenderAt<KeepAliveHost>("http://localhost/page");
         cut.WaitForAssertion(() =>
-            StringAssert.Contains(cut.Find("[data-testid=lifecyclepage]").TextContent, "activations:1"));
+            Assert.Contains("activations:1", cut.Find("[data-testid=lifecyclepage]").TextContent));
 
         // A query-only navigation re-commits the same route/instance: renavigation.
         await cut.InvokeAsync(() => brouter.Navigate("/page?tab=2"));
         cut.WaitForAssertion(() =>
         {
             var el = cut.Find("[data-testid=lifecyclepage]");
-            StringAssert.Contains(el.TextContent, "activations:1");
-            StringAssert.Contains(el.TextContent, "renavigations:1");
+            Assert.Contains("activations:1", el.TextContent);
+            Assert.Contains("renavigations:1", el.TextContent);
         });
     }
 }

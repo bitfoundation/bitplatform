@@ -56,7 +56,7 @@ public class BitAiChatMessageE2ETests : E2ETestBase
 
         var bubble = await Message("cms-user").Locator(".bit-aicms-bbl").RectAsync();
         Assert.AreEqual(column.Right, bubble.Right, 1, "The question ends at the end of the line.");
-        Assert.IsTrue(bubble.Left > column.Left + 100, "The bubble is as wide as its text.");
+        Assert.IsGreaterThan(column.Left + 100, bubble.Left, "The bubble is as wide as its text.");
 
         var body = await Message("cms-assistant").Locator(".bit-aicms-bdy").RectAsync();
         Assert.AreEqual(column.Left, body.Left, 1);
@@ -300,7 +300,7 @@ public class BitAiChatMessageE2ETests : E2ETestBase
         await Expect(Message("cms-still")).ToHaveCSSAsync("animation-name", "none");
 
         var duration = AiE2EHelpers.ParseSeconds(await ComputedStyleAsync("#cms-animated", "animation-duration"));
-        Assert.IsTrue(duration > 0.05, $"The entrance plays: {duration}s.");
+        Assert.IsGreaterThan(0.05, duration, $"The entrance plays: {duration}s.");
         // Backwards only: a transform animation still in effect after it has run would keep the message a containing
         // block for what is fixed inside it (a full-screen artifact).
         await Expect(Message("cms-animated")).ToHaveCSSAsync("animation-fill-mode", "backwards");
@@ -308,7 +308,7 @@ public class BitAiChatMessageE2ETests : E2ETestBase
         await Page.EmulateMediaAsync(new() { ReducedMotion = ReducedMotion.Reduce });
         await Page.Locator("#cms-replay").ClickAsync();
         await Expect(Message("cms-animated")).ToHaveClassAsync(HasClass("bit-aicms-ent"));
-        Assert.IsTrue(AiE2EHelpers.ParseSeconds(await ComputedStyleAsync("#cms-animated", "animation-duration")) <= 0.001, "The entrance collapses.");
+        Assert.IsLessThanOrEqualTo(0.001, AiE2EHelpers.ParseSeconds(await ComputedStyleAsync("#cms-animated", "animation-duration")), "The entrance collapses.");
     }
 
     // ---------- content ----------
@@ -398,7 +398,7 @@ public class BitAiChatMessageE2ETests : E2ETestBase
         // The row of actions under the answer reads from the right.
         var copy = await Message("cms-rtl-assistant").Locator("button[aria-label='Copy']").RectAsync();
         var good = await Message("cms-rtl-assistant").Locator("button[aria-label='Good response']").RectAsync();
-        Assert.IsTrue(copy.Left > good.Left, "The first action is the rightmost one.");
+        Assert.IsGreaterThan(good.Left, copy.Left, "The first action is the rightmost one.");
     }
 
     [TestMethod]

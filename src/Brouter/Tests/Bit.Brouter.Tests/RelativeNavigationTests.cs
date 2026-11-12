@@ -72,7 +72,7 @@ public class RelativeNavigationTests : BunitTestContext
 
         brouter.Navigate("../7");
 
-        cut.WaitForAssertion(() => StringAssert.EndsWith(nav.Uri, "/users/7"));
+        cut.WaitForAssertion(() => Assert.EndsWith("/users/7", nav.Uri));
     }
 
     [TestMethod]
@@ -85,7 +85,7 @@ public class RelativeNavigationTests : BunitTestContext
 
         cut.WaitForAssertion(() =>
         {
-            StringAssert.EndsWith(nav.Uri, "/admin/login");
+            Assert.EndsWith("/admin/login", nav.Uri);
             Assert.IsNotNull(cut.Find("[data-testid=login]"));
         });
     }

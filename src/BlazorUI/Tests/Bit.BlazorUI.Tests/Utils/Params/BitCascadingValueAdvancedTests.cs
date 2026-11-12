@@ -103,6 +103,7 @@ public class BitCascadingValueAdvancedTests
     }
 
     [TestMethod]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MSTEST0067", Justification = "The synchronous lazy factory must remain occupied while concurrent readers contend for it.")]
     public void ShouldRunTheLazyFactoryOnlyOnceUnderConcurrentReads()
     {
         for (int attempt = 0; attempt < 20; attempt++)
@@ -455,7 +456,7 @@ public class BitCascadingValueAdvancedTests
     }
 
     [TestMethod]
-    public void ShouldRaiseEveryChangedHandlerEvenWhenOneOfThemThrows()
+    public async Task ShouldRaiseEveryChangedHandlerEvenWhenOneOfThemThrows()
     {
         var value = new BitCascadingValue(1);
         var first = 0;
@@ -469,13 +470,13 @@ public class BitCascadingValueAdvancedTests
         Assert.AreEqual(1, first);
         Assert.AreEqual(1, second);
 
-        var exception = Assert.ThrowsExactly<InvalidOperationException>(() => task.GetAwaiter().GetResult());
+        var exception = await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => task);
 
         Assert.AreEqual("boom", exception.Message);
     }
 
     [TestMethod]
-    public void ShouldRaiseEveryAsyncChangedHandlerEvenWhenOneOfThemThrows()
+    public async Task ShouldRaiseEveryAsyncChangedHandlerEvenWhenOneOfThemThrows()
     {
         var value = new BitCascadingValue(1);
         var second = 0;
@@ -486,7 +487,7 @@ public class BitCascadingValueAdvancedTests
         var task = value.NotifyChangedAsync();
 
         Assert.AreEqual(1, second);
-        Assert.ThrowsExactly<InvalidOperationException>(() => task.GetAwaiter().GetResult());
+        await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => task);
     }
 
     [TestMethod]
@@ -512,7 +513,7 @@ public class BitCascadingValueAdvancedTests
 
         Assert.AreEqual(1, raised);
         Assert.IsNotNull(captured);
-        Assert.AreEqual(2, captured.InnerExceptions.Count);
+        Assert.HasCount(2, captured.InnerExceptions);
     }
 
     [TestMethod]
@@ -531,7 +532,7 @@ public class BitCascadingValueAdvancedTests
     }
 
     [TestMethod]
-    public void ShouldKeepTheObservationConsistentUnderConcurrentSubscriptionsAndValueChanges()
+    public async global::System.Threading.Tasks.Task ShouldKeepTheObservationConsistentUnderConcurrentSubscriptionsAndValueChanges()
     {
         for (int attempt = 0; attempt < 20; attempt++)
         {
@@ -547,7 +548,7 @@ public class BitCascadingValueAdvancedTests
                     value.Changed += Handler;
                     value.Changed -= Handler;
                 }
-            });
+            }, TestContext.CancellationToken);
 
             var mutator = Task.Run(() =>
             {
@@ -555,9 +556,9 @@ public class BitCascadingValueAdvancedTests
                 {
                     value.Value = new ObservableCollection<int>();
                 }
-            });
+            }, TestContext.CancellationToken);
 
-            Task.WaitAll(subscriber, mutator);
+            await Task.WhenAll(subscriber, mutator);
 
             value.Changed += Handler;
 
@@ -571,4 +572,6 @@ public class BitCascadingValueAdvancedTests
             value.Changed -= Handler;
         }
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

@@ -24,9 +24,9 @@ public class McpMergeLabTests
         Assert.IsTrue(report.Converged);
         Assert.HasCount(2, report.Replicas!);
         Assert.IsTrue(report.Operations.All(line => line.StartsWith("base:", StringComparison.Ordinal) || line.StartsWith("A:", StringComparison.Ordinal) || line.StartsWith("B:", StringComparison.Ordinal)));
-        Assert.IsTrue(report.Notes.Any(note => note.Contains("<replica>: <type> <name> <action> <arguments>", StringComparison.Ordinal)));
+        Assert.Contains(note => note.Contains("<replica>: <type> <name> <action> <arguments>", StringComparison.Ordinal), report.Notes);
 
-        CollectionAssert.AreEquivalent(new[] { "one value wins", "both survive" }, report.Decisions!.Select(decision => decision.Outcome).ToArray());
+        Assert.AreSequenceEqual(new[] { "one value wins", "both survive" }, report.Decisions!.Select(decision => decision.Outcome).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -56,7 +56,7 @@ public class McpMergeLabTests
         Assert.Contains($"({winner}'s write)", decision.Detail);
         Assert.Contains($"{loser}'s write is gone", decision.Detail);
         Assert.Contains("never by time", decision.Detail);
-        Assert.IsTrue(report.Notes.Any(note => note.StartsWith("BcrdtMap:", StringComparison.Ordinal)));
+        Assert.Contains(note => note.StartsWith("BcrdtMap:", StringComparison.Ordinal), report.Notes);
     }
 
     [TestMethod]
@@ -121,7 +121,7 @@ public class McpMergeLabTests
         Assert.EndsWith("!", notes);
 
         // Nobody wrote the key: it holds the text both replicas wrote into.
-        Assert.IsFalse(report.Decisions!.Any(decision => decision.Target.StartsWith("map", StringComparison.Ordinal)));
+        Assert.DoesNotContain(decision => decision.Target.StartsWith("map", StringComparison.Ordinal), report.Decisions!);
         Assert.AreEqual("both survive", report.Decisions!.Single().Outcome);
     }
 
@@ -192,7 +192,7 @@ public class McpMergeLabTests
 
         var items = report.Merged!["todo"]!.AsArray().Select(item => item!.GetValue<string>()).ToArray();
 
-        CollectionAssert.AreEquivalent(new[] { "x", "y", "z" }, items);
+        Assert.AreSequenceEqual(new[] { "x", "y", "z" }, items, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         Assert.AreEqual("all survive", report.Decisions!.Single().Outcome);
     }
 
@@ -219,12 +219,12 @@ public class McpMergeLabTests
 
         var decision = report.Decisions!.Single();
         Assert.AreEqual("counter 'votes'", decision.Target);
-        CollectionAssert.AreEqual(new[] { "A", "B", "C" }, decision.Replicas);
+        Assert.AreSequenceEqual(new[] { "A", "B", "C" }, decision.Replicas);
         Assert.AreEqual("every change is summed", decision.Outcome);
         Assert.Contains("A added 2, B incremented it, added 3 and C decremented it while apart", decision.Detail);
         Assert.Contains("the counter started at 5, A +2, B +4 and C -1, and every replica now holds 10", decision.Detail);
         Assert.Contains("count + 1", decision.Detail);
-        Assert.IsTrue(report.Notes.Any(note => note.StartsWith("BcrdtCounter:", StringComparison.Ordinal)));
+        Assert.Contains(note => note.StartsWith("BcrdtCounter:", StringComparison.Ordinal), report.Notes);
     }
 
     [TestMethod]
@@ -289,7 +289,7 @@ public class McpMergeLabTests
         Assert.Contains("A +2 and B +3 on a counter that started at 1 - add up to 6, but every replica holds 0", counter.Detail);
         Assert.Contains("was written over concurrently", counter.Detail);
         Assert.DoesNotContain("see that decision", counter.Detail, "Only C wrote the key, so there is no key decision to point at.");
-        Assert.IsFalse(report.Decisions!.Any(decision => decision.Target.StartsWith("map", StringComparison.Ordinal)));
+        Assert.DoesNotContain(decision => decision.Target.StartsWith("map", StringComparison.Ordinal), report.Decisions!);
     }
 
     [TestMethod]
@@ -383,7 +383,7 @@ public class McpMergeLabTests
         Assert.IsTrue(report.Converged, string.Join(" | ", report.Diverged ?? []));
         Assert.AreEqual(4 * 3 * 2 * 1 + 1, report.Schedules);
         Assert.IsNull(report.Diverged);
-        CollectionAssert.AreEqual(new ulong[] { 1, 2, 3, 4 }, report.Replicas!.Select(replica => replica.ClientId).ToArray());
+        Assert.AreSequenceEqual(new ulong[] { 1, 2, 3, 4 }, report.Replicas!.Select(replica => replica.ClientId).ToArray());
     }
 
     [TestMethod]
@@ -401,7 +401,7 @@ public class McpMergeLabTests
 
         Assert.IsNull(lines.Error);
         Assert.IsNull(json.Error);
-        CollectionAssert.AreEqual(lines.Operations, json.Operations);
+        Assert.AreSequenceEqual(lines.Operations, json.Operations);
         Assert.AreEqual(lines.Merged!.ToJsonString(), json.Merged!.ToJsonString());
         Assert.AreEqual("one value wins", lines.Decisions!.Single().Outcome);
     }
@@ -436,7 +436,7 @@ public class McpMergeLabTests
             Assert.IsNotNull(report.Error, operations);
             Assert.Contains(expected, report.Error, operations);
             Assert.IsNull(report.Replicas, operations);
-            Assert.IsTrue(report.Notes.Any(note => note.Contains("<replica>: <type>", StringComparison.Ordinal)), $"{operations}: the error should come with the format.");
+            Assert.Contains(note => note.Contains("<replica>: <type>", StringComparison.Ordinal), report.Notes, $"{operations}: the error should come with the format.");
         }
     }
 

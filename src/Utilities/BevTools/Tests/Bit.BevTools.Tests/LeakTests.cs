@@ -104,7 +104,7 @@ public sealed class LeakTests : IDisposable
         var cause = Assert.ContainsSingle(group.Causes);
         Assert.AreEqual("LeakyEvents (injected) → Changed", cause.Holder);
         Assert.AreEqual("handler LeakySubscriber.OnChanged", cause.Detail);
-        StringAssert.Contains(cause.Suggestion, "Unsubscribe");
+        Assert.Contains("Unsubscribe", cause.Suggestion);
     }
 
     [TestMethod]
@@ -122,8 +122,8 @@ public sealed class LeakTests : IDisposable
         var group = Assert.ContainsSingle(RenderRemoveAndCheck<ReferenceHolder>());
         var cause = Assert.ContainsSingle(group.Causes);
         Assert.AreEqual("the JS runtime", cause.Holder);
-        StringAssert.Contains(cause.Detail, "DotNetObjectReference<ReferenceHolder>");
-        StringAssert.Contains(cause.Suggestion, "Dispose the DotNetObjectReference");
+        Assert.Contains("DotNetObjectReference<ReferenceHolder>", cause.Detail);
+        Assert.Contains("Dispose the DotNetObjectReference", cause.Suggestion);
     }
 
     [TestMethod]
@@ -132,7 +132,7 @@ public sealed class LeakTests : IDisposable
         try
         {
             var group = Assert.ContainsSingle(RenderRemoveAndCheck<TimerHolder>());
-            Assert.AreEqual(2, group.Causes.Count, string.Join("; ", group.Causes));
+            Assert.HasCount(2, group.Causes, string.Join("; ", group.Causes));
             Assert.Contains(c => c.Holder == "its own field _ticker" && c.Detail == "Timer still scheduled, with a callback that reaches the component", group.Causes);
             Assert.Contains(c => c.Holder == "its own field _poll" && c.Detail == "Timer still scheduled, with a callback that reaches the component", group.Causes);
         }
@@ -202,7 +202,7 @@ public sealed class LeakTests : IDisposable
         var elapsed = System.Diagnostics.Stopwatch.GetElapsedTime(started);
 
         Assert.AreEqual(1000, group.Count);
-        StringAssert.Contains(Assert.ContainsSingle(group.Causes).Detail, "which captures the component");
+        Assert.Contains("which captures the component", Assert.ContainsSingle(group.Causes).Detail);
         // Every row's closure on one shared event: read once per check, not once per row (1.2 s before, Release).
         Console.WriteLine($"1000 retained rows checked in {elapsed.TotalMilliseconds:0} ms");
         Assert.IsLessThan(1000, elapsed.TotalMilliseconds, $"took {elapsed.TotalMilliseconds:0} ms");
@@ -245,9 +245,9 @@ public sealed class LeakTests : IDisposable
     {
         var group = Assert.ContainsSingle(RenderRemoveAndCheck<OptionsListener>());
         var cause = Assert.ContainsSingle(group.Causes);
-        StringAssert.StartsWith(cause.Holder, "IOptionsMonitor<LeakOptions> (injected) → ");
-        StringAssert.Contains(cause.Detail, "OptionsListener");
-        StringAssert.Contains(cause.Suggestion, "Dispose the subscription");
+        Assert.StartsWith("IOptionsMonitor<LeakOptions> (injected) → ", cause.Holder);
+        Assert.Contains("OptionsListener", cause.Detail);
+        Assert.Contains("Dispose the subscription", cause.Suggestion);
     }
 
     [TestMethod]
@@ -261,7 +261,7 @@ public sealed class LeakTests : IDisposable
 
         var finding = Assert.ContainsSingle(f => f.Diagnostic.RuleId == "memory.retained-components", Session.Diagnostics.Findings).Diagnostic;
         Assert.AreEqual("LeakySubscriber: 1 disposed instance still alive", finding.Title);
-        StringAssert.Contains(finding.Evidence, "Held by: LeakyEvents (injected) → Changed: handler LeakySubscriber.OnChanged");
+        Assert.Contains("Held by: LeakyEvents (injected) → Changed: handler LeakySubscriber.OnChanged", finding.Evidence);
     }
 
     [TestMethod]
@@ -273,12 +273,12 @@ public sealed class LeakTests : IDisposable
             Assert.IsTrue(session.IsInMultiUserHost);
             Assert.IsFalse(session.AllowsForcedCollection);
             using var answer = JsonDocument.Parse(BevToolsProtocol.Handle(session, "command", "{\"name\":\"collect\"}"));
-            StringAssert.Contains(answer.RootElement.GetProperty("error").GetString(), "not allowed");
+            Assert.Contains("not allowed", answer.RootElement.GetProperty("error").GetString()!);
         }
     }
 }
 
-public class ManyRows : ComponentBase
+internal class ManyRows : ComponentBase
 {
     [Parameter] public int Count { get; set; }
 
@@ -293,26 +293,26 @@ public class ManyRows : ComponentBase
     }
 }
 
-public sealed class LeakOptions
+internal sealed class LeakOptions
 {
     public int Value { get; set; }
 }
 
-public sealed class TransientEvents
+internal sealed class TransientEvents
 {
     public event Action? Changed;
 
     public void Raise() => Changed?.Invoke();
 }
 
-public class TransientViewModelUser : ComponentBase
+internal class TransientViewModelUser : ComponentBase
 {
     [Inject] public TransientEvents Vm { get; set; } = default!;
 
     protected override void OnInitialized() => Vm.Changed += StateHasChanged;
 }
 
-public class StaticallyHeldWithFiredTimer : ComponentBase
+internal class StaticallyHeldWithFiredTimer : ComponentBase
 {
     public static readonly List<object> Instances = [];
 
@@ -327,7 +327,7 @@ public class StaticallyHeldWithFiredTimer : ComponentBase
     }
 }
 
-public class OptionsListener : ComponentBase
+internal class OptionsListener : ComponentBase
 {
     [Inject] public Microsoft.Extensions.Options.IOptionsMonitor<LeakOptions> Options { get; set; } = default!;
 
@@ -336,14 +336,14 @@ public class OptionsListener : ComponentBase
     private void OnOptionsChanged(LeakOptions options, string? name) => StateHasChanged();
 }
 
-public sealed class LeakyEvents
+internal sealed class LeakyEvents
 {
     public event Action? Changed;
 
     public int Subscribers => Changed?.GetInvocationList().Length ?? 0;
 }
 
-public class LeakHost : ComponentBase
+internal class LeakHost : ComponentBase
 {
     [Parameter] public Type? Child { get; set; }
 
@@ -357,7 +357,7 @@ public class LeakHost : ComponentBase
     }
 }
 
-public class LeakySubscriber : ComponentBase
+internal class LeakySubscriber : ComponentBase
 {
     [Inject] public LeakyEvents Events { get; set; } = default!;
 
@@ -366,7 +366,7 @@ public class LeakySubscriber : ComponentBase
     private void OnChanged() => StateHasChanged();
 }
 
-public class TidySubscriber : ComponentBase, IDisposable
+internal class TidySubscriber : ComponentBase, IDisposable
 {
     [Inject] public LeakyEvents Events { get; set; } = default!;
 
@@ -377,14 +377,14 @@ public class TidySubscriber : ComponentBase, IDisposable
     public void Dispose() => Events.Changed -= OnChanged;
 }
 
-public class WatchedTidySubscriber : TidySubscriber
+internal class WatchedTidySubscriber : TidySubscriber
 {
     public static WeakReference? Last;
 
     public WatchedTidySubscriber() => Last = new WeakReference(this);
 }
 
-public class LambdaSubscriber : ComponentBase
+internal class LambdaSubscriber : ComponentBase
 {
     private int _changes;
 
@@ -398,7 +398,7 @@ public class LambdaSubscriber : ComponentBase
     }
 }
 
-public class ReferenceHolder : ComponentBase
+internal class ReferenceHolder : ComponentBase
 {
     [Inject] public IJSRuntime JS { get; set; } = default!;
 
@@ -411,7 +411,7 @@ public class ReferenceHolder : ComponentBase
     }
 }
 
-public class TimerHolder : ComponentBase
+internal class TimerHolder : ComponentBase
 {
     private static readonly List<IDisposable> Started = [];
     private System.Timers.Timer? _ticker;
@@ -461,7 +461,7 @@ internal sealed class PlainRenderer(IServiceProvider services) : Renderer(servic
 }
 
 /// <summary>A JS runtime that tracks DotNetObjectReferences the way every real one does, and never answers.</summary>
-public sealed class TrackingTestJSRuntime : JSRuntime
+internal sealed class TrackingTestJSRuntime : JSRuntime
 {
     protected override void BeginInvokeJS(long taskId, string identifier, string? argsJson, JSCallResultType resultType, long targetInstanceId)
     {

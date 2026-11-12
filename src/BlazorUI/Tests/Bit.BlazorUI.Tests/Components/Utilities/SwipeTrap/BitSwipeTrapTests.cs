@@ -250,9 +250,9 @@ public class BitSwipeTrapTests : BunitTestContext
         Assert.AreEqual(0m, invocation.Arguments[4]);          // threshold
         Assert.AreEqual(0, invocation.Arguments[5]);           // throttle
         Assert.AreEqual(BitSwipeOrientation.None, invocation.Arguments[6]); // orientationLock
-        Assert.AreEqual(false, invocation.Arguments[7]);       // touchOnly
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(invocation.Arguments[7]));       // touchOnly
         Assert.IsNull(invocation.Arguments[8]);                // skipSelector
-        Assert.AreEqual(false, invocation.Arguments[9]);       // keyboardTrigger
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(invocation.Arguments[9]));       // keyboardTrigger
     }
 
     [TestMethod]
@@ -279,9 +279,9 @@ public class BitSwipeTrapTests : BunitTestContext
         Assert.AreEqual(10m, invocation.Arguments[4]);
         Assert.AreEqual(20, invocation.Arguments[5]);
         Assert.AreEqual(BitSwipeOrientation.Horizontal, invocation.Arguments[6]);
-        Assert.AreEqual(true, invocation.Arguments[7]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(invocation.Arguments[7]));
         Assert.AreEqual(".no-swipe", invocation.Arguments[8]);
-        Assert.AreEqual(true, invocation.Arguments[9]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(invocation.Arguments[9]));
     }
 
     [TestMethod]
@@ -303,7 +303,7 @@ public class BitSwipeTrapTests : BunitTestContext
         Context.JSInterop.VerifyInvoke("BitBlazorUI.SwipeTrap.dispose");
 
         var setups = Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.SwipeTrap.setup").ToList();
-        Assert.AreEqual(2, setups.Count);
+        Assert.HasCount(2, setups);
         Assert.AreEqual(0.3m, setups[0].Arguments[2]);
         Assert.AreEqual(0.7m, setups[1].Arguments[2]);
     }
@@ -325,7 +325,7 @@ public class BitSwipeTrapTests : BunitTestContext
         });
 
         var setups = Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.SwipeTrap.setup").ToList();
-        Assert.AreEqual(1, setups.Count);
+        Assert.ContainsSingle(setups);
     }
 
     [TestMethod]
@@ -343,8 +343,8 @@ public class BitSwipeTrapTests : BunitTestContext
 
         var setups = Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.SwipeTrap.setup").ToList();
         var disposes = Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.SwipeTrap.dispose").ToList();
-        Assert.AreEqual(1, setups.Count);
-        Assert.AreEqual(0, disposes.Count);
+        Assert.ContainsSingle(setups);
+        Assert.IsEmpty(disposes);
     }
 
     [TestMethod]
@@ -358,7 +358,7 @@ public class BitSwipeTrapTests : BunitTestContext
         component.Render();
 
         var setups = Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.SwipeTrap.setup").ToList();
-        Assert.AreEqual(2, setups.Count);
+        Assert.HasCount(2, setups);
     }
 
     [TestMethod]
@@ -381,9 +381,9 @@ public class BitSwipeTrapTests : BunitTestContext
         });
 
         var setups = Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.SwipeTrap.setup").ToList();
-        Assert.AreEqual(3, setups.Count);
-        Assert.AreEqual(false, setups[0].Arguments[7]);
-        Assert.AreEqual(true, setups[1].Arguments[7]);
+        Assert.HasCount(3, setups);
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(setups[0].Arguments[7]));
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(setups[1].Arguments[7]));
         Assert.AreEqual(".no-swipe", setups[2].Arguments[8]);
     }
 
@@ -575,7 +575,7 @@ public class BitSwipeTrapTests : BunitTestContext
 
         var invocation = Context.JSInterop.VerifyInvoke("BitBlazorUI.SwipeTrap.setup");
 
-        Assert.AreEqual(11, invocation.Arguments.Count);
+        Assert.HasCount(11, invocation.Arguments);
         Assert.AreEqual(component.Instance.UniqueId.ToString(), invocation.Arguments[0]);
         Assert.IsInstanceOfType<DotNetObjectReference<BitSwipeTrap>>(invocation.Arguments[10]);
     }
@@ -599,8 +599,8 @@ public class BitSwipeTrapTests : BunitTestContext
         var setups = Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.SwipeTrap.setup").ToList();
         var disposes = Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.SwipeTrap.dispose").ToList();
 
-        Assert.AreEqual(2, setups.Count);
-        Assert.AreEqual(1, disposes.Count);
+        Assert.HasCount(2, setups);
+        Assert.ContainsSingle(disposes);
         Assert.AreEqual(id, disposes[0].Arguments[0]);
         Assert.IsTrue(setups.All(s => Equals(s.Arguments[0], id)));
     }
@@ -632,7 +632,7 @@ public class BitSwipeTrapTests : BunitTestContext
         });
 
         var setups = Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.SwipeTrap.setup").ToList();
-        Assert.AreEqual(4, setups.Count);
+        Assert.HasCount(4, setups);
         Assert.AreEqual(12m, setups[1].Arguments[4]);
         Assert.AreEqual(50, setups[2].Arguments[5]);
         Assert.AreEqual(0.4m, setups[3].Arguments[3]);
@@ -650,7 +650,7 @@ public class BitSwipeTrapTests : BunitTestContext
         await component.Instance.DisposeAsync();
 
         var disposes = Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.SwipeTrap.dispose").ToList();
-        Assert.AreEqual(1, disposes.Count);
+        Assert.ContainsSingle(disposes);
     }
 
     [TestMethod]
@@ -667,9 +667,9 @@ public class BitSwipeTrapTests : BunitTestContext
         });
 
         var setups = Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.SwipeTrap.setup").ToList();
-        Assert.AreEqual(2, setups.Count);
-        Assert.AreEqual(false, setups[0].Arguments[9]);
-        Assert.AreEqual(true, setups[1].Arguments[9]);
+        Assert.HasCount(2, setups);
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(setups[0].Arguments[9]));
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(setups[1].Arguments[9]));
     }
 
     [TestMethod]

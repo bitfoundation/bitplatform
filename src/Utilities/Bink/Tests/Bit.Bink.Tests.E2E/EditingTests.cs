@@ -1,4 +1,4 @@
-using Bit.Bink.Tests.E2E.Infrastructure;
+﻿using Bit.Bink.Tests.E2E.Infrastructure;
 using Microsoft.Playwright;
 
 namespace Bit.Bink.Tests.E2E;
@@ -91,7 +91,7 @@ public sealed class EditingTests : BinkTest
             await page.WaitForTimeoutAsync(100);
             copied = await page.EvaluateAsync<string>("() => navigator.clipboard.readText()");
         }
-        StringAssert.StartsWith(copied, "{\"format\":\"bink\"", "Ctrl+C should have written the selection to the system clipboard.");
+        Assert.StartsWith("{\"format\":\"bink\"", copied, "Ctrl+C should have written the selection to the system clipboard.");
 
         // The paste event is what Ctrl+V raises; dispatching it with the clipboard's content exercises the same path
         // without depending on how the automation maps the shortcut.
@@ -124,8 +124,8 @@ public sealed class EditingTests : BinkTest
             await page.WaitForTimeoutAsync(100);
             types = await page.EvaluateAsync<string>("async () => { const items = await navigator.clipboard.read(); return items.flatMap(i => i.types).join(','); }");
         }
-        StringAssert.Contains(types, "text/plain");
-        StringAssert.Contains(types, "image/png");
+        Assert.Contains("text/plain", types);
+        Assert.Contains("image/png", types);
         int pngBytes = await page.EvaluateAsync<int>("async () => { const items = await navigator.clipboard.read(); return (await items[0].getType('image/png')).size; }");
         Assert.IsGreaterThan(100, pngBytes);
     }
@@ -156,9 +156,9 @@ public sealed class EditingTests : BinkTest
 
         var download = await page.RunAndWaitForDownloadAsync(() => page.Locator("button", new PageLocatorOptions { HasTextString = "Export PNG" }).First.ClickAsync());
         string path = (await download.PathAsync())!;
-        byte[] bytes = await File.ReadAllBytesAsync(path);
+        byte[] bytes = await File.ReadAllBytesAsync(path, TestContext.CancellationToken);
 
-        CollectionAssert.AreEqual(new byte[] { 0x89, (byte)'P', (byte)'N', (byte)'G' }, bytes.Take(4).ToArray());
+        Assert.AreSequenceEqual(new byte[] { 0x89, (byte)'P', (byte)'N', (byte)'G' }, bytes.Take(4).ToArray());
         // The IHDR chunk holds the size: the ink plus padding, at scale 2, so well over the drawn stroke's own size.
         int width = System.Buffers.Binary.BinaryPrimitives.ReadInt32BigEndian(bytes.AsSpan(16, 4));
         int height = System.Buffers.Binary.BinaryPrimitives.ReadInt32BigEndian(bytes.AsSpan(20, 4));
@@ -267,7 +267,7 @@ public sealed class EditingTests : BinkTest
         await page.Mouse.UpAsync();
         await page.Keyboard.UpAsync("Alt");
         await page.WaitForTimeoutAsync(250);
-        StringAssert.Contains(await page.Locator(".bit-bink-canvas [role=status]").TextContentAsync() ?? "", "1 elements selected");
+        Assert.Contains("1 elements selected", await page.Locator(".bit-bink-canvas [role=status]").TextContentAsync() ?? "");
 
         // Alt-dragging the selected stroke leaves it in place and moves a copy.
         await page.Keyboard.DownAsync("Alt");

@@ -131,11 +131,11 @@ public class BitImageTests : BunitTestContext
             parameters.AddChildContent("overlay");
         });
 
-        StringAssert.Contains(component.Find(".bit-img").GetAttribute("style"), "margin:1rem");
-        StringAssert.Contains(component.Find(".bit-img-plc").GetAttribute("style"), "opacity:0.5");
-        StringAssert.Contains(component.Find(".bit-img-img").GetAttribute("style"), "padding:1rem");
-        StringAssert.Contains(component.Find(".bit-img-tpl").GetAttribute("style"), "color:red");
-        StringAssert.Contains(component.Find(".bit-img-ovl").GetAttribute("style"), "color:blue");
+        Assert.Contains("margin:1rem", component.Find(".bit-img").GetAttribute("style")!);
+        Assert.Contains("opacity:0.5", component.Find(".bit-img-plc").GetAttribute("style")!);
+        Assert.Contains("padding:1rem", component.Find(".bit-img-img").GetAttribute("style")!);
+        Assert.Contains("color:red", component.Find(".bit-img-tpl").GetAttribute("style")!);
+        Assert.Contains("color:blue", component.Find(".bit-img-ovl").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -366,8 +366,8 @@ public class BitImageTests : BunitTestContext
         Assert.AreEqual("images/bit-logo-blue.png", image.GetAttribute("src"));
 
         // The two styles are joined rather than one replacing the other.
-        StringAssert.Contains(image.GetAttribute("style"), "margin:1rem");
-        StringAssert.Contains(image.GetAttribute("style"), "padding:1rem");
+        Assert.Contains("margin:1rem", image.GetAttribute("style")!);
+        Assert.Contains("padding:1rem", image.GetAttribute("style")!);
     }
 
     [TestMethod,
@@ -531,7 +531,7 @@ public class BitImageTests : BunitTestContext
                 parameters.Add(p => p.Width, "85.5");
             });
 
-            StringAssert.Contains(component.Find(".bit-img").GetAttribute("style"), "width:85.5px");
+            Assert.Contains("width:85.5px", component.Find(".bit-img").GetAttribute("style")!);
         }
         finally
         {
@@ -1177,7 +1177,7 @@ public class BitImageTests : BunitTestContext
             parameters.Add(p => p.LoadingTemplate, (RenderFragment)(builder => builder.AddContent(0, "loading")));
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-img-tpl").Count);
+        Assert.IsEmpty(component.FindAll(".bit-img-tpl"));
     }
 
     [TestMethod,
@@ -1302,7 +1302,7 @@ public class BitImageTests : BunitTestContext
         component.Find(".bit-img-img").TriggerEvent("onload", new ProgressEventArgs());
         component.Find(".bit-img-img").TriggerEvent("onerror", new ErrorEventArgs());
 
-        CollectionAssert.AreEqual(new[] { BitImageState.Loaded, BitImageState.Error }, states);
+        Assert.AreSequenceEqual(new[] { BitImageState.Loaded, BitImageState.Error }, states);
     }
 
     /// <summary>A new source is a new image, so whatever the previous one ended up as is no longer the answer.</summary>
@@ -1328,7 +1328,7 @@ public class BitImageTests : BunitTestContext
         Assert.AreEqual(BitImageState.Loading, component.Instance.LoadingState);
         Assert.AreEqual("second.png", component.Find(".bit-img-img").GetAttribute("src"));
         Assert.IsTrue(component.Find(".bit-img-img").ClassList.Contains("bit-img-hid"));
-        CollectionAssert.AreEqual(new[] { BitImageState.Loaded, BitImageState.Loading }, states);
+        Assert.AreSequenceEqual(new[] { BitImageState.Loaded, BitImageState.Loading }, states);
     }
 
     [TestMethod]
@@ -1341,11 +1341,11 @@ public class BitImageTests : BunitTestContext
             parameters.Add(p => p.ErrorTemplate, (RenderFragment)(builder => builder.AddContent(0, "error!")));
         });
 
-        StringAssert.Contains(component.Markup, "loading...");
+        Assert.Contains("loading...", component.Markup);
 
         component.Find(".bit-img-img").TriggerEvent("onload", new ProgressEventArgs());
 
-        Assert.AreEqual(0, component.FindAll(".bit-img-tpl").Count);
+        Assert.IsEmpty(component.FindAll(".bit-img-tpl"));
     }
 
     [TestMethod]
@@ -1360,8 +1360,8 @@ public class BitImageTests : BunitTestContext
 
         component.Find(".bit-img-img").TriggerEvent("onerror", new ErrorEventArgs());
 
-        StringAssert.Contains(component.Markup, "error!");
-        Assert.IsFalse(component.Markup.Contains("loading..."));
+        Assert.Contains("error!", component.Markup);
+        Assert.DoesNotContain("loading...", component.Markup);
     }
 
 
@@ -1387,7 +1387,7 @@ public class BitImageTests : BunitTestContext
         // The fallback is another image being fetched rather than the end of this one.
         Assert.AreEqual("fallback.png", component.Find(".bit-img-img").GetAttribute("src"));
         Assert.AreEqual(BitImageState.Loading, component.Instance.LoadingState);
-        Assert.AreEqual(0, states.Count);
+        Assert.IsEmpty(states);
     }
 
     [TestMethod]
@@ -1459,7 +1459,7 @@ public class BitImageTests : BunitTestContext
 
         component.Find(".bit-img-img").TriggerEvent("onload", new ProgressEventArgs());
 
-        Assert.AreEqual(0, component.FindAll(".bit-img-plc").Count);
+        Assert.IsEmpty(component.FindAll(".bit-img-plc"));
     }
 
     [TestMethod]
@@ -1501,21 +1501,21 @@ public class BitImageTests : BunitTestContext
 
         // Its fade ending before the image has arrived is not the end of its job.
         component.Find(".bit-img-plc").TriggerEvent("onanimationend", new BitAnimationEventArgs { AnimationName = "bit-img-fade-out" });
-        Assert.AreEqual(1, component.FindAll(".bit-img-plc").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-img-plc"));
 
         component.Find(".bit-img-img").TriggerEvent("onload", new ProgressEventArgs());
         component.Find(".bit-img-plc").TriggerEvent("onanimationend", new BitAnimationEventArgs { AnimationName = "bit-img-fade-out" });
 
         // Left in place it would stay laid over the image, invisible, for the life of the component.
-        Assert.AreEqual(0, component.FindAll(".bit-img-plc").Count);
+        Assert.IsEmpty(component.FindAll(".bit-img-plc"));
 
         // Loading again - a srcset candidate swapped in on a resize - is not a new arrival to fade over.
         component.Find(".bit-img-img").TriggerEvent("onload", new ProgressEventArgs());
-        Assert.AreEqual(0, component.FindAll(".bit-img-plc").Count);
+        Assert.IsEmpty(component.FindAll(".bit-img-plc"));
 
         // A new source is: the placeholder stands in for it, and cross-fades with it once more.
         component.Render(parameters => parameters.Add(p => p.Src, "other.png"));
-        Assert.AreEqual(1, component.FindAll(".bit-img-plc").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-img-plc"));
 
         component.Find(".bit-img-img").TriggerEvent("onload", new ProgressEventArgs());
         Assert.IsTrue(component.Find(".bit-img-plc").ClassList.Contains("bit-img-pfo"));
@@ -1535,10 +1535,10 @@ public class BitImageTests : BunitTestContext
 
         // An animation a restyle runs on the placeholder ending is not the cross-fade ending.
         component.Find(".bit-img-plc").TriggerEvent("onanimationend", new BitAnimationEventArgs { AnimationName = "app-pulse" });
-        Assert.AreEqual(1, component.FindAll(".bit-img-plc").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-img-plc"));
 
         component.Find(".bit-img-plc").TriggerEvent("onanimationend", new BitAnimationEventArgs { AnimationName = "bit-img-fade-out" });
-        Assert.AreEqual(0, component.FindAll(".bit-img-plc").Count);
+        Assert.IsEmpty(component.FindAll(".bit-img-plc"));
     }
 
     [TestMethod]
@@ -1556,7 +1556,7 @@ public class BitImageTests : BunitTestContext
         // An end that fired before the library's script registered the event's arguments has no name to check, and
         // is taken for the fade rather than leaving the placeholder over the image for good.
         component.Find(".bit-img-plc").TriggerEvent("onanimationend", new BitAnimationEventArgs());
-        Assert.AreEqual(0, component.FindAll(".bit-img-plc").Count);
+        Assert.IsEmpty(component.FindAll(".bit-img-plc"));
     }
 
     [TestMethod]
@@ -1576,7 +1576,7 @@ public class BitImageTests : BunitTestContext
         component.Find(".bit-img-plc").TriggerEvent("onanimationstart", new BitAnimationEventArgs { AnimationName = "app-crossfade" });
         component.Find(".bit-img-plc").TriggerEvent("onanimationend", new BitAnimationEventArgs { AnimationName = "app-crossfade" });
 
-        Assert.AreEqual(0, component.FindAll(".bit-img-plc").Count);
+        Assert.IsEmpty(component.FindAll(".bit-img-plc"));
     }
 
     [TestMethod]
@@ -1596,10 +1596,10 @@ public class BitImageTests : BunitTestContext
 
         // The fade ending first leaves the restyle's longer animation still playing on it.
         component.Find(".bit-img-plc").TriggerEvent("onanimationend", new BitAnimationEventArgs { AnimationName = "bit-img-fade-out" });
-        Assert.AreEqual(1, component.FindAll(".bit-img-plc").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-img-plc"));
 
         component.Find(".bit-img-plc").TriggerEvent("onanimationend", new BitAnimationEventArgs { AnimationName = "app-glow" });
-        Assert.AreEqual(0, component.FindAll(".bit-img-plc").Count);
+        Assert.IsEmpty(component.FindAll(".bit-img-plc"));
     }
 
     [TestMethod]
@@ -1619,10 +1619,10 @@ public class BitImageTests : BunitTestContext
         component.Find(".bit-img-plc").TriggerEvent("onanimationstart", new BitAnimationEventArgs { AnimationName = "app-glow" });
 
         component.Find(".bit-img-plc").TriggerEvent("onanimationend", new BitAnimationEventArgs { AnimationName = "app-glow" });
-        Assert.AreEqual(1, component.FindAll(".bit-img-plc").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-img-plc"));
 
         component.Find(".bit-img-plc").TriggerEvent("onanimationend", new BitAnimationEventArgs { AnimationName = "app-glow" });
-        Assert.AreEqual(0, component.FindAll(".bit-img-plc").Count);
+        Assert.IsEmpty(component.FindAll(".bit-img-plc"));
     }
 
     [TestMethod]
@@ -1641,7 +1641,7 @@ public class BitImageTests : BunitTestContext
         component.Find(".bit-img-plc").TriggerEvent("onanimationstart", new BitAnimationEventArgs { AnimationName = "bit-img-fade-out" });
         component.Find(".bit-img-plc").TriggerEvent("onanimationcancel", new BitAnimationEventArgs { AnimationName = "bit-img-fade-out" });
 
-        Assert.AreEqual(0, component.FindAll(".bit-img-plc").Count);
+        Assert.IsEmpty(component.FindAll(".bit-img-plc"));
     }
 
     [TestMethod]
@@ -1660,10 +1660,10 @@ public class BitImageTests : BunitTestContext
 
         component.Find(".bit-img-plc").TriggerEvent("onanimationstart", new BitAnimationEventArgs { AnimationName = "bit-img-fade-out" });
         component.Find(".bit-img-plc").TriggerEvent("onanimationend", new BitAnimationEventArgs { AnimationName = "app-pulse" });
-        Assert.AreEqual(1, component.FindAll(".bit-img-plc").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-img-plc"));
 
         component.Find(".bit-img-plc").TriggerEvent("onanimationend", new BitAnimationEventArgs { AnimationName = "bit-img-fade-out" });
-        Assert.AreEqual(0, component.FindAll(".bit-img-plc").Count);
+        Assert.IsEmpty(component.FindAll(".bit-img-plc"));
     }
 
     [TestMethod]
@@ -1674,7 +1674,7 @@ public class BitImageTests : BunitTestContext
             parameters.Add(p => p.Src, "image.png");
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-img-plc").Count);
+        Assert.IsEmpty(component.FindAll(".bit-img-plc"));
     }
 
 
@@ -1692,7 +1692,7 @@ public class BitImageTests : BunitTestContext
 
         var overlay = component.Find(".bit-img-ovl");
 
-        StringAssert.Contains(overlay.InnerHtml, "caption");
+        Assert.Contains("caption", overlay.InnerHtml);
     }
 
     [TestMethod]
@@ -1700,7 +1700,7 @@ public class BitImageTests : BunitTestContext
     {
         var component = RenderComponent<BitImage>();
 
-        Assert.AreEqual(0, component.FindAll(".bit-img-ovl").Count);
+        Assert.IsEmpty(component.FindAll(".bit-img-ovl"));
     }
 
     [TestMethod]
@@ -1724,7 +1724,7 @@ public class BitImageTests : BunitTestContext
         // Back to the beginning: the original source, the loading state, and the fallback available again.
         Assert.AreEqual(BitImageState.Loading, component.Instance.LoadingState);
         Assert.AreEqual("broken.png", component.Find(".bit-img-img").GetAttribute("src"));
-        CollectionAssert.AreEqual(new[] { BitImageState.Error, BitImageState.Loading }, states);
+        Assert.AreSequenceEqual(new[] { BitImageState.Error, BitImageState.Loading }, states);
 
         component.Find(".bit-img-img").TriggerEvent("onerror", new ErrorEventArgs());
         Assert.AreEqual("fallback.png", component.Find(".bit-img-img").GetAttribute("src"));
@@ -1750,7 +1750,7 @@ public class BitImageTests : BunitTestContext
         var picture = component.Find("picture.bit-img-pic");
         var sources = component.FindAll("picture.bit-img-pic > source");
 
-        Assert.AreEqual(2, sources.Count);
+        Assert.HasCount(2, sources);
         Assert.AreEqual("photo.avif", sources[0].GetAttribute("srcset"));
         Assert.AreEqual("image/avif", sources[0].GetAttribute("type"));
         Assert.AreEqual("(min-width: 600px)", sources[0].GetAttribute("media"));
@@ -1774,7 +1774,7 @@ public class BitImageTests : BunitTestContext
             parameters.Add(p => p.Sources, [new BitImageSource { Srcset = "photo.avif" }, null!, new BitImageSource()]);
         });
 
-        Assert.AreEqual(1, component.FindAll("picture.bit-img-pic > source").Count);
+        Assert.ContainsSingle(component.FindAll("picture.bit-img-pic > source"));
     }
 
     /// <summary>No source worth rendering means no picture at all, so nothing is added to the DOM for it.</summary>
@@ -1787,7 +1787,7 @@ public class BitImageTests : BunitTestContext
             parameters.Add(p => p.Sources, [new BitImageSource()]);
         });
 
-        Assert.AreEqual(0, component.FindAll("picture").Count);
+        Assert.IsEmpty(component.FindAll("picture"));
     }
 
     /// <summary>
@@ -1850,7 +1850,7 @@ public class BitImageTests : BunitTestContext
             parameters.Add(p => p.ImagePosition, "top");
         });
 
-        StringAssert.Contains(component.Find(".bit-img-plc").GetAttribute("style"), "object-position:top");
+        Assert.Contains("object-position:top", component.Find(".bit-img-plc").GetAttribute("style")!);
     }
 
     /// <summary>An image that failed is as absent as one still loading, so the placeholder stays.</summary>
@@ -1865,7 +1865,7 @@ public class BitImageTests : BunitTestContext
 
         component.Find(".bit-img-img").TriggerEvent("onerror", new ErrorEventArgs());
 
-        Assert.AreEqual(1, component.FindAll(".bit-img-plc").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-img-plc"));
     }
 
     /// <summary>A class list in ImageAttributes is joined to the component's rather than replaced by it.</summary>
@@ -1982,18 +1982,18 @@ public class BitImageTests : BunitTestContext
         });
 
         Assert.AreEqual(BitImageState.Loading, component.Instance.LoadingState);
-        StringAssert.Contains(component.Markup, "loading...");
-        Assert.IsFalse(component.Markup.Contains("no image"));
+        Assert.Contains("loading...", component.Markup);
+        Assert.DoesNotContain("no image", component.Markup);
 
         // The source arriving is the load it was waiting for, not a return from an error.
         component.Render(parameters => parameters.Add(p => p.Src, "image.png"));
 
         Assert.AreEqual(BitImageState.Loading, component.Instance.LoadingState);
-        Assert.AreEqual(0, states.Count);
+        Assert.IsEmpty(states);
 
         component.Find(".bit-img-img").TriggerEvent("onload", new ProgressEventArgs());
 
-        CollectionAssert.AreEqual(new[] { BitImageState.Loaded }, states);
+        Assert.AreSequenceEqual(new[] { BitImageState.Loaded }, states);
     }
 
     /// <summary>
@@ -2040,7 +2040,7 @@ public class BitImageTests : BunitTestContext
         // Once the image itself is on screen it is what is announced, and the stand-in goes.
         component.Find(".bit-img-img").TriggerEvent("onload", new ProgressEventArgs());
 
-        Assert.AreEqual(0, component.FindAll(".bit-img-alt").Count);
+        Assert.IsEmpty(component.FindAll(".bit-img-alt"));
 
         // A failed image is hidden again, and its text alternative with it - so the stand-in returns.
         component.Find(".bit-img-img").TriggerEvent("onerror", new ErrorEventArgs());
@@ -2073,7 +2073,7 @@ public class BitImageTests : BunitTestContext
             parameters.Add(p => p.Alt, alt);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-img-alt").Count);
+        Assert.IsEmpty(component.FindAll(".bit-img-alt"));
     }
 
     /// <summary>
@@ -2108,7 +2108,7 @@ public class BitImageTests : BunitTestContext
             parameters.Add(p => p.StartVisible, true);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-img-alt").Count);
+        Assert.IsEmpty(component.FindAll(".bit-img-alt"));
     }
 
     [TestMethod]
@@ -2122,11 +2122,11 @@ public class BitImageTests : BunitTestContext
             parameters.Add(p => p.ErrorTemplate, (RenderFragment)(builder => builder.AddContent(0, "error!")));
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-img-alt").Count);
+        Assert.IsEmpty(component.FindAll(".bit-img-alt"));
 
         component.Find(".bit-img-img").TriggerEvent("onerror", new ErrorEventArgs());
 
-        Assert.AreEqual(0, component.FindAll(".bit-img-alt").Count);
+        Assert.IsEmpty(component.FindAll(".bit-img-alt"));
     }
 
 
@@ -2145,15 +2145,15 @@ public class BitImageTests : BunitTestContext
         Assert.IsTrue(frames[0].ClassList.Contains("cascaded"));
         Assert.IsTrue(frames[0].ClassList.Contains("bit-img-rnd"));
         Assert.IsTrue(frames[0].ClassList.Contains("bit-img-brd"));
-        StringAssert.Contains(frames[0].GetAttribute("style"), "width:10rem");
-        StringAssert.Contains(frames[0].GetAttribute("style"), "aspect-ratio:16/9");
+        Assert.Contains("width:10rem", frames[0].GetAttribute("style")!);
+        Assert.Contains("aspect-ratio:16/9", frames[0].GetAttribute("style")!);
         Assert.IsTrue(images[0].ClassList.Contains("bit-img-cvr"));
         Assert.IsTrue(images[0].ClassList.Contains("bit-img-vis"));
         Assert.AreEqual("lazy", images[0].GetAttribute("loading"));
         Assert.AreEqual("async", images[0].GetAttribute("decoding"));
 
         // The second one sets its own width and fit, which the cascading parameters must not overwrite.
-        StringAssert.Contains(frames[1].GetAttribute("style"), "width:20rem");
+        Assert.Contains("width:20rem", frames[1].GetAttribute("style")!);
         Assert.IsTrue(images[1].ClassList.Contains("bit-img-cnt"));
         Assert.IsFalse(images[1].ClassList.Contains("bit-img-cvr"));
 
@@ -2202,7 +2202,7 @@ public class BitImageTests : BunitTestContext
         Assert.AreEqual("own", img.GetAttribute("data-both"));
         Assert.AreEqual("cascaded", img.GetAttribute("data-cascaded"));
 
-        Assert.AreEqual(2, own.Count);
+        Assert.HasCount(2, own);
         Assert.IsFalse(own.ContainsKey("data-cascaded"));
     }
 
@@ -2294,7 +2294,7 @@ public class BitImageTests : BunitTestContext
 
         Assert.AreEqual("b.png", image.Find(".bit-img-img").GetAttribute("src"));
         Assert.AreEqual(BitImageState.Loading, image.Instance.LoadingState);
-        CollectionAssert.AreEqual(new[] { reached, BitImageState.Loading }, states);
+        Assert.AreSequenceEqual(new[] { reached, BitImageState.Loading }, states);
     }
 
     // ---- the browser's own listeners and the focus --------------------------------------------------
@@ -2312,7 +2312,7 @@ public class BitImageTests : BunitTestContext
 
         // It is the img that is focused and answers the key, so it is the img that carries the listener.
         Assert.AreEqual(component.Instance.ImageElement, invocation.Arguments[0]);
-        CollectionAssert.AreEquivalent(new[] { " ", "Spacebar" }, (string[])invocation.Arguments[1]!);
+        Assert.AreSequenceEqual(new[] { " ", "Spacebar" }, (string[])invocation.Arguments[1]!, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -2337,7 +2337,7 @@ public class BitImageTests : BunitTestContext
 
         // The listener stays on the element and reads the key list on every event, so neither a render nor the
         // load pays another round trip.
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.registerPreventKeys"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.registerPreventKeys"]);
     }
 
     [TestMethod]
@@ -2353,8 +2353,8 @@ public class BitImageTests : BunitTestContext
 
         var invocations = Context.JSInterop.Invocations["BitBlazorUI.Utils.registerPreventKeys"];
 
-        Assert.AreEqual(2, invocations.Count);
-        Assert.AreEqual(0, ((string[])invocations[1].Arguments[1]!).Length);
+        Assert.HasCount(2, invocations);
+        Assert.IsEmpty(((string[])invocations[1].Arguments[1]!));
     }
 
     [TestMethod]
@@ -2371,9 +2371,9 @@ public class BitImageTests : BunitTestContext
         // A reload replaces the img rather than patching it, and the listener went with the element it was put on.
         var invocations = Context.JSInterop.Invocations["BitBlazorUI.Utils.registerPreventKeys"];
 
-        Assert.AreEqual(2, invocations.Count);
+        Assert.HasCount(2, invocations);
         Assert.AreEqual(component.Instance.ImageElement, invocations[1].Arguments[0]);
-        CollectionAssert.AreEquivalent(new[] { " ", "Spacebar" }, (string[])invocations[1].Arguments[1]!);
+        Assert.AreSequenceEqual(new[] { " ", "Spacebar" }, (string[])invocations[1].Arguments[1]!, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -2391,7 +2391,7 @@ public class BitImageTests : BunitTestContext
         // is installed and never let it be tried again.
         component.Render(parameters => parameters.Add(p => p.Title, "re-rendered"));
 
-        Assert.AreEqual(2, Context.JSInterop.Invocations["BitBlazorUI.Utils.registerPreventKeys"].Count);
+        Assert.HasCount(2, Context.JSInterop.Invocations["BitBlazorUI.Utils.registerPreventKeys"]);
     }
 
     [TestMethod,
@@ -2419,7 +2419,7 @@ public class BitImageTests : BunitTestContext
 
         // The img is what is focusable, and the flag is the one asked for: the overload taking it is what focuses
         // the image without scrolling the document to bring it into view.
-        Assert.AreEqual(1, invocations.Count);
+        Assert.ContainsSingle(invocations);
         Assert.AreEqual(component.Instance.ImageElement, invocations[0].Arguments[0]);
         Assert.AreEqual(preventScroll, invocations[0].Arguments[1]);
     }
@@ -2435,14 +2435,14 @@ public class BitImageTests : BunitTestContext
             parameters.Add(p => p.Styles, new() { ErrorTemplate = "color:red" });
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-img-tpl").Count);
+        Assert.IsEmpty(component.FindAll(".bit-img-tpl"));
 
         component.Find(".bit-img-img").TriggerEvent("onerror", new ErrorEventArgs());
 
         var template = component.Find(".bit-img-tpl");
 
         Assert.IsTrue(template.ClassList.Contains("error-class"));
-        StringAssert.Contains(template.GetAttribute("style"), "color:red");
+        Assert.Contains("color:red", template.GetAttribute("style")!);
         Assert.AreEqual("error!", template.TextContent);
     }
 
@@ -2464,11 +2464,11 @@ public class BitImageTests : BunitTestContext
 
         var names = component.Find(".bit-img-img").Attributes.Select(a => a.Name).Where(n => n.StartsWith("blazor:", StringComparison.Ordinal) is false).ToList();
 
-        CollectionAssert.AreEqual(new List<string> { "sizes", "srcset", "src" }, names.Skip(names.Count - 3).ToList());
-        Assert.IsTrue(names.IndexOf("loading") < names.IndexOf("sizes"));
-        Assert.IsTrue(names.IndexOf("fetchpriority") < names.IndexOf("sizes"));
-        Assert.IsTrue(names.IndexOf("crossorigin") < names.IndexOf("sizes"));
-        Assert.IsTrue(names.IndexOf("referrerpolicy") < names.IndexOf("sizes"));
+        Assert.AreSequenceEqual(new List<string> { "sizes", "srcset", "src" }, names.Skip(names.Count - 3).ToList());
+        Assert.IsLessThan(names.IndexOf("sizes"), names.IndexOf("loading"));
+        Assert.IsLessThan(names.IndexOf("sizes"), names.IndexOf("fetchpriority"));
+        Assert.IsLessThan(names.IndexOf("sizes"), names.IndexOf("crossorigin"));
+        Assert.IsLessThan(names.IndexOf("sizes"), names.IndexOf("referrerpolicy"));
     }
 
     [TestMethod]
@@ -2491,7 +2491,7 @@ public class BitImageTests : BunitTestContext
 
         Assert.AreEqual("src", names[^1]);
         Assert.AreEqual("srcset", names[^2]);
-        Assert.IsTrue(names.IndexOf("loading") < names.IndexOf("srcset"));
+        Assert.IsLessThan(names.IndexOf("srcset"), names.IndexOf("loading"));
         Assert.AreEqual("splatted.png", img.GetAttribute("src"));
         Assert.AreEqual("parameter-2x.png 2x", img.GetAttribute("srcset"));
         Assert.AreEqual("1", img.GetAttribute("data-x"));

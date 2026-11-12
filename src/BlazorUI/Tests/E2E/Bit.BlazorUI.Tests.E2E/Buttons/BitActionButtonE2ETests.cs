@@ -63,7 +63,7 @@ public class BitActionButtonE2ETests : E2ETestBase
         await Expect(iconOnly.Locator(".bit-acb-con")).ToHaveCountAsync(0);
         await Expect(iconOnly).ToHaveAccessibleNameAsync("Call");
         var box = await iconOnly.BoxAsync();
-        Assert.IsTrue(box.Width >= box.Height - 0.5, "An icon-only action button is at least as wide as it is tall.");
+        Assert.IsGreaterThanOrEqualTo(box.Height - 0.5, box.Width, "An icon-only action button is at least as wide as it is tall.");
 
         // IconOnly drops the content altogether - which is why the docs ask for an AriaLabel beside it
         var iconOnlyText = Btn("acb-icon-only-text");
@@ -82,12 +82,12 @@ public class BitActionButtonE2ETests : E2ETestBase
         await OpenAsync("/e2e/action-button");
 
         var start = Btn("acb-start");
-        Assert.IsTrue((await start.Locator(".bit-acb-ico").BoxAsync()).X < (await start.Locator(".bit-acb-con").BoxAsync()).X);
+        Assert.IsLessThan((await start.Locator(".bit-acb-con").BoxAsync()).X, (await start.Locator(".bit-acb-ico").BoxAsync()).X);
 
         var end = Btn("acb-end");
         await Expect(end).ToHaveClassAsync(HasClass("bit-acb-eni"));
         await Expect(end.Locator(".bit-acb-inn")).ToHaveCSSAsync("flex-direction", "row-reverse");
-        Assert.IsTrue((await end.Locator(".bit-acb-ico").BoxAsync()).X > (await end.Locator(".bit-acb-con").BoxAsync()).X);
+        Assert.IsGreaterThan((await end.Locator(".bit-acb-con").BoxAsync()).X, (await end.Locator(".bit-acb-ico").BoxAsync()).X);
     }
 
     [TestMethod]
@@ -271,13 +271,13 @@ public class BitActionButtonE2ETests : E2ETestBase
 
         await Expect(Btn("acb-fw")).ToHaveClassAsync(HasClass("bit-acb-fwi"));
         ButtonsE2EHelpers.AreClose(container.Width, (await Btn("acb-fw").BoxAsync()).Width, 0.5, "full width");
-        Assert.IsTrue((await Btn("acb-not-fw").BoxAsync()).Width < container.Width - 50);
+        Assert.IsLessThan(container.Width - 50, (await Btn("acb-not-fw").BoxAsync()).Width);
 
         // the content grows, so an End icon is pushed to the far edge of the row
         var end = Btn("acb-fw-end");
         var endBox = await end.BoxAsync();
         var icon = await end.Locator(".bit-acb-ico").BoxAsync();
-        Assert.IsTrue(endBox.X + endBox.Width - (icon.X + icon.Width) < 20, "The End icon sits at the far edge of a full-width row.");
+        Assert.IsLessThan(20, endBox.X + endBox.Width - (icon.X + icon.Width), "The End icon sits at the far edge of a full-width row.");
     }
 
     [TestMethod]
@@ -292,7 +292,7 @@ public class BitActionButtonE2ETests : E2ETestBase
         await Expect(content).ToHaveCSSAsync("white-space", "nowrap");
         await Expect(content).ToHaveCSSAsync("text-overflow", "ellipsis");
         Assert.IsTrue(await content.EvaluateAsync<bool>("el => el.scrollWidth > el.clientWidth"));
-        Assert.IsTrue((await Btn("acb-wrap").BoxAsync()).Height > (await noWrap.BoxAsync()).Height);
+        Assert.IsGreaterThan((await noWrap.BoxAsync()).Height, (await Btn("acb-wrap").BoxAsync()).Height);
     }
 
     // ---------- loading ----------
@@ -426,8 +426,8 @@ public class BitActionButtonE2ETests : E2ETestBase
         var click = await Page.EvaluateAsync<double>("() => window.__delay.click");
         var busy = await Page.EvaluateAsync<double>("() => window.__delay.busy");
         var spinner = await Page.EvaluateAsync<double>("() => window.__delay.spinner");
-        Assert.IsTrue(busy <= spinner, $"The busy state came at {busy}ms, after the spinner at {spinner}ms.");
-        Assert.IsTrue(spinner - click >= 450, $"The spinner came {spinner - click}ms after the click; the delay is 500ms.");
+        Assert.IsLessThanOrEqualTo(spinner, busy, $"The busy state came at {busy}ms, after the spinner at {spinner}ms.");
+        Assert.IsGreaterThanOrEqualTo(450, spinner - click, $"The spinner came {spinner - click}ms after the click; the delay is 500ms.");
 
         await Btn("btn-release-delay").ClickAsync();
         await Expect(button.Locator(".bit-acb-spn")).ToHaveCountAsync(0);
@@ -509,7 +509,7 @@ public class BitActionButtonE2ETests : E2ETestBase
         await underlined.HoverAsync();
         var thick = await Page.ResolvePxAsync("var(--bit-shp-brd-width-thick)");
         await Expect(content).ToHaveCSSAsync("text-decoration-thickness", $"{thick}px");
-        Assert.IsTrue(thick > rest, $"The hover thickens the underline ({rest}px -> {thick}px).");
+        Assert.IsGreaterThan(rest, thick, $"The hover thickens the underline ({rest}px -> {thick}px).");
     }
 
     // ---------- events ----------
@@ -846,7 +846,7 @@ public class BitActionButtonE2ETests : E2ETestBase
 
         await Btn("btn-vis-hidden").ClickAsync();
         await Expect(button).ToHaveCSSAsync("visibility", "hidden");
-        Assert.IsTrue(await button.EvaluateAsync<double>("el => el.getBoundingClientRect().width") > 0);
+        Assert.IsGreaterThan(0, await button.EvaluateAsync<double>("el => el.getBoundingClientRect().width"));
 
         await Btn("btn-vis-collapsed").ClickAsync();
         await Expect(button).ToHaveCSSAsync("display", "none");
@@ -861,11 +861,11 @@ public class BitActionButtonE2ETests : E2ETestBase
         await OpenAsync("/e2e/action-button");
 
         var full = ButtonsE2EHelpers.ParseSeconds(await Btn("motion-default").StyleAsync("transition-duration"));
-        Assert.IsTrue(full >= 0.05);
+        Assert.IsGreaterThanOrEqualTo(0.05, full);
 
         await Page.EmulateMediaAsync(new() { ReducedMotion = ReducedMotion.Reduce });
 
-        Assert.IsTrue(ButtonsE2EHelpers.ParseSeconds(await Btn("motion-default").StyleAsync("transition-duration")) < 0.001);
+        Assert.IsLessThan(0.001, ButtonsE2EHelpers.ParseSeconds(await Btn("motion-default").StyleAsync("transition-duration")));
         Assert.AreEqual(full, ButtonsE2EHelpers.ParseSeconds(await Btn("motion-forced").StyleAsync("transition-duration")), 0.0001);
     }
 
@@ -891,8 +891,8 @@ public class BitActionButtonE2ETests : E2ETestBase
         var html = await response.TextAsync();
 
         Assert.IsTrue(response.Ok);
-        StringAssert.Matches(html, new Regex(@"<button id=""acb-basic"" class=""[^""]*\bbit-acb\b"));
-        StringAssert.Contains(html, "<span id=\"status\">Loading</span>");
+        Assert.MatchesRegex(new Regex(@"<button id=""acb-basic"" class=""[^""]*\bbit-acb\b"), html);
+        Assert.Contains("<span id=\"status\">Loading</span>", html);
     }
 
     [TestMethod]

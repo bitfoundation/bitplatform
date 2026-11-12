@@ -1,6 +1,8 @@
-using System.Net;
+﻿using System.Net;
 using System.Text.RegularExpressions;
 using Bit.Bortable.Demo.Client.Examples;
+
+[assembly: global::Microsoft.VisualStudio.TestTools.UnitTesting.DoNotParallelizeAttribute]
 
 namespace Bit.Bortable.Tests.Mcp;
 

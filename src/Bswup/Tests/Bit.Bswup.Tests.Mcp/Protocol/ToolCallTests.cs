@@ -34,7 +34,7 @@ public class ToolCallTests
     public static async Task StartAsync(TestContext _)
     {
         _server = await McpTestServer.StartAsync();
-        _tools = await _server.Mcp.ListToolsAsync();
+        _tools = await _server.Mcp.ListToolsAsync(cancellationToken: _.CancellationToken);
     }
 
     [ClassCleanup]
@@ -52,7 +52,7 @@ public class ToolCallTests
 
             // A one-liner is a name restated; the description is the only thing a model uses to
             // decide between the eleven tools here.
-            Assert.IsTrue(tool.Description!.Length > 80, $"{tool.Name}: description is {tool.Description.Length} characters");
+            Assert.IsGreaterThan(80, tool.Description!.Length, $"{tool.Name}: description is {tool.Description.Length} characters");
         }
     }
 
@@ -64,10 +64,10 @@ public class ToolCallTests
             var annotations = tool.ProtocolTool.Annotations;
 
             Assert.IsNotNull(annotations, tool.Name);
-            Assert.AreEqual(true, annotations.ReadOnlyHint, $"{tool.Name} changes nothing and must say so");
-            Assert.AreEqual(true, annotations.IdempotentHint, tool.Name);
-            Assert.AreEqual(false, annotations.DestructiveHint, tool.Name);
-            Assert.AreEqual(false, annotations.OpenWorldHint, $"{tool.Name} answers from this build, not from the internet");
+            Assert.IsTrue(annotations.ReadOnlyHint, $"{tool.Name} changes nothing and must say so");
+            Assert.IsTrue(annotations.IdempotentHint, tool.Name);
+            Assert.IsFalse(annotations.DestructiveHint, tool.Name);
+            Assert.IsFalse(annotations.OpenWorldHint, $"{tool.Name} answers from this build, not from the internet");
         }
     }
 
@@ -82,7 +82,7 @@ public class ToolCallTests
             {
                 Assert.IsTrue(property.Value.TryGetProperty("description", out var description),
                     $"{tool.Name}.{property.Name} has no description - a model has to guess what to pass");
-                Assert.IsTrue(description.GetString()!.Length > 20, $"{tool.Name}.{property.Name}");
+                Assert.IsGreaterThan(20, description.GetString()!.Length, $"{tool.Name}.{property.Name}");
             }
         }
     }
@@ -116,14 +116,14 @@ public class ToolCallTests
         // There used to be a "start here" tool whose 4,000-character answer was the list of tools
         // the client already holds, plus the rules the server instructions already carry. A client
         // paid for it twice and an agent paid a call to be told to make another one.
-        Assert.IsFalse(_tools.Any(tool => tool.Name.Contains("Overview", StringComparison.OrdinalIgnoreCase)),
+        Assert.DoesNotContain(tool => tool.Name.Contains("Overview", StringComparison.OrdinalIgnoreCase), _tools,
             string.Join(", ", _tools.Select(tool => tool.Name)));
 
         var instructions = _server.Mcp.ServerInstructions!;
 
-        StringAssert.Contains(instructions, "autostart");
-        StringAssert.Contains(instructions, "service-worker.published.js");
-        StringAssert.Contains(instructions, "never be cached at the HTTP");
+        Assert.Contains("autostart", instructions);
+        Assert.Contains("service-worker.published.js", instructions);
+        Assert.Contains("never be cached at the HTTP", instructions);
     }
 
     [TestMethod]
@@ -147,7 +147,7 @@ public class ToolCallTests
     {
         var result = await _server.CallAsync("SearchBswup", new { query = "   " });
 
-        Assert.IsTrue(result.IsError is not true);
+        Assert.AreNotEqual(true, result.IsError);
     }
 
     [TestMethod]
@@ -157,8 +157,8 @@ public class ToolCallTests
     {
         var text = await _server.CallTextAsync("GetBswupSetupGuide", new { hostingModel = model });
 
-        StringAssert.Contains(text, "## Checklist");
-        StringAssert.Contains(text, expected);
+        Assert.Contains("## Checklist", text);
+        Assert.Contains(expected, text);
     }
 
     [TestMethod]
@@ -166,9 +166,9 @@ public class ToolCallTests
     {
         var text = await _server.CallTextAsync("GetBswupSetupGuide", new { hostingModel = "maui-hybrid" });
 
-        StringAssert.Contains(text, "is not a known hosting model");
-        StringAssert.Contains(text, "standalone-wasm");
-        StringAssert.Contains(text, "blazor-web-app");
+        Assert.Contains("is not a known hosting model", text);
+        Assert.Contains("standalone-wasm", text);
+        Assert.Contains("blazor-web-app", text);
     }
 
     [TestMethod]
@@ -179,8 +179,8 @@ public class ToolCallTests
 
         var names = options.EnumerateArray().Select(option => option.GetProperty("name").GetString()).ToArray();
 
-        CollectionAssert.Contains(names, "stallTimeout");
-        CollectionAssert.Contains(names, "updateOnVisibility");
+        Assert.Contains("stallTimeout", names);
+        Assert.Contains("updateOnVisibility", names);
     }
 
     [TestMethod]
@@ -189,15 +189,15 @@ public class ToolCallTests
         var result = await _server.CallAsync("GetBswupServiceWorkerSettings");
         var payload = McpTestServer.StructuredOf(result, "GetBswupServiceWorkerSettings");
 
-        Assert.IsTrue(payload.GetProperty("settings").GetArrayLength() > 15);
-        Assert.IsTrue(payload.GetProperty("defaultAssetsInclude").GetArrayLength() > 10);
-        Assert.IsTrue(payload.GetProperty("defaultAssetsExclude").GetArrayLength() > 0);
+        Assert.IsGreaterThan(15, payload.GetProperty("settings").GetArrayLength());
+        Assert.IsGreaterThan(10, payload.GetProperty("defaultAssetsInclude").GetArrayLength());
+        Assert.IsGreaterThan(0, payload.GetProperty("defaultAssetsExclude").GetArrayLength());
 
         var notes = string.Join("\n", payload.GetProperty("notes").EnumerateArray().Select(note => note.GetString()));
 
-        StringAssert.Contains(notes, "BEFORE");
-        StringAssert.Contains(notes, "service-worker.published.js");
-        StringAssert.Contains(notes, "exclude always beats an include");
+        Assert.Contains("BEFORE", notes);
+        Assert.Contains("service-worker.published.js", notes);
+        Assert.Contains("exclude always beats an include", notes);
     }
 
     [TestMethod]
@@ -212,7 +212,7 @@ public class ToolCallTests
 
         var names = payload.GetProperty("modes").EnumerateArray().Select(mode => mode.GetProperty("name").GetString()).ToArray();
 
-        CollectionAssert.AreEquivalent(new[] { "NoPrerender", "InitialPrerender", "AlwaysPrerender", "FullOffline" }, names);
+        Assert.AreSequenceEqual(new[] { "NoPrerender", "InitialPrerender", "AlwaysPrerender", "FullOffline" }, names, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -223,7 +223,7 @@ public class ToolCallTests
         var whole = await _server.CallTextAsync("GetBswupServiceWorkerSettings");
         var one = await _server.CallTextAsync("GetBswupServiceWorkerSettings", new { name = "self.assetsExclude" });
 
-        Assert.IsTrue(one.Length * 4 < whole.Length, $"narrowing saved nothing: {one.Length} of {whole.Length} characters");
+        Assert.IsLessThan(whole.Length, one.Length * 4, $"narrowing saved nothing: {one.Length} of {whole.Length} characters");
 
         var payload = JsonSerializer.Deserialize<JsonElement>(one);
 
@@ -244,8 +244,8 @@ public class ToolCallTests
         var result = await _server.CallAsync("GetBswupEvents", new { name = "updateRead" });
         var events = McpTestServer.StructuredOf(result, "GetBswupEvents");
 
-        Assert.IsTrue(events.GetArrayLength() > 1);
-        Assert.IsTrue(events.EnumerateArray().Any(message => message.GetProperty("name").GetString() == "updateReady"));
+        Assert.IsGreaterThan(1, events.GetArrayLength());
+        Assert.Contains(message => message.GetProperty("name").GetString() == "updateReady", events.EnumerateArray());
     }
 
     [TestMethod]
@@ -258,7 +258,7 @@ public class ToolCallTests
 
         var problems = string.Join("\n", report.GetProperty("problems").EnumerateArray().Select(problem => problem.GetString()));
 
-        StringAssert.Contains(problems, "AFTER the importScripts line");
+        Assert.Contains("AFTER the importScripts line", problems);
     }
 
     [TestMethod]
@@ -266,10 +266,10 @@ public class ToolCallTests
     {
         var result = await _server.CallAsync("InspectBswupServiceWorker", new { script = new string(' ', 64_001) });
 
-        Assert.IsTrue(result.IsError is true);
+        Assert.IsTrue(result.IsError);
         // The reason reaches the model, so it can trim the file and call again - and it says the
         // whole file was refused, not that the first 64,000 characters were read.
-        StringAssert.Contains(McpTestServer.TextOf(result), "over the 64000-character limit, so none of it was inspected");
+        Assert.Contains("over the 64000-character limit, so none of it was inspected", McpTestServer.TextOf(result));
     }
 
     [TestMethod]
@@ -280,7 +280,7 @@ public class ToolCallTests
         var tool = _tools.Single(tool => tool.Name == "InspectBswupServiceWorker");
         var description = tool.ProtocolTool.InputSchema.GetProperty("properties").GetProperty("script").GetProperty("description").GetString();
 
-        StringAssert.Contains(description, "at most 64,000 characters");
+        Assert.Contains("at most 64,000 characters", description!);
     }
 
     [TestMethod]
@@ -288,8 +288,8 @@ public class ToolCallTests
     {
         var result = await _server.CallAsync("InspectBswupServiceWorker", new { script = ServiceWorkerFixtures.ChainedAssignments });
 
-        Assert.IsTrue(result.IsError is true);
-        StringAssert.Contains(McpTestServer.TextOf(result), "chained too deeply");
+        Assert.IsTrue(result.IsError);
+        Assert.Contains("chained too deeply", McpTestServer.TextOf(result));
     }
 
     [TestMethod]
@@ -300,7 +300,7 @@ public class ToolCallTests
         await _server.CallAsync("InspectBswupServiceWorker", new { script = new string(' ', 64_001) });
         await _server.CallAsync("InspectBswupServiceWorker", new { script = ServiceWorkerFixtures.ChainedAssignments });
 
-        Assert.IsFalse(_server.LoggedExceptions.Any(exception => exception is ToolInputException), "a refused input was logged as a server error");
+        Assert.DoesNotContain(exception => exception is ToolInputException, _server.LoggedExceptions, "a refused input was logged as a server error");
     }
 
     [TestMethod]
@@ -316,7 +316,7 @@ public class ToolCallTests
         var assets = analysis.GetProperty("assets").EnumerateArray()
             .ToDictionary(asset => asset.GetProperty("url").GetString()!, asset => asset.GetProperty("cached").GetBoolean());
 
-        Assert.AreEqual(4, assets.Count, "newlines, commas and semicolons all separate URLs");
+        Assert.HasCount(4, assets, "newlines, commas and semicolons all separate URLs");
         Assert.IsTrue(assets["_framework/dotnet.native.wasm"]);
         Assert.IsTrue(assets["css/app.css"]);
         Assert.IsFalse(assets["service-worker.js"]);
@@ -346,7 +346,7 @@ public class ToolCallTests
 
         var notes = string.Join("\n", analysis.GetProperty("notes").EnumerateArray().Select(note => note.GetString()));
 
-        StringAssert.Contains(notes, "Only the first 200 of the 260 URLs");
+        Assert.Contains("Only the first 200 of the 260 URLs", notes);
     }
 
     [TestMethod]
@@ -356,7 +356,7 @@ public class ToolCallTests
         // length - otherwise a body of any size is parsed in full before anything is discarded.
         var urls = string.Join("\n", Enumerable.Range(0, 6_000).Select(index => $"_framework/asset{index}.dll"));
 
-        Assert.IsTrue(urls.Length > 64_000, "the fixture has to reach the cap for this to test anything");
+        Assert.IsGreaterThan(64_000, urls.Length, "the fixture has to reach the cap for this to test anything");
 
         var result = await _server.CallAsync("InspectBswupServiceWorker", new { script = ServiceWorkerFixtures.Clean, assetUrls = urls });
         var analysis = McpTestServer.StructuredOf(result, "InspectBswupServiceWorker").GetProperty("assets");
@@ -371,7 +371,7 @@ public class ToolCallTests
 
         var notes = string.Join("\n", analysis.GetProperty("notes").EnumerateArray().Select(note => note.GetString()));
 
-        StringAssert.Contains(notes, "ran past 64000 characters");
+        Assert.Contains("ran past 64000 characters", notes);
     }
 
     [TestMethod]
@@ -396,8 +396,8 @@ public class ToolCallTests
 
         var names = api.EnumerateArray().Select(member => member.GetProperty("name").GetString()).ToArray();
 
-        CollectionAssert.Contains(names, "checkForUpdate");
-        CollectionAssert.Contains(names, "forceRefresh");
+        Assert.Contains("checkForUpdate", names);
+        Assert.Contains("forceRefresh", names);
     }
 
     [TestMethod]
@@ -413,7 +413,7 @@ public class ToolCallTests
 
         var ids = ui.GetProperty("elements").EnumerateArray().Select(element => element.GetProperty("id").GetString()).ToArray();
 
-        CollectionAssert.Contains(ids, "bit-bswup-progress-bar");
+        Assert.Contains("bit-bswup-progress-bar", ids);
     }
 
     [TestMethod]
@@ -428,7 +428,7 @@ public class ToolCallTests
         {
             var slug = page.Slug.Length == 0 ? "introduction" : page.Slug;
 
-            StringAssert.Contains(description, $"'{slug}'", $"the '{slug}' page is not reachable from the description");
+            Assert.Contains($"'{slug}'", description, $"the '{slug}' page is not reachable from the description");
         }
     }
 
@@ -438,12 +438,12 @@ public class ToolCallTests
         // Its one 30,000-character section said what the documentation pages say, so an agent
         // could pay three times over for the same material. It stays readable for a person who
         // wants to pin it; it is no longer something a search can spend a context window on.
-        Assert.IsFalse(_tools.Any(tool => tool.Name.Contains("GuideSection", StringComparison.OrdinalIgnoreCase)),
+        Assert.DoesNotContain(tool => tool.Name.Contains("GuideSection", StringComparison.OrdinalIgnoreCase), _tools,
             string.Join(", ", _tools.Select(tool => tool.Name)));
 
         var guide = await _server.ReadResourceTextAsync("bswup://guide");
 
-        Assert.IsTrue(guide.Length > 1000);
+        Assert.IsGreaterThan(1000, guide.Length);
     }
 
     [TestMethod]
@@ -452,7 +452,7 @@ public class ToolCallTests
         var result = await _server.CallAsync("GetBswupSourceFiles");
         var files = McpTestServer.StructuredOf(result, "GetBswupSourceFiles");
 
-        Assert.IsTrue(files.GetArrayLength() > 15);
+        Assert.IsGreaterThan(15, files.GetArrayLength());
 
         // Fetching all of them would be a slow way of re-testing the catalog; the point here is
         // that a path off the listing really is fetchable through the protocol.
@@ -461,7 +461,7 @@ public class ToolCallTests
             var text = await _server.CallTextAsync("GetBswupSourceFile", new { path });
 
             Assert.IsFalse(text.StartsWith("No source file at", StringComparison.Ordinal), path);
-            Assert.IsTrue(text.Length > 100, path);
+            Assert.IsGreaterThan(100, text.Length, path);
         }
     }
 
@@ -470,8 +470,8 @@ public class ToolCallTests
     {
         var text = await _server.CallTextAsync("GetBswupSourceFile", new { path = "service-worker.published.js" });
 
-        StringAssert.Contains(text, "Did you mean");
-        StringAssert.Contains(text, "Demo/Client/wwwroot/service-worker.published.js");
+        Assert.Contains("Did you mean", text);
+        Assert.Contains("Demo/Client/wwwroot/service-worker.published.js", text);
     }
 
     [TestMethod]
@@ -479,7 +479,7 @@ public class ToolCallTests
     {
         var text = await _server.CallTextAsync("GetBswupSourceFile", new { path = "zzz-not-a-file" });
 
-        StringAssert.Contains(text, "Call GetBswupSourceFiles for the full list");
+        Assert.Contains("Call GetBswupSourceFiles for the full list", text);
     }
 
     [TestMethod]
@@ -492,19 +492,19 @@ public class ToolCallTests
             .OrderByDescending(file => BswupSourceCatalog.GetSourceFile(file.Path)!.Length)
             .First();
 
-        Assert.IsTrue(BswupSourceCatalog.GetSourceFile(longest.Path)!.Length > 16_000,
+        Assert.IsGreaterThan(16_000, BswupSourceCatalog.GetSourceFile(longest.Path)!.Length,
             "no embedded source file is long enough to be windowed - the cap is untested");
 
         var first = await _server.CallTextAsync("GetBswupSourceFile", new { path = longest.Path });
 
-        StringAssert.StartsWith(first, "[lines 1-");
-        StringAssert.Contains(first, $"startLine: ");
-        Assert.IsTrue(first.Length < 17_000, $"{longest.Path} came back as {first.Length} characters");
+        Assert.StartsWith("[lines 1-", first);
+        Assert.Contains($"startLine: ", first);
+        Assert.IsLessThan(17_000, first.Length, $"{longest.Path} came back as {first.Length} characters");
 
         var next = int.Parse(System.Text.RegularExpressions.Regex.Match(first, @"startLine: (?<line>\d+)").Groups["line"].Value);
         var second = await _server.CallTextAsync("GetBswupSourceFile", new { path = longest.Path, startLine = next });
 
-        StringAssert.StartsWith(second, $"[lines {next}-");
+        Assert.StartsWith($"[lines {next}-", second);
     }
 
     [TestMethod]
@@ -527,9 +527,9 @@ public class ToolCallTests
 
         var past = await _server.CallTextAsync("GetBswupSourceFile", new { path, startLine = lines + 1 });
 
-        StringAssert.Contains(past, $"{lines} lines");
-        StringAssert.Contains(past, $"no line {lines + 1}");
-        StringAssert.Contains(past, $"between 1 and {lines}");
+        Assert.Contains($"{lines} lines", past);
+        Assert.Contains($"no line {lines + 1}", past);
+        Assert.Contains($"between 1 and {lines}", past);
     }
 
     [TestMethod]
@@ -557,7 +557,7 @@ public class ToolCallTests
             var last = await _server.CallTextAsync("GetBswupSourceFile", new { path = file.Path, startLine = file.Lines });
             var header = $"[lines {file.Lines}-{file.Lines} of {file.Lines} - this is the end of the file]";
 
-            StringAssert.StartsWith(last, header,
+            Assert.StartsWith(header, last,
                 $"the last line of '{file.Path}' does not line up with the {file.Lines} lines the listing advertises");
         }
     }

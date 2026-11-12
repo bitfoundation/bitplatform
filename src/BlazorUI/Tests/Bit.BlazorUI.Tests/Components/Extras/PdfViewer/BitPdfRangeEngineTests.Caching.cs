@@ -66,8 +66,8 @@ public partial class BitPdfRangeEngineTests
         int result = await source.Run(document, build);
 
         Assert.AreEqual(1, result);
-        Assert.IsTrue(attempts > 10);
-        Assert.AreEqual(1, firstObjects.Count, "A complete dictionary must survive later missing-data restarts.");
+        Assert.IsGreaterThan(10, attempts);
+        Assert.ContainsSingle(firstObjects, "A complete dictionary must survive later missing-data restarts.");
     }
 
     private sealed class FailingFilterXRef : IBitPdfXRef

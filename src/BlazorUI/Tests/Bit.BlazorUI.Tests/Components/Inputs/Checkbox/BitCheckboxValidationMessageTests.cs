@@ -32,7 +32,7 @@ public class BitCheckboxValidationMessageTests : BunitTestContext
         var component = RenderCheckbox(editContext, model, new() { [nameof(BitCheckbox.ShowValidationMessage)] = true });
 
         // Nothing is shown before the EditContext has anything to say.
-        Assert.AreEqual(0, component.FindAll(".bit-chb-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-chb-erm"));
         Assert.IsNull(component.Find(".bit-chb-inp").GetAttribute("aria-describedby"));
 
         component.InvokeAsync(() => editContext.Validate());
@@ -49,7 +49,7 @@ public class BitCheckboxValidationMessageTests : BunitTestContext
         component.Find(".bit-chb-inp").Click();
 
         Assert.IsFalse(model.Value);
-        Assert.AreEqual(0, component.FindAll(".bit-chb-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-chb-erm"));
         Assert.IsNull(component.Find(".bit-chb-inp").GetAttribute("aria-describedby"));
         Assert.IsNull(component.Find(".bit-chb-inp").GetAttribute("aria-invalid"));
     }
@@ -98,7 +98,7 @@ public class BitCheckboxValidationMessageTests : BunitTestContext
 
         // The checkbox is marked as before, and the message stays where the page puts it.
         Assert.AreEqual("true", component.Find(".bit-chb-inp").GetAttribute("aria-invalid"));
-        Assert.AreEqual(0, component.FindAll(".bit-chb-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-chb-erm"));
         Assert.IsNull(component.Find(".bit-chb-inp").GetAttribute("aria-describedby"));
         Assert.IsFalse(component.Find(".bit-chb").ClassList.Contains("bit-chb-her"));
     }
@@ -120,7 +120,7 @@ public class BitCheckboxValidationMessageTests : BunitTestContext
 
         component.InvokeAsync(() => editContext.Validate());
 
-        Assert.AreEqual(1, component.FindAll(".bit-chb-erm").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-chb-erm"));
         Assert.AreEqual("Paper invoices are not available on the free plan.", component.Find(".bit-chb-erm").TextContent.Trim());
 
         // Once the app takes its message back, the EditContext's takes the line.
@@ -144,7 +144,7 @@ public class BitCheckboxValidationMessageTests : BunitTestContext
         // A submit validates every field at once; the checkbox that takes the focus says what is wrong with it
         // instead. The messages do not even wire a live region of their own.
         Assert.AreEqual(RangeMessage, component.Find(".bit-chb-erm").TextContent.Trim());
-        Assert.AreEqual(0, component.FindAll("[role=status]").Count);
+        Assert.IsEmpty(component.FindAll("[role=status]"));
     }
 
     [TestMethod]
@@ -252,13 +252,13 @@ public class BitCheckboxValidationMessageTests : BunitTestContext
         attributes[nameof(BitCheckbox.ShowValidationMessage)] = true;
         Rerender(component, editContext, model, attributes);
 
-        Assert.AreEqual(1, component.FindAll(".bit-chb-erm").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-chb-erm"));
         Assert.IsTrue(component.Find(".bit-chb").ClassList.Contains("bit-chb-her"));
 
         // And both go once the state is accepted.
         component.Find(".bit-chb-inp").Click();
 
-        Assert.AreEqual(0, component.FindAll(".bit-chb-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-chb-erm"));
         Assert.IsFalse(component.Find(".bit-chb").ClassList.Contains("bit-chb-her"));
     }
 
@@ -279,12 +279,12 @@ public class BitCheckboxValidationMessageTests : BunitTestContext
 
         component.InvokeAsync(() => editContext.Validate());
 
-        Assert.AreEqual(1, component.FindAll(".bit-chb-erm").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-chb-erm"));
 
         attributes[nameof(BitCheckbox.NoValidate)] = true;
         Rerender(component, editContext, model, attributes);
 
-        Assert.AreEqual(0, component.FindAll(".bit-chb-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-chb-erm"));
         Assert.IsNull(component.Find(".bit-chb-inp").GetAttribute("aria-describedby"));
         Assert.IsFalse(component.Find(".bit-chb").ClassList.Contains("bit-chb-her"));
     }
@@ -301,8 +301,8 @@ public class BitCheckboxValidationMessageTests : BunitTestContext
         component.InvokeAsync(() => editContext.Validate());
 
         // The model has a message, but the checkbox has no member of it the message could belong to.
-        Assert.IsTrue(editContext.GetValidationMessages().Any());
-        Assert.AreEqual(0, component.FindAll(".bit-chb-erm").Count);
+        Assert.IsNotEmpty(editContext.GetValidationMessages());
+        Assert.IsEmpty(component.FindAll(".bit-chb-erm"));
     }
 
     [TestMethod]
@@ -321,7 +321,7 @@ public class BitCheckboxValidationMessageTests : BunitTestContext
 
         component.Find(".bit-chb-inp").Click();
 
-        Assert.AreEqual(0, component.FindAll(".bit-chb-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-chb-erm"));
 
         component.Find("form").Submit();
 

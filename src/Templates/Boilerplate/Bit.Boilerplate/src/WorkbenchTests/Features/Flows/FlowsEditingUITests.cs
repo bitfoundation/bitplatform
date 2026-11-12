@@ -171,7 +171,7 @@ public class FlowsEditingUITests : FlowPageTest
 
         await WaitForFlow(chosen.Id, f => f.Screens.Length == 2);
 
-        Assert.HasCount(1, (await FlowById(last.Id)).Screens);
+        Assert.ContainsSingle((await FlowById(last.Id)).Screens);
     }
 
     [TestMethod, WithAnAgent]

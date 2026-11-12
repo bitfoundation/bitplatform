@@ -353,8 +353,8 @@ public sealed class AdoNetSurfaceTests
 
         var image = await connection.ExportAsync(Ct);
 
-        Assert.IsTrue(image.Length >= 4096);
-        CollectionAssert.AreEqual("SQLite format 3\0"u8.ToArray(), image[..16]);
+        Assert.IsGreaterThanOrEqualTo(4096, image.Length);
+        Assert.AreSequenceEqual("SQLite format 3\0"u8.ToArray(), image[..16]);
     }
 
     // ---------------------------------------------------------------------------------------------

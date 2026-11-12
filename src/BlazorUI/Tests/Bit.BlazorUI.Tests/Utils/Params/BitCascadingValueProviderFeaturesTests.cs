@@ -32,8 +32,8 @@ public partial class BitCascadingValueProviderFeaturesTests : BunitTestContext
 
         Assert.AreEqual(5, consumer.Number);
         Assert.IsNull(consumer.Greeting);
-        Assert.AreEqual(1, component.FindComponents<CascadingValue<int>>().Count);
-        Assert.AreEqual(0, component.FindComponents<CascadingValue<string>>().Count);
+        Assert.ContainsSingle(component.FindComponents<CascadingValue<int>>());
+        Assert.IsEmpty(component.FindComponents<CascadingValue<string>>());
     }
 
     [TestMethod]
@@ -275,7 +275,7 @@ public partial class BitCascadingValueProviderFeaturesTests : BunitTestContext
         });
 
         component.MarkupMatches(string.Empty);
-        Assert.AreEqual(1, component.FindComponents<CascadingValue<int>>().Count);
+        Assert.ContainsSingle(component.FindComponents<CascadingValue<int>>());
     }
 
     [TestMethod]
@@ -308,8 +308,8 @@ public partial class BitCascadingValueProviderFeaturesTests : BunitTestContext
 
         Assert.AreEqual("second", consumer.Greeting);
         Assert.AreEqual(2, consumer.Number);
-        Assert.AreEqual(1, component.FindComponents<CascadingValue<string>>().Count);
-        Assert.AreEqual(1, component.FindComponents<CascadingValue<int>>().Count);
+        Assert.ContainsSingle(component.FindComponents<CascadingValue<string>>());
+        Assert.ContainsSingle(component.FindComponents<CascadingValue<int>>());
     }
 
     [TestMethod]
@@ -331,7 +331,7 @@ public partial class BitCascadingValueProviderFeaturesTests : BunitTestContext
         });
 
         Assert.AreEqual("greeting", component.FindComponent<CascadingConsumer>().Instance.Greeting);
-        Assert.AreEqual(3, component.FindComponents<CascadingValue<string>>().Count);
+        Assert.HasCount(3, component.FindComponents<CascadingValue<string>>());
     }
 
     [TestMethod]
@@ -352,7 +352,7 @@ public partial class BitCascadingValueProviderFeaturesTests : BunitTestContext
         });
 
         Assert.AreEqual("from-values", component.FindComponent<CascadingConsumer>().Instance.Greeting);
-        Assert.AreEqual(1, component.FindComponents<CascadingValue<string>>().Count);
+        Assert.ContainsSingle(component.FindComponents<CascadingValue<string>>());
     }
 
     [TestMethod]

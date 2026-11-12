@@ -23,7 +23,7 @@ public class BitDropdownDisplayE2ETests : BitDropdownE2ETestBase
         await Expect(Trigger("dd-required")).ToHaveAttributeAsync("aria-required", "true");
 
         var marker = await Page.Locator("#dd-required .bit-drp-lbl").EvaluateAsync<string>("el => getComputedStyle(el, '::after').content");
-        StringAssert.Contains(marker, "*");
+        Assert.Contains("*", marker);
 
         await Expect(Trigger("dd-title")).Not.ToHaveAttributeAsync("aria-required", "true");
     }
@@ -53,12 +53,12 @@ public class BitDropdownDisplayE2ETests : BitDropdownE2ETestBase
 
         var describedBy = await Trigger("dd-desc").GetAttributeAsync("aria-describedby");
         var ids = describedBy!.Split(' ');
-        Assert.AreEqual(2, ids.Length);
+        Assert.HasCount(2, ids);
         Assert.AreEqual(await description.GetAttributeAsync("id"), ids[0]);
         Assert.AreEqual(await hidden.GetAttributeAsync("id"), ids[1]);
 
         // The description sits under the field.
-        Assert.IsTrue((await BoxAsync(description)).Y >= (await BoxAsync(Trigger("dd-desc"))).Y + (await BoxAsync(Trigger("dd-desc"))).Height - 1);
+        Assert.IsGreaterThanOrEqualTo((await BoxAsync(Trigger("dd-desc"))).Y + (await BoxAsync(Trigger("dd-desc"))).Height - 1, (await BoxAsync(description)).Y);
 
         var template = Page.Locator("#dd-desc-tpl .bit-drp-des");
         await Expect(template.Locator("#desc-tpl-content")).ToHaveTextAsync("Nothing here is final.");
@@ -138,15 +138,15 @@ public class BitDropdownDisplayE2ETests : BitDropdownE2ETestBase
         var suffixBox = await BoxAsync(suffix);
 
         Assert.AreEqual(fieldBox.X + 1, prefixBox.X, 1.5, "The prefix starts the field.");
-        Assert.IsTrue(prefixBox.X + prefixBox.Width <= textBox.X + 1, "The prefix comes before the text.");
-        Assert.IsTrue(suffixBox.X >= textBox.X + textBox.Width - 1, "The suffix comes after the text.");
+        Assert.IsLessThanOrEqualTo(textBox.X + 1, prefixBox.X + prefixBox.Width, "The prefix comes before the text.");
+        Assert.IsGreaterThanOrEqualTo(textBox.X + textBox.Width - 1, suffixBox.X, "The suffix comes after the text.");
         Assert.AreEqual(fieldBox.X + fieldBox.Width - 1, suffixBox.X + suffixBox.Width, 1.5, "The suffix ends the field.");
         Assert.AreNotEqual("rgba(0, 0, 0, 0)", await StyleAsync(prefix, "background-color"), "The addons are filled.");
 
         await Expect(Page.Locator("#dd-prefix-tpl .bit-drp-wrp #prefix-tpl-content")).ToHaveTextAsync("PRE");
         await Expect(Page.Locator("#dd-prefix-tpl .bit-drp-wrp #suffix-tpl-content")).ToHaveTextAsync("SUF");
         await Expect(Page.Locator("#dd-prefix-tpl .bit-drp-pre")).ToHaveCountAsync(0);
-        Assert.IsTrue((await BoxAsync(Page.Locator("#prefix-tpl-content"))).X < (await BoxAsync(TextContainer("dd-prefix-tpl"))).X);
+        Assert.IsLessThan((await BoxAsync(TextContainer("dd-prefix-tpl"))).X, (await BoxAsync(Page.Locator("#prefix-tpl-content"))).X);
     }
 
     [TestMethod]
@@ -160,7 +160,7 @@ public class BitDropdownDisplayE2ETests : BitDropdownE2ETestBase
         var full = await BoxAsync(Root("dd-nofit"));
 
         Assert.AreEqual(600, full.Width, 1);
-        Assert.IsTrue(fit.Width < 300, $"A FitWidth dropdown is only as wide as its content, was {fit.Width}px.");
+        Assert.IsLessThan(300, fit.Width, $"A FitWidth dropdown is only as wide as its content, was {fit.Width}px.");
     }
 
     [TestMethod]
@@ -201,7 +201,7 @@ public class BitDropdownDisplayE2ETests : BitDropdownE2ETestBase
         var callout = await OpenDropdownAsync("dd-sticky");
         var scroller = ListBox(callout);
 
-        Assert.IsTrue(await PxAsync(scroller, "height") <= 200.5, "MaxHeight caps the scrollable list.");
+        Assert.IsLessThanOrEqualTo(200.5, await PxAsync(scroller, "height"), "MaxHeight caps the scrollable list.");
         await Expect(callout).ToHaveClassAsync(HasClass("bit-drp-sth"));
 
         await scroller.EvaluateAsync("el => el.scrollTop = 150");
@@ -217,7 +217,7 @@ public class BitDropdownDisplayE2ETests : BitDropdownE2ETestBase
         await NextFramesAsync();
 
         var plainHeader = plain.Locator(".bit-drp-ihw", new() { HasTextString = "Group Alpha" });
-        Assert.IsTrue((await BoxAsync(plainHeader)).Y < (await BoxAsync(plainScroller)).Y - 50, "A header that is not sticky scrolls away.");
+        Assert.IsLessThan((await BoxAsync(plainScroller)).Y - 50, (await BoxAsync(plainHeader)).Y, "A header that is not sticky scrolls away.");
     }
 
     private async Task<ILocator> OpenPlainAsync()

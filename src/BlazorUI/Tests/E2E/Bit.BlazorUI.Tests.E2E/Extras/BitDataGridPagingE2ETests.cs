@@ -50,7 +50,7 @@ public class BitDataGridPagingE2ETests : BitDataGridE2ETestBase
         await Expect(PageSize(id)).ToHaveValueAsync("10");
 
         // The pager comes after the rows.
-        Assert.IsTrue((await BoxAsync(Pagers(id))).Y > (await BoxAsync(Viewport(id))).Y);
+        Assert.IsGreaterThan((await BoxAsync(Viewport(id))).Y, (await BoxAsync(Pagers(id))).Y);
     }
 
     [TestMethod]
@@ -118,7 +118,7 @@ public class BitDataGridPagingE2ETests : BitDataGridE2ETestBase
 
         const string id = "grid-pager-top";
         await Expect(Pagers(id)).ToHaveCountAsync(1);
-        Assert.IsTrue((await BoxAsync(Pagers(id))).Y < (await BoxAsync(Viewport(id))).Y, "The pager is not above the rows.");
+        Assert.IsLessThan((await BoxAsync(Viewport(id))).Y, (await BoxAsync(Pagers(id))).Y, "The pager is not above the rows.");
         await Expect(Current(id)).ToHaveTextAsync("Page 1 of 3");
     }
 
@@ -130,8 +130,8 @@ public class BitDataGridPagingE2ETests : BitDataGridE2ETestBase
         const string id = "grid-pager-both";
         await Expect(Pagers(id)).ToHaveCountAsync(2);
         var view = await BoxAsync(Viewport(id));
-        Assert.IsTrue((await BoxAsync(Pagers(id).Nth(0))).Y < view.Y);
-        Assert.IsTrue((await BoxAsync(Pagers(id).Nth(1))).Y > view.Y);
+        Assert.IsLessThan(view.Y, (await BoxAsync(Pagers(id).Nth(0))).Y);
+        Assert.IsGreaterThan(view.Y, (await BoxAsync(Pagers(id).Nth(1))).Y);
 
         await PagerButton(id, "Next page", pager: 0).ClickAsync();
         await Expect(Current(id, 0)).ToHaveTextAsync("Page 2 of 3");
@@ -150,7 +150,7 @@ public class BitDataGridPagingE2ETests : BitDataGridE2ETestBase
 
         const string id = "grid-pager-start";
         await Expect(Pagers(id)).ToHaveCountAsync(1);
-        Assert.IsTrue((await BoxAsync(Pagers(id))).Y > (await BoxAsync(Viewport(id))).Y);
+        Assert.IsGreaterThan((await BoxAsync(Viewport(id))).Y, (await BoxAsync(Pagers(id))).Y);
     }
 
     [TestMethod]

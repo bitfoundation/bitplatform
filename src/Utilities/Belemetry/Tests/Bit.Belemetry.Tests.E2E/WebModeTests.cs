@@ -28,7 +28,7 @@ public abstract partial class WebModeTests : HarnessTest
     protected override string BaseUrl => _session.Host.BaseUrl;
 
     // The host is its own receiver: the browser exports same-origin.
-    protected override CollectorClient Collector => _collector ??= new CollectorClient(_session.Host.BaseUrl);
+    private protected override CollectorClient Collector => _collector ??= new CollectorClient(_session.Host.BaseUrl);
 
     protected override Task<IPage> OpenPageAsync() => _session.OpenAsync(Mode);
 
@@ -56,7 +56,7 @@ public abstract partial class WebModeTests : HarnessTest
         await Page.Locator("#named-button").ClickAsync();
         await FlushScriptAsync();
         // Several flush intervals (500 ms): anything not held would have been exported by now.
-        await Task.Delay(TimeSpan.FromSeconds(2.5));
+        await Task.Delay(TimeSpan.FromSeconds(2.5), TestContext.CancellationToken);
 
         var before = await Collector.ReceivedAsync(session);
         Assert.AreEqual(0, before.Logs.Count + before.Spans.Count + before.Envelopes.Count,
@@ -105,13 +105,13 @@ public abstract partial class WebModeTests : HarnessTest
         await Page.Locator("#named-button").ClickAsync();
         await Page.EvaluateAsync("() => window.BitBelemetry.trackEvent('harness.after-revoke')");
         await FlushScriptAsync();
-        await Task.Delay(TimeSpan.FromSeconds(2.5));
+        await Task.Delay(TimeSpan.FromSeconds(2.5), TestContext.CancellationToken);
 
         foreach (var id in new[] { session, context.SessionId! }.Distinct())
         {
             var after = await Collector.ReceivedAsync(id);
-            Assert.IsFalse(after.Logs.Any(l => l.Attributes.GetValueOrDefault("target.name") == "harness-named-button"), "A click was sent after consent was revoked.");
-            Assert.IsFalse(after.Logs.Any(l => l.EventName == "harness.after-revoke"), "A custom event was sent after consent was revoked.");
+            Assert.DoesNotContain(l => l.Attributes.GetValueOrDefault("target.name") == "harness-named-button", after.Logs, "A click was sent after consent was revoked.");
+            Assert.DoesNotContain(l => l.EventName == "harness.after-revoke", after.Logs, "A custom event was sent after consent was revoked.");
         }
     }
 
@@ -133,7 +133,7 @@ public abstract partial class WebModeTests : HarnessTest
 
         var initial = await Collector.WaitForAsync(t => PageView(t, "/"), "the initial page view", session);
         Assert.AreEqual("initial", initial.Attributes.GetValueOrDefault("browser.navigation.type"));
-        StringAssert.StartsWith(initial.Attributes.GetValueOrDefault("url.full"), BaseUrl + "/");
+        Assert.StartsWith(BaseUrl + "/", initial.Attributes.GetValueOrDefault("url.full"));
         Assert.AreEqual("Belemetry harness (" + Mode + ")", initial.Attributes.GetValueOrDefault("page.title"));
 
         var second = await Collector.WaitForAsync(t => PageView(t, "/second"), "the page view of /second", session);
@@ -151,8 +151,8 @@ public abstract partial class WebModeTests : HarnessTest
 
         // Each navigation counts once, however many history calls and enhanced loads it took.
         var all = await Collector.ReceivedAsync(session);
-        Assert.AreEqual(1, all.Logs.Count(l => l.EventName == "browser.page_view" && l.Attributes.GetValueOrDefault("url.path") == "/second"),
-            "The navigation to /second was counted more than once.");
+        Assert.ContainsSingle(l => l.EventName == "browser.page_view" && l.Attributes.GetValueOrDefault("url.path") == "/second",
+all.Logs, "The navigation to /second was counted more than once.");
 
         // Browser records carry the browser's resource, and the session on every record.
         Assert.AreEqual("webjs", initial.Resource.GetValueOrDefault("telemetry.sdk.language"));
@@ -180,7 +180,7 @@ public abstract partial class WebModeTests : HarnessTest
 
         // The ignored click came first, so it would be in the same or an earlier batch.
         var all = await Collector.ReceivedAsync(session);
-        Assert.IsFalse(all.Logs.Any(l => l.Attributes.GetValueOrDefault("target.id") == "ignored-button"), "A click inside [data-bit-belemetry-ignore] was recorded.");
+        Assert.DoesNotContain(l => l.Attributes.GetValueOrDefault("target.id") == "ignored-button", all.Logs, "A click inside [data-bit-belemetry-ignore] was recorded.");
     }
 
     [TestMethod]
@@ -196,7 +196,7 @@ public abstract partial class WebModeTests : HarnessTest
             "the JS error", session);
         Assert.AreEqual(17, error.SeverityNumber);
         Assert.AreEqual("Error", error.Attributes.GetValueOrDefault("exception.type"));
-        StringAssert.Contains(error.Attributes.GetValueOrDefault("exception.stacktrace"), "harness.js");
+        Assert.Contains("harness.js", error.Attributes.GetValueOrDefault("exception.stacktrace")!);
 
         // And the Azure Monitor exporter turned it into an Exception envelope.
         await Collector.WaitForAsync(t => t.Envelopes.FirstOrDefault(e => e.Name == "Microsoft.ApplicationInsights.Exception" && e.BaseData?.Contains("Harness JS error") is true),
@@ -208,11 +208,11 @@ public abstract partial class WebModeTests : HarnessTest
         Assert.AreEqual("error", sentry.Level);
         Assert.AreEqual("bit.belemetry.errors", sentry.Logger);
         Assert.AreEqual("bit.belemetry.javascript", sentry.SdkName);
-        StringAssert.Matches(sentry.EventId, EventIdPattern(), "A Sentry event id is 32 lowercase hex characters.");
+        Assert.MatchesRegex(EventIdPattern(), sentry.EventId, "A Sentry event id is 32 lowercase hex characters.");
         Assert.AreEqual(sentry.EnvelopeEventId, sentry.EventId);
         Assert.AreEqual("harnesssentrykey", sentry.Key);
         Assert.IsFalse(sentry.Handled);
-        Assert.IsTrue(sentry.Frames.Any(f => f.Contains("harness.js", StringComparison.Ordinal)), string.Join(" | ", sentry.Frames));
+        Assert.Contains(f => f.Contains("harness.js", StringComparison.Ordinal), sentry.Frames, string.Join(" | ", sentry.Frames));
     }
 
     [TestMethod]
@@ -245,7 +245,8 @@ public abstract partial class WebModeTests : HarnessTest
 
         // The exports themselves are never traced.
         var all = await Collector.ReceivedAsync(session);
-        Assert.IsFalse(all.Spans.Any(s => s.Attributes.GetValueOrDefault("url.full")?.Contains("/test-collector") is true), "An export request was traced.");
+        var actualValue = all.Spans.Any(s => s.Attributes.GetValueOrDefault("url.full")?.Contains("/test-collector") is true);
+        Assert.IsFalse(actualValue, "An export request was traced.");
     }
 
     [TestMethod]
@@ -315,8 +316,8 @@ public abstract partial class WebModeTests : HarnessTest
         Assert.AreEqual(context.PseudoId, envelope.Tags.GetValueOrDefault("ai.user.id"));
         Assert.AreEqual("belemetry-harness", envelope.Tags.GetValueOrDefault("ai.cloud.role"));
         Assert.AreEqual("Browser", envelope.Tags.GetValueOrDefault("ai.device.type"));
-        StringAssert.StartsWith(envelope.Tags.GetValueOrDefault("ai.internal.sdkVersion"), "bitblmjs:");
-        StringAssert.Contains(envelope.BaseData, BaseUrl + "/");
+        Assert.StartsWith("bitblmjs:", envelope.Tags.GetValueOrDefault("ai.internal.sdkVersion"));
+        Assert.Contains(BaseUrl + "/", envelope.BaseData!);
     }
 
     private static CollectedLog? Vital(CollectedTelemetry received, string name) =>
@@ -326,7 +327,7 @@ public abstract partial class WebModeTests : HarnessTest
     {
         Assert.IsTrue(double.TryParse(vital.Attributes.GetValueOrDefault("web_vital.value"), System.Globalization.CultureInfo.InvariantCulture, out var value) && value >= 0,
             $"{name} has no valid value.");
-        CollectionAssert.Contains(new[] { "good", "needs-improvement", "poor" }, vital.Attributes.GetValueOrDefault("web_vital.rating"));
+        Assert.Contains(vital.Attributes.GetValueOrDefault("web_vital.rating"), new[] { "good", "needs-improvement", "poor" });
     }
 
     private static CollectedLog? PageView(CollectedTelemetry received, string path) =>
@@ -337,6 +338,8 @@ public abstract partial class WebModeTests : HarnessTest
 
     [GeneratedRegex("^[0-9a-f]{32}$")]
     private static partial Regex EventIdPattern();
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }
 
 /// <summary>A mode with a .NET runtime in the page: <c>IBelemetry</c> calls from C#.</summary>
@@ -371,12 +374,12 @@ public abstract class InteractiveWebModeTests : WebModeTests
 
         // The framework's HandleEvent activity: the failure happened in this handler's trace, observed rather than guessed.
         Assert.AreEqual("onclick on Bit.Belemetry.Tests.Harness.Pages.DiagnosticsPage.FailInHandler", await state.GetAttributeAsync("data-triggering-action"));
-        StringAssert.Contains(await state.GetAttributeAsync("data-components"), "Bit.Belemetry.Tests.Harness.Pages.DiagnosticsPage:trace");
+        Assert.Contains("Bit.Belemetry.Tests.Harness.Pages.DiagnosticsPage:trace", (await state.GetAttributeAsync("data-components"))!);
 
         // Exported through the library's preview, as a download.
         var download = await Page.RunAndWaitForDownloadAsync(() => Page.Locator(".bit-belemetry-preview-confirm").ClickAsync());
-        StringAssert.EndsWith(download.SuggestedFilename, ".zip");
-        StringAssert.StartsWith(download.SuggestedFilename, "belemetry-harness-diagnostics-");
+        Assert.EndsWith(".zip", download.SuggestedFilename);
+        Assert.StartsWith("belemetry-harness-diagnostics-", download.SuggestedFilename);
         var path = Path.Combine(Path.GetTempPath(), "belemetry-e2e-" + Guid.NewGuid().ToString("N") + ".zip");
         await download.SaveAsAsync(path);
         try
@@ -390,11 +393,11 @@ public abstract class InteractiveWebModeTests : WebModeTests
 
             using var timeline = JsonDocument.Parse(files["timeline.json"]);
             var events = timeline.RootElement.GetProperty("events").EnumerateArray().ToList();
-            Assert.IsTrue(events.Any(e => e.GetProperty("source").GetString() == "browser" && e.GetProperty("category").GetString() == "http"
-                && e.GetProperty("outcome").GetString() == "failure" && e.GetProperty("attributes").GetProperty("url.template").GetString()!.EndsWith("/test-api/fail", StringComparison.Ordinal)),
+            Assert.Contains(e => e.GetProperty("source").GetString() == "browser" && e.GetProperty("category").GetString() == "http"
+                && e.GetProperty("outcome").GetString() == "failure" && e.GetProperty("attributes").GetProperty("url.template").GetString()!.EndsWith("/test-api/fail", StringComparison.Ordinal), events,
                 "The page's failed request is in the timeline, as a URL template.");
-            Assert.IsTrue(events.Any(e => e.GetProperty("source").GetString() == "browser" && e.TryGetProperty("exception", out var x) && x.GetProperty("type").GetString() == "Error"));
-            Assert.IsTrue(events.Any(e => e.GetProperty("name").GetString() == "handle_event"));
+            Assert.Contains(e => e.GetProperty("source").GetString() == "browser" && e.TryGetProperty("exception", out var x) && x.GetProperty("type").GetString() == "Error", events);
+            Assert.Contains(e => e.GetProperty("name").GetString() == "handle_event", events);
 
             // The bundle is about the failure, not the user: no session id, no rendered values.
             var all = string.Concat(files.Values);
@@ -449,7 +452,7 @@ public abstract class InteractiveWebModeTests : WebModeTests
         Assert.AreEqual("csharp", sentry.Platform);
         Assert.AreEqual($"System.InvalidOperationException: Harness exception {marker}", sentry.Exceptions.Single());
         Assert.IsTrue(sentry.Handled);
-        Assert.IsTrue(sentry.Frames.Any(f => f.EndsWith("HomePage.TrackException", StringComparison.Ordinal)), string.Join(" | ", sentry.Frames));
+        Assert.Contains(f => f.EndsWith("HomePage.TrackException", StringComparison.Ordinal), sentry.Frames, string.Join(" | ", sentry.Frames));
         Assert.AreEqual(await SessionIdAsync(), sentry.Tags.GetValueOrDefault("session.id"));
         Assert.AreEqual("track-exception", sentry.Extra.GetValueOrDefault("harness.action"));
     }

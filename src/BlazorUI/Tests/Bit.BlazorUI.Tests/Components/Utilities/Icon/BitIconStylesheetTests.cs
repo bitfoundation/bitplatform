@@ -20,7 +20,7 @@ public partial class BitIconStylesheetTests
 
         var documented = DocumentedVariables(stylesheet);
 
-        Assert.IsTrue(documented.Length > 0, "The stylesheet documents no public variable.");
+        Assert.IsNotEmpty(documented, "The stylesheet documents no public variable.");
 
         foreach (var name in documented)
         {
@@ -28,7 +28,7 @@ public partial class BitIconStylesheetTests
             // to the global --bit-shd-focus-ring (see BitFocusRingStylesheetTests).
             var read = name.EndsWith("-focus-color", StringComparison.Ordinal) ? $"var({name})" : $"var({name}, ";
 
-            StringAssert.Contains(stylesheet, read, $"{name} is documented but never read as it should be.");
+            Assert.Contains(read, stylesheet, $"{name} is documented but never read as it should be.");
         }
     }
 
@@ -42,7 +42,7 @@ public partial class BitIconStylesheetTests
 
         foreach (var name in read)
         {
-            CollectionAssert.Contains(documented, name, $"{name} is read but not documented in the header.");
+            Assert.Contains(name, documented, $"{name} is read but not documented in the header.");
         }
     }
 
@@ -61,15 +61,15 @@ public partial class BitIconStylesheetTests
 
         // An explicit Color publishes the role, which is read before the public variable; the variable only restyles
         // the primary role an unset Color stands for, and so does the shade of an app's own --bit-Icon-color.
-        StringAssert.Contains(stylesheet, "$ico-clr: var(--bit-ico-clr, var(--bit-Icon-color, #{$clr-pri}));");
-        StringAssert.Contains(stylesheet, "$ico-clr-txt: var(--bit-ico-clr-txt, var(--bit-Icon-contrast-color, #{$clr-pri-text}));");
-        StringAssert.Contains(stylesheet, "$ico-clr-hover: var(--bit-ico-clr-hover, var(--bit-Icon-hover-color, var(--bit-ico-pub-hover, #{$clr-pri-hover})));");
-        StringAssert.Contains(stylesheet, "$ico-clr-active: var(--bit-ico-clr-active, var(--bit-Icon-active-color, var(--bit-ico-pub-active, #{$clr-pri-active})));");
-        StringAssert.Contains(stylesheet, "$ico-clr-focus: var(--bit-ico-clr-focus, var(--bit-Icon-focus-color));");
-        StringAssert.Contains(stylesheet, "@include focus-ring-own($ico-clr-focus);");
+        Assert.Contains("$ico-clr: var(--bit-ico-clr, var(--bit-Icon-color, #{$clr-pri}));", stylesheet);
+        Assert.Contains("$ico-clr-txt: var(--bit-ico-clr-txt, var(--bit-Icon-contrast-color, #{$clr-pri-text}));", stylesheet);
+        Assert.Contains("$ico-clr-hover: var(--bit-ico-clr-hover, var(--bit-Icon-hover-color, var(--bit-ico-pub-hover, #{$clr-pri-hover})));", stylesheet);
+        Assert.Contains("$ico-clr-active: var(--bit-ico-clr-active, var(--bit-Icon-active-color, var(--bit-ico-pub-active, #{$clr-pri-active})));", stylesheet);
+        Assert.Contains("$ico-clr-focus: var(--bit-ico-clr-focus, var(--bit-Icon-focus-color));", stylesheet);
+        Assert.Contains("@include focus-ring-own($ico-clr-focus);", stylesheet);
 
         // So does an explicit Size, for the size of the glyph.
-        StringAssert.Contains(stylesheet, "font-size: var(--bit-ico-size, var(--bit-Icon-size, #{$siz-icon-md}));");
+        Assert.Contains("font-size: var(--bit-ico-size, var(--bit-Icon-size, #{$siz-icon-md}));", stylesheet);
 
         // The only private values read after a public variable are the shades of that variable itself, which no
         // parameter publishes.
@@ -87,8 +87,8 @@ public partial class BitIconStylesheetTests
         // An app that sets --bit-Icon-color alone would otherwise see the same color at rest, under the pointer and
         // pressed. Neither shade has a fallback, so it is unset - and the role's own shade is read - while the public
         // variables are.
-        StringAssert.Contains(clickable, "--bit-ico-pub-hover: color-mix(in srgb, var(--bit-Icon-color) 85%, ");
-        StringAssert.Contains(clickable, "--bit-ico-pub-active: color-mix(in srgb, var(--bit-Icon-hover-color, var(--bit-ico-pub-hover)) 85%, ");
+        Assert.Contains("--bit-ico-pub-hover: color-mix(in srgb, var(--bit-Icon-color) 85%, ", clickable);
+        Assert.Contains("--bit-ico-pub-active: color-mix(in srgb, var(--bit-Icon-hover-color, var(--bit-ico-pub-hover)) 85%, ", clickable);
     }
 
     [TestMethod]
@@ -100,7 +100,7 @@ public partial class BitIconStylesheetTests
         // an icon given no Color is meant to be painted in.
         var direct = Regex.Matches(rules, @"var\(--bit-ico-clr[a-z-]*\)");
 
-        Assert.AreEqual(0, direct.Count, "A rule reads a private color variable without the public fallback.");
+        Assert.IsEmpty(direct, "A rule reads a private color variable without the public fallback.");
     }
 
     [TestMethod]
@@ -108,10 +108,10 @@ public partial class BitIconStylesheetTests
     {
         var root = Block(ReadStylesheet(), ".bit-ico");
 
-        StringAssert.Contains(root, "font-size: var(--bit-ico-size, var(--bit-Icon-size, #{$siz-icon-md}));");
-        StringAssert.Contains(root, "padding: var(--bit-Icon-padding, #{spacing(0.5)});");
-        StringAssert.Contains(root, "border-radius: var(--bit-Icon-radius, #{$shp-radius-control});");
-        StringAssert.Contains(root, "border-width: var(--bit-Icon-border-width, #{$shp-border-width});");
+        Assert.Contains("font-size: var(--bit-ico-size, var(--bit-Icon-size, #{$siz-icon-md}));", root);
+        Assert.Contains("padding: var(--bit-Icon-padding, #{spacing(0.5)});", root);
+        Assert.Contains("border-radius: var(--bit-Icon-radius, #{$shp-radius-control});", root);
+        Assert.Contains("border-width: var(--bit-Icon-border-width, #{$shp-border-width});", root);
     }
 
     [TestMethod]
@@ -121,9 +121,9 @@ public partial class BitIconStylesheetTests
         // the root rather than only on the clickable one.
         var root = Block(ReadStylesheet(), ".bit-ico");
 
-        StringAssert.Contains(root, "&:focus-visible {");
-        StringAssert.Contains(root, "@include focus-ring-own($ico-clr-focus);");
-        StringAssert.DoesNotMatch(Block(ReadStylesheet(), ".bit-ico-int"), new Regex("focus-ring"));
+        Assert.Contains("&:focus-visible {", root);
+        Assert.Contains("@include focus-ring-own($ico-clr-focus);", root);
+        Assert.DoesNotMatchRegex(new Regex("focus-ring"), Block(ReadStylesheet(), ".bit-ico-int"));
     }
 
     [TestMethod]
@@ -133,8 +133,8 @@ public partial class BitIconStylesheetTests
         // icon would otherwise be taken out of the fixed width and the glyph would spill out of its box.
         var fixedWidth = Block(ReadStylesheet(), ".bit-ico-fxw");
 
-        StringAssert.Contains(fixedWidth, "width: var(--bit-Icon-fixed-width, 1.25em);");
-        StringAssert.Contains(fixedWidth, "box-sizing: content-box;");
+        Assert.Contains("width: var(--bit-Icon-fixed-width, 1.25em);", fixedWidth);
+        Assert.Contains("box-sizing: content-box;", fixedWidth);
     }
 
     [TestMethod,
@@ -147,8 +147,8 @@ public partial class BitIconStylesheetTests
         // for the colors - and only that, so the one rule sizing the glyph keeps the weight a Classes class competes with.
         var block = Block(ReadStylesheet(), $".bit-ico-{size}");
 
-        StringAssert.Contains(block, $"--bit-ico-size: #{{$siz-icon-{size}}};");
-        Assert.IsFalse(block.Contains("font-size"), $".bit-ico-{size} sets the font size itself rather than the private size the root reads.");
+        Assert.Contains($"--bit-ico-size: #{{$siz-icon-{size}}};", block);
+        Assert.DoesNotContain("font-size", block, $".bit-ico-{size} sets the font size itself rather than the private size the root reads.");
     }
 
     [TestMethod]
@@ -165,14 +165,14 @@ public partial class BitIconStylesheetTests
                                       .Distinct()
                                       .ToArray();
 
-        Assert.IsTrue(set.Length > 0, "No private variable is set by a class.");
-        CollectionAssert.Contains(set, "--bit-ico-anm-itr", "The variables written inline by the component are not found.");
+        Assert.IsNotEmpty(set, "No private variable is set by a class.");
+        Assert.Contains("--bit-ico-anm-itr", set, "The variables written inline by the component are not found.");
 
         var registered = PrivateProperties(stylesheet);
 
         foreach (var name in set)
         {
-            CollectionAssert.Contains(registered, name, $"{name} is not in $ico-private-properties, so a nested icon inherits it.");
+            Assert.Contains(name, registered, $"{name} is not in $ico-private-properties, so a nested icon inherits it.");
         }
     }
 
@@ -181,22 +181,22 @@ public partial class BitIconStylesheetTests
     {
         var stylesheet = ReadStylesheet();
 
-        Assert.IsTrue(PrivateProperties(stylesheet).Length > 0, "$ico-private-properties lists nothing.");
+        Assert.IsNotEmpty(PrivateProperties(stylesheet), "$ico-private-properties lists nothing.");
 
-        StringAssert.Contains(stylesheet, """
+        Assert.Contains("""
             @each $name in $ico-private-properties {
                 @property --bit-ico-#{$name} {
                     syntax: "*";
                     inherits: false;
                 }
             }
-            """.Replace("\r\n", "\n"));
+            """.Replace("\r\n", "\n"), stylesheet);
 
-        StringAssert.Contains(Block(stylesheet, ".bit-ico"), """
+        Assert.Contains("""
                 @each $name in $ico-private-properties {
                     --bit-ico-#{$name}: initial;
                 }
-            """.Replace("\r\n", "\n"));
+            """.Replace("\r\n", "\n"), Block(stylesheet, ".bit-ico"));
     }
 
     private static string[] PrivateProperties(string stylesheet)

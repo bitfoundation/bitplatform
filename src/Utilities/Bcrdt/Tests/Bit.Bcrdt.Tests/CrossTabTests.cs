@@ -114,7 +114,7 @@ public class CrossTabTests
         var clock = Stopwatch.StartNew();
         while (!condition())
         {
-            Assert.IsTrue(clock.Elapsed < Patience, because);
+            Assert.IsLessThan(Patience, clock.Elapsed, because);
             await Task.Delay(10);
         }
     }
@@ -215,15 +215,15 @@ public class CrossTabTests
         BcrdtCollaborativeDocument writing = tabs[0], reading = tabs[1];
 
         await using IBcrdtTransport grantor = network.CreateTransport("reader:" + DocumentId);
-        await grantor.ConnectAsync();
-        await grantor.SendAsync(BcrdtSyncProtocol.EncodeAuth(BcrdtDocumentAccess.ReadOnly, null));
+        await grantor.ConnectAsync(TestContext.CancellationToken);
+        await grantor.SendAsync(BcrdtSyncProtocol.EncodeAuth(BcrdtDocumentAccess.ReadOnly, null), TestContext.CancellationToken);
         await AssertEventuallyAsync(() => reading.Sync!.Access == BcrdtDocumentAccess.ReadOnly, "the reader should be told");
 
         reading.Crdt.GetText("body").Insert(0, "not accepted");
         writing.Crdt.GetText("body").Insert(0, "accepted ");
         await AssertEventuallyAsync(() => server.Doc.GetText("body").ToString() == "accepted ", "the writer's edit should reach the server");
         await AssertEventuallyAsync(() => reading.Crdt.GetText("body").ToString().Contains("accepted ", StringComparison.Ordinal), "and the reader's tab");
-        await Task.Delay(200);
+        await Task.Delay(200, TestContext.CancellationToken);
 
         Assert.AreEqual("accepted ", writing.Crdt.GetText("body").ToString(), "the reader's edit does not reach another tab");
         Assert.AreEqual("accepted ", server.Doc.GetText("body").ToString(), "nor the server");
@@ -247,8 +247,8 @@ public class CrossTabTests
                 BcrdtSyncProvider toServer = await Task.Run(() => new BcrdtSyncProvider(doc, network.CreateTransport(ServerRoom), null, SyncOptions()));
                 BcrdtSyncProvider toTabs = await Task.Run(() => new BcrdtSyncProvider(doc, network.CreateTransport(TabsRoom), null, SyncOptions()));
                 tabs.Add((doc, toServer, toTabs));
-                await toServer.ConnectAsync();
-                await toTabs.ConnectAsync();
+                await toServer.ConnectAsync(TestContext.CancellationToken);
+                await toTabs.ConnectAsync(TestContext.CancellationToken);
                 await AssertEventuallyAsync(() => toServer.IsSynced && toTabs.IsSynced, "the tab should settle");
             }
 
@@ -286,7 +286,7 @@ public class CrossTabTests
             HandshakeTimeout = TimeSpan.FromMilliseconds(200),
             ShouldForward = args => args.Origin != quiet,
         }));
-        await provider.ConnectAsync();
+        await provider.ConnectAsync(TestContext.CancellationToken);
         await AssertEventuallyAsync(() => provider.IsSynced, "the provider should settle");
         traffic.Clear();
 
@@ -303,7 +303,7 @@ public class CrossTabTests
         Assert.AreEqual(string.Empty, server.Doc.GetText("quiet").ToString());
 
         // The handshake is not filtered: it reconciles everything.
-        await provider.ResyncAsync();
+        await provider.ResyncAsync(TestContext.CancellationToken);
         await AssertEventuallyAsync(() => server.Doc.GetText("quiet").ToString() == "kept here", "the next handshake brings the rest");
     }
 
@@ -330,7 +330,7 @@ public class CrossTabTests
             string before = BcrdtConvergenceHarness.Describe(server.Doc);
 
             // The browser goes offline: every tab loses the server, and none loses the others.
-            foreach (BcrdtCollaborativeDocument tab in tabs) await tab.DisconnectAsync();
+            foreach (BcrdtCollaborativeDocument tab in tabs) await tab.DisconnectAsync(TestContext.CancellationToken);
             await AssertEventuallyAsync(() => network.MemberCount(ServerRoom) == 1, "only the server should be left in its room");
             traffic.Clear();
 
@@ -346,7 +346,7 @@ public class CrossTabTests
             Assert.AreEqual(0, traffic.Count(ServerRoom), $"seed {seed}: nothing should reach the server while the tabs are offline");
             Assert.AreEqual(before, BcrdtConvergenceHarness.Describe(server.Doc), $"seed {seed}: the server should not have changed");
 
-            foreach (BcrdtCollaborativeDocument tab in tabs) await tab.ConnectAsync();
+            foreach (BcrdtCollaborativeDocument tab in tabs) await tab.ConnectAsync(TestContext.CancellationToken);
 
             await AssertConvergedEventuallyAsync($"seed {seed}: reconnecting should bring the server everything", [server.Doc, .. tabs.Select(tab => tab.Crdt)]);
             await AssertEventuallyAsync(() => tabs.All(tab => tab.IsSynced), $"seed {seed}: every tab should be synced with the server again");
@@ -375,7 +375,7 @@ public class CrossTabTests
             online[0].Text("notes").Insert(0, "shared start, some of it deleted later");
             await AssertConvergedEventuallyAsync("the shared start", server.Doc, elsewhere.Doc, offline.Crdt, online[0].Crdt, online[1].Crdt);
 
-            await offline.DisconnectAsync();
+            await offline.DisconnectAsync(TestContext.CancellationToken);
             traffic.Clear();
 
             // The offline tab's changes - a deletion among them - reach the other tabs, and not the server: the tabs
@@ -396,7 +396,7 @@ public class CrossTabTests
             await AssertEventuallyAsync(() => (string?)online[1].Map.Get("elsewhere") == "from another browser", "the change from elsewhere should reach the online tabs");
             Assert.IsNull(offline.Map.Get("elsewhere"), "the offline tab should get the change from elsewhere when it reconnects, not before");
 
-            await offline.ConnectAsync();
+            await offline.ConnectAsync(TestContext.CancellationToken);
 
             await AssertConvergedEventuallyAsync($"seed {seed}: reconnecting should reconcile everyone", server.Doc, elsewhere.Doc, offline.Crdt, online[0].Crdt, online[1].Crdt);
             Assert.AreEqual("from another browser", offline.Map.Get("elsewhere"));
@@ -420,7 +420,7 @@ public class CrossTabTests
         BcrdtCollaborativeDocument[] tabs = await OpenAsync([first, second]);
         (BcrdtCollaborativeDocument online, BcrdtCollaborativeDocument offline) = (tabs[0], tabs[1]);
 
-        await offline.DisconnectAsync();
+        await offline.DisconnectAsync(TestContext.CancellationToken);
         offline.Text("notes").Insert(0, "Written offline.");
         await AssertEventuallyAsync(() => online.Text("notes").ToString() == "Written offline.", "the online tab should follow the offline one");
         online.Text("notes").Insert("Written offline.".Length, " Continued online.");
@@ -428,7 +428,7 @@ public class CrossTabTests
         await AssertEventuallyAsync(() => elsewhere.Doc.HasPendingUpdates, "the continuation should arrive, and wait");
         Assert.AreEqual(string.Empty, elsewhere.Doc.GetText("notes").ToString());
 
-        await offline.ConnectAsync();
+        await offline.ConnectAsync(TestContext.CancellationToken);
         await AssertConvergedEventuallyAsync("the offline tab's handshake should bring what the continuation builds on", elsewhere.Doc, online.Crdt, offline.Crdt);
         Assert.AreEqual("Written offline. Continued online.", elsewhere.Doc.GetText("notes").ToString());
     }
@@ -453,13 +453,13 @@ public class CrossTabTests
 
         using var elsewhere = new BcrdtDocument();
         await using BcrdtSyncProvider elsewhereProvider = await Task.Run(() => new BcrdtSyncProvider(elsewhere, relay.Create(DocumentId), null, SyncOptions()));
-        await elsewhereProvider.ConnectAsync();
+        await elsewhereProvider.ConnectAsync(TestContext.CancellationToken);
         await AssertEventuallyAsync(() => elsewhereProvider.IsSynced, "somebody else's browser should be in the room");
 
         BcrdtCollaborativeDocument[] tabs = await OpenAsync([first, second]);
         (BcrdtCollaborativeDocument online, BcrdtCollaborativeDocument offline) = (tabs[0], tabs[1]);
 
-        await offline.DisconnectAsync();
+        await offline.DisconnectAsync(TestContext.CancellationToken);
         offline.Text("notes").Insert(0, "Written offline.");
         await AssertEventuallyAsync(() => online.Text("notes").ToString() == "Written offline.", "the online tab should follow the offline one");
         online.Text("notes").Insert("Written offline.".Length, " Continued online.");
@@ -497,7 +497,7 @@ public class CrossTabTests
             new Rooms(network, "tabs:"));
 
         var clock = Stopwatch.StartNew();
-        BcrdtCollaborativeDocument document = await tab.OpenAsync(DocumentId);
+        BcrdtCollaborativeDocument document = await tab.OpenAsync(DocumentId, cancellationToken: TestContext.CancellationToken);
         await AssertEventuallyAsync(() => document.CrossTabSync!.IsSynced, "nobody is there to answer");
 
         Assert.IsGreaterThanOrEqualTo(TimeSpan.FromMilliseconds(250), clock.Elapsed, "synced by the timeout, not by an answer");
@@ -512,7 +512,7 @@ public class CrossTabTests
         await using BcrdtCollaborationService tab = Tab(network);
         BcrdtCollaborativeDocument document = (await OpenAsync([tab]))[0];
 
-        await document.DisconnectAsync();
+        await document.DisconnectAsync(TestContext.CancellationToken);
         Assert.AreEqual(BcrdtConnectionStatus.Disconnected, document.ConnectionStatus);
         Assert.IsTrue(document.CrossTabSync!.IsSynced);
         Assert.AreEqual(1, network.MemberCount(TabsRoom));
@@ -537,8 +537,8 @@ public class CrossTabTests
 
         // Opened offline: the tabs reach each other, and not the server.
         var ada = new BcrdtCollaboratorInfo("ada", "Ada", "#ff0000");
-        BcrdtCollaborativeDocument a = await first.OpenAsync(DocumentId, new BcrdtOpenDocumentOptions { User = ada, Connect = false });
-        BcrdtCollaborativeDocument b = await second.OpenAsync(DocumentId, new BcrdtOpenDocumentOptions { User = ada, Connect = false });
+        BcrdtCollaborativeDocument a = await first.OpenAsync(DocumentId, new BcrdtOpenDocumentOptions { User = ada, Connect = false }, TestContext.CancellationToken);
+        BcrdtCollaborativeDocument b = await second.OpenAsync(DocumentId, new BcrdtOpenDocumentOptions { User = ada, Connect = false }, TestContext.CancellationToken);
         await AssertEventuallyAsync(() => a.CrossTabSync!.IsSynced && b.CrossTabSync!.IsSynced, "the tabs should settle");
 
         a.Text("body").Insert(0, "shared");
@@ -547,8 +547,8 @@ public class CrossTabTests
         Assert.IsEmpty(b.Presence.Others, "presence does not cross between tabs");
 
         // Online, each lists the other - once, through the server.
-        await a.ConnectAsync();
-        await b.ConnectAsync();
+        await a.ConnectAsync(TestContext.CancellationToken);
+        await b.ConnectAsync(TestContext.CancellationToken);
         await AssertEventuallyAsync(() => a.Presence.Others.Count == 1 && b.Presence.Others.Count == 1, "each tab should list the other through the server");
         Assert.AreEqual(b.ClientId, a.Presence.Others.Single().ClientId);
         Assert.AreEqual(0, traffic.Count(TabsRoom, BcrdtSyncMessageKind.AwarenessUpdate, BcrdtSyncMessageKind.AwarenessQuery));
@@ -569,7 +569,7 @@ public class CrossTabTests
         Assert.IsNull(services.GetService<BcrdtCrossTabTransports>());
 
         await using AsyncServiceScope scope = services.CreateAsyncScope();
-        BcrdtCollaborativeDocument document = await scope.ServiceProvider.GetRequiredService<IBcrdtCollaborationService>().OpenAsync(DocumentId);
+        BcrdtCollaborativeDocument document = await scope.ServiceProvider.GetRequiredService<IBcrdtCollaborationService>().OpenAsync(DocumentId, cancellationToken: TestContext.CancellationToken);
         Assert.IsNull(document.CrossTabSync);
         Assert.IsNull(document.Sync);
     }
@@ -608,7 +608,7 @@ public class CrossTabTests
         await using var otherApp = new BcrdtCollaborationService(options, null, null, new BcrdtBroadcastChannelTransportFactory(browser, "other-app"));
 
         BcrdtCollaborativeDocument[] tabs = await OpenAsync([first, second, otherApp]);
-        CollectionAssert.AreEquivalent(new[] { "bit-bcrdt/doc", "bit-bcrdt/doc", "other-app/doc" }, browser.OpenChannels());
+        Assert.AreSequenceEqual(new[] { "bit-bcrdt/doc", "bit-bcrdt/doc", "other-app/doc" }, browser.OpenChannels(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
         tabs[0].Text("body").Insert(0, "hello, other tab");
         tabs[1].Text("body").Insert(0, ">> ");
@@ -617,7 +617,7 @@ public class CrossTabTests
         Assert.AreEqual(string.Empty, tabs[2].Text("body").ToString(), "another prefix is another channel");
 
         await first.CloseAsync(DocumentId);
-        CollectionAssert.AreEquivalent(new[] { "bit-bcrdt/doc", "other-app/doc" }, browser.OpenChannels());
+        Assert.AreSequenceEqual(new[] { "bit-bcrdt/doc", "other-app/doc" }, browser.OpenChannels(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         Assert.AreEqual(0, browser.LiveReceivers(), "a closed channel's receiver should be released, and the others' are .NET's to keep");
 
         tabs[1].Text("body").Insert(0, "after: ");
@@ -633,24 +633,24 @@ public class CrossTabTests
         int received = 0;
         transport.MessageReceived += _ => received++;
 
-        await transport.ConnectAsync();
+        await transport.ConnectAsync(TestContext.CancellationToken);
         BcrdtBroadcastChannelTransport.Receiver receiver = browser.Receivers().Single().Value;
         receiver.OnChannelMessage([1, 2, 3]);
         Assert.AreEqual(1, received);
 
         // One already on its way through interop when the channel closed.
-        await transport.DisconnectAsync();
+        await transport.DisconnectAsync(TestContext.CancellationToken);
         Assert.AreEqual(BcrdtTransportState.Disconnected, transport.State);
         receiver.OnChannelMessage([1, 2, 3]);
         Assert.AreEqual(1, received);
 
         // A channel opened again reports to a receiver of its own.
-        await transport.ConnectAsync();
+        await transport.ConnectAsync(TestContext.CancellationToken);
         Assert.AreNotSame(receiver, browser.Receivers().Single().Value);
-        await transport.DisconnectAsync();
+        await transport.DisconnectAsync(TestContext.CancellationToken);
 
         // Sending on a closed channel is dropped, not thrown, as the transport contract asks.
-        await transport.SendAsync(new byte[] { 4 });
+        await transport.SendAsync(new byte[] { 4 }, TestContext.CancellationToken);
         Assert.IsEmpty(browser.Posted);
     }
 
@@ -759,4 +759,6 @@ public class CrossTabTests
             public ValueTask DisposeAsync() => ValueTask.CompletedTask;
         }
     }
+
+    public TestContext TestContext { get; set; }
 }

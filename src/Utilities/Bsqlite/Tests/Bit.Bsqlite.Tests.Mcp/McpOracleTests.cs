@@ -39,7 +39,7 @@ public partial class McpOracleTests
     [TestMethod]
     public void The_storage_catalog_is_what_the_provider_types_declare()
     {
-        CollectionAssert.AreEqual(_firstParty.Select(provider => provider.Name).ToArray(), BsqliteStorageCatalog.Providers.Select(provider => provider.Name).ToArray());
+        Assert.AreSequenceEqual(_firstParty.Select(provider => provider.Name).ToArray(), BsqliteStorageCatalog.Providers.Select(provider => provider.Name).ToArray());
 
         foreach (var provider in _firstParty)
         {
@@ -47,7 +47,9 @@ public partial class McpOracleTests
 
             Assert.AreEqual(provider.GetType().Name, entry.TypeName);
             Assert.AreEqual(provider.GetType().Assembly.GetName().Name, entry.Package);
-            Assert.AreEqual(provider.VfsModule?.ModuleUrl, entry.VfsModule, provider.Name);
+            var expectedValue = provider.VfsModule?.ModuleUrl;
+            var actualValue = entry.VfsModule;
+            Assert.AreEqual(expectedValue, actualValue, provider.Name);
 
             foreach (var property in typeof(BsqliteStorageCapabilities).GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(property => property.Name != "EqualityContract"))
             {
@@ -99,7 +101,7 @@ public partial class McpOracleTests
             });
 
             var bindings = new BsqliteInMemoryStorageBindingStore();
-            if (binding is not null) await bindings.SetProviderNameAsync("app.db", binding);
+            if (binding is not null) await bindings.SetProviderNameAsync("app.db", binding, TestContext.CancellationToken);
 
             var resolver = new BsqliteStorageProviderResolver(
                 candidates.Select(name => new DescribedProvider(_firstParty.Single(provider => provider.Name == name), unavailable.Contains(name))),
@@ -114,24 +116,37 @@ public partial class McpOracleTests
 
             IReadOnlyList<BsqliteStorageCandidateOutcome> attempts;
             BsqliteStorageResolution? resolution = null;
+            string? resolutionError = null;
 
             try
             {
-                resolution = await resolver.ResolveAsync("app.db", selection);
+                resolution = await resolver.ResolveAsync("app.db", selection, TestContext.CancellationToken);
                 attempts = resolution.Attempts;
             }
             catch (BsqliteStorageUnavailableException exception)
             {
                 attempts = exception.Attempts;
-                Assert.AreEqual(exception.Message, plan.Error, context);
+                resolutionError = exception.Message;
             }
 
+            if (resolutionError is not null) Assert.AreEqual(resolutionError, plan.Error, context);
+
             Assert.AreEqual(resolution is not null, plan.Opens, context);
-            Assert.AreEqual(resolution?.Provider.Name, plan.Provider, context);
-            Assert.AreEqual(resolution?.IsFirstChoice, plan.IsFirstChoice, context);
-            Assert.AreEqual(resolution?.WasDecidedByExistingData, plan.WasDecidedByExistingData, context);
-            Assert.AreEqual(resolution?.BetterProviderAvailable?.Name, plan.BetterProviderAvailable, context);
-            Assert.AreEqual(resolution?.Provider.Capabilities.RequiredBuild.ToString(), plan.EngineBuild, context);
+            var expectedValue = resolution?.Provider.Name;
+            var actualValue = plan.Provider;
+            Assert.AreEqual(expectedValue, actualValue, context);
+            var expectedValue1 = resolution?.IsFirstChoice;
+            var actualValue2 = plan.IsFirstChoice;
+            Assert.AreEqual(expectedValue1, actualValue2, context);
+            var expectedValue3 = resolution?.WasDecidedByExistingData;
+            var actualValue4 = plan.WasDecidedByExistingData;
+            Assert.AreEqual(expectedValue3, actualValue4, context);
+            var expectedValue5 = resolution?.BetterProviderAvailable?.Name;
+            var actualValue6 = plan.BetterProviderAvailable;
+            Assert.AreEqual(expectedValue5, actualValue6, context);
+            var expectedValue7 = resolution?.Provider.Capabilities.RequiredBuild.ToString();
+            var actualValue8 = plan.EngineBuild;
+            Assert.AreEqual(expectedValue7, actualValue8, context);
 
             foreach (var attempt in attempts)
             {
@@ -153,15 +168,14 @@ public partial class McpOracleTests
 
         var indexed = BsqliteApiCatalog.Types.Select(type => type.Name).ToHashSet(StringComparer.Ordinal);
 
-        CollectionAssert.AreEquivalent(exported.ToArray(), indexed.ToArray());
+        Assert.AreSequenceEqual(exported.ToArray(), indexed.ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
     public void The_api_covers_every_package_and_the_entry_points()
     {
-        CollectionAssert.AreEquivalent(
-            new[] { typeof(BsqliteConnection), typeof(BsqliteInProcessTransport) }.Select(type => type.Assembly).ToArray(),
-            BsqliteApiCatalog.Assemblies);
+        Assert.AreSequenceEqual(
+            new[] { typeof(BsqliteConnection), typeof(BsqliteInProcessTransport) }.Select(type => type.Assembly).ToArray(), BsqliteApiCatalog.Assemblies, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
         // The first-party backends ship in the library package rather than packages of their own.
         foreach (var provider in _firstParty)
@@ -172,8 +186,8 @@ public partial class McpOracleTests
         var entryPoints = BsqliteApiCatalog.GetTypeDetails("BitBsqlite")!;
 
         Assert.AreEqual("Microsoft.Extensions.DependencyInjection", entryPoints.Namespace);
-        Assert.IsTrue(entryPoints.Members.Any(member => member.Name == "AddBitBsqliteServices"));
-        Assert.IsTrue(entryPoints.Members.Any(member => member.Name == "AddBitBsqliteDbContext<TContext>"));
+        Assert.Contains(member => member.Name == "AddBitBsqliteServices", entryPoints.Members);
+        Assert.Contains(member => member.Name == "AddBitBsqliteDbContext<TContext>", entryPoints.Members);
         Assert.AreEqual("Microsoft.EntityFrameworkCore", BsqliteApiCatalog.GetTypeDetails("BsqliteDbContextOptionsExtensions")!.Namespace);
     }
 
@@ -212,7 +226,7 @@ public partial class McpOracleTests
 
             var sections = BsqliteSourceCatalog.GetSections(document.Name);
 
-            CollectionAssert.AreEqual(headings, sections.Select(section => section.Heading).ToArray(), document.Name);
+            Assert.AreSequenceEqual(headings, sections.Select(section => section.Heading).ToArray(), document.Name);
             Assert.HasCount(sections.Length, sections.Select(section => section.Key).Distinct(StringComparer.Ordinal), $"Every section of '{document.Name}' needs a key of its own.");
 
             foreach (var section in sections)
@@ -239,16 +253,15 @@ public partial class McpOracleTests
             ("GetBsqliteSourceFile", "?path=Demo/Client/Pages/Storage.razor", new() { ["path"] = "Demo/Client/Pages/Storage.razor" }),
         ];
 
-        CollectionAssert.AreEquivalent(McpSurfaceTests.ExpectedTools, calls.Select(call => call.Tool).ToArray(),
-            "The HTTP mirror is being exercised for a different set of tools than the server publishes.");
+        Assert.AreSequenceEqual(McpSurfaceTests.ExpectedTools, calls.Select(call => call.Tool).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, "The HTTP mirror is being exercised for a different set of tools than the server publishes.");
 
         foreach (var (tool, query, arguments) in calls)
         {
-            using var response = await http.GetAsync($"/api/mcp/{tool}{query}");
+            using var response = await http.GetAsync($"/api/mcp/{tool}{query}", TestContext.CancellationToken);
 
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, tool);
 
-            var body = await response.Content.ReadAsStringAsync();
+            var body = await response.Content.ReadAsStringAsync(TestContext.CancellationToken);
 
             if (tool is "SearchBsqlite" or "PlanBsqliteStorageSelection" or "CheckBsqliteSql")
             {
@@ -269,13 +282,13 @@ public partial class McpOracleTests
     {
         using var http = McpTestHost.CreateHttpClient();
 
-        var catalog = await http.GetFromJsonAsync<BsqliteMcpCatalogDto>("/api/mcp/GetMcpCatalog");
+        var catalog = await http.GetFromJsonAsync<BsqliteMcpCatalogDto>("/api/mcp/GetMcpCatalog", TestContext.CancellationToken);
 
         Assert.IsNotNull(catalog);
-        CollectionAssert.AreEquivalent(McpSurfaceTests.ExpectedTools, catalog.Tools.Select(tool => tool.Name).ToArray());
-        CollectionAssert.AreEquivalent((await McpTestHost.Client.ListPromptsAsync()).Select(prompt => prompt.Name).ToArray(), catalog.Prompts.Select(prompt => prompt.Name).ToArray());
+        Assert.AreSequenceEqual(McpSurfaceTests.ExpectedTools, catalog.Tools.Select(tool => tool.Name).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
+        Assert.AreSequenceEqual((await McpTestHost.Client.ListPromptsAsync(cancellationToken: TestContext.CancellationToken)).Select(prompt => prompt.Name).ToArray(), catalog.Prompts.Select(prompt => prompt.Name).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         Assert.IsTrue(catalog.Tools.All(tool => tool.Title is not null && tool.Description.Length > 0));
-        Assert.IsFalse(catalog.Tools.SelectMany(tool => tool.Parameters).Any(parameter => parameter.StartsWith("cancellationToken", StringComparison.Ordinal)));
+        Assert.DoesNotContain(parameter => parameter.StartsWith("cancellationToken", StringComparison.Ordinal), catalog.Tools.SelectMany(tool => tool.Parameters));
     }
 
     [TestMethod]
@@ -283,11 +296,11 @@ public partial class McpOracleTests
     {
         using var http = McpTestHost.CreateHttpClient();
 
-        using var page = await http.GetAsync("/mcp-server");
-        using var products = await http.GetAsync("/api/products");
+        using var page = await http.GetAsync("/mcp-server", TestContext.CancellationToken);
+        using var products = await http.GetAsync("/api/products", TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.OK, page.StatusCode);
-        Assert.Contains("MCP server", await page.Content.ReadAsStringAsync());
+        Assert.Contains("MCP server", await page.Content.ReadAsStringAsync(TestContext.CancellationToken));
         Assert.AreEqual(HttpStatusCode.OK, products.StatusCode, "The server's own catalog endpoint is untouched.");
     }
 
@@ -300,14 +313,14 @@ public partial class McpOracleTests
     {
         using var http = McpTestHost.CreateHttpClient();
 
-        var before = JsonDocument.Parse(await http.GetStringAsync("/api/products")).RootElement.GetArrayLength();
+        var before = JsonDocument.Parse(await http.GetStringAsync("/api/products", TestContext.CancellationToken)).RootElement.GetArrayLength();
 
         using var post = await http.PostAsync(
             "/api/products",
-            new StringContent("""{"name":"x","price":1}""", System.Text.Encoding.UTF8, "application/json"));
+            new StringContent("""{"name":"x","price":1}""", System.Text.Encoding.UTF8, "application/json"), TestContext.CancellationToken);
 
         Assert.IsFalse(post.IsSuccessStatusCode);
-        Assert.AreEqual(before, JsonDocument.Parse(await http.GetStringAsync("/api/products")).RootElement.GetArrayLength());
+        Assert.AreEqual(before, JsonDocument.Parse(await http.GetStringAsync("/api/products", TestContext.CancellationToken)).RootElement.GetArrayLength());
     }
 
     /// <summary>A first-party backend as the test describes it: its real capabilities, and the probe the plan says it gives.</summary>
@@ -327,4 +340,6 @@ public partial class McpOracleTests
 
     [GeneratedRegex(@"^#{2,4} (?<text>.+)$")]
     private static partial Regex HeadingRegex();
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

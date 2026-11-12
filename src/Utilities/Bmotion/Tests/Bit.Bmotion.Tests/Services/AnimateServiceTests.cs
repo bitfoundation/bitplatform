@@ -36,17 +36,17 @@ public class AnimateServiceTests
         await using var _ = engine;
         interop.SelectorResolver = _ => ["li-0", "li-1", "li-2"];
 
-        var controls = await service.AnimateAsync(".item", Bm.To(opacity: 0.5), Bm.Tween(0.4), Bm.Stagger(0.1));
+        var controls = await service.AnimateAsync(".item", Bm.To(opacity: 0.5), Bm.Tween(0.4), Bm.Stagger(0.1), TestContext.CancellationToken);
 
         var plays = interop.ArgsOf("playWaapiAnimation");
-        CollectionAssert.AreEqual(new[] { "li-0", "li-1", "li-2" }, plays.Select(p => (string)p[0]!).ToArray());
-        CollectionAssert.AreEqual(new[] { 0.0, 100.0, 200.0 }, plays.Select(p => Math.Round((double)Timing(p)["delay"]!, 6)).ToArray());
+        Assert.AreSequenceEqual(new[] { "li-0", "li-1", "li-2" }, plays.Select(p => (string)p[0]!).ToArray());
+        Assert.AreSequenceEqual(new[] { 0.0, 100.0, 200.0 }, plays.Select(p => Math.Round((double)Timing(p)["delay"]!, 6)).ToArray());
         Assert.IsTrue(plays.All(p => (double)Timing(p)["duration"]! == 400));
         Assert.IsFalse(controls.WhenCompleteAsync().IsCompleted, "nothing has finished yet");
 
         interop.FinishWaapi();
 
-        await controls.WhenCompleteAsync().WaitAsync(Timeout);
+        await controls.WhenCompleteAsync().WaitAsync(Timeout, TestContext.CancellationToken);
     }
 
     [TestMethod]
@@ -55,7 +55,7 @@ public class AnimateServiceTests
         var (service, engine, interop) = Create();
         await using var _ = engine;
 
-        await service.AnimateAsync("#box", Bm.To(opacity: 0.5, transition: Bm.Tween(0.2)), Bm.Tween(1));
+        await service.AnimateAsync("#box", Bm.To(opacity: 0.5, transition: Bm.Tween(0.2)), Bm.Tween(1), cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(200.0, (double)Timing(interop.ArgsOf("playWaapiAnimation").Single())["duration"]!);
     }
@@ -67,17 +67,17 @@ public class AnimateServiceTests
         await using var _ = engine;
         interop.SelectorResolver = _ => ["a", "b"];
 
-        var controls = await service.AnimateAsync(".item", Bm.To(opacity: 0.5), Bm.Tween(1));
+        var controls = await service.AnimateAsync(".item", Bm.To(opacity: 0.5), Bm.Tween(1), cancellationToken: TestContext.CancellationToken);
         Assert.IsTrue(engine.IsRegistered("a") && engine.IsRegistered("b"));
 
         controls.Stop();
 
         // Frozen in place: the browser animations are committed and cancelled...
         Assert.IsTrue(interop.ArgsOf("cancelWaapiAnimation").All(a => (bool)a[2]!), "Stop must commit the current values");
-        CollectionAssert.AreEquivalent(new[] { "a", "b" }, interop.ArgsOf("cancelWaapiAnimation").Select(a => (string)a[0]!).ToArray());
+        Assert.AreSequenceEqual(new[] { "a", "b" }, interop.ArgsOf("cancelWaapiAnimation").Select(a => (string)a[0]!).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         // ...the targets are released, and an awaiting caller is let go.
         Assert.IsFalse(engine.IsRegistered("a") || engine.IsRegistered("b"));
-        await controls.WhenCompleteAsync().WaitAsync(Timeout);
+        await controls.WhenCompleteAsync().WaitAsync(Timeout, TestContext.CancellationToken);
     }
 
     [TestMethod]
@@ -88,7 +88,7 @@ public class AnimateServiceTests
 
         var controls = await service.AnimateAsync("#box", Bm.To(opacity: 0.5), cancellationToken: new CancellationToken(canceled: true));
 
-        Assert.AreEqual(0, interop.Calls.Count);
+        Assert.IsEmpty(interop.Calls);
         Assert.IsTrue(controls.WhenCompleteAsync().IsCompleted);
     }
 
@@ -104,7 +104,7 @@ public class AnimateServiceTests
 
         Assert.IsTrue(interop.WasCalled("cancelWaapiAnimation"));
         Assert.IsFalse(engine.IsRegistered("bm-sel-1"));
-        await controls.WhenCompleteAsync().WaitAsync(Timeout);
+        await controls.WhenCompleteAsync().WaitAsync(Timeout, TestContext.CancellationToken);
     }
 
     [TestMethod]
@@ -114,7 +114,7 @@ public class AnimateServiceTests
         await using var _ = engine;
         interop.RefResolver = _ => "hero";
 
-        await service.AnimateAsync(new Microsoft.AspNetCore.Components.ElementReference("ref-1"), Bm.To(scale: 1.5), Bm.Tween(0.3));
+        await service.AnimateAsync(new Microsoft.AspNetCore.Components.ElementReference("ref-1"), Bm.To(scale: 1.5), Bm.Tween(0.3), TestContext.CancellationToken);
 
         Assert.AreEqual("hero", interop.ArgsOf("playWaapiAnimation").Single()[0]);
     }
@@ -165,7 +165,7 @@ public class AnimateServiceTests
         // 512ms of real time at double speed covers the whole one-second tween.
         RunFrames(engine, 16, 528);
 
-        await controls.WhenCompleteAsync().WaitAsync(Timeout);
+        await controls.WhenCompleteAsync().WaitAsync(Timeout, TestContext.CancellationToken);
     }
 
     [TestMethod]
@@ -177,7 +177,7 @@ public class AnimateServiceTests
 
         controls.Complete();
 
-        await controls.WhenCompleteAsync().WaitAsync(Timeout);
+        await controls.WhenCompleteAsync().WaitAsync(Timeout, TestContext.CancellationToken);
         // Snapped straight to the authored end value, and nothing is left running.
         Assert.AreEqual("#ffffff", ColorOf(engine));
         Assert.IsFalse(engine.GetDiagnostics().Single(d => d.Id == "el").HasActiveAnimations);
@@ -215,12 +215,12 @@ public class AnimateServiceTests
 
         var animation = service.AnimateAsync(value, 100, Bm.Tween(0.2, ease: BmEase.Linear));
         RunFrames(engine, 0, 400);
-        await animation.WaitAsync(Timeout);
+        await animation.WaitAsync(Timeout, TestContext.CancellationToken);
 
         Assert.AreEqual(100, value.Value, 1e-9);
-        Assert.IsTrue(seen.Count >= 5, $"expected per-frame updates, got {seen.Count}");
+        Assert.IsGreaterThanOrEqualTo(5, seen.Count, $"expected per-frame updates, got {seen.Count}");
         for (int i = 1; i < seen.Count; i++)
-            Assert.IsTrue(seen[i] >= seen[i - 1], "a linear tween towards a higher target never goes back");
+            Assert.IsGreaterThanOrEqualTo(seen[i - 1], seen[i], "a linear tween towards a higher target never goes back");
     }
 
     [TestMethod]
@@ -230,7 +230,7 @@ public class AnimateServiceTests
         await using var __ = engine;
         var value = Bm.Value(0.0);
 
-        await service.AnimateAsync(value, 42, Bm.Tween(1)).WaitAsync(Timeout);
+        await service.AnimateAsync(value, 42, Bm.Tween(1)).WaitAsync(Timeout, TestContext.CancellationToken);
 
         Assert.AreEqual(42, value.Value);
     }
@@ -246,10 +246,10 @@ public class AnimateServiceTests
         Assert.AreEqual(0, updates[0], "the start value is reported synchronously");
 
         RunFrames(engine, 0, 200);
-        await animation.WaitAsync(Timeout);
+        await animation.WaitAsync(Timeout, TestContext.CancellationToken);
 
         Assert.AreEqual(100, updates[^1], 1e-9);
-        Assert.IsTrue(updates.Any(v => v > 0 && v < 100), "intermediate values are reported");
+        Assert.Contains(v => v > 0 && v < 100, updates, "intermediate values are reported");
     }
 
     [TestMethod]
@@ -288,7 +288,7 @@ public class AnimateServiceTests
             engine.ComputeFrame(frame * 16.0);
         }
 
-        Assert.IsTrue(follower.Value > 300, $"the follower got to {follower.Value} while its source got to {source.Value}");
+        Assert.IsGreaterThan(300, follower.Value, $"the follower got to {follower.Value} while its source got to {source.Value}");
     }
 
     [TestMethod]
@@ -336,7 +336,7 @@ public class AnimateServiceTests
         source.SetSync(100);
         RunFrames(engine, 0, 16);
 
-        Assert.IsTrue(follower.Value < 0, $"the follower went to {follower.Value} instead of first moving away from its target");
+        Assert.IsLessThan(0, follower.Value, $"the follower went to {follower.Value} instead of first moving away from its target");
     }
 
     [TestMethod]
@@ -355,7 +355,7 @@ public class AnimateServiceTests
         RunFrames(engine, 64, 112);
         source.SetSync(200);
 
-        await animation.WaitAsync(Timeout);   // superseded: settled without another frame
+        await animation.WaitAsync(Timeout, TestContext.CancellationToken);   // superseded: settled without another frame
         RunFrames(engine, 128, 6000);
         Assert.AreEqual(200, follower.Value, 1e-6, "and the follower follows its source again");
     }
@@ -413,7 +413,7 @@ public class AnimateServiceTests
         var (service, engine, interop) = CreateForSequence();
         await using var _ = engine;
 
-        var controls = await service.RunAsync(TwoSteps);
+        var controls = await service.RunAsync(TwoSteps, TestContext.CancellationToken);
 
         engine.ComputeFrame(0);
         Assert.IsTrue(Started(interop, "a"), "the first segment starts at 0");
@@ -423,7 +423,7 @@ public class AnimateServiceTests
         Assert.IsTrue(Started(interop, "b"));
 
         interop.FinishWaapi();
-        await controls.WhenCompleteAsync().WaitAsync(Timeout);
+        await controls.WhenCompleteAsync().WaitAsync(Timeout, TestContext.CancellationToken);
     }
 
     [TestMethod]
@@ -432,7 +432,7 @@ public class AnimateServiceTests
         var (service, engine, interop) = CreateForSequence();
         await using var _ = engine;
 
-        var controls = await service.RunAsync(TwoSteps);
+        var controls = await service.RunAsync(TwoSteps, TestContext.CancellationToken);
         engine.ComputeFrame(0);
         controls.Pause();
         RunFrames(engine, 16, 1000);
@@ -454,10 +454,10 @@ public class AnimateServiceTests
         engine.ComputeFrame(0);
         cts.Cancel();
 
-        await controls.WhenCompleteAsync().WaitAsync(Timeout);
+        await controls.WhenCompleteAsync().WaitAsync(Timeout, TestContext.CancellationToken);
         RunFrames(engine, 16, 500);
         Assert.IsFalse(Started(interop, "b"));
-        Assert.IsTrue(interop.ArgsOf("cancelWaapiAnimation").Any(a => (string)a[0]! == "a"), "the running segment is stopped");
+        Assert.Contains(a => (string)a[0]! == "a", interop.ArgsOf("cancelWaapiAnimation"), "the running segment is stopped");
         Assert.IsFalse(engine.IsRegistered("a") || engine.IsRegistered("b"), "every target is released");
     }
 
@@ -472,4 +472,6 @@ public class AnimateServiceTests
         Assert.IsFalse(interop.WasCalled("resolveOrRegisterBySelector"));
         Assert.IsTrue(controls.WhenCompleteAsync().IsCompleted);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

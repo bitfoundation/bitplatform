@@ -4,13 +4,13 @@ using System.Text.Json.Nodes;
 namespace Bit.Bsqlite.Tests.E2E.Infrastructure;
 
 /// <summary>What the worker reports about itself: the SQLite version and the engine build it loaded.</summary>
-public sealed record HostVersion(string Version, string Build);
+internal sealed record HostVersion(string Version, string Build);
 
 /// <summary>
 /// The options of the host module's <c>open</c>, as the .NET transport sends them. Unset members are left
 /// out of what the page receives rather than sent as null, the same as a JavaScript caller leaving them out.
 /// </summary>
-public sealed record HostOptions
+internal sealed record HostOptions
 {
     public string DatabaseName { get; init; } = "test.db";
 
@@ -46,13 +46,13 @@ public sealed record HostOptions
 }
 
 /// <summary>A module the worker imports: a storage provider's VFS, or an extension registering functions.</summary>
-public sealed record JsModule(string ModuleUrl, string RegisterExport = "register")
+internal sealed record JsModule(string ModuleUrl, string RegisterExport = "register")
 {
     internal Dictionary<string, object?> ToArgument() => new() { ["moduleUrl"] = ModuleUrl, ["registerExport"] = RegisterExport };
 }
 
 /// <summary>What a storage provider tells the worker it cannot do, so the worker can refuse it in SQL.</summary>
-public sealed record StorageLimits(bool SupportsMultiDatabaseTransactions, bool CanChangePageSize)
+internal sealed record StorageLimits(bool SupportsMultiDatabaseTransactions, bool CanChangePageSize)
 {
     internal Dictionary<string, object?> ToArgument() => new()
     {
@@ -62,7 +62,7 @@ public sealed record StorageLimits(bool SupportsMultiDatabaseTransactions, bool 
 }
 
 /// <summary>The first-party storages, as each .NET provider describes itself to the worker.</summary>
-public static class Storages
+internal static class Storages
 {
     public static readonly JsModule OpfsVfs = new("/_content/Bit.Bsqlite/bit-bsqlite-opfs-vfs.js");
     public static readonly StorageLimits OpfsLimits = new(SupportsMultiDatabaseTransactions: false, CanChangePageSize: true);
@@ -99,7 +99,7 @@ public static class Storages
 }
 
 /// <summary>One request of a batch. <see cref="ResultKind"/> is <c>nonQuery</c>, <c>scalar</c> or <c>reader</c>.</summary>
-public sealed record WireRequest(string CommandText, IReadOnlyList<WireParameter>? Parameters = null, string ResultKind = "nonQuery", int? MaxRows = null)
+internal sealed record WireRequest(string CommandText, IReadOnlyList<WireParameter>? Parameters = null, string ResultKind = "nonQuery", int? MaxRows = null)
 {
     internal Dictionary<string, object?> ToArgument()
     {
@@ -119,7 +119,7 @@ public sealed record WireRequest(string CommandText, IReadOnlyList<WireParameter
 /// A parameter with a natural value. Two kinds cannot cross into the page as themselves and are written as
 /// <see cref="Blob"/> for bytes and <see cref="BigInt"/> for a 64-bit integer.
 /// </summary>
-public sealed record WireParameter(string Name, object? Value = null)
+internal sealed record WireParameter(string Name, object? Value = null)
 {
     public byte[]? Bytes { get; init; }
 
@@ -141,7 +141,7 @@ public sealed record WireParameter(string Name, object? Value = null)
 }
 
 /// <summary>One result set of a reply, with the rows kept as JSON for <see cref="AssertJson"/>.</summary>
-public sealed record WireResult(string[] ColumnNames, string?[] ColumnTypes, int RecordsAffected, long LastInsertRowId, JsonElement Rows)
+internal sealed record WireResult(string[] ColumnNames, string?[] ColumnTypes, int RecordsAffected, long LastInsertRowId, JsonElement Rows)
 {
     internal static WireResult From(JsonElement result) => new(
         [.. result.GetProperty("columnNames").EnumerateArray().Select(n => n.GetString()!)],
@@ -152,7 +152,7 @@ public sealed record WireResult(string[] ColumnNames, string?[] ColumnTypes, int
 }
 
 /// <summary>A failed batch, as the reply carried it.</summary>
-public sealed record WireFailure(string Message, int? SqliteCode, string Name)
+internal sealed record WireFailure(string Message, int? SqliteCode, string Name)
 {
     internal static WireFailure? From(JsonElement failure) => failure.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined
         ? null

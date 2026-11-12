@@ -235,7 +235,7 @@ public class BinkCanvasTests : BunitContext
         canvas.InvokeAsync(() => canvas.Instance.Selection.Set(second.Id)).GetAwaiter().GetResult();
         BinkPdfExportResult selected = canvas.Instance.ExportPdf(new BinkPdfExportOptions { Region = BinkExportRegion.Selection, Padding = 0, Scale = 1 });
         string text = System.Text.Encoding.Latin1.GetString(selected.Bytes);
-        StringAssert.Contains(text, $"/MediaBox [0 0 {BinkPdfFile.Number(second.Bounds.Width)} {BinkPdfFile.Number(second.Bounds.Height)}]", "Cropped to the selected stroke.");
+        Assert.Contains($"/MediaBox [0 0 {BinkPdfFile.Number(second.Bounds.Width)} {BinkPdfFile.Number(second.Bounds.Height)}]", text, "Cropped to the selected stroke.");
     }
 
     [TestMethod]

@@ -441,7 +441,7 @@ public class BitDropdownKeyboardE2ETests : BitDropdownE2ETestBase
         // The open list sits above the dialog.
         var calloutZ = await callout.EvaluateAsync<int>("el => parseInt(getComputedStyle(el).zIndex)");
         var dialogZ = await Page.Locator(".bit-dlg").First.EvaluateAsync<int>("el => { for (let e = el; e; e = e.parentElement) { const z = parseInt(getComputedStyle(e).zIndex); if (!isNaN(z)) return z; } return 0; }");
-        Assert.IsTrue(calloutZ > dialogZ, $"The callout ({calloutZ}) stacks above the dialog ({dialogZ}).");
+        Assert.IsGreaterThan(dialogZ, calloutZ, $"The callout ({calloutZ}) stacks above the dialog ({dialogZ}).");
 
         await Option(callout, "Carrot").ClickAsync();
 

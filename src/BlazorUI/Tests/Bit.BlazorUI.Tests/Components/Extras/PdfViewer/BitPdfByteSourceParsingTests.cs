@@ -28,7 +28,7 @@ public class BitPdfByteSourceParsingTests
         Assert.AreEqual(prefix.Length, stream.Start);
         Assert.AreEqual(prefix.Length + content.Length, stream.End);
         Assert.AreEqual((double)declaredLength, stream.Dict!.Get("Length"));
-        CollectionAssert.AreEqual(Encoding.Latin1.GetBytes(content), stream.GetBytes());
+        Assert.AreSequenceEqual(Encoding.Latin1.GetBytes(content), stream.GetBytes());
         Assert.AreEqual(42d, parser.GetObj());
     }
 
@@ -44,7 +44,7 @@ public class BitPdfByteSourceParsingTests
         Assert.AreEqual(255, sub.GetByte());
         Assert.AreEqual(stream.Start, stream.Pos);
         byte[] copy = stream.GetBytes();
-        CollectionAssert.AreEqual(new byte[] { 0, 255, 65, 81 }, copy);
+        Assert.AreSequenceEqual(new byte[] { 0, 255, 65, 81 }, copy);
         copy[0] = 99;
         stream.Reset();
         Assert.AreEqual(0, stream.GetByte());
@@ -57,13 +57,13 @@ public class BitPdfByteSourceParsingTests
         byte[] original = TestPdf.HelloWorld();
         string text = Encoding.Latin1.GetString(original);
         int startxref = text.LastIndexOf("startxref\n", StringComparison.Ordinal);
-        Assert.IsTrue(startxref >= 0);
+        Assert.IsGreaterThanOrEqualTo(0, startxref);
         byte[] damaged = Encoding.Latin1.GetBytes(text[..startxref] + "startxref\n0\n%%EOF");
 
         var reference = BitPdfDocument.Load(original);
         var recovered = BitPdfDocument.Load(damaged);
         Assert.AreEqual(reference.PageCount, recovered.PageCount);
-        Assert.IsTrue(recovered.Warnings.Count > 0);
+        Assert.IsNotEmpty(recovered.Warnings);
         Assert.AreEqual(
             new BitPdfHtmlRenderer(reference.Pages[0], reference.XRef).Render(),
             new BitPdfHtmlRenderer(recovered.Pages[0], recovered.XRef).Render());
@@ -84,7 +84,7 @@ public class BitPdfByteSourceParsingTests
         var document = BitPdfDocument.Load(prefixed);
         Assert.AreEqual("1.7", document.Version);
         Assert.AreEqual(1, document.PageCount);
-        Assert.AreEqual(0, document.Warnings.Count);
-        StringAssert.Contains(new BitPdfHtmlRenderer(document.Pages[0], document.XRef).Render(), "Hello");
+        Assert.IsEmpty(document.Warnings);
+        Assert.Contains("Hello", new BitPdfHtmlRenderer(document.Pages[0], document.XRef).Render());
     }
 }

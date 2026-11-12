@@ -22,7 +22,7 @@ public class StandaloneTests : BswupTest
 
         var scope = await Page.EvaluateAsync<string>("async () => (await navigator.serviceWorker.getRegistration()).scope");
         Assert.AreEqual($"{Session.Origin}/standalone/", scope);
-        CollectionAssert.AreEqual(new[] { BucketName((await Session.ManifestAsync(AppPath)).Version) }, await BswupCacheNamesAsync());
+        Assert.AreSequenceEqual(new[] { BucketName((await Session.ManifestAsync(AppPath)).Version) }, await BswupCacheNamesAsync());
     }
 
     [TestMethod]
@@ -31,7 +31,7 @@ public class StandaloneTests : BswupTest
         await InstallAsync();
 
         var requests = await Session.RequestsAsync();
-        Assert.IsTrue(requests.Any(r => r.Path == "/standalone/service-worker-assets.js" && r.Status == 200), "The manifest was not requested next to the worker.");
-        Assert.IsFalse(requests.Any(r => r.Path == "/service-worker.js" || r.Path == "/service-worker-assets.js"), "The sub-path app requested root worker files.");
+        Assert.Contains(r => r.Path == "/standalone/service-worker-assets.js" && r.Status == 200, requests, "The manifest was not requested next to the worker.");
+        Assert.DoesNotContain(r => r.Path == "/service-worker.js" || r.Path == "/service-worker-assets.js", requests, "The sub-path app requested root worker files.");
     }
 }

@@ -7,7 +7,7 @@ namespace Bit.BlazorUI.Tests.Performance;
 /// say what it is), then stops what the browser tests of the run share - the test host and the browser.
 /// </summary>
 [TestClass]
-public sealed class BrowserTestRun
+public static class BrowserTestRun
 {
     [AssemblyCleanup]
     public static async Task Cleanup()

@@ -48,8 +48,8 @@ public class BitProgressParamsTests : BunitTestContext
     [TestMethod]
     public void BitProgressParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitProgress)}", BitProgressParams.ParamName);
-        Assert.AreEqual("BitParams.BitProgress", BitProgressParams.ParamName);
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitProgress)}", new BitProgressParams().Name);
+        Assert.AreEqual("BitParams.BitProgress", new BitProgressParams().Name);
     }
 
     [TestMethod]
@@ -87,7 +87,7 @@ public class BitProgressParamsTests : BunitTestContext
 
         var missing = parameters.Where(p => carried.Contains(p) is false).ToArray();
 
-        Assert.AreEqual(0, missing.Length, $"Missing from BitProgressParams: {string.Join(", ", missing)}");
+        Assert.IsEmpty(missing, $"Missing from BitProgressParams: {string.Join(", ", missing)}");
     }
 
     [TestMethod]
@@ -213,7 +213,7 @@ public class BitProgressParamsTests : BunitTestContext
     {
         var component = RenderWithParams(new BitProgressParams { AnnounceProgress = true, AnnounceStep = 10 });
 
-        Assert.AreEqual(1, component.FindAll(".bit-prb-lvr").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-prb-lvr"));
     }
 
     [TestMethod]
@@ -273,7 +273,7 @@ public class BitProgressParamsTests : BunitTestContext
 
         Assert.IsTrue(component.Find(".bit-prb").ClassList.Contains("bit-prb-rnd"));
         Assert.AreEqual("10", component.Find("[role=progressbar]").GetAttribute("aria-valuemin"));
-        Assert.AreEqual(1, component.FindAll(".bit-prb-lvr").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-prb-lvr"));
 
         component.Render(parameters =>
         {
@@ -294,7 +294,7 @@ public class BitProgressParamsTests : BunitTestContext
         Assert.IsFalse(root.ClassList.Contains("bit-prb-rnd"));
         Assert.AreEqual("0", bar.GetAttribute("aria-valuemin"));
         Assert.AreEqual("100", bar.GetAttribute("aria-valuemax"));
-        Assert.AreEqual(0, component.FindAll(".bit-prb-lvr").Count);
+        Assert.IsEmpty(component.FindAll(".bit-prb-lvr"));
         Assert.IsTrue(root.ClassList.Contains("bit-prb-sm"), "a parameter the markup sets is left alone");
     }
 

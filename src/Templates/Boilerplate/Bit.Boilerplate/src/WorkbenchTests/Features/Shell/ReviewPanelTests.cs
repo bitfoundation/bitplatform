@@ -54,7 +54,7 @@ public class ReviewPanelTests
 
         cut.Find($"textarea[aria-label='{WorkbenchStrings.NewComment}']").KeyDown(new KeyboardEventArgs { Key = "Enter", CtrlKey = true });
 
-        Assert.HasCount(1, sent, "The draft is cleared once it is sent, so a second Ctrl+Enter sends nothing.");
+        Assert.ContainsSingle(sent, "The draft is cleared once it is sent, so a second Ctrl+Enter sends nothing.");
     }
 
     [TestMethod]
@@ -125,7 +125,7 @@ public class ReviewPanelTests
 
         cut.Find($"button[aria-label='{WorkbenchStrings.DeleteComment}']").Click();
 
-        Assert.HasCount(1, session.ThreadsOf(page.Key));
+        Assert.ContainsSingle(session.ThreadsOf(page.Key));
         Assert.Contains(WorkbenchStrings.DeleteCommentConfirm, cut.Markup);
 
         cut.Find($"button[aria-label='{WorkbenchStrings.DeleteComment}']").Click();

@@ -23,10 +23,10 @@ public class BitOverlayE2ETests : E2ETestBase
         var response = await Page.APIRequest.GetAsync($"{BaseUrl}{Route}");
         var html = await response.TextAsync();
 
-        StringAssert.Contains(html, "id=\"ovl-basic\"");
-        StringAssert.Contains(html, "bit-ovl-ctr bit-ovl");
-        StringAssert.Contains(html, "id=\"basic-content\"");
-        StringAssert.Contains(html, "id=\"status\">Loading");
+        Assert.Contains("id=\"ovl-basic\"", html);
+        Assert.Contains("bit-ovl-ctr bit-ovl", html);
+        Assert.Contains("id=\"basic-content\"", html);
+        Assert.Contains("id=\"status\">Loading", html);
 
         await OpenAsync(Route);
 
@@ -260,7 +260,7 @@ public class BitOverlayE2ETests : E2ETestBase
 
         // And the drag selected the text of the content, which the layer hands its selectability back to.
         var selection = await Page.EvaluateAsync<string>("() => window.getSelection().toString()");
-        Assert.IsTrue(selection.Length > 0, "The drag selected no text of the content.");
+        Assert.IsGreaterThan(0, selection.Length, "The drag selected no text of the content.");
 
         // A plain click on the layer afterwards dismisses as usual.
         await Page.Mouse.ClickAsync(10, 10);
@@ -907,7 +907,7 @@ public class BitOverlayE2ETests : E2ETestBase
         await OpenAsync(Route);
 
         var full = await FadeDurationMsAsync("#ovl-motion");
-        Assert.IsTrue(full >= 50, $"The layer does not fade without reduced motion ({full}ms).");
+        Assert.IsGreaterThanOrEqualTo(50, full, $"The layer does not fade without reduced motion ({full}ms).");
 
         await Page.EmulateMediaAsync(new() { ReducedMotion = ReducedMotion.Reduce });
 

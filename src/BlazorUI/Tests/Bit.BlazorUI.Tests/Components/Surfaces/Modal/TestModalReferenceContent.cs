@@ -9,7 +9,7 @@ namespace Bit.BlazorUI.Tests.Components.Surfaces.Modal;
 /// from one that hands it over on every render of the container. It takes no parameters of its own, which would be
 /// handed over again whenever the modal re-renders.
 /// </summary>
-public class TestModalReferenceContent : ComponentBase
+internal class TestModalReferenceContent : ComponentBase
 {
     [CascadingParameter] public BitModalReference? ModalReference { get; set; }
 

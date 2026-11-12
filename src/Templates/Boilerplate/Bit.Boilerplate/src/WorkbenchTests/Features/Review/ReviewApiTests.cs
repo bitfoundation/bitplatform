@@ -266,7 +266,7 @@ public class ReviewApiTests
 
         var redrawn = (await GetReview())["flows"]!.AsArray().Where(f => (string?)f!["id"] == id).ToArray();
 
-        Assert.HasCount(1, redrawn);
+        Assert.ContainsSingle(redrawn);
         Assert.AreEqual("Planning a week, again", (string?)redrawn[0]!["name"]);
     }
 

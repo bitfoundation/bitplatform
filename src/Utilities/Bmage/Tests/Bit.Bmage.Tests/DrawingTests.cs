@@ -88,8 +88,8 @@ public sealed class RasterizerTests
         using var canvas = ImageCanvas.Create(64, 8);
         var paint = new LinearGradientPaint(new Vector2(0, 0), new Vector2(64, 0), [(0f, Rgba32.Black), (1f, Rgba32.White)]);
         canvas.FillPath(new PathBuilder().AddRectangle(new RectangleF(0, 0, 64, 8)).Build(), paint);
-        Assert.IsTrue(canvas.Buffer[1, 4].R < 20);
-        Assert.IsTrue(canvas.Buffer[62, 4].R > 235);
+        Assert.IsLessThan(20, canvas.Buffer[1, 4].R);
+        Assert.IsGreaterThan(235, canvas.Buffer[62, 4].R);
         Assert.IsInRange(110, 145, canvas.Buffer[32, 4].R);
     }
 
@@ -124,10 +124,10 @@ public sealed class StrokerTests
     {
         using var canvas = ImageCanvas.Create(64, 64);
         canvas.DrawLine(new Vector2(20, 32), new Vector2(44, 32), Rgba32.Black, new StrokeStyle { Width = 10, Cap = LineCap.Round });
-        Assert.IsTrue(canvas.Buffer[17, 32].A > 100, "Round cap did not extend past the start point");
+        Assert.IsGreaterThan(100, canvas.Buffer[17, 32].A, "Round cap did not extend past the start point");
         using var butt = ImageCanvas.Create(64, 64);
         butt.DrawLine(new Vector2(20, 32), new Vector2(44, 32), Rgba32.Black, new StrokeStyle { Width = 10, Cap = LineCap.Butt });
-        Assert.IsTrue(butt.Buffer[17, 32].A < 20, "Butt cap extended past the start point");
+        Assert.IsLessThan(20, butt.Buffer[17, 32].A, "Butt cap extended past the start point");
     }
 
     [TestMethod]
@@ -142,8 +142,8 @@ public sealed class StrokerTests
             if (canvas.Buffer[x, 8].A > 200) covered++;
             else if (canvas.Buffer[x, 8].A < 20) gaps++;
         }
-        Assert.IsTrue(covered > 20, $"Too little ink: {covered}");
-        Assert.IsTrue(gaps > 20, $"No gaps in the dashed line: {gaps}");
+        Assert.IsGreaterThan(20, covered, $"Too little ink: {covered}");
+        Assert.IsGreaterThan(20, gaps, $"No gaps in the dashed line: {gaps}");
     }
 
     [TestMethod]
@@ -151,11 +151,11 @@ public sealed class StrokerTests
     {
         using var canvas = ImageCanvas.Create(64, 64);
         canvas.DrawRectangle(new RectangleF(16, 16, 32, 32), Rgba32.Black, new StrokeStyle { Width = 4 });
-        Assert.IsTrue(canvas.Buffer[32, 16].A > 200, "top edge missing");
-        Assert.IsTrue(canvas.Buffer[32, 48].A > 200, "bottom edge missing");
-        Assert.IsTrue(canvas.Buffer[16, 32].A > 200, "left edge missing");
-        Assert.IsTrue(canvas.Buffer[48, 32].A > 200, "right edge missing");
-        Assert.IsTrue(canvas.Buffer[32, 32].A < 20, "interior should not be filled");
+        Assert.IsGreaterThan(200, canvas.Buffer[32, 16].A, "top edge missing");
+        Assert.IsGreaterThan(200, canvas.Buffer[32, 48].A, "bottom edge missing");
+        Assert.IsGreaterThan(200, canvas.Buffer[16, 32].A, "left edge missing");
+        Assert.IsGreaterThan(200, canvas.Buffer[48, 32].A, "right edge missing");
+        Assert.IsLessThan(20, canvas.Buffer[32, 32].A, "interior should not be filled");
     }
 
     [TestMethod]
@@ -163,11 +163,11 @@ public sealed class StrokerTests
     {
         using var canvas = ImageCanvas.Create(80, 80);
         canvas.DrawArrow(new Vector2(10, 40), new Vector2(70, 40), Rgba32.Black, new StrokeStyle { Width = 4 });
-        Assert.IsTrue(canvas.Buffer[40, 40].A > 200, "shaft missing");
+        Assert.IsGreaterThan(200, canvas.Buffer[40, 40].A, "shaft missing");
         // The head is wider than the shaft near the tip.
         var shaftWidth = CountColumn(canvas, 30);
         var headWidth = CountColumn(canvas, 60);
-        Assert.IsTrue(headWidth > shaftWidth, $"head ({headWidth}) not wider than shaft ({shaftWidth})");
+        Assert.IsGreaterThan(shaftWidth, headWidth, $"head ({headWidth}) not wider than shaft ({shaftWidth})");
 
         static int CountColumn(ImageCanvas c, int x)
         {
@@ -228,7 +228,7 @@ public sealed class CanvasImageTests
         using var canvas = ImageCanvas.Create(64, 64);
         canvas.Rotate(45, new Vector2(32, 32));
         canvas.DrawImage(source, new RectangleF(22, 22, 20, 20));
-        Assert.IsTrue(canvas.Buffer[32, 32].A > 200, "rotated image did not cover the centre");
+        Assert.IsGreaterThan(200, canvas.Buffer[32, 32].A, "rotated image did not cover the centre");
     }
 
     [TestMethod]
@@ -269,8 +269,8 @@ public sealed class AnnotationTests
         using var canvas = ImageCanvas.Create(64, 64);
         var annotation = new RectangleAnnotation { Rectangle = new RectangleF(16, 16, 32, 32) };
         annotation.Render(canvas, new AnnotationRenderContext());
-        Assert.IsTrue(canvas.Buffer[32, 16].A > 200);
-        Assert.IsTrue(canvas.Buffer[32, 32].A < 20);
+        Assert.IsGreaterThan(200, canvas.Buffer[32, 16].A);
+        Assert.IsLessThan(20, canvas.Buffer[32, 32].A);
     }
 
     [TestMethod]
@@ -377,7 +377,7 @@ public sealed class AnnotationTests
     {
         var annotation = new RectangleAnnotation { Rectangle = new RectangleF(10, 20, 40, 10), Rotation = 90 };
         var bounds = annotation.GetRotatedBounds();
-        Assert.IsTrue(bounds.Height > bounds.Width, $"Rotated bounds were not reoriented: {bounds}");
+        Assert.IsGreaterThan(bounds.Width, bounds.Height, $"Rotated bounds were not reoriented: {bounds}");
     }
 }
 
@@ -504,7 +504,7 @@ public sealed class DocumentAndHistoryTests
         var count = history.Entries.Count;
         for (var i = 0; i < 20; i++)
             history.Amend(ImageDocument.Create(new Size(50, 50)).AddOperation(new Operations.Adjustments.BrightnessAdjustment(i / 100f)));
-        Assert.AreEqual(count, history.Entries.Count);
+        Assert.HasCount(count, history.Entries);
     }
 
     [TestMethod]
@@ -514,7 +514,7 @@ public sealed class DocumentAndHistoryTests
         var history = new EditHistory(original, maxDepth: 5);
         for (var i = 0; i < 20; i++)
             history.Push(history.Current.AddOperation(new Operations.Adjustments.BrightnessAdjustment(0.01f * (i + 1))), $"Step {i}");
-        Assert.AreEqual(5, history.Entries.Count);
+        Assert.HasCount(5, history.Entries);
         Assert.IsTrue(history.Entries[0].Document.IsEmpty, "The original state was discarded");
     }
 
@@ -525,7 +525,7 @@ public sealed class DocumentAndHistoryTests
         for (var i = 0; i < 99; i++)
             history.Push(history.Current.AddOperation(new Operations.Adjustments.BrightnessAdjustment(0.001f * i)), $"Step {i}");
         // 100 undo steps on a 24 megapixel image must not cost anything like 100 copies of the pixels.
-        Assert.IsTrue(history.EstimatedMemory < 1_000_000, $"History used {history.EstimatedMemory} bytes");
+        Assert.IsLessThan(1_000_000, history.EstimatedMemory, $"History used {history.EstimatedMemory} bytes");
     }
 
     [TestMethod]

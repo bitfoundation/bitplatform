@@ -54,7 +54,7 @@ public sealed class HostedAppTrimmingTests
         var (_, assets) = publish.ReadServiceWorkerManifest();
         Assert.IsTrue(assets.ContainsKey(ScriptBundle), "The manifest no longer lists the trimmed script bundle.");
         Assert.IsTrue(assets.ContainsKey(StyleBundle), "The manifest no longer lists the trimmed style bundle.");
-        Assert.IsFalse(assets.Keys.Any(url => url.StartsWith(Leaflet, StringComparison.Ordinal)), "The manifest lists Leaflet, which the app does not use.");
+        Assert.DoesNotContain(url => url.StartsWith(Leaflet, StringComparison.Ordinal), assets.Keys, "The manifest lists Leaflet, which the app does not use.");
     }
 
     [TestMethod]
@@ -74,7 +74,7 @@ public sealed class HostedAppTrimmingTests
 
         var listed = assets.Keys.Where(url => url.StartsWith(Modules, StringComparison.Ordinal) && url.EndsWith(".js", StringComparison.Ordinal))
                            .Select(url => url[Modules.Length..^".js".Length]).Order(StringComparer.Ordinal).ToList();
-        CollectionAssert.AreEqual(publish.PublishedModules("Bit.BlazorUI"), listed, $"The manifest lists the modules {string.Join(", ", listed)}.");
+        Assert.AreSequenceEqual(publish.PublishedModules("Bit.BlazorUI"), listed, $"The manifest lists the modules {string.Join(", ", listed)}.");
     }
 
     /// <summary>
@@ -96,7 +96,7 @@ public sealed class HostedAppTrimmingTests
 
         var (_, assets) = publish.ReadServiceWorkerManifest(ClientBasePath);
         Assert.IsTrue(assets.ContainsKey($"{ClientBasePath}/{ScriptBundle}"), "The manifest no longer lists the trimmed script bundle.");
-        Assert.IsFalse(assets.Keys.Any(url => url.StartsWith($"{ClientBasePath}/{Leaflet}", StringComparison.Ordinal)), "The manifest lists Leaflet, which the app does not use.");
+        Assert.DoesNotContain(url => url.StartsWith($"{ClientBasePath}/{Leaflet}", StringComparison.Ordinal), assets.Keys, "The manifest lists Leaflet, which the app does not use.");
     }
 
     [TestMethod]
@@ -113,7 +113,7 @@ public sealed class HostedAppTrimmingTests
 
         var (_, assets) = publish.ReadServiceWorkerManifest();
         Assert.IsTrue(assets.ContainsKey(ScriptBundle), "The manifest does not list the trimmed script bundle.");
-        Assert.IsFalse(assets.Keys.Any(url => url.StartsWith(Leaflet, StringComparison.Ordinal)), "The manifest lists Leaflet, which the app does not use.");
+        Assert.DoesNotContain(url => url.StartsWith(Leaflet, StringComparison.Ordinal), assets.Keys, "The manifest lists Leaflet, which the app does not use.");
     }
 
     [TestMethod]
@@ -158,7 +158,7 @@ public sealed class HostedAppTrimmingTests
             }
         }
 
-        Assert.AreEqual(0, wrong.Count, Summarize(wrong));
+        Assert.IsEmpty(wrong, Summarize(wrong));
     }
 
     /// <summary>
@@ -231,7 +231,7 @@ public sealed class HostedAppTrimmingTests
             }
         }
 
-        Assert.AreEqual(0, wrong.Count, Summarize(wrong));
+        Assert.IsEmpty(wrong, Summarize(wrong));
     }
 
     private static PublishResult Of(string scenario) => scenario switch

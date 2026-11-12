@@ -20,7 +20,7 @@ public class DispatchByNameTests
         await harness.Manager.DispatchAsync("orders/Place", new JsonObject { ["name"] = "desk", ["quantity"] = 1 });
 
         Assert.AreEqual(4, harness.Store.Units);
-        CollectionAssert.AreEqual(new[] { "orders/AddUnits", "orders/Place" }, harness.Log.QualifiedNames.ToArray());
+        Assert.AreSequenceEqual(new[] { "orders/AddUnits", "orders/Place" }, harness.Log.QualifiedNames.ToArray());
 
         // The wrapper captured the converted value, not the JSON node it came in as.
         Assert.AreEqual(3, harness.Log.Actions[0].Args[0].Value);
@@ -33,7 +33,7 @@ public class DispatchByNameTests
 
         await harness.Manager.DispatchAsync("orders/Place", new JsonObject { ["Quantity"] = 2, ["NAME"] = "chair" });
 
-        CollectionAssert.AreEqual(new[] { "2 x chair" }, harness.Store.Lines);
+        Assert.AreSequenceEqual(new[] { "2 x chair" }, harness.Store.Lines);
     }
 
     [TestMethod]
@@ -47,7 +47,7 @@ public class DispatchByNameTests
 
         Assert.AreEqual(OrderPriority.High, harness.Store.Priority);
         Assert.AreEqual(12.5m, harness.Store.Discount);
-        CollectionAssert.AreEqual(new[] { "a", "b" }, harness.Store.Tags);
+        Assert.AreSequenceEqual(new[] { "a", "b" }, harness.Store.Tags);
     }
 
     [TestMethod]
@@ -61,7 +61,7 @@ public class DispatchByNameTests
         await harness.Manager.DispatchAsync("orders/ResetState");
         Assert.AreEqual(0, harness.Store.Units);
 
-        CollectionAssert.AreEqual(new[] { "Set Units", "ResetState" }, harness.Log.Names.ToArray());
+        Assert.AreSequenceEqual(new[] { "Set Units", "ResetState" }, harness.Log.Names.ToArray());
     }
 
     [TestMethod]
@@ -100,7 +100,7 @@ public class DispatchByNameTests
         using var harness = BlexTestHarness.For<OrderBookStore>();
 
         var unknownAction = Assert.ThrowsExactly<InvalidOperationException>(() => harness.Manager.DispatchAsync("orders/Teleport"));
-        StringAssert.Contains(unknownAction.Message, "orders/Teleport");
+        Assert.Contains("orders/Teleport", unknownAction.Message);
         Assert.ThrowsExactly<InvalidOperationException>(() => harness.Manager.DispatchAsync("nowhere/AddUnits"));
         Assert.ThrowsExactly<InvalidOperationException>(() => harness.Manager.DispatchAsync("orders"));
     }
@@ -111,7 +111,7 @@ public class DispatchByNameTests
         using var harness = BlexTestHarness.For<OrderBookStore>();
 
         var missing = Assert.ThrowsExactly<ArgumentException>(() => harness.Manager.DispatchAsync("orders/Place", new JsonObject { ["name"] = "x" }));
-        StringAssert.Contains(missing.Message, "quantity");
+        Assert.Contains("quantity", missing.Message);
         Assert.AreEqual(0, harness.Store.Units);
     }
 
@@ -123,7 +123,7 @@ public class DispatchByNameTests
         using var harness = BlexTestHarness.For<OrderBookStore>();
 
         var invalid = Assert.ThrowsExactly<ArgumentException>(() => harness.Manager.DispatchAsync("orders/Place", new JsonObject { ["name"] = "x", ["quantity"] = null }));
-        StringAssert.Contains(invalid.Message, "quantity");
+        Assert.Contains("quantity", invalid.Message);
         Assert.IsNull(invalid.ParamName, "the message names the argument; \"args\" would name the helper's own parameter");
         Assert.AreEqual(0, harness.Store.Units);
     }
@@ -150,7 +150,7 @@ public class DispatchByNameTests
         Dispatch(harness.Manager, """{"type":"orders/AddUnits","payload":{"units":1}}""");
 
         Assert.AreEqual(1, harness.Store.Units);
-        CollectionAssert.AreEqual(new[] { "AddUnits", "Place", "AddUnits", "Clear", "AddUnits" }, harness.Log.Names.ToArray());
+        Assert.AreSequenceEqual(new[] { "AddUnits", "Place", "AddUnits", "Clear", "AddUnits" }, harness.Log.Names.ToArray());
     }
 
     [TestMethod]
@@ -176,9 +176,9 @@ public class DispatchByNameTests
         Dispatch(harness.Manager, """{"type":"orders/Fail","payload":"boom"}""");     // the action throws
         Dispatch(harness.Manager, """{"type":"orders/FailLater","payload":"later"}"""); // ...asynchronously
 
-        await allReported.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        await allReported.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
         Assert.IsTrue(errors.All(e => e.Source == "devtools"));
-        StringAssert.Contains(errors[2].Exception.Message, "orders/Teleport");
+        Assert.Contains("orders/Teleport", errors[2].Exception.Message);
     }
 
     [TestMethod]
@@ -194,7 +194,7 @@ public class DispatchByNameTests
         Dispatch(harness.Manager, """{"type":"shipments/Ship","payload":{"parcel":{"Name":"pen","Quantity":1}}}""");
 
         Assert.IsEmpty(errors, string.Join("; ", errors.Select(e => e.Exception.Message)));
-        CollectionAssert.AreEqual(new[] { "2 x mug", "1 x pen" }, harness.Store.Shipped);
+        Assert.AreSequenceEqual(new[] { "2 x mug", "1 x pen" }, harness.Store.Shipped);
     }
 
     [TestMethod]
@@ -238,4 +238,6 @@ public class DispatchByNameTests
 
     private static void Dispatch(BlexManager manager, string typed)
         => manager.HandleDevToolsMessage(new JsonObject { ["type"] = "ACTION", ["payload"] = typed }.ToJsonString());
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

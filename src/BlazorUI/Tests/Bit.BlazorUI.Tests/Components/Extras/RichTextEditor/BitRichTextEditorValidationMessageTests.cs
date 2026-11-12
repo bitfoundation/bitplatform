@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
@@ -27,7 +28,7 @@ public class BitRichTextEditorValidationMessageTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitRichTextEditorShowValidationMessageShouldShowTheMessageOfTheFormUnderTheEditor()
+    public async Task BitRichTextEditorShowValidationMessageShouldShowTheMessageOfTheFormUnderTheEditor()
     {
         var model = new FormModel();
         var validCount = 0;
@@ -53,7 +54,7 @@ public class BitRichTextEditorValidationMessageTests : BunitTestContext
         });
 
         // Nothing is shown before the form has anything to say.
-        Assert.AreEqual(0, component.FindAll(".bit-rte-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rte-erm"));
 
         component.Find("form").Submit();
 
@@ -70,13 +71,13 @@ public class BitRichTextEditorValidationMessageTests : BunitTestContext
 
         // An edit the form accepts takes the line, and the reference to it, away again.
         var editor = component.FindComponent<BitRichTextEditor>().Instance;
-        component.InvokeAsync(() => editor._OnContentChanged("<p>typed</p>", new BitRichTextEditorContentFacts(true, false, 5, 1))).Wait();
+        await component.InvokeAsync(() => editor._OnContentChanged("<p>typed</p>", new BitRichTextEditorContentFacts(true, false, 5, 1)));
 
         Assert.IsNotNull(model.Body);
 
         component.WaitForAssertion(() =>
         {
-            Assert.AreEqual(0, component.FindAll(".bit-rte-erm").Count);
+            Assert.IsEmpty(component.FindAll(".bit-rte-erm"));
             Assert.AreEqual(component.Find(".bit-rte-hint").Id, component.Find(".bit-rte-edt").GetAttribute("aria-describedby"));
         });
 
@@ -86,7 +87,7 @@ public class BitRichTextEditorValidationMessageTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitRichTextEditorShowValidationMessageShouldFollowTheMessagesWhileTheFieldStaysInvalid()
+    public async Task BitRichTextEditorShowValidationMessageShouldFollowTheMessagesWhileTheFieldStaysInvalid()
     {
         var model = new FormModel();
         var editContext = new EditContext(model);
@@ -95,29 +96,29 @@ public class BitRichTextEditorValidationMessageTests : BunitTestContext
 
         var component = RenderEditor(editContext, model, parameters => parameters.Add(p => p.ShowValidationMessage, true));
 
-        component.InvokeAsync(() =>
+        await component.InvokeAsync(() =>
         {
             store.Add(field, "Keep it under a page.");
             editContext.NotifyValidationStateChanged();
-        }).Wait();
+        });
 
         component.WaitForAssertion(() => Assert.AreEqual("Keep it under a page.", component.Find(".bit-rte-erm").TextContent.Trim()));
 
         // Every message the field holds is shown, in the order they were added, as the ValidationMessage component
         // lists them.
-        component.InvokeAsync(() =>
+        await component.InvokeAsync(() =>
         {
             store.Clear(field);
             store.Add(field, "No links to other sites.");
             store.Add(field, "No images.");
             editContext.NotifyValidationStateChanged();
-        }).Wait();
+        });
 
         component.WaitForAssertion(() => Assert.AreEqual("No links to other sites. No images.", component.Find(".bit-rte-erm").TextContent.Trim()));
     }
 
     [TestMethod]
-    public void BitRichTextEditorWithoutShowValidationMessageShouldLeaveTheMessagesToTheValidationMessageComponent()
+    public async Task BitRichTextEditorWithoutShowValidationMessageShouldLeaveTheMessagesToTheValidationMessageComponent()
     {
         var model = new FormModel();
         var editContext = new EditContext(model);
@@ -125,16 +126,16 @@ public class BitRichTextEditorValidationMessageTests : BunitTestContext
 
         var component = RenderEditor(editContext, model);
 
-        component.InvokeAsync(() => editContext.Validate()).Wait();
+        await component.InvokeAsync(() => editContext.Validate());
 
         // The editor is marked as before, and the message stays where the page puts it.
         component.WaitForAssertion(() => Assert.AreEqual("true", component.Find(".bit-rte-edt").GetAttribute("aria-invalid")));
-        Assert.AreEqual(0, component.FindAll(".bit-rte-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rte-erm"));
         Assert.AreEqual(component.Find(".bit-rte-hint").Id, component.Find(".bit-rte-edt").GetAttribute("aria-describedby"));
     }
 
     [TestMethod]
-    public void BitRichTextEditorErrorMessageShouldWinTheLineOverTheMessagesOfTheEditContext()
+    public async Task BitRichTextEditorErrorMessageShouldWinTheLineOverTheMessagesOfTheEditContext()
     {
         var model = new FormModel();
         var editContext = new EditContext(model);
@@ -146,9 +147,9 @@ public class BitRichTextEditorValidationMessageTests : BunitTestContext
             parameters.Add(p => p.ErrorMessage, "The server rejected this content.");
         });
 
-        component.InvokeAsync(() => editContext.Validate()).Wait();
+        await component.InvokeAsync(() => editContext.Validate());
 
-        Assert.AreEqual(1, component.FindAll(".bit-rte-erm").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-rte-erm"));
         Assert.AreEqual("The server rejected this content.", component.Find(".bit-rte-erm").TextContent.Trim());
 
         // Once the app takes its message back, the EditContext's takes the line.
@@ -160,7 +161,7 @@ public class BitRichTextEditorValidationMessageTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitRichTextEditorShouldNotAnnounceTheMessagesOfTheEditContext()
+    public async Task BitRichTextEditorShouldNotAnnounceTheMessagesOfTheEditContext()
     {
         var model = new FormModel();
         var editContext = new EditContext(model);
@@ -168,15 +169,15 @@ public class BitRichTextEditorValidationMessageTests : BunitTestContext
 
         var component = RenderEditor(editContext, model, parameters => parameters.Add(p => p.ShowValidationMessage, true));
 
-        component.InvokeAsync(() => editContext.Validate()).Wait();
+        await component.InvokeAsync(() => editContext.Validate());
 
         // A submit validates every field at once; the field that takes the focus says what is wrong with it instead.
         component.WaitForAssertion(() => Assert.AreEqual(RequiredMessage, component.Find(".bit-rte-erm").TextContent.Trim()));
-        Assert.IsFalse(component.FindAll("[role=status]").Any(r => r.TextContent.Contains(RequiredMessage)));
+        Assert.DoesNotContain(r => r.TextContent.Contains(RequiredMessage), component.FindAll("[role=status]"));
     }
 
     [TestMethod]
-    public void BitRichTextEditorShouldDescribeTheSurfaceWithTheMessageFirst()
+    public async Task BitRichTextEditorShouldDescribeTheSurfaceWithTheMessageFirst()
     {
         var model = new FormModel();
         var editContext = new EditContext(model);
@@ -189,14 +190,14 @@ public class BitRichTextEditorValidationMessageTests : BunitTestContext
             parameters.Add(p => p.ShowCount, true);
         });
 
-        component.InvokeAsync(() => editContext.Validate()).Wait();
+        await component.InvokeAsync(() => editContext.Validate());
 
         // What is wrong first, then the helper text, the count, and last the hint about the keyboard shortcuts.
         component.WaitForAssertion(() =>
         {
             var ids = component.Find(".bit-rte-edt").GetAttribute("aria-describedby")!.Split(' ');
 
-            Assert.AreEqual(4, ids.Length);
+            Assert.HasCount(4, ids);
             Assert.AreEqual(component.Find(".bit-rte-erm").Id, ids[0]);
             Assert.AreEqual(component.Find(".bit-rte-dsc").Id, ids[1]);
             Assert.AreEqual(component.Find(".bit-rte-cnt").Id, ids[2]);
@@ -205,7 +206,7 @@ public class BitRichTextEditorValidationMessageTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitRichTextEditorSourceViewShouldBeDescribedByTheMessageToo()
+    public async Task BitRichTextEditorSourceViewShouldBeDescribedByTheMessageToo()
     {
         var model = new FormModel();
         var editContext = new EditContext(model);
@@ -217,7 +218,7 @@ public class BitRichTextEditorValidationMessageTests : BunitTestContext
             parameters.Add(p => p.Toolbar, BitRichTextEditorToolbar.Source);
         });
 
-        component.InvokeAsync(() => editContext.Validate()).Wait();
+        await component.InvokeAsync(() => editContext.Validate());
 
         component.Find("button[aria-label='HTML source view']").Click();
 
@@ -227,7 +228,7 @@ public class BitRichTextEditorValidationMessageTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitRichTextEditorBoundToNothingShouldShowNoMessage()
+    public async Task BitRichTextEditorBoundToNothingShouldShowNoMessage()
     {
         var model = new FormModel();
         var editContext = new EditContext(model);
@@ -235,15 +236,15 @@ public class BitRichTextEditorValidationMessageTests : BunitTestContext
 
         var component = RenderEditor(editContext, model, parameters => parameters.Add(p => p.ShowValidationMessage, true), bound: false);
 
-        component.InvokeAsync(() => editContext.Validate()).Wait();
+        await component.InvokeAsync(() => editContext.Validate());
 
         // The model has a message, but the editor has no member of it the message could belong to.
-        Assert.IsTrue(editContext.GetValidationMessages().Any());
-        Assert.AreEqual(0, component.FindAll(".bit-rte-erm").Count);
+        Assert.IsNotEmpty(editContext.GetValidationMessages());
+        Assert.IsEmpty(component.FindAll(".bit-rte-erm"));
     }
 
     [TestMethod]
-    public void BitRichTextEditorShouldShowTheMessagesWhenACascadeAsksForThem()
+    public async Task BitRichTextEditorShouldShowTheMessagesWhenACascadeAsksForThem()
     {
         var model = new FormModel();
         var editContext = new EditContext(model);
@@ -264,7 +265,7 @@ public class BitRichTextEditorValidationMessageTests : BunitTestContext
             });
         });
 
-        component.InvokeAsync(() => editContext.Validate()).Wait();
+        await component.InvokeAsync(() => editContext.Validate());
 
         component.WaitForAssertion(() => Assert.AreEqual(RequiredMessage, component.Find(".bit-rte-erm").TextContent.Trim()));
     }
@@ -293,4 +294,5 @@ public class BitRichTextEditorValidationMessageTests : BunitTestContext
         [Required]
         public string? Body { get; set; }
     }
+
 }

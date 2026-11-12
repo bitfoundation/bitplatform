@@ -68,7 +68,7 @@ public class McpToolSurfaceTests
     [TestMethod]
     public void Every_expected_tool_is_published_and_nothing_else_is()
     {
-        CollectionAssert.AreEquivalent(ExpectedTools, _tools.Select(tool => tool.Name).ToArray());
+        Assert.AreSequenceEqual(ExpectedTools, _tools.Select(tool => tool.Name).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -77,10 +77,11 @@ public class McpToolSurfaceTests
         foreach (var tool in _tools)
         {
             Assert.IsFalse(string.IsNullOrWhiteSpace(tool.Title), $"'{tool.Name}' has no title, so a client lists it by its method name.");
+            var actualValue = tool.Description?.Length > 80;
 
             // The description is what a model picks a tool by; a one-liner is not enough to tell
             // eight documentation tools apart.
-            Assert.IsTrue(tool.Description?.Length > 80,
+            Assert.IsTrue(actualValue,
                 $"'{tool.Name}' has a description of {tool.Description?.Length ?? 0} characters - too short to choose it by.");
         }
     }
@@ -93,8 +94,8 @@ public class McpToolSurfaceTests
             var annotations = tool.ProtocolTool.Annotations;
 
             Assert.IsNotNull(annotations, $"'{tool.Name}' carries no annotations, so a client has to assume it might write.");
-            Assert.AreEqual(true, annotations.ReadOnlyHint, $"'{tool.Name}' is not marked read-only; a client will stop and ask before running it.");
-            Assert.AreEqual(false, annotations.OpenWorldHint, $"'{tool.Name}' is not marked closed-world.");
+            Assert.IsTrue(annotations.ReadOnlyHint, $"'{tool.Name}' is not marked read-only; a client will stop and ask before running it.");
+            Assert.IsFalse(annotations.OpenWorldHint, $"'{tool.Name}' is not marked closed-world.");
 
             // Both are defined only for tools that modify something; stating them on a reader says nothing.
             Assert.IsNull(annotations.DestructiveHint, $"'{tool.Name}' states a destructive hint, which is meaningless on a read-only tool.");
@@ -147,7 +148,7 @@ public class McpToolSurfaceTests
             var tool = _tools.Single(t => t.Name == name);
             var required = tool.JsonSchema.GetProperty("required").EnumerateArray().Select(value => value.GetString()).ToArray();
 
-            CollectionAssert.Contains(required, argument, $"'{name}.{argument}' is not declared required.");
+            Assert.Contains(argument, required, $"'{name}.{argument}' is not declared required.");
         }
     }
 
@@ -167,14 +168,14 @@ public class McpToolSurfaceTests
             // Saying so in the description is the only way a model learns the index is even there:
             // an optional argument on its own reads as "you may leave this out", not as a second
             // thing the tool does.
-            StringAssert.Contains(tool.Description!, "Omit",
+            Assert.Contains("Omit", tool.Description!,
                 $"'{name}' never says what leaving its key out answers with.");
         }
 
         // One page of results is a sensible default; a query is not.
         var search = _tools.Single(tool => tool.Name == "SearchBrouter");
         var searchRequired = search.JsonSchema.GetProperty("required").EnumerateArray().Select(value => value.GetString()).ToArray();
-        CollectionAssert.DoesNotContain(searchRequired, "limit");
+        Assert.DoesNotContain("limit", searchRequired);
     }
 
     [TestMethod]
@@ -187,7 +188,7 @@ public class McpToolSurfaceTests
                          .EnumerateArray().Select(value => value.GetString()).ToArray();
 
 
-        CollectionAssert.AreEquivalent(new[] { "server", "wasm", "auto", "standalone-wasm", "hybrid" }, values);
+        Assert.AreSequenceEqual(new[] { "server", "wasm", "auto", "standalone-wasm", "hybrid" }, values, Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -233,7 +234,7 @@ public class McpToolSurfaceTests
                                             + JsonSerializer.Serialize(tool.JsonSchema).Length
                                             + (tool.ReturnJsonSchema is null ? 0 : JsonSerializer.Serialize(tool.ReturnJsonSchema).Length));
 
-        Assert.IsTrue(characters < 12_000,
+        Assert.IsLessThan(12_000, characters,
             $"The published tool surface is {characters} characters, which every request now carries.");
     }
 

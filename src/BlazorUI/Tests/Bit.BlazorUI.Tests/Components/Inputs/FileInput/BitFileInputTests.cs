@@ -43,7 +43,7 @@ public class BitFileInputTests : BunitTestContext
         var container = component.Find(".bit-fin");
 
         Assert.AreEqual(!isEnabled, fileInput.HasAttribute("disabled"));
-        
+
         if (isEnabled)
         {
             Assert.IsFalse(container.ClassList.Contains("bit-dis"));
@@ -314,7 +314,7 @@ public class BitFileInputTests : BunitTestContext
 
         var fileInput = component.Find(".bit-fin-fi");
         var ariaLabelledBy = fileInput.GetAttribute("aria-labelledby");
-        
+
         Assert.IsNotNull(ariaLabelledBy);
         Assert.Contains("FileInput-", ariaLabelledBy);
     }
@@ -328,7 +328,7 @@ public class BitFileInputTests : BunitTestContext
         });
 
         var fileInput = component.Find(".bit-fin-fi");
-        
+
         Assert.IsFalse(fileInput.HasAttribute("aria-labelledby"));
     }
 
@@ -341,7 +341,7 @@ public class BitFileInputTests : BunitTestContext
         });
 
         var fileList = component.FindAll(".bit-fin-fl");
-        
+
         Assert.IsEmpty(fileList);
     }
 
@@ -378,7 +378,7 @@ public class BitFileInputTests : BunitTestContext
 
         var container = component.Find(".bit-fin");
         var dirAttribute = container.GetAttribute("dir");
-        
+
         Assert.AreEqual(dir.ToString().ToLower(), dirAttribute);
     }
 
@@ -393,7 +393,7 @@ public class BitFileInputTests : BunitTestContext
         });
 
         var container = component.Find(".bit-fin");
-        
+
         Assert.IsTrue(container.ClassList.Contains(customClass));
     }
 
@@ -408,8 +408,9 @@ public class BitFileInputTests : BunitTestContext
         });
 
         var container = component.Find(".bit-fin");
-        
-        Assert.IsTrue(container.GetAttribute("style")?.Contains("color: red") ?? false);
+        var actualValue = container.GetAttribute("style")?.Contains("color: red") ?? false;
+
+        Assert.IsTrue(actualValue);
     }
 
     [TestMethod]
@@ -423,7 +424,7 @@ public class BitFileInputTests : BunitTestContext
         });
 
         var container = component.Find($"#{customId}");
-        
+
         Assert.IsNotNull(container);
     }
 
@@ -438,7 +439,7 @@ public class BitFileInputTests : BunitTestContext
         // so the assertion would hold no matter what ShowRemoveButton defaults to.
         component.Find(".bit-fin-fi").Change(string.Empty);
 
-        Assert.HasCount(1, component.FindAll(".bit-fin-itm"));
+        Assert.ContainsSingle(component.FindAll(".bit-fin-itm"));
         Assert.IsEmpty(component.FindAll(".bit-fin-rbt"));
     }
 
@@ -710,7 +711,7 @@ public class BitFileInputTests : BunitTestContext
         // removing the original leaves a single copy behind, which is no longer a duplicate of anything.
         await component.InvokeAsync(() => instance.RemoveFile(instance.Files[0]));
 
-        Assert.HasCount(1, instance.Files);
+        Assert.ContainsSingle(instance.Files);
         Assert.IsTrue(instance.Files[0].IsValid);
         Assert.IsNull(instance.Files[0].Message);
     }
@@ -784,7 +785,7 @@ public class BitFileInputTests : BunitTestContext
         component.Find(".bit-fin-fi").Change(string.Empty);
 
         Assert.IsNotNull(invalidFiles);
-        Assert.HasCount(1, invalidFiles);
+        Assert.ContainsSingle(invalidFiles);
         Assert.AreEqual("huge.txt", invalidFiles[0].Name);
     }
 
@@ -836,7 +837,7 @@ public class BitFileInputTests : BunitTestContext
         var instance = component.Instance;
 
         Assert.IsNotNull(invalidFiles);
-        Assert.HasCount(1, invalidFiles);
+        Assert.ContainsSingle(invalidFiles);
         Assert.AreEqual("file3.txt", invalidFiles[0].Name);
 
         invalidFiles = null;
@@ -895,7 +896,7 @@ public class BitFileInputTests : BunitTestContext
         var customLabel = component.Find(".custom-label");
 
         Assert.AreEqual(templateText, customLabel.TextContent);
-        
+
         // Original label should not be rendered
         var originalLabels = component.FindAll(".bit-fin-lbl");
 
@@ -908,9 +909,9 @@ public class BitFileInputTests : BunitTestContext
         var component = RenderComponent<BitFileInput>();
 
         var fileList = component.FindAll(".bit-fin-fl");
-        
+
         // File list div should be rendered but empty when no files are selected
-        Assert.HasCount(1, fileList);
+        Assert.ContainsSingle(fileList);
         Assert.AreEqual(0, fileList[0].ChildElementCount);
     }
 
@@ -920,7 +921,7 @@ public class BitFileInputTests : BunitTestContext
         var component = RenderComponent<BitFileInput>();
 
         var fileInput = component.Find("input[type='file']");
-        
+
         Assert.IsNotNull(fileInput);
         Assert.IsTrue(fileInput.ClassList.Contains("bit-fin-fi"));
     }
@@ -931,7 +932,7 @@ public class BitFileInputTests : BunitTestContext
         var component = RenderComponent<BitFileInput>();
 
         var labelButton = component.Find("button.bit-fin-lbl");
-        
+
         Assert.IsNotNull(labelButton);
         Assert.AreEqual("button", labelButton.GetAttribute("type"));
     }
@@ -1141,7 +1142,7 @@ public class BitFileInputTests : BunitTestContext
 
         var container = component.Find(".bit-fin");
         var style = container.GetAttribute("style") ?? string.Empty;
-        
+
         if (string.IsNullOrEmpty(expectedStyle))
         {
             Assert.DoesNotContain("visibility:hidden", style);
@@ -1249,7 +1250,7 @@ public class BitFileInputTests : BunitTestContext
         var folders = component.FindAll(".bit-fin-fp");
 
         // only the file that reported a path gets one, so an ordinary selection keeps the row it always had.
-        Assert.HasCount(1, folders);
+        Assert.ContainsSingle(folders);
         Assert.AreEqual("docs/notes", folders[0].TextContent);
     }
 
@@ -1331,7 +1332,7 @@ public class BitFileInputTests : BunitTestContext
         var icons = component.FindAll(".bit-fin-fio i");
 
         // a null from the selector leaves that file without a glyph at all.
-        Assert.HasCount(1, icons);
+        Assert.ContainsSingle(icons);
         Assert.IsTrue(icons[0].ClassList.Contains("bit-icon--Attach"));
     }
 
@@ -1443,8 +1444,8 @@ public class BitFileInputTests : BunitTestContext
         // the pressed button is gone with its file, so the focus has to be handed on rather than dropped.
         Context.JSInterop.VerifyFocusAsyncInvoke();
 
-        Assert.HasCount(1, component.FindAll(".bit-fin-rbt"));
-        Assert.HasCount(1, component.Instance.Files);
+        Assert.ContainsSingle(component.FindAll(".bit-fin-rbt"));
+        Assert.ContainsSingle(component.Instance.Files);
         Assert.AreEqual("file2.txt", component.Instance.Files[0].Name);
     }
 
@@ -1453,7 +1454,7 @@ public class BitFileInputTests : BunitTestContext
     {
         var component = RenderComponent<BitFileInput>();
 
-        await Assert.ThrowsExactlyAsync<ArgumentNullException>(() => component.Instance.OpenReadStreamAsync(null!));
+        await Assert.ThrowsExactlyAsync<ArgumentNullException>(() => component.Instance.OpenReadStreamAsync(null!, cancellationToken: TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -1618,7 +1619,7 @@ public class BitFileInputTests : BunitTestContext
             parameters.Add(p => p.DropZoneIconName, string.Empty);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-fin-dzi").Count);
+        Assert.IsEmpty(component.FindAll(".bit-fin-dzi"));
     }
 
     [TestMethod]
@@ -1880,15 +1881,15 @@ public class BitFileInputTests : BunitTestContext
         component.Find(".bit-fin-fi").Change(string.Empty);
 
         // the files callback hands over the whole list, the rejected file included; the value is the valid names.
-        Assert.HasCount(1, filesChanges);
-        CollectionAssert.AreEqual(new[] { "a.txt", "big.txt" }, filesChanges[0].Select(f => f.Name).ToArray());
-        CollectionAssert.AreEqual(new[] { "a.txt" }, values);
+        Assert.ContainsSingle(filesChanges);
+        Assert.AreSequenceEqual(new[] { "a.txt", "big.txt" }, filesChanges[0].Select(f => f.Name).ToArray());
+        Assert.AreSequenceEqual(new[] { "a.txt" }, values);
 
         // the same selection again is a change of the files, not of the value.
         component.Find(".bit-fin-fi").Change(string.Empty);
 
         Assert.HasCount(2, filesChanges);
-        Assert.HasCount(1, values);
+        Assert.ContainsSingle(values);
     }
 
     [TestMethod,
@@ -1915,7 +1916,7 @@ public class BitFileInputTests : BunitTestContext
         component.Find(".bit-fin-fi").Change(string.Empty);
 
         Assert.AreEqual("a.txt", value);
-        Assert.HasCount(1, component.Instance.Files);
+        Assert.ContainsSingle(component.Instance.Files);
 
         component.Render(parameters => parameters.Add(p => p.Value, emptied));
 
@@ -1923,7 +1924,7 @@ public class BitFileInputTests : BunitTestContext
         // change came from the consumer rather than the user.
         Assert.IsEmpty(component.Instance.Files);
         Assert.IsEmpty(component.FindAll(".bit-fin-itm"));
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.FileInput.reset"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.FileInput.reset"]);
         Assert.AreEqual(1, valueChanges);
         Assert.AreEqual(1, filesChanges);
         Assert.AreEqual(1, changes);
@@ -1949,9 +1950,9 @@ public class BitFileInputTests : BunitTestContext
         // a browser cannot be handed files from code, so a value naming other files changes nothing.
         component.Render(parameters => parameters.Add(p => p.Value, "other.txt"));
 
-        Assert.HasCount(1, component.Instance.Files);
+        Assert.ContainsSingle(component.Instance.Files);
         Assert.AreEqual("a.txt", component.Instance.Files[0].Name);
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.FileInput.reset"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.FileInput.reset"]);
 
         // the selection writes its own value back the next time it changes.
         SetupFiles([new() { Name = "b.txt", Size = 10, FileId = "2" }]);
@@ -2032,13 +2033,13 @@ public class BitFileInputTests : BunitTestContext
 
         await remove.ClickAsync(new());
 
-        Assert.HasCount(1, component.Instance.Files);
+        Assert.ContainsSingle(component.Instance.Files);
         Assert.AreEqual(0, removes);
 
         await browse.ClickAsync(new());
         await component.InvokeAsync(() => component.Instance.Browse());
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.FileInput.browse"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.FileInput.browse"]);
 
         // an editable one browses again.
         component.Render(parameters => parameters.Add(p => p.ReadOnly, false));
@@ -2048,7 +2049,7 @@ public class BitFileInputTests : BunitTestContext
 
         await component.InvokeAsync(() => component.Instance.Browse());
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.FileInput.browse"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.FileInput.browse"]);
     }
 
     [TestMethod,
@@ -2191,8 +2192,9 @@ public class BitFileInputTests : BunitTestContext
 
         // ...and a selection that reaches it all the same is not taken.
         nativeInput.Change(string.Empty);
+        var actualValue = component.Instance.Files?.Count ?? 0;
 
-        Assert.AreEqual(0, component.Instance.Files?.Count ?? 0);
+        Assert.AreEqual(0, actualValue);
         Assert.AreEqual(0, filesChanges);
         Assert.IsNull(value);
         Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.FileInput.setup"]);
@@ -2267,9 +2269,10 @@ public class BitFileInputTests : BunitTestContext
         await component.InvokeAsync(() => fileInput.Instance.Browse());
 
         Assert.IsNull(model.Value);
-        Assert.AreEqual(0, fileInput.Instance.Files?.Count ?? 0);
+        var actualValue = fileInput.Instance.Files?.Count ?? 0;
+        Assert.AreEqual(0, actualValue);
         Assert.IsFalse(editContext.IsModified());
-        Assert.IsFalse(editContext.GetValidationMessages().Any());
+        Assert.IsEmpty(editContext.GetValidationMessages());
         Assert.IsFalse(component.Find(".bit-fin").ClassList.Contains("bit-inv"));
         Assert.IsNull(component.Find(".bit-fin-lbl").GetAttribute("aria-invalid"));
     }
@@ -2333,9 +2336,9 @@ public class BitFileInputTests : BunitTestContext
 
         var args = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.FileInput.setup").Arguments;
 
-        Assert.AreEqual(true, args[2]);
-        Assert.AreEqual(true, args[3]);
-        Assert.AreEqual(true, args[4]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(args[2]));
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(args[3]));
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(args[4]));
     }
 
     [TestMethod]
@@ -2355,9 +2358,9 @@ public class BitFileInputTests : BunitTestContext
         // the class and style of the drag state are the script's to apply, so they travel with the setup.
         Assert.AreEqual("bit-fin-drg c-drag", args[2]);
         Assert.AreEqual("--s: drag;", args[3]);
-        Assert.AreEqual(false, args[4]);
-        Assert.AreEqual(false, args[5]);
-        Assert.AreEqual(true, args[6]);
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(args[4]));
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(args[5]));
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(args[6]));
     }
 
     [TestMethod,
@@ -2563,10 +2566,10 @@ public class BitFileInputTests : BunitTestContext
 
         await component.FindAll(".bit-fin-rbt")[1].ClickAsync(new());
 
-        CollectionAssert.AreEqual(new[] { "b.txt" }, removed);
+        Assert.AreSequenceEqual(new[] { "b.txt" }, removed);
         Assert.AreEqual(2, filesChanges);
         Assert.AreEqual("a.txt", component.Instance.Value);
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.FileInput.removeFile"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.FileInput.removeFile"]);
     }
 
     [TestMethod]
@@ -2586,16 +2589,16 @@ public class BitFileInputTests : BunitTestContext
 
         var instance = component.Instance;
 
-        await component.InvokeAsync(() => instance.ReadContentAsync());
+        await component.InvokeAsync(() => instance.ReadContentAsync(cancellationToken: TestContext.CancellationToken));
 
-        CollectionAssert.AreEqual(new byte[] { 1, 2, 3 }, instance.Files[0].Content);
+        Assert.AreSequenceEqual(new byte[] { 1, 2, 3 }, instance.Files[0].Content);
         // the rejected file is not read, whether by the read of them all or by one of its own.
         Assert.IsNull(instance.Files[1].Content);
 
-        await component.InvokeAsync(() => instance.ReadContentAsync(instance.Files[1]));
+        await component.InvokeAsync(() => instance.ReadContentAsync(instance.Files[1], TestContext.CancellationToken));
 
         Assert.IsNull(instance.Files[1].Content);
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.FileInput.readContent"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.FileInput.readContent"]);
     }
 
     [TestMethod]
@@ -2610,7 +2613,7 @@ public class BitFileInputTests : BunitTestContext
 
         component.Render(parameters => parameters.Add(p => p.Disabled, true));
 
-        await component.InvokeAsync(() => component.Instance.ReadContentAsync());
+        await component.InvokeAsync(() => component.Instance.ReadContentAsync(cancellationToken: TestContext.CancellationToken));
 
         Assert.IsNull(component.Instance.Files[0].Content);
         Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.FileInput.readContent"]);
@@ -2642,7 +2645,7 @@ public class BitFileInputTests : BunitTestContext
 
         await component.Instance.DisposeAsync();
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.FileInput.clear"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.FileInput.clear"]);
     }
 
     [TestMethod]
@@ -2707,7 +2710,7 @@ public class BitFileInputTests : BunitTestContext
             var element = component.Find(selector);
 
             Assert.IsTrue(element.ClassList.Contains(cssClass), $"{selector} lacks {cssClass}.");
-            StringAssert.Contains(element.GetAttribute("style") ?? string.Empty, style, $"{selector} lacks {style}.");
+            Assert.Contains(style, element.GetAttribute("style") ?? string.Empty, $"{selector} lacks {style}.");
         }
 
         AssertPart(".bit-fin", "c-root", "--s: root;");
@@ -2730,4 +2733,6 @@ public class BitFileInputTests : BunitTestContext
     {
         Context.JSInterop.Setup<BitFileInputInfo[]>("BitBlazorUI.FileInput.setup", _ => true).SetResult(files);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

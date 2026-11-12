@@ -62,9 +62,9 @@ public class ReviewRegressionTests : BunitContext
             await cut.InvokeAsync(() => cut.Instance.CompleteConnection("b", null, BlowHandleType.Target));
         }
 
-        Assert.AreEqual(2, edges.Count);
+        Assert.HasCount(2, edges);
         Assert.AreNotEqual(edges[0].Id, edges[1].Id);
-        Assert.AreEqual(2, cut.FindAll(".bit-blow-edge").Count);
+        Assert.HasCount(2, cut.FindAll(".bit-blow-edge"));
     }
 
     [TestMethod]
@@ -79,8 +79,8 @@ public class ReviewRegressionTests : BunitContext
         await cut.InvokeAsync(() => cut.Instance.StartConnection("a", null, BlowHandleType.Source, BlowPosition.Bottom));
         await cut.InvokeAsync(() => cut.Instance.CompleteConnection("b", null, BlowHandleType.Target));
 
-        Assert.AreEqual(2, edges.Count);
-        Assert.AreEqual(2, edges.Select(e => e.Id).Distinct().Count());
+        Assert.HasCount(2, edges);
+        Assert.HasCount(2, edges.Select(e => e.Id).Distinct());
     }
 
     [TestMethod]
@@ -168,7 +168,7 @@ public class ReviewRegressionTests : BunitContext
         pane.PointerMove(new PointerEventArgs { PointerId = 1, ClientX = 400, ClientY = 400 });
         pane.PointerUp(new PointerEventArgs { PointerId = 1, ClientX = 400, ClientY = 400 });
 
-        Assert.AreEqual(2, ends.Count);
+        Assert.HasCount(2, ends);
         Assert.IsFalse(ends[0].IsDropped);
         Assert.IsTrue(ends[1].IsDropped);
         Assert.IsFalse(ends[1].IsValid);
@@ -205,7 +205,7 @@ public class ReviewRegressionTests : BunitContext
         pane.PointerMove(new PointerEventArgs { PointerId = 1, ClientX = 78, ClientY = 205 });
         pane.PointerUp(new PointerEventArgs { PointerId = 1, ClientX = 78, ClientY = 205 });
 
-        Assert.AreEqual(expectedEdges, edges.Count);
+        Assert.HasCount(expectedEdges, edges);
     }
 
     [TestMethod]
@@ -359,10 +359,10 @@ public class ReviewRegressionTests : BunitContext
         var cut = Render(nodes, extra: p => p.Add(c => c.HistoryEnabled, true));
 
         await cut.InvokeAsync(() => cut.Instance.AddNodes(new BlowNode { Id = "c" }));
-        Assert.AreEqual(3, nodes.Count);
+        Assert.HasCount(3, nodes);
 
         await cut.InvokeAsync(() => cut.Instance.UndoAsync());
-        Assert.AreEqual(2, nodes.Count);
+        Assert.HasCount(2, nodes);
     }
 
     [TestMethod]
@@ -452,7 +452,7 @@ public class ReviewRegressionTests : BunitContext
         var loop = BlowEdgePath.Loop(75, 40, BlowPosition.Bottom, 75, 0, BlowPosition.Top, 60, node);
 
         // The midpoint of the curve is left of the node, not hidden behind it.
-        Assert.IsTrue(loop.LabelX < node.Left, $"loop midpoint at x={loop.LabelX} is behind the node");
+        Assert.IsLessThan(node.Left, loop.LabelX, $"loop midpoint at x={loop.LabelX} is behind the node");
     }
 
     [TestMethod]
@@ -460,7 +460,7 @@ public class ReviewRegressionTests : BunitContext
     {
         var loop = BlowEdgePath.Loop(75, 40, BlowPosition.Bottom, 75.0001, 0, BlowPosition.Top, 60);
 
-        Assert.IsTrue(Math.Abs(loop.LabelX - 75) > 30, "the loop collapsed onto the node");
+        Assert.IsGreaterThan(30, Math.Abs(loop.LabelX - 75), "the loop collapsed onto the node");
     }
 
     [TestMethod]
@@ -494,9 +494,9 @@ public class ReviewRegressionTests : BunitContext
         BlowLayout.Layered(nodes, edges);
 
         var y = nodes.ToDictionary(n => n.Id, n => n.Position.Y);
-        Assert.IsTrue(y["start"] < y["a"]);
-        Assert.IsTrue(y["a"] < y["b"]);
-        Assert.IsTrue(y["b"] < y["end"]);
+        Assert.IsLessThan(y["a"], y["start"]);
+        Assert.IsLessThan(y["b"], y["a"]);
+        Assert.IsLessThan(y["end"], y["b"]);
     }
 
     [TestMethod]
@@ -511,7 +511,7 @@ public class ReviewRegressionTests : BunitContext
         BlowLayout.Circle(nodes);
 
         var top = nodes.OrderBy(n => n.Position.Y).ToArray();
-        Assert.IsTrue(top[1].Position.Y >= top[0].Position.Y + 300, "the two nodes overlap");
+        Assert.IsGreaterThanOrEqualTo(top[0].Position.Y + 300, top[1].Position.Y, "the two nodes overlap");
     }
 
     [TestMethod]
@@ -541,8 +541,8 @@ public class ReviewRegressionTests : BunitContext
 
         BlowAlign.DistributeHorizontally(nodes);
 
-        Assert.IsTrue(nodes[1].Position.X >= nodes[0].Position.X + 500);
-        Assert.IsTrue(nodes[2].Position.X >= nodes[1].Position.X + 50);
+        Assert.IsGreaterThanOrEqualTo(nodes[0].Position.X + 500, nodes[1].Position.X);
+        Assert.IsGreaterThanOrEqualTo(nodes[1].Position.X + 50, nodes[2].Position.X);
     }
 
     [TestMethod]
@@ -581,7 +581,10 @@ public class ReviewRegressionTests : BunitContext
     {
         var child = new BlowNode
         {
-            Id = "c", Position = new(10, 10), ParentId = "p", Extent = new BlowRect(0, 0, 200, 200),
+            Id = "c",
+            Position = new(10, 10),
+            ParentId = "p",
+            Extent = new BlowRect(0, 0, 200, 200),
         };
         child.AbsolutePosition = new BlowXYPosition(510, 310);
 
@@ -905,6 +908,6 @@ public class ReviewRegressionTests : BunitContext
         var quotes = BlowTextMetrics.EstimateWidth("“x”", 10);
 
         Assert.AreEqual(10, emoji, 1e-6);
-        Assert.IsTrue(quotes < 3 * 10 * 0.9);
+        Assert.IsLessThan(3 * 10 * 0.9, quotes);
     }
 }

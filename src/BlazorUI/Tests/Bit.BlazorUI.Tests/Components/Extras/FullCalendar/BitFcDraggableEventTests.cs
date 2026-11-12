@@ -83,8 +83,8 @@ public class BitFcDraggableEventTests : BunitTestContext
         Assert.AreEqual("Standup", root.QuerySelector(".content")!.TextContent);
 
         // The button chrome is reset inline, so the content looks the way it would anywhere else.
-        StringAssert.Contains(root.GetAttribute("style"), "cursor:pointer;");
-        StringAssert.Contains(root.GetAttribute("style"), "background:none;");
+        Assert.Contains("cursor:pointer;", root.GetAttribute("style")!);
+        Assert.Contains("background:none;", root.GetAttribute("style")!);
     }
 
     [TestMethod]

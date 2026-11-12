@@ -19,7 +19,7 @@ public class WorkbenchStoreTests
     {
         var store = NewStore();
 
-        Assert.HasCount(1, store.Panes);
+        Assert.ContainsSingle(store.Panes);
         Assert.AreEqual("1", store.SelectedPane.Id);
         Assert.AreEqual(new WorkbenchScenario(), store.SelectedPane.Scenario);
         Assert.AreEqual("fit", store.Zoom);
@@ -98,12 +98,12 @@ public class WorkbenchStoreTests
         var store = NewStore();
 
         store.RemovePane("1");
-        Assert.HasCount(1, store.Panes, "The last view can't be removed.");
+        Assert.ContainsSingle(store.Panes, "The last view can't be removed.");
 
         store.AddPane();
         store.RemovePane("2");
 
-        Assert.HasCount(1, store.Panes);
+        Assert.ContainsSingle(store.Panes);
         Assert.AreEqual("1", store.SelectedPaneId);
     }
 
@@ -305,7 +305,7 @@ public class WorkbenchStoreTests
         store.AddPane();
         store.OpenUrl("?data=empty&device=ipad-mini");
 
-        Assert.HasCount(1, store.Panes);
+        Assert.ContainsSingle(store.Panes);
         Assert.AreEqual(WorkbenchDataState.Empty, store.SelectedPane.Scenario.Data);
         Assert.AreEqual("ipad-mini", store.SelectedPane.Scenario.Device);
         Assert.AreEqual("2", store.SelectedPaneId, "The selected view's frame is reused.");

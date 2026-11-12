@@ -65,7 +65,7 @@ public class BitInfiniteScrollingE2ETests : E2ETestBase
         await Expect(ItemsOf("isc-basic").Nth(39)).ToHaveTextAsync("Item 39");
 
         // The reader stays where they were: the new items come below.
-        Assert.IsTrue(await List("isc-basic").EvaluateAsync<double>("e => e.scrollTop") > 0);
+        Assert.IsGreaterThan(0, await List("isc-basic").EvaluateAsync<double>("e => e.scrollTop"));
 
         await ScrollToEndAsync("#isc-basic");
         await Expect(ItemsOf("isc-basic")).ToHaveCountAsync(60);
@@ -307,7 +307,7 @@ public class BitInfiniteScrollingE2ETests : E2ETestBase
         await Expect(end).ToHaveTextAsync("This is the beginning of the conversation.");
         var endBox = await end.BoundingBoxAsync();
         var firstBox = await ItemsOf("isc-reversed", "msg").First.BoundingBoxAsync();
-        Assert.IsTrue(endBox!.Y < firstBox!.Y, "The status blocks sit above the items.");
+        Assert.IsLessThan(firstBox!.Y, endBox!.Y, "The status blocks sit above the items.");
         _ = anchorTop;
     }
 
@@ -327,7 +327,7 @@ public class BitInfiniteScrollingE2ETests : E2ETestBase
         var a = await ItemsOf("isc-horizontal", "isc-h-item").Nth(0).BoundingBoxAsync();
         var b = await ItemsOf("isc-horizontal", "isc-h-item").Nth(1).BoundingBoxAsync();
         Assert.AreEqual(a!.Y, b!.Y, 1);
-        Assert.IsTrue(b.X > a.X);
+        Assert.IsGreaterThan(a.X, b.X);
         await Expect(list.Locator(".bit-isc-lst")).ToHaveCSSAsync("width", "12px");
 
         await ScrollToEndAsync("#isc-horizontal", horizontal: true);
@@ -375,7 +375,7 @@ public class BitInfiniteScrollingE2ETests : E2ETestBase
                 return last.getBoundingClientRect().top - o.getBoundingClientRect().bottom;
             }
             """);
-        Assert.IsTrue(sentinelBelow > 50, $"The sentinel is out of sight ({sentinelBelow}px below).");
+        Assert.IsGreaterThan(50, sentinelBelow, $"The sentinel is out of sight ({sentinelBelow}px below).");
         await Expect(ItemsOf("isc-scroller")).ToHaveCountAsync(20);
     }
 
@@ -729,7 +729,7 @@ public class BitInfiniteScrollingE2ETests : E2ETestBase
         await article.FocusAsync();
         await Page.Keyboard.PressAsync("PageDown");
         await Expect(List("isc-vars-feed").Locator("article").Nth(1)).ToBeFocusedAsync();
-        StringAssert.Contains(await ComputedStyleAsync("#isc-vars-feed article:focus", "outline-color") + await ComputedStyleAsync("#isc-vars-feed article:focus", "box-shadow"), "rgb(0, 200, 0)");
+        Assert.Contains("rgb(0, 200, 0)", await ComputedStyleAsync("#isc-vars-feed article:focus", "outline-color") + await ComputedStyleAsync("#isc-vars-feed article:focus", "box-shadow"));
     }
 
     // ---------- RTL ----------
@@ -753,7 +753,7 @@ public class BitInfiniteScrollingE2ETests : E2ETestBase
 
         var a = await ItemsOf("isc-rtl-h", "isc-h-item").Nth(0).BoundingBoxAsync();
         var b = await ItemsOf("isc-rtl-h", "isc-h-item").Nth(1).BoundingBoxAsync();
-        Assert.IsTrue(b!.X < a!.X, "The second item sits to the left of the first.");
+        Assert.IsLessThan(a!.X, b!.X, "The second item sits to the left of the first.");
         await ScrollToEndAsync("#isc-rtl-h", horizontal: true);
         await Expect(ItemsOf("isc-rtl-h", "isc-h-item")).ToHaveCountAsync(20);
     }
@@ -782,11 +782,11 @@ public class BitInfiniteScrollingE2ETests : E2ETestBase
         var html = await response.TextAsync();
 
         Assert.IsTrue(response.Ok);
-        StringAssert.Contains(html, "Preloaded 14");
-        StringAssert.Matches(html, new Regex(@"<div id=""isc-basic"" class=""bit-isc isc-box"""));
+        Assert.Contains("Preloaded 14", html);
+        Assert.MatchesRegex(new Regex(@"<div id=""isc-basic"" class=""bit-isc isc-box"""), html);
         var basic = Regex.Match(html, @"<div id=""isc-basic"".*?<span id=""basic-calls"">", RegexOptions.Singleline).Value;
-        Assert.IsFalse(basic.Contains("isc-item"), "Without Preload the provider is not called on the server.");
-        StringAssert.Contains(html, "<span id=\"status\">Loading</span>");
+        Assert.DoesNotContain("isc-item", basic, "Without Preload the provider is not called on the server.");
+        Assert.Contains("<span id=\"status\">Loading</span>", html);
     }
 
     [TestMethod]

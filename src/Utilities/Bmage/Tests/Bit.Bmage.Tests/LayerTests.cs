@@ -40,7 +40,7 @@ public sealed class LayerTests
     public void SeparableModesComputeTheirBlendFunction(BlendMode mode, int source, int expected)
     {
         var result = Compositor.Blend(new Rgba32(128, 128, 128), new Rgba32((byte)source, (byte)source, (byte)source), mode);
-        Assert.IsTrue(Math.Abs(result.R - expected) <= 1, $"{mode} of {source} over 128 gave {result.R}, expected {expected}.");
+        Assert.IsLessThanOrEqualTo(1, Math.Abs(result.R - expected), $"{mode} of {source} over 128 gave {result.R}, expected {expected}.");
         Assert.AreEqual(255, result.A);
     }
 
@@ -50,10 +50,10 @@ public sealed class LayerTests
         // Cs <= 0.5: B = Cb - (1 - 2Cs) Cb (1 - Cb); Cs > 0.5 with Cb > 0.25: B = Cb + (2Cs - 1)(sqrt(Cb) - Cb).
         var darker = Compositor.Blend(new Rgba32(128, 128, 128), new Rgba32(64, 64, 64), BlendMode.SoftLight);
         var cb = 128 / 255.0; var cs = 64 / 255.0;
-        Assert.IsTrue(Math.Abs(darker.R - (cb - (1 - 2 * cs) * cb * (1 - cb)) * 255) <= 1);
+        Assert.IsLessThanOrEqualTo(1, Math.Abs(darker.R - (cb - (1 - 2 * cs) * cb * (1 - cb)) * 255));
         var lighter = Compositor.Blend(new Rgba32(128, 128, 128), new Rgba32(200, 200, 200), BlendMode.SoftLight);
         cs = 200 / 255.0;
-        Assert.IsTrue(Math.Abs(lighter.R - (cb + (2 * cs - 1) * (Math.Sqrt(cb) - cb)) * 255) <= 1);
+        Assert.IsLessThanOrEqualTo(1, Math.Abs(lighter.R - (cb + (2 * cs - 1) * (Math.Sqrt(cb) - cb)) * 255));
     }
 
     [TestMethod]
@@ -89,12 +89,12 @@ public sealed class LayerTests
         // Colour keeps the destination's luminosity and takes the source's hue: a grey becomes a red of the same lightness.
         var tinted = Compositor.Blend(grey, red, BlendMode.Color);
         Assert.IsTrue(tinted.R > tinted.G && tinted.R > tinted.B, $"{tinted}");
-        Assert.IsTrue(Math.Abs(Lum(tinted) - Lum(grey)) <= 2, $"luminosity {Lum(tinted)} vs {Lum(grey)}");
+        Assert.IsLessThanOrEqualTo(2, Math.Abs(Lum(tinted) - Lum(grey)), $"luminosity {Lum(tinted)} vs {Lum(grey)}");
 
         // Luminosity is the reverse: the red takes the grey's lightness and keeps its hue.
         var relit = Compositor.Blend(red, grey, BlendMode.Luminosity);
-        Assert.IsTrue(Math.Abs(Lum(relit) - Lum(grey)) <= 2);
-        Assert.IsTrue(relit.R > relit.G);
+        Assert.IsLessThanOrEqualTo(2, Math.Abs(Lum(relit) - Lum(grey)));
+        Assert.IsGreaterThan(relit.G, relit.R);
 
         // A grey source has no saturation, so Saturation turns any colour grey.
         var desaturated = Compositor.Blend(red, grey, BlendMode.Saturation);
@@ -144,15 +144,15 @@ public sealed class LayerTests
         using var photo = ParallelProcessingTests.Noise(60, 40, seed: 31);
         using var background = ParallelProcessingTests.Noise(100, 80, seed: 32);
         foreach (var mode in new[] { BlendMode.SourceOver, BlendMode.Multiply, BlendMode.Screen, BlendMode.Color })
-        foreach (var rotation in new[] { 0f, 20f })
-        {
-            var plain = new ImageLayer { Image = photo, Bounds = new RectangleF(15.5f, 10, 70, 50), Rotation = rotation, BlendMode = mode, Opacity = 0.8f };
-            using var unmasked = background.Clone();
-            plain.Composite(unmasked);
-            using var masked = background.Clone();
-            (plain with { Mask = Mask.All() }).Composite(masked);
-            FastPathEquivalenceTests.AssertSamePixels(unmasked, masked, $"{mode}, rotated {rotation}");
-        }
+            foreach (var rotation in new[] { 0f, 20f })
+            {
+                var plain = new ImageLayer { Image = photo, Bounds = new RectangleF(15.5f, 10, 70, 50), Rotation = rotation, BlendMode = mode, Opacity = 0.8f };
+                using var unmasked = background.Clone();
+                plain.Composite(unmasked);
+                using var masked = background.Clone();
+                (plain with { Mask = Mask.All() }).Composite(masked);
+                FastPathEquivalenceTests.AssertSamePixels(unmasked, masked, $"{mode}, rotated {rotation}");
+            }
     }
 
     [TestMethod]
@@ -197,7 +197,7 @@ public sealed class LayerTests
         using var image = ImageBuffer.Create(4, 4, new Rgba32(100, 100, 100));
         new AdjustmentLayer(ImagePipeline.Create().Invert()) { Opacity = 0.5f }.Composite(image);
 
-        Assert.IsTrue(Math.Abs(image[0, 0].R - 128) <= 1, $"{image[0, 0]}");
+        Assert.IsLessThanOrEqualTo(1, Math.Abs(image[0, 0].R - 128), $"{image[0, 0]}");
     }
 
     [TestMethod]
@@ -273,14 +273,14 @@ public sealed class LayerTests
         var adjustment = new AdjustmentLayer(ImagePipeline.Create().Grayscale());
         var document = ImageDocument.Create(new Size(10, 10)).AddLayer(fill).AddLayer(adjustment);
 
-        Assert.AreEqual(2, document.Layers.Count);
+        Assert.HasCount(2, document.Layers);
         Assert.IsFalse(document.IsEmpty);
         var moved = document.MoveLayer(adjustment.Id, 0);
         Assert.AreSame(adjustment, moved.Layers[0]);
         var faded = moved.UpdateLayer(fill with { Opacity = 0.3f });
         Assert.AreEqual(0.3f, faded.FindLayer(fill.Id)!.Opacity);
         Assert.AreEqual(1f, document.FindLayer(fill.Id)!.Opacity, "The original document changed.");
-        Assert.AreEqual(1, faded.RemoveLayer(fill.Id).Layers.Count);
+        Assert.ContainsSingle(faded.RemoveLayer(fill.Id).Layers);
         Assert.AreSame(document, document.UpdateLayer(fill), "Replacing a layer with itself should change nothing.");
     }
 
@@ -310,7 +310,7 @@ public sealed class LayerTests
         session.AddAnnotation(rectangle);
 
         var before = counting.Composited;
-        var preview = await session.RenderPreviewAsync();
+        var preview = await session.RenderPreviewAsync(TestContext.CancellationToken);
         Assert.AreEqual(before + 1, counting.Composited);
         using (var expected = await FreshRender(source, session.Document, 150))
             FastPathEquivalenceTests.AssertSamePixels(expected, preview, "layered preview");
@@ -318,7 +318,7 @@ public sealed class LayerTests
         // Moving the annotation draws it again over the kept composite: the layers are not composited again.
         session.Apply(d => d.UpdateAnnotation(rectangle.Translate(30, 10)), "move");
         before = counting.Composited;
-        preview = await session.RenderPreviewAsync();
+        preview = await session.RenderPreviewAsync(TestContext.CancellationToken);
         Assert.AreEqual(before, counting.Composited, "The layers were composited again for an annotation edit.");
         using (var expected = await FreshRender(source, session.Document, 150))
             FastPathEquivalenceTests.AssertSamePixels(expected, preview, "moved annotation");
@@ -326,7 +326,7 @@ public sealed class LayerTests
         // Editing a layer composites again.
         session.Apply(d => d.UpdateLayer(d.Layers[1] with { Opacity = 0.5f }), "fade");
         before = counting.Composited;
-        preview = await session.RenderPreviewAsync();
+        preview = await session.RenderPreviewAsync(TestContext.CancellationToken);
         Assert.AreEqual(before + 1, counting.Composited);
         using (var expected = await FreshRender(source, session.Document, 150))
             FastPathEquivalenceTests.AssertSamePixels(expected, preview, "faded layer");
@@ -355,4 +355,6 @@ public sealed class LayerTests
 
         protected override Layer ScaleCore(double scale) => this;
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

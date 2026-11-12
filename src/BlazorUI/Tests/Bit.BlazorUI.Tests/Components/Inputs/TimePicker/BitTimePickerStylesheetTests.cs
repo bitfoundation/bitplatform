@@ -21,10 +21,10 @@ public class BitTimePickerStylesheetTests
         // The label of an action button sits on the callout rather than on the role's fill, so it is drawn in the role's
         // text color: a secondary or a warning main is picked to fill a surface and is under 3:1 as text on white. The
         // selected meridiem, a fill, keeps the main.
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "@mixin tpc-color-resolution"), "--bit-tpc-clr-fg: var(--bit-tpc-rl-fg, var(--bit-TimePicker-color, #{$clr-pri}));");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-tpc-abn {"), "color: var(--bit-tpc-clr-fg);");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n    .bit-tpc-#{$role} {"), "--bit-tpc-rl-fg: #{role-text($role, $tokens)};");
-        StringAssert.DoesNotMatch(stylesheet, new System.Text.RegularExpressions.Regex(@"\.bit-tpc-abn:disabled \{\s*color: var\(--bit-tpc-clr\);"));
+        Assert.Contains("--bit-tpc-clr-fg: var(--bit-tpc-rl-fg, var(--bit-TimePicker-color, #{$clr-pri}));", SourceFiles.GetScssBlock(stylesheet, "@mixin tpc-color-resolution"));
+        Assert.Contains("color: var(--bit-tpc-clr-fg);", SourceFiles.GetScssBlock(stylesheet, "\n.bit-tpc-abn {"));
+        Assert.Contains("--bit-tpc-rl-fg: #{role-text($role, $tokens)};", SourceFiles.GetScssBlock(stylesheet, "\n    .bit-tpc-#{$role} {"));
+        Assert.DoesNotMatchRegex(new System.Text.RegularExpressions.Regex(@"\.bit-tpc-abn:disabled \{\s*color: var\(--bit-tpc-clr\);"), stylesheet);
     }
 
     [TestMethod]
@@ -35,28 +35,28 @@ public class BitTimePickerStylesheetTests
         // An explicit Color publishes the role slots, which the resolution reads before the variables, then the primary
         // role an unset one stands for. The role classes themselves name no variable.
         var resolution = SourceFiles.GetScssBlock(stylesheet, "@mixin tpc-color-resolution");
-        StringAssert.Contains(resolution, "--bit-tpc-clr: var(--bit-tpc-rl-clr, var(--bit-TimePicker-color, #{$clr-pri}));");
-        StringAssert.Contains(resolution, "--bit-tpc-clr-txt: var(--bit-tpc-rl-txt, var(--bit-TimePicker-on-color, #{$clr-pri-text}));");
-        StringAssert.Contains(resolution, "--bit-tpc-clr-hover: var(--bit-tpc-rl-hover, var(--bit-TimePicker-hover-color, #{$clr-pri-hover}));");
-        StringAssert.Contains(resolution, "--bit-tpc-clr-active: var(--bit-tpc-rl-active, var(--bit-TimePicker-active-color, #{$clr-pri-active}));");
-        StringAssert.Contains(resolution, "--bit-tpc-clr-focus: var(--bit-tpc-rl-focus, var(--bit-TimePicker-focus-color));");
-        Assert.IsFalse(SourceFiles.GetScssBlock(stylesheet, "\n    .bit-tpc-#{$role} {").Contains("--bit-TimePicker-"), "A role class reads a public variable ahead of its own color.");
+        Assert.Contains("--bit-tpc-clr: var(--bit-tpc-rl-clr, var(--bit-TimePicker-color, #{$clr-pri}));", resolution);
+        Assert.Contains("--bit-tpc-clr-txt: var(--bit-tpc-rl-txt, var(--bit-TimePicker-on-color, #{$clr-pri-text}));", resolution);
+        Assert.Contains("--bit-tpc-clr-hover: var(--bit-tpc-rl-hover, var(--bit-TimePicker-hover-color, #{$clr-pri-hover}));", resolution);
+        Assert.Contains("--bit-tpc-clr-active: var(--bit-tpc-rl-active, var(--bit-TimePicker-active-color, #{$clr-pri-active}));", resolution);
+        Assert.Contains("--bit-tpc-clr-focus: var(--bit-tpc-rl-focus, var(--bit-TimePicker-focus-color));", resolution);
+        Assert.DoesNotContain("--bit-TimePicker-", SourceFiles.GetScssBlock(stylesheet, "\n    .bit-tpc-#{$role} {"), "A role class reads a public variable ahead of its own color.");
 
         // So does an explicit Size, for every size a variable restyles; the size classes name no variable either.
-        StringAssert.Contains(stylesheet, "var(--bit-tpc-inp-h, var(--bit-TimePicker-height, #{$siz-ctrl-md}))");
-        StringAssert.Contains(stylesheet, "var(--bit-tpc-inp-fs, var(--bit-TimePicker-font-size, #{$tg-fs-sm}))");
-        StringAssert.Contains(stylesheet, "var(--bit-tpc-lbl-fs, var(--bit-TimePicker-label-font-size, #{$tg-fs-sm}))");
-        StringAssert.Contains(stylesheet, "var(--bit-tpc-des-fs, var(--bit-TimePicker-description-font-size, #{$tg-fs-xs}))");
-        StringAssert.Contains(stylesheet, "var(--bit-tpc-fld-ico-fs, var(--bit-TimePicker-icon-size, #{$siz-icon-md}))");
-        StringAssert.Contains(stylesheet, "var(--bit-tpc-cell-size, var(--bit-TimePicker-cell-size, #{spacing(3.75)}))");
-        StringAssert.Contains(stylesheet, "var(--bit-tpc-cell-fs, var(--bit-TimePicker-cell-font-size, #{$tg-fs-lg}))");
-        StringAssert.Contains(stylesheet, "var(--bit-tpc-ico-fs, var(--bit-TimePicker-spin-font-size, #{$tg-fs-xs}))");
-        StringAssert.Contains(stylesheet, "var(--bit-tpc-sep-fs, var(--bit-TimePicker-separator-font-size, #{$tg-fs-xl}))");
-        StringAssert.Contains(stylesheet, "var(--bit-tpc-ampm-fs, var(--bit-TimePicker-meridiem-font-size, #{$tg-fs-sm}))");
-        StringAssert.Contains(stylesheet, "var(--bit-tpc-act-fs, var(--bit-TimePicker-action-font-size, #{$tg-fs-sm}))");
+        Assert.Contains("var(--bit-tpc-inp-h, var(--bit-TimePicker-height, #{$siz-ctrl-md}))", stylesheet);
+        Assert.Contains("var(--bit-tpc-inp-fs, var(--bit-TimePicker-font-size, #{$tg-fs-sm}))", stylesheet);
+        Assert.Contains("var(--bit-tpc-lbl-fs, var(--bit-TimePicker-label-font-size, #{$tg-fs-sm}))", stylesheet);
+        Assert.Contains("var(--bit-tpc-des-fs, var(--bit-TimePicker-description-font-size, #{$tg-fs-xs}))", stylesheet);
+        Assert.Contains("var(--bit-tpc-fld-ico-fs, var(--bit-TimePicker-icon-size, #{$siz-icon-md}))", stylesheet);
+        Assert.Contains("var(--bit-tpc-cell-size, var(--bit-TimePicker-cell-size, #{spacing(3.75)}))", stylesheet);
+        Assert.Contains("var(--bit-tpc-cell-fs, var(--bit-TimePicker-cell-font-size, #{$tg-fs-lg}))", stylesheet);
+        Assert.Contains("var(--bit-tpc-ico-fs, var(--bit-TimePicker-spin-font-size, #{$tg-fs-xs}))", stylesheet);
+        Assert.Contains("var(--bit-tpc-sep-fs, var(--bit-TimePicker-separator-font-size, #{$tg-fs-xl}))", stylesheet);
+        Assert.Contains("var(--bit-tpc-ampm-fs, var(--bit-TimePicker-meridiem-font-size, #{$tg-fs-sm}))", stylesheet);
+        Assert.Contains("var(--bit-tpc-act-fs, var(--bit-TimePicker-action-font-size, #{$tg-fs-sm}))", stylesheet);
         foreach (var size in new[] { "\n.bit-tpc-sm {", "\n.bit-tpc-md {", "\n.bit-tpc-lg {" })
         {
-            Assert.IsFalse(SourceFiles.GetScssBlock(stylesheet, size).Contains("--bit-TimePicker-"), "A size class reads a public variable ahead of its own size.");
+            Assert.DoesNotContain("--bit-TimePicker-", SourceFiles.GetScssBlock(stylesheet, size), "A size class reads a public variable ahead of its own size.");
         }
 
         Assert.IsFalse(Regex.IsMatch(stylesheet, @"var\(--bit-TimePicker-[a-z-]+, var\(--bit-tpc-"), "A public variable is read before the parameter it restyles the default of.");
@@ -77,18 +77,18 @@ public class BitTimePickerStylesheetTests
                                          "--bit-tpc-cell-size", "--bit-tpc-cell-fs", "--bit-tpc-ico-fs", "--bit-tpc-sep-fs", "--bit-tpc-ampm-fs",
                                          "--bit-tpc-act-fs" })
         {
-            StringAssert.Contains(resets, $"{property}: initial;");
+            Assert.Contains($"{property}: initial;", resets);
         }
 
         foreach (var element in new[] { "\n.bit-tpc {", "\n.bit-tpc-cal {" })
         {
             var declarations = SourceFiles.GetScssDeclarations(stylesheet, element);
-            StringAssert.Contains(declarations, "@include tpc-parameter-resets;");
-            StringAssert.Contains(declarations, "@include tpc-color-resolution;");
+            Assert.Contains("@include tpc-parameter-resets;", declarations);
+            Assert.Contains("@include tpc-color-resolution;", declarations);
         }
 
         var calloutIndex = stylesheet.IndexOf("\n.bit-tpc-cal {", System.StringComparison.Ordinal);
-        Assert.IsTrue(calloutIndex < stylesheet.IndexOf("\n    .bit-tpc-#{$role} {", System.StringComparison.Ordinal), "The role classes come before the callout that resets what they publish.");
-        Assert.IsTrue(calloutIndex < stylesheet.IndexOf("\n.bit-tpc-sm {", System.StringComparison.Ordinal), "The size classes come before the callout that resets what they publish.");
+        Assert.IsLessThan(stylesheet.IndexOf("\n    .bit-tpc-#{$role} {", System.StringComparison.Ordinal), calloutIndex, "The role classes come before the callout that resets what they publish.");
+        Assert.IsLessThan(stylesheet.IndexOf("\n.bit-tpc-sm {", System.StringComparison.Ordinal), calloutIndex, "The size classes come before the callout that resets what they publish.");
     }
 }

@@ -71,7 +71,7 @@ public class ParentDrivenRenderRuleTests : BunitContext
     }
 }
 
-public class FrameworkChildHost : ComponentBase
+internal class FrameworkChildHost : ComponentBase
 {
     private int _counter;
 

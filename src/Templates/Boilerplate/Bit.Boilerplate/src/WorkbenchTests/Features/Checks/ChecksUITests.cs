@@ -440,7 +440,7 @@ public class ChecksUITests : WorkbenchPageTest
         var download = await Page.RunAndWaitForDownloadAsync(() => Press(Panel.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.ChecksExportAll })));
 
         Assert.AreEqual("pos-dashboard-checks.md", download.SuggestedFilename);
-        Assert.Contains("(`button-name`)", await File.ReadAllTextAsync(await download.PathAsync()));
+        Assert.Contains("(`button-name`)", await File.ReadAllTextAsync(await download.PathAsync(), TestContext.CancellationToken));
     }
 
     [TestMethod, OnPhones]
@@ -454,4 +454,5 @@ public class ChecksUITests : WorkbenchPageTest
         await Expect(Page.GetByRole(AriaRole.Tab, new() { Name = WorkbenchStrings.ChecksTab })).ToHaveCountAsync(0);
         await Expect(Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.RunChecks })).ToHaveCountAsync(0);
     }
+
 }

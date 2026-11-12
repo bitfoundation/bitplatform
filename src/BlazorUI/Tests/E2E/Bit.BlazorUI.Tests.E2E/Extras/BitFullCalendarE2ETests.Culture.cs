@@ -22,10 +22,10 @@ public partial class BitFullCalendarE2ETests
         var headers = calendar.Locator(".bit-bfc-month-header-cell");
         var first = (await headers.First.BoundingBoxAsync())!;
         var last = (await headers.Last.BoundingBoxAsync())!;
-        Assert.IsTrue(first.X > last.X, "the week runs from the right");
+        Assert.IsGreaterThan(last.X, first.X, "the week runs from the right");
         var previous = (await calendar.Locator(".bit-bfc-date-nav .bit-bfc-btn-nav").First.BoundingBoxAsync())!;
         var next = (await calendar.Locator(".bit-bfc-date-nav .bit-bfc-btn-nav").Last.BoundingBoxAsync())!;
-        Assert.IsTrue(next.X < previous.X, "next is on the left");
+        Assert.IsLessThan(previous.X, next.X, "next is on the left");
         Assert.AreEqual("matrix(-1, 0, 0, 1, 0, 0)", await calendar.Locator(".bit-bfc-date-nav .bit-bfc-btn-nav svg").First.EvaluateAsync<string>("e => getComputedStyle(e).transform"));
     }
 
@@ -87,7 +87,7 @@ public partial class BitFullCalendarE2ETests
         await Expect(cal.Locator(".bit-bfc-week-header-day-num.today")).ToHaveTextAsync("25");
         var firstDay = (await cal.Locator(".bit-bfc-week-header-day").First.BoundingBoxAsync())!;
         var lastDay = (await cal.Locator(".bit-bfc-week-header-day").Last.BoundingBoxAsync())!;
-        Assert.IsTrue(firstDay.X > lastDay.X, "the week runs from the right");
+        Assert.IsGreaterThan(lastDay.X, firstDay.X, "the week runs from the right");
 
         // Alt+ArrowLeft moves an event to the next day of a right-to-left week
         await Block(cal, "f1").FocusAsync();
@@ -97,7 +97,7 @@ public partial class BitFullCalendarE2ETests
         await Expect(cal.Locator(".bit-bfc-week-day-col").Nth(5).Locator("[data-bit-bfc-event='f1']")).ToBeAttachedAsync();
         var moved = (await Block(cal, "f1").BoundingBoxAsync())!;
         var todayColumn = (await cal.Locator(".bit-bfc-today-col").BoundingBoxAsync())!;
-        Assert.IsTrue(moved.X < todayColumn.X, "the event moved one column to the left, to the next day");
+        Assert.IsLessThan(todayColumn.X, moved.X, "the event moved one column to the left, to the next day");
 
         await cal.Locator(".bit-bfc-header-right .bit-bfc-btn-primary").ClickAsync();
         var dialog = Dialog(cal);
@@ -110,7 +110,7 @@ public partial class BitFullCalendarE2ETests
         await cal.Locator(".bit-bfc-mode-tab", new() { HasText = "خط زمانی" }).ClickAsync();
         var gutter = (await cal.Locator(".bit-bfc-tl-resource-cell").First.BoundingBoxAsync())!;
         var row = (await cal.Locator(".bit-bfc-tl-scroll").BoundingBoxAsync())!;
-        Assert.IsTrue(gutter.X + gutter.Width > row.X + row.Width - 2, "the resource gutter sits on the right");
+        Assert.IsGreaterThan(row.X + row.Width - 2, gutter.X + gutter.Width, "the resource gutter sits on the right");
     }
 
     [TestMethod]
@@ -152,7 +152,7 @@ public partial class BitFullCalendarE2ETests
         await cal.Locator(".bit-bfc-mode-tab", new() { HasText = "Timeline" }).ClickAsync();
         var gutter = (await cal.Locator(".bit-bfc-tl-resource-cell").First.BoundingBoxAsync())!;
         var scroller = (await cal.Locator(".bit-bfc-tl-scroll").BoundingBoxAsync())!;
-        Assert.IsTrue(gutter.X + gutter.Width > scroller.X + scroller.Width - 2, "the resource gutter sits on the right");
+        Assert.IsGreaterThan(scroller.X + scroller.Width - 2, gutter.X + gutter.Width, "the resource gutter sits on the right");
     }
 
     [TestMethod]
@@ -166,7 +166,7 @@ public partial class BitFullCalendarE2ETests
         Assert.AreEqual("ltr", await english.EvaluateAsync<string>("e => getComputedStyle(e).direction"));
         var first = (await english.Locator(".bit-bfc-month-header-cell").First.BoundingBoxAsync())!;
         var last = (await english.Locator(".bit-bfc-month-header-cell").Last.BoundingBoxAsync())!;
-        Assert.IsTrue(first.X < last.X);
+        Assert.IsLessThan(last.X, first.X);
 
         await AssertRightToLeftLayoutAsync(Page.Locator("#inherited-fa-cal"));
     }

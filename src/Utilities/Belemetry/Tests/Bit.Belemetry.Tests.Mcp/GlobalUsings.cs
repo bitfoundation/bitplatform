@@ -4,3 +4,5 @@ global using Bit.Belemetry;
 global using Bit.Belemetry.Demo.Server.Dtos;
 global using Bit.Belemetry.Demo.Server.Services;
 global using Bit.Belemetry.Demo.Server.Controllers;
+
+[assembly: global::Microsoft.VisualStudio.TestTools.UnitTesting.DoNotParallelizeAttribute]

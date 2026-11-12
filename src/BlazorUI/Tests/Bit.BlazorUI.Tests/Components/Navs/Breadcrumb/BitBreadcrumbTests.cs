@@ -53,7 +53,7 @@ public class BitBreadcrumbTests : BunitTestContext
         }
         else
         {
-            Assert.AreEqual(breadcrumbItems.Count, breadcrumbElements.Count);
+            Assert.HasCount(breadcrumbItems.Count, breadcrumbElements);
         }
     }
 
@@ -82,7 +82,7 @@ public class BitBreadcrumbTests : BunitTestContext
         // The items that did not fit are the ones rendered in the overflow callout.
         var overflowElements = component.FindAll(".bit-brc-cal .bit-brc-ofi");
 
-        Assert.AreEqual(GetBreadcrumbItems().Count - (int)maxDisplayedItems, overflowElements.Count);
+        Assert.HasCount(GetBreadcrumbItems().Count - (int)maxDisplayedItems, overflowElements);
     }
 
     [TestMethod]
@@ -111,8 +111,8 @@ public class BitBreadcrumbTests : BunitTestContext
             parameters.Add(p => p.MaxDisplayedItems, (uint)10);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-brc-obt").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-brc-cal .bit-brc-ofi").Count);
+        Assert.IsEmpty(component.FindAll(".bit-brc-obt"));
+        Assert.IsEmpty(component.FindAll(".bit-brc-cal .bit-brc-ofi"));
     }
 
     [TestMethod]
@@ -130,7 +130,7 @@ public class BitBreadcrumbTests : BunitTestContext
 
         var listItems = component.FindAll(".bit-brc-icn > li");
 
-        Assert.AreEqual(1, component.FindAll(".bit-brc-obt").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-brc-obt"));
 
         for (var i = 0; i < listItems.Count; i++)
         {
@@ -160,7 +160,7 @@ public class BitBreadcrumbTests : BunitTestContext
         Assert.AreEqual("page", breadcrumbElements[lastIndex].GetAttribute("aria-current"));
 
         // Only the selected item carries aria-current.
-        Assert.AreEqual(1, breadcrumbElements.Count(e => e.HasAttribute("aria-current")));
+        Assert.ContainsSingle(e => e.HasAttribute("aria-current"), breadcrumbElements);
     }
 
     [TestMethod]
@@ -206,7 +206,7 @@ public class BitBreadcrumbTests : BunitTestContext
 
         var dividers = component.FindAll(".bit-brc-icn > li").Where(li => li.QuerySelector(".bit-brc-div") is not null).ToList();
 
-        Assert.AreEqual(GetBreadcrumbItems().Count - 1, dividers.Count);
+        Assert.HasCount(GetBreadcrumbItems().Count - 1, dividers);
         Assert.IsTrue(dividers.All(d => d.GetAttribute("aria-hidden") == "true"));
     }
 
@@ -224,9 +224,9 @@ public class BitBreadcrumbTests : BunitTestContext
 
         var dividers = component.FindAll(".bit-brc-dtx");
 
-        Assert.AreEqual(GetBreadcrumbItems().Count - 1, dividers.Count);
+        Assert.HasCount(GetBreadcrumbItems().Count - 1, dividers);
         Assert.AreEqual(dividerText, dividers[0].TextContent);
-        Assert.AreEqual(0, component.FindAll(".bit-brc-div").Count);
+        Assert.IsEmpty(component.FindAll(".bit-brc-div"));
     }
 
     [TestMethod]
@@ -244,8 +244,8 @@ public class BitBreadcrumbTests : BunitTestContext
             }));
         });
 
-        Assert.AreEqual(GetBreadcrumbItems().Count - 1, component.FindAll(".custom-divider").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-brc-dtx").Count);
+        Assert.HasCount(GetBreadcrumbItems().Count - 1, component.FindAll(".custom-divider"));
+        Assert.IsEmpty(component.FindAll(".bit-brc-dtx"));
     }
 
     [TestMethod,
@@ -332,14 +332,14 @@ public class BitBreadcrumbTests : BunitTestContext
         component.Find(".bit-brc-cal .bit-brc-ofi").Click();
 
         // The collapsed step is the root of the trail (the overflow index is 0), and it is the one reported.
-        Assert.AreEqual(1, clicked.Count);
+        Assert.ContainsSingle(clicked);
         Assert.AreEqual("Folder 1", clicked[0].Text);
         Assert.AreEqual("false", component.Find(".bit-brc-obt").GetAttribute("aria-expanded"));
 
         // The element the focus was on is gone with the menu, so it goes back onto the button the menu belongs to,
         // scrolled into view when it has to be (unlike the focus a click puts on it).
         Assert.AreEqual(1, FocusCalls() - focusCallsBefore);
-        Assert.AreEqual(false, Context.JSInterop.Invocations.Last(i => i.Identifier == "Blazor._internal.domWrapper.focus").Arguments[1]);
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(Context.JSInterop.Invocations.Last(i => i.Identifier == "Blazor._internal.domWrapper.focus").Arguments[1]));
     }
 
     [TestMethod,
@@ -354,8 +354,9 @@ public class BitBreadcrumbTests : BunitTestContext
         });
 
         var breadcrumb = component.Find(".bit-brc");
+        var actualValue = breadcrumb?.GetAttribute("style")?.Contains(customStyle);
 
-        Assert.IsTrue(breadcrumb?.GetAttribute("style")?.Contains(customStyle));
+        Assert.IsTrue(actualValue);
     }
 
     [TestMethod,
@@ -395,10 +396,16 @@ public class BitBreadcrumbTests : BunitTestContext
                 Assert.IsFalse(breadcrumb.HasAttribute("style"));
                 break;
             case BitVisibility.Hidden:
-                Assert.IsTrue(breadcrumb?.GetAttribute("style")?.Contains("visibility:hidden"));
+                {
+                    var actualValue = breadcrumb?.GetAttribute("style")?.Contains("visibility:hidden");
+                    Assert.IsTrue(actualValue);
+                }
                 break;
             case BitVisibility.Collapsed:
-                Assert.IsTrue(breadcrumb?.GetAttribute("style")?.Contains("display:none"));
+                {
+                    var actualValue1 = breadcrumb?.GetAttribute("style")?.Contains("display:none");
+                    Assert.IsTrue(actualValue1);
+                }
                 break;
         }
     }
@@ -465,8 +472,8 @@ public class BitBreadcrumbTests : BunitTestContext
 
         string[] classes = ["bit-brc-pri", "bit-brc-err", "bit-brc-sm", "bit-brc-md", "bit-brc-lg"];
 
-        Assert.IsFalse(classes.Any(component.Find(".bit-brc").ClassList.Contains));
-        Assert.IsFalse(classes.Any(component.Find(".bit-brc-cal").ClassList.Contains));
+        Assert.DoesNotContain<string>(component.Find(".bit-brc").ClassList.Contains, classes);
+        Assert.DoesNotContain<string>(component.Find(".bit-brc-cal").ClassList.Contains, classes);
     }
 
     [TestMethod,
@@ -586,7 +593,7 @@ public class BitBreadcrumbTests : BunitTestContext
         Assert.AreEqual("link", disabled.GetAttribute("role"));
         Assert.AreEqual("true", disabled.GetAttribute("aria-disabled"));
         Assert.IsFalse(disabled.HasAttribute("href"));
-        Assert.AreEqual(0, component.FindAll(".bit-brc-icn button").Count);
+        Assert.IsEmpty(component.FindAll(".bit-brc-icn button"));
     }
 
     [TestMethod]
@@ -656,8 +663,8 @@ public class BitBreadcrumbTests : BunitTestContext
             parameters.Add(p => p.MaxItemWidth, maxItemWidth);
         });
 
-        Assert.IsTrue(component.Find(".bit-brc").GetAttribute("style")!.Contains($"--bit-brc-itm-max-width:{maxItemWidth}"));
-        Assert.IsTrue(component.Find(".bit-brc-cal").GetAttribute("style")!.Contains($"--bit-brc-itm-max-width:{maxItemWidth}"));
+        Assert.Contains($"--bit-brc-itm-max-width:{maxItemWidth}", component.Find(".bit-brc").GetAttribute("style")!);
+        Assert.Contains($"--bit-brc-itm-max-width:{maxItemWidth}", component.Find(".bit-brc-cal").GetAttribute("style")!);
         Assert.IsTrue(component.Find(".bit-brc-itm > span").ClassList.Contains("bit-brc-itx"));
     }
 
@@ -782,7 +789,7 @@ public class BitBreadcrumbTests : BunitTestContext
             parameters.Add(p => p.Items, items);
         });
 
-        Assert.AreEqual(1, component.FindAll("a.bit-brc-itm").Count);
+        Assert.ContainsSingle(component.FindAll("a.bit-brc-itm"));
         Assert.IsTrue(component.Find(".bit-brc-nii").ClassList.Contains("bit-brc-dis"));
     }
 
@@ -799,7 +806,7 @@ public class BitBreadcrumbTests : BunitTestContext
         Assert.IsTrue(component.Find(".bit-brc").ClassList.Contains("bit-dis"));
         Assert.IsTrue(component.Find(".bit-brc-obt").HasAttribute("disabled"));
         // A disabled breadcrumb has no navigable links.
-        Assert.AreEqual(0, component.FindAll("a.bit-brc-itm").Count);
+        Assert.IsEmpty(component.FindAll("a.bit-brc-itm"));
     }
 
     [TestMethod]
@@ -810,11 +817,11 @@ public class BitBreadcrumbTests : BunitTestContext
             parameters.Add(p => p.Items, GetBreadcrumbItems());
         });
 
-        Assert.AreEqual(4, component.FindAll(".bit-brc-icn > li a").Count);
+        Assert.HasCount(4, component.FindAll(".bit-brc-icn > li a"));
 
         component.Render(parameters => parameters.Add(p => p.Items, new List<BitBreadcrumbItem>()));
 
-        Assert.AreEqual(0, component.FindAll(".bit-brc-icn > li").Count);
+        Assert.IsEmpty(component.FindAll(".bit-brc-icn > li"));
     }
 
     [TestMethod]
@@ -827,11 +834,11 @@ public class BitBreadcrumbTests : BunitTestContext
             parameters.Add(p => p.Items, items);
         });
 
-        CollectionAssert.AreEqual(new[] { "Folder 1", "Folder 2", "Folder 3", "Folder 4" }, GetItemTexts(component));
+        Assert.AreSequenceEqual(new[] { "Folder 1", "Folder 2", "Folder 3", "Folder 4" }, GetItemTexts(component));
 
         component.Render(parameters => parameters.Add(p => p.Items, items.AsEnumerable().Reverse().ToList()));
 
-        CollectionAssert.AreEqual(new[] { "Folder 4", "Folder 3", "Folder 2", "Folder 1" }, GetItemTexts(component));
+        Assert.AreSequenceEqual(new[] { "Folder 4", "Folder 3", "Folder 2", "Folder 1" }, GetItemTexts(component));
     }
 
     [TestMethod]
@@ -857,9 +864,9 @@ public class BitBreadcrumbTests : BunitTestContext
         });
 
         // The template of an item wins over the ItemTemplate of the component.
-        Assert.AreEqual(1, component.FindAll(".bit-brc-icn .item-template").Count);
-        Assert.AreEqual(2, component.FindAll(".bit-brc-icn .default-template").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-brc-cal .overflow-template").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-brc-icn .item-template"));
+        Assert.HasCount(2, component.FindAll(".bit-brc-icn .default-template"));
+        Assert.ContainsSingle(component.FindAll(".bit-brc-cal .overflow-template"));
     }
 
     [TestMethod]
@@ -872,8 +879,8 @@ public class BitBreadcrumbTests : BunitTestContext
             parameters.Add(p => p.Items, GetCustomItems());
         });
 
-        Assert.AreEqual(0, component.FindAll("[aria-current]").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-brc-sel").Count);
+        Assert.IsEmpty(component.FindAll("[aria-current]"));
+        Assert.IsEmpty(component.FindAll(".bit-brc-sel"));
     }
 
     [TestMethod,
@@ -910,15 +917,16 @@ public class BitBreadcrumbTests : BunitTestContext
 
         var links = component.FindAll("a.bit-brc-itm");
 
-        Assert.AreEqual(2, links.Count);
+        Assert.HasCount(2, links);
         Assert.AreEqual("Custom 1", links[0].QuerySelector(".bit-brc-itx")!.TextContent.Trim());
-        Assert.AreEqual("(opens in a new tab)", links[0].QuerySelector(".bit-brc-vhd")?.TextContent);
+        var actualValue = links[0].QuerySelector(".bit-brc-vhd")?.TextContent;
+        Assert.AreEqual("(opens in a new tab)", actualValue);
         Assert.AreEqual("/custom-1", links[0].GetAttribute("href"));
         Assert.AreEqual("The first one", links[0].GetAttribute("title"));
         Assert.AreEqual("_blank", links[0].GetAttribute("target"));
         Assert.AreEqual("page", component.Find(".bit-brc-sel").GetAttribute("aria-current"));
         // The third item is disabled through the Disabled selector, so it is not a link.
-        Assert.AreEqual(1, component.FindAll(".bit-brc-nii.bit-brc-dis").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-brc-nii.bit-brc-dis"));
     }
 
     [TestMethod]
@@ -937,7 +945,7 @@ public class BitBreadcrumbTests : BunitTestContext
 
         var links = component.FindAll("a.bit-brc-itm");
 
-        Assert.AreEqual(3, links.Count);
+        Assert.HasCount(3, links);
         Assert.AreEqual("Custom 1", links[0].TextContent.Trim());
         Assert.AreEqual("page", component.Find(".bit-brc-sel").GetAttribute("aria-current"));
     }
@@ -988,22 +996,22 @@ public class BitBreadcrumbTests : BunitTestContext
 
         Assert.IsTrue(first.ClassList.Contains("custom-look"));
         Assert.IsTrue(first.ClassList.Contains("bit-brc-eni"));
-        Assert.IsTrue(first.GetAttribute("style")!.Contains("color:red"));
+        Assert.Contains("color:red", first.GetAttribute("style")!);
         // A text-only step cannot carry an aria-label, so the label is written out as hidden text instead.
         Assert.IsFalse(first.HasAttribute("aria-label"));
         Assert.AreEqual("Custom 1", first.QuerySelector(".bit-brc-vhd")!.TextContent);
         Assert.IsTrue(first.QuerySelector("i")!.ClassList.Contains("bit-icon--Home"));
 
         // The templates of the collapsed step replace its content in the overflow menu, not in the trail.
-        Assert.AreEqual(0, component.FindAll(".bit-brc-icn .custom-fragment").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-brc-scn .custom-overflow-fragment").Count);
+        Assert.IsEmpty(component.FindAll(".bit-brc-icn .custom-fragment"));
+        Assert.ContainsSingle(component.FindAll(".bit-brc-scn .custom-overflow-fragment"));
 
         // The whole trail, the keys of its items included, is rebuilt when the collapsing goes away.
         component.Render(parameters => parameters.Add(p => p.MaxDisplayedItems, (uint)0));
 
-        Assert.AreEqual(1, component.FindAll(".bit-brc-icn .custom-fragment").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-brc-icn .custom-fragment"));
         Assert.IsTrue(component.FindAll(".bit-brc-icn i")[0].ClassList.Contains("bit-icon--Home"));
-        Assert.IsTrue(component.FindAll(".bit-brc-icn .bit-brc-nii")[1].QuerySelector("i") is null);
+        Assert.IsNull(component.FindAll(".bit-brc-icn .bit-brc-nii")[1].QuerySelector("i"));
     }
 
     [TestMethod]
@@ -1065,8 +1073,8 @@ public class BitBreadcrumbTests : BunitTestContext
         var selected = component.Find(".bit-brc-sel");
 
         Assert.IsTrue(selected.ClassList.Contains("custom-selected"));
-        Assert.IsTrue(selected.GetAttribute("style")!.Contains("color:red"));
-        Assert.IsTrue(selected.GetAttribute("style")!.Contains("font-style:italic"));
+        Assert.Contains("color:red", selected.GetAttribute("style")!);
+        Assert.Contains("font-style:italic", selected.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1108,7 +1116,7 @@ public class BitBreadcrumbTests : BunitTestContext
 
         var icons = component.FindAll(".bit-brc-nii i");
 
-        Assert.AreEqual(2, icons.Count);
+        Assert.HasCount(2, icons);
         Assert.IsTrue(icons[0].ClassList.Contains("fa-house"));
         Assert.IsTrue(icons[1].ClassList.Contains("fa-laptop"));
         // The icons carry no information of their own next to the text of their item.
@@ -1145,8 +1153,8 @@ public class BitBreadcrumbTests : BunitTestContext
             }));
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-brc-obt .custom-overflow-icon").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-brc-obt i").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-brc-obt .custom-overflow-icon"));
+        Assert.IsEmpty(component.FindAll(".bit-brc-obt i"));
     }
 
     [TestMethod]
@@ -1180,7 +1188,7 @@ public class BitBreadcrumbTests : BunitTestContext
             parameters.Add(p => p.Items, GetBreadcrumbItems());
         });
 
-        Assert.AreEqual(0, component.FindAll("div[id$='-options-container']").Count);
+        Assert.IsEmpty(component.FindAll("div[id$='-options-container']"));
     }
 
     [TestMethod]
@@ -1210,13 +1218,13 @@ public class BitBreadcrumbTests : BunitTestContext
 
         var wrappers = component.FindAll(".bit-brc-scn > li");
 
-        Assert.AreEqual(3, wrappers.Count);
+        Assert.HasCount(3, wrappers);
         Assert.IsTrue(wrappers.All(w => w.GetAttribute("role") == "presentation"));
 
         // Every step of the collapsed trail is a menu item, whether it is actionable or not.
         var menuItems = component.FindAll(".bit-brc-scn .bit-brc-ofi, .bit-brc-scn .bit-brc-ofn");
 
-        Assert.AreEqual(3, menuItems.Count);
+        Assert.HasCount(3, menuItems);
         Assert.IsTrue(menuItems.All(i => i.GetAttribute("role") == "menuitem"));
         Assert.AreEqual("-1", menuItems.First(i => i.ClassList.Contains("bit-brc-ofn")).GetAttribute("tabindex"));
     }
@@ -1242,7 +1250,7 @@ public class BitBreadcrumbTests : BunitTestContext
         Assert.AreEqual("true", component.Find(".bit-brc-icn .bit-brc-nii").GetAttribute("aria-disabled"));
         Assert.AreEqual("true", component.Find(".bit-brc-scn .bit-brc-ofn").GetAttribute("aria-disabled"));
         // The items that are enabled say nothing about it.
-        Assert.AreEqual(0, component.FindAll(".bit-brc-itm[aria-disabled], .bit-brc-ofi[aria-disabled]").Count);
+        Assert.IsEmpty(component.FindAll(".bit-brc-itm[aria-disabled], .bit-brc-ofi[aria-disabled]"));
     }
 
     [TestMethod]
@@ -1332,11 +1340,13 @@ public class BitBreadcrumbTests : BunitTestContext
         });
 
         var links = component.FindAll(".bit-brc-icn a.bit-brc-itm");
-        Assert.AreEqual("(opens in a new tab)", links[0].QuerySelector(".bit-brc-vhd")?.TextContent);
+        var actualValue = links[0].QuerySelector(".bit-brc-vhd")?.TextContent;
+        Assert.AreEqual("(opens in a new tab)", actualValue);
 
         var overflowLinks = component.FindAll(".bit-brc-scn a.bit-brc-ofi");
         Assert.IsNull(overflowLinks[0].QuerySelector(".bit-brc-vhd"));
-        Assert.AreEqual("(opens in a new tab)", overflowLinks[1].QuerySelector(".bit-brc-vhd")?.TextContent);
+        var actualValue1 = overflowLinks[1].QuerySelector(".bit-brc-vhd")?.TextContent;
+        Assert.AreEqual("(opens in a new tab)", actualValue1);
     }
 
     [TestMethod]
@@ -1403,14 +1413,14 @@ public class BitBreadcrumbTests : BunitTestContext
 
         component.Find(".bit-brc-obt").Click();
 
-        Assert.IsTrue(component.Find(".bit-brc-ovl").GetAttribute("style")!.Contains("display:block"));
+        Assert.Contains("display:block", component.Find(".bit-brc-ovl").GetAttribute("style")!);
 
         // Everything fits again: the button the menu belongs to is gone, so the menu and the overlay that
         // catches the clicks outside of it may not stay behind.
         component.Render(parameters => parameters.Add(p => p.MaxDisplayedItems, (uint)0));
 
         component.WaitForAssertion(() =>
-            Assert.IsTrue(component.Find(".bit-brc-ovl").GetAttribute("style")!.Contains("display:none")));
+            Assert.Contains("display:none", component.Find(".bit-brc-ovl").GetAttribute("style")!));
     }
 
     [TestMethod]
@@ -1429,7 +1439,7 @@ public class BitBreadcrumbTests : BunitTestContext
         component.WaitForAssertion(() =>
             Assert.AreEqual("false", component.Find(".bit-brc-obt").GetAttribute("aria-expanded")));
 
-        Assert.IsTrue(component.Find(".bit-brc-ovl").GetAttribute("style")!.Contains("display:none"));
+        Assert.Contains("display:none", component.Find(".bit-brc-ovl").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1458,7 +1468,7 @@ public class BitBreadcrumbTests : BunitTestContext
 
         var modes = handler.Invocations.Select(i => (string)i.Arguments[2]!).ToArray();
 
-        CollectionAssert.AreEqual(new[] { "first", "next", "prev", "first", "last", "char" }, modes);
+        Assert.AreSequenceEqual(new[] { "first", "next", "prev", "first", "last", "char" }, modes);
         Assert.AreEqual("f", handler.Invocations.Last().Arguments[3]);
         // The items that are not actionable are part of the rotation too.
         Assert.AreEqual(".bit-brc-ofi, .bit-brc-ofn", handler.Invocations.Last().Arguments[1]);
@@ -1483,7 +1493,7 @@ public class BitBreadcrumbTests : BunitTestContext
 
         // A focus that scrolled the button into view would scroll a sticky header's container, and the
         // scroll dismisses the menu the click just opened.
-        Assert.AreEqual(true, Context.JSInterop.Invocations.Last(i => i.Identifier == "Blazor._internal.domWrapper.focus").Arguments[1]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(Context.JSInterop.Invocations.Last(i => i.Identifier == "Blazor._internal.domWrapper.focus").Arguments[1]));
     }
 
     [TestMethod]
@@ -1529,14 +1539,14 @@ public class BitBreadcrumbTests : BunitTestContext
 
         var elements = root.GetProperty("itemListElement").EnumerateArray().ToList();
 
-        Assert.AreEqual(4, elements.Count);
+        Assert.HasCount(4, elements);
         Assert.AreEqual("ListItem", elements[0].GetProperty("@type").GetString());
         Assert.AreEqual(1, elements[0].GetProperty("position").GetInt32());
         Assert.AreEqual("Folder 1", elements[0].GetProperty("name").GetString());
         Assert.AreEqual(4, elements[3].GetProperty("position").GetInt32());
         Assert.AreEqual("Folder 4", elements[3].GetProperty("name").GetString());
         // The relative addresses of the items become absolute ones.
-        Assert.IsTrue(elements[0].GetProperty("item").GetString()!.StartsWith("http"));
+        Assert.StartsWith("http", elements[0].GetProperty("item").GetString()!);
     }
 
     [TestMethod]
@@ -1547,7 +1557,7 @@ public class BitBreadcrumbTests : BunitTestContext
             parameters.Add(p => p.Items, GetBreadcrumbItems());
         });
 
-        Assert.AreEqual(0, component.FindAll("script[type='application/ld+json']").Count);
+        Assert.IsEmpty(component.FindAll("script[type='application/ld+json']"));
     }
 
     [TestMethod]
@@ -1576,7 +1586,7 @@ public class BitBreadcrumbTests : BunitTestContext
         var elements = json.RootElement.GetProperty("itemListElement").EnumerateArray().ToList();
 
         Assert.AreEqual(items[0].Text, elements[0].GetProperty("name").GetString());
-        Assert.IsTrue(elements[0].GetProperty("item").GetString()!.EndsWith("/a?x=1&y=2"));
+        Assert.EndsWith("/a?x=1&y=2", elements[0].GetProperty("item").GetString()!);
     }
 
     [TestMethod]
@@ -1600,7 +1610,7 @@ public class BitBreadcrumbTests : BunitTestContext
         var elements = json.RootElement.GetProperty("itemListElement").EnumerateArray().ToList();
 
         // An item without a name is nothing to write, and the current page carries no address of its own.
-        Assert.AreEqual(2, elements.Count);
+        Assert.HasCount(2, elements);
         Assert.AreEqual("Folder 3", elements[1].GetProperty("name").GetString());
         Assert.AreEqual(2, elements[1].GetProperty("position").GetInt32());
         Assert.IsFalse(elements[1].TryGetProperty("item", out _));
@@ -1616,7 +1626,7 @@ public class BitBreadcrumbTests : BunitTestContext
         });
 
         // Every step but the page the user is already on is still a link to follow.
-        Assert.AreEqual(3, component.FindAll("a.bit-brc-itm").Count);
+        Assert.HasCount(3, component.FindAll("a.bit-brc-itm"));
 
         var current = component.Find(".bit-brc-nii");
 
@@ -1646,7 +1656,7 @@ public class BitBreadcrumbTests : BunitTestContext
         });
 
         // Neither the handler of the item nor the one of the component turns the current page into a button.
-        Assert.AreEqual(1, component.FindAll("button.bit-brc-itm").Count);
+        Assert.ContainsSingle(component.FindAll("button.bit-brc-itm"));
         Assert.AreEqual("Folder 2", component.Find(".bit-brc-nii").TextContent.Trim());
 
         component.Find("button.bit-brc-itm").Click();
@@ -1680,7 +1690,7 @@ public class BitBreadcrumbTests : BunitTestContext
         Assert.AreEqual("Folder 2", current.TextContent.Trim());
         Assert.AreEqual("page", current.GetAttribute("aria-current"));
         Assert.AreEqual("menuitem", current.GetAttribute("role"));
-        Assert.AreEqual(1, component.FindAll(".bit-brc-scn a.bit-brc-ofi").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-brc-scn a.bit-brc-ofi"));
     }
 
     [TestMethod]
@@ -1702,14 +1712,14 @@ public class BitBreadcrumbTests : BunitTestContext
         Assert.IsFalse(button.HasAttribute("aria-controls"));
         Assert.IsFalse(button.HasAttribute("aria-expanded"));
 
-        CollectionAssert.AreEqual(new[] { "Folder 1", "Folder 4" }, GetItemTexts(component));
+        Assert.AreSequenceEqual(new[] { "Folder 1", "Folder 4" }, GetItemTexts(component));
 
         button.Click();
 
-        CollectionAssert.AreEqual(new[] { "Folder 1", "Folder 2", "Folder 3", "Folder 4" }, GetItemTexts(component));
+        Assert.AreSequenceEqual(new[] { "Folder 1", "Folder 2", "Folder 3", "Folder 4" }, GetItemTexts(component));
         // The button is gone with the collapsing it undid, and no menu was opened on the way.
-        Assert.AreEqual(0, component.FindAll(".bit-brc-obt").Count);
-        Assert.IsTrue(component.Find(".bit-brc-ovl").GetAttribute("style")!.Contains("display:none"));
+        Assert.IsEmpty(component.FindAll(".bit-brc-obt"));
+        Assert.Contains("display:none", component.Find(".bit-brc-ovl").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1754,30 +1764,30 @@ public class BitBreadcrumbTests : BunitTestContext
 
         component.Find(".bit-brc-obt").Click();
 
-        Assert.AreEqual(0, component.FindAll(".bit-brc-obt").Count);
+        Assert.IsEmpty(component.FindAll(".bit-brc-obt"));
 
         // A trail of other items is another trail, which starts collapsed the way this one did.
         component.Render(parameters => parameters.Add(p => p.Items, GetBreadcrumbItems().Take(3).ToList()));
 
-        Assert.AreEqual(1, component.FindAll(".bit-brc-obt").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-brc-obt"));
 
         component.Find(".bit-brc-obt").Click();
 
-        Assert.AreEqual(0, component.FindAll(".bit-brc-obt").Count);
+        Assert.IsEmpty(component.FindAll(".bit-brc-obt"));
 
         // So is the same trail collapsed at another count.
         component.Render(parameters => parameters.Add(p => p.MaxDisplayedItems, (uint)1));
 
-        Assert.AreEqual(1, component.FindAll(".bit-brc-obt").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-brc-obt"));
 
         component.Find(".bit-brc-obt").Click();
 
-        Assert.AreEqual(0, component.FindAll(".bit-brc-obt").Count);
+        Assert.IsEmpty(component.FindAll(".bit-brc-obt"));
 
         // And giving the button its menu back takes the expansion it no longer offers with it.
         component.Render(parameters => parameters.Add(p => p.ExpandOverflow, false));
 
-        Assert.AreEqual(1, component.FindAll(".bit-brc-obt").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-brc-obt"));
         Assert.AreEqual("menu", component.Find(".bit-brc-obt").GetAttribute("aria-haspopup"));
     }
 
@@ -1797,8 +1807,8 @@ public class BitBreadcrumbTests : BunitTestContext
 
         // There is no menu to open, to move around in or to close: the button is activated like any other.
         Assert.AreEqual(0, handler.Invocations.Count);
-        Assert.IsTrue(component.Find(".bit-brc-ovl").GetAttribute("style")!.Contains("display:none"));
-        Assert.AreEqual(1, component.FindAll(".bit-brc-obt").Count);
+        Assert.Contains("display:none", component.Find(".bit-brc-ovl").GetAttribute("style")!);
+        Assert.ContainsSingle(component.FindAll(".bit-brc-obt"));
     }
 
     [TestMethod]
@@ -1842,13 +1852,13 @@ public class BitBreadcrumbTests : BunitTestContext
 
         component.Find(".bit-brc-obt").Click();
 
-        Assert.IsTrue(component.Find(".bit-brc-ovl").GetAttribute("style")!.Contains("display:block"));
+        Assert.Contains("display:block", component.Find(".bit-brc-ovl").GetAttribute("style")!);
 
         // The button no longer owns a menu, so the one it opened may not stay behind with its overlay.
         component.Render(parameters => parameters.Add(p => p.ExpandOverflow, true));
 
         component.WaitForAssertion(() =>
-            Assert.IsTrue(component.Find(".bit-brc-ovl").GetAttribute("style")!.Contains("display:none")));
+            Assert.Contains("display:none", component.Find(".bit-brc-ovl").GetAttribute("style")!));
     }
 
     [TestMethod]
@@ -1862,7 +1872,7 @@ public class BitBreadcrumbTests : BunitTestContext
         });
 
         Assert.IsTrue(component.Find(".bit-brc").ClassList.Contains("first-root"));
-        Assert.IsTrue(component.Find(".bit-brc").GetAttribute("style")!.Contains("color:red"));
+        Assert.Contains("color:red", component.Find(".bit-brc").GetAttribute("style")!);
 
         component.Render(parameters =>
         {
@@ -1874,8 +1884,8 @@ public class BitBreadcrumbTests : BunitTestContext
 
         Assert.IsTrue(root.ClassList.Contains("second-root"));
         Assert.IsFalse(root.ClassList.Contains("first-root"));
-        Assert.IsTrue(root.GetAttribute("style")!.Contains("color:blue"));
-        Assert.IsFalse(root.GetAttribute("style")!.Contains("color:red"));
+        Assert.Contains("color:blue", root.GetAttribute("style")!);
+        Assert.DoesNotContain("color:red", root.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1924,10 +1934,10 @@ public class BitBreadcrumbTests : BunitTestContext
         // The root keeps all of what was written for it, the public variables included.
         var rootStyle = component.Find(".bit-brc").GetAttribute("style")!;
 
-        Assert.IsTrue(rootStyle.Contains("color:red"));
-        Assert.IsTrue(rootStyle.Contains("--bit-Breadcrumb-color: green"));
-        Assert.IsTrue(rootStyle.Contains("--bit-Breadcrumb-callout-background: navy"));
-        Assert.IsTrue(rootStyle.Contains("margin: 0"));
+        Assert.Contains("color:red", rootStyle);
+        Assert.Contains("--bit-Breadcrumb-color: green", rootStyle);
+        Assert.Contains("--bit-Breadcrumb-callout-background: navy", rootStyle);
+        Assert.Contains("margin: 0", rootStyle);
 
         // Nothing of it is copied onto the menu, which writes only what is meant for it: the variables reach
         // the menu through the root once it is relocated, rather than through its own inline style.
@@ -1942,7 +1952,7 @@ public class BitBreadcrumbTests : BunitTestContext
 
         Assert.AreEqual(rootId, toggle.Arguments[^2]);
         Assert.AreNotEqual(rootId, component.Find(".bit-brc-obt").Id);
-        Assert.IsFalse((component.Find(".bit-brc-cal").GetAttribute("style") ?? "").Contains("--bit-Breadcrumb-"));
+        Assert.DoesNotContain("--bit-Breadcrumb-", (component.Find(".bit-brc-cal").GetAttribute("style") ?? ""));
     }
 
     [TestMethod]
@@ -1956,14 +1966,14 @@ public class BitBreadcrumbTests : BunitTestContext
 
         var dividers = component.FindAll(".bit-brc-icn > li[aria-hidden='true']");
 
-        Assert.AreEqual(3, dividers.Count);
+        Assert.HasCount(3, dividers);
         Assert.IsTrue(dividers.All(d => d.ClassList.Contains("bit-brc-dvw") && d.ClassList.Contains("custom-divider")));
     }
 
     [TestMethod]
     public void BitBreadcrumbParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual($"{nameof(BitParams)}.BitBreadcrumb", BitBreadcrumbParams.ParamName);
+        Assert.AreEqual($"{nameof(BitParams)}.BitBreadcrumb", new BitBreadcrumbParams().Name);
     }
 
     [TestMethod]
@@ -2003,8 +2013,8 @@ public class BitBreadcrumbTests : BunitTestContext
         Assert.AreEqual("/", component.Find(".bit-brc-dtx").TextContent);
 
         // The collapsing settings reach the split of the trail, which is computed after the cascade is applied.
-        Assert.AreEqual(2, component.FindAll(".bit-brc-icn .bit-brc-itm, .bit-brc-icn .bit-brc-nii").Count);
-        Assert.AreEqual(2, component.FindAll(".bit-brc-cal .bit-brc-ofi").Count);
+        Assert.HasCount(2, component.FindAll(".bit-brc-icn .bit-brc-itm, .bit-brc-icn .bit-brc-nii"));
+        Assert.HasCount(2, component.FindAll(".bit-brc-cal .bit-brc-ofi"));
         Assert.AreEqual("Show the rest", component.Find(".bit-brc-obt").GetAttribute("aria-label"));
     }
 
@@ -2033,7 +2043,7 @@ public class BitBreadcrumbTests : BunitTestContext
         // Direct parameters win over the cascaded ones, a zero MaxDisplayedItems included.
         Assert.IsTrue(root.ClassList.Contains("bit-brc-err"));
         Assert.IsFalse(root.ClassList.Contains("bit-brc-suc"));
-        Assert.AreEqual(0, component.FindAll(".bit-brc-obt").Count);
+        Assert.IsEmpty(component.FindAll(".bit-brc-obt"));
 
         // What the breadcrumb left unset is still filled in from the cascade.
         Assert.IsTrue(root.ClassList.Contains("bit-brc-lg"));
@@ -2190,7 +2200,7 @@ public class BitBreadcrumbTests : BunitTestContext
                                                                  .Where(n => baseParameters.Contains(n) is false && _notCascaded.Contains(n) is false)
                                                                  .ToList();
 
-        Assert.IsTrue(parameters.Count > 0);
+        Assert.IsNotEmpty(parameters);
 
         foreach (var name in parameters)
         {
@@ -2243,12 +2253,12 @@ public class BitBreadcrumbTests : BunitTestContext
         var root = component.Find(".bit-brc");
 
         Assert.IsTrue(root.ClassList.Contains("cascaded-root"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin: 1px");
+        Assert.Contains("margin: 1px", root.GetAttribute("style")!);
         Assert.IsTrue(component.Find(".bit-brc-itm").ClassList.Contains("cascaded-item"));
-        StringAssert.Contains(component.Find(".bit-brc-itm").GetAttribute("style"), "color: red");
+        Assert.Contains("color: red", component.Find(".bit-brc-itm").GetAttribute("style")!);
         Assert.IsTrue(component.Find(".bit-brc-obt").ClassList.Contains("cascaded-button"));
         Assert.IsTrue(component.Find(".bit-brc-cal").ClassList.Contains("cascaded-callout"));
-        StringAssert.Contains(component.Find(".bit-brc-cal").GetAttribute("style"), "padding: 4px");
+        Assert.Contains("padding: 4px", component.Find(".bit-brc-cal").GetAttribute("style")!);
         Assert.IsTrue(component.Find(".bit-brc-ofi").ClassList.Contains("cascaded-overflow-item"));
     }
 
@@ -2277,14 +2287,14 @@ public class BitBreadcrumbTests : BunitTestContext
 
         Assert.AreEqual("cascaded-id", root.Id);
         Assert.IsTrue(root.ClassList.Contains("cascaded"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin: 2px");
+        Assert.Contains("margin: 2px", root.GetAttribute("style")!);
         Assert.AreEqual("rtl", root.GetAttribute("dir"));
         Assert.AreEqual("Where you are", root.GetAttribute("aria-label"));
         Assert.IsTrue(root.ClassList.Contains("bit-dis"));
         // The direction reaches the menu rendered beside the root, and the disabled state its button.
         Assert.AreEqual("rtl", component.Find(".bit-brc-cal").GetAttribute("dir"));
         Assert.AreEqual("true", component.Find(".bit-brc-obt").GetAttribute("aria-disabled"));
-        Assert.AreEqual(0, component.FindAll("a.bit-brc-itm").Count);
+        Assert.IsEmpty(component.FindAll("a.bit-brc-itm"));
     }
 
     [TestMethod]
@@ -2356,11 +2366,11 @@ public class BitBreadcrumbTests : BunitTestContext
         // The template outranks the text divider cascaded beside it, exactly as it does on the breadcrumb itself.
         // Every divider - between the shown steps and beside the overflow button - draws the template.
         var dividers = component.FindAll(".bit-brc-dvw");
-        Assert.IsTrue(dividers.Count > 1);
-        Assert.AreEqual(dividers.Count, component.FindAll(".bit-brc-dvw .cascaded-divider").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-brc-dtx").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-brc-obt .cascaded-overflow-icon").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-brc-obt i").Count);
+        Assert.IsGreaterThan(1, dividers.Count);
+        Assert.HasCount(dividers.Count, component.FindAll(".bit-brc-dvw .cascaded-divider"));
+        Assert.IsEmpty(component.FindAll(".bit-brc-dtx"));
+        Assert.ContainsSingle(component.FindAll(".bit-brc-obt .cascaded-overflow-icon"));
+        Assert.IsEmpty(component.FindAll(".bit-brc-obt i"));
     }
 
     [TestMethod]
@@ -2379,12 +2389,12 @@ public class BitBreadcrumbTests : BunitTestContext
         var button = component.Find(".bit-brc-obt");
 
         Assert.IsFalse(button.HasAttribute("aria-haspopup"));
-        CollectionAssert.AreEqual(new[] { "Folder 1", "Folder 4" }, GetItemTexts(breadcrumb));
+        Assert.AreSequenceEqual(new[] { "Folder 1", "Folder 4" }, GetItemTexts(breadcrumb));
 
         button.Click();
 
-        CollectionAssert.AreEqual(new[] { "Folder 1", "Folder 2", "Folder 3", "Folder 4" }, GetItemTexts(breadcrumb));
-        Assert.AreEqual(0, component.FindAll(".bit-brc-obt").Count);
+        Assert.AreSequenceEqual(new[] { "Folder 1", "Folder 2", "Folder 3", "Folder 4" }, GetItemTexts(breadcrumb));
+        Assert.IsEmpty(component.FindAll(".bit-brc-obt"));
         Assert.AreEqual(0, ToggleCalls());
     }
 
@@ -2411,7 +2421,7 @@ public class BitBreadcrumbTests : BunitTestContext
             });
         });
 
-        Assert.AreEqual(1, component.FindAll("a.bit-brc-itm").Count);
+        Assert.ContainsSingle(component.FindAll("a.bit-brc-itm"));
 
         var current = component.Find(".bit-brc-nii");
 
@@ -2439,8 +2449,8 @@ public class BitBreadcrumbTests : BunitTestContext
 
         // The width is written on the root and on the menu, and the text of a step that may be cut off by it
         // becomes the tooltip of that step.
-        StringAssert.Contains(component.Find(".bit-brc").GetAttribute("style"), "--bit-brc-itm-max-width:8rem");
-        StringAssert.Contains(component.Find(".bit-brc-cal").GetAttribute("style"), "--bit-brc-itm-max-width:8rem");
+        Assert.Contains("--bit-brc-itm-max-width:8rem", component.Find(".bit-brc").GetAttribute("style")!);
+        Assert.Contains("--bit-brc-itm-max-width:8rem", component.Find(".bit-brc-cal").GetAttribute("style")!);
         Assert.AreEqual("Folder 2", component.Find(".bit-brc-icn .bit-brc-itm").GetAttribute("title"));
     }
 
@@ -2473,9 +2483,9 @@ public class BitBreadcrumbTests : BunitTestContext
         var breadcrumb = component.FindComponent<BitBreadcrumb<BitBreadcrumbItem>>();
 
         // The measurements run, and the trail shrinks down to the single item it may not drop.
-        component.WaitForAssertion(() => Assert.AreEqual(1, GetItemTexts(breadcrumb).Length));
-        Assert.AreEqual(1, component.FindAll(".bit-brc-obt").Count);
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Observers.registerResize"));
+        component.WaitForAssertion(() => Assert.ContainsSingle(GetItemTexts(breadcrumb)));
+        Assert.ContainsSingle(component.FindAll(".bit-brc-obt"));
+        Assert.ContainsSingle(i => i.Identifier == "BitBlazorUI.Observers.registerResize", Context.JSInterop.Invocations);
     }
 
     [TestMethod]
@@ -2558,7 +2568,7 @@ public class BitBreadcrumbTests : BunitTestContext
 
         // A false the breadcrumb wrote for itself is a choice, not an absence the cascade may fill in.
         Assert.IsFalse(root.ClassList.Contains("bit-brc-wrp"));
-        Assert.AreEqual(4, component.FindAll("a.bit-brc-itm").Count);
+        Assert.HasCount(4, component.FindAll("a.bit-brc-itm"));
         // What it left unset still comes from the cascade.
         Assert.IsTrue(root.ClassList.Contains("bit-brc-scr"));
     }
@@ -2611,8 +2621,8 @@ public class BitBreadcrumbTests : BunitTestContext
             parameters.Add(p => p.Items, (IList<BitBreadcrumbItem>)null!);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-brc-icn > li").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-brc-obt").Count);
+        Assert.IsEmpty(component.FindAll(".bit-brc-icn > li"));
+        Assert.IsEmpty(component.FindAll(".bit-brc-obt"));
     }
 
     [TestMethod]
@@ -2689,7 +2699,7 @@ public class BitBreadcrumbTests : BunitTestContext
 
         var overlay = component.Find(".bit-brc-ovl");
         Assert.IsTrue(overlay.ClassList.Contains("custom-overlay"));
-        StringAssert.Contains(overlay.GetAttribute("style"), "opacity:0.5");
+        Assert.Contains("opacity:0.5", overlay.GetAttribute("style")!);
 
         var overflowButtonIcon = component.Find(".bit-brc-obt i");
         Assert.IsTrue(overflowButtonIcon.ClassList.Contains("custom-overflow-button-icon"));
@@ -2727,7 +2737,7 @@ public class BitBreadcrumbTests : BunitTestContext
         var overflowSelected = component.Find(".bit-brc-ofi");
         Assert.IsTrue(overflowSelected.ClassList.Contains("bit-brc-sel"));
         Assert.IsTrue(overflowSelected.ClassList.Contains("custom-overflow-selected"));
-        StringAssert.Contains(overflowSelected.GetAttribute("style"), "font-style:italic");
+        Assert.Contains("font-style:italic", overflowSelected.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -2755,11 +2765,11 @@ public class BitBreadcrumbTests : BunitTestContext
         // current page.
         var links = component.FindAll(".bit-brc-icn a.bit-brc-nii");
 
-        Assert.AreEqual(2, links.Count);
+        Assert.HasCount(2, links);
         Assert.IsTrue(links.All(l => l.GetAttribute("role") == "link" && l.GetAttribute("aria-disabled") == "true" && l.HasAttribute("href") is false));
         Assert.AreEqual("page", links[1].GetAttribute("aria-current"));
         Assert.AreEqual("true", component.Find(".bit-brc-icn span.bit-brc-nii").GetAttribute("aria-disabled"));
-        Assert.AreEqual(0, component.FindAll(".bit-brc-icn a.bit-brc-itm, .bit-brc-icn button.bit-brc-itm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-brc-icn a.bit-brc-itm, .bit-brc-icn button.bit-brc-itm"));
 
         // The overflow button is a native control, so it is disabled natively and through aria-disabled alike.
         var button = component.Find(".bit-brc-obt");
@@ -2811,7 +2821,7 @@ public class BitBreadcrumbTests : BunitTestContext
 
         // The menu is a popup opened through Callouts, which the surfaces ask about on their own, so the key is
         // never claimed in the markup.
-        Assert.AreEqual(0, component.FindAll("[data-bit-esc]").Count);
+        Assert.IsEmpty(component.FindAll("[data-bit-esc]"));
     }
 
     [TestMethod]
@@ -2832,7 +2842,7 @@ public class BitBreadcrumbTests : BunitTestContext
         Assert.AreEqual("false", component.Find(".bit-brc-obt").GetAttribute("aria-expanded"));
         // The focus goes back onto the button, so that the Tab the script stopped moves on from there next time.
         Assert.AreEqual(1, FocusCalls() - focusCallsBefore);
-        Assert.AreEqual(false, Context.JSInterop.Invocations.Last(i => i.Identifier == "Blazor._internal.domWrapper.focus").Arguments[1]);
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(Context.JSInterop.Invocations.Last(i => i.Identifier == "Blazor._internal.domWrapper.focus").Arguments[1]));
     }
 
     [TestMethod]
@@ -2844,30 +2854,30 @@ public class BitBreadcrumbTests : BunitTestContext
         });
 
         // Nothing to register while the whole trail fits: there is no menu and no button.
-        Assert.AreEqual(0, PreventKeysRegistrations().Count);
+        Assert.IsEmpty(PreventKeysRegistrations());
 
         component.Render(parameters => parameters.Add(p => p.MaxDisplayedItems, (uint)3));
 
         var registrations = PreventKeysRegistrations();
 
         // The menu stops its navigation keys, the button the two arrows that open it.
-        Assert.AreEqual(2, registrations.Count);
-        CollectionAssert.AreEqual(new[] { "ArrowUp", "ArrowDown", "Home", "End", "Tab" }, (string[])registrations[0].Arguments[1]!);
-        CollectionAssert.AreEqual(new[] { "ArrowUp", "ArrowDown" }, (string[])registrations[1].Arguments[1]!);
+        Assert.HasCount(2, registrations);
+        Assert.AreSequenceEqual(new[] { "ArrowUp", "ArrowDown", "Home", "End", "Tab" }, (string[])registrations[0].Arguments[1]!);
+        Assert.AreSequenceEqual(new[] { "ArrowUp", "ArrowDown" }, (string[])registrations[1].Arguments[1]!);
 
         // A render that keeps the menu registers nothing again.
         component.Render(parameters => parameters.Add(p => p.Class, "custom"));
 
-        Assert.AreEqual(2, PreventKeysRegistrations().Count);
+        Assert.HasCount(2, PreventKeysRegistrations());
 
         // The registration follows the lifetime of the button: gone with it, back with it.
         component.Render(parameters => parameters.Add(p => p.MaxDisplayedItems, (uint)0));
 
-        Assert.AreEqual(2, PreventKeysRegistrations().Count);
+        Assert.HasCount(2, PreventKeysRegistrations());
 
         component.Render(parameters => parameters.Add(p => p.MaxDisplayedItems, (uint)3));
 
-        Assert.AreEqual(4, PreventKeysRegistrations().Count);
+        Assert.HasCount(4, PreventKeysRegistrations());
 
         List<JSRuntimeInvocation> PreventKeysRegistrations() =>
             Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.Utils.registerPreventKeys").ToList();
@@ -2897,7 +2907,7 @@ public class BitBreadcrumbTests : BunitTestContext
         Assert.AreEqual(component.Find(".bit-brc-obt").Id, toggle.Arguments[1]);
         Assert.AreEqual(component.Find(".bit-brc-cal").Id, toggle.Arguments[3]);
         Assert.AreEqual(component.Find(".bit-brc-ovl").Id, toggle.Arguments[5]);
-        Assert.AreEqual(true, toggle.Arguments[6]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(toggle.Arguments[6]));
     }
 
     [TestMethod]
@@ -2913,19 +2923,19 @@ public class BitBreadcrumbTests : BunitTestContext
         var calloutId = component.Find(".bit-brc-cal").Id;
         var rootId = component.Find(".bit-brc").Id;
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Observers.registerResize")));
+        component.WaitForAssertion(() => Assert.ContainsSingle(i => i.Identifier == "BitBlazorUI.Observers.registerResize", Context.JSInterop.Invocations));
 
         await component.Instance.DisposeAsync();
 
         // The callout lives at the end of the body while it is open and the resize observer watches the root, both
         // keyed by their ids, so a breadcrumb that goes away without unwinding them leaves both behind.
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Callouts.clear" && (string)i.Arguments[0]! == calloutId));
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Observers.unregisterResize" && (string)i.Arguments[0]! == rootId));
+        Assert.ContainsSingle(i => i.Identifier == "BitBlazorUI.Callouts.clear" && (string)i.Arguments[0]! == calloutId, Context.JSInterop.Invocations);
+        Assert.ContainsSingle(i => i.Identifier == "BitBlazorUI.Observers.unregisterResize" && (string)i.Arguments[0]! == rootId, Context.JSInterop.Invocations);
 
         // Disposing it again is harmless.
         await component.Instance.DisposeAsync();
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Callouts.clear"));
+        Assert.ContainsSingle(i => i.Identifier == "BitBlazorUI.Callouts.clear", Context.JSInterop.Invocations);
     }
 
     [TestMethod]
@@ -2948,9 +2958,9 @@ public class BitBreadcrumbTests : BunitTestContext
         var elements = json.RootElement.GetProperty("itemListElement").EnumerateArray().ToList();
 
         // An icon-only step is named the way assistive technologies name it.
-        Assert.AreEqual(2, elements.Count);
+        Assert.HasCount(2, elements);
         Assert.AreEqual("Home", elements[0].GetProperty("name").GetString());
-        Assert.IsTrue(elements[0].GetProperty("item").GetString()!.EndsWith("/"));
+        Assert.EndsWith("/", elements[0].GetProperty("item").GetString()!);
     }
 
     private static RenderFragment RenderBreadcrumb(Action<RenderTreeBuilder>? extraAttributes = null) => builder =>

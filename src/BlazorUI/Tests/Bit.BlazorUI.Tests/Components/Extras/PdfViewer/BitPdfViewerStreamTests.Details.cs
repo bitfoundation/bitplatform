@@ -26,12 +26,12 @@ public partial class BitPdfViewerStreamTests
         var structure = new BitPdfDict(); structure.Set("K", element);
         document.Catalog.Set("StructTreeRoot", structure);
         if (sourceFailure)
-            await Assert.ThrowsAsync<IOException>(() => component.InvokeAsync(() => component.Instance.LoadDocumentDetailsAsync()));
+            await Assert.ThrowsAsync<IOException>(() => component.InvokeAsync(() => component.Instance.LoadDocumentDetailsAsync(TestContext.CancellationToken)));
         else
         {
-            await component.InvokeAsync(() => component.Instance.LoadDocumentDetailsAsync());
-            Assert.AreEqual(0, component.Instance.FormFields.Count);
-            Assert.AreEqual(1, component.Instance.StructureTree.Count);
+            await component.InvokeAsync(() => component.Instance.LoadDocumentDetailsAsync(TestContext.CancellationToken));
+            Assert.IsEmpty(component.Instance.FormFields);
+            Assert.ContainsSingle(component.Instance.StructureTree);
             Assert.AreEqual("P", component.Instance.StructureTree[0].Type);
         }
     }

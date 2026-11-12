@@ -143,7 +143,7 @@ public sealed class BitServiceWorkerManifestTests
             return url == Bundle ? TrimmedHash : null;
         });
 
-        CollectionAssert.AreEqual(new[] { "_framework/dotnet.js", Bundle }, asked, $"It asked about {string.Join(", ", asked)}.");
+        Assert.AreSequenceEqual(new[] { "_framework/dotnet.js", Bundle }, asked, $"It asked about {string.Join(", ", asked)}.");
     }
 
     /// <summary>
@@ -191,8 +191,9 @@ public sealed class BitServiceWorkerManifestTests
             Manifest(newline, ("index.html", OtherHash), (Bundle, FullHash)), [], Serving((Bundle, hash)))?.Version;
 
         var version = VersionFor("\r\n", TrimmedHash);
+        var actualValue = version?.Length;
 
-        Assert.AreEqual(8, version?.Length, $"The version '{version}' does not have the SDK's eight-character shape.");
+        Assert.AreEqual(8, actualValue, $"The version '{version}' does not have the SDK's eight-character shape.");
         Assert.AreEqual(version, VersionFor("\r\n", TrimmedHash), "The same list came out under two versions.");
         Assert.AreEqual(version, VersionFor("\n", TrimmedHash), "The same list, written with other line endings, came out under another version.");
         Assert.AreNotEqual(version, VersionFor("\r\n", OtherHash), "Two different lists came out under one version.");

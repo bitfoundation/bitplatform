@@ -99,7 +99,7 @@ public class SourceGeneratorTests
     [TestMethod]
     public void Generated_Index_Definitions_Are_Wired_Into_Descriptor()
     {
-        Assert.AreEqual(3, TodoItem.Table.Indexes.Count);
+        Assert.HasCount(3, TodoItem.Table.Indexes);
         Assert.Contains(TodoItem.Indexes.Done, TodoItem.Table.Indexes);
         Assert.Contains(TodoItem.Indexes.Category, TodoItem.Table.Indexes);
         Assert.Contains(TodoItem.Indexes.CreatedAt, TodoItem.Table.Indexes);
@@ -111,7 +111,7 @@ public class SourceGeneratorTests
     [TestMethod]
     public async Task Generated_Table_Works_End_To_End_In_A_Database()
     {
-        await using var db = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions().AddTable(TodoItem.Table));
+        await using var db = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions().AddTable(TodoItem.Table), TestContext.CancellationToken);
         var todos = db.GetTable(TodoItem.Table);
         var item = SampleTodo();
 
@@ -177,4 +177,6 @@ public class SourceGeneratorTests
         Assert.AreEqual("name-after-the-changed-field", decoded.Name);
         Assert.AreEqual("", decoded.Value);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

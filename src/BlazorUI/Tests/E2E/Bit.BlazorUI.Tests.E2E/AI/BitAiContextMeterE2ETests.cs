@@ -248,13 +248,13 @@ public class BitAiContextMeterE2ETests : E2ETestBase
         {
             var label = await Meter(id).Locator("> .bit-aictm-ttl").RectAsync();
             var percent = await Percent(id).RectAsync();
-            Assert.IsTrue(label.Left > percent.Left, $"{id}: the label leads from the right.");
+            Assert.IsGreaterThan(percent.Left, label.Left, $"{id}: the label leads from the right.");
 
             // The bar fills from the right.
             var track = await Bar(id).RectAsync();
             var fill = await Bar(id).Locator(".bit-prb-bar").RectAsync();
             Assert.AreEqual(track.Right, fill.Right, 1.5, $"{id}: the fill starts on the right.");
-            Assert.IsTrue(fill.Left > track.Left + 10, $"{id}: a quarter of the bar is filled.");
+            Assert.IsGreaterThan(track.Left + 10, fill.Left, $"{id}: a quarter of the bar is filled.");
         }
 
         var ltrTrack = await Bar("ctm-ltr").RectAsync();

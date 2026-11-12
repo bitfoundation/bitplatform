@@ -58,7 +58,7 @@ public class PrivacySectionUITests : SettingsPageTest
 
         var download = await Page.RunAndWaitForDownloadAsync(() => Press(Privacy.GetByRole(AriaRole.Button, new() { Name = AppStrings.ExportPersonalDataButton, Exact = true })));
 
-        var content = await File.ReadAllTextAsync(await download.PathAsync());
+        var content = await File.ReadAllTextAsync(await download.PathAsync(), TestContext.CancellationToken);
 
         Assert.Contains(WorkbenchDemoUsers.All[0].Email, content);
     }

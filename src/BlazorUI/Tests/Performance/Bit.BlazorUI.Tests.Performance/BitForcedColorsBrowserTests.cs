@@ -197,8 +197,8 @@ public class BitForcedColorsBrowserTests : PerformanceTestBase
             }
             """);
 
-        Assert.IsTrue(items.Count(i => i.Selected) >= 4, "The page holds no selected item or collapsed branch holding one.");
-        Assert.IsTrue(items.Any(i => i.Selected is false), "The page holds no item that is not selected.");
+        Assert.IsGreaterThanOrEqualTo(4, items.Count(i => i.Selected), "The page holds no selected item or collapsed branch holding one.");
+        Assert.Contains(i => i.Selected is false, items, "The page holds no item that is not selected.");
 
         var failures = new List<string>();
         var widths = items.Select(i => i.InlineStart.Width).Distinct().ToArray();
@@ -217,7 +217,7 @@ public class BitForcedColorsBrowserTests : PerformanceTestBase
             }
         }
 
-        Assert.AreEqual(0, failures.Count, string.Join("\n", failures));
+        Assert.IsEmpty(failures, string.Join("\n", failures));
     }
 
     // The context meter paints its track in the secondary border color, which the forced palette maps to CanvasText, a
@@ -250,14 +250,14 @@ public class BitForcedColorsBrowserTests : PerformanceTestBase
             }
             """);
 
-        Assert.AreEqual(5, pairs.Length, "The page holds the five meters of the part.");
+        Assert.HasCount(5, pairs, "The page holds the five meters of the part.");
 
         var failures = pairs.Select(p => p.Split('|'))
                             .Where(p => double.Parse(p[0], System.Globalization.CultureInfo.InvariantCulture) < MinimumContrast)
                             .Select(p => $"A meter's fill is {p[1]}, {p[0]}:1.")
                             .ToArray();
 
-        Assert.AreEqual(0, failures.Length, string.Join("\n", failures));
+        Assert.IsEmpty(failures, string.Join("\n", failures));
     }
 
     // The rows of the overflow menu reserve a border's room, which the mode would draw around each of them.
@@ -271,14 +271,14 @@ public class BitForcedColorsBrowserTests : PerformanceTestBase
         var palette = await ReadPalette();
         var rows = await ReadEdges(".bit-brc-ofi, .bit-brc-ofn", null);
 
-        Assert.IsTrue(rows.Length >= 2, "The overflow menu holds no rows.");
+        Assert.IsGreaterThanOrEqualTo(2, rows.Length, "The overflow menu holds no rows.");
 
         var failures = rows.SelectMany(row => row.Sides)
                            .Where(side => side.Edge.Color != (palette.Forcing ? side.Row.Behind : palette.Canvas))
                            .Select(side => $"The {side.Name} edge of {side.Row.Name} is drawn, {side.Edge.Color} on {side.Row.Behind}.")
                            .ToArray();
 
-        Assert.AreEqual(0, failures.Length, string.Join("\n", failures));
+        Assert.IsEmpty(failures, string.Join("\n", failures));
     }
 
     // Every Outline tab reserves the frame of the selection; the mode would box every tab alike and close the selected one
@@ -299,7 +299,7 @@ public class BitForcedColorsBrowserTests : PerformanceTestBase
                 getComputedStyle(p.querySelector(':scope > .bit-pvt-hwr'), '::before').zIndex + '/' + getComputedStyle(p.querySelector('.bit-pvti-sel')).zIndex)
             """);
 
-        Assert.AreEqual(5, layers.Length, "The page holds no Outline pivot for every placement and a disabled one.");
+        Assert.HasCount(5, layers, "The page holds no Outline pivot for every placement and a disabled one.");
         Assert.AreEqual(5, tabs.Count(t => t.Selected), "Not every Outline pivot holds a selected tab.");
 
         var failures = layers.Where(l => l != "1/2").Select(l => $"The rule and the selected tab are not stacked rule over tabs, selected tab over rule: {l}.").ToList();
@@ -325,7 +325,7 @@ public class BitForcedColorsBrowserTests : PerformanceTestBase
             }
         }
 
-        Assert.AreEqual(0, failures.Count, string.Join("\n", failures));
+        Assert.IsEmpty(failures, string.Join("\n", failures));
     }
 
     private sealed record Edge(string Color, double Width);
@@ -460,7 +460,7 @@ public class BitForcedColorsBrowserTests : PerformanceTestBase
 
     private static void AssertReadable(List<string> unreadable, string when)
     {
-        Assert.AreEqual(0, unreadable.Count, $"Unreadable text {when}:\n{string.Join("\n", unreadable)}");
+        Assert.IsEmpty(unreadable, $"Unreadable text {when}:\n{string.Join("\n", unreadable)}");
     }
 
     /// <summary>

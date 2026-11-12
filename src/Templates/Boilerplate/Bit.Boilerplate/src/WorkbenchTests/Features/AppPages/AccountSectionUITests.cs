@@ -20,7 +20,7 @@ public class AccountSectionUITests : SettingsPageTest
     private static string Required(string field) => Message(AppStrings.RequiredAttribute_ValidationError, field);
 
     /// <summary>Opens a tab, which a narrow view may have moved into its More tabs menu.</summary>
-    private async Task OpenTab(string name)
+    private async Task OpenAccountTab(string name)
     {
         var tab = Account.GetByRole(AriaRole.Tab, new() { Name = name, Exact = true });
 
@@ -46,16 +46,16 @@ public class AccountSectionUITests : SettingsPageTest
 
         await Expect(Panel(AppStrings.Passwordless)).ToBeVisibleAsync();
 
-        await OpenTab(AppStrings.Delete);
+        await OpenAccountTab(AppStrings.Delete);
         await Expect(ButtonIn(Panel(AppStrings.Delete), AppStrings.DeleteAccount)).ToBeVisibleAsync();
 
-        await OpenTab(AppStrings.Password);
+        await OpenAccountTab(AppStrings.Password);
         await Expect(TextField(Panel(AppStrings.Password), AppStrings.OldPassword)).ToBeVisibleAsync();
 
-        await OpenTab(AppStrings.Phone);
+        await OpenAccountTab(AppStrings.Phone);
         await Expect(ButtonIn(Panel(AppStrings.Phone), AppStrings.Submit)).ToBeVisibleAsync();
 
-        await OpenTab(AppStrings.Email);
+        await OpenAccountTab(AppStrings.Email);
         await Expect(TextField(Panel(AppStrings.Email), AppStrings.NewEmail)).ToBeVisibleAsync();
 
         await ReloadTheViewOnceSaved($"\"AccountTab\":\"{nameof(AppStrings.Email)}\"");
@@ -87,7 +87,7 @@ public class AccountSectionUITests : SettingsPageTest
     public async Task ANewEmail_Should_BeRefusedWhenEmptyInvalidOrTheSame(WorkbenchSurface surface)
     {
         await OpenSection(AppStrings.AccountTitle);
-        await OpenTab(AppStrings.Email);
+        await OpenAccountTab(AppStrings.Email);
 
         var panel = Panel(AppStrings.Email);
         var submit = ButtonIn(panel, AppStrings.Submit);
@@ -115,7 +115,7 @@ public class AccountSectionUITests : SettingsPageTest
     public async Task ChangingTheEmail_Should_AskForTheCodeAndThenTakeTheNewAddress(WorkbenchSurface surface)
     {
         await OpenSection(AppStrings.AccountTitle);
-        await OpenTab(AppStrings.Email);
+        await OpenAccountTab(AppStrings.Email);
 
         var panel = Panel(AppStrings.Email);
 
@@ -142,7 +142,7 @@ public class AccountSectionUITests : SettingsPageTest
     public async Task TheEmailCodeStep_Should_ResendRefuseAnEmptyCodeStayAfterAReloadAndGoBack(WorkbenchSurface surface)
     {
         await OpenSection(AppStrings.AccountTitle);
-        await OpenTab(AppStrings.Email);
+        await OpenAccountTab(AppStrings.Email);
 
         var panel = Panel(AppStrings.Email);
 
@@ -176,7 +176,7 @@ public class AccountSectionUITests : SettingsPageTest
     public async Task AlreadyHavingAnEmailCode_Should_AskForTheAddressToo(WorkbenchSurface surface)
     {
         await OpenSection(AppStrings.AccountTitle);
-        await OpenTab(AppStrings.Email);
+        await OpenAccountTab(AppStrings.Email);
 
         var panel = Panel(AppStrings.Email);
 
@@ -202,7 +202,7 @@ public class AccountSectionUITests : SettingsPageTest
     public async Task ANewPhoneNumber_Should_BeRefusedWhenEmptyInvalidOrTheSame(WorkbenchSurface surface)
     {
         await OpenSection(AppStrings.AccountTitle);
-        await OpenTab(AppStrings.Phone);
+        await OpenAccountTab(AppStrings.Phone);
 
         var panel = Panel(AppStrings.Phone);
         var submit = ButtonIn(panel, AppStrings.Submit);
@@ -229,7 +229,7 @@ public class AccountSectionUITests : SettingsPageTest
     public async Task ChangingThePhoneNumber_Should_AskForTheCodeAndThenTakeTheNewNumber(WorkbenchSurface surface)
     {
         await OpenSection(AppStrings.AccountTitle);
-        await OpenTab(AppStrings.Phone);
+        await OpenAccountTab(AppStrings.Phone);
 
         var panel = Panel(AppStrings.Phone);
 
@@ -250,7 +250,7 @@ public class AccountSectionUITests : SettingsPageTest
     public async Task ThePhoneCodeStep_Should_ResendRefuseAnEmptyCodeStayAfterAReloadAndGoBack(WorkbenchSurface surface)
     {
         await OpenSection(AppStrings.AccountTitle);
-        await OpenTab(AppStrings.Phone);
+        await OpenAccountTab(AppStrings.Phone);
 
         var panel = Panel(AppStrings.Phone);
 
@@ -282,7 +282,7 @@ public class AccountSectionUITests : SettingsPageTest
     public async Task AlreadyHavingAPhoneCode_Should_AskForTheNumberToo(WorkbenchSurface surface)
     {
         await OpenSection(AppStrings.AccountTitle);
-        await OpenTab(AppStrings.Phone);
+        await OpenAccountTab(AppStrings.Phone);
 
         var panel = Panel(AppStrings.Phone);
 
@@ -305,7 +305,7 @@ public class AccountSectionUITests : SettingsPageTest
     public async Task ThePasswordForm_Should_RefuseWhatIsMissingShortOrDifferent(WorkbenchSurface surface)
     {
         await OpenSection(AppStrings.AccountTitle);
-        await OpenTab(AppStrings.Password);
+        await OpenAccountTab(AppStrings.Password);
 
         var panel = Panel(AppStrings.Password);
         var change = ButtonIn(panel, AppStrings.ChangePasswordButtonText);
@@ -330,7 +330,7 @@ public class AccountSectionUITests : SettingsPageTest
     public async Task AValidPassword_Should_SayItChangedAndEmptyTheForm(WorkbenchSurface surface)
     {
         await OpenSection(AppStrings.AccountTitle);
-        await OpenTab(AppStrings.Password);
+        await OpenAccountTab(AppStrings.Password);
 
         var panel = Panel(AppStrings.Password);
 
@@ -351,7 +351,7 @@ public class AccountSectionUITests : SettingsPageTest
     public async Task APassword_Should_BeRevealedAndHiddenAgain(WorkbenchSurface surface)
     {
         await OpenSection(AppStrings.AccountTitle);
-        await OpenTab(AppStrings.Password);
+        await OpenAccountTab(AppStrings.Password);
 
         var panel = Panel(AppStrings.Password);
         var field = TextField(panel, AppStrings.OldPassword);
@@ -373,7 +373,7 @@ public class AccountSectionUITests : SettingsPageTest
     public async Task DeletingTheAccount_Should_AskAndKeepItOnCancel(WorkbenchSurface surface)
     {
         await OpenSection(AppStrings.AccountTitle);
-        await OpenTab(AppStrings.Delete);
+        await OpenAccountTab(AppStrings.Delete);
 
         await Press(ButtonIn(Panel(AppStrings.Delete), AppStrings.DeleteAccount));
 
@@ -389,7 +389,7 @@ public class AccountSectionUITests : SettingsPageTest
     public async Task AnOpenDeleteConfirmation_Should_NotComeBackAfterAReload(WorkbenchSurface surface)
     {
         await OpenSection(AppStrings.AccountTitle);
-        await OpenTab(AppStrings.Delete);
+        await OpenAccountTab(AppStrings.Delete);
 
         await Press(ButtonIn(Panel(AppStrings.Delete), AppStrings.DeleteAccount));
 
@@ -405,7 +405,7 @@ public class AccountSectionUITests : SettingsPageTest
     public async Task DeletingTheAccount_Should_SignTheViewOut(WorkbenchSurface surface)
     {
         await OpenSection(AppStrings.AccountTitle);
-        await OpenTab(AppStrings.Delete);
+        await OpenAccountTab(AppStrings.Delete);
 
         await Press(ButtonIn(Panel(AppStrings.Delete), AppStrings.DeleteAccount));
         await Press(DeleteDialog.GetByRole(AriaRole.Button, new() { Name = BitBlazorUIStrings.DialogOkText, Exact = true }));

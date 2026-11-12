@@ -65,7 +65,7 @@ public class BitTextFieldParamsTests : BunitTestContext
 
         var missing = parameters.Where(name => typeof(BitTextFieldParams).GetProperty(name) is null).ToList();
 
-        Assert.AreEqual(0, missing.Count, "BitTextFieldParams is missing: " + string.Join(", ", missing));
+        Assert.IsEmpty(missing, "BitTextFieldParams is missing: " + string.Join(", ", missing));
     }
 
     [TestMethod]
@@ -202,10 +202,10 @@ public class BitTextFieldParamsTests : BunitTestContext
 
         // The cascaded values reach the scripts the multiline mode and the selection are wired with.
         var setup = Context.JSInterop.Invocations["BitBlazorUI.TextField.setupMultilineInput"].Single();
-        Assert.AreEqual(true, setup.Arguments[2]);
-        Assert.AreEqual(true, setup.Arguments[3]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(setup.Arguments[2]));
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(setup.Arguments[3]));
         Assert.AreEqual(8, setup.Arguments[4]);
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.TextField.setupSelectOnFocus"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.TextField.setupSelectOnFocus"]);
 
         var password = RenderWithParams(new BitTextFieldParams
         {
@@ -370,7 +370,7 @@ public class BitTextFieldParamsTests : BunitTestContext
         Assert.IsFalse(input.HasAttribute("maxlength"));
         Assert.IsFalse(input.HasAttribute("readonly"));
         Assert.IsFalse(input.HasAttribute("required"));
-        Assert.AreEqual(0, component.FindAll(".bit-tfl-lbl").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-tfl-ftr").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tfl-lbl"));
+        Assert.IsEmpty(component.FindAll(".bit-tfl-ftr"));
     }
 }

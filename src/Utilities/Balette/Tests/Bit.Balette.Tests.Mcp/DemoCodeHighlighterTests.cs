@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
 
+[assembly: global::Microsoft.VisualStudio.TestTools.UnitTesting.DoNotParallelizeAttribute]
+
 namespace Bit.Balette.Tests.Mcp;
 
 /// <summary>
@@ -58,17 +60,17 @@ public class DemoCodeHighlighterTests
         // A page that renders its samples some other way, or a block whose field went missing, would drop out silently.
         foreach (var page in new[] { "Home", "GettingStarted", "Commands", "PagesAndFlows", "SearchAndRanking", "Modes", "Keyboard", "Theming", "Localization", "Performance", "OptionsAndSecurity" })
         {
-            Assert.IsTrue(snippets.Any(snippet => ((string)snippet[0]!).StartsWith($"/{page}: ", StringComparison.Ordinal)), $"{page} shows no snippet");
+            Assert.Contains(snippet => ((string)snippet[0]!).StartsWith($"/{page}: ", StringComparison.Ordinal), snippets, $"{page} shows no snippet");
         }
         CollectionAssert.IsSubsetOf(new[] { "razor", "csharp", "css" }, snippets.Select(snippet => (string)snippet[2]!).Distinct().ToArray());
         Assert.AreEqual("css", snippets.Single(snippet => (string)snippet[0]! == "/Theming: TokensExample")[2]);
 
         // A Razor comment written inside a snippet's string is the snippet's, not a comment of the page that holds it.
-        StringAssert.StartsWith((string)snippets.Single(snippet => (string)snippet[0]! == "/Localization: ParameterExample")[1]!, "@* One palette. *@");
+        Assert.StartsWith("@* One palette. *@", (string)snippets.Single(snippet => (string)snippet[0]! == "/Localization: ParameterExample")[1]!);
 
         // A snippet built from the page's state is a property, read off a page with its services injected.
-        StringAssert.StartsWith((string)snippets.Single(snippet => (string)snippet[0]! == "/Theming: PaletteMarkup")[1]!, "<Balette Theme=");
-        StringAssert.StartsWith((string)snippets.Single(snippet => (string)snippet[0]! == "/SearchAndRanking: RankFormula")[1]!, "rank = score + priority");
+        Assert.StartsWith("<Balette Theme=", (string)snippets.Single(snippet => (string)snippet[0]! == "/Theming: PaletteMarkup")[1]!);
+        Assert.StartsWith("rank = score + priority", (string)snippets.Single(snippet => (string)snippet[0]! == "/SearchAndRanking: RankFormula")[1]!);
     }
 
     [TestMethod]

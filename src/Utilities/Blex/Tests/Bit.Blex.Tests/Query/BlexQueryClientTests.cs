@@ -1,4 +1,4 @@
-using Bit.Blex.Query;
+﻿using Bit.Blex.Query;
 using static Bit.Blex.Tests.Query.QueryTest;
 
 namespace Bit.Blex.Tests.Query;
@@ -111,7 +111,8 @@ public class BlexQueryClientTests
         await refetch;
 
         Assert.IsTrue(query.IsError);
-        Assert.AreEqual("down", query.Error?.Message);
+        var actualValue = query.Error?.Message;
+        Assert.AreEqual("down", actualValue);
         Assert.AreEqual(1, query.Data, "data from the earlier success is kept");
         Assert.IsTrue(query.IsStale, "a failed refetch leaves the data stale");
     }
@@ -127,7 +128,8 @@ public class BlexQueryClientTests
         await Until(() => clock.Timers == 1, "the first backoff");
 
         Assert.AreEqual(1, query.FailureCount);
-        Assert.AreEqual("1", query.FailureReason?.Message);
+        var actualValue = query.FailureReason?.Message;
+        Assert.AreEqual("1", actualValue);
         Assert.IsNull(query.Error, "a failure that will be retried is not the query's error yet");
         Assert.IsTrue(query.IsLoading);
 
@@ -147,7 +149,8 @@ public class BlexQueryClientTests
         await query.WhenSettledAsync();
 
         Assert.IsTrue(query.IsError);
-        Assert.AreEqual("3", query.Error?.Message);
+        var actualValue1 = query.Error?.Message;
+        Assert.AreEqual("3", actualValue1);
         Assert.AreEqual(3, query.FailureCount);
     }
 
@@ -217,7 +220,7 @@ public class BlexQueryClientTests
         server.Respond(1, "new");
         await refetch;
         server.Respond(0, "old");   // the slow, superseded response lands last
-        await Task.Delay(20);
+        await Task.Delay(20, TestContext.CancellationToken);
 
         Assert.AreEqual("new", query.Data, "a stale response must never overwrite a newer one");
     }
@@ -316,7 +319,7 @@ public class BlexQueryClientTests
 
         query.Dispose();
         clock.Advance(TimeSpan.FromSeconds(30));
-        await Task.Delay(20);
+        await Task.Delay(20, TestContext.CancellationToken);
         Assert.AreEqual(2, server.Calls, "polling stops with the observer");
     }
 
@@ -345,11 +348,11 @@ public class BlexQueryClientTests
         var (client, _, _) = Client();
         var server = new FakeServer<int>();
 
-        var first = client.FetchAsync(["n"], server.Fetch(), Fresh);
+        var first = client.FetchAsync(["n"], server.Fetch(), Fresh, TestContext.CancellationToken);
         server.Respond(0, 5);
         Assert.AreEqual(5, await first);
 
-        Assert.AreEqual(5, await client.FetchAsync(["n"], server.Fetch(), Fresh));
+        Assert.AreEqual(5, await client.FetchAsync(["n"], server.Fetch(), Fresh, TestContext.CancellationToken));
         Assert.AreEqual(1, server.Calls, "fresh data is served from the cache");
     }
 
@@ -359,7 +362,7 @@ public class BlexQueryClientTests
         var (client, _, _) = Client();
         var server = new FakeServer<int>();
 
-        var fetch = client.FetchAsync(["n"], server.Fetch());
+        var fetch = client.FetchAsync(["n"], server.Fetch(), cancellationToken: TestContext.CancellationToken);
         server.Fail(0, new InvalidOperationException("nope"));
 
         var error = await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => fetch);
@@ -591,13 +594,15 @@ public class BlexQueryClientTests
         // than giving way to a loading state that comes straight back to the error when the retry fails too.
         var refetch = query.RefetchAsync();
         Assert.IsTrue(query.IsError);
-        Assert.AreEqual("down", query.Error?.Message);
+        var actualValue = query.Error?.Message;
+        Assert.AreEqual("down", actualValue);
         Assert.IsTrue(query.IsRefetching);
         Assert.IsFalse(query.IsLoading);
 
         server.Fail(1, new InvalidOperationException("still down"));
         await refetch;
-        Assert.AreEqual("still down", query.Error?.Message);
+        var actualValue1 = query.Error?.Message;
+        Assert.AreEqual("still down", actualValue1);
 
         var again = query.RefetchAsync();
         server.Respond(2, 1);
@@ -619,4 +624,6 @@ public class BlexQueryClientTests
             return workItem();
         }
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

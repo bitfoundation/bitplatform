@@ -35,7 +35,7 @@ public class WorkbenchReviewDocumentTests
         Assert.AreEqual(WorkbenchReviewStatus.Open, thread.Status);
         Assert.IsTrue(thread.HasState);
         Assert.IsGreaterThan(0, thread.Sequence);
-        Assert.HasCount(1, thread.Messages);
+        Assert.ContainsSingle(thread.Messages);
         Assert.IsFalse(thread.Messages[0].FromAgent);
         Assert.AreEqual(("Sarah", "Make it bigger"), (thread.Messages[0].Author, thread.Messages[0].Text));
         Assert.IsEmpty(thread.Tasks);
@@ -143,7 +143,7 @@ public class WorkbenchReviewDocumentTests
 
         Edit(() => WorkbenchReviewDocument.SetTasks(Threads, "a", [new("only", false)]));
 
-        Assert.HasCount(1, Thread("a").Tasks);
+        Assert.ContainsSingle(Thread("a").Tasks);
     }
 
     [TestMethod]
@@ -206,7 +206,7 @@ public class WorkbenchReviewDocumentTests
 
         Assert.AreEqual(first.CreatedAt, second.CreatedAt);
         Assert.AreEqual("Renamed", second.Name);
-        Assert.HasCount(1, second.Screens);
+        Assert.ContainsSingle(second.Screens);
         Assert.IsEmpty(second.Links);
     }
 
@@ -285,7 +285,7 @@ public class WorkbenchReviewDocumentTests
 
         var threads = WorkbenchReviewDocument.ReadThreads(Threads);
 
-        Assert.HasCount(1, threads);
+        Assert.ContainsSingle(threads);
         Assert.AreEqual(WorkbenchReviewStatus.Open, threads[0].Status);
         Assert.AreEqual("body", threads[0].Anchor.Selector);
         Assert.IsEmpty(threads[0].Messages);

@@ -22,10 +22,10 @@ public class JavaScriptSourceTests
         var stripped = JavaScriptSource.StripComments(code);
 
         Assert.AreEqual(code.Length, stripped.Length, "offsets must survive, or reported positions drift");
-        StringAssert.Contains(stripped, "self.a = 1;");
-        StringAssert.Contains(stripped, "self.b = 2;");
-        Assert.IsFalse(stripped.Contains("trailing"));
-        Assert.IsFalse(stripped.Contains("block"));
+        Assert.Contains("self.a = 1;", stripped);
+        Assert.Contains("self.b = 2;", stripped);
+        Assert.DoesNotContain("trailing", stripped);
+        Assert.DoesNotContain("block", stripped);
     }
 
     [TestMethod]
@@ -34,7 +34,7 @@ public class JavaScriptSourceTests
         var stripped = JavaScriptSource.StripComments("// note\nself.isPassive = true;");
 
         // Swallowing the newline would fold the statement below into the comment.
-        StringAssert.Contains(stripped, "\nself.isPassive = true;");
+        Assert.Contains("\nself.isPassive = true;", stripped);
     }
 
     [TestMethod]
@@ -42,8 +42,8 @@ public class JavaScriptSourceTests
     {
         var stripped = JavaScriptSource.StripComments("self.assetsUrl = 'https://cdn.example.com/a.js'; self.isPassive = true;");
 
-        StringAssert.Contains(stripped, "https://cdn.example.com/a.js");
-        StringAssert.Contains(stripped, "self.isPassive = true;");
+        Assert.Contains("https://cdn.example.com/a.js", stripped);
+        Assert.Contains("self.isPassive = true;", stripped);
     }
 
     [TestMethod]
@@ -51,8 +51,8 @@ public class JavaScriptSourceTests
     {
         var stripped = JavaScriptSource.StripComments(@"self.assetsInclude = [/https:\/\/cdn\.example\.com\//]; self.isPassive = true;");
 
-        StringAssert.Contains(stripped, @"https:\/\/cdn\.example\.com\/");
-        StringAssert.Contains(stripped, "self.isPassive = true;");
+        Assert.Contains(@"https:\/\/cdn\.example\.com\/", stripped);
+        Assert.Contains("self.isPassive = true;", stripped);
     }
 
     [TestMethod]
@@ -63,8 +63,8 @@ public class JavaScriptSourceTests
         var stripped = JavaScriptSource.StripComments(code);
 
         Assert.AreEqual(code.Length, stripped.Length);
-        StringAssert.Contains(stripped, "self.a = 1;");
-        Assert.IsFalse(stripped.Contains("never closed"));
+        Assert.Contains("self.a = 1;", stripped);
+        Assert.DoesNotContain("never closed", stripped);
     }
 
     [TestMethod]
@@ -83,12 +83,12 @@ public class JavaScriptSourceTests
     {
         var assignments = Read("self.mode = 'FullOffline';\nself.isPassive = false;");
 
-        Assert.AreEqual(2, assignments.Count);
+        Assert.HasCount(2, assignments);
         Assert.AreEqual("mode", assignments[0].Name);
         Assert.AreEqual("'FullOffline'", assignments[0].Value);
         Assert.AreEqual("isPassive", assignments[1].Name);
         Assert.AreEqual("false", assignments[1].Value);
-        Assert.IsTrue(assignments[0].Index < assignments[1].Index, "indices must follow source order");
+        Assert.IsLessThan(assignments[1].Index, assignments[0].Index, "indices must follow source order");
     }
 
     [TestMethod]
@@ -97,7 +97,7 @@ public class JavaScriptSourceTests
         // The shipped worker defaults its own settings this way.
         var assignments = Read("self.errorTolerance ||= 'lax';");
 
-        Assert.AreEqual(1, assignments.Count);
+        Assert.ContainsSingle(assignments);
         Assert.AreEqual("errorTolerance", assignments[0].Name);
         Assert.AreEqual("'lax'", assignments[0].Value);
     }
@@ -107,7 +107,7 @@ public class JavaScriptSourceTests
     {
         var assignments = Read("if (self.mode === 'FullOffline') { } if (self.isPassive == true) { } const f = self.handler => 1;");
 
-        Assert.AreEqual(0, assignments.Count, "a comparison is not a setting");
+        Assert.IsEmpty(assignments, "a comparison is not a setting");
     }
 
     [TestMethod]
@@ -115,7 +115,7 @@ public class JavaScriptSourceTests
     {
         var assignments = Read("myself.isPassive = true;\nwindow.self.isPassive = true;\nother.self.mode = 'x';");
 
-        Assert.AreEqual(0, assignments.Count);
+        Assert.IsEmpty(assignments);
     }
 
     [TestMethod]
@@ -123,7 +123,7 @@ public class JavaScriptSourceTests
     {
         var assignments = Read("self.isPassive = false\nself.caseInsensitiveUrl = true\n");
 
-        Assert.AreEqual(2, assignments.Count);
+        Assert.HasCount(2, assignments);
         Assert.AreEqual("false", assignments[0].Value, "without ASI the first value swallows the rest of the file");
         Assert.AreEqual("true", assignments[1].Value);
     }
@@ -139,8 +139,8 @@ public class JavaScriptSourceTests
             self.isPassive = true;
             """);
 
-        Assert.AreEqual(2, assignments.Count);
-        StringAssert.Contains(assignments[0].Value, "blazor.web.js");
+        Assert.HasCount(2, assignments);
+        Assert.Contains("blazor.web.js", assignments[0].Value);
         Assert.AreEqual("true", assignments[1].Value);
     }
 
@@ -149,8 +149,8 @@ public class JavaScriptSourceTests
     {
         var assignments = Read("self.assetsInclude = [\n  /\\.js$/,\n  /\\.css$/\n]\nself.isPassive = true\n");
 
-        Assert.AreEqual(2, assignments.Count);
-        StringAssert.Contains(assignments[0].Value, ".css");
+        Assert.HasCount(2, assignments);
+        Assert.Contains(".css", assignments[0].Value);
     }
 
     [TestMethod]
@@ -160,7 +160,7 @@ public class JavaScriptSourceTests
         // hiding every setting below it - the one failure mode a configuration review cannot have.
         var assignments = Read("self.weird = someCall(function () { return ';' });\nself.isPassive = false;");
 
-        Assert.IsTrue(assignments.Any(a => a.Name == "isPassive"), "a later assignment must never be swallowed");
+        Assert.Contains(a => a.Name == "isPassive", assignments, "a later assignment must never be swallowed");
     }
 
     [TestMethod]
@@ -169,7 +169,7 @@ public class JavaScriptSourceTests
         var assignments = Read("self.noPrerenderQuery = 'a;b';\nself.isPassive = true;");
 
         Assert.AreEqual("'a;b'", assignments[0].Value);
-        Assert.AreEqual(2, assignments.Count);
+        Assert.HasCount(2, assignments);
     }
 
     [TestMethod]
@@ -177,7 +177,7 @@ public class JavaScriptSourceTests
     {
         var assignments = Read(ServiceWorkerFixtures.Import);
 
-        Assert.IsFalse(assignments.Any(a => a.Name == "importScripts"),
+        Assert.DoesNotContain(a => a.Name == "importScripts", assignments,
             "importScripts is a call, not an assignment");
     }
 
@@ -194,7 +194,7 @@ public class JavaScriptSourceTests
     {
         var literals = JavaScriptSource.ReadLiterals(@"[/\.js$/i, 'weather.json', ""/api/""]");
 
-        CollectionAssert.AreEqual(new[] { @"/\.js$/i", "'weather.json'", @"""/api/""" }, literals.ToArray());
+        Assert.AreSequenceEqual(new[] { @"/\.js$/i", "'weather.json'", @"""/api/""" }, literals.ToArray());
     }
 
     [TestMethod]
@@ -202,7 +202,7 @@ public class JavaScriptSourceTests
     {
         var literals = JavaScriptSource.ReadLiterals(@"[/[a-z/]+\.js$/]");
 
-        Assert.AreEqual(1, literals.Count, "a '/' inside a character class does not end the pattern");
+        Assert.ContainsSingle(literals, "a '/' inside a character class does not end the pattern");
         Assert.AreEqual(@"/[a-z/]+\.js$/", literals[0]);
     }
 
@@ -219,7 +219,7 @@ public class JavaScriptSourceTests
     {
         var literals = JavaScriptSource.ReadLiterals("[...basePatterns, ...extraPatterns]");
 
-        Assert.AreEqual(0, literals.Count);
+        Assert.IsEmpty(literals);
     }
 
     // -- ReadObjectLiteral / ReadObjectEntries ---------------------------------
@@ -230,7 +230,7 @@ public class JavaScriptSourceTests
         var body = JavaScriptSource.ReadObjectLiteral("const defaultoptions = { sw: 'service-worker.js', log: 'warn' };", "const defaultoptions =");
 
         Assert.IsNotNull(body);
-        StringAssert.Contains(body, "sw: 'service-worker.js'");
+        Assert.Contains("sw: 'service-worker.js'", body);
     }
 
     [TestMethod]
@@ -239,8 +239,8 @@ public class JavaScriptSourceTests
         var body = JavaScriptSource.ReadObjectLiteral("const o = { a: { b: 1 }, c: '}' , d: 2 }; const after = 9;", "const o =");
 
         Assert.IsNotNull(body);
-        StringAssert.Contains(body, "d: 2");
-        Assert.IsFalse(body.Contains("const after"), "the literal must end at its own closing brace");
+        Assert.Contains("d: 2", body);
+        Assert.DoesNotContain("const after", body, "the literal must end at its own closing brace");
     }
 
     [TestMethod]
@@ -257,7 +257,7 @@ public class JavaScriptSourceTests
         var body = JavaScriptSource.ReadArrayLiteral(@"const DEFAULT = [/\.dll$/, /\.wasm$/]; const after = 9;", "const DEFAULT =");
 
         Assert.IsNotNull(body);
-        CollectionAssert.AreEqual(new[] { @"/\.dll$/", @"/\.wasm$/" }, JavaScriptSource.ReadLiterals(body).ToArray());
+        Assert.AreSequenceEqual(new[] { @"/\.dll$/", @"/\.wasm$/" }, JavaScriptSource.ReadLiterals(body).ToArray());
     }
 
     [TestMethod]
@@ -268,7 +268,7 @@ public class JavaScriptSourceTests
         var body = JavaScriptSource.ReadArrayLiteral(@"const DEFAULT = [/^\[dev\]/, /[a-z]\]$/, /\.css$/];", "const DEFAULT =");
 
         Assert.IsNotNull(body);
-        CollectionAssert.AreEqual(new[] { @"/^\[dev\]/", @"/[a-z]\]$/", @"/\.css$/" }, JavaScriptSource.ReadLiterals(body).ToArray());
+        Assert.AreSequenceEqual(new[] { @"/^\[dev\]/", @"/[a-z]\]$/", @"/\.css$/" }, JavaScriptSource.ReadLiterals(body).ToArray());
     }
 
     [TestMethod]
@@ -277,7 +277,7 @@ public class JavaScriptSourceTests
         var body = JavaScriptSource.ReadArrayLiteral(@"const DEFAULT = [']', 'app.css']; const after = 9;", "const DEFAULT =");
 
         Assert.IsNotNull(body);
-        CollectionAssert.AreEqual(new[] { "']'", "'app.css'" }, JavaScriptSource.ReadLiterals(body).ToArray());
+        Assert.AreSequenceEqual(new[] { "']'", "'app.css'" }, JavaScriptSource.ReadLiterals(body).ToArray());
     }
 
     [TestMethod]
@@ -291,7 +291,7 @@ public class JavaScriptSourceTests
     {
         var entries = JavaScriptSource.ReadObjectEntries(" sw: 'service-worker.js', stallTimeout: 60, persistStorage: false ");
 
-        CollectionAssert.AreEqual(new[] { "sw", "stallTimeout", "persistStorage" }, entries.Select(e => e.Key).ToArray());
+        Assert.AreSequenceEqual(new[] { "sw", "stallTimeout", "persistStorage" }, entries.Select(e => e.Key).ToArray());
         Assert.AreEqual("'service-worker.js'", entries[0].Value);
         Assert.AreEqual("60", entries[1].Value);
         Assert.AreEqual("false", entries[2].Value);
@@ -302,7 +302,7 @@ public class JavaScriptSourceTests
     {
         var entries = JavaScriptSource.ReadObjectEntries("a: { x: 1, y: 2 }, b: [1, 2, 3], c: 4");
 
-        Assert.AreEqual(3, entries.Count);
+        Assert.HasCount(3, entries);
         Assert.AreEqual("{ x: 1, y: 2 }", entries[0].Value);
         Assert.AreEqual("[1, 2, 3]", entries[1].Value);
         Assert.AreEqual("4", entries[2].Value);
@@ -310,18 +310,18 @@ public class JavaScriptSourceTests
 
     // The failure this guards against is a scan that never advances, so it has to time out rather
     // than hang the whole run.
-    [TestMethod, Timeout(5000)]
+    [TestMethod, Timeout(5000, CooperativeCancellation = true)]
     public void ReadObjectEntries_SkipsWhatIsNotAPlainKeyWithoutSpinning()
     {
         // A spread and a quoted key are not `key:` pairs; the scan must step over them and finish.
         var entries = JavaScriptSource.ReadObjectEntries("...rest, 'quoted': 1, plain: 2");
 
-        Assert.IsTrue(entries.Any(e => e.Key == "plain"), "the readable entry after unreadable ones must still be found");
+        Assert.Contains(e => e.Key == "plain", entries, "the readable entry after unreadable ones must still be found");
     }
 
     [TestMethod]
     public void ReadObjectEntries_HandlesAnEmptyBody()
     {
-        Assert.AreEqual(0, JavaScriptSource.ReadObjectEntries("   ").Count);
+        Assert.IsEmpty(JavaScriptSource.ReadObjectEntries("   "));
     }
 }

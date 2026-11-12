@@ -5,7 +5,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.Brouter.Tests;
 
-public sealed record LoadedUser(string Name, int Age);
+internal sealed record LoadedUser(string Name, int Age);
 
 [TestClass]
 public class RouteDataCascadeTests : BunitTestContext
@@ -46,9 +46,9 @@ public class RouteDataCascadeTests : BunitTestContext
         var absentEx = Assert.ThrowsExactly<InvalidOperationException>(() => empty.Get<LoadedUser>());
         var mismatchEx = Assert.ThrowsExactly<InvalidOperationException>(() => mismatched.Get<LoadedUser>());
 
-        StringAssert.Contains(absentEx.Message, "No route data value is present");
-        StringAssert.Contains(mismatchEx.Message, nameof(String));
-        StringAssert.Contains(mismatchEx.Message, nameof(LoadedUser));
+        Assert.Contains("No route data value is present", absentEx.Message);
+        Assert.Contains(nameof(String), mismatchEx.Message);
+        Assert.Contains(nameof(LoadedUser), mismatchEx.Message);
     }
 
     [TestMethod]

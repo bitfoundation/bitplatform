@@ -71,7 +71,7 @@ public class BitAiReadAloudTests : BitAiTestBase
 
         await reader.ReadAsync(reply);
 
-        CollectionAssert.AreEqual(new[] { "Hello there." }, synthesizer.Texts);
+        Assert.AreSequenceEqual(new[] { "Hello there." }, synthesizer.Texts);
         Context.JSInterop.VerifyInvoke(Prime);
 
         var play = Context.JSInterop.VerifyInvoke(Play);
@@ -84,7 +84,7 @@ public class BitAiReadAloudTests : BitAiTestBase
         Assert.IsFalse(reader.IsLoading);
         Assert.IsTrue(reader.IsReading(reply));
         Assert.AreSame(reply, reader.Message);
-        Assert.IsTrue(changes > 0);
+        Assert.IsGreaterThan(0, changes);
     }
 
     [TestMethod]
@@ -122,7 +122,7 @@ public class BitAiReadAloudTests : BitAiTestBase
         await reader.ToggleAsync(second);
         Assert.IsNull(reader.Message);
         Assert.IsFalse(reader.IsPlaying);
-        Assert.AreEqual(2, Context.JSInterop.Invocations[Stop].Count);
+        Assert.HasCount(2, Context.JSInterop.Invocations[Stop]);
     }
 
     [TestMethod]
@@ -140,7 +140,7 @@ public class BitAiReadAloudTests : BitAiTestBase
 
         // Another reply finishing is not read: no reading follows the conversation.
         await reader.ReadNextAsync(Reply("Next."));
-        Assert.AreEqual(1, Context.JSInterop.Invocations[Play].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations[Play]);
     }
 
     [TestMethod]
@@ -161,7 +161,7 @@ public class BitAiReadAloudTests : BitAiTestBase
         await reader.ReadNextAsync(first); // the same reply again is not read twice
         await reader.ReadNextAsync(next);
 
-        CollectionAssert.AreEqual(new[] { "First.", "Next." }, synthesizer.Texts);
+        Assert.AreSequenceEqual(new[] { "First.", "Next." }, synthesizer.Texts);
         Assert.IsTrue(reader.IsReading(next));
 
         await reader.StopAsync();
@@ -188,7 +188,7 @@ public class BitAiReadAloudTests : BitAiTestBase
         reply.SetStatus(BitAiMessageStatus.Complete);
         await reader.ReadNextAsync(reply);
 
-        CollectionAssert.AreEqual(new[] { "Streaming..." }, synthesizer.Texts);
+        Assert.AreSequenceEqual(new[] { "Streaming..." }, synthesizer.Texts);
         Assert.IsTrue(reader.IsPlaying);
     }
 
@@ -223,7 +223,7 @@ public class BitAiReadAloudTests : BitAiTestBase
         refused.Failed += failures.Add;
         await refused.ReadAsync(Reply("Text."));
 
-        CollectionAssert.AreEqual(new[] { "synthesis-failed", "playback-failed" }, failures);
+        Assert.AreSequenceEqual(new[] { "synthesis-failed", "playback-failed" }, failures);
         Assert.IsFalse(refused.IsPlaying);
     }
 
@@ -270,11 +270,11 @@ public class BitAiReadAloudTests : BitAiTestBase
         failed.SetStatus(BitAiMessageStatus.Failed);
         await reader.ReadNextAsync(failed);
 
-        CollectionAssert.AreEqual(new[] { "First." }, synthesizer.Texts);
+        Assert.AreSequenceEqual(new[] { "First." }, synthesizer.Texts);
         Assert.IsTrue(reader.IsFollowing);
 
         await reader.ReadNextAsync(Reply("Next."));
-        CollectionAssert.AreEqual(new[] { "First.", "Next." }, synthesizer.Texts);
+        Assert.AreSequenceEqual(new[] { "First.", "Next." }, synthesizer.Texts);
 
         // A reading waiting for a reply that is then stopped is over, rather than reading what had arrived.
         await reader.StopAsync();
@@ -324,7 +324,7 @@ public class BitAiReadAloudTests : BitAiTestBase
         Assert.IsEmpty(synthesizer.Texts);
 
         await reader.ReadAsync(Reply("Only code."));
-        CollectionAssert.AreEqual(new[] { "Only code." }, synthesizer.Texts);
+        Assert.AreSequenceEqual(new[] { "Only code." }, synthesizer.Texts);
 
         Context.JSInterop.VerifyNotInvoke(Play);
         Assert.IsNull(reader.Message);
@@ -342,7 +342,7 @@ public class BitAiReadAloudTests : BitAiTestBase
         Assert.AreEqual(8, (int)Context.JSInterop.VerifyInvoke(Stop).Arguments[0]!);
 
         await reader.ReadAsync(Reply("After."));
-        Assert.AreEqual(1, Context.JSInterop.Invocations[Play].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations[Play]);
     }
 
     [TestMethod]
@@ -413,7 +413,7 @@ public class BitAiReadAloudTests : BitAiTestBase
         Assert.AreEqual("true", cascade.Find("[aria-label='Read aloud']").GetAttribute("data-bit-ai-read-aloud"));
 
         // Asked once per reader, however many replies it reads.
-        Assert.AreEqual(1, Context.JSInterop.Invocations[Watch].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations[Watch]);
     }
 
     [TestMethod]
@@ -590,7 +590,7 @@ public class BitAiReadAloudTests : BitAiTestBase
         await chat.InvokeAsync(reader.StopAsync);
         await chat.InvokeAsync(() => reader.ReadAsync(session.Conversation.Messages[^1]));
 
-        CollectionAssert.AreEqual(new[] { "first", "second" }, heard);
+        Assert.AreSequenceEqual(new[] { "first", "second" }, heard);
     }
 
     [TestMethod]
@@ -635,15 +635,15 @@ public class BitAiReadAloudTests : BitAiTestBase
         await chat.InvokeAsync(() => chat.Instance.ReadAloud!.ReadAsync(first));
         await chat.InvokeAsync(() => chat.Instance.ReadAloud!._OnPlaybackEnded(7));
 
-        var turn = chat.InvokeAsync(() => session.SubmitAsync("And then?"));
-        chat.WaitForAssertion(() => Assert.IsTrue(session.Conversation.Messages[^1].GetText().Contains("Half")));
+        var turn = chat.InvokeAsync(() => session.SubmitAsync("And then?", cancellationToken: TestContext.CancellationToken));
+        chat.WaitForAssertion(() => Assert.Contains("Half", session.Conversation.Messages[^1].GetText()));
 
         session.Stop();
         await turn;
         chat.WaitForAssertion(() => Assert.IsFalse(session.IsGenerating));
         await chat.InvokeAsync(() => Task.CompletedTask);
 
-        CollectionAssert.AreEqual(new[] { "The first reply." }, synthesizer.Texts);
+        Assert.AreSequenceEqual(new[] { "The first reply." }, synthesizer.Texts);
         Assert.IsTrue(chat.Instance.ReadAloud!.IsFollowing);
     }
 
@@ -668,9 +668,9 @@ public class BitAiReadAloudTests : BitAiTestBase
         await chat.InvokeAsync(() => chat.Instance.ReadAloud!.ReadAsync(first));
         await chat.InvokeAsync(() => chat.Instance.ReadAloud!._OnPlaybackEnded(7));
 
-        await chat.InvokeAsync(() => session.SubmitAsync("And then?"));
+        await chat.InvokeAsync(() => session.SubmitAsync("And then?", cancellationToken: TestContext.CancellationToken));
 
-        chat.WaitForAssertion(() => CollectionAssert.AreEqual(new[] { "The first reply.", "The next reply." }, synthesizer.Texts));
+        chat.WaitForAssertion(() => Assert.AreSequenceEqual(new[] { "The first reply.", "The next reply." }, synthesizer.Texts));
     }
 
     private static BitAiChatSession SessionWithReply()
@@ -703,4 +703,6 @@ public class BitAiReadAloudTests : BitAiTestBase
             yield return new BitAiMessageCompletedEvent();
         }
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

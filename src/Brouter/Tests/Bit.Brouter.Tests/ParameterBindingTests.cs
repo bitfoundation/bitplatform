@@ -95,8 +95,8 @@ public class ParameterBindingTests : BunitTestContext
         var ex = Assert.ThrowsExactly<InvalidOperationException>(
             () => BrouterTypedParameterCache.GetBindings(typeof(MissingParameterAttribute)));
 
-        StringAssert.Contains(ex.Message, nameof(MissingParameterAttribute));
-        StringAssert.Contains(ex.Message, "[Parameter]");
+        Assert.Contains(nameof(MissingParameterAttribute), ex.Message);
+        Assert.Contains("[Parameter]", ex.Message);
     }
 
     [TestMethod]
@@ -105,8 +105,8 @@ public class ParameterBindingTests : BunitTestContext
         var ex = Assert.ThrowsExactly<InvalidOperationException>(
             () => BrouterTypedParameterCache.GetBindings(typeof(MissingPublicSetter)));
 
-        StringAssert.Contains(ex.Message, nameof(MissingPublicSetter));
-        StringAssert.Contains(ex.Message, "public setter");
+        Assert.Contains(nameof(MissingPublicSetter), ex.Message);
+        Assert.Contains("public setter", ex.Message);
     }
 
     [TestMethod]
@@ -115,8 +115,8 @@ public class ParameterBindingTests : BunitTestContext
         var ex = Assert.ThrowsExactly<InvalidOperationException>(
             () => BrouterTypedParameterCache.GetBindings(typeof(RouteAndQueryAmbiguous)));
 
-        StringAssert.Contains(ex.Message, nameof(BrouterParameterAttribute));
-        StringAssert.Contains(ex.Message, nameof(SupplyParameterFromQueryAttribute));
+        Assert.Contains(nameof(BrouterParameterAttribute), ex.Message);
+        Assert.Contains(nameof(SupplyParameterFromQueryAttribute), ex.Message);
     }
 
     [TestMethod]
@@ -125,8 +125,8 @@ public class ParameterBindingTests : BunitTestContext
         var ex = Assert.ThrowsExactly<InvalidOperationException>(
             () => BrouterTypedParameterCache.GetBindings(typeof(BrouterQueryMissingParameterAttribute)));
 
-        StringAssert.Contains(ex.Message, nameof(BrouterQueryMissingParameterAttribute));
-        StringAssert.Contains(ex.Message, "[Parameter]");
+        Assert.Contains(nameof(BrouterQueryMissingParameterAttribute), ex.Message);
+        Assert.Contains("[Parameter]", ex.Message);
     }
 
     [TestMethod]
@@ -135,8 +135,8 @@ public class ParameterBindingTests : BunitTestContext
         var ex = Assert.ThrowsExactly<InvalidOperationException>(
             () => BrouterTypedParameterCache.GetBindings(typeof(BrouterRouteAndBrouterQueryAmbiguous)));
 
-        StringAssert.Contains(ex.Message, nameof(BrouterParameterAttribute));
-        StringAssert.Contains(ex.Message, nameof(BrouterQueryAttribute));
+        Assert.Contains(nameof(BrouterParameterAttribute), ex.Message);
+        Assert.Contains(nameof(BrouterQueryAttribute), ex.Message);
     }
 
     [TestMethod]
@@ -147,7 +147,7 @@ public class ParameterBindingTests : BunitTestContext
         var ex = Assert.ThrowsExactly<InvalidOperationException>(
             () => BrouterTypedParameterCache.GetBindings(typeof(BothQueryAttributesAmbiguous)));
 
-        StringAssert.Contains(ex.Message, nameof(BrouterQueryAttribute));
-        StringAssert.Contains(ex.Message, nameof(SupplyParameterFromQueryAttribute));
+        Assert.Contains(nameof(BrouterQueryAttribute), ex.Message);
+        Assert.Contains(nameof(SupplyParameterFromQueryAttribute), ex.Message);
     }
 }

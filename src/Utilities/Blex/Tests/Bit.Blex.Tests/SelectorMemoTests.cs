@@ -177,7 +177,7 @@ public class SelectorMemoTests
         profile.SignIn("ada");
         counter.Increment();
 
-        await pending.WaitAsync(TimeSpan.FromSeconds(5));
+        await pending.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
     }
 
     [TestMethod]
@@ -191,6 +191,8 @@ public class SelectorMemoTests
     public async Task ManagerWaitForAsync_ReturnsImmediatelyWhenAlreadyTrue()
     {
         var (manager, _, _) = Setup();
-        await manager.WaitForAsync(() => true).WaitAsync(TimeSpan.FromSeconds(5));
+        await manager.WaitForAsync(() => true).WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

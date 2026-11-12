@@ -25,20 +25,20 @@ public sealed class WebAssemblyTrimmingTests
         // of a citation with a BitCard, so the card is kept with it.)
         var styles = Published.KeptStyles(Core);
         Assert.IsTrue(styles.Count is > 10 and < 60, $"The trimmed core stylesheet keeps {styles.Count} components: {string.Join(", ", styles)}");
-        foreach (var expected in new[] { "BitButton", "BitTextField", "BitDropdown", "BitDatePicker", "BitNav", "BitModal" }) CollectionAssert.Contains(styles, expected);
-        foreach (var unexpected in new[] { "BitCarousel", "BitSplitter", "BitScrollablePane", "BitSwiper" }) CollectionAssert.DoesNotContain(styles, unexpected);
+        foreach (var expected in new[] { "BitButton", "BitTextField", "BitDropdown", "BitDatePicker", "BitNav", "BitModal" }) Assert.Contains(expected, styles);
+        foreach (var unexpected in new[] { "BitCarousel", "BitSplitter", "BitScrollablePane", "BitSwiper" }) Assert.DoesNotContain(unexpected, styles);
 
         var scripts = Published.KeptScripts(Core);
-        foreach (var expected in new[] { "general", "Utils.Keys", "Callouts", "BitTextField", "BitNav" }) CollectionAssert.Contains(scripts, expected);
-        foreach (var unexpected in new[] { "BitScrollablePane", "BitSplitter", "BitPullToRefresh" }) CollectionAssert.DoesNotContain(scripts, unexpected);
+        foreach (var expected in new[] { "general", "Utils.Keys", "Callouts", "BitTextField", "BitNav" }) Assert.Contains(expected, scripts);
+        foreach (var unexpected in new[] { "BitScrollablePane", "BitSplitter", "BitPullToRefresh" }) Assert.DoesNotContain(unexpected, scripts);
 
-        CollectionAssert.Contains(Published.KeptStyles(Extras), "BitDataGrid");
-        CollectionAssert.DoesNotContain(Published.KeptStyles(Extras), "BitPdfViewer");
-        CollectionAssert.DoesNotContain(Published.KeptScripts(Extras), "BitPdfViewer");
+        Assert.Contains("BitDataGrid", Published.KeptStyles(Extras));
+        Assert.DoesNotContain("BitPdfViewer", Published.KeptStyles(Extras));
+        Assert.DoesNotContain("BitPdfViewer", Published.KeptScripts(Extras));
 
         // The AI chat, with the transcript, the composer and the messages it draws, and their scripts.
-        foreach (var expected in new[] { "BitAiChat", "BitAiMessageList", "BitAiChatMessage", "BitAiPromptInput" }) CollectionAssert.Contains(Published.KeptStyles(AI), expected);
-        foreach (var expected in new[] { "BitAiPromptInput", "BitAiMessageList" }) CollectionAssert.Contains(Published.KeptScripts(AI), expected);
+        foreach (var expected in new[] { "BitAiChat", "BitAiMessageList", "BitAiChatMessage", "BitAiPromptInput" }) Assert.Contains(expected, Published.KeptStyles(AI));
+        foreach (var expected in new[] { "BitAiPromptInput", "BitAiMessageList" }) Assert.Contains(expected, Published.KeptScripts(AI));
 
         foreach (var package in new[] { Core, Extras, AI })
         {
@@ -55,8 +55,7 @@ public sealed class WebAssemblyTrimmingTests
         // The app cascades a BitButtonParams to its buttons: everything BitParams reads of it by reflection is kept.
         var created = Published.ReadTrimmedAssembly(Core).FindType("Bit.BlazorUI.BitButtonParams");
         Assert.IsNotNull(created, "BitButtonParams, which the app creates, was trimmed away.");
-        CollectionAssert.AreEquivalent(PublishResult.ReadUntrimmedAssembly(Core).FindType("Bit.BlazorUI.BitButtonParams")!.Properties, created.Properties,
-                                       "BitButtonParams, which the app creates, lost properties BitParams reads by reflection.");
+        Assert.AreSequenceEqual(PublishResult.ReadUntrimmedAssembly(Core).FindType("Bit.BlazorUI.BitButtonParams")!.Properties, created.Properties, Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, "BitButtonParams, which the app creates, lost properties BitParams reads by reflection.");
 
         // It renders a text field and a data grid but creates neither's params: nothing of those is left but the
         // UpdateParameters their components call, emptied - no property, no field, no closure of the lambdas it held.
@@ -66,7 +65,7 @@ public sealed class WebAssemblyTrimmingTests
             Assert.IsNotNull(members, $"{type} is gone altogether: does the app still render its component?");
 
             var kept = members.Properties.Concat(members.Fields).Concat(members.NestedTypes).ToList();
-            Assert.AreEqual(0, kept.Count, $"{type}, which the app never creates, keeps {string.Join(", ", kept)}.");
+            Assert.IsEmpty(kept, $"{type}, which the app never creates, keeps {string.Join(", ", kept)}.");
         }
     }
 

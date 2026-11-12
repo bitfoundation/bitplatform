@@ -53,8 +53,8 @@ public class RoutingTests
         await using var harness = new BonboardingHarness();
         harness.WithElements("#a", "#b", "#c");
 
-        var session = await harness.Service.StartAsync(Tour());
-        await session.NextAsync();
+        var session = await harness.Service.StartAsync(Tour(), cancellationToken: TestContext.CancellationToken);
+        await session.NextAsync(TestContext.CancellationToken);
 
         // Navigation is synchronous in the test navigation manager, so the step is live again by
         // the time NextAsync returns.
@@ -69,8 +69,8 @@ public class RoutingTests
         await using var harness = new BonboardingHarness();
         harness.WithElements("#a", "#b", "#c");
 
-        var session = await harness.Service.StartAsync(Tour());
-        await session.NextAsync();
+        var session = await harness.Service.StartAsync(Tour(), cancellationToken: TestContext.CancellationToken);
+        await session.NextAsync(TestContext.CancellationToken);
         Assert.AreEqual(BonboardingTourStatus.Running, session.Status);
 
         harness.Navigation!.SimulateUserNavigation("dashboard");
@@ -91,12 +91,13 @@ public class RoutingTests
         var tour = Tour();
         tour.OnStepChanged = args => { changes.Add(args); return ValueTask.CompletedTask; };
 
-        var session = await harness.Service.StartAsync(tour);
-        await session.NextAsync();
+        var session = await harness.Service.StartAsync(tour, cancellationToken: TestContext.CancellationToken);
+        await session.NextAsync(TestContext.CancellationToken);
 
         Assert.AreEqual("b", session.CurrentStep!.Id);
         Assert.AreEqual("b", changes[^1].Step.Id);
-        Assert.AreEqual("a", changes[^1].PreviousStep?.Id);
+        var actualValue = changes[^1].PreviousStep?.Id;
+        Assert.AreEqual("a", actualValue);
         Assert.AreEqual(BonboardingStepChangeReason.Next, changes[^1].Reason);
     }
 
@@ -106,9 +107,9 @@ public class RoutingTests
         await using var harness = new BonboardingHarness();
         harness.WithElements("#a", "#b", "#c");
 
-        var session = await harness.Service.StartAsync(Tour());
-        await session.NextAsync();
-        await session.PauseAsync();
+        var session = await harness.Service.StartAsync(Tour(), cancellationToken: TestContext.CancellationToken);
+        await session.NextAsync(TestContext.CancellationToken);
+        await session.PauseAsync(TestContext.CancellationToken);
 
         harness.Navigation!.SimulateUserNavigation("dashboard");
         Assert.AreEqual(BonboardingTourStatus.Paused, session.Status);
@@ -116,7 +117,7 @@ public class RoutingTests
         harness.Navigation.SimulateUserNavigation("settings");
         Assert.AreEqual(BonboardingTourStatus.Paused, session.Status);
 
-        await session.ResumeAsync();
+        await session.ResumeAsync(TestContext.CancellationToken);
 
         Assert.AreEqual(BonboardingTourStatus.Running, session.Status);
         Assert.AreEqual("b", session.CurrentStep!.Id);
@@ -128,8 +129,8 @@ public class RoutingTests
         await using var harness = new BonboardingHarness(options => options.AutoNavigateToStepRoute = false);
         harness.WithElements("#a", "#b", "#c");
 
-        var session = await harness.Service.StartAsync(Tour());
-        await session.NextAsync();
+        var session = await harness.Service.StartAsync(Tour(), cancellationToken: TestContext.CancellationToken);
+        await session.NextAsync(TestContext.CancellationToken);
 
         Assert.IsEmpty(harness.Navigation!.Navigations);
         Assert.AreEqual(BonboardingTourStatus.Waiting, session.Status);
@@ -151,7 +152,7 @@ public class RoutingTests
             Steps = [new BonboardingStepDefinition { Id = "a", Target = BonboardingStepTarget.Css("#a"), Route = "settings/*" }],
         };
 
-        var session = await harness.Service.StartAsync(tour);
+        var session = await harness.Service.StartAsync(tour, cancellationToken: TestContext.CancellationToken);
 
         Assert.IsEmpty(harness.Navigation!.Navigations);
         Assert.AreEqual(BonboardingTourStatus.Waiting, session.Status);
@@ -173,12 +174,12 @@ public class RoutingTests
             Steps = [new BonboardingStepDefinition { Id = "a", Target = BonboardingStepTarget.Css("#a") }],
         };
 
-        await harness.Service.StartAsync(tour);
+        await harness.Service.StartAsync(tour, cancellationToken: TestContext.CancellationToken);
         var before = harness.Interop.MeasureCount;
 
         harness.Navigation!.SimulateUserNavigation("?tab=two");
 
-        Assert.IsTrue(harness.Interop.MeasureCount > before);
+        Assert.IsGreaterThan(before, harness.Interop.MeasureCount);
     }
 
     [TestMethod]
@@ -202,7 +203,7 @@ public class RoutingTests
             ],
         };
 
-        var session = await harness.Service.StartAsync(tour);
+        var session = await harness.Service.StartAsync(tour, cancellationToken: TestContext.CancellationToken);
 
         // The browser's Back button: another page replaced this one, and the target went with it.
         harness.Interop.ExistingSelectors.Clear();
@@ -231,7 +232,7 @@ public class RoutingTests
             ],
         };
 
-        var session = await harness.Service.StartAsync(tour);
+        var session = await harness.Service.StartAsync(tour, cancellationToken: TestContext.CancellationToken);
 
         // A same-page navigation re-renders the page without the target, and the refresh it triggers notices...
         harness.Interop.ExistingSelectors.Clear();
@@ -240,7 +241,7 @@ public class RoutingTests
         // ...as does the browser's next frame, which reports the same loss.
         await harness.Interop.LoseTargetAsync(session.Id);
 
-        Assert.AreEqual(1, harness.Events.Kinds.Count(kind => kind == BonboardingEventKind.TargetMissing));
+        Assert.ContainsSingle(kind => kind == BonboardingEventKind.TargetMissing, harness.Events.Kinds);
         Assert.AreEqual(BonboardingTourStatus.Running, session.Status);
         Assert.IsFalse(session.HasTarget, "The step shows centred.");
     }
@@ -257,8 +258,8 @@ public class RoutingTests
             Steps = [new BonboardingStepDefinition { Id = "a", Target = BonboardingStepTarget.Css("#a") }],
         };
 
-        var session = await harness.Service.StartAsync(tour);
-        await session.CompleteAsync();
+        var session = await harness.Service.StartAsync(tour, cancellationToken: TestContext.CancellationToken);
+        await session.CompleteAsync(TestContext.CancellationToken);
 
         var measurements = harness.Interop.MeasureCount;
         harness.Navigation!.SimulateUserNavigation("elsewhere");
@@ -273,11 +274,13 @@ public class RoutingTests
         await using var harness = new BonboardingHarness(withNavigation: false);
         harness.WithElements("#a", "#b", "#c");
 
-        var session = await harness.Service.StartAsync(Tour());
-        await session.NextAsync();
+        var session = await harness.Service.StartAsync(Tour(), cancellationToken: TestContext.CancellationToken);
+        await session.NextAsync(TestContext.CancellationToken);
 
         // With no router available the route requirement is simply ignored rather than hanging.
         Assert.AreEqual("b", session.CurrentStep!.Id);
         Assert.AreEqual(BonboardingTourStatus.Running, session.Status);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

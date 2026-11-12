@@ -1,4 +1,4 @@
-using Bit.Bmotion.Tests.TestInfra;
+﻿using Bit.Bmotion.Tests.TestInfra;
 
 namespace Bit.Bmotion.Tests.Engine;
 
@@ -55,7 +55,7 @@ public class MixedUnitLengthTests
         var written = new List<string>();
         for (int i = 0; i <= 16; i++)
             if (engine.ComputeFrame(i * 16.0)?.GetValueOrDefault("el")?.TryGetValue("width", out var v) == true) written.Add(v);
-        Assert.IsTrue(written.Any(w => w.StartsWith("calc(", StringComparison.Ordinal) && w.Contains("px + ") && w.EndsWith("%)")),
+        Assert.Contains(w => w.StartsWith("calc(", StringComparison.Ordinal) && w.Contains("px + ") && w.EndsWith("%)"), written,
             $"it plays between the two: {string.Join(" | ", written)}");
         Assert.AreEqual("50%", written[^1], "and lands on the authored target");
     }
@@ -74,7 +74,7 @@ public class MixedUnitLengthTests
             var keyframes = (Dictionary<string, object>[])interop.ArgsOf("playWaapiAnimation").Last()[2]!;
             var mode = inProcess ? "WebAssembly" : "Server";
             // On Blazor Server the browser starts from what the page shows (an implicit first keyframe).
-            Assert.AreEqual(inProcess ? 2 : 1, keyframes.Length, $"the browser interpolates between the ends itself ({mode})");
+            Assert.HasCount(inProcess ? 2 : 1, keyframes, $"the browser interpolates between the ends itself ({mode})");
             if (inProcess) Assert.AreEqual("100px", keyframes[0]["width"]);
             Assert.AreEqual("50%", keyframes[^1]["width"], mode);
             interop.FinishWaapi();
