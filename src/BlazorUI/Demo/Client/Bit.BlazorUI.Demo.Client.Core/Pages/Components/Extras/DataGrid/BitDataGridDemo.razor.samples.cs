@@ -691,7 +691,7 @@ private async Task SimulateLoading()
 </BitDataGrid>
 
 <BitDataGrid Items=""@lazyTreeRoots"" Height=""360px"" KeyField=""n => n.Id""
-             ChildrenProvider=""LoadChildrenAsync"" HasChildrenSelector=""IsFolder"">
+             OnLoadChildren=""LoadChildrenAsync"" HasChildrenSelector=""IsFolder"">
     <BitDataGridColumn Property=""p => p.Name"" Width=""280px"" />
     <BitDataGridColumn Property=""p => p.Kind"" Title=""Type"" Width=""110px"" />
     <BitDataGridColumn Property=""p => p.Size"" Title=""Size (bytes)"" Format=""N0"" Align=""BitTextAlign.End"" />
@@ -716,10 +716,12 @@ private int nextLazyNodeId = 1000;
 // An unloaded node cannot know its children; this decides whether it offers a toggle.
 private static bool IsFolder(FileNode node) => node.Kind == ""Folder"";
 
-// Called on a node's first expand only; the grid caches the result.
-private async Task<IEnumerable<FileNode>?> LoadChildrenAsync(FileNode parent)
+// Called on a node's first expand only; the grid caches the result. The grid cancels the token
+// once it no longer needs the children (new Items, or the grid is gone).
+private async Task<IEnumerable<FileNode>?> LoadChildrenAsync(BitDataGridChildrenRequest<FileNode> request)
 {
-    await Task.Delay(600); // e.g. await http.GetFromJsonAsync<List<FileNode>>($""api/files/{parent.Id}"")
+    var parent = request.Parent;
+    await Task.Delay(600, request.CancellationToken); // e.g. await http.GetFromJsonAsync<List<FileNode>>($""api/files/{parent.Id}"", request.CancellationToken)
     return
     [
         new FileNode { Id = ++nextLazyNodeId, Name = $""{parent.Name}-sub"", Kind = ""Folder"", Modified = parent.Modified.AddDays(1) },

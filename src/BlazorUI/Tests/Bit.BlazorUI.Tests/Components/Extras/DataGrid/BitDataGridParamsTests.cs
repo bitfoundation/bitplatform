@@ -77,6 +77,7 @@ public class BitDataGridParamsTests : BunitTestContext
         nameof(BitDataGrid<Row>.OnDetailToggle),
         nameof(BitDataGrid<Row>.OnFilterChange),
         nameof(BitDataGrid<Row>.OnGroupChange),
+        nameof(BitDataGrid<Row>.OnLoadChildren),
         nameof(BitDataGrid<Row>.OnLoadMore),
         nameof(BitDataGrid<Row>.OnPageChange),
         nameof(BitDataGrid<Row>.OnRead),

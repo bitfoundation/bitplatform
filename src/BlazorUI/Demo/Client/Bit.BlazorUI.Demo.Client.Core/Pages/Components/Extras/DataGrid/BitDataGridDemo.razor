@@ -463,12 +463,13 @@
             </BitDataGrid>
             <br /><br />
             <div>
-                <b>ChildrenProvider</b> loads a node's children on its first expand (cached afterwards), and <b>HasChildrenSelector</b>
-                tells an unloaded node whether to offer a toggle. Each folder below takes 600 ms to load.
+                <b>OnLoadChildren</b> loads a node's children on its first expand (cached afterwards), with a token the grid cancels
+                once it no longer needs them (new <b>Items</b>, or the grid is gone); <b>ChildrenProvider</b> does the same without the token.
+                <b>HasChildrenSelector</b> tells an unloaded node whether to offer a toggle. Each folder below takes 600 ms to load.
             </div>
             <br />
             <BitDataGrid Items="@lazyTreeRoots" Height="360px" KeyField="n => n.Id"
-                         ChildrenProvider="LoadChildrenAsync" HasChildrenSelector="IsFolder">
+                         OnLoadChildren="LoadChildrenAsync" HasChildrenSelector="IsFolder">
                 <BitDataGridColumn Property="p => p.Name" Width="280px" />
                 <BitDataGridColumn Property="p => p.Kind" Title="Type" Width="110px" />
                 <BitDataGridColumn Property="p => p.Size" Title="Size (bytes)" Format="N0" Align="BitTextAlign.End" />

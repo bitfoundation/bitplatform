@@ -113,7 +113,8 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     [Parameter] public Func<TItem, IEnumerable<TItem>?>? ChildrenSelector { get; set; }
 
     /// <summary>When tree mode is active, controls whether nodes start expanded. Default: collapsed.
-    /// Ignored in lazy mode (<see cref="ChildrenProvider"/>), where children aren't known up front.</summary>
+    /// Ignored in lazy mode (<see cref="ChildrenProvider"/> or <see cref="OnLoadChildren"/>), where children aren't
+    /// known up front.</summary>
     [Parameter] public bool TreeInitiallyExpanded { get; set; }
 
     /// <summary>
@@ -121,14 +122,25 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     /// backend) the first time a node is expanded and cached for later toggles. Pair it with
     /// <see cref="HasChildrenSelector"/> so unloaded nodes know whether to render an expand toggle.
     /// Mutually exclusive with <see cref="ChildrenSelector"/>.
+    /// <para>The grid cannot tell it to stop: <see cref="OnLoadChildren"/> loads the same way and also hands over a
+    /// token the grid cancels once it no longer needs the children.</para>
     /// </summary>
     [Parameter] public Func<TItem, Task<IEnumerable<TItem>?>>? ChildrenProvider { get; set; }
 
     /// <summary>
+    /// The <see cref="ChildrenProvider"/> that can be cancelled: it loads a node's children the same way, and is called
+    /// with a <see cref="BitDataGridChildrenRequest{TItem}"/> carrying the node and a <see cref="CancellationToken"/>.
+    /// The grid cancels that token once it no longer needs the children - a new <see cref="Items"/> reference replaced
+    /// the hierarchy, or the grid was disposed - and then ignores the <see cref="OperationCanceledException"/> the fetch
+    /// throws. Set only one of <see cref="ChildrenSelector"/>, <see cref="ChildrenProvider"/> and this.
+    /// </summary>
+    [Parameter] public Func<BitDataGridChildrenRequest<TItem>, Task<IEnumerable<TItem>?>>? OnLoadChildren { get; set; }
+
+    /// <summary>
     /// Tells whether a node can have children before they are loaded, so the expand toggle renders on
-    /// unloaded lazy nodes. Only used with <see cref="ChildrenProvider"/>; when omitted, a node shows
-    /// a toggle only after its children have been loaded (i.e. never for the initial render), so
-    /// providing it is strongly recommended.
+    /// unloaded lazy nodes. Only used with <see cref="ChildrenProvider"/> or <see cref="OnLoadChildren"/>; when
+    /// omitted, a node shows a toggle only after its children have been loaded (i.e. never for the initial render),
+    /// so providing it is strongly recommended.
     /// </summary>
     [Parameter] public Func<TItem, bool>? HasChildrenSelector { get; set; }
 
@@ -651,12 +663,16 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     private readonly Dictionary<object, (int Level, bool HasChildren)> _treeMeta = new();
     private List<TItem>? _treeRows;
     private bool _treeInitialized;
-    // lazy tree mode (ChildrenProvider): children fetched on first expand, cached by node key
+    // lazy tree mode (ChildrenProvider or OnLoadChildren): children fetched on first expand, cached by node key
     private readonly Dictionary<object, IReadOnlyList<TItem>> _loadedChildren = new();
     private readonly HashSet<object> _loadingNodes = new();
     // Which tree hierarchy the two sets above belong to: moved on whenever a new Items reference clears them, so a
     // lazy fetch started for the previous hierarchy can tell, once it returns, that its rows are gone.
     private int _treeGeneration;
+    // Gives every OnLoadChildren fetch of the current hierarchy its token. Cancelled, and dropped for a new one, when
+    // the generation moves on, and cancelled when the grid is disposed; never disposed, for the reason
+    // ResetLoadCancellation gives.
+    private CancellationTokenSource? _treeLoadCts;
 
     // cell navigation
     private TItem? _focusedRow;
@@ -907,7 +923,8 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     /// <summary>Items is an <see cref="IQueryable{T}"/>: filters/sorts/paging are translated into
     /// expression trees and executed by the provider (e.g. EF Core → SQL) instead of in memory.</summary>
     internal bool IsQueryableMode => Items is IQueryable<TItem> && !IsTreeMode && !IsServerMode && !IsInfiniteMode;
-    internal bool IsTreeMode => ChildrenSelector is not null || ChildrenProvider is not null;
+    internal bool IsTreeMode => ChildrenSelector is not null || IsLazyTreeMode;
+    private bool IsLazyTreeMode => ChildrenProvider is not null || OnLoadChildren is not null;
     internal bool IsEditing(TItem item) => _editItem is not null && KeyEquals(_editItem, item);
     internal bool IsRowSelected(TItem item) => _selected.Contains(item);
     /// <summary>Total number of rows in the current (filtered) view; the provider-reported total in
@@ -1155,21 +1172,21 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
         // Tree mode flattens the bound Items via ProcessTreeData and never calls the remote data
         // callbacks, so combining it with OnRead/OnLoadMore would let RefreshAsync bypass tree
         // processing and present a flat remote list under a tree UI. Reject the ambiguous config.
-        if ((ChildrenSelector is not null || ChildrenProvider is not null) && (OnRead is not null || OnLoadMore is not null))
+        if (IsTreeMode && (OnRead is not null || OnLoadMore is not null))
         {
             throw new InvalidOperationException(
-                $"{nameof(BitDataGrid<TItem>)} cannot combine tree mode ({nameof(ChildrenSelector)}/{nameof(ChildrenProvider)}) with " +
+                $"{nameof(BitDataGrid<TItem>)} cannot combine tree mode ({nameof(ChildrenSelector)}/{nameof(ChildrenProvider)}/{nameof(OnLoadChildren)}) with " +
                 $"{nameof(OnRead)} (server mode) or {nameof(OnLoadMore)} (infinite-scrolling mode). " +
                 $"Tree data must be provided through {nameof(Items)}.");
         }
 
         // Two children sources would be ambiguous: the synchronous selector and the async lazy
-        // provider resolve children in incompatible ways, so exactly one may drive tree mode.
-        if (ChildrenSelector is not null && ChildrenProvider is not null)
+        // providers resolve children in incompatible ways, so exactly one may drive tree mode.
+        if ((ChildrenSelector is null ? 0 : 1) + (ChildrenProvider is null ? 0 : 1) + (OnLoadChildren is null ? 0 : 1) > 1)
         {
             throw new InvalidOperationException(
-                $"{nameof(BitDataGrid<TItem>)} cannot use both {nameof(ChildrenSelector)} and " +
-                $"{nameof(ChildrenProvider)} at the same time. Provide only one children source.");
+                $"{nameof(BitDataGrid<TItem>)} can use only one of {nameof(ChildrenSelector)}, {nameof(ChildrenProvider)} and " +
+                $"{nameof(OnLoadChildren)} at a time. Provide only one children source.");
         }
 
         // The parent owns the quick-search term while it binds SearchText, so an actual parameter
@@ -1257,10 +1274,13 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
                 _treeInitialized = false;
                 _expandedTree.Clear();
                 _treeFilterCollapsed.Clear();
-                // A new hierarchy invalidates lazily-fetched children of the previous one.
+                // A new hierarchy invalidates lazily-fetched children of the previous one, so the fetches still out for
+                // it can stop.
                 _loadedChildren.Clear();
                 _loadingNodes.Clear();
                 _treeGeneration++;
+                _treeLoadCts?.Cancel();
+                _treeLoadCts = null;
             }
 
             // A replaced client-side data source drops rows for good; prune per-row state keyed on the
@@ -1825,7 +1845,7 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
             // children themselves don't exist locally yet). Once the children are loaded (or a
             // selector provides them) the real list wins, so a node whose fetch returned no
             // children drops its expand toggle even when the selector claimed it had some.
-            var hasChildren = ChildrenProvider is not null && children is null
+            var hasChildren = IsLazyTreeMode && children is null
                 ? HasChildrenSelector?.Invoke(item) ?? false
                 : children is { Count: > 0 };
             _treeMeta[GetKey(item)] = (ancestors.Count, hasChildren);
@@ -1900,9 +1920,9 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
 
     /// <summary>Whether tree rows can be pruned by the search/filters at all: the synchronous
     /// <see cref="ChildrenSelector"/> can be walked to find a match deeper in a collapsed branch,
-    /// while a lazy <see cref="ChildrenProvider"/>'s unloaded children cannot be examined without
-    /// fetching the whole tree - so a lazy tree keeps rendering unfiltered rather than pruning on a
-    /// half-known hierarchy.</summary>
+    /// while a lazy tree's unloaded children (<see cref="ChildrenProvider"/>, <see cref="OnLoadChildren"/>) cannot
+    /// be examined without fetching the whole tree - so a lazy tree keeps rendering unfiltered rather than pruning on
+    /// a half-known hierarchy.</summary>
     internal bool TreeFilteringSupported => ChildrenSelector is not null;
 
     private bool TreeFilteringActive
@@ -2026,7 +2046,7 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
         {
             // Expanding a lazy node for the first time: fetch and cache its children. A re-entrant
             // toggle while the fetch is in flight is ignored so the provider isn't called twice.
-            if (ChildrenProvider is not null && !_loadedChildren.ContainsKey(key))
+            if (IsLazyTreeMode && !_loadedChildren.ContainsKey(key))
             {
                 if (!_loadingNodes.Add(key))
                 {
@@ -2039,12 +2059,22 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
                 // may then be cached, collapsed or unflagged under that key: it would show the old hierarchy's
                 // children on the next expand without a fetch, or clear a newer fetch's loading flag.
                 var generation = _treeGeneration;
+                // Only OnLoadChildren takes a token, so ChildrenProvider's fetch keeps one that never cancels.
+                var cancellationToken = OnLoadChildren is null ? CancellationToken.None : (_treeLoadCts ??= new()).Token;
                 try
                 {
-                    var children = await ChildrenProvider(item);
+                    var children = OnLoadChildren is not null
+                        ? await OnLoadChildren(new() { Parent = item, CancellationToken = cancellationToken })
+                        : await ChildrenProvider!(item);
                     if (generation != _treeGeneration) return;
                     _loadedChildren[key] = children as IReadOnlyList<TItem> ?? children?.ToList() ?? (IReadOnlyList<TItem>)Array.Empty<TItem>();
                     childrenLoaded = true;
+                }
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                {
+                    // The grid cancelled this fetch itself, because the hierarchy it was for is gone or the grid is.
+                    // That is not a failure, and there is nothing left to put back.
+                    return;
                 }
                 catch
                 {
@@ -2067,15 +2097,15 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     }
 
     /// <summary>Expands every node in the tree. No-op outside tree mode. In lazy mode
-    /// (<see cref="ChildrenProvider"/>) only already-loaded branches expand - recursively fetching the
-    /// whole tree could be unbounded.</summary>
+    /// (<see cref="ChildrenProvider"/> or <see cref="OnLoadChildren"/>) only already-loaded branches expand -
+    /// recursively fetching the whole tree could be unbounded.</summary>
     public async Task ExpandAllAsync()
     {
         if (!IsTreeMode) return;
         // A pruned tree renders from the collapse set, so dropping it is what "expand all" means there.
         _treeFilterCollapsed.Clear();
         _expandedTree.Clear();
-        if (ChildrenProvider is not null)
+        if (IsLazyTreeMode)
         {
             foreach (var key in _loadedChildren.Keys) _expandedTree.Add(key);
         }
@@ -2533,6 +2563,7 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
         // ObjectDisposedException for an OnRead/OnLoadMore call still holding the token.
         _loadCts?.Cancel();
         _disposalCts.Cancel();
+        _treeLoadCts?.Cancel();
 
         await base.DisposeAsync(disposing);
     }
@@ -2772,8 +2803,8 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     // ----------------------------------------------------------- Filtering
     internal bool ColumnFilterable(BitDataGridColumn<TItem> column)
         // A tree grid filters by pruning the hierarchy to the branches containing a match, which needs
-        // the whole hierarchy in hand; a lazily-loaded tree (ChildrenProvider) cannot see its unloaded
-        // children, so the filter row is suppressed there rather than appearing active while silently
+        // the whole hierarchy in hand; a lazily-loaded tree (ChildrenProvider, OnLoadChildren) cannot see its
+        // unloaded children, so the filter row is suppressed there rather than appearing active while silently
         // ignoring most of the data.
         => column.HasField && (!IsTreeMode || TreeFilteringSupported) && (column.Filterable ?? Filterable);
 
@@ -2935,8 +2966,8 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
 
     /// <summary>Whether the grid renders (and applies) the quick-search box. A tree grid searches by
     /// pruning the hierarchy to the branches containing a match; a lazily-loaded tree
-    /// (<see cref="ChildrenProvider"/>) cannot see its unloaded children, so the box is suppressed
-    /// there rather than appearing active while searching only part of the data - mirroring how the
+    /// (<see cref="ChildrenProvider"/>, <see cref="OnLoadChildren"/>) cannot see its unloaded children, so the box is
+    /// suppressed there rather than appearing active while searching only part of the data - mirroring how the
     /// filter row behaves.</summary>
     internal bool SearchActive => ShowSearchBox && (!IsTreeMode || TreeFilteringSupported);
 

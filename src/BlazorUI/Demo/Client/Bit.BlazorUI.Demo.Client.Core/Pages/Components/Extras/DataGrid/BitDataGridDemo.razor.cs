@@ -252,10 +252,11 @@ public partial class BitDataGridDemo : AppComponentBase
 
     private static bool IsFolder(FileNode node) => node.Kind == "Folder";
 
-    private async Task<IEnumerable<FileNode>?> LoadChildrenAsync(FileNode parent)
+    private async Task<IEnumerable<FileNode>?> LoadChildrenAsync(BitDataGridChildrenRequest<FileNode> request)
     {
         // Simulates a backend call; results are cached by the grid, so each folder loads once.
-        await Task.Delay(600);
+        var parent = request.Parent;
+        await Task.Delay(600, request.CancellationToken);
         return
         [
             new FileNode { Id = ++nextLazyNodeId, Name = $"{parent.Name}-sub", Kind = "Folder", Modified = parent.Modified.AddDays(1) },
