@@ -142,7 +142,7 @@ app's signing. It asks for the rest, and an empty answer skips one. `bit pipelin
 <!--#if (api == "Standalone")-->
 | `SERVER_API_ADDRESS` | variable | The api's public address. Every app is built with it as `ServerAddress`, and the deployment stops if it is missing |
 <!--#endif-->
-| `APP_TITLE`, `APP_ID` | variable | The app's name and id. Each environment has an id and a name of its own, so the Test and Production apps install side by side. The version is `<Version>` in `src/Directory.Build.props`, which each release raises |
+| `APP_TITLE`, `APP_ID` | variable | The app's name and id. Each environment has an id and a name of its own, so the Test and Production apps install side by side. The version is `<Version>` in `src/Directory.Build.props`: the first release ships `0.0.1` and each later one raises it. Test's Android, iOS and Windows apps take the run's number as their build number, so each Test deployment installs as an update |
 | `OPENAI_APIKEY` | secret, optional | The key `bit translate` fills missing translations with; without it a missing translation fails the deploy |
 <!--#if (aspire == true)-->
 | `SMTP_CONNECTION_STRING` | secret | The SMTP server the app and the landing page send email through |

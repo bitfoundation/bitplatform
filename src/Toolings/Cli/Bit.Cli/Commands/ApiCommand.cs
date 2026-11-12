@@ -163,11 +163,13 @@ public static class ApiCommand
 
         if (requireRecorded)
         {
+            var exists = File.Exists(api.DocumentOf(version));
+
             steps.Add("api-recorded", api.DescribesCurrentApi(version)
                 ? StepResult.Succeeded($"{recordedFile} describes this api")
-                : StepResult.Failed(File.Exists(api.DocumentOf(version)) ? $"{recordedFile} describes another api" : $"{recordedFile} isn't there",
+                : StepResult.Failed(exists ? $"{recordedFile} describes another api" : $"{recordedFile} isn't there",
                     "so no release recorded the api this commit runs",
-                    $"Raise the version in {api.Relative(api.VersionFile)} and run bit api release before the change reaches the branch Production deploys from."));
+                    $"{(exists ? $"Raise the version in {api.Relative(api.VersionFile)} and run" : "Run")} bit api release before the change reaches the branch Production deploys from."));
         }
 
         if (record && broken.Count == 0 && refused.Count == 0 && toolFailed is false)

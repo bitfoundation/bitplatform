@@ -82,6 +82,7 @@ public class ApiTests
 
         Assert.AreEqual(CliApp.ExitCheckFailed, await RunInAsync(host, project, "api", "check", "--release", "--no-build"), host.Output);
         StringAssert.Contains(host.FlatOutput, "openapi/1.2.0.json isn't there");
+        StringAssert.Contains(host.FlatOutput, "Run bit api release before the change reaches the branch Production deploys from.");
 
         File.WriteAllText(Path.Combine(project, "openapi", "1.2.0.json"), """{ "paths": { "/api/v1/Todo/Get": {} }, "openapi": "3.1.2" }""");
 
@@ -92,6 +93,7 @@ public class ApiTests
 
         Assert.AreEqual(CliApp.ExitCheckFailed, await RunInAsync(host, project, "api", "check", "--release", "--no-build"), host.Output);
         StringAssert.Contains(host.FlatOutput, "openapi/1.2.0.json describes another api");
+        StringAssert.Contains(host.FlatOutput, "Raise the version in src/Directory.Build.props and run bit api release before the change reaches the branch Production deploys from.");
     }
 
     [TestMethod]

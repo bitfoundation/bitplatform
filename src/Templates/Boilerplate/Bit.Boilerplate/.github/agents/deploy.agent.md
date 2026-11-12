@@ -358,12 +358,15 @@ there, and the setting or secret that carries it. Every environment gets its own
   SignalR hub included, and where Server.Web reads the sign-in keys. Server.Web's `/api` forwarder exists only for the
   calls that set the prerendering cookie (`UpdateSession`, `SignOut`), not as the app's way to the api.
 <!--#endif-->
-- The app's version is `<Version>` in `src/Directory.Build.props`, starting at `0.0.1`, and one version covers Android,
-  iOS, Windows, macOS, the web and the api. In the pull request of each merge into `main` that deploys the app, raise its
-  patch, minor or major from a rough idea of how much changed, then run `bit api release`: it checks that the api still
-  works for every app version the server supports and keeps it as `openapi/<version>.json`. The Production deployment,
-  the first one included, stops without that file. Never set the version or a `SupportedAppVersions` minimum through a
-  GitHub variable or secret: the check reads both from the repository.
+- The app's version is `<Version>` in `src/Directory.Build.props`, and one version covers Android, iOS, Windows, macOS,
+  the web and the api, in every environment. The first release ships the `0.0.1` the project starts with. In the pull
+  request of each later merge into `main` that deploys the app, raise its patch, minor or major from a rough idea of how
+  much changed. Either way, run `bit api release` in that pull request: it checks that the api still works for every app
+  version the server supports and keeps it as `openapi/<version>.json`. The Production deployment, the first one
+  included, stops without that file. A deployment to Test never raises the version: the CD gives Test's Android, iOS and
+  Windows apps the run's number as their build number, so each one installs as an update of the last. Never set the
+  version or a `SupportedAppVersions` minimum through a GitHub variable or secret: the check reads both from the
+  repository, and the deployment stops on such a minimum.
 - When `bit api release` reports a breaking change, the user decides, never you: keep the old shape working next to the
   new one, or raise `SupportedAppVersions` in Server.Api's `appsettings.json` to the version it names, so the older apps
   have to update before they call the server again. A new major does the same for every platform without a minimum.
