@@ -26,7 +26,7 @@
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="11.0.0" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="11.0.0" />
         <PackageReference Include="NWebsec.AspNetCore.Middleware" Version="3.0.0" />
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="10.3.1" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="11.0.0" />
         <PackageReference Include="AspNetCore.HealthChecks.System" Version="9.0.0" />
         <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="9.0.0" />
         <PackageReference Include="Riok.Mapperly" Version="4.3.1" />
