@@ -4,9 +4,9 @@ using Microsoft.JSInterop;
 namespace Bit.BlazorUI;
 
 /// <summary>
-/// Asks whether an edit or a delete opened on a recurring occurrence applies to that occurrence alone
-/// or to the whole series. "This event" is preselected: it is the change that cannot reach further
-/// than the one date the user opened.
+/// Asks whether an edit or a delete opened on a recurring occurrence applies to that occurrence alone, to it and every
+/// later one (offered when <see cref="OnConfirmFollowing"/> is set), or to the whole series. "This event" is
+/// preselected: it is the change that cannot reach further than the one date the user opened.
 /// </summary>
 public partial class BitFcRecurrenceScopeDialog : IAsyncDisposable
 {
@@ -21,13 +21,21 @@ public partial class BitFcRecurrenceScopeDialog : IAsyncDisposable
     /// <summary>Raised with <c>true</c> when the whole series was chosen, <c>false</c> for this occurrence only.</summary>
     [Parameter] public EventCallback<bool> OnConfirm { get; set; }
 
+    /// <summary>
+    /// Raised, in place of <see cref="OnConfirm"/>, when this occurrence and every later one was chosen. The choice is
+    /// offered only while this is set.
+    /// </summary>
+    [Parameter] public EventCallback OnConfirmFollowing { get; set; }
+
     [Parameter] public EventCallback OnCancel { get; set; }
 
     private readonly string _titleId = $"bfc-scope-title-{Guid.NewGuid():N}";
     private readonly string _groupName = $"bfc-scope-{Guid.NewGuid():N}";
 
     private ElementReference _dialogRef;
-    private bool _allOccurrences;
+    private Scope _scope;
+
+    private enum Scope { This, Following, All }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -44,7 +52,9 @@ public partial class BitFcRecurrenceScopeDialog : IAsyncDisposable
             await OnCancel.InvokeAsync();
     }
 
-    private Task Confirm() => OnConfirm.InvokeAsync(_allOccurrences);
+    private Task Confirm() => _scope is Scope.Following && OnConfirmFollowing.HasDelegate
+        ? OnConfirmFollowing.InvokeAsync()
+        : OnConfirm.InvokeAsync(_scope is Scope.All);
 
     public async ValueTask DisposeAsync()
     {

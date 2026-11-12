@@ -117,22 +117,23 @@ public class BitFullCalendarRecurrenceScopeDialogTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitFullCalendarScopeDialogShouldOfferTwoChoicesWithThisEventPreselected()
+    public void BitFullCalendarScopeDialogShouldOfferThreeChoicesWithThisEventPreselected()
     {
         var component = RenderSeries();
         OpenDelete(component);
 
         var radios = Radios(component);
-        Assert.AreEqual(2, radios.Count);
+        Assert.AreEqual(3, radios.Count);
         Assert.IsTrue(radios[0].HasAttribute("checked"));
         Assert.IsFalse(radios[1].HasAttribute("checked"));
+        Assert.IsFalse(radios[2].HasAttribute("checked"));
 
         // One group, so the arrow keys move between them and only one is ever checked.
         Assert.IsFalse(string.IsNullOrEmpty(radios[0].GetAttribute("name")));
-        Assert.AreEqual(radios[0].GetAttribute("name"), radios[1].GetAttribute("name"));
+        Assert.AreEqual(1, radios.Select(r => r.GetAttribute("name")).Distinct().Count());
 
         CollectionAssert.AreEqual(
-            new[] { "This event", "All events in the series" },
+            new[] { "This event", "This and following events", "All events in the series" },
             component.FindAll($"{Scope} .bit-bfc-scope-option").Select(o => o.TextContent.Trim()).ToArray());
         Assert.IsTrue(component.FindAll($"{Scope} .bit-bfc-scope-option").All(o => o.TagName == "LABEL"), "a click on the text checks the radio");
     }
@@ -156,6 +157,7 @@ public class BitFullCalendarRecurrenceScopeDialogTests : BunitTestContext
         {
             RecurringDeleteTitle = "Remove a repeating meeting",
             ThisOccurrenceOption = "Only this one",
+            ThisAndFollowingOption = "From this one on",
             AllOccurrencesOption = "Every one",
             CancelButton = "Keep",
             OkButton = "Go",
@@ -164,7 +166,7 @@ public class BitFullCalendarRecurrenceScopeDialogTests : BunitTestContext
 
         Assert.AreEqual("Remove a repeating meeting", component.Find($"{Scope} h3").TextContent.Trim());
         CollectionAssert.AreEqual(
-            new[] { "Only this one", "Every one" },
+            new[] { "Only this one", "From this one on", "Every one" },
             component.FindAll($"{Scope} .bit-bfc-scope-option").Select(o => o.TextContent.Trim()).ToArray());
         CollectionAssert.AreEqual(
             new[] { "Keep", "Go" },
@@ -213,9 +215,12 @@ public class BitFullCalendarRecurrenceScopeDialogTests : BunitTestContext
         var component = RenderSeries(changes);
         OpenDelete(component);
 
+        Radios(component)[2].Change(true);
+        Assert.IsTrue(Radios(component)[2].HasAttribute("checked"));
+        Assert.IsFalse(Radios(component)[0].HasAttribute("checked"));
         Radios(component)[1].Change(true);
         Assert.IsTrue(Radios(component)[1].HasAttribute("checked"));
-        Assert.IsFalse(Radios(component)[0].HasAttribute("checked"));
+        Assert.IsFalse(Radios(component)[2].HasAttribute("checked"));
 
         Radios(component)[0].Change(true);
         component.Find($"{Scope} .bit-bfc-btn-primary").Click();
@@ -234,7 +239,7 @@ public class BitFullCalendarRecurrenceScopeDialogTests : BunitTestContext
         var component = RenderSeries();
         OpenEdit(component);
 
-        Radios(component)[1].Change(true);
+        Radios(component)[2].Change(true);
         component.Find($"{Scope} .bit-bfc-btn-primary").Click();
 
         Assert.AreEqual(0, component.FindAll(Scope).Count);
@@ -246,13 +251,14 @@ public class BitFullCalendarRecurrenceScopeDialogTests : BunitTestContext
     {
         var component = RenderSeries();
         OpenDelete(component);
-        Radios(component)[1].Change(true);
+        Radios(component)[2].Change(true);
         component.Find($"{Scope} .bit-bfc-dialog-footer .bit-bfc-btn:not(.bit-bfc-btn-primary)").Click();
 
         component.Find(".bit-bfc-dialog-footer .bit-bfc-btn-danger").Click();
 
         Assert.IsTrue(Radios(component)[0].HasAttribute("checked"));
         Assert.IsFalse(Radios(component)[1].HasAttribute("checked"));
+        Assert.IsFalse(Radios(component)[2].HasAttribute("checked"));
     }
 
     [TestMethod]
