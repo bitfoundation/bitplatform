@@ -1,4 +1,5 @@
 ﻿@import "../../../Styles/functions.scss";
+@import "../../../Styles/media-queries.scss";
 
 // Public CSS variables, read with a fallback and never declared here, so they inherit: set one on :root,
 // on any ancestor, or on the Style of a single breadcrumb. The overflow menu is rendered outside the root
@@ -366,6 +367,33 @@ $brc-private-properties:
 .bit-brc-scn {
     overflow: hidden auto;
     max-height: $siz-popup-max-height;
+}
+
+// A Responsive overflow menu on a small screen: a sheet that slides up from the bottom edge of the screen, sized
+// against the screen rather than placed against the overflow button - Callouts.position caps its list to the screen
+// and shows it, and slides it back out once it closes. Declared after .bit-brc-cal, whose display, sizes, corners and
+// animation it takes over at the same weight.
+.bit-brc-res {
+    @include lt-sm {
+        @include responsive-panel-closed;
+        @include responsive-panel-safe-area(brc);
+        bottom: 0;
+        inset-inline: 0;
+        width: 100%;
+        max-width: 100%;
+        // The callout's entry animation fills its end state, which would win over the transform and the opacity the
+        // sheet slides with, so the sheet moves by the transition alone.
+        animation-name: unset;
+        box-shadow: $box-shadow-sheet;
+        transform: translateY(100%);
+        transition: transform $mot-duration $mot-easing-decelerate, opacity $mot-duration-short linear;
+        border-radius: var(--bit-Breadcrumb-callout-radius, #{$shp-radius-popup}) var(--bit-Breadcrumb-callout-radius, #{$shp-radius-popup}) 0 0;
+        // The sheet lies against the bottom edge, which a phone's home indicator (or an app shell's bottom bar)
+        // covers, so its steps end above the safe area there. Drawn as a border, which the background of the sheet
+        // still paints, which stays outside the list it scrolls, and which no padding a consumer gives the callout
+        // takes away.
+        border-bottom: var(--bit-callout-sa-bottom) solid transparent;
+    }
 }
 
 .bit-brc-ofi,

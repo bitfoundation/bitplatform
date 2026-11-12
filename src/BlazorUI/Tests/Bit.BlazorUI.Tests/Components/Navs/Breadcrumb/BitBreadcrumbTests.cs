@@ -296,6 +296,65 @@ public class BitBreadcrumbTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitBreadcrumbShouldMakeTheOverflowMenuASheetInTheResponsiveMode()
+    {
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetBreadcrumbItems());
+            parameters.Add(p => p.MaxDisplayedItems, (uint)3);
+        });
+
+        Assert.IsFalse(component.Find(".bit-brc-cal").ClassList.Contains("bit-brc-res"));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Items, GetBreadcrumbItems());
+            parameters.Add(p => p.MaxDisplayedItems, (uint)3);
+            parameters.Add(p => p.Responsive, true);
+        });
+
+        Assert.IsTrue(component.Find(".bit-brc-cal").ClassList.Contains("bit-brc-res"));
+    }
+
+    [TestMethod,
+        DataRow(false, BitResponsiveMode.None),
+        DataRow(true, BitResponsiveMode.Bottom)]
+    public void BitBreadcrumbShouldAskForASheetFromTheBottomEdgeInTheResponsiveMode(bool responsive, BitResponsiveMode expected)
+    {
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetBreadcrumbItems());
+            parameters.Add(p => p.MaxDisplayedItems, (uint)3);
+            parameters.Add(p => p.Responsive, responsive);
+        });
+
+        component.Find(".bit-brc-obt").Click();
+
+        var toggle = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
+
+        // The arguments of Callouts.toggle, in order: dotnetObj, componentId, component, calloutId, callout,
+        // overlayId, isCalloutOpen, responsiveMode, ...
+        Assert.AreEqual(expected, toggle.Arguments[7]);
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbParamsShouldCascadeResponsive()
+    {
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, [new BitBreadcrumbParams { Responsive = true }]);
+            parameters.AddChildContent<BitBreadcrumb<BitBreadcrumbItem>>(breadcrumb =>
+            {
+                breadcrumb.Add(p => p.Items, GetBreadcrumbItems());
+                breadcrumb.Add(p => p.MaxDisplayedItems, (uint)3);
+            });
+        });
+
+        Assert.IsTrue(component.FindComponent<BitBreadcrumb<BitBreadcrumbItem>>().Instance.Responsive);
+        Assert.IsTrue(component.Find(".bit-brc-cal").ClassList.Contains("bit-brc-res"));
+    }
+
+    [TestMethod]
     public void BitBreadcrumbOverflowButtonShouldCloseTheMenuOnEscape()
     {
         var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
