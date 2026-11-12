@@ -59,6 +59,7 @@ public static partial class Program
         await app.RunAsync();
     }
 
+    // True while the build runs Main only to write openapi/current.json, not to serve requests.
     private static bool WritesOpenApiDocument => System.Reflection.Assembly.GetEntryAssembly()?.GetName().Name is "GetDocument.Insider";
 
     /// <summary>
