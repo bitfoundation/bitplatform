@@ -33,6 +33,8 @@ public partial class MainLayout
             Text = "Inputs",
             ChildItems =
             [
+                // The forms guide heads the inputs it ties together, the way the theming guide heads its group.
+                new() { Text = "Forms", Url = "/forms", Description = "EditForm, Validation, DataAnnotations" },
                 new() { Text = "Calendar", Url = "/components/calendar" },
                 new() { Text = "Checkbox", Url = "/components/checkbox", AdditionalUrls = ["/components/check-box"] },
                 new() { Text = "ChoiceGroup", Url = "/components/choicegroup", AdditionalUrls = ["/components/choice-group"], Description = "Radio, RadioButton" },
