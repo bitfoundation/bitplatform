@@ -1,3 +1,5 @@
+using Bit.Bmage;
+using Bit.Bmage.Pipeline;
 using ImageMagick;
 using System.Net.Http.Headers;
 using Boilerplate.Shared.Features.Attachments;
@@ -23,7 +25,7 @@ public class UploadFormatAllowListTests
             {
                 using var image = TestImageFactory.Solid(MagickColors.Teal, 512, 512);
 
-                await Upload(httpClient, image.ToByteArray(format));
+                await Upload(httpClient, image.ToByteArray(Enum.Parse<MagickFormat>(format.ToString())));
 
                 using var original = new MagickImage(await Download(httpClient, userId, AttachmentKind.UserProfileImageOriginal));
 
@@ -58,7 +60,7 @@ public class UploadFormatAllowListTests
             foreach (var (format, bytes) in OtherFormats())
             {
                 await Assert.ThrowsExactlyAsync<BadRequestException>(() => Upload(httpClient, bytes),
-                    $"A {format} upload must be refused as bad input before ImageMagick decodes it.");
+                    $"A {format} upload must be refused as bad input before it is decoded.");
             }
 
             var after = await Download(httpClient, userId, AttachmentKind.UserProfileImageSmall);
@@ -71,17 +73,24 @@ public class UploadFormatAllowListTests
     }
 
     [TestMethod]
-    public void ImageMagick_Should_RefuseEveryCoderOutsideTheAllowedFormats()
+    public void Bmage_Should_IdentifyNoOtherFormatAsAnAllowedOne()
     {
+        using var services = new ServiceCollection().AddBitBmageHeadlessServices().BuildServiceProvider();
+        using var scope = services.CreateScope();
+        var imageProcessor = scope.ServiceProvider.GetRequiredService<ImageProcessor>();
+
         foreach (var (format, bytes) in OtherFormats())
         {
-            Assert.ThrowsExactly<MagickPolicyErrorException>(() => new MagickImageInfo(bytes),
-                $"ImageMagick handed {format} to a coder: the security policy Program.Services sets before anything else touches ImageMagick is not in effect.");
+            Assert.IsFalse(AttachmentController.AllowedImageFormats.Contains(imageProcessor.Identify(bytes)?.Format ?? ImageFormat.Unknown),
+                $"{format} was identified as an allowed format, so UploadAttachment would hand it to a decoder.");
         }
 
         using var allowed = TestImageFactory.Solid(MagickColors.Teal, 16, 16);
 
-        Assert.AreEqual(MagickFormat.Png, new MagickImageInfo(allowed.ToByteArray(MagickFormat.Png)).Format);
+        var identified = imageProcessor.Identify(allowed.ToByteArray(MagickFormat.Png));
+
+        Assert.IsNotNull(identified);
+        Assert.AreEqual(ImageFormat.Png, identified.Format);
     }
 
     private static IEnumerable<(string Format, byte[] Bytes)> OtherFormats()
@@ -89,6 +98,10 @@ public class UploadFormatAllowListTests
         yield return ("SVG", """<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512"><rect width="512" height="512" fill="red"/></svg>"""u8.ToArray());
         yield return ("PostScript", "%!PS-Adobe-3.0\n%%BoundingBox: 0 0 512 512\nnewpath 0 0 moveto 512 512 lineto stroke showpage\n"u8.ToArray());
         yield return ("PPM", [.. "P6\n512 512\n255\n"u8, .. new byte[512 * 512 * 3]]);
+
+        using var image = TestImageFactory.Solid(MagickColors.Teal, 64, 64);
+        yield return ("ICO", image.ToByteArray(MagickFormat.Ico));
+        yield return ("TIFF", image.ToByteArray(MagickFormat.Tiff));
     }
 
     private async Task<AppTestServer> StartServer()

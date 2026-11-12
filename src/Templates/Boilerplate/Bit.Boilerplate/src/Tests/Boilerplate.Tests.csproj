@@ -16,6 +16,7 @@
         <PackageReference Condition=" '$(advancedTests)' == 'true' OR '$(advancedTests)' == '' " Include="Otp.NET" />
         <PackageReference Include="Microsoft.Playwright.MSTest.v4" />
         <PackageReference Include="bunit" />
+        <PackageReference Include="Magick.NET-Q16-AnyCPU" />
         <PackageReference Include="MSTest" />
     </ItemGroup>
 

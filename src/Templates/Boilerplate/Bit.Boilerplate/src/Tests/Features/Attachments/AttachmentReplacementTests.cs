@@ -9,7 +9,7 @@ namespace Boilerplate.Tests.Features.Attachments;
 /// that split have already been paid for once:
 /// <list type="bullet">
 /// <item>It used to delete the existing rows and the existing blob <b>before</b> decoding the upload. A file that was
-/// too small, or that ImageMagick could not decode, therefore destroyed the picture the user already had while
+/// too small, or that could not be decoded, therefore destroyed the picture the user already had while
 /// leaving <c>HasProfilePicture</c> true - so the profile pointed at a blob that no longer existed and no code path
 /// could restore or clear it.</item>
 /// <item>The first fix for that then went the other way and removed-and-re-added the rows in one
@@ -109,8 +109,8 @@ public class AttachmentReplacementTests
 
 
     /// <summary>
-    /// The other rejection path this class's own header names as already paid for once: a file ImageMagick cannot
-    /// decode. It must be refused as bad input (400, like the too-small rejection) rather than surfacing as a 500
+    /// The other rejection path this class's own header names as already paid for once: a file that cannot be
+    /// decoded. It must be refused as bad input (400, like the too-small rejection) rather than surfacing as a 500
     /// with a Critical log entry - and the picture the user already had must be exactly as it was.
     /// </summary>
     [TestMethod]
@@ -134,7 +134,7 @@ public class AttachmentReplacementTests
             Array.Fill(garbageBytes, (byte)'x');
             await Assert.ThrowsExactlyAsync<BadRequestException>(
                 () => Upload(httpClient, garbageBytes),
-                "A payload ImageMagick cannot decode is the caller's fault and must be refused as bad input: anything " +
+                "A payload that cannot be decoded is the caller's fault and must be refused as bad input: anything " +
                 "else means it reached the unknown-error handler and logged Critical from ordinary user input.");
 
             var after = await Download(httpClient, userId);

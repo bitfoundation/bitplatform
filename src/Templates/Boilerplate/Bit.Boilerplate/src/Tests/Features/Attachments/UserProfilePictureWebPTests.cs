@@ -13,7 +13,7 @@ public partial class UserProfilePictureWebPTests
     /// Verifies the server-side image pipeline of <c>AttachmentController.UploadUserProfilePicture</c>: uploading a
     /// NON-webp source image (the repo's 512x512 <c>images/icons/bit-icon-512.png</c>) must produce a
     /// <see cref="AttachmentKind.UserProfileImageSmall"/> attachment that is resized to 256x256 and re-encoded to WebP
-    /// via ImageMagick (<c>sourceImage.ToByteArray(MagickFormat.WebP)</c>). After signing in with the seeded default
+    /// by bit Bmage (<c>imageProcessor.EncodeAsync</c>). After signing in with the seeded default
     /// account, the test POSTs the PNG as multipart/form-data through the authenticated DI <see cref="HttpClient"/>
     /// (the <c>AuthDelegatingHandler</c> attaches the bearer token automatically), then GETs the small attachment back
     /// (<c>GetAttachment/{userId}/UserProfileImageSmall</c>, an anonymous endpoint) and asserts the downloaded bytes
