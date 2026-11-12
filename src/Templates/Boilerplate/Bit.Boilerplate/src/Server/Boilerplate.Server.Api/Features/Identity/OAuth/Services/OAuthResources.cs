@@ -33,14 +33,7 @@ public static class OAuthResources
     /// Asked of the session granting a token and of nobody else: what handing the capability to an external application
     /// is worth demanding, on top of <paramref name="Policies"/>.
     /// </param>
-    public sealed record OAuthResource(string Path, string[] Scopes, string[] Policies, string[] GrantPolicies)
-    {
-        /// <summary>
-        /// Offered in the metadata next to <see cref="Scopes"/>, but neither named in the 401 challenge nor granted to a
-        /// client that omits <c>scope</c>: a client gets them only by asking for them.
-        /// </summary>
-        public string[] OptionalScopes { get; init; } = [];
-    }
+    public sealed record OAuthResource(string Path, string[] Scopes, string[] Policies, string[] GrantPolicies);
 
     private static readonly OAuthResource[] resources = [
         //#if (signalR == true)
@@ -49,8 +42,8 @@ public static class OAuthResources
         //#endif
         new(DevMcpPath, [OAuthScopes.DevMcp], [AppFeatures.System.DevMcp, AuthPolicies.TFA_ENABLED], []),
         // The feature alone at the endpoint, which the Operations page reads with the session it already has; minting
-        // a token that reads it unattended takes two factor. The failures' error texts only with a scope of their own.
-        new(HealthzPath, [OAuthScopes.Healthz], [AppFeatures.System.Operations_View], [AuthPolicies.TFA_ENABLED]) { OptionalScopes = [OAuthScopes.HealthzErrors] }
+        // a token that reads it unattended takes two factor. A token never gets the failures' error texts (See WriteHealthReport).
+        new(HealthzPath, [OAuthScopes.Healthz], [AppFeatures.System.Operations_View], [AuthPolicies.TFA_ENABLED])
     ];
 
     /// <summary>
@@ -69,9 +62,6 @@ public static class OAuthResources
     /// without a default every such client is turned away with <c>invalid_scope</c>.
     /// </summary>
     public static string[] ScopesFor(string resourceOrPath) => Find(resourceOrPath)?.Scopes ?? [];
-
-    /// <summary>Published as the resource's <c>scopes_supported</c>: what it is for, and what else it can be asked for.</summary>
-    public static string[] ScopesSupportedFor(string resourceOrPath) => Find(resourceOrPath) is { } resource ? [.. resource.Scopes, .. resource.OptionalScopes] : [];
 
     /// <summary>The policies the resource's endpoint requires of every caller.</summary>
     public static string[] PoliciesFor(string resourceOrPath) => Find(resourceOrPath)?.Policies ?? [];

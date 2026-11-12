@@ -332,10 +332,10 @@ The project includes **health check endpoints** to monitor application health.
 mapped everywhere too, but behind its feature and never cached. It is also an **OAuth resource** (`OAuthResources`), so
 an external monitor can read it with a token of its own instead of a user's session, minted through the same consent
 page as `/dev-mcp`. Granting one takes more than reading the page does: the feature **and** a session that signed in
-with two factor (`GrantPolicies` on the resource's row), because that token reads the report unattended. A token with
-the `healthz` scope gets the report without the exceptions; one that also asks for `healthz-errors` gets them too. The
-app's own session, which the Operations page uses, always does. The resource's metadata document
-(`/.well-known/oauth-protected-resource/healthz`, anonymous like every RFC 9728 document) lists both scopes and carries
+with two factor (`GrantPolicies` on the resource's row), because that token reads the report unattended. A token gets
+the report without the exceptions, which can carry a server name or a connection string, nor the description a check
+that throws takes from its exception's message; only the app's own session, which the Operations page uses, reads them. The resource's metadata document
+(`/.well-known/oauth-protected-resource/healthz`, anonymous like every RFC 9728 document) lists the `healthz` scope and carries
 `bit_template_version`, the version `bit.json` records, so a monitor can tell a bit Boilerplate app and its version
 before it asks for a token. Adding health check endpoints to a non-development
 deployment has security implications (see <https://aka.ms/dotnet/aspire/healthchecks>): decide deliberately whether to

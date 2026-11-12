@@ -1933,12 +1933,6 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
     <data name="OAuthScopeHealthzShortDescription" xml:space="preserve">
     <value>Het statusrapport lezen.</value>
   </data>
-    <data name="OAuthScopeHealthzErrorsDescription" xml:space="preserve">
-    <value>De foutdetails lezen van alles wat faalt in het statusrapport. Die kunnen servernamen en verbindingsgegevens bevatten.</value>
-  </data>
-    <data name="OAuthScopeHealthzErrorsShortDescription" xml:space="preserve">
-    <value>De foutdetails in het statusrapport lezen.</value>
-  </data>
     <data name="OAuthSessionAuthorizedApplication" xml:space="preserve">
     <value>Geautoriseerde applicatie</value>
   </data>

@@ -1933,12 +1933,6 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="OAuthScopeHealthzShortDescription" xml:space="preserve">
     <value>Read the health report.</value>
   </data>
-    <data name="OAuthScopeHealthzErrorsDescription" xml:space="preserve">
-    <value>Read the error details of anything failing in the health report. They can name servers and include connection details.</value>
-  </data>
-    <data name="OAuthScopeHealthzErrorsShortDescription" xml:space="preserve">
-    <value>Read the error details in the health report.</value>
-  </data>
     <data name="OAuthSessionAuthorizedApplication" xml:space="preserve">
     <value>Authorized application</value>
   </data>

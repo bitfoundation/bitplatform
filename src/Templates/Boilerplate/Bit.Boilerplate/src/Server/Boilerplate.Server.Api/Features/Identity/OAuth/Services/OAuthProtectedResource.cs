@@ -46,7 +46,7 @@ public static class OAuthProtectedResource
             resource = $"{issuer}{resourcePath}",
             // One authorization server: this app. The client discovers the rest from that server's own metadata.
             authorization_servers = new[] { issuer },
-            scopes_supported = OAuthResources.ScopesSupportedFor(resourcePath),
+            scopes_supported = OAuthResources.ScopesFor(resourcePath),
             bearer_methods_supported = new[] { "header" },
             resource_documentation = $"{issuer}/scalar",
             // RFC 9728 §2 allows parameters of its own. Anonymous like the rest of the document, so a monitor seeing

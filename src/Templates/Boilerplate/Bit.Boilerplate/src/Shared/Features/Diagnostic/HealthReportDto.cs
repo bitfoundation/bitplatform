@@ -46,7 +46,7 @@ public class HealthReportEntryDto
 
     /// <summary>
     /// The whole exception, inner ones included. It can carry a connection string, hence the feature this report needs,
-    /// and an OAuth token without the <c>healthz-errors</c> scope gets null here.
+    /// and an OAuth token always gets null here: only the app's own session reads it.
     /// </summary>
     public string? Exception { get; set; }
 

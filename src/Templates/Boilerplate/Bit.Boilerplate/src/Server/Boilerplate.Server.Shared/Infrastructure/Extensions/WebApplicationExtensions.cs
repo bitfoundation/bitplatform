@@ -14,7 +14,6 @@ using Microsoft.AspNetCore.Localization.Routing;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Boilerplate.Shared.Features.Diagnostic;
-using Boilerplate.Shared.Features.Identity.OAuth;
 using Boilerplate.Shared.Infrastructure.Dtos;
 using Boilerplate.Shared.Infrastructure.Services;
 using Boilerplate.Server.Shared.Infrastructure.Services;
@@ -280,10 +279,8 @@ public static class WebApplicationExtensions
         var registrations = context.RequestServices.GetRequiredService<IOptions<HealthCheckServiceOptions>>().Value.Registrations.ToDictionary(r => r.Name);
 
         // An exception can carry a server name or a connection string. The app's own session (the Operations page) gets
-        // it; an OAuth token, which some other app holds, only with the scope that says so.
-        var user = context.User;
-        var includeExceptions = user.HasClaim(claim => claim.Type is AppClaimTypes.OAUTH_CLIENT_ID) is false
-            || OAuthScopes.Parse(user.FindFirst(AppClaimTypes.OAUTH_SCOPE)?.Value).Contains(OAuthScopes.HealthzErrors, StringComparer.Ordinal);
+        // it; an OAuth token, which some other app holds, never does.
+        var includeExceptions = context.User.HasClaim(claim => claim.Type is AppClaimTypes.OAUTH_CLIENT_ID) is false;
 
         HealthReportDto body = new()
         {
@@ -302,7 +299,10 @@ public static class WebApplicationExtensions
                     Status = (HealthCheckStatus)entry.Value.Status,
                     FailureStatus = (HealthCheckStatus)(registration?.FailureStatus ?? HealthStatus.Unhealthy),
                     Timeout = registration?.Timeout is { } timeout && timeout != Timeout.InfiniteTimeSpan ? timeout : null,
-                    Description = entry.Value.Description,
+                    // A check that throws gets its exception's message as its description, which is the error text again.
+                    Description = includeExceptions || entry.Value.Exception is null || entry.Value.Description != entry.Value.Exception.Message
+                        ? entry.Value.Description
+                        : null,
                     Duration = entry.Value.Duration,
                     // ToString() rather than the message alone: the inner exception is usually the one naming the cause.
                     Exception = includeExceptions ? entry.Value.Exception?.ToString() : null,

@@ -1933,12 +1933,6 @@
     <data name="OAuthScopeHealthzShortDescription" xml:space="preserve">
     <value>हेल्थ रिपोर्ट पढ़ना।</value>
   </data>
-    <data name="OAuthScopeHealthzErrorsDescription" xml:space="preserve">
-    <value>हेल्थ रिपोर्ट में विफल हो रही हर चीज़ के एरर विवरण पढ़ना। इनमें सर्वर के नाम और कनेक्शन की जानकारी हो सकती है।</value>
-  </data>
-    <data name="OAuthScopeHealthzErrorsShortDescription" xml:space="preserve">
-    <value>हेल्थ रिपोर्ट में एरर विवरण पढ़ना।</value>
-  </data>
     <data name="OAuthSessionAuthorizedApplication" xml:space="preserve">
     <value>अधिकृत एप्लिकेशन</value>
   </data>

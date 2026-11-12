@@ -197,7 +197,7 @@ public partial class OAuthTokenService(AppDbContext dbContext,
             .ExecuteUpdateAsync(setters => setters.SetProperty(session => session.RenewedOn, now), cancellationToken);
 
         // Re-read from the token rather than from the request: a refresh must never widen what was consented to.
-        var scopes = OAuthScopes.Parse(ticket.Principal.GetClaimValue<string?>(AppClaimTypes.OAUTH_SCOPE));
+        var scopes = OAuthScopes.Parse(ticket.Principal.GetClaimValue<string?>("scope"));
 
         var amr = string.Join(' ', ticket.Principal.FindAll(AppClaimTypes.AMR).Select(claim => claim.Value));
 
@@ -239,7 +239,7 @@ public partial class OAuthTokenService(AppDbContext dbContext,
         identity.AddClaim(new Claim(SecurityStampClaimType, await userManager.GetSecurityStampAsync(user)));
         identity.AddClaim(new Claim(AppClaimTypes.SESSION_ID, userSession.Id.ToString()));
         identity.AddClaim(new Claim(AppClaimTypes.OAUTH_CLIENT_ID, clientId));
-        identity.AddClaim(new Claim(AppClaimTypes.OAUTH_SCOPE, string.Join(' ', scopes)));
+        identity.AddClaim(new Claim("scope", string.Join(' ', scopes)));
 
         // /dev-mcp asks for AuthPolicies.TFA_ENABLED on top of the feature, so the token has to say how the user
         // authenticated when they granted it.
