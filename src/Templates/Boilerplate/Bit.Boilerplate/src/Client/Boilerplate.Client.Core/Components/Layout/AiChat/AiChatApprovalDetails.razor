@@ -1,7 +1,9 @@
 @inherits AppComponentBase
 
-@* What a tool call the user is asked to approve will do, under the question it asks (See AppChatbot.AskApproval). Its words
-   are the app's, fixed per tool, never the model's. A plain root element, so the scoped ::deep styles apply. *@
+@* Human in the loop: a tool whose effect the user can't take back, such as ClearAppFiles, runs only once the user approves
+   it on screen. The model can only ask, and an approval left unanswered or cancelled counts as a no (See
+   AppChatbot.ChatbotUi.AskApproval). This lists what the call will do, under the question it asks. Its words are the
+   app's, fixed per tool, never the model's. A plain root element, so the scoped ::deep styles apply. *@
 @if (consequences.Length > 0)
 {
     <div class="approval-details">

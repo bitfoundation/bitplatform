@@ -80,12 +80,15 @@ public partial class AppAiChat
             ToolCallDisplay = AppAiChatTools.Display
         };
 
+        // Through BitParams (See AppAiChat.razor): BitAiChat renders the prompt input, the voice input and the approval card
+        // itself, and has no parameters of its own for these. Here rather than in AppBitParams, which renders as the app starts:
+        // Bit.BlazorUI.AI loads only once the user reaches for the chat, so nothing at startup can name its types.
         parameters =
         [
             // Accept only narrows the file dialog; the composer checks a drop and a paste against it too
             new BitAiPromptInputParams { Accept = ImageUploadContentTypes.Accept, MaxAttachments = MaxImagesPerMessage },
             new BitAiVoiceInputParams { MaxRecordingSize = MaxRecordingSize },
-            new BitAiToolApprovalParams { DetailTemplate = call => ApprovalDetails(call) }
+            new BitAiToolApprovalParams { DetailTemplate = ApprovalDetails }
         ];
 
         suggestions =
@@ -355,36 +358,28 @@ public partial class AppAiChat
         logger.LogInformation("The answer {MessageId} was rated {Feedback}.", feedback.Message.MessageId, feedback.Feedback);
     }
 
-    /// <summary>The tools whose calls the panel draws as cards of its own, from what the call carries.</summary>
+    /// <summary>The tools whose calls the panel draws as cards of its own, from what the call carries (the cards are in AppAiChat.razor).</summary>
     private void RegisterRenderers()
     {
-        renderers.RegisterTool(AiChatProtocol.Tools.RequestHumanFollowUp, context => builder =>
-        {
-            var key = $"followUpSent:{context.Call.ToolCallId}";
-
-            builder.OpenComponent<HumanFollowUpCard>(0);
-            builder.AddComponentParameter(1, nameof(HumanFollowUpCard.ConversationSummary), Argument(context.Call, "conversationSummary"));
-            builder.AddComponentParameter(2, nameof(HumanFollowUpCard.IsSent), context.Message.Extensions.GetValueOrDefault(key) is true or JsonElement { ValueKind: JsonValueKind.True });
-            builder.AddComponentParameter(3, nameof(HumanFollowUpCard.OnSent), EventCallback.Factory.Create(this, async () =>
-            {
-                // Kept with the conversation, so a form already sent isn't offered again when the app opens it next time
-                context.Message.Extensions[key] = true;
-                await SaveHistory();
-            }));
-            builder.CloseComponent();
-        });
+        renderers.RegisterTool(AiChatProtocol.Tools.RequestHumanFollowUp, HumanFollowUp);
 
         //#if (module == "Sales")
         //#if (database == "PostgreSQL" || database == "SqlServer")
-        renderers.RegisterTool(AiChatProtocol.Tools.ShowProducts, context => builder =>
-        {
-            builder.OpenComponent<ProductsCard>(0);
-            builder.AddComponentParameter(1, nameof(ProductsCard.Shown), ShownProducts(context.Call));
-            builder.AddComponentParameter(2, nameof(ProductsCard.OnAsk), EventCallback.Factory.Create<string>(this, SendPrompt));
-            builder.CloseComponent();
-        });
+        renderers.RegisterTool(AiChatProtocol.Tools.ShowProducts, Products);
         //#endif
         //#endif
+    }
+
+    private static string FollowUpSentKey(BitAiToolCallPart call) => $"followUpSent:{call.ToolCallId}";
+
+    private static bool IsFollowUpSent(BitAiToolCallContext context)
+        => context.Message.Extensions.GetValueOrDefault(FollowUpSentKey(context.Call)) is true or JsonElement { ValueKind: JsonValueKind.True };
+
+    /// <summary>Kept with the conversation, so a form already sent isn't offered again when the app opens it next time.</summary>
+    private async Task MarkFollowUpSent(BitAiToolCallContext context)
+    {
+        context.Message.Extensions[FollowUpSentKey(context.Call)] = true;
+        await SaveHistory();
     }
 
     //#if (module == "Sales")
@@ -412,14 +407,6 @@ public partial class AppAiChat
     }
     //#endif
     //#endif
-
-    private RenderFragment ApprovalDetails(BitAiToolCallPart call) => builder =>
-    {
-        builder.OpenComponent<AiChatApprovalDetails>(0);
-        builder.AddComponentParameter(1, nameof(AiChatApprovalDetails.ToolName), call.ToolName);
-        builder.AddComponentParameter(2, nameof(AiChatApprovalDetails.IsInVoiceCall), isInVoiceCall);
-        builder.CloseComponent();
-    };
 
     private static string? Argument(BitAiToolCallPart call, string name)
         => call.Arguments is { ValueKind: JsonValueKind.Object } arguments && arguments.TryGetProperty(name, out var value) && value.ValueKind is JsonValueKind.String ? value.GetString() : null;

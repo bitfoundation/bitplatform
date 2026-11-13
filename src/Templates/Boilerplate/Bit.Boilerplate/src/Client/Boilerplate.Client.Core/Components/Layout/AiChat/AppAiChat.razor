@@ -71,3 +71,22 @@
 
     <audio @ref="voiceCallAudioRef" class="voice-call-audio" autoplay></audio>
 </div>
+
+@* The cards of the tools RegisterRenderers names, and what an approval asks about, as Razor rather than RenderTreeBuilder
+   calls, so the compiler checks every parameter. Markup only: what they read and do is in AppAiChat.razor.cs. *@
+@code {
+    private RenderFragment HumanFollowUp(BitAiToolCallContext context) =>
+        @<HumanFollowUpCard ConversationSummary="@Argument(context.Call, "conversationSummary")"
+                            IsSent="@IsFollowUpSent(context)"
+                            OnSent="@(() => MarkFollowUpSent(context))" />;
+
+    @*#if (module == "Sales")*@
+    @*#if (database == "PostgreSQL" || database == "SqlServer")*@
+    private RenderFragment Products(BitAiToolCallContext context) =>
+        @<ProductsCard Shown="@ShownProducts(context.Call)" OnAsk="SendPrompt" />;
+    @*#endif*@
+    @*#endif*@
+
+    private RenderFragment ApprovalDetails(BitAiToolCallPart call) =>
+        @<AiChatApprovalDetails ToolName="@call.ToolName" IsInVoiceCall="isInVoiceCall" />;
+}
