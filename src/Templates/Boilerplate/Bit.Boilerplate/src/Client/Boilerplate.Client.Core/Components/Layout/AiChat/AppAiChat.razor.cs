@@ -21,7 +21,7 @@ namespace Boilerplate.Client.Core.Components.Layout.AiChat;
 /// Shared for that reason), and none of theirs appears in a public member here.
 /// </para>
 /// </summary>
-public partial class AppAiChat
+public partial class AppAiChat : IAppAiChat
 {
     /// <summary>The largest image the composer takes; the server refuses anything larger (See AttachmentController).</summary>
     private const long MaxImageSize = 10 * 1024 * 1024;
