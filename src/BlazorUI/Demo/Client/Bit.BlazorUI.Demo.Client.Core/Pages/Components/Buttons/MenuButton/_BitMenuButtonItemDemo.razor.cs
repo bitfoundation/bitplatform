@@ -17,6 +17,9 @@ public partial class _BitMenuButtonItemDemo
 
     private string? submenuClickedItem;
 
+    private string? contextClickedItem;
+    private BitMenuButton<BitMenuButtonItem> contextMenuButton = default!;
+
     private readonly BitMenuButtonParams[] menuButtonParams =
     [
         new()
@@ -191,6 +194,15 @@ public partial class _BitMenuButtonItemDemo
         new() { Text = "Download", Key = "download", IconName = BitIconName.Download },
         new() { IsSeparator = true },
         new() { Text = "Report", Key = "report", IconName = BitIconName.Flag }
+    ];
+
+    private static List<BitMenuButtonItem> contextItems =
+    [
+        new() { Text = "Cut", Key = "cut", IconName = BitIconName.Cut },
+        new() { Text = "Copy", Key = "copy", IconName = BitIconName.Copy },
+        new() { Text = "Paste", Key = "paste", IconName = BitIconName.Paste },
+        new() { IsSeparator = true },
+        new() { Text = "Delete", Key = "delete", IconName = BitIconName.Delete }
     ];
 
     private static List<BitMenuButtonItem> rtlItemsIcon =

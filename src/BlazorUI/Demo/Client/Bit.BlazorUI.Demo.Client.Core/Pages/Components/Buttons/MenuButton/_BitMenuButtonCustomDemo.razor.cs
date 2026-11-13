@@ -17,6 +17,9 @@ public partial class _BitMenuButtonCustomDemo
 
     private string? submenuClickedCustom;
 
+    private string? contextClickedCustom;
+    private BitMenuButton<Operation> contextMenuButton = default!;
+
     private readonly BitMenuButtonParams[] menuButtonParams =
     [
         new()
@@ -216,6 +219,15 @@ public partial class _BitMenuButtonCustomDemo
 
     private static List<Operation> dropDirectionCustoms =
         Enumerable.Range(1, 8).Select(i => new Operation { Name = $"Custom {i}", Id = i.ToString() }).ToList();
+
+    private static List<Operation> contextCustoms =
+    [
+        new() { Name = "Cut", Id = "cut", Image = BitIconName.Cut },
+        new() { Name = "Copy", Id = "copy", Image = BitIconName.Copy },
+        new() { Name = "Paste", Id = "paste", Image = BitIconName.Paste },
+        new() { IsDivider = true },
+        new() { Name = "Delete", Id = "delete", Image = BitIconName.Delete }
+    ];
 
     private static List<Operation> responsiveCustoms =
     [

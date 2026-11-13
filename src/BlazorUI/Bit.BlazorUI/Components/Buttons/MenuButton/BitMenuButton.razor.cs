@@ -27,6 +27,15 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
     private string _menuId = default!;
     private string _calloutId = default!;
     private string _overlayId = default!;
+    // The zero-sized element a menu opened at a point is placed against (see OpenAt), and the point itself.
+    private string _pointId = default!;
+    private double? _pointX;
+    private double? _pointY;
+    private bool _openAtPointAfterRender;
+    private bool _moveToPointAfterRender;
+    // Whether the element the focus was on when the menu was opened at a point is remembered, for the menu to hand
+    // the focus back to it as it closes rather than to a trigger the user never went near.
+    private bool _focusOriginCaptured;
     private bool _autoFocus;
     private bool _focusFirstItemOnOpen;
     private int _hoverToken;
@@ -492,6 +501,68 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
     /// </summary>
     public ValueTask FocusAsync() => _operatorButtonRef.FocusAsync();
 
+    /// <summary>
+    /// Opens the menu at a point on the screen rather than against the menu button, which is what a context menu
+    /// needs: the menu is placed against the point the way it is against the button, so it still flips to the side
+    /// with the most room and is kept within the screen, and the focus moves to its first item.
+    /// </summary>
+    /// <param name="x">The horizontal distance in pixels from the left edge of the visible page.</param>
+    /// <param name="y">The vertical distance in pixels from the top edge of the visible page.</param>
+    /// <remarks>
+    /// Calling it again while the menu is open at a point moves it to the new point instead of reopening it. Closing
+    /// the menu hands the focus back to the element that had it when the menu was opened, or to the menu button when
+    /// there is no such element left. The menu button takes the placement back the next time the menu is opened by
+    /// anything else. Nothing is opened while the menu button is disabled, or before it has rendered for the first time.
+    /// </remarks>
+    public async Task OpenAt(double x, double y)
+    {
+        if (Disabled || IsDisposed) return;
+
+        // The positioning code is handed the reference the first render creates.
+        if (_dotnetObj is null) return;
+
+        var moving = IsOpen && HasPoint;
+
+        // A menu brought to a new point is a fresh one there, so nothing the user had opened or typed into it
+        // where it was comes along.
+        if (IsOpen)
+        {
+            await CloseSubmenusFrom(0);
+
+            ResetTypeahead();
+        }
+
+        _pointX = x;
+        _pointY = y;
+
+        // The element the menu is placed against is rendered from these coordinates, so both the opening and a
+        // move to a new point wait for the render that puts it there.
+        if (moving)
+        {
+            _moveToPointAfterRender = true;
+        }
+        else
+        {
+            // A menu opened against the button is laid out again against the point, which is what the toggle
+            // does for a callout that is already open.
+            if (IsOpen is false && await AssignIsOpenInternal(true) is false)
+            {
+                ForgetPoint();
+                return;
+            }
+
+            _openAtPointAfterRender = true;
+        }
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    /// <summary>
+    /// Opens the menu at the point a mouse event happened, which is what a context menu needs. It is the
+    /// <see cref="OpenAt(double, double)"/> above, handed the coordinates of the event.
+    /// </summary>
+    public Task OpenAt(MouseEventArgs e) => OpenAt(e.ClientX, e.ClientY);
+
 
 
     [JSInvokable("CloseCallout")]
@@ -601,6 +672,7 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
         _menuId = $"BitMenuButton-{UniqueId}-menu";
         _calloutId = $"BitMenuButton-{UniqueId}-callout";
         _overlayId = $"BitMenuButton-{UniqueId}-overlay";
+        _pointId = $"BitMenuButton-{UniqueId}-point";
 
         // The cascade is read here as well as in OnParametersSet because DefaultIsToggled (and the Split and Toggle
         // it depends on) is acted on while initializing, which is before OnParametersSet has run for the first time -
@@ -702,6 +774,27 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
             if (_autoFocus && IsDisposed is false)
             {
                 await _operatorButtonRef.FocusSafelyAsync();
+            }
+        }
+
+        // A menu opened at a point waits for the render that puts the point on the page. It may have been closed
+        // again before that render, in which case there is nothing left to open or move.
+        if (_openAtPointAfterRender)
+        {
+            _openAtPointAfterRender = false;
+
+            if (IsOpen && HasPoint && IsDisposed is false)
+            {
+                await ShowAtPoint();
+            }
+        }
+        else if (_moveToPointAfterRender)
+        {
+            _moveToPointAfterRender = false;
+
+            if (IsOpen && HasPoint && IsDisposed is false)
+            {
+                await MoveToPoint();
             }
         }
 
@@ -1402,14 +1495,14 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
     // The overlay takes the click that dismisses the menu, so the click never reaches a control of its own:
     // whatever had the focus when the menu closed is either the trigger itself, or an item that is now
     // hidden - and a hidden element losing the focus drops it on the document, taking the keyboard back to
-    // the top of the page (WCAG 2.4.3). So the trigger is given it back, the way Escape does.
+    // the top of the page (WCAG 2.4.3). So it is handed back the way Escape does (see ReturnFocus).
     private async Task HandleOnOverlayClick()
     {
         await CloseCallout();
 
         StateHasChanged();
 
-        await FocusTrigger();
+        await ReturnFocus();
     }
 
     internal async Task HandleOnItemClick(TItem item)
@@ -1470,12 +1563,12 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
         // classes) needs an explicit re-render here.
         StateHasChanged();
 
-        // The focused item is hidden along with the callout, so return the focus to the trigger button. A menu
+        // The focused item is hidden along with the callout, so the focus is handed back (see ReturnFocus). A menu
         // that stays open keeps the focus where the user left it, which is what lets the next arrow key
         // continue from the item just toggled instead of starting over.
         if (CloseOnItemClick)
         {
-            await FocusTrigger();
+            await ReturnFocus();
         }
     }
 
@@ -1621,7 +1714,7 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
                 {
                     await CloseCallout();
                     StateHasChanged();
-                    await FocusTrigger();
+                    await ReturnFocus();
                 }
                 else
                 {
@@ -1633,7 +1726,7 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
                 // Tab leaves the menu altogether, however deep in it the focus was.
                 await CloseCallout();
                 StateHasChanged();
-                await FocusTrigger();
+                await ReturnFocus();
                 break;
             default:
                 if (owner is not null && await IsBackKey(e))
@@ -1684,6 +1777,75 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
         // A disabled item is normally stepped over, but DisabledInteractive is the page asking for it to be
         // reachable - which is the whole point of keeping it focusable rather than natively disabled.
         return _js.BitMenuButtonsFocusItem(calloutId, mode, character, DisabledInteractive, fromCurrent);
+    }
+
+    // Where the focus goes as the menu closes from inside: back to the element it was on when the menu was opened at
+    // a point, which is where the user was working, and otherwise - or once that element has left the page - to the
+    // trigger the menu belongs to.
+    private async Task ReturnFocus()
+    {
+        if (_focusOriginCaptured && IsDisposed is false)
+        {
+            _focusOriginCaptured = false;
+
+            try
+            {
+                if (await _js.BitUtilsTryRestoreFocusOrigin(_calloutId)) return;
+            }
+            catch (JSDisconnectedException) { return; } // we can ignore this exception here
+        }
+
+        await FocusTrigger();
+    }
+
+    private async Task ShowAtPoint()
+    {
+        try
+        {
+            // Remembered before the focus moves into the menu. A focus that is already in it - a menu opened against
+            // the button and then moved to a point from its own keyboard - is not an origin, and leaves nothing to
+            // hand back but the trigger.
+            _focusOriginCaptured = await _js.BitUtilsTryCaptureFocusOrigin(_calloutId);
+
+            await ToggleCallout();
+
+            // The trigger is not where the user is, so the keyboard has nothing to open the menu from: it is taken
+            // straight into the menu, as the arrow keys open it from the trigger.
+            await FocusItem("first");
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+    }
+
+    // The menu is already open at a point and was only moved to a new one, so it is laid out again rather than
+    // toggled again: going back through the toggle would replay the entry animation of a menu that never went
+    // anywhere, and a second right-click somewhere else would flash the menu it only moved.
+    private async Task MoveToPoint()
+    {
+        try
+        {
+            await _js.BitCalloutReposition();
+
+            await FocusItem("first");
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+    }
+
+    private bool HasPoint => _pointX.HasValue && _pointY.HasValue;
+
+    private void ForgetPoint()
+    {
+        _pointX = null;
+        _pointY = null;
+    }
+
+    // The coordinates are written with the invariant culture, since a comma decimal separator would leave the
+    // browser with a length it cannot read.
+    private string GetPointStyle()
+    {
+        var x = _pointX!.Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        var y = _pointY!.Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
+
+        return $"left:{x}px;top:{y}px";
     }
 
     private async Task FocusTrigger()
@@ -1820,9 +1982,25 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
         // Only an open state the page restyles the root for can move what the menu is placed against.
         _repositionAfterRender = IsOpen && (Styles?.Opened.HasValue() is true || Classes?.Opened.HasValue() is true);
 
+        // A menu opened at a point is placed against the zero-sized element rendered there, so the placement code
+        // needs to know nothing about points: it measures an element as it always does.
+        var componentId = HasPoint ? _pointId : _Id;
+
+        if (IsOpen is false)
+        {
+            // Whatever opens the menu next places it against the button, unless it is OpenAt again.
+            ForgetPoint();
+        }
+        else if (HasPoint is false)
+        {
+            // An origin remembered for a menu that was opened at a point and then dismissed from outside (a click on
+            // the page) was never handed back, and is not where the focus of a menu opened from the button goes.
+            _focusOriginCaptured = false;
+        }
+
         await _js.BitCalloutToggleCallout(
             dotnetObj: _dotnetObj,
-            componentId: _Id,
+            componentId: componentId,
             component: null,
             calloutId: _calloutId,
             callout: null,
@@ -1980,6 +2158,12 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
             {
                 await _js.BitCalloutClearCallout(_calloutId);
                 await _js.BitMenuButtonsDispose(_Id);
+
+                // An origin that was never handed back would keep its element alive for as long as the page lives.
+                if (_focusOriginCaptured)
+                {
+                    await _js.BitUtilsDisposeFocusOrigin(_calloutId);
+                }
             });
         }
     }
