@@ -301,6 +301,7 @@ public static class ComponentCatalog
 
         // Notifications
         ["Badge"] = BitIconName.Badge,
+        ["EmptyState"] = BitIconName.Inbox,
         ["Message"] = BitIconName.Message,
         ["Persona"] = BitIconName.Contact,
         ["SnackBar"] = BitIconName.Feedback,
@@ -488,6 +489,7 @@ public static class ComponentCatalog
 
         // Notifications
         ["Badge"] = "A small marker on another element: a count, a dot, a status.",
+        ["EmptyState"] = "What a page, a panel or a list shows when it has nothing to show: an icon, a title, a line on what to do, and the actions to get going.",
         ["Message"] = "An inline bar for an error, a warning, or something worth knowing.",
         ["Persona"] = "A person: their avatar, name, secondary text and presence.",
         ["SnackBar"] = "A brief, dismissible notification that stacks in a corner of the screen.",
