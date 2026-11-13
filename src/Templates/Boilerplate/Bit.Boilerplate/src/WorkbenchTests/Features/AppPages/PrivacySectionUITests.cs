@@ -1,4 +1,6 @@
 //+:cnd:noEmit
+using System.IO.Compression;
+
 namespace Boilerplate.WorkbenchTests.Features.AppPages;
 
 /// <summary>The Settings page's Privacy section: the consents, downloading the data, and the way to the account's deletion.</summary>
@@ -21,7 +23,7 @@ public class PrivacySectionUITests : SettingsPageTest
 
         await Expect(consent).ToBeCheckedAsync();
 
-        await ReloadTheViewOnceSaved("\"Analytics\":true");
+        await ReloadTheViewOnceSaved("Analytics=1");
 
         await Expect(consent).ToBeCheckedAsync();
 
@@ -45,7 +47,7 @@ public class PrivacySectionUITests : SettingsPageTest
 
         await Expect(consent).ToBeCheckedAsync();
 
-        await ReloadTheViewOnceSaved("\"Advertising\":true");
+        await ReloadTheViewOnceSaved("Advertising=1");
 
         await Expect(consent).ToBeCheckedAsync();
     }
@@ -58,9 +60,12 @@ public class PrivacySectionUITests : SettingsPageTest
 
         var download = await Page.RunAndWaitForDownloadAsync(() => Press(Privacy.GetByRole(AriaRole.Button, new() { Name = AppStrings.ExportPersonalDataButton, Exact = true })));
 
-        var content = await File.ReadAllTextAsync(await download.PathAsync());
+        // The server's zip: the data, with the profile picture beside it.
+        using var archive = ZipFile.OpenRead(await download.PathAsync());
+        using var data = new StreamReader(archive.GetEntry("data.json")!.Open());
 
-        Assert.Contains(WorkbenchDemoUsers.All[0].Email, content);
+        Assert.Contains(WorkbenchDemoUsers.All[0].Email, await data.ReadToEndAsync());
+        Assert.IsNotNull(archive.Entries.FirstOrDefault(entry => entry.FullName.StartsWith("files/attachments/profile-picture", StringComparison.Ordinal)));
     }
 
     [TestMethod, EverySurface]
@@ -68,7 +73,7 @@ public class PrivacySectionUITests : SettingsPageTest
     {
         await OpenSection(AppStrings.PrivacyTitle);
 
-        await Press(Privacy.GetByRole(AriaRole.Button, new() { Name = AppStrings.AccountSettingsLink, Exact = true }));
+        await Press(Privacy.GetByRole(AriaRole.Link, new() { Name = AppStrings.AccountSettingsLink, Exact = true }));
 
         await Expect(Section(AppStrings.AccountTitle)).ToBeVisibleAsync();
         await Expect(SectionHeader(AppStrings.PrivacyTitle)).ToHaveAttributeAsync("aria-expanded", "false");
