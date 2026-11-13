@@ -115,6 +115,8 @@ public static partial class Program
         //#if (signalR == true)
         services.AddScoped<Features.Attachments.AiChatImagesRetentionJobRunner>();
         services.AddScoped<Infrastructure.SignalR.AppChatbot>();
+        // Holds a tool call for the user's decision until it comes back over the hub (See AppChatbot.ClearAppFiles).
+        services.AddSingleton<BitAiApprovalBroker>();
         services.AddSingleton<Features.Chatbot.ChatbotAnswerSigner>();
         services.AddSingleton<Features.Chatbot.ChatbotRateLimiter>();
         //#endif
@@ -615,14 +617,36 @@ public static partial class Program
         if (string.IsNullOrWhiteSpace(appSettings.AI?.OpenAI?.ChatApiKey) is false)
         {
             // https://github.com/dotnet/extensions/tree/main/src/Libraries/Microsoft.Extensions.AI.OpenAI#microsoftextensionsaiopenai
-            services.AddChatClient(sp => new OpenAI.Chat.ChatClient(model: appSettings.AI.OpenAI.ChatModel, credential: new(appSettings.AI.OpenAI.ChatApiKey), options: new()
+#pragma warning disable OPENAI001 // The Responses api's client is still marked experimental.
+            var chatClient = services.AddChatClient(sp =>
             {
-                Endpoint = appSettings.AI.OpenAI.ChatEndpoint,
-                Transport = new HttpClientPipelineTransport(sp.GetRequiredService<IHttpClientFactory>().CreateClient("AI"))
-            }).AsIChatClient())
-            .UseLogging()
-            .UseFunctionInvocation()
-            .UseOpenTelemetry(configure: c => c.EnableSensitiveData = env.IsDevelopment());
+                var transport = new HttpClientPipelineTransport(sp.GetRequiredService<IHttpClientFactory>().CreateClient("AI"));
+
+                // See AI:OpenAI:ChatUseResponsesApi comment in Server.Api's appsettings.json
+                return appSettings.AI.OpenAI.ChatUseResponsesApi
+                    ? new OpenAI.Responses.ResponsesClient(credential: new(appSettings.AI.OpenAI.ChatApiKey), options: new()
+                    {
+                        Endpoint = appSettings.AI.OpenAI.ChatEndpoint,
+                        Transport = transport
+                    }).AsIChatClient(appSettings.AI.OpenAI.ChatModel)
+                    : new OpenAI.Chat.ChatClient(model: appSettings.AI.OpenAI.ChatModel, credential: new(appSettings.AI.OpenAI.ChatApiKey), options: new()
+                    {
+                        Endpoint = appSettings.AI.OpenAI.ChatEndpoint,
+                        Transport = transport
+                    }).AsIChatClient();
+            });
+
+            if (appSettings.AI.OpenAI.ChatUseResponsesApi)
+            {
+                // Nothing is kept on the provider's side, as with /v1/chat/completions: the app sends the conversation every time
+                // and stores it nowhere but the user's device
+                chatClient.ConfigureOptions(options => options.RawRepresentationFactory ??= _ => new OpenAI.Responses.CreateResponseOptions { StoredOutputEnabled = false });
+            }
+#pragma warning restore OPENAI001
+
+            chatClient.UseLogging()
+                .UseFunctionInvocation()
+                .UseOpenTelemetry(configure: c => c.EnableSensitiveData = env.IsDevelopment());
             // .UseDistributedCache()
 
             //#if (signalR == true)

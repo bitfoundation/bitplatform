@@ -96,6 +96,9 @@
     <Link rel="stylesheet" Href="_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.css" />
     <Link rel="stylesheet" Href="_content/Bit.BlazorUI.Assets/styles/bit.blazorui.assets.css" />
     <Link rel="stylesheet" Href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.extras.css" />
+    @*#if (signalR == true)*@
+    <Link rel="stylesheet" Href="_content/Bit.BlazorUI.AI/styles/bit.blazorui.ai.css" />
+    @*#endif*@
     @*#if (theme == "Cupertino")*@
     <Link rel="stylesheet" Href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.cupertino.css" />
     @*#endif*@
@@ -141,6 +144,9 @@
         <Script Src="_content/Bit.BlazorUI/scripts/bit.blazorui.js"></Script>
         <Script Src="_content/Boilerplate.Client.Core/scripts/app.js"></Script>
         <Script Src="_content/Bit.BlazorUI.Extras/scripts/bit.blazorui.extras.js"></Script>
+        @*#if (signalR == true)*@
+        <Script Src="_content/Bit.BlazorUI.AI/scripts/bit.blazorui.ai.js"></Script>
+        @*#endif*@
     }
 </body>
 

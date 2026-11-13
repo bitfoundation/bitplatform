@@ -216,6 +216,9 @@ public class OpenAIOptions
     public Uri? ChatEndpoint { get; set; }
     public string? ChatApiKey { get; set; }
 
+    // See AI:OpenAI:ChatUseResponsesApi comment in Server.Api's appsettings.json
+    public bool ChatUseResponsesApi { get; set; } = true;
+
     public string? EmbeddingModel { get; set; }
     public Uri? EmbeddingEndpoint { get; set; }
     public string? EmbeddingApiKey { get; set; }

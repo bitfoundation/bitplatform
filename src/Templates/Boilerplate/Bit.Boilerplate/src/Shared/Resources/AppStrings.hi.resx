@@ -1234,9 +1234,6 @@
   <data name="AiChatApprovalWaiting" xml:space="preserve">
     <value>आपके उत्तर की प्रतीक्षा है</value>
   </data>
-  <data name="AiChatApprovalClearAppFilesTitle" xml:space="preserve">
-    <value>क्या इस डिवाइस पर ऐप की फ़ाइलें साफ़ करें?</value>
-  </data>
   <data name="AiChatApprovalClearAppFilesDescription" xml:space="preserve">
     <value>नए सिरे से शुरू करने से खराब स्थानीय डेटा के कारण होने वाली अधिकांश समस्याएँ ठीक हो जाती हैं।</value>
   </data>
@@ -1255,35 +1252,11 @@
   <data name="AiChatApprovalClearAppFilesApprove" xml:space="preserve">
     <value>फ़ाइलें साफ़ करें</value>
   </data>
-  <data name="AiChatApprovalClearAppFilesDecline" xml:space="preserve">
-    <value>अभी नहीं</value>
-  </data>
-  <data name="AiChatApprovalClearAppFilesApproved" xml:space="preserve">
-    <value>ऐप की फ़ाइलें साफ़ की जा रही हैं</value>
-  </data>
-  <data name="AiChatApprovalClearAppFilesDeclined" xml:space="preserve">
-    <value>आपने ऐप की फ़ाइलें रखीं।</value>
-  </data>
-  <data name="AiChatApprovalClearAppFilesNoAnswer" xml:space="preserve">
-    <value>कुछ भी साफ़ नहीं किया गया: अनुरोध का उत्तर नहीं मिला।</value>
-  </data>
-  <data name="AiChatApprovalTitle" xml:space="preserve">
-    <value>क्या इसे स्वीकृत करें?</value>
-  </data>
   <data name="AiChatApprovalApprove" xml:space="preserve">
     <value>स्वीकृत करें</value>
   </data>
   <data name="AiChatApprovalDecline" xml:space="preserve">
     <value>अस्वीकार करें</value>
-  </data>
-  <data name="AiChatApprovalApproved" xml:space="preserve">
-    <value>स्वीकृत</value>
-  </data>
-  <data name="AiChatApprovalDeclined" xml:space="preserve">
-    <value>अस्वीकार किया गया।</value>
-  </data>
-  <data name="AiChatApprovalNoAnswer" xml:space="preserve">
-    <value>अनुरोध का उत्तर नहीं मिला।</value>
   </data>
   <!--#if (module == "Sales") -->
   <!--#if (database == "PostgreSQL" || database == "SqlServer") -->
@@ -1310,9 +1283,6 @@
   <data name="AiChatPanelStopDictation" xml:space="preserve">
     <value>श्रुतलेख रोकें</value>
   </data>
-  <data name="AiChatPanelDictation" xml:space="preserve">
-    <value>श्रुतलेख</value>
-  </data>
   <data name="AiChatPanelMicrophoneBlocked" xml:space="preserve">
     <value>माइक्रोफ़ोन का उपयोग अवरुद्ध है। बोलकर लिखने के लिए सेटिंग में अनुमति दें।</value>
   </data>
@@ -1327,9 +1297,6 @@
   </data>
   <data name="AiChatPanelTranscribing" xml:space="preserve">
     <value>आपने जो कहा उसे लिखा जा रहा है</value>
-  </data>
-  <data name="AiChatPanelDictationTimeLeft" xml:space="preserve">
-    <value>बोलकर लिखना बंद होने में शेष समय</value>
   </data>
   <data name="AiChatPanelSpeechSignInTitle" xml:space="preserve">
     <value>आवाज़ के लिए खाता आवश्यक है</value>
@@ -1381,6 +1348,114 @@
   </data>
   <data name="AiChatPanelRestore" xml:space="preserve">
     <value>पुनर्स्थापित करें</value>
+  </data>
+  <data name="AiChatStop" xml:space="preserve">
+    <value>रोकें</value>
+  </data>
+  <data name="AiChatRegenerate" xml:space="preserve">
+    <value>फिर से उत्तर दें</value>
+  </data>
+  <data name="AiChatRetry" xml:space="preserve">
+    <value>फिर से प्रयास करें</value>
+  </data>
+  <data name="AiChatGoodAnswer" xml:space="preserve">
+    <value>अच्छा उत्तर</value>
+  </data>
+  <data name="AiChatBadAnswer" xml:space="preserve">
+    <value>खराब उत्तर</value>
+  </data>
+  <data name="AiChatScrollToLatest" xml:space="preserve">
+    <value>नवीनतम संदेश पर जाएं</value>
+  </data>
+  <data name="AiChatThinking" xml:space="preserve">
+    <value>सोच रहा है…</value>
+  </data>
+  <data name="AiChatFollowUps" xml:space="preserve">
+    <value>सुझाए गए अगले प्रश्न</value>
+  </data>
+  <data name="AiChatListening" xml:space="preserve">
+    <value>सुन रहा है</value>
+  </data>
+  <data name="AiChatRecordingTimeLeft" xml:space="preserve">
+    <value>{0} शेष</value>
+  </data>
+  <data name="AiChatDurationMinutes" xml:space="preserve">
+    <value>{0} मिनट</value>
+  </data>
+  <data name="AiChatDurationSeconds" xml:space="preserve">
+    <value>{0} सेकंड</value>
+  </data>
+  <data name="AiChatRecordingStarted" xml:space="preserve">
+    <value>रिकॉर्डिंग हो रही है, {0} शेष</value>
+  </data>
+  <data name="AiChatCommands" xml:space="preserve">
+    <value>कमांड</value>
+  </data>
+  <data name="AiChatRetryIn" xml:space="preserve">
+    <value>{0} बाद फिर से कोशिश करें।</value>
+  </data>
+  <data name="AiChatReasoning" xml:space="preserve">
+    <value>तर्क</value>
+  </data>
+  <data name="AiChatReasonedFor" xml:space="preserve">
+    <value>{0} तक सोचा</value>
+  </data>
+  <data name="AiChatSteps" xml:space="preserve">
+    <value>चरण</value>
+  </data>
+  <data name="AiChatInProgress" xml:space="preserve">
+    <value>जारी है</value>
+  </data>
+  <data name="AiChatDone" xml:space="preserve">
+    <value>पूरा हुआ</value>
+  </data>
+  <data name="AiChatFailed" xml:space="preserve">
+    <value>विफल</value>
+  </data>
+  <data name="AiChatSkipped" xml:space="preserve">
+    <value>छोड़ा गया</value>
+  </data>
+  <data name="AiChatNotStarted" xml:space="preserve">
+    <value>शुरू नहीं हुआ</value>
+  </data>
+  <data name="AiChatElapsed" xml:space="preserve">
+    <value>बीता समय</value>
+  </data>
+  <data name="AiChatToolCalls" xml:space="preserve">
+    <value>उपयोग किए गए टूल</value>
+  </data>
+  <data name="AiChatDropImage" xml:space="preserve">
+    <value>संलग्न करने के लिए छवि यहां छोड़ें</value>
+  </data>
+  <data name="AiChatTooManyImages" xml:space="preserve">
+    <value>प्रति संदेश अधिकतम {0} छवियां</value>
+  </data>
+  <data name="AiChatToolProductSearch" xml:space="preserve">
+    <value>उत्पाद खोज</value>
+  </data>
+  <data name="AiChatToolNavigation" xml:space="preserve">
+    <value>पेज नेविगेशन</value>
+  </data>
+  <data name="AiChatToolThemeChange" xml:space="preserve">
+    <value>थीम परिवर्तन</value>
+  </data>
+  <data name="AiChatToolLanguageChange" xml:space="preserve">
+    <value>भाषा परिवर्तन</value>
+  </data>
+  <data name="AiChatToolSignIn" xml:space="preserve">
+    <value>साइन इन</value>
+  </data>
+  <data name="AiChatToolErrorCheck" xml:space="preserve">
+    <value>त्रुटि रिपोर्ट जांच</value>
+  </data>
+  <data name="AiChatToolFailed" xml:space="preserve">
+    <value>{0} विफल रहा</value>
+  </data>
+  <data name="AiChatToolDeclined" xml:space="preserve">
+    <value>{0} अस्वीकार किया गया</value>
+  </data>
+  <data name="AiChatToolCancelled" xml:space="preserve">
+    <value>{0} रद्द किया गया</value>
   </data>
   <!--#endif -->
   <!--#if (ads == true) -->

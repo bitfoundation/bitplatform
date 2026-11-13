@@ -38,47 +38,37 @@ public partial class AppChatbot
     }
 
     /// <summary>
-    /// Shows the user a card in the chat for leaving their contact details, so a human operator can follow up.
-    /// No [McpServerTool]: the card needs the app's chat panel on the other end of the SignalR connection.
+    /// Shows the user a form in the chat for leaving their contact details, so a human operator can follow up. The panel
+    /// draws it from this call's arguments (See HumanFollowUpCard). No [McpServerTool]: the form needs the app's chat panel.
     /// </summary>
     [Description("Shows the user a form inside the chat for leaving their contact details, so a human operator can follow up on an issue you could not resolve. Use it instead of asking for an email address or phone number yourself.")]
     private async Task<string?> RequestHumanFollowUp(
         [Required, Description("A summary of the conversation so far in at most three sentences, written in the user's language")] string conversationSummary,
         CancellationToken cancellationToken = default)
     {
-        var shown = await ShowCard(new()
-        {
-            ComponentType = AiChatCardComponents.HumanFollowUp,
-            Data = { ["ConversationSummary"] = conversationSummary },
-            RawMarkdown = $"Showed a form for leaving contact details, so a human operator can follow up on: {conversationSummary}"
-        }, cancellationToken);
+        var shown = await ui.Show(AiChatProtocol.Tools.RequestHumanFollowUp,
+                                  arguments: JsonSerializer.SerializeToElement(new Dictionary<string, string?> { ["conversationSummary"] = conversationSummary }, AppJsonContext.Default.DictionaryStringString),
+                                  shown: null,
+                                  replay: $"Showed a form for leaving contact details, so a human operator can follow up on: {conversationSummary}",
+                                  cancellationToken);
 
         return shown
             ? "The contact form was shown to the user in the chat. They fill in their contact details there, so do not ask for them yourself."
             : "Failed to show the contact form.";
     }
 
-    /// <summary>Sent rather than invoked: nothing waits for the panel. No [McpServerTool]: the buttons need the chat panel.</summary>
+    /// <summary>Shown under the answer as prompts to tap. No [McpServerTool]: the buttons need the chat panel.</summary>
     [Description("Shows the user exactly 3 things they might want to ask or do next, as buttons to tap under your answer. Each is under 60 characters, worded as the user would say it and in the language you answer in.")]
     private async Task<string> ShowFollowUpSuggestions(
         [Required, Description("The suggestions, most useful first")] string[] suggestions,
         CancellationToken cancellationToken = default)
     {
-        await using var scope = serviceProvider.CreateAsyncScope();
+        // More than this pushes the message box off the screen on a phone
+        string[] shown = [.. suggestions.Where(suggestion => string.IsNullOrWhiteSpace(suggestion) is false).Select(suggestion => suggestion.Trim()).Take(3)];
 
-        try
-        {
-            await scope.ServiceProvider.GetRequiredService<IHubContext<AppHub>>()
-                .Clients.Client(signalRConnectionId!)
-                .SendAsync(SharedAppMessages.SHOW_AI_CHAT_SUGGESTIONS, suggestions, cancellationToken);
-
-            return "The suggestions are shown to the user.";
-        }
-        catch (Exception exp)
-        {
-            serviceProvider.GetRequiredService<ApiServerExceptionHandler>().Handle(exp);
-            return "Failed to show the suggestions.";
-        }
+        return await ui.Suggest(shown, cancellationToken)
+            ? "The suggestions are shown to the user."
+            : "Failed to show the suggestions.";
     }
 
     /// <summary>
@@ -230,21 +220,16 @@ public partial class AppChatbot
         }
     }
 
-    /// <summary>Clears application files on the user's device to fix issues, only once the user approves on screen (See <see cref="AwaitCard"/>).</summary>
+    /// <summary>Clears application files on the user's device to fix issues, only once the user approves on screen (See <see cref="ChatbotUi.AskApproval"/>).</summary>
     [Description("Clears the app's files on the user's device - local data, cache and storage - to fix corrupted local state; it also signs the user out, deletes this conversation and restarts the app. It asks the user to approve on their screen and does nothing without that approval, so don't ask for permission in the conversation yourself.")]
     private async Task<string?> ClearAppFiles(CancellationToken cancellationToken = default)
     {
-        var decision = await AwaitCard(new()
-        {
-            ComponentType = AiChatCardComponents.UserApproval,
-            Data = { ["Action"] = nameof(ClearAppFiles) },
-            RawMarkdown = "Asked the user to approve clearing the app's files on this device, which signs them out, deletes this conversation and restarts the app."
-        }, cancellationToken);
+        var decision = await ui.AskApproval(AiChatProtocol.Tools.ClearAppFiles, localizer[nameof(AppStrings.AiChatApprovalClearAppFilesDescription)], cancellationToken);
 
-        if (decision is AiChatCardDecision.Declined)
+        if (decision is BitAiApprovalDecision.Rejected)
             return "The user declined, so nothing was cleared. Carry on another way, and don't offer it again unless they bring it up.";
 
-        if (decision is not AiChatCardDecision.Approved)
+        if (decision is not (BitAiApprovalDecision.Approved or BitAiApprovalDecision.ApprovedAlways))
             return "The approval went unanswered, so nothing was cleared. Don't ask again on your own.";
 
         await using var scope = serviceProvider.CreateAsyncScope();
@@ -263,76 +248,6 @@ public partial class AppChatbot
         {
             serviceProvider.GetRequiredService<ApiServerExceptionHandler>().Handle(exp);
             return "Failed to clear app files on the device.";
-        }
-    }
-
-    /// <summary>Shows a card in the conversation and keeps what it showed in the history. False when it could not be shown.</summary>
-    private async Task<bool> ShowCard(AiChatCard card, CancellationToken cancellationToken)
-    {
-        await using var scope = serviceProvider.CreateAsyncScope();
-
-        try
-        {
-            SignCard(card);
-
-            var shown = await scope.ServiceProvider.GetRequiredService<IHubContext<AppHub>>()
-                .Clients.Client(signalRConnectionId!)
-                .InvokeAsync<bool>(SharedAppMessages.SHOW_AI_CHAT_CARD, card, cancellationToken);
-
-            if (shown)
-            {
-                RememberCard(card, cancellationToken);
-            }
-
-            return shown;
-        }
-        catch (Exception exp)
-        {
-            serviceProvider.GetRequiredService<ApiServerExceptionHandler>().Handle(exp);
-            return false;
-        }
-    }
-
-    /// <summary>Shows a card and waits for the user's decision. Fails closed: an error or a cancellation is NoAnswer.</summary>
-    private async Task<string> AwaitCard(AiChatCard card, CancellationToken cancellationToken)
-    {
-        await using var scope = serviceProvider.CreateAsyncScope();
-
-        try
-        {
-            SignCard(card);
-            RememberCard(card, cancellationToken);
-
-            var decision = await scope.ServiceProvider.GetRequiredService<IHubContext<AppHub>>()
-                .Clients.Client(signalRConnectionId!)
-                .InvokeAsync<string?>(SharedAppMessages.AWAIT_AI_CHAT_CARD, card, cancellationToken);
-
-            return decision is AiChatCardDecision.Approved or AiChatCardDecision.Declined ? decision : AiChatCardDecision.NoAnswer;
-        }
-        catch (Exception exp)
-        {
-            serviceProvider.GetRequiredService<ApiServerExceptionHandler>().Handle(exp);
-            return AiChatCardDecision.NoAnswer;
-        }
-    }
-
-    /// <summary>Signed like an answer, so the panel can resend it as one. A voice call's cards stay unsigned, like its answers.</summary>
-    private void SignCard(AiChatCard card)
-    {
-        if (isVoiceCall is false)
-        {
-            card.Signature = answerSigner.Sign(card.RawMarkdown!);
-        }
-    }
-
-    /// <summary>Adds the card to the text chat's history as the panel resends it; not once its turn was cancelled.</summary>
-    private void RememberCard(AiChatCard card, CancellationToken cancellationToken)
-    {
-        if (isVoiceCall || cancellationToken.IsCancellationRequested) return;
-
-        lock (historyLock)
-        {
-            chatMessages.Add(new(ChatRole.Assistant, card.RawMarkdown));
         }
     }
 
@@ -386,7 +301,8 @@ public partial class AppChatbot
         [property: Description("Up to 3 phrases under 40 characters, in the user's language, on how it meets what the user asked for - taken from the product's details only")] string[]? Highlights);
 
     /// <summary>
-    /// Shows products as cards. The model only picks and orders them: names, prices and pictures come from the database.
+    /// Shows products as cards. The model only picks and orders them: names, prices and pictures come from the database,
+    /// and reach the panel as what the call shows (See ShownProductsDto), while the model is told only which ones it showed.
     /// No [McpServerTool]: the cards need the app's chat panel.
     /// </summary>
     [Description("Shows products to the user as numbered cards in the chat - picture, name, manufacturer, price and a link to the product page - in the order given. Pass only products the GetProductRecommendations tool returned. The cards replace a written list: afterwards don't repeat their names, prices, pictures or links; say in a sentence or two how they compare and what doesn't match the user's needs.")]
@@ -429,16 +345,11 @@ public partial class AppChatbot
         var list = recommendations.Select((recommendation, index) =>
             $"{index + 1}. [{recommendation.Product.Name}]({recommendation.Product.PageUrl}) - {recommendation.Product.CategoryName} - {recommendation.Product.Price.ToString("N0", CultureInfo.InvariantCulture)} {recommendation.Product.CurrencyIso ?? "USD"}");
 
-        var shown = await ShowCard(new()
-        {
-            ComponentType = AiChatCardComponents.Products,
-            Data =
-            {
-                ["Title"] = title,
-                ["Products"] = JsonSerializer.Serialize(recommendations, AppJsonContext.Default.ListProductRecommendationDto)
-            },
-            RawMarkdown = $"**{title}**\n\n{string.Join('\n', list)}"
-        }, cancellationToken);
+        var shown = await ui.Show(AiChatProtocol.Tools.ShowProducts,
+                                  arguments: null,
+                                  shown: JsonSerializer.SerializeToElement(new ShownProductsDto { Title = title, Products = recommendations }, AppJsonContext.Default.ShownProductsDto),
+                                  replay: $"**{title}**\n\n{string.Join('\n', list)}",
+                                  cancellationToken);
 
         return shown
             ? $"These product cards are shown:\n{string.Join('\n', list)}\nDon't repeat what they show. To open one the user picks, such as the second one, call NavigateToPage with its page url."

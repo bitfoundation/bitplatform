@@ -1234,9 +1234,6 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   <data name="AiChatApprovalWaiting" xml:space="preserve">
     <value>Väntar på ditt svar</value>
   </data>
-  <data name="AiChatApprovalClearAppFilesTitle" xml:space="preserve">
-    <value>Rensa appens filer på den här enheten?</value>
-  </data>
   <data name="AiChatApprovalClearAppFilesDescription" xml:space="preserve">
     <value>En nystart löser de flesta problem som orsakas av skadade lokala data.</value>
   </data>
@@ -1255,35 +1252,11 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   <data name="AiChatApprovalClearAppFilesApprove" xml:space="preserve">
     <value>Rensa filer</value>
   </data>
-  <data name="AiChatApprovalClearAppFilesDecline" xml:space="preserve">
-    <value>Inte nu</value>
-  </data>
-  <data name="AiChatApprovalClearAppFilesApproved" xml:space="preserve">
-    <value>Rensar appens filer</value>
-  </data>
-  <data name="AiChatApprovalClearAppFilesDeclined" xml:space="preserve">
-    <value>Du behöll appens filer.</value>
-  </data>
-  <data name="AiChatApprovalClearAppFilesNoAnswer" xml:space="preserve">
-    <value>Inget rensades: begäran besvarades inte.</value>
-  </data>
-  <data name="AiChatApprovalTitle" xml:space="preserve">
-    <value>Godkänna detta?</value>
-  </data>
   <data name="AiChatApprovalApprove" xml:space="preserve">
     <value>Godkänn</value>
   </data>
   <data name="AiChatApprovalDecline" xml:space="preserve">
     <value>Avböj</value>
-  </data>
-  <data name="AiChatApprovalApproved" xml:space="preserve">
-    <value>Godkänt</value>
-  </data>
-  <data name="AiChatApprovalDeclined" xml:space="preserve">
-    <value>Avböjt.</value>
-  </data>
-  <data name="AiChatApprovalNoAnswer" xml:space="preserve">
-    <value>Begäran besvarades inte.</value>
   </data>
   <!--#if (module == "Sales") -->
   <!--#if (database == "PostgreSQL" || database == "SqlServer") -->
@@ -1310,9 +1283,6 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   <data name="AiChatPanelStopDictation" xml:space="preserve">
     <value>Sluta diktera</value>
   </data>
-  <data name="AiChatPanelDictation" xml:space="preserve">
-    <value>Diktering</value>
-  </data>
   <data name="AiChatPanelMicrophoneBlocked" xml:space="preserve">
     <value>Åtkomsten till mikrofonen är blockerad. Tillåt den i dina inställningar för att kunna diktera.</value>
   </data>
@@ -1327,9 +1297,6 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   </data>
   <data name="AiChatPanelTranscribing" xml:space="preserve">
     <value>Skriver ner det du sa</value>
-  </data>
-  <data name="AiChatPanelDictationTimeLeft" xml:space="preserve">
-    <value>Tid kvar innan dikteringen stoppas</value>
   </data>
   <data name="AiChatPanelSpeechSignInTitle" xml:space="preserve">
     <value>Rösten kräver ett konto</value>
@@ -1381,6 +1348,114 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   </data>
   <data name="AiChatPanelRestore" xml:space="preserve">
     <value>Återställ</value>
+  </data>
+  <data name="AiChatStop" xml:space="preserve">
+    <value>Stoppa</value>
+  </data>
+  <data name="AiChatRegenerate" xml:space="preserve">
+    <value>Svara igen</value>
+  </data>
+  <data name="AiChatRetry" xml:space="preserve">
+    <value>Försök igen</value>
+  </data>
+  <data name="AiChatGoodAnswer" xml:space="preserve">
+    <value>Bra svar</value>
+  </data>
+  <data name="AiChatBadAnswer" xml:space="preserve">
+    <value>Dåligt svar</value>
+  </data>
+  <data name="AiChatScrollToLatest" xml:space="preserve">
+    <value>Gå till det senaste meddelandet</value>
+  </data>
+  <data name="AiChatThinking" xml:space="preserve">
+    <value>Tänker…</value>
+  </data>
+  <data name="AiChatFollowUps" xml:space="preserve">
+    <value>Föreslagna följdfrågor</value>
+  </data>
+  <data name="AiChatListening" xml:space="preserve">
+    <value>Lyssnar</value>
+  </data>
+  <data name="AiChatRecordingTimeLeft" xml:space="preserve">
+    <value>{0} kvar</value>
+  </data>
+  <data name="AiChatDurationMinutes" xml:space="preserve">
+    <value>{0} min</value>
+  </data>
+  <data name="AiChatDurationSeconds" xml:space="preserve">
+    <value>{0} s</value>
+  </data>
+  <data name="AiChatRecordingStarted" xml:space="preserve">
+    <value>Spelar in, {0} kvar</value>
+  </data>
+  <data name="AiChatCommands" xml:space="preserve">
+    <value>Kommandon</value>
+  </data>
+  <data name="AiChatRetryIn" xml:space="preserve">
+    <value>Försök igen om {0}.</value>
+  </data>
+  <data name="AiChatReasoning" xml:space="preserve">
+    <value>Resonemang</value>
+  </data>
+  <data name="AiChatReasonedFor" xml:space="preserve">
+    <value>Tänkte i {0}</value>
+  </data>
+  <data name="AiChatSteps" xml:space="preserve">
+    <value>Steg</value>
+  </data>
+  <data name="AiChatInProgress" xml:space="preserve">
+    <value>Pågår</value>
+  </data>
+  <data name="AiChatDone" xml:space="preserve">
+    <value>Klart</value>
+  </data>
+  <data name="AiChatFailed" xml:space="preserve">
+    <value>Misslyckades</value>
+  </data>
+  <data name="AiChatSkipped" xml:space="preserve">
+    <value>Hoppades över</value>
+  </data>
+  <data name="AiChatNotStarted" xml:space="preserve">
+    <value>Inte påbörjad</value>
+  </data>
+  <data name="AiChatElapsed" xml:space="preserve">
+    <value>Förfluten tid</value>
+  </data>
+  <data name="AiChatToolCalls" xml:space="preserve">
+    <value>Använda verktyg</value>
+  </data>
+  <data name="AiChatDropImage" xml:space="preserve">
+    <value>Släpp bilden för att bifoga den</value>
+  </data>
+  <data name="AiChatTooManyImages" xml:space="preserve">
+    <value>Högst {0} bilder per meddelande</value>
+  </data>
+  <data name="AiChatToolProductSearch" xml:space="preserve">
+    <value>Produktsökning</value>
+  </data>
+  <data name="AiChatToolNavigation" xml:space="preserve">
+    <value>Sidnavigering</value>
+  </data>
+  <data name="AiChatToolThemeChange" xml:space="preserve">
+    <value>Byte av tema</value>
+  </data>
+  <data name="AiChatToolLanguageChange" xml:space="preserve">
+    <value>Byte av språk</value>
+  </data>
+  <data name="AiChatToolSignIn" xml:space="preserve">
+    <value>Inloggning</value>
+  </data>
+  <data name="AiChatToolErrorCheck" xml:space="preserve">
+    <value>Kontroll av felrapport</value>
+  </data>
+  <data name="AiChatToolFailed" xml:space="preserve">
+    <value>{0} misslyckades</value>
+  </data>
+  <data name="AiChatToolDeclined" xml:space="preserve">
+    <value>{0} avböjdes</value>
+  </data>
+  <data name="AiChatToolCancelled" xml:space="preserve">
+    <value>{0} avbröts</value>
   </data>
   <!--#endif -->
   <!--#if (ads == true) -->

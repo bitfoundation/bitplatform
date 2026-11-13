@@ -63,6 +63,7 @@
         <Using Include="ZiggyCreatures.Caching.Fusion" />
         <Using Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') OR ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Microsoft.Extensions.AI" />
         <Using Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.AspNetCore.SignalR" />
+        <Using Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Bit.BlazorUI" />
         <Using Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Boilerplate.Server.Api.Features.Chatbot" />
         <Using Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Boilerplate.Server.Api.Infrastructure.SignalR" />
         <Using Include="Boilerplate.Server.Api.Infrastructure.DevMcp" />
@@ -96,6 +97,8 @@
         <PackageReference Condition=" '$(database)' == 'PostgreSQL' OR '$(database)' == '' " Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
         <PackageReference Condition=" '$(database)' == 'MySql' OR '$(database)' == '' " Include="MySql.EntityFrameworkCore" />
         <PackageReference Condition="'$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.Azure.SignalR" />
+        <PackageReference Condition="'$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Bit.BlazorUI.AI.Server" />
+        <PackageReference Condition="'$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Bit.BlazorUI.AI.ChatClient" />
         <PackageReference Include="ModelContextProtocol.AspNetCore" />
         <PackageReference Include="System.Linq.Dynamic.Core" />
         <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="CommunityToolkit.Datasync.Server" />

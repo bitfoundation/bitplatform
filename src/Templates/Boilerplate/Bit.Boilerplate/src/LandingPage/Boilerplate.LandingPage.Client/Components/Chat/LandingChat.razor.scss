@@ -10,21 +10,37 @@
     gap: 12px;
 }
 
-.lp-chat-bubble {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    height: 52px;
-    padding-inline: 18px 20px;
-    border: 0;
-    border-radius: 999px;
-    background: var(--lp-chat-bubble-bg, var(--lp-fg));
-    color: var(--lp-chat-bubble-fg, var(--lp-bg));
-    --bit-Icon-color: currentColor;
-    box-shadow: 0 12px 32px -12px color-mix(in oklab, var(--lp-fg) 60%, transparent);
-    font-size: .9375rem;
-    font-weight: 600;
-    cursor: pointer;
+// The bubble and the concierge tab are BitButtons, painted in the sample's own colors (--lp-chat-bubble-bg/-fg, and
+// --lp-chat-bubble-icon for the glyph) through BitButton's public variables, the same at rest, hovered and pressed.
+@mixin chat-trigger {
+    --bit-Button-fill-background: var(--lp-chat-bubble-bg, var(--lp-fg));
+    --bit-Button-fill-hover-background: var(--lp-chat-bubble-bg, var(--lp-fg));
+    --bit-Button-fill-active-background: var(--lp-chat-bubble-bg, var(--lp-fg));
+    --bit-Button-fill-color: var(--lp-chat-bubble-fg, var(--lp-bg));
+    --bit-Button-fill-hover-color: var(--lp-chat-bubble-fg, var(--lp-bg));
+    --bit-Button-fill-active-color: var(--lp-chat-bubble-fg, var(--lp-bg));
+    --bit-Button-fill-border-color: transparent;
+    --bit-Button-fill-hover-border-color: transparent;
+    --bit-Button-fill-active-border-color: transparent;
+    --bit-Button-min-width: 0;
+    --bit-Button-font-weight: 600;
+    --bit-Button-text-transform: none;
+    --bit-Button-letter-spacing: 0;
+
+    // Included under a ::deep rule, which already reaches into BitButton
+    .lp-chat-trigger-icon {
+        color: var(--lp-chat-bubble-icon, currentColor);
+    }
+}
+
+.lp-chat-bubble-root ::deep .lp-chat-bubble {
+    @include chat-trigger;
+    --bit-Button-min-height: 52px;
+    --bit-Button-padding: 0 20px;
+    --bit-Button-gap: 10px;
+    --bit-Button-radius: 999px;
+    --bit-Button-font-size: .9375rem;
+    --bit-Button-shadow: 0 12px 32px -12px color-mix(in oklab, var(--lp-fg) 60%, transparent);
     transition: transform .2s var(--lp-ease);
 
     &:hover {
@@ -33,12 +49,13 @@
 
     @include lt-sm {
         width: 52px;
-        padding: 0;
-        justify-content: center;
+        --bit-Button-padding: 0;
+    }
+}
 
-        .lp-chat-bubble-label {
-            display: none;
-        }
+.lp-chat-bubble-root ::deep .lp-chat-bubble-label {
+    @include lt-sm {
+        display: none;
     }
 }
 
@@ -111,26 +128,24 @@
     font-size: .875rem;
 }
 
-.lp-chat-concierge-tab {
+.lp-chat-concierge {
+    display: contents;
+}
+
+.lp-chat-concierge ::deep .lp-chat-concierge-tab {
+    @include chat-trigger;
+    --bit-Button-min-height: 0;
+    --bit-Button-padding: 14px 10px;
+    --bit-Button-gap: 8px;
+    --bit-Button-radius: 12px 0 0 12px;
+    --bit-Button-font-size: .875rem;
+    --bit-Button-shadow: 0 10px 30px -12px color-mix(in oklab, var(--lp-fg) 60%, transparent);
     position: fixed;
     z-index: 700;
     top: 50%;
     right: 0;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 14px 10px;
-    border: 0;
-    border-radius: 12px 0 0 12px;
-    background: var(--lp-chat-bubble-bg, var(--lp-fg));
-    color: var(--lp-chat-bubble-fg, var(--lp-bg));
-    --bit-Icon-color: currentColor;
-    font-size: .875rem;
-    font-weight: 600;
     writing-mode: vertical-rl;
-    cursor: pointer;
     transform: translateY(-50%);
-    box-shadow: 0 10px 30px -12px color-mix(in oklab, var(--lp-fg) 60%, transparent);
 
     &:dir(rtl) {
         right: auto;
@@ -142,8 +157,8 @@
         top: auto;
         right: max(16px, env(safe-area-inset-right, 0px));
         bottom: max(20px, env(safe-area-inset-bottom, 0px));
-        padding: 12px 14px;
-        border-radius: 999px;
+        --bit-Button-padding: 12px 14px;
+        --bit-Button-radius: 999px;
         writing-mode: horizontal-tb;
         transform: none;
 

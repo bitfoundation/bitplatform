@@ -55,6 +55,7 @@
 
     <ItemGroup Condition=" '$(RunAOTCompilation)' != 'true' AND '$(PublishAot)' != 'true' ">
         <BlazorWebAssemblyLazyLoad Include="Bit.BlazorUI.AI.wasm" />
+        <BlazorWebAssemblyLazyLoad Include="Bit.BlazorUI.AI.Core.wasm" />
         <BlazorWebAssemblyLazyLoad Include="System.Net.WebSockets.Client.wasm" />
         <BlazorWebAssemblyLazyLoad Include="System.Net.WebSockets.wasm" />
         <BlazorWebAssemblyLazyLoad Include="Bit.Bonboarding.wasm" />
