@@ -1724,7 +1724,7 @@ public partial class BitDropdownDemo
                },
                new()
                {
-                   Name = "EmptyContent",
+                   Name = "Empty",
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the empty state content of the BitDropdown."

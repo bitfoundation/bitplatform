@@ -127,10 +127,10 @@
         </BitChart>
     </div>
     <div class="box"><BitChart Id="cht-nodata" Type="BitChartType.Bar" Data="_emptyData" Options="NoAnim()" /></div>
-    <div class="box"><BitChart Id="cht-nodata-text" Type="BitChartType.Bar" Data="_emptyData" Options="NoAnim()" NoDataText="Nothing yet" /></div>
+    <div class="box"><BitChart Id="cht-nodata-text" Type="BitChartType.Bar" Data="_emptyData" Options="NoAnim()" EmptyText="Nothing yet" /></div>
     <div class="box">
         <BitChart Id="cht-nodata-template" Type="BitChartType.Bar" Data="_emptyData" Options="NoAnim()">
-            <NoDataTemplate><b class="custom-nodata">Empty!</b></NoDataTemplate>
+            <EmptyTemplate><b class="custom-nodata">Empty!</b></EmptyTemplate>
         </BitChart>
     </div>
 </E2ESection>
@@ -372,7 +372,7 @@
     [
         new()
         {
-            NoDataText = "Cascaded empty text",
+            EmptyText = "Cascaded empty text",
             Height = "200px",
             Type = BitChartType.Line
         }

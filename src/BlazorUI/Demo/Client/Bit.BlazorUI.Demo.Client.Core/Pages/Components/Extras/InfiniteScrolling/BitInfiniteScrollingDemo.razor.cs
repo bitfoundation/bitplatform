@@ -29,7 +29,7 @@ public partial class BitInfiniteScrollingDemo
          },
          new()
          {
-            Name = "EmptyMessage",
+            Name = "EmptyText",
             Type = "string",
             DefaultValue = "There is no item",
             Description = "The message to render when there is no item available and no EmptyTemplate is provided.",

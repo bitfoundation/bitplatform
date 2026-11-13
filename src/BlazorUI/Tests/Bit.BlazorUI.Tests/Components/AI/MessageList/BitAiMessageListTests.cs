@@ -61,7 +61,7 @@ public class BitAiMessageListTests : BitAiTestBase
     }
 
     [TestMethod]
-    public void BitAiMessageListShouldRenderTheEmptyContentOnlyWhileThereAreNoMessages()
+    public void BitAiMessageListShouldRenderTheEmptyTemplateOnlyWhileThereAreNoMessages()
     {
         var conversation = new BitAiConversation();
 

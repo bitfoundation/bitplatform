@@ -36,7 +36,7 @@
 
 <E2ESection Id="search" Title="Search box">
     <BitCountryPicker Id="cnp-search" Placeholder="Select a country" SearchBoxPlaceholder="Country or ISO code"
-                      NoResultsMessage="No matching country" @bind-Value="_searchValue" />
+                      NoResultsText="No matching country" @bind-Value="_searchValue" />
     <span id="search-value">@(_searchValue?.Iso2 ?? "null")</span>
     <BitCountryPicker Id="cnp-nosearch" NoSearchBox Placeholder="Select a country" @bind-Value="_noSearchValue" />
     <span id="nosearch-value">@(_noSearchValue?.Iso2 ?? "null")</span>
@@ -154,7 +154,7 @@
 
 <E2ESection Id="localization" Title="Localization">
     <BitCountryPicker Id="cnp-german" Countries="_germanCountries" Placeholder="Land auswählen"
-                      SearchBoxPlaceholder="Suchen" SearchBoxAriaLabel="Land suchen" NoResultsMessage="Kein Land gefunden"
+                      SearchBoxPlaceholder="Suchen" SearchBoxAriaLabel="Land suchen" NoResultsText="Kein Land gefunden"
                       SearchResultsAnnouncement="@(count => count == 1 ? "1 Land gefunden" : $"{count} Länder gefunden")" />
 </E2ESection>
 

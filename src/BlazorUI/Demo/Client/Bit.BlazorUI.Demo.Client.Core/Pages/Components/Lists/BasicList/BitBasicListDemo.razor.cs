@@ -29,7 +29,7 @@ public partial class BitBasicListDemo
         },
         new()
         {
-            Name = "EmptyContent",
+            Name = "EmptyTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "The content rendered in place of the rows while the list holds no items.",
@@ -198,7 +198,7 @@ public partial class BitBasicListDemo
             Name = "Role",
             Type = "string?",
             DefaultValue = "list",
-            Description = "The role of the element holding the rows (which also carries the AriaLabel). Without a RowTemplate each row is rendered as a listitem while the role is list. Left off while the EmptyContent shows; set it to null to leave it off altogether. Wherever the element has no role to name, the AriaLabel names the root, as a group, instead.",
+            Description = "The role of the element holding the rows (which also carries the AriaLabel). Without a RowTemplate each row is rendered as a listitem while the role is list. Left off while the EmptyTemplate shows; set it to null to leave it off altogether. Wherever the element has no role to name, the AriaLabel names the root, as a group, instead.",
         },
         new()
         {

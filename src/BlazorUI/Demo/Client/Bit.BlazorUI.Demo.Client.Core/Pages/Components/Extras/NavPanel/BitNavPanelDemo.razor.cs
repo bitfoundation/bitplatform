@@ -107,20 +107,6 @@ public partial class BitNavPanelDemo
         },
         new()
         {
-            Name = "EmptyListTemplate",
-            Type = "RenderFragment?",
-            DefaultValue = "null",
-            Description = "The custom template for when the search result is empty.",
-        },
-        new()
-        {
-            Name = "EmptyListMessage",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "The custom message for when the search result is empty.",
-        },
-        new()
-        {
             Name = "ExpandAriaLabel",
             Type = "string?",
             DefaultValue = "null",
@@ -372,6 +358,20 @@ public partial class BitNavPanelDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Stops the closing drawer of a small screen from handing the focus back to the element that had it when the drawer opened. Only ever read by a panel that took the focus in the first place: a modal drawer, or one with AutoFocus.",
+        },
+        new()
+        {
+            Name = "NoResultsTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The custom template for when the search result is empty.",
+        },
+        new()
+        {
+            Name = "NoResultsText",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The custom message for when the search result is empty.",
         },
         new()
         {
@@ -700,7 +700,7 @@ public partial class BitNavPanelDemo
                 },
                 new()
                 {
-                    Name = "EmptyListMessage",
+                    Name = "NoResults",
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the empty list message of the BitNavPanel.",
@@ -1476,7 +1476,7 @@ public partial class BitNavPanelDemo
         {
             ExpandOnHover = true,
             SearchBoxPlaceholder = "Find a page...",
-            EmptyListMessage = "No page matches.",
+            NoResultsText = "No page matches.",
             ToggleAriaLabel = "Collapse or expand the menu",
             SearchAnnouncementProvider = count => count == 1 ? "One page matches." : $"{count} pages match.",
         }

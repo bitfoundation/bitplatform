@@ -239,11 +239,11 @@ public class BitAccordionListParamsTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitAccordionListShouldTakeACascadedEmptyContent()
+    public void BitAccordionListShouldTakeACascadedEmptyTemplate()
     {
         var component = RenderWithParams(new BitAccordionListParams
         {
-            EmptyContent = builder => builder.AddMarkupContent(0, "<span class=\"cascaded-empty\">Nothing</span>"),
+            EmptyTemplate = builder => builder.AddMarkupContent(0, "<span class=\"cascaded-empty\">Nothing</span>"),
         }, items: []);
 
         Assert.AreEqual(1, component.FindAll(".cascaded-empty").Count);

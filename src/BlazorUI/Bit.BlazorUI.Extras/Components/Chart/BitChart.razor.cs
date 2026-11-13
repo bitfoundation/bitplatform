@@ -87,7 +87,7 @@ public partial class BitChart : BitComponentBase
         + "Enter to select, and Escape to leave.";
 
     /// <summary>Custom content shown in place of the plot when there is nothing to draw.</summary>
-    [Parameter] public RenderFragment? NoDataTemplate { get; set; }
+    [Parameter] public RenderFragment? EmptyTemplate { get; set; }
 
     /// <summary>
     /// The sentence added to the <see cref="NavigationHint"/> while zoom is enabled, telling a keyboard user that the
@@ -97,7 +97,7 @@ public partial class BitChart : BitComponentBase
     [Parameter] public string? ZoomHint { get; set; } = "Press plus or minus to zoom, and 0 to reset the zoom.";
 
     /// <summary>Message shown in place of the plot when there is nothing to draw.</summary>
-    [Parameter] public string NoDataText { get; set; } = "No data to display";
+    [Parameter] public string EmptyText { get; set; } = "No data to display";
 
     /// <summary>Raised when a data element is clicked: (datasetIndex, dataIndex).</summary>
     [Parameter] public EventCallback<(int DatasetIndex, int DataIndex)> OnElementClick { get; set; }

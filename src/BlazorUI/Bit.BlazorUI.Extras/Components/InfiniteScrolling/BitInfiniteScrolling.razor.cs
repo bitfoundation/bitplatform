@@ -152,7 +152,7 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
     /// <summary>
     /// The message to render when there is no item available and no EmptyTemplate is provided.
     /// </summary>
-    [Parameter] public string EmptyMessage { get; set; } = "There is no item";
+    [Parameter] public string EmptyText { get; set; } = "There is no item";
 
     /// <summary>
     /// The custom template to render when there is no item available.
@@ -1127,7 +1127,7 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
 
         if (_error is not null) return ErrorTemplate is null ? null : ErrorMessage;
 
-        if (_showEmpty) return EmptyMessage;
+        if (_showEmpty) return EmptyText;
 
         var loaded = _lastLoadedCount > 0 && LoadedMessage.HasValue()
             ? FormatLoadedMessage(LoadedMessage!)
