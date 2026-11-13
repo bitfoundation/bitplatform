@@ -45,6 +45,9 @@ public partial class MainLayout : IAsyncDisposable
     private RouteData? currentRouteData;
     private List<Action> unsubscribers = [];
     private CancellationTokenSource getCurrentUserCts = new();
+    /// <summary>What <see cref="SetCurrentUser"/> loads last, which coming back online waits for rather than restarts.</summary>
+    private Task currentUserLoads = Task.CompletedTask;
+    private bool isReloadingCurrentUser;
 
 
     protected override async Task OnInitializedAsync()
@@ -96,10 +99,29 @@ public partial class MainLayout : IAsyncDisposable
                 // Back online after the server couldn't be reached: what failed to load then, such as the signed-in
                 // user's profile when the app was opened offline, would stay missing until the app is reloaded.
                 // SetCurrentUser loads only what's missing. From offline only, as the first answer at start comes
-                // while the profile is still on its way.
-                if (wasOffline && IsOnline is true)
+                // while the profile is still on its way. A load still on its way is waited for rather than
+                // restarted, as cancelling it would tell the app it's offline again.
+                if (wasOffline && IsOnline is true && isReloadingCurrentUser is false)
                 {
-                    await SetCurrentUser(authManager.GetAuthenticationStateAsync());
+                    isReloadingCurrentUser = true;
+                    try
+                    {
+                        try
+                        {
+                            await currentUserLoads;
+                        }
+                        catch (Exception)
+                        {
+                            // Handled where it was started; what it couldn't load is loaded below
+                        }
+
+                        await SetCurrentUser(authManager.GetAuthenticationStateAsync());
+                    }
+                    finally
+                    {
+                        isReloadingCurrentUser = false;
+                    }
+
                     await InvokeAsync(StateHasChanged);
                 }
             }));
@@ -208,7 +230,7 @@ public partial class MainLayout : IAsyncDisposable
                 //#endif
             ];
 
-            await Task.WhenAll(loads);
+            await (currentUserLoads = Task.WhenAll(loads));
         }
 
         lastAuthUser = authUser;
