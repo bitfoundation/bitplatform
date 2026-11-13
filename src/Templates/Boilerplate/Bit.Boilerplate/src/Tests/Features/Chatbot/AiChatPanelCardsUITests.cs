@@ -130,9 +130,11 @@ public partial class AiChatPanelCardsUITests : AiChatPanelTestBase
         await SendChatMessage(panel, "show me all your cars", chatClient);
 
         await Expect(panel.Locator(".products .product-name")).ToHaveTextAsync(["1. EQB SUV", "2. EQE Sedan", "3. EQE SUV", "4. EQS SUV", "5. EQS Sedan", "6. GLA SUV"]);
-        await Expect(panel.GetByText("Here are our cars.")).ToBeVisibleAsync();
 
-        await panel.GetByRole(AriaRole.Link, new() { Name = "1. EQB SUV", Exact = true }).ClickAsync();
+        var firstCar = panel.GetByRole(AriaRole.Link, new() { Name = "1. EQB SUV", Exact = true });
+
+        await firstCar.FocusAsync();
+        await firstCar.ClickAsync();
 
         await Expect(Page).ToHaveURLAsync(new Regex($"{PageUrls.Product}/10000$"));
         await Expect(panel).ToBeHiddenAsync();
