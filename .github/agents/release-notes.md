@@ -60,8 +60,8 @@ run, update every line of the comment and add one to the log.
 ## Structure
 
 1. `## What's Changed`
-2. `### Key Highlights`, with `####` subsections: bit platform (a new .NET version, license changes), bit BlazorUI,
-   Tooling, bit Boilerplate, Websites. A new .NET version always goes in the highlights.
+2. `### Key Highlights`, with `####` subsections: bit Fabric, bit platform (a new .NET version, license changes), bit
+   BlazorUI, Tooling, bit Boilerplate, Websites. A new .NET version always goes in the highlights.
 3. After Websites, a general note as a quote: `> **Note:** Everything in bit platform, ... is there to get you to a
    better product with fewer tokens and less time. Nothing limits what you build or what you use.` Keep it in every
    release, with examples from that release.
@@ -96,6 +96,17 @@ These came from the maintainer's corrections, so get them right the first time:
   simple move from the old package" says enough. How it does that does not belong here.
 - **Order inside a subsection:** the newest and most visible first. AI components came before forms and validation.
 - A breaking change gets one plain sentence on what to switch to, such as "Move from `Bit.Besql` to `Bit.Bsqlite`".
+- **One schedule per line.** A line that put the scans run after each deployment next to the checks run every minute
+  read as a security scan every minute. Things that happen at different times get lines of their own.
+
+## bit Fabric
+
+bit Fabric completes the loop from an idea to an app that stays up, so the highlights open with it in every release. No
+PR in this repo brings it in: its facts come from bitfabric.co and the maintainer, who may know of features the site
+does not show yet. Follow the user's path: pick a project on bitfabric.co/new and get it set up on your own machine,
+privacy first right after that (bit Fabric never sees the code, the database or the prompts), bring an existing app and
+its look over, build new features with the AI-DLC on the Workbench, deploy, then the scans that run after each
+deployment and the checks that keep the app up. Keep it true to what bit Fabric does at release time.
 
 ## Dependencies
 
@@ -110,6 +121,7 @@ PRs that touch package files change: one comes in, one goes out, or an open one 
 - Check a claim in the code before writing it, such as zero downtime in the template's CD workflow.
 - Open every link in the highlights once and expect a 200.
 - Numbers (sizes, prices, scores) come from a measurement or from the maintainer, never from a guess.
+- Read the discussion body back after every edit and compare it with what was sent. A euro sign once went live garbled.
 
 ## Side work
 
