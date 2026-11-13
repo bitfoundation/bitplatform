@@ -31,6 +31,13 @@ jobs:
     environment: ${{ inputs.ENV_NAME }}
     steps:
 
+      # The runner's preinstalled toolchains leave a thin margin once the app is published and its images are built, so drop
+      # the ones no step here uses, as ci.yml does.
+      - name: Free disk space
+        run: |
+          sudo rm -rf /opt/ghc /usr/local/.ghcup /usr/share/swift /usr/local/share/boost /opt/hostedtoolcache/CodeQL /usr/local/share/powershell /usr/share/miniconda /opt/az /usr/local/lib/android/sdk/ndk
+          df -h /
+
       - name: Checkout source code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
