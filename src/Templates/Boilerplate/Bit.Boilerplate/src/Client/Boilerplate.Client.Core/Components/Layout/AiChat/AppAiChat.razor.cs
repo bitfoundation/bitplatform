@@ -1,5 +1,6 @@
 //+:cnd:noEmit
 using System.Net;
+using System.Runtime.CompilerServices;
 using Boilerplate.Shared.Features.Chatbot;
 using Boilerplate.Shared.Features.Attachments;
 //#if (module == "Sales")
@@ -127,7 +128,7 @@ public partial class AppAiChat : IAppAiChat
 
         // Bit.BlazorUI.AI.SignalR's transport, over the app's own connection: each answer streams from AppHub (a BitAiHub),
         // with as much of the conversation as the server reads
-        var transport = new AiChatHistoryWindow(new BitAiSignalRTransport((HubConnection)await hubConnection.GetHubConnection(CurrentCancellationToken)));
+        var transport = new AiChatHistoryWindow(CreateTransport(await hubConnection.GetHubConnection(CurrentCancellationToken)));
 
         session = new BitAiChatSession(transport, await RestoreHistory(), new()
         {
@@ -406,6 +407,9 @@ public partial class AppAiChat : IAppAiChat
         //#endif
         //#endif
     }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static IBitAiTransport CreateTransport(object hubConnection) => new BitAiSignalRTransport((HubConnection)hubConnection);
 
     private static string FollowUpSentKey(BitAiToolCallPart call) => $"followUpSent:{call.ToolCallId}";
 
