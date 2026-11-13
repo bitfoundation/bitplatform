@@ -16,11 +16,14 @@ namespace Bit.BlazorUI.Tests.Components.Extras.ImageViewer;
 [TestClass]
 public class BitImageViewerParamsTests : BunitTestContext
 {
-    // What makes one image viewer the one it is: its image and its zoom.
+    // What makes one image viewer the one it is: its image, its zoom, and whether it is full screen or a lightbox.
     private static readonly string[] _notCascaded =
     [
         nameof(BitImageViewer.CascadingParameters),
         nameof(BitImageViewer.Alt),
+        nameof(BitImageViewer.FullScreen),
+        nameof(BitImageViewer.FullScreenChanged),
+        nameof(BitImageViewer.FullScreenOnly),
         nameof(BitImageViewer.Src),
         nameof(BitImageViewer.Zoom),
         nameof(BitImageViewer.ZoomChanged),

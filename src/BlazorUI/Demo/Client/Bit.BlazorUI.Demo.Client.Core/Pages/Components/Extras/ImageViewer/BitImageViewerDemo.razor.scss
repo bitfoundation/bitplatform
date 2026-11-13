@@ -12,6 +12,25 @@
         flex-direction: column;
     }
 
+    .lightbox-thumb {
+        padding: 0;
+        width: 8rem;
+        cursor: zoom-in;
+        overflow: hidden;
+        border-radius: 0.5rem;
+        border: 1px solid var(--bit-clr-brd-sec);
+
+        img {
+            width: 100%;
+            display: block;
+        }
+
+        &:focus-visible {
+            outline: 2px solid var(--bit-clr-pri-focus);
+            outline-offset: 2px;
+        }
+    }
+
     .custom-viewport {
         border: 2px dashed var(--bit-clr-brd-pri);
     }

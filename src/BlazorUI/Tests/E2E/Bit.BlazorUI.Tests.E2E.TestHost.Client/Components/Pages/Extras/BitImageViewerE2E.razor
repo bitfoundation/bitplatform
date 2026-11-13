@@ -21,6 +21,23 @@
     <BitImageViewer Id="imv-dis" Src="samples/imageviewer-grid.svg" Alt="Disabled" Height="300px" Disabled />
 </div>
 
+@* A viewer that goes full screen from its own button, and a lightbox the page opens from a thumbnail of its own. *@
+<div style="width: 400px; margin-top: 16px;">
+    <BitImageViewer Id="imv-fs" Src="samples/imageviewer-grid.svg" Alt="Full screen" Height="300px" ShowFullScreenButton @bind-FullScreen="_fullScreen" />
+</div>
+<div id="imv-fs-state">@_fullScreen</div>
+
+<button id="imv-thumb" type="button" @onclick="() => _lightbox = true">Open the lightbox</button>
+<BitImageViewer Id="imv-lb" Src="samples/imageviewer-grid.svg" Alt="Lightbox" FullScreenOnly @bind-FullScreen="_lightbox" />
+
+@* A viewer the page has not bound, driven from its methods only: nothing the page renders hands it anything new. *@
+<div style="width: 400px; margin-top: 16px;">
+    <BitImageViewer @ref="_apiViewer" Id="imv-api" Src="samples/imageviewer-grid.svg" Alt="Methods" Height="300px" NoToolbar />
+</div>
+<button id="btn-api-zoom-in" type="button" @onclick="() => _apiViewer.ZoomIn()">ZoomIn</button>
+<button id="btn-api-reset" type="button" @onclick="() => _apiViewer.Reset()">Reset</button>
+<button id="btn-api-full-screen" type="button" @onclick="() => _apiViewer.EnterFullScreen()">EnterFullScreen</button>
+
 <div style="height: 2000px;"></div>
 
 <div style="position: fixed; right: 8px; top: 8px;">
@@ -29,6 +46,9 @@
 
 @code {
     private double _zoom = 1;
+    private bool _fullScreen;
+    private bool _lightbox;
+    private BitImageViewer _apiViewer = default!;
     private string _src = "samples/imageviewer-grid.svg";
 
     private void SwitchSource() => _src = _src.Contains('?') ? "samples/imageviewer-grid.svg" : "samples/imageviewer-grid.svg?v=2";

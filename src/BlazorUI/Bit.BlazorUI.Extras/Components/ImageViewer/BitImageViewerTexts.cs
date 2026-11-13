@@ -35,4 +35,14 @@ public class BitImageViewerTexts
     /// The name of the button that fits the image in the viewer again. Default: "Fit to view".
     /// </summary>
     public string Reset { get; set; } = "Fit to view";
+
+    /// <summary>
+    /// The name of the button that shows the viewer full screen. Default: "Full screen".
+    /// </summary>
+    public string EnterFullScreen { get; set; } = "Full screen";
+
+    /// <summary>
+    /// The name of the buttons that show a full screen viewer back in the page. Default: "Exit full screen".
+    /// </summary>
+    public string ExitFullScreen { get; set; } = "Exit full screen";
 }

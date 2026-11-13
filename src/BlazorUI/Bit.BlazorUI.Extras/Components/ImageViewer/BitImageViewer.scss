@@ -8,6 +8,8 @@
 //   --bit-ImageViewer-button-size         width and height of a toolbar button             (default: spacing(4))
 //   --bit-ImageViewer-button-hover-background fill of a toolbar button under the pointer   (default: $clr-bg-sec-hover)
 //   --bit-ImageViewer-focus-color         focus ring of the frame and the buttons           (default: $clr-pri-focus)
+//   --bit-ImageViewer-fullscreen-background surface a full screen viewer covers the page with (default: $clr-bg-pri)
+//   --bit-ImageViewer-fullscreen-padding  room around the frame of a full screen viewer      (default: spacing(2))
 
 .bit-imv {
     display: flex;
@@ -126,4 +128,41 @@
     font-size: $tg-fs-sm;
     min-width: spacing(6);
     font-variant-numeric: tabular-nums;
+}
+
+// Full screen, the viewer covers the page: its frame takes the room the toolbar leaves it, whatever height it was given
+// in the page, and the close button sits on the frame's top corner at the end of the line.
+.bit-imv-fsc {
+    inset: 0;
+    position: fixed;
+    box-sizing: border-box;
+    z-index: $zindex-modal;
+    padding: var(--bit-ImageViewer-fullscreen-padding, #{spacing(2)});
+    background: var(--bit-ImageViewer-fullscreen-background, #{$clr-bg-pri});
+
+    > .bit-imv-vpt {
+        min-height: 0;
+        height: auto;
+        flex: 1 1 auto;
+    }
+}
+
+// The close button is drawn over the image, so it carries a surface of its own to stay readable on any picture.
+.bit-imv-cls {
+    z-index: 1;
+    position: absolute;
+    border-radius: 50%;
+    box-shadow: $box-shadow-popup;
+    --bit-imv-btn-sbg: #{$clr-bg-pri};
+    inset-block-start: calc(var(--bit-ImageViewer-fullscreen-padding, #{spacing(2)}) + #{spacing(1)});
+    inset-inline-end: calc(var(--bit-ImageViewer-fullscreen-padding, #{spacing(2)}) + #{spacing(1)});
+
+    &:hover:not(:disabled) {
+        --bit-imv-btn-sbg: var(--bit-ImageViewer-button-hover-background, #{$clr-bg-pri-hover});
+    }
+}
+
+// A lightbox the page opens from a thumbnail of its own takes no room in the page until then.
+.bit-imv-fso:not(.bit-imv-fsc) {
+    display: none;
 }

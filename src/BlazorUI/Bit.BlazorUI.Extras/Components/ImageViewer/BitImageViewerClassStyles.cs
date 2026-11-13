@@ -31,4 +31,14 @@ public class BitImageViewerClassStyles
     /// Custom CSS classes/styles for the zoom level shown in the toolbar of the BitImageViewer.
     /// </summary>
     public string? ZoomText { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the root element of the BitImageViewer while it is full screen.
+    /// </summary>
+    public string? FullScreen { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the close button of a full screen BitImageViewer.
+    /// </summary>
+    public string? CloseButton { get; set; }
 }

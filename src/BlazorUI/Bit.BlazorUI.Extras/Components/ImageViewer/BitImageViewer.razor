@@ -2,12 +2,33 @@
 @inherits BitComponentBase
 
 @* The root holds the viewport and the toolbar under it. A disabled viewer zooms and pans no more, and drops the handlers
-   of activation the page splatted on its root. *@
+   of activation the page splatted on its root.
+   Full screen, the root covers the page as a modal dialog, named like the viewport: the focus is kept inside it, the
+   page behind it holds still, and a plain Escape leaves it - claimed through data-bit-esc (see Utils.claimEscape) only
+   while the press does leave it, so a surface around the viewer closes on any other. *@
 <div @ref="RootElement" @attributes="DisabledAwareHtmlAttributes"
      id="@_Id"
+     role="@(FullScreen ? "dialog" : null)"
+     aria-modal="@(FullScreen ? "true" : null)"
+     aria-label="@(FullScreen ? AriaLabel ?? Alt : null)"
+     data-bit-esc="@EscapeClaim"
+     @onkeydown="HandleOnRootKeyDown"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
+
+    @if (FullScreen)
+    {
+        @* Always there while full screen, toolbar or not: a viewer covering the page has to show the way back. *@
+        <button type="button"
+                title="@ActiveTexts.ExitFullScreen"
+                aria-label="@ActiveTexts.ExitFullScreen"
+                style="@Styles?.CloseButton"
+                class="bit-imv-btn bit-imv-cls @Classes?.CloseButton"
+                @onclick="ExitFullScreen">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+        </button>
+    }
 
     @* The frame the image is zoomed and panned in, and a tab stop of its own, which is where the keyboard does both
        (see BitImageViewer.ts). It is a named region rather than an image: the picture inside it is the image, with its
@@ -72,6 +93,30 @@
                     @onclick="Reset">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" /></svg>
             </button>
+            @if (ShowFullScreenButton)
+            {
+                @* The same element both ways, so the focus handed back to it on the way out finds it still in the page. *@
+                var fullScreenText = FullScreen ? ActiveTexts.ExitFullScreen : ActiveTexts.EnterFullScreen;
+                <button @ref="_fullScreenButtonRef"
+                        type="button"
+                        title="@fullScreenText"
+                        aria-label="@fullScreenText"
+                        aria-haspopup="@(FullScreen ? null : "dialog")"
+                        disabled="@CannotToggleFullScreen"
+                        aria-disabled="@(CannotToggleFullScreen ? "true" : null)"
+                        style="@Styles?.Button"
+                        class="bit-imv-btn bit-imv-fsb @Classes?.Button"
+                        @onclick="ToggleFullScreen">
+                    @if (FullScreen)
+                    {
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 4l-6 6M14 4v6h6M4 20l6-6M10 20v-6H4" /></svg>
+                    }
+                    else
+                    {
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4h6v6M10 20H4v-6M20 4l-6 6M4 20l6-6" /></svg>
+                    }
+                </button>
+            }
         </div>
     }
 </div>
