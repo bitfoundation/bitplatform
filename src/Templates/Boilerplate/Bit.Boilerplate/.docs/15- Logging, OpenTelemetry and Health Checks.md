@@ -470,7 +470,7 @@ missing, reporting Degraded the same way.
 `cloudflare`,
 <!--#endif-->
 the sign-in checks, `reCaptcha` and the AI checks are registered with
-`AddCachedCheck`, which reuses a healthy result for 5 minutes (1 minute for `azureSignalR` and `websites`, 30 minutes for
+`AddCachedCheck`, which reuses a healthy result for 5 minutes (1 minute for `azureSignalR`, 30 seconds for `websites`, 30 minutes for
 `emailDelivery`, whose DNS lookups also keep each answer for its TTL). Probes that arrive together share one run. A
 failing result is never reused, so each probe checks again and a recovery shows up right away. This keeps load balancer
 probes from turning into paid calls or repeated sign-ins. `/healthz` reports a reused result with its own run's

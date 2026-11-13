@@ -1023,8 +1023,10 @@ public static partial class Program
 #pragma warning restore EXTEXP0001
 
             // The check bounds itself; the registration's timeout only backs that up, as the report would lose which sites failed.
+            // A healthy result is kept for half of a one-minute monitoring interval, so a monitor reading once a minute always gets
+            // a run of its own and learns a site is down on its next read, while probes in the same half minute share one request.
             healthChecksBuilder.AddCachedCheck("websites", HealthCheckCategories.Websites, sp => ActivatorUtilities.CreateInstance<WebsitesHealthCheck>(sp, (object)websites),
-                cacheDuration: TimeSpan.FromMinutes(1), timeout: WebsitesHealthCheck.CheckTimeout + TimeSpan.FromSeconds(2));
+                cacheDuration: TimeSpan.FromSeconds(30), timeout: WebsitesHealthCheck.CheckTimeout + TimeSpan.FromSeconds(2));
         }
 
         // Outside development, a missing configuration is most likely a deployment mistake, so it reports Degraded.
