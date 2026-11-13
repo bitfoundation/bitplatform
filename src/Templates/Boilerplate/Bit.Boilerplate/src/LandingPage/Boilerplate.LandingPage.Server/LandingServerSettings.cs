@@ -133,7 +133,10 @@ public partial class AIOptions
 public partial class OpenAIOptions
 {
     [Required]
-    public string ChatModel { get; set; } = "gpt-5.6-luna";
+    public string ChatModel { get; set; } = "gpt-6-luna";
+
+    // See AI:OpenAI:ChatUseResponsesApi comment in LandingPage.Server's appsettings.json
+    public bool ChatUseResponsesApi { get; set; } = true;
 
     public string? ChatApiKey { get; set; }
 

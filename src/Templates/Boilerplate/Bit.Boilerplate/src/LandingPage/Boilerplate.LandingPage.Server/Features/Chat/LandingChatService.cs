@@ -206,15 +206,37 @@ public static partial class LandingChatEndpoints
         {
             services.AddHttpClient("AI");
 
-            services.AddChatClient(sp => new OpenAI.Chat.ChatClient(model: settings.AI.OpenAI.ChatModel, credential: new(settings.AI.OpenAI.ChatApiKey), options: new()
+#pragma warning disable OPENAI001 // The Responses api's client is still marked experimental.
+            var chatClient = services.AddChatClient(sp =>
             {
-                Endpoint = settings.AI.OpenAI.ChatEndpoint,
-                Transport = new HttpClientPipelineTransport(sp.GetRequiredService<IHttpClientFactory>().CreateClient("AI"))
-            }).AsIChatClient())
+                var transport = new HttpClientPipelineTransport(sp.GetRequiredService<IHttpClientFactory>().CreateClient("AI"));
+
+                // See AI:OpenAI:ChatUseResponsesApi comment in LandingPage.Server's appsettings.json
+                return settings.AI.OpenAI.ChatUseResponsesApi
+                    ? new OpenAI.Responses.ResponsesClient(credential: new(settings.AI.OpenAI.ChatApiKey), options: new()
+                    {
+                        Endpoint = settings.AI.OpenAI.ChatEndpoint,
+                        Transport = transport
+                    }).AsIChatClient(settings.AI.OpenAI.ChatModel)
+                    : new OpenAI.Chat.ChatClient(model: settings.AI.OpenAI.ChatModel, credential: new(settings.AI.OpenAI.ChatApiKey), options: new()
+                    {
+                        Endpoint = settings.AI.OpenAI.ChatEndpoint,
+                        Transport = transport
+                    }).AsIChatClient();
+            });
+
+            if (settings.AI.OpenAI.ChatUseResponsesApi)
+            {
+                // Nothing is kept on the provider's side, as with /v1/chat/completions: the visitor's browser keeps the
+                // conversation and sends it with every question
+                chatClient.ConfigureOptions(options => options.RawRepresentationFactory ??= _ => new OpenAI.Responses.CreateResponseOptions { StoredOutputEnabled = false });
+            }
+#pragma warning restore OPENAI001
+
             // Runs the gallery chat's ShowSamples (See LandingChatService); a sample's chat has no tools
-            .UseFunctionInvocation()
-            .UseLogging()
-            .UseOpenTelemetry();
+            chatClient.UseFunctionInvocation()
+                .UseLogging()
+                .UseOpenTelemetry();
         }
 
         return services;

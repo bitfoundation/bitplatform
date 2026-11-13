@@ -41,9 +41,10 @@ public class ChatModelTests
 
         Assert.AreEqual("It costs nothing.", answer);
         Assert.IsNotNull(model.Options);
-        Assert.IsNull(model.Options.Temperature, "gpt-5.6-luna, the default model, refuses any temperature but its own.");
+        Assert.IsNull(model.Options.Temperature, "Left to the model, which a reasoning model requires.");
         Assert.IsNotNull(model.Options.Reasoning);
         Assert.AreEqual(ReasoningEffort.None, model.Options.Reasoning.Effort);
+        Assert.AreEqual(ReasoningOutput.None, model.Options.Reasoning.Output);
         Assert.AreEqual(600, model.Options.MaxOutputTokens);
     }
 

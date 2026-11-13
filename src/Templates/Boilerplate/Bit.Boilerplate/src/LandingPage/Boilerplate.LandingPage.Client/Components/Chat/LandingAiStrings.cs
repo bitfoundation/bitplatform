@@ -40,6 +40,23 @@ internal sealed class LandingAiStrings(IStringLocalizer<LandingStrings> localize
 
     public override string Thinking => localizer[nameof(LandingStrings.ChatThinking)];
 
+    public override string Reasoning => localizer[nameof(LandingStrings.ChatReasoning)];
+
+    public override string ReasonedFor(TimeSpan duration) => localizer[nameof(LandingStrings.ChatReasonedFor), FormatDuration(duration)];
+
+    // The library's own says it in English. Abbreviated units, so no language needs a plural of its own.
+    public override string FormatDuration(TimeSpan duration)
+    {
+        var seconds = (int)Math.Ceiling(Math.Max(0, duration.TotalSeconds));
+        var (minutes, rest) = (seconds / 60, seconds % 60);
+
+        if (minutes is 0) return localizer[nameof(LandingStrings.ChatDurationSeconds), rest];
+
+        if (rest is 0) return localizer[nameof(LandingStrings.ChatDurationMinutes), minutes];
+
+        return $"{localizer[nameof(LandingStrings.ChatDurationMinutes), minutes]} {localizer[nameof(LandingStrings.ChatDurationSeconds), rest]}";
+    }
+
     public override string SomethingWentWrong => localizer[nameof(LandingStrings.ChatFailed)];
 
     public override string GenerationStopped => localizer[nameof(LandingStrings.ChatStopped)];

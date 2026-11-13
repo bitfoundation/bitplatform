@@ -96,7 +96,18 @@ public partial class AppAiChat
             new BitAiVoiceInputParams { MaxRecordingSize = MaxRecordingSize },
             new BitAiToolApprovalParams { DetailTemplate = ApprovalDetails },
             // A step's title already says what it called, in the user's language; the tags would repeat it by the tool's name
-            new BitAiAgentRunViewParams { Classes = new() { Step = new() { ToolCalls = "step-tool-calls" } } }
+            new BitAiAgentRunViewParams { Classes = new() { Step = new() { ToolCalls = "step-tool-calls" } } },
+            // A line the size of a tool call's rather than a box: an answer that reasons between its calls shows several
+            new BitAiReasoningPartViewParams
+            {
+                Classes = new()
+                {
+                    Root = "reasoning",
+                    Icon = "reasoning-icon",
+                    Body = "reasoning-body",
+                    Collapsible = new() { Accordion = new() { Header = "reasoning-toggle" } }
+                }
+            }
         ];
 
         commands =

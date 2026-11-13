@@ -471,6 +471,18 @@
     <data name="ChatThinking" xml:space="preserve">
         <value>Thinking…</value>
     </data>
+    <data name="ChatReasoning" xml:space="preserve">
+        <value>Reasoning</value>
+    </data>
+    <data name="ChatReasonedFor" xml:space="preserve">
+        <value>Thought for {0}</value>
+    </data>
+    <data name="ChatDurationSeconds" xml:space="preserve">
+        <value>{0} sec</value>
+    </data>
+    <data name="ChatDurationMinutes" xml:space="preserve">
+        <value>{0} min</value>
+    </data>
     <data name="ChatStopped" xml:space="preserve">
         <value>Stopped</value>
     </data>

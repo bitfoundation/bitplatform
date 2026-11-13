@@ -53,7 +53,18 @@ public partial class LandingChatSurface : IAsyncDisposable
                 // dictates with, shows nothing else for it (See specs/workarounds.md)
                 Classes = new() { VoiceInput = new() { Button = new() { Checked = "lp-chat-dictating" } } }
             },
-            new BitAiMessageActionsParams { ShowFeedback = false }
+            new BitAiMessageActionsParams { ShowFeedback = false },
+            // What the model reasoned, as a line rather than a box: an answer that reasons between its calls shows several
+            new BitAiReasoningPartViewParams
+            {
+                Classes = new()
+                {
+                    Root = "lp-chat-reasoning",
+                    Icon = "lp-chat-reasoning-icon",
+                    Body = "lp-chat-reasoning-body",
+                    Collapsible = new() { Accordion = new() { Header = "lp-chat-reasoning-toggle" } }
+                }
+            }
         ];
 
         renderers.RegisterTool(LandingChatContext.ShowSamplesTool, context => builder =>

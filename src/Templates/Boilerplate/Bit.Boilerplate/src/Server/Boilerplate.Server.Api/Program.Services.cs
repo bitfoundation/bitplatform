@@ -622,7 +622,7 @@ public static partial class Program
             {
                 var transport = new HttpClientPipelineTransport(sp.GetRequiredService<IHttpClientFactory>().CreateClient("AI"));
 
-                // See AI:OpenAI:ChatUseResponsesApi
+                // See AI:OpenAI:ChatUseResponsesApi comment in Server.Api's appsettings.json
                 return appSettings.AI.OpenAI.ChatUseResponsesApi
                     ? new OpenAI.Responses.ResponsesClient(credential: new(appSettings.AI.OpenAI.ChatApiKey), options: new()
                     {

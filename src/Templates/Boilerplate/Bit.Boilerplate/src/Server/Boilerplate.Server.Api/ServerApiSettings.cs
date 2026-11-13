@@ -216,11 +216,7 @@ public class OpenAIOptions
     public Uri? ChatEndpoint { get; set; }
     public string? ChatApiKey { get; set; }
 
-    /// <summary>
-    /// The chat talks to the model over /v1/responses, where it can call tools while it reasons and shows a summary of its
-    /// reasoning (See AI:ChatOptions:Reasoning). False for a provider with nothing but /v1/chat/completions, which also takes
-    /// AI:ChatOptions:Reasoning:Effort set to None.
-    /// </summary>
+    // See AI:OpenAI:ChatUseResponsesApi comment in Server.Api's appsettings.json
     public bool ChatUseResponsesApi { get; set; } = true;
 
     public string? EmbeddingModel { get; set; }

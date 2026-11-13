@@ -471,6 +471,18 @@
     <data name="ChatThinking" xml:space="preserve">
         <value>در حال فکر کردن…</value>
     </data>
+    <data name="ChatReasoning" xml:space="preserve">
+        <value>استدلال</value>
+    </data>
+    <data name="ChatReasonedFor" xml:space="preserve">
+        <value>{0} فکر کرد</value>
+    </data>
+    <data name="ChatDurationSeconds" xml:space="preserve">
+        <value>{0} ثانیه</value>
+    </data>
+    <data name="ChatDurationMinutes" xml:space="preserve">
+        <value>{0} دقیقه</value>
+    </data>
     <data name="ChatStopped" xml:space="preserve">
         <value>متوقف شد</value>
     </data>
