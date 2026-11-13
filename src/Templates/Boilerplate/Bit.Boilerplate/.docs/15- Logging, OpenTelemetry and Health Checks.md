@@ -169,6 +169,7 @@ The logging configuration is centralized in [`src/Shared/appsettings.json`](/src
 - **EF Core Commands**: `Information` - Shows SQL queries in logs (useful for debugging)
 - **Sentry**: Production error tracking with `Warning` level
 - **DiagnosticLogger**: `Information` level for in-app diagnostics
+- **BevTools**: `Information` level for the Logs panel of the in-app dev tools
 - **Console**: Logs to device log/logcat on mobile platforms
 
 ---
