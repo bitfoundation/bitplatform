@@ -98,13 +98,13 @@
 
         <DemoExample Title="Empty state" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
             <div>
-                An empty conversation shows <b>EmptyTitle</b>, <b>EmptyBody</b> and the <b>Suggestions</b> - starter prompts a
+                An empty conversation shows <b>EmptyTitle</b>, <b>EmptyDescription</b> and the <b>Suggestions</b> - starter prompts a
                 tap sends to the session. Three concrete examples do more for an empty box than any heading.
             </div>
             <br />
             <div style="height:400px">
                 <BitAiChat EmptyTitle="Hi, I am the docs assistant"
-                           EmptyBody="Ask about any component, or start from one of these."
+                           EmptyDescription="Ask about any component, or start from one of these."
                            Suggestions="suggestions" />
             </div>
         </DemoExample>
@@ -383,7 +383,7 @@
             <div style="height:400px">
                 <BitAiChat Dir="BitDir.Rtl"
                            EmptyTitle="چطور می‌توانم کمک کنم؟"
-                           EmptyBody="پیامی بنویسید یا یکی از پیشنهادها را انتخاب کنید."
+                           EmptyDescription="پیامی بنویسید یا یکی از پیشنهادها را انتخاب کنید."
                            Placeholder="پیام خود را بنویسید..."
                            Suggestions="rtlSuggestions" />
             </div>

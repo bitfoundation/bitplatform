@@ -25,8 +25,14 @@
         </BitText>
         <br />
         <BitText>
+            It is a <BitLink Href="/components/emptystate">BitEmptyState</BitLink> with the words of a conversation, a sparkle for
+            its icon and the suggestions for its actions, so it has the same parts and names: Title, Description, their templates,
+            the icon and HeadingLevel.
+        </BitText>
+        <br />
+        <BitText>
             It needs no session: <b>OnSuggestion</b> hands the chosen prompt to the page, which submits it (a BitAiChat submits
-            its own suggestions to its session). The heading and the line default to the EmptyTitle and EmptyBody strings of the
+            its own suggestions to its session). The heading and the line default to the EmptyTitle and EmptyDescription strings of the
             <BitLink Href="/components/ai/optionsprovider">BitAiUiOptions</BitLink> in force, so a localized string table
             changes them everywhere. The glyph is decorative and hidden from assistive technologies; the suggestions are
             buttons, reachable with the keyboard. See the <BitLink Href="/ai/scenarios/basic">basic chat</BitLink> scenario.
@@ -41,16 +47,18 @@
             <BitAiEmptyState />
         </DemoExample>
 
-        <DemoExample Title="Title & body" RazorCode="@example2RazorCode" Id="example2">
+        <DemoExample Title="Title & description" RazorCode="@example2RazorCode" Id="example2">
             <div>
-                <b>Title</b> and <b>Body</b> replace the words of the string table; <b>ChildContent</b> takes the place of the
+                <b>Title</b> and <b>Description</b> replace the words of the string table; <b>DescriptionTemplate</b> takes the place of the
                 line with markup of your own.
             </div>
             <br />
-            <BitAiEmptyState Title="Ask the docs assistant" Body="It knows every component of bit BlazorUI." />
+            <BitAiEmptyState Title="Ask the docs assistant" Description="It knows every component of bit BlazorUI." />
             <br />
             <BitAiEmptyState Title="Start a new thread">
-                Questions are answered from the <BitLink Href="/components">component gallery</BitLink> and nothing else.
+                <DescriptionTemplate>
+                    Questions are answered from the <BitLink Href="/components">component gallery</BitLink> and nothing else.
+                </DescriptionTemplate>
             </BitAiEmptyState>
         </DemoExample>
 
@@ -99,7 +107,7 @@
                 <b>BitParams</b> with a <b>BitAiEmptyStateParams</b> sets the words, the glyph, the classes and the styles every
                 empty state inside it greets with; an empty state's own value wins (the second keeps its own title). The
                 suggestions, the templates and the callback are not cascaded. The glyph reaches the empty state of each
-                BitAiChat in it too, while its words come from the chat's <b>EmptyTitle</b> and <b>EmptyBody</b> and its look
+                BitAiChat in it too, while its words come from the chat's <b>EmptyTitle</b> and <b>EmptyDescription</b> and its look
                 from the chat's <b>Styles</b> / <b>Classes</b> - cascade those through a
                 <BitLink Href="/components/ai/chat">BitAiChatParams</BitLink>.
             </div>
@@ -148,7 +156,7 @@
                 <div class="example-surface">
                     <BitAiEmptyState Title="CSS variables"
                                      Suggestions="suggestions"
-                                     Style="--bit-AiEmptyState-gap:0.5rem;--bit-AiEmptyState-padding:1.5rem;--bit-AiEmptyState-color:var(--bit-clr-fg-pri);--bit-AiEmptyState-icon-color:var(--bit-clr-suc);--bit-AiEmptyState-icon-size:4rem;--bit-AiEmptyState-title-color:var(--bit-clr-suc);--bit-AiEmptyState-title-font-size:2rem;--bit-AiEmptyState-title-font-weight:300;--bit-AiEmptyState-suggestions-gap:1rem" />
+                                     Style="--bit-AiEmptyState-gap:0.5rem;--bit-AiEmptyState-padding:1.5rem;--bit-AiEmptyState-description-color:var(--bit-clr-fg-pri);--bit-AiEmptyState-icon-color:var(--bit-clr-suc);--bit-AiEmptyState-icon-size:4rem;--bit-AiEmptyState-title-color:var(--bit-clr-suc);--bit-AiEmptyState-title-font-size:2rem;--bit-AiEmptyState-title-font-weight:300;--bit-AiEmptyState-suggestions-gap:1rem" />
                 </div>
             </div>
         </DemoExample>
@@ -159,7 +167,7 @@
             <div class="example-surface">
                 <BitAiEmptyState Dir="BitDir.Rtl"
                                  Title="چطور می‌توانم کمک کنم؟"
-                                 Body="پیامی بنویسید یا یکی از پیشنهادها را انتخاب کنید."
+                                 Description="پیامی بنویسید یا یکی از پیشنهادها را انتخاب کنید."
                                  Suggestions="rtlSuggestions" />
             </div>
         </DemoExample>

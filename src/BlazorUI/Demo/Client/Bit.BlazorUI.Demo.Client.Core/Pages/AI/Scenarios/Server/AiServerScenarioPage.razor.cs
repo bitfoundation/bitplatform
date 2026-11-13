@@ -17,7 +17,7 @@ public partial class AiServerScenarioPage
 
     private BitAiChatSession? Session => _transport == WebSocket ? _webSocketSession : _sseSession;
 
-    private string EmptyBody => _transport == WebSocket
+    private string EmptyDescription => _transport == WebSocket
         ? "The reply is generated on the server and streamed here over a WebSocket."
         : "The reply is generated on the server and streamed here as server-sent events.";
 

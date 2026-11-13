@@ -8,7 +8,7 @@ public partial class AiStreamingScenarioPage
 <div style="height: 560px">
     <BitAiChat Session="session"
                EmptyTitle="Watch it arrive"
-               EmptyBody="Send anything. The reply is a full Markdown document written progressively."
+               EmptyDescription="Send anything. The reply is a full Markdown document written progressively."
                Suggestions="suggestions" />
 </div>
 

@@ -8,7 +8,7 @@ public partial class AiArtifactsScenarioPage
 <div style="height: 560px">
     <BitAiChat Session="session"
                EmptyTitle="Ask for a document"
-               EmptyBody="Send once for a draft, then again to see it revised into version two."
+               EmptyDescription="Send once for a draft, then again to see it revised into version two."
                Suggestions="suggestions" />
 </div>
 """;
