@@ -42,6 +42,7 @@ public class BitDisabledActivationContractTests : BunitTestContext
         [typeof(BitDropdown<BitDropdownItem<string>, string>)],
         [typeof(BitFileInput)],
         [typeof(BitFileUpload)],
+        [typeof(BitListBox<BitListBoxItem<string>, string>)],
         [typeof(BitNumberField<int>)],
         [typeof(BitOtpInput)],
         [typeof(BitRating)],

@@ -41,6 +41,7 @@ public partial class MainLayout
                 new() { Text = "Dropdown", Url = "/components/dropdown", Description = "Select, ComboBox, MultiSelect", Data = "Chips" },
                 new() { Text = "FileInput", Url = "/components/fileinput", AdditionalUrls = ["/components/file-input"] },
                 new() { Text = "FileUpload", Url = "/components/fileupload", AdditionalUrls = ["/components/file-upload"] },
+                new() { Text = "ListBox", Url = "/components/listbox", AdditionalUrls = ["/components/list-box"], Description = "SelectList, Listbox, MultiSelectList", Data = "List box, Select list, Multi select, Single select, Pick list, Selectable list, Option list, Inline select" },
                 new() { Text = "NumberField", Url = "/components/numberfield", AdditionalUrls = ["/components/numerictextfield", "/components/numeric-text-field", "/components/spinbutton", "/components/spin-button"], Description = "NumberInput" },
                 new() { Text = "OtpInput", Url = "/components/otpinput", AdditionalUrls = ["/components/otp-input"], Description = "PinInput, VerificationCode, OneTimePassword" },
                 new() { Text = "Rating", Url = "/components/rating", Description = "Rate, Stars", Data = "Review, Score, Feedback" },
