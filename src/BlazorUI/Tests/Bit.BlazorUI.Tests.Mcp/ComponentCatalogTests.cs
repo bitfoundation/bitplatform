@@ -433,6 +433,7 @@ public class ComponentCatalogTests : McpTestBase
     [DataRow("BitTimeZonePicker", "BitTimeZonePickerParams")]
     [DataRow("BitNotificationCenter", "BitNotificationCenterParams")]
     [DataRow("BitContextMenu", "BitContextMenuParams")]
+    [DataRow("BitPopConfirm", "BitPopConfirmParams")]
     [DataRow("BitResourceTimeline", "BitResourceTimelineParams")]
     [DataRow("BitToggle", "BitToggleParams")]
     [DataRow("BitSwipeTrap", "BitSwipeTrapParams")]
