@@ -42,7 +42,7 @@ jobs:
           global-json-file: global.json
 
       - name: Prepare this machine with bit setup
-        uses: bitfoundation/bitplatform/.github/actions/bit-bp/bit-setup@v-11.0.0-pre-18
+        uses: bitfoundation/bitplatform/.github/actions/bit-bp/bit-setup@v-11.0.0-pre-19
         with:
           arguments: --no-build
 
@@ -648,7 +648,7 @@ jobs:
           global-json-file: global.json
 
       - name: Prepare this machine with bit setup
-        uses: bitfoundation/bitplatform/.github/actions/bit-bp/bit-setup@v-11.0.0-pre-18
+        uses: bitfoundation/bitplatform/.github/actions/bit-bp/bit-setup@v-11.0.0-pre-19
         with:
           arguments: --platforms windows --no-build
 
@@ -670,7 +670,7 @@ jobs:
       # Logs in to Azure with the job's OIDC token and points vpk at the Artifact Signing account, so vpk pack signs the app.
       - name: Sign the app with Artifact Signing
         if: vars.CODE_SIGNING_ACCOUNT != ''
-        uses: bitfoundation/bitplatform/.github/actions/bit-bp/artifact-signing@v-11.0.0-pre-18
+        uses: bitfoundation/bitplatform/.github/actions/bit-bp/artifact-signing@v-11.0.0-pre-19
         with:
           endpoint: ${{ vars.CODE_SIGNING_ENDPOINT }}
           account: ${{ vars.CODE_SIGNING_ACCOUNT }}
@@ -731,7 +731,7 @@ jobs:
           global-json-file: global.json
 
       - name: Prepare this machine with bit setup
-        uses: bitfoundation/bitplatform/.github/actions/bit-bp/bit-setup@v-11.0.0-pre-18
+        uses: bitfoundation/bitplatform/.github/actions/bit-bp/bit-setup@v-11.0.0-pre-19
         with:
           arguments: --platforms android --no-build
 
@@ -809,7 +809,7 @@ jobs:
           xcode-version: '27.2'
 
       - name: Prepare this machine with bit setup
-        uses: bitfoundation/bitplatform/.github/actions/bit-bp/bit-setup@v-11.0.0-pre-18
+        uses: bitfoundation/bitplatform/.github/actions/bit-bp/bit-setup@v-11.0.0-pre-19
         with:
           arguments: --platforms ios --no-build
 
