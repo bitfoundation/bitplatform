@@ -151,7 +151,7 @@ public partial class BitTimeZonePickerDemo
         },
         new()
         {
-            Name = "NoResultsMessage",
+            Name = "NoResultsText",
             Type = "string?",
             DefaultValue = "null",
             Description = "The message to show, and to announce, when the search result of the time zone list is empty.",

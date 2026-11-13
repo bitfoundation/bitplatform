@@ -243,7 +243,7 @@ public class BitPhoneInputParams : BitInputBaseParams<string?>, IBitComponentPar
     /// <summary>
     /// The message to show, and to announce, when the search result of the country dropdown is empty.
     /// </summary>
-    public string? NoResultsMessage { get; set; }
+    public string? NoResultsText { get; set; }
 
     /// <summary>
     /// The custom template to show when the search result of the country dropdown is empty.
@@ -563,9 +563,9 @@ public class BitPhoneInputParams : BitInputBaseParams<string?>, IBitComponentPar
             bitPhoneInput.TakeFromCascade(nameof(NoFocusOnSelect), NoFocusOnSelect.Value, static p => p.NoFocusOnSelect, static (p, v) => p.NoFocusOnSelect = v);
         }
 
-        if (NoResultsMessage.HasValue())
+        if (NoResultsText.HasValue())
         {
-            bitPhoneInput.TakeFromCascade(nameof(NoResultsMessage), NoResultsMessage, static p => p.NoResultsMessage, static (p, v) => p.NoResultsMessage = v);
+            bitPhoneInput.TakeFromCascade(nameof(NoResultsText), NoResultsText, static p => p.NoResultsText, static (p, v) => p.NoResultsText = v);
         }
 
         if (NoResultsTemplate is not null)

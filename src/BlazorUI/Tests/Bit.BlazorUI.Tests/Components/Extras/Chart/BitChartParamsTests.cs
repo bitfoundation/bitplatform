@@ -133,12 +133,12 @@ public class BitChartParamsTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitChartShouldTakeTheCascadedLoadingAndNoDataTemplates()
+    public void BitChartShouldTakeTheCascadedLoadingAndEmptyTemplates()
     {
         var chartParams = new BitChartParams
         {
             LoadingTemplate = Marker("cascaded-loading"),
-            NoDataTemplate = Marker("cascaded-nodata"),
+            EmptyTemplate = Marker("cascaded-nodata"),
         };
 
         var loading = RenderWithParams(chartParams, builder => builder.AddAttribute(1, nameof(BitChart.IsLoading), true));
@@ -202,7 +202,7 @@ public class BitChartParamsTests : BunitTestContext
         {
             MaxTableColumns = 4,
             NavigationHint = "Cascaded navigation hint.",
-            NoDataTemplate = Marker("cascaded-nodata"),
+            EmptyTemplate = Marker("cascaded-nodata"),
         }, builder =>
         {
             builder.AddAttribute(1, nameof(BitChart.Data), LongSeries(20));

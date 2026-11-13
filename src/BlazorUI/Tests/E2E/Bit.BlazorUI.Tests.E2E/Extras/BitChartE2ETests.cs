@@ -727,7 +727,7 @@ public class BitChartE2ETests : E2ETestBase
     }
 
     [TestMethod]
-    public async Task NoData_ShowsTheMessageTextOrTemplate()
+    public async Task Empty_ShowsTheMessageTextOrTemplate()
     {
         await OpenAsync(Route);
 

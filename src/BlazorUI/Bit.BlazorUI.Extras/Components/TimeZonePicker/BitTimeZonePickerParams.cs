@@ -124,7 +124,7 @@ public class BitTimeZonePickerParams : BitComponentBaseParams, IBitComponentPara
     /// <summary>
     /// The message to show, and to announce, when the search result of the time zone list is empty.
     /// </summary>
-    public string? NoResultsMessage { get; set; }
+    public string? NoResultsText { get; set; }
 
     /// <summary>
     /// The custom template to show when the search result of the time zone list is empty.
@@ -331,9 +331,9 @@ public class BitTimeZonePickerParams : BitComponentBaseParams, IBitComponentPara
             bitTimeZonePicker.TakeFromCascade(nameof(NoOffset), NoOffset.Value, static p => p.NoOffset, static (p, v) => p.NoOffset = v);
         }
 
-        if (NoResultsMessage.HasValue())
+        if (NoResultsText.HasValue())
         {
-            bitTimeZonePicker.TakeFromCascade(nameof(NoResultsMessage), NoResultsMessage, static p => p.NoResultsMessage, static (p, v) => p.NoResultsMessage = v);
+            bitTimeZonePicker.TakeFromCascade(nameof(NoResultsText), NoResultsText, static p => p.NoResultsText, static (p, v) => p.NoResultsText = v);
         }
 
         if (NoResultsTemplate is not null)

@@ -222,7 +222,7 @@ public partial class BitTimeZonePicker<TValue> : BitInputBase<TValue>
     /// The message to show when the search result of the time zone list is empty. It is also what a screen reader
     /// announces for an empty result.
     /// </summary>
-    [Parameter] public string? NoResultsMessage { get; set; }
+    [Parameter] public string? NoResultsText { get; set; }
 
     /// <summary>
     /// The custom template to show when the search result of the time zone list is empty.
@@ -322,7 +322,7 @@ public partial class BitTimeZonePicker<TValue> : BitInputBase<TValue>
     /// <summary>
     /// What a screen reader announces for the number of time zones a search term leaves in the list, in place of the
     /// default "1 time zone found" / "{count} time zones found" - the way to translate that announcement. An empty result
-    /// announces <see cref="NoResultsMessage"/> instead, and returning null or an empty string keeps a count from being
+    /// announces <see cref="NoResultsText"/> instead, and returning null or an empty string keeps a count from being
     /// announced at all.
     /// </summary>
     [Parameter] public Func<int, string?>? SearchResultsAnnouncement { get; set; }
@@ -1297,7 +1297,7 @@ public partial class BitTimeZonePicker<TValue> : BitInputBase<TValue>
 
         // The list the term filtered down to is inside a callout, so its length is only ever seen: it is announced here
         // for the users who cannot see it.
-        Announce(BitTimeZoneList.GetSearchAnnouncement(count, NoResultsMessage, SearchResultsAnnouncement));
+        Announce(BitTimeZoneList.GetSearchAnnouncement(count, NoResultsText, SearchResultsAnnouncement));
     }
 
     // Lands the list a key opened where that key says: Home and End on the first and the last time zone, a letter on the

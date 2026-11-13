@@ -614,7 +614,7 @@ public class BitChartTests : BunitTestContext
         var component = RenderComponent<BitChart>(p =>
         {
             p.Add(c => c.Data, new BitChartData());
-            p.Add(c => c.NoDataText, "Nothing here");
+            p.Add(c => c.EmptyText, "Nothing here");
         });
 
         Assert.AreEqual("Nothing here", component.Find(".bit-cht-nodata").TextContent.Trim());
@@ -626,7 +626,7 @@ public class BitChartTests : BunitTestContext
         var component = RenderComponent<BitChart>(p =>
         {
             p.Add(c => c.Data, new BitChartData());
-            p.Add(c => c.NoDataTemplate, (builder) =>
+            p.Add(c => c.EmptyTemplate, (builder) =>
             {
                 builder.OpenElement(0, "b");
                 builder.AddAttribute(1, "class", "empty");
@@ -2027,8 +2027,8 @@ public class BitChartTests : BunitTestContext
     {
         var component = RenderComponent<BitChart>(p =>
         {
-            p.Add(c => c.Classes, new BitChartClassStyles { NoData = "c-empty" });
-            p.Add(c => c.Styles, new BitChartClassStyles { NoData = "margin:8px" });
+            p.Add(c => c.Classes, new BitChartClassStyles { Empty = "c-empty" });
+            p.Add(c => c.Styles, new BitChartClassStyles { Empty = "margin:8px" });
         });
 
         StringAssert.Contains(component.Find(".bit-cht-nodata.c-empty").GetAttribute("style"), "margin:8px");

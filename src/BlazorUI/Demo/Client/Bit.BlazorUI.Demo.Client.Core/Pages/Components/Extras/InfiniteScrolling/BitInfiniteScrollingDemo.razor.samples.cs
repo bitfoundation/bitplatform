@@ -37,7 +37,7 @@ private async ValueTask<IEnumerable<int>> LoadBasicItems(BitInfiniteScrollingIte
 <BitInfiniteScrolling ItemsProvider=""LoadEmptyItems""
                       Class=""basic""
                       Context=""item""
-                      EmptyMessage=""Nothing to show here."">
+                      EmptyText=""Nothing to show here."">
     <div>Item @item</div>
 </BitInfiniteScrolling>";
     private readonly string example2CsharpCode = @"

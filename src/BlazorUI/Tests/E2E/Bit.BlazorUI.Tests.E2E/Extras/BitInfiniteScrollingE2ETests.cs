@@ -126,7 +126,7 @@ public class BitInfiniteScrollingE2ETests : E2ETestBase
     }
 
     [TestMethod]
-    public async Task Empty_AFirstPageWithNoItem_ShowsTheEmptyMessage()
+    public async Task Empty_AFirstPageWithNoItem_ShowsTheEmptyText()
     {
         await OpenAsync(Route);
         await ShowAsync("isc-empty");

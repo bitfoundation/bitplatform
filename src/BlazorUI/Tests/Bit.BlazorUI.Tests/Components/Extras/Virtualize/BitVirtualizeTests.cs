@@ -177,7 +177,7 @@ public class BitVirtualizeTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitVirtualizeShouldBeAGroupWhileItsItemsAreReplacedByTheEmptyContent()
+    public void BitVirtualizeShouldBeAGroupWhileItsItemsAreReplacedByTheEmptyTemplate()
     {
         SetupViewport(300);
 

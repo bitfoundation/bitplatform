@@ -175,14 +175,14 @@
             }
             else if (ShowNoData)
             {
-                <div class="bit-cht-nodata @Classes?.NoData" style="@Styles?.NoData">
-                    @if (NoDataTemplate is not null)
+                <div class="bit-cht-nodata @Classes?.Empty" style="@Styles?.Empty">
+                    @if (EmptyTemplate is not null)
                     {
-                        @NoDataTemplate
+                        @EmptyTemplate
                     }
                     else
                     {
-                        @NoDataText
+                        @EmptyText
                     }
                 </div>
             }

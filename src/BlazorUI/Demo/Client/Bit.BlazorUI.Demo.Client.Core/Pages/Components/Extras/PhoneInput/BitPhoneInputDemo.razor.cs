@@ -345,7 +345,7 @@ public partial class BitPhoneInputDemo
         },
         new()
         {
-            Name = "NoResultsMessage",
+            Name = "NoResultsText",
             Type = "string?",
             DefaultValue = "null",
             Description = "The message to show, and to announce to a screen reader, when the search result of the country dropdown is empty.",
@@ -532,7 +532,7 @@ public partial class BitPhoneInputDemo
             Name = "SearchResultsAnnouncement",
             Type = "Func<int, string?>?",
             DefaultValue = "null",
-            Description = "What a screen reader announces for the number of countries a search term leaves in the list, in place of the default \"1 country found\" / \"{count} countries found\". An empty result announces NoResultsMessage instead, and returning null keeps a count from being announced.",
+            Description = "What a screen reader announces for the number of countries a search term leaves in the list, in place of the default \"1 country found\" / \"{count} countries found\". An empty result announces NoResultsText instead, and returning null keeps a count from being announced.",
         },
         new()
         {
@@ -898,7 +898,7 @@ private readonly List<BitCountry> preferredCountries =
 <BitPhoneInput DefaultCountry=""BitCountries.France""
                Placeholder=""Enter your number""
                SearchBoxPlaceholder=""Country or code""
-               NoResultsMessage=""No matching country"" />
+               NoResultsText=""No matching country"" />
 
 <BitPhoneInput NoSearchBox DefaultCountry=""BitCountries.France"" Placeholder=""Enter your number"" />";
 
@@ -1171,7 +1171,7 @@ private BitCountry? submissionCountry = BitCountries.Canada;";
                DropdownAriaLabel=""Land""
                SearchBoxPlaceholder=""Suchen""
                SearchBoxAriaLabel=""Land suchen""
-               NoResultsMessage=""Kein Land gefunden""
+               NoResultsText=""Kein Land gefunden""
                SearchResultsAnnouncement=""@(count => count == 1 ? ""1 Land gefunden"" : $""{count} Länder gefunden"")""
                ShowClearButton
                ClearButtonAriaLabel=""Nummer löschen"" />";

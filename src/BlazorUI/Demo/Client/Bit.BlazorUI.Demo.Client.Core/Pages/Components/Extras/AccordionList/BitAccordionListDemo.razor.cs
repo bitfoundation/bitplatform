@@ -142,7 +142,7 @@ public partial class BitAccordionListDemo
         },
         new()
         {
-            Name = "EmptyContent",
+            Name = "EmptyTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "The custom content to render in place of the items when the list has none. A list built from Options or ChildContent only knows it is empty once its options have had their turn to register, so its empty content takes the render after the first; a list built from Items shows it right away.",

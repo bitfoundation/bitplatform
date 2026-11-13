@@ -285,37 +285,37 @@ public class BitBasicListTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitBasicListShouldRenderEmptyContentWhenThereIsNoItem()
+    public void BitBasicListShouldRenderEmptyTemplateWhenThereIsNoItem()
     {
         var component = RenderComponent<BitBasicList<string>>(p =>
         {
             p.Add(x => x.Items, new List<string>());
             p.Add(x => x.RowTemplate, (RenderFragment<string>)(item => b => b.AddContent(0, item)));
-            p.Add(x => x.EmptyContent, (RenderFragment)(b => b.AddMarkupContent(0, "<div class='empty'>nothing</div>")));
+            p.Add(x => x.EmptyTemplate, (RenderFragment)(b => b.AddMarkupContent(0, "<div class='empty'>nothing</div>")));
         });
 
         Assert.IsNotNull(component.Find(".empty"));
     }
 
     [TestMethod]
-    public void BitBasicListShouldRenderEmptyContentWithoutRowTemplate()
+    public void BitBasicListShouldRenderEmptyTemplateWithoutRowTemplate()
     {
         var component = RenderComponent<BitBasicList<string>>(p =>
         {
             p.Add(x => x.Items, new List<string>());
-            p.Add(x => x.EmptyContent, (RenderFragment)(b => b.AddMarkupContent(0, "<div class='empty'>nothing</div>")));
+            p.Add(x => x.EmptyTemplate, (RenderFragment)(b => b.AddMarkupContent(0, "<div class='empty'>nothing</div>")));
         });
 
         Assert.IsNotNull(component.Find(".empty"));
     }
 
     [TestMethod]
-    public void BitBasicListShouldNotRenderEmptyContentWhenThereAreItems()
+    public void BitBasicListShouldNotRenderEmptyTemplateWhenThereAreItems()
     {
         var component = RenderComponent<BitBasicList<string>>(p =>
         {
             p.Add(x => x.Items, new List<string> { "one" });
-            p.Add(x => x.EmptyContent, (RenderFragment)(b => b.AddMarkupContent(0, "<div class='empty'>nothing</div>")));
+            p.Add(x => x.EmptyTemplate, (RenderFragment)(b => b.AddMarkupContent(0, "<div class='empty'>nothing</div>")));
         });
 
         Assert.AreEqual(0, component.FindAll(".empty").Count);
@@ -1525,7 +1525,7 @@ public class BitBasicListTests : BunitTestContext
         var excluded = new HashSet<string>
         {
             nameof(BitBasicList<Person>.CascadingParameters),
-            nameof(BitBasicList<Person>.EmptyContent),
+            nameof(BitBasicList<Person>.EmptyTemplate),
             nameof(BitBasicList<Person>.FooterTemplate),
             nameof(BitBasicList<Person>.HeaderTemplate),
             nameof(BitBasicList<Person>.Items),

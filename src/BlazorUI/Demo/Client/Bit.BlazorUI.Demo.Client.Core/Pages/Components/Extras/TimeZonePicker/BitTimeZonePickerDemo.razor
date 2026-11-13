@@ -138,7 +138,7 @@
                 (<code>+3:30</code>, <code>utc-5</code>, <code>gmt+0530</code>; <code>+5</code> finds every zone of the
                 hour). The result count is announced to screen readers. Typing on the closed field opens it with the
                 search already started. <b>SearchBoxPlaceholder</b>, <b>SearchBoxAriaLabel</b> and
-                <b>NoResultsMessage</b> set its texts. <b>NoSearchBox</b> removes it; the field then answers to
+                <b>NoResultsText</b> set its texts. <b>NoSearchBox</b> removes it; the field then answers to
                 type-ahead, open or closed.
             </div>
             <br />
@@ -147,7 +147,7 @@
                                    Label="Search box"
                                    Placeholder="Select a time zone"
                                    SearchBoxPlaceholder="City, country or offset"
-                                   NoResultsMessage="No matching time zone" />
+                                   NoResultsText="No matching time zone" />
                 <BitTimeZonePicker TValue="string" Label="NoSearchBox" NoSearchBox Placeholder="Select a time zone" />
             </div>
         </DemoExample>
@@ -358,7 +358,7 @@
                 Every text the picker shows or announces can be translated. The names of the places and the countries
                 come from <b>TimeZones</b> - new <b>BitTimeZone</b> instances carrying the ids of the built-in ones; the
                 search box and the empty result take <b>SearchBoxPlaceholder</b>, <b>SearchBoxAriaLabel</b> and
-                <b>NoResultsMessage</b>; and <b>SearchResultsAnnouncement</b> phrases the result count a screen reader
+                <b>NoResultsText</b>; and <b>SearchResultsAnnouncement</b> phrases the result count a screen reader
                 hears.
             </div>
             <br />
@@ -369,7 +369,7 @@
                                    Placeholder="Zeitzone auswählen"
                                    SearchBoxPlaceholder="Suchen"
                                    SearchBoxAriaLabel="Zeitzone suchen"
-                                   NoResultsMessage="Keine Zeitzone gefunden"
+                                   NoResultsText="Keine Zeitzone gefunden"
                                    SearchResultsAnnouncement="@(count => count == 1 ? "1 Zeitzone gefunden" : $"{count} Zeitzonen gefunden")" />
             </div>
         </DemoExample>
@@ -430,7 +430,7 @@
             <br />
             <div>
                 A polite status region outside the list says what is otherwise only seen: the result count of a search
-                ("12 time zones found", or <b>NoResultsMessage</b> for none, worded by <b>SearchResultsAnnouncement</b>
+                ("12 time zones found", or <b>NoResultsText</b> for none, worded by <b>SearchResultsAnnouncement</b>
                 when it is set), an <b>ErrorMessage</b> as it appears, and with NoSearchBox the time zone just picked.
                 <b>Required</b> writes <code>aria-required</code> and keeps its asterisk from being read out,
                 <b>ReadOnly</b> writes <code>aria-readonly</code>, an invalid value <code>aria-invalid</code>, and

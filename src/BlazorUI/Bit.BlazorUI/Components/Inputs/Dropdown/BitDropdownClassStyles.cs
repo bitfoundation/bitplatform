@@ -242,7 +242,7 @@ public class BitDropdownClassStyles
     /// <summary>
     /// Custom CSS classes/styles for the empty state content of the BitDropdown.
     /// </summary>
-    public string? EmptyContent { get; set; }
+    public string? Empty { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the loading state container of the BitDropdown.

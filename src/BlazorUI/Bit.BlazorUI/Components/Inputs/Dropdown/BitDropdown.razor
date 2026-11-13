@@ -39,7 +39,7 @@
     RenderFragment emptyContent =
         @* The empty state is not an option, so it is marked presentational to keep it out of the
            options of the listbox it is rendered in; its text stays exposed either way. *@
-        @<div role="presentation" style="@Styles?.EmptyContent" class="bit-drp-emp @Classes?.EmptyContent">
+        @<div role="presentation" style="@Styles?.Empty" class="bit-drp-emp @Classes?.Empty">
             @if (HasSearchText && (NoResultsTemplate is not null || NoResultsText.HasValue()))
             {
                 @if (NoResultsTemplate is not null)

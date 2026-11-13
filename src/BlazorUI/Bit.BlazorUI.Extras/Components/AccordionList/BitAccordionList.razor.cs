@@ -212,7 +212,7 @@ public partial class BitAccordionList<[DynamicallyAccessedMembers(DynamicallyAcc
     /// options have had their turn to register, so the empty content of one takes the render after the first
     /// rather than the first itself; a list built from <see cref="Items"/> shows it right away.
     /// </remarks>
-    [Parameter] public RenderFragment? EmptyContent { get; set; }
+    [Parameter] public RenderFragment? EmptyTemplate { get; set; }
 
     /// <summary>
     /// The space (gap) in pixels between the accordion items, overriding the --bit-AccordionList-gap CSS variable.
@@ -1684,7 +1684,7 @@ public partial class BitAccordionList<[DynamicallyAccessedMembers(DynamicallyAcc
     // A list built from options only knows it is empty once its options have had their turn to register, so
     // the empty content of one waits for the marker rendered behind them rather than flashing on the first
     // render, before any of them has registered.
-    private bool _ShowEmptyContent => EmptyContent is not null
+    private bool _ShowEmptyTemplate => EmptyTemplate is not null
                                    && _items.Count == 0
                                    && ((Options ?? ChildContent) is null || _optionsReached);
 
@@ -1698,11 +1698,11 @@ public partial class BitAccordionList<[DynamicallyAccessedMembers(DynamicallyAcc
     {
         if (_optionsReached) return;
 
-        var showEmptyContent = _ShowEmptyContent;
+        var showEmptyTemplate = _ShowEmptyTemplate;
 
         _optionsReached = true;
 
-        if (showEmptyContent is false && _ShowEmptyContent)
+        if (showEmptyTemplate is false && _ShowEmptyTemplate)
         {
             StateHasChanged();
         }

@@ -46,7 +46,7 @@ public class BitNavPanelPrerenderTests
     }
 
     [TestMethod]
-    public async Task BitNavPanelShouldShowTheEmptyListMessageForASearchWithoutMatchesBeforeInteractivity()
+    public async Task BitNavPanelShouldShowTheNoResultsTextForASearchWithoutMatchesBeforeInteractivity()
     {
         var document = await Prerender("nothing-matches-this");
 

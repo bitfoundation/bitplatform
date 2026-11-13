@@ -57,7 +57,7 @@ public class BitChartPrerenderTests
     {
         var empty = await PrerenderAsync(new Dictionary<string, object?>
         {
-            [nameof(BitChart.NoDataText)] = "Nothing yet",
+            [nameof(BitChart.EmptyText)] = "Nothing yet",
         });
 
         StringAssert.Contains(empty.QuerySelector(".bit-cht-nodata")!.TextContent, "Nothing yet");

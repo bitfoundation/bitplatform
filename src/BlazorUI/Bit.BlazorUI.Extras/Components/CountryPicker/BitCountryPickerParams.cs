@@ -131,7 +131,7 @@ public class BitCountryPickerParams : BitInputBaseParams<BitCountry?>, IBitCompo
     /// <summary>
     /// The message to show, and to announce, when the search result of the country list is empty.
     /// </summary>
-    public string? NoResultsMessage { get; set; }
+    public string? NoResultsText { get; set; }
 
     /// <summary>
     /// The custom template to show when the search result of the country list is empty.
@@ -329,9 +329,9 @@ public class BitCountryPickerParams : BitInputBaseParams<BitCountry?>, IBitCompo
             bitCountryPicker.TakeFromCascade(nameof(NoFlags), NoFlags.Value, static p => p.NoFlags, static (p, v) => p.NoFlags = v);
         }
 
-        if (NoResultsMessage.HasValue())
+        if (NoResultsText.HasValue())
         {
-            bitCountryPicker.TakeFromCascade(nameof(NoResultsMessage), NoResultsMessage, static p => p.NoResultsMessage, static (p, v) => p.NoResultsMessage = v);
+            bitCountryPicker.TakeFromCascade(nameof(NoResultsText), NoResultsText, static p => p.NoResultsText, static (p, v) => p.NoResultsText = v);
         }
 
         if (NoResultsTemplate is not null)

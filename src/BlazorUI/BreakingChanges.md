@@ -5,6 +5,33 @@ Breaking changes to the public API of the bit BlazorUI packages (`Bit.BlazorUI`,
 
 ## 11.0.0
 
+### The empty and no-results slots have one name each ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+
+What a component shows when it has nothing to show was spelled five ways. It now has two names, one per meaning:
+`EmptyTemplate` / `EmptyText` (and the `Empty` class-style part) for a component with **no items at all**, and
+`NoResultsTemplate` / `NoResultsText` (and the `NoResults` part) for a search or filter that **matched none** of the
+items it has. The outliers are renamed to them; each row applies to the `[Parameter]` and to its `BitXxxParams`
+counterpart:
+
+| Component | Before | After |
+|---|---|---|
+| `BitBasicList` | `EmptyContent` | `EmptyTemplate` |
+| `BitAccordionList` | `EmptyContent` | `EmptyTemplate` |
+| `BitChart` | `NoDataTemplate`, `NoDataText`, `BitChartClassStyles.NoData` | `EmptyTemplate`, `EmptyText`, `Empty` |
+| `BitInfiniteScrolling` | `EmptyMessage` | `EmptyText` |
+| `BitDropdown` | `BitDropdownClassStyles.EmptyContent` | `Empty` |
+| `BitNavPanel` | `EmptyListTemplate`, `EmptyListMessage`, `BitNavPanelClassStyles.EmptyListMessage` | `NoResultsTemplate`, `NoResultsText`, `NoResults` |
+| `BitCountryPicker`, `BitPhoneInput`, `BitTimeZonePicker` | `NoResultsMessage` | `NoResultsText` |
+
+`BitNavPanel`'s are no-results names, not empty ones: its slot was always the message of a search that matched no item.
+
+**Search the markup for the old names**: an old name written as an attribute (`NoDataText="…"`) still compiles,
+without a warning, and is rendered as an attribute of the root rather than applied, so the component silently falls
+back to its default content. An old template written as a child element fails to compile in a `BitBasicList`
+(`RZ9996`), but in a `BitAccordionList`, which takes child content, it compiles with only a `RZ10012` warning and is
+taken for markup of that content. Leave `EmptyContent` alone on the framework's own `Virtualize`, which is not one of
+these.
+
 ### `BitNavPanel` renders the content of its drawer the first time it opens ([#14866](https://github.com/bitfoundation/bitplatform/issues/14866))
 
 Below its `DrawerBreakpoint` the panel is an off-canvas drawer, and the content of a drawer that has never been opened
