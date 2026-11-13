@@ -24,6 +24,23 @@ public abstract class AiChatPanelTestBase : AppPageTest
         return panel;
     }
 
+    protected async Task WaitUntilKeptOnTheDevice(string text)
+    {
+        await Page.WaitForFunctionAsync("""
+            async text => {
+                if ((await indexedDB.databases()).some(database => database.name === 'ai-chat-conversation') === false) return false;
+                const database = await new Promise((resolve, reject) => { const request = indexedDB.open('ai-chat-conversation'); request.onsuccess = () => resolve(request.result); request.onerror = () => reject(request.error); });
+                try {
+                    if (database.objectStoreNames.contains('conversation') === false) return false;
+                    const values = await new Promise(resolve => { const request = database.transaction('conversation').objectStore('conversation').getAll(); request.onsuccess = () => resolve(request.result); request.onerror = () => resolve([]); });
+                    return values.some(value => (typeof value === 'string' ? value : JSON.stringify(value)).includes(text));
+                } finally {
+                    database.close();
+                }
+            }
+            """, text, new() { PollingInterval = 100 });
+    }
+
     /// <summary>Where the user types: the panel's only multi-line text box.</summary>
     protected static ILocator MessageBox(ILocator panel) => panel.Locator("textarea").First;
 
