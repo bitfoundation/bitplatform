@@ -8,4 +8,7 @@ public partial class PreviewLayout
 {
     // Right-to-left for a right-to-left culture; null leaves the bit components' default.
     private readonly BitDir? currentDir = CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft ? BitDir.Rtl : null;
+
+    /// <summary>The app's own (MainLayout.ModalParameters): its modals carry the class the app's styles give them.</summary>
+    private static readonly BitModalParameters modalParameters = new() { Classes = new() { Root = "modal" } };
 }

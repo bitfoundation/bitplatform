@@ -1,7 +1,7 @@
 using Bit.Bortable;
 using Bit.Belemetry;
 using Microsoft.AspNetCore.Components.Authorization;
-using Boilerplate.Workbench.Infrastructure.Services.StandIns;
+using Boilerplate.Shared.Features.Identity;
 
 namespace Boilerplate.Workbench;
 
@@ -24,8 +24,13 @@ public static partial class Program
             services.AddHttpContextAccessor();
             // Stand-ins for what the app's client projects provide: device features, storage, sign-in state and error handling.
             services.AddScoped<IBitDeviceCoordinator, WorkbenchDeviceCoordinator>();
-            services.AddScoped<IStorageService, WorkbenchStorageService>();
+            services.AddScoped<WorkbenchStorageService>();
+            services.AddScoped<IStorageService, WorkbenchViewStorage>();
             services.AddScoped<AuthenticationStateProvider, WorkbenchAuthenticationStateProvider>();
+            // The access token, whether the session lately confirmed it's the user, and the refresh that confirms it.
+            services.AddScoped<WorkbenchElevation>();
+            services.AddScoped<IAuthTokenProvider, WorkbenchAuthTokenProvider>();
+            services.AddScoped<IIdentityController, WorkbenchIdentityController>();
             services.AddScoped(sp =>
             {
                 // Built as the app builds it, while the sign-in state itself comes from the stand-in provider above.
@@ -38,9 +43,11 @@ public static partial class Program
             services.AddScoped<SharedExceptionHandler>(sp => sp.GetRequiredService<ClientExceptionHandlerBase>());
             services.AddScoped(sp =>
             {
-                // For code that asks for an HttpClient: it points at the Workbench itself, as the Workbench calls no app server.
+                // For code that asks for an HttpClient: it points at the Workbench itself, as the Workbench calls no app server, and
+                // carries the view's access token, as the app's carries the user's, so what the Workbench serves at the app's
+                // addresses knows who asked (See IWorkbenchEndpointRouteBuilderExtensions).
                 var request = sp.GetRequiredService<IHttpContextAccessor>().HttpContext?.Request;
-                return new HttpClient
+                return new HttpClient(new WorkbenchBearerHandler(sp.GetRequiredService<IAuthTokenProvider>()) { InnerHandler = new SocketsHttpHandler() })
                 {
                     BaseAddress = request is null ? new Uri("http://localhost/") : new Uri($"{request.Scheme}://{request.Host}/")
                 };

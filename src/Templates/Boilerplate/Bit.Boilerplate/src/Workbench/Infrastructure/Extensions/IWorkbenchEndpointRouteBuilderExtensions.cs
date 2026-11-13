@@ -2,11 +2,14 @@ using System.Text;
 using System.IO.Compression;
 using Bit.Bcrdt.Server;
 using Microsoft.Extensions.Localization;
+using Boilerplate.Shared.Features.Identity;
+using Boilerplate.Shared.Features.Attachments;
 
 namespace Boilerplate.Workbench.Infrastructure.Extensions;
 
 /// <summary>
-/// Maps the Workbench's HTTP endpoints: screenshots, thumbnails, review sheets, checks and the review API the agent uses.
+/// Maps the Workbench's HTTP endpoints: screenshots, thumbnails, review sheets, checks, the review API the agent uses, and
+/// what the app's own pages fetch from their server by address.
 /// </summary>
 public static class IWorkbenchEndpointRouteBuilderExtensions
 {
@@ -14,8 +17,75 @@ public static class IWorkbenchEndpointRouteBuilderExtensions
 
     extension(IEndpointRouteBuilder endpoints)
     {
+        /// <summary>
+        /// What the app's settings page fetches or sends by address rather than through a controller: the demo users' profile
+        /// pictures, an upload of a new one, and the personal data export. Who asks comes from the view's access token, which
+        /// the app's code sends as it would to its server (See WorkbenchBearerHandler).
+        /// </summary>
+        public void MapSettingsSampleEndpoints()
+        {
+            foreach (var kind in (AttachmentKind[])[AttachmentKind.UserProfileImageSmall, AttachmentKind.UserProfileImageOriginal])
+            {
+                endpoints.MapGet($"api/v1/Attachment/GetAttachment/{{id:guid}}/{kind}", (Guid id, IWebHostEnvironment environment) =>
+                    WorkbenchProfilePictures.Find(id) is { } uploaded ? Results.File(uploaded.Content, uploaded.ContentType)
+                    : WorkbenchProfilePictures.SampleOf(id) is { } photo ? Results.File(environment.WebRootFileProvider.GetFileInfo(photo).CreateReadStream(), "image/svg+xml")
+                    : Results.NotFound());
+            }
+
+            // The page posts the picture itself: the image editor's result as a form, or BitFileUpload's file as the body.
+            endpoints.MapPost("api/v1/Attachment/UploadUserProfilePicture", async (HttpRequest request, CancellationToken cancellationToken) =>
+            {
+                if (UserOf(request) is not { } userId)
+                    return Results.Unauthorized();
+
+                if (request.ContentLength > WorkbenchProfilePictures.MaxBytes)
+                    return Results.StatusCode(StatusCodes.Status413PayloadTooLarge);
+
+                byte[] content;
+                string contentType;
+
+                if (request.HasFormContentType)
+                {
+                    var file = (await request.ReadFormAsync(cancellationToken)).Files.FirstOrDefault();
+                    if (file is null)
+                        return Results.BadRequest();
+
+                    using var stream = new MemoryStream();
+                    await file.CopyToAsync(stream, cancellationToken);
+                    (content, contentType) = (stream.ToArray(), file.ContentType);
+                }
+                else
+                {
+                    using var stream = new MemoryStream();
+                    await request.Body.CopyToAsync(stream, cancellationToken);
+                    (content, contentType) = (stream.ToArray(), request.ContentType ?? "image/jpeg");
+                }
+
+                if (content.Length is 0 || content.Length > WorkbenchProfilePictures.MaxBytes)
+                    return Results.BadRequest();
+
+                WorkbenchProfilePictures.Keep(userId, content, contentType);
+                return Results.Ok();
+            });
+
+            endpoints.MapGet(IUserController.ExportPersonalDataUri, (HttpRequest request, IWebHostEnvironment environment, IStringLocalizer<WorkbenchStrings> localizer) =>
+            {
+                // As the server's, it needs the session to have confirmed it's the user lately (ELEVATED_ACCESS).
+                if (UserOf(request, elevated: true) is not { } userId || WorkbenchClaims.UserOf(userId) is not { } user)
+                    return Results.StatusCode(StatusCodes.Status403Forbidden);
+
+                var index = WorkbenchDemoUsers.All.ToList().IndexOf(user);
+                var photo = WorkbenchPhotos.Find(user.NameKey) is { } path ? environment.WebRootFileProvider.GetFileInfo(path).PhysicalPath : null;
+                var exportedOn = DateTimeOffset.UtcNow;
+
+                return Results.File(SettingsExports.PersonalData(index, localizer[user.NameKey], exportedOn, photo), "application/zip", SettingsExports.FileNameOf(userId, exportedOn));
+            });
+        }
+
         public void MapWorkbenchEndpoints()
         {
+            endpoints.MapSettingsSampleEndpoints();
+
             // The views listed in shots, as one zip of PNGs.
             endpoints.MapGet("api/screenshots/zip", async (string? shots, HttpContext context, WorkbenchScreenshotService screenshotService, WorkbenchScreenshotLimiter limiter, CancellationToken cancellationToken) =>
             {
@@ -274,6 +344,28 @@ public static class IWorkbenchEndpointRouteBuilderExtensions
 
     /// <summary>The name the review shows the agent's changes under.</summary>
     private static string AgentName(string? agent) => string.IsNullOrWhiteSpace(agent) ? "Agent" : agent.Trim();
+
+    /// <summary>
+    /// The demo user a request of the app's code comes from, by the access token it carries; null without one, or, when
+    /// <paramref name="elevated"/>, without the session having confirmed it's the user lately.
+    /// </summary>
+    private static Guid? UserOf(HttpRequest request, bool elevated = false)
+    {
+        var header = request.Headers.Authorization.ToString();
+
+        if (header.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase) is false)
+            return null;
+
+        var user = IAuthTokenProvider.ParseAccessToken(header["Bearer ".Length..], validateExpiry: true);
+
+        if (user.IsAuthenticated() is false)
+            return null;
+
+        if (elevated && (user.GetElevatedSessionExpiresOn() is not { } until || until <= DateTimeOffset.UtcNow))
+            return null;
+
+        return user.GetUserId();
+    }
 
     /// <summary>Captures every entry at once, and stops the others as soon as one fails.</summary>
     private static async Task<TResult[]> CaptureAll<TEntry, TResult>(IEnumerable<TEntry> entries, Func<TEntry, CancellationToken, Task<TResult>> capture, CancellationToken cancellationToken)

@@ -1,6 +1,6 @@
 namespace Boilerplate.WorkbenchTests.Features.AppPages;
 
-/// <summary>The Settings page's Profile section: the form with its validation and draft, the birth date and gender, and the picture.</summary>
+/// <summary>The Settings page's Profile section: the form with its validation, the birth date and gender, and the picture.</summary>
 [TestClass, TestCategory("UITest")]
 public class ProfileSectionUITests : SettingsPageTest
 {
@@ -91,18 +91,17 @@ public class ProfileSectionUITests : SettingsPageTest
     }
 
     [TestMethod, EverySurface]
-    public async Task WhatWasTypedButNotSaved_Should_StayAfterAReload(WorkbenchSurface surface)
+    public async Task WhatWasTypedButNotSaved_Should_BeGoneAfterAReload(WorkbenchSurface surface)
     {
         await OpenSection(AppStrings.ProfileTitle);
 
-        var name = $"Draft {Guid.NewGuid():N}";
-
-        await FullName.FillAsync(name);
+        await FullName.FillAsync($"Draft {Guid.NewGuid():N}");
         await FullName.PressAsync("Tab");
 
-        await ReloadTheViewOnceSaved(name);
+        // As in the app, a reload shows the profile as the server has it.
+        await ReloadTheView();
 
-        await Expect(FullName).ToHaveValueAsync(name);
+        await Expect(FullName).ToHaveValueAsync(WorkbenchStrings.DemoUserYas);
     }
 
     [TestMethod, EverySurface]
@@ -140,7 +139,9 @@ public class ProfileSectionUITests : SettingsPageTest
         await Expect(View().GetByRole(AriaRole.Button, new() { Name = "Go to next month" })).ToBeDisabledAsync();
     }
 
-    [TestMethod, EverySurface]
+    // One surface only: an upload is the Workbench's, so every view of the user shows it, and one made by this test on
+    // another surface at the same time would bring the picture back after its removal.
+    [TestMethod, Surfaces(WorkbenchSurface.DesktopWithoutAgent)]
     public async Task ThePicture_Should_BeRemovedAndChosenAgain(WorkbenchSurface surface)
     {
         await OpenSection(AppStrings.ProfileTitle);
@@ -149,13 +150,16 @@ public class ProfileSectionUITests : SettingsPageTest
 
         await Expect(RemovePicture).ToHaveCountAsync(0);
 
-        await ReloadTheViewOnceSaved("\"hasPicture\":false");
+        await ReloadTheViewOnceSaved("\"hasProfilePicture\":false");
 
         await Expect(RemovePicture).ToHaveCountAsync(0);
 
         var chooser = await Page.RunAndWaitForFileChooserAsync(() => Press(Profile.GetByRole(AriaRole.Button, new() { Name = AppStrings.UploadNewImage, Exact = true })));
 
         await chooser.SetFilesAsync(new FilePayload { Name = "picture.png", MimeType = "image/png", Buffer = [137, 80, 78, 71] });
+
+        // The app's image editor can't open a picture this small, and offers to upload it as it is.
+        await Press(View().GetByRole(AriaRole.Button, new() { Name = AppStrings.UploadImageAsIs, Exact = true }));
 
         await Expect(RemovePicture).ToBeVisibleAsync();
     }

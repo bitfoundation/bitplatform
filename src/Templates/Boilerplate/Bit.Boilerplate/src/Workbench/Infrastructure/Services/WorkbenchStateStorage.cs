@@ -1,5 +1,5 @@
 using System.Text.Json;
-using Boilerplate.Workbench.Components.Pages.AppPages.Settings;
+using Boilerplate.Workbench.Components.Pages.AppPages.Settings.Data;
 
 namespace Boilerplate.Workbench.Infrastructure.Services;
 

@@ -1347,6 +1347,54 @@
     <data name="SettingsCaption" xml:space="preserve">
         <value>Votre compte, à votre façon</value>
     </data>
+    <data name="SettingsSwitchSection" xml:space="preserve">
+        <value>Section</value>
+    </data>
+    <data name="SettingsSectionProfile" xml:space="preserve">
+        <value>Profil</value>
+    </data>
+    <data name="SettingsSectionAccount" xml:space="preserve">
+        <value>Compte</value>
+    </data>
+    <data name="SettingsSectionTfa" xml:space="preserve">
+        <value>Authentification à deux facteurs</value>
+    </data>
+    <data name="SettingsSectionSessions" xml:space="preserve">
+        <value>Sessions</value>
+    </data>
+    <data name="SettingsSectionPrivacy" xml:space="preserve">
+        <value>Confidentialité</value>
+    </data>
+    <data name="SettingsSectionUpgrade" xml:space="preserve">
+        <value>Mise à niveau</value>
+    </data>
+    <data name="SettingsSwitchTwoFactor" xml:space="preserve">
+        <value>Deux facteurs</value>
+    </data>
+    <data name="SettingsTwoFactorOff" xml:space="preserve">
+        <value>Non configurée</value>
+    </data>
+    <data name="SettingsTwoFactorOn" xml:space="preserve">
+        <value>Activée</value>
+    </data>
+    <data name="SettingsSwitchPasskey" xml:space="preserve">
+        <value>Clé d'accès</value>
+    </data>
+    <data name="SettingsPasskeyOff" xml:space="preserve">
+        <value>Aucune</value>
+    </data>
+    <data name="SettingsPasskeyOn" xml:space="preserve">
+        <value>Sur cet appareil</value>
+    </data>
+    <data name="SettingsSwitchConfirm" xml:space="preserve">
+        <value>Confirmer votre identité</value>
+    </data>
+    <data name="SettingsConfirmRecent" xml:space="preserve">
+        <value>Confirmé il y a une minute</value>
+    </data>
+    <data name="SettingsConfirmAsk" xml:space="preserve">
+        <value>Demande d'abord un code</value>
+    </data>
     <data name="CalendarViewDay" xml:space="preserve">
         <value>Jour</value>
     </data>
