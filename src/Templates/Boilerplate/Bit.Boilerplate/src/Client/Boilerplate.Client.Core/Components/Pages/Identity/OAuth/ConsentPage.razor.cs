@@ -153,7 +153,8 @@ public partial class ConsentPage
         CodeChallengeMethod = CodeChallengeMethod,
         Resource = Resource,
         //#if (multitenant == true)
-        TenantId = TenantId
+        // Once reviewed, the tenant the page named, none included: the session may have switched tenants since.
+        TenantId = TenantId ?? (consent is null ? null : (consent.TenantId ?? Guid.Empty).ToString())
         //#endif
     };
 
