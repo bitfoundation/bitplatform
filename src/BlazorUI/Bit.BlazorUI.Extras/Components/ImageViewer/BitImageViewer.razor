@@ -1,0 +1,77 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+
+@* The root holds the viewport and the toolbar under it. A disabled viewer zooms and pans no more, and drops the handlers
+   of activation the page splatted on its root. *@
+<div @ref="RootElement" @attributes="DisabledAwareHtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
+
+    @* The frame the image is zoomed and panned in, and a tab stop of its own, which is where the keyboard does both
+       (see BitImageViewer.ts). It is a named region rather than an image: the picture inside it is the image, with its
+       own alternative text, and the frame is the control around it, announced as an image viewer and described by how
+       it is operated. *@
+    <div @ref="_viewportRef"
+         role="region"
+         tabindex="@(Disabled ? "-1" : "0")"
+         aria-roledescription="@ActiveTexts.RoleDescription"
+         aria-label="@(AriaLabel ?? Alt)"
+         aria-describedby="@_instructionsId"
+         aria-keyshortcuts="+ - 0 ArrowUp ArrowDown ArrowLeft ArrowRight"
+         aria-disabled="@(Disabled ? "true" : null)"
+         style="@GetViewportStyle()"
+         class="bit-imv-vpt @Classes?.Viewport">
+        @if (Src.HasValue())
+        {
+            <img src="@Src"
+                 alt="@(Alt ?? string.Empty)"
+                 draggable="false"
+                 style="@Styles?.Image"
+                 class="bit-imv-img @Classes?.Image" />
+        }
+    </div>
+
+    <span id="@_instructionsId" class="bit-imv-ins">@ActiveTexts.Instructions</span>
+
+    @if (NoToolbar is false)
+    {
+        <div role="group"
+             aria-label="@ActiveTexts.ToolbarAriaLabel"
+             style="@Styles?.Toolbar"
+             class="bit-imv-tbr @Classes?.Toolbar">
+            <button type="button"
+                    title="@ActiveTexts.ZoomOut"
+                    aria-label="@ActiveTexts.ZoomOut"
+                    disabled="@CannotZoomOut"
+                    aria-disabled="@(CannotZoomOut ? "true" : null)"
+                    style="@Styles?.Button"
+                    class="bit-imv-btn @Classes?.Button"
+                    @onclick="ZoomOut">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" /><path d="M15.5 15.5 20 20M7.5 10.5h6" /></svg>
+            </button>
+            <span style="@Styles?.ZoomText" class="bit-imv-zmt @Classes?.ZoomText" aria-live="polite">@GetZoomText()</span>
+            <button type="button"
+                    title="@ActiveTexts.ZoomIn"
+                    aria-label="@ActiveTexts.ZoomIn"
+                    disabled="@CannotZoomIn"
+                    aria-disabled="@(CannotZoomIn ? "true" : null)"
+                    style="@Styles?.Button"
+                    class="bit-imv-btn @Classes?.Button"
+                    @onclick="ZoomIn">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" /><path d="M15.5 15.5 20 20M7.5 10.5h6M10.5 7.5v6" /></svg>
+            </button>
+            <button type="button"
+                    title="@ActiveTexts.Reset"
+                    aria-label="@ActiveTexts.Reset"
+                    disabled="@CannotReset"
+                    aria-disabled="@(CannotReset ? "true" : null)"
+                    style="@Styles?.Button"
+                    class="bit-imv-btn @Classes?.Button"
+                    @onclick="Reset">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" /></svg>
+            </button>
+        </div>
+    }
+</div>
