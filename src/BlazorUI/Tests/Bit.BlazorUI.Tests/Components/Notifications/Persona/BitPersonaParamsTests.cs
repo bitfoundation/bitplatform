@@ -238,7 +238,7 @@ public class BitPersonaParamsTests : BunitTestContext
             RenderPersona(builder => builder.AddAttribute(10, nameof(BitPersona.Href), "/profile")));
 
         Assert.AreEqual("View profile", component.Find(".bit-prs-imo").TextContent.Trim());
-        Assert.AreEqual("View profile", component.Find("a.bit-prs-cne").GetAttribute("aria-label"));
+        Assert.AreEqual("View profile, SK", component.Find("a.bit-prs-cne").GetAttribute("aria-label"));
     }
 
     [TestMethod]
