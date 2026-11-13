@@ -372,6 +372,20 @@ public class BitStrings
 
 
 
+    // ===== BitStepper =====
+
+    /// <summary>
+    /// What a screen reader is told after the text of a completed step of a <see cref="BitStepper{TItem}"/>.
+    /// </summary>
+    public virtual string StepCompleted => "Completed";
+
+    /// <summary>
+    /// What a screen reader is told after the text of a step of a <see cref="BitStepper{TItem}"/> that is in error.
+    /// </summary>
+    public virtual string StepError => "Error";
+
+
+
     // ===== BitSwiper =====
 
     /// <summary>
