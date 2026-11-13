@@ -1347,6 +1347,54 @@
     <data name="SettingsCaption" xml:space="preserve">
         <value>账户由你做主</value>
     </data>
+    <data name="SettingsSwitchSection" xml:space="preserve">
+        <value>部分</value>
+    </data>
+    <data name="SettingsSectionProfile" xml:space="preserve">
+        <value>个人资料</value>
+    </data>
+    <data name="SettingsSectionAccount" xml:space="preserve">
+        <value>账户</value>
+    </data>
+    <data name="SettingsSectionTfa" xml:space="preserve">
+        <value>双重身份验证</value>
+    </data>
+    <data name="SettingsSectionSessions" xml:space="preserve">
+        <value>会话</value>
+    </data>
+    <data name="SettingsSectionPrivacy" xml:space="preserve">
+        <value>隐私</value>
+    </data>
+    <data name="SettingsSectionUpgrade" xml:space="preserve">
+        <value>升级</value>
+    </data>
+    <data name="SettingsSwitchTwoFactor" xml:space="preserve">
+        <value>双重验证</value>
+    </data>
+    <data name="SettingsTwoFactorOff" xml:space="preserve">
+        <value>未设置</value>
+    </data>
+    <data name="SettingsTwoFactorOn" xml:space="preserve">
+        <value>已开启</value>
+    </data>
+    <data name="SettingsSwitchPasskey" xml:space="preserve">
+        <value>通行密钥</value>
+    </data>
+    <data name="SettingsPasskeyOff" xml:space="preserve">
+        <value>无</value>
+    </data>
+    <data name="SettingsPasskeyOn" xml:space="preserve">
+        <value>在此设备上</value>
+    </data>
+    <data name="SettingsSwitchConfirm" xml:space="preserve">
+        <value>确认是您本人</value>
+    </data>
+    <data name="SettingsConfirmRecent" xml:space="preserve">
+        <value>一分钟前已确认</value>
+    </data>
+    <data name="SettingsConfirmAsk" xml:space="preserve">
+        <value>先要求输入验证码</value>
+    </data>
     <data name="CalendarViewDay" xml:space="preserve">
         <value>日</value>
     </data>

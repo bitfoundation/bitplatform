@@ -1347,6 +1347,54 @@
     <data name="SettingsCaption" xml:space="preserve">
         <value>Your account, your way</value>
     </data>
+    <data name="SettingsSwitchSection" xml:space="preserve">
+        <value>Section</value>
+    </data>
+    <data name="SettingsSectionProfile" xml:space="preserve">
+        <value>Profile</value>
+    </data>
+    <data name="SettingsSectionAccount" xml:space="preserve">
+        <value>Account</value>
+    </data>
+    <data name="SettingsSectionTfa" xml:space="preserve">
+        <value>Two-factor authentication</value>
+    </data>
+    <data name="SettingsSectionSessions" xml:space="preserve">
+        <value>Sessions</value>
+    </data>
+    <data name="SettingsSectionPrivacy" xml:space="preserve">
+        <value>Privacy</value>
+    </data>
+    <data name="SettingsSectionUpgrade" xml:space="preserve">
+        <value>Upgrade</value>
+    </data>
+    <data name="SettingsSwitchTwoFactor" xml:space="preserve">
+        <value>Two-factor</value>
+    </data>
+    <data name="SettingsTwoFactorOff" xml:space="preserve">
+        <value>Not set up</value>
+    </data>
+    <data name="SettingsTwoFactorOn" xml:space="preserve">
+        <value>On</value>
+    </data>
+    <data name="SettingsSwitchPasskey" xml:space="preserve">
+        <value>Passkey</value>
+    </data>
+    <data name="SettingsPasskeyOff" xml:space="preserve">
+        <value>None</value>
+    </data>
+    <data name="SettingsPasskeyOn" xml:space="preserve">
+        <value>On this device</value>
+    </data>
+    <data name="SettingsSwitchConfirm" xml:space="preserve">
+        <value>Confirming it's you</value>
+    </data>
+    <data name="SettingsConfirmRecent" xml:space="preserve">
+        <value>Confirmed a minute ago</value>
+    </data>
+    <data name="SettingsConfirmAsk" xml:space="preserve">
+        <value>Asks for a code first</value>
+    </data>
     <data name="CalendarViewDay" xml:space="preserve">
         <value>Day</value>
     </data>

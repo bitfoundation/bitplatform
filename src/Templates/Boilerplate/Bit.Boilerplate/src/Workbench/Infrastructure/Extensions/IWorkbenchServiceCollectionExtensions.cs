@@ -3,8 +3,11 @@ using Bit.Bonboarding;
 using Bit.Bcrdt;
 using Bit.Bcrdt.Server;
 using Microsoft.Extensions.Localization;
+using Boilerplate.Shared.Features.Identity;
+using Boilerplate.Shared.Features.Attachments;
 //#if (module == "Admin")
-using Boilerplate.Workbench.Components.Pages.AppPages.Dashboard;
+using Boilerplate.Shared.Features.Dashboard;
+using Boilerplate.Workbench.Components.Pages.AppPages.Dashboard.Data;
 //#endif
 
 namespace Boilerplate.Workbench.Infrastructure.Extensions;
@@ -19,6 +22,8 @@ public static class IWorkbenchServiceCollectionExtensions
         public void AddWorkbenchServices(IConfiguration configuration)
         {
             services.AddScoped<WorkbenchScenarioState>();
+            // What a link of the app's own pages opens in a view (See PreviewPage.StayInThePreview).
+            services.AddScoped<WorkbenchAppLinks>();
             services.AddSingleton<WorkbenchScreenshotService>();
             services.AddSingleton(_ => new WorkbenchScreenshotLimiter(configuration));
             services.AddSingleton<WorkbenchSnapshots>();
@@ -26,6 +31,20 @@ public static class IWorkbenchServiceCollectionExtensions
             services.AddScoped<BuildingsService>();
             services.AddScoped<AssistantService>();
             services.AddScoped<ShiftsService>();
+
+            // The app's own pages, on stand-ins of its server: the settings page on the view's sample account, through the
+            // user and attachment controllers and the device's passkeys, and the dashboard on a sample product catalog.
+            services.AddScoped<SettingsSampleAccount>();
+            services.AddScoped<IUserController, WorkbenchUserController>();
+            services.AddScoped<IAttachmentController, WorkbenchAttachmentController>();
+            services.AddScoped<IWebAuthnService, WorkbenchWebAuthnService>();
+            services.AddScoped<WorkbenchScenarioSignOut>();
+            //#if (ads == true)
+            services.AddScoped<IAdsService, WorkbenchAdsService>();
+            //#endif
+            //#if (module == "Admin")
+            services.AddScoped<IDashboardController, WorkbenchDashboardController>();
+            //#endif
 
             // The assistant page's chat runs on the sample replies of AssistantService.
             services.AddBitBlazorUIAIServices(ai =>
@@ -55,9 +74,7 @@ public static class IWorkbenchServiceCollectionExtensions
             services.AddBitBlexStore<AssistantStore>();
             services.AddBitBlexStore<ShiftsStore>();
             services.AddBitBlexStore<SettingsStore>();
-            //#if (module == "Admin")
-            services.AddBitBlexStore<DashboardStore>();
-            //#endif
+            services.AddBitBlexStore<WorkbenchDeviceStore>();
             services.AddScoped<IBlexStorage, WorkbenchStateStorage>();
             services.AddBitBlexPersistence();
             services.AddScoped<IBitAccentColorStore, ChromeAccentStore>();

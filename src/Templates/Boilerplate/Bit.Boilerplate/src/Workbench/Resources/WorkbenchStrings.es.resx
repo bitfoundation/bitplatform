@@ -1347,6 +1347,54 @@
     <data name="SettingsCaption" xml:space="preserve">
         <value>Tu cuenta, a tu manera</value>
     </data>
+    <data name="SettingsSwitchSection" xml:space="preserve">
+        <value>Sección</value>
+    </data>
+    <data name="SettingsSectionProfile" xml:space="preserve">
+        <value>Perfil</value>
+    </data>
+    <data name="SettingsSectionAccount" xml:space="preserve">
+        <value>Cuenta</value>
+    </data>
+    <data name="SettingsSectionTfa" xml:space="preserve">
+        <value>Autenticación en dos pasos</value>
+    </data>
+    <data name="SettingsSectionSessions" xml:space="preserve">
+        <value>Sesiones</value>
+    </data>
+    <data name="SettingsSectionPrivacy" xml:space="preserve">
+        <value>Privacidad</value>
+    </data>
+    <data name="SettingsSectionUpgrade" xml:space="preserve">
+        <value>Mejorar</value>
+    </data>
+    <data name="SettingsSwitchTwoFactor" xml:space="preserve">
+        <value>Dos pasos</value>
+    </data>
+    <data name="SettingsTwoFactorOff" xml:space="preserve">
+        <value>Sin configurar</value>
+    </data>
+    <data name="SettingsTwoFactorOn" xml:space="preserve">
+        <value>Activada</value>
+    </data>
+    <data name="SettingsSwitchPasskey" xml:space="preserve">
+        <value>Llave de acceso</value>
+    </data>
+    <data name="SettingsPasskeyOff" xml:space="preserve">
+        <value>Ninguna</value>
+    </data>
+    <data name="SettingsPasskeyOn" xml:space="preserve">
+        <value>En este dispositivo</value>
+    </data>
+    <data name="SettingsSwitchConfirm" xml:space="preserve">
+        <value>Confirmar que eres tú</value>
+    </data>
+    <data name="SettingsConfirmRecent" xml:space="preserve">
+        <value>Confirmado hace un minuto</value>
+    </data>
+    <data name="SettingsConfirmAsk" xml:space="preserve">
+        <value>Pide primero un código</value>
+    </data>
     <data name="CalendarViewDay" xml:space="preserve">
         <value>Día</value>
     </data>
