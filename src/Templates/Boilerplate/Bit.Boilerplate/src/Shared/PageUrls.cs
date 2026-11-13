@@ -9,11 +9,13 @@ namespace Boilerplate.Shared;
 // (Server.Web/Infrastructure/Extensions/WebApplicationExtensions.cs) and, when signalR is enabled, passed to the
 // chatbot's GetAppPages tool.
 // Do not describe a page here unless the description is safe for an anonymous reader.
+// [NoIndex] keeps a page out of search engines (See NoIndexAttribute and PageUrls.IsNoIndex).
 public static partial class PageUrls
 {
     [Description("Home page.")]
     public const string Home = "/";
 
+    [NoIndex]
     public const string NotFound = "/not-found";
 
     [Description("Legal terms, conditions and end-user license agreement.")]
@@ -85,7 +87,15 @@ public static partial class PageUrls
     /// booting Blazor WebAssembly in an Android browser (ConsentPage.LeaveFor gets back out). Deliberately not under
     /// /oauth/, which belongs to the server, so the service worker, the AASA and the Android filter need no carve-out.
     /// </summary>
+    [NoIndex]
     public const string OAuthConsent = "/oauth-consent";
+
+    /// <summary>
+    /// The device's telemetry and what the server sees of the request, for troubleshooting. No [Description]: it is
+    /// not part of the app's navigation.
+    /// </summary>
+    [NoIndex]
+    public const string Diagnostic = "/diagnostic";
 
     public const string WebInteropApp = "/web-interop-app.html";
 }

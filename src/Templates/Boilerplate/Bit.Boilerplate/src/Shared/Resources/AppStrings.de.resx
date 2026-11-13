@@ -2105,6 +2105,12 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
     <data name="SignOutOfAllAccounts" xml:space="preserve">
     <value>Von allen Konten auf diesem Gerät abmelden</value>
   </data>
+    <data name="DiagnosticPageTitle" xml:space="preserve">
+    <value>Diagnose</value>
+  </data>
+    <data name="DiagnosticPageDescription" xml:space="preserve">
+    <value>Was dieses Gerät und der Server über die App melden, zur Fehlerbehebung.</value>
+  </data>
   <!--#if (framework == 'net11.0') -->
     <data name="KioskTitle" xml:space="preserve">
     <value>Kioskmodus</value>

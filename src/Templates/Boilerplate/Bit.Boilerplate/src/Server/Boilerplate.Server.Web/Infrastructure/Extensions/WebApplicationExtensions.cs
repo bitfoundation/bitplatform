@@ -129,6 +129,26 @@ public static partial class WebApplicationExtensions
             return app;
         }
 
+        /// <summary>
+        /// Sends <c>X-Robots-Tag: noindex</c> with every page whose <see cref="PageUrls"/> url carries
+        /// <see cref="NoIndexAttribute"/>. <c>AppPageData</c> renders the same as a meta tag, but with pre-rendering off
+        /// that tag only exists once the page's scripts have run, and a header is read from the first response.
+        /// </summary>
+        public WebApplication UseNoIndexHeader()
+        {
+            app.Use(async (context, next) =>
+            {
+                if (context.IsBlazorPageContext() && PageUrls.IsNoIndex(context.Request.GetUri()))
+                {
+                    context.Response.Headers["X-Robots-Tag"] = "noindex";
+                }
+
+                await next(context);
+            });
+
+            return app;
+        }
+
         public WebApplication UseSiteMap()
         {
             const string siteMapHeader = @"<?xml version=""1.0"" encoding=""UTF-8""?>
@@ -165,7 +185,8 @@ public static partial class WebApplicationExtensions
                      .SelectMany(t => t.GetCustomAttributes<Microsoft.AspNetCore.Components.RouteAttribute>())
                      .Where(att => RouteRegex().IsMatch(att.Template) is false)
                      .Select(att => att.Template)
-                     .Except([PageUrls.NotFound, PageUrls.NotAuthorized])
+                     // A page search engines should not index has no place in the list of pages to index.
+                     .Where(url => PageUrls.NoIndexUrls.Contains(url) is false)
                      .ToArray();
 
                 // Culture-prefixed urls only: the bare url always 302s (See UseCultureUrlRedirection), and a sitemap

@@ -2105,6 +2105,12 @@
     <data name="SignOutOfAllAccounts" xml:space="preserve">
     <value>تسجيل الخروج من جميع الحسابات على هذا الجهاز</value>
   </data>
+    <data name="DiagnosticPageTitle" xml:space="preserve">
+    <value>التشخيص</value>
+  </data>
+    <data name="DiagnosticPageDescription" xml:space="preserve">
+    <value>ما يُبلغ عنه هذا الجهاز والخادم بشأن التطبيق، لاستكشاف الأخطاء وإصلاحها.</value>
+  </data>
   <!--#if (framework == 'net11.0') -->
     <data name="KioskTitle" xml:space="preserve">
     <value>وضع الكشك</value>

@@ -177,6 +177,8 @@ public static partial class Program
 
             app.UseCultureUrlRedirection();
 
+            app.UseNoIndexHeader();
+
             app.UseOutputCache();
 
             app.UseAntiforgery();

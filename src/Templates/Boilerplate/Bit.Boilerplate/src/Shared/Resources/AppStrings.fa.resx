@@ -2105,6 +2105,12 @@
     <data name="SignOutOfAllAccounts" xml:space="preserve">
     <value>خروج از همه حساب‌های این دستگاه</value>
   </data>
+    <data name="DiagnosticPageTitle" xml:space="preserve">
+    <value>عیب‌یابی</value>
+  </data>
+    <data name="DiagnosticPageDescription" xml:space="preserve">
+    <value>آنچه این دستگاه و سرور درباره‌ی برنامه گزارش می‌دهند، برای عیب‌یابی.</value>
+  </data>
   <!--#if (framework == 'net11.0') -->
     <data name="KioskTitle" xml:space="preserve">
     <value>حالت کیوسک</value>
