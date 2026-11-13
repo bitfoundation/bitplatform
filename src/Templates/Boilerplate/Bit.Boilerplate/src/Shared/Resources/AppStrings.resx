@@ -1234,9 +1234,6 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="AiChatApprovalWaiting" xml:space="preserve">
     <value>Waiting for your answer</value>
   </data>
-    <data name="AiChatApprovalClearAppFilesTitle" xml:space="preserve">
-    <value>Clear the app's files on this device?</value>
-  </data>
     <data name="AiChatApprovalClearAppFilesDescription" xml:space="preserve">
     <value>Starting fresh fixes most problems caused by broken local data.</value>
   </data>
@@ -1255,35 +1252,11 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="AiChatApprovalClearAppFilesApprove" xml:space="preserve">
     <value>Clear files</value>
   </data>
-    <data name="AiChatApprovalClearAppFilesDecline" xml:space="preserve">
-    <value>Not now</value>
-  </data>
-    <data name="AiChatApprovalClearAppFilesApproved" xml:space="preserve">
-    <value>Clearing the app's files</value>
-  </data>
-    <data name="AiChatApprovalClearAppFilesDeclined" xml:space="preserve">
-    <value>You kept the app's files.</value>
-  </data>
-    <data name="AiChatApprovalClearAppFilesNoAnswer" xml:space="preserve">
-    <value>Nothing was cleared: the request went unanswered.</value>
-  </data>
-    <data name="AiChatApprovalTitle" xml:space="preserve">
-    <value>Approve this?</value>
-  </data>
     <data name="AiChatApprovalApprove" xml:space="preserve">
     <value>Approve</value>
   </data>
     <data name="AiChatApprovalDecline" xml:space="preserve">
     <value>Decline</value>
-  </data>
-    <data name="AiChatApprovalApproved" xml:space="preserve">
-    <value>Approved</value>
-  </data>
-    <data name="AiChatApprovalDeclined" xml:space="preserve">
-    <value>Declined.</value>
-  </data>
-    <data name="AiChatApprovalNoAnswer" xml:space="preserve">
-    <value>The request went unanswered.</value>
   </data>
     <!--#if (module == "Sales") -->
     <!--#if (database == "PostgreSQL" || database == "SqlServer") -->
@@ -1310,9 +1283,6 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="AiChatPanelStopDictation" xml:space="preserve">
     <value>Stop dictation</value>
   </data>
-    <data name="AiChatPanelDictation" xml:space="preserve">
-    <value>Dictation</value>
-  </data>
     <data name="AiChatPanelMicrophoneBlocked" xml:space="preserve">
     <value>Microphone access is blocked. Allow it in your settings to dictate.</value>
   </data>
@@ -1327,9 +1297,6 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
   </data>
     <data name="AiChatPanelTranscribing" xml:space="preserve">
     <value>Writing down what you said</value>
-  </data>
-    <data name="AiChatPanelDictationTimeLeft" xml:space="preserve">
-    <value>Time left before dictation stops</value>
   </data>
     <data name="AiChatPanelSpeechSignInTitle" xml:space="preserve">
     <value>Voice needs an account</value>
@@ -1381,6 +1348,114 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
   </data>
   <data name="AiChatPanelRestore" xml:space="preserve">
     <value>Restore</value>
+  </data>
+  <data name="AiChatStop" xml:space="preserve">
+    <value>Stop</value>
+  </data>
+  <data name="AiChatRegenerate" xml:space="preserve">
+    <value>Answer again</value>
+  </data>
+  <data name="AiChatRetry" xml:space="preserve">
+    <value>Try again</value>
+  </data>
+  <data name="AiChatGoodAnswer" xml:space="preserve">
+    <value>Good answer</value>
+  </data>
+  <data name="AiChatBadAnswer" xml:space="preserve">
+    <value>Bad answer</value>
+  </data>
+  <data name="AiChatScrollToLatest" xml:space="preserve">
+    <value>Go to the latest message</value>
+  </data>
+  <data name="AiChatThinking" xml:space="preserve">
+    <value>Thinking…</value>
+  </data>
+  <data name="AiChatFollowUps" xml:space="preserve">
+    <value>Suggested next questions</value>
+  </data>
+  <data name="AiChatListening" xml:space="preserve">
+    <value>Listening</value>
+  </data>
+  <data name="AiChatRecordingTimeLeft" xml:space="preserve">
+    <value>{0} left</value>
+  </data>
+  <data name="AiChatDurationMinutes" xml:space="preserve">
+    <value>{0} min</value>
+  </data>
+  <data name="AiChatDurationSeconds" xml:space="preserve">
+    <value>{0} sec</value>
+  </data>
+  <data name="AiChatRecordingStarted" xml:space="preserve">
+    <value>Recording, {0} left</value>
+  </data>
+  <data name="AiChatCommands" xml:space="preserve">
+    <value>Commands</value>
+  </data>
+  <data name="AiChatRetryIn" xml:space="preserve">
+    <value>Try again in {0}.</value>
+  </data>
+  <data name="AiChatReasoning" xml:space="preserve">
+    <value>Reasoning</value>
+  </data>
+  <data name="AiChatReasonedFor" xml:space="preserve">
+    <value>Thought for {0}</value>
+  </data>
+  <data name="AiChatSteps" xml:space="preserve">
+    <value>Steps</value>
+  </data>
+  <data name="AiChatInProgress" xml:space="preserve">
+    <value>In progress</value>
+  </data>
+  <data name="AiChatDone" xml:space="preserve">
+    <value>Done</value>
+  </data>
+  <data name="AiChatFailed" xml:space="preserve">
+    <value>Failed</value>
+  </data>
+  <data name="AiChatSkipped" xml:space="preserve">
+    <value>Skipped</value>
+  </data>
+  <data name="AiChatNotStarted" xml:space="preserve">
+    <value>Not started</value>
+  </data>
+  <data name="AiChatElapsed" xml:space="preserve">
+    <value>Elapsed</value>
+  </data>
+  <data name="AiChatToolCalls" xml:space="preserve">
+    <value>Tools it used</value>
+  </data>
+  <data name="AiChatDropImage" xml:space="preserve">
+    <value>Drop the image to attach it</value>
+  </data>
+  <data name="AiChatTooManyImages" xml:space="preserve">
+    <value>Up to {0} images per message</value>
+  </data>
+  <data name="AiChatToolProductSearch" xml:space="preserve">
+    <value>Product search</value>
+  </data>
+  <data name="AiChatToolNavigation" xml:space="preserve">
+    <value>Page navigation</value>
+  </data>
+  <data name="AiChatToolThemeChange" xml:space="preserve">
+    <value>Theme change</value>
+  </data>
+  <data name="AiChatToolLanguageChange" xml:space="preserve">
+    <value>Language change</value>
+  </data>
+  <data name="AiChatToolSignIn" xml:space="preserve">
+    <value>Sign-in</value>
+  </data>
+  <data name="AiChatToolErrorCheck" xml:space="preserve">
+    <value>Error report check</value>
+  </data>
+  <data name="AiChatToolFailed" xml:space="preserve">
+    <value>{0} failed</value>
+  </data>
+  <data name="AiChatToolDeclined" xml:space="preserve">
+    <value>{0} declined</value>
+  </data>
+  <data name="AiChatToolCancelled" xml:space="preserve">
+    <value>{0} cancelled</value>
   </data>
   <!--#endif -->
     <!--#if (ads == true) -->

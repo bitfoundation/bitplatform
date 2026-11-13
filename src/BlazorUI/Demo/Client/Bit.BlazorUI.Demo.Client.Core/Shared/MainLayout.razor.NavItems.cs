@@ -41,6 +41,7 @@ public partial class MainLayout
                 new() { Text = "Dropdown", Url = "/components/dropdown", Description = "Select, ComboBox, MultiSelect", Data = "Chips" },
                 new() { Text = "FileInput", Url = "/components/fileinput", AdditionalUrls = ["/components/file-input"] },
                 new() { Text = "FileUpload", Url = "/components/fileupload", AdditionalUrls = ["/components/file-upload"] },
+                new() { Text = "ListBox", Url = "/components/listbox", AdditionalUrls = ["/components/list-box"], Description = "SelectList, Listbox, MultiSelectList", Data = "List box, Select list, Multi select, Single select, Pick list, Selectable list, Option list, Inline select" },
                 new() { Text = "NumberField", Url = "/components/numberfield", AdditionalUrls = ["/components/numerictextfield", "/components/numeric-text-field", "/components/spinbutton", "/components/spin-button"], Description = "NumberInput" },
                 new() { Text = "OtpInput", Url = "/components/otpinput", AdditionalUrls = ["/components/otp-input"], Description = "PinInput, VerificationCode, OneTimePassword" },
                 new() { Text = "Rating", Url = "/components/rating", Description = "Rate, Stars", Data = "Review, Score, Feedback" },
@@ -98,6 +99,7 @@ public partial class MainLayout
                 new() { Text = "NavBar", Url = "/components/navbar", Description = "NavMenu, TabPanel, TabBar, BottomNavigation" },
                 new() { Text = "Pagination", Url = "/components/pagination" },
                 new() { Text = "Pivot", Url = "/components/pivot", Description = "Tab, TabPage" },
+                new() { Text = "Stepper", Url = "/components/stepper", Description = "Steps, Wizard, ProgressSteps", Data = "Step indicator, Multi-step form, Checkout steps, Onboarding, Progress tracker, Linear steps, Vertical steps" },
             ]
         },
         new()
@@ -170,6 +172,7 @@ public partial class MainLayout
                 new() { Text = "AccordionList", Url = "/components/accordionlist", Description = "Expander, Accordion" },
                 new() { Text = "AppShell", Url = "/components/appshell", Description = "SafeArea" },
                 new() { Text = "Chart", Url = "/components/chart", Description = "Graph, Plot", Data = "Line chart, Bar chart, Column chart, Area chart, Pie chart, Doughnut, Donut, Polar area, Radar, Spider, Scatter, Bubble, Mixed, Combo, Sparkline, Gauge, Waterfall, Error bars, Trendline, Annotations, Zoom, Chart.js" },
+                new() { Text = "ContextMenu", Url = "/components/contextmenu", Description = "RightClickMenu, PopupMenu, ShortcutMenu", Data = "Context menu, Right click, Right-click menu, Shift+F10, Menu key, Popup menu, Actions menu", AdditionalUrls = ["/components/context-menu"] },
                 new() { Text = "CountryPicker", Url = "/components/countrypicker", Description = "CountrySelector, CountrySelect", Data = "Country, Nationality, Country of residence, Billing country, Flag, ISO code" },
                 new() { Text = "DataGrid", Url = "/components/datagrid", AdditionalUrls = ["/components/data-grid"], Description = "DataTable, TreeGrid, TreeList" },
                 new() { Text = "ErrorBoundary", Url = "/components/errorboundary" },
@@ -184,6 +187,7 @@ public partial class MainLayout
                 new() { Text = "NotificationCenter", Url = "/components/notificationcenter", Description = "NotificationBell, NotificationInbox, NotificationsPanel", Data = "Notifications, Bell, Inbox, Unread count, Notification history, Activity feed" },
                 new() { Text = "PdfViewer", Url = "/components/pdfviewer", Description = "PdfReader, Pdf", Data = "PDF, Document viewer, Preview, Print, Thumbnails, Bookmarks, Find in document, Attachments, Fullscreen, Presentation", AdditionalUrls = ["/components/pdfreader"] },
                 new() { Text = "PhoneInput", Url = "/components/phoneinput" },
+                new() { Text = "PopConfirm", Url = "/components/popconfirm", Description = "Popconfirm, ConfirmPopover, ConfirmPopup", Data = "Confirm, Confirmation, Are you sure, Delete confirmation, Inline confirm, Popover, Alert dialog", AdditionalUrls = ["/components/pop-confirm"] },
                 new() { Text = "ResourceTimeline", Url = "/components/resourcetimeline", Description = "ResourceScheduler, Gantt, ResourcePlanner", Data = "Timeline, Scheduler, Planner, Gantt chart, Roster, Allocations, Bookings, Shifts, Dispatch, Fleet, Crew, Rotations, Time zone, Zoom, Drag and drop, Canvas, SVG, HTML" },
                 new() { Text = "RichTextEditor", Url = "/components/richtexteditor", Description = "WysiwygEditor, HtmlEditor", Data = "WYSIWYG, Rich text, HTML editor, Text editor, Content editor, Comment box, Formatting, Toolbar, Mentions" },
                 new() { Text = "TextShimmer", Url = "/components/textshimmer", Description = "ShinyText, Skeleton, Loading, AI" },

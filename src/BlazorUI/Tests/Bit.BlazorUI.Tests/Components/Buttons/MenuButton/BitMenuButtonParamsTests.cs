@@ -201,6 +201,7 @@ public class BitMenuButtonParamsTests : BunitTestContext
             NewTabHint = "(new window)",
             NoIcon = true,
             NoNewTabHint = true,
+            NoOverlay = true,
             RadioIcon = radioIcon,
             RadioIconName = "RadioBtnOn",
             Reclickable = true,
@@ -255,6 +256,7 @@ public class BitMenuButtonParamsTests : BunitTestContext
         Assert.AreEqual("(new window)", instance.NewTabHint);
         Assert.IsTrue(instance.NoIcon);
         Assert.IsTrue(instance.NoNewTabHint);
+        Assert.IsTrue(instance.NoOverlay);
         Assert.AreSame(radioIcon, instance.RadioIcon);
         Assert.AreEqual("RadioBtnOn", instance.RadioIconName);
         Assert.IsTrue(instance.Reclickable);

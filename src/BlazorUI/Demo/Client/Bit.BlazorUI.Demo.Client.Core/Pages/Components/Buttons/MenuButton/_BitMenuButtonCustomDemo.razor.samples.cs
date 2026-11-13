@@ -866,6 +866,45 @@ private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
 };";
 
     private readonly string example21RazorCode = @"
+<div class=""context-area"" tabindex=""0""
+     @oncontextmenu=""e => contextMenuButton.OpenAt(e)"" @oncontextmenu:preventDefault>
+    Right-click here
+</div>
+<BitMenuButton @ref=""contextMenuButton"" NoOverlay Text=""Edit"" Items=""contextCustoms"" NameSelectors=""nameSelectors""
+               OnClick=""(Operation? item) => contextClickedCustom = item?.Name ?? contextClickedCustom"" />
+
+<div>Clicked item: <b>@contextClickedCustom</b></div>";
+
+    private readonly string example21CsharpCode = @"
+public class Operation
+{
+    public string? Id { get; set; }
+    public string? Name { get; set; }
+    public string? Image { get; set; }
+    public bool IsDivider { get; set; }
+}
+
+private string? contextClickedCustom;
+private BitMenuButton<Operation> contextMenuButton = default!;
+
+private static List<Operation> contextCustoms =
+[
+    new() { Name = ""Cut"", Id = ""cut"", Image = BitIconName.Cut },
+    new() { Name = ""Copy"", Id = ""copy"", Image = BitIconName.Copy },
+    new() { Name = ""Paste"", Id = ""paste"", Image = BitIconName.Paste },
+    new() { IsDivider = true },
+    new() { Name = ""Delete"", Id = ""delete"", Image = BitIconName.Delete }
+];
+
+private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
+{
+    Text = { Name = nameof(Operation.Name) },
+    Key = { Name = nameof(Operation.Id) },
+    IconName = { Name = nameof(Operation.Image) },
+    IsSeparator = { Name = nameof(Operation.IsDivider) }
+};";
+
+    private readonly string example22RazorCode = @"
 <BitMenuButton Text=""Primary"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Fill"" Color=""BitColor.Primary"" />
 <BitMenuButton Text=""Primary"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Outline"" Color=""BitColor.Primary"" />
 <BitMenuButton Text=""Primary"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Text"" Color=""BitColor.Primary"" />
@@ -1175,7 +1214,7 @@ private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
 <BitMenuButton Text=""TertiaryBorder"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryBorder"" Disabled Split />
 <BitMenuButton Text=""TertiaryBorder"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Text"" Color=""BitColor.TertiaryBorder"" Disabled Split />";
 
-    private readonly string example21CsharpCode = @"
+    private readonly string example22CsharpCode = @"
 public class Operation
 {
     public string? Id { get; set; }
@@ -1199,7 +1238,7 @@ private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
     IsDisabled = { Selector = m => m.Disabled }
 };";
 
-    private readonly string example22RazorCode = @"
+    private readonly string example23RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitMenuButton Text=""Actions""
@@ -1248,7 +1287,7 @@ private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
                Icon=""@BitIconInfo.Fa(""brands github"")""
                ChevronDownIcon=""@BitIconInfo.Fa(""solid angles-down"")"" />";
 
-    private readonly string example22CsharpCode = @"
+    private readonly string example23CsharpCode = @"
 public class Operation
 {
     public string? Id { get; set; }
@@ -1273,7 +1312,7 @@ private BitMenuButtonNameSelectors<Operation> nameSelectors2 = new()
     IsDisabled = { Selector = m => m.Disabled }
 };";
 
-    private readonly string example23RazorCode = @"
+    private readonly string example24RazorCode = @"
 <BitMenuButton Text=""Small"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Fill"" Size=""BitSize.Small"" />
 <BitMenuButton Text=""Small"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Outline"" Size=""BitSize.Small"" />
 <BitMenuButton Text=""Small"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Text"" Size=""BitSize.Small"" />
@@ -1286,7 +1325,7 @@ private BitMenuButtonNameSelectors<Operation> nameSelectors2 = new()
 <BitMenuButton Text=""Large"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Outline"" Size=""BitSize.Large"" />
 <BitMenuButton Text=""Large"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Text"" Size=""BitSize.Large"" />";
 
-    private readonly string example23CsharpCode = @"
+    private readonly string example24CsharpCode = @"
 public class Operation
 {
     public string? Id { get; set; }
@@ -1310,7 +1349,7 @@ private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
     IsDisabled = { Selector = m => m.Disabled }
 };";
 
-    private readonly string example24RazorCode = @"
+    private readonly string example25RazorCode = @"
 <style>
     .custom-class {
         margin-inline: 1rem;
@@ -1401,7 +1440,7 @@ private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
 
 <BitMenuButton Text=""Actions"" IconName=""@BitIconName.Settings"" Items=""destructiveCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Outline"" />";
 
-    private readonly string example24CsharpCode = @"
+    private readonly string example25CsharpCode = @"
 public class Operation
 {
     public string? Id { get; set; }
@@ -1433,11 +1472,11 @@ private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
     IsDisabled = { Selector = m => m.Disabled }
 };";
 
-    private readonly string example25RazorCode = @"
+    private readonly string example26RazorCode = @"
 <BitMenuButton Text=""گزینه ها"" Dir=""BitDir.Rtl"" Items=""rtlCustoms"" IconName=""@BitIconName.Edit"" NameSelectors=""nameSelectors"" />
 <BitMenuButton Text=""گزینه ها"" Dir=""BitDir.Rtl"" Items=""rtlCustoms"" ChevronDownIconName=""@BitIconName.DoubleChevronDown"" NameSelectors=""nameSelectors"" Split />";
 
-    private readonly string example25CsharpCode = @"
+    private readonly string example26CsharpCode = @"
 public class Operation
 {
     public string? Id { get; set; }

@@ -128,7 +128,7 @@ The features below were switched **off** when this project was generated from th
 *   **Azure Application Insights** (`appInsights`): Application Insights telemetry across the server and every client head.
 <!--#endif-->
 <!--#if (signalR != true)-->
-*   **SignalR, and with it the whole AI chatbot** (`signalR`): the real-time messaging hub, and the AI assistant: `AppAiChatPanel` with its cards, chat history, dictation, read-aloud and voice call, the server-side `Features/Chatbot` implementation and the system prompts page. Asking for "AI" or "a chatbot" in this project means enabling `signalR`.
+*   **SignalR, and with it the whole AI chatbot** (`signalR`): the real-time messaging hub, and the AI assistant: `AppAiChatPanel` (Bit.BlazorUI.AI's `BitAiChat`, streaming from `AppHub`) with its cards, chat history, dictation, read-aloud and voice call, the server-side `Features/Chatbot` implementation and the system prompts page. Asking for "AI" or "a chatbot" in this project means enabling `signalR`.
 <!--#endif-->
 <!--#if (offlineDb != true)-->
 *   **Offline database** (`offlineDb`): a client-side EF Core `DbContext` so the app can store and query its data on the device.

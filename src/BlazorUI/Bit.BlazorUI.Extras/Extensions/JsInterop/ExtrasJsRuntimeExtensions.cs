@@ -91,4 +91,9 @@ internal static class ExtrasJsRuntimeExtensions
     {
         return jsRuntime.Invoke<string?>("BitBlazorUI.Extras.getTimeZone");
     }
+
+    internal static ValueTask<double[]?> BitExtrasGetContextMenuPoint(this IJSRuntime jsRuntime, ElementReference root)
+    {
+        return jsRuntime.Invoke<double[]?>("BitBlazorUI.Extras.getContextMenuPoint", root);
+    }
 }

@@ -208,6 +208,12 @@ public class BitMenuButtonParams : BitComponentBaseParams, IBitComponentParams
     public bool? NoNewTabHint { get; set; }
 
     /// <summary>
+    /// Leaves the page its own clicks while the menu is open, by not rendering the overlay that otherwise covers
+    /// it. A click or a right-click outside of the menu and its button dismisses it.
+    /// </summary>
+    public bool? NoOverlay { get; set; }
+
+    /// <summary>
     /// The icon of the bullet shown on a checked single-choice item, using custom CSS classes for external
     /// icon libraries. Takes precedence over <see cref="RadioIconName"/> when both are set.
     /// </summary>
@@ -457,6 +463,11 @@ public class BitMenuButtonParams : BitComponentBaseParams, IBitComponentParams
         if (NoIcon.HasValue)
         {
             bitMenuButton.TakeFromCascade(nameof(NoIcon), NoIcon.Value, static m => m.NoIcon, static (m, v) => m.NoIcon = v);
+        }
+
+        if (NoOverlay.HasValue)
+        {
+            bitMenuButton.TakeFromCascade(nameof(NoOverlay), NoOverlay.Value, static m => m.NoOverlay, static (m, v) => m.NoOverlay = v);
         }
 
 

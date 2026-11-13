@@ -261,6 +261,14 @@ internal static class UtilsJsRuntimeExtensions
     }
 
 
+    // The same capture, reporting whether an origin was remembered, which it is not for a focus that was on the body
+    // or already inside the element.
+    internal static ValueTask<bool> BitUtilsTryCaptureFocusOrigin(this IJSRuntime jsRuntime, string elementId)
+    {
+        return jsRuntime.Invoke<bool>("BitBlazorUI.Utils.captureFocusOrigin", elementId);
+    }
+
+
     internal static ValueTask BitUtilsRestoreFocusOrigin(this IJSRuntime jsRuntime, string elementId)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.Utils.restoreFocusOrigin", elementId);

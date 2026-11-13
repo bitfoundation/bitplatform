@@ -59,23 +59,23 @@ public partial class WebAiChatbotTests : AiChatbotTestsBase
     }
 
     /// <summary>
-    /// A turn reaches the panel as one json document carrying the answer and the signature (See <c>AssistantTurn</c>).
-    /// Only the answer is the user's to read, so none of the document's own words may reach the screen - which is what a
-    /// panel rendering the stream instead of reading it would put there.
+    /// An answer reaches the panel with what the server wrote on it alongside its words - the signature it is sent back
+    /// with, what the model is to read of it later (See <c>AiChatProtocol</c>). Only the words are the user's to read,
+    /// so none of that may reach the screen.
     /// </summary>
     [TestMethod]
-    public async Task Assistant_Should_NotRenderTheStreamsOwnDocumentIntoAnAnswer()
+    public async Task Assistant_Should_NotRenderWhatTheServerWroteOnAnAnswerIntoIt()
     {
         var panel = await OpenChatPanel(App.Sales);
 
         var answer = await panel.Ask(PwaQuestion);
 
-        foreach (var ofTheDocument in new[] { "sentAt", "signature" })
+        // CfDJ8 is how every ASP.NET Core data protection payload, a signature included, starts.
+        foreach (var ofTheMetadata in new[] { "CfDJ8", "replaySignature" })
         {
-            Assert.DoesNotContain(ofTheDocument, answer, StringComparison.OrdinalIgnoreCase,
+            Assert.DoesNotContain(ofTheMetadata, answer, StringComparison.OrdinalIgnoreCase,
                 $"""
-                The answer carries part of the document it travelled in, so the panel is showing the stream rather
-                than reading it.
+                The answer shows what the server wrote on it, rather than only its words.
 
                 The answer: {answer}
                 """);

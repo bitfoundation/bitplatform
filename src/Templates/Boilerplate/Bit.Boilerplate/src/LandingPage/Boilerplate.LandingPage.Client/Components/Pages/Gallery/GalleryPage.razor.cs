@@ -14,6 +14,7 @@ public partial class GalleryPage
 
     private string? filter = All;
     private BitChoiceGroupItem<string>[] filters = [];
+    private string[] chatSuggestions = [];
 
     protected override void OnParametersSet()
     {
@@ -22,6 +23,13 @@ public partial class GalleryPage
             new() { Value = All, Text = Localizer[nameof(LandingStrings.GalleryFilterAll)] },
             new() { Value = Launched, Text = Localizer[nameof(LandingStrings.GalleryFilterLaunched)] },
             new() { Value = PreLaunch, Text = Localizer[nameof(LandingStrings.GalleryFilterPreLaunch)] }
+        ];
+
+        chatSuggestions =
+        [
+            Localizer[nameof(LandingStrings.ChatGallerySuggestion1)],
+            Localizer[nameof(LandingStrings.ChatGallerySuggestion2)],
+            Localizer[nameof(LandingStrings.ChatGallerySuggestion3)]
         ];
 
         base.OnParametersSet();

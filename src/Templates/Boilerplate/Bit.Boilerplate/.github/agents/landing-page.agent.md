@@ -27,9 +27,13 @@ Paths below are relative to `src/LandingPage/Boilerplate.LandingPage.Client/` un
   language links, social previews, structured data), navigation, footer, store badges, the download QR code, the
   App Store rating, the waitlist form, FAQ, countdown, announcement bar, share buttons, the consent banner and the
   legal pages. Their texts are in `Resources/LandingStrings.resx` with its `.fa.resx`.
-- **The chat** is `Components/Chat/`, in three looks (bubble, inline, concierge) that the samples pick from. It loads
-  only when a visitor opens it. What it may say about each sample is in
-  `src/LandingPage/Boilerplate.LandingPage.Server/Features/Chat/LandingChatPrompts.cs`.
+- **The chat** is `Components/Chat/`, in three looks (bubble, inline, concierge) that the samples pick from, built on
+  Bit.BlazorUI.AI with a WebSocket per question (`MapBitAiWebSocket` in
+  `src/LandingPage/Boilerplate.LandingPage.Server/Features/Chat/LandingChatService.cs`). It loads only when a visitor
+  reaches for it. What it may say about each sample is in
+  `src/LandingPage/Boilerplate.LandingPage.Server/Features/Chat/LandingChatPrompts.cs`, and what the gallery's own chat
+  says about all of them is built there from `LandingSites.cs` and each sample's `Card*` texts, so it follows the
+  samples kept or deleted.
 - **The tour** of the samples is `Components/Tour/`, started from the gallery's button and rendered next to the router
   in `Components/Routes.razor`, so it survives the move from one sample's layout to another's. `LandingTourSteps.cs`
   lists its steps, each with the page it opens and the CSS class it points at, and `TourStrings.resx` with its
@@ -88,7 +92,9 @@ Paths below are relative to `src/LandingPage/Boilerplate.LandingPage.Client/` un
 3. Delete `Components/Pages/Gallery/`, every other sample's folder, styles, images and chat facts, and their entries
    in `LandingSites.cs` and the project file. A deleted sample's copy in the Workbench goes with it, with its catalog
    entry, its import in `src/Workbench/Styles/workbench.scss` and its strings. `Components/Layout/SiteLayout.razor` and
-   the gallery's texts in `LandingStrings` go with the gallery when nothing else uses them, and so does its tour: `Components/Tour/`,
+   the gallery's texts in `LandingStrings` go with the gallery when nothing else uses them, and so does its chat
+   (`LandingChatPrompts.GetGallery`, the `ShowSamples` tool in `LandingChatService`, `Components/Chat/LandingChatSamples`
+   and the `Gallery` handling in `LandingChatSurface`) and its tour: `Components/Tour/`,
    `<LandingTour />` in `Components/Routes.razor`, `LandingTourLauncher` and its registration, and the
    `Bit.Bonboarding` and `TourStrings` lines in the client's project file.
 4. Replace the sample's name, logo, texts, images (its link preview included), company details, store links and chat

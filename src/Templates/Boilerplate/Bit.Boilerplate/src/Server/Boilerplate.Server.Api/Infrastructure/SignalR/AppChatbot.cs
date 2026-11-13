@@ -1,4 +1,5 @@
 //+:cnd:noEmit
+using System.Runtime.CompilerServices;
 using System.Threading.Channels;
 using Microsoft.Agents.AI;
 using FluentStorage.Storage;
@@ -10,19 +11,25 @@ using Microsoft.AspNetCore.Authentication.BearerToken;
 namespace Boilerplate.Server.Api.Infrastructure.SignalR;
 
 /// <summary>
-/// Service responsible for managing chatbot conversations, maintaining chat history,
-/// and handling AI interactions including getting user feedbacks, describing app's features and pages etc.
-/// This service is exposed over SignalR's AppHub.Chat.cs, so it can accept stream of user messages and return stream of AI responses using AiChatPanel.razor
+/// Answers the AI chat panel, one answer at a time: <see cref="Reply"/> reads the conversation the panel sends with each
+/// question and streams the answer back as Bit.BlazorUI.AI events, through <see cref="AppHub"/> (a BitAiHub). Nothing of
+/// the conversation is kept here between answers: the panel keeps it and sends it each time, and what it says the
+/// assistant said counts only where the assistant's signature checks out (See <see cref="AsProvablySaid"/>).
+/// <para>
 /// Only the tools that stay on the server carry [McpServerTool], so an external MCP client can use them too (checkout
-/// AppChatbot.Tools.cs). The rest reach into the user's live app over this SignalR connection - navigating it, showing
-/// a sign-in modal, clearing its files - which is the agent's to do and nobody else's, so they are AIFunctions only
-/// and signalRConnectionId is always the connection StartChat was given.
-///
+/// AppChatbot.Tools.cs). The rest reach into the user's live app over this SignalR connection - navigating it, showing a
+/// sign-in modal, clearing its files - which is the agent's to do and nobody else's, so they are AIFunctions only and
+/// signalRConnectionId is always the connection the answer streams to. What a tool shows in the conversation itself -
+/// products, a form, an approval, suggestions - goes through <see cref="ui"/>: the answer streaming to the panel, or in a
+/// voice call, which streams no answer, the panel over that connection.
+/// </para>
+/// <para>
 /// Microsoft.Agents.AI:
 /// Workflows are not implemented in this project, but with AIAgent, achieving them is now easier compared to using IChatClient directly.
 /// For example, it would be better to have separate Agents: one for product search, one for support, and one for app guidance.
 /// A coordinator Agent could determine which specialized Agent to delegate the task to based on the user's message,
 /// rather than having a single Agent with a very long System Prompt and many Tools.
+/// </para>
 /// </summary>
 public partial class AppChatbot
 {
@@ -37,284 +44,324 @@ public partial class AppChatbot
     [AutoInject] private IServiceProvider serviceProvider = default!;
     [AutoInject] private ChatbotRateLimiter rateLimiter = default!;
     [AutoInject] private IHubContext<AppHub> hubContext = default!;
+    [AutoInject] private BitAiApprovalBroker approvalBroker = default!;
     [AutoInject] private IStringLocalizer<AppStrings> localizer = default!;
     [AutoInject] private IHttpContextAccessor httpContextAccessor = default!;
     [AutoInject] private ApiServerExceptionHandler exceptionHandler = default!;
     [AutoInject] private IOptionsMonitor<BearerTokenOptions> bearerTokenOptions = default!;
 
-    private string? variablesDefault;
     private string? signalRConnectionId;
 
-    /// <summary>A voice call's cards stay unsigned, like its answers (See SignCard).</summary>
-    private bool isVoiceCall;
-
-    private List<ChatMessage> chatMessages = [];
-
-    /// <summary>Guards <see cref="chatMessages"/>: a tool of a turn being cancelled can still be adding a card to it (See RememberCard).</summary>
-    private readonly Lock historyLock = new();
+    /// <summary>Where the tools show what they show in the conversation (See <see cref="ChatbotUi"/>).</summary>
+    private ChatbotUi ui = ChatbotUi.None;
 
     /// <summary>
-    /// This is a heart of streaming AI responses back to the client.
+    /// Answers the last message of <paramref name="request"/>, the user's question, with the events the panel's
+    /// BitAiChat renders: the text as the model writes it, the tools it calls and what they show, then the answer signed
+    /// (See <see cref="AiChatProtocol.Signature"/>), so the panel can send it back as the assistant's.
     /// </summary>
-    private readonly Channel<string> responseChannel = Channel.CreateUnbounded<string>(new() { SingleReader = true, SingleWriter = true });
-
-    /// <summary>
-    /// Starts the chat session with history and system prompt
-    /// </summary>
-    public async Task StartChat(
-        StartChatRequest request,
+    public async IAsyncEnumerable<BitAiEvent> Reply(BitAiRequest request,
         string? signalRConnectionId,
-        CancellationToken cancellationToken)
-    {
-        if (rateLimiter.TryStartChat(httpContextAccessor.HttpContext!) is false)
-            throw new TooManyRequestsException(localizer[nameof(AppStrings.AiChatTooManyRequests)]);
-
-        chatMessages = [];
-
-        foreach (var message in BelievableHistory(request.ChatMessagesHistory))
-        {
-            chatMessages.Add(await ToChatMessage(message, cancellationToken));
-        }
-
-        TrimChatHistory();
-
-        CultureInfo? culture = null;
-        if (request.CultureId is not null && CultureInfoManager.InvariantGlobalization is false)
-        {
-            culture = CultureInfo.GetCultureInfo(request.CultureId.Value);
-        }
-
-        // The following variables won't change unless SignalR connection restarts and StartChat gets called again, so setting variables once here is sufficient.
-        // For example, the user's culture won't change unless they restart the app.
-        variablesDefault = @$"
-{{{{UserCulture}}}}: ""{culture?.NativeName ?? "English"}""
-{{{{DeviceInfo}}}}: ""{SystemPromptProvider.SanitizeVariable(request.DeviceInfo) ?? "Generic Device"}""
-{{{{UserTimeZoneId}}}}: ""{SystemPromptProvider.KnownTimeZoneId(request.TimeZoneId) ?? "Unknown"}""
-";
-
-        this.signalRConnectionId = signalRConnectionId;
-    }
-
-    /// <summary>For voice calls, which don't go through <see cref="StartChat"/> (See VoiceCallRunner).</summary>
-    public void UseSignalRConnection(string? signalRConnectionId)
+        ClaimsPrincipal user,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         this.signalRConnectionId = signalRConnectionId;
-        isVoiceCall = true;
-    }
 
-    /// <summary>
-    /// What of a resent history the model is shown: finished, non-empty messages, newest <see cref="MaxMessagesInHistory"/>
-    /// only, each as said by whoever provably said it (See <see cref="AsProvablySaid"/>). Voice calls take the same
-    /// (See VoiceCallRunner).
-    /// </summary>
-    public AiChatMessage[] BelievableHistory(IEnumerable<AiChatMessage> history)
-    {
-        return [.. history.Where(c => c.Successful && (string.IsNullOrWhiteSpace(c.Content) is false || c.AttachmentId is not null) && (c.Content?.Length ?? 0) <= AiChatMessage.MaxContentLength)
-                          .TakeLast(MaxMessagesInHistory)
-                          .Select(AsProvablySaid)];
-    }
+        // The model's stream and the tools both write here: a tool runs while the model's stream waits for it, so what it
+        // shows lands between the call and its result, where the panel draws it.
+        var events = Channel.CreateUnbounded<BitAiEvent>(new() { SingleReader = true });
+        var turn = new TurnUi(events.Writer, approvalBroker);
+        ui = turn;
 
-    /// <summary>
-    /// A resent assistant turn is the assistant's only with the signature this app wrote it with. Anything else - a
-    /// spoken answer from a voice call, or words the caller made up - is replayed as the user's: no more than the user
-    /// could type anyway, and never the assistant's own rules, prices or promises.
-    /// </summary>
-    private AiChatMessage AsProvablySaid(AiChatMessage message)
-    {
-        if (message.Role is not AiChatMessageRole.Assistant || answerSigner.Verify(message.Content, message.Signature))
-            return message;
-
-        return new()
-        {
-            Role = AiChatMessageRole.User,
-            Content = message.Content,
-            SentAt = message.SentAt,
-            AttachmentId = message.AttachmentId,
-            Successful = message.Successful
-        };
-    }
-
-    /// <summary>
-    /// Get the response channel for streaming AI responses
-    /// </summary>
-    public ChannelReader<string> GetStreamingChannel() => responseChannel.Reader;
-
-    /// <summary>
-    /// Process an incoming message and stream the AI response
-    /// </summary>
-    public async Task ProcessNewMessage(
-        AiChatMessage incomingMessage,
-        ClaimsPrincipal? user,
-        CancellationToken cancellationToken)
-    {
-        // Everything sent for this turn is one json document (See AssistantTurn): the opening goes out with the answer's
-        // first piece, the rest follows as the model writes it, and CloseTurn writes the closing.
-        StringBuilder answer = new();
-        var opened = false;
+        using var stop = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        var answering = Answer(request, user, turn, events.Writer, stop.Token);
 
         try
         {
-            if (string.IsNullOrWhiteSpace(variablesDefault))
-                throw new InvalidOperationException($"Chat session must be started before processing messages. Call {nameof(StartChat)} method first.");
-
-            if (Refusal(incomingMessage) is KnownException refusal)
+            await foreach (var evt in events.Reader.ReadAllAsync(cancellationToken))
             {
-                await SendExceptionToClient(refusal, cancellationToken);
-                await CloseTurn(answer, opened, successful: false);
+                yield return evt;
+            }
+        }
+        finally
+        {
+            // The panel stopped the answer, or went away: the model and a tool still waiting on an approval stop with it.
+            await stop.CancelAsync();
+            await answering;
+        }
+    }
+
+    /// <summary>For voice calls, which stream no answer: the tools show what they show over the user's SignalR connection (See VoiceCallRunner).</summary>
+    public void UseSignalRConnection(string? signalRConnectionId)
+    {
+        this.signalRConnectionId = signalRConnectionId;
+        ui = new VoiceCallUi(hubContext, signalRConnectionId);
+    }
+
+    /// <summary>Runs the agent for one question, writing its events to <paramref name="events"/>. Never throws: a failure is the answer's error.</summary>
+    private async Task Answer(BitAiRequest request, ClaimsPrincipal user, TurnUi turn, ChannelWriter<BitAiEvent> events, CancellationToken cancellationToken)
+    {
+        try
+        {
+            // The answer, the tools' replies and the errors below are written in the user's language. Set on this task's
+            // own flow, so it reaches the agent and its tools and nothing outside this answer.
+            if (UserCulture(request) is { } culture)
+            {
+                CultureInfo.CurrentCulture = CultureInfo.CurrentUICulture = culture;
+            }
+
+            if (Refusal(request, out var retryAfter) is { } refusal)
+            {
+                await events.WriteAsync(Refused(refusal, retryAfter), cancellationToken);
                 return;
             }
 
             supportAgent ??= serviceProvider.GetRequiredKeyedService<AIAgent>("SupportAgent");
 
-            // ChatRole.User rather than the role on the payload: whatever it claims, everything arriving on this
-            // stream is the user speaking.
-            var userMessage = await ToChatMessage(ChatRole.User, incomingMessage.Content, incomingMessage.AttachmentId, cancellationToken);
+            List<ChatMessage> conversation = [new(ChatRole.System, VariablesPrompt(request, user)), .. await ToChatMessages(request, cancellationToken)];
 
-            ChatMessage[] conversation;
+            var startedAt = timeProvider.GetUtcNow();
+            StringBuilder answer = new();
+            AnswerSteps steps = new(localizer);
 
-            lock (historyLock)
+            var updates = supportAgent.RunStreamingAsync(conversation, options: new ChatClientAgentRunOptions(CreateChatOptions()), cancellationToken: cancellationToken)
+                                      .AsChatResponseUpdatesAsync();
+
+            await foreach (var evt in Metered(updates, cancellationToken).ToBitAiEventsAsync(cancellationToken))
             {
-                chatMessages.Add(userMessage);
-
-                TrimChatHistory();
-
-                conversation = [.. chatMessages];
-            }
-
-            var chatOptions = CreateChatOptions();
-
-            // The following variables might change without SignalR connection restarts, so these should set here every time a new message is about to be processed.
-            // For example, user can sign-in/sign-out during chat without restarting the app or SignalR connection.
-            // User can change these values using prompt injection, so it's important not to rely on these variables for critical logic or security decisions,
-            // but rather use them for providing better context to the model to generate more relevant responses.
-            // You can either check if user is authenticated or not at a time tools are being called, or add dedicated tool so the LLM model would call it to figure out the user's authentication state instead of relying on variables.
-            var variablesPrompt = @$"
-### Variables:
-{variablesDefault}
-{{{{IsAuthenticated}}}}: ""{user.IsAuthenticated()}"",
-{{{{WebAppUrl}}}}: ""{SystemPromptProvider.EscapeVariable(httpContextAccessor.HttpContext!.Request.GetWebAppUrl().ToString())}"",
-";
-
-            var toolRan = false;
-            var answered = false;
-
-            await foreach (var response in supportAgent.RunStreamingAsync([
-                new (ChatRole.System, variablesPrompt),
-                .. conversation,
-                ], options: new ChatClientAgentRunOptions(chatOptions), cancellationToken: cancellationToken))
-            {
-                foreach (var usage in response.Contents.OfType<UsageContent>())
+                switch (evt)
                 {
-                    ChatbotMetrics.RecordChatUsage(usage.Details, supportAgent.Name, appSettings.AI?.OpenAI?.ChatModel);
+                    case BitAiTextDeltaEvent delta:
+                        // What follows a tool is a paragraph of its own, as the panel draws it (See AiChatProtocol.Answer).
+                        if (turn.ToolRanSinceText && answer.Length > 0)
+                        {
+                            answer.Append("\n\n");
+                        }
+                        turn.ToolRanSinceText = false;
+                        answer.Append(delta.Delta);
+                        break;
+
+                    case BitAiToolCallStartedEvent:
+                        turn.ToolRanSinceText = true;
+                        break;
+
+                    // What the panel draws of a call (ShownProductsDto) rather than what the model was told (See ChatbotUi.Show).
+                    case BitAiToolResultEvent result when turn.TakeShown(result.ToolCallId) is { } shown:
+                        await events.WriteAsync(new BitAiToolResultEvent(result.ToolCallId, BitAiToolOutcome.Success(shown)), cancellationToken);
+                        continue;
+
+                    case BitAiMessageCompletedEvent when Signed(answer.ToString(), turn.Shown, startedAt) is { } signed:
+                        await events.WriteAsync(signed, cancellationToken);
+                        break;
                 }
 
-                if (cancellationToken.IsCancellationRequested)
+                foreach (var before in steps.Before(evt))
                 {
-                    await CloseTurn(answer, opened, successful: false);
-                    return;
+                    await events.WriteAsync(before, cancellationToken);
                 }
 
-                // A model that calls a tool often says so first, then writes on once the tool is done.
-                toolRan |= response.Contents.Any(content => content is FunctionCallContent or FunctionResultContent);
+                await events.WriteAsync(evt, cancellationToken);
 
-                if (response.Text is not { Length: > 0 } chunk) continue;
-
-                if (toolRan && answered)
+                foreach (var after in steps.After(evt))
                 {
-                    chunk = $"\n\n{chunk}";
-                }
-
-                toolRan = false;
-                answered |= string.IsNullOrWhiteSpace(chunk) is false;
-                answer.Append(chunk);
-
-                var escaped = JsonEncodedText.Encode(chunk, System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping).Value;
-
-                // The opening goes with the first piece, so the panel is never handed an answer that is still empty.
-                await responseChannel.Writer.WriteAsync(opened ? escaped : $"{OpenTurn()}\"{escaped}", cancellationToken);
-                opened = true;
-            }
-
-            if (answered)
-            {
-                lock (historyLock)
-                {
-                    chatMessages.Add(new(ChatRole.Assistant, answer.ToString()));
+                    await events.WriteAsync(after, cancellationToken);
                 }
             }
-
-            await CloseTurn(answer, opened, successful: true);
         }
-        catch (Exception exp) when (exp is OperationCanceledException or ChannelClosedException)
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
-            await CloseTurn(answer, opened, successful: false);
+            // The panel stopped the answer; what it showed so far stays there, marked as stopped.
         }
         catch (Exception exp)
         {
-            exceptionHandler.Handle(exp, new() { { "SignalRConnectionId", signalRConnectionId } });
-            await CloseTurn(answer, opened, successful: false);
+            var problem = exceptionHandler.Handle(exp, new() { { "SignalRConnectionId", signalRConnectionId } });
+
+            events.TryWrite(Failure(problem.Title, retryable: true));
+        }
+        finally
+        {
+            events.TryComplete();
         }
     }
 
-    /// <summary>Everything of the turn's document that comes before the answer.</summary>
-    private string OpenTurn() => $$"""{"sentAt":"{{timeProvider.GetUtcNow():O}}","answer":""";
-
     /// <summary>
-    /// Finishes the turn's document with the fields only the server can fill in, over the answer the user was actually
-    /// shown.
-    /// <para>
-    /// Never sent with the message's own token: the client ends a turn when the document closes, and on an unbounded
-    /// channel WriteAsync drops what it is given once that token is cancelled - which is the case here.
-    /// </para>
+    /// The answer's signatures, on the metadata of the message the panel keeps (See <see cref="AiChatProtocol"/>): one over
+    /// the words the model wrote, which read aloud speaks, and - when a tool showed something - one over what the model
+    /// reads of the whole answer on later turns. Null when nothing was said or shown.
     /// </summary>
-    private Task CloseTurn(StringBuilder answer, bool opened, bool successful)
+    private BitAiMetadataEvent? Signed(string answer, IReadOnlyList<string> shown, DateTimeOffset startedAt)
     {
-        // The answer's string is still open, or nothing was written at all and the opening goes out with the closing.
-        var rest = opened ? "\"" : $"{OpenTurn()}null";
+        if (string.IsNullOrWhiteSpace(answer) && shown.Count is 0) return null;
 
-        var signature = successful && string.IsNullOrWhiteSpace(answer.ToString()) is false
-            ? $"\"{JsonEncodedText.Encode(answerSigner.Sign(answer.ToString()))}\""
-            : "null";
+        Dictionary<string, object?> extra = new()
+        {
+            [AiChatProtocol.Answer] = answer,
+            [AiChatProtocol.Signature] = answerSigner.Sign(answer)
+        };
 
-        return SendStringToClient($$"""{{rest}},"signature":{{signature}},"successful":{{(successful ? "true" : "false")}}}""",
-                                  CancellationToken.None);
+        if (shown.Count > 0)
+        {
+            var replay = string.Join("\n\n", shown.Append(answer).Where(part => string.IsNullOrWhiteSpace(part) is false));
+
+            extra[AiChatProtocol.Replay] = replay;
+            extra[AiChatProtocol.ReplaySignature] = answerSigner.Sign(replay);
+        }
+
+        return new BitAiMetadataEvent(new BitAiGenerationMetadata { StartedAt = startedAt, CompletedAt = timeProvider.GetUtcNow(), Extra = extra });
     }
 
-    private KnownException? Refusal(AiChatMessage incomingMessage)
+    /// <summary>Passes the model's updates on, recording the split of each model call's usage on the way (See ChatbotMetrics).</summary>
+    private async IAsyncEnumerable<ChatResponseUpdate> Metered(IAsyncEnumerable<ChatResponseUpdate> updates, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        if (incomingMessage.Content?.Length > AiChatMessage.MaxContentLength)
+        await foreach (var update in updates.WithCancellation(cancellationToken))
+        {
+            foreach (var usage in update.Contents.OfType<UsageContent>())
+            {
+                ChatbotMetrics.RecordChatUsage(usage.Details, supportAgent?.Name, appSettings.AI?.OpenAI?.ChatModel);
+            }
+
+            yield return update;
+        }
+    }
+
+    private static BitAiErrorEvent Failure(string? message, bool retryable) => new(new BitAiError(message ?? "The answer could not be written.") { IsRetryable = retryable });
+
+    /// <summary>Why a question isn't answered, if it isn't, and - when that's the per-minute limit - how long until it would be.</summary>
+    private KnownException? Refusal(BitAiRequest request, out TimeSpan? retryAfter)
+    {
+        retryAfter = null;
+
+        // The question is the last message, the user's; anything else is a request this panel never sends.
+        if (request.Messages is not [.., { Role.IsUser: true } question] || question.GetText().Length > AiChatMessage.MaxContentLength)
             return new BadRequestException();
 
-        if (rateLimiter.TryProcessMessage(httpContextAccessor.HttpContext!) is false)
+        if (rateLimiter.TryProcessMessage(httpContextAccessor.HttpContext!, out retryAfter) is false)
             return new TooManyRequestsException(localizer[nameof(AppStrings.AiChatTooManyRequests)]);
 
         return null;
     }
 
-    private async Task SendExceptionToClient(KnownException exception, CancellationToken cancellationToken)
+    /// <summary>
+    /// A refused question's answer. Past the per-minute limit the same question is answered once the wait is over, so the
+    /// panel says how long that is and offers it again then; anything else would be refused again.
+    /// </summary>
+    private BitAiErrorEvent Refused(KnownException refusal, TimeSpan? retryAfter)
     {
-        var problemDetails = exceptionHandler.Handle(exception, new() { { "SignalRConnectionId", signalRConnectionId } });
+        var message = exceptionHandler.Handle(refusal, new() { { "SignalRConnectionId", signalRConnectionId } }).Title;
 
-        if (signalRConnectionId is null)
-            return;
+        return refusal is TooManyRequestsException
+            ? new(new BitAiError(message ?? refusal.Message) { Kind = BitAiErrorKind.RateLimit, IsRetryable = true, RetryAfter = retryAfter })
+            : Failure(message, retryable: false);
+    }
 
-        await hubContext.Clients.Client(signalRConnectionId).Publish(SharedAppMessages.EXCEPTION_THROWN, problemDetails, cancellationToken);
+    private static CultureInfo? UserCulture(BitAiRequest request)
+    {
+        if (CultureInfoManager.InvariantGlobalization || ContextValue(request, AiChatProtocol.CultureId) is not { } lcid || int.TryParse(lcid, out var cultureId) is false)
+            return null;
+
+        return CultureInfoManager.SupportedCultures.Where(c => c.Culture.LCID == cultureId).Select(c => c.Culture).FirstOrDefault();
     }
 
     /// <summary>
-    /// A message of the resent history, as the role it claims. Only messages that went through
-    /// <see cref="AsProvablySaid"/> reach here, so an assistant turn is one this app signed.
+    /// What the model knows about the user and their device. The user can change any of these through prompt injection,
+    /// so they're context for a better answer, never something to decide on: a tool that needs to know whether the user
+    /// is signed in checks it itself when it's called.
     /// </summary>
-    private Task<ChatMessage> ToChatMessage(AiChatMessage message, CancellationToken cancellationToken)
-        => ToChatMessage(message.Role is AiChatMessageRole.Assistant ? ChatRole.Assistant : ChatRole.User,
-                         message.Content,
-                         message.AttachmentId,
-                         cancellationToken);
+    private string VariablesPrompt(BitAiRequest request, ClaimsPrincipal user) => $@"
+### Variables:
+{{{{UserCulture}}}}: ""{UserCulture(request)?.NativeName ?? "English"}""
+{{{{DeviceInfo}}}}: ""{SystemPromptProvider.SanitizeVariable(ContextValue(request, AiChatProtocol.DeviceInfo)) ?? "Generic Device"}""
+{{{{UserTimeZoneId}}}}: ""{SystemPromptProvider.KnownTimeZoneId(ContextValue(request, AiChatProtocol.TimeZoneId)) ?? "Unknown"}""
+{{{{IsAuthenticated}}}}: ""{user.IsAuthenticated()}"",
+{{{{WebAppUrl}}}}: ""{SystemPromptProvider.EscapeVariable(httpContextAccessor.HttpContext!.Request.GetWebAppUrl().ToString())}"",
+";
+
+    /// <summary>What the panel sends besides the conversation, in the request's options (See <see cref="AiChatProtocol"/>).</summary>
+    private static string? ContextValue(BitAiRequest request, string key) => request.Options?.Extra?.GetValueOrDefault(key) switch
+    {
+        string text => text,
+        JsonElement { ValueKind: JsonValueKind.String } json => json.GetString(),
+        JsonElement { ValueKind: JsonValueKind.Number } json => json.GetRawText(),
+        int number => number.ToString(CultureInfo.InvariantCulture),
+        _ => null
+    };
 
     /// <summary>
-    /// The text of a message, plus the image the user attached to it, if any.
+    /// The conversation as the model reads it: finished messages that say something and aren't over long, the newest
+    /// <see cref="MaxMessagesInHistory"/> only, each as said by whoever provably said it (See <see cref="AsProvablySaid"/>),
+    /// with the pictures the user attached.
     /// </summary>
-    private async Task<ChatMessage> ToChatMessage(ChatRole role, string? content, Guid? attachmentId, CancellationToken cancellationToken)
+    private async Task<List<ChatMessage>> ToChatMessages(BitAiRequest request, CancellationToken cancellationToken)
+    {
+        List<ChatMessage> messages = [];
+
+        // A stopped or failed answer is kept on screen, but never replayed: the model would read its own unfinished
+        // sentence as something it completed.
+        foreach (var message in request.Messages.Where(m => m.Status is not (BitAiMessageStatus.Cancelled or BitAiMessageStatus.Failed)).TakeLast(MaxMessagesInHistory))
+        {
+            var (role, text) = AsProvablySaid(message);
+
+            // Nothing of the panel's is that long (See Refusal), so it would only grow the prompt - and the bill.
+            if (text?.Length > AiChatMessage.MaxContentLength) continue;
+
+            var images = message.Role.IsUser ? message.Attachments.Select(AttachedImageId).OfType<Guid>().ToArray() : [];
+
+            if (string.IsNullOrWhiteSpace(text) && images.Length is 0) continue;
+
+            messages.Add(ToChatMessage(role, text, images));
+        }
+
+        TrimChatHistory(messages);
+
+        await ReadAttachedImages(messages, cancellationToken);
+
+        return messages;
+    }
+
+    /// <summary>
+    /// What a message of the conversation the panel sent says, and who said it. An assistant message is the assistant's
+    /// only with the signature this app wrote it with (See <see cref="AiChatProtocol.Signature"/>). Anything else - a
+    /// spoken answer from a voice call, or words the caller made up - is replayed as the user's: no more than the user
+    /// could type anyway, and never the assistant's own rules, prices or promises.
+    /// </summary>
+    private (ChatRole Role, string? Text) AsProvablySaid(IBitAiMessage message)
+    {
+        if (message.Role.IsUser) return (ChatRole.User, message.GetText());
+
+        var extra = message.Metadata?.Extra;
+
+        if (ExtraValue(extra, AiChatProtocol.Replay) is { } replay && answerSigner.Verify(replay, ExtraValue(extra, AiChatProtocol.ReplaySignature)))
+            return (ChatRole.Assistant, replay);
+
+        if (ExtraValue(extra, AiChatProtocol.Answer) is { } answer && answerSigner.Verify(answer, ExtraValue(extra, AiChatProtocol.Signature)))
+            return (ChatRole.Assistant, answer);
+
+        return (ChatRole.User, message.GetText());
+    }
+
+    /// <summary>What a voice call is told of the conversation so far: the text chat's rules, applied to the history it's sent (See VoiceCallRunner).</summary>
+    public AiChatMessage[] BelievableHistory(IEnumerable<AiChatMessage> history)
+    {
+        return [.. history.Where(m => string.IsNullOrWhiteSpace(m.Content) is false && m.Content.Length <= AiChatMessage.MaxContentLength)
+                          .TakeLast(MaxMessagesInHistory)
+                          .Select(m => m.Role is AiChatMessageRole.Assistant && answerSigner.Verify(m.Content, m.Signature) is false
+                              ? new AiChatMessage { Role = AiChatMessageRole.User, Content = m.Content }
+                              : m)];
+    }
+
+    private static string? ExtraValue(IReadOnlyDictionary<string, object?>? extra, string key) => extra?.GetValueOrDefault(key) switch
+    {
+        string text => text,
+        JsonElement { ValueKind: JsonValueKind.String } json => json.GetString(),
+        _ => null
+    };
+
+    /// <summary>The image an attachment of the panel stands for: the id it was stored under, never its address (See <see cref="AiChatProtocol.AttachmentId"/>).</summary>
+    private static Guid? AttachedImageId(BitAiAttachment attachment)
+        => ExtraValue(attachment.Metadata, AiChatProtocol.AttachmentId) is { } id && Guid.TryParse(id, out var attachmentId) ? attachmentId : null;
+
+    /// <summary>The text of a message, plus the images the user attached to it, if any, by their ids (See <see cref="ReadAttachedImages"/>).</summary>
+    private static ChatMessage ToChatMessage(ChatRole role, string? content, Guid[] attachmentIds)
     {
         List<AIContent> contents = [];
 
@@ -323,21 +370,52 @@ public partial class AppChatbot
             contents.Add(new TextContent(content));
         }
 
-        if (await ReadAttachedImage(attachmentId, cancellationToken) is AIContent image)
-        {
-            contents.Add(image);
-        }
+        contents.AddRange(attachmentIds.Select(attachmentId => new AttachedImage(attachmentId)));
 
         return new ChatMessage(role, contents);
+    }
+
+    /// <summary>An image of the conversation by its id, until <see cref="ReadAttachedImages"/> reads it.</summary>
+    private sealed class AttachedImage(Guid attachmentId) : AIContent
+    {
+        public Guid AttachmentId { get; } = attachmentId;
+    }
+
+    /// <summary>
+    /// Reads the pictures the model is shown, once <see cref="TrimChatHistory"/> has picked them, rather than every one the
+    /// conversation holds. A picture AiChatImagesRetentionJobRunner has deleted since is left out, rather than failing the
+    /// question or every one after it: the conversation comes back from the device for as long as the user keeps it.
+    /// </summary>
+    private async Task ReadAttachedImages(List<ChatMessage> messages, CancellationToken cancellationToken)
+    {
+        foreach (var message in messages)
+        {
+            var contents = message.Contents;
+
+            for (var i = contents.Count - 1; i >= 0; i--)
+            {
+                if (contents[i] is not AttachedImage image) continue;
+
+                if (await ReadAttachedImage(image.AttachmentId, cancellationToken) is { } read)
+                {
+                    contents[i] = read;
+                }
+                else
+                {
+                    contents.RemoveAt(i);
+                }
+            }
+
+            KeepSaying(contents);
+        }
     }
 
     /// <summary>What <c>AttachmentController</c> stores and serves an AI chat image as.</summary>
     private const string AiChatImageMediaType = "image/webp";
 
     /// <summary>
-    /// The chat image the client named, or null when it named none. The kind is fixed here rather than taken from
-    /// the client, so an id is only ever looked for among this app's chat images - a payload cannot point this at a
-    /// profile picture.
+    /// A chat image the user attached. The kind is fixed here rather than taken from the client, so an id is only ever
+    /// looked for among this app's chat images - a payload cannot point this at a profile picture.
     /// <para>
     /// The picture is handed over as a url for the provider to fetch, which costs nothing to produce and does not
     /// re-upload the same bytes on every turn of the conversation. That only works where the provider can reach this
@@ -346,17 +424,16 @@ public partial class AppChatbot
     /// to do the same.
     /// </para>
     /// </summary>
-    private async Task<AIContent?> ReadAttachedImage(Guid? attachmentId, CancellationToken cancellationToken)
+    private async Task<AIContent?> ReadAttachedImage(Guid attachmentId, CancellationToken cancellationToken)
     {
-        if (attachmentId is null)
-            return null;
+        var path = AttachmentController.GetFilePath(appSettings, attachmentId, AttachmentKind.AiChatImage);
+
+        if (await blobStorage.ObjectExists(path, cancellationToken) is false) return null;
 
         if (hostEnvironment.IsDevelopment() is false)
         {
             return new UriContent(new Uri(httpContextAccessor.HttpContext!.Request.GetBaseUrl(), $"api/v1/Attachment/GetAttachment/{attachmentId}/{AttachmentKind.AiChatImage}"), AiChatImageMediaType);
         }
-
-        var path = AttachmentController.GetFilePath(appSettings, attachmentId.Value, AttachmentKind.AiChatImage);
 
         return new DataContent(await blobStorage.GetBytes(path, cancellationToken), AiChatImageMediaType);
     }
@@ -368,14 +445,14 @@ public partial class AppChatbot
     /// </summary>
     private const int MaxImagesInHistory = 3;
 
-    /// <inheritdoc cref="StartChatRequest.MaxChatMessagesHistory"/>
-    private const int MaxMessagesInHistory = StartChatRequest.MaxChatMessagesHistory;
+    /// <inheritdoc cref="AiChatProtocol.MaxHistory"/>
+    private const int MaxMessagesInHistory = AiChatProtocol.MaxHistory;
 
     /// <summary>
-    /// The conversation is resent in full on every message, so an unbounded history grows the prompt (and its
-    /// cost) without limit until the provider rejects it for exceeding the context window.
+    /// The conversation is sent in full with every question, so an unbounded history grows the prompt (and its cost)
+    /// without limit until the provider rejects it for exceeding the context window.
     /// </summary>
-    private void TrimChatHistory()
+    private static void TrimChatHistory(List<ChatMessage> chatMessages)
     {
         if (chatMessages.Count > MaxMessagesInHistory)
         {
@@ -390,21 +467,27 @@ public partial class AppChatbot
 
             for (var j = contents.Count - 1; j >= 0; j--)
             {
-                // Both shapes a picture arrives in - see ReadAttachedImage - or the cap would quietly stop applying
-                // in every environment that hands the model a url.
-                if (contents[j] is not (DataContent or UriContent)) continue;
+                // Still ids here, so the pictures past the cap are never read (See ReadAttachedImages)
+                if (contents[j] is not AttachedImage) continue;
 
                 if (++pictures <= MaxImagesInHistory) continue;
 
                 contents.RemoveAt(j);
             }
 
-            // What was said about a picture stays in the conversation once the picture itself is gone - but a message
-            // that was nothing else is left with no content at all, which not every provider accepts.
-            if (contents.Count == 0)
-            {
-                contents.Add(new TextContent("(an image the user attached earlier)"));
-            }
+            KeepSaying(contents);
+        }
+    }
+
+    /// <summary>
+    /// What was said about a picture stays in the conversation once the picture itself is left out - but a message that was
+    /// nothing else is left with no content at all, which not every provider accepts.
+    /// </summary>
+    private static void KeepSaying(IList<AIContent> contents)
+    {
+        if (contents.Count == 0)
+        {
+            contents.Add(new TextContent("(an image the user attached earlier)"));
         }
     }
 
@@ -444,15 +527,5 @@ public partial class AppChatbot
         var chatOptions = new ChatOptions { };
         configuration.GetRequiredSection("AI:ChatOptions").Bind(chatOptions);
         return chatOptions;
-    }
-
-    private async Task SendStringToClient(string message, CancellationToken ct)
-    {
-        try
-        {
-            await responseChannel.Writer.WriteAsync(message, ct);
-        }
-        catch (ChannelClosedException) { } // Normal when client has disconnected / stream ended.
-        catch (OperationCanceledException) { }
     }
 }

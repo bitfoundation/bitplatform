@@ -18,7 +18,7 @@ public partial class AppHub
     public string[] GetDiagnosticReport([FromServices] ServerDiagnosticService diagnostic)
     {
         // Azure SignalR runs the hub with no ambient ASP.NET Core request, so IHttpContextAccessor is never set (See
-        // StartChat). The handshake's context is exactly the request whose forwarding is in question.
+        // AppHub.Chatbot.cs). The handshake's context is exactly the request whose forwarding is in question.
         serviceProvider.GetRequiredService<IHttpContextAccessor>().HttpContext = Context.GetHttpContext();
 
         return diagnostic.BuildSections(DiagnosticReportSource.SignalR);

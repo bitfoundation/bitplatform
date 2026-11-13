@@ -259,6 +259,7 @@ public static class ComponentCatalog
         ["Dropdown"] = BitIconName.Combobox,
         ["FileInput"] = BitIconName.OpenFile,
         ["FileUpload"] = BitIconName.Upload,
+        ["ListBox"] = BitIconName.BulletedList,
         ["NumberField"] = BitIconName.NumberField,
         ["OtpInput"] = BitIconName.PasswordField,
         ["Rating"] = BitIconName.FavoriteStar,
@@ -296,6 +297,7 @@ public static class ComponentCatalog
         ["NavBar"] = BitIconName.SecondaryNav,
         ["Pagination"] = BitIconName.Page,
         ["Pivot"] = BitIconName.BrowserTab,
+        ["Stepper"] = BitIconName.NumberedList,
 
         // Notifications
         ["Badge"] = BitIconName.Badge,
@@ -343,6 +345,7 @@ public static class ComponentCatalog
         ["AccordionList"] = BitIconName.CollapseAll,
         ["AppShell"] = BitIconName.Devices4,
         ["Chart"] = BitIconName.BarChartVertical,
+        ["ContextMenu"] = BitIconName.ContextMenu,
         ["CountryPicker"] = BitIconName.Globe,
         ["DataGrid"] = BitIconName.Table,
         ["ErrorBoundary"] = BitIconName.ErrorBadge,
@@ -357,6 +360,7 @@ public static class ComponentCatalog
         ["NotificationCenter"] = BitIconName.Ringer,
         ["PdfViewer"] = BitIconName.PDF,
         ["PhoneInput"] = BitIconName.Phone,
+        ["PopConfirm"] = BitIconName.StatusCircleQuestionMark,
         ["ResourceTimeline"] = BitIconName.TimelineMatrixView,
         ["RichTextEditor"] = BitIconName.EditNote,
         ["TextShimmer"] = BitIconName.ChatBot,
@@ -440,6 +444,7 @@ public static class ComponentCatalog
         ["Dropdown"] = "Single or multi select from a list, with search, chips, grouping and virtualization.",
         ["FileInput"] = "The selection half of file handling: browse, drag and drop, capture from camera.",
         ["FileUpload"] = "The transport half: chunked, resumable uploads with per-file progress.",
+        ["ListBox"] = "An always-visible list to pick one item or several from, bound and validated like any input.",
         ["NumberField"] = "A text field dedicated to numbers, with steppers, bounds and formatting.",
         ["OtpInput"] = "The row of boxes a one-time passcode is typed into, with paste and auto-advance.",
         ["Rating"] = "Turns an opinion into a row of stars: hover to preview, click to commit.",
@@ -477,6 +482,7 @@ public static class ComponentCatalog
         ["NavBar"] = "A bar of navigation links to the main areas of an app, the way a mobile app puts its top-level destinations along the bottom of the screen.",
         ["Pagination"] = "Moves between pages of a long collection.",
         ["Pivot"] = "Tabs for switching between frequently accessed, distinct content categories.",
+        ["Stepper"] = "The steps of a process in their order - done, current and upcoming - horizontally or vertically.",
 
         // Notifications
         ["Badge"] = "A small marker on another element: a count, a dot, a status.",
@@ -524,6 +530,7 @@ public static class ComponentCatalog
         ["AccordionList"] = "An accordion that builds its expandable items from a single collection.",
         ["AppShell"] = "The cross-platform application container: safe areas, scroll state, chrome.",
         ["Chart"] = "A native Blazor charting component rendered entirely with SVG.",
+        ["ContextMenu"] = "A menu opened where an area of the page is right-clicked, or with Shift+F10 or the Menu key.",
         ["CountryPicker"] = "A searchable country selector with flags, bound to a BitCountry.",
         ["DataGrid"] = "An information-rich grid with sorting, filtering, paging and virtualization.",
         ["ErrorBoundary"] = "Catches exceptions thrown by its children and renders a recoverable fallback UI.",
@@ -538,6 +545,7 @@ public static class ComponentCatalog
         ["NotificationCenter"] = "A bell with an unread count that opens a panel listing the notifications the app's snack bar showed.",
         ["PdfViewer"] = "A pure-C# PDF viewer: no pdf.js, works in every render mode.",
         ["PhoneInput"] = "A phone number field with a searchable country selector and flags.",
+        ["PopConfirm"] = "A confirmation asked in a small popup anchored to the action that needs it.",
         ["ResourceTimeline"] = "A resource planner: allocation bars on resource rows along a zoomable, time-zone-aware time axis.",
         ["RichTextEditor"] = "A native WYSIWYG editor written in C#, with a configurable toolbar.",
         ["TextShimmer"] = "A gradient band sweeping across text, for AI-style streaming states.",

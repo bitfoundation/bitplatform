@@ -372,6 +372,23 @@
             } catch (e) { console.error('BitBlazorUI.Extras.scrollOptionIntoView:', e); }
         }
 
+        // The point a context menu opened from the keyboard is placed at: the middle of the element that has the focus
+        // inside the area (a row, a cell, or the area itself), which is where Chromium places its own menu for
+        // Shift+F10 too. Only the part of that element on the screen counts, so a focused area taller or wider than the
+        // viewport still gets its menu in view.
+        public static getContextMenuPoint(root: HTMLElement): number[] {
+            const active = document.activeElement;
+            const target = active instanceof Element && root.contains(active) ? active : root;
+            const rect = target.getBoundingClientRect();
+
+            const left = Math.max(rect.left, 0);
+            const right = Math.max(left, Math.min(rect.right, window.innerWidth));
+            const top = Math.max(rect.top, 0);
+            const bottom = Math.max(top, Math.min(rect.bottom, window.innerHeight));
+
+            return [Math.round((left + right) / 2), Math.round((top + bottom) / 2)];
+        }
+
         // The IANA id of the time zone the browser runs in - the visitor's own, which on Blazor Server is
         // not the one TimeZoneInfo.Local reads (the server's). Engines built on CLDR may answer with an id
         // IANA has since renamed (Asia/Calcutta, Europe/Kiev), which the C# side resolves. Null where the

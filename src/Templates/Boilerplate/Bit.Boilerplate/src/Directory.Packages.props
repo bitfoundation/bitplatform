@@ -10,6 +10,10 @@
         <PackageVersion Include="Bit.BlazorUI.Assets" Version="11.0.0-pre-19" />
         <PackageVersion Include="Bit.BlazorUI.Extras" Version="11.0.0-pre-19" />
         <PackageVersion Include="Bit.BlazorUI.AI" Version="11.0.0-pre-19" />
+        <PackageVersion Include="Bit.BlazorUI.AI.Core" Version="11.0.0-pre-19" />
+        <PackageVersion Include="Bit.BlazorUI.AI.Server" Version="11.0.0-pre-19" />
+        <PackageVersion Include="Bit.BlazorUI.AI.SignalR" Version="11.0.0-pre-19" />
+        <PackageVersion Include="Bit.BlazorUI.AI.ChatClient" Version="11.0.0-pre-19" />
         <PackageVersion Include="Bit.Bmage" Version="11.0.0-pre-19" />
         <PackageVersion Include="Bit.Bmage.Blazor" Version="11.0.0-pre-19" />
         <PackageVersion Include="Bit.BevTools" Version="11.0.0-pre-19" />

@@ -847,7 +847,36 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Color" RazorCode="@example21RazorCode" Id="example21" PreventRenderForMcpClient>
+<DemoExample Title="Context menu" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21"
+             PreventRenderForMcpClient>
+    <div>
+        OpenAt opens the menu at a point on the screen instead of against the button, which makes it a context menu:
+        hand it the event of a right-click, or the coordinates of a point, and the menu opens there with the focus on
+        its first item and the keys it always answers. It is still placed to stay on the screen, and Escape, Tab or an
+        item closes it and hands the focus back to where it was. NoOverlay leaves the page its own clicks while the menu
+        is open, so a second right-click on the box moves the menu there, and a click anywhere else dismisses it.
+        Right-click the box below.
+    </div>
+    <br />
+    <div class="example-content">
+        <div class="context-area" tabindex="0"
+             @oncontextmenu="e => contextMenuButton.OpenAt(e)" @oncontextmenu:preventDefault>
+            Right-click here
+        </div>
+        <BitMenuButton @ref="contextMenuButton" NoOverlay Text="Edit" TItem="BitMenuButtonOption"
+                       OnClick="(BitMenuButtonOption? item) => contextClickedOption = item?.Text ?? contextClickedOption">
+            <BitMenuButtonOption Text="Cut" Key="cut" IconName="@BitIconName.Cut" />
+            <BitMenuButtonOption Text="Copy" Key="copy" IconName="@BitIconName.Copy" />
+            <BitMenuButtonOption Text="Paste" Key="paste" IconName="@BitIconName.Paste" />
+            <BitMenuButtonOption IsSeparator />
+            <BitMenuButtonOption Text="Delete" Key="delete" IconName="@BitIconName.Delete" />
+        </BitMenuButton>
+    </div>
+    <br />
+    <div>Clicked item: <b>@contextClickedOption</b></div>
+</DemoExample>
+
+<DemoExample Title="Color" RazorCode="@example22RazorCode" Id="example22" PreventRenderForMcpClient>
     <div>
         The Color parameter applies the general theme colors of bit BlazorUI (Primary being the default) to the menu
         button across all variants, in both normal and Split modes.
@@ -2335,7 +2364,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="External Icons" RazorCode="@example22RazorCode" Id="example22" PreventRenderForMcpClient>
+<DemoExample Title="External Icons" RazorCode="@example23RazorCode" Id="example23" PreventRenderForMcpClient>
     <div>
         Icons from external libraries, like Font Awesome, can be used with the Icon parameter of both the menu button
         and its options, either as a plain CSS class string or a BitIconInfo instance. The ChevronDownIcon parameter
@@ -2401,7 +2430,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Size" RazorCode="@example23RazorCode" Id="example23" PreventRenderForMcpClient>
+<DemoExample Title="Size" RazorCode="@example24RazorCode" Id="example24" PreventRenderForMcpClient>
     <div>
         The Size parameter adjusts the size of the menu button among Small, Medium (default), and Large.
     </div>
@@ -2461,7 +2490,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Style & Class" RazorCode="@example24RazorCode" Id="example24" PreventRenderForMcpClient>
+<DemoExample Title="Style & Class" RazorCode="@example25RazorCode" Id="example25" PreventRenderForMcpClient>
     <div>
         Customize the look of the menu button at any level: the Style and Class parameters of the root element, the
         Style and Class of each option, the Styles and Classes parameters targeting the internal parts of the
@@ -2566,7 +2595,7 @@
     </BitMenuButton>
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example25RazorCode" Id="example25" PreventRenderForMcpClient>
+<DemoExample Title="RTL" RazorCode="@example26RazorCode" Id="example26" PreventRenderForMcpClient>
     <div>
         Use the Dir parameter to render the menu button in right-to-left (RTL) direction.
     </div>

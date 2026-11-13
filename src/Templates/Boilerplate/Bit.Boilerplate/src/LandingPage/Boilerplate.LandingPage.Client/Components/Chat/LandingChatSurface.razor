@@ -1,21 +1,25 @@
 @inherits LandingComponentBase
 
 <div class="lp-chat-surface @Class">
-    <CascadingValue Value="renderers" IsFixed="true">
-        <CascadingValue Value="uiOptions" IsFixed="true">
-            <BitAiChat Session="session"
-                       Suggestions="Suggestions"
-                       EmptyTitle="@Localizer[nameof(LandingStrings.ChatEmptyTitle)]"
-                       EmptyBody="@Localizer[nameof(LandingStrings.ChatEmptyBody), Site.Name]"
-                       Placeholder="@Localizer[nameof(LandingStrings.ChatPlaceholder)]"
-                       AllowAttachments="false"
-                       AllowDictation="false"
-                       UiOptions="uiOptions"
-                       Dir="@(IsRtl ? BitDir.Rtl : BitDir.Ltr)">
-                <FooterTemplate>
-                    <p class="lp-chat-notice">@Localizer[nameof(LandingStrings.ChatAiNotice)]</p>
-                </FooterTemplate>
-            </BitAiChat>
+    @* The conversation of an earlier visit is read back first, so the chat opens on it rather than on an empty one *@
+    @if (session is not null)
+    {
+        <CascadingValue Value="renderers" IsFixed="true">
+            <BitParams Parameters="parameters">
+                <BitAiChat Session="session"
+                           Suggestions="Suggestions"
+                           EmptyTitle="@Localizer[nameof(LandingStrings.ChatEmptyTitle)]"
+                           EmptyBody="@EmptyBody"
+                           Placeholder="@Localizer[nameof(LandingStrings.ChatPlaceholder)]"
+                           AllowAttachments="false"
+                           AllowDictation="true"
+                           UiOptions="uiOptions"
+                           Dir="@(IsRtl ? BitDir.Rtl : BitDir.Ltr)">
+                    <FooterTemplate>
+                        <p class="lp-chat-notice">@Localizer[nameof(LandingStrings.ChatAiNotice)]</p>
+                    </FooterTemplate>
+                </BitAiChat>
+            </BitParams>
         </CascadingValue>
-    </CascadingValue>
+    }
 </div>
