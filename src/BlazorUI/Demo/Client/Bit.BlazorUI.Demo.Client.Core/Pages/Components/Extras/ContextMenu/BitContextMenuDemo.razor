@@ -1,0 +1,171 @@
+﻿@page "/components/contextmenu"
+@page "/components/context-menu"
+
+<PageOutlet Url="components/contextmenu"
+            Title="ContextMenu"
+            Description="BitContextMenu opens a menu where an area of the page is right-clicked, or with Shift+F10 or the Menu key." />
+
+<DemoPage Name="ContextMenu"
+          SecondaryNames="@(["RightClickMenu", "PopupMenu", "ShortcutMenu"])"
+          Description="BitContextMenu opens a menu over an area of the page rather than from a button: where the area is right-clicked, or from the keyboard with Shift+F10 or the Menu key while the focus is in it. The menu is a BitMenuButton's, with its items, keyboard, submenus and check and radio items."
+          Parameters="componentParameters"
+          PublicMembers="componentPublicMembers"
+          GitHubExtrasUrl="ContextMenu/BitContextMenu.razor"
+          GitHubDemoUrl="Extras/ContextMenu/BitContextMenuDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            To use this component, you need to install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Extras" Target="_blank">
+                <BitTag Reversed
+                        Text="Bit.BlazorUI.Extras"
+                        Color="BitColor.SecondaryBackground"
+                        IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            nuget package, as described in the Optional steps of the
+            <BitLink Href="/getting-started">Getting started</BitLink> page.
+        </BitText>
+        <br />
+        <BitText>
+            The area is a tab stop of its own, so the keyboard can reach it and open the menu. While the menu is open, a
+            right-click on the area moves it there, and a click or a right-click anywhere else on the page closes it.
+            Escape, Tab or an item hands the focus back to where it was in the area.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1" PreventRenderForMcpClient>
+            <div>
+                Right-click the box, or focus it with Tab and press Shift+F10 or the Menu key. The menu opens at the point,
+                with the focus on its first item.
+            </div>
+            <br />
+            <div>
+                <BitContextMenu Items="basicItems" OnItemClick="(BitMenuButtonItem item) => basicClicked = item.Text">
+                    <div class="context-area">Right-click here</div>
+                </BitContextMenu>
+                <br />
+                <div>Clicked item: <b>@basicClicked</b></div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Options" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2" PreventRenderForMcpClient>
+            <div>
+                The items can be declared as BitMenuButtonOption components in Options, with everything a menu button's items
+                have: icons, separators, submenus, and check and radio items.
+            </div>
+            <br />
+            <div>
+                <BitContextMenu TItem="BitMenuButtonOption" OnItemClick="(BitMenuButtonOption item) => optionClicked = item.Text">
+                    <ChildContent>
+                        <div class="context-area">Right-click here</div>
+                    </ChildContent>
+                    <Options>
+                        <BitMenuButtonOption Text="Cut" Key="cut" IconName="@BitIconName.Cut" />
+                        <BitMenuButtonOption Text="Copy" Key="copy" IconName="@BitIconName.Copy" />
+                        <BitMenuButtonOption Text="Paste" Key="paste" IconName="@BitIconName.Paste" />
+                        <BitMenuButtonOption IsSeparator />
+                        <BitMenuButtonOption Text="Share" Key="share" IconName="@BitIconName.Share">
+                            <BitMenuButtonOption Text="Email" Key="email" IconName="@BitIconName.Mail" />
+                            <BitMenuButtonOption Text="Link" Key="link" IconName="@BitIconName.Link" />
+                        </BitMenuButtonOption>
+                        <BitMenuButtonOption IsSeparator />
+                        <BitMenuButtonOption Text="Show grid" Key="grid" Checkable @bind-IsChecked="showGrid" />
+                    </Options>
+                </BitContextMenu>
+                <br />
+                <div>Clicked item: <b>@optionClicked</b>, show grid: <b>@showGrid</b></div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Custom items" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3" PreventRenderForMcpClient>
+            <div>Items of a class of the app's own, mapped through NameSelectors.</div>
+            <br />
+            <div>
+                <BitContextMenu Items="customItems"
+                                NameSelectors="customNameSelectors"
+                                OnItemClick="(ContextMenuOperation item) => customClicked = item.Name">
+                    <div class="context-area">Right-click here</div>
+                </BitContextMenu>
+                <br />
+                <div>Clicked item: <b>@customClicked</b></div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Rows" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4" PreventRenderForMcpClient>
+            <div>
+                One context menu serves a whole list: each row records itself as the one the menu is for, on its own right-click
+                and on its focus (for Shift+F10). From the keyboard the menu opens at the focused row.
+            </div>
+            <br />
+            <div>
+                <BitContextMenu Items="fileItems" OnItemClick="(BitMenuButtonItem item) => fileAction = (item.Text, currentFile)">
+                    <div class="file-list">
+                        @foreach (var file in files)
+                        {
+                            <div class="file-row @(currentFile == file ? "current" : null)" tabindex="0"
+                                 @onfocus="() => currentFile = file" @oncontextmenu="() => currentFile = file">
+                                @file
+                            </div>
+                        }
+                    </div>
+                </BitContextMenu>
+                <br />
+                <div>Last action: <b>@(fileAction is { } a ? $"{a.Action} {a.File}" : null)</b></div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Binding & OpenAt" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5" PreventRenderForMcpClient>
+            <div>
+                IsOpen is two-way bindable, and closes the menu when set to false. OpenAt opens it from code at a point of
+                the viewport, or at the point of a mouse event.
+            </div>
+            <br />
+            <div>
+                <BitContextMenu @ref="boundContextMenu" Items="basicItems" @bind-IsOpen="isBoundOpen">
+                    <div class="context-area">Right-click here</div>
+                </BitContextMenu>
+                <br />
+                <div class="example-content">
+                    <BitButton OnClick="() => boundContextMenu.OpenAt(24, 24)">Open at (24, 24)</BitButton>
+                    <BitText>IsOpen: <b>@isBoundOpen</b></BitText>
+                </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Disabled" RazorCode="@example6RazorCode" Id="example6" PreventRenderForMcpClient>
+            <div>A disabled context menu leaves the area to the browser's own menu.</div>
+            <br />
+            <div>
+                <BitContextMenu Items="basicItems" Disabled>
+                    <div class="context-area">Right-click here</div>
+                </BitContextMenu>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7" PreventRenderForMcpClient>
+            <div>
+                The area takes Style and Class, and the menu MenuStyles and MenuClasses, which are a menu button's
+                (BitMenuButtonClassStyles), and AriaLabel names the menu.
+            </div>
+            <br />
+            <div>
+                <BitContextMenu Items="basicItems"
+                                AriaLabel="Clipboard"
+                                Style="border-radius: 1rem; background-color: var(--bit-clr-bg-sec);"
+                                MenuStyles="@(new() { CalloutContainer = "min-width: 12rem;", ItemText = "color: tomato;" })"
+                                MenuClasses="@(new() { Callout = "custom-callout" })">
+                    <div class="context-area">Right-click here</div>
+                </BitContextMenu>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example8RazorCode" Id="example8" PreventRenderForMcpClient>
+            <div>Use BitContextMenu in right-to-left (RTL).</div>
+            <br />
+            <div dir="rtl">
+                <BitContextMenu Dir="BitDir.Rtl" Items="rtlItems">
+                    <div class="context-area">اینجا کلیک راست کنید</div>
+                </BitContextMenu>
+            </div>
+        </DemoExample>
+    </Examples>
+</DemoPage>
