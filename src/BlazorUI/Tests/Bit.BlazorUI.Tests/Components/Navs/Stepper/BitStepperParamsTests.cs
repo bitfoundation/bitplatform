@@ -21,11 +21,14 @@ public class BitStepperParamsTests : BunitTestContext
     private static readonly string[] _notCascaded =
     [
         nameof(BitStepper<BitStepperItem>.CascadingParameters),
+        nameof(BitStepper<BitStepperItem>.ChildContent),
         nameof(BitStepper<BitStepperItem>.CurrentIndex),
         nameof(BitStepper<BitStepperItem>.CurrentIndexChanged),
         nameof(BitStepper<BitStepperItem>.Items),
+        nameof(BitStepper<BitStepperItem>.NameSelectors),
         nameof(BitStepper<BitStepperItem>.OnChange),
         nameof(BitStepper<BitStepperItem>.OnItemClick),
+        nameof(BitStepper<BitStepperItem>.Options),
     ];
 
     private IRenderedComponent<BitParams> RenderWithParams(BitStepperParams stepperParams, Action<RenderTreeBuilder>? attributes = null)

@@ -1,0 +1,23 @@
+﻿@using Bit.BlazorUI
+
+<BitStepper TItem="BitStepperOption" CurrentIndex="CurrentIndex" CurrentIndexChanged="i => CurrentIndex = i" OnItemClick="o => Clicked.Add(o.Text)">
+    <BitStepperOption Text="First" Key="first" Description="Start here" IconName="Contact" OnClick="o => OwnClicks.Add(o.Text)" />
+    @if (ShowMiddle)
+    {
+        <BitStepperOption Text="Middle" Key="middle" />
+    }
+    <BitStepperOption Text="@LastText" Key="last" IsError="LastIsError" IsDisabled="LastIsDisabled" Title="The end"
+                      Class="last-class" Style="margin:1px" AriaLabel="@LastAriaLabel" />
+</BitStepper>
+
+@code {
+    [Parameter] public bool ShowMiddle { get; set; }
+    [Parameter] public string LastText { get; set; } = "Last";
+    [Parameter] public bool LastIsError { get; set; }
+    [Parameter] public bool LastIsDisabled { get; set; }
+    [Parameter] public string? LastAriaLabel { get; set; }
+    [Parameter] public int CurrentIndex { get; set; }
+
+    public List<string?> Clicked { get; } = [];
+    public List<string?> OwnClicks { get; } = [];
+}
