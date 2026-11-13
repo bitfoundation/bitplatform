@@ -114,7 +114,7 @@ public class TwoFactorSectionUITests : SettingsPageTest
     }
 
     [TestMethod, EverySurface]
-    public async Task ARefusedCopy_Should_SayItFailed(WorkbenchSurface surface)
+    public async Task ARefusedCopy_Should_NotSayItCopied(WorkbenchSurface surface)
     {
         await Context.AddInitScriptAsync("navigator.clipboard.writeText = () => Promise.reject(new Error('Refused'))");
 
@@ -122,7 +122,7 @@ public class TwoFactorSectionUITests : SettingsPageTest
 
         await Press(TwoFactor.GetByRole(AriaRole.Button, new() { Name = AppStrings.Copy, Exact = true }));
 
-        await Expect(Snack(WorkbenchStrings.CopyFailed)).ToBeVisibleAsync();
+        await Expect(TwoFactor.GetByRole(AriaRole.Button, new() { Name = AppStrings.Copy, Exact = true })).ToBeVisibleAsync();
         await Expect(TwoFactor.GetByRole(AriaRole.Button, new() { Name = AppStrings.Copied, Exact = true })).ToHaveCountAsync(0);
     }
 

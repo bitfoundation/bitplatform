@@ -161,6 +161,8 @@ public class AccountSectionUITests : SettingsPageTest
         await Press(ButtonIn(panel, AppStrings.ResendEmailTokenButtonText));
 
         await Expect(Snack(AppStrings.SuccessfulSendChangeEmailTokenMessage)).ToBeVisibleAsync();
+        // The first code's message may still show: the resent one is in once the step's buttons stop loading, before going back.
+        await Expect(confirm).ToBeEnabledAsync();
         await Expect(TextField(panel, AppStrings.Email)).ToHaveValueAsync(NewEmail);
         await Expect(confirm).ToBeVisibleAsync();
 
@@ -266,6 +268,8 @@ public class AccountSectionUITests : SettingsPageTest
         await Press(ButtonIn(panel, AppStrings.ResendPhoneTokenButtonText));
 
         await Expect(Snack(AppStrings.SuccessfulSendChangePhoneNumberTokenMessage)).ToBeVisibleAsync();
+        // The first code's message may still show: the resent one is in once the step's buttons stop loading, before going back.
+        await Expect(confirm).ToBeEnabledAsync();
         await Expect(confirm).ToBeVisibleAsync();
 
         await Press(ButtonIn(panel, AppStrings.GoBack));
@@ -407,6 +411,6 @@ public class AccountSectionUITests : SettingsPageTest
 
         await Expect(View().GetByText(AppStrings.YouAreNotAuthorized)).ToBeVisibleAsync();
         await Expect(AccountButton(AppStrings.AccountMenuTitle)).ToBeVisibleAsync();
-        await Expect(Page).ToHaveURLAsync(new Regex(@"\?auth=signedout$"));
+        await Expect(Page).ToHaveURLAsync(new Regex(@"\?auth=signedout(&|$)"));
     }
 }

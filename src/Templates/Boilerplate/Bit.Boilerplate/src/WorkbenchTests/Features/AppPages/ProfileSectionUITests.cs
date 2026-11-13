@@ -156,6 +156,9 @@ public class ProfileSectionUITests : SettingsPageTest
 
         await chooser.SetFilesAsync(new FilePayload { Name = "picture.png", MimeType = "image/png", Buffer = [137, 80, 78, 71] });
 
+        // The app's image editor can't open a picture this small, and offers to upload it as it is.
+        await Press(View().GetByRole(AriaRole.Button, new() { Name = AppStrings.UploadImageAsIs, Exact = true }));
+
         await Expect(RemovePicture).ToBeVisibleAsync();
     }
 }
