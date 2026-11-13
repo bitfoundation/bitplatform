@@ -382,6 +382,7 @@ public class ComponentCatalogTests : McpTestBase
     [DataRow("BitText", "BitTextParams")]
     [DataRow("BitStack", "BitStackParams")]
     [DataRow("BitChoiceGroup", "BitChoiceGroupParams")]
+    [DataRow("BitListBox", "BitListBoxParams")]
     [DataRow("BitCircularTimePicker", "BitCircularTimePickerParams")]
     [DataRow("BitCarousel", "BitCarouselParams")]
     [DataRow("BitDropdown", "BitDropdownParams<TItem, TValue>")]

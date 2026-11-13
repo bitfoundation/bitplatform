@@ -1,0 +1,35 @@
+﻿@using System.ComponentModel.DataAnnotations
+@using Bit.BlazorUI
+@using Microsoft.AspNetCore.Components.Forms
+
+<EditForm Model="Model" OnValidSubmit="() => ValidSubmits++">
+    <DataAnnotationsValidator />
+
+    <BitListBox Id="single" Items="Items" @bind-Value="Model.Fruit" ShowValidationMessage />
+
+    <BitListBox Id="multi" Items="Items" MultiSelect @bind-Values="Model.Fruits" ShowValidationMessage />
+
+    <button id="submit" type="submit">Submit</button>
+</EditForm>
+
+@code {
+    public class FormModel
+    {
+        [Required(ErrorMessage = "Pick a fruit")]
+        public string? Fruit { get; set; }
+
+        [MinLength(2, ErrorMessage = "Pick two fruits")]
+        public IEnumerable<string?>? Fruits { get; set; } = [];
+    }
+
+    public FormModel Model { get; } = new();
+
+    public int ValidSubmits { get; private set; }
+
+    public List<BitListBoxItem<string>> Items { get; } =
+    [
+        new() { Text = "Apple", Value = "apple" },
+        new() { Text = "Banana", Value = "banana" },
+        new() { Text = "Cherry", Value = "cherry" }
+    ];
+}

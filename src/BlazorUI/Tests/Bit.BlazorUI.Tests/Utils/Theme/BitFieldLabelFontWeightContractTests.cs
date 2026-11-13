@@ -39,6 +39,7 @@ public sealed class BitFieldLabelFontWeightContractTests
         (".bit-dtp-lbl", "Bit.BlazorUI/Components/Inputs/DatePicker/BitDatePicker.scss"),
         (".bit-dtrp-lbl", "Bit.BlazorUI/Components/Inputs/DateRangePicker/BitDateRangePicker.scss"),
         (".bit-drp-lbl", "Bit.BlazorUI/Components/Inputs/Dropdown/BitDropdown.scss"),
+        (".bit-lbx-lbl", "Bit.BlazorUI/Components/Inputs/ListBox/BitListBox.scss"),
         (".bit-nfl-lbl", "Bit.BlazorUI/Components/Inputs/NumberField/BitNumberField.scss"),
         (".bit-otp-lbl", "Bit.BlazorUI/Components/Inputs/OtpInput/BitOtpInput.scss"),
         (".bit-rtg-lbl", "Bit.BlazorUI/Components/Inputs/Rating/BitRating.scss"),
