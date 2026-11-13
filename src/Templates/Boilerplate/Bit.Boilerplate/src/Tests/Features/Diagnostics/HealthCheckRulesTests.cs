@@ -28,7 +28,7 @@ public partial class HealthCheckRulesTests
         var reused = await Check(cachedCheck);
 
         Assert.AreEqual(1, innerCheck.Calls, "A healthy result younger than the cache duration must be reused.");
-        Assert.AreEqual(checkedAt, reused.Data["CheckedAt"], "A reused result must say when the check really ran.");
+        Assert.AreEqual(checkedAt, reused.Data["VerifiedAt"], "A reused result must say when the check really ran.");
         Assert.AreEqual(TimeSpan.FromMinutes(5), reused.Data["CacheDuration"]);
         Assert.IsInstanceOfType<TimeSpan>(reused.Data["Duration"], "A reused result must say how long the check really ran.");
 
@@ -237,6 +237,7 @@ public partial class HealthCheckRulesTests
     [DataRow("smtp.gmail.com", "google", true, DisplayName = "Google Workspace, signed")]
     [DataRow("smtp.office365.com", "selector1", false, DisplayName = "Microsoft 365, not signed")]
     [DataRow("smtp.sendgrid.net", "s1", true, DisplayName = "SendGrid, signed")]
+    [DataRow("smtp.azurecomm.net", "selector1-azurecomm-prod-net", true, DisplayName = "Azure Communication Services, signed")]
     public async Task EmailDeliveryHealthCheck_Should_OnlyReportDkim_AtTheServicesSelectors(string smtpHost, string selector, bool signed)
     {
         Dictionary<string, string[]> records = new()
@@ -404,6 +405,51 @@ public partial class HealthCheckRulesTests
             {
                 await writer.WriteLineAsync("502 Command not implemented");
             }
+        }
+    }
+
+    /// <summary>
+    /// A site is listed once by the address it is requested at, whose scheme and host are case-insensitive but whose path is
+    /// not: <c>example.com</c> and <c>https://EXAMPLE.com/</c> are one site, <c>/A</c> and <c>/a</c> two.
+    /// </summary>
+    [TestMethod]
+    public void WebsitesHealthCheck_Should_ListEachSiteOnce_ByTheAddressItIsRequestedAt()
+    {
+        var section = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
+        {
+            ["Websites"] = "example.com, https://EXAMPLE.com/ https://example.com/A https://example.com/a",
+            ["Websites:0"] = "http://example.com"
+        }).Build().GetSection("Websites");
+
+        Assert.AreSequenceEqual(new[] { "example.com", "https://example.com/A", "https://example.com/a", "http://example.com" },
+            WebsitesHealthCheck.Read(section));
+    }
+
+    /// <summary>
+    /// Two entries for one address are requested once: requested twice, their two failures would be one key of the
+    /// result's data, and the check would throw instead of saying what went wrong.
+    /// </summary>
+    [TestMethod]
+    public async Task WebsitesHealthCheck_Should_ReportASiteListedTwiceOnce()
+    {
+        var websitesHealthCheck = new WebsitesHealthCheck(new UnavailableSitesHttpClientFactory(), ["site.example", "https://SITE.example/"]);
+
+        var result = await Check(websitesHealthCheck);
+
+        Assert.AreEqual(HealthStatus.Degraded, result.Status);
+        Assert.AreEqual("1 of 1 sites failed", result.Description);
+        Assert.AreEqual("503 Service Unavailable.", result.Data["https://site.example/"]);
+    }
+
+    /// <summary>Every site it is asked for answers 503, without a request leaving the machine.</summary>
+    private sealed class UnavailableSitesHttpClientFactory : IHttpClientFactory
+    {
+        public HttpClient CreateClient(string name) => new(new UnavailableHandler());
+
+        private sealed class UnavailableHandler : HttpMessageHandler
+        {
+            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+                => Task.FromResult(new HttpResponseMessage(HttpStatusCode.ServiceUnavailable) { RequestMessage = request });
         }
     }
 

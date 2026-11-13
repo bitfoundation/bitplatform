@@ -2180,6 +2180,12 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="SignOutOfAllAccounts" xml:space="preserve">
     <value>Sign out of all accounts on this device</value>
   </data>
+    <data name="DiagnosticPageTitle" xml:space="preserve">
+    <value>Diagnostic</value>
+  </data>
+    <data name="DiagnosticPageDescription" xml:space="preserve">
+    <value>What this device and the server report about the app, for troubleshooting.</value>
+  </data>
   <!--#if (framework == 'net11.0') -->
     <data name="KioskTitle" xml:space="preserve">
     <value>Kiosk mode</value>

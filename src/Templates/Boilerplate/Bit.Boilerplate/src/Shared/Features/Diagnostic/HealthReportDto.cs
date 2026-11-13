@@ -40,7 +40,21 @@ public class HealthReportEntryDto
 
     public string? Description { get; set; }
 
+    /// <summary>
+    /// How long the check took. A healthy result that is reused (See <see cref="VerifiedAt"/>) carries its own run's
+    /// duration, not the cache lookup's.
+    /// </summary>
     public TimeSpan Duration { get; set; }
+
+    /// <summary>
+    /// When the dependency was last really checked, for a check whose healthy result is reused for
+    /// <see cref="CacheDuration"/> so probes don't each become a paid call (See AddCachedCheck). It can be well before
+    /// the report. Null for a check that runs on every report.
+    /// </summary>
+    public DateTimeOffset? VerifiedAt { get; set; }
+
+    /// <summary>How long a healthy result of the check is reused. Null for a check that runs on every report.</summary>
+    public TimeSpan? CacheDuration { get; set; }
 
     public TimeSpan? Timeout { get; set; }
 
@@ -58,6 +72,27 @@ public class HealthReportEntryDto
     /// Null for a check registered without one.
     /// </summary>
     public string? Category { get; set; }
+
+    /// <summary>
+    /// What a page calls the check, such as "Database" for <c>AppDbContext</c>, in the app's own words (See
+    /// HealthCheckDescriptions); the registration name for a check described nowhere.
+    /// </summary>
+    public string Title { get; set; } = "";
+
+    /// <summary>
+    /// The check's icon, a bit BlazorUI <c>BitIconName</c>: its own, or its category's (See <see cref="HealthCheckCategories.IconOf"/>).
+    /// </summary>
+    public string IconName { get; set; } = "";
+
+    /// <summary>What a pass proves, such as "Opens a connection to the app's database". Null when the app says nothing.</summary>
+    public string? About { get; set; }
+
+    /// <summary>
+    /// The check stands in for a dependency whose settings are missing (See AddNotConfiguredCheck). It reports Degraded
+    /// like a slow dependency does, but asks for another fix: configure the dependency, or remove the code that uses it.
+    /// Set from the registration's <see cref="HealthCheckTags.NotConfigured"/> tag.
+    /// </summary>
+    public bool IsNotConfigured { get; set; }
 
     public Dictionary<string, string?> Data { get; set; } = [];
 }

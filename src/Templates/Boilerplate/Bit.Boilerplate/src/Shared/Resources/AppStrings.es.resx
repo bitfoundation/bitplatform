@@ -2180,6 +2180,12 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
     <data name="SignOutOfAllAccounts" xml:space="preserve">
     <value>Cerrar sesión en todas las cuentas de este dispositivo</value>
   </data>
+    <data name="DiagnosticPageTitle" xml:space="preserve">
+    <value>Diagnóstico</value>
+  </data>
+    <data name="DiagnosticPageDescription" xml:space="preserve">
+    <value>Lo que este dispositivo y el servidor informan sobre la aplicación, para solucionar problemas.</value>
+  </data>
   <!--#if (framework == 'net11.0') -->
     <data name="KioskTitle" xml:space="preserve">
     <value>Modo quiosco</value>

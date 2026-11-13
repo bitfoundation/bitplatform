@@ -26,4 +26,22 @@ public static class HealthCheckCategories
 
     /// <summary>Any other service the app calls, such as a payment gateway, a map or a CRM.</summary>
     public const string Integrations = "category:Integrations";
+
+    /// <summary>The project's other sites, such as its landing page or a blog (See <c>HealthChecks:Websites</c>).</summary>
+    public const string Websites = "category:Websites";
+
+    /// <summary>
+    /// The icon (a <c>BitIconName</c>) of a check in <paramref name="category"/>, a name without <see cref="TagPrefix"/>,
+    /// that has none of its own, and of that category's group on the Operations page.
+    /// </summary>
+    public static string IconOf(string? category) => category switch
+    {
+        "Platform" => "Server",
+        "Messaging" => "Message",
+        "Identity" => "Permissions",
+        "AI" => "Robot",
+        "Integrations" => "PlugConnected",
+        "Websites" => "Globe",
+        _ => "Diagnostic"
+    };
 }

@@ -25,14 +25,15 @@ public static class IHealthChecksBuilderExtensions
 
         /// <summary>
         /// Stands in for a check whose dependency has no configuration, and reports Degraded (See AddServerApiHealthChecks).
-        /// It takes the real check's <paramref name="category"/>, so it is grouped where that check would be.
+        /// It takes the real check's <paramref name="category"/>, so it is grouped where that check would be, and the
+        /// <see cref="HealthCheckTags.NotConfigured"/> tag, so /healthz says it is only missing its settings.
         /// </summary>
         public IHealthChecksBuilder AddNotConfiguredCheck(string name, string category, string settings)
         {
             return builder.Add(new HealthCheckRegistration(name,
                 _ => new NotConfiguredHealthCheck(settings),
                 failureStatus: HealthStatus.Degraded,
-                tags: [category]));
+                tags: [category, HealthCheckTags.NotConfigured]));
         }
     }
 

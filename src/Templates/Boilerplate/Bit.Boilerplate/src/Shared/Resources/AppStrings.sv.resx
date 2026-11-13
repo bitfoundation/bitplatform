@@ -2180,6 +2180,12 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
     <data name="SignOutOfAllAccounts" xml:space="preserve">
     <value>Logga ut från alla konton på den här enheten</value>
   </data>
+    <data name="DiagnosticPageTitle" xml:space="preserve">
+    <value>Diagnostik</value>
+  </data>
+    <data name="DiagnosticPageDescription" xml:space="preserve">
+    <value>Vad den här enheten och servern rapporterar om appen, för felsökning.</value>
+  </data>
   <!--#if (framework == 'net11.0') -->
     <data name="KioskTitle" xml:space="preserve">
     <value>Kioskläge</value>

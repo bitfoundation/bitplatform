@@ -2180,6 +2180,12 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
     <data name="SignOutOfAllAccounts" xml:space="preserve">
     <value>Afmelden bij alle accounts op dit apparaat</value>
   </data>
+    <data name="DiagnosticPageTitle" xml:space="preserve">
+    <value>Diagnose</value>
+  </data>
+    <data name="DiagnosticPageDescription" xml:space="preserve">
+    <value>Wat dit apparaat en de server over de app melden, voor het oplossen van problemen.</value>
+  </data>
   <!--#if (framework == 'net11.0') -->
     <data name="KioskTitle" xml:space="preserve">
     <value>Kioskmodus</value>

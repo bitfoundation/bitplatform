@@ -2180,6 +2180,12 @@
     <data name="SignOutOfAllAccounts" xml:space="preserve">
     <value>इस डिवाइस के सभी खातों से साइन आउट करें</value>
   </data>
+    <data name="DiagnosticPageTitle" xml:space="preserve">
+    <value>निदान</value>
+  </data>
+    <data name="DiagnosticPageDescription" xml:space="preserve">
+    <value>समस्या निवारण के लिए, यह डिवाइस और सर्वर ऐप के बारे में क्या बताते हैं।</value>
+  </data>
   <!--#if (framework == 'net11.0') -->
     <data name="KioskTitle" xml:space="preserve">
     <value>कियोस्क मोड</value>

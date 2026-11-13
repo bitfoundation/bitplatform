@@ -2180,6 +2180,12 @@
     <data name="SignOutOfAllAccounts" xml:space="preserve">
     <value>退出此设备上的所有账户</value>
   </data>
+    <data name="DiagnosticPageTitle" xml:space="preserve">
+    <value>诊断</value>
+  </data>
+    <data name="DiagnosticPageDescription" xml:space="preserve">
+    <value>此设备和服务器报告的应用信息，用于故障排除。</value>
+  </data>
   <!--#if (framework == 'net11.0') -->
     <data name="KioskTitle" xml:space="preserve">
     <value>自助终端模式</value>

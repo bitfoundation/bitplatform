@@ -1037,6 +1037,22 @@ public static partial class Program
                 cacheDuration: TimeSpan.FromMinutes(30), timeout: TimeSpan.FromSeconds(10));
         }
 
+        // The project's other sites, such as its landing page or a blog, so a monitor reading /health watches them too. Optional,
+        // so with none listed there's no entry rather than a missing configuration. No retries: the check reports the first answer.
+        if (WebsitesHealthCheck.Read(configuration.GetSection("HealthChecks:Websites")) is { Length: > 0 } websites)
+        {
+#pragma warning disable EXTEXP0001 // RemoveAllResilienceHandlers is still marked experimental.
+            builder.Services.AddHttpClient(WebsitesHealthCheck.HttpClientName, httpClient => httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (compatible; Boilerplate-HealthCheck)"))
+                .RemoveAllResilienceHandlers();
+#pragma warning restore EXTEXP0001
+
+            // The check bounds itself; the registration's timeout only backs that up, as the report would lose which sites failed.
+            // A healthy result is kept for half of a one-minute monitoring interval, so a monitor reading once a minute always gets
+            // a run of its own and learns a site is down on its next read, while probes in the same half minute share one request.
+            healthChecksBuilder.AddCachedCheck("websites", HealthCheckCategories.Websites, sp => ActivatorUtilities.CreateInstance<WebsitesHealthCheck>(sp, (object)websites),
+                cacheDuration: TimeSpan.FromSeconds(30), timeout: WebsitesHealthCheck.CheckTimeout + TimeSpan.FromSeconds(2));
+        }
+
         // Outside development, a missing configuration is most likely a deployment mistake, so it reports Degraded.
         // A project that doesn't use a dependency should remove its code.
         var reportNotConfigured = builder.Environment.IsDevelopment() is false;
@@ -1095,8 +1111,12 @@ public static partial class Program
         //#endif
 
         //#if (signalR == true)
-        AddCachedCheckIfConfigured("azureSignalR", HealthCheckCategories.Messaging, string.IsNullOrWhiteSpace(configuration["Azure:SignalR:ConnectionString"]) is false, "Azure:SignalR:ConnectionString",
-            sp => ActivatorUtilities.CreateInstance<Infrastructure.SignalR.AzureSignalRHealthCheck>(sp), cacheDuration: TimeSpan.FromMinutes(1), timeout: TimeSpan.FromSeconds(10));
+        // Azure SignalR is optional in every environment: without it the app serves SignalR itself, so it has no stand-in.
+        if (string.IsNullOrWhiteSpace(configuration["Azure:SignalR:ConnectionString"]) is false)
+        {
+            healthChecksBuilder.AddCachedCheck("azureSignalR", HealthCheckCategories.Messaging, sp => ActivatorUtilities.CreateInstance<Infrastructure.SignalR.AzureSignalRHealthCheck>(sp),
+                cacheDuration: TimeSpan.FromMinutes(1), timeout: TimeSpan.FromSeconds(10));
+        }
         //#endif
 
         //#if (notification == true)

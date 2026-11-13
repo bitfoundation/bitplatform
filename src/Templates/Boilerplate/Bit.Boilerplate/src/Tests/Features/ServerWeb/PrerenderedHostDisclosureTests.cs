@@ -35,7 +35,7 @@ public class PrerenderedHostDisclosureTests
         Assert.DoesNotContain(hostOperatingSystem, about,
             $"The about page told an anonymous visitor the server runs '{hostOperatingSystem}', on a page whose subject is the visitor's own device.");
 
-        var diagnostic = await visitorHttpClient.GetStringAsync("/diagnostic", TestContext.CancellationToken);
+        var diagnostic = await visitorHttpClient.GetStringAsync(PageUrls.Diagnostic, TestContext.CancellationToken);
 
         Assert.DoesNotContain(hostOperatingSystem, diagnostic,
             $"The diagnostic page prerendered the server's '{hostOperatingSystem}' as the client's Platform, and that page is anonymous too.");

@@ -5,8 +5,8 @@ using Boilerplate.Shared.Features.Diagnostic;
 namespace Boilerplate.Client.Core.Components.Layout.Diagnostic;
 
 /// <summary>
-/// The device's own telemetry context, plus what the api says about the request. Routable at <c>/diagnostic</c> - a
-/// literal route rather than a <see cref="PageUrls"/> entry, since it is not part of the app's navigation.
+/// The device's own telemetry context, plus what the api says about the request. Routable at
+/// <see cref="PageUrls.Diagnostic"/>, which is not part of the app's navigation and not for search engines.
 /// </summary>
 public partial class DiagnosticReport
 {
@@ -15,6 +15,12 @@ public partial class DiagnosticReport
     /// only runs when asked for.
     /// </summary>
     [Parameter] public bool AutoRun { get; set; } = true;
+
+    /// <summary>
+    /// Set by <see cref="AppDiagnosticModal"/>, which shows the report on top of whatever page is open: the report then
+    /// leaves that page's title, description and head alone.
+    /// </summary>
+    [Parameter] public bool Embedded { get; set; }
 
     //#if (notification == true)
     /// <summary>Long enough for a subscription that is going to arrive, short enough not to hold up the report.</summary>

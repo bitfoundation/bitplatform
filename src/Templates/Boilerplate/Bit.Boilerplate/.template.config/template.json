@@ -954,6 +954,8 @@
                         "src/Tests/Features/Categories/AddOrEditCategoryModalTests.cs",
                         "src/Tests/Features/Ads/AdsServiceTests.cs",
                         "src/Tests/Features/Configuration/ClientSettingsValidationTests.cs",
+                        "src/Tests/Features/Configuration/HttpClientDefaultsTests.cs",
+                        "src/Tests/Features/ForceUpdate/ForceUpdateTests.cs",
                         "src/Tests/Features/Identity/TrustedOriginsTests.cs",
                         "src/Tests/Features/Identity/MagicLinkSignInTests.cs",
                         "src/Tests/Features/Identity/MagicLinkSignInUtils.cs",
@@ -1112,6 +1114,7 @@
                         "src/Tests/Features/Chatbot/TestAiChatPanel.cs",
                         "src/Tests/Features/Chatbot/SpeechHealthChecksTests.cs",
                         "src/Tests/Features/Chatbot/ChatbotCostLimitsTests.cs",
+                        "src/Tests/Features/Chatbot/AiChatAnswerStepsTests.cs",
                         "src/Tests/Features/SignalR/AzureSignalRHealthCheckTests.cs",
                         "src/Tests/Features/Attachments/AiChatImagesRetentionTests.cs"
                     ]
