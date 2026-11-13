@@ -170,6 +170,7 @@ public partial class MainLayout
                 new() { Text = "AccordionList", Url = "/components/accordionlist", Description = "Expander, Accordion" },
                 new() { Text = "AppShell", Url = "/components/appshell", Description = "SafeArea" },
                 new() { Text = "Chart", Url = "/components/chart", Description = "Graph, Plot", Data = "Line chart, Bar chart, Column chart, Area chart, Pie chart, Doughnut, Donut, Polar area, Radar, Spider, Scatter, Bubble, Mixed, Combo, Sparkline, Gauge, Waterfall, Error bars, Trendline, Annotations, Zoom, Chart.js" },
+                new() { Text = "ContextMenu", Url = "/components/contextmenu", Description = "RightClickMenu, PopupMenu, ShortcutMenu", Data = "Context menu, Right click, Right-click menu, Shift+F10, Menu key, Popup menu, Actions menu", AdditionalUrls = ["/components/context-menu"] },
                 new() { Text = "CountryPicker", Url = "/components/countrypicker", Description = "CountrySelector, CountrySelect", Data = "Country, Nationality, Country of residence, Billing country, Flag, ISO code" },
                 new() { Text = "DataGrid", Url = "/components/datagrid", AdditionalUrls = ["/components/data-grid"], Description = "DataTable, TreeGrid, TreeList" },
                 new() { Text = "ErrorBoundary", Url = "/components/errorboundary" },
