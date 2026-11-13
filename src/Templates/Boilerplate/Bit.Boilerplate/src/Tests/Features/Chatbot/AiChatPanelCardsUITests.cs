@@ -134,7 +134,7 @@ public partial class AiChatPanelCardsUITests : AiChatPanelTestBase
         var firstCar = panel.GetByRole(AriaRole.Link, new() { Name = "1. EQB SUV", Exact = true });
 
         await firstCar.FocusAsync();
-        await firstCar.ClickAsync();
+        await firstCar.PressAsync("Enter");
 
         await Expect(Page).ToHaveURLAsync(new Regex($"{PageUrls.Product}/10000$"));
         await Expect(panel).ToBeHiddenAsync();
