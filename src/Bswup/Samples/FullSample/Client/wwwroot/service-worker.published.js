@@ -1,4 +1,4 @@
-// bit version: 11.0.0-pre-19
+// bit version: 11.0.0-pre-20
 
 self.assetsInclude = [];
 // The client's scoped-css bundle is in this app's asset manifest but is never served: in a
