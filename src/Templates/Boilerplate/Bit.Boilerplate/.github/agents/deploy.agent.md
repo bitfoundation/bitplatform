@@ -240,8 +240,8 @@ business, and only what the project doesn't answer by itself.
 - The Workbench (`src/Workbench`), when the user deploys it, runs as Blazor Server, the only mode it has, and only on
   Test, on a hostname behind Cloudflare Access (section 8), since it is for the team and the few people they invite.
 <!--#endif-->
-- Apart from the Workbench, Blazor Server is for development only in this template, and so is Auto, which runs on
-  Blazor Server until WebAssembly has loaded: offer neither for the app or the landing page.
+- Apart from the Workbench, we don't recommend Blazor Server outside development, nor Auto, which runs on Blazor
+  Server until WebAssembly has loaded: recommend WebAssembly for the app and the landing page.
 - Multilingual support adds about 800 KB to what a visitor downloads. If the project isn't multilingual, make sure
   `InvariantGlobalization` is on in `src/Directory.Build.props`.
 - Tell the user the outcome in their own terms ("Google can show your product pages, and they appear at once"), and
