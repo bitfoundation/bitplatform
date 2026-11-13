@@ -523,6 +523,33 @@ public class BitListBoxTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitListBoxShouldStillFocusItsItemsOnceItsItemsAreReplaced()
+    {
+        string? bound = null;
+
+        var com = RenderComponent<BitListBox<BitListBoxItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, Fruits());
+            parameters.Bind(p => p.Value, bound, v => bound = v);
+        });
+
+        string LastFocused() => ((Microsoft.AspNetCore.Components.ElementReference)Context.JSInterop.Invocations[FocusElement].Last().Arguments[0]!).Id;
+
+        com.Find("ul").KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });
+        var avocado = LastFocused();
+        com.Find("ul").KeyDown(new KeyboardEventArgs { Key = "ArrowUp" });
+
+        // New item objects under the same keys: Blazor keeps the elements, and with them the references it created them
+        // with, which are the ones the list box has to focus.
+        com.Render(parameters => parameters.Add(p => p.Items, Fruits()));
+
+        com.Find("ul").KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });
+
+        Assert.IsFalse(string.IsNullOrEmpty(avocado));
+        Assert.AreEqual(avocado, LastFocused(), "the focus is given the reference the element was created with.");
+    }
+
+    [TestMethod]
     public void BitListBoxShouldKeepThePageFromScrollingOnItsKeys()
     {
         RenderComponent<BitListBox<BitListBoxItem<string>, string>>(parameters => parameters.Add(p => p.Items, Fruits()));

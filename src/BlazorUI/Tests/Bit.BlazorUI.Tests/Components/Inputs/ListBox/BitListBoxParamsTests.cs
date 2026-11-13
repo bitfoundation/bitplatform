@@ -21,6 +21,9 @@ public class BitListBoxParamsTests : BunitTestContext
     private static readonly string[] _notCascaded =
     [
         nameof(BitListBox<BitListBoxItem<string>, string>.CascadingParameters),
+        nameof(BitListBox<BitListBoxItem<string>, string>.ChildContent),
+        nameof(BitListBox<BitListBoxItem<string>, string>.NameSelectors),
+        nameof(BitListBox<BitListBoxItem<string>, string>.Options),
         nameof(BitListBox<BitListBoxItem<string>, string>.DefaultValues),
         nameof(BitListBox<BitListBoxItem<string>, string>.ErrorMessage),
         nameof(BitListBox<BitListBoxItem<string>, string>.Invalid),

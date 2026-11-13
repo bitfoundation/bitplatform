@@ -12,6 +12,10 @@ namespace Bit.BlazorUI;
 /// move between the items. In single select mode the selection follows the keyboard, the way a native list does; with
 /// <see cref="MultiSelect"/>, Space (or Enter, or a click) adds the item to the selection or takes it out, and the
 /// selection is <see cref="Values"/>. Both bind to an EditForm and are validated with it.
+/// <br />
+/// The items are given in one of three ways: <see cref="BitListBoxItem{TValue}"/> objects in <see cref="Items"/>,
+/// objects of a custom class in <see cref="Items"/> read through <see cref="NameSelectors"/>, or
+/// <see cref="BitListBoxOption{TValue}"/> components in <see cref="Options"/> (or as the child content).
 /// </remarks>
 public partial class BitListBox<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem, TValue> : BitInputBase<TValue> where TItem : class
 {
@@ -21,11 +25,22 @@ public partial class BitListBox<[DynamicallyAccessedMembers(DynamicallyAccessedM
     // How long a pause in typing starts a new typeahead search.
     private static readonly TimeSpan _typeaheadTimeout = TimeSpan.FromMilliseconds(1000);
 
+    // Why the options of TItem never reach a list box of TValue, or null when they do (see OnInitialized).
+    private static readonly string? _optionValueTypeMismatch = BitItemValueType.GetOptionMismatch(nameof(BitListBox<TItem, TValue>), typeof(TItem), typeof(TValue), typeof(BitListBoxOption<>));
+
 
 
     private List<TItem> _items = [];
     private IEnumerable<TItem>? _oldItems;
-    private ElementReference[] _optionRefs = [];
+    // By the key each item is rendered with, rather than by position: Blazor hands an element its reference only when it
+    // creates it, so the reference of an item kept across a render (moved by a reorder, or by new Items) is the one it
+    // was created with, and the collection is never replaced.
+    private readonly Dictionary<string, ElementReference> _optionRefs = [];
+
+    // Set when an option registers or goes away, so the order of the items is read back from the document after the
+    // render (see ReorderOptions).
+    private bool _optionsOrderDirty;
+    private string _optionsContainerId = default!;
 
     // The item the keyboard is on: the one tab stop of the list, and the one moved by the keys.
     private int _activeIndex = -1;
@@ -57,6 +72,11 @@ public partial class BitListBox<[DynamicallyAccessedMembers(DynamicallyAccessedM
     public BitListBoxParams? CascadingParameters { get; set; }
 
 
+
+    /// <summary>
+    /// The content of the list box, that are BitListBoxOption components.
+    /// </summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
     /// Custom CSS classes for the different parts of the list box.
@@ -97,6 +117,11 @@ public partial class BitListBox<[DynamicallyAccessedMembers(DynamicallyAccessedM
     [Parameter] public string? MaxHeight { get; set; }
 
     /// <summary>
+    /// The names (or selectors) of the members the items are read from, for items of a custom class.
+    /// </summary>
+    [Parameter] public BitListBoxNameSelectors<TItem, TValue>? NameSelectors { get; set; }
+
+    /// <summary>
     /// Lets the user select several items, which are <see cref="Values"/> instead of <see cref="BitInputBase{TValue}.Value"/>.
     /// </summary>
     [Parameter, ResetClassBuilder]
@@ -111,6 +136,11 @@ public partial class BitListBox<[DynamicallyAccessedMembers(DynamicallyAccessedM
     /// The callback for when an item is selected (in multi select mode, added to the selection).
     /// </summary>
     [Parameter] public EventCallback<TItem> OnSelectItem { get; set; }
+
+    /// <summary>
+    /// Alias for the ChildContent parameter: the items declared as BitListBoxOption components.
+    /// </summary>
+    [Parameter] public RenderFragment? Options { get; set; }
 
     /// <summary>
     /// Shows the validation messages of the cascading EditContext for the list box under it, where
@@ -152,7 +182,7 @@ public partial class BitListBox<[DynamicallyAccessedMembers(DynamicallyAccessedM
     {
         var index = TabStopIndex;
 
-        return index < 0 ? ValueTask.CompletedTask : _optionRefs[index].FocusAsync(preventScroll);
+        return FocusItemAsync(index, preventScroll);
     }
 
 
@@ -177,6 +207,13 @@ public partial class BitListBox<[DynamicallyAccessedMembers(DynamicallyAccessedM
 
     protected override void OnInitialized()
     {
+        // A list box of options that never reach it is refused before it renders an empty list.
+        if (_optionValueTypeMismatch is not null)
+        {
+            throw new InvalidOperationException(_optionValueTypeMismatch);
+        }
+
+        _optionsContainerId = $"BitListBox-{UniqueId}-options";
         _listId = $"BitListBox-{UniqueId}-list";
         _labelId = $"BitListBox-{UniqueId}-label";
         _errorId = $"BitListBox-{UniqueId}-error";
@@ -202,13 +239,11 @@ public partial class BitListBox<[DynamicallyAccessedMembers(DynamicallyAccessedM
     {
         CascadingParameters?.UpdateParameters(this);
 
-        if (ReferenceEquals(_oldItems, Items) is false)
+        // With options, the items are the options that registered themselves; Items is not read at all.
+        if (ChildContent is null && Options is null && ReferenceEquals(_oldItems, Items) is false)
         {
             _oldItems = Items;
-            _items = Items?.ToList() ?? [];
-            _optionRefs = new ElementReference[_items.Count];
-
-            if (_activeIndex >= _items.Count) _activeIndex = -1;
+            SetItems(Items?.ToList() ?? []);
         }
 
         if (ValueHasBeenSet) _hasValue = true;
@@ -232,8 +267,99 @@ public partial class BitListBox<[DynamicallyAccessedMembers(DynamicallyAccessedM
             _focusActiveAfterRender = false;
 
             var index = TabStopIndex;
-            if (index >= 0) await _optionRefs[index].FocusAsync();
+            await FocusItemAsync(index, false);
         }
+
+        if (_optionsOrderDirty)
+        {
+            _optionsOrderDirty = false;
+
+            try
+            {
+                var orderedOptionIds = await _js.BitUtilsGetChildrenAttributes(_optionsContainerId, BitListBoxOption<TValue>._OPTION_ID_ATTRIBUTE);
+
+                if (IsDisposed || orderedOptionIds is null) return;
+
+                ReorderOptions(orderedOptionIds);
+            }
+            catch (JSDisconnectedException) { } // the circuit is gone, so there is no page left to order the items for
+            catch (JSException) { } // reading the markers failed, which only leaves the items in the order they registered
+        }
+    }
+
+
+
+    internal void RegisterOption(BitListBoxOption<TValue> option)
+    {
+        SetItems([.. _items, (option as TItem)!]);
+        _optionsOrderDirty = true;
+
+        StateHasChanged();
+    }
+
+    internal void UnregisterOption(BitListBoxOption<TValue> option)
+    {
+        // The options unregister while they are disposed, which also happens when the list box itself goes away, so a
+        // render is only asked for while the list box is still alive.
+        if (IsDisposing) return;
+
+        SetItems(_items.Where(i => ReferenceEquals(i, option) is false).ToList());
+        _optionsOrderDirty = true;
+
+        StateHasChanged();
+    }
+
+    // The list box draws the items from the options and reads their values while it renders, so a change to the
+    // parameters of an option needs a render of the list box to show.
+    internal void NotifyOptionParametersChanged()
+    {
+        if (IsDisposed) return;
+
+        StateHasChanged();
+    }
+
+    // An option rendered after the others (an @if that turns true) registers last, wherever it sits in the markup. So
+    // the items are put back in the order of the options' markers in the document, which is the order of the markup.
+    internal void ReorderOptions(string[] orderedOptionIds)
+    {
+        if (orderedOptionIds.Length == 0) return;
+
+        List<TItem> ordered = new(_items.Count);
+
+        foreach (var optionId in orderedOptionIds)
+        {
+            var item = _items.FirstOrDefault(i => (i as BitListBoxOption<TValue>)?._OptionId == optionId);
+            if (item is null || ordered.Contains(item)) continue;
+
+            ordered.Add(item);
+        }
+
+        ordered.AddRange(_items.Except(ordered));
+
+        if (ordered.SequenceEqual(_items)) return;
+
+        // The keyboard stays on the item it was on, wherever that item has moved to.
+        var active = _activeIndex >= 0 && _activeIndex < _items.Count ? _items[_activeIndex] : null;
+
+        SetItems(ordered);
+
+        if (active is not null) _activeIndex = _items.IndexOf(active);
+
+        StateHasChanged();
+    }
+
+    private void SetItems(List<TItem> items)
+    {
+        _items = items;
+
+        // The references of the items no longer in the list go with them.
+        var keys = _items.Select((item, index) => GetItemKey(item, index)).ToHashSet();
+        foreach (var key in _optionRefs.Keys.Where(k => keys.Contains(k) is false).ToList())
+        {
+            _optionRefs.Remove(key);
+        }
+
+        if (_activeIndex >= _items.Count) _activeIndex = -1;
     }
 
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue result, [NotNullWhen(false)] out string? parsingErrorMessage)
@@ -466,31 +592,57 @@ public partial class BitListBox<[DynamicallyAccessedMembers(DynamicallyAccessedM
         return style.HasValue() ? style : null;
     }
 
+    private ValueTask FocusItemAsync(int index, bool preventScroll)
+    {
+        if (index < 0 || index >= _items.Count) return ValueTask.CompletedTask;
+
+        return _optionRefs.TryGetValue(GetItemKey(_items[index], index), out var element)
+            ? element.FocusAsync(preventScroll)
+            : ValueTask.CompletedTask;
+    }
+
     private string GetItemKey(TItem item, int index) => GetKey(item) ?? index.ToString(System.Globalization.CultureInfo.InvariantCulture);
 
 
 
-    // The item readers. Only BitListBoxItem is read for now; the readers are where the other item types will be read.
+    // The item readers, for each of the three ways the items are given: BitListBoxItem objects, BitListBoxOption
+    // components, or objects of a custom class read through NameSelectors - by a selector when one is given, and by the
+    // name of the member otherwise. A custom item with no NameSelectors has nothing to be read by.
 
-    private BitListBoxItem<TValue>? AsItem(TItem item) => item as BitListBoxItem<TValue>;
+    private T? Read<T>(TItem item,
+                       Func<BitListBoxItem<TValue>, T?> fromItem,
+                       Func<BitListBoxOption<TValue>, T?> fromOption,
+                       BitNameSelectorPair<TItem, T>? selector)
+    {
+        if (item is BitListBoxItem<TValue> listBoxItem) return fromItem(listBoxItem);
 
-    private string? GetAriaLabel(TItem item) => AsItem(item)?.AriaLabel;
+        if (item is BitListBoxOption<TValue> listBoxOption) return fromOption(listBoxOption);
 
-    private string? GetClass(TItem item) => AsItem(item)?.Class;
+        if (selector is null) return default;
 
-    private string? GetDescription(TItem item) => AsItem(item)?.Description;
+        return selector.Selector is not null
+            ? selector.Selector(item)
+            : item.GetValueFromProperty<T>(selector.Name);
+    }
 
-    private BitIconInfo? GetIcon(TItem item) => BitIconInfo.From(AsItem(item)?.Icon, AsItem(item)?.IconName);
+    private string? GetAriaLabel(TItem item) => Read(item, i => i.AriaLabel, o => o.AriaLabel, NameSelectors?.AriaLabel);
 
-    private bool GetIsDisabled(TItem item) => AsItem(item)?.IsDisabled ?? false;
+    private string? GetClass(TItem item) => Read(item, i => i.Class, o => o.Class, NameSelectors?.Class);
 
-    private string? GetKey(TItem item) => AsItem(item)?.Key;
+    private string? GetDescription(TItem item) => Read(item, i => i.Description, o => o.Description, NameSelectors?.Description);
 
-    private string? GetStyle(TItem item) => AsItem(item)?.Style;
+    private BitIconInfo? GetIcon(TItem item) => BitIconInfo.From(Read(item, i => i.Icon, o => o.Icon, NameSelectors?.Icon),
+                                                                 Read(item, i => i.IconName, o => o.IconName, NameSelectors?.IconName));
 
-    private string? GetText(TItem item) => AsItem(item)?.Text;
+    private bool GetIsDisabled(TItem item) => Read(item, i => i.IsDisabled, o => o.IsDisabled, NameSelectors?.IsDisabled);
 
-    private string? GetTitle(TItem item) => AsItem(item)?.Title;
+    private string? GetKey(TItem item) => Read(item, i => i.Key, o => o.Key, NameSelectors?.Key);
 
-    private TValue? GetValue(TItem item) => AsItem(item) is { } listBoxItem ? listBoxItem.Value : default;
+    private string? GetStyle(TItem item) => Read(item, i => i.Style, o => o.Style, NameSelectors?.Style);
+
+    private string? GetText(TItem item) => Read(item, i => i.Text, o => o.Text, NameSelectors?.Text);
+
+    private string? GetTitle(TItem item) => Read(item, i => i.Title, o => o.Title, NameSelectors?.Title);
+
+    private TValue? GetValue(TItem item) => Read(item, i => i.Value, o => o.Value, NameSelectors?.Value);
 }

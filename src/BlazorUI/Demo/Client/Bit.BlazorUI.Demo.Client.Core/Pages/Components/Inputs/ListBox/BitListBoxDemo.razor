@@ -19,14 +19,34 @@
               GitHubDemoUrl="Inputs/ListBox/BitListBoxDemo.razor">
         <NotesTemplate>
             <BitText>
-                The items are given as <BitLink Href="#listbox-item"><BitTag Color="BitColor.SecondaryBackground">BitListBoxItem</BitTag></BitLink>
-                objects through Items. The list box is a WAI-ARIA listbox and a single tab stop: the arrow keys, Home, End
-                and typing the start of a text move between the items. With one to choose, the selection follows the
-                keyboard; with MultiSelect, Space (or Enter, or a click) adds an item to the selection or takes it out.
+                The BitListBox is a <BitTag Color="BitColor.SecondaryBackground">Multi-API</BitTag> component
+                which can accept the list of items in 3 different ways:
+                <br />
+                1. The <BitLink Href="#listbox-item"><BitTag Color="BitColor.SecondaryBackground">BitListBoxItem</BitTag></BitLink> class <br />
+                2. A <BitTag Color="BitColor.SecondaryBackground">Custom Generic</BitTag> class, read through <BitLink Href="#name-selectors">NameSelectors</BitLink> <br />
+                3. The <BitLink Href="#listbox-option"><BitTag Color="BitColor.SecondaryBackground">BitListBoxOption</BitTag></BitLink> component
+            </BitText>
+            <br />
+            <BitText>
+                The list box is a WAI-ARIA listbox and a single tab stop: the arrow keys, Home, End and typing the start of a
+                text move between the items. With one to choose, the selection follows the keyboard; with MultiSelect, Space
+                (or Enter, or a click) adds an item to the selection or takes it out.
             </BitText>
         </NotesTemplate>
         <Examples>
-            <_BitListBoxItemDemo />
+            <BitPivot Classes="@(new() { HeaderContainer = "pivot-sticky-header" })" MountAll="RenderForMcpClient">
+                <BitPivotItem HeaderText="Item">
+                    <_BitListBoxItemDemo />
+                </BitPivotItem>
+
+                <BitPivotItem HeaderText="Custom">
+                    <_BitListBoxCustomDemo />
+                </BitPivotItem>
+
+                <BitPivotItem HeaderText="Option">
+                    <_BitListBoxOptionDemo />
+                </BitPivotItem>
+            </BitPivot>
         </Examples>
     </DemoPage>
 </div>

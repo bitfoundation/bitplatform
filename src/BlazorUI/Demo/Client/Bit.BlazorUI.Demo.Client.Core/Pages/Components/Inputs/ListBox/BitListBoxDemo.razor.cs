@@ -2,8 +2,19 @@
 
 public partial class BitListBoxDemo
 {
+    [CascadingParameter(Name = nameof(RenderForMcpClient))] public bool RenderForMcpClient { get; set; }
+
     private readonly List<ComponentParameter> componentParameters =
     [
+        new()
+        {
+            Name = "ChildContent",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The content of the BitListBox, that are BitListBoxOption components.",
+            LinkType = LinkType.Link,
+            Href = "#listbox-option",
+        },
         new()
         {
             Name = "Classes",
@@ -66,6 +77,15 @@ public partial class BitListBoxDemo
         },
         new()
         {
+            Name = "NameSelectors",
+            Type = "BitListBoxNameSelectors<TItem, TValue>?",
+            DefaultValue = "null",
+            Description = "The names (or selectors) of the members the items are read from, for items of a custom class.",
+            LinkType = LinkType.Link,
+            Href = "#name-selectors",
+        },
+        new()
+        {
             Name = "OnDeselectItem",
             Type = "EventCallback<TItem>",
             DefaultValue = "",
@@ -77,6 +97,15 @@ public partial class BitListBoxDemo
             Type = "EventCallback<TItem>",
             DefaultValue = "",
             Description = "The callback for when an item is selected (in multi select mode, added to the selection).",
+        },
+        new()
+        {
+            Name = "Options",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Alias of ChildContent: the items declared as BitListBoxOption components.",
+            LinkType = LinkType.Link,
+            Href = "#listbox-option",
         },
         new()
         {
@@ -140,6 +169,54 @@ public partial class BitListBoxDemo
                 new() { Name = "Text", Type = "string?", DefaultValue = "null", Description = "The text of the item, which typeahead matches too." },
                 new() { Name = "Title", Type = "string?", DefaultValue = "null", Description = "The title (tooltip) of the item." },
                 new() { Name = "Value", Type = "TValue?", DefaultValue = "null", Description = "The value of the item: what selecting it writes to the Value (or adds to the Values) of the list box." },
+            ]
+        },
+        new()
+        {
+            Id = "listbox-option",
+            Title = "BitListBoxOption<TValue>",
+            Parameters =
+            [
+                new() { Name = "AriaLabel", Type = "string?", DefaultValue = "null", Description = "The aria-label of the item, which replaces its text and description as what a screen reader names it by." },
+                new() { Name = "Class", Type = "string?", DefaultValue = "null", Description = "The custom CSS classes of the item." },
+                new() { Name = "Description", Type = "string?", DefaultValue = "null", Description = "A second line of text under the text of the item." },
+                new() { Name = "Icon", Type = "BitIconInfo?", DefaultValue = "null", Description = "The icon shown before the text of the item, using custom CSS classes for external icon libraries. Takes precedence over IconName." },
+                new() { Name = "IconName", Type = "string?", DefaultValue = "null", Description = "The name of the icon shown before the text of the item, from the built-in Fluent UI icons." },
+                new() { Name = "IsDisabled", Type = "bool", DefaultValue = "false", Description = "Whether the item is disabled: it cannot be selected, and the keyboard passes it by." },
+                new() { Name = "Key", Type = "string?", DefaultValue = "null", Description = "A unique value to use as the key of the item." },
+                new() { Name = "Style", Type = "string?", DefaultValue = "null", Description = "The custom CSS styles of the item." },
+                new() { Name = "Text", Type = "string?", DefaultValue = "null", Description = "The text of the item, which typeahead matches too." },
+                new() { Name = "Title", Type = "string?", DefaultValue = "null", Description = "The title (tooltip) of the item." },
+                new() { Name = "Value", Type = "TValue?", DefaultValue = "null", Description = "The value of the item: what selecting it writes to the Value (or adds to the Values) of the list box." },
+            ]
+        },
+        new()
+        {
+            Id = "name-selectors",
+            Title = "BitListBoxNameSelectors<TItem, TValue>",
+            Parameters =
+            [
+                new() { Name = "AriaLabel", Type = "BitNameSelectorPair<TItem, string?>", DefaultValue = "new(nameof(BitListBoxItem<TValue>.AriaLabel))", Description = "The AriaLabel field name and selector of the custom input class.", LinkType = LinkType.Link, Href = "#name-selector-pair" },
+                new() { Name = "Class", Type = "BitNameSelectorPair<TItem, string?>", DefaultValue = "new(nameof(BitListBoxItem<TValue>.Class))", Description = "The CSS Class field name and selector of the custom input class.", LinkType = LinkType.Link, Href = "#name-selector-pair" },
+                new() { Name = "Description", Type = "BitNameSelectorPair<TItem, string?>", DefaultValue = "new(nameof(BitListBoxItem<TValue>.Description))", Description = "The Description field name and selector of the custom input class.", LinkType = LinkType.Link, Href = "#name-selector-pair" },
+                new() { Name = "Icon", Type = "BitNameSelectorPair<TItem, BitIconInfo?>", DefaultValue = "new(nameof(BitListBoxItem<TValue>.Icon))", Description = "The Icon field name and selector of the custom input class.", LinkType = LinkType.Link, Href = "#name-selector-pair" },
+                new() { Name = "IconName", Type = "BitNameSelectorPair<TItem, string?>", DefaultValue = "new(nameof(BitListBoxItem<TValue>.IconName))", Description = "The IconName field name and selector of the custom input class.", LinkType = LinkType.Link, Href = "#name-selector-pair" },
+                new() { Name = "IsDisabled", Type = "BitNameSelectorPair<TItem, bool>", DefaultValue = "new(nameof(BitListBoxItem<TValue>.IsDisabled))", Description = "The IsDisabled field name and selector of the custom input class.", LinkType = LinkType.Link, Href = "#name-selector-pair" },
+                new() { Name = "Key", Type = "BitNameSelectorPair<TItem, string?>", DefaultValue = "new(nameof(BitListBoxItem<TValue>.Key))", Description = "The Key field name and selector of the custom input class.", LinkType = LinkType.Link, Href = "#name-selector-pair" },
+                new() { Name = "Style", Type = "BitNameSelectorPair<TItem, string?>", DefaultValue = "new(nameof(BitListBoxItem<TValue>.Style))", Description = "The CSS Style field name and selector of the custom input class.", LinkType = LinkType.Link, Href = "#name-selector-pair" },
+                new() { Name = "Text", Type = "BitNameSelectorPair<TItem, string?>", DefaultValue = "new(nameof(BitListBoxItem<TValue>.Text))", Description = "The Text field name and selector of the custom input class.", LinkType = LinkType.Link, Href = "#name-selector-pair" },
+                new() { Name = "Title", Type = "BitNameSelectorPair<TItem, string?>", DefaultValue = "new(nameof(BitListBoxItem<TValue>.Title))", Description = "The Title field name and selector of the custom input class.", LinkType = LinkType.Link, Href = "#name-selector-pair" },
+                new() { Name = "Value", Type = "BitNameSelectorPair<TItem, TValue?>", DefaultValue = "new(nameof(BitListBoxItem<TValue>.Value))", Description = "The Value field name and selector of the custom input class.", LinkType = LinkType.Link, Href = "#name-selector-pair" },
+            ]
+        },
+        new()
+        {
+            Id = "name-selector-pair",
+            Title = "BitNameSelectorPair",
+            Parameters =
+            [
+                new() { Name = "Name", Type = "string", Description = "Custom class property name." },
+                new() { Name = "Selector", Type = "Func<TItem, TProp?>?", Description = "Custom class property selector." },
             ]
         },
         new()
