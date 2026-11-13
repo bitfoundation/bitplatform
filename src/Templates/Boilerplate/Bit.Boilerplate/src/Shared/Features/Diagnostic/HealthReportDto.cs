@@ -94,7 +94,24 @@ public class HealthReportEntryDto
     /// </summary>
     public bool IsNotConfigured { get; set; }
 
+    /// <summary>
+    /// What the check put in its result, as text. A reused result's own run is in it too, under the names app versions
+    /// from before <see cref="Duration"/>, <see cref="VerifiedAt"/> and <see cref="CacheDuration"/> read it by (See
+    /// <see cref="LegacyDataKeys"/>).
+    /// </summary>
     public Dictionary<string, string?> Data { get; set; } = [];
+
+    /// <summary>
+    /// The name <see cref="VerifiedAt"/> has in <see cref="Data"/> for app versions from before it was a field.
+    /// </summary>
+    public const string LegacyVerifiedAtKey = "CheckedAt";
+
+    /// <summary>
+    /// The keys of <see cref="Data"/> that repeat a reused result's run for the Operations page of app versions in users'
+    /// hands from before <see cref="Duration"/>, <see cref="VerifiedAt"/> and <see cref="CacheDuration"/> were fields.
+    /// Read the fields; the keys can go once <c>SupportedAppVersions</c> leaves those versions out.
+    /// </summary>
+    public static readonly string[] LegacyDataKeys = [nameof(Duration), nameof(CacheDuration), LegacyVerifiedAtKey];
 }
 
 /// <summary>

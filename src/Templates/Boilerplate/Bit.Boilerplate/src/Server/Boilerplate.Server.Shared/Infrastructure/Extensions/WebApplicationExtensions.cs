@@ -322,8 +322,9 @@ public static class WebApplicationExtensions
                     IconName = description?.IconName ?? HealthCheckCategories.IconOf(category),
                     About = description?.About,
                     IsNotConfigured = entry.Value.Tags.Contains(HealthCheckTags.NotConfigured),
-                    // Stringified, as a check may put anything in here.
-                    Data = data.Where(item => HealthCheckResultData.Keys.Contains(item.Key) is false).ToDictionary(item => item.Key, item => item.Value switch
+                    // Stringified, as a check may put anything in here. A reused result's run stays in it, under the names
+                    // the Operations page of app versions in users' hands reads (See HealthReportEntryDto.LegacyDataKeys).
+                    Data = data.ToDictionary(item => item.Key is HealthCheckResultData.VerifiedAt ? HealthReportEntryDto.LegacyVerifiedAtKey : item.Key, item => item.Value switch
                     {
                         DateTimeOffset dateTimeOffset => dateTimeOffset.ToString("O", CultureInfo.InvariantCulture),
                         IFormattable formattable => formattable.ToString(null, CultureInfo.InvariantCulture),

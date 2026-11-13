@@ -123,7 +123,8 @@ public partial class OperationsPage
 
         public TimeSpan? CacheDuration => entry.CacheDuration;
 
-        public IEnumerable<KeyValuePair<string, string?>> ExtraData => entry.Data;
+        /// <summary>What the check put in its result, without the run's fields repeated for older app versions.</summary>
+        public IEnumerable<KeyValuePair<string, string?>> ExtraData => entry.Data.Where(item => HealthReportEntryDto.LegacyDataKeys.Contains(item.Key) is false);
 
         public bool HasDetails => string.IsNullOrWhiteSpace(entry.Exception) is false || ExtraData.Any();
 
