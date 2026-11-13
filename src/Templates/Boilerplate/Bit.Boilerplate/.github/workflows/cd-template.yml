@@ -142,10 +142,17 @@ jobs:
           name: compose
           path: compose
 
+      # The login is this job's own: DOCKER_CONFIG points every later step at a folder in the job's temporary folder. One VM
+      # can host both environments with their runners as one user, and a login in that user's ~/.docker would be shared, so
+      # the deployment that ended first would log the other out before it pulled its images.
       - name: Log in to GitHub Container Registry
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: echo "$GITHUB_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+        run: |
+          docker_config="$RUNNER_TEMP/docker-config"
+          mkdir -p "$docker_config"
+          echo "DOCKER_CONFIG=$docker_config" >> "$GITHUB_ENV"
+          echo "$GITHUB_TOKEN" | DOCKER_CONFIG="$docker_config" docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
 
       # Writes the Compose project to ~/deployments/<project>: its .env, the apps' settings files and the AppCertificate, from
       # this environment's secrets. The steps below read them from there, so only this one sees the secrets.
