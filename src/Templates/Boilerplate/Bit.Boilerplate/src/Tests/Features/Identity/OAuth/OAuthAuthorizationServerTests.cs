@@ -8,6 +8,10 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Boilerplate.Shared.Features.Diagnostic;
 using Boilerplate.Shared.Features.Identity.OAuth;
 using Boilerplate.Shared.Features.Identity.OAuth.Dtos;
+//#if (multitenant == true)
+using Boilerplate.Shared.Features.Tenants;
+using Boilerplate.Server.Api.Features.Tenants;
+//#endif
 //#if (advancedTests == true)
 using Boilerplate.Tests.Features.DevMcp;
 //#endif
@@ -682,6 +686,70 @@ public class OAuthAuthorizationServerTests
             "And Approve enforces it too - the request reaches it from a query string the browser can edit.");
     }
 
+    //#if (multitenant == true)
+    /// <summary>
+    /// No MCP client sends <c>tenant_id</c>, which is this template's own parameter, so a grant that takes its tenant from
+    /// the request alone carries none, and the token then reads none of a tenant's data. A request naming none gets the
+    /// tenant the approving session is in, named on the consent page first; one naming a tenant the user never joined is
+    /// still refused.
+    /// </summary>
+    [TestMethod]
+    public async Task ARequestNamingNoTenant_Should_GrantTheTenantTheApprovingSessionIsIn()
+    {
+        await using var server = new AppTestServer();
+        await server.Build(configureTestConfiguration: ConfigureTestClient)
+                    .Start(TestContext.CancellationToken);
+
+        await using var client = server.CreateAppClient();
+        var (email, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(client, TestContext.CancellationToken);
+        await using var _ = grant;
+
+        // A tenant of her own, because creating one makes its creator an accepted member - unlike the seeded tenant
+        // MakeGlobalAdmin switched her into, which a global admin may enter without ever joining it.
+        await TestAccountUtils.Elevate(client, email, TestContext.CancellationToken);
+
+        var ownTenant = await client.GetController<ITenantController>()
+            .Create(new() { Name = $"t{Guid.NewGuid():N}" }, TestContext.CancellationToken);
+
+        Assert.IsTrue(await client.AuthManager.SwitchTenant(ownTenant.Id, TestContext.CancellationToken),
+            "The session has to be in her tenant, or there is nothing for the grant to take from it.");
+
+        var (verifier, challenge) = GeneratePkcePair();
+        var request = BuildRequest(server, challenge);
+        var oauthController = client.GetController<IOAuthController>();
+
+        var consent = await oauthController.Review(request, TestContext.CancellationToken);
+
+        Assert.AreEqual(ownTenant.Name, consent.TenantName,
+            "The consent page has to name the tenant the grant will carry, or the user approves one they cannot see.");
+
+        var approval = await oauthController.Approve(request, TestContext.CancellationToken);
+        var granted = await ExchangeCode(server, QueryValueOf(approval.RedirectUrl, "code")!, verifier);
+
+        Assert.AreEqual(ownTenant.Id.ToString(), TenantIdOf(granted.GetProperty("access_token").GetString()!),
+            "An MCP client never names a tenant, so a token that takes one from the request alone answers 403 wherever " +
+            "a tenant is required, and lands in the fallback tenant wherever one is not.");
+
+        var (status, body) = await PostToken(server, new()
+        {
+            ["grant_type"] = "refresh_token",
+            ["refresh_token"] = granted.GetProperty("refresh_token").GetString()!,
+            ["client_id"] = TestClientId
+        });
+
+        Assert.AreEqual(HttpStatusCode.OK, status, $"The refresh grant should work at all: {body}");
+        Assert.AreEqual(ownTenant.Id.ToString(), TenantIdOf(JsonDocument.Parse(body).RootElement.GetProperty("access_token").GetString()!),
+            "And a refresh keeps it: the client refreshes on its own and never names a tenant then either.");
+
+        // The seeded tenant: a global admin may switch into it, but she never joined it.
+        request.TenantId = TenantConfiguration.FallbackTenantId.ToString();
+
+        await Assert.ThrowsExactlyAsync<BadRequestException>(
+            () => oauthController.Approve(request, TestContext.CancellationToken),
+            "A tenant named in the request is still granted only to an accepted member of it.");
+    }
+    //#endif
+
     //#if (signalR == true)
     /// <summary>
     /// The chatbot's scope maps to no feature, which NarrowScopes grants vacuously. Says that path works, and that the
@@ -922,6 +990,13 @@ public class OAuthAuthorizationServerTests
     {
         return Guid.Parse(new JwtSecurityToken(accessToken).Claims.Single(claim => claim.Type is AppClaimTypes.SESSION_ID).Value);
     }
+
+    //#if (multitenant == true)
+    private static string? TenantIdOf(string accessToken)
+    {
+        return new JwtSecurityToken(accessToken).Claims.SingleOrDefault(claim => claim.Type is AppClaimTypes.TENANT_ID)?.Value;
+    }
+    //#endif
 
     private static string? QueryValueOf(string url, string key)
     {
