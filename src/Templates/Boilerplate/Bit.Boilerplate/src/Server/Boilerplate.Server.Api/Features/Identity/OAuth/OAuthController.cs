@@ -107,25 +107,32 @@ public partial class OAuthController : AppControllerBase, IOAuthController
 
     //#if (multitenant == true)
     /// <summary>
-    /// A tenant is accepted only for an accepted member of an active one; a request naming none gets no tenant claim
-    /// rather than being quietly placed in one.
+    /// A tenant is accepted only for an accepted member of an active one. A request naming none gets the tenant the
+    /// approving session is in, which Review names on the consent page, so the user sees which one they grant: an MCP
+    /// client such as grok.com knows nothing of tenants and never names one, and a token without one could read none of
+    /// a tenant's data. A user with no tenant, or whose session's tenant they left, grants none.
     /// </summary>
     private async Task<Guid?> ResolveTenantId(string? requestedTenantId, CancellationToken cancellationToken)
     {
-        // A malformed one never gets here - OAuthService.Validate turns it into invalid_request first.
-        if (Guid.TryParse(requestedTenantId, out var tenantId) is false)
-            return null;
-
         var userId = User.GetUserId();
 
-        var isMember = await DbContext.TenantUsers
-            .AnyAsync(tu => tu.UserId == userId && tu.TenantId == tenantId && tu.AcceptedOn != null && tu.Tenant!.IsActive, cancellationToken);
+        // A malformed one never gets here - OAuthService.Validate turns it into invalid_request first.
+        if (Guid.TryParse(requestedTenantId, out var tenantId) is false)
+        {
+            if (User.GetTenantId() is not Guid sessionTenantId)
+                return null;
 
-        if (isMember is false)
+            return await IsActiveMember(userId, sessionTenantId, cancellationToken) ? sessionTenantId : null;
+        }
+
+        if (await IsActiveMember(userId, tenantId, cancellationToken) is false)
             throw new BadRequestException(Localizer[nameof(AppStrings.OAuthErrorNotAMemberOfWorkspace)]);
 
         return tenantId;
     }
+
+    private Task<bool> IsActiveMember(Guid userId, Guid tenantId, CancellationToken cancellationToken)
+        => DbContext.TenantUsers.AnyAsync(tu => tu.UserId == userId && tu.TenantId == tenantId && tu.AcceptedOn != null && tu.Tenant!.IsActive, cancellationToken);
 
     private async Task<string?> TenantNameOf(Guid? tenantId, CancellationToken cancellationToken)
     {
