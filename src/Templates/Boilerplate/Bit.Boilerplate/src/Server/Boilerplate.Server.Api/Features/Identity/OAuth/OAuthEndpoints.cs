@@ -109,7 +109,7 @@ public static class OAuthEndpoints
         catch (BadRequestException exception)
         {
             // RFC 6749's error body: clients parse this, and problem-details would be unreadable to them.
-            return OAuthError(exception.Data["Reason"]?.ToString() ?? "invalid_request");
+            return OAuthError(exception.Data["Reason"]?.ToString() ?? "invalid_request", exception.Data["Description"]?.ToString());
         }
         catch (Exception exception) when (exception is DbUpdateConcurrencyException or ConflictException)
         {
@@ -118,7 +118,12 @@ public static class OAuthEndpoints
         }
     }
 
-    private static IResult OAuthError(string error) => Results.Json(new { error }, statusCode: 400);
+    /// <summary>
+    /// RFC 6749 §5.2. <paramref name="description"/> tells the client why, such as a revoked approval, so it can tell its
+    /// user what to do instead of guessing.
+    /// </summary>
+    private static IResult OAuthError(string error, string? description = null)
+        => Results.Json(description is null ? new { error } : (object)new { error, error_description = description }, statusCode: 400);
 
     /// <summary>
     /// RFC 8414. Everything is derived from the request, so one deployment answers correctly on localhost, on a dev

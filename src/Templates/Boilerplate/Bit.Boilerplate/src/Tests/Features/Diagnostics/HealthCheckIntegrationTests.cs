@@ -226,6 +226,7 @@ public partial class HealthCheckIntegrationTests
 
         await server.Build(configureTestApiAppServices: services => services.AddHealthChecks()
                 .AddCheck("paymentGateway", () => HealthCheckResult.Healthy(), tags: [HealthCheckCategories.Integrations])
+                .Describe("paymentGateway", "Payment gateway", "Money", "Authorizes and voids a one cent payment.")
                 .AddCheck("untagged", () => HealthCheckResult.Healthy()))
             .Start(TestContext.CancellationToken);
 
@@ -251,7 +252,13 @@ public partial class HealthCheckIntegrationTests
         foreach (var (name, entry) in report.Entries.Where(entry => entry.Key is not "untagged"))
         {
             Assert.IsFalse(string.IsNullOrEmpty(entry.Category), $"The '{name}' check has no category. Tag it with one of HealthCheckCategories.");
+            Assert.AreNotEqual(name, entry.Title, $"The '{name}' check has no title. Describe it in HealthCheckDescriptions.");
+            Assert.IsFalse(string.IsNullOrEmpty(entry.IconName), $"The '{name}' check has no icon.");
         }
+
+        Assert.AreEqual("Database", report.Entries["AppDbContext"].Title, "A monitor shows the check the way the app names it.");
+        Assert.AreEqual("Mail", report.Entries["smtp"].IconName);
+        Assert.IsFalse(string.IsNullOrEmpty(report.Entries["smtp"].About));
 
         Assert.AreEqual("Platform", report.Entries["binStorage"].Category);
         Assert.AreEqual("Platform", report.Entries["AppDbContext"].Category);
@@ -263,9 +270,39 @@ public partial class HealthCheckIntegrationTests
 
         var paymentGateway = report.Entries["paymentGateway"];
         Assert.AreEqual("Integrations", paymentGateway.Category);
+        Assert.AreEqual("Payment gateway", paymentGateway.Title, "A check of the app's own is described next to its registration.");
+        Assert.AreEqual("Money", paymentGateway.IconName);
+        Assert.AreEqual("Authorizes and voids a one cent payment.", paymentGateway.About);
         Assert.Contains(HealthCheckCategories.Integrations, paymentGateway.Tags, "The category tag stays among the tags.");
 
         Assert.IsNull(report.Entries["untagged"].Category, "A check registered without a category tag has none.");
+        Assert.AreEqual("untagged", report.Entries["untagged"].Title, "A check described nowhere goes by its registration name.");
+        Assert.AreEqual(HealthCheckCategories.IconOf(null), report.Entries["untagged"].IconName);
+    }
+
+    /// <summary>
+    /// A monitor given only the app's address finds the app's server here (See bit-app.json in Client.Web's
+    /// wwwroot/.well-known, which a statically hosted front end serves as it is).
+    /// </summary>
+    [TestMethod]
+    public async Task BitAppDocument_Should_NameTheServer_AndTheFrontEnd()
+    {
+        await using var server = new AppTestServer();
+
+        await server.Build().Start(TestContext.CancellationToken);
+
+        using var httpClient = new HttpClient();
+        var body = await httpClient.GetStringAsync(new Uri(server.WebAppAddress, ".well-known/bit-app.json"), TestContext.CancellationToken);
+
+        using var json = JsonDocument.Parse(body);
+        var document = json.RootElement;
+
+        Assert.AreEqual("server", document.GetProperty("front_end").GetString(), body);
+        Assert.IsTrue(Uri.TryCreate(document.GetProperty("server").GetString(), UriKind.Absolute, out var serverAddress), body);
+        Assert.AreEqual("/manifest.json", document.GetProperty("manifest").GetString(), body);
+
+        using var metadata = await httpClient.GetAsync(new Uri(serverAddress, ".well-known/oauth-protected-resource/healthz"), TestContext.CancellationToken);
+        Assert.AreEqual(HttpStatusCode.OK, metadata.StatusCode, $"The server it names must be the one whose /healthz a monitor reads: {serverAddress}");
     }
 
     /// <summary>

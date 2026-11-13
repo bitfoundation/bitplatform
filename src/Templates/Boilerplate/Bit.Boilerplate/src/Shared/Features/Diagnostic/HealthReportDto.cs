@@ -74,6 +74,20 @@ public class HealthReportEntryDto
     public string? Category { get; set; }
 
     /// <summary>
+    /// What a page calls the check, such as "Database" for <c>AppDbContext</c>, in the app's own words (See
+    /// HealthCheckDescriptions); the registration name for a check described nowhere.
+    /// </summary>
+    public string Title { get; set; } = "";
+
+    /// <summary>
+    /// The check's icon, a bit BlazorUI <c>BitIconName</c>: its own, or its category's (See <see cref="HealthCheckCategories.IconOf"/>).
+    /// </summary>
+    public string IconName { get; set; } = "";
+
+    /// <summary>What a pass proves, such as "Opens a connection to the app's database". Null when the app says nothing.</summary>
+    public string? About { get; set; }
+
+    /// <summary>
     /// The check stands in for a dependency whose settings are missing (See AddNotConfiguredCheck). It reports Degraded
     /// like a slow dependency does, but asks for another fix: configure the dependency, or remove the code that uses it.
     /// Set from the registration's <see cref="HealthCheckTags.NotConfigured"/> tag.

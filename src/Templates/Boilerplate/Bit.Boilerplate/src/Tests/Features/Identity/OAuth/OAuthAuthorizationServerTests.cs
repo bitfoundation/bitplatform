@@ -622,6 +622,7 @@ public class OAuthAuthorizationServerTests
         Assert.AreEqual(HttpStatusCode.BadRequest, replayed.Status,
             "A refresh token redeemed twice must be refused the second time, however quickly the second attempt comes.");
         Assert.Contains("invalid_grant", replayed.Body);
+        Assert.Contains("\"error_description\":\"The refresh token was used twice", replayed.Body, "The client is told why, so it can tell its user.");
 
         await using var scopeApiApp = server.ApiApp.Services.CreateAsyncScope();
         var dbContext = scopeApiApp.ServiceProvider.GetRequiredService<AppDbContext>();

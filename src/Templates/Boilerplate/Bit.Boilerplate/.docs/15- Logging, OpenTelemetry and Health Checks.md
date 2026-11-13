@@ -339,7 +339,13 @@ the report without the exceptions, which can carry a server name or a connection
 that throws takes from its exception's message; only the app's own session, which the Operations page uses, reads them. The resource's metadata document
 (`/.well-known/oauth-protected-resource/healthz`, anonymous like every RFC 9728 document) lists the `healthz` scope and carries
 `bit_template_version`, the version `bit.json` records, so a monitor can tell a bit Boilerplate app and its version
-before it asks for a token. Adding health check endpoints to a non-development
+before it asks for a token. A refused token request says why in `error_description`, such as a revoked approval or
+a new password, so the monitor can tell its user. Every front end also serves `/.well-known/bit-app.json`, anonymously:
+`server`, where `/healthz` and that metadata live, `front_end`, `server` when Server.Web renders the pages and `static`
+for the copy in `Boilerplate.Client.Web/wwwroot/.well-known` that a statically hosted front end serves, and `manifest`,
+the web app manifest with the app's name and icons. A monitor given the app's address finds the rest from there. When
+you change a static front end's `ServerAddress`, change `server` in that file too, as you do the preconnect link in
+`index.html`. Adding health check endpoints to a non-development
 deployment has security implications (see <https://aka.ms/dotnet/aspire/healthchecks>): decide deliberately whether to
 expose `/health` publicly or to restrict it to your load balancer's network, because an anonymous caller can drive the
 work behind it. `/health` and `/alive` responses are output-cached for 10 seconds, but that cache does not apply to a
@@ -472,7 +478,11 @@ Anything you add that a request path genuinely depends on should report Unhealth
 Every check carries one of `HealthCheckCategories` (`Platform`, `Messaging`, `Identity`, `AI`, `Integrations`) as a tag,
 which `/healthz` reports as the entry's `category`, so the Operations page and a monitor can group a check they don't know
 by name. Tag yours too, e.g. `tags: [HealthCheckCategories.Integrations]` for a payment gateway, a map or a CRM; a
-category of your own, `category:<Name>`, works as well.
+category of your own, `category:<Name>`, works as well. Each entry also carries the check's `title`, `iconName` (a
+`BitIconName`) and `about`, what a pass proves, from `HealthCheckDescriptions`, so the Operations page and a monitor
+show it the way the app names it. Describe yours next to its registration, e.g.
+`.Describe("paymentGateway", "Payment gateway", "Money", "Authorizes and voids a one cent payment.")`; one described
+nowhere is reported under its registration name, with its category's icon.
 
 ---
 

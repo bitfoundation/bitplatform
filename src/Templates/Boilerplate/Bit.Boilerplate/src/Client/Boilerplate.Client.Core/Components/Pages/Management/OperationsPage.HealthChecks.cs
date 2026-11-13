@@ -6,8 +6,9 @@ namespace Boilerplate.Client.Core.Components.Pages.Management;
 public partial class OperationsPage
 {
     /// <summary>
-    /// The groups the page shows checks in, in this order. A check the catalog below doesn't know lands in the group its
-    /// report names (See HealthCheckCategories), and in "Other" when it names none of these.
+    /// The groups the page shows checks in, in this order: each check lands in the group its report names (See
+    /// HealthCheckCategories), and in "Other" when it names none of these. Each check's title, icon and about come from
+    /// the report too (See HealthCheckDescriptions).
     /// </summary>
     private static readonly (string Name, string IconName, string About)[] categories =
     [
@@ -21,52 +22,6 @@ public partial class OperationsPage
         //#endif
         ("Other", BitIconName.Diagnostic, "Checks this page has no description for.")
     ];
-
-    /// <summary>
-    /// Title, group, icon and what each check proves, keyed by registration name (See AddServerApiHealthChecks).
-    /// </summary>
-    private static readonly Dictionary<string, (string Title, string Category, string IconName, string About)> catalog = new()
-    {
-        ["binStorage"] = ("Disk space", "Platform", BitIconName.HardDrive, "At least 2 GB free on the instance that answered this report. The only liveness check."),
-        ["AppDbContext"] = ("Database", "Platform", BitIconName.Database, "Opens a connection to the app's database."),
-        ["hangfire"] = ("Background jobs", "Platform", BitIconName.Processing, "At least one Hangfire server is running."),
-        ["appCertificate"] = ("App certificate", "Platform", BitIconName.Certificate, "The certificate that signs tokens and protects data is within its validity period."),
-        ["StackExchange.Redis_redis-persistent"] = ("Redis (persistent)", "Platform", BitIconName.Server, "Hangfire storage and distributed locks."),
-        ["StackExchange.Redis_redis-cache"] = ("Redis (cache)", "Platform", BitIconName.ServerProcesses, "The distributed cache and backplane. Memory keeps serving without it."),
-        ["userProfileImages"] = ("File storage", "Platform", BitIconName.Photo2, "The storage container of the uploaded files."),
-        //#if (cloudflare == true)
-        ["cloudflare"] = ("Cloudflare", "Platform", BitIconName.Globe, "The zones whose edge cache the app purges."),
-        //#endif
-
-        //#if (api == "Standalone")
-        // Server.Web's own checks (See AddWebAppChecks).
-        ["web:binStorage"] = ("Web server disk space", "Web server", BitIconName.HardDrive, "At least 2 GB free where Server.Web runs. Its only liveness check."),
-        ["web:serverApi"] = ("Server API", "Web server", BitIconName.PlugConnected, "Server.Web reaches the API it prerenders with and forwards to."),
-        ["web:healthz"] = ("Web server report", "Web server", BitIconName.Website, "Server.Web's own health report can be read."),
-        //#endif
-
-        ["smtp"] = ("Email", "Messaging", BitIconName.Mail, "Signs in to the SMTP server without sending anything."),
-        ["emailDelivery"] = ("Email sender domain", "Messaging", BitIconName.MailCheck, "The sender's domain has SPF and DMARC records, so mail can reach inboxes rather than spam."),
-        ["sms"] = ("SMS", "Messaging", BitIconName.CellPhone, "The Twilio account is active."),
-        ["firebase"] = ("Android push", "Messaging", BitIconName.Ringer, "Firebase Cloud Messaging accepts the credentials."),
-        ["apns"] = ("Apple push", "Messaging", BitIconName.Ringer, "APNs accepts the credentials."),
-        ["azureSignalR"] = ("Azure SignalR", "Messaging", BitIconName.Streaming, "The service is healthy and accepts the access key."),
-
-        ["keycloakIdentity"] = ("Keycloak", "Identity", BitIconName.Permissions, "The realm's discovery document answers."),
-        ["entraId"] = ("Microsoft Entra ID", "Identity", BitIconName.AuthenticatorApp, "The tenant answers and accepts the app's credentials."),
-        ["appleSignIn"] = ("Sign in with Apple", "Identity", BitIconName.Signin, "The client secret can be signed and Apple answers."),
-        ["googleSignIn"] = ("Sign in with Google", "Identity", BitIconName.Signin, "Can't be verified without a user; only reported while not configured."),
-        ["gitHubSignIn"] = ("Sign in with GitHub", "Identity", BitIconName.Signin, "Can't be verified without a user; only reported while not configured."),
-        ["twitterSignIn"] = ("Sign in with X", "Identity", BitIconName.Signin, "Can't be verified without a user; only reported while not configured."),
-        ["facebookSignIn"] = ("Sign in with Facebook", "Identity", BitIconName.Signin, "Can't be verified without a user; only reported while not configured."),
-        ["reCaptcha"] = ("reCAPTCHA", "Identity", BitIconName.Shield, "Google's siteverify answers."),
-
-        ["aiChat"] = ("AI chat", "AI", BitIconName.ChatBot, "The chat model gives a short answer."),
-        ["aiEmbedding"] = ("Embeddings", "AI", BitIconName.DocumentSearch, "One word gets embedded, as semantic search does."),
-        ["aiSpeechToText"] = ("Speech to text", "AI", BitIconName.Microphone, "Half a second of silence gets transcribed."),
-        ["aiTextToSpeech"] = ("Text to speech", "AI", BitIconName.Speakers, "\"OK\" is read aloud in the configured voice."),
-        ["aiRealtime"] = ("Voice calls", "AI", BitIconName.Headset, "The realtime model issues a session for the configured voice.")
-    };
 
     /// <summary>
     /// What no health check can prove, because it needs a user, a device or a delivery, and how to verify it.
@@ -101,23 +56,22 @@ public partial class OperationsPage
 
     private sealed class CheckView(string name, HealthReportEntryDto entry)
     {
-        // A check the catalog doesn't know, such as one of your own, takes the group and icon of its category.
-        private readonly (string Title, string Category, string IconName, string About) info =
-            catalog.TryGetValue(name, out var known) ? known
-            : categories.FirstOrDefault(category => category.Name == entry.Category) is { Name: not null } group ? (name, group.Name, group.IconName, "")
-            : (name, "Other", BitIconName.Diagnostic, "");
+        // Server.Web's own checks get a group of their own (See AddWebAppChecks); a category the page has no group for, "Other".
+        private readonly string category = name.StartsWith("web:", StringComparison.Ordinal) ? "Web server"
+            : categories.Any(category => category.Name == entry.Category) ? entry.Category!
+            : "Other";
 
         public string Name => name;
 
         public HealthReportEntryDto Entry => entry;
 
-        public string Title => info.Title;
+        public string Title => entry.Title;
 
-        public string Category => info.Category;
+        public string Category => category;
 
-        public string IconName => info.IconName;
+        public string IconName => entry.IconName;
 
-        public string About => info.About;
+        public string About => entry.About ?? "";
 
         public string? Description => entry.Description;
 

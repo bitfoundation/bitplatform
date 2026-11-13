@@ -278,6 +278,7 @@ public static class WebApplicationExtensions
     private static Task WriteHealthReport(HttpContext context, HealthReport report)
     {
         var registrations = context.RequestServices.GetRequiredService<IOptions<HealthCheckServiceOptions>>().Value.Registrations.ToDictionary(r => r.Name);
+        var descriptions = context.RequestServices.GetRequiredService<IOptions<HealthCheckDescriptions>>().Value;
 
         // An exception can carry a server name or a connection string. The app's own session (the Operations page) gets
         // it; an OAuth token, which some other app holds, never does.
@@ -295,6 +296,10 @@ public static class WebApplicationExtensions
             {
                 var registration = registrations.GetValueOrDefault(entry.Key);
                 var data = entry.Value.Data;
+                var category = entry.Value.Tags.FirstOrDefault(tag => tag.StartsWith(HealthCheckCategories.TagPrefix, StringComparison.Ordinal))?[HealthCheckCategories.TagPrefix.Length..] is { Length: > 0 } tagged
+                    ? tagged
+                    : null;
+                var description = descriptions.GetValueOrDefault(entry.Key);
 
                 return new HealthReportEntryDto
                 {
@@ -312,9 +317,10 @@ public static class WebApplicationExtensions
                     // ToString() rather than the message alone: the inner exception is usually the one naming the cause.
                     Exception = includeExceptions ? entry.Value.Exception?.ToString() : null,
                     Tags = [.. entry.Value.Tags],
-                    Category = entry.Value.Tags.FirstOrDefault(tag => tag.StartsWith(HealthCheckCategories.TagPrefix, StringComparison.Ordinal))?[HealthCheckCategories.TagPrefix.Length..] is { Length: > 0 } category
-                        ? category
-                        : null,
+                    Category = category,
+                    Title = description?.Title ?? entry.Key,
+                    IconName = description?.IconName ?? HealthCheckCategories.IconOf(category),
+                    About = description?.About,
                     IsNotConfigured = entry.Value.Tags.Contains(HealthCheckTags.NotConfigured),
                     // Stringified, as a check may put anything in here.
                     Data = data.Where(item => HealthCheckResultData.Keys.Contains(item.Key) is false).ToDictionary(item => item.Key, item => item.Value switch
