@@ -85,10 +85,10 @@
   },
   {
     "id": "boilerplate-workaround",
-    "kind": "full",
+    "kind": "kept",
     "files": ["src/Templates/Boilerplate/Bit.Boilerplate/specs/workarounds.md"],
     "regex": "\\bBit\\.[\\w.]+ {V}",
-    "why": "The Boilerplate's workarounds name the bit package a defect is in, at the version the template ships; while the report is open, that version still has it"
+    "why": "The Boilerplate's workarounds record the bit package version a defect was seen in; it stays until someone checks the entry again"
   },
   {
     "id": "mcp-url",

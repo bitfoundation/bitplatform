@@ -44,7 +44,7 @@ function Get-Rules {
     $rules = Get-Content $rulesFile -Raw | ConvertFrom-Json
     $ids = @{}
     foreach ($r in $rules) {
-        $placeholder = switch ($r.kind) { 'full' { '{V}' } 'core' { '{CORE}' } default { throw "rule $($r.id): kind must be full or core" } }
+        $placeholder = switch ($r.kind) { 'full' { '{V}' } 'kept' { '{V}' } 'core' { '{CORE}' } default { throw "rule $($r.id): kind must be full, core or kept" } }
         $parts = $r.regex -split [regex]::Escape($placeholder)
         if ($parts.Count -ne 2) { throw "rule $($r.id): the regex must hold $placeholder exactly once" }
         if ($ids.ContainsKey($r.id)) { throw "duplicate rule id $($r.id)" }
@@ -69,7 +69,7 @@ function Invoke-Scan([string]$full) {
     $core = Get-Core $full
     $isPre = $full.Contains('-pre-')
     $compiled = foreach ($r in $rules) {
-        $v = if ($r.kind -eq 'full') { $full } else { $core }
+        $v = if ($r.kind -eq 'core') { $core } else { $full }
         [pscustomobject]@{ Rule = $r; Regex = [regex]::new($r.Before + '(?<v>' + (Get-Token $v) + ')' + $r.After) }
     }
     $fullRe = [regex]::new((Get-Token $full))
@@ -77,6 +77,7 @@ function Invoke-Scan([string]$full) {
     $scan = [pscustomobject]@{
         Full = $full; Core = $core; IsPre = $isPre
         Hits = [Collections.Generic.List[object]]::new()
+        Kept = [Collections.Generic.List[object]]::new()
         Uncovered = [Collections.Generic.List[object]]::new()
         Suspects = [Collections.Generic.List[object]]::new()
         Conflicts = [Collections.Generic.List[string]]::new()
@@ -109,7 +110,8 @@ function Invoke-Scan([string]$full) {
                 }
             }
             foreach ($s in $spans.Values) {
-                $scan.Hits.Add([pscustomobject]@{ File = $path; Line = $i + 1; Start = $s.Start; End = $s.End; Rule = $s.Rule; Kind = $s.Kind; Text = $body })
+                $hit = [pscustomobject]@{ File = $path; Line = $i + 1; Start = $s.Start; End = $s.End; Rule = $s.Rule; Kind = $s.Kind; Text = $body }
+                if ($s.Kind -eq 'kept') { $scan.Kept.Add($hit) } else { $scan.Hits.Add($hit) }
             }
             if ($isPre) {
                 foreach ($m in $fullRe.Matches($body)) {
@@ -186,10 +188,10 @@ function Write-Report($scan) {
     $ok = $true
     $files = @($scan.Hits | ForEach-Object File | Select-Object -Unique).Count
     $full = @($scan.Hits | Where-Object Kind -EQ 'full').Count
-    Write-Host "version $($scan.Full) (core $($scan.Core)): $($scan.Hits.Count) spans in $files files ($full full, $($scan.Hits.Count - $full) core)"
+    Write-Host "version $($scan.Full) (core $($scan.Core)): $($scan.Hits.Count) spans in $files files ($full full, $($scan.Hits.Count - $full) core), $($scan.Kept.Count) kept as written"
     foreach ($r in $rules) {
-        $n = @($scan.Hits | Where-Object Rule -EQ $r.id).Count
-        Write-Host ('  {0,4}  {1}{2}' -f $n, $r.id, $(if ($n) { '' } else { '   <- matches nothing' }))
+        $n = @(@($scan.Hits) + @($scan.Kept) | Where-Object Rule -EQ $r.id).Count
+        Write-Host ('  {0,4}  {1}{2}' -f $n, $r.id, $(if ($r.kind -eq 'kept') { '   (kept)' } elseif ($n) { '' } else { '   <- matches nothing' }))
     }
     if ($scan.Conflicts.Count) {
         $ok = $false
@@ -203,7 +205,7 @@ function Write-Report($scan) {
     }
     if ($scan.Uncovered.Count) {
         $ok = $false
-        Write-Host "`nUNCOVERED: $($scan.Uncovered.Count) occurrences of $($scan.Full) that no rule matches. Add a narrow rule to rules.json:"
+        Write-Host "`nUNCOVERED: $($scan.Uncovered.Count) occurrences of $($scan.Full) that no rule matches. Add a narrow rule to rules.json, of kind kept when the line records the version on purpose:"
         $scan.Uncovered | ForEach-Object { Write-Host "  $($_.File):$($_.Line): $($_.Text)" }
     }
     if ($scan.Suspects.Count) {
@@ -270,7 +272,9 @@ $problems = [Collections.Generic.List[string]]::new()
 if ((Get-ReleaseVersion) -ne $To) { $problems.Add('ReleaseVersion did not change') }
 if ($scan.IsPre) {
     $oldRe = [regex]::new((Get-Token $old))
-    $left = @(@(git -C $Repo grep -n -I -F -e $old) + @(git -C $Repo grep --untracked -n -I -F -e $old) | Where-Object { $_ -and $oldRe.IsMatch($_) } | Select-Object -Unique)
+    $keptLines = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+    foreach ($k in $scan.Kept) { $null = $keptLines.Add("$($k.File):$($k.Line):") }
+    $left = @(@(git -C $Repo grep -n -I -F -e $old) + @(git -C $Repo grep --untracked -n -I -F -e $old) | Where-Object { $_ -and $oldRe.IsMatch($_) -and -not ($_ -match '^(.+?:\d+:)' -and $keptLines.Contains($Matches[1])) } | Select-Object -Unique)
     if ($left.Count) { $problems.Add("$old is still in the repo:`n$($left -join "`n")") }
 }
 if ($after.Hits.Count -ne $scan.Hits.Count) { $problems.Add("$($scan.Hits.Count) spans before, $($after.Hits.Count) after: the rules match a different set of lines at $To") }
