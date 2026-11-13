@@ -1013,6 +1013,20 @@ public static partial class Program
                 cacheDuration: TimeSpan.FromMinutes(30), timeout: TimeSpan.FromSeconds(10));
         }
 
+        // The project's other sites, such as its landing page or a blog, so a monitor reading /health watches them too. Optional,
+        // so with none listed there's no entry rather than a missing configuration. No retries: the check reports the first answer.
+        if (WebsitesHealthCheck.Read(configuration.GetSection("HealthChecks:Websites")) is { Length: > 0 } websites)
+        {
+#pragma warning disable EXTEXP0001 // RemoveAllResilienceHandlers is still marked experimental.
+            builder.Services.AddHttpClient(WebsitesHealthCheck.HttpClientName, httpClient => httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (compatible; Boilerplate-HealthCheck)"))
+                .RemoveAllResilienceHandlers();
+#pragma warning restore EXTEXP0001
+
+            // The check bounds itself; the registration's timeout only backs that up, as the report would lose which sites failed.
+            healthChecksBuilder.AddCachedCheck("websites", HealthCheckCategories.Websites, sp => ActivatorUtilities.CreateInstance<WebsitesHealthCheck>(sp, (object)websites),
+                cacheDuration: TimeSpan.FromMinutes(1), timeout: WebsitesHealthCheck.CheckTimeout + TimeSpan.FromSeconds(2));
+        }
+
         // Outside development, a missing configuration is most likely a deployment mistake, so it reports Degraded.
         // A project that doesn't use a dependency should remove its code.
         var reportNotConfigured = builder.Environment.IsDevelopment() is false;
