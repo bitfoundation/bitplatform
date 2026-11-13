@@ -543,7 +543,7 @@ private static List<BitMenuButtonItem> responsiveItems =
      @oncontextmenu=""e => contextMenuButton.OpenAt(e)"" @oncontextmenu:preventDefault>
     Right-click here
 </div>
-<BitMenuButton @ref=""contextMenuButton"" Text=""Edit"" Items=""contextItems""
+<BitMenuButton @ref=""contextMenuButton"" NoOverlay Text=""Edit"" Items=""contextItems""
                OnClick=""(BitMenuButtonItem? item) => contextClickedItem = item?.Text ?? contextClickedItem"" />
 
 <div>Clicked item: <b>@contextClickedItem</b></div>";

@@ -870,7 +870,7 @@ private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
      @oncontextmenu=""e => contextMenuButton.OpenAt(e)"" @oncontextmenu:preventDefault>
     Right-click here
 </div>
-<BitMenuButton @ref=""contextMenuButton"" Text=""Edit"" Items=""contextCustoms"" NameSelectors=""nameSelectors""
+<BitMenuButton @ref=""contextMenuButton"" NoOverlay Text=""Edit"" Items=""contextCustoms"" NameSelectors=""nameSelectors""
                OnClick=""(Operation? item) => contextClickedCustom = item?.Name ?? contextClickedCustom"" />
 
 <div>Clicked item: <b>@contextClickedCustom</b></div>";

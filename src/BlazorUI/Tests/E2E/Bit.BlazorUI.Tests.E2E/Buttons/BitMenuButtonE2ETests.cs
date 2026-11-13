@@ -21,7 +21,7 @@ namespace Bit.BlazorUI.Tests.E2E.Buttons;
 /// prerendering - are the same for every API and run against the Items page. Responsive has a page of its own
 /// (/e2e/menu-button/responsive): its callout on a wide screen is covered here, its sheet on a phone by
 /// BitMenuButtonMobileE2ETests. OpenAt, which opens the menu at a point as a context menu does, has a page of its own
-/// too (/e2e/menu-button/context).
+/// too (/e2e/menu-button/context), shared with NoOverlay, which leaves the page its own clicks while the menu is open.
 /// </summary>
 [TestClass]
 public class BitMenuButtonE2ETests : E2ETestBase
@@ -1599,6 +1599,121 @@ public class BitMenuButtonE2ETests : E2ETestBase
         box = await callout.BoxAsync();
         Assert.IsTrue(box.Y + box.Height <= button.Y + 1, "the menu opens above the button at the bottom of the page.");
         Near(button.X, box.X, "left along the button");
+    }
+
+    // ---------- NoOverlay ----------
+
+    [TestMethod]
+    public async Task NoOverlay_ASecondRightClickOnTheArea_ReachesIt_AndMovesTheMenuThere()
+    {
+        await OpenAsync("/e2e/menu-button/context");
+
+        var area = Page.Locator("#ctx-area-no");
+        await area.EvaluateAsync("el => el.addEventListener('contextmenu', e => window.__ctxPoint = [e.clientX, e.clientY], { capture: true })");
+        Task<double[]> PointAsync() => Page.EvaluateAsync<double[]>("() => window.__ctxPoint");
+
+        await area.ClickAsync(new() { Button = MouseButton.Right, Position = new() { X = 40, Y = 30 } });
+
+        var menu = await MenuOf("mnb-ctx-no");
+        var callout = CalloutOf(menu);
+        await Expect(menu).ToBeVisibleAsync();
+        await SettledAsync(callout);
+        await Expect(ItemsOf(menu).First).ToBeFocusedAsync();
+
+        // Nothing covers the page, so a real second right-click lands on the area, whose handler takes it for itself
+        // (preventDefault) and moves the menu to the new point rather than letting it be dismissed.
+        await area.ClickAsync(new() { Button = MouseButton.Right, Position = new() { X = 320, Y = 100 } });
+
+        var point = await PollAsync(PointAsync, p => p[0] > 250, "the second right-click did not reach the area");
+        await PollAsync(async () => (await callout.BoxAsync()).X, left => Math.Abs(left - point[0]) < 1.5, "the menu did not move to the new point");
+        Near(point[1] + 1, (await callout.BoxAsync()).Y, "top at the new point");
+
+        await Expect(menu).ToBeVisibleAsync();
+        await Expect(Text("ctx-no-open")).ToHaveTextAsync("True");
+        await Expect(ItemsOf(menu).First).ToBeFocusedAsync();
+
+        // A click inside the menu is not a click outside of it: the item runs, and the focus goes back to the area.
+        await ItemsOf(menu).Nth(2).ClickAsync();
+        await Expect(Text("ctx-no-clicked")).ToHaveTextAsync("Delete");
+        await Expect(menu).ToBeHiddenAsync();
+        await Expect(area).ToBeFocusedAsync();
+    }
+
+    [TestMethod]
+    public async Task NoOverlay_ARightClickOutsideTheMenu_DismissesIt()
+    {
+        await OpenAsync("/e2e/menu-button/context");
+
+        await Page.Locator("#ctx-area-no").ClickAsync(new() { Button = MouseButton.Right, Position = new() { X = 40, Y = 30 } });
+
+        var menu = await MenuOf("mnb-ctx-no");
+        await Expect(menu).ToBeVisibleAsync();
+        await SettledAsync(CalloutOf(menu));
+
+        // The page does not take this one for itself, so it is the user going elsewhere.
+        await Page.Locator("#ctx-page-clicks").ClickAsync(new() { Button = MouseButton.Right });
+
+        await Expect(menu).ToBeHiddenAsync();
+        await Expect(Text("ctx-no-open")).ToHaveTextAsync("False");
+    }
+
+    [TestMethod]
+    public async Task NoOverlay_AClickOnThePage_ReachesIt_AndDismissesTheMenu_WhereTheOverlayTakesItForItself()
+    {
+        await OpenAsync("/e2e/menu-button/context");
+
+        var pageButton = Page.Locator("#btn-page");
+
+        await Opb("mnb-ctx-no").ClickAsync();
+        var menu = await MenuOf("mnb-ctx-no");
+        await Expect(menu).ToBeVisibleAsync();
+        await SettledAsync(CalloutOf(menu));
+
+        await pageButton.ClickAsync();
+
+        await Expect(Text("ctx-page-clicks")).ToHaveTextAsync("1");
+        await Expect(menu).ToBeHiddenAsync();
+        await Expect(Text("ctx-no-open")).ToHaveTextAsync("False");
+
+        // The menu button beside it keeps its overlay, which takes the same click for itself: the menu closes and
+        // the page button never hears it.
+        await Opb("mnb-ctx").ClickAsync();
+        var covered = await MenuOf("mnb-ctx");
+        await Expect(covered).ToBeVisibleAsync();
+        await SettledAsync(CalloutOf(covered));
+
+        var box = await pageButton.BoxAsync();
+        await Page.Mouse.ClickAsync(box.X + box.Width / 2, box.Y + box.Height / 2);
+
+        await Expect(covered).ToBeHiddenAsync();
+        await Expect(Text("ctx-page-clicks")).ToHaveTextAsync("1");
+    }
+
+    [TestMethod]
+    public async Task NoOverlay_TheButtonClosesItsOpenMenu_AndTheMainHalfOfASplitButtonRunsAndClosesIt()
+    {
+        await OpenAsync("/e2e/menu-button/context");
+
+        await Opb("mnb-ctx-no").ClickAsync();
+        var menu = await MenuOf("mnb-ctx-no");
+        await Expect(menu).ToBeVisibleAsync();
+        await SettledAsync(CalloutOf(menu));
+
+        // The click lands on the button itself now, which closes the menu rather than opening it again.
+        await Opb("mnb-ctx-no").ClickAsync();
+        await Expect(menu).ToBeHiddenAsync();
+        await Expect(Text("ctx-no-open")).ToHaveTextAsync("False");
+        await NextFramesAsync();
+        await Expect(menu).ToBeHiddenAsync();
+
+        await Chb("mnb-split-no").ClickAsync();
+        var split = await MenuOf("mnb-split-no");
+        await Expect(split).ToBeVisibleAsync();
+        await SettledAsync(CalloutOf(split));
+
+        await Opb("mnb-split-no").ClickAsync();
+        await Expect(Text("split-no-runs")).ToHaveTextAsync("1");
+        await Expect(split).ToBeHiddenAsync();
     }
 
     [TestMethod]
