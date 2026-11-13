@@ -342,6 +342,7 @@ public partial class AiChatPanelCardsUITests : AiChatPanelTestBase
 
         await Expect(panel.GetByRole(AriaRole.Textbox, new() { Name = "Email" })).ToBeVisibleAsync();
         await Expect(panel.GetByText(answer)).ToBeVisibleAsync();
+        await WaitUntilKeptOnTheDevice(answer);
 
         await Page.ReloadAsync(new() { WaitUntil = WaitUntilState.NetworkIdle });
 
