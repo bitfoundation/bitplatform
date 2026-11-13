@@ -236,6 +236,28 @@ public class BitImageViewerTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitImageViewerPublicMethodsShouldZoomAViewerThePageHasNotBound()
+    {
+        var handle = SetupHandle();
+        var com = Render();
+
+        // Called on a reference to the viewer, from a render of the page that hands the viewer nothing new: the viewer
+        // re-renders itself, which is what tells the script and shows the zoom.
+        com.InvokeAsync(() => com.Instance.ZoomIn()).Wait();
+
+        Assert.AreEqual("125%", com.Find(".bit-imv-zmt").TextContent);
+        Assert.AreEqual(1.25, handle.Calls.Last(c => c.Identifier == "setZoom").Args![0]);
+
+        com.InvokeAsync(() => com.Instance.ZoomOut()).Wait();
+        Assert.AreEqual("100%", com.Find(".bit-imv-zmt").TextContent);
+
+        com.InvokeAsync(() => com.Instance.ZoomIn()).Wait();
+        com.InvokeAsync(() => com.Instance.Reset()).Wait();
+        Assert.AreEqual("100%", com.Find(".bit-imv-zmt").TextContent);
+        Assert.AreEqual(1.0, handle.Calls.Last(c => c.Identifier == "setZoom").Args![0]);
+    }
+
+    [TestMethod]
     public void BitImageViewerShouldPutTheScriptBackWhereAOneWayZoomHoldsIt()
     {
         var handle = SetupHandle();

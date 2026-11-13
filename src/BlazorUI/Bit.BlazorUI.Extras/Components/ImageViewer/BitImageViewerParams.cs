@@ -65,6 +65,11 @@ public class BitImageViewerParams : BitComponentBaseParams, IBitComponentParams
     public bool? NoToolbar { get; set; }
 
     /// <summary>
+    /// Adds a button to the toolbar that shows the viewer full screen.
+    /// </summary>
+    public bool? ShowFullScreenButton { get; set; }
+
+    /// <summary>
     /// Custom CSS styles for the different parts of the image viewer.
     /// </summary>
     public BitImageViewerClassStyles? Styles { get; set; }
@@ -131,6 +136,11 @@ public class BitImageViewerParams : BitComponentBaseParams, IBitComponentParams
         if (NoToolbar.HasValue)
         {
             bitImageViewer.TakeFromCascade(nameof(NoToolbar), NoToolbar.Value, static c => c.NoToolbar, static (c, v) => c.NoToolbar = v);
+        }
+
+        if (ShowFullScreenButton.HasValue)
+        {
+            bitImageViewer.TakeFromCascade(nameof(ShowFullScreenButton), ShowFullScreenButton.Value, static c => c.ShowFullScreenButton, static (c, v) => c.ShowFullScreenButton = v);
         }
 
         if (Styles is not null)
