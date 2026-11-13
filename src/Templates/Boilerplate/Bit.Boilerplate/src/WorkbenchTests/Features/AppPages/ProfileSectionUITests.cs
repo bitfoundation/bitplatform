@@ -139,7 +139,9 @@ public class ProfileSectionUITests : SettingsPageTest
         await Expect(View().GetByRole(AriaRole.Button, new() { Name = "Go to next month" })).ToBeDisabledAsync();
     }
 
-    [TestMethod, EverySurface]
+    // One surface only: an upload is the Workbench's, so every view of the user shows it, and one made by this test on
+    // another surface at the same time would bring the picture back after its removal.
+    [TestMethod, Surfaces(WorkbenchSurface.DesktopWithoutAgent)]
     public async Task ThePicture_Should_BeRemovedAndChosenAgain(WorkbenchSurface surface)
     {
         await OpenSection(AppStrings.ProfileTitle);
