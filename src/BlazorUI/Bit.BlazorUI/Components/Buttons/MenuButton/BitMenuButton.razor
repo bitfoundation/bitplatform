@@ -194,11 +194,16 @@
     <div id="@_pointId" aria-hidden="true" class="bit-mnb-pnt" style="@GetPointStyle()"></div>
 }
 
-<div @onclick="HandleOnOverlayClick" @onclick:stopPropagation
-     aria-hidden="true"
-     style="display:@(IsOpen ? "block" : "none");@Styles?.Overlay"
-     id="@_overlayId"
-     class="bit-mnb-ovl @Classes?.Overlay"></div>
+@* Without the overlay the page keeps its own clicks, and the dismissal the overlay would have taken care of falls
+   to the page-level handler on the JS side (see NoOverlay). *@
+@if (NoOverlay is false)
+{
+    <div @onclick="HandleOnOverlayClick" @onclick:stopPropagation
+         aria-hidden="true"
+         style="display:@(IsOpen ? "block" : "none");@Styles?.Overlay"
+         id="@_overlayId"
+         class="bit-mnb-ovl @Classes?.Overlay"></div>
+}
 
 <div @onkeydown="e => HandleOnMenuKeyDown(e, _calloutId, null)"
      id="@_calloutId"

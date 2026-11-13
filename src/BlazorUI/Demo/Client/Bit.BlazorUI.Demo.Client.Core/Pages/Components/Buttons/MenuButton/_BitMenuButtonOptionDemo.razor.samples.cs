@@ -673,7 +673,7 @@ private readonly BitMenuButtonParams[] menuButtonParams =
      @oncontextmenu=""e => contextMenuButton.OpenAt(e)"" @oncontextmenu:preventDefault>
     Right-click here
 </div>
-<BitMenuButton @ref=""contextMenuButton"" Text=""Edit"" TItem=""BitMenuButtonOption""
+<BitMenuButton @ref=""contextMenuButton"" NoOverlay Text=""Edit"" TItem=""BitMenuButtonOption""
                OnClick=""(BitMenuButtonOption? item) => contextClickedOption = item?.Text ?? contextClickedOption"">
     <BitMenuButtonOption Text=""Cut"" Key=""cut"" IconName=""@BitIconName.Cut"" />
     <BitMenuButtonOption Text=""Copy"" Key=""copy"" IconName=""@BitIconName.Copy"" />

@@ -297,6 +297,19 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
     [Parameter] public bool NoNewTabHint { get; set; }
 
     /// <summary>
+    /// Leaves the page its own clicks while the menu is open, by not rendering the overlay that otherwise covers
+    /// it. Whatever is underneath the menu can be interacted with, and a click or a right-click outside of the
+    /// menu and its button dismisses it.
+    /// </summary>
+    /// <remarks>
+    /// This is what a context menu opened with <see cref="OpenAt(MouseEventArgs)"/> needs: the overlay would take
+    /// the right-click that is meant to move the menu to a new point, leaving the browser to show its own menu on
+    /// top of it instead. Without it, a right-click the page takes for itself (its handler prevents the default)
+    /// moves the menu, and any other one dismisses it.
+    /// </remarks>
+    [Parameter] public bool NoOverlay { get; set; }
+
+    /// <summary>
     /// Determines whether the menu button is in the loading state.
     /// It replaces the default icon of the header button with a spinner and ignores its click.
     /// In split mode the chevron still opens the menu, so the rest of the commands stay reachable.
@@ -1414,7 +1427,8 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
         {
             // The trigger of a plain menu button toggles its menu. With the pointer the overlay takes the
             // click that would close it, but from the keyboard the trigger keeps the focus after it was
-            // opened, so Enter and Space arrive here with the menu already open - and have to close it.
+            // opened, so Enter and Space arrive here with the menu already open - and have to close it. So
+            // does a click on a menu button that renders no overlay (NoOverlay).
             if (IsOpen)
             {
                 _focusFirstItemOnOpen = false;
@@ -1424,6 +1438,14 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
             }
 
             await OpenCallout();
+        }
+        else if (IsOpen)
+        {
+            // The main half of a split button is a command of its own, and running it is leaving the menu. The
+            // overlay takes that click while the menu is open, so it is a menu button without one (NoOverlay) whose
+            // main half can be clicked with its menu still open - and the menu has to go with the click.
+            await CloseCallout();
+            StateHasChanged();
         }
 
         if (Toggle && Split)
@@ -1476,7 +1498,8 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
 
     // The chevron of a split button is the trigger of its menu, so it toggles it the way the header of a plain
     // one does. With the pointer the overlay takes the click that would close an open menu, but from the
-    // keyboard the chevron can still be the focused element with the menu open, and Enter has to close it.
+    // keyboard the chevron can still be the focused element with the menu open, and Enter has to close it - as
+    // does a click on it when there is no overlay (NoOverlay).
     private async Task HandleOnChevronClick()
     {
         if (Disabled) return;
@@ -2004,7 +2027,9 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
             component: null,
             calloutId: _calloutId,
             callout: null,
-            overlayId: _overlayId,
+            // An empty id tells the JS side that no overlay takes the outside clicks, so that the page-level
+            // handler dismisses the menu instead (see NoOverlay).
+            overlayId: NoOverlay ? "" : _overlayId,
             isCalloutOpen: IsOpen,
             // A sheet coming up from the bottom edge, the way an action sheet does, rather than a side panel: a menu
             // is a short list of actions within reach of the thumb.

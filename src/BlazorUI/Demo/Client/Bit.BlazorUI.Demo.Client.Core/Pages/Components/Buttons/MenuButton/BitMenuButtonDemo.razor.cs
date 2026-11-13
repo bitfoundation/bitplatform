@@ -301,6 +301,13 @@ public partial class BitMenuButtonDemo
         },
         new()
         {
+            Name = "NoOverlay",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Leaves the page its own clicks while the menu is open, by not rendering the overlay that otherwise covers it. A click or a right-click outside of the menu and its button dismisses it; a right-click the page takes for itself (preventDefault) can move a menu opened with OpenAt instead.",
+        },
+        new()
+        {
             Name = "OnClick",
             Type = "EventCallback<TItem?>",
             Description = "The callback that is called when the header button is clicked, with the selected item in Sticky mode and null otherwise, and when an item of the menu is activated outside of Sticky mode, with that item."
