@@ -20,7 +20,8 @@ anyone can read them before it ships.
   comment.
 - A discussion body takes up to 65,536 characters. If the notes outgrow it, keep the highlights and Dependencies in the
   body, move the longest PR list into a comment of its own that is edited the same way, and say so in the progress
-  comment.
+  comment. The release body is then the discussion body with that list put back in its place, and that is what gets
+  handed back.
 
 ## Reading the request
 
@@ -35,15 +36,17 @@ Fetch develop first. The progress comment holds what the next run needs:
 
 - the range and the tag the notes are for
 - the develop commit the review reached, and the day the open PRs were read
-- the open PRs counted as merged, the open PRs left out as asked, and the PRs left out by rule
+- the open PRs counted as merged, each with the head commit it was read at, the open PRs left out as asked, and the PRs
+  left out by rule
 - PRs folded into another one (for example, merged into a feature branch that came in as one PR)
 - the last PR that changed the dependencies
 - the number of PRs per section
 - a short dated log, one line per run
 
 A PR is new when it was merged after that commit, or when it is open and in none of the lists. Also look for PRs counted
-as merged that were closed without merging: they come out of the notes. At the end of the run, update every line of the
-comment and add one to the log.
+as merged that were closed without merging: they come out of the notes. An open PR counted as merged whose head commit
+moved gets its title, section, highlight and package files checked again, and keeps its one entry. At the end of the
+run, update every line of the comment and add one to the log.
 
 ## Keep it cheap
 
@@ -99,8 +102,8 @@ These came from the maintainer's corrections, so get them right the first time:
 Compare the package versions of the previous tag with develop plus the open PRs counted as merged, applied on top in a
 throwaway merge. Never take them from release notes. For bit packages, list only what the NuGet publish workflow really
 packs. For bit Boilerplate, cover the template's NuGet and npm packages. A whole framework's worth of major updates, such
-as every Microsoft.AspNetCore package moving to a new .NET, is one line, not a list. Only rerun the comparison when a
-new PR touches package files.
+as every Microsoft.AspNetCore package moving to a new .NET, is one line, not a list. Only rerun the comparison when the
+PRs that touch package files change: one comes in, one goes out, or an open one gets new commits.
 
 ## Check before claiming
 
