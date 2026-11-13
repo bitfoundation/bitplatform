@@ -502,6 +502,13 @@ have taken requests, so a failure from then on leaves the database ahead and und
 <!--#else-->
   takes from Caddy, and the address each provider of section 5 was registered with.
 <!--#endif-->
+- `bit new` writes the addresses given as `--apiServerUrl` and `--webAppUrl` into the project, and leaves
+  `use-your-api-server-url-here.com` and `use-your-web-app-url-here.com` wherever one wasn't given. The CD fills in only
+  the settings, `ServerAddress` and `TrustedOrigins`, so nothing replaces them in the files: the Android app's
+  `DataHosts`, the iOS and macOS `applinks:` entitlements, the `preconnect` links of both `index.html` files, the static
+  client's `robots.txt` and `bit-app.json`, and the MCP files of the next line. Before the first deployment, search the
+  repository for both and put Production's real address in each, the api's and the web app's, or settle it another way,
+  such as removing the app links of an app the user doesn't ship, so nothing is published with a placeholder.
 - Put each environment's dev-mcp address, `https://<its server>/dev-mcp`, into the `dev-mcp-test` and
   `dev-mcp-production` entries of every MCP file (`.mcp.json`, `.vscode/mcp.json`, `.cursor/mcp.json`,
   `.junie/mcp/mcp.json`, `.codex/config.toml`), so the troubleshoot skill reads the environment a problem was seen in.
