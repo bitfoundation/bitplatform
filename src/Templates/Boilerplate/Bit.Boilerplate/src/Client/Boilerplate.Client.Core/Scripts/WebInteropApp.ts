@@ -1,8 +1,6 @@
 //+:cnd:noEmit
 // Read Client.web/wwwroot/web-interop-app.html comments.
 
-import { App } from './App';
-
 export class WebInteropApp {
     private static autoClose = true;
 
@@ -89,8 +87,7 @@ export class WebInteropApp {
             if (window.opener) {
                 window.opener.postMessage({ key: 'PUBLISH_MESSAGE', message: 'EXTERNAL_SIGN_IN_CALLBACK', payload: urlToOpen });
             }
-            else if (await WebInteropApp.handOver(urlToOpen) === false) {
-                // Nobody waits for it: the page that opened this window was closed or reloaded, so it goes on here.
+            else {
                 WebInteropApp.autoClose = false;
                 location.href = urlToOpen;
             }
@@ -106,32 +103,6 @@ export class WebInteropApp {
         if (!response.ok) {
             throw new Error(`ExternalSignInCallback was refused with status ${response.status}.`);
         }
-    }
-
-    /**
-     * A window loses its opener when it passes through a page of another origin with a Cross-Origin-Opener-Policy, as
-     * the same-origin-allow-popups of the template's own pages (App.razor.cs) and of many sign-in providers' does: the
-     * browser moves it to a browsing context group of its own. The page that opened it is still on this origin and
-     * waits for the answer (See App.expectExternalCallback), so it goes over a BroadcastChannel instead, and once that
-     * page says it has it, this window closes as usual, which a window opened by script may still do.
-     */
-    private static handOver(urlToOpen: string) {
-        return new Promise<boolean>(resolve => {
-            if (!('BroadcastChannel' in window)) return resolve(false);
-
-            const channel = new BroadcastChannel(App.externalCallbackChannel);
-            const id = crypto.randomUUID();
-            const timeout = setTimeout(() => { channel.close(); resolve(false); }, 2000);
-
-            channel.onmessage = e => {
-                if (e.data?.answerTo !== id) return;
-                clearTimeout(timeout);
-                channel.close();
-                resolve(true);
-            };
-
-            channel.postMessage({ id, payload: urlToOpen });
-        });
     }
 
     /// The per-process token the local HTTP server requires on every request. It is placed in the interop URL by

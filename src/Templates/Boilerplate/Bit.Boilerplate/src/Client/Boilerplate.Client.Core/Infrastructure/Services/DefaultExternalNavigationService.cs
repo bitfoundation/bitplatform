@@ -5,7 +5,6 @@ public partial class DefaultExternalNavigationService : IExternalNavigationServi
     [AutoInject] private readonly Window window = default!;
     [AutoInject] private readonly PubSubService pubSubService = default!;
     [AutoInject] private readonly NavigationManager navigationManager = default!;
-    [AutoInject] private readonly IJSRuntime jsRuntime = default!;
 
     /// <summary>
     /// The MauiExternalNavigationService (Client.Maui) implementation of <see cref="IExternalNavigationService"/> can show one window at a time
@@ -31,10 +30,6 @@ public partial class DefaultExternalNavigationService : IExternalNavigationServi
         }
         else
         {
-            // The window may come back without an opener, which a Cross-Origin-Opener-Policy on its way cuts, and then
-            // hands its answer over a BroadcastChannel that only this page takes (See WebInteropApp.handOver).
-            await jsRuntime.InvokeVoidAsync("App.expectExternalCallback");
-
             pubSubUnsubscribe?.Invoke();
             pubSubUnsubscribe = pubSubService.Subscribe(ClientAppMessages.EXTERNAL_SIGN_IN_CALLBACK, async _ =>
             {
