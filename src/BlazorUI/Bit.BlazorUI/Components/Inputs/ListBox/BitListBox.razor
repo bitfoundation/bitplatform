@@ -19,6 +19,17 @@
         <div id="@_labelId" style="@Styles?.Label" class="bit-lbx-lbl @Classes?.Label">@Label</div>
     }
 
+    @* The options render nothing but a marker each: the items are drawn in the list below from the options that
+       registered. The markers are kept outside the list, which holds nothing but its options. *@
+    @if (Options is not null || ChildContent is not null)
+    {
+        <div hidden aria-hidden="true" style="display:none" id="@_optionsContainerId">
+            <CascadingValue Value="this" IsFixed="true">
+                @(Options ?? ChildContent)
+            </CascadingValue>
+        </div>
+    }
+
     @* The listbox itself is no tab stop: the item the keyboard is on is (roving tabindex), so the browser moves the focus
        from item to item - and scrolls the one it lands on into view - while the keys are handled here, where they
        bubble up to. *@
@@ -45,9 +56,10 @@
             var disabled = Disabled || GetIsDisabled(item);
             var icon = GetIcon(item);
             var description = GetDescription(item);
+            var key = GetItemKey(item, index);
 
-            <li @key="GetItemKey(item, index)"
-                @ref="_optionRefs[index]"
+            <li @key="key"
+                @ref="_optionRefs[key]"
                 @onclick="() => HandleOnItemClick(index)"
                 id="@GetOptionId(index)"
                 role="option"
