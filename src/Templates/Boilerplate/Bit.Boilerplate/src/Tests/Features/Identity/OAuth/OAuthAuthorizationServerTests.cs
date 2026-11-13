@@ -11,6 +11,7 @@ using Boilerplate.Shared.Features.Identity.OAuth.Dtos;
 //#if (multitenant == true)
 using Boilerplate.Shared.Features.Tenants;
 using Boilerplate.Server.Api.Features.Tenants;
+using Boilerplate.Client.Core.Components.Pages.Identity.OAuth;
 //#endif
 //#if (advancedTests == true)
 using Boilerplate.Tests.Features.DevMcp;
@@ -752,7 +753,8 @@ public class OAuthAuthorizationServerTests
     /// <summary>
     /// The consent page names a tenant when it loads, and Authorize may be pressed long after, when the session can be in
     /// another tenant, switched in another tab. The page approves with the tenant Review named, <see cref="Guid.Empty"/>
-    /// for none (See ConsentPage.BuildRequest), so the grant carries the tenant the user saw.
+    /// for none (<see cref="ConsentPage.TenantIdToAnswerWith"/>), so the grant carries the tenant the user saw, also when
+    /// the request's <c>tenant_id</c> is blank, which validation reads as absent.
     /// </summary>
     [TestMethod]
     public async Task TheApproval_Should_GrantTheTenantTheConsentPageNamed_AfterTheSessionSwitched()
@@ -775,6 +777,7 @@ public class OAuthAuthorizationServerTests
 
         var (verifier, challenge) = GeneratePkcePair();
         var request = BuildRequest(server, challenge);
+        request.TenantId = " ";
         var oauthController = client.GetController<IOAuthController>();
 
         var consent = await oauthController.Review(request, TestContext.CancellationToken);
@@ -784,8 +787,7 @@ public class OAuthAuthorizationServerTests
         Assert.IsTrue(await client.AuthManager.SwitchTenant(otherTenant.Id, TestContext.CancellationToken),
             "The session has to be in another tenant by the time Authorize is pressed.");
 
-        // What the consent page sends once it has reviewed the request.
-        request.TenantId = (consent.TenantId ?? Guid.Empty).ToString();
+        request.TenantId = ConsentPage.TenantIdToAnswerWith(request.TenantId, consent);
 
         var approval = await oauthController.Approve(request, TestContext.CancellationToken);
         var granted = await ExchangeCode(server, QueryValueOf(approval.RedirectUrl, "code")!, verifier);

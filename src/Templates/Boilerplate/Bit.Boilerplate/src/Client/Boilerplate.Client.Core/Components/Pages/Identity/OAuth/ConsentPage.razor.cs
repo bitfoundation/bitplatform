@@ -153,10 +153,19 @@ public partial class ConsentPage
         CodeChallengeMethod = CodeChallengeMethod,
         Resource = Resource,
         //#if (multitenant == true)
-        // Once reviewed, the tenant the page named, none included: the session may have switched tenants since.
-        TenantId = TenantId ?? (consent is null ? null : (consent.TenantId ?? Guid.Empty).ToString())
+        TenantId = TenantIdToAnswerWith(TenantId, consent)
         //#endif
     };
+
+    //#if (multitenant == true)
+    /// <summary>
+    /// Review is asked with the request's own <c>tenant_id</c>; every answer after it with the tenant Review named,
+    /// <see cref="Guid.Empty"/> for none, whatever the query says: the session may have switched tenants since, in another
+    /// tab, and a blank <c>tenant_id</c> would otherwise let Approve take the one it is in by then.
+    /// </summary>
+    public static string? TenantIdToAnswerWith(string? requestedTenantId, OAuthConsentDto? consent)
+        => consent is null ? requestedTenantId : (consent.TenantId ?? Guid.Empty).ToString();
+    //#endif
 
     /// <summary>The only failures that reach this page rather than the client.</summary>
     private string DescribeError(string errorCode) => errorCode switch
