@@ -119,7 +119,9 @@ public partial class HealthCheckIntegrationTests
         var smtp = report.Entries["smtp"];
         Assert.AreEqual(HealthCheckStatus.Degraded, smtp.FailureStatus);
         Assert.AreEqual(TimeSpan.FromSeconds(10), smtp.Timeout);
-        Assert.IsTrue(smtp.Data.ContainsKey("CheckedAt"), "A cached check says when it really ran.");
+        Assert.IsNotNull(smtp.VerifiedAt, "A cached check says when it really ran.");
+        Assert.AreEqual(TimeSpan.FromMinutes(5), smtp.CacheDuration);
+        Assert.IsEmpty(smtp.Data.Keys.Intersect(["Duration", "VerifiedAt", "CacheDuration"]), "Its run is reported in fields, not in its data.");
     }
 
     private async Task<HttpResponseMessage> GetReport(HttpClient httpClient, Uri url)
@@ -264,6 +266,48 @@ public partial class HealthCheckIntegrationTests
         Assert.Contains(HealthCheckCategories.Integrations, paymentGateway.Tags, "The category tag stays among the tags.");
 
         Assert.IsNull(report.Entries["untagged"].Category, "A check registered without a category tag has none.");
+    }
+
+    /// <summary>
+    /// A missing configuration reports Degraded like a slow dependency, so /healthz says which of the two an entry is (See
+    /// HealthReportEntryDto.IsNotConfigured): neither the Operations page nor a monitor has to read the description.
+    /// </summary>
+    [TestMethod]
+    public async Task DetailedReport_Should_TellAMissingConfiguration_FromADegradedDependency()
+    {
+        await using var server = new AppTestServer();
+
+        await server.Build(configureTestApiAppServices: services => services.AddHealthChecks()
+                .AddNotConfiguredCheck("paymentGateway", HealthCheckCategories.Integrations, "PaymentGateway")
+                .AddCheck("maps", () => HealthCheckResult.Degraded("Answered in 4 seconds."), tags: [HealthCheckCategories.Integrations]))
+            .Start(TestContext.CancellationToken);
+
+        await using var adminClient = server.CreateAppClient();
+        await adminClient.AuthManager.SignIn(new()
+        {
+            Email = TestData.DefaultTestEmail,
+            Password = TestData.DefaultTestPassword
+        }, TestContext.CancellationToken);
+
+        using var response = await GetReport(adminClient.HttpClient, new Uri(server.ApiAppAddress, "healthz"));
+
+        var body = await response.Content.ReadAsStringAsync(TestContext.CancellationToken);
+
+        using (var json = JsonDocument.Parse(body))
+        {
+            Assert.IsTrue(json.RootElement.GetProperty("entries").GetProperty("paymentGateway").GetProperty("isNotConfigured").GetBoolean(), body);
+        }
+
+        var report = JsonSerializer.Deserialize(body, adminClient.Services.GetRequiredService<JsonSerializerOptions>().GetTypeInfo<HealthReportDto>());
+        Assert.IsNotNull(report);
+
+        Assert.AreEqual(HealthCheckStatus.Degraded, report.Entries["paymentGateway"].Status);
+        Assert.IsTrue(report.Entries["paymentGateway"].IsNotConfigured);
+        Assert.AreEqual("Integrations", report.Entries["paymentGateway"].Category, "A stand-in is grouped where the real check would be.");
+
+        Assert.AreEqual(HealthCheckStatus.Degraded, report.Entries["maps"].Status);
+        Assert.IsFalse(report.Entries["maps"].IsNotConfigured, "A slow dependency is configured.");
+        Assert.IsFalse(report.Entries["binStorage"].IsNotConfigured);
     }
 
     /// <summary>
@@ -487,9 +531,6 @@ public partial class HealthCheckIntegrationTests
             //#if (cloudflare == true)
             "cloudflare",
             //#endif
-            //#if (signalR == true)
-            "azureSignalR",
-            //#endif
             //#if (notification == true)
             "firebase", "apns",
             //#endif
@@ -539,10 +580,15 @@ public partial class HealthCheckIntegrationTests
 
             Assert.AreEqual(HealthStatus.Degraded, result.Status, $"'{name}': {result.Description}");
             Assert.Contains("is not configured", result.Description!, $"'{name}' must say what is missing.");
+            Assert.Contains(HealthCheckTags.NotConfigured, registration.Tags, $"/healthz must report '{name}' as not configured, not as failing.");
 
             // A stand-in is grouped where the real check would be.
             AssertCategory(registration);
         }
+        //#if (signalR == true)
+
+        Assert.DoesNotContain(r => r.Name is "azureSignalR", registrations, "Without Azure SignalR the app serves SignalR itself, so a missing connection string is no setup gap.");
+        //#endif
     }
 
     /// <summary>

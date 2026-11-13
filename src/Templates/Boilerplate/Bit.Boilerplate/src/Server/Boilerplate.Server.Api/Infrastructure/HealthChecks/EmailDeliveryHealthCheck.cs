@@ -49,6 +49,7 @@ public class EmailDeliveryHealthCheck(EmailDeliverySettings settings, EmailDeliv
         ("gmail.com", ["google"]),
         ("office365.com", ["selector1", "selector2"]),
         ("outlook.com", ["selector1", "selector2"]),
+        ("azurecomm.net", ["selector1-azurecomm-prod-net", "selector2-azurecomm-prod-net"]),
         ("sendgrid.net", ["s1", "s2"]),
         ("mailjet.com", ["mailjet"]),
         ("mandrillapp.com", ["mandrill"]),

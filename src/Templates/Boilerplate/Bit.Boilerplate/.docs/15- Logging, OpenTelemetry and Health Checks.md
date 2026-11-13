@@ -321,7 +321,8 @@ The project includes **health check endpoints** to monitor application health.
 1. **`/health`** - readiness. Runs every registered check, and returns 503 only when one of them reports Unhealthy.
 2. **`/alive`** - liveness. Runs only the checks tagged `"live"`, which today is the disk-space check alone.
 3. **`/healthz`** - the detailed report behind the **Operations** page (Management menu). It keeps the HealthChecks UI
-   format and adds each check's failure status, timeout, category and full exception, plus the time of the report. It also says
+   format and adds each check's failure status, timeout, category, whether it only misses its settings (`isNotConfigured`)
+   and full exception, plus the time of the report. It also says
    which build answered and since when: `applicationVersion` (the informational version, which ends with the commit
    in a Release build), `instanceName` (the machine name) and `startedAt` (when the process started, in UTC), so a
    monitor that polls it can mark deployments and restarts, instance by instance. It needs the
@@ -392,7 +393,8 @@ provider outage does not take an otherwise healthy instance out of the load bala
   or without one DMARC record with a policy at `_dmarc.<domain>` or at its organizational domain (two of them, or one
   without `p`, and receivers apply none), Gmail, Outlook and Yahoo put the app's mail, sign-in codes and magic links
   included, in spam or drop it, so the check reports Degraded. DKIM's selector is the sending service's choice, so DKIM
-  is only looked up at the selectors Google Workspace, Microsoft 365, SendGrid, Mailjet, Mandrill and Resend use for
+  is only looked up at the selectors Google Workspace, Microsoft 365, Azure Communication Services, SendGrid, Mailjet,
+  Mandrill and Resend use for
   every customer, and reported in the entry's data without changing its status, even when the lookup fails. With Sign in with Apple configured, the data also notes that mail to Apple's private relay
   (`privaterelay.appleid.com`) only arrives once the domain is registered with Apple, which no API can confirm. The
   check is left out where mail is caught rather than delivered: the shared ethereal.email mailbox, or a loopback SMTP
@@ -432,11 +434,17 @@ In development, `sms`, `keycloakIdentity`,
 <!--#if (cloudflare == true)-->
 `cloudflare`,
 <!--#endif-->
-`entraId`, `appleSignIn`, `azureSignalR`, `firebase`, `apns`
+`entraId`, `appleSignIn`, `firebase`, `apns`
 and the AI checks are registered only when their settings are present. In any other environment they are always
-registered, and one without settings reports Degraded with "... is not configured". A deployment that ships the code
-for a dependency but leaves it unconfigured is most likely a mistake. If your project doesn't use one of them, remove
-its code, check included.
+registered, and one without settings reports Degraded with "... is not configured", and `/healthz` marks its entry
+`isNotConfigured`, so the Operations page and a monitor show it as a setup gap rather than as a failing dependency. A
+deployment that ships the code for a dependency but leaves it unconfigured is most likely a mistake. If your project
+doesn't use one of them, remove its code, check included.
+<!--#if (signalR == true)-->
+
+`azureSignalR` is registered only when `Azure:SignalR:ConnectionString` is set, in every environment: without it, the
+app serves SignalR itself and live updates keep working, so a missing connection string is a choice rather than a gap.
+<!--#endif-->
 
 Google, GitHub, Twitter and Facebook sign-in can't be verified without a user signing in, so they have no check. Outside
 development, `googleSignIn`, `gitHubSignIn`, `twitterSignIn` and `facebookSignIn` appear only when their settings are
@@ -450,7 +458,9 @@ the sign-in checks, `reCaptcha` and the AI checks are registered with
 `AddCachedCheck`, which reuses a healthy result for 5 minutes (1 minute for `azureSignalR`, 30 minutes for
 `emailDelivery`, whose DNS lookups also keep each answer for its TTL). Probes that arrive together share one run. A
 failing result is never reused, so each probe checks again and a recovery shows up right away. This keeps load balancer
-probes from turning into paid calls or repeated sign-ins.
+probes from turning into paid calls or repeated sign-ins. `/healthz` reports a reused result with its own run's
+`duration` rather than the cache lookup's, when that run was (`verifiedAt`) and how long a result is reused
+(`cacheDuration`).
 
 With Redis enabled, Aspire registers `StackExchange.Redis_redis-persistent` (Unhealthy) and
 `StackExchange.Redis_redis-cache`. The template changes `redis-cache` to Degraded, because FusionCache keeps serving from

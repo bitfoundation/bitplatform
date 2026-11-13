@@ -99,11 +99,6 @@ public partial class OperationsPage
 
     private enum ManualTest { None, Push, Email, Sms }
 
-    /// <summary>
-    /// Data keys the page shows on its own (See CachedHealthCheck), so the details list leaves them out.
-    /// </summary>
-    private static readonly string[] knownDataKeys = ["CheckedAt", "CacheDuration", "Duration"];
-
     private sealed class CheckView(string name, HealthReportEntryDto entry)
     {
         // A check the catalog doesn't know, such as one of your own, takes the group and icon of its category.
@@ -129,11 +124,11 @@ public partial class OperationsPage
         /// <summary>
         /// A missing configuration reports Degraded (See AddNotConfiguredCheck), but asks for a different fix.
         /// </summary>
-        public Tone Tone => entry.Status switch
+        public Tone Tone => entry switch
         {
-            HealthCheckStatus.Healthy => Tone.Healthy,
-            HealthCheckStatus.Degraded when entry.Description?.Contains("is not configured", StringComparison.Ordinal) is true => Tone.NotConfigured,
-            HealthCheckStatus.Degraded => Tone.Degraded,
+            { IsNotConfigured: true } => Tone.NotConfigured,
+            { Status: HealthCheckStatus.Healthy } => Tone.Healthy,
+            { Status: HealthCheckStatus.Degraded } => Tone.Degraded,
             _ => Tone.Unhealthy
         };
 
@@ -159,22 +154,22 @@ public partial class OperationsPage
         public bool IsLiveness => entry.Tags.Contains("live");
 
         /// <summary>
-        /// How long the check really ran; a cached one's report duration is only the cache lookup (See CachedHealthCheck).
+        /// The tags the card shows as they are: liveness, the category and a missing configuration are shown otherwise.
         /// </summary>
-        public TimeSpan Duration => TimeSpan.TryParse(entry.Data.GetValueOrDefault("Duration"), CultureInfo.InvariantCulture, out var duration) ? duration : entry.Duration;
+        public string[] OtherTags => [.. entry.Tags.Where(tag => tag is not ("live" or HealthCheckTags.NotConfigured)
+                                                                 && tag.StartsWith(HealthCheckCategories.TagPrefix, StringComparison.Ordinal) is false)];
+
+        public TimeSpan Duration => entry.Duration;
 
         public double? TimeoutUsage => entry.Timeout is { TotalMilliseconds: > 0 } timeout
             ? Math.Min(100, 100 * Duration.TotalMilliseconds / timeout.TotalMilliseconds)
             : null;
 
-        /// <summary>
-        /// When a cached check really ran, which may be well before this report (See CachedHealthCheck).
-        /// </summary>
-        public DateTimeOffset? VerifiedAt => DateTimeOffset.TryParse(entry.Data.GetValueOrDefault("CheckedAt"), CultureInfo.InvariantCulture, out var at) ? at : null;
+        public DateTimeOffset? VerifiedAt => entry.VerifiedAt;
 
-        public TimeSpan? CacheDuration => TimeSpan.TryParse(entry.Data.GetValueOrDefault("CacheDuration"), CultureInfo.InvariantCulture, out var duration) ? duration : null;
+        public TimeSpan? CacheDuration => entry.CacheDuration;
 
-        public IEnumerable<KeyValuePair<string, string?>> ExtraData => entry.Data.Where(item => knownDataKeys.Contains(item.Key) is false);
+        public IEnumerable<KeyValuePair<string, string?>> ExtraData => entry.Data;
 
         public bool HasDetails => string.IsNullOrWhiteSpace(entry.Exception) is false || ExtraData.Any();
 

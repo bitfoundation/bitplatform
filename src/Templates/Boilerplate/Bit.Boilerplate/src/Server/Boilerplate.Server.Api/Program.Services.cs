@@ -1071,8 +1071,12 @@ public static partial class Program
         //#endif
 
         //#if (signalR == true)
-        AddCachedCheckIfConfigured("azureSignalR", HealthCheckCategories.Messaging, string.IsNullOrWhiteSpace(configuration["Azure:SignalR:ConnectionString"]) is false, "Azure:SignalR:ConnectionString",
-            sp => ActivatorUtilities.CreateInstance<Infrastructure.SignalR.AzureSignalRHealthCheck>(sp), cacheDuration: TimeSpan.FromMinutes(1), timeout: TimeSpan.FromSeconds(10));
+        // Azure SignalR is optional in every environment: without it the app serves SignalR itself, so it has no stand-in.
+        if (string.IsNullOrWhiteSpace(configuration["Azure:SignalR:ConnectionString"]) is false)
+        {
+            healthChecksBuilder.AddCachedCheck("azureSignalR", HealthCheckCategories.Messaging, sp => ActivatorUtilities.CreateInstance<Infrastructure.SignalR.AzureSignalRHealthCheck>(sp),
+                cacheDuration: TimeSpan.FromMinutes(1), timeout: TimeSpan.FromSeconds(10));
+        }
         //#endif
 
         //#if (notification == true)

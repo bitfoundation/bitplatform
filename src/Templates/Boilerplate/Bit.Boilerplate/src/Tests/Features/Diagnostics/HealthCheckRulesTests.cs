@@ -28,7 +28,7 @@ public partial class HealthCheckRulesTests
         var reused = await Check(cachedCheck);
 
         Assert.AreEqual(1, innerCheck.Calls, "A healthy result younger than the cache duration must be reused.");
-        Assert.AreEqual(checkedAt, reused.Data["CheckedAt"], "A reused result must say when the check really ran.");
+        Assert.AreEqual(checkedAt, reused.Data["VerifiedAt"], "A reused result must say when the check really ran.");
         Assert.AreEqual(TimeSpan.FromMinutes(5), reused.Data["CacheDuration"]);
         Assert.IsInstanceOfType<TimeSpan>(reused.Data["Duration"], "A reused result must say how long the check really ran.");
 
@@ -237,6 +237,7 @@ public partial class HealthCheckRulesTests
     [DataRow("smtp.gmail.com", "google", true, DisplayName = "Google Workspace, signed")]
     [DataRow("smtp.office365.com", "selector1", false, DisplayName = "Microsoft 365, not signed")]
     [DataRow("smtp.sendgrid.net", "s1", true, DisplayName = "SendGrid, signed")]
+    [DataRow("smtp.azurecomm.net", "selector1-azurecomm-prod-net", true, DisplayName = "Azure Communication Services, signed")]
     public async Task EmailDeliveryHealthCheck_Should_OnlyReportDkim_AtTheServicesSelectors(string smtpHost, string selector, bool signed)
     {
         Dictionary<string, string[]> records = new()
