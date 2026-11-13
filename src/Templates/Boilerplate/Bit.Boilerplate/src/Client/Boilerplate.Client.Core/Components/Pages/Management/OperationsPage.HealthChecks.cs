@@ -17,6 +17,7 @@ public partial class OperationsPage
         ("Identity", BitIconName.Permissions, "External sign in providers and bot protection."),
         ("AI", BitIconName.Robot, "The models behind the chatbot, search and voice calls."),
         ("Integrations", BitIconName.PlugConnected, "The other services the app calls, such as a payment gateway or a map."),
+        ("Websites", BitIconName.Globe, "The project's other sites, such as its landing page, a blog or the docs."),
         //#if (api == "Standalone")
         ("Web server", BitIconName.Website, "Server.Web, which renders the pages in front of the standalone API."),
         //#endif

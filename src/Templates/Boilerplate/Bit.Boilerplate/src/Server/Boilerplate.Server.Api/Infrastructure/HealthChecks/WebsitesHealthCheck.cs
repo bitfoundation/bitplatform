@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace Boilerplate.Server.Api.Infrastructure.HealthChecks;
@@ -23,15 +24,35 @@ public class WebsitesHealthCheck(IHttpClientFactory httpClientFactory, string[] 
     private const int concurrentRequests = 5;
 
     /// <summary>
+    /// Each site once, by the address it is requested at: <c>example.com</c> and <c>https://EXAMPLE.com/</c> are one site,
+    /// while <c>/A</c> and <c>/a</c> are two, as a path's case can tell sites apart.
+    /// </summary>
+    private readonly string[] sites = Distinct(websites);
+
+    /// <summary>
     /// The sites <paramref name="section"/> lists: an array in appsettings.json, one value separated by commas or spaces,
     /// which a single environment or GitHub variable can carry (<c>HealthChecks__Websites</c>), or both.
     /// </summary>
     public static string[] Read(IConfigurationSection section)
     {
-        return [.. (section.Value ?? "").Split([',', ';', ' ', '\t', '\r', '\n'], StringSplitOptions.RemoveEmptyEntries)
-            .Concat(section.GetChildren().Select(child => child.Value?.Trim()).OfType<string>().Where(site => site.Length > 0))
-            .Distinct(StringComparer.OrdinalIgnoreCase)];
+        return Distinct([.. (section.Value ?? "").Split([',', ';', ' ', '\t', '\r', '\n'], StringSplitOptions.RemoveEmptyEntries)
+            .Concat(section.GetChildren().Select(child => child.Value?.Trim()).OfType<string>().Where(site => site.Length > 0))]);
     }
+
+    private static string[] Distinct(string[] websites) => [.. websites.DistinctBy(RequestKeyOf, StringComparer.Ordinal)];
+
+    /// <summary>
+    /// The address <paramref name="site"/> is requested at, which keys its result: the scheme and the host lowercased by
+    /// <see cref="Uri"/>, and the path and the query as they were written. A bare host, such as blog.example.com, is
+    /// requested over https.
+    /// </summary>
+    private static bool TryGetAddress(string site, [NotNullWhen(true)] out Uri? address)
+    {
+        return Uri.TryCreate(site.Contains("://", StringComparison.Ordinal) ? site : $"https://{site}", UriKind.Absolute, out address)
+            && address.Scheme is "http" or "https";
+    }
+
+    private static string RequestKeyOf(string site) => TryGetAddress(site, out var address) ? address.AbsoluteUri : site;
 
     public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
     {
@@ -40,11 +61,9 @@ public class WebsitesHealthCheck(IHttpClientFactory httpClientFactory, string[] 
         using var slots = new SemaphoreSlim(concurrentRequests);
         var httpClient = httpClientFactory.CreateClient(HttpClientName);
 
-        var results = await Task.WhenAll(websites.Select(async site =>
+        var results = await Task.WhenAll(sites.Select(async site =>
         {
-            // A bare host, such as blog.example.com, is requested over https.
-            if (Uri.TryCreate(site.Contains("://", StringComparison.Ordinal) ? site : $"https://{site}", UriKind.Absolute, out var address) is false
-                || address.Scheme is not ("http" or "https"))
+            if (TryGetAddress(site, out var address) is false)
                 return (Site: site, Problem: (string?)"Not an http or https address.");
 
             try
@@ -69,9 +88,9 @@ public class WebsitesHealthCheck(IHttpClientFactory httpClientFactory, string[] 
         var failed = results.Where(result => result.Problem is not null).ToArray();
 
         if (failed.Length is 0)
-            return HealthCheckResult.Healthy(websites.Length is 1 ? "The site answers" : $"All {websites.Length} sites answer");
+            return HealthCheckResult.Healthy(sites.Length is 1 ? "The site answers" : $"All {sites.Length} sites answer");
 
-        return new HealthCheckResult(context.Registration.FailureStatus, $"{failed.Length} of {websites.Length} sites failed",
+        return new HealthCheckResult(context.Registration.FailureStatus, $"{failed.Length} of {sites.Length} sites failed",
             data: failed.ToDictionary(result => result.Site, result => (object)result.Problem!));
     }
 
