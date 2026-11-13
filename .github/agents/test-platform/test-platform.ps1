@@ -1536,7 +1536,8 @@ function Stop-FolderProcesses([string] $folder) {
 }
 
 function Get-ChangedPaths([string] $folder, [string] $since) {
-    @(git -C $folder diff --name-only $since) + @(git -C $folder ls-files --others --exclude-standard) |
+    git -C $folder worktree list --porcelain | Where-Object { $_ -like 'worktree *' } | ForEach-Object { $_.Substring(9) } | Where-Object { Test-Path $_ } |
+        ForEach-Object { @(git -C $_ diff --name-only $since) + @(git -C $_ ls-files --others --exclude-standard) } |
         Where-Object { $_ -and $_ -notlike '.playwright-mcp/*' -and $_ -ne '.claude/settings.local.json' } |
         Sort-Object -Unique
 }
