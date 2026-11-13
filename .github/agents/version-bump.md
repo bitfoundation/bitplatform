@@ -15,8 +15,8 @@ as it is. Read this file and the helper from that checkout.
 ## Pick the version and the issue
 
 The current version is `ReleaseVersion` in `src/Bit.Build.props`. Prerelease issues carry the `prerelease` label,
-releases the `release` label; look at the latest few. If the next version already has an issue and no PR, use it.
-Otherwise open one titled ``Prerelease `v-X.Y.Z-pre-NN` `` or ``Release `v-X.Y.Z` ``, with the same text as its body,
+releases the `release` label; look at the latest few. If the next version already has an open PR, report that PR and
+stop. If it has an issue and no PR, use the issue. Otherwise open one titled ``Prerelease `v-X.Y.Z-pre-NN` `` or ``Release `v-X.Y.Z` ``, with the same text as its body,
 that label, and yourself as assignee. Prerelease numbers have two digits. When it is unclear what comes next (another
 pre, the stable release, or the first pre of a new version), ask.
 

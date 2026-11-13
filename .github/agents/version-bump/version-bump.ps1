@@ -84,7 +84,8 @@ function Invoke-Scan([string]$full) {
         Texts = @{}
     }
     $self = [IO.Path]::GetRelativePath($Repo, $PSScriptRoot).Replace('\', '/') + '/'
-    $paths = @((git -C $Repo grep -I -l -z -F -e $core) -split "`0" | Where-Object { $_ -and -not $_.StartsWith($self, [StringComparison]::Ordinal) })
+    $found = @((git -C $Repo grep -I -l -z -F -e $core) -split "`0") + @((git -C $Repo grep --untracked -I -l -z -F -e $core) -split "`0")
+    $paths = @($found | Where-Object { $_ -and -not $_.StartsWith($self, [StringComparison]::Ordinal) } | Select-Object -Unique)
     foreach ($path in $paths) {
         $bytes = [IO.File]::ReadAllBytes((Join-Path $Repo $path))
         try { $text = $utf8Strict.GetString($bytes) }
@@ -269,7 +270,7 @@ $problems = [Collections.Generic.List[string]]::new()
 if ((Get-ReleaseVersion) -ne $To) { $problems.Add('ReleaseVersion did not change') }
 if ($scan.IsPre) {
     $oldRe = [regex]::new((Get-Token $old))
-    $left = @(git -C $Repo grep -n -I -F -e $old | Where-Object { $oldRe.IsMatch($_) })
+    $left = @(@(git -C $Repo grep -n -I -F -e $old) + @(git -C $Repo grep --untracked -n -I -F -e $old) | Where-Object { $_ -and $oldRe.IsMatch($_) } | Select-Object -Unique)
     if ($left.Count) { $problems.Add("$old is still in the repo:`n$($left -join "`n")") }
 }
 if ($after.Hits.Count -ne $scan.Hits.Count) { $problems.Add("$($scan.Hits.Count) spans before, $($after.Hits.Count) after: the rules match a different set of lines at $To") }

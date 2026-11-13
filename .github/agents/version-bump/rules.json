@@ -24,7 +24,7 @@
     "id": "bit-cli",
     "kind": "full",
     "files": ["*"],
-    "regex": "\\bBit\\.Cli\\b.*?--version {V}",
+    "regex": "\\bBit\\.Cli\\b[^;&|]*?--version {V}",
     "why": "dotnet tool install and dnx of Bit.Cli in docs, pages, the dev container, workflows and scripts"
   },
   {
