@@ -3,8 +3,7 @@ namespace Boilerplate.Server.Shared.Infrastructure.HealthChecks;
 /// <summary>
 /// The data keys of a reused result's own run (See CachedHealthCheck), which a check can only pass on in its result's
 /// data. The health report writer reports them as the entry's <c>Duration</c>, <c>VerifiedAt</c> and
-/// <c>CacheDuration</c> (See WriteHealthReport), so no reader has to know these keys; they stay in its data only for app
-/// versions from before those fields (See HealthReportEntryDto.LegacyDataKeys).
+/// <c>CacheDuration</c> rather than as data (See WriteHealthReport), so no reader has to know these keys.
 /// </summary>
 public static class HealthCheckResultData
 {
@@ -16,4 +15,6 @@ public static class HealthCheckResultData
 
     /// <summary>How long a healthy result is reused, a <see cref="TimeSpan"/>.</summary>
     public const string CacheDuration = "CacheDuration";
+
+    public static readonly string[] Keys = [Duration, VerifiedAt, CacheDuration];
 }
