@@ -1388,6 +1388,42 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   <data name="AiChatRecordingStarted" xml:space="preserve">
     <value>Grabando, quedan {0}</value>
   </data>
+  <data name="AiChatCommands" xml:space="preserve">
+    <value>Comandos</value>
+  </data>
+  <data name="AiChatRetryIn" xml:space="preserve">
+    <value>Vuelve a intentarlo en {0}.</value>
+  </data>
+  <data name="AiChatReasoning" xml:space="preserve">
+    <value>Razonamiento</value>
+  </data>
+  <data name="AiChatReasonedFor" xml:space="preserve">
+    <value>Pensó durante {0}</value>
+  </data>
+  <data name="AiChatSteps" xml:space="preserve">
+    <value>Pasos</value>
+  </data>
+  <data name="AiChatInProgress" xml:space="preserve">
+    <value>En curso</value>
+  </data>
+  <data name="AiChatDone" xml:space="preserve">
+    <value>Listo</value>
+  </data>
+  <data name="AiChatFailed" xml:space="preserve">
+    <value>Error</value>
+  </data>
+  <data name="AiChatSkipped" xml:space="preserve">
+    <value>Omitido</value>
+  </data>
+  <data name="AiChatNotStarted" xml:space="preserve">
+    <value>Sin empezar</value>
+  </data>
+  <data name="AiChatElapsed" xml:space="preserve">
+    <value>Tiempo transcurrido</value>
+  </data>
+  <data name="AiChatToolCalls" xml:space="preserve">
+    <value>Herramientas usadas</value>
+  </data>
   <data name="AiChatDropImage" xml:space="preserve">
     <value>Suelta la imagen para adjuntarla</value>
   </data>

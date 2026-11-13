@@ -1388,6 +1388,42 @@
   <data name="AiChatRecordingStarted" xml:space="preserve">
     <value>रिकॉर्डिंग हो रही है, {0} शेष</value>
   </data>
+  <data name="AiChatCommands" xml:space="preserve">
+    <value>कमांड</value>
+  </data>
+  <data name="AiChatRetryIn" xml:space="preserve">
+    <value>{0} बाद फिर से कोशिश करें।</value>
+  </data>
+  <data name="AiChatReasoning" xml:space="preserve">
+    <value>तर्क</value>
+  </data>
+  <data name="AiChatReasonedFor" xml:space="preserve">
+    <value>{0} तक सोचा</value>
+  </data>
+  <data name="AiChatSteps" xml:space="preserve">
+    <value>चरण</value>
+  </data>
+  <data name="AiChatInProgress" xml:space="preserve">
+    <value>जारी है</value>
+  </data>
+  <data name="AiChatDone" xml:space="preserve">
+    <value>पूरा हुआ</value>
+  </data>
+  <data name="AiChatFailed" xml:space="preserve">
+    <value>विफल</value>
+  </data>
+  <data name="AiChatSkipped" xml:space="preserve">
+    <value>छोड़ा गया</value>
+  </data>
+  <data name="AiChatNotStarted" xml:space="preserve">
+    <value>शुरू नहीं हुआ</value>
+  </data>
+  <data name="AiChatElapsed" xml:space="preserve">
+    <value>बीता समय</value>
+  </data>
+  <data name="AiChatToolCalls" xml:space="preserve">
+    <value>उपयोग किए गए टूल</value>
+  </data>
   <data name="AiChatDropImage" xml:space="preserve">
     <value>संलग्न करने के लिए छवि यहां छोड़ें</value>
   </data>

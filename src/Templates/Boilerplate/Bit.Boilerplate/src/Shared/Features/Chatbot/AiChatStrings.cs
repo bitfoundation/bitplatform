@@ -4,7 +4,8 @@ namespace Boilerplate.Shared.Features.Chatbot;
 
 /// <summary>
 /// The words of Bit.BlazorUI.AI the AI chat panel shows, read from AppStrings so they follow the app's language. What the
-/// panel never shows - artifacts, agents, forms the model fills, the model picker - keeps the library's English.
+/// panel never shows - artifacts, forms the model fills, the model picker - keeps the library's English, and so does the
+/// token usage under an answer, which only a development build shows.
 /// <para>
 /// Here rather than beside the panel: the client's router reads every type of the client's assemblies as the app starts,
 /// before the chat's are loaded (See AppAiChatPanel.EnsureLoaded), and a type built on one of theirs would make them fail to
@@ -22,6 +23,10 @@ public sealed class AiChatStrings(IStringLocalizer<AppStrings> localizer) : BitA
     public override string Regenerate => localizer[nameof(AppStrings.AiChatRegenerate)];
 
     public override string Retry => localizer[nameof(AppStrings.AiChatRetry)];
+
+    public override string RetryIn(TimeSpan wait) => localizer[nameof(AppStrings.AiChatRetryIn), FormatDuration(wait)];
+
+    public override string Commands => localizer[nameof(AppStrings.AiChatCommands)];
 
     public override string Copy => localizer[nameof(AppStrings.Copy)];
 
@@ -89,6 +94,38 @@ public sealed class AiChatStrings(IStringLocalizer<AppStrings> localizer) : BitA
 
         return $"{localizer[nameof(AppStrings.AiChatDurationMinutes), minutes]} {localizer[nameof(AppStrings.AiChatDurationSeconds), rest]}";
     }
+
+    // How long the model reasoned, a step took or the user waits for a retry, in the same words as a recording's time
+    public override string FormatDuration(TimeSpan duration) => RecordingDuration(duration);
+
+    public override string Reasoning => localizer[nameof(AppStrings.AiChatReasoning)];
+
+    public override string ReasonedFor(TimeSpan duration) => localizer[nameof(AppStrings.AiChatReasonedFor), FormatDuration(duration)];
+
+    // An answer's steps (See AppChatbot.AnswerSteps): it has no plan, only what it did, and no name of its own
+    public override string Plan => localizer[nameof(AppStrings.AiChatSteps)];
+
+    public override string AgentRunning => localizer[nameof(AppStrings.AiChatInProgress)];
+
+    public override string AgentCompleted => localizer[nameof(AppStrings.AiChatDone)];
+
+    public override string AgentFailed => localizer[nameof(AppStrings.AiChatFailed)];
+
+    public override string AgentCancelled => localizer[nameof(AppStrings.Canceled)];
+
+    public override string Elapsed => localizer[nameof(AppStrings.AiChatElapsed)];
+
+    public override string ToolCalls => localizer[nameof(AppStrings.AiChatToolCalls)];
+
+    public override string AgentStepStatus(BitAiAgentStepStatus status) => status switch
+    {
+        BitAiAgentStepStatus.Running => localizer[nameof(AppStrings.AiChatInProgress)],
+        BitAiAgentStepStatus.Blocked => localizer[nameof(AppStrings.AiChatApprovalWaiting)],
+        BitAiAgentStepStatus.Completed => localizer[nameof(AppStrings.AiChatDone)],
+        BitAiAgentStepStatus.Failed => localizer[nameof(AppStrings.AiChatFailed)],
+        BitAiAgentStepStatus.Skipped => localizer[nameof(AppStrings.AiChatSkipped)],
+        _ => localizer[nameof(AppStrings.AiChatNotStarted)]
+    };
 
     public override string ReadAloud => localizer[nameof(AppStrings.AiChatPanelReadAloud)];
 

@@ -13,35 +13,39 @@ internal static class AppAiChatTools
     /// The calls the user sees: as a line saying what the assistant did, a card of their own (products, a form, an
     /// approval), or nothing at all - the ones that only feed the model, and the suggestions, which show under the answer.
     /// </summary>
-    public static BitAiToolCallDisplay Display(BitAiToolCallPart call) => call.ToolName switch
-    {
-        AiChatProtocol.Tools.GetCurrentDateTime or AiChatProtocol.Tools.GetAppPages or AiChatProtocol.Tools.ShowFollowUpSuggestions => BitAiToolCallDisplay.Hidden,
-        AiChatProtocol.Tools.RequestHumanFollowUp or AiChatProtocol.Tools.ClearAppFiles => BitAiToolCallDisplay.Card,
-        //#if (module == "Sales")
-        //#if (database == "PostgreSQL" || database == "SqlServer")
-        AiChatProtocol.Tools.ShowProducts => BitAiToolCallDisplay.Card,
-        //#endif
-        //#endif
-        _ => BitAiToolCallDisplay.Status
-    };
+    public static BitAiToolCallDisplay Display(BitAiToolCallPart call) =>
+        AiChatProtocol.Tools.Hidden.Contains(call.ToolName) ? BitAiToolCallDisplay.Hidden :
+        AiChatProtocol.Tools.Cards.Contains(call.ToolName) ? BitAiToolCallDisplay.Card :
+        BitAiToolCallDisplay.Status;
 
     /// <summary>The title, icon and risk a call is shown with. Null leaves the tool's own name, for a tool added without a line here.</summary>
-    public static BitAiToolDefinition? Describe(string toolName, IStringLocalizer<AppStrings> localizer) => toolName switch
+    public static BitAiToolDefinition? Describe(string toolName, IStringLocalizer<AppStrings> localizer)
     {
-        AiChatProtocol.Tools.NavigateToPage => new(toolName) { Title = localizer[nameof(AppStrings.AiChatToolNavigation)], Icon = BitIconName.NavigateForward },
-        AiChatProtocol.Tools.SetApplicationTheme => new(toolName) { Title = localizer[nameof(AppStrings.AiChatToolThemeChange)], Icon = BitIconName.Color },
-        AiChatProtocol.Tools.SetApplicationCulture => new(toolName) { Title = localizer[nameof(AppStrings.AiChatToolLanguageChange)], Icon = BitIconName.LocaleLanguage },
-        AiChatProtocol.Tools.ShowSignInModal => new(toolName) { Title = localizer[nameof(AppStrings.AiChatToolSignIn)], Icon = BitIconName.Signin },
-        AiChatProtocol.Tools.CheckLastError => new(toolName) { Title = localizer[nameof(AppStrings.AiChatToolErrorCheck)], Icon = BitIconName.Bug },
-        // Destructive: the approval's allow button takes the error color, so it doesn't read as the safe answer
-        AiChatProtocol.Tools.ClearAppFiles => new(toolName) { Title = localizer[nameof(AppStrings.AiChatApprovalClearAppFilesApprove)], Icon = BitIconName.Broom, Risk = BitAiToolRisk.Destructive },
-        AiChatProtocol.Tools.RequestHumanFollowUp => new(toolName) { Title = localizer[nameof(AppStrings.AiChatHumanFollowUpPrompt)], Icon = BitIconName.Contact },
-        //#if (module == "Sales")
-        //#if (database == "PostgreSQL" || database == "SqlServer")
-        AiChatProtocol.Tools.GetProductRecommendations => new(toolName) { Title = localizer[nameof(AppStrings.AiChatToolProductSearch)], Icon = BitIconName.Search },
-        AiChatProtocol.Tools.ShowProducts => new(toolName) { Title = localizer[nameof(AppStrings.AiChatToolProductSearch)], Icon = BitIconName.Car },
-        //#endif
-        //#endif
-        _ => null
-    };
+        // The title is the one the server gives the call as a step, too (See AppChatbot.AnswerSteps)
+        if (AiChatProtocol.Tools.TitleKey(toolName) is not { } title) return null;
+
+        return new(toolName)
+        {
+            Title = localizer[title],
+            Icon = toolName switch
+            {
+                AiChatProtocol.Tools.NavigateToPage => BitIconName.NavigateForward,
+                AiChatProtocol.Tools.SetApplicationTheme => BitIconName.Color,
+                AiChatProtocol.Tools.SetApplicationCulture => BitIconName.LocaleLanguage,
+                AiChatProtocol.Tools.ShowSignInModal => BitIconName.Signin,
+                AiChatProtocol.Tools.CheckLastError => BitIconName.Bug,
+                AiChatProtocol.Tools.ClearAppFiles => BitIconName.Broom,
+                AiChatProtocol.Tools.RequestHumanFollowUp => BitIconName.Contact,
+                //#if (module == "Sales")
+                //#if (database == "PostgreSQL" || database == "SqlServer")
+                AiChatProtocol.Tools.GetProductRecommendations => BitIconName.Search,
+                AiChatProtocol.Tools.ShowProducts => BitIconName.Car,
+                //#endif
+                //#endif
+                _ => null
+            },
+            // Destructive: the approval's allow button takes the error color, so it doesn't read as the safe answer
+            Risk = toolName is AiChatProtocol.Tools.ClearAppFiles ? BitAiToolRisk.Destructive : BitAiToolRisk.ReadOnly
+        };
+    }
 }

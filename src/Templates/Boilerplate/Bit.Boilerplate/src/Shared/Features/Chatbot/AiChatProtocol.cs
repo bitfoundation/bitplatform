@@ -68,5 +68,43 @@ public static class AiChatProtocol
         public const string ShowProducts = nameof(ShowProducts);
         //#endif
         //#endif
+
+        /// <summary>The calls the user doesn't see: the ones that only feed the model, and the suggestions, which show under the answer.</summary>
+        public static readonly IReadOnlySet<string> Hidden = new HashSet<string>([GetCurrentDateTime, GetAppPages, ShowFollowUpSuggestions]);
+
+        /// <summary>The calls drawn as a card of their own: a form, an approval, products.</summary>
+        public static readonly IReadOnlySet<string> Cards = new HashSet<string>([
+            RequestHumanFollowUp,
+            ClearAppFiles,
+            //#if (module == "Sales")
+            //#if (database == "PostgreSQL" || database == "SqlServer")
+            ShowProducts
+            //#endif
+            //#endif
+        ]);
+
+        /// <summary>
+        /// A call the panel shows as a line saying what the assistant did. An answer that makes two or more of them shows
+        /// them as its steps instead (See <c>AppChatbot.AnswerSteps</c>).
+        /// </summary>
+        public static bool IsStep(string toolName) => Hidden.Contains(toolName) is false && Cards.Contains(toolName) is false;
+
+        /// <summary>The AppStrings key of what a call is shown as, a line or a step; null leaves the tool's own name.</summary>
+        public static string? TitleKey(string toolName) => toolName switch
+        {
+            NavigateToPage => nameof(AppStrings.AiChatToolNavigation),
+            SetApplicationTheme => nameof(AppStrings.AiChatToolThemeChange),
+            SetApplicationCulture => nameof(AppStrings.AiChatToolLanguageChange),
+            ShowSignInModal => nameof(AppStrings.AiChatToolSignIn),
+            CheckLastError => nameof(AppStrings.AiChatToolErrorCheck),
+            ClearAppFiles => nameof(AppStrings.AiChatApprovalClearAppFilesApprove),
+            RequestHumanFollowUp => nameof(AppStrings.AiChatHumanFollowUpPrompt),
+            //#if (module == "Sales")
+            //#if (database == "PostgreSQL" || database == "SqlServer")
+            GetProductRecommendations or ShowProducts => nameof(AppStrings.AiChatToolProductSearch),
+            //#endif
+            //#endif
+            _ => null
+        };
     }
 }

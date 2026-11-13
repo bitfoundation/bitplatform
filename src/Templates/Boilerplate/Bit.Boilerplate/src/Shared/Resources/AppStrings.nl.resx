@@ -1388,6 +1388,42 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   <data name="AiChatRecordingStarted" xml:space="preserve">
     <value>Opname loopt, nog {0}</value>
   </data>
+  <data name="AiChatCommands" xml:space="preserve">
+    <value>Opdrachten</value>
+  </data>
+  <data name="AiChatRetryIn" xml:space="preserve">
+    <value>Probeer het over {0} opnieuw.</value>
+  </data>
+  <data name="AiChatReasoning" xml:space="preserve">
+    <value>Redenering</value>
+  </data>
+  <data name="AiChatReasonedFor" xml:space="preserve">
+    <value>{0} nagedacht</value>
+  </data>
+  <data name="AiChatSteps" xml:space="preserve">
+    <value>Stappen</value>
+  </data>
+  <data name="AiChatInProgress" xml:space="preserve">
+    <value>Bezig</value>
+  </data>
+  <data name="AiChatDone" xml:space="preserve">
+    <value>Klaar</value>
+  </data>
+  <data name="AiChatFailed" xml:space="preserve">
+    <value>Mislukt</value>
+  </data>
+  <data name="AiChatSkipped" xml:space="preserve">
+    <value>Overgeslagen</value>
+  </data>
+  <data name="AiChatNotStarted" xml:space="preserve">
+    <value>Niet gestart</value>
+  </data>
+  <data name="AiChatElapsed" xml:space="preserve">
+    <value>Verstreken</value>
+  </data>
+  <data name="AiChatToolCalls" xml:space="preserve">
+    <value>Gebruikte hulpmiddelen</value>
+  </data>
   <data name="AiChatDropImage" xml:space="preserve">
     <value>Zet de afbeelding hier neer om haar toe te voegen</value>
   </data>

@@ -63,6 +63,14 @@ public partial class ChatbotCostLimitsTests
 
         Assert.HasCount(conversationsWithinTheLimit, chatClient.ReceivedConversations, "The message past the per-minute limit reached the model.");
         Assert.AreEqual(BitAiMessageStatus.Failed, refused.Status, "The answer to a message past the limit must say it was refused.");
+
+        // The same question is answered once the minute is over, so the panel says when and offers it again then
+        Assert.IsNotNull(refused.Error, "The refused message's answer must say why it failed.");
+        Assert.AreEqual(BitAiErrorKind.RateLimit, refused.Error.Kind, "The refusal must say it's the rate limit, which the panel waits out.");
+        Assert.IsTrue(refused.Error.IsRetryable, "Past the wait, the same question is answered, so the panel must offer to send it again.");
+        Assert.IsNotNull(refused.Error.RetryAfter, "The refusal must say how long to wait.");
+        Assert.IsTrue(refused.Error.RetryAfter > TimeSpan.Zero && refused.Error.RetryAfter <= TimeSpan.FromMinutes(1),
+            $"The wait must be what's left of the limit's minute, not {refused.Error.RetryAfter}.");
     }
 
     /// <summary>

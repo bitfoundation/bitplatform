@@ -62,6 +62,7 @@ public partial class AppAiChat
     private IBitComponentParams[] parameters = [];
     private readonly BitAiRendererRegistry renderers = new();
     private string[] suggestions = [];
+    private BitAiSlashCommand[] commands = [];
     private AppAiChatStatus status = new(IsInVoiceCall: false, NeedsAnswer: false);
 
     private string GreetingText
@@ -77,18 +78,31 @@ public partial class AppAiChat
             ShowTimestamps = true,
             // The zone the user picked, rather than the device's (See TimeZoneService)
             TimeZone = await TimeZoneService.GetCurrentTimeZone(),
-            ToolCallDisplay = AppAiChatTools.Display
+            // What each answer cost and which model wrote it, for the developer tuning the prompt and the settings
+            ShowUsage = AppEnvironment.IsDevelopment(),
+            ShowModelName = AppEnvironment.IsDevelopment(),
+            // A call that is a step of its answer's timeline is shown there instead (See AppChatbot.AnswerSteps)
+            ToolCallDisplay = call => IsStep(call) ? BitAiToolCallDisplay.Hidden : AppAiChatTools.Display(call)
         };
 
-        // Through BitParams (See AppAiChat.razor): BitAiChat renders the prompt input, the voice input and the approval card
-        // itself, and has no parameters of its own for these. Here rather than in AppBitParams, which renders as the app starts:
-        // Bit.BlazorUI.AI loads only once the user reaches for the chat, so nothing at startup can name its types.
+        // Through BitParams (See AppAiChat.razor): BitAiChat renders the prompt input, the voice input, the approval card
+        // and an answer's steps itself, and has no parameters of its own for these. Here rather than in AppBitParams, which
+        // renders as the app starts: Bit.BlazorUI.AI loads only once the user reaches for the chat, so nothing at startup can
+        // name its types.
         parameters =
         [
             // Accept only narrows the file dialog; the composer checks a drop and a paste against it too
             new BitAiPromptInputParams { Accept = ImageUploadContentTypes.Accept, MaxAttachments = MaxImagesPerMessage },
             new BitAiVoiceInputParams { MaxRecordingSize = MaxRecordingSize },
-            new BitAiToolApprovalParams { DetailTemplate = ApprovalDetails }
+            new BitAiToolApprovalParams { DetailTemplate = ApprovalDetails },
+            // A step's title already says what it called, in the user's language; the tags would repeat it by the tool's name
+            new BitAiAgentRunViewParams { Classes = new() { Step = new() { ToolCalls = "step-tool-calls" } } }
+        ];
+
+        commands =
+        [
+            new("clear", Localizer[nameof(AppStrings.Clear)], BitIconName.Delete) { Handler = WrapHandled(Clear) },
+            new("regenerate", Localizer[nameof(AppStrings.AiChatRegenerate)], BitIconName.Refresh) { Handler = WrapHandled(Regenerate) }
         ];
 
         suggestions =
@@ -200,6 +214,18 @@ public partial class AppAiChat
 
         RaiseStatusChanged();
     }
+
+    /// <summary>The /regenerate command: the last answer again, as its own regenerate button would.</summary>
+    private async Task Regenerate()
+    {
+        if (session is null || session.Conversation.Messages.Any(message => message.Role.IsAssistant) is false) return;
+
+        await session.RegenerateAsync(cancellationToken: CurrentCancellationToken);
+    }
+
+    /// <summary>Whether a call is one of its answer's steps (See AppChatbot.AnswerSteps), whose step id is the call's own.</summary>
+    private bool IsStep(BitAiToolCallPart call)
+        => session?.Conversation.Runs.Values.Any(run => run.Steps.Any(step => step.StepId == call.ToolCallId)) is true;
 
     /// <summary>The panel closed: what's read aloud stops, while a voice call and an answer go on.</summary>
     public async Task OnPanelClosed()

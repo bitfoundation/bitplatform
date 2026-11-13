@@ -1388,6 +1388,42 @@
   <data name="AiChatRecordingStarted" xml:space="preserve">
     <value>در حال ضبط، {0} مانده</value>
   </data>
+  <data name="AiChatCommands" xml:space="preserve">
+    <value>دستورها</value>
+  </data>
+  <data name="AiChatRetryIn" xml:space="preserve">
+    <value>{0} دیگر دوباره امتحان کنید.</value>
+  </data>
+  <data name="AiChatReasoning" xml:space="preserve">
+    <value>استدلال</value>
+  </data>
+  <data name="AiChatReasonedFor" xml:space="preserve">
+    <value>{0} فکر کرد</value>
+  </data>
+  <data name="AiChatSteps" xml:space="preserve">
+    <value>مراحل</value>
+  </data>
+  <data name="AiChatInProgress" xml:space="preserve">
+    <value>در حال انجام</value>
+  </data>
+  <data name="AiChatDone" xml:space="preserve">
+    <value>انجام شد</value>
+  </data>
+  <data name="AiChatFailed" xml:space="preserve">
+    <value>ناموفق</value>
+  </data>
+  <data name="AiChatSkipped" xml:space="preserve">
+    <value>رد شد</value>
+  </data>
+  <data name="AiChatNotStarted" xml:space="preserve">
+    <value>شروع نشده</value>
+  </data>
+  <data name="AiChatElapsed" xml:space="preserve">
+    <value>زمان سپری‌شده</value>
+  </data>
+  <data name="AiChatToolCalls" xml:space="preserve">
+    <value>ابزارهای به‌کاررفته</value>
+  </data>
   <data name="AiChatDropImage" xml:space="preserve">
     <value>تصویر را رها کنید تا پیوست شود</value>
   </data>

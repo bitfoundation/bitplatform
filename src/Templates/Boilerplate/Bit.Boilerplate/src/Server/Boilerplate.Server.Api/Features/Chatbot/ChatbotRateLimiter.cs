@@ -19,9 +19,13 @@ public sealed class ChatbotRateLimiter : IDisposable
                 Window = TimeSpan.FromMinutes(1)
             }));
 
-    public bool TryProcessMessage(HttpContext context)
+    /// <summary>Counts one more question of the caller's, unless it's one too many this minute.</summary>
+    /// <param name="retryAfter">When refused, how long until the caller's next question is answered, if the limiter knows.</param>
+    public bool TryProcessMessage(HttpContext context, out TimeSpan? retryAfter)
     {
         using var lease = messages.AttemptAcquire(context);
+
+        retryAfter = lease.IsAcquired is false && lease.TryGetMetadata(MetadataName.RetryAfter, out var wait) ? wait : null;
 
         return lease.IsAcquired;
     }

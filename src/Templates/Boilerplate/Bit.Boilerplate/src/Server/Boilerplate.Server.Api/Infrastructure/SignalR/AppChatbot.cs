@@ -110,9 +110,9 @@ public partial class AppChatbot
                 CultureInfo.CurrentCulture = CultureInfo.CurrentUICulture = culture;
             }
 
-            if (Refusal(request) is { } refusal)
+            if (Refusal(request, out var retryAfter) is { } refusal)
             {
-                await events.WriteAsync(Failure(exceptionHandler.Handle(refusal, new() { { "SignalRConnectionId", signalRConnectionId } }).Title, retryable: false), cancellationToken);
+                await events.WriteAsync(Refused(refusal, retryAfter), cancellationToken);
                 return;
             }
 
@@ -122,6 +122,7 @@ public partial class AppChatbot
 
             var startedAt = timeProvider.GetUtcNow();
             StringBuilder answer = new();
+            AnswerSteps steps = new(localizer);
 
             var updates = supportAgent.RunStreamingAsync(conversation, options: new ChatClientAgentRunOptions(CreateChatOptions()), cancellationToken: cancellationToken)
                                       .AsChatResponseUpdatesAsync();
@@ -154,7 +155,17 @@ public partial class AppChatbot
                         break;
                 }
 
+                foreach (var before in steps.Before(evt))
+                {
+                    await events.WriteAsync(before, cancellationToken);
+                }
+
                 await events.WriteAsync(evt, cancellationToken);
+
+                foreach (var after in steps.After(evt))
+                {
+                    await events.WriteAsync(after, cancellationToken);
+                }
             }
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -215,16 +226,32 @@ public partial class AppChatbot
 
     private static BitAiErrorEvent Failure(string? message, bool retryable) => new(new BitAiError(message ?? "The answer could not be written.") { IsRetryable = retryable });
 
-    private KnownException? Refusal(BitAiRequest request)
+    /// <summary>Why a question isn't answered, if it isn't, and - when that's the per-minute limit - how long until it would be.</summary>
+    private KnownException? Refusal(BitAiRequest request, out TimeSpan? retryAfter)
     {
+        retryAfter = null;
+
         // The question is the last message, the user's; anything else is a request this panel never sends.
         if (request.Messages is not [.., { Role.IsUser: true } question] || question.GetText().Length > AiChatMessage.MaxContentLength)
             return new BadRequestException();
 
-        if (rateLimiter.TryProcessMessage(httpContextAccessor.HttpContext!) is false)
+        if (rateLimiter.TryProcessMessage(httpContextAccessor.HttpContext!, out retryAfter) is false)
             return new TooManyRequestsException(localizer[nameof(AppStrings.AiChatTooManyRequests)]);
 
         return null;
+    }
+
+    /// <summary>
+    /// A refused question's answer. Past the per-minute limit the same question is answered once the wait is over, so the
+    /// panel says how long that is and offers it again then; anything else would be refused again.
+    /// </summary>
+    private BitAiErrorEvent Refused(KnownException refusal, TimeSpan? retryAfter)
+    {
+        var message = exceptionHandler.Handle(refusal, new() { { "SignalRConnectionId", signalRConnectionId } }).Title;
+
+        return refusal is TooManyRequestsException
+            ? new(new BitAiError(message ?? refusal.Message) { Kind = BitAiErrorKind.RateLimit, IsRetryable = true, RetryAfter = retryAfter })
+            : Failure(message, retryable: false);
     }
 
     private static CultureInfo? UserCulture(BitAiRequest request)

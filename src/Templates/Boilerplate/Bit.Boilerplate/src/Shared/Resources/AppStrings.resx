@@ -1388,6 +1388,42 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
   <data name="AiChatRecordingStarted" xml:space="preserve">
     <value>Recording, {0} left</value>
   </data>
+  <data name="AiChatCommands" xml:space="preserve">
+    <value>Commands</value>
+  </data>
+  <data name="AiChatRetryIn" xml:space="preserve">
+    <value>Try again in {0}.</value>
+  </data>
+  <data name="AiChatReasoning" xml:space="preserve">
+    <value>Reasoning</value>
+  </data>
+  <data name="AiChatReasonedFor" xml:space="preserve">
+    <value>Thought for {0}</value>
+  </data>
+  <data name="AiChatSteps" xml:space="preserve">
+    <value>Steps</value>
+  </data>
+  <data name="AiChatInProgress" xml:space="preserve">
+    <value>In progress</value>
+  </data>
+  <data name="AiChatDone" xml:space="preserve">
+    <value>Done</value>
+  </data>
+  <data name="AiChatFailed" xml:space="preserve">
+    <value>Failed</value>
+  </data>
+  <data name="AiChatSkipped" xml:space="preserve">
+    <value>Skipped</value>
+  </data>
+  <data name="AiChatNotStarted" xml:space="preserve">
+    <value>Not started</value>
+  </data>
+  <data name="AiChatElapsed" xml:space="preserve">
+    <value>Elapsed</value>
+  </data>
+  <data name="AiChatToolCalls" xml:space="preserve">
+    <value>Tools it used</value>
+  </data>
   <data name="AiChatDropImage" xml:space="preserve">
     <value>Drop the image to attach it</value>
   </data>

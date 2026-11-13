@@ -1388,6 +1388,42 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   <data name="AiChatRecordingStarted" xml:space="preserve">
     <value>Spelar in, {0} kvar</value>
   </data>
+  <data name="AiChatCommands" xml:space="preserve">
+    <value>Kommandon</value>
+  </data>
+  <data name="AiChatRetryIn" xml:space="preserve">
+    <value>Försök igen om {0}.</value>
+  </data>
+  <data name="AiChatReasoning" xml:space="preserve">
+    <value>Resonemang</value>
+  </data>
+  <data name="AiChatReasonedFor" xml:space="preserve">
+    <value>Tänkte i {0}</value>
+  </data>
+  <data name="AiChatSteps" xml:space="preserve">
+    <value>Steg</value>
+  </data>
+  <data name="AiChatInProgress" xml:space="preserve">
+    <value>Pågår</value>
+  </data>
+  <data name="AiChatDone" xml:space="preserve">
+    <value>Klart</value>
+  </data>
+  <data name="AiChatFailed" xml:space="preserve">
+    <value>Misslyckades</value>
+  </data>
+  <data name="AiChatSkipped" xml:space="preserve">
+    <value>Hoppades över</value>
+  </data>
+  <data name="AiChatNotStarted" xml:space="preserve">
+    <value>Inte påbörjad</value>
+  </data>
+  <data name="AiChatElapsed" xml:space="preserve">
+    <value>Förfluten tid</value>
+  </data>
+  <data name="AiChatToolCalls" xml:space="preserve">
+    <value>Använda verktyg</value>
+  </data>
   <data name="AiChatDropImage" xml:space="preserve">
     <value>Släpp bilden för att bifoga den</value>
   </data>

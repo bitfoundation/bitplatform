@@ -21,6 +21,12 @@
         position: relative;
     }
 
+    // The tags of what a step of an answer called: the step's title already says it, in the user's language, where the
+    // tags would only repeat it by the tool's name (See AppAiChat's BitAiAgentRunViewParams).
+    .step-tool-calls {
+        display: none;
+    }
+
     // Floats in the composer beside the call button, with the time left written on it.
     .speech-timer {
         width: 4rem;

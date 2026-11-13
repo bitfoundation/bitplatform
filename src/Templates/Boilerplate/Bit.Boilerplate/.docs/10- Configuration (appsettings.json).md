@@ -219,13 +219,17 @@ In [`src/Server/Boilerplate.Server.Api/appsettings.json`](/src/Server/Boilerplat
     },
     "AI": {
         "ChatOptions": {
-            "Temperature": 0,
-            "MaxOutputTokens": 2000
+            "MaxOutputTokens": 2000,
+            "Reasoning": {
+                "Effort": "Low",
+                "Output": "Summary"
+            }
         },
         "OpenAI": {
-            "ChatModel": "gpt-4.1-mini",
+            "ChatModel": "gpt-5.6-luna",
             "ChatApiKey": null,
-            "ChatEndpoint": "https://models.inference.ai.azure.com"
+            "ChatEndpoint": "https://api.openai.com/v1",
+            "ChatUseResponsesApi": true
         }
     },
     "Identity": {

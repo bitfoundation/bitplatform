@@ -1388,6 +1388,42 @@
   <data name="AiChatRecordingStarted" xml:space="preserve">
     <value>جارٍ التسجيل، متبقٍ {0}</value>
   </data>
+  <data name="AiChatCommands" xml:space="preserve">
+    <value>الأوامر</value>
+  </data>
+  <data name="AiChatRetryIn" xml:space="preserve">
+    <value>حاول مرة أخرى بعد {0}.</value>
+  </data>
+  <data name="AiChatReasoning" xml:space="preserve">
+    <value>الاستدلال</value>
+  </data>
+  <data name="AiChatReasonedFor" xml:space="preserve">
+    <value>فكّر لمدة {0}</value>
+  </data>
+  <data name="AiChatSteps" xml:space="preserve">
+    <value>الخطوات</value>
+  </data>
+  <data name="AiChatInProgress" xml:space="preserve">
+    <value>قيد التنفيذ</value>
+  </data>
+  <data name="AiChatDone" xml:space="preserve">
+    <value>تم</value>
+  </data>
+  <data name="AiChatFailed" xml:space="preserve">
+    <value>فشل</value>
+  </data>
+  <data name="AiChatSkipped" xml:space="preserve">
+    <value>تم تخطيه</value>
+  </data>
+  <data name="AiChatNotStarted" xml:space="preserve">
+    <value>لم يبدأ</value>
+  </data>
+  <data name="AiChatElapsed" xml:space="preserve">
+    <value>الوقت المنقضي</value>
+  </data>
+  <data name="AiChatToolCalls" xml:space="preserve">
+    <value>الأدوات المستخدمة</value>
+  </data>
   <data name="AiChatDropImage" xml:space="preserve">
     <value>أفلت الصورة لإرفاقها</value>
   </data>
