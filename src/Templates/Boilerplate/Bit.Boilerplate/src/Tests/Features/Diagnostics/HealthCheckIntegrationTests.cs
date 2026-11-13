@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Globalization;
 using Boilerplate.Server.Api;
 using Boilerplate.Server.Api.Infrastructure.HealthChecks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -364,6 +365,7 @@ public partial class HealthCheckIntegrationTests
         ["hangfire"] = HealthCheckCategories.Platform,
         ["appCertificate"] = HealthCheckCategories.Platform,
         ["userProfileImages"] = HealthCheckCategories.Platform,
+        ["websites"] = HealthCheckCategories.Websites,
         //#if (redis == true)
         ["StackExchange.Redis_redis-persistent"] = HealthCheckCategories.Platform,
         ["StackExchange.Redis_redis-cache"] = HealthCheckCategories.Platform,
@@ -419,6 +421,48 @@ public partial class HealthCheckIntegrationTests
     /// <c>localChecks</c> needs a timeout, reports Degraded and stays out of <c>/alive</c>. The optional ones are
     /// configured below, as development only registers them then.
     /// </summary>
+    /// <summary>
+    /// The project's other sites in <c>HealthChecks:Websites</c>, given as one value the way a single environment or GitHub
+    /// variable carries them and as a list, are each requested over HTTP: one that answers stays out of the data, and each
+    /// one that failed is in it with what went wrong. The check runs directly, as the detailed report needs an operator.
+    /// </summary>
+    [TestMethod]
+    public async Task Websites_Should_SayWhatWentWrongWithEachSiteThatFailed()
+    {
+        // Sites of the project's own: one that answers, one that's down and one whose redirect ends in a missing page.
+        await using var sites = WebApplication.CreateSlimBuilder().Build();
+        sites.Urls.Add("http://127.0.0.1:0");
+        sites.MapGet("/up", () => "up");
+        sites.MapGet("/down", () => Results.StatusCode(StatusCodes.Status503ServiceUnavailable));
+        sites.MapGet("/moved", () => Results.Redirect("/gone"));
+        await sites.StartAsync(TestContext.CancellationToken);
+        var origin = sites.Urls.Single().TrimEnd('/');
+
+        await using var server = new AppTestServer();
+
+        await server.Build(configureTestConfiguration: configuration =>
+        {
+            configuration["HealthChecks:Websites"] = $"{origin}/up, {origin}/down site.invalid";
+            configuration["HealthChecks:Websites:0"] = $"{origin}/moved";
+            configuration["HealthChecks:Websites:1"] = "ftp://files.example.com";
+        }).Start(TestContext.CancellationToken);
+
+        var registration = server.ApiApp.Services.GetRequiredService<IOptions<HealthCheckServiceOptions>>().Value.Registrations.Single(r => r.Name == "websites");
+        Assert.IsLessThan(TimeSpan.FromSeconds(15), registration.Timeout, "A monitor waits about 15 seconds for /health, so the check must end well before.");
+
+        var report = await server.ApiApp.Services.GetRequiredService<HealthCheckService>()
+            .CheckHealthAsync(r => r.Name == "websites", TestContext.CancellationToken);
+        var entry = report.Entries["websites"];
+
+        Assert.AreEqual(HealthStatus.Degraded, entry.Status, entry.Description);
+        Assert.AreEqual("4 of 5 sites failed", entry.Description);
+        Assert.DoesNotContain(site => site.EndsWith("/up", StringComparison.Ordinal), entry.Data.Keys, "A site that answers stays out of the data.");
+        Assert.AreEqual("503 Service Unavailable.", entry.Data[$"{origin}/down"]);
+        Assert.AreEqual("404 Not Found.", entry.Data[$"{origin}/moved"], "The status is the one the redirects end in.");
+        Assert.AreEqual("Its name doesn't resolve.", entry.Data["https://site.invalid/"]);
+        Assert.AreEqual("Not an http or https address.", entry.Data["ftp://files.example.com"]);
+    }
+
     [TestMethod]
     public async Task ExternalHealthChecks_Should_BeBoundedAndNonFatal()
     {
@@ -428,6 +472,7 @@ public partial class HealthCheckIntegrationTests
         {
             // A real-looking SMTP server, as emailDelivery stays out where mail is caught (the shipped ethereal.email).
             configuration["ConnectionStrings:smtp"] = "Endpoint=smtp://smtp.example.com:587";
+            configuration["HealthChecks:Websites"] = "https://site.invalid";
             configuration["Authentication:Keycloak:KeycloakUrl"] = "http://keycloak.invalid/";
             configuration["Authentication:Keycloak:Realm"] = "dev";
             configuration["Authentication:AzureAD:ClientId"] = "not-a-real-client";
@@ -460,7 +505,7 @@ public partial class HealthCheckIntegrationTests
 
         string[] expectedExternalChecks =
         [
-            "userProfileImages", "smtp", "emailDelivery", "sms", "keycloakIdentity", "entraId", "appleSignIn",
+            "userProfileImages", "websites", "smtp", "emailDelivery", "sms", "keycloakIdentity", "entraId", "appleSignIn",
             //#if (captcha == "reCaptcha")
             "reCaptcha",
             //#endif

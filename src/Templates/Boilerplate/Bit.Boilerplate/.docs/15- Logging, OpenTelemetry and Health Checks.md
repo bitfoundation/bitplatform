@@ -393,6 +393,15 @@ under **Web server** with a `web:` prefix (`web:binStorage`, `web:serverApi`). I
 It also adds checks for remote dependencies. Each one has a timeout and reports **Degraded** rather than Unhealthy, so a
 provider outage does not take an otherwise healthy instance out of the load balancer:
 - **`userProfileImages`**: the blob storage.
+- **`websites`**: your other sites, listed in `HealthChecks:Websites`, such as the landing page, a blog on WordPress or
+  the docs, so a monitor reading `/healthz` watches them along with the app. Each one gets a GET that has to end, after
+  its redirects, in a success status: behind a CDN such as Cloudflare a TCP connection succeeds whatever state the site
+  is in. Five are requested at a time, each within 5 seconds and all of them within 10, so a site that hangs can't hold
+  `/health` past a monitor's timeout. Each one that failed is in the entry's data with what went wrong: its status code,
+  a Cloudflare challenge, a name that doesn't resolve, a TLS or connection error, or no answer in time. A bare host is
+  requested over https. List them in `appsettings.json`, or as one value separated by commas or spaces, which a single
+  environment variable carries (`HealthChecks__Websites`), and so does one GitHub variable of the deployment. With none
+  listed there's no entry, as the check is optional.
 - **`smtp`**: connects, runs STARTTLS when `EnableSsl` is on, signs in when credentials are set, then quits without sending.
 - **`emailDelivery`**: reads the DNS of the domain of `Email:DefaultFromEmail`, the address every mail is sent from, so it
   needs no setting of its own. Without an SPF record, with one that ends in `+all` (any server may send as the domain),
@@ -456,12 +465,12 @@ Google, GitHub, Twitter and Facebook sign-in can't be verified without a user si
 development, `googleSignIn`, `gitHubSignIn`, `twitterSignIn` and `facebookSignIn` appear only when their settings are
 missing, reporting Degraded the same way.
 
-`smtp`, `emailDelivery`, `firebase`, `apns`,
+`smtp`, `emailDelivery`, `websites`, `firebase`, `apns`,
 <!--#if (cloudflare == true)-->
 `cloudflare`,
 <!--#endif-->
 the sign-in checks, `reCaptcha` and the AI checks are registered with
-`AddCachedCheck`, which reuses a healthy result for 5 minutes (1 minute for `azureSignalR`, 30 minutes for
+`AddCachedCheck`, which reuses a healthy result for 5 minutes (1 minute for `azureSignalR` and `websites`, 30 minutes for
 `emailDelivery`, whose DNS lookups also keep each answer for its TTL). Probes that arrive together share one run. A
 failing result is never reused, so each probe checks again and a recovery shows up right away. This keeps load balancer
 probes from turning into paid calls or repeated sign-ins. `/healthz` reports a reused result with its own run's
@@ -475,7 +484,7 @@ standalone API, `Server.Web` has only `redis-cache` and also checks the API's `/
 
 Anything you add that a request path genuinely depends on should report Unhealthy; anything external should not.
 
-Every check carries one of `HealthCheckCategories` (`Platform`, `Messaging`, `Identity`, `AI`, `Integrations`) as a tag,
+Every check carries one of `HealthCheckCategories` (`Platform`, `Messaging`, `Identity`, `AI`, `Integrations`, `Websites`) as a tag,
 which `/healthz` reports as the entry's `category`, so the Operations page and a monitor can group a check they don't know
 by name. Tag yours too, e.g. `tags: [HealthCheckCategories.Integrations]` for a payment gateway, a map or a CRM; a
 category of your own, `category:<Name>`, works as well. Each entry also carries the check's `title`, `iconName` (a
