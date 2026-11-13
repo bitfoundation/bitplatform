@@ -108,7 +108,7 @@ public class BitDisabledActivationContractTests : BunitTestContext
 
     // The ones whose Disabled only switches one behaviour of theirs off while the content they host stays live: the
     // panel of an accordion, the slides of a carousel, the panel of a pivot's open tab, the overlay of a map, the body
-    // of a message box, the header and footer of a nav panel, the area of a context menu - and the AI surfaces that frame content of the app or of
+    // of a message box, the header and footer of a nav panel, the area of a context menu, the trigger of a pop confirm - and the AI surfaces that frame content of the app or of
     // the model (a transcript, a message, a tool card, an artifact, a generated component). What bubbles up to their
     // root from there is an enabled control's own event, so they keep the handlers the page splatted on them.
     public static IEnumerable<object[]> ContentHosts =>
@@ -123,6 +123,7 @@ public class BitDisabledActivationContractTests : BunitTestContext
         [typeof(BitMap<BitLeafletMapProvider>)],
         [typeof(BitNavPanel<BitNavItem>)],
         [typeof(BitContextMenu<BitMenuButtonItem>)],
+        [typeof(BitPopConfirm)],
         [typeof(BitResourceTimeline)],
         [typeof(BitAiCollapsible)],
         [typeof(BitAiToolCallView)],
