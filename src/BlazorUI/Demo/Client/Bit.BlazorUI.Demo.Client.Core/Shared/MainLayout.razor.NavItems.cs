@@ -98,6 +98,7 @@ public partial class MainLayout
                 new() { Text = "NavBar", Url = "/components/navbar", Description = "NavMenu, TabPanel, TabBar, BottomNavigation" },
                 new() { Text = "Pagination", Url = "/components/pagination" },
                 new() { Text = "Pivot", Url = "/components/pivot", Description = "Tab, TabPage" },
+                new() { Text = "Stepper", Url = "/components/stepper", Description = "Steps, Wizard, ProgressSteps", Data = "Step indicator, Multi-step form, Checkout steps, Onboarding, Progress tracker, Linear steps, Vertical steps" },
             ]
         },
         new()

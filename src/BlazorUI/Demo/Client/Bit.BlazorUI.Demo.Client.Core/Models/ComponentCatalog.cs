@@ -296,6 +296,7 @@ public static class ComponentCatalog
         ["NavBar"] = BitIconName.SecondaryNav,
         ["Pagination"] = BitIconName.Page,
         ["Pivot"] = BitIconName.BrowserTab,
+        ["Stepper"] = BitIconName.NumberedList,
 
         // Notifications
         ["Badge"] = BitIconName.Badge,
@@ -478,6 +479,7 @@ public static class ComponentCatalog
         ["NavBar"] = "A bar of navigation links to the main areas of an app, the way a mobile app puts its top-level destinations along the bottom of the screen.",
         ["Pagination"] = "Moves between pages of a long collection.",
         ["Pivot"] = "Tabs for switching between frequently accessed, distinct content categories.",
+        ["Stepper"] = "The steps of a process in their order - done, current and upcoming - horizontally or vertically.",
 
         // Notifications
         ["Badge"] = "A small marker on another element: a count, a dot, a status.",

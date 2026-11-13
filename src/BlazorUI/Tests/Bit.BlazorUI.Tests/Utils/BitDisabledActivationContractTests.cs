@@ -58,6 +58,7 @@ public class BitDisabledActivationContractTests : BunitTestContext
         [typeof(BitNavBar<BitNavBarItem>)],
         [typeof(BitPagination)],
         [typeof(BitPivotItem)],
+        [typeof(BitStepper<BitStepperItem>)],
         [typeof(BitPersona)],
         [typeof(BitTag)],
         [typeof(BitCard)],

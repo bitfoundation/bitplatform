@@ -1,0 +1,30 @@
+﻿@page "/components/stepper"
+@inherits AppComponentBase
+
+
+<PageOutlet Url="components/stepper"
+            Title="Stepper"
+            Description="The Stepper component shows the steps of a process in their order - the ones done, the one the user is on and the ones still to come - horizontally or vertically." />
+
+<div>
+    <DemoPage Name="Stepper"
+              SecondaryNames="@(["Steps", "Wizard", "ProgressSteps"])"
+              Description="The Stepper component shows the steps of a process in their order - the ones done, the one the user is on and the ones still to come - horizontally or vertically, and lets the user go to a step by clicking it. What each step shows, and the buttons that move between them, are the page's."
+              Parameters="componentParameters"
+              SubClasses="componentSubClasses"
+              CssVariables="componentCssVariables"
+              GitHubUrl="Navs/Stepper/BitStepper.razor"
+              GitHubDemoUrl="Navs/Stepper/BitStepperDemo.razor">
+        <NotesTemplate>
+            <BitText>
+                The steps are given as <BitLink Href="#stepper-item"><BitTag Color="BitColor.SecondaryBackground">BitStepperItem</BitTag></BitLink>
+                objects through Items. The stepper draws the steps alone: the page shows the content of the current step and
+                moves the stepper forward with CurrentIndex. The steps are an ordered list, the current step says so through
+                aria-current="step", and a completed step or one in error says so in words after its text.
+            </BitText>
+        </NotesTemplate>
+        <Examples>
+            <_BitStepperItemDemo />
+        </Examples>
+    </DemoPage>
+</div>
