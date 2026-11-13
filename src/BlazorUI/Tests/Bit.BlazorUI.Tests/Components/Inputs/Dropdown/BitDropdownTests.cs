@@ -3219,7 +3219,7 @@ public class BitDropdownTests : BunitTestContext
         // Nothing matched, so the callout says so instead of showing the group names of an empty list.
         Assert.AreEqual(0, component.FindAll(".bit-drp-ihd").Count);
         Assert.AreEqual(0, component.FindAll(".bit-drp-sep").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-drp-emp").Count);
+        Assert.AreEqual(1, component.FindAll(".bit-drp-nor").Count);
     }
 
     [TestMethod]
@@ -3893,7 +3893,7 @@ public class BitDropdownTests : BunitTestContext
 
         // The empty state is not shown beside it: a list that says "no results" while offering to create
         // the very thing that was searched for contradicts itself.
-        Assert.AreEqual(0, component.FindAll(".bit-drp-emp").Count);
+        Assert.AreEqual(0, component.FindAll(".bit-drp-emp, .bit-drp-nor").Count);
 
         // A term that names an existing item is a selection rather than a creation, so the offer goes.
         component.Find(".bit-drp-inp").Input("Apple");
@@ -5480,13 +5480,64 @@ public class BitDropdownTests : BunitTestContext
         searched.Find(".bit-drp-wrp").Click();
         searched.Find(".bit-drp-sin").Input("zzz");
 
-        Assert.AreEqual("No results found", searched.Find(".bit-drp-emp").TextContent.Trim());
+        Assert.AreEqual("No results found", searched.Find(".bit-drp-nor").TextContent.Trim());
+        Assert.AreEqual("presentation", searched.Find(".bit-drp-nor").GetAttribute("role"));
+        Assert.AreEqual(0, searched.FindAll(".bit-drp-emp").Count);
+
+        // The text of an empty list is not the text of a search: it never stands in for the no-results one.
+        searched.Render(parameters => parameters.Add(p => p.EmptyText, "Nothing here"));
+        Assert.AreEqual("No results found", searched.Find(".bit-drp-nor").TextContent.Trim());
 
         searched.Render(parameters => parameters.Add(p => p.NoResultsText, "No match"));
-        Assert.AreEqual("No match", searched.Find(".bit-drp-emp").TextContent.Trim());
+        Assert.AreEqual("No match", searched.Find(".bit-drp-nor").TextContent.Trim());
 
         searched.Render(parameters => parameters.Add(p => p.NoResultsTemplate, (RenderFragment)(builder => builder.AddMarkupContent(0, "<i class=\"my-none\">None</i>"))));
-        Assert.AreEqual("None", searched.Find(".bit-drp-emp .my-none").TextContent);
+        Assert.AreEqual("None", searched.Find(".bit-drp-nor .my-none").TextContent);
+    }
+
+    [TestMethod]
+    public void BitDropdownWithNoItemsShouldStayEmptyWhileSearched()
+    {
+        // There is nothing a search could have missed: the list is empty, searched or not.
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.ShowSearchBox, true);
+            parameters.Add(p => p.Items, new List<BitDropdownItem<string>>());
+            parameters.Add(p => p.NoResultsText, "No match");
+        });
+
+        component.Find(".bit-drp-wrp").Click();
+        component.Find(".bit-drp-sin").Input("zzz");
+
+        Assert.AreEqual("No items found", component.Find(".bit-drp-emp").TextContent.Trim());
+        Assert.AreEqual(0, component.FindAll(".bit-drp-nor").Count);
+    }
+
+    [TestMethod]
+    public void BitDropdownShouldApplyTheClassesAndStylesOfItsEmptyAndNoResultsParts()
+    {
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.ShowSearchBox, true);
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+            parameters.Add(p => p.Classes, new BitDropdownClassStyles { Empty = "c-empty", NoResults = "c-none" });
+            parameters.Add(p => p.Styles, new BitDropdownClassStyles { Empty = "margin:1px", NoResults = "margin:2px" });
+        });
+
+        component.Find(".bit-drp-wrp").Click();
+        component.Find(".bit-drp-sin").Input("zzz");
+
+        var none = component.Find(".bit-drp-nor");
+        Assert.IsTrue(none.ClassList.Contains("c-none"));
+        Assert.AreEqual("margin:2px", none.GetAttribute("style"));
+
+        component.Render(parameters => parameters.Add(p => p.Items, new List<BitDropdownItem<string>>()));
+
+        var empty = component.Find(".bit-drp-emp");
+        Assert.IsTrue(empty.ClassList.Contains("c-empty"));
+        Assert.AreEqual("margin:1px", empty.GetAttribute("style"));
     }
 
     [TestMethod]

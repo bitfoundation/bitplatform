@@ -348,7 +348,7 @@ public partial class BitPhoneInputDemo
             Name = "NoResultsText",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The message to show, and to announce to a screen reader, when the search result of the country dropdown is empty.",
+            Description = "The message to show, and to announce to a screen reader, when the search result of the country dropdown is empty. Defaults to BitStrings.NoResultsFound (\"No results found\").",
         },
         new()
         {

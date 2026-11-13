@@ -221,6 +221,7 @@ public partial class BitTimeZonePicker<TValue> : BitInputBase<TValue>
     /// <summary>
     /// The message to show when the search result of the time zone list is empty. It is also what a screen reader
     /// announces for an empty result.
+    /// Defaults to <see cref="BitStrings.NoResultsFound"/> of <see cref="BitStrings.Current"/>.
     /// </summary>
     [Parameter] public string? NoResultsText { get; set; }
 

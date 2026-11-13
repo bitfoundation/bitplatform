@@ -57,7 +57,7 @@ public class BitNotificationCenterE2ETests : E2ETestBase
         await Bell.ClickAsync();
         await Panel.Locator(".bit-ntc-clr").ClickAsync();
 
-        await Expect(Panel.Locator(".bit-ntc-emp")).ToHaveTextAsync("No notifications");
+        await Expect(Panel.Locator(".bit-ntc-emp")).ToHaveTextAsync("No items found");
         await Expect(Panel.Locator(".bit-ntc-itm")).ToHaveCountAsync(0);
         await Expect(Panel.Locator(".bit-ntc-clr")).ToHaveCountAsync(0);
     }

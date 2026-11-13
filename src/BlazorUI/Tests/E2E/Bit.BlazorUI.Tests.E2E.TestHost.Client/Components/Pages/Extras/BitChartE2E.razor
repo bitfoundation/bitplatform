@@ -159,7 +159,7 @@
                   Classes="@(new() { Root = "custom-root", Plot = "custom-plot", Legend = "custom-legend", LegendItem = "custom-legend-item", Title = "custom-title" })"
                   Styles="@(new() { Plot = "background: rgb(250, 250, 210);", Legend = "outline: 1px solid rgb(4, 5, 6);" })" />
     </div>
-    <div class="box" id="vars-scope" style="--bit-Chart-series-color-1: rgb(255, 0, 255); --bit-Chart-series-color-2: rgb(0, 255, 255); --bit-Chart-no-data-color: rgb(128, 0, 0); --bit-Chart-tooltip-background: rgb(0, 0, 128); --bit-Chart-legend-color: rgb(0, 100, 0);">
+    <div class="box" id="vars-scope" style="--bit-Chart-series-color-1: rgb(255, 0, 255); --bit-Chart-series-color-2: rgb(0, 255, 255); --bit-Chart-empty-color: rgb(128, 0, 0); --bit-Chart-tooltip-background: rgb(0, 0, 128); --bit-Chart-legend-color: rgb(0, 100, 0);">
         <BitChart Id="cht-vars" Type="BitChartType.Bar" Data="_paletteData" Options="NoAnim()" />
         <BitChart Id="cht-vars-nodata" Type="BitChartType.Bar" Data="_emptyData" Options="NoAnim()" />
     </div>

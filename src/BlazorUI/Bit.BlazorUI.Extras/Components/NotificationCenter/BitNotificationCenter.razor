@@ -58,7 +58,16 @@
 
                 @if (history.Count == 0)
                 {
-                    <div style="@Styles?.Empty" class="bit-ntc-emp @Classes?.Empty">@(EmptyText ?? DefaultEmptyText)</div>
+                    <div style="@Styles?.Empty" class="bit-ntc-emp @Classes?.Empty">
+                        @if (EmptyTemplate is not null)
+                        {
+                            @EmptyTemplate
+                        }
+                        else
+                        {
+                            @(EmptyText ?? BitStrings.Current.NoItemsFound)
+                        }
+                    </div>
                 }
                 else
                 {

@@ -64,6 +64,11 @@ public class BitAccordionListParams : BitComponentBaseParams, IBitComponentParam
     public RenderFragment? EmptyTemplate { get; set; }
 
     /// <summary>
+    /// The text to render in place of the items when the list has none.
+    /// </summary>
+    public string? EmptyText { get; set; }
+
+    /// <summary>
     /// The icon to show in place of the expander icon of all items while they are expanded, using custom CSS classes
     /// for external icon libraries.
     /// </summary>
@@ -237,6 +242,11 @@ public class BitAccordionListParams : BitComponentBaseParams, IBitComponentParam
         if (EmptyTemplate is not null)
         {
             bitAccordionList.TakeFromCascade(nameof(EmptyTemplate), EmptyTemplate, static a => a.EmptyTemplate, static (a, v) => a.EmptyTemplate = v);
+        }
+
+        if (EmptyText is not null)
+        {
+            bitAccordionList.TakeFromCascade(nameof(EmptyText), EmptyText, static a => a.EmptyText, static (a, v) => a.EmptyText = v);
         }
 
 

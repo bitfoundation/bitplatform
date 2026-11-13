@@ -310,6 +310,64 @@ public class BitBasicListTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitBasicListShouldSayItHasNoItemInItsDefaultWordsOrItsEmptyText()
+    {
+        var component = RenderComponent<BitBasicList<string>>(p => p.Add(x => x.Items, new List<string>()));
+
+        Assert.AreEqual("No items found", component.Find(".bit-bsl-itm > .bit-bsl-emp").TextContent.Trim());
+
+        component.Render(p => p.Add(x => x.EmptyText, "Nobody yet"));
+        Assert.AreEqual("Nobody yet", component.Find(".bit-bsl-emp").TextContent.Trim());
+
+        // The template takes the place of the text, inside the same part.
+        component.Render(p => p.Add(x => x.EmptyTemplate, (RenderFragment)(b => b.AddMarkupContent(0, "<i class='empty'>nothing</i>"))));
+        Assert.IsNotNull(component.Find(".bit-bsl-emp > .empty"));
+        Assert.IsFalse(component.Find(".bit-bsl-emp").TextContent.Contains("Nobody yet"));
+
+        component.Render(p => p.Add(x => x.Items, new List<string> { "one" }));
+        Assert.AreEqual(0, component.FindAll(".bit-bsl-emp").Count);
+    }
+
+    [TestMethod]
+    public void BitBasicListShouldApplyTheClassesAndStylesOfItsEmptyPart()
+    {
+        var component = RenderComponent<BitBasicList<string>>(p =>
+        {
+            p.Add(x => x.Items, new List<string>());
+            p.Add(x => x.Classes, new BitBasicListClassStyles { Empty = "c-empty" });
+            p.Add(x => x.Styles, new BitBasicListClassStyles { Empty = "margin:1px" });
+        });
+
+        var empty = component.Find(".bit-bsl-emp");
+        Assert.IsTrue(empty.ClassList.Contains("c-empty"));
+        Assert.AreEqual("margin:1px", empty.GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitBasicListShouldSayAVirtualizedListHasNoItem()
+    {
+        var component = RenderComponent<BitBasicList<string>>(p =>
+        {
+            p.Add(x => x.Items, new List<string>());
+            p.Add(x => x.Virtualize, true);
+        });
+
+        Assert.AreEqual("No items found", component.Find(".bit-bsl-emp").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitBasicListShouldNotSayItHasNoItemWhileLoading()
+    {
+        var component = RenderComponent<BitBasicList<string>>(p =>
+        {
+            p.Add(x => x.Items, new List<string>());
+            p.Add(x => x.Loading, true);
+        });
+
+        Assert.AreEqual(0, component.FindAll(".bit-bsl-emp").Count);
+    }
+
+    [TestMethod]
     public void BitBasicListShouldNotRenderEmptyTemplateWhenThereAreItems()
     {
         var component = RenderComponent<BitBasicList<string>>(p =>
@@ -1476,6 +1534,7 @@ public class BitBasicListTests : BunitTestContext
             LoadMore = true,
             LoadMoreSize = 7,
             LoadMoreText = "More",
+            EmptyText = "None",
             OverscanCount = 9,
             Role = "feed",
             StickyFooter = true,
@@ -1507,6 +1566,7 @@ public class BitBasicListTests : BunitTestContext
         Assert.IsTrue(list.LoadMore);
         Assert.AreEqual(7, list.LoadMoreSize);
         Assert.AreEqual("More", list.LoadMoreText);
+        Assert.AreEqual("None", list.EmptyText);
         Assert.AreEqual(9, list.OverscanCount);
         Assert.AreEqual("feed", list.Role);
         Assert.IsTrue(list.StickyFooter);

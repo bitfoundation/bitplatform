@@ -371,7 +371,7 @@ public partial class BitNavPanelDemo
             Name = "NoResultsText",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The custom message for when the search result is empty.",
+            Description = "The custom message for when the search result is empty. Defaults to BitStrings.NoResultsFound (\"No results found\").",
         },
         new()
         {

@@ -51,8 +51,8 @@ public partial class BitChartDemo
         {
             Name = "EmptyText",
             Type = "string",
-            DefaultValue = "No data to display",
-            Description = "Message shown in place of the plot when the configuration produces nothing to draw."
+            DefaultValue = "null",
+            Description = "Message shown in place of the plot when the configuration produces nothing to draw. Defaults to BitStrings.NoItemsFound (\"No items found\")."
         },
         new()
         {
@@ -333,7 +333,7 @@ public partial class BitChartDemo
         },
         new()
         {
-            Name = "--bit-Chart-no-data-color",
+            Name = "--bit-Chart-empty-color",
             DefaultValue = "--bit-clr-fg-sec",
             Description = "Color of the empty-state message.",
         },

@@ -731,11 +731,11 @@ public class BitChartE2ETests : E2ETestBase
     {
         await OpenAsync(Route);
 
-        await Expect(Page.Locator("#cht-nodata .bit-cht-nodata")).ToHaveTextAsync("No data to display");
+        await Expect(Page.Locator("#cht-nodata .bit-cht-emp")).ToHaveTextAsync("No items found");
         await Expect(Page.Locator("#cht-nodata g.bit-cht-data > g")).ToHaveCountAsync(0);
         await Expect(Page.Locator("#cht-nodata svg.bit-cht-svg")).ToHaveAttributeAsync("role", "img");
-        await Expect(Page.Locator("#cht-nodata-text .bit-cht-nodata")).ToHaveTextAsync("Nothing yet");
-        await Expect(Page.Locator("#cht-nodata-template .bit-cht-nodata .custom-nodata")).ToHaveTextAsync("Empty!");
+        await Expect(Page.Locator("#cht-nodata-text .bit-cht-emp")).ToHaveTextAsync("Nothing yet");
+        await Expect(Page.Locator("#cht-nodata-template .bit-cht-emp .custom-nodata")).ToHaveTextAsync("Empty!");
     }
 
     [TestMethod]
@@ -819,7 +819,7 @@ public class BitChartE2ETests : E2ETestBase
         await Expect(rects.First).ToHaveCSSAsync("fill", "rgb(255, 0, 255)");
         await Expect(rects.Nth(2)).ToHaveCSSAsync("fill", "rgb(0, 255, 255)");
         await Expect(Page.Locator("#cht-vars .bit-cht-lgd-itm").First).ToHaveCSSAsync("color", "rgb(0, 100, 0)");
-        await Expect(Page.Locator("#cht-vars-nodata .bit-cht-nodata")).ToHaveCSSAsync("color", "rgb(128, 0, 0)");
+        await Expect(Page.Locator("#cht-vars-nodata .bit-cht-emp")).ToHaveCSSAsync("color", "rgb(128, 0, 0)");
 
         await Page.Locator("#cht-vars g.bit-cht-data > g.bit-cht-el").Nth(1).HoverAsync();
         await Expect(Page.Locator("#cht-vars .bit-cht-tt")).ToHaveCSSAsync("background-color", "rgb(0, 0, 128)");
@@ -830,7 +830,7 @@ public class BitChartE2ETests : E2ETestBase
     {
         await OpenAsync(Route);
 
-        await Expect(Page.Locator("#cht-params .bit-cht-nodata")).ToHaveTextAsync("Cascaded empty text");
+        await Expect(Page.Locator("#cht-params .bit-cht-emp")).ToHaveTextAsync("Cascaded empty text");
         Assert.AreEqual(200, (await Page.Locator("#cht-params").BoundingBoxAsync())!.Height, 1);
         await Expect(Page.Locator("#cht-params svg.bit-cht-svg")).ToHaveAttributeAsync("aria-label", "Bar chart with 0 data series.");
     }

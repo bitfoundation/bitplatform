@@ -1061,7 +1061,7 @@ public class BitSearchBoxE2ETests : E2ETestBase
 
         await Input("sb-noresults").PressSequentiallyAsync("xyz", Typing);
         var callout = await CalloutAsync("sb-noresults");
-        await Expect(callout.Locator(".bit-srb-nrs")).ToHaveTextAsync("No matching item found.");
+        await Expect(callout.Locator(".bit-srb-nor")).ToHaveTextAsync("No matching item found.");
         await Expect(Page.Locator("#sb-noresults .bit-srb-lvr")).ToHaveTextAsync(new Regex("No matching item found\\."));
 
         await Input("sb-noresults-template").PressSequentiallyAsync("xyz", Typing);
@@ -1375,7 +1375,7 @@ public class BitSearchBoxE2ETests : E2ETestBase
         await Expect(listbox).ToHaveAttributeAsync("aria-label", "Matching items");
         await Expect(listbox.Locator("[role=option]").First.Locator("mark.bit-srb-hlt")).ToHaveTextAsync("A");
         await Input("sb-casc-1").PressSequentiallyAsync("xyz", Typing);
-        await Expect((await CalloutAsync("sb-casc-1")).Locator(".bit-srb-nrs")).ToHaveTextAsync("No matching item found.");
+        await Expect((await CalloutAsync("sb-casc-1")).Locator(".bit-srb-nor")).ToHaveTextAsync("No matching item found.");
         await Page.Keyboard.PressAsync("Escape");
 
         await Expect(Root("sb-casc-own")).Not.ToHaveClassAsync(HasClass("bit-srb-und"));

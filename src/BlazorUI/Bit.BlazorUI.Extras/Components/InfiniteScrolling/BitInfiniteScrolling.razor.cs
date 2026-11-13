@@ -150,9 +150,10 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
     [Parameter, ResetClassBuilder] public BitInfiniteScrollingClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// The message to render when there is no item available and no EmptyTemplate is provided.
+    /// The message to render when there is no item available and no EmptyTemplate is provided. Default:
+    /// <see cref="BitStrings.NoItemsFound"/>.
     /// </summary>
-    [Parameter] public string EmptyText { get; set; } = "There is no item";
+    [Parameter] public string? EmptyText { get; set; }
 
     /// <summary>
     /// The custom template to render when there is no item available.
@@ -1127,7 +1128,7 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
 
         if (_error is not null) return ErrorTemplate is null ? null : ErrorMessage;
 
-        if (_showEmpty) return EmptyText;
+        if (_showEmpty) return EmptyText ?? BitStrings.Current.NoItemsFound;
 
         var loaded = _lastLoadedCount > 0 && LoadedMessage.HasValue()
             ? FormatLoadedMessage(LoadedMessage!)

@@ -36,6 +36,13 @@ public partial class BitBasicListDemo
         },
         new()
         {
+            Name = "EmptyText",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The text rendered in place of the rows while the list holds no items and no EmptyTemplate is given. Defaults to BitStrings.NoItemsFound (\"No items found\").",
+        },
+        new()
+        {
             Name = "FitHeight",
             Type = "bool",
             DefaultValue = "false",
@@ -320,6 +327,18 @@ public partial class BitBasicListDemo
         },
         new()
         {
+            Name = "--bit-BasicList-empty-padding",
+            DefaultValue = "spacing(2)",
+            Description = "Padding of what an empty list shows.",
+        },
+        new()
+        {
+            Name = "--bit-BasicList-empty-color",
+            DefaultValue = "--bit-clr-fg-sec",
+            Description = "Text of what an empty list shows.",
+        },
+        new()
+        {
             Name = "--bit-BasicList-spinner-color",
             DefaultValue = "--bit-clr-pri",
             Description = "Moving arc of the default spinners (loading content and busy LoadMore button).",
@@ -437,6 +456,13 @@ public partial class BitBasicListDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the LoadMore text of the list.",
+                },
+                new()
+                {
+                    Name = "Empty",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for what the list shows when there is no item to show.",
                 },
             ]
         }

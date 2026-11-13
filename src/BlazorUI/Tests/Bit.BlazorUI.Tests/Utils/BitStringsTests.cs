@@ -23,6 +23,8 @@ public sealed class BitStringsTests : BunitTestContext
         public override string Breadcrumb => "Brotkrümelpfad";
         public override string Pagination => "Seitennavigation";
         public override string PageFormat => "Seite {0}";
+        public override string NoItemsFound => "Keine Einträge";
+        public override string NoResultsFound => "Keine Treffer";
     }
 
     [TestCleanup]
@@ -110,5 +112,34 @@ public sealed class BitStringsTests : BunitTestContext
         });
         Assert.AreEqual("Seitennavigation", pagination.Find("nav").GetAttribute("aria-label"));
         Assert.AreEqual("Seite 3", pagination.Find(".bit-pgn-sel").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void TranslatedStringsShouldBeWhatEveryEmptyListSays()
+    {
+        BitStrings.Current = new GermanStrings();
+
+        var basicList = RenderComponent<BitBasicList<int>>(parameters => parameters.Add(p => p.Items, []));
+        Assert.AreEqual("Keine Einträge", basicList.Find(".bit-bsl-emp").TextContent.Trim());
+
+        var virtualize = RenderComponent<BitVirtualize<int>>(parameters =>
+        {
+            parameters.Add(p => p.Items, []);
+            parameters.Add(p => p.ItemTemplate, (RenderFragment<int>)(item => builder => builder.AddContent(0, item)));
+        });
+        Assert.AreEqual("Keine Einträge", virtualize.Find(".bit-vir-emp").TextContent.Trim());
+
+        var accordionList = RenderComponent<BitAccordionList<BitAccordionListItem>>(parameters => parameters.Add(p => p.Items, []));
+        Assert.AreEqual("Keine Einträge", accordionList.Find(".bit-acl-emp").TextContent.Trim());
+
+        // The texts object of the grid reads the strings each time it is asked, not once when it is made, so an
+        // instance made before the strings were set still says them; a text set on it wins over them.
+        var gridStrings = new BitDataGridStrings();
+        Assert.AreEqual("Keine Einträge", gridStrings.EmptyText);
+        Assert.AreEqual("Keine Treffer", gridStrings.NoMatchesText);
+        BitStrings.Current = null;
+        Assert.AreEqual("No items found", gridStrings.EmptyText);
+        gridStrings.EmptyText = "Leer";
+        Assert.AreEqual("Leer", gridStrings.EmptyText);
     }
 }

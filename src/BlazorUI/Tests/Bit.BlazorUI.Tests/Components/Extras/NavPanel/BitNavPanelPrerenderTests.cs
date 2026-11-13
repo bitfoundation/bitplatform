@@ -51,7 +51,7 @@ public class BitNavPanelPrerenderTests
         var document = await Prerender("nothing-matches-this");
 
         Assert.AreEqual(0, GetItemTexts(document).Length);
-        StringAssert.Contains(document.Body!.TextContent, "Nothing found!");
+        StringAssert.Contains(document.Body!.TextContent, "No results found");
     }
 
     [TestMethod]

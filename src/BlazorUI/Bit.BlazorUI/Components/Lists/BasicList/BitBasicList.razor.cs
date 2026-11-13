@@ -187,9 +187,15 @@ public partial class BitBasicList<TItem> : BitComponentBase
     public BitBasicListClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// The custom content that will be rendered when there is no item to show.
+    /// The custom content that will be rendered when there is no item to show, which takes the place of
+    /// <see cref="EmptyText"/>.
     /// </summary>
     [Parameter] public RenderFragment? EmptyTemplate { get; set; }
+
+    /// <summary>
+    /// The text that will be rendered when there is no item to show. Default: <see cref="BitStrings.NoItemsFound"/>.
+    /// </summary>
+    [Parameter] public string? EmptyText { get; set; }
 
     /// <summary>
     /// Sets the height of the list to fit its content.

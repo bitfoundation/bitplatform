@@ -617,7 +617,7 @@ public class BitChartTests : BunitTestContext
             p.Add(c => c.EmptyText, "Nothing here");
         });
 
-        Assert.AreEqual("Nothing here", component.Find(".bit-cht-nodata").TextContent.Trim());
+        Assert.AreEqual("Nothing here", component.Find(".bit-cht-emp").TextContent.Trim());
     }
 
     [TestMethod]
@@ -635,13 +635,13 @@ public class BitChartTests : BunitTestContext
             });
         });
 
-        Assert.AreEqual("none", component.Find(".bit-cht-nodata .empty").TextContent);
+        Assert.AreEqual("none", component.Find(".bit-cht-emp .empty").TextContent);
     }
 
     [TestMethod]
     public void AChartWithDataShouldNotShowTheEmptyState()
     {
-        Assert.AreEqual(0, RenderChart().FindAll(".bit-cht-nodata").Count);
+        Assert.AreEqual(0, RenderChart().FindAll(".bit-cht-emp").Count);
     }
 
     // ---- titles ----
@@ -2031,7 +2031,7 @@ public class BitChartTests : BunitTestContext
             p.Add(c => c.Styles, new BitChartClassStyles { Empty = "margin:8px" });
         });
 
-        StringAssert.Contains(component.Find(".bit-cht-nodata.c-empty").GetAttribute("style"), "margin:8px");
+        StringAssert.Contains(component.Find(".bit-cht-emp.c-empty").GetAttribute("style"), "margin:8px");
     }
 
     // ---- enabled state ----
@@ -2237,13 +2237,13 @@ public class BitChartTests : BunitTestContext
         Assert.AreEqual("Fetching", component.Find(".bit-cht-sr[role=status]").TextContent.Trim());
         Assert.IsNull(loading.GetAttribute("role"));
         StringAssert.Contains(loading.TextContent, "Fetching");
-        Assert.AreEqual(0, component.FindAll(".bit-cht-nodata").Count, "a chart still loading claimed it has no data");
+        Assert.AreEqual(0, component.FindAll(".bit-cht-emp").Count, "a chart still loading claimed it has no data");
 
         component.Render(p => p.Add(c => c.IsLoading, false));
 
         Assert.IsNull(component.Find(".bit-cht").GetAttribute("aria-busy"));
         Assert.AreEqual(0, component.FindAll(".bit-cht-ldg").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-cht-nodata").Count);
+        Assert.AreEqual(1, component.FindAll(".bit-cht-emp").Count);
     }
 
     [TestMethod]
