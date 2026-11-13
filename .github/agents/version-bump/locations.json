@@ -1,0 +1,363 @@
+{
+  ".github/actions/bit-bp/bit-setup/action.yml": [
+    "default: {V}"
+  ],
+  ".github/agents/dependency-update.md": [
+    "**`Bit.*` self-references track the in-development version**, currently `{V}`. Never read"
+  ],
+  ".github/agents/test-platform/test-platform.ps1": [
+    "dotnet tool install Bit.Cli --tool-path $tools --version {V} | Out-Null"
+  ],
+  ".vscode/mcp.json": [
+    "\"url\": \"https://bitplatform.dev/mcp?v={CORE}\""
+  ],
+  "README.md": [
+    "dotnet tool install --global Bit.Cli --version {V}"
+  ],
+  "src/Bit.Build.props": [
+    "<ReleaseVersion>{V}</ReleaseVersion>"
+  ],
+  "src/BlazorUI/Bit.BlazorUI/Info.cs": [
+    "public static string Version { get; } = \"{V}\";"
+  ],
+  "src/BlazorUI/Bit.BlazorUI/Scripts/general.ts": [
+    "(BitBlazorUI as any).version = (window as any)['bit-blazorui version'] = '{V}';"
+  ],
+  "src/BlazorUI/Demo/Bit.BlazorUI.Demo.Server/Bit.BlazorUI.Demo.Server.csproj": [
+    "<PackageReference Include=\"Bit.Belemetry\" Version=\"{V}\" />",
+    "<PackageReference Include=\"Bit.BlazorES2019\" Version=\"{V}\" />",
+    "<PackageReference Include=\"Bit.CodeAnalyzers\" Version=\"{V}\">",
+    "<PackageReference Include=\"Bit.SourceGenerators\" Version=\"{V}\">"
+  ],
+  "src/BlazorUI/Demo/Bit.BlazorUI.Demo.Shared/Bit.BlazorUI.Demo.Shared.csproj": [
+    "<PackageReference Include=\"Bit.CodeAnalyzers\" Version=\"{V}\">",
+    "<PackageReference Include=\"Bit.SourceGenerators\" Version=\"{V}\">"
+  ],
+  "src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Bit.BlazorUI.Demo.Client.Core.csproj": [
+    "<PackageReference Include=\"Bit.CodeAnalyzers\" Version=\"{V}\">",
+    "<PackageReference Include=\"Bit.SourceGenerators\" Version=\"{V}\">"
+  ],
+  "src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Pages/GettingStartedPage.razor": [
+    "<CodeBox>dotnet tool install --global Bit.Cli --version {V}"
+  ],
+  "src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Maui/Bit.BlazorUI.Demo.Client.Maui.csproj": [
+    "<PackageReference Include=\"Bit.BlazorES2019\" Version=\"{V}\" />",
+    "<PackageReference Include=\"Bit.CodeAnalyzers\" Version=\"{V}\">",
+    "<PackageReference Include=\"Bit.SourceGenerators\" Version=\"{V}\">"
+  ],
+  "src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Web.Shared/Bit.BlazorUI.Demo.Client.Web.Shared.csproj": [
+    "<PackageReference Include=\"Bit.Bswup\" Version=\"{V}\" />",
+    "<PackageReference Include=\"Bit.CodeAnalyzers\" Version=\"{V}\">",
+    "<PackageReference Include=\"Bit.SourceGenerators\" Version=\"{V}\">"
+  ],
+  "src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Web/Bit.BlazorUI.Demo.Client.Web.csproj": [
+    "<PackageReference Include=\"Bit.CodeAnalyzers\" Version=\"{V}\">",
+    "<PackageReference Include=\"Bit.SourceGenerators\" Version=\"{V}\">",
+    "<PackageReference Include=\"Bit.Minifier\" Version=\"{V}\" PrivateAssets=\"all\" />"
+  ],
+  "src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Web/wwwroot/service-worker.published.js": [
+    "// bit version: {V}"
+  ],
+  "src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Windows/Bit.BlazorUI.Demo.Client.Windows.csproj": [
+    "<PackageReference Include=\"Bit.BlazorES2019\" Version=\"{V}\" />",
+    "<PackageReference Include=\"Bit.CodeAnalyzers\" Version=\"{V}\">",
+    "<PackageReference Include=\"Bit.SourceGenerators\" Version=\"{V}\">"
+  ],
+  "src/Brouter/Demo/Client/Bit.Brouter.Demo.Client.csproj": [
+    "<PackageReference Include=\"Bit.Minifier\" Version=\"{V}\" PrivateAssets=\"all\" />"
+  ],
+  "src/Brouter/Demo/Client/Pages/GeneratorPage.razor": [
+    "&lt;<span class=\"k\">PackageReference</span> Include=<span class=\"s\">\"Bit.Brouter\"</span> Version=<span class=\"s\">\"{V}\"</span> /&gt;",
+    "&lt;<span class=\"k\">PackageReference</span> Include=<span class=\"s\">\"Bit.Brouter.Generators\"</span> Version=<span class=\"s\">\"{V}\"</span> PrivateAssets=<span class=\"s\">\"all\"</span> /&gt;</pre>"
+  ],
+  "src/Brouter/Demo/Client/Pages/GettingStartedPage.razor": [
+    "&lt;<span class=\"k\">PackageReference</span> Include=<span class=\"s\">\"Bit.Brouter\"</span> Version=<span class=\"s\">\"{V}\"</span> /&gt;",
+    "&lt;<span class=\"k\">PackageReference</span> Include=<span class=\"s\">\"Bit.Brouter.Generators\"</span> Version=<span class=\"s\">\"{V}\"</span> PrivateAssets=<span class=\"s\">\"all\"</span> /&gt;</pre>"
+  ],
+  "src/Bswup/Bit.Bswup/Scripts/bit-bswup.progress.ts": [
+    "(window as any)['bit-bswup.progress version'] = '{V}';"
+  ],
+  "src/Bswup/Bit.Bswup/Scripts/bit-bswup.sw-cleanup.ts": [
+    "(self as any)['bit-bswup.sw-cleanup version'] = '{V}';"
+  ],
+  "src/Bswup/Bit.Bswup/Scripts/bit-bswup.sw.ts": [
+    "(self as any)['bit-bswup.sw version'] = '{V}';"
+  ],
+  "src/Bswup/Bit.Bswup/Scripts/bit-bswup.ts": [
+    "BitBswup.version = (window as any)['bit-bswup version'] = '{V}';"
+  ],
+  "src/Bswup/Demo/Client/Bit.Bswup.Demo.Client.csproj": [
+    "<PackageReference Include=\"Bit.Minifier\" Version=\"{V}\" PrivateAssets=\"all\" />"
+  ],
+  "src/Bswup/Demo/Client/wwwroot/service-worker.js": [
+    "// bit version: {V}"
+  ],
+  "src/Bswup/Demo/Client/wwwroot/service-worker.published.js": [
+    "// bit version: {V}"
+  ],
+  "src/Bswup/Samples/BasicSample/wwwroot/service-worker.js": [
+    "// bit version: {V}"
+  ],
+  "src/Bswup/Samples/BasicSample/wwwroot/service-worker.published.js": [
+    "// bit version: {V}"
+  ],
+  "src/Bswup/Samples/FullSample/Client/wwwroot/service-worker.js": [
+    "// bit version: {V}"
+  ],
+  "src/Bswup/Samples/FullSample/Client/wwwroot/service-worker.published.js": [
+    "// bit version: {V}"
+  ],
+  "src/Butil/Bit.Butil/Scripts/butil.ts": [
+    "BitButil.version = window['bit-butil version'] = '{V}';"
+  ],
+  "src/Butil/Demo/Client/Bit.Butil.Demo.Client.csproj": [
+    "<PackageReference Include=\"Bit.Minifier\" Version=\"{V}\" PrivateAssets=\"all\" />"
+  ],
+  "src/Templates/BlazorEmpty/Bit.BlazorEmpty/BlazorEmpty.Client/BlazorEmpty.Client.csproj": [
+    "<!-- Generated by bit-empty template v-{V} -->",
+    "<PackageReference Include=\"Bit.BlazorUI\" Version=\"{V}\" />",
+    "<PackageReference Include=\"Bit.CodeAnalyzers\" Version=\"{V}\">",
+    "<PackageReference Include=\"Bit.SourceGenerators\" Version=\"{V}\">"
+  ],
+  "src/Templates/BlazorEmpty/Bit.BlazorEmpty/BlazorEmpty/BlazorEmpty.csproj": [
+    "<!-- Generated by bit-empty template v-{V} -->",
+    "<PackageReference Include=\"Bit.BlazorUI\" Version=\"{V}\" />",
+    "<PackageReference Include=\"Bit.CodeAnalyzers\" Version=\"{V}\">",
+    "<PackageReference Include=\"Bit.SourceGenerators\" Version=\"{V}\">"
+  ],
+  "src/Templates/Boilerplate/Bit.Boilerplate/.codex/config.toml": [
+    "url = \"https://bitplatform.dev/mcp?v={CORE}\""
+  ],
+  "src/Templates/Boilerplate/Bit.Boilerplate/.cursor/mcp.json": [
+    "\"url\": \"https://bitplatform.dev/mcp?v={CORE}\""
+  ],
+  "src/Templates/Boilerplate/Bit.Boilerplate/.devcontainer/devcontainer.json": [
+    "\"onCreateCommand\": \"dotnet tool install --global Bit.Cli --version {V} && /root/.dotnet/tools/bit setup --yes\","
+  ],
+  "src/Templates/Boilerplate/Bit.Boilerplate/.docs/01- Entity Framework Core.md": [
+    "`bit migration` runs EF Core's `dotnet ef` with the `dotnet-ef` version that matches the project's EF Core packages, formats the new migration with `dotnet format`, and when it fails, shows its errors and the command to run it again. Install the bit CLI with `dotnet tool install --global Bit.Cli --version {V}`, or run it without installing it: `dnx Bit.Cli --version {V} -- migration add Initial`."
+  ],
+  "src/Templates/Boilerplate/Bit.Boilerplate/.docs/05- Localization and Multi-language Support.md": [
+    "Nothing to install: `dnx Bit.Cli --version {V} -- translate` runs it straight from NuGet. With the bit CLI installed as a .NET global tool (`dotnet tool install --global Bit.Cli --version {V}`), the command is `bit translate`."
+  ],
+  "src/Templates/Boilerplate/Bit.Boilerplate/.docs/19- Project Miscellaneous Files.md": [
+    "<PackageReference Include=\"Bit.BlazorUI\" Version=\"{V}\" />",
+    "<PackageVersion Include=\"Bit.BlazorUI\" Version=\"{V}\" />",
+    "<PackageVersion Include=\"Bit.BlazorUI\" Version=\"{V}\" />",
+    "<PackageVersion Include=\"Bit.Butil\" Version=\"{V}\" />",
+    "dnx Bit.Cli --version {V} -- translate",
+    "\"url\": \"https://bitplatform.dev/mcp?v={CORE}\""
+  ],
+  "src/Templates/Boilerplate/Bit.Boilerplate/.gemini/settings.json": [
+    "\"httpUrl\": \"https://bitplatform.dev/mcp?v={CORE}\""
+  ],
+  "src/Templates/Boilerplate/Bit.Boilerplate/.github/workflows/cd-template.yml": [
+    "uses: bitfoundation/bitplatform/.github/actions/bit-bp/bit-setup@v-{V}",
+    "uses: bitfoundation/bitplatform/.github/actions/bit-bp/bit-setup@v-{V}",
+    "uses: bitfoundation/bitplatform/.github/actions/bit-bp/artifact-signing@v-{V}",
+    "uses: bitfoundation/bitplatform/.github/actions/bit-bp/bit-setup@v-{V}",
+    "uses: bitfoundation/bitplatform/.github/actions/bit-bp/bit-setup@v-{V}"
+  ],
+  "src/Templates/Boilerplate/Bit.Boilerplate/.github/workflows/ci.yml": [
+    "uses: bitfoundation/bitplatform/.github/actions/bit-bp/bit-setup@v-{V}"
+  ],
+  "src/Templates/Boilerplate/Bit.Boilerplate/.junie/mcp/mcp.json": [
+    "\"url\": \"https://bitplatform.dev/mcp?v={CORE}\""
+  ],
+  "src/Templates/Boilerplate/Bit.Boilerplate/.mcp.json": [
+    "\"url\": \"https://bitplatform.dev/mcp?v={CORE}\""
+  ],
+  "src/Templates/Boilerplate/Bit.Boilerplate/.vscode/mcp.json": [
+    "\"url\": \"https://bitplatform.dev/mcp?v={CORE}\""
+  ],
+  "src/Templates/Boilerplate/Bit.Boilerplate/bit.json": [
+    "\"version\": \"{V}\","
+  ],
+  "src/Templates/Boilerplate/Bit.Boilerplate/src/Client/Boilerplate.Client.Web/wwwroot/service-worker.published.js": [
+    "// bit version: {V}"
+  ],
+  "src/Templates/Boilerplate/Bit.Boilerplate/src/Directory.Packages.props": [
+    "<!-- Generated by bit-bp template v-{V} -->",
+    "<PackageVersion Include=\"Bit.Butil\" Version=\"{V}\" />",
+    "<PackageVersion Include=\"Bit.Brouter\" Version=\"{V}\" />",
+    "<PackageVersion Include=\"Bit.BlazorUI\" Version=\"{V}\" />",
+    "<PackageVersion Include=\"Bit.BlazorES2019\" Version=\"{V}\" />",
+    "<PackageVersion Include=\"Bit.BlazorUI.Icons\" Version=\"{V}\" />",
+    "<PackageVersion Include=\"Bit.BlazorUI.Assets\" Version=\"{V}\" />",
+    "<PackageVersion Include=\"Bit.BlazorUI.Extras\" Version=\"{V}\" />",
+    "<PackageVersion Include=\"Bit.BlazorUI.AI\" Version=\"{V}\" />",
+    "<PackageVersion Include=\"Bit.Bmage\" Version=\"{V}\" />",
+    "<PackageVersion Include=\"Bit.Bmage.Blazor\" Version=\"{V}\" />",
+    "<PackageVersion Include=\"Bit.BevTools\" Version=\"{V}\" />",
+    "<PackageVersion Include=\"Bit.BevTools.Loader\" Version=\"{V}\" />",
+    "<PackageVersion Include=\"Bit.Bswup\" Version=\"{V}\" />",
+    "<PackageVersion Include=\"Bit.Minifier\" Version=\"{V}\" />",
+    "<PackageVersion Include=\"Bit.CodeAnalyzers\" Version=\"{V}\" />",
+    "<PackageVersion Include=\"Bit.SourceGenerators\" Version=\"{V}\" />",
+    "<PackageVersion Include=\"Bit.Bmotion\" Version=\"{V}\" />",
+    "<PackageVersion Include=\"Bit.Bortable\" Version=\"{V}\" />",
+    "<PackageVersion Include=\"Bit.Blex\" Version=\"{V}\" />",
+    "<PackageVersion Include=\"Bit.Bcrdt\" Version=\"{V}\" />",
+    "<PackageVersion Include=\"Bit.Bcrdt.Server\" Version=\"{V}\" />",
+    "<PackageVersion Include=\"Bit.Blow\" Version=\"{V}\" />",
+    "<PackageVersion Include=\"Bit.Bonboarding\" Version=\"{V}\" />",
+    "<PackageVersion Include=\"Bit.Belemetry\" Version=\"{V}\" />",
+    "<PackageVersion Condition=\" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''\" Include=\"Bit.Bsqlite\" Version=\"{V}\" />"
+  ],
+  "src/Templates/Boilerplate/Bit.Boilerplate/src/LandingPage/Boilerplate.LandingPage.Client/wwwroot/service-worker.published.js": [
+    "// bit version: {V}"
+  ],
+  "src/Templates/Boilerplate/Readme.md": [
+    "dotnet tool install --global Bit.Cli --version {V}"
+  ],
+  "src/Toolings/Cli/README.md": [
+    "dotnet tool install --global Bit.Cli --version {V}",
+    "dnx Bit.Cli --version {V} -- new MyApp",
+    "dotnet tool install --global Bit.Cli --version {V}",
+    "run: dotnet tool install --global Bit.Cli --version {V}",
+    "| `dnx Bit.ResxTranslator` | `dnx Bit.Cli --version {V} -- translate`, or `bit translate` |",
+    "| `dnx Bit.Minifier.Cli --decode map trace` | `dnx Bit.Cli --version {V} -- decode map trace`, or `bit decode map trace` |"
+  ],
+  "src/Toolings/Minifier/README.md": [
+    "dnx Bit.Cli --version {V} -- decode bit-minifier.map trace.txt"
+  ],
+  "src/Utilities/Balette/Demo/Client/Bit.Balette.Demo.Client.csproj": [
+    "<PackageReference Include=\"Bit.Minifier\" Version=\"{V}\" PrivateAssets=\"all\" />"
+  ],
+  "src/Utilities/BbScanner/Demo/Client/Bit.BbScanner.Demo.Client.csproj": [
+    "<PackageReference Include=\"Bit.Minifier\" Version=\"{V}\" PrivateAssets=\"all\" />"
+  ],
+  "src/Utilities/Bcrdt/Demo/Client/Bit.Bcrdt.Demo.Client.csproj": [
+    "<PackageReference Include=\"Bit.Minifier\" Version=\"{V}\" PrivateAssets=\"all\" />"
+  ],
+  "src/Utilities/Bcrdt/Demo/Server/Services/BcrdtServerInstructions.cs": [
+    "public const string BcrdtVersion = \"{V}\";"
+  ],
+  "src/Utilities/Bdnd/Demo/Client/Bit.Bdnd.Demo.Client.csproj": [
+    "<PackageReference Include=\"Bit.Minifier\" Version=\"{V}\" PrivateAssets=\"all\" />"
+  ],
+  "src/Utilities/Belemetry/Demo/Client/Bit.Belemetry.Demo.Client.csproj": [
+    "<PackageReference Include=\"Bit.Minifier\" Version=\"{V}\" PrivateAssets=\"all\" />"
+  ],
+  "src/Utilities/BevTools/Demo/Client/Bit.BevTools.Demo.Client.csproj": [
+    "<PackageReference Include=\"Bit.Minifier\" Version=\"{V}\" PrivateAssets=\"all\" />"
+  ],
+  "src/Utilities/Bink/Demo/Client/Bit.Bink.Demo.Client.csproj": [
+    "<PackageReference Include=\"Bit.Minifier\" Version=\"{V}\" PrivateAssets=\"all\" />"
+  ],
+  "src/Utilities/Blex/Demo/Client/Bit.Blex.Demo.Client.csproj": [
+    "<PackageReference Include=\"Bit.Minifier\" Version=\"{V}\" PrivateAssets=\"all\" />"
+  ],
+  "src/Utilities/Blex/Demo/Client/Pages/Installation.razor": [
+    "<PackageReference Include=\"Bit.Blex\" Version=\"{V}\" />"
+  ],
+  "src/Utilities/Blow/Demo/Client/Bit.Blow.Demo.Client.csproj": [
+    "<PackageReference Include=\"Bit.Minifier\" Version=\"{V}\" PrivateAssets=\"all\" />"
+  ],
+  "src/Utilities/Bmage/Demo/Client/Bit.Bmage.Demo.Client.csproj": [
+    "<PackageReference Include=\"Bit.Minifier\" Version=\"{V}\" PrivateAssets=\"all\" />"
+  ],
+  "src/Utilities/Bmotion/Demo/Client/Bit.Bmotion.Demo.Client.csproj": [
+    "<PackageReference Include=\"Bit.Minifier\" Version=\"{V}\" PrivateAssets=\"all\" />"
+  ],
+  "src/Utilities/Bonboarding/Demo/Client/Bit.Bonboarding.Demo.Client.csproj": [
+    "<PackageReference Include=\"Bit.Minifier\" Version=\"{V}\" PrivateAssets=\"all\" />"
+  ],
+  "src/Utilities/Borm/Demo/Client/Bit.Borm.Demo.Client.csproj": [
+    "<PackageReference Include=\"Bit.Minifier\" Version=\"{V}\" PrivateAssets=\"all\" />"
+  ],
+  "src/Utilities/Bortable/Demo/Client/Bit.Bortable.Demo.Client.csproj": [
+    "<PackageReference Include=\"Bit.Minifier\" Version=\"{V}\" PrivateAssets=\"all\" />"
+  ],
+  "src/Websites/Careers/src/Bit.Websites.Careers.Client/Bit.Websites.Careers.Client.csproj": [
+    "<PackageReference Include=\"Bit.Bswup\" Version=\"{V}\" />",
+    "<PackageReference Include=\"Bit.BlazorUI\" Version=\"{V}\" />",
+    "<PackageReference Include=\"Bit.BlazorUI.Icons\" Version=\"{V}\" />",
+    "<PackageReference Include=\"Bit.BlazorUI.Assets\" Version=\"{V}\" />",
+    "<PackageReference Include=\"Bit.Minifier\" Version=\"{V}\" PrivateAssets=\"all\" />",
+    "<PackageReference Include=\"Bit.CodeAnalyzers\" Version=\"{V}\">",
+    "<PackageReference Include=\"Bit.SourceGenerators\" Version=\"{V}\">"
+  ],
+  "src/Websites/Careers/src/Bit.Websites.Careers.Client/wwwroot/service-worker.published.js": [
+    "// bit version: {V}"
+  ],
+  "src/Websites/Careers/src/Bit.Websites.Careers.Server/Bit.Websites.Careers.Server.csproj": [
+    "<PackageReference Include=\"Bit.Belemetry\" Version=\"{V}\" />",
+    "<PackageReference Include=\"Bit.BlazorES2019\" Version=\"{V}\" />",
+    "<PackageReference Include=\"Bit.CodeAnalyzers\" Version=\"{V}\">",
+    "<PackageReference Include=\"Bit.SourceGenerators\" Version=\"{V}\">"
+  ],
+  "src/Websites/Careers/src/Bit.Websites.Careers.Shared/Bit.Websites.Careers.Shared.csproj": [
+    "<PackageReference Include=\"Bit.CodeAnalyzers\" Version=\"{V}\">",
+    "<PackageReference Include=\"Bit.SourceGenerators\" Version=\"{V}\">"
+  ],
+  "src/Websites/Careers/src/Directory.Build.props": [
+    "<!-- Generated by bit-bp template v-{V} -->"
+  ],
+  "src/Websites/Platform/src/Bit.Websites.Platform.Client/Bit.Websites.Platform.Client.csproj": [
+    "<PackageReference Include=\"Bit.Bswup\" Version=\"{V}\" />",
+    "<PackageReference Include=\"Bit.Butil\" Version=\"{V}\" />",
+    "<PackageReference Include=\"Bit.BlazorUI\" Version=\"{V}\" />",
+    "<PackageReference Include=\"Bit.BlazorUI.Extras\" Version=\"{V}\" />",
+    "<PackageReference Include=\"Bit.BlazorUI.Assets\" Version=\"{V}\" />",
+    "<PackageReference Include=\"Bit.Minifier\" Version=\"{V}\" PrivateAssets=\"all\" />",
+    "<PackageReference Include=\"Bit.CodeAnalyzers\" Version=\"{V}\">",
+    "<PackageReference Include=\"Bit.SourceGenerators\" Version=\"{V}\">"
+  ],
+  "src/Websites/Platform/src/Bit.Websites.Platform.Client/Pages/Home/HomePage.razor": [
+    "<CodeBox>dotnet tool install --global Bit.Cli --version {V}"
+  ],
+  "src/Websites/Platform/src/Bit.Websites.Platform.Client/Pages/Templates/Templates02GettingStartedPage.razor": [
+    "<CodeBox>dotnet tool install --global Bit.Cli --version {V}</CodeBox>",
+    "Or run it once without installing it: <code>dnx Bit.Cli --version {V} -- new MyApp</code>"
+  ],
+  "src/Websites/Platform/src/Bit.Websites.Platform.Client/Pages/Toolings/Toolings01CliPage.razor": [
+    "<CodeBox>dotnet tool install --global Bit.Cli --version {V}",
+    "Or run it once without installing it: <code>dnx Bit.Cli --version {V} -- new MyApp</code>",
+    "<CodeBox>dotnet tool install --global Bit.Cli --version {V}"
+  ],
+  "src/Websites/Platform/src/Bit.Websites.Platform.Client/Pages/Toolings/Toolings02MinifierPage.razor": [
+    "<CodeBox>dnx Bit.Cli --version {V} -- decode bit-minifier.map trace.txt</CodeBox>"
+  ],
+  "src/Websites/Platform/src/Bit.Websites.Platform.Client/wwwroot/service-worker.published.js": [
+    "// bit version: {V}"
+  ],
+  "src/Websites/Platform/src/Bit.Websites.Platform.Server/Bit.Websites.Platform.Server.csproj": [
+    "<PackageReference Include=\"Bit.Belemetry\" Version=\"{V}\" />",
+    "<PackageReference Include=\"Bit.BlazorES2019\" Version=\"{V}\" />",
+    "<PackageReference Include=\"Bit.CodeAnalyzers\" Version=\"{V}\">",
+    "<PackageReference Include=\"Bit.SourceGenerators\" Version=\"{V}\">"
+  ],
+  "src/Websites/Platform/src/Bit.Websites.Platform.Shared/Bit.Websites.Platform.Shared.csproj": [
+    "<PackageReference Include=\"Bit.CodeAnalyzers\" Version=\"{V}\">",
+    "<PackageReference Include=\"Bit.SourceGenerators\" Version=\"{V}\">"
+  ],
+  "src/Websites/Platform/src/Directory.Build.props": [
+    "<!-- Generated by bit-bp template v-{V} -->"
+  ],
+  "src/Websites/Sales/src/Bit.Websites.Sales.Client/Bit.Websites.Sales.Client.csproj": [
+    "<PackageReference Include=\"Bit.Bswup\" Version=\"{V}\" />",
+    "<PackageReference Include=\"Bit.BlazorUI\" Version=\"{V}\" />",
+    "<PackageReference Include=\"Bit.BlazorUI.Icons\" Version=\"{V}\" />",
+    "<PackageReference Include=\"Bit.BlazorUI.Assets\" Version=\"{V}\" />",
+    "<PackageReference Include=\"Bit.Minifier\" Version=\"{V}\" PrivateAssets=\"all\" />",
+    "<PackageReference Include=\"Bit.CodeAnalyzers\" Version=\"{V}\">",
+    "<PackageReference Include=\"Bit.SourceGenerators\" Version=\"{V}\">"
+  ],
+  "src/Websites/Sales/src/Bit.Websites.Sales.Client/wwwroot/service-worker.published.js": [
+    "// bit version: {V}"
+  ],
+  "src/Websites/Sales/src/Bit.Websites.Sales.Server/Bit.Websites.Sales.Server.csproj": [
+    "<PackageReference Include=\"Bit.Belemetry\" Version=\"{V}\" />",
+    "<PackageReference Include=\"Bit.BlazorES2019\" Version=\"{V}\" />",
+    "<PackageReference Include=\"Bit.CodeAnalyzers\" Version=\"{V}\">",
+    "<PackageReference Include=\"Bit.SourceGenerators\" Version=\"{V}\">"
+  ],
+  "src/Websites/Sales/src/Bit.Websites.Sales.Shared/Bit.Websites.Sales.Shared.csproj": [
+    "<PackageReference Include=\"Bit.CodeAnalyzers\" Version=\"{V}\">",
+    "<PackageReference Include=\"Bit.SourceGenerators\" Version=\"{V}\">"
+  ],
+  "src/Websites/Sales/src/Directory.Build.props": [
+    "<!-- Generated by bit-bp template v-{V} -->"
+  ]
+}
