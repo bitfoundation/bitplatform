@@ -7,7 +7,6 @@ public partial class LandingChat
     // The same files the project file marks with BlazorWebAssemblyLazyLoad
     private static readonly string[] lazyAssemblies = ["Bit.BlazorUI.AI.wasm", "Bit.BlazorUI.AI.Core.wasm", "System.Net.WebSockets.Client.wasm", "System.Net.WebSockets.wasm"];
 
-    [AutoInject] private IJSRuntime jsRuntime = default!;
     [AutoInject] private LazyAssemblyLoader lazyAssemblyLoader = default!;
 
     /// <summary>The sample the chat answers about. Without one it's the gallery's chat, which knows every sample.</summary>
@@ -101,37 +100,32 @@ public partial class LandingChat
         }
     }
 
-    // One download however many times it's asked for, and one that failed - or broke off, as JS interop does when a Blazor
-    // Server circuit drops - is tried again the next time
+    // One download however many times it's asked for, and one that failed or broke off is tried again the next time
     private Task<bool> Load()
     {
         if (loading is null || (loading.IsCompleted && loading is not { IsCompletedSuccessfully: true, Result: true }))
         {
-            loading = LoadAssets();
+            loading = LoadAssemblies();
         }
 
         return loading;
     }
 
-    private async Task<bool> LoadAssets()
+    // Its stylesheet and script are on every page (See App.razor); its assemblies are what's left to download
+    private async Task<bool> LoadAssemblies()
     {
+        // Only a non-AOT WebAssembly build marks them lazy; anywhere else they're loaded already
+        if (OperatingSystem.IsBrowser() is false || (AppContext.TryGetSwitch("Boilerplate.IsAot", out var isAot) && isAot)) return true;
+
         try
         {
-            // The stylesheet only: the scripts of Bit.BlazorUI.AI come as modules, each the first time the chat calls into it (See BitBlazorUILazyScripts)
-            await jsRuntime.InvokeVoidAsync("landing.loadAssets", (string[])["_content/Bit.BlazorUI.AI/styles/bit.blazorui.ai.css"], (string[])[]);
-
-            // Only a non-AOT WebAssembly build marks them lazy; anywhere else they're loaded already
-            if (OperatingSystem.IsBrowser() && (AppContext.TryGetSwitch("Boilerplate.IsAot", out var isAot) && isAot) is false)
-            {
-                await lazyAssemblyLoader.LoadAssembliesAsync(lazyAssemblies);
-            }
+            await lazyAssemblyLoader.LoadAssembliesAsync(lazyAssemblies);
 
             return true;
         }
-        catch (Exception exp) when (exp is JSException or JSDisconnectedException or TaskCanceledException or HttpRequestException or InvalidOperationException)
+        catch (Exception exp) when (exp is JSException or TaskCanceledException or HttpRequestException or InvalidOperationException)
         {
-            // Offline, a deployment the page outlived or a dropped circuit: the chat says it couldn't open, and opening it
-            // again tries again
+            // Offline, or a deployment the page outlived: the chat says it couldn't open, and opening it again tries again
             return false;
         }
     }

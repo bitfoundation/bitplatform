@@ -58,9 +58,9 @@ fits its business:
   (`MapBitAiWebSocket` on the server, `BitAiWebSocketTransport` in the browser), with no SignalR in the client. It
   streams its answers, takes a question by voice where the browser can hear one, offers the page's other questions
   under each answer, lets a new question cut the current answer short, and keeps the conversation for the rest of the
-  visit, across the sample's pages and a change of language. Nothing of it is downloaded until the visitor reaches for
-  it, and it starts downloading as soon as the pointer, a finger or the focus is on its button, so it's ready by the
-  click. The gallery has a chat of its own, which knows every sample and shows the ones closest to the visitor's product
+  visit, across the sample's pages and a change of language. Its code isn't downloaded until the visitor reaches for
+  it (its stylesheet and script come with the page, cut to the parts it uses), and the download starts as soon as the
+  pointer, a finger or the focus is on its button, so it's ready by the click. The gallery has a chat of its own, which knows every sample and shows the ones closest to the visitor's product
   as cards they can open.
 - **Search engines and link previews**: every page has its own title, description, canonical link, language
   alternates, preview image and structured data (the organization, the app, the FAQ), and the server writes
@@ -89,10 +89,10 @@ step whose sample is gone is left out, and one whose element isn't there shows i
   a slow phone all see it at once, then WebAssembly takes over. bit Bswup runs it as a PWA in `AlwaysPrerender` mode:
   each visit still gets the server's fresh page, and the app's files come from the device's cache. A new version
   reloads the page as soon as it's ready.
-- **Small to download.** Trimmed and minified with Bit.Minifier, the chat and the tour lazy-loaded, bit BlazorUI's
-  scripts as modules each page downloads only when one of its components needs it (`BitBlazorUILazyScripts`), only the
-  page's language's data downloaded, so changing the language reloads the page, fonts self-hosted as small subsets,
-  static files precompressed with Brotli, and responses compressed with Brotli and Gzip (and Zstandard on .NET 11).
+- **Small to download.** Trimmed and minified with Bit.Minifier, the chat's code and the tour lazy-loaded, bit
+  BlazorUI's stylesheets and scripts cut at publish to the parts the site uses, only the page's language's data
+  downloaded, so changing the language reloads the page, fonts self-hosted as small subsets, static files precompressed
+  with Brotli, and responses compressed with Brotli and Gzip (and Zstandard on .NET 11).
 - **Cacheable.** The pages set no cookies, the antiforgery check included, so a CDN can cache them; static files are
   cached for a week when their URL carries a version, and pages for ten minutes.
 - **No scripts for crawlers and benchmarks.** Search engine crawlers, Lighthouse and PageSpeed Insights get the

@@ -30,6 +30,7 @@
     <Link rel="stylesheet" Href="_content/Bit.BlazorUI/styles/bit.blazorui.css" />
     <Link rel="stylesheet" Href="_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.css" />
     <Link rel="stylesheet" Href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.extras.css" />
+    <Link rel="stylesheet" Href="_content/Bit.BlazorUI.AI/styles/bit.blazorui.ai.css" />
     <Link rel="stylesheet" Href="styles/landing.css" />
     <Link rel="stylesheet" Href="Boilerplate.LandingPage.Server.styles.css" />
 
@@ -58,7 +59,10 @@
         </script>
         <Script Src="_content/Bit.Bswup/bit-bswup.js" sw="service-worker.js" blazorScript="_framework/bit.blazor.web.es2019.js" updateInterval="600" updateOnVisibility="true"></Script>
         <Script Src="_content/Bit.Butil/bit-butil.js"></Script>
-        @* No script of bit BlazorUI: each component's own is downloaded the first time it's used (See BitBlazorUILazyScripts in Directory.Build.props) *@
+        @* bit BlazorUI's scripts, as the app has them: a publish cuts each bundle to the parts the site uses *@
+        <Script Src="_content/Bit.BlazorUI/scripts/bit.blazorui.js"></Script>
+        <Script Src="_content/Bit.BlazorUI.Extras/scripts/bit.blazorui.extras.js"></Script>
+        <Script Src="_content/Bit.BlazorUI.AI/scripts/bit.blazorui.ai.js"></Script>
         <Script Src="scripts/landing.js"></Script>
     }
 </body>

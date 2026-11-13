@@ -158,7 +158,8 @@ public class PageTests
         {
             var html = await client.GetStringAsync(site.Path.Length is 0 ? LandingRoutes.Home : site.Path);
 
-            foreach (Match toggle in Regex.Matches(html, "<button[^>]*class=\"lp-chat-(bubble|concierge-tab)[^>]*>"))
+            // BitButtons, whose own classes come first
+            foreach (Match toggle in Regex.Matches(html, "<button[^>]*class=\"[^\"]*\\blp-chat-(bubble|concierge-tab)\\b[^\"]*\"[^>]*>"))
             {
                 toggles++;
 

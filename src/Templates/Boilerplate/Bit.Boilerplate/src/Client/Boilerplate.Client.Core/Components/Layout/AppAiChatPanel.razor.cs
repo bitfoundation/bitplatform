@@ -5,9 +5,10 @@ using Boilerplate.Client.Core.Components.Layout.AiChat;
 namespace Boilerplate.Client.Core.Components.Layout;
 
 /// <summary>
-/// The AI chat's floating button and panel. The chat itself (<see cref="AppAiChat"/>) is built on Bit.BlazorUI.AI, which
-/// the browser downloads only when the chat is first reached for - its assemblies, styles and scripts - so this shell,
-/// on every page of the app, holds nothing of it.
+/// The AI chat's floating button and panel. The chat itself (<see cref="AppAiChat"/>) is built on Bit.BlazorUI.AI, whose
+/// assemblies the browser downloads only when the chat is first reached for, so this shell, on every page of the app,
+/// holds nothing of them. Its stylesheet and script are on every page, the way bit BlazorUI's are, cut at publish to the
+/// parts the app uses.
 /// </summary>
 public partial class AppAiChatPanel
 {
@@ -124,38 +125,31 @@ public partial class AppAiChatPanel
         }
     }
 
-    // One download however many times it's asked for, and one that failed - or broke off, as JS interop does when a Blazor
-    // Server circuit drops - is tried again the next time
+    // One download however many times it's asked for, and one that failed or broke off is tried again the next time
     private Task<bool> Load()
     {
         if (loading is null || (loading.IsCompleted && loading is not { IsCompletedSuccessfully: true, Result: true }))
         {
-            loading = LoadAssets();
+            loading = LoadAssemblies();
         }
 
         return loading;
     }
 
-    private async Task<bool> LoadAssets()
+    private async Task<bool> LoadAssemblies()
     {
+        // Only a non-AOT WebAssembly build marks them lazy; anywhere else they're loaded already
+        if (AppPlatform.IsBrowser is false || AppPlatform.IsAot) return true;
+
         try
         {
-            await JSRuntime.InvokeVoidAsync("App.loadAssets",
-                                            (string[])["_content/Bit.BlazorUI.AI/styles/bit.blazorui.ai.css"],
-                                            (string[])["_content/Bit.BlazorUI.AI/scripts/bit.blazorui.ai.js"]);
-
-            // Only a non-AOT WebAssembly build marks them lazy; anywhere else they're loaded already
-            if (AppPlatform.IsBrowser && AppPlatform.IsAot is false)
-            {
-                await lazyAssemblyLoader.LoadAssembliesAsync(lazyAssemblies);
-            }
+            await lazyAssemblyLoader.LoadAssembliesAsync(lazyAssemblies);
 
             return true;
         }
-        catch (Exception exp) when (exp is JSException or JSDisconnectedException or TaskCanceledException or HttpRequestException or InvalidOperationException)
+        catch (Exception exp) when (exp is JSException or TaskCanceledException or HttpRequestException or InvalidOperationException)
         {
-            // Offline, a deployment the page outlived or a dropped circuit: the panel says it couldn't open, and the retry
-            // tries again
+            // Offline, or a deployment the page outlived: the panel says it couldn't open, and the retry tries again
             ExceptionHandler.Handle(exp, ExceptionDisplayKind.None);
             return false;
         }

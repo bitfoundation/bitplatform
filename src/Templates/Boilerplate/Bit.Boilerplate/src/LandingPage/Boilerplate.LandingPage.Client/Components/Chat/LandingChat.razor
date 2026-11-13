@@ -46,18 +46,19 @@
         break;
 
     case LandingChatVariant.Concierge:
-        @* A string, since Blazor drops a false bool attribute and a closed chat must still say aria-expanded="false" *@
-        <button type="button"
-                class="lp-chat-concierge-tab @Class"
-                aria-haspopup="dialog"
-                aria-expanded="@(isOpen ? "true" : "false")"
-                @onclick="Open"
-                @onpointerenter="Prepare"
-                @onfocus="Prepare"
-                @ontouchstart="Prepare">
-            <BitIcon IconName="@BitIconName.ChatBot" />
-            <span>@(Label ?? Localizer[nameof(LandingStrings.ChatOpen)])</span>
-        </button>
+        @* A plain wrapper (display: contents), so the scoped ::deep styles reach the tab. aria-expanded is a string, since
+           Blazor drops a false bool attribute and a closed chat must still say aria-expanded="false". *@
+        <div class="lp-chat-concierge">
+            <BitButton IconName="@BitIconName.ChatBot"
+                       OnClick="Open"
+                       Class="@($"lp-chat-concierge-tab {Class}")"
+                       Classes="@(new() { Icon = "lp-chat-trigger-icon" })"
+                       aria-haspopup="dialog"
+                       aria-expanded="@(isOpen ? "true" : "false")"
+                       @onpointerenter="Prepare"
+                       @onfocus="Prepare"
+                       @ontouchstart="Prepare">@(Label ?? Localizer[nameof(LandingStrings.ChatOpen)])</BitButton>
+        </div>
         <BitPanel @bind-IsOpen="isOpen"
                   Placement="@(IsRtl ? BitPlacement.Left : BitPlacement.Right)"
                   Styles="@(new() { Root = "--bit-Panel-size: min(440px, 100vw)" })"
@@ -112,18 +113,17 @@
                     }
                 </section>
             }
-            <button type="button"
-                    class="lp-chat-bubble"
-                    aria-haspopup="dialog"
-                    aria-expanded="@(isOpen ? "true" : "false")"
-                    title="@(Label ?? Localizer[nameof(LandingStrings.ChatOpen)])"
-                    @onclick="Toggle"
-                    @onpointerenter="Prepare"
-                    @onfocus="Prepare"
-                    @ontouchstart="Prepare">
-                <BitIcon IconName="@(isOpen ? BitIconName.Cancel : BitIconName.ChatBot)" />
-                <span class="lp-chat-bubble-label">@(Label ?? Localizer[nameof(LandingStrings.ChatOpen)])</span>
-            </button>
+            @* On a phone only the icon shows, and the title names the button. *@
+            <BitButton IconName="@(isOpen ? BitIconName.Cancel : BitIconName.ChatBot)"
+                       OnClick="Toggle"
+                       Title="@(Label ?? Localizer[nameof(LandingStrings.ChatOpen)])"
+                       Class="lp-chat-bubble"
+                       Classes="@(new() { Icon = "lp-chat-trigger-icon", Container = "lp-chat-bubble-label" })"
+                       aria-haspopup="dialog"
+                       aria-expanded="@(isOpen ? "true" : "false")"
+                       @onpointerenter="Prepare"
+                       @onfocus="Prepare"
+                       @ontouchstart="Prepare">@(Label ?? Localizer[nameof(LandingStrings.ChatOpen)])</BitButton>
         </div>
         break;
 }
