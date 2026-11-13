@@ -1,15 +1,17 @@
 using System.Text.RegularExpressions;
 using Boilerplate.Shared.Features.Chatbot;
 
-namespace Boilerplate.Client.Core.Components.Layout;
+namespace Boilerplate.Client.Core.Components.Layout.AiChat;
 
-// Voice call: audio goes to the provider over WebRTC, while the key, prompt and tools stay on the server
-// (See ChatbotController.StartVoiceCall). Never runs alongside dictation or read aloud. Typed messages go into the call too.
-public partial class AppAiChatPanel
+// Voice call: audio goes to the provider over WebRTC, while the key, prompt and tools stay on the server (See
+// ChatbotController.StartVoiceCall). Both sides' words land in the conversation as they're spoken, and what the tools show
+// - products, a form, an approval - lands there too (See AppChatbot.VoiceCallUi). Messages typed during the call go into it.
+public partial class AppAiChat
 {
     [AutoInject] private WebRtc webRtc = default!;
+    [AutoInject] private MediaDevices mediaDevices = default!;
+    [AutoInject] private IPermissionService permissionService = default!;
     [AutoInject] private IChatbotController chatbotController = default!;
-
 
     private bool isVoiceCallSupported;
     private bool isVoiceCallConnecting;
@@ -18,6 +20,8 @@ public partial class AppAiChatPanel
     private MediaStreamHandle? voiceCallMicrophone;
     private PeerConnectionHandle? voiceCallConnection;
     private RtcDataChannelHandle? voiceCallEvents;
+    private IDisposable? voiceCallEventsSubscription;
+    private IDisposable? voiceCallDecisionSubscription;
 
     /// <summary>The call's own: dialing, then its countdown.</summary>
     private CancellationTokenSource? voiceCallCts;
@@ -28,9 +32,27 @@ public partial class AppAiChatPanel
     /// <summary>The model's audio is still playing, which can outlast its response.</summary>
     private bool isVoiceCallSpeaking;
 
-    /// <summary>Transcript bubbles, keyed by the provider's item id (user) or response id (assistant).</summary>
-    private readonly Dictionary<string, AiChatMessage> voiceCallMessages = [];
+    /// <summary>Transcript messages, keyed by the provider's item id (user) or response id (assistant).</summary>
+    private readonly Dictionary<string, BitAiMessage> voiceCallMessages = [];
 
+    /// <summary>How much of its max duration the call has used.</summary>
+    private double speechPercent;
+    private TimeSpan speechTimeLeft;
+
+    /// <summary>Primary, then warning for the last 30% and error for the last 10%.</summary>
+    private BitColor SpeechTimerColor => speechPercent >= 90 ? BitColor.Error : speechPercent >= 70 ? BitColor.Warning : BitColor.Primary;
+
+    private async Task InitializeVoiceCall()
+    {
+        // Both are asked about because they are separate globals that go missing separately: only navigator.mediaDevices
+        // needs a secure context.
+        isVoiceCallSupported = await webRtc.IsSupported() && await mediaDevices.IsSupported();
+
+        voiceCallEventsSubscription = hubConnection.On<string[], string?>(SharedAppMessages.SHOW_AI_CHAT_EVENTS, ShowVoiceCallEvents);
+        voiceCallDecisionSubscription = hubConnection.On<string[], string?>(SharedAppMessages.AWAIT_AI_CHAT_DECISION, AwaitVoiceCallDecision);
+
+        StateHasChanged();
+    }
 
     private async Task ToggleVoiceCall()
     {
@@ -48,11 +70,15 @@ public partial class AppAiChatPanel
             return;
         }
 
-        await StopDictation();
-        await StopReadAloud();
+        // Talking and being read to at once would put the reading into the call
+        if (chat?.ReadAloud is { } readAloud)
+        {
+            await readAloud.StopAsync();
+        }
+
+        session?.Stop();
 
         isVoiceCallConnecting = true;
-        followUpSuggestions = [];
         StateHasChanged();
 
         try
@@ -96,7 +122,7 @@ public partial class AppAiChatPanel
                 CultureId = CultureInfo.CurrentCulture.LCID,
                 TimeZoneId = (await TimeZoneService.GetCurrentTimeZone()).Id,
                 DeviceInfo = TelemetryContext.Platform,
-                ChatMessagesHistory = ResentHistory()
+                ChatMessagesHistory = VoiceCallHistory()
             }, callCts.Token);
 
             // Hung up while the server was answering.
@@ -116,8 +142,26 @@ public partial class AppAiChatPanel
         finally
         {
             isVoiceCallConnecting = false;
+            RaiseStatusChanged();
             StateHasChanged();
         }
+    }
+
+    /// <summary>
+    /// The conversation so far, for the call to carry on from: what the assistant wrote, as the server signed it, and
+    /// everything else as it reads. The server trusts no more of it than it trusts of the text chat's.
+    /// </summary>
+    private List<AiChatMessage> VoiceCallHistory()
+    {
+        return [.. session!.Conversation.Messages
+            .Where(message => message.Status is not (BitAiMessageStatus.Cancelled or BitAiMessageStatus.Failed) && (message.Role.IsUser || message.Role.IsAssistant))
+            .TakeLast(AiChatProtocol.MaxHistory)
+            .Select(message => message.Role.IsAssistant && ExtraValue(message, AiChatProtocol.Replay) is { } replay
+                ? new AiChatMessage { Role = AiChatMessageRole.Assistant, Content = replay, Signature = ExtraValue(message, AiChatProtocol.ReplaySignature) }
+                : message.Role.IsAssistant && ExtraValue(message, AiChatProtocol.Answer) is { } answer
+                    ? new AiChatMessage { Role = AiChatMessageRole.Assistant, Content = answer, Signature = ExtraValue(message, AiChatProtocol.Signature) }
+                    : new AiChatMessage { Role = message.Role.IsUser ? AiChatMessageRole.User : AiChatMessageRole.Assistant, Content = message.GetText() })
+            .Where(message => string.IsNullOrWhiteSpace(message.Content) is false)];
     }
 
     private async Task HandleVoiceCallState(PeerConnectionHandle? connection, string state)
@@ -130,9 +174,39 @@ public partial class AppAiChatPanel
     /// <summary>The server hangs up on time; this ends the call here too, should the browser not notice.</summary>
     private async Task CountDownVoiceCall(TimeSpan maxDuration, PeerConnectionHandle connection, CancellationToken cancellationToken)
     {
-        if (await CountDownSpeech(maxDuration, cancellationToken) is false) return;
+        var startedAt = TimeProvider.GetUtcNow();
+        speechTimeLeft = maxDuration;
+        speechPercent = 0;
 
-        await InvokeAsync(() => VoiceCallEnded(connection));
+        try
+        {
+            using PeriodicTimer timer = new(TimeSpan.FromMilliseconds(500), TimeProvider);
+
+            do
+            {
+                var elapsed = TimeProvider.GetUtcNow() - startedAt;
+
+                if (elapsed >= maxDuration)
+                {
+                    await InvokeAsync(() => VoiceCallEnded(connection));
+                    return;
+                }
+
+                await InvokeAsync(() =>
+                {
+                    // Already reset by whoever cancelled.
+                    if (cancellationToken.IsCancellationRequested) return;
+
+                    speechTimeLeft = maxDuration - elapsed;
+                    speechPercent = elapsed / maxDuration * 100;
+                    StateHasChanged();
+                });
+            }
+            while (await timer.WaitForNextTickAsync(cancellationToken));
+        }
+        catch (OperationCanceledException)
+        {
+        }
     }
 
     /// <summary>Ended by the provider, the network or the time limit, rather than by the user.</summary>
@@ -148,7 +222,7 @@ public partial class AppAiChatPanel
         StateHasChanged();
     }
 
-    /// <summary>Shows the transcript of both sides as it is spoken; tools run on the server.</summary>
+    /// <summary>Writes both sides' words into the conversation as they're spoken; the tools run on the server.</summary>
     private async Task HandleVoiceCallEvent(ButilMessage message)
     {
         if (message.IsBinary || message.Json is null) return;
@@ -184,19 +258,19 @@ public partial class AppAiChatPanel
                 break;
 
             case "conversation.item.input_audio_transcription.delta" when ReadString(root, "item_id") is { } itemId:
-                VoiceCallMessage(itemId, AiChatMessageRole.User).Content += ReadString(root, "delta");
+                Speak(VoiceCallMessage(itemId, BitAiRole.User), ReadString(root, "delta"));
                 break;
 
             case "conversation.item.input_audio_transcription.completed" when ReadString(root, "item_id") is { } itemId:
-                await CompleteVoiceCallMessage(VoiceCallMessage(itemId, AiChatMessageRole.User), ReadString(root, "transcript"));
+                await CompleteVoiceCallMessage(VoiceCallMessage(itemId, BitAiRole.User), ReadString(root, "transcript"));
                 break;
 
             case "response.output_audio_transcript.delta" when ReadString(root, "response_id") is { } responseId:
-                VoiceCallMessage(responseId, AiChatMessageRole.Assistant).Content += ReadString(root, "delta");
+                Speak(VoiceCallMessage(responseId, BitAiRole.Assistant), ReadString(root, "delta"));
                 break;
 
             case "response.output_audio_transcript.done" when ReadString(root, "response_id") is { } responseId:
-                await CompleteVoiceCallMessage(VoiceCallMessage(responseId, AiChatMessageRole.Assistant), ReadString(root, "transcript"));
+                await CompleteVoiceCallMessage(VoiceCallMessage(responseId, BitAiRole.Assistant), ReadString(root, "transcript"));
                 break;
 
             case "error":
@@ -204,20 +278,15 @@ public partial class AppAiChatPanel
                                   root.TryGetProperty("error", out var error) ? ReadString(error, "message") : null);
                 break;
         }
-
-        StateHasChanged();
     }
 
     /// <summary>
     /// A message typed during a call goes into the call and cuts the model short, as speaking over it would. Images don't
-    /// go into a call.
+    /// go into a call. False when it could not be sent, so the composer gives it back.
     /// </summary>
-    private async Task SendVoiceCallMessage()
+    private async Task<bool> SendVoiceCallMessage(string text)
     {
-        if (string.IsNullOrWhiteSpace(userInput)) return;
-
-        var text = userInput;
-        userInput = string.Empty;
+        if (string.IsNullOrWhiteSpace(text)) return true;
 
         if (voiceCallEvents is { } interrupted)
         {
@@ -247,48 +316,160 @@ public partial class AppAiChatPanel
 
         if (sent is false)
         {
-            if (string.IsNullOrWhiteSpace(userInput))
-            {
-                userInput = text;
-            }
-
             SnackBarService.Error(Localizer[nameof(AppStrings.AiChatPanelVoiceCall)], Localizer[nameof(AppStrings.AiChatPanelVoiceCallMessageNotSent)]);
-            return;
+            return false;
         }
 
-        followUpSuggestions = [];
+        session!.Conversation.AddMessage(BitAiRole.User, text);
 
-        var message = new AiChatMessage { Role = AiChatMessageRole.User, Content = text, SentAt = TimeProvider.GetUtcNow() };
+        await SaveHistory();
 
-        chatMessages.Add(message);
-
-        await RememberMessage(message);
+        return true;
     }
 
-    private AiChatMessage VoiceCallMessage(string key, AiChatMessageRole role)
+    /// <summary>The message a speaker's words of one turn go into, added the first time they're heard.</summary>
+    private BitAiMessage VoiceCallMessage(string key, BitAiRole role)
     {
         if (voiceCallMessages.TryGetValue(key, out var message)) return message;
 
-        message = new() { Role = role, Content = string.Empty, SentAt = TimeProvider.GetUtcNow() };
+        message = new BitAiMessage(role) { CreatedAt = TimeProvider.GetUtcNow() };
+        message.SetStatus(BitAiMessageStatus.Streaming);
 
         voiceCallMessages[key] = message;
-        chatMessages.Add(message);
+        session!.Conversation.AddMessage(message);
 
         return message;
     }
 
-    /// <summary>Unsigned, so a spoken answer isn't read aloud, and a resent history replays it as the user's words.</summary>
-    private async Task CompleteVoiceCallMessage(AiChatMessage message, string? transcript)
+    private void Speak(BitAiMessage message, string? delta)
     {
-        message.Content = transcript ?? message.Content;
+        if (string.IsNullOrEmpty(delta)) return;
 
-        if (string.IsNullOrWhiteSpace(message.Content))
+        session!.Processor.Apply(new BitAiTextDeltaEvent(delta) { MessageId = message.MessageId });
+    }
+
+    /// <summary>
+    /// Settles what was said with the provider's final transcript. Unsigned, so a spoken answer isn't read aloud, and the
+    /// server replays it as the user's words.
+    /// </summary>
+    private async Task CompleteVoiceCallMessage(BitAiMessage message, string? transcript)
+    {
+        if (transcript is not null)
         {
-            chatMessages.Remove(message);
+            if (message.PartsOf<BitAiTextPart>().FirstOrDefault() is { } text)
+            {
+                text.SetText(transcript);
+            }
+            else
+            {
+                message.AddPart(new BitAiTextPart(transcript));
+            }
+        }
+
+        message.CompleteOpenParts();
+
+        if (string.IsNullOrWhiteSpace(message.GetText()))
+        {
+            session!.Conversation.RemoveMessage(message.MessageId);
             return;
         }
 
-        await RememberMessage(message);
+        message.SetStatus(BitAiMessageStatus.Complete);
+
+        await SaveHistory();
+    }
+
+    /// <summary>
+    /// What a tool shows during a call (See AppChatbot.VoiceCallUi): the events a text answer would have streamed, applied
+    /// to the assistant's message being spoken, or to one of their own.
+    /// </summary>
+    private async Task<string?> ShowVoiceCallEvents(string[] events)
+    {
+        var shown = false;
+
+        await InvokeAsync(async () =>
+        {
+            if (session is null) return;
+
+            var message = VoiceCallToolsMessage();
+
+            foreach (var json in events)
+            {
+                if (BitAiWireSerializer.Deserialize(json) is { } evt)
+                {
+                    session.Processor.Apply(evt with { MessageId = message.MessageId });
+                }
+            }
+
+            shown = true;
+
+            await SaveHistory();
+        });
+
+        return shown ? "shown" : null;
+    }
+
+    /// <summary>
+    /// Like <see cref="ShowVoiceCallEvents"/>, for a call that waits on the user's approval (ClearAppFiles): the approval
+    /// shows in the conversation, and its decision is the answer. Fails closed: hanging up or clearing the chat answers
+    /// <see cref="BitAiApprovalDecision.Undecided"/>.
+    /// </summary>
+    private async Task<string?> AwaitVoiceCallDecision(string[] events)
+    {
+        TaskCompletionSource<BitAiApprovalDecision> decision = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        string? toolCallId = null;
+
+        void OnDecided(BitAiToolCallPart call, BitAiApprovalDecision value)
+        {
+            if (call.ToolCallId == toolCallId) decision.TrySetResult(value);
+        }
+
+        await InvokeAsync(() =>
+        {
+            if (session is null || isInVoiceCall is false)
+            {
+                decision.TrySetResult(BitAiApprovalDecision.Undecided);
+                return;
+            }
+
+            var message = VoiceCallToolsMessage();
+
+            foreach (var json in events)
+            {
+                if (BitAiWireSerializer.Deserialize(json) is not { } evt) continue;
+
+                if (evt is BitAiToolCallStartedEvent started) toolCallId = started.ToolCallId;
+
+                session.Processor.Apply(evt with { MessageId = message.MessageId });
+            }
+
+            session.ApprovalDecided += OnDecided;
+            RaiseStatusChanged();
+        });
+
+        using var hungUp = voiceCallCts is { } callCts ? callCts.Token.Register(() => decision.TrySetResult(BitAiApprovalDecision.Undecided)) : default;
+
+        try
+        {
+            return (await decision.Task).ToString();
+        }
+        finally
+        {
+            if (session is not null) session.ApprovalDecided -= OnDecided;
+            _ = InvokeAsync(RaiseStatusChanged);
+        }
+    }
+
+    /// <summary>The assistant's message a tool's events of the call go into: the one being spoken, else a new one.</summary>
+    private BitAiMessage VoiceCallToolsMessage()
+    {
+        if (session!.Conversation.LastMessage is { Role.IsAssistant: true } last && voiceCallMessages.ContainsValue(last))
+            return last;
+
+        var message = new BitAiMessage(BitAiRole.Assistant) { CreatedAt = TimeProvider.GetUtcNow() };
+        session.Conversation.AddMessage(message);
+
+        return message;
     }
 
     /// <summary>A failed response is otherwise silence. A rate limit's message says when to try again.</summary>
@@ -323,15 +504,16 @@ public partial class AppAiChatPanel
     /// <summary>Closing the connection ends the call at the provider, and the server's side with it.</summary>
     private async Task EndVoiceCall()
     {
-        // The call's tool may be waiting on a card.
-        if (isInVoiceCall)
-        {
-            await ExpireAwaitedCard();
-        }
-
         isInVoiceCall = false;
         isVoiceCallSpeaking = false;
         speechPercent = 0;
+
+        foreach (var spoken in voiceCallMessages.Values.Where(message => message.IsBusy))
+        {
+            spoken.CompleteOpenParts();
+            spoken.SetStatus(BitAiMessageStatus.Complete);
+        }
+
         voiceCallMessages.Clear();
 
         // Releases a message waiting for a response that will never finish.
@@ -368,5 +550,7 @@ public partial class AppAiChatPanel
         {
             await microphone.DisposeAsync();
         }
+
+        RaiseStatusChanged();
     }
 }

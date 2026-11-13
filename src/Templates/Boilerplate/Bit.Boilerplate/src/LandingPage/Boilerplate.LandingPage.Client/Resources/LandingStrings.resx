@@ -429,9 +429,6 @@
     <data name="ChatSend" xml:space="preserve">
         <value>Ask</value>
     </data>
-    <data name="ChatConnectionLost" xml:space="preserve">
-        <value>The connection to the assistant dropped. Please try again.</value>
-    </data>
     <data name="ChatInvalidQuestion" xml:space="preserve">
         <value>That question is too long to answer here. Please ask it more briefly.</value>
     </data>
@@ -482,6 +479,60 @@
     </data>
     <data name="ChatEmptyBody" xml:space="preserve">
         <value>Ask anything about {0}: what it does, what it costs, or how to get it.</value>
+    </data>
+    <data name="ChatGalleryTitle" xml:space="preserve">
+        <value>Ask about the samples</value>
+    </data>
+    <data name="ChatGalleryEmptyBody" xml:space="preserve">
+        <value>Tell me what your product does, and I&apos;ll point you to the samples closest to it.</value>
+    </data>
+    <data name="ChatGallerySuggestion1" xml:space="preserve">
+        <value>Which sample suits a café or a restaurant?</value>
+    </data>
+    <data name="ChatGallerySuggestion2" xml:space="preserve">
+        <value>Which samples take a waitlist before launch?</value>
+    </data>
+    <data name="ChatGallerySuggestion3" xml:space="preserve">
+        <value>How do I make a sample my product&apos;s home page?</value>
+    </data>
+    <data name="ChatOpenSample" xml:space="preserve">
+        <value>Open the {0} sample</value>
+    </data>
+    <data name="ChatOpenSampleShort" xml:space="preserve">
+        <value>Open</value>
+    </data>
+    <data name="ChatRegenerate" xml:space="preserve">
+        <value>Answer again</value>
+    </data>
+    <data name="ChatCopied" xml:space="preserve">
+        <value>Copied</value>
+    </data>
+    <data name="ChatEdit" xml:space="preserve">
+        <value>Edit</value>
+    </data>
+    <data name="ChatSave" xml:space="preserve">
+        <value>Ask again</value>
+    </data>
+    <data name="ChatCancel" xml:space="preserve">
+        <value>Cancel</value>
+    </data>
+    <data name="ChatFollowUps" xml:space="preserve">
+        <value>Questions to ask next</value>
+    </data>
+    <data name="ChatStartDictation" xml:space="preserve">
+        <value>Ask by voice</value>
+    </data>
+    <data name="ChatStopDictation" xml:space="preserve">
+        <value>Stop listening</value>
+    </data>
+    <data name="ChatListening" xml:space="preserve">
+        <value>Listening</value>
+    </data>
+    <data name="ChatDictationStopped" xml:space="preserve">
+        <value>Stopped listening</value>
+    </data>
+    <data name="ChatDictationFailed" xml:space="preserve">
+        <value>The browser couldn&apos;t hear you. Check that the page may use the microphone, then try again.</value>
     </data>
     <data name="LegalPrivacyTitle" xml:space="preserve">
         <value>Privacy policy</value>

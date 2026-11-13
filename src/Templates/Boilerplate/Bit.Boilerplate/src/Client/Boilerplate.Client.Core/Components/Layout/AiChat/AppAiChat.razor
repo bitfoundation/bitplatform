@@ -1,0 +1,71 @@
+@inherits AppComponentBase
+
+@* A plain root element, so the scoped ::deep styles apply. The conversation is read back from the device first, so the
+   chat opens on it rather than on an empty one. *@
+<div class="app-ai-chat">
+    @if (session is not null)
+    {
+        <CascadingValue Value="renderers" IsFixed="true">
+            <BitParams Parameters="parameters">
+                <BitAiChat @ref="chat"
+                           Session="session"
+                           UiOptions="uiOptions"
+                           Dir="CurrentDir"
+                           EmptyTitle="@GreetingText"
+                           EmptyBody=""
+                           Suggestions="suggestions"
+                           Placeholder="@Localizer[nameof(AppStrings.AiChatPanelPlaceholder)]"
+                           AllowAttachments="@(isInVoiceCall is false)"
+                           AttachmentUploader="UploadImage"
+                           MaxAttachmentSize="MaxImageSize"
+                           AllowDictation="@(isInVoiceCall is false)"
+                           Transcriber="Transcribe"
+                           AllowReadAloud="@(isInVoiceCall is false)"
+                           KeepReadingAloud="true"
+                           Synthesizer="Synthesize"
+                           OnSubmit="WrapHandled((BitAiPromptSubmission submission) => Submit(submission))"
+                           OnFeedback="RecordFeedback"
+                           Class="chat"
+                           Classes="@(new() { MessageList = new() { Root = "transcript" } })">
+                    <ComposerSuffixTemplate>
+                        @if (isInVoiceCall)
+                        {
+                            @* Drains towards the call's max duration: warning for the last 30%, error for the last 10%. *@
+                            @* FitHeight, not FitSize: a fit-content width is written inline, over the pill's own width, and
+                               collapses it under the time, which then lands on the call button beside it. *@
+                            <BitStack FitHeight Class="@($"speech-timer{(speechPercent >= 90 ? " ending" : null)}")">
+                                <BitProgress Rounded
+                                             Thickness="24"
+                                             Class="speech-timer-progress"
+                                             Percent="100 - speechPercent"
+                                             Color="SpeechTimerColor"
+                                             Classes="@(new() { Bar = "speech-timer-bar" })"
+                                             AriaValueText="@speechTimeLeft.ToString(@"m\:ss")"
+                                             AriaLabel="@Localizer[nameof(AppStrings.AiChatPanelVoiceCallTimeLeft)]" />
+                                @* Over the whole pill rather than inside the fill, which gets too narrow to hold it near the end. *@
+                                <BitText Numeric
+                                         Class="speech-timer-text"
+                                         Weight="BitFontWeight.Semibold"
+                                         Typography="BitTypography.Caption1">@speechTimeLeft.ToString(@"m\:ss")</BitText>
+                            </BitStack>
+                        }
+                        @if (isVoiceCallSupported)
+                        {
+                            <BitButton IconOnly
+                                       Variant="BitVariant.Text"
+                                       IsLoading="isVoiceCallConnecting"
+                                       OnClick="WrapHandled(ToggleVoiceCall)"
+                                       Class="voice-call-button"
+                                       IconName="@(isInVoiceCall ? BitIconName.DeclineCall : BitIconName.Phone)"
+                                       Color="@(isInVoiceCall ? BitColor.Error : isVoiceCallConnecting ? BitColor.Primary : BitColor.SecondaryForeground)"
+                                       Title="@(isInVoiceCall ? Localizer[nameof(AppStrings.AiChatPanelEndVoiceCall)] : Localizer[nameof(AppStrings.AiChatPanelStartVoiceCall)])"
+                                       AriaLabel="@(isInVoiceCall ? Localizer[nameof(AppStrings.AiChatPanelEndVoiceCall)] : Localizer[nameof(AppStrings.AiChatPanelStartVoiceCall)])" />
+                        }
+                    </ComposerSuffixTemplate>
+                </BitAiChat>
+            </BitParams>
+        </CascadingValue>
+    }
+
+    <audio @ref="voiceCallAudioRef" class="voice-call-audio" autoplay></audio>
+</div>

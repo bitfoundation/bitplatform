@@ -58,8 +58,6 @@ public static partial class Program
 
             app.UseOutputCache();
 
-            app.UseWebSockets(new() { KeepAliveInterval = TimeSpan.FromSeconds(20) });
-
             app.UseRateLimiter();
 
             app.UseAntiforgery();

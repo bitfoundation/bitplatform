@@ -1,23 +1,33 @@
-namespace Boilerplate.Client.Core.Components.Layout.AppAiChatPanelCards;
+namespace Boilerplate.Client.Core.Components.Layout.AiChat;
 
 /// <summary>
-/// Shown when the chatbot could not resolve the user's issue (See <c>AppChatbot.RequestHumanFollowUp</c>). A signed-in
-/// user is already known, so only an anonymous one is asked for contact details.
+/// Shown when the chatbot could not resolve the user's issue (See <c>AppChatbot.RequestHumanFollowUp</c>), drafted with the
+/// model's summary of the conversation. A signed-in user is already known, so only an anonymous one is asked for contact
+/// details.
 /// </summary>
-public partial class HumanFollowUpCard : IStoresItself
+public partial class HumanFollowUpCard
 {
     [CascadingParameter] public UserDto? CurrentUser { get; set; }
 
     [AutoInject] private ILogger<HumanFollowUpCard> logger = default!;
 
+    /// <summary>The model's draft, in the user's language.</summary>
+    [Parameter] public string? ConversationSummary { get; set; }
+
+    /// <summary>Sent already, in this visit or one before it: the form gives way to its confirmation.</summary>
+    [Parameter] public bool IsSent { get; set; }
+
+    /// <summary>Keeps that it was sent with the conversation, so it isn't offered again once the app reloads it.</summary>
+    [Parameter] public EventCallback OnSent { get; set; }
+
     private readonly FollowUpRequest request = new();
 
-    private bool IsSent => Message.Data.ContainsKey("Sent");
+    /// <summary>Sent from this card just now, ahead of <see cref="IsSent"/> coming back from the conversation.</summary>
+    private bool sent;
 
     protected override async Task OnInitAsync()
     {
-        // The model's draft, in the user's language.
-        request.ConversationSummary = Message.Data.GetValueOrDefault("ConversationSummary");
+        request.ConversationSummary = ConversationSummary;
 
         await base.OnInitAsync();
     }
@@ -39,10 +49,9 @@ public partial class HumanFollowUpCard : IStoresItself
                           CurrentUser is null ? request.PhoneNumber : CurrentUser.PhoneNumber,
                           request.ConversationSummary);
 
-        // Stored only once sent (See IStoresItself): an unsent form isn't worth bringing back.
-        Message.Data["Sent"] = "true";
+        sent = true;
 
-        await Host.Save(Message);
+        await OnSent.InvokeAsync();
     }
 
     [DtoResourceType(typeof(AppStrings))]

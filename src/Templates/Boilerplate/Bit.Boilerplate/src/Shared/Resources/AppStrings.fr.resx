@@ -1234,9 +1234,6 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   <data name="AiChatApprovalWaiting" xml:space="preserve">
     <value>En attente de votre réponse</value>
   </data>
-  <data name="AiChatApprovalClearAppFilesTitle" xml:space="preserve">
-    <value>Effacer les fichiers de l'application sur cet appareil ?</value>
-  </data>
   <data name="AiChatApprovalClearAppFilesDescription" xml:space="preserve">
     <value>Repartir de zéro corrige la plupart des problèmes causés par des données locales endommagées.</value>
   </data>
@@ -1255,35 +1252,11 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   <data name="AiChatApprovalClearAppFilesApprove" xml:space="preserve">
     <value>Effacer les fichiers</value>
   </data>
-  <data name="AiChatApprovalClearAppFilesDecline" xml:space="preserve">
-    <value>Pas maintenant</value>
-  </data>
-  <data name="AiChatApprovalClearAppFilesApproved" xml:space="preserve">
-    <value>Effacement des fichiers de l'application</value>
-  </data>
-  <data name="AiChatApprovalClearAppFilesDeclined" xml:space="preserve">
-    <value>Vous avez conservé les fichiers de l'application.</value>
-  </data>
-  <data name="AiChatApprovalClearAppFilesNoAnswer" xml:space="preserve">
-    <value>Rien n'a été effacé : la demande est restée sans réponse.</value>
-  </data>
-  <data name="AiChatApprovalTitle" xml:space="preserve">
-    <value>Approuver ceci ?</value>
-  </data>
   <data name="AiChatApprovalApprove" xml:space="preserve">
     <value>Approuver</value>
   </data>
   <data name="AiChatApprovalDecline" xml:space="preserve">
     <value>Refuser</value>
-  </data>
-  <data name="AiChatApprovalApproved" xml:space="preserve">
-    <value>Approuvé</value>
-  </data>
-  <data name="AiChatApprovalDeclined" xml:space="preserve">
-    <value>Refusé.</value>
-  </data>
-  <data name="AiChatApprovalNoAnswer" xml:space="preserve">
-    <value>La demande est restée sans réponse.</value>
   </data>
   <!--#if (module == "Sales") -->
   <!--#if (database == "PostgreSQL" || database == "SqlServer") -->
@@ -1310,9 +1283,6 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   <data name="AiChatPanelStopDictation" xml:space="preserve">
     <value>Arrêter la dictée</value>
   </data>
-  <data name="AiChatPanelDictation" xml:space="preserve">
-    <value>Dictée</value>
-  </data>
   <data name="AiChatPanelMicrophoneBlocked" xml:space="preserve">
     <value>L'accès au microphone est bloqué. Autorisez-le dans vos paramètres afin de pouvoir dicter.</value>
   </data>
@@ -1327,9 +1297,6 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   </data>
   <data name="AiChatPanelTranscribing" xml:space="preserve">
     <value>Transcription de ce que vous avez dit</value>
-  </data>
-  <data name="AiChatPanelDictationTimeLeft" xml:space="preserve">
-    <value>Temps restant avant l'arrêt de la dictée</value>
   </data>
   <data name="AiChatPanelSpeechSignInTitle" xml:space="preserve">
     <value>La voix nécessite un compte</value>
@@ -1381,6 +1348,69 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   </data>
   <data name="AiChatPanelRestore" xml:space="preserve">
     <value>Restaurer</value>
+  </data>
+  <data name="AiChatStop" xml:space="preserve">
+    <value>Arrêter</value>
+  </data>
+  <data name="AiChatRegenerate" xml:space="preserve">
+    <value>Répondre à nouveau</value>
+  </data>
+  <data name="AiChatRetry" xml:space="preserve">
+    <value>Réessayer</value>
+  </data>
+  <data name="AiChatGoodAnswer" xml:space="preserve">
+    <value>Bonne réponse</value>
+  </data>
+  <data name="AiChatBadAnswer" xml:space="preserve">
+    <value>Mauvaise réponse</value>
+  </data>
+  <data name="AiChatScrollToLatest" xml:space="preserve">
+    <value>Aller au dernier message</value>
+  </data>
+  <data name="AiChatThinking" xml:space="preserve">
+    <value>Réflexion…</value>
+  </data>
+  <data name="AiChatFollowUps" xml:space="preserve">
+    <value>Questions suggérées</value>
+  </data>
+  <data name="AiChatListening" xml:space="preserve">
+    <value>À l&apos;écoute</value>
+  </data>
+  <data name="AiChatRecordingTimeLeft" xml:space="preserve">
+    <value>Encore {0}</value>
+  </data>
+  <data name="AiChatDropImage" xml:space="preserve">
+    <value>Déposez l&apos;image pour la joindre</value>
+  </data>
+  <data name="AiChatTooManyImages" xml:space="preserve">
+    <value>Jusqu&apos;à {0} images par message</value>
+  </data>
+  <data name="AiChatToolProductSearch" xml:space="preserve">
+    <value>Recherche de produits</value>
+  </data>
+  <data name="AiChatToolNavigation" xml:space="preserve">
+    <value>Navigation vers une page</value>
+  </data>
+  <data name="AiChatToolThemeChange" xml:space="preserve">
+    <value>Changement de thème</value>
+  </data>
+  <data name="AiChatToolLanguageChange" xml:space="preserve">
+    <value>Changement de langue</value>
+  </data>
+  <data name="AiChatToolSignIn" xml:space="preserve">
+    <value>Connexion</value>
+  </data>
+  <data name="AiChatToolErrorCheck" xml:space="preserve">
+    <value>Vérification du rapport d&apos;erreur</value>
+  </data>
+  <data name="AiChatToolFailed" xml:space="preserve">
+    <value>{0} a échoué</value>
+  </data>
+  <data name="AiChatToolDeclined" xml:space="preserve">
+    <value>{0} refusé</value>
+  </data>
+  <data name="AiChatToolCancelled" xml:space="preserve">
+    <value>{0} annulé</value>
   </data>
   <!--#endif -->
   <!--#if (ads == true) -->

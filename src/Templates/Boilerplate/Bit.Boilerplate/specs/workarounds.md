@@ -12,6 +12,16 @@ Code that works around a defect in a library, a tool or the platform this app bu
 - **Upstream:** the report, or why there is none yet.
 - **Remove when:** how to tell the fix has arrived, and how to check it.
 -->
+<!--#if (signalR == true)-->
+
+## The AI chat panel shows a second scrollbar
+
+- **Symptom:** once a conversation is longer than the AI chat panel, the panel scrolls its body beside the transcript's own scrollbar, and scrolling it moves the message box away.
+- **Cause:** while it has nothing to say, the read-aloud status of each answer (`.bit-aimac-ras` of `BitAiMessageActions`, Bit.BlazorUI.AI 11.0.0-pre-19) is hidden with `position: absolute`. `BitAiMessageList`, the transcript's scroll container, is not positioned, so the status is placed against the chat's root instead, where the transcript neither scrolls nor clips it.
+- **Workaround:** `AppAiChat` (`src/Client/Boilerplate.Client.Core/Components/Layout/AiChat/AppAiChat.razor` and its `.razor.scss`) gives the message list a `transcript` class through `Classes.MessageList.Root`, and that class positions it. `AiChatPanelLayoutUITests` fails when the panel's body scrolls.
+- **Upstream:** not reported yet (found 2026-11-13).
+- **Remove when:** `BitAiMessageList` is the containing block of its messages. To check, remove the `transcript` class and its rule, then run `AiChatPanelLayoutUITests`.
+<!--#endif-->
 <!--#if (aspire == true && redis == true)-->
 
 ## Published Redis runs without persistence

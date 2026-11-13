@@ -115,6 +115,8 @@ public static partial class Program
         //#if (signalR == true)
         services.AddScoped<Features.Attachments.AiChatImagesRetentionJobRunner>();
         services.AddScoped<Infrastructure.SignalR.AppChatbot>();
+        // Holds a tool call for the user's decision until it comes back over the hub (See AppChatbot.ClearAppFiles).
+        services.AddSingleton<BitAiApprovalBroker>();
         services.AddSingleton<Features.Chatbot.ChatbotAnswerSigner>();
         services.AddSingleton<Features.Chatbot.ChatbotRateLimiter>();
         //#endif

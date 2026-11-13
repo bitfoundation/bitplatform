@@ -1,17 +1,12 @@
-@inherits AiChatCardBase
+@inherits AppComponentBase
 
 @* A plain root element, so the scoped ::deep styles apply. *@
 <div class="products">
-    @if (products.Count is 0)
-    {
-        @* Unreadable products: what the card showed instead. *@
-        <BitMarkdownViewer Markdown="@Message.RawMarkdown" />
-    }
-    else
+    @if (products.Count > 0)
     {
         <BitStack Horizontal FitHeight Gap="0.5rem" VerticalAlign="BitAlignment.Center">
             <BitIcon IconName="@BitIconName.Car" />
-            <BitText Typography="BitTypography.Subtitle2" Weight="BitFontWeight.Semibold">@title</BitText>
+            <BitText Typography="BitTypography.Subtitle2" Weight="BitFontWeight.Semibold">@Shown?.Title</BitText>
         </BitStack>
 
         @* Numbered, so the user can say "the second one", in a voice call too. The best match gets the big picture. *@

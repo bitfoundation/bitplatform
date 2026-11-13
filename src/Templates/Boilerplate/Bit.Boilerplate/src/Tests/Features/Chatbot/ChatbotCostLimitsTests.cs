@@ -1,11 +1,11 @@
-using Microsoft.Extensions.AI;
-using System.Threading.Channels;
+using Bit.BlazorUI;
 using Boilerplate.Shared.Features.Chatbot;
 using Boilerplate.Server.Api.Features.Chatbot;
-using Boilerplate.Server.Api.Infrastructure.SignalR;
+using static Boilerplate.Tests.Features.Chatbot.TestAiChatPanel;
 
 namespace Boilerplate.Tests.Features.Chatbot;
 
+/// <summary>Every question the AI chat panel sends is paid for, so what bounds the bill is the server's, not the panel's.</summary>
 [TestClass, TestCategory("IntegrationTest")]
 public partial class ChatbotCostLimitsTests
 {
@@ -22,18 +22,17 @@ public partial class ChatbotCostLimitsTests
         await using var scope = server.ApiApp.Services.CreateAsyncScope();
         var httpContext = SetCurrentHttpContext(scope.ServiceProvider, server.WebAppAddress);
 
-        var chatbot = scope.ServiceProvider.GetRequiredService<AppChatbot>();
-        await chatbot.StartChat(new StartChatRequest(), signalRConnectionId: "test-connection-id", TestContext.CancellationToken);
+        await using var panel = new TestAiChatPanel(scope.ServiceProvider, httpContext.User);
 
-        await chatbot.ProcessNewMessage(new AiChatMessage { Content = new string('a', AiChatMessage.MaxContentLength + 1) }, httpContext.User, TestContext.CancellationToken);
+        var refused = await panel.Ask(new string('a', AiChatMessage.MaxContentLength + 1), cancellationToken: TestContext.CancellationToken);
 
         Assert.IsEmpty(chatClient.ReceivedConversations, "A message longer than AiChatMessage.MaxContentLength reached the model.");
 
-        var turn = await ReadTurn(chatbot.GetStreamingChannel());
+        Assert.AreEqual(BitAiMessageStatus.Failed, refused.Status, "The refused message's answer must still end, as failed, or the panel keeps waiting for it.");
+        Assert.IsNotNull(refused.Error, "The refused message's answer must say why it failed.");
+        Assert.IsFalse(refused.Error.IsRetryable, "Sending the same message again would be refused again, so the panel must not offer to.");
 
-        Assert.IsFalse(turn.Successful, "The refused message's turn must still close, as unsuccessful, or the panel keeps waiting for its answer.");
-
-        await chatbot.ProcessNewMessage(new AiChatMessage { Content = new string('a', AiChatMessage.MaxContentLength) }, httpContext.User, TestContext.CancellationToken);
+        await panel.Ask(new string('a', AiChatMessage.MaxContentLength), cancellationToken: TestContext.CancellationToken);
 
         Assert.HasCount(1, chatClient.ReceivedConversations, "A message of exactly AiChatMessage.MaxContentLength must still reach the model.");
     }
@@ -49,48 +48,29 @@ public partial class ChatbotCostLimitsTests
         await using var scope = server.ApiApp.Services.CreateAsyncScope();
         var httpContext = SetCurrentHttpContext(scope.ServiceProvider, server.WebAppAddress);
 
-        var chatbot = scope.ServiceProvider.GetRequiredService<AppChatbot>();
-        await chatbot.StartChat(new StartChatRequest(), signalRConnectionId: "test-connection-id", TestContext.CancellationToken);
+        await using var panel = new TestAiChatPanel(scope.ServiceProvider, httpContext.User);
 
         for (var message = 1; message <= ChatbotRateLimiter.MessagesPerMinute; message++)
         {
-            await chatbot.ProcessNewMessage(new AiChatMessage { Content = $"question {message}" }, httpContext.User, TestContext.CancellationToken);
+            await panel.Ask($"question {message}", cancellationToken: TestContext.CancellationToken);
         }
 
         var conversationsWithinTheLimit = chatClient.ReceivedConversations.Count;
 
         Assert.AreEqual(ChatbotRateLimiter.MessagesPerMinute, conversationsWithinTheLimit, "Every message within the limit must reach the model.");
 
-        await chatbot.ProcessNewMessage(new AiChatMessage { Content = "one question too many" }, httpContext.User, TestContext.CancellationToken);
+        var refused = await panel.Ask("one question too many", cancellationToken: TestContext.CancellationToken);
 
         Assert.HasCount(conversationsWithinTheLimit, chatClient.ReceivedConversations, "The message past the per-minute limit reached the model.");
+        Assert.AreEqual(BitAiMessageStatus.Failed, refused.Status, "The answer to a message past the limit must say it was refused.");
     }
 
+    /// <summary>
+    /// The whole conversation goes up with every question, so a message too long to be sent as a question must not
+    /// reach the model as part of the history either - nor cost the conversation the rest of it.
+    /// </summary>
     [TestMethod]
-    public async Task ChatsBeyondThePerMinuteLimit_Should_BeRefusedAsTooManyRequests()
-    {
-        var chatClient = new TestChatClient();
-
-        await using var server = BuildServerWith(chatClient);
-        await server.Start(TestContext.CancellationToken);
-
-        await using var scope = server.ApiApp.Services.CreateAsyncScope();
-        SetCurrentHttpContext(scope.ServiceProvider, server.WebAppAddress);
-
-        var chatbot = scope.ServiceProvider.GetRequiredService<AppChatbot>();
-
-        for (var chat = 1; chat <= ChatbotRateLimiter.ChatsPerMinute; chat++)
-        {
-            await chatbot.StartChat(new StartChatRequest(), signalRConnectionId: "test-connection-id", TestContext.CancellationToken);
-        }
-
-        await Assert.ThrowsExactlyAsync<TooManyRequestsException>(
-            () => chatbot.StartChat(new StartChatRequest(), signalRConnectionId: "test-connection-id", TestContext.CancellationToken),
-            "A chat started past the per-minute limit must be refused.");
-    }
-
-    [TestMethod]
-    public async Task AnOverLongMessageInTheResentHistory_Should_BeDropped_RatherThanFailTheChat()
+    public async Task AnOverLongMessageInTheConversation_Should_BeDropped_RatherThanFailTheAnswer()
     {
         var chatClient = new TestChatClient();
 
@@ -103,26 +83,24 @@ public partial class ChatbotCostLimitsTests
         var overLongAnswer = new string('a', AiChatMessage.MaxContentLength + 1);
         var overLongQuestion = new string('b', AiChatMessage.MaxContentLength + 1);
 
-        var chatbot = scope.ServiceProvider.GetRequiredService<AppChatbot>();
-        await chatbot.StartChat(new StartChatRequest
-        {
-            ChatMessagesHistory =
-            [
-                new() { Role = AiChatMessageRole.User, Content = "what is bit platform?" },
-                SignedAnswer(scope.ServiceProvider, overLongAnswer),
-                new() { Role = AiChatMessageRole.User, Content = overLongQuestion }
-            ]
-        }, signalRConnectionId: "test-connection-id", TestContext.CancellationToken);
+        var kept = new BitAiConversation();
+        UserMessage(kept, "what is bit platform?");
+        SignedAnswer(kept, scope.ServiceProvider, overLongAnswer);
+        UserMessage(kept, overLongQuestion);
 
-        await chatbot.ProcessNewMessage(new AiChatMessage { Content = "the newest question" }, httpContext.User, TestContext.CancellationToken);
+        await using var panel = new TestAiChatPanel(scope.ServiceProvider, httpContext.User, kept);
+
+        var answer = await panel.Ask("the newest question", cancellationToken: TestContext.CancellationToken);
+
+        Assert.AreEqual(BitAiMessageStatus.Complete, answer.Status, "The newest question must still be answered.");
 
         var conversation = chatClient.ReceivedConversations[^1];
 
         Assert.Contains(message => message.Text == "what is bit platform?", conversation,
-            "The resent history must still reach the model, minus what is too long.");
+            "The conversation must still reach the model, minus what is too long.");
 
         Assert.DoesNotContain(message => message.Text == overLongAnswer || message.Text == overLongQuestion, conversation,
-            "A resent message longer than AiChatMessage.MaxContentLength reached the model.");
+            "A message longer than AiChatMessage.MaxContentLength reached the model as part of the conversation.");
     }
 
     [TestMethod]
@@ -136,59 +114,14 @@ public partial class ChatbotCostLimitsTests
         await using var scope = server.ApiApp.Services.CreateAsyncScope();
         var httpContext = SetCurrentHttpContext(scope.ServiceProvider, server.WebAppAddress);
 
-        var chatbot = scope.ServiceProvider.GetRequiredService<AppChatbot>();
-        await chatbot.StartChat(new StartChatRequest(), signalRConnectionId: "test-connection-id", TestContext.CancellationToken);
+        await using var panel = new TestAiChatPanel(scope.ServiceProvider, httpContext.User);
 
-        await chatbot.ProcessNewMessage(new AiChatMessage { Content = "what is bit platform?" }, httpContext.User, TestContext.CancellationToken);
+        await panel.Ask("what is bit platform?", cancellationToken: TestContext.CancellationToken);
 
         var configuredCap = server.ApiApp.Services.GetRequiredService<IConfiguration>().GetValue<int?>("AI:ChatOptions:MaxOutputTokens");
 
         Assert.IsNotNull(configuredCap, "AI:ChatOptions:MaxOutputTokens is not set, so an answer can run as long as the model allows.");
         Assert.IsNotNull(chatClient.LastStreamingOptions, "The model was never asked for an answer.");
         Assert.AreEqual(configuredCap, chatClient.LastStreamingOptions.MaxOutputTokens, "The configured answer length cap did not reach the model.");
-    }
-
-    private async Task<AssistantTurn> ReadTurn(ChannelReader<string> responses)
-    {
-        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(TestContext.CancellationToken);
-        timeout.CancelAfter(TimeSpan.FromSeconds(30));
-
-        var reader = new PartialJsonReader<AssistantTurn>(AppJsonContext.Default.AssistantTurn);
-        AssistantTurn? turn = null;
-
-        while (reader.IsComplete is false)
-        {
-            turn = reader.Append(await responses.ReadAsync(timeout.Token));
-        }
-
-        return turn!;
-    }
-
-    private static AiChatMessage SignedAnswer(IServiceProvider scopedServices, string content)
-    {
-        return new()
-        {
-            Role = AiChatMessageRole.Assistant,
-            Content = content,
-            Signature = scopedServices.GetRequiredService<ChatbotAnswerSigner>().Sign(content)
-        };
-    }
-
-    private static AppTestServer BuildServerWith(TestChatClient chatClient)
-    {
-        return new AppTestServer().Build(
-            configureTestServices: services => services.Replace(ServiceDescriptor.Singleton<IChatClient>(chatClient)),
-            configureTestConfiguration: configuration => configuration["AI:OpenAI:ChatApiKey"] = "fake-key-never-used-by-these-tests");
-    }
-
-    private static HttpContext SetCurrentHttpContext(IServiceProvider scopedServices, Uri serverAddress)
-    {
-        var httpContext = new DefaultHttpContext { RequestServices = scopedServices };
-        httpContext.Request.Scheme = serverAddress.Scheme;
-        httpContext.Request.Host = new HostString(serverAddress.Authority);
-
-        scopedServices.GetRequiredService<IHttpContextAccessor>().HttpContext = httpContext;
-
-        return httpContext;
     }
 }

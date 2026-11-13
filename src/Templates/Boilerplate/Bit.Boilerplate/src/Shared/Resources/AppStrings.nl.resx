@@ -1234,9 +1234,6 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   <data name="AiChatApprovalWaiting" xml:space="preserve">
     <value>Wachten op uw antwoord</value>
   </data>
-  <data name="AiChatApprovalClearAppFilesTitle" xml:space="preserve">
-    <value>De bestanden van de app op dit apparaat wissen?</value>
-  </data>
   <data name="AiChatApprovalClearAppFilesDescription" xml:space="preserve">
     <value>Opnieuw beginnen lost de meeste problemen door beschadigde lokale gegevens op.</value>
   </data>
@@ -1255,35 +1252,11 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   <data name="AiChatApprovalClearAppFilesApprove" xml:space="preserve">
     <value>Bestanden wissen</value>
   </data>
-  <data name="AiChatApprovalClearAppFilesDecline" xml:space="preserve">
-    <value>Nu niet</value>
-  </data>
-  <data name="AiChatApprovalClearAppFilesApproved" xml:space="preserve">
-    <value>De bestanden van de app worden gewist</value>
-  </data>
-  <data name="AiChatApprovalClearAppFilesDeclined" xml:space="preserve">
-    <value>U hebt de bestanden van de app behouden.</value>
-  </data>
-  <data name="AiChatApprovalClearAppFilesNoAnswer" xml:space="preserve">
-    <value>Er is niets gewist: het verzoek bleef onbeantwoord.</value>
-  </data>
-  <data name="AiChatApprovalTitle" xml:space="preserve">
-    <value>Dit goedkeuren?</value>
-  </data>
   <data name="AiChatApprovalApprove" xml:space="preserve">
     <value>Goedkeuren</value>
   </data>
   <data name="AiChatApprovalDecline" xml:space="preserve">
     <value>Weigeren</value>
-  </data>
-  <data name="AiChatApprovalApproved" xml:space="preserve">
-    <value>Goedgekeurd</value>
-  </data>
-  <data name="AiChatApprovalDeclined" xml:space="preserve">
-    <value>Geweigerd.</value>
-  </data>
-  <data name="AiChatApprovalNoAnswer" xml:space="preserve">
-    <value>Het verzoek bleef onbeantwoord.</value>
   </data>
   <!--#if (module == "Sales") -->
   <!--#if (database == "PostgreSQL" || database == "SqlServer") -->
@@ -1310,9 +1283,6 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   <data name="AiChatPanelStopDictation" xml:space="preserve">
     <value>Dicteren stoppen</value>
   </data>
-  <data name="AiChatPanelDictation" xml:space="preserve">
-    <value>Dicteren</value>
-  </data>
   <data name="AiChatPanelMicrophoneBlocked" xml:space="preserve">
     <value>Toegang tot de microfoon is geblokkeerd. Sta deze toe in je instellingen om te kunnen dicteren.</value>
   </data>
@@ -1327,9 +1297,6 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   </data>
   <data name="AiChatPanelTranscribing" xml:space="preserve">
     <value>Bezig met uitschrijven wat u zei</value>
-  </data>
-  <data name="AiChatPanelDictationTimeLeft" xml:space="preserve">
-    <value>Resterende tijd voordat het dicteren stopt</value>
   </data>
   <data name="AiChatPanelSpeechSignInTitle" xml:space="preserve">
     <value>Spraak vereist een account</value>
@@ -1381,6 +1348,69 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   </data>
   <data name="AiChatPanelRestore" xml:space="preserve">
     <value>Herstellen</value>
+  </data>
+  <data name="AiChatStop" xml:space="preserve">
+    <value>Stoppen</value>
+  </data>
+  <data name="AiChatRegenerate" xml:space="preserve">
+    <value>Opnieuw antwoorden</value>
+  </data>
+  <data name="AiChatRetry" xml:space="preserve">
+    <value>Opnieuw proberen</value>
+  </data>
+  <data name="AiChatGoodAnswer" xml:space="preserve">
+    <value>Goed antwoord</value>
+  </data>
+  <data name="AiChatBadAnswer" xml:space="preserve">
+    <value>Slecht antwoord</value>
+  </data>
+  <data name="AiChatScrollToLatest" xml:space="preserve">
+    <value>Naar het nieuwste bericht</value>
+  </data>
+  <data name="AiChatThinking" xml:space="preserve">
+    <value>Denkt na…</value>
+  </data>
+  <data name="AiChatFollowUps" xml:space="preserve">
+    <value>Voorgestelde vervolgvragen</value>
+  </data>
+  <data name="AiChatListening" xml:space="preserve">
+    <value>Luistert</value>
+  </data>
+  <data name="AiChatRecordingTimeLeft" xml:space="preserve">
+    <value>Nog {0}</value>
+  </data>
+  <data name="AiChatDropImage" xml:space="preserve">
+    <value>Zet de afbeelding hier neer om haar toe te voegen</value>
+  </data>
+  <data name="AiChatTooManyImages" xml:space="preserve">
+    <value>Maximaal {0} afbeeldingen per bericht</value>
+  </data>
+  <data name="AiChatToolProductSearch" xml:space="preserve">
+    <value>Producten zoeken</value>
+  </data>
+  <data name="AiChatToolNavigation" xml:space="preserve">
+    <value>Paginanavigatie</value>
+  </data>
+  <data name="AiChatToolThemeChange" xml:space="preserve">
+    <value>Themawissel</value>
+  </data>
+  <data name="AiChatToolLanguageChange" xml:space="preserve">
+    <value>Taalwissel</value>
+  </data>
+  <data name="AiChatToolSignIn" xml:space="preserve">
+    <value>Aanmelden</value>
+  </data>
+  <data name="AiChatToolErrorCheck" xml:space="preserve">
+    <value>Foutrapport controleren</value>
+  </data>
+  <data name="AiChatToolFailed" xml:space="preserve">
+    <value>{0} mislukt</value>
+  </data>
+  <data name="AiChatToolDeclined" xml:space="preserve">
+    <value>{0} geweigerd</value>
+  </data>
+  <data name="AiChatToolCancelled" xml:space="preserve">
+    <value>{0} geannuleerd</value>
   </data>
   <!--#endif -->
   <!--#if (ads == true) -->

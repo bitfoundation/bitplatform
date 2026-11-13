@@ -429,9 +429,6 @@
     <data name="ChatSend" xml:space="preserve">
         <value>بپرس</value>
     </data>
-    <data name="ChatConnectionLost" xml:space="preserve">
-        <value>ارتباط با دستیار قطع شد. لطفاً دوباره امتحان کنید.</value>
-    </data>
     <data name="ChatInvalidQuestion" xml:space="preserve">
         <value>این سؤال برای پاسخ دادن در این‌جا خیلی طولانی است. لطفاً کوتاه‌تر بپرسید.</value>
     </data>
@@ -482,6 +479,60 @@
     </data>
     <data name="ChatEmptyBody" xml:space="preserve">
         <value>هر سؤالی درباره‌ی {0} دارید بپرسید: چه کار می‌کند، چقدر هزینه دارد، یا چطور آن را بگیرید.</value>
+    </data>
+    <data name="ChatGalleryTitle" xml:space="preserve">
+        <value>درباره‌ی نمونه‌ها بپرسید</value>
+    </data>
+    <data name="ChatGalleryEmptyBody" xml:space="preserve">
+        <value>بگویید محصولتان چه کار می‌کند تا نمونه‌هایی را که به آن نزدیک‌ترند نشانتان بدهم.</value>
+    </data>
+    <data name="ChatGallerySuggestion1" xml:space="preserve">
+        <value>کدام نمونه به یک کافه یا رستوران می‌خورد؟</value>
+    </data>
+    <data name="ChatGallerySuggestion2" xml:space="preserve">
+        <value>کدام نمونه‌ها پیش از عرضه لیست انتظار دارند؟</value>
+    </data>
+    <data name="ChatGallerySuggestion3" xml:space="preserve">
+        <value>چطور یک نمونه را صفحه‌ی اصلی محصولم کنم؟</value>
+    </data>
+    <data name="ChatOpenSample" xml:space="preserve">
+        <value>باز کردن نمونه‌ی {0}</value>
+    </data>
+    <data name="ChatOpenSampleShort" xml:space="preserve">
+        <value>باز کردن</value>
+    </data>
+    <data name="ChatRegenerate" xml:space="preserve">
+        <value>دوباره پاسخ بده</value>
+    </data>
+    <data name="ChatCopied" xml:space="preserve">
+        <value>کپی شد</value>
+    </data>
+    <data name="ChatEdit" xml:space="preserve">
+        <value>ویرایش</value>
+    </data>
+    <data name="ChatSave" xml:space="preserve">
+        <value>دوباره بپرس</value>
+    </data>
+    <data name="ChatCancel" xml:space="preserve">
+        <value>انصراف</value>
+    </data>
+    <data name="ChatFollowUps" xml:space="preserve">
+        <value>سؤال‌های بعدی</value>
+    </data>
+    <data name="ChatStartDictation" xml:space="preserve">
+        <value>با صدا بپرسید</value>
+    </data>
+    <data name="ChatStopDictation" xml:space="preserve">
+        <value>توقف شنیدن</value>
+    </data>
+    <data name="ChatListening" xml:space="preserve">
+        <value>در حال شنیدن</value>
+    </data>
+    <data name="ChatDictationStopped" xml:space="preserve">
+        <value>شنیدن متوقف شد</value>
+    </data>
+    <data name="ChatDictationFailed" xml:space="preserve">
+        <value>مرورگر صدای شما را نشنید. مطمئن شوید صفحه اجازه‌ی استفاده از میکروفون را دارد و دوباره امتحان کنید.</value>
     </data>
     <data name="LegalPrivacyTitle" xml:space="preserve">
         <value>سیاست حریم خصوصی</value>

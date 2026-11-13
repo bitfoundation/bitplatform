@@ -2,44 +2,43 @@ using System.Runtime.CompilerServices;
 
 namespace Boilerplate.LandingPage.Client.Components.Chat;
 
-internal sealed class LandingAiTransport(ILandingChatClient chatClient, string site) : IBitAiTransport
+/// <summary>
+/// Carries each question to the server and its answer back, in the wire format of Bit.BlazorUI.AI: over a WebSocket of its
+/// own in the browser (the server's MapBitAiWebSocket), or straight from the server's <see cref="ILandingChatBackend"/>
+/// under Blazor Server. Internal, like every type here built on a type of the lazily loaded assemblies, since the router
+/// reads every public type of the assembly at startup.
+/// </summary>
+internal sealed class LandingAiTransport(string siteKey, Uri endpoint, ILandingChatBackend? backend) : IBitAiTransport
 {
-    public async IAsyncEnumerable<BitAiEvent> StreamAsync(BitAiRequest request, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    private readonly BitAiWebSocketTransport? socket = backend is null ? new(endpoint) : null;
+
+    public IAsyncEnumerable<BitAiEvent> StreamAsync(BitAiRequest request, CancellationToken cancellationToken = default)
     {
-        yield return new BitAiMessageStartedEvent();
-
-        LandingChatTurn[] turns = [.. request.Messages
-            .Where(m => m.Role == BitAiRole.User || m.Role == BitAiRole.Assistant)
-            .Select(m => new LandingChatTurn(m.Role == BitAiRole.User, m.GetText()))
-            .Where(t => string.IsNullOrWhiteSpace(t.Text) is false)];
-
-        await using var deltas = chatClient.AskAsync(new(site, CultureInfo.CurrentUICulture.Name, turns), cancellationToken).GetAsyncEnumerator(cancellationToken);
-
-        // C# can't yield inside a try with a catch, so only MoveNextAsync is guarded and a failure is yielded after the loop
-        LandingChatException? failure = null;
-
-        while (failure is null)
+        // The sample and the language travel with the conversation, so the answer is about the right sample, in the visitor's language
+        var question = new BitAiRequest(request.Messages)
         {
-            try
+            ConversationId = request.ConversationId,
+            Options = request.Options,
+            Tools = request.Tools,
+            Context = new Dictionary<string, object?>
             {
-                if (await deltas.MoveNextAsync() is false)
-                    break;
+                [LandingChatContext.Site] = siteKey,
+                [LandingChatContext.Culture] = CultureInfo.CurrentUICulture.Name
             }
-            catch (LandingChatException exp)
-            {
-                failure = exp;
-                break;
-            }
+        };
 
-            yield return new BitAiTextDeltaEvent(deltas.Current);
-        }
+        return socket is not null ? socket.StreamAsync(question, cancellationToken) : StreamFromBackend(question, cancellationToken);
+    }
 
-        if (failure is not null)
+    private async IAsyncEnumerable<BitAiEvent> StreamFromBackend(BitAiRequest request, [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        var json = BitAiWireSerializer.SerializeRequest(await BitAiWireSerializer.ToSnapshotAsync(request, cancellationToken: cancellationToken));
+
+        await foreach (var item in backend!.StreamAsync(json, cancellationToken))
         {
-            yield return new BitAiErrorEvent(new BitAiError(failure.Message) { IsRetryable = failure.Retryable });
-            yield break;
+            // An event of a type this version doesn't know is skipped, as the socket skips it
+            if (BitAiWireSerializer.Deserialize(item) is { } evt)
+                yield return evt;
         }
-
-        yield return new BitAiMessageCompletedEvent();
     }
 }

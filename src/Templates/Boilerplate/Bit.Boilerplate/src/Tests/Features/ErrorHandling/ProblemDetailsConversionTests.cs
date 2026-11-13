@@ -20,8 +20,8 @@ public class ProblemDetailsConversionTests
     /// <summary>
     /// Each of these threw before: a missing <c>type</c> hit <c>Assembly.GetType(null)</c>'s
     /// <c>ArgumentNullException</c>, a missing <c>key</c> hit a <c>NullReferenceException</c>, and a <c>type</c>
-    /// naming something without the expected constructor - an abstract exception, a non-exception type the fuzzy
-    /// <c>EndsWith</c> fallback matched, or <c>TransientException</c>, which only offers the <c>(string)</c>
+    /// naming something without the expected constructor - an abstract exception, a non-exception type the
+    /// fallback by name matched, or <c>TransientException</c>, which only offers the <c>(string)</c>
     /// overload - hit a <c>MissingMethodException</c>.
     /// </summary>
     [TestMethod]

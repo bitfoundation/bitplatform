@@ -5,6 +5,12 @@
         <PredefinedCulturesOnly>false</PredefinedCulturesOnly>
     </PropertyGroup>
 
+    <PropertyGroup>
+        <!-- The bit BlazorUI scripts as modules, each downloaded the first time a component on the page calls into it, rather
+             than as bundles every page loads: App.razor has no <script> of theirs, and the chat's arrive with the chat. -->
+        <BitBlazorUILazyScripts>true</BitBlazorUILazyScripts>
+    </PropertyGroup>
+
     <ItemGroup>
         <Using Remove="Boilerplate.Shared" />
         <Using Remove="Boilerplate.Shared.Resources" />

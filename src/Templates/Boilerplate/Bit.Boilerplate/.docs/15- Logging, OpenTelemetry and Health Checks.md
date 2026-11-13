@@ -92,7 +92,7 @@ public static readonly UpDownCounter<long> ActiveConversations =
     Meter.Current.CreateUpDownCounter<long>(
         "chatbot.active_conversations",
         "{conversation}",
-        "Text chats open in the AI chat panel right now.");
+        "Answers of the AI chat panel being written right now.");
 
 // Increment when operation starts
 ActiveConversations.Add(1);

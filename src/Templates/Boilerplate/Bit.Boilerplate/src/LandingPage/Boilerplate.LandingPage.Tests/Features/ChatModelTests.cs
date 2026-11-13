@@ -27,10 +27,16 @@ public class ChatModelTests
         await using var scope = server.Services.CreateAsyncScope();
         var chat = scope.ServiceProvider.GetRequiredService<LandingChatService>();
 
+        var conversation = new BitAiConversation();
+        conversation.AddMessage(BitAiRole.User, "What does it cost?");
+
         var answer = "";
-        await foreach (var piece in chat.AskAsync(new(LandingSites.All[0].Key, "en-US", [new(true, "What does it cost?")]), CancellationToken.None))
+        await foreach (var evt in chat.StreamAsync(new(conversation.Messages)
         {
-            answer += piece;
+            Context = new Dictionary<string, object?> { [LandingChatContext.Site] = LandingSites.All[0].Key, [LandingChatContext.Culture] = "en-US" }
+        }, CancellationToken.None))
+        {
+            answer += (evt as BitAiTextDeltaEvent)?.Delta;
         }
 
         Assert.AreEqual("It costs nothing.", answer);

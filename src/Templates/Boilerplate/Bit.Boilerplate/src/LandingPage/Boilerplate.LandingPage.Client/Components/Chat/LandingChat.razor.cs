@@ -5,12 +5,13 @@ namespace Boilerplate.LandingPage.Client.Components.Chat;
 public partial class LandingChat
 {
     // The same files the project file marks with BlazorWebAssemblyLazyLoad
-    private static readonly string[] lazyAssemblies = ["Bit.BlazorUI.AI.wasm", "System.Net.WebSockets.Client.wasm", "System.Net.WebSockets.wasm"];
+    private static readonly string[] lazyAssemblies = ["Bit.BlazorUI.AI.wasm", "Bit.BlazorUI.AI.Core.wasm", "System.Net.WebSockets.Client.wasm", "System.Net.WebSockets.wasm"];
 
     [AutoInject] private IJSRuntime jsRuntime = default!;
     [AutoInject] private LazyAssemblyLoader lazyAssemblyLoader = default!;
 
-    [Parameter, EditorRequired] public LandingSite Site { get; set; } = default!;
+    /// <summary>The sample the chat answers about. Without one it's the gallery's chat, which knows every sample.</summary>
+    [Parameter] public LandingSite? Site { get; set; }
 
     [Parameter] public LandingChatVariant Variant { get; set; }
 
@@ -34,13 +35,11 @@ public partial class LandingChat
     private bool hasFailed;
     private string? draft;
     private string? question;
+    private Task<bool>? loading;
 
-    protected override void OnParametersSet()
-    {
-        Title ??= Localizer[nameof(LandingStrings.ChatTitle), Site.Name];
-
-        base.OnParametersSet();
-    }
+    private string ChatTitle => Title ?? (Site is null
+        ? Localizer[nameof(LandingStrings.ChatGalleryTitle)]
+        : Localizer[nameof(LandingStrings.ChatTitle), Site.Name]);
 
     private async Task Toggle()
     {
@@ -72,6 +71,18 @@ public partial class LandingChat
         }
     }
 
+    /// <summary>
+    /// Starts the download the moment the visitor reaches for the chat - a pointer over its button, the focus in it, a
+    /// finger on it - so it's mostly done by the time they click, while a visitor who never chats still downloads none of it.
+    /// </summary>
+    private void Prepare()
+    {
+        if (isLoaded is false)
+        {
+            _ = Load();
+        }
+    }
+
     private async Task EnsureLoaded()
     {
         if (isLoaded)
@@ -79,9 +90,29 @@ public partial class LandingChat
 
         isLoading = true;
 
+        isLoaded = await Load();
+        hasFailed = isLoaded is false;
+
+        isLoading = false;
+    }
+
+    // One download however many times it's asked for, and a failed one is tried again the next time
+    private Task<bool> Load()
+    {
+        if (loading is null || (loading.IsCompleted && loading.Result is false))
+        {
+            loading = LoadAssets();
+        }
+
+        return loading;
+    }
+
+    private async Task<bool> LoadAssets()
+    {
         try
         {
-            await jsRuntime.InvokeVoidAsync("landing.loadAssets", (string[])["_content/Bit.BlazorUI.AI/styles/bit.blazorui.ai.css"], (string[])["_content/Bit.BlazorUI.AI/scripts/bit.blazorui.ai.js"]);
+            // The stylesheet only: the scripts of Bit.BlazorUI.AI come as modules, each the first time the chat calls into it (See BitBlazorUILazyScripts)
+            await jsRuntime.InvokeVoidAsync("landing.loadAssets", (string[])["_content/Bit.BlazorUI.AI/styles/bit.blazorui.ai.css"], (string[])[]);
 
             // Only a non-AOT WebAssembly build marks them lazy; anywhere else they're loaded already
             if (OperatingSystem.IsBrowser() && (AppContext.TryGetSwitch("Boilerplate.IsAot", out var isAot) && isAot) is false)
@@ -89,16 +120,12 @@ public partial class LandingChat
                 await lazyAssemblyLoader.LoadAssembliesAsync(lazyAssemblies);
             }
 
-            isLoaded = true;
-            hasFailed = false;
+            return true;
         }
-        catch (JSException)
+        catch (Exception exp) when (exp is JSException or HttpRequestException or InvalidOperationException)
         {
-            hasFailed = true;
-        }
-        finally
-        {
-            isLoading = false;
+            // Offline, or a deployment the page outlived: the chat says it couldn't open, and opening it again tries again
+            return false;
         }
     }
 }

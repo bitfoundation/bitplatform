@@ -1234,9 +1234,6 @@
   <data name="AiChatApprovalWaiting" xml:space="preserve">
     <value>正在等待你的答复</value>
   </data>
-  <data name="AiChatApprovalClearAppFilesTitle" xml:space="preserve">
-    <value>要清除此设备上的应用文件吗？</value>
-  </data>
   <data name="AiChatApprovalClearAppFilesDescription" xml:space="preserve">
     <value>从头开始可以解决大多数由本地数据损坏引起的问题。</value>
   </data>
@@ -1255,35 +1252,11 @@
   <data name="AiChatApprovalClearAppFilesApprove" xml:space="preserve">
     <value>清除文件</value>
   </data>
-  <data name="AiChatApprovalClearAppFilesDecline" xml:space="preserve">
-    <value>暂不</value>
-  </data>
-  <data name="AiChatApprovalClearAppFilesApproved" xml:space="preserve">
-    <value>正在清除应用文件</value>
-  </data>
-  <data name="AiChatApprovalClearAppFilesDeclined" xml:space="preserve">
-    <value>你保留了应用文件。</value>
-  </data>
-  <data name="AiChatApprovalClearAppFilesNoAnswer" xml:space="preserve">
-    <value>未清除任何内容：请求未得到答复。</value>
-  </data>
-  <data name="AiChatApprovalTitle" xml:space="preserve">
-    <value>批准此操作吗？</value>
-  </data>
   <data name="AiChatApprovalApprove" xml:space="preserve">
     <value>批准</value>
   </data>
   <data name="AiChatApprovalDecline" xml:space="preserve">
     <value>拒绝</value>
-  </data>
-  <data name="AiChatApprovalApproved" xml:space="preserve">
-    <value>已批准</value>
-  </data>
-  <data name="AiChatApprovalDeclined" xml:space="preserve">
-    <value>已拒绝。</value>
-  </data>
-  <data name="AiChatApprovalNoAnswer" xml:space="preserve">
-    <value>请求未得到答复。</value>
   </data>
   <!--#if (module == "Sales") -->
   <!--#if (database == "PostgreSQL" || database == "SqlServer") -->
@@ -1310,9 +1283,6 @@
   <data name="AiChatPanelStopDictation" xml:space="preserve">
     <value>停止语音输入</value>
   </data>
-  <data name="AiChatPanelDictation" xml:space="preserve">
-    <value>语音输入</value>
-  </data>
   <data name="AiChatPanelMicrophoneBlocked" xml:space="preserve">
     <value>麦克风访问已被阻止。请在设置中允许访问后再使用语音输入。</value>
   </data>
@@ -1327,9 +1297,6 @@
   </data>
   <data name="AiChatPanelTranscribing" xml:space="preserve">
     <value>正在把你说的话转成文字</value>
-  </data>
-  <data name="AiChatPanelDictationTimeLeft" xml:space="preserve">
-    <value>语音输入停止前的剩余时间</value>
   </data>
   <data name="AiChatPanelSpeechSignInTitle" xml:space="preserve">
     <value>语音功能需要账户</value>
@@ -1381,6 +1348,69 @@
   </data>
   <data name="AiChatPanelRestore" xml:space="preserve">
     <value>还原</value>
+  </data>
+  <data name="AiChatStop" xml:space="preserve">
+    <value>停止</value>
+  </data>
+  <data name="AiChatRegenerate" xml:space="preserve">
+    <value>重新回答</value>
+  </data>
+  <data name="AiChatRetry" xml:space="preserve">
+    <value>重试</value>
+  </data>
+  <data name="AiChatGoodAnswer" xml:space="preserve">
+    <value>回答很好</value>
+  </data>
+  <data name="AiChatBadAnswer" xml:space="preserve">
+    <value>回答不好</value>
+  </data>
+  <data name="AiChatScrollToLatest" xml:space="preserve">
+    <value>转到最新消息</value>
+  </data>
+  <data name="AiChatThinking" xml:space="preserve">
+    <value>思考中…</value>
+  </data>
+  <data name="AiChatFollowUps" xml:space="preserve">
+    <value>建议的后续问题</value>
+  </data>
+  <data name="AiChatListening" xml:space="preserve">
+    <value>正在聆听</value>
+  </data>
+  <data name="AiChatRecordingTimeLeft" xml:space="preserve">
+    <value>剩余 {0}</value>
+  </data>
+  <data name="AiChatDropImage" xml:space="preserve">
+    <value>拖放图片以附加</value>
+  </data>
+  <data name="AiChatTooManyImages" xml:space="preserve">
+    <value>每条消息最多 {0} 张图片</value>
+  </data>
+  <data name="AiChatToolProductSearch" xml:space="preserve">
+    <value>产品搜索</value>
+  </data>
+  <data name="AiChatToolNavigation" xml:space="preserve">
+    <value>页面导航</value>
+  </data>
+  <data name="AiChatToolThemeChange" xml:space="preserve">
+    <value>更换主题</value>
+  </data>
+  <data name="AiChatToolLanguageChange" xml:space="preserve">
+    <value>更换语言</value>
+  </data>
+  <data name="AiChatToolSignIn" xml:space="preserve">
+    <value>登录</value>
+  </data>
+  <data name="AiChatToolErrorCheck" xml:space="preserve">
+    <value>检查错误报告</value>
+  </data>
+  <data name="AiChatToolFailed" xml:space="preserve">
+    <value>{0}失败</value>
+  </data>
+  <data name="AiChatToolDeclined" xml:space="preserve">
+    <value>{0}已拒绝</value>
+  </data>
+  <data name="AiChatToolCancelled" xml:space="preserve">
+    <value>{0}已取消</value>
   </data>
   <!--#endif -->
   <!--#if (ads == true) -->
