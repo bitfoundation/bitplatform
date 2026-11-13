@@ -6,10 +6,12 @@ public partial class BitAiEmptyStateDemo
 <BitAiEmptyState />";
 
     private readonly string example2RazorCode = @"
-<BitAiEmptyState Title=""Ask the docs assistant"" Body=""It knows every component of bit BlazorUI."" />
+<BitAiEmptyState Title=""Ask the docs assistant"" Description=""It knows every component of bit BlazorUI."" />
 
 <BitAiEmptyState Title=""Start a new thread"">
-    Questions are answered from the <BitLink Href=""/components"">component gallery</BitLink> and nothing else.
+    <DescriptionTemplate>
+        Questions are answered from the <BitLink Href=""/components"">component gallery</BitLink> and nothing else.
+    </DescriptionTemplate>
 </BitAiEmptyState>";
 
     private readonly string example3RazorCode = @"
@@ -52,7 +54,7 @@ private readonly BitAiEmptyStateParams[] emptyStateParams =
     new()
     {
         Title = ""Ask the docs"",
-        Body = ""Both empty states take their words and glyph from the BitParams around them."",
+        Description = ""Both empty states take their words and glyph from the BitParams around them."",
         IconName = BitIconName.ChatBot,
     }
 ];";
@@ -93,14 +95,14 @@ private readonly BitAiEmptyStateParams[] emptyStateParams =
 
 <BitAiEmptyState Title=""CSS variables""
                  Suggestions=""suggestions""
-                 Style=""--bit-AiEmptyState-gap:0.5rem;--bit-AiEmptyState-padding:1.5rem;--bit-AiEmptyState-color:var(--bit-clr-fg-pri);--bit-AiEmptyState-icon-color:var(--bit-clr-suc);--bit-AiEmptyState-icon-size:4rem;--bit-AiEmptyState-title-color:var(--bit-clr-suc);--bit-AiEmptyState-title-font-size:2rem;--bit-AiEmptyState-title-font-weight:300;--bit-AiEmptyState-suggestions-gap:1rem"" />";
+                 Style=""--bit-AiEmptyState-gap:0.5rem;--bit-AiEmptyState-padding:1.5rem;--bit-AiEmptyState-description-color:var(--bit-clr-fg-pri);--bit-AiEmptyState-icon-color:var(--bit-clr-suc);--bit-AiEmptyState-icon-size:4rem;--bit-AiEmptyState-title-color:var(--bit-clr-suc);--bit-AiEmptyState-title-font-size:2rem;--bit-AiEmptyState-title-font-weight:300;--bit-AiEmptyState-suggestions-gap:1rem"" />";
     private readonly string example8CsharpCode = @"
 private readonly string[] suggestions = [""Summarize this page"", ""Write a release note"", ""Explain render modes""];";
 
     private readonly string example9RazorCode = @"
 <BitAiEmptyState Dir=""BitDir.Rtl""
                  Title=""چطور می‌توانم کمک کنم؟""
-                 Body=""پیامی بنویسید یا یکی از پیشنهادها را انتخاب کنید.""
+                 Description=""پیامی بنویسید یا یکی از پیشنهادها را انتخاب کنید.""
                  Suggestions=""rtlSuggestions"" />";
     private readonly string example9CsharpCode = @"
 private readonly string[] rtlSuggestions = [""این صفحه را خلاصه کن"", ""یک یادداشت انتشار بنویس""];";

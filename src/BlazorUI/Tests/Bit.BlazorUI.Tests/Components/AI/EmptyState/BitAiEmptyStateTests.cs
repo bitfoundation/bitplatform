@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -12,31 +13,59 @@ public class BitAiEmptyStateTests : BitAiTestBase
     {
         var component = RenderComponent<BitAiEmptyState>();
 
-        Assert.AreEqual("How can I help?", component.Find(".bit-aiems-ttl").TextContent);
-        Assert.AreEqual("Ask a question to get started.", component.Find(".bit-aiems-bdy").TextContent.Trim());
-        Assert.IsEmpty(component.FindAll(".bit-aiems-sgs"));
+        Assert.AreEqual("How can I help?", component.Find(".bit-ems-ttl").TextContent);
+        Assert.AreEqual("Ask a question to get started.", component.Find(".bit-ems-dsc").TextContent.Trim());
+        Assert.IsEmpty(component.FindAll(".bit-ems-con"));
     }
 
     [TestMethod]
-    public void BitAiEmptyStateShouldRespectTitleAndBody()
+    public void BitAiEmptyStateShouldRespectTitleAndDescription()
     {
         var component = RenderComponent<BitAiEmptyState>(p => p
             .Add(c => c.Title, "Ask me anything")
-            .Add(c => c.Body, "I know a lot about cats."));
+            .Add(c => c.Description, "I know a lot about cats."));
 
-        Assert.AreEqual("Ask me anything", component.Find(".bit-aiems-ttl").TextContent);
-        Assert.AreEqual("I know a lot about cats.", component.Find(".bit-aiems-bdy").TextContent.Trim());
+        Assert.AreEqual("Ask me anything", component.Find(".bit-ems-ttl").TextContent);
+        Assert.AreEqual("I know a lot about cats.", component.Find(".bit-ems-dsc").TextContent.Trim());
     }
 
     [TestMethod]
-    public void BitAiEmptyStateShouldRenderTheChildContentInPlaceOfTheBody()
+    public void BitAiEmptyStateShouldRenderItsTemplatesInPlaceOfItsTexts()
     {
         var component = RenderComponent<BitAiEmptyState>(p => p
-            .Add(c => c.Body, "unused")
-            .AddChildContent("<em class=\"custom\">Custom</em>"));
+            .Add(c => c.Title, "unused title")
+            .Add(c => c.Description, "unused")
+            .Add(c => c.TitleTemplate, "<b class=\"heading\">Hi</b>")
+            .Add(c => c.DescriptionTemplate, "<em class=\"custom\">Custom</em>"));
 
-        Assert.IsNotNull(component.Find(".bit-aiems-bdy > em.custom"));
-        Assert.IsFalse(component.Find(".bit-aiems-bdy").TextContent.Contains("unused"));
+        Assert.IsNotNull(component.Find(".bit-ems-ttl > b.heading"));
+        Assert.IsFalse(component.Find(".bit-ems-ttl").TextContent.Contains("unused title"));
+        Assert.IsNotNull(component.Find(".bit-ems-dsc > em.custom"));
+        Assert.IsFalse(component.Find(".bit-ems-dsc").TextContent.Contains("unused"));
+    }
+
+    [TestMethod]
+    public void BitAiEmptyStateShouldBeDrawnByTheCoreEmptyState()
+    {
+        var component = RenderComponent<BitAiEmptyState>(p => p.Add(c => c.Suggestions, new List<string> { "Plan a trip" }));
+
+        // One BitEmptyState inside the root of the AI one, holding every part; the suggestions are its actions.
+        var core = component.Find(".bit-aiems > .bit-ems");
+        CollectionAssert.AreEqual(new[] { "bit-ems-ico", "bit-ems-ttl", "bit-ems-dsc", "bit-ems-con" }, core.Children.Select(c => c.ClassList[0]).ToArray());
+        Assert.AreEqual(1, component.FindAll(".bit-ems").Count);
+    }
+
+    [TestMethod]
+    public void BitAiEmptyStateShouldMakeItsHeadingAHeadingOnlyWhenAsked()
+    {
+        var component = RenderComponent<BitAiEmptyState>();
+
+        Assert.IsNull(component.Find(".bit-ems-ttl").GetAttribute("role"));
+
+        component.Render(p => p.Add(c => c.HeadingLevel, 2));
+
+        Assert.AreEqual("heading", component.Find(".bit-ems-ttl").GetAttribute("role"));
+        Assert.AreEqual("2", component.Find(".bit-ems-ttl").GetAttribute("aria-level"));
     }
 
     [TestMethod]
@@ -44,7 +73,7 @@ public class BitAiEmptyStateTests : BitAiTestBase
     {
         var component = RenderComponent<BitAiEmptyState>();
 
-        var icon = component.Find(".bit-ico.bit-aiems-ico");
+        var icon = component.Find("i.bit-ems-ico");
 
         Assert.IsTrue(icon.ClassList.Contains("bit-icon--AutoEnhanceOn"));
         Assert.AreEqual("true", icon.GetAttribute("aria-hidden"));
@@ -55,7 +84,7 @@ public class BitAiEmptyStateTests : BitAiTestBase
     {
         var component = RenderComponent<BitAiEmptyState>(p => p.Add(c => c.Icon, new BitIconInfo()));
 
-        var icon = component.Find(".bit-ico.bit-aiems-ico");
+        var icon = component.Find("i.bit-ems-ico");
 
         Assert.IsTrue(icon.ClassList.Contains("bit-icon--AutoEnhanceOn"));
         Assert.IsTrue(icon.ClassList.Contains("bit-icon-ai--AutoEnhanceOn"));
@@ -66,14 +95,14 @@ public class BitAiEmptyStateTests : BitAiTestBase
     {
         var named = RenderComponent<BitAiEmptyState>(p => p.Add(c => c.IconName, "Robot"));
 
-        Assert.IsTrue(named.Find(".bit-aiems-ico").ClassList.Contains("bit-icon--Robot"));
+        Assert.IsTrue(named.Find(".bit-ems-ico").ClassList.Contains("bit-icon--Robot"));
 
         var templated = RenderComponent<BitAiEmptyState>(p => p
             .Add(c => c.IconName, "Robot")
             .Add(c => c.IconTemplate, "<img class=\"logo\" alt=\"\" />"));
 
-        Assert.IsNotNull(templated.Find("div.bit-aiems-ico > img.logo"));
-        Assert.IsEmpty(templated.FindAll(".bit-ico"));
+        Assert.IsNotNull(templated.Find("div.bit-ems-ico > img.logo"));
+        Assert.IsEmpty(templated.FindAll("i.bit-ems-ico"));
     }
 
     [TestMethod]
@@ -85,7 +114,7 @@ public class BitAiEmptyStateTests : BitAiTestBase
             .Add(c => c.Suggestions, ["Plan a trip", "Explain a concept"])
             .Add(c => c.OnSuggestion, s => chosen.Add(s)));
 
-        var buttons = component.FindAll(".bit-aiems-sgs > button");
+        var buttons = component.FindAll(".bit-ems-con > button");
 
         Assert.HasCount(2, buttons);
         Assert.AreEqual("Plan a trip", buttons[0].TextContent.Trim());
@@ -107,7 +136,7 @@ public class BitAiEmptyStateTests : BitAiTestBase
 
         Assert.IsTrue(component.Find(".bit-aiems").ClassList.Contains("bit-dis"));
 
-        var button = component.Find(".bit-aiems-sgs > button");
+        var button = component.Find(".bit-ems-con > button");
         Assert.AreEqual("true", button.GetAttribute("aria-disabled"));
 
         button.Click();
@@ -120,20 +149,20 @@ public class BitAiEmptyStateTests : BitAiTestBase
     {
         var component = RenderComponent<BitAiEmptyState>(p => p
             .Add(c => c.Suggestions, ["Plan a trip"])
-            .Add(c => c.Classes, new() { Root = "custom-root", Icon = "custom-icon", Title = "custom-title", Body = "custom-body", Suggestions = "custom-suggestions", Suggestion = new() { Root = "custom-suggestion" } })
-            .Add(c => c.Styles, new() { Root = "color: red;", Icon = "color: orange;", Title = "color: green;", Body = "color: blue;", Suggestions = "color: purple;" }));
+            .Add(c => c.Classes, new() { Root = "custom-root", Icon = "custom-icon", Title = "custom-title", Description = "custom-body", Suggestions = "custom-suggestions", Suggestion = new() { Root = "custom-suggestion" } })
+            .Add(c => c.Styles, new() { Root = "color: red;", Icon = "color: orange;", Title = "color: green;", Description = "color: blue;", Suggestions = "color: purple;" }));
 
         Assert.IsTrue(component.Find(".bit-aiems").ClassList.Contains("custom-root"));
         StringAssert.Contains(component.Find(".bit-aiems").GetAttribute("style"), "color: red;");
-        Assert.IsTrue(component.Find(".bit-aiems-ico").ClassList.Contains("custom-icon"));
-        StringAssert.Contains(component.Find(".bit-aiems-ico").GetAttribute("style"), "color: orange;");
-        Assert.IsTrue(component.Find(".bit-aiems-ttl").ClassList.Contains("custom-title"));
-        Assert.AreEqual("color: green;", component.Find(".bit-aiems-ttl").GetAttribute("style"));
-        Assert.IsTrue(component.Find(".bit-aiems-bdy").ClassList.Contains("custom-body"));
-        Assert.AreEqual("color: blue;", component.Find(".bit-aiems-bdy").GetAttribute("style"));
-        Assert.IsTrue(component.Find(".bit-aiems-sgs").ClassList.Contains("custom-suggestions"));
-        Assert.AreEqual("color: purple;", component.Find(".bit-aiems-sgs").GetAttribute("style"));
-        Assert.IsTrue(component.Find(".bit-aiems-sgs > button").ClassList.Contains("custom-suggestion"));
+        Assert.IsTrue(component.Find(".bit-ems-ico").ClassList.Contains("custom-icon"));
+        StringAssert.Contains(component.Find(".bit-ems-ico").GetAttribute("style"), "color: orange;");
+        Assert.IsTrue(component.Find(".bit-ems-ttl").ClassList.Contains("custom-title"));
+        Assert.AreEqual("color: green;", component.Find(".bit-ems-ttl").GetAttribute("style"));
+        Assert.IsTrue(component.Find(".bit-ems-dsc").ClassList.Contains("custom-body"));
+        Assert.AreEqual("color: blue;", component.Find(".bit-ems-dsc").GetAttribute("style"));
+        Assert.IsTrue(component.Find(".bit-ems-con").ClassList.Contains("custom-suggestions"));
+        Assert.AreEqual("color: purple;", component.Find(".bit-ems-con").GetAttribute("style"));
+        Assert.IsTrue(component.Find(".bit-ems-con > button").ClassList.Contains("custom-suggestion"));
     }
 
     [TestMethod]

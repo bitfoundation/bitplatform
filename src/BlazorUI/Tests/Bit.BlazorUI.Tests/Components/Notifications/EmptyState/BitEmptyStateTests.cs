@@ -87,6 +87,22 @@ public class BitEmptyStateTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitEmptyStateShouldWriteTheLigatureOfALigatureIconSet()
+    {
+        var com = Render(p => p.Add(x => x.Icon, BitIconInfo.Mi("inbox")));
+
+        var icon = com.Find(".bit-ems-ico");
+
+        Assert.AreEqual("inbox", icon.TextContent);
+        Assert.AreEqual("no", icon.GetAttribute("translate"), "a translated ligature draws nothing");
+
+        com.Render(p => p.Add(x => x.Icon, BitIconInfo.Fa("solid folder-open")));
+
+        Assert.AreEqual("", com.Find(".bit-ems-ico").TextContent);
+        Assert.IsNull(com.Find(".bit-ems-ico").GetAttribute("translate"));
+    }
+
+    [TestMethod]
     public void BitEmptyStateShouldPreferTheIconOverTheIconNameAndTheTemplateOverBoth()
     {
         var com = Render(p =>

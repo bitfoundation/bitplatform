@@ -32,7 +32,7 @@ back to its default content. An old template written as a child element fails to
 taken for markup of that content. Leave `EmptyContent` alone on the framework's own `Virtualize`, which is not one of
 these.
 
-### Every empty list and fruitless search says so, in the same words ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+### Every empty list and fruitless search says so, in the same words ([#15032](https://github.com/bitfoundation/bitplatform/issues/15032))
 
 What a component shows when it has nothing to show now works the same way on all of them: the template wins, then
 the text, and with neither the component says the default of `BitStrings.Current` - `NoItemsFound` ("No items
@@ -80,6 +80,40 @@ a no-results message written in `EmptyText` or `EmptyTemplate` to `NoResultsText
 
 `BitNotificationCenter` also takes an `EmptyTemplate` now, which wins over its `EmptyText` and cascades through
 `BitNotificationCenterParams`.
+### `BitAiEmptyState` is a `BitEmptyState` and takes its names ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+
+The empty state of a conversation is now drawn by the core `BitEmptyState`, with the words of a conversation, a sparkle
+for its icon and the suggestions for its actions. It takes the names of the core one, with no old name kept beside them:
+
+| Before | After |
+|---|---|
+| `BitAiEmptyState.Body` (and `BitAiEmptyStateParams.Body`) | `Description` |
+| `BitAiEmptyState.ChildContent` | `DescriptionTemplate` |
+| `BitAiEmptyStateClassStyles.Body` | `Description` |
+| `BitAiChat.EmptyBody` (and `BitAiChatParams.EmptyBody`) | `EmptyDescription` |
+| `BitAiStrings.EmptyBody` | `EmptyDescription` |
+| `--bit-AiEmptyState-color` | `--bit-AiEmptyState-description-color` |
+
+Markup written as the child content of a `BitAiEmptyState` no longer compiles (`RZ9996`): wrap it in
+`<DescriptionTemplate>`. A `Body="…"` or `EmptyBody="…"` attribute still compiles, without a warning, and lands on the
+root as an HTML attribute, so the line falls back to the string table: search the markup for them. A `BitAiStrings`
+subclass that overrides `EmptyBody` fails to compile until it overrides `EmptyDescription`.
+
+**The markup changed.** The root keeps its `bit-aiems` class, and a `BitEmptyState` inside it holds the parts:
+
+| Before | After |
+|---|---|
+| `.bit-aiems-ico` (a `BitIcon`, `.bit-ico`) | `.bit-ems-ico` (an `<i>`, or a `<div>` holding the `IconTemplate`) |
+| `.bit-aiems-ttl` | `.bit-ems-ttl` |
+| `.bit-aiems-bdy` | `.bit-ems-dsc` |
+| `.bit-aiems-sgs` | `.bit-ems-con` |
+
+The layout (gap, padding, centering) is on the inner `.bit-ems`, not on the root; the `--bit-AiEmptyState-*` variables
+still restyle it, and the line now takes its color and size from `--bit-AiEmptyState-description-color` and the new
+`--bit-AiEmptyState-description-font-size` (default `--bit-tpg-fs-md`) rather than from the color of the root. The
+`Classes` and `Styles` parts reach the same elements as before.
+
+It also gains the `TitleTemplate` and `HeadingLevel` of the core one.
 ### `BitNavPanel` renders the content of its drawer the first time it opens ([#14866](https://github.com/bitfoundation/bitplatform/issues/14866))
 
 Below its `DrawerBreakpoint` the panel is an off-canvas drawer, and the content of a drawer that has never been opened

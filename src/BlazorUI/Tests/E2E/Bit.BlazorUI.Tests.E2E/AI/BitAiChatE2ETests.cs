@@ -128,13 +128,13 @@ public class BitAiChatE2ETests : E2ETestBase
         await OpenAsync(Route);
 
         var empty = Chat("cht-empty").Locator(".bit-aiems");
-        await Expect(empty.Locator(".bit-aiems-ttl")).ToHaveTextAsync("Hi, I am the docs assistant");
-        await Expect(empty.Locator(".bit-aiems-bdy")).ToHaveTextAsync("Ask about any component, or start from one of these.");
-        await Expect(empty.Locator(".bit-aiems-sgs > .bit-btn")).ToHaveTextAsync(["What is Blazor?", "markdown please"]);
+        await Expect(empty.Locator(".bit-ems-ttl")).ToHaveTextAsync("Hi, I am the docs assistant");
+        await Expect(empty.Locator(".bit-ems-dsc")).ToHaveTextAsync("Ask about any component, or start from one of these.");
+        await Expect(empty.Locator(".bit-ems-con > .bit-btn")).ToHaveTextAsync(["What is Blazor?", "markdown please"]);
 
         // The empty state is inside the transcript, centered in its column.
         await Expect(Transcript("cht-empty").Locator(".bit-aiems")).ToHaveCountAsync(1);
-        await empty.Locator(".bit-aiems-ico").AssertAiGlyphAsync("AutoEnhanceOn");
+        await empty.Locator(".bit-ems-ico").AssertAiGlyphAsync("AutoEnhanceOn");
     }
 
     [TestMethod]
@@ -142,7 +142,7 @@ public class BitAiChatE2ETests : E2ETestBase
     {
         await OpenAsync(Route);
 
-        await Chat("cht-empty").Locator(".bit-aiems-sgs > .bit-btn", new() { HasText = "What is Blazor?" }).ClickAsync();
+        await Chat("cht-empty").Locator(".bit-ems-con > .bit-btn", new() { HasText = "What is Blazor?" }).ClickAsync();
 
         await Expect(Messages("cht-empty", "user")).ToHaveTextAsync(["What is Blazor?"]);
         await Expect(Messages("cht-empty", "assistant").First.Locator(".bit-aicms-bdy")).ToHaveTextAsync("You said: What is Blazor?");
@@ -154,7 +154,7 @@ public class BitAiChatE2ETests : E2ETestBase
     {
         await OpenAsync(Route);
 
-        var suggestion = Chat("cht-empty").Locator(".bit-aiems-sgs > .bit-btn", new() { HasText = "markdown please" });
+        var suggestion = Chat("cht-empty").Locator(".bit-ems-con > .bit-btn", new() { HasText = "markdown please" });
         await suggestion.FocusAsync();
         await Page.Keyboard.PressAsync("Enter");
 
@@ -408,7 +408,7 @@ public class BitAiChatE2ETests : E2ETestBase
         await Expect(Composer("cht-disabled")).ToBeDisabledAsync();
         await Expect(Composer("cht-disabled")).ToHaveAttributeAsync("aria-disabled", "true");
 
-        var suggestion = Chat("cht-disabled").Locator(".bit-aiems-sgs > .bit-btn").First;
+        var suggestion = Chat("cht-disabled").Locator(".bit-ems-con > .bit-btn").First;
         await Expect(suggestion).ToBeDisabledAsync();
         await suggestion.ClickAsync(new() { Force = true });
         await suggestion.DispatchEventAsync("click");
