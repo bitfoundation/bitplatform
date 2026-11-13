@@ -370,9 +370,9 @@ account has them. A last section, **Configuration**, reads `IDiagnosticControlle
 caching, prerendering, forwarded headers, the telemetry exporters or a force-update floor are switched on. Whatever a
 check already covers is deliberately absent from it, and no credential is ever in it - each one is a boolean saying
 whether it is set, which `DeploymentConfigurationTests` asserts against the deployment's own connection strings.
-Its catalog (`OperationsPage.HealthChecks.cs`) gives each registration name a title, a group and a description; add
-a new check there to give it the same treatment. A check it doesn't know goes to the group its category names, or to
-**Other**.
+Each check is shown under the title, icon and description its report gives it: describe a check of your own with
+`.Describe(...)` next to its registration and give it a category tag, as the end of this section shows. It is grouped
+under the category its report names, or under **Other** when the page has no group for that category.
 
 With a standalone API, the page also reads `Server.Web`'s own `/healthz`, behind the same feature, and shows its checks
 under **Web server** with a `web:` prefix (`web:binStorage`, `web:serverApi`). If that report can't be read, a
