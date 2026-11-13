@@ -1,7 +1,10 @@
 @import '../../../Styles/abstracts/_bit-css-variables.scss';
 
+// The theme's spacing step, at its density.
+$space: calc(#{$bit-spacing-scaling-factor} * #{$bit-layout-density-scale});
+
 .approval-details {
-    gap: 0.5rem;
+    gap: $space;
     display: flex;
     flex-direction: column;
 }
@@ -10,7 +13,7 @@
     .approval-consequences {
         margin: 0;
         list-style: none;
-        padding: 0.75rem 0.875rem;
+        padding: calc(#{$space} * 1.5) calc(#{$space} * 1.75);
         border-radius: $bit-shape-border-radius;
         background-color: $bit-color-background-secondary;
     }

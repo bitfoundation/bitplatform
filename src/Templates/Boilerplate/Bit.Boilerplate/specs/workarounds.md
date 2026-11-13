@@ -22,6 +22,14 @@ Code that works around a defect in a library, a tool or the platform this app bu
 - **Upstream:** not reported yet (found 2026-11-13).
 - **Remove when:** `BitAiMessageList` is the containing block of its messages. To check, remove the `transcript` class and its rule, then run `AiChatPanelLayoutUITests`.
 <!--#endif-->
+
+## The landing page's chat doesn't show that it's listening
+
+- **Symptom:** after the microphone of the landing page's chat is pressed, nothing on the page says that it's listening: the button only turns a darker shade, as any pressed button does, and stays so until the visitor stops it or speaks.
+- **Cause:** `BitAiVoiceInput` (Bit.BlazorUI.AI 11.0.0-pre-19) marks a recording for the app's own transcriber, with a countdown and a class on its root, but the browser's own speech recognition, which the landing page dictates with, gets only the checked state of its `BitToggleButton`. That it listens, and that the browser refused the microphone, is said only in its visually hidden live region.
+- **Workaround:** `LandingChatSurface` (`src/LandingPage/Boilerplate.LandingPage.Client/Components/Chat/LandingChatSurface.razor.cs` and its `.razor.scss`) gives the checked microphone an `lp-chat-dictating` class through `BitAiPromptInputParams.Classes.VoiceInput.Button.Checked`, which paints it in the page's accent and pulses it, or rings it under reduced motion.
+- **Upstream:** not reported yet (found 2026-11-13).
+- **Remove when:** `BitAiVoiceInput` shows that the browser's speech recognition is listening, and that it failed. To check, remove the class and its rule, then press the microphone on the landing page.
 <!--#if (aspire == true && redis == true)-->
 
 ## Published Redis runs without persistence

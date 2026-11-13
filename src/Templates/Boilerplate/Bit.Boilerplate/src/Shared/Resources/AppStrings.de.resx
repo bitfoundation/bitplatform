@@ -1379,6 +1379,15 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
   <data name="AiChatRecordingTimeLeft" xml:space="preserve">
     <value>Noch {0}</value>
   </data>
+  <data name="AiChatDurationMinutes" xml:space="preserve">
+    <value>{0} Min.</value>
+  </data>
+  <data name="AiChatDurationSeconds" xml:space="preserve">
+    <value>{0} Sek.</value>
+  </data>
+  <data name="AiChatRecordingStarted" xml:space="preserve">
+    <value>Aufnahme läuft, noch {0}</value>
+  </data>
   <data name="AiChatDropImage" xml:space="preserve">
     <value>Bild zum Anhängen hier ablegen</value>
   </data>

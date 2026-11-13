@@ -1379,6 +1379,15 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   <data name="AiChatRecordingTimeLeft" xml:space="preserve">
     <value>Nog {0}</value>
   </data>
+  <data name="AiChatDurationMinutes" xml:space="preserve">
+    <value>{0} min</value>
+  </data>
+  <data name="AiChatDurationSeconds" xml:space="preserve">
+    <value>{0} sec</value>
+  </data>
+  <data name="AiChatRecordingStarted" xml:space="preserve">
+    <value>Opname loopt, nog {0}</value>
+  </data>
   <data name="AiChatDropImage" xml:space="preserve">
     <value>Zet de afbeelding hier neer om haar toe te voegen</value>
   </data>

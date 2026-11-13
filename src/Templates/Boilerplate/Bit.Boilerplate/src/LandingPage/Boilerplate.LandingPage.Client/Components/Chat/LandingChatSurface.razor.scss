@@ -7,6 +7,31 @@
     --bit-AiChatMessage-user-background: var(--lp-accent);
     --bit-AiChatMessage-user-color: var(--lp-accent-fg);
     --bit-AiChat-background: transparent;
+
+    // The microphone while it listens: in the page's accent and pulsing like a live one, where the library only fills it
+    // in like any pressed button (See specs/workarounds.md)
+    ::deep .lp-chat-dictating {
+        --bit-ToggleButton-checked-color: var(--lp-accent-fg);
+        --bit-ToggleButton-checked-background: var(--lp-accent);
+        --bit-ToggleButton-checked-hover-background: var(--lp-accent);
+        --bit-ToggleButton-checked-active-background: var(--lp-accent);
+        animation: lp-chat-dictating 1.6s var(--lp-ease) infinite;
+
+        @media (prefers-reduced-motion: reduce) {
+            animation: none;
+            box-shadow: 0 0 0 3px color-mix(in oklab, var(--lp-accent) 40%, transparent);
+        }
+    }
+}
+
+@keyframes lp-chat-dictating {
+    from {
+        box-shadow: 0 0 0 0 color-mix(in oklab, var(--lp-accent) 55%, transparent);
+    }
+
+    to {
+        box-shadow: 0 0 0 10px color-mix(in oklab, var(--lp-accent) 0%, transparent);
+    }
 }
 
 .lp-chat-notice {

@@ -3,7 +3,8 @@ using Boilerplate.Shared.Features.Chatbot;
 namespace Boilerplate.Client.Core.Components.Layout.AiChat;
 
 // Keeps the conversation on the device so closing the app doesn't start it over: one record, the conversation as
-// Bit.BlazorUI.AI writes it (BitAiConversationSerializer), its images by address rather than by their bytes. IndexedDB
+// Bit.BlazorUI.AI writes it (BitAiConversationSerializer), its images by address rather than by their bytes, under its
+// owner's id - so a tab that writes it as another hands the device over can't put it under the next owner's name. IndexedDB
 // rather than local storage: answers are markdown, and local storage has ~5MB per origin and writes on the UI thread.
 // Nothing here is uploaded - what leaves the device is the conversation each question already carries.
 // To store it on the server instead, only RestoreHistory, SaveHistory and ForgetHistory need a new body.
@@ -13,7 +14,6 @@ public partial class AppAiChat
     internal const string HistoryDatabase = "ai-chat-conversation";
 
     private const string ConversationStore = "conversation";
-    private const string ConversationKey = "current";
     private const string OwnerStore = "owner";
     private const string OwnerKey = "userId";
 
@@ -31,6 +31,9 @@ public partial class AppAiChat
     private string? historyOwner;
 
     private string? conversationOwner;
+
+    /// <summary>Changes with the hands the chat is in, so the next owner gets a BitAiChat of its own (See AppAiChat.razor).</summary>
+    private int chatGeneration;
 
     /// <summary>
     /// Who is at the device now; signed out counts as an owner. Read from the authentication state rather than the
@@ -75,7 +78,7 @@ public partial class AppAiChat
                 return;
             }
 
-            if (await historyDb.Get<string>(ConversationStore, ConversationKey) is { Length: > 0 } json)
+            if (await historyDb.Get<string>(ConversationStore, historyOwner) is { Length: > 0 } json)
             {
                 conversation = BitAiConversationSerializer.FromJson(json);
             }
@@ -115,6 +118,10 @@ public partial class AppAiChat
         try
         {
             await Clear(); // Forgets the stored one too, under the current owner's name.
+
+            // What the previous owner typed or picked and didn't send isn't part of the conversation, so it goes with the
+            // composer that holds it. The session carries on under the new one.
+            chatGeneration++;
         }
         catch
         {
@@ -130,20 +137,25 @@ public partial class AppAiChat
     /// <summary>Keeps the conversation as it is now, its newest <see cref="AiChatProtocol.MaxHistory"/> messages: anything older would only be read off the disk to be dropped.</summary>
     private Task SaveHistory() => TryHistory("save", async () =>
     {
-        if (historyDb is null || session is null) return;
+        if (historyDb is null || session is null || historyOwner is null) return;
 
-        // Another tab handed the stored conversation to someone else, so this one must not be written under their name.
+        // Another tab handed the stored conversation to someone else, so this one stops writing. A write that slips in
+        // as it does lands under its own owner's id, which the next owner never reads.
         if (await historyDb.Get<string>(OwnerStore, OwnerKey) != historyOwner)
         {
             CloseHistory();
             return;
         }
 
-        var snapshot = BitAiConversationSerializer.ToSnapshot(session.Conversation);
-        snapshot = snapshot with { Messages = [.. snapshot.Messages.TakeLast(AiChatProtocol.MaxHistory)] };
-
-        await historyDb.Put(ConversationStore, BitAiConversationSerializer.ToJson(snapshot), ConversationKey);
+        await historyDb.Put(ConversationStore, ConversationJson(), historyOwner);
     });
+
+    private string ConversationJson()
+    {
+        var snapshot = BitAiConversationSerializer.ToSnapshot(session!.Conversation);
+
+        return BitAiConversationSerializer.ToJson(snapshot with { Messages = [.. snapshot.Messages.TakeLast(AiChatProtocol.MaxHistory)] });
+    }
 
     /// <summary>Throws the stored conversation away, leaving it owned by whoever is at the device now.</summary>
     private Task ForgetHistory() => TryHistory("forget", async () =>
@@ -170,11 +182,17 @@ public partial class AppAiChat
         _ = closing?.DisposeAsync();
     }
 
+    /// <summary>
+    /// Makes whoever is at the device now the owner of what is stored. Signing in part way through carries the conversation
+    /// on, so it moves to the new owner's id in the same batch, and a reload finds it there.
+    /// </summary>
     private async Task ClaimHistory()
     {
         historyOwner = await CurrentHistoryOwner();
 
-        await historyDb!.Put(OwnerStore, historyOwner, OwnerKey);
+        await historyDb!.Transact([IndexedDbOperation.Clear(ConversationStore),
+                                   IndexedDbOperation.Put(OwnerStore, historyOwner, OwnerKey),
+                                   .. session is null ? [] : new[] { IndexedDbOperation.Put(ConversationStore, ConversationJson(), historyOwner) }]);
     }
 
     /// <summary>

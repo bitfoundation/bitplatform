@@ -1379,6 +1379,15 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   <data name="AiChatRecordingTimeLeft" xml:space="preserve">
     <value>Quedan {0}</value>
   </data>
+  <data name="AiChatDurationMinutes" xml:space="preserve">
+    <value>{0} min</value>
+  </data>
+  <data name="AiChatDurationSeconds" xml:space="preserve">
+    <value>{0} s</value>
+  </data>
+  <data name="AiChatRecordingStarted" xml:space="preserve">
+    <value>Grabando, quedan {0}</value>
+  </data>
   <data name="AiChatDropImage" xml:space="preserve">
     <value>Suelta la imagen para adjuntarla</value>
   </data>

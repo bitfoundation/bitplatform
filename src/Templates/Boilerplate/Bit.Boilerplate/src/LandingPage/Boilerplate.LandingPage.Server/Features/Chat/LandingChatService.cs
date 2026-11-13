@@ -12,17 +12,34 @@ namespace Boilerplate.LandingPage.Server.Features.Chat;
 /// </summary>
 public sealed partial class LandingChatService(IServiceProvider serviceProvider,
     LandingServerSettings settings,
+    LandingChatQuestionLimiter questionLimiter,
     IStringLocalizer<LandingStrings> localizer,
     IStringLocalizerFactory localizerFactory,
     ILogger<LandingChatService> logger)
 {
-    public const int MaxTurns = 20;
-
     /// <summary>The longest question; the chat's text box takes no more (See LandingChatSurface).</summary>
     public const int MaxTurnLength = 1_000;
 
     /// <summary>The longest answer sent back as part of the conversation: well over what AI:ChatOptions:MaxOutputTokens lets the model write.</summary>
     public const int MaxAnswerLength = 8_000;
+
+    /// <summary>
+    /// Answers a question once it's within the visitor's allowance (See LandingChatEndpoints.AddLandingChat). The one way in
+    /// for the socket and for Blazor Server alike, so neither asks the model more often than the other.
+    /// </summary>
+    public IAsyncEnumerable<BitAiEvent> Answer(BitAiRequest request, string visitor, CancellationToken cancellationToken)
+    {
+        using var lease = questionLimiter.Limiter.AttemptAcquire(visitor);
+
+        if (lease.IsAcquired is false)
+        {
+            var culture = LandingCultures.Find(ContextValue(request, LandingChatContext.Culture)) ?? LandingCultures.Default;
+
+            return Only(Failure(localizer.In(culture, nameof(LandingStrings.ChatTooManyQuestions)), retryable: false));
+        }
+
+        return StreamAsync(request, cancellationToken);
+    }
 
     public async IAsyncEnumerable<BitAiEvent> StreamAsync(BitAiRequest request, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
@@ -54,7 +71,7 @@ public sealed partial class LandingChatService(IServiceProvider serviceProvider,
         }
 
         List<ChatMessage> messages = [new(ChatRole.System, isGallery ? LandingChatPrompts.GetGallery(culture, localizerFactory) : LandingChatPrompts.Get(site!, culture))];
-        messages.AddRange(turns.TakeLast(12));
+        messages.AddRange(turns);
 
         // A copy for each question, as ChatOptions is mutable and the settings' instance is shared by every request
         var options = settings.AI.ChatOptions.Clone();
@@ -105,15 +122,20 @@ public sealed partial class LandingChatService(IServiceProvider serviceProvider,
     private static string[] ShowSamples([Description("The keys of the samples to show, best match first, at most 3")] string[] keys)
         => [.. keys.Select(LandingSites.Find).OfType<LandingSite>().Select(site => site.Key).Distinct().Take(3)];
 
-    /// <summary>The conversation as the model reads it, or null when it's too long or doesn't end with the visitor's question.</summary>
+    /// <summary>
+    /// The newest turns of the conversation, as the model reads them (See LandingChatContext.MaxTurns), or null when one of
+    /// them is too long or the last isn't the visitor's question. Older turns are left out rather than refused, so a long
+    /// conversation goes on.
+    /// </summary>
     private static ChatMessage[]? Turns(BitAiRequest request)
     {
         // A message the visitor stopped half way still says what it said; tool cards and the like aren't words of the conversation
         ChatMessage[] turns = [.. request.Messages.Where(message => message.Role.IsUser || message.Role.IsAssistant)
                                                   .Select(message => new ChatMessage(message.Role.IsUser ? ChatRole.User : ChatRole.Assistant, message.GetText().Trim()))
-                                                  .Where(turn => turn.Text.Length > 0)];
+                                                  .Where(turn => turn.Text.Length > 0)
+                                                  .TakeLast(LandingChatContext.MaxTurns)];
 
-        if (turns is not { Length: > 0 and <= MaxTurns } || turns[^1].Role != ChatRole.User)
+        if (turns is not { Length: > 0 } || turns[^1].Role != ChatRole.User)
             return null;
 
         return turns.All(turn => turn.Text.Length <= (turn.Role == ChatRole.User ? MaxTurnLength : MaxAnswerLength)) ? turns : null;
@@ -129,6 +151,13 @@ public sealed partial class LandingChatService(IServiceProvider serviceProvider,
 
     public static BitAiErrorEvent Failure(string message, bool retryable) => new(new BitAiError(message) { IsRetryable = retryable });
 
+#pragma warning disable CS1998 // An iterator of one event needs no await
+    private static async IAsyncEnumerable<BitAiEvent> Only(BitAiEvent evt)
+    {
+        yield return evt;
+    }
+#pragma warning restore CS1998
+
     [LoggerMessage(Level = LogLevel.Error, Message = "The chat of {Site} couldn't get an answer from the model")]
     private static partial void LogModelFailed(ILogger logger, Exception exception, string site);
 
@@ -136,14 +165,20 @@ public sealed partial class LandingChatService(IServiceProvider serviceProvider,
     private static partial void LogModelReportedError(ILogger logger, string site, string? errorCode);
 }
 
-/// <summary>The chat's server end under Blazor Server, where the components already run on the server (See ILandingChatBackend).</summary>
-public sealed class DirectLandingChatBackend(LandingChatService chatService, IServiceProvider serviceProvider) : ILandingChatBackend
+/// <summary>
+/// The chat's server end under Blazor Server, where the components already run on the server (See ILandingChatBackend). Its
+/// questions count against the same allowance as the socket's: the visitor is told by the address of the circuit's
+/// connection, read as the chat first asks, and a circuit that can't tell counts as a visitor of its own.
+/// </summary>
+public sealed class DirectLandingChatBackend(LandingChatService chatService, IHttpContextAccessor httpContextAccessor, IServiceProvider serviceProvider) : ILandingChatBackend
 {
+    private readonly string visitor = httpContextAccessor.HttpContext?.GetClientIp() ?? $"circuit-{Guid.NewGuid():N}";
+
     public async IAsyncEnumerable<string> StreamAsync(string request, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         var question = BitAiWireSerializer.ToRequest(BitAiWireSerializer.DeserializeRequest(request), services: serviceProvider);
 
-        await foreach (var evt in chatService.StreamAsync(question, cancellationToken))
+        await foreach (var evt in chatService.Answer(question, visitor, cancellationToken))
         {
             yield return BitAiWireSerializer.Serialize(evt);
         }
@@ -194,7 +229,8 @@ public static partial class LandingChatEndpoints
     {
         app.MapBitAiWebSocket("/api/chat", Answer, new()
         {
-            // Many times what twenty turns can take, and far less than the library's default
+            // Many times what the turns a question carries can take (See LandingChatContext.MaxTurns), and far less than the
+            // library's default
             MaxRequestSize = 512 * 1024,
             RequestTimeout = TimeSpan.FromSeconds(15),
             WebSockets = new() { KeepAliveInterval = TimeSpan.FromSeconds(20) }
@@ -205,19 +241,7 @@ public static partial class LandingChatEndpoints
     }
 
     private static IAsyncEnumerable<BitAiEvent> Answer(BitAiRequest request, HttpContext context, CancellationToken cancellationToken)
-    {
-        using var lease = context.RequestServices.GetRequiredService<LandingChatQuestionLimiter>().Limiter.AttemptAcquire(context.GetClientIp());
-
-        if (lease.IsAcquired is false)
-        {
-            var culture = LandingCultures.Find(request.Context?.GetValueOrDefault(LandingChatContext.Culture) is JsonElement { ValueKind: JsonValueKind.String } name ? name.GetString() : null) ?? LandingCultures.Default;
-            var localizer = context.RequestServices.GetRequiredService<IStringLocalizer<LandingStrings>>();
-
-            return Only(LandingChatService.Failure(localizer.In(culture, nameof(LandingStrings.ChatTooManyQuestions)), retryable: false));
-        }
-
-        return context.RequestServices.GetRequiredService<LandingChatService>().StreamAsync(request, cancellationToken);
-    }
+        => context.RequestServices.GetRequiredService<LandingChatService>().Answer(request, context.GetClientIp(), cancellationToken);
 
     /// <summary>Browsers apply no CORS to WebSockets, so this keeps other sites' pages from using the chat.</summary>
     private static TBuilder RequireSameOrigin<TBuilder>(this TBuilder builder)
@@ -243,13 +267,6 @@ public static partial class LandingChatEndpoints
 
         return builder;
     }
-
-#pragma warning disable CS1998 // An iterator of one event needs no await
-    private static async IAsyncEnumerable<BitAiEvent> Only(BitAiEvent evt)
-    {
-        yield return evt;
-    }
-#pragma warning restore CS1998
 }
 
 /// <summary>How many questions each visitor may ask (See <see cref="LandingChatEndpoints.AddLandingChat"/>).</summary>

@@ -56,6 +56,7 @@ public partial class AppAiChat
     [AutoInject] private ILogger<AppAiChat> logger = default!;
 
     private BitAiChat? chat;
+    private BitAiReadAloud? tunedReadAloud;
     private BitAiChatSession? session;
     private BitAiUiOptions uiOptions = default!;
     private IBitComponentParams[] parameters = [];
@@ -122,7 +123,8 @@ public partial class AppAiChat
 
         if (string.IsNullOrWhiteSpace(InitialPrompt) is false)
         {
-            _ = SendPrompt(InitialPrompt);
+            // Not awaited, so the chat renders while the answer streams; what goes wrong is still handled, as an awaited one's would be
+            _ = WrapHandled<string>(SendPrompt)(InitialPrompt);
         }
 
         await base.OnInitAsync();
@@ -136,13 +138,21 @@ public partial class AppAiChat
         await base.OnParamsSetAsync();
     }
 
-    protected override async Task OnAfterFirstRenderAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (chat?.ReadAloud is { } readAloud)
+        // The chat makes a new reader whenever reading aloud comes back - after a voice call - and is itself new after a
+        // change of hands (See SyncHistoryOwner), so each one is set up as it appears
+        if (chat?.ReadAloud is { } readAloud && readAloud != tunedReadAloud)
         {
             readAloud.PlaybackRate = ReadAloudPlaybackRate;
+            tunedReadAloud = readAloud;
         }
 
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    protected override async Task OnAfterFirstRenderAsync()
+    {
         await InitializeVoiceCall();
 
         await base.OnAfterFirstRenderAsync();

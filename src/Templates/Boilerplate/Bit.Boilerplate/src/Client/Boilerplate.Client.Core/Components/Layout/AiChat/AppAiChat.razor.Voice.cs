@@ -418,6 +418,7 @@ public partial class AppAiChat
     {
         TaskCompletionSource<BitAiApprovalDecision> decision = new(TaskCreationOptions.RunContinuationsAsynchronously);
         string? toolCallId = null;
+        BitAiToolCallPart? awaited = null;
 
         void OnDecided(BitAiToolCallPart call, BitAiApprovalDecision value)
         {
@@ -443,6 +444,8 @@ public partial class AppAiChat
                 session.Processor.Apply(evt with { MessageId = message.MessageId });
             }
 
+            awaited = toolCallId is null ? null : message.FindToolCall(toolCallId);
+
             session.ApprovalDecided += OnDecided;
             RaiseStatusChanged();
         });
@@ -456,7 +459,19 @@ public partial class AppAiChat
         finally
         {
             if (session is not null) session.ApprovalDecided -= OnDecided;
-            _ = InvokeAsync(RaiseStatusChanged);
+
+            _ = InvokeAsync(async () =>
+            {
+                // Hung up before the user decided: the approval is withdrawn, so its buttons don't stay on screen offering a
+                // decision nothing waits for any more
+                if (awaited is { Status: BitAiToolCallStatus.AwaitingApproval })
+                {
+                    awaited.SetStatus(BitAiToolCallStatus.Cancelled);
+                    await SaveHistory();
+                }
+
+                RaiseStatusChanged();
+            });
         }
     }
 
@@ -508,13 +523,21 @@ public partial class AppAiChat
         isVoiceCallSpeaking = false;
         speechPercent = 0;
 
-        foreach (var spoken in voiceCallMessages.Values.Where(message => message.IsBusy))
+        var interrupted = voiceCallMessages.Values.Where(message => message.IsBusy).ToArray();
+
+        foreach (var spoken in interrupted)
         {
             spoken.CompleteOpenParts();
             spoken.SetStatus(BitAiMessageStatus.Complete);
         }
 
         voiceCallMessages.Clear();
+
+        // What was said before the call ended mid-sentence is kept like the rest, rather than only until the next save
+        if (interrupted.Length > 0)
+        {
+            await SaveHistory();
+        }
 
         // Releases a message waiting for a response that will never finish.
         voiceCallResponse?.TrySetResult();

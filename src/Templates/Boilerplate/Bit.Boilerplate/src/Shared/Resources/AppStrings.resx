@@ -1379,6 +1379,15 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
   <data name="AiChatRecordingTimeLeft" xml:space="preserve">
     <value>{0} left</value>
   </data>
+  <data name="AiChatDurationMinutes" xml:space="preserve">
+    <value>{0} min</value>
+  </data>
+  <data name="AiChatDurationSeconds" xml:space="preserve">
+    <value>{0} sec</value>
+  </data>
+  <data name="AiChatRecordingStarted" xml:space="preserve">
+    <value>Recording, {0} left</value>
+  </data>
   <data name="AiChatDropImage" xml:space="preserve">
     <value>Drop the image to attach it</value>
   </data>

@@ -46,7 +46,13 @@ public partial class LandingChatSurface : IAsyncDisposable
 
         parameters =
         [
-            new BitAiPromptInputParams { DictationLanguage = CultureInfo.CurrentUICulture.Name },
+            new BitAiPromptInputParams
+            {
+                DictationLanguage = CultureInfo.CurrentUICulture.Name,
+                // The microphone says that it listens in the page's own way: the browser's speech recognition, which this chat
+                // dictates with, shows nothing else for it (See specs/workarounds.md)
+                Classes = new() { VoiceInput = new() { Button = new() { Checked = "lp-chat-dictating" } } }
+            },
             new BitAiMessageActionsParams { ShowFeedback = false }
         ];
 

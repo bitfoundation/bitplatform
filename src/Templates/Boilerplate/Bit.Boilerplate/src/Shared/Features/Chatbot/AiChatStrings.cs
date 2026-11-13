@@ -73,7 +73,22 @@ public sealed class AiChatStrings(IStringLocalizer<AppStrings> localizer) : BitA
 
     public override string DictationFailed(string error) => localizer[nameof(AppStrings.AiChatPanelDictationStopped), error];
 
+    public override string RecordingStarted(TimeSpan remaining) => localizer[nameof(AppStrings.AiChatRecordingStarted), RecordingDuration(remaining)];
+
     public override string RecordingTimeLeft(TimeSpan remaining) => localizer[nameof(AppStrings.AiChatRecordingTimeLeft), RecordingDuration(remaining)];
+
+    // The library's own says it in English. Abbreviated units, so no language needs a plural of its own.
+    public override string RecordingDuration(TimeSpan duration)
+    {
+        var seconds = (int)Math.Ceiling(Math.Max(0, duration.TotalSeconds));
+        var (minutes, rest) = (seconds / 60, seconds % 60);
+
+        if (minutes is 0) return localizer[nameof(AppStrings.AiChatDurationSeconds), rest];
+
+        if (rest is 0) return localizer[nameof(AppStrings.AiChatDurationMinutes), minutes];
+
+        return $"{localizer[nameof(AppStrings.AiChatDurationMinutes), minutes]} {localizer[nameof(AppStrings.AiChatDurationSeconds), rest]}";
+    }
 
     public override string ReadAloud => localizer[nameof(AppStrings.AiChatPanelReadAloud)];
 

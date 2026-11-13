@@ -1379,6 +1379,15 @@
   <data name="AiChatRecordingTimeLeft" xml:space="preserve">
     <value>{0} مانده</value>
   </data>
+  <data name="AiChatDurationMinutes" xml:space="preserve">
+    <value>{0} دقیقه</value>
+  </data>
+  <data name="AiChatDurationSeconds" xml:space="preserve">
+    <value>{0} ثانیه</value>
+  </data>
+  <data name="AiChatRecordingStarted" xml:space="preserve">
+    <value>در حال ضبط، {0} مانده</value>
+  </data>
   <data name="AiChatDropImage" xml:space="preserve">
     <value>تصویر را رها کنید تا پیوست شود</value>
   </data>

@@ -46,7 +46,7 @@
         }
 
         &.ending {
-            animation: speech-timer-ending 1.2s ease-in-out infinite;
+            animation: speech-timer-ending calc(1.2s * #{$bit-motion-loop-factor}) $bit-motion-easing infinite;
         }
 
         @media (prefers-reduced-motion: reduce) {

@@ -28,7 +28,7 @@
 
         // A call goes on while the panel is closed.
         &.in-call {
-            animation: open-panel-in-call 1.6s ease-out infinite;
+            animation: open-panel-in-call calc(1.6s * #{$bit-motion-loop-factor}) $bit-motion-easing-decelerate infinite;
         }
 
         // A tool waits for the user's approval.

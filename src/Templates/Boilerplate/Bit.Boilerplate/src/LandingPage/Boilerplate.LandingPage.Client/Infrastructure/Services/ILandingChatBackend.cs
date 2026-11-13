@@ -28,4 +28,10 @@ public static class LandingChatContext
 
     /// <summary>The gallery chat's tool that shows the samples it recommends as cards the visitor can open.</summary>
     public const string ShowSamplesTool = "ShowSamples";
+
+    /// <summary>
+    /// How many of the conversation's newest messages go with a question, and the model reads: the conversation goes on as
+    /// long as the visitor likes, while what one question sends stays bounded.
+    /// </summary>
+    public const int MaxTurns = 12;
 }

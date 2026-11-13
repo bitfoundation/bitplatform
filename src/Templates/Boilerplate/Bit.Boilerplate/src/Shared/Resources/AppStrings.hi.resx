@@ -1379,6 +1379,15 @@
   <data name="AiChatRecordingTimeLeft" xml:space="preserve">
     <value>{0} शेष</value>
   </data>
+  <data name="AiChatDurationMinutes" xml:space="preserve">
+    <value>{0} मिनट</value>
+  </data>
+  <data name="AiChatDurationSeconds" xml:space="preserve">
+    <value>{0} सेकंड</value>
+  </data>
+  <data name="AiChatRecordingStarted" xml:space="preserve">
+    <value>रिकॉर्डिंग हो रही है, {0} शेष</value>
+  </data>
   <data name="AiChatDropImage" xml:space="preserve">
     <value>संलग्न करने के लिए छवि यहां छोड़ें</value>
   </data>

@@ -9,7 +9,7 @@
         <BitStack Element="ul" Gap="0.5rem" Class="approval-consequences" AriaLabel="@Localizer[nameof(AppStrings.AiChatApprovalWhatHappens)]">
             @foreach (var (iconName, text) in consequences)
             {
-                <BitStack Element="li" Horizontal Gap="0.625rem" VerticalAlign="BitAlignment.Center">
+                <BitStack @key="iconName" Element="li" Horizontal Gap="0.625rem" VerticalAlign="BitAlignment.Center">
                     <BitIcon IconName="@iconName" Color="BitColor.SecondaryForeground" />
                     <BitText Typography="BitTypography.Body2">@text</BitText>
                 </BitStack>

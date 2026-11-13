@@ -90,16 +90,22 @@ public partial class LandingChat
 
         isLoading = true;
 
-        isLoaded = await Load();
-        hasFailed = isLoaded is false;
-
-        isLoading = false;
+        try
+        {
+            isLoaded = await Load();
+            hasFailed = isLoaded is false;
+        }
+        finally
+        {
+            isLoading = false;
+        }
     }
 
-    // One download however many times it's asked for, and a failed one is tried again the next time
+    // One download however many times it's asked for, and one that failed - or broke off, as JS interop does when a Blazor
+    // Server circuit drops - is tried again the next time
     private Task<bool> Load()
     {
-        if (loading is null || (loading.IsCompleted && loading.Result is false))
+        if (loading is null || (loading.IsCompleted && loading is not { IsCompletedSuccessfully: true, Result: true }))
         {
             loading = LoadAssets();
         }
@@ -122,9 +128,10 @@ public partial class LandingChat
 
             return true;
         }
-        catch (Exception exp) when (exp is JSException or HttpRequestException or InvalidOperationException)
+        catch (Exception exp) when (exp is JSException or JSDisconnectedException or TaskCanceledException or HttpRequestException or InvalidOperationException)
         {
-            // Offline, or a deployment the page outlived: the chat says it couldn't open, and opening it again tries again
+            // Offline, a deployment the page outlived or a dropped circuit: the chat says it couldn't open, and opening it
+            // again tries again
             return false;
         }
     }

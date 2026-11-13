@@ -7,7 +7,9 @@
     {
         <CascadingValue Value="renderers" IsFixed="true">
             <BitParams Parameters="parameters">
-                <BitAiChat @ref="chat"
+                @* Keyed so a change of hands gets a composer of its own, without the draft and the images of the one before (See SyncHistoryOwner). *@
+                <BitAiChat @key="chatGeneration"
+                           @ref="chat"
                            Session="session"
                            UiOptions="uiOptions"
                            Dir="CurrentDir"

@@ -281,10 +281,12 @@ public partial class AppChatbot
 
             if (string.IsNullOrWhiteSpace(text) && images.Length is 0) continue;
 
-            messages.Add(await ToChatMessage(role, text, images, cancellationToken));
+            messages.Add(ToChatMessage(role, text, images));
         }
 
         TrimChatHistory(messages);
+
+        await ReadAttachedImages(messages, cancellationToken);
 
         return messages;
     }
@@ -331,8 +333,8 @@ public partial class AppChatbot
     private static Guid? AttachedImageId(BitAiAttachment attachment)
         => ExtraValue(attachment.Metadata, AiChatProtocol.AttachmentId) is { } id && Guid.TryParse(id, out var attachmentId) ? attachmentId : null;
 
-    /// <summary>The text of a message, plus the images the user attached to it, if any.</summary>
-    private async Task<ChatMessage> ToChatMessage(ChatRole role, string? content, Guid[] attachmentIds, CancellationToken cancellationToken)
+    /// <summary>The text of a message, plus the images the user attached to it, if any, by their ids (See <see cref="ReadAttachedImages"/>).</summary>
+    private static ChatMessage ToChatMessage(ChatRole role, string? content, Guid[] attachmentIds)
     {
         List<AIContent> contents = [];
 
@@ -341,12 +343,44 @@ public partial class AppChatbot
             contents.Add(new TextContent(content));
         }
 
-        foreach (var attachmentId in attachmentIds)
-        {
-            contents.Add(await ReadAttachedImage(attachmentId, cancellationToken));
-        }
+        contents.AddRange(attachmentIds.Select(attachmentId => new AttachedImage(attachmentId)));
 
         return new ChatMessage(role, contents);
+    }
+
+    /// <summary>An image of the conversation by its id, until <see cref="ReadAttachedImages"/> reads it.</summary>
+    private sealed class AttachedImage(Guid attachmentId) : AIContent
+    {
+        public Guid AttachmentId { get; } = attachmentId;
+    }
+
+    /// <summary>
+    /// Reads the pictures the model is shown, once <see cref="TrimChatHistory"/> has picked them, rather than every one the
+    /// conversation holds. A picture AiChatImagesRetentionJobRunner has deleted since is left out, rather than failing the
+    /// question or every one after it: the conversation comes back from the device for as long as the user keeps it.
+    /// </summary>
+    private async Task ReadAttachedImages(List<ChatMessage> messages, CancellationToken cancellationToken)
+    {
+        foreach (var message in messages)
+        {
+            var contents = message.Contents;
+
+            for (var i = contents.Count - 1; i >= 0; i--)
+            {
+                if (contents[i] is not AttachedImage image) continue;
+
+                if (await ReadAttachedImage(image.AttachmentId, cancellationToken) is { } read)
+                {
+                    contents[i] = read;
+                }
+                else
+                {
+                    contents.RemoveAt(i);
+                }
+            }
+
+            KeepSaying(contents);
+        }
     }
 
     /// <summary>What <c>AttachmentController</c> stores and serves an AI chat image as.</summary>
@@ -363,14 +397,16 @@ public partial class AppChatbot
     /// to do the same.
     /// </para>
     /// </summary>
-    private async Task<AIContent> ReadAttachedImage(Guid attachmentId, CancellationToken cancellationToken)
+    private async Task<AIContent?> ReadAttachedImage(Guid attachmentId, CancellationToken cancellationToken)
     {
+        var path = AttachmentController.GetFilePath(appSettings, attachmentId, AttachmentKind.AiChatImage);
+
+        if (await blobStorage.ObjectExists(path, cancellationToken) is false) return null;
+
         if (hostEnvironment.IsDevelopment() is false)
         {
             return new UriContent(new Uri(httpContextAccessor.HttpContext!.Request.GetBaseUrl(), $"api/v1/Attachment/GetAttachment/{attachmentId}/{AttachmentKind.AiChatImage}"), AiChatImageMediaType);
         }
-
-        var path = AttachmentController.GetFilePath(appSettings, attachmentId, AttachmentKind.AiChatImage);
 
         return new DataContent(await blobStorage.GetBytes(path, cancellationToken), AiChatImageMediaType);
     }
@@ -404,21 +440,27 @@ public partial class AppChatbot
 
             for (var j = contents.Count - 1; j >= 0; j--)
             {
-                // Both shapes a picture arrives in - see ReadAttachedImage - or the cap would quietly stop applying
-                // in every environment that hands the model a url.
-                if (contents[j] is not (DataContent or UriContent)) continue;
+                // Still ids here, so the pictures past the cap are never read (See ReadAttachedImages)
+                if (contents[j] is not AttachedImage) continue;
 
                 if (++pictures <= MaxImagesInHistory) continue;
 
                 contents.RemoveAt(j);
             }
 
-            // What was said about a picture stays in the conversation once the picture itself is gone - but a message
-            // that was nothing else is left with no content at all, which not every provider accepts.
-            if (contents.Count == 0)
-            {
-                contents.Add(new TextContent("(an image the user attached earlier)"));
-            }
+            KeepSaying(contents);
+        }
+    }
+
+    /// <summary>
+    /// What was said about a picture stays in the conversation once the picture itself is left out - but a message that was
+    /// nothing else is left with no content at all, which not every provider accepts.
+    /// </summary>
+    private static void KeepSaying(IList<AIContent> contents)
+    {
+        if (contents.Count == 0)
+        {
+            contents.Add(new TextContent("(an image the user attached earlier)"));
         }
     }
 

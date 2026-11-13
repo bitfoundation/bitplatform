@@ -14,8 +14,9 @@ internal sealed class LandingAiTransport(string siteKey, Uri endpoint, ILandingC
 
     public IAsyncEnumerable<BitAiEvent> StreamAsync(BitAiRequest request, CancellationToken cancellationToken = default)
     {
-        // The sample and the language travel with the conversation, so the answer is about the right sample, in the visitor's language
-        var question = new BitAiRequest(request.Messages)
+        // The sample and the language travel with the conversation, so the answer is about the right sample, in the visitor's
+        // language. Only its newest messages: the server reads no more (See LandingChatContext.MaxTurns).
+        var question = new BitAiRequest([.. request.Messages.TakeLast(LandingChatContext.MaxTurns)])
         {
             ConversationId = request.ConversationId,
             Options = request.Options,

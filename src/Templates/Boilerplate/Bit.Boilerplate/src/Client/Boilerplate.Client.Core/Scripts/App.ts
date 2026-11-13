@@ -22,19 +22,41 @@ export class App {
         return App.jsBridgeObj?.invokeMethodAsync('PublishMessage', message, payload);
     }
 
-    /* Adds stylesheets and scripts a feature brings only once it's used, each once however often it's asked for.
-       Called by `AppAiChatPanel.razor.cs`, which loads the AI chat when it first opens. */
+    // Each asset's download, so a caller asking while it's under way waits for the same one.
+    private static assets = new Map<string, Promise<void>>();
+
+    /* Adds stylesheets and scripts a feature brings only once it's used, each once however often it's asked for, and
+       a failed one again the next time. Called by `AppAiChatPanel.razor.cs`, which loads the AI chat when it first opens. */
     public static loadAssets(styles: string[], scripts: string[]) {
-        const load = (tag: 'link' | 'script', attributes: Record<string, string>, selector: string) => document.querySelector(selector)
-            ? Promise.resolve()
-            : new Promise<void>((resolve, reject) => {
-                const element = Object.assign(document.createElement(tag), attributes, { onload: () => resolve(), onerror: reject });
+        const load = (tag: 'link' | 'script', attributes: Record<string, string>, url: string, selector: string) => {
+            const known = App.assets.get(url);
+            if (known) return known;
+
+            // One the page itself carries
+            if (document.querySelector(selector)) return Promise.resolve();
+
+            const loading = new Promise<void>((resolve, reject) => {
+                const element = Object.assign(document.createElement(tag), attributes);
+
+                element.onload = () => resolve();
+                element.onerror = () => {
+                    // Gone, so that asking again downloads it again rather than finding the element and taking it as loaded
+                    element.remove();
+                    App.assets.delete(url);
+                    reject(new Error(`Failed to load ${url}`));
+                };
+
                 (tag === 'link' ? document.head : document.body).appendChild(element);
             });
 
+            App.assets.set(url, loading);
+
+            return loading;
+        };
+
         return Promise.all([
-            ...styles.map(href => load('link', { rel: 'stylesheet', href }, `link[href="${href}"]`)),
-            ...scripts.map(src => load('script', { src }, `script[src="${src}"]`))
+            ...styles.map(href => load('link', { rel: 'stylesheet', href }, href, `link[href="${href}"]`)),
+            ...scripts.map(src => load('script', { src }, src, `script[src="${src}"]`))
         ]);
     }
 

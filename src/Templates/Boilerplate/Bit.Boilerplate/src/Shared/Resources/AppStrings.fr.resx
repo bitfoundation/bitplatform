@@ -1379,6 +1379,15 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   <data name="AiChatRecordingTimeLeft" xml:space="preserve">
     <value>Encore {0}</value>
   </data>
+  <data name="AiChatDurationMinutes" xml:space="preserve">
+    <value>{0} min</value>
+  </data>
+  <data name="AiChatDurationSeconds" xml:space="preserve">
+    <value>{0} s</value>
+  </data>
+  <data name="AiChatRecordingStarted" xml:space="preserve">
+    <value>Enregistrement, encore {0}</value>
+  </data>
   <data name="AiChatDropImage" xml:space="preserve">
     <value>Déposez l&apos;image pour la joindre</value>
   </data>

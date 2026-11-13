@@ -1379,6 +1379,15 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   <data name="AiChatRecordingTimeLeft" xml:space="preserve">
     <value>{0} kvar</value>
   </data>
+  <data name="AiChatDurationMinutes" xml:space="preserve">
+    <value>{0} min</value>
+  </data>
+  <data name="AiChatDurationSeconds" xml:space="preserve">
+    <value>{0} s</value>
+  </data>
+  <data name="AiChatRecordingStarted" xml:space="preserve">
+    <value>Spelar in, {0} kvar</value>
+  </data>
   <data name="AiChatDropImage" xml:space="preserve">
     <value>Släpp bilden för att bifoga den</value>
   </data>

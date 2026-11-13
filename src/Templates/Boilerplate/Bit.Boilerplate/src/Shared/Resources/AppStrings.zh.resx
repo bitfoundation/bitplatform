@@ -1379,6 +1379,15 @@
   <data name="AiChatRecordingTimeLeft" xml:space="preserve">
     <value>剩余 {0}</value>
   </data>
+  <data name="AiChatDurationMinutes" xml:space="preserve">
+    <value>{0} 分钟</value>
+  </data>
+  <data name="AiChatDurationSeconds" xml:space="preserve">
+    <value>{0} 秒</value>
+  </data>
+  <data name="AiChatRecordingStarted" xml:space="preserve">
+    <value>正在录音，剩余 {0}</value>
+  </data>
   <data name="AiChatDropImage" xml:space="preserve">
     <value>拖放图片以附加</value>
   </data>

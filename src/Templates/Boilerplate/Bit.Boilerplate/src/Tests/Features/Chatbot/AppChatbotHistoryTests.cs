@@ -580,6 +580,47 @@ public partial class AppChatbotHistoryTests
     }
 
     /// <summary>
+    /// The conversation comes back from the device for as long as the user keeps it, while AiChatImagesRetentionJobRunner
+    /// deletes its pictures after a few hours. A picture that is gone is left out of what the model is handed - the url of
+    /// a missing picture fails the provider's request, and reading its bytes fails the question - and what was said about
+    /// it still goes up.
+    /// </summary>
+    [TestMethod]
+    public async Task APictureRetentionHasDeleted_Should_BeLeftOut_WhileTheConversationGoesOn()
+    {
+        var chatClient = new TestChatClient();
+
+        await using var server = BuildServerWith(chatClient);
+        await server.Start(TestContext.CancellationToken);
+
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
+        var httpContext = SetCurrentHttpContext(scope.ServiceProvider, server.WebAppAddress);
+
+        var attachmentId = Guid.NewGuid();
+        await StoreAiChatImage(scope.ServiceProvider, attachmentId, [0x52, 0x49, 0x46, 0x46]);
+
+        await using var panel = new TestAiChatPanel(scope.ServiceProvider, httpContext.User);
+
+        await panel.Ask("what is in this picture?", [Image(attachmentId)], TestContext.CancellationToken);
+
+        // What the retention job does once the picture is past its time
+        var path = AttachmentController.GetFilePath(scope.ServiceProvider.GetRequiredService<ServerApiSettings>(), attachmentId, AttachmentKind.AiChatImage);
+        await scope.ServiceProvider.GetRequiredService<IStore>().DeleteSingleObject(path, TestContext.CancellationToken);
+
+        var answer = await panel.Ask("and what colour is it?", cancellationToken: TestContext.CancellationToken);
+
+        Assert.AreEqual(BitAiMessageStatus.Complete, answer.Status, "The question after the picture was deleted must still be answered.");
+
+        var conversation = chatClient.ReceivedConversations[^1];
+
+        Assert.IsEmpty(conversation.SelectMany(message => message.Contents).Where(content => content is DataContent or UriContent),
+            $"The deleted picture was still handed to the model. Conversation: {Describe(conversation)}");
+
+        Assert.Contains(message => message.Text?.Contains("what is in this picture?", StringComparison.Ordinal) is true, conversation,
+            $"What was said about the picture must stay in the conversation. Conversation: {Describe(conversation)}");
+    }
+
+    /// <summary>
     /// Outside development the picture is handed over as a url the provider fetches for itself, rather than as bytes
     /// read from storage and re-uploaded on every turn. The bytes path stays for development, where the provider
     /// cannot reach a backend serving localhost - which is why every other test here sees a <c>DataContent</c>.
