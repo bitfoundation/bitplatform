@@ -1,0 +1,86 @@
+﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
+
+// Public CSS variables, read with a fallback and never declared here, so a value set on :root re-skins every avatar
+// group and one set on the Style of an instance that one:
+//   --bit-AvatarGroup-overlap              share of a coin each avatar covers of the one before it   (default: 0.2)
+//   --bit-AvatarGroup-gap                  room between the avatars of a Spread group                (default: spacing(0.5))
+//   --bit-AvatarGroup-ring-color           ring that cuts overlapping coins apart                    (default: $clr-bg-pri)
+//   --bit-AvatarGroup-ring-width           width of that ring                                        (default: 2px)
+//   --bit-AvatarGroup-overflow-background  fill of the overflow coin                                 (default: $clr-bg-ter)
+//   --bit-AvatarGroup-overflow-color       count on the overflow coin                                (default: $clr-fg-pri)
+//   --bit-AvatarGroup-overflow-border-color edge of the overflow coin, which keeps it a coin on any surface (default: $clr-brd-sec)
+//
+// The avatars are BitPersonas, which every --bit-Persona-* variable restyles as well.
+
+.bit-avg {
+    display: inline-flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    // The width of one coin of the size the group is drawn in, which the overlap is a share of: the same values the
+    // persona sizes its coins with, published per size below.
+    --bit-avg-coin: #{spacing(4)};
+
+    // Each avatar is drawn over the one before it, cut out of it by a ring of the color of the surface. The ring gives
+    // way to the focus ring of a coin that has the keyboard, which is also lifted over its neighbors, as one under the
+    // pointer is, so neither is half hidden behind the next coin.
+    &:not(.bit-avg-spr) {
+        > .bit-prs + .bit-prs {
+            margin-inline-start: calc(var(--bit-avg-coin) * var(--bit-AvatarGroup-overlap, 0.2) * -1);
+        }
+
+        .bit-prs-cne:not(:focus-visible) {
+            box-shadow: 0 0 0 var(--bit-AvatarGroup-ring-width, 2px) var(--bit-AvatarGroup-ring-color, #{$clr-bg-pri});
+        }
+    }
+
+    > .bit-prs {
+        position: relative;
+
+        &:hover,
+        &:focus-within {
+            z-index: 1;
+        }
+    }
+}
+
+.bit-avg-spr {
+    gap: var(--bit-AvatarGroup-gap, #{spacing(0.5)});
+}
+
+// The overflow coin publishes no coin color of its own, so the persona's variables for an unset one are what paint it.
+.bit-avg-ovf {
+    --bit-Persona-coin-background: var(--bit-AvatarGroup-overflow-background, #{$clr-bg-ter});
+    --bit-Persona-coin-color: var(--bit-AvatarGroup-overflow-color, #{$clr-fg-pri});
+}
+
+.bit-avg-ovf .bit-prs-fil {
+    border-color: var(--bit-AvatarGroup-overflow-border-color, #{$clr-brd-sec});
+}
+
+.bit-avg-s24 {
+    --bit-avg-coin: #{spacing(3)};
+}
+
+.bit-avg-s40 {
+    --bit-avg-coin: #{spacing(5)};
+}
+
+.bit-avg-s48 {
+    --bit-avg-coin: #{spacing(6)};
+}
+
+.bit-avg-s56 {
+    --bit-avg-coin: #{spacing(7)};
+}
+
+.bit-avg-s72 {
+    --bit-avg-coin: #{spacing(9)};
+}
+
+.bit-avg-s100 {
+    --bit-avg-coin: #{spacing(12.5)};
+}
+
+.bit-avg-s120 {
+    --bit-avg-coin: #{spacing(15)};
+}

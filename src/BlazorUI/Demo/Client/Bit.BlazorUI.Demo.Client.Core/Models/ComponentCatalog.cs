@@ -344,6 +344,7 @@ public static class ComponentCatalog
         // Extras
         ["AccordionList"] = BitIconName.CollapseAll,
         ["AppShell"] = BitIconName.Devices4,
+        ["AvatarGroup"] = BitIconName.People,
         ["Chart"] = BitIconName.BarChartVertical,
         ["ContextMenu"] = BitIconName.ContextMenu,
         ["CountryPicker"] = BitIconName.Globe,
@@ -529,6 +530,7 @@ public static class ComponentCatalog
         // Extras
         ["AccordionList"] = "An accordion that builds its expandable items from a single collection.",
         ["AppShell"] = "The cross-platform application container: safe areas, scroll state, chrome.",
+        ["AvatarGroup"] = "The avatars of a group of people as overlapping coins, with a +N coin for the rest.",
         ["Chart"] = "A native Blazor charting component rendered entirely with SVG.",
         ["ContextMenu"] = "A menu opened where an area of the page is right-clicked, or with Shift+F10 or the Menu key.",
         ["CountryPicker"] = "A searchable country selector with flags, bound to a BitCountry.",

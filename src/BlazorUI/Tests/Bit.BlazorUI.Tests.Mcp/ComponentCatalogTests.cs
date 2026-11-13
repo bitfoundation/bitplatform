@@ -434,6 +434,7 @@ public class ComponentCatalogTests : McpTestBase
     [DataRow("BitNotificationCenter", "BitNotificationCenterParams")]
     [DataRow("BitContextMenu", "BitContextMenuParams")]
     [DataRow("BitPopConfirm", "BitPopConfirmParams")]
+    [DataRow("BitAvatarGroup", "BitAvatarGroupParams")]
     [DataRow("BitResourceTimeline", "BitResourceTimelineParams")]
     [DataRow("BitToggle", "BitToggleParams")]
     [DataRow("BitSwipeTrap", "BitSwipeTrapParams")]
