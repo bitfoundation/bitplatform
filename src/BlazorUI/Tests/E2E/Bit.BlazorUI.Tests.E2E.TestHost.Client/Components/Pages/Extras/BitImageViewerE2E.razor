@@ -1,0 +1,35 @@
+﻿@page "/e2e/image-viewer"
+
+<PageTitle>BitImageViewer E2E</PageTitle>
+
+<h1>BitImageViewer</h1>
+
+@* An 800x400 image in a 400x300 frame, which fits it at 400x200 with a band above and below; one that zooms with the
+   plain wheel; a disabled one; and a page tall enough to scroll, for the wheel that is the page's. *@
+<div style="width: 400px;">
+    <BitImageViewer Id="imv" Src="@_src" Alt="Four colored quadrants" Height="300px" @bind-Zoom="_zoom" />
+</div>
+<div id="imv-zoom">@_zoom.ToString(System.Globalization.CultureInfo.InvariantCulture)</div>
+<button id="btn-src" type="button" @onclick="SwitchSource">Switch the image</button>
+<button id="btn-zoom-3" type="button" @onclick="() => _zoom = 3">Zoom to 3</button>
+
+<div style="width: 400px; margin-top: 16px;">
+    <BitImageViewer Id="imv-wheel" Src="samples/imageviewer-grid.svg" Alt="Wheel" Height="300px" WheelZoom NoToolbar />
+</div>
+
+<div style="width: 400px; margin-top: 16px;">
+    <BitImageViewer Id="imv-dis" Src="samples/imageviewer-grid.svg" Alt="Disabled" Height="300px" Disabled />
+</div>
+
+<div style="height: 2000px;"></div>
+
+<div style="position: fixed; right: 8px; top: 8px;">
+    <E2EStatus />
+</div>
+
+@code {
+    private double _zoom = 1;
+    private string _src = "samples/imageviewer-grid.svg";
+
+    private void SwitchSource() => _src = _src.Contains('?') ? "samples/imageviewer-grid.svg" : "samples/imageviewer-grid.svg?v=2";
+}

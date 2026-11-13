@@ -179,6 +179,7 @@ public partial class MainLayout
                 new() { Text = "ErrorBoundary", Url = "/components/errorboundary" },
                 new() { Text = "Flag", Url = "/components/flag", Description = "Country, CountryFlag" },
                 new() { Text = "FullCalendar", Url = "/components/fullcalendar", Description = "Scheduler, EventCalendar, Planner" },
+                new() { Text = "ImageViewer", Url = "/components/imageviewer", Description = "ZoomableImage, PanZoom, ImageZoom", Data = "Image viewer, Zoom, Pan, Pinch to zoom, Photo viewer, Magnify, Inspect, Floor plan, Diagram", AdditionalUrls = ["/components/image-viewer"] },
                 new() { Text = "InfiniteScrolling", Url = "/components/infinitescrolling", Description = "InfiniteScroll, LoadMore", Data = "Endless scroll, Infinite list, Lazy loading, Feed, Chat, Paging" },
                 new() { Text = "Map", Url = "/components/map", Description = "GeoMap, Maps", Data = "Leaflet, MapLibre, Mapbox, OpenLayers, ArcGIS, Azure Maps, Cesium, Globe, Markers, Pins, Clustering, GeoJSON, Tiles, Location, Geolocation, GIS" },
                 new() { Text = "MarkdownEditor", Url = "/components/markdowneditor", Description = "MdEditor", Data = "Markdown, Text editor, Rich text, Comment box, Notes, Preview, Toolbar" },

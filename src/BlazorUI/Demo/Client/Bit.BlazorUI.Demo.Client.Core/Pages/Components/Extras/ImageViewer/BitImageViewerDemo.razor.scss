@@ -1,0 +1,23 @@
+﻿::deep {
+    .example-content {
+        gap: 0.5rem;
+        display: flex;
+        flex-flow: row wrap;
+        align-items: center;
+    }
+
+    .example-stack {
+        gap: 1rem;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .custom-viewport {
+        border: 2px dashed var(--bit-clr-brd-pri);
+    }
+
+    .custom-button {
+        border-radius: 50%;
+        background-color: var(--bit-clr-bg-ter);
+    }
+}

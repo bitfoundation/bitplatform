@@ -62,6 +62,7 @@ public class BitDisabledActivationContractTests : BunitTestContext
         [typeof(BitStepper<BitStepperItem>)],
         [typeof(BitPersona)],
         [typeof(BitAvatarGroup)],
+        [typeof(BitImageViewer)],
         [typeof(BitTag)],
         [typeof(BitCard)],
         [typeof(BitIcon)],
