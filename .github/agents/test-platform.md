@@ -64,7 +64,10 @@ answer, and repeat the plan back before starting:
 
 1. **The branch**, or the commit, under test, unless a link names it. Read this file and run the helper from a
    checkout of that branch, pulled first: the helper takes the suite, its stages and the CD workflows from the
-   checkout it runs in.
+   checkout it runs in. Fetch, and check that the branch has every commit of the branch it merges into (develop, or
+   bit11): one that lacks some tests older code than its merge brings, and its CD puts that code on the demos. Name
+   the missing commits in the question and offer to merge them in first. Fetch again right before the first run
+   starts, since merges keep landing, and ask again if one landed meanwhile.
 2. **The tests**: any of the CI run (step 1), the CD rollout and its versions check (step 2), the E2E suite (step 3,
    every stage or some), bitplatform.dev/mcp (step 4), the dev container (step 5), the Aspire containers (step 6),
    `bit diff` (step 7) and the agent instructions (step 8: every scenario or some, with which models, and whether
