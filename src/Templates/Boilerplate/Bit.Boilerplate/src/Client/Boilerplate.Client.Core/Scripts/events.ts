@@ -10,6 +10,22 @@ import { App } from './App';
 
     window.addEventListener('storage', handleStorage);
 
+    // A sign-in or approval window whose opener a Cross-Origin-Opener-Policy cut hands its answer over here instead of
+    // through window.opener (See WebInteropApp.handOver). Only the page that opened it takes it, and says so.
+    if ('BroadcastChannel' in window) {
+        const externalCallbacks = new BroadcastChannel(App.externalCallbackChannel);
+        externalCallbacks.addEventListener('message', (e: MessageEvent) => {
+            const id = e.data?.id;
+            const payload = e.data?.payload;
+            if (typeof id !== 'string' || typeof payload !== 'string') return;
+            if (new URL(payload, location.origin).origin !== location.origin) return;
+            if (App.takeExternalCallback() === false) return;
+
+            externalCallbacks.postMessage({ answerTo: id });
+            App.publishMessage('EXTERNAL_SIGN_IN_CALLBACK', payload);
+        });
+    }
+
     // Fires only in the other tabs, so they follow a sign-in or sign-out made in this one (See AuthManager).
     function handleStorage(e: StorageEvent) {
         if (e.storageArea !== window.localStorage) return;
