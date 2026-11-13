@@ -444,6 +444,22 @@ public partial class BitMenuButtonDemo
         },
     ];
 
+    private readonly List<ComponentParameter> componentPublicMembers =
+    [
+        new()
+        {
+            Name = "FocusAsync",
+            Type = "ValueTask",
+            Description = "Gives focus to the header button of the menu button.",
+        },
+        new()
+        {
+            Name = "OpenAt",
+            Type = "Task",
+            Description = "Opens the menu at a point on the screen rather than against the menu button, which is what a context menu needs, and moves the focus to its first item. It takes the coordinates (double x, double y) or the MouseEventArgs they came from, and moves a menu already open at a point to the new one. Closing the menu hands the focus back to where it was when the menu was opened.",
+        },
+    ];
+
     private readonly List<ComponentCssVariable> componentCssVariables =
     [
         new()

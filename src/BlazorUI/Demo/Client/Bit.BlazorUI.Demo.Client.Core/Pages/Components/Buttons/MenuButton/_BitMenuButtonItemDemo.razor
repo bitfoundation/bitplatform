@@ -468,7 +468,28 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Color" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21"
+<DemoExample Title="Context menu" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21"
+             PreventRenderForMcpClient>
+    <div>
+        OpenAt opens the menu at a point on the screen instead of against the button, which makes it a context menu:
+        hand it the event of a right-click, or the coordinates of a point, and the menu opens there with the focus on
+        its first item and the keys it always answers. It is still placed to stay on the screen, and Escape, Tab or an
+        item closes it and hands the focus back to where it was. Right-click the box below.
+    </div>
+    <br />
+    <div class="example-content">
+        <div class="context-area" tabindex="0"
+             @oncontextmenu="e => contextMenuButton.OpenAt(e)" @oncontextmenu:preventDefault>
+            Right-click here
+        </div>
+        <BitMenuButton @ref="contextMenuButton" Text="Edit" Items="contextItems"
+                       OnClick="(BitMenuButtonItem? item) => contextClickedItem = item?.Text ?? contextClickedItem" />
+    </div>
+    <br />
+    <div>Clicked item: <b>@contextClickedItem</b></div>
+</DemoExample>
+
+<DemoExample Title="Color" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22"
              PreventRenderForMcpClient>
     <div>
         The Color parameter applies the general theme colors of bit BlazorUI (Primary being the default) to the menu
@@ -1055,7 +1076,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="External Icons" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22">
+<DemoExample Title="External Icons" RazorCode="@example23RazorCode" CsharpCode="@example23CsharpCode" Id="example23">
     <div>
         Icons from external libraries, like Font Awesome, can be used with the Icon parameter of both the menu button
         and its items, either as a plain CSS class string or a BitIconInfo instance. The ChevronDownIcon parameter
@@ -1094,7 +1115,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Size" RazorCode="@example23RazorCode" CsharpCode="@example23CsharpCode" Id="example23"
+<DemoExample Title="Size" RazorCode="@example24RazorCode" CsharpCode="@example24CsharpCode" Id="example24"
              PreventRenderForMcpClient>
     <div>The Size parameter adjusts the size of the menu button among Small, Medium (default), and Large.</div>
     <br />
@@ -1117,7 +1138,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Style & Class" RazorCode="@example24RazorCode" CsharpCode="@example24CsharpCode" Id="example24">
+<DemoExample Title="Style & Class" RazorCode="@example25RazorCode" CsharpCode="@example25CsharpCode" Id="example25">
     <div>
         Customize the look of the menu button at any level: the Style and Class parameters of the root element, the
         Style and Class of each item, the Styles and Classes parameters targeting the internal parts of the
@@ -1182,7 +1203,7 @@
                    Variant="BitVariant.Outline" />
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example25RazorCode" CsharpCode="@example25CsharpCode" Id="example25"
+<DemoExample Title="RTL" RazorCode="@example26RazorCode" CsharpCode="@example26CsharpCode" Id="example26"
              PreventRenderForMcpClient>
     <div>Use the Dir parameter to render the menu button in right-to-left (RTL) direction.</div>
     <br />

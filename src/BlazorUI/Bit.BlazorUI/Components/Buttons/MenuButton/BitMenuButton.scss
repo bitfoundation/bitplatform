@@ -386,6 +386,14 @@ $mnb-private-properties: clr, clr-fg, clr-txt, clr-hover, clr-active, clr-dark, 
     @include visually-hidden;
 }
 
+// The point a menu opened with OpenAt is placed against: a spot on the screen, taking no room and no clicks.
+.bit-mnb-pnt {
+    width: 0;
+    height: 0;
+    position: fixed;
+    pointer-events: none;
+}
+
 .bit-mnb-ovl {
     top: 0;
     left: 0;

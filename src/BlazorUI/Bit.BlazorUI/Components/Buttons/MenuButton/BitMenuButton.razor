@@ -187,6 +187,13 @@
     <span id="@descriptionId" class="bit-mnb-dsc">@AriaDescription</span>
 }
 
+@* The zero-sized element a menu opened at a point is placed against (see OpenAt). It is rendered beside the root
+   rather than inside it, so nothing the page declares on the root can move it off the point. *@
+@if (HasPoint)
+{
+    <div id="@_pointId" aria-hidden="true" class="bit-mnb-pnt" style="@GetPointStyle()"></div>
+}
+
 <div @onclick="HandleOnOverlayClick" @onclick:stopPropagation
      aria-hidden="true"
      style="display:@(IsOpen ? "block" : "none");@Styles?.Overlay"

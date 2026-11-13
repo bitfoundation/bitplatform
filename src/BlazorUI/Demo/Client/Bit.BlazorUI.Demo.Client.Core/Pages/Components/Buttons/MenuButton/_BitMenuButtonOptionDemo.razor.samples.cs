@@ -669,6 +669,26 @@ private readonly BitMenuButtonParams[] menuButtonParams =
 </BitMenuButton>";
 
     private readonly string example21RazorCode = @"
+<div class=""context-area"" tabindex=""0""
+     @oncontextmenu=""e => contextMenuButton.OpenAt(e)"" @oncontextmenu:preventDefault>
+    Right-click here
+</div>
+<BitMenuButton @ref=""contextMenuButton"" Text=""Edit"" TItem=""BitMenuButtonOption""
+               OnClick=""(BitMenuButtonOption? item) => contextClickedOption = item?.Text ?? contextClickedOption"">
+    <BitMenuButtonOption Text=""Cut"" Key=""cut"" IconName=""@BitIconName.Cut"" />
+    <BitMenuButtonOption Text=""Copy"" Key=""copy"" IconName=""@BitIconName.Copy"" />
+    <BitMenuButtonOption Text=""Paste"" Key=""paste"" IconName=""@BitIconName.Paste"" />
+    <BitMenuButtonOption IsSeparator />
+    <BitMenuButtonOption Text=""Delete"" Key=""delete"" IconName=""@BitIconName.Delete"" />
+</BitMenuButton>
+
+<div>Clicked item: <b>@contextClickedOption</b></div>";
+
+    private readonly string example21CsharpCode = @"
+private string? contextClickedOption;
+private BitMenuButton<BitMenuButtonOption> contextMenuButton = default!;";
+
+    private readonly string example22RazorCode = @"
 <BitMenuButton Text=""Primary"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.Primary"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
@@ -1828,7 +1848,7 @@ private readonly BitMenuButtonParams[] menuButtonParams =
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>";
 
-    private readonly string example22RazorCode = @"
+    private readonly string example23RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitMenuButton Text=""Actions"" 
@@ -1895,7 +1915,7 @@ private readonly BitMenuButtonParams[] menuButtonParams =
     <BitMenuButtonOption Text=""Delete"" Icon=""@BitIconInfo.Fa(""solid trash"")"" />
 </BitMenuButton>";
 
-    private readonly string example23RazorCode = @"
+    private readonly string example24RazorCode = @"
 <BitMenuButton Text=""Small"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Size=""BitSize.Small"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
@@ -1944,7 +1964,7 @@ private readonly BitMenuButtonParams[] menuButtonParams =
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>";
 
-    private readonly string example24RazorCode = @"
+    private readonly string example25RazorCode = @"
 <style>
     .custom-class {
         margin-inline: 1rem;
@@ -2070,7 +2090,7 @@ private readonly BitMenuButtonParams[] menuButtonParams =
     <BitMenuButtonOption Text=""Delete"" Key=""delete"" IconName=""@BitIconName.Delete"" Style=""--bit-MenuButton-item-color: var(--bit-clr-err);"" />
 </BitMenuButton>";
 
-    private readonly string example25RazorCode = @"
+    private readonly string example26RazorCode = @"
 <BitMenuButton Text=""گزینه ها"" Dir=""BitDir.Rtl"" TItem=""BitMenuButtonOption"" IconName=""@BitIconName.Edit"">
     <BitMenuButtonOption Text=""گزینه الف"" Key=""A"" IconName=""@BitIconName.Emoji"" />
     <BitMenuButtonOption Text=""گزینه ب"" Key=""B"" IconName=""@BitIconName.Emoji"" />
