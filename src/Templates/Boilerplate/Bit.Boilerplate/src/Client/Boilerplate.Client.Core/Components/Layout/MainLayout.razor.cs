@@ -89,8 +89,19 @@ public partial class MainLayout : IAsyncDisposable
             {
                 if (IsOnline == (bool?)payload)
                     return;
+                var wasOffline = IsOnline is false;
                 telemetryContext.IsOnline = IsOnline = (bool?)payload;
                 await InvokeAsync(StateHasChanged);
+
+                // Back online after the server couldn't be reached: what failed to load then, such as the signed-in
+                // user's profile when the app was opened offline, would stay missing until the app is reloaded.
+                // SetCurrentUser loads only what's missing. From offline only, as the first answer at start comes
+                // while the profile is still on its way.
+                if (wasOffline && IsOnline is true)
+                {
+                    await SetCurrentUser(authManager.GetAuthenticationStateAsync());
+                    await InvokeAsync(StateHasChanged);
+                }
             }));
 
             unsubscribers.Add(pubSubService.Subscribe(ClientAppMessages.PROFILE_UPDATED, async payload =>
