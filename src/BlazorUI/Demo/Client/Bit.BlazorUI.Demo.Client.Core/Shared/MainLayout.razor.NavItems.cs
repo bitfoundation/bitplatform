@@ -108,6 +108,7 @@ public partial class MainLayout
             ChildItems =
             [
                 new() { Text = "Badge", Url = "/components/badge" },
+                new() { Text = "EmptyState", Url = "/components/emptystate", AdditionalUrls = ["/components/empty-state"], Description = "Empty, NoData, ZeroState, BlankSlate", Data = "Empty list, No items, No results, No data, Placeholder, Zero state, Blank state, Nothing here, First run" },
                 new() { Text = "Message", Url = "/components/message", AdditionalUrls = ["/components/messagebar", "/components/message-bar"], Description = "Alert, MessageBar" },
                 new() { Text = "Persona", Url = "/components/persona", Description = "Avatar" },
                 new() { Text = "SnackBar", Url = "/components/snackbar", Description = "Toast" },

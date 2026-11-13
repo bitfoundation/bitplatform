@@ -1,0 +1,58 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+
+<div @ref="RootElement"
+     @attributes="HtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
+    @if (IconTemplate is not null)
+    {
+        <div style="@Styles?.Icon" class="bit-ems-ico @Classes?.Icon">@IconTemplate</div>
+    }
+    else
+    {
+        var icon = BitIconInfo.From(Icon, IconName);
+        if (icon is not null)
+        {
+            @* The glyph only decorates the title beside it, which says what it means. *@
+            <i style="@Styles?.Icon" class="bit-ems-ico @icon.GetCssClasses() @Classes?.Icon" aria-hidden="true"></i>
+        }
+    }
+
+    @* A heading only where the app asks for one: an empty state inside a list or a dropdown is a line of the list, and a
+       heading there would be a stray entry in the outline of the page. *@
+    <div style="@Styles?.Title"
+         class="bit-ems-ttl @Classes?.Title"
+         role="@(_HeadingLevel is null ? null : "heading")"
+         aria-level="@_HeadingLevel">
+        @if (TitleTemplate is not null)
+        {
+            @TitleTemplate
+        }
+        else
+        {
+            @(Title ?? BitStrings.Current.NoItemsFound)
+        }
+    </div>
+
+    @if (DescriptionTemplate is not null || Description.HasValue())
+    {
+        <div style="@Styles?.Description" class="bit-ems-dsc @Classes?.Description">
+            @if (DescriptionTemplate is not null)
+            {
+                @DescriptionTemplate
+            }
+            else
+            {
+                @Description
+            }
+        </div>
+    }
+
+    @if (ChildContent is not null)
+    {
+        <div style="@Styles?.Content" class="bit-ems-con @Classes?.Content">@ChildContent</div>
+    }
+</div>
