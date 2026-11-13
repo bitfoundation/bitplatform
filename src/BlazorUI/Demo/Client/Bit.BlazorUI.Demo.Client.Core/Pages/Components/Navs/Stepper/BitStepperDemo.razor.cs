@@ -2,8 +2,19 @@
 
 public partial class BitStepperDemo
 {
+    [CascadingParameter(Name = nameof(RenderForMcpClient))] public bool RenderForMcpClient { get; set; }
+
     private readonly List<ComponentParameter> componentParameters =
     [
+        new()
+        {
+            Name = "ChildContent",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The content of the BitStepper, that are BitStepperOption components.",
+            LinkType = LinkType.Link,
+            Href = "#stepper-option",
+        },
         new()
         {
             Name = "Classes",
@@ -66,6 +77,15 @@ public partial class BitStepperDemo
         },
         new()
         {
+            Name = "NameSelectors",
+            Type = "BitStepperNameSelectors<TItem>?",
+            DefaultValue = "null",
+            Description = "The names (or selectors) of the members the steps are read from, for items of a custom class.",
+            LinkType = LinkType.Link,
+            Href = "#name-selectors",
+        },
+        new()
+        {
             Name = "OnChange",
             Type = "EventCallback<int>",
             DefaultValue = "",
@@ -77,6 +97,15 @@ public partial class BitStepperDemo
             Type = "EventCallback<TItem>",
             DefaultValue = "",
             Description = "The callback for when a step is clicked, the current one included, as long as it can be gone to.",
+        },
+        new()
+        {
+            Name = "Options",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Alias of ChildContent: the steps declared as BitStepperOption components.",
+            LinkType = LinkType.Link,
+            Href = "#stepper-option",
         },
         new()
         {
@@ -123,6 +152,56 @@ public partial class BitStepperDemo
                 new() { Name = "Style", Type = "string?", DefaultValue = "null", Description = "The custom CSS styles of the step." },
                 new() { Name = "Text", Type = "string?", DefaultValue = "null", Description = "The text of the step." },
                 new() { Name = "Title", Type = "string?", DefaultValue = "null", Description = "The title (tooltip) of the step." },
+            ]
+        },
+        new()
+        {
+            Id = "stepper-option",
+            Title = "BitStepperOption",
+            Parameters =
+            [
+                new() { Name = "AriaLabel", Type = "string?", DefaultValue = "null", Description = "The aria-label of a step that can be clicked, which replaces its text, description and state as what a screen reader names it by." },
+                new() { Name = "Class", Type = "string?", DefaultValue = "null", Description = "The custom CSS classes of the step." },
+                new() { Name = "Description", Type = "string?", DefaultValue = "null", Description = "A second line of text under the text of the step." },
+                new() { Name = "Icon", Type = "BitIconInfo?", DefaultValue = "null", Description = "The icon shown in the indicator of the step in place of its number, using custom CSS classes for external icon libraries. Takes precedence over IconName." },
+                new() { Name = "IconName", Type = "string?", DefaultValue = "null", Description = "The name of the icon shown in the indicator of the step in place of its number, from the built-in Fluent UI icons." },
+                new() { Name = "IsDisabled", Type = "bool", DefaultValue = "false", Description = "Whether the step is disabled: it cannot be gone to, and is drawn dimmed." },
+                new() { Name = "IsError", Type = "bool", DefaultValue = "false", Description = "Whether the step is in error, shown with the error icon and color whatever the position of the step." },
+                new() { Name = "Key", Type = "string?", DefaultValue = "null", Description = "A unique value to use as the key of the step." },
+                new() { Name = "OnClick", Type = "EventCallback<BitStepperOption>", DefaultValue = "", Description = "The click handler of the step, run when it is clicked and it can be gone to." },
+                new() { Name = "Style", Type = "string?", DefaultValue = "null", Description = "The custom CSS styles of the step." },
+                new() { Name = "Text", Type = "string?", DefaultValue = "null", Description = "The text of the step." },
+                new() { Name = "Title", Type = "string?", DefaultValue = "null", Description = "The title (tooltip) of the step." },
+            ]
+        },
+        new()
+        {
+            Id = "name-selectors",
+            Title = "BitStepperNameSelectors",
+            Parameters =
+            [
+                new() { Name = "AriaLabel", Type = "BitNameSelectorPair<TItem, string?>", DefaultValue = "new(nameof(BitStepperItem.AriaLabel))", Description = "The AriaLabel field name and selector of the custom input class.", LinkType = LinkType.Link, Href = "#name-selector-pair" },
+                new() { Name = "Class", Type = "BitNameSelectorPair<TItem, string?>", DefaultValue = "new(nameof(BitStepperItem.Class))", Description = "The CSS Class field name and selector of the custom input class.", LinkType = LinkType.Link, Href = "#name-selector-pair" },
+                new() { Name = "Description", Type = "BitNameSelectorPair<TItem, string?>", DefaultValue = "new(nameof(BitStepperItem.Description))", Description = "The Description field name and selector of the custom input class.", LinkType = LinkType.Link, Href = "#name-selector-pair" },
+                new() { Name = "Icon", Type = "BitNameSelectorPair<TItem, BitIconInfo?>", DefaultValue = "new(nameof(BitStepperItem.Icon))", Description = "The Icon field name and selector of the custom input class.", LinkType = LinkType.Link, Href = "#name-selector-pair" },
+                new() { Name = "IconName", Type = "BitNameSelectorPair<TItem, string?>", DefaultValue = "new(nameof(BitStepperItem.IconName))", Description = "The IconName field name and selector of the custom input class.", LinkType = LinkType.Link, Href = "#name-selector-pair" },
+                new() { Name = "IsDisabled", Type = "BitNameSelectorPair<TItem, bool>", DefaultValue = "new(nameof(BitStepperItem.IsDisabled))", Description = "The IsDisabled field name and selector of the custom input class.", LinkType = LinkType.Link, Href = "#name-selector-pair" },
+                new() { Name = "IsError", Type = "BitNameSelectorPair<TItem, bool>", DefaultValue = "new(nameof(BitStepperItem.IsError))", Description = "The IsError field name and selector of the custom input class.", LinkType = LinkType.Link, Href = "#name-selector-pair" },
+                new() { Name = "Key", Type = "BitNameSelectorPair<TItem, string?>", DefaultValue = "new(nameof(BitStepperItem.Key))", Description = "The Key field name and selector of the custom input class.", LinkType = LinkType.Link, Href = "#name-selector-pair" },
+                new() { Name = "OnClick", Type = "BitNameSelectorPair<TItem, Action<TItem>?>", DefaultValue = "new(nameof(BitStepperItem.OnClick))", Description = "The OnClick field name and selector of the custom input class.", LinkType = LinkType.Link, Href = "#name-selector-pair" },
+                new() { Name = "Style", Type = "BitNameSelectorPair<TItem, string?>", DefaultValue = "new(nameof(BitStepperItem.Style))", Description = "The CSS Style field name and selector of the custom input class.", LinkType = LinkType.Link, Href = "#name-selector-pair" },
+                new() { Name = "Text", Type = "BitNameSelectorPair<TItem, string?>", DefaultValue = "new(nameof(BitStepperItem.Text))", Description = "The Text field name and selector of the custom input class.", LinkType = LinkType.Link, Href = "#name-selector-pair" },
+                new() { Name = "Title", Type = "BitNameSelectorPair<TItem, string?>", DefaultValue = "new(nameof(BitStepperItem.Title))", Description = "The Title field name and selector of the custom input class.", LinkType = LinkType.Link, Href = "#name-selector-pair" },
+            ]
+        },
+        new()
+        {
+            Id = "name-selector-pair",
+            Title = "BitNameSelectorPair",
+            Parameters =
+            [
+                new() { Name = "Name", Type = "string", Description = "Custom class property name." },
+                new() { Name = "Selector", Type = "Func<TItem, TProp?>?", Description = "Custom class property selector." },
             ]
         },
         new()

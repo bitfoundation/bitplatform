@@ -11,6 +11,10 @@ namespace Bit.BlazorUI;
 /// The stepper draws the steps alone: what each step shows, and the buttons that move between them, are the page's,
 /// which moves the stepper with <see cref="CurrentIndex"/>. A <see cref="Linear"/> stepper lets the user go back to a
 /// step already done but not skip ahead, and a <see cref="ReadOnly"/> one only shows where the process is.
+/// <br />
+/// The steps are given in one of three ways: <see cref="BitStepperItem"/> objects in <see cref="Items"/>, objects of a
+/// custom class in <see cref="Items"/> read through <see cref="NameSelectors"/>, or <see cref="BitStepperOption"/>
+/// components in <see cref="Options"/> (or as the child content).
 /// </remarks>
 public partial class BitStepper<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem> : BitComponentBase where TItem : class
 {
@@ -22,6 +26,13 @@ public partial class BitStepper<[DynamicallyAccessedMembers(DynamicallyAccessedM
     private List<TItem> _items = [];
     private IEnumerable<TItem>? _oldItems;
 
+    // Set when an option registers or goes away, so the order of the steps is read back from the document after the
+    // render (see ReorderOptions).
+    private bool _optionsOrderDirty;
+    private string _optionsContainerId = default!;
+
+    [Inject] private IJSRuntime _js { get; set; } = default!;
+
 
 
     /// <summary>
@@ -32,6 +43,11 @@ public partial class BitStepper<[DynamicallyAccessedMembers(DynamicallyAccessedM
     public BitStepperParams? CascadingParameters { get; set; }
 
 
+
+    /// <summary>
+    /// The content of the stepper, that are BitStepperOption components.
+    /// </summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
     /// Custom CSS classes for the different parts of the stepper.
@@ -82,6 +98,11 @@ public partial class BitStepper<[DynamicallyAccessedMembers(DynamicallyAccessedM
     [Parameter] public bool Linear { get; set; }
 
     /// <summary>
+    /// The names (or selectors) of the members the steps are read from, for items of a custom class.
+    /// </summary>
+    [Parameter] public BitStepperNameSelectors<TItem>? NameSelectors { get; set; }
+
+    /// <summary>
     /// The callback for when the user goes to another step, with its index. It runs even when
     /// <see cref="CurrentIndex"/> is bound one way and could not be written back, so a page holding the index itself
     /// still hears about the step the user asked for.
@@ -92,6 +113,11 @@ public partial class BitStepper<[DynamicallyAccessedMembers(DynamicallyAccessedM
     /// The callback for when a step is clicked, the current one included, as long as it can be gone to.
     /// </summary>
     [Parameter] public EventCallback<TItem> OnItemClick { get; set; }
+
+    /// <summary>
+    /// Alias for the ChildContent parameter: the steps declared as BitStepperOption components.
+    /// </summary>
+    [Parameter] public RenderFragment? Options { get; set; }
 
     /// <summary>
     /// Only shows where the process is: no step can be clicked.
@@ -129,17 +155,102 @@ public partial class BitStepper<[DynamicallyAccessedMembers(DynamicallyAccessedM
         StyleBuilder.Register(() => Styles?.Root);
     }
 
+    protected override void OnInitialized()
+    {
+        _optionsContainerId = $"BitStepper-{UniqueId}-options";
+
+        base.OnInitialized();
+    }
+
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);
 
-        if (ReferenceEquals(_oldItems, Items) is false)
+        // With options, the steps are the options that registered themselves; Items is not read at all.
+        if (ChildContent is null && Options is null && ReferenceEquals(_oldItems, Items) is false)
         {
             _oldItems = Items;
             _items = Items?.ToList() ?? [];
         }
 
         base.OnParametersSet();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (_optionsOrderDirty is false) return;
+
+        _optionsOrderDirty = false;
+
+        try
+        {
+            var orderedOptionIds = await _js.BitUtilsGetChildrenAttributes(_optionsContainerId, BitStepperOption._OPTION_ID_ATTRIBUTE);
+
+            if (IsDisposed || orderedOptionIds is null) return;
+
+            ReorderOptions(orderedOptionIds);
+        }
+        catch (JSDisconnectedException) { } // the circuit is gone, so there is no page left to order the steps for
+        catch (JSException) { } // reading the markers failed, which only leaves the steps in the order they registered
+    }
+
+
+
+    internal void RegisterOption(BitStepperOption option)
+    {
+        _items.Add((option as TItem)!);
+        _optionsOrderDirty = true;
+
+        StateHasChanged();
+    }
+
+    internal void UnregisterOption(BitStepperOption option)
+    {
+        // The options unregister while they are disposed, which also happens when the stepper itself goes away, so a
+        // render is only asked for while the stepper is still alive.
+        if (IsDisposing) return;
+
+        _items.Remove((option as TItem)!);
+        _optionsOrderDirty = true;
+
+        StateHasChanged();
+    }
+
+    // The stepper draws the steps from the options and reads their values while it renders, so a change to the
+    // parameters of an option needs a render of the stepper to show.
+    internal void NotifyOptionParametersChanged()
+    {
+        if (IsDisposed) return;
+
+        StateHasChanged();
+    }
+
+    // An option rendered after the others (an @if that turns true) registers last, wherever it sits in the markup, and
+    // the position of a step is what numbers it and decides its state. So the steps are put back in the order of the
+    // options' markers in the document, which is the order of the markup.
+    internal void ReorderOptions(string[] orderedOptionIds)
+    {
+        if (orderedOptionIds.Length == 0) return;
+
+        List<TItem> ordered = new(_items.Count);
+
+        foreach (var optionId in orderedOptionIds)
+        {
+            var item = _items.FirstOrDefault(i => (i as BitStepperOption)?._OptionId == optionId);
+            if (item is null || ordered.Contains(item)) continue;
+
+            ordered.Add(item);
+        }
+
+        ordered.AddRange(_items.Except(ordered));
+
+        if (ordered.SequenceEqual(_items)) return;
+
+        _items = ordered;
+
+        StateHasChanged();
     }
 
 
@@ -179,6 +290,14 @@ public partial class BitStepper<[DynamicallyAccessedMembers(DynamicallyAccessedM
         if (item is BitStepperItem stepperItem)
         {
             stepperItem.OnClick?.Invoke(stepperItem);
+        }
+        else if (item is BitStepperOption stepperOption)
+        {
+            await stepperOption.OnClick.InvokeAsync(stepperOption);
+        }
+        else if (NameSelectors is not null)
+        {
+            Read(item, null, null, NameSelectors.OnClick)?.Invoke(item);
         }
 
         await OnItemClick.InvokeAsync(item);
@@ -265,27 +384,45 @@ public partial class BitStepper<[DynamicallyAccessedMembers(DynamicallyAccessedM
 
 
 
-    // The item readers. Only BitStepperItem is read for now; the readers are where the other item types will be read.
+    // The item readers, for each of the three ways the steps are given: BitStepperItem objects, BitStepperOption
+    // components, or objects of a custom class read through NameSelectors - by a selector when one is given, and by the
+    // name of the member otherwise. A custom item with no NameSelectors has nothing to be read by.
 
-    private string? GetAriaLabel(TItem item) => (item as BitStepperItem)?.AriaLabel;
+    private T? Read<T>(TItem item,
+                       Func<BitStepperItem, T?>? fromItem,
+                       Func<BitStepperOption, T?>? fromOption,
+                       BitNameSelectorPair<TItem, T>? selector)
+    {
+        if (item is BitStepperItem stepperItem) return fromItem is null ? default : fromItem(stepperItem);
 
-    private string? GetClass(TItem item) => (item as BitStepperItem)?.Class;
+        if (item is BitStepperOption stepperOption) return fromOption is null ? default : fromOption(stepperOption);
 
-    private string? GetDescription(TItem item) => (item as BitStepperItem)?.Description;
+        if (selector is null) return default;
 
-    private BitIconInfo? GetIcon(TItem item) => (item as BitStepperItem)?.Icon;
+        return selector.Selector is not null
+            ? selector.Selector(item)
+            : item.GetValueFromProperty<T>(selector.Name);
+    }
 
-    private string? GetIconName(TItem item) => (item as BitStepperItem)?.IconName;
+    private string? GetAriaLabel(TItem item) => Read(item, i => i.AriaLabel, o => o.AriaLabel, NameSelectors?.AriaLabel);
 
-    private bool GetIsDisabled(TItem item) => (item as BitStepperItem)?.IsDisabled ?? false;
+    private string? GetClass(TItem item) => Read(item, i => i.Class, o => o.Class, NameSelectors?.Class);
 
-    private bool GetIsError(TItem item) => (item as BitStepperItem)?.IsError ?? false;
+    private string? GetDescription(TItem item) => Read(item, i => i.Description, o => o.Description, NameSelectors?.Description);
 
-    private string? GetKey(TItem item) => (item as BitStepperItem)?.Key;
+    private BitIconInfo? GetIcon(TItem item) => Read(item, i => i.Icon, o => o.Icon, NameSelectors?.Icon);
 
-    private string? GetStyle(TItem item) => (item as BitStepperItem)?.Style;
+    private string? GetIconName(TItem item) => Read(item, i => i.IconName, o => o.IconName, NameSelectors?.IconName);
 
-    private string? GetText(TItem item) => (item as BitStepperItem)?.Text;
+    private bool GetIsDisabled(TItem item) => Read(item, i => i.IsDisabled, o => o.IsDisabled, NameSelectors?.IsDisabled);
 
-    private string? GetTitle(TItem item) => (item as BitStepperItem)?.Title;
+    private bool GetIsError(TItem item) => Read(item, i => i.IsError, o => o.IsError, NameSelectors?.IsError);
+
+    private string? GetKey(TItem item) => Read(item, i => i.Key, o => o.Key, NameSelectors?.Key);
+
+    private string? GetStyle(TItem item) => Read(item, i => i.Style, o => o.Style, NameSelectors?.Style);
+
+    private string? GetText(TItem item) => Read(item, i => i.Text, o => o.Text, NameSelectors?.Text);
+
+    private string? GetTitle(TItem item) => Read(item, i => i.Title, o => o.Title, NameSelectors?.Title);
 }
