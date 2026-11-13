@@ -415,6 +415,7 @@ public partial class BitNavPanel<[DynamicallyAccessedMembers(DynamicallyAccessed
 
     /// <summary>
     /// The custom message for when the search result is empty.
+    /// Defaults to <see cref="BitStrings.NoResultsFound"/> of <see cref="BitStrings.Current"/>.
     /// </summary>
     [Parameter] public string? NoResultsText { get; set; }
 

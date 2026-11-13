@@ -5,7 +5,7 @@ Breaking changes to the public API of the bit BlazorUI packages (`Bit.BlazorUI`,
 
 ## 11.0.0
 
-### The empty and no-results slots have one name each ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+### The empty and no-results slots have one name each ([#15029](https://github.com/bitfoundation/bitplatform/issues/15029))
 
 What a component shows when it has nothing to show was spelled five ways. It now has two names, one per meaning:
 `EmptyTemplate` / `EmptyText` (and the `Empty` class-style part) for a component with **no items at all**, and
@@ -32,6 +32,54 @@ back to its default content. An old template written as a child element fails to
 taken for markup of that content. Leave `EmptyContent` alone on the framework's own `Virtualize`, which is not one of
 these.
 
+### Every empty list and fruitless search says so, in the same words ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+
+What a component shows when it has nothing to show now works the same way on all of them: the template wins, then
+the text, and with neither the component says the default of `BitStrings.Current` - `NoItemsFound` ("No items
+found") for no items at all and `NoResultsFound` ("No results found") for a search or filter that matched none.
+Translate them once through a `BitStrings` subclass (`AddBitBlazorUIServices(o => o.Strings = …)`) instead of on
+every component.
+
+**Components that showed nothing now show the default.** Pass an `EmptyTemplate` that renders nothing to keep the
+old look:
+
+| Component | Before | Now |
+|---|---|---|
+| `BitBasicList`, `BitAccordionList`, `BitVirtualize` | an empty list without an `EmptyTemplate` rendered nothing | renders `EmptyText` (new), else "No items found", in a part of its own (`bit-bsl-emp`, `bit-acl-emp`, `bit-vir-emp`) styled through the `Empty` class-style part (new on the first two); `BitBasicList` and `BitAccordionList` also read the new `--bit-BasicList-empty-*` / `--bit-AccordionList-empty-*` variables |
+| `BitSearchBox` | a search that found no suggestion kept the callout closed unless `NoResultsText` or `NoResultsTemplate` was given | opens the callout and says "No results found" (and announces it) |
+
+**The default words changed** where a component had words of its own:
+
+| Component | Before | Now |
+|---|---|---|
+| `BitChart.EmptyText` | "No data to display" | "No items found" |
+| `BitInfiniteScrolling.EmptyText` | "There is no item" | "No items found" |
+| `BitNotificationCenter.EmptyText` | "No notifications" | "No items found" |
+| `BitDataGridStrings.EmptyText` | "No records to display." | "No items found" |
+| `BitDataGridStrings.NoMatchesText` | "No records match the current filters." | "No results found" |
+| `BitNavPanel.NoResultsText` | "Nothing found!" | "No results found" |
+| `BitSearchBox`'s announcement of a fruitless search | "No suggestion found." | "No results found" |
+
+`BitChart.EmptyText` and `BitInfiniteScrolling.EmptyText` are `null` by default now, as every other `EmptyText` is,
+instead of holding their English text: code that reads them gets `null` until a text is set. The two texts of
+`BitDataGridStrings` above read `BitStrings.Current` each time they are shown until a text of their own is set.
+
+**`BitDropdown` keeps its two states apart.** A search that matches none of the items renders `NoResultsTemplate`,
+else `NoResultsText`, else "No results found", in its own `bit-drp-nor` element styled through the new
+`BitDropdownClassStyles.NoResults` part. `EmptyTemplate` and `EmptyText` are only for a dropdown with no items at
+all, searched or not; before, they were shown for a fruitless search too when no `NoResultsText` was given. Move
+a no-results message written in `EmptyText` or `EmptyTemplate` to `NoResultsText` or `NoResultsTemplate`.
+
+**CSS names:**
+
+| Before | After |
+|---|---|
+| `.bit-cht-nodata` | `.bit-cht-emp` |
+| `.bit-srb-nrs` | `.bit-srb-nor` |
+| `--bit-Chart-no-data-color` | `--bit-Chart-empty-color` |
+
+`BitNotificationCenter` also takes an `EmptyTemplate` now, which wins over its `EmptyText` and cascades through
+`BitNotificationCenterParams`.
 ### `BitNavPanel` renders the content of its drawer the first time it opens ([#14866](https://github.com/bitfoundation/bitplatform/issues/14866))
 
 Below its `DrawerBreakpoint` the panel is an off-canvas drawer, and the content of a drawer that has never been opened

@@ -125,7 +125,7 @@ public class BitInfiniteScrollingTests : BunitTestContext
             parameters.Add(p => p.ItemTemplate, ItemTemplate());
         });
 
-        Assert.IsFalse(component.Markup.Contains("There is no item"));
+        Assert.IsFalse(component.Markup.Contains("No items found"));
     }
 
     [TestMethod]

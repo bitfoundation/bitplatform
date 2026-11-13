@@ -374,12 +374,13 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
     [Parameter] public Func<TItem?, TValue>? DynamicValueGenerator { get; set; }
 
     /// <summary>
-    /// The custom template to render in the callout when there is no item to show.
+    /// The custom template to render in the callout when there is no item at all, which takes the place of
+    /// <see cref="EmptyText"/>.
     /// </summary>
     [Parameter] public RenderFragment? EmptyTemplate { get; set; }
 
     /// <summary>
-    /// The text to render in the callout when there is no item to show.
+    /// The text to render in the callout when there is no item at all. Default: <see cref="BitStrings.NoItemsFound"/>.
     /// </summary>
     [Parameter] public string? EmptyText { get; set; }
 
@@ -625,8 +626,8 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
     public bool NoBorder { get; set; }
 
     /// <summary>
-    /// The custom template to render in the callout when the current search has no result.
-    /// Falls back to the <see cref="EmptyTemplate"/> when not set.
+    /// The custom template to render in the callout when the current search matched none of the items, which takes
+    /// the place of <see cref="NoResultsText"/>.
     /// </summary>
     [Parameter] public RenderFragment? NoResultsTemplate { get; set; }
 
@@ -641,8 +642,8 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
     [Parameter] public bool NoWrapNavigation { get; set; }
 
     /// <summary>
-    /// The text to render in the callout when the current search has no result.
-    /// Falls back to the <see cref="EmptyText"/> when not set.
+    /// The text to render in the callout when the current search matched none of the items. Default:
+    /// <see cref="BitStrings.NoResultsFound"/>.
     /// </summary>
     [Parameter] public string? NoResultsText { get; set; }
 
@@ -3495,6 +3496,17 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
     private bool HasNoVisibleItems()
     {
         return GetDisplayItems().Any(i => GetItemType(i) == BitDropdownItemType.Normal && GetIsHidden(i) is false) is false;
+    }
+
+    // Whether the empty list is a search that matched none of the items there are, rather than a list with no items to
+    // search at all. An ItemsProvider only hands over what it matched, so with one a typed search is taken for it.
+    private bool IsNoResults()
+    {
+        if (HasSearchText is false) return false;
+
+        if (ItemsProvider is not null) return true;
+
+        return Items?.Any(i => GetItemType(i) == BitDropdownItemType.Normal && GetIsHidden(i) is false) ?? false;
     }
 
     // Read on every render of the callout, so the items are counted in place rather than collected into

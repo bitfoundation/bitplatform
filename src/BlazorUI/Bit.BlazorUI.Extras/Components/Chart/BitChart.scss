@@ -33,7 +33,7 @@
 //   --bit-Chart-zoom-box-border-color  border of the drag-to-zoom selection           (default: $clr-pri)
 //   --bit-Chart-inactive-opacity       the series faded behind a highlighted legend
 //                                      item                                           (default: 0.2)
-//   --bit-Chart-no-data-color          the empty-state message                        (default: $clr-fg-sec)
+//   --bit-Chart-empty-color            the empty-state message                        (default: $clr-fg-sec)
 //   --bit-Chart-loading-background     the veil over the plot while loading           (default: $clr-bg-pri at 70%)
 //   --bit-Chart-loading-color          the loading label                              (default: $clr-fg-sec)
 //   --bit-Chart-loading-spinner-color  the turning arc of the loading spinner         (default: $clr-pri)
@@ -348,14 +348,14 @@ $cht-side-steps: (lgd: 1, sub: 2, ttl: 3);
     @include spinner-ring($siz-icon-lg, var(--bit-Chart-loading-spinner-color, #{$clr-pri}), translucent(currentcolor, 25%));
 }
 
-.bit-cht-nodata {
+.bit-cht-emp {
     inset: 0;
     display: flex;
     position: absolute;
     align-items: center;
     justify-content: center;
     font-size: $tg-fs-sm;
-    color: var(--bit-Chart-no-data-color, #{$clr-fg-sec});
+    color: var(--bit-Chart-empty-color, #{$clr-fg-sec});
 }
 
 .bit-cht-sr {

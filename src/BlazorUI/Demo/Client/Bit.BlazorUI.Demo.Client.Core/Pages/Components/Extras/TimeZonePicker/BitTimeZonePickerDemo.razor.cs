@@ -154,7 +154,7 @@ public partial class BitTimeZonePickerDemo
             Name = "NoResultsText",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The message to show, and to announce, when the search result of the time zone list is empty.",
+            Description = "The message to show, and to announce, when the search result of the time zone list is empty. Defaults to BitStrings.NoResultsFound (\"No results found\").",
         },
         new()
         {

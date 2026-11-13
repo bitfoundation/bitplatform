@@ -46,6 +46,11 @@ public class BitNotificationCenterParams : BitComponentBaseParams, IBitComponent
     public BitNotificationCenterClassStyles? Classes { get; set; }
 
     /// <summary>
+    /// The custom content the panel shows when there are no notifications.
+    /// </summary>
+    public RenderFragment? EmptyTemplate { get; set; }
+
+    /// <summary>
     /// The text the panel shows when there are no notifications.
     /// </summary>
     public string? EmptyText { get; set; }
@@ -122,6 +127,11 @@ public class BitNotificationCenterParams : BitComponentBaseParams, IBitComponent
         if (Classes is not null)
         {
             bitNotificationCenter.TakeFromCascade(nameof(Classes), Classes, static c => c.Classes, static (c, v) => c.Classes = v);
+        }
+
+        if (EmptyTemplate is not null)
+        {
+            bitNotificationCenter.TakeFromCascade(nameof(EmptyTemplate), EmptyTemplate, static c => c.EmptyTemplate, static (c, v) => c.EmptyTemplate = v);
         }
 
         if (EmptyText is not null)

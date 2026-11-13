@@ -1849,7 +1849,7 @@ public class BitNavPanelTests : BunitTestContext
         component.WaitForAssertion(() =>
         {
             Assert.AreEqual(0, component.FindAll(".bit-nav-ict").Count);
-            Assert.AreEqual("Nothing found!", component.Find(".bit-txt").TextContent.Trim());
+            Assert.AreEqual("No results found", component.Find(".bit-txt").TextContent.Trim());
         });
     }
 
@@ -2793,7 +2793,7 @@ public class BitNavPanelTests : BunitTestContext
         {
             var message = component.Find(".bit-txt");
 
-            Assert.AreEqual("Nothing found!", message.TextContent.Trim());
+            Assert.AreEqual("No results found", message.TextContent.Trim());
             Assert.IsTrue(message.ClassList.Contains("c-empty"));
             StringAssert.Contains(message.GetAttribute("style"), "color:red");
         });

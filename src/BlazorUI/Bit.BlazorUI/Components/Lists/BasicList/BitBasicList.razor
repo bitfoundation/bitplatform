@@ -69,7 +69,7 @@
                 {
                     <_BitBasicListVirtualize Items="_viewItems"
                                              ItemSize="@ItemSize"
-                                             EmptyTemplate="EmptyTemplate"
+                                             EmptyTemplate="_EmptyContent"
                                              OverscanCount="@OverscanCount">
                         @VirtualizedRow(context)
                     </_BitBasicListVirtualize>
@@ -78,7 +78,7 @@
                 {
                     <_BitBasicListVirtualize @ref="_bitBasicListVirtualizeRef"
                                              ItemSize="@ItemSize"
-                                             EmptyTemplate="EmptyTemplate"
+                                             EmptyTemplate="_EmptyContent"
                                              OverscanCount="@OverscanCount"
                                              Placeholder="VirtualizePlaceholder"
                                              ItemsProvider="ProvideVirtualizedItems">
@@ -128,7 +128,7 @@
             }
             else
             {
-                @EmptyTemplate
+                @_EmptyContent
             }
         </div>
     }
@@ -196,3 +196,19 @@
         </div>
     }
 </div>
+
+@code {
+    // What the list shows when there is no item to show, in the plain list and in both modes of the virtualized one:
+    // the EmptyTemplate, or the EmptyText, which always says something.
+    private RenderFragment _EmptyContent =>
+        @<div style="@Styles?.Empty" class="bit-bsl-emp @Classes?.Empty">
+            @if (EmptyTemplate is not null)
+            {
+                @EmptyTemplate
+            }
+            else
+            {
+                @(EmptyText ?? BitStrings.Current.NoItemsFound)
+            }
+        </div>;
+}

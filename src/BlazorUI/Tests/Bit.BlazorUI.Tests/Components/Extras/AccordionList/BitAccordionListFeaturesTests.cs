@@ -1106,6 +1106,43 @@ public class BitAccordionListFeaturesTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitAccordionListShouldSayItHasNoItemsInTheDefaultWordsOrItsOwn()
+    {
+        var component = RenderComponent<BitAccordionList<BitAccordionListItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, []);
+            parameters.Add(p => p.Classes, new BitAccordionListClassStyles { Empty = "my-empty" });
+            parameters.Add(p => p.Styles, new BitAccordionListClassStyles { Empty = "color:red" });
+        });
+
+        var empty = component.Find(".bit-acl-emp");
+        Assert.AreEqual("No items found", empty.TextContent.Trim());
+        Assert.IsTrue(empty.ClassList.Contains("my-empty"));
+        Assert.AreEqual("color:red", empty.GetAttribute("style"));
+
+        component.Render(parameters => parameters.Add(p => p.EmptyText, "Nothing yet"));
+        Assert.AreEqual("Nothing yet", component.Find(".bit-acl-emp").TextContent.Trim());
+
+        // The template takes the place of the text, inside the same part.
+        component.Render(parameters => parameters.Add(p => p.EmptyTemplate, (RenderFragment)(builder => builder.AddMarkupContent(0, "<span class=\"no-items\">Nothing here</span>"))));
+        Assert.AreEqual("Nothing here", component.Find(".bit-acl-emp > .no-items").TextContent);
+        Assert.IsFalse(component.Find(".bit-acl-emp").TextContent.Contains("Nothing yet"));
+
+        component.Render(parameters => parameters.Add(p => p.Items, GetItems()));
+        Assert.AreEqual(0, component.FindAll(".bit-acl-emp").Count);
+    }
+
+    [TestMethod]
+    public void BitAccordionListOfOptionsShouldSayItHasNoItemsOnlyOnceItsOptionsHadTheirTurn()
+    {
+        var component = RenderComponent<BitAccordionList<BitAccordionListOption>>(parameters =>
+        {
+            parameters.Add(p => p.ChildContent, (RenderFragment)(builder => { }));
+        });
+
+        Assert.AreEqual("No items found", component.Find(".bit-acl-emp").TextContent.Trim());
+    }
+    [TestMethod]
     public void BitAccordionListShouldNameItselfAsAGroupOnlyWhenItCarriesALabel()
     {
         var component = RenderComponent<BitAccordionList<BitAccordionListItem>>(parameters =>

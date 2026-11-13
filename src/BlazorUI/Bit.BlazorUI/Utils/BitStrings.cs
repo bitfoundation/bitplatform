@@ -59,6 +59,20 @@ public class BitStrings
     public virtual string LoadingText => "Loading...";
 
     /// <summary>
+    /// What a component with no items at all says: the fallback of every <c>EmptyText</c> - that of
+    /// <see cref="BitDropdown{TItem, TValue}.EmptyText"/>, <see cref="BitBasicList{TItem}.EmptyText"/> and the
+    /// components of the other packages (the lists, the chart, the notification center, the data grid).
+    /// </summary>
+    public virtual string NoItemsFound => "No items found";
+
+    /// <summary>
+    /// What a component says when a search or a filter matched none of its items: the fallback of every
+    /// <c>NoResultsText</c> - that of <see cref="BitDropdown{TItem, TValue}.NoResultsText"/>,
+    /// <see cref="BitSearchBox.NoResultsText"/> and the pickers and the nav panel of the other packages.
+    /// </summary>
+    public virtual string NoResultsFound => "No results found";
+
+    /// <summary>
     /// What the live region of an input says of an <c>ErrorMessageTemplate</c> when its <c>ErrorMessageAriaLabel</c> is
     /// not set, the template having no text of its own to announce (<see cref="BitTextField"/>, <see cref="BitSearchBox"/>,
     /// <see cref="BitNumberField{TValue}"/>, <see cref="BitDropdown{TItem, TValue}"/>, <see cref="BitDatePicker"/>,
@@ -172,15 +186,6 @@ public class BitStrings
     /// </summary>
     public virtual string SelectAll => "Select all";
 
-    /// <summary>
-    /// What an empty list says while a search is typed: the fallback of <see cref="BitDropdown{TItem, TValue}.EmptyText"/>.
-    /// </summary>
-    public virtual string NoResultsFound => "No results found";
-
-    /// <summary>
-    /// What an empty list says with no search typed: the fallback of <see cref="BitDropdown{TItem, TValue}.EmptyText"/>.
-    /// </summary>
-    public virtual string NoItemsFound => "No items found";
 
 
 
@@ -196,11 +201,6 @@ public class BitStrings
     /// <see cref="BitSearchBox.SuggestFailedText"/>.
     /// </summary>
     public virtual string SuggestionsFailed => "Suggestions could not be loaded.";
-
-    /// <summary>
-    /// What a screen reader announces when no suggestion matches: the fallback of <see cref="BitSearchBox.NoResultsText"/>.
-    /// </summary>
-    public virtual string NoSuggestionFound => "No suggestion found.";
 
     /// <summary>
     /// What a screen reader announces while too few characters are typed for suggestions, <c>{0}</c> being how many

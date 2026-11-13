@@ -73,7 +73,7 @@
         <div class="bit-isc-emp @Classes?.Empty" style="@Styles?.Empty">
             @if (EmptyTemplate is null)
             {
-                @EmptyText
+                @(EmptyText ?? BitStrings.Current.NoItemsFound)
             }
             else
             {

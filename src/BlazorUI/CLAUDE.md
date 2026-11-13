@@ -175,6 +175,14 @@ break recorded in `BreakingChanges.md` - never kept beside the new name as an `[
   the `NoResults` part for a search or filter that **matched none** of the items there are. A component with both
   (`BitDropdown`) has both. Never `EmptyContent`, `NoDataTemplate`, `EmptyMessage` or `EmptyListTemplate`: the
   framework's own `Virtualize.EmptyContent` is the one `EmptyContent` left, and it is not ours.
+- **...and it works the same way everywhere.** The template wins, then the text, and with neither the component
+  still says something: `BitStrings.Current.NoItemsFound` for empty, `BitStrings.Current.NoResultsFound` for no
+  results - never a literal of its own, and never nothing. The text parameters are `string?` defaulting to `null`
+  (the default is read at render time, so a `BitStrings` set later still reaches it). The message sits in a wrapper
+  element of its own, `bit-<prefix>-emp` / `bit-<prefix>-nor`, carrying the `Empty` / `NoResults` class-style part,
+  with the template rendered inside it. A component with both meanings keeps them apart: a fruitless search never
+  falls back to the empty text, and an empty component searched stays empty. A component that keeps its words in a
+  texts object (`BitDataGridStrings`) keeps them there, with a getter that falls back to `BitStrings.Current`.
 
 ## Core components never render each other
 

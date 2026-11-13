@@ -177,6 +177,27 @@ public class BitVirtualizeTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitVirtualizeShouldSayItHasNoItemsInTheDefaultWordsOrItsOwn()
+    {
+        var component = RenderComponent<BitVirtualize<int>>(parameters =>
+        {
+            parameters.Add(p => p.Items, new List<int>());
+            parameters.Add(p => p.ItemTemplate, itemTemplate);
+        });
+
+        Assert.AreEqual("No items found", component.Find(".bit-vir-emp").TextContent.Trim());
+        Assert.AreEqual(0, component.FindAll(".bit-vir-spc").Count);
+
+        component.Render(parameters => parameters.Add(p => p.EmptyText, "Nothing yet"));
+        Assert.AreEqual("Nothing yet", component.Find(".bit-vir-emp").TextContent.Trim());
+
+        component.Render(parameters => parameters.Add(p => p.EmptyTemplate, builder => builder.AddContent(0, "No data")));
+        Assert.AreEqual("No data", component.Find(".bit-vir-emp").TextContent.Trim());
+
+        component.Render(parameters => parameters.Add(p => p.Items, new List<int> { 1, 2, 3 }));
+        Assert.AreEqual(0, component.FindAll(".bit-vir-emp").Count);
+    }
+    [TestMethod]
     public void BitVirtualizeShouldBeAGroupWhileItsItemsAreReplacedByTheEmptyTemplate()
     {
         SetupViewport(300);

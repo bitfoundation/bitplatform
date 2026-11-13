@@ -183,7 +183,7 @@ public class BitChartParams : BitComponentBaseParams, IBitComponentParams
 
         if (EmptyText.HasValue())
         {
-            bitChart.TakeFromCascade(nameof(EmptyText), EmptyText!, static c => c.EmptyText, static (c, v) => c.EmptyText = v);
+            bitChart.TakeFromCascade(nameof(EmptyText), EmptyText, static c => c.EmptyText, static (c, v) => c.EmptyText = v);
         }
 
         if (Options is not null)

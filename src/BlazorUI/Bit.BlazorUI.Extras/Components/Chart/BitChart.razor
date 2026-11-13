@@ -173,16 +173,16 @@
                     }
                 </div>
             }
-            else if (ShowNoData)
+            else if (ShowEmpty)
             {
-                <div class="bit-cht-nodata @Classes?.Empty" style="@Styles?.Empty">
+                <div class="bit-cht-emp @Classes?.Empty" style="@Styles?.Empty">
                     @if (EmptyTemplate is not null)
                     {
                         @EmptyTemplate
                     }
                     else
                     {
-                        @EmptyText
+                        @(EmptyText ?? BitStrings.Current.NoItemsFound)
                     }
                 </div>
             }

@@ -480,7 +480,8 @@ public partial class BitDataGridDemo
             Parameters =
             [
                 new() { Name = "GridLabel", Type = "string", DefaultValue = "\"Data grid\"", Description = "The grid's accessible name when no AriaLabel is given." },
-                new() { Name = "EmptyText", Type = "string", DefaultValue = "\"No records to display.\"", Description = "Shown when there are no rows." },
+                new() { Name = "EmptyText", Type = "string", DefaultValue = "BitStrings.NoItemsFound", Description = "Shown when there are no rows; \"No items found\" unless BitStrings.Current says otherwise." },
+                new() { Name = "NoMatchesText", Type = "string", DefaultValue = "BitStrings.NoResultsFound", Description = "Shown instead of EmptyText when the filters or the search exclude every row; \"No results found\" unless BitStrings.Current says otherwise." },
                 new() { Name = "LoadingText", Type = "string", DefaultValue = "\"Loading…\"", Description = "Shown while Loading is true, and while a server grid reads its first rows." },
                 new() { Name = "ReadErrorText", Type = "string", DefaultValue = "\"The records could not be loaded.\"", Description = "Shown in place of the rows when a read fails and OnReadError is set." },
                 new() { Name = "RetryText", Type = "string", DefaultValue = "\"Retry\"", Description = "The button that reads the rows again after a failed read." },
