@@ -148,6 +148,15 @@
     <BitCallout @ref="_point" NoOverlay>
         <div id="point-body" class="e2e-clo-body">At a point.</div>
     </BitCallout>
+    @* Opened from an anchor of its own, which takes the focus in, and then moved to a point from its own keyboard. *@
+    <BitCallout @ref="_moveToPoint" Id="mtp-callout" AutoFocus NoOverlay>
+        <Anchor><button id="mtp-anchor" type="button">Open, then move to a point</button></Anchor>
+        <ChildContent>
+            <div id="mtp-body" class="e2e-clo-body">
+                <button id="mtp-move" type="button" @onclick="() => _moveToPoint.OpenAt(200, 200)">Move to a point</button>
+            </div>
+        </ChildContent>
+    </BitCallout>
 </E2ESection>
 
 <E2ESection Id="surface" Title="Background, Border, NoShadow">
@@ -524,6 +533,7 @@
 
     private BitCallout _ctx = default!;
     private BitCallout _point = default!;
+    private BitCallout _moveToPoint = default!;
     private string _ctxAction = "";
     private int _ctxOpens;
 

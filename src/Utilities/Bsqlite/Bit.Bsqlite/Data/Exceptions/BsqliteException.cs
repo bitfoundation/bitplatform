@@ -28,6 +28,19 @@ public class BsqliteException : DbException
         : base(message)
         => SqliteErrorCode = sqliteErrorCode;
 
+    /// <param name="message">The engine's message, passed through unaltered.</param>
+    /// <param name="sqliteErrorCode">
+    /// The SQLite result code, or <see langword="null"/> when the failure came from the transport rather
+    /// than from the engine.
+    /// </param>
+    /// <param name="innerException">
+    /// The failure this one stands for - on a device, Microsoft.Data.Sqlite's <c>SqliteException</c>, with its
+    /// extended result code and its stack.
+    /// </param>
+    public BsqliteException(string message, int? sqliteErrorCode, Exception? innerException)
+        : base(message, innerException)
+        => SqliteErrorCode = sqliteErrorCode;
+
     /// <summary>The SQLite result code, when the engine supplied one.</summary>
     public int? SqliteErrorCode { get; }
 

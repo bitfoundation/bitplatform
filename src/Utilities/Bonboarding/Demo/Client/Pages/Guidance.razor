@@ -173,6 +173,46 @@
 </section>
 
 <section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Tasks that wait for others, and optional ones</h3>
+    <p>
+        Inviting the team only makes sense once there is a project to invite them to, so that task <code>DependsOn</code> the
+        first: until it is done it is locked - no button, a dashed ring, and a line saying what to do first. Picking a theme
+        is <code>Optional</code>: tagged as such, and left out of the progress, so the checklist is complete without it.
+    </p>
+    <p>
+        Dismissing a checklist takes away the button that had focus, and only the application knows where focus belongs
+        next. Here <code>OnDismissed</code> moves it to the button that brings the checklist back.
+    </p>
+
+    <div class="bb-demo">
+        <div class="bb-fields">
+            <button type="button" class="btn btn-secondary" @onclick="CreateProjectAsync">Create a project</button>
+            <button type="button" class="btn btn-secondary" @ref="_restoreTasks" @onclick="ResetTasksAsync">Reset the tasks</button>
+        </div>
+
+        <div>
+            <BonboardingChecklist Checklist="Tasks"
+                                  Dismissible="true"
+                                  HeadingLevel="4"
+                                  OnCompleted="() => _tasksCompleted = true"
+                                  OnDismissed="TasksDismissedAsync" />
+
+            @if (_tasksCompleted)
+            {
+                <div class="bb-note bb-note-success" role="status">Complete: the optional task is not needed for that.</div>
+            }
+
+            @if (_tasksDismissed)
+            {
+                <div class="bb-note" role="status">Dismissed. Focus moved to "Reset the tasks", which brings it back.</div>
+            }
+        </div>
+    </div>
+
+    <pre class="bb-code" tabindex="0">@TasksExample</pre>
+</section>
+
+<section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> A list of tours</h3>
     <p>
         The entry point of a help menu or resource centre: the tours, where the user stands with each - new, in progress or
@@ -302,6 +342,58 @@
 
     private BonboardingChecklistDefinition? _checklistDefinition;
 
+    private const string TasksId = "demo-workspace-tasks";
+    private ElementReference _restoreTasks;
+    private bool _tasksCompleted;
+    private bool _tasksDismissed;
+
+    private BonboardingChecklistDefinition Tasks => _tasksDefinition ??= new()
+    {
+        Id = TasksId,
+        Title = "Set up your workspace",
+        Items =
+        {
+            new BonboardingChecklistItem
+            {
+                Id = "project",
+                Title = "Create a project",
+                Description = "Use the button above; it raises the \"project-created\" signal.",
+                CompleteOnSignal = "project-created",
+            },
+            new BonboardingChecklistItem
+            {
+                Id = "invite",
+                Title = "Invite your team",
+                DependsOn = ["project"],
+                OnClick = ctx => new ValueTask(BonboardingService.SetChecklistItemAsync(TasksId, ctx.Item.Id)),
+            },
+            new BonboardingChecklistItem
+            {
+                Id = "theme",
+                Title = "Pick a theme",
+                Optional = true,
+                OnClick = ctx => new ValueTask(BonboardingService.SetChecklistItemAsync(TasksId, ctx.Item.Id)),
+            },
+        },
+    };
+
+    private BonboardingChecklistDefinition? _tasksDefinition;
+
+    private Task CreateProjectAsync() => BonboardingService.SignalAsync("project-created");
+
+    private async Task TasksDismissedAsync()
+    {
+        _tasksDismissed = true;
+        await _restoreTasks.FocusAsync();
+    }
+
+    private async Task ResetTasksAsync()
+    {
+        _tasksCompleted = false;
+        _tasksDismissed = false;
+        await BonboardingService.ResetChecklistAsync(TasksId);
+    }
+
     private static readonly BonboardingTourDefinition[] ListedTours = [UsageTour, ShortTour, WorkspaceTour.Create()];
 
     private async Task SearchedAsync()
@@ -380,6 +472,22 @@
         await BonboardingService.SetChecklistItemAsync("demo-getting-started", "search", false);     // not done after all
         await BonboardingService.SignalAsync("searched");
         await BonboardingService.ResetChecklistAsync("demo-getting-started");                        // ticks and dismissal
+        """;
+
+    private const string TasksExample = """
+        Items =
+        {
+            new() { Id = "project", Title = "Create a project", CompleteOnSignal = "project-created" },
+            // Locked until "project" is done: no button, and "Do first: Create a project" under it.
+            new() { Id = "invite", Title = "Invite your team", DependsOn = ["project"], OnClick = InviteAsync },
+            // Tagged "Optional", and left out of the progress.
+            new() { Id = "theme", Title = "Pick a theme", Optional = true, OnClick = PickThemeAsync },
+        }
+
+        <BonboardingChecklist Checklist="Tasks" Dismissible="true" OnDismissed="() => restoreButton.FocusAsync()" />
+
+        // In a unit test: duplicate ids, unknown prerequisites, circles.
+        Assert.IsEmpty(Tasks.Validate());
         """;
 
     private const string TourListExample = """

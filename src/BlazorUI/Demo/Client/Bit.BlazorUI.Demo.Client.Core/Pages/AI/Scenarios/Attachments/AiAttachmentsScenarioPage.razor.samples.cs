@@ -12,7 +12,7 @@ public partial class AiAttachmentsScenarioPage
                MaxAttachmentSize="MaxSize"
                OnAttachmentRejected="OnRejected"
                EmptyTitle="Attach something"
-               EmptyBody="Drag a file onto the composer, paste a screenshot, or use the paperclip. Files over 2 MB are turned away." />
+               EmptyDescription="Drag a file onto the composer, paste a screenshot, or use the paperclip. Files over 2 MB are turned away." />
 </div>
 
 <aside aria-label="Turned away">

@@ -1,0 +1,22 @@
+﻿@import "../../../Styles/functions.scss";
+
+// Public CSS variables. They are read with a fallback and never declared here, so a value set on :root, on an
+// ancestor or on the Style of a long press inherits down to whatever reads it:
+//   --bit-LongPress-focus-color        focus ring color of a KeyboardTrigger long press     (default: $clr-pri-focus)
+
+.bit-lpr {
+    // A touch held on a link or an image brings up the callout of the browser (iOS) - the press is the long press's.
+    -webkit-touch-callout: none;
+
+    // Only a long press the keyboard can reach (KeyboardTrigger, or a TabIndex of the page's own) is ever focused.
+    &:focus-visible {
+        @include focus-ring-own(var(--bit-LongPress-focus-color));
+    }
+}
+
+// While a press is held: a touch held that long selects the word under it on most browsers, and a mouse held down
+// starts a selection as it drifts. Also the styling hook of the pressed state.
+.bit-lpr-prs {
+    user-select: none;
+    -webkit-user-select: none;
+}

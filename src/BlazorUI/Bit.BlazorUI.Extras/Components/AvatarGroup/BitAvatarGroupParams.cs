@@ -9,7 +9,7 @@ namespace Bit.BlazorUI;
 /// What belongs here is what the avatar groups of an app agree on: their size, layout and look, how many avatars they
 /// draw and how they name their overflow. The people and what a click on them does are the state of a single group.
 /// </remarks>
-public class BitAvatarGroupParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitAvatarGroupParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitAvatarGroup"/> cascading parameters within <see cref="BitParams"/>.

@@ -107,6 +107,33 @@ public class GestureCancellationTests : BunitContext
     }
 
     [TestMethod]
+    public void AnotherFingerTheBrowserTakesOverLeavesTheDragAlone()
+    {
+        // A pane that leaves a swipe on its background to the page: the browser scrolls with a second finger, and
+        // takes that finger over, while the first one is still dragging a node (#14902).
+        var nodes = ThreeNodes();
+        var cut = Render(nodes, extra: p => { p.Add(c => c.PanOnDrag, false); p.Add(c => c.ZoomOnPinch, false); });
+        var pane = cut.Find(".bit-blow");
+
+        cut.FindAll(".bit-blow-node")[0]
+            .PointerDown(new PointerEventArgs { PointerId = 1, PointerType = "touch", Button = 0, ClientX = 0, ClientY = 0 });
+        pane.PointerMove(new PointerEventArgs { PointerId = 1, PointerType = "touch", ClientX = 90, ClientY = 70 });
+        var moved = nodes[0].Position;
+        Assert.AreNotEqual(new BlowXYPosition(0, 0), moved);
+
+        pane.PointerCancel(new PointerEventArgs { PointerId = 2, PointerType = "touch" });
+
+        Assert.AreEqual(moved, nodes[0].Position);
+        Assert.IsTrue(nodes[0].Dragging);
+
+        // The dragging finger itself taken over still abandons the drag.
+        pane.PointerCancel(new PointerEventArgs { PointerId = 1, PointerType = "touch" });
+
+        Assert.AreEqual(new BlowXYPosition(0, 0), nodes[0].Position);
+        Assert.IsFalse(nodes[0].Dragging);
+    }
+
+    [TestMethod]
     public void ACancelledDragEndsOnceWithNothingLeftToRecord()
     {
         var stops = 0;

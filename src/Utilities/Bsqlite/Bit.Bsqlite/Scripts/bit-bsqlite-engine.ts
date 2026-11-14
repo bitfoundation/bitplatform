@@ -16,6 +16,12 @@ import type { JsModuleReference } from './bit-bsqlite-host.js';
 export interface VfsRegistration {
     vfsName?: string | null;
     onOpenSql?: string[];
+    /**
+     * The registered VFS, when it records the exception behind the last error it returned as `lastError`, as
+     * wa-sqlite's VFSes do: a storage failure then keeps its name - `QuotaExceededError` - across SQLite's
+     * generic I/O result code.
+     */
+    vfs?: { lastError?: unknown } | null;
 }
 
 /** A loaded engine, with the provider's VFS registered against it. */
@@ -25,6 +31,7 @@ export interface LoadedEngine {
     build: string;
     vfsName: string | null;
     onOpenSql: string[];
+    vfs: { lastError?: unknown } | null;
 }
 
 interface EngineBuildFiles {
@@ -99,6 +106,7 @@ export async function loadEngine({ requiredBuild, databaseName, vfs }: { require
 
     let vfsName: string | null = null;
     let onOpenSql: string[] = [];
+    let registeredVfs: { lastError?: unknown } | null = null;
 
     if (vfs) {
         const vfsModule = await import(vfs.moduleUrl);
@@ -114,6 +122,7 @@ export async function loadEngine({ requiredBuild, databaseName, vfs }: { require
         const registered: VfsRegistration | undefined = await register({ module, sqlite3, databaseName });
         vfsName = registered?.vfsName ?? null;
         onOpenSql = Array.isArray(registered?.onOpenSql) ? registered.onOpenSql : [];
+        registeredVfs = registered?.vfs ?? null;
 
         if (!vfsName) {
             throw new Error(
@@ -122,5 +131,5 @@ export async function loadEngine({ requiredBuild, databaseName, vfs }: { require
         }
     }
 
-    return { sqlite3, module, build: build.id, vfsName, onOpenSql };
+    return { sqlite3, module, build: build.id, vfsName, onOpenSql, vfs: registeredVfs };
 }

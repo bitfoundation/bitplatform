@@ -11,7 +11,7 @@ namespace Bit.BlazorUI;
 /// switcher alike, and which a BitParams around the layout does in one place. The <see cref="BitAccentColorSwitcher.OnChange"/>
 /// callback is deliberately not here: it is what makes one switcher the one it is.
 /// </remarks>
-public class BitAccentColorSwitcherParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitAccentColorSwitcherParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitAccentColorSwitcher"/> cascading parameters within <see cref="BitParams"/>.

@@ -19,10 +19,6 @@ public partial class BitAiModelSelector : BitAiComponentBase
 
 
 
-    [Inject] private IServiceProvider _services { get; set; } = default!;
-
-
-
     /// <summary>
     /// Gets or sets the cascading parameters for the model selector component.
     /// </summary>
@@ -38,8 +34,8 @@ public partial class BitAiModelSelector : BitAiComponentBase
 
 
     /// <summary>
-    /// The catalog of the models to offer. When null, the <see cref="IBitAiModelCatalog"/> registered in the services is
-    /// used.
+    /// The catalog of the models to offer. When null, the cascaded one (<see cref="BitAiServices.ModelCatalog"/>) is
+    /// used, else the <see cref="IBitAiModelCatalog"/> registered in the services.
     /// </summary>
     [Parameter] public IBitAiModelCatalog? Catalog { get; set; }
 
@@ -132,7 +128,7 @@ public partial class BitAiModelSelector : BitAiComponentBase
             _announcedId = null;
         }
 
-        var catalog = Catalog ?? _services.GetService(typeof(IBitAiModelCatalog)) as IBitAiModelCatalog;
+        var catalog = Catalog ?? GetAiService<IBitAiModelCatalog>();
         var source = Models ?? catalog?.Models ?? [];
 
         BuildItems(source, catalog);

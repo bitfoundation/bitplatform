@@ -27,6 +27,27 @@ public class SelectionTests : BortableTestContext
         => ItemElement(list, label).ClickAsync(new MouseEventArgs { ShiftKey = true });
 
     [TestMethod]
+    public async Task SelectedItemsCarryAnAttributeTheBrowserLayerCountsThemBy()
+    {
+        var list = RenderSelectable(["A", "B", "C"], []);
+
+        await ClickAsync(list, "A");
+        await ClickAsync(list, "C");
+
+        var marked = list.FindAll("[data-bortable-selected]").Select(e => e.TextContent.Trim());
+        Assert.AreSequenceEqual(["A", "C"], marked.ToList());
+        Assert.IsTrue(SentOptions(list)!.MultiDrag);
+    }
+
+    [TestMethod]
+    public void AListWithoutMultiDragMarksNothingSelected()
+    {
+        var list = RenderList(["A", "B"], "L1", p => p.Add(c => c.SelectedItems, ["A"]));
+
+        Assert.IsEmpty(list.FindAll("[data-bortable-selected]"));
+    }
+
+    [TestMethod]
     public async Task AClickPublishesTheSelectionInListOrder()
     {
         var published = new List<IReadOnlyCollection<string>>();

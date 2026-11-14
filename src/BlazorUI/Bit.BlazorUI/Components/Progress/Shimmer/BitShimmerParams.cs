@@ -12,7 +12,7 @@ namespace Bit.BlazorUI;
 /// and <see cref="BitShimmer.LoadedLabel"/>, which belong on the one shimmer that speaks for a region rather than
 /// on every shimmer in it.
 /// </remarks>
-public class BitShimmerParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitShimmerParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitShimmer"/> cascading parameters within <see cref="BitParams"/>.

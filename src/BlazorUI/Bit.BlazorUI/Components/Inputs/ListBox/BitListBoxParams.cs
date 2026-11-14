@@ -9,7 +9,7 @@ namespace Bit.BlazorUI;
 /// It carries the parameters that say nothing about the item and value types or about what a single list box holds, so
 /// one object fits every list box under it. The items, the values, the label and the callbacks stay on the list box.
 /// </remarks>
-public class BitListBoxParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitListBoxParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitListBox{TItem, TValue}"/> cascading parameters within <see cref="BitParams"/>.

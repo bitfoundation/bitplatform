@@ -10,7 +10,7 @@ namespace Bit.BlazorUI;
 /// bell, the time zone and how much history to keep. Whether one is open (<see cref="BitNotificationCenter.IsOpen"/>
 /// and its callback) is deliberately not here: it is the state of a single center.
 /// </remarks>
-public class BitNotificationCenterParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitNotificationCenterParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitNotificationCenter"/> cascading parameters within <see cref="BitParams"/>.

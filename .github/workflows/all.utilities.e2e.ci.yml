@@ -1,0 +1,77 @@
+name: All Utilities E2E CI
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+
+  bmotion_e2e:
+    name: bmotion e2e
+    uses: ./.github/workflows/ci.bmotion.e2e.yml
+
+  bmage_e2e:
+    name: bmage e2e
+    uses: ./.github/workflows/ci.bmage.e2e.yml
+
+  bsqlite_e2e:
+    name: bsqlite e2e
+    uses: ./.github/workflows/ci.bsqlite.e2e.yml
+
+  bink_e2e:
+    name: bink e2e
+    uses: ./.github/workflows/ci.bink.e2e.yml
+
+  balette_e2e:
+    name: balette e2e
+    uses: ./.github/workflows/ci.balette.e2e.yml
+
+  bbscanner_e2e:
+    name: bbscanner e2e
+    uses: ./.github/workflows/ci.bbscanner.e2e.yml
+
+  blazedb_e2e:
+    name: blazedb e2e
+    uses: ./.github/workflows/ci.blazedb.e2e.yml
+
+  blow_e2e:
+    name: blow e2e
+    uses: ./.github/workflows/ci.blow.e2e.yml
+
+  bcrdt_e2e:
+    name: bcrdt e2e
+    uses: ./.github/workflows/ci.bcrdt.e2e.yml
+
+  blex_e2e:
+    name: blex e2e
+    uses: ./.github/workflows/ci.blex.e2e.yml
+
+  bonboarding_e2e:
+    name: bonboarding e2e
+    uses: ./.github/workflows/ci.bonboarding.e2e.yml
+
+  bdnd_e2e:
+    name: bdnd e2e
+    uses: ./.github/workflows/ci.bdnd.e2e.yml
+
+  borm_e2e:
+    name: borm e2e
+    uses: ./.github/workflows/ci.borm.e2e.yml
+
+  bortable_e2e:
+    name: bortable e2e
+    uses: ./.github/workflows/ci.bortable.e2e.yml
+
+  belemetry_e2e:
+    name: belemetry e2e
+    uses: ./.github/workflows/ci.belemetry.e2e.yml
+
+  bevtools_e2e:
+    name: bevtools e2e
+    uses: ./.github/workflows/ci.bevtools.e2e.yml
+
+  bheadless_e2e:
+    name: bheadless e2e
+    uses: ./.github/workflows/ci.bheadless.e2e.yml

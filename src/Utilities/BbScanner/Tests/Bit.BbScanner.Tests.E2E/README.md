@@ -56,9 +56,9 @@ dotnet test --filter "FullyQualifiedName~.ScannerInterfaceTests."
 dotnet test --filter "FullyQualifiedName~DecodesEverySymbologyInTheClip"
 ```
 
-CI runs the suite in `.github/workflows/bit.ci.BbScanner.e2e.yml`, which only runs when started by hand (Actions >
-"bit platform CI - BbScanner E2E" > Run workflow). The pull-request pipeline, `bit.ci.BbScanner.yml`, runs the build,
-decoder, component and MCP tests only. The E2E workflow drives the demo published the way `bbscanner.demo.cd.yml`
+CI runs the suite in `.github/workflows/ci.bbscanner.e2e.yml`, which only runs when started by hand (Actions >
+"CI BbScanner E2E" > Run workflow). The pull-request pipeline, `ci.bbscanner.yml`, runs the build,
+decoder, component and MCP tests only. The E2E workflow drives the demo published the way `cd.bbscanner.demo.yml`
 publishes it - trimmed and compiled ahead of time, which a build output is neither - and points the suite at it with
 `BBSCANNER_E2E_BASE_URL`:
 

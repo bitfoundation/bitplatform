@@ -11,7 +11,7 @@ namespace Bit.BlazorUI;
 /// purpose: they are what makes one prompt the one it is. This is how an app reaches the prompts a
 /// <see cref="BitAiChat"/> draws inside its tool-call cards.
 /// </remarks>
-public class BitAiToolApprovalParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitAiToolApprovalParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitAiToolApproval"/> cascading parameters within <see cref="BitParams"/>.

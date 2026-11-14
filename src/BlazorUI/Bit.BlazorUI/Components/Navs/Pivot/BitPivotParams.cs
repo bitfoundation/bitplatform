@@ -10,7 +10,7 @@ namespace Bit.BlazorUI;
 /// templates and the event callbacks are left out on purpose: they belong to a single pivot rather than to a
 /// group of them.
 /// </remarks>
-public class BitPivotParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitPivotParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitPivot"/> cascading parameters within <see cref="BitParams"/>.

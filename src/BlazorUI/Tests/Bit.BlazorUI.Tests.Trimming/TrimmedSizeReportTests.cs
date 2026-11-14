@@ -5,10 +5,10 @@ using Bit.BlazorUI.Tests.Trimming.Infrastructure;
 namespace Bit.BlazorUI.Tests.Trimming;
 
 /// <summary>
-/// The bytes each fixture app keeps of every bundle, written to trimmed-bundle-sizes.json in the run's results directory
-/// (--results-directory, which CI uploads; TestResults beside the test app otherwise), so the sizes can be followed from
-/// one run to the next. It is a record, not a limit: no size fails it, only a publish that failed or a report that no
-/// longer reads as the trimming's.
+/// The bytes each fixture app keeps of every bundle, and what the AI package costs an app that lazy-loads it, written to
+/// trimmed-bundle-sizes.json in the run's results directory (--results-directory, which CI uploads; TestResults beside the
+/// test app otherwise), so the sizes can be followed from one run to the next. It is a record, not a limit: no size fails
+/// it, only a publish that failed or a report that no longer reads as the trimming's.
 /// </summary>
 [TestClass]
 public sealed class TrimmedSizeReportTests
@@ -72,6 +72,12 @@ public sealed class TrimmedSizeReportTests
             };
         }).ToList();
 
+        // What the AI package costs a trimmed WebAssembly app that lazy-loads it (LazyAiTrimmingTests' publish), part by
+        // part, with what it downloads as it starts and once its chat opens: the figures the Trimming page states.
+        var lazyAi = LazyAiTrimmingTests.Published;
+        lazyAi.AssertSucceeded();
+        var aiParts = LazyAiTrimmingTests.MeasureAiPackage(lazyAi);
+
         var report = new
         {
             GeneratedAt = DateTimeOffset.UtcNow,
@@ -80,6 +86,15 @@ public sealed class TrimmedSizeReportTests
             Os = RuntimeInformation.OSDescription,
             Configuration = "Release",
             Apps = apps,
+            LazyAiPackage = new
+            {
+                App = "lazy-ai",
+                Project = Publisher.LazyAi,
+                Parts = aiParts,
+                StartupBrotliBytes = aiParts.Where(p => p.When == "startup").Sum(p => p.BrotliBytes),
+                ChatBrotliBytes = aiParts.Where(p => p.When == "chat").Sum(p => p.BrotliBytes),
+                TotalBrotliBytes = aiParts.Sum(p => p.BrotliBytes),
+            },
         };
 
         var directory = ResultsDirectory();

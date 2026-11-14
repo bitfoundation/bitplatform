@@ -5,7 +5,7 @@ public partial class AiServerScenarioPage
     private readonly string example1RazorCode = """
 <div style="height: 560px">
     <BitAiChat EmptyTitle="Ask the server"
-               EmptyBody="The reply is generated on the server and streamed here." />
+               EmptyDescription="The reply is generated on the server and streamed here." />
 </div>
 """;
 

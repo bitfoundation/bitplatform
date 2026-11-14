@@ -5,7 +5,7 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// The parameters for <see cref="BitCollapse"/> component.
 /// </summary>
-public class BitCollapseParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitCollapseParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitCollapse"/> cascading parameters within <see cref="BitParams"/>.

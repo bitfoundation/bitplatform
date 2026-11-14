@@ -12,7 +12,7 @@ namespace Bit.BlazorUI;
 /// usable from a single non-generic <see cref="BitParams"/> list no matter which of the three item APIs each
 /// nav under it uses.
 /// </remarks>
-public class BitNavParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitNavParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitNav{TItem}"/> cascading parameters within <see cref="BitParams"/>.

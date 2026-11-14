@@ -23,13 +23,13 @@ and EF Core only when a page that uses its database opens.
 
 | Suite | What it covers |
 |---|---|
-| `EngineTests`, `EngineBehaviourTests`, `EngineConformanceTests` | Build negotiation and the pinned SQLite version; one database per worker; the statement cache, engine-reported changes, counters, open-time configuration, snapshots; the conformance rules on the in-memory VFS. |
+| `EngineTests`, `EngineBehaviourTests`, `EngineConformanceTests` | Build negotiation and the pinned SQLite version; the SQL features the build has and leaves out; one database per worker; the statement cache, engine-reported changes, counters, open-time configuration, snapshots; the conformance rules on the in-memory VFS. |
 | `BinaryWireTests`, `InteropTests`, `WorkerTests` | The binary batch and reply format end to end, the interop envelope that keeps SQLite result codes across the boundary, and the worker's request queue, failures, guards and lifecycle. |
 | `FunctionsTests` | The `ef_*` decimal functions, aggregates, the `EF_DECIMAL` collation and `REGEXP`, against .NET's answers. |
 | `LiveQueryTests` | Change notifications from the update and commit hooks, in one tab and across tabs. |
-| `OpfsTests`, `IndexedDbTests`, `CacheStorageTests`, `StorageIsolationTests` | Each backend's persistence, crash safety, admin surface and multi-tab behaviour, and that two backends never see each other's data under the same name. |
+| `OpfsTests`, `IndexedDbTests`, `CacheStorageTests`, `StorageIsolationTests` | Each backend's persistence, crash safety, admin surface and multi-tab behaviour, a snapshot of an open database taken on a worker that has just opened it, and that two backends never see each other's data under the same name. |
 | `SubPathTests` | Every module is reached relative to the document, so an app under `<base href="/nested/">` works unchanged. |
-| `DemoTests` | Every page in the docs panel, and the landing page, is prerendered, hydrates and opens its database without a console error; an unknown route answers 404 with the site's own page; moving the database between backends from the session bar keeps the data and the binding sticks, even while the page is still loading, and is not offered onto in-memory; a refused write shows SQLite's reason without Blazor's error bar; an unsaved order edit stays out of the grid; a file that is not a database is refused before import; the browser and the server seed the same catalog through the same model. |
+| `DemoTests` | Every page in the docs panel, and the landing page, is prerendered, hydrates and opens its database without a console error; an unknown route answers 404 with the site's own page; moving the database between backends from the session bar keeps the data and the binding sticks, even while the page is still loading, and is not offered onto in-memory; a refused write shows SQLite's reason without Blazor's error bar; a backup downloaded from the admin page restores over the database; an unsaved order edit stays out of the grid; a file that is not a database is refused before it is restored; the browser and the server seed the same catalog through the same model. |
 | `LazyLoadingTests` | The published lazy loading sample - trimmed, with `Bit.Bsqlite.wasm`, the EF Core assemblies `docs/getting-started.md`'s "Lazy loading on WebAssembly" lists and the library with the app's context and migration marked `BlazorWebAssemblyLazyLoad` and loaded by the router's `OnNavigateAsync`, and nothing of Bsqlite's registered in the browser - as that section sets it up: its home page downloads none of them; navigating to the products page downloads each once (and not again on the way back), and a deep link to it is prerendered by the server (which registers the services with the same `AppDatabase.Register` and resolves the router's `LazyAssemblyLoader`) and then downloads them; either way the page builds Bsqlite's services itself through `GetBitBsqliteServices`, opens and migrates its database and adds a product, which a reload reads back from the browser's storage - all without a console error, an unhandled exception or a failed request. Published with AOT (`BSQLITE_E2E_LAZY_AOT=1`), the sample leaves the lazy marks out as the guide says an AOT build must, and the same tests check that it loads them with the app and nothing on demand. |
 | `SoakTests` (category `Soak`) | Per storage, a worker killed mid-transaction a thousand times, and four then eight tabs committing at once, each ending on `PRAGMA integrity_check`. Opt-in: minutes, not seconds. |
 | `BenchmarkTests` (category `Benchmark`) | Runs `TestPages/benchmarks.html` per backend and prints its numbers. Opt-in, and never a gate. |
@@ -60,9 +60,9 @@ dotnet test --filter "FullyQualifiedName~.OpfsTests."
 dotnet test --filter "FullyQualifiedName~Persistence_survives_a_worker_restart"
 ```
 
-CI does the same in Release (`.github/workflows/bit.ci.Bsqlite.e2e.yml`), only when started by hand (Actions >
-"bit platform CI - Bsqlite E2E" > Run workflow), and uploads the test results (TRX) and the demo's output as an
-artifact. Its demo tests drive the demo published the way `bsqlite.demo.cd.yml` publishes it rather than a build
+CI does the same in Release (`.github/workflows/ci.bsqlite.e2e.yml`), only when started by hand (Actions >
+"CI Bsqlite E2E" > Run workflow), and uploads the test results (TRX) and the demo's output as an
+artifact. Its demo tests drive the demo published the way `cd.bsqlite.demo.yml` publishes it rather than a build
 output: only a publish trims the WebAssembly client, so an interop payload the trimmer breaks (an anonymous type whose
 constructor lost its parameter names, a getter nothing but System.Text.Json reads) fails there and nowhere else. The
 lazy loading tests drive the sample published for the same reason, and because only a publish writes the lazy marks into
@@ -89,7 +89,7 @@ Locally, delete the sample's `bin/Release` and `obj/Release` folders before publ
 the AOT one's intermediates can ship the assemblies with their IL stripped, and the runtime then fails to start
 (`Assertion: should not be reached at ... interp.c`).
 
-The pull-request pipeline, `bit.ci.Bsqlite.yml`, runs the build, unit, MCP server and JavaScript tests only.
+The pull-request pipeline, `ci.bsqlite.yml`, runs the build, unit, MCP server and JavaScript tests only.
 
 Without PowerShell 7, the browser can be installed with the Node.js runtime Playwright ships:
 `bin/Debug/net11.0/.playwright/node/<platform>/node bin/Debug/net11.0/.playwright/package/cli.js install chromium`.

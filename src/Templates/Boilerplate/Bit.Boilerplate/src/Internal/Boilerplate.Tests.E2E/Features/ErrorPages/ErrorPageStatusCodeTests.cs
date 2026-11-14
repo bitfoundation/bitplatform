@@ -5,7 +5,7 @@ namespace Boilerplate.Tests.E2E.Features.ErrorPages;
 /// scripts off. Server.Web's Handle40XStatusCodes redirects Blazor's bodiless 401/404 to NotAuthorizedPage /
 /// NotFoundPage and keeps the status code on them.
 /// <para>
-/// AdminPanel is not among the rows: admin-sample.cd.yml does not set <c>WebAppRender.PrerenderEnabled</c>, so it
+/// AdminPanel is not among the rows: cd.adminpanel.demo.yml does not set <c>WebAppRender.PrerenderEnabled</c>, so it
 /// serves a shell and only the client router knows, once WebAssembly is up, that a route is missing or needs an
 /// account. WebErrorPageTests covers it there.
 /// </para>

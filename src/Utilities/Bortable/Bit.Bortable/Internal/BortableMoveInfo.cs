@@ -23,4 +23,7 @@ internal sealed class BortableMoveInfo
 
     /// <summary>The drag ended with every list it touched put back as it was.</summary>
     public bool Canceled { get; init; }
+
+    /// <summary>In swap mode, the item <see cref="Item"/> trades places with; <c>null</c> for any other move.</summary>
+    public object? SwappedWith { get; init; }
 }

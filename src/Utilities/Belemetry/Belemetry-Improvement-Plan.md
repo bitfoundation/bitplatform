@@ -31,9 +31,9 @@ packages:
 
 - Library: `net8.0`, `net9.0`, `net10.0`; `IsTrimmable` + `IsAotCompatible`; one browser script (ES2019).
 - This workstation has only the .NET 10 runtime (10.0.13). **The net8.0 and net9.0 test legs cannot run here**
-  (`You must install or update .NET to run this application`); they build, and CI (`bit.ci.Belemetry.yml`) runs
+  (`You must install or update .NET to run this application`); they build, and CI (`ci.belemetry.yml`) runs
   all three. Every test result below is net10.0 unless stated otherwise.
-- The Playwright E2E suite (`Tests.E2E`) and the publish gate (`bit.ci.Belemetry.e2e.yml`) need a Chromium install;
+- The Playwright E2E suite (`Tests.E2E`) and the publish gate (`ci.belemetry.e2e.yml`) need a Chromium install;
   they are not part of the per-round verification here, and CI runs them on demand only. Since #14702 that run also
   drives the MAUI sample on Windows, and the pull request pipeline builds the sample for Android, iOS and Mac Catalyst.
 
@@ -472,7 +472,7 @@ Browser RUM, Grafana Faro 2.13, Elastic RUM, MDN / WHATWG / W3C). Items not veri
 | `Tests/Bit.Belemetry.Tests.EntityFrameworkCore`, `.Hangfire` (net10.0) | 9, 4 | 9, 4 passed |
 | Benchmarks (BenchmarkDotNet short job) | - | run; numbers in section 8.2 and the benchmarks' README |
 | Solution build | MAUI sample needs a workload | same (workload missing locally) |
-| **Not run** | net8.0/net9.0 test legs (runtimes missing here; CI runs them), Playwright E2E and the trimmed/AOT publish gate (`bit.ci.Belemetry.e2e.yml`, on demand), real browsers other than happy-dom, real backends | |
+| **Not run** | net8.0/net9.0 test legs (runtimes missing here; CI runs them), Playwright E2E and the trimmed/AOT publish gate (`ci.belemetry.e2e.yml`, on demand), real browsers other than happy-dom, real backends | |
 
 Rounds completed: 6 (of at most 10). The rounds stopped because every P0 and P1 gap is closed with tests, the
 independent review's findings are fixed, and what remains is deferred for a stated reason or platform-limited; the

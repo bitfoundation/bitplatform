@@ -58,4 +58,19 @@ public sealed class BortableEventArgs<TItem>
     /// dropped, into a list with a <see cref="Bortable{TItem}.ConfirmDrop"/>, which cannot be asked then.
     /// </summary>
     public bool Canceled { get; init; }
+
+    /// <summary>
+    /// <c>true</c> when the move is a swap: the dragged <see cref="Item"/> trades places with <see cref="SwappedWith"/>
+    /// (a list in <see cref="Bortable{TItem}.Swap"/> mode). Set on the events of a committed swap and on the
+    /// <see cref="Bortable{TItem}.CanDrop"/> questions about one.
+    /// </summary>
+    public bool IsSwap { get; init; }
+
+    /// <summary>
+    /// In a swap (<see cref="IsSwap"/>), the item <see cref="Item"/> trades places with: it takes the place
+    /// <see cref="Item"/> leaves - index <see cref="OldIndex"/> of the source list, unless a keyboard drag carried the
+    /// item into another list first - so that a handler can save both moves. <c>default</c> for any other move: check
+    /// <see cref="IsSwap"/> rather than this, as for an item of a value type <c>default</c> is an item too.
+    /// </summary>
+    public TItem? SwappedWith { get; init; }
 }

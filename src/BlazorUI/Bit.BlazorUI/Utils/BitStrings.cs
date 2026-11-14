@@ -397,4 +397,13 @@ public class BitStrings
     /// The name of the next button of a swiper: the fallback of <see cref="BitSwiper.NextAriaLabel"/>.
     /// </summary>
     public virtual string NextSlide => "Next slide";
+
+    // ===== BitPanel =====
+
+    /// <summary>
+    /// The name of the grabber of a bottom sheet, which says the size it is at: the fallback of
+    /// <see cref="BitPanel.GrabberAriaLabelFormat"/>. {0} is the snap point the sheet is at, counted from 1, and {1} how
+    /// many there are.
+    /// </summary>
+    public virtual string PanelSizeFormat => "Resize, size {0} of {1}";
 }

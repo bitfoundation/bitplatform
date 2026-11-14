@@ -56,18 +56,52 @@
     height: 100%;
     overflow: hidden;
     background: var(--bit-blow-bg);
+    /* Every touch is the canvas's while a one-finger drag on the pane pans it or draws a selection box. When it
+       does neither, the canvas says so with bit-blow-page-scroll (below) and the page scrolls under that finger. */
     touch-action: none;
     user-select: none;
     outline: none;
+    cursor: default;
+}
+
+/* Only a pane that pans when dragged says it can be grabbed (bit-blow-pane-pan, set by the canvas). */
+.bit-blow.bit-blow-pane-pan {
     cursor: grab;
 }
 
-.bit-blow:active {
+.bit-blow.bit-blow-pane-pan:active {
     cursor: grabbing;
 }
 
-/* The pane is focusable (it takes the keyboard shortcuts), so a keyboard user needs to see when
-   it has focus. Inset, since the pane clips whatever is drawn outside it. */
+/* A one-finger drag on the pane neither pans nor draws a selection box: the browser scrolls the page with it, as
+   it would anywhere else. A pinch stays the canvas's while ZoomOnPinch is on - touch-action cannot tell one finger
+   from two, so the canvas's script keeps the browser from panning with a pinch that starts on the pane - and is the
+   browser's otherwise (bit-blow-page-zoom). */
+.bit-blow.bit-blow-page-scroll {
+    touch-action: pan-x pan-y;
+}
+
+.bit-blow.bit-blow-page-scroll.bit-blow-page-zoom {
+    touch-action: pan-x pan-y pinch-zoom;
+}
+
+/* What still moves under a finger keeps its touches to itself, so it drags while the background around it scrolls
+   the page. On a pane that takes every touch anyway (the default) this changes nothing. A drag handle drags only
+   while its node can be dragged: the node says otherwise with undraggable, the canvas's NodesDraggable being off
+   with bit-blow-nodes-locked. A node itself is left to the canvas's script, which keeps the page from scrolling
+   under a node that drags: a touch-action of its own would also be the touch-action of everything inside it, and
+   take the page's scroll from its nodrag content, and from a node that only a drag handle drags. */
+.bit-blow:not(.bit-blow-nodes-locked) > .bit-blow-viewport > .bit-blow-node:not(.undraggable) .bit-blow-drag-handle,
+.bit-blow-handle.connectable,
+.bit-blow-resize-handle,
+.bit-blow-resize-strip,
+.bit-blow-edge-reconnect-hit,
+.bit-blow-minimap.pannable {
+    touch-action: none;
+}
+
+/* A pane with something for the keyboard to do is a Tab stop (it takes the keyboard shortcuts), so a keyboard user
+   needs to see when it has focus. Inset, since the pane clips whatever is drawn outside it. */
 .bit-blow:focus-visible {
     outline: 2px solid var(--bit-blow-node-selected);
     outline-offset: -2px;
@@ -651,7 +685,9 @@
 }
 
 .bit-blow-node.undraggable,
-.bit-blow-node.undraggable:active {
+.bit-blow-node.undraggable:active,
+.bit-blow-nodes-locked > .bit-blow-viewport > .bit-blow-node,
+.bit-blow-nodes-locked > .bit-blow-viewport > .bit-blow-node:active {
     cursor: default;
 }
 

@@ -1,0 +1,136 @@
+name: All Release Build
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+    - 'src/**'
+
+env:
+  DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: all-release-build-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  build-release:
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.event.pull_request.title, 'Prerelease') || startsWith(github.event.pull_request.title, 'Release') || startsWith(github.event.pull_request.title, 'Version')
+    name: build ${{ matrix.name }} for release
+    runs-on: ubuntu-26.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - name: BlazorUI
+          solution: src/BlazorUI/Bit.BlazorUI.slnx
+        - name: Brouter
+          solution: src/Brouter/Bit.Brouter.slnx
+        - name: Bswup
+          solution: src/Bswup/Bit.Bswup.slnx
+        - name: Butil
+          solution: src/Butil/Bit.Butil.slnx
+        - name: Balette
+          solution: src/Utilities/Balette/Bit.Balette.slnx
+        - name: BbScanner
+          solution: src/Utilities/BbScanner/Bit.BbScanner.slnx
+        - name: Bcrdt
+          solution: src/Utilities/Bcrdt/Bit.Bcrdt.slnx
+          remove: Samples/Maui/Bit.Bcrdt.Samples.Maui.csproj
+        - name: Bdnd
+          solution: src/Utilities/Bdnd/Bit.Bdnd.slnx
+        - name: Belemetry
+          solution: src/Utilities/Belemetry/Bit.Belemetry.slnx
+        - name: BevTools
+          solution: src/Utilities/BevTools/Bit.BevTools.slnx
+        - name: Bheadless
+          solution: src/Utilities/Bheadless/Bit.Bheadless.slnx
+        - name: Bink
+          solution: src/Utilities/Bink/Bit.Bink.slnx
+        - name: BlazeDb
+          solution: src/Utilities/BlazeDb/Bit.BlazeDb.slnx
+        - name: Blex
+          solution: src/Utilities/Blex/Bit.Blex.slnx
+        - name: Blow
+          solution: src/Utilities/Blow/Bit.Blow.slnx
+        - name: Bmage
+          solution: src/Utilities/Bmage/Bit.Bmage.slnx
+        - name: Bmotion
+          solution: src/Utilities/Bmotion/Bit.Bmotion.slnx
+        - name: Bonboarding
+          solution: src/Utilities/Bonboarding/Bit.Bonboarding.Web.slnf
+          workloads: false
+        - name: Borm
+          solution: src/Utilities/Borm/Bit.Borm.slnx
+          remove: Samples/Maui/Bit.Borm.Samples.Maui.csproj
+        - name: Bortable
+          solution: src/Utilities/Bortable/Bit.Bortable.slnx
+        - name: Bsqlite
+          solution: src/Utilities/Bsqlite/Bit.Bsqlite.slnx
+        - name: BlazorES2019
+          solution: src/Toolings/BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj
+          workloads: false
+          node: false
+        - name: Cli
+          solution: src/Toolings/Cli/Bit.Cli.slnx
+          workloads: false
+          node: false
+        - name: CodeAnalyzers
+          solution: src/Toolings/CodeAnalyzers/Bit.CodeAnalyzers.slnx
+          workloads: false
+          node: false
+        - name: Minifier
+          solution: src/Toolings/Minifier/Bit.Minifier.slnx
+          workloads: false
+          node: false
+        - name: SourceGenerators
+          solution: src/Toolings/SourceGenerators/Bit.SourceGenerators.slnx
+          workloads: false
+          node: false
+
+    steps:
+
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET 11.0
+      uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+      with:
+        global-json-file: src/global.json
+
+    - name: Setup .NET 10.0
+      uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+      with:
+        dotnet-version: 10.0.x
+
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version: 24
+
+    - name: Remove the MAUI sample from the solution
+      if: matrix.remove
+      run: cd "$(dirname '${{ matrix.solution }}')" && dotnet sln "$(basename '${{ matrix.solution }}')" remove ${{ matrix.remove }}
+
+    - name: Restore workloads
+      if: matrix.workloads != false
+      run: cd "$(dirname '${{ matrix.solution }}')" && dotnet workload restore
+
+    # The demos install Bit.Minifier as a package at the version being released, which nuget.org only has once this
+    # release is published, so restore takes it from a package packed from this very source instead.
+    - name: Pack Minifier
+      run: |
+        dotnet build src/Toolings/Minifier/Bit.Minifier/Bit.Minifier.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Toolings/Minifier/Bit.Minifier/Bit.Minifier.csproj --output ${{ github.workspace }}/packages --configuration Release
+
+    - name: InstallNodejsDependencies
+      if: matrix.node != false
+      continue-on-error: true # Error MSB4057, not all csproj files have InstallNodejsDependencies target.
+      run: dotnet build ${{ matrix.solution }} -t:InstallNodejsDependencies -m:1 -f net11.0 -p:RestoreAdditionalProjectSources=${{ github.workspace }}/packages
+
+    - name: dotnet build
+      run: dotnet build ${{ matrix.solution }} -c Release -p:RestoreAdditionalProjectSources=${{ github.workspace }}/packages

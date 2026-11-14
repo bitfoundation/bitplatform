@@ -9,7 +9,7 @@ namespace Bit.BlazorUI;
 /// What each swipe trap holds for itself - its content and its callbacks - is not a group default, so it is not
 /// carried here.
 /// </remarks>
-public class BitSwipeTrapParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitSwipeTrapParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitSwipeTrap"/> cascading parameters within <see cref="BitParams"/>.

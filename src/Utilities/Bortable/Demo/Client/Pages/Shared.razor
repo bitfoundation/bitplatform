@@ -44,6 +44,21 @@
 </section>
 
 <section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> One list, several groups</h3>
+    <p class="bb-card-desc">
+        Tasks and Bugs are groups of their own, so they never exchange items. The Trash takes both:
+        <code>PutGroups</code> names the groups a list takes items from besides its own. It lets items in only - the
+        Trash's items go nowhere else - and <code>FromGroup</code> tells where an item came from.
+    </p>
+
+    <div class="bb-demo">
+        <TrashBin />
+    </div>
+
+    <DemoCode For="typeof(TrashBin)" />
+</section>
+
+<section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Try it</h3>
     <ul class="bb-detail-list">
         <li>
@@ -56,6 +71,10 @@
             the <a href="rules">rules</a> page shows <code>RevertOnSpill</code>, which puts it back instead.
         </li>
         <li>Move every message out of the Inbox: its empty state shows up, and the Inbox still takes items back.</li>
+        <li>
+            Drag a task over Bugs: it is not taken. Drag it into the Trash, then a bug: both land there, and
+            <strong>Last thrown away</strong> names the group each came from. An item in the Trash stays there.
+        </li>
         <li>
             From the keyboard, pick <em>A2</em> up with <kbd>Space</kbd> and press <kbd>→</kbd>: List A has no item to
             its right, so the item is carried into List B, the nearest list of the group in that direction.
@@ -100,6 +119,7 @@
             <tbody>
                 <tr><td class="bb-table-key"><code>Group</code></td><td><code>shared</code>, <code>shared-empty</code></td><td>Lists with the same group name exchange items.</td></tr>
                 <tr><td class="bb-table-key"><code>ItemClassSelector</code></td><td><code>Tint</code></td><td>A class computed from the item, added to its wrapper, so it follows the item from list to list.</td></tr>
+                <tr><td class="bb-table-key"><code>PutGroups</code></td><td><code>["tasks", "bugs"]</code></td><td>Other groups whose items the list takes, besides its own.</td></tr>
                 <tr><td class="bb-table-key"><code>ChildContent</code></td><td>the empty states</td><td>Extra content rendered inside the list, after the items.</td></tr>
                 <tr><td class="bb-table-key"><code>AriaLabel</code></td><td><code>Inbox</code>, <code>Archive</code></td><td>The list's accessible name, which announcements name it by: "moved to position 1 of 3 in Archive".</td></tr>
             </tbody>

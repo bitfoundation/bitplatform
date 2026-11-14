@@ -5,7 +5,7 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// The parameters for the <see cref="BitPullToRefresh"/> component.
 /// </summary>
-public class BitPullToRefreshParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitPullToRefreshParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the BitPullToRefresh cascading parameters within BitParams.

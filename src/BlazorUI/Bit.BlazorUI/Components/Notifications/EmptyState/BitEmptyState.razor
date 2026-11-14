@@ -16,8 +16,12 @@
         var icon = BitIconInfo.From(Icon, IconName);
         if (icon is not null)
         {
-            @* The glyph only decorates the title beside it, which says what it means. *@
-            <i style="@Styles?.Icon" class="bit-ems-ico @icon.GetCssClasses() @Classes?.Icon" aria-hidden="true"></i>
+            @* The glyph only decorates the title beside it, which says what it means. A ligature set (Material Icons,
+               Material Symbols) names its glyph with the element's text, which a page translator must leave alone. *@
+            <i style="@Styles?.Icon"
+               class="bit-ems-ico @icon.GetCssClasses() @Classes?.Icon"
+               aria-hidden="true"
+               translate="@(icon.Content.HasValue() ? "no" : null)">@icon.Content</i>
         }
     }
 

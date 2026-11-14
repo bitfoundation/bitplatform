@@ -9,7 +9,7 @@ namespace Bit.BlazorUI;
 /// What belongs here is what the pop confirms of an app agree on: the words and the color of their buttons, the side
 /// they open on and their look. The question, the trigger and whether one is open are the state of a single pop confirm.
 /// </remarks>
-public class BitPopConfirmParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitPopConfirmParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitPopConfirm"/> cascading parameters within <see cref="BitParams"/>.

@@ -141,6 +141,10 @@
     <button id="btn-open-nonmodal" @onclick="() => _nonModalOpen = true">Open the non-modal drawer</button>
     <span id="nonmodal-open">@_nonModalOpen</span>
     <BitNavPanel Id="npn-drawer-nonmodal" Items="@I("nonmodal")" @bind-IsOpen="_nonModalOpen" DrawerBreakpoint="BitNavPanelBreakpoint.Always" NoOverlay NoAutoClose />
+    <button id="btn-open-notrap" @onclick="() => _noTrapOpen = true">Open the drawer that does not trap the focus</button>
+    <button id="btn-close-notrap" @onclick="() => _noTrapOpen = false">Close the drawer that does not trap the focus</button>
+    <span id="notrap-open">@_noTrapOpen</span>
+    <BitNavPanel Id="npn-drawer-notrap" Items="@I("notrap")" @bind-IsOpen="_noTrapOpen" DrawerBreakpoint="BitNavPanelBreakpoint.Always" AutoFocus NoFocusTrap />
     <button id="btn-api-open" @onclick="() => _drawerRef!.Open()">Open()</button>
     <button id="btn-api-close" @onclick="() => _drawerRef!.Close()">Close()</button>
     <button id="btn-never">A column on every screen</button>
@@ -272,6 +276,7 @@
     private bool _drawerOpen;
     private bool _endOpen;
     private bool _nonModalOpen;
+    private bool _noTrapOpen;
     private bool _iconsToggled = true;
     private bool _styledToggled;
     private bool _varsToggled;

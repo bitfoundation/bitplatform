@@ -17,7 +17,7 @@ namespace Bit.BlazorUI;
 /// to. How the messages are announced (<see cref="Politeness"/> and <see cref="Role"/>) is shared like their look: a
 /// region of standing notices that should not be announced at all, say, sets it once for every message in it.
 /// </remarks>
-public class BitMessageParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitMessageParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitMessage"/> cascading parameters within <see cref="BitParams"/>.

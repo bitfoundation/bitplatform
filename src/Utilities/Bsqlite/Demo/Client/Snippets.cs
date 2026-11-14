@@ -559,49 +559,35 @@ internal static class Snippets
 
         public const string Export =
             """
-            var session = await Database.EnsureSessionAsync();
-            var provider = session.Resolution.Provider;
+            @inject BsqliteDatabase Database
 
-            byte[] image = await provider.Admin.ExportAsync("app.db");
+            // A snapshot of the open database, as of its last committed write.
+            byte[] image = await Database.ExportAsync();
 
-            // A plain SQLite file: open it in any desktop tool.
+            // A plain SQLite file: open it in any desktop tool, or restore it later.
             await js.InvokeVoidAsync("bsqliteDemo.download", "app.db", image);
             """;
 
-        public const string Import =
+        public const string Restore =
             """
-            // The worker is closed for the whole of the work, so it cannot keep writing the image
-            // being replaced - and nothing can reopen the database halfway through.
-            await Database.WhileClosedAsync(async ct =>
-            {
-                await provider.Admin.ImportAsync("app.db", bytes, ct);
+            // Checked first - not a SQLite database, or cut short, and nothing changes. Then the
+            // database closes (Closing handlers let go), the file replaces it where it lives, is
+            // read back to verify, and the database reopens (Opened handlers reload).
+            await Database.RestoreAsync(bytes);
 
-                // Record the sticky binding, or the next open would create an empty file on the
-                // preferred backend and the import would look like it vanished.
-                await Database.Bindings.SetProviderNameAsync("app.db", provider.Name, ct);
-            });
-
-            // The reopen raises Opened, which is how every page hears it should reload; a context
-            // runs the migrations before they come back for the database.
-            await using (await Database.OpenContextAsync())
-            {
-            }
+            // A context applies the migrations an older backup is missing.
+            await using var db = await Contexts.CreateDbContextAsync();
             """;
 
         public const string Delete =
             """
-            await Database.WhileClosedAsync(async ct =>
-            {
-                await provider.Admin.DeleteAsync("app.db", ct);
-
-                // Forget the binding so selection is free to pick the preferred backend again.
-                await Database.Bindings.RemoveAsync("app.db", ct);
-            });
+            // Closes the database and deletes it from every backend that holds a copy, then forgets
+            // the binding - so selection is free to pick the preferred backend again, and no copy
+            // left elsewhere comes back on the next open.
+            await Database.DeleteAsync();
 
             // Migrates and reseeds the now-empty database.
-            await using (await Database.OpenContextAsync())
-            {
-            }
+            await using var db = await Contexts.CreateDbContextAsync();
             """;
     }
 

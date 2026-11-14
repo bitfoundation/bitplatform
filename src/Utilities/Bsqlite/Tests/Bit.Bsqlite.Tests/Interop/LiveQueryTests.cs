@@ -213,6 +213,95 @@ public sealed class LiveQueryTests
         Assert.IsFalse(overlapped);
     }
 
+    /// <summary>
+    /// A handler that throws is the handler's failure, not the query's: the write runs the query once,
+    /// calls the handler once, and reports what it threw - it is not mistaken for a busy context and run
+    /// again, which called every handler twice for one write.
+    /// </summary>
+    [TestMethod]
+    public async Task AChangedHandlerThatThrows_IsReported_WithoutRunningTheQueryAgain()
+    {
+        var transport = new RemoteWriteTransport();
+        await using var connection = new BsqliteConnection(transport, "live-throwing.db");
+        await connection.OpenAsync(Ct);
+
+        var runs = 0;
+        var calls = 0;
+        Exception? reported = null;
+        await using var live = new BsqliteLiveQuery<int>(
+            connection,
+            _ => Task.FromResult(Interlocked.Increment(ref runs)),
+            ["product"]);
+        await live.RefreshAsync(Ct);
+        live.Changed += (_, _) =>
+        {
+            Interlocked.Increment(ref calls);
+            throw new InvalidOperationException("the component is gone");
+        };
+        live.RefreshFailed += (_, ex) => reported = ex;
+
+        transport.ReportRemoteWrite("product");
+        await WaitUntilAsync(() => reported is not null);
+        await Task.Delay(50, Ct);
+
+        Assert.AreEqual(2, runs);
+        Assert.AreEqual(1, calls);
+        Assert.AreEqual("the component is gone", reported!.Message);
+    }
+
+    [TestMethod]
+    public async Task DisposedWhileTheQueryRuns_RaisesNothingAfterwards()
+    {
+        var transport = new RemoteWriteTransport();
+        await using var connection = new BsqliteConnection(transport, "live-disposed.db");
+        await connection.OpenAsync(Ct);
+
+        var release = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var live = new BsqliteLiveQuery<int>(connection, _ => release.Task, ["product"]);
+        var changed = false;
+        live.Changed += (_, _) => changed = true;
+
+        var running = live.RefreshAsync(Ct);
+        await live.DisposeAsync();
+        release.SetResult(1);
+
+        await Assert.ThrowsExactlyAsync<ObjectDisposedException>(() => running);
+        Assert.IsFalse(changed);
+        Assert.AreEqual(0, live.Current);
+    }
+
+    /// <summary>
+    /// Disposal that lands once a result is past the last disposed check - its Changed handlers already
+    /// running - waits for them to finish, so none is called after DisposeAsync returns; and a run that comes to
+    /// publish after it is refused.
+    /// </summary>
+    [TestMethod]
+    public async Task DisposedWhileChangedIsRaised_ReturnsOnlyOnceTheHandlersHaveRun()
+    {
+        var transport = new RemoteWriteTransport();
+        await using var connection = new BsqliteConnection(transport, "live-disposed-publishing.db");
+        await connection.OpenAsync(Ct);
+
+        var live = new BsqliteLiveQuery<int>(connection, _ => Task.FromResult(1), ["product"]);
+        Task? disposal = null;
+        var completedWhileRaising = true;
+        var lastHandlerRan = false;
+        live.Changed += (_, _) =>
+        {
+            disposal = Task.Run(() => live.DisposeAsync().AsTask());
+            completedWhileRaising = disposal.Wait(TimeSpan.FromMilliseconds(200));
+        };
+        live.Changed += (_, _) => lastHandlerRan = true;
+
+        Assert.AreEqual(1, await live.RefreshAsync(Ct));
+        Assert.IsNotNull(disposal);
+        await disposal;
+
+        Assert.IsFalse(completedWhileRaising, "DisposeAsync returned while Changed was still being raised.");
+        Assert.IsTrue(lastHandlerRan);
+        await Assert.ThrowsExactlyAsync<ObjectDisposedException>(() => live.RefreshAsync(Ct));
+    }
+
     /// <summary>A transport that can be told to speak for another tab.</summary>
     private sealed class RemoteWriteTransport : IBsqliteTransport
     {

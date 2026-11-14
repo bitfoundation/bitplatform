@@ -1,0 +1,364 @@
+name: CI BlazorUI E2E
+
+# The full end-to-end suite of bit BlazorUI (src/BlazorUI/Tests/E2E): every non-legacy component of Bit.BlazorUI,
+# Bit.BlazorUI.Extras and Bit.BlazorUI.AI driven by Playwright against a test host that renders each page either on the
+# server (InteractiveServer) or in the browser (InteractiveWebAssembly). The host and the tests are built once, then run
+# by one job per browser engine, render mode and shard (see build); the suite is long, so it only runs when started by
+# hand (Actions > this workflow > Run workflow). See src/BlazorUI/Tests/E2E/README.md for running it locally.
+
+on:
+  workflow_dispatch:
+    inputs:
+      browsers:
+        description: Browser engines to run
+        type: choice
+        default: all
+        options:
+        - all
+        - chromium
+        - firefox
+        - webkit
+      render-modes:
+        description: Render modes to run
+        type: choice
+        default: all
+        options:
+        - all
+        - server
+        - wasm
+      filter:
+        description: Optional test filter (e.g. FullyQualifiedName~BitButtonE2ETests); empty runs everything
+        type: string
+        default: ''
+  workflow_call:
+    inputs:
+      browsers:
+        type: string
+        default: all
+      render-modes:
+        type: string
+        default: all
+      filter:
+        type: string
+        default: ''
+
+env:
+  DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
+  E2E_DIR: src/BlazorUI/Tests/E2E
+  # How long an E2E job may run, in minutes. Written once, here: it is the job's timeout-minutes (through the build
+  # job's outputs, as timeout-minutes cannot read env) and what its test run's own --timeout is worked out from.
+  E2E_JOB_MINUTES: 180
+  # What a job keeps back of that time once its tests have started: the run stops itself (--timeout) this long before
+  # the job's end, and then still waits for the tests under way to finish, writes the TRX of every test it finished and
+  # uploads it. A job the runner cancels at its timeout writes none.
+  E2E_RESERVE_MINUTES: 20
+  # How many tests one job runs at most, per render mode. In wasm mode every test boots the .NET WebAssembly runtime
+  # afresh, in a browser context of its own: about a second a page on a fast machine and several on a runner, whatever
+  # the build - the boot is the runtime starting, not the download, so neither a warm cache nor a trimmed client takes
+  # it away - which makes a wasm test about five times as long as a server one.
+  E2E_SERVER_TESTS_PER_JOB: 12000
+  E2E_WASM_TESTS_PER_JOB: 2500
+
+permissions:
+  contents: read
+
+jobs:
+
+  # Builds the host and the tests once for every E2E job, and plans those jobs. The tests the run selects (all, or the
+  # ones its filter does) are listed off the built assembly and dealt, a test class at a time, into as many shards per
+  # render mode as that mode's tests-per-job allows: the largest class first, each into the shard with the fewest tests
+  # so far, so the shards stay even as classes grow or are added. One job per browser engine, render mode and shard.
+  build:
+    name: build the E2E host and tests
+    runs-on: ubuntu-26.04
+    timeout-minutes: 60
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+      job-minutes: ${{ steps.plan.outputs.job-minutes }}
+
+    steps:
+
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET 11.0
+      uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+      with:
+        global-json-file: src/global.json
+
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version: 24
+
+    # The host builds the libraries it references (and their scripts and styles through npm) and the WebAssembly
+    # client that holds the pages; the test project only needs Playwright and MSTest. In Release: the WebAssembly
+    # client of a Debug build also has every test's browser download the symbols of every assembly and the hot reload
+    # agent, and run the IL unoptimized.
+    - name: Build the E2E test host
+      run: dotnet build $E2E_DIR/Bit.BlazorUI.Tests.E2E.TestHost -c Release -f net11.0
+
+    - name: Build the E2E tests
+      run: dotnet build $E2E_DIR/Bit.BlazorUI.Tests.E2E -f net11.0
+
+    - name: Plan the E2E jobs
+      id: plan
+      env:
+        BROWSERS: ${{ inputs.browsers }}
+        MODES: ${{ inputs.render-modes }}
+        FILTER: ${{ inputs.filter }}
+      run: |
+        if [ "$BROWSERS" = "all" ]; then browsers='["chromium","firefox","webkit"]'; else browsers=$(jq -cn --arg b "$BROWSERS" '[$b]'); fi
+        if [ "$MODES" = "all" ]; then modes='["server","wasm"]'; else modes=$(jq -cn --arg m "$MODES" '[$m]'); fi
+
+        args=(--list-tests json --no-ansi)
+        if [ -n "$FILTER" ]; then args+=(--filter "$FILTER"); fi
+        if ! dotnet exec $E2E_DIR/Bit.BlazorUI.Tests.E2E/bin/Debug/net11.0/Bit.BlazorUI.Tests.E2E.dll "${args[@]}" > "$RUNNER_TEMP/tests.json"; then
+          echo "::error::The tests could not be listed, or the filter '$FILTER' selects none of them."
+          exit 1
+        fi
+
+        # Every test class with its test count, the largest first, dealt into the shards of each mode.
+        jq -c --argjson modes "$modes" --argjson perJob "{\"server\": $E2E_SERVER_TESTS_PER_JOB, \"wasm\": $E2E_WASM_TESTS_PER_JOB}" '
+          def deal($n): reduce .[] as $class ([range(0; $n) | {tests: 0, classes: []}];
+                          (to_entries | min_by(.value.tests) | .key) as $i
+                          | .[$i].tests += $class.tests | .[$i].classes += [$class.name]);
+          [.tests[] | .type.namespace + "." + .type.typeName] | group_by(.) | map({name: .[0], tests: length})
+          | sort_by(-.tests, .name) as $classes
+          | ($classes | map(.tests) | add) as $total
+          | [$modes[] as $mode | {key: $mode, value: ($classes | deal([1, ([($total / $perJob[$mode] | ceil), ($classes | length)] | min)] | max))}]
+          | from_entries' "$RUNNER_TEMP/tests.json" > e2e-shards.json
+
+        matrix=$(jq -c --argjson browsers "$browsers" '
+          {include: [$browsers[] as $browser | to_entries[] | .key as $mode | (.value | length) as $shards
+                     | .value | to_entries[] | {browser: $browser, mode: $mode, shard: (.key + 1), shards: $shards}]}' e2e-shards.json)
+
+        {
+          echo "| Render mode | Shard | Tests | Test classes |"
+          echo "|---|---|---|---|"
+          jq -r 'to_entries[] | .key as $mode | (.value | length) as $shards | .value | to_entries[]
+                 | "| \($mode) | \(.key + 1) of \($shards) | \(.value.tests) | \(.value.classes | length) |"' e2e-shards.json
+        } >> "$GITHUB_STEP_SUMMARY"
+
+        echo "$matrix" | jq .
+        echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
+        echo "job-minutes=$E2E_JOB_MINUTES" >> "$GITHUB_OUTPUT"
+
+    # The host runs from its build output, which serves its static web assets - the libraries' scripts and styles, the
+    # WebAssembly client, the framework's own - from where the build left them: the content roots its
+    # staticwebassets.runtime.json lists, in the source tree and the NuGet cache. Those are packed with the host's and
+    # the tests' outputs at the paths they have here, which every job of the run unpacks them to alike.
+    - name: Pack the builds
+      run: |
+        host=$GITHUB_WORKSPACE/$E2E_DIR/Bit.BlazorUI.Tests.E2E.TestHost/bin/Release/net11.0
+        tests=$GITHUB_WORKSPACE/$E2E_DIR/Bit.BlazorUI.Tests.E2E/bin/Debug/net11.0
+        # Each folder once: one nested in another one already listed is packed with it.
+        { echo "$host"; echo "$tests"; jq -r '.ContentRoots[]' "$host/Bit.BlazorUI.Tests.E2E.TestHost.staticwebassets.runtime.json"; } \
+          | sed 's:/*$:/:' | LC_ALL=C sort -u \
+          | while read -r path; do if [ -e "$path" ]; then echo "$path"; fi; done \
+          | awk 'kept == "" || index($0, kept) != 1 { print; kept = $0 }' > "$RUNNER_TEMP/packed.txt"
+        cat "$RUNNER_TEMP/packed.txt"
+        mkdir -p "$RUNNER_TEMP/e2e-build"
+        tar -cPf "$RUNNER_TEMP/e2e-build/e2e-build.tar" -T "$RUNNER_TEMP/packed.txt"
+        mv e2e-shards.json "$RUNNER_TEMP/e2e-build/"
+        du -sh "$RUNNER_TEMP/e2e-build"/*
+
+    - name: Upload the builds
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: blazorui-e2e-build
+        path: ${{ runner.temp }}/e2e-build
+        retention-days: 1
+
+  e2e-BlazorUI:
+    needs: build
+    name: E2E ${{ matrix.browser }} / ${{ matrix.mode }}${{ matrix.shards > 1 && format(' / {0} of {1}', matrix.shard, matrix.shards) || '' }}
+    runs-on: ubuntu-26.04
+    timeout-minutes: ${{ fromJSON(needs.build.outputs.job-minutes) }}
+
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.build.outputs.matrix) }}
+
+    env:
+      E2E_HOST_URL: http://localhost:5290
+      BROWSER: ${{ matrix.browser }}
+      E2E_RENDER_MODE: ${{ matrix.mode }}
+
+    steps:
+
+    # What the test run is given is counted from here (see the run step).
+    - name: Note when the job started
+      run: echo "E2E_JOB_STARTED=$(date +%s)" >> "$GITHUB_ENV"
+
+    # Only what setup-dotnet reads: everything the host and the tests run from comes from the build job.
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+          sparse-checkout: src/global.json
+          sparse-checkout-cone-mode: false
+
+    - name: Setup .NET 11.0
+      uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+      with:
+        global-json-file: src/global.json
+
+    - name: Download the builds
+      uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+      with:
+        name: blazorui-e2e-build
+        path: ${{ runner.temp }}/e2e-build
+
+    - name: Unpack the builds
+      run: tar -xPf "$RUNNER_TEMP/e2e-build/e2e-build.tar"
+
+    - name: Install the Playwright browser
+      run: pwsh $E2E_DIR/Bit.BlazorUI.Tests.E2E/bin/Debug/net11.0/playwright.ps1 install --with-deps ${{ matrix.browser }}
+
+    # Started once for the whole run (the tests attach to a host already answering at E2E_HOST_URL), with its output
+    # kept for the artifacts below. In Development, as `dotnet run` starts it through its launchSettings.json: that is
+    # also what has it serve its static web assets from the content roots above.
+    - name: Start the E2E test host
+      run: |
+        cd $E2E_DIR/Bit.BlazorUI.Tests.E2E.TestHost
+        ASPNETCORE_ENVIRONMENT=Development nohup dotnet bin/Release/net11.0/Bit.BlazorUI.Tests.E2E.TestHost.dll --urls $E2E_HOST_URL > "$GITHUB_WORKSPACE/host.log" 2>&1 &
+        for i in $(seq 1 120); do
+          if curl -s -o /dev/null -w "%{http_code}" $E2E_HOST_URL/ | grep -q 200; then echo "host is up"; exit 0; fi
+          sleep 1
+        done
+        echo "the host did not come up"; cat "$GITHUB_WORKSPACE/host.log"; exit 1
+
+    # dotnet exec on the built assembly: the MSTest runner reports "zero tests ran" through dotnet test here. The run
+    # is given what is left of the job's time, however long the steps before it took, but the reserve (see env).
+    - name: Run the E2E tests
+      env:
+        FILTER: ${{ inputs.filter }}
+        SHARD: ${{ matrix.shard }}
+      run: |
+        minutes=$(( E2E_JOB_MINUTES - E2E_RESERVE_MINUTES - ($(date +%s) - E2E_JOB_STARTED + 59) / 60 ))
+        if [ "$minutes" -lt 1 ]; then
+          echo "::error::The steps before the tests took the whole of the job's $E2E_JOB_MINUTES minutes but its $E2E_RESERVE_MINUTES minute reserve."
+          exit 1
+        fi
+        echo "The tests are given ${minutes} minutes."
+
+        # The test classes of this job's shard (see build), and the run's own filter within them.
+        filter=$(jq -r --arg mode "$E2E_RENDER_MODE" --argjson shard "$SHARD" '
+          .[$mode] | if length > 1 then .[$shard - 1].classes | map("ClassName=" + .) | join("|") else "" end' "$RUNNER_TEMP/e2e-build/e2e-shards.json")
+        if [ -n "$FILTER" ]; then
+          if [ -n "$filter" ]; then filter="($filter)&($FILTER)"; else filter="$FILTER"; fi
+        fi
+
+        args=(--report-trx --results-directory "$GITHUB_WORKSPACE/e2e-results" --timeout "${minutes}m")
+        if [ -n "$filter" ]; then args+=(--filter "$filter"); fi
+        cd $E2E_DIR/Bit.BlazorUI.Tests.E2E
+        dotnet exec bin/Debug/net11.0/Bit.BlazorUI.Tests.E2E.dll "${args[@]}"
+
+    - name: Upload the test results
+      if: always()
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: e2e-results-${{ matrix.browser }}-${{ matrix.mode }}${{ matrix.shards > 1 && format('-{0}of{1}', matrix.shard, matrix.shards) || '' }}
+        path: |
+          e2e-results
+          host.log
+        if-no-files-found: ignore
+
+  trimming-BlazorUI:
+    name: trimming
+    runs-on: ubuntu-26.04
+    timeout-minutes: 120
+
+    env:
+      TRIMMING_DIR: src/BlazorUI/Tests/Bit.BlazorUI.Tests.Trimming
+      RUN_BROWSER_TESTS: 1
+      RUN_PACKAGE_TESTS: 1
+
+    steps:
+
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET 11.0
+      uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+      with:
+        global-json-file: src/global.json
+
+    - name: Setup .NET 10.0
+      uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+      with:
+        dotnet-version: 10.0.x
+
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version: 24
+
+    - name: Build the trimming tests
+      run: dotnet build $TRIMMING_DIR
+
+    - name: Install the Playwright browsers
+      run: pwsh $TRIMMING_DIR/bin/Debug/net11.0/playwright.ps1 install --with-deps chromium firefox webkit
+
+    - name: Run the trimming tests
+      run: |
+        cd $TRIMMING_DIR
+        dotnet exec bin/Debug/net11.0/Bit.BlazorUI.Tests.Trimming.dll --report-trx --results-directory "$GITHUB_WORKSPACE/trimming-results"
+
+    - name: Upload the test results
+      if: always()
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: trimming-results
+        path: trimming-results
+        if-no-files-found: ignore
+
+  browser-BlazorUI:
+    name: browser tests
+    runs-on: ubuntu-26.04
+    timeout-minutes: 120
+
+    env:
+      PERFORMANCE_DIR: src/BlazorUI/Tests/Performance
+      RUN_BROWSER_TESTS: 1
+
+    steps:
+
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET 11.0
+      uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+      with:
+        global-json-file: src/global.json
+
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version: 24
+
+    - name: Build the test host
+      run: dotnet build $PERFORMANCE_DIR/Bit.BlazorUI.Tests.Performance.TestHost -f net11.0
+
+    - name: Build the browser tests
+      run: dotnet build $PERFORMANCE_DIR/Bit.BlazorUI.Tests.Performance -f net11.0
+
+    - name: Install the Playwright browser
+      run: pwsh $PERFORMANCE_DIR/Bit.BlazorUI.Tests.Performance/bin/Debug/net11.0/playwright.ps1 install --with-deps chromium
+
+    - name: Run the browser tests
+      run: |
+        cd $PERFORMANCE_DIR/Bit.BlazorUI.Tests.Performance
+        dotnet exec bin/Debug/net11.0/Bit.BlazorUI.Tests.Performance.dll --report-trx --results-directory "$GITHUB_WORKSPACE/browser-results"
+
+    - name: Upload the test results
+      if: always()
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: browser-results
+        path: browser-results
+        if-no-files-found: ignore

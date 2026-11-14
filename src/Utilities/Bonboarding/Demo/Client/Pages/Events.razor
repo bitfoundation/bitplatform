@@ -19,13 +19,16 @@
         Run the tour and watch the log. Each step's <code>StepShown</code> is followed by a <code>StepLeft</code> that says how
         long it was on screen, and the first step carries <code>Metadata</code> - your own analytics dimensions, which ride
         along on every event about it. Finish the tour, close it, skip it or press Escape, and compare the event it ends with.
-        Run it again after leaving it part way, and it starts with <code>TourResumed</code>.
+        Run it again after leaving it part way, and it starts with <code>TourResumed</code>. <strong>Preview it</strong> runs the
+        same tour with <code>BonboardingStartOptions.Preview</code>: every event is marked <code>preview</code>, and the saved
+        record below does not change.
     </p>
 
     <div class="bb-demo">
         <div class="bb-demo-bar">
             <span class="bb-demo-label">Live</span>
             <button type="button" class="btn btn-primary" @onclick="StartAsync">Run a tour and watch the log</button>
+            <button type="button" class="btn btn-secondary" @onclick="PreviewAsync">Preview it</button>
             <button type="button" class="btn btn-secondary" @onclick="Clear">Clear the log</button>
         </div>
 
@@ -70,15 +73,21 @@
 
     <p>
         Each event carries its <code>Kind</code>, the <code>Session</code> and its <code>Tour</code>, the <code>Step</code> and
-        <code>StepIndex</code> when it is about one, <code>Duration</code> on <code>StepLeft</code>, the <code>Action</code> on
-        <code>ActionInvoked</code>, the <code>Reason</code> on a tour's last event, the <code>Error</code> on
-        <code>TourFailed</code>, and a <code>Timestamp</code>.
+        <code>StepIndex</code> when it is about one, <code>Duration</code> on <code>StepLeft</code> (time on the step) and on
+        the tour's last event (time the whole tour took), <code>ChangeReason</code> on <code>StepShown</code> (how the user got
+        there: <code>Start</code>, <code>Next</code>, <code>Previous</code>, <code>Jump</code>...), <code>TargetIssue</code> on
+        <code>TargetMissing</code> (<code>NotFound</code>, <code>Hidden</code> or <code>InvalidSelector</code>), the
+        <code>Action</code> on <code>ActionInvoked</code>, the <code>Reason</code> on a tour's last event, the <code>Error</code> on
+        <code>TourFailed</code>, <code>IsPreview</code> for a preview's events, and a <code>Timestamp</code> from the registered
+        <code>TimeProvider</code>.
     </p>
     <p>Worth measuring:</p>
     <ul class="bb-detail-list">
         <li><strong>Completion rate per tour</strong>: <code>TourCompleted</code> over <code>TourStarted</code>, ignoring <code>TourCancelled</code>.</li>
         <li><strong>Drop-off by step</strong>: the last <code>StepShown</code> before a <code>TourDismissed</code> or <code>TourSkipped</code> - the step not worth the interruption.</li>
         <li><strong>Time per step</strong>, from <code>StepLeft.Duration</code>: a step left in under a second was not read.</li>
+        <li><strong>Time to complete</strong>, from <code>TourCompleted.Duration</code>, and time to drop off from <code>TourDismissed.Duration</code>.</li>
+        <li><strong>How people move</strong>, from <code>StepShown.ChangeReason</code>: many <code>Previous</code> on a step means the one before it was unclear.</li>
         <li><strong><code>TargetMissing</code> counts</strong>: a step whose target keeps going missing points at something that has moved or been renamed.</li>
         <li><strong><code>AdvanceBlocked</code> counts</strong>: a step that holds people back a lot has instructions they find hard to follow.</li>
     </ul>
@@ -248,10 +257,15 @@
 
     private void OnEvent(object? sender, BonboardingEvent onboardingEvent)
     {
-        var detail = onboardingEvent.Step is { } step
+        var detail = (onboardingEvent.Step is { } step && onboardingEvent.Reason is null
             ? $"{step.Id}{(onboardingEvent.Duration is { } duration ? $" after {duration.TotalMilliseconds:0}ms" : string.Empty)}"
+                + (onboardingEvent.ChangeReason is { } how ? $" ({how})" : string.Empty)
+                + (onboardingEvent.TargetIssue is not BonboardingTargetIssue.None ? $" target {onboardingEvent.TargetIssue}" : string.Empty)
                 + (step.Metadata is { Count: > 0 } metadata ? $" [{string.Join(", ", metadata.Select(pair => $"{pair.Key}={pair.Value}"))}]" : string.Empty)
-            : onboardingEvent.Reason?.ToString() ?? onboardingEvent.Tour.Id;
+            : onboardingEvent.Reason is { } reason
+                ? $"{reason}{(onboardingEvent.Duration is { } ran ? $" after {ran.TotalSeconds:0.0}s" : string.Empty)}"
+                : onboardingEvent.Tour.Id)
+            + (onboardingEvent.IsPreview ? " - preview" : string.Empty);
 
         _log.Insert(0, new LogEntry(DateTime.Now, onboardingEvent.Kind, detail));
 
@@ -268,7 +282,12 @@
         _recordChecked = false;
     }
 
-    private Task StartAsync() => BonboardingService.StartAsync(new BonboardingTourDefinition
+    private Task StartAsync() => BonboardingService.StartAsync(AnalyticsTour());
+
+    // The same tour, as an author checking it would run it: nothing read from or written to the store.
+    private Task PreviewAsync() => BonboardingService.StartAsync(AnalyticsTour(), new BonboardingStartOptions { Preview = true });
+
+    private static BonboardingTourDefinition AnalyticsTour() => new()
     {
         Id = TourId,
         Title = "Analytics demo",
@@ -298,7 +317,7 @@
                 DoneLabel = "Finish",
             },
         },
-    });
+    };
 
     private async Task RefreshRecordAsync()
     {

@@ -5,4 +5,8 @@
 export declare class IDBBatchAtomicVFS {
     static create(name: string, module: unknown, options?: { idbName?: string; lockPolicy?: 'exclusive' | 'shared' | 'shared+hint'; lockTimeout?: number }): Promise<IDBBatchAtomicVFS>;
     name: string;
+    /** The longest full path SQLite may ask the VFS for; read when the VFS is registered. */
+    mxPathname: number;
+    /** The exception behind the last error result a method returned, or null. */
+    lastError: unknown;
 }

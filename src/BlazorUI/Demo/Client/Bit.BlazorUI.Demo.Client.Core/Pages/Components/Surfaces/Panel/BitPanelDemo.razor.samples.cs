@@ -277,6 +277,35 @@ private decimal swipeDiff;
 private bool isSwipePanelOpen;";
 
     private readonly string example9RazorCode = @"
+<style>
+    .sheet-row {
+        padding: 0.75rem 0;
+        border-bottom: 1px solid var(--bit-clr-brd-sec);
+    }
+</style>
+
+<BitButton OnClick=""() => isSheetOpen = true"">Open sheet</BitButton>
+<span>Snap point: <b>@sheetSnapPoint</b></span>
+
+<BitPanel @bind-IsOpen=""isSheetOpen""
+          @bind-SnapPoint=""sheetSnapPoint""
+          Placement=""BitPlacement.Bottom""
+          SnapPoints=""sheetSnapPoints""
+          HeaderText=""Nearby places"">
+    @foreach (var place in places)
+    {
+        <div class=""sheet-row"">@place</div>
+    }
+</BitPanel>";
+    private readonly string example9CsharpCode = @"
+private bool isSheetOpen;
+private int? sheetSnapPoint;
+
+// A quarter of the screen, 400 pixels, and nine tenths of the screen.
+private static readonly double[] sheetSnapPoints = [0.25, 400, 0.9];
+
+private static readonly string[] places = [""Bakery"", ""Bookshop"", ""Café"", ""Florist"", ""Gallery"", ""Library"", ""Market"", ""Museum"", ""Park"", ""Pharmacy"", ""Post office"", ""Station""];";
+    private readonly string example10RazorCode = @"
 <BitButton OnClick=""() => isOuterPanelOpen = true"">Open outer panel</BitButton>
 
 <BitPanel @bind-IsOpen=""isOuterPanelOpen"" Size=""360"" ModeFull HeaderText=""Outer"" ShowCloseButton>
@@ -302,12 +331,12 @@ private bool isSwipePanelOpen;";
           ShowCloseButton>
     Declared beside the outer panel and lifted over it by ZIndex.
 </BitPanel>";
-    private readonly string example9CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 private bool isOuterPanelOpen;
 private bool isInnerPanelOpen;
 private bool isSiblingPanelOpen;";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example11RazorCode = @"
 <style>
     .absolute-container {
         gap: 1rem;
@@ -335,10 +364,10 @@ private bool isSiblingPanelOpen;";
         Contained by its box.
     </BitPanel>
 </div>";
-    private readonly string example10CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 private bool isAbsolutePanelOpen;";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example12RazorCode = @"
 <BitToggle @bind-Value=""keepMounted"" Label=""KeepMounted"" />
 
 <BitButton OnClick=""() => isRenderPanelOpen = true"">Open panel</BitButton>
@@ -353,14 +382,14 @@ private bool isAbsolutePanelOpen;";
           OnTransitionEnd=""v => lastSettledState = v"">
     <BitTextField Label=""Type something"" />
 </BitPanel>";
-    private readonly string example11CsharpCode = @"
+    private readonly string example12CsharpCode = @"
 private bool keepMounted;
 private int openCount;
 private bool lastToggleState;
 private bool lastSettledState;
 private bool isRenderPanelOpen;";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example13RazorCode = @"
 <BitParams Parameters=""@panelParams"">
     <BitButton OnClick=""() => isCascadedPanelOpen = true"">Cascaded values</BitButton>
     <BitButton OnClick=""() => isOverridingPanelOpen = true"">Own Placement</BitButton>
@@ -373,7 +402,7 @@ private bool isRenderPanelOpen;";
         Slides in from the end, everything else from the cascade.
     </BitPanel>
 </BitParams>";
-    private readonly string example12CsharpCode = @"
+    private readonly string example13CsharpCode = @"
 private readonly BitPanelParams[] panelParams =
 [
     new()
@@ -387,7 +416,7 @@ private readonly BitPanelParams[] panelParams =
 private bool isCascadedPanelOpen;
 private bool isOverridingPanelOpen;";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example14RazorCode = @"
 <!-- FontAwesome CSS -->
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
@@ -407,11 +436,11 @@ private bool isOverridingPanelOpen;";
           CloseIconName=""@BitIconName.ChromeBack"">
     The close button uses another built-in icon.
 </BitPanel>";
-    private readonly string example13CsharpCode = @"
+    private readonly string example14CsharpCode = @"
 private bool isExternalIconPanelOpen;
 private bool isIconNamePanelOpen;";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example15RazorCode = @"
 <style>
     .custom-container {
         border-end-start-radius: 1rem;
@@ -472,12 +501,12 @@ private bool isIconNamePanelOpen;";
           Style=""--bit-Panel-size: 22rem; --bit-Panel-radius: 1.5rem; --bit-Panel-border-width: 2px; --bit-Panel-border-color: var(--bit-clr-pri); --bit-Panel-padding: 2rem; --bit-Panel-header-font-size: 1.75rem; --bit-Panel-overlay-background: #0006; --bit-Panel-overlay-backdrop-filter: blur(4px);"">
     Rounded inner corners, a primary edge, roomier padding and a darker, blurring overlay.
 </BitPanel>";
-    private readonly string example14CsharpCode = @"
+    private readonly string example15CsharpCode = @"
 private bool isStylesPanelOpen;
 private bool isClassesPanelOpen;
 private bool isCssVarsPanelOpen;";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example16RazorCode = @"
 <div dir=""rtl"">
     <BitButton OnClick=""() => isRtlPanelOpenStart = true"">آغاز</BitButton>
     <BitButton OnClick=""() => isRtlPanelOpenEnd = true"">پایان</BitButton>
@@ -502,7 +531,7 @@ private bool isCssVarsPanelOpen;";
           Placement=""BitPlacement.End"">
     لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
 </BitPanel>";
-    private readonly string example15CsharpCode = @"
+    private readonly string example16CsharpCode = @"
 private bool isRtlPanelOpenStart;
 private bool isRtlPanelOpenEnd;";
 }

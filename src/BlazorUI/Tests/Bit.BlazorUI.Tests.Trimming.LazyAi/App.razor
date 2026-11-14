@@ -1,0 +1,39 @@
+﻿@using System.Reflection
+@using Microsoft.AspNetCore.Components.WebAssembly.Services
+@inject LazyAssemblyLoader AssemblyLoader
+
+@* The chat's page lives in a library of its own, lazy-loaded with the AI packages: the router learns of it once
+   OnNavigateAsync has loaded it, before it routes to /chat. *@
+<Router AppAssembly="typeof(App).Assembly"
+        AdditionalAssemblies="_lazyLoaded"
+        OnNavigateAsync="OnNavigateAsync">
+    <Found Context="routeData">
+        <RouteView RouteData="routeData" />
+    </Found>
+    <Navigating>
+        <p id="chat-loading">Loading the chat...</p>
+    </Navigating>
+    <NotFound>
+        <p>Nothing here.</p>
+    </NotFound>
+</Router>
+
+@code {
+    private readonly List<Assembly> _lazyLoaded = [];
+
+    private async Task OnNavigateAsync(NavigationContext context)
+    {
+        // The path is the one navigated to, its query and fragment included: /chat?conversation=42 and /chat/history
+        // open the chat as well.
+        var path = context.Path.Split('?', '#')[0].Trim('/');
+
+        if ((path.Equals("chat", StringComparison.OrdinalIgnoreCase) || path.StartsWith("chat/", StringComparison.OrdinalIgnoreCase))
+            && _lazyLoaded.Count == 0)
+        {
+            var assemblies = await AssemblyLoader.LoadAssembliesAsync(
+                ["Bit.BlazorUI.AI.Core.wasm", "Bit.BlazorUI.AI.wasm", "Bit.BlazorUI.Tests.Trimming.LazyAi.Chat.wasm"]);
+
+            _lazyLoaded.AddRange(assemblies);
+        }
+    }
+}

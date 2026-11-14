@@ -17,7 +17,7 @@ namespace Bit.BlazorUI;
 /// <see cref="BitDialog.SubtitleAriaId"/> and <see cref="BitDialog.IsAlert"/>) are left off, since they are the
 /// business of the dialog they belong to.
 /// </remarks>
-public class BitDialogParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitDialogParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitDialog"/> cascading parameters within <see cref="BitParams"/>.

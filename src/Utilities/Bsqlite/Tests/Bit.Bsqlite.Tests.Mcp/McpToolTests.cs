@@ -51,7 +51,7 @@ public class McpToolTests
 
         // A package README by the part of its name that says something.
         Assert.StartsWith("# Bit.Bsqlite.Testing", await McpCall.TextAsync("GetBsqliteDocument", new() { ["name"] = "testing" }));
-        Assert.StartsWith("# bit Bsqlite", await McpCall.TextAsync("GetBsqliteDocument", new() { ["name"] = "README" }));
+        Assert.StartsWith("# Bit.Bsqlite", await McpCall.TextAsync("GetBsqliteDocument", new() { ["name"] = "README" }));
     }
 
     [TestMethod]

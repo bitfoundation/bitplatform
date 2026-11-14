@@ -406,4 +406,89 @@ public class SwapTests : BortableTestContext
         Assert.AreSequenceEqual(["X"], left);
         Assert.AreSequenceEqual(["A"], right);
     }
+
+    // ---- the partner, in the events ----
+
+    [TestMethod]
+    public async Task TheEventsOfASwapNameTheItemItTradedWith()
+    {
+        var log = new List<Raised<string>>();
+        var list = RenderSwapList(["A", "B", "C"], log: log);
+
+        await DragStartAsync(list, "A");
+        await HoverItemAsync(list, 2);
+        await DropAsync(list);
+
+        foreach (var name in new[] { "Update", "Sort", "End" })
+        {
+            var e = Single(log, name, "L1");
+            Assert.IsTrue(e.IsSwap, name);
+            Assert.AreEqual("C", e.SwappedWith, name);
+        }
+        Assert.IsFalse(Single(log, "Start", "L1").IsSwap);
+    }
+
+    [TestMethod]
+    public async Task ACrossListSwapNamesThePartnerOnBothLists()
+    {
+        var log = new List<Raised<string>>();
+        var l1 = RenderSwapList(["A", "B"], "L1", log);
+        var l2 = RenderSwapList(["X", "Y"], "L2", log);
+
+        await DragStartAsync(l1, "A");
+        await HoverItemAsync(l2, 1);
+        await DropAsync(l2);
+
+        Assert.AreEqual("Y", Single(log, "Add", "L2").SwappedWith);
+        Assert.AreEqual("Y", Single(log, "Remove", "L1").SwappedWith);
+        Assert.AreEqual("Y", Single(log, "End", "L1").SwappedWith);
+    }
+
+    [TestMethod]
+    public async Task CanDropIsToldWhichItemASwapWouldTradeWith()
+    {
+        var asked = new List<BortableEventArgs<string>>();
+        var l1 = RenderSwapList(["A", "B"], "L1", extra: p => p.Add(c => c.CanDrop, e => { asked.Add(e); return true; }));
+        var l2 = RenderSwapList(["X", "Y"], "L2", extra: p => p.Add(c => c.CanDrop, e => { asked.Add(e); return true; }));
+
+        await DragStartAsync(l1, "A");
+        await HoverItemAsync(l2, 0);
+
+        // L2 is asked about A taking X's place, L1 about X coming back in A's place.
+        Assert.HasCount(2, asked);
+        Assert.IsTrue(asked.All(e => e.IsSwap));
+        Assert.AreEqual("A", asked[0].Item);
+        Assert.AreEqual("X", asked[0].SwappedWith);
+        Assert.AreEqual("X", asked[1].Item);
+        Assert.AreEqual("A", asked[1].SwappedWith);
+    }
+
+    [TestMethod]
+    public async Task ARefusedOrCancelledSwapNamesNoPartner()
+    {
+        var log = new List<Raised<string>>();
+        var list = RenderSwapList(["A", "B", "C"], log: log);
+
+        await DragStartAsync(list, "A");
+        await HoverItemAsync(list, 2);
+        await EndAsync(list, "cancel");
+
+        var end = Single(log, "End", "L1");
+        Assert.IsTrue(end.Canceled);
+        Assert.IsFalse(end.IsSwap);
+        Assert.IsNull(end.SwappedWith);
+    }
+
+    [TestMethod]
+    public async Task ASortingListReportsNoSwap()
+    {
+        var log = new List<Raised<string>>();
+        var list = RenderList(["A", "B", "C"], "L1", p => Record(p, "L1", log));
+
+        await DragStartAsync(list, "A");
+        await DragOverAsync(list, 3);
+        await DropAsync(list);
+
+        Assert.IsFalse(Single(log, "Update", "L1").IsSwap);
+    }
 }

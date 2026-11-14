@@ -99,7 +99,7 @@ private void HandleDelete(BitAiConversationSummary summary)
         <BitAiChat @key=""chatSession.Conversation.ConversationId""
                    Session=""chatSession""
                    EmptyTitle=""New conversation""
-                   EmptyBody=""Send a message and this thread joins the list."" />
+                   EmptyDescription=""Send a message and this thread joins the list."" />
     }
 </div>";
     private readonly string example3CsharpCode = @"

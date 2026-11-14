@@ -9,7 +9,7 @@ namespace Bit.BlazorUI;
 /// What belongs here is the look every part view of a region shares. The part, its message, the conversation, the
 /// session and the citation callback are left out on purpose: they are what makes one part view the one it is.
 /// </remarks>
-public class BitAiMessagePartViewParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitAiMessagePartViewParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitAiMessagePartView"/> cascading parameters within <see cref="BitParams"/>.

@@ -411,6 +411,24 @@ internal static class BlazorReflection
         }
     }
 
+    private static readonly FieldInfo? TrackedReferencesField = typeof(Microsoft.JSInterop.JSRuntime).GetField("_trackedRefsById", BindingFlags.Instance | BindingFlags.NonPublic);
+
+    /// <summary>
+    /// The JS runtime's table of the <c>DotNetObjectReference</c>s it handed to JavaScript, by id
+    /// (<c>JSRuntime._trackedRefsById</c>); null when <paramref name="runtime"/> is not a <c>JSRuntime</c> or the field is gone.
+    /// </summary>
+    public static IDictionary? TrackedDotNetObjectReferences(object? runtime)
+    {
+        try
+        {
+            return runtime is Microsoft.JSInterop.JSRuntime ? TrackedReferencesField?.GetValue(runtime) as IDictionary : null;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
     /// <summary>Whether ComponentBase ran OnAfterRender at least once; null when the field is missing.</summary>
     public static bool? HasCalledOnAfterRender(ComponentBase component)
     {

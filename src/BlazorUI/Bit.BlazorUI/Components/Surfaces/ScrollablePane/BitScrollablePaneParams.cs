@@ -5,7 +5,7 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// The parameters for <see cref="BitScrollablePane"/> component.
 /// </summary>
-public class BitScrollablePaneParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitScrollablePaneParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitScrollablePane"/> cascading parameters within <see cref="BitParams"/>.

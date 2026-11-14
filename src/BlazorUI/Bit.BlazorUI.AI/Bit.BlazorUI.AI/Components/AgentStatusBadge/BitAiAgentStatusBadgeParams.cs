@@ -9,7 +9,7 @@ namespace Bit.BlazorUI;
 /// What belongs here is what the badges of an application, or of one part of it, agree on: their look. The status is
 /// left out on purpose: it is what makes one badge the one it is.
 /// </remarks>
-public class BitAiAgentStatusBadgeParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitAiAgentStatusBadgeParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitAiAgentStatusBadge"/> cascading parameters within <see cref="BitParams"/>.

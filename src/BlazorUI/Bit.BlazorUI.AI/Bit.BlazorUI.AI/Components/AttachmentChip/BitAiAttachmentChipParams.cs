@@ -9,7 +9,7 @@ namespace Bit.BlazorUI;
 /// What belongs here is what the attachment chips of an application, or of one part of it, agree on: their look. The
 /// attachment and the remove callback are left out on purpose: they are what makes one chip the one it is.
 /// </remarks>
-public class BitAiAttachmentChipParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitAiAttachmentChipParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitAiAttachmentChip"/> cascading parameters within <see cref="BitParams"/>.

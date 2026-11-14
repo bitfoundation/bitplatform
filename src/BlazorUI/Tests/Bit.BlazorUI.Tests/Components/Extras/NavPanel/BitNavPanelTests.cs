@@ -1517,7 +1517,7 @@ public class BitNavPanelTests : BunitTestContext
         component.WaitForAssertion(() =>
         {
             Assert.AreEqual("-1", component.Find(".bit-npn").GetAttribute("tabindex"));
-            Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.captureFocusOrigin"].Count);
+            Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.storeFocus"].Count);
 
             var focused = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].ToList();
             Assert.AreEqual(1, focused.Count);
@@ -1543,7 +1543,7 @@ public class BitNavPanelTests : BunitTestContext
         component.WaitForAssertion(() =>
         {
             Assert.AreEqual(0, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
-            Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.captureFocusOrigin"].Count);
+            Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.storeFocus"].Count);
         });
     }
 
@@ -2181,14 +2181,14 @@ public class BitNavPanelTests : BunitTestContext
         SetDrawerScreen(component, true);
 
         component.WaitForAssertion(
-            () => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.captureFocusOrigin"].Count));
+            () => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.storeFocus"].Count));
 
         component.Find(".bit-npn-ovl").Click();
 
         component.WaitForAssertion(() =>
         {
             Assert.IsFalse(isOpen);
-            Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.restoreFocusOrigin"].Count);
+            Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.restoreFocus"].Count);
         });
     }
 
@@ -2206,7 +2206,7 @@ public class BitNavPanelTests : BunitTestContext
 
         component.WaitForAssertion(() => Assert.AreEqual("dialog", component.Find(".bit-npn").GetAttribute("role")));
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.captureFocusOrigin"].Count);
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.storeFocus"].Count);
     }
 
     [TestMethod]
@@ -2232,7 +2232,7 @@ public class BitNavPanelTests : BunitTestContext
             var root = component.Find(".bit-npn");
 
             Assert.AreEqual("-1", root.GetAttribute("tabindex"));
-            Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.captureFocusOrigin"].Count);
+            Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.storeFocus"].Count);
 
             // The drawer itself, not the search box: focusing an input would open the on-screen keyboard.
             var focused = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].ToList();
@@ -2240,13 +2240,21 @@ public class BitNavPanelTests : BunitTestContext
             Assert.AreNotEqual(component.FindComponent<BitSearchBox>().Instance.InputElement.Id, ((ElementReference)focused[0].Arguments[0]!).Id);
         });
 
+        var panelId = component.Find(".bit-npn").Id;
+
+        // Stored under the panel's id with the panel as its scope: a focus already inside the drawer is no origin.
+        CollectionAssert.AreEqual(new object?[] { panelId, panelId }, Context.JSInterop.Invocations["BitBlazorUI.Utils.storeFocus"][^1].Arguments.ToArray());
+
         component.Find(".bit-npn-ovl").Click();
 
         component.WaitForAssertion(() =>
         {
             Assert.IsFalse(isOpen);
-            Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.restoreFocusOrigin"].Count);
+            Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.restoreFocus"].Count);
         });
+
+        // Handed back only while the focus is lost - on the body, or still inside the drawer it was taken into.
+        CollectionAssert.AreEqual(new object?[] { panelId, true, panelId }, Context.JSInterop.Invocations["BitBlazorUI.Utils.restoreFocus"][^1].Arguments.ToArray());
     }
 
     [TestMethod]
@@ -2873,7 +2881,7 @@ public class BitNavPanelTests : BunitTestContext
         {
             Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"].Count);
             Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"].Count);
-            Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.captureFocusOrigin"].Count);
+            Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.storeFocus"].Count);
         });
 
         // A drawer disposed while it is open would otherwise leave the page held by a key nothing releases again.
@@ -2881,8 +2889,8 @@ public class BitNavPanelTests : BunitTestContext
 
         Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.unlockScroll"].Count);
         Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.disposeFocusTrap"].Count);
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.disposeFocusOrigin"].Count);
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.restoreFocusOrigin"].Count);
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.forgetFocus"].Count);
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.restoreFocus"].Count);
     }
 
     [TestMethod]
@@ -2898,7 +2906,7 @@ public class BitNavPanelTests : BunitTestContext
         // Only what was taken is handed back.
         Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.unlockScroll"].Count);
         Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.disposeFocusTrap"].Count);
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.disposeFocusOrigin"].Count);
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.forgetFocus"].Count);
     }
 
     [TestMethod]

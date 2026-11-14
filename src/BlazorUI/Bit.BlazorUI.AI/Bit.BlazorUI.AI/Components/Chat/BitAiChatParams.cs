@@ -10,7 +10,7 @@ namespace Bit.BlazorUI;
 /// state and the composer, whether the system messages are shown, and their classes and styles. The session, the
 /// conversation, the templates, the callbacks and the speech delegates are left out on purpose: they are what makes one chat the one it is.
 /// </remarks>
-public class BitAiChatParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitAiChatParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitAiChat"/> cascading parameters within <see cref="BitParams"/>.
@@ -58,7 +58,7 @@ public class BitAiChatParams : BitComponentBaseParams, IBitComponentParams
     /// <summary>
     /// The supporting line of the empty state.
     /// </summary>
-    public string? EmptyBody { get; set; }
+    public string? EmptyDescription { get; set; }
 
     /// <summary>
     /// The heading of the empty state.
@@ -134,9 +134,9 @@ public class BitAiChatParams : BitComponentBaseParams, IBitComponentParams
             bitAiChat.TakeFromCascade(nameof(Classes), Classes, static c => c.Classes, static (c, v) => c.Classes = v);
         }
 
-        if (EmptyBody.HasValue())
+        if (EmptyDescription.HasValue())
         {
-            bitAiChat.TakeFromCascade(nameof(EmptyBody), EmptyBody, static c => c.EmptyBody, static (c, v) => c.EmptyBody = v);
+            bitAiChat.TakeFromCascade(nameof(EmptyDescription), EmptyDescription, static c => c.EmptyDescription, static (c, v) => c.EmptyDescription = v);
         }
 
         if (EmptyTitle.HasValue())

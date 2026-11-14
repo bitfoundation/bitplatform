@@ -357,11 +357,21 @@
             scrollContainer.style.height = '';
             scrollContainer.style.maxHeight = '';
 
-            const componentWidth = component.offsetWidth;
+            // The widths are read off getBoundingClientRect rather than off offsetWidth, which rounds the layout width
+            // to the nearest whole pixel: a callout whose widest item lands just above one (97.09px read as 97) would
+            // be set that rounded width below and come out a fraction narrower than its content, cutting that item
+            // off with an ellipsis - and a component of a fractional width would be handed a callout a fraction
+            // narrower or wider than itself. The exact width is what gets written (style.width takes fractional
+            // pixels) and what the placement below works with, so nothing is rounded anywhere. The transform a
+            // callout opens with (see playEntryAnimation) is only ever a translation, which leaves the size of
+            // the box alone.
+            const componentRect = component.getBoundingClientRect();
+            const componentWidth = componentRect.width;
             const componentHeight = component.offsetHeight;
-            const { x: componentX, y: componentY } = component.getBoundingClientRect();
+            const { x: componentX, y: componentY } = componentRect;
 
-            let calloutWidth = callout.offsetWidth;
+            const calloutRect = callout.getBoundingClientRect();
+            let calloutWidth = calloutRect.width;
             // The consumer's cap shortens the scrollable list (and only it), so the callout the placement
             // below decides for can be shorter than the one measured here: whatever the cap takes off that
             // list comes off this height too, or a list that fits under the component only because of the
@@ -369,7 +379,7 @@
             const calloutHeight = callout.offsetHeight - (maxHeight > 0 && scrollContainerId
                                                             ? Math.max(0, (scrollContainer as HTMLElement).offsetHeight - maxHeight)
                                                             : 0);
-            const { x: calloutLeft } = callout.getBoundingClientRect();
+            const calloutLeft = calloutRect.x;
 
             // Distances from the component to each edge of the visible band (getBoundingClientRect space),
             // less the room the requested gap takes out of each of them.
@@ -1791,15 +1801,17 @@
         // close), Escape is listened for on the page, Tab and Shift+Tab are kept inside the callout, or the
         // callout is put into the tab order after its trigger. Each is asked for on its own, and the ones the
         // component has already set up are not asked for again. Reports whether a focus origin was remembered.
+        // The callout is the scope of the origin (see Utils.storeFocus): a focus already inside it - a callout
+        // moved from its anchor to a point from its own keyboard - is no origin.
         export function setupKeyboard(
             calloutId: string,
             dotnetObj: DotNetObject,
-            captureFocusOrigin: boolean,
+            storeFocusOrigin: boolean,
             escape: boolean,
             escapeTriggerId: string | null,
             focusTrap: boolean,
             tabOutTriggerId: string | null) {
-            const captured = captureFocusOrigin && Utils.captureFocusOrigin(calloutId);
+            const stored = storeFocusOrigin && Utils.storeFocus(calloutId, calloutId);
 
             if (escape) {
                 Utils.setupEscape(calloutId, dotnetObj, escapeTriggerId);
@@ -1813,7 +1825,7 @@
                 Utils.setupTabOut(calloutId, tabOutTriggerId, dotnetObj);
             }
 
-            return captured;
+            return stored;
         }
 
         // The keyboard handling of an open BitDropMenu, brought to the mode asked for and the focus moved into the
@@ -1879,7 +1891,7 @@
             Utils.disposeFocusIn(calloutId);
 
             if (forgetFocusOrigin) {
-                Utils.disposeFocusOrigin(calloutId);
+                Utils.forgetFocus(calloutId);
             }
         }
 

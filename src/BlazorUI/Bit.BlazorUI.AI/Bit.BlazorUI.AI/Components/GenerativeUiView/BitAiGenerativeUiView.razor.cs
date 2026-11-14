@@ -4,7 +4,8 @@
 /// BitAiGenerativeUiView renders a component the model chose, with the properties it produced.
 /// </summary>
 /// <remarks>
-/// Resolution goes through the <see cref="IBitAiGenerativeUiRegistry"/>, never through a type name in the payload, so a
+/// Resolution goes through the <see cref="IBitAiGenerativeUiRegistry"/> - the one of the cascaded
+/// <see cref="BitAiServices.GenerativeUi"/>, else the registered one - never through a type name in the payload, so a
 /// model can only ever instantiate a component the app deliberately registered, and only set the properties listed on
 /// it. A name that is not registered renders a quiet placeholder rather than an exception, because a made-up component
 /// should not take down the response around it, and the component itself runs inside a
@@ -27,10 +28,6 @@ public partial class BitAiGenerativeUiView : BitAiComponentBase
         // Held in a field rather than created per render, so the diff keeps being handed the same delegate.
         _renderComponent = RenderComponent;
     }
-
-
-
-    [Inject] private IBitAiGenerativeUiRegistry _registry { get; set; } = default!;
 
 
 
@@ -91,7 +88,9 @@ public partial class BitAiGenerativeUiView : BitAiComponentBase
     {
         CascadingParameters?.UpdateParameters(this);
 
-        _component = _registry.Find(Part.ComponentName);
+        // The cascaded registry (BitAiServices.GenerativeUi), else the registered one, else none: a name nothing
+        // registers renders the placeholder.
+        _component = GetAiService<IBitAiGenerativeUiRegistry>()?.Find(Part.ComponentName);
 
         // The props are bound again only when there is something new to bind: another part, another registration, or
         // a change of this part since the last binding - a re-render of the message around it changes none of them.

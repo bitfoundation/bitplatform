@@ -55,6 +55,28 @@ public sealed class StorageProviderResolverTests
         Assert.Contains("switched off", attempt.Probe!.UnavailableReason!, StringComparison.Ordinal);
     }
 
+    /// <summary>
+    /// The resolver lives as long as the scope - the whole application on WebAssembly - so a probe that
+    /// failed once is asked again, not remembered: a passing quota error or a busy page must not keep every
+    /// later database off the preferred backend until a reload.
+    /// </summary>
+    [TestMethod]
+    public async Task AnUnavailableProbe_IsNotRemembered_WhileAnAvailableOneIs()
+    {
+        var opfs = new FakeStorageProvider("opfs", isAvailable: false);
+        var resolver = Resolver(new BsqliteInMemoryStorageBindingStore(), opfs, new FakeStorageProvider("indexeddb"));
+        var selection = Select(s => s.Prefer("opfs").Fallback("indexeddb"));
+
+        Assert.AreEqual("indexeddb", (await resolver.ResolveAsync("first.db", selection, Ct)).Provider.Name);
+
+        opfs.IsAvailable = true;
+        Assert.AreEqual("opfs", (await resolver.ResolveAsync("second.db", selection, Ct)).Provider.Name);
+
+        var probes = opfs.ProbeCount;
+        await resolver.ResolveAsync("third.db", selection, Ct);
+        Assert.AreEqual(probes, opfs.ProbeCount, "An available probe is remembered.");
+    }
+
     [TestMethod]
     public async Task FallbackIsUsed_WhenPreferredIsUnavailable()
     {
@@ -154,6 +176,25 @@ public sealed class StorageProviderResolverTests
         await resolver.ResolveAsync("two.db", selection, Ct);
 
         Assert.AreEqual(1, opfs.ProbeCount);
+    }
+
+    /// <summary>
+    /// An admin operation probes afresh; finding a backend gone, it drops the success remembered for it, so the
+    /// next resolve does not put a new database on a backend that has stopped answering.
+    /// </summary>
+    [TestMethod]
+    public async Task AFreshProbeThatFindsABackendGone_ForgetsTheSuccessRememberedForIt()
+    {
+        var opfs = new FakeStorageProvider("opfs");
+        var resolver = Resolver(new BsqliteInMemoryStorageBindingStore(), opfs, new FakeStorageProvider("indexeddb"));
+        var selection = Select(s => s.Prefer("opfs").Fallback("indexeddb"));
+
+        Assert.AreEqual("opfs", (await resolver.ResolveAsync("first.db", selection, Ct)).Provider.Name);
+
+        opfs.IsAvailable = false;
+        Assert.IsFalse((await resolver.ProbeHolderAsync(opfs, Ct)).IsAvailable);
+
+        Assert.AreEqual("indexeddb", (await resolver.ResolveAsync("second.db", selection, Ct)).Provider.Name);
     }
 
     [TestClass]

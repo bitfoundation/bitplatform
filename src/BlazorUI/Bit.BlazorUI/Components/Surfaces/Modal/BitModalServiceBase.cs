@@ -690,7 +690,7 @@ public abstract class BitModalServiceBase<TReference, TParameters>
 
         _missingContainerLogged = true;
 
-        _logger?.LogError(MissingContainerMessage);
+        _logger?.LogError(MissingContainerLogMessage);
     }
 
 
@@ -698,6 +698,12 @@ public abstract class BitModalServiceBase<TReference, TParameters>
     /// <summary>
     /// Creates a new concrete modal reference bound to this service.
     /// </summary>
+    /// <summary>
+    /// What is logged, once, when a modal is shown while no container of this service is mounted: a service of other
+    /// surfaces than modals names its own container here.
+    /// </summary>
+    protected virtual string MissingContainerLogMessage => MissingContainerMessage;
+
     protected abstract TReference CreateReference(bool persistent);
 
     /// <summary>

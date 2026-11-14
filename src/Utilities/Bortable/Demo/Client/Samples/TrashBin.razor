@@ -1,0 +1,45 @@
+@* A trash list that takes the items of two groups (PutGroups), while the two lists never exchange items. *@
+
+<div class="demo-columns">
+    <div class="demo-col">
+        <div class="demo-col-title">Tasks</div>
+        <Bortable @bind-Items="_tasks" TItem="string" Group="tasks" Id="trash-tasks" AriaLabel="Tasks"
+                  Class="demo-list" ItemClass="demo-item" GhostClass="demo-ghost">
+            <ItemTemplate Context="item">@item</ItemTemplate>
+        </Bortable>
+    </div>
+    <div class="demo-col">
+        <div class="demo-col-title">Bugs</div>
+        <Bortable @bind-Items="_bugs" TItem="string" Group="bugs" Id="trash-bugs" AriaLabel="Bugs"
+                  Class="demo-list" ItemClass="demo-item tinted" GhostClass="demo-ghost">
+            <ItemTemplate Context="item">@item</ItemTemplate>
+        </Bortable>
+    </div>
+    <div class="demo-col">
+        <div class="demo-col-title">Trash</div>
+        <Bortable @bind-Items="_trash" TItem="string" Group="trash" PutGroups='["tasks", "bugs"]' Id="trash-bin"
+                  AriaLabel="Trash" OnAdd="OnThrownAway"
+                  Class="demo-list" ItemClass="demo-item" GhostClass="demo-ghost">
+            <ItemTemplate Context="item">@item</ItemTemplate>
+            <ChildContent>
+                @if (_trash.Count == 0)
+                {
+                    <div class="demo-empty" role="listitem">Drop a task or a bug here.</div>
+                }
+            </ChildContent>
+        </Bortable>
+    </div>
+</div>
+
+<p class="demo-order"><strong>Trash:</strong> <span id="trash-order">@string.Join(", ", _trash)</span></p>
+<p class="demo-order"><strong>Last thrown away:</strong> <span id="trash-last">@_last</span></p>
+
+@code {
+    private IList<string> _tasks = new List<string> { "Write the docs", "Plan the release", "Tidy the backlog" };
+    private IList<string> _bugs = new List<string> { "Crash on save", "Typo in the footer" };
+    private IList<string> _trash = new List<string>();
+    private string _last = "nothing yet";
+
+    // FromGroup tells where an item came from.
+    private void OnThrownAway(BortableEventArgs<string> e) => _last = $"{e.Item}, from the {e.FromGroup} group";
+}

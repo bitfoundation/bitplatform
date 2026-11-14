@@ -1,0 +1,152 @@
+name: CI Bink E2E
+
+# The demo app in Chromium, Firefox and WebKit: drawing with mouse, touch and pen input, keyboard handling, display
+# scaling, every demo page and its accessibility (axe-core, WCAG 2.1 AA), against the demo published the way it
+# ships, and the published lazy loading sample next to it - trimmed in every engine and, in a job of its own,
+# AOT-compiled. It takes far longer than the build-and-unit pipeline
+# (ci.bink.yml), so it runs only when started by hand. See src/Utilities/Bink/Tests/Bit.Bink.Tests.E2E/README.md for
+# what the browser suite proves and how to run it locally.
+
+on:
+  workflow_dispatch:
+  workflow_call:
+
+env:
+  DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
+
+permissions:
+  contents: read
+
+jobs:
+
+  e2e:
+    name: Bink E2E (${{ matrix.browser }})
+    runs-on: ubuntu-26.04
+    strategy:
+      # Each engine is a verdict of its own: one failing must not cancel what the others would find.
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+
+    steps:
+
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET 11.0
+      uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+      with:
+        global-json-file: src/global.json
+
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version: 24
+
+    - name: Install wasm-tools
+      run: cd src && dotnet workload install wasm-tools
+
+    # The tests drive the demo published the way cd.bink.demo.yml publishes it, not a build output: only a publish
+    # trims the WebAssembly client, and an interop payload the trimmer breaks - an anonymous type whose constructor
+    # lost its parameter names, a getter nothing but System.Text.Json reads - works in every build and fails only there.
+    - name: Publish the demo
+      run: dotnet publish src/Utilities/Bink/Demo/Server/Bit.Bink.Demo.Server.csproj -c Release -o demo -p:InvariantGlobalization=true
+
+    # Published rather than built for the same reason: LazyLoadingTests drives what an app that lazy loads ships,
+    # trimmed, and only a publish writes the lazy mark into the boot configuration. The suite starts it from its
+    # publish folder.
+    - name: Publish the lazy loading sample
+      run: dotnet publish src/Utilities/Bink/Samples/Lazy/Bit.Bink.Samples.Lazy/Bit.Bink.Samples.Lazy.csproj -c Release
+
+    - name: Build the E2E suite
+      run: dotnet build src/Utilities/Bink/Tests/Bit.Bink.Tests.E2E/Bit.Bink.Tests.E2E.csproj -c Release
+
+    - name: Install Playwright ${{ matrix.browser }}
+      run: pwsh src/Utilities/Bink/Tests/Bit.Bink.Tests.E2E/bin/Release/net11.0/playwright.ps1 install --with-deps ${{ matrix.browser }}
+
+    - name: Start the published demo
+      run: |
+        cd demo
+        nohup dotnet Bit.Bink.Demo.Server.dll --urls http://127.0.0.1:5000 > ../demo.log 2>&1 &
+        for attempt in $(seq 1 60); do
+          curl --silent --fail --output /dev/null http://127.0.0.1:5000/ && exit 0
+          sleep 2
+        done
+        cat ../demo.log
+        exit 1
+
+    - name: Run E2E tests
+      env:
+        BINK_E2E_BASE_URL: http://127.0.0.1:5000
+        BINK_E2E_BROWSER: ${{ matrix.browser }}
+      # Run from inside src so src/global.json's Microsoft.Testing.Platform runner setting applies.
+      run: >
+        cd src/Utilities/Bink/Tests/Bit.Bink.Tests.E2E &&
+        dotnet test -c Release --no-build
+        --report-trx --report-trx-filename bink-e2e-${{ matrix.browser }}.trx
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: bink-e2e-${{ matrix.browser }}
+        path: |
+          **/bink-e2e-${{ matrix.browser }}.trx
+          demo.log
+        if-no-files-found: ignore
+
+  # The README's setup for an AOT build: the sample's project file leaves the lazy mark and the router's switch out when
+  # RunAOTCompilation is true, so Bit.Bink loads with the app. LazyLoadingTests (BINK_E2E_LAZY_AOT=1) checks that the
+  # whiteboard then works all the same and nothing is downloaded on demand.
+  lazy-loading-aot:
+    name: Bink lazy loading (AOT)
+    runs-on: ubuntu-26.04
+    timeout-minutes: 60
+
+    steps:
+
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET 11.0
+      uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+      with:
+        global-json-file: src/global.json
+
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version: 24
+
+    - name: Install wasm-tools
+      run: cd src && dotnet workload install wasm-tools
+
+    # Every test opens the session the suite shares, which starts the demo before anything else. These tests do not
+    # drive it, so its build output is enough here.
+    - name: Build the demo, publish the lazy loading sample with AOT and build the E2E suite
+      run: |
+        dotnet build src/Utilities/Bink/Demo/Server/Bit.Bink.Demo.Server.csproj -c Release
+        dotnet publish src/Utilities/Bink/Samples/Lazy/Bit.Bink.Samples.Lazy/Bit.Bink.Samples.Lazy.csproj -c Release -p:RunAOTCompilation=true
+        dotnet build src/Utilities/Bink/Tests/Bit.Bink.Tests.E2E/Bit.Bink.Tests.E2E.csproj -c Release
+
+    - name: Install Playwright Chromium
+      run: pwsh src/Utilities/Bink/Tests/Bit.Bink.Tests.E2E/bin/Release/net11.0/playwright.ps1 install --with-deps chromium
+
+    - name: Run the lazy loading tests against the AOT publish
+      env:
+        BINK_E2E_LAZY_AOT: 1
+      # Run from inside src so src/global.json's Microsoft.Testing.Platform runner setting applies.
+      run: >
+        cd src/Utilities/Bink/Tests/Bit.Bink.Tests.E2E &&
+        dotnet test -c Release --no-build --filter "FullyQualifiedName~LazyLoadingTests"
+        --report-trx --report-trx-filename bink-e2e-lazy-aot.trx
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: bink-e2e-lazy-aot
+        path: '**/bink-e2e-lazy-aot.trx'
+        if-no-files-found: ignore

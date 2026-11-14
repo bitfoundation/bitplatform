@@ -10,7 +10,7 @@ namespace Bit.BlazorUI;
 /// <see cref="BitOverlay.DefaultIsOpen"/>), its content, the element reference of its scroller
 /// (<see cref="BitOverlay.ScrollerElement"/>) and its callbacks - is not a group default, so it is not carried here.
 /// </remarks>
-public class BitOverlayParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitOverlayParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitOverlay"/> cascading parameters within <see cref="BitParams"/>.

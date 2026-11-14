@@ -105,6 +105,71 @@ public sealed class FileSystemStorageProviderTests
         Assert.Contains("relative to", error.Message);
     }
 
+    /// <summary>
+    /// Names that are not the database's to take: a device on Windows, a file SQLite or the backend keeps
+    /// beside a database - <c>app.db-journal</c> would be rolled back into <c>app.db</c> - or the binding file.
+    /// </summary>
+    [TestMethod]
+    [DataRow("CON")]
+    [DataRow("nul.db")]
+    [DataRow("data/COM1.db")]
+    [DataRow("lpt9")]
+    [DataRow("app.db-journal")]
+    [DataRow("app.db-WAL")]
+    [DataRow("app.db-shm")]
+    [DataRow("app.db.0123.import")]
+    [DataRow("app.db.0123.aside")]
+    [DataRow(".bit-bsqlite-bindings")]
+    public void DatabaseName_IsNotOneTheBackendOrTheSystemReserves(string name)
+    {
+        var error = Assert.ThrowsExactly<ArgumentException>(() => Provider().GetDatabasePath(name));
+
+        Assert.Contains("relative to", error.Message);
+    }
+
+    /// <summary>
+    /// The reserved names came in a later release: a database a device already keeps under one - on Android,
+    /// iOS or macOS, where <c>aux.db</c> is a file like any other - still opens, so its data is not cut off.
+    /// </summary>
+    [TestMethod]
+    [DataRow("backup.import")]
+    [DataRow("data/old.aside")]
+    [DataRow("aux.db")]
+    [DataRow("con.sqlite")]
+    public void DatabaseName_ReservedSinceTheDatabaseWasMade_StillOpensIt(string name)
+    {
+        var provider = Provider();
+        if (name is "aux.db" or "con.sqlite" && OperatingSystem.IsWindows())
+        {
+            Assert.Inconclusive("A device name is never a file on Windows.");
+        }
+
+        var path = Path.Combine([provider.RootDirectory, .. name.Split('/')]);
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        File.WriteAllBytes(path, SqliteImages.Valid());
+
+        Assert.AreEqual(path, provider.GetDatabasePath(name));
+    }
+
+    /// <summary>A file SQLite keeps beside a database is no database, so having one there opens nothing.</summary>
+    [TestMethod]
+    public void DatabaseName_OfAJournalThatExists_IsStillRefused()
+    {
+        var provider = Provider();
+        Directory.CreateDirectory(provider.RootDirectory);
+        File.WriteAllBytes(Path.Combine(provider.RootDirectory, "app.db-journal"), [0xd9, 0xd5, 0x05, 0xf9, 0x20, 0xa1, 0x63, 0xd7]);
+
+        Assert.ThrowsExactly<ArgumentException>(() => provider.GetDatabasePath("app.db-journal"));
+    }
+
+    [TestMethod]
+    [DataRow("console.db")]
+    [DataRow("COM10.db")]
+    [DataRow("data/journal.db")]
+    [DataRow("contacts/app.db")]
+    public void DatabaseName_ThatOnlyResemblesAReservedOne_IsAccepted(string name)
+        => Assert.IsNotNull(Provider().GetDatabasePath(name));
+
     [TestMethod]
     public void Root_CanBeADriveOrTheFileSystemRoot()
     {
@@ -297,7 +362,7 @@ public sealed class FileSystemStorageProviderTests
     {
         var provider = Provider();
         await provider.Admin.ImportAsync("app.db", SqliteImage(), Ct);
-        await File.WriteAllBytesAsync(provider.GetDatabasePath($"app.db.{Guid.NewGuid():N}.aside"), SqliteImage(), Ct);
+        await File.WriteAllBytesAsync($"{provider.GetDatabasePath("app.db")}.{Guid.NewGuid():N}.aside", SqliteImage(), Ct);
 
         CollectionAssert.AreEqual(new[] { "app.db" }, (await provider.Admin.ListAsync(Ct)).ToArray());
     }

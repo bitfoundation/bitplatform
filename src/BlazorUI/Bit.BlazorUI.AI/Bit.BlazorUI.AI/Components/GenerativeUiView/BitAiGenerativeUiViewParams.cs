@@ -9,7 +9,7 @@ namespace Bit.BlazorUI;
 /// What belongs here is what every generative UI view of an app or a section of it agrees on - whether the binding
 /// diagnostics are shown, and the classes and styles of its parts - rather than the part a single view renders.
 /// </remarks>
-public class BitAiGenerativeUiViewParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitAiGenerativeUiViewParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitAiGenerativeUiView"/> cascading parameters within <see cref="BitParams"/>.

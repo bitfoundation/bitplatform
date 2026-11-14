@@ -1,0 +1,116 @@
+name: CI Belemetry
+
+# Build plus the unit, browser-script, MCP and hosting tests, and the MAUI sample built for Android (in the solution
+# build), iOS and Mac Catalyst. The browser E2E suites, the MAUI sample driven on Windows and the trimmed/AOT publish
+# gate are in ci.belemetry.e2e.yml and run on demand only.
+
+on:
+  workflow_dispatch:
+  workflow_call:
+  pull_request:
+    paths:
+    - 'src/Utilities/Belemetry/**'
+
+env:
+  DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bit-ci-Belemetry-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  build-Belemetry:
+    if: startsWith(github.event.pull_request.title, 'Prerelease') != true && startsWith(github.event.pull_request.title, 'Release') != true && startsWith(github.event.pull_request.title, 'Version') != true
+    name: build Bit.Belemetry
+    runs-on: ubuntu-26.04
+
+    steps:
+
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET 11.0
+      uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+      with:
+        global-json-file: src/global.json
+
+    - name: Setup .NET 10.0
+      uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+      with:
+        dotnet-version: 10.0.x
+
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version: 24
+
+    - name: dotnet workload restore
+      run:  cd src/Utilities/Belemetry && dotnet workload restore
+
+    - name: dotnet build
+      run: dotnet build src/Utilities/Belemetry/Bit.Belemetry.slnx
+
+    # The test steps run from inside src so src/global.json's "test" runner setting applies
+    # (from the repo root the SDK falls back to the unsupported VSTest path).
+    - name: dotnet test
+      run: cd src/Utilities/Belemetry/Tests/Bit.Belemetry.Tests && dotnet test --no-build
+
+    - name: dotnet test (Entity Framework Core instrumentation, net10.0/net11.0)
+      run: cd src/Utilities/Belemetry/Tests/Bit.Belemetry.Tests.EntityFrameworkCore && dotnet test --no-build
+
+    - name: dotnet test (Hangfire instrumentation, net10.0/net11.0)
+      run: cd src/Utilities/Belemetry/Tests/Bit.Belemetry.Tests.Hangfire && dotnet test --no-build
+
+    - name: npm test (browser script)
+      run: cd src/Utilities/Belemetry/Tests/bit-belemetry-js && npm ci && npm test
+
+    - name: dotnet test (MCP server and OTLP receiver)
+      run: cd src/Utilities/Belemetry/Tests/Bit.Belemetry.Tests.Mcp && dotnet test --no-build
+
+    - name: dotnet test (hosting - every render mode over HTTP, net10.0/net11.0)
+      run: cd src/Utilities/Belemetry/Tests/Bit.Belemetry.Tests.Hosting && dotnet test --no-build
+
+  # The MAUI sample for the Apple platforms, which only a Mac builds: the solution build above, on Linux, takes its
+  # Android target only. A build, not a run - no WebView on these platforms can be driven by the E2E suite - but it
+  # compiles and links the app against Bit.Belemetry the way an iOS or Mac Catalyst app ships, which nothing else does.
+  build-Belemetry-maui-apple:
+    if: startsWith(github.event.pull_request.title, 'Prerelease') != true && startsWith(github.event.pull_request.title, 'Release') != true && startsWith(github.event.pull_request.title, 'Version') != true
+    name: build Bit.Belemetry MAUI sample (iOS, Mac Catalyst)
+    runs-on: xcode-27
+
+    steps:
+
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET 11.0
+      uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+      with:
+        global-json-file: src/global.json
+
+    # The Xcode the .NET 11 iOS and Mac Catalyst workloads build against, as the release workflows select it.
+    - uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1.7.0
+      with:
+        xcode-version: '27.2'
+
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version: 24
+
+    # Every workload the MAUI project's target frameworks need on macOS (Android, iOS, Mac Catalyst): restore evaluates
+    # all of them, even for a build of one.
+    - name: dotnet workload restore
+      run: cd src/Utilities/Belemetry/Samples/Maui && dotnet workload restore
+
+    # For the simulator, which needs no signing identity; Release so the linker trims the app as it would ship.
+    - name: dotnet build (iOS)
+      run: dotnet build src/Utilities/Belemetry/Samples/Maui/Bit.Belemetry.Samples.Maui.csproj -c Release -f net11.0-ios -p:RuntimeIdentifier=iossimulator-arm64
+
+    - name: dotnet build (Mac Catalyst)
+      run: dotnet build src/Utilities/Belemetry/Samples/Maui/Bit.Belemetry.Samples.Maui.csproj -c Release -f net11.0-maccatalyst -p:RuntimeIdentifier=maccatalyst-arm64

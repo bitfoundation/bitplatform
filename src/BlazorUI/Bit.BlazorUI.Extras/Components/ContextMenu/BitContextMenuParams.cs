@@ -9,7 +9,7 @@ namespace Bit.BlazorUI;
 /// What belongs here is what the context menus of an app agree on: the look of their menus, their name and whether an
 /// item closes them. The items, and whether one is open, are the state of a single context menu.
 /// </remarks>
-public class BitContextMenuParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitContextMenuParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitContextMenu{TItem}"/> cascading parameters within <see cref="BitParams"/>.

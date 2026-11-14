@@ -11,7 +11,7 @@ namespace Bit.BlazorUI;
 /// draft key, the model and the templates and callbacks are left out on purpose: they are what makes one composer the one
 /// it is.
 /// </remarks>
-public class BitAiPromptInputParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitAiPromptInputParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitAiPromptInput"/> cascading parameters within <see cref="BitParams"/>.

@@ -140,6 +140,7 @@ public class BitPanelParamsTests : BunitTestContext
         paramsProperties.UnionWith(
         [
             nameof(BitPanel.IsOpen),
+            nameof(BitPanel.SnapPoint),
             nameof(BitPanel.HeaderText),
             nameof(BitPanel.FooterText),
             nameof(BitPanel.TitleAriaId),
@@ -198,6 +199,7 @@ public class BitPanelParamsTests : BunitTestContext
             if (underlying == typeof(ElementReference)) return new ElementReference("sample");
             if (underlying == typeof(BitIconInfo)) return BitIconInfo.Css("sample");
             if (underlying == typeof(BitPanelClassStyles)) return new BitPanelClassStyles();
+            if (underlying == typeof(IReadOnlyList<double>)) return new List<double> { 0.5, 0.9 };
             if (underlying.IsEnum)
             {
                 var values = Enum.GetValues(underlying);

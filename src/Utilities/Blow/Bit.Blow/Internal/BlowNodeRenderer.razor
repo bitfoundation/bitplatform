@@ -114,6 +114,8 @@
             // Not "nodrag": that is the canvas's escape-hatch class, and the guard behind it
             // swallows every press inside the element - selecting the node and its handles too.
             if (!Node.Draggable) sb.Append(" undraggable");
+            // Only a BlowDragHandle inside drags the node; its body does not, so it keeps no touches from the page.
+            else if (Node.UseCustomDragHandle) sb.Append(" custom-drag-handle");
             if (!string.IsNullOrEmpty(Node.Class)) sb.Append(' ').Append(Node.Class);
             return sb.ToString();
         }

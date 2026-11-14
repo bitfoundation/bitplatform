@@ -9,7 +9,7 @@ namespace Bit.BlazorUI;
 /// What belongs here is the look every tool result of a region shares. The result itself is left out on purpose: it
 /// is what makes one view the one it is.
 /// </remarks>
-public class BitAiToolResultViewParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitAiToolResultViewParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitAiToolResultView"/> cascading parameters within <see cref="BitParams"/>.

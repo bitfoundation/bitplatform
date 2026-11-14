@@ -23,6 +23,10 @@ interface BevJsCallEntry {
     at: number;
     durationMs?: number;
     error?: string;
+    /** How long before the report the call was made, by the page's clock: a server's clock is not the browser's. */
+    ageMs?: number;
+    /** Made while a requestAnimationFrame callback ran: what tells a per-frame loop from a burst of events or a timer. */
+    frame?: boolean;
 }
 
 interface BevStorageEntry {
@@ -99,6 +103,9 @@ let originalInvokeAsync: any = null;
 let originalInvoke: any = null;
 let originalObjectInvokeAsync: any = null;
 let originalObjectInvoke: any = null;
+let originalRequestAnimationFrame: any = null;
+// How many requestAnimationFrame callbacks are running (a callback can call into another's code, never nest frames).
+let animationFrameDepth = 0;
 let originalSend: any = null;
 let originalWebSocket: any = null;
 let trafficTimer: ReturnType<typeof setInterval> | null = null;
@@ -317,6 +324,8 @@ function queueJsToDotNet(target: BevTarget | null, entry: BevJsCallEntry, genera
         if (target.jsToDotNetBatch.length === 0) return;
         const batch = target.jsToDotNetBatch;
         target.jsToDotNetBatch = [];
+        const sent = Date.now();
+        for (const entry of batch) entry.ageMs = Math.max(0, sent - entry.at);
         invoke(target, "ReportJsToDotNet", batch);
     }, 500);
 }
@@ -331,6 +340,7 @@ function trackAsync(target: BevTarget | null, identifier: string, argCount: numb
     const start = performance.now();
     const generation = hubGeneration;
     const entry: BevJsCallEntry = { identifier, args: argCount, sync: false, at: Date.now() };
+    if (animationFrameDepth > 0) entry.frame = true;
     let promise: any;
     try {
         promise = call();
@@ -351,6 +361,7 @@ function trackSync(target: BevTarget | null, identifier: string, argCount: numbe
     const start = performance.now();
     const generation = hubGeneration;
     const entry: BevJsCallEntry = { identifier, args: argCount, sync: true, at: Date.now() };
+    if (animationFrameDepth > 0) entry.frame = true;
     try {
         const r = call();
         finishCall(target, entry, start, generation);
@@ -401,6 +412,25 @@ function wrapDotNet() {
             return trackSync(targetForDispatcher(this._callDispatcher), "object#" + (this._id ?? "?") + "." + methodIdentifier, args.length, call);
         };
     }
+
+    // A call is marked as made from an animation frame only when it is: evenly spaced calls at 60 Hz are as often a
+    // scroll or pointer handler, or a timer, whose remedy is not the one of a requestAnimationFrame loop. The callback
+    // and the id the page gets back are the page's own; only a counter is kept around the call.
+    if (typeof window.requestAnimationFrame === "function" && !originalRequestAnimationFrame) {
+        originalRequestAnimationFrame = window.requestAnimationFrame;
+        const original = originalRequestAnimationFrame;
+        window.requestAnimationFrame = function (this: any, callback: FrameRequestCallback) {
+            if (typeof callback !== "function") return original.call(this, callback);
+            return original.call(this, function (this: any, time: DOMHighResTimeStamp) {
+                animationFrameDepth++;
+                try {
+                    return callback.call(this, time);
+                } finally {
+                    animationFrameDepth--;
+                }
+            });
+        };
+    }
 }
 
 function unwrapDotNet() {
@@ -411,6 +441,8 @@ function unwrapDotNet() {
     const proto = DotNet.DotNetObject && DotNet.DotNetObject.prototype;
     if (proto && originalObjectInvokeAsync) proto.invokeMethodAsync = originalObjectInvokeAsync;
     if (proto && originalObjectInvoke) proto.invokeMethod = originalObjectInvoke;
+    if (originalRequestAnimationFrame) window.requestAnimationFrame = originalRequestAnimationFrame;
+    originalRequestAnimationFrame = null;
     originalInvokeAsync = null;
     originalInvoke = null;
     originalObjectInvokeAsync = null;

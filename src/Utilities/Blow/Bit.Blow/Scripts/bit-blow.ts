@@ -68,6 +68,10 @@ const ROOT_CLASS = 'bit-blow';
 const VIEWPORT_CLASS = 'bit-blow-viewport';
 const NODE_CLASS = 'bit-blow-node';
 const HANDLE_CLASS = 'bit-blow-handle';
+// The pane's classes that say what a finger on it does; see InteractionClass in BlowCanvas.
+const PAGE_SCROLL_CLASS = 'bit-blow-page-scroll';
+const PAGE_ZOOM_CLASS = 'bit-blow-page-zoom';
+const NODES_LOCKED_CLASS = 'bit-blow-nodes-locked';
 
 export function getRect(el: Element | null): BlowDomRect | null {
     if (!el) return null;
@@ -446,9 +450,37 @@ export function installInteractionGuards(paneEl: HTMLElement | null, noDragClass
         e.preventDefault();
     };
 
+    // True when a finger that went down on `target` drags one of this flow's nodes: a node of this pane (a direct child
+    // of its viewport) that can be dragged by its body, and not from inside an escape hatch (nodrag, nopan), whose
+    // press the node never hears.
+    const dragsNode = (target: EventTarget | null): boolean => {
+        if (!(target instanceof Element) || pane.classList.contains(NODES_LOCKED_CLASS)) return false;
+        if (closestInPane(target, pointerSelector)) return false;
+        const node = target.closest(`.${NODE_CLASS}`);
+        const viewport = node?.parentElement;
+        return !!node && !!viewport && viewport.classList.contains(VIEWPORT_CLASS) && viewport.parentElement === pane
+            && !node.classList.contains('undraggable') && !node.classList.contains('custom-drag-handle');
+    };
+
+    // A pane that leaves a swipe on its background to the page (bit-blow-page-scroll) has touch-action: pan-x pan-y,
+    // which cannot say "one finger is the page's, a node or two fingers are the canvas's": it lets the browser scroll
+    // with a finger on a node that drags, or with a pinch, and take their pointers over (pointercancel) mid-gesture.
+    // Nor can a node say it with a touch-action of its own, which would be its nodrag content's as well. So the
+    // browser is stopped here instead, while it can still be: a touchmove is only cancelable until the page has
+    // started to scroll, so a swipe that already scrolls the page goes on scrolling it.
+    const onTouchMove = (e: TouchEvent) => {
+        if (!e.cancelable || !pane.classList.contains(PAGE_SCROLL_CLASS)) return;
+        const own = Array.from(e.touches)
+            .map(t => t.target)
+            .filter(t => t instanceof Element && pane.contains(t) && !inNestedFlow(t));
+        const pinch = own.length >= 2 && !pane.classList.contains(PAGE_ZOOM_CLASS);
+        if (pinch || own.some(dragsNode)) e.preventDefault();
+    };
+
     if (pointerSelector) pane.addEventListener('pointerdown', onPointerDown);
     // Not passive: preventDefault() has to be able to stop the page from scrolling.
     pane.addEventListener('wheel', onWheel, { passive: false });
+    pane.addEventListener('touchmove', onTouchMove, { passive: false });
     pane.addEventListener('keydown', onKeyDown);
     pane.addEventListener('dragstart', onDragStart);
 
@@ -456,6 +488,7 @@ export function installInteractionGuards(paneEl: HTMLElement | null, noDragClass
         dispose: () => {
             pane.removeEventListener('pointerdown', onPointerDown);
             pane.removeEventListener('wheel', onWheel);
+            pane.removeEventListener('touchmove', onTouchMove);
             pane.removeEventListener('keydown', onKeyDown);
             pane.removeEventListener('dragstart', onDragStart);
         }

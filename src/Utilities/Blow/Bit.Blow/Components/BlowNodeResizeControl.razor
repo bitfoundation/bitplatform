@@ -61,6 +61,7 @@
     {
         if (!Attached || e.Button != 0) return;
         Flow.StartResize(NodeContext.Node.Id, Position, e.ClientX, e.ClientY,
-            MinWidth, MinHeight, KeepAspectRatio, MaxWidth, MaxHeight, e.PointerId);
+            new BlowResizeOptions { MinWidth = MinWidth, MinHeight = MinHeight, MaxWidth = MaxWidth, MaxHeight = MaxHeight, KeepAspectRatio = KeepAspectRatio },
+            e.PointerId);
     }
 }

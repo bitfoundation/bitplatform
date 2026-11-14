@@ -11,7 +11,7 @@ namespace Bit.BlazorUI;
 /// typing aids, their size and their look. The value and its events, the label, the description, the validation state
 /// and the auto-focus are left out on purpose: they are what makes one editor the one it is.
 /// </remarks>
-public class BitRichTextEditorParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitRichTextEditorParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitRichTextEditor"/> cascading parameters within <see cref="BitParams"/>.

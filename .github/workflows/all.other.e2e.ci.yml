@@ -1,0 +1,82 @@
+name: All Other E2E CI
+
+on:
+  workflow_dispatch:
+    inputs:
+      prerelease_packages:
+        description: Bit packages of the latest CD Prerelease nuget packages run instead of nuget.org
+        type: boolean
+        default: false
+      boilerplate_postgres:
+        description: Boilerplate tests with PostgreSQL
+        type: boolean
+        default: true
+      boilerplate_mysql:
+        description: Boilerplate tests with MySQL
+        type: boolean
+        default: true
+      boilerplate_mssql:
+        description: Boilerplate tests with SQL Server
+        type: boolean
+        default: true
+      boilerplate_workbench:
+        description: Boilerplate Workbench tests
+        type: boolean
+        default: true
+      boilerplate_configurations:
+        description: Boilerplate configurations
+        type: boolean
+        default: true
+      blazorui:
+        description: BlazorUI E2E suite
+        type: boolean
+        default: true
+      bswup:
+        description: Bswup E2E suite
+        type: boolean
+        default: true
+      butil:
+        description: Butil E2E suite
+        type: boolean
+        default: true
+      brouter:
+        description: Brouter E2E suite
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+
+  templates_e2e:
+    name: templates e2e
+    uses: ./.github/workflows/ci.templates.e2e.yml
+    with:
+      prerelease_packages: ${{ inputs.prerelease_packages }}
+      boilerplate_postgres: ${{ inputs.boilerplate_postgres }}
+      boilerplate_mysql: ${{ inputs.boilerplate_mysql }}
+      boilerplate_mssql: ${{ inputs.boilerplate_mssql }}
+      boilerplate_workbench: ${{ inputs.boilerplate_workbench }}
+      boilerplate_configurations: ${{ inputs.boilerplate_configurations }}
+
+  blazorui_e2e:
+    name: blazorui e2e
+    if: ${{ inputs.blazorui }}
+    uses: ./.github/workflows/ci.blazorui.e2e.yml
+
+  bswup_e2e:
+    name: bswup e2e
+    if: ${{ inputs.bswup }}
+    uses: ./.github/workflows/ci.bswup.e2e.yml
+
+  butil_e2e:
+    name: butil e2e
+    if: ${{ inputs.butil }}
+    uses: ./.github/workflows/ci.butil.e2e.yml
+
+  brouter_e2e:
+    name: brouter e2e
+    if: ${{ inputs.brouter }}
+    uses: ./.github/workflows/ci.brouter.e2e.yml

@@ -12,7 +12,7 @@ namespace Bit.BlazorUI;
 /// stay on the component itself, since a list of tags, the form field it is posted as and the handler that
 /// watches it are never shared between two fields.
 /// </remarks>
-public class BitTagsInputParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitTagsInputParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitTagsInput"/> cascading parameters within <see cref="BitParams"/>.

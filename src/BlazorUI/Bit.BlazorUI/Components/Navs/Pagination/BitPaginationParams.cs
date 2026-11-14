@@ -11,7 +11,7 @@ namespace Bit.BlazorUI;
 /// not carried here. What is carried is how a pagination looks, behaves and speaks: which makes a single
 /// <see cref="BitParams"/> the place to localize every pagination of an app at once.
 /// </remarks>
-public class BitPaginationParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitPaginationParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitPagination"/> cascading parameters within <see cref="BitParams"/>.

@@ -10,7 +10,7 @@ namespace Bit.BlazorUI;
 /// their classes and styles. The conversation, the session, the templates and the callbacks are left out on purpose:
 /// they are what makes one transcript the one it is.
 /// </remarks>
-public class BitAiMessageListParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitAiMessageListParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitAiMessageList"/> cascading parameters within <see cref="BitParams"/>.

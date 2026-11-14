@@ -9,7 +9,7 @@ namespace Bit.BlazorUI;
 /// What belongs here is what every artifact panel of an app or a section of it agrees on - the classes and styles of
 /// its parts - rather than the artifact and the version a single panel shows.
 /// </remarks>
-public class BitAiArtifactViewParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitAiArtifactViewParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitAiArtifactView"/> cascading parameters within <see cref="BitParams"/>.

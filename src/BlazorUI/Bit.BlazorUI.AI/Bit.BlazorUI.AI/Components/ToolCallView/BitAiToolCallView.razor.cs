@@ -10,7 +10,8 @@
 /// waits for an approval. Its header says what the call is doing or how it ended (running, used, failed,
 /// declined, cancelled - the tool-call texts of <see cref="BitAiStrings"/>), with the icon the definition of the tool
 /// names (<see cref="BitAiToolDefinition.Icon"/>) or, when it names none, a wrench. The definition is the call's, or -
-/// until a session puts it on the call as it runs it - the one registered for the tool (<see cref="IBitAiToolRegistry"/>).
+/// until a session puts it on the call as it runs it - the one the app gave the tool (<see cref="IBitAiToolRegistry"/>):
+/// in the tools of the <see cref="Session"/>, else the cascaded <see cref="BitAiServices.Tools"/>, else the registered ones.
 /// The arguments are shown as they
 /// stream in, parsed leniently, and the result as text or as a
 /// <see cref="BitAiJsonView"/>; a running call shows its progress as a <see cref="BitProgress"/>, and one awaiting a
@@ -39,9 +40,10 @@ public partial class BitAiToolCallView : BitAiComponentBase
     private string? _iconName;
     private string? _iconClasses;
 
-    // The definition the app registered for the tool, looked up again only when the tool of the call changes (see
-    // _Definition).
+    // The definition the app gave the tool, looked up again only when the tool of the call or the registry it is looked
+    // up in changes (see _Definition).
     private string? _registeredFor;
+    private IBitAiToolRegistry? _registeredIn;
     private BitAiToolDefinition? _registeredDefinition;
 
     private bool _open;
@@ -58,9 +60,6 @@ public partial class BitAiToolCallView : BitAiComponentBase
     private BitAiToolCallPart? _subscribed;
     private BitAiToolCallStatus _lastStatus = BitAiToolCallStatus.Streaming;
 
-
-
-    [Inject] private IServiceProvider _services { get; set; } = default!;
 
 
     /// <summary>
@@ -194,20 +193,24 @@ public partial class BitAiToolCallView : BitAiComponentBase
 
     private string _DisplayName => _Definition?.DisplayName ?? Call.ToolName;
 
-    // The definition of the call, else the one the app registered for its tool. A session puts the definition on a call
-    // only as it runs it, so the card would otherwise be headed by the raw name the model wrote - under the wrench - while
-    // the call streams and waits, and for good on a call the session never runs (one a server ran). The registry is
-    // looked up rather than injected: an app that cascades its renderers may register no services at all.
+    // The definition of the call, else the one the app gave its tool: in the tools of the session - which a page that
+    // registers nothing (a lazy-loaded package) hands its session itself - else the cascaded or the registered ones. A
+    // session puts the definition on a call only as it runs it, so the card would otherwise be headed by the raw name the
+    // model wrote - under the wrench - while the call streams and waits, and for good on a call the session never runs
+    // (one a server ran).
     private BitAiToolDefinition? _Definition
     {
         get
         {
             if (Call.Definition is { } definition) return definition;
 
-            if (string.Equals(_registeredFor, Call.ToolName, StringComparison.Ordinal) is false)
+            var tools = Session?.Tools ?? GetAiService<IBitAiToolRegistry>();
+
+            if (ReferenceEquals(_registeredIn, tools) is false || string.Equals(_registeredFor, Call.ToolName, StringComparison.Ordinal) is false)
             {
+                _registeredIn = tools;
                 _registeredFor = Call.ToolName;
-                _registeredDefinition = (_services.GetService(typeof(IBitAiToolRegistry)) as IBitAiToolRegistry)?.Find(Call.ToolName)?.Definition;
+                _registeredDefinition = tools?.Find(Call.ToolName)?.Definition;
             }
 
             return _registeredDefinition;

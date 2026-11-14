@@ -9,7 +9,7 @@ namespace Bit.BlazorUI;
 /// What belongs here is the look every boundary of a region shares. The content a boundary protects and the label of
 /// its notice are left out on purpose: they are what makes one boundary the one it is.
 /// </remarks>
-public class BitAiRendererBoundaryParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitAiRendererBoundaryParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitAiRendererBoundary"/> cascading parameters within <see cref="BitParams"/>.

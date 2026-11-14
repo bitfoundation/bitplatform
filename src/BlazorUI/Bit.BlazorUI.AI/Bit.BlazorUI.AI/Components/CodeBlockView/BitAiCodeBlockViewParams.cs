@@ -10,7 +10,7 @@ namespace Bit.BlazorUI;
 /// header bar, and the look of their parts. The code, its language and file name and whether it is still streaming
 /// are left out on purpose: they are what makes one code block the one it is.
 /// </remarks>
-public class BitAiCodeBlockViewParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitAiCodeBlockViewParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitAiCodeBlockView"/> cascading parameters within <see cref="BitParams"/>.

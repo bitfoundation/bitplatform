@@ -5,7 +5,7 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// The parameters for <see cref="BitAccordion"/> component.
 /// </summary>
-public class BitAccordionParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitAccordionParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitAccordion"/> cascading parameters within <see cref="BitParams"/>.

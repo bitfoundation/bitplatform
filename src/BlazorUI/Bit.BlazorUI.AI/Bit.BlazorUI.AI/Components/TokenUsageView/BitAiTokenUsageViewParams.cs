@@ -9,7 +9,7 @@ namespace Bit.BlazorUI;
 /// What belongs here is what the readouts of an application, or of one part of it, agree on: which figures they show
 /// and their look. The usage and the metadata are left out on purpose: they are what makes one readout the one it is.
 /// </remarks>
-public class BitAiTokenUsageViewParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitAiTokenUsageViewParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitAiTokenUsageView"/> cascading parameters within <see cref="BitParams"/>.

@@ -30,6 +30,165 @@ public class AccessibilityTests : BunitContext
         Assert.AreEqual("Order pipeline", pane.GetAttribute("aria-label"));
     }
 
+    // ---- a canvas that is only a picture (#14902) ----
+
+    /// <summary>Every interaction off, as for a canvas used as a picture - except the one named, left on.</summary>
+    private static Action<ComponentParameterCollectionBuilder<BlowCanvas>> Inert(string? except = null) => p =>
+    {
+        p.Add(c => c.PanOnDrag, false);
+        p.Add(c => c.ZoomOnScroll, false);
+        p.Add(c => c.ZoomOnPinch, false);
+        p.Add(c => c.ZoomOnDoubleClick, false);
+        p.Add(c => c.PreventScrolling, false);
+        p.Add(c => c.NodesFocusable, false);
+        p.Add(c => c.EdgesFocusable, false);
+        p.Add(c => c.NodesDraggable, except == nameof(BlowCanvas.NodesDraggable));
+        p.Add(c => c.NodesConnectable, except == nameof(BlowCanvas.NodesConnectable));
+        p.Add(c => c.ElementsSelectable, except == nameof(BlowCanvas.ElementsSelectable));
+        p.Add(c => c.ClipboardShortcutsEnabled, except == nameof(BlowCanvas.ClipboardShortcutsEnabled));
+        p.Add(c => c.HistoryEnabled, except == nameof(BlowCanvas.HistoryEnabled));
+    };
+
+    [TestMethod]
+    public void ACanvasWithNothingForTheKeyboardIsNoTabStop()
+    {
+        var cut = Render([new BlowNode { Id = "1" }], extra: Inert());
+
+        var pane = cut.Find(".bit-blow");
+        // Focusable from code, so focus can be handed back to it, but no Tab stop.
+        Assert.AreEqual("-1", pane.GetAttribute("tabindex"));
+        Assert.AreEqual("group", pane.GetAttribute("role"));
+        Assert.AreEqual("Flow diagram", pane.GetAttribute("aria-label"));
+        // "Press Tab to move between the nodes and edges" describes nothing when neither takes focus.
+        Assert.IsNull(pane.GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void AnInteractiveCanvasStaysATabStop()
+    {
+        foreach (var setting in new[]
+                 {
+                     nameof(BlowCanvas.ElementsSelectable), nameof(BlowCanvas.NodesDraggable), nameof(BlowCanvas.NodesConnectable),
+                     nameof(BlowCanvas.ClipboardShortcutsEnabled), nameof(BlowCanvas.HistoryEnabled),
+                 })
+        {
+            var cut = Render([new BlowNode { Id = "1" }], extra: Inert(setting));
+
+            var pane = cut.Find(".bit-blow");
+            Assert.AreEqual("0", pane.GetAttribute("tabindex"), setting);
+            Assert.AreEqual("application", pane.GetAttribute("role"), setting);
+        }
+    }
+
+    [TestMethod]
+    public void ASelectionTheAppMadeKeepsThePaneATabStopForTheDeleteKeys()
+    {
+        var cut = Render([new BlowNode { Id = "1", Selected = true }], extra: Inert());
+
+        var pane = cut.Find(".bit-blow");
+        Assert.AreEqual("0", pane.GetAttribute("tabindex"));
+        Assert.AreEqual("application", pane.GetAttribute("role"));
+
+        // Nothing for the delete keys to do: a picture again.
+        var noDelete = Render([new BlowNode { Id = "1", Selected = true }],
+            extra: p => { Inert()(p); p.Add(c => c.DeleteKeyEnabled, false); });
+        Assert.AreEqual("-1", noDelete.Find(".bit-blow").GetAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public void InstructionsOfTheAppsOwnStayWhenNothingTakesFocus()
+    {
+        var labels = new BlowAriaLabels { PaneInstructions = "Press Delete to remove the selection, Ctrl+Z to undo." };
+        var cut = Render([new BlowNode { Id = "1" }], extra: p =>
+        {
+            Inert(nameof(BlowCanvas.HistoryEnabled))(p);
+            p.Add(c => c.AriaLabels, labels);
+        });
+
+        var pane = cut.Find(".bit-blow");
+        var describedBy = pane.GetAttribute("aria-describedby");
+        Assert.IsNotNull(describedBy);
+        Assert.AreEqual(labels.PaneInstructions, cut.Find($"#{describedBy}").TextContent);
+    }
+
+    [TestMethod]
+    public void TheAppsOwnTabIndexRoleAndLabelWin()
+    {
+        var cut = Render([new BlowNode { Id = "1" }], extra: p => p
+            .AddUnmatched("tabindex", "-1")
+            .AddUnmatched("role", "img")
+            .AddUnmatched("aria-label", "Architecture"));
+
+        var pane = cut.Find(".bit-blow");
+        Assert.AreEqual("-1", pane.GetAttribute("tabindex"));
+        Assert.AreEqual("img", pane.GetAttribute("role"));
+        Assert.AreEqual("Architecture", pane.GetAttribute("aria-label"));
+
+        // And the other way around: a picture an app wants reachable from the keyboard after all.
+        var forced = Render([new BlowNode { Id = "1" }], extra: p => { Inert()(p); p.AddUnmatched("tabindex", "0"); });
+        Assert.AreEqual("0", forced.Find(".bit-blow").GetAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public void ThePaneTellsTheStylesheetWhatADragOnItDoes()
+    {
+        static string[] ClassesOf(IRenderedComponent<BlowCanvas> cut) => cut.Find(".bit-blow").ClassList.ToArray();
+
+        // The default: a drag pans, so the pane takes every touch and shows the grab cursor.
+        var panning = ClassesOf(Render([new BlowNode { Id = "1" }]));
+        CollectionAssert.Contains(panning, "bit-blow-pane-pan");
+        CollectionAssert.DoesNotContain(panning, "bit-blow-page-scroll");
+        CollectionAssert.DoesNotContain(panning, "bit-blow-nodes-locked");
+
+        // A drag that draws a selection box is still the canvas's touch, but grabs nothing.
+        var selecting = ClassesOf(Render([new BlowNode { Id = "1" }], extra: p => p.Add(c => c.SelectionOnDrag, true)));
+        CollectionAssert.DoesNotContain(selecting, "bit-blow-pane-pan");
+        CollectionAssert.DoesNotContain(selecting, "bit-blow-page-scroll");
+
+        // Neither: the page scrolls under a finger; the pinch stays the canvas's while it zooms on one.
+        var pinching = ClassesOf(Render([new BlowNode { Id = "1" }], extra: p => p.Add(c => c.PanOnDrag, false)));
+        CollectionAssert.DoesNotContain(pinching, "bit-blow-pane-pan");
+        CollectionAssert.Contains(pinching, "bit-blow-page-scroll");
+        CollectionAssert.DoesNotContain(pinching, "bit-blow-page-zoom");
+
+        // A picture: the page scrolls and zooms, and no node offers to be dragged.
+        var picture = ClassesOf(Render([new BlowNode { Id = "1" }], extra: Inert()));
+        CollectionAssert.DoesNotContain(picture, "bit-blow-pane-pan");
+        CollectionAssert.Contains(picture, "bit-blow-page-scroll");
+        CollectionAssert.Contains(picture, "bit-blow-page-zoom");
+        CollectionAssert.Contains(picture, "bit-blow-nodes-locked");
+
+        // Panning with the middle button only leaves the left one - a finger - with nothing to do on the pane, but the
+        // middle button's drag still grabs it.
+        var middle = ClassesOf(Render([new BlowNode { Id = "1" }], extra: p => p.Add(c => c.PanButtons, [1])));
+        CollectionAssert.Contains(middle, "bit-blow-pane-pan");
+        CollectionAssert.Contains(middle, "bit-blow-page-scroll");
+    }
+
+    [TestMethod]
+    public void HoldingThePanKeyShowsThatADragNowPans()
+    {
+        var cut = Render([new BlowNode { Id = "1" }], extra: p => p.Add(c => c.SelectionOnDrag, true));
+        var pane = cut.Find(".bit-blow");
+        Assert.IsFalse(pane.ClassList.Contains("bit-blow-pane-pan"));
+
+        pane.KeyDown(new KeyboardEventArgs { Key = " " });
+        Assert.IsTrue(cut.Find(".bit-blow").ClassList.Contains("bit-blow-pane-pan"));
+
+        cut.Find(".bit-blow").KeyUp(new KeyboardEventArgs { Key = " " });
+        Assert.IsFalse(cut.Find(".bit-blow").ClassList.Contains("bit-blow-pane-pan"));
+    }
+
+    [TestMethod]
+    public void ANodeOnlyItsDragHandleDragsSaysSo()
+    {
+        var cut = Render([new BlowNode { Id = "1", UseCustomDragHandle = true }, new BlowNode { Id = "2" }]);
+
+        var nodes = cut.FindAll(".bit-blow-node");
+        Assert.IsTrue(nodes[0].ClassList.Contains("custom-drag-handle"));
+        Assert.IsFalse(nodes[1].ClassList.Contains("custom-drag-handle"));
+    }
+
     [TestMethod]
     public void NodesAndEdgesCarryAccessibleNames()
     {
