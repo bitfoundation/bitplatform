@@ -55,11 +55,13 @@ a review, or before merging:
 bit ci
 ```
 
-It runs the workflow on this machine with [act](https://nektosact.com), in a container on Docker or Podman, the same
-steps GitHub would run. The first run builds the container's image from [`.github/act/Dockerfile`](/.github/act/Dockerfile)
-(act's runner image, with the JDK and the Android SDK GitHub's runner has), and the next ones reuse it until that file
-changes. `bit setup` installs act along with the rest. Extra arguments go to act as they are, such as
-`bit ci -- --list`. To run it on GitHub instead: `gh workflow run ci.yml --ref <branch>`.
+It runs the workflow's steps with [act](https://nektosact.com) on this machine itself, not in a container, with the .NET
+SDK, workloads, NuGet packages, Playwright's browsers and Android SDK that `bit setup` installed here, so a run downloads
+nothing again. act runs them on a copy of the project's files without what `.gitignore` leaves out, such as `bin` and
+`obj`: each run builds from scratch, and the app can keep running from the project's folder meanwhile. On Windows the
+steps run in PowerShell 7 rather than bash, so `ci.yml`'s commands are ones both run. The CI each CD runs on GitHub's Linux
+runners is still the clean check. `bit setup` installs act along with the rest. Extra arguments go to act as they are,
+such as `bit ci -- --list`. To run it on GitHub instead: `gh workflow run ci.yml --ref <branch>`.
 
 In a public repository, every build also gets a signed attestation of the commit and the run that made it, which
 `gh attestation verify` checks, and the About page links to them.

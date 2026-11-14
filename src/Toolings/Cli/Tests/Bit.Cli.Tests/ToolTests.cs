@@ -211,28 +211,6 @@ public class ToolTests
     }
 
     [TestMethod]
-    public async Task PodmanWithoutItsDockerApi_Should_BeRestarted()
-    {
-        using var host = new TestHost(HostOs.Windows);
-        AllInstalled(host.Runner);
-        host.Runner.NotFound("docker");
-        host.Runner.Executables["podman"] = "podman";
-        host.Runner.On("podman", "--version", 0, "podman version 6.1.4");
-        host.Runner.On("podman", "machine inspect --format", 0, @"\\.\pipe\podman-machine-default");
-
-        Assert.AreEqual(ToolState.Installed, (await CheckAsync(host, new ToolNeeds { Aspire = true })).Single(c => c.Tool.Id == "docker").Status.State);
-
-        // The podman CLI goes over SSH and still answers, while act, which connects to the pipe, can't.
-        host.Environment.NamedPipeExists = pipe => pipe != @"\\.\pipe\podman-machine-default";
-        var withoutApi = (await CheckAsync(host, new ToolNeeds { Aspire = true })).Single(c => c.Tool.Id == "docker");
-
-        Assert.AreEqual(ToolState.NotRunning, withoutApi.Status.State);
-        StringAssert.Contains(withoutApi.Status.Detail, "Docker API");
-        StringAssert.Contains(withoutApi.Action!.Title, "Restart Podman");
-        CollectionAssert.AreEqual(new[] { "machine stop", "machine start" }, withoutApi.Action.Commands.Select(c => string.Join(' ', c.Arguments)).ToArray());
-    }
-
-    [TestMethod]
     [DataRow(HostOs.Windows, "winget")]
     [DataRow(HostOs.MacOS, "brew")]
     [DataRow(HostOs.Linux, "bash")]
@@ -252,19 +230,6 @@ public class ToolTests
         Assert.AreEqual(ToolState.Missing, act.Status.State);
         Assert.IsTrue(act.Action!.Optional, "The app builds and runs without act.");
         StringAssert.EndsWith(Path.GetFileNameWithoutExtension(act.Action.Commands[0].FileName), installer);
-    }
-
-    [TestMethod]
-    public async Task AProjectWithCiButNoAspire_Should_StillNeedAContainerRuntime()
-    {
-        using var host = new TestHost(HostOs.Windows);
-        AllInstalled(host.Runner);
-
-        var docker = (await CheckAsync(host, new ToolNeeds { Ci = true })).Single(c => c.Tool.Id == "docker");
-
-        Assert.IsTrue(docker.Needed, "bit ci runs the workflow in a container.");
-        StringAssert.Contains(docker.Why, "bit ci");
-        Assert.IsFalse((await CheckAsync(host, new ToolNeeds())).Single(c => c.Tool.Id == "docker").Needed);
     }
 
     [TestMethod]

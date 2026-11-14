@@ -13,7 +13,7 @@ public static class CiCommand
             Arity = ArgumentArity.ZeroOrMore
         };
 
-        var command = new Command("ci", "Run the project's CI workflow, .github/workflows/ci.yml, on this machine with act, in a container on Docker or Podman, the way GitHub runs it, without spending Actions minutes.")
+        var command = new Command("ci", "Run the project's CI workflow, .github/workflows/ci.yml, on this machine with act, with the tools bit setup installed here, without spending Actions minutes.")
         {
             actArguments
         };
@@ -33,11 +33,6 @@ public static class CiCommand
             if (File.Exists(ci.Workflow) is false)
             {
                 return cli.UsageError("ci-workflow-missing", $"The project has no {Path.GetRelativePath(directory, ci.Workflow)} for bit ci to run.");
-            }
-
-            if (File.Exists(ci.Dockerfile) is false)
-            {
-                return cli.UsageError("ci-dockerfile-missing", $"The project has no {Path.GetRelativePath(directory, ci.Dockerfile)}, which bit ci builds the CI container's image from. The bit Boilerplate template has it.");
             }
 
             return await ci.RunAsync(parseResult.GetValue(actArguments) ?? [], cancellationToken);

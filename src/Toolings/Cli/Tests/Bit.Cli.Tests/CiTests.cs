@@ -7,94 +7,40 @@ namespace Bit.Cli.Tests;
 [TestClass]
 public class CiTests
 {
-    private const string Dockerfile = "ARG UBUNTU_VERSION=26.04\nFROM ghcr.io/catthehacker/ubuntu:pwsh-${UBUNTU_VERSION}\n";
-
-    private const string Pipe = @"\\.\pipe\podman-machine-default";
-
     [TestMethod]
-    public async Task Ci_Should_RunTheWorkflowWithActOnPodmansPipe()
+    [DataRow(HostOs.Windows)]
+    [DataRow(HostOs.MacOS)]
+    [DataRow(HostOs.Linux)]
+    public async Task Ci_Should_RunTheWorkflowWithActOnThisMachine(HostOs os)
     {
-        using var host = new TestHost(HostOs.Windows);
-        var directory = CreateProject(host, "    runs-on: ubuntu-24.04\n");
-        Podman(host);
-        host.Runner.On("podman", "image inspect", 0);
+        using var host = new TestHost(os);
+        var directory = CreateProject(host, "    runs-on: ubuntu-24.04\n  other:\n    runs-on: 'ubuntu-26.04' # the next one\n");
 
         Assert.AreEqual(CliApp.ExitOk, await host.RunAsync("ci", "--", "--job", "build_and_test"), host.Output);
 
         var act = host.Runner.Calls.Single(c => c.FileName == "act");
-        var image = LocalCi.ImageFor(Dockerfile, "ubuntu-24.04");
 
         Assert.AreEqual(directory, act.WorkingDirectory);
-        Assert.AreEqual("npipe:////./pipe/podman-machine-default", act.Environment!["DOCKER_HOST"]);
         Assert.IsTrue(act.Interactive, "act's log is the run's output.");
-        StringAssert.StartsWith(act.CommandLine, "act workflow_dispatch --workflows .github/workflows/ci.yml");
-        StringAssert.Contains(act.CommandLine, $"--platform ubuntu-24.04={image}");
-        StringAssert.Contains(act.CommandLine, "--container-daemon-socket /run/user/1000/podman/podman.sock");
-        StringAssert.EndsWith(act.CommandLine, "--job build_and_test");
-        StringAssert.StartsWith(image, "localhost/bit-ci:24.04-");
-        Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments.FirstOrDefault() is "build"), "The image was there already.");
+        Assert.AreEqual("act workflow_dispatch --workflows .github/workflows/ci.yml --platform ubuntu-24.04=-self-hosted --platform ubuntu-26.04=-self-hosted --action-offline-mode --job build_and_test", act.CommandLine);
+        Assert.IsFalse(host.Runner.Calls.Any(c => c.FileName is "docker" or "podman"), "Nothing runs in a container.");
     }
 
     [TestMethod]
-    public async Task Ci_Should_BuildTheImageForEachUbuntuVersionOnlyWhenItsMissing()
+    public async Task TheWorkflowsSteps_Should_RunTheBitThatRunsThem()
     {
-        using var host = new TestHost(HostOs.Windows);
-        CreateProject(host, "    runs-on: ubuntu-24.04\n  other:\n    runs-on: 'ubuntu-26.04' # the next one\n  mac:\n    runs-on: macos-15\n");
-        Podman(host);
-        host.Runner.On("podman", "image inspect", 1, "image not known");
-        host.Runner.On("podman", $"image inspect {LocalCi.ImageFor(Dockerfile, "ubuntu-26.04")}", 0);
+        using var host = new TestHost(HostOs.Linux, new Dictionary<string, string> { ["PATH"] = "/usr/bin" });
+        var directory = CreateProject(host, "    runs-on: ubuntu-26.04\n");
 
-        Assert.AreEqual(CliApp.ExitOk, await host.RunAsync("ci"), host.Output);
+        Assert.AreEqual(CliApp.ExitOk, await new LocalCi(host.Services, directory) { Self = "/opt/bit-dev/bit" }.RunAsync([], CancellationToken.None), host.Output);
 
-        var build = host.Runner.Calls.Single(c => c.Arguments.FirstOrDefault() is "build");
-
-        CollectionAssert.IsSubsetOf(new[] { "--platform", "linux/amd64", "--build-arg", "UBUNTU_VERSION=24.04", "--tag", LocalCi.ImageFor(Dockerfile, "ubuntu-24.04") }, build.Arguments.ToArray());
-        StringAssert.Contains(host.Runner.Calls.Single(c => c.FileName == "act").CommandLine, $"--platform ubuntu-26.04={LocalCi.ImageFor(Dockerfile, "ubuntu-26.04")}");
+        Assert.AreEqual($"{Path.GetDirectoryName("/opt/bit-dev/bit")}{Path.PathSeparator}/usr/bin", host.Runner.Calls.Single(c => c.FileName == "act").Environment!["PATH"]);
     }
 
     [TestMethod]
-    public async Task Ci_Should_SayWhenPodmansDockerApiIsDown()
+    public void AWorkflowWithoutAPlainLabel_Should_StillRunOnThisMachine()
     {
-        using var host = new TestHost(HostOs.Windows);
-        CreateProject(host, "    runs-on: ubuntu-24.04\n");
-        Podman(host);
-        host.Environment.NamedPipeExists = _ => false;
-
-        Assert.AreEqual(CliApp.ExitFailed, await host.RunAsync("ci"), host.Output);
-
-        StringAssert.Contains(host.FlatOutput, "Podman's Docker API is down");
-        StringAssert.Contains(host.FlatOutput, "bit doctor");
-        Assert.IsFalse(host.Runner.Calls.Any(c => c.FileName == "act"));
-    }
-
-    [TestMethod]
-    public async Task Ci_Should_PointActAtDockersSocketInItsVm()
-    {
-        using var mac = new TestHost(HostOs.MacOS);
-        CreateProject(mac, "    runs-on: ubuntu-26.04\n");
-        mac.Runner.Executables["act"] = "act";
-        mac.Runner.On("docker", "version", 0, "28.5.1");
-
-        Assert.AreEqual(CliApp.ExitOk, await mac.RunAsync("ci"), mac.Output);
-
-        var act = mac.Runner.Calls.Single(c => c.FileName == "act");
-        Assert.IsNull(act.Environment, "act finds Docker itself.");
-        StringAssert.Contains(act.CommandLine, "--container-daemon-socket /var/run/docker.sock");
-    }
-
-    [TestMethod]
-    public async Task Ci_Should_ConnectActToPodmansOwnSocketOnLinux()
-    {
-        using var host = new TestHost(HostOs.Linux);
-        CreateProject(host, "    runs-on: ubuntu-26.04\n");
-        Podman(host);
-        host.Runner.On("podman", "info", 0, "/run/user/1000/podman/podman.sock");
-
-        Assert.AreEqual(CliApp.ExitOk, await host.RunAsync("ci"), host.Output);
-
-        var act = host.Runner.Calls.Single(c => c.FileName == "act");
-        Assert.AreEqual("unix:///run/user/1000/podman/podman.sock", act.Environment!["DOCKER_HOST"]);
-        StringAssert.Contains(act.CommandLine, "--container-daemon-socket /run/user/1000/podman/podman.sock");
+        CollectionAssert.AreEqual(new[] { "ubuntu-latest" }, LocalCi.Labels("jobs:\n  a:\n    runs-on: ${{ matrix.os }}\n").ToArray());
     }
 
     [TestMethod]
@@ -102,7 +48,6 @@ public class CiTests
     {
         using var host = new TestHost(HostOs.Linux);
         CreateProject(host, "    runs-on: ubuntu-26.04\n");
-        host.Runner.On("docker", "version", 0, "28.5.1");
 
         Assert.AreEqual(CliApp.ExitOk, await host.RunAsync("ci", "--", "-s", "GITHUB_TOKEN=ghp_example", "--secret=NUGET_KEY=nk_example", "-s", "FROM_ENV"), host.Output);
 
@@ -114,7 +59,7 @@ public class CiTests
     }
 
     [TestMethod]
-    public async Task Ci_Should_NeedActAndTheProjectsWorkflowAndDockerfile()
+    public async Task Ci_Should_NeedTheProjectsWorkflowActAndPowerShell()
     {
         using var host = new TestHost(HostOs.Linux);
 
@@ -122,16 +67,19 @@ public class CiTests
         StringAssert.Contains(host.FlatOutput, "isn't a bit Boilerplate project folder");
 
         var directory = CreateProject(host, "    runs-on: ubuntu-26.04\n");
-        File.Delete(Path.Combine(directory, ".github", "act", "Dockerfile"));
+        File.Delete(Path.Combine(directory, ".github", "workflows", "ci.yml"));
 
         Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("ci"));
-        StringAssert.Contains(host.FlatOutput, "Dockerfile");
+        StringAssert.Contains(host.FlatOutput, "ci.yml");
 
-        File.WriteAllText(Path.Combine(directory, ".github", "act", "Dockerfile"), Dockerfile);
+        CreateProject(host, "    runs-on: ubuntu-26.04\n");
         host.Runner.Executables.Remove("act");
+        host.Runner.Executables.Remove("pwsh");
 
         Assert.AreEqual(CliApp.ExitFailed, await host.RunAsync("ci"));
         StringAssert.Contains(host.FlatOutput, "bit setup --tools act");
+        StringAssert.Contains(host.FlatOutput, "https://aka.ms/install-powershell");
+        Assert.IsFalse(host.Runner.Calls.Any(c => c.FileName == "act"));
     }
 
     [TestMethod]
@@ -139,31 +87,12 @@ public class CiTests
     {
         using var host = new TestHost(HostOs.Linux);
         CreateProject(host, "    runs-on: ubuntu-26.04\n");
-        host.Runner.On("docker", "version", 0, "28.5.1");
         host.Runner.On("act", "workflow_dispatch", 1);
 
         Assert.AreEqual(CliApp.ExitFailed, await host.RunAsync("ci"), host.Output);
 
         StringAssert.Contains(host.FlatOutput, "CI failed");
         StringAssert.Contains(host.FlatOutput, "act's log above says which step failed");
-        Assert.IsFalse(host.Runner.Calls.Single(c => c.FileName == "act").CommandLine.Contains("--container-daemon-socket", StringComparison.Ordinal), "On Linux, act mounts the socket it connects to.");
-    }
-
-    [TestMethod]
-    public void TheImage_Should_ChangeWithTheDockerfileButNotItsLineEndings()
-    {
-        Assert.AreEqual(LocalCi.ImageFor(Dockerfile, "ubuntu-24.04"), LocalCi.ImageFor(Dockerfile.ReplaceLineEndings("\r\n"), "ubuntu-24.04"));
-        Assert.AreNotEqual(LocalCi.ImageFor(Dockerfile, "ubuntu-24.04"), LocalCi.ImageFor(Dockerfile + "RUN true\n", "ubuntu-24.04"));
-        CollectionAssert.AreEqual(new[] { "ubuntu-latest" }, LocalCi.UbuntuLabels("jobs:\n  a:\n    runs-on: windows-2025\n").ToArray());
-    }
-
-    private static void Podman(TestHost host)
-    {
-        host.Runner.Executables["act"] = "act";
-        host.Runner.Executables["podman"] = "podman";
-        host.Runner.NotFound("docker");
-        host.Runner.On("podman", "info", 0, "unix:///run/user/1000/podman/podman.sock");
-        host.Runner.On("podman", "machine inspect --format", 0, Pipe);
     }
 
     private static string CreateProject(TestHost host, string jobs)
@@ -172,8 +101,8 @@ public class CiTests
         File.WriteAllText(Path.Combine(directory, "Contoso.slnx"), "<Solution />");
         File.WriteAllText(Path.Combine(directory, "Contoso.Web.slnf"), "{}");
         File.WriteAllText(Path.Combine(Directory.CreateDirectory(Path.Combine(directory, ".github", "workflows")).FullName, "ci.yml"), $"on:\n  workflow_dispatch:\njobs:\n  build_and_test:\n{jobs}");
-        File.WriteAllText(Path.Combine(Directory.CreateDirectory(Path.Combine(directory, ".github", "act")).FullName, "Dockerfile"), Dockerfile);
         host.Runner.Executables["act"] = "act";
+        host.Runner.Executables["pwsh"] = "pwsh";
         return directory;
     }
 }

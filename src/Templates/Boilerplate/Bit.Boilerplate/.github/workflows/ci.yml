@@ -2,9 +2,9 @@ name: Boilerplate CI
 
 # https://bitplatform.dev/templates/dev-ops
 
-# By hand: `bit ci` runs it on this machine in a container, with act, and spends no Actions minutes; on GitHub,
-# `gh workflow run ci.yml --ref <branch>` runs it. cd-template.yml runs it before every deployment, which goes out only
-# once it passes.
+# By hand: `bit ci` runs it on this machine with act, with the tools `bit setup` installed here, and spends no Actions
+# minutes; on GitHub, `gh workflow run ci.yml --ref <branch>` runs it. cd-template.yml runs it before every deployment,
+# which goes out only once it passes.
 on:
   workflow_dispatch:
   workflow_call:
@@ -30,14 +30,16 @@ jobs:
           persist-credentials: false
 
     # The runner's preinstalled toolchains leave a thin margin once the tests are built, so drop the ones no project here uses.
-    # act's container (bit ci) has none of them.
+    # Not on a developer's machine (bit ci).
     - name: Free disk space
       if: ${{ !env.ACT }}
       run: |
         sudo rm -rf /opt/ghc /usr/local/.ghcup /usr/share/swift /usr/local/share/boost /opt/hostedtoolcache/CodeQL /usr/local/share/powershell /usr/share/miniconda /opt/az /usr/local/lib/android/sdk/ndk
         df -h /
 
+    # On a developer's machine (bit ci), the SDK bit setup installed is used, with its workloads, rather than another copy.
     - name: Setup .NET
+      if: ${{ !env.ACT }}
       uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
       with:
         global-json-file: global.json
@@ -46,9 +48,16 @@ jobs:
       run: dotnet format whitespace --folder . --verify-no-changes
 
     - name: Set up and build with bit setup
+      if: ${{ !env.ACT }}
       uses: bitfoundation/bitplatform/.github/actions/bit-bp/bit-setup@v-11.0.0-pre-19
       with:
         arguments: --platforms android -p:EnforceCodeStyleInBuild=true
+
+    # On a developer's machine (bit ci), with the bit CLI that runs it: act would copy bit platform's whole repository for
+    # the action above on every run.
+    - name: Set up and build with bit setup
+      if: ${{ env.ACT }}
+      run: bit setup --yes --platforms android -p:EnforceCodeStyleInBuild=true
 
     - name: Check that the api still works for the app versions it supports
       run: bit api check
@@ -57,7 +66,7 @@ jobs:
       id: test
       run: cd src/Tests && dotnet test
 
-    # Not under act (bit ci), whose artifact server this action doesn't work with: there the run's log has the failures.
+    # Not on a developer's machine (bit ci), where act has no artifact server for it: the run's log has the failures.
     - name: Upload Tests Artifact
       uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       if: ${{ failure() && steps.test.conclusion == 'failure' && !env.ACT }}

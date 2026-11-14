@@ -125,17 +125,17 @@ In VS Code, bit Boilerplate's **Run the Android app** task runs `bit run android
 
 ## bit ci
 
-Runs the project's CI workflow, `.github/workflows/ci.yml`, on this machine, the way GitHub runs it, without spending Actions minutes:
+Runs the project's CI workflow, `.github/workflows/ci.yml`, on this machine, without spending Actions minutes:
 
 ```bash
 bit ci
 bit ci -- --list
 ```
 
-- It runs the workflow with [act](https://nektosact.com), in a container on Docker or Podman. `bit setup` installs act along with the rest.
-- The container starts from an image it builds from the project's `.github/act/Dockerfile`: act's runner image plus the JDK and the Android SDK GitHub's runner comes with. It builds it on the first run and whenever that file changes, tagged with the file's hash, and the other runs reuse it.
-- It finds where act connects to the engine, and where the engine's socket is for the job's container to mount, since the tests start containers of their own: Docker as it is, or Podman, through its Docker API pipe on Windows. When that pipe is down while Podman's machine runs, as after Windows restarts for an update, it says so; `bit doctor --fix` restarts Podman to bring it back.
-- The run's log says which step failed and why. The workflow's artifact uploads are skipped under act, and the container goes away with what it built.
+- It runs the workflow's steps with [act](https://nektosact.com) on this machine itself, not in a container: with the .NET SDK, workloads, NuGet packages, Playwright's browsers and Android SDK `bit setup` installed here, so a run downloads nothing again, and the tests reach Docker or Podman as they do outside CI. `bit setup` installs act along with the rest.
+- act runs them on a copy of the project's files without what `.gitignore` leaves out, such as `bin` and `obj`, so each run builds from scratch, and the app can keep running from the project's folder meanwhile.
+- It needs PowerShell 7, which the steps run in on Windows and bit's setup action runs in everywhere, as on GitHub's runners.
+- The run's log says which step failed and why. The workflow's artifact uploads are skipped under act.
 - Arguments after `--` go to act as they are.
 
 ## bit diff
@@ -209,7 +209,7 @@ bit doctor
 bit doctor --fix
 ```
 
-Checks the tools a project needs, inside a project for that project's own needs, and offers to install what's missing with `--fix`. It exits with code 3 when something needed is missing. On Windows it also checks that Podman's Docker API pipe answers, which act and other Docker clients connect to, and offers to restart Podman when it doesn't.
+Checks the tools a project needs, inside a project for that project's own needs, and offers to install what's missing with `--fix`. It exits with code 3 when something needed is missing.
 
 ## bit trust
 
@@ -430,7 +430,7 @@ Collect the profile in the job that publishes the app, right before the AOT publ
 - **bit itself**, when a newer version is out: a copy for the run in `~/.bitplatform/cli`, then `dotnet tool update --global Bit.Cli` once the run ends.
 - **Secrets, environments and pull request and Actions settings** of your GitHub repository, only with `bit pipeline`, after you confirm or with `--yes`.
 - **oasdiff**, for `bit api`, in `~/.bitplatform/tools`.
-- **act**, for `bit ci`, when you tick it, and the image `bit ci` builds from the project's `.github/act/Dockerfile`, `localhost/bit-ci:<hash>`, which Docker or Podman keeps.
+- **act**, for `bit ci`, when you tick it, and the copy of the project act runs the workflow on, in `~/.cache/act`.
 - **Its own folder**, `~/.bitplatform`: `settings.json`, the template cache, logs, telemetry not sent yet, the repositories `bit diff` creates, and in `keys` the keys `bit pipeline` and `bit keys android` create, which only your user can read on macOS and Linux.
 
 ## Telemetry
