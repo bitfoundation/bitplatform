@@ -37,7 +37,7 @@
             <BitChart Type="BitChartType.Bar" Data="revenueData" Options="barOptions" Height="14rem" IsLoading Description="@Localizer[nameof(WorkbenchStrings.ThemeExtrasRevenuePerMonth)]" />
         </StateSample>
         <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateEmpty)">
-            <BitChart Type="BitChartType.Bar" Data="emptyData" Options="barOptions" Height="14rem" NoDataText="@Localizer[nameof(WorkbenchStrings.ThemeExtrasNoSalesYetThisMonth)]" Description="@Localizer[nameof(WorkbenchStrings.ThemeExtrasRevenuePerMonth)]" />
+            <BitChart Type="BitChartType.Bar" Data="emptyData" Options="barOptions" Height="14rem" EmptyText="@Localizer[nameof(WorkbenchStrings.ThemeExtrasNoSalesYetThisMonth)]" Description="@Localizer[nameof(WorkbenchStrings.ThemeExtrasRevenuePerMonth)]" />
         </StateSample>
     </ComponentStates>
 
@@ -172,7 +172,7 @@
                                       Class="orders-feed"
                                       AriaLabel="@Localizer[nameof(WorkbenchStrings.ThemeExtrasTodaySOrders)]"
                                       LoadingMessage="@Localizer[nameof(WorkbenchStrings.ThemeExtrasLoadingMoreOrders)]"
-                                      EmptyMessage="@Localizer[nameof(WorkbenchStrings.ThemeExtrasNoOrdersYetToday)]">
+                                      EmptyText="@Localizer[nameof(WorkbenchStrings.ThemeExtrasNoOrdersYetToday)]">
                     <ItemTemplate Context="index">
                         <ExtrasOrderRow Index="index" />
                     </ItemTemplate>

@@ -115,14 +115,14 @@
             </BitAccordionList>
 
             <BitBasicList Items="tenants" FullWidth>
-                <EmptyContent>
+                <EmptyTemplate>
                     <BitStack HorizontalAlign="BitAlignment.Center" Gap="1rem" Padding="3rem 1rem">
                         <BitIcon IconName="@BitIconName.Org" Color="BitColor.Primary" FontSize="3rem" />
                         <BitText Typography="BitTypography.Body1" Align="BitTextAlign.Center">
                             @Localizer[nameof(AppStrings.SelectTenantMessage)]
                         </BitText>
                     </BitStack>
-                </EmptyContent>
+                </EmptyTemplate>
                 <RowTemplate Context="tenant">
                     <BitCard role="listitem" FullWidth Class="tenant-card" @key="tenant.Id">
                         <BitStack Gap="1rem">
