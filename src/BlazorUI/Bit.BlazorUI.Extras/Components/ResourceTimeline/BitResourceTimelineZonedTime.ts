@@ -60,9 +60,6 @@
             this.timeZone = timeZone || null;
             this.locale = locale || null;
 
-            const zone = timeZone || undefined;
-            const loc = locale || undefined;
-
             // Numeric wall-clock parts in the zone, used for day/hour math and the
             // hour label. en-US + h23 guarantees parseable 0-23 hour values
             // regardless of the display locale configured above.
@@ -71,20 +68,16 @@
                 year: 'numeric', month: '2-digit', day: '2-digit',
                 hour: '2-digit', minute: '2-digit', second: '2-digit'
             };
-            if (zone) partsOpts.timeZone = zone;
+            if (this.timeZone) partsOpts.timeZone = this.timeZone;
             this._partsDtf = new Intl.DateTimeFormat('en-US', partsOpts);
 
             // Localized day label; configured (or viewer) locale for i18n, zone for
             // correctness.
-            const dateOpts: Intl.DateTimeFormatOptions = { weekday: 'short', month: 'short', day: 'numeric' };
-            if (zone) dateOpts.timeZone = zone;
-            this._dateDtf = new Intl.DateTimeFormat(loc, dateOpts);
+            this._dateDtf = this._dtf({ weekday: 'short', month: 'short', day: 'numeric' });
 
             // Spoken/short date+time, used for screen-reader announcements, the
             // drag ghost readout and tooltips.
-            const dateTimeOpts: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
-            if (zone) dateTimeOpts.timeZone = zone;
-            this._dateTimeDtf = new Intl.DateTimeFormat(loc, dateTimeOpts);
+            this._dateTimeDtf = this._dtf({ month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
         }
 
         // Wall-clock parts of an instant, in this zone.
@@ -237,22 +230,32 @@
         // of days and weeks; a month with its year ("Jul 2026"), for months and
         // quarters; a year alone ("2026"). Created on first use, since most
         // timelines are never zoomed out that far.
+        //
+        // A day is the same day in every calendar, so the day labels are in the
+        // locale's own (a Persian date under fa-IR). Months and years are not:
+        // the engine walks them on Gregorian boundaries (its wall-clock parts are
+        // en-US), so their labels are Gregorian too, in the locale's words and
+        // digits - under fa-IR the period starting on January 1 reads as that
+        // Gregorian year, not as the Persian year in progress on that day, most
+        // of which falls in the next period.
         public formatShortDate(ts: number): string {
             if (!this._shortDateDtf) this._shortDateDtf = this._dtf({ month: 'short', day: 'numeric' });
             return this._shortDateDtf.format(ts);
         }
 
         public formatMonth(ts: number): string {
-            if (!this._monthDtf) this._monthDtf = this._dtf({ month: 'short', year: 'numeric' });
+            if (!this._monthDtf) this._monthDtf = this._dtf({ month: 'short', year: 'numeric', calendar: 'gregory' });
             return this._monthDtf.format(ts);
         }
 
         public formatYear(ts: number): string {
-            if (!this._yearDtf) this._yearDtf = this._dtf({ year: 'numeric' });
+            if (!this._yearDtf) this._yearDtf = this._dtf({ year: 'numeric', calendar: 'gregory' });
             return this._yearDtf.format(ts);
         }
 
         // A label formatter in the configured (or viewer) locale and this zone.
+        // Every human-facing formatter is made here, so the locale and the zone
+        // are applied one way for all of them.
         private _dtf(opts: Intl.DateTimeFormatOptions): Intl.DateTimeFormat {
             if (this.timeZone) opts.timeZone = this.timeZone;
             return new Intl.DateTimeFormat(this.locale || undefined, opts);
@@ -267,11 +270,7 @@
         // locale's h12 cycle (en-US → "3 PM").
         public formatHour(hour: number, hour12: boolean): string {
             if (!hour12) return String(hour).padStart(2, '0');
-            if (!this._hour12Dtf) {
-                const opts: Intl.DateTimeFormatOptions = { hour: 'numeric', hourCycle: 'h12' };
-                if (this.timeZone) opts.timeZone = this.timeZone;
-                this._hour12Dtf = new Intl.DateTimeFormat(this.locale || undefined, opts);
-            }
+            if (!this._hour12Dtf) this._hour12Dtf = this._dtf({ hour: 'numeric', hourCycle: 'h12' });
             const ts = this.wallClockToTs(2000, 1, 1, hour, 0, 0);
             return this._hour12Dtf.format(ts);
         }

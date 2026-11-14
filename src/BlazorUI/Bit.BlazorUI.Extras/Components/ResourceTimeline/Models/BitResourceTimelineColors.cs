@@ -32,7 +32,10 @@ public class BitResourceTimelineColors
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Label { get; set; }
 
-    /// <summary>Day labels on the top row of the time axis.</summary>
+    /// <summary>
+    /// Labels of the date row, the top row of the time axis: a label per day, or per run of days, week,
+    /// month, quarter, half year or year as the zoom drops.
+    /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? DateLabel { get; set; }
 

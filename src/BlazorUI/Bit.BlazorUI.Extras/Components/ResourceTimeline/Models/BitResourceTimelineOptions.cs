@@ -201,10 +201,13 @@ public class BitResourceTimelineOptions
 
     /// <summary>
     /// BCP 47 locale (for example <c>"de-DE"</c> or <c>"ja-JP"</c>) used to format
-    /// day labels, tooltips and screen-reader announcements. Left unset it is the
+    /// the date-row labels, tooltips and screen-reader announcements. Left unset it is the
     /// viewer's locale; once a locale was applied, an empty string returns to the
     /// viewer's (<c>null</c> keeps the locale in force). Hour ticks stay 24-hour
-    /// unless <see cref="Hour12"/> is set.
+    /// unless <see cref="Hour12"/> is set. A day is labelled in the locale's own calendar
+    /// (a Persian date under <c>"fa-IR"</c>); the months and years the date row marks when
+    /// zoomed out are Gregorian ones, so they are labelled as such, in the locale's words
+    /// and digits.
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Locale { get; set; }
@@ -213,8 +216,8 @@ public class BitResourceTimelineOptions
     /// First day of the week (Sunday = 0). Left unset it is the week start of
     /// <see cref="Locale"/> (or of the viewer's locale) through <c>Intl.Locale</c>
     /// weekInfo where the browser has it, otherwise Monday.
-    /// Applies to week-oriented banding when present; <c>PanByDaysAsync(7)</c>
-    /// remains a 7-calendar-day step.
+    /// Applies to week-oriented banding when present and to the weeks the date row marks
+    /// when zoomed out; <c>PanByDaysAsync(7)</c> remains a 7-calendar-day step.
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public DayOfWeek? FirstDayOfWeek { get; set; }

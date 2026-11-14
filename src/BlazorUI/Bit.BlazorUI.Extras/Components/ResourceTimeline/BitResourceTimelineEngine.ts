@@ -85,6 +85,16 @@
     // Space kept between a date-row label and the edges of its period.
     const DATE_LABEL_PADDING = 6;
 
+    // The zoned time's formatter of each date-row format: the one map both the
+    // labels drawn (_buildTimeAxisScene) and the widths a tier is chosen from
+    // (_dateRowLabelWidth) go through, so the two can never disagree.
+    const DATE_ROW_FORMATS: { readonly [format: string]: (time: ResourceTimelineZonedTime, ts: number) => string } = Object.freeze({
+        date: (time: ResourceTimelineZonedTime, ts: number) => time.formatDate(ts),
+        short: (time: ResourceTimelineZonedTime, ts: number) => time.formatShortDate(ts),
+        month: (time: ResourceTimelineZonedTime, ts: number) => time.formatMonth(ts),
+        year: (time: ResourceTimelineZonedTime, ts: number) => time.formatYear(ts)
+    });
+
     // Line box a bar label occupies, as a multiple of its font's pixel size, and
     // the size assumed when barLabelFont carries no px size to read.
     const LABEL_LINE_HEIGHT_RATIO = 1.2;
@@ -320,6 +330,8 @@
         width: number;
         color: string;
         key: number;
+        // The instant the stripe starts at (before culling to the viewport).
+        ts: number;
     }
 
     export interface ResourceTimelineColumnStripes {
@@ -622,9 +634,10 @@
         private _renderPending: boolean;
         private _renderErrors: number | undefined;
         private _time!: ResourceTimelineZonedTime;
-        // The widest label of each date-row format, measured once per zoned time
-        // (zone and locale) and date font (see _dateRowLabelWidths).
-        private _dateRowWidths: { time: ResourceTimelineZonedTime; font: string; widths: { [format: string]: number } } | null | undefined;
+        // The widest label of each date-row format measured so far, for one
+        // locale and date font (see _dateRowLabelWidth); dropped when a web font
+        // finishes loading (_handleFontsLoaded).
+        private _dateRowWidths: { key: string; widths: { [format: string]: number } } | null | undefined;
         private _disposed!: boolean;
 
         // Pooled scene and its nodes (see _resetScene)
@@ -643,6 +656,7 @@
         private _onResize: () => void;
         private _onScroll: () => void;
         private _onAnyScroll: () => void;
+        private _onFontsLoaded: () => void;
         private _onPointerDown: (e: PointerEvent) => void;
         private _onPointerMove: (e: PointerEvent) => void;
         private _onPointerUp: (e: PointerEvent) => void;
@@ -738,7 +752,7 @@
                 barLabelGap: 3,
                 barIconSize: 16,
                 // Axis typography. These are read by every renderer *and* by the
-                // engine when it measures a day label to pin it, so they have to
+                // engine when it measures a date-row label to pin it, so they have to
                 // live in one place - a renderer drawing at a different size than
                 // the engine measured would mis-pin the label.
                 dateLabelFont: DEFAULT_FONTS.dateLabelFont,
@@ -761,7 +775,7 @@
                 // in: day/hour boundaries and labels are computed in this zone.
                 // null uses the viewer's local zone.
                 timeZone: null,
-                // BCP 47 locale (e.g. "de-DE") for day labels, tooltips and
+                // BCP 47 locale (e.g. "de-DE") for date-row labels, tooltips and
                 // screen-reader announcements. null uses the viewer's locale.
                 locale: null,
                 // First day of the week: 0=Sunday … 6=Saturday. null = locale
@@ -1147,6 +1161,7 @@
             // Capture phase so scrolling in *any* ancestor is seen (scroll events
             // do not bubble). Only drops the cached rect; no layout is read here.
             this._onAnyScroll = () => { this._surfaceRect = null; };
+            this._onFontsLoaded = () => this._handleFontsLoaded();
             this._onPointerDown = (e) => this.handlePointerDown(e);
             this._onPointerMove = (e) => this.handlePointerMove(e);
             this._onPointerUp = (e) => this.handlePointerUp(e);
@@ -1399,6 +1414,8 @@
         private _setupEventListeners(): void {
             window.addEventListener('resize', this._onResize);
             window.addEventListener('scroll', this._onAnyScroll, { passive: true, capture: true });
+            const fonts = (document as any).fonts;
+            if (fonts && fonts.addEventListener) fonts.addEventListener('loadingdone', this._onFontsLoaded);
             this.wrapper.addEventListener('scroll', this._onScroll, { passive: true });
             this._bindSurfaceEvents();
             // Keyboard interaction is bound to the focusable wrapper (role
@@ -2241,7 +2258,7 @@
                 const segLeft = Math.max(dayStartX, startX);
                 const segRight = Math.min(dayEndX, visibleEndX);
                 if (segRight > segLeft) {
-                    const label = this._formatDateRowLabel(dayStart, tier);
+                    const label = DATE_ROW_FORMATS[tier.format](this._time, dayStart);
                     const padding = DATE_LABEL_PADDING;
                     const textWidth = ctx.measureText(label).width;
                     const preferredX = segLeft + padding;
@@ -2310,49 +2327,65 @@
         // The date row's step at the current zoom: the finest tier whose shortest
         // period still holds its widest label with padding on both sides. Below
         // the coarsest tier's fit it stays on that tier, the least crowded there is.
+        // A format is measured only once the walk reaches it, so a timeline that
+        // never zooms out past days never makes the coarser formatters at all.
         private _dateRowTier(): ResourceTimelineDateRowTier {
             const pph = this._pixelsPerHour;
-            const widths = this._dateRowLabelWidths();
             for (let i = 0; i < DATE_ROW_TIERS.length; i++) {
                 const tier = DATE_ROW_TIERS[i];
-                if (tier.minHours * pph >= widths[tier.format] + 2 * DATE_LABEL_PADDING) return tier;
+                if (tier.minHours * pph >= this._dateRowLabelWidth(tier.format) + 2 * DATE_LABEL_PADDING) return tier;
             }
             return DATE_ROW_TIERS[DATE_ROW_TIERS.length - 1];
         }
 
-        // The widest label each format writes, over samples that cover every
-        // month and weekday name and two-digit days, measured in the date font.
-        // A tier is chosen off these rather than the labels on screen, so it does
-        // not flip back and forth as the view scrolls past a long month name.
-        private _dateRowLabelWidths(): { [format: string]: number } {
+        // A web font that finishes loading (document.fonts' loadingdone) changes
+        // how wide the date-row labels are, and the widths a tier was chosen from
+        // may have been measured in its fallback: measure them again next frame.
+        private _handleFontsLoaded(): void {
+            this._dateRowWidths = null;
+            if (!this._disposed) this.render();
+        }
+
+        // The widest label a format writes, measured in the date font. A tier is
+        // chosen off it rather than off the labels on screen, so it does not flip
+        // back and forth as the view scrolls past a long month name.
+        //
+        // The day formats are measured over every day of a year, which holds every
+        // pair of a weekday and a month name with a two-digit day in any calendar
+        // the locale may use (a Persian or a lunar month as much as a Gregorian
+        // one) - the widest label is a combination no shorter sample is sure to
+        // hit. That is a few hundred measures, made once per locale and date font:
+        // the cache outlives a new zoned time (every option or theme change makes
+        // one), since the zone does not change which names a year of labels uses.
+        private _dateRowLabelWidth(format: string): number {
             const font = this.config.dateLabelFont;
-            const cached = this._dateRowWidths;
-            if (cached && cached.time === this._time && cached.font === font) return cached.widths;
+            const key = (this._time.locale || '') + '|' + font;
+            let cache = this._dateRowWidths;
+            if (!cache || cache.key !== key) cache = this._dateRowWidths = { key, widths: {} };
+            const known = cache.widths[format];
+            if (known !== undefined) return known;
+
+            const utc = ResourceTimelineZonedTime.utc;
+            const samples: number[] = [];
+            if (format === 'year') {
+                samples.push(utc(1988, 6, 15, 12), utc(2026, 6, 15, 12), utc(2099, 6, 15, 12));
+            } else if (format === 'month') {
+                // Gregorian months (see ResourceTimelineZonedTime.formatMonth).
+                for (let month = 1; month <= 12; month++) samples.push(utc(2026, month, 15, 12));
+            } else {
+                for (let day = 0; day < 365; day++) samples.push(utc(2026, 1, 1 + day, 12));
+            }
 
             const time = this._time;
+            const write = DATE_ROW_FORMATS[format];
             const ctx = this._measureCtx;
             ctx.font = font;
-            const utc = ResourceTimelineZonedTime.utc;
-            const days: number[] = [];
-            for (let month = 1; month <= 12; month++) days.push(utc(2026, month, 28, 12));
-            for (let day = 21; day <= 27; day++) days.push(utc(2026, 9, day, 12));   // a Monday-to-Sunday week
-            const years = [utc(1988, 6, 15, 12), utc(2026, 6, 15, 12), utc(2099, 6, 15, 12)];
-            const widest = (samples: number[], format: (ts: number) => string): number => {
-                let max = 0;
-                for (let i = 0; i < samples.length; i++) {
-                    max = Math.max(max, ctx.measureText(format(samples[i])).width);
-                }
-                return max;
-            };
-
-            const widths = {
-                date: widest(days, ts => time.formatDate(ts)),
-                short: widest(days, ts => time.formatShortDate(ts)),
-                month: widest(days, ts => time.formatMonth(ts)),
-                year: widest(years, ts => time.formatYear(ts))
-            };
-            this._dateRowWidths = { time, font, widths };
-            return widths;
+            let max = 0;
+            for (let i = 0; i < samples.length; i++) {
+                max = Math.max(max, ctx.measureText(write(time, samples[i])).width);
+            }
+            cache.widths[format] = max;
+            return max;
         }
 
         // The start of the date-row period holding `ts`: its local midnight, the
@@ -2400,16 +2433,6 @@
                 }
             }
             return next > start ? next : start + tier.minHours * 3600000;
-        }
-
-        private _formatDateRowLabel(ts: number, tier: ResourceTimelineDateRowTier): string {
-            const time = this._time;
-            switch (tier.format) {
-                case 'date': return time.formatDate(ts);
-                case 'short': return time.formatShortDate(ts);
-                case 'month': return time.formatMonth(ts);
-                default: return time.formatYear(ts);
-            }
         }
 
         private _buildGridScene(scene: any): void {
@@ -2812,7 +2835,7 @@
             const x0 = Math.max(axisX, this.getTimeToX(startTs));
             const x1 = Math.min(this._viewportW, this.getTimeToX(endTs));
             if (!(x1 > x0)) return;
-            out.push({ x: x0, width: x1 - x0, color, key });
+            out.push({ x: x0, width: x1 - x0, color, key, ts: startTs });
         }
 
         // Checker cells are one rect per row per stripe. Below a few pixels, or
@@ -2907,16 +2930,21 @@
             }
         }
 
+        // Day and week stripes tint the date row while its periods line up with
+        // them. Zoomed out to where the date row marks runs of days, weeks or
+        // months, stripe edges would fall inside its periods, between its
+        // separators; the stripes tint the rows under it instead, as hour stripes
+        // do, and still echo the columns of the content pane.
         private _paintTimeAxisStripes(scene: any, columns: ResourceTimelineColumnStripes): void {
             const v = scene.viewport;
             let y;
             let height;
-            if (columns.unit === 'hour') {
-                y = v.utcRowY == null ? v.dateRowHeight : v.utcRowY;
-                height = v.axisHeight - y;
-            } else {
+            if (columns.unit !== 'hour' && this._dateRowHoldsStripes(scene, columns)) {
                 y = 0;
                 height = v.dateRowHeight;
+            } else {
+                y = v.utcRowY == null ? v.dateRowHeight : v.utcRowY;
+                height = v.axisHeight - y;
             }
             if (!(height > 0)) return;
             const stripes = columns.stripes;
@@ -2924,6 +2952,21 @@
                 const stripe = stripes[i];
                 this._pushSurfaceRect(scene.surfaceTimeAxis, stripe.x, y, stripe.width, height, stripe.color);
             }
+        }
+
+        // True when every stripe edge on screen is a date-row separator (the scene's
+        // time axis is built first). Both lists run left to right, so one pass.
+        private _dateRowHoldsStripes(scene: any, columns: ResourceTimelineColumnStripes): boolean {
+            const days = scene.days;
+            const stripes = columns.stripes;
+            let j = 0;
+            // The first stripe's start is where the walk began, not an edge.
+            for (let i = 1; i < stripes.length; i++) {
+                const ts = stripes[i].ts;
+                while (j < days.length && (days[j].sepTs == null || days[j].sepTs < ts)) j++;
+                if (j === days.length || days[j].sepTs !== ts) return false;
+            }
+            return true;
         }
 
         private _paintResourceAxisStripes(scene: any, fills: (string | null)[]): void {
@@ -7367,6 +7410,8 @@
             }
             window.removeEventListener('resize', this._onResize);
             window.removeEventListener('scroll', this._onAnyScroll, { capture: true });
+            const fonts = (document as any).fonts;
+            if (fonts && fonts.removeEventListener) fonts.removeEventListener('loadingdone', this._onFontsLoaded);
             this.wrapper.removeEventListener('scroll', this._onScroll);
             this.wrapper.removeEventListener('keydown', this._onKeyDown);
             this.wrapper.removeEventListener('focus', this._onFocusIn);

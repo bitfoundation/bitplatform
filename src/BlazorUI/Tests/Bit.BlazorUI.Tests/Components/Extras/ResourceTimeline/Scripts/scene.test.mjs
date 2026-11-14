@@ -495,8 +495,9 @@ test('adjacent day titles never overlap', () => {
 const RANGE_START = Date.parse('2000-01-01T00:00:00Z');
 const RANGE_END = Date.parse('2100-01-01T00:00:00Z');
 
-function zoomedOutScene(pph, { timeZone = 'UTC', firstDayOfWeek = 1, at = START } = {}) {
+function zoomedOutScene(pph, { timeZone = 'UTC', firstDayOfWeek = 1, at = START, measure = null } = {}) {
     const engine = makeSceneEngine([], { config: { locale: 'en-US', firstDayOfWeek } });
+    if (measure) engine._measureCtx.measureText = measure;
     engine.config.timeZone = timeZone;
     engine._rebuildDateFormatters();
     engine.timeRange = { start: RANGE_START, end: RANGE_END };
@@ -632,25 +633,69 @@ test('weeks of the date row follow FirstDayOfWeek', () => {
 });
 
 test('the date row picks its step from the widest title, not the one on screen', () => {
-    // A locale whose titles are longer needs more room for the same step. The
-    // step is found off sample dates covering every month and weekday, so it
-    // does not change as the view scrolls from May into September.
+    // September is drawn 35px wider than any other month here. At 3px an hour
+    // a day holds "May 20" (42px and its paddings) but not "Sep 20" (77px), so
+    // a step taken off the titles on screen would be a day in May and two in
+    // September. Taken off the widest title of the year, it is two days in both.
     const pph = 3;
-    const may = separatorTimes(zoomedOutScene(pph).scene);
-    const september = separatorTimes(zoomedOutScene(pph, { at: Date.parse('2026-09-20T00:00:00Z') }).scene);
-    assert.equal(may[1] - may[0], september[1] - september[0]);
+    const measure = (t) => ({ width: t.length * 7 + (t.includes('Sep') ? 35 : 0) });
+    const step = (at) => {
+        const { scene } = zoomedOutScene(pph, { at, measure });
+        const starts = separatorTimes(scene);
+        assert.ok(starts.length >= 2);
+        return starts[1] - starts[0];
+    };
+    assert.equal(step(START), 48 * HOUR, 'May');
+    assert.equal(step(Date.parse('2026-09-20T00:00:00Z')), 48 * HOUR, 'September');
+});
 
-    // The widths are measured once per zoned time and date font.
-    const { engine } = zoomedOutScene(pph);
+test('the date row measures every weekday with every month', () => {
+    // Only Wednesdays of May are wide. 2026's May 28 is a Thursday, so a sample
+    // of one day a month would never see one.
+    const { engine } = zoomedOutScene(40, {
+        measure: (t) => ({ width: t.length * 7 + (/Wed, May/.test(t) ? 100 : 0) })
+    });
+    assert.equal(engine._dateRowLabelWidth('date'), 'Wed, May 27'.length * 7 + 100);
+});
+
+test('the date row measures a format only once it needs it, and once per locale and font', () => {
     let measured = 0;
-    const measure = engine._measureCtx.measureText;
-    engine._measureCtx.measureText = (t) => { measured++; return measure(t); };
-    engine.buildScene();
-    const perFrame = measured;
-    engine.config.dateLabelFont = '20px serif';
+    const counting = (t) => { measured++; return { width: t.length * 7 }; };
+
+    // Zoomed in, only the day titles are measured; the coarser formatters are
+    // never even made.
+    const { engine } = zoomedOutScene(40, { measure: counting });
+    assert.ok(engine._dateRowWidths.widths.date > 0);
+    assert.deepEqual(Object.keys(engine._dateRowWidths.widths), ['date']);
+    assert.equal(engine._time._shortDateDtf, undefined);
+    assert.equal(engine._time._monthDtf, undefined);
+    assert.equal(engine._time._yearDtf, undefined);
+
+    // A frame afterwards measures the titles on screen and nothing more ...
     measured = 0;
     engine.buildScene();
-    assert.ok(measured > perFrame, 'a new date font measures the samples again');
+    const perFrame = measured;
+    assert.ok(perFrame < 30, `a frame measures its own titles only, measured ${perFrame}`);
+
+    // ... and so does one after a new zoned time of the same locale (every
+    // option or theme change makes one).
+    engine._rebuildDateFormatters();
+    measured = 0;
+    engine.buildScene();
+    assert.equal(measured, perFrame, 'a new zoned time keeps the widths');
+
+    // A new date font, a new locale or a web font that has finished loading
+    // measures the samples again.
+    for (const [what, change] of [
+        ['a new date font', () => { engine.config.dateLabelFont = '20px serif'; }],
+        ['a new locale', () => { engine.config.locale = 'de-DE'; engine._rebuildDateFormatters(); }],
+        ['a loaded web font', () => { engine.render = () => { }; engine._handleFontsLoaded(); }]
+    ]) {
+        change();
+        measured = 0;
+        engine.buildScene();
+        assert.ok(measured > perFrame + 300, `${what} measures the samples again, measured ${measured}`);
+    }
 });
 
 test('UTC ticks do not linger in the scene once the row is turned off', () => {
