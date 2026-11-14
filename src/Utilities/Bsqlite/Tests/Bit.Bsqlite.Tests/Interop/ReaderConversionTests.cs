@@ -86,7 +86,42 @@ public sealed class ReaderConversionTests
         for (var i = 0; i < expected.FieldCount; i++)
         {
             Assert.AreEqual(expected.GetInt64(i), reader.GetInt64(i), $"GetInt64 of column {i}");
+            Assert.AreEqual(expected.GetFieldValue<long>(i), reader.GetFieldValue<long>(i), $"GetFieldValue<long> of column {i}");
             Assert.AreEqual(expected.GetDouble(i), reader.GetDouble(i), $"GetDouble of column {i}");
+        }
+    }
+
+    /// <summary>
+    /// <c>GetFieldValue</c> of an integer type reads TEXT by its integer prefix too - an exponent is not part of
+    /// it, so <c>1e2</c> is 1, not 100 - and a value past the 64-bit range saturates before it is narrowed.
+    /// </summary>
+    [TestMethod]
+    public async Task GetFieldValueOfAnInteger_ReadsTextByItsIntegerPrefix_AsMicrosoftDataSqliteDoes()
+    {
+        const string Sql = "SELECT '1e2', '12abc', 'abc', ' -7.9', '99999999999999999999', '-99999999999999999999'";
+
+        await using var reader = await ReadAsync(Sql);
+        await using var oracle = new Microsoft.Data.Sqlite.SqliteConnection("Data Source=:memory:");
+        await oracle.OpenAsync(Ct);
+        await using var command = oracle.CreateCommand();
+        command.CommandText = Sql;
+        await using var expected = await command.ExecuteReaderAsync(Ct);
+        Assert.IsTrue(await expected.ReadAsync(Ct));
+
+        Assert.AreEqual(1L, reader.GetInt64(0));
+        Assert.AreEqual(1, reader.GetFieldValue<int>(0));
+        Assert.AreEqual(long.MaxValue, reader.GetFieldValue<long>(4));
+        Assert.AreEqual(long.MinValue, reader.GetFieldValue<long>(5));
+
+        for (var i = 0; i < 4; i++)
+        {
+            Assert.AreEqual(expected.GetFieldValue<int>(i), reader.GetFieldValue<int>(i), $"GetFieldValue<int> of column {i}");
+        }
+
+        for (var i = 4; i < expected.FieldCount; i++)
+        {
+            Assert.AreEqual(expected.GetFieldValue<long>(i), reader.GetFieldValue<long>(i), $"GetFieldValue<long> of column {i}");
+            Assert.ThrowsExactly<OverflowException>(() => reader.GetFieldValue<int>(i), $"GetFieldValue<int> of column {i}");
         }
     }
 

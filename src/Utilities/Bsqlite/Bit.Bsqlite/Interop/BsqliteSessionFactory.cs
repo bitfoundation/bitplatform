@@ -171,8 +171,9 @@ public sealed class BsqliteSessionFactory : IBsqliteSessionFactory
     /// otherwise be found once the binding is gone - that is how a database whose binding was lost is
     /// recovered - and a database deleted on sign-out would come back with the previous user's rows.
     /// The binding goes last, so a failure part way leaves it naming where the data still is. A backend
-    /// that cannot be reached is skipped with a warning, unless it is the one the binding names, and one that
-    /// cannot take the name at all holds no copy and is skipped too - found out before anything is deleted.
+    /// that cannot be reached is skipped with a warning, unless it is the one the binding names - and the binding
+    /// is then marked deleted rather than removed, so a copy left there is not found again. One that cannot take
+    /// the name at all holds no copy and is skipped too - found out before anything is deleted.
     /// </remarks>
     internal async Task DeleteEverywhereAsync(string databaseName, CancellationToken cancellationToken)
     {
@@ -254,7 +255,23 @@ public sealed class BsqliteSessionFactory : IBsqliteSessionFactory
             await provider.Admin.DeleteAsync(databaseName, cancellationToken).ConfigureAwait(false);
         }
 
-        await _bindings.RemoveAsync(databaseName, cancellationToken).ConfigureAwait(false);
+        // A persistent backend that could not be reached may still hold a copy, and a database with no binding is
+        // looked for on every backend - so once that backend answered again, the next open would find the deleted
+        // database and bring its rows back. The binding is marked deleted instead: the next open starts a new
+        // database, whose binding replaces the mark.
+        var unreached = probes.Any(entry => !entry.Probe.IsAvailable
+            && entry.Provider.Capabilities.IsPersistent
+            && _resolver.CanHoldData(entry.Provider));
+        if (unreached)
+        {
+            await _bindings
+                .SetProviderNameAsync(databaseName, BsqliteStorageProviderResolver.DeletedBinding, cancellationToken)
+                .ConfigureAwait(false);
+        }
+        else
+        {
+            await _bindings.RemoveAsync(databaseName, cancellationToken).ConfigureAwait(false);
+        }
     }
 
     /// <summary>

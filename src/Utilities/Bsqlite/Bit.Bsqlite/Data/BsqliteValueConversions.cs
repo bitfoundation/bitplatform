@@ -14,28 +14,21 @@ internal static class BsqliteValueConversions
     private const double UnixEpochJulianDay = 2440587.5;
 
     /// <summary>
-    /// A REAL becomes an INTEGER by truncation toward zero, as <c>CAST(x AS INTEGER)</c> and
-    /// <c>sqlite3_column_int64</c> make it - not by rounding, which <see cref="Convert"/> does - and
-    /// saturates rather than wrapping past the 64-bit range.
+    /// A cell read as an INTEGER, as <c>sqlite3_column_int64</c> - and so Microsoft.Data.Sqlite's
+    /// <c>GetInt64</c> and <c>GetFieldValue&lt;long&gt;</c> - reads it. A REAL is truncated toward zero, as
+    /// <c>CAST(x AS INTEGER)</c> does - not rounded, which <see cref="Convert"/> does - and TEXT is read by
+    /// its leading integer, <c>0</c> when it has none, rather than refused; both saturate rather than wrap
+    /// past the 64-bit range.
     /// </summary>
     public static long ToInt64(object value) => value switch
     {
         long integer => integer,
         double real => RealToInteger(real),
-        string text => long.TryParse(text.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsed)
-            ? parsed
-            : RealToInteger(double.Parse(text, NumberStyles.Float, CultureInfo.InvariantCulture)),
+        string text => TextToInteger(text),
         bool flag => flag ? 1 : 0,
         decimal money => (long)decimal.Truncate(money),
         _ => Convert.ToInt64(value, CultureInfo.InvariantCulture),
     };
-
-    /// <summary>
-    /// A cell read as an INTEGER, as <c>sqlite3_column_int64</c> - and so Microsoft.Data.Sqlite's
-    /// <c>GetInt64</c> - reads it: TEXT by its leading integer, <c>0</c> when it has none, rather than refused.
-    /// </summary>
-    public static long ColumnToInt64(object value)
-        => value is string text ? TextToInteger(text) : ToInt64(value);
 
     /// <summary>
     /// A cell read as a REAL, as <c>sqlite3_column_double</c> - and so Microsoft.Data.Sqlite's

@@ -248,13 +248,21 @@ public sealed class DemoTests : DemoTest
     /// <summary>
     /// The admin page's backup round trip: the open database is exported as a file - on IndexedDB and Cache
     /// Storage through the snapshot the worker takes with <c>VACUUM INTO</c> - and that file restored over it,
-    /// after which the database reopens and the catalog is still there.
+    /// after which the database reopens as it was when the backup was taken: a product renamed since has its
+    /// old name back, and a category added since is gone.
     /// </summary>
     [TestMethod]
     public async Task A_backup_downloaded_from_the_admin_page_restores_over_the_database()
     {
         var errors = new List<string>();
         var page = await NewDemoPageAsync(errors);
+        var mark = Guid.NewGuid().ToString("N")[..8];
+        var products = page.Locator("table[data-rows='products'] tbody tr");
+        var categories = page.Locator(".bb-split .bb-stage").Nth(1).Locator("table tbody tr");
+
+        await GotoInteractiveAsync(page, "/catalog");
+        await WaitForSessionAsync(page);
+        await RenameProductAsync(page, "TL-100", $"Backed up {mark}");
 
         await GotoInteractiveAsync(page, "/admin");
         await WaitForSessionAsync(page);
@@ -268,6 +276,18 @@ public sealed class DemoTests : DemoTest
             var image = await File.ReadAllBytesAsync(path);
             CollectionAssert.AreEqual("SQLite format 3\0"u8.ToArray(), image[..16]);
 
+            // Changed after the backup: the restore has to bring back what was exported, not keep these.
+            await GotoInteractiveAsync(page, "/catalog");
+            await WaitForSessionAsync(page);
+            await RenameProductAsync(page, "TL-100", $"Changed {mark}");
+            var categoryName = page.Locator(".bb-split .bb-stage").Nth(1).Locator("label", new LocatorLocatorOptions { HasText = "Name" }).Locator("input");
+            await categoryName.FillAsync($"Added {mark}");
+            await categoryName.DispatchEventAsync("change");
+            await page.Locator("button", new PageLocatorOptions { HasText = "Add category" }).ClickAsync();
+            await Assertions.Expect(categories.Filter(new LocatorFilterOptions { HasText = $"Added {mark}" })).ToHaveCountAsync(1);
+
+            await GotoInteractiveAsync(page, "/admin");
+            await WaitForSessionAsync(page);
             await page.Locator("section:has(h3:has-text('Restore from a file')) input[type=file]").SetInputFilesAsync(path);
             await page.Locator("button", new PageLocatorOptions { HasText = "Restore and reopen" }).ClickAsync();
 
@@ -279,8 +299,26 @@ public sealed class DemoTests : DemoTest
         }
 
         await GotoInteractiveAsync(page, "/catalog");
-        await Assertions.Expect(page.Locator("table[data-rows='products'] tbody tr").First).ToBeVisibleAsync();
+        await WaitForSessionAsync(page);
+        await Assertions.Expect(products.Filter(new LocatorFilterOptions { HasText = "TL-100" }).Locator("td.bq-name")).ToHaveTextAsync($"Backed up {mark}");
+        await Assertions.Expect(products.Filter(new LocatorFilterOptions { HasText = $"Changed {mark}" })).ToHaveCountAsync(0);
+        await Assertions.Expect(categories.First).ToBeVisibleAsync();
+        await Assertions.Expect(categories.Filter(new LocatorFilterOptions { HasText = $"Added {mark}" })).ToHaveCountAsync(0);
         Assert.AreEqual(0, errors.Count, "Console errors:" + Environment.NewLine + string.Join(Environment.NewLine, errors));
+    }
+
+    /// <summary>Renames a product through the catalog's editor, and waits for the grid to show the new name.</summary>
+    private static async Task RenameProductAsync(IPage page, string sku, string name)
+    {
+        var row = page.Locator("table[data-rows='products'] tbody tr").Filter(new LocatorFilterOptions { HasText = sku });
+        await row.ClickAsync();
+
+        var input = page.Locator(".bb-split .bb-stage").First.Locator("label", new LocatorLocatorOptions { HasText = "Name" }).Locator("input");
+        await input.FillAsync(name);
+        await input.DispatchEventAsync("change");
+        await page.Locator(".bb-split .bb-stage").First.Locator("button", new LocatorLocatorOptions { HasText = "Save" }).ClickAsync();
+
+        await Assertions.Expect(row.Locator("td.bq-name")).ToHaveTextAsync(name);
     }
 
     /// <summary>

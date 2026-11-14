@@ -359,7 +359,9 @@ public static partial class BsqliteSetupGuide
            re-run on the other's writes.
         6. `Database.Resolution` names `file-system` and the folder. `Database.ExportAsync()` backs the open database up as
            a plain SQLite file, `Database.RestoreAsync(bytes)` checks one - a backup, or a pre-populated database, WAL
-           mode included - and puts it in place, and `Database.DeleteAsync()` removes it: with the database closed in
+           mode included, provided the file is a whole snapshot on its own: taken with SQLite's backup API or
+           `VACUUM INTO`, or after a completed checkpoint with no writer running, since writes still in the `-wal` file
+           are not in it - and puts it in place, and `Database.DeleteAsync()` removes it: with the database closed in
            every other window, since while one still has the file open, a restore or a delete throws.
         """;
 

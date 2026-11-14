@@ -686,7 +686,10 @@ async function runRequest(current: Session, request: BatchRequest, sink: RowSink
                 // free locks, and so a cached statement starts clean next time.
                 let released = false;
                 try {
-                    await prepared.release(stmt);
+                    // A reset that fails after the statement succeeded is a failure of its own - the commit of
+                    // a statement stopped at its first row happens in it - and is thrown. After a failed step it
+                    // only repeats the error already thrown.
+                    await prepared.release(stmt, !succeeded);
                     released = true;
                 } finally {
                     // Only now: a statement stopped before it was done - a scalar or single-row read of an
@@ -787,7 +790,7 @@ class StatementCache {
         this.#db = db;
     }
 
-    async acquire(sql: string): Promise<{ statements: AsyncIterable<number>; release(stmt: number): Promise<void>; dispose(): Promise<void> }> {
+    async acquire(sql: string): Promise<{ statements: AsyncIterable<number>; release(stmt: number, stepFailed: boolean): Promise<void>; dispose(): Promise<void> }> {
         const sqlite3 = this.#sqlite3;
         const cached = this.#entries.get(sql);
 
@@ -798,7 +801,7 @@ class StatementCache {
             this.#inUse.add(cached);
             return {
                 statements: (async function* () { yield cached; })(),
-                release: stmt => this.#reset(stmt),
+                release: (stmt, stepFailed) => this.#reset(stmt, stepFailed),
                 dispose: async () => {
                     this.#inUse.delete(cached);
                 },
@@ -824,7 +827,7 @@ class StatementCache {
 
         return {
             statements,
-            release: stmt => this.#reset(stmt),
+            release: (stmt, stepFailed) => this.#reset(stmt, stepFailed),
             dispose: async () => {
                 // A text that turned out to be one statement, run to the end, is kept for the next time it
                 // is sent; anything else - several statements, or one cut short by an error - is finalized.
@@ -841,17 +844,30 @@ class StatementCache {
         };
     }
 
-    async #reset(stmt: number): Promise<void> {
+    /**
+     * Resets a statement and clears its bindings. A reset error is thrown unless the step before it failed -
+     * reset() then only repeats the error code the step has already thrown - since otherwise it is the
+     * statement's own outcome: an INSERT ... RETURNING read for one row in autocommit commits here, and a
+     * commit that fails must not be reported as a success.
+     */
+    async #reset(stmt: number, stepFailed: boolean): Promise<void> {
+        let failure: { error: unknown } | null = null;
         try {
             await this.#sqlite3.reset(stmt);
-        } catch {
-            // reset() repeats the error code of a failed step, which has already been thrown.
+        } catch (error) {
+            if (!stepFailed) {
+                failure = { error };
+            }
         }
 
         try {
             this.#sqlite3.clear_bindings(stmt);
         } catch {
             // A statement that cannot clear is finalized on the next schema change or eviction.
+        }
+
+        if (failure) {
+            throw failure.error;
         }
     }
 

@@ -270,6 +270,38 @@ public sealed class LiveQueryTests
         Assert.AreEqual(0, live.Current);
     }
 
+    /// <summary>
+    /// Disposal that lands once a result is past the last disposed check - its Changed handlers already
+    /// running - waits for them to finish, so none is called after DisposeAsync returns; and a run that comes to
+    /// publish after it is refused.
+    /// </summary>
+    [TestMethod]
+    public async Task DisposedWhileChangedIsRaised_ReturnsOnlyOnceTheHandlersHaveRun()
+    {
+        var transport = new RemoteWriteTransport();
+        await using var connection = new BsqliteConnection(transport, "live-disposed-publishing.db");
+        await connection.OpenAsync(Ct);
+
+        var live = new BsqliteLiveQuery<int>(connection, _ => Task.FromResult(1), ["product"]);
+        Task? disposal = null;
+        var completedWhileRaising = true;
+        var lastHandlerRan = false;
+        live.Changed += (_, _) =>
+        {
+            disposal = Task.Run(() => live.DisposeAsync().AsTask());
+            completedWhileRaising = disposal.Wait(TimeSpan.FromMilliseconds(200));
+        };
+        live.Changed += (_, _) => lastHandlerRan = true;
+
+        Assert.AreEqual(1, await live.RefreshAsync(Ct));
+        Assert.IsNotNull(disposal);
+        await disposal;
+
+        Assert.IsFalse(completedWhileRaising, "DisposeAsync returned while Changed was still being raised.");
+        Assert.IsTrue(lastHandlerRan);
+        await Assert.ThrowsExactlyAsync<ObjectDisposedException>(() => live.RefreshAsync(Ct));
+    }
+
     /// <summary>A transport that can be told to speak for another tab.</summary>
     private sealed class RemoteWriteTransport : IBsqliteTransport
     {

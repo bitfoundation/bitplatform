@@ -117,6 +117,28 @@ public sealed class EngineBehaviourTests : BsqliteTest
     }
 
     /// <summary>
+    /// The same scalar read, of an insert whose commit fails - a deferred foreign key it violates is checked when
+    /// the statement is reset, after its first row was read: the failure is the request's, not swallowed with the
+    /// reset, and the insert that was rolled back is neither counted nor reported.
+    /// </summary>
+    [TestMethod]
+    public async Task Engine_reported_changes_a_commit_that_failed_in_the_reset_of_a_statement_stopped_at_its_first_row_fails_the_request()
+    {
+        await OpenForChangesAsync();
+        await ExecAsync(Page, "CREATE TABLE note (id INTEGER PRIMARY KEY, product_id INTEGER REFERENCES product(id) DEFERRABLE INITIALLY DEFERRED)");
+        await NotificationsAsync(Page);
+
+        var error = await ExecuteExpectingFailureAsync(Page, new WireRequest(
+            "INSERT INTO note (product_id) VALUES (98), (99) RETURNING id",
+            ResultKind: "scalar"));
+
+        Assert.IsNotNull(error);
+        Assert.AreEqual(19, error.SqliteCode);
+        AssertJson.AreEqual("[[0]]", (await QueryAsync(Page, "SELECT COUNT(*) FROM note")).Rows);
+        AssertJson.AreEqual("[]", await NotifiedAsync(Page));
+    }
+
+    /// <summary>
     /// A transaction whose COMMIT another tab's read held off with SQLITE_BUSY is rolled back instead: the commit
     /// hook ran for it, but nothing it wrote became visible, so nothing is reported.
     /// </summary>

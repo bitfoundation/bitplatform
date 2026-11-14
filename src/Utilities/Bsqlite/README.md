@@ -71,7 +71,9 @@ apart: a Blazor Web App of its own whose browser half downloads Bit.Bsqlite and 
   multi-result readers, typed exceptions by SQLite result code, and values read the way Microsoft.Data.Sqlite reads them.
 - **Backup, restore, delete.** `Database.ExportAsync()` snapshots the open database as an ordinary SQLite file;
   `RestoreAsync` checks a file - a backup, or a WAL-mode database from a server - before it replaces the database, and
-  verifies the copy; `DeleteAsync` removes a database from every backend, for a sign-out that leaves nothing behind.
+  verifies the copy. A WAL-mode file has to be a whole snapshot on its own - taken with SQLite's backup API or
+  `VACUUM INTO`, or after a completed checkpoint with no writer running - since writes still in its `-wal` file are not
+  in it; `DeleteAsync` removes a database from every backend, for a sign-out that leaves nothing behind.
 
 ## Packages
 

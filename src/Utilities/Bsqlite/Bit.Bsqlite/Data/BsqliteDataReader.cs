@@ -215,7 +215,7 @@ public sealed class BsqliteDataReader : DbDataReader
         var other => Convert.ToBoolean(other, CultureInfo.InvariantCulture),
     };
 
-    public override byte GetByte(int ordinal) => checked((byte)BsqliteValueConversions.ColumnToInt64(RequireValue(ordinal)));
+    public override byte GetByte(int ordinal) => checked((byte)BsqliteValueConversions.ToInt64(RequireValue(ordinal)));
 
     public override char GetChar(int ordinal) => RequireValue(ordinal) switch
     {
@@ -240,11 +240,11 @@ public sealed class BsqliteDataReader : DbDataReader
     };
 
     // Truncated, as SQLite turns a REAL into an INTEGER, and checked, as Microsoft.Data.Sqlite narrows one.
-    public override short GetInt16(int ordinal) => checked((short)BsqliteValueConversions.ColumnToInt64(RequireValue(ordinal)));
+    public override short GetInt16(int ordinal) => checked((short)BsqliteValueConversions.ToInt64(RequireValue(ordinal)));
 
-    public override int GetInt32(int ordinal) => checked((int)BsqliteValueConversions.ColumnToInt64(RequireValue(ordinal)));
+    public override int GetInt32(int ordinal) => checked((int)BsqliteValueConversions.ToInt64(RequireValue(ordinal)));
 
-    public override long GetInt64(int ordinal) => BsqliteValueConversions.ColumnToInt64(RequireValue(ordinal));
+    public override long GetInt64(int ordinal) => BsqliteValueConversions.ToInt64(RequireValue(ordinal));
 
     public override string GetString(int ordinal) => BsqliteValueConversions.ToText(RequireValue(ordinal));
 

@@ -307,7 +307,9 @@ public sealed class BsqliteDatabase : IAsyncDisposable, IDisposable
     /// <para>
     /// What signing a user out of an offline app calls for. Every backend is cleared, not only the one in use:
     /// a database whose binding is gone is looked for on every backend before it is created anew, so a copy
-    /// left elsewhere - by an interrupted migration, say - would otherwise come back on the next open.
+    /// left elsewhere - by an interrupted migration, say - would otherwise come back on the next open. A backend
+    /// that cannot be reached is logged and skipped - unless the database lives there - and the record is then
+    /// kept, marked deleted, so a copy it may still hold is never looked for.
     /// </para>
     /// <para>
     /// <see cref="Closing"/> handlers let go first; the database is not reopened. Close other tabs that have it

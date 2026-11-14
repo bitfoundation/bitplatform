@@ -12,6 +12,11 @@ public sealed class BsqliteLiveQuery<T> : IBsqliteLiveQuery<T>
     private readonly Action? _onDispose;
     private readonly Lock _refreshGate = new();
 
+    // Held while a result is published and Changed raised, and by DisposeAsync while it marks the query
+    // disposed: a run that read its result before disposal publishes it before DisposeAsync returns, and
+    // one that comes to publish after it does not.
+    private readonly Lock _publishGate = new();
+
     // One run of the query at a time, explicit or not: an EF query runs on a context that allows one
     // operation at a time, and two runs finishing out of order would publish the older snapshot last.
     private readonly SemaphoreSlim _runGate = new(1, 1);
@@ -99,25 +104,29 @@ public sealed class BsqliteLiveQuery<T> : IBsqliteLiveQuery<T>
 
             var snapshot = await _execute(cancellationToken).ConfigureAwait(false);
 
-            // And again: a query disposed while it ran has nobody left to tell, and a Changed raised after
-            // DisposeAsync returned would reach a component that has already gone.
-            ObjectDisposedException.ThrowIf(_disposed != 0, this);
-
-            Current = snapshot;
-
-            // Enumerators first, so a Changed handler that throws cannot starve them of a result.
-            Publish(snapshot);
-
-            try
+            lock (_publishGate)
             {
-                Changed?.Invoke(this, snapshot);
-            }
-            catch (Exception ex) when (catchHandlerErrors)
-            {
-                return (snapshot, ex);
-            }
+                // And again, under the gate DisposeAsync marks disposal under: a query disposed while it ran
+                // has nobody left to tell, and a Changed raised after DisposeAsync returned would reach a
+                // component that has already gone.
+                ObjectDisposedException.ThrowIf(_disposed != 0, this);
 
-            return (snapshot, null);
+                Current = snapshot;
+
+                // Enumerators first, so a Changed handler that throws cannot starve them of a result.
+                Publish(snapshot);
+
+                try
+                {
+                    Changed?.Invoke(this, snapshot);
+                }
+                catch (Exception ex) when (catchHandlerErrors)
+                {
+                    return (snapshot, ex);
+                }
+
+                return (snapshot, null);
+            }
         }
         finally
         {
@@ -192,11 +201,19 @@ public sealed class BsqliteLiveQuery<T> : IBsqliteLiveQuery<T>
     }
 
     /// <inheritdoc />
+    /// <remarks>
+    /// A result already being published when this is called - its <see cref="Changed"/> handlers running on
+    /// another thread - is finished first, so no handler is called once this returns. A handler may dispose
+    /// the query itself.
+    /// </remarks>
     public ValueTask DisposeAsync()
     {
-        if (Interlocked.Exchange(ref _disposed, 1) != 0)
+        lock (_publishGate)
         {
-            return ValueTask.CompletedTask;
+            if (Interlocked.Exchange(ref _disposed, 1) != 0)
+            {
+                return ValueTask.CompletedTask;
+            }
         }
 
         _connection.TablesChanged -= OnTablesChanged;

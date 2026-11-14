@@ -360,16 +360,27 @@ public sealed class IndexedDbTests : BsqliteTest
             """);
 
         await OpenIdbAsync(Page, databaseName);
+        var copyName = UniqueName("idb-snapshot-copy");
         var header = await Page.EvaluateAsync<JsonElement>(
             """
-            async () => {
+            async copyName => {
               const image = await globalThis.host.export();
+              const admin = await import('/_content/Bit.Bsqlite/bit-bsqlite-idb-admin.js');
+              await admin.importDatabase(copyName, image);
               return { length: image.byteLength, magic: new TextDecoder().decode(image.subarray(0, 15)) };
             }
-            """);
+            """, copyName);
 
         Assert.AreEqual("SQLite format 3", header.GetProperty("magic").GetString());
         Assert.IsGreaterThan(4096, header.GetProperty("length").GetInt32());
+
+        // The image is the database, not only its header: opened under a name of its own, every row is there and
+        // SQLite finds nothing wrong with it.
+        await OpenIdbAsync(Page, copyName);
+        AssertJson.AreEqual(
+            """[[2000, 2001000, "row 2000"]]""",
+            (await QueryAsync(Page, "SELECT COUNT(*), SUM(id), (SELECT name FROM product WHERE id = 2000) FROM product")).Rows);
+        AssertJson.AreEqual("""[["ok"]]""", (await QueryAsync(Page, "PRAGMA integrity_check")).Rows);
     }
 
     /// <summary>

@@ -149,6 +149,15 @@ export async function importDatabase(databaseName: string, contents: Uint8Array 
     const bytes = contents instanceof Uint8Array ? contents : new Uint8Array(contents ?? []);
     const { directory, fileName } = await directoryFor(name, { create: true });
 
+    // A journal with a header is a write that has not finished - another tab's, or one a crash cut short -
+    // and the file alone is then torn: the journal is what rolls it back. Deleted here, an import that then
+    // failed to write would leave the old database torn for good, so it is refused and the journal kept.
+    if (await hasHotJournal(name)) {
+        throw new Error(
+            `OPFS database '${name}' has a rollback journal from a write that has not finished. Open it once so `
+            + 'SQLite rolls the journal back, or wait for the write to commit, then import over it.');
+    }
+
     // The old file's journal goes first. Left until after the new file is written, a tab closed in
     // between - or a removal that fails - would leave it to be rolled back into the imported database
     // on its next open, writing the old database's pages over the new one's.
@@ -251,13 +260,21 @@ async function collect(directory: FileSystemDirectoryHandle, prefix: string, nam
     }
 }
 
-/** The database name a file of the VFS's stands for: its URL path segment, decoded. */
+/**
+ * The database name a file of the VFS's stands for: its URL path segment, decoded - but only when the decoded
+ * name maps back to this same segment through {@link directoryFor}. The URL parser escapes a space or a
+ * non-ASCII character and leaves `%` alone, so a file named `a%41.db` or `a%2Fb.db` came from a name spelled
+ * that way: decoded, it would read as `aA.db` or `a/b.db`, which are other files.
+ */
 function decodeName(segment: string): string {
+    let decoded: string;
     try {
-        return decodeURIComponent(segment);
+        decoded = decodeURIComponent(segment);
     } catch {
         return segment;
     }
+
+    return new URL(decoded, 'file://').pathname === `/${segment}` ? decoded : segment;
 }
 
 function isNotFound(error: unknown): boolean {

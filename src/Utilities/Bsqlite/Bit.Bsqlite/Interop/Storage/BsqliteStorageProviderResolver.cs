@@ -114,6 +114,13 @@ public sealed class BsqliteStorageProviderResolver
             .GetProviderNameAsync(databaseName, cancellationToken)
             .ConfigureAwait(false);
 
+        if (string.Equals(boundProviderName, DeletedBinding, StringComparison.Ordinal))
+        {
+            // Deleted while a backend could not be reached: a copy it may still hold is the deleted database, not
+            // one to look for. The new database's binding replaces the mark.
+            return await ResolveNewDatabaseAsync(databaseName, selection, candidates, cancellationToken).ConfigureAwait(false);
+        }
+
         if (boundProviderName is not null)
         {
             return await ResolveExistingDatabaseAsync(databaseName, boundProviderName, selection, candidates, cancellationToken)
@@ -479,6 +486,18 @@ public sealed class BsqliteStorageProviderResolver
     internal IReadOnlyCollection<IBsqliteStorageProvider> Providers => _providers.Values;
 
     /// <summary>
+    /// The binding a delete leaves in place of the database's when a backend that may hold a copy could not be
+    /// reached: the next open starts a new database rather than looking for - and finding - that copy.
+    /// </summary>
+    internal const string DeletedBinding = "bit-bsqlite:deleted";
+
+    /// <summary>
+    /// Whether <paramref name="provider"/> can serve this host for a database it may hold. One that cannot is never
+    /// looked in for a database that has lost its binding, so a copy left on it is never found again.
+    /// </summary>
+    internal bool CanHoldData(IBsqliteStorageProvider provider) => UnservableReason(provider, holdsData: true) is null;
+
+    /// <summary>
     /// Whether <paramref name="provider"/> can be reached to work on data it may already hold - in a Blazor
     /// Hybrid app, a browser backend its web view kept databases on before they moved to the device. Probed
     /// afresh: an admin operation is rare, and one that trusted an answer from the start of the session would
@@ -531,6 +550,11 @@ public sealed class BsqliteStorageProviderResolver
         if (probe.IsAvailable)
         {
             _probeCache[provider.Name] = probe;
+        }
+        else if (fresh)
+        {
+            // A backend found gone by a fresh probe is not still taken for available by the next resolve.
+            _probeCache.TryRemove(provider.Name, out _);
         }
 
         return probe;

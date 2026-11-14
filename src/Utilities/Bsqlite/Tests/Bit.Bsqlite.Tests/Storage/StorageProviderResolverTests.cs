@@ -178,6 +178,25 @@ public sealed class StorageProviderResolverTests
         Assert.AreEqual(1, opfs.ProbeCount);
     }
 
+    /// <summary>
+    /// An admin operation probes afresh; finding a backend gone, it drops the success remembered for it, so the
+    /// next resolve does not put a new database on a backend that has stopped answering.
+    /// </summary>
+    [TestMethod]
+    public async Task AFreshProbeThatFindsABackendGone_ForgetsTheSuccessRememberedForIt()
+    {
+        var opfs = new FakeStorageProvider("opfs");
+        var resolver = Resolver(new BsqliteInMemoryStorageBindingStore(), opfs, new FakeStorageProvider("indexeddb"));
+        var selection = Select(s => s.Prefer("opfs").Fallback("indexeddb"));
+
+        Assert.AreEqual("opfs", (await resolver.ResolveAsync("first.db", selection, Ct)).Provider.Name);
+
+        opfs.IsAvailable = false;
+        Assert.IsFalse((await resolver.ProbeHolderAsync(opfs, Ct)).IsAvailable);
+
+        Assert.AreEqual("indexeddb", (await resolver.ResolveAsync("second.db", selection, Ct)).Provider.Name);
+    }
+
     [TestClass]
     public sealed class NonPersistentFallback
     {

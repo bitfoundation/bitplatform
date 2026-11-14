@@ -192,6 +192,90 @@ public sealed class OpfsTests : BsqliteTest
     }
 
     /// <summary>
+    /// A name that already holds a percent escape is stored as spelled - the URL parser leaves <c>%</c> alone - so
+    /// it is listed as spelled too: decoded, <c>a%41.db</c> would read as <c>aA.db</c> and <c>a%2Fb.db</c> as a file in
+    /// a folder, both of them somewhere else.
+    /// </summary>
+    [TestMethod]
+    public async Task Admin_lists_a_name_holding_a_percent_escape_as_a_name_that_finds_the_same_file()
+    {
+        await SkipUnlessOpfsAsync(Page);
+
+        await GotoHostPageAsync(Page);
+
+        var suffix = Guid.NewGuid().ToString("N");
+        string[] names = [$"a%41-{suffix}.db", $"x%2Fy-{suffix}.db", $"100%-{suffix}.db"];
+
+        var outcome = await Page.EvaluateAsync<JsonElement>(
+            """
+            async ({ names, suffix }) => {
+              const admin = await import('/_content/Bit.Bsqlite/bit-bsqlite-opfs-admin.js');
+              const image = new Uint8Array([1, 2, 3]);
+              for (const name of names) {
+                await admin.importDatabase(name, image);
+              }
+
+              const listed = (await admin.list()).filter(name => name.includes(suffix));
+              const found = [];
+              for (const name of listed) {
+                found.push(await admin.exists(name));
+              }
+
+              for (const name of names) {
+                await admin.deleteDatabase(name);
+              }
+
+              return { listed, found };
+            }
+            """, new { names, suffix });
+
+        CollectionAssert.AreEquivalent(names, outcome.GetProperty("listed").EnumerateArray().Select(n => n.GetString()).ToArray());
+        Assert.IsTrue(outcome.GetProperty("found").EnumerateArray().All(f => f.GetBoolean()));
+    }
+
+    /// <summary>
+    /// A journal with a header is a write not yet finished, and the file without it is torn: an import over it is
+    /// refused, and the journal kept, rather than deleted ahead of a write that could still fail.
+    /// </summary>
+    [TestMethod]
+    public async Task Admin_import_over_a_hot_journal_is_refused_and_the_journal_kept()
+    {
+        await SkipUnlessOpfsAsync(Page);
+
+        await GotoHostPageAsync(Page);
+
+        var outcome = await Page.EvaluateAsync<JsonElement>(
+            """
+            async name => {
+              const admin = await import('/_content/Bit.Bsqlite/bit-bsqlite-opfs-admin.js');
+              await admin.importDatabase(name, new Uint8Array([1, 2, 3]));
+
+              const root = await navigator.storage.getDirectory();
+              const journal = await root.getFileHandle(name + '-journal', { create: true });
+              const writable = await journal.createWritable();
+              await writable.write(new Uint8Array([0xd9, 0xd5, 0x05, 0xf9, 0x20, 0xa1, 0x63, 0xd7]));
+              await writable.close();
+
+              let error = null;
+              try {
+                await admin.importDatabase(name, new Uint8Array([4, 5, 6]));
+              } catch (e) {
+                error = e.message;
+              }
+
+              const kept = (await (await root.getFileHandle(name + '-journal')).getFile()).size;
+              const contents = Array.from(await (await (await root.getFileHandle(name)).getFile()).arrayBuffer().then(b => new Uint8Array(b)));
+              await admin.deleteDatabase(name);
+              return { error, kept, contents };
+            }
+            """, UniqueName("opfs-hot-journal"));
+
+        StringAssert.Contains(outcome.GetProperty("error").GetString(), "rollback journal");
+        Assert.AreEqual(8, outcome.GetProperty("kept").GetInt32());
+        AssertJson.AreEqual("[1, 2, 3]", outcome.GetProperty("contents"));
+    }
+
+    /// <summary>
     /// A snapshot of an open OPFS database - the backup <c>BsqliteDatabase.ExportAsync</c> takes - on a worker
     /// that has just opened it: OPFSCoopSyncVFS hands out its access handles cooperatively, so the first read
     /// answers busy and has to be retried, which <c>sqlite3_serialize</c> on its own cannot do.

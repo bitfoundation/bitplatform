@@ -442,6 +442,37 @@ public sealed class BsqliteSessionFactoryTests
     }
 
     /// <summary>
+    /// A backend that could not be reached may keep a copy, which a database without a binding would be looked
+    /// for - and found - on once it answers again. The binding is marked deleted instead, so the next open starts
+    /// a new database there and binds it.
+    /// </summary>
+    [TestMethod]
+    public async Task Delete_WhileAnotherBackendIsUnreachable_KeepsItsCopyFromComingBack()
+    {
+        var home = new PersistentTestProvider("home");
+        var away = new PersistentTestProvider("away");
+        await home.Admin.ImportAsync("app.db", SqliteImages.Valid(fill: 1), Ct);
+        await away.Admin.ImportAsync("app.db", SqliteImages.Valid(fill: 2), Ct);
+        var store = new BsqliteInMemoryStorageBindingStore();
+        await store.SetProviderNameAsync("app.db", "home", Ct);
+        await using var database = new BsqliteDatabase(
+            Factory(store, new RecordingTransportFactory(), s => s.Prefer("home").Fallback("away"), home, away),
+            "app.db");
+        away.IsAvailable = false;
+
+        await database.DeleteAsync(Ct);
+        Assert.IsFalse(await home.Admin.ExistsAsync("app.db", Ct));
+
+        // The copy is there once the backend answers again - and is not what the next open finds.
+        away.IsAvailable = true;
+        await database.OpenAsync(Ct);
+
+        Assert.AreEqual("home", database.Resolution!.Provider.Name);
+        Assert.IsFalse(database.Resolution.WasDecidedByExistingData, "The deleted database's copy was opened.");
+        Assert.AreEqual("home", await store.GetProviderNameAsync("app.db", Ct));
+    }
+
+    /// <summary>
     /// Every backend is asked before any is touched: a copy on a backend registered ahead of the unreachable
     /// one that holds the database is still there after the delete fails.
     /// </summary>
@@ -668,8 +699,13 @@ public sealed class BsqliteSessionFactoryTests
             set => ((MemoryAdmin)Admin).TearNextImport = value;
         }
 
+        /// <summary>Whether the next probe finds the backend available.</summary>
+        public bool IsAvailable { get; set; } = true;
+
         public ValueTask<BsqliteProbeResult> ProbeAsync(CancellationToken cancellationToken = default)
-            => ValueTask.FromResult(BsqliteProbeResult.Available());
+            => ValueTask.FromResult(IsAvailable
+                ? BsqliteProbeResult.Available()
+                : BsqliteProbeResult.Unavailable($"'{Name}' is switched off."));
 
         private sealed class MemoryAdmin(bool refusesImports, DeleteBehavior deletes, bool refusesNames) : IBsqliteStorageAdmin
         {
