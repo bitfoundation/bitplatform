@@ -234,7 +234,21 @@ public partial class BitAiChat : BitAiComponentBase
     [Parameter] public string? ReadAloudLanguage { get; set; }
 
     /// <summary>
-    /// The session to drive. When unset, one is created from the registered transport.
+    /// The services everything inside this chat uses in place of the cascaded or registered ones - what
+    /// <c>AddBitBlazorUIAIServices</c> would register, handed over on the page (see <see cref="BitAiServices"/>). A
+    /// <see cref="BitAiServices.Transport"/> set there is what a chat handed no <see cref="Session"/> creates its own over.
+    /// </summary>
+    /// <remarks>
+    /// For an app that registers nothing of the package at startup, such as one that lazy-loads its assemblies
+    /// (<c>BlazorWebAssemblyLazyLoad</c>). A session the chat creates follows its <see cref="UiOptions"/> - the strings
+    /// of the errors it writes, unpaced text where <see cref="BitAiUiOptions.SmoothStreaming"/> is off - which a session
+    /// handed over as <see cref="Session"/> takes from its own options instead.
+    /// </remarks>
+    [Parameter] public BitAiServices? Services { get; set; }
+
+    /// <summary>
+    /// The session to drive. When unset, one is created over the transport of the <see cref="Services"/> (or cascaded
+    /// ones), else the registered one.
     /// </summary>
     [Parameter] public BitAiChatSession? Session { get; set; }
 
@@ -252,8 +266,9 @@ public partial class BitAiChat : BitAiComponentBase
     /// The app's text-to-speech the replies are read aloud through, given the reply - its text
     /// (<see cref="BitAiMessage.GetText"/>, Markdown), and whatever else the service needs of it, such as a signature it
     /// carries - and a token cancelled when the reading is stopped; it returns the audio to play, or null when there is
-    /// nothing to read. When null, an <see cref="IBitAiTextToSpeech"/> service registered through
-    /// <c>AddBitBlazorUIAIServices</c> is used, if there is one. Only used when <see cref="AllowReadAloud"/> is on.
+    /// nothing to read. When null, the <see cref="BitAiServices.TextToSpeech"/> of the <see cref="Services"/> (or cascaded
+    /// ones) is used, else an <see cref="IBitAiTextToSpeech"/> service registered through <c>AddBitBlazorUIAIServices</c>,
+    /// if there is one. Only used when <see cref="AllowReadAloud"/> is on.
     /// </summary>
     [Parameter] public Func<BitAiMessage, CancellationToken, Task<BitAiSpeechAudio?>>? Synthesizer { get; set; }
 
@@ -268,8 +283,9 @@ public partial class BitAiChat : BitAiComponentBase
 
     /// <summary>
     /// The app's speech-to-text the composer's dictation transcribes a recording of the microphone with, in place of the
-    /// speech API of the browser (see <see cref="BitAiVoiceInput.Transcriber"/>). When null, an
-    /// <see cref="IBitAiSpeechToText"/> service registered through <c>AddBitBlazorUIAIServices</c> is used, if there is one.
+    /// speech API of the browser (see <see cref="BitAiVoiceInput.Transcriber"/>). When null, the
+    /// <see cref="BitAiServices.SpeechToText"/> of the <see cref="Services"/> (or cascaded ones) is used, else an
+    /// <see cref="IBitAiSpeechToText"/> service registered through <c>AddBitBlazorUIAIServices</c>, if there is one.
     /// Only used when <see cref="AllowDictation"/> is on.
     /// </summary>
     [Parameter] public Func<Stream, string, CancellationToken, Task<string?>>? Transcriber { get; set; }
@@ -326,6 +342,8 @@ public partial class BitAiChat : BitAiComponentBase
 
         if (UiOptions is not null) CascadedOptions = UiOptions;
 
+        if (Services is not null) CascadedServices = Services;
+
         UpdateReadAloud();
 
         // A session this chat created is ended once the host supplies its own: it would otherwise live on, with its
@@ -373,6 +391,19 @@ public partial class BitAiChat : BitAiComponentBase
 
     private BitAiChatSession CreateSession()
     {
+        // A transport handed over on the page wins over the registered one, with the tools and the approval policy handed
+        // over beside it - else the registered ones, which is what the factory would have given the session.
+        if (CascadedServices?.Transport is { } pageTransport)
+        {
+            return new BitAiChatSession(
+                pageTransport,
+                Conversation,
+                WithUiOptions(SessionOptions ?? new BitAiChatSessionOptions()),
+                GetAiService<IBitAiToolRegistry>(),
+                GetAiService<IBitAiToolApprovalPolicy>(),
+                _services);
+        }
+
         if (_services.GetService(typeof(BitAiChatSessionFactory)) is BitAiChatSessionFactory factory)
         {
             return factory.Create(Conversation, WithUiOptions(SessionOptions ?? factory.Defaults));
@@ -384,8 +415,8 @@ public partial class BitAiChat : BitAiComponentBase
         }
 
         throw new InvalidOperationException(
-            "BitAiChat needs a session or a registered IBitAiTransport. Call services.AddBitBlazorUIAIServices(ai => ai.UseTransport<T>()) " +
-            "during startup, or pass a Session parameter.");
+            "BitAiChat needs a session or a transport. Call services.AddBitBlazorUIAIServices(ai => ai.UseTransport<T>()) " +
+            "during startup, pass a Session parameter, or pass Services with a Transport.");
     }
 
     // A session of this chat's own follows the UI options in force here: the errors it writes read in their words, which
@@ -453,7 +484,7 @@ public partial class BitAiChat : BitAiComponentBase
     // the app set on the reader (its Language, PlaybackRate, handlers).
     private void UpdateReadAloud()
     {
-        _textToSpeech = AllowReadAloud && Synthesizer is null ? _services.GetService(typeof(IBitAiTextToSpeech)) as IBitAiTextToSpeech : null;
+        _textToSpeech = AllowReadAloud && Synthesizer is null ? GetAiService<IBitAiTextToSpeech>() : null;
 
         if (AllowReadAloud is false || (Synthesizer is null && _textToSpeech is null))
         {

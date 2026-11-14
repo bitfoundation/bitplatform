@@ -16,7 +16,7 @@ namespace Bit.BlazorUI;
 /// and a preference the user changes from the settings panel of one of them is written back onto it - so the
 /// calendars keep the same preferences, which is what sharing one object asks for.
 /// </remarks>
-public class BitFullCalendarParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitFullCalendarParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitFullCalendar"/> cascading parameters within <see cref="BitParams"/>.

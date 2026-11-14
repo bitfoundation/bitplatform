@@ -12,6 +12,11 @@ public sealed class BsqliteLiveQuery<T> : IBsqliteLiveQuery<T>
     private readonly Action? _onDispose;
     private readonly Lock _refreshGate = new();
 
+    // Held while a result is published and Changed raised, and by DisposeAsync while it marks the query
+    // disposed: a run that read its result before disposal publishes it before DisposeAsync returns, and
+    // one that comes to publish after it does not.
+    private readonly Lock _publishGate = new();
+
     // One run of the query at a time, explicit or not: an EF query runs on a context that allows one
     // operation at a time, and two runs finishing out of order would publish the older snapshot last.
     private readonly SemaphoreSlim _runGate = new(1, 1);
@@ -73,6 +78,21 @@ public sealed class BsqliteLiveQuery<T> : IBsqliteLiveQuery<T>
 
     /// <inheritdoc />
     public async Task<T> RefreshAsync(CancellationToken cancellationToken = default)
+        => (await RunAsync(catchHandlerErrors: false, cancellationToken).ConfigureAwait(false)).Snapshot;
+
+    /// <summary>
+    /// Runs the query, publishes the result and raises <see cref="Changed"/> - one run at a time, so results
+    /// reach the handlers in the order they were read.
+    /// </summary>
+    /// <param name="catchHandlerErrors">
+    /// Whether an exception from a <see cref="Changed"/> handler is returned rather than thrown. A refresh a
+    /// write triggered has no caller to throw to, and must not mistake a handler's failure for its own: the
+    /// query succeeded, and running it again would only call every handler twice for one write.
+    /// </param>
+    /// <param name="cancellationToken">Stops waiting for the turn, and the query.</param>
+    private async Task<(T Snapshot, Exception? HandlerError)> RunAsync(
+        bool catchHandlerErrors,
+        CancellationToken cancellationToken)
     {
         ObjectDisposedException.ThrowIf(_disposed != 0, this);
 
@@ -83,12 +103,30 @@ public sealed class BsqliteLiveQuery<T> : IBsqliteLiveQuery<T>
             ObjectDisposedException.ThrowIf(_disposed != 0, this);
 
             var snapshot = await _execute(cancellationToken).ConfigureAwait(false);
-            Current = snapshot;
 
-            // Enumerators first, so a Changed handler that throws cannot starve them of a result.
-            Publish(snapshot);
-            Changed?.Invoke(this, snapshot);
-            return snapshot;
+            lock (_publishGate)
+            {
+                // And again, under the gate DisposeAsync marks disposal under: a query disposed while it ran
+                // has nobody left to tell, and a Changed raised after DisposeAsync returned would reach a
+                // component that has already gone.
+                ObjectDisposedException.ThrowIf(_disposed != 0, this);
+
+                Current = snapshot;
+
+                // Enumerators first, so a Changed handler that throws cannot starve them of a result.
+                Publish(snapshot);
+
+                try
+                {
+                    Changed?.Invoke(this, snapshot);
+                }
+                catch (Exception ex) when (catchHandlerErrors)
+                {
+                    return (snapshot, ex);
+                }
+
+                return (snapshot, null);
+            }
         }
         finally
         {
@@ -163,11 +201,19 @@ public sealed class BsqliteLiveQuery<T> : IBsqliteLiveQuery<T>
     }
 
     /// <inheritdoc />
+    /// <remarks>
+    /// A result already being published when this is called - its <see cref="Changed"/> handlers running on
+    /// another thread - is finished first, so no handler is called once this returns. A handler may dispose
+    /// the query itself.
+    /// </remarks>
     public ValueTask DisposeAsync()
     {
-        if (Interlocked.Exchange(ref _disposed, 1) != 0)
+        lock (_publishGate)
         {
-            return ValueTask.CompletedTask;
+            if (Interlocked.Exchange(ref _disposed, 1) != 0)
+            {
+                return ValueTask.CompletedTask;
+            }
         }
 
         _connection.TablesChanged -= OnTablesChanged;
@@ -245,7 +291,13 @@ public sealed class BsqliteLiveQuery<T> : IBsqliteLiveQuery<T>
             {
                 try
                 {
-                    await RefreshAsync().ConfigureAwait(false);
+                    var (_, handlerError) = await RunAsync(catchHandlerErrors: true, CancellationToken.None)
+                        .ConfigureAwait(false);
+                    if (handlerError is not null)
+                    {
+                        ReportRefreshFailure(handlerError);
+                    }
+
                     break;
                 }
                 catch (Exception) when (_disposed != 0)

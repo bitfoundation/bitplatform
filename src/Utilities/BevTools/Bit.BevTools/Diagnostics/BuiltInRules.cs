@@ -560,16 +560,25 @@ internal static class BuiltInRules
             foreach (var group in session.Leaks.Retained())
             {
                 var causes = group.Causes;
+
+                // Held only by @ref fields, one instance each, released when that markup renders again: memory kept,
+                // not memory growing.
+                var bounded = causes.Count > 0 && causes.All(c => c.Bounded);
                 var evidence = (group.Count == 1 ? "Survived " : "Each survived ") + group.FullCollections + "+ full garbage collections since it was disposed (the oldest " + BevFmt.Ago(group.OldestDisposal) + "). "
+                    + (group.DescendantCount > 0
+                        ? "With it, " + group.DescendantCount + " disposed component" + (group.DescendantCount == 1 ? "" : "s") + " it rendered: " + BevRetentionAnalyzer.Describe(group.Descendants) + ". "
+                        : "")
                     + (causes.Count > 0
                         ? "Held by: " + string.Join("; ", causes.Take(3).Select(c => c.Holder + ": " + c.Detail)) + "."
-                        : "No reference to it was found in its injected services, its cascading values, the JS runtime's object references or its own timers: something else holds it (a static field, a cache, an object it handed itself to).");
+                        : BevRetentionAnalyzer.NotFound(session))
+                    + (bounded ? " A field holds one instance at a time and the next render of that markup replaces it: this does not grow, but keeps what the component references until then." : "");
                 yield return new BevDiagnostic(
                     Id,
-                    BevDiagnosticSeverity.Warning,
-                    group.DisplayName + ": " + group.Count + " disposed instance" + (group.Count == 1 ? "" : "s") + " still alive",
+                    bounded ? BevDiagnosticSeverity.Info : BevDiagnosticSeverity.Warning,
+                    group.DisplayName + ": " + group.Count + " disposed instance" + (group.Count == 1 ? "" : "s") + " still alive"
+                        + (group.DescendantCount > 0 ? ", with " + group.DescendantCount + " component" + (group.DescendantCount == 1 ? "" : "s") + " " + (group.Count == 1 ? "it" : "they") + " rendered" : ""),
                     evidence,
-                    causes.Count > 0 ? causes[0].Suggestion : "Take a heap snapshot (dotnet-gcdump for a server process, the browser's memory tool for WebAssembly) and follow the path that retains it.",
+                    causes.Count > 0 ? causes[0].Suggestion : BevRetentionAnalyzer.HeapSnapshot,
                     Fingerprint: Id + ":" + group.TypeName);
             }
         }
@@ -1292,8 +1301,19 @@ internal static class BuiltInRules
         }
     }
 
+    /// <summary>
+    /// The same interop function called many times within one second. Counted in calls, not timeline events: the calls
+    /// JavaScript makes to .NET are one event per name per second, and the interop store has the time of each. A loop
+    /// that calls .NET once per animation frame is told apart: that is an animation's design while it runs, and costs
+    /// what its calls take, which the finding states. It is told by what the page hub saw - each call made from a
+    /// requestAnimationFrame callback - and by the calls being one per frame, never by their rhythm alone: a scroll or
+    /// pointer handler, or a timer, is as evenly spaced at 60 Hz, and is a burst to throttle.
+    /// </summary>
     private sealed class ExcessiveJsInteropRule : IBevDiagnosticRule
     {
+        /// <summary>The share of a second the calls of a per-frame loop may take before it is a warning rather than a note.</summary>
+        private const double FrameLoopBudgetMs = 250;
+
         public string Id => "jsinterop.excessive";
 
         public string Title => "Excessive JS interop";
@@ -1303,17 +1323,157 @@ internal static class BuiltInRules
         public IEnumerable<BevDiagnostic> Evaluate(IBevDiagnosticContext context)
         {
             var options = Opt(context);
-            // The busiest second of the last half minute: a burst is over before anyone opens the panel to look.
-            foreach (var identifier in context.EventsInWindow(BevToolsEventKind.JsInterop, BurstLookback).GroupBy(e => e.Title))
+            // Only a name with at least the threshold of calls in the whole half minute can have them in one second: the
+            // interop store is read, and indexed, only when one does.
+            var candidates = context.EventsInWindow(BevToolsEventKind.JsInterop, BurstLookback)
+                .GroupBy(e => e.Title)
+                .Where(g => g.Sum(e => e.TryGetData("calls", out var c) && c is int n ? n : 1) >= options.ExcessiveJsInteropCount)
+                .ToList();
+            if (candidates.Count == 0)
             {
-                var group = DensestWindow(identifier, TimeSpan.FromSeconds(1));
-                var count = group.Count;
-                if (count >= options.ExcessiveJsInteropCount)
+                yield break;
+            }
+
+            var eventIds = candidates.SelectMany(g => g).Select(e => e.Id).ToHashSet();
+            var recorded = context is DiagnosticContext { Session: { } session }
+                ? session.Interop.Snapshot().Where(r => eventIds.Contains(r.TimelineEventId)).ToLookup(r => r.TimelineEventId)
+                : null;
+            var nowTicks = System.Diagnostics.Stopwatch.GetTimestamp();
+
+            // The busiest second of the last half minute: a burst is over before anyone opens the panel to look.
+            foreach (var identifier in candidates)
+            {
+                var (count, calls, perSecond) = Busiest(identifier, recorded);
+                if (count < options.ExcessiveJsInteropCount)
                 {
-                    var components = group.Select(e => e.ComponentName).Where(n => n is not null).Distinct().ToList();
-                    yield return new BevDiagnostic(Id, BevDiagnosticSeverity.Warning, $"{identifier.Key} called {count} times in 1 s", components.Count > 0 ? "From " + string.Join(", ", components) + "." : "Origin not attributable to a component.", "Throttle, batch arguments into one call, or keep the loop in JavaScript.", Fingerprint: $"{Id}:{identifier.Key}", RelatedEventIds: group.Take(10).Select(e => e.Id).ToList());
+                    continue;
+                }
+
+                var related = calls.Select(c => c.Event).Concat(perSecond).Distinct().ToList();
+                var totalMs = calls.Sum(c => c.Ms) + perSecond.Sum(e => e.TryGetData("totalMs", out var t) && t is double ms ? ms : 0);
+                var components = related.Select(e => e.ComponentName).Where(n => n is not null).Distinct().ToList();
+                var target = related.Select(e => e.DataString("targetType")).FirstOrDefault(t => t is not null);
+                var origin = components.Count > 0 ? "From " + string.Join(", ", components) + "."
+                    : target is not null ? "Called on a " + target + ", which is not a component."
+                    : "Origin not attributable to a component.";
+                var cost = $" The calls took {Ms(totalMs)} of that second, from call to completion.";
+                var fingerprint = $"{Id}:{identifier.Key}";
+                var relatedIds = related.Take(10).Select(e => e.Id).ToList();
+
+                var fromFrames = related.Count > 0 && related.All(e => e.TryGetData("animationFrame", out var f) && f is true);
+                if (fromFrames && perSecond.Count == 0 && FrameInterval(calls.Select(c => c.Ticks).ToList()) is { } intervalMs)
+                {
+                    // Whether it is still going says whether it was stopped: the last call a moment ago, and how long the
+                    // calls have gone on within the half minute looked at.
+                    var all = identifier.OrderBy(e => e.StartTicks).ToList();
+                    var lastAgo = (nowTicks - all[^1].StartTicks) / (double)System.Diagnostics.Stopwatch.Frequency;
+                    var ranFor = (all[^1].StartTicks - all[0].StartTicks) / (double)System.Diagnostics.Stopwatch.Frequency;
+                    var running = lastAgo < 2
+                        ? $" Still running: calls throughout the last {ranFor:0} s. If nothing on the page is animating now, the loop was never stopped."
+                        : $" It ran for {ranFor:0} s and stopped {lastAgo:0} s ago.";
+                    yield return new BevDiagnostic(
+                        Id,
+                        totalMs >= FrameLoopBudgetMs ? BevDiagnosticSeverity.Warning : BevDiagnosticSeverity.Info,
+                        $"{identifier.Key} runs every animation frame ({count} calls in 1 s)",
+                        origin + $" Each call was made from a requestAnimationFrame callback, one per frame, every {intervalMs:0.#} ms: a loop whose design is one call per frame while it animates." + cost + running,
+                        "Stop the loop when the animation ends (cancelAnimationFrame) and dispose its DotNetObjectReference; if each frame's .NET work is heavy, keep the loop in JavaScript and call .NET when the animation starts or ends.",
+                        Fingerprint: fingerprint,
+                        RelatedEventIds: relatedIds);
+                    continue;
+                }
+
+                // The remedy is on the side that makes the calls: .NET calling JavaScript is a .NET timer or loop.
+                var suggestion = identifier.Key.StartsWith("→ JS ", StringComparison.Ordinal)
+                    ? "Throttle the .NET code that makes the calls (a timer, a loop, a handler per event), batch their arguments into one call, or move the loop into JavaScript."
+                    : "Throttle or debounce the JavaScript that makes the calls (a scroll, pointer or resize handler, a timer), batch their arguments into one call, or keep the loop in JavaScript.";
+                yield return new BevDiagnostic(Id, BevDiagnosticSeverity.Warning, $"{identifier.Key} called {count} times in 1 s", origin + cost, suggestion, Fingerprint: fingerprint, RelatedEventIds: relatedIds);
+            }
+        }
+
+        /// <summary>
+        /// The most calls within one second: by the time of each call the interop store still has (an event without a
+        /// call count is a call), else by the second an event of many calls covers, which can only undercount.
+        /// </summary>
+        private static (int Count, List<(long Ticks, double Ms, BevToolsEvent Event)> Calls, List<BevToolsEvent> PerSecond) Busiest(IEnumerable<BevToolsEvent> events, ILookup<long, BevJsInteropRecord>? recorded)
+        {
+            var points = new List<(long Ticks, double Ms, BevToolsEvent Event)>();
+            var seconds = new List<BevToolsEvent>();
+            foreach (var e in events)
+            {
+                var expected = e.TryGetData("calls", out var c) && c is int n ? n : 1;
+                var records = recorded?[e.Id].ToList() ?? [];
+                if (records.Count == expected && records.All(r => r.StartTicks != 0))
+                {
+                    points.AddRange(records.Select(r => (r.StartTicks, r.DurationMs ?? 0, e)));
+                }
+                else if (expected == 1)
+                {
+                    points.Add((e.StartTicks, e.DurationMs ?? 0, e));
+                }
+                else
+                {
+                    seconds.Add(e);
                 }
             }
+
+            points.Sort((a, b) => a.Ticks.CompareTo(b.Ticks));
+            var span = System.Diagnostics.Stopwatch.Frequency;
+            var (bestStart, bestCount, start) = (0, 0, 0);
+            for (var end = 0; end < points.Count; end++)
+            {
+                while (points[end].Ticks - points[start].Ticks >= span)
+                {
+                    start++;
+                }
+
+                if (end - start + 1 > bestCount)
+                {
+                    (bestStart, bestCount) = (start, end - start + 1);
+                }
+            }
+
+            // A second covered by events of many calls also holds the calls of that second whose time is known (a slow or
+            // failed call keeps an event of its own): both count for it, each event once, since an event is either one or
+            // the other. A value tuple's MaxBy throws on no elements: there are none when every call's time is known.
+            var timedBySecond = points.ToLookup(p => SecondOf(p.Event));
+            var bySecond = seconds.GroupBy(SecondOf)
+                .Select(g => (Count: g.Sum(e => (int)e.Data!["calls"]!) + timedBySecond[g.Key].Count(), Events: g.ToList(), Timed: timedBySecond[g.Key].ToList()))
+                .DefaultIfEmpty((Count: 0, Events: [], Timed: []))
+                .MaxBy(g => g.Count);
+            return bySecond.Count > bestCount
+                ? (bySecond.Count, bySecond.Timed, bySecond.Events)
+                : (bestCount, points.GetRange(bestStart, bestCount), []);
+
+            // The second the page's clock put the calls in, which the bridge groups them by; the event's own time otherwise.
+            static long SecondOf(BevToolsEvent e) => e.TryGetData("second", out var s) && s is long second ? second : e.Timestamp.ToUnixTimeSeconds();
+        }
+
+        /// <summary>
+        /// The interval, in milliseconds, of calls evenly spaced at a display's frame rate (30 to 240 Hz, a dropped frame
+        /// here and there); null for anything else, and for too few calls to tell.
+        /// </summary>
+        private static double? FrameInterval(List<long> ticks)
+        {
+            if (ticks.Count < 20)
+            {
+                return null;
+            }
+
+            var gaps = new List<double>(ticks.Count - 1);
+            for (var i = 1; i < ticks.Count; i++)
+            {
+                gaps.Add((ticks[i] - ticks[i - 1]) * 1000.0 / System.Diagnostics.Stopwatch.Frequency);
+            }
+
+            gaps.Sort();
+            var median = gaps[gaps.Count / 2];
+            if (median is < 4 or > 34)
+            {
+                return null;
+            }
+
+            var regular = gaps.Count(g => g >= median * 0.5 && g <= median * 1.6);
+            return regular >= gaps.Count * 0.8 ? median : null;
         }
     }
 

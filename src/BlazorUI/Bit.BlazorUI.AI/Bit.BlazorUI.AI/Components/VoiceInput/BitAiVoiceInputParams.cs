@@ -11,7 +11,7 @@ namespace Bit.BlazorUI;
 /// out on purpose: they are what makes one voice input the one it is (an app transcribing everywhere the same way
 /// registers an <see cref="IBitAiSpeechToText"/> service instead).
 /// </remarks>
-public class BitAiVoiceInputParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitAiVoiceInputParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitAiVoiceInput"/> cascading parameters within <see cref="BitParams"/>.

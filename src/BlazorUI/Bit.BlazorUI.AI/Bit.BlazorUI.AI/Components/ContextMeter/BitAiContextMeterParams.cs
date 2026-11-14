@@ -10,7 +10,7 @@ namespace Bit.BlazorUI;
 /// look. The figures it reads - the conversation, the model and the counts - are left out on purpose: they are what makes
 /// one meter the one it is.
 /// </remarks>
-public class BitAiContextMeterParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitAiContextMeterParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitAiContextMeter"/> cascading parameters within <see cref="BitParams"/>.

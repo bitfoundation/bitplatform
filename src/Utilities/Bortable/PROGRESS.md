@@ -297,9 +297,54 @@ natively.
 - Checks: `Bit.Bortable.Tests.E2E` 93 / 93 (Chromium), `Bit.Bortable.Tests.Mcp` 111 / 111; every page at 1280 and
   375 px, light and dark, with no overflow and no console error; every new sample driven by a script.
 
+### Round 13 - identity, group rules, the swap partner, the multi-drag count
+
+A second improvement plan (a "world-class ordering engine" plan) was reviewed against the code before anything was
+built. Most of it was already in place (rounds 1-12). Of the rest, what was built:
+
+| # | Gap | Fix | Evidence |
+| --- | --- | --- | --- |
+| G21 | Items were told apart only by `Equals`: a page that loaded its rows again (new instances of the same records) lost every key, element, focus and selection, and a class compared by reference had no way to say "the same row" | `ItemKey` (`Func<TItem, object>`, the QuickGrid name): the `@key`, every lookup of the engine (`IndexOfItem`), the selection set and the browser-layer keys use it; the duplicate check across lists uses the target's key, so a `Clone` factory gives a copy a key of its own. Without it nothing changes (`List<T>.IndexOf` as before). A new `ItemKey` delegate rebuilds the sets | `ItemKeyTests` (9), E2E `IdentityAndGroupRulesTests` |
+| G22 | A list took the items of one group only: no trash or archive list for several boards (SortableJS `group.put: [...]`) | `PutGroups`: other groups a list takes items from; lets items in only | `GroupRulesTests` (6), E2E |
+| G23 | No minimum: a list that must keep a step could be emptied | `MinItems`: no item moves out to another list below it; clones, swaps and reorders unaffected; a multi-drag counts what it carries; a keyboard drag already carried out counts as gone | `GroupRulesTests` (7), E2E |
+| G24 | A swap's events did not say what the item traded with, so a handler could not save both moves; `CanDrop` was not told either | `IsSwap` and `SwappedWith` on `BortableEventArgs`, on the events of a committed swap and on the `CanDrop` questions about one | `SwapTests` (5), E2E |
+| G25 | A multi-drag's picture showed one item, whatever the selection | `data-bortable-selected` on selected items; the browser layer puts `data-bortable-count` and a `.bit-bortable-count` element on the pointer preview, and on a copy of the item it sets as the native drag image (the item itself is left alone); the stylesheet draws a count (`--bit-bortable-count-*`, forced colours too) | `SelectionTests` (2), E2E `MultiDragCountTests` |
+| - | E2E harness: `AssertLabelsAsync`'s failure message was built before the first poll, so it always said the list showed `[]` | `EventuallyAsync` takes the message as a function | - |
+
+Demos: "Items with ids" (`/simple-list`, with the key switchable, to see the difference), "One list, several groups"
+(`/shared`), "MinItems" (`/rules`), "Last swap" (`/swap`). README: an "Item identity" section with "Saving an order"
+(describing a move by its neighbours, for persistence and shared stores), `PutGroups`, `MinItems`, the swap partner,
+the count, the API tables and the SortableJS mapping (`group.put` names, `dataIdAttr`).
+
+Plan items deliberately not taken, and why:
+
+- **Running Bortable on Bdnd, a shared Bheadless accessibility layer, Bmotion animations.** Bdnd is a React DnD /
+  Pragmatic style toolkit (drag sources, drop targets, a monitor; order changed on drop) with its own browser module;
+  Bortable is a SortableJS style engine (live reorder, placeholder, swap thresholds) with its own; Bheadless's sortable
+  is a headless component with its own. Each ships alone with no dependency but ASP.NET Core. Putting one on another
+  would make every Bortable user download a second JS module and couple two release trains, to replace code that is
+  tested (and measured) as it is, with no behaviour a user gains. The FLIP slides are ~100 lines that Bmotion would not
+  shorten.
+- **Blex, Bcrdt and BlazeDb adapters.** The bound `IList<TItem>` is the state and the events carry the move (and now
+  the item's identity and the swap partner), which is what any store needs; "Saving an order" shows the pattern. An
+  adapter in the package would be a dependency; a demo would make the demo, and its CI, depend on three other
+  utilities.
+- **Extracting a UI-less engine, a sensor architecture, a benchmark project.** The engine is driven and tested without
+  a browser already (the bUnit harness calls the bridge as the browser layer does); the input routing is the browser
+  layer's on purpose (round 2), and its pointer, native and keyboard paths are one router. Measurements stay in E2E
+  `LargeListTests`, where the cost is (rendering and interop), not in the engine's list operations.
+- **Async `CanDrop`.** It runs at every pointer step; a wait there would stall the drag. `ConfirmDrop` is the async check.
+- **Virtualization, drop-on-node trees.** Still G19 / G20.
+
+Checks: `Bit.Bortable.Tests` 285 x 2 frameworks; `Bit.Bortable.Tests.Mcp` 154; `Bit.Bortable.Tests.E2E` (Chromium) 103 of 105,
+with the two lazy loading tests inconclusive where the sample is not published.
+
 ## Remaining limitations and follow-ups
 
 - Virtualization (G19) and tree-specific drop-on-node / expand-on-hover (G20) are deliberate boundaries, documented.
+- A page that replaces `Items` with a list that no longer holds a selected item drops it from the list's selection
+  without raising `SelectedItemsChanged`, so a bound selection keeps it until the next selection change. With `ItemKey`
+  a list loaded again keeps its selection, which covers the common case.
 - Keyboard dragging in screen readers' browse modes depends on the reader passing keys through; `MoveAsync` /
   `MoveToAsync` buttons are the documented alternative (demonstrated on `/accessibility`). Not yet verified by hand
   with NVDA/JAWS/VoiceOver - recommended before a stable release.

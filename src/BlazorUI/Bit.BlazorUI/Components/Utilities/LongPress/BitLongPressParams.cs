@@ -9,7 +9,7 @@ namespace Bit.BlazorUI;
 /// It carries how the long presses of an app are held - how long, how still, by what - and whether the keyboard has
 /// them too. What a press does stays on each long press.
 /// </remarks>
-public class BitLongPressParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitLongPressParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitLongPress"/> cascading parameters within <see cref="BitParams"/>.

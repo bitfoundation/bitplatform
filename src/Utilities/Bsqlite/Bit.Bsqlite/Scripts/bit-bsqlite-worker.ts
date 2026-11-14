@@ -70,6 +70,13 @@ interface Session {
     db: number;
     build: string;
     vfsName: string | null;
+    /** The VFS, when it records the exception behind its last error. See {@link describe}. */
+    vfs: { lastError?: unknown } | null;
+    /**
+     * The extension modules' register functions, run on every connection this worker opens on the database -
+     * the snapshot's copy included, whose VACUUM rebuilds indexes that may use their functions or collations.
+     */
+    extensions: ExtensionRegistration[];
     databaseName: string;
     limits: { supportsMultiDatabaseTransactions: boolean; canChangePageSize: boolean };
     statements: StatementCache;
@@ -77,11 +84,13 @@ interface Session {
      * Tables written since the last notification, and whether a transaction has committed since then.
      * See {@link notifyIfCommitted}.
      */
-    changes: { tables: Set<string>; committed: boolean };
+    changes: { tables: Set<string>; committed: boolean; commitPending: boolean };
     stmtReadonly: (stmt: number) => number;
     lastInsertRowId: (db: number) => bigint;
     bindZeroBlob: (stmt: number, index: number, length: number) => number;
 }
+
+type ExtensionRegistration = (handles: { module: SQLiteModule; sqlite3: SQLiteAPI; db: number; databaseName: string }) => unknown;
 
 /** What `open` is asked for, as the host posts it. */
 interface OpenRequest {
@@ -152,12 +161,24 @@ scope.addEventListener('message', event => {
  * result code rather than a flattened string.
  */
 function describe(error: any): { message: string; sqliteCode: number | null; name: string } {
-    return {
+    const described = {
         message: error?.message ?? String(error),
         // wa-sqlite raises SQLiteError with the primary result code; anything else has no code.
         sqliteCode: typeof error?.code === 'number' ? error.code : null,
         name: error?.name ?? 'Error',
     };
+
+    // A VFS turns every storage exception into SQLITE_IOERR - or SQLITE_FULL - and keeps the exception. A
+    // full origin is worth telling apart: the .NET side raises BsqliteQuotaExceededException for it, which
+    // an application can act on by freeing space, where a plain I/O error says nothing it can act on.
+    const cause = session?.vfs?.lastError as { name?: string; message?: string } | null | undefined;
+    if ((described.sqliteCode === SQLite.SQLITE_IOERR || described.sqliteCode === SQLite.SQLITE_FULL)
+        && cause?.name === 'QuotaExceededError') {
+        described.name = cause.name;
+        described.message = `${described.message}: ${cause.message ?? 'the storage quota is exhausted'}`;
+    }
+
+    return described;
 }
 
 async function dispatch(request: any): Promise<unknown> {
@@ -175,7 +196,7 @@ async function dispatch(request: any): Promise<unknown> {
             return { version: requireSession().sqlite3.libversion(), build: session!.build };
 
         case 'serialize':
-            return serialize(request.schema ?? 'main');
+            return await snapshot(request.schema ?? 'main');
 
         default:
             throw new Error(`Unknown request kind '${request.kind}'.`);
@@ -221,14 +242,17 @@ async function open({ databaseName, requiredBuild, vfs, limits, foreignKeys, onO
     // reading of the SQL can know about - and the commit hook says when those rows became visible to
     // anyone else. Together they let a notification wait for COMMIT instead of firing on a write that
     // may yet roll back, and that another tab could not have seen anyway.
-    const changes = { tables: new Set<string>(), committed: false };
+    const changes = { tables: new Set<string>(), committed: false, commitPending: false };
     sqlite3.update_hook(db, (_operation, _schema, table) => {
         if (table) {
             changes.tables.add(table);
         }
     });
     sqlite3.commit_hook(db, () => {
-        changes.committed = true;
+        // Pending, not done: the hook runs before the commit, which can still fail - SQLITE_BUSY while
+        // another tab reads - leaving the transaction open for a ROLLBACK that throws its writes away.
+        // runRequest counts it once the statement has succeeded and the connection is back in autocommit.
+        changes.commitPending = true;
         return SQLite.SQLITE_OK;
     });
 
@@ -246,6 +270,8 @@ async function open({ databaseName, requiredBuild, vfs, limits, foreignKeys, onO
         db,
         build: engine.build,
         vfsName: engine.vfsName,
+        vfs: engine.vfs ?? null,
+        extensions: [],
         databaseName,
         limits: {
             supportsMultiDatabaseTransactions: limits?.supportsMultiDatabaseTransactions !== false,
@@ -269,27 +295,44 @@ async function open({ databaseName, requiredBuild, vfs, limits, foreignKeys, onO
         ...(onOpenSql ?? []),
     ];
 
-    // Provider configuration (cache_size for batch-atomic and the like) and the application's own.
-    // Run here rather than through execute() so a guard meant for application SQL cannot block them,
-    // and before extensions so an extension sees the configured connection.
-    for (const sql of configuration) {
-        await runConfigurationSql(sqlite3, db, sql);
-    }
-
-    // Extension modules add user-defined functions, collations, or virtual tables. They receive the
-    // same handles the built-in function set does.
-    for (const extension of extensions ?? []) {
-        const imported = await import(extension.moduleUrl);
-        const exportName = extension.registerExport ?? 'register';
-        const register = Object.hasOwn(imported, exportName) ? imported[exportName] : undefined;
-        if (typeof register !== 'function') {
-            throw new Error(`'${extension.moduleUrl}' does not export a function named '${exportName}'.`);
+    try {
+        // Provider configuration (cache_size for batch-atomic and the like) and the application's own.
+        // Run here rather than through execute() so a guard meant for application SQL cannot block them,
+        // and before extensions so an extension sees the configured connection.
+        for (const sql of configuration) {
+            await runConfigurationSql(sqlite3, db, sql);
         }
 
-        await register({ module, sqlite3, db, databaseName });
+        // Extension modules add user-defined functions, collations, or virtual tables. They receive the
+        // same handles the built-in function set does.
+        for (const extension of extensions ?? []) {
+            const imported = await import(extension.moduleUrl);
+            const exportName = extension.registerExport ?? 'register';
+            const register = Object.hasOwn(imported, exportName) ? imported[exportName] : undefined;
+            if (typeof register !== 'function') {
+                throw new Error(`'${extension.moduleUrl}' does not export a function named '${exportName}'.`);
+            }
+
+            await register({ module, sqlite3, db, databaseName });
+            session!.extensions.push(register);
+        }
+    } catch (error) {
+        // An open that failed part way leaves nothing open: kept, the session would be handed to the next
+        // open as `reused` - without the configuration or the extension that failed.
+        session = null;
+        await closeQuietly(sqlite3, db);
+        throw error;
     }
 
     return { build: engine.build, vfsName: engine.vfsName, reused: false };
+}
+
+async function closeQuietly(sqlite3: SQLiteAPI, db: number): Promise<void> {
+    try {
+        await sqlite3.close(db);
+    } catch {
+        // The failure that brought us here is the one worth reporting.
+    }
 }
 
 async function runConfigurationSql(sqlite3: SQLiteAPI, db: number, sql: string): Promise<void> {
@@ -312,12 +355,102 @@ async function close() {
     return { closed: true };
 }
 
+let snapshotSequence = 0;
+
 /**
- * A consistent snapshot of the open database as a SQLite file image, taken through
- * `sqlite3_serialize` so it reflects every committed write without closing the connection.
+ * A consistent snapshot of the open database as a SQLite file image, reflecting every committed write,
+ * taken without closing the connection.
+ *
+ * On the synchronous build that is `sqlite3_serialize`, byte for byte - inside a read transaction begun
+ * through the statement API first. OPFSCoopSyncVFS takes its access handles cooperatively: a read that
+ * finds the handle released answers SQLITE_BUSY and has the caller retry once the handle is back, which
+ * wa-sqlite's prepare and step do and `sqlite3_serialize`, a single synchronous call, cannot - it fails
+ * on the first page. Begun through step, the transaction holds the handle and the lock, and every page
+ * serialize reads after that is a plain synchronous read.
+ *
+ * The asynchronous builds can only suspend inside the handful of entry points they were built to suspend
+ * in - step, prepare, open, close - and `sqlite3_serialize` is not one of them: on IndexedDB or Cache
+ * Storage every read may suspend, so it fails with "trying to suspend without WebAssembly.promising"
+ * (JSPI) or corrupts Asyncify's stack. There the copy is made with SQL instead - see
+ * {@link snapshotThroughVacuum}.
  */
-function serialize(schema: string): Uint8Array {
-    const { module, db } = requireSession();
+async function snapshot(schema: string): Promise<Uint8Array> {
+    const current = requireSession();
+    if (current.build === 'synchronous' || !current.vfsName) {
+        return await serializeInReadTransaction(current, schema);
+    }
+
+    if (schema !== 'main') {
+        throw new Error(`Only the main schema can be snapshotted on the '${current.build}' engine build.`);
+    }
+
+    return await snapshotThroughVacuum(current);
+}
+
+/**
+ * Copies the database into memory with `VACUUM ... INTO`, which runs as a statement - so the engine may
+ * suspend in it - and then serializes the copy, which lives in the engine's own memory VFS and needs no
+ * storage at all.
+ *
+ * The copy is made on a connection of its own, opened on a named `memdb` file with URI filenames on:
+ * the database's own connection was opened without them, and `VACUUM INTO` and `ATTACH` read a URI only
+ * on a connection that has them. That connection attaches the database through the same VFS - one more
+ * connection to the file, coordinated with this one and other tabs by the VFS's locks - and vacuums it
+ * into the memdb file it already holds open, which keeps the copy alive until it has been serialized.
+ *
+ * The image holds the same schema and rows, `user_version` and `application_id` as the database, but is
+ * compacted: free pages are dropped and tables are rewritten in order, so it is not byte for byte the file.
+ */
+async function snapshotThroughVacuum(current: Session): Promise<Uint8Array> {
+    const { sqlite3, module, databaseName } = current;
+    const memdb = `file:/bit-bsqlite-snapshot-${++snapshotSequence}?vfs=memdb`;
+    const source = `file:${encodeURIComponent(databaseName)}?vfs=${encodeURIComponent(current.vfsName!)}`;
+
+    // Whatever the VFS kept from an earlier failure is not the cause of one here.
+    if (current.vfs) {
+        current.vfs.lastError = null;
+    }
+
+    const copy = await sqlite3.open_v2(
+        memdb,
+        SQLite.SQLITE_OPEN_CREATE | SQLite.SQLITE_OPEN_READWRITE | SQLite.SQLITE_OPEN_URI);
+    try {
+        // VACUUM rebuilds every index of the copy on this connection: an index on an expression or with a
+        // collation needs the functions the database's own connection has - EF_DECIMAL, the ef_* set, and
+        // whatever the extension modules added.
+        registerFunctions(module, sqlite3, copy);
+        for (const register of current.extensions) {
+            await register({ module, sqlite3, db: copy, databaseName });
+        }
+
+        await runConfigurationSql(sqlite3, copy, `ATTACH ${sqlLiteral(source)} AS bit_bsqlite_source`);
+        await runConfigurationSql(sqlite3, copy, `VACUUM bit_bsqlite_source INTO ${sqlLiteral(memdb)}`);
+        await runConfigurationSql(sqlite3, copy, 'DETACH bit_bsqlite_source');
+        return serialize({ module, db: copy }, 'main');
+    } finally {
+        await sqlite3.close(copy);
+    }
+}
+
+async function serializeInReadTransaction(current: Session, schema: string): Promise<Uint8Array> {
+    const { sqlite3, db } = current;
+    await runConfigurationSql(sqlite3, db, 'BEGIN');
+    try {
+        // Any read of the schema takes the shared lock - and, on OPFS, the file's access handle - for the
+        // rest of the transaction.
+        await runConfigurationSql(sqlite3, db, `SELECT count(*) FROM "${schema.replaceAll('"', '""')}".sqlite_schema`);
+        return serialize(current, schema);
+    } finally {
+        await runConfigurationSql(sqlite3, db, 'ROLLBACK');
+    }
+}
+
+function sqlLiteral(text: string): string {
+    return `'${text.replaceAll("'", "''")}'`;
+}
+
+/** `sqlite3_serialize`: only for a database whose pages can be read without suspending. */
+function serialize({ module, db }: Pick<Session, 'module' | 'db'>, schema: string): Uint8Array {
     const sizePtr = module._sqlite3_malloc(8);
     try {
         const pointer = module.ccall(
@@ -394,7 +527,11 @@ async function execute(batch: BatchRequest[]): Promise<TaggedResult[]> {
 
 /** The .NET path: a binary batch in, a binary reply out, with no object graph in between. */
 async function executeBinary(bytes: Uint8Array): Promise<Uint8Array> {
-    const writer = new BinaryWriter(Math.max(4096, bytes.byteLength * 4));
+    // Sized by what a reply usually holds, not by the request: a request carrying a large blob gets a reply
+    // of a few bytes, and a buffer four times its size would be allocated, zeroed and transferred for it.
+    // Small too, since most replies - a SaveChanges round trip, a scalar - are a few bytes and the whole
+    // buffer is what the reply keeps or transfers. The writer grows by doubling when rows need more.
+    const writer = new BinaryWriter(4 * 1024);
     beginReply(writer);
 
     let batch;
@@ -439,6 +576,11 @@ async function runBatch(batch: BatchRequest[], sink: RowSink): Promise<void> {
     const current = requireSession();
     let schemaChanged = false;
 
+    // Whatever the VFS kept from an earlier failure is not the cause of one in this batch.
+    if (current.vfs) {
+        current.vfs.lastError = null;
+    }
+
     try {
         for (const request of batch) {
             if (isSchemaChange(request.commandText)) {
@@ -474,33 +616,44 @@ async function runRequest(current: Session, request: BatchRequest, sink: RowSink
         ? 1
         : (Number.isInteger(request.maxRows) && request.maxRows! >= 0 ? request.maxRows! : Infinity);
 
+    // CommandBehavior.SchemaOnly: the shape of the result, without running anything. Stepping even the
+    // statements that return no rows would carry out a DELETE the caller only asked to describe.
+    const schemaOnly = wantsRows && request.maxRows === 0;
+
     const prepared = await current.statements.acquire(request.commandText);
-    let recordsAffected = 0;
+    // -1 until a statement that can write has run: what Microsoft.Data.Sqlite - and so the native transport
+    // a Blazor Hybrid app runs on - reports for a query, as ADO.NET asks of a SELECT.
+    let recordsAffected = -1;
     let captured = false;
+    let succeeded = false;
 
     try {
-        for (const stmt of prepared.statements) {
+        // Lazily: each statement of a multi-statement text is prepared only once the one before it has run,
+        // as sqlite3_exec does, so `CREATE TABLE t ...; INSERT INTO t ...` finds the table it just created.
+        for await (const stmt of prepared.statements) {
             try {
                 bind(current, stmt, request.parameters ?? []);
-                const columnCount = sqlite3.column_count(stmt);
-                const producesRows = columnCount > 0;
+                const producesRows = sqlite3.column_count(stmt) > 0;
 
                 // Rows are taken from the first statement that produces any, and later statements still
                 // run. This is what EF's insert-then-select pattern needs: the INSERT reports its changes
                 // and the following SELECT is the result set the reader consumes.
                 if (wantsRows && producesRows && !captured) {
                     captured = true;
-                    const names = sqlite3.column_names(stmt);
                     let storageClasses: (number | null)[] | null = null;
+                    let columnCount = 0;
                     let rows = 0;
 
                     try {
                         while (rows < maxRows && await sqlite3.step(stmt) === SQLite.SQLITE_ROW) {
                             if (storageClasses === null) {
+                                // Read once the statement has stepped: a cached statement whose table another tab
+                                // altered is prepared again inside sqlite3_step, and only then has its new columns.
                                 // Storage classes of the first row, not declared types: the engine is compiled
                                 // with SQLITE_OMIT_DECLTYPE, so declared types do not exist in this build.
+                                columnCount = sqlite3.column_count(stmt);
                                 storageClasses = readStorageClasses(sqlite3, stmt, columnCount);
-                                sink.columns(names, storageClasses);
+                                sink.columns(sqlite3.column_names(stmt), storageClasses);
                                 sink.beginRows();
                             }
 
@@ -509,25 +662,47 @@ async function runRequest(current: Session, request: BatchRequest, sink: RowSink
                         }
                     } finally {
                         if (storageClasses === null) {
-                            sink.columns(names, new Array(columnCount).fill(null));
+                            columnCount = sqlite3.column_count(stmt);
+                            sink.columns(sqlite3.column_names(stmt), new Array(columnCount).fill(null));
                             sink.beginRows();
                         }
                     }
-                } else {
+                } else if (!schemaOnly) {
                     while (await sqlite3.step(stmt) === SQLite.SQLITE_ROW) {
                         // Drained deliberately: a statement whose rows nobody asked for still has to run.
                     }
                 }
 
                 // Read-only statements leave sqlite3_changes() at the previous write's value, which must
-                // not be counted twice - this is the same rule Microsoft.Data.Sqlite applies.
-                if (!current.stmtReadonly(stmt)) {
-                    recordsAffected += sqlite3.changes(db);
+                // not be counted twice - this is the same rule Microsoft.Data.Sqlite applies. Nor is a
+                // statement that schema-only never ran.
+                if (!schemaOnly && !current.stmtReadonly(stmt)) {
+                    recordsAffected = Math.max(recordsAffected, 0) + sqlite3.changes(db);
                 }
+
+                succeeded = true;
             } finally {
                 // Whether the statement finished or threw, its bindings and cursor must be released: to
                 // free locks, and so a cached statement starts clean next time.
-                await prepared.release(stmt);
+                let released = false;
+                try {
+                    // A reset that fails after the statement succeeded is a failure of its own - the commit of
+                    // a statement stopped at its first row happens in it - and is thrown. After a failed step it
+                    // only repeats the error already thrown.
+                    await prepared.release(stmt, !succeeded);
+                    released = true;
+                } finally {
+                    // Only now: a statement stopped before it was done - a scalar or single-row read of an
+                    // INSERT ... RETURNING in autocommit - commits in the reset above, and its commit hook with
+                    // it. A commit the hook announced for a statement that failed, or whose reset failed, did
+                    // not happen - and is forgotten either way, so a later statement is not taken for it.
+                    if (released && succeeded && current.changes.commitPending && sqlite3.get_autocommit(db)) {
+                        current.changes.committed = true;
+                    }
+
+                    current.changes.commitPending = false;
+                    succeeded = false;
+                }
             }
         }
 
@@ -615,7 +790,7 @@ class StatementCache {
         this.#db = db;
     }
 
-    async acquire(sql: string): Promise<{ statements: number[]; release(stmt: number): Promise<void>; dispose(): Promise<void> }> {
+    async acquire(sql: string): Promise<{ statements: AsyncIterable<number>; release(stmt: number, stepFailed: boolean): Promise<void>; dispose(): Promise<void> }> {
         const sqlite3 = this.#sqlite3;
         const cached = this.#entries.get(sql);
 
@@ -625,68 +800,74 @@ class StatementCache {
             this.#entries.set(sql, cached);
             this.#inUse.add(cached);
             return {
-                statements: [cached],
-                release: stmt => this.#reset(stmt),
+                statements: (async function* () { yield cached; })(),
+                release: (stmt, stepFailed) => this.#reset(stmt, stepFailed),
                 dispose: async () => {
                     this.#inUse.delete(cached);
                 },
             };
         }
 
-        const statements: number[] = [];
-        try {
-            for await (const stmt of sqlite3.statements(this.#db, sql, {
+        // Prepared one at a time, as the caller runs them: a statement is planned against the schema the
+        // statements before it left, so preparing the whole text up front fails on anything a later
+        // statement uses that an earlier one creates or alters.
+        const prepared: number[] = [];
+        let finished = false;
+        const statements = (async function* (db: number) {
+            for await (const stmt of sqlite3.statements(db, sql, {
                 unscoped: true,
                 flags: StatementCache.SQLITE_PREPARE_PERSISTENT,
             })) {
-                statements.push(stmt);
-            }
-        } catch (error) {
-            for (const stmt of statements) {
-                await sqlite3.finalize(stmt);
+                prepared.push(stmt);
+                yield stmt;
             }
 
-            throw error;
-        }
-
-        if (statements.length === 1 && cached === undefined) {
-            const stmt = statements[0];
-            this.#entries.set(sql, stmt);
-            this.#inUse.add(stmt);
-            await this.#evict();
-            return {
-                statements,
-                release: s => this.#reset(s),
-                dispose: async () => {
-                    this.#inUse.delete(stmt);
-                },
-            };
-        }
+            finished = true;
+        })(this.#db);
 
         return {
             statements,
-            release: async () => {
-                // Finalized in dispose; nothing to release per statement.
-            },
+            release: (stmt, stepFailed) => this.#reset(stmt, stepFailed),
             dispose: async () => {
-                for (const stmt of statements) {
+                // A text that turned out to be one statement, run to the end, is kept for the next time it
+                // is sent; anything else - several statements, or one cut short by an error - is finalized.
+                if (finished && prepared.length === 1 && cached === undefined && !this.#entries.has(sql)) {
+                    this.#entries.set(sql, prepared[0]);
+                    await this.#evict();
+                    return;
+                }
+
+                for (const stmt of prepared) {
                     await sqlite3.finalize(stmt);
                 }
             },
         };
     }
 
-    async #reset(stmt: number): Promise<void> {
+    /**
+     * Resets a statement and clears its bindings. A reset error is thrown unless the step before it failed -
+     * reset() then only repeats the error code the step has already thrown - since otherwise it is the
+     * statement's own outcome: an INSERT ... RETURNING read for one row in autocommit commits here, and a
+     * commit that fails must not be reported as a success.
+     */
+    async #reset(stmt: number, stepFailed: boolean): Promise<void> {
+        let failure: { error: unknown } | null = null;
         try {
             await this.#sqlite3.reset(stmt);
-        } catch {
-            // reset() repeats the error code of a failed step, which has already been thrown.
+        } catch (error) {
+            if (!stepFailed) {
+                failure = { error };
+            }
         }
 
         try {
             this.#sqlite3.clear_bindings(stmt);
         } catch {
             // A statement that cannot clear is finalized on the next schema change or eviction.
+        }
+
+        if (failure) {
+            throw failure.error;
         }
     }
 

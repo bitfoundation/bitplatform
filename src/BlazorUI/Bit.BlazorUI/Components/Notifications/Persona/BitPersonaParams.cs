@@ -9,7 +9,7 @@ namespace Bit.BlazorUI;
 /// It carries what a set of personas shares - their size, shape, coin coloring, layout and the localized presence
 /// titles - and leaves what is one person's own (the texts, the picture, the presence, the callbacks) to each persona.
 /// </remarks>
-public class BitPersonaParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitPersonaParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitPersona"/> cascading parameters within <see cref="BitParams"/>.

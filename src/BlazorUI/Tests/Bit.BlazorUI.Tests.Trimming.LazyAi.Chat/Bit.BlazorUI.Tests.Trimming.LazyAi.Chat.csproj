@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <!-- The part of Bit.BlazorUI.Tests.Trimming.LazyAi that is downloaded when its chat opens: the page that renders
+         BitAiChat and the transport the chat streams from. Lazy-loaded with the AI packages, so nothing the app starts
+         with references a type of them. -->
+    <PropertyGroup>
+        <TargetFramework>net11.0</TargetFramework>
+        <LangVersion>14</LangVersion>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <SupportedPlatform Include="browser" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\Bit.BlazorUI.AI\Bit.BlazorUI.AI\Bit.BlazorUI.AI.csproj" />
+    </ItemGroup>
+
+    <!-- The consumer app's transport, shared rather than copied, so the replies both apps' browser tests expect are written
+         once. -->
+    <ItemGroup>
+        <Compile Include="..\Bit.BlazorUI.Tests.Consumer\EchoTransport.cs" Link="EchoTransport.cs" />
+    </ItemGroup>
+
+</Project>

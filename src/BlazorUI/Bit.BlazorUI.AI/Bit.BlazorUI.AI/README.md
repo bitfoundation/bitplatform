@@ -61,6 +61,15 @@ one:
 
 6. Start using BlazorUI AI components following its documents: https://blazorui.bitplatform.dev
 
+### Downloading it only when the chat opens
+
+A Blazor WebAssembly app can lazy-load `Bit.BlazorUI.AI.wasm` and `Bit.BlazorUI.AI.Core.wasm`
+(`BlazorWebAssemblyLazyLoad`) with the pages that render the components. Nothing of the package has to be registered
+for them to render, so `Program.cs` calls `AddBitBlazorUIServices()` alone, and the chat's page hands it what the
+registration would have given it: a `BitAiServices` with its transport and, where it wants them, its tools, renderers,
+generative UI registry and model catalog (`<BitAiChat Services="..." UiOptions="..." />`). The setup, and what each part costs
+a trimmed app, are on the Trimming page: https://blazorui.bitplatform.dev/trimming#lazy-ai
+
 ### The one interface you implement
 
 Everything the components do is downstream of a single boundary. Implement it over a provider SDK, an HTTP endpoint, a

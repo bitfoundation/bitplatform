@@ -11,7 +11,7 @@ namespace Bit.BlazorUI;
 /// named and described by, and the event callbacks are left out on purpose: they belong to a single callout rather
 /// than to a group of them.
 /// </remarks>
-public class BitCalloutParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitCalloutParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitCallout"/> cascading parameters within <see cref="BitParams"/>.

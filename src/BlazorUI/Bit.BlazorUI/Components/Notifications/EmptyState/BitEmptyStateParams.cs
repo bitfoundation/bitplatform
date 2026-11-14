@@ -9,7 +9,7 @@ namespace Bit.BlazorUI;
 /// It carries what the empty states of an app agree on - their look, their icon, the level of their heading. The words
 /// and the actions of each one stay on the empty state.
 /// </remarks>
-public class BitEmptyStateParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitEmptyStateParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitEmptyState"/> cascading parameters within <see cref="BitParams"/>.

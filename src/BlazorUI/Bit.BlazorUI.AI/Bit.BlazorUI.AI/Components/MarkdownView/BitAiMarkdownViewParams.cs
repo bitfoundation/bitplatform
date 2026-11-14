@@ -9,7 +9,7 @@ namespace Bit.BlazorUI;
 /// What belongs here is what the Markdown views of an app, or of one part of it, agree on - the look of their parts.
 /// The document, its citations and the caret are left out on purpose: they are what makes one view the one it is.
 /// </remarks>
-public class BitAiMarkdownViewParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitAiMarkdownViewParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitAiMarkdownView"/> cascading parameters within <see cref="BitParams"/>.

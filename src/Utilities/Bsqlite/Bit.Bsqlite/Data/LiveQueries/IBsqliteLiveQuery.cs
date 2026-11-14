@@ -16,7 +16,8 @@ public interface IBsqliteLiveQuery<T> : IAsyncDisposable
     event EventHandler<T>? Changed;
 
     /// <summary>
-    /// Raised when a write-triggered re-run fails even after its retry. An explicit
+    /// Raised when a write-triggered re-run fails even after its retry, or when a <see cref="Changed"/>
+    /// handler throws during one - the query is not run again for it. An explicit
     /// <see cref="RefreshAsync"/> throws instead.
     /// </summary>
     event EventHandler<Exception>? RefreshFailed;

@@ -48,6 +48,9 @@ internal sealed class BortableDragContext
     /// <summary>In swap mode, the item highlighted as the swap target, if any.</summary>
     public object? SwapTargetItem { get; set; }
 
+    /// <summary>The item the drop traded the dragged item for, once a swap is committed; <c>null</c> otherwise.</summary>
+    public object? SwappedWith { get; set; }
+
     /// <summary>
     /// In multi-drag mode, the full ordered set of items being dragged together (including the primary
     /// <see cref="Item"/>), in source-list order. <c>null</c> for a single-item drag.

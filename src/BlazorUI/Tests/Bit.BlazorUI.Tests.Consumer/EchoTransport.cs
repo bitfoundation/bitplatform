@@ -7,6 +7,10 @@ namespace Bit.BlazorUI.Tests.Consumer;
 /// The transport the app's chat streams its replies from, written the way an app writes one in C# 12: an async iterator
 /// of the AI package's events. It echoes the last thing the user said, a few characters at a time.
 /// </summary>
+/// <remarks>
+/// Also compiled into Bit.BlazorUI.Tests.Trimming.LazyAi.Chat (a linked file), whose lazy-loaded chat answers the same
+/// way: the browser tests of both apps expect these replies.
+/// </remarks>
 public sealed class EchoTransport : IBitAiTransport
 {
     public async IAsyncEnumerable<BitAiEvent> StreamAsync(BitAiRequest request, [EnumeratorCancellation] CancellationToken cancellationToken = default)

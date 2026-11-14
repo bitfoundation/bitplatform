@@ -12,7 +12,7 @@ namespace Bit.BlazorUI;
 /// are left off, since the items, the place a swiper starts on and what a page does when it moves are the business
 /// of the swiper they belong to.
 /// </remarks>
-public class BitSwiperParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitSwiperParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitSwiper"/> cascading parameters within <see cref="BitParams"/>.

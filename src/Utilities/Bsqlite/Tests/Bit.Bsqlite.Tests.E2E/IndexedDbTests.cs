@@ -339,5 +339,70 @@ public sealed class IndexedDbTests : BsqliteTest
         }
     }
 
+    /// <summary>
+    /// A snapshot of an open database reads every page through the VFS - and on IndexedDB a read, and the
+    /// lock taken before it, can suspend - so it is taken on a worker freshly opened, whose page cache
+    /// holds nothing yet.
+    /// </summary>
+    [TestMethod]
+    public async Task Snapshot_of_an_open_database_reads_pages_the_cache_does_not_hold()
+    {
+        var databaseName = UniqueName("idb-snapshot");
+        await OpenIdbAsync(Page, databaseName);
+        await ExecAsync(Page, "CREATE TABLE product (id INTEGER PRIMARY KEY, name TEXT)");
+        await ExecAsync(Page, "WITH RECURSIVE n(i) AS (SELECT 1 UNION ALL SELECT i + 1 FROM n WHERE i < 2000) INSERT INTO product (name) SELECT 'row ' || i FROM n");
+        await Page.EvaluateAsync(
+            """
+            async () => {
+              await globalThis.host.close();
+              globalThis.host.dispose();
+            }
+            """);
+
+        await OpenIdbAsync(Page, databaseName);
+        var copyName = UniqueName("idb-snapshot-copy");
+        var header = await Page.EvaluateAsync<JsonElement>(
+            """
+            async copyName => {
+              const image = await globalThis.host.export();
+              const admin = await import('/_content/Bit.Bsqlite/bit-bsqlite-idb-admin.js');
+              await admin.importDatabase(copyName, image);
+              return { length: image.byteLength, magic: new TextDecoder().decode(image.subarray(0, 15)) };
+            }
+            """, copyName);
+
+        Assert.AreEqual("SQLite format 3", header.GetProperty("magic").GetString());
+        Assert.IsGreaterThan(4096, header.GetProperty("length").GetInt32());
+
+        // The image is the database, not only its header: opened under a name of its own, every row is there and
+        // SQLite finds nothing wrong with it.
+        await OpenIdbAsync(Page, copyName);
+        AssertJson.AreEqual(
+            """[[2000, 2001000, "row 2000"]]""",
+            (await QueryAsync(Page, "SELECT COUNT(*), SUM(id), (SELECT name FROM product WHERE id = 2000) FROM product")).Rows);
+        AssertJson.AreEqual("""[["ok"]]""", (await QueryAsync(Page, "PRAGMA integrity_check")).Rows);
+    }
+
+    /// <summary>
+    /// The snapshot's VACUUM rebuilds every index on a connection of its own: an index on a column EF Core
+    /// declares with the <c>EF_DECIMAL</c> collation needs that connection to have the collation too.
+    /// </summary>
+    [TestMethod]
+    public async Task Snapshot_of_a_database_with_an_index_on_a_function_or_collation_of_the_engine()
+    {
+        await OpenIdbAsync(Page, UniqueName("idb-snapshot-collation"));
+        await ExecAsync(Page, "CREATE TABLE price (id INTEGER PRIMARY KEY, amount TEXT COLLATE EF_DECIMAL)");
+        await ExecAsync(Page, "CREATE INDEX ix_price_amount ON price (amount)");
+        await ExecAsync(Page, "CREATE INDEX ix_price_rounded ON price (ef_add(amount, '0'))");
+        await ExecAsync(Page, "INSERT INTO price (amount) VALUES ('10.5'), ('2.25')");
+
+        var magic = await Page.EvaluateAsync<string>(
+            """
+            async () => new TextDecoder().decode((await globalThis.host.export()).subarray(0, 15))
+            """);
+
+        Assert.AreEqual("SQLite format 3", magic);
+    }
+
     private static Task<HostVersion> OpenIdbAsync(IPage page, string databaseName) => OpenHostAsync(page, Storages.IndexedDb(databaseName));
 }

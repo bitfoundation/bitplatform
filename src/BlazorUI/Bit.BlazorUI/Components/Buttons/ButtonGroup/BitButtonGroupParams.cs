@@ -12,7 +12,7 @@ namespace Bit.BlazorUI;
 /// bound to (ToggleKey and ToggleKeys), which belongs to one group rather than being a default for many.
 /// The initial selection is still cascadable through <see cref="DefaultToggleKey"/> and <see cref="DefaultToggleKeys"/>.
 /// </remarks>
-public class BitButtonGroupParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitButtonGroupParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitButtonGroup{TItem}"/> cascading parameters within <see cref="BitParams"/>.

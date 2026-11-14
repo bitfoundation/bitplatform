@@ -10,6 +10,45 @@ namespace Bit.Bsqlite.Tests.E2E;
 [TestClass]
 public sealed class StorageIsolationTests : BsqliteTest
 {
+    /// <summary>
+    /// wa-sqlite's VFS base allows SQLite 64-byte paths, and a database whose name with a leading slash did not
+    /// fit failed to open with nothing but "sqlite3_open_v2": a database named after a tenant and a user was
+    /// enough. Every persistent backend now takes a name of a few hundred characters.
+    /// </summary>
+    [TestMethod]
+    [DataRow("opfs")]
+    [DataRow("indexeddb")]
+    [DataRow("cache-storage")]
+    public async Task A_long_database_name_opens_and_keeps_its_rows(string backend)
+    {
+        if (backend == "opfs")
+        {
+            await SkipUnlessOpfsAsync(Page);
+        }
+
+        var databaseName = $"tenants/{new string('t', 60)}/users/{Guid.NewGuid():N}/{new string('d', 80)}.db";
+        var options = backend switch
+        {
+            "opfs" => Opfs(databaseName),
+            "indexeddb" => Idb(databaseName),
+            _ => Storages.CacheStorage(databaseName),
+        };
+
+        await OpenHostAsync(Page, options);
+        await ExecAsync(Page, "CREATE TABLE product (id INTEGER PRIMARY KEY, name TEXT)");
+        await ExecAsync(Page, "BEGIN; INSERT INTO product (name) VALUES ('kept'); COMMIT;");
+        await Page.EvaluateAsync(
+            """
+            async () => {
+              await globalThis.host.close();
+              globalThis.host.dispose();
+            }
+            """);
+
+        await OpenHostAsync(Page, options);
+        AssertJson.AreEqual("""[["kept"]]""", (await QueryAsync(Page, "SELECT name FROM product")).Rows);
+    }
+
     [TestMethod]
     public async Task An_IndexedDB_write_is_invisible_on_OPFS_under_the_same_name()
     {

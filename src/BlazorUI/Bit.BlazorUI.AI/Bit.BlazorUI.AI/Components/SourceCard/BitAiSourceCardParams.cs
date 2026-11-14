@@ -9,7 +9,7 @@ namespace Bit.BlazorUI;
 /// What belongs here is what the source cards of an application, or of one part of it, agree on: their look. The
 /// source, its number and the callback are left out on purpose: they are what makes one card the one it is.
 /// </remarks>
-public class BitAiSourceCardParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitAiSourceCardParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitAiSourceCard"/> cascading parameters within <see cref="BitParams"/>.

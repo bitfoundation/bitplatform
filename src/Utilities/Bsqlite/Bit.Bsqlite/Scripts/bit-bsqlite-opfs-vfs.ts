@@ -14,12 +14,19 @@ import type { SyncAccessHandleSource } from './bit-bsqlite-opfs-handles.js';
 export const VFS_NAME = 'opfs-coop-sync';
 
 /** Called by the worker with the Emscripten module and the wa-sqlite JavaScript API it just loaded. */
-export async function register({ module, sqlite3 }: { module: SQLiteModule; sqlite3: SQLiteAPI }): Promise<{ vfsName: string }> {
+export async function register({ module, sqlite3 }: { module: SQLiteModule; sqlite3: SQLiteAPI }): Promise<{ vfsName: string; vfs: { lastError?: unknown } }> {
     // This worker is the engine's alone, so the handle API every OPFS file here goes through can wait out
     // a handle a closed tab still holds - see bit-bsqlite-opfs-handles.ts.
     retryStaleAccessHandles(FileSystemFileHandle.prototype as unknown as SyncAccessHandleSource);
 
     const vfs = await OPFSCoopSyncVFS.create(VFS_NAME, module);
+    // wa-sqlite's VFS base allows 64-byte paths, and SQLite refuses to open a database whose full path - the name
+    // with a leading slash - does not fit, with nothing but "sqlite3_open_v2" to say why: a 60-character database
+    // name failed outright. The storage under it keys files by the whole name, so the limit is SQLite's own default.
+    vfs.mxPathname = 512;
     sqlite3.vfs_register(vfs, /* makeDefault */ false);
-    return { vfsName: VFS_NAME };
+
+    // The VFS keeps the exception behind the I/O error it returned - a full origin, say - which is how the
+    // worker tells a quota failure from any other I/O error.
+    return { vfsName: VFS_NAME, vfs };
 }

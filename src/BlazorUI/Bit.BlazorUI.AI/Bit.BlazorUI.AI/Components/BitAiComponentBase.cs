@@ -15,6 +15,8 @@ public abstract class BitAiComponentBase : BitComponentBase
     private BitAiRenderScheduler? _scheduler;
     private BitAiUiOptions? _registeredOptions;
     private BitAiRendererRegistry? _registeredRenderers;
+    // What the registration gives this component, by service type: looked up once each, a miss as well as a hit.
+    private Dictionary<Type, object?>? _registeredServices;
 
 
 
@@ -33,6 +35,17 @@ public abstract class BitAiComponentBase : BitComponentBase
     /// other view.
     /// </remarks>
     [CascadingParameter] public BitAiRendererRegistry? CascadedRenderers { get; set; }
+
+    /// <summary>
+    /// The services cascaded to this component (a <c>CascadingValue</c> of a <see cref="BitAiServices"/>, or the
+    /// <see cref="BitAiChat.Services"/> of an enclosing chat), if any - each one set there is used in place of the
+    /// registered one.
+    /// </summary>
+    /// <remarks>
+    /// For a page that hands the components what <c>AddBitBlazorUIAIServices</c> would have registered: an app that
+    /// lazy-loads the package (<c>BlazorWebAssemblyLazyLoad</c>) registers nothing of it at startup.
+    /// </remarks>
+    [CascadingParameter] public BitAiServices? CascadedServices { get; set; }
 
     [Inject] private IServiceProvider _serviceProvider { get; set; } = default!;
 
@@ -94,17 +107,41 @@ public abstract class BitAiComponentBase : BitComponentBase
         BitAiSafeUrls.HostOf(BitAiSafeUrls.Resolve(source, () => DocumentBaseUri));
 
     /// <summary>
-    /// The renderers this component uses: the cascaded registry (<see cref="CascadedRenderers"/>), else the one registered
-    /// with <c>AddBitBlazorUIAIServices</c> (<see cref="BitAiBuilderUiExtensions.ConfigureRenderers"/>).
+    /// The renderers this component uses: the cascaded registry (<see cref="CascadedRenderers"/>), else the cascaded
+    /// services' (<see cref="BitAiServices.Renderers"/>), else the one registered with <c>AddBitBlazorUIAIServices</c>
+    /// (<see cref="BitAiBuilderUiExtensions.ConfigureRenderers"/>), else none - the built-in rendering of everything.
     /// </summary>
-    private protected BitAiRendererRegistry Renderers => CascadedRenderers ?? RegisteredRenderers;
+    /// <remarks>
+    /// Nothing of the package has to be registered for a component to render: an app that lazy-loads the assembly
+    /// (<c>BlazorWebAssemblyLazyLoad</c>) cannot call <c>AddBitBlazorUIAIServices</c> at startup, and hands the chat what
+    /// it would have registered on the page instead (<see cref="BitAiServices"/>).
+    /// </remarks>
+    private protected BitAiRendererRegistry Renderers => CascadedRenderers ?? CascadedServices?.Renderers ?? RegisteredRenderers;
+
+    /// <summary>
+    /// A service of the package this component uses: the one the cascaded <see cref="BitAiServices"/> sets, else the
+    /// registered one, else <see langword="null"/>. Every AI service a component reads is looked up through this, never
+    /// injected: nothing of the package has to be registered for a component to render.
+    /// </summary>
+    private protected T? GetAiService<T>() where T : class
+    {
+        if (CascadedServices?.Find(typeof(T)) is T cascaded) return cascaded;
+
+        _registeredServices ??= [];
+
+        if (_registeredServices.TryGetValue(typeof(T), out var registered) is false)
+        {
+            _registeredServices[typeof(T)] = registered = _serviceProvider?.GetService(typeof(T));
+        }
+
+        return registered as T;
+    }
 
     private BitAiUiOptions RegisteredOptions => _registeredOptions ??=
         _serviceProvider?.GetService(typeof(BitAiUiOptions)) as BitAiUiOptions ?? BitAiUiOptions.Default;
 
     private BitAiRendererRegistry RegisteredRenderers => _registeredRenderers ??=
-        _serviceProvider?.GetService(typeof(BitAiRendererRegistry)) as BitAiRendererRegistry
-        ?? throw new InvalidOperationException("No BitAiRendererRegistry is registered: call AddBitBlazorUIAIServices at startup, or cascade a registry to the component.");
+        _serviceProvider?.GetService(typeof(BitAiRendererRegistry)) as BitAiRendererRegistry ?? BitAiRendererRegistry.None;
 
 
 
@@ -120,6 +157,10 @@ public abstract class BitAiComponentBase : BitComponentBase
 
         CascadedRenderers = parametersDictionary.Remove(nameof(CascadedRenderers), out var cascadedRenderers)
             ? (BitAiRendererRegistry?)cascadedRenderers
+            : null;
+
+        CascadedServices = parametersDictionary.Remove(nameof(CascadedServices), out var cascadedServices)
+            ? (BitAiServices?)cascadedServices
             : null;
 
         ParametersCache = parametersDictionary;

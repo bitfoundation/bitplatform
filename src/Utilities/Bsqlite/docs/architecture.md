@@ -55,11 +55,11 @@ JavaScript callers get the same information in a structured-clone-friendly tagge
 
 ## The statement cache
 
-The worker keeps up to 64 prepared statements keyed by SQL text, lent out and reset after each use. EF Core sends the same text over and over with different parameters; preparing is a parse and a plan, resetting is nearly free. Only single-statement texts are cached. A DDL statement clears the cache, since column metadata is read before stepping and must reflect the new schema.
+The worker keeps up to 64 prepared statements keyed by SQL text, lent out and reset after each use. EF Core sends the same text over and over with different parameters; preparing is a parse and a plan, resetting is nearly free. Only single-statement texts are cached. A text of several statements is prepared one statement at a time, each once the one before it has run, as `sqlite3_exec` does - so `CREATE TABLE t ...; INSERT INTO t ...` finds the table it just created. Column names are read after a statement first steps, by which point SQLite has prepared it again if another tab changed the schema; a DDL statement run here also clears the cache.
 
 ## Change tracking
 
-`sqlite3_update_hook` names every table a row changed in, through triggers and cascades; the statement text covers DDL and truncating deletes, which the hook does not see. `sqlite3_commit_hook` says when those rows became visible. The worker accumulates tables until the connection is back in autocommit and then notifies - this tab's .NET transport and, over a `BroadcastChannel`, every other tab - only if a commit happened. See [Live queries](live-queries.md#how-changes-are-detected). Affected-row counts honour `sqlite3_stmt_readonly`, so an `INSERT` followed by a `SELECT` reports the insert once - the rule Microsoft.Data.Sqlite applies.
+`sqlite3_update_hook` names every table a row changed in, through triggers and cascades; the statement text covers DDL and truncating deletes, which the hook does not see. `sqlite3_commit_hook` says when those rows became visible - counted once the statement that committed has succeeded, since the hook runs before a commit that can still fail with `SQLITE_BUSY` and be rolled back. The worker accumulates tables until the connection is back in autocommit and then notifies - this tab's .NET transport and, over a `BroadcastChannel`, every other tab - only if a commit happened. See [Live queries](live-queries.md#how-changes-are-detected). Affected-row counts honour `sqlite3_stmt_readonly`, so an `INSERT` followed by a `SELECT` reports the insert once - the rule Microsoft.Data.Sqlite applies.
 
 ## Open-time configuration
 

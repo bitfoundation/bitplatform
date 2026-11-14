@@ -5,7 +5,7 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// The parameters for <see cref="BitChart"/> component.
 /// </summary>
-public class BitChartParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitChartParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitChart"/> cascading parameters within <see cref="BitParams"/>.

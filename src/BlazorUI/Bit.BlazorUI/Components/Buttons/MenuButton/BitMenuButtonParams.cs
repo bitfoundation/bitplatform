@@ -12,7 +12,7 @@ namespace Bit.BlazorUI;
 /// templates and the callbacks) belong to a single menu button rather than to a section of a page, and are left
 /// to the markup of each one.
 /// </remarks>
-public class BitMenuButtonParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitMenuButtonParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitMenuButton{TItem}"/> cascading parameters within <see cref="BitParams"/>.

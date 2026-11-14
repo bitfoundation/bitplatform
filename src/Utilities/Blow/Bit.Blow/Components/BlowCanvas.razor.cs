@@ -746,13 +746,18 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
 
     /// <summary>
     /// The pane's <c>aria-describedby</c>: the flow's own instructions, after whatever the app described it by
-    /// through an attribute of its own, so neither replaces the other.
+    /// through an attribute of its own, so neither replaces the other. The default instructions tell how to Tab between
+    /// the nodes and edges, so they are left out when neither takes focus; instructions of the app's own, which may
+    /// well tell about other keys, are always kept.
     /// </summary>
     private string? PaneDescribedBy
     {
         get
         {
-            var own = string.IsNullOrEmpty(AriaLabels.PaneInstructions) ? null : DescriptionId("pane");
+            var instructions = AriaLabels.PaneInstructions;
+            var tabHintOnly = instructions == BlowAriaLabels.Default.PaneInstructions
+                              && (DisableKeyboardA11y || !(NodesFocusable || EdgesFocusable));
+            var own = tabHintOnly || string.IsNullOrEmpty(instructions) ? null : DescriptionId("pane");
             var app = AdditionalAttributes?.GetValueOrDefault("aria-describedby")?.ToString();
             return string.IsNullOrWhiteSpace(app) ? own : own is null ? app : $"{app} {own}";
         }
@@ -2424,21 +2429,23 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
 
         var multi = IsMultiSelect(e);
 
-        // Holding the pan-activation key forces a pan, overriding selection-on-drag.
-        if (PanOnDrag && _panKeyHeld)
-        {
-            await StartPanAsync(e);
-            return;
-        }
-
         // Box selection: while the selection key is held, or on a plain drag when SelectionOnDrag
         // is enabled. The two keys are separate settings but default to the same one, so holding
         // it both opens the box and adds what it catches to the existing selection. The
         // multi-selection key on its own only makes a box additive; it does not open one, which
         // is what lets a null SelectionKey really mean "only SelectionOnDrag draws a box".
+        // Holding the pan-activation key forces a pan, overriding both (see PrimaryPaneDrag).
         var selectionKeyHeld = SelectionKey is { } selKey && IsModifierHeld(selKey, e);
+        var drag = PrimaryPaneDrag(selectionKeyHeld);
 
-        if (ElementsSelectable && (selectionKeyHeld || SelectionOnDrag))
+        // A pan the pan-activation key forced is a pan, never a click that deselects.
+        if (drag == PaneDrag.Pan && _panKeyHeld)
+        {
+            await StartPanAsync(e);
+            return;
+        }
+
+        if (drag == PaneDrag.Select)
         {
             _selAdditive = multi;
 
@@ -2486,7 +2493,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         // more of the graph must not throw away what was selected in it.
         _clearSelectionOnClick = ElementsSelectable;
 
-        if (PanOnDrag) await StartPanAsync(e);
+        if (drag == PaneDrag.Pan) await StartPanAsync(e);
     }
 
     private async Task StartPanAsync(PointerEventArgs e)
@@ -3087,6 +3094,11 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     private void OnPanePointerCancel(PointerEventArgs e)
     {
         _activePointers.Remove(e.PointerId);
+
+        // As with a release, only the pointer driving the gesture can end it. On a pane that leaves a swipe on its
+        // background to the page, the browser takes over a second finger that scrolls it - which must not put back
+        // the node the first finger is still dragging. A pinch is driven by both of its fingers.
+        if (!_pinching && _capturedPointerId is { } captured && e.PointerId != captured) return;
 
         // The browser took the pointer over: the click a press on a node was waiting for is not coming.
         _pressedNode = null;
@@ -6924,6 +6936,60 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         BlowReducedMotion.Never => "bit-blow-allow-motion",
         _ => null,
     };
+
+    /// <summary>What a drag of the primary button on the empty pane does.</summary>
+    private enum PaneDrag { None, Pan, Select }
+
+    /// <summary>
+    /// What a press of the primary button - the mouse's left one, a pen, a finger - on the empty pane starts: the one
+    /// decision the press itself (<see cref="OnPanePointerDown"/>), the cursor and the pane's <c>touch-action</c> all
+    /// follow, so none of them can tell a different story. The primary button does nothing on the pane unless it is
+    /// one of <see cref="PanButtons"/>; held, the pan-activation key turns any such drag into a pan, and the selection
+    /// key (or <see cref="SelectionOnDrag"/>) into a selection box.
+    /// </summary>
+    /// <param name="selectionKeyHeld">Whether the press holds the selection key; only a press can tell.</param>
+    private PaneDrag PrimaryPaneDrag(bool selectionKeyHeld = false) =>
+        !PanButtons.Contains(0) ? PaneDrag.None
+        : PanOnDrag && _panKeyHeld ? PaneDrag.Pan
+        : ElementsSelectable && (selectionKeyHeld || SelectionOnDrag) ? PaneDrag.Select
+        : PanOnDrag ? PaneDrag.Pan
+        : PaneDrag.None;
+
+    /// <summary>
+    /// True when the pane has something to do with the keyboard: the selection to clear, move, delete or select all,
+    /// a node to drag or connect (and Escape to abandon either), the clipboard or the history keys - or a selection the
+    /// app made in code, which the delete keys still remove. A canvas with none of them - a picture of a graph - is no
+    /// Tab stop and no <c>role="application"</c>, which would take the arrow keys from the page for nothing. Nodes and
+    /// edges that are focusable are Tab stops of their own either way. An app can still decide otherwise with a
+    /// <c>tabindex</c> and a <c>role</c> of its own on the canvas.
+    /// </summary>
+    private bool PaneFocusable => ElementsSelectable || NodesDraggable || NodesConnectable
+                                  || ClipboardShortcutsEnabled || HistoryEnabled
+                                  || (DeleteKeyEnabled && DeleteKeys.Count > 0
+                                      && (Nodes.Any(n => n.Selected) || Edges.Any(ed => ed.Selected)));
+
+    /// <summary>
+    /// The classes that tell the stylesheet what the pane does with a pointer: a pane that pans when dragged - with the
+    /// primary button, the pan-activation key held, or only one of the other <see cref="PanButtons"/> - shows the
+    /// grab cursor (<c>bit-blow-pane-pan</c>); one whose drag with a finger is no gesture lets the page scroll under
+    /// it (<c>bit-blow-page-scroll</c>), and pinch-zoom it too when the canvas does not zoom on a pinch
+    /// (<c>bit-blow-page-zoom</c>); and with <see cref="NodesDraggable"/> off no node shows the grab cursor or keeps
+    /// the touches it would drag with (<c>bit-blow-nodes-locked</c>).
+    /// </summary>
+    private string InteractionClass
+    {
+        get
+        {
+            // While a one-finger drag on the empty pane is a gesture of the flow's own - a pan, or a selection box - the
+            // browser has to leave every touch on the pane to the canvas; otherwise the page scrolls under that finger.
+            var primary = PrimaryPaneDrag();
+            // A primary button that does nothing on the pane leaves the drag to the other pan buttons, if any.
+            var pans = primary == PaneDrag.Pan || (primary == PaneDrag.None && PanOnDrag && PanButtons.Count > 0);
+            return (pans ? "bit-blow-pane-pan" : "")
+                   + (primary != PaneDrag.None ? "" : ZoomOnPinch ? " bit-blow-page-scroll" : " bit-blow-page-scroll bit-blow-page-zoom")
+                   + (NodesDraggable ? "" : " bit-blow-nodes-locked");
+        }
+    }
 
     /// <summary>
     /// The transform of the zoomed layer, plus the zoom as a custom property: what lets the stylesheet keep hit

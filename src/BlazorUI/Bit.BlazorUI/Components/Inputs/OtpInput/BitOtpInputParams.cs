@@ -5,7 +5,7 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// The parameters for <see cref="BitOtpInput"/> component.
 /// </summary>
-public class BitOtpInputParams : BitInputBaseParams<string?>, IBitComponentParams
+public partial class BitOtpInputParams : BitInputBaseParams<string?>, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitOtpInput"/> cascading parameters within <see cref="BitParams"/>.

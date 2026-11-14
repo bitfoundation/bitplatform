@@ -249,10 +249,19 @@ public partial class BitAiChatDemo
         },
         new()
         {
+            Name = "Services",
+            Type = "BitAiServices?",
+            DefaultValue = "null",
+            Description = "What AddBitBlazorUIAIServices would register, handed over on the page - for an app that registers nothing of the package at startup, such as one that lazy-loads it. Cascaded to everything inside the chat, which reads each service it sets ahead of the registered one; its Transport is what a chat handed no Session creates its own over.",
+            LinkType = LinkType.Link,
+            Href = "#ai-services",
+        },
+        new()
+        {
             Name = "Session",
             Type = "BitAiChatSession?",
             DefaultValue = "null",
-            Description = "The session to drive. When unset, the chat creates one - through the registered BitAiChatSessionFactory, or over the registered IBitAiTransport - and disposes it with itself; a supplied session belongs to the page, which disposes it.",
+            Description = "The session to drive. When unset, the chat creates one - over the Transport of its Services (or cascaded ones), else through the registered BitAiChatSessionFactory, else over the registered IBitAiTransport - and disposes it with itself; a supplied session belongs to the page, which disposes it.",
             LinkType = LinkType.Link,
             Href = "#chat-session",
         },
@@ -408,6 +417,71 @@ public partial class BitAiChatDemo
                     Description = "Custom CSS classes/styles for the BitAiScrollToLatest of the BitAiChat.",
                     LinkType = LinkType.Link,
                     Href = "/components/ai/scrolltolatest#class-styles"
+                }
+            ]
+        },
+        new()
+        {
+            Id = "ai-services",
+            Title = "BitAiServices",
+            Description = "What AddBitBlazorUIAIServices would register, handed to the AI components on the page instead: through the chat's Services, or a CascadingValue of it around any AI component. Each service set here is read ahead of the registered one; one left unset falls back to the registered one, else to the built-in behaviour.",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "Transport",
+                    Type = "IBitAiTransport?",
+                    DefaultValue = "null",
+                    Description = "The transport a chat handed no Session creates its session over (UseTransport). That session follows the chat's SessionOptions and UiOptions."
+                },
+                new()
+                {
+                    Name = "Tools",
+                    Type = "IBitAiToolRegistry?",
+                    DefaultValue = "null",
+                    Description = "The tools a session the chat creates may run (AddTool), and the ones a tool call's card takes its title and icon from until the session puts a definition on the call."
+                },
+                new()
+                {
+                    Name = "ApprovalPolicy",
+                    Type = "IBitAiToolApprovalPolicy?",
+                    DefaultValue = "null",
+                    Description = "What decides which calls of a session the chat creates need a human decision (UseApprovalPolicy)."
+                },
+                new()
+                {
+                    Name = "Renderers",
+                    Type = "BitAiRendererRegistry?",
+                    DefaultValue = "null",
+                    Description = "The renderers (ConfigureRenderers). A CascadingValue of a BitAiRendererRegistry nearer the component still wins over it."
+                },
+                new()
+                {
+                    Name = "GenerativeUi",
+                    Type = "IBitAiGenerativeUiRegistry?",
+                    DefaultValue = "null",
+                    Description = "The components a model may name in a generative UI part (ConfigureGenerativeUi)."
+                },
+                new()
+                {
+                    Name = "ModelCatalog",
+                    Type = "IBitAiModelCatalog?",
+                    DefaultValue = "null",
+                    Description = "The models (AddModels): what a BitAiModelSelector handed no Models or Catalog offers, and the names a reply's metadata shows its model by."
+                },
+                new()
+                {
+                    Name = "TextToSpeech",
+                    Type = "IBitAiTextToSpeech?",
+                    DefaultValue = "null",
+                    Description = "What the replies are read aloud through when the chat is handed no Synthesizer (UseTextToSpeech)."
+                },
+                new()
+                {
+                    Name = "SpeechToText",
+                    Type = "IBitAiSpeechToText?",
+                    DefaultValue = "null",
+                    Description = "What the composer's dictation transcribes through when handed no Transcriber (UseSpeechToText)."
                 }
             ]
         },

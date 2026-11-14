@@ -13,7 +13,7 @@ namespace Bit.BlazorUI;
 /// The values are defaults, not overrides: a parameter a Modal sets itself wins, and so does one a Modal shown
 /// through the <see cref="BitModalService"/> is given for that one showing.
 /// </remarks>
-public class BitModalParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitModalParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitModal"/> cascading parameters within <see cref="BitParams"/>.

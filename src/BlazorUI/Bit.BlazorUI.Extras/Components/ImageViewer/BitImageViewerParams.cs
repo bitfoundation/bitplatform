@@ -9,7 +9,7 @@ namespace Bit.BlazorUI;
 /// What belongs here is what the image viewers of an app agree on: how far and in what steps they zoom, how they are
 /// operated, their size, look and words. The image and its zoom are the state of a single viewer.
 /// </remarks>
-public class BitImageViewerParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitImageViewerParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitImageViewer"/> cascading parameters within <see cref="BitParams"/>.

@@ -11,7 +11,7 @@ namespace Bit.BlazorUI;
 /// <see cref="BitProgress.Value"/> and <see cref="BitProgress.Buffer"/>, the texts naming and describing it, and
 /// the templates.
 /// </remarks>
-public class BitProgressParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitProgressParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitProgress"/> cascading parameters within <see cref="BitParams"/>.

@@ -11,7 +11,7 @@ namespace Bit.BlazorUI;
 /// whether it is open, its content and the texts of its header and footer, the ids of the elements that name and
 /// describe it, and its callbacks.
 /// </remarks>
-public class BitPanelParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitPanelParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitPanel"/> cascading parameters within <see cref="BitParams"/>.

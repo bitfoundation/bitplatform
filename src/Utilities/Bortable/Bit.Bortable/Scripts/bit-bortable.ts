@@ -16,6 +16,10 @@ const ITEM = 'data-bortable-item';
 const KEY = 'data-bortable-key';
 const PLACEHOLDER = 'data-bortable-placeholder';
 const NO_DRAG = 'data-bortable-disabled';
+/** On an item of a MultiDrag list's selection. */
+const SELECTED = 'data-bortable-selected';
+/** On the picture of a drag that carries several items - the preview, or the item while the browser takes its drag image - with how many. */
+const COUNT = 'data-bortable-count';
 const EASING = 'cubic-bezier(0.22, 1, 0.36, 1)';
 
 // The data type that marks a drag as a list's own. Any other drag (a file, selected text) is left alone.
@@ -268,6 +272,16 @@ function listOfItem(item: Element): ListState | null {
     return listOf(item.parentElement);
 }
 
+/** How many items a drag of `item` carries: the selection of a MultiDrag list it is part of, otherwise itself. */
+function carriedCount(list: ListState, item: Element): number {
+    if (!list.opts.multiDrag || !item.hasAttribute(SELECTED)) return 1;
+    let count = 0;
+    for (const child of Array.from(list.el.children)) {
+        if (child.hasAttribute(SELECTED)) count++;
+    }
+    return Math.max(count, 1);
+}
+
 /** The items between `node` and the document that belong to a registered list, innermost first. */
 function ownItemsAround(node: Element | null): { item: HTMLElement; list: ListState }[] {
     const found: { item: HTMLElement; list: ListState }[] = [];
@@ -473,6 +487,8 @@ function activate(p: Press, x: number, y: number): void {
     try { p.item.releasePointerCapture(p.pointerId); } catch { /* not captured */ }
 
     const preview = makePreview(p.item, p.list.opts.dragClass);
+    const count = carriedCount(p.list, p.item);
+    if (count > 1) showCount(preview, count);
     const rect = p.item.getBoundingClientRect();
     const dx = x - rect.left, dy = y - rect.top;
     let frame = 0;
@@ -500,14 +516,28 @@ function activate(p: Press, x: number, y: number): void {
 }
 
 /**
- * A copy of the item that follows the pointer, outside the lists and above everything. It carries the item's own
- * look, read off its computed style, and the drag class, which may add a shadow, a tilt or an opacity of its own.
+ * Puts the count of a multi-drag on its picture (data-bortable-count), drawn by an element of its own rather than a
+ * pseudo-element, which the item's own styles may already use.
+ */
+function showCount(picture: HTMLElement, count: number): void {
+    picture.setAttribute(COUNT, String(count));
+    const badge = document.createElement('span');
+    badge.className = 'bit-bortable-count';
+    badge.setAttribute('aria-hidden', 'true');
+    badge.textContent = String(count);
+    picture.appendChild(badge);
+}
+
+/**
+ * A copy of the item that follows the pointer, outside the lists and above everything - or, for a native drag of a
+ * selection, that the browser takes its drag image of. It carries the item's own look, read off its computed style,
+ * and the drag class, which may add a shadow, a tilt or an opacity of its own.
  */
 function makePreview(item: HTMLElement, dragClass: string): HTMLElement {
     const rect = item.getBoundingClientRect();
     const preview = item.cloneNode(true) as HTMLElement;
     for (const el of [preview, ...Array.from(preview.querySelectorAll('[id]'))]) el.removeAttribute('id');
-    for (const attribute of [ITEM, KEY, NO_DRAG, 'tabindex', 'role', 'aria-describedby', 'aria-roledescription', 'draggable']) {
+    for (const attribute of [ITEM, KEY, NO_DRAG, SELECTED, 'tabindex', 'role', 'aria-describedby', 'aria-roledescription', 'draggable']) {
         preview.removeAttribute(attribute);
     }
     preview.setAttribute('aria-hidden', 'true');
@@ -700,6 +730,18 @@ document.addEventListener('dragstart', (e: DragEvent) => {
     // The mark the lists recognise the drag by. Setting data also makes older browsers (Firefox) start the drag.
     e.dataTransfer.setData(DRAG_TYPE, list.opts.id);
     e.dataTransfer.effectAllowed = 'copyMove';
+
+    // A selection dragged together says how many items it carries, on a picture of the item the browser takes its drag
+    // image of once this handler returns, and which goes right after. The item itself is left alone: its own
+    // positioning and pseudo-elements stay as they are while the browser takes the picture.
+    const count = carriedCount(list, item);
+    if (count > 1) {
+        const rect = item.getBoundingClientRect();
+        const image = makePreview(item, '');
+        showCount(image, count);
+        e.dataTransfer.setDragImage(image, e.clientX - rect.left, e.clientY - rect.top);
+        setTimeout(() => image.remove());
+    }
     begin(list, item, e.target, key, lastPointerType);
 }, true);
 
