@@ -1,4 +1,8 @@
-﻿using Microsoft.JSInterop;
+﻿using System.Collections;
+using System.Diagnostics;
+using System.Globalization;
+using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 
 namespace Bit.BevTools;
 
@@ -26,6 +30,12 @@ public sealed class BevJsCallEntry
     public string? Error { get; set; }
 
     public long At { get; set; }
+
+    /// <summary>How long before the report the call was made; null from a hub that does not say.</summary>
+    public double? AgeMs { get; set; }
+
+    /// <summary>Made while a requestAnimationFrame callback ran; false from a hub that does not say.</summary>
+    public bool Frame { get; set; }
 }
 
 public sealed class BevBrowserSnapshot
@@ -62,8 +72,27 @@ public sealed class BevJsBridge(BevToolsSession session, Action toggle, Action? 
     private const int MaxJsErrorTextLength = 4000;
     private const int MaxJsErrorTypeLength = 200;
 
+    private const int MaxResolvedObjects = 512;
+
+    /// <summary>How many seconds' routine events a later report may still add to, at most.</summary>
+    private const int MaxOpenSeconds = 256;
+
     private int _lastLargeMessageReported;
     private double _largeMessagesReportedUntil;
+
+    /// <summary>
+    /// What each object id JavaScript called was, once resolved: ids are never reused, and a reference disposed before
+    /// its calls are reported can no longer be looked up. Names only; nothing here keeps an application object alive.
+    /// </summary>
+    private readonly Dictionary<long, (string TypeName, long? ComponentInstanceId, string? ComponentName)> _resolvedObjects = [];
+
+    /// <summary>
+    /// The routine events of the latest seconds, by name, second and whether made from animation frames: the calls of
+    /// one second that the hub reports in two parts are one event.
+    /// </summary>
+    private readonly Dictionary<(string Identifier, long Second, bool Frame), JsCallGroup> _routine = [];
+
+    private long _newestSecond;
 
     [JSInvokable]
     public void OnJsError(BevJsErrorPayload payload)
@@ -245,6 +274,13 @@ public sealed class BevJsBridge(BevToolsSession session, Action toggle, Action? 
         });
     }
 
+    /// <summary>
+    /// The calls page script made to .NET since the last report. Each is a record in the JS interop store; the timeline
+    /// gets one event per name per second (a requestAnimationFrame loop calls .NET sixty times a second, which would fill
+    /// the timeline in about a minute), except for a call that failed or was slow, which keeps an event of its own. The
+    /// hub reports every 500 ms, so a second's calls can arrive in two reports: the event of the first is replaced by
+    /// one that holds both.
+    /// </summary>
     [JSInvokable]
     public void ReportJsToDotNet(BevJsCallEntry[] batch)
     {
@@ -253,33 +289,231 @@ public sealed class BevJsBridge(BevToolsSession session, Action toggle, Action? 
             return;
         }
 
+        var now = DateTimeOffset.UtcNow;
+        var nowTicks = Stopwatch.GetTimestamp();
+        IDictionary? references = null;
+        var referencesRead = false;
+        var calls = new List<JsCall>(batch.Length);
         foreach (var entry in batch)
         {
             session.Browser.JsToDotNetCalls++;
             var error = entry.Error is null ? null : BevRedactor.RedactText(entry.Error);
+            var age = TimeSpan.FromMilliseconds(Math.Max(0, entry.AgeMs ?? (now - DateTimeOffset.FromUnixTimeMilliseconds(entry.At)).TotalMilliseconds));
+            var (identifier, objectId, target) = Resolve(entry.Identifier ?? "?", ref references, ref referencesRead);
             var record = new BevJsInteropRecord
             {
                 Id = session.Interop.NextId(),
-                At = DateTimeOffset.FromUnixTimeMilliseconds(entry.At),
+                At = now - age,
+                StartTicks = nowTicks - (long)(age.TotalSeconds * Stopwatch.Frequency),
                 Direction = BevJsInteropDirection.JsToDotNet,
-                Identifier = entry.Identifier ?? "?",
+                Identifier = identifier,
                 ArgumentCount = entry.Args,
                 IsSync = entry.Sync,
+                ComponentInstanceId = target?.ComponentInstanceId,
+                ComponentName = target?.ComponentName,
             };
-            record.TimelineEventId = session.Timeline.Record(new BevToolsEvent
-            {
-                Kind = BevToolsEventKind.JsInterop,
-                Category = "js-interop",
-                Title = "← .NET " + record.Identifier,
-                Detail = (entry.Sync ? "sync" : "async") + ", " + entry.Args + " args" + (error is null ? "" : ", failed: " + error),
-                Timestamp = record.At,
-                DurationMs = entry.DurationMs,
-                Severity = error is null ? BevToolsSeverity.Info : BevToolsSeverity.Error,
-                Data = new Dictionary<string, object?> { ["callId"] = record.Id },
-            });
             session.Interop.Add(record);
             session.Interop.Complete(record, entry.DurationMs, error is null, error);
+            calls.Add(new JsCall(entry, record, error, objectId, target?.TypeName));
         }
+
+        var slowMs = session.Options.Diagnostics.SlowJsInteropMs;
+        // Calls made from animation frames apart from the others: an event says which it holds, for the interop rule.
+        foreach (var group in calls.GroupBy(c => (c.Record.Identifier, Second: c.Entry.At / 1000, c.Entry.Frame)))
+        {
+            List<JsCall>? routine = null;
+            foreach (var call in group)
+            {
+                if (call.Error is not null || call.Entry.DurationMs >= slowMs)
+                {
+                    Link([call], session.Timeline.Record(Event(new JsCallGroup(call))));
+                }
+                else
+                {
+                    (routine ??= []).Add(call);
+                }
+            }
+
+            if (routine is not null)
+            {
+                Routine(group.Key, routine);
+            }
+        }
+
+        // Only the seconds a later report can still add to are kept: the hub reports every 500 ms.
+        if (calls.Count > 0)
+        {
+            _newestSecond = Math.Max(_newestSecond, calls.Max(c => c.Entry.At / 1000));
+            foreach (var key in _routine.Keys.Where(k => k.Second < _newestSecond - 2).ToList())
+            {
+                _routine.Remove(key);
+            }
+
+            if (_routine.Count > MaxOpenSeconds)
+            {
+                _routine.Clear();
+            }
+        }
+    }
+
+    /// <summary>The routine calls of one name in one second: added to the event an earlier report recorded for them while it is still there.</summary>
+    private void Routine((string Identifier, long Second, bool Frame) key, List<JsCall> calls)
+    {
+        if (_routine.TryGetValue(key, out var open))
+        {
+            foreach (var call in calls)
+            {
+                open.Add(call);
+            }
+
+            if (session.Timeline.Replace(open.EventId, Event(open)))
+            {
+                Link(calls, open.EventId);
+                return;
+            }
+        }
+
+        // The first report of this second, or its event is gone (the timeline was cleared or wrapped).
+        var group = new JsCallGroup(calls[0]);
+        foreach (var call in calls.Skip(1))
+        {
+            group.Add(call);
+        }
+
+        group.EventId = session.Timeline.Record(Event(group));
+        Link(calls, group.EventId);
+        _routine[key] = group;
+    }
+
+    private static void Link(List<JsCall> calls, long eventId)
+    {
+        foreach (var call in calls)
+        {
+            call.Record.TimelineEventId = eventId;
+        }
+    }
+
+    private static BevToolsEvent Event(JsCallGroup group)
+    {
+        var first = group.First;
+        var on = group.Objects.Count == 0 ? "" : ", on " + (first.TargetType is null ? "" : "a " + first.TargetType + " ") + "(" + string.Join(", ", group.Objects.Take(3)) + (group.Objects.Count > 3 ? ", …" : "") + ")";
+        var data = new Dictionary<string, object?> { ["callId"] = first.Record.Id, ["second"] = first.Entry.At / 1000 };
+        if (first.TargetType is not null)
+        {
+            data["targetType"] = first.TargetType;
+        }
+
+        if (first.Entry.Frame)
+        {
+            data["animationFrame"] = true;
+        }
+
+        string detail;
+        if (group.Count == 1)
+        {
+            detail = (first.Entry.Sync ? "sync" : "async") + ", " + first.Entry.Args + " args" + on + (first.Error is null ? "" : ", failed: " + first.Error);
+        }
+        else
+        {
+            data["calls"] = group.Count;
+            data["totalMs"] = group.TotalMs;
+            detail = group.Count + " calls in this second" + on + ", " + BevFmt.Ms(group.TotalMs) + " in all, the longest " + BevFmt.Ms(group.MaxMs);
+        }
+
+        return new BevToolsEvent
+        {
+            Kind = BevToolsEventKind.JsInterop,
+            Category = "js-interop",
+            Title = "← .NET " + first.Record.Identifier,
+            Detail = detail,
+            Timestamp = first.Record.At,
+            StartTicks = first.Record.StartTicks,
+            // The longest call, not the second the calls spread over: what the slow-call rule reads.
+            DurationMs = group.MaxMs,
+            Severity = first.Error is null ? BevToolsSeverity.Info : BevToolsSeverity.Error,
+            // Calls on several instances of one component share a name: the event is then none of theirs.
+            ComponentInstanceId = group.OneComponent ? first.Record.ComponentInstanceId : null,
+            ComponentName = group.OneComponent ? first.Record.ComponentName : null,
+            Data = data,
+        };
+    }
+
+    private readonly record struct JsCall(BevJsCallEntry Entry, BevJsInteropRecord Record, string? Error, string? ObjectId, string? TargetType);
+
+    /// <summary>What one timeline event says about its calls, kept as totals: a second of a busy loop holds hundreds.</summary>
+    private sealed class JsCallGroup(JsCall first)
+    {
+        public JsCall First { get; } = first;
+
+        public int Count { get; private set; } = 1;
+
+        public double TotalMs { get; private set; } = first.Entry.DurationMs;
+
+        public double MaxMs { get; private set; } = first.Entry.DurationMs;
+
+        /// <summary>The first four objects called: three are named, and a fourth says there were more.</summary>
+        public List<string> Objects { get; } = first.ObjectId is null ? [] : [first.ObjectId];
+
+        /// <summary>Whether every call was on the first call's component instance (or none was on a component).</summary>
+        public bool OneComponent { get; private set; } = true;
+
+        public long EventId { get; set; }
+
+        public void Add(JsCall call)
+        {
+            Count++;
+            TotalMs += call.Entry.DurationMs;
+            MaxMs = Math.Max(MaxMs, call.Entry.DurationMs);
+            if (call.ObjectId is not null && Objects.Count < 4 && !Objects.Contains(call.ObjectId))
+            {
+                Objects.Add(call.ObjectId);
+            }
+
+            OneComponent &= call.Record.ComponentInstanceId == First.Record.ComponentInstanceId;
+        }
+    }
+
+    /// <summary>
+    /// "object#26.ComputeFrame" names the <see cref="DotNetObjectReference"/> JavaScript called by the id the JS runtime
+    /// gave it, which says nothing; the runtime's table says what it wraps. A call on a component is that component's,
+    /// any other is named by its type ("BmotionFrameLoop.ComputeFrame"), so calls on every instance of it count together.
+    /// A reference disposed before the report, or a table that cannot be read, keeps the id.
+    /// </summary>
+    private (string Identifier, string? ObjectId, (string TypeName, long? ComponentInstanceId, string? ComponentName)? Target) Resolve(string identifier, ref IDictionary? references, ref bool referencesRead)
+    {
+        const string prefix = "object#";
+        var dot = identifier.IndexOf('.', StringComparison.Ordinal);
+        if (!identifier.StartsWith(prefix, StringComparison.Ordinal) || dot < 0
+            || !long.TryParse(identifier.AsSpan(prefix.Length, dot - prefix.Length), NumberStyles.None, CultureInfo.InvariantCulture, out var id))
+        {
+            return (identifier, null, null);
+        }
+
+        if (!_resolvedObjects.TryGetValue(id, out var target))
+        {
+            if (!referencesRead)
+            {
+                references = BevJSObjectReferences.Table(session);
+                referencesRead = true;
+            }
+
+            if (BevJSObjectReferences.Target(references, id) is not { } value)
+            {
+                return (identifier, null, null);
+            }
+
+            target = value is IComponent component && session.Components.TryGet(component, out var record)
+                ? (record.DisplayName, record.InstanceId, record.DisplayName)
+                : (TypeNames.Short(value.GetType()), null, null);
+            if (_resolvedObjects.Count >= MaxResolvedObjects)
+            {
+                _resolvedObjects.Clear();
+            }
+
+            _resolvedObjects[id] = target;
+        }
+
+        return (target.TypeName + identifier[dot..], "object #" + id, target);
     }
 
     /// <summary>What a component picked in the page does in the in-app panel: select it.</summary>

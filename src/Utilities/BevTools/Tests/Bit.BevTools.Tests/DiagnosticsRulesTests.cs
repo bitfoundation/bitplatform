@@ -92,6 +92,30 @@ public class DiagnosticsRulesTests
         }
     }
 
+    [TestMethod]
+    public void Calls_from_dotnet_at_frame_rate_are_excessive_interop_not_an_animation_loop()
+    {
+        // A .NET timer drawing every 16 ms has the rhythm of a requestAnimationFrame loop, and none of its remedies:
+        // there is no animation frame to cancel and no DotNetObjectReference to dispose.
+        var (session, scope) = TestHelpers.CreateSession(o => o.Diagnostics.ExcessiveJsInteropCount = 50);
+        using (scope)
+        {
+            var now = System.Diagnostics.Stopwatch.GetTimestamp();
+            var freq = System.Diagnostics.Stopwatch.Frequency;
+            for (var i = 0; i < 60; i++)
+            {
+                session.Timeline.Record(Interop("→ JS canvas.draw", now - 3 * freq + i * freq / 60));
+            }
+
+            session.Diagnostics.Evaluate(force: true);
+            var finding = Assert.ContainsSingle(f => f.Diagnostic.RuleId == "jsinterop.excessive", session.Diagnostics.Findings).Diagnostic;
+            Assert.AreEqual("→ JS canvas.draw called 60 times in 1 s", finding.Title);
+            Assert.AreEqual(BevDiagnosticSeverity.Warning, finding.Severity);
+            StringAssert.Contains(finding.Suggestion, "the .NET code that makes the calls");
+            Assert.IsFalse(finding.Suggestion!.Contains("cancelAnimationFrame", StringComparison.Ordinal), finding.Suggestion);
+        }
+    }
+
     private static BevToolsEvent Interop(string title, long? at = null) =>
         new() { Kind = BevToolsEventKind.JsInterop, Category = "js", Title = title, DurationMs = 1, StartTicks = at ?? System.Diagnostics.Stopwatch.GetTimestamp() };
 
