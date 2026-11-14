@@ -413,7 +413,7 @@ public async Task PropagateAuthState(bool firstRun, Task<AuthenticationState> ta
     TelemetryContext.UserSessionId = isAuthenticated ? user.GetSessionId() : null;
 
     // Update Belemetry
-    _ = belemetry.SetUserAsync(isAuthenticated ? user.GetUserId().ToString() : null);
+    await belemetry.SetUserAsync(isAuthenticated ? user.GetUserId().ToString() : null);
 
     // Start SignalR connection
     await EnsureSignalRStarted();

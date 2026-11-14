@@ -33,18 +33,7 @@ public static class WebApplicationExtensions
         {
             var healthChecks = app.MapGroup("");
 
-            ((IEndpointConventionBuilder)healthChecks.CacheOutput("HealthChecks"))
-                .Add(endpoint =>
-                {
-                    if (endpoint.RequestDelegate is not { } requestDelegate) return;
-
-                    // Keeps the checks' own spans out of the export too
-                    endpoint.RequestDelegate = context =>
-                    {
-                        Activity.Current?.ActivityTraceFlags &= ~ActivityTraceFlags.Recorded;
-                        return requestDelegate(context);
-                    };
-                });
+            ((IEndpointConventionBuilder)healthChecks.CacheOutput("HealthChecks")).Add(KeepChecksOutOfTraces);
 
             // All health checks must pass for app to be
             // considered ready to accept traffic after starting
@@ -71,7 +60,8 @@ public static class WebApplicationExtensions
             foreach (var path in new[] { "/healthz", "/healthz/v1" })
             {
                 app.MapHealthChecks(path, healthzOptions)
-                   .RequireAuthorization(healthzAuthorization ?? [new AuthorizeAttribute(AppFeatures.System.Operations_View)]);
+                   .RequireAuthorization(healthzAuthorization ?? [new AuthorizeAttribute(AppFeatures.System.Operations_View)])
+                   .Add(KeepChecksOutOfTraces);
             }
 
             return app;
@@ -344,5 +334,16 @@ public static class WebApplicationExtensions
         };
 
         return context.Response.WriteAsJsonAsync(body, AppJsonContext.Default.HealthReportDto, cancellationToken: context.RequestAborted);
+    }
+
+    private static void KeepChecksOutOfTraces(EndpointBuilder endpoint)
+    {
+        if (endpoint.RequestDelegate is not { } requestDelegate) return;
+
+        endpoint.RequestDelegate = context =>
+        {
+            Activity.Current?.ActivityTraceFlags &= ~ActivityTraceFlags.Recorded;
+            return requestDelegate(context);
+        };
     }
 }

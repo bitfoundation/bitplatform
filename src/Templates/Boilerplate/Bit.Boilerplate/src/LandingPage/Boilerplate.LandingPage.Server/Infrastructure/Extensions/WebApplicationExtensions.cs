@@ -53,6 +53,10 @@ public static class WebApplicationExtensions
             var telemetryOrigins = "https://*.applicationinsights.azure.com https://dc.services.visualstudio.com";
             //#if (sentry == true)
             telemetryOrigins += " https://*.sentry.io";
+            if (Uri.TryCreate(app.Configuration["Belemetry:SentryDsn"], UriKind.Absolute, out var sentryDsn) && sentryDsn.Host.EndsWith(".sentry.io", StringComparison.OrdinalIgnoreCase) is false)
+            {
+                telemetryOrigins += $" {sentryDsn.Scheme}://{sentryDsn.Authority}";
+            }
             //#endif
 
             var csp = string.Join(' ',

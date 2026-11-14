@@ -49,7 +49,7 @@ public partial class WebTelemetryConsentTests : AppTestBase
         // ---- Refused ----
         var sentWhileRefused = await WalkAboutAndTerms(page, track);
 
-        Assert.DoesNotContain(body => body.Contains("Microsoft.ApplicationInsights.PageView", StringComparison.Ordinal), sentWhileRefused,
+        Assert.IsEmpty(sentWhileRefused.SelectMany(PageViewTagsOf),
             "With Analytics refused, page views reached the ingestion endpoint.");
         await AssertNoIdentifyingStorage(page, "With Analytics refused");
 
@@ -60,8 +60,8 @@ public partial class WebTelemetryConsentTests : AppTestBase
 
         var sentWhileGranted = await WalkAboutAndTerms(page, track);
 
-        Assert.Contains(body => body.Contains("Microsoft.ApplicationInsights.PageView", StringComparison.Ordinal) && body.Contains($"\"ai.user.authUserId\":\"{userId}\"", StringComparison.OrdinalIgnoreCase), sentWhileGranted,
-            $"With Analytics granted, no page view named the signed-in user {userId}.");
+        Assert.Contains(tags => tags.TryGetProperty("ai.user.authUserId", out var authUserId) && string.Equals(authUserId.GetString(), userId, StringComparison.OrdinalIgnoreCase),
+            sentWhileGranted.SelectMany(PageViewTagsOf), $"With Analytics granted, no page view named the signed-in user {userId}.");
         Assert.Contains("bit-belemetry-pseudo-id", await page.EvaluateAsync<string[]>(IdentifyingStorageScript),
             "With Analytics granted, Belemetry is allowed its pseudonymous device id and should have stored it.");
 
@@ -104,6 +104,16 @@ public partial class WebTelemetryConsentTests : AppTestBase
         await page.WaitForTimeoutAsync(3_000);
 
         return [.. track];
+    }
+
+    /// <summary>The tags of each page view in a request to the ingestion endpoint, which takes a JSON array of envelopes.</summary>
+    private static JsonElement[] PageViewTagsOf(string body)
+    {
+        using var envelopes = JsonDocument.Parse(body);
+
+        return [.. envelopes.RootElement.EnumerateArray()
+            .Where(envelope => envelope.GetProperty("name").GetString() is "Microsoft.ApplicationInsights.PageView")
+            .Select(envelope => envelope.GetProperty("tags").Clone())];
     }
 
     private static async Task AssertNoIdentifyingStorage(IPage page, string when)
