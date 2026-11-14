@@ -35,6 +35,11 @@ public static class CiCommand
                 return cli.UsageError("ci-workflow-missing", $"The project has no {Path.GetRelativePath(directory, ci.Workflow)} for bit ci to run.");
             }
 
+            if (LocalCi.Labels(await File.ReadAllTextAsync(ci.Workflow, cancellationToken)) is null)
+            {
+                return cli.UsageError("ci-runs-on", $"bit ci runs each job of {Path.GetRelativePath(directory, ci.Workflow)} on this machine, so its runs-on has to be a runner label, such as ubuntu-24.04, or a list of them: act skips a job whose runs-on is an expression or another form, and the run would pass without it.");
+            }
+
             return await ci.RunAsync(parseResult.GetValue(actArguments) ?? [], cancellationToken);
         });
 

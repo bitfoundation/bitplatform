@@ -38,9 +38,28 @@ public class CiTests
     }
 
     [TestMethod]
-    public void AWorkflowWithoutAPlainLabel_Should_StillRunOnThisMachine()
+    public async Task AListOfLabels_Should_RunEachOnThisMachine()
     {
-        CollectionAssert.AreEqual(new[] { "ubuntu-latest" }, LocalCi.Labels("jobs:\n  a:\n    runs-on: ${{ matrix.os }}\n").ToArray());
+        using var host = new TestHost(HostOs.Linux);
+        CreateProject(host, "    runs-on: [ubuntu-24.04, 'ubuntu-26.04']\n");
+
+        Assert.AreEqual(CliApp.ExitOk, await host.RunAsync("ci"), host.Output);
+
+        StringAssert.Contains(host.Runner.Calls.Single(c => c.FileName == "act").CommandLine, "--platform ubuntu-24.04=-self-hosted --platform ubuntu-26.04=-self-hosted");
+    }
+
+    [TestMethod]
+    [DataRow("    runs-on: ${{ matrix.os }}\n")]
+    [DataRow("    runs-on:\n      - ubuntu-24.04\n")]
+    public async Task ARunsOnThatIsntALabel_Should_StopRatherThanPassWithoutTheJob(string jobs)
+    {
+        using var host = new TestHost(HostOs.Linux);
+        CreateProject(host, jobs);
+
+        Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("ci"), host.Output);
+
+        StringAssert.Contains(host.FlatOutput, "runs-on has to be a runner label");
+        Assert.IsFalse(host.Runner.Calls.Any(c => c.FileName == "act"));
     }
 
     [TestMethod]
@@ -49,12 +68,18 @@ public class CiTests
         using var host = new TestHost(HostOs.Linux);
         CreateProject(host, "    runs-on: ubuntu-26.04\n");
 
-        Assert.AreEqual(CliApp.ExitOk, await host.RunAsync("ci", "--", "-s", "GITHUB_TOKEN=ghp_example", "--secret=NUGET_KEY=nk_example", "-s", "FROM_ENV"), host.Output);
+        Assert.AreEqual(CliApp.ExitOk, await host.RunAsync("ci", "--", "-s", "GITHUB_TOKEN=ghp_example", "--secret=NUGET_KEY=nk_example", "-s=A_KEY=a_example", "-sB_KEY=b_example", "-s", "FROM_ENV"), host.Output);
 
         var act = host.Runner.Calls.Single(c => c.FileName == "act");
-        CollectionAssert.IsSubsetOf(new[] { "GITHUB_TOKEN=ghp_example", "--secret=NUGET_KEY=nk_example" }, act.Arguments.ToArray(), "act gets them as they are.");
-        Assert.IsFalse(act.CommandLine.Contains("ghp_example", StringComparison.Ordinal) || act.CommandLine.Contains("nk_example", StringComparison.Ordinal), act.CommandLine);
-        StringAssert.Contains(act.CommandLine, "GITHUB_TOKEN=***");
+        CollectionAssert.IsSubsetOf(new[] { "GITHUB_TOKEN=ghp_example", "--secret=NUGET_KEY=nk_example", "-s=A_KEY=a_example", "-sB_KEY=b_example" }, act.Arguments.ToArray(), "act gets them as they are.");
+        foreach (var value in new[] { "ghp_example", "nk_example", "a_example", "b_example" })
+        {
+            Assert.IsFalse(act.CommandLine.Contains(value, StringComparison.Ordinal), act.CommandLine);
+        }
+        foreach (var masked in new[] { "GITHUB_TOKEN=***", "--secret=NUGET_KEY=***", "-s=A_KEY=***", "-sB_KEY=***" })
+        {
+            StringAssert.Contains(act.CommandLine, masked);
+        }
         StringAssert.EndsWith(act.CommandLine, "-s FROM_ENV");
     }
 

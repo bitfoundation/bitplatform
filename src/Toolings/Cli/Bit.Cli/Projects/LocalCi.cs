@@ -20,21 +20,43 @@ public sealed partial class LocalCi(CliServices cli, string directory)
     /// <summary>bit's own executable, first on the PATH of the workflow's steps so they run the bit that runs them; null when it runs through dotnet.</summary>
     public string? Self { get; init; } = Environment.ProcessPath is { } path && Path.GetFileNameWithoutExtension(path).Equals("bit", StringComparison.OrdinalIgnoreCase) ? path : null;
 
-    /// <summary>The runner labels of the workflow's jobs, such as ubuntu-24.04, which act runs on this machine.</summary>
-    public static IReadOnlyList<string> Labels(string workflow)
+    /// <summary>
+    /// The runner labels of the workflow's jobs, such as ubuntu-24.04, which act runs on this machine: each runs-on is a label
+    /// or a list of them. Null for any other runs-on, such as an expression: act would skip that job as a platform it doesn't
+    /// know, and the run would pass without running it.
+    /// </summary>
+    public static IReadOnlyList<string>? Labels(string workflow)
     {
-        var labels = RunsOnRegex().Matches(workflow).Select(m => m.Groups["label"].Value).Distinct().ToList();
-        return labels.Count == 0 ? ["ubuntu-latest"] : labels;
+        var labels = new List<string>();
+
+        foreach (Match runsOn in RunsOnRegex().Matches(workflow))
+        {
+            var value = runsOn.Groups["value"].Value.Trim();
+            string[] items = value.StartsWith('[') && value.EndsWith(']') ? value[1..^1].Split(',') : [value];
+
+            foreach (var item in items.Select(i => i.Trim().Trim('\'', '"')))
+            {
+                if (LabelRegex().IsMatch(item) is false)
+                    return null;
+
+                labels.Add(item);
+            }
+        }
+
+        return labels.Count == 0 ? null : labels.Distinct().ToList();
     }
 
-    [GeneratedRegex("""^\s*runs-on:\s*['"]?(?<label>[\w.-]+)['"]?\s*(#.*)?$""", RegexOptions.Multiline)]
+    [GeneratedRegex("""^\s*runs-on:(?<value>[^#\r\n]*)""", RegexOptions.Multiline)]
     private static partial Regex RunsOnRegex();
+
+    [GeneratedRegex("""^[\w.-]+$""")]
+    private static partial Regex LabelRegex();
 
     public async Task<int> RunAsync(IReadOnlyList<string> actArguments, CancellationToken cancellationToken)
     {
         var steps = new StepRunner(cli);
         string? act = null;
-        var labels = Labels(await File.ReadAllTextAsync(Workflow, cancellationToken));
+        var labels = Labels(await File.ReadAllTextAsync(Workflow, cancellationToken))!;
 
         await steps.RunAsync("act", "Looking for act", (_, _) =>
         {

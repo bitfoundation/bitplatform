@@ -101,10 +101,13 @@ public partial class MainLayout : IAsyncDisposable
                     {
                         var authUser = (await authManager.GetAuthenticationStateAsync()).User;
                         if (authUser.IsAuthenticated() is false) return;
-                        await LoadCurrentUser(authUser, getCurrentUserCts.Token);
-                        //#if (multitenant == true)
-                        await SetCurrentTenantIfNeeded(authUser.GetTenantId(), getCurrentUserCts.Token);
-                        //#endif
+                        await Task.WhenAll(
+                        [
+                            LoadCurrentUser(authUser, getCurrentUserCts.Token),
+                            //#if (multitenant == true)
+                            SetCurrentTenantIfNeeded(authUser.GetTenantId(), getCurrentUserCts.Token),
+                            //#endif
+                        ]);
                         StateHasChanged();
                     });
                 }

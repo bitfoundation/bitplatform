@@ -26,7 +26,8 @@ public sealed record ProcessSpec
 
     /// <summary>
     /// The arguments for a log or a message, with the value of each secret act takes on its command line masked:
-    /// <c>-s NAME=value</c>, <c>--secret NAME=value</c> and <c>--secret=NAME=value</c>, as <c>bit ci -- ...</c> passes them on.
+    /// <c>-s NAME=value</c>, <c>--secret NAME=value</c>, and attached as <c>--secret=NAME=value</c>, <c>-s=NAME=value</c>
+    /// or <c>-sNAME=value</c>, as <c>bit ci -- ...</c> passes them on.
     /// </summary>
     public static IEnumerable<string> Redact(IEnumerable<string> arguments)
     {
@@ -34,9 +35,14 @@ public sealed record ProcessSpec
 
         foreach (var argument in arguments)
         {
+            var attached = argument.StartsWith("--secret=", StringComparison.Ordinal) ? "--secret=".Length
+                : argument.StartsWith("-s=", StringComparison.Ordinal) ? "-s=".Length
+                : argument.StartsWith("-s", StringComparison.Ordinal) ? "-s".Length
+                : -1;
+
             if (secretNext && argument.IndexOf('=') is > 0 and var equals)
                 yield return argument[..(equals + 1)] + "***";
-            else if (argument.StartsWith("--secret=", StringComparison.Ordinal) && argument.IndexOf('=', "--secret=".Length) is > 0 and var valueEquals)
+            else if (attached > 0 && argument.IndexOf('=', attached) is > 0 and var valueEquals)
                 yield return argument[..(valueEquals + 1)] + "***";
             else
                 yield return argument;
