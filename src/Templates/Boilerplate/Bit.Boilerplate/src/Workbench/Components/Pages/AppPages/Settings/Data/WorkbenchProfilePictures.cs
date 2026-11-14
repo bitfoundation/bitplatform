@@ -12,6 +12,21 @@ public static class WorkbenchProfilePictures
 
     private static readonly ConcurrentDictionary<Guid, (byte[] Content, string ContentType, int Uploads)> uploaded = [];
 
+    /// <summary>
+    /// The type of an upload by its first bytes, as the server identifies the format rather than trusting what the upload
+    /// says it is: one of the images the page accepts (ImageUploadContentTypes), or null for anything else.
+    /// </summary>
+    public static string? ImageTypeOf(ReadOnlySpan<byte> content) => content switch
+    {
+        [0x89, 0x50, 0x4E, 0x47, ..] => "image/png",
+        [0xFF, 0xD8, 0xFF, ..] => "image/jpeg",
+        [0x47, 0x49, 0x46, 0x38, ..] => "image/gif",
+        [0x52, 0x49, 0x46, 0x46, _, _, _, _, 0x57, 0x45, 0x42, 0x50, ..] => "image/webp",
+        [_, _, _, _, 0x66, 0x74, 0x79, 0x70, 0x61, 0x76, 0x69, 0x66 or 0x73, ..] => "image/avif",
+        [0x42, 0x4D, ..] => "image/bmp",
+        _ => null
+    };
+
     /// <summary>How many pictures this user has uploaded, so the view's account notices a new one.</summary>
     public static int Uploads(Guid userId) => uploaded.TryGetValue(userId, out var picture) ? picture.Uploads : 0;
 

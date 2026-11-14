@@ -24,6 +24,7 @@ public partial class PreviewPage
     private IDisposable? navigationGuard;
 
     [AutoInject] private WorkbenchAppLinks appLinks = default!;
+    [AutoInject] private ClientExceptionHandlerBase exceptionHandler = default!;
     [AutoInject] private BlexManager blexManager = default!;
     [AutoInject] private WorkbenchSnapshots snapshots = default!;
     [AutoInject] private BitAccentColorService accentColorService = default!;
@@ -104,11 +105,19 @@ public partial class PreviewPage
 
             if (appLinks.Follow(target) is { } follow)
             {
-                // Once this navigation is over, so the one it starts isn't taken for part of it.
+                // Once this navigation is over, so the one it starts isn't taken for part of it. Left to run, so what goes wrong
+                // in it goes to the app's handler, as anything else the app's page does.
                 _ = InvokeAsync(async () =>
                 {
-                    await Task.Yield();
-                    await follow();
+                    try
+                    {
+                        await Task.Yield();
+                        await follow();
+                    }
+                    catch (Exception exception)
+                    {
+                        exceptionHandler.Handle(exception);
+                    }
                 });
             }
         }

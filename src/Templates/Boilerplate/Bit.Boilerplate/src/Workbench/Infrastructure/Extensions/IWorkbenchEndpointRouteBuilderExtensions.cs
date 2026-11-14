@@ -2,7 +2,6 @@ using System.Text;
 using System.IO.Compression;
 using Bit.Bcrdt.Server;
 using Microsoft.Extensions.Localization;
-using Boilerplate.Shared.Features.Identity;
 using Boilerplate.Shared.Features.Attachments;
 
 namespace Boilerplate.Workbench.Infrastructure.Extensions;
@@ -18,9 +17,10 @@ public static class IWorkbenchEndpointRouteBuilderExtensions
     extension(IEndpointRouteBuilder endpoints)
     {
         /// <summary>
-        /// What the app's settings page fetches or sends by address rather than through a controller: the demo users' profile
-        /// pictures, an upload of a new one, and the personal data export. Who asks comes from the view's access token, which
-        /// the app's code sends as it would to its server (See WorkbenchBearerHandler).
+        /// What the browser fetches or sends by address for the app's settings page, rather than its code through a controller:
+        /// the demo users' profile pictures and an upload of a new one. Who uploads comes from the view's access token, which the
+        /// page sends as it would to its server. The personal data export, which the page's code asks for, is answered in the
+        /// view (See WorkbenchExportHandler).
         /// </summary>
         public void MapSettingsSampleEndpoints()
         {
@@ -33,16 +33,15 @@ public static class IWorkbenchEndpointRouteBuilderExtensions
             }
 
             // The page posts the picture itself: the image editor's result as a form, or BitFileUpload's file as the body.
-            endpoints.MapPost("api/v1/Attachment/UploadUserProfilePicture", async (HttpRequest request, CancellationToken cancellationToken) =>
+            endpoints.MapPost("api/v1/Attachment/UploadUserProfilePicture", async (HttpRequest request, IStringLocalizer<AppStrings> appLocalizer, CancellationToken cancellationToken) =>
             {
-                if (UserOf(request) is not { } userId)
+                if (WorkbenchClaims.UserOf(request.Headers.Authorization.ToString(), elevated: false) is not { } userId)
                     return Results.Unauthorized();
 
                 if (request.ContentLength > WorkbenchProfilePictures.MaxBytes)
                     return Results.StatusCode(StatusCodes.Status413PayloadTooLarge);
 
                 byte[] content;
-                string contentType;
 
                 if (request.HasFormContentType)
                 {
@@ -52,33 +51,26 @@ public static class IWorkbenchEndpointRouteBuilderExtensions
 
                     using var stream = new MemoryStream();
                     await file.CopyToAsync(stream, cancellationToken);
-                    (content, contentType) = (stream.ToArray(), file.ContentType);
+                    content = stream.ToArray();
                 }
                 else
                 {
                     using var stream = new MemoryStream();
                     await request.Body.CopyToAsync(stream, cancellationToken);
-                    (content, contentType) = (stream.ToArray(), request.ContentType ?? "image/jpeg");
+                    content = stream.ToArray();
                 }
 
                 if (content.Length is 0 || content.Length > WorkbenchProfilePictures.MaxBytes)
                     return Results.BadRequest();
 
-                WorkbenchProfilePictures.Keep(userId, content, contentType);
+                // Only the images the app's page accepts, told by their bytes as the server tells them, and served as that type:
+                // the picture's address answers anyone, so a page or a script sent as one would run on the Workbench's origin.
+                // What the upload says it is counts for nothing, as BitFileUpload sends a slice of the file, which has no type.
+                if (WorkbenchProfilePictures.ImageTypeOf(content) is not { } imageType)
+                    return Results.BadRequest(appLocalizer[nameof(AppStrings.UnsupportedImageFormat)].ToString());
+
+                WorkbenchProfilePictures.Keep(userId, content, imageType);
                 return Results.Ok();
-            });
-
-            endpoints.MapGet(IUserController.ExportPersonalDataUri, (HttpRequest request, IWebHostEnvironment environment, IStringLocalizer<WorkbenchStrings> localizer) =>
-            {
-                // As the server's, it needs the session to have confirmed it's the user lately (ELEVATED_ACCESS).
-                if (UserOf(request, elevated: true) is not { } userId || WorkbenchClaims.UserOf(userId) is not { } user)
-                    return Results.StatusCode(StatusCodes.Status403Forbidden);
-
-                var index = WorkbenchDemoUsers.All.ToList().IndexOf(user);
-                var photo = WorkbenchPhotos.Find(user.NameKey) is { } path ? environment.WebRootFileProvider.GetFileInfo(path).PhysicalPath : null;
-                var exportedOn = DateTimeOffset.UtcNow;
-
-                return Results.File(SettingsExports.PersonalData(index, localizer[user.NameKey], exportedOn, photo), "application/zip", SettingsExports.FileNameOf(userId, exportedOn));
             });
         }
 
@@ -344,28 +336,6 @@ public static class IWorkbenchEndpointRouteBuilderExtensions
 
     /// <summary>The name the review shows the agent's changes under.</summary>
     private static string AgentName(string? agent) => string.IsNullOrWhiteSpace(agent) ? "Agent" : agent.Trim();
-
-    /// <summary>
-    /// The demo user a request of the app's code comes from, by the access token it carries; null without one, or, when
-    /// <paramref name="elevated"/>, without the session having confirmed it's the user lately.
-    /// </summary>
-    private static Guid? UserOf(HttpRequest request, bool elevated = false)
-    {
-        var header = request.Headers.Authorization.ToString();
-
-        if (header.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase) is false)
-            return null;
-
-        var user = IAuthTokenProvider.ParseAccessToken(header["Bearer ".Length..], validateExpiry: true);
-
-        if (user.IsAuthenticated() is false)
-            return null;
-
-        if (elevated && (user.GetElevatedSessionExpiresOn() is not { } until || until <= DateTimeOffset.UtcNow))
-            return null;
-
-        return user.GetUserId();
-    }
 
     /// <summary>Captures every entry at once, and stops the others as soon as one fails.</summary>
     private static async Task<TResult[]> CaptureAll<TEntry, TResult>(IEnumerable<TEntry> entries, Func<TEntry, CancellationToken, Task<TResult>> capture, CancellationToken cancellationToken)

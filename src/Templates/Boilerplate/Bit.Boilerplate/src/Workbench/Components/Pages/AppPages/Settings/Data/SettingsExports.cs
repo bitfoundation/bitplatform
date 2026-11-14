@@ -1,13 +1,14 @@
 //+:cnd:noEmit
 using System.IO.Compression;
 using System.Text.Json;
+using Boilerplate.Shared.Features.Identity.Dtos;
 
 namespace Boilerplate.Workbench.Components.Pages.AppPages.Settings.Data;
 
 /// <summary>
 /// The demo user's personal data export, the zip the privacy section downloads, laid out as the server's
 /// (PersonalDataExportService): a data.json of sections, each saying why the data is kept and for how long, and the files.
-/// It holds the demo user's sample data, as the Workbench serves it to no view in particular.
+/// It holds the view's account as it is now, with what the page changed, as the server's holds what it has stored.
 /// </summary>
 public static class SettingsExports
 {
@@ -15,11 +16,13 @@ public static class SettingsExports
 
     public static string FileNameOf(Guid userId, DateTimeOffset exportedOn) => $"personal-data-{userId}-{exportedOn:yyyy-MM-dd}.zip";
 
-    public static byte[] PersonalData(int userIndex, string fullName, DateTimeOffset exportedOn, string? photoPath)
+    public static byte[] PersonalData(UserDto user, IEnumerable<UserSessionDto> sessions, DateTimeOffset exportedOn, string? photoPath)
     {
-        var (user, sessions) = SettingsSampleAccount.Sample(userIndex, fullName, exportedOn);
-        var picture = WorkbenchProfilePictures.Find(user.Id);
-        var pictureFile = picture is { } uploaded ? $"files/attachments/profile-picture{ExtensionOf(uploaded.ContentType)}" : photoPath is null ? null : "files/attachments/profile-picture.svg";
+        // photoPath is the demo user's own photo on disk, which the profile shows until a picture is uploaded.
+        var picture = user.HasProfilePicture ? WorkbenchProfilePictures.Find(user.Id) : null;
+        var pictureFile = user.HasProfilePicture is false ? null
+                        : picture is { } uploaded ? $"files/attachments/profile-picture{ExtensionOf(uploaded.ContentType)}"
+                        : photoPath is null ? null : "files/attachments/profile-picture.svg";
 
         var export = new
         {
@@ -95,7 +98,8 @@ public static class SettingsExports
         "image/png" => ".png",
         "image/webp" => ".webp",
         "image/gif" => ".gif",
-        "image/svg+xml" => ".svg",
+        "image/avif" => ".avif",
+        "image/bmp" => ".bmp",
         _ => ".jpg"
     };
 }

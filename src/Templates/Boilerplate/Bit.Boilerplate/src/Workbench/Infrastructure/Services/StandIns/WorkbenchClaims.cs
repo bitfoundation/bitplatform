@@ -68,13 +68,26 @@ public static class WorkbenchClaims
     }
 
     /// <summary>
+    /// The keys the server's token writes these claims under (JwtSecurityTokenHandler's DefaultOutboundClaimTypeMap, which
+    /// AppJwtSecureDataFormat writes with), so the app's client reads the role, its implied features and the user's name as it
+    /// does from the server's.
+    /// </summary>
+    private static readonly Dictionary<string, string> tokenKeys = new()
+    {
+        [ClaimTypes.NameIdentifier] = "nameid",
+        [ClaimTypes.Name] = "unique_name",
+        [ClaimTypes.Email] = "email",
+        [ClaimTypes.Role] = "role"
+    };
+
+    /// <summary>
     /// An access token of these claims, the way the app's client reads one (IAuthTokenProvider.ParseAccessToken): good for an
     /// hour, elevated until <paramref name="elevatedUntil"/> when given, and unsigned, as nothing in the Workbench checks a
     /// signature.
     /// </summary>
     public static string AccessToken(IEnumerable<Claim> claims, DateTimeOffset now, DateTimeOffset? elevatedUntil)
     {
-        var payload = claims.GroupBy(claim => claim.Type)
+        var payload = claims.GroupBy(claim => tokenKeys.GetValueOrDefault(claim.Type, claim.Type))
                             .ToDictionary(group => group.Key, group => group.Count() is 1 ? (object)group.First().Value : group.Select(claim => claim.Value).ToArray());
 
         payload["exp"] = now.AddHours(1).ToUnixTimeSeconds();
@@ -85,6 +98,27 @@ public static class WorkbenchClaims
         }
 
         return $"{Base64Url("""{"alg":"none","typ":"JWT"}""")}.{Base64Url(JsonSerializer.Serialize(payload))}.";
+    }
+
+    /// <summary>
+    /// The demo user a request of the app's code comes from, by the access token its <paramref name="authorization"/> header
+    /// carries; null without one, or, when <paramref name="elevated"/>, without the session having confirmed it's the user
+    /// lately (the server's ELEVATED_ACCESS).
+    /// </summary>
+    public static Guid? UserOf(string? authorization, bool elevated)
+    {
+        if (authorization?.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase) is not true)
+            return null;
+
+        var user = IAuthTokenProvider.ParseAccessToken(authorization["Bearer ".Length..], validateExpiry: true);
+
+        if (user.IsAuthenticated() is false)
+            return null;
+
+        if (elevated && (user.GetElevatedSessionExpiresOn() is not { } until || until <= DateTimeOffset.UtcNow))
+            return null;
+
+        return user.GetUserId();
     }
 
     private static string Base64Url(string json) => Convert.ToBase64String(Encoding.UTF8.GetBytes(json)).TrimEnd('=').Replace('+', '-').Replace('/', '_');

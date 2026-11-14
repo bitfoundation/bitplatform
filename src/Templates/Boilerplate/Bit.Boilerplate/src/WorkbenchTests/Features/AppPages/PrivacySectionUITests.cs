@@ -69,6 +69,37 @@ public class PrivacySectionUITests : SettingsPageTest
     }
 
     [TestMethod, EverySurface]
+    public async Task TheDownload_Should_HoldWhatThePageChanged(WorkbenchSurface surface)
+    {
+        await OpenSection(AppStrings.ProfileTitle);
+
+        var profile = Section(AppStrings.ProfileTitle);
+        var name = $"Name {Guid.NewGuid():N}";
+
+        await profile.GetByRole(AriaRole.Textbox, new() { Name = AppStrings.FullName, Exact = true }).FillAsync(name);
+        await Press(profile.GetByRole(AriaRole.Button, new() { Name = AppStrings.Save, Exact = true }));
+
+        await Expect(Snack(AppStrings.ProfileUpdatedSuccessfullyMessage)).ToBeVisibleAsync();
+
+        var removePicture = profile.GetByRole(AriaRole.Button, new() { Name = AppStrings.Remove, Exact = true });
+
+        await Press(removePicture);
+
+        await Expect(removePicture).ToHaveCountAsync(0);
+
+        await Press(SectionHeader(AppStrings.PrivacyTitle));
+
+        var download = await Page.RunAndWaitForDownloadAsync(() => Press(Privacy.GetByRole(AriaRole.Button, new() { Name = AppStrings.ExportPersonalDataButton, Exact = true })));
+
+        // As the server's, it holds the account as it is now: the name just saved, and no picture since it was removed.
+        using var archive = ZipFile.OpenRead(await download.PathAsync());
+        using var data = new StreamReader(archive.GetEntry("data.json")!.Open());
+
+        Assert.Contains(name, await data.ReadToEndAsync());
+        Assert.IsNull(archive.Entries.FirstOrDefault(entry => entry.FullName.StartsWith("files/attachments/", StringComparison.Ordinal)));
+    }
+
+    [TestMethod, EverySurface]
     public async Task TheAccountSettingsLink_Should_OpenTheAccountSection(WorkbenchSurface surface)
     {
         await OpenSection(AppStrings.PrivacyTitle);

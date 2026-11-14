@@ -34,10 +34,15 @@ public sealed class SettingsSampleAccount(WorkbenchScenarioState scenarioState, 
             var user = Current();
             var uploads = WorkbenchProfilePictures.Uploads(user.Id);
 
-            if (uploads != store.SeenUploads)
+            if (uploads > store.SeenUploads)
             {
                 user.HasProfilePicture = true;
                 user.Version = $"{int.Parse(user.Version ?? "0", CultureInfo.InvariantCulture) + 1}";
+                store.ShowUpload(user, uploads);
+            }
+            else if (uploads < store.SeenUploads)
+            {
+                // The Workbench restarted, which forgets the uploads but not what the view saved: a picture removed stays removed.
                 store.ShowUpload(user, uploads);
             }
 

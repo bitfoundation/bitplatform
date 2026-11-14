@@ -46,6 +46,13 @@ public sealed class WorkbenchViewStorage(WorkbenchStorageService browserStorage,
         if (IAuthTokenProvider.IsTokenStorageKey(key) is false)
             return false;
 
+        FollowTheSignIn();
+        return true;
+    }
+
+    /// <summary>Starts the sign-in items over when they were kept for another sign-in than the view's.</summary>
+    private void FollowTheSignIn()
+    {
         var current = (scenarioState.Scenario.Auth, scenarioState.Scenario.User);
 
         if (signIn != current)
@@ -53,8 +60,6 @@ public sealed class WorkbenchViewStorage(WorkbenchStorageService browserStorage,
             signIn = current;
             signInItems.Clear();
         }
-
-        return true;
     }
 
     public ValueTask<string?> GetItem(string key)
@@ -117,6 +122,9 @@ public sealed class WorkbenchViewStorage(WorkbenchStorageService browserStorage,
     public async ValueTask Clear()
     {
         deviceStore.Clear();
+
+        // The removed items below are the view's sign-in's, or the next read would take them for another's and drop them.
+        FollowTheSignIn();
 
         foreach (var key in signInItems.Keys.ToArray())
         {

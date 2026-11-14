@@ -45,9 +45,12 @@ public static partial class Program
             {
                 // For code that asks for an HttpClient: it points at the Workbench itself, as the Workbench calls no app server, and
                 // carries the view's access token, as the app's carries the user's, so what the Workbench serves at the app's
-                // addresses knows who asked (See IWorkbenchEndpointRouteBuilderExtensions).
+                // addresses knows who asked (See IWorkbenchEndpointRouteBuilderExtensions). The personal data export is answered in
+                // the view, from its own account (See WorkbenchExportHandler).
                 var request = sp.GetRequiredService<IHttpContextAccessor>().HttpContext?.Request;
-                return new HttpClient(new WorkbenchBearerHandler(sp.GetRequiredService<IAuthTokenProvider>()) { InnerHandler = new SocketsHttpHandler() })
+                var export = ActivatorUtilities.CreateInstance<WorkbenchExportHandler>(sp);
+                export.InnerHandler = new SocketsHttpHandler();
+                return new HttpClient(new WorkbenchBearerHandler(sp.GetRequiredService<IAuthTokenProvider>()) { InnerHandler = export })
                 {
                     BaseAddress = request is null ? new Uri("http://localhost/") : new Uri($"{request.Scheme}://{request.Host}/")
                 };
