@@ -75,6 +75,23 @@ public sealed class DependencyInjectionTests
     }
 
     [TestMethod]
+    public void LazyLoadsXml_IsTheSwitchTheBuildSetsNextToTheMark()
+    {
+        // Unset outside a WebAssembly build that marks System.Private.Xml.wasm, so a BeforeFirstOpen step loads nothing.
+        Assert.IsFalse(BsqliteBuilder.LazyLoadsXml);
+
+        AppContext.SetSwitch("Bit.Bsqlite.LazyLoadsXml", true);
+        try
+        {
+            Assert.IsTrue(BsqliteBuilder.LazyLoadsXml);
+        }
+        finally
+        {
+            AppContext.SetSwitch("Bit.Bsqlite.LazyLoadsXml", false);
+        }
+    }
+
+    [TestMethod]
     public async Task ContextFactory_OpensTheDatabase_PreparesTheSchemaOnce_AndHandsOutContexts()
     {
         var firstUse = 0;

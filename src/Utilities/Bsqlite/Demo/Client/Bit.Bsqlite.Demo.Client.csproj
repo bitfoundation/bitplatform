@@ -18,7 +18,9 @@
   </ItemGroup>
 
   <!-- Kept out of the startup download: every Bsqlite connection needs it, so BeforeFirstOpen loads it right before
-       the first database opens (Extensions/IServiceCollectionExtensions.cs). -->
+       the first database opens (Extensions/IServiceCollectionExtensions.cs). Bit.Bsqlite.targets, imported below, drops
+       the mark from an AOT build, which would abort at startup with it, and sets the switch BsqliteBuilder.LazyLoadsXml
+       reads everywhere else - so the step knows whether there is anything to load. -->
   <ItemGroup>
     <BlazorWebAssemblyLazyLoad Include="System.Private.Xml.wasm" />
   </ItemGroup>
