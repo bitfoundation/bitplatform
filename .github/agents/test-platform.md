@@ -45,7 +45,9 @@ its jobs (`/job/<id>`); the run id is the number after `/runs/`.
 - **All CI** runs: fix what they failed on - step 1. There is no single All CI any more: it is split by folder into All
   Other CI (`all.other.ci.yml`), All Toolings CI (`all.toolings.ci.yml`) and All Utilities CI (`all.utilities.ci.yml`),
   and a full check takes all three. The E2E suites have their own two, All Other E2E CI (`all.other.e2e.ci.yml`) and All
-  Utilities E2E CI (`all.utilities.e2e.ci.yml`).
+  Utilities E2E CI (`all.utilities.e2e.ci.yml`). The Boilerplate's tests against PostgreSQL, MySQL and SQL Server, its
+  Workbench tests and its configuration builds are in CI Templates E2E (`ci.templates.e2e.yml`), which All Other E2E CI
+  runs, so checking the Boilerplate takes that run too.
 - An **All Apps CD** run (`all.apps.cd.yml`): roll its apps out before testing them - step 2.
 
 ```bash
@@ -81,8 +83,8 @@ answer, and repeat the plan back before starting:
    only what nuget.org doesn't have yet, package by package. At a version that is already there it builds packages
    and publishes only a package id that is new at that version: start it, and any later one a fix needs, without
    asking, and tell the user when the branch adds a package, since that one stays on nuget.org.
-4. **All CI**: the linked runs, new runs of the three on the branch (every job, or which ones), with or without the two
-   E2E ones, or none.
+4. **All CI**: the linked runs, new runs on the branch (every job, or which ones) of the three and of All Other E2E CI
+   for the Boilerplate's tests, with or without its library suites and All Utilities E2E CI, or none.
 5. **All Apps CD**: the linked run, a new run (every app, or which of `server`, `wasm`, `windows`, `android` and `ios`),
    or none, which tests what is deployed now. Say which branch and `APP_VERSION` that is, from the last All Apps CD run
    (`gh run list -R bitfoundation/bitplatform -w all.apps.cd.yml -L 1`): it is often another branch than the one under test.
@@ -97,13 +99,14 @@ until the report. Start the run's task on the Workbench (next section), then go 
 1. The prerelease run, when asked for:
    `gh workflow run cd.prerelease.nuget.packages.yml -R bitfoundation/bitplatform --ref <branch>`. Wait for it to succeed
    (`gh run watch <run-id> -R bitfoundation/bitplatform --exit-status`) before anything that takes its packages.
-2. `APP_VERSION`, then the All CI runs and All Apps CD together, All Other CI and All Apps CD with the chosen
-   `prerelease_packages`. Their inputs name their jobs and default to on; `-f <job>=false` leaves one out. The E2E
-   suites are no input any more: start All Other E2E CI and All Utilities E2E CI when they are asked for. After a
-   prerelease run that published a new version, start them once nuget.org lists that version for `Bit.Minifier` and
-   `Bit.BlazorES2019`: the library demos and their jobs take those two from nuget.org even with `prerelease_packages`,
-   and fail with NU1102 until then. Every other package comes from the run's artifact, so don't wait for the rest, which
-   nuget.org can list half an hour later.
+2. `APP_VERSION`, then the All CI runs and All Apps CD together, All Other CI, All Other E2E CI and All Apps CD with the
+   chosen `prerelease_packages`. Their inputs name their jobs and default to on; `-f <job>=false` leaves one out, so All
+   Other E2E CI with `-f blazorui=false -f bswup=false -f butil=false -f brouter=false` runs the Boilerplate's tests
+   without the library suites. Start All Utilities E2E CI only when it is asked for. After a prerelease run that
+   published a new version, start them once nuget.org lists that version for `Bit.Minifier` and `Bit.BlazorES2019`: the
+   library demos and their jobs take those two from nuget.org even with `prerelease_packages`, and fail with NU1102
+   until then. Every other package comes from the run's artifact, so don't wait for the rest, which nuget.org can list
+   half an hour later.
 3. While they run: step 1 as CI jobs fail, and steps 5 and 6, which need no CD: start each as soon as its packages
    exist, one at a time, whenever this machine has several GB free (check before each, since the CD deploys here
    too). Step 7 needs no CD and is light: do it while CI and CD run. Step 8 needs no CD either: start it in the
@@ -189,9 +192,9 @@ websites - is checked. Every command prints what it checked and exits non-zero o
 
    A test that needs what the job generated - another database, `--module Admin`, `--advancedTests` - needs the same
    project: pack the template and the CLI the way `.github/actions/setup-bit-cli` does, then replay the job's
-   `bit new ...` line from `all.other.ci.yml` with `--template-package` in a scratch folder outside the repository, with the
+   `bit new ...` line from `ci.templates.e2e.yml` with `--template-package` in a scratch folder outside the repository, with the
    job's database in Docker and the job's connection string (`ConnectionStrings__mssqldb` and the like, in
-   `all.other.ci.yml`).
+   `ci.templates.e2e.yml`).
 
    Run a flaky test often enough to watch it fail before the fix and not after - under load, when the failure is
    about timing.
@@ -283,7 +286,8 @@ websites - is checked. Every command prints what it checked and exits non-zero o
    on the branch under test: only a fix to that branch's own changes goes on it. Push to a branch of your own without
    asking, for the user to review with the report; ask before pushing to anyone else's. The All CI runs on the pushed
    branch are the final proof: `gh workflow run <file> -R bitfoundation/bitplatform --ref <branch>` for `all.other.ci.yml`,
-   `all.toolings.ci.yml` and `all.utilities.ci.yml`, since no one run covers them all. Re-running a failed
+   `all.toolings.ci.yml` and `all.utilities.ci.yml`, since no one run covers them all, and `ci.templates.e2e.yml` for a
+   Boilerplate fix. Re-running a failed
    job (`gh run rerun <run-id> --failed`) tells flaky from broken, and proves nothing about a fix. It has to wait for
    the whole run to end: a new run with every other job off answers sooner. A push to a branch
    with an open PR also starts that PR's CI workflows; cancel the ones the All CI runs cover anyway, so the runners go to it.
@@ -373,7 +377,7 @@ and each job of a CD or CI run with `prerelease_packages` takes the newest unexp
 prerelease run that finishes in the middle of a CD run hands the jobs that start after it another build, maybe of
 another branch: compare the jobs' notices. The prerelease run also pushes its packages to nuget.org, skipping every
 version nuget.org already has, so a second run at the same version changes nothing there and its build lives only in
-its artifact. All Other CI's `prerelease_packages` option works the same way for its template and website jobs. So when a
+its artifact. The `prerelease_packages` option of All Other CI and All Other E2E CI works the same way for their template and website jobs. So when a
 template fix uses a library change that nuget.org's build of the version doesn't have, everything here passes while
 the fix's own PR, built with nuget.org's packages, fails until the next prerelease version: say so in the report and in
 the PR. The push also stops at the first package nuget.org refuses, and every package after it stays off nuget.org:
@@ -471,7 +475,7 @@ with a publish of the commit the expected sizes were measured on. The service wo
 included, report no size to Playwright, so the total leaves them out.
 
 Two gaps of third-party libraries on .NET 11 are known: the template's MySQL provider doesn't work there, and
-CommunityToolkit.Datasync doesn't sync. That is why All Other CI's MySQL job and the offline Todo demo build .NET 10
+CommunityToolkit.Datasync doesn't sync. That is why the MySQL job of CI Templates E2E and the offline Todo demo build .NET 10
 projects. A .NET 11 project that uses either fails by design: report it as known and don't triage it. Check them
 again once those libraries support .NET 11.
 

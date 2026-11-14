@@ -382,15 +382,16 @@ Finish every sweep with an issue, a PR and a full CI run. `upstream` is `bitfoun
 4. PR from `<fork-owner>:<n>` into `upstream/develop`, title `Update project dependencies (#<n>)`.
    The body starts with `closes #<n>` and carries the report: Changed, Breaking or important,
    Held back, Missed / drifted, Not verified.
-5. Run All Other CI (`all.other.ci.yml`), All Toolings CI (`all.toolings.ci.yml`) and All Utilities CI
-   (`all.utilities.ci.yml`) on the fork against the branch and give the three URLs with the PR link. All CI is split by
-   folder now, so no one run covers every project:
+5. Run All Other CI (`all.other.ci.yml`), All Toolings CI (`all.toolings.ci.yml`), All Utilities CI
+   (`all.utilities.ci.yml`) and CI Templates E2E (`ci.templates.e2e.yml`, the Boilerplate's tests against each database)
+   on the fork against the branch and give the four URLs with the PR link. All CI is split by folder now, so no one run
+   covers every project:
 
    ```bash
-   for w in all.other.ci.yml all.toolings.ci.yml all.utilities.ci.yml; do
+   for w in all.other.ci.yml all.toolings.ci.yml all.utilities.ci.yml ci.templates.e2e.yml; do
      gh workflow run $w --repo <fork-owner>/bitplatform --ref <n>
    done
-   for w in all.other.ci.yml all.toolings.ci.yml all.utilities.ci.yml; do
+   for w in all.other.ci.yml all.toolings.ci.yml all.utilities.ci.yml ci.templates.e2e.yml; do
      gh run list --repo <fork-owner>/bitplatform --workflow $w --branch <n> --limit 1 --json url --jq '.[0].url'
    done
    ```

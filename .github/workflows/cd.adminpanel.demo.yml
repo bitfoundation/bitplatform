@@ -38,7 +38,7 @@ on:
         type: boolean
         default: true
       prerelease_packages:
-        description: Bit packages of the latest Prerelease nuget packages run instead of nuget.org
+        description: Bit packages of the latest CD Prerelease nuget packages run instead of nuget.org
         type: boolean
         default: false
   workflow_call:

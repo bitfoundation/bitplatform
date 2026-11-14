@@ -27,7 +27,7 @@ on:
         type: boolean
         default: true
       prerelease_packages:
-        description: Bit packages of the latest Prerelease nuget packages run instead of nuget.org (AdminPanel, Sales, Todo, Workbench, the landing page, and the platform and sales websites)
+        description: Bit packages of the latest CD Prerelease nuget packages run instead of nuget.org (AdminPanel, Sales, Todo, Workbench, the landing page, and the platform and sales websites)
         type: boolean
         default: false
 
