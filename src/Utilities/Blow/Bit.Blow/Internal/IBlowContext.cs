@@ -102,8 +102,7 @@ public interface IBlowContext
     /// the pane so the gesture survives the pointer leaving the flow.
     /// </summary>
     void StartResize(string nodeId, BlowResizeDirection direction,
-        double clientX, double clientY, double minWidth, double minHeight, bool keepAspectRatio,
-        double maxWidth, double maxHeight, long pointerId);
+        double clientX, double clientY, BlowResizeOptions options, long pointerId);
 
     /// <summary>Begins dragging a node from a custom <c>BlowDragHandle</c> element.</summary>
     void BeginNodeDrag(BlowNode node, Microsoft.AspNetCore.Components.Web.PointerEventArgs e);

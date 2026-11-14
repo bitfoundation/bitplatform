@@ -137,7 +137,8 @@ public class ConstraintTests : BunitContext
         var cut = Render([parent, child]);
 
         await cut.InvokeAsync(() => cut.Instance.StartResize(
-            "c", BlowResizeDirection.BottomRight, 0, 0, 20, 20, false, double.MaxValue, double.MaxValue, 1));
+            "c", BlowResizeDirection.BottomRight, 0, 0,
+            new BlowResizeOptions { MinWidth = 20, MinHeight = 20 }, 1));
 
         cut.Find(".bit-blow").PointerMove(new PointerEventArgs { PointerId = 1, ClientX = 5000, ClientY = 5000 });
 
@@ -160,7 +161,8 @@ public class ConstraintTests : BunitContext
         var cut = Render([node]);
 
         await cut.InvokeAsync(() => cut.Instance.StartResize(
-            "n", BlowResizeDirection.Left, 0, 0, 20, 20, false, double.MaxValue, double.MaxValue, 1));
+            "n", BlowResizeDirection.Left, 0, 0,
+            new BlowResizeOptions { MinWidth = 20, MinHeight = 20 }, 1));
 
         cut.Find(".bit-blow").PointerMove(new PointerEventArgs { PointerId = 1, ClientX = -5000, ClientY = 0 });
 
@@ -183,7 +185,8 @@ public class ConstraintTests : BunitContext
         var cut = Render([node]);
 
         await cut.InvokeAsync(() => cut.Instance.StartResize(
-            "n", BlowResizeDirection.BottomRight, 0, 0, 20, 20, false, 150, 90, 1));
+            "n", BlowResizeDirection.BottomRight, 0, 0,
+            new BlowResizeOptions { MinWidth = 20, MinHeight = 20, MaxWidth = 150, MaxHeight = 90 }, 1));
 
         cut.Find(".bit-blow").PointerMove(new PointerEventArgs { PointerId = 1, ClientX = 5000, ClientY = 5000 });
 
@@ -198,7 +201,8 @@ public class ConstraintTests : BunitContext
         var cut = Render([node]);
 
         await cut.InvokeAsync(() => cut.Instance.StartResize(
-            "n", BlowResizeDirection.BottomRight, 0, 0, 20, 20, false, double.MaxValue, double.MaxValue, 1));
+            "n", BlowResizeDirection.BottomRight, 0, 0,
+            new BlowResizeOptions { MinWidth = 20, MinHeight = 20 }, 1));
 
         cut.Find(".bit-blow").PointerMove(new PointerEventArgs { PointerId = 1, ClientX = 400, ClientY = 300 });
 
@@ -213,7 +217,8 @@ public class ConstraintTests : BunitContext
         var cut = Render([node]);
 
         await cut.InvokeAsync(() => cut.Instance.StartResize(
-            "n", BlowResizeDirection.BottomRight, 0, 0, 40, 30, false, double.MaxValue, double.MaxValue, 1));
+            "n", BlowResizeDirection.BottomRight, 0, 0,
+            new BlowResizeOptions { MinWidth = 40, MinHeight = 30 }, 1));
 
         cut.Find(".bit-blow").PointerMove(new PointerEventArgs { PointerId = 1, ClientX = -5000, ClientY = -5000 });
 

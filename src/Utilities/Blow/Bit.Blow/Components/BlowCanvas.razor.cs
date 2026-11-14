@@ -6633,17 +6633,17 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     /// <summary>Begins a node resize gesture. Called by <c>BlowNodeResizer</c> and <c>BlowNodeResizeControl</c>.</summary>
     public void StartResize(string nodeId, BlowResizeDirection direction,
         double clientX, double clientY, double minWidth, double minHeight, bool keepAspectRatio)
-        => StartResize(nodeId, direction, clientX, clientY, minWidth, minHeight, keepAspectRatio,
-            double.MaxValue, double.MaxValue, NoPointer);
+        => StartResize(nodeId, direction, clientX, clientY,
+            new BlowResizeOptions { MinWidth = minWidth, MinHeight = minHeight, KeepAspectRatio = keepAspectRatio }, NoPointer);
 
     /// <summary>
     /// Begins a node resize gesture with size bounds, capturing the pointer on the pane so the
     /// gesture survives the pointer leaving the flow.
     /// </summary>
     public void StartResize(string nodeId, BlowResizeDirection direction,
-        double clientX, double clientY, double minWidth, double minHeight, bool keepAspectRatio,
-        double maxWidth, double maxHeight, long pointerId)
+        double clientX, double clientY, BlowResizeOptions options, long pointerId)
     {
+        ArgumentNullException.ThrowIfNull(options);
         OnPointerPress();
         if (!Index.TryGetValue(nodeId, out var node)) return;
 
@@ -6655,10 +6655,10 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         _resizeStartPos = node.Position;
         _resizeStartSize = node.EffectiveSize;
         _resizeOriginalSize = (node.Width, node.Height);
-        _resizeMinW = Math.Max(1, minWidth);
-        _resizeMinH = Math.Max(1, minHeight);
-        _resizeMaxW = Math.Max(_resizeMinW, maxWidth);
-        _resizeMaxH = Math.Max(_resizeMinH, maxHeight);
+        _resizeMinW = Math.Max(1, options.MinWidth);
+        _resizeMinH = Math.Max(1, options.MinHeight);
+        _resizeMaxW = Math.Max(_resizeMinW, options.MaxWidth);
+        _resizeMaxH = Math.Max(_resizeMinH, options.MaxHeight);
 
         // A node pinned inside its parent must not be resizable straight out of it. Folding the
         // extent into the size bounds here means every later step - the clamp, the aspect-ratio
@@ -6677,7 +6677,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
             if (direction.HasFlag(BlowResizeDirection.Top))
                 _resizeMaxH = Math.Min(_resizeMaxH, Math.Max(_resizeMinH, _resizeStartPos.Y + startSize.Height - extent.Top));
         }
-        _resizeKeepAspect = keepAspectRatio;
+        _resizeKeepAspect = options.KeepAspectRatio;
         node.Resizing = true;
         CapturePane(pointerId);
         _ = OnNodeResizeStart.InvokeAsync(node);
