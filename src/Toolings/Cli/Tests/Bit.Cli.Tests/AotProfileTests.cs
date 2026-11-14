@@ -402,9 +402,47 @@ public class AotProfileTests
 
         Assert.AreEqual(0, await host.RunAsync("aot-profile", "--browser", browser.Executable), host.Output);
 
-        Assert.AreEqual(2, browser.Navigations);
+        Assert.AreEqual(2, browser.Loads);
+        Assert.AreEqual(1, browser.Downloads);
         StringAssert.Contains(host.FlatOutput, "Used the app 1 page");
         Assert.IsTrue(File.Exists(Path.Combine(host.WorkingDirectory, "App.Client.aotprofile")));
+    }
+
+    [TestMethod]
+    public async Task AnInteractiveAutoStartPathWithAFragment_Should_BeLoadedAgainAsANewDocument()
+    {
+        if (OperatingSystem.IsWindows() is false)
+            return;
+
+        using var host = new TestHost();
+        File.WriteAllText(Path.Combine(host.WorkingDirectory, "App.Client.csproj"), "<Project />");
+        PublishesAStaticApp(host);
+        await using var browser = new FakeBrowser(host.Root) { RendersInteractiveAuto = true };
+
+        Assert.AreEqual(0, await host.RunAsync("aot-profile", "--browser", browser.Executable, "--path", "/#home"), host.Output);
+
+        Assert.AreEqual(2, browser.Loads);
+        Assert.AreEqual(1, browser.Downloads);
+    }
+
+    [TestMethod]
+    public async Task AnInteractiveAutoAppUsedAgainAfterAReload_Should_NotBeLoadedTwiceAgain()
+    {
+        if (OperatingSystem.IsWindows() is false)
+            return;
+
+        using var host = new TestHost();
+        File.WriteAllText(Path.Combine(host.WorkingDirectory, "App.Client.csproj"), "<Project />");
+        PublishesAStaticApp(host);
+        await using var browser = new FakeBrowser(host.Root) { RendersInteractiveAuto = true, ReloadsWhileSettling = page => page == "/sign-out" };
+        browser.Links["/"] = ["/sign-out"];
+
+        Assert.AreEqual(0, await host.RunAsync("aot-profile", "--browser", browser.Executable, "--max-pages", "10"), host.Output);
+
+        StringAssert.Contains(host.FlatOutput, "/sign-out reloads the app");
+        Assert.AreEqual(3, browser.Loads);
+        Assert.AreEqual(1, browser.Downloads);
+        StringAssert.Contains(host.FlatOutput, "Used the app 1 page");
     }
 
     [TestMethod]
@@ -502,6 +540,9 @@ public class AotProfileTests
         private TcpClient? client;
         private string page = "/";
         private bool started;
+        private Uri? current;
+        private bool hashStored;
+        private bool downloadedHere;
 
         public FakeBrowser(string folder)
         {
@@ -538,7 +579,9 @@ public class AotProfileTests
 
         public bool RendersInteractiveAuto { get; init; }
 
-        public int Navigations { get; private set; }
+        public int Loads { get; private set; }
+
+        public int Downloads { get; private set; }
 
         public async ValueTask DisposeAsync()
         {
@@ -615,8 +658,7 @@ public class AotProfileTests
                     File.WriteAllText(stop, "");
                     return [];
                 case "Page.navigate":
-                    Navigations++;
-                    page = new Uri(parameters!["url"]!.GetValue<string>()).AbsolutePath;
+                    Navigate(parameters!["url"]!.GetValue<string>());
                     return [];
                 case "Runtime.evaluate":
                     var expression = parameters!["expression"]!.GetValue<string>();
@@ -628,10 +670,42 @@ public class AotProfileTests
             }
         }
 
+        // Like Chromium, a navigation to the URL the tab is on that differs only by its fragment, or not at all when it has
+        // one, stays in the same document. A new document of an InteractiveAuto app renders on the server, and stores a new
+        // resource hash, until a document before it has stored one: localStorage outlives the document.
+        private void Navigate(string url)
+        {
+            var next = new Uri(url);
+
+            if (next.Fragment.Length > 0 && current is not null && Uri.Compare(next, current, UriComponents.HttpRequestUrl, UriFormat.UriEscaped, StringComparison.Ordinal) == 0)
+            {
+                current = next;
+                return;
+            }
+
+            current = next;
+
+            if (next.Scheme is "about")
+                return;
+
+            Loads++;
+            page = next.AbsolutePath;
+            downloadedHere = RendersInteractiveAuto && hashStored is false;
+            hashStored |= RendersInteractiveAuto;
+        }
+
         private JsonNode? Evaluate(string function, JsonNode? argument)
         {
             if (function.Contains("getDotnetRuntime === 'function'", StringComparison.Ordinal))
-                return RendersInteractiveAuto && Navigations < 2 ? argument!["reloaded"]!.GetValue<bool>() ? "timeout" : "downloaded" : "started";
+            {
+                if (downloadedHere)
+                {
+                    Downloads++;
+                    return "downloaded";
+                }
+
+                return "started";
+            }
 
             if (function.Contains("window.__bitAotProfile = 1", StringComparison.Ordinal))
             {

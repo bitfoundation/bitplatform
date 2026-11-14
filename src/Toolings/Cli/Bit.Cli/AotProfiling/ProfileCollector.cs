@@ -41,20 +41,44 @@ public sealed partial class ProfileCollector(DevToolsPage page, PublishedApp app
                     Object.defineProperty(value, 'start', { configurable: true, get: () => start, set: f => start = typeof f === 'function' ? wrap(value, f) : f });
                 }
             });
+            const runtime = window.__bitRuntime = { auto: false, hash: undefined };
+            const setItem = Storage.prototype.setItem;
+            Storage.prototype.setItem = function (key, value) {
+                if (String(key).startsWith('blazor-resource-hash')) {
+                    try { runtime.hash = runtime.hash === 'new' || this.getItem(key) !== String(value) ? 'new' : 'same'; } catch { }
+                }
+                return setItem.call(this, key, value);
+            };
+            const auto = /^\s*Blazor:[^{]*\{.*"type"\s*:\s*"auto"/s;
+            new MutationObserver((records, observer) => {
+                if (records.some(record => [...record.addedNodes].some(node => node.nodeType === Node.COMMENT_NODE && auto.test(node.data)))) {
+                    runtime.auto = true;
+                    observer.disconnect();
+                }
+            }).observe(document, { childList: true, subtree: true });
         })();
         """;
 
-    // A Blazor Web App whose pages render InteractiveAuto runs a first visit on a Blazor Server circuit and only downloads
-    // the WebAssembly runtime, without starting it. blazor.web.js notes the download in localStorage, under
-    // blazor-resource-hash, and the next page load starts the runtime and renders the pages on it. 'downloaded' says the
-    // first visit got that far without a runtime, so the page is loaded again.
+    // A Blazor Web App renders an InteractiveAuto component on the server until the browser holds the app's WebAssembly
+    // resources. blazor.web.js keeps their hash in localStorage, under keys starting with blazor-resource-hash (.NET 10 writes
+    // blazor-resource-hash:<assembly>, .NET 11 that and blazor-resource-hash), and writes it once the resources are loaded:
+    // a hash that changed tells the page rendered its InteractiveAuto components on the server. .NET 11 then only downloads
+    // the runtime and never starts it; .NET 10 starts it with nothing to run. The init script notes, per page load, whether
+    // the page holds an InteractiveAuto component (its prerendered <!--Blazor:{"type":"auto",...}--> marker) and whether a
+    // hash was written and changed. 'downloaded' says the components ran on the server, so the page is loaded once more.
+    // A page with InteractiveAuto components that started the runtime waits briefly for the hash, which .NET 10 writes just
+    // after it. A page without them, an InteractiveWebAssembly or standalone app, starts the runtime and is never reloaded.
     private const string WaitForRuntime = """
-        async ({ timeout, reloaded }) => {
+        async timeout => {
             const end = Date.now() + timeout;
-            const downloaded = () => { try { return !!localStorage.getItem('blazor-resource-hash'); } catch { return false; } };
+            let startedAt;
             while (Date.now() < end) {
-                if (typeof globalThis.getDotnetRuntime === 'function' && globalThis.getDotnetRuntime(0)) return 'started';
-                if (!reloaded && downloaded()) return 'downloaded';
+                const state = window.__bitRuntime ?? {};
+                if (state.auto && state.hash === 'new') return 'downloaded';
+                if (typeof globalThis.getDotnetRuntime === 'function' && globalThis.getDotnetRuntime(0)) {
+                    startedAt ??= Date.now();
+                    if (!state.auto || state.hash || Date.now() - startedAt >= 5000) return 'started';
+                }
                 await new Promise(r => setTimeout(r, 250));
             }
             return 'timeout';
@@ -160,20 +184,7 @@ public sealed partial class ProfileCollector(DevToolsPage page, PublishedApp app
 
     public async Task<IReadOnlyList<string>> VisitAsync(string startPath, int maxPages, IReadOnlyCollection<string> skipped, Action<string> progress, CancellationToken cancellationToken)
     {
-        var url = new Uri(app.Origin, startPath).ToString();
-        var waited = System.Diagnostics.Stopwatch.StartNew();
-        await page.SendAsync("Page.navigate", new { url }, cancellationToken);
-        var runtime = (await page.EvaluateAsync(WaitForRuntime, new { timeout = 180_000, reloaded = false }, cancellationToken)).GetString();
-
-        if (runtime is "downloaded")
-        {
-            log.Write("The first visit downloaded the .NET runtime without starting it (InteractiveAuto); loading the page again to run it on WebAssembly.");
-            await page.SendAsync("Page.navigate", new { url }, cancellationToken);
-            runtime = (await page.EvaluateAsync(WaitForRuntime, new { timeout = (int)Math.Max(1_000, 180_000 - waited.ElapsedMilliseconds), reloaded = true }, cancellationToken)).GetString();
-        }
-
-        if (runtime is not "started")
-            throw new InvalidOperationException("The app's .NET runtime didn't start within 3 minutes.");
+        await LoadAsync(new Uri(app.Origin, startPath).ToString(), cancellationToken);
 
         await page.EvaluateAsync("() => { window.__bitAotProfile = 1; }", cancellationToken: cancellationToken);
         var visited = new List<string> { (await SettleAsync(startPath, cancellationToken)).GetString()! };
@@ -210,6 +221,34 @@ public sealed partial class ProfileCollector(DevToolsPage page, PublishedApp app
             throw new AppReloadedException(visited[^1]);
 
         return visited;
+    }
+
+    // Loads the page until the .NET runtime runs it, at most twice (see WaitForRuntime), within 3 minutes in all. Each load
+    // goes through about:blank: a Page.navigate to the URL the tab is already on only scrolls when the URL has a fragment.
+    private async Task LoadAsync(string url, CancellationToken cancellationToken)
+    {
+        var deadline = DateTime.UtcNow.AddMinutes(3);
+
+        for (var load = 1; ; load++)
+        {
+            await page.SendAsync("Page.navigate", new { url = "about:blank" }, cancellationToken);
+            await page.SendAsync("Page.navigate", new { url }, cancellationToken);
+            var left = (int)Math.Max(1_000, (deadline - DateTime.UtcNow).TotalMilliseconds);
+            var runtime = await page.EvaluateAsync(WaitForRuntime, left, cancellationToken);
+
+            switch (runtime.ValueKind is JsonValueKind.String ? runtime.GetString() : null)
+            {
+                case "started":
+                    return;
+                case "downloaded" when load is 1:
+                    log.Write("The page's InteractiveAuto components ran on the server while the browser downloaded the app's .NET runtime; loading the page again to run them on WebAssembly.");
+                    continue;
+                case "downloaded":
+                    throw new InvalidOperationException("The app's InteractiveAuto components still ran on the server when the page was loaded a second time: the browser didn't keep the .NET runtime it downloaded.");
+                default:
+                    throw new InvalidOperationException("The app's .NET runtime didn't start within 3 minutes.");
+            }
+        }
     }
 
     public async Task<bool> RunStepAsync(string step, CancellationToken cancellationToken)
