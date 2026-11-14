@@ -225,8 +225,31 @@ jobs:
         merge-multiple: true
         path: packages
 
+    - name: Take the Bit packages from this commit only
+      run: |
+        cat > nuget.config <<'EOF'
+        <?xml version="1.0" encoding="utf-8"?>
+        <configuration>
+          <packageSources>
+            <clear />
+            <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
+            <add key="bit-release" value="%GITHUB_WORKSPACE%/packages" />
+          </packageSources>
+          <packageSourceMapping>
+            <packageSource key="nuget.org">
+              <package pattern="*" />
+            </packageSource>
+            <packageSource key="bit-release">
+              <package pattern="Bit.*" />
+            </packageSource>
+          </packageSourceMapping>
+        </configuration>
+        EOF
+
     - name: Restore workloads
-      run: dotnet workload restore ${{ matrix.solution }}
+      run: |
+        dotnet workload restore ${{ matrix.solution }}
+        dotnet workload install wasm-tools
 
     - name: dotnet build
-      run: dotnet build ${{ matrix.solution }} -c Release -p:RestoreAdditionalProjectSources=${{ github.workspace }}/packages
+      run: dotnet build ${{ matrix.solution }} -c Release
