@@ -16,8 +16,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: bit-ci-Bortable-${{ github.event.pull_request.number || github.run_id }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  group: ci-bortable-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build-Bortable:
@@ -59,3 +59,8 @@ jobs:
 
     - name: dotnet test (MCP server)
       run: cd src/Utilities/Bortable/Tests/Bit.Bortable.Tests.Mcp && dotnet test --no-build
+
+    - name: dotnet pack
+      run: |
+        dotnet build src/Utilities/Bortable/Bit.Bortable/Bit.Bortable.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Utilities/Bortable/Bit.Bortable/Bit.Bortable.csproj --output ./packages --configuration Release

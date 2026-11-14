@@ -10,6 +10,10 @@ env:
 permissions:
   contents: read
 
+concurrency:
+  group: ci-bmotion-e2e-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   # The browser suite: every harness page in a real Chromium, once per render mode - and on every runtime the
   # library ships for where the runtime is what differs - and, in the wasm / net11.0 leg, the published lazy loading

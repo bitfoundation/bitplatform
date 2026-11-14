@@ -17,6 +17,10 @@ permissions:
   contents: read
   actions: read
 
+concurrency:
+  group: cd-workbench-demo
+  cancel-in-progress: true
+
 jobs:
 
   build_workbench:

@@ -18,6 +18,10 @@ env:
 permissions:
   contents: read
 
+concurrency:
+  group: ci-bbscanner-e2e-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
 
   e2e:

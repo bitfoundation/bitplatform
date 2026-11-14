@@ -20,6 +20,10 @@ permissions:
   contents: read
   actions: read
 
+concurrency:
+  group: cd-platform-website
+  cancel-in-progress: true
+
 jobs:
 
   build_api_blazor:

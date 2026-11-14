@@ -2,6 +2,11 @@ name: CI Templates
 
 on:
   workflow_dispatch:
+    inputs:
+      prerelease_packages:
+        description: Bit packages of the latest CD Prerelease nuget packages run instead of nuget.org
+        type: boolean
+        default: false
   workflow_call:
     inputs:
       prerelease_packages:
@@ -22,8 +27,8 @@ permissions:
   actions: read
 
 concurrency:
-  group: bit-ci-Templates-${{ github.event.pull_request.number || github.run_id }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  group: ci-templates-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build-Templates:
@@ -42,6 +47,11 @@ jobs:
       uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
       with:
         global-json-file: src/global.json
+
+    - name: dotnet pack
+      run: |
+        dotnet pack src/Templates/Boilerplate/Bit.Boilerplate.ProjectTemplate.csproj --output ./packages --configuration Release
+        dotnet pack src/Templates/BlazorEmpty/Bit.BlazorEmpty.ProjectTemplate.csproj --output ./packages --configuration Release
 
     - name: Use prerelease packages
       if: inputs.prerelease_packages

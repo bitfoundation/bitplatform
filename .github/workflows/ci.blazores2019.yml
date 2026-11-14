@@ -14,8 +14,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: bit-ci-BlazorES2019-${{ github.event.pull_request.number || github.run_id }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  group: ci-blazores2019-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build-BlazorES2019:
@@ -83,3 +83,8 @@ jobs:
 
     - name: dotnet build
       run: dotnet build src/Toolings/BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj
+
+    - name: dotnet pack
+      run: |
+        dotnet build src/Toolings/BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Toolings/BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj --output ./packages --configuration Release

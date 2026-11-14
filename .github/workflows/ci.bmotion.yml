@@ -14,8 +14,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: bit-ci-Bmotion-${{ github.event.pull_request.number || github.run_id }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  group: ci-bmotion-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build-Bmotion:
@@ -68,4 +68,9 @@ jobs:
         cd src/Utilities/Bmotion/Tests/bit-bmotion-js
         npm ci || npm install
         npm test
+
+    - name: dotnet pack
+      run: |
+        dotnet build src/Utilities/Bmotion/Bit.Bmotion/Bit.Bmotion.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Utilities/Bmotion/Bit.Bmotion/Bit.Bmotion.csproj --output ./packages --configuration Release
 

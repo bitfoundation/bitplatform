@@ -20,8 +20,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: bit-ci-Bmage-${{ github.event.pull_request.number || github.run_id }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  group: ci-bmage-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
 
@@ -75,3 +75,10 @@ jobs:
 
     - name: dotnet test (hosting samples - every render mode over HTTP)
       run: cd src/Utilities/Bmage/Tests/Bit.Bmage.Tests.Hosting && dotnet test --no-build
+
+    - name: dotnet pack
+      run: |
+        for project in Bit.Bmage Bit.Bmage.Blazor Bit.Bmage.Bink Bit.Bmage.BbScanner; do
+          dotnet build src/Utilities/Bmage/$project/$project.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+          dotnet pack src/Utilities/Bmage/$project/$project.csproj --output ./packages --configuration Release
+        done

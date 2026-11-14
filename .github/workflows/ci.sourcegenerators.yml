@@ -14,8 +14,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: bit-ci-SourceGenerators-${{ github.event.pull_request.number || github.run_id }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  group: ci-sourcegenerators-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build-SourceGenerators:
@@ -40,3 +40,6 @@ jobs:
 
     - name: dotnet test
       run: cd src/Toolings/SourceGenerators/Tests/Bit.SourceGenerators.Tests && dotnet test --no-build
+
+    - name: dotnet pack
+      run: dotnet build src/Toolings/SourceGenerators/Bit.SourceGenerators/Bit.SourceGenerators.csproj --configuration Release

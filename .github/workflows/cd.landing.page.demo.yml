@@ -17,6 +17,10 @@ permissions:
   contents: read
   actions: read
 
+concurrency:
+  group: cd-landing-page-demo
+  cancel-in-progress: true
+
 jobs:
 
   build_landingpage:

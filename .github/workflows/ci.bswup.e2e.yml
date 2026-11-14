@@ -14,6 +14,10 @@ env:
 permissions:
   contents: read
 
+concurrency:
+  group: ci-bswup-e2e-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
 
   # Every host shape (the Blazor Web App in the WebAssembly, WebAssembly without prerendering, Auto

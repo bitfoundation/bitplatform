@@ -17,8 +17,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: bit-ci-Butil-${{ github.event.pull_request.number || github.run_id }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  group: ci-butil-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
 
@@ -100,3 +100,8 @@ jobs:
         name: butil-hosting-results
         path: '**/butil-hosting*.trx'
         if-no-files-found: ignore
+
+    - name: dotnet pack
+      run: |
+        dotnet build src/Butil/Bit.Butil/Bit.Butil.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Butil/Bit.Butil/Bit.Butil.csproj --output ./packages --configuration Release
