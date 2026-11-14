@@ -1,8 +1,15 @@
 @*+:cnd:noEmit*@
-@attribute [Route("/diagnostic")]
-@attribute [Route("{culture?}/diagnostic")]
+@attribute [Route(PageUrls.Diagnostic)]
+@attribute [Route("{culture?}" + PageUrls.Diagnostic)]
 
 @inherits AppPageBase
+
+@if (Embedded is false)
+{
+    @* PageTitle only: the heading below already says Diagnostic, and Title would put it in the header a second time. *@
+    <AppPageData PageTitle="@Localizer[nameof(AppStrings.DiagnosticPageTitle)]"
+                 Description="@Localizer[nameof(AppStrings.DiagnosticPageDescription)]" />
+}
 
 <BitStack Gap="1rem" AutoHeight Padding="1rem" Style="max-width:60rem;margin-inline:auto">
 

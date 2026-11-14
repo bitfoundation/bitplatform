@@ -1234,9 +1234,6 @@
   <data name="AiChatApprovalWaiting" xml:space="preserve">
     <value>في انتظار ردك</value>
   </data>
-  <data name="AiChatApprovalClearAppFilesTitle" xml:space="preserve">
-    <value>هل تريد مسح ملفات التطبيق على هذا الجهاز؟</value>
-  </data>
   <data name="AiChatApprovalClearAppFilesDescription" xml:space="preserve">
     <value>البدء من جديد يحل معظم المشكلات الناتجة عن تلف البيانات المحلية.</value>
   </data>
@@ -1255,35 +1252,11 @@
   <data name="AiChatApprovalClearAppFilesApprove" xml:space="preserve">
     <value>مسح الملفات</value>
   </data>
-  <data name="AiChatApprovalClearAppFilesDecline" xml:space="preserve">
-    <value>ليس الآن</value>
-  </data>
-  <data name="AiChatApprovalClearAppFilesApproved" xml:space="preserve">
-    <value>جارٍ مسح ملفات التطبيق</value>
-  </data>
-  <data name="AiChatApprovalClearAppFilesDeclined" xml:space="preserve">
-    <value>احتفظت بملفات التطبيق.</value>
-  </data>
-  <data name="AiChatApprovalClearAppFilesNoAnswer" xml:space="preserve">
-    <value>لم يُمسح أي شيء: لم يتم الرد على الطلب.</value>
-  </data>
-  <data name="AiChatApprovalTitle" xml:space="preserve">
-    <value>هل توافق على هذا؟</value>
-  </data>
   <data name="AiChatApprovalApprove" xml:space="preserve">
     <value>موافقة</value>
   </data>
   <data name="AiChatApprovalDecline" xml:space="preserve">
     <value>رفض</value>
-  </data>
-  <data name="AiChatApprovalApproved" xml:space="preserve">
-    <value>تمت الموافقة</value>
-  </data>
-  <data name="AiChatApprovalDeclined" xml:space="preserve">
-    <value>تم الرفض.</value>
-  </data>
-  <data name="AiChatApprovalNoAnswer" xml:space="preserve">
-    <value>لم يتم الرد على الطلب.</value>
   </data>
   <!--#if (module == "Sales") -->
   <!--#if (database == "PostgreSQL" || database == "SqlServer") -->
@@ -1310,9 +1283,6 @@
   <data name="AiChatPanelStopDictation" xml:space="preserve">
     <value>إيقاف الإملاء</value>
   </data>
-  <data name="AiChatPanelDictation" xml:space="preserve">
-    <value>الإملاء</value>
-  </data>
   <data name="AiChatPanelMicrophoneBlocked" xml:space="preserve">
     <value>تم حظر الوصول إلى الميكروفون. اسمح به من الإعدادات لكي تتمكن من الإملاء.</value>
   </data>
@@ -1327,9 +1297,6 @@
   </data>
   <data name="AiChatPanelTranscribing" xml:space="preserve">
     <value>جارٍ تحويل ما قلته إلى نص</value>
-  </data>
-  <data name="AiChatPanelDictationTimeLeft" xml:space="preserve">
-    <value>الوقت المتبقي قبل توقف الإملاء</value>
   </data>
   <data name="AiChatPanelSpeechSignInTitle" xml:space="preserve">
     <value>الميزات الصوتية تتطلب حساباً</value>
@@ -1381,6 +1348,114 @@
   </data>
   <data name="AiChatPanelRestore" xml:space="preserve">
     <value>استعادة</value>
+  </data>
+  <data name="AiChatStop" xml:space="preserve">
+    <value>إيقاف</value>
+  </data>
+  <data name="AiChatRegenerate" xml:space="preserve">
+    <value>أجب مرة أخرى</value>
+  </data>
+  <data name="AiChatRetry" xml:space="preserve">
+    <value>حاول مرة أخرى</value>
+  </data>
+  <data name="AiChatGoodAnswer" xml:space="preserve">
+    <value>إجابة جيدة</value>
+  </data>
+  <data name="AiChatBadAnswer" xml:space="preserve">
+    <value>إجابة سيئة</value>
+  </data>
+  <data name="AiChatScrollToLatest" xml:space="preserve">
+    <value>الانتقال إلى أحدث رسالة</value>
+  </data>
+  <data name="AiChatThinking" xml:space="preserve">
+    <value>يفكر…</value>
+  </data>
+  <data name="AiChatFollowUps" xml:space="preserve">
+    <value>أسئلة مقترحة تالية</value>
+  </data>
+  <data name="AiChatListening" xml:space="preserve">
+    <value>يستمع</value>
+  </data>
+  <data name="AiChatRecordingTimeLeft" xml:space="preserve">
+    <value>متبقٍ {0}</value>
+  </data>
+  <data name="AiChatDurationMinutes" xml:space="preserve">
+    <value>{0} دقيقة</value>
+  </data>
+  <data name="AiChatDurationSeconds" xml:space="preserve">
+    <value>{0} ثانية</value>
+  </data>
+  <data name="AiChatRecordingStarted" xml:space="preserve">
+    <value>جارٍ التسجيل، متبقٍ {0}</value>
+  </data>
+  <data name="AiChatCommands" xml:space="preserve">
+    <value>الأوامر</value>
+  </data>
+  <data name="AiChatRetryIn" xml:space="preserve">
+    <value>حاول مرة أخرى بعد {0}.</value>
+  </data>
+  <data name="AiChatReasoning" xml:space="preserve">
+    <value>الاستدلال</value>
+  </data>
+  <data name="AiChatReasonedFor" xml:space="preserve">
+    <value>فكّر لمدة {0}</value>
+  </data>
+  <data name="AiChatSteps" xml:space="preserve">
+    <value>الخطوات</value>
+  </data>
+  <data name="AiChatInProgress" xml:space="preserve">
+    <value>قيد التنفيذ</value>
+  </data>
+  <data name="AiChatDone" xml:space="preserve">
+    <value>تم</value>
+  </data>
+  <data name="AiChatFailed" xml:space="preserve">
+    <value>فشل</value>
+  </data>
+  <data name="AiChatSkipped" xml:space="preserve">
+    <value>تم تخطيه</value>
+  </data>
+  <data name="AiChatNotStarted" xml:space="preserve">
+    <value>لم يبدأ</value>
+  </data>
+  <data name="AiChatElapsed" xml:space="preserve">
+    <value>الوقت المنقضي</value>
+  </data>
+  <data name="AiChatToolCalls" xml:space="preserve">
+    <value>الأدوات المستخدمة</value>
+  </data>
+  <data name="AiChatDropImage" xml:space="preserve">
+    <value>أفلت الصورة لإرفاقها</value>
+  </data>
+  <data name="AiChatTooManyImages" xml:space="preserve">
+    <value>حتى {0} صور لكل رسالة</value>
+  </data>
+  <data name="AiChatToolProductSearch" xml:space="preserve">
+    <value>البحث عن المنتجات</value>
+  </data>
+  <data name="AiChatToolNavigation" xml:space="preserve">
+    <value>التنقل إلى صفحة</value>
+  </data>
+  <data name="AiChatToolThemeChange" xml:space="preserve">
+    <value>تغيير المظهر</value>
+  </data>
+  <data name="AiChatToolLanguageChange" xml:space="preserve">
+    <value>تغيير اللغة</value>
+  </data>
+  <data name="AiChatToolSignIn" xml:space="preserve">
+    <value>تسجيل الدخول</value>
+  </data>
+  <data name="AiChatToolErrorCheck" xml:space="preserve">
+    <value>فحص تقرير الأخطاء</value>
+  </data>
+  <data name="AiChatToolFailed" xml:space="preserve">
+    <value>فشل {0}</value>
+  </data>
+  <data name="AiChatToolDeclined" xml:space="preserve">
+    <value>تم رفض {0}</value>
+  </data>
+  <data name="AiChatToolCancelled" xml:space="preserve">
+    <value>تم إلغاء {0}</value>
   </data>
   <!--#endif -->
   <!--#if (ads == true) -->
@@ -1928,7 +2003,7 @@
     <value>قراءة معلومات تشخيصية عن هذا النشر.</value>
   </data>
     <data name="OAuthScopeHealthzDescription" xml:space="preserve">
-    <value>قراءة تقرير الحالة التفصيلي لهذا النشر، بما في ذلك تفاصيل أخطاء كل ما هو معطّل.</value>
+    <value>قراءة تقرير الحالة التفصيلي لهذا النشر، دون تفاصيل أخطاء ما هو معطّل.</value>
   </data>
     <data name="OAuthScopeHealthzShortDescription" xml:space="preserve">
     <value>قراءة تقرير الحالة.</value>
@@ -2104,6 +2179,12 @@
   </data>
     <data name="SignOutOfAllAccounts" xml:space="preserve">
     <value>تسجيل الخروج من جميع الحسابات على هذا الجهاز</value>
+  </data>
+    <data name="DiagnosticPageTitle" xml:space="preserve">
+    <value>التشخيص</value>
+  </data>
+    <data name="DiagnosticPageDescription" xml:space="preserve">
+    <value>ما يُبلغ عنه هذا الجهاز والخادم بشأن التطبيق، لاستكشاف الأخطاء وإصلاحها.</value>
   </data>
   <!--#if (framework == 'net11.0') -->
     <data name="KioskTitle" xml:space="preserve">

@@ -21,10 +21,9 @@ public partial class SystemPromptContractTests
     public TestContext TestContext { get; set; } = default!;
 
     /// <summary>
-    /// The variables <c>AppChatbot</c> actually emits into the per-message <c>### Variables:</c> system message:
-    /// <c>variablesDefault</c> supplies the first three (See <c>AppChatbot.StartChat</c>) and
-    /// <c>variablesPrompt</c> the last three (See <c>AppChatbot.ProcessNewMessage</c>). A prompt that references
-    /// anything else hands the model a placeholder that is never substituted.
+    /// The variables <c>AppChatbot</c> actually emits into the per-question <c>### Variables:</c> system message (See
+    /// <c>AppChatbot.VariablesPrompt</c>), and a voice call into its instructions (See <c>ChatbotController.StartVoiceCall</c>).
+    /// A prompt that references anything else hands the model a placeholder that is never substituted.
     /// </summary>
     private static readonly string[] suppliedVariables =
     [

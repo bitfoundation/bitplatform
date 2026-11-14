@@ -463,12 +463,13 @@
             </BitDataGrid>
             <br /><br />
             <div>
-                <b>ChildrenProvider</b> loads a node's children on its first expand (cached afterwards), and <b>HasChildrenSelector</b>
-                tells an unloaded node whether to offer a toggle. Each folder below takes 600 ms to load.
+                <b>OnLoadChildren</b> loads a node's children on its first expand (cached afterwards), with a token the grid cancels
+                once it no longer needs them (new <b>Items</b>, or the grid is gone); <b>ChildrenProvider</b> does the same without the token.
+                <b>HasChildrenSelector</b> tells an unloaded node whether to offer a toggle. Each folder below takes 600 ms to load.
             </div>
             <br />
             <BitDataGrid Items="@lazyTreeRoots" Height="360px" KeyField="n => n.Id"
-                         ChildrenProvider="LoadChildrenAsync" HasChildrenSelector="IsFolder">
+                         OnLoadChildren="LoadChildrenAsync" HasChildrenSelector="IsFolder">
                 <BitDataGridColumn Property="p => p.Name" Width="280px" />
                 <BitDataGridColumn Property="p => p.Kind" Title="Type" Width="110px" />
                 <BitDataGridColumn Property="p => p.Size" Title="Size (bytes)" Format="N0" Align="BitTextAlign.End" />
@@ -523,8 +524,9 @@
             <BitText>@serverLastRequest</BitText>
             <br /><br />
             <div>
-                With <b>Virtualize</b> instead of paging, rows are fetched as they scroll into view - 100,000 here. The result's
-                <b>Aggregates</b> fill the footer with totals over the whole matching set.
+                With <b>Virtualize</b> instead of paging, rows are fetched as they scroll into view - 100,000 here. The request's
+                <b>Aggregates</b> name what the footer shows (a sum of Price and an average of Rating), and the result's
+                <b>Aggregates</b> fill it in over the whole matching set.
             </div>
             <br />
             <BitDataGrid OnRead="LoadVirtualServerData" Virtualize="true" Height="480px" RowHeight="40"
@@ -535,8 +537,25 @@
                 <BitDataGridColumn Property="p => p.Supplier" Width="180px" />
                 <BitDataGridColumn Property="p => p.Price" Width="140px" Format="C2" Align="BitTextAlign.End" Aggregate="BitDataGridAggregateType.Sum" AggregateFormat="C0" />
                 <BitDataGridColumn Property="p => p.Stock" Width="120px" Align="BitTextAlign.End" />
-                <BitDataGridColumn Property="p => p.Rating" Width="110px" Format="N1" Align="BitTextAlign.End" FrozenEnd="true" />
+                <BitDataGridColumn Property="p => p.Rating" Width="110px" Format="N1" Align="BitTextAlign.End" FrozenEnd="true" Aggregate="BitDataGridAggregateType.Average" />
             </BitDataGrid>
+            <br /><br />
+            <div>
+                With <b>OnReadError</b> set, a read that throws stays inside the grid: an error row with a <b>Retry</b> button takes the
+                place of the rows, and you get the exception to log or report. Check the box, then page or sort - and uncheck it to
+                retry with success. Without <b>OnReadError</b> the exception propagates, as it always has.
+            </div>
+            <br />
+            <BitCheckbox Label="Make the server fail" @bind-Value="serverFails" />
+            <br />
+            <BitDataGrid OnRead="LoadFlakyServerData" OnReadError="HandleReadError" Height="300px" Pageable="true" PageSize="5">
+                <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitTextAlign.End" />
+                <BitDataGridColumn Property="p => p.Name" Width="220px" />
+                <BitDataGridColumn Property="p => p.Category" />
+                <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitTextAlign.End" />
+            </BitDataGrid>
+            <br />
+            <BitText>@serverLastError</BitText>
         </DemoExample>
 
         <DemoExample Title="Infinite scrolling" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">

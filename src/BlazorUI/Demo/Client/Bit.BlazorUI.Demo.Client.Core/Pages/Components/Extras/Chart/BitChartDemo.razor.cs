@@ -42,6 +42,20 @@ public partial class BitChartDemo
         },
         new()
         {
+            Name = "EmptyTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Custom content shown in place of the plot when there is nothing to draw. Takes precedence over EmptyText."
+        },
+        new()
+        {
+            Name = "EmptyText",
+            Type = "string",
+            DefaultValue = "null",
+            Description = "Message shown in place of the plot when the configuration produces nothing to draw. Defaults to BitStrings.NoItemsFound (\"No items found\")."
+        },
+        new()
+        {
             Name = "GenerateTable",
             Type = "bool",
             DefaultValue = "true",
@@ -95,20 +109,6 @@ public partial class BitChartDemo
             Type = "string?",
             DefaultValue = "\"Interactive chart. Use the left and right arrow keys...\"",
             Description = "A visually hidden sentence telling a screen-reader user how to walk the data, pointed at by aria-describedby. Only rendered while there is data to navigate; set it to null to leave it out."
-        },
-        new()
-        {
-            Name = "NoDataTemplate",
-            Type = "RenderFragment?",
-            DefaultValue = "null",
-            Description = "Custom content shown in place of the plot when there is nothing to draw. Takes precedence over NoDataText."
-        },
-        new()
-        {
-            Name = "NoDataText",
-            Type = "string",
-            DefaultValue = "No data to display",
-            Description = "Message shown in place of the plot when the configuration produces nothing to draw."
         },
         new()
         {
@@ -333,7 +333,7 @@ public partial class BitChartDemo
         },
         new()
         {
-            Name = "--bit-Chart-no-data-color",
+            Name = "--bit-Chart-empty-color",
             DefaultValue = "--bit-clr-fg-sec",
             Description = "Color of the empty-state message.",
         },
@@ -486,7 +486,7 @@ public partial class BitChartDemo
                 new() { Name = "LegendItem", Type = "string?", DefaultValue = "null", Description = "Custom class or style applied to each legend item." },
                 new() { Name = "Plot", Type = "string?", DefaultValue = "null", Description = "Custom class or style applied to the plot container that holds the SVG, the tooltip and the empty state." },
                 new() { Name = "Tooltip", Type = "string?", DefaultValue = "null", Description = "Custom class or style applied to the tooltip box, the default one and a custom template's alike." },
-                new() { Name = "NoData", Type = "string?", DefaultValue = "null", Description = "Custom class or style applied to the empty state shown when there is nothing to draw." },
+                new() { Name = "Empty", Type = "string?", DefaultValue = "null", Description = "Custom class or style applied to the empty state shown when there is nothing to draw." },
                 new() { Name = "Loading", Type = "string?", DefaultValue = "null", Description = "Custom class or style applied to the loading state shown over the plot while the chart is loading." },
             ]
         },

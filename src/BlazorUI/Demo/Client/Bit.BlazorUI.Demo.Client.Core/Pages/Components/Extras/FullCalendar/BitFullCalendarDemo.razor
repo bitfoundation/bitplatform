@@ -171,9 +171,10 @@
                 A <b>Recurrence</b> repeats an event daily, weekly (on <b>DaysOfWeek</b>), monthly or yearly, every
                 <b>Interval</b> units, ending after a <b>Count</b>, on an <b>Until</b> date, or never. <b>WeekOfMonth</b>
                 lands it on "the third Tuesday"; <b>ExceptionDates</b> and <b>AdditionalDates</b> skip or add single dates.
-                Only the visible range is expanded. The dialogs edit the rule too, and ask whether an edit means this
-                occurrence or the whole series; dragging or resizing one occurrence moves it alone (its date is skipped on
-                the series and <b>OnChange</b> reports that edit and the new one-off).
+                Only the visible range is expanded. The dialogs edit the rule too, and ask whether an edit or a delete means
+                this occurrence, this and the following ones (the series ends before it, and an edit starts a new series from
+                it), or the whole series; dragging or resizing one occurrence moves it alone (its date is skipped on the series
+                and <b>OnChange</b> reports that edit and the new one-off).
             </div>
             <br />
             <BitFullCalendar Events="recurringEvents" />

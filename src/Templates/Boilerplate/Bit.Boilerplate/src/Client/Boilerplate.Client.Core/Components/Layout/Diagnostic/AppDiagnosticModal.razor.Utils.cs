@@ -149,9 +149,9 @@ public partial class AppDiagnosticModal
         await Attempt(nameof(SessionStorage), sessionStorage.Clear);
 
         //#if (signalR == true)
-        // The conversation the AI chat panel keeps on this device (See AppAiChatPanel.RestoreHistory). The panel drops
-        // its connection on delete, which would otherwise block it.
-        await Attempt(nameof(IndexedDb), () => indexedDb.DeleteDatabase(AppAiChatPanel.HistoryDatabase).AsTask());
+        // The conversation the AI chat keeps on this device (See AppAiChat.RestoreHistory). The chat drops its connection
+        // on delete, which would otherwise block it. A const, so naming it loads nothing of the lazily loaded chat.
+        await Attempt(nameof(IndexedDb), () => indexedDb.DeleteDatabase(AiChat.AppAiChat.HistoryDatabase).AsTask());
         //#endif
 
         await Attempt(nameof(Cookie), async () =>

@@ -7,11 +7,28 @@
         <StaticWebAssetProjectMode Condition=" '$(api)' == 'Integrated' OR '$(api)' == ''">Default</StaticWebAssetProjectMode>
     </PropertyGroup>
 
+    <PropertyGroup>
+        <OpenApiDocumentsDirectory>$(MSBuildThisFileDirectory)../../../openapi</OpenApiDocumentsDirectory>
+        <OpenApiGenerateDocumentsOptions>--file-name current --openapi-version OpenApi3_1</OpenApiGenerateDocumentsOptions>
+        <OpenApiGenerateDocumentsOnBuild Condition="'$(Environment)' != 'Development' OR '$(DotNetWatchBuild)' == 'true'">false</OpenApiGenerateDocumentsOnBuild>
+    </PropertyGroup>
+
     <PropertyGroup Condition="'$(Environment)' != 'Development' And '$(SelfContained)' == 'true'">
         <RuntimeIdentifier>linux-x64</RuntimeIdentifier>
         <PublishReadyToRun>true</PublishReadyToRun>
         <PublishReadyToRunComposite>true</PublishReadyToRunComposite>
     </PropertyGroup>
+
+    <!--/-:msbuild-conditional:noEmit -->
+    <!-- The template version bit.json records, served as bit_template_version in the OAuth protected resource metadata (See OAuthProtectedResource). -->
+    <PropertyGroup Condition="'$(BitTemplateVersion)' == '' AND Exists('$(MSBuildThisFileDirectory)../../../bit.json')">
+        <BitTemplateVersion>$([System.Text.RegularExpressions.Regex]::Match($([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)../../../bit.json')), '"version"\s*:\s*"([^"]+)"').Groups[1].Value)</BitTemplateVersion>
+    </PropertyGroup>
+
+    <ItemGroup Condition="'$(BitTemplateVersion)' != ''">
+        <AssemblyMetadata Include="BitTemplateVersion" Value="$(BitTemplateVersion)" />
+    </ItemGroup>
+    <!--/+:msbuild-conditional:noEmit -->
 
     <ItemGroup>
         <Using Include="System.Text" />
@@ -46,6 +63,7 @@
         <Using Include="ZiggyCreatures.Caching.Fusion" />
         <Using Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') OR ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Microsoft.Extensions.AI" />
         <Using Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.AspNetCore.SignalR" />
+        <Using Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Bit.BlazorUI" />
         <Using Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Boilerplate.Server.Api.Features.Chatbot" />
         <Using Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Boilerplate.Server.Api.Infrastructure.SignalR" />
         <Using Include="Boilerplate.Server.Api.Infrastructure.DevMcp" />
@@ -63,8 +81,9 @@
         <PackageReference Include="Humanizer" />
         <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" />
         <PackageReference Include="QRCoder" />
-        <PackageReference Include="Magick.NET-Q16-AnyCPU" />
+        <PackageReference Include="Bit.Bmage" />
         <PackageReference Include="FluentEmail.Smtp" />
+        <PackageReference Include="DnsClient" />
         <PackageReference Include="FluentStorage" />
         <PackageReference Condition=" '$(filesStorage)' == 'S3' OR '$(filesStorage)' == '' " Include="AWSSDK.Core" />
         <PackageReference Condition=" '$(filesStorage)' == 'S3' OR '$(filesStorage)' == '' " Include="FluentStorage.AWS" />
@@ -78,6 +97,8 @@
         <PackageReference Condition=" '$(database)' == 'PostgreSQL' OR '$(database)' == '' " Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
         <PackageReference Condition=" '$(database)' == 'MySql' OR '$(database)' == '' " Include="MySql.EntityFrameworkCore" />
         <PackageReference Condition="'$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.Azure.SignalR" />
+        <PackageReference Condition="'$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Bit.BlazorUI.AI.Server" />
+        <PackageReference Condition="'$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Bit.BlazorUI.AI.ChatClient" />
         <PackageReference Include="ModelContextProtocol.AspNetCore" />
         <PackageReference Include="System.Linq.Dynamic.Core" />
         <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="CommunityToolkit.Datasync.Server" />
@@ -90,6 +111,7 @@
         <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" />
         <PackageReference Include="Scalar.AspNetCore" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+        <PackageReference Include="Microsoft.Extensions.ApiDescription.Server" PrivateAssets="all" />
         <PackageReference Include="Microsoft.Identity.Web" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.Twitter" />

@@ -1,0 +1,41 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+@typeparam TItem
+
+@* The area the menu is opened over. Its Disabled only switches the menu off, so the content stays live and the root
+   keeps the handlers the page splatted on it (HtmlAttributes). It is a tab stop of its own, so that a keyboard user
+   can reach it and open the menu, unless the page says otherwise (TabIndex). A right-click is taken from the browser
+   only while there is a menu to show instead. *@
+<div @ref="RootElement" @attributes="HtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()"
+     tabindex="@(TabIndex ?? (Disabled ? null : "0"))"
+     @oncontextmenu="HandleOnContextMenu"
+     @oncontextmenu:preventDefault="Disabled is false"
+     @onkeydown="HandleOnKeyDown">
+    @ChildContent
+</div>
+
+@* The menu is a menu button's, opened at a point (OpenAt) rather than from its button, which is never shown: only the
+   root of a menu button holds its button, while its menu is rendered beside that root. The hidden button still names
+   the menu (aria-labelledby), with the AriaLabel it is given. Without an overlay, a right-click on the area reaches the
+   handler above and moves the open menu, and any other click or right-click on the page dismisses it. *@
+<BitMenuButton @ref="_menuButton"
+               TItem="TItem"
+               Id="@_menuButtonId"
+               Visibility="BitVisibility.Collapsed"
+               NoOverlay
+               AriaLabel="@(AriaLabel ?? DefaultAriaLabel)"
+               Dir="Dir"
+               Items="Items"
+               Options="Options"
+               NameSelectors="NameSelectors"
+               ItemTemplate="ItemTemplate"
+               CloseOnItemClick="CloseOnItemClick"
+               Classes="MenuClasses"
+               Styles="MenuStyles"
+               IsOpen="IsOpen"
+               IsOpenChanged="HandleIsOpenChanged"
+               OnClick="(TItem? item) => HandleOnItemClick(item)" />

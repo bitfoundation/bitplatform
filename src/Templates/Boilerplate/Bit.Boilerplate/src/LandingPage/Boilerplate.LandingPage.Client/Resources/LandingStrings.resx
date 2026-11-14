@@ -429,9 +429,6 @@
     <data name="ChatSend" xml:space="preserve">
         <value>Ask</value>
     </data>
-    <data name="ChatConnectionLost" xml:space="preserve">
-        <value>The connection to the assistant dropped. Please try again.</value>
-    </data>
     <data name="ChatInvalidQuestion" xml:space="preserve">
         <value>That question is too long to answer here. Please ask it more briefly.</value>
     </data>
@@ -474,6 +471,18 @@
     <data name="ChatThinking" xml:space="preserve">
         <value>Thinking…</value>
     </data>
+    <data name="ChatReasoning" xml:space="preserve">
+        <value>Reasoning</value>
+    </data>
+    <data name="ChatReasonedFor" xml:space="preserve">
+        <value>Thought for {0}</value>
+    </data>
+    <data name="ChatDurationSeconds" xml:space="preserve">
+        <value>{0} sec</value>
+    </data>
+    <data name="ChatDurationMinutes" xml:space="preserve">
+        <value>{0} min</value>
+    </data>
     <data name="ChatStopped" xml:space="preserve">
         <value>Stopped</value>
     </data>
@@ -482,6 +491,60 @@
     </data>
     <data name="ChatEmptyBody" xml:space="preserve">
         <value>Ask anything about {0}: what it does, what it costs, or how to get it.</value>
+    </data>
+    <data name="ChatGalleryTitle" xml:space="preserve">
+        <value>Ask about the samples</value>
+    </data>
+    <data name="ChatGalleryEmptyBody" xml:space="preserve">
+        <value>Tell me what your product does, and I&apos;ll point you to the samples closest to it.</value>
+    </data>
+    <data name="ChatGallerySuggestion1" xml:space="preserve">
+        <value>Which sample suits a café or a restaurant?</value>
+    </data>
+    <data name="ChatGallerySuggestion2" xml:space="preserve">
+        <value>Which samples take a waitlist before launch?</value>
+    </data>
+    <data name="ChatGallerySuggestion3" xml:space="preserve">
+        <value>How do I make a sample my product&apos;s home page?</value>
+    </data>
+    <data name="ChatOpenSample" xml:space="preserve">
+        <value>Open the {0} sample</value>
+    </data>
+    <data name="ChatOpenSampleShort" xml:space="preserve">
+        <value>Open</value>
+    </data>
+    <data name="ChatRegenerate" xml:space="preserve">
+        <value>Answer again</value>
+    </data>
+    <data name="ChatCopied" xml:space="preserve">
+        <value>Copied</value>
+    </data>
+    <data name="ChatEdit" xml:space="preserve">
+        <value>Edit</value>
+    </data>
+    <data name="ChatSave" xml:space="preserve">
+        <value>Ask again</value>
+    </data>
+    <data name="ChatCancel" xml:space="preserve">
+        <value>Cancel</value>
+    </data>
+    <data name="ChatFollowUps" xml:space="preserve">
+        <value>Questions to ask next</value>
+    </data>
+    <data name="ChatStartDictation" xml:space="preserve">
+        <value>Ask by voice</value>
+    </data>
+    <data name="ChatStopDictation" xml:space="preserve">
+        <value>Stop listening</value>
+    </data>
+    <data name="ChatListening" xml:space="preserve">
+        <value>Listening</value>
+    </data>
+    <data name="ChatDictationStopped" xml:space="preserve">
+        <value>Stopped listening</value>
+    </data>
+    <data name="ChatDictationFailed" xml:space="preserve">
+        <value>The browser couldn&apos;t hear you. Check that the page may use the microphone, then try again.</value>
     </data>
     <data name="LegalPrivacyTitle" xml:space="preserve">
         <value>Privacy policy</value>
@@ -499,7 +562,7 @@
         <value>What we collect</value>
     </data>
     <data name="LegalPrivacy2Body" xml:space="preserve">
-        <value>When you join the waitlist: your email address, your first name if you give it, the platforms you chose, your language and the page that brought you here. When you use the chat: your questions, which are sent to an AI provider to be answered and aren't kept after the conversation. With your consent only: how pages load and which ones are read, without cookies and without telling who you are. Always: the errors the site runs into in your browser, without telling who you are, and the server's logs of requests, including IP addresses, kept briefly for security.</value>
+        <value>When you join the waitlist: your email address, your first name if you give it, the platforms you chose, your language and the page that brought you here. When you use the chat: your questions, which are sent to an AI provider to be answered and aren't kept on our side. Your browser keeps the conversation until you close the tab. With your consent only: how pages load and which ones are read, without cookies and without telling who you are. Always: the errors the site runs into in your browser, without telling who you are, and the server's logs of requests, including IP addresses, kept briefly for security.</value>
     </data>
     <data name="LegalPrivacy3Title" xml:space="preserve">
         <value>Why we may use it</value>
@@ -517,7 +580,7 @@
         <value>How long we keep it</value>
     </data>
     <data name="LegalPrivacy5Body" xml:space="preserve">
-        <value>Waitlist details until you unsubscribe or we launch and send the last email. Server logs and error reports for 30 days. Chat questions not at all.</value>
+        <value>Waitlist details until you unsubscribe or we launch and send the last email. Server logs and error reports for 30 days. Chat questions not at all: only your browser keeps the conversation, until you close the tab.</value>
     </data>
     <data name="LegalPrivacy6Title" xml:space="preserve">
         <value>Your rights</value>
@@ -584,6 +647,12 @@
     </data>
     <data name="LegalCookies3Body" xml:space="preserve">
         <value>The files the page runs on are kept for your next visit, so it opens faster. Clear them from your browser's site settings whenever you like.</value>
+    </data>
+    <data name="LegalCookies4Title" xml:space="preserve">
+        <value>Your chat</value>
+    </data>
+    <data name="LegalCookies4Body" xml:space="preserve">
+        <value>Your conversation with the chat, so a reload or another page of the same sample carries it on. It's kept in this tab only, is gone when you close it, and reaches us only as part of your next question.</value>
     </data>
     <data name="LegalImprintTitle" xml:space="preserve">
         <value>Imprint</value>

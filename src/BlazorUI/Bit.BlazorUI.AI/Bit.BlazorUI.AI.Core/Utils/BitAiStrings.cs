@@ -264,8 +264,8 @@ public class BitAiStrings
     /// <summary>Heading shown above an empty conversation.</summary>
     public virtual string EmptyTitle => "How can I help?";
 
-    /// <summary>Body shown above an empty conversation.</summary>
-    public virtual string EmptyBody => "Ask a question to get started.";
+    /// <summary>Supporting line shown under the heading of an empty conversation.</summary>
+    public virtual string EmptyDescription => "Ask a question to get started.";
 
     /// <summary>Label for starting a new conversation.</summary>
     public virtual string NewConversation => "New conversation";

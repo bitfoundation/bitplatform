@@ -10,7 +10,7 @@ namespace Bit.BlazorUI.Tests.E2E.Extras;
 /// per-item overrides, disabled and read-only items and lists, the callbacks in the order they are raised,
 /// OnToggling with its reasons, refusal and busy state, both two-way bindings and every public method, LazyContent
 /// and UnmountOnCollapse, MaxHeight and TransitionDuration (with reduced motion), HiddenUntilFound with a real
-/// fragment reveal, ExpandOnPrint, ScrollIntoViewOnExpand in a real scroll box, Joined / Gap / NoBorder, EmptyContent,
+/// fragment reveal, ExpandOnPrint, ScrollIntoViewOnExpand in a real scroll box, Joined / Gap / NoBorder, EmptyTemplate,
 /// the heading levels and regions, the keyboard navigation between the headers, the BitParams cascade, Background /
 /// Border / Size, Style / Class / Styles / Classes of every part, the --bit-AccordionList-* and --bit-Accordion-*
 /// variables, RTL, prerendering, a changing collection and unmounting. The Custom and Option APIs are covered by
@@ -837,7 +837,7 @@ public class BitAccordionListE2ETests : E2ETestBase
     // ---------- empty ----------
 
     [TestMethod]
-    public async Task EmptyContent_ShowsWhileThereAreNoItems()
+    public async Task EmptyTemplate_ShowsWhileThereAreNoItems()
     {
         await OpenAsync(Route);
 

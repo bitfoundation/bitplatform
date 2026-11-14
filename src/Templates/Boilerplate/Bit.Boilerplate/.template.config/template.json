@@ -815,6 +815,7 @@
                         "**/node_modules/**",
                         "**/[Tt]est[Rr]esults/**",
                         ".playwright-mcp/**",
+                        "openapi/**",
                         ".template.config/**",
                         "**/*.filelist",
                         "**/*.user",
@@ -870,7 +871,7 @@
                     "condition": "(module != Sales || (database != PostgreSQL && database != SqlServer))",
                     "exclude": [
                         "src/Shared/Features/Products/ProductRecommendationDto.cs",
-                        "src/Client/Boilerplate.Client.Core/Components/Layout/AppAiChatPanelCards/ProductsCard*"
+                        "src/Client/Boilerplate.Client.Core/Components/Layout/AiChat/ProductsCard*"
                     ]
                 },
                 {
@@ -953,6 +954,8 @@
                         "src/Tests/Features/Categories/AddOrEditCategoryModalTests.cs",
                         "src/Tests/Features/Ads/AdsServiceTests.cs",
                         "src/Tests/Features/Configuration/ClientSettingsValidationTests.cs",
+                        "src/Tests/Features/Configuration/HttpClientDefaultsTests.cs",
+                        "src/Tests/Features/ForceUpdate/ForceUpdateTests.cs",
                         "src/Tests/Features/Identity/TrustedOriginsTests.cs",
                         "src/Tests/Features/Identity/MagicLinkSignInTests.cs",
                         "src/Tests/Features/Identity/MagicLinkSignInUtils.cs",
@@ -1029,6 +1032,7 @@
                         "src/Tests/Features/Identity/WebAuthnCredentialOwnershipTests.cs",
                         "src/Tests/Features/Attachments/AttachmentReplacementTests.cs",
                         "src/Tests/Features/Attachments/UploadFormatAllowListTests.cs",
+                        "src/Tests/Features/Attachments/Assets/**",
                         "src/Tests/Features/Products/ProductImageLifecycleTests.cs",
                         "src/Tests/Features/Products/ProductCultureSafetyTests.cs",
                         "src/Tests/Features/Categories/CategoryDeleteGuardTests.cs",
@@ -1092,8 +1096,9 @@
                         "src/Tests/Features/Diagnostics/DiagnosticReportSourcesTests.cs",
                         "src/Tests/Features/Mcp/GetCurrentDateTimeMcpIntegrationTests.cs",
                         "src/Tests/Features/Chatbot/SystemPromptContractTests.cs",
-                        "src/Tests/Features/Chatbot/AiChatMessageWireContractTests.cs",
+                        "src/Tests/Features/Chatbot/AiChatWireContractTests.cs",
                         "src/Tests/Features/Chatbot/AiChatPanelThemeUITests.cs",
+                        "src/Tests/Features/Chatbot/AiChatPanelLayoutUITests.cs",
                         "src/Tests/Features/Chatbot/ChatbotSpeechEndpointTests.cs",
                         "src/Tests/Features/Chatbot/ChatbotVoiceCallTests.cs",
                         "src/Tests/Features/Chatbot/SpeakableTextTests.cs",
@@ -1103,12 +1108,13 @@
                         "src/Tests/Features/Chatbot/AiChatPanelCardsUITests.cs",
                         "src/Tests/Features/Chatbot/AiChatPanelHistoryUITests.cs",
                         "src/Tests/Features/Chatbot/AiChatPanelGreetingUITests.cs",
-                        "src/Tests/Features/Chatbot/PartialJsonReaderTests.cs",
                         "src/Tests/Features/Chatbot/ChatbotConversationMetricsTests.cs",
                         "src/Tests/Features/Chatbot/ChatbotMetricsTests.cs",
                         "src/Tests/Features/Chatbot/TestChatClient.cs",
+                        "src/Tests/Features/Chatbot/TestAiChatPanel.cs",
                         "src/Tests/Features/Chatbot/SpeechHealthChecksTests.cs",
                         "src/Tests/Features/Chatbot/ChatbotCostLimitsTests.cs",
+                        "src/Tests/Features/Chatbot/AiChatAnswerStepsTests.cs",
                         "src/Tests/Features/SignalR/AzureSignalRHealthCheckTests.cs",
                         "src/Tests/Features/Attachments/AiChatImagesRetentionTests.cs"
                     ]
@@ -1179,7 +1185,7 @@
                         "src/Server/Boilerplate.Server.Api/Features/Identity/Configurations/UserSessionConfiguration.cs",
                         "src/Server/Boilerplate.Server.Api/Infrastructure/Extensions/IClientProxyExtensions.cs",
                         "src/Client/Boilerplate.Client.Core/Components/Layout/AppAiChatPanel.*",
-                        "src/Client/Boilerplate.Client.Core/Components/Layout/AppAiChatPanelCards/**",
+                        "src/Client/Boilerplate.Client.Core/Components/Layout/AiChat/**",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/SystemPromptsPage.*",
                         "src/Client/Boilerplate.Client.Core/Infrastructure/Services/SignalRInfiniteRetryPolicy.cs",
                         "src/Client/Boilerplate.Client.Core/Infrastructure/Services/AppHubConnection.cs"

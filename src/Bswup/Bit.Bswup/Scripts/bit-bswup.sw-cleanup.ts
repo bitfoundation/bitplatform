@@ -1,4 +1,4 @@
-(self as any)['bit-bswup.sw-cleanup version'] = '11.0.0-pre-18';
+(self as any)['bit-bswup.sw-cleanup version'] = '11.0.0-pre-19';
 
 interface BitBswupGlobals {
     clients: any

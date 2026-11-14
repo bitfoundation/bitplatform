@@ -301,6 +301,13 @@ public partial class BitMenuButtonDemo
         },
         new()
         {
+            Name = "NoOverlay",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Leaves the page its own clicks while the menu is open, by not rendering the overlay that otherwise covers it. A click or a right-click outside of the menu and its button dismisses it; a right-click the page takes for itself (preventDefault) can move a menu opened with OpenAt instead.",
+        },
+        new()
+        {
             Name = "OnClick",
             Type = "EventCallback<TItem?>",
             Description = "The callback that is called when the header button is clicked, with the selected item in Sticky mode and null otherwise, and when an item of the menu is activated outside of Sticky mode, with that item."
@@ -344,6 +351,13 @@ public partial class BitMenuButtonDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Enables re-clicking the header button while the menu button is in the loading state. By default its click is ignored, which is what protects against a double submission.",
+        },
+        new()
+        {
+            Name = "Responsive",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Shows the menu as a sheet that slides up from the bottom edge of the screen on screens narrower than 600px (an action sheet), instead of the callout under the button. The sheet runs the full width of the screen, grows with its items up to the height of the screen, where the items that do not fit scroll (MaxHeight does not cap it), and closes the ways the callout does. A submenu still opens beside its item.",
         },
         new()
         {
@@ -434,6 +448,22 @@ public partial class BitMenuButtonDemo
             Description = "The visual variant of the menu button.",
             LinkType = LinkType.Link,
             Href = "#variant-enum"
+        },
+    ];
+
+    private readonly List<ComponentParameter> componentPublicMembers =
+    [
+        new()
+        {
+            Name = "FocusAsync",
+            Type = "ValueTask",
+            Description = "Gives focus to the header button of the menu button.",
+        },
+        new()
+        {
+            Name = "OpenAt",
+            Type = "Task",
+            Description = "Opens the menu at a point on the screen rather than against the menu button, which is what a context menu needs, and moves the focus to its first item. It takes the coordinates (double x, double y) or the MouseEventArgs they came from, and moves a menu already open at a point to the new one. Closing the menu hands the focus back to where it was when the menu was opened.",
         },
     ];
 

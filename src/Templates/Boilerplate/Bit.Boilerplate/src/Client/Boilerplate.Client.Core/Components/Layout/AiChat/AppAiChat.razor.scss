@@ -1,0 +1,113 @@
+@import '../../../Styles/abstracts/_bit-css-variables.scss';
+
+$space: calc(#{$bit-spacing-scaling-factor} * #{$bit-layout-density-scale});
+
+.app-ai-chat {
+    height: 100%;
+    display: flex;
+    min-height: 0;
+    flex-direction: column;
+}
+
+::deep {
+    .chat {
+        flex: 1;
+        min-height: 0;
+        --bit-AiChat-background: transparent;
+    }
+
+    // The containing block of what a message positions absolutely - the hidden read-aloud status of every answer - so
+    // it scrolls with the transcript instead of sticking out of the panel and giving it a second scrollbar.
+    // See specs/workarounds.md.
+    .transcript {
+        position: relative;
+    }
+
+    // The tags of what a step of an answer called: the step's title already says it, in the user's language, where the
+    // tags would only repeat it by the tool's name (See AppAiChat's BitAiAgentRunViewParams).
+    .step-tool-calls {
+        display: none;
+    }
+
+    // What the model reasoned reads as one line, the size of a tool call's, rather than a box: an answer that reasons
+    // between its calls shows one panel each time (See AppAiChat's BitAiReasoningPartViewParams).
+    .reasoning {
+        --bit-Accordion-border-width: 0;
+        --bit-Accordion-background: transparent;
+        --bit-Accordion-header-hover-background: transparent;
+        --bit-Accordion-header-active-background: transparent;
+        --bit-Accordion-color: #{$bit-color-foreground-secondary};
+        --bit-Accordion-title-font-size: #{$bit-typography-fs-sm};
+        --bit-Accordion-icon-size: #{$bit-typography-fs-xs};
+        --bit-Accordion-header-padding: calc(#{$space} * 0.25) 0;
+        --bit-Accordion-content-padding: calc(#{$space} * 0.5) 0 0;
+    }
+
+    .reasoning-toggle:focus-visible {
+        outline-offset: calc(#{$space} * 0.25);
+        border-radius: $bit-shape-radius-xs;
+    }
+
+    @media (hover: hover) {
+        .reasoning-toggle:hover {
+            color: $bit-color-foreground-primary;
+        }
+    }
+
+    .reasoning-icon {
+        font-size: $bit-size-icon-sm;
+    }
+
+    // Set apart from the answer by a line down its side, under the chevron
+    .reasoning-body {
+        margin-inline-start: calc(#{$space} * 0.75);
+        padding-inline-start: calc(#{$space} * 1.5);
+        border-inline-start: $bit-shape-border-width solid $bit-color-border-secondary;
+    }
+
+    // Floats in the composer beside the call button, with the time left written on it.
+    .speech-timer {
+        width: 4rem;
+        position: relative;
+        align-self: center;
+
+        // The stack aligns to flex-start, and a bar of absolutely positioned parts has no width of its own.
+        .speech-timer-progress {
+            width: 100%;
+        }
+
+        // Faded so the time on top stays readable in every phase color.
+        .speech-timer-bar {
+            opacity: 0.45;
+        }
+
+        .speech-timer-text {
+            inset: 0;
+            display: grid;
+            position: absolute;
+            place-items: center;
+            color: $bit-color-foreground-primary;
+        }
+
+        &.ending {
+            animation: speech-timer-ending calc(1.2s * #{$bit-motion-loop-factor}) $bit-motion-easing infinite;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            &.ending {
+                animation: none;
+            }
+        }
+    }
+
+    @keyframes speech-timer-ending {
+        50% {
+            opacity: 0.55;
+        }
+    }
+}
+
+// The call's audio has no visible surface of its own; a hidden media element still plays.
+.voice-call-audio {
+    display: none;
+}

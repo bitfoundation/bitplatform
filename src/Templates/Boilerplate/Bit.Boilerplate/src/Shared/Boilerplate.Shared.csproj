@@ -16,6 +16,8 @@
           <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="CommunityToolkit.Datasync.Server.Abstractions" />
+        <!-- The AI chat's words (See AiChatStrings): the UI-free core of bit BlazorUI AI, which the browser downloads only when the chat opens. -->
+        <PackageReference Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Bit.BlazorUI.AI.Core" />
     </ItemGroup>
 
     <ItemGroup>

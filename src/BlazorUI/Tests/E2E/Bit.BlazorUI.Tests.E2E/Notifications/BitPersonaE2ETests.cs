@@ -447,7 +447,7 @@ public class BitPersonaE2ETests : E2ETestBase
 
         await Expect(Page.Locator("#link-veil .bit-prs-imo")).ToHaveTextAsync("View profile");
         await Expect(Page.Locator("#link-veil a")).ToHaveAttributeAsync("aria-label", "View profile");
-        await Expect(Page.Locator("#link-hidden-details a")).ToHaveAttributeAsync("aria-label", "Xafan Salina, View profile");
+        await Expect(Page.Locator("#link-hidden-details a")).ToHaveAttributeAsync("aria-label", "Xafan Salina, View profile, XS");
 
         await link.ClickAsync();
         await Expect(Page).ToHaveURLAsync(new Regex("/e2e/persona#link-target$"));
@@ -950,6 +950,24 @@ public class BitPersonaE2ETests : E2ETestBase
         await Expect(Root("role")).ToHaveAttributeAsync("aria-label", "Item");
 
         await Expect(Root("basic-initials")).Not.ToHaveAttributeAsync("role", Any);
+    }
+
+    [TestMethod]
+    public async Task ClickableCoins_CarryTheLettersTheyShowInTheirNames_AndPassAxe()
+    {
+        await OpenAsync("/e2e/persona");
+
+        // What a speech user reads off a coin is what it is operated by (Label in Name): the initials on it are in
+        // its name, after what the overlay says. A coin showing a picture or an icon has no letters to add.
+        var initialsLink = Page.Locator("#link-hidden-details a.bit-prs-cne");
+        await Expect(initialsLink).ToHaveAccessibleNameAsync("Xafan Salina, View profile, XS");
+        await Expect(Page.Locator("#image-click-initials button.bit-prs-cne")).ToHaveAccessibleNameAsync("Add photo, SK");
+        await Expect(Page.Locator("#link-rel a.bit-prs-cne")).ToHaveAccessibleNameAsync("bit platform, bp");
+        await Expect(Page.Locator("#link-blank a.bit-prs-cne")).ToHaveAccessibleNameAsync("bit platform");
+        await Expect(Page.Locator("#image-click button.bit-prs-cne")).ToHaveAccessibleNameAsync("Change photo");
+
+        await AssertNoAxeViolationsAsync("#action");
+        await AssertNoAxeViolationsAsync("#link");
     }
 
     [TestMethod]

@@ -214,7 +214,7 @@ Verified with the existing tests that cover them.
 | VAL-01 | Structured graph validation (rules, severities, element references) | P1 | Verified (R2) | `OnError` covers structural problems only | `BlowGraphValidator` with built-in and custom rules | Unit tests |
 | VAL-02 | Required ports and min/max cardinality | P1 | Verified (R2) | - | Rules over `BlowPort` | Unit tests |
 | VAL-03 | Error markers and navigation to invalid elements | P1 | Verified (R6) | Canvas `Validation` parameter marks nodes, edges and ports; problems in the accessible description; the demo's problem list focuses the node (ValidationMarksAndFocusTests; E2E) | - | Done |
-| VAL-04 | Execution integration points (status, runtime adapters) | P2 | Verified (R8) | `BlowRunState`/`BlowRunStatus`, `RunStates`; demos `/examples/workflow-runner` (validate, run in topological order, failure skips dependants, cancel) and `/examples/state-machine` (E2E RunAndRoutingTests) | The engine is the app's by design | Done |
+| VAL-04 | Execution integration points (status, runtime adapters) | P2 | Verified (R8) | `BlowRunState`/`BlowRunStatus`, `RunStates`; demos `/examples/workflow-runner` (validate, run in topological order, failure skips dependants, cancel) and `/examples/state-machine` (E2E RunAndRoutingTests) | R14: the engine is `BlowRunner` (RUN-01..05) | Done |
 
 ### A11Y - accessibility
 
@@ -257,6 +257,23 @@ Verified with the existing tests that cover them.
 | EXT-01 | Custom renderers, templates, per-handle rules | P1 | Verified | Templates, `BlowHandleRegistration` | - | - |
 | EXT-02 | Pluggable layout and routing | P2 | Verified (R7, R11) | Layout through `IBlowLayout` (R7). Routing through `IBlowEdgeRouter` (R11): `BlowCanvas.Routing` and the SVG export take any router, `BlowRoutingOptions` is the built-in one; routes cached per edge and asked for again when the ends, the nodes near them or the router change (EdgeRouterTests; E2E custom router on `/examples/edge-routing`) | - | Done |
 | DOC-01 | Requirements record, README, demos for each new capability | P1 | Verified (R9) | This file; README sections for every capability and an Upgrading table; package README; 6 new demos (typed ports, grouping, layouts and collapsing, edge routing, workflow runner, state machine) and 4 extended (save and restore, localization, viewport transitions, accessibility), all in the catalog and swept by `DemoPagesTests`; MCP reference generated from the code and README | - | Done |
+
+### RUN, DEF, INT - execution, node kinds and interchange (round 14)
+
+| ID | Capability | P | Status | Current / evidence | Gap and approach | Acceptance and verification |
+| --- | --- | --- | --- | --- | --- | --- |
+| RUN-01 | Run a graph with no UI: dependency order, values along edges, parallel up to a limit | P1 | Verified (R14) | `BlowRunner`, `BlowNodeRunContext`, `BlowNodeResult` (RuntimeTests.ValuesFlowAlongEdges..., IndependentNodesRunAtOnceUpToTheLimit) | Was the application's (VAL-04) | Done |
+| RUN-02 | Branches and joins | P1 | Verified (R14) | `Branch`/`Outputs`/`Stop`, `BlowJoinMode.Any`/`All` (RuntimeTests.ABranchRunsOnlyThePathItChose, AnAllJoinIsSkipped...) | - | Done |
+| RUN-03 | Failures, error outputs, retries with backoff, timeouts, cancellation, run timeout, limits | P1 | Verified (R14) | `BlowRetryPolicy`, `BlowNodeRunOptions`, `StopOnFailure`, `MaxExecutions`, `MaxDepth` (RuntimeTests; RoundFourteenReviewTests: callbacks and timer limits never throw, a handler ignoring its token is abandoned) | - | Done |
+| RUN-04 | Approval steps, pause and resume, checkpoints, resume, run from a node, sub-graphs | P2 | Verified (R14) | `WaitAsync` + `BlowRunStatus.Waiting`, `BlowRunControl`, `BlowRunCheckpoint`, `StartAt`, `RunSubgraphAsync` (RuntimeTests; RoundFourteenReviewTests.Runner_StartAtWithoutACheckpoint..., sub-run idempotency) | - | Done |
+| RUN-05 | Observability without leaking payloads; live states and playback on the canvas | P1 | Verified (R14) | `BlowRunEvent` (no values), messages free of exception text unless `DescribeError`, events on the caller's context, `BlowRunStates`, `StatesAt` (RuntimeTests.AnExceptionMessageIsNotShown..., ARunCanBePlayedBack; E2E RunAndRoutingTests: approval, retries, branch, failure) | - | Done |
+| DEF-01 | Node kinds apart from nodes: catalog, factory, validation, execution, deprecation | P1 | Verified (R14) | `BlowNodeDefinition`, `BlowNodeRegistry` (NodeRegistryTests; demo `/examples/node-catalog`) | - | Done |
+| DEF-02 | Ports computed from a node's settings, and the edges they orphan | P2 | Verified (R14) | `DynamicPorts`, `RefreshPorts` (NodeRegistryTests.DynamicPortsFollowTheNodesSettings) | - | Done |
+| INT-01 | Graph diff that is also a patch | P2 | Verified (R14) | `BlowGraphDiff.Compare/Invert/ApplyTo` (DiffAndInterchangeTests; demo `/examples/diagram-formats`) | - | Done |
+| INT-02 | Mermaid, DOT and GraphML interchange, safe on hostile input | P2 | Verified (R14) | `BlowMermaidFormat` (in/out), `BlowDotFormat` (out), `BlowGraphMLFormat` (in/out) (DiffAndInterchangeTests; RoundFourteenReviewTests: linear-time reading, depth limits, no recursion, XML-safe output, DTDs refused) | DOT import left out (see round 14) | Done |
+| INT-03 | Selection commands: upstream, downstream, connected, members, invert | P2 | Verified (R14) | `BlowSelection` (SelectionHelperTests) | - | Done |
+| INT-04 | Ecosystem adapters (Bcrdt, Blex, BlazeDb, Bdnd, Borm, BevTools, Balette, Bink, Bmotion, Butil, Brouter, Bheadless) | P2 | Open | The core hooks exist (remote edits and `Rebase`, `OnGraphChanged`, `BlowGraphDiff` as a patch, registry `Metadata`, run events) | One optional package per integration, Bcrdt first, after reviewing its API | - |
+| INT-05 | PNG export | P3 | Open | SVG export exists (SER-06) | Rasterize the SVG export in the browser | - |
 
 ## Round log
 
@@ -847,3 +864,117 @@ Final runs, from `src/Utilities/Blow`:
 - `Bit.Blow.Tests.E2E`, Release, against the published demo: Chromium 280 / 280; Firefox and WebKit 171 / 171 run, the
   other 109 Inconclusive by design (107 accessibility-tree audits, 2 context-menu-key tests). In one Firefox run a
   page's WebAssembly boot outlasted the 90 s wait on a loaded machine; the page sweep then passed 107 / 107 twice.
+
+### Round 14 - the platform plan: a workflow runner, node kinds, diff and diagram formats
+
+Asked for: a nineteen-phase plan to make Blow "a world-class graph platform" (core engine, typed schemas, node
+registry, dynamic ports, routing, interaction modes, layout, a workflow runtime, history, documents, collaboration,
+performance, accessibility, extensibility, twelve ecosystem integrations, theming, tests, docs, packaging), with
+leave to change what does not fit the products.
+
+Plan review, against what thirteen rounds had already built. Most of phases 1-6, 8, 10, 11, 14 and 15 were in place
+and verified (the tables above); re-implementing them would have been churn. What was genuinely missing, and what
+the round did about it:
+
+| Plan item | Decision | Why |
+| --- | --- | --- |
+| Phase 7, execution engine (`Bit.Blow.Runtime`) | Built, in the core package (`Runtime/`), not a new one | It is UI-free C# with no dependency, like the validator and the serializer already in the core; a package would add a CI workflow, NuGet entries and ~25 touchpoints for ~1,500 lines the trimmer removes when unused. Keeping it in the core also lets `BlowRunStates` feed `RunStates` with no adapter. |
+| Phase 3.1 / 12.2, node definitions and catalogs | Built: `BlowNodeDefinition`, `BlowNodeRegistry` | Separates kinds from instances without changing `BlowNode`: a node is tied to its kind by `Type`, so documents, templates and history are untouched. |
+| Phase 3.3, dynamic ports | Built on the registry (`DynamicPorts`, `RefreshPorts`) | Ports already existed (MOD-03); what was missing was ports computed from a node's settings and the edges they leave behind. |
+| Phase 2.3 / 8.3, graph diffing and comparison | Built: `BlowGraphDiff` | Also the patch format a collaboration adapter needs (`ApplyTo`, `Invert`). |
+| Phase 8.4, Mermaid / DOT / GraphML | Built: Mermaid in and out, GraphML in and out (yEd-aware), DOT out | DOT import was left out: its grammar is large and Mermaid and GraphML cover import; DOT is mostly an output for Graphviz. |
+| Phase 5.3, advanced selection | Built: `BlowSelection` (upstream, downstream, connected, edges among / touching, members, invert) | Pure functions feeding the existing `SelectAsync`, rather than new canvas modes. Lasso selection was not added: box selection exists and a lasso adds little in a node editor. |
+| Phase 16.3, `InspectBlowFlow` | Extended with an `Execution` section | Whether `BlowRunner` would run the flow, its order, stages, width, roots, leaves and the default validator's issues. |
+| Phase 5.2, interaction-mode registry | Not adopted | The canvas's flags (`PanOnDrag`, `SelectionOnDrag`, `NodesConnectable`, `ConnectOnClick`, read-only) already make the modes; a registry would be a second way to say the same thing. |
+| Phase 3.2, rotatable nodes; Phase 4.1, edge bundling | Not adopted | No use in node editors that justifies breaking handle and routing geometry. |
+| Phase 8.4, PDF and PNG export | Deferred | PDF needs a dependency; PNG needs the browser to rasterize the SVG export - small, but browser-only and untestable headless; next round. |
+| Phase 9 / 13, ecosystem integrations (Bcrdt, Blex, BlazeDb, Bdnd, Borm, BevTools, Balette, Bink, Bmotion, Butil, Brouter, Bheadless) | Deferred, with the core hooks in place | Each is a package of its own with its own dependency and CI. The core now has what they would stand on: `EditAsync(..., origin: Remote, recordHistory: false)` and `Rebase` (round 5) for remote edits, `BlowGraphDiff` as a patch, `OnGraphChanged` for a store, registry `Metadata` for a Borm schema, run events for BevTools. Bcrdt first, after a review of its API. |
+| Phase 12.3, command system | Deferred | The keys are already parameters; a command registry is worth doing with the Balette integration, not before. |
+| Phase 10.4, 50,000-node targets | Not changed | PERF-08 (a drag frame at 900 nodes on WebAssembly) is still the limiting item; culling and level of detail exist. |
+
+Implemented:
+
+- **Runner** (`BlowRunner`, `BlowRunRequest`, `BlowRunnerOptions`, `BlowNodeRunOptions`, `BlowNodeRunContext`,
+  `BlowNodeResult`, `BlowRunResult`, `BlowNodeRunRecord`, `BlowRunEvent`, `BlowRunStates`, `BlowRunControl`,
+  `BlowRunCheckpoint`, `BlowRetryPolicy`, `BlowNodeException`, `BlowRunError`, `BlowRunMessages`, `BlowRunCodes`):
+  dependency order over `BlowGraphAlgorithms.TopologicalSort`, a ready queue ranked by that order, `MaxConcurrency`;
+  outputs per source handle (`Done`, `Branch`, `Outputs`, `Stop`); `Any` and `All` joins; failure skips dependants
+  with the reason carried down the chain, `ErrorOutput` routes it instead, `StopOnFailure` cancels the rest;
+  retries with exponential backoff, transient and non-transient failures; per-attempt and per-run timeouts through
+  `TimeProvider`; cancellation; pause and resume between nodes; `WaitAsync` for approvals (`BlowRunStatus.Waiting`);
+  checkpoints, resume and `StartAt`; sub-graph runs with shared variables, depth and execution limits; an ordered
+  event stream with no payloads, raised on the caller's context; playback (`StatesAt`); refusal before start
+  (cycles, missing handlers, unknown start nodes, a validator's errors) and `Check` to ask without running.
+  Exception messages never reach run messages unless `DescribeError` allows it.
+- `BlowRunStatus.Waiting` and `BlowRunStatus.Cancelled` (appended), with their own badges (a pause bar; a square, so
+  a cancelled step is not mistaken for a failed one), forced-colours rules and spoken names.
+- **Node kinds**: `BlowNodeDefinition` (label, category, tags, description, icon, version, ports, dynamic ports,
+  size, sides, starting data, configure, validate, run, run options, deprecation, replacement, migration, hidden,
+  metadata) and `BlowNodeRegistry` (register / replace / unregister with `Changed`, `Create`, `Search` and
+  `Categories`, `RefreshPorts`, `Upgrade`, `ValidationRule`); `BlowRunner.Use(registry)`.
+  `BlowValidationCodes.UnknownNodeType`, `DeprecatedNodeType`.
+- **Diff**: `BlowGraphDiff` (`Compare` over lists or documents, `Invert`, `ApplyTo`), `BlowNodeChange`,
+  `BlowEdgeChange`, `BlowGraphDiffOptions` (position tolerance, selection, ignored properties, data comparison; JSON
+  compared by content).
+- **Formats**: `BlowMermaidFormat` (export with safe ids and entity-escaped labels; import of the flowchart syntax
+  in common use, `click`/`style` reported and skipped), `BlowDotFormat` (export, every string quoted), `BlowGraphMLFormat`
+  (export; import with DTDs prohibited and no resolver, yEd geometry and labels, unknown attributes kept as data),
+  `BlowDiagramImportOptions` (limits, layout of position-less imports, group padding),
+  `BlowImportCodes.InvalidXml`.
+- **Selection**: `BlowSelection`.
+- Demos: `/examples/workflow-runner` rewritten on `BlowRunner` (parallel steps, a branch, an `All` join, retries, an
+  approval, pause, stop, run from a selected node, a replay slider, animated active edges); new
+  `/examples/node-catalog` and `/examples/diagram-formats`. MCP: `InspectBlowFlow` reports `Execution`. README:
+  "Node kinds and catalogs", "Running a graph" (five subsections), "Mermaid, DOT and GraphML", "Comparing graphs",
+  `BlowSelection`, run statuses, Upgrading row; package README and description.
+
+Review (an independent reviewer with scratch tests against the code; 23 confirmed by a failing test, 2 by crashing
+the test host, the rest from reading - all fixed, 34 regression tests in `RoundFourteenReviewTests`):
+
+- Imports that hung or crashed the process on small hostile input:
+  - A cubic regex in Mermaid's subgraph header (3,000 spaces took 14.5 s) and a quadratic one in its link text: the
+    header is read by hand, the link text matches white space one way only, every pattern has a match timeout
+    reported as an issue, and chains are matched by position (`\G`) instead of re-copying the rest of the line.
+  - GraphML text nested 200,000 elements deep overflowed the stack in `XmlNode.InnerText`: elements deeper than
+    `2 x MaxDepth + 16` are refused by a streaming pass before a tree is built.
+  - Mermaid subgraphs ignored `MaxDepth`, and all three exporters recursed once per nesting level (a 100,000-deep
+    chain overflowed): `BlowDiagramText.Walk` walks groups with a stack, indentation is capped, GraphML stops
+    indenting past 16 levels (XmlWriter indents in full), nodes on a parent cycle are exported instead of dropped.
+  - Mermaid issues were unbounded (89,900 from 4 KB) and a limit did not stop the line: limits are reported once,
+    reading stops at once, issues are capped (`BlowDiagramImportOptions.MaxIssues`).
+- The runner broke "does not throw": timeouts and delays a timer cannot take (60 days, negative), a throwing
+  `ShouldRetry`, `NodeOptions`, `ResolveHandler` or message formatter all escaped `RunAsync` with no `RunFinished`.
+  Handlers and options are now looked up once per run, every callback is guarded and fails its node, waits are
+  clamped (longer than a timer is no limit).
+- Timeouts did nothing against a handler ignoring its token (a 150 ms run timeout took 2.5 s and the node
+  "succeeded"): the attempt now awaits the handler with its token and abandons it; what an abandoned handler reports
+  afterwards is ignored.
+- `StartAt` without a checkpoint ran nothing (the start node had no input): start nodes run with whatever reached them.
+- `OnEvent` was called on the reporting thread, so a `Report` from `Task.Run` broke Blazor: events are queued and
+  posted to the run's context, in order.
+- GraphML export threw on characters XML cannot carry (ids, lone surrogates, U+FFFE from a Mermaid entity): every
+  string goes through `XmlSafe`; Mermaid entities never produce surrogates or non-characters.
+- Smaller: `Upgrade` kept the deprecated kind's ports; sub-run ids changed between retries (now numbered within the
+  attempt, and a request's `Resume` id is kept); a node id starting with "click" dropped its statement; a generated
+  GraphML edge id could repeat an explicit one; GraphML ports exceeded `MaxPortsPerNode`; dangling GraphML edges were
+  not reported; equal JSON as `JsonElement` and `JsonNode` was a change; a cancellation after every node settled
+  made the run `Cancelled`; an `ErrorOutput` with no edge from it swallowed the failure; each paused loop left a wait
+  registered; registry reads could race a registration (now copy-on-write); DOT pointed edges at a stray node for a
+  group (now `compound=true` with `lhead`/`ltail`).
+- Left as documented: a sub-run started with the outer run's `BlowRunStates` clears it (`RunSubgraphAsync` says to
+  give it states of its own).
+
+Final runs, from `src/Utilities/Blow`:
+
+- `Bit.Blow.Tests` (net10.0, net11.0): 1,071 / 1,071 on each, 101 of them new (RuntimeTests 37, NodeRegistryTests 11,
+  DiffAndInterchangeTests 16, SelectionHelperTests 3, RoundFourteenReviewTests 34). The runtime and review suites
+  passed five runs in a row with a browser suite loading the machine.
+- `Bit.Blow.Tests.Mcp` (Release): 225 / 225, including the new `Execution` report.
+- Release builds of the library, the unit tests and the E2E tests: 0 warnings, 0 errors. (`Bit.Blow.slnx` as a whole
+  needs the `maui-android` workload this machine lacks; the demo's BL0016 warnings are in its layout, not this round's
+  files.)
+- `Bit.Blow.Tests.E2E`, Chromium, Release: the page sweep (every button on every page, the two new pages included),
+  the workflow runner (failure, approval and branch, retries) and forced colours 124 / 124; the accessibility-tree
+  audit 112 / 112 pages. Firefox and WebKit not run this round.
+
+No commits were made.

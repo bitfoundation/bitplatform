@@ -1,0 +1,195 @@
+﻿@import "../../../Styles/functions.scss";
+
+// Public CSS variables. They are read with a fallback and never declared here, so a value set on :root, on an
+// ancestor or on the Style of a list box inherits down to whatever reads it:
+//   --bit-ListBox-selected-background   background of a selected item                 (default: $clr-bg-pri-active)
+//   --bit-ListBox-selected-color        color of the mark of a selected item (the bar of a single select one,
+//                                       the filled box of a multi select one)          (default: $clr-pri)
+// The colors never override a disabled item, which keeps its disabled palette.
+
+.bit-lbx {
+    display: flex;
+    flex-direction: column;
+    gap: spacing(0.5);
+    color: $clr-fg-pri;
+    font-size: $tg-fs-md;
+    font-family: $tg-font-family;
+}
+
+.bit-lbx-lbl {
+    font-weight: $tg-field-label-font-weight;
+}
+
+// A required list box marks its label the way every other input marks its own.
+.bit-lbx-req .bit-lbx-lbl::after {
+    content: " *";
+    color: $clr-req;
+}
+
+.bit-lbx-lst {
+    margin: 0;
+    padding: spacing(0.5) 0;
+    list-style: none;
+    overflow-y: auto;
+    box-sizing: border-box;
+    background-color: $clr-bg-pri;
+    border-radius: $shp-radius-control;
+    border: $shp-border-width solid $clr-brd-pri;
+}
+
+// The hover plate is painted from a private variable the hover rule sets, rather than by the hover rule itself, so an
+// app's class on the item still wins over it as it does at rest. It starts out unset on each item, so a list box
+// nested in a hovered item never inherits the plate.
+.bit-lbx-itm {
+    --bit-lbx-itm-bg: initial;
+    display: flex;
+    cursor: pointer;
+    position: relative;
+    gap: spacing(1);
+    align-items: center;
+    padding: spacing(0.75) spacing(1.5);
+    background-color: var(--bit-lbx-itm-bg, transparent);
+
+    &:focus-visible {
+        outline: none;
+        @include focus-ring-inset($clr-pri-focus);
+    }
+
+    @media (hover: hover) {
+        &:hover:not(.bit-lbx-ids) {
+            --bit-lbx-itm-bg: #{$clr-bg-pri-hover};
+        }
+    }
+}
+
+// A selected item of a single select list box is marked by a bar along its start edge as well as by its background, so
+// the mark does not rest on the color alone.
+.bit-lbx-sel {
+    background-color: var(--bit-ListBox-selected-background, #{$clr-bg-pri-active});
+
+    &::before {
+        content: "";
+        top: spacing(0.5);
+        bottom: spacing(0.5);
+        position: absolute;
+        inset-inline-start: 0;
+        width: $shp-border-width-thick;
+        border-radius: $shp-radius-full;
+        background-color: var(--bit-ListBox-selected-color, #{$clr-pri});
+    }
+}
+
+.bit-lbx-mul .bit-lbx-sel::before {
+    content: none;
+}
+
+// The check box of a multi select item, drawn here: the item is the option, and the box only shows its state.
+.bit-lbx-chk {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    box-sizing: border-box;
+    justify-content: center;
+    font-size: $tg-fs-xs;
+    width: spacing(2.25);
+    height: spacing(2.25);
+    border-radius: $shp-radius-sm;
+    border: $shp-border-width solid $clr-brd-pri;
+}
+
+.bit-lbx-sel .bit-lbx-chk {
+    color: $clr-pri-text;
+    border-color: var(--bit-ListBox-selected-color, #{$clr-pri});
+    background-color: var(--bit-ListBox-selected-color, #{$clr-pri});
+}
+
+.bit-lbx-ico {
+    flex: none;
+    font-size: $siz-icon-md;
+}
+
+.bit-lbx-txc {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.bit-lbx-dsc {
+    color: $clr-fg-sec;
+    font-size: $tg-fs-sm;
+}
+
+.bit-lbx-err {
+    color: $clr-err;
+    font-size: $tg-fs-sm;
+}
+
+.bit-inv .bit-lbx-lst {
+    border-color: $clr-err;
+}
+
+.bit-lbx-rdo .bit-lbx-itm {
+    cursor: default;
+}
+
+// A disabled item, or every item of a disabled list box, keeps its disabled palette whatever its state. These rules
+// come after the state ones, which they share their specificity with.
+.bit-lbx-ids {
+    cursor: default;
+    color: $clr-fg-dis;
+
+    .bit-lbx-dsc {
+        color: $clr-fg-dis;
+    }
+
+    .bit-lbx-chk {
+        color: $clr-fg-dis;
+        border-color: $clr-brd-dis;
+        background-color: transparent;
+    }
+}
+
+.bit-dis .bit-lbx-lst {
+    border-color: $clr-brd-dis;
+}
+
+.bit-dis .bit-lbx-sel {
+    background-color: $clr-bg-dis;
+
+    &::before {
+        background-color: $clr-brd-dis;
+    }
+}
+
+// Forced-colors modes drop the backgrounds, so a selected item becomes a Highlight row and its box a Highlight square,
+// and a disabled item is drawn in GrayText.
+@media (forced-colors: active) {
+    .bit-lbx-sel {
+        color: HighlightText;
+        forced-color-adjust: none;
+        background-color: Highlight;
+
+        &::before {
+            background-color: HighlightText;
+        }
+
+        .bit-lbx-dsc {
+            color: HighlightText;
+        }
+
+        .bit-lbx-chk {
+            color: Highlight;
+            border-color: HighlightText;
+            background-color: HighlightText;
+        }
+    }
+
+    .bit-lbx-ids,
+    .bit-lbx-ids .bit-lbx-dsc {
+        color: GrayText;
+    }
+
+    .bit-lbx-ids .bit-lbx-chk {
+        border-color: GrayText;
+    }
+}

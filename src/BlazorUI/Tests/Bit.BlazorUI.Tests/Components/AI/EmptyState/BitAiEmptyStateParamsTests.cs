@@ -20,7 +20,8 @@ public class BitAiEmptyStateParamsTests : BitAiTestBase
     private static readonly string[] _notCascaded =
     [
         nameof(BitAiEmptyState.CascadingParameters),
-        nameof(BitAiEmptyState.ChildContent),
+        nameof(BitAiEmptyState.DescriptionTemplate),
+        nameof(BitAiEmptyState.TitleTemplate),
         nameof(BitAiEmptyState.IconTemplate),
         nameof(BitAiEmptyState.OnSuggestion),
         nameof(BitAiEmptyState.Suggestions),
@@ -73,14 +74,14 @@ public class BitAiEmptyStateParamsTests : BitAiTestBase
         {
             Class = "cascaded",
             Title = "Welcome",
-            Body = "Ask away.",
+            Description = "Ask away.",
             IconName = "Robot",
         });
 
         Assert.IsTrue(component.Find(".bit-aiems").ClassList.Contains("cascaded"));
-        Assert.AreEqual("Welcome", component.Find(".bit-aiems-ttl").TextContent);
-        Assert.AreEqual("Ask away.", component.Find(".bit-aiems-bdy").TextContent.Trim());
-        Assert.IsTrue(component.Find(".bit-aiems-ico").ClassList.Contains("bit-icon--Robot"));
+        Assert.AreEqual("Welcome", component.Find(".bit-ems-ttl").TextContent);
+        Assert.AreEqual("Ask away.", component.Find(".bit-ems-dsc").TextContent.Trim());
+        Assert.IsTrue(component.Find(".bit-ems-ico").ClassList.Contains("bit-icon--Robot"));
     }
 
     [TestMethod]
@@ -100,7 +101,7 @@ public class BitAiEmptyStateParamsTests : BitAiTestBase
 
         Assert.IsTrue(component.Find(".bit-aiems").ClassList.Contains("own"));
         Assert.IsFalse(component.Find(".bit-aiems").ClassList.Contains("cascaded"));
-        Assert.AreEqual("Hello", component.Find(".bit-aiems-ttl").TextContent);
-        Assert.IsTrue(component.Find(".bit-aiems-ico").ClassList.Contains("bit-icon--ChatBot"));
+        Assert.AreEqual("Hello", component.Find(".bit-ems-ttl").TextContent);
+        Assert.IsTrue(component.Find(".bit-ems-ico").ClassList.Contains("bit-icon--ChatBot"));
     }
 }

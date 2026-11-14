@@ -203,6 +203,13 @@ public partial class BitBreadcrumbDemo
         },
         new()
         {
+            Name = "Responsive",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Shows the overflow menu as a sheet that slides up from the bottom edge of the screen on screens narrower than 600px, instead of the callout under the overflow button. The sheet runs the full width of the screen, grows with the collapsed steps up to the height of the screen, where the steps that do not fit scroll, and closes the ways the callout does. It has nothing to do with ExpandOverflow, which opens no menu."
+        },
+        new()
+        {
             Name = "Scrollable",
             Type = "bool",
             DefaultValue = "false",

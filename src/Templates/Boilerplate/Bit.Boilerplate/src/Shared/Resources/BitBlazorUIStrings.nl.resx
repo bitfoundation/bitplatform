@@ -280,4 +280,166 @@
   <data name="DataGridAnnouncementSearchCleared" xml:space="preserve">
     <value>Zoekopdracht gewist</value>
   </data>
+  <data name="CalendarAriaLabel" xml:space="preserve">
+    <value>Kalender</value>
+  </data>
+  <data name="CalendarGoToNextMonthTitle" xml:space="preserve">
+    <value>Naar volgende maand</value>
+  </data>
+  <data name="CalendarGoToPrevMonthTitle" xml:space="preserve">
+    <value>Naar vorige maand</value>
+  </data>
+  <data name="CalendarGoToNextYearTitle" xml:space="preserve">
+    <value>Naar volgend jaar {0}</value>
+  </data>
+  <data name="CalendarGoToPrevYearTitle" xml:space="preserve">
+    <value>Naar vorig jaar {0}</value>
+  </data>
+  <data name="CalendarGoToNextYearRangeTitle" xml:space="preserve">
+    <value>Volgende jarenreeks {0} - {1}</value>
+  </data>
+  <data name="CalendarGoToPrevYearRangeTitle" xml:space="preserve">
+    <value>Vorige jarenreeks {0} - {1}</value>
+  </data>
+  <data name="CalendarGoToTodayTitle" xml:space="preserve">
+    <value>Naar vandaag</value>
+  </data>
+  <data name="CalendarMonthPickerToggleTitle" xml:space="preserve">
+    <value>{0}, maand wijzigen</value>
+  </data>
+  <data name="CalendarYearPickerToggleTitle" xml:space="preserve">
+    <value>{0}, jaar wijzigen</value>
+  </data>
+  <data name="CalendarYearRangePickerToggleTitle" xml:space="preserve">
+    <value>{0} - {1}, maand wijzigen</value>
+  </data>
+  <data name="CalendarWeekNumbersHeaderTitle" xml:space="preserve">
+    <value>Week</value>
+  </data>
+  <data name="CalendarWeekNumberTitle" xml:space="preserve">
+    <value>Weeknummer {0}</value>
+  </data>
+  <data name="CalendarShowTimePickerTitle" xml:space="preserve">
+    <value>Tijdkiezer tonen</value>
+  </data>
+  <data name="CalendarHideTimePickerTitle" xml:space="preserve">
+    <value>Tijdkiezer verbergen</value>
+  </data>
+  <data name="DatePickerClearButtonTitle" xml:space="preserve">
+    <value>Datum wissen</value>
+  </data>
+  <data name="DatePickerCloseButtonTitle" xml:space="preserve">
+    <value>Datumkiezer sluiten</value>
+  </data>
+  <data name="DatePickerDateFormatAriaDescription" xml:space="preserve">
+    <value>Verwacht formaat: {0}</value>
+  </data>
+  <data name="DatePickerHighlightedDateAriaLabel" xml:space="preserve">
+    <value>{0}, gemarkeerd</value>
+  </data>
+  <data name="DatePickerNowButtonTitle" xml:space="preserve">
+    <value>Naar nu</value>
+  </data>
+  <data name="DatePickerSelectedDateAriaAtomic" xml:space="preserve">
+    <value>Geselecteerde datum {0}</value>
+  </data>
+  <data name="TimeIncreaseHourTitle" xml:space="preserve">
+    <value>Uur verhogen</value>
+  </data>
+  <data name="TimeDecreaseHourTitle" xml:space="preserve">
+    <value>Uur verlagen</value>
+  </data>
+  <data name="TimeIncreaseMinuteTitle" xml:space="preserve">
+    <value>Minuut verhogen</value>
+  </data>
+  <data name="TimeDecreaseMinuteTitle" xml:space="preserve">
+    <value>Minuut verlagen</value>
+  </data>
+  <data name="TimeIncreaseSecondTitle" xml:space="preserve">
+    <value>Seconde verhogen</value>
+  </data>
+  <data name="TimeDecreaseSecondTitle" xml:space="preserve">
+    <value>Seconde verlagen</value>
+  </data>
+  <data name="TimeHourLabel" xml:space="preserve">
+    <value>Uur</value>
+  </data>
+  <data name="TimeMinuteLabel" xml:space="preserve">
+    <value>Minuut</value>
+  </data>
+  <data name="TimeSecondLabel" xml:space="preserve">
+    <value>Seconde</value>
+  </data>
+  <data name="DateRangePickerApplyButtonText" xml:space="preserve">
+    <value>Toepassen</value>
+  </data>
+  <data name="DateRangePickerCancelButtonText" xml:space="preserve">
+    <value>Annuleren</value>
+  </data>
+  <data name="DateRangePickerClearButtonTitle" xml:space="preserve">
+    <value>Geselecteerd datumbereik wissen</value>
+  </data>
+  <data name="DateRangePickerCloseButtonTitle" xml:space="preserve">
+    <value>Datumbereikkiezer sluiten</value>
+  </data>
+  <data name="DateRangePickerPresetsAriaLabel" xml:space="preserve">
+    <value>Vooraf ingestelde datumbereiken</value>
+  </data>
+  <data name="DateRangePickerSelectedDateAriaAtomic" xml:space="preserve">
+    <value>Geselecteerd datumbereik {0}</value>
+  </data>
+  <data name="DateRangePickerStartTimeIncreaseHourTitle" xml:space="preserve">
+    <value>Startuur verhogen</value>
+  </data>
+  <data name="DateRangePickerStartTimeDecreaseHourTitle" xml:space="preserve">
+    <value>Startuur verlagen</value>
+  </data>
+  <data name="DateRangePickerStartTimeIncreaseMinuteTitle" xml:space="preserve">
+    <value>Startminuut verhogen</value>
+  </data>
+  <data name="DateRangePickerStartTimeDecreaseMinuteTitle" xml:space="preserve">
+    <value>Startminuut verlagen</value>
+  </data>
+  <data name="DateRangePickerEndTimeIncreaseHourTitle" xml:space="preserve">
+    <value>Einduur verhogen</value>
+  </data>
+  <data name="DateRangePickerEndTimeDecreaseHourTitle" xml:space="preserve">
+    <value>Einduur verlagen</value>
+  </data>
+  <data name="DateRangePickerEndTimeIncreaseMinuteTitle" xml:space="preserve">
+    <value>Eindminuut verhogen</value>
+  </data>
+  <data name="DateRangePickerEndTimeDecreaseMinuteTitle" xml:space="preserve">
+    <value>Eindminuut verlagen</value>
+  </data>
+  <data name="DateRangePickerStartHourLabel" xml:space="preserve">
+    <value>Startuur</value>
+  </data>
+  <data name="DateRangePickerStartMinuteLabel" xml:space="preserve">
+    <value>Startminuut</value>
+  </data>
+  <data name="DateRangePickerEndHourLabel" xml:space="preserve">
+    <value>Einduur</value>
+  </data>
+  <data name="DateRangePickerEndMinuteLabel" xml:space="preserve">
+    <value>Eindminuut</value>
+  </data>
+  <data name="DateRangePickerValueFormat" xml:space="preserve">
+    <value>Begin: {0} - Einde: {1}</value>
+  </data>
+  <data name="TimePickerCalloutAriaLabel" xml:space="preserve">
+    <value>Klok</value>
+  </data>
+  <data name="TimePickerClearButtonText" xml:space="preserve">
+    <value>Wissen</value>
+  </data>
+  <data name="TimePickerClearButtonTitle" xml:space="preserve">
+    <value>Geselecteerde tijd wissen</value>
+  </data>
+  <data name="TimePickerCloseButtonTitle" xml:space="preserve">
+    <value>Tijdkiezer sluiten</value>
+  </data>
+  <data name="TimePickerNowButtonText" xml:space="preserve">
+    <value>Nu</value>
+  </data>
 </root>

@@ -695,14 +695,29 @@ button.bit-dtg-htext {
     border-top: $shp-border-width-thick $shp-border-style var(--bit-DataGrid-border-color, #{$clr-brd-ter});
 }
 
-/* ---------------------------------------------------------- Empty / loading */
+/* ---------------------------------------------------------- Empty / loading / read error */
 .bit-dtg-empty,
-.bit-dtg-loading {
+.bit-dtg-loading,
+.bit-dtg-read-error {
     padding: spacing(4);
     justify-content: center;
     gap: spacing(1);
     text-align: center;
     color: $clr-fg-sec;
+}
+
+// The message and its Retry button wrap onto two lines where the grid is too narrow for both, rather than the button
+// being clipped off the end of the cell.
+.bit-dtg-read-error {
+    flex-wrap: wrap;
+    column-gap: spacing(2);
+    white-space: normal;
+}
+
+// While the rows are read again the button keeps its look and its focus: it is marked busy, not disabled, and only
+// ignores the presses.
+.bit-dtg-btn[aria-busy="true"] {
+    cursor: progress;
 }
 
 // The ring is drawn the other way round from most: a three-quarter arc of the text color with its gap turning.
@@ -1086,7 +1101,8 @@ button.bit-dtg-htext {
     .bit-dtg-group-agg,
     .bit-dtg-pager-info,
     .bit-dtg-empty,
-    .bit-dtg-loading {
+    .bit-dtg-loading,
+    .bit-dtg-read-error {
         color: inherit;
     }
 

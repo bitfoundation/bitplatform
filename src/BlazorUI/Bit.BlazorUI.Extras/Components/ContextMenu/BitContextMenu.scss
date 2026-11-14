@@ -1,0 +1,11 @@
+﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
+
+// The area a context menu is opened over. It is a block of the page's own content, which it lays out no differently:
+// only its focus is drawn, since it is a tab stop of its own (the keyboard opens the menu from there). The menu is a
+// BitMenuButton's, restyled through MenuClasses and MenuStyles and the menu button's own --bit-MenuButton-* variables.
+
+.bit-ctm {
+    &:focus-visible {
+        @include focus-ring;
+    }
+}

@@ -280,4 +280,166 @@
   <data name="DataGridAnnouncementSearchCleared" xml:space="preserve">
     <value>खोज हटाई गई</value>
   </data>
+  <data name="CalendarAriaLabel" xml:space="preserve">
+    <value>कैलेंडर</value>
+  </data>
+  <data name="CalendarGoToNextMonthTitle" xml:space="preserve">
+    <value>अगले महीने पर जाएं</value>
+  </data>
+  <data name="CalendarGoToPrevMonthTitle" xml:space="preserve">
+    <value>पिछले महीने पर जाएं</value>
+  </data>
+  <data name="CalendarGoToNextYearTitle" xml:space="preserve">
+    <value>अगले वर्ष {0} पर जाएं</value>
+  </data>
+  <data name="CalendarGoToPrevYearTitle" xml:space="preserve">
+    <value>पिछले वर्ष {0} पर जाएं</value>
+  </data>
+  <data name="CalendarGoToNextYearRangeTitle" xml:space="preserve">
+    <value>अगली वर्ष सीमा {0} - {1}</value>
+  </data>
+  <data name="CalendarGoToPrevYearRangeTitle" xml:space="preserve">
+    <value>पिछली वर्ष सीमा {0} - {1}</value>
+  </data>
+  <data name="CalendarGoToTodayTitle" xml:space="preserve">
+    <value>आज पर जाएं</value>
+  </data>
+  <data name="CalendarMonthPickerToggleTitle" xml:space="preserve">
+    <value>{0}, महीना बदलें</value>
+  </data>
+  <data name="CalendarYearPickerToggleTitle" xml:space="preserve">
+    <value>{0}, वर्ष बदलें</value>
+  </data>
+  <data name="CalendarYearRangePickerToggleTitle" xml:space="preserve">
+    <value>{0} - {1}, महीना बदलें</value>
+  </data>
+  <data name="CalendarWeekNumbersHeaderTitle" xml:space="preserve">
+    <value>सप्ताह</value>
+  </data>
+  <data name="CalendarWeekNumberTitle" xml:space="preserve">
+    <value>सप्ताह संख्या {0}</value>
+  </data>
+  <data name="CalendarShowTimePickerTitle" xml:space="preserve">
+    <value>समय चयनकर्ता दिखाएं</value>
+  </data>
+  <data name="CalendarHideTimePickerTitle" xml:space="preserve">
+    <value>समय चयनकर्ता छिपाएं</value>
+  </data>
+  <data name="DatePickerClearButtonTitle" xml:space="preserve">
+    <value>तारीख साफ़ करें</value>
+  </data>
+  <data name="DatePickerCloseButtonTitle" xml:space="preserve">
+    <value>तारीख चयनकर्ता बंद करें</value>
+  </data>
+  <data name="DatePickerDateFormatAriaDescription" xml:space="preserve">
+    <value>अपेक्षित प्रारूप: {0}</value>
+  </data>
+  <data name="DatePickerHighlightedDateAriaLabel" xml:space="preserve">
+    <value>{0}, हाइलाइट किया गया</value>
+  </data>
+  <data name="DatePickerNowButtonTitle" xml:space="preserve">
+    <value>अभी पर जाएं</value>
+  </data>
+  <data name="DatePickerSelectedDateAriaAtomic" xml:space="preserve">
+    <value>चयनित तारीख {0}</value>
+  </data>
+  <data name="TimeIncreaseHourTitle" xml:space="preserve">
+    <value>घंटा बढ़ाएं</value>
+  </data>
+  <data name="TimeDecreaseHourTitle" xml:space="preserve">
+    <value>घंटा घटाएं</value>
+  </data>
+  <data name="TimeIncreaseMinuteTitle" xml:space="preserve">
+    <value>मिनट बढ़ाएं</value>
+  </data>
+  <data name="TimeDecreaseMinuteTitle" xml:space="preserve">
+    <value>मिनट घटाएं</value>
+  </data>
+  <data name="TimeIncreaseSecondTitle" xml:space="preserve">
+    <value>सेकंड बढ़ाएं</value>
+  </data>
+  <data name="TimeDecreaseSecondTitle" xml:space="preserve">
+    <value>सेकंड घटाएं</value>
+  </data>
+  <data name="TimeHourLabel" xml:space="preserve">
+    <value>घंटा</value>
+  </data>
+  <data name="TimeMinuteLabel" xml:space="preserve">
+    <value>मिनट</value>
+  </data>
+  <data name="TimeSecondLabel" xml:space="preserve">
+    <value>सेकंड</value>
+  </data>
+  <data name="DateRangePickerApplyButtonText" xml:space="preserve">
+    <value>लागू करें</value>
+  </data>
+  <data name="DateRangePickerCancelButtonText" xml:space="preserve">
+    <value>रद्द करें</value>
+  </data>
+  <data name="DateRangePickerClearButtonTitle" xml:space="preserve">
+    <value>चयनित तारीख सीमा साफ़ करें</value>
+  </data>
+  <data name="DateRangePickerCloseButtonTitle" xml:space="preserve">
+    <value>तारीख सीमा चयनकर्ता बंद करें</value>
+  </data>
+  <data name="DateRangePickerPresetsAriaLabel" xml:space="preserve">
+    <value>पूर्वनिर्धारित तारीख सीमाएं</value>
+  </data>
+  <data name="DateRangePickerSelectedDateAriaAtomic" xml:space="preserve">
+    <value>चयनित तारीख सीमा {0}</value>
+  </data>
+  <data name="DateRangePickerStartTimeIncreaseHourTitle" xml:space="preserve">
+    <value>प्रारंभ घंटा बढ़ाएं</value>
+  </data>
+  <data name="DateRangePickerStartTimeDecreaseHourTitle" xml:space="preserve">
+    <value>प्रारंभ घंटा घटाएं</value>
+  </data>
+  <data name="DateRangePickerStartTimeIncreaseMinuteTitle" xml:space="preserve">
+    <value>प्रारंभ मिनट बढ़ाएं</value>
+  </data>
+  <data name="DateRangePickerStartTimeDecreaseMinuteTitle" xml:space="preserve">
+    <value>प्रारंभ मिनट घटाएं</value>
+  </data>
+  <data name="DateRangePickerEndTimeIncreaseHourTitle" xml:space="preserve">
+    <value>समाप्ति घंटा बढ़ाएं</value>
+  </data>
+  <data name="DateRangePickerEndTimeDecreaseHourTitle" xml:space="preserve">
+    <value>समाप्ति घंटा घटाएं</value>
+  </data>
+  <data name="DateRangePickerEndTimeIncreaseMinuteTitle" xml:space="preserve">
+    <value>समाप्ति मिनट बढ़ाएं</value>
+  </data>
+  <data name="DateRangePickerEndTimeDecreaseMinuteTitle" xml:space="preserve">
+    <value>समाप्ति मिनट घटाएं</value>
+  </data>
+  <data name="DateRangePickerStartHourLabel" xml:space="preserve">
+    <value>प्रारंभ घंटा</value>
+  </data>
+  <data name="DateRangePickerStartMinuteLabel" xml:space="preserve">
+    <value>प्रारंभ मिनट</value>
+  </data>
+  <data name="DateRangePickerEndHourLabel" xml:space="preserve">
+    <value>समाप्ति घंटा</value>
+  </data>
+  <data name="DateRangePickerEndMinuteLabel" xml:space="preserve">
+    <value>समाप्ति मिनट</value>
+  </data>
+  <data name="DateRangePickerValueFormat" xml:space="preserve">
+    <value>प्रारंभ: {0} - समाप्ति: {1}</value>
+  </data>
+  <data name="TimePickerCalloutAriaLabel" xml:space="preserve">
+    <value>घड़ी</value>
+  </data>
+  <data name="TimePickerClearButtonText" xml:space="preserve">
+    <value>साफ़ करें</value>
+  </data>
+  <data name="TimePickerClearButtonTitle" xml:space="preserve">
+    <value>चयनित समय साफ़ करें</value>
+  </data>
+  <data name="TimePickerCloseButtonTitle" xml:space="preserve">
+    <value>समय चयनकर्ता बंद करें</value>
+  </data>
+  <data name="TimePickerNowButtonText" xml:space="preserve">
+    <value>अभी</value>
+  </data>
 </root>

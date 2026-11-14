@@ -446,9 +446,9 @@ private List<BitButtonGroupItem> bindingButtons =>
 <BitCheckbox @bind-Value=""showEmptyItems"" Label=""Show the options"" />
 
 <BitAccordionList TItem=""BitAccordionListOption"">
-    <EmptyContent>
+    <EmptyTemplate>
         <BitText Typography=""BitTypography.Body2"">There is nothing to show here yet.</BitText>
-    </EmptyContent>
+    </EmptyTemplate>
     <Options>
         @if (showEmptyItems)
         {

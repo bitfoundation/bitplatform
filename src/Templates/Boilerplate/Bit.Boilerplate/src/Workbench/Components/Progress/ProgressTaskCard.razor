@@ -1,0 +1,24 @@
+@inherits WorkbenchComponentBase
+
+<a class="task-card @(Selected ? "selected" : null) @(ProgressTask.NeedsYouCount > 0 ? "needs-you" : null) status-@ProgressTask.Status.ToString().ToLowerInvariant()"
+   href="@WorkbenchUrls.ProgressTask(ProgressTask.Id)"
+   aria-current="@(Selected ? "page" : null)"
+   data-task-id="@ProgressTask.Id">
+    <span class="card-top">
+        <span class="card-title" dir="auto">@ProgressTask.Title</span>
+        @if (ProgressTask.NeedsYouCount is > 0 and var count)
+        {
+            <span class="needs-count" title="@Localizer[nameof(WorkbenchStrings.ProgressNeedsYouCount), count]">@count.ToString(CultureInfo.CurrentCulture)</span>
+        }
+    </span>
+    <span class="card-agent">
+        <span class="agent-dot @(ProgressTask.IsAgentActive && ProgressTask.IsFinished is false ? "active" : null)" aria-hidden="true"></span>
+        <span dir="auto">@ProgressTask.Agent</span>
+        <span class="card-time">· @WorkbenchTimes.Ago(ProgressTask.UpdatedAt, Localizer)</span>
+    </span>
+    <span class="card-bottom">
+        <span class="card-bar" style="@FormattableString.Invariant($"--wb-done: {ProgressTask.Percent}%")" aria-hidden="true"><span></span></span>
+        <span class="card-count">@Localizer[nameof(WorkbenchStrings.ProgressStepsDone), ProgressTask.CompletedCount, ProgressTask.Steps.Length]</span>
+        <ProgressStatusTag ProgressTask="ProgressTask" />
+    </span>
+</a>

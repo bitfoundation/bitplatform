@@ -220,7 +220,9 @@ public static class BinkPngCodec
                 interlace = chunk[12];
                 if (width <= 0 || height <= 0) throw new FormatException("PNG dimensions are invalid.");
                 if ((long)width * height > maxPixels) throw new FormatException($"The PNG is {width} by {height} pixels, which exceeds the limit of {maxPixels} pixels.");
-                if (bitDepth != 8) throw new FormatException($"Only 8-bit PNGs are supported (this one is {bitDepth}-bit).");
+                // Palette images may pack their indices at 1, 2 or 4 bits, as indexed encoders do for few colours.
+                if (bitDepth != 8 && !(colorType == 3 && bitDepth is 1 or 2 or 4))
+                    throw new FormatException($"Only 8-bit PNGs, and palette PNGs of 1, 2 or 4 bits, are supported (this one is {bitDepth}-bit).");
                 if (interlace != 0) throw new FormatException("Interlaced PNGs are not supported.");
                 sawHeader = true;
             }
@@ -247,7 +249,8 @@ public static class BinkPngCodec
         if ((long)width * height * 4 > Array.MaxLength || ((long)width * channels + 1) * height > Array.MaxLength)
             throw new FormatException($"The PNG is {width} by {height} pixels, which is too large to decode.");
         var key = new ColorKey(colorType, transparency);
-        int stride = width * channels;
+        // A packed palette row holds several indices a byte; its filters work byte by byte, as for one channel.
+        int stride = bitDepth == 8 ? width * channels : (int)(((long)width * bitDepth + 7) / 8);
         int rowBytes = width * 4;
         int total = rowBytes * height;
 
@@ -272,7 +275,7 @@ public static class BinkPngCodec
                 Unfilter((byte)filter, current, previous, channels);
                 long end = (long)(y + 1) * rowBytes;
                 if (end > pixels.Length) Array.Resize(ref pixels, (int)Math.Min(total, Math.Max(end, pixels.Length * 2L)));
-                ExpandRow(current, pixels.AsSpan(y * rowBytes, rowBytes), width, colorType, palette, key);
+                ExpandRow(current, pixels.AsSpan(y * rowBytes, rowBytes), width, colorType, bitDepth, palette, key);
                 (previous, current) = (current, previous);
             }
         }
@@ -379,8 +382,9 @@ public static class BinkPngCodec
         }
     }
 
-    private static void ExpandRow(ReadOnlySpan<byte> source, Span<byte> destination, int width, int colorType, byte[]? palette, in ColorKey key)
+    private static void ExpandRow(ReadOnlySpan<byte> source, Span<byte> destination, int width, int colorType, int bitDepth, byte[]? palette, in ColorKey key)
     {
+        int perByte = 8 / bitDepth, mask = (1 << bitDepth) - 1;
         for (int x = 0; x < width; x++)
         {
             int d = x * 4;
@@ -402,7 +406,8 @@ public static class BinkPngCodec
                 }
                 case 3:
                 {
-                    int index = source[x];
+                    // Packed indices run from each byte's high bits down.
+                    int index = bitDepth == 8 ? source[x] : source[x / perByte] >> (8 - bitDepth * (x % perByte + 1)) & mask;
                     int p = index * 3;
                     if (palette is null || p + 2 >= palette.Length) throw new FormatException("A PNG palette index is out of range.");
                     destination[d] = palette[p]; destination[d + 1] = palette[p + 1]; destination[d + 2] = palette[p + 2];

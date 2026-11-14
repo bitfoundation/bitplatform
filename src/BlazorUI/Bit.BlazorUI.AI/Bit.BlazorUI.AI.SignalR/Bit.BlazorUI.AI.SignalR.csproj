@@ -33,7 +33,7 @@
              (GHSA-334f-vvp4-7g6p). Client.Core rather than Client: the transport takes the app's HubConnection and never
              builds one, so the HTTP connection machinery is the app's choice to add. -->
         <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.AspNetCore.SignalR.Client.Core" Version="[10.0.13,11.0.0)" />
-        <PackageReference Condition="'$(TargetFramework)' == 'net11.0'" Include="Microsoft.AspNetCore.SignalR.Client.Core" Version="[11.0.0-rc.1.26425.128,12.0.0)" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net11.0'" Include="Microsoft.AspNetCore.SignalR.Client.Core" Version="[11.0.0,12.0.0)" />
     </ItemGroup>
 
     <ItemGroup>

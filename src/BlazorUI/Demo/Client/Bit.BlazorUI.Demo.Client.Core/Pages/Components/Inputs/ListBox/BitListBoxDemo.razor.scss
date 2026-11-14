@@ -1,0 +1,27 @@
+﻿::deep {
+    .example-box {
+        gap: 1.5rem;
+        display: flex;
+        flex-flow: row wrap;
+        align-items: flex-start;
+
+        .bit-lbx {
+            min-width: 14rem;
+        }
+    }
+
+    .custom-class .bit-lbx-lst {
+        border-width: 0.125rem;
+        border-color: dodgerblue;
+        border-radius: 0.75rem;
+    }
+
+    .custom-item .bit-lbx-txt {
+        font-weight: bold;
+        color: dodgerblue;
+    }
+
+    .custom-selected {
+        background-color: #ff634733;
+    }
+}

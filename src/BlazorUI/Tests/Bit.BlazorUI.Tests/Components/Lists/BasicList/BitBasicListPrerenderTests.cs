@@ -137,13 +137,13 @@ public class BitBasicListPrerenderTests : BunitTestContext
     }
 
     [TestMethod]
-    public async Task BitBasicListShouldPrerenderTheEmptyContentOfAnEmptyVirtualizedList()
+    public async Task BitBasicListShouldPrerenderTheEmptyTemplateOfAnEmptyVirtualizedList()
     {
         var html = await Prerenderer.RenderAsync<BitBasicList<int>>(new Dictionary<string, object?>
         {
             [nameof(BitBasicList<int>.Items)] = Array.Empty<int>(),
             [nameof(BitBasicList<int>.Virtualize)] = true,
-            [nameof(BitBasicList<int>.EmptyContent)] = (RenderFragment)(b => b.AddMarkupContent(0, "<i class=\"empty\">empty</i>")),
+            [nameof(BitBasicList<int>.EmptyTemplate)] = (RenderFragment)(b => b.AddMarkupContent(0, "<i class=\"empty\">empty</i>")),
         });
 
         StringAssert.Contains(html, "class=\"empty\"");
@@ -209,7 +209,7 @@ public class BitBasicListPrerenderTests : BunitTestContext
             p.Add(x => x.ItemsProviderDelay, 0);
             p.Add(x => x.ItemsProvider, request => ValueTask.FromResult(BitBasicListItemsProviderResult.From<int>([], 0)));
             p.Add(x => x.VirtualizePlaceholder, c => b => b.AddMarkupContent(0, $"<div class=\"ph\">{c.Index}</div>"));
-            p.Add(x => x.EmptyContent, b => b.AddMarkupContent(0, "<div class=\"empty\">empty</div>"));
+            p.Add(x => x.EmptyTemplate, b => b.AddMarkupContent(0, "<div class=\"empty\">empty</div>"));
         });
 
         component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll(".empty").Count));

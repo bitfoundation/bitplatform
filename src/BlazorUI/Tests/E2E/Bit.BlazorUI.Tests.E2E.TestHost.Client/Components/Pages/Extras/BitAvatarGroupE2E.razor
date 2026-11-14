@@ -1,0 +1,47 @@
+﻿@page "/e2e/avatar-group"
+
+<PageTitle>BitAvatarGroup E2E</PageTitle>
+
+<h1>BitAvatarGroup</h1>
+
+@* An overlapping group of clickable avatars with an overflow coin; the same people spread out; and a right-to-left
+   group, whose avatars overlap the other way. *@
+<BitAvatarGroup Id="avg"
+                Items="_people"
+                MaxDisplayed="3"
+                AriaLabel="Project team"
+                OnItemClick="(BitAvatarGroupItem item) => _clicked = item.Text"
+                OnOverflowClick="(IReadOnlyList<BitAvatarGroupItem> hidden) => _hidden = string.Join(',', hidden.Select(p => p.Text))" />
+
+<div style="margin-top: 16px;">
+    <BitAvatarGroup Id="avg-spr" Items="_people" MaxDisplayed="3" Spread AriaLabel="Spread team" />
+</div>
+
+<div style="margin-top: 16px;">
+    <BitAvatarGroup Id="avg-72" Items="_people" MaxDisplayed="3" Size="BitPersonaSize.Size72" AriaLabel="Large team" />
+</div>
+
+<div dir="rtl" style="margin-top: 16px;">
+    <BitAvatarGroup Id="avg-rtl" Dir="BitDir.Rtl" Items="_people" MaxDisplayed="3" AriaLabel="RTL team" />
+</div>
+
+<div id="avg-clicked">@_clicked</div>
+<div id="avg-hidden">@_hidden</div>
+
+<div style="position: fixed; right: 8px; top: 8px;">
+    <E2EStatus />
+</div>
+
+@code {
+    private string? _clicked;
+    private string? _hidden;
+
+    private readonly List<BitAvatarGroupItem> _people =
+    [
+        new() { Key = "annie", Text = "Annie Lindqvist", Presence = BitPersonaPresence.Online },
+        new() { Key = "aaron", Text = "Aaron Reid" },
+        new() { Key = "alex", Text = "Alex Lundberg" },
+        new() { Key = "roko", Text = "Roko Kolar" },
+        new() { Key = "christian", Text = "Christian Bergqvist" },
+    ];
+}

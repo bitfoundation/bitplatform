@@ -111,7 +111,7 @@ public sealed class AotProfileRun(CliServices cli)
                 try
                 {
                     visited = await cli.Console.RunWithStatusAsync($"Using the app at {app.Origin}", progress => collector.VisitAsync(request.StartPath, Math.Max(1, request.MaxPages), skipped, progress, cancellationToken));
-                    steps = [.. request.Steps.Where(step => skipped.Contains(step) is false)];
+                    steps = [.. request.Steps.Where(step => ProfileCollector.IsLeftOut(step, skipped) is false)];
 
                     if (steps.Count > 0)
                         await collector.RunStepAsync(request.StartPath, cancellationToken);
@@ -128,8 +128,9 @@ public sealed class AotProfileRun(CliServices cli)
                 catch (AppReloadedException reload) when (reloads < MaxReloads)
                 {
                     reloads++;
-                    cli.Console.StepWarning($"{reload.Path} reloads the app, which starts the profile over. Using the app again without it.");
-                    skipped.Add(reload.Path);
+                    var leftOut = ProfileCollector.LeftOut(reload.Path);
+                    cli.Console.StepWarning($"{reload.Path} reloads the app, which starts the profile over. Using the app again without {(leftOut == reload.Path ? "it" : $"the pages under {leftOut[..^2]}")}.");
+                    skipped.Add(leftOut);
                 }
             }
 

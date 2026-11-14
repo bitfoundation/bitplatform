@@ -44,8 +44,8 @@ public class BitAiOptionsProviderE2ETests : E2ETestBase
         await Expect(list.Locator("button[aria-label='Löschen Ohne Titel']")).ToHaveCountAsync(1);
         await Expect(list.GetByRole(AriaRole.List, new() { Name = "Heute" })).ToHaveCountAsync(1);
 
-        await Expect(Page.Locator("#opt-empty .bit-aiems-ttl")).ToHaveTextAsync("Wie kann ich helfen?");
-        await Expect(Page.Locator("#opt-empty .bit-aiems-bdy")).ToHaveTextAsync("Stellen Sie eine Frage, um zu beginnen.");
+        await Expect(Page.Locator("#opt-empty .bit-ems-ttl")).ToHaveTextAsync("Wie kann ich helfen?");
+        await Expect(Page.Locator("#opt-empty .bit-ems-dsc")).ToHaveTextAsync("Stellen Sie eine Frage, um zu beginnen.");
         await Expect(Page.Locator("#opt-stl button")).ToHaveTextAsync("Zur neuesten");
 
         // And back again.
@@ -80,15 +80,15 @@ public class BitAiOptionsProviderE2ETests : E2ETestBase
     {
         await OpenAsync(Route);
 
-        await Expect(Page.Locator("#opt-outer .bit-aiems-ttl")).ToHaveTextAsync("Wie kann ich helfen?");
-        await Expect(Page.Locator("#opt-inner .bit-aiems-ttl")).ToHaveTextAsync("Wie kann ich helfen?");
+        await Expect(Page.Locator("#opt-outer .bit-ems-ttl")).ToHaveTextAsync("Wie kann ich helfen?");
+        await Expect(Page.Locator("#opt-inner .bit-ems-ttl")).ToHaveTextAsync("Wie kann ich helfen?");
 
         // The inner options are the outer ones with the actions switched off; outside it they are still shown.
         await Expect(Page.Locator("#opt-inner-message .bit-aimac-act")).ToHaveCountAsync(0);
         await Expect(Page.Locator("#opt-outer-message .bit-aimac-act button[aria-label='Kopieren']")).ToHaveCountAsync(1);
 
         // A provider given no options hands on the outer ones.
-        await Expect(Page.Locator("#opt-handed-on .bit-aiems-ttl")).ToHaveTextAsync("Wie kann ich helfen?");
+        await Expect(Page.Locator("#opt-handed-on .bit-ems-ttl")).ToHaveTextAsync("Wie kann ich helfen?");
     }
 
     [TestMethod]
@@ -98,7 +98,7 @@ public class BitAiOptionsProviderE2ETests : E2ETestBase
 
         var chat = Page.Locator("#opt-own");
         await Expect(chat.Locator(".bit-aimsl")).ToHaveAttributeAsync("aria-label", "Conversation");
-        await Expect(chat.Locator(".bit-aiems-ttl")).ToHaveTextAsync("How can I help?");
+        await Expect(chat.Locator(".bit-ems-ttl")).ToHaveTextAsync("How can I help?");
         await Expect(chat.Locator("textarea.bit-aipri-inp")).ToHaveAttributeAsync("placeholder", "Send a message...");
     }
 
@@ -107,7 +107,7 @@ public class BitAiOptionsProviderE2ETests : E2ETestBase
     {
         await OpenAsync(Route);
 
-        await Expect(Page.Locator("#opt-registered .bit-aiems-ttl")).ToHaveTextAsync("How can I help?");
+        await Expect(Page.Locator("#opt-registered .bit-ems-ttl")).ToHaveTextAsync("How can I help?");
 
         // The provider adds no element of its own: what it holds is a child of the element around it.
         Assert.IsTrue(await Page.Locator("#opt-registered").EvaluateAsync<bool>("e => e.parentElement.id === 'opt-plain'"));
@@ -130,8 +130,8 @@ public class BitAiOptionsProviderE2ETests : E2ETestBase
         await Expect(list.Locator(".bit-aicvl-ttl")).ToHaveTextAsync("Untitled");
         await Expect(list.Locator("button[aria-label='Delete Untitled']")).ToHaveCountAsync(1);
 
-        await Expect(Page.Locator("#opt-empty .bit-aiems-ttl")).ToHaveTextAsync("How can I help?");
-        await Expect(Page.Locator("#opt-empty .bit-aiems-bdy")).ToHaveTextAsync("Ask a question to get started.");
+        await Expect(Page.Locator("#opt-empty .bit-ems-ttl")).ToHaveTextAsync("How can I help?");
+        await Expect(Page.Locator("#opt-empty .bit-ems-dsc")).ToHaveTextAsync("Ask a question to get started.");
         await Expect(Page.Locator("#opt-stl button")).ToHaveTextAsync("Scroll to latest");
     }
 }

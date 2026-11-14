@@ -119,7 +119,7 @@ public partial class BitAiChat : BitAiComponentBase
     /// <summary>
     /// The supporting line of the empty state.
     /// </summary>
-    [Parameter] public string? EmptyBody { get; set; }
+    [Parameter] public string? EmptyDescription { get; set; }
 
     /// <summary>
     /// The content that replaces the empty state.

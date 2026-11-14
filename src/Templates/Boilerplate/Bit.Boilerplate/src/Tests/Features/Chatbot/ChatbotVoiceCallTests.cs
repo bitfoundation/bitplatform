@@ -369,12 +369,12 @@ public class ChatbotVoiceCallTests
         await using var client = server.CreateAppClient();
         var httpClient = await SignIn(client);
 
-        List<AiChatMessage> history = [.. Enumerable.Range(0, StartChatRequest.MaxChatMessagesHistory + 5)
+        List<AiChatMessage> history = [.. Enumerable.Range(0, AiChatProtocol.MaxHistory + 5)
             .Select(index => new AiChatMessage { Role = AiChatMessageRole.User, Content = $"message {index}" })];
 
         await StartVoiceCall(client, httpClient, history);
 
-        Assert.AreSequenceEqual(history.TakeLast(StartChatRequest.MaxChatMessagesHistory).Select(message => message.Content),
+        Assert.AreSequenceEqual(history.TakeLast(AiChatProtocol.MaxHistory).Select(message => message.Content),
                                 realtime.Sideband.Sent().Select(sent => (string?)sent["item"]!["content"]![0]!["text"]));
 
         realtime.Sideband.End();

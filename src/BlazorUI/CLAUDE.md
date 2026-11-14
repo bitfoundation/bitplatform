@@ -165,6 +165,25 @@ never
      aria-label="@TagName(tag)">
 ```
 
+## One name per concept
+
+A concept that more than one component has is spelled the same on all of them, and an outlier is renamed to it, the
+break recorded in `BreakingChanges.md` - never kept beside the new name as an `[Obsolete]` alias.
+
+- **What a component shows when it has nothing to show** has two names, one per meaning: `EmptyTemplate` /
+  `EmptyText` and the `Empty` class-style part for **no items at all**, and `NoResultsTemplate` / `NoResultsText` and
+  the `NoResults` part for a search or filter that **matched none** of the items there are. A component with both
+  (`BitDropdown`) has both. Never `EmptyContent`, `NoDataTemplate`, `EmptyMessage` or `EmptyListTemplate`: the
+  framework's own `Virtualize.EmptyContent` is the one `EmptyContent` left, and it is not ours.
+- **...and it works the same way everywhere.** The template wins, then the text, and with neither the component
+  still says something: `BitStrings.Current.NoItemsFound` for empty, `BitStrings.Current.NoResultsFound` for no
+  results - never a literal of its own, and never nothing. The text parameters are `string?` defaulting to `null`
+  (the default is read at render time, so a `BitStrings` set later still reaches it). The message sits in a wrapper
+  element of its own, `bit-<prefix>-emp` / `bit-<prefix>-nor`, carrying the `Empty` / `NoResults` class-style part,
+  with the template rendered inside it. A component with both meanings keeps them apart: a fruitless search never
+  falls back to the empty text, and an empty component searched stays empty. A component that keeps its words in a
+  texts object (`BitDataGridStrings`) keeps them there, with a getter that falls back to `BitStrings.Current`.
+
 ## Core components never render each other
 
 A component in the core `Bit.BlazorUI` project draws everything it shows with its own markup and its own

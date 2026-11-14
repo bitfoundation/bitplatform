@@ -1,0 +1,50 @@
+﻿@page "/components/stepper"
+@inherits AppComponentBase
+
+
+<PageOutlet Url="components/stepper"
+            Title="Stepper"
+            Description="The Stepper component shows the steps of a process in their order - the ones done, the one the user is on and the ones still to come - horizontally or vertically." />
+
+<div>
+    <DemoPage Name="Stepper"
+              SecondaryNames="@(["Steps", "Wizard", "ProgressSteps"])"
+              Description="The Stepper component shows the steps of a process in their order - the ones done, the one the user is on and the ones still to come - horizontally or vertically, and lets the user go to a step by clicking it. What each step shows, and the buttons that move between them, are the page's."
+              Parameters="componentParameters"
+              SubClasses="componentSubClasses"
+              CssVariables="componentCssVariables"
+              GitHubUrl="Navs/Stepper/BitStepper.razor"
+              GitHubDemoUrl="Navs/Stepper/BitStepperDemo.razor">
+        <NotesTemplate>
+            <BitText>
+                The BitStepper is a <BitTag Color="BitColor.SecondaryBackground">Multi-API</BitTag> component
+                which can accept the list of steps in 3 different ways:
+                <br />
+                1. The <BitLink Href="#stepper-item"><BitTag Color="BitColor.SecondaryBackground">BitStepperItem</BitTag></BitLink> class <br />
+                2. A <BitTag Color="BitColor.SecondaryBackground">Custom Generic</BitTag> class, read through <BitLink Href="#name-selectors">NameSelectors</BitLink> <br />
+                3. The <BitLink Href="#stepper-option"><BitTag Color="BitColor.SecondaryBackground">BitStepperOption</BitTag></BitLink> component
+            </BitText>
+            <br />
+            <BitText>
+                The stepper draws the steps alone: the page shows the content of the current step and moves the stepper
+                forward with CurrentIndex. The steps are an ordered list, the current step says so through
+                aria-current="step", and a completed step or one in error says so in words after its text.
+            </BitText>
+        </NotesTemplate>
+        <Examples>
+            <BitPivot Classes="@(new() { HeaderContainer = "pivot-sticky-header" })" MountAll="RenderForMcpClient">
+                <BitPivotItem HeaderText="Item">
+                    <_BitStepperItemDemo />
+                </BitPivotItem>
+
+                <BitPivotItem HeaderText="Custom">
+                    <_BitStepperCustomDemo />
+                </BitPivotItem>
+
+                <BitPivotItem HeaderText="Option">
+                    <_BitStepperOptionDemo />
+                </BitPivotItem>
+            </BitPivot>
+        </Examples>
+    </DemoPage>
+</div>

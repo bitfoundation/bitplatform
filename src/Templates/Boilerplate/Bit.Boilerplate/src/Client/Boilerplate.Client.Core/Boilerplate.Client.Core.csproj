@@ -24,6 +24,8 @@
         <PackageReference Condition=" '$(module)' == 'Admin' OR '$(module)' == '' " Include="Bit.Bortable" />
         <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="CommunityToolkit.Datasync.Client" />
         <PackageReference Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.AspNetCore.SignalR.Client" />
+        <PackageReference Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Bit.BlazorUI.AI" />
+        <PackageReference Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Bit.BlazorUI.AI.SignalR" />
         <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Microsoft.EntityFrameworkCore.Sqlite" />
         <!--/-:msbuild-conditional:noEmit -->
         <PackageReference Include="Bit.BlazorUI.Extras" />

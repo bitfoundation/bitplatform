@@ -208,6 +208,12 @@ public class BitMenuButtonParams : BitComponentBaseParams, IBitComponentParams
     public bool? NoNewTabHint { get; set; }
 
     /// <summary>
+    /// Leaves the page its own clicks while the menu is open, by not rendering the overlay that otherwise covers
+    /// it. A click or a right-click outside of the menu and its button dismisses it.
+    /// </summary>
+    public bool? NoOverlay { get; set; }
+
+    /// <summary>
     /// The icon of the bullet shown on a checked single-choice item, using custom CSS classes for external
     /// icon libraries. Takes precedence over <see cref="RadioIconName"/> when both are set.
     /// </summary>
@@ -222,6 +228,12 @@ public class BitMenuButtonParams : BitComponentBaseParams, IBitComponentParams
     /// Enables re-clicking the header button while the menu button is in the loading state.
     /// </summary>
     public bool? Reclickable { get; set; }
+
+    /// <summary>
+    /// Shows the menu as a sheet that slides up from the bottom edge of the screen on small screens (an action
+    /// sheet), instead of the callout under the button.
+    /// </summary>
+    public bool? Responsive { get; set; }
 
     /// <summary>
     /// The size of the menu button.
@@ -453,6 +465,11 @@ public class BitMenuButtonParams : BitComponentBaseParams, IBitComponentParams
             bitMenuButton.TakeFromCascade(nameof(NoIcon), NoIcon.Value, static m => m.NoIcon, static (m, v) => m.NoIcon = v);
         }
 
+        if (NoOverlay.HasValue)
+        {
+            bitMenuButton.TakeFromCascade(nameof(NoOverlay), NoOverlay.Value, static m => m.NoOverlay, static (m, v) => m.NoOverlay = v);
+        }
+
 
         if (RadioIcon is not null)
         {
@@ -467,6 +484,11 @@ public class BitMenuButtonParams : BitComponentBaseParams, IBitComponentParams
         if (Reclickable.HasValue)
         {
             bitMenuButton.TakeFromCascade(nameof(Reclickable), Reclickable.Value, static m => m.Reclickable, static (m, v) => m.Reclickable = v);
+        }
+
+        if (Responsive.HasValue)
+        {
+            bitMenuButton.TakeFromCascade(nameof(Responsive), Responsive.Value, static m => m.Responsive, static (m, v) => m.Responsive = v);
         }
 
         if (Size.HasValue)

@@ -312,6 +312,9 @@
     <data name="ToggleWorkbenchTheme" xml:space="preserve">
         <value>वर्कबेंच को लाइट और डार्क के बीच बदलें</value>
     </data>
+    <data name="WorkbenchLanguage" xml:space="preserve">
+        <value>वर्कबेंच की भाषा</value>
+    </data>
     <data name="PosStoreAll" xml:space="preserve">
         <value>सभी स्टोर</value>
     </data>
@@ -814,16 +817,16 @@
         <value>लिम्बर्ग</value>
     </data>
     <data name="HomePageTitle" xml:space="preserve">
-        <value>वर्कबेंच · हर पेज को डिज़ाइन करें, जाँचें और कैप्चर करें</value>
+        <value>वर्कबेंच · जहाँ आप और आपका AI एजेंट ऐप बनाते हैं</value>
     </data>
     <data name="HomeEyebrow" xml:space="preserve">
         <value>आपके प्रोजेक्ट का हिस्सा</value>
     </data>
     <data name="HomeHeadline" xml:space="preserve">
-        <value>बैकएंड बनने से पहले ही डिज़ाइन पूरा कर लें।</value>
+        <value>जहाँ आप और आपका AI एजेंट ऐप बनाते हैं।</value>
     </data>
     <data name="HomeLead" xml:space="preserve">
-        <value>वर्कबेंच आपके ऐप के पेजों को सैंपल डेटा पर चलाती है, ताकि आप हर स्थिति डिज़ाइन कर सकें, उसे हर डिवाइस पर देख सकें और स्टोर के लिए तैयार स्क्रीनशॉट एक्सपोर्ट कर सकें, उन्हीं कंपोनेंट और थीम के साथ जिनके साथ आपका ऐप आता है।</value>
+        <value>हर पेज को सैंपल डेटा पर, हर स्थिति और हर डिवाइस पर डिज़ाइन करें, उसे ऐसी टिप्पणियों से रिव्यू करें जिनका जवाब आपका एजेंट आपके लिखते-लिखते देता है, और डिप्लॉयमेंट या नए फ़ीचर जैसे उसके लंबे कामों को देखते हुए उसके सवालों का जवाब एक क्लिक या अपनी आवाज़ से दें। सब कुछ आपके प्रोजेक्ट के अंदर, उन्हीं कंपोनेंट और थीम के साथ जो आपका ऐप इस्तेमाल करता है।</value>
     </data>
     <data name="HomeStartHere" xml:space="preserve">
         <value>यहाँ से शुरू करें</value>
@@ -856,13 +859,13 @@
         <value>आपके प्रोजेक्ट में वर्कबेंच क्यों है</value>
     </data>
     <data name="HomeWhySubtitle" xml:space="preserve">
-        <value>आपके पेजों के लिए एक डिज़ाइन टूल, एक टेस्ट बेंच और एक फ़ोटो स्टूडियो, खुद प्रोजेक्ट के अंदर।</value>
+        <value>डिज़ाइन टूल, टेस्ट बेंच, फ़ोटो स्टूडियो और आपके एजेंट का कंट्रोल रूम, प्रोजेक्ट के अंदर ही।</value>
     </data>
     <data name="HomeWhyAgentsTitle" xml:space="preserve">
-        <value>किसी भी AI एजेंट के साथ डिज़ाइन करें</value>
+        <value>किसी भी AI एजेंट के साथ काम करें</value>
     </data>
     <data name="HomeWhyAgentsText" xml:space="preserve">
-        <value>आपको Claude Design या Figma की ज़रूरत नहीं है। चाहे आप Codex, Copilot या Claude Code इस्तेमाल करें, आपका एजेंट यहाँ पेज डिज़ाइन कर सकता है, उन्हें असली ब्राउज़र में देख सकता है और उन्हें बेहतर बना सकता है।</value>
+        <value>Claude Code, Codex, Copilot, Gemini, Junie या Cursor: आपका एजेंट यहाँ पेज डिज़ाइन करता है और उन्हें असली ब्राउज़र में देखता है, अपने लंबे कामों की प्रगति दिखाता है और जो चाहिए वह आपसे पूछता है। Claude Design या Figma की ज़रूरत नहीं।</value>
     </data>
     <data name="HomeWhyRealTitle" xml:space="preserve">
         <value>असली कंपोनेंट, मॉकअप नहीं</value>
@@ -907,7 +910,7 @@
         <value>अपने AI से कहें</value>
     </data>
     <data name="HomeHowStep1Text" xml:space="preserve">
-        <value>Claude, Codex, GitHub Copilot, Gemini या Junie से पेज बनाने को कहें, वह उसे यहाँ ऐसे सैंपल डेटा के साथ बनाता है जो असली डेटा की तरह लोड होता है।</value>
+        <value>Claude, Codex, GitHub Copilot, Gemini या Junie से कोई पेज, फ़ीचर या डिप्लॉयमेंट माँगें। पेज यहाँ ऐसे सैंपल डेटा पर बनते हैं जो असली की तरह लोड होता है।</value>
     </data>
     <data name="HomeHowStep2Title" xml:space="preserve">
         <value>हर स्थिति जाँचें</value>
@@ -2458,10 +2461,10 @@
         <value>अपने AI एजेंट के साथ लाइव रिव्यू करें</value>
     </data>
     <data name="HomeWhyLiveText" xml:space="preserve">
-        <value>पेज की किसी भी जगह पर टिप्पणी पिन करें। आपकी अपनी मशीन पर, आपका कोडिंग एजेंट आपके लिखते ही उसे पा लेता है, पेज बदलता है, टिप्पणी पर जवाब देता है और उस पर सही का निशान लगा देता है। Claude Code, Codex, Copilot, Gemini, Junie और Cursor के साथ काम करता है।</value>
+        <value>पेज की किसी भी जगह पर टिप्पणी लगाएँ, लिखकर या बोलकर। आपके अपने कंप्यूटर पर, आपका कोडिंग एजेंट उसे आपके लिखते-लिखते पाता है, पेज बदलता है, टिप्पणी पर जवाब देता है और उसे पूरा चिह्नित करता है। Claude Code, Codex, Copilot, Gemini, Junie और Cursor के साथ काम करता है।</value>
     </data>
     <data name="TourLiveText" xml:space="preserve">
-        <value>पेज की किसी भी जगह पर टिप्पणी पिन करें। आपकी अपनी मशीन पर, आपका कोडिंग एजेंट आपके लिखते ही उसे पा लेता है, पेज बदलता है, टिप्पणी पर जवाब देता है और उस पर सही का निशान लगा देता है। Claude Code, Codex, Copilot, Gemini, Junie और Cursor के साथ काम करता है। अभी आज़माएँ: अपनी टिप्पणी लिखें और भेजें।</value>
+        <value>पेज की किसी भी जगह पर टिप्पणी लगाएँ, लिखकर या बोलकर: भेजें के पास वाला माइक्रोफ़ोन आपकी आवाज़ को टेक्स्ट बना देता है। आपके अपने कंप्यूटर पर, आपका कोडिंग एजेंट उसे आपके लिखते-लिखते पाता है, पेज बदलता है, टिप्पणी पर जवाब देता है और उसे पूरा चिह्नित करता है। Claude Code, Codex, Copilot, Gemini, Junie और Cursor के साथ काम करता है। अभी आज़माएँ: अपनी टिप्पणी लिखें और भेजें।</value>
     </data>
     <data name="HomeChipLive" xml:space="preserve">
         <value>AI के साथ लाइव रिव्यू</value>
@@ -4811,5 +4814,532 @@
     </data>
     <data name="ThemeLocalizationNote" xml:space="preserve">
         <value>इस पेज के कंपोनेंट्स के सभी टेक्स्ट हर भाषा में अनुवादित नहीं हैं। इसका मतलब यह नहीं कि यह सुविधा नहीं है: यहाँ का हर कंपोनेंट लोकलाइज़ किया जा सकता है, लेकिन उनके सारे टेक्स्ट का अनुवाद इस पेज के काम में कुछ खास नहीं जोड़ता था। ज़रूरत हो तो अपने AI एजेंट से अनुवाद पूरे करने को कहें।</value>
+    </data>
+    <data name="Progress" xml:space="preserve">
+        <value>प्रगति</value>
+    </data>
+    <data name="ProgressTitle" xml:space="preserve">
+        <value>काम पर आपके एजेंट</value>
+    </data>
+    <data name="ProgressLead" xml:space="preserve">
+        <value>आपके AI एजेंटों का हर लंबा काम, हर चैट का अपना: क्या हो चुका है, एजेंट अभी क्या कर रहा है, क्या बाकी है और उसे आपसे क्या चाहिए।</value>
+    </data>
+    <data name="ProgressTasks" xml:space="preserve">
+        <value>काम</value>
+    </data>
+    <data name="ProgressSamplesTitle" xml:space="preserve">
+        <value>ये उदाहरण हैं</value>
+    </data>
+    <data name="ProgressSamplesText" xml:space="preserve">
+        <value>जैसे ही कोई काम शुरू होगा, आपके एजेंटों के काम यहाँ दिखेंगे। तब तक इन्हें आज़माएँ: किसी सवाल का जवाब दें, कोई कदम पूरा करें या एजेंट को लिखें।</value>
+    </data>
+    <data name="ProgressSamplesVisitorText" xml:space="preserve">
+        <value>इस वर्कबेंच पर काम कर रहे एजेंटों के काम सिर्फ़ उसी कंप्यूटर पर दिखते हैं जिस पर यह चल रहा है। ये उदाहरण दिखाते हैं कि वहाँ आपको क्या दिखेगा।</value>
+    </data>
+    <data name="ProgressGroupNeedsYou" xml:space="preserve">
+        <value>आपकी ज़रूरत है</value>
+    </data>
+    <data name="ProgressGroupWorking" xml:space="preserve">
+        <value>जारी है</value>
+    </data>
+    <data name="ProgressGroupFinished" xml:space="preserve">
+        <value>पूरे हुए</value>
+    </data>
+    <data name="ProgressAllTasks" xml:space="preserve">
+        <value>सभी काम</value>
+    </data>
+    <data name="ProgressNeedsYou" xml:space="preserve">
+        <value>आपकी ज़रूरत है</value>
+    </data>
+    <data name="ProgressWorking" xml:space="preserve">
+        <value>चल रहा है</value>
+    </data>
+    <data name="ProgressDone" xml:space="preserve">
+        <value>पूरा</value>
+    </data>
+    <data name="ProgressFailed" xml:space="preserve">
+        <value>विफल</value>
+    </data>
+    <data name="ProgressStopped" xml:space="preserve">
+        <value>रुका हुआ</value>
+    </data>
+    <data name="ProgressNeedsYouCount" xml:space="preserve">
+        <value>{0} आपका इंतज़ार कर रहे हैं</value>
+    </data>
+    <data name="ProgressStepsDone" xml:space="preserve">
+        <value>{1} में से {0} कदम</value>
+    </data>
+    <data name="ProgressAgentActive" xml:space="preserve">
+        <value>अभी सक्रिय</value>
+    </data>
+    <data name="ProgressAgentLastSeen" xml:space="preserve">
+        <value>आख़िरी बार {0}</value>
+    </data>
+    <data name="ProgressStarted" xml:space="preserve">
+        <value>शुरू: {0}</value>
+    </data>
+    <data name="ProgressUpdated" xml:space="preserve">
+        <value>अपडेट: {0}</value>
+    </data>
+    <data name="ProgressSample" xml:space="preserve">
+        <value>उदाहरण</value>
+    </data>
+    <data name="ProgressYourTurn" xml:space="preserve">
+        <value>आपकी बारी</value>
+    </data>
+    <data name="ProgressYourTurnHint" xml:space="preserve">
+        <value>आपके जवाब देते ही {0} आगे बढ़ेगा।</value>
+    </data>
+    <data name="ProgressOpenLink" xml:space="preserve">
+        <value>खोलें</value>
+    </data>
+    <data name="ProgressDidIt" xml:space="preserve">
+        <value>मैंने कर दिया</value>
+    </data>
+    <data name="ProgressNothingForYou" xml:space="preserve">
+        <value>अभी आपकी ज़रूरत नहीं है। ज़रूरत होने पर {0} आपको यहाँ बुलाएगा।</value>
+    </data>
+    <data name="ProgressSteps" xml:space="preserve">
+        <value>कदम</value>
+    </data>
+    <data name="ProgressNoSteps" xml:space="preserve">
+        <value>एजेंट ने अभी अपने कदम नहीं बताए हैं।</value>
+    </data>
+    <data name="ProgressYou" xml:space="preserve">
+        <value>आप</value>
+    </data>
+    <data name="ProgressStepTodo" xml:space="preserve">
+        <value>बाकी</value>
+    </data>
+    <data name="ProgressStepDoing" xml:space="preserve">
+        <value>जारी</value>
+    </data>
+    <data name="ProgressStepDone" xml:space="preserve">
+        <value>पूरा</value>
+    </data>
+    <data name="ProgressStepBlocked" xml:space="preserve">
+        <value>अटका हुआ</value>
+    </data>
+    <data name="ProgressStepSkipped" xml:space="preserve">
+        <value>छोड़ा गया</value>
+    </data>
+    <data name="ProgressKeepInMind" xml:space="preserve">
+        <value>ध्यान रखें</value>
+    </data>
+    <data name="ProgressNoteInfo" xml:space="preserve">
+        <value>नोट</value>
+    </data>
+    <data name="ProgressNoteWarning" xml:space="preserve">
+        <value>चेतावनी</value>
+    </data>
+    <data name="ProgressNoteDecision" xml:space="preserve">
+        <value>फ़ैसला</value>
+    </data>
+    <data name="ProgressNoteSuccess" xml:space="preserve">
+        <value>पूरा</value>
+    </data>
+    <data name="ProgressNoteError" xml:space="preserve">
+        <value>समस्या</value>
+    </data>
+    <data name="ProgressLinks" xml:space="preserve">
+        <value>लिंक</value>
+    </data>
+    <data name="ProgressActivity" xml:space="preserve">
+        <value>गतिविधि</value>
+    </data>
+    <data name="ProgressMessagePlaceholder" xml:space="preserve">
+        <value>{0} को लिखें</value>
+    </data>
+    <data name="ProgressDelete" xml:space="preserve">
+        <value>यह काम हटाएँ</value>
+    </data>
+    <data name="ProgressDeleteConfirm" xml:space="preserve">
+        <value>हमेशा के लिए हटाएँ?</value>
+    </data>
+    <data name="ProgressPickTask" xml:space="preserve">
+        <value>कोई काम चुनें और देखें कि वह कहाँ तक पहुँचा।</value>
+    </data>
+    <data name="ProgressTaskGone" xml:space="preserve">
+        <value>यह काम अब नहीं है। शायद इसके एजेंट ने इसे पूरा करके हटा दिया।</value>
+    </data>
+    <data name="ProgressAddNote" xml:space="preserve">
+        <value>नोट जोड़ें</value>
+    </data>
+    <data name="ProgressAnswerPlaceholder" xml:space="preserve">
+        <value>आपका जवाब</value>
+    </data>
+    <data name="ProgressNotePlaceholder" xml:space="preserve">
+        <value>कुछ जोड़ना है? (वैकल्पिक)</value>
+    </data>
+    <data name="ProgressYes" xml:space="preserve">
+        <value>हाँ</value>
+    </data>
+    <data name="ProgressNo" xml:space="preserve">
+        <value>नहीं</value>
+    </data>
+    <data name="ProgressSendAnswer" xml:space="preserve">
+        <value>जवाब भेजें</value>
+    </data>
+    <data name="ProgressAnswerFailed" xml:space="preserve">
+        <value>इस बीच इस सवाल का जवाब दे दिया गया या इसे वापस ले लिया गया।</value>
+    </data>
+    <data name="ProgressSent" xml:space="preserve">
+        <value>{0} को भेज दिया।</value>
+    </data>
+    <data name="ProgressSampleSentTitle" xml:space="preserve">
+        <value>यह एक उदाहरण है</value>
+    </data>
+    <data name="ProgressSampleSent" xml:space="preserve">
+        <value>असली काम में {0} को यह तुरंत मिलता है और वह आगे बढ़ता है।</value>
+    </data>
+    <data name="ProgressSampleSecret" xml:space="preserve">
+        <value>असली काम में यह वहीं जाता है जहाँ सवाल कहता है, और {0} इसे देखे बिना आगे बढ़ता है।</value>
+    </data>
+    <data name="ProgressSecretToGitHubEnvironment" xml:space="preserve">
+        <value>यह सीधे GitHub में {0} नाम से, {1} एनवायरनमेंट के secret के रूप में जाता है। {2} इसे कभी नहीं देखता।</value>
+    </data>
+    <data name="ProgressSecretToGitHub" xml:space="preserve">
+        <value>यह सीधे GitHub में {0} नाम से, रिपॉज़िटरी के secret के रूप में जाता है। {1} इसे कभी नहीं देखता।</value>
+    </data>
+    <data name="ProgressSecretToFile" xml:space="preserve">
+        <value>यह प्रोजेक्ट के बाहर एक फ़ाइल में जाता है, जिसे {0} अपने कमांड में इस्तेमाल करता है, बिना इसे कभी देखे।</value>
+    </data>
+    <data name="ProgressSecretPlaceholder" xml:space="preserve">
+        <value>यहाँ चिपकाएँ</value>
+    </data>
+    <data name="ProgressSecretStore" xml:space="preserve">
+        <value>सहेजें</value>
+    </data>
+    <data name="ProgressSecretStored" xml:space="preserve">
+        <value>सहेज लिया गया। {0} इसे कभी देखे बिना आगे बढ़ता है।</value>
+    </data>
+    <data name="ProgressSecretStoreFailed" xml:space="preserve">
+        <value>इसे सहेजा नहीं जा सका: {0}</value>
+    </data>
+    <data name="ProgressSecretOnlyHere" xml:space="preserve">
+        <value>सीक्रेट सिर्फ़ वही कंप्यूटर ले सकता है जिस पर यह वर्कबेंच चल रहा है।</value>
+    </data>
+    <data name="ProgressSecretAnswered" xml:space="preserve">
+        <value>सहेजा गया, कभी दिखाया नहीं जाता</value>
+    </data>
+    <data name="ProgressEntryStepDone" xml:space="preserve">
+        <value>पूरा: {0}</value>
+    </data>
+    <data name="ProgressAgentNeedsYou" xml:space="preserve">
+        <value>{0} को आपकी ज़रूरत है</value>
+    </data>
+    <data name="ProgressAgentFinished" xml:space="preserve">
+        <value>{0} ने एक काम पूरा किया</value>
+    </data>
+    <data name="ProgressAgentStopped" xml:space="preserve">
+        <value>{0} ने एक काम रोक दिया</value>
+    </data>
+    <data name="ProgressGuideListTitle" xml:space="preserve">
+        <value>हर चैट, एक सूची</value>
+    </data>
+    <data name="ProgressGuideListText" xml:space="preserve">
+        <value>लंबा काम चला रही हर AI चैट, जैसे पहला डिप्लॉयमेंट या कोई नया फ़ीचर, अपनी प्रगति यहाँ बाकी चैटों के साथ दिखाती है। जिसमें आपकी ज़रूरत है, वह सबसे ऊपर आता है।</value>
+    </data>
+    <data name="ProgressGuideTurnTitle" xml:space="preserve">
+        <value>आपकी बारी</value>
+    </data>
+    <data name="ProgressGuideTurnText" xml:space="preserve">
+        <value>एजेंट के सवालों का जवाब एक क्लिक, कुछ शब्दों या अपनी आवाज़ से दें, और अपना हिस्सा पूरा होने पर उसे बताएँ। भेजते ही वह आगे बढ़ता है।</value>
+    </data>
+    <data name="ProgressGuideStepsTitle" xml:space="preserve">
+        <value>क्या हुआ और क्या बाकी है</value>
+    </data>
+    <data name="ProgressGuideStepsText" xml:space="preserve">
+        <value>एजेंट का हर पूरा किया कदम, जिस पर वह अभी है और जो आगे बाकी है। जो कदम सिर्फ़ आप उठा सकते हैं, वे चिह्नित हैं।</value>
+    </data>
+    <data name="ProgressGuideActivityTitle" xml:space="preserve">
+        <value>एजेंट से बात करें</value>
+    </data>
+    <data name="ProgressGuideActivityText" xml:space="preserve">
+        <value>यहाँ एजेंट को कुछ भी लिखें या बोलें, और पढ़ें कि उसने क्या और कब किया। अगली बार देखने पर वह आपका संदेश पढ़ेगा।</value>
+    </data>
+    <data name="ProgressGuideSoundTitle" xml:space="preserve">
+        <value>ज़रूरत पड़ने पर वह आपको बुलाता है</value>
+    </data>
+    <data name="ProgressGuideSoundText" xml:space="preserve">
+        <value>जब कोई एजेंट आपसे कुछ पूछता है तो आवाज़ बजती है, जब तक वर्कबेंच म्यूट न हो, और टैब का शीर्षक गिनता है कि कितनी चीज़ें आपका इंतज़ार कर रही हैं। किसी दूसरे ऐप में रहते हुए भी सूचना पाने के लिए किसी पेज के रिव्यू टैब में सूचनाएँ चालू करें।</value>
+    </data>
+    <data name="Dictate" xml:space="preserve">
+        <value>बोलकर लिखना</value>
+    </data>
+    <data name="DictateIn" xml:space="preserve">
+        <value>टाइप करने की जगह बोलें ({0})</value>
+    </data>
+    <data name="StopDictation" xml:space="preserve">
+        <value>सुनना बंद करें</value>
+    </data>
+    <data name="DictationLanguage" xml:space="preserve">
+        <value>बोलकर लिखने की भाषा</value>
+    </data>
+    <data name="Listening" xml:space="preserve">
+        <value>सुन रहा है…</value>
+    </data>
+    <data name="MicrophoneBlocked" xml:space="preserve">
+        <value>ब्राउज़र ने माइक्रोफ़ोन रोक दिया है। एड्रेस बार से इस साइट के लिए इसकी अनुमति दें, फिर दोबारा कोशिश करें।</value>
+    </data>
+    <data name="DictationNeedsNetwork" xml:space="preserve">
+        <value>इस ब्राउज़र में बोलकर लिखने के लिए इंटरनेट कनेक्शन चाहिए।</value>
+    </data>
+    <data name="DictationLanguageNotSupported" xml:space="preserve">
+        <value>यह ब्राउज़र {0} में बोलकर लिखना नहीं जानता।</value>
+    </data>
+    <data name="DictationFailed" xml:space="preserve">
+        <value>बोलकर लिखना शुरू नहीं हुआ। फिर से कोशिश करें या टाइप करें।</value>
+    </data>
+    <data name="TimeJustNow" xml:space="preserve">
+        <value>अभी-अभी</value>
+    </data>
+    <data name="TimeMinutesAgo" xml:space="preserve">
+        <value>{0} मिनट पहले</value>
+    </data>
+    <data name="TimeHoursAgo" xml:space="preserve">
+        <value>{0} घंटे पहले</value>
+    </data>
+    <data name="SampleDeployTitle" xml:space="preserve">
+        <value>Test और Production पर डिप्लॉय करें</value>
+    </data>
+    <data name="SampleDeploySummary" xml:space="preserve">
+        <value>आपके अपने सर्वर पर Test और Production एनवायरनमेंट तैयार करना, ऐप को आपके डोमेन पर चलाते हुए।</value>
+    </data>
+    <data name="SampleDeployStepServices" xml:space="preserve">
+        <value>ऐप को चाहिए बाहरी सेवाएँ और उनकी कुंजियाँ ढूँढना</value>
+    </data>
+    <data name="SampleDeployStepEnvironments" xml:space="preserve">
+        <value>GitHub पर Test और Production एनवायरनमेंट बनाना</value>
+    </data>
+    <data name="SampleDeployStepServer" xml:space="preserve">
+        <value>एक Linux सर्वर लेना और उसका पता बताना</value>
+    </data>
+    <data name="SampleDeployStepToken" xml:space="preserve">
+        <value>Cloudflare API टोकन बनाना</value>
+    </data>
+    <data name="SampleDeployStepTokenDetail" xml:space="preserve">
+        <value>Cloudflare डैशबोर्ड में My Profile, फिर API Tokens खोलें और ऐसा टोकन बनाएँ जो DNS और Cloudflare Tunnel बदल सके। फिर उसे नीचे चिपकाएँ।</value>
+    </data>
+    <data name="SampleDeployStepRunner" xml:space="preserve">
+        <value>सर्वर पर Docker और GitHub Actions रनर इंस्टॉल करना</value>
+    </data>
+    <data name="SampleDeployStepTunnel" xml:space="preserve">
+        <value>Cloudflare Tunnel से ऐप को आपके डोमेन पर चलाना</value>
+    </data>
+    <data name="SampleDeployStepFirst" xml:space="preserve">
+        <value>पहले Test पर, फिर Production पर डिप्लॉय करना</value>
+    </data>
+    <data name="SampleDeployAskEmail" xml:space="preserve">
+        <value>ऐप के ईमेल कौन-सी सेवा भेजे?</value>
+    </data>
+    <data name="SampleDeployAskEmailDetail" xml:space="preserve">
+        <value>ऐप साइन-इन कोड और पासवर्ड रीसेट ईमेल से भेजता है। आप इसे बाद में बदल सकते हैं।</value>
+    </data>
+    <data name="SampleDeployAskEmailOption1" xml:space="preserve">
+        <value>किसी ईमेल सेवा का मुफ़्त खाता</value>
+    </data>
+    <data name="SampleDeployAskEmailOption2" xml:space="preserve">
+        <value>हमारी कंपनी का मेल सर्वर</value>
+    </data>
+    <data name="SampleDeployAskEmailOption3" xml:space="preserve">
+        <value>अभी कोई नहीं: ईमेल लॉग में दिखाएँ</value>
+    </data>
+    <data name="SampleDeployAskSsh" xml:space="preserve">
+        <value>टनल चलने लगे तो सर्वर का SSH पोर्ट बंद कर दूँ?</value>
+    </data>
+    <data name="SampleDeployAskSshDetail" xml:space="preserve">
+        <value>आप तब भी टनल से और अपने प्रोवाइडर के वेब कंसोल से सर्वर तक पहुँच पाएँगे।</value>
+    </data>
+    <data name="SampleDeployAskToken" xml:space="preserve">
+        <value>Cloudflare टोकन चिपकाएँ</value>
+    </data>
+    <data name="SampleDeployNoteSecrets" xml:space="preserve">
+        <value>कुंजियाँ और पासवर्ड कभी किसी चैट में नहीं आते। आप उन्हें यहाँ चिपकाते हैं, और हर एक सीधे अपनी जगह जाता है, बिना मेरे देखे।</value>
+    </data>
+    <data name="SampleDeployNoteOneServer" xml:space="preserve">
+        <value>लागत कम रखने के लिए दोनों एनवायरनमेंट के लिए एक ही सर्वर।</value>
+    </data>
+    <data name="SampleDeployLinkCloudflare" xml:space="preserve">
+        <value>Cloudflare डैशबोर्ड</value>
+    </data>
+    <data name="SampleDeployFeed1" xml:space="preserve">
+        <value>ऐप 6 बाहरी सेवाएँ इस्तेमाल करता है; उनमें से 3 को आपके अपने खातों की कुंजियाँ चाहिए।</value>
+    </data>
+    <data name="SampleDeployFeed2" xml:space="preserve">
+        <value>सर्वर 203.0.113.24 पर तैयार है।</value>
+    </data>
+    <data name="SampleDeployFeed3" xml:space="preserve">
+        <value>आपकी जोड़ी कुंजी से सर्वर में साइन इन किया और पासवर्ड से साइन-इन बंद कर दिया।</value>
+    </data>
+    <data name="SampleDeployFeed4" xml:space="preserve">
+        <value>टनल बनाने के लिए Cloudflare टोकन का इंतज़ार है।</value>
+    </data>
+    <data name="SampleFeatureTitle" xml:space="preserve">
+        <value>नया फ़ीचर: लॉयल्टी पॉइंट</value>
+    </data>
+    <data name="SampleFeatureSummary" xml:space="preserve">
+        <value>ग्राहक हर ऑर्डर पर पॉइंट कमाते हैं और चेकआउट पर खर्च करते हैं। आपने डिज़ाइन मंज़ूर कर दिया है, अब इसे बना रहा हूँ।</value>
+    </data>
+    <data name="SampleFeatureStepRequirements" xml:space="preserve">
+        <value>ज़रूरतें तय करना और उन्हें स्पेक में लिखना</value>
+    </data>
+    <data name="SampleFeatureStepPlan" xml:space="preserve">
+        <value>काम को 6 हिस्सों में बाँटना</value>
+    </data>
+    <data name="SampleFeatureStepDesign" xml:space="preserve">
+        <value>वर्कबेंच में डिज़ाइन मंज़ूर करना</value>
+    </data>
+    <data name="SampleFeatureStepLedger" xml:space="preserve">
+        <value>पॉइंट लेजर और उसकी API बनाना</value>
+    </data>
+    <data name="SampleFeatureStepCheckout" xml:space="preserve">
+        <value>चेकआउट पर पॉइंट खर्च करना</value>
+    </data>
+    <data name="SampleFeatureStepTests" xml:space="preserve">
+        <value>फ़ोन और डेस्कटॉप पर टेस्ट</value>
+    </data>
+    <data name="SampleStepTryOnTest" xml:space="preserve">
+        <value>Test एनवायरनमेंट पर आज़माना</value>
+    </data>
+    <data name="SampleFeatureAskWorth" xml:space="preserve">
+        <value>चेकआउट पर एक पॉइंट की क़ीमत कितनी है?</value>
+    </data>
+    <data name="SampleFeatureAskWorthDetail" xml:space="preserve">
+        <value>यह सेटिंग्स में जाएगा, ताकि आप इसे बाद में बदल सकें।</value>
+    </data>
+    <data name="SampleFeatureAskWorthPlaceholder" xml:space="preserve">
+        <value>उदाहरण: 100 पॉइंट = ₹10</value>
+    </data>
+    <data name="SampleFeatureAskOrders" xml:space="preserve">
+        <value>किन ऑर्डरों पर पॉइंट मिलें?</value>
+    </data>
+    <data name="SampleFeatureAskOrdersOption1" xml:space="preserve">
+        <value>ऑनलाइन ऑर्डर</value>
+    </data>
+    <data name="SampleFeatureAskOrdersOption2" xml:space="preserve">
+        <value>स्टोर में ऑर्डर</value>
+    </data>
+    <data name="SampleFeatureAskOrdersOption3" xml:space="preserve">
+        <value>गिफ़्ट कार्ड से भुगतान वाले ऑर्डर</value>
+    </data>
+    <data name="SampleFeatureNoteExpiry" xml:space="preserve">
+        <value>पॉइंट कमाने के 12 महीने बाद ख़त्म हो जाते हैं।</value>
+    </data>
+    <data name="SampleFeatureNoteSpec" xml:space="preserve">
+        <value>अब तक तय हुई हर बात, खुले सवालों के साथ, फ़ीचर के स्पेक में है।</value>
+    </data>
+    <data name="SampleFeatureLinkDesign" xml:space="preserve">
+        <value>मंज़ूर डिज़ाइन</value>
+    </data>
+    <data name="SampleFeatureFeed1" xml:space="preserve">
+        <value>ज़रूरतें स्पेक में लिख दीं; आपके लिए 3 सवाल बाकी हैं।</value>
+    </data>
+    <data name="SampleFeatureFeed2" xml:space="preserve">
+        <value>अच्छा लग रहा है। पॉइंट बैज थोड़ा छोटा कर दो।</value>
+    </data>
+    <data name="SampleFeatureFeed3" xml:space="preserve">
+        <value>बैज छोटा कर दिया और बनाना शुरू किया।</value>
+    </data>
+    <data name="SampleFeatureFeed4" xml:space="preserve">
+        <value>लेजर और उसका डेटाबेस माइग्रेशन जुड़ गया है। अब उसकी API लिख रहा हूँ।</value>
+    </data>
+    <data name="SampleFixTitle" xml:space="preserve">
+        <value>सुधार: रोज़ की बिक्री रिपोर्ट में रिफ़ंड नहीं दिख रहे</value>
+    </data>
+    <data name="SampleFixSummary" xml:space="preserve">
+        <value>आधी रात के बाद के रिफ़ंड गलत दिन में गिने जा रहे थे। ठीक किया, Test पर आज़माया और मर्ज किया।</value>
+    </data>
+    <data name="SampleFixStepLogs" xml:space="preserve">
+        <value>Production के लॉग में वजह ढूँढना</value>
+    </data>
+    <data name="SampleFixStepTest" xml:space="preserve">
+        <value>ऐसा टेस्ट लिखना जो सुधार के बिना फ़ेल हो</value>
+    </data>
+    <data name="SampleFixStepFix" xml:space="preserve">
+        <value>रिफ़ंड को स्टोर के अपने टाइम ज़ोन में गिनना</value>
+    </data>
+    <data name="SampleFixStepMerge" xml:space="preserve">
+        <value>मर्ज करना, जिससे Production अपडेट होता है</value>
+    </data>
+    <data name="SampleFixAskMerge" xml:space="preserve">
+        <value>इसे main में मर्ज करूँ? इससे Production अपडेट होगा।</value>
+    </data>
+    <data name="SampleFixNoteDone" xml:space="preserve">
+        <value>Production अब सुधार के साथ चल रहा है। टेस्ट इस बग को लौटने नहीं देगा।</value>
+    </data>
+    <data name="SampleFixLinkPullRequest" xml:space="preserve">
+        <value>पुल रिक्वेस्ट</value>
+    </data>
+    <data name="SampleFixLinkTest" xml:space="preserve">
+        <value>Test एनवायरनमेंट</value>
+    </data>
+    <data name="SampleFixFeed1" xml:space="preserve">
+        <value>मिल गया: रिपोर्ट स्टोर का नहीं, सर्वर का टाइम ज़ोन इस्तेमाल कर रही थी।</value>
+    </data>
+    <data name="SampleFixFeed2" xml:space="preserve">
+        <value>अब Test पर है। आधी रात के बाद एक रिफ़ंड आज़माएँ।</value>
+    </data>
+    <data name="SampleFixFeed3" xml:space="preserve">
+        <value>मर्ज हो गया। Production अपडेट है।</value>
+    </data>
+    <data name="HomeWhyProgressTitle" xml:space="preserve">
+        <value>लंबे काम देखें, एक क्लिक में जवाब दें</value>
+    </data>
+    <data name="HomeWhyProgressText" xml:space="preserve">
+        <value>डिप्लॉयमेंट या नए फ़ीचर में कई कदम होते हैं, और कुछ सिर्फ़ आप उठा सकते हैं। हर एजेंट चैट यहाँ दिखाती है कि क्या हुआ, क्या बाकी है और उसे आपसे क्या चाहिए, ताकि लंबी चैट में कुछ खो न जाए। वहाँ चिपकाई गई कुंजियाँ और पासवर्ड सीधे अपनी जगह जाते हैं, कभी चैट से होकर नहीं।</value>
+    </data>
+    <data name="HomeWhyVoiceTitle" xml:space="preserve">
+        <value>टाइप करने की जगह बोलें</value>
+    </data>
+    <data name="HomeWhyVoiceText" xml:space="preserve">
+        <value>किसी टिप्पणी, जवाब या उत्तर के पास माइक्रोफ़ोन दबाएँ और बोलें। ब्राउज़र आपकी आवाज़ को आपकी चुनी भाषा में टेक्स्ट बना देता है।</value>
+    </data>
+    <data name="TourProgressText" xml:space="preserve">
+        <value>डिप्लॉयमेंट या नए फ़ीचर में कई कदम होते हैं, और कुछ सिर्फ़ आप उठा सकते हैं। हर एजेंट चैट यहाँ दिखाती है कि क्या हुआ, क्या बाकी है और उसे आपसे क्या चाहिए। एक क्लिक, कुछ शब्दों या अपनी आवाज़ से जवाब दें, और वह तुरंत आगे बढ़ता है। उदाहरणों पर आज़माएँ।</value>
+    </data>
+    <data name="HomeFactAgent" xml:space="preserve">
+        <value>आपके एजेंटों की प्रगति और सवाल एक जगह</value>
+    </data>
+    <data name="HomeHowStepAnswerTitle" xml:space="preserve">
+        <value>देखें और जवाब दें</value>
+    </data>
+    <data name="HomeHowStepAnswerText" xml:space="preserve">
+        <value>उसकी प्रगति देखें, उसके सवालों का जवाब एक क्लिक या अपनी आवाज़ से दें, और पेज पर टिप्पणियाँ लगाएँ, जिनका वह आपके लिखते-लिखते जवाब देता है।</value>
+    </data>
+    <data name="HomeProgressSubtitle" xml:space="preserve">
+        <value>पहला डिप्लॉयमेंट या नया फ़ीचर जैसे लंबे काम चलते-चलते यहाँ साथ-साथ रिपोर्ट करते हैं, चाहे आप कितनी भी चैट चलाएँ।</value>
+    </data>
+    <data name="HomeProgressPointSteps" xml:space="preserve">
+        <value>हर कदम, मौजूदा कदम और जो बाकी है</value>
+    </data>
+    <data name="HomeProgressPointAnswer" xml:space="preserve">
+        <value>सवाल, जिनका जवाब आप क्लिक या आवाज़ से देते हैं</value>
+    </data>
+    <data name="HomeProgressPointSound" xml:space="preserve">
+        <value>ज़रूरत पड़ने पर एक आवाज़ और टैब पर गिनती</value>
+    </data>
+    <data name="HomeProgressPointSecrets" xml:space="preserve">
+        <value>कुंजियाँ और पासवर्ड सीधे अपनी जगह जाते हैं, कभी चैट से होकर नहीं</value>
+    </data>
+    <data name="HomeProgressOpen" xml:space="preserve">
+        <value>प्रगति खोलें</value>
+    </data>
+    <data name="ProgressRunningFrom" xml:space="preserve">
+        <value>यह वर्कबेंच {0} का कोड दिखा रहा है</value>
+    </data>
+    <data name="ProgressReport" xml:space="preserve">
+        <value>रिपोर्ट</value>
+    </data>
+    <data name="SampleFixReport" xml:space="preserve">
+        <value>**कारण:** रिपोर्ट बिक्री को सर्वर के दिन के हिसाब से गिनती थी, जो UTC पर चलता है, इसलिए स्टोर में आधी रात के बाद किया गया रिफ़ंड पिछले दिन में गिना जाता था।
+
+**सुधार:** अब रिफ़ंड स्टोर के अपने टाइम ज़ोन में गिने जाते हैं, और एक नया टेस्ट स्टोर के समय से 00:30 बजे रिफ़ंड करके जाँचता है कि वह किस दिन में आता है।
+
+| जाँच | नतीजा |
+| --- | --- |
+| सभी टेस्ट | पास |
+| Test पर आधी रात के बाद रिफ़ंड | सही दिन में |
+| merge के बाद Production | अपडेट हो गया |</value>
     </data>
 </root>

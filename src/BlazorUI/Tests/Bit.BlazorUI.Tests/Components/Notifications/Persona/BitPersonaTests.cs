@@ -2001,7 +2001,7 @@ public class BitPersonaTests : BunitTestContext
         Assert.IsNull(persona.GetAttribute("aria-label"));
 
         // The coin names itself instead, and says who it belongs to since nothing else does.
-        Assert.AreEqual("Xafan Salina, Change photo", component.Find(".bit-prs-imc").GetAttribute("aria-label"));
+        Assert.AreEqual("Xafan Salina, Change photo, XS", component.Find(".bit-prs-imc").GetAttribute("aria-label"));
     }
 
     [TestMethod]
@@ -2027,8 +2027,9 @@ public class BitPersonaTests : BunitTestContext
             parameters.Add(p => p.OnImageClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
         });
 
-        // The name is already in the details next to it, so repeating it would only be noise.
-        Assert.AreEqual("Change photo", component.Find(".bit-prs-imc").GetAttribute("aria-label"));
+        // The name is already in the details next to it, so repeating it would only be noise. The letters on the coin
+        // are what is on the control, and stay in its name (Label in Name).
+        Assert.AreEqual("Change photo, XS", component.Find(".bit-prs-imc").GetAttribute("aria-label"));
     }
 
     [TestMethod]
@@ -2044,7 +2045,7 @@ public class BitPersonaTests : BunitTestContext
             parameters.Add(p => p.OnImageClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
         });
 
-        Assert.AreEqual("Xafan Salina", component.Find(".bit-prs-imc").GetAttribute("aria-label"));
+        Assert.AreEqual("Xafan Salina, XS", component.Find(".bit-prs-imc").GetAttribute("aria-label"));
     }
 
     [TestMethod]
@@ -2619,7 +2620,91 @@ public class BitPersonaTests : BunitTestContext
             parameters.Add(p => p.OnImageClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
         });
 
-        Assert.AreEqual("Saleh Khafan", component.Find("button.bit-prs-cne").GetAttribute("aria-label"));
+        Assert.AreEqual("Saleh Khafan, SK", component.Find("button.bit-prs-cne").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitPersonaClickableCoinShouldCarryTheInitialsItShowsInItsName()
+    {
+        // What a speech user reads off the coin to operate it ("click AL") has to be in its name (Label in Name).
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.HidePersonaDetails, true);
+            parameters.Add(p => p.PrimaryText, "Annie Lindqvist");
+            parameters.Add(p => p.ImageOverlayText, "");
+            parameters.Add(p => p.OnImageClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
+        });
+
+        Assert.AreEqual("AL", component.Find(".bit-prs-ini").TextContent);
+        Assert.AreEqual("Annie Lindqvist, AL", component.Find("button.bit-prs-cne").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitPersonaClickableCoinShouldCarryTheInitialsOfAFailedPicture()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.HidePersonaDetails, true);
+            parameters.Add(p => p.PrimaryText, "Annie Lindqvist");
+            parameters.Add(p => p.ImageUrl, "/missing.png");
+            parameters.Add(p => p.ImageOverlayText, "");
+            parameters.Add(p => p.OnImageClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
+        });
+
+        // A picture shows no letters, so there are none to name the coin after.
+        Assert.AreEqual("Annie Lindqvist", component.Find("button.bit-prs-cne").GetAttribute("aria-label"));
+
+        // Once it fails to load the initials take its place, and the name follows them.
+        component.Find("img").TriggerEvent("onerror", new ErrorEventArgs());
+
+        Assert.AreEqual("Annie Lindqvist, AL", component.Find("button.bit-prs-cne").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitPersonaClickableCoinShowingNoLettersShouldKeepItsName()
+    {
+        var icon = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.HidePersonaDetails, true);
+            parameters.Add(p => p.PrimaryText, "Design Team");
+            parameters.Add(p => p.CoinIconName, "Group");
+            parameters.Add(p => p.ImageOverlayText, "");
+            parameters.Add(p => p.OnImageClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
+        });
+
+        Assert.AreEqual("Design Team", icon.Find("button.bit-prs-cne").GetAttribute("aria-label"));
+
+        var unknown = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.HidePersonaDetails, true);
+            parameters.Add(p => p.PrimaryText, "Unresolved");
+            parameters.Add(p => p.Unknown, true);
+            parameters.Add(p => p.ImageOverlayText, "");
+            parameters.Add(p => p.Href, "/people/unknown");
+        });
+
+        Assert.AreEqual("Unresolved", unknown.Find("a.bit-prs-cne").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    [DataRow("AL", "AL")]
+    [DataRow("Annie (AL)", "Annie (AL)")]
+    [DataRow("3 more: Roko Kolar", "3 more: Roko Kolar")]
+    [DataRow("Annie Lindqvist", "Annie Lindqvist, AL")]
+    public void BitPersonaClickableCoinShouldNotRepeatInitialsItsNameAlreadyHolds(string ariaLabel, string expected)
+    {
+        var initials = ariaLabel.StartsWith('3') ? "+3" : "AL";
+
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.HidePersonaDetails, true);
+            parameters.Add(p => p.AriaLabel, ariaLabel);
+            parameters.Add(p => p.ImageInitials, initials);
+            parameters.Add(p => p.ImageOverlayText, "");
+            parameters.Add(p => p.OnImageClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
+        });
+
+        Assert.AreEqual(expected, component.Find("button.bit-prs-cne").GetAttribute("aria-label"));
     }
 
     [TestMethod]
@@ -2958,7 +3043,7 @@ public class BitPersonaTests : BunitTestContext
         });
 
         Assert.AreEqual("View profile", component.Find(".bit-prs-imo").TextContent.Trim());
-        Assert.AreEqual("View profile", component.Find(".bit-prs-cne").GetAttribute("aria-label"));
+        Assert.AreEqual("View profile, XS", component.Find(".bit-prs-cne").GetAttribute("aria-label"));
     }
 
     [TestMethod]

@@ -21,10 +21,9 @@ public sealed partial class BonboardingTour : ComponentBase, IAsyncDisposable
 
     // Resolved rather than injected, so the tour also registers in an app that lazy loads Bit.Bonboarding.
     private readonly BonboardingRuntime.Handle _runtime = new(typeof(BonboardingTour),
-        BonboardingRuntime.Needs.Service | BonboardingRuntime.Needs.Time);
+        BonboardingRuntime.Needs.Service);
     private BonboardingRuntime Runtime => _runtime.Get(Services);
     private IBonboardingService BonboardingService => Runtime.Service;
-    private TimeProvider Time => Runtime.Time;
 
     /// <summary>Stable identifier, also used as the persistence key.</summary>
     [Parameter, EditorRequired] public required string Id { get; set; }
@@ -139,8 +138,9 @@ public sealed partial class BonboardingTour : ComponentBase, IAsyncDisposable
 
         if (Definition.Steps.Count == 0) return;
 
-        // Nobody asked for this start, so it waits for a tour already running rather than taking its place.
-        var options = new BonboardingStartOptions { WhenBusy = BonboardingBusyBehavior.Queue };
+        // Nobody asked for this start, so it waits for a tour already running rather than taking its place, and it
+        // passes over a snoozed tour and whatever BonboardingOptions.CanAutoStart holds back.
+        var options = new BonboardingStartOptions { WhenBusy = BonboardingBusyBehavior.Queue, Automatic = true };
 
         try
         {
@@ -148,16 +148,16 @@ public sealed partial class BonboardingTour : ComponentBase, IAsyncDisposable
             {
                 await BonboardingService.StartOnceAsync(Definition, options);
             }
-            else if (await BonboardingService.GetRecordAsync(Id) is not { } record || !record.IsSnoozedAt(Time.GetUtcNow()))
+            else
             {
                 await BonboardingService.StartAsync(Definition, options);
             }
         }
         catch (BonboardingException)
         {
-            // CanStart declined, or the definition is invalid (the service has logged why). An automatic
-            // start has no caller to report that to, and an exception escaping a lifecycle method would
-            // take the whole circuit down.
+            // CanStart or CanAutoStart declined, the user snoozed the tour, or the definition is invalid (the
+            // service has logged why). An automatic start has no caller to report that to, and an exception
+            // escaping a lifecycle method would take the whole circuit down.
         }
     }
 

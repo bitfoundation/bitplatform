@@ -316,7 +316,7 @@ internal sealed class BitCountryList
     /// </summary>
     internal static string? GetSearchAnnouncement(int count, string? noResultsMessage, Func<int, string?>? announcement) => count switch
     {
-        0 => noResultsMessage ?? "No results found",
+        0 => noResultsMessage ?? BitStrings.Current.NoResultsFound,
         _ when announcement is not null => announcement(count),
         1 => "1 country found",
         _ => $"{count} countries found"

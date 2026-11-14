@@ -28,8 +28,18 @@
         }
     }
 
-    @if (_ShowEmptyContent)
+    @if (_ShowEmpty)
     {
-        @EmptyContent
+        @* What a list with no item says: the EmptyTemplate, or the EmptyText, which always says something. *@
+        <div style="@Styles?.Empty" class="bit-acl-emp @Classes?.Empty">
+            @if (EmptyTemplate is not null)
+            {
+                @EmptyTemplate
+            }
+            else
+            {
+                @(EmptyText ?? BitStrings.Current.NoItemsFound)
+            }
+        </div>
     }
 </div>

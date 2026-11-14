@@ -7,8 +7,8 @@
         <RootNamespace>Bit.Blow</RootNamespace>
         <ImplicitUsings>enable</ImplicitUsings>
         <IsTrimmable>true</IsTrimmable>
-        <Description>A Blazor-native library for node-based UIs, editors, flow charts and diagrams - a Blazor counterpart to React Flow: a pannable and zoomable BlowCanvas with draggable, resizable and connectable nodes, edges, sub-flows, auto-layout, alignment guides, undo/redo, copy/paste and full keyboard accessibility. Interaction, layout and geometry run in C#; the browser layer only measures the DOM.</Description>
-        <PackageTags>Bit;Blazor;Flow;Diagram;NodeEditor;Graph;Flowchart;Workflow;ReactFlow;Accessibility</PackageTags>
+        <Description>A Blazor-native library for node-based UIs, editors, flow charts and diagrams - a Blazor counterpart to React Flow: a pannable and zoomable BlowCanvas with draggable, resizable and connectable nodes, edges, sub-flows, auto-layout, alignment guides, undo/redo, copy/paste and full keyboard accessibility, plus a headless workflow runner, node kind registry, graph diff and Mermaid/DOT/GraphML interchange. Interaction, layout and geometry run in C#; the browser layer only measures the DOM.</Description>
+        <PackageTags>Bit;Blazor;Flow;Diagram;NodeEditor;Graph;Flowchart;Workflow;WorkflowEngine;ReactFlow;Mermaid;GraphML;Accessibility</PackageTags>
     </PropertyGroup>
 
     <ItemGroup>

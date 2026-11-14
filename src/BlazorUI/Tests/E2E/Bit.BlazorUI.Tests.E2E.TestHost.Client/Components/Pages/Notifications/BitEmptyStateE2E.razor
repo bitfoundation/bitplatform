@@ -1,0 +1,55 @@
+﻿@page "/e2e/empty-state"
+
+<PageTitle>BitEmptyState E2E</PageTitle>
+
+<h1>BitEmptyState</h1>
+
+@* A full empty state, centered; the same one at the start of the line, in both directions; one with nothing set, which
+   says the default words; and one squeezed into a narrow column with a word longer than the column. *@
+<div style="width: 480px;">
+    <BitEmptyState Id="ems-full"
+                   HeadingLevel="2"
+                   IconName="@BitIconName.Inbox"
+                   Title="Your inbox is empty"
+                   Description="When someone writes to you, it shows up here.">
+        <BitButton>Write a message</BitButton>
+    </BitEmptyState>
+</div>
+
+<div style="width: 480px; margin-top: 16px;">
+    <BitEmptyState Id="ems-start"
+                   IconName="@BitIconName.Filter"
+                   Title="Nothing matches these filters"
+                   Description="Clear a filter to see more."
+                   Style="--bit-EmptyState-align: start;">
+        <BitButton>Clear the filters</BitButton>
+    </BitEmptyState>
+</div>
+
+<div dir="rtl" style="width: 480px; margin-top: 16px;">
+    <BitEmptyState Id="ems-rtl"
+                   Dir="BitDir.Rtl"
+                   IconName="@BitIconName.Inbox"
+                   Title="صندوق پیام شما خالی است"
+                   Description="وقتی کسی برای شما پیام بفرستد، اینجا نمایش داده می‌شود."
+                   Style="--bit-EmptyState-align: start;">
+        <BitButton>نوشتن پیام</BitButton>
+    </BitEmptyState>
+</div>
+
+<div style="width: 480px; margin-top: 16px;">
+    <BitEmptyState Id="ems-default" />
+</div>
+
+<div style="width: 140px; margin-top: 16px;">
+    <BitEmptyState Id="ems-narrow"
+                   Title="Supercalifragilisticexpialidocious"
+                   Description="Antidisestablishmentarianism">
+        <BitButton>One</BitButton>
+        <BitButton>Two</BitButton>
+    </BitEmptyState>
+</div>
+
+<div style="position: fixed; right: 8px; top: 8px;">
+    <E2EStatus />
+</div>

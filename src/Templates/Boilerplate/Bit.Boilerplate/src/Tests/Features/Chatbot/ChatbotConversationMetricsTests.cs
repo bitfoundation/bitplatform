@@ -1,18 +1,18 @@
-using System.Threading.Channels;
+using Bit.BlazorUI;
 using System.Diagnostics.Metrics;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.AspNetCore.Http.Connections;
-using Boilerplate.Shared.Features.Chatbot;
+using static Boilerplate.Tests.Features.Chatbot.TestAiChatPanel;
 
 namespace Boilerplate.Tests.Features.Chatbot;
 
 /// <summary>
-/// <c>chatbot.active_conversations</c> is an up-down counter: <c>AppHub.StartChat</c> adds one once a chat is
-/// open and takes it back in the <c>finally</c> of the stream. A path that ends a chat without reaching that
-/// <c>finally</c> would leave the dashboard counting conversations that are long gone, and nothing else would notice.
+/// <c>chatbot.active_conversations</c> is an up-down counter: <c>AppHub.StreamAsync</c> adds one as an answer starts and
+/// takes it back in the <c>finally</c> of its stream. A path that ends an answer without reaching that <c>finally</c>
+/// would leave the dashboard counting answers that are long gone, and nothing else would notice.
 /// <para>
 /// Read in process with a <see cref="MeterListener"/> - what the OpenTelemetry exporter and <c>dotnet-counters</c> read
-/// too. <c>DoNotParallelize</c>: the counter is process wide, so another test's chat would move it.
+/// too. <c>DoNotParallelize</c>: the counter is process wide, so another test's answer would move it.
 /// </para>
 /// </summary>
 [TestClass, TestCategory("IntegrationTest"), DoNotParallelize]
@@ -23,14 +23,20 @@ public partial class ChatbotConversationMetricsTests
     public TestContext TestContext { get; set; } = default!;
 
     /// <summary>
-    /// Once ended by the client, once by the connection going away - the two ways a chat really ends. StartChat asks
-    /// nothing of the model, so no AI provider is needed for the count to move.
+    /// Once stopped in the panel, once by the connection going away - the two ways an answer ends before the model is
+    /// done. The model writes a word and waits there, so each answer stays open until one of them ends it.
     /// </summary>
     [TestMethod]
-    public async Task OngoingConversationsCount_Should_RiseForAnOpenChat_AndFallBackWhenItEnds()
+    public async Task OngoingConversationsCount_Should_RiseForAnAnswerBeingWritten_AndFallBackWhenItEnds()
     {
-        await using var server = new AppTestServer();
-        await server.Build().Start(TestContext.CancellationToken);
+        var chatClient = new TestChatClient
+        {
+            StreamingChunks = _ => ["bit platform is", " a set of tools"],
+            PauseAfterFirstChunk = new TaskCompletionSource()
+        };
+
+        await using var server = BuildServerWith(chatClient);
+        await server.Start(TestContext.CancellationToken);
 
         long ongoing = 0;
 
@@ -45,30 +51,30 @@ public partial class ChatbotConversationMetricsTests
         listener.SetMeasurementEventCallback<long>((_, measurement, _, _) => Interlocked.Add(ref ongoing, measurement));
         listener.Start();
 
-        // ---- Ended by the client ----
+        // ---- Stopped in the panel ----
         await using (var connection = await Connect(server))
         {
-            using var chat = new CancellationTokenSource();
-            var reading = ReadChat(connection, chat.Token);
+            using var answer = new CancellationTokenSource();
+            var reading = ReadAnswer(connection, answer.Token);
 
-            await WaitFor(() => Interlocked.Read(ref ongoing) is 1, () => $"An open chat should count as one ongoing conversation, the counter says {Interlocked.Read(ref ongoing)}.");
+            await WaitFor(() => Interlocked.Read(ref ongoing) is 1, () => $"An answer being written should count as one ongoing conversation, the counter says {Interlocked.Read(ref ongoing)}.");
 
-            await chat.CancelAsync();
+            await answer.CancelAsync();
             await reading;
 
-            await WaitFor(() => Interlocked.Read(ref ongoing) is 0, () => $"A chat the client ended should no longer be counted, the counter says {Interlocked.Read(ref ongoing)}.");
+            await WaitFor(() => Interlocked.Read(ref ongoing) is 0, () => $"An answer the panel stopped should no longer be counted, the counter says {Interlocked.Read(ref ongoing)}.");
         }
 
         // ---- Ended by the connection going away ----
         var droppedConnection = await Connect(server);
-        var droppedReading = ReadChat(droppedConnection, CancellationToken.None);
+        var droppedReading = ReadAnswer(droppedConnection, CancellationToken.None);
 
-        await WaitFor(() => Interlocked.Read(ref ongoing) is 1, () => $"The second chat should count as one ongoing conversation, the counter says {Interlocked.Read(ref ongoing)}.");
+        await WaitFor(() => Interlocked.Read(ref ongoing) is 1, () => $"The second answer should count as one ongoing conversation, the counter says {Interlocked.Read(ref ongoing)}.");
 
         await droppedConnection.DisposeAsync();
         await droppedReading;
 
-        await WaitFor(() => Interlocked.Read(ref ongoing) is 0, () => $"A chat whose connection went away should no longer be counted, the counter says {Interlocked.Read(ref ongoing)}.");
+        await WaitFor(() => Interlocked.Read(ref ongoing) is 0, () => $"An answer whose connection went away should no longer be counted, the counter says {Interlocked.Read(ref ongoing)}.");
     }
 
     private async Task<HubConnection> Connect(AppTestServer server)
@@ -82,25 +88,25 @@ public partial class ChatbotConversationMetricsTests
         return connection;
     }
 
-    /// <summary>
-    /// Opens a chat nobody has spoken in yet: the user's side is a stream the client keeps open and never writes to, so
-    /// the chat stays open until the token or the connection ends it.
-    /// </summary>
-    private static Task ReadChat(HubConnection connection, CancellationToken cancellationToken)
+    /// <summary>Asks a question over the connection the way the panel does (See AppAiChat), and reads its answer until the token or the connection ends it.</summary>
+    private static Task ReadAnswer(HubConnection connection, CancellationToken cancellationToken)
     {
-        var userMessages = Channel.CreateUnbounded<AiChatMessage>();
+        var conversation = new BitAiConversation();
+        conversation.AddMessage(BitAiRole.User, "what is bit platform?");
+
+        var transport = new BitAiSignalRTransport(connection);
 
         return Task.Run(async () =>
         {
             try
             {
-                await foreach (var _ in connection.StreamAsync<string>(SharedAppMessages.StartChat, new StartChatRequest(), userMessages.Reader, cancellationToken))
+                await foreach (var _ in transport.StreamAsync(new BitAiRequest([.. conversation.Messages]), cancellationToken))
                 {
                 }
             }
             catch (Exception)
             {
-                // Ending the chat is the point: a canceled stream or a closed connection both surface here.
+                // Ending the answer is the point: a canceled stream or a closed connection both surface here.
             }
         }, CancellationToken.None);
     }

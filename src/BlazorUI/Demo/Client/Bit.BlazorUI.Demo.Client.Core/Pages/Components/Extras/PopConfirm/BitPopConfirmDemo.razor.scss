@@ -1,0 +1,17 @@
+﻿::deep {
+    .example-content {
+        gap: 0.5rem;
+        display: flex;
+        flex-flow: row wrap;
+        align-items: center;
+    }
+
+    .custom-popconfirm {
+        border: 1px solid var(--bit-clr-brd-pri);
+        background-color: var(--bit-clr-bg-sec);
+    }
+
+    .custom-message {
+        font-style: italic;
+    }
+}

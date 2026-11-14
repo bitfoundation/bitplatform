@@ -63,7 +63,11 @@ interface StepGeometry {
     popoverRadius: number | null;
     // A target selector the browser cannot parse. Reported at once rather than waited on.
     invalidSelector?: string | null;
+    // Why a wanted target was not found: 'not-found' or 'hidden'. Only worked out when it was not found.
+    targetIssue?: TargetIssue | null;
 }
+
+type TargetIssue = 'not-found' | 'hidden';
 
 interface BrowserEnvironment {
     reducedMotion: boolean;
@@ -233,7 +237,9 @@ export async function activateStep(spec: StepActivation): Promise<StepGeometry> 
         session.trapFocus = false;
         attachKeyboard(session, { ...spec, interaction: 'free', trapFocus: false });
         startWaiting(session, spec);
-        return emptyGeometry(spec.activation);
+        const waiting = emptyGeometry(spec.activation);
+        waiting.targetIssue = targetIssueOf(spec);
+        return waiting;
     }
 
     session.targets = elements;
@@ -245,12 +251,20 @@ export async function activateStep(spec: StepActivation): Promise<StepGeometry> 
     // The step may have been replaced or the session detached while the smooth scroll settled.
     if (session.disposed || session.spec !== spec) return emptyGeometry(spec.activation);
 
+    // A Blazor re-render during the scroll may have replaced the target with a new node: bind that one rather
+    // than measure the old node and report a target that is right there as missing.
+    if (elements.length > 0 && !session.targets.some(isRendered)) {
+        const recovered = resolveAll(spec);
+        if (recovered.length > 0) session.targets = recovered;
+    }
+
     observe(session);
     attachKeyboard(session, spec);
     attachAdvanceTrigger(session, spec);
 
     const geometry = measureSession(session);
     geometry.invalidSelector = invalid;
+    if (!geometry.found && wantsTarget(spec)) geometry.targetIssue = targetIssueOf(spec);
     session.lastFrame = geometry;
     return geometry;
 }
@@ -277,6 +291,7 @@ export function measure(sessionId: string): StepGeometry {
     }
 
     const geometry = measureSession(session);
+    if (!geometry.found && session.spec && wantsTarget(session.spec)) geometry.targetIssue = targetIssueOf(session.spec);
 
     // This reply reports the loss, so the targets go as they do when a frame finds them gone: otherwise the next
     // frame would find them missing too and report the same loss a second time. As there, a target the user just
@@ -369,6 +384,38 @@ function isRendered(element: Element): boolean {
     } catch {
         return true;
     }
+}
+
+/**
+ * Why a step's (primary) target is not found, so .NET can say what to fix: elements match but none of them is
+ * shown ('hidden'), or nothing matches at all ('not-found'). Asked only by the replies and callbacks that report a
+ * missing target to .NET, never on every frame, so the extra lookup is paid once per report.
+ */
+function targetIssueOf(spec: StepActivation): TargetIssue {
+    const descriptor = spec.target;
+
+    try {
+        if (descriptor && descriptor.kind === 'Element') {
+            const element = descriptor.element;
+            return element instanceof Element && element.isConnected && !isRendered(element) ? 'hidden' : 'not-found';
+        }
+
+        if (descriptor && descriptor.kind === 'Selector' && descriptor.selector) {
+            // Hidden only when every match is: one that is shown means the target is there, not hidden.
+            const all = document.querySelectorAll(descriptor.selector);
+            if (all.length === 0) return 'not-found';
+
+            for (let i = 0; i < all.length; i++) {
+                if (isRendered(all[i])) return 'not-found';
+            }
+
+            return 'hidden';
+        }
+    } catch {
+        // An invalid selector is reported on its own, as invalidSelector.
+    }
+
+    return 'not-found';
 }
 
 /** The first target selector of a step that the browser cannot parse, or null when every one is valid. */
@@ -474,7 +521,8 @@ function startWaiting(session: Session, spec: StepActivation) {
             if (settled || session.disposed) return;
             settled = true;
             stopWaiting(session);
-            invoke(session, 'OnWaitTimedOut', spec.activation);
+            // Why the target is still missing now, at the end of the wait: it may have rendered hidden since the start.
+            invoke(session, 'OnWaitTimedOut', spec.activation, targetIssueOf(spec));
         }, spec.waitTimeoutMs);
     }
 
@@ -627,7 +675,7 @@ function scheduleFrame(session: Session) {
                 return;
             } else {
                 session.targets = [];
-                invoke(session, 'OnTargetLost', activationOf(session));
+                invoke(session, 'OnTargetLost', activationOf(session), session.spec ? targetIssueOf(session.spec) : 'not-found');
                 return;
             }
         }
@@ -643,13 +691,11 @@ function push(session: Session, geometry: StepGeometry) {
     invoke(session, 'OnGeometryChanged', geometry);
 }
 
-function invoke(session: Session, method: string, arg?: unknown) {
+function invoke(session: Session, method: string, ...args: unknown[]) {
     if (session.disposed || !session.ref) return;
 
     try {
-        const promise = arg === undefined
-            ? session.ref.invokeMethodAsync(method, session.id)
-            : session.ref.invokeMethodAsync(method, session.id, arg);
+        const promise = session.ref.invokeMethodAsync(method, session.id, ...args);
 
         if (promise && typeof promise.catch === 'function') {
             // The circuit can go away between scheduling and delivery; that is not an error.

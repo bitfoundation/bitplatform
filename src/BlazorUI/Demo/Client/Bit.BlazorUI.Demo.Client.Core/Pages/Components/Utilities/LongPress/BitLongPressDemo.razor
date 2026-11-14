@@ -1,0 +1,158 @@
+﻿@page "/components/longpress"
+@page "/components/long-press"
+
+<PageOutlet Url="components/longpress"
+            Title="LongPress"
+            Description="BitLongPress raises an event when its content is pressed and held - by a touch, a pen, a mouse or the context-menu keys of the keyboard." />
+
+<DemoPage Name="LongPress"
+          SecondaryNames="@(["PressAndHold", "TapAndHold"])"
+          Description="BitLongPress raises an event when its content is pressed and held: a touch, a pen or a mouse button kept down in place for a moment, or the context-menu keys of the keyboard. It is what a touch screen has for a secondary action where a desktop has the right-click - a context menu on iOS, which never raises one on its own, an item's options, a preview."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          CssVariables="componentCssVariables"
+          GitHubUrl="Utilities/LongPress/BitLongPress.razor"
+          GitHubDemoUrl="Utilities/LongPress/BitLongPressDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            A press is called off when the pointer moves further than <b>MoveTolerance</b>, when the page scrolls under it,
+            when a second finger comes down and when it is released before <b>Delay</b>; nothing is taken from the browser,
+            so the content still scrolls and zooms. A press that was long swallows the click its release would make, and a
+            touch held on the content brings up neither the text selection nor the callout of the browser. While a press is
+            held the root carries the <b>bit-lpr-prs</b> class. Turn on <b>KeyboardTrigger</b> for the keyboard's long
+            press (WCAG 2.2 SC 2.1.1): Shift+F10 and the Menu key, the keys that bring up a context menu.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+            <div>
+                Press and hold inside the box - with a finger, a pen or the mouse. <b>OnLongPress</b> reports the point the
+                press was held at and the <b>PointerType</b> that held it.
+            </div>
+            <br />
+            <div>
+                <BitLongPress OnLongPress="HandleBasicLongPress">
+                    <div class="press-box">Press and hold here</div>
+                </BitLongPress>
+                <br />
+                <div>Long presses: <b>@basicCount</b></div>
+                <div>Last: <b>@basicLast</b></div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Context menu" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <div>
+                A BitContextMenu opens on a right-click, which iOS never raises for a long press. Opening it at the point
+                <b>OnLongPress</b> reports gives every touch screen the same menu.
+            </div>
+            <br />
+            <div>
+                <BitLongPress OnLongPress="e => contextMenu.OpenAt(e.ClientX, e.ClientY)">
+                    <BitContextMenu @ref="contextMenu" Items="menuItems" OnItemClick="(BitMenuButtonItem item) => menuClicked = item.Text">
+                        <div class="press-box">Right-click, or press and hold here</div>
+                    </BitContextMenu>
+                </BitLongPress>
+                <br />
+                <div>Clicked item: <b>@menuClicked</b></div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Click and long press" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+            <div>
+                The content keeps its own click. A tap on the button clicks it; a long press on it raises <b>OnLongPress</b>
+                instead, and the click its release would make is swallowed.
+            </div>
+            <br />
+            <div>
+                <BitLongPress OnLongPress="HandleClickLongPress">
+                    <BitButton OnClick="HandleClick">Tap, or press and hold</BitButton>
+                </BitLongPress>
+                <br />
+                <div>Last: <b>@clickLog</b></div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Delay & tolerance" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div>
+                <b>Delay</b> is how long a press is held, 500ms by default. <b>MoveTolerance</b> is how far the pointer may
+                drift while it is held, 10px by default; a press that moves further is a scroll or a drag, and is called off.
+            </div>
+            <br />
+            <div>
+                <div class="example-stack">
+                    <BitLongPress Delay="1500" OnLongPress="HandleSlowLongPress">
+                        <div class="press-box">Hold for 1.5 seconds</div>
+                    </BitLongPress>
+                    <BitLongPress MoveTolerance="40" OnLongPress="HandleTolerantLongPress">
+                        <div class="press-box">Hold, and drift up to 40px</div>
+                    </BitLongPress>
+                    <div>Last: <b>@delayLog</b></div>
+                </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Touch only" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                <b>TouchOnly</b> leaves the mouse out: a mouse button held down does nothing, while a finger or a pen still
+                long-presses. On a desktop, the right-click is the mouse's secondary action already.
+            </div>
+            <br />
+            <div>
+                <BitLongPress TouchOnly OnLongPress="(BitLongPressEventArgs e) => touchLog = e.PointerType">
+                    <div class="press-box">Press and hold with a finger or a pen</div>
+                </BitLongPress>
+                <br />
+                <div>Held by: <b>@touchLog</b></div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Keyboard" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <div>
+                <b>KeyboardTrigger</b> makes the long press a tab stop whose context-menu keys - Shift+F10 and the Menu key -
+                raise <b>OnLongPress</b>, at the middle of what has the focus and with a <b>PointerType</b> of "keyboard". Give
+                it an <b>AriaLabel</b> that says what the press does.
+            </div>
+            <br />
+            <div>
+                <BitLongPress KeyboardTrigger
+                              AriaLabel="Photo, press and hold for its options"
+                              OnLongPress="HandleKeyboardLongPress">
+                    <div class="press-box">Tab here, then press Shift+F10</div>
+                </BitLongPress>
+                <br />
+                <div>Last: <b>@keyboardLog</b></div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Disabled" RazorCode="@example7RazorCode" Id="example7">
+            <div>A disabled long press raises nothing, and leaves the tab order.</div>
+            <br />
+            <div>
+                <BitLongPress Disabled KeyboardTrigger OnLongPress="() => { }">
+                    <div class="press-box disabled">Holding here does nothing</div>
+                </BitLongPress>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+            <div>
+                The <b>bit-lpr-prs</b> class the root carries while a press is held is the hook for feedback: here the box
+                sinks under the finger and fills up over the delay. <b>--bit-LongPress-focus-color</b> colors the focus ring
+                of a KeyboardTrigger long press.
+            </div>
+            <br />
+            <div>
+                <BitLongPress Class="custom-press"
+                              Delay="800"
+                              KeyboardTrigger
+                              AriaLabel="Styled long press"
+                              Style="--bit-LongPress-focus-color: var(--bit-clr-suc);"
+                              OnLongPress="() => styleCount++">
+                    <div class="press-box">Press and hold here</div>
+                </BitLongPress>
+                <br />
+                <div>Long presses: <b>@styleCount</b></div>
+            </div>
+        </DemoExample>
+    </Examples>
+</DemoPage>

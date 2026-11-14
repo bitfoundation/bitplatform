@@ -188,16 +188,6 @@ public partial class BitNavPanel<[DynamicallyAccessedMembers(DynamicallyAccessed
     public BitNavPanelBreakpoint? DrawerBreakpoint { get; set; }
 
     /// <summary>
-    /// The custom template for when the search result is empty.
-    /// </summary>
-    [Parameter] public RenderFragment? EmptyListTemplate { get; set; }
-
-    /// <summary>
-    /// The custom message for when the search result is empty.
-    /// </summary>
-    [Parameter] public string? EmptyListMessage { get; set; }
-
-    /// <summary>
     /// The default aria-label of the expand/collapse button of a collapsed item of the nav.
     /// </summary>
     [Parameter] public string? ExpandAriaLabel { get; set; }
@@ -417,6 +407,17 @@ public partial class BitNavPanel<[DynamicallyAccessedMembers(DynamicallyAccessed
     /// or one with <see cref="AutoFocus"/>.
     /// </summary>
     [Parameter] public bool NoRestoreFocus { get; set; }
+
+    /// <summary>
+    /// The custom template for when the search result is empty, which takes the place of <see cref="NoResultsText"/>.
+    /// </summary>
+    [Parameter] public RenderFragment? NoResultsTemplate { get; set; }
+
+    /// <summary>
+    /// The custom message for when the search result is empty.
+    /// Defaults to <see cref="BitStrings.NoResultsFound"/> of <see cref="BitStrings.Current"/>.
+    /// </summary>
+    [Parameter] public string? NoResultsText { get; set; }
 
     /// <summary>
     /// Lets the page behind the open drawer of a small screen keep scrolling.

@@ -1,0 +1,195 @@
+﻿@page "/components/emptystate"
+@page "/components/empty-state"
+
+<PageOutlet Url="components/emptystate"
+            Title="EmptyState"
+            Description="BitEmptyState is what a page, a panel or a list shows when it has nothing to show: an icon, a title that says so, a line on what to do about it, and the actions to get going." />
+
+<DemoPage Name="EmptyState"
+          SecondaryNames="@(["Empty", "NoData", "ZeroState", "BlankSlate"])"
+          Description="BitEmptyState is what a page, a panel or a list shows when it has nothing to show - an inbox with no mail, a search with no results, a project with no tasks yet: an icon or an illustration, a title that says so, a line on why or what to do about it, and the actions to get going."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          CssVariables="componentCssVariables"
+          GitHubUrl="Notifications/EmptyState/BitEmptyState.razor"
+          GitHubDemoUrl="Notifications/EmptyState/BitEmptyStateDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            Without a Title it says "No items found", the NoItemsFound of BitStrings, so translating BitStrings once
+            translates every empty state of the app - and the empty lists of the other components, which say the same.
+            It is plain content, not a live region: a list that a search empties while the user looks at it announces that
+            itself. The title is a heading only where HeadingLevel asks for one.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+            <div>With nothing set, an empty state says "No items found". Title and Description put the words of the app in its place.</div>
+            <br />
+            <div>
+                <BitEmptyState />
+                <BitEmptyState Title="No messages" Description="When someone writes to you, it shows up here." />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Icon" RazorCode="@example2RazorCode" Id="example2">
+            <div>
+                IconName puts an icon of the built-in Fluent UI icons above the title, and IconTemplate puts any content there
+                in its place - an illustration, most of the time. The icon only decorates the title, so it is hidden from
+                screen readers; a template is read as it is written.
+            </div>
+            <br />
+            <div>
+                <BitEmptyState IconName="@BitIconName.Inbox"
+                               Title="Your inbox is empty"
+                               Description="When someone writes to you, it shows up here." />
+                <BitEmptyState Title="No pictures yet" Description="The pictures you upload are kept here.">
+                    <IconTemplate>
+                        <svg width="72" height="56" viewBox="0 0 72 56" aria-hidden="true">
+                            <rect x="2" y="2" width="68" height="52" rx="6" fill="none" stroke="currentColor" stroke-width="3" />
+                            <circle cx="22" cy="20" r="6" fill="currentColor" />
+                            <path d="M6 48 L26 30 L38 40 L50 26 L66 44 L66 50 L6 50 Z" fill="currentColor" opacity="0.5" />
+                        </svg>
+                    </IconTemplate>
+                </BitEmptyState>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Actions" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+            <div>The child content is the actions under the text, most of the time the button that adds the first item.</div>
+            <br />
+            <div>
+                @if (tasks.Count == 0)
+                {
+                    <BitEmptyState IconName="@BitIconName.TaskManager"
+                                   Title="No tasks yet"
+                                   Description="Add a task to start planning the project.">
+                        <BitButton OnClick="AddTask" IconName="@BitIconName.Add">Add a task</BitButton>
+                        <BitButton Variant="BitVariant.Outline" Href="/components/basiclist">Learn more</BitButton>
+                    </BitEmptyState>
+                }
+                else
+                {
+                    <div>@tasks.Count task(s) added.</div>
+                    <br />
+                    <BitButton Variant="BitVariant.Outline" OnClick="() => tasks.Clear()">Clear the tasks</BitButton>
+                }
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Templates" RazorCode="@example4RazorCode" Id="example4">
+            <div>TitleTemplate and DescriptionTemplate take the place of the title and of the line under it, for words that need more than text.</div>
+            <br />
+            <div>
+                <BitEmptyState IconName="@BitIconName.SearchIssue">
+                    <TitleTemplate>No results for <i>"blue widget"</i></TitleTemplate>
+                    <DescriptionTemplate>
+                        Check the spelling, or <BitLink Href="/components/emptystate">browse every product</BitLink> instead.
+                    </DescriptionTemplate>
+                </BitEmptyState>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Heading" RazorCode="@example5RazorCode" Id="example5">
+            <div>
+                An empty state that stands for the whole of a page or a section makes its title a heading of the outline of the
+                page with HeadingLevel, so a screen reader user finds it as they find the other headings. Inside a list it is a
+                line of the list, which is why the title is no heading by default.
+            </div>
+            <br />
+            <div>
+                <BitEmptyState HeadingLevel="2"
+                               IconName="@BitIconName.Archive"
+                               Title="No archived projects"
+                               Description="Projects you archive are kept here, out of the way of the ones you work on." />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="In a list" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <div>
+                The EmptyTemplate of a list is where an empty state goes. Here a BitBasicList shows one until a person is
+                added to it.
+            </div>
+            <br />
+            <div>
+                <BitButton OnClick="AddPerson" IconName="@BitIconName.AddFriend">Add a person</BitButton>
+                <BitButton Variant="BitVariant.Outline" OnClick="() => people.Clear()">Clear</BitButton>
+                <br />
+                <br />
+                <BitBasicList Items="people" Style="height: auto; border: 1px solid var(--bit-clr-brd-sec)">
+                    <EmptyTemplate>
+                        <BitEmptyState IconName="@BitIconName.People" Title="No people" Description="The people you add are listed here." />
+                    </EmptyTemplate>
+                    <RowTemplate Context="person">
+                        <div style="padding: 0.5rem 1rem">@person</div>
+                    </RowTemplate>
+                </BitBasicList>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Alignment" RazorCode="@example7RazorCode" Id="example7">
+            <div>
+                The --bit-EmptyState-align variable sets where the parts sit across the empty state: center (the default),
+                start or end. An empty state at the start of the line suits a narrow panel or a menu.
+            </div>
+            <br />
+            <div>
+                <BitEmptyState IconName="@BitIconName.Filter"
+                               Title="Nothing matches these filters"
+                               Description="Clear a filter to see more."
+                               Style="--bit-EmptyState-align: start;">
+                    <BitButton Variant="BitVariant.Text" Size="BitSize.Small">Clear the filters</BitButton>
+                </BitEmptyState>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="External Icons" RazorCode="@example8RazorCode" Id="example8">
+            <div>Use icons from external libraries like FontAwesome and Bootstrap Icons with the <b>Icon</b> parameter.</div>
+            <div>See the <BitLink Href="#bit-icon-info">BitIconInfo</BitLink> section in the parameters table for usage.</div>
+            <br />
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+            <div>
+                <BitEmptyState Icon="@BitIconInfo.Fa("solid folder-open")" Title="This folder is empty" />
+                <BitEmptyState Icon="@BitIconInfo.Bi("cart-x")" Title="Your cart is empty" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example9RazorCode" Id="example9">
+            <div>
+                Classes and Styles reach the root, the icon, the title, the line under it and the actions, and the
+                --bit-EmptyState-* variables restyle the defaults.
+            </div>
+            <br />
+            <div>
+                <BitEmptyState IconName="@BitIconName.CloudUpload"
+                               Title="Drop files here"
+                               Description="Or pick them from your computer."
+                               Style="--bit-EmptyState-icon-color: var(--bit-clr-pri); --bit-EmptyState-title-font-size: var(--bit-tpg-fs-xl);" />
+                <br />
+                <BitEmptyState IconName="@BitIconName.Ringer"
+                               Title="No notifications"
+                               Description="You are all caught up."
+                               Classes="@(new() { Root = "custom-root", Icon = "custom-icon", Title = "custom-title" })" />
+                <br />
+                <BitEmptyState IconName="@BitIconName.Calendar"
+                               Title="No events today"
+                               Styles="@(new() { Root = "border: 1px dashed var(--bit-clr-brd-pri); border-radius: 0.5rem;", Description = "font-style: italic;" })"
+                               Description="Enjoy the free time." />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example10RazorCode" Id="example10">
+            <div>Use BitEmptyState in right-to-left (RTL).</div>
+            <br />
+            <div dir="rtl">
+                <BitEmptyState Dir="BitDir.Rtl"
+                               IconName="@BitIconName.Inbox"
+                               Title="صندوق پیام شما خالی است"
+                               Description="وقتی کسی برای شما پیام بفرستد، اینجا نمایش داده می‌شود."
+                               Style="--bit-EmptyState-align: start;">
+                    <BitButton>نوشتن پیام</BitButton>
+                </BitEmptyState>
+            </div>
+        </DemoExample>
+    </Examples>
+</DemoPage>

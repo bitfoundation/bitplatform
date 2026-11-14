@@ -46,7 +46,7 @@ public class BitChartParamsTests : BunitTestContext
         Assert.AreEqual(0, second.QuerySelectorAll(".bit-cht-data rect").Length, "its own Line type draws no bars");
 
         // The third one has no data, so the cascaded empty-state text shows.
-        StringAssert.Contains(charts[2].QuerySelector(".bit-cht-nodata")!.TextContent, "Nothing yet");
+        StringAssert.Contains(charts[2].QuerySelector(".bit-cht-emp")!.TextContent, "Nothing yet");
 
         // The fourth one is loading, and says so with the cascaded label.
         StringAssert.Contains(charts[3].QuerySelector(".bit-cht-ldg")!.TextContent, "Cascaded loading");
@@ -133,19 +133,19 @@ public class BitChartParamsTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitChartShouldTakeTheCascadedLoadingAndNoDataTemplates()
+    public void BitChartShouldTakeTheCascadedLoadingAndEmptyTemplates()
     {
         var chartParams = new BitChartParams
         {
             LoadingTemplate = Marker("cascaded-loading"),
-            NoDataTemplate = Marker("cascaded-nodata"),
+            EmptyTemplate = Marker("cascaded-nodata"),
         };
 
         var loading = RenderWithParams(chartParams, builder => builder.AddAttribute(1, nameof(BitChart.IsLoading), true));
         Assert.AreEqual(1, loading.FindAll(".bit-cht-ldg .cascaded-loading").Count);
 
         var empty = RenderWithParams(chartParams);
-        Assert.AreEqual(1, empty.FindAll(".bit-cht-nodata .cascaded-nodata").Count);
+        Assert.AreEqual(1, empty.FindAll(".bit-cht-emp .cascaded-nodata").Count);
     }
 
     [TestMethod]
@@ -202,7 +202,7 @@ public class BitChartParamsTests : BunitTestContext
         {
             MaxTableColumns = 4,
             NavigationHint = "Cascaded navigation hint.",
-            NoDataTemplate = Marker("cascaded-nodata"),
+            EmptyTemplate = Marker("cascaded-nodata"),
         }, builder =>
         {
             builder.AddAttribute(1, nameof(BitChart.Data), LongSeries(20));

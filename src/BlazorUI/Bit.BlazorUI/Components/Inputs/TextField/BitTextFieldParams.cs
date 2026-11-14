@@ -244,6 +244,16 @@ public class BitTextFieldParams : BitInputBaseParams<string?>, IBitComponentPara
     public RenderFragment? LoadingTemplate { get; set; }
 
     /// <summary>
+    /// The pattern the text is laid out over as the user types ('#' a digit, 'A' a letter, '*' either).
+    /// </summary>
+    public string? Mask { get; set; }
+
+    /// <summary>
+    /// Makes the value of a masked field hold only the characters that went into the slots of its mask.
+    /// </summary>
+    public bool? MaskRawValue { get; set; }
+
+    /// <summary>
     /// Specifies the maximum number of characters allowed in the input.
     /// </summary>
     public int? MaxLength { get; set; }
@@ -617,6 +627,16 @@ public class BitTextFieldParams : BitInputBaseParams<string?>, IBitComponentPara
         if (LoadingTemplate is not null)
         {
             bitTextField.TakeFromCascade(nameof(LoadingTemplate), LoadingTemplate, static t => t.LoadingTemplate, static (t, v) => t.LoadingTemplate = v);
+        }
+
+        if (Mask is not null)
+        {
+            bitTextField.TakeFromCascade(nameof(Mask), Mask, static t => t.Mask, static (t, v) => t.Mask = v);
+        }
+
+        if (MaskRawValue.HasValue)
+        {
+            bitTextField.TakeFromCascade(nameof(MaskRawValue), MaskRawValue.Value, static t => t.MaskRawValue, static (t, v) => t.MaskRawValue = v);
         }
 
         if (MaxLength.HasValue)

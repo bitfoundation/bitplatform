@@ -8,9 +8,10 @@
 /// Occurrences are expanded for the visible range only, so an open-ended series costs nothing to
 /// keep. They carry <see cref="BitFullCalendarEvent.SeriesId"/> and
 /// <see cref="BitFullCalendarEvent.OccurrenceDate"/> so a click handler knows which one was picked.
-/// An occurrence cannot be dragged or resized; the event details dialog edits or deletes either that
-/// one occurrence (by skipping its date and, for an edit, adding a one-off event in its place) or the
-/// whole series (by changing the master).
+/// Dragging or resizing an occurrence moves it alone, out of its series; the event details dialog edits
+/// or deletes either that one occurrence (by skipping its date and, for an edit, adding a one-off event in its place), that
+/// occurrence and every later one (by ending the series before it with <see cref="Until"/> and, for an
+/// edit, adding a new series that starts from it), or the whole series (by changing the master).
 /// </para>
 /// <para>
 /// Recurrence is computed on the proleptic Gregorian calendar (the one <see cref="DateTime"/> itself

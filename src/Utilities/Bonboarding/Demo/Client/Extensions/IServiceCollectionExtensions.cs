@@ -1,4 +1,5 @@
 ﻿using Bit.Bonboarding;
+using Bit.Bonboarding.Demo.Client.Shared;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -17,7 +18,13 @@ public static class IServiceCollectionExtensions
         {
             options.Labels.Skip = "Skip";
             options.StorageKeyPrefix = "bit-bonboarding-demo:";
+
+            // "Turn tips off" (the lifecycle page has the switch): automatic starts are held back, while a start the
+            // user asks for still runs.
+            options.CanAutoStart = ctx => ValueTask.FromResult(!ctx.Services.GetRequiredService<DemoPreferences>().MuteTips);
         });
+
+        services.AddScoped<DemoPreferences>();
 
         return services;
     }

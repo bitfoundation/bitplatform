@@ -57,10 +57,10 @@ public class BitChartPrerenderTests
     {
         var empty = await PrerenderAsync(new Dictionary<string, object?>
         {
-            [nameof(BitChart.NoDataText)] = "Nothing yet",
+            [nameof(BitChart.EmptyText)] = "Nothing yet",
         });
 
-        StringAssert.Contains(empty.QuerySelector(".bit-cht-nodata")!.TextContent, "Nothing yet");
+        StringAssert.Contains(empty.QuerySelector(".bit-cht-emp")!.TextContent, "Nothing yet");
 
         var loading = await PrerenderAsync(new Dictionary<string, object?>
         {
@@ -70,7 +70,7 @@ public class BitChartPrerenderTests
         });
 
         StringAssert.Contains(loading.QuerySelector(".bit-cht-ldg")!.TextContent, "Fetching");
-        Assert.IsNull(loading.QuerySelector(".bit-cht-nodata"), "Loading holds the empty state back.");
+        Assert.IsNull(loading.QuerySelector(".bit-cht-emp"), "Loading holds the empty state back.");
     }
 
     [TestMethod]
