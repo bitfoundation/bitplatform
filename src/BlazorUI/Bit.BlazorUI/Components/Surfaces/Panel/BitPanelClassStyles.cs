@@ -48,4 +48,9 @@ public class BitPanelClassStyles
     /// Custom CSS classes/styles for the footer of the BitPanel.
     /// </summary>
     public string? Footer { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the grabber of a bottom sheet with more than one snap point, the bar at its top edge.
+    /// </summary>
+    public string? Grabber { get; set; }
 }

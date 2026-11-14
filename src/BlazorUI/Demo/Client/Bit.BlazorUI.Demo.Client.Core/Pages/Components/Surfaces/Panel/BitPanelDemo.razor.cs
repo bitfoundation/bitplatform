@@ -92,6 +92,13 @@ public partial class BitPanelDemo
         },
         new()
         {
+            Name = "GrabberAriaLabelFormat",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The name of the grabber of a bottom sheet with more than one snap point, as a composite format string: {0} is the snap point it is at, counted from 1, and {1} how many there are. Defaults to BitStrings.PanelSizeFormat (\"Resize, size {0} of {1}\").",
+        },
+        new()
+        {
             Name = "Header",
             Type = "RenderFragment?",
             DefaultValue = "null",
@@ -289,6 +296,20 @@ public partial class BitPanelDemo
         },
         new()
         {
+            Name = "SnapPoint",
+            Type = "int?",
+            DefaultValue = "null",
+            Description = "The index, in SnapPoints, of the height a bottom sheet is at. Two-way bindable: it follows the sheet as it is dragged or moved with its grabber, and setting it moves the sheet. Unset, the sheet opens at the first one.",
+        },
+        new()
+        {
+            Name = "SnapPoints",
+            Type = "IReadOnlyList<double>?",
+            DefaultValue = "null",
+            Description = "The heights a panel at the bottom settles at, from the smallest to the largest - a bottom sheet. A value of 1 or less is a fraction of the viewport's height, a larger one pixels. The sheet is dragged between them and settles at the nearest one; dragged below the smallest by more than SwipeTrigger of it, it is dismissed. With two or more it shows a grabber: a tap or Enter moves it to the next height, the arrow keys up and down, Home and End to the smallest and the largest. They take the place of Size and of the cap that leaves a strip of the page showing; read only at the bottom and when not FullSize.",
+        },
+        new()
+        {
             Name = "Styles",
             Type = "BitPanelClassStyles?",
             DefaultValue = "null",
@@ -434,6 +455,12 @@ public partial class BitPanelDemo
             DefaultValue = "--bit-tpg-fw-semibold",
             Description = "Weight of the header.",
         },
+        new()
+        {
+            Name = "--bit-Panel-grabber-color",
+            DefaultValue = "--bit-clr-brd-pri",
+            Description = "Bar of the grabber of a bottom sheet with snap points.",
+        },
     ];
 
     private readonly List<ComponentSubClass> componentSubClasses =
@@ -506,6 +533,13 @@ public partial class BitPanelDemo
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the footer of the BitPanel."
+               },
+               new()
+               {
+                   Name = "Grabber",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the grabber of a bottom sheet with more than one snap point, the bar at its top edge."
                }
             ]
         },
@@ -609,6 +643,14 @@ public partial class BitPanelDemo
     private decimal swipeStart;
     private decimal swipeDiff;
     private bool isSwipePanelOpen;
+
+    private bool isSheetOpen;
+    private int? sheetSnapPoint;
+
+    // A quarter of the screen, 400 pixels, and nine tenths of the screen.
+    private static readonly double[] sheetSnapPoints = [0.25, 400, 0.9];
+
+    private static readonly string[] places = ["Bakery", "Bookshop", "Café", "Florist", "Gallery", "Library", "Market", "Museum", "Park", "Pharmacy", "Post office", "Station"];
 
     private bool isOuterPanelOpen;
     private bool isInnerPanelOpen;

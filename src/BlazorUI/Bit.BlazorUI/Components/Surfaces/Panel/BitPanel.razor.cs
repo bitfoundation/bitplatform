@@ -1,4 +1,6 @@
-﻿
+﻿using System.Globalization;
+
+
 namespace Bit.BlazorUI;
 
 /// <summary>
@@ -48,6 +50,8 @@ public partial class BitPanel : BitComponentBase
     private MouseEventArgs? _dismissArgs;
     private DotNetObjectReference<BitPanel>? _dotnetObj;
     private DotNetObjectReference<BitPanel>? _swipesDotnetObj;
+    private ElementReference _grabberRef;
+    private string? _grabberKeysFor;
     // What the escape guard answered for the Escape Blazor is about to hand the key handler (see
     // _OnEscapeVerdict), taken by the handler as it starts.
     private readonly BitEscapeVerdict _escapeVerdict = new();
@@ -201,6 +205,12 @@ public partial class BitPanel : BitComponentBase
     /// the header is what the dialog points its <c>aria-labelledby</c> at unless
     /// <see cref="TitleAriaId"/> or <see cref="BitComponentBase.AriaLabel"/> names it instead.
     /// </remarks>
+    /// <summary>
+    /// The name of the grabber of a bottom sheet with more than one snap point, as a composite format string: {0} is the
+    /// snap point the sheet is at, counted from 1, and {1} how many there are. Default: <see cref="BitStrings.PanelSizeFormat"/>.
+    /// </summary>
+    [Parameter] public string? GrabberAriaLabelFormat { get; set; }
+
     [Parameter] public RenderFragment? Header { get; set; }
 
     /// <summary>
@@ -472,6 +482,31 @@ public partial class BitPanel : BitComponentBase
     [Parameter] public double? Size { get; set; }
 
     /// <summary>
+    /// The index, in <see cref="SnapPoints"/>, of the height a bottom sheet is at. It follows the sheet as the user
+    /// drags it or moves it with its grabber, and setting it moves the sheet. Unset, the sheet opens at the first one.
+    /// </summary>
+    /// <remarks>
+    /// Bound one way (no <c>SnapPointChanged</c>), the height is the app's alone: a drag or the grabber settles the
+    /// sheet back at it unless the app sets it anew.
+    /// </remarks>
+    [Parameter, TwoWayBound]
+    public int? SnapPoint { get; set; }
+
+    /// <summary>
+    /// The heights a panel at the bottom of the screen settles at, from the smallest to the largest - a bottom sheet. A
+    /// value of 1 or less is a fraction of the height of the viewport (0.5 is half of it), a larger one a height in pixels.
+    /// </summary>
+    /// <remarks>
+    /// The sheet is dragged up and down between them, settling at the nearest one where it is let go; dragged below the
+    /// smallest by more than <see cref="SwipeTrigger"/> of it, it is dismissed. With two or more of them it shows a
+    /// grabber at its top edge, which is the way to resize it without dragging: a tap or Enter moves it to the next one
+    /// (back to the first after the last), the arrow keys up and down, and Home and End to the smallest and the largest.
+    /// <see cref="SnapPoint"/> is the one it is at. They take the place of <see cref="Size"/> and of the cap that keeps a
+    /// strip of the page showing, and they are only read by a panel at the bottom that is not <see cref="FullSize"/>.
+    /// </remarks>
+    [Parameter] public IReadOnlyList<double>? SnapPoints { get; set; }
+
+    /// <summary>
     /// The element reference of the scroller whose scrolling is taken away while the panel is open, for the
     /// layouts whose scroller is not the page and cannot be named by a selector.
     /// </summary>
@@ -620,6 +655,19 @@ public partial class BitPanel : BitComponentBase
         }
 
         await OnTransitionEnd.InvokeAsync(IsOpen);
+    }
+
+    // Where a drag of a bottom sheet settled, as the index of the snap point it chose. The answer is the snap point the
+    // sheet is at once the app had its say - a SnapPoint bound one way keeps it where the app holds it - which the
+    // script settles the sheet at: a render that leaves the height as it was writes nothing over what the drag left.
+    [JSInvokable("OnSnap")]
+    public async Task<int> _OnSnap(int index)
+    {
+        if (IsDisposed) return _SnapIndex;
+
+        await SnapTo(index);
+
+        return _SnapIndex;
     }
 
     [JSInvokable("OnClose")]
@@ -774,6 +822,8 @@ public partial class BitPanel : BitComponentBase
 
             await SetupSwipes();
         }
+
+        await RegisterGrabberKeys();
 
         if (_internalIsOpen == IsOpen) return;
 
@@ -987,6 +1037,78 @@ public partial class BitPanel : BitComponentBase
     // The edge the panel actually slides in from; every consumer of Placement goes through it (see ToPanelSide).
     private BitPlacement EffectivePosition => Placement.ToPanelSide();
 
+    // The keys the grabber answers itself, whose default action (scrolling the panel's content) is kept from happening.
+    private static readonly string[] _grabberKeys = ["ArrowUp", "ArrowDown", "Home", "End"];
+
+    // The snap points a bottom sheet reads: the positive ones of SnapPoints, on a panel at the bottom that is not full size.
+    private List<double> _SnapPoints => EffectivePosition == BitPlacement.Bottom && FullSize is false && SnapPoints is { Count: > 0 }
+                                            ? SnapPoints.Where(p => p > 0 && double.IsFinite(p)).ToList()
+                                            : [];
+
+    private bool _IsSnapping => _SnapPoints.Count > 0;
+
+    private bool _HasGrabber => _SnapPoints.Count > 1;
+
+    private int _SnapIndex => Math.Clamp(SnapPoint ?? 0, 0, Math.Max(_SnapPoints.Count - 1, 0));
+
+    // A snap point as the CSS height it stands for: a fraction of the viewport's height or a number of pixels. The
+    // swipe script writes the very same text when a drag settles, so the two never disagree about where the sheet is.
+    private static string ToSnapHeight(double point) => point <= 1
+        ? FormattableString.Invariant($"{point * 100}dvh")
+        : FormattableString.Invariant($"{point}px");
+
+    private string GetSnapPointsAttribute() => string.Join(' ', _SnapPoints.Select(p => p.ToString(CultureInfo.InvariantCulture)));
+
+    private string GetGrabberLabel() => string.Format(CultureInfo.CurrentCulture, GrabberAriaLabelFormat ?? BitStrings.Current.PanelSizeFormat, _SnapIndex + 1, _SnapPoints.Count);
+
+    private async Task SnapTo(int index)
+    {
+        if (index < 0 || index >= _SnapPoints.Count) return;
+
+        if (await AssignSnapPoint(index)) StateHasChanged();
+    }
+
+    // A tap or Enter moves the sheet to the next height, back to the first after the last: one press is enough to reach
+    // any of them without dragging (WCAG 2.5.7).
+    private async Task HandleOnGrabberClick()
+    {
+        if (Disabled || _SnapPoints.Count < 2) return;
+
+        await SnapTo((_SnapIndex + 1) % _SnapPoints.Count);
+    }
+
+    private async Task HandleOnGrabberKeyDown(KeyboardEventArgs e)
+    {
+        if (Disabled) return;
+
+        var last = _SnapPoints.Count - 1;
+        var target = e.Key switch
+        {
+            "ArrowUp" => Math.Min(_SnapIndex + 1, last),
+            "ArrowDown" => Math.Max(_SnapIndex - 1, 0),
+            "Home" => 0,
+            "End" => last,
+            _ => -1
+        };
+
+        if (target >= 0 && target != _SnapIndex) await SnapTo(target);
+    }
+
+    // The grabber is rendered with the content, and again whenever the snap points bring it back, so its keys are
+    // registered once per element rather than once per panel.
+    private async Task RegisterGrabberKeys()
+    {
+        if (_HasGrabber is false || _grabberRef.Id is null || _grabberRef.Id == _grabberKeysFor) return;
+
+        _grabberKeysFor = _grabberRef.Id;
+
+        try
+        {
+            await _js.BitUtilsRegisterPreventKeys(_grabberRef, _grabberKeys);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+    }
+
     private bool IsHorizontal => EffectivePosition.IsInlineSide();
 
     // Whether the content of the panel is in the page. It goes in on the first opening and comes back out
@@ -1058,9 +1180,13 @@ public partial class BitPanel : BitComponentBase
     {
         List<string> styles = [];
 
-        // A full-size panel is sized by its own class, so a size given as well is left out rather than
-        // fought with.
-        if (Size is not null && FullSize is false)
+        // A bottom sheet is as tall as the snap point it is at, which its own class reads; a size given as well is
+        // left out rather than fought with, as it is by a full-size panel.
+        if (_IsSnapping)
+        {
+            styles.Add($"--bit-pnl-snp:{ToSnapHeight(_SnapPoints[_SnapIndex])}");
+        }
+        else if (Size is not null && FullSize is false)
         {
             var prop = IsHorizontal ? "width" : "height";
             styles.Add(FormattableString.Invariant($"{prop}:{Size}px"));
@@ -1103,6 +1229,11 @@ public partial class BitPanel : BitComponentBase
         if (IsOpen)
         {
             classes.Add("bit-pnl-opn");
+        }
+
+        if (_IsSnapping)
+        {
+            classes.Add("bit-pnl-snp");
         }
 
         if (Classes?.Container is string containerClass && containerClass.HasValue())
