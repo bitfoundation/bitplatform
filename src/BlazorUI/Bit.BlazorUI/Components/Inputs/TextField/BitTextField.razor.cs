@@ -34,8 +34,10 @@ public partial class BitTextField : BitTextInputBase<string?>
     private DotNetObjectReference<BitTextField>? _dotnetObj;
     private string? _inputMode;
     private bool _trimOnParse;
-    // A commit of the field's own running, and the value it writes (see HandleOnStringValueChangeAsync).
-    private (bool Running, string? Value) _ownCommit;
+    // The values the field's own running commits write, one entry per commit, so commits that overlap (a debounced
+    // or throttled one still awaiting when the next starts) each keep theirs until they end (see
+    // HandleOnStringValueChangeAsync).
+    private readonly List<string?> _ownCommits = [];
     private bool _isPasswordRevealed;
     private BitInputType? _elementType;
     private string _inputId = string.Empty;
@@ -922,10 +924,10 @@ public partial class BitTextField : BitTextInputBase<string?>
         }
 
         // A value that moved without the field moving it - the page emptying it after a send, say - is what the
-        // input shows from then on, whatever had been typed into it before. The value the field's own commit wrote,
-        // handed back by the binding while that commit runs, is left to the commit to settle (see
+        // input shows from then on, whatever had been typed into it before. The value any of the field's own commits
+        // wrote, handed back by the binding while that commit runs, is left to the commit to settle (see
         // HandleOnStringValueChangeAsync).
-        if (_ownCommit.Running is false || string.Equals(Value, _ownCommit.Value, StringComparison.Ordinal) is false)
+        if (_ownCommits.Contains(Value) is false)
         {
             ReleaseTypedTextIfMoved(Value);
         }
@@ -1171,14 +1173,16 @@ public partial class BitTextField : BitTextInputBase<string?>
         // is still running. A field that commits something other than the text typed (a mask lays it out) must not take
         // that for the page moving the value: letting go of the typed text there would render the committed value into
         // the input, a round trip behind the typing on a server circuit, over the keys typed since.
-        _ownCommit = (true, TryParseValueFromString(e.Value?.ToString(), out var committing, out _) ? committing : null);
+        // Commits can overlap, so each adds its own value as it starts and takes only that one back as it ends.
+        var committed = TryParseValueFromString(e.Value?.ToString(), out var committing, out _) ? committing : null;
+        _ownCommits.Add(committed);
         try
         {
             await base.HandleOnStringValueChangeAsync(e);
         }
         finally
         {
-            _ownCommit = default;
+            _ownCommits.Remove(committed);
         }
 
         // Once the value holds the typed text the input shows the value again; until then the value this commit

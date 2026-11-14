@@ -1724,6 +1724,38 @@ public class BitMarkdownEditorE2ETests : E2ETestBase
     }
 
     [TestMethod]
+    public async Task Escape_InADialog_FromTheTextArea_ClosesTheOpenFindPanel_AndKeepsTheFocusThere()
+    {
+        await OpenAsync(Route);
+
+        await Page.ClickAsync("#btn-open-dialog");
+        await Expect(Page.Locator("#dialog-open")).ToHaveTextAsync("True");
+        var textArea = TextArea("mde-dialog");
+        await Expect(textArea).ToBeVisibleAsync();
+        // Same waits as the find box's case above: the editor's script set up for the field, and the dialog done
+        // placing its focus.
+        await Page.WaitForFunctionAsync("ta => Object.values(BitBlazorUI.MarkdownEditor._editors).some(e => e.textArea === ta)", await textArea.ElementHandleAsync());
+        await Expect(Page.Locator("#dialog-opened")).ToHaveTextAsync("1");
+
+        await textArea.FocusAsync();
+        await Page.Keyboard.PressAsync("Control+f");
+        var panel = Page.Locator("#mde-dialog .bit-mde-fnd");
+        await Expect(panel).ToBeVisibleAsync();
+        // The find box takes the focus a round trip after the panel shows; the focus is moved back to the textarea only
+        // once it has, so nothing takes it away again before the press.
+        await Expect(panel.Locator("input[type='search']")).ToBeFocusedAsync();
+
+        // Back in the textarea with the panel still open, the textarea claims the Escape that closes it.
+        await textArea.FocusAsync();
+        await Expect(textArea).ToBeFocusedAsync();
+        await Expect(textArea).ToHaveAttributeAsync("data-bit-esc", "claim");
+        await Page.Keyboard.PressAsync("Escape");
+        await Expect(panel).ToHaveCountAsync(0);
+        await Expect(textArea).ToBeFocusedAsync();
+        await Expect(Page.Locator("#dialog-open")).ToHaveTextAsync("True");
+    }
+
+    [TestMethod]
     public async Task AutoSave_KeepsADraftThatSurvivesAReload_UntilClearDraft()
     {
         await OpenAsync(Route);
