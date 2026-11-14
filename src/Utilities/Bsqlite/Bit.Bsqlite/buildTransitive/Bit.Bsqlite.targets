@@ -47,4 +47,27 @@
         </ItemGroup>
     </Target>
 
+    <!-- Opening a database needs System.Private.Xml, which an app may keep out of its startup download with
+         <BlazorWebAssemblyLazyLoad Include="System.Private.Xml.wasm" /> and load in a BeforeFirstOpen step.
+
+         - An AOT build drops that mark: AOT compiles the assembly into dotnet.native.wasm anyway, and with it marked
+           lazy the runtime aborts at startup with a Mono assertion (method-builder-ilgen.c) - it builds code for a
+           method whose signature names one of the assembly's types before the assembly is there.
+         - Any other build that keeps the mark sets the Bit.Bsqlite.LazyLoadsXml switch, which
+           BsqliteBuilder.LazyLoadsXml reads: the step loads the assembly only then, since loading one that is not
+           marked throws.
+
+         So the app marks it unconditionally and checks BsqliteBuilder.LazyLoadsXml, with no condition or switch of its
+         own. In a target, so it sees the mark wherever the app made it, before the WebAssembly SDK reads the marks, the
+         runtime configuration is written and the trimmer reads the switches. -->
+    <Target Name="_BitBsqliteLazyLoadXml"
+            BeforeTargets="PrepareForBuild;_GenerateRuntimeConfigurationFilesInputCache;_ResolveWasmConfiguration;PrepareForILLink;PrepareForPublish"
+            Condition=" '$(RuntimeIdentifier)' == 'browser-wasm' ">
+        <ItemGroup>
+            <_BitBsqliteLazyXml Include="@(BlazorWebAssemblyLazyLoad)" Condition=" '%(Filename)' == 'System.Private.Xml' " />
+            <BlazorWebAssemblyLazyLoad Remove="@(_BitBsqliteLazyXml)" Condition=" '$(RunAOTCompilation)' == 'true' " />
+            <RuntimeHostConfigurationOption Include="Bit.Bsqlite.LazyLoadsXml" Value="true" Trim="true" Condition=" '$(RunAOTCompilation)' != 'true' And '@(_BitBsqliteLazyXml)' != '' " />
+        </ItemGroup>
+    </Target>
+
 </Project>

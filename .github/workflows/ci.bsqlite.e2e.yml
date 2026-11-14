@@ -1,7 +1,7 @@
 name: CI Bsqlite E2E
 
 # The worker, the engine builds and every VFS in Chromium, plus every page of the demo website and the published lazy
-# loading sample - trimmed, and in a job of its own AOT-compiled. It takes far longer than the build-and-unit pipeline
+# loading sample - trimmed, and in jobs of their own AOT-compiled. It takes far longer than the build-and-unit pipeline
 # (ci.bsqlite.yml), so it runs only when started by hand. See
 # src/Utilities/Bsqlite/Tests/Bit.Bsqlite.Tests.E2E/README.md for what the browser suite proves and how to run it locally.
 
@@ -97,6 +97,81 @@ jobs:
         name: bsqlite-e2e
         path: |
           **/bsqlite-e2e.trx
+          demo.log
+        if-no-files-found: ignore
+
+  # The demo published with AOT. Its project file marks System.Private.Xml.wasm lazy unconditionally, and
+  # Bit.Bsqlite.targets drops that mark from an AOT build - with it the runtime aborts at startup with a Mono assertion
+  # (method-builder-ilgen.c) - and leaves BsqliteBuilder.LazyLoadsXml unset, so its BeforeFirstOpen step loads nothing:
+  # loading an assembly that is not marked throws on the first open. DemoTests opens a database on every page, so a
+  # regression on either side fails here.
+  demo-aot:
+    name: Bsqlite demo (AOT)
+    runs-on: ubuntu-26.04
+    timeout-minutes: 60
+
+    steps:
+
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET 11.0
+      uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+      with:
+        global-json-file: src/global.json
+
+    - name: Setup .NET 10.0
+      uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+      with:
+        dotnet-version: 10.0.x
+
+    # Before the first restore, as above: the library's restore runs the TypeScript build.
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version: 24
+
+    - name: Install wasm-tools
+      run: cd src && dotnet workload install wasm-tools wasm-tools-net10
+
+    - name: Publish the demo with AOT
+      run: dotnet publish src/Utilities/Bsqlite/Demo/Server/Bit.Bsqlite.Demo.Server.csproj -c Release -o demo -p:InvariantGlobalization=true -p:RunAOTCompilation=true
+
+    - name: Build the E2E suite
+      run: dotnet build src/Utilities/Bsqlite/Tests/Bit.Bsqlite.Tests.E2E/Bit.Bsqlite.Tests.E2E.csproj -c Release
+
+    - name: Install Playwright Chromium
+      run: pwsh src/Utilities/Bsqlite/Tests/Bit.Bsqlite.Tests.E2E/bin/Release/net11.0/playwright.ps1 install --with-deps chromium
+
+    - name: Start the published demo
+      run: |
+        cd demo
+        nohup dotnet Bit.Bsqlite.Demo.Server.dll --urls http://127.0.0.1:5000 > ../demo.log 2>&1 &
+        for attempt in $(seq 1 60); do
+          curl --silent --fail --output /dev/null http://127.0.0.1:5000/ && exit 0
+          sleep 2
+        done
+        cat ../demo.log
+        exit 1
+
+    - name: Run demo E2E tests
+      env:
+        BSQLITE_E2E_DEMO_URL: http://127.0.0.1:5000
+      # Run from inside src so src/global.json's Microsoft.Testing.Platform runner setting applies.
+      run: >
+        cd src/Utilities/Bsqlite/Tests/Bit.Bsqlite.Tests.E2E &&
+        dotnet test -c Release --no-build
+        --filter "FullyQualifiedName~DemoTests"
+        --report-trx --report-trx-filename bsqlite-e2e-demo-aot.trx
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: bsqlite-e2e-demo-aot
+        path: |
+          **/bsqlite-e2e-demo-aot.trx
           demo.log
         if-no-files-found: ignore
 

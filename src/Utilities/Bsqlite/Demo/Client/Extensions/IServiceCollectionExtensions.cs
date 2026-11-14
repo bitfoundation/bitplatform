@@ -44,10 +44,12 @@ public static class IServiceCollectionExtensions
                 .Fallback(BsqliteCacheStorageProvider.ProviderName)
                 .Fallback(BsqliteInMemoryStorageProvider.ProviderName)
                 .AllowNonPersistentFallback())
-            // System.Private.Xml.wasm is lazy loaded (see the project file): opening a database needs it, so it
-            // downloads right before the first open instead of with the app. Only the browser ever opens one.
-            .BeforeFirstOpen((sp, _) => sp.GetRequiredService<LazyAssemblyLoader>()
-                .LoadAssembliesAsync(["System.Private.Xml.wasm"]))
+            // System.Private.Xml.wasm is lazy loaded outside AOT builds (see the project file): opening a database needs
+            // it, so it downloads right before the first open instead of with the app. Only the browser ever opens one.
+            // LazyLoadsXml is false in an AOT build, which loads it with the app: loading one not marked throws.
+            .BeforeFirstOpen((sp, _) => BsqliteBuilder.LazyLoadsXml
+                ? sp.GetRequiredService<LazyAssemblyLoader>().LoadAssembliesAsync(["System.Private.Xml.wasm"])
+                : Task.CompletedTask)
             .AddDatabase(BrowserDatabase.DatabaseName));
 
         // Contexts come from a factory bound to that database. Migrations run once per session, then the
