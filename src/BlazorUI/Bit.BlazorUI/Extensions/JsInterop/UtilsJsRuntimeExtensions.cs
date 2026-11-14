@@ -253,15 +253,6 @@ internal static class UtilsJsRuntimeExtensions
     }
 
 
-    // Hands the focus back to the element captureFocusOrigin remembered, reporting whether the focus was taken
-    // care of: false when there was no origin to hand it back to (the focus was on the body when the popup
-    // opened) or the origin has left the page, which leaves the caller the focus to place itself.
-    internal static ValueTask<bool> BitUtilsTryRestoreFocusOrigin(this IJSRuntime jsRuntime, string elementId)
-    {
-        return jsRuntime.Invoke<bool>("BitBlazorUI.Utils.restoreFocusOrigin", elementId);
-    }
-
-
     // Reports the end of the transform transition of an element back to .NET, which is when a surface that
     // slides has actually finished sliding.
     internal static ValueTask BitUtilsSetupTransitionEnd<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(

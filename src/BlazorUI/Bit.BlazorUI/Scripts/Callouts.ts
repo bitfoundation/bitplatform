@@ -1801,15 +1801,17 @@
         // close), Escape is listened for on the page, Tab and Shift+Tab are kept inside the callout, or the
         // callout is put into the tab order after its trigger. Each is asked for on its own, and the ones the
         // component has already set up are not asked for again. Reports whether a focus origin was remembered.
+        // The callout is the scope of the origin (see Utils.storeFocus): a focus already inside it - a callout
+        // moved from its anchor to a point from its own keyboard - is no origin.
         export function setupKeyboard(
             calloutId: string,
             dotnetObj: DotNetObject,
-            captureFocusOrigin: boolean,
+            storeFocusOrigin: boolean,
             escape: boolean,
             escapeTriggerId: string | null,
             focusTrap: boolean,
             tabOutTriggerId: string | null) {
-            const captured = captureFocusOrigin && Utils.captureFocusOrigin(calloutId);
+            const stored = storeFocusOrigin && Utils.storeFocus(calloutId, calloutId);
 
             if (escape) {
                 Utils.setupEscape(calloutId, dotnetObj, escapeTriggerId);
@@ -1823,7 +1825,7 @@
                 Utils.setupTabOut(calloutId, tabOutTriggerId, dotnetObj);
             }
 
-            return captured;
+            return stored;
         }
 
         // The keyboard handling of an open BitDropMenu, brought to the mode asked for and the focus moved into the
@@ -1889,7 +1891,7 @@
             Utils.disposeFocusIn(calloutId);
 
             if (forgetFocusOrigin) {
-                Utils.disposeFocusOrigin(calloutId);
+                Utils.forgetFocus(calloutId);
             }
         }
 

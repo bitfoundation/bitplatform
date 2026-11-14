@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
@@ -603,7 +604,7 @@ public class BitCalloutTests : BunitTestContext
         // Each piece is a round trip of its own on a server-rendered page, all standing between the click and the
         // focus moving into the callout, so the focus origin, the page-level Escape and the focus trap go together.
         Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Callouts.setupKeyboard"].Count);
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.captureFocusOrigin"].Count);
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.storeFocus"].Count);
         Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupEscape"].Count);
         Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"].Count);
 
@@ -2998,7 +2999,7 @@ public class BitCalloutTests : BunitTestContext
     {
         Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.containsActiveElement", _ => true).SetResult(true);
         Context.JSInterop.Setup<bool>("BitBlazorUI.Callouts.setupKeyboard", _ => true).SetResult(true);
-        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.restoreFocusOrigin", _ => true).SetResult(true);
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.restoreFocus", _ => true).SetResult(true);
 
         var component = RenderComponent<BitCallout>(parameters =>
         {
@@ -3021,7 +3022,7 @@ public class BitCalloutTests : BunitTestContext
 
         // The origin is kept through the disposal, since it is what the focus is about to be handed back to.
         Assert.AreEqual(false, Context.JSInterop.Invocations["BitBlazorUI.Callouts.disposeKeyboard"][^1].Arguments[1]);
-        Assert.AreEqual(contentId, Context.JSInterop.Invocations["BitBlazorUI.Utils.restoreFocusOrigin"][^1].Arguments[0]);
+        CollectionAssert.AreEqual(new object?[] { contentId, true, contentId }, Context.JSInterop.Invocations["BitBlazorUI.Utils.restoreFocus"][^1].Arguments.ToArray());
         Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.focusFirstElement"].Count);
     }
 
@@ -3039,7 +3040,7 @@ public class BitCalloutTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance.Open());
         await component.InvokeAsync(() => component.Instance.Close());
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.restoreFocusOrigin"].Count);
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.restoreFocus"].Count);
         Assert.AreEqual(true, Context.JSInterop.Invocations["BitBlazorUI.Callouts.disposeKeyboard"][^1].Arguments[1]);
     }
 
@@ -3077,7 +3078,7 @@ public class BitCalloutTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance.Close());
 
         // Left to the body, the keyboard would be back at the top of the page.
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.restoreFocusOrigin"].Count);
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.restoreFocus"].Count);
         Assert.AreEqual(component.Find(".bit-clo-acn").Id,
                         Context.JSInterop.Invocations["BitBlazorUI.Utils.focusFirstElement"][^1].Arguments[0]);
     }
@@ -3089,7 +3090,7 @@ public class BitCalloutTests : BunitTestContext
         Context.JSInterop.Setup<bool>("BitBlazorUI.Callouts.setupKeyboard", _ => true).SetResult(true);
 
         // The element the context menu was opened over has left the page while the menu was open.
-        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.restoreFocusOrigin", _ => true).SetResult(false);
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.restoreFocus", _ => true).SetResult(false);
 
         var component = RenderComponent<BitCallout>(parameters =>
         {
@@ -3102,7 +3103,7 @@ public class BitCalloutTests : BunitTestContext
 
         await component.InvokeAsync(() => component.Instance.Close());
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.restoreFocusOrigin"].Count);
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.restoreFocus"].Count);
         Assert.AreEqual(component.Find(".bit-clo-acn").Id,
                         Context.JSInterop.Invocations["BitBlazorUI.Utils.focusFirstElement"][^1].Arguments[0]);
     }

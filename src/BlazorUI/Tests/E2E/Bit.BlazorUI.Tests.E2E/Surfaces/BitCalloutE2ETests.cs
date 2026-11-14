@@ -381,6 +381,35 @@ public class BitCalloutE2ETests : E2ETestBase
         Near(141, box.Y, "top at y");
     }
 
+    // A callout opened from its own anchor and then moved to a point from its own keyboard already has the focus in it:
+    // that focus is no origin, so closing the callout hands the focus to its anchor rather than to an element of the
+    // hidden callout.
+    [TestMethod]
+    public async Task OpenAt_ACalloutMovedToAPointFromItsOwnKeyboard_ClosesBackToItsAnchor()
+    {
+        await OpenAsync(Url);
+
+        var anchor = El("mtp-anchor");
+        await anchor.FocusAsync();
+        await anchor.PressAsync("Enter");
+
+        var callout = Cal("mtp-body");
+        await Expect(callout).ToBeVisibleAsync();
+        await Expect(El("mtp-move")).ToBeFocusedAsync();
+
+        // The keyboard handling is chosen again for the point on the render that puts the point on the page. The point
+        // is named after the callout as its anchor container is.
+        var pointId = (await Page.Locator("#mtp-callout > .bit-clo-acn").GetAttributeAsync("id"))!.Replace("-anchor", "-point");
+        await Page.Keyboard.PressAsync("Enter");
+        await Expect(Page.Locator($"[id='{pointId}']")).ToHaveCountAsync(1);
+        await NextFramesAsync();
+        await Expect(El("mtp-move")).ToBeFocusedAsync();
+
+        await Page.Keyboard.PressAsync("Escape");
+        await Expect(callout).ToBeHiddenAsync();
+        await Expect(anchor).ToBeFocusedAsync();
+    }
+
     [TestMethod]
     public async Task Background_EveryColorKind_PaintsTheSurface()
     {
