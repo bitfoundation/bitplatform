@@ -10,7 +10,7 @@ namespace Boilerplate.Workbench.Infrastructure.Services.StandIns;
 /// As the server's, it needs the session to have confirmed it's the user lately (ELEVATED_ACCESS). Anything else the app's
 /// code sends goes on to the Workbench's endpoints.
 /// </summary>
-public sealed class WorkbenchExportHandler(IUserController userController, IWebHostEnvironment environment) : DelegatingHandler
+public sealed class WorkbenchExportHandler(IUserController userController, WorkbenchScenarioState scenarioState, IWebHostEnvironment environment) : DelegatingHandler
 {
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
@@ -22,6 +22,13 @@ public sealed class WorkbenchExportHandler(IUserController userController, IWebH
 
         var user = await userController.GetCurrentUser(cancellationToken);
         var sessions = await userController.GetUserSessions(cancellationToken);
+
+        // Both follow the view's sign-in, which can change while they load, as they take a while in the Slow state. An export
+        // of another account than the token's, or of one account's profile with another's sessions, is refused as a token
+        // that's no longer the view's.
+        if (user.Id != userId || scenarioState.Scenario.Auth is WorkbenchAuthState.SignedOut || WorkbenchClaims.UserIdOf(scenarioState.Scenario.User) != userId)
+            return new(HttpStatusCode.Unauthorized) { RequestMessage = request };
+
         var photo = WorkbenchPhotos.Find(demoUser.NameKey) is { } path ? environment.WebRootFileProvider.GetFileInfo(path).PhysicalPath : null;
         var exportedOn = DateTimeOffset.UtcNow;
 

@@ -5,9 +5,10 @@ namespace Boilerplate.Workbench.Infrastructure.Services.StandIns;
 /// TryEnterElevatedAccessMode): what removing a session, changing the email or deleting the account first ask for. A view
 /// confirmed a minute ago, so those go straight through, unless its page's <see cref="Switch"/> says the app asks first:
 /// then the app's own ElevatedAccessModal opens, and a code or a passkey it accepts confirms the view for five minutes.
-/// A confirmation is the sign-in's that made it: another demo user, or signing out, has to confirm again.
+/// A confirmation is gone once the view's sign-in changes, as signing out drops the tokens that carried it: another demo
+/// user, or the same one signed in again, has to confirm again.
 /// </summary>
-public sealed class WorkbenchElevation(WorkbenchScenarioState scenarioState)
+public sealed class WorkbenchElevation : IDisposable
 {
     /// <summary>The switch of a page whose actions ask to confirm it's you.</summary>
     public const string Switch = "confirm";
@@ -18,7 +19,19 @@ public sealed class WorkbenchElevation(WorkbenchScenarioState scenarioState)
     /// <summary>How long a confirmation lasts, as the server's access token with it does.</summary>
     private static readonly TimeSpan lifetime = TimeSpan.FromMinutes(5);
 
-    private (DateTimeOffset Until, (WorkbenchAuthState Auth, int User) SignIn)? confirmed;
+    private readonly WorkbenchScenarioState scenarioState;
+
+    private DateTimeOffset? confirmedUntil;
+
+    /// <summary>The sign-in <see cref="confirmedUntil"/> belongs to.</summary>
+    private (WorkbenchAuthState Auth, int User) signIn;
+
+    public WorkbenchElevation(WorkbenchScenarioState scenarioState)
+    {
+        this.scenarioState = scenarioState;
+        signIn = SignIn;
+        scenarioState.Changed += FollowTheSignIn;
+    }
 
     private (WorkbenchAuthState Auth, int User) SignIn => (scenarioState.Scenario.Auth, scenarioState.Scenario.User);
 
@@ -27,15 +40,33 @@ public sealed class WorkbenchElevation(WorkbenchScenarioState scenarioState)
     {
         get
         {
+            FollowTheSignIn();
+
             var now = DateTimeOffset.UtcNow;
 
-            if (confirmed is { } confirmation && confirmation.SignIn == SignIn && confirmation.Until > now)
-                return confirmation.Until;
+            if (confirmedUntil > now)
+                return confirmedUntil;
 
             return scenarioState.Scenario.GetSwitch(Switch) is AskCase ? null : now.Add(lifetime);
         }
     }
 
     /// <summary>What the server does with a code or a passkey it accepts.</summary>
-    public void Confirm() => confirmed = (DateTimeOffset.UtcNow.Add(lifetime), SignIn);
+    public void Confirm()
+    {
+        FollowTheSignIn();
+        confirmedUntil = DateTimeOffset.UtcNow.Add(lifetime);
+    }
+
+    /// <summary>Forgets the confirmation once the view is signed out or signed in as someone else.</summary>
+    private void FollowTheSignIn()
+    {
+        if (SignIn == signIn)
+            return;
+
+        signIn = SignIn;
+        confirmedUntil = null;
+    }
+
+    public void Dispose() => scenarioState.Changed -= FollowTheSignIn;
 }

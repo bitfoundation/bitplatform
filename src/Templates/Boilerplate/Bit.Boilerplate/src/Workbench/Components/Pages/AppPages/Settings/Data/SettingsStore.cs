@@ -19,11 +19,11 @@ public partial class SettingsStore
     [BlexState] private string _authenticatorKey = "";
     [BlexState] private int _recoveryCodesLeft;
     [BlexState] private bool _hasPasskey;
-    /// <summary>How many uploaded pictures the account has shown, so it notices a new one.</summary>
-    [BlexState] private int _seenUploads;
+    /// <summary>The id of the uploaded picture the account shows last (See WorkbenchProfilePictures.LastUpload), so it notices a new one.</summary>
+    [BlexState] private string? _seenUpload;
 
     [BlexAction]
-    private void OnStartOver(string shapedFor, UserDto user, UserSessionDto[] sessions, bool isTwoFactorEnabled, string authenticatorKey, int recoveryCodesLeft, bool hasPasskey, int seenUploads)
+    private void OnStartOver(string shapedFor, UserDto user, UserSessionDto[] sessions, bool isTwoFactorEnabled, string authenticatorKey, int recoveryCodesLeft, bool hasPasskey, string? seenUpload)
     {
         ShapedFor = shapedFor;
         User = user;
@@ -32,12 +32,12 @@ public partial class SettingsStore
         AuthenticatorKey = authenticatorKey;
         RecoveryCodesLeft = recoveryCodesLeft;
         HasPasskey = hasPasskey;
-        SeenUploads = seenUploads;
+        SeenUpload = seenUpload;
     }
 
     [BlexAction] private void OnChangeUser(UserDto user) => User = user;
 
-    [BlexAction] private void OnShowUpload(UserDto user, int seenUploads) => (User, SeenUploads) = (user, seenUploads);
+    [BlexAction] private void OnShowUpload(UserDto user, string? seenUpload) => (User, SeenUpload) = (user, seenUpload);
 
     [BlexAction] private void OnChangeSessions(UserSessionDto[] sessions) => Sessions = sessions;
 

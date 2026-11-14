@@ -10,7 +10,7 @@ public static class WorkbenchProfilePictures
     /// <summary>The settings page's own limit (ProfileSection's BitFileUpload).</summary>
     public const int MaxBytes = 10 * 1024 * 1024;
 
-    private static readonly ConcurrentDictionary<Guid, (byte[] Content, string ContentType, int Uploads)> uploaded = [];
+    private static readonly ConcurrentDictionary<Guid, (byte[] Content, string ContentType, string Upload)> uploaded = [];
 
     /// <summary>
     /// The type of an upload by its first bytes, as the server identifies the format rather than trusting what the upload
@@ -27,11 +27,13 @@ public static class WorkbenchProfilePictures
         _ => null
     };
 
-    /// <summary>How many pictures this user has uploaded, so the view's account notices a new one.</summary>
-    public static int Uploads(Guid userId) => uploaded.TryGetValue(userId, out var picture) ? picture.Uploads : 0;
+    /// <summary>
+    /// The id of this user's latest upload, or null with none since the Workbench started, so a view's account notices one it
+    /// hasn't shown, whichever view uploaded it and whatever the view saved before a restart.
+    /// </summary>
+    public static string? LastUpload(Guid userId) => uploaded.TryGetValue(userId, out var picture) ? picture.Upload : null;
 
-    public static void Keep(Guid userId, byte[] content, string contentType)
-        => uploaded.AddOrUpdate(userId, _ => (content, contentType, 1), (_, previous) => (content, contentType, previous.Uploads + 1));
+    public static void Keep(Guid userId, byte[] content, string contentType) => uploaded[userId] = (content, contentType, Guid.NewGuid().ToString("N"));
 
     /// <summary>The picture uploaded for this user, if any.</summary>
     public static (byte[] Content, string ContentType)? Find(Guid userId) => uploaded.TryGetValue(userId, out var picture) ? (picture.Content, picture.ContentType) : null;

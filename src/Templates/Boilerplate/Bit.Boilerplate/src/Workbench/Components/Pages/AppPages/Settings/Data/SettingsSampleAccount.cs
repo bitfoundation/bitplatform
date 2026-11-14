@@ -32,18 +32,19 @@ public sealed class SettingsSampleAccount(WorkbenchScenarioState scenarioState, 
         get
         {
             var user = Current();
-            var uploads = WorkbenchProfilePictures.Uploads(user.Id);
+            var upload = WorkbenchProfilePictures.LastUpload(user.Id);
 
-            if (uploads > store.SeenUploads)
+            if (upload != store.SeenUpload)
             {
-                user.HasProfilePicture = true;
-                user.Version = $"{int.Parse(user.Version ?? "0", CultureInfo.InvariantCulture) + 1}";
-                store.ShowUpload(user, uploads);
-            }
-            else if (uploads < store.SeenUploads)
-            {
-                // The Workbench restarted, which forgets the uploads but not what the view saved: a picture removed stays removed.
-                store.ShowUpload(user, uploads);
+                // None means the Workbench restarted, which forgets the uploads but not what the view saved: a picture removed
+                // stays removed.
+                if (upload is not null)
+                {
+                    user.HasProfilePicture = true;
+                    user.Version = $"{int.Parse(user.Version ?? "0", CultureInfo.InvariantCulture) + 1}";
+                }
+
+                store.ShowUpload(user, upload);
             }
 
             return Copy(user);
@@ -164,7 +165,7 @@ public sealed class SettingsSampleAccount(WorkbenchScenarioState scenarioState, 
 
         var (user, sessions) = Sample(scenario.User, localizer[WorkbenchDemoUsers.Find(scenario.User).NameKey], DateTimeOffset.UtcNow);
 
-        store.StartOver(shapedFor, user, [.. sessions], twoFactor, FirstKey, twoFactor ? 8 : 0, passkey, WorkbenchProfilePictures.Uploads(user.Id));
+        store.StartOver(shapedFor, user, [.. sessions], twoFactor, FirstKey, twoFactor ? 8 : 0, passkey, WorkbenchProfilePictures.LastUpload(user.Id));
     }
 
     /// <summary>The demo user's profile and the devices and apps they are signed in on, before anything was changed.</summary>
