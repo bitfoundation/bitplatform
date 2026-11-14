@@ -1703,6 +1703,38 @@ public class BitMenuButtonE2ETests : E2ETestBase
         Near(button.X, box.X, "left along the button");
     }
 
+    // A menu opened from its button and then moved to a point already has the keyboard in it: that focus is no origin,
+    // so closing the menu hands the focus to the button it was opened from rather than to an item of the hidden menu.
+    [TestMethod]
+    public async Task OpenAt_AMenuOpenedFromTheButtonAndMovedToAPoint_ClosesBackToTheButton()
+    {
+        await OpenAsync("/e2e/menu-button/context");
+
+        var opb = Opb("mnb-ctx");
+        await opb.FocusAsync();
+        await Page.Keyboard.PressAsync("ArrowDown");
+
+        var menu = await MenuOf("mnb-ctx");
+        await Expect(menu).ToBeVisibleAsync();
+        await Expect(ItemsOf(menu).First).ToBeFocusedAsync();
+
+        // The overlay of the open menu covers the area, so the right-click is sent to the area the way the page would
+        // hear it some other way.
+        var area = Page.Locator("#ctx-area");
+        var box = await area.BoxAsync();
+        var (x, y) = (Math.Round(box.X + 40), Math.Round(box.Y + 30));
+        await area.EvaluateAsync("(el, p) => el.dispatchEvent(new MouseEvent('contextmenu', { clientX: p[0], clientY: p[1], button: 2, bubbles: true, cancelable: true }))", new[] { x, y });
+
+        var callout = CalloutOf(menu);
+        await PollAsync(async () => (await callout.BoxAsync()).X, left => Math.Abs(left - x) < 1.5, "the menu did not move to the point");
+        await Expect(ItemsOf(menu).First).ToBeFocusedAsync();
+
+        await Page.Keyboard.PressAsync("Escape");
+        await Expect(menu).ToBeHiddenAsync();
+        await Expect(Text("ctx-open")).ToHaveTextAsync("False");
+        await Expect(opb).ToBeFocusedAsync();
+    }
+
     // ---------- NoOverlay ----------
 
     [TestMethod]
