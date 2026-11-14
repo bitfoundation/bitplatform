@@ -111,6 +111,31 @@ public class BitResourceTimelineOptions
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public bool? StackOnLabelCollision { get; set; }
 
+    /// <summary>
+    /// When <c>true</c>, two bars of a row that do not overlap in time and whose
+    /// facing labels say the same - the first bar's
+    /// <see cref="BitResourceTimelineAllocation.TextEnd"/> and the next one's
+    /// <see cref="BitResourceTimelineAllocation.TextStart"/>, such as the airport
+    /// between two legs of a flight - draw that text once instead of twice into
+    /// the gap between them. The labels are compared trimmed and ignoring case;
+    /// empty ones and placeholders (<c>—</c>, <c>–</c>, <c>-</c>, <c>…</c>,
+    /// <c>...</c>) never match.
+    /// <para>
+    /// A pair is merged while the gap is narrower than both labels side by side
+    /// plus room for one more, not only once they would touch. The remaining label
+    /// is centered in the gap when the whole word fits there, and omitted when it
+    /// would run under either bar. Either way it does not, by itself, push the next
+    /// bar onto another lane (<see cref="StackOnLabelCollision"/>); different
+    /// labels still stack. Like a collision, this is measured in pixels and
+    /// recomputed when the zoom changes, so a gap that grows wide enough shows
+    /// both labels again.
+    /// </para>
+    /// Only the drawing changes: the allocations keep both texts, and so do their
+    /// tooltips and accessible names. Defaults to <c>false</c>.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public bool? CollapseMatchingEdgeLabels { get; set; }
+
     /// <summary>Minimum drawn bar width so very short allocations stay visible, in pixels.</summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? MinBarWidth { get; set; }
