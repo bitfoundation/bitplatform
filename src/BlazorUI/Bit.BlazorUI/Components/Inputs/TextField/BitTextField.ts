@@ -1,4 +1,7 @@
 ﻿namespace BitBlazorUI {
+    // The input of a masked field, marked while the last write to its text is the mask's layout (see setupMaskedChange).
+    type MaskedInput = HTMLInputElement & { _bitMaskWrote?: boolean };
+
     export class TextField {
         // The three concerns of a text field (the multiline behaviors, the ghost text and the IME guard)
         // are wired independently and can be turned on and off at any point in the life of a component,
@@ -540,23 +543,56 @@
         }
 
         // WebKit fires no change event when the input loses the focus if the last thing to write its value was a script -
-        // and with fast typing the layout written above lands after the last key - so a field committing on change would
-        // never commit what was typed. Once the layout is the last write, the change is raised on the way out unless the
-        // browser raised it (it does so before blur) or the user edited the text since (the browser raises it then).
-        private static keepMaskedChange(inputElement: HTMLInputElement) {
-            const el = inputElement as HTMLInputElement & { _bitMaskWrote?: boolean, _bitMaskWatch?: boolean };
-            el._bitMaskWrote = true;
+        // and with fast typing the layout setMaskedValue writes lands after the last key - so a field committing on change
+        // would never commit what was typed. So the change is raised on the way out, but only where the browser itself
+        // owed one and skipped it: the last write was the layout (setMaskedValue, while focused), and the text differs
+        // from the one the browser compares with - the text at focus, or at the last change raised since - exactly the
+        // rule a browser raises its own change by. That leaves every engine that does raise it alone: it raises it ahead
+        // of blur, which moves that text along, and a text the mask put back to what it was raises nothing anywhere. A
+        // native change still arriving after this one, for the same text, is kept from the page, so one edit commits once.
+        // Set up by .NET for every masked field before it is typed into, so the text at its first focus is known.
+        public static setupMaskedChange(id: string, inputElement: HTMLInputElement) {
+            if (!inputElement) return;
 
-            if (el._bitMaskWatch) return;
-            el._bitMaskWatch = true;
+            const signal = TextField.getSignal(id, 'maskedChange');
+            const el = inputElement as MaskedInput;
 
-            el.addEventListener('input', e => { if (e.isTrusted) el._bitMaskWrote = false; });
-            el.addEventListener('change', () => { el._bitMaskWrote = false; });
+            let settled = el.value;
+            let raised: string | null = null;
+            el._bitMaskWrote = false;
+
+            el.addEventListener('focus', () => {
+                settled = el.value;
+                raised = null;
+                el._bitMaskWrote = false;
+            }, { signal });
+
+            el.addEventListener('input', e => {
+                if (e.isTrusted) el._bitMaskWrote = false;
+            }, { signal });
+
+            el.addEventListener('change', e => {
+                if (e.isTrusted && raised !== null && raised === el.value) {
+                    // The browser's own change for the text the blur below already committed; Blazor listens on the
+                    // document, so stopping it on the element is what keeps the commit from running twice.
+                    raised = null;
+                    e.stopImmediatePropagation();
+                    return;
+                }
+
+                settled = el.value;
+                el._bitMaskWrote = false;
+            }, { signal });
+
             el.addEventListener('blur', () => {
                 if (!el._bitMaskWrote) return;
                 el._bitMaskWrote = false;
+
+                if (el.value === settled) return;
+
+                raised = el.value;
                 el.dispatchEvent(new Event('change', { bubbles: true }));
-            });
+            }, { signal });
         }
 
         // Writes the text of a masked field, laid out over its mask, back into the input without throwing the caret to the
@@ -576,7 +612,9 @@
 
             if (typed !== value) {
                 inputElement.value = value;
-                TextField.keepMaskedChange(inputElement);
+                // Only a layout written while the user is in the field is one its blur may owe a change for (see
+                // setupMaskedChange); one landing after the focus has gone is no edit of the next visit.
+                if (focused) (inputElement as MaskedInput)._bitMaskWrote = true;
             }
 
             if (!focused || start === null) return;

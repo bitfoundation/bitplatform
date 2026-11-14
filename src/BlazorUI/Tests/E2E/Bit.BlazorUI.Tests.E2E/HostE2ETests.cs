@@ -4,7 +4,7 @@
 /// Pins the host itself: it answers, every page it lists becomes interactive, and a page's errors reach the test.
 /// </summary>
 [TestClass]
-public class HostE2ETests : E2ETestBase
+public partial class HostE2ETests : E2ETestBase
 {
     [TestMethod]
     public async Task TheHomePageBecomesInteractive()
@@ -42,6 +42,24 @@ public class HostE2ETests : E2ETestBase
         // one whose own connection dropped - which raises the very same errors - the connection check.
         AllowConsoleErrors = AllowPageErrors = true;
         (int Console, int Page) atCommit = (0, 0);
+
+        // The requests a navigation cut off: issued by the page on screen and failed once the navigation away from it had
+        // started. WebKit reports the fetches among them in words it also uses for a real failure (see
+        // IsCutOffByLeaving), so only a failure of one of these - read off the browser's own record of the request, never
+        // off how the host's address happens to be spelled - is taken for one cut off.
+        var navigations = 0;
+        var issuedDuring = new Dictionary<IRequest, int>();
+        var cutOff = new HashSet<string>(StringComparer.Ordinal);
+        Page.Request += (_, request) =>
+        {
+            if (request.IsNavigationRequest && request.Frame == Page.MainFrame) navigations++;
+            else issuedDuring[request] = navigations;
+        };
+        Page.RequestFailed += (_, request) =>
+        {
+            if (issuedDuring.Remove(request, out var issued) && issued < navigations) cutOff.Add(NormalizeUrl(request.Url));
+        };
+        Page.RequestFinished += (_, request) => issuedDuring.Remove(request);
         Page.FrameNavigated += (_, frame) =>
         {
             if (frame.ParentFrame is null) atCommit = (ConsoleErrors.Count, PageErrors.Count);
@@ -64,7 +82,7 @@ public class HostE2ETests : E2ETestBase
             var commit = atCommit;
             var leaving = ConsoleErrors.Skip(checkedTo.Console).Take(commit.Console - checkedTo.Console)
                                        .Concat(PageErrors.Skip(checkedTo.Page).Take(commit.Page - checkedTo.Page))
-                                       .Where(error => IsTheConnectionGone(error) is false && IsCutOffByLeaving(error) is false)
+                                       .Where(error => IsTheConnectionGone(error) is false && IsCutOffByLeaving(error, cutOff) is false)
                                        .ToList();
             if (leaving.Count > 0) failures.Add($"{page}: raised an error while it was left ({leaving[0].Split('\n')[0]})");
 
@@ -123,12 +141,25 @@ public class HostE2ETests : E2ETestBase
     // A request of the page being left that the navigation cut off, which Firefox reports as failed with the status of a
     // load aborted (NS_BINDING_ABORTED, 0x804B0002) - a font it was still downloading, say - and WebKit as a fetch that
     // "cannot load ... due to access control checks" (the PDF viewer's sample it was still fetching). WebKit says the
-    // same of a request a real CORS check refused, so only a request to the host itself, which no access control check
-    // refuses, is taken for one cut off.
-    private static bool IsCutOffByLeaving(string error)
+    // same of a request a real CORS check refused, or one that failed for real (a refused connection, an aborted
+    // response), so the WebKit one is only taken for one cut off when the request it names is one the browser saw fail
+    // after the navigation away had started (cutOff).
+    private static bool IsCutOffByLeaving(string error, IReadOnlySet<string> cutOff)
     {
-        return error.Contains("status=2152398850", StringComparison.Ordinal)
-               || (error.Contains($"Fetch API cannot load {BaseUrl}/", StringComparison.Ordinal)
-                   && error.Contains(" due to access control checks", StringComparison.Ordinal));
+        if (error.Contains("status=2152398850", StringComparison.Ordinal)) return true;
+
+        var fetch = WebKitCutOffFetch().Match(error);
+
+        return fetch.Success && cutOff.Contains(NormalizeUrl(fetch.Groups[1].Value));
     }
+
+    // One spelling of an address, so the one in a console message and the one of a request compare equal: scheme and
+    // host in lower case, the default port dropped.
+    private static string NormalizeUrl(string url)
+    {
+        return Uri.TryCreate(url, UriKind.Absolute, out var uri) ? uri.AbsoluteUri : url;
+    }
+
+    [System.Text.RegularExpressions.GeneratedRegex(@"Fetch API cannot load (\S+) due to access control checks")]
+    private static partial System.Text.RegularExpressions.Regex WebKitCutOffFetch();
 }

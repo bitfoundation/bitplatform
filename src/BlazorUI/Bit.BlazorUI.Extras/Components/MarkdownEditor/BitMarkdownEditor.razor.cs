@@ -23,6 +23,9 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
     private bool _helpTrapped;
     private bool _showFind;
     private bool _focusFind;
+    // Set by an Escape from a pane that closed the find panel: the render taking the panel away may take a focus
+    // that was on its way into the find box with it, which OnAfterRenderAsync then puts back on the pane.
+    private bool _restorePaneFocus;
     private bool _matchCase;
     private string _findText = string.Empty;
     private string _replaceText = string.Empty;
@@ -731,9 +734,12 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
         if (_showFind)
         {
             _showFind = false;
-            // An Escape pressed in the textarea right after Ctrl+F, before the find box has taken the focus, would
-            // otherwise leave that focus on its way into a box the render below takes away - and so on the page's body.
-            await Focus();
+            // An Escape pressed in a pane right after Ctrl+F, before the find box has taken the focus: the focus the
+            // render of the panel still owes the box is not given, so it stays in the pane the key was pressed in. One
+            // already on its way there is lost with the box the render below takes away, and is put back on the pane
+            // after it (OnAfterRenderAsync) - only then, so a pane that kept the focus keeps it.
+            _focusFind = false;
+            _restorePaneFocus = true;
             await InvokeAsync(StateHasChanged);
             return;
         }
@@ -919,6 +925,12 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
         {
             _focusFind = false;
             await _findRef.FocusSafelyAsync();
+        }
+
+        if (_restorePaneFocus && _showFind is false)
+        {
+            _restorePaneFocus = false;
+            try { await _js.BitMarkdownEditorRestoreFocus(_Id); } catch (JSDisconnectedException) { }
         }
 
         var config = BuildConfig();
@@ -1505,6 +1517,7 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
 
         _showFind = true;
         _focusFind = true;
+        _restorePaneFocus = false;
     }
 
     private async Task CloseFind()

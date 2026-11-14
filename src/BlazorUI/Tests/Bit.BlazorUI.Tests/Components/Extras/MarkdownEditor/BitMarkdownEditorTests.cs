@@ -791,6 +791,24 @@ public class BitMarkdownEditorTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitMarkdownEditorEscapeFromAPaneShouldLeaveTheFocusInThatPane()
+    {
+        // The Escape comes from the textarea or the preview pane, and the focus stays in the one it came from: the
+        // editor does not move it into the textarea, only hands a focus the closed panel took with it back to the
+        // pane it was last in (restoreFocus, which leaves a focus that is still somewhere real alone).
+        var component = RenderComponent<BitMarkdownEditor>();
+
+        await component.InvokeAsync(() => component.Instance._OnShortcut("find"));
+        Assert.AreEqual(1, component.FindAll(".bit-mde-fnd").Count);
+
+        await component.InvokeAsync(() => component.Instance._OnEscape());
+
+        Assert.AreEqual(0, component.FindAll(".bit-mde-fnd").Count);
+        component.WaitForAssertion(() => Context.JSInterop.VerifyInvoke("BitBlazorUI.MarkdownEditor.restoreFocus"));
+        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.MarkdownEditor.focus"));
+    }
+
+    [TestMethod]
     public async Task BitMarkdownEditorFindPanelShouldClaimTheEscapeThatClosesIt()
     {
         // The find boxes, and the panes whose Escape the script hands to .NET, carry data-bit-esc (Utils.claimEscape)

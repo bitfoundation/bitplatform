@@ -130,6 +130,10 @@
             MarkdownEditor._editors[id]?.syncFocus();
         }
 
+        public static restoreFocus(id: string) {
+            MarkdownEditor._editors[id]?.restoreFocus();
+        }
+
         public static dispose(id: string) {
             if (!MarkdownEditor._editors[id]) return;
 
@@ -232,6 +236,8 @@
         // Whether the focus is (or was last, before nothing took it over) in one of the two panes, so a mode switch
         // that hides the focused pane can hand the focus to the one that is now on screen.
         private _paneFocused = false;
+        // The pane the focus was last in, which restoreFocus puts it back on.
+        private _lastPane: HTMLElement | null = null;
         private _keyPane: HTMLElement | null = null;
         // The observers that keep an AutoHeight editor fitted to its content: the preview re-rendered by .NET, a
         // mode or full-screen switch, and a change of width that re-wraps the text.
@@ -660,6 +666,21 @@
 
             const target = this.textArea.offsetParent !== null ? this.textArea : this._keyPane;
             target?.focus();
+        }
+
+        // Called after a render that took away a panel the focus may have been on its way into (the find panel an
+        // Escape from a pane closed while it was still taking the focus): a focus dropped on the page's body goes back
+        // to the pane the user was last in. A focus still somewhere real - the pane the Escape was pressed in - stays.
+        public restoreFocus() {
+            const active = document.activeElement;
+            if (active && active !== document.body && active.isConnected) return;
+
+            const pane = this._lastPane;
+            if (pane && pane.isConnected && pane.offsetParent !== null) {
+                pane.focus();
+            } else {
+                this.focus();
+            }
         }
 
         // Opens the file picker and uploads what is picked, the way a pasted or dropped image is uploaded.
@@ -1112,6 +1133,7 @@
 
         private paneFocusInHandler = (e: FocusEvent) => {
             this._paneFocused = this.isPane(e.target);
+            if (this._paneFocused) this._lastPane = e.target as HTMLElement;
         };
 
         // A focus that moved somewhere real has left the panes for good; one that went nowhere (the pane was just
