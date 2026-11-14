@@ -999,6 +999,7 @@ Override them on `:root`, on one list's `Class`, or inline through `Style`:
 | `bit-bortable-has-handle` | The container of a list with a `Handle`. |
 | `bit-bortable-instructions` | The hidden keyboard instructions every item refers to. |
 | `bit-bortable-drag` (`DragClass`) | The preview that follows a finger, a pen or a `ForceFallback` mouse. |
+| `bit-bortable-count` | The count on the picture of a multi-drag that carries several items: the pointer preview, or the copy the browser takes its drag image of. |
 
 `GhostClass`, `ChosenClass`, `SwapClass` and `SelectedClass` replace the class used for their state, for a list
 that wants its own look instead of the stylesheet's.
