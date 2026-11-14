@@ -334,6 +334,20 @@ internal static class UtilsJsRuntimeExtensions
     }
 
 
+    // The same hold, reporting the scroll offset of the scroller it took, which an absolutely positioned surface
+    // laid out inside that scroller is pushed down by. The compensation for the room the scrollbar took can be
+    // turned off for the callers that have always let the page shift by its width.
+    internal static ValueTask<float> BitUtilsLockScrollWithOffset(this IJSRuntime jsRuntime, string key, string? selector, bool compensate = true)
+    {
+        return jsRuntime.Invoke<float>("BitBlazorUI.Utils.lockScroll", key, selector, compensate);
+    }
+
+    internal static ValueTask<float> BitUtilsLockScrollWithOffset(this IJSRuntime jsRuntime, string key, ElementReference scroller, bool compensate = true)
+    {
+        return jsRuntime.Invoke<float>("BitBlazorUI.Utils.lockScroll", key, scroller, compensate);
+    }
+
+
     // Releases the scroll lock held under the given key.
     internal static ValueTask BitUtilsUnlockScroll(this IJSRuntime jsRuntime, string key)
     {
