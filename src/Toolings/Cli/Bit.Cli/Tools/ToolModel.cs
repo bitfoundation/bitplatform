@@ -99,6 +99,9 @@ public sealed record ToolNeeds
     public Version? AspireVersion { get; init; }
 
     public bool NeedsMaui => Platforms.Any(p => p is not Platform.Web);
+
+    /// <summary>Aspire runs the project's resources in containers, and bit ci runs its CI workflow in one.</summary>
+    public bool NeedsContainerRuntime => Aspire || Ci;
 }
 
 public enum Elevation

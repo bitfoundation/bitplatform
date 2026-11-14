@@ -83,6 +83,37 @@ public class CiTests
     }
 
     [TestMethod]
+    public async Task Ci_Should_ConnectActToPodmansOwnSocketOnLinux()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        CreateProject(host, "    runs-on: ubuntu-26.04\n");
+        Podman(host);
+        host.Runner.On("podman", "info", 0, "/run/user/1000/podman/podman.sock");
+
+        Assert.AreEqual(CliApp.ExitOk, await host.RunAsync("ci"), host.Output);
+
+        var act = host.Runner.Calls.Single(c => c.FileName == "act");
+        Assert.AreEqual("unix:///run/user/1000/podman/podman.sock", act.Environment!["DOCKER_HOST"]);
+        StringAssert.Contains(act.CommandLine, "--container-daemon-socket /run/user/1000/podman/podman.sock");
+    }
+
+    [TestMethod]
+    public async Task ASecretForAct_Should_StayOutOfTheLog()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        CreateProject(host, "    runs-on: ubuntu-26.04\n");
+        host.Runner.On("docker", "version", 0, "28.5.1");
+
+        Assert.AreEqual(CliApp.ExitOk, await host.RunAsync("ci", "--", "-s", "GITHUB_TOKEN=ghp_example", "--secret=NUGET_KEY=nk_example", "-s", "FROM_ENV"), host.Output);
+
+        var act = host.Runner.Calls.Single(c => c.FileName == "act");
+        CollectionAssert.IsSubsetOf(new[] { "GITHUB_TOKEN=ghp_example", "--secret=NUGET_KEY=nk_example" }, act.Arguments.ToArray(), "act gets them as they are.");
+        Assert.IsFalse(act.CommandLine.Contains("ghp_example", StringComparison.Ordinal) || act.CommandLine.Contains("nk_example", StringComparison.Ordinal), act.CommandLine);
+        StringAssert.Contains(act.CommandLine, "GITHUB_TOKEN=***");
+        StringAssert.EndsWith(act.CommandLine, "-s FROM_ENV");
+    }
+
+    [TestMethod]
     public async Task Ci_Should_NeedActAndTheProjectsWorkflowAndDockerfile()
     {
         using var host = new TestHost(HostOs.Linux);

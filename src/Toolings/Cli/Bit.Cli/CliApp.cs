@@ -70,7 +70,7 @@ public static class CliApp
 
         using var log = new CliLog(environment.LogsDirectory, commandName);
         services = new CliServices(environment, console, log: log);
-        log.Write($"bit {BuildInfo.Version} ({BuildInfo.Commit ?? "local build"}) on {environment.Os} {environment.Architecture}: {string.Join(' ', args.Select(ProcessSpec.Quote))}");
+        log.Write($"bit {BuildInfo.Version} ({BuildInfo.Commit ?? "local build"}) on {environment.Os} {environment.Architecture}: {string.Join(' ', ProcessSpec.Redact(args).Select(ProcessSpec.Quote))}");
 
         var isMeta = parseResult.Errors.Count > 0 || command == root || commandName is Tools.AdministratorSession.CommandName || args.Any(a => a is "--help" or "-h" or "-?" or "/?" or "--version");
         var decision = TelemetryDecision.Resolve(environment, services.Settings, BuildInfo.TelemetryConnectionString);

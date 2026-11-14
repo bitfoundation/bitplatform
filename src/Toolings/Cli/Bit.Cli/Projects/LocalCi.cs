@@ -131,7 +131,15 @@ public sealed partial class LocalCi(CliServices cli, string directory)
         // the tests start their own containers.
         var info = await cli.Runner.RunAsync(new ProcessSpec { FileName = podman, Arguments = ["info", "--format", "{{.Host.RemoteSocket.Path}}"], Timeout = TimeSpan.FromSeconds(30) }, cancellationToken);
         var socket = info.Succeeded ? info.OutputLines.FirstOrDefault()?.Trim() : null;
-        var socketPath = socket?.StartsWith("unix://", StringComparison.Ordinal) is true ? socket["unix://".Length..] : null;
+
+        // unix://<path> through a machine, and the bare path where Podman runs here itself.
+        var socketPath = socket switch
+        {
+            null => null,
+            _ when socket.StartsWith("unix://", StringComparison.Ordinal) => socket["unix://".Length..],
+            _ when socket.StartsWith('/') => socket,
+            _ => null
+        };
 
         if (cli.Environment.IsWindows)
         {
@@ -149,9 +157,9 @@ public sealed partial class LocalCi(CliServices cli, string directory)
         }
 
         // Podman runs here itself, and its service is the same socket act connects to.
-        return socket is null
+        return socketPath is null
             ? (null, "Podman's service doesn't answer. systemctl --user enable --now podman.socket starts it.")
-            : (new ContainerEngine(podman, socket, socketPath), null);
+            : (new ContainerEngine(podman, "unix://" + socketPath, socketPath), null);
     }
 
     private async Task<StepResult> ImagesAsync(ContainerEngine engine, IReadOnlyDictionary<string, string> images, Action<string> progress, CancellationToken cancellationToken)

@@ -255,6 +255,32 @@ public class ToolTests
     }
 
     [TestMethod]
+    public async Task AProjectWithCiButNoAspire_Should_StillNeedAContainerRuntime()
+    {
+        using var host = new TestHost(HostOs.Windows);
+        AllInstalled(host.Runner);
+
+        var docker = (await CheckAsync(host, new ToolNeeds { Ci = true })).Single(c => c.Tool.Id == "docker");
+
+        Assert.IsTrue(docker.Needed, "bit ci runs the workflow in a container.");
+        StringAssert.Contains(docker.Why, "bit ci");
+        Assert.IsFalse((await CheckAsync(host, new ToolNeeds())).Single(c => c.Tool.Id == "docker").Needed);
+    }
+
+    [TestMethod]
+    public async Task AMacWithoutHomebrew_Should_GetItForAct()
+    {
+        using var host = new TestHost(HostOs.MacOS);
+        AllInstalled(host.Runner);
+        host.Runner.NotFound("act");
+
+        var checks = await ToolCatalog.CheckAsync(new ToolContext(host.Environment, host.Runner, new ToolNeeds { Ci = true }, new PackageManagers { HasSudo = true }), CancellationToken.None);
+
+        Assert.IsNull(checks.Single(c => c.Tool.Id == "act").Action, "act comes from Homebrew, which isn't there yet.");
+        Assert.IsTrue(checks.Any(c => c.Tool.Id == "homebrew"), string.Join(", ", checks.Select(c => c.Tool.Id)));
+    }
+
+    [TestMethod]
     public async Task MacOS_Should_GetColimaAndTheDockerCli()
     {
         using var host = new TestHost(HostOs.MacOS);

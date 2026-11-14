@@ -55,7 +55,7 @@ public static partial class ToolCatalog
             checks[docker] = checks[docker] with { Action = DockerTool.AfterWslRestart(checks[docker].Action!) };
         }
 
-        var brewNeeded = checks.Any(c => c.Status.IsSatisfied is false && c.Tool is not HomebrewTool && c.Action is null && context.Environment.IsMacOS && context.PackageManagers.Brew is null && c.Tool is NodeTool or GitTool or DockerTool or VsCodeTool);
+        var brewNeeded = checks.Any(c => c.Status.IsSatisfied is false && c.Tool is not HomebrewTool && c.Action is null && context.Environment.IsMacOS && context.PackageManagers.Brew is null && c.Tool is NodeTool or GitTool or DockerTool or ActTool or VsCodeTool);
         checks.RemoveAll(c => c.Tool is HomebrewTool && (c.Status.IsSatisfied || brewNeeded is false));
 
         return checks;
@@ -554,11 +554,11 @@ public static partial class ToolCatalog
 
         public override bool AppliesInCi(ToolContext context) => false;
 
-        public override bool AppliesTo(ToolContext context) => context.Environment.IsWindows && context.Needs.Aspire;
+        public override bool AppliesTo(ToolContext context) => context.Environment.IsWindows && context.Needs.NeedsContainerRuntime;
 
         public override string Why(ToolContext context) => "Podman runs its containers in WSL 2";
 
-        public override bool IsNeeded(ToolContext context) => context.Needs.Aspire;
+        public override bool IsNeeded(ToolContext context) => context.Needs.NeedsContainerRuntime;
 
         public override async Task<ToolStatus> DetectAsync(ToolContext context, CancellationToken cancellationToken)
         {
@@ -608,6 +608,7 @@ public static partial class ToolCatalog
 
         public override string Why(ToolContext context) => context.Needs switch
         {
+            { Aspire: false, Ci: true } => "bit ci runs the project's CI workflow in a container",
             { Aspire: false } => "runs containers; this project doesn't need it without Aspire",
             { ContainersRequired: true, Containers.Count: > 0 } needs => $"Aspire runs {Join(needs.Containers)} in containers",
             { Containers.Count: > 0 } needs => $"Aspire runs {Join(needs.Containers)} in containers; the app also runs without them",
@@ -616,7 +617,7 @@ public static partial class ToolCatalog
 
         private static string Join(IReadOnlyList<string> items) => items.Count == 1 ? items[0] : $"{string.Join(", ", items.SkipLast(1))} and {items[^1]}";
 
-        public override bool IsNeeded(ToolContext context) => context.Needs.Aspire;
+        public override bool IsNeeded(ToolContext context) => context.Needs.NeedsContainerRuntime;
 
         public override async Task<ToolStatus> DetectAsync(ToolContext context, CancellationToken cancellationToken)
         {
