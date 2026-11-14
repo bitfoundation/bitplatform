@@ -1,0 +1,31 @@
+﻿::deep {
+    .press-box {
+        display: flex;
+        min-height: 6rem;
+        align-items: center;
+        border-radius: 0.5rem;
+        justify-content: center;
+        border: 1px dashed var(--bit-clr-brd-pri);
+        background-color: var(--bit-clr-bg-sec);
+    }
+
+    .press-box.disabled {
+        color: var(--bit-clr-fg-dis);
+    }
+
+    .example-stack {
+        gap: 1rem;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .custom-press .press-box {
+        transition: transform 0.15s ease, background-size 0.8s linear;
+        background: linear-gradient(color-mix(in srgb, var(--bit-clr-pri) 25%, transparent), color-mix(in srgb, var(--bit-clr-pri) 25%, transparent)) no-repeat left / 0% 100%;
+    }
+
+    .custom-press.bit-lpr-prs .press-box {
+        transform: scale(0.97);
+        background-size: 100% 100%;
+    }
+}
