@@ -36,7 +36,8 @@ public sealed class TestHost : IDisposable
             CurrentDirectory = WorkingDirectory,
             Variables = allVariables,
             IsInputRedirected = true,
-            IsOutputRedirected = true
+            IsOutputRedirected = true,
+            NamedPipeExists = _ => true
         };
 
         Out = new TestConsole().Width(140);

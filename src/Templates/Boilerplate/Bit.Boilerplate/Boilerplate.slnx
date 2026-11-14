@@ -71,6 +71,9 @@
     <File Path=".github/workflows/cd-template.yml" />
     <File Path=".github/workflows/ci.yml" />
   </Folder>
+  <Folder Name="/.SolutionItems/.github/act/">
+    <File Path=".github/act/Dockerfile" />
+  </Folder>
   <Folder Name="/Server/">
     <Project Path="src/Server/Boilerplate.Server.Web/Boilerplate.Server.Web.csproj" />
     <Project Path="src/Server/Boilerplate.Server.Api/Boilerplate.Server.Api.csproj" />

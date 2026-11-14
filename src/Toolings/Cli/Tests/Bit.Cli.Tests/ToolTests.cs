@@ -211,6 +211,50 @@ public class ToolTests
     }
 
     [TestMethod]
+    public async Task PodmanWithoutItsDockerApi_Should_BeRestarted()
+    {
+        using var host = new TestHost(HostOs.Windows);
+        AllInstalled(host.Runner);
+        host.Runner.NotFound("docker");
+        host.Runner.Executables["podman"] = "podman";
+        host.Runner.On("podman", "--version", 0, "podman version 6.1.4");
+        host.Runner.On("podman", "machine inspect --format", 0, @"\\.\pipe\podman-machine-default");
+
+        Assert.AreEqual(ToolState.Installed, (await CheckAsync(host, new ToolNeeds { Aspire = true })).Single(c => c.Tool.Id == "docker").Status.State);
+
+        // The podman CLI goes over SSH and still answers, while act, which connects to the pipe, can't.
+        host.Environment.NamedPipeExists = pipe => pipe != @"\\.\pipe\podman-machine-default";
+        var withoutApi = (await CheckAsync(host, new ToolNeeds { Aspire = true })).Single(c => c.Tool.Id == "docker");
+
+        Assert.AreEqual(ToolState.NotRunning, withoutApi.Status.State);
+        StringAssert.Contains(withoutApi.Status.Detail, "Docker API");
+        StringAssert.Contains(withoutApi.Action!.Title, "Restart Podman");
+        CollectionAssert.AreEqual(new[] { "machine stop", "machine start" }, withoutApi.Action.Commands.Select(c => string.Join(' ', c.Arguments)).ToArray());
+    }
+
+    [TestMethod]
+    [DataRow(HostOs.Windows, "winget")]
+    [DataRow(HostOs.MacOS, "brew")]
+    [DataRow(HostOs.Linux, "bash")]
+    public async Task Act_Should_BeOfferedForTheProjectsCi(HostOs os, string installer)
+    {
+        using var host = new TestHost(os);
+        AllInstalled(host.Runner);
+        host.Runner.Executables["winget"] = "winget";
+        host.Runner.Executables["brew"] = "/opt/homebrew/bin/brew";
+        host.Runner.NotFound("act");
+
+        Assert.IsFalse((await CheckAsync(host, new ToolNeeds { Aspire = true })).Any(c => c.Tool.Id == "act"), "A project without ci.yml has nothing for act to run.");
+
+        var act = (await CheckAsync(host, new ToolNeeds { Aspire = true, Ci = true })).Single(c => c.Tool.Id == "act");
+
+        Assert.IsTrue(act.Needed);
+        Assert.AreEqual(ToolState.Missing, act.Status.State);
+        Assert.IsTrue(act.Action!.Optional, "The app builds and runs without act.");
+        StringAssert.EndsWith(Path.GetFileNameWithoutExtension(act.Action.Commands[0].FileName), installer);
+    }
+
+    [TestMethod]
     public async Task MacOS_Should_GetColimaAndTheDockerCli()
     {
         using var host = new TestHost(HostOs.MacOS);

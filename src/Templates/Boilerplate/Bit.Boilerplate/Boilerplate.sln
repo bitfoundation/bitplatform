@@ -64,6 +64,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{
         .github\workflows\ci.yml = .github\workflows\ci.yml
     EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "act", "act", "{6B1F0C2E-7A4D-4E8B-9C35-2D8E1F4A7B90}"
+    ProjectSection(SolutionItems) = preProject
+        .github\act\Dockerfile = .github\act\Dockerfile
+    EndProjectSection
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Boilerplate.Client.Windows", "src\Client\Boilerplate.Client.Windows\Boilerplate.Client.Windows.csproj", "{E3CB3C34-F5DE-4A96-B552-7D52BCAD1E1F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Boilerplate.Server.Api", "src\Server\Boilerplate.Server.Api\Boilerplate.Server.Api.csproj", "{3D93B170-BDCD-4890-92B3-F5ABE48F3D3A}"
@@ -227,6 +232,7 @@ Global
         {3E577755-186F-4E63-8153-B8DE890015C9} = {5CF43F76-BB71-4B5B-B4DF-1C753E042A8F}
         {4A5D6E7F-8B9C-1A2B-3C4D-5E6F7A8B9C2D} = {3E577755-186F-4E63-8153-B8DE890015C9}
         {2347E3B2-FDDE-427E-A0AE-E4DCD47C2989} = {3E577755-186F-4E63-8153-B8DE890015C9}
+        {6B1F0C2E-7A4D-4E8B-9C35-2D8E1F4A7B90} = {3E577755-186F-4E63-8153-B8DE890015C9}
         {E3CB3C34-F5DE-4A96-B552-7D52BCAD1E1F} = {248D8229-BABD-4F0A-A9C6-0417B464507B}
         {AA97E5DE-1021-2739-ED90-9EDEEAEB5CA2} = {723683EA-193C-45FD-A64D-7830A2867E4F}
         {2D9C5ABB-ED99-4ADB-9296-F3A5F5FD3C07} = {5E3393CE-5AFC-49A7-A28C-5191BB58B021}

@@ -131,7 +131,8 @@ Before implementing any changes, you **MUST** complete the following:
 <!--#else-->
 -   **Add new migrations**: Run `bit migration add <MigrationName>` in any folder of the project.
 <!--#endif-->
--   **Format before committing**: Run `dotnet format whitespace --folder .` in the project's root folder. CI fails a pull request on anything this would change.
+-   **Format before committing**: Run `dotnet format whitespace --folder .` in the project's root folder. CI fails on anything this would change.
+-   **Run CI**: Run `bit ci` in the project's root folder. It runs `.github/workflows/ci.yml` on this machine in a container, with act on Docker or Podman, and takes as long as CI on GitHub, so cap the wait as section 6 says. A pull request starts no workflow, so this is a change's CI; each CD runs it again before it deploys.
 -   **Generate Resx C# code**: Run `dotnet build -t:PrepareResources` in the src/Shared directory.
 -   **Use the bit CLI for the rest**: besides `bit setup` for a fresh clone, `bit keys` creates the project's keys and certificates, `bit pipeline` fills in the secrets of the GitHub Actions workflows, `bit migration` adds EF Core migrations, `bit api check` tells whether a change to the api breaks an app version users still run and `bit run` starts the native apps; `bit --help` lists them all.
 

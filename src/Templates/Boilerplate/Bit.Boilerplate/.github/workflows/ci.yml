@@ -2,10 +2,12 @@ name: Boilerplate CI
 
 # https://bitplatform.dev/templates/dev-ops
 
+# By hand: `bit ci` runs it on this machine in a container, with act, and spends no Actions minutes; on GitHub,
+# `gh workflow run ci.yml --ref <branch>` runs it. cd-template.yml runs it before every deployment, which goes out only
+# once it passes.
 on:
   workflow_dispatch:
-  pull_request:
-    types: [ opened, synchronize, reopened, ready_for_review ]
+  workflow_call:
 
 env:
   DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
@@ -13,15 +15,10 @@ env:
 permissions:
   contents: read
 
-concurrency:
-  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
-
 jobs:
 
   build_and_test:
     name: build and test
-    if: ${{ github.event_name != 'pull_request' || !github.event.pull_request.draft }}
     runs-on: ubuntu-26.04
     timeout-minutes: 45
 
@@ -33,7 +30,9 @@ jobs:
           persist-credentials: false
 
     # The runner's preinstalled toolchains leave a thin margin once the tests are built, so drop the ones no project here uses.
+    # act's container (bit ci) has none of them.
     - name: Free disk space
+      if: ${{ !env.ACT }}
       run: |
         sudo rm -rf /opt/ghc /usr/local/.ghcup /usr/share/swift /usr/local/share/boost /opt/hostedtoolcache/CodeQL /usr/local/share/powershell /usr/share/miniconda /opt/az /usr/local/lib/android/sdk/ndk
         df -h /
@@ -58,9 +57,10 @@ jobs:
       id: test
       run: cd src/Tests && dotnet test
 
+    # Not under act (bit ci), whose artifact server this action doesn't work with: there the run's log has the failures.
     - name: Upload Tests Artifact
       uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-      if: ${{ failure() && steps.test.conclusion == 'failure' }}
+      if: ${{ failure() && steps.test.conclusion == 'failure' && !env.ACT }}
       with:
         name: tests-artifact
         path: ./src/Tests/TestResults
@@ -78,7 +78,7 @@ jobs:
 
     - name: Upload Workbench Tests Artifact
       uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-      if: ${{ failure() && steps.test-workbench.conclusion == 'failure' }}
+      if: ${{ failure() && steps.test-workbench.conclusion == 'failure' && !env.ACT }}
       with:
         name: workbench-tests-artifact
         path: ./src/WorkbenchTests/TestResults

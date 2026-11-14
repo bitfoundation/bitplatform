@@ -45,6 +45,8 @@ public sealed class CliEnvironment
 
     public bool IsElevated { get; init; }
 
+    public Func<string, bool> NamedPipeExists { get; set; } = WindowsNamedPipeExists;
+
     public string BitDirectory => Path.Combine(HomeDirectory, ".bitplatform");
 
     public string LogsDirectory => Path.Combine(BitDirectory, "logs");
@@ -54,6 +56,20 @@ public sealed class CliEnvironment
     public bool IsMacOS => Os is HostOs.MacOS;
 
     public bool IsLinux => Os is HostOs.Linux;
+
+    public const string PipeDirectory = @"\\.\pipe\";
+
+    private static bool WindowsNamedPipeExists(string path)
+    {
+        try
+        {
+            return OperatingSystem.IsWindows() && Directory.GetFiles(PipeDirectory).Contains(path, StringComparer.OrdinalIgnoreCase);
+        }
+        catch (Exception exp) when (exp is IOException or UnauthorizedAccessException)
+        {
+            return false;
+        }
+    }
 
     public string? GetVariable(string name)
     {
