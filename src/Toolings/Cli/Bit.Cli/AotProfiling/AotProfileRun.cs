@@ -147,13 +147,14 @@ public sealed class AotProfileRun(CliServices cli)
 
             var profile = AotProfile.Read(data);
             var collected = profile.Methods.Count;
+            var generic = profile.AddRange(AssemblyMethods.ReadGenericInstances([.. profile.Methods], assemblies.Select(a => a.Path)));
             var unmanaged = assemblies.Sum(a => profile.AddRange(AssemblyMethods.Read(a.Path, unmanagedCallersOnly: true)));
             var included = request.Include.Sum(name => profile.AddRange(AssemblyMethods.Read(assemblies.First(a => string.Equals(a.Name, name, StringComparison.OrdinalIgnoreCase)).Path, unmanagedCallersOnly: false)));
 
             Directory.CreateDirectory(Path.GetDirectoryName(output)!);
             await File.WriteAllBytesAsync(output, profile.ToArray(), cancellationToken);
 
-            var detail = $"{collected:N0} methods run, {unmanaged:N0} [UnmanagedCallersOnly]{(request.Include.Count > 0 ? $", {included:N0} of {string.Join(", ", request.Include)}" : "")}";
+            var detail = $"{collected:N0} methods run, {generic:N0} virtual methods of their generic classes, {unmanaged:N0} [UnmanagedCallersOnly]{(request.Include.Count > 0 ? $", {included:N0} of {string.Join(", ", request.Include)}" : "")}";
             cli.Console.Step(StepStatus.Succeeded, $"Wrote {Path.GetRelativePath(current, output)}", detail);
             cli.Console.Line($"[grey]Publish with[/] -p:WasmAotProfilePath={Markup.Escape(output)} [grey]and the same -p properties.[/]");
             return CliApp.ExitOk;

@@ -98,6 +98,33 @@ public class AotProfileTests
     }
 
     [TestMethod]
+    public void TheVirtualMethodsOfTheGenericClassesAMethodRanIn_Should_BeListedForTheSameInstance()
+    {
+        var tests = new AotProfileImage("Bit.Cli.Tests", "");
+        var coreLib = CoreLib with { Name = typeof(object).Assembly.GetName().Name! };
+        var text = new AotProfileClass(coreLib, "System.String");
+        var number = new AotProfileClass(coreLib, "System.Int32");
+        var texts = new AotProfileClass(coreLib, "System.Collections.Generic.List`1", [text]);
+        var overReferences = new AotProfileClass(tests, "Bit.Cli.Tests.ProfileConverter`2", [text, texts]);
+        var overValues = new AotProfileClass(tests, "Bit.Cli.Tests.ProfileConverter`2", [number, number]);
+
+        var methods = AssemblyMethods.ReadGenericInstances(
+            [
+                new AotProfileMethod(overReferences, "First", 2, "System.Collections.Generic.List`1<string>(string,System.Collections.Generic.List`1<System.Collections.Generic.List`1<string>>)"),
+                new AotProfileMethod(overValues, "First", 2, "int(int,System.Collections.Generic.List`1<int>)")
+            ],
+            [typeof(ProfileConverter<,>).Assembly.Location, typeof(object).Assembly.Location]);
+
+        // Over value types alone, an instance has code of its own: no instance the profiler leaves out runs on it. And of
+        // the rest, only the methods a vtable calls: First and the constructor stay as the profile has them.
+        var method = methods.Single();
+        Assert.AreEqual(overReferences, method.Class);
+        Assert.AreEqual("Add", method.Name);
+        Assert.AreEqual(2, method.ParameterCount);
+        Assert.AreEqual("void(string,System.Collections.Generic.List`1<string> modreq(System.Runtime.InteropServices.InAttribute)&)", method.Signature);
+    }
+
+    [TestMethod]
     [DataRow("""<script src="_framework/blazor.web.js"></script>""", """<script src="_framework/blazor.web.js" autostart="false"></script><script>Blazor.start();</script>""")]
     [DataRow("""<body><script src="_framework/blazor.webassembly.4rb4qnk8jm.js"></script><script src="app.js"></script>""", """<body><script src="_framework/blazor.webassembly.4rb4qnk8jm.js" autostart="false"></script><script>Blazor.start();</script><script src="app.js"></script>""")]
     [DataRow("""<script src="_framework/blazor.webassembly.js" autostart="false"></script>""", """<script src="_framework/blazor.webassembly.js" autostart="false"></script>""")]
@@ -770,4 +797,14 @@ public static class ProfileSamples
     {
         public sealed class Inner;
     }
+}
+
+/// <summary>Shaped like System.Text.Json's dictionary converters: a virtual method that takes a type parameter by <c>in</c>.</summary>
+public class ProfileConverter<TKey, TValue>
+{
+    public virtual void Add(TKey key, in TValue value) { }
+
+    public TValue First(TKey key, List<TValue> values) => values[0];
+
+    public T Convert<T>(T value) => value;
 }
