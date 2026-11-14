@@ -71,6 +71,25 @@
         </StateSample>
     </ComponentStates>
 
+    <ComponentStates Name="BitLongPress" Wide>
+        <StateSample Name="@PressLabel">
+            <div class="press-box">
+                <BitLongPress KeyboardTrigger AriaLabel="@PressLabel" OnLongPress="OnHeld" Class="press-stage">
+                    <BitIcon IconName="@BitIconName.TouchPointer" Size="BitSize.Large" Color="BitColor.Primary" />
+                    <BitText Typography="BitTypography.Body2">@Localizer[pressKey]</BitText>
+                </BitLongPress>
+            </div>
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFocused)" Force="focus">
+            <div class="press-box">
+                <BitLongPress KeyboardTrigger AriaLabel="@PressLabel" Class="press-stage">
+                    <BitIcon IconName="@BitIconName.TouchPointer" Size="BitSize.Large" Color="BitColor.Primary" />
+                    <BitText Typography="BitTypography.Body2">@Localizer[nameof(WorkbenchStrings.ThemeUtilitiesPressAndHoldHere)]</BitText>
+                </BitLongPress>
+            </div>
+        </StateSample>
+    </ComponentStates>
+
     <ComponentStates Name="BitMediaQuery" Wide>
         <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeUtilitiesWhatThisViewSWidth)]">
             <BitMediaQuery ScreenQuery="BitScreenQuery.LtMd">

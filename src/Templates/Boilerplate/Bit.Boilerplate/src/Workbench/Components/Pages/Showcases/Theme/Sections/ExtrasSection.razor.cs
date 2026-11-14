@@ -46,6 +46,10 @@ public partial class ExtrasSection
 
     // Each accordion list sample gets lists of its own, so expanding one never opens another.
     private List<BitAccordionListItem>[] faqLists = [];
+    private List<BitAvatarGroupItem> team = [];
+    private List<BitAvatarGroupItem> customers = [];
+    private List<BitMenuButtonItem> orderMenuItems = [];
+    private BitContextMenu<BitMenuButtonItem>? orderMenu;
     private BitChartData revenueData = new();
     private BitChartData visitorsData = new();
     private BitChartData paymentsData = new();
@@ -70,12 +74,18 @@ public partial class ExtrasSection
     // The calendar view the user picked; until then the default for the screen.
     private BitFullCalendarView? pickedView;
 
+    [AutoInject] private BitSnackBarService bitSnackBarService = default!;
+
     // Texts the samples share.
     private string SaveText => AppLocalizer[nameof(AppStrings.Save)];
 
     private string CancelText => AppLocalizer[nameof(AppStrings.Cancel)];
 
     private string OkText => AppLocalizer[nameof(AppStrings.Ok)];
+
+    private string DeleteText => AppLocalizer[nameof(AppStrings.Delete)];
+
+    private string NotificationsText => AppLocalizer[nameof(AppStrings.Notifications)];
 
     private string SearchText => Localizer[nameof(WorkbenchStrings.ThemeSearch)];
 
@@ -113,6 +123,24 @@ public partial class ExtrasSection
         faqLists = [.. Enumerable.Range(0, 6).Select(_ => CreateFaqItems())];
         openNavItems = CreateNavItems();
         railNavItems = CreateNavItems();
+
+        team = [.. ExtrasSamples.Staff.Select((member, index) => new BitAvatarGroupItem
+        {
+            Key = member.NameKey,
+            Text = Localizer[member.NameKey],
+            ImageUrl = WorkbenchPhotos.Find(member.NameKey),
+            Presence = index switch { 0 => BitPersonaPresence.Online, 1 => BitPersonaPresence.Away, _ => BitPersonaPresence.None }
+        })];
+
+        customers = [.. ExtrasSamples.Orders.Select(order => new BitAvatarGroupItem { Key = order.Number, Text = order.Customer })];
+
+        orderMenuItems =
+        [
+            new() { Key = "edit", Text = AppLocalizer[nameof(AppStrings.Edit)], IconName = BitIconName.Edit },
+            new() { Key = "copy", Text = AppLocalizer[nameof(AppStrings.Copy)], IconName = BitIconName.Copy },
+            new() { Key = "separator", IsSeparator = true },
+            new() { Key = "delete", Text = DeleteText, IconName = BitIconName.Delete }
+        ];
 
         CreateCharts();
 
@@ -487,6 +515,15 @@ public partial class ExtrasSection
         }
 
         return [];
+    }
+
+    private Task OpenOrderMenu(BitLongPressEventArgs args) => orderMenu?.OpenAt(args.ClientX, args.ClientY) ?? Task.CompletedTask;
+
+    private async Task ShowSnackBars()
+    {
+        await bitSnackBarService.Success(Localizer[nameof(WorkbenchStrings.ThemeSuccess)], Localizer[nameof(WorkbenchStrings.ThemeMessage), BitColor.Success]);
+        await bitSnackBarService.Warning(Localizer[nameof(WorkbenchStrings.ThemeWarning)], Localizer[nameof(WorkbenchStrings.ThemeMessage), BitColor.Warning]);
+        await bitSnackBarService.Error(Localizer[nameof(WorkbenchStrings.ThemeError)], Localizer[nameof(WorkbenchStrings.ThemeMessage), BitColor.Error]);
     }
 
     private void OnPhoneChanged(bool phone) => isPhone = phone;

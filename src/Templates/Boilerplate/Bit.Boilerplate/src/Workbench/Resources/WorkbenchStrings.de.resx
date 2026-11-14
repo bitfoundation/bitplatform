@@ -4146,6 +4146,15 @@
     <data name="ThemeExtrasForCustomersTwelveSeats" xml:space="preserve">
         <value>Für Kunden, zwölf Plätze</value>
     </data>
+    <data name="ThemeExtrasRightClickOrPressAnd" xml:space="preserve">
+        <value>Rechtsklick oder gedrückt halten</value>
+    </data>
+    <data name="ThemeExtrasListsWhatTheSnackBars" xml:space="preserve">
+        <value>Listet auf, was die Snackbars gezeigt haben</value>
+    </data>
+    <data name="ThemeExtrasUnreadCount" xml:space="preserve">
+        <value>{0} ungelesen</value>
+    </data>
     <data name="ThemeInputsWeekNumbersTime" xml:space="preserve">
         <value>Kalenderwochen, Uhrzeit</value>
     </data>
@@ -4485,6 +4494,9 @@
     <data name="ThemeNotificationsDismissible" xml:space="preserve">
         <value>Schließbar</value>
     </data>
+    <data name="ThemeNotificationsSetAGoal" xml:space="preserve">
+        <value>Ziel festlegen</value>
+    </data>
     <data name="ThemeOverlaysDeliveryTimes" xml:space="preserve">
         <value>Lieferzeiten</value>
     </data>
@@ -4799,6 +4811,15 @@
     </data>
     <data name="ThemeUtilitiesClampedToTwoLines" xml:space="preserve">
         <value>Auf zwei Zeilen begrenzt</value>
+    </data>
+    <data name="ThemeUtilitiesPressAndHoldTheBox" xml:space="preserve">
+        <value>Halten Sie die Box gedrückt</value>
+    </data>
+    <data name="ThemeUtilitiesPressAndHoldHere" xml:space="preserve">
+        <value>Hier gedrückt halten</value>
+    </data>
+    <data name="ThemeUtilitiesPressedAndHeld" xml:space="preserve">
+        <value>Gedrückt gehalten</value>
     </data>
     <data name="ThemeSectionsOfThisPage" xml:space="preserve">
         <value>Abschnitte dieser Seite</value>

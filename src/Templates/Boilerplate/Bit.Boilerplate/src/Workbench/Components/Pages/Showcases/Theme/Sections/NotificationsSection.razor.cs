@@ -1,6 +1,6 @@
 namespace Boilerplate.Workbench.Components.Pages.Showcases.Theme.Sections;
 
-/// <summary>The Notifications category: badges, messages, people with their presence, snack bars and tags.</summary>
+/// <summary>The Notifications category: badges, empty states, messages, people with their presence, snack bars and tags.</summary>
 public partial class NotificationsSection
 {
     /// <summary>Sample people, one per presence, for the BitPersona row.</summary>

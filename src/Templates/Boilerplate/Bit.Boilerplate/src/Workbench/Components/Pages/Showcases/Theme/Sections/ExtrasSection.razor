@@ -23,6 +23,15 @@
         </StateSample>
     </ComponentStates>
 
+    <ComponentStates Name="BitAvatarGroup" Wide>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateDefault)">
+            <BitAvatarGroup Items="team" MaxDisplayed="4" AriaLabel="@Localizer[nameof(WorkbenchStrings.PosTeam)]" />
+        </StateSample>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeNotificationsInitials)]">
+            <BitAvatarGroup Items="customers" AriaLabel="@Localizer[nameof(WorkbenchStrings.ThemeExtrasNewCustomers)]" />
+        </StateSample>
+    </ComponentStates>
+
     <ComponentStates Name="BitChart" Full>
         <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeExtrasBars)]">
             <BitChart Type="BitChartType.Bar" Data="revenueData" Options="barOptions" Height="14rem" Description="@Localizer[nameof(WorkbenchStrings.ThemeExtrasRevenuePerMonth)]" />
@@ -38,6 +47,16 @@
         </StateSample>
         <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateEmpty)">
             <BitChart Type="BitChartType.Bar" Data="emptyData" Options="barOptions" Height="14rem" EmptyText="@Localizer[nameof(WorkbenchStrings.ThemeExtrasNoSalesYetThisMonth)]" Description="@Localizer[nameof(WorkbenchStrings.ThemeExtrasRevenuePerMonth)]" />
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitContextMenu" Wide>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeExtrasRightClickOrPressAnd)]">
+            <BitLongPress OnLongPress="OpenOrderMenu">
+                <BitContextMenu @ref="orderMenu" Items="orderMenuItems" AriaLabel="@Localizer[nameof(WorkbenchStrings.ThemeActions)]">
+                    <ExtrasOrderRow Index="0" />
+                </BitContextMenu>
+            </BitLongPress>
         </StateSample>
     </ComponentStates>
 
@@ -145,6 +164,12 @@
                                  HideFilters
                                  HideSettings />
             </div>
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitImageViewer" Wide>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateDefault)">
+            <BitImageViewer Src="@ThemeSamples.IllustrationUrl" Alt="@Localizer[nameof(WorkbenchStrings.ThemeSurfacesTwoPeopleReadingTheSales)]" Height="14rem" ShowFullScreenButton />
         </StateSample>
     </ComponentStates>
 
@@ -276,6 +301,27 @@
         </StateSample>
     </ComponentStates>
 
+    <ComponentStates Name="BitNotificationCenter" Wide>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeExtrasListsWhatTheSnackBars)]">
+            <div class="row">
+                <BitNotificationCenter AriaLabel="@NotificationsText"
+                                       HeaderText="@NotificationsText"
+                                       ClearAllText="@AppLocalizer[nameof(AppStrings.Clear)]"
+                                       EmptyText="@Localizer[nameof(WorkbenchStrings.PosNoDataYet)]"
+                                       UnreadAriaLabelFormat="@Localizer[nameof(WorkbenchStrings.ThemeExtrasUnreadCount)]"
+                                       UnreadItemText="@Localizer[nameof(WorkbenchStrings.ThemeNotificationsNew)]" />
+                <BitButton Variant="BitVariant.Outline" IconName="@BitIconName.Feedback" OnClick="ShowSnackBars">@Localizer[nameof(WorkbenchStrings.ThemeOverlaySnackBar)]</BitButton>
+            </div>
+            <BitSnackBar ServiceHost
+                         Multiline
+                         AutoDismiss
+                         MaxItems="3"
+                         OverflowBehavior="BitSnackBarOverflowBehavior.Queue"
+                         Position="BitPosition.TopCenter"
+                         AutoDismissTime="TimeSpan.FromSeconds(10)" />
+        </StateSample>
+    </ComponentStates>
+
     <ComponentStates Name="BitPdfViewer" Full>
         <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateDefault)">
             <BitPdfViewer Source="invoice" Height="26rem" AriaLabel="@Localizer[nameof(WorkbenchStrings.ThemeExtrasInvoice), ExtrasSamples.Orders[0].Number]" />
@@ -300,6 +346,18 @@
         </StateSample>
         <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
             <BitPhoneInput Label="@PhoneLabel" Placeholder="@PhonePlaceholder" Value="@("+31201234567")" Disabled />
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitPopConfirm" Wide>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeSurfacesOpensFromAButton)]">
+            <BitPopConfirm Title="@AppLocalizer[nameof(AppStrings.DeleteProduct)]"
+                           Message="@AppLocalizer[nameof(AppStrings.AreYouSureWannaDeleteProduct), Localizer[nameof(WorkbenchStrings.PosProductOatLatte)].Value]"
+                           ConfirmText="@DeleteText"
+                           CancelText="@CancelText"
+                           ConfirmColor="BitColor.Error">
+                <BitButton Variant="BitVariant.Outline" Color="BitColor.Error" IconName="@BitIconName.Delete">@DeleteText</BitButton>
+            </BitPopConfirm>
         </StateSample>
     </ComponentStates>
 

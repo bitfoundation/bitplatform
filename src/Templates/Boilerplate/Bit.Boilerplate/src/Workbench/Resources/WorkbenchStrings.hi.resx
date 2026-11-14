@@ -4146,6 +4146,15 @@
     <data name="ThemeExtrasForCustomersTwelveSeats" xml:space="preserve">
         <value>ग्राहकों के लिए, बारह सीटें</value>
     </data>
+    <data name="ThemeExtrasRightClickOrPressAnd" xml:space="preserve">
+        <value>राइट-क्लिक करें या दबाकर रखें</value>
+    </data>
+    <data name="ThemeExtrasListsWhatTheSnackBars" xml:space="preserve">
+        <value>स्नैकबार में दिखाई गई सूचनाओं की सूची</value>
+    </data>
+    <data name="ThemeExtrasUnreadCount" xml:space="preserve">
+        <value>{0} अपठित</value>
+    </data>
     <data name="ThemeInputsWeekNumbersTime" xml:space="preserve">
         <value>हफ़्ते की संख्या, समय</value>
     </data>
@@ -4485,6 +4494,9 @@
     <data name="ThemeNotificationsDismissible" xml:space="preserve">
         <value>बंद करने योग्य</value>
     </data>
+    <data name="ThemeNotificationsSetAGoal" xml:space="preserve">
+        <value>लक्ष्य तय करें</value>
+    </data>
     <data name="ThemeOverlaysDeliveryTimes" xml:space="preserve">
         <value>डिलीवरी का समय</value>
     </data>
@@ -4799,6 +4811,15 @@
     </data>
     <data name="ThemeUtilitiesClampedToTwoLines" xml:space="preserve">
         <value>दो पंक्तियों तक सीमित</value>
+    </data>
+    <data name="ThemeUtilitiesPressAndHoldTheBox" xml:space="preserve">
+        <value>बॉक्स को दबाकर रखें</value>
+    </data>
+    <data name="ThemeUtilitiesPressAndHoldHere" xml:space="preserve">
+        <value>यहाँ दबाकर रखें</value>
+    </data>
+    <data name="ThemeUtilitiesPressedAndHeld" xml:space="preserve">
+        <value>दबाकर रखा गया</value>
     </data>
     <data name="ThemeSectionsOfThisPage" xml:space="preserve">
         <value>इस पेज के भाग</value>
