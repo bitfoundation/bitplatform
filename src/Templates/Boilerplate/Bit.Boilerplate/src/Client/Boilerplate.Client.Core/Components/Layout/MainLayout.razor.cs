@@ -156,7 +156,7 @@ public partial class MainLayout : IAsyncDisposable
     {
         try
         {
-            await SetCurrentUser(task);
+            await InvokeAsync(() => SetCurrentUser(task));
         }
         catch (Exception ex)
         {
@@ -196,9 +196,10 @@ public partial class MainLayout : IAsyncDisposable
 
         await SetNavPanelItems(authUser);
 
-        using var currentCts = getCurrentUserCts;
-        getCurrentUserCts = new();
-        await currentCts.TryCancel();
+        var currentCts = new CancellationTokenSource();
+        var cancellationToken = currentCts.Token;
+        using var previousCts = Interlocked.Exchange(ref getCurrentUserCts, currentCts);
+        await previousCts.TryCancel();
 
         if (authUser.IsAuthenticated() is false)
         {
@@ -211,9 +212,9 @@ public partial class MainLayout : IAsyncDisposable
         {
             Task[] loads =
             [
-                LoadCurrentUser(authUser, getCurrentUserCts.Token),
+                LoadCurrentUser(authUser, cancellationToken),
                 //#if (multitenant == true)
-                SetCurrentTenantIfNeeded(authUser.GetTenantId(), getCurrentUserCts.Token),
+                SetCurrentTenantIfNeeded(authUser.GetTenantId(), cancellationToken),
                 //#endif
             ];
 
@@ -309,11 +310,7 @@ public partial class MainLayout : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        if (getCurrentUserCts is not null)
-        {
-            await getCurrentUserCts.TryCancel();
-            getCurrentUserCts.Dispose();
-        }
+        await getCurrentUserCts.TryCancel();
 
         authManager.AuthenticationStateChanged -= AuthManager_AuthenticationStateChanged;
         bitThemeNotifications.ThemeChanged -= BitThemeNotifications_ThemeChanged;
