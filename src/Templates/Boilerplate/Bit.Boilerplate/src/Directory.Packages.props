@@ -30,6 +30,9 @@
         <PackageVersion Include="Bit.Blow" Version="11.0.0-pre-19" />
         <PackageVersion Include="Bit.Bonboarding" Version="11.0.0-pre-19" />
         <PackageVersion Include="Bit.Belemetry" Version="11.0.0-pre-19" />
+        <PackageVersion Include="Bit.Belemetry.EntityFrameworkCore" Version="11.0.0-pre-19" />
+        <PackageVersion Include="Bit.Belemetry.Hangfire" Version="11.0.0-pre-19" />
+        <PackageVersion Include="Bit.BevTools.Belemetry" Version="11.0.0-pre-19" />
         <PackageVersion Include="DistributedLock.FileSystem" Version="1.0.3" />
         <PackageVersion Include="Fido2.AspNet" Version="4.3.2" />
         <PackageVersion Include="HtmlSanitizer" Version="11.0.26" />
@@ -42,14 +45,6 @@
         <PackageVersion Include="AspNetCore.HealthChecks.Hangfire" Version="9.0.0" />
         <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.4314.35" />
         <PackageVersion Include="MSTest" Version="4.5.2" />
-        <PackageVersion Include="OpenTelemetry.Instrumentation.EntityFrameworkCore" Version="1.20.2-beta.1" />
-        <PackageVersion Include="OpenTelemetry.Instrumentation.Hangfire" Version="1.20.2-beta.1" />
-        <PackageVersion Include="OpenTelemetry.Resources.Azure" Version="1.20.2-beta.1" />
-        <PackageVersion Include="OpenTelemetry.Resources.Container" Version="1.20.1-beta.1" />
-        <PackageVersion Include="OpenTelemetry.Resources.Host" Version="1.20.1-beta.1" />
-        <PackageVersion Include="OpenTelemetry.Resources.OperatingSystem" Version="1.20.1-beta.1" />
-        <PackageVersion Include="OpenTelemetry.Resources.Process" Version="1.20.1-rc.1" />
-        <PackageVersion Include="OpenTelemetry.Resources.ProcessRuntime" Version="1.20.1-beta.1" />
         <PackageVersion Include="Oscore.Maui.AppStoreInfo" Version="1.3.1" />
         <PackageVersion Include="Plugin.Maui.AppRating" Version="1.3.0" />
         <!-- Not 118.3.1.1: it pulls AndroidX Fragment 1.9, whose classes clash with MAUI's Fragment.Ktx and break the Android build. -->
@@ -76,16 +71,9 @@
         <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '')" Include="Aspire.Hosting.Keycloak" Version="13.6.5-preview.1.26559.7" />
         <PackageVersion Condition=" '$(aspire)' == 'true' OR '$(aspire)' == '' " Include="Aspire.Hosting.Docker" Version="13.6.5" />
         <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(cloudflare)' == 'true' OR '$(cloudflare)' == '') " Include="Shirubasoft.Aspire.CloudflareTunnels" Version="2.5.1" />
-        <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.20.1" />
-        <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.20.1" />
-        <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.20.2" />
-        <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.20.2" />
-        <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.20.1" />
         <PackageVersion Include="Hangfire.AspNetCore" Version="1.8.25" />
         <PackageVersion Include="Hangfire.EntityFrameworkCore" Version="0.9.0" />
-        <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.AspNetCore" Version="6.12.1" />
         <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.Maui" Version="6.12.1" />
-        <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.Extensions.Logging" Version="6.12.1" />
         <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.Firebase.Messaging" Version="125.1.1" />
         <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Plugin.LocalNotification" Version="14.1.2" />
         <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="AdsPush" Version="2.0.0" />
@@ -96,8 +84,6 @@
         <PackageVersion Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') OR ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Microsoft.Agents.AI" Version="1.28.0" />
         <PackageVersion Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') OR ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Microsoft.Agents.AI.Hosting" Version="1.28.0-preview.261106.1" />
         <PackageVersion Condition=" ('$(database)' == 'PostgreSQL' OR '$(database)' == '') " Include="Pgvector.EntityFrameworkCore" Version="0.3.0" />
-        <PackageVersion Include="Azure.Monitor.OpenTelemetry.Exporter" Version="1.10.0" />
-        <PackageVersion Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="BlazorApplicationInsights" Version="3.3.0" />
         <!-- Oracle's newest is 10.0.9, an EF 10 provider, and nothing on nuget.org is built for EF 11. It
              restores and compiles against EF 11 - its EF dependency is a floor, not a range - but creating
              the DbContext throws "Method not found: RelationalTypeMapping.Clone", the same break the EF 10
@@ -130,7 +116,6 @@
         <PackageVersion Include="Microsoft.Playwright.MSTest.v4" Version="1.64.1" />
         <PackageVersion Include="bunit" Version="2.15.2" />
         <PackageVersion Include="ZiggyCreatures.FusionCache.AspNetCore.OutputCaching" Version="2.9.0" />
-        <PackageVersion Include="ZiggyCreatures.FusionCache.OpenTelemetry" Version="2.9.0" />
         <PackageVersion Include="ZiggyCreatures.FusionCache.Serialization.SystemTextJson" Version="2.9.0" />
     </ItemGroup>
     <!--/+:msbuild-conditional:noEmit -->

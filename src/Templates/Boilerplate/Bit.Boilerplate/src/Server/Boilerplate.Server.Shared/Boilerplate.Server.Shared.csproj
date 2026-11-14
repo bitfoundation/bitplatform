@@ -14,26 +14,11 @@
         <PackageReference Include="Microsoft.Extensions.Http.Resilience" />
         <PackageReference Include="Microsoft.Extensions.ServiceDiscovery" />
         <PackageReference Include="Microsoft.Extensions.Telemetry" />
-        <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
-        <PackageReference Include="OpenTelemetry.Extensions.Hosting" />
-        <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" />
-        <PackageReference Include="OpenTelemetry.Instrumentation.Http" />
-        <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" />
-        <PackageReference Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="Azure.Monitor.OpenTelemetry.Exporter" />
-        <PackageReference Include="OpenTelemetry.Instrumentation.EntityFrameworkCore" />
-        <PackageReference Include="OpenTelemetry.Instrumentation.Hangfire" />
         <PackageReference Condition="'$(redis)' == 'true' OR '$(redis)' == ''" Include="Microsoft.Extensions.Caching.StackExchangeRedis" />
         <PackageReference Condition="'$(redis)' == 'true' OR '$(redis)' == ''" Include="Aspire.StackExchange.Redis" />
         <PackageReference Condition="'$(redis)' == 'true' OR '$(redis)' == ''" Include="ZiggyCreatures.FusionCache.Backplane.StackExchangeRedis" />
         <PackageReference Condition="'$(redis)' == 'true' OR '$(redis)' == ''" Include="ZiggyCreatures.FusionCache.Locking.Distributed.Redis" />
         <PackageReference Condition="('$(redis)' == 'true' OR '$(redis)' == '') AND ('$(signalR)' == 'true' OR '$(signalR)' == '')" Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" />
-        <PackageReference Include="OpenTelemetry.Resources.Azure" />
-        <PackageReference Include="OpenTelemetry.Resources.Container" />
-        <PackageReference Include="OpenTelemetry.Resources.Host" />
-        <PackageReference Include="OpenTelemetry.Resources.OperatingSystem" />
-        <PackageReference Include="OpenTelemetry.Resources.Process" />
-        <PackageReference Include="OpenTelemetry.Resources.ProcessRuntime" />
-        <PackageReference Include="ZiggyCreatures.FusionCache.OpenTelemetry" />
         <PackageReference Include="ZiggyCreatures.FusionCache.AspNetCore.OutputCaching" />
         <PackageReference Include="ZiggyCreatures.FusionCache.Serialization.SystemTextJson" />
     </ItemGroup>

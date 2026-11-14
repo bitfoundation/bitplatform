@@ -33,8 +33,18 @@ public static class WebApplicationExtensions
         {
             var healthChecks = app.MapGroup("");
 
-            healthChecks
-                .CacheOutput("HealthChecks");
+            ((IEndpointConventionBuilder)healthChecks.CacheOutput("HealthChecks"))
+                .Add(endpoint =>
+                {
+                    if (endpoint.RequestDelegate is not { } requestDelegate) return;
+
+                    // Keeps the checks' own spans out of the export too
+                    endpoint.RequestDelegate = context =>
+                    {
+                        Activity.Current?.ActivityTraceFlags &= ~ActivityTraceFlags.Recorded;
+                        return requestDelegate(context);
+                    };
+                });
 
             // All health checks must pass for app to be
             // considered ready to accept traffic after starting

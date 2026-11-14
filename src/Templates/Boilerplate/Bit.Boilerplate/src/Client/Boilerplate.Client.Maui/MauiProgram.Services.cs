@@ -1,13 +1,7 @@
 //+:cnd:noEmit
-// [mirror] blazor hybrid DI registrations, logging and OpenTelemetry setup - keep in sync with:
+// [mirror] blazor hybrid DI registrations and logging setup - keep in sync with:
 // - src/Client/Boilerplate.Client.Windows/Program.Services.cs
 
-//#if (appInsights == true)
-using Azure.Monitor.OpenTelemetry.Exporter;
-//#endif
-using OpenTelemetry;
-using OpenTelemetry.Resources;
-using System.Diagnostics.Metrics;
 using Microsoft.Extensions.Options;
 using Boilerplate.Client.Maui.Infrastructure.Services;
 using Boilerplate.Client.Core.Infrastructure.Services.HttpMessageHandlers;
@@ -53,8 +47,6 @@ public static partial class MauiProgram
             });
 
             services.AddSingleton<IStorageService, MauiStorageService>();
-            var settings = new ClientMauiSettings();
-            configuration.Bind(settings);
             services.AddSingleton(sp => sp.GetRequiredService<IOptions<ClientMauiSettings>>().Value);
             services.AddSingleton(ITelemetryContext.Current!);
             services.AddSingleton<ILocalHttpServer, MauiLocalHttpServer>();
@@ -65,45 +57,6 @@ public static partial class MauiProgram
             builder.Logging.ConfigureLoggers(configuration);
 
             builder.Logging.AddEventSourceLogger();
-
-            builder.Logging.AddOpenTelemetry(options =>
-            {
-                options.IncludeScopes = true;
-                options.IncludeFormattedMessage = true;
-                configuration.Bind("Logging:OpenTelemetry", options);
-            });
-
-            var openTelemetry = services.AddOpenTelemetry()
-                .WithMetrics(metrics =>
-                {
-                    metrics.AddMeter(Meter.Current.Name);
-                })
-                .WithTracing(tracing =>
-                {
-                    tracing.AddSource(ActivitySource.Current.Name);
-                })
-                .ConfigureResource(resource =>
-                {
-                    resource.AddAttributes([new("service.name", builder.Environment.ApplicationName)]);
-                });
-
-            var useOtlpExporter = string.IsNullOrWhiteSpace(builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]) is false
-                || string.IsNullOrWhiteSpace(builder.Configuration["OTEL_EXPORTER_OTLP_LOGS_ENDPOINT"]) is false;
-
-            if (useOtlpExporter)
-            {
-                openTelemetry.UseOtlpExporter();
-            }
-
-            //#if (appInsights == true)
-            if (string.IsNullOrWhiteSpace(settings.ApplicationInsights?.ConnectionString) is false)
-            {
-                openTelemetry.UseAzureMonitorExporter(options =>
-                {
-                    configuration.Bind("ApplicationInsights", options);
-                });
-            }
-            //#endif
 
             if (AppPlatform.IsWindows)
             {

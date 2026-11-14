@@ -22,14 +22,6 @@ else
         {
             <AppHead />
         }
-        @*#if (appInsights == true)*@
-        else if (RendererInfo.IsInteractive)
-        {
-            @* Already in the document from App.razor; this only hands the JS SDK to the interactive renderer
-               (InitJSRuntime), which is what IApplicationInsights calls from C# need. *@
-            <BlazorApplicationInsights.ApplicationInsightsInit IsWasmStandalone="true" />
-        }
-        @*#endif*@
         <SectionOutlet SectionName="@AppPageData.HeadSectionName" />
     </HeadContent>
 }

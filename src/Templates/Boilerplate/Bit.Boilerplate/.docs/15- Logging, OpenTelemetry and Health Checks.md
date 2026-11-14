@@ -132,8 +132,9 @@ The logging configuration is centralized in [`src/Shared/appsettings.json`](/src
 
 ```json
 {
-  "ApplicationInsights": {
-    "ConnectionString": null
+  "Belemetry": {
+    "AzureMonitorConnectionString": null,
+    "SentryDsn": null
   },
   "Logging": {
     "LogLevel": {
@@ -142,11 +143,7 @@ The logging configuration is centralized in [`src/Shared/appsettings.json`](/src
       "Microsoft.EntityFrameworkCore.Database.Command": "Information",
       "Microsoft.AspNetCore.Diagnostics.ExceptionHandlerMiddleware": "None"
     },
-    "Sentry": {
-      "Sentry_Comment": "https://docs.sentry.io/platforms/dotnet/guides/extensions-logging/",
-      "Dsn": "",
-      "SendDefaultPii": true,
-      "EnableScopeSync": true,
+    "Belemetry": {
       "LogLevel": {
         "Default": "Warning",
         "Microsoft.Hosting.Lifetime": "Information"
@@ -167,7 +164,7 @@ The logging configuration is centralized in [`src/Shared/appsettings.json`](/src
 
 - **Default Log Level**: `Warning` - Only warnings and above are logged by default
 - **EF Core Commands**: `Information` - Shows SQL queries in logs (useful for debugging)
-- **Sentry**: Production error tracking with `Warning` level
+- **Belemetry**: What reaches OTLP and Application Insights, `Warning` level (Sentry takes errors only)
 - **DiagnosticLogger**: `Information` level for in-app diagnostics
 - **BevTools**: `Information` level for the Logs panel of the in-app dev tools
 - **Console**: Logs to device log/logcat on mobile platforms
@@ -235,33 +232,21 @@ public async Task<DiagnosticLogDto[]> GetUserSessionLogs(Guid userSessionId, [Fr
 
 ### 🖥️ Server Applications
 
-* **Server.Api**
+Every project sends its telemetry through [bit Belemetry](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Belemetry): logs, traces and metrics over OTLP (the Aspire dashboard, Grafana, Datadog, New Relic etc.) and to Azure Application Insights, and errors to Sentry as Issues. [`ConfigureAppTelemetry`](../src/Shared/Infrastructure/Extensions/BelemetryOptionsExtensions.cs) adds each exporter whose setting is there: `OTEL_EXPORTER_OTLP_ENDPOINT`, `Belemetry:AzureMonitorConnectionString` or `Belemetry:SentryDsn`.
 
-    Server.Api uses **OpenTelemetry** for distributed tracing and metrics.
-    
-    Support for Open Telemetry means that all telemetry platforms (Including but not limited to Sentry, Azure Application Insights, Datadog, New Relic etc.) can be used to collect and visualize logs, traces and metrics.
+* **Server.Api** and **Server.Web**
 
-    **Sampling** is enabled to reduce costs: unknown/unhandled exceptions and slow activities are always captured (100%), while known/transient exceptions, warnings, and info logs are sampled at **5%**. See [`AppOpenTelemetryProcessor.cs`](../src/Server/Boilerplate.Server.Shared/Infrastructure/Services/AppOpenTelemetryProcessor.cs) and [`AppLoggingSampler.cs`](../src/Server/Boilerplate.Server.Shared/Infrastructure/Services/AppLoggingSampler.cs).
+    Requests, EF Core commands, Hangfire jobs, HttpClient calls and FusionCache, besides the app's own logs, activities and meters.
 
-* **Server.Web**
-
-    Server.Web uses **OpenTelemetry** for distributed tracing and metrics.
+    **Sampling** is enabled to reduce costs: unknown/unhandled exceptions and slow activities are always captured (100%), while known/transient exceptions, warnings, and info logs are sampled at **5%**. See [`AppBelemetryProcessor.cs`](../src/Server/Boilerplate.Server.Shared/Infrastructure/Services/AppBelemetryProcessor.cs) and [`AppLoggingSampler.cs`](../src/Server/Boilerplate.Server.Shared/Infrastructure/Services/AppLoggingSampler.cs).
 
 ### 📱 Client Applications
 
-* **Client.Windows**
+* **Client.Web**, **Client.Windows** and **Client.Maui**
 
-    Client.Windows uses **OpenTelemetry** for distributed tracing and metrics, and uses Azure Application Insights JavaScript SDK for Blazor Hybrid WebView JavaScript errors, navigation tracking etc.
+    The page's own telemetry (page views, clicks, web vitals, JavaScript errors and fetch calls), besides the app's .NET logs, traces and metrics. Page views, clicks, sessions and the ids that recognize a device wait for the Analytics consent (See `ConsentService`).
 
-* **Client.Maui**
-
-    Client.Maui uses **OpenTelemetry** for distributed tracing and metrics, and uses Azure Application Insights JavaScript SDK for Blazor Hybrid WebView JavaScript errors, navigation tracking etc.
-
-* **Client.Web (Blazor WebAssembly)**
-
-    Client.Web doesn't use Open Telemetry due to size constraints, but uses any Microsoft.Extensions.Logging implementations such as `Sentry.Extensions.Logging`
-
-    `BlazorApplicationInsights` nuget package implements Microsoft.Extensions.Logging. It also tracks Browser JavaScript errors, navigations etc.
+    Client.Maui also runs `Sentry.Maui`, for crashes only: Belemetry's Sentry exporter sends every other error, as in the other projects.
 
 ---
 
@@ -298,7 +283,7 @@ A Docker Compose deployment runs the dashboard next to the apps, on the server's
 says how to open it). It keeps its telemetry in SQLite on a volume, so a restart or a deployment doesn't lose it, and
 holds 100,000 logs and 100,000 traces at most. Outside Development the server sends it about 5% of its ordinary logs and
 fast successful spans, and every unexpected error and every span slower than a second, though not always the rest of its
-trace (`AppLoggingSampler` and `AppOpenTelemetryProcessor`).
+trace (`AppLoggingSampler` and `AppBelemetryProcessor`).
 
 The landing page's browser sends the dashboard its errors, and its logs and traces once the visitor consents. It can't
 reach the gRPC endpoint the apps use inside the Compose network, so the deploy job gives it the landing page's own

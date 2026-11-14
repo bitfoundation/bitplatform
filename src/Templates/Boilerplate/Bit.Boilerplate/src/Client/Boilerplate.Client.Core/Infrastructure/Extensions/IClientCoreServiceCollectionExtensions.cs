@@ -1,8 +1,4 @@
 //+:cnd:noEmit
-//#if (appInsights == true)
-using BlazorApplicationInsights;
-using BlazorApplicationInsights.Interfaces;
-//#endif
 //#if (offlineDb == true)
 using Bit.Bsqlite.Storage.Opfs;
 using Bit.Bsqlite.Storage.InMemory;
@@ -10,6 +6,7 @@ using Bit.Bsqlite.Storage.IndexedDb;
 using Bit.Bsqlite.EntityFrameworkCore;
 //#endif
 using Bit.BevTools;
+using Bit.Belemetry;
 //#if (module == "Admin")
 using Bit.Bortable;
 //#endif
@@ -35,11 +32,22 @@ public static partial class IClientCoreServiceCollectionExtensions
             services.AddScoped<CultureService>();
             services.AddScoped<TimeZoneService>();
             services.AddScoped<LazyAssemblyLoader>();
+            var bevToolsAtStartup = AppEnvironment.IsDevelopment() || AppPlatform.IsBlazorHybrid;
             services.AddBitBevToolsLoaderServices(options =>
             {
-                options.RegisterAtStartup = AppEnvironment.IsDevelopment() || AppPlatform.IsBlazorHybrid;
+                options.RegisterAtStartup = bevToolsAtStartup;
                 options.ShowBadge = false;
             });
+            services.AddBitBelemetryServices(options =>
+            {
+                options.Consent.Default = ConsentService.TelemetryWithoutAnalytics;
+                options.Consent.Persist = false;
+                options.Diagnostics.Enabled = bevToolsAtStartup;
+            });
+            if (bevToolsAtStartup)
+            {
+                services.AddBevToolsBelemetry();
+            }
             services.AddScoped<SignInModalService>();
             services.AddScoped<ImageEditorService>();
             //#if (module == "Admin")
@@ -132,14 +140,6 @@ public static partial class IClientCoreServiceCollectionExtensions
             services.AddOfflineDb();
             //#endif
 
-            //#if (appInsights == true)
-            services.Add(ServiceDescriptor.Describe(typeof(IApplicationInsights), typeof(AppInsightsJsSdkService), AppPlatform.IsBrowser ? ServiceLifetime.Singleton : ServiceLifetime.Scoped));
-            services.AddBlazorApplicationInsights(options =>
-            {
-                configuration.Bind("ApplicationInsights", options);
-            }, loggingOptions: options => configuration.Bind("Logging:ApplicationInsightsLoggerProvider", options));
-            //#endif
-
             services.AddTypedHttpClients(); // See Boilerplate.Shared/Controllers/Readme.md
 
             //#if (signalR == true)
@@ -148,6 +148,13 @@ public static partial class IClientCoreServiceCollectionExtensions
             //#endif
 
             return services;
+        }
+
+        // Apart, so the startup code names no Bit.BevTools type: the browser lazy loads it outside Development
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private void AddBevToolsBelemetry()
+        {
+            services.AddBitBevToolsBelemetry();
         }
 
         //#if (offlineDb == true)

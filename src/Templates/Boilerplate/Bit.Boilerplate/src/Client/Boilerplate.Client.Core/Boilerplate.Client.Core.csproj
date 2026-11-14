@@ -19,7 +19,6 @@
         <Using Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Microsoft.EntityFrameworkCore" />
         <Using Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Boilerplate.Client.Core.Infrastructure.Data" />
         <PackageReference Condition=" '$(brouter)' == 'true' OR '$(brouter)' == '' " Include="Bit.Brouter" />
-        <PackageReference Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="BlazorApplicationInsights" />
         <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Bit.Bsqlite" />
         <PackageReference Condition=" '$(module)' == 'Admin' OR '$(module)' == '' " Include="Bit.Bortable" />
         <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="CommunityToolkit.Datasync.Client" />
@@ -32,6 +31,7 @@
         <PackageReference Include="Bit.Bmage.Blazor" />
         <PackageReference Include="Bit.BevTools" />
         <PackageReference Include="Bit.BevTools.Loader" />
+        <PackageReference Include="Bit.BevTools.Belemetry" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" />
         <PackageReference Include="Microsoft.Extensions.Logging.Configuration" />

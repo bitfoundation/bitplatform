@@ -30,7 +30,6 @@
         <PackageReference Include="Bit.Bswup" />
         <!--/+:msbuild-conditional:noEmit -->
         <PackageReference Condition=" '$(offlineDb)' != 'true' " Include="Bit.Minifier" PrivateAssets="all" />
-        <PackageReference Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.Extensions.Logging" />
         <!--/-:msbuild-conditional:noEmit -->
     </ItemGroup>
 
@@ -55,6 +54,7 @@
         <BlazorWebAssemblyLazyLoad Include="Bit.Bmage.wasm" />
         <BlazorWebAssemblyLazyLoad Include="Bit.Bmage.Blazor.wasm" />
         <BlazorWebAssemblyLazyLoad Condition=" '$(Environment)' != 'Development' " Include="Bit.BevTools.wasm" />
+        <BlazorWebAssemblyLazyLoad Condition=" '$(Environment)' != 'Development' " Include="Bit.BevTools.Belemetry.wasm" />
         <!--#if (signalR == true)-->
         <!-- The AI chat, downloaded the first time its panel is reached for (See AppAiChatPanel.lazyAssemblies). -->
         <BlazorWebAssemblyLazyLoad Include="Bit.BlazorUI.AI.wasm" />

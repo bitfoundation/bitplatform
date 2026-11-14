@@ -34,8 +34,7 @@ public partial class ContentSecurityPolicy
 
         //#if (appInsights == true)
         // --- Add Azure App Insights ---
-        connectSrc.Add("https://dc.services.visualstudio.com https://*.in.applicationinsights.azure.com https://js.monitor.azure.com");
-        scriptSrc.Add("https://js.monitor.azure.com");
+        connectSrc.Add("https://dc.services.visualstudio.com https://*.in.applicationinsights.azure.com");
         //#endif
 
         //#if (sentry == true)

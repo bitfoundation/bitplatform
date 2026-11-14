@@ -1,3 +1,4 @@
+//+:cnd:noEmit
 using Bit.Butil;
 using Bit.Belemetry;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
@@ -25,11 +26,19 @@ public static class IServiceCollectionExtensions
             options.ServiceName = "Boilerplate.LandingPage";
             // Errors are reported from the first moment, as a legitimate interest; everything else waits for consent
             options.Consent.Default = BelemetryFeatures.Errors;
+            options.Errors.CaptureUnhandledExceptions = false;
 
             if (string.IsNullOrWhiteSpace(configuration["Belemetry:AzureMonitorConnectionString"]) is false)
             {
                 options.AddAzureMonitorExporter(configuration["Belemetry:AzureMonitorConnectionString"]!);
             }
+
+            //#if (sentry == true)
+            if (string.IsNullOrWhiteSpace(configuration["Belemetry:SentryDsn"]) is false)
+            {
+                options.AddSentryExporter(configuration["Belemetry:SentryDsn"]!);
+            }
+            //#endif
 
             // Belemetry reads the OTEL_ variables itself everywhere but in the browser, where App.razor hands them to the runtime
             if (OperatingSystem.IsBrowser() && Environment.GetEnvironmentVariable("OTEL_EXPORTER_OTLP_ENDPOINT") is { Length: > 0 } otlpEndpoint)

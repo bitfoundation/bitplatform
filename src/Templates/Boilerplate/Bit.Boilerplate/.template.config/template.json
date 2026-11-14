@@ -937,7 +937,6 @@
                         "src/Tests/Features/Urls/ODataQueryFilterTests.cs",
                         "src/Tests/Features/Diagnostics/TelemetryScopeTests.cs",
                         "src/Tests/Features/Diagnostics/LoggingConfigurationTests.cs",
-                        "src/Tests/Features/Diagnostics/AppInsightsReadinessTests.cs",
                         "src/Tests/Features/Diagnostics/DiagnosticModalVirtualizationTests.cs",
                         "src/Tests/Features/TemplateConfig/SourceNameLeakTests.cs",
                         "src/Tests/Features/TemplateConfig/HybridHostHardeningTests.cs",
@@ -1248,14 +1247,6 @@
                         "src/Server/Boilerplate.Server.Api/Features/Identity/HealthChecks/GoogleRecaptchaHealthCheck.cs",
                         "src/Tests/Features/Identity/GoogleRecaptchaHealthCheckTests.cs",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/Identity/SignUp/GoogleRecaptcha.razor"
-                    ]
-                },
-                {
-                    "condition": "(appInsights != true)",
-                    "exclude": [
-                        "src/Client/Boilerplate.Client.Core/Infrastructure/Services/AppInsightsJsSdkService.cs",
-                        "src/Shared/ApplicationInsightsOptions.cs",
-                        "src/Tests/Features/Diagnostics/AppInsightsReadinessTests.cs"
                     ]
                 },
                 {

@@ -141,8 +141,9 @@ In [`src/Shared/appsettings.json`](/src/Shared/appsettings.json), you can see lo
 
 ```json
 {
-    "ApplicationInsights": {
-        "ConnectionString": null
+    "Belemetry": {
+        "AzureMonitorConnectionString": null,
+        "SentryDsn": null
     },
     "Logging": {
         "LogLevel": {
@@ -151,16 +152,7 @@ In [`src/Shared/appsettings.json`](/src/Shared/appsettings.json), you can see lo
             "Microsoft.EntityFrameworkCore.Database.Command": "Information",
             "Microsoft.AspNetCore.Diagnostics.ExceptionHandlerMiddleware": "None"
         },
-        "ApplicationInsights": {
-            "LogLevel": {
-                "Default": "Warning",
-                "Microsoft.Hosting.Lifetime": "Information"
-            }
-        },
-        "Sentry": {
-            "Dsn": "",
-            "SendDefaultPii": true,
-            "EnableScopeSync": true,
+        "Belemetry": {
             "LogLevel": {
                 "Default": "Warning",
                 "Microsoft.Hosting.Lifetime": "Information"

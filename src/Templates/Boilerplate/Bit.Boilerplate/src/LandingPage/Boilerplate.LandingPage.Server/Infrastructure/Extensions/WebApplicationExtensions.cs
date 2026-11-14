@@ -1,3 +1,4 @@
+//+:cnd:noEmit
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -49,6 +50,10 @@ public static class WebApplicationExtensions
         public WebApplication UseLandingSecurityHeaders()
         {
             var otlpOrigin = app.Configuration.GetBrowserOtlpEndpoint()?.Endpoint.GetLeftPart(UriPartial.Authority);
+            var telemetryOrigins = "https://*.applicationinsights.azure.com https://dc.services.visualstudio.com";
+            //#if (sentry == true)
+            telemetryOrigins += " https://*.sentry.io";
+            //#endif
 
             var csp = string.Join(' ',
                 "default-src 'self';",
@@ -56,7 +61,7 @@ public static class WebApplicationExtensions
                 "style-src 'self' 'unsafe-inline';",
                 "img-src 'self' data: blob:;",
                 "font-src 'self';",
-                $"connect-src 'self' https://*.applicationinsights.azure.com https://dc.services.visualstudio.com{(otlpOrigin is null ? null : $" {otlpOrigin}")};",
+                $"connect-src 'self' {telemetryOrigins}{(otlpOrigin is null ? null : $" {otlpOrigin}")};",
                 "frame-src https://www.openstreetmap.org;",
                 "object-src 'none';",
                 "frame-ancestors 'self';",

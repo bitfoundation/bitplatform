@@ -1,3 +1,4 @@
+using Bit.Belemetry;
 using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -52,8 +53,8 @@ public class AppLoggingSampler(IServiceProvider serviceProvider) : LoggingSample
         // --- SCENARIO A: Active Telemetry Trace Context Exists ---
         if (currentActivity != null && currentActivity.TraceId != default)
         {
-            // Re-use the existing OpenTelemetry sampling logic to ensure consistent sampling across the entire trace
-            return AppOpenTelemetryProcessor.ShouldSample(currentActivity);
+            // Re-use the span sampling decision to ensure consistent sampling across the entire trace
+            return BelemetrySampler.ShouldSample(currentActivity.TraceId, AppBelemetryProcessor.SamplingRatio);
         }
 
         // --- SCENARIO B: Fallback (No active trace context) ---

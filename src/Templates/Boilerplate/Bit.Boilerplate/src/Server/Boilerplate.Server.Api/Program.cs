@@ -1,4 +1,6 @@
 //+:cnd:noEmit
+using Bit.Belemetry;
+
 namespace Boilerplate.Server.Api;
 
 public static partial class Program
@@ -19,12 +21,10 @@ public static partial class Program
 
         builder.Configuration.AddSharedConfigurations();
 
-        //#if (sentry == true)
-        builder.WebHost.UseSentry(configureOptions: options => builder.Configuration.DynamicBind("Logging:Sentry", options));
-        //#endif
-
         builder.Services.AddSharedProjectServices(builder.Configuration);
         builder.AddServerApiProjectServices();
+        // Unlike Server.Web, this host has no unhandled exception handlers of its own
+        builder.Services.Configure<BelemetryOptions>(options => options.Errors.CaptureUnhandledExceptions = true);
 
         var app = builder.Build();
 
