@@ -929,6 +929,7 @@
                         "src/Tests/Features/Identity/GetAccessTokenTests.cs",
                         "src/Tests/Features/Identity/AccessTokenCookieTests.cs",
                         "src/Tests/Features/Identity/IStorageServiceContractTests.cs",
+                        "src/Tests/Features/Identity/ProfileBackOnlineUITests.cs",
                         "src/Tests/Infrastructure/Components/BitOtpInputUtils.cs",
                         "src/Tests/Infrastructure/Components/BitSnackBarUtils.cs",
                         "src/Tests/Infrastructure/Components/AppMenuUtils.cs",
