@@ -122,7 +122,7 @@ The features below were switched **off** when this project was generated from th
 *   **Push notifications** (`notification`): the AdsPush-based server side plus the per-platform client services for Android (FCM), iOS / macOS (APNs), Windows and Web Push.
 <!--#endif-->
 <!--#if (sentry != true)-->
-*   **Sentry** (`sentry`): Sentry error reporting and logging across the server and every client head.
+*   **Sentry** (`sentry`): errors from the server and every client head as Sentry Issues, and crash reports from the MAUI app.
 <!--#endif-->
 <!--#if (appInsights != true)-->
 *   **Azure Application Insights** (`appInsights`): Application Insights telemetry across the server and every client head.

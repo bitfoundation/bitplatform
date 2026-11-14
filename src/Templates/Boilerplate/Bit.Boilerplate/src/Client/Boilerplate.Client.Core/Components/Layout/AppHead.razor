@@ -8,9 +8,3 @@
 {
     <meta name="robots" content="noindex, nofollow" />
 }
-
-@*#if (appInsights == true)*@
-<Link rel="preconnect" href="https://js.monitor.azure.com" crossorigin />
-@* IsWasmStandalone reads backwards: false is what RENDERS the snippet, with the real connection string. *@
-<BlazorApplicationInsights.ApplicationInsightsInit IsWasmStandalone="false" />
-@*#endif*@

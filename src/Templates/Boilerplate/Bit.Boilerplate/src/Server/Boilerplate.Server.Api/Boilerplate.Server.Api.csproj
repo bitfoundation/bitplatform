@@ -103,7 +103,8 @@
         <PackageReference Include="System.Linq.Dynamic.Core" />
         <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="CommunityToolkit.Datasync.Server" />
         <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="CommunityToolkit.Datasync.Server.EntityFrameworkCore" />
-        <PackageReference Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.AspNetCore" />
+        <PackageReference Include="Bit.Belemetry.EntityFrameworkCore" />
+        <PackageReference Include="Bit.Belemetry.Hangfire" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" PrivateAssets="all" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" PrivateAssets="all" />
         <PackageReference Include="AspNetCore.HealthChecks.Uris" />

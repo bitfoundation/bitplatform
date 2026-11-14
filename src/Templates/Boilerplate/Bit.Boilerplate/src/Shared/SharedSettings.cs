@@ -5,10 +5,6 @@ namespace Boilerplate.Shared;
 
 public partial class SharedSettings : IValidatableObject
 {
-    //#if (appInsights == true)
-    public ApplicationInsightsOptions? ApplicationInsights { get; set; }
-    //#endif
-
     public virtual IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         var validationResults = new List<ValidationResult>();

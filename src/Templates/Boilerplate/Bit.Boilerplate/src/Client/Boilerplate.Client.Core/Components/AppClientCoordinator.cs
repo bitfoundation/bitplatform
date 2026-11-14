@@ -3,9 +3,7 @@ using System.Web;
 //#if (signalR == true)
 using Microsoft.AspNetCore.SignalR;
 //#endif
-//#if (appInsights == true)
-using BlazorApplicationInsights.Interfaces;
-//#endif
+using Bit.Belemetry;
 using Boilerplate.Client.Core.Infrastructure.Services.DiagnosticLog;
 
 namespace Boilerplate.Client.Core.Components;
@@ -13,7 +11,7 @@ namespace Boilerplate.Client.Core.Components;
 /// <summary>
 /// Manages the initialization and coordination of core services and settings within the client application.
 /// This includes authentication state handling, telemetry setup, culture configuration, and optional
-/// services such as SignalR connections, push notifications, and application insights.
+/// services such as SignalR connections, push notifications, and telemetry.
 /// </summary>
 public partial class AppClientCoordinator : AppComponentBase
 {
@@ -23,11 +21,10 @@ public partial class AppClientCoordinator : AppComponentBase
     [AutoInject] private AppHubConnection hubConnection = default!;
     [AutoInject] private SignInModalService signInModalService = default!;
     //#endif
+    [AutoInject] private IBelemetry belemetry = default!;
     [AutoInject] private CultureService cultureService = default!;
-    //#if (appInsights == true)
-    [AutoInject] private IApplicationInsights appInsights = default!;
     [AutoInject] private ConsentService consentService = default!;
-    //#endif
+    [AutoInject] private IBelemetryConsent belemetryConsent = default!;
     [AutoInject] private UserAgent userAgent = default!;
     [AutoInject] private IUserController userController = default!;
     [AutoInject] private ILogger<AuthManager> authLogger = default!;
@@ -88,31 +85,13 @@ public partial class AppClientCoordinator : AppComponentBase
             await TimeZoneService.ApplyPreferredTimeZone();
             TelemetryContext.PageUrl = new Uri(NavigationManager.Uri).GetUrlWithMaskedQueryValues();
 
-            //#if (appInsights == true)
-            _ = appInsights.AddTelemetryInitializer(new()
-            {
-                Data = new()
-                {
-                    ["ai.application.ver"] = TelemetryContext.AppVersion,
-                    ["ai.session.id"] = TelemetryContext.AppSessionId,
-                    ["ai.device.locale"] = CultureInfo.CurrentUICulture.Name
-                }
-            });
+            await ApplyTelemetryConsent();
 
-            if (appInsights is AppInsightsJsSdkService appInsightsJsSdk)
-            {
-                appInsightsJsSdk.AnalyticsConsentProvider = () => consentService.IsGranted(ConsentCategory.Analytics);
-            }
-
-            _ = appInsights.UpdateCfg(new());
-
-            // The empty config asks for nothing - the switches are filled in there.
             unsubscribes.Add(PubSubService.Subscribe(ClientAppMessages.CONSENT_CHANGED, async _ =>
             {
-                await appInsights.UpdateCfg(new());
+                await ApplyTelemetryConsent();
                 await ApplyAuthenticatedUserContext(lastPropagatedUser);
             }));
-            //#endif
 
             await accentColorService.InitializeAsync();
 
@@ -157,9 +136,7 @@ public partial class AppClientCoordinator : AppComponentBase
     private void NavigationManager_LocationChanged(object? sender, LocationChangedEventArgs e)
     {
         TelemetryContext.PageUrl = new Uri(e.Location).GetUrlWithMaskedQueryValues();
-        //#if (appInsights != true)
         navigatorLogger.LogInformation("Navigator's location changed to {Location}", TelemetryContext.PageUrl);
-        //#endif
 
         _ = SwitchToAccountInUrl(e.Location);
     }
@@ -192,31 +169,34 @@ public partial class AppClientCoordinator : AppComponentBase
         }
     }
 
-    //#if (appInsights == true)
-    private async Task ApplyAuthenticatedUserContext(ClaimsPrincipal? user)
+    private async Task ApplyTelemetryConsent()
     {
         try
         {
-            if (user?.IsAuthenticated() is true && await consentService.IsGranted(ConsentCategory.Analytics))
-            {
-                await appInsights.SetAuthenticatedUserContext(user.GetUserId().ToString());
-            }
-            else
-            {
-                await appInsights.ClearAuthenticatedUserContext();
-            }
+            await belemetryConsent.SetAsync(await consentService.GetTelemetryFeatures());
         }
         catch (Exception exp)
         {
             ExceptionHandler.Handle(exp, displayKind: ExceptionDisplayKind.None);
         }
     }
-    //#endif
+
+    private async Task ApplyAuthenticatedUserContext(ClaimsPrincipal? user)
+    {
+        try
+        {
+            await belemetry.SetUserAsync(user?.IsAuthenticated() is true ? user.GetUserId().ToString() : null);
+        }
+        catch (Exception exp)
+        {
+            ExceptionHandler.Handle(exp, displayKind: ExceptionDisplayKind.None);
+        }
+    }
 
     private ClaimsPrincipal? lastPropagatedUser;
     private ClaimsPrincipal? propagatingUser;
     /// <summary>
-    /// This code manages the association of a user with sensitive services, such as SignalR, push notifications, App Insights, and others,
+    /// This code manages the association of a user with sensitive services, such as SignalR, push notifications, Belemetry, and others,
     /// ensuring the user is correctly set or cleared as needed.
     /// </summary>
     public async Task PropagateAuthState(bool firstRun, Task<AuthenticationState> task)
@@ -250,14 +230,12 @@ public partial class AppClientCoordinator : AppComponentBase
             // we use this method to propagate the user ID and other telemetry contexts via Microsoft.Extensions.Logging's Scope feature.
             // PropagateUserId method is invoked both during app startup and when the authentication state changes.
             // Additionally, this is a convenient place to manage user-specific contexts for services like:
-            // - App Insights: Set or clear the user ID for tracking purposes.
+            // - Belemetry: Set or clear the user ID for tracking purposes.
             // - Push Notifications: Update subscriptions to ensure user-specific notifications are routed to the correct devices.
             // - SignalR: Map connection IDs to a user's group of connections for message targeting.
             // By leveraging this method during authentication state changes, we streamline the propagation of user-specific contexts across these systems.
 
-            //#if (appInsights == true)
             _ = ApplyAuthenticatedUserContext(user);
-            //#endif
 
             var data = TelemetryContext.ToDictionary();
             using var scope = authLogger.BeginScope(data);

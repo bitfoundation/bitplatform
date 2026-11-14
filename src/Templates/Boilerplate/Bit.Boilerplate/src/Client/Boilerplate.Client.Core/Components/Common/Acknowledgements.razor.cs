@@ -34,7 +34,6 @@ public partial class Acknowledgements
         new("Entity Framework Core", "https://learn.microsoft.com/ef", "https://github.com/dotnet/efcore", "MIT"),
         new("System.Linq.Dynamic.Core", "https://dynamic-linq.net", "https://github.com/zzzprojects/System.Linq.Dynamic.Core", "Apache-2.0"),
         new(".NET MAUI", "https://dotnet.microsoft.com/apps/maui", "https://github.com/dotnet/maui", "MIT"),
-        new("OpenTelemetry .NET", "https://opentelemetry.io", "https://github.com/open-telemetry/opentelemetry-dotnet", "Apache-2.0"),
         new("Hangfire", "https://www.hangfire.io", "https://github.com/HangfireIO/Hangfire", "LGPL-3.0 / Commercial"),
         new("Mapperly", "https://mapperly.riok.app", "https://github.com/riok/mapperly", "Apache-2.0"),
         new("FusionCache", "https://github.com/ZiggyCreatures/FusionCache", "https://github.com/ZiggyCreatures/FusionCache", "MIT"),
@@ -67,14 +66,11 @@ public partial class Acknowledgements
         //#if (filesStorage == "S3")
         new("AWS SDK for .NET", "https://aws.amazon.com/sdk-for-net", "https://github.com/aws/aws-sdk-net", "Apache-2.0"),
         //#endif
-        //#if (filesStorage == "AzureBlobStorage" || appInsights == true)
+        //#if (filesStorage == "AzureBlobStorage")
         new("Azure SDK for .NET", "https://learn.microsoft.com/dotnet/azure/sdk/azure-sdk-for-dotnet", "https://github.com/Azure/azure-sdk-for-net", "MIT"),
         //#endif
         //#if (sentry == true)
         new("Sentry", "https://sentry.io", "https://github.com/getsentry/sentry-dotnet", "MIT"),
-        //#endif
-        //#if (appInsights == true)
-        new("BlazorApplicationInsights", "https://github.com/IvanJosipovic/BlazorApplicationInsights", "https://github.com/IvanJosipovic/BlazorApplicationInsights", "MIT"),
         //#endif
         //#if (offlineDb == true)
         new("Community Toolkit Datasync", "https://github.com/CommunityToolkit/Datasync", "https://github.com/CommunityToolkit/Datasync", "MIT"),

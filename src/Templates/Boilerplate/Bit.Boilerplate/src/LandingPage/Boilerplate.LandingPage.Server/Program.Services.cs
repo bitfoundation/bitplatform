@@ -30,7 +30,7 @@ public static partial class Program
                 .Bind(configuration)
                 .ValidateOnStart();
 
-            builder.AddLandingOpenTelemetry();
+            builder.AddLandingTelemetry();
 
             // The client's services, for prerendering; the server registers its direct clients after it
             services.AddLandingPageClientServices(configuration);
