@@ -53,6 +53,18 @@ public sealed class BonboardingLabels
     /// <summary>What a screen reader hears after a checklist item still to do.</summary>
     public string ChecklistItemTodo { get; set; } = "Not done";
 
+    /// <summary>The tag on a checklist item that is <see cref="BonboardingChecklistItem.Optional"/>.</summary>
+    public string ChecklistItemOptional { get; set; } = "Optional";
+
+    /// <summary>
+    /// The line under a checklist item that is locked until others are done (<see cref="BonboardingChecklistItem.DependsOn"/>).
+    /// <c>{0}</c> is the titles of the items still to do, separated by <see cref="ChecklistListSeparator"/>.
+    /// </summary>
+    public string ChecklistItemLockedFormat { get; set; } = DefaultChecklistItemLockedFormat;
+
+    /// <summary>What separates the titles in <see cref="ChecklistItemLockedFormat"/>. Default <c>", "</c>.</summary>
+    public string ChecklistListSeparator { get; set; } = ", ";
+
     /// <summary>State of a tour in a <see cref="BonboardingTourList"/> the user has never started.</summary>
     public string TourNew { get; set; } = "New";
 
@@ -72,6 +84,8 @@ public sealed class BonboardingLabels
     public string TourReplay { get; set; } = "Replay";
 
     internal const string DefaultChecklistProgressFormat = "{0} of {1} done";
+
+    internal const string DefaultChecklistItemLockedFormat = "Do first: {0}";
 
     internal const string DefaultProgressFormat = "{0} of {1}";
 

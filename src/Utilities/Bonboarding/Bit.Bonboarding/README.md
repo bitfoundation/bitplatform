@@ -58,9 +58,11 @@ A WebAssembly app can lazy load `Bit.Bonboarding.wasm` instead: it skips the reg
 - Interactive steps that advance when the user actually uses the highlighted control.
 - Conditional and branching flows, where Back follows the path the user took, and validation that says why.
 - Route-aware tours that span pages.
-- Beacons that open hints or tours, onboarding checklists, and a list of tours to start again.
-- Automatic tours that queue by priority instead of interrupting, "remind me later", and definitions checked
-  before anyone sees them.
+- Beacons that open hints or tours, onboarding checklists with optional and prerequisite tasks, and a list of
+  tours to start again.
+- Automatic tours that queue by priority instead of interrupting, "remind me later", a global rule to turn
+  automatic tips off, and definitions checked before anyone sees them.
+- Previews that never touch a user's progress, and missing targets that say why (absent, hidden, invalid selector).
 - Accessibility built in: dialog semantics, focus trap and restoration, live-region announcements,
   reduced motion and forced colors.
 - Theming through CSS variables, per-step templates, or a fully headless popover.

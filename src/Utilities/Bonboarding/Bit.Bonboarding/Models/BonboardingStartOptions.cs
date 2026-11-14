@@ -37,4 +37,22 @@ public sealed class BonboardingStartOptions
     /// <c>AutoStart</c> queues. Another session of the same tour is always replaced.
     /// </summary>
     public BonboardingBusyBehavior WhenBusy { get; set; } = BonboardingBusyBehavior.Replace;
+
+    /// <summary>
+    /// Says that nobody asked for this start: the application decided to show the tour (on first login, on reaching a
+    /// page). An automatic start passes over a tour the user snoozed, and asks <see cref="BonboardingOptions.CanAutoStart"/>
+    /// first, so a user who turned tips off is not shown any; a start the user asks for (a help menu, a replay) is not
+    /// held back by either. <see cref="IBonboardingService.StartOnceAsync"/> and a declarative <c>AutoStart</c> are
+    /// always automatic. A start that is held back throws a <see cref="BonboardingException"/>, as one
+    /// <see cref="BonboardingTourDefinition.CanStart"/> declines does. Default <see langword="false"/>.
+    /// </summary>
+    public bool Automatic { get; set; }
+
+    /// <summary>
+    /// Runs the tour without touching the user's progress, for authors and testers checking a tour: stored progress is
+    /// neither read nor written (it starts at the top, or at <see cref="StartAtStepId"/>), and it starts whatever
+    /// <see cref="BonboardingTourDefinition.CanStart"/> says and however the user left the tour. Its events carry
+    /// <see cref="BonboardingEvent.IsPreview"/>, so analytics can leave them out. Default <see langword="false"/>.
+    /// </summary>
+    public bool Preview { get; set; }
 }
