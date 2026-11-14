@@ -1410,6 +1410,10 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
         _geometry = geometry;
         _lastSequence = geometry.Sequence;
 
+        // A target that is measured again is no longer missing, however it came back: a centred step whose target
+        // returned, a refresh, a frame from the browser.
+        if (geometry.Found) TargetIssue = BonboardingTargetIssue.None;
+
         var options = CurrentOptions;
         if (options is null) return;
 

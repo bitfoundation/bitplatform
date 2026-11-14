@@ -134,7 +134,8 @@ public class PlacementInvariantTests
             Assert.AreNotEqual(BonboardingPlacementSide.Center, result.Side, Describe(request, result));
 
             var edge = result.Side is BonboardingPlacementSide.Top or BonboardingPlacementSide.Bottom ? result.Popover.Width : result.Popover.Height;
-            Assert.IsTrue(result.ArrowOffset >= -Tolerance && result.ArrowOffset <= edge + Tolerance, Describe(request, result));
+            var inset = request.CornerRadius + (request.ArrowSize / 2d);
+            Assert.IsTrue(result.ArrowOffset >= inset - Tolerance && result.ArrowOffset <= edge - inset + Tolerance, Describe(request, result));
         }
     }
 
