@@ -53,7 +53,7 @@ The solution is organized into the following projects. Understand their roles to
 *   **Boilerplate.Client.Web**: The Blazor WebAssembly (WASM) standalone project.
 *   **Boilerplate.Client.Maui**: The .NET MAUI Blazor Hybrid project for native mobile and desktop apps.
 *   **Boilerplate.Client.Windows**: The Windows Forms Blazor Hybrid project.
-*   **Boilerplate.Workbench**: A separate web app for designing pages before the app builds them: it runs them on sample data with the app's own components and theme, on device frames side by side, in every theme, language and data state, and makes the App Store, Google Play and Microsoft Store screenshots. It references Client.Core and is never deployed with the app. Its pages are designs, not app code: an approved one is rebuilt in the app following this file, never copied as it is.
+*   **Boilerplate.Workbench**: A separate web app for designing pages before the app builds them: it runs them on sample data with the app's own components and theme, on device frames side by side, in every theme, language and data state, and makes the App Store, Google Play and Microsoft Store screenshots. It references Client.Core and is never deployed with the app. Its pages are designs, not app code: an approved one is rebuilt in the app following this file, never copied as it is. A page the app already has is shown there as the app's own component, on stand-ins of the server, and copied there only when the user wants to redesign it.
 *   **Boilerplate.LandingPage.Server** and **Boilerplate.LandingPage.Client**: The product's public landing page, a site of its own next to the app: sample landing pages for several kinds of business, each under its own path with its own pages, look, texts and chat, a waitlist before launch and the store links after it, prerendered for search engines, in English and Persian. It references none of the app's projects and deploys as a service of its own.
 
 ## 3. Information Gathering & Codebase Investigation
@@ -131,7 +131,8 @@ Before implementing any changes, you **MUST** complete the following:
 <!--#else-->
 -   **Add new migrations**: Run `bit migration add <MigrationName>` in any folder of the project.
 <!--#endif-->
--   **Format before committing**: Run `dotnet format whitespace --folder .` in the project's root folder. CI fails a pull request on anything this would change.
+-   **Format before committing**: Run `dotnet format whitespace --folder .` in the project's root folder. CI fails on anything this would change.
+-   **Run CI**: Run `bit ci` in the project's root folder. It runs `.github/workflows/ci.yml` on this machine in a container, with act on Docker or Podman, and takes as long as CI on GitHub, so cap the wait as section 6 says. A pull request starts no workflow, so this is a change's CI; each CD runs it again before it deploys.
 -   **Generate Resx C# code**: Run `dotnet build -t:PrepareResources` in the src/Shared directory.
 -   **Use the bit CLI for the rest**: besides `bit setup` for a fresh clone, `bit keys` creates the project's keys and certificates, `bit pipeline` fills in the secrets of the GitHub Actions workflows, `bit migration` adds EF Core migrations, `bit api check` tells whether a change to the api breaks an app version users still run and `bit run` starts the native apps; `bit --help` lists them all.
 

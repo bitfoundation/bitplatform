@@ -40,7 +40,7 @@ public class AccountSectionUITests : SettingsPageTest
     }
 
     [TestMethod, EverySurface]
-    public async Task EveryTab_Should_ShowItsOwnFormAndTheOpenOneShouldStayAfterAReload(WorkbenchSurface surface)
+    public async Task EveryTab_Should_ShowItsOwnFormAndAReloadShouldOpenTheFirstOneAgain(WorkbenchSurface surface)
     {
         await OpenSection(AppStrings.AccountTitle);
 
@@ -58,9 +58,10 @@ public class AccountSectionUITests : SettingsPageTest
         await OpenTab(AppStrings.Email);
         await Expect(TextField(Panel(AppStrings.Email), AppStrings.NewEmail)).ToBeVisibleAsync();
 
-        await ReloadTheViewOnceSaved($"\"AccountTab\":\"{nameof(AppStrings.Email)}\"");
+        // The app keeps the open tab only while the page is open.
+        await ReloadTheView();
 
-        await Expect(TextField(Panel(AppStrings.Email), AppStrings.NewEmail)).ToBeVisibleAsync();
+        await Expect(Panel(AppStrings.Passwordless)).ToBeVisibleAsync();
     }
 
     [TestMethod, EverySurface]
@@ -74,7 +75,7 @@ public class AccountSectionUITests : SettingsPageTest
 
         await Expect(ButtonIn(panel, AppStrings.DisablePasswordless)).ToBeVisibleAsync();
 
-        await ReloadTheViewOnceSaved("\"IsPasswordlessEnabled\":true");
+        await ReloadTheViewOnceSaved("\"HasPasskey\":true");
 
         await Expect(ButtonIn(panel, AppStrings.DisablePasswordless)).ToBeVisibleAsync();
 
@@ -139,7 +140,7 @@ public class AccountSectionUITests : SettingsPageTest
     }
 
     [TestMethod, EverySurface]
-    public async Task TheEmailCodeStep_Should_ResendRefuseAnEmptyCodeStayAfterAReloadAndGoBack(WorkbenchSurface surface)
+    public async Task TheEmailCodeStep_Should_ResendRefuseAnEmptyCodeAndGoBack(WorkbenchSurface surface)
     {
         await OpenSection(AppStrings.AccountTitle);
         await OpenTab(AppStrings.Email);
@@ -160,9 +161,8 @@ public class AccountSectionUITests : SettingsPageTest
         await Press(ButtonIn(panel, AppStrings.ResendEmailTokenButtonText));
 
         await Expect(Snack(AppStrings.SuccessfulSendChangeEmailTokenMessage)).ToBeVisibleAsync();
-
-        await ReloadTheViewOnceSaved(NewEmail);
-
+        // The first code's message may still show: the resent one is in once the step's buttons stop loading, before going back.
+        await Expect(confirm).ToBeEnabledAsync();
         await Expect(TextField(panel, AppStrings.Email)).ToHaveValueAsync(NewEmail);
         await Expect(confirm).ToBeVisibleAsync();
 
@@ -247,7 +247,7 @@ public class AccountSectionUITests : SettingsPageTest
     }
 
     [TestMethod, EverySurface]
-    public async Task ThePhoneCodeStep_Should_ResendRefuseAnEmptyCodeStayAfterAReloadAndGoBack(WorkbenchSurface surface)
+    public async Task ThePhoneCodeStep_Should_ResendRefuseAnEmptyCodeAndGoBack(WorkbenchSurface surface)
     {
         await OpenSection(AppStrings.AccountTitle);
         await OpenTab(AppStrings.Phone);
@@ -268,9 +268,8 @@ public class AccountSectionUITests : SettingsPageTest
         await Press(ButtonIn(panel, AppStrings.ResendPhoneTokenButtonText));
 
         await Expect(Snack(AppStrings.SuccessfulSendChangePhoneNumberTokenMessage)).ToBeVisibleAsync();
-
-        await ReloadTheViewOnceSaved(NewPhone[1..]);
-
+        // The first code's message may still show: the resent one is in once the step's buttons stop loading, before going back.
+        await Expect(confirm).ToBeEnabledAsync();
         await Expect(confirm).ToBeVisibleAsync();
 
         await Press(ButtonIn(panel, AppStrings.GoBack));
@@ -395,9 +394,9 @@ public class AccountSectionUITests : SettingsPageTest
 
         await Expect(DeleteDialog).ToBeVisibleAsync();
 
-        await ReloadTheViewOnceSaved($"\"AccountTab\":\"{nameof(AppStrings.Delete)}\"");
+        await ReloadTheView();
 
-        await Expect(Panel(AppStrings.Delete)).ToBeVisibleAsync();
+        await Expect(Panel(AppStrings.Passwordless)).ToBeVisibleAsync();
         await Expect(DeleteDialog).ToHaveCountAsync(0);
     }
 
@@ -412,6 +411,6 @@ public class AccountSectionUITests : SettingsPageTest
 
         await Expect(View().GetByText(AppStrings.YouAreNotAuthorized)).ToBeVisibleAsync();
         await Expect(AccountButton(AppStrings.AccountMenuTitle)).ToBeVisibleAsync();
-        await Expect(Page).ToHaveURLAsync(new Regex(@"\?auth=signedout$"));
+        await Expect(Page).ToHaveURLAsync(new Regex(@"\?auth=signedout(&|$)"));
     }
 }

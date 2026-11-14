@@ -24,17 +24,19 @@ public class WizardTests
     }
 
     [TestMethod]
-    public async Task Docker_Should_BeOfferedUncheckedWithoutAspire()
+    public async Task Docker_Should_BeOfferedCheckedWithoutAspireForBitCi()
     {
         var prompter = new ScriptedPrompter().On("Create it?", false);
         using var host = MissingDocker(prompter);
 
         Assert.AreEqual(0, await host.RunAsync("new", "Contoso", "--aspire", "false"), host.Output);
 
+        // Without Aspire the app runs no containers, but its CI does: bit ci runs ci.yml in one.
         var install = prompter.Find("Install these?");
         Assert.IsNotNull(install, host.Output);
         var docker = install.Choices.Single(c => c.Contains("Docker", StringComparison.Ordinal));
-        CollectionAssert.DoesNotContain(install.Preselected.ToList(), docker);
+        CollectionAssert.Contains(install.Preselected.ToList(), docker);
+        StringAssert.Contains(docker, "bit ci");
     }
 
     [TestMethod]

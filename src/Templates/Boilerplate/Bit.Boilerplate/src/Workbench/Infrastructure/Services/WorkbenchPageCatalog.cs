@@ -2,6 +2,7 @@
 //#if (module == "Admin")
 using Boilerplate.Workbench.Components.Pages.AppPages.Dashboard;
 //#endif
+using Boilerplate.Workbench.Components.Pages.AppPages.Settings.Data;
 
 namespace Boilerplate.Workbench.Infrastructure.Services;
 
@@ -125,7 +126,8 @@ public static class WorkbenchPageCatalog
             nameof(WorkbenchStrings.AppDashboardTitle),
             nameof(WorkbenchStrings.AppDashboardDescription),
             BitIconName.BarChartVerticalFill,
-            typeof(DashboardPage),
+            // The app's own page, on a sample product catalog (See DashboardHost).
+            typeof(DashboardHost),
             nameof(WorkbenchStrings.CategoryAppPages),
             ["BitChart", "BitCard", "BitEllipsisLoading"],
             nameof(WorkbenchStrings.AppDashboardCaption)),
@@ -134,10 +136,43 @@ public static class WorkbenchPageCatalog
             nameof(WorkbenchStrings.SettingsTitle),
             nameof(WorkbenchStrings.SettingsDescription),
             BitIconName.Equalizer,
-            typeof(SettingsPage),
+            // The app's own page, on the view's sample account (See SettingsHost).
+            typeof(SettingsHost),
             nameof(WorkbenchStrings.CategoryAppPages),
             ["BitAccordionList", "BitPivot", "BitOtpInput", "BitFileUpload"],
-            nameof(WorkbenchStrings.SettingsCaption)),
+            nameof(WorkbenchStrings.SettingsCaption))
+        {
+            Switches =
+            [
+                new(SettingsHost.SectionSwitch, nameof(WorkbenchStrings.SettingsSwitchSection),
+                [
+                    new(PageUrls.SettingsSections.Profile, nameof(WorkbenchStrings.SettingsSectionProfile)),
+                    new(PageUrls.SettingsSections.Account, nameof(WorkbenchStrings.SettingsSectionAccount)),
+                    new(PageUrls.SettingsSections.Tfa, nameof(WorkbenchStrings.SettingsSectionTfa)),
+                    new(PageUrls.SettingsSections.Sessions, nameof(WorkbenchStrings.SettingsSectionSessions)),
+                    new(PageUrls.SettingsSections.Privacy, nameof(WorkbenchStrings.SettingsSectionPrivacy)),
+                    //#if (ads == true)
+                    new(PageUrls.SettingsSections.UpgradeAccount, nameof(WorkbenchStrings.SettingsSectionUpgrade)),
+                    //#endif
+                ]),
+                new(SettingsSampleAccount.TwoFactorSwitch, nameof(WorkbenchStrings.SettingsSwitchTwoFactor),
+                [
+                    new("off", nameof(WorkbenchStrings.SettingsTwoFactorOff)),
+                    new(SettingsSampleAccount.On, nameof(WorkbenchStrings.SettingsTwoFactorOn))
+                ]),
+                new(SettingsSampleAccount.PasskeySwitch, nameof(WorkbenchStrings.SettingsSwitchPasskey),
+                [
+                    new("off", nameof(WorkbenchStrings.SettingsPasskeyOff)),
+                    new(SettingsSampleAccount.On, nameof(WorkbenchStrings.SettingsPasskeyOn))
+                ]),
+                // What removing a session, changing the email or deleting the account first ask for (AuthManager.TryEnterElevatedAccessMode).
+                new(WorkbenchElevation.Switch, nameof(WorkbenchStrings.SettingsSwitchConfirm),
+                [
+                    new("recent", nameof(WorkbenchStrings.SettingsConfirmRecent)),
+                    new(WorkbenchElevation.AskCase, nameof(WorkbenchStrings.SettingsConfirmAsk))
+                ])
+            ]
+        },
         new("landing-minimal",
             nameof(WorkbenchStrings.LandingMinimalTitle),
             nameof(WorkbenchStrings.LandingMinimalDescription),

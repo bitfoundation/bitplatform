@@ -2,11 +2,13 @@ using System.Text;
 using System.IO.Compression;
 using Bit.Bcrdt.Server;
 using Microsoft.Extensions.Localization;
+using Boilerplate.Shared.Features.Attachments;
 
 namespace Boilerplate.Workbench.Infrastructure.Extensions;
 
 /// <summary>
-/// Maps the Workbench's HTTP endpoints: screenshots, thumbnails, review sheets, checks and the review API the agent uses.
+/// Maps the Workbench's HTTP endpoints: screenshots, thumbnails, review sheets, checks, the review API the agent uses, and
+/// what the app's own pages fetch from their server by address.
 /// </summary>
 public static class IWorkbenchEndpointRouteBuilderExtensions
 {
@@ -14,8 +16,68 @@ public static class IWorkbenchEndpointRouteBuilderExtensions
 
     extension(IEndpointRouteBuilder endpoints)
     {
+        /// <summary>
+        /// What the browser fetches or sends by address for the app's settings page, rather than its code through a controller:
+        /// the demo users' profile pictures and an upload of a new one. Who uploads comes from the view's access token, which the
+        /// page sends as it would to its server. The personal data export, which the page's code asks for, is answered in the
+        /// view (See WorkbenchExportHandler).
+        /// </summary>
+        public void MapSettingsSampleEndpoints()
+        {
+            foreach (var kind in (AttachmentKind[])[AttachmentKind.UserProfileImageSmall, AttachmentKind.UserProfileImageOriginal])
+            {
+                endpoints.MapGet($"api/v1/Attachment/GetAttachment/{{id:guid}}/{kind}", (Guid id, IWebHostEnvironment environment) =>
+                    WorkbenchProfilePictures.Find(id) is { } uploaded ? Results.File(uploaded.Content, uploaded.ContentType)
+                    : WorkbenchProfilePictures.SampleOf(id) is { } photo ? Results.File(environment.WebRootFileProvider.GetFileInfo(photo).CreateReadStream(), "image/svg+xml")
+                    : Results.NotFound());
+            }
+
+            // The page posts the picture itself: the image editor's result as a form, or BitFileUpload's file as the body.
+            endpoints.MapPost("api/v1/Attachment/UploadUserProfilePicture", async (HttpRequest request, IStringLocalizer<AppStrings> appLocalizer, CancellationToken cancellationToken) =>
+            {
+                if (WorkbenchClaims.UserOf(request.Headers.Authorization.ToString(), elevated: false) is not { } userId)
+                    return Results.Unauthorized();
+
+                if (request.ContentLength > WorkbenchProfilePictures.MaxBytes)
+                    return Results.StatusCode(StatusCodes.Status413PayloadTooLarge);
+
+                byte[] content;
+
+                if (request.HasFormContentType)
+                {
+                    var file = (await request.ReadFormAsync(cancellationToken)).Files.FirstOrDefault();
+                    if (file is null)
+                        return Results.BadRequest();
+
+                    using var stream = new MemoryStream();
+                    await file.CopyToAsync(stream, cancellationToken);
+                    content = stream.ToArray();
+                }
+                else
+                {
+                    using var stream = new MemoryStream();
+                    await request.Body.CopyToAsync(stream, cancellationToken);
+                    content = stream.ToArray();
+                }
+
+                if (content.Length is 0 || content.Length > WorkbenchProfilePictures.MaxBytes)
+                    return Results.BadRequest();
+
+                // Only the images the app's page accepts, told by their bytes as the server tells them, and served as that type:
+                // the picture's address answers anyone, so a page or a script sent as one would run on the Workbench's origin.
+                // What the upload says it is counts for nothing, as BitFileUpload sends a slice of the file, which has no type.
+                if (WorkbenchProfilePictures.ImageTypeOf(content) is not { } imageType)
+                    return Results.BadRequest(appLocalizer[nameof(AppStrings.UnsupportedImageFormat)].ToString());
+
+                WorkbenchProfilePictures.Keep(userId, content, imageType);
+                return Results.Ok();
+            });
+        }
+
         public void MapWorkbenchEndpoints()
         {
+            endpoints.MapSettingsSampleEndpoints();
+
             // The views listed in shots, as one zip of PNGs.
             endpoints.MapGet("api/screenshots/zip", async (string? shots, HttpContext context, WorkbenchScreenshotService screenshotService, WorkbenchScreenshotLimiter limiter, CancellationToken cancellationToken) =>
             {

@@ -45,6 +45,11 @@ public partial class MainLayout : IAsyncDisposable
     private RouteData? currentRouteData;
     private List<Action> unsubscribers = [];
     private CancellationTokenSource getCurrentUserCts = new();
+    /// <summary>What <see cref="SetCurrentUser"/> loads last, which coming back online waits for rather than restarts.</summary>
+    private Task currentUserLoads = Task.CompletedTask;
+    private bool isReloadingCurrentUser;
+    /// <summary>The app came back online again while <see cref="ReloadCurrentUser"/> ran, so it checks again once it's done.</summary>
+    private bool isCurrentUserRecheckPending;
 
 
     protected override async Task OnInitializedAsync()
@@ -89,8 +94,17 @@ public partial class MainLayout : IAsyncDisposable
             {
                 if (IsOnline == (bool?)payload)
                     return;
+                var wasOffline = IsOnline is false;
                 telemetryContext.IsOnline = IsOnline = (bool?)payload;
                 await InvokeAsync(StateHasChanged);
+
+                // Back online after the server couldn't be reached: what failed to load then, such as the signed-in
+                // user's profile when the app was opened offline, would stay missing until the app is reloaded.
+                // From offline only, as the first answer at start comes while the profile is still on its way.
+                if (wasOffline && IsOnline is true)
+                {
+                    await InvokeAsync(ReloadCurrentUser);
+                }
             }));
 
             unsubscribers.Add(pubSubService.Subscribe(ClientAppMessages.PROFILE_UPDATED, async payload =>
@@ -169,6 +183,56 @@ public partial class MainLayout : IAsyncDisposable
         await bitExtraServices.AddRootCssClasses();
     }
 
+    /// <summary>
+    /// Loads again what <see cref="SetCurrentUser"/> couldn't load while the server was out of reach; it loads only what's
+    /// missing. A load still on its way is waited for rather than restarted, as cancelling it would tell the app it's offline
+    /// again. Coming back online once more while this runs, as when the profile's call fails and the tenant's then goes
+    /// through, has it check again once it's done.
+    /// </summary>
+    private async Task ReloadCurrentUser()
+    {
+        if (isReloadingCurrentUser)
+        {
+            isCurrentUserRecheckPending = true;
+            return;
+        }
+
+        isReloadingCurrentUser = true;
+        try
+        {
+            do
+            {
+                isCurrentUserRecheckPending = false;
+
+                try
+                {
+                    await currentUserLoads;
+                }
+                catch (Exception)
+                {
+                    // Handled where it was started; what it couldn't load is loaded below
+                }
+
+                try
+                {
+                    await SetCurrentUser(authManager.GetAuthenticationStateAsync());
+                }
+                catch (Exception exp)
+                {
+                    exceptionHandler.Handle(exp);
+                }
+            }
+            while (isCurrentUserRecheckPending && IsOnline is true);
+        }
+        finally
+        {
+            isReloadingCurrentUser = false;
+            isCurrentUserRecheckPending = false;
+        }
+
+        StateHasChanged();
+    }
+
     private ClaimsPrincipal? lastAuthUser;
     private async Task SetCurrentUser(Task<AuthenticationState> task)
     {
@@ -197,7 +261,7 @@ public partial class MainLayout : IAsyncDisposable
                 //#endif
             ];
 
-            await Task.WhenAll(loads);
+            await (currentUserLoads = Task.WhenAll(loads));
         }
 
         lastAuthUser = authUser;

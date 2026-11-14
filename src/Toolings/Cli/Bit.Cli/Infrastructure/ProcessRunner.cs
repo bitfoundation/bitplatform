@@ -22,7 +22,28 @@ public sealed record ProcessSpec
 
     public string? StandardInput { get; init; }
 
-    public string CommandLine => string.Join(' ', new[] { FileName }.Concat(Arguments).Select(Quote));
+    public string CommandLine => string.Join(' ', new[] { FileName }.Concat(Redact(Arguments)).Select(Quote));
+
+    /// <summary>
+    /// The arguments for a log or a message, with the value of each secret act takes on its command line masked:
+    /// <c>-s NAME=value</c>, <c>--secret NAME=value</c> and <c>--secret=NAME=value</c>, as <c>bit ci -- ...</c> passes them on.
+    /// </summary>
+    public static IEnumerable<string> Redact(IEnumerable<string> arguments)
+    {
+        var secretNext = false;
+
+        foreach (var argument in arguments)
+        {
+            if (secretNext && argument.IndexOf('=') is > 0 and var equals)
+                yield return argument[..(equals + 1)] + "***";
+            else if (argument.StartsWith("--secret=", StringComparison.Ordinal) && argument.IndexOf('=', "--secret=".Length) is > 0 and var valueEquals)
+                yield return argument[..(valueEquals + 1)] + "***";
+            else
+                yield return argument;
+
+            secretNext = argument is "-s" or "--secret";
+        }
+    }
 
     public string Attempt
     {

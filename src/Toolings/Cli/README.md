@@ -20,7 +20,7 @@ It needs a .NET 10 SDK or later. `dnx` asks once before it downloads the package
 `bit new` creates a project from [bit Boilerplate](https://bitplatform.dev/templates) and gets it ready, so the first run works:
 
 1. Takes the project name and options from its arguments. The [create project page](https://bitplatform.dev/templates/create-project) builds the whole command. A name that is also the name of a type in bit Boilerplate's code, like `App` or `Program`, is refused, because its namespace would hide that type and the project wouldn't build. When a newer bit is out, the run continues with it, see [Staying up to date](#staying-up-to-date).
-2. Checks this machine, lists what the project needs and is missing, and installs what you tick: the .NET SDK the template's `global.json` pins, nuget.org as a package source when it's missing or disabled, Node.js, a container runtime that is free for commercial use (Podman on Windows, Colima with the docker CLI on macOS, Docker Engine on Linux; a Docker you already have is used as it is), WSL and the Windows Virtual Machine Platform that Podman runs on, Git, the Aspire CLI, the HTTPS development certificate, VS Code, the GitHub CLI when you ask for a GitHub repository, Windows long paths, and for native apps the Windows Hypervisor Platform the Android emulator uses and Windows developer mode, plus Python 3 on Linux when the offline database's native WebAssembly build needs it. Things already installed aren't shown, and neither is anything that doesn't apply to your operating system. A project that runs without its containers, such as one with SQLite and no Redis, still gets them, but a restart they ask for is a note, not a warning. The development certificate is trusted first, because Windows and macOS ask you to confirm it, so once that and the administrator prompt are answered you can leave it to finish. On Windows that one prompt, right after the plan, also covers the build support and the Android SDK when their folders need administrator rights. The versions come from the project: the .NET SDK from `global.json`, Node.js from `engines.node` in Client.Core's `package.json`, and the Aspire CLI from the AppHost's Aspire version, so an older Aspire CLI is updated to it. When nvm, fnm or Volta manages Node.js, Node.js is installed or updated through it, so the version it picks is the one that runs. On macOS with a native app, it also checks that Xcode is the one the project's .NET for iOS asks for.
+2. Checks this machine, lists what the project needs and is missing, and installs what you tick: the .NET SDK the template's `global.json` pins, nuget.org as a package source when it's missing or disabled, Node.js, a container runtime that is free for commercial use (Podman on Windows, Colima with the docker CLI on macOS, Docker Engine on Linux; a Docker you already have is used as it is), WSL and the Windows Virtual Machine Platform that Podman runs on, Git, the Aspire CLI, the HTTPS development certificate, VS Code, act for `bit ci`, the GitHub CLI when you ask for a GitHub repository, Windows long paths, and for native apps the Windows Hypervisor Platform the Android emulator uses and Windows developer mode, plus Python 3 on Linux when the offline database's native WebAssembly build needs it. Things already installed aren't shown, and neither is anything that doesn't apply to your operating system. A project that runs without its containers, such as one with SQLite and no Redis, still gets them, but a restart they ask for is a note, not a warning. The development certificate is trusted first, because Windows and macOS ask you to confirm it, so once that and the administrator prompt are answered you can leave it to finish. On Windows that one prompt, right after the plan, also covers the build support and the Android SDK when their folders need administrator rights. The versions come from the project: the .NET SDK from `global.json`, Node.js from `engines.node` in Client.Core's `package.json`, and the Aspire CLI from the AppHost's Aspire version, so an older Aspire CLI is updated to it. When nvm, fnm or Volta manages Node.js, Node.js is installed or updated through it, so the version it picks is the one that runs. On macOS with a native app, it also checks that Xcode is the one the project's .NET for iOS asks for.
 3. Warns, only when it's sure, about hardware that makes development slow: virtualization turned off in the BIOS or UEFI while the project's containers or the Android emulator need it, less than 15 GB of memory, or a project drive that is a hard disk rather than an SSD. Drives are judged only when they're internal and on real hardware; USB drives, virtual disks and virtual machines are left alone.
 4. Creates the project, with a development certificate and web push (VAPID) keys of its own, and keeps only its `.slnx`: the `.sln` the template also ships for older Visual Studio versions is removed.
 5. Initializes git with `main`, the project's only long-lived branch, and commits. When git doesn't know your name yet, it commits as your user name and `<user name>@git.com`, set on this repository only. On Windows it also turns on git's own long path support (`core.longpaths`), which Windows long paths don't cover.
@@ -123,6 +123,21 @@ bit run ios
 
 In VS Code, bit Boilerplate's **Run the Android app** task runs `bit run android`.
 
+## bit ci
+
+Runs the project's CI workflow, `.github/workflows/ci.yml`, on this machine, the way GitHub runs it, without spending Actions minutes:
+
+```bash
+bit ci
+bit ci -- --list
+```
+
+- It runs the workflow with [act](https://nektosact.com), in a container on Docker or Podman. `bit setup` installs act along with the rest.
+- The container starts from an image it builds from the project's `.github/act/Dockerfile`: act's runner image plus the JDK and the Android SDK GitHub's runner comes with. It builds it on the first run and whenever that file changes, tagged with the file's hash, and the other runs reuse it.
+- It finds where act connects to the engine, and where the engine's socket is for the job's container to mount, since the tests start containers of their own: Docker as it is, or Podman, through its Docker API pipe on Windows. When that pipe is down while Podman's machine runs, as after Windows restarts for an update, it says so; `bit doctor --fix` restarts Podman to bring it back.
+- The run's log says which step failed and why. The workflow's artifact uploads are skipped under act, and the container goes away with what it built.
+- Arguments after `--` go to act as they are.
+
 ## bit diff
 
 Shows what changed in bit Boilerplate between two versions, for your project:
@@ -182,7 +197,7 @@ A job that publishes lets bit build first too, so its CSS and JS are generated b
 
 In CI, bit installs what a build and its tests need and leaves alone what only a developer's machine needs:
 
-- Docker or Podman, WSL, the Aspire CLI and Windows features aren't installed, and the project isn't started.
+- Docker or Podman, WSL, act, the Aspire CLI and Windows features aren't installed, and the project isn't started.
 - The HTTPS development certificate is trusted on Linux only. There it's trusted for some clients, and the step notes that .NET's own HTTPS calls also need `~/.aspnet/dev-certs/trust` in `SSL_CERT_DIR`; any other failure is a warning.
 - MAUI's `InstallAndroidDependencies` completes the runner's Android SDK, so a pipeline needs no `sdkmanager` step.
 - Playwright gets every browser with its system libraries, since CI may test more than Chromium.
@@ -194,7 +209,7 @@ bit doctor
 bit doctor --fix
 ```
 
-Checks the tools a project needs, inside a project for that project's own needs, and offers to install what's missing with `--fix`. It exits with code 3 when something needed is missing.
+Checks the tools a project needs, inside a project for that project's own needs, and offers to install what's missing with `--fix`. It exits with code 3 when something needed is missing. On Windows it also checks that Podman's Docker API pipe answers, which act and other Docker clients connect to, and offers to restart Podman when it doesn't.
 
 ## bit trust
 
@@ -415,6 +430,7 @@ Collect the profile in the job that publishes the app, right before the AOT publ
 - **bit itself**, when a newer version is out: a copy for the run in `~/.bitplatform/cli`, then `dotnet tool update --global Bit.Cli` once the run ends.
 - **Secrets, environments and pull request and Actions settings** of your GitHub repository, only with `bit pipeline`, after you confirm or with `--yes`.
 - **oasdiff**, for `bit api`, in `~/.bitplatform/tools`.
+- **act**, for `bit ci`, when you tick it, and the image `bit ci` builds from the project's `.github/act/Dockerfile`, `localhost/bit-ci:<hash>`, which Docker or Podman keeps.
 - **Its own folder**, `~/.bitplatform`: `settings.json`, the template cache, logs, telemetry not sent yet, the repositories `bit diff` creates, and in `keys` the keys `bit pipeline` and `bit keys android` create, which only your user can read on macOS and Linux.
 
 ## Telemetry

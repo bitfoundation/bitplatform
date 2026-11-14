@@ -1399,7 +1399,7 @@ public class ProjectStepTests
     }
 
     [TestMethod]
-    public async Task Format_Should_FormatTheWholeSolutionWithoutRestoringItAgain()
+    public async Task Format_Should_FormatTheWholeSolutionWithoutRestoringItAgainThenEveryFileTheWayCiChecksIt()
     {
         using var host = new TestHost();
         var project = CreateFakeProject(host, "Contoso");
@@ -1407,7 +1407,7 @@ public class ProjectStepTests
         var result = await new ProjectSteps(host.Services, project).FormatAsync(_ => { }, CancellationToken.None);
 
         Assert.AreEqual(StepStatus.Succeeded, result.Status);
-        CollectionAssert.AreEqual(new[] { "format", "Contoso.slnx", "--no-restore", "--exclude-diagnostics", "BL0016" }, host.Runner.Calls.Single(c => c.FileName is "dotnet").Arguments.ToArray());
+        CollectionAssert.AreEqual(new[] { "format Contoso.slnx --no-restore --exclude-diagnostics BL0016", "format whitespace --folder ." }, host.Runner.Calls.Where(c => c.FileName is "dotnet").Select(c => string.Join(' ', c.Arguments)).ToArray());
     }
 
     [TestMethod]

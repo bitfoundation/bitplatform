@@ -5,7 +5,7 @@ using Boilerplate.WorkbenchTests.Features.Showcases;
 
 namespace Boilerplate.WorkbenchTests.Features.AppPages;
 
-/// <summary>The copy of the app's dashboard: its figures and charts, editing its layout, who may open it, and its data states picked in the tools.</summary>
+/// <summary>The app's dashboard in the Workbench: its figures and charts, editing its layout, who may open it, and its data states picked in the tools, as the app shows each.</summary>
 [TestClass, TestCategory("UITest")]
 public class DashboardUITests : AppViewPageTest
 {
@@ -19,9 +19,11 @@ public class DashboardUITests : AppViewPageTest
 
     private ILocator PercentageChart => Widgets.Filter(new() { HasText = AppStrings.ProductsPercentagePerCategory });
 
-    private ILocator Retries => View().GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.PosRetry, Exact = true });
+    /// <summary>What the app says when its server can't be reached, as a failed load in the Error state is.</summary>
+    private ILocator Unreachable => View().GetByText(AppStrings.TransientException, new() { Exact = true }).First;
 
-    private ILocator Failed => View().GetByText(WorkbenchStrings.LoadFailed, new() { Exact = true });
+    /// <summary>A widget's place in the layout the page keeps on the device, as the view saves it: its id, span and whether it's hidden.</summary>
+    private static string SavedLayout(string widget, int span, bool hidden) => $"{widget}:{span}:{hidden}";
 
     private static ILocator Figure(ILocator stats, string label) => stats.Locator(".bit-crd").Filter(new() { HasText = label }).GetByRole(AriaRole.Paragraph).First;
 
@@ -74,7 +76,7 @@ public class DashboardUITests : AppViewPageTest
     }
 
     [TestMethod, EverySurface]
-    public async Task EditMode_Should_OfferResizingAndHidingAndStayAfterAReload(WorkbenchSurface surface)
+    public async Task EditMode_Should_OfferResizingAndHidingAndEndWithAReload(WorkbenchSurface surface)
     {
         await OpenWorkbench("dashboard");
 
@@ -90,12 +92,10 @@ public class DashboardUITests : AppViewPageTest
             await Expect(HideButton(widget)).ToBeVisibleAsync();
         }
 
-        await ReloadTheViewOnceSaved("\"IsEditing\":true");
+        // As in the app, editing lasts while the page is open.
+        await ReloadTheView();
 
-        await Expect(ResizeButton(Stats)).ToBeVisibleAsync();
-
-        await Press(EditButton);
-
+        await Expect(Stats).ToBeVisibleAsync();
         await Expect(ResizeButton(Stats)).ToHaveCountAsync(0);
     }
 
@@ -115,7 +115,7 @@ public class DashboardUITests : AppViewPageTest
         await Expect(CountChart).ToHaveCountAsync(0);
         await Expect(Stats).ToBeVisibleAsync();
 
-        await ReloadTheViewOnceSaved("\"hidden\":true");
+        await ReloadTheViewOnceSaved(SavedLayout("ProductsCountPerCategoryWidget", 3, hidden: true));
 
         await Expect(CountChart).ToHaveCountAsync(0);
 
@@ -147,10 +147,11 @@ public class DashboardUITests : AppViewPageTest
         await Press(ResizeButton(Stats));
         await Expect(Stats).ToHaveClassAsync(new Regex(@"\bspan-4\b"));
 
-        await ReloadTheViewOnceSaved("\"span\":4");
+        await ReloadTheViewOnceSaved(SavedLayout("OverallStatsWidget", 4, hidden: false));
 
         await Expect(Stats).ToHaveClassAsync(new Regex(@"\bspan-4\b"));
 
+        await Press(EditButton);
         await Press(ResizeButton(Stats));
         await Expect(Stats).ToHaveClassAsync(new Regex(@"\bspan-6\b"));
     }
@@ -193,7 +194,7 @@ public class DashboardUITests : AppViewPageTest
         await Expect(Widgets.First).ToContainTextAsync(AppStrings.ProductsCountPerCategoryChart);
         await Expect(Widgets.Nth(1)).ToContainTextAsync(AppStrings.TotalProducts);
 
-        await ReloadTheViewOnceSaved("\"Widgets\":[{\"id\":\"ProductsCountPerCategoryWidget\"");
+        await ReloadTheViewOnceSaved("\"dashboard-widgets\":\"ProductsCountPerCategoryWidget");
 
         await Expect(Widgets.First).ToContainTextAsync(AppStrings.ProductsCountPerCategoryChart);
     }
@@ -238,7 +239,7 @@ public class DashboardUITests : AppViewPageTest
 
         await Expect(Page).ToHaveURLAsync(new Regex(@"\?data=loading$"));
         await Expect(Stats.Locator(".bit-ldn-elp")).ToHaveCountAsync(4);
-        await Expect(Failed).ToHaveCountAsync(0);
+        await Expect(Unreachable).ToHaveCountAsync(0);
         await Expect(View().GetByRole(AriaRole.Application)).ToHaveCountAsync(0);
     }
 
@@ -256,34 +257,20 @@ public class DashboardUITests : AppViewPageTest
             await Expect(Figure(Stats, label)).ToHaveTextAsync("0");
         }
 
-        await Expect(Failed).ToHaveCountAsync(0);
+        await Expect(Unreachable).ToHaveCountAsync(0);
     }
 
     [TestMethod, EverySurface]
-    public async Task Error_Should_FailEveryWidgetAndEachRetryShouldLoadItsOwn(WorkbenchSurface surface)
+    public async Task Error_Should_SayTheServerCantBeReachedAndShowNoFigures(WorkbenchSurface surface)
     {
         await OpenWorkbench("dashboard");
 
         await PressInTheTools(WorkbenchStrings.DataError);
 
         await Expect(Page).ToHaveURLAsync(new Regex(@"\?data=error$"));
-        await Expect(Failed).ToHaveCountAsync(3);
-
-        await Press(Stats.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.PosRetry, Exact = true }));
-
-        await Expect(Failed).ToHaveCountAsync(2);
-        await Expect(Figure(Stats, AppStrings.TotalProducts)).ToHaveTextAsync("50");
-
-        await Press(CountChart.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.PosRetry, Exact = true }));
-
-        await Expect(Failed).ToHaveCountAsync(1);
-        await Expect(CountChart.GetByRole(AriaRole.Application)).ToBeVisibleAsync();
-
-        await Press(PercentageChart.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.PosRetry, Exact = true }));
-
-        await Expect(Failed).ToHaveCountAsync(0);
-        await Expect(PercentageChart.GetByRole(AriaRole.Application)).ToBeVisibleAsync();
-        await Expect(Retries).ToHaveCountAsync(0);
+        await Expect(Unreachable).ToBeVisibleAsync();
+        await Expect(Figure(Stats, AppStrings.TotalProducts)).ToHaveTextAsync("0");
+        await Expect(View().GetByRole(AriaRole.Application)).ToHaveCountAsync(0);
     }
 
     [TestMethod, EverySurface]
@@ -291,8 +278,10 @@ public class DashboardUITests : AppViewPageTest
     {
         await OpenWorkbench("dashboard", "?data=mixed");
 
-        await Expect(Failed).ToHaveCountAsync(1);
-        await Expect(Retries).ToHaveCountAsync(1);
+        // In the order the widgets ask: the figures fail, the count chart is empty and the percentage chart has its data.
+        await Expect(Unreachable).ToBeVisibleAsync();
+        await Expect(Figure(Stats, AppStrings.TotalProducts)).ToHaveTextAsync("0");
+        await Expect(PercentageChart.GetByRole(AriaRole.Application)).ToBeVisibleAsync();
         await Expect(View().GetByRole(AriaRole.Application)).ToHaveCountAsync(1);
     }
 

@@ -23,6 +23,8 @@ public partial class PreviewPage
     private DotNetObjectReference<PreviewPage>? reference;
     private IDisposable? navigationGuard;
 
+    [AutoInject] private WorkbenchAppLinks appLinks = default!;
+    [AutoInject] private ClientExceptionHandlerBase exceptionHandler = default!;
     [AutoInject] private BlexManager blexManager = default!;
     [AutoInject] private WorkbenchSnapshots snapshots = default!;
     [AutoInject] private BitAccentColorService accentColorService = default!;
@@ -88,12 +90,36 @@ public partial class PreviewPage
         }
     }
 
-    /// <summary>Keeps the view where it is when a link of the app's chrome names a page that isn't here, as the host page's base address makes it the Workbench's home page.</summary>
+    /// <summary>
+    /// Keeps the view where it is when a link of the app's chrome names a page that isn't here, as the host page's base
+    /// address makes it the Workbench's home page. A link of one of the app's own pages that a Workbench page stands for
+    /// opens that page instead (See WorkbenchAppLinks).
+    /// </summary>
     private ValueTask StayInThePreview(LocationChangingContext context)
     {
-        if (NavigationManager.ToAbsoluteUri(context.TargetLocation).AbsolutePath.StartsWith("/preview/", StringComparison.OrdinalIgnoreCase) is false)
+        var target = NavigationManager.ToAbsoluteUri(context.TargetLocation);
+
+        if (target.AbsolutePath.StartsWith("/preview/", StringComparison.OrdinalIgnoreCase) is false)
         {
             context.PreventNavigation();
+
+            if (appLinks.Follow(target) is { } follow)
+            {
+                // Once this navigation is over, so the one it starts isn't taken for part of it. Left to run, so what goes wrong
+                // in it goes to the app's handler, as anything else the app's page does.
+                _ = InvokeAsync(async () =>
+                {
+                    try
+                    {
+                        await Task.Yield();
+                        await follow();
+                    }
+                    catch (Exception exception)
+                    {
+                        exceptionHandler.Handle(exception);
+                    }
+                });
+            }
         }
 
         return ValueTask.CompletedTask;

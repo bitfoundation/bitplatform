@@ -12,6 +12,8 @@
                 <LayoutError MarkReady />
             </ErrorContent>
         </PageErrorBoundary>
+        @* Inside the BitParams, as the app's (MainLayout, within Routes' AppBitParams), so a modal the app opens, such as its
+           code prompt with six boxes, gets the app's defaults and its modal class too. *@
+        <BitModalContainer ModalParameters="modalParameters" />
     </Boilerplate.Client.Core.Components.AppBitParams>
-    <BitModalContainer />
 </CascadingValue>

@@ -17,6 +17,7 @@ public static partial class ToolCatalog
         new HomebrewTool(),
         new WslTool(),
         new DockerTool(),
+        new ActTool(),
         new AspireCliTool(),
         new DevCertificateTool(),
         new LongPathsTool(),
@@ -54,7 +55,7 @@ public static partial class ToolCatalog
             checks[docker] = checks[docker] with { Action = DockerTool.AfterWslRestart(checks[docker].Action!) };
         }
 
-        var brewNeeded = checks.Any(c => c.Status.IsSatisfied is false && c.Tool is not HomebrewTool && c.Action is null && context.Environment.IsMacOS && context.PackageManagers.Brew is null && c.Tool is NodeTool or GitTool or DockerTool or VsCodeTool);
+        var brewNeeded = checks.Any(c => c.Status.IsSatisfied is false && c.Tool is not HomebrewTool && c.Action is null && context.Environment.IsMacOS && context.PackageManagers.Brew is null && c.Tool is NodeTool or GitTool or DockerTool or ActTool or VsCodeTool);
         checks.RemoveAll(c => c.Tool is HomebrewTool && (c.Status.IsSatisfied || brewNeeded is false));
 
         return checks;
@@ -108,6 +109,20 @@ public static partial class ToolCatalog
             && (await runner.RunAsync(new ProcessSpec { FileName = podman, Arguments = ["container", "ls", "-n", "1"], Timeout = TimeSpan.FromSeconds(20) }, cancellationToken)).Succeeded
             ? "podman"
             : null;
+    }
+
+    public static string? FindPodman(IProcessRunner runner, CliEnvironment environment) => DockerTool.FindPodman(runner, environment);
+
+    /// <summary>
+    /// The named pipe Podman's machine serves the Docker API on in Windows, which act, the docker CLI and Testcontainers
+    /// connect to. The podman CLI and Aspire go over SSH instead, so they keep working when it's down.
+    /// </summary>
+    public static async Task<string?> PodmanPipeAsync(IProcessRunner runner, string podman, CancellationToken cancellationToken)
+    {
+        var result = await runner.RunAsync(new ProcessSpec { FileName = podman, Arguments = ["machine", "inspect", "--format", "{{.ConnectionInfo.PodmanPipe.Path}}"], Timeout = TimeSpan.FromSeconds(20) }, cancellationToken);
+        var pipe = result.Succeeded ? result.OutputLines.FirstOrDefault()?.Trim() : null;
+
+        return pipe is not null && pipe.StartsWith(CliEnvironment.PipeDirectory, StringComparison.OrdinalIgnoreCase) ? pipe : null;
     }
 
     public static string? DotnetRoot(ToolContext context) => DotnetRoot(context.Runner);
@@ -539,11 +554,11 @@ public static partial class ToolCatalog
 
         public override bool AppliesInCi(ToolContext context) => false;
 
-        public override bool AppliesTo(ToolContext context) => context.Environment.IsWindows && context.Needs.Aspire;
+        public override bool AppliesTo(ToolContext context) => context.Environment.IsWindows && context.Needs.NeedsContainerRuntime;
 
         public override string Why(ToolContext context) => "Podman runs its containers in WSL 2";
 
-        public override bool IsNeeded(ToolContext context) => context.Needs.Aspire;
+        public override bool IsNeeded(ToolContext context) => context.Needs.NeedsContainerRuntime;
 
         public override async Task<ToolStatus> DetectAsync(ToolContext context, CancellationToken cancellationToken)
         {
@@ -577,6 +592,8 @@ public static partial class ToolCatalog
 
         private const string PodmanMachineStopped = "Podman's machine isn't running";
 
+        private const string PodmanWithoutApi = "Podman's Docker API is down, which act and other Docker clients connect to";
+
         private const string DockerWithoutAccess = "your user can't reach it";
 
         private const string SignOutAndIn = "Sign out and back in so your user can run docker without sudo.";
@@ -591,6 +608,7 @@ public static partial class ToolCatalog
 
         public override string Why(ToolContext context) => context.Needs switch
         {
+            { Aspire: false, Ci: true } => "bit ci runs the project's CI workflow in a container",
             { Aspire: false } => "runs containers; this project doesn't need it without Aspire",
             { ContainersRequired: true, Containers.Count: > 0 } needs => $"Aspire runs {Join(needs.Containers)} in containers",
             { Containers.Count: > 0 } needs => $"Aspire runs {Join(needs.Containers)} in containers; the app also runs without them",
@@ -599,7 +617,7 @@ public static partial class ToolCatalog
 
         private static string Join(IReadOnlyList<string> items) => items.Count == 1 ? items[0] : $"{string.Join(", ", items.SkipLast(1))} and {items[^1]}";
 
-        public override bool IsNeeded(ToolContext context) => context.Needs.Aspire;
+        public override bool IsNeeded(ToolContext context) => context.Needs.NeedsContainerRuntime;
 
         public override async Task<ToolStatus> DetectAsync(ToolContext context, CancellationToken cancellationToken)
         {
@@ -611,7 +629,13 @@ public static partial class ToolCatalog
             if (FindPodman(context) is { } podman)
             {
                 if ((await context.RunAsync(podman, ["container", "ls", "-n", "1"], cancellationToken, TimeSpan.FromSeconds(20))).Succeeded)
+                {
+                    // Podman's API forwarder can be gone while its machine runs, as after Windows restarts it for an update.
+                    if (context.Environment.IsWindows && await PodmanPipeAsync(context.Runner, podman, cancellationToken) is { } pipe && context.Environment.NamedPipeExists(pipe) is false)
+                        return new ToolStatus(ToolState.NotRunning, null, PodmanWithoutApi);
+
                     return ToolStatus.Installed($"Podman {ParseVersion((await context.RunAsync(podman, ["--version"], cancellationToken)).Output)}".Trim());
+                }
 
                 if (context.Environment.IsWindows)
                     return new ToolStatus(ToolState.NotRunning, null, (await context.RunAsync(podman, ["machine", "inspect"], cancellationToken)).Succeeded ? PodmanMachineStopped : PodmanWithoutMachine);
@@ -635,6 +659,16 @@ public static partial class ToolCatalog
             {
                 return context.Environment.Os switch
                 {
+                    HostOs.Windows when status.Detail is PodmanWithoutApi && FindPodman(context) is { } podman => new ToolAction
+                    {
+                        ToolId = Id,
+                        Title = "Restart Podman, which stops its running containers",
+                        Commands =
+                        [
+                            new ProcessSpec { FileName = podman, Arguments = ["machine", "stop"], Timeout = TimeSpan.FromMinutes(5) },
+                            new ProcessSpec { FileName = podman, Arguments = ["machine", "start"], Timeout = TimeSpan.FromMinutes(30) }
+                        ]
+                    },
                     HostOs.Windows when status.Detail is PodmanWithoutMachine or PodmanMachineStopped && FindPodman(context) is { } podman
                         => new ToolAction { ToolId = Id, Title = "Start Podman", Commands = PodmanMachine(podman, init: status.Detail is PodmanWithoutMachine) },
                     HostOs.Windows when FindDockerDesktop(context) is { } desktop => new ToolAction
@@ -748,6 +782,48 @@ public static partial class ToolCatalog
             var path = Path.Combine(context.Environment.GetVariable("ProgramFiles") ?? @"C:\Program Files", "Docker", "Docker", "Docker Desktop.exe");
             return File.Exists(path) ? path : null;
         }
+    }
+
+    private sealed class ActTool : Tool
+    {
+        public override string Id => "act";
+
+        public override string Name => "act";
+
+        public override bool AppliesInCi(ToolContext context) => false;
+
+        public override bool AppliesTo(ToolContext context) => context.Needs.Ci;
+
+        public override string Why(ToolContext context) => "bit ci runs the project's CI workflow on this machine with it, in a container";
+
+        public override bool IsNeeded(ToolContext context) => true;
+
+        public override async Task<ToolStatus> DetectAsync(ToolContext context, CancellationToken cancellationToken)
+        {
+            var result = await context.RunAsync("act", ["--version"], cancellationToken);
+            return result.Succeeded ? ToolStatus.Installed(ParseVersion(result.Output)?.ToString()) : ToolStatus.Missing();
+        }
+
+        public override ToolAction? PlanInstall(ToolContext context, ToolStatus status)
+        {
+            var action = context.Environment.Os switch
+            {
+                HostOs.Windows => context.PackageManagers.WingetInstall(Id, "Install act", "nektos.act", admin: false),
+                HostOs.MacOS => context.PackageManagers.BrewInstall(Id, "Install act", "act"),
+                _ => new ToolAction
+                {
+                    ToolId = Id,
+                    Title = "Install act",
+                    Elevation = Elevation.Sudo,
+                    Commands = [PackageManagers.Sudo("bash", "-c", "set -o pipefail; curl --proto '=https' -fsSL https://raw.githubusercontent.com/nektos/act/master/install.sh | bash -s -- -b /usr/local/bin")]
+                }
+            };
+
+            // The app builds and runs without it; only bit ci needs it.
+            return action is null ? null : action with { Optional = true };
+        }
+
+        public override string? ManualInstructions(ToolContext context) => "https://nektosact.com/installation/";
     }
 
     private sealed class AspireCliTool : Tool
