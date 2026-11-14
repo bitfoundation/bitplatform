@@ -4155,6 +4155,12 @@
     <data name="ThemeExtrasUnreadCount" xml:space="preserve">
         <value>{0} ungelesen</value>
     </data>
+    <data name="ThemeExtrasDeleteProductTitle" xml:space="preserve">
+        <value>Dieses Produkt löschen?</value>
+    </data>
+    <data name="ThemeExtrasDeleteProductBody" xml:space="preserve">
+        <value>{0} wird von der Karte genommen.</value>
+    </data>
     <data name="ThemeInputsWeekNumbersTime" xml:space="preserve">
         <value>Kalenderwochen, Uhrzeit</value>
     </data>

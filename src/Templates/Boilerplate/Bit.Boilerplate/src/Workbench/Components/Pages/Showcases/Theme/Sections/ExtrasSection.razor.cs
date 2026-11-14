@@ -85,7 +85,7 @@ public partial class ExtrasSection
 
     private string DeleteText => AppLocalizer[nameof(AppStrings.Delete)];
 
-    private string NotificationsText => AppLocalizer[nameof(AppStrings.Notifications)];
+    private string NotificationsText => Localizer[nameof(WorkbenchStrings.ThemeNotifications)];
 
     private string SearchText => Localizer[nameof(WorkbenchStrings.ThemeSearch)];
 

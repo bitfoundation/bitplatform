@@ -4155,6 +4155,12 @@
     <data name="ThemeExtrasUnreadCount" xml:space="preserve">
         <value>{0} unread</value>
     </data>
+    <data name="ThemeExtrasDeleteProductTitle" xml:space="preserve">
+        <value>Delete this product?</value>
+    </data>
+    <data name="ThemeExtrasDeleteProductBody" xml:space="preserve">
+        <value>{0} will be removed from the menu.</value>
+    </data>
     <data name="ThemeInputsWeekNumbersTime" xml:space="preserve">
         <value>Week numbers, time</value>
     </data>

@@ -4155,6 +4155,12 @@
     <data name="ThemeExtrasUnreadCount" xml:space="preserve">
         <value>{0} خوانده‌نشده</value>
     </data>
+    <data name="ThemeExtrasDeleteProductTitle" xml:space="preserve">
+        <value>این محصول حذف شود؟</value>
+    </data>
+    <data name="ThemeExtrasDeleteProductBody" xml:space="preserve">
+        <value>{0} از منو حذف می‌شود.</value>
+    </data>
     <data name="ThemeInputsWeekNumbersTime" xml:space="preserve">
         <value>شمارهٔ هفته، ساعت</value>
     </data>

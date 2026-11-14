@@ -4155,6 +4155,12 @@
     <data name="ThemeExtrasUnreadCount" xml:space="preserve">
         <value>{0} अपठित</value>
     </data>
+    <data name="ThemeExtrasDeleteProductTitle" xml:space="preserve">
+        <value>यह उत्पाद हटाएँ?</value>
+    </data>
+    <data name="ThemeExtrasDeleteProductBody" xml:space="preserve">
+        <value>{0} मेन्यू से हटा दिया जाएगा।</value>
+    </data>
     <data name="ThemeInputsWeekNumbersTime" xml:space="preserve">
         <value>हफ़्ते की संख्या, समय</value>
     </data>
