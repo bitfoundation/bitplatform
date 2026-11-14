@@ -4,6 +4,7 @@ Always follow the settings defined in the `.editorconfig` file located at the ro
 
 # CI Workflows
 
+`.github/workflows/README.md` describes how the workflows fit together; keep it in step with them.
 Never put E2E (browser/Playwright, hybrid, publish-gate) tests in a project's main CI workflow (`.github/workflows/ci.<project>.yml`).
 The main workflow runs on pull requests and must only build, run the unit/integration tests and pack every package the project
 publishes, the way `cd.nuget.packages.yml` packs it; the All workflows pack nothing themselves.
