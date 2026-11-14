@@ -10,9 +10,6 @@
 //   --bit-AiMessageActions-error-color  text saying that reading the reply aloud failed       (default: $clr-err-fg)
 
 .bit-aimac {
-    // The containing block of the visually hidden read-aloud status, so a row used on its own, outside a message list,
-    // keeps it in place too.
-    position: relative;
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -55,11 +52,21 @@
 
 // Says that reading the reply aloud failed. Empty, it takes no room in the row (a gap of its own included) while staying
 // on the page as the live region the failure is announced through.
+// Out of the flow, its pixel is placed against the nearest positioned ancestor, which the row is not: positioning the
+// row would paint it, metadata included, over an earlier positioned element without a z-index (an app's sticky date
+// header), and the nearest one is usually the chat, outside the box the transcript scrolls in. Parked where it would
+// have been laid out, the status of an answer below the fold would then hang past the chat and give whatever scrolls
+// around it a scrollbar. So the empty status is pinned to the start corner of that ancestor instead, inside it with
+// its margin taken back, where it adds to no scrollable overflow whichever ancestor it is and whichever way it reads.
+// An empty region has nothing to show where it sits; once it holds the failure it is back in the row.
 .bit-aimac-ras {
     color: var(--bit-AiMessageActions-error-color, #{$clr-err-fg});
 
     &:empty {
         @include visually-hidden;
+        margin: 0;
+        inset-block-start: 0;
+        inset-inline-start: 0;
     }
 }
 

@@ -16,13 +16,9 @@
 // place itself - at the newest message while it follows it, on the message being read otherwise, as older messages
 // come in above it - the same way in every engine, so the browser's own scroll anchoring, which not every engine has
 // and which would correct the same change a second time, is turned off.
-// It is also the containing block of whatever its messages position, such as the visually hidden live regions they
-// keep on the page: those then scroll with the transcript and are clipped by it, rather than being placed against the
-// chat around it, outside the scroll box, where they would make whatever scrolls around the chat overflow too.
 .bit-aimsl {
     flex: 1 1 auto;
     min-height: 0;
-    position: relative;
     overflow-x: hidden;
     overflow-y: auto;
     overflow-anchor: none;
