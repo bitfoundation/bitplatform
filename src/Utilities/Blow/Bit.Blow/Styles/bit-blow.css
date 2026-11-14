@@ -56,14 +56,45 @@
     height: 100%;
     overflow: hidden;
     background: var(--bit-blow-bg);
+    /* Every touch is the canvas's while a one-finger drag on the pane pans it or draws a selection box. When it
+       does neither, the canvas says so with bit-blow-page-scroll (below) and the page scrolls under that finger. */
     touch-action: none;
     user-select: none;
     outline: none;
+    cursor: default;
+}
+
+/* Only a pane that pans when dragged says it can be grabbed (bit-blow-pane-pan, set by the canvas). */
+.bit-blow.bit-blow-pane-pan {
     cursor: grab;
 }
 
-.bit-blow:active {
+.bit-blow.bit-blow-pane-pan:active {
     cursor: grabbing;
+}
+
+/* A one-finger drag on the pane neither pans nor draws a selection box: the browser scrolls the page with it, as
+   it would anywhere else. A pinch stays the canvas's while ZoomOnPinch is on, and is the browser's otherwise
+   (bit-blow-page-zoom). */
+.bit-blow.bit-blow-page-scroll {
+    touch-action: pan-x pan-y;
+}
+
+.bit-blow.bit-blow-page-scroll.bit-blow-page-zoom {
+    touch-action: pan-x pan-y pinch-zoom;
+}
+
+/* What still moves under a finger keeps its touches to itself, so it drags while the background around it scrolls
+   the page. On a pane that takes every touch anyway (the default) this changes nothing. A node is draggable unless
+   it says otherwise (undraggable) or the canvas's NodesDraggable is off (bit-blow-nodes-locked). */
+.bit-blow:not(.bit-blow-nodes-locked) > .bit-blow-viewport > .bit-blow-node:not(.undraggable),
+.bit-blow-handle.connectable,
+.bit-blow-resize-handle,
+.bit-blow-resize-strip,
+.bit-blow-drag-handle,
+.bit-blow-edge-reconnect-hit,
+.bit-blow-minimap.pannable {
+    touch-action: none;
 }
 
 /* The pane is focusable (it takes the keyboard shortcuts), so a keyboard user needs to see when
@@ -651,7 +682,9 @@
 }
 
 .bit-blow-node.undraggable,
-.bit-blow-node.undraggable:active {
+.bit-blow-node.undraggable:active,
+.bit-blow-nodes-locked > .bit-blow-viewport > .bit-blow-node,
+.bit-blow-nodes-locked > .bit-blow-viewport > .bit-blow-node:active {
     cursor: default;
 }
 

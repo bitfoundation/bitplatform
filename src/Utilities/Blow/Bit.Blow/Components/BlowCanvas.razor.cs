@@ -746,13 +746,15 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
 
     /// <summary>
     /// The pane's <c>aria-describedby</c>: the flow's own instructions, after whatever the app described it by
-    /// through an attribute of its own, so neither replaces the other.
+    /// through an attribute of its own, so neither replaces the other. The instructions tell how to Tab between the
+    /// nodes and edges, so they are left out when neither takes focus.
     /// </summary>
     private string? PaneDescribedBy
     {
         get
         {
-            var own = string.IsNullOrEmpty(AriaLabels.PaneInstructions) ? null : DescriptionId("pane");
+            var tabbable = !DisableKeyboardA11y && (NodesFocusable || EdgesFocusable);
+            var own = !tabbable || string.IsNullOrEmpty(AriaLabels.PaneInstructions) ? null : DescriptionId("pane");
             var app = AdditionalAttributes?.GetValueOrDefault("aria-describedby")?.ToString();
             return string.IsNullOrWhiteSpace(app) ? own : own is null ? app : $"{app} {own}";
         }
@@ -6924,6 +6926,36 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         BlowReducedMotion.Never => "bit-blow-allow-motion",
         _ => null,
     };
+
+    /// <summary>
+    /// True when a one-finger drag on the empty pane is a gesture of the flow's own - a pan, or a selection box - and
+    /// the browser has to leave every touch on the pane to the canvas. Otherwise the page scrolls under that finger.
+    /// The same test the pane's press applies: the primary button (which a finger is) does nothing on the pane unless
+    /// it is one of <see cref="PanButtons"/>.
+    /// </summary>
+    private bool PaneDragIsGesture => PanButtons.Contains(0) && (PanOnDrag || (ElementsSelectable && SelectionOnDrag));
+
+    /// <summary>
+    /// True when the pane has something to do with the keyboard: the selection to clear, move, delete or select all,
+    /// a node to drag or connect (and Escape to abandon either), the clipboard or the history keys. A canvas with none
+    /// of them - a picture of a graph - is no Tab stop and no <c>role="application"</c>, which would take the arrow
+    /// keys from the page for nothing. Nodes and edges that are focusable are Tab stops of their own either way. An
+    /// app can still decide otherwise with a <c>tabindex</c> and a <c>role</c> of its own on the canvas.
+    /// </summary>
+    private bool PaneFocusable => ElementsSelectable || NodesDraggable || NodesConnectable
+                                  || ClipboardShortcutsEnabled || HistoryEnabled;
+
+    /// <summary>
+    /// The classes that tell the stylesheet what the pane does with a pointer: a pane that pans when dragged shows the
+    /// grab cursor (<c>bit-blow-pane-pan</c>); one whose drag is no gesture lets the page scroll under a finger
+    /// (<c>bit-blow-page-scroll</c>), and pinch-zoom it too when the canvas does not zoom on a pinch
+    /// (<c>bit-blow-page-zoom</c>); and with <see cref="NodesDraggable"/> off no node shows the grab cursor or keeps
+    /// the touches it would drag with (<c>bit-blow-nodes-locked</c>).
+    /// </summary>
+    private string InteractionClass =>
+        (PanOnDrag && PanButtons.Contains(0) && !(ElementsSelectable && SelectionOnDrag) ? "bit-blow-pane-pan" : "")
+        + (PaneDragIsGesture ? "" : ZoomOnPinch ? " bit-blow-page-scroll" : " bit-blow-page-scroll bit-blow-page-zoom")
+        + (NodesDraggable ? "" : " bit-blow-nodes-locked");
 
     /// <summary>
     /// The transform of the zoomed layer, plus the zoom as a custom property: what lets the stylesheet keep hit

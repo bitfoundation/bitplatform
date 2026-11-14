@@ -15,12 +15,14 @@
 <CascadingValue Name="@BlowCascadingNames.GeometryVersion" Value="_geometryVersion">
 <CascadingValue Name="@BlowCascadingNames.GraphVersion" Value="_graphVersion">
 <CascadingValue Name="@BlowCascadingNames.ConnectionVersion" Value="_connectionVersion">
-    <div @attributes="AdditionalAttributes"
-         class="bit-blow @ColorModeClass @MotionClass @Class"
+    @* The pane's tabindex, role and aria-label come before the app's attributes, so an app can replace them: the
+       last of two attributes of the same name is the one written. *@
+    <div class="bit-blow @ColorModeClass @MotionClass @InteractionClass @Class"
          style="@Style"
-         tabindex="0"
-         role="application"
+         tabindex="@(PaneFocusable ? "0" : null)"
+         role="@(PaneFocusable ? "application" : "group")"
          aria-label="@AriaLabel"
+         @attributes="AdditionalAttributes"
          aria-describedby="@PaneDescribedBy"
          @ref="_paneRef"
          @onpointerdown="OnPanePointerDown"

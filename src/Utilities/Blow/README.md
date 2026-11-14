@@ -1374,6 +1374,13 @@ mouse's notches, and no single event zooms by more than about 15%. Ctrl+wheel - 
 pinch - always zooms. A wheel over a panel, the control bar or a minimap that does not zoom scrolls the page as
 ordinary content would.
 
+A finger works the same way. While a one-finger drag on the background pans (`PanOnDrag`) or draws a selection box
+(`SelectionOnDrag`), the canvas takes every touch on it (`touch-action: none`). When it does neither, a swipe on the
+background scrolls the page (`touch-action: pan-x pan-y`, plus `pinch-zoom` when `ZoomOnPinch` is off), while the
+nodes that can be dragged and the handles that can be connected keep their touches, so they still drag. The grab
+cursor likewise shows only where dragging moves something: on the background while it pans, and on a node while it
+can be dragged.
+
 ```razor
 <BlowCanvas Nodes="_nodes" Edges="_edges" SelectionOnDrag="true" PanButtons="_panButtons" />
 
@@ -2593,6 +2600,10 @@ and invalid colours still win while a connection is dragged:
 ### The keyboard map
 
 The canvas is a focusable region with `role="application"`; keys work while it, or a node or edge in it, has focus.
+A canvas that has nothing for the keyboard to do - `ElementsSelectable`, `NodesDraggable`, `NodesConnectable`,
+`ClipboardShortcutsEnabled` and `HistoryEnabled` all off, as for a diagram shown as a picture - is no Tab stop and has
+`role="group"` instead, so the arrow keys keep scrolling the page. A `tabindex`, `role` or `aria-label` given to the
+canvas as an attribute replaces its own.
 
 | Key | Action |
 | --- | --- |
