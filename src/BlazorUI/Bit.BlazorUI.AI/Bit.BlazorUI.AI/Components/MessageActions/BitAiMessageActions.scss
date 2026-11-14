@@ -10,6 +10,9 @@
 //   --bit-AiMessageActions-error-color  text saying that reading the reply aloud failed       (default: $clr-err-fg)
 
 .bit-aimac {
+    // The containing block of the visually hidden read-aloud status, so a row used on its own, outside a message list,
+    // keeps it in place too.
+    position: relative;
     display: flex;
     flex-wrap: wrap;
     align-items: center;
