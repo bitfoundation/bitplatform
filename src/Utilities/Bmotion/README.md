@@ -1643,4 +1643,4 @@ It never turns reduction on or off (that stays with `BmReducedMotionMode` and `B
 
 ## License
 
-[MIT](https://github.com/bitfoundation/bitplatform/blob/develop/LICENSE)
+[PolyForm Perimeter License 1.0.1](https://github.com/bitfoundation/bitplatform/blob/develop/LICENSE)

@@ -61,4 +61,4 @@ Providers that cannot run in the current environment report the test inconclusiv
 rather than failing, so the same suite is meaningful on desktop and in a browser.
 
 Built on MSTest: the derived classes need `[TestClass]`, and the kit's test methods come with the base
-class. MIT. Part of [bit Bsqlite](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bsqlite).
+class. PolyForm Perimeter License 1.0.1. Part of [bit Bsqlite](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bsqlite).

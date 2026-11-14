@@ -444,7 +444,7 @@ public sealed partial class NewWorkflow(CliServices cli)
 
         cli.Console.Out.WriteLine();
         cli.Console.Out.MarkupLine($"  [bold blue]bit[/] [grey]CLI {Markup.Escape(BuildInfo.Version)}[/]");
-        cli.Console.Out.MarkupLine($"  [grey]open source at github.com/bitfoundation/bitplatform · {Markup.Escape(provenance)} · details: bit about[/]");
+        cli.Console.Out.MarkupLine($"  [grey]source available at github.com/bitfoundation/bitplatform · {Markup.Escape(provenance)} · details: bit about[/]");
         cli.Console.Out.WriteLine();
     }
 

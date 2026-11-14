@@ -2,7 +2,7 @@
 
 <br/>
 
-![License](https://img.shields.io/github/license/bitfoundation/bitplatform.svg)
+[![License](https://img.shields.io/badge/license-PolyForm%20Perimeter%201.0.1-blue.svg)](https://github.com/bitfoundation/bitplatform/blob/develop/LICENSE)
 ![Release CI Status](https://github.com/bitfoundation/bitplatform/actions/workflows/bit.ci.release.yml/badge.svg)
 ![NuGet version](https://img.shields.io/nuget/v/bit.blazorui.svg?logo=nuget)
 [![Nuget downloads](https://img.shields.io/badge/packages_download-10M-blue.svg?logo=nuget)](https://www.nuget.org/profiles/bit-foundation)
@@ -14,7 +14,7 @@
 
 # 🧾 Introduction
 
-**bitplatform** is a set of open-source tools for building fast, polished apps with Blazor and C#. The libraries target **.NET 10 and 11** and are built for Blazor WebAssembly, Server, and Hybrid (MAUI) apps.
+**bitplatform** is a set of source-available tools for building fast, polished apps with Blazor and C#. The libraries target **.NET 10 and 11** and are built for Blazor WebAssembly, Server, and Hybrid (MAUI) apps.
 
 For more details, visit us at [bitplatform.dev](https://bitplatform.dev/).
 
@@ -79,9 +79,9 @@ bit new MyApp
 
 <br/>
 
-# 🎁 OSS Showcases
+# 🎁 Source Available Showcases
 
-The following apps are our open-source projects powered by the bit platform showcasing the different capabilities of our toolchain:
+The following apps are our source-available projects powered by the bit platform showcasing the different capabilities of our toolchain:
 
 | | &nbsp;&nbsp;&nbsp;Web&nbsp;&nbsp;&nbsp; | &nbsp;&nbsp;&nbsp;iOS&nbsp;&nbsp;&nbsp; | Android | Windows | macOS |
 |:-:|:--:|:--:|:--:|:--:|:--:|

@@ -66,7 +66,7 @@ public partial class BitMarkdownViewerLegacyDemo
 
 <br/>
 
-![License](https://img.shields.io/github/license/bitfoundation/bitplatform.svg)
+[![License](https://img.shields.io/badge/license-PolyForm%20Perimeter%201.0.1-blue.svg)](https://github.com/bitfoundation/bitplatform/blob/develop/LICENSE)
 ![CI Status](https://github.com/bitfoundation/bitplatform/actions/workflows/bit.ci.yml/badge.svg)
 ![NuGet version](https://img.shields.io/nuget/v/bit.blazorui.svg?logo=nuget)
 [![Nuget downloads](https://img.shields.io/badge/packages_download-8.2M-blue.svg?logo=nuget)](https://www.nuget.org/profiles/bit-foundation)
@@ -97,9 +97,9 @@ For more details, visit us at [bitplatform.dev](https://bitplatform.dev/).
 
 <br/>
 
-# 🎁 OSS Showcases
+# 🎁 Source Available Showcases
 
-The following apps are our open-source projects powered by the bit platform showcasing the different capabilities of our toolchain:
+The following apps are our source-available projects powered by the bit platform showcasing the different capabilities of our toolchain:
 
 | | &nbsp;&nbsp;&nbsp;Web&nbsp;&nbsp;&nbsp; | &nbsp;&nbsp;&nbsp;iOS&nbsp;&nbsp;&nbsp; | Android | Windows | macOS |
 |:-:|:--:|:--:|:--:|:--:|:--:|
@@ -135,7 +135,7 @@ We welcome contributions! Many people all over the world have helped make this p
 
 # **Contributions**
 
-![Alt](https://repobeats.axiom.co/api/embed/66dc1fc04ed967094b98ac118e8f18fa38b19f6a.svg ""bit platform open source contributions report"")";
+![Alt](https://repobeats.axiom.co/api/embed/66dc1fc04ed967094b98ac118e8f18fa38b19f6a.svg ""bit platform source available contributions report"")";
 
     private DateTimeOffset? parsingDateTime;
     private DateTimeOffset? parsedDateTime;
@@ -175,7 +175,7 @@ private string advancedMarkdown = @""![Header](https://user-images.githubusercon
 
 <br/>
 
-![License](https://img.shields.io/github/license/bitfoundation/bitplatform.svg)
+[![License](https://img.shields.io/badge/license-PolyForm%20Perimeter%201.0.1-blue.svg)](https://github.com/bitfoundation/bitplatform/blob/develop/LICENSE)
 ![CI Status](https://github.com/bitfoundation/bitplatform/actions/workflows/bit.ci.yml/badge.svg)
 ![NuGet version](https://img.shields.io/nuget/v/bit.blazorui.svg?logo=nuget)
 [![Nuget downloads](https://img.shields.io/badge/packages_download-8.2M-blue.svg?logo=nuget)](https://www.nuget.org/profiles/bit-foundation)
@@ -206,9 +206,9 @@ For more details, visit us at [bitplatform.dev](https://bitplatform.dev/).
 
 <br/>
 
-# 🎁 OSS Showcases
+# 🎁 Source Available Showcases
 
-The following apps are our open-source projects powered by the bit platform showcasing the different capabilities of our toolchain:
+The following apps are our source-available projects powered by the bit platform showcasing the different capabilities of our toolchain:
 
 | | &nbsp;&nbsp;&nbsp;Web&nbsp;&nbsp;&nbsp; | &nbsp;&nbsp;&nbsp;iOS&nbsp;&nbsp;&nbsp; | Android | Windows | macOS |
 |:-:|:--:|:--:|:--:|:--:|:--:|
@@ -244,7 +244,7 @@ We welcome contributions! Many people all over the world have helped make this p
 
 # **Contributions**
 
-![Alt](https://repobeats.axiom.co/api/embed/66dc1fc04ed967094b98ac118e8f18fa38b19f6a.svg """"bit platform open source contributions report"""")"";";
+![Alt](https://repobeats.axiom.co/api/embed/66dc1fc04ed967094b98ac118e8f18fa38b19f6a.svg """"bit platform source available contributions report"""")"";";
 
     private readonly string example3RazorCode = @"
 <BitMarkdownViewerLegacy Markdown=""@(""# Events of the BitMarkdownViewerLegacy:\n\n- OnParsing\n- OnParsed\n- OnRendered"")""
