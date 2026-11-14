@@ -398,7 +398,7 @@ public partial class BitOverlay : BitComponentBase
 
         if (isOpen)
         {
-            await CaptureFocusOrigin();
+            await StoreFocusOrigin();
         }
         else
         {
@@ -457,13 +457,13 @@ public partial class BitOverlay : BitComponentBase
     // then hidden would leave that focus to drop to the body - the top of the page, as far as the next Tab
     // is concerned. So the element the focus was on as the Overlay opened is remembered, and handed the
     // focus back as it closes, for as long as the focus is still the Overlay's to hand back.
-    private async Task CaptureFocusOrigin()
+    private async Task StoreFocusOrigin()
     {
         if (IsDisposed || IsRendered is false) return;
 
         try
         {
-            await _js.BitUtilsCaptureFocusOrigin(_Id);
+            await _js.BitUtilsStoreFocus(_Id, scopeId: _Id);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
@@ -474,7 +474,7 @@ public partial class BitOverlay : BitComponentBase
 
         try
         {
-            await _js.BitUtilsRestoreFocusOrigin(_Id);
+            await _js.BitUtilsRestoreFocus(_Id, onlyWhenLost: true, scopeId: _Id);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
@@ -765,7 +765,7 @@ public partial class BitOverlay : BitComponentBase
 
         try
         {
-            await _js.BitUtilsDisposeFocusOrigin(_Id);
+            await _js.BitUtilsForgetFocus(_Id);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
 

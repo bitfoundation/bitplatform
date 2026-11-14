@@ -138,6 +138,7 @@ public partial class MainLayout
                 new() { Text = "Modal", Url = "/components/modal", AdditionalUrls = ["/components/promodal"] },
                 new() { Text = "ModalService", Url = "/components/modalservice", AdditionalUrls = ["/components/promodalservice"] },
                 new() { Text = "Panel", Url = "/components/panel", AdditionalUrls = ["/components/propanel"], Description = "Drawer, Sheet, BottomSheet, Offcanvas" },
+                new() { Text = "PanelService", Url = "/components/panelservice", AdditionalUrls = ["/components/panel-service"], Description = "SheetService, DrawerService" },
                 new() { Text = "ScrollablePane", Url = "/components/scrollablepane", Description = "ScrollView, ScrollArea" },
                 new() { Text = "Splitter", Url = "/components/splitter", Description = "SplitPane, Resizable" },
                 new() { Text = "Tooltip", Url = "/components/tooltip" },

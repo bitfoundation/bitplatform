@@ -93,6 +93,7 @@
     <button id="btn-noescape-open" @onclick="() => _noEscapeOpen = true">NoDismissOnEscape</button>
     <button id="btn-modeless-open" @onclick="() => _modelessOpen = true">Modeless</button>
     <button id="behind-button" @onclick="() => _behindClicks++">Behind</button>
+    <button id="btn-modeless-close" @onclick="() => _modelessOpen = false">Close modeless</button>
     <span id="behind-clicks">@_behindClicks</span>
     <span id="blocking-open">@_blockingOpen</span>
     <span id="noescape-open">@_noEscapeOpen</span>

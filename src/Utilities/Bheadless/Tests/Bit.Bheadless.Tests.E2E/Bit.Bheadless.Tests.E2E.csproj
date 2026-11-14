@@ -36,7 +36,7 @@
     </ItemGroup>
 
     <!-- Deliberately no ProjectReference to the demo. The suite publishes Bit.Bheadless.Demo.Server the way
-         bheadless.demo.cd.yml does and runs that output as a separate process (Infrastructure/DemoHost.cs): only
+         cd.bheadless.demo.yml does and runs that output as a separate process (Infrastructure/DemoHost.cs): only
          a publish trims the WebAssembly client. A reference would also build the library and the client a second
          time, into the same obj folders, on every test build. -->
 

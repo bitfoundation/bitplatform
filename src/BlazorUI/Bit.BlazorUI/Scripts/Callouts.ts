@@ -357,11 +357,21 @@
             scrollContainer.style.height = '';
             scrollContainer.style.maxHeight = '';
 
-            const componentWidth = component.offsetWidth;
+            // The widths are read off getBoundingClientRect rather than off offsetWidth, which rounds the layout width
+            // to the nearest whole pixel: a callout whose widest item lands just above one (97.09px read as 97) would
+            // be set that rounded width below and come out a fraction narrower than its content, cutting that item
+            // off with an ellipsis - and a component of a fractional width would be handed a callout a fraction
+            // narrower or wider than itself. The exact width is what gets written (style.width takes fractional
+            // pixels) and what the placement below works with, so nothing is rounded anywhere. The transform a
+            // callout opens with (see playEntryAnimation) is only ever a translation, which leaves the size of
+            // the box alone.
+            const componentRect = component.getBoundingClientRect();
+            const componentWidth = componentRect.width;
             const componentHeight = component.offsetHeight;
-            const { x: componentX, y: componentY } = component.getBoundingClientRect();
+            const { x: componentX, y: componentY } = componentRect;
 
-            let calloutWidth = callout.offsetWidth;
+            const calloutRect = callout.getBoundingClientRect();
+            let calloutWidth = calloutRect.width;
             // The consumer's cap shortens the scrollable list (and only it), so the callout the placement
             // below decides for can be shorter than the one measured here: whatever the cap takes off that
             // list comes off this height too, or a list that fits under the component only because of the
@@ -369,7 +379,7 @@
             const calloutHeight = callout.offsetHeight - (maxHeight > 0 && scrollContainerId
                                                             ? Math.max(0, (scrollContainer as HTMLElement).offsetHeight - maxHeight)
                                                             : 0);
-            const { x: calloutLeft } = callout.getBoundingClientRect();
+            const calloutLeft = calloutRect.x;
 
             // Distances from the component to each edge of the visible band (getBoundingClientRect space),
             // less the room the requested gap takes out of each of them.

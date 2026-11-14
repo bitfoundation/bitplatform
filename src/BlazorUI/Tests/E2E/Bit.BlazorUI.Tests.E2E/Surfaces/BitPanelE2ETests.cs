@@ -486,6 +486,22 @@ public class BitPanelE2ETests : E2ETestBase
         await Expect(Page.Locator("#modeless-open")).ToHaveTextAsync("True");
     }
 
+    // The focus is only the panel's to hand back while it is lost; one the user has moved out onto the page belongs to
+    // the user, and closing the panel from there leaves it where it was moved.
+    [TestMethod]
+    public async Task Modeless_FocusMovedOutWhileOpen_IsLeftWhereItWasMovedWhenThePanelCloses()
+    {
+        await OpenAsync(PagePath);
+        await OpenPanelAsync("btn-modeless-open", "modeless-panel");
+
+        await PressAsync(Page.Locator("#btn-modeless-close"));
+        await Expect(Page.Locator("#modeless-open")).ToHaveTextAsync("False");
+        await WaitForTransitionsAsync("modeless-panel");
+        await NextFramesAsync();
+
+        await Expect(Page.Locator("#btn-modeless-close")).ToBeFocusedAsync();
+    }
+
     // ---------- Refusing a dismissal ----------
 
     [TestMethod]

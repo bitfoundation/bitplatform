@@ -66,10 +66,10 @@ dotnet build Tests/Bit.BevTools.Tests.E2E/Bit.BevTools.Tests.E2E.csproj -c Relea
 cd Tests/Bit.BevTools.Tests.E2E && BEVTOOLS_E2E_LAZY_AOT=1 dotnet test -c Release --no-build
 ```
 
-The workflow `.github/workflows/bit.ci.BevTools.e2e.yml` runs both in Release: the `e2e` job against the trimmed
+The workflow `.github/workflows/ci.bevtools.e2e.yml` runs both in Release: the `e2e` job against the trimmed
 publish and the `lazy-loading-aot` job against the AOT-compiled one. It is started by hand (`workflow_dispatch`) or from
-All Utilities CI (`all.ci.utilities.yml`, with its E2E input), never on a pull request: the build-and-unit pipeline is
-`bit.ci.BevTools.yml`.
+All Utilities E2E CI (`all.utilities.e2e.ci.yml`), never on a pull request: the build-and-unit pipeline is
+`ci.bevtools.yml`.
 
 ```bash
 dotnet publish src/Utilities/BevTools/Samples/Lazy/Bit.BevTools.Samples.Lazy/Bit.BevTools.Samples.Lazy.csproj -c Release

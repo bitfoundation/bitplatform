@@ -60,9 +60,9 @@ dotnet test --filter "FullyQualifiedName~.OpfsTests."
 dotnet test --filter "FullyQualifiedName~Persistence_survives_a_worker_restart"
 ```
 
-CI does the same in Release (`.github/workflows/bit.ci.Bsqlite.e2e.yml`), only when started by hand (Actions >
-"bit platform CI - Bsqlite E2E" > Run workflow), and uploads the test results (TRX) and the demo's output as an
-artifact. Its demo tests drive the demo published the way `bsqlite.demo.cd.yml` publishes it rather than a build
+CI does the same in Release (`.github/workflows/ci.bsqlite.e2e.yml`), only when started by hand (Actions >
+"CI Bsqlite E2E" > Run workflow), and uploads the test results (TRX) and the demo's output as an
+artifact. Its demo tests drive the demo published the way `cd.bsqlite.demo.yml` publishes it rather than a build
 output: only a publish trims the WebAssembly client, so an interop payload the trimmer breaks (an anonymous type whose
 constructor lost its parameter names, a getter nothing but System.Text.Json reads) fails there and nowhere else. The
 lazy loading tests drive the sample published for the same reason, and because only a publish writes the lazy marks into
@@ -99,7 +99,7 @@ Locally, delete the sample's `bin/Release` and `obj/Release` folders before publ
 the AOT one's intermediates can ship the assemblies with their IL stripped, and the runtime then fails to start
 (`Assertion: should not be reached at ... interp.c`).
 
-The pull-request pipeline, `bit.ci.Bsqlite.yml`, runs the build, unit, MCP server and JavaScript tests only.
+The pull-request pipeline, `ci.bsqlite.yml`, runs the build, unit, MCP server and JavaScript tests only.
 
 Without PowerShell 7, the browser can be installed with the Node.js runtime Playwright ships:
 `bin/Debug/net11.0/.playwright/node/<platform>/node bin/Debug/net11.0/.playwright/package/cli.js install chromium`.

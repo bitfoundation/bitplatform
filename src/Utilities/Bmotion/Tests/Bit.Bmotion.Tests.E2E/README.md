@@ -125,7 +125,7 @@ lazy-loadable library shares); `BMOTION_E2E_LAZY_BASE_URL` points it at a copy t
 has not been published makes those tests inconclusive - or failed, on a build server (`CI=true`) - and leaves the other
 fixtures alone.
 
-In `bit.ci.Bmotion.e2e.yml` the `wasm` / `net11.0` leg publishes the sample next to the harness build, and the
+In `ci.bmotion.e2e.yml` the `wasm` / `net11.0` leg publishes the sample next to the harness build, and the
 `lazy-loading-aot` job publishes it with AOT (needs the wasm-tools workload) and runs `LazyLoadingTests` alone. The
 suite starts the harness host before any test runs, so that job builds it too, though none of its tests drive it:
 

@@ -182,6 +182,96 @@ public class AotProfileTests
     }
 
     [TestMethod]
+    public void TheVirtualMethodsOfTheGenericClassesAMethodRanIn_Should_BeListedForTheSameInstance()
+    {
+        var methods = GenericInstanceMethods(Converter(Text, Texts), Converter(Number, Number));
+
+        // Over value types alone, an instance has code of its own: no instance the profiler leaves out runs on it. And of
+        // the rest, only the methods a vtable calls: First and the constructor stay as the profile has them.
+        var method = methods.Single();
+        Assert.AreEqual(Converter(Text, Texts).Key, method.Class.Key);
+        Assert.AreEqual("Add", method.Name);
+        Assert.AreEqual(2, method.ParameterCount);
+        Assert.AreEqual("void(string,System.Collections.Generic.List`1<string> modreq(System.Runtime.InteropServices.InAttribute)&)", method.Signature);
+    }
+
+    [TestMethod]
+    public void AnInstanceOverAReferenceTypeAndAValueType_Should_BeListed()
+    {
+        var method = GenericInstanceMethods(Converter(Text, Number)).Single();
+
+        Assert.AreEqual("void(string,int modreq(System.Runtime.InteropServices.InAttribute)&)", method.Signature);
+    }
+
+    [TestMethod]
+    public void AnInstanceOverAGenericStructOfAReferenceType_Should_BeListed()
+    {
+        // KeyValuePair<string, string> runs on KeyValuePair<__Canon, __Canon>, which other instances share.
+        var pair = new AotProfileClass(CoreLib, "System.Collections.Generic.KeyValuePair`2", [Text, Text]);
+        var numbers = new AotProfileClass(CoreLib, "System.Collections.Generic.KeyValuePair`2", [Number, Number]);
+
+        var method = GenericInstanceMethods(Converter(pair, Number), Converter(numbers, Number)).Single();
+
+        Assert.AreEqual(Converter(pair, Number).Key, method.Class.Key);
+        Assert.AreEqual("void(System.Collections.Generic.KeyValuePair`2<string, string>,int modreq(System.Runtime.InteropServices.InAttribute)&)", method.Signature);
+    }
+
+    [TestMethod]
+    public void ClassesInTheGlobalNamespaceOrNestedTwice_Should_BeNamedTheWayMonosSignaturesNameThem()
+    {
+        // The profile writes a class of the global namespace with a dot first, and of a class nested twice only the class
+        // it's nested in directly; a signature names the first without the dot and the second in full.
+        var global = new AotProfileClass(Tests, ".ProfileGlobalItem");
+        var nested = new AotProfileClass(Tests, ".Nested/Inner");
+
+        var globals = new AotProfileClass(CoreLib, "System.Collections.Generic.List`1", [global]);
+
+        var methods = GenericInstanceMethods(Converter(global, nested), Converter(globals, global));
+
+        CollectionAssert.AreEqual(new[]
+        {
+            "void(ProfileGlobalItem,Bit.Cli.Tests.ProfileSamples/Nested/Inner modreq(System.Runtime.InteropServices.InAttribute)&)",
+            "void(System.Collections.Generic.List`1<ProfileGlobalItem>,ProfileGlobalItem modreq(System.Runtime.InteropServices.InAttribute)&)"
+        }, methods.Select(m => m.Signature).ToList());
+        // The methods' classes keep the names the profile gives them.
+        CollectionAssert.AreEqual(new[] { Converter(global, nested).Key, Converter(globals, global).Key }, methods.Select(m => m.Class.Key).ToList());
+        StringAssert.Contains(methods[1].Class.Key, "System.Collections.Generic.List`1<[Bit.Cli.Tests].ProfileGlobalItem>");
+    }
+
+    [TestMethod]
+    public void TheVirtualMethodsOfTheGenericBaseClasses_Should_BeListedForTheTypeArgumentsTheyAreGiven()
+    {
+        var methods = GenericInstanceMethods(new AotProfileClass(Tests, "Bit.Cli.Tests.ProfileTextConverter`1", [Texts]))
+            .ToDictionary(m => $"{m.Class.Key}::{m.Name}", m => m.Signature);
+
+        Assert.HasCount(2, methods);
+        Assert.AreEqual("System.Collections.Generic.List`1<string>(string)", methods["[Bit.Cli.Tests]Bit.Cli.Tests.ProfileTextConverter`1<[System.Private.CoreLib]System.Collections.Generic.List`1<[System.Private.CoreLib]System.String>>::Read"]);
+        Assert.AreEqual("void(string,System.Collections.Generic.List`1<string> modreq(System.Runtime.InteropServices.InAttribute)&)", methods[$"{Converter(Text, Texts).Key}::Add"]);
+    }
+
+    [TestMethod]
+    public void AnInstanceOverAClassThatIsNotInTheApp_Should_NotBeListed()
+    {
+        var missing = new AotProfileClass(new AotProfileImage("Missing", ""), "Missing.Item");
+
+        Assert.IsEmpty(GenericInstanceMethods(Converter(missing, Number), Converter(Text, new AotProfileClass(Tests, "Bit.Cli.Tests.Missing"))));
+    }
+
+    private static readonly AotProfileImage Tests = new("Bit.Cli.Tests", "");
+    private static readonly AotProfileClass Text = new(CoreLib, "System.String");
+    private static readonly AotProfileClass Number = new(CoreLib, "System.Int32");
+    private static readonly AotProfileClass Texts = new(CoreLib, "System.Collections.Generic.List`1", [Text]);
+
+    private static AotProfileClass Converter(AotProfileClass key, AotProfileClass value) => new(Tests, "Bit.Cli.Tests.ProfileConverter`2", [key, value]);
+
+    private static IReadOnlyList<AotProfileMethod> GenericInstanceMethods(params AotProfileClass[] classes)
+    {
+        return AssemblyMethods.ReadGenericInstances(
+            classes.Select(c => new AotProfileMethod(c, "First", 2, "")),
+            [typeof(ProfileConverter<,>).Assembly.Location, typeof(object).Assembly.Location]);
+    }
+
+    [TestMethod]
     [DataRow("""<script src="_framework/blazor.web.js"></script>""", """<script src="_framework/blazor.web.js" autostart="false"></script><script>Blazor.start();</script>""")]
     [DataRow("""<body><script src="_framework/blazor.webassembly.4rb4qnk8jm.js"></script><script src="app.js"></script>""", """<body><script src="_framework/blazor.webassembly.4rb4qnk8jm.js" autostart="false"></script><script>Blazor.start();</script><script src="app.js"></script>""")]
     [DataRow("""<script src="_framework/blazor.webassembly.js" autostart="false"></script>""", """<script src="_framework/blazor.webassembly.js" autostart="false"></script>""")]
@@ -884,4 +974,19 @@ public static class ProfileSamples
 
         public void Log(Guid value, int a, int b, int c, int d, int e, int f, int g, int h) { }
     }
+}
+
+/// <summary>Shaped like System.Text.Json's dictionary converters: a virtual method that takes a type parameter by <c>in</c>.</summary>
+public class ProfileConverter<TKey, TValue>
+{
+    public virtual void Add(TKey key, in TValue value) { }
+
+    public TValue First(TKey key, List<TValue> values) => values[0];
+
+    public T Convert<T>(T value) => value;
+}
+
+public class ProfileTextConverter<TValue> : ProfileConverter<string, TValue>
+{
+    public virtual TValue Read(string text) => default!;
 }

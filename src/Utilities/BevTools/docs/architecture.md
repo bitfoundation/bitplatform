@@ -580,6 +580,6 @@ internal.
   (runtimes, live inspection, text-only rendering of hostile names, commands, offline files); the extension source
   (mailbox round trips, request data that cannot become code).
 * Non-functional: parallel writers, session churn, bounded buffers, per-render overhead ceiling, disabled-mode footprint,
-  plus a reproducible benchmark (`Tests/Bit.BevTools.Benchmarks`). CI (`.github/workflows/bit.ci.BevTools.yml`)
+  plus a reproducible benchmark (`Tests/Bit.BevTools.Benchmarks`). CI (`.github/workflows/ci.bevtools.yml`)
   builds the solution, runs the .NET suite on net10.0 and net11.0, the JavaScript tests, assembles the
   extension, and makes a benchmark smoke run.

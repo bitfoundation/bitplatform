@@ -244,7 +244,8 @@ public class RoundTwelveReviewTests : BunitContext
         await Node(cut, "a").KeyDownAsync(new KeyboardEventArgs { Key = "c" });
         Assert.IsTrue(cut.Instance.IsConnecting);
 
-        await cut.InvokeAsync(() => cut.Instance.StartResize("b", BlowResizeDirection.Bottom, 0, 0, 10, 10, false, 1000, 1000, 1));
+        await cut.InvokeAsync(() => cut.Instance.StartResize("b", BlowResizeDirection.Bottom, 0, 0,
+            new BlowResizeOptions { MinWidth = 10, MinHeight = 10, MaxWidth = 1000, MaxHeight = 1000 }, 1));
 
         Assert.IsFalse(cut.Instance.IsConnecting);
         Assert.AreEqual(new BlowAriaLabels().KeyboardConnectionCancelled, Heard(cut));

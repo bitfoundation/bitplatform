@@ -1,0 +1,73 @@
+name: CI Websites
+
+on:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      prerelease_packages:
+        type: boolean
+        default: false
+  pull_request:
+    paths:
+    - 'src/Websites/**'
+    - 'src/Toolings/Minifier/**'
+
+env:
+  DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: bit-ci-Websites-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  build-Websites:
+    if: startsWith(github.event.pull_request.title, 'Prerelease') != true && startsWith(github.event.pull_request.title, 'Release') != true && startsWith(github.event.pull_request.title, 'Version') != true
+    name: build Bit.Websites
+    runs-on: ubuntu-26.04
+
+    steps:
+
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET 11.0
+      uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+      with:
+        global-json-file: src/global.json
+
+    - name: Setup .NET 10.0
+      uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+      with:
+        global-json-file: src/Websites/Platform/global.json
+
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version: 24
+      
+    - name: Use prerelease packages
+      if: inputs.prerelease_packages
+      uses: ./.github/actions/use-prerelease-packages
+      with:
+        project-folder: .
+
+    - name: Install wasm
+      run: |
+        cd src && dotnet workload install wasm-tools
+        cd Websites/Platform && dotnet workload install wasm-tools
+
+    - name: Build Careers
+      run: dotnet build src/Websites/Careers/Bit.Websites.Careers.slnx
+
+    - name: Build Platform
+      working-directory: src/Websites/Platform
+      run: dotnet build Bit.Websites.Platform.slnx
+
+    - name: Build Sales
+      working-directory: src/Websites/Sales
+      run: dotnet build Bit.Websites.Sales.slnx

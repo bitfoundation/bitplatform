@@ -1,0 +1,124 @@
+name: CI BevTools E2E
+
+# The browser suite: the published lazy loading sample, which opens BevTools on demand and lazy loads it on
+# WebAssembly, driven in Chromium with Playwright - trimmed, and AOT-compiled in a job of its own. It takes far longer
+# than the build-and-unit pipeline (ci.bevtools.yml), so it runs only when started by hand or from All Utilities E2E CI.
+# See src/Utilities/BevTools/Tests/Bit.BevTools.Tests.E2E/README.md for what it proves and how to run it locally.
+
+on:
+  workflow_dispatch:
+  workflow_call:
+
+env:
+  DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
+
+permissions:
+  contents: read
+
+jobs:
+
+  e2e:
+    name: BevTools E2E (Chromium)
+    runs-on: ubuntu-26.04
+    timeout-minutes: 45
+
+    steps:
+
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    # Only .NET 11: the sample and the suite target net11.0 alone, and build only that target of the multi-targeted
+    # libraries; ci.bevtools.yml adds .NET 10 to run the net10.0 unit tests.
+    - name: Setup .NET 11.0
+      uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+      with:
+        global-json-file: src/global.json
+
+    # Bit.BevTools compiles its TypeScript (npm ci, tsc, esbuild) as it builds.
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version: 24
+
+    # No dotnet workload restore: neither project below needs a workload, and a restore over Bit.BevTools.slnx would
+    # install the workloads its MAUI sample needs.
+    - name: Publish the lazy loading sample and build the E2E suite
+      # The sample is published rather than built: LazyLoadingTests drives what an app that lazy loads ships, trimmed.
+      run: |
+        dotnet publish src/Utilities/BevTools/Samples/Lazy/Bit.BevTools.Samples.Lazy/Bit.BevTools.Samples.Lazy.csproj -c Release
+        dotnet build src/Utilities/BevTools/Tests/Bit.BevTools.Tests.E2E/Bit.BevTools.Tests.E2E.csproj -c Release
+
+    - name: Install Playwright Chromium
+      run: pwsh src/Utilities/BevTools/Tests/Bit.BevTools.Tests.E2E/bin/Release/net11.0/playwright.ps1 install --with-deps chromium
+
+    - name: Run E2E tests
+      # Run from inside src so src/global.json's Microsoft.Testing.Platform runner setting applies.
+      run: >
+        cd src/Utilities/BevTools/Tests/Bit.BevTools.Tests.E2E &&
+        dotnet test -c Release --no-build
+        --report-trx --report-trx-filename bevtools-e2e.trx
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: bevtools-e2e
+        path: '**/bevtools-e2e.trx'
+        if-no-files-found: ignore
+
+  # The README's AOT setup: an AOT build cannot lazy load, so the sample leaves its lazy mark out when
+  # RunAOTCompilation is true and starts with Bit.BevTools. The same tests then check (BEVTOOLS_E2E_LAZY_AOT) that the
+  # loader takes it from the assemblies the app started with - Bit.BevTools.Loader is AOT compatible, Bit.BevTools is
+  # not and runs anyway - and downloads nothing on demand.
+  lazy-loading-aot:
+    name: BevTools E2E - lazy loading sample, AOT (Chromium)
+    runs-on: ubuntu-26.04
+    # The publish compiles the entire client ahead of time.
+    timeout-minutes: 60
+
+    steps:
+
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET 11.0
+      uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+      with:
+        global-json-file: src/global.json
+
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version: 24
+
+    # From inside src, so src/global.json picks the SDK: the workload has to be installed for the SDK that publishes.
+    - name: Install wasm-tools
+      run: cd src/Utilities/BevTools && dotnet workload install wasm-tools
+
+    - name: Publish the lazy loading sample AOT-compiled and build the E2E suite
+      run: |
+        cd src/Utilities/BevTools
+        dotnet publish Samples/Lazy/Bit.BevTools.Samples.Lazy/Bit.BevTools.Samples.Lazy.csproj -c Release -p:RunAOTCompilation=true
+        dotnet build Tests/Bit.BevTools.Tests.E2E/Bit.BevTools.Tests.E2E.csproj -c Release
+
+    - name: Install Playwright Chromium
+      run: pwsh src/Utilities/BevTools/Tests/Bit.BevTools.Tests.E2E/bin/Release/net11.0/playwright.ps1 install --with-deps chromium
+
+    - name: Run E2E tests against the AOT-compiled sample
+      env:
+        BEVTOOLS_E2E_LAZY_AOT: 1
+      # Run from inside src so src/global.json's Microsoft.Testing.Platform runner setting applies.
+      run: >
+        cd src/Utilities/BevTools/Tests/Bit.BevTools.Tests.E2E &&
+        dotnet test -c Release --no-build
+        --report-trx --report-trx-filename bevtools-e2e-aot.trx
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: bevtools-e2e-aot
+        path: '**/bevtools-e2e-aot.trx'
+        if-no-files-found: ignore

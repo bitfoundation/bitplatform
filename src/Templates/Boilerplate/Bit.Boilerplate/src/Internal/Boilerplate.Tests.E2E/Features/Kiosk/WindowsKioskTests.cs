@@ -4,7 +4,7 @@ namespace Boilerplate.Tests.E2E.Features.Kiosk;
 
 /// <summary>
 /// Kiosk mode, which only the AdminPanel Windows app is built with (<c>Kiosk.Enabled</c> in
-/// .github/workflows/admin-sample.cd.yml) - so Todo and Sales are here as the contrast that proves each assertion is
+/// .github/workflows/cd.adminpanel.demo.yml) - so Todo and Sales are here as the contrast that proves each assertion is
 /// about the kiosk rather than about every Client.Windows app.
 /// <para>
 /// Not parallelized: every session starts its Client.Windows app on the same CDP port 9222 (see

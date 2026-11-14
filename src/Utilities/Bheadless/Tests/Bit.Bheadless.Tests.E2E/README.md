@@ -60,7 +60,7 @@ dotnet test --filter "FullyQualifiedName~.KeyboardTests."
 dotnet test --filter "FullyQualifiedName~Dialog_traps_focus"
 ```
 
-The suite publishes the demo itself before the first test, the way `bheadless.demo.cd.yml` does
+The suite publishes the demo itself before the first test, the way `cd.bheadless.demo.yml` does
 (`dotnet publish ... -c Release -p:AspNetCoreHostingModel=OutOfProcess -p:InvariantGlobalization=true`), into
 `bin/<configuration>/net11.0/demo/<render mode>`, starts it on a free port in the Production environment, shares it
 between all tests and stops it when the run ends. A publish rather than a build output: only a publish trims the
@@ -108,8 +108,8 @@ the render-mode markers of its home page and refuses to run against the other on
 
 ## CI
 
-`.github/workflows/bit.ci.Bheadless.e2e.yml` publishes the demo the way `bheadless.demo.cd.yml` does,
+`.github/workflows/ci.bheadless.e2e.yml` publishes the demo the way `cd.bheadless.demo.yml` does,
 builds this suite in Release, installs Chromium and runs it from this folder with `--report-trx`, once per render mode,
-uploading the TRX and the traces of failed tests. It runs only when started by hand (Actions > "bit platform CI -
-Bheadless E2E" > Run workflow) or called from another workflow; the pull-request pipeline,
-`bit.ci.Bheadless.yml`, runs the build, the component tests and the MCP tests only.
+uploading the TRX and the traces of failed tests. It runs only when started by hand (Actions > "CI Bheadless E2E" > Run
+workflow) or called from another workflow; the pull-request pipeline,
+`ci.bheadless.yml`, runs the build, the component tests and the MCP tests only.
