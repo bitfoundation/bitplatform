@@ -58,7 +58,11 @@ public class BitResourceTimelineOptions
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? ResourceAxisMaxWidth { get; set; }
 
-    /// <summary>Height of the date row within the time axis, in pixels.</summary>
+    /// <summary>
+    /// Height of the date row within the time axis, in pixels. The date row labels each day, and
+    /// thins as the zoom drops so its labels never overlap: every other day, then weeks, months,
+    /// quarters, half years and years.
+    /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? DateRowHeight { get; set; }
 
@@ -131,9 +135,10 @@ public class BitResourceTimelineOptions
     public int? BarIconSize { get; set; }
 
     /// <summary>
-    /// CSS font shorthand for the day labels on the time axis (default <c>"12px sans-serif"</c>).
-    /// The component measures day labels in this font to pin them while a day scrolls past, so
-    /// it must match what is actually drawn.
+    /// CSS font shorthand for the date-row labels on the time axis (default <c>"12px sans-serif"</c>).
+    /// The component measures the labels in this font to pin them while their day (or week, month,
+    /// ...) scrolls past and to pick how far apart they go as the zoom drops, so it must match what
+    /// is actually drawn.
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? DateLabelFont { get; set; }

@@ -48,6 +48,10 @@
         private _dateTimeDtf: Intl.DateTimeFormat;
         // Created on the first 12-hour label (see formatHour).
         private _hour12Dtf: Intl.DateTimeFormat | undefined;
+        // Created on the first coarse date-row label (see formatShortDate).
+        private _shortDateDtf: Intl.DateTimeFormat | undefined;
+        private _monthDtf: Intl.DateTimeFormat | undefined;
+        private _yearDtf: Intl.DateTimeFormat | undefined;
 
         // `timeZone` is an IANA id (e.g. "Europe/Berlin"), or null for the viewer's
         // local zone. `locale` is a BCP 47 tag for human-facing labels, or null for
@@ -226,6 +230,32 @@
         // Localized day label for the date row ("Mon, Jul 20").
         public formatDate(ts: number): string {
             return this._dateDtf.format(ts);
+        }
+
+        // The coarser labels the date row switches to as the zoom drops (see the
+        // engine's _dateRowTier): a day without its weekday ("Jul 20"), for runs
+        // of days and weeks; a month with its year ("Jul 2026"), for months and
+        // quarters; a year alone ("2026"). Created on first use, since most
+        // timelines are never zoomed out that far.
+        public formatShortDate(ts: number): string {
+            if (!this._shortDateDtf) this._shortDateDtf = this._dtf({ month: 'short', day: 'numeric' });
+            return this._shortDateDtf.format(ts);
+        }
+
+        public formatMonth(ts: number): string {
+            if (!this._monthDtf) this._monthDtf = this._dtf({ month: 'short', year: 'numeric' });
+            return this._monthDtf.format(ts);
+        }
+
+        public formatYear(ts: number): string {
+            if (!this._yearDtf) this._yearDtf = this._dtf({ year: 'numeric' });
+            return this._yearDtf.format(ts);
+        }
+
+        // A label formatter in the configured (or viewer) locale and this zone.
+        private _dtf(opts: Intl.DateTimeFormatOptions): Intl.DateTimeFormat {
+            if (this.timeZone) opts.timeZone = this.timeZone;
+            return new Intl.DateTimeFormat(this.locale || undefined, opts);
         }
 
         // Short localized date + time, for announcements, tooltips and the ghost.

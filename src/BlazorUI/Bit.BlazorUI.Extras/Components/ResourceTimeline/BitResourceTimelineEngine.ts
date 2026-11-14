@@ -57,6 +57,34 @@
     // time span only, so nothing but a real time overlap stacks them.
     const NO_SPAN = Object.freeze({ lead: 0, trail: 0 });
 
+    // The steps the date row (the top row of the time axis) can take, finest
+    // first. Each is a run of `n` calendar units, labelled in one of the zoned
+    // time's formats; the row takes the first whose shortest period still fits
+    // its widest label (see _dateRowTier), so it thins from one label a day to
+    // every other day, weeks, months, quarters and years as the zoom drops,
+    // rather than piling a label per day on top of each other. `minHours` is the
+    // shortest real length of a period: a 23-hour DST day, a 28-day February,
+    // a 90-day first quarter, a 181-day first half, a 365-day year.
+    const DATE_ROW_TIERS: readonly ResourceTimelineDateRowTier[] = Object.freeze([
+        { unit: 'day', n: 1, format: 'date', minHours: 23 },
+        { unit: 'day', n: 1, format: 'short', minHours: 23 },
+        { unit: 'day', n: 2, format: 'short', minHours: 47 },
+        { unit: 'week', n: 1, format: 'short', minHours: 7 * 24 - 1 },
+        { unit: 'week', n: 2, format: 'short', minHours: 14 * 24 - 1 },
+        { unit: 'month', n: 1, format: 'month', minHours: 28 * 24 - 1 },
+        { unit: 'month', n: 3, format: 'month', minHours: 90 * 24 - 1 },
+        { unit: 'month', n: 6, format: 'month', minHours: 181 * 24 - 1 },
+        { unit: 'year', n: 1, format: 'year', minHours: 365 * 24 - 1 },
+        { unit: 'year', n: 2, format: 'year', minHours: 2 * 365 * 24 - 1 },
+        { unit: 'year', n: 5, format: 'year', minHours: 5 * 365 * 24 - 1 },
+        { unit: 'year', n: 10, format: 'year', minHours: 10 * 365 * 24 - 1 },
+        { unit: 'year', n: 50, format: 'year', minHours: 50 * 365 * 24 - 1 },
+        { unit: 'year', n: 100, format: 'year', minHours: 100 * 365 * 24 - 1 }
+    ] as ResourceTimelineDateRowTier[]);
+
+    // Space kept between a date-row label and the edges of its period.
+    const DATE_LABEL_PADDING = 6;
+
     // Line box a bar label occupies, as a multiple of its font's pixel size, and
     // the size assumed when barLabelFont carries no px size to read.
     const LABEL_LINE_HEIGHT_RATIO = 1.2;
@@ -276,6 +304,14 @@
     export interface ResourceTimelineTimeRange {
         start: number;
         end: number;
+    }
+
+    /** One step of the date row: a run of `n` calendar units and the format its label is in (see DATE_ROW_TIERS). */
+    export interface ResourceTimelineDateRowTier {
+        unit: 'day' | 'week' | 'month' | 'year';
+        n: number;
+        format: 'date' | 'short' | 'month' | 'year';
+        minHours: number;
     }
 
     /** One column stripe of the content pane, culled to the viewport. */
@@ -586,6 +622,9 @@
         private _renderPending: boolean;
         private _renderErrors: number | undefined;
         private _time!: ResourceTimelineZonedTime;
+        // The widest label of each date-row format, measured once per zoned time
+        // (zone and locale) and date font (see _dateRowLabelWidths).
+        private _dateRowWidths: { time: ResourceTimelineZonedTime; font: string; widths: { [format: string]: number } } | null | undefined;
         private _disposed!: boolean;
 
         // Pooled scene and its nodes (see _resetScene)
@@ -2147,26 +2186,32 @@
             return this._configSnap;
         }
 
-        // Top axis row: one label per day, pinned to stay visible while the day is
-        // on screen (sticky-header style), with a separator at each midnight
-        // boundary. Below it, hourly ticks/labels thinned to fit the zoom - one row
-        // in the axis zone, or two (UTC above it) when showUtcTime is set.
+        // Top axis row: one label per period - a day, or a run of days, a week, a
+        // month, a quarter or a year as the zoom drops (see _dateRowTier) - pinned
+        // to stay visible while the period is on screen (sticky-header style), with
+        // a separator at each period's start. Below it, hourly ticks/labels thinned
+        // to fit the zoom - one row in the axis zone, or two (UTC above it) when
+        // showUtcTime is set.
         private _buildTimeAxisScene(scene: any, hours: ResourceTimelineHourBoundary[], utcHours: ResourceTimelineHourBoundary[] | null): void {
             const c = this.config;
             const startX = c.resourceAxisWidth;
             const visibleEndX = this._viewportW;
             const dateRowHeight = c.dateRowHeight;
 
-            // Day labels are pinned within the day's visible span; measure with the
+            // Picked (and its label widths measured) before the font is set for
+            // the labels below, since measuring sets the same font.
+            const tier = this._dateRowTier();
+
+            // Labels are pinned within the period's visible span; measure with the
             // same font the renderer will draw with (config.dateLabelFont), or the
             // pinned position would not match the rendered text width.
             const ctx = this._measureCtx;
             ctx.font = c.dateLabelFont;
 
-            let dayStart = this._time.startOfDay(this.visibleTimeRange!.start);
-            // A stuck nextDay (a zone that cannot advance) must not hang the frame.
+            let dayStart = this._dateRowPeriodStart(this.visibleTimeRange!.start, tier);
+            // A stuck period walk (a zone that cannot advance) must not hang the frame.
             for (let guard = 0; dayStart <= this.visibleTimeRange!.end && guard < 10000; guard++) {
-                const dayEnd = this._time.nextDay(dayStart);
+                const dayEnd = this._dateRowNextPeriod(dayStart, tier);
                 if (!(dayEnd > dayStart)) break;
                 const dayStartX = this.getTimeToX(dayStart);
                 const dayEndX = this.getTimeToX(dayEnd);
@@ -2186,16 +2231,18 @@
                     day.sepTs = dayStart;
                 }
 
-                // Sticky-header pinning: sit at the left of the day's visible
-                // span. When the next day's title approaches from the right, this
-                // one is pushed left so the two never overlap, and slides out of
-                // the content area (renderers clip at the resource-axis edge)
-                // rather than stacking on the incoming title.
+                // Sticky-header pinning: sit at the left of the period's visible
+                // span. When the next period's title approaches from the right,
+                // this one is pushed left so the two never overlap, and slides out
+                // of the content area (renderers clip at the resource-axis edge)
+                // rather than stacking on the incoming title. The tier keeps every
+                // period at least as wide as its label and both paddings, so a
+                // pushed title never reaches back past its own period's start.
                 const segLeft = Math.max(dayStartX, startX);
                 const segRight = Math.min(dayEndX, visibleEndX);
                 if (segRight > segLeft) {
-                    const label = this._time.formatDate(dayStart);
-                    const padding = 6;
+                    const label = this._formatDateRowLabel(dayStart, tier);
+                    const padding = DATE_LABEL_PADDING;
                     const textWidth = ctx.measureText(label).width;
                     const preferredX = segLeft + padding;
                     const pushedX = dayEndX - padding - textWidth;
@@ -2258,6 +2305,111 @@
                 if (n >= needed) return n;
             }
             return 24;
+        }
+
+        // The date row's step at the current zoom: the finest tier whose shortest
+        // period still holds its widest label with padding on both sides. Below
+        // the coarsest tier's fit it stays on that tier, the least crowded there is.
+        private _dateRowTier(): ResourceTimelineDateRowTier {
+            const pph = this._pixelsPerHour;
+            const widths = this._dateRowLabelWidths();
+            for (let i = 0; i < DATE_ROW_TIERS.length; i++) {
+                const tier = DATE_ROW_TIERS[i];
+                if (tier.minHours * pph >= widths[tier.format] + 2 * DATE_LABEL_PADDING) return tier;
+            }
+            return DATE_ROW_TIERS[DATE_ROW_TIERS.length - 1];
+        }
+
+        // The widest label each format writes, over samples that cover every
+        // month and weekday name and two-digit days, measured in the date font.
+        // A tier is chosen off these rather than the labels on screen, so it does
+        // not flip back and forth as the view scrolls past a long month name.
+        private _dateRowLabelWidths(): { [format: string]: number } {
+            const font = this.config.dateLabelFont;
+            const cached = this._dateRowWidths;
+            if (cached && cached.time === this._time && cached.font === font) return cached.widths;
+
+            const time = this._time;
+            const ctx = this._measureCtx;
+            ctx.font = font;
+            const utc = ResourceTimelineZonedTime.utc;
+            const days: number[] = [];
+            for (let month = 1; month <= 12; month++) days.push(utc(2026, month, 28, 12));
+            for (let day = 21; day <= 27; day++) days.push(utc(2026, 9, day, 12));   // a Monday-to-Sunday week
+            const years = [utc(1988, 6, 15, 12), utc(2026, 6, 15, 12), utc(2099, 6, 15, 12)];
+            const widest = (samples: number[], format: (ts: number) => string): number => {
+                let max = 0;
+                for (let i = 0; i < samples.length; i++) {
+                    max = Math.max(max, ctx.measureText(format(samples[i])).width);
+                }
+                return max;
+            };
+
+            const widths = {
+                date: widest(days, ts => time.formatDate(ts)),
+                short: widest(days, ts => time.formatShortDate(ts)),
+                month: widest(days, ts => time.formatMonth(ts)),
+                year: widest(years, ts => time.formatYear(ts))
+            };
+            this._dateRowWidths = { time, font, widths };
+            return widths;
+        }
+
+        // The start of the date-row period holding `ts`: its local midnight, the
+        // first day of its week (FirstDayOfWeek) or month, or New Year's Day.
+        // Runs of several units are aligned to the calendar - day and week runs
+        // to their ordinal since the epoch, months to the year (quarters start in
+        // January, April, July and October), years to multiples of the run - so a
+        // period keeps its start as the view scrolls.
+        private _dateRowPeriodStart(ts: number, tier: ResourceTimelineDateRowTier): number {
+            const time = this._time;
+            const p = time.parts(ts);
+            switch (tier.unit) {
+                case 'day':
+                    return time.addDays(ts, -this._mod(this._dayOrdinal(p), tier.n));
+                case 'week': {
+                    const intoWeek = (this._weekday(p) - this._weekStartDay() + 7) % 7;
+                    return time.addDays(ts, -intoWeek - 7 * this._mod(this._weekOrdinal(p), tier.n));
+                }
+                case 'month': {
+                    const index = p.year * 12 + p.month - 1;
+                    const start = index - this._mod(index, tier.n);
+                    return time.wallClockToTs(Math.floor(start / 12), this._mod(start, 12) + 1, 1, 0, 0, 0);
+                }
+                default:
+                    return time.wallClockToTs(p.year - this._mod(p.year, tier.n), 1, 1, 0, 0, 0);
+            }
+        }
+
+        // The start of the date-row period after the one starting at `start`.
+        // Always later than `start`, so the walk over the visible range ends.
+        private _dateRowNextPeriod(start: number, tier: ResourceTimelineDateRowTier): number {
+            const time = this._time;
+            let next: number;
+            if (tier.unit === 'day') {
+                next = tier.n === 1 ? time.nextDay(start) : time.addDays(start, tier.n);
+            } else if (tier.unit === 'week') {
+                next = time.addDays(start, 7 * tier.n);
+            } else {
+                const p = time.parts(start);
+                if (tier.unit === 'month') {
+                    const index = p.year * 12 + p.month - 1 + tier.n;
+                    next = time.wallClockToTs(Math.floor(index / 12), this._mod(index, 12) + 1, 1, 0, 0, 0);
+                } else {
+                    next = time.wallClockToTs(p.year + tier.n, 1, 1, 0, 0, 0);
+                }
+            }
+            return next > start ? next : start + tier.minHours * 3600000;
+        }
+
+        private _formatDateRowLabel(ts: number, tier: ResourceTimelineDateRowTier): string {
+            const time = this._time;
+            switch (tier.format) {
+                case 'date': return time.formatDate(ts);
+                case 'short': return time.formatShortDate(ts);
+                case 'month': return time.formatMonth(ts);
+                default: return time.formatYear(ts);
+            }
         }
 
         private _buildGridScene(scene: any): void {
