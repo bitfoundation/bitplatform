@@ -101,7 +101,7 @@ public class AotProfileTests
     public void MethodsWithMoreThanEightParameters_Should_BeListed_SinceCompiledCodeCannotEnterTheInterpreterForThem()
     {
         var methods = AssemblyMethods.ReadWide(typeof(ProfileSamples).Assembly.Location)
-            .Where(m => m.Class.Name.StartsWith("Bit.Cli.Tests.ProfileSamples", StringComparison.Ordinal))
+            .Where(m => m.Class.Name.StartsWith("Bit.Cli.Tests.ProfileSamples", StringComparison.Ordinal) && m.Class.Name != "Bit.Cli.Tests.ProfileSamples/WideOf`1")
             .ToList();
 
         // The implementation alone: the interface's method has no body to compile, and eight parameters is what the
@@ -111,6 +111,46 @@ public class AotProfileTests
         Assert.AreEqual("Log", log.Name);
         Assert.AreEqual(9, log.ParameterCount);
         Assert.AreEqual("void(System.Guid,System.Guid,System.DateTimeOffset,System.TimeSpan,string,int,int,int,System.Threading.CancellationToken)", log.Signature);
+    }
+
+    [TestMethod]
+    public void MethodsWithEightParameters_Should_NotBeListed_SinceThisIsNotCounted()
+    {
+        // Mono's interpreter entry wrappers take this besides their eight arguments, so an instance method with eight
+        // parameters - nine arguments with this - is entered like a static one with eight.
+        var methods = AssemblyMethods.ReadWide(typeof(ProfileSamples).Assembly.Location)
+            .Where(m => m.Class.Name.StartsWith("Bit.Cli.Tests.ProfileSamples", StringComparison.Ordinal))
+            .ToList();
+
+        Assert.IsFalse(methods.Any(m => m.Name is "Eight" or "EightOnInstance"));
+    }
+
+    [TestMethod]
+    public void WideMethodsOfGenericTypes_Should_BeListedForEachInstantiationTheAppRan()
+    {
+        var assembly = typeof(ProfileSamples).Assembly;
+        var image = new AotProfileImage(assembly.GetName().Name!, "00000000-0000-0000-0000-000000000000");
+        var coreLib = new AotProfileImage("System.Private.CoreLib", "00000000-0000-0000-0000-000000000000");
+        var list = new AotProfileClass(coreLib, "System.Collections.Generic.List`1", [new AotProfileClass(coreLib, "System.String")]);
+        var ran = new[]
+        {
+            new AotProfileClass(image, "Bit.Cli.Tests.ProfileSamples/WideOf`1", [new AotProfileClass(coreLib, "System.Int32")]),
+            new AotProfileClass(image, "Bit.Cli.Tests.ProfileSamples/WideOf`1", [list]),
+            new AotProfileClass(image, "Bit.Cli.Tests.ProfileSamples/WideOf`1", [new AotProfileClass(coreLib, "System.Int32")]),
+        };
+
+        var methods = AssemblyMethods.ReadWide(assembly.Location, ran)
+            .Where(m => m.Class.Name == "Bit.Cli.Tests.ProfileSamples/WideOf`1")
+            .ToDictionary(m => m.Class.Key, m => m.Signature);
+
+        // The definition, then each instantiation once, inflated the way Mono's profiler writes it.
+        Assert.HasCount(3, methods);
+        Assert.AreEqual("void(T,int,int,int,int,int,int,int,int)", methods[$"[{image.Name}]Bit.Cli.Tests.ProfileSamples/WideOf`1"]);
+        Assert.AreEqual("void(int,int,int,int,int,int,int,int,int)", methods[ran[0].Key]);
+        Assert.AreEqual("void(System.Collections.Generic.List`1<string>,int,int,int,int,int,int,int,int)", methods[ran[1].Key]);
+
+        // A generic method is not: nothing says which instantiations the app makes.
+        Assert.IsFalse(AssemblyMethods.ReadWide(assembly.Location, ran).Any(m => m.Name == "GenericWide"));
     }
 
     [TestMethod]
@@ -784,6 +824,8 @@ public static class ProfileSamples
 
     public static void Eight(int a, int b, int c, int d, int e, int f, int g, int h) { }
 
+    public static void GenericWide<T>(T value, int a, int b, int c, int d, int e, int f, int g, int h) { }
+
     public static class Nested
     {
         public sealed class Inner;
@@ -797,5 +839,12 @@ public static class ProfileSamples
     public sealed class Wide : IWide
     {
         public void Log(Guid id, Guid connection, DateTimeOffset start, TimeSpan duration, string text, int a, int b, int c, CancellationToken cancellationToken) { }
+
+        public void EightOnInstance(int a, int b, int c, int d, int e, int f, int g, int h) { }
+    }
+
+    public sealed class WideOf<T>
+    {
+        public void Log(T value, int a, int b, int c, int d, int e, int f, int g, int h) { }
     }
 }

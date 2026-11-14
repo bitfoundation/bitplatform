@@ -178,8 +178,9 @@ public sealed class BsqliteBuilder
     /// download with <c>BlazorWebAssemblyLazyLoad</c> loads it here, through <c>LazyAssemblyLoader</c>.
     /// Opening needs it: every connection is a <c>DbConnection</c>, whose <c>GetSchema</c> returns a
     /// <c>DataTable</c>, and the runtime cannot set the connection type up without the assembly that
-    /// type's XML support lives in. Mark it lazy only outside AOT builds, with a switch next to the mark
-    /// that the step checks: an AOT build that marks it aborts at startup with a Mono assertion.
+    /// type's XML support lives in. The step checks <see cref="LazyLoadsXml"/> first: the package drops the
+    /// mark in an AOT build, which would otherwise abort at startup with a Mono assertion, and loading an
+    /// assembly that is not marked throws.
     /// </para>
     /// <para>
     /// Steps run in the order they were added, and must not open a database themselves: the open is
@@ -189,8 +190,9 @@ public sealed class BsqliteBuilder
     /// </remarks>
     /// <example>
     /// <code>
-    /// sqlite.BeforeFirstOpen((sp, ct) => sp.GetRequiredService&lt;LazyAssemblyLoader&gt;()
-    ///     .LoadAssembliesAsync(["System.Private.Xml.wasm"]));
+    /// sqlite.BeforeFirstOpen((sp, ct) => BsqliteBuilder.LazyLoadsXml
+    ///     ? sp.GetRequiredService&lt;LazyAssemblyLoader&gt;().LoadAssembliesAsync(["System.Private.Xml.wasm"])
+    ///     : Task.CompletedTask);
     /// </code>
     /// </example>
     public BsqliteBuilder BeforeFirstOpen(Func<IServiceProvider, CancellationToken, Task> step)
@@ -199,6 +201,22 @@ public sealed class BsqliteBuilder
         _beforeFirstOpen.Add(step);
         return this;
     }
+
+    /// <summary>
+    /// Whether <c>System.Private.Xml.wasm</c> is lazy loaded in this WebAssembly app: true only where the app
+    /// marks it with <c>BlazorWebAssemblyLazyLoad</c> and the build is not AOT-compiled. The package's build
+    /// sets it next to the mark, and drops the mark from an AOT build - which compiles the assembly into
+    /// <c>dotnet.native.wasm</c> anyway, and aborts at startup with a Mono assertion when it is marked.
+    /// </summary>
+    /// <remarks>
+    /// A <see cref="BeforeFirstOpen"/> step that loads the assembly checks it first: loading an assembly that
+    /// is not marked throws. False everywhere else - on a server, in Blazor Hybrid, and in an app that
+    /// references Bit.Bsqlite through a project reference without importing its <c>Bit.Bsqlite.targets</c>.
+    /// </remarks>
+    [FeatureSwitchDefinition(LazyLoadsXmlSwitch)]
+    public static bool LazyLoadsXml => AppContext.TryGetSwitch(LazyLoadsXmlSwitch, out var on) && on;
+
+    private const string LazyLoadsXmlSwitch = "Bit.Bsqlite.LazyLoadsXml";
 
     /// <summary>
     /// Adds a JavaScript module that registers user-defined functions, collations, or virtual

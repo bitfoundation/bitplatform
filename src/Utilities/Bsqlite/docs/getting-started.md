@@ -69,17 +69,24 @@ Builder options:
   `System.Private.Xml.wasm` out of its startup download with `<BlazorWebAssemblyLazyLoad>` loads it here; opening a
   database needs it:
 
-  ```csharp
-  .BeforeFirstOpen((sp, ct) => sp.GetRequiredService<LazyAssemblyLoader>()
-      .LoadAssembliesAsync(["System.Private.Xml.wasm"]))
+  ```xml
+  <ItemGroup>
+    <BlazorWebAssemblyLazyLoad Include="System.Private.Xml.wasm" />
+  </ItemGroup>
   ```
 
-  Mark it only outside AOT builds - `<ItemGroup Condition=" '$(RunAOTCompilation)' != 'true' ">` - with a switch next
-  to the mark the step checks, as the [lazy loading](#lazy-loading-on-webassembly) setup below does: AOT compiles it
-  into `dotnet.native.wasm` anyway, and an AOT build that marks it aborts at startup with a Mono assertion at
-  `method-builder-ilgen.c`. The [demo](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bsqlite/Demo/Client/)
-  does this. An app that [lazy loads Bit.Bsqlite](#lazy-loading-on-webassembly) itself loads `System.Private.Xml.wasm` together
-  with it instead.
+  ```csharp
+  .BeforeFirstOpen((sp, ct) => BsqliteBuilder.LazyLoadsXml
+      ? sp.GetRequiredService<LazyAssemblyLoader>().LoadAssembliesAsync(["System.Private.Xml.wasm"])
+      : Task.CompletedTask)
+  ```
+
+  The package drops the mark from an AOT build: AOT compiles the assembly into `dotnet.native.wasm` anyway, and an AOT
+  build that marks it aborts at startup with a Mono assertion at `method-builder-ilgen.c`. `BsqliteBuilder.LazyLoadsXml`
+  is true only where the mark is kept, so the step loads nothing there - loading an assembly that is not marked throws.
+  An app that references Bit.Bsqlite through a project reference imports `Bit.Bsqlite.targets` itself for this, as the
+  [demo](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bsqlite/Demo/Client/) does. An app that
+  [lazy loads Bit.Bsqlite](#lazy-loading-on-webassembly) itself loads `System.Private.Xml.wasm` together with it instead.
 - `AddExtensionModule("/my-functions.js")` - JavaScript that registers SQL functions; see [Extending](extending.md).
 - `UseBindingStore<T>()` - replace where sticky bindings are remembered.
 - `ConfigureFileSystemStorage(o => o.RootDirectory = ...)` - where a Blazor Hybrid app keeps its databases; by default a folder of the app's own under local application data.

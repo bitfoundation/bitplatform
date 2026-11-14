@@ -85,6 +85,16 @@ dotnet publish src/Utilities/Bsqlite/Samples/Lazy/Bit.Bsqlite.Samples.Lazy/Bit.B
 cd src/Utilities/Bsqlite/Tests/Bit.Bsqlite.Tests.E2E && BSQLITE_E2E_LAZY_AOT=1 dotnet test -c Release --no-build --filter "FullyQualifiedName~LazyLoadingTests"
 ```
 
+The `demo-aot` job does the same for the demo and runs `DemoTests` alone against it: the demo marks
+`System.Private.Xml.wasm` lazy, and `Bit.Bsqlite.targets` drops that mark from an AOT build and leaves
+`BsqliteBuilder.LazyLoadsXml` unset, so its `BeforeFirstOpen` step loads nothing:
+
+```bash
+dotnet publish src/Utilities/Bsqlite/Demo/Server/Bit.Bsqlite.Demo.Server.csproj -c Release -o demo -p:InvariantGlobalization=true -p:RunAOTCompilation=true
+(cd demo && dotnet Bit.Bsqlite.Demo.Server.dll --urls http://127.0.0.1:5000 &)
+cd src/Utilities/Bsqlite/Tests/Bit.Bsqlite.Tests.E2E && BSQLITE_E2E_DEMO_URL=http://127.0.0.1:5000 dotnet test -c Release --no-build --filter "FullyQualifiedName~DemoTests"
+```
+
 Locally, delete the sample's `bin/Release` and `obj/Release` folders before publishing it without AOT again: a publish over
 the AOT one's intermediates can ship the assemblies with their IL stripped, and the runtime then fails to start
 (`Assertion: should not be reached at ... interp.c`).

@@ -147,9 +147,12 @@ public sealed class AotProfileRun(CliServices cli)
 
             var profile = AotProfile.Read(data);
             var collected = profile.Methods.Count;
-            var unmanaged = assemblies.Sum(a => profile.AddRange(AssemblyMethods.Read(a.Path, unmanagedCallersOnly: true)));
-            var wide = assemblies.Sum(a => profile.AddRange(AssemblyMethods.ReadWide(a.Path)));
-            var included = request.Include.Sum(name => profile.AddRange(AssemblyMethods.Read(assemblies.First(a => string.Equals(a.Name, name, StringComparison.OrdinalIgnoreCase)).Path, unmanagedCallersOnly: false)));
+            // The instantiations of generic types the app ran: each gets its wide (and --include) methods compiled too.
+            var instantiated = profile.Methods.Select(m => m.Class).ToList();
+            // Each count is how many of its kind the profile has, whether the run had already put them there or not.
+            var unmanaged = AddAll(profile, assemblies.SelectMany(a => AssemblyMethods.Read(a.Path, unmanagedCallersOnly: true)));
+            var wide = AddAll(profile, assemblies.SelectMany(a => AssemblyMethods.ReadWide(a.Path, instantiated)));
+            var included = AddAll(profile, request.Include.SelectMany(name => AssemblyMethods.Read(assemblies.First(a => string.Equals(a.Name, name, StringComparison.OrdinalIgnoreCase)).Path, unmanagedCallersOnly: false, instantiated)));
 
             Directory.CreateDirectory(Path.GetDirectoryName(output)!);
             await File.WriteAllBytesAsync(output, profile.ToArray(), cancellationToken);
@@ -187,5 +190,13 @@ public sealed class AotProfileRun(CliServices cli)
             return path.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase) ? path : null;
 
         return Directory.Exists(path) && Directory.GetFiles(path, "*.csproj") is [var only] ? only : null;
+    }
+
+    /// <summary>Adds the methods to the profile and returns how many distinct ones there are, added now or there before.</summary>
+    private static int AddAll(AotProfile profile, IEnumerable<AotProfileMethod> methods)
+    {
+        var listed = methods.DistinctBy(m => m.Key).ToList();
+        profile.AddRange(listed);
+        return listed.Count;
     }
 }
