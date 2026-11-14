@@ -67,6 +67,29 @@
 </section>
 
 <section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> MinItems - a list that keeps a few</h3>
+    <p class="bb-card-desc">
+        <code>MinItems</code> is the fewest items a list keeps: no item moves out of it to another list when that would
+        leave fewer - the other lists do not take the drag, as if they were full. A multi-drag counts every item it would
+        carry away. The list still sorts, clones out and swaps, none of which empties it.
+    </p>
+
+    <div class="bb-demo">
+        <RequiredSteps />
+    </div>
+
+    <DemoCode For="typeof(RequiredSteps)" />
+
+    <ul class="bb-detail-list">
+        <li>
+            Drag <em>Deploy</em> to the Unused steps: it goes, and two steps are left. Now drag <em>Test</em>: Unused
+            steps does not take it, and it stays in the pipeline. Add <em>Lint</em> from the shelf, and a step can leave
+            again.
+        </li>
+    </ul>
+</section>
+
+<section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> ConfirmDrop - the last word</h3>
     <p class="bb-card-desc">
         <code>ConfirmDrop</code> is asked once an item has been dropped into the list, for a check that has to wait: a

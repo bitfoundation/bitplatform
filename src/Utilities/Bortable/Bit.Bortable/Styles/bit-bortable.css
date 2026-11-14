@@ -95,6 +95,27 @@
     box-shadow: var(--bit-bortable-selected-ring, inset 0 0 0 2px rgba(var(--bit-bortable-accent-rgb), 0.8));
 }
 
+/* A multi-drag that carries several items says how many on its picture: the preview that follows a finger, a pen or a
+   ForceFallback mouse, and the copy of the item the browser takes its drag image of. Both are copies placed by the
+   browser layer (position: fixed), and the count is an element of their own: the item itself, its positioning and its
+   pseudo-elements are left alone. --bit-bortable-count-display: none hides it. */
+[data-bortable-count] > .bit-bortable-count {
+    display: var(--bit-bortable-count-display, block);
+    position: absolute;
+    top: 0.35em;
+    inset-inline-end: 0.35em;
+    min-width: 1.6em;
+    margin: 0;
+    padding: 0.2em 0.45em;
+    box-sizing: border-box;
+    border-radius: 999px;
+    background: var(--bit-bortable-count-bg, rgba(var(--bit-bortable-accent-rgb), 1));
+    color: var(--bit-bortable-count-color, #fff);
+    font: 600 0.75rem/1.2 system-ui, sans-serif;
+    text-align: center;
+    pointer-events: none;
+}
+
 .bit-bortable-disabled > .bit-bortable-item {
     cursor: default;
 }
@@ -142,6 +163,12 @@
     .bit-bortable-ghost {
         outline: 2px dashed GrayText;
         outline-offset: -2px;
+    }
+
+    [data-bortable-count] > .bit-bortable-count {
+        background: Highlight;
+        color: HighlightText;
+        forced-color-adjust: none;
     }
 
     .bit-bortable-item:focus-visible {

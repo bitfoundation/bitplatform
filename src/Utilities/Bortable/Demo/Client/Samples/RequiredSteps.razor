@@ -1,0 +1,31 @@
+@* A pipeline that keeps at least two steps (MinItems), next to a shelf of steps that can be added to it. *@
+
+<div class="demo-columns">
+    <div class="demo-col">
+        <div class="demo-col-title">Pipeline (at least 2 steps)</div>
+        <Bortable @bind-Items="_pipeline" TItem="string" Group="steps" MinItems="2" Id="steps-pipeline"
+                  AriaLabel="Pipeline" Class="demo-list" ItemClass="demo-item" GhostClass="demo-ghost">
+            <ItemTemplate Context="step">@step</ItemTemplate>
+        </Bortable>
+    </div>
+    <div class="demo-col">
+        <div class="demo-col-title">Unused steps</div>
+        <Bortable @bind-Items="_shelf" TItem="string" Group="steps" Id="steps-shelf" AriaLabel="Unused steps"
+                  Class="demo-list" ItemClass="demo-item tinted" GhostClass="demo-ghost">
+            <ItemTemplate Context="step">@step</ItemTemplate>
+            <ChildContent>
+                @if (_shelf.Count == 0)
+                {
+                    <div class="demo-empty" role="listitem">Every step is in the pipeline.</div>
+                }
+            </ChildContent>
+        </Bortable>
+    </div>
+</div>
+
+<p class="demo-order"><strong>Pipeline:</strong> <span id="steps-order">@string.Join(" → ", _pipeline)</span></p>
+
+@code {
+    private IList<string> _pipeline = new List<string> { "Build", "Test", "Deploy" };
+    private IList<string> _shelf = new List<string> { "Lint", "Benchmark" };
+}

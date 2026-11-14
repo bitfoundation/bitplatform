@@ -18,6 +18,34 @@
 <DemoCode For="typeof(SimpleSortable)" />
 
 <section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Items with ids</h3>
+    <p class="bb-card-desc">
+        A list tells its items apart by their <code>Equals</code>, as <code>@@key</code> does. Rows a server sends are
+        usually classes compared by reference, and loading them again gives new objects for the same rows.
+        <code>ItemKey</code> tells the list what identifies a row - its id - so a row loaded again keeps its element,
+        its focus and its selection, and a drag moves the object the list holds now.
+    </p>
+
+    <div class="bb-demo">
+        <ReloadableList />
+    </div>
+
+    <DemoCode For="typeof(ReloadableList)" />
+
+    <ul class="bb-detail-list">
+        <li>
+            Click two rows to select them, then press <strong>Load the rows again</strong>: they stay selected. Untick
+            <code>ItemKey</code> and do the same: the new objects are new items to the list, and the selection is gone.
+        </li>
+        <li>
+            The key must be unique within the list and stay the same while the row is in it. It is also how the list
+            spots a duplicate: a row whose id is already in a list is never dropped into it, so a <code>Clone</code>
+            factory gives a copy an id of its own.
+        </li>
+    </ul>
+</section>
+
+<section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Try it</h3>
     <ul class="bb-detail-list">
         <li>
@@ -86,6 +114,7 @@
                 <tr><td class="bb-table-key"><code>Class</code>, <code>ItemClass</code></td><td><code>demo-list</code>, <code>demo-item</code></td><td>The CSS classes of the list container and of every item wrapper. The look of the list is yours.</td></tr>
                 <tr><td class="bb-table-key"><code>GhostClass</code></td><td><code>demo-ghost</code></td><td>Replaces <code>bit-bortable-ghost</code>, the class of the item being dragged: a dashed card here, instead of the stylesheet's dimmed one.</td></tr>
                 <tr><td class="bb-table-key"><code>Animation</code></td><td>the slider</td><td>How long, in milliseconds, items take to slide into place; <code>150</code> by default, <code>0</code> turns it off.</td></tr>
+                <tr><td class="bb-table-key"><code>ItemKey</code></td><td><code>row =&gt; row.Id</code></td><td>What identifies an item: what its element is keyed by, and how the list finds it and keeps it selected. The item itself by default.</td></tr>
             </tbody>
         </table>
     </div>

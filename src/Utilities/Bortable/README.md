@@ -38,8 +38,9 @@ order a user makes is the order your code reads back.
 - **Swap mode** (the SortableJS Swap plugin): drop an item onto another to trade their places.
 - **Multi-drag** (the SortableJS MultiDrag plugin): select several items and drag them together.
 - **Drag handles, filters** for locked items, and **per-item classes** that follow an item from list to list.
-- **Rules**: `CanDrop` vets every position before it is shown (the SortableJS `onMove`), `MaxItems` caps a list,
-  and `ConfirmDrop` asks your code - a server, a dialog - before a drop is kept, putting everything back if it says
+- **Rules**: `CanDrop` vets every position before it is shown (the SortableJS `onMove`), `MaxItems` caps a list
+  and `MinItems` keeps it from emptying, `PutGroups` lets a list take items from several groups, and `ConfirmDrop`
+  asks your code - a server, a dialog - before a drop is kept, putting everything back if it says
   no.
 - **Cancel and spill**: a cancelled drag leaves no partial change behind; `RevertOnSpill` puts a drag released
   outside every list back where it was.
@@ -51,7 +52,8 @@ order a user makes is the order your code reads back.
 - **Two-way binding** with `@bind-Items`, and the SortableJS lifecycle events (`OnStart`, `OnEnd`, `OnAdd`,
   `OnRemove`, `OnUpdate`, `OnSort`, `OnChange`), which also say how the drag was made and whether it was
   cancelled.
-- **Generic and strongly typed**: `Bortable<TItem>`.
+- **Generic and strongly typed**: `Bortable<TItem>`, with `ItemKey` for items identified by an id, so a list loaded
+  again keeps its elements, focus and selection.
 - Works on **Blazor WebAssembly, Blazor Server, Blazor Web App and Blazor Hybrid**, on .NET 10 and 11, is
   trimming and AOT friendly, and can be [lazy loaded](#lazy-loading-on-webassembly) on WebAssembly.
 
@@ -182,6 +184,7 @@ every event raised, in order. Every tool is read-only.
 
 - [Getting started](#getting-started)
 - [Sorting a list](#sorting-a-list)
+- [Item identity](#item-identity)
 - [Shared lists](#shared-lists)
 - [Nested lists](#nested-lists)
 - [Drag handles](#drag-handles)
@@ -288,7 +291,7 @@ array, is displayed and can be cloned from (`Pull="BortablePull.Clone"`), but it
 dropped into.
 
 Items are rendered with `@key`, so they must be unique within a list: a list of strings must not hold the same
-string twice. See [limitations](#limitations).
+string twice. Items that carry an id are better keyed by it: see [item identity](#item-identity).
 
 ### Where to go next
 
@@ -363,6 +366,60 @@ running when the next change comes is picked up from wherever it is, so items ne
 into it. The container gets the `bit-bortable-disabled` class. To keep a list's order fixed while still letting its
 items be dragged out, use `Sort="false"` instead.
 
+## Item identity
+
+A list tells its items apart the way `@key` does: by their `Equals`. That is right for strings, numbers and records,
+but not for the entities most apps bind - classes compared by reference, which a page loads again from its server as
+new instances of the same rows. Give the list an `ItemKey` and it tells items apart by that key instead:
+
+```razor
+<Bortable @bind-Items="_tasks" TItem="TaskDto" ItemKey="t => t.Id">
+    <ItemTemplate Context="task">@task.Title</ItemTemplate>
+</Bortable>
+
+@code {
+    private IList<TaskDto> _tasks = [];
+
+    // Loaded again - new instances of the same rows: every item keeps its element, its focus and its selection.
+    private async Task RefreshAsync() => _tasks = await Api.GetTasksAsync();
+}
+```
+
+The key is what each item's element is keyed by, how the list finds an item - for a drag, a keyboard move,
+`MoveAsync`, the selection - and how it recognises a duplicate: an item whose key is already in a list is never
+dropped into it. So the key must be unique within a list and must not change while the item is in it, and a `Clone`
+factory must give the copy a key of its own (`Clone="t => t with { Id = NewId() }"`); a copy that keeps the
+original's key cannot go into a list that already holds an item with that key.
+
+When the items are loaded again during a drag, the drag carries on with the new instances: what lands in a list, and
+what the events report, is the instance the list holds when the drop happens, not the copy the drag started with.
+An inline lambda is fine as the `ItemKey`: the list recognises it by its code, not by the delegate a render creates,
+so giving it again on every render does not make the list start over with its items.
+
+### Saving an order
+
+The events are raised once the bound lists are updated, so a handler reads the final order from them. To save a move
+rather than the whole list - to a server, or to a store shared by several people - describe it by the items around
+it, which stay right when other items move, rather than by its index alone:
+
+```razor
+<Bortable @bind-Items="_tasks" TItem="TaskDto" ItemKey="t => t.Id" OnUpdate="SaveAsync">
+    <ItemTemplate Context="task">@task.Title</ItemTemplate>
+</Bortable>
+
+@code {
+    private Task SaveAsync(BortableEventArgs<TaskDto> e)
+    {
+        int? after = e.NewIndex > 0 ? _tasks[e.NewIndex - 1].Id : null;                // the item before it
+        int? before = e.NewIndex < _tasks.Count - 1 ? _tasks[e.NewIndex + 1].Id : null; // the item after it
+        return Api.MoveAsync(e.Item.Id, after, before);
+    }
+}
+```
+
+`OnAdd` names the destination list in `ToId`; a multi-drag lands as one block, its items in the order of `Items`; a
+swap names the item it traded places with in `SwappedWith`.
+
 ## Shared lists
 
 ### Groups
@@ -401,6 +458,22 @@ DOM node from one component to another would recreate it and cancel the browser'
     <ItemTemplate Context="item">@item</ItemTemplate>
 </Bortable>
 ```
+
+### Taking items from several groups
+
+A list belongs to one `Group`, and takes the items of that group. `PutGroups` names other groups it takes items from
+as well - a trash or an archive list that every board can drop into:
+
+```razor
+<Bortable @bind-Items="_tasks" TItem="Card" Group="tasks">...</Bortable>
+<Bortable @bind-Items="_bugs" TItem="Card" Group="bugs">...</Bortable>
+
+<Bortable @bind-Items="_trash" TItem="Card" Group="trash" PutGroups='["tasks", "bugs"]'>...</Bortable>
+```
+
+It lets items in only: the trash's own items still go only to lists of its group, or to a list that names `trash` in
+its `PutGroups`. `Put`, `MaxItems`, `CanDrop` and the item type apply as to any other drop, and `FromGroup` tells a
+handler where an item came from.
 
 ### Cloning
 
@@ -496,6 +569,9 @@ drop the dragged item and that item swap positions. Swapping works within a list
 group, as long as each list could take the other's item. A swap always trades the items themselves, so a list whose
 `Pull` is `Clone` gives its item away in a swap rather than a copy of it.
 
+The events of a swap set `IsSwap`, and `SwappedWith` names the item the dragged one traded places with - it now sits
+at `OldIndex` of the list the dragged item left - so a handler can save both moves. `CanDrop` is told the same.
+
 ```razor
 <Bortable @bind-Items="_items" TItem="string" Swap="true">
     <ItemTemplate Context="item">@item</ItemTemplate>
@@ -528,14 +604,22 @@ and with the keyboard.
 click, a range, Shift+Space, a drag that moves the selection (which spends it) or picks up an unselected item (which
 clears it) - and takes a selection you set. Items that are not in the list, or are locked by `Filter`, are left out.
 
+A drag that carries several items says how many on its picture - the preview that follows a finger, a pen or a
+`ForceFallback` mouse, and the drag image the browser takes of a copy of the item - with a count in its corner: the
+browser layer marks the picture with `data-bortable-count` and draws the count as a `.bit-bortable-count` element of
+its own (see [the custom properties](#the-custom-properties)). The item itself is never changed for it, so its own
+positioning and `::before` / `::after` stay as they are.
+Selected items carry `data-bortable-selected`, whatever `SelectedClass` is.
+
 The `Items` property of the event arguments lists every item a drag moved. Multi-drag moves; combined with a clone
 pull, dragging into another list clones only the dragged item. Items that leave the list, or are replaced along
 with the whole `Items` list, leave the selection too.
 
 ## Rules
 
-`Group`, `Pull`, `Put` and `Sort` decide which lists exchange items. Three more parameters bring your own rules -
-a kanban board's workflow, a column's work-in-progress limit, a server that has the last word.
+`Group`, `PutGroups`, `Pull`, `Put` and `Sort` decide which lists exchange items. Four more parameters bring your own
+rules - a kanban board's workflow, a column's work-in-progress limit, a list that must not be emptied, a server that
+has the last word.
 
 ### CanDrop
 
@@ -574,6 +658,18 @@ item it carries; a swap brings one item and takes one, so it is never refused fo
 
 ```razor
 <Bortable @bind-Items="_inProgress" TItem="Card" Group="board" MaxItems="3">
+```
+
+### MinItems
+
+`MinItems` is the fewest items a list keeps: an item is not moved out of it to another list when that would leave
+fewer - the other lists do not take the drag, as if they were full. A multi-drag counts every item it would carry
+away. The items still sort within the list, clone out of it and swap with other lists, none of which empties it, and
+the page itself may change the list as it likes.
+
+```razor
+@* A workflow keeps at least one step. *@
+<Bortable @bind-Items="_steps" TItem="Step" Group="steps" MinItems="1">
 ```
 
 ### ConfirmDrop
@@ -624,7 +720,7 @@ What counts as a cancel depends on how the item is dragged:
 
 `MoveAsync(item, newIndex)` moves an item within its list, and `MoveToAsync(item, listId, newIndex)` into another
 list of the group, exactly as a drag would: the same rules decide (`Sort`, `Disabled`, `Pull`, `Put`, `Group`,
-`MaxItems`, `CanDrop`), `ConfirmDrop` is asked, the items slide into place, and the drag's events follow with
+`PutGroups`, `MaxItems`, `MinItems`, `CanDrop`), `ConfirmDrop` is asked, the items slide into place, and the drag's events follow with
 `Input` set to `BortableInput.Api`. Both return `true` when the item moved. A clone source puts a copy in the
 target; a swap-mode list trades the item with the one at `newIndex`. `Filter` locks an item against the user's drags
 only, and a multi-drag selection is not carried along.
@@ -805,6 +901,8 @@ All events are `EventCallback<BortableEventArgs<TItem>>`:
 | `CrossedLists` | `bool` | `true` when the item moved between lists. |
 | `Input` | `BortableInput` | How the drag was made: `Mouse`, `Touch`, `Pen`, `Keyboard`, or `Api` for a move made by code. |
 | `IsClone` | `bool` | `true` when a copy goes into another list and the original stays. |
+| `IsSwap` | `bool` | The move trades the dragged item with `SwappedWith` (swap mode). |
+| `SwappedWith` | `TItem` | In a swap, the item the dragged one traded places with. |
 | `Canceled` | `bool` | On `OnEnd`: the drag kept nothing - cancelled, spilled with `RevertOnSpill`, refused by `ConfirmDrop` or, for a multi-drag's gathering, by `CanDrop`, or ended as its list left the page with a `ConfirmDrop` to ask (see below). |
 
 Give the lists an `Id` of your own when a handler needs to tell them apart; otherwise each gets a generated one.
@@ -865,6 +963,9 @@ through `Class` and `Style` on the container and `ItemClass` and `ItemClassSelec
 | `--bit-bortable-swap-outline` | `2px dashed` accent at 60% | The swap target's outline. |
 | `--bit-bortable-selected-bg` | the accent at 25% | A multi-drag selected item's background. |
 | `--bit-bortable-selected-ring` | `inset` 2px accent at 80% | A multi-drag selected item's ring (a `box-shadow`). |
+| `--bit-bortable-count-display` | `block` | The count on the picture of a multi-drag that carries several items; `none` hides it. |
+| `--bit-bortable-count-bg` | the accent at 100% | That count's background. |
+| `--bit-bortable-count-color` | `#fff` | That count's text. |
 | `--bit-bortable-filtered-opacity` | `0.7` | A filtered item. |
 | `--bit-bortable-focus-outline` | `2px solid` accent at 90% | The outline of an item focused from the keyboard. |
 | `--bit-bortable-focus-offset` | `2px` | How far that outline sits outside the item. |
@@ -898,6 +999,7 @@ Override them on `:root`, on one list's `Class`, or inline through `Style`:
 | `bit-bortable-has-handle` | The container of a list with a `Handle`. |
 | `bit-bortable-instructions` | The hidden keyboard instructions every item refers to. |
 | `bit-bortable-drag` (`DragClass`) | The preview that follows a finger, a pen or a `ForceFallback` mouse. |
+| `bit-bortable-count` | The count on the picture of a multi-drag that carries several items: the pointer preview, or the copy the browser takes its drag image of. |
 
 `GhostClass`, `ChosenClass`, `SwapClass` and `SelectedClass` replace the class used for their state, for a list
 that wants its own look instead of the stylesheet's.
@@ -1179,14 +1281,17 @@ let a filter narrow it.
 | `Items` | `IList<TItem>?` | `null` | The items to display and reorder (a mutable list). Bind with `@bind-Items`. |
 | `ItemsChanged` | `EventCallback<IList<TItem>>` | | Raised once per drag when the list changed. |
 | `ItemTemplate` | `RenderFragment<TItem>?` | `null` | Template rendered for each item. |
+| `ItemKey` | `Func<TItem, object>?` | `null` | What identifies an item (its `@key`, how the list finds it); the item itself without it. See [item identity](#item-identity). |
 | `ChildContent` | `RenderFragment?` | `null` | Extra content rendered after the items, such as an empty state. |
 | `Id` | `string` | generated | Stable DOM id of the list, reported as `FromId` and `ToId`. |
 | `Group` | `string?` | `null` | Lists sharing a group name can exchange items. |
+| `PutGroups` | `IReadOnlyCollection<string>?` | `null` | Other groups whose items may be dropped here (SortableJS `group.put` with names). |
 | `Pull` | `BortablePull` | `Move` | How items leave this list: `Move`, `None` or `Clone`. |
 | `Put` | `bool` | `true` | Whether items from the group may be dropped here. |
 | `Sort` | `bool` | `true` | Whether the list can be reordered. |
 | `CanDrop` | `Func<BortableEventArgs<TItem>, bool>?` | `null` | Whether the item may take a position here; asked before it is shown (SortableJS `onMove`). |
 | `MaxItems` | `int?` | `null` | The most items the list holds; a full list takes nothing from other lists. |
+| `MinItems` | `int?` | `null` | The fewest items the list keeps; no item moves out to another list below it. |
 | `ConfirmDrop` | `Func<BortableEventArgs<TItem>, Task<bool>>?` | `null` | Asked after a drop here whether to keep it; `false` puts everything back. |
 | `RevertOnSpill` | `bool` | `false` | A drag from this list released outside every list is put back (SortableJS `revertOnSpill`). |
 | `SwapThreshold` | `double` | `1` | Fraction (0-1) of an item that is an active swap zone, measured from its centre. |
@@ -1297,7 +1402,9 @@ leaves the parameter's own default. See [app-wide defaults](#app-wide-defaults).
 | MultiDrag plugin: `multiDrag`, `selectedClass` | `MultiDrag`, `SelectedClass` |
 | `onMove` (return `false`) | `CanDrop` (return `false`) |
 | OnSpill plugin: `revertOnSpill` | `RevertOnSpill` |
-| `group: { put: (to) => ... }` with a count | `MaxItems` |
+| `group: { put: (to) => ... }` with a count | `MaxItems`, `MinItems` |
+| `group: { put: ["a", "b"] }` | `PutGroups='["a", "b"]'` |
+| `dataIdAttr` | `ItemKey` |
 | `toArray()`, `store` | Not needed: the bound `IList<TItem>` is the state |
 | `sort(order)` | `MoveAsync`, `MoveToAsync` - one item at a time, as a drag would move it |
 | `forceFallback`, `dragClass` | `ForceFallback`, `DragClass` (touch and pen always drag this way) |
@@ -1311,7 +1418,8 @@ leaves the parameter's own default. See [app-wide defaults](#app-wide-defaults).
 
 - Items must be unique within a list, as Blazor's `@key` requires. An item is never dropped into a list that
   already holds an equal one, so a value-equal duplicate (the same string twice) is refused rather than breaking
-  rendering. For clone mode, use a reference type and a `Clone` factory that returns a distinct object.
+  rendering. For clone mode, use a reference type and a `Clone` factory that returns a distinct object. Items with an
+  id are told apart by it with `ItemKey`.
 - An item moving between lists with the pointer is committed when the drag ends, with a live placeholder preview
   meanwhile, rather than physically moving between lists mid-drag. (A keyboard drag moves the item itself.)
 - A mouse drags with the browser's own HTML5 drag and drop, with its drag image and auto-scrolling, unless the list
