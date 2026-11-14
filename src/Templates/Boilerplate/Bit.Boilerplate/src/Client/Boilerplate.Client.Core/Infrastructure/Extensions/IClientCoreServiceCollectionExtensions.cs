@@ -41,7 +41,6 @@ public static partial class IClientCoreServiceCollectionExtensions
             services.AddBitBelemetryServices(options =>
             {
                 options.Consent.Default = ConsentService.TelemetryWithoutAnalytics;
-                options.Consent.Persist = false;
                 options.Diagnostics.Enabled = bevToolsAtStartup;
             });
             if (bevToolsAtStartup)
