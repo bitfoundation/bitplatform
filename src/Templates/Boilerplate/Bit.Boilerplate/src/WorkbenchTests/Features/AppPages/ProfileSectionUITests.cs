@@ -1,3 +1,8 @@
+using System.Net.Http.Headers;
+using System.Text.Json;
+using Boilerplate.Workbench.Components.Pages.AppPages.Settings.Data;
+using Boilerplate.Workbench.Infrastructure.Services.StandIns;
+
 namespace Boilerplate.WorkbenchTests.Features.AppPages;
 
 /// <summary>The Settings page's Profile section: the form with its validation, the birth date and gender, and the picture.</summary>
@@ -163,4 +168,49 @@ public class ProfileSectionUITests : SettingsPageTest
 
         await Expect(RemovePicture).ToBeVisibleAsync();
     }
+
+    // On the third user, whose picture no other test looks at or uploads, and on one surface only, as ThePicture_Should_BeRemovedAndChosenAgain.
+    [TestMethod, Surfaces(WorkbenchSurface.DesktopWithoutAgent)]
+    public async Task APictureAnotherViewUploaded_Should_ShowWhateverTheViewSavedBefore(WorkbenchSurface surface)
+    {
+        // This view had removed its picture, and saved the upload it showed last, one the Workbench forgot when it restarted.
+        var (user, sessions) = SettingsSampleAccount.Sample(2, WorkbenchStrings.DemoUserZahra, DateTimeOffset.UtcNow);
+        user.HasProfilePicture = false;
+
+        var saved = JsonSerializer.Serialize(new
+        {
+            ShapedFor = "2/en-US/False/False",
+            User = user,
+            Sessions = sessions,
+            AuthenticatorKey = SettingsSampleAccount.FirstKey,
+            SeenUpload = "an upload from before a restart"
+        });
+
+        // A preview alone, with no shell around it.
+        var remove = Page.GetByRole(AriaRole.Region, new() { Name = AppStrings.ProfileTitle, Exact = true }).GetByRole(AriaRole.Button, new() { Name = AppStrings.Remove, Exact = true });
+
+        await OpenSettingsStore(saved, "&user=2");
+
+        // Nothing uploaded since the restart: the picture stays removed.
+        await Expect(Page.GetByRole(AriaRole.Textbox, new() { Name = AppStrings.FullName, Exact = true })).ToHaveValueAsync(WorkbenchStrings.DemoUserZahra);
+        await Expect(remove).ToHaveCountAsync(0);
+
+        // Another view of the user uploads a picture.
+        using (var client = Server.CreateClient())
+        {
+            using var form = new MultipartFormDataContent { { new ByteArrayContent(Convert.FromBase64String(OnePixelPng)), "file", "picture.png" } };
+            using var upload = new HttpRequestMessage(HttpMethod.Post, "api/v1/Attachment/UploadUserProfilePicture") { Content = form };
+            upload.Headers.Authorization = new AuthenticationHeaderValue("Bearer", WorkbenchClaims.AccessToken(WorkbenchClaims.Of(new() { User = 2 }), DateTimeOffset.UtcNow, elevatedUntil: null));
+
+            using var response = await client.SendAsync(upload);
+
+            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        await OpenSettingsStore(saved, "&user=2");
+
+        await Expect(remove).ToBeVisibleAsync();
+    }
+
+    private const string OnePixelPng = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
 }

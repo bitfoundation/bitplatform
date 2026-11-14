@@ -68,10 +68,12 @@ public class PrivacySectionUITests : SettingsPageTest
         Assert.IsNotNull(archive.Entries.FirstOrDefault(entry => entry.FullName.StartsWith("files/attachments/profile-picture", StringComparison.Ordinal)));
     }
 
+    // On the second user, whose picture no test uploads: an upload is the Workbench's, and the first user's (See
+    // ProfileSectionUITests) would bring the picture back into this view after its removal.
     [TestMethod, EverySurface]
     public async Task TheDownload_Should_HoldWhatThePageChanged(WorkbenchSurface surface)
     {
-        await OpenSection(AppStrings.ProfileTitle);
+        await OpenSection(AppStrings.ProfileTitle, "?user=1");
 
         var profile = Section(AppStrings.ProfileTitle);
         var name = $"Name {Guid.NewGuid():N}";
