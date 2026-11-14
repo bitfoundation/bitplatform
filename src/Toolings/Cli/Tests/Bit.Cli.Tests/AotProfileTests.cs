@@ -204,6 +204,14 @@ public class AotProfileTests
     }
 
     [TestMethod]
+    public void AnInstanceOverAnInterface_Should_BeListed()
+    {
+        var method = GenericInstanceMethods(Converter(new AotProfileClass(CoreLib, "System.IDisposable"), Number)).Single();
+
+        Assert.AreEqual("void(System.IDisposable,int modreq(System.Runtime.InteropServices.InAttribute)&)", method.Signature);
+    }
+
+    [TestMethod]
     public void AnInstanceOverAGenericStructOfAReferenceType_Should_BeListed()
     {
         // KeyValuePair<string, string> runs on KeyValuePair<__Canon, __Canon>, which other instances share.
