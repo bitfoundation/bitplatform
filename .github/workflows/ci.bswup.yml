@@ -77,3 +77,8 @@ jobs:
         cd src/Bswup/Tests/bit-bswup-js
         npm ci
         npm test
+
+    - name: dotnet pack
+      run: |
+        dotnet build src/Bswup/Bit.Bswup/Bit.Bswup.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Bswup/Bit.Bswup/Bit.Bswup.csproj --output ./packages --configuration Release

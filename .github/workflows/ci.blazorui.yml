@@ -59,3 +59,14 @@ jobs:
     # The MCP server suite boots the demo server as a child process and talks to it over HTTP (about a minute).
     - name: Test MCP server
       run: dotnet run --project src/BlazorUI/Tests/Bit.BlazorUI.Tests.Mcp
+
+    - name: dotnet pack
+      run: |
+        for project in Bit.BlazorUI Bit.BlazorUI.Extras Bit.BlazorUI.Legacy Bit.BlazorUI.Assets Bit.BlazorUI.Icons; do
+          dotnet build src/BlazorUI/$project/$project.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+          dotnet pack src/BlazorUI/$project/$project.csproj --output ./packages --configuration Release
+        done
+        for project in Bit.BlazorUI.AI.Core Bit.BlazorUI.AI Bit.BlazorUI.AI.Server Bit.BlazorUI.AI.SignalR Bit.BlazorUI.AI.ChatClient; do
+          dotnet build src/BlazorUI/Bit.BlazorUI.AI/$project/$project.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+          dotnet pack src/BlazorUI/Bit.BlazorUI.AI/$project/$project.csproj --output ./packages --configuration Release
+        done

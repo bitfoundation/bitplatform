@@ -83,3 +83,8 @@ jobs:
 
     - name: dotnet build
       run: dotnet build src/Toolings/BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj
+
+    - name: dotnet pack
+      run: |
+        dotnet build src/Toolings/BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Toolings/BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj --output ./packages --configuration Release

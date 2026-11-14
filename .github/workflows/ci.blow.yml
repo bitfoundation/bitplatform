@@ -61,3 +61,8 @@ jobs:
 
     - name: dotnet test (MCP server)
       run: cd src/Utilities/Blow/Tests/Bit.Blow.Tests.Mcp && dotnet test --no-build
+
+    - name: dotnet pack
+      run: |
+        dotnet build src/Utilities/Blow/Bit.Blow/Bit.Blow.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Utilities/Blow/Bit.Blow/Bit.Blow.csproj --output ./packages --configuration Release

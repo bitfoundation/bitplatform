@@ -69,3 +69,8 @@ jobs:
         npm ci || npm install
         npm test
 
+    - name: dotnet pack
+      run: |
+        dotnet build src/Utilities/Bmotion/Bit.Bmotion/Bit.Bmotion.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Utilities/Bmotion/Bit.Bmotion/Bit.Bmotion.csproj --output ./packages --configuration Release
+

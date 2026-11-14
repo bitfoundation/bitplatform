@@ -74,6 +74,13 @@ jobs:
     - name: dotnet test (hosting - every render mode over HTTP, net10.0/net11.0)
       run: cd src/Utilities/Belemetry/Tests/Bit.Belemetry.Tests.Hosting && dotnet test --no-build
 
+    - name: dotnet pack
+      run: |
+        for project in Bit.Belemetry Bit.Belemetry.EntityFrameworkCore Bit.Belemetry.Hangfire; do
+          dotnet build src/Utilities/Belemetry/$project/$project.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+          dotnet pack src/Utilities/Belemetry/$project/$project.csproj --output ./packages --configuration Release
+        done
+
   # The MAUI sample for the Apple platforms, which only a Mac builds: the solution build above, on Linux, takes its
   # Android target only. A build, not a run - no WebView on these platforms can be driven by the E2E suite - but it
   # compiles and links the app against Bit.Belemetry the way an iOS or Mac Catalyst app ships, which nothing else does.

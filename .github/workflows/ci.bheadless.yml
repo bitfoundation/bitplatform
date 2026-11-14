@@ -65,3 +65,10 @@ jobs:
 
     - name: dotnet test (MCP server)
       run: cd src/Utilities/Bheadless/Tests/Bit.Bheadless.Tests.Mcp && dotnet test --no-build
+
+    - name: dotnet pack
+      run: |
+        for project in Bit.Bheadless Bit.Bheadless.Testing; do
+          dotnet build src/Utilities/Bheadless/$project/$project.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+          dotnet pack src/Utilities/Bheadless/$project/$project.csproj --output ./packages --configuration Release
+        done

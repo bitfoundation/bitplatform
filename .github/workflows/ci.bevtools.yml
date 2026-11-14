@@ -73,3 +73,10 @@ jobs:
     - name: Benchmark harness smoke run
       run: dotnet run -c Release --project src/Utilities/BevTools/Tests/Bit.BevTools.Benchmarks
       timeout-minutes: 15
+
+    - name: dotnet pack
+      run: |
+        for project in Bit.BevTools.Loader Bit.BevTools Bit.BevTools.Server Bit.BevTools.Cli Bit.BevTools.Blex Bit.BevTools.Belemetry; do
+          dotnet build src/Utilities/BevTools/$project/$project.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+          dotnet pack src/Utilities/BevTools/$project/$project.csproj --output ./packages --configuration Release
+        done

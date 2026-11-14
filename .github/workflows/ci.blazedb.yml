@@ -72,3 +72,10 @@ jobs:
 
     - name: dotnet test (MCP server)
       run: cd src/Utilities/BlazeDb/Tests/Bit.BlazeDb.Tests.Mcp && dotnet test --no-build
+
+    - name: dotnet pack
+      run: |
+        for project in Bit.BlazeDb Bit.BlazeDb.EntityFrameworkCore Bit.BlazeDb.Blex Bit.BlazeDb.Bcrdt; do
+          dotnet build src/Utilities/BlazeDb/$project/$project.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+          dotnet pack src/Utilities/BlazeDb/$project/$project.csproj --output ./packages --configuration Release
+        done

@@ -39,7 +39,6 @@ jobs:
           solution: src/Utilities/BbScanner/Bit.BbScanner.slnx
         - name: Bcrdt
           solution: src/Utilities/Bcrdt/Bit.Bcrdt.slnx
-          remove: Samples/Maui/Bit.Bcrdt.Samples.Maui.csproj
         - name: Bdnd
           solution: src/Utilities/Bdnd/Bit.Bdnd.slnx
         - name: Belemetry
@@ -61,35 +60,28 @@ jobs:
         - name: Bmotion
           solution: src/Utilities/Bmotion/Bit.Bmotion.slnx
         - name: Bonboarding
-          solution: src/Utilities/Bonboarding/Bit.Bonboarding.Web.slnf
-          workloads: false
+          solution: src/Utilities/Bonboarding/Bit.Bonboarding.slnx
         - name: Borm
           solution: src/Utilities/Borm/Bit.Borm.slnx
-          remove: Samples/Maui/Bit.Borm.Samples.Maui.csproj
         - name: Bortable
           solution: src/Utilities/Bortable/Bit.Bortable.slnx
         - name: Bsqlite
           solution: src/Utilities/Bsqlite/Bit.Bsqlite.slnx
         - name: BlazorES2019
           solution: src/Toolings/BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj
-          workloads: false
-          node: false
+          tooling: true
         - name: Cli
           solution: src/Toolings/Cli/Bit.Cli.slnx
-          workloads: false
-          node: false
+          tooling: true
         - name: CodeAnalyzers
           solution: src/Toolings/CodeAnalyzers/Bit.CodeAnalyzers.slnx
-          workloads: false
-          node: false
+          tooling: true
         - name: Minifier
           solution: src/Toolings/Minifier/Bit.Minifier.slnx
-          workloads: false
-          node: false
+          tooling: true
         - name: SourceGenerators
           solution: src/Toolings/SourceGenerators/Bit.SourceGenerators.slnx
-          workloads: false
-          node: false
+          tooling: true
 
     steps:
 
@@ -112,12 +104,8 @@ jobs:
       with:
         node-version: 24
 
-    - name: Remove the MAUI sample from the solution
-      if: matrix.remove
-      run: cd "$(dirname '${{ matrix.solution }}')" && dotnet sln "$(basename '${{ matrix.solution }}')" remove ${{ matrix.remove }}
-
     - name: Restore workloads
-      if: matrix.workloads != false
+      if: ${{ !matrix.tooling }}
       run: cd "$(dirname '${{ matrix.solution }}')" && dotnet workload restore
 
     # The demos install Bit.Minifier as a package at the version being released, which nuget.org only has once this
@@ -128,9 +116,117 @@ jobs:
         dotnet pack src/Toolings/Minifier/Bit.Minifier/Bit.Minifier.csproj --output ${{ github.workspace }}/packages --configuration Release
 
     - name: InstallNodejsDependencies
-      if: matrix.node != false
+      if: ${{ !matrix.tooling }}
       continue-on-error: true # Error MSB4057, not all csproj files have InstallNodejsDependencies target.
       run: dotnet build ${{ matrix.solution }} -t:InstallNodejsDependencies -m:1 -f net11.0 -p:RestoreAdditionalProjectSources=${{ github.workspace }}/packages
+
+    - name: dotnet build
+      run: dotnet build ${{ matrix.solution }} -c Release -p:RestoreAdditionalProjectSources=${{ github.workspace }}/packages
+
+  pack-release:
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.event.pull_request.title, 'Prerelease') || startsWith(github.event.pull_request.title, 'Release') || startsWith(github.event.pull_request.title, 'Version')
+    name: pack ${{ matrix.group }} packages for release
+    runs-on: ubuntu-26.04
+    strategy:
+      matrix:
+        include:
+        - group: other
+          projects: '^src/(BlazorUI|Bswup|Butil|Brouter)/'
+        - group: utilities
+          projects: '^src/Utilities/'
+        - group: toolings
+          projects: '^src/Toolings/'
+
+    steps:
+
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET 11.0
+      uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+      with:
+        global-json-file: src/global.json
+
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version: 24
+
+    - name: Pack what CD Nuget packages publishes
+      run: |
+        mapfile -t projects < <(grep -oP 'dotnet pack \K\S+\.csproj' .github/workflows/cd.nuget.packages.yml | grep -v Maui | grep -E '${{ matrix.projects }}')
+        for project in "${projects[@]}"; do
+          dotnet build "$project" -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+          dotnet pack "$project" --output packages --configuration Release
+        done
+
+    - name: Pack SourceGenerators
+      if: matrix.group == 'toolings'
+      run: dotnet build src/Toolings/SourceGenerators/Bit.SourceGenerators/Bit.SourceGenerators.csproj --configuration Release -p:PackageOutputPath=${{ github.workspace }}/packages/
+
+    - name: Upload the packages
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: release-packages-${{ matrix.group }}
+        path: packages/*.nupkg
+        if-no-files-found: error
+        retention-days: 1
+
+  build-release-apps:
+    needs: pack-release
+    name: build ${{ matrix.name }} for release
+    runs-on: ubuntu-26.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - name: Boilerplate
+          folder: src/Templates/Boilerplate/Bit.Boilerplate
+          solution: Boilerplate.slnx
+        - name: Careers
+          folder: src/Websites/Careers
+          solution: Bit.Websites.Careers.slnx
+        - name: Platform
+          folder: src/Websites/Platform
+          solution: Bit.Websites.Platform.slnx
+        - name: Sales
+          folder: src/Websites/Sales
+          solution: Bit.Websites.Sales.slnx
+    defaults:
+      run:
+        working-directory: ${{ matrix.folder }}
+
+    steps:
+
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET 11.0
+      uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+      with:
+        global-json-file: src/global.json
+
+    - name: Setup .NET 10.0
+      uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+      with:
+        global-json-file: src/Websites/Platform/global.json
+
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version: 24
+
+    - name: Download the packages
+      uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+      with:
+        pattern: release-packages-*
+        merge-multiple: true
+        path: packages
+
+    - name: Restore workloads
+      run: dotnet workload restore ${{ matrix.solution }}
 
     - name: dotnet build
       run: dotnet build ${{ matrix.solution }} -c Release -p:RestoreAdditionalProjectSources=${{ github.workspace }}/packages

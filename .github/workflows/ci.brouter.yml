@@ -67,3 +67,10 @@ jobs:
 
     - name: dotnet test (hosting - every render mode over HTTP, net10.0/net11.0)
       run: cd src/Brouter/Tests/Bit.Brouter.Tests.Hosting && dotnet test --no-build
+
+    - name: dotnet pack
+      run: |
+        for project in Bit.Brouter Bit.Brouter.Generators; do
+          dotnet build src/Brouter/$project/$project.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+          dotnet pack src/Brouter/$project/$project.csproj --output ./packages --configuration Release
+        done

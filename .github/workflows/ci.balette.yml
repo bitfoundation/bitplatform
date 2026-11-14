@@ -66,3 +66,8 @@ jobs:
 
     - name: dotnet test (MCP server)
       run: cd src/Utilities/Balette/Tests/Bit.Balette.Tests.Mcp && dotnet test --no-build
+
+    - name: dotnet pack
+      run: |
+        dotnet build src/Utilities/Balette/Bit.Balette/Bit.Balette.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Utilities/Balette/Bit.Balette/Bit.Balette.csproj --output ./packages --configuration Release
