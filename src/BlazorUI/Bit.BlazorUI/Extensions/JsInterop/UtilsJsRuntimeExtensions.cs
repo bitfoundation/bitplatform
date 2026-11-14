@@ -306,10 +306,13 @@ internal static class UtilsJsRuntimeExtensions
 
 
     // Records the element the focus is on right now under the given key, so that a popup which is about to
-    // take the focus over can hand it back to whatever opened it once it closes.
-    internal static ValueTask BitUtilsStoreFocus(this IJSRuntime jsRuntime, string key)
+    // take the focus over can hand it back to whatever opened it once it closes. scopeId names the popup itself,
+    // for one whose focus may already be inside it: that focus is no origin, and one stored earlier is kept.
+    internal static ValueTask BitUtilsStoreFocus(this IJSRuntime jsRuntime, string key, string? scopeId = null)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.storeFocus", key);
+        return scopeId is null
+            ? jsRuntime.InvokeVoid("BitBlazorUI.Utils.storeFocus", key)
+            : jsRuntime.InvokeVoid("BitBlazorUI.Utils.storeFocus", key, scopeId);
     }
 
 
