@@ -211,6 +211,29 @@ public class ToolTests
     }
 
     [TestMethod]
+    [DataRow(HostOs.Windows, "winget", "Microsoft.PowerShell")]
+    [DataRow(HostOs.MacOS, "brew", "powershell")]
+    [DataRow(HostOs.Linux, "snap", "powershell")]
+    public async Task PowerShell_Should_BeOfferedForTheProjectsCi(HostOs os, string installer, string package)
+    {
+        using var host = new TestHost(os);
+        AllInstalled(host.Runner);
+        host.Runner.Executables["winget"] = "winget";
+        host.Runner.Executables["snap"] = "/usr/bin/snap";
+        host.Runner.NotFound("pwsh");
+
+        Assert.IsFalse((await CheckAsync(host, new ToolNeeds { Aspire = true })).Any(c => c.Tool.Id == "pwsh"), "A project without ci.yml has nothing for bit ci to run.");
+
+        var pwsh = (await CheckAsync(host, new ToolNeeds { Aspire = true, Ci = true })).Single(c => c.Tool.Id == "pwsh");
+
+        Assert.IsTrue(pwsh.Needed);
+        Assert.AreEqual(ToolState.Missing, pwsh.Status.State);
+        Assert.IsTrue(pwsh.Action!.Optional, "The app builds and runs without PowerShell 7.");
+        StringAssert.EndsWith(Path.GetFileNameWithoutExtension(pwsh.Action.Commands[0].FileName), installer);
+        CollectionAssert.Contains(pwsh.Action.Commands[0].Arguments.ToArray(), package);
+    }
+
+    [TestMethod]
     [DataRow(HostOs.Windows, "winget")]
     [DataRow(HostOs.MacOS, "brew")]
     [DataRow(HostOs.Linux, "bash")]

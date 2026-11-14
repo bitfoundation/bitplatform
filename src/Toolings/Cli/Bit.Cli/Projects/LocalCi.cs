@@ -69,7 +69,7 @@ public sealed partial class LocalCi(CliServices cli, string directory)
         // GitHub's runners have PowerShell 7, which bit's setup action runs in, and act runs the workflow's steps in it on Windows.
         await steps.RunAsync("pwsh", "Looking for PowerShell 7", (_, _) => Task.FromResult(cli.Runner.FindExecutable("pwsh") is { } pwsh
             ? StepResult.Succeeded("Found PowerShell 7", pwsh)
-            : StepResult.Failed("PowerShell 7 isn't installed", "the workflow's steps run in it, as on GitHub's runners", followUp: "See https://aka.ms/install-powershell")), cancellationToken);
+            : StepResult.Failed("PowerShell 7 isn't installed", "the workflow's steps run in it, as on GitHub's runners", followUp: "bit setup --tools pwsh installs it, or see https://aka.ms/install-powershell")), cancellationToken);
 
         if (steps.AnyFailed is false)
         {
