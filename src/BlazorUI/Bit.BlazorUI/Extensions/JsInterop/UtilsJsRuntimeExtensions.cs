@@ -320,10 +320,13 @@ internal static class UtilsJsRuntimeExtensions
     // Stops the given element (the page itself when no selector is given) from scrolling while the popup
     // registered under the given key is open. The locks are counted, so a page held by more than one popup
     // is only handed back once the last of them lets go, and the room the scrollbar took is added back as
-    // padding so that taking it away does not shift the page sideways.
-    internal static ValueTask BitUtilsLockScroll(this IJSRuntime jsRuntime, string key, string? selector = null)
+    // padding so that taking it away does not shift the page sideways - unless the caller is one that has
+    // always let the page shift by the width of the scrollbar, which turns the compensation off.
+    internal static ValueTask BitUtilsLockScroll(this IJSRuntime jsRuntime, string key, string? selector = null, bool compensate = true)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.lockScroll", key, selector);
+        return compensate
+            ? jsRuntime.InvokeVoid("BitBlazorUI.Utils.lockScroll", key, selector)
+            : jsRuntime.InvokeVoid("BitBlazorUI.Utils.lockScroll", key, selector, false);
     }
 
     // The same hold, taken on an element the caller already has a reference to rather than on one named by a

@@ -1541,19 +1541,18 @@ public class BitCalloutTests : BunitTestContext
 
         component.Find(".bit-clo-acn").Click();
 
-        var opened = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"][^1];
+        var opened = Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"][^1];
 
-        // The first argument is the key the hold is counted under; the scroller is the second.
-        Assert.AreEqual("body", opened.Arguments[1]);
-        Assert.AreEqual(true, opened.Arguments[2]);
+        // The first argument is the key the hold is counted under; the scroller is the second. The callout has always
+        // let the page shift by the width of its scrollbar, so no room is given back.
+        CollectionAssert.AreEqual(new object?[] { component.Instance.UniqueId, "body", false }, opened.Arguments.ToArray());
 
         component.Find(".bit-clo-ovl").Click();
 
-        // The page is handed back its scrolling when the callout that took it away goes.
-        var closed = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"][^1];
+        // The page is handed back its scrolling when the callout that took it away goes, by the key it was held under.
+        var closed = Context.JSInterop.Invocations["BitBlazorUI.Utils.unlockScroll"][^1];
 
-        Assert.AreEqual("body", closed.Arguments[1]);
-        Assert.AreEqual(false, closed.Arguments[2]);
+        Assert.AreEqual(component.Instance.UniqueId, closed.Arguments[0]);
     }
 
     [TestMethod]
@@ -1566,7 +1565,7 @@ public class BitCalloutTests : BunitTestContext
 
         component.Find(".bit-clo-acn").Click();
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"].Count);
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"].Count);
     }
 
     [TestMethod]
@@ -1586,10 +1585,9 @@ public class BitCalloutTests : BunitTestContext
             parameters.Add(p => p.Anchor, Markup("<button>Anchor</button>"));
         });
 
-        var released = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"][^1];
+        var released = Context.JSInterop.Invocations["BitBlazorUI.Utils.unlockScroll"][^1];
 
-        Assert.AreEqual("body", released.Arguments[1]);
-        Assert.AreEqual(false, released.Arguments[2]);
+        Assert.AreEqual(component.Instance.UniqueId, released.Arguments[0]);
     }
 
 
@@ -3191,9 +3189,8 @@ public class BitCalloutTests : BunitTestContext
 
         Assert.AreEqual(anchorId, Context.JSInterop.Invocations["BitBlazorUI.Utils.disposeAriaPopup"][^1].Arguments[0]);
 
-        var overflow = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"][^1].Arguments;
-        Assert.AreEqual("body", overflow[1]);
-        Assert.AreEqual(false, overflow[2]);
+        var held = Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"][^1].Arguments;
+        Assert.AreEqual(held[0], Context.JSInterop.Invocations["BitBlazorUI.Utils.unlockScroll"][^1].Arguments[0]);
     }
 
     [TestMethod]
@@ -3209,7 +3206,8 @@ public class BitCalloutTests : BunitTestContext
         await Context.DisposeComponentsAsync();
 
         Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Callouts.clear"].Count);
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"].Count);
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"].Count);
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.unlockScroll"].Count);
     }
 
     [TestMethod]
