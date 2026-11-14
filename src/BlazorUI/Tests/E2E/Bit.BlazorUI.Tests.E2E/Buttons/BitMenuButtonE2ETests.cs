@@ -1015,21 +1015,101 @@ public class BitMenuButtonE2ETests : E2ETestBase
     {
         await OpenAsync(ItemsApi);
 
-        // The widest item is 160.25px, which offsetWidth reads as 160: the width the callout is set to is rounded up
-        // instead, so the item still fits inside it rather than running a quarter of a pixel past it - which is what
-        // ellipsized a label whose text landed just above a whole pixel ("Nederlan…").
+        // The widest item lands a fraction of a pixel above a whole one, which offsetWidth reads as the whole one below
+        // it. The callout is set its exact width instead, so the item still fits inside it rather than running a
+        // fraction of a pixel past it - which is what ellipsized a label whose text landed just above a whole pixel
+        // ("Nederlan…").
         var menu = await OpenMenuAsync("mnb-fraction-width");
         var callout = CalloutOf(menu);
         await SettledAsync(callout);
+        await Expect(ItemsOf(menu)).ToHaveCountAsync(2);
+
+        // The width of the text is the font's, so where its fraction lands is not up to the page. The widest item is
+        // padded here until the width the callout's content takes lands a quarter of a pixel above a whole one - the
+        // fraction offsetWidth rounds down - and the callout is placed again.
+        var fraction = await callout.EvaluateAsync<double>(@"el => {
+            const contentWidth = () => {
+                const width = el.style.width;
+                el.style.width = 'max-content';
+                const measured = el.getBoundingClientRect().width;
+                el.style.width = width;
+                return measured;
+            };
+            const item = el.querySelectorAll('.bit-mnb-itm')[1];
+            const delta = (1.25 - (contentWidth() % 1)) % 1;
+            item.style.paddingInlineEnd = (parseFloat(getComputedStyle(item).paddingInlineEnd) + delta) + 'px';
+            BitBlazorUI.Callouts.reposition();
+            return contentWidth() % 1;
+        }");
+        Assert.AreEqual(0.25, fraction, 0.02, "The content of the callout is a quarter of a pixel wider than a whole one.");
 
         Assert.AreNotEqual("", await callout.EvaluateAsync<string>("el => el.style.width"), "The callout is set no width.");
         var overflow = await callout.EvaluateAsync<double>(@"el => {
             const style = getComputedStyle(el);
             const inner = el.getBoundingClientRect().right - parseFloat(style.borderRightWidth) - parseFloat(style.paddingRight);
             const items = Array.from(el.querySelectorAll('.bit-mnb-itm'));
+            if (items.length === 0) return Number.POSITIVE_INFINITY;
             return Math.max(...items.map(item => item.getBoundingClientRect().right)) - inner;
         }");
         Assert.IsTrue(overflow <= 0.01, $"The widest item runs {overflow}px past the callout.");
+
+        // The symptom itself: the label is not squeezed below the width of its text, which is what draws the ellipsis.
+        var squeezed = await ItemsOf(menu).Nth(1).Locator(".bit-mnb-btx").EvaluateAsync<double>(@"el => {
+            const range = document.createRange();
+            range.selectNodeContents(el);
+            return range.getBoundingClientRect().width - el.getBoundingClientRect().width;
+        }");
+        Assert.IsTrue(squeezed <= 0.01, $"The label is {squeezed}px narrower than its text.");
+    }
+
+    [TestMethod]
+    public async Task Callout_OfAFullWidthButtonOfAFractionalWidth_IsExactlyAsWideAsTheButton()
+    {
+        await OpenAsync(ItemsApi);
+
+        // The button is 200.4px wide, which offsetWidth reads as 200: the callout is set the button's exact width, so
+        // their edges line up rather than the callout ending a fraction of a pixel short of the button.
+        var menu = await OpenMenuAsync("mnb-fullwidth-fraction");
+        var callout = CalloutOf(menu);
+        await SettledAsync(callout);
+
+        const string LeftAndWidth = "el => { const r = el.getBoundingClientRect(); return [r.left, r.width]; }";
+        var button = await Root("mnb-fullwidth-fraction").EvaluateAsync<double[]>(LeftAndWidth);
+        var box = await callout.EvaluateAsync<double[]>(LeftAndWidth);
+        Assert.AreNotEqual(Math.Round(button[1]), button[1], 0.01, "The button is a fraction of a pixel wider than a whole one.");
+        Assert.AreEqual(button[1], box[1], 0.01, "The callout is as wide as the button.");
+        Assert.AreEqual(button[0], box[0], 0.01, "The callout starts where the button does.");
+    }
+
+    [TestMethod]
+    public async Task Submenu_PlacedOnTheLeftOfItsRowByItsWidth_KeepsAWholePixelGapToTheRow()
+    {
+        await OpenAsync(ItemsApi);
+
+        // In RTL a submenu is placed on the left of its row, at the row's left edge less its own width and the gap. A
+        // submenu is never set a width, but its width still places it: one a fraction of a pixel above a whole one,
+        // rounded, would leave the gap that fraction off the whole number of pixels the placement asks for.
+        await Opb("mnb-rtl-fraction").FocusAsync();
+        await Page.Keyboard.PressAsync("ArrowDown");
+        var menu = await MenuOf("mnb-rtl-fraction");
+        await Expect(menu).ToBeVisibleAsync();
+        var row = ItemsOf(menu).First;
+        await Expect(row).ToBeFocusedAsync();
+        await Page.Keyboard.PressAsync("ArrowLeft");
+        await Expect(row).ToHaveAttributeAsync("aria-expanded", "true");
+
+        var submenu = await SubmenuOfAsync(row);
+        var callout = CalloutOf(submenu);
+        await SettledAsync(callout);
+
+        var width = await callout.EvaluateAsync<double>("el => el.getBoundingClientRect().width");
+        Assert.AreNotEqual(Math.Round(width), width, 0.01, "The submenu is a fraction of a pixel wider than a whole one.");
+
+        var rowLeft = await row.EvaluateAsync<double>("el => el.getBoundingClientRect().left");
+        var right = await callout.EvaluateAsync<double>("el => el.getBoundingClientRect().right");
+        var gap = rowLeft - right;
+        Assert.IsTrue(gap > 0, $"The submenu overlaps its row by {-gap}px.");
+        Assert.AreEqual(Math.Round(gap), gap, 0.01, $"The gap between the submenu and its row ({gap}px) is not a whole number of pixels.");
     }
 
     [TestMethod]

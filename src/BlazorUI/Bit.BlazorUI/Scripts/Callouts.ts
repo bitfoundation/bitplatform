@@ -357,14 +357,21 @@
             scrollContainer.style.height = '';
             scrollContainer.style.maxHeight = '';
 
-            const componentWidth = component.offsetWidth;
+            // The widths are read off getBoundingClientRect rather than off offsetWidth, which rounds the layout width
+            // to the nearest whole pixel: a callout whose widest item lands just above one (97.09px read as 97) would
+            // be set that rounded width below and come out a fraction narrower than its content, cutting that item
+            // off with an ellipsis - and a component of a fractional width would be handed a callout a fraction
+            // narrower or wider than itself. The exact width is what gets written (style.width takes fractional
+            // pixels) and what the placement below works with, so nothing is rounded anywhere. The transform a
+            // callout opens with (see playEntryAnimation) is only ever a translation, which leaves the size of
+            // the box alone.
+            const componentRect = component.getBoundingClientRect();
+            const componentWidth = componentRect.width;
             const componentHeight = component.offsetHeight;
-            const { x: componentX, y: componentY } = component.getBoundingClientRect();
+            const { x: componentX, y: componentY } = componentRect;
 
-            // Rounded UP to a whole pixel (see measureContentWidth): the width set on the callout below is this one,
-            // and offsetWidth rounds to the nearest pixel, so a callout whose widest item lands just above one would
-            // be set a fraction narrower than its content and cut that item off with an ellipsis.
-            let calloutWidth = Callouts.measureContentWidth(callout);
+            const calloutRect = callout.getBoundingClientRect();
+            let calloutWidth = calloutRect.width;
             // The consumer's cap shortens the scrollable list (and only it), so the callout the placement
             // below decides for can be shorter than the one measured here: whatever the cap takes off that
             // list comes off this height too, or a list that fits under the component only because of the
@@ -372,7 +379,7 @@
             const calloutHeight = callout.offsetHeight - (maxHeight > 0 && scrollContainerId
                                                             ? Math.max(0, (scrollContainer as HTMLElement).offsetHeight - maxHeight)
                                                             : 0);
-            const { x: calloutLeft } = callout.getBoundingClientRect();
+            const calloutLeft = calloutRect.x;
 
             // Distances from the component to each edge of the visible band (getBoundingClientRect space),
             // less the room the requested gap takes out of each of them.
@@ -924,28 +931,6 @@
             callout.classList.add('bit-cal-ent');
             void callout.offsetHeight;
             callout.classList.remove('bit-cal-ent');
-        }
-
-        // The width an element's content lays it out at, rounded up to the next whole pixel. offsetWidth rounds the
-        // layout width to the NEAREST pixel, so 97.09px reads as 97 - and a callout handed that back as its width is
-        // 0.09px short of its widest item, which text-overflow then cuts with an ellipsis. It is read off the
-        // computed width rather than off getBoundingClientRect, which carries the transform a callout opens with (see
-        // playEntryAnimation) - a scale reads short whenever the callout is placed again while it is still opening.
-        // The resolved width follows box-sizing, so the padding and the border are added only where it leaves them
-        // out. Rounded up from a hair below the measure, so a width that is already whole is not taken a pixel wider
-        // by the last digit the engine prints it with.
-        export function measureContentWidth(el: HTMLElement): number {
-            const rounded = el.offsetWidth;
-            const style = getComputedStyle(el);
-            let width = parseFloat(style.width);
-            if (!isFinite(width)) return rounded;
-
-            if (style.boxSizing !== 'border-box') {
-                width += (parseFloat(style.paddingLeft) || 0) + (parseFloat(style.paddingRight) || 0)
-                       + (parseFloat(style.borderLeftWidth) || 0) + (parseFloat(style.borderRightWidth) || 0);
-            }
-
-            return Math.max(rounded, Math.ceil(width - 0.001));
         }
 
         // Measures the layout viewport's edges in getBoundingClientRect() space by stretching a

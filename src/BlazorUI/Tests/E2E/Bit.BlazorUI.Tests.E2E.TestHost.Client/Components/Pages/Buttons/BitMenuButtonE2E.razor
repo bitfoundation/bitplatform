@@ -167,6 +167,10 @@
     <div id="fw-container" style="width: 420px;">
         <BitMenuButton Id="mnb-fullwidth" FullWidth Text="Full width" Items="@(L("fullwidth"))" />
     </div>
+    @* A full-width button a fraction of a pixel wider than a whole one, which offsetWidth rounds down. *@
+    <div style="width: 200.4px;">
+        <BitMenuButton Id="mnb-fullwidth-fraction" FullWidth Text="Full width" Items="@(L("fullwidth-fraction"))" />
+    </div>
     @NarrowRow(@<BitMenuButton Id="mnb-narrow-icononly" IconOnly Variant="BitVariant.Text" Size="BitSize.Small" AriaLabel="More" IconName="@BitIconName.More" Items="@(L("narrow-icononly"))" />)
     @NarrowRow(@<BitMenuButton Id="mnb-narrow-split" Split Text="Save" Items="@(L("narrow-split"))" />)
     @NarrowRow(@<BitMenuButton Id="mnb-narrow-text" Text="Options" IconName="@BitIconName.Add" Items="@(L("narrow-text"))" />)
@@ -195,7 +199,7 @@
         <BitMenuButton Id="@($"mnb-background-{kind}")" Text="@kind.ToString()" Items="@(L($"background-{kind}"))" Background="kind" />
     }
     <BitMenuButton Id="mnb-maxheight" Text="Scrolling" Items="_long" MaxHeight="10rem" />
-    @* A menu whose widest item is a fraction of a pixel wider than a whole one, which offsetWidth rounds down. *@
+    @* A menu whose widest item the test pads to a fraction of a pixel above a whole one, which offsetWidth rounds down. *@
     <BitMenuButton Id="mnb-fraction-width" IconOnly Size="BitSize.Small" AriaLabel="Languages" IconName="@BitIconName.World" Items="_fractionWidth" />
     <BitMenuButton Id="mnb-stays-open" Text="Stays open" Items="@(L("stays-open"))" CloseOnItemClick="false" />
 </E2ESection>
@@ -267,6 +271,10 @@
     @* Kept to the right of the page, so its submenu has the room to open on the left the way RTL asks for. *@
     <div style="display: flex; justify-content: flex-end;">
         <BitMenuButton Id="mnb-rtl" Dir="BitDir.Rtl" Text="درج" IconName="@BitIconName.Add" Items="_rtlSubmenu" />
+    </div>
+    @* A submenu a fraction of a pixel wider than a whole one, which its width places on the left of its row. *@
+    <div style="display: flex; justify-content: flex-end;">
+        <BitMenuButton Id="mnb-rtl-fraction" Dir="BitDir.Rtl" Text="زبان" Items="_rtlFractionSubmenu" />
     </div>
     <div dir="rtl">
         <BitMenuButton Id="mnb-rtl-inherited" Text="درج" IconName="@BitIconName.Add" Items="_rtlInheritedSubmenu" />
@@ -437,7 +445,19 @@
     private readonly List<BitMenuButtonItem> _fractionWidth =
     [
         new() { Key = "en", Text = "English" },
-        new() { Key = "nl", Text = "Nederlands", Style = "width: 160.25px;" }
+        new() { Key = "nl", Text = "Nederlands", Style = "padding-inline-end: 10.25px;" }
+    ];
+    private readonly List<BitMenuButtonItem> _rtlFractionSubmenu =
+    [
+        new()
+        {
+            Key = "lang", Text = "Language",
+            ChildItems =
+            [
+                new() { Key = "en", Text = "English" },
+                new() { Key = "nl", Text = "Nederlands", Style = "width: 120.25px;" }
+            ]
+        }
     ];
     private readonly List<BitMenuButtonItem> _mountedItems = Basic();
     private readonly List<BitMenuButtonItem> _customMarks =
