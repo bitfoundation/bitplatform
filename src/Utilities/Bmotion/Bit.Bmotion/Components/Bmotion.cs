@@ -1358,6 +1358,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         string easing = t?.Type == BmotionTransitionType.Spring
             ? "cubic-bezier(0.14,1,0.34,1)"
             : BmEaseFunctions.ToCssString(t);
+        var flip = new BmotionFlip { Dx = dx, Dy = dy, Sx = sx, Sy = sy, DurationMs = dur, Easing = easing, OriginX = anchor.X, OriginY = anchor.Y };
         if (moves)
         {
             // The transform the element shows when the FLIP ends, compositor animations advanced by its length.
@@ -1373,15 +1374,14 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
             await OnLayoutAnimationStart.InvokeAsync();
             // The ref is only handed over when someone is listening, so the common case costs no
             // JS→.NET callback at the end of every layout animation.
-            await Interop.PlayWaapiFlipAsync(_id, dx, dy, sx, sy, dur, easing, finalT,
-                anchor.X, anchor.Y, OnLayoutAnimationComplete.HasDelegate ? _dotnet : null);
+            await Interop.PlayWaapiFlipAsync(_id, flip, finalT, OnLayoutAnimationComplete.HasDelegate ? _dotnet : null);
         }
 
         if (crossfadeWith is not { _disposed: false }) return (moves, false);
         // The one leaving travels the other way, from its box onto this one's, over the same time and curve.
         crossfadeWith._crossfadingOut = true;
-        await Interop.PlayLayoutCrossfadeAsync(_id, crossfadeWith._id, -dx, -dy,
-            sx > 0 ? 1 / sx : 1, sy > 0 ? 1 / sy : 1, dur, easing, anchor.X, anchor.Y);
+        await Interop.PlayLayoutCrossfadeAsync(_id, crossfadeWith._id,
+            flip with { Dx = -dx, Dy = -dy, Sx = sx > 0 ? 1 / sx : 1, Sy = sy > 0 ? 1 / sy : 1 });
         return (moves, true);
     }
 

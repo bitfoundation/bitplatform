@@ -12,32 +12,99 @@ namespace Bit.BevTools;
 /// <summary>
 /// Finds what keeps a disposed component alive, in the places a Blazor component typically leaks through: an event or
 /// callback list on a singleton or scoped service it injected or a value cascaded to it (subscribed to and never
-/// unsubscribed), the JS runtime's table of <see cref="DotNetObjectReference"/>s (created and never disposed), and its
-/// own timers (scheduled and never stopped). Only reference identity is checked - no value is read or shown - and every
-/// hit is a reference that exists, not a guess; anything held elsewhere (a static, a cache) is not found, and the
-/// finding says so.
+/// unsubscribed), the objects those hold (a list of steps, each with its callback), a field of a component that is
+/// still on the page (an <c>@ref</c> to one it stopped rendering), the JS runtime's table of
+/// <see cref="DotNetObjectReference"/>s and what their targets hold (created and never disposed), and its own timers
+/// (scheduled and never stopped). Only reference identity is checked - no value is read or shown - and every hit is a
+/// reference that exists, not a guess. The search is bounded (<see cref="MaxDepth"/> objects below each holder, and
+/// only into application and library types, never the framework's): anything held elsewhere (a static, a cache, a
+/// longer path) is not found, and the finding says what was searched.
 /// </summary>
 internal static class BevRetentionAnalyzer
 {
     private const BindingFlags InstanceFields = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly;
     private const int MaxItemsPerCollection = 1000;
 
+    /// <summary>
+    /// How many objects and collections below a holder the search follows: a service → its object → that object's list
+    /// → an item, whose callback is then read.
+    /// </summary>
+    internal const int MaxDepth = 4;
+
+    /// <summary>The objects one holder's search may read, whatever their depth: a service that holds a large graph is read in part.</summary>
+    private const int MaxObjectsPerHolder = 20_000;
+
+    /// <summary>
+    /// The objects one check may read below every service, cascaded value and JS reference together: a component that
+    /// injects thirty services holding the app's caches must not freeze the UI thread (on WebAssembly, the only one)
+    /// for the length of thirty searches. The live components' fields have a budget of their own.
+    /// </summary>
+    private const int MaxObjectsPerScan = 60_000;
+
     private static readonly ConcurrentDictionary<Type, FieldInfo[]> Fields = new();
+
+    /// <summary>
+    /// What a finding says when no reference was found: what was searched and within which limits, which is not
+    /// everywhere, and not everything there either. A source that could not be read (the JS runtime's table, when its
+    /// runtime is not one BevTools can read) is named as not searched.
+    /// </summary>
+    internal static string NotFound(BevToolsSession session)
+    {
+        static string N(int n) => n.ToString("N0", System.Globalization.CultureInfo.InvariantCulture);
+        var jsTable = BevJSObjectReferences.Table(session) is not null;
+        return "No reference to it was found within what BevTools searched: its injected singleton and scoped services, its cascading values, NavigationManager and AuthenticationStateProvider, "
+            + "the fields of the components still on the page, " + (jsTable ? "the JS runtime's DotNetObjectReference table, " : "") + "and its own timers"
+            + " (followed up to " + MaxDepth + " objects deep into the application's and its libraries' own types, at most " + N(MaxItemsPerCollection) + " items of each collection or handler list, "
+            + N(MaxObjectsPerHolder) + " objects per holder and " + N(MaxObjectsPerScan) + " in all)."
+            + (jsTable ? "" : " The JS runtime's DotNetObjectReference table could not be read, so it was not searched.")
+            + " A reference past those limits is not found, and what holds it may also be elsewhere: a static field, a cache, a framework object, or a longer path.";
+    }
+
+    /// <summary>How to find what BevTools did not.</summary>
+    internal const string HeapSnapshot = "Take a heap snapshot and follow the path from it to a root: dotnet-gcdump for a server process, the runtime's GC dump (collectGcDump, in a build with diagnostics) on WebAssembly.";
+
+    /// <summary>"BitText 200, BitIcon 111, BitButton 80 and 12 more types".</summary>
+    internal static string Describe(IReadOnlyList<BevRetainedTypeCount> types, int shown = 5) =>
+        string.Join(", ", types.Take(shown).Select(t => t.DisplayName + " " + t.Count))
+        + (types.Count > shown ? " and " + (types.Count - shown) + " more type" + (types.Count - shown == 1 ? "" : "s") : "");
 
     /// <summary>
     /// What one check has read: each holder's references indexed once, however many retained components share it. A
     /// list row's leak is a thousand rows on one service's event; reading that event a thousand times was the cost.
     /// </summary>
-    internal sealed class Scan(BevToolsSession session)
+    internal sealed class Scan(BevToolsSession session, IEnumerable<IComponent>? disposed = null)
     {
         public BevToolsSession Session { get; } = session;
 
-        internal Dictionary<object, Dictionary<object, List<(string Member, string Detail, string Suggestion)>>> Holders { get; } = new(ReferenceEqualityComparer.Instance);
+        /// <summary>
+        /// The disposed components still alive. One of them holding another is not what keeps either: both go when
+        /// whatever holds the first lets go (a disposed carousel's list of its disposed items).
+        /// </summary>
+        internal HashSet<IComponent> Disposed { get; } = new(disposed ?? [], ReferenceEqualityComparer.Instance);
+
+        internal Dictionary<object, Dictionary<object, List<Hit>>> Holders { get; } = new(ReferenceEqualityComparer.Instance);
+
+        /// <summary>What the searches below services, cascaded values and JS references may still read in this check.</summary>
+        internal Budget Objects { get; } = new(MaxObjectsPerScan);
+
+        /// <summary>The scope's event sources every component may have subscribed to, resolved once per check.</summary>
+        internal List<(object? Service, Type Type)>? EventSources { get; set; }
 
         internal Dictionary<object, List<BevRetentionCause>>? JSReferences { get; set; }
 
+        internal Dictionary<object, List<BevRetentionCause>>? LiveComponents { get; set; }
+
         internal Dictionary<Type, ServiceLifetime>? Lifetimes { get; set; }
     }
+
+    /// <summary>A count of objects left to read, shared by the searches that draw on it.</summary>
+    internal sealed class Budget(int remaining)
+    {
+        public int Remaining { get; set; } = remaining;
+    }
+
+    /// <summary>A reference to a component that a search found: the path to it, how it holds it and what releases it.</summary>
+    internal readonly record struct Hit(string Member, string Detail, string Suggestion, bool InCollection = false);
 
     public static IReadOnlyList<BevRetentionCause> Analyze(Scan scan, IComponent component)
     {
@@ -48,7 +115,7 @@ internal static class BevRetentionAnalyzer
             {
                 if (!scan.Holders.TryGetValue(holder, out var index))
                 {
-                    scan.Holders[holder] = index = IndexHolder(holder, delegatesOnly);
+                    scan.Holders[holder] = index = IndexHolder(scan, holder, delegatesOnly);
                 }
 
                 if (index.TryGetValue(component, out var found))
@@ -57,7 +124,12 @@ internal static class BevRetentionAnalyzer
                 }
             }
 
-            if ((scan.JSReferences ??= IndexJSRuntime(scan.Session)).TryGetValue(component, out var references))
+            if ((scan.LiveComponents ??= IndexLiveComponents(scan)).TryGetValue(component, out var fields))
+            {
+                causes.AddRange(fields);
+            }
+
+            if ((scan.JSReferences ??= IndexJSRuntime(scan)).TryGetValue(component, out var references))
             {
                 causes.AddRange(references);
             }
@@ -76,6 +148,7 @@ internal static class BevRetentionAnalyzer
     /// <summary>
     /// The objects the component was handed that outlive it, and the scope's own event sources it may have subscribed to.
     /// A transient service is the component's own: it holding the component back is a cycle, not what keeps it alive.
+    /// So is a cascaded component that is disposed itself.
     /// </summary>
     private static List<(object Holder, string Name, bool DelegatesOnly)> Holders(Scan scan, IComponent component)
     {
@@ -97,16 +170,9 @@ internal static class BevRetentionAnalyzer
 
         // Subscribing to these does not need an [Inject] property of the component's own: a base class or a helper
         // can do it with the component as the target.
-        foreach (var name in (string[])["Microsoft.AspNetCore.Components.NavigationManager, Microsoft.AspNetCore.Components",
-                     "Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider, Microsoft.AspNetCore.Components.Authorization"])
+        foreach (var (service, type) in scan.EventSources ??= EventSources(scan.Session))
         {
-            if (Type.GetType(name, throwOnError: false) is { } type)
-            {
-                using (SessionResolver.BeginBevToolsWork())
-                {
-                    Add(GetService(scan.Session, type), TypeNames.Short(type));
-                }
-            }
+            Add(service, TypeNames.Short(type));
         }
 
         return holders;
@@ -118,7 +184,8 @@ internal static class BevRetentionAnalyzer
                 value = tracking.Inner;
             }
 
-            if (value is null || value is string || value.GetType().IsPrimitive || ReferenceEquals(value, component) || !seen.Add(value) || IsNeverAHolder(value.GetType()))
+            if (value is null || value is string || value.GetType().IsPrimitive || ReferenceEquals(value, component) || !seen.Add(value) || IsNeverAHolder(value.GetType())
+                || (value is IComponent holder && scan.Disposed.Contains(holder)))
             {
                 return;
             }
@@ -148,15 +215,34 @@ internal static class BevRetentionAnalyzer
             : null;
     }
 
-    private static object? GetService(BevToolsSession session, Type type)
+    private static List<(object? Service, Type Type)> EventSources(BevToolsSession session)
     {
-        try
+        var sources = new List<(object?, Type)>();
+        foreach (var name in (string[])["Microsoft.AspNetCore.Components.NavigationManager, Microsoft.AspNetCore.Components",
+                     "Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider, Microsoft.AspNetCore.Components.Authorization"])
         {
-            return session.Services.GetService(type);
+            if (Type.GetType(name, throwOnError: false) is { } type)
+            {
+                sources.Add((GetService(session, type), type));
+            }
         }
-        catch
+
+        return sources;
+    }
+
+    /// <summary>A service of the session's scope, asked for as BevTools' own work; null when it is not registered or its factory throws.</summary>
+    internal static object? GetService(BevToolsSession session, Type type)
+    {
+        using (SessionResolver.BeginBevToolsWork())
         {
-            return null;
+            try
+            {
+                return session.Services.GetService(type);
+            }
+            catch
+            {
+                return null;
+            }
         }
     }
 
@@ -183,46 +269,263 @@ internal static class BevRetentionAnalyzer
     /// </summary>
     private static bool IsExtensionsService(Type type) => type.Namespace?.StartsWith("Microsoft.Extensions.", StringComparison.Ordinal) ?? false;
 
-    /// <summary>Every component the holder's fields reach - by a handler, a closure, the field itself or a collection - with how.</summary>
-    private static Dictionary<object, List<(string Member, string Detail, string Suggestion)>> IndexHolder(object holder, bool delegatesOnly)
+    /// <summary>
+    /// Whether the search follows a reference into an object of this type below a holder: the application's and its
+    /// libraries' own types, where a component's callback is kept (a tour's steps, an animation engine's listeners).
+    /// The framework's types are not followed - their internals are not where an application leaks, and a renderer or a
+    /// container reaches everything - nor BevTools' own, which never holds an application component strongly.
+    /// </summary>
+    private static readonly ConcurrentDictionary<Type, bool> Walkable = new();
+
+    /// <summary>
+    /// Tuples and key-value pairs: framework types, but only carriers of what the application put in them (a list of
+    /// <c>(Owner, Callback)</c> subscriptions), so their fields are read as if they were the collection item's own.
+    /// </summary>
+    private static readonly ConcurrentDictionary<Type, bool> Carriers = new();
+
+    private static bool IsCarrier(Type type) => Carriers.GetOrAdd(type, static t =>
+        typeof(ITuple).IsAssignableFrom(t) || (t.IsGenericType && t.GetGenericTypeDefinition() == typeof(KeyValuePair<,>)));
+
+    private static bool IsWalkable(Type type) => Walkable.GetOrAdd(type, static t =>
     {
-        var index = new Dictionary<object, List<(string, string, string)>>(ReferenceEqualityComparer.Instance);
-        for (var type = holder.GetType(); type is not null && type != typeof(object); type = type.BaseType)
+        if (t.IsPrimitive || t.IsEnum || t.IsPointer || t == typeof(string) || typeof(Delegate).IsAssignableFrom(t) || typeof(IComponent).IsAssignableFrom(t)
+            || typeof(MemberInfo).IsAssignableFrom(t) || IsNeverAHolder(t))
         {
-            foreach (var field in Fields.GetOrAdd(type, static t => t.GetFields(InstanceFields)))
+            return false;
+        }
+
+        if (t.IsDefined(typeof(CompilerGeneratedAttribute), false))
+        {
+            return true;
+        }
+
+        // BevTools' own types all live directly in its namespace (exactly: an application under "Bit.BevTools.Demo" is
+        // an application).
+        var assembly = t.Assembly.GetName().Name ?? "";
+        return !(assembly.StartsWith("System.", StringComparison.Ordinal) || assembly.StartsWith("Microsoft.", StringComparison.Ordinal)
+            || assembly is "System" or "mscorlib" or "netstandard"
+            || t.Namespace == "Bit.BevTools");
+    });
+
+    /// <summary>
+    /// Every component the holder reaches - by a handler, a closure, a field, a collection, or an object of the
+    /// application's that holds one of those, up to <see cref="MaxDepth"/> objects down - with the path.
+    /// </summary>
+    private static Dictionary<object, List<Hit>> IndexHolder(Scan scan, object holder, bool delegatesOnly)
+    {
+        var walker = new Walker(MaxObjectsPerHolder, scan.Objects) { DelegatesOnly = delegatesOnly };
+        walker.Walk(holder, "", 0);
+        return walker.Index;
+    }
+
+    /// <summary>
+    /// A bounded walk of an object graph by reference, from one root, that notes the components it reaches. It reads at
+    /// most <paramref name="cap"/> objects, and draws each from <paramref name="pool"/> too when it is given one.
+    /// </summary>
+    private sealed class Walker(int cap, Budget? pool = null)
+    {
+        /// <summary>
+        /// The shallowest depth each object and collection was read at. One reached first by a long path and later by a
+        /// short one is read again, with the depth the short one leaves; never again at the same depth or deeper.
+        /// </summary>
+        private readonly Dictionary<object, int> _visited = new(ReferenceEqualityComparer.Instance);
+        private int _left = cap;
+
+        /// <summary>Only delegates are read, not collections nor objects: configuration's values are not BevTools' to walk.</summary>
+        public bool DelegatesOnly { get; init; }
+
+        /// <summary>Whether handlers and callbacks are read; when not, only fields and collections that hold a component directly count.</summary>
+        public bool FollowDelegates { get; init; } = true;
+
+        /// <summary>Whether the application's own objects are entered, or only collections (and the tuples in them).</summary>
+        public bool WalkObjects { get; init; } = true;
+
+        /// <summary>How many objects and collections below the root are followed (the root's own fields are at 1).</summary>
+        public int MaxDepth { get; init; } = BevRetentionAnalyzer.MaxDepth;
+
+        public Dictionary<object, List<Hit>> Index { get; } = new(ReferenceEqualityComparer.Instance);
+
+        /// <summary>
+        /// One object more read; false once the walk's cap or the shared pool is spent. Counted only for an object not
+        /// yet visited: a graph whose objects are reached by many paths reads each once.
+        /// </summary>
+        private bool Spend()
+        {
+            if (--_left < 0)
             {
-                object? value;
-                try
+                return false;
+            }
+
+            return pool is null || --pool.Remaining >= 0;
+        }
+
+        /// <summary>Whether the cap and the shared pool still allow reading.</summary>
+        private bool HasBudget => _left > 0 && (pool is null || pool.Remaining > 0);
+
+        /// <summary>
+        /// Whether <paramref name="value"/> is read at <paramref name="depth"/>: the first time, counted as one object
+        /// more (when <paramref name="spend"/>); again only from a shallower depth, which reads further below it, and
+        /// not counted again (it is the same object), but only while there is budget left.
+        /// </summary>
+        private bool Enter(object value, int depth, bool spend)
+        {
+            if (_visited.TryGetValue(value, out var at))
+            {
+                if (depth >= at || !HasBudget)
                 {
-                    value = field.GetValue(holder);
-                }
-                catch
-                {
-                    continue;
+                    return false;
                 }
 
-                var member = MemberName(field);
-                switch (value)
+                _visited[value] = depth;
+                return true;
+            }
+
+            _visited[value] = depth;
+            return !spend || Spend();
+        }
+
+        /// <summary>The fields of <paramref name="value"/>, which is <paramref name="depth"/> objects below the root (the root is 0).</summary>
+        public void Walk(object value, string path, int depth)
+        {
+            if (!Enter(value, depth, spend: true))
+            {
+                return;
+            }
+
+            Fields(value, path, depth, carrier: false);
+        }
+
+        /// <summary>
+        /// The fields of an object, one level down; or of a carrier (a tuple in a collection), at the level of the item it
+        /// is and under its path: "_subscribers[]", not "_subscribers[].Item2".
+        /// </summary>
+        private void Fields(object value, string path, int depth, bool carrier)
+        {
+            for (var type = value.GetType(); type is not null && type != typeof(object) && type != typeof(ValueType); type = type.BaseType)
+            {
+                foreach (var field in BevRetentionAnalyzer.Fields.GetOrAdd(type, static t => t.GetFields(InstanceFields)))
                 {
-                    case null:
+                    var fieldType = field.FieldType;
+                    if (fieldType.IsPrimitive || fieldType.IsEnum || fieldType.IsPointer || fieldType == typeof(string) || fieldType.IsByRefLike)
+                    {
                         continue;
-                    case Delegate handlers:
-                        IndexDelegate(handlers, member, index);
-                        break;
-                    case IComponent component when !delegatesOnly:
-                        Note(index, component, member, "a field that holds the component itself", "Clear the field when the component is disposed, or hold it weakly.");
-                        break;
-                    case IDictionary dictionary when !delegatesOnly && IsFrameworkCollection(value.GetType()):
-                        IndexItems(DictionaryValues(dictionary), member, index);
-                        break;
-                    case IEnumerable items when !delegatesOnly && IsFrameworkCollection(value.GetType()):
-                        IndexItems(items, member, index);
-                        break;
+                    }
+
+                    object? member;
+                    try
+                    {
+                        member = field.GetValue(value);
+                    }
+                    catch
+                    {
+                        continue;
+                    }
+
+                    if (carrier)
+                    {
+                        Value(member, path, depth, inCollection: true);
+                    }
+                    else
+                    {
+                        Value(member, path.Length == 0 ? MemberName(field) : path + "." + MemberName(field), depth + 1, inCollection: false);
+                    }
                 }
             }
         }
 
-        return index;
+        private void Value(object? value, string path, int depth, bool inCollection)
+        {
+            switch (value)
+            {
+                case null:
+                    return;
+                case Delegate handlers:
+                    if (FollowDelegates)
+                    {
+                        IndexDelegate(handlers, path, Index);
+                    }
+
+                    return;
+                case IComponent component when !DelegatesOnly:
+                    Note(Index, component, inCollection
+                        ? new Hit(path, "a collection that still contains the component", "Remove the component from it in Dispose.", InCollection: true)
+                        : new Hit(path, "a field that holds the component itself", "Clear the field when the component is disposed, or hold it weakly."));
+                    return;
+                case IComponent:
+                    return;
+            }
+
+            var type = value.GetType();
+            if (type == typeof(EventCallback) || (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(EventCallback<>)))
+            {
+                if (FollowDelegates && BlazorReflection.EventCallbackDelegate(value) is { } callback)
+                {
+                    IndexDelegate(callback, path, Index);
+                }
+
+                return;
+            }
+
+            if (DelegatesOnly)
+            {
+                return;
+            }
+
+            if (inCollection && IsCarrier(type))
+            {
+                // Not a level: the item it carries is. Not remembered as visited (a value tuple is a new box each time it
+                // is read), and not counted again: the item was.
+                Fields(value, path, depth, carrier: true);
+                return;
+            }
+
+            // A collection counts as a level, and is visited once, like an object: one that contains itself, or a chain
+            // of nested ones, ends at the depth.
+            if (depth > MaxDepth)
+            {
+                return;
+            }
+
+            if (value is IDictionary dictionary && IsFrameworkCollection(type))
+            {
+                if (Enter(value, depth, spend: false))
+                {
+                    Items(DictionaryValues(dictionary), path + "[]", depth);
+                }
+            }
+            else if (value is IEnumerable items && IsFrameworkCollection(type))
+            {
+                if (Enter(value, depth, spend: false))
+                {
+                    Items(items, path + "[]", depth);
+                }
+            }
+            else if (WalkObjects && IsWalkable(type))
+            {
+                Walk(value, path, depth);
+            }
+        }
+
+        private void Items(IEnumerable items, string path, int depth)
+        {
+            var count = 0;
+            try
+            {
+                foreach (var item in items)
+                {
+                    if (++count > MaxItemsPerCollection || !Spend())
+                    {
+                        return;
+                    }
+
+                    Value(item, path, depth + 1, inCollection: true);
+                }
+            }
+            catch
+            {
+                // A collection modified while it is read, or one that throws when enumerated: nothing to report from it.
+            }
+        }
     }
 
     /// <summary>A dictionary's values through its enumerator: a concurrent dictionary's Values copies it whole under every lock.</summary>
@@ -243,36 +546,7 @@ internal static class BevRetentionAnalyzer
         || (type.Namespace is "System.Collections.Generic" or "System.Collections.Concurrent" or "System.Collections.Immutable" or "System.Collections.ObjectModel"
             && type.Assembly.GetName().Name is { } assembly && (assembly.StartsWith("System.", StringComparison.Ordinal) || assembly == "mscorlib"));
 
-    private static void IndexItems(IEnumerable items, string member, Dictionary<object, List<(string, string, string)>> index)
-    {
-        var count = 0;
-        try
-        {
-            foreach (var item in items)
-            {
-                if (++count > MaxItemsPerCollection)
-                {
-                    return;
-                }
-
-                switch (item)
-                {
-                    case Delegate handlers:
-                        IndexDelegate(handlers, member, index);
-                        break;
-                    case IComponent component:
-                        Note(index, component, member, "a collection that still contains the component", "Remove the component from it in Dispose.");
-                        break;
-                }
-            }
-        }
-        catch
-        {
-            // A collection modified while it is read, or one that throws when enumerated: nothing to report from it.
-        }
-    }
-
-    private static void IndexDelegate(Delegate handlers, string member, Dictionary<object, List<(string, string, string)>> index)
+    private static void IndexDelegate(Delegate handlers, string member, Dictionary<object, List<Hit>> index)
     {
         var count = 0;
         foreach (var handler in handlers.GetInvocationList())
@@ -305,7 +579,7 @@ internal static class BevRetentionAnalyzer
     /// A subscription object that holds the listener it was given (<c>IOptionsMonitor.OnChange</c> keeps a
     /// <c>ChangeTrackerDisposable</c> whose delegate is the component's handler): one level of its delegate fields.
     /// </summary>
-    private static void IndexWrapped(object wrapper, string member, Dictionary<object, List<(string, string, string)>> index)
+    private static void IndexWrapped(object wrapper, string member, Dictionary<object, List<Hit>> index)
     {
         var through = TypeNames.Short(wrapper.GetType());
         for (var type = wrapper.GetType(); type is not null && type != typeof(object); type = type.BaseType)
@@ -346,7 +620,10 @@ internal static class BevRetentionAnalyzer
         }
     }
 
-    private static void Note(Dictionary<object, List<(string, string, string)>> index, object component, string member, string detail, string suggestion)
+    private static void Note(Dictionary<object, List<Hit>> index, object component, string member, string detail, string suggestion) =>
+        Note(index, component, new Hit(member, detail, suggestion));
+
+    private static void Note(Dictionary<object, List<Hit>> index, object component, Hit hit)
     {
         if (!index.TryGetValue(component, out var notes))
         {
@@ -355,7 +632,7 @@ internal static class BevRetentionAnalyzer
 
         if (notes.Count < 10)
         {
-            notes.Add((member, detail, suggestion));
+            notes.Add(hit);
         }
     }
 
@@ -398,31 +675,84 @@ internal static class BevRetentionAnalyzer
         }
     }
 
-    private static readonly Lazy<FieldInfo?> TrackedReferences = new(() => typeof(JSRuntime).GetField("_trackedRefsById", BindingFlags.Instance | BindingFlags.NonPublic));
-
     /// <summary>
-    /// A DotNetObjectReference passed to JS is kept in the runtime's table until it is disposed - for a circuit, until
-    /// the circuit ends - and with it whatever it wraps. Indexed once per check by the component each one reaches.
+    /// The components still on the page that reference a removed one from a field of their own: an <c>@ref</c> (or a
+    /// list of them) to a child the markup no longer renders keeps that child until the field is overwritten. Only the
+    /// component's own fields are read, directly or as a framework collection's items (tuples in it included); not
+    /// its delegates, nor the objects it holds (its injected services are searched as holders already).
+    /// <para>
+    /// A single field holds one instance at a time, and an <c>@ref</c> in an <c>@if</c> is overwritten the next time
+    /// the markup renders it: that cause is <see cref="BevRetentionCause.Bounded"/>. A collection that is only added to
+    /// grows with every render, and is not.
+    /// </para>
     /// </summary>
-    private static Dictionary<object, List<BevRetentionCause>> IndexJSRuntime(BevToolsSession session)
+    private static Dictionary<object, List<BevRetentionCause>> IndexLiveComponents(Scan scan)
     {
         var index = new Dictionary<object, List<BevRetentionCause>>(ReferenceEqualityComparer.Instance);
-        object? runtime;
-        using (SessionResolver.BeginBevToolsWork())
-        {
-            runtime = GetService(session, typeof(IJSRuntime));
-        }
-
-        if (runtime is BevTrackingJSRuntime tracking)
-        {
-            runtime = tracking.Inner;
-        }
-
-        if (runtime is not JSRuntime || TrackedReferences.Value?.GetValue(runtime) is not IDictionary table)
+        if (scan.Disposed.Count == 0)
         {
             return index;
         }
 
+        // A budget of its own: what the searches below services spent must not hide an @ref.
+        var budget = new Budget(MaxObjectsPerHolder);
+        foreach (var record in scan.Session.Components.All)
+        {
+            if (record.IsDisposed || record.IsBevTools || record.Component is not { } live)
+            {
+                continue;
+            }
+
+            if (budget.Remaining <= 0)
+            {
+                break;
+            }
+
+            var walker = new Walker(MaxObjectsPerHolder, budget) { FollowDelegates = false, WalkObjects = false, MaxDepth = 1 };
+            walker.Walk(live, "", 0);
+            foreach (var (held, hits) in walker.Index)
+            {
+                if (held is not IComponent component || !scan.Disposed.Contains(component))
+                {
+                    continue;
+                }
+
+                if (!index.TryGetValue(held, out var causes))
+                {
+                    index[held] = causes = [];
+                }
+
+                foreach (var hit in hits.Take(10 - causes.Count))
+                {
+                    causes.Add(new BevRetentionCause(record.DisplayName + " (still rendered) → " + hit.Member,
+                        hit.InCollection ? "a collection that still contains the removed component" : "a field that still references the removed component, as an @ref does",
+                        hit.InCollection
+                            ? "Remove the component from the collection when the markup stops rendering it (or keep its data instead of the component)."
+                            : "Clear the field when the markup stops rendering the component (or keep its data instead of the component): Blazor never clears an @ref.")
+                    {
+                        Bounded = !hit.InCollection,
+                    });
+                }
+            }
+        }
+
+        return index;
+    }
+
+    /// <summary>
+    /// A DotNetObjectReference passed to JS is kept in the runtime's table until it is disposed - for a circuit, until
+    /// the circuit ends - and with it whatever it wraps, and whatever that holds: a library's object (an animation
+    /// engine, an observer) that keeps the component's callback. Indexed once per check by the component each one reaches.
+    /// </summary>
+    private static Dictionary<object, List<BevRetentionCause>> IndexJSRuntime(Scan scan)
+    {
+        var index = new Dictionary<object, List<BevRetentionCause>>(ReferenceEqualityComparer.Instance);
+        if (BevJSObjectReferences.Table(scan.Session) is not { } table)
+        {
+            return index;
+        }
+
+        // The scan's budget, shared with the services: a page can hand JavaScript hundreds of references.
         var count = 0;
         foreach (var reference in DictionaryValues(table))
         {
@@ -431,20 +761,46 @@ internal static class BevRetentionAnalyzer
                 break;
             }
 
-            // DotNetObjectReference<T>.Value: what the reference keeps alive.
-            var target = reference?.GetType().GetProperty("Value")?.GetValue(reference);
-            var reached = target is IComponent component ? [component] : target is null ? [] : Captured(target);
-            foreach (var held in reached)
+            var target = BevJSObjectReferences.Target(reference);
+            if (target is not null && target.GetType().Namespace == "Bit.BevTools")
             {
-                if (!index.ContainsKey(held))
+                // BevTools' own references (each panel's bridge): never what holds an application component.
+                continue;
+            }
+
+            var description = "a " + TypeNames.Short(reference!.GetType()) + " passed to JavaScript and never disposed";
+            if (target is IComponent component)
+            {
+                Add(component, description, "Dispose the DotNetObjectReference in Dispose/DisposeAsync (and tell the JS side to drop it).");
+            }
+            else if (target is not null)
+            {
+                if (scan.Objects.Remaining <= 0)
                 {
-                    index[held] = [new BevRetentionCause("the JS runtime", "a " + TypeNames.Short(reference!.GetType()) + " passed to JavaScript and never disposed",
-                        "Dispose the DotNetObjectReference in Dispose/DisposeAsync (and tell the JS side to drop it).")];
+                    continue;
+                }
+
+                var walker = new Walker(MaxObjectsPerHolder, scan.Objects);
+                walker.Walk(target, "", 0);
+                // A lambda's closure has compiler-made field names: its path would say nothing.
+                var named = !target.GetType().IsDefined(typeof(CompilerGeneratedAttribute), false);
+                foreach (var (held, paths) in walker.Index)
+                {
+                    Add(held, description + (named ? ", whose target holds it (" + TypeNames.Short(target.GetType()) + "." + paths[0].Member + ")" : ""),
+                        "Dispose the DotNetObjectReference, or what the component got from the library that created it, in Dispose/DisposeAsync.");
                 }
             }
         }
 
         return index;
+
+        void Add(object held, string detail, string suggestion)
+        {
+            if (!index.ContainsKey(held))
+            {
+                index[held] = [new BevRetentionCause("the JS runtime", detail, suggestion)];
+            }
+        }
     }
 
     /// <summary>
@@ -546,29 +902,33 @@ internal static class BevRetentionAnalyzer
     }
 
     /// <summary>
-    /// The components the renderer itself still references from its frame buffers: a component its parent stopped
-    /// rendering is kept in the parent's previous render tree until the parent renders again, and in buffers reused
-    /// without clearing. Held only there, a disposed component is not leaked: it goes with the parent's next render.
+    /// The components the renderers themselves still reference from their frame buffers, of every renderer the session
+    /// saw (a page can have more than one): a component its parent stopped rendering is kept in the parent's previous
+    /// render tree until the parent renders again, and in buffers reused without clearing. Held only there, a disposed
+    /// component is not leaked: it goes with the parent's next render.
     /// </summary>
     public static HashSet<IComponent> HeldByRenderer(BevToolsSession session)
     {
         var held = new HashSet<IComponent>(ReferenceEqualityComparer.Instance);
-        if (session.Components.Renderer is not { } renderer || BlazorReflection.ComponentStates(renderer) is not { } states)
+        foreach (var renderer in session.Components.Renderers)
         {
-            return held;
-        }
-
-        foreach (var state in states)
-        {
-            foreach (var frames in BlazorReflection.FrameBuffers(state))
+            if (BlazorReflection.ComponentStates(renderer) is not { } states)
             {
-                Collect(frames);
+                continue;
             }
-        }
 
-        if (BlazorReflection.BatchReferenceFrames(renderer) is { } batch)
-        {
-            Collect(batch);
+            foreach (var state in states)
+            {
+                foreach (var frames in BlazorReflection.FrameBuffers(state))
+                {
+                    Collect(frames);
+                }
+            }
+
+            if (BlazorReflection.BatchReferenceFrames(renderer) is { } batch)
+            {
+                Collect(batch);
+            }
         }
 
         return held;

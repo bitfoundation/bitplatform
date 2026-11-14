@@ -679,11 +679,13 @@ and WebKit's `auto` host and Release runs.
 
 ### 7.7 Breaking changes and migration
 
-No public member was removed or renamed. The new interface members have default implementations, and every new
-parameter defaults to the old behaviour unless the table says otherwise.
+No public member was removed or renamed, except the two `IBmotionInterop` FLIP members in the first row. The new
+interface members have default implementations, and every new parameter defaults to the old behaviour unless the table
+says otherwise.
 
 | Change | Round | Migration |
 |---|---|---|
+| `IBmotionInterop.PlayWaapiFlipAsync` and `PlayLayoutCrossfadeAsync` take the flip as one `BmotionFlip` (#14914: an interface method over eight parameters fails in an app compiled with profile-guided AOT). `PlayLayoutCrossfadeAsync` no longer has a default body, so an implementation still declaring the old overload fails to compile instead of silently never crossfading | #14914 | A custom `IBmotionInterop` implements both with `BmotionFlip`; one with no crossfade to play returns `ValueTask.CompletedTask` |
 | A LayoutId handed over while the old holder is still leaving crossfades (`LayoutCrossfade` default `true`) | 4 | `LayoutCrossfade="false"` |
 | Reorder lists auto-scroll near their scroller's edge (`AutoScroll` default `true`) | 4 | `AutoScroll="false"` |
 | A drag stays under the pointer when something scrolls under it | 4 | None needed (bug fix) |

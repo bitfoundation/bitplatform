@@ -99,9 +99,9 @@ dotnet test --filter "FullyQualifiedName~Dropping_the_knight"
 dotnet test --filter "FullyQualifiedName!~Every_demo_page"
 ```
 
-The workflow `.github/workflows/bit.ci.Bdnd.e2e.yml` does the same in Release, and runs the
+The workflow `.github/workflows/ci.bdnd.e2e.yml` does the same in Release, and runs the
 [publish gate](#publish-gate-trimming--aot) next to it. It is started by hand (`workflow_dispatch`) only, since the
-suite takes far longer than the build-and-unit pipeline in `bit.ci.Bdnd.yml`:
+suite takes far longer than the build-and-unit pipeline in `ci.bdnd.yml`:
 
 ```bash
 dotnet build src/Utilities/Bdnd/Demo/Server/Bit.Bdnd.Demo.Server.csproj -c Release
@@ -206,7 +206,7 @@ page and the [single target](https://bdnd.bitplatform.dev/dustbin/single) dustbi
 
 ### Publish gate (trimming / AOT)
 
-`publish-gate.sh` publishes the demo the way `bdnd.demo.cd.yml` deploys it - its WebAssembly client trimmed, and,
+`publish-gate.sh` publishes the demo the way `cd.bdnd.demo.yml` deploys it - its WebAssembly client trimmed, and,
 with the wasm-tools workload installed as the deployment has it, its runtime relinked - or, with
 `-p:RunAOTCompilation=true`, AOT-compiled, which the deployed demo is not but an app using the library may be. It
 fails on any trim/AOT analysis warning raised inside Bit.Bdnd: the trimmer's, and the trim and AOT analyzers' while
@@ -230,7 +230,7 @@ dotnet build Tests/Bit.Bdnd.Tests.E2E/Bit.Bdnd.Tests.E2E.csproj
 BDND_E2E_PUBLISHED_HOST=$PWD/../../artifacts/bdnd-demo-trimmed dotnet test --project Tests/Bit.Bdnd.Tests.E2E/Bit.Bdnd.Tests.E2E.csproj --no-build
 ```
 
-The `publish-gate` job of `bit.ci.Bdnd.e2e.yml` runs both legs, and publishes the lazy loading sample with the same
+The `publish-gate` job of `ci.bdnd.e2e.yml` runs both legs, and publishes the lazy loading sample with the same
 properties next to the demo, so `LazyLoadingTests` runs against a trimmed and an AOT-compiled sample too:
 
 ```bash

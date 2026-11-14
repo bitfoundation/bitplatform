@@ -433,7 +433,7 @@ dotnet build Utilities/Bheadless/Bit.Bheadless.slnx
 cd Utilities/Bheadless/Tests/Bit.Bheadless.Tests && dotnet test     # component, keyboard and ARIA tests (bUnit)
 ```
 
-Debug builds target .NET 11 only; pass `-p:BuildAllTfms=true` to build and test .NET 10 as well, as CI does. The browser suite (axe-core on every demo page + keyboard flows) is described in [Tests/Bit.Bheadless.Tests.E2E/README.md](Tests/Bit.Bheadless.Tests.E2E/README.md) and runs in `bit.ci.Bheadless.e2e.yml`.
+Debug builds target .NET 11 only; pass `-p:BuildAllTfms=true` to build and test .NET 10 as well, as CI does. The browser suite (axe-core on every demo page + keyboard flows) is described in [Tests/Bit.Bheadless.Tests.E2E/README.md](Tests/Bit.Bheadless.Tests.E2E/README.md) and runs in `ci.bheadless.e2e.yml`.
 
 New components should follow the APG pattern for their role, cover keyboard interaction and ARIA in tests (`ShouldBeAccessible()` on every state), and come with CSS and Tailwind demos.
 

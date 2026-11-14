@@ -1,6 +1,6 @@
 ---
 name: test-platform
-description: Test one build of bitplatform end to end on the demo host - fix what its All CI run failed on, start an All CD run at a new APP_VERSION when asked to, roll its web, Android and Windows apps out to APP_VERSION, run the Boilerplate E2E suite against the deployed demos, check that bitplatform.dev/mcp answers each release from that release's own code, check that a new bit Boilerplate project's dev container sets itself up with bit and runs the app, check that its Aspire containers are reused from one run to the next and stopped once it sits idle, on Windows and inside the dev container, check that bit diff compares two bit Boilerplate versions, and check that AI agents follow a new project's AGENTS.md and skills. It first asks which of these to do and how. Use when asked to test the platform or to start the e2e tests, or when handed an All CI and/or All CD run link.
+description: Test one build of bitplatform end to end on the demo host - fix what its All CI runs failed on, start an All Apps CD run at a new APP_VERSION when asked to, roll its web, Android and Windows apps out to APP_VERSION, run the Boilerplate E2E suite against the deployed demos, check that bitplatform.dev/mcp answers each release from that release's own code, check that a new bit Boilerplate project's dev container sets itself up with bit and runs the app, check that its Aspire containers are reused from one run to the next and stopped once it sits idle, on Windows and inside the dev container, check that bit diff compares two bit Boilerplate versions, and check that AI agents follow a new project's AGENTS.md and skills. It first asks which of these to do and how. Use when asked to test the platform or to start the e2e tests, or when handed All CI and/or All Apps CD run links.
 ---
 
 # Test the platform
@@ -39,11 +39,16 @@ Four rules for working on it:
 
 ## Inputs
 
-Up to two GitHub Actions links, in any order. Each may point at a run, one of its attempts (`/attempts/2`) or one of
+GitHub Actions links, in any order. Each may point at a run, one of its attempts (`/attempts/2`) or one of
 its jobs (`/job/<id>`); the run id is the number after `/runs/`.
 
-- An **All CI** run (`all.ci.yml`): fix what it failed on - step 1.
-- An **All CD** run (`all.cd.yml`): roll its apps out before testing them - step 2.
+- **All CI** runs: fix what they failed on - step 1. There is no single All CI any more: it is split by folder into All
+  Other CI (`all.other.ci.yml`), All Toolings CI (`all.toolings.ci.yml`) and All Utilities CI (`all.utilities.ci.yml`),
+  and a full check takes all three. The E2E suites have their own two, All Other E2E CI (`all.other.e2e.ci.yml`) and All
+  Utilities E2E CI (`all.utilities.e2e.ci.yml`). The Boilerplate's tests against PostgreSQL, MySQL and SQL Server, its
+  Workbench tests and its configuration builds are in CI Templates E2E (`ci.templates.e2e.yml`), which All Other E2E CI
+  runs, so checking the Boilerplate takes that run too.
+- An **All Apps CD** run (`all.apps.cd.yml`): roll its apps out before testing them - step 2.
 
 ```bash
 gh run view <run-id> -R bitfoundation/bitplatform --json workflowName,headBranch,headSha,attempt,conclusion,createdAt
@@ -73,32 +78,35 @@ answer, and repeat the plan back before starting:
    `bit diff` (step 7) and the agent instructions (step 8: every scenario or some, with which models, and whether
    `-Long`; it draws on the usage limits of this machine's Claude Code login, about 40 minutes per model and as much
    again with `-Long`).
-3. **The Bit packages**: nuget.org's, or the build of a Prerelease nuget packages run (`prerelease_packages`). The
+3. **The Bit packages**: nuget.org's, or the build of a CD Prerelease nuget packages run (`prerelease_packages`). The
    latter needs a successful prerelease run on the branch under test first. It publishes to nuget.org
    only what nuget.org doesn't have yet, package by package. At a version that is already there it builds packages
    and publishes only a package id that is new at that version: start it, and any later one a fix needs, without
    asking, and tell the user when the branch adds a package, since that one stays on nuget.org.
-4. **All CI**: the linked run, a new run on the branch (every job, or which ones), or none.
-5. **All CD**: the linked run, a new run (every app, or which of `server`, `wasm`, `windows`, `android` and `ios`),
-   or none, which tests what is deployed now. Say which branch and `APP_VERSION` that is, from the last All CD run
-   (`gh run list -R bitfoundation/bitplatform -w all.cd.yml -L 1`): it is often another branch than the one under test.
+4. **All CI**: the linked runs, new runs on the branch (every job, or which ones) of the three and of All Other E2E CI
+   for the Boilerplate's tests, with or without its library suites and All Utilities E2E CI, or none.
+5. **All Apps CD**: the linked run, a new run (every app, or which of `server`, `wasm`, `windows`, `android` and `ios`),
+   or none, which tests what is deployed now. Say which branch and `APP_VERSION` that is, from the last All Apps CD run
+   (`gh run list -R bitfoundation/bitplatform -w all.apps.cd.yml -L 1`): it is often another branch than the one under test.
 6. **`APP_VERSION`**, for a new CD run: raise it, and to which version, or keep it.
 7. **Steps 5 to 8**: from the commit under test (`-Sha`) or from nuget.org. With `-Sha` the other Bit packages still
    come from nuget.org at the template's version; when nuget.org's build of that version is older than the commit's
-   libraries, `-PrereleasePackages` takes them from the newest Prerelease nuget packages run instead.
+   libraries, `-PrereleasePackages` takes them from the newest CD Prerelease nuget packages run instead.
 
 Start, change or skip nothing beyond the answers, and ask nothing more once they are in: the user is often away
 until the report. Start the run's task on the Workbench (next section), then go in this order:
 
 1. The prerelease run, when asked for:
-   `gh workflow run prerelease.nuget.org.yml -R bitfoundation/bitplatform --ref <branch>`. Wait for it to succeed
+   `gh workflow run cd.prerelease.nuget.packages.yml -R bitfoundation/bitplatform --ref <branch>`. Wait for it to succeed
    (`gh run watch <run-id> -R bitfoundation/bitplatform --exit-status`) before anything that takes its packages.
-2. `APP_VERSION`, then All CI and All CD together, both with the chosen `prerelease_packages`. All CI's inputs name
-   its jobs and default to on, except `e2e` (the E2E suites), which is off; `-f <job>=false` leaves one out and
-   `-f e2e=true` adds the E2E suites. After a prerelease run that published a new version, start them once nuget.org
-   lists that version for `Bit.Minifier` and `Bit.BlazorES2019`: the library demos and their jobs take those two from
-   nuget.org even with `prerelease_packages`, and fail with NU1102 until then. Every other package comes from the
-   run's artifact, so don't wait for the rest, which nuget.org can list half an hour later.
+2. `APP_VERSION`, then the All CI runs and All Apps CD together, All Other CI, All Other E2E CI and All Apps CD with the
+   chosen `prerelease_packages`. Their inputs name their jobs and default to on; `-f <job>=false` leaves one out, so All
+   Other E2E CI with `-f blazorui=false -f bswup=false -f butil=false -f brouter=false` runs the Boilerplate's tests
+   without the library suites. Start All Utilities E2E CI only when it is asked for. After a prerelease run that
+   published a new version, start them once nuget.org lists that version for `Bit.Minifier` and `Bit.BlazorES2019`: the
+   library demos and their jobs take those two from nuget.org even with `prerelease_packages`, and fail with NU1102
+   until then. Every other package comes from the run's artifact, so don't wait for the rest, which nuget.org can list
+   half an hour later.
 3. While they run: step 1 as CI jobs fail, and steps 5 and 6, which need no CD: start each as soon as its packages
    exist, one at a time, whenever this machine has several GB free (check before each, since the CD deploys here
    too). Step 7 needs no CD and is light: do it while CI and CD run. Step 8 needs no CD either: start it in the
@@ -136,8 +144,8 @@ task. Open the task's page in this machine's browser once, and leave the Workben
 ## The helper
 
 `.github/agents/test-platform/test-platform.ps1` (PowerShell 7) does the mechanical work. It reads what is deployed
-where from the CD workflows of the Boilerplate demos (`admin-sample`, `sales-module-demo`, `todo-sample`) and of the
-platform website (`platform.website`, which serves bitplatform.dev/mcp), and from the E2E suite's `DeployedApps.cs` and
+where from the CD workflows of the Boilerplate demos (`cd.adminpanel.demo`, `cd.sales.module.demo`, `cd.todo.demo`) and of the
+platform website (`cd.platform.website`, which serves bitplatform.dev/mcp), and from the E2E suite's `DeployedApps.cs` and
 `RunTests.bat`, so it follows them instead of repeating them. Nothing else the CD deploys - the library demos, the other
 websites - is checked. Every command prints what it checked and exits non-zero on a failure.
 
@@ -146,7 +154,7 @@ websites - is checked. Every command prints what it checked and exits non-zero o
 | `versions [-Sha <sha>] [-CdRun <id or url>]` | Every IIS site, Windows app and Android app of those workflows, each Boilerplate web app - the version its nav panel shows in a fresh headless Edge - and the MCP endpoint's own version, against `APP_VERSION`. With `-CdRun`, also where that CD run took its Bit packages from. |
 | `android -CdRun <id or url>` | Downloads the run's APKs, boots the emulator when no device is up, installs them and checks their versions. |
 | `windows [-Force]` | Opens each Windows app that is behind and taps its version, which updates it and restarts it. |
-| `e2e [-Stage <stages>] [-Filter <filter>] [-PrereleasePackages]` | Signs the global admin in once, then runs the E2E suite stage by stage like `RunTests.bat` - skipping the mac's stages when its Playwright server is down or on another version - keeping each stage's log and TRX. With `-PrereleasePackages`, it builds the suite with the Bit packages of the newest Prerelease nuget packages run. |
+| `e2e [-Stage <stages>] [-Filter <filter>] [-PrereleasePackages]` | Signs the global admin in once, then runs the E2E suite stage by stage like `RunTests.bat` - skipping the mac's stages when its Playwright server is down or on another version - keeping each stage's log and TRX. With `-PrereleasePackages`, it builds the suite with the Bit packages of the newest CD Prerelease nuget packages run. |
 | `mcp [-McpVersion <x.y.z>] [-Tool <name> -Arguments <json>] [-AllLibraries]` | One `tools/list` or `tools/call` on `https://bitplatform.dev/mcp`. `-AllLibraries` lists every bit library's tools, as the website's chat does; without it BlazorUI's and Butil's are the only library tools listed. |
 | `devcontainer [-Sha <sha> [-PrereleasePackages]] [-Framework <tfm>] [-Keep]` | Creates a project with `bit new`, for the template's default .NET or the one `-Framework` names, brings its dev container up with the devcontainers CLI and runs `bit doctor` in it, with bit and the template from that commit or from nuget.org. Then removes the container, its volumes and its image, and keeps the logs. |
 | `aspire [-Sha <sha> [-PrereleasePackages]] [-Framework <tfm>] [-Keep]` | Creates a project with `bit new` the same way and runs its Aspire app host three times with `dotnet run`: the second run must reuse the first one's containers, they must stop once the app host has sat idle for its idle time, and the third run must bring them back on the same volumes. Then removes the project, its containers and their volumes, and keeps the logs. |
@@ -184,9 +192,9 @@ websites - is checked. Every command prints what it checked and exits non-zero o
 
    A test that needs what the job generated - another database, `--module Admin`, `--advancedTests` - needs the same
    project: pack the template and the CLI the way `.github/actions/setup-bit-cli` does, then replay the job's
-   `bit new ...` line from `all.ci.yml` with `--template-package` in a scratch folder outside the repository, with the
+   `bit new ...` line from `ci.templates.e2e.yml` with `--template-package` in a scratch folder outside the repository, with the
    job's database in Docker and the job's connection string (`ConnectionStrings__mssqldb` and the like, in
-   `all.ci.yml`).
+   `ci.templates.e2e.yml`).
 
    Run a flaky test often enough to watch it fail before the fix and not after - under load, when the failure is
    about timing.
@@ -228,7 +236,7 @@ websites - is checked. Every command prints what it checked and exits non-zero o
      runner proves nothing; compare a step's duration with an earlier run's instead.
    - Afterwards remove the containers, volumes and leftover `dcp` processes the repro left, never another
      project's containers.
-   - A Prerelease nuget packages run signs the libraries with the release key, which no other build uses. A library
+   - A CD Prerelease nuget packages run signs the libraries with the release key, which no other build uses. A library
      that grants its internals to another one under the repository's key alone builds everywhere else and fails
      there with CS0281; it has to name both keys.
    - A trimmed publish that crashes ILLink with a stack overflow on a new .NET points at one type the trimmer keeps
@@ -241,7 +249,7 @@ websites - is checked. Every command prints what it checked and exits non-zero o
      starts and finishes, run the job a few times on a branch of your own, and read what was still in flight. A
      network idle that never comes with nothing in flight is Chromium's event, not the app.
    - A library's E2E failure on another branch than develop: run that library's E2E workflow on develop too
-     (`gh workflow run bit.ci.<Library>.e2e.yml --ref develop`) before calling it the branch's own. New tests of a
+     (`gh workflow run ci.<library>.e2e.yml --ref develop`) before calling it the branch's own. New tests of a
      library sometimes reach develop without ever passing in CI.
    - A failure only one branch has can come from its runner image rather than its code: compare the jobs' `runs-on`.
      A newer Ubuntu ships a newer ICU, whose culture data changes formatting, such as the calendar a culture uses
@@ -255,7 +263,7 @@ websites - is checked. Every command prints what it checked and exits non-zero o
    - A Prerelease run that stops at `dotnet pack` with CP0002 met a public API that a merge changed without its
      `CompatibilitySuppressions.xml`. `dotnet build` the project with `-p:GeneratePackageOnBuild=false` first, as the
      workflow does, or the pack fails with NU5026, then pack with `-p:ApiCompatGenerateSuppressionFile=true` and put
-     back the BOM it drops. Only packing validates: All CD and a demo's Release build still go through.
+     back the BOM it drops. Only packing validates: All Apps CD and a demo's Release build still go through.
    - A template conditional that stays in a generated project at random, and only in CI, comes from the template
      engine's one conditional switch for all `.cs` files: a file that ends with it off leaves it off for the next one,
      unless that one starts with `//+:cnd:noEmit`. A template in a folder is read in the file system's order, which on
@@ -276,12 +284,13 @@ websites - is checked. Every command prints what it checked and exits non-zero o
 
    Put the run's fixes in one issue and one PR, cut from develop when they apply there and from bit11 otherwise, not
    on the branch under test: only a fix to that branch's own changes goes on it. Push to a branch of your own without
-   asking, for the user to review with the report; ask before pushing to anyone else's. A CI run on the pushed branch
-   is the final proof: `gh workflow run all.ci.yml -R bitfoundation/bitplatform --ref <branch>`. Re-running a failed
+   asking, for the user to review with the report; ask before pushing to anyone else's. The All CI runs on the pushed
+   branch are the final proof: `gh workflow run <file> -R bitfoundation/bitplatform --ref <branch>` for `all.other.ci.yml`,
+   `all.toolings.ci.yml` and `all.utilities.ci.yml`, since no one run covers them all, and `ci.templates.e2e.yml` for a
+   Boilerplate fix. Re-running a failed
    job (`gh run rerun <run-id> --failed`) tells flaky from broken, and proves nothing about a fix. It has to wait for
-   the whole run to end, which the E2E suites can hold up for hours: a new All CI with every other job off answers
-   sooner. A push to a branch
-   with an open PR also starts that PR's CI workflows; cancel the ones All CI runs anyway, so the runners go to it.
+   the whole run to end: a new run with every other job off answers sooner. A push to a branch
+   with an open PR also starts that PR's CI workflows; cancel the ones the All CI runs cover anyway, so the runners go to it.
 
    A fix in a bit library - any `Bit.*` project other than the Boilerplate template, its tests, demos and samples
    included - gets an issue and a PR of its own instead, so its owners review it. Fixes to the Boilerplate, to the
@@ -291,12 +300,12 @@ This machine has four cores and serves the demos too, so a local build or test r
 
 ## 2. The CD run: every app at APP_VERSION
 
-**Starting one.** All CD deploys to the live demos and the stores, so start it only when the user asks. It builds the
+**Starting one.** All Apps CD deploys to the live demos and the stores, so start it only when the user asks. It builds the
 branch it is started on.
 
 ```bash
 gh variable set APP_VERSION -R bitfoundation/bitplatform --body <new version>
-gh workflow run all.cd.yml -R bitfoundation/bitplatform --ref <branch> -f prerelease_packages=<true|false>
+gh workflow run all.apps.cd.yml -R bitfoundation/bitplatform --ref <branch> -f prerelease_packages=<true|false>
 ```
 
 Raise `APP_VERSION` first, to the version the user names or the next one: Google Play refuses a bundle whose version
@@ -357,18 +366,18 @@ the account's runners, not a broken build: re-run the failed jobs later. When a 
 nuget.org already has the same build of the Bit packages, that demo's own CD workflow without `prerelease_packages`
 delivers it instead.
 
-**Bit packages.** All CD has a `prerelease_packages` option. With it, the Boilerplate demos and the platform website
-are built with the Bit packages of the latest Prerelease nuget packages run (`prerelease.nuget.org.yml`) instead of
+**Bit packages.** All Apps CD has a `prerelease_packages` option. With it, the Boilerplate demos and the platform website
+are built with the Bit packages of the latest CD Prerelease nuget packages run (`cd.prerelease.nuget.packages.yml`) instead of
 nuget.org's, and each job that took them leaves a "Bit packages" notice naming that run's branch and commit. `versions`
 reads those notices when given the CD run. Say where the packages came from next to the versions table: a library
 change is on the demos only when it names the branch that has it.
 
-Every Prerelease nuget packages run, on any branch, uploads all the packages it built as its `nupkg-files` artifact,
+Every CD Prerelease nuget packages run, on any branch, uploads all the packages it built as its `nupkg-files` artifact,
 and each job of a CD or CI run with `prerelease_packages` takes the newest unexpired one when that job starts. So a
 prerelease run that finishes in the middle of a CD run hands the jobs that start after it another build, maybe of
 another branch: compare the jobs' notices. The prerelease run also pushes its packages to nuget.org, skipping every
 version nuget.org already has, so a second run at the same version changes nothing there and its build lives only in
-its artifact. All CI's `prerelease_packages` option works the same way for its template and website jobs. So when a
+its artifact. The `prerelease_packages` option of All Other CI and All Other E2E CI works the same way for their template and website jobs. So when a
 template fix uses a library change that nuget.org's build of the version doesn't have, everything here passes while
 the fix's own PR, built with nuget.org's packages, fails until the next prerelease version: say so in the report and in
 the PR. The push also stops at the first package nuget.org refuses, and every package after it stays off nuget.org:
@@ -466,12 +475,12 @@ with a publish of the commit the expected sizes were measured on. The service wo
 included, report no size to Playwright, so the total leaves them out.
 
 Two gaps of third-party libraries on .NET 11 are known: the template's MySQL provider doesn't work there, and
-CommunityToolkit.Datasync doesn't sync. That is why All CI's MySQL job and the offline Todo demo build .NET 10
+CommunityToolkit.Datasync doesn't sync. That is why the MySQL job of CI Templates E2E and the offline Todo demo build .NET 10
 projects. A .NET 11 project that uses either fails by design: report it as known and don't triage it. Check them
 again once those libraries support .NET 11.
 
 **A fix is proven only by the next CD.** The suite tests the deployed build, so a fix to the template or to a demo
-reaches it only through another All CD run on the fixed commit. Verify what can be verified locally, commit, and say
+reaches it only through another All Apps CD run on the fixed commit. Verify what can be verified locally, commit, and say
 plainly which failures stay until that CD.
 
 **Trying an Android fix before its CD.** Build the template tree's `Client.Maui` against the live AdminPanel: point
@@ -488,8 +497,8 @@ storage setting, run `am clear-debug-app`, remove `/data/local/tmp/chrome-comman
 and `adb emu kill` if the emulator was off before.
 
 A fix in a bit library does not have to wait for its release: the demos take the libraries as packages, and
-`prerelease_packages` swaps nuget.org's for the fix's. Ask the user to run Prerelease nuget packages on the fix's
-branch and then All CD with that option, with no other prerelease run finishing in between. Both branches have to be
+`prerelease_packages` swaps nuget.org's for the fix's. Ask the user to run CD Prerelease nuget packages on the fix's
+branch and then All Apps CD with that option, with no other prerelease run finishing in between. Both branches have to be
 on the same version in `src/Bit.Build.props`; otherwise the action stops before it changes anything and names both
 versions.
 
@@ -560,7 +569,7 @@ devcontainers CLI brings its container up, and `bit doctor` runs inside it.
   before that, `dotnet nuget locals http-cache --clear`.
   `dotnet tool install` finds a new Bit.Cli a few minutes after the package itself is listed, so "bit could not
   be installed" right after a publish is that wait; `dotnet tool search Bit.Cli --prerelease` shows when it ends.
-- `-PrereleasePackages` puts the packages of the newest Prerelease nuget packages run into that feed too, bit's
+- `-PrereleasePackages` puts the packages of the newest CD Prerelease nuget packages run into that feed too, bit's
   aside, and maps every `Bit.*` to it: a template that already uses library changes nuget.org's build of its version
   doesn't have compiles against them.
 - It's heavy: a few GB in the container engine's VM and about ten minutes, most of them for the container's image and the

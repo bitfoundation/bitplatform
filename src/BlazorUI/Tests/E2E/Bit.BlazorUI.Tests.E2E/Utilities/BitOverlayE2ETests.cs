@@ -390,6 +390,24 @@ public class BitOverlayE2ETests : E2ETestBase
     }
 
     [TestMethod]
+    public async Task Focus_MovedOutsideWhileOpen_IsLeftWhereItWasMovedWhenTheOverlayCloses()
+    {
+        await OpenAsync(Route);
+
+        await Page.ClickAsync("#btn-open-dismiss");
+        await Expect(Page.Locator("#dismiss-opened")).ToHaveTextAsync("1");
+
+        // The focus is moved somewhere outside the Overlay of the page's own accord: it is no longer the Overlay's to
+        // hand back, so closing the Overlay leaves it there rather than pulling it back to the opener.
+        await Page.FocusAsync("#btn-toggle-blocking");
+        await Page.Keyboard.PressAsync("Escape");
+        await Expect(Page.Locator("#dismiss-open")).ToHaveTextAsync("False");
+
+        await Page.WaitForTimeoutAsync(300);
+        await Expect(Page.Locator("#btn-toggle-blocking")).ToBeFocusedAsync();
+    }
+
+    [TestMethod]
     public async Task Escape_TwoOpenOverlays_ClosesTheTopmostFirst()
     {
         await OpenAsync(Route);

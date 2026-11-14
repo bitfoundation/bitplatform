@@ -1,0 +1,78 @@
+﻿@page "/e2e/panel-service"
+@inject BitPanelService PanelService
+
+@* Panels shown from code through BitPanelService: a side panel with a header and a close button whose content closes it
+   with a result; a guarded one; and a bottom sheet. Each writes what its Result completed with, and whether it was
+   dismissed, into lines of its own. *@
+
+<PageTitle>BitPanelService E2E</PageTitle>
+
+<h1>BitPanelService</h1>
+
+<button id="show-panel" @onclick="ShowPanel">Show panel</button>
+<button id="show-guarded" @onclick="ShowGuarded">Show guarded</button>
+<button id="show-sheet" @onclick="ShowSheet">Show sheet</button>
+<label><input id="allow-close" type="checkbox" @bind="_allowClose" /> Allow closing</label>
+
+<span id="result">@_result</span>
+<span id="dismissed">@_dismissed</span>
+
+<BitPanelContainer />
+
+<div style="position: fixed; right: 8px; top: 8px;">
+    <E2EStatus />
+</div>
+
+@code {
+    private string? _result;
+    private string? _dismissed;
+    private bool _allowClose;
+
+    private async Task ShowPanel()
+    {
+        var panel = await PanelService.Show(p => @<div>
+                <p id="panel-text">Shown from code</p>
+                <button id="panel-done" @onclick="@(() => p.CloseWith("done"))">Done</button>
+            </div>, new BitPanelParameters { HeaderText = "From code", ShowCloseButton = true, Placement = BitPlacement.End, Size = 320, Class = "e2e-svc-panel" });
+
+        await Track(panel);
+    }
+
+    private async Task ShowGuarded()
+    {
+        var panel = await PanelService.Show(p => @<p>Guarded</p>, new BitPanelParameters
+        {
+            HeaderText = "Guarded",
+            ShowCloseButton = true,
+            Class = "e2e-svc-guarded",
+            CanClose = () => Task.FromResult(_allowClose),
+        });
+
+        await Track(panel);
+    }
+
+    private async Task ShowSheet()
+    {
+        var panel = await PanelService.Show(p => @<p>A sheet</p>, new BitPanelParameters
+        {
+            HeaderText = "Sheet",
+            Placement = BitPlacement.Bottom,
+            SnapPoints = [0.3, 0.6],
+            Class = "e2e-svc-sheet",
+        });
+
+        await Track(panel);
+    }
+
+    private async Task Track(BitPanelReference panel)
+    {
+        _result = "open";
+        _dismissed = null;
+
+        var result = await panel.Result;
+
+        _result = result?.ToString() ?? "null";
+        _dismissed = panel.IsDismissed.ToString();
+        StateHasChanged();
+    }
+}

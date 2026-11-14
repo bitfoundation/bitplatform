@@ -330,15 +330,16 @@ internal sealed class FakeBmotionInterop : IBmotionInterop
     }
 
     public ValueTask PlayWaapiFlipAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(
-        string elementId, double dx, double dy, double sx, double sy, double durationMs, string easingStr,
-        string? finalTransform, double originX, double originY, DotNetObjectReference<T>? dotnetRef) where T : class
+        string elementId, BmotionFlip flip, string? finalTransform, DotNetObjectReference<T>? dotnetRef) where T : class
     {
         if (dotnetRef is not null)
         {
             FlipRefs[elementId] = dotnetRef.Value;
             FlipReferences[elementId] = dotnetRef;
         }
-        Record("playWaapiFlip", elementId, dx, dy, sx, sy, durationMs, easingStr, finalTransform, originX, originY);
+        // Flattened by the real bridge's own code, so the order recorded is the order it sends
+        // (BmotionInteropTests pins that order against playWaapiFlip's parameters).
+        Record("playWaapiFlip", BmotionInterop.WaapiFlipArgs(elementId, flip, finalTransform, dotnetRef));
         return ValueTask.CompletedTask;
     }
 
@@ -356,10 +357,9 @@ internal sealed class FakeBmotionInterop : IBmotionInterop
         return ValueTask.CompletedTask;
     }
 
-    public ValueTask PlayLayoutCrossfadeAsync(string leadId, string followId, double dx, double dy, double sx, double sy,
-        double durationMs, string easingStr, double originX, double originY)
+    public ValueTask PlayLayoutCrossfadeAsync(string leadId, string followId, BmotionFlip flip)
     {
-        Record("playLayoutCrossfade", leadId, followId, dx, dy, sx, sy, durationMs, easingStr, originX, originY);
+        Record("playLayoutCrossfade", BmotionInterop.LayoutCrossfadeArgs(leadId, followId, flip));
         return ValueTask.CompletedTask;
     }
 

@@ -68,7 +68,7 @@ dotnet test --filter "FullyQualifiedName~Removing_the_last_line"
 dotnet test --filter "FullyQualifiedName!~Every_demo_page"
 ```
 
-The workflow `.github/workflows/bit.ci.Borm.e2e.yml` does the same in Release:
+The workflow `.github/workflows/ci.borm.e2e.yml` does the same in Release:
 
 ```bash
 dotnet build src/Utilities/Borm/Demo/Server/Bit.Borm.Demo.Server.csproj -c Release

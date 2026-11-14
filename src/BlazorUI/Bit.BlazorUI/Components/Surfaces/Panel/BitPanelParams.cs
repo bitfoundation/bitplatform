@@ -77,6 +77,11 @@ public partial class BitPanelParams : BitComponentBaseParams, IBitComponentParam
     public bool? FullSize { get; set; }
 
     /// <summary>
+    /// The name of the grabber of a bottom sheet, as a composite format string: {0} is the snap point it is at, {1} how many.
+    /// </summary>
+    public string? GrabberAriaLabelFormat { get; set; }
+
+    /// <summary>
     /// Reports the panel to assistive technologies as an alert dialog.
     /// </summary>
     public bool? IsAlert { get; set; }
@@ -157,6 +162,12 @@ public partial class BitPanelParams : BitComponentBaseParams, IBitComponentParam
     public double? Size { get; set; }
 
     /// <summary>
+    /// The heights a panel at the bottom of the screen settles at, from the smallest to the largest: a value of 1 or less
+    /// is a fraction of the height of the viewport, a larger one a height in pixels.
+    /// </summary>
+    public IReadOnlyList<double>? SnapPoints { get; set; }
+
+    /// <summary>
     /// Custom CSS styles for different parts of the panel.
     /// </summary>
     public BitPanelClassStyles? Styles { get; set; }
@@ -224,6 +235,11 @@ public partial class BitPanelParams : BitComponentBaseParams, IBitComponentParam
         if (CloseIconName.HasValue())
         {
             bitPanel.TakeFromCascade(nameof(CloseIconName), CloseIconName, static p => p.CloseIconName, static (p, v) => p.CloseIconName = v);
+        }
+
+        if (GrabberAriaLabelFormat.HasValue())
+        {
+            bitPanel.TakeFromCascade(nameof(GrabberAriaLabelFormat), GrabberAriaLabelFormat, static p => p.GrabberAriaLabelFormat, static (p, v) => p.GrabberAriaLabelFormat = v);
         }
 
         if (FullSize.HasValue)
@@ -314,6 +330,11 @@ public partial class BitPanelParams : BitComponentBaseParams, IBitComponentParam
         if (Styles is not null)
         {
             bitPanel.TakeFromCascade(nameof(Styles), Styles, static p => p.Styles, static (p, v) => p.Styles = v);
+        }
+
+        if (SnapPoints is not null)
+        {
+            bitPanel.TakeFromCascade(nameof(SnapPoints), SnapPoints, static p => p.SnapPoints, static (p, v) => p.SnapPoints = v);
         }
 
         if (SwipeTrigger.HasValue)

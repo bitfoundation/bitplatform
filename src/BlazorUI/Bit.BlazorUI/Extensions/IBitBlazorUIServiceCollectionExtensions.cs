@@ -57,6 +57,16 @@ public static class IBitBlazorUIServiceCollectionExtensions
             services.TryAddScoped(sp => new BitModalService(sp.GetService<ILoggerFactory>()));
         }
 
+        // The modal service of panels, registered the same way for the same reasons.
+        if (trySingleton)
+        {
+            services.TryAddSingleton(sp => new BitPanelService(sp.GetService<ILoggerFactory>()));
+        }
+        else
+        {
+            services.TryAddScoped(sp => new BitPanelService(sp.GetService<ILoggerFactory>()));
+        }
+
         // Scoped for the same reason as the modal service: the host it shows through belongs to one circuit.
         if (trySingleton)
         {

@@ -147,9 +147,10 @@ internal sealed class HeadlessBmotionInterop : IBmotionInterop
         => ValueTask.FromResult<BmotionBoundingRect?>(null);
 
     public ValueTask PlayWaapiFlipAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(
-        string elementId, double dx, double dy, double sx, double sy, double durationMs, string easingStr,
-        string? finalTransform, double originX, double originY, DotNetObjectReference<T>? dotnetRef) where T : class
+        string elementId, BmotionFlip flip, string? finalTransform, DotNetObjectReference<T>? dotnetRef) where T : class
         => ValueTask.CompletedTask;
+
+    public ValueTask PlayLayoutCrossfadeAsync(string leadId, string followId, BmotionFlip flip) => ValueTask.CompletedTask;
 
     // -- Reading the page ------------------------------------------------------
 

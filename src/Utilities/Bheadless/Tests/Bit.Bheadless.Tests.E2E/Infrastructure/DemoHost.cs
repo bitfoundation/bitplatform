@@ -1,7 +1,7 @@
 ﻿namespace Bit.Bheadless.Tests.E2E.Infrastructure;
 
 /// <summary>
-/// The demo server every test drives: Bit.Bheadless.Demo.Server published the way bheadless.demo.cd.yml
+/// The demo server every test drives: Bit.Bheadless.Demo.Server published the way cd.bheadless.demo.yml
 /// publishes it, started on a free port, once for the whole run. Every test opens its own browser context (its own
 /// storage and WebAssembly instance, or its own circuit), so sharing the process shares nothing.
 /// </summary>
@@ -66,7 +66,7 @@ public sealed class DemoHost : IAsyncDisposable
     private static string DotNet => Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") is { Length: > 0 } host ? host : "dotnet";
 
     /// <summary>
-    /// bheadless.demo.cd.yml's publish (less its version stamp), into a folder next to the test binaries. The
+    /// cd.bheadless.demo.yml's publish (less its version stamp), into a folder next to the test binaries. The
     /// Server mode leaves the WebAssembly client out (<c>-p:IncludeWasm=false</c>), and App.razor then renders every page
     /// on a circuit. Run from the demo's folder so src/global.json picks the SDK, as it does for CI's step.
     /// </summary>

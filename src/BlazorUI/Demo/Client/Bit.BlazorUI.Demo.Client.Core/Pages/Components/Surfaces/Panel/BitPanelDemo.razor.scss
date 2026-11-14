@@ -8,6 +8,12 @@
     max-width: max-content;
 }
 
+// A row of the list a bottom sheet holds.
+.sheet-row {
+    padding: rem2(12px) 0;
+    border-bottom: 1px solid $bit-color-border-secondary;
+}
+
 // The switches an example is set up with before its panel is opened.
 .controls {
     gap: rem2(16px) rem2(32px);

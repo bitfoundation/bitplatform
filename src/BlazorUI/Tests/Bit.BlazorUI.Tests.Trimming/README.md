@@ -73,7 +73,7 @@ dotnet exec bin/Debug/net11.0/Bit.BlazorUI.Tests.Trimming.dll
 `dotnet run`; filter as usual (`dotnet test --filter "FullyQualifiedName~ServerAppTrimmingTests"`). The publishes take
 about ten minutes in all, without the opt-in tests below.
 
-CI runs it with both variables below set, in the `trimming` job of `.github/workflows/bit.ci.BlazorUI.e2e.yml`.
+CI runs it with both variables below set, in the `trimming` job of `.github/workflows/ci.blazorui.e2e.yml`.
 
 | Variable | Adds |
 | --- | --- |

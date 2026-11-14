@@ -16,8 +16,9 @@
 //   --bit-Panel-padding              inset of the header, the body and the footer       (default: $spa-dialog)
 //   --bit-Panel-header-font-size     text size of the header                            (default: $tg-fs-xl)
 //   --bit-Panel-header-font-weight   weight of the header                               (default: $tg-fw-semibold)
+//   --bit-Panel-grabber-color        bar of the grabber of a bottom sheet               (default: $clr-brd-pri)
 
-$pnl-private-properties: zin-ovl, zin-cnt;
+$pnl-private-properties: zin-ovl, zin-cnt, snp;
 
 .bit-pnl {
     // What the component writes into an inline style starts out unset on every root, so an instance nested in
@@ -380,10 +381,67 @@ $pnl-private-properties: zin-ovl, zin-cnt;
                 visibility 0s linear 0s;
 }
 
+// A bottom sheet with snap points is as tall as the snap point it is at (--bit-pnl-snp, written by the component and by
+// the swipe script as a drag settles), up to the whole of the screen: the cap that leaves a strip of the page showing is
+// the snap points' to set. The height is animated as the sheet moves from one to another, on top of the slide in and
+// out of the open state.
+.bit-pnl-snp {
+    max-height: 100%;
+    height: var(--bit-pnl-snp);
+
+    &.bit-pnl-opn {
+        transition: height $mot-duration $mot-easing,
+                    transform $mot-duration $mot-easing-decelerate,
+                    opacity $mot-duration-short $mot-easing-decelerate,
+                    visibility 0s linear 0s;
+    }
+}
+
+// The grabber of a bottom sheet: a bar at its top edge the sheet is dragged by, which is also a button. It stays at the
+// top of a panel whose own content scrolls, and takes no touch gesture from the swipe that drags the sheet by it. The
+// bar is small, the button around it is a target of a comfortable size (WCAG 2.5.8).
+.bit-pnl-grb {
+    top: 0;
+    margin: 0;
+    z-index: 1;
+    width: 100%;
+    border: none;
+    display: flex;
+    flex-shrink: 0;
+    cursor: grab;
+    padding: spacing(1) 0;
+    position: sticky;
+    touch-action: none;
+    align-items: center;
+    justify-content: center;
+    min-height: spacing(3);
+    background-color: var(--bit-Panel-background, #{$clr-bg-pri});
+    -webkit-tap-highlight-color: transparent;
+
+    &:focus-visible {
+        @include focus-ring-inset(#{$clr-pri-focus});
+    }
+
+    &:disabled {
+        cursor: default;
+    }
+}
+
+.bit-pnl-grh {
+    height: 4px;
+    border-radius: 2px;
+    width: spacing(4.5);
+    background-color: var(--bit-Panel-grabber-color, #{$clr-brd-pri});
+}
 // A forced-colors mode throws away the shadow the panel casts and the tint of its overlay, which between them
 // are the whole of what tells the panel apart from the page beside it. The rule on the side it turns towards
 // the page is drawn instead, in the system text color, so the panel still reads as a surface with an edge.
 @media (forced-colors: active) {
+    // The bar of the grabber is a fill, which the mode would throw away along with the rest of the colors.
+    .bit-pnl-grh {
+        background-color: CanvasText;
+    }
+
     .bit-pnl-cnt {
         --bit-pnl-edge: #{$shp-border-width} #{$shp-border-style} CanvasText;
     }
