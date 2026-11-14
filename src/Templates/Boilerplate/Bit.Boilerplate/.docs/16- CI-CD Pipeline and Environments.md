@@ -60,7 +60,7 @@ SDK, workloads, NuGet packages, Playwright's browsers and Android SDK that `bit 
 nothing again. act runs them on a copy of the project's files without what `.gitignore` leaves out, such as `bin` and
 `obj`: each run builds from scratch, and the app can keep running from the project's folder meanwhile. On Windows the
 steps run in PowerShell 7 rather than bash, so `ci.yml`'s commands are ones both run. The CI each CD runs on GitHub's Linux
-runners is still the clean check. `bit setup` installs act along with the rest. Extra arguments go to act as they are,
+runners is still the clean check. `bit setup` installs act and PowerShell 7 along with the rest. Extra arguments go to act as they are,
 such as `bit ci -- --list`. To run it on GitHub instead: `gh workflow run ci.yml --ref <branch>`.
 
 In a public repository, every build also gets a signed attestation of the commit and the run that made it, which

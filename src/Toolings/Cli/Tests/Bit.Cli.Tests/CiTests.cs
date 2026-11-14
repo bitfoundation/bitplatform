@@ -103,7 +103,7 @@ public class CiTests
 
         Assert.AreEqual(CliApp.ExitFailed, await host.RunAsync("ci"));
         StringAssert.Contains(host.FlatOutput, "bit setup --tools act");
-        StringAssert.Contains(host.FlatOutput, "https://aka.ms/install-powershell");
+        StringAssert.Contains(host.FlatOutput, "bit setup --tools pwsh");
         Assert.IsFalse(host.Runner.Calls.Any(c => c.FileName == "act"));
     }
 
