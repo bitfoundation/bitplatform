@@ -74,7 +74,6 @@ public partial class ExtrasSection
     // The calendar view the user picked; until then the default for the screen.
     private BitFullCalendarView? pickedView;
 
-    [AutoInject] private BitSnackBarService bitSnackBarService = default!;
 
     // Texts the samples share.
     private string SaveText => AppLocalizer[nameof(AppStrings.Save)];
@@ -519,11 +518,11 @@ public partial class ExtrasSection
 
     private Task OpenOrderMenu(BitLongPressEventArgs args) => orderMenu?.OpenAt(args.ClientX, args.ClientY) ?? Task.CompletedTask;
 
-    private async Task ShowSnackBars()
+    private void ShowSnackBars()
     {
-        await bitSnackBarService.Success(Localizer[nameof(WorkbenchStrings.ThemeSuccess)], Localizer[nameof(WorkbenchStrings.ThemeMessage), BitColor.Success]);
-        await bitSnackBarService.Warning(Localizer[nameof(WorkbenchStrings.ThemeWarning)], Localizer[nameof(WorkbenchStrings.ThemeMessage), BitColor.Warning]);
-        await bitSnackBarService.Error(Localizer[nameof(WorkbenchStrings.ThemeError)], Localizer[nameof(WorkbenchStrings.ThemeMessage), BitColor.Error]);
+        SnackBarService.Success(Localizer[nameof(WorkbenchStrings.ThemeSuccess)], Localizer[nameof(WorkbenchStrings.ThemeMessage), BitColor.Success]);
+        SnackBarService.Warning(Localizer[nameof(WorkbenchStrings.ThemeWarning)], Localizer[nameof(WorkbenchStrings.ThemeMessage), BitColor.Warning]);
+        SnackBarService.Error(Localizer[nameof(WorkbenchStrings.ThemeError)], Localizer[nameof(WorkbenchStrings.ThemeMessage), BitColor.Error]);
     }
 
     private void OnPhoneChanged(bool phone) => isPhone = phone;

@@ -312,13 +312,6 @@
                                        UnreadItemText="@Localizer[nameof(WorkbenchStrings.ThemeNotificationsNew)]" />
                 <BitButton Variant="BitVariant.Outline" IconName="@BitIconName.Feedback" OnClick="ShowSnackBars">@Localizer[nameof(WorkbenchStrings.ThemeOverlaySnackBar)]</BitButton>
             </div>
-            <BitSnackBar ServiceHost
-                         Multiline
-                         AutoDismiss
-                         MaxItems="3"
-                         OverflowBehavior="BitSnackBarOverflowBehavior.Queue"
-                         Position="BitPosition.TopCenter"
-                         AutoDismissTime="TimeSpan.FromSeconds(10)" />
         </StateSample>
     </ComponentStates>
 
