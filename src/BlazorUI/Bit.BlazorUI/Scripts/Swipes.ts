@@ -53,6 +53,16 @@
             // down, which getX and getY read), so a touchcancel that takes away another finger is told apart from one
             // that takes away the gesture's own.
             let touchId: number | null = null;
+            // The snap points of a bottom sheet (BitPanel's SnapPoints), read off the element when a gesture starts so a
+            // sheet given new ones is followed: each as the value it was given (a fraction of the viewport's height, or
+            // pixels) and the height in pixels it stands for. Null on every other surface, which this leaves as it was.
+            let snaps: { raw: number, px: number }[] | null = null;
+            // The height of the sheet when the gesture started: the snap point it was at.
+            let startHeight = 0;
+            // Whether the gesture started on the sheet's grabber (data-bit-swipe-handle), which drags the sheet whatever
+            // its content is scrolled to, and whose click a drag ends in is not a press of it.
+            let fromHandle = false;
+            let moved = false;
 
             // The physical edge the surface is pinned to: the logical pair is read against the direction it is
             // laid out in, the physical pair stays where it is named in both.
@@ -67,6 +77,21 @@
             const getX = (e: TouchEvent | PointerEvent) => isTouch(e) ? e.touches[0].screenX : e.clientX;
             const getY = (e: TouchEvent | PointerEvent) => isTouch(e) ? e.touches[0].screenY : e.clientY;
 
+            const readSnaps = () => {
+                if (position !== 'bottom') return null;
+
+                const value = element.getAttribute('data-bit-snaps');
+                if (!value) return null;
+
+                const points = value.split(' ').map(Number).filter(v => v > 0 && isFinite(v));
+                if (points.length === 0) return null;
+
+                return points.map(raw => ({ raw, px: raw <= 1 ? raw * window.innerHeight : raw }));
+            };
+
+            // The CSS height a snap point stands for, written exactly as the component writes it (BitPanel.ToSnapHeight).
+            const toSnapHeight = (raw: number) => raw <= 1 ? `${raw * 100}dvh` : `${raw}px`;
+
             const onStart = async (e: TouchEvent | PointerEvent): Promise<void> => {
                 if (belongsElsewhere(e.target)) return;
 
@@ -79,6 +104,11 @@
                 startY = getY(e);
 
                 bcr = element.getBoundingClientRect();
+
+                snaps = readSnaps();
+                startHeight = bcr.height;
+                fromHandle = e.target instanceof Element && e.target.closest('[data-bit-swipe-handle]') !== null;
+                moved = false;
 
                 element.style.transitionDuration = '0s';
                 originalTransform = element.style.transform;
@@ -102,6 +132,7 @@
                 const absY = Math.abs(diffY);
                 const thresX = absX > 5;
                 const thresY = absY > 5;
+                if (thresX || thresY) moved = true;
 
 
                 if (orientation === BitSwipeOrientation.None) {
@@ -154,7 +185,27 @@
                     }
                 }
 
-                if (position === 'bottom') {
+                if (position === 'bottom' && snaps) {
+                    // A bottom sheet with snap points follows the finger up and down between the smallest and the largest,
+                    // and slides off the screen below the smallest, the way a sheet without them is dismissed. A content
+                    // scrolled down is scrolled back first, unless the sheet is held by its grabber.
+                    if (diffY > 0 && !fromHandle && canScrollAway()) {
+                        element.style.height = '';
+                        element.style.transform = originalTransform;
+                    } else {
+                        const min = snaps[0].px;
+                        const max = snaps[snaps.length - 1].px;
+                        const height = startHeight - diffY;
+
+                        if (height >= min) {
+                            element.style.height = `${Math.min(height, max)}px`;
+                            element.style.transform = originalTransform;
+                        } else {
+                            element.style.height = `${min}px`;
+                            element.style.transform = `translateY(${min - height}px)`;
+                        }
+                    }
+                } else if (position === 'bottom') {
                     if (diffY > 0 && !canScrollAway()) {
                         element.style.transform = `translateY(${diffY}px)`;
                     } else {
@@ -206,7 +257,58 @@
                 startX = startY = -1;
                 gestureSource = null;
                 element.style.transitionDuration = '';
+
+                // A drag that started on the grabber ends in a click on it, which is not a press of the button: the press
+                // moves the sheet to the next snap point, and the drag has already put it where it was let go.
+                if (fromHandle && moved) swallowNextClick();
+
                 try {
+                    if (position === 'bottom' && snaps && diffY !== 0) {
+                        const scrollableNow = element.scrollHeight - element.clientHeight;
+                        const scrolledNow = !fromHandle && scrollableNow > 1 && element.scrollTop > 1;
+
+                        if (!scrolledNow) {
+                            const points = snaps;
+                            const min = points[0].px;
+                            const height = startHeight - diffY;
+
+                            if (height < min && (min - height) / min > trigger) {
+                                // The height the sheet was dragged down to is kept while it slides away, and given back to
+                                // its snap point once it is gone, so the next time it opens it is the height it was at.
+                                const restore = () => { element.style.height = ''; };
+                                element.addEventListener('transitionend', restore, { once: true });
+                                window.setTimeout(restore, 1000);
+
+                                return await dotnetObj.invokeMethodAsync('OnClose');
+                            }
+
+                            let target = 0;
+                            let nearest = Infinity;
+                            points.forEach((point, i) => {
+                                const distance = Math.abs(point.px - height);
+                                if (distance < nearest) {
+                                    nearest = distance;
+                                    target = i;
+                                }
+                            });
+
+                            // The sheet moves to the snap point it was let go nearest to, and settles at the one the
+                            // component answers with: the app may hold it where it was (a SnapPoint bound one way).
+                            element.style.height = `${points[target].px}px`;
+                            if (element.style.transform === dragTransform) element.style.transform = originalTransform;
+
+                            if (!disposed) {
+                                const at: number = await dotnetObj.invokeMethodAsync('OnSnap', target);
+                                const settled = points[Math.min(Math.max(at ?? target, 0), points.length - 1)];
+
+                                element.style.setProperty('--bit-pnl-snp', toSnapHeight(settled.raw));
+                                element.style.height = '';
+                            }
+
+                            return;
+                        }
+                    }
+
                     if (onLeftEdge() && diffX < 0) {
                         if ((Math.abs(diffX) / bcr.width) > trigger) {
                             return await dotnetObj.invokeMethodAsync('OnClose');
@@ -265,8 +367,19 @@
                 orientation = BitSwipeOrientation.None;
                 element.style.transitionDuration = '';
                 element.style.transform = originalTransform;
+                if (snaps) element.style.height = '';
+                stopFollowingWindow();
 
                 dotnetObj.invokeMethodAsync('OnEnd', 0, 0);
+            };
+
+            const swallowNextClick = () => {
+                const swallow = (e: Event) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                };
+                element.addEventListener('click', swallow, { capture: true, once: true });
+                window.setTimeout(() => element.removeEventListener('click', swallow, true), 400);
             };
 
             // A drag that starts on something that takes the pointer for itself is that thing's to handle:
@@ -331,13 +444,38 @@
             const onTouchMove = (e: TouchEvent) => { if (ownsTouches()) void onMove(e); };
             const onTouchEnd = (e: TouchEvent) => { if (ownsTouches()) void onEnd(e); };
             const ownsPointer = (e: PointerEvent) => e.pointerType !== 'touch' && e.pointerType === gestureSource;
+            // A mouse or a pen dragging a bottom sheet with snap points is followed on the window rather than on the
+            // sheet: the sheet only grows under the pointer once the move has been seen, so a pointer moving up passes
+            // over its top edge first, and the leave of the sheet would end the drag right there. (A finger needs none
+            // of it: its touch events keep coming to the element it went down on.)
+            let followingWindow = false;
+            const onWindowPointerMove = (e: PointerEvent) => { if (ownsPointer(e)) void onMove(e); };
+            const onWindowPointerEnd = (e: PointerEvent) => {
+                if (!ownsPointer(e)) return;
+
+                stopFollowingWindow();
+                void onEnd(e);
+            };
+            const stopFollowingWindow = () => {
+                if (!followingWindow) return;
+
+                followingWindow = false;
+                window.removeEventListener('pointermove', onWindowPointerMove);
+                window.removeEventListener('pointerup', onWindowPointerEnd);
+            };
             const onPointerStart = (e: PointerEvent) => {
                 if (e.pointerType === 'touch' || (gestureSource === 'touch' && startX !== -1)) return;
 
                 void onStart(e);
+
+                if (snaps && startX !== -1 && !followingWindow) {
+                    followingWindow = true;
+                    window.addEventListener('pointermove', onWindowPointerMove);
+                    window.addEventListener('pointerup', onWindowPointerEnd);
+                }
             };
-            const onPointerMove = (e: PointerEvent) => { if (ownsPointer(e)) void onMove(e); };
-            const onPointerEnd = (e: PointerEvent) => { if (ownsPointer(e)) void onEnd(e); };
+            const onPointerMove = (e: PointerEvent) => { if (!followingWindow && ownsPointer(e)) void onMove(e); };
+            const onPointerEnd = (e: PointerEvent) => { if (!followingWindow && ownsPointer(e)) void onEnd(e); };
             // A gesture the browser takes away - a system gesture, an alert, the contact of a pen it starts panning
             // under - ends in a cancel rather than an end, and is given up rather than weighed: nothing the gesture
             // did by then was a decision to dismiss the surface. Left unfinished, it would keep the drag's transform
@@ -354,7 +492,12 @@
 
                 if (following) abort();
             };
-            const onPointerCancel = (e: PointerEvent) => { if (ownsPointer(e) && startX !== -1) abort(); };
+            const onPointerCancel = (e: PointerEvent) => {
+                if (!ownsPointer(e) || startX === -1) return;
+
+                stopFollowingWindow();
+                abort();
+            };
 
             scrollContainer?.addEventListener('touchstart', onScrollContainerTouchStart);
             element.addEventListener('touchstart', onTouchStart);
@@ -380,6 +523,7 @@
                 element.removeEventListener('pointerup', onPointerEnd);
                 element.removeEventListener('pointerleave', onPointerEnd, false);
                 element.removeEventListener('pointercancel', onPointerCancel);
+                stopFollowingWindow();
             });
             Swipes._swipes.push(swipe);
 
