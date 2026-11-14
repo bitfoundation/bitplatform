@@ -50,6 +50,14 @@ public static class AssemblyMethods
     /// Listed as <see cref="Read(string, bool, IEnumerable{AotProfileClass}?)"/> lists methods: one of a generic type
     /// for each instantiation in <paramref name="instantiated"/>. A generic method is left out - nothing in the
     /// assembly says which instantiations the app makes - and is compiled only when one of them ran.
+    /// <para>
+    /// Mono's AOT compiler finds a profiled method by its class, name, parameter count and signature text, taking the
+    /// first that matches, so overloads are told apart only by their signatures. Those that differ in their parameter
+    /// types are each listed and found. A generic type's overloads that one of its instantiations inflates to the same
+    /// signature - <c>Log(T, ...)</c> and <c>Log(string, ...)</c> once <c>T</c> is <c>string</c> - are a known
+    /// limitation: that instantiation gets a single entry, which compiles the overload declared first, and the other
+    /// stays on the interpreter. No signature text written here could name it, so it is kept rather than left out.
+    /// </para>
     /// </remarks>
     public static IReadOnlyList<AotProfileMethod> ReadWide(string path, IEnumerable<AotProfileClass>? instantiated = null)
         => Read(path, (_, _, parameterCount) => parameterCount > MaxInterpreterEntryArguments, instantiated);

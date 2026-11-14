@@ -89,7 +89,7 @@ public class AotProfileTests
     public void EveryMethod_Should_BeListedWithMonosSignatures()
     {
         var methods = AssemblyMethods.Read(typeof(ProfileSamples).Assembly.Location, unmanagedCallersOnly: false)
-            .Where(m => m.Class.Name.StartsWith("Bit.Cli.Tests.ProfileSamples", StringComparison.Ordinal))
+            .Where(m => m.Class.Name.StartsWith("Bit.Cli.Tests.ProfileSamples", StringComparison.Ordinal) && m.Class.Name != "Bit.Cli.Tests.ProfileSamples/WideOverloads`1")
             .ToDictionary(m => $"{m.Class.Name}::{m.Name}", m => m.Signature);
 
         Assert.AreEqual("void(string,int&,System.Collections.Generic.List`1<int>[],Bit.Cli.Tests.ProfileSamples/Nested/Inner)", methods["Bit.Cli.Tests.ProfileSamples::Plain"]);
@@ -101,7 +101,7 @@ public class AotProfileTests
     public void MethodsWithMoreThanEightParameters_Should_BeListed_SinceCompiledCodeCannotEnterTheInterpreterForThem()
     {
         var methods = AssemblyMethods.ReadWide(typeof(ProfileSamples).Assembly.Location)
-            .Where(m => m.Class.Name.StartsWith("Bit.Cli.Tests.ProfileSamples", StringComparison.Ordinal) && m.Class.Name != "Bit.Cli.Tests.ProfileSamples/WideOf`1")
+            .Where(m => m.Class.Name.StartsWith("Bit.Cli.Tests.ProfileSamples", StringComparison.Ordinal) && m.Class.Name is not ("Bit.Cli.Tests.ProfileSamples/WideOf`1" or "Bit.Cli.Tests.ProfileSamples/WideOverloads`1"))
             .ToList();
 
         // The implementation alone: the interface's method has no body to compile, and eight parameters is what the
@@ -151,6 +151,34 @@ public class AotProfileTests
 
         // A generic method is not: nothing says which instantiations the app makes.
         Assert.IsFalse(AssemblyMethods.ReadWide(assembly.Location, ran).Any(m => m.Name == "GenericWide"));
+    }
+
+    [TestMethod]
+    public void WideOverloadsOfGenericTypes_Should_EachReachTheProfile_UnlessAnInstantiationGivesThemOneSignature()
+    {
+        var assembly = typeof(ProfileSamples).Assembly;
+        var image = new AotProfileImage(assembly.GetName().Name!, "00000000-0000-0000-0000-000000000000");
+        var coreLib = new AotProfileImage("System.Private.CoreLib", "00000000-0000-0000-0000-000000000000");
+        const string name = "Bit.Cli.Tests.ProfileSamples/WideOverloads`1";
+        var ofLong = new AotProfileClass(image, name, [new AotProfileClass(coreLib, "System.Int64")]);
+        var ofString = new AotProfileClass(image, name, [new AotProfileClass(coreLib, "System.String")]);
+        const string ints = "int,int,int,int,int,int,int,int";
+
+        var profile = new AotProfile();
+        profile.AddRange(AssemblyMethods.ReadWide(assembly.Location, [ofLong, ofString]).Where(m => m.Class.Name == name));
+
+        // What the AOT compiler reads: Mono resolves each record by class, name, parameter count and signature text.
+        var signatures = AotProfile.Read(profile.ToArray()).Methods
+            .Where(m => m.Name == "Log")
+            .GroupBy(m => m.Class.Key)
+            .ToDictionary(g => g.Key, g => g.Select(m => m.Signature).Order(StringComparer.Ordinal).ToList());
+
+        CollectionAssert.AreEqual(new[] { $"void(System.Guid,{ints})", $"void(T,{ints})", $"void(string,{ints})" }, signatures[$"[{image.Name}]{name}"]);
+        CollectionAssert.AreEqual(new[] { $"void(System.Guid,{ints})", $"void(long,{ints})", $"void(string,{ints})" }, signatures[ofLong.Key]);
+
+        // Log(T, ...) and Log(string, ...) are one signature on WideOverloads<string>: a single record, which Mono resolves
+        // to the overload declared first. The other stays on the interpreter - the documented limitation.
+        CollectionAssert.AreEqual(new[] { $"void(System.Guid,{ints})", $"void(string,{ints})" }, signatures[ofString.Key]);
     }
 
     [TestMethod]
@@ -846,5 +874,14 @@ public static class ProfileSamples
     public sealed class WideOf<T>
     {
         public void Log(T value, int a, int b, int c, int d, int e, int f, int g, int h) { }
+    }
+
+    public sealed class WideOverloads<T>
+    {
+        public void Log(T value, int a, int b, int c, int d, int e, int f, int g, int h) { }
+
+        public void Log(string value, int a, int b, int c, int d, int e, int f, int g, int h) { }
+
+        public void Log(Guid value, int a, int b, int c, int d, int e, int f, int g, int h) { }
     }
 }
