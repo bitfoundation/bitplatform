@@ -76,3 +76,10 @@ jobs:
 
     - name: dotnet test (MCP server)
       run: cd src/Utilities/Borm/Tests/Bit.Borm.Tests.Mcp && dotnet test --no-build
+
+    - name: dotnet pack
+      run: |
+        for project in Bit.Borm Bit.Borm.FluentValidation; do
+          dotnet build src/Utilities/Borm/$project/$project.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+          dotnet pack src/Utilities/Borm/$project/$project.csproj --output ./packages --configuration Release
+        done

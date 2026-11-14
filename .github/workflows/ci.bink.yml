@@ -62,3 +62,8 @@ jobs:
 
     - name: dotnet test (MCP server)
       run: cd src/Utilities/Bink/Tests/Bit.Bink.Tests.Mcp && dotnet test --no-build
+
+    - name: dotnet pack
+      run: |
+        dotnet build src/Utilities/Bink/Bit.Bink/Bit.Bink.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Utilities/Bink/Bit.Bink/Bit.Bink.csproj --output ./packages --configuration Release

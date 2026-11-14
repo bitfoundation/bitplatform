@@ -40,3 +40,8 @@ jobs:
 
     - name: dotnet test
       run: cd src/Toolings/Minifier/Tests/Bit.Minifier.Tests && dotnet test --no-build
+
+    - name: dotnet pack
+      run: |
+        dotnet build src/Toolings/Minifier/Bit.Minifier/Bit.Minifier.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Toolings/Minifier/Bit.Minifier/Bit.Minifier.csproj --output ./packages --configuration Release

@@ -43,6 +43,11 @@ jobs:
       with:
         global-json-file: src/global.json
 
+    - name: dotnet pack
+      run: |
+        dotnet pack src/Templates/Boilerplate/Bit.Boilerplate.ProjectTemplate.csproj --output ./packages --configuration Release
+        dotnet pack src/Templates/BlazorEmpty/Bit.BlazorEmpty.ProjectTemplate.csproj --output ./packages --configuration Release
+
     - name: Use prerelease packages
       if: inputs.prerelease_packages
       uses: ./.github/actions/use-prerelease-packages

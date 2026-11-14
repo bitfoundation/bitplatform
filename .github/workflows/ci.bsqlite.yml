@@ -72,3 +72,10 @@ jobs:
         cd src/Utilities/Bsqlite/Tests/bit-bsqlite-js
         npm ci || npm install
         npm test
+
+    - name: dotnet pack
+      run: |
+        for project in Bit.Bsqlite Bit.Bsqlite.Testing; do
+          dotnet build src/Utilities/Bsqlite/$project/$project.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+          dotnet pack src/Utilities/Bsqlite/$project/$project.csproj --output ./packages --configuration Release
+        done

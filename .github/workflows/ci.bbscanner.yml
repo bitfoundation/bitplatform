@@ -62,3 +62,12 @@ jobs:
 
     - name: dotnet test (MCP server)
       run: cd src/Utilities/BbScanner/Tests/Bit.BbScanner.Tests.Mcp && dotnet test --no-build
+
+    # Bit.BbScanner.Maui packs its Android target only, the one a Linux runner builds; the release workflows
+    # pack every platform on Windows.
+    - name: dotnet pack
+      run: |
+        for project in Bit.BbScanner Bit.BbScanner.Maui; do
+          dotnet build src/Utilities/BbScanner/$project/$project.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+          dotnet pack src/Utilities/BbScanner/$project/$project.csproj --output ./packages --configuration Release
+        done

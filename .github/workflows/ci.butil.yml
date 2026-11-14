@@ -100,3 +100,8 @@ jobs:
         name: butil-hosting-results
         path: '**/butil-hosting*.trx'
         if-no-files-found: ignore
+
+    - name: dotnet pack
+      run: |
+        dotnet build src/Butil/Bit.Butil/Bit.Butil.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Butil/Bit.Butil/Bit.Butil.csproj --output ./packages --configuration Release

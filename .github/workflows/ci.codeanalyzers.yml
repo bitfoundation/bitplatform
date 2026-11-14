@@ -40,3 +40,8 @@ jobs:
 
     - name: dotnet test
       run: cd src/Toolings/CodeAnalyzers/Tests/Bit.CodeAnalyzers.Tests && dotnet test --no-build
+
+    - name: dotnet pack
+      run: |
+        dotnet build src/Toolings/CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Toolings/CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj --output ./packages --configuration Release
