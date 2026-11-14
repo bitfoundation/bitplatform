@@ -1011,6 +1011,28 @@ public class BitMenuButtonE2ETests : E2ETestBase
     }
 
     [TestMethod]
+    public async Task Callout_IsNeverSetAFractionOfAPixelNarrowerThanItsWidestItem()
+    {
+        await OpenAsync(ItemsApi);
+
+        // The widest item is 160.25px, which offsetWidth reads as 160: the width the callout is set to is rounded up
+        // instead, so the item still fits inside it rather than running a quarter of a pixel past it - which is what
+        // ellipsized a label whose text landed just above a whole pixel ("Nederlan…").
+        var menu = await OpenMenuAsync("mnb-fraction-width");
+        var callout = CalloutOf(menu);
+        await SettledAsync(callout);
+
+        Assert.AreNotEqual("", await callout.EvaluateAsync<string>("el => el.style.width"), "The callout is set no width.");
+        var overflow = await callout.EvaluateAsync<double>(@"el => {
+            const style = getComputedStyle(el);
+            const inner = el.getBoundingClientRect().right - parseFloat(style.borderRightWidth) - parseFloat(style.paddingRight);
+            const items = Array.from(el.querySelectorAll('.bit-mnb-itm'));
+            return Math.max(...items.map(item => item.getBoundingClientRect().right)) - inner;
+        }");
+        Assert.IsTrue(overflow <= 0.01, $"The widest item runs {overflow}px past the callout.");
+    }
+
+    [TestMethod]
     public async Task Responsive_OnAWideScreen_TheMenuIsTheCalloutUnderTheButton()
     {
         await OpenAsync("/e2e/menu-button/responsive");

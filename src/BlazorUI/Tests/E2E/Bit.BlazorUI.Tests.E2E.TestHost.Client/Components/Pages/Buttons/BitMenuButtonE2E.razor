@@ -195,6 +195,8 @@
         <BitMenuButton Id="@($"mnb-background-{kind}")" Text="@kind.ToString()" Items="@(L($"background-{kind}"))" Background="kind" />
     }
     <BitMenuButton Id="mnb-maxheight" Text="Scrolling" Items="_long" MaxHeight="10rem" />
+    @* A menu whose widest item is a fraction of a pixel wider than a whole one, which offsetWidth rounds down. *@
+    <BitMenuButton Id="mnb-fraction-width" IconOnly Size="BitSize.Small" AriaLabel="Languages" IconName="@BitIconName.World" Items="_fractionWidth" />
     <BitMenuButton Id="mnb-stays-open" Text="Stays open" Items="@(L("stays-open"))" CloseOnItemClick="false" />
 </E2ESection>
 
@@ -432,6 +434,11 @@
         new() { Key = "styled", Text = "Styled", Style = "color: rgb(255, 0, 255);" }
     ];
     private List<BitMenuButtonItem> _dynamic = [new() { Key = "a", Text = "A" }];
+    private readonly List<BitMenuButtonItem> _fractionWidth =
+    [
+        new() { Key = "en", Text = "English" },
+        new() { Key = "nl", Text = "Nederlands", Style = "width: 160.25px;" }
+    ];
     private readonly List<BitMenuButtonItem> _mountedItems = Basic();
     private readonly List<BitMenuButtonItem> _customMarks =
     [
