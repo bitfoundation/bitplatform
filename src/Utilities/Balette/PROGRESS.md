@@ -7,7 +7,7 @@ and what is still open. Newest iteration last.
 
 - `dotnet build Bit.Balette.slnx`: succeeds; one pre-existing nullable warning in `Bit.Balette.Tests.Mcp`.
 - `Bit.Balette.Tests` (bUnit + model tests, net8.0/net9.0/net10.0): 378 passed (126 per target framework), 0 failed.
-- E2E (Playwright) and MCP suites exist; E2E is run on demand (`bit.ci.Balette.e2e.yml`).
+- E2E (Playwright) and MCP suites exist; E2E is run on demand (`ci.balette.e2e.yml`).
 
 ### Audit findings
 
@@ -271,7 +271,7 @@ warnings on net8.0/net9.0/net10.0 with the trim and AOT analyzers; `dotnet pack`
 
 - Blazor Server in the browser: the demo takes `Demo:RenderMode=Server` (off in the published site) and the E2E host
   starts it so when `BALETTE_E2E_RENDER_MODE=Server`; the fatal-error check also recognises a circuit ended by an
-  exception; `bit.ci.Balette.e2e.yml` runs the suite in both modes.
+  exception; `ci.balette.e2e.yml` runs the suite in both modes.
 - The first Server run: 79 of 81 passed. Both failures were tests assuming WebAssembly's speed, not palette defects - one
   proved a page had opened by a row that nested search also lists on the root, one read a highlight before the server's
   render arrived. Both now wait for what they need.
@@ -311,7 +311,7 @@ checks that the internals - `BaletteTextFold`, `BaletteUrl`, `BaletteTypoToleran
 ## Iteration 11 (2026-10-23) - every demo page in Chromium, Firefox and WebKit
 
 The browser suite had only ever run in Chromium. It now runs in any of Playwright's three engines
-(`BALETTE_E2E_BROWSER`), and `bit.ci.Balette.e2e.yml` runs all three in both render modes. Past the suite, every demo
+(`BALETTE_E2E_BROWSER`), and `ci.balette.e2e.yml` runs all three in both render modes. Past the suite, every demo
 page was driven by Playwright scripts in each engine: screenshots at 1280, 820 and 390 px in light and dark; console
 errors, failed requests and horizontal overflow on every page; what each page's controls do (the Try chips, the
 counter and the inline palette, the search lab, the theming controls, registering 2,000 commands then measuring and
@@ -461,7 +461,7 @@ outrank Prompts for "a command that asks for a name before it runs". E2E in Chro
 skipped (the lazy loading sample was not published), 0 failed, including the new `GuardTests`. `dotnet build` of the
 solution: only the MAUI sample's Android target fails, for an Android SDK (API 37) not installed on this machine.
 
-**Not run this time**: Firefox, WebKit and Blazor Server E2E (`bit.ci.Balette.e2e.yml` runs them), and a manual
+**Not run this time**: Firefox, WebKit and Blazor Server E2E (`ci.balette.e2e.yml` runs them), and a manual
 screen-reader pass (still open).
 
 ## Where it stands

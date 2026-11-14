@@ -65,10 +65,10 @@ Every test runs in all three engines but three, which report Inconclusive outsid
 audit, which reads the tree through the DevTools protocol, and the two that press the context-menu key, which
 Playwright's Firefox and WebKit deliver without the `contextmenu` event the real browsers raise for it.
 
-The workflow `.github/workflows/bit.ci.Blow.e2e.yml` does the same in Release, once per engine (Chromium, Firefox and
-WebKit), against the demo published the way `blow.demo.cd.yml` publishes it rather than a build output. It is started
+The workflow `.github/workflows/ci.blow.e2e.yml` does the same in Release, once per engine (Chromium, Firefox and
+WebKit), against the demo published the way `cd.blow.demo.yml` publishes it rather than a build output. It is started
 by hand (`workflow_dispatch`) only, since the suite takes far longer than the build-and-unit pipeline in
-`bit.ci.Blow.yml`. The publish is the point: only a publish trims the WebAssembly client, so an interop payload the
+`ci.blow.yml`. The publish is the point: only a publish trims the WebAssembly client, so an interop payload the
 trimmer breaks (an anonymous type whose constructor lost its parameter names, a getter nothing but System.Text.Json
 reads) fails there and nowhere else:
 

@@ -1,0 +1,789 @@
+name: CD Todo Demo
+
+# Project templates come equipped with GitHub Actions CI/CD, providing you with a hassle-free way to get started with your new project. It is important to note that you should not depend on the contents of this file. More info at https://bitplatform.dev/templates/dev-ops
+
+env:
+  # Lets the About page show the run, the commit and the attestations of the build.
+  ShowBuildProvenance: true
+  SERVER_WEB_ADDRESS: 'https://todo.bitplatform.dev'
+  SERVER_API_ADDRESS: 'https://todo-api.bitplatform.dev'
+  R2_BUCKET: 'todo'
+  APP_BUNDLE_ID: 'com.bitplatform.Todo.Template'
+  OpenAI__ApiKey: ${{ secrets.OpenAI__ApiKey }}
+  OpenAI__Endpoint: ${{ secrets.OpenAI__Endpoint }}
+  OPENAI__MODEL: ${{ secrets.OPENAI__MODEL }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      server:
+        description: Server web + api
+        type: boolean
+        default: true
+      wasm:
+        description: Blazor WASM standalone
+        type: boolean
+        default: true
+      windows:
+        description: Windows app
+        type: boolean
+        default: true
+      android:
+        description: Android app
+        type: boolean
+        default: true
+      ios:
+        description: iOS app
+        type: boolean
+        default: true
+      prerelease_packages:
+        description: Bit packages of the latest CD Prerelease nuget packages run instead of nuget.org
+        type: boolean
+        default: false
+  workflow_call:
+    inputs:
+      server:
+        type: boolean
+        default: true
+      wasm:
+        type: boolean
+        default: true
+      windows:
+        type: boolean
+        default: true
+      android:
+        type: boolean
+        default: true
+      ios:
+        type: boolean
+        default: true
+      prerelease_packages:
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+
+  build_api:
+    name: build api
+    if: inputs.server
+    runs-on: windows-2025
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+      attestations: write
+
+    steps:
+    
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+      with:
+        global-json-file: src/global.json
+
+    - name: Use prerelease packages
+      if: inputs.prerelease_packages
+      uses: ./.github/actions/use-prerelease-packages
+      with:
+        project-folder: src/Templates/Boilerplate/Bit.Boilerplate
+
+    - name: Setup bit CLI
+      uses: ./.github/actions/setup-bit-cli
+
+    - name: Create project with bit new
+      run: bit new TodoSample --framework net11.0 --database PostgreSQL --sample --appInsights --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --offlineDb --signalR --ads --api Standalone --redis --multitenant false --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --no-restore --no-build --no-format --no-migration --no-trust
+       
+    - name: Translate .resx files
+      run: |
+            cd TodoSample
+            bit translate
+
+    - name: Update core appsettings.json
+      uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
+      with:
+        files: 'TodoSample/**/appsettings*json'
+      env:
+        ServerAddress: ${{ env.SERVER_API_ADDRESS }}
+        AdsPushVapid.PublicKey: ${{ secrets.TODO_PUBLIC_VAPIDKEY }}
+        GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
+        ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
+
+    - name: Publish Server API
+      working-directory: TodoSample
+      run: dotnet publish src/Server/TodoSample.Server.Api/TodoSample.Server.Api.csproj -c Release -o ../server-api -p:Version="${{ vars.APP_VERSION}}" -p:AspNetCoreHostingModel=OutOfProcess
+
+    # Server-owned; C:\inetpub keeps its own copies. Also keeps them out of the artifact.
+    - name: Strip server-owned files from bundle
+      shell: pwsh
+      run: |
+        Get-ChildItem server-api -File -Include 'appsettings*.json', 'AppCertificate.*', 'AppleAuthKey.p8', '*.pfx' -Recurse |
+          ForEach-Object { Write-Host "Removing $($_.FullName)"; Remove-Item $_.FullName -Force }
+
+    - name: Upload server api artifact
+      id: server_api_artifact
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: TodoApi
+        path: server-api
+        include-hidden-files: true # Required for wwwroot/.well-known folder
+
+    - name: Attest server api artifact
+      uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+      with:
+        subject-name: TodoApi
+        subject-digest: sha256:${{ steps.server_api_artifact.outputs.artifact-digest }}
+
+  build_blazor:
+    name: build blazor web
+    if: inputs.server
+    runs-on: windows-2025
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+      attestations: write
+
+    steps:
+    
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+      with:
+        global-json-file: src/global.json
+
+    - name: Use prerelease packages
+      if: inputs.prerelease_packages
+      uses: ./.github/actions/use-prerelease-packages
+      with:
+        project-folder: src/Templates/Boilerplate/Bit.Boilerplate
+
+    - name: Setup bit CLI
+      uses: ./.github/actions/setup-bit-cli
+
+    - name: Create project with bit new
+      run: bit new TodoSample --framework net11.0 --database PostgreSQL --sample --appInsights --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --signalR --ads --api Standalone --multitenant false --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --no-build --no-format --no-migration --no-trust
+       
+    - name: Translate .resx files
+      run: |
+            cd TodoSample
+            bit translate
+
+    - name: Update core appsettings.json
+      uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
+      with:
+        files: 'TodoSample/**/appsettings*json'
+      env:
+        WebAppRender.PrerenderEnabled: true
+        ServerAddress: ${{ env.SERVER_API_ADDRESS }}
+        WebAppRender.BlazorMode: 'BlazorWebAssembly'
+        AdsPushVapid.PublicKey: ${{ secrets.TODO_PUBLIC_VAPIDKEY }}
+        GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
+        ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
+        
+    - name: Configure bswup # Always AlwaysPrerender is the last item, so overriding it has the desired effect
+      run: |
+          sed -i "s/\/\/ self.mode = 'AlwaysPrerender'/self.mode = 'InitialPrerender'/g" TodoSample/src/Client/TodoSample.Client.Web/wwwroot/service-worker.published.js
+      
+      
+    - name: Publish Server Web
+      working-directory: TodoSample
+      run: dotnet publish src/Server/TodoSample.Server.Web/TodoSample.Server.Web.csproj -c Release -o ../server-web -p:Version="${{ vars.APP_VERSION}}" -p:AspNetCoreHostingModel=OutOfProcess -p:BitMinifyAggressive=true -p:BitMinifyMapOutputPath="${{ github.workspace }}/bit-minifier.map"
+
+    # Every publish renames afresh, so this map reads the stack traces of this release and of no other. It lives in
+    # obj, which this checkout throws away - kept here, and never next to the client, which would serve it.
+    - name: Upload minifier map artifact
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: Todo-minifier-map
+        path: bit-minifier.map
+
+    # Server-owned; C:\inetpub keeps its own copies. Also keeps them out of the artifact.
+    - name: Strip server-owned files from bundle
+      shell: pwsh
+      run: |
+        Get-ChildItem server-web -File -Include 'appsettings*.json', 'AppCertificate.*', 'AppleAuthKey.p8', '*.pfx' -Recurse |
+          ForEach-Object { Write-Host "Removing $($_.FullName)"; Remove-Item $_.FullName -Force }
+
+    - name: Upload server web artifact
+      id: server_web_artifact
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: Todo
+        path: server-web
+        include-hidden-files: true # Required for wwwroot/.well-known folder
+
+    - name: Attest server web artifact
+      uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+      with:
+        subject-name: Todo
+        subject-digest: sha256:${{ steps.server_web_artifact.outputs.artifact-digest }}
+
+  deploy_server_web:
+    name: deploy server web
+    needs: build_blazor
+    runs-on: [self-hosted, Windows, X64, bitplatform-iis]
+    environment:
+      name: production
+      url: 'https://todo.bitplatform.dev'
+
+    steps:
+
+    - name: Checkout deploy action
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+          fetch-depth: 1
+          sparse-checkout: .github/actions
+
+    - name: Deploy
+      uses: ./.github/actions/deploy-to-server
+      with:
+        artifact-name: Todo
+        app-pool: Todo
+        site-path: C:\inetpub\Todo
+        sentinel-file: TodoSample.Server.Web.dll
+        health-check-url: 'https://todo.bitplatform.dev/health'
+        cloudflare-zone-id: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+        cloudflare-token: ${{ secrets.CLOUDFLARE_TOKEN }}
+
+  deploy_server_api:
+    name: deploy server api
+    needs: build_api
+    runs-on: [self-hosted, Windows, X64, bitplatform-iis]
+    environment:
+      name: production
+      url: 'https://todo-api.bitplatform.dev'
+
+    steps:
+
+    - name: Checkout deploy action
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+          fetch-depth: 1
+          sparse-checkout: .github/actions
+
+    - name: Deploy
+      uses: ./.github/actions/deploy-to-server
+      with:
+        artifact-name: TodoApi
+        app-pool: TodoApi
+        site-path: C:\inetpub\TodoApi
+        sentinel-file: TodoSample.Server.Api.dll
+        health-check-url: 'https://todo-api.bitplatform.dev/health'
+        cloudflare-zone-id: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+        cloudflare-token: ${{ secrets.CLOUDFLARE_TOKEN }}
+
+  deploy_blazor_wasm_standalone_aot:
+    name: build blazor wasm standalone (AOT)
+    if: inputs.wasm
+    runs-on: ubuntu-24.04
+
+    steps:
+    
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+      with:
+        global-json-file: src/global.json
+        dotnet-version: 10.0.x
+
+    - name: Use prerelease packages
+      if: inputs.prerelease_packages
+      uses: ./.github/actions/use-prerelease-packages
+      with:
+        project-folder: src/Templates/Boilerplate/Bit.Boilerplate
+
+    - name: Setup bit CLI
+      uses: ./.github/actions/setup-bit-cli
+
+    - name: Create project with bit new
+      run: bit new TodoSample --framework net10.0 --database PostgreSQL --sample --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --signalR false --ads --multitenant false --theme Cupertino --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --no-build --no-format --no-migration --no-trust
+
+    - name: Update core appsettings.json
+      uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
+      with:
+        files: 'TodoSample/**/appsettings*json'
+      env:
+        ServerAddress: ${{ env.SERVER_API_ADDRESS }}
+        AdsPushVapid.PublicKey: ${{ secrets.TODO_PUBLIC_VAPIDKEY }}
+        GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
+
+      
+    - name: Collect the AOT profile
+      working-directory: TodoSample
+      run: bit aot-profile src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -o ../todo.aotprofile --origin https://todo-aot.bitplatform.cc --step "click:.menu-chevron" --step "click:button[role=switch][aria-label*=theme i]" --include TodoSample.Client.Core --include TodoSample.Client.Web -p:Version="${{ vars.APP_VERSION}}" -p:InvariantGlobalization=true -p:WasmEnableSIMD=true -p:BitMinifyAggressive=true
+
+    - name: Publish
+      working-directory: TodoSample
+      run: dotnet publish src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -c Release -o ../client -p:Version="${{ vars.APP_VERSION}}" -p:RunAOTCompilation=true -p:InvariantGlobalization=true -p:WasmEnableSIMD=true -p:BitMinifyAggressive=true -p:BitMinifyMapOutputPath="${{ github.workspace }}/bit-minifier.map" -p:WasmAotProfilePath="${{ github.workspace }}/todo.aotprofile"
+
+    # what the stack traces this client logs are read back through: see the note in the server web job
+    - name: Upload minifier map artifact
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: TodoAot-minifier-map
+        path: bit-minifier.map
+
+    - name: Upload to asw
+      run: |
+          npm install -g @azure/static-web-apps-cli
+          swa deploy --deployment-token ${{ secrets.TODO_AOT_ASW_TOKEN }} --env production --app-location client/wwwroot
+
+  deploy_blazor_wasm_standalone_offlineDb:
+    name: build blazor wasm standalone (Offline database)
+    if: inputs.wasm
+    runs-on: ubuntu-24.04
+
+    steps:
+    
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+      with:
+        global-json-file: src/global.json
+        dotnet-version: 10.0.x
+
+    - name: Use prerelease packages
+      if: inputs.prerelease_packages
+      uses: ./.github/actions/use-prerelease-packages
+      with:
+        project-folder: src/Templates/Boilerplate/Bit.Boilerplate
+
+    - name: Setup bit CLI
+      uses: ./.github/actions/setup-bit-cli
+
+    - name: Create project with bit new
+      run: bit new TodoSample --framework net10.0 --database PostgreSQL --sample --appInsights --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --offlineDb --signalR --ads --multitenant false --theme Fluent --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --no-restore --no-build --no-format --no-migration --no-trust
+
+    - name: Update core appsettings.json
+      uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
+      with:
+        files: 'TodoSample/**/appsettings*json'
+      env:
+        ServerAddress: ${{ env.SERVER_API_ADDRESS }}
+        AdsPushVapid.PublicKey: ${{ secrets.TODO_PUBLIC_VAPIDKEY }}
+        GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
+        ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
+
+    - name: Configure bswup # Always AlwaysPrerender is the last item, so overriding it has the desired effect
+      run: |
+          sed -i "s/\/\/ self.mode = 'AlwaysPrerender'/self.mode = 'FullOffline'/g" TodoSample/src/Client/TodoSample.Client.Web/wwwroot/service-worker.published.js
+
+    - name: Optimize DbContext
+      run: |
+          cd TodoSample/src/Server/TodoSample.Server.Web && dotnet build -c Release && dnx dotnet-ef@10.0.15 -- dbcontext optimize --context AppOfflineDbContext --output-dir Infrastructure/Data/CompiledModel --namespace TodoSample.Client.Core.Infrastructure.Data --project ../../Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj --verbose
+
+    - name: Publish
+      working-directory: TodoSample
+      run: dotnet publish src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -c Release -o ../client -p:Version="${{ vars.APP_VERSION}}" -p:WasmEnableSIMD=true -p:InvariantGlobalization=true
+
+    - name: Upload to asw
+      run: |
+          npm install -g @azure/static-web-apps-cli
+          swa deploy --deployment-token ${{ secrets.TODO_OFFLINE_ASW_TOKEN }} --env production --app-location client/wwwroot
+
+  deploy_blazor_wasm_standalone_small:
+    name: build blazor wasm standalone (small)
+    if: inputs.wasm
+    runs-on: ubuntu-24.04
+
+    steps:
+    
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+      with:
+        global-json-file: src/global.json
+        dotnet-version: 10.0.x
+
+    - name: Use prerelease packages
+      if: inputs.prerelease_packages
+      uses: ./.github/actions/use-prerelease-packages
+      with:
+        project-folder: src/Templates/Boilerplate/Bit.Boilerplate
+
+    - name: Setup bit CLI
+      uses: ./.github/actions/setup-bit-cli
+
+    - name: Create project with bit new
+      run: bit new TodoSample --framework net10.0 --database PostgreSQL --sample --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --signalR false --ads --multitenant false --brouter false --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --no-build --no-format --no-migration --no-trust
+
+    - name: Update core appsettings.json
+      uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
+      with:
+        files: 'TodoSample/**/appsettings*json'
+      env:
+        ServerAddress: ${{ env.SERVER_API_ADDRESS }}
+        AdsPushVapid.PublicKey: ${{ secrets.TODO_PUBLIC_VAPIDKEY }}
+        GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
+
+    - name: Publish
+      working-directory: TodoSample
+      run: dotnet publish src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -c Release -o ../client -p:Version="${{ vars.APP_VERSION}}" -p:WasmEnableSIMD=true -p:InvariantGlobalization=true -p:BitMinifyAggressive=true -p:BitMinifyMapOutputPath="${{ github.workspace }}/bit-minifier.map"
+
+    # what the stack traces this client logs are read back through: see the note in the server web job
+    - name: Upload minifier map artifact
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: TodoSmall-minifier-map
+        path: bit-minifier.map
+
+    - name: Upload to asw
+      run: |
+          npm install -g @azure/static-web-apps-cli
+          swa deploy --deployment-token ${{ secrets.TODO_SMALL_ASW_TOKEN }} --env production --app-location client/wwwroot
+
+  build_blazor_hybrid_windows:
+    name: build blazor hybrid (windows)
+    if: inputs.windows
+    runs-on: windows-2025
+    environment: code-signing
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+      attestations: write
+  
+    steps:
+     
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+      with:
+        global-json-file: src/global.json
+        dotnet-version: 10.0.x
+
+    - name: Use prerelease packages
+      if: inputs.prerelease_packages
+      uses: ./.github/actions/use-prerelease-packages
+      with:
+        project-folder: src/Templates/Boilerplate/Bit.Boilerplate
+
+    - name: Setup bit CLI
+      uses: ./.github/actions/setup-bit-cli
+
+    - name: Create project with bit new
+      run: bit new TodoSample --framework net10.0 --database PostgreSQL --sample --sentry --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --captcha reCaptcha --signalR --ads --multitenant false --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --platforms windows --no-build --no-format --no-migration --no-trust
+  
+    - name: Translate .resx files
+      run: |
+            cd TodoSample
+            bit translate
+
+    - name: Update core appsettings.json
+      uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
+      with:
+        files: 'TodoSample\**\appsettings*json'
+      env:
+        WebAppUrl: ${{ env.SERVER_WEB_ADDRESS }}
+        ServerAddress: ${{ env.SERVER_API_ADDRESS }}
+        Logging.Sentry.Dsn: ${{ secrets.TODO_SENTRY_DSN }}
+        WindowsUpdate.FilesUrl: https://windows-todo.bitplatform.dev
+        GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
+
+    - name: Install vpk
+      shell: pwsh
+      run: |
+        dotnet tool install vpk --version 1.3.39-g8d2844f --tool-path "$env:RUNNER_TEMP/vpk"
+        Add-Content $env:GITHUB_PATH "$env:RUNNER_TEMP/vpk"
+
+    # Needed for delta packages. Fails on the first run, when the bucket is empty.
+    - name: Download previous releases from R2
+      continue-on-error: true
+      run: |
+          cd TodoSample\src\Client\TodoSample.Client.Windows\
+          vpk download s3 --endpoint ${{ vars.R2_ENDPOINT }} --bucket ${{ env.R2_BUCKET }} --keyId ${{ secrets.R2_ACCESS_KEY_ID }} --secret ${{ secrets.R2_SECRET_ACCESS_KEY }} -o .\Releases
+
+    # '\.dll$' signs only the executables: this CD runs often for end-to-end tests, and a demo's dlls gain nothing from a signature.
+    - name: Sign the executables with Artifact Signing
+      if: vars.CODE_SIGNING_ACCOUNT != ''
+      uses: ./.github/actions/bit-bp/artifact-signing
+      with:
+        endpoint: ${{ vars.CODE_SIGNING_ENDPOINT }}
+        account: ${{ vars.CODE_SIGNING_ACCOUNT }}
+        certificate-profile: ${{ vars.CODE_SIGNING_CERTIFICATE_PROFILE }}
+        client-id: ${{ secrets.CODE_SIGNING_CLIENT_ID }}
+        tenant-id: ${{ secrets.CODE_SIGNING_TENANT_ID }}
+        subscription-id: ${{ secrets.CODE_SIGNING_SUBSCRIPTION_ID }}
+        exclude: '\.dll$'
+
+    - name: Publish
+      run: |
+          cd TodoSample\src\Client\TodoSample.Client.Windows\
+          dotnet publish TodoSample.Client.Windows.csproj -c Release -o .\publish-result -r win-x86 -p:Version="${{ vars.APP_VERSION}}"
+          vpk pack -u TodoSample.Client.Windows -v "${{ vars.APP_VERSION }}" -p .\publish-result -e TodoSample.Client.Windows.exe -r win-x86 --framework webview2 --icon .\wwwroot\favicon.ico --packTitle TodoSample
+
+    - name: Attest the installer and packages
+      uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+      with:
+        subject-path: |
+          TodoSample/src/Client/TodoSample.Client.Windows/Releases/*-Setup.exe
+          TodoSample/src/Client/TodoSample.Client.Windows/Releases/*-Portable.zip
+          TodoSample/src/Client/TodoSample.Client.Windows/Releases/*-${{ vars.APP_VERSION }}-*.nupkg
+
+    # The update feed behind WindowsUpdate.FilesUrl.
+    - name: Upload releases to R2
+      run: |
+          cd TodoSample\src\Client\TodoSample.Client.Windows\
+          vpk upload s3 --endpoint ${{ vars.R2_ENDPOINT }} --bucket ${{ env.R2_BUCKET }} --keyId ${{ secrets.R2_ACCESS_KEY_ID }} --secret ${{ secrets.R2_SECRET_ACCESS_KEY }} -o .\Releases --keepMaxReleases 10
+
+  build_blazor_hybrid_android:
+    name: build blazor hybrid (android)
+    if: inputs.android
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+      attestations: write
+  
+    steps:
+     
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+     
+    - name: Setup .NET
+      uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+      with:
+        global-json-file: src/global.json
+        dotnet-version: 10.0.x
+
+    - name: Use prerelease packages
+      if: inputs.prerelease_packages
+      uses: ./.github/actions/use-prerelease-packages
+      with:
+        project-folder: src/Templates/Boilerplate/Bit.Boilerplate
+
+    - name: Setup bit CLI
+      uses: ./.github/actions/setup-bit-cli
+
+    - name: Create project with bit new
+      run: bit new TodoSample --framework net10.0 --database PostgreSQL --sample --sentry --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --signalR --ads --multitenant false --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --platforms android --no-build --no-format --no-migration --no-trust
+  
+    - name: Extract Android signing key from env
+      uses: timheuer/base64-to-file@dfa5a5dd38803cb4f5c3a081eeb28e8362d43e9c # v2.0.0
+      with:
+          fileDir: './TodoSample/src/Client/TodoSample.Client.Maui/'
+          fileName: 'TodoSample.keystore'
+          encodedString: ${{ secrets.ANDROID_RELEASE_KEYSTORE_FILE_BASE64 }}
+
+    - name: Extract Android signing key from env
+      uses: timheuer/base64-to-file@dfa5a5dd38803cb4f5c3a081eeb28e8362d43e9c # v2.0.0
+      with:
+          fileDir: './TodoSample/src/Client/TodoSample.Client.Maui/Platforms/Android'
+          fileName: 'google-services.json'
+          encodedString: ${{ secrets.TODO_GOOGLE_SERVICES_JSON_BASE64 }}
+  
+    - name: Translate .resx files
+      run: |
+            cd TodoSample
+            bit translate
+
+    - name: Update core appsettings.json
+      uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
+      with:
+        files: 'TodoSample/**/appsettings*json'
+      env:
+        WebAppUrl: ${{ env.SERVER_WEB_ADDRESS }}
+        ServerAddress: ${{ env.SERVER_API_ADDRESS }}
+        Logging.Sentry.Dsn: ${{ secrets.TODO_SENTRY_DSN }}
+        GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
+
+    - name: Delete App Icon
+      run: rm TodoSample/src/Client/TodoSample.Client.Maui/Resources/AppIcon/appicon.svg
+
+    - name: Extract App Icon from env
+      uses: timheuer/base64-to-file@dfa5a5dd38803cb4f5c3a081eeb28e8362d43e9c # v2.0.0
+      with:
+          fileDir: './TodoSample/src/Client/TodoSample.Client.Maui/Resources/AppIcon/'
+          fileName: 'appicon.svg'
+          encodedString: ${{ vars.TODO_ICON }}
+
+    - name: Delete App Splash Screen
+      run: rm TodoSample/src/Client/TodoSample.Client.Maui/Resources/Splash/splash.svg
+
+    - name: Extract App Splash Screen from env
+      uses: timheuer/base64-to-file@dfa5a5dd38803cb4f5c3a081eeb28e8362d43e9c # v2.0.0
+      with:
+          fileDir: './TodoSample/src/Client/TodoSample.Client.Maui/Resources/Splash/'
+          fileName: 'splash.svg'
+          encodedString: ${{ vars.TODO_SPLASH_SCREEN }}
+
+  
+    - name: Publish aab
+      working-directory: TodoSample
+      run: dotnet publish src/Client/TodoSample.Client.Maui/TodoSample.Client.Maui.csproj -c Release -p:AndroidPackageFormats=aab%3Bapk -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="TodoSample.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:Version="${{ vars.APP_VERSION }}" -p:ApplicationTitle="TodoSample" -p:ApplicationId="${{ env.APP_BUNDLE_ID }}" -f net10.0-android
+
+    - name: Upload artifact
+      id: artifact
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: android-bundle
+        path: TodoSample/src/Client/TodoSample.Client.Maui/bin/Release/net10.0-android/*-Signed.apk
+
+    - name: Attest artifact
+      uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+      with:
+        subject-name: android-bundle
+        subject-digest: sha256:${{ steps.artifact.outputs.artifact-digest }}
+
+    # versionCode derives from APP_VERSION; bump it or Play rejects the bundle.
+    - name: Upload to Google Play (internal track)
+      uses: r0adkll/upload-google-play@e738b9dd8f2476ea806d921b64aacd24f34515a5 # v1.1.5
+      with:
+        serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+        packageName: ${{ env.APP_BUNDLE_ID }}
+        releaseFiles: TodoSample/src/Client/TodoSample.Client.Maui/bin/Release/net10.0-android/*-Signed.aab
+        releaseName: ${{ vars.APP_VERSION }}
+        track: internal
+        status: completed
+
+  build_blazor_hybrid_ios:
+    name: build blazor hybrid (iOS-macOS)
+    if: inputs.ios
+    runs-on: xcode-27
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+      attestations: write
+  
+    steps:
+     
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+     
+    - name: Setup .NET
+      uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+      with:
+        global-json-file: src/global.json
+        dotnet-version: 10.0.x
+
+    - uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1.7.0
+      with:
+        xcode-version: '27.2'
+
+    - name: Use prerelease packages
+      if: inputs.prerelease_packages
+      uses: ./.github/actions/use-prerelease-packages
+      with:
+        project-folder: src/Templates/Boilerplate/Bit.Boilerplate
+
+    - name: Setup bit CLI
+      uses: ./.github/actions/setup-bit-cli
+
+    - name: Create project with bit new
+      run: bit new TodoSample --framework net10.0 --database PostgreSQL --sample --sentry --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --signalR --ads --multitenant false --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --platforms ios --no-build --no-format --no-migration --no-trust
+      
+    - name: Translate .resx files
+      run: |
+            cd TodoSample
+            bit translate
+
+    - name: Update core appsettings.json
+      uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
+      with:
+        files: 'TodoSample/**/appsettings*json'
+      env:
+        WebAppUrl: ${{ env.SERVER_WEB_ADDRESS }}
+        ServerAddress: ${{ env.SERVER_API_ADDRESS }}
+        Logging.Sentry.Dsn: ${{ secrets.TODO_SENTRY_DSN }}
+        GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
+
+    - name: Import Code-Signing Certificates
+      uses: apple-actions/import-codesign-certs@288b8ec97b82c66b6f2a6baaf7acc8dfbcbe331c # v7.2.0
+      with:
+        p12-file-base64: ${{ secrets.APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_BASE64 }}
+        p12-password: ${{ secrets.APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_PASSWORD }}
+
+    - name: Download Apple Provisioning Profiles
+      uses: Apple-Actions/download-provisioning-profiles@233aa54e59082c0e8a8cf8b0b02c72dea2422ef9 # v7.1.0
+      with:
+        bundle-id: ${{ env.APP_BUNDLE_ID }}
+        issuer-id: ${{ secrets.APPSTORE_API_KEY_ISSUER_ID }}
+        api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
+        api-private-key: ${{ secrets.APPSTORE_API_KEY_PRIVATE_KEY }}
+
+    - name: Delete App Icon
+      run: rm TodoSample/src/Client/TodoSample.Client.Maui/Resources/AppIcon/appicon.svg
+
+    - name: Extract App Icon from env
+      uses: timheuer/base64-to-file@dfa5a5dd38803cb4f5c3a081eeb28e8362d43e9c # v2.0.0
+      with:
+          fileDir: './TodoSample/src/Client/TodoSample.Client.Maui/Resources/AppIcon/'
+          fileName: 'appicon.svg'
+          encodedString: ${{ vars.TODO_ICON }}
+
+    - name: Delete App Splash Screen
+      run: rm TodoSample/src/Client/TodoSample.Client.Maui/Resources/Splash/splash.svg
+
+    - name: Extract App Splash Screen from env
+      uses: timheuer/base64-to-file@dfa5a5dd38803cb4f5c3a081eeb28e8362d43e9c # v2.0.0
+      with:
+          fileDir: './TodoSample/src/Client/TodoSample.Client.Maui/Resources/Splash/'
+          fileName: 'splash.svg'
+          encodedString: ${{ vars.TODO_SPLASH_SCREEN }}
+
+  
+    - name: Build ipa
+      working-directory: TodoSample
+      run: dotnet publish src/Client/TodoSample.Client.Maui/TodoSample.Client.Maui.csproj -p:RuntimeIdentifier=ios-arm64 -c Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="TodoTemplate" -p:Version="${{ vars.APP_VERSION }}" -p:ApplicationTitle="Todo" -p:ApplicationId="${{ env.APP_BUNDLE_ID }}" -f net10.0-ios
+
+    - name: Locate ipa
+      id: ipa
+      run: echo "path=$(ls TodoSample/src/Client/TodoSample.Client.Maui/bin/release/net10.0-ios/ios-arm64/publish/*.ipa | head -n 1)" >> $GITHUB_OUTPUT
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: ios-bundle
+        path: ${{ steps.ipa.outputs.path }}
+
+    - name: Attest ipa
+      uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+      with:
+        subject-path: ${{ steps.ipa.outputs.path }}
+
+    # App Store submission stays manual.
+    - name: Upload to TestFlight
+      uses: apple-actions/upload-testflight-build@665328adbecbc3ad929d3da710696d928b8a7ba9 # v5.9.0
+      with:
+        app-path: ${{ steps.ipa.outputs.path }}
+        app-type: ios
+        issuer-id: ${{ secrets.APPSTORE_API_KEY_ISSUER_ID }}
+        api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
+        api-private-key: ${{ secrets.APPSTORE_API_KEY_PRIVATE_KEY }}
+        uses-non-exempt-encryption: 'false'

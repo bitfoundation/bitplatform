@@ -1,0 +1,42 @@
+name: CI Minifier
+
+on:
+  workflow_dispatch:
+  workflow_call:
+  pull_request:
+    paths:
+    - 'src/Toolings/Minifier/**'
+
+env:
+  DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bit-ci-Minifier-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  build-Minifier:
+    if: startsWith(github.event.pull_request.title, 'Prerelease') != true && startsWith(github.event.pull_request.title, 'Release') != true && startsWith(github.event.pull_request.title, 'Version') != true
+    name: build Bit.Minifier
+    runs-on: ubuntu-26.04
+
+    steps:
+
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET 11.0
+      uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+      with:
+        global-json-file: src/global.json
+
+    - name: dotnet build
+      run: dotnet build src/Toolings/Minifier/Bit.Minifier.slnx
+
+    - name: dotnet test
+      run: cd src/Toolings/Minifier/Tests/Bit.Minifier.Tests && dotnet test --no-build
