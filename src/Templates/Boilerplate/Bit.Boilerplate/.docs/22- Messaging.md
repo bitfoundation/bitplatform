@@ -412,11 +412,8 @@ public async Task PropagateAuthState(bool firstRun, Task<AuthenticationState> ta
     TelemetryContext.UserId = userId;
     TelemetryContext.UserSessionId = isAuthenticated ? user.GetSessionId() : null;
 
-    // Update App Insights
-    if (isAuthenticated)
-        _ = appInsights.SetAuthenticatedUserContext(user.GetUserId().ToString());
-    else
-        _ = appInsights.ClearAuthenticatedUserContext();
+    // Update Belemetry (ApplyAuthenticatedUserContext handles its own exceptions)
+    _ = ApplyAuthenticatedUserContext(user);
 
     // Start SignalR connection
     await EnsureSignalRStarted();

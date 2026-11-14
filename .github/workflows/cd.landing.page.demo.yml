@@ -58,7 +58,7 @@ jobs:
       with:
         files: 'Bit.Boilerplate/src/LandingPage/Bit.Boilerplate.LandingPage.Client/appsettings.json'
       env:
-        Belemetry.AzureMonitorConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
+        ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
 
     - name: Publish
       working-directory: Bit.Boilerplate

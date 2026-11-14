@@ -15,6 +15,11 @@ public class PageTests
     private const string lighthouse = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Chrome-Lighthouse";
     private const string pageSpeed = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko; Google Page Speed Insights) Chrome/75.0.3777.100 Safari/537.36 Chrome-Lighthouse";
     private const string browser = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
+    private const string telemetryOrigins = "https://*.applicationinsights.azure.com https://dc.services.visualstudio.com"
+        //#if (sentry == true)
+        + " https://*.sentry.io"
+        //#endif
+        ;
     private const string duckDuckGoBrowser = "Mozilla/5.0 (Linux; Android 13; K) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/116.0.0.0 Mobile DuckDuckGo/5 Safari/537.36";
 
     private static LandingTestServer server = default!;
@@ -294,7 +299,7 @@ public class PageTests
 
         Assert.AreEqual("'self'", directives["base-uri"]);
         Assert.AreEqual("'self' data: blob:", directives["img-src"]);
-        Assert.AreEqual("'self' https://*.applicationinsights.azure.com https://dc.services.visualstudio.com", directives["connect-src"]);
+        Assert.AreEqual($"'self' {telemetryOrigins}", directives["connect-src"]);
     }
 
     [TestMethod]
@@ -317,7 +322,7 @@ public class PageTests
         var html = await response.Content.ReadAsStringAsync();
         var csp = string.Join(", ", response.Headers.GetValues("Content-Security-Policy"));
 
-        Assert.AreEqual(reachesTheBrowser, csp.Contains($"connect-src 'self' https://*.applicationinsights.azure.com https://dc.services.visualstudio.com {endpoint};", StringComparison.Ordinal));
+        Assert.AreEqual(reachesTheBrowser, csp.Contains($"connect-src 'self' {telemetryOrigins} {endpoint};", StringComparison.Ordinal));
         Assert.AreEqual(reachesTheBrowser, html.Contains($"\"OTEL_EXPORTER_OTLP_ENDPOINT\":\"{endpoint}\",\"OTEL_EXPORTER_OTLP_PROTOCOL\":\"{protocol?.ToLowerInvariant()}\"", StringComparison.Ordinal));
         Assert.DoesNotContain("k3y-n0t-for-pages", html);
     }
@@ -340,7 +345,7 @@ public class PageTests
         var html = await response.Content.ReadAsStringAsync();
         var csp = string.Join(", ", response.Headers.GetValues("Content-Security-Policy"));
 
-        Assert.AreEqual(reachesTheBrowser, csp.Contains($"connect-src 'self' https://*.applicationinsights.azure.com https://dc.services.visualstudio.com {endpoint};", StringComparison.Ordinal));
+        Assert.AreEqual(reachesTheBrowser, csp.Contains($"connect-src 'self' {telemetryOrigins} {endpoint};", StringComparison.Ordinal));
         Assert.AreEqual(reachesTheBrowser, html.Contains($"\"OTEL_EXPORTER_OTLP_ENDPOINT\":\"{endpoint}\",\"OTEL_EXPORTER_OTLP_PROTOCOL\":\"http/protobuf\"", StringComparison.Ordinal));
         Assert.AreEqual(reachesTheBrowser, html.Contains($"{{\"type\":\"otlp\",\"endpoint\":\"{endpoint}/\",\"protocol\":\"http/protobuf\"", StringComparison.Ordinal), "The browser script posts there too, before WebAssembly starts and for what only JavaScript sees.");
         Assert.DoesNotContain("compose-dashboard", html);

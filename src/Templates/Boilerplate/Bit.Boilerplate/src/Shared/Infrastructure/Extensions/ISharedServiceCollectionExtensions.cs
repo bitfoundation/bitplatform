@@ -1,5 +1,6 @@
 //+:cnd:noEmit
 using System.Text;
+using Bit.Belemetry;
 using Boilerplate.Shared.Features.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Web;
@@ -43,6 +44,8 @@ public static partial class ISharedServiceCollectionExtensions
             {
                 configuration.GetRequiredSection("MemoryCache").DynamicBind(options);
             });
+
+            services.AddBitBelemetryServices(options => options.ConfigureAppTelemetry(configuration));
 
             return services;
         }

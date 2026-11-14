@@ -5,15 +5,16 @@ public partial class ContentSecurityPolicy
 {
     [AutoInject] private ClientCoreSettings settings = default!;
     [AutoInject] private AbsoluteServerAddressProvider absoluteServerAddressProvider = default!;
+    [AutoInject] private IConfiguration configuration = default!;
 
     protected string? CspContent { get; set; }
 
     protected override void OnInitialized()
     {
-        CspContent = BuildCspString(settings, absoluteServerAddressProvider);
+        CspContent = BuildCspString(settings, absoluteServerAddressProvider, configuration);
     }
 
-    public static string BuildCspString(ClientCoreSettings settings, AbsoluteServerAddressProvider absoluteServerAddressProvider)
+    public static string BuildCspString(ClientCoreSettings settings, AbsoluteServerAddressProvider absoluteServerAddressProvider, IConfiguration configuration)
     {
         var apiUrl = absoluteServerAddressProvider.GetAddress().ToString();
         var webAppUrl = settings.WebAppUrl?.ToString();
@@ -34,14 +35,25 @@ public partial class ContentSecurityPolicy
 
         //#if (appInsights == true)
         // --- Add Azure App Insights ---
-        connectSrc.Add("https://dc.services.visualstudio.com https://*.in.applicationinsights.azure.com https://js.monitor.azure.com");
-        scriptSrc.Add("https://js.monitor.azure.com");
+        connectSrc.Add("https://dc.services.visualstudio.com https://*.in.applicationinsights.azure.com");
         //#endif
 
         //#if (sentry == true)
         // --- Add Sentry ---
         connectSrc.Add("https://*.sentry.io");
+        if (Uri.TryCreate(configuration["Logging:Sentry:Dsn"], UriKind.Absolute, out var sentryDsn))
+        {
+            connectSrc.Add($"{sentryDsn.Scheme}://{sentryDsn.Authority}");
+        }
         //#endif
+
+        // --- Add the OTLP collector Belemetry's browser script posts to ---
+        if (configuration["OTEL_EXPORTER_OTLP_PROTOCOL"]?.Trim().ToLowerInvariant() is not "grpc"
+            && Uri.TryCreate(configuration["OTEL_EXPORTER_OTLP_ENDPOINT"], UriKind.Absolute, out var otlpEndpoint)
+            && otlpEndpoint.Scheme is "http" or "https")
+        {
+            connectSrc.Add($"{otlpEndpoint.Scheme}://{otlpEndpoint.Authority}");
+        }
 
         //#if (captcha == "reCaptcha")
         // --- Add Google reCAPTCHA ---
