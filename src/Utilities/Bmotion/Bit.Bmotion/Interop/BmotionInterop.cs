@@ -264,12 +264,16 @@ public sealed class BmotionInterop : IBmotionInterop
 
     /// <summary>Run a FLIP animation via the Web Animations API.</summary>
     public async ValueTask PlayWaapiFlipAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(
-        string elementId, double dx, double dy, double sx, double sy,
-        double durationMs, string easingStr, string? finalTransform,
-        double originX, double originY, DotNetObjectReference<T>? dotnetRef) where T : class
-        => await (await Module()).InvokeVoidAsync(
-            "playWaapiFlip", elementId, dx, dy, sx, sy, durationMs, easingStr, finalTransform,
-            originX, originY, dotnetRef);
+        string elementId, BmotionFlip flip, string? finalTransform, DotNetObjectReference<T>? dotnetRef) where T : class
+        => await (await Module()).InvokeVoidAsync("playWaapiFlip", WaapiFlipArgs(elementId, flip, finalTransform, dotnetRef));
+
+    /// <summary>
+    /// The arguments of <c>playWaapiFlip</c>, in its parameter order. The one place <see cref="BmotionFlip"/> is
+    /// flattened for it, so the test fake records exactly what this bridge sends.
+    /// </summary>
+    internal static object?[] WaapiFlipArgs(string elementId, BmotionFlip flip, string? finalTransform, object? dotnetRef)
+        => [elementId, flip.Dx, flip.Dy, flip.Sx, flip.Sy, flip.DurationMs, flip.Easing, finalTransform,
+            flip.OriginX, flip.OriginY, dotnetRef];
 
     public async ValueTask<BmotionBoundingRect?> MeasureAndHoldLayoutAsync(string elementId, BmotionMeasureOptions options,
         bool translate, bool scale, double anchorX, double anchorY)
@@ -284,10 +288,15 @@ public sealed class BmotionInterop : IBmotionInterop
     public async ValueTask ReleaseLayoutHoldAsync(string elementId)
         => await (await Module()).InvokeVoidAsync("releaseLayoutHold", elementId);
 
-    public async ValueTask PlayLayoutCrossfadeAsync(string leadId, string followId, double dx, double dy, double sx, double sy,
-        double durationMs, string easingStr, double originX, double originY)
-        => await (await Module()).InvokeVoidAsync(
-            "playLayoutCrossfade", leadId, followId, dx, dy, sx, sy, durationMs, easingStr, originX, originY);
+    public async ValueTask PlayLayoutCrossfadeAsync(string leadId, string followId, BmotionFlip flip)
+        => await (await Module()).InvokeVoidAsync("playLayoutCrossfade", LayoutCrossfadeArgs(leadId, followId, flip));
+
+    /// <summary>
+    /// The arguments of <c>playLayoutCrossfade</c>, in its parameter order. The one place <see cref="BmotionFlip"/> is
+    /// flattened for it, so the test fake records exactly what this bridge sends.
+    /// </summary>
+    internal static object?[] LayoutCrossfadeArgs(string leadId, string followId, BmotionFlip flip)
+        => [leadId, followId, flip.Dx, flip.Dy, flip.Sx, flip.Sy, flip.DurationMs, flip.Easing, flip.OriginX, flip.OriginY];
 
     public async ValueTask CancelLayoutCrossfadeAsync(string elementId)
         => await (await Module()).InvokeVoidAsync("cancelLayoutCrossfade", elementId);

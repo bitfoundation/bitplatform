@@ -130,24 +130,26 @@ public interface IBmotionInterop : IAsyncDisposable
     ValueTask ReleaseLayoutHoldAsync(string elementId) => ValueTask.CompletedTask;
 
     /// <summary>
-    /// Plays the FLIP animation. <paramref name="originX"/>/<paramref name="originY"/> are the
-    /// projection anchor (0-1 of the element's box) the deltas were measured from, and
+    /// Plays the FLIP animation <paramref name="flip"/> describes, ending on <paramref name="finalTransform"/>;
     /// <paramref name="dotnetRef"/> - when given - receives <c>OnLayoutAnimationCompleted</c> once
     /// the animation finishes or is superseded.
     /// </summary>
     ValueTask PlayWaapiFlipAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(
-        string elementId, double dx, double dy, double sx, double sy, double durationMs, string easingStr,
-        string? finalTransform, double originX, double originY, DotNetObjectReference<T>? dotnetRef) where T : class;
+        string elementId, BmotionFlip flip, string? finalTransform, DotNetObjectReference<T>? dotnetRef) where T : class;
 
     /// <summary>
     /// Crossfades two holders of a LayoutId as the layout animation plays: <paramref name="leadId"/>, the one taking
     /// it over, fades in; <paramref name="followId"/>, the one on its way out, fades out while it travels onto the
-    /// lead's box - by (<paramref name="dx"/>, <paramref name="dy"/>) and (<paramref name="sx"/>,
-    /// <paramref name="sy"/>) about the anchor (<paramref name="originX"/>, <paramref name="originY"/>) - and stays
-    /// there until it is removed. Defaults to doing nothing.
+    /// lead's box - by the offset and scale of <paramref name="flip"/>, about its anchor - and stays there until it
+    /// is removed.
     /// </summary>
-    ValueTask PlayLayoutCrossfadeAsync(string leadId, string followId, double dx, double dy, double sx, double sy,
-        double durationMs, string easingStr, double originX, double originY) => ValueTask.CompletedTask;
+    /// <remarks>
+    /// No default body, unlike the members around it: it replaces an overload that took the flip one parameter each,
+    /// and with a default an implementation still declaring that overload would compile, never be called, and leave
+    /// every LayoutId crossfade unplayed. An implementation with nothing to play returns
+    /// <see cref="ValueTask.CompletedTask"/>.
+    /// </remarks>
+    ValueTask PlayLayoutCrossfadeAsync(string leadId, string followId, BmotionFlip flip);
 
     /// <summary>Takes an element that came back off its crossfade out (see <see cref="PlayLayoutCrossfadeAsync"/>). Defaults to doing nothing.</summary>
     ValueTask CancelLayoutCrossfadeAsync(string elementId) => ValueTask.CompletedTask;
