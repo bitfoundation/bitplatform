@@ -64,6 +64,12 @@ internal interface IBortableZone
     /// </summary>
     bool TakesDrag(BortableDragContext ctx);
 
+    /// <summary>
+    /// Whether this list, where the drag <paramref name="ctx"/> started, lets the drag take its items out for good: its
+    /// <c>MinItems</c> stays met.
+    /// </summary>
+    bool LetsGo(BortableDragContext ctx);
+
     int Count { get; }
     int IndexOf(object item);
     object? ItemAt(int index);

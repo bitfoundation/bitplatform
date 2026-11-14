@@ -313,18 +313,23 @@ public abstract class BortableTest
     protected static async Task AssertLabelsAsync(IPage page, string listId, string[] expected, bool withPlaceholder = false, string? because = null)
     {
         string[] shown = [];
+        // The message is built on failure, so that it says what the list showed last rather than before the first poll.
         await EventuallyAsync(async () => (shown = await LabelsAsync(page, listId, withPlaceholder)).SequenceEqual(expected),
-            $"#{listId} shows [{string.Join(", ", expected)}] (it shows [{string.Join(", ", shown)}]){(because is null ? "" : ": " + because)}");
+            () => $"#{listId} shows [{string.Join(", ", expected)}] (it shows [{string.Join(", ", shown)}]){(because is null ? "" : ": " + because)}");
     }
 
     /// <summary>Polls <paramref name="condition"/> until it holds, failing with <paramref name="what"/> when it never does.</summary>
-    protected static async Task EventuallyAsync(Func<Task<bool>> condition, string what, int timeoutMs = 10_000)
+    protected static Task EventuallyAsync(Func<Task<bool>> condition, string what, int timeoutMs = 10_000)
+        => EventuallyAsync(condition, () => what, timeoutMs);
+
+    /// <summary>Polls <paramref name="condition"/> until it holds, failing with what <paramref name="what"/> says then when it never does.</summary>
+    protected static async Task EventuallyAsync(Func<Task<bool>> condition, Func<string> what, int timeoutMs = 10_000)
     {
         var deadline = DateTime.UtcNow.AddMilliseconds(timeoutMs);
         while (true)
         {
             if (await condition()) return;
-            if (DateTime.UtcNow > deadline) Assert.Fail($"timed out waiting until {what}");
+            if (DateTime.UtcNow > deadline) Assert.Fail($"timed out waiting until {what()}");
             await Task.Delay(50);
         }
     }

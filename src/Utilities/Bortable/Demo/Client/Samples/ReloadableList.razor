@@ -1,0 +1,42 @@
+@* Rows identified by an id: with ItemKey, a list loaded again (new instances of the same rows) keeps its selection. *@
+
+<div class="bb-toolbar">
+    <button type="button" id="keys-reload" class="btn btn-secondary" @onclick="Reload">Load the rows again</button>
+    <label class="demo-check">
+        <input id="keys-by-id" type="checkbox" @bind="_byId" /> <code>ItemKey="row =&gt; row.Id"</code>
+    </label>
+</div>
+
+<Bortable @bind-Items="_rows" TItem="TaskRow" ItemKey="@(_byId ? ById : null)" MultiDrag="true" Id="keys-list"
+          AriaLabel="Tasks" ItemLabel="row => row.Title"
+          Class="demo-list" ItemClass="demo-item" GhostClass="demo-ghost">
+    <ItemTemplate Context="row">@row.Title</ItemTemplate>
+</Bortable>
+
+<p class="demo-order"><strong>Order:</strong> <span id="keys-order">@string.Join(", ", _rows.Select(r => r.Title))</span></p>
+<p class="demo-order"><strong>Loaded:</strong> <span id="keys-loads">@_loads @(_loads == 1 ? "time" : "times")</span></p>
+
+@code {
+    // A row as a server sends it: a class, so two loads of the same row are two different objects.
+    private sealed class TaskRow(int id, string title)
+    {
+        public int Id { get; } = id;
+        public string Title { get; } = title;
+    }
+
+    private static readonly Func<TaskRow, object> ById = row => row.Id;
+
+    private bool _byId = true;
+    private int _loads = 1;
+    private IList<TaskRow> _rows = new List<TaskRow>
+    {
+        new(1, "Write the spec"), new(2, "Review the design"), new(3, "Build the API"), new(4, "Ship it")
+    };
+
+    // What a refresh from the server does: the same rows, in the order last saved, as new objects.
+    private void Reload()
+    {
+        _rows = _rows.Select(row => new TaskRow(row.Id, row.Title)).ToList();
+        _loads++;
+    }
+}

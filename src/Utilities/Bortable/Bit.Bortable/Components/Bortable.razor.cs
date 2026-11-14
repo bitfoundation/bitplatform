@@ -20,12 +20,15 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
 {
     private static readonly EqualityComparer<TItem> Comparer = EqualityComparer<TItem>.Default;
 
+    // How the list tells its items apart (see ItemKey): by the key ItemKey gives them, or as the items compare.
+    private Identity _identity = Identity.Default;
+
     // Items currently selected for multi-drag in this list.
-    private readonly HashSet<TItem> _selected = new();
+    private HashSet<TItem> _selected = new(Identity.Default);
 
     // The key each item is rendered with (data-bortable-key), by which the browser layer names an item. Items are
     // compared the way @key compares them, so an item keeps its key for as long as it stays in the list.
-    private readonly Dictionary<object, string> _keyOf = new(ItemComparer.Instance);
+    private Dictionary<object, string> _keyOf = new(new ItemComparer(Identity.Default));
     private readonly Dictionary<string, TItem> _itemOf = new(StringComparer.Ordinal);
 
     private ElementReference _listElement;
@@ -66,6 +69,17 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
     /// <summary>Template rendered for each item.</summary>
     [Parameter] public RenderFragment<TItem>? ItemTemplate { get; set; }
 
+    /// <summary>
+    /// What identifies an item, e.g. <c>card => card.Id</c>: the value its element is keyed by (<c>@key</c>), by which the
+    /// list finds it, tells it from the other items and keeps it selected. Give it when the page may replace the items
+    /// with new instances of the same data - a list loaded again from a server - so that each item keeps its element,
+    /// its focus and its selection; or when items compared by reference stand for records with an id. The key must be
+    /// unique within the list and must not change while the item is in it, and a <see cref="Clone"/> factory has to
+    /// give a copy a key of its own: a copy whose key is already in the target list is refused as a duplicate.
+    /// Default: the item itself, compared by its <c>Equals</c>.
+    /// </summary>
+    [Parameter] public Func<TItem, object>? ItemKey { get; set; }
+
     /// <summary>Optional extra content rendered after the items (e.g. an empty-state placeholder).</summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
@@ -82,6 +96,15 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
 
     /// <summary>Lists that share the same group name can exchange items.</summary>
     [Parameter] public string? Group { get; set; }
+
+    /// <summary>
+    /// Other groups whose items may be dropped into this list, besides its own <see cref="Group"/>: a trash or an archive
+    /// list that takes the cards of several boards, say. It lets items in only - this list's own items still go only to
+    /// the lists of its group, or to lists that name its group here - and <see cref="Put"/>, <see cref="MaxItems"/>,
+    /// <see cref="CanDrop"/> and the item type apply as for any other drop. The SortableJS <c>group.put</c> option
+    /// given a list of group names.
+    /// </summary>
+    [Parameter] public IReadOnlyCollection<string>? PutGroups { get; set; }
 
     /// <summary>Controls how items may be dragged out of this list.</summary>
     [Parameter] public BortablePull Pull { get; set; } = BortablePull.Move;
@@ -115,6 +138,13 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
     /// (the default) sets no limit.
     /// </summary>
     [Parameter] public int? MaxItems { get; set; }
+
+    /// <summary>
+    /// The fewest items this list keeps: an item is not moved out to another list when that would leave fewer (a
+    /// multi-drag counts every item it carries away). Reordering within the list, cloning out of it and swapping are not
+    /// affected, and neither is a change the page makes to the list itself. <c>null</c> (the default) sets no limit.
+    /// </summary>
+    [Parameter] public int? MinItems { get; set; }
 
     /// <summary>
     /// Asked once an item has been dropped into this list - from this list or another one - whether to keep the
@@ -371,6 +401,16 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
     {
         _parametersVersion++;
 
+        // A new ItemKey tells the items apart differently: the sets that hold them are built again with it.
+        if (!ReferenceEquals(ItemKey, _identity.Key))
+        {
+            _identity = ItemKey is null ? Identity.Default : new Identity(ItemKey);
+            _selected = new HashSet<TItem>(_selected, _identity);
+            var keys = new Dictionary<object, string>(new ItemComparer(_identity));
+            foreach (var (item, key) in _keyOf) keys[item] = key;
+            _keyOf = keys;
+        }
+
         // A selection set by the page (@bind-SelectedItems) replaces the list's own.
         if (MultiDrag && SelectedItems is { } wanted && !ReferenceEquals(wanted, _publishedSelection))
         {
@@ -385,7 +425,7 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
         {
             var items = Items;
             if (!MultiDrag || items is null) _selected.Clear();
-            else _selected.RemoveWhere(item => !items.Contains(item));
+            else _selected.IntersectWith(new HashSet<TItem>(items, _identity));
         }
     }
 
@@ -402,7 +442,7 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
     {
         var ctx = Service.Context;
         string? dragState = null;
-        if (ctx is not null && ReferenceEquals(ctx.CurrentZone, this) && ctx.Item is TItem dragged && Comparer.Equals(dragged, item))
+        if (ctx is not null && ReferenceEquals(ctx.CurrentZone, this) && ctx.Item is TItem dragged && _identity.Equals(dragged, item))
         {
             if (ctx.PlaceholderZone is null || ReferenceEquals(ctx.PlaceholderZone, this))
                 // A keyboard drag moves the item itself, with no drag image: it is chosen, not a ghost of itself.
@@ -414,7 +454,7 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
         }
 
         bool swapTarget = ctx is not null && ReferenceEquals(ctx.SwapTargetZone, this)
-            && ctx.SwapTargetItem is TItem target && Comparer.Equals(target, item);
+            && ctx.SwapTargetItem is TItem target && _identity.Equals(target, item);
 
         return Css("bit-bortable-item", ItemClass, ItemClassSelector?.Invoke(item), dragState,
             swapTarget ? SwapClass : null,
@@ -481,7 +521,7 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
     {
         var items = Items;
         if (!KeyboardEnabled || items is null || items.Count == 0) return null;
-        if (_activeKey is not null && _itemOf.TryGetValue(_activeKey, out var active) && items.Contains(active)) return _activeKey;
+        if (_activeKey is not null && _itemOf.TryGetValue(_activeKey, out var active) && IndexOfItem(active) >= 0) return _activeKey;
         return KeyOf(items[0]);
     }
 
@@ -520,7 +560,7 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
         var items = Items;
         if (items is null || _keyOf.Count <= items.Count * 2 + 32) return;
 
-        var keep = new Dictionary<object, string>(ItemComparer.Instance);
+        var keep = new Dictionary<object, string>(new ItemComparer(_identity));
         foreach (var item in items)
             if (item is not null && _keyOf.TryGetValue(item, out var key)) keep[item] = key;
 
@@ -545,9 +585,9 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
     private async Task<bool> SelectAsync(TItem item, bool range)
     {
         var items = Items;
-        if (!MultiDrag || items is null || !CanDrag(item) || items.IndexOf(item) is var at && at < 0) return false;
+        if (!MultiDrag || items is null || !CanDrag(item) || IndexOfItem(item) is var at && at < 0) return false;
 
-        int from = range && _anchor is { } anchor ? items.IndexOf(anchor.Item) : -1;
+        int from = range && _anchor is { } anchor ? IndexOfItem(anchor.Item) : -1;
         if (from >= 0)
         {
             for (int i = Math.Min(from, at); i <= Math.Max(from, at); i++)
@@ -715,12 +755,12 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
 
     private async Task<BortableKeyResult> PickAsync(string key)
     {
-        if (_disposed || !KeyboardEnabled || Items is null || !_itemOf.TryGetValue(key, out var item) || Items.IndexOf(item) < 0)
+        if (_disposed || !KeyboardEnabled || Items is null || !_itemOf.TryGetValue(key, out var item) || IndexOfItem(item) < 0)
             return NotDragging;
 
         _activeKey = key;
         if (!CanDrag(item))
-            return new BortableKeyResult { Announce = EffectiveMessages.Locked(new BortableAnnouncement { Item = LabelOf(item), Position = Items.IndexOf(item) + 1, Count = Items.Count, List = AriaLabel }) };
+            return new BortableKeyResult { Announce = EffectiveMessages.Locked(new BortableAnnouncement { Item = LabelOf(item), Position = IndexOfItem(item) + 1, Count = Items.Count, List = AriaLabel }) };
 
         var started = await StartAsync(key, "keyboard");
         if (started is null) return NotDragging;
@@ -735,7 +775,7 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
             return NotDragging;
 
         _activeKey = key;
-        var about = new BortableAnnouncement { Item = LabelOf(item), Position = Items.IndexOf(item) + 1, Count = Items.Count, List = AriaLabel };
+        var about = new BortableAnnouncement { Item = LabelOf(item), Position = IndexOfItem(item) + 1, Count = Items.Count, List = AriaLabel };
         if (!CanDrag(item)) return new BortableKeyResult { Announce = EffectiveMessages.Locked(about) };
 
         bool selected = await SelectAsync(item, range: false);
@@ -912,7 +952,7 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
     /// </summary>
     private BortableMoveInfo? BeginDrag(TItem item, BortableInput input, bool carrySelection)
     {
-        int oldIndex = Items?.IndexOf(item) ?? -1;
+        int oldIndex = IndexOfItem(item);
         if (oldIndex < 0) return null;
 
         // Multi-drag: dragging a selected item carries the whole selection; dragging an
@@ -1030,7 +1070,7 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
         // drop index is still expressed in this list's indices (hidden item included).
         if (target < 0) return ClearSwapTarget(ctx) ? Changed : Unchanged; // dead zone: keep the current order (and any preview)
 
-        int from = Items.IndexOf(dragged);
+        int from = IndexOfItem(dragged);
         if (from < 0) return Unchanged;
         int insertAt = Math.Min(target > from ? target - 1 : target, Items.Count - 1);
         bool previewedElsewhere = ctx.PlaceholderZone is not null;
@@ -1109,16 +1149,19 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
     {
         if (Items is null || ctx.PullMode == BortablePull.None || !CanReceiveFrom(ctx.Source)) return false;
 
+        // A swap leaves both lists as long as they were; any other drop takes the items out of the source for good.
+        if (!Swap && !ctx.Source.LetsGo(ctx)) return false;
+
         // Every incoming item must be of this list's type and not already in it: Blazor
         // requires unique @key values, so a value-equal duplicate cannot be added.
         if (ctx.MultiItems is { } block && ctx.PullMode == BortablePull.Move)
         {
             foreach (var item in block)
-                if (item is not TItem t || Items.Contains(t)) return false;
+                if (item is not TItem t || IndexOfItem(t) >= 0) return false;
             return HasRoomFor(block.Count);
         }
 
-        return ctx.Item is TItem dragged && !Items.Contains(dragged) && HasRoomFor(1);
+        return ctx.Item is TItem dragged && IndexOfItem(dragged) < 0 && HasRoomFor(1);
     }
 
     /// <summary>Whether <see cref="MaxItems"/> leaves room for <paramref name="incoming"/> more items. A swap brings one and takes one.</summary>
@@ -1128,8 +1171,30 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
     {
         if (Disabled || !Put || !IsMutable) return false;
         if (ReferenceEquals(source, this)) return true;
-        if (Group is null || source.GroupName is null) return false;
-        return string.Equals(Group, source.GroupName, StringComparison.Ordinal);
+        if (source.GroupName is not { } group) return false;
+        if (string.Equals(Group, group, StringComparison.Ordinal)) return true;
+        return PutGroups is { Count: > 0 } groups && groups.Contains(group, StringComparer.Ordinal);
+    }
+
+    /// <summary>
+    /// Whether <see cref="MinItems"/> lets the drag <paramref name="ctx"/>, which started in this list, take its items
+    /// out of it for good: a clone leaves them, and items a keyboard drag already carried out count as gone.
+    /// </summary>
+    private bool LetsGo(BortableDragContext ctx)
+    {
+        if (MinItems is not { } min || ctx.PullMode != BortablePull.Move) return true;
+
+        int leaving = 0;
+        if (ctx.MultiItems is { } block)
+        {
+            foreach (var item in block)
+                if (item is TItem t && IndexOfItem(t) >= 0) leaving++;
+        }
+        else if (ctx.Item is TItem t && IndexOfItem(t) >= 0)
+        {
+            leaving = 1;
+        }
+        return Count - leaving >= min;
     }
 
     /// <summary>Shows (or moves) the drop placeholder in this zone at <paramref name="index"/>.</summary>
@@ -1211,7 +1276,8 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
             NewIndex = index,
             From = ctx.Source,
             To = this,
-            Input = ctx.Input
+            Input = ctx.Input,
+            SwappedWith = partner
         };
         if (!AllowsMove(ctx, swapped)) return false;
         if (home) return true;
@@ -1224,7 +1290,8 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
             NewIndex = back.IndexOf(ctx.Item),
             From = this,
             To = back,
-            Input = ctx.Input
+            Input = ctx.Input,
+            SwappedWith = ctx.Item
         });
     }
 
@@ -1272,6 +1339,7 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
         fromZone.Replace(fromIndex, target);
         toZone.Replace(toIndex, dragged);
         ctx.CurrentZone = toZone;
+        ctx.SwappedWith = target;
     }
 
     // ----- drop / end ----------------------------------------------------
@@ -1415,7 +1483,8 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
                 To = to,
                 Input = ctx.Input,
                 IsClone = IsCloneInto(ctx, to),
-                Canceled = canceled
+                Canceled = canceled,
+                SwappedWith = canceled ? null : ctx.SwappedWith
             },
             // Only the lists the drag left different: an item dragged away and back again changed nothing.
             ChangedZones = ctx.TouchedZones.Where(ctx.Changed).ToList(),
@@ -1473,7 +1542,7 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
         if (_disposed || Disabled || Items is null || Service.Context is not null || Service.Confirming > 0) return false;
 
         bool within = ReferenceEquals(target, this);
-        int from = Items.IndexOf(item);
+        int from = IndexOfItem(item);
         if (from < 0 || newIndex < 0) return false;
         if (within ? newIndex >= Items.Count || newIndex == from : newIndex > (target.IsSwap ? target.Count - 1 : target.Count)) return false;
 
@@ -1775,7 +1844,7 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
 
         // Never insert an item of the wrong type or one that is already here (a
         // duplicate @key, e.g. a Clone factory returning an equal value): cancel instead.
-        if (moving is not TItem item || Items.Contains(item)) return;
+        if (moving is not TItem item || IndexOfItem(item) >= 0) return;
 
         int sourceIndex = -1;
         if (!clone)
@@ -1938,11 +2007,12 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
     bool IBortableZone.CanReceiveFrom(IBortableZone source) => CanReceiveFrom(source);
     bool IBortableZone.Accepts(object item) => item is TItem;
     bool IBortableZone.TakesDrag(BortableDragContext ctx) => !_disposed && HandlesDrag(ctx);
+    bool IBortableZone.LetsGo(BortableDragContext ctx) => LetsGo(ctx);
 
     private int Count => Items?.Count ?? 0;
     int IBortableZone.Count => Count;
 
-    int IBortableZone.IndexOf(object item) => Items is not null && item is TItem t ? Items.IndexOf(t) : -1;
+    int IBortableZone.IndexOf(object item) => item is TItem t ? IndexOfItem(t) : -1;
 
     object? IBortableZone.ItemAt(int index) => Items![index];
 
@@ -2001,8 +2071,12 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
     void IBortableZone.EndDrag()
     {
         var items = Items;
-        if (_selected.Count > 0 && items is not null && _selected.RemoveWhere(item => !items.Contains(item)) > 0)
-            _selectionChanged = true;
+        if (_selected.Count > 0 && items is not null)
+        {
+            int before = _selected.Count;
+            _selected.IntersectWith(new HashSet<TItem>(items, _identity));
+            if (_selected.Count != before) _selectionChanged = true;
+        }
     }
 
     Task IBortableZone.RaiseEventAsync(BortableEventType type, BortableMoveInfo info)
@@ -2068,7 +2142,9 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
             ToGroup = info.To.GroupName,
             Input = info.Input,
             IsClone = info.IsClone,
-            Canceled = info.Canceled
+            Canceled = info.Canceled,
+            IsSwap = info.SwappedWith is not null,
+            SwappedWith = info.SwappedWith is TItem partner ? partner : default
         };
     }
 
@@ -2151,15 +2227,55 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
         }
     }
 
-    /// <summary>Compares boxed items the way <c>@key</c> compares the items themselves.</summary>
-    private sealed class ItemComparer : IEqualityComparer<object>
+    /// <summary>
+    /// Where <paramref name="item"/> is in the list, found by its identity (<see cref="ItemKey"/>); <c>-1</c> when it is
+    /// not there.
+    /// </summary>
+    private int IndexOfItem(TItem item)
     {
-        public static readonly ItemComparer Instance = new();
+        var items = Items;
+        if (items is null) return -1;
+        if (_identity.Key is null) return items.IndexOf(item);
 
+        for (int i = 0; i < items.Count; i++)
+            if (_identity.Equals(items[i], item)) return i;
+        return -1;
+    }
+
+    /// <summary>The value an item's element is keyed by (<c>@key</c>): its <see cref="ItemKey"/>, or the item itself.</summary>
+    private object? ElementKey(TItem item) => _identity.Key is { } key && item is not null ? key(item) : item;
+
+    /// <summary>
+    /// Tells items apart the way their elements are keyed: by the key <see cref="ItemKey"/> gives them, or - without
+    /// one - as the items themselves compare.
+    /// </summary>
+    private sealed class Identity(Func<TItem, object>? key) : IEqualityComparer<TItem>
+    {
+        public static readonly Identity Default = new(null);
+
+        public Func<TItem, object>? Key => key;
+
+        public bool Equals(TItem? x, TItem? y)
+        {
+            if (key is null) return Comparer.Equals(x!, y!);
+            if (x is null || y is null) return x is null && y is null;
+            return object.Equals(key(x), key(y));
+        }
+
+        public int GetHashCode(TItem obj)
+        {
+            if (obj is null) return 0;
+            return key is null ? Comparer.GetHashCode(obj) : key(obj)?.GetHashCode() ?? 0;
+        }
+    }
+
+    /// <summary>Compares boxed items the way <c>@key</c> compares the items themselves.</summary>
+    private sealed class ItemComparer(Identity identity) : IEqualityComparer<object>
+    {
         bool IEqualityComparer<object>.Equals(object? x, object? y)
-            => x is TItem a && y is TItem b ? Comparer.Equals(a, b) : Equals(x, y);
+            => x is TItem a && y is TItem b ? identity.Equals(a, b) : Equals(x, y);
 
         int IEqualityComparer<object>.GetHashCode(object obj)
-            => obj is TItem item ? Comparer.GetHashCode(item!) : obj.GetHashCode();
+            => obj is TItem item ? identity.GetHashCode(item) : obj.GetHashCode();
     }
 }

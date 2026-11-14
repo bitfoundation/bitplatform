@@ -33,7 +33,8 @@
 
             bool canDrag = CanDrag(current);
             string? key = KeyOf(current);
-            <div @key="current"
+            bool selected = MultiDrag && _selected.Contains(current);
+            <div @key="ElementKey(current)"
                  class="@ItemCssClass(current)"
                  role="listitem"
                  tabindex="@(keyboard ? (key == activeKey ? "0" : "-1") : null)"
@@ -42,6 +43,7 @@
                  data-bortable-item="true"
                  data-bortable-key="@key"
                  data-bortable-disabled="@(canDrag ? null : "true")"
+                 data-bortable-selected="@(selected ? "true" : null)"
                  draggable="@(canDrag && string.IsNullOrEmpty(Handle) ? "true" : "false")"
                  @onclick="ItemClickCallback(current)">
                 @if (ItemTemplate is not null)
