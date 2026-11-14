@@ -408,6 +408,7 @@ public partial class AppAiChat : IAppAiChat
         //#endif
     }
 
+    // The cast stays here, out of line: the WebAssembly interpreter compiles OnInitAsync as it starts, before GetHubConnection has loaded SignalR
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static IBitAiTransport CreateTransport(object hubConnection) => new BitAiSignalRTransport((HubConnection)hubConnection);
 
