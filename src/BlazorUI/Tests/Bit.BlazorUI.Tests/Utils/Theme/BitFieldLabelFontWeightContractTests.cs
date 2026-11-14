@@ -39,6 +39,7 @@ public sealed class BitFieldLabelFontWeightContractTests
         (".bit-dtp-lbl", "Bit.BlazorUI/Components/Inputs/DatePicker/BitDatePicker.scss"),
         (".bit-dtrp-lbl", "Bit.BlazorUI/Components/Inputs/DateRangePicker/BitDateRangePicker.scss"),
         (".bit-drp-lbl", "Bit.BlazorUI/Components/Inputs/Dropdown/BitDropdown.scss"),
+        (".bit-lbx-lbl", "Bit.BlazorUI/Components/Inputs/ListBox/BitListBox.scss"),
         (".bit-nfl-lbl", "Bit.BlazorUI/Components/Inputs/NumberField/BitNumberField.scss"),
         (".bit-otp-lbl", "Bit.BlazorUI/Components/Inputs/OtpInput/BitOtpInput.scss"),
         (".bit-rtg-lbl", "Bit.BlazorUI/Components/Inputs/Rating/BitRating.scss"),
@@ -71,6 +72,7 @@ public sealed class BitFieldLabelFontWeightContractTests
         ".bit-ldn-lbl", // the text under a loading indicator
         ".bit-prb-lbl", // the text of a progress bar
         ".bit-pgn-lbl", // the page text of a pagination
+        ".bit-stp-lbl", // the text and description of a step of a stepper
         ".bit-tag-lbl", // the text of a tag
         ".bit-dtg-chooser-label", // a checkbox row of a data grid's column chooser
         ".bit-pdv-page-label", // the page number of a pdf viewer

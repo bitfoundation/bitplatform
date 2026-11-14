@@ -60,17 +60,17 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="bunit" Version="2.14.0" />
+        <PackageReference Include="bunit" Version="2.15.2" />
         <PackageReference Include="MSTest" Version="4.5.2" />
     </ItemGroup>
 
     <!-- The AI packages' transports end to end: the SSE and WebSocket endpoints and the hub of Bit.BlazorUI.AI.Server hosted
          in memory, read by the SSE, WebSocket and SignalR transports. -->
     <ItemGroup>
-        <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.AspNetCore.TestHost" Version="10.0.14" />
-        <PackageReference Condition="'$(TargetFramework)' == 'net11.0'" Include="Microsoft.AspNetCore.TestHost" Version="11.0.0-rc.3.26522.148" />
-        <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.14" />
-        <PackageReference Condition="'$(TargetFramework)' == 'net11.0'" Include="Microsoft.AspNetCore.SignalR.Client" Version="11.0.0-rc.3.26522.148" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.AspNetCore.TestHost" Version="10.0.15" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net11.0'" Include="Microsoft.AspNetCore.TestHost" Version="11.0.0" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.15" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net11.0'" Include="Microsoft.AspNetCore.SignalR.Client" Version="11.0.0" />
     </ItemGroup>
 
     <!-- IsRuntimeInvalid probes framework-internal members of these assemblies reflectively and

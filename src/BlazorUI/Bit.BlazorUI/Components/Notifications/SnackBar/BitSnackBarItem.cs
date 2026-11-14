@@ -200,6 +200,16 @@ public class BitSnackBarItem
     public string? Role { get; set; }
 
     /// <summary>
+    /// When this snack bar item last arrived on the screen, set by the host as it shows the item.
+    /// </summary>
+    /// <remarks>
+    /// This is <c>null</c> until the item has been shown, which an item still waiting in the queue has not. An item
+    /// shown again takes the time of its new arrival. It is what a list of past notifications, such as the
+    /// <see cref="BitSnackBarService.History"/>, shows as their time.
+    /// </remarks>
+    public DateTimeOffset? ShownAt { get; internal set; }
+
+    /// <summary>
     /// The title text of the snack bar item.
     /// </summary>
     public string Title { get; set; } = default!;

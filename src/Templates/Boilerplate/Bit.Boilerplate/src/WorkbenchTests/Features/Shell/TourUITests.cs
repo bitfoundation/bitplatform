@@ -19,7 +19,7 @@ public class TourUITests : WorkbenchPageTest
     private static readonly Regex onTheSamplesArrow = new($"/flows/{WorkbenchSampleFlows.BuildingsId}\\?{WorkbenchUrls.ArrowQueryKey}={WorkbenchSampleFlows.BuildingsAddArrowId}$");
 
     /// <summary>The steps up to and including the Flows one, after the first.</summary>
-    private static readonly string[] stepsToFlows = [WorkbenchStrings.HomeWhyHeadStartTitle, WorkbenchStrings.HomeWhyDevicesTitle, WorkbenchStrings.HomeWhyStatesTitle, WorkbenchStrings.HomeWhyStoresTitle, WorkbenchStrings.HomeWhyRealTitle, WorkbenchStrings.HomeWhyLiveTitle, WorkbenchStrings.Flows];
+    private static readonly string[] stepsToFlows = [WorkbenchStrings.HomeWhyHeadStartTitle, WorkbenchStrings.HomeWhyDevicesTitle, WorkbenchStrings.HomeWhyStatesTitle, WorkbenchStrings.HomeWhyStoresTitle, WorkbenchStrings.HomeWhyRealTitle, WorkbenchStrings.HomeWhyLiveTitle, WorkbenchStrings.HomeWhyProgressTitle, WorkbenchStrings.Flows];
 
     /// <summary>The steps on the building sample's board: the arrow's one only where an arrow can be changed.</summary>
     private string[] BoardSteps => HasAgent ? [WorkbenchStrings.Flows, WorkbenchStrings.TourArrowsTitle] : [WorkbenchStrings.Flows];
@@ -71,6 +71,10 @@ public class TourUITests : WorkbenchPageTest
         await Expect(Page.Locator("#wb-tab-review")).ToHaveAttributeAsync("aria-selected", "true");
         await Expect(Page).ToHaveURLAsync(new Regex("/workbench/pos-dashboard"));
 
+        await Advance(WorkbenchStrings.HomeWhyProgressTitle);
+        await Expect(Page).ToHaveURLAsync(new Regex($"{WorkbenchUrls.Progress}$"));
+        await Expect(Page.Locator(".task-list")).ToBeVisibleAsync();
+
         await Advance(WorkbenchStrings.Flows);
         await Expect(Page).ToHaveURLAsync(onTheSample);
         await Expect(Page.Locator(".screen-card")).ToHaveCountAsync(3);
@@ -113,6 +117,22 @@ public class TourUITests : WorkbenchPageTest
         await Expect(Popover).ToHaveCountAsync(0);
         await Expect(Views).ToHaveCountAsync(1);
         await Expect(Page).ToHaveURLAsync(new Regex("theme=dark.*device=desktop-1536"));
+    }
+
+    [TestMethod, OnDesktops]
+    public async Task TheTour_Should_EndOnTheViewTabWhicheverTabItStartedFrom(WorkbenchSurface surface)
+    {
+        await OpenWorkbench("shifts");
+
+        await Press(Page.Locator("#wb-tab-checks"));
+        await Expect(Page.Locator("#wb-tab-checks")).ToHaveAttributeAsync("aria-selected", "true");
+
+        await Press(Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.TourStart, Exact = true }));
+        await Advance(WorkbenchStrings.HomeWhyHeadStartTitle);
+        await Press(Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.TourSkip, Exact = true }));
+
+        await Expect(Popover).ToHaveCountAsync(0);
+        await Expect(Page.Locator("#wb-tab-view")).ToHaveAttributeAsync("aria-selected", "true");
     }
 
     [TestMethod, OnDesktops]
@@ -180,7 +200,7 @@ public class TourUITests : WorkbenchPageTest
 
         await Press(Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.TourStart, Exact = true }));
 
-        foreach (var title in new[] { WorkbenchStrings.HomeWhyHeadStartTitle, WorkbenchStrings.HomeWhyDevicesTitle, WorkbenchStrings.HomeWhyStatesTitle, WorkbenchStrings.HomeWhyStoresTitle, WorkbenchStrings.HomeWhyRealTitle, WorkbenchStrings.HomeWhyLiveTitle, WorkbenchStrings.Flows })
+        foreach (var title in new[] { WorkbenchStrings.HomeWhyHeadStartTitle, WorkbenchStrings.HomeWhyDevicesTitle, WorkbenchStrings.HomeWhyStatesTitle, WorkbenchStrings.HomeWhyStoresTitle, WorkbenchStrings.HomeWhyRealTitle, WorkbenchStrings.HomeWhyLiveTitle, WorkbenchStrings.HomeWhyProgressTitle, WorkbenchStrings.Flows })
         {
             await Advance(title);
         }
@@ -188,9 +208,14 @@ public class TourUITests : WorkbenchPageTest
         await Expect(Page).ToHaveURLAsync(new Regex($"/flows/{WorkbenchSampleFlows.BuildingsId}$"));
 
         await Press(Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.TourBack, Exact = true }));
+        await Expect(Popover.GetByText(WorkbenchStrings.HomeWhyProgressTitle, new() { Exact = true })).ToBeVisibleAsync();
+        await Expect(Page).ToHaveURLAsync(new Regex($"{WorkbenchUrls.Progress}$"));
+
+        await Press(Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.TourBack, Exact = true }));
         await Expect(Popover.GetByText(WorkbenchStrings.HomeWhyLiveTitle, new() { Exact = true })).ToBeVisibleAsync();
         await Expect(Page.Locator("#wb-tab-review")).ToHaveAttributeAsync("aria-selected", "true");
 
+        await Advance(WorkbenchStrings.HomeWhyProgressTitle);
         await Advance(WorkbenchStrings.Flows);
         await Press(Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.TourSkip, Exact = true }));
 
@@ -284,6 +309,10 @@ public class TourUITests : WorkbenchPageTest
         await ExpectAboveTheCard(Page.Locator("#wb-inspector"));
         await Expect(Page.Locator("#wb-tab-review")).ToHaveAttributeAsync("aria-selected", "true");
 
+        await Advance(WorkbenchStrings.HomeWhyProgressTitle);
+        await Expect(Page).ToHaveURLAsync(new Regex($"{WorkbenchUrls.Progress}$"));
+        await ExpectAboveTheCard(Page.Locator(".list-title"));
+
         await Advance(WorkbenchStrings.Flows);
         await Expect(Page).ToHaveURLAsync(onTheSample);
         await Expect(Page.Locator(".screen-card")).ToHaveCountAsync(3);
@@ -318,7 +347,7 @@ public class TourUITests : WorkbenchPageTest
         await Page.GotoAsync(new Uri(Server.Address, "workbench/pos-dashboard?tour=true").ToString());
         await Expect(Popover.GetByText(WorkbenchStrings.HomeWhyAgentsTitle, new() { Exact = true })).ToBeVisibleAsync();
 
-        foreach (var title in new[] { WorkbenchStrings.HomeWhyHeadStartTitle, WorkbenchStrings.HomeWhyDevicesTitle, WorkbenchStrings.HomeWhyStatesTitle, WorkbenchStrings.HomeWhyStoresTitle, WorkbenchStrings.HomeWhyRealTitle, WorkbenchStrings.HomeWhyLiveTitle, WorkbenchStrings.Flows })
+        foreach (var title in new[] { WorkbenchStrings.HomeWhyHeadStartTitle, WorkbenchStrings.HomeWhyDevicesTitle, WorkbenchStrings.HomeWhyStatesTitle, WorkbenchStrings.HomeWhyStoresTitle, WorkbenchStrings.HomeWhyRealTitle, WorkbenchStrings.HomeWhyLiveTitle, WorkbenchStrings.HomeWhyProgressTitle, WorkbenchStrings.Flows })
         {
             await Advance(title);
         }
@@ -327,10 +356,13 @@ public class TourUITests : WorkbenchPageTest
 
         await Page.GoBackAsync();
 
-        await Expect(Popover.GetByText(WorkbenchStrings.HomeWhyLiveTitle, new() { Exact = true })).ToBeVisibleAsync();
+        await Expect(Popover.GetByText(WorkbenchStrings.HomeWhyProgressTitle, new() { Exact = true })).ToBeVisibleAsync();
+        await Expect(Page).ToHaveURLAsync(new Regex($"{WorkbenchUrls.Progress}$"));
 
         // The card's own Back reloads the view during the step that hides it: it has to keep a size there, or its page draws nothing.
         await Advance(WorkbenchStrings.Flows);
+        await Press(Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.TourBack, Exact = true }));
+        await Expect(Popover.GetByText(WorkbenchStrings.HomeWhyProgressTitle, new() { Exact = true })).ToBeVisibleAsync();
         await Press(Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.TourBack, Exact = true }));
         await Expect(Popover.GetByText(WorkbenchStrings.HomeWhyLiveTitle, new() { Exact = true })).ToBeVisibleAsync();
         await Expect(Views).ToHaveCountAsync(1);

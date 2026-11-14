@@ -588,6 +588,13 @@
 
 @* ---------- Unmount ---------- *@
 
+<E2ESection Id="mask" Title="Mask">
+    <BitTextField Id="tf-mask-date" Label="Date" Mask="##/##/####" Immediate @bind-Value="_maskedDate" />
+    <span id="mask-date-value">@_maskedDate</span>
+    <BitTextField Id="tf-mask-phone" Label="Phone" Mask="(###) ###-####" MaskRawValue @bind-Value="_maskedPhone" />
+    <span id="mask-phone-value">@_maskedPhone</span>
+</E2ESection>
+
 <E2ESection Id="unmount" Title="Unmount">
     <button id="btn-toggle-mount" type="button" @onclick="() => _mounted = !_mounted">toggle mount</button>
     <span id="mounted">@_mounted</span>
@@ -612,6 +619,8 @@
     ];
 
     private string? _basicValue;
+    private string? _maskedDate;
+    private string? _maskedPhone;
 
     private bool _disabled = true;
     private int _disabledClicks;

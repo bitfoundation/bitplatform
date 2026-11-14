@@ -1074,12 +1074,12 @@ public class BitAccordionListFeaturesTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitAccordionListShouldRenderTheEmptyContentOnlyWhileTheListIsEmpty()
+    public void BitAccordionListShouldRenderTheEmptyTemplateOnlyWhileTheListIsEmpty()
     {
         var component = RenderComponent<BitAccordionList<BitAccordionListItem>>(parameters =>
         {
             parameters.Add(p => p.Items, []);
-            parameters.Add(p => p.EmptyContent, (RenderFragment)(builder => builder.AddMarkupContent(0, "<span class=\"no-items\">Nothing here</span>")));
+            parameters.Add(p => p.EmptyTemplate, (RenderFragment)(builder => builder.AddMarkupContent(0, "<span class=\"no-items\">Nothing here</span>")));
         });
 
         Assert.AreEqual(1, component.FindAll(".no-items").Count);
@@ -1092,19 +1092,56 @@ public class BitAccordionListFeaturesTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitAccordionListShouldRenderTheEmptyContentOfAListOfOptions()
+    public void BitAccordionListShouldRenderTheEmptyTemplateOfAListOfOptions()
     {
         // A list of options only knows it is empty once its options have had their turn to register, so the
         // empty content needs a render of its own - and an empty list has no option to ask for one.
         var component = RenderComponent<BitAccordionList<BitAccordionListOption>>(parameters =>
         {
             parameters.Add(p => p.ChildContent, (RenderFragment)(builder => { }));
-            parameters.Add(p => p.EmptyContent, (RenderFragment)(builder => builder.AddMarkupContent(0, "<span class=\"no-items\">Nothing here</span>")));
+            parameters.Add(p => p.EmptyTemplate, (RenderFragment)(builder => builder.AddMarkupContent(0, "<span class=\"no-items\">Nothing here</span>")));
         });
 
         Assert.AreEqual(1, component.FindAll(".no-items").Count);
     }
 
+    [TestMethod]
+    public void BitAccordionListShouldSayItHasNoItemsInTheDefaultWordsOrItsOwn()
+    {
+        var component = RenderComponent<BitAccordionList<BitAccordionListItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, []);
+            parameters.Add(p => p.Classes, new BitAccordionListClassStyles { Empty = "my-empty" });
+            parameters.Add(p => p.Styles, new BitAccordionListClassStyles { Empty = "color:red" });
+        });
+
+        var empty = component.Find(".bit-acl-emp");
+        Assert.AreEqual("No items found", empty.TextContent.Trim());
+        Assert.IsTrue(empty.ClassList.Contains("my-empty"));
+        Assert.AreEqual("color:red", empty.GetAttribute("style"));
+
+        component.Render(parameters => parameters.Add(p => p.EmptyText, "Nothing yet"));
+        Assert.AreEqual("Nothing yet", component.Find(".bit-acl-emp").TextContent.Trim());
+
+        // The template takes the place of the text, inside the same part.
+        component.Render(parameters => parameters.Add(p => p.EmptyTemplate, (RenderFragment)(builder => builder.AddMarkupContent(0, "<span class=\"no-items\">Nothing here</span>"))));
+        Assert.AreEqual("Nothing here", component.Find(".bit-acl-emp > .no-items").TextContent);
+        Assert.IsFalse(component.Find(".bit-acl-emp").TextContent.Contains("Nothing yet"));
+
+        component.Render(parameters => parameters.Add(p => p.Items, GetItems()));
+        Assert.AreEqual(0, component.FindAll(".bit-acl-emp").Count);
+    }
+
+    [TestMethod]
+    public void BitAccordionListOfOptionsShouldSayItHasNoItemsOnlyOnceItsOptionsHadTheirTurn()
+    {
+        var component = RenderComponent<BitAccordionList<BitAccordionListOption>>(parameters =>
+        {
+            parameters.Add(p => p.ChildContent, (RenderFragment)(builder => { }));
+        });
+
+        Assert.AreEqual("No items found", component.Find(".bit-acl-emp").TextContent.Trim());
+    }
     [TestMethod]
     public void BitAccordionListShouldNameItselfAsAGroupOnlyWhenItCarriesALabel()
     {

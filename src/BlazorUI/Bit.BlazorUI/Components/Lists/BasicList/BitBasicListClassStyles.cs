@@ -37,4 +37,9 @@ public class BitBasicListClassStyles
     /// Custom CSS classes/styles for the LoadMore text of the list.
     /// </summary>
     public string? LoadMoreText { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for what the list shows when there is no item to show.
+    /// </summary>
+    public string? Empty { get; set; }
 }

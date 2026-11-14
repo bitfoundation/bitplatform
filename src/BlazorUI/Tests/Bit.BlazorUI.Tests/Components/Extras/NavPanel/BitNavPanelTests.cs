@@ -521,7 +521,7 @@ public class BitNavPanelTests : BunitTestContext
         {
             parameters.Add(p => p.Items, TreeItems());
             parameters.Add(p => p.SearchDebounceTime, 0);
-            parameters.Add(p => p.EmptyListMessage, "Nothing here!");
+            parameters.Add(p => p.NoResultsText, "Nothing here!");
         });
 
         component.Find(".bit-srb-inp").Change("zzz");
@@ -543,13 +543,13 @@ public class BitNavPanelTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitNavPanelEmptyListTemplateShouldReplaceTheMessage()
+    public void BitNavPanelNoResultsTemplateShouldReplaceTheMessage()
     {
         var component = RenderComponent<BitNavPanel<BitNavItem>>(parameters =>
         {
             parameters.Add(p => p.Items, TreeItems());
             parameters.Add(p => p.SearchDebounceTime, 0);
-            parameters.Add<RenderFragment>(p => p.EmptyListTemplate, b => b.AddMarkupContent(0, "<div class='empty'>None</div>"));
+            parameters.Add<RenderFragment>(p => p.NoResultsTemplate, b => b.AddMarkupContent(0, "<div class='empty'>None</div>"));
         });
 
         component.Find(".bit-srb-inp").Change("zzz");
@@ -1849,7 +1849,7 @@ public class BitNavPanelTests : BunitTestContext
         component.WaitForAssertion(() =>
         {
             Assert.AreEqual(0, component.FindAll(".bit-nav-ict").Count);
-            Assert.AreEqual("Nothing found!", component.Find(".bit-txt").TextContent.Trim());
+            Assert.AreEqual("No results found", component.Find(".bit-txt").TextContent.Trim());
         });
     }
 
@@ -2779,21 +2779,21 @@ public class BitNavPanelTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitNavPanelShouldApplyItsEmptyListMessageClassesAndStyles()
+    public void BitNavPanelShouldApplyItsNoResultsClassesAndStyles()
     {
         var component = RenderComponent<BitNavPanel<BitNavItem>>(parameters =>
         {
             parameters.Add(p => p.Items, Items);
             parameters.Add(p => p.SearchText, "zzz");
-            parameters.Add(p => p.Classes, new BitNavPanelClassStyles { EmptyListMessage = "c-empty" });
-            parameters.Add(p => p.Styles, new BitNavPanelClassStyles { EmptyListMessage = "color:red" });
+            parameters.Add(p => p.Classes, new BitNavPanelClassStyles { NoResults = "c-empty" });
+            parameters.Add(p => p.Styles, new BitNavPanelClassStyles { NoResults = "color:red" });
         });
 
         component.WaitForAssertion(() =>
         {
             var message = component.Find(".bit-txt");
 
-            Assert.AreEqual("Nothing found!", message.TextContent.Trim());
+            Assert.AreEqual("No results found", message.TextContent.Trim());
             Assert.IsTrue(message.ClassList.Contains("c-empty"));
             StringAssert.Contains(message.GetAttribute("style"), "color:red");
         });

@@ -312,6 +312,9 @@
     <data name="ToggleWorkbenchTheme" xml:space="preserve">
         <value>Växla arbetsbänken mellan ljust och mörkt</value>
     </data>
+    <data name="WorkbenchLanguage" xml:space="preserve">
+        <value>Arbetsbänkens språk</value>
+    </data>
     <data name="PosStoreAll" xml:space="preserve">
         <value>Alla butiker</value>
     </data>
@@ -814,16 +817,16 @@
         <value>Limburg</value>
     </data>
     <data name="HomePageTitle" xml:space="preserve">
-        <value>Arbetsbänk · Designa, granska och ta skärmbilder av varje sida</value>
+        <value>Arbetsbänk · Där du och din AI-agent bygger appen</value>
     </data>
     <data name="HomeEyebrow" xml:space="preserve">
         <value>En del av ditt projekt</value>
     </data>
     <data name="HomeHeadline" xml:space="preserve">
-        <value>Gör klart designen innan backenden finns.</value>
+        <value>Där du och din AI-agent bygger appen.</value>
     </data>
     <data name="HomeLead" xml:space="preserve">
-        <value>Arbetsbänken kör appens sidor med exempeldata, så att du kan designa varje läge, se det på alla enheter och exportera skärmbilder redo för appbutikerna, med samma komponenter och tema som din app levereras med.</value>
+        <value>Designa varje sida på exempeldata, i varje tillstånd och på varje enhet, granska den med kommentarer som din agent svarar på medan du skriver, och följ dess långa uppgifter, som en driftsättning eller en ny funktion, genom att svara på frågorna med ett klick eller din röst. Allt i ditt eget projekt, med appens egna komponenter och tema.</value>
     </data>
     <data name="HomeStartHere" xml:space="preserve">
         <value>Börja här</value>
@@ -856,13 +859,13 @@
         <value>Därför har ditt projekt en arbetsbänk</value>
     </data>
     <data name="HomeWhySubtitle" xml:space="preserve">
-        <value>Ett designverktyg, en testbänk och en fotostudio för dina sidor, inne i själva projektet.</value>
+        <value>Ett designverktyg, en testbänk, en fotostudio och din agents kontrollrum, i själva projektet.</value>
     </data>
     <data name="HomeWhyAgentsTitle" xml:space="preserve">
-        <value>Designa med valfri AI-agent</value>
+        <value>Arbeta med valfri AI-agent</value>
     </data>
     <data name="HomeWhyAgentsText" xml:space="preserve">
-        <value>Du behöver inte Claude Design eller Figma. Oavsett om du använder Codex, Copilot eller Claude Code kan din agent designa sidor här, titta på dem i en riktig webbläsare och förfina dem.</value>
+        <value>Claude Code, Codex, Copilot, Gemini, Junie eller Cursor: din agent designar sidor här och tittar på dem i en riktig webbläsare, visar hur dess långa uppgifter går och frågar dig vad den behöver. Du behöver inte Claude Design eller Figma.</value>
     </data>
     <data name="HomeWhyRealTitle" xml:space="preserve">
         <value>Riktiga komponenter, inte skisser</value>
@@ -907,7 +910,7 @@
         <value>Fråga din AI</value>
     </data>
     <data name="HomeHowStep1Text" xml:space="preserve">
-        <value>Be Claude, Codex, GitHub Copilot, Gemini eller Junie om sidan, så byggs den här med exempeldata som laddas precis som riktiga data.</value>
+        <value>Be Claude, Codex, GitHub Copilot, Gemini eller Junie om en sida, en funktion eller en driftsättning. Sidor byggs här på exempeldata som laddas som den riktiga.</value>
     </data>
     <data name="HomeHowStep2Title" xml:space="preserve">
         <value>Granska varje läge</value>
@@ -2458,10 +2461,10 @@
         <value>Granska live med din AI-agent</value>
     </data>
     <data name="HomeWhyLiveText" xml:space="preserve">
-        <value>Fäst en kommentar var som helst på en sida. På din egen dator får din kodningsagent den medan du skriver, ändrar sidan, svarar i kommentaren och bockar av den. Fungerar med Claude Code, Codex, Copilot, Gemini, Junie och Cursor.</value>
+        <value>Fäst en kommentar var som helst på en sida, skriven eller talad. På din egen dator får din kodagent den medan du skriver, ändrar sidan, svarar på kommentaren och bockar av den. Fungerar med Claude Code, Codex, Copilot, Gemini, Junie och Cursor.</value>
     </data>
     <data name="TourLiveText" xml:space="preserve">
-        <value>Fäst en kommentar var som helst på en sida. På din egen dator får din kodningsagent den medan du skriver, ändrar sidan, svarar i kommentaren och bockar av den. Fungerar med Claude Code, Codex, Copilot, Gemini, Junie och Cursor. Prova nu: skriv din kommentar och skicka den.</value>
+        <value>Fäst en kommentar var som helst på en sida, skriven eller talad: mikrofonen bredvid Skicka gör om din röst till text. På din egen dator får din kodagent den medan du skriver, ändrar sidan, svarar på kommentaren och bockar av den. Fungerar med Claude Code, Codex, Copilot, Gemini, Junie och Cursor. Prova nu: skriv din kommentar och skicka den.</value>
     </data>
     <data name="HomeChipLive" xml:space="preserve">
         <value>Livegranskning med AI</value>
@@ -4811,5 +4814,532 @@
     </data>
     <data name="ThemeLocalizationNote" xml:space="preserve">
         <value>Alla texter i komponenterna på den här sidan är inte översatta till alla språk. Det betyder inte att det inte går: varje komponent här kan lokaliseras, men att översätta alla deras texter tillförde lite till det sidan är till för. Be din AI-agent att göra klart översättningarna när du behöver dem.</value>
+    </data>
+    <data name="Progress" xml:space="preserve">
+        <value>Förlopp</value>
+    </data>
+    <data name="ProgressTitle" xml:space="preserve">
+        <value>Dina agenter i arbete</value>
+    </data>
+    <data name="ProgressLead" xml:space="preserve">
+        <value>Varje lång uppgift dina AI-agenter kör, en per chatt: vad som är gjort, vad agenten gör just nu, vad som återstår och vad den behöver från dig.</value>
+    </data>
+    <data name="ProgressTasks" xml:space="preserve">
+        <value>Uppgifter</value>
+    </data>
+    <data name="ProgressSamplesTitle" xml:space="preserve">
+        <value>Det här är exempel</value>
+    </data>
+    <data name="ProgressSamplesText" xml:space="preserve">
+        <value>Dina agenters uppgifter visas här så snart en startar. Tills dess kan du prova de här: svara på en fråga, bocka av ett steg eller skriv till agenten.</value>
+    </data>
+    <data name="ProgressSamplesVisitorText" xml:space="preserve">
+        <value>Uppgifterna för agenterna på den här arbetsbänken visas bara på datorn den körs på. De här exemplen visar vad du skulle se där.</value>
+    </data>
+    <data name="ProgressGroupNeedsYou" xml:space="preserve">
+        <value>Väntar på dig</value>
+    </data>
+    <data name="ProgressGroupWorking" xml:space="preserve">
+        <value>Pågår</value>
+    </data>
+    <data name="ProgressGroupFinished" xml:space="preserve">
+        <value>Avslutade</value>
+    </data>
+    <data name="ProgressAllTasks" xml:space="preserve">
+        <value>Alla uppgifter</value>
+    </data>
+    <data name="ProgressNeedsYou" xml:space="preserve">
+        <value>Väntar på dig</value>
+    </data>
+    <data name="ProgressWorking" xml:space="preserve">
+        <value>Arbetar</value>
+    </data>
+    <data name="ProgressDone" xml:space="preserve">
+        <value>Klar</value>
+    </data>
+    <data name="ProgressFailed" xml:space="preserve">
+        <value>Misslyckades</value>
+    </data>
+    <data name="ProgressStopped" xml:space="preserve">
+        <value>Stoppad</value>
+    </data>
+    <data name="ProgressNeedsYouCount" xml:space="preserve">
+        <value>{0} väntar på dig</value>
+    </data>
+    <data name="ProgressStepsDone" xml:space="preserve">
+        <value>{0} av {1} steg</value>
+    </data>
+    <data name="ProgressAgentActive" xml:space="preserve">
+        <value>aktiv nu</value>
+    </data>
+    <data name="ProgressAgentLastSeen" xml:space="preserve">
+        <value>hördes av senast {0}</value>
+    </data>
+    <data name="ProgressStarted" xml:space="preserve">
+        <value>Startade {0}</value>
+    </data>
+    <data name="ProgressUpdated" xml:space="preserve">
+        <value>Uppdaterad {0}</value>
+    </data>
+    <data name="ProgressSample" xml:space="preserve">
+        <value>Exempel</value>
+    </data>
+    <data name="ProgressYourTurn" xml:space="preserve">
+        <value>Din tur</value>
+    </data>
+    <data name="ProgressYourTurnHint" xml:space="preserve">
+        <value>{0} fortsätter så snart du svarar.</value>
+    </data>
+    <data name="ProgressOpenLink" xml:space="preserve">
+        <value>Öppna</value>
+    </data>
+    <data name="ProgressDidIt" xml:space="preserve">
+        <value>Klart</value>
+    </data>
+    <data name="ProgressNothingForYou" xml:space="preserve">
+        <value>Inget väntar på dig just nu. {0} kallar på dig här när det behövs.</value>
+    </data>
+    <data name="ProgressSteps" xml:space="preserve">
+        <value>Steg</value>
+    </data>
+    <data name="ProgressNoSteps" xml:space="preserve">
+        <value>Agenten har inte listat sina steg än.</value>
+    </data>
+    <data name="ProgressYou" xml:space="preserve">
+        <value>Du</value>
+    </data>
+    <data name="ProgressStepTodo" xml:space="preserve">
+        <value>Att göra</value>
+    </data>
+    <data name="ProgressStepDoing" xml:space="preserve">
+        <value>Pågår</value>
+    </data>
+    <data name="ProgressStepDone" xml:space="preserve">
+        <value>Klart</value>
+    </data>
+    <data name="ProgressStepBlocked" xml:space="preserve">
+        <value>Blockerat</value>
+    </data>
+    <data name="ProgressStepSkipped" xml:space="preserve">
+        <value>Hoppades över</value>
+    </data>
+    <data name="ProgressKeepInMind" xml:space="preserve">
+        <value>Tänk på</value>
+    </data>
+    <data name="ProgressNoteInfo" xml:space="preserve">
+        <value>Notering</value>
+    </data>
+    <data name="ProgressNoteWarning" xml:space="preserve">
+        <value>Varning</value>
+    </data>
+    <data name="ProgressNoteDecision" xml:space="preserve">
+        <value>Beslut</value>
+    </data>
+    <data name="ProgressNoteSuccess" xml:space="preserve">
+        <value>Klart</value>
+    </data>
+    <data name="ProgressNoteError" xml:space="preserve">
+        <value>Problem</value>
+    </data>
+    <data name="ProgressLinks" xml:space="preserve">
+        <value>Länkar</value>
+    </data>
+    <data name="ProgressActivity" xml:space="preserve">
+        <value>Aktivitet</value>
+    </data>
+    <data name="ProgressMessagePlaceholder" xml:space="preserve">
+        <value>Skriv till {0}</value>
+    </data>
+    <data name="ProgressDelete" xml:space="preserve">
+        <value>Ta bort uppgiften</value>
+    </data>
+    <data name="ProgressDeleteConfirm" xml:space="preserve">
+        <value>Ta bort för gott?</value>
+    </data>
+    <data name="ProgressPickTask" xml:space="preserve">
+        <value>Välj en uppgift för att se hur det går.</value>
+    </data>
+    <data name="ProgressTaskGone" xml:space="preserve">
+        <value>Uppgiften finns inte längre. Agenten kan ha avslutat och tagit bort den.</value>
+    </data>
+    <data name="ProgressAddNote" xml:space="preserve">
+        <value>Lägg till en notering</value>
+    </data>
+    <data name="ProgressAnswerPlaceholder" xml:space="preserve">
+        <value>Ditt svar</value>
+    </data>
+    <data name="ProgressNotePlaceholder" xml:space="preserve">
+        <value>Något att lägga till? (valfritt)</value>
+    </data>
+    <data name="ProgressYes" xml:space="preserve">
+        <value>Ja</value>
+    </data>
+    <data name="ProgressNo" xml:space="preserve">
+        <value>Nej</value>
+    </data>
+    <data name="ProgressSendAnswer" xml:space="preserve">
+        <value>Skicka svar</value>
+    </data>
+    <data name="ProgressAnswerFailed" xml:space="preserve">
+        <value>Frågan har besvarats eller dragits tillbaka under tiden.</value>
+    </data>
+    <data name="ProgressSent" xml:space="preserve">
+        <value>Skickat till {0}.</value>
+    </data>
+    <data name="ProgressSampleSentTitle" xml:space="preserve">
+        <value>Det här är ett exempel</value>
+    </data>
+    <data name="ProgressSampleSent" xml:space="preserve">
+        <value>I en riktig uppgift får {0} det här direkt och fortsätter.</value>
+    </data>
+    <data name="ProgressSampleSecret" xml:space="preserve">
+        <value>I en riktig uppgift går den dit frågan säger, och {0} fortsätter utan att se den.</value>
+    </data>
+    <data name="ProgressSecretToGitHubEnvironment" xml:space="preserve">
+        <value>Den går direkt till GitHub som {0}, en secret i miljön {1}. {2} ser den aldrig.</value>
+    </data>
+    <data name="ProgressSecretToGitHub" xml:space="preserve">
+        <value>Den går direkt till GitHub som {0}, en secret i repositoryt. {1} ser den aldrig.</value>
+    </data>
+    <data name="ProgressSecretToFile" xml:space="preserve">
+        <value>Den hamnar i en fil utanför projektet, som {0} använder i sina kommandon utan att någonsin se den.</value>
+    </data>
+    <data name="ProgressSecretPlaceholder" xml:space="preserve">
+        <value>Klistra in den här</value>
+    </data>
+    <data name="ProgressSecretStore" xml:space="preserve">
+        <value>Spara</value>
+    </data>
+    <data name="ProgressSecretStored" xml:space="preserve">
+        <value>Sparad. {0} fortsätter utan att någonsin se den.</value>
+    </data>
+    <data name="ProgressSecretStoreFailed" xml:space="preserve">
+        <value>Den kunde inte sparas: {0}</value>
+    </data>
+    <data name="ProgressSecretOnlyHere" xml:space="preserve">
+        <value>Bara datorn som den här arbetsbänken körs på kan ta emot en hemlighet.</value>
+    </data>
+    <data name="ProgressSecretAnswered" xml:space="preserve">
+        <value>Sparad, visas aldrig</value>
+    </data>
+    <data name="ProgressEntryStepDone" xml:space="preserve">
+        <value>Klart: {0}</value>
+    </data>
+    <data name="ProgressAgentNeedsYou" xml:space="preserve">
+        <value>{0} behöver dig</value>
+    </data>
+    <data name="ProgressAgentFinished" xml:space="preserve">
+        <value>{0} har slutfört en uppgift</value>
+    </data>
+    <data name="ProgressAgentStopped" xml:space="preserve">
+        <value>{0} har stoppat en uppgift</value>
+    </data>
+    <data name="ProgressGuideListTitle" xml:space="preserve">
+        <value>Varje chatt, en lista</value>
+    </data>
+    <data name="ProgressGuideListText" xml:space="preserve">
+        <value>Varje AI-chatt som kör en lång uppgift, som en första driftsättning eller en ny funktion, visar sitt förlopp här bredvid de andra. Det som väntar på dig kommer först.</value>
+    </data>
+    <data name="ProgressGuideTurnTitle" xml:space="preserve">
+        <value>Din tur</value>
+    </data>
+    <data name="ProgressGuideTurnText" xml:space="preserve">
+        <value>Svara på agentens frågor med ett klick, några ord eller din röst, och säg till när du har gjort din del. Den fortsätter så snart du skickar.</value>
+    </data>
+    <data name="ProgressGuideStepsTitle" xml:space="preserve">
+        <value>Vad som är klart och vad som återstår</value>
+    </data>
+    <data name="ProgressGuideStepsText" xml:space="preserve">
+        <value>Varje steg agenten har tagit, det den är på nu och vad som återstår. Stegen som bara du kan ta är markerade.</value>
+    </data>
+    <data name="ProgressGuideActivityTitle" xml:space="preserve">
+        <value>Prata med agenten</value>
+    </data>
+    <data name="ProgressGuideActivityText" xml:space="preserve">
+        <value>Skriv eller säg vad som helst till agenten här, och läs vad den gjorde och när. Den läser ditt meddelande nästa gång den hör av sig.</value>
+    </data>
+    <data name="ProgressGuideSoundTitle" xml:space="preserve">
+        <value>Den kallar på dig när den behöver dig</value>
+    </data>
+    <data name="ProgressGuideSoundText" xml:space="preserve">
+        <value>Ett ljud spelas när en agent frågar dig något, om inte arbetsbänken är ljudlös, och flikens titel räknar det som väntar på dig. Slå på aviseringar på en sidas granskningsflik för att få en även i en annan app.</value>
+    </data>
+    <data name="Dictate" xml:space="preserve">
+        <value>Diktering</value>
+    </data>
+    <data name="DictateIn" xml:space="preserve">
+        <value>Tala i stället för att skriva ({0})</value>
+    </data>
+    <data name="StopDictation" xml:space="preserve">
+        <value>Sluta lyssna</value>
+    </data>
+    <data name="DictationLanguage" xml:space="preserve">
+        <value>Dikteringsspråk</value>
+    </data>
+    <data name="Listening" xml:space="preserve">
+        <value>Lyssnar…</value>
+    </data>
+    <data name="MicrophoneBlocked" xml:space="preserve">
+        <value>Webbläsaren blockerade mikrofonen. Tillåt den för den här webbplatsen i adressfältet och försök igen.</value>
+    </data>
+    <data name="DictationNeedsNetwork" xml:space="preserve">
+        <value>Diktering kräver en internetanslutning i den här webbläsaren.</value>
+    </data>
+    <data name="DictationLanguageNotSupported" xml:space="preserve">
+        <value>Den här webbläsaren kan inte ta diktering på {0}.</value>
+    </data>
+    <data name="DictationFailed" xml:space="preserve">
+        <value>Dikteringen startade inte. Försök igen eller skriv i stället.</value>
+    </data>
+    <data name="TimeJustNow" xml:space="preserve">
+        <value>nyss</value>
+    </data>
+    <data name="TimeMinutesAgo" xml:space="preserve">
+        <value>för {0} min sedan</value>
+    </data>
+    <data name="TimeHoursAgo" xml:space="preserve">
+        <value>för {0} tim sedan</value>
+    </data>
+    <data name="SampleDeployTitle" xml:space="preserve">
+        <value>Driftsätt till Test och Produktion</value>
+    </data>
+    <data name="SampleDeploySummary" xml:space="preserve">
+        <value>Sätter upp Test- och Produktionsmiljöerna på din egen server, med appen på din domän.</value>
+    </data>
+    <data name="SampleDeployStepServices" xml:space="preserve">
+        <value>Hitta de externa tjänster appen behöver och deras nycklar</value>
+    </data>
+    <data name="SampleDeployStepEnvironments" xml:space="preserve">
+        <value>Skapa Test- och Produktionsmiljöerna på GitHub</value>
+    </data>
+    <data name="SampleDeployStepServer" xml:space="preserve">
+        <value>Skaffa en Linux-server och dela dess adress</value>
+    </data>
+    <data name="SampleDeployStepToken" xml:space="preserve">
+        <value>Skapa en API-token i Cloudflare</value>
+    </data>
+    <data name="SampleDeployStepTokenDetail" xml:space="preserve">
+        <value>Öppna My Profile och sedan API Tokens i Cloudflares instrumentpanel och skapa en som kan ändra DNS och Cloudflare Tunnel. Klistra sedan in den nedan.</value>
+    </data>
+    <data name="SampleDeployStepRunner" xml:space="preserve">
+        <value>Installera Docker och GitHub Actions-runnern på servern</value>
+    </data>
+    <data name="SampleDeployStepTunnel" xml:space="preserve">
+        <value>Servera appen på din domän via en Cloudflare Tunnel</value>
+    </data>
+    <data name="SampleDeployStepFirst" xml:space="preserve">
+        <value>Driftsätt till Test, sedan till Produktion</value>
+    </data>
+    <data name="SampleDeployAskEmail" xml:space="preserve">
+        <value>Vilken tjänst ska skicka appens e-post?</value>
+    </data>
+    <data name="SampleDeployAskEmailDetail" xml:space="preserve">
+        <value>Appen mejlar inloggningskoder och lösenordsåterställningar. Du kan ändra det senare.</value>
+    </data>
+    <data name="SampleDeployAskEmailOption1" xml:space="preserve">
+        <value>Ett gratiskonto hos en e-posttjänst</value>
+    </data>
+    <data name="SampleDeployAskEmailOption2" xml:space="preserve">
+        <value>Vårt företags e-postserver</value>
+    </data>
+    <data name="SampleDeployAskEmailOption3" xml:space="preserve">
+        <value>Ingen just nu: visa e-posten i loggarna</value>
+    </data>
+    <data name="SampleDeployAskSsh" xml:space="preserve">
+        <value>Stänga serverns SSH-port när tunneln fungerar?</value>
+    </data>
+    <data name="SampleDeployAskSshDetail" xml:space="preserve">
+        <value>Du når fortfarande servern via tunneln och via leverantörens webbkonsol.</value>
+    </data>
+    <data name="SampleDeployAskToken" xml:space="preserve">
+        <value>Klistra in Cloudflare-token</value>
+    </data>
+    <data name="SampleDeployNoteSecrets" xml:space="preserve">
+        <value>Nycklar och lösenord hamnar aldrig i en chatt. Du klistrar in dem här, och var och en går direkt dit den ska utan att jag ser den.</value>
+    </data>
+    <data name="SampleDeployNoteOneServer" xml:space="preserve">
+        <value>En server för båda miljöerna, för att hålla nere kostnaden.</value>
+    </data>
+    <data name="SampleDeployLinkCloudflare" xml:space="preserve">
+        <value>Cloudflares instrumentpanel</value>
+    </data>
+    <data name="SampleDeployFeed1" xml:space="preserve">
+        <value>Appen använder 6 externa tjänster; 3 av dem behöver nycklar från dina egna konton.</value>
+    </data>
+    <data name="SampleDeployFeed2" xml:space="preserve">
+        <value>Servern är redo på 203.0.113.24.</value>
+    </data>
+    <data name="SampleDeployFeed3" xml:space="preserve">
+        <value>Loggade in på servern med nyckeln du lade till och stängde av inloggning med lösenord.</value>
+    </data>
+    <data name="SampleDeployFeed4" xml:space="preserve">
+        <value>Väntar på Cloudflare-token för att sätta upp tunneln.</value>
+    </data>
+    <data name="SampleFeatureTitle" xml:space="preserve">
+        <value>Ny funktion: lojalitetspoäng</value>
+    </data>
+    <data name="SampleFeatureSummary" xml:space="preserve">
+        <value>Kunder tjänar poäng på varje beställning och använder dem i kassan. Nu när du har godkänt designen byggs den.</value>
+    </data>
+    <data name="SampleFeatureStepRequirements" xml:space="preserve">
+        <value>Spika kraven och skriva in dem i specen</value>
+    </data>
+    <data name="SampleFeatureStepPlan" xml:space="preserve">
+        <value>Planera arbetet i 6 uppgifter</value>
+    </data>
+    <data name="SampleFeatureStepDesign" xml:space="preserve">
+        <value>Godkänn designen i arbetsbänken</value>
+    </data>
+    <data name="SampleFeatureStepLedger" xml:space="preserve">
+        <value>Bygga poängliggaren och dess API</value>
+    </data>
+    <data name="SampleFeatureStepCheckout" xml:space="preserve">
+        <value>Använda poäng i kassan</value>
+    </data>
+    <data name="SampleFeatureStepTests" xml:space="preserve">
+        <value>Tester på mobiler och datorer</value>
+    </data>
+    <data name="SampleStepTryOnTest" xml:space="preserve">
+        <value>Prova i Testmiljön</value>
+    </data>
+    <data name="SampleFeatureAskWorth" xml:space="preserve">
+        <value>Hur mycket är en poäng värd i kassan?</value>
+    </data>
+    <data name="SampleFeatureAskWorthDetail" xml:space="preserve">
+        <value>Det hamnar i inställningarna så att du kan ändra det senare.</value>
+    </data>
+    <data name="SampleFeatureAskWorthPlaceholder" xml:space="preserve">
+        <value>Till exempel: 100 poäng = 10 kr</value>
+    </data>
+    <data name="SampleFeatureAskOrders" xml:space="preserve">
+        <value>Vilka beställningar ger poäng?</value>
+    </data>
+    <data name="SampleFeatureAskOrdersOption1" xml:space="preserve">
+        <value>Onlinebeställningar</value>
+    </data>
+    <data name="SampleFeatureAskOrdersOption2" xml:space="preserve">
+        <value>Beställningar i butik</value>
+    </data>
+    <data name="SampleFeatureAskOrdersOption3" xml:space="preserve">
+        <value>Beställningar betalda med presentkort</value>
+    </data>
+    <data name="SampleFeatureNoteExpiry" xml:space="preserve">
+        <value>Poängen går ut 12 månader efter att de tjänats in.</value>
+    </data>
+    <data name="SampleFeatureNoteSpec" xml:space="preserve">
+        <value>Allt som har beslutats hittills finns i funktionens spec, tillsammans med de frågor som är öppna.</value>
+    </data>
+    <data name="SampleFeatureLinkDesign" xml:space="preserve">
+        <value>Godkänd design</value>
+    </data>
+    <data name="SampleFeatureFeed1" xml:space="preserve">
+        <value>Skrev in kraven i specen; 3 frågor återstår för dig.</value>
+    </data>
+    <data name="SampleFeatureFeed2" xml:space="preserve">
+        <value>Ser bra ut. Gör poängmärket lite mindre.</value>
+    </data>
+    <data name="SampleFeatureFeed3" xml:space="preserve">
+        <value>Gjorde märket mindre och började bygga.</value>
+    </data>
+    <data name="SampleFeatureFeed4" xml:space="preserve">
+        <value>Liggaren och dess databasmigrering är på plats. Skriver dess API nu.</value>
+    </data>
+    <data name="SampleFixTitle" xml:space="preserve">
+        <value>Fix: återbetalningar saknas i den dagliga försäljningsrapporten</value>
+    </data>
+    <data name="SampleFixSummary" xml:space="preserve">
+        <value>Återbetalningar efter midnatt räknades på fel dag. Fixat, provat i Test och sammanslaget.</value>
+    </data>
+    <data name="SampleFixStepLogs" xml:space="preserve">
+        <value>Hitta orsaken i Produktions loggar</value>
+    </data>
+    <data name="SampleFixStepTest" xml:space="preserve">
+        <value>Skriva ett test som misslyckas utan fixen</value>
+    </data>
+    <data name="SampleFixStepFix" xml:space="preserve">
+        <value>Räkna återbetalningar i butikens egen tidszon</value>
+    </data>
+    <data name="SampleFixStepMerge" xml:space="preserve">
+        <value>Slå ihop, vilket uppdaterar Produktion</value>
+    </data>
+    <data name="SampleFixAskMerge" xml:space="preserve">
+        <value>Slå ihop med main? Det uppdaterar Produktion.</value>
+    </data>
+    <data name="SampleFixNoteDone" xml:space="preserve">
+        <value>Produktion kör fixen. Testet hindrar felet från att komma tillbaka.</value>
+    </data>
+    <data name="SampleFixLinkPullRequest" xml:space="preserve">
+        <value>Pull request</value>
+    </data>
+    <data name="SampleFixLinkTest" xml:space="preserve">
+        <value>Testmiljö</value>
+    </data>
+    <data name="SampleFixFeed1" xml:space="preserve">
+        <value>Hittade det: rapporten använde serverns tidszon, inte butikens.</value>
+    </data>
+    <data name="SampleFixFeed2" xml:space="preserve">
+        <value>Finns i Test nu. Prova en återbetalning efter midnatt.</value>
+    </data>
+    <data name="SampleFixFeed3" xml:space="preserve">
+        <value>Sammanslaget. Produktion är uppdaterad.</value>
+    </data>
+    <data name="HomeWhyProgressTitle" xml:space="preserve">
+        <value>Följ långa uppgifter, svara med ett klick</value>
+    </data>
+    <data name="HomeWhyProgressText" xml:space="preserve">
+        <value>En driftsättning eller en ny funktion kräver många steg, och vissa kan bara du ta. Varje agentchatt visar här vad som är gjort, vad som återstår och vad den behöver från dig, så att inget försvinner i en lång chatt. Nycklar och lösenord som du klistrar in där går direkt dit de ska, aldrig via chatten.</value>
+    </data>
+    <data name="HomeWhyVoiceTitle" xml:space="preserve">
+        <value>Tala i stället för att skriva</value>
+    </data>
+    <data name="HomeWhyVoiceText" xml:space="preserve">
+        <value>Tryck på mikrofonen bredvid en kommentar, ett svar eller en återkoppling och säg det. Webbläsaren gör om din röst till text, på det språk du väljer.</value>
+    </data>
+    <data name="TourProgressText" xml:space="preserve">
+        <value>En driftsättning eller en ny funktion kräver många steg, och vissa kan bara du ta. Varje agentchatt visar här vad som är gjort, vad som återstår och vad den behöver från dig. Svara med ett klick, några ord eller din röst, så fortsätter den direkt. Prova med exemplen.</value>
+    </data>
+    <data name="HomeFactAgent" xml:space="preserve">
+        <value>Dina agenters förlopp och frågor på ett ställe</value>
+    </data>
+    <data name="HomeHowStepAnswerTitle" xml:space="preserve">
+        <value>Följ och svara</value>
+    </data>
+    <data name="HomeHowStepAnswerText" xml:space="preserve">
+        <value>Följ förloppet, svara på frågorna med ett klick eller din röst och fäst kommentarer på sidan, som agenten svarar på medan du skriver.</value>
+    </data>
+    <data name="HomeProgressSubtitle" xml:space="preserve">
+        <value>Långa uppgifter som en första driftsättning eller en ny funktion rapporterar här medan de pågår, sida vid sida, hur många chattar du än kör.</value>
+    </data>
+    <data name="HomeProgressPointSteps" xml:space="preserve">
+        <value>Varje steg, det aktuella och vad som återstår</value>
+    </data>
+    <data name="HomeProgressPointAnswer" xml:space="preserve">
+        <value>Frågor du svarar på med ett klick eller din röst</value>
+    </data>
+    <data name="HomeProgressPointSound" xml:space="preserve">
+        <value>Ett ljud och en räknare på fliken när den behöver dig</value>
+    </data>
+    <data name="HomeProgressPointSecrets" xml:space="preserve">
+        <value>Nycklar och lösenord hamnar där de ska, aldrig via chatten</value>
+    </data>
+    <data name="HomeProgressOpen" xml:space="preserve">
+        <value>Öppna förloppet</value>
+    </data>
+    <data name="ProgressRunningFrom" xml:space="preserve">
+        <value>Den här arbetsbänken visar koden i {0}</value>
+    </data>
+    <data name="ProgressReport" xml:space="preserve">
+        <value>Rapport</value>
+    </data>
+    <data name="SampleFixReport" xml:space="preserve">
+        <value>**Orsak:** rapporten delade upp försäljningen efter serverns dag, som går på UTC, så en återbetalning efter midnatt i butiken räknades på dagen innan.
+
+**Åtgärd:** återbetalningar räknas nu i butikens egen tidszon, och ett nytt test gör en återbetalning klockan 00:30 butikstid och kontrollerar vilken dag den hamnar på.
+
+| Kontroll | Resultat |
+| --- | --- |
+| Alla tester | Godkända |
+| Återbetalning efter midnatt på Test | På rätt dag |
+| Production efter merge | Uppdaterad |</value>
     </data>
 </root>

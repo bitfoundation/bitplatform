@@ -94,7 +94,7 @@ public class TourCommentUITests : ReviewPageTest
         Assert.AreEqual("shifts", threads.Single(t => t.Messages[0].Text == text).PageKey);
 
         await Press(Button(WorkbenchStrings.TourNext));
-        await Expect(Popover.GetByText(WorkbenchStrings.Flows, new() { Exact = true })).ToBeVisibleAsync();
+        await Expect(Popover.GetByText(WorkbenchStrings.HomeWhyProgressTitle, new() { Exact = true })).ToBeVisibleAsync();
     }
 
     [TestMethod, OnDesktops]

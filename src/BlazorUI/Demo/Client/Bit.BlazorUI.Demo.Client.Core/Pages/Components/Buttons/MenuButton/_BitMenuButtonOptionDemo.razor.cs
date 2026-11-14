@@ -21,6 +21,9 @@ public partial class _BitMenuButtonOptionDemo
 
     private string? submenuClickedOption;
 
+    private string? contextClickedOption;
+    private BitMenuButton<BitMenuButtonOption> contextMenuButton = default!;
+
     private readonly BitMenuButtonParams[] menuButtonParams =
     [
         new()

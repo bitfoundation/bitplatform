@@ -63,7 +63,7 @@ public partial class OAuthTokenService(AppDbContext dbContext,
                    ?? throw new BadRequestException().WithData("Reason", "invalid_grant");
 
         if (await userManager.IsLockedOutAsync(user))
-            throw new BadRequestException().WithData("Reason", "invalid_grant");
+            throw new BadRequestException().WithData("Reason", "invalid_grant").WithData("Description", "The user is locked out.");
 
         //#if (multitenant == true)
         await EnsureActiveTenantMembership(user.Id, stored.TenantId, cancellationToken);
@@ -134,7 +134,7 @@ public partial class OAuthTokenService(AppDbContext dbContext,
             throw new BadRequestException().WithData("Reason", "invalid_grant");
 
         if ((ticket.Properties.ExpiresUtc ?? DateTimeOffset.MinValue) < timeProvider.GetUtcNow())
-            throw new BadRequestException().WithData("Reason", "invalid_grant");
+            throw new BadRequestException().WithData("Reason", "invalid_grant").WithData("Description", "The approval expired.");
 
         var clientId = ticket.Principal.GetClaimValue<string?>(AppClaimTypes.OAUTH_CLIENT_ID);
 
@@ -148,7 +148,7 @@ public partial class OAuthTokenService(AppDbContext dbContext,
             .Include(session => session.User)
             .Include(session => session.OAuthGrant)
             .FirstOrDefaultAsync(session => session.Id == sessionId, cancellationToken)
-            ?? throw new BadRequestException().WithData("Reason", "invalid_grant"); // Revoked from Settings -> Sessions.
+            ?? throw new BadRequestException().WithData("Reason", "invalid_grant").WithData("Description", "The approval was revoked."); // From Settings -> Sessions.
 
         var user = userSession.User!;
 
@@ -165,15 +165,15 @@ public partial class OAuthTokenService(AppDbContext dbContext,
             logger.LogWarning("Refresh token reuse detected for OAuth client {ClientId}. Revoking session {SessionId}.", clientId, sessionId);
             dbContext.UserSessions.Remove(userSession);
             await dbContext.SaveChangesAsync(cancellationToken);
-            throw new BadRequestException().WithData("Reason", "invalid_grant");
+            throw new BadRequestException().WithData("Reason", "invalid_grant").WithData("Description", "The refresh token was used twice, so the approval was revoked.");
         }
 
         var securityStamp = ticket.Principal.GetClaimValue<string?>(SecurityStampClaimType);
         if (string.Equals(await userManager.GetSecurityStampAsync(user), securityStamp, StringComparison.Ordinal) is false)
-            throw new BadRequestException().WithData("Reason", "invalid_grant");
+            throw new BadRequestException().WithData("Reason", "invalid_grant").WithData("Description", "The user's security changed since the approval, such as a new password.");
 
         if (await userManager.IsLockedOutAsync(user))
-            throw new BadRequestException().WithData("Reason", "invalid_grant");
+            throw new BadRequestException().WithData("Reason", "invalid_grant").WithData("Description", "The user is locked out.");
 
         //#if (multitenant == true)
         await EnsureActiveTenantMembership(user.Id, userSession.TenantId, cancellationToken);
@@ -216,7 +216,7 @@ public partial class OAuthTokenService(AppDbContext dbContext,
             return;
 
         if (await dbContext.TenantUsers.AnyAsync(tu => tu.UserId == userId && tu.TenantId == tenantId && tu.AcceptedOn != null && tu.Tenant!.IsActive, cancellationToken) is false)
-            throw new BadRequestException().WithData("Reason", "invalid_grant");
+            throw new BadRequestException().WithData("Reason", "invalid_grant").WithData("Description", "The user is no longer an active member of the team the approval was given in.");
     }
     //#endif
 

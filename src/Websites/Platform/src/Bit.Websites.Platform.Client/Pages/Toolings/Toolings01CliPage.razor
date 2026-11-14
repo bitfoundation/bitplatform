@@ -15,9 +15,9 @@
         With the bit CLI it's one command. <code>bit new</code> creates a bit Boilerplate project, installs what your machine is missing,
         builds it, starts it and opens it in your editor, ready for you and your AI assistant to work on.
     </BitText>
-    <CodeBox>dotnet tool install --global Bit.Cli --version 11.0.0-pre-18
+    <CodeBox>dotnet tool install --global Bit.Cli --version 11.0.0-pre-19
 bit new MyApp</CodeBox>
-    Or run it once without installing it: <code>dnx Bit.Cli --version 11.0.0-pre-18 -- new MyApp</code>
+    Or run it once without installing it: <code>dnx Bit.Cli --version 11.0.0-pre-19 -- new MyApp</code>
     <br />
     <br />
 
@@ -82,6 +82,7 @@ bit new Contoso.Shop --dry-run</CodeBox>
                 <li><code>bit clean</code> deletes the build outputs and downloaded packages, stopping on Windows whatever still holds their files.</li>
                 <li><code>bit rename</code> renames the project everywhere its name appears: files, folders, namespaces, database names and the app id.</li>
                 <li><code>bit remove</code> deletes a project folder for good, even while the app or a build process still holds its files.</li>
+                <li><code>bit api check</code> fails when a change to the api breaks the app versions your users still run, and <code>bit api release</code> keeps the api each release ships to compare with.</li>
                 <li><code>bit translate</code> fills in the missing translations of <code>.resx</code> files with any OpenAI-compatible LLM, and keeps the existing ones.</li>
                 <li><code>bit decode</code> reads a stack trace of an app shrunk by <a href="@Urls.Minifier">bit Minifier</a> back into the names its source has.</li>
                 <li><code>bit aot-profile</code> records which code a Blazor WebAssembly app really runs, so ahead-of-time compilation makes that code fast and leaves the download small.</li>
@@ -96,7 +97,7 @@ bit new Contoso.Shop --dry-run</CodeBox>
             <BitText Typography="BitTypography.H5" Gutter>In CI</BitText>
             <code>bit new</code> and <code>bit setup</code> prepare CI machines too, so a pipeline needs no steps of its own for Node.js, build tools, Playwright or the development certificate.
             The pipelines bit Boilerplate ships install bit once per job and let it build:
-            <CodeBox>dotnet tool install --global Bit.Cli --version 11.0.0-pre-18
+            <CodeBox>dotnet tool install --global Bit.Cli --version 11.0.0-pre-19
 bit setup --platforms android --no-browsers --yes</CodeBox>
             In CI it installs what a build and its tests need, and leaves alone what only a developer's machine needs, such as containers and the Aspire CLI.
         </div>

@@ -10,8 +10,9 @@ using Boilerplate.Server.Api.Infrastructure.SignalR;
 namespace Boilerplate.Tests.Features.Chatbot;
 
 /// <summary>
-/// The cards a tool shows in the conversation, end to end with only the model scripted: the real tool loads and signs the
-/// card, the real hub carries it to the real panel, which renders, stores and resends it.
+/// The cards a tool shows in the conversation, end to end with only the model scripted: the real tool says what to show,
+/// the real hub streams it with the answer, and the real panel draws it from the tool call (See AppAiChat.RegisterRenderers),
+/// keeps it on the device and sends it back with the answer, signed.
 /// </summary>
 [TestClass, TestCategory("UITest"), Retry(2)]
 public partial class AiChatPanelCardsUITests : AiChatPanelTestBase
@@ -68,13 +69,12 @@ public partial class AiChatPanelCardsUITests : AiChatPanelTestBase
         // The answer streams in under the cards it talks about.
         await Expect(panel.GetByText(answer)).ToBeVisibleAsync();
 
-        var rows = (await panel.Locator(".message-row").AllInnerTextsAsync()).ToList();
+        var cardsBox = await panel.Locator(".products").First.BoundingBoxAsync();
+        var answerBox = await panel.GetByText(answer).BoundingBoxAsync();
 
-        Assert.IsLessThan(rows.FindIndex(row => row.Contains(answer, StringComparison.Ordinal)),
-                          rows.FindIndex(row => row.Contains("EQB SUV", StringComparison.Ordinal)),
-                          $"The cards must come before the answer of their turn. Rows: {string.Join(" | ", rows)}");
+        Assert.IsLessThan(answerBox!.Y, cardsBox!.Y, "The cards must come before the answer of their turn.");
 
-        await Expect(panel.Locator(".default-prompt-button")).ToHaveTextAsync(["Which one is cheaper?"]);
+        await Expect(panel.GetByRole(AriaRole.Button, new() { Name = "Which one is cheaper?", Exact = true })).ToBeVisibleAsync();
 
         // So "open the second one" has a page to open: GetAppPages lists no product pages.
         var shownResult = await ToolResult(chatClient, "show-products");
@@ -156,9 +156,9 @@ public partial class AiChatPanelCardsUITests : AiChatPanelTestBase
 
         await SendChatMessage(panel, ClearFilesQuestion, chatClient);
 
-        var approval = panel.Locator(".approval");
-
-        await Expect(approval.GetByRole(AriaRole.Button, new() { Name = "Clear files" })).ToBeVisibleAsync();
+        // What clearing does is the app's own words, under the question, never the model's (See AiChatApprovalDetails).
+        await Expect(panel.GetByText(AppStrings.AiChatApprovalClearAppFilesRestart)).ToBeVisibleAsync();
+        await Expect(Approve(panel)).ToBeVisibleAsync();
 
         // Closing the panel ends no wait, and the launcher says an answer is still wanted.
         await panel.GetByRole(AriaRole.Button, new() { Name = "Close", Exact = true }).ClickAsync();
@@ -168,10 +168,10 @@ public partial class AiChatPanelCardsUITests : AiChatPanelTestBase
 
         panel = await OpenChatPanel();
 
-        await approval.GetByRole(AriaRole.Button, new() { Name = "Not now" }).ClickAsync();
+        await Decline(panel).ClickAsync();
 
-        await Expect(panel.GetByText("You kept the app's files.")).ToBeVisibleAsync();
         await Expect(panel.GetByText(answer)).ToBeVisibleAsync();
+        await Expect(Approve(panel)).ToHaveCountAsync(0);
         await Expect(Page.Locator(".open-panel-button.needs-answer")).ToHaveCountAsync(0);
 
         var result = await ToolResult(chatClient, "clear-files");
@@ -182,11 +182,13 @@ public partial class AiChatPanelCardsUITests : AiChatPanelTestBase
 
         panel = await OpenChatPanel();
 
+        // The decision is kept with the conversation, so the question isn't asked again.
         await Expect(panel.GetByText(ClearFilesQuestion)).ToBeVisibleAsync();
-        await Expect(panel.GetByText("You kept the app's files.")).ToBeVisibleAsync();
+        await Expect(panel.GetByText(answer)).ToBeVisibleAsync();
+        await Expect(Approve(panel)).ToHaveCountAsync(0);
     }
 
-    /// <summary>Sending another message instead of answering ends the wait and clears nothing.</summary>
+    /// <summary>Sending another message instead of answering stops the answer waiting on it, and clears nothing.</summary>
     [TestMethod]
     public async Task ClearingTheAppFiles_Should_ClearNothing_WhenTheUserMovesOnWithoutAnswering()
     {
@@ -206,48 +208,59 @@ public partial class AiChatPanelCardsUITests : AiChatPanelTestBase
 
         await SendChatMessage(panel, ClearFilesQuestion, chatClient);
 
-        await Expect(panel.Locator(".approval")).ToBeVisibleAsync();
+        await Expect(Approve(panel)).ToBeVisibleAsync();
 
         await SendFollowUpMessage(panel, nextQuestion, chatClient);
 
         await Expect(panel.GetByText(nextAnswer)).ToBeVisibleAsync();
-        await Expect(panel.Locator(".approval")).ToHaveCountAsync(0);
-        await Expect(panel.GetByText("Nothing was cleared: the request went unanswered.")).ToBeVisibleAsync();
+        await Expect(Approve(panel)).ToHaveCountAsync(0);
+        await Expect(Page.Locator(".open-panel-button.needs-answer")).ToHaveCountAsync(0);
+
+        Assert.DoesNotContain(message => message.Role == ChatRole.Assistant, chatClient.ReceivedConversations[^1],
+            "The answer stopped while it waited on the user is not the model's to read.");
 
         await Page.ReloadAsync(new() { WaitUntil = WaitUntilState.NetworkIdle });
 
         panel = await OpenChatPanel();
 
         await Expect(panel.GetByText(nextAnswer)).ToBeVisibleAsync();
-        await Expect(panel.GetByText("Nothing was cleared: the request went unanswered.")).ToBeVisibleAsync();
+        await Expect(Approve(panel)).ToHaveCountAsync(0);
     }
 
     /// <summary>Approved on the card, the conversation is deleted from the device and the app restarts.</summary>
     [TestMethod]
     public async Task ClearingTheAppFiles_Should_ClearThem_OnceTheUserApproves()
     {
+        const string greeting = "hello";
+        const string greetingAnswer = "Hi, how can I help?";
+
         var chatClient = new TestChatClient
         {
-            StreamingUpdates = (_, conversation) => ToolsRanSinceTheQuestion(conversation)
-                ? Answer("Clearing your app's files.")
-                : ToolCalls(new FunctionCallContent("clear-files", "ClearAppFiles"))
+            StreamingUpdates = (_, conversation) => LastQuestion(conversation) == greeting
+                ? Answer(greetingAnswer)
+                : ToolsRanSinceTheQuestion(conversation)
+                    ? Answer("Clearing your app's files.")
+                    : ToolCalls(new FunctionCallContent("clear-files", "ClearAppFiles"))
         };
 
         var panel = await StartChat(chatClient);
         var appUrl = Page.Url;
 
-        await SendChatMessage(panel, ClearFilesQuestion, chatClient);
+        // The conversation is kept as each answer ends, and the one waiting on the approval won't have yet: so one answered
+        // before it, for the conversation to be there to clear.
+        await SendChatMessage(panel, greeting, chatClient);
+        await Expect(panel.GetByText(greetingAnswer)).ToBeVisibleAsync();
 
-        var approval = panel.Locator(".approval");
+        await SendFollowUpMessage(panel, ClearFilesQuestion, chatClient);
 
-        await Expect(approval).ToBeVisibleAsync();
+        await Expect(Approve(panel)).ToBeVisibleAsync();
 
-        Assert.IsGreaterThan(0, await StoredConversationLength(), "Control: the conversation must be stored before the files are cleared.");
+        await Eventually(async () => await StoredConversationLength() > 0, "Control: the conversation must be stored before the files are cleared.");
 
         // Set on the page about to be cleared, so the app restarting shows as the flag going missing.
         await Page.EvaluateAsync("() => window.beforeClearingTheAppFiles = true");
 
-        await approval.GetByRole(AriaRole.Button, new() { Name = "Clear files" }).ClickAsync();
+        await Approve(panel).ClickAsync();
 
         var result = await ToolResult(chatClient, "clear-files");
 
@@ -255,7 +268,7 @@ public partial class AiChatPanelCardsUITests : AiChatPanelTestBase
 
         await Eventually(() => Page.EvaluateAsync<bool>("""
             async () => window.beforeClearingTheAppFiles !== true
-                        || (await indexedDB.databases()).every(database => database.name !== 'ai-chat')
+                        || (await indexedDB.databases()).every(database => database.name !== 'ai-chat-conversation')
             """), "Nothing was cleared: the conversation's database is still there, and the app never restarted.");
 
         // The app may be restarting itself right now, which aborts a navigation of our own.
@@ -285,7 +298,7 @@ public partial class AiChatPanelCardsUITests : AiChatPanelTestBase
 
         await SendChatMessage(panel, "I still can't sign in", chatClient);
 
-        var form = panel.Locator(".card-row");
+        var form = panel.Locator("form");
 
         await form.GetByRole(AriaRole.Textbox, new() { Name = "Email" }).FillAsync("someone@example.com");
 
@@ -304,12 +317,15 @@ public partial class AiChatPanelCardsUITests : AiChatPanelTestBase
         panel = await OpenChatPanel();
 
         await Expect(panel.GetByText(sent)).ToBeVisibleAsync();
-        await Expect(panel.Locator(".card-row").GetByRole(AriaRole.Textbox, new() { Name = "Email" })).ToHaveCountAsync(0);
+        await Expect(panel.GetByRole(AriaRole.Textbox, new() { Name = "Email" })).ToHaveCountAsync(0);
     }
 
-    /// <summary>A contact form nobody sent isn't stored, so a reload brings back the conversation without it.</summary>
+    /// <summary>
+    /// A contact form nobody sent comes back after a reload still to be sent: the model was told it showed one (See
+    /// AiChatProtocol.Replay), so it won't offer another.
+    /// </summary>
     [TestMethod]
-    public async Task AnUnsentContactForm_Should_NotComeBack_AfterAReload()
+    public async Task AnUnsentContactForm_Should_ComeBackStillToBeSent_AfterAReload()
     {
         const string answer = "Please leave your contact details in the form.";
 
@@ -324,7 +340,7 @@ public partial class AiChatPanelCardsUITests : AiChatPanelTestBase
 
         await SendChatMessage(panel, "I still can't sign in", chatClient);
 
-        await Expect(panel.Locator(".card-row").GetByRole(AriaRole.Textbox, new() { Name = "Email" })).ToBeVisibleAsync();
+        await Expect(panel.GetByRole(AriaRole.Textbox, new() { Name = "Email" })).ToBeVisibleAsync();
         await Expect(panel.GetByText(answer)).ToBeVisibleAsync();
 
         await Page.ReloadAsync(new() { WaitUntil = WaitUntilState.NetworkIdle });
@@ -332,7 +348,7 @@ public partial class AiChatPanelCardsUITests : AiChatPanelTestBase
         panel = await OpenChatPanel();
 
         await Expect(panel.GetByText(answer)).ToBeVisibleAsync();
-        await Expect(panel.Locator(".card-row")).ToHaveCountAsync(0);
+        await Expect(panel.GetByRole(AriaRole.Textbox, new() { Name = "Email" })).ToBeVisibleAsync();
     }
 
     //#if (module == "Sales")
@@ -364,8 +380,7 @@ public partial class AiChatPanelCardsUITests : AiChatPanelTestBase
         {
             var conversationsBefore = chatClient.ReceivedConversations.Count;
 
-            await panel.Locator("textarea").FillAsync(message);
-            await panel.Locator(".send-message-button").ClickAsync();
+            await Send(panel, message);
 
             if (await WaitForServerToReceiveAMessage(chatClient, conversationsBefore, TimeSpan.FromSeconds(15)))
                 return;
@@ -375,6 +390,10 @@ public partial class AiChatPanelCardsUITests : AiChatPanelTestBase
     }
     //#endif
     //#endif
+
+    private static ILocator Approve(ILocator panel) => panel.GetByRole(AriaRole.Button, new() { Name = AppStrings.AiChatApprovalApprove, Exact = true });
+
+    private static ILocator Decline(ILocator panel) => panel.GetByRole(AriaRole.Button, new() { Name = AppStrings.AiChatApprovalDecline, Exact = true });
 
     /// <summary>An answer in one piece.</summary>
     private static ChatResponseUpdate[] Answer(string text)
@@ -444,25 +463,25 @@ public partial class AiChatPanelCardsUITests : AiChatPanelTestBase
         throw new AssertFailedException(failure);
     }
 
-    /// <summary>How many messages and cards the panel has stored on this device (See AppAiChatPanel.RememberMessage).</summary>
+    /// <summary>How many conversations the panel has stored on this device - one at most (See AppAiChat.razor.History.cs).</summary>
     private Task<int> StoredConversationLength()
     {
         return Page.EvaluateAsync<int>("""
             async () => {
                 // Opening one that isn't there would create it, without the stores the app gives it.
-                if ((await indexedDB.databases()).every(database => database.name !== 'ai-chat')) return 0;
+                if ((await indexedDB.databases()).every(database => database.name !== 'ai-chat-conversation')) return 0;
 
                 const db = await new Promise((resolve, reject) => {
-                    const request = indexedDB.open('ai-chat');
+                    const request = indexedDB.open('ai-chat-conversation');
                     request.onsuccess = () => resolve(request.result);
                     request.onerror = () => reject(request.error);
                 });
 
                 try {
-                    if (db.objectStoreNames.contains('messages') === false) return 0;
+                    if (db.objectStoreNames.contains('conversation') === false) return 0;
 
                     return await new Promise((resolve, reject) => {
-                        const request = db.transaction('messages').objectStore('messages').count();
+                        const request = db.transaction('conversation').objectStore('conversation').count();
                         request.onsuccess = () => resolve(request.result);
                         request.onerror = () => reject(request.error);
                     });

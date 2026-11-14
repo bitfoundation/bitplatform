@@ -798,8 +798,8 @@ public partial class WorkbenchViewPage
         bonboardingService.SessionsChanged -= OnGuidesChanged;
         reference?.Dispose();
 
-        // A guide left running would keep pointing at a shell that is gone; the tour goes on when this is its way to the Flows page.
-        var isTourOnItsWay = IsTouring && IsOnFlowsPage;
+        // A guide left running would keep pointing at a shell that is gone; the tour goes on when this is its way to the Flows or Progress page.
+        var isTourOnItsWay = IsTouring && (IsOnFlowsPage || IsOnProgressPage);
 
         try
         {

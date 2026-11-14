@@ -141,7 +141,7 @@ public partial class BitAiOptionsProviderDemo
                 new() { Name = "DropFiles", Type = "string", DefaultValue = "\"Drop files to attach\"", Description = "Prompt shown over the composer while a file is dragged over it." },
                 new() { Name = "Edit", Type = "string", DefaultValue = "\"Edit\"", Description = "Label for editing a message." },
                 new() { Name = "Elapsed", Type = "string", DefaultValue = "\"Elapsed\"", Description = "Accessible label for the elapsed time of a running agent." },
-                new() { Name = "EmptyBody", Type = "string", DefaultValue = "\"Ask a question to get started.\"", Description = "Body shown above an empty conversation." },
+                new() { Name = "EmptyDescription", Type = "string", DefaultValue = "\"Ask a question to get started.\"", Description = "Body shown above an empty conversation." },
                 new() { Name = "EmptyTitle", Type = "string", DefaultValue = "\"How can I help?\"", Description = "Heading shown above an empty conversation." },
                 new() { Name = "Expand", Type = "string", DefaultValue = "\"Expand\"", Description = "Label for opening an artifact full screen." },
                 new() { Name = "FieldAboveMaximum", Type = "string", DefaultValue = "$\"{label} must be at most {maximum}.\"", Description = "FieldAboveMaximum(string label, double maximum): Validation message for a number above the maximum." },

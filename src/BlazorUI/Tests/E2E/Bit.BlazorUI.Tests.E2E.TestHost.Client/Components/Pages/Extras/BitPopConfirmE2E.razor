@@ -1,0 +1,41 @@
+﻿@page "/e2e/pop-confirm"
+
+<PageTitle>BitPopConfirm E2E</PageTitle>
+
+<h1>BitPopConfirm</h1>
+
+@* A pop confirm with a title and a message, whose answers are logged in the order they come; a disabled one whose
+   trigger counts its own clicks; and a page button that counts its clicks, for the click outside of the popup. *@
+<BitPopConfirm Id="pcf"
+               Title="Delete the file?"
+               Message="It cannot be brought back."
+               ConfirmText="Delete"
+               @bind-IsOpen="_isOpen"
+               OnConfirm="@(() => _answers.Add("confirm"))"
+               OnCancel="@(() => _answers.Add("cancel"))">
+    <button id="pcf-trigger" type="button">Delete</button>
+</BitPopConfirm>
+
+<BitPopConfirm Id="pcf-dis" Title="Never asked" Disabled>
+    <button id="pcf-dis-trigger" type="button" @onclick="() => _disabledClicks++">Disabled</button>
+</BitPopConfirm>
+
+<div style="margin-top: 240px;">
+    <button id="btn-page" type="button" @onclick="() => _pageClicks++">Page button</button>
+</div>
+
+<div id="pcf-answers">@string.Join(",", _answers)</div>
+<div id="pcf-open">@_isOpen</div>
+<div id="pcf-page-clicks">@_pageClicks</div>
+<div id="pcf-dis-clicks">@_disabledClicks</div>
+
+<div style="position: fixed; right: 8px; top: 8px;">
+    <E2EStatus />
+</div>
+
+@code {
+    private readonly List<string> _answers = [];
+    private bool _isOpen;
+    private int _pageClicks;
+    private int _disabledClicks;
+}

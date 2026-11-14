@@ -8,8 +8,8 @@ namespace Boilerplate.Tests.Features.Chatbot;
 public abstract class AiChatPanelTestBase : AppPageTest
 {
     /// <summary>
-    /// Opens the floating chat button and waits for the panel, including its locally rendered greeting - which is
-    /// the signal that the panel is fully interactive rather than merely present in the DOM.
+    /// Opens the floating chat button and waits for the panel's message box - the signal that the lazily loaded chat
+    /// is there and interactive rather than merely the panel around it.
     /// </summary>
     protected async Task<ILocator> OpenChatPanel()
     {
@@ -19,10 +19,13 @@ public abstract class AiChatPanelTestBase : AppPageTest
 
         var panel = Page.Locator(".panel-cnt");
         await Expect(panel).ToBeVisibleAsync();
-        await Expect(panel.Locator("textarea")).ToBeVisibleAsync();
+        await Expect(MessageBox(panel)).ToBeVisibleAsync();
 
         return panel;
     }
+
+    /// <summary>Where the user types: the panel's only multi-line text box.</summary>
+    protected static ILocator MessageBox(ILocator panel) => panel.Locator("textarea").First;
 
     /// <summary>
     /// Types a message, sends it, and waits until the server really received it.
@@ -30,15 +33,13 @@ public abstract class AiChatPanelTestBase : AppPageTest
     /// The wait is not decoration. SignalR traffic is invisible to Playwright's network waits and an anonymous
     /// connection leaves no server-side row to poll (See <c>AppHub.ChangeAuthenticationStateImplementation</c>: a new
     /// anonymous connection is deliberately not recorded), so the only observable proof that the message arrived is
-    /// the chatbot calling the model. And if the hub connection was not up yet, <c>AppAiChatPanel.StartChannel</c>
-    /// assigns its channel BEFORE <c>StreamAsync</c> throws, which leaves the panel with a channel that is never
-    /// read from - a plain resend would go nowhere. Clearing the chat is the shipped recovery for that
-    /// (<c>ClearChat</c> -> <c>RestartChannel</c>), so that is what the retry does.
+    /// the chatbot calling the model. A question sent before the app's hub connection is up fails as an answer the
+    /// user can retry; clearing the chat and asking again is what the retry here does.
     /// </para>
     /// <para>
-    /// The recovery wipes the conversation, so this is for the first message of a test only. A test whose later turns
-    /// build on the state the earlier ones left behind - a panel setting, a message it is still pointing at - sends
-    /// those with <see cref="SendFollowUpMessage"/>, which fails rather than silently starting over.
+    /// Clearing wipes the conversation, so this is for the first message of a test only. A test whose later turns
+    /// build on the state the earlier ones left behind sends those with <see cref="SendFollowUpMessage"/>, which fails
+    /// rather than silently starting over.
     /// </para>
     /// </summary>
     protected async Task SendChatMessage(ILocator panel, string message, TestChatClient chatClient)
@@ -49,11 +50,10 @@ public abstract class AiChatPanelTestBase : AppPageTest
         {
             if (attempt > 1)
             {
-                await panel.GetByTitle(AppStrings.Clear).ClickAsync();
+                await panel.GetByRole(AriaRole.Button, new() { Name = AppStrings.Clear, Exact = true }).ClickAsync();
             }
 
-            await panel.Locator("textarea").FillAsync(message);
-            await panel.Locator(".send-message-button").ClickAsync();
+            await Send(panel, message);
 
             if (await WaitForServerToReceiveAMessage(chatClient, conversationsBefore, TimeSpan.FromSeconds(15)))
                 return;
@@ -72,11 +72,17 @@ public abstract class AiChatPanelTestBase : AppPageTest
     {
         var conversationsBefore = chatClient.ReceivedConversations.Count;
 
-        await panel.Locator("textarea").FillAsync(message);
-        await panel.Locator(".send-message-button").ClickAsync();
+        await Send(panel, message);
 
         Assert.IsTrue(await WaitForServerToReceiveAMessage(chatClient, conversationsBefore, TimeSpan.FromSeconds(15)),
                       $"The follow-up message '{message}' never reached the server.");
+    }
+
+    /// <summary>Sends as a user does: Enter in the message box.</summary>
+    protected static async Task Send(ILocator panel, string message)
+    {
+        await MessageBox(panel).FillAsync(message);
+        await MessageBox(panel).PressAsync("Enter");
     }
 
     protected async Task<bool> WaitForServerToReceiveAMessage(TestChatClient chatClient, int conversationsBefore, TimeSpan timeout)

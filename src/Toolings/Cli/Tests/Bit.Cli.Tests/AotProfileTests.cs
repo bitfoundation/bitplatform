@@ -134,6 +134,23 @@ public class AotProfileTests
     }
 
     [TestMethod]
+    [DataRow("/fa-IR", "/fa-IR/*")]
+    [DataRow("/fa-IR/hotel/rooms", "/fa-IR/*")]
+    [DataRow("/sign-out", "/sign-out")]
+    [DataRow("/account/sign-out", "/account/sign-out")]
+    [DataRow("/", "/")]
+    [DataRow("click:#sign-out", "click:#sign-out")]
+    public void AReloadingLinkIntoALanguage_Should_LeaveOutTheWholeLanguage(string reloaded, string expected)
+    {
+        var leftOut = ProfileCollector.LeftOut(reloaded);
+
+        Assert.AreEqual(expected, leftOut);
+        Assert.IsTrue(ProfileCollector.IsLeftOut(reloaded, [leftOut]));
+        Assert.IsFalse(ProfileCollector.IsLeftOut("/fa-IRAN", [leftOut]));
+        Assert.IsFalse(ProfileCollector.IsLeftOut("/hotel", [leftOut]));
+    }
+
+    [TestMethod]
     public void AStaticApp_Should_BeServedFromItsFolder()
     {
         using var host = new TestHost();
@@ -269,14 +286,87 @@ public class AotProfileTests
         using var host = new TestHost();
         File.WriteAllText(Path.Combine(host.WorkingDirectory, "App.Client.csproj"), "<Project />");
         PublishesAStaticApp(host);
-        await using var browser = new FakeBrowser(host.Root) { ReloadsWhileSettling = "/sign-out" };
+        await using var browser = new FakeBrowser(host.Root) { ReloadsWhileSettling = page => page == "/sign-out" };
         browser.Links["/"] = ["/counter", "/sign-out"];
 
-        Assert.AreEqual(0, await host.RunAsync("aot-profile", "--browser", browser.Executable), host.Output);
+        Assert.AreEqual(0, await host.RunAsync("aot-profile", "--browser", browser.Executable, "--max-pages", "10"), host.Output);
 
         StringAssert.Contains(host.FlatOutput, "/sign-out reloads the app");
         StringAssert.Contains(host.FlatOutput, "Used the app 2 pages");
         Assert.IsTrue(File.Exists(Path.Combine(host.WorkingDirectory, "App.Client.aotprofile")));
+    }
+
+    [TestMethod]
+    public async Task TheStartPage_Should_BeTheOnlyPageVisitedByDefault()
+    {
+        if (OperatingSystem.IsWindows() is false)
+            return;
+
+        using var host = new TestHost();
+        File.WriteAllText(Path.Combine(host.WorkingDirectory, "App.Client.csproj"), "<Project />");
+        PublishesAStaticApp(host);
+        await using var browser = new FakeBrowser(host.Root);
+        browser.Links["/"] = ["/counter", "/weather"];
+
+        Assert.AreEqual(0, await host.RunAsync("aot-profile", "--browser", browser.Executable), host.Output);
+
+        StringAssert.Contains(host.FlatOutput, "Used the app 1 page");
+    }
+
+    [TestMethod]
+    public async Task PagesInAnotherLanguage_Should_BeLeftOutTogether()
+    {
+        if (OperatingSystem.IsWindows() is false)
+            return;
+
+        using var host = new TestHost();
+        File.WriteAllText(Path.Combine(host.WorkingDirectory, "App.Client.csproj"), "<Project />");
+        PublishesAStaticApp(host);
+        await using var browser = new FakeBrowser(host.Root) { ReloadsWhileSettling = page => page.StartsWith("/fa-IR", StringComparison.Ordinal) };
+        string[] pages = ["/hotel", "/retail", "/crm", "/fitness", "/minimal", "/accounting"];
+        browser.Links["/"] = ["/fa-IR", .. pages];
+        foreach (var page in pages)
+        {
+            browser.Links[page] = [$"/fa-IR{page}"];
+        }
+
+        Assert.AreEqual(0, await host.RunAsync("aot-profile", "--browser", browser.Executable, "--max-pages", "50"), host.Output);
+
+        StringAssert.Contains(host.FlatOutput, "/fa-IR reloads the app");
+        Assert.DoesNotContain("/fa-IR/hotel reloads the app", host.FlatOutput);
+        StringAssert.Contains(host.FlatOutput, "Used the app 7 pages");
+    }
+
+    [TestMethod]
+    public void TheServer_Should_BeFoundWhetherItPublishesSelfContainedOrNot()
+    {
+        using var host = new TestHost();
+        var client = """{ "runtimeOptions": { "tfm": "net11.0", "includedFrameworks": [ { "name": "Microsoft.NETCore.App", "version": "11.0.0" } ], "wasmHostProperties": { "perHostConfig": [ { "name": "browser", "host": "browser" } ] } } }""";
+        var selfContained = """{ "runtimeOptions": { "tfm": "net11.0", "includedFrameworks": [ { "name": "Microsoft.NETCore.App", "version": "11.0.0" }, { "name": "Microsoft.AspNetCore.App", "version": "11.0.0" } ] } }""";
+        var frameworkDependent = """{ "runtimeOptions": { "tfm": "net11.0", "frameworks": [ { "name": "Microsoft.NETCore.App", "version": "11.0.0" }, { "name": "Microsoft.AspNetCore.App", "version": "11.0.0" } ] } }""";
+        var apphost = OperatingSystem.IsWindows() ? ".exe" : "";
+
+        var standalone = Directory.CreateDirectory(Path.Combine(host.Root, "standalone")).FullName;
+        File.WriteAllText(Path.Combine(standalone, "App.Client.runtimeconfig.json"), client);
+        File.WriteAllText(Path.Combine(standalone, "App.Client.dll"), "");
+
+        var contained = Directory.CreateDirectory(Path.Combine(host.Root, "self-contained")).FullName;
+        File.WriteAllText(Path.Combine(contained, "App.Client.runtimeconfig.json"), client);
+        File.WriteAllText(Path.Combine(contained, "App.Client.dll"), "");
+        File.WriteAllText(Path.Combine(contained, "App.Server.runtimeconfig.json"), selfContained);
+        File.WriteAllText(Path.Combine(contained, "App.Server.dll"), "");
+        File.WriteAllText(Path.Combine(contained, "App.Server" + apphost), "");
+
+        var dependent = Directory.CreateDirectory(Path.Combine(host.Root, "framework-dependent")).FullName;
+        File.WriteAllText(Path.Combine(dependent, "App.Client.runtimeconfig.json"), client);
+        File.WriteAllText(Path.Combine(dependent, "App.Client.dll"), "");
+        File.WriteAllText(Path.Combine(dependent, "App.Server.runtimeconfig.json"), frameworkDependent);
+        File.WriteAllText(Path.Combine(dependent, "App.Server.dll"), "");
+        File.WriteAllText(Path.Combine(dependent, "App.Server" + apphost), "");
+
+        Assert.IsNull(PublishedApp.FindServer(standalone));
+        Assert.AreEqual(Path.Combine(contained, "App.Server" + apphost), PublishedApp.FindServer(contained));
+        Assert.AreEqual(Path.Combine(dependent, "App.Server.dll"), PublishedApp.FindServer(dependent));
     }
 
     [TestMethod]
@@ -440,7 +530,7 @@ public class AotProfileTests
 
         public Dictionary<string, string[]> Links { get; } = [];
 
-        public string? ReloadsWhileSettling { get; init; }
+        public Func<string, bool>? ReloadsWhileSettling { get; init; }
 
         public string? ReloadingClick { get; init; }
 
@@ -560,7 +650,7 @@ public class AotProfileTests
 
             if (function.Contains("MutationObserver", StringComparison.Ordinal))
             {
-                if (page == ReloadsWhileSettling)
+                if (ReloadsWhileSettling?.Invoke(page) is true)
                 {
                     started = false;
                     throw new DevToolsException("Execution context was destroyed.");

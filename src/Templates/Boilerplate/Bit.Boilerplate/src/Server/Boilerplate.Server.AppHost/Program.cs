@@ -78,6 +78,13 @@ if (builder.Environment.IsDevelopment())
     serverApiProject.WithHttpHealthCheck("/alive");
 }
 
+if (builder.ExecutionContext.IsRunMode)
+{
+    // An OAuth client arrives at /oauth/authorize without an origin, so without WebAppUrl the api sends it to a consent
+    // page on its own host, which has none (404). A deployment sets it in cd-template.yml.
+    serverApiProject.WithEnvironment("WebAppUrl", serverWebProject.GetEndpoint("http"));
+}
+
 serverWebProject.WithReference(serverApiProject);
 //#if (database == "SqlServer")
 serverApiProject.WithReference(sqlDatabase).WaitFor(sqlDatabase);

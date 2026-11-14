@@ -70,13 +70,16 @@ public static partial class Program
         app.MapGet("/", () => Results.Redirect("/scalar")).ExcludeFromDescription();
         app.MapGet("/swagger", () => Results.Redirect("/scalar")).ExcludeFromDescription();
 
-        app.UseHangfireDashboard(options: new()
+        if (WritesOpenApiDocument is false)
         {
-            DarkModeEnabled = true,
-            Authorization = [new HangfireDashboardAuthorizationFilter()]
-        });
+            app.UseHangfireDashboard(options: new()
+            {
+                DarkModeEnabled = true,
+                Authorization = [new HangfireDashboardAuthorizationFilter()]
+            });
 
-        app.ScheduleAppRecurringJobs();
+            app.ScheduleAppRecurringJobs();
+        }
 
         app.MapGet("/api/minimal-api-sample/{routeParameter}", [AppResponseCache(MaxAge = 3600 * 24)] (string routeParameter, [FromQuery] string queryStringParameter) => new
         {

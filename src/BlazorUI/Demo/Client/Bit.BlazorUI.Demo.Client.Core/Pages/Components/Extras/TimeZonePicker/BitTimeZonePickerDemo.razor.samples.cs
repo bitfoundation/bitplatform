@@ -68,7 +68,7 @@ private readonly List<string> preferredTimeZones = [""Europe/Berlin"", ""Asia/Te
                    Label=""Search box""
                    Placeholder=""Select a time zone""
                    SearchBoxPlaceholder=""City, country or offset""
-                   NoResultsMessage=""No matching time zone"" />
+                   NoResultsText=""No matching time zone"" />
 
 <BitTimeZonePicker TValue=""string"" Label=""NoSearchBox"" NoSearchBox Placeholder=""Select a time zone"" />";
 
@@ -222,7 +222,7 @@ private TimeZoneInfo? submissionTimeZone;";
                    Placeholder=""Zeitzone auswählen""
                    SearchBoxPlaceholder=""Suchen""
                    SearchBoxAriaLabel=""Zeitzone suchen""
-                   NoResultsMessage=""Keine Zeitzone gefunden""
+                   NoResultsText=""Keine Zeitzone gefunden""
                    SearchResultsAnnouncement=""@(count => count == 1 ? ""1 Zeitzone gefunden"" : $""{count} Zeitzonen gefunden"")"" />";
     private readonly string example17CsharpCode = @"
 private readonly List<BitTimeZone> germanTimeZones =

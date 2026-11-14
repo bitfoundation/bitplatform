@@ -402,6 +402,25 @@ public partial class BitTextField : BitTextInputBase<string?>
     [Parameter] public RenderFragment? LoadingTemplate { get; set; }
 
     /// <summary>
+    /// The pattern the text is laid out over as the user types: '#' takes a digit, 'A' a letter and '*' a letter or a
+    /// digit, and every other character is a literal inserted for the user - "##/##/####" turns 12312025 into
+    /// "12/31/2025". A backslash makes the character after it a literal (<c>\A</c> is the letter A itself). A character
+    /// a slot does not take is dropped, and so is what is typed beyond the last slot. The caret stays on the character it
+    /// was on as the literals move around it. Ignored in the <see cref="Multiline"/> mode.
+    /// <para>
+    /// The value is the formatted text, literals included, unless <see cref="MaskRawValue"/> is set.
+    /// </para>
+    /// </summary>
+    [Parameter] public string? Mask { get; set; }
+
+    /// <summary>
+    /// Makes the value of a field with a <see cref="Mask"/> hold only the characters that went into its slots
+    /// ("12312025") rather than the formatted text it shows ("12/31/2025"). A value set from outside is laid out over
+    /// the mask either way.
+    /// </summary>
+    [Parameter] public bool MaskRawValue { get; set; }
+
+    /// <summary>
     /// Specifies the maximum number of characters allowed in the input.
     /// A negative value (the default) removes the limit and renders no maxlength attribute.
     /// </summary>
@@ -1076,9 +1095,29 @@ public partial class BitTextField : BitTextInputBase<string?>
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out string? result, [NotNullWhen(false)] out string? parsingErrorMessage)
     {
         result = _trimOnParse ? value?.Trim() : value;
+
+        // The text of a masked field is committed laid out over the mask, or as the characters of its slots alone.
+        if (ActiveMask is { } mask && string.IsNullOrEmpty(result) is false)
+        {
+            var masked = ApplyMask(result, mask);
+            result = MaskRawValue ? BitMask.Strip(masked, mask, BitMask.TextTokens, BitMask.Escape) : masked;
+        }
+
         parsingErrorMessage = null;
         return true;
     }
+
+    // A value is shown laid out over the mask whichever way it came: formatted, raw, or set from outside half formatted.
+    protected override string? FormatValueAsString(string? value)
+        => ActiveMask is { } mask && string.IsNullOrEmpty(value) is false ? ApplyMask(value, mask) : value;
+
+    // The mask the field formats with: a multiline field has none, since a mask lays out a single line.
+    private string? ActiveMask => Multiline || Mask.HasNoValue() ? null : Mask;
+
+    // Lays a text out over the mask, peeling off whatever layout it already carries first: the same text formatted
+    // again is what typing into a masked field does on every keystroke.
+    private static string ApplyMask(string text, string mask)
+        => BitMask.Apply(BitMask.Strip(text, mask, BitMask.TextTokens, BitMask.Escape), mask, BitMask.TextTokens, appendOverflow: false, BitMask.Escape);
 
     // What the value attribute of the input is rendered with: the text typed into it while the value has not caught
     // up with that text - Immediate off, a debounce or a throttle still running, a binding that refuses it - and the
@@ -1092,7 +1131,29 @@ public partial class BitTextField : BitTextInputBase<string?>
     // since, and fast typing lost them.
     private async Task HandleOnElementInput(string? text)
     {
+        // What the input holds from here on, as far as a render knows: the text the event carried, so a render writes
+        // nothing into it (see ElementValue).
         RecordTypedText(text, Value);
+
+        // A masked field lays each keystroke out at once, and writes the layout into the input through a script that keeps
+        // the caret on the character it was on - never through a render, which would park the caret at the end - and only
+        // into an input that still holds the text the event carried: one typed into since holds a newer text, whose own
+        // input event lays it out.
+        if (ActiveMask is { } mask && string.IsNullOrEmpty(text) is false)
+        {
+            var masked = ApplyMask(text, mask);
+
+            if (masked != text)
+            {
+                try
+                {
+                    await _js.BitTextFieldSetMaskedValue(InputElement, masked, text, mask);
+                }
+                catch (JSException) { } // the element might not be ready yet
+
+                text = masked;
+            }
+        }
 
         await HandleOnStringValueInputAsync(new ChangeEventArgs { Value = text });
     }

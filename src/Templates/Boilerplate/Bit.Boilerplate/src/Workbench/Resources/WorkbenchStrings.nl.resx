@@ -312,6 +312,9 @@
     <data name="ToggleWorkbenchTheme" xml:space="preserve">
         <value>Werkbank wisselen tussen licht en donker</value>
     </data>
+    <data name="WorkbenchLanguage" xml:space="preserve">
+        <value>Taal van de werkbank</value>
+    </data>
     <data name="PosStoreAll" xml:space="preserve">
         <value>Alle winkels</value>
     </data>
@@ -814,16 +817,16 @@
         <value>Limburg</value>
     </data>
     <data name="HomePageTitle" xml:space="preserve">
-        <value>Werkbank · Elke pagina ontwerpen, beoordelen en vastleggen</value>
+        <value>Werkbank · Waar jij en je AI-agent de app bouwen</value>
     </data>
     <data name="HomeEyebrow" xml:space="preserve">
         <value>Onderdeel van je project</value>
     </data>
     <data name="HomeHeadline" xml:space="preserve">
-        <value>Maak het ontwerp af voordat de backend bestaat.</value>
+        <value>Waar jij en je AI-agent de app bouwen.</value>
     </data>
     <data name="HomeLead" xml:space="preserve">
-        <value>De werkbank draait de pagina's van je app op voorbeeldgegevens, zodat je elke toestand ontwerpt, op elk apparaat bekijkt en schermafbeeldingen voor de stores maakt, met dezelfde componenten en hetzelfde thema als je app.</value>
+        <value>Ontwerp elke pagina op voorbeelddata, in elke toestand en op elk apparaat, beoordeel hem met opmerkingen die je agent beantwoordt terwijl je schrijft, en volg zijn lange taken, zoals een deployment of een nieuwe functie, door zijn vragen te beantwoorden met een klik of je stem. Allemaal in je eigen project, met de componenten en het thema van je app.</value>
     </data>
     <data name="HomeStartHere" xml:space="preserve">
         <value>Begin hier</value>
@@ -856,13 +859,13 @@
         <value>Waarom je project een werkbank heeft</value>
     </data>
     <data name="HomeWhySubtitle" xml:space="preserve">
-        <value>Een ontwerptool, een testbank en een fotostudio voor je pagina's, in het project zelf.</value>
+        <value>Een ontwerptool, een testbank, een fotostudio en de controlekamer van je agent, in het project zelf.</value>
     </data>
     <data name="HomeWhyAgentsTitle" xml:space="preserve">
-        <value>Ontwerpen met elke AI-agent</value>
+        <value>Werk met elke AI-agent</value>
     </data>
     <data name="HomeWhyAgentsText" xml:space="preserve">
-        <value>Je hebt Claude Design of Figma niet nodig. Of je nu Codex, Copilot of Claude Code gebruikt, je agent kan hier pagina's ontwerpen, ze in een echte browser bekijken en verbeteren.</value>
+        <value>Claude Code, Codex, Copilot, Gemini, Junie of Cursor: je agent ontwerpt hier pagina's en bekijkt ze in een echte browser, laat zien hoe zijn lange taken gaan en vraagt je wat hij nodig heeft. Claude Design of Figma heb je niet nodig.</value>
     </data>
     <data name="HomeWhyRealTitle" xml:space="preserve">
         <value>Echte componenten, geen mockups</value>
@@ -907,7 +910,7 @@
         <value>Vraag het aan je AI</value>
     </data>
     <data name="HomeHowStep1Text" xml:space="preserve">
-        <value>Vraag Claude, Codex, GitHub Copilot, Gemini of Junie om de pagina. Die bouwt hem hier met voorbeeldgegevens die laden zoals de echte.</value>
+        <value>Vraag Claude, Codex, GitHub Copilot, Gemini of Junie om een pagina, een functie of een deployment. Pagina's worden hier gebouwd op voorbeelddata die laadt als het echte werk.</value>
     </data>
     <data name="HomeHowStep2Title" xml:space="preserve">
         <value>Beoordeel elke toestand</value>
@@ -2458,10 +2461,10 @@
         <value>Live beoordelen met je AI-agent</value>
     </data>
     <data name="HomeWhyLiveText" xml:space="preserve">
-        <value>Zet een opmerking vast op elke plek van een pagina. Op je eigen computer krijgt je codeeragent die al terwijl je schrijft, past de pagina aan, antwoordt bij de opmerking en vinkt hem af. Werkt met Claude Code, Codex, Copilot, Gemini, Junie en Cursor.</value>
+        <value>Zet een opmerking op elke plek van een pagina, getypt of ingesproken. Op je eigen computer krijgt je codeeragent hem terwijl je schrijft, past de pagina aan, antwoordt bij de opmerking en vinkt hem af. Werkt met Claude Code, Codex, Copilot, Gemini, Junie en Cursor.</value>
     </data>
     <data name="TourLiveText" xml:space="preserve">
-        <value>Zet een opmerking vast op elke plek van een pagina. Op je eigen computer krijgt je codeeragent die al terwijl je schrijft, past de pagina aan, antwoordt bij de opmerking en vinkt hem af. Werkt met Claude Code, Codex, Copilot, Gemini, Junie en Cursor. Probeer het nu: schrijf je opmerking en verstuur hem.</value>
+        <value>Zet een opmerking op elke plek van een pagina, getypt of ingesproken: de microfoon naast Versturen maakt van je stem tekst. Op je eigen computer krijgt je codeeragent hem terwijl je schrijft, past de pagina aan, antwoordt bij de opmerking en vinkt hem af. Werkt met Claude Code, Codex, Copilot, Gemini, Junie en Cursor. Probeer het nu: schrijf je opmerking en verstuur hem.</value>
     </data>
     <data name="HomeChipLive" xml:space="preserve">
         <value>Live beoordelen met AI</value>
@@ -4811,5 +4814,532 @@
     </data>
     <data name="ThemeLocalizationNote" xml:space="preserve">
         <value>Niet elke tekst van de componenten op deze pagina is in elke taal vertaald. Dat betekent niet dat het niet kan: elk component hier is te lokaliseren, maar alle teksten vertalen voegde weinig toe aan waar deze pagina voor is. Vraag je AI-agent de vertalingen aan te vullen wanneer je ze nodig hebt.</value>
+    </data>
+    <data name="Progress" xml:space="preserve">
+        <value>Voortgang</value>
+    </data>
+    <data name="ProgressTitle" xml:space="preserve">
+        <value>Je agents aan het werk</value>
+    </data>
+    <data name="ProgressLead" xml:space="preserve">
+        <value>Elke lange taak van je AI-agents, één per chat: wat er al gedaan is, waar de agent nu mee bezig is, wat er nog komt en wat hij van je nodig heeft.</value>
+    </data>
+    <data name="ProgressTasks" xml:space="preserve">
+        <value>Taken</value>
+    </data>
+    <data name="ProgressSamplesTitle" xml:space="preserve">
+        <value>Dit zijn voorbeelden</value>
+    </data>
+    <data name="ProgressSamplesText" xml:space="preserve">
+        <value>De taken van je agents verschijnen hier zodra er een begint. Probeer tot die tijd deze: beantwoord een vraag, vink een stap af of schrijf de agent.</value>
+    </data>
+    <data name="ProgressSamplesVisitorText" xml:space="preserve">
+        <value>De taken van de agents op deze werkbank zie je alleen op de computer waarop hij draait. Deze voorbeelden laten zien wat je daar zou zien.</value>
+    </data>
+    <data name="ProgressGroupNeedsYou" xml:space="preserve">
+        <value>Wacht op jou</value>
+    </data>
+    <data name="ProgressGroupWorking" xml:space="preserve">
+        <value>Bezig</value>
+    </data>
+    <data name="ProgressGroupFinished" xml:space="preserve">
+        <value>Afgerond</value>
+    </data>
+    <data name="ProgressAllTasks" xml:space="preserve">
+        <value>Alle taken</value>
+    </data>
+    <data name="ProgressNeedsYou" xml:space="preserve">
+        <value>Wacht op jou</value>
+    </data>
+    <data name="ProgressWorking" xml:space="preserve">
+        <value>Bezig</value>
+    </data>
+    <data name="ProgressDone" xml:space="preserve">
+        <value>Klaar</value>
+    </data>
+    <data name="ProgressFailed" xml:space="preserve">
+        <value>Mislukt</value>
+    </data>
+    <data name="ProgressStopped" xml:space="preserve">
+        <value>Gestopt</value>
+    </data>
+    <data name="ProgressNeedsYouCount" xml:space="preserve">
+        <value>{0} wachten op jou</value>
+    </data>
+    <data name="ProgressStepsDone" xml:space="preserve">
+        <value>{0} van {1} stappen</value>
+    </data>
+    <data name="ProgressAgentActive" xml:space="preserve">
+        <value>nu actief</value>
+    </data>
+    <data name="ProgressAgentLastSeen" xml:space="preserve">
+        <value>laatst gehoord {0}</value>
+    </data>
+    <data name="ProgressStarted" xml:space="preserve">
+        <value>Gestart {0}</value>
+    </data>
+    <data name="ProgressUpdated" xml:space="preserve">
+        <value>Bijgewerkt {0}</value>
+    </data>
+    <data name="ProgressSample" xml:space="preserve">
+        <value>Voorbeeld</value>
+    </data>
+    <data name="ProgressYourTurn" xml:space="preserve">
+        <value>Jouw beurt</value>
+    </data>
+    <data name="ProgressYourTurnHint" xml:space="preserve">
+        <value>{0} gaat verder zodra je antwoordt.</value>
+    </data>
+    <data name="ProgressOpenLink" xml:space="preserve">
+        <value>Openen</value>
+    </data>
+    <data name="ProgressDidIt" xml:space="preserve">
+        <value>Gedaan</value>
+    </data>
+    <data name="ProgressNothingForYou" xml:space="preserve">
+        <value>Er wacht nu niets op je. {0} roept je hier zodra dat wel zo is.</value>
+    </data>
+    <data name="ProgressSteps" xml:space="preserve">
+        <value>Stappen</value>
+    </data>
+    <data name="ProgressNoSteps" xml:space="preserve">
+        <value>De agent heeft zijn stappen nog niet opgesomd.</value>
+    </data>
+    <data name="ProgressYou" xml:space="preserve">
+        <value>Jij</value>
+    </data>
+    <data name="ProgressStepTodo" xml:space="preserve">
+        <value>Te doen</value>
+    </data>
+    <data name="ProgressStepDoing" xml:space="preserve">
+        <value>Bezig</value>
+    </data>
+    <data name="ProgressStepDone" xml:space="preserve">
+        <value>Klaar</value>
+    </data>
+    <data name="ProgressStepBlocked" xml:space="preserve">
+        <value>Geblokkeerd</value>
+    </data>
+    <data name="ProgressStepSkipped" xml:space="preserve">
+        <value>Overgeslagen</value>
+    </data>
+    <data name="ProgressKeepInMind" xml:space="preserve">
+        <value>Goed om te weten</value>
+    </data>
+    <data name="ProgressNoteInfo" xml:space="preserve">
+        <value>Let op</value>
+    </data>
+    <data name="ProgressNoteWarning" xml:space="preserve">
+        <value>Waarschuwing</value>
+    </data>
+    <data name="ProgressNoteDecision" xml:space="preserve">
+        <value>Besluit</value>
+    </data>
+    <data name="ProgressNoteSuccess" xml:space="preserve">
+        <value>Gelukt</value>
+    </data>
+    <data name="ProgressNoteError" xml:space="preserve">
+        <value>Probleem</value>
+    </data>
+    <data name="ProgressLinks" xml:space="preserve">
+        <value>Links</value>
+    </data>
+    <data name="ProgressActivity" xml:space="preserve">
+        <value>Activiteit</value>
+    </data>
+    <data name="ProgressMessagePlaceholder" xml:space="preserve">
+        <value>Schrijf {0}</value>
+    </data>
+    <data name="ProgressDelete" xml:space="preserve">
+        <value>Deze taak verwijderen</value>
+    </data>
+    <data name="ProgressDeleteConfirm" xml:space="preserve">
+        <value>Definitief verwijderen?</value>
+    </data>
+    <data name="ProgressPickTask" xml:space="preserve">
+        <value>Kies een taak om te zien hoe het ervoor staat.</value>
+    </data>
+    <data name="ProgressTaskGone" xml:space="preserve">
+        <value>Deze taak bestaat niet meer. De agent heeft hem misschien afgerond en verwijderd.</value>
+    </data>
+    <data name="ProgressAddNote" xml:space="preserve">
+        <value>Notitie toevoegen</value>
+    </data>
+    <data name="ProgressAnswerPlaceholder" xml:space="preserve">
+        <value>Je antwoord</value>
+    </data>
+    <data name="ProgressNotePlaceholder" xml:space="preserve">
+        <value>Nog iets toe te voegen? (optioneel)</value>
+    </data>
+    <data name="ProgressYes" xml:space="preserve">
+        <value>Ja</value>
+    </data>
+    <data name="ProgressNo" xml:space="preserve">
+        <value>Nee</value>
+    </data>
+    <data name="ProgressSendAnswer" xml:space="preserve">
+        <value>Antwoord versturen</value>
+    </data>
+    <data name="ProgressAnswerFailed" xml:space="preserve">
+        <value>Die vraag is intussen beantwoord of ingetrokken.</value>
+    </data>
+    <data name="ProgressSent" xml:space="preserve">
+        <value>Naar {0} verstuurd.</value>
+    </data>
+    <data name="ProgressSampleSentTitle" xml:space="preserve">
+        <value>Dit is een voorbeeld</value>
+    </data>
+    <data name="ProgressSampleSent" xml:space="preserve">
+        <value>Bij een echte taak krijgt {0} dit meteen en gaat verder.</value>
+    </data>
+    <data name="ProgressSampleSecret" xml:space="preserve">
+        <value>Bij een echte taak gaat het naar waar de vraag zegt, en {0} gaat verder zonder het te zien.</value>
+    </data>
+    <data name="ProgressSecretToGitHubEnvironment" xml:space="preserve">
+        <value>Het gaat rechtstreeks naar GitHub als {0}, een secret van de omgeving {1}. {2} ziet het nooit.</value>
+    </data>
+    <data name="ProgressSecretToGitHub" xml:space="preserve">
+        <value>Het gaat rechtstreeks naar GitHub als {0}, een secret van de repository. {1} ziet het nooit.</value>
+    </data>
+    <data name="ProgressSecretToFile" xml:space="preserve">
+        <value>Het komt in een bestand buiten het project, dat {0} in zijn opdrachten gebruikt zonder het ooit te zien.</value>
+    </data>
+    <data name="ProgressSecretPlaceholder" xml:space="preserve">
+        <value>Plak het hier</value>
+    </data>
+    <data name="ProgressSecretStore" xml:space="preserve">
+        <value>Opslaan</value>
+    </data>
+    <data name="ProgressSecretStored" xml:space="preserve">
+        <value>Opgeslagen. {0} gaat verder zonder het ooit te zien.</value>
+    </data>
+    <data name="ProgressSecretStoreFailed" xml:space="preserve">
+        <value>Het kon niet worden opgeslagen: {0}</value>
+    </data>
+    <data name="ProgressSecretOnlyHere" xml:space="preserve">
+        <value>Alleen de computer waarop deze werkbank draait kan een geheim aannemen.</value>
+    </data>
+    <data name="ProgressSecretAnswered" xml:space="preserve">
+        <value>Opgeslagen, nooit getoond</value>
+    </data>
+    <data name="ProgressEntryStepDone" xml:space="preserve">
+        <value>Gedaan: {0}</value>
+    </data>
+    <data name="ProgressAgentNeedsYou" xml:space="preserve">
+        <value>{0} heeft je nodig</value>
+    </data>
+    <data name="ProgressAgentFinished" xml:space="preserve">
+        <value>{0} heeft een taak afgerond</value>
+    </data>
+    <data name="ProgressAgentStopped" xml:space="preserve">
+        <value>{0} heeft een taak gestopt</value>
+    </data>
+    <data name="ProgressGuideListTitle" xml:space="preserve">
+        <value>Elke chat, één lijst</value>
+    </data>
+    <data name="ProgressGuideListText" xml:space="preserve">
+        <value>Elke AI-chat met een lange taak, zoals een eerste deployment of een nieuwe functie, toont hier zijn voortgang naast de andere. Wat op jou wacht, staat bovenaan.</value>
+    </data>
+    <data name="ProgressGuideTurnTitle" xml:space="preserve">
+        <value>Jouw beurt</value>
+    </data>
+    <data name="ProgressGuideTurnText" xml:space="preserve">
+        <value>Beantwoord de vragen van de agent met een klik, een paar woorden of je stem, en laat weten wanneer jouw deel klaar is. Hij gaat verder zodra je verstuurt.</value>
+    </data>
+    <data name="ProgressGuideStepsTitle" xml:space="preserve">
+        <value>Wat klaar is en wat nog komt</value>
+    </data>
+    <data name="ProgressGuideStepsText" xml:space="preserve">
+        <value>Elke stap die de agent zette, de stap waar hij nu is en wat er nog komt. Stappen die alleen jij kunt zetten, zijn gemarkeerd.</value>
+    </data>
+    <data name="ProgressGuideActivityTitle" xml:space="preserve">
+        <value>Praat met de agent</value>
+    </data>
+    <data name="ProgressGuideActivityText" xml:space="preserve">
+        <value>Schrijf of zeg hier alles tegen de agent en lees wat hij wanneer deed. Hij leest je bericht de volgende keer dat hij langskomt.</value>
+    </data>
+    <data name="ProgressGuideSoundTitle" xml:space="preserve">
+        <value>Hij roept je als hij je nodig heeft</value>
+    </data>
+    <data name="ProgressGuideSoundText" xml:space="preserve">
+        <value>Er klinkt een geluid als een agent je iets vraagt, tenzij de werkbank gedempt is, en de titel van het tabblad telt wat op je wacht. Zet meldingen aan op het beoordelingstabblad van een pagina om er ook in een andere app een te krijgen.</value>
+    </data>
+    <data name="Dictate" xml:space="preserve">
+        <value>Dicteren</value>
+    </data>
+    <data name="DictateIn" xml:space="preserve">
+        <value>Spreek in plaats van typen ({0})</value>
+    </data>
+    <data name="StopDictation" xml:space="preserve">
+        <value>Stoppen met luisteren</value>
+    </data>
+    <data name="DictationLanguage" xml:space="preserve">
+        <value>Dicteertaal</value>
+    </data>
+    <data name="Listening" xml:space="preserve">
+        <value>Luistert…</value>
+    </data>
+    <data name="MicrophoneBlocked" xml:space="preserve">
+        <value>De browser heeft de microfoon geblokkeerd. Sta hem voor deze site toe via de adresbalk en probeer het opnieuw.</value>
+    </data>
+    <data name="DictationNeedsNetwork" xml:space="preserve">
+        <value>Dicteren heeft in deze browser een internetverbinding nodig.</value>
+    </data>
+    <data name="DictationLanguageNotSupported" xml:space="preserve">
+        <value>Deze browser kan niet dicteren in het {0}.</value>
+    </data>
+    <data name="DictationFailed" xml:space="preserve">
+        <value>Dicteren is niet gestart. Probeer het opnieuw of typ.</value>
+    </data>
+    <data name="TimeJustNow" xml:space="preserve">
+        <value>zojuist</value>
+    </data>
+    <data name="TimeMinutesAgo" xml:space="preserve">
+        <value>{0} min geleden</value>
+    </data>
+    <data name="TimeHoursAgo" xml:space="preserve">
+        <value>{0} uur geleden</value>
+    </data>
+    <data name="SampleDeployTitle" xml:space="preserve">
+        <value>Uitrollen naar Test en Productie</value>
+    </data>
+    <data name="SampleDeploySummary" xml:space="preserve">
+        <value>De Test- en Productieomgeving op je eigen server inrichten, met de app op je eigen domein.</value>
+    </data>
+    <data name="SampleDeployStepServices" xml:space="preserve">
+        <value>De externe diensten van de app en hun sleutels vinden</value>
+    </data>
+    <data name="SampleDeployStepEnvironments" xml:space="preserve">
+        <value>De Test- en Productieomgeving op GitHub aanmaken</value>
+    </data>
+    <data name="SampleDeployStepServer" xml:space="preserve">
+        <value>Een Linux-server regelen en het adres doorgeven</value>
+    </data>
+    <data name="SampleDeployStepToken" xml:space="preserve">
+        <value>Een Cloudflare-API-token maken</value>
+    </data>
+    <data name="SampleDeployStepTokenDetail" xml:space="preserve">
+        <value>Open in het Cloudflare-dashboard My Profile en dan API Tokens, en maak er een die DNS en Cloudflare Tunnel mag bewerken. Plak hem daarna hieronder.</value>
+    </data>
+    <data name="SampleDeployStepRunner" xml:space="preserve">
+        <value>Docker en de GitHub Actions-runner op de server installeren</value>
+    </data>
+    <data name="SampleDeployStepTunnel" xml:space="preserve">
+        <value>De app via een Cloudflare Tunnel op je domein aanbieden</value>
+    </data>
+    <data name="SampleDeployStepFirst" xml:space="preserve">
+        <value>Eerst naar Test, dan naar Productie uitrollen</value>
+    </data>
+    <data name="SampleDeployAskEmail" xml:space="preserve">
+        <value>Welke dienst moet de e-mails van de app versturen?</value>
+    </data>
+    <data name="SampleDeployAskEmailDetail" xml:space="preserve">
+        <value>De app mailt inlogcodes en wachtwoordherstel. Je kunt dit later nog wijzigen.</value>
+    </data>
+    <data name="SampleDeployAskEmailOption1" xml:space="preserve">
+        <value>Een gratis account bij een e-maildienst</value>
+    </data>
+    <data name="SampleDeployAskEmailOption2" xml:space="preserve">
+        <value>De mailserver van ons bedrijf</value>
+    </data>
+    <data name="SampleDeployAskEmailOption3" xml:space="preserve">
+        <value>Voorlopig geen: toon e-mails in de logs</value>
+    </data>
+    <data name="SampleDeployAskSsh" xml:space="preserve">
+        <value>De SSH-poort van de server sluiten zodra de tunnel werkt?</value>
+    </data>
+    <data name="SampleDeployAskSshDetail" xml:space="preserve">
+        <value>Je bereikt de server nog steeds via de tunnel en via de webconsole van je provider.</value>
+    </data>
+    <data name="SampleDeployAskToken" xml:space="preserve">
+        <value>Plak het Cloudflare-token</value>
+    </data>
+    <data name="SampleDeployNoteSecrets" xml:space="preserve">
+        <value>Sleutels en wachtwoorden komen nooit in een chat. Je plakt ze hier, en elk gaat rechtstreeks naar zijn plek zonder dat ik het zie.</value>
+    </data>
+    <data name="SampleDeployNoteOneServer" xml:space="preserve">
+        <value>Eén server voor beide omgevingen, om de kosten laag te houden.</value>
+    </data>
+    <data name="SampleDeployLinkCloudflare" xml:space="preserve">
+        <value>Cloudflare-dashboard</value>
+    </data>
+    <data name="SampleDeployFeed1" xml:space="preserve">
+        <value>De app gebruikt 6 externe diensten; 3 daarvan hebben sleutels uit je eigen accounts nodig.</value>
+    </data>
+    <data name="SampleDeployFeed2" xml:space="preserve">
+        <value>De server staat klaar op 203.0.113.24.</value>
+    </data>
+    <data name="SampleDeployFeed3" xml:space="preserve">
+        <value>Met de sleutel die je toevoegde op de server ingelogd en inloggen met wachtwoord uitgezet.</value>
+    </data>
+    <data name="SampleDeployFeed4" xml:space="preserve">
+        <value>Ik wacht op het Cloudflare-token om de tunnel op te zetten.</value>
+    </data>
+    <data name="SampleFeatureTitle" xml:space="preserve">
+        <value>Nieuwe functie: spaarpunten</value>
+    </data>
+    <data name="SampleFeatureSummary" xml:space="preserve">
+        <value>Klanten sparen punten bij elke bestelling en wisselen ze in bij het afrekenen. Nu je het ontwerp hebt goedgekeurd, wordt het gebouwd.</value>
+    </data>
+    <data name="SampleFeatureStepRequirements" xml:space="preserve">
+        <value>De eisen vastleggen en in de specificatie schrijven</value>
+    </data>
+    <data name="SampleFeatureStepPlan" xml:space="preserve">
+        <value>Het werk in 6 taken plannen</value>
+    </data>
+    <data name="SampleFeatureStepDesign" xml:space="preserve">
+        <value>Het ontwerp goedkeuren in de werkbank</value>
+    </data>
+    <data name="SampleFeatureStepLedger" xml:space="preserve">
+        <value>Het puntenregister en de API bouwen</value>
+    </data>
+    <data name="SampleFeatureStepCheckout" xml:space="preserve">
+        <value>Punten inwisselen bij het afrekenen</value>
+    </data>
+    <data name="SampleFeatureStepTests" xml:space="preserve">
+        <value>Tests op telefoons en desktops</value>
+    </data>
+    <data name="SampleStepTryOnTest" xml:space="preserve">
+        <value>Uitproberen op de Testomgeving</value>
+    </data>
+    <data name="SampleFeatureAskWorth" xml:space="preserve">
+        <value>Hoeveel is een punt waard bij het afrekenen?</value>
+    </data>
+    <data name="SampleFeatureAskWorthDetail" xml:space="preserve">
+        <value>Het komt in de instellingen, zodat je het later kunt wijzigen.</value>
+    </data>
+    <data name="SampleFeatureAskWorthPlaceholder" xml:space="preserve">
+        <value>Bijvoorbeeld: 100 punten = € 1</value>
+    </data>
+    <data name="SampleFeatureAskOrders" xml:space="preserve">
+        <value>Welke bestellingen leveren punten op?</value>
+    </data>
+    <data name="SampleFeatureAskOrdersOption1" xml:space="preserve">
+        <value>Online bestellingen</value>
+    </data>
+    <data name="SampleFeatureAskOrdersOption2" xml:space="preserve">
+        <value>Bestellingen in de winkel</value>
+    </data>
+    <data name="SampleFeatureAskOrdersOption3" xml:space="preserve">
+        <value>Bestellingen betaald met een cadeaukaart</value>
+    </data>
+    <data name="SampleFeatureNoteExpiry" xml:space="preserve">
+        <value>Punten vervallen 12 maanden nadat ze zijn verdiend.</value>
+    </data>
+    <data name="SampleFeatureNoteSpec" xml:space="preserve">
+        <value>Alles wat tot nu toe besloten is, staat in de specificatie van de functie, met de vragen die nog open zijn.</value>
+    </data>
+    <data name="SampleFeatureLinkDesign" xml:space="preserve">
+        <value>Goedgekeurd ontwerp</value>
+    </data>
+    <data name="SampleFeatureFeed1" xml:space="preserve">
+        <value>De eisen staan in de specificatie; er liggen nog 3 vragen voor je klaar.</value>
+    </data>
+    <data name="SampleFeatureFeed2" xml:space="preserve">
+        <value>Ziet er goed uit. Maak de puntenbadge iets kleiner.</value>
+    </data>
+    <data name="SampleFeatureFeed3" xml:space="preserve">
+        <value>Badge verkleind en begonnen met bouwen.</value>
+    </data>
+    <data name="SampleFeatureFeed4" xml:space="preserve">
+        <value>Het register en de databasemigratie staan erin. Nu schrijf ik de API.</value>
+    </data>
+    <data name="SampleFixTitle" xml:space="preserve">
+        <value>Oplossing: terugbetalingen ontbreken in het dagelijkse verkooprapport</value>
+    </data>
+    <data name="SampleFixSummary" xml:space="preserve">
+        <value>Terugbetalingen na middernacht werden op de verkeerde dag geteld. Opgelost, getest op Test en samengevoegd.</value>
+    </data>
+    <data name="SampleFixStepLogs" xml:space="preserve">
+        <value>De oorzaak vinden in de logs van Productie</value>
+    </data>
+    <data name="SampleFixStepTest" xml:space="preserve">
+        <value>Een test schrijven die zonder de oplossing faalt</value>
+    </data>
+    <data name="SampleFixStepFix" xml:space="preserve">
+        <value>Terugbetalingen tellen in de tijdzone van de winkel</value>
+    </data>
+    <data name="SampleFixStepMerge" xml:space="preserve">
+        <value>Samenvoegen, waarmee Productie wordt bijgewerkt</value>
+    </data>
+    <data name="SampleFixAskMerge" xml:space="preserve">
+        <value>Samenvoegen in main? Dat werkt Productie bij.</value>
+    </data>
+    <data name="SampleFixNoteDone" xml:space="preserve">
+        <value>Productie draait met de oplossing. De test zorgt dat de bug niet terugkomt.</value>
+    </data>
+    <data name="SampleFixLinkPullRequest" xml:space="preserve">
+        <value>Pull request</value>
+    </data>
+    <data name="SampleFixLinkTest" xml:space="preserve">
+        <value>Testomgeving</value>
+    </data>
+    <data name="SampleFixFeed1" xml:space="preserve">
+        <value>Gevonden: het rapport gebruikte de tijdzone van de server, niet die van de winkel.</value>
+    </data>
+    <data name="SampleFixFeed2" xml:space="preserve">
+        <value>Staat nu op Test. Probeer een terugbetaling na middernacht.</value>
+    </data>
+    <data name="SampleFixFeed3" xml:space="preserve">
+        <value>Samengevoegd. Productie is bijgewerkt.</value>
+    </data>
+    <data name="HomeWhyProgressTitle" xml:space="preserve">
+        <value>Volg lange taken, antwoord met één klik</value>
+    </data>
+    <data name="HomeWhyProgressText" xml:space="preserve">
+        <value>Een deployment of een nieuwe functie kost veel stappen, en sommige kun alleen jij zetten. Elke chat met een agent laat hier zien wat er gedaan is, wat er nog komt en wat hij van je nodig heeft, zodat niets verloren gaat in een lange chat. Sleutels en wachtwoorden die je daar plakt, gaan rechtstreeks naar hun plek, nooit via de chat.</value>
+    </data>
+    <data name="HomeWhyVoiceTitle" xml:space="preserve">
+        <value>Spreek in plaats van typen</value>
+    </data>
+    <data name="HomeWhyVoiceText" xml:space="preserve">
+        <value>Druk op de microfoon naast een opmerking, een reactie of een antwoord en zeg het. De browser maakt van je stem tekst, in de taal die je kiest.</value>
+    </data>
+    <data name="TourProgressText" xml:space="preserve">
+        <value>Een deployment of een nieuwe functie kost veel stappen, en sommige kun alleen jij zetten. Elke chat met een agent laat hier zien wat er gedaan is, wat er nog komt en wat hij van je nodig heeft. Antwoord met een klik, een paar woorden of je stem, en hij gaat meteen verder. Probeer het met de voorbeelden.</value>
+    </data>
+    <data name="HomeFactAgent" xml:space="preserve">
+        <value>Voortgang en vragen van je agents op één plek</value>
+    </data>
+    <data name="HomeHowStepAnswerTitle" xml:space="preserve">
+        <value>Volg het en antwoord</value>
+    </data>
+    <data name="HomeHowStepAnswerText" xml:space="preserve">
+        <value>Volg de voortgang, beantwoord zijn vragen met een klik of je stem en zet opmerkingen op de pagina, die hij beantwoordt terwijl je schrijft.</value>
+    </data>
+    <data name="HomeProgressSubtitle" xml:space="preserve">
+        <value>Lange taken, zoals een eerste deployment of een nieuwe functie, melden hier onderweg hoe ze ervoor staan, naast elkaar, hoeveel chats je ook hebt.</value>
+    </data>
+    <data name="HomeProgressPointSteps" xml:space="preserve">
+        <value>Elke stap, de huidige en wat er nog komt</value>
+    </data>
+    <data name="HomeProgressPointAnswer" xml:space="preserve">
+        <value>Vragen die je beantwoordt met een klik of je stem</value>
+    </data>
+    <data name="HomeProgressPointSound" xml:space="preserve">
+        <value>Een geluid en een teller op het tabblad als hij je nodig heeft</value>
+    </data>
+    <data name="HomeProgressPointSecrets" xml:space="preserve">
+        <value>Sleutels en wachtwoorden gaan naar hun plek, nooit via de chat</value>
+    </data>
+    <data name="HomeProgressOpen" xml:space="preserve">
+        <value>Voortgang openen</value>
+    </data>
+    <data name="ProgressRunningFrom" xml:space="preserve">
+        <value>Deze werkbank toont de code van {0}</value>
+    </data>
+    <data name="ProgressReport" xml:space="preserve">
+        <value>Verslag</value>
+    </data>
+    <data name="SampleFixReport" xml:space="preserve">
+        <value>**Oorzaak:** het rapport deelde verkopen in op de dag van de server, die in UTC draait, dus een terugbetaling na middernacht in de winkel telde mee voor de dag ervoor.
+
+**Oplossing:** terugbetalingen tellen nu in de tijdzone van de winkel zelf, en een nieuwe test doet een terugbetaling om 00:30 winkeltijd en controleert op welke dag die valt.
+
+| Controle | Resultaat |
+| --- | --- |
+| Alle tests | Geslaagd |
+| Terugbetaling na middernacht op Test | Op de juiste dag |
+| Production na de merge | Bijgewerkt |</value>
     </data>
 </root>

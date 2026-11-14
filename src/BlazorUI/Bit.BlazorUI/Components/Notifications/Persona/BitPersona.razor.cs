@@ -1225,9 +1225,37 @@ public partial class BitPersona : BitComponentBase
 
     /// <summary>
     /// The accessible name of a coin that is also a button or a link. It says what activating it does, and -
-    /// where the details are hidden and nothing else says so - who it belongs to.
+    /// where the details are hidden and nothing else says so - who it belongs to. It ends with the initials the coin
+    /// shows, when it shows some (<paramref name="shownInitials"/>).
     /// </summary>
-    private string? GetCoinButtonLabel()
+    /// <remarks>
+    /// A control's name has to hold the text it shows (WCAG 2.5.3, Label in Name), which is what a speech user reads
+    /// off the screen to operate it: "AL" is what is on a coin standing in for Annie Lindqvist, and a name of
+    /// "Annie Lindqvist" alone leaves "click AL" matching nothing. The initials follow what the overlay says, which
+    /// comes first on the coin as it does in the name. A picture, a coin icon or a template shows no letters, and
+    /// leaves the name as it is.
+    /// </remarks>
+    private string? GetCoinButtonLabel(string? shownInitials)
+    {
+        var label = GetCoinButtonName();
+
+        if (label.HasNoValue() || shownInitials.HasNoValue()) return label;
+
+        // Read the way a speech user and the checkers read them, as words of letters and digits: a name that already
+        // holds what the coin shows as one of its words carries it - a label of "AL" given by hand, or the "3 more"
+        // of a "+3" coin.
+        var shown = ToWord(shownInitials!);
+
+        if (shown.Length is 0) return label;
+
+        if (label!.Split(' ').Select(ToWord).Any(word => string.Equals(word, shown, StringComparison.OrdinalIgnoreCase))) return label;
+
+        return $"{label}, {shownInitials}";
+
+        static string ToWord(string text) => new(text.Where(char.IsLetterOrDigit).ToArray());
+    }
+
+    private string? GetCoinButtonName()
     {
         if (HasClickableCoin is false) return null;
 

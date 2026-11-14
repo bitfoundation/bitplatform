@@ -87,9 +87,11 @@ public static partial class Program
                     QueueLimit = 0
                 }));
 
+                // A socket per question, so this is a little above the questions LandingChatQuestionLimiter allows: that one
+                // answers in words the visitor can read, and this one turns away whatever ignores it
                 options.AddPolicy(LandingRateLimits.Chat, context => RateLimitPartition.GetSlidingWindowLimiter(context.GetClientIp(), _ => new()
                 {
-                    PermitLimit = 10,
+                    PermitLimit = 40,
                     Window = TimeSpan.FromMinutes(10),
                     SegmentsPerWindow = 5,
                     QueueLimit = 0

@@ -447,6 +447,15 @@ Imagine this scenario:
 - You fix bugs that don't affect the API contract
 - You change UI-only code
 
+### Knowing When a Change Breaks an Older App
+
+`bit api check` tells you. A Debug build of Server.Api writes its OpenAPI document to `openapi/current.json`, and each
+release keeps its own as `openapi/<version>.json` with `bit api release`, once `<Version>` in `src/Directory.Build.props`
+has the new version. The check compares the api with every kept version from the lowest minimum above on (the start of
+the server's major version where a platform has none) and fails on a change that breaks one of them: keep the old shape
+working next to the new one, or raise the minimum past those versions. CI runs it on every pull request, and the
+Production deployment also requires the document of the version it ships.
+
 ### Version Number Strategy
 
 Use semantic versioning: `MAJOR.MINOR.PATCH`

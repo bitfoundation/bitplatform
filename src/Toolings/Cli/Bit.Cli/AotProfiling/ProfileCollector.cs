@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Globalization;
+using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Bit.Cli.Infrastructure;
@@ -183,7 +184,7 @@ public sealed partial class ProfileCollector(DevToolsPage page, PublishedApp app
         {
             foreach (var link in (await page.EvaluateAsync(Links, cancellationToken: cancellationToken)).EnumerateArray())
             {
-                if (PagePath(link.GetString(), app.Origin) is { } path && visited.Contains(path) is false && queue.Contains(path) is false && skipped.Contains(path) is false)
+                if (PagePath(link.GetString(), app.Origin) is { } path && visited.Contains(path) is false && queue.Contains(path) is false && IsLeftOut(path, skipped) is false)
                 {
                     queue.Enqueue(path);
                 }
@@ -282,6 +283,27 @@ public sealed partial class ProfileCollector(DevToolsPage page, PublishedApp app
             || (step.StartsWith("click:", StringComparison.Ordinal) && step.Length > "click:".Length)
             || (step.StartsWith("key:", StringComparison.Ordinal) && step.Length > "key:".Length)
             || (step.StartsWith("wait:", StringComparison.Ordinal) && int.TryParse(step["wait:".Length..], out var wait) && wait >= 0);
+    }
+
+    public static string LeftOut(string reloaded)
+    {
+        if (reloaded.StartsWith('/') is false || reloaded.Split('/')[1] is not { Length: >= 2 } segment)
+            return reloaded;
+
+        try
+        {
+            CultureInfo.GetCultureInfo(segment, predefinedOnly: true);
+            return $"/{segment}/*";
+        }
+        catch (CultureNotFoundException)
+        {
+            return reloaded;
+        }
+    }
+
+    public static bool IsLeftOut(string path, IReadOnlyCollection<string> leftOut)
+    {
+        return leftOut.Contains(path) || leftOut.Any(prefix => prefix.EndsWith("/*", StringComparison.Ordinal) && $"{path}/".StartsWith(prefix[..^1], StringComparison.OrdinalIgnoreCase));
     }
 
     public static string? PagePath(string? href, Uri origin)

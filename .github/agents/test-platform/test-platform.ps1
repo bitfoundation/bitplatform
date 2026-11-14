@@ -636,7 +636,14 @@ function Update-WindowsApps {
         $tapped = $false
 
         while (-not (Test-Version (Get-ProductVersion $app.Exe)) -and (Get-Date) -lt $deadline) {
-            if (-not $tapped -and (Get-CdpOwner 9222) -eq $name) {
+            $owner = Get-CdpOwner 9222
+
+            if (-not $tapped -and $owner -like '*.Client.Windows' -and $owner -ne $name) {
+                Write-Host "  $owner restarted into its update and holds the debugging port. Closing it and opening $($app.Id) again."
+                Stop-WindowsApps
+                Start-Process $app.Exe -WindowStyle Minimized
+            }
+            elseif (-not $tapped -and $owner -eq $name) {
                 try {
                     $page = Get-CdpPage 9222 5
                     $shown = Wait-AppVersion $page.webSocketDebuggerUrl 5
@@ -1032,7 +1039,7 @@ function Install-BitUnderTest([string] $lab) {
     }
     else {
         Write-Host 'Installing bit from nuget.org...'
-        dotnet tool install Bit.Cli --tool-path $tools --version 11.0.0-pre-18 | Out-Null
+        dotnet tool install Bit.Cli --tool-path $tools --version 11.0.0-pre-19 | Out-Null
     }
 
     if ($LASTEXITCODE -ne 0) {
@@ -1576,6 +1583,17 @@ function Install-AgentFixture([string] $folder, $scenario, $scenarios) {
     git @git commit -q -m $fixture.commit
 }
 
+# Where the Workbench of a project keeps its review and the agents' tasks: named after the clone's folder and a hash of its
+# git folder and of where the Workbench sits in it, the way WorkbenchFolders.Reviews names it.
+function Get-WorkbenchDataFolder([string] $project) {
+    $gitFolder = [IO.Path]::TrimEndingDirectorySeparator([IO.Path]::GetFullPath((Join-Path $project '.git')))
+    $key = "$gitFolder|src/Workbench"
+    $bytes = [Text.Encoding]::UTF8.GetBytes($IsWindows ? $key.ToLowerInvariant() : $key)
+    $hash = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($bytes)).ToLowerInvariant().Substring(0, 12)
+
+    Join-Path ([Environment]::GetFolderPath('LocalApplicationData')) "bit-workbench\$(Split-Path $project -Leaf)-$hash"
+}
+
 function Set-AgentMemory([string] $folder, $scenario) {
     if ($scenario.memory -eq 'none') {
         return
@@ -1858,6 +1876,7 @@ function Invoke-AgentsTest {
             Get-ChildItem (Join-Path $lab 'runs') -Directory -ErrorAction SilentlyContinue | ForEach-Object {
                 Stop-FolderProcesses $_.FullName
                 Remove-Item (Get-ClaudeProjectFolder (Join-Path $_.FullName $scenarios.project)) -Recurse -Force -ErrorAction SilentlyContinue
+                Remove-Item (Get-WorkbenchDataFolder (Join-Path $_.FullName $scenarios.project)) -Recurse -Force -ErrorAction SilentlyContinue
                 Remove-Item $_.FullName -Recurse -Force -ErrorAction SilentlyContinue
             }
 

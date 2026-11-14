@@ -3,14 +3,14 @@
 Create [bit platform](https://bitplatform.dev) projects that are ready to run on Windows, macOS and Linux, translate `.resx` files with an LLM, decode stack traces minified by Bit.Minifier, and write the profiles that compile Blazor WebAssembly apps ahead of time.
 
 ```bash
-dotnet tool install --global Bit.Cli --version 11.0.0-pre-18
+dotnet tool install --global Bit.Cli --version 11.0.0-pre-19
 bit new MyApp
 ```
 
 Or run it without installing anything:
 
 ```bash
-dnx Bit.Cli --version 11.0.0-pre-18 -- new MyApp
+dnx Bit.Cli --version 11.0.0-pre-19 -- new MyApp
 ```
 
 It needs a .NET 10 SDK or later. `dnx` asks once before it downloads the package.
@@ -168,7 +168,7 @@ It needs the GitHub CLI, signed in with admin rights on the repository. For anot
 `bit new` and `bit setup` prepare CI machines too, so a pipeline needs no steps of its own for Node.js, workloads, Playwright or the development certificate. The pipelines bit Boilerplate ships install bit once per job and run it before they publish:
 
 ```bash
-dotnet tool install --global Bit.Cli --version 11.0.0-pre-18
+dotnet tool install --global Bit.Cli --version 11.0.0-pre-19
 bit setup --platforms android --no-browsers --yes
 ```
 
@@ -267,6 +267,22 @@ Runs EF Core's `dotnet ef` for the project, in any folder of it, with the `dotne
 - `add` then runs `dotnet format` on the new migration's files alone, so it follows the project's code style.
 - When `dotnet ef` fails, bit shows its errors and the command to run it again. A project created with `--database Other` has no database provider until you add one, and bit says so.
 
+## bit api
+
+```bash
+bit api check
+bit api release
+```
+
+Keeps a bit Boilerplate project's api working for the app versions its users still run, since the apps in the stores don't all update the day the server does:
+
+- A Debug build of Server.Api writes its OpenAPI document to `openapi/current.json`, which git ignores. A release keeps a copy as `openapi/<version>.json`, for the `<Version>` in `src/Directory.Build.props`.
+- `check` builds Server.Api and compares `openapi/current.json` with the document of every kept version the server still supports: from the lowest minimum in `SupportedAppVersions` in Server.Api's `appsettings.json` and `appsettings.Production.json`, where a platform without one supports the server's whole major version. It exits with code 3 when a change breaks one of them, lists each change once with the endpoints it touches, and names the version `SupportedAppVersions` would have to rise to for those apps to update instead. `--no-build` compares the document the last build wrote.
+- `release` runs the same check, and changes nothing when it fails. Otherwise it keeps `openapi/<version>.json`, which it never replaces with another api, and deletes the documents of versions below the lowest supported one.
+- `release` and `check --release` fail when a `SupportedAppVersions` minimum is above `<Version>`, since the server would make the apps it ships update at once.
+- `check --release` also requires `openapi/<version>.json` to describe the api, as on a commit Production deploys. Only summaries and descriptions may differ, so a reworded comment needs no new version. bit Boilerplate's CI runs `bit api check` on every pull request, and its Production CD runs `bit api check --release`.
+- The comparison is [oasdiff](https://github.com/oasdiff/oasdiff)'s (Apache-2.0). bit downloads one pinned release to `~/.bitplatform/tools` and runs it only when the archive's SHA-256 matches the one bit records. On top of oasdiff's rules, removing a response property breaks: ASP.NET Core marks few properties as required, and an app that reads one gets a default value instead.
+
 ## bit translate
 
 Fills in the missing translations of `.resx` files with an OpenAI-compatible LLM, and keeps the existing ones:
@@ -304,7 +320,7 @@ In a pipeline:
 
 ```yaml
 - name: Install the bit CLI
-  run: dotnet tool install --global Bit.Cli --version 11.0.0-pre-18
+  run: dotnet tool install --global Bit.Cli --version 11.0.0-pre-19
 
 - name: Translate .resx files
   env:
@@ -368,7 +384,7 @@ dotnet publish src/Client/MyApp.Client.Web/MyApp.Client.Web.csproj -c Release -p
 
 1. Publishes the project in Release on the interpreter, with Mono's AOT profiler in it. Pass the `-p` properties the AOT publish gets: both publishes then trim alike and, with Bit.Minifier, minify to the same names, and the profile names methods by those names.
 2. Starts it. A server project runs on a free local port. A standalone Blazor WebAssembly app is served from its `wwwroot` by the browser itself at `--origin`, `http://localhost:5000` by default; pass the address the app is deployed at when its API only accepts requests from there.
-3. Opens it in a headless Chromium, Chrome or Edge without its service worker, waits for .NET to start (an `InteractiveAuto` app's first visit runs on the server and only downloads .NET, so the page is loaded once more to run it on WebAssembly), and follows the app's links to every page it reaches, up to `--max-pages` (50). Then it does the `--step`s, each a path, `click:<css selector>`, `key:<key>` or `wait:<milliseconds>`. A link that reloads the app is left out and the visit starts over without it.
+3. Opens it in a headless Chromium, Chrome or Edge without its service worker and waits for .NET to start on the start page (`--path`, `/` by default); an `InteractiveAuto` app's first visit runs on the server and only downloads .NET, so the page is loaded once more to run it on WebAssembly. That page runs the startup every page shares, like the DI setup, the layout and the first render, which is what the profile is for: each page more adds its own code, and so makes the download bigger. `--max-pages <n>` follows the app's links to more pages. Then it does the `--step`s, each a path, `click:<css selector>`, `key:<key>` or `wait:<milliseconds>`. A page or step that reloads the app is left out and the visit starts over without it; a link into another language, like `/fa-IR/...`, leaves out every page of that language.
 4. Writes the profile: every method that ran, every `[UnmanagedCallersOnly]` method, which the compiled app calls directly and can't run without, and with `--include <assembly>` every method of that assembly, run or not.
 
 The app needs no change for it. The browser is Playwright's Chromium when it's installed (`bit setup` installs it for a bit Boilerplate project's UI tests), then Chrome, then Edge, or `--browser <path>`. The publish goes to the temp folder and is deleted at the end.
@@ -398,6 +414,7 @@ Collect the profile in the job that publishes the app, right before the AOT publ
 - **Trust entries**, only for the folder `bit new` created or the one you pass to `bit trust`: `projects` in `~/.claude.json`, `trustedFolders` in `~/.copilot/config.json`, `[projects]` in `~/.codex/config.toml`, `~/.gemini/trustedFolders.json`, and VS Code's trust store in `~/.vscode-shared/sharedStorage/state.vscdb` (only while VS Code isn't running). Each file keeps everything else in it. To undo, delete the entry, or use each tool's own trust settings.
 - **bit itself**, when a newer version is out: a copy for the run in `~/.bitplatform/cli`, then `dotnet tool update --global Bit.Cli` once the run ends.
 - **Secrets, environments and pull request and Actions settings** of your GitHub repository, only with `bit pipeline`, after you confirm or with `--yes`.
+- **oasdiff**, for `bit api`, in `~/.bitplatform/tools`.
 - **Its own folder**, `~/.bitplatform`: `settings.json`, the template cache, logs, telemetry not sent yet, the repositories `bit diff` creates, and in `keys` the keys `bit pipeline` and `bit keys android` create, which only your user can read on macOS and Linux.
 
 ## Telemetry
@@ -438,12 +455,12 @@ When a step fails, bit says right under it what it was doing: the exact command 
 | 0 | Done |
 | 1 | A step failed |
 | 2 | Wrong usage, or a value is missing |
-| 3 | A check failed: `bit translate --check`, `bit doctor`, `bit pipeline --check` |
+| 3 | A check failed: `bit translate --check`, `bit doctor`, `bit pipeline --check`, `bit api` |
 | 130 | Canceled |
 
 ## Coming from the old tools
 
 | Before | Now |
 |---|---|
-| `dnx Bit.ResxTranslator` | `dnx Bit.Cli --version 11.0.0-pre-18 -- translate`, or `bit translate` |
-| `dnx Bit.Minifier.Cli --decode map trace` | `dnx Bit.Cli --version 11.0.0-pre-18 -- decode map trace`, or `bit decode map trace` |
+| `dnx Bit.ResxTranslator` | `dnx Bit.Cli --version 11.0.0-pre-19 -- translate`, or `bit translate` |
+| `dnx Bit.Minifier.Cli --decode map trace` | `dnx Bit.Cli --version 11.0.0-pre-19 -- decode map trace`, or `bit decode map trace` |

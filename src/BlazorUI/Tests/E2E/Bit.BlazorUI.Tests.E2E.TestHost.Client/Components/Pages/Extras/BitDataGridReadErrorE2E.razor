@@ -1,0 +1,85 @@
+﻿@page "/e2e/data-grid/read-errors"
+
+@* BitDataGrid's failed reads, handled through OnReadError: a paged server grid whose pages the page makes fail on
+   demand, and a server-virtualized one whose windows past the first it makes fail as the grid scrolls to them. A read
+   can be held until released, so a test sees the grid while it reads again. *@
+
+<PageTitle>BitDataGrid read errors E2E</PageTitle>
+
+<h1>BitDataGrid read errors</h1>
+
+<E2ESection Id="paged" Title="Server-side paging">
+    <button id="btn-fail" type="button" @onclick="() => _fail = !_fail">Make the reads @(_fail ? "succeed" : "fail")</button>
+    <button id="btn-hold" type="button" @onclick="() => _gate = new(TaskCreationOptions.RunContinuationsAsynchronously)">Hold the next read</button>
+    <button id="btn-release" type="button" @onclick="() => _gate?.TrySetResult()">Release the held read</button>
+    <BitDataGrid TItem="Row" Id="grid-paged" OnRead="ReadAsync" OnReadError="e => { _errors++; _lastError = e.Message; }"
+                 Pageable="true" PageSize="5" CellNavigation="true">
+        <BitDataGridColumn Property="r => r.Id" Width="100px" />
+        <BitDataGridColumn Property="r => r.Name" Width="200px" />
+    </BitDataGrid>
+    <p>reads <span id="reads">@_reads</span> | errors <span id="errors">@_errors</span> | last <span id="last-error">@_lastError</span> | held <span id="held">@(_held ? "yes" : "no")</span></p>
+</E2ESection>
+
+<E2ESection Id="virtual" Title="Server-side virtualization">
+    <button id="btn-fail-virtual" type="button" @onclick="() => _failVirtual = !_failVirtual">Make the later windows @(_failVirtual ? "succeed" : "fail")</button>
+    <BitDataGrid TItem="Row" Id="grid-virtual" OnRead="ReadVirtualAsync" OnReadError="_ => _virtualErrors++"
+                 Virtualize="true" Height="300px" RowHeight="36" CellNavigation="true">
+        <BitDataGridColumn Property="r => r.Id" Width="100px" />
+        <BitDataGridColumn Property="r => r.Name" Width="200px" />
+    </BitDataGrid>
+    <p>virtual errors <span id="virtual-errors">@_virtualErrors</span></p>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    public class Row
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = "";
+    }
+
+    private static List<Row> Rows(int count) => Enumerable.Range(1, count).Select(i => new Row { Id = i, Name = $"Item {i:0000}" }).ToList();
+
+    private readonly List<Row> _all = Rows(23);
+    private readonly List<Row> _virtualAll = Rows(2000);
+
+    private bool _fail;
+    private TaskCompletionSource? _gate;
+    private bool _held;
+    private int _reads;
+    private int _errors;
+    private string _lastError = "";
+    private bool _failVirtual;
+    private int _virtualErrors;
+
+    // At once, unless a click has the page hold the read until released. Only a click holds or fails one, so a prerender
+    // never waits and never fails.
+    private async Task<BitDataGridReadResult<Row>> ReadAsync(BitDataGridReadRequest request)
+    {
+        _reads++;
+        if (_gate is { } gate)
+        {
+            _held = true;
+            await InvokeAsync(StateHasChanged);
+            await gate.Task.WaitAsync(request.CancellationToken);
+            _gate = null;
+            _held = false;
+        }
+        await InvokeAsync(StateHasChanged);
+
+        if (_fail) throw new InvalidOperationException($"The read of rows {request.Skip + 1}-{request.Skip + request.Take} failed.");
+
+        return new BitDataGridReadResult<Row>(_all.Skip(request.Skip).Take(request.Take ?? _all.Count).ToList(), _all.Count);
+    }
+
+    private async Task<BitDataGridReadResult<Row>> ReadVirtualAsync(BitDataGridReadRequest request)
+    {
+        await Task.Delay(50, request.CancellationToken);
+
+        // The first window is read ahead of Virtualize; the ones past it are what the grid reads as it scrolls.
+        if (_failVirtual && request.Skip > 100) throw new InvalidOperationException("The window failed.");
+
+        return new BitDataGridReadResult<Row>(_virtualAll.Skip(request.Skip).Take(request.Take ?? _virtualAll.Count).ToList(), _virtualAll.Count);
+    }
+}

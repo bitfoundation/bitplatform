@@ -63,15 +63,15 @@ public partial class WebAiChatbotAttachmentTests : AppTestBase
 
         await WaitUntilInteractive(page);
 
-        // Sending an image uploads it first, and that upload needs an account (See AppAiChatPanel.UploadPendingAttachment).
+        // Sending an image uploads it first, and that upload needs an account (See AppAiChat.UploadImage).
         await SignIn(page, StoreUser.Email, StoreUser.Password);
 
         var panel = await AiChatPanel.Open(page);
 
         await panel.AttachmentInput.SetInputFilesAsync(imageFile);
 
-        // The thumbnail is the panel saying it took the file; without it the message goes up as text alone.
-        await Expect(page.Locator(".pending-attachment")).ToBeVisibleAsync();
+        // The file showing in the composer is the panel saying it took it; without it the message goes up as text alone.
+        await Expect(panel.PendingAttachment(Path.GetFileName(imageFile))).ToBeVisibleAsync();
 
         var answer = await panel.Ask(Question);
 

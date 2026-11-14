@@ -95,17 +95,17 @@ public partial class BitAiChatDemo
         },
         new()
         {
-            Name = "EmptyBody",
+            Name = "EmptyDescription",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The supporting line of the empty state. Defaults to the EmptyBody of the string table (\"Ask a question to get started.\").",
+            Description = "The supporting line of the empty state. Defaults to the EmptyDescription of the string table (\"Ask a question to get started.\").",
         },
         new()
         {
             Name = "EmptyTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The content that replaces the empty state (and with it EmptyTitle, EmptyBody and Suggestions) while the conversation has no message to show - the system messages it hides do not count.",
+            Description = "The content that replaces the empty state (and with it EmptyTitle, EmptyDescription and Suggestions) while the conversation has no message to show - the system messages it hides do not count.",
         },
         new()
         {
@@ -784,7 +784,7 @@ public partial class BitAiChatDemo
         new()
         {
             EmptyTitle = "Ask the docs",
-            EmptyBody = "Both chats take this heading and line from the BitParams around them.",
+            EmptyDescription = "Both chats take this heading and line from the BitParams around them.",
             Placeholder = "Ask about a component...",
             AllowAttachments = false,
         }

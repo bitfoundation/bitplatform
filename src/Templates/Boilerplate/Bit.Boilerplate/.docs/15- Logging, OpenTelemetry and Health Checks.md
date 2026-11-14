@@ -92,7 +92,7 @@ public static readonly UpDownCounter<long> ActiveConversations =
     Meter.Current.CreateUpDownCounter<long>(
         "chatbot.active_conversations",
         "{conversation}",
-        "Text chats open in the AI chat panel right now.");
+        "Answers of the AI chat panel being written right now.");
 
 // Increment when operation starts
 ActiveConversations.Add(1);
@@ -169,6 +169,7 @@ The logging configuration is centralized in [`src/Shared/appsettings.json`](/src
 - **EF Core Commands**: `Information` - Shows SQL queries in logs (useful for debugging)
 - **Sentry**: Production error tracking with `Warning` level
 - **DiagnosticLogger**: `Information` level for in-app diagnostics
+- **BevTools**: `Information` level for the Logs panel of the in-app dev tools
 - **Console**: Logs to device log/logcat on mobile platforms
 
 ---
@@ -320,7 +321,11 @@ The project includes **health check endpoints** to monitor application health.
 1. **`/health`** - readiness. Runs every registered check, and returns 503 only when one of them reports Unhealthy.
 2. **`/alive`** - liveness. Runs only the checks tagged `"live"`, which today is the disk-space check alone.
 3. **`/healthz`** - the detailed report behind the **Operations** page (Management menu). It keeps the HealthChecks UI
-   format and adds each check's failure status, timeout and full exception, plus the time of the report. It needs the
+   format and adds each check's failure status, timeout, category, whether it only misses its settings (`isNotConfigured`)
+   and full exception, plus the time of the report. It also says
+   which build answered and since when: `applicationVersion` (the informational version, which ends with the commit
+   in a Release build), `instanceName` (the machine name) and `startedAt` (when the process started, in UTC), so a
+   monitor that polls it can mark deployments and restarts, instance by instance. It needs the
    `AppFeatures.System.Operations_View` feature, which only global admins have. Like `/health`, it answers 503 when a
    check reports Unhealthy, so a monitor can go by the status code, and the report is in the body either way.
 
@@ -329,8 +334,18 @@ The project includes **health check endpoints** to monitor application health.
 mapped everywhere too, but behind its feature and never cached. It is also an **OAuth resource** (`OAuthResources`), so
 an external monitor can read it with a token of its own instead of a user's session, minted through the same consent
 page as `/dev-mcp`. Granting one takes more than reading the page does: the feature **and** a session that signed in
-with two factor (`GrantPolicies` on the resource's row), because that token reads the report unattended, exceptions and
-connection strings and all. Adding health check endpoints to a non-development
+with two factor (`GrantPolicies` on the resource's row), because that token reads the report unattended. A token gets
+the report without the exceptions, which can carry a server name or a connection string, nor the description a check
+that throws takes from its exception's message; only the app's own session, which the Operations page uses, reads them. The resource's metadata document
+(`/.well-known/oauth-protected-resource/healthz`, anonymous like every RFC 9728 document) lists the `healthz` scope and carries
+`bit_template_version`, the version `bit.json` records, so a monitor can tell a bit Boilerplate app and its version
+before it asks for a token. A refused token request says why in `error_description`, such as a revoked approval or
+a new password, so the monitor can tell its user. Every front end also serves `/.well-known/bit-app.json`, anonymously:
+`server`, where `/healthz` and that metadata live, `front_end`, `server` when Server.Web renders the pages and `static`
+for the copy in `Boilerplate.Client.Web/wwwroot/.well-known` that a statically hosted front end serves, and `manifest`,
+the web app manifest with the app's name and icons. A monitor given the app's address finds the rest from there. When
+you change a static front end's `ServerAddress`, change `server` in that file too, as you do the preconnect link in
+`index.html`. Adding health check endpoints to a non-development
 deployment has security implications (see <https://aka.ms/dotnet/aspire/healthchecks>): decide deliberately whether to
 expose `/health` publicly or to restrict it to your load balancer's network, because an anonymous caller can drive the
 work behind it. `/health` and `/alive` responses are output-cached for 10 seconds, but that cache does not apply to a
@@ -355,8 +370,9 @@ account has them. A last section, **Configuration**, reads `IDiagnosticControlle
 caching, prerendering, forwarded headers, the telemetry exporters or a force-update floor are switched on. Whatever a
 check already covers is deliberately absent from it, and no credential is ever in it - each one is a boolean saying
 whether it is set, which `DeploymentConfigurationTests` asserts against the deployment's own connection strings.
-Its catalog (`OperationsPage.HealthChecks.cs`) gives each registration name a title, a group and a description; add
-a new check there to give it the same treatment.
+Each check is shown under the title, icon and description its report gives it: describe a check of your own with
+`.Describe(...)` next to its registration and give it a category tag, as the end of this section shows. It is grouped
+under the category its report names, or under **Other** when the page has no group for that category.
 
 With a standalone API, the page also reads `Server.Web`'s own `/healthz`, behind the same feature, and shows its checks
 under **Web server** with a `web:` prefix (`web:binStorage`, `web:serverApi`). If that report can't be read, a
@@ -377,7 +393,27 @@ under **Web server** with a `web:` prefix (`web:binStorage`, `web:serverApi`). I
 It also adds checks for remote dependencies. Each one has a timeout and reports **Degraded** rather than Unhealthy, so a
 provider outage does not take an otherwise healthy instance out of the load balancer:
 - **`userProfileImages`**: the blob storage.
+- **`websites`**: your other sites, listed in `HealthChecks:Websites`, such as the landing page, a blog on WordPress or
+  the docs, so a monitor reading `/healthz` watches them along with the app. Each one gets a GET that has to end, after
+  its redirects, in a success status: behind a CDN such as Cloudflare a TCP connection succeeds whatever state the site
+  is in. Five are requested at a time, each within 5 seconds and all of them within 10, so a site that hangs can't hold
+  `/health` past a monitor's timeout. Each one that failed is in the entry's data with what went wrong: its status code,
+  a Cloudflare challenge, a name that doesn't resolve, a TLS or connection error, or no answer in time. A bare host is
+  requested over https. List them in `appsettings.json`, or as one value separated by commas or spaces, which a single
+  environment variable carries (`HealthChecks__Websites`), and so does one GitHub variable of the deployment. With none
+  listed there's no entry, as the check is optional.
 - **`smtp`**: connects, runs STARTTLS when `EnableSsl` is on, signs in when credentials are set, then quits without sending.
+- **`emailDelivery`**: reads the DNS of the domain of `Email:DefaultFromEmail`, the address every mail is sent from, so it
+  needs no setting of its own. Without an SPF record, with one that ends in `+all` (any server may send as the domain),
+  or without one DMARC record with a policy at `_dmarc.<domain>` or at its organizational domain (two of them, or one
+  without `p`, and receivers apply none), Gmail, Outlook and Yahoo put the app's mail, sign-in codes and magic links
+  included, in spam or drop it, so the check reports Degraded. DKIM's selector is the sending service's choice, so DKIM
+  is only looked up at the selectors Google Workspace, Microsoft 365, Azure Communication Services, SendGrid, Mailjet,
+  Mandrill and Resend use for
+  every customer, and reported in the entry's data without changing its status, even when the lookup fails. With Sign in with Apple configured, the data also notes that mail to Apple's private relay
+  (`privaterelay.appleid.com`) only arrives once the domain is registered with Apple, which no API can confirm. The
+  check is left out where mail is caught rather than delivered: the shared ethereal.email mailbox, or a loopback SMTP
+  server such as Mailpit in development.
 - **`sms`**: fetches the Twilio account and requires it to be active.
 - **`keycloakIdentity`**: reads Keycloak's discovery document.
 <!--#if (cloudflare == true)-->
@@ -413,24 +449,33 @@ In development, `sms`, `keycloakIdentity`,
 <!--#if (cloudflare == true)-->
 `cloudflare`,
 <!--#endif-->
-`entraId`, `appleSignIn`, `azureSignalR`, `firebase`, `apns`
+`entraId`, `appleSignIn`, `firebase`, `apns`
 and the AI checks are registered only when their settings are present. In any other environment they are always
-registered, and one without settings reports Degraded with "... is not configured". A deployment that ships the code
-for a dependency but leaves it unconfigured is most likely a mistake. If your project doesn't use one of them, remove
-its code, check included.
+registered, and one without settings reports Degraded with "... is not configured", and `/healthz` marks its entry
+`isNotConfigured`, so the Operations page and a monitor show it as a setup gap rather than as a failing dependency. A
+deployment that ships the code for a dependency but leaves it unconfigured is most likely a mistake. If your project
+doesn't use one of them, remove its code, check included.
+<!--#if (signalR == true)-->
+
+`azureSignalR` is registered only when `Azure:SignalR:ConnectionString` is set, in every environment: without it, the
+app serves SignalR itself and live updates keep working, so a missing connection string is a choice rather than a gap.
+<!--#endif-->
 
 Google, GitHub, Twitter and Facebook sign-in can't be verified without a user signing in, so they have no check. Outside
 development, `googleSignIn`, `gitHubSignIn`, `twitterSignIn` and `facebookSignIn` appear only when their settings are
 missing, reporting Degraded the same way.
 
-`smtp`, `firebase`, `apns`,
+`smtp`, `emailDelivery`, `websites`, `firebase`, `apns`,
 <!--#if (cloudflare == true)-->
 `cloudflare`,
 <!--#endif-->
 the sign-in checks, `reCaptcha` and the AI checks are registered with
-`AddCachedCheck`, which reuses a healthy result for 5 minutes (1 minute for `azureSignalR`). Probes that arrive together share one run. A
+`AddCachedCheck`, which reuses a healthy result for 5 minutes (1 minute for `azureSignalR`, 30 seconds for `websites`, 30 minutes for
+`emailDelivery`, whose DNS lookups also keep each answer for its TTL). Probes that arrive together share one run. A
 failing result is never reused, so each probe checks again and a recovery shows up right away. This keeps load balancer
-probes from turning into paid calls or repeated sign-ins.
+probes from turning into paid calls or repeated sign-ins. `/healthz` reports a reused result with its own run's
+`duration` rather than the cache lookup's, when that run was (`verifiedAt`) and how long a result is reused
+(`cacheDuration`).
 
 With Redis enabled, Aspire registers `StackExchange.Redis_redis-persistent` (Unhealthy) and
 `StackExchange.Redis_redis-cache`. The template changes `redis-cache` to Degraded, because FusionCache keeps serving from
@@ -438,6 +483,15 @@ memory without it. `redis-persistent` is registered only where `Server.Api` runs
 standalone API, `Server.Web` has only `redis-cache` and also checks the API's `/alive` endpoint (`serverApi`, Degraded).
 
 Anything you add that a request path genuinely depends on should report Unhealthy; anything external should not.
+
+Every check carries one of `HealthCheckCategories` (`Platform`, `Messaging`, `Identity`, `AI`, `Integrations`, `Websites`) as a tag,
+which `/healthz` reports as the entry's `category`, so the Operations page and a monitor can group a check they don't know
+by name. Tag yours too, e.g. `tags: [HealthCheckCategories.Integrations]` for a payment gateway, a map or a CRM; a
+category of your own, `category:<Name>`, works as well. Each entry also carries the check's `title`, `iconName` (a
+`BitIconName`) and `about`, what a pass proves, from `HealthCheckDescriptions`, so the Operations page and a monitor
+show it the way the app names it. Describe yours next to its registration, e.g.
+`.Describe("paymentGateway", "Payment gateway", "Money", "Authorizes and voids a one cent payment.")`; one described
+nowhere is reported under its registration name, with its category's icon.
 
 ---
 

@@ -126,14 +126,14 @@ public class BitInfiniteScrollingE2ETests : E2ETestBase
     }
 
     [TestMethod]
-    public async Task Empty_AFirstPageWithNoItem_ShowsTheEmptyMessage()
+    public async Task Empty_AFirstPageWithNoItem_ShowsTheEmptyText()
     {
         await OpenAsync(Route);
         await ShowAsync("isc-empty");
         await ShowAsync("isc-empty-default");
 
         await Expect(List("isc-empty").Locator(".bit-isc-emp")).ToHaveTextAsync("Nothing to show here.");
-        await Expect(List("isc-empty-default").Locator(".bit-isc-emp")).ToHaveTextAsync("There is no item");
+        await Expect(List("isc-empty-default").Locator(".bit-isc-emp")).ToHaveTextAsync("No items found");
         await Expect(Status("isc-empty")).ToHaveTextAsync("Nothing to show here.");
         await Expect(List("isc-empty").Locator(".bit-isc-ldg")).ToHaveCountAsync(0);
     }

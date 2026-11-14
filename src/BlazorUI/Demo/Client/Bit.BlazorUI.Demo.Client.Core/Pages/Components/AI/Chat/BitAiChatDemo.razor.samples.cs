@@ -63,7 +63,7 @@ private static BitAiConversation CreateHistory()
     private readonly string example4RazorCode = @"
 <div style=""height:400px"">
     <BitAiChat EmptyTitle=""Hi, I am the docs assistant""
-               EmptyBody=""Ask about any component, or start from one of these.""
+               EmptyDescription=""Ask about any component, or start from one of these.""
                Suggestions=""suggestions"" />
 </div>";
     private readonly string example4CsharpCode = @"
@@ -386,7 +386,7 @@ private readonly BitAiChatParams[] chatParams =
     new()
     {
         EmptyTitle = ""Ask the docs"",
-        EmptyBody = ""Both chats take this heading and line from the BitParams around them."",
+        EmptyDescription = ""Both chats take this heading and line from the BitParams around them."",
         Placeholder = ""Ask about a component..."",
         AllowAttachments = false,
     }
@@ -465,7 +465,7 @@ private static async Task<string?> DescribeRecordingAsync(Stream audio, string c
 <div style=""height:400px"">
     <BitAiChat Dir=""BitDir.Rtl""
                EmptyTitle=""چطور می‌توانم کمک کنم؟""
-               EmptyBody=""پیامی بنویسید یا یکی از پیشنهادها را انتخاب کنید.""
+               EmptyDescription=""پیامی بنویسید یا یکی از پیشنهادها را انتخاب کنید.""
                Placeholder=""پیام خود را بنویسید...""
                Suggestions=""rtlSuggestions"" />
 </div>";

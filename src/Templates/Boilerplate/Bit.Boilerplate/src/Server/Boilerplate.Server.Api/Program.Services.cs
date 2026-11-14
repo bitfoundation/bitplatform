@@ -1,13 +1,14 @@
 //+:cnd:noEmit
 using System.Net;
 using System.Net.Mail;
-using ImageMagick;
-using ImageMagick.Configuration;
+using Bit.Bmage;
+using Bit.Bmage.Memory;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Boilerplate.Server.Api.Features.Identity;
 using Boilerplate.Server.Api.Features.Identity.OAuth;
 using Boilerplate.Server.Api.Features.Identity.OAuth.Services;
 using Boilerplate.Server.Api.Features.Diagnostic;
+using Boilerplate.Shared.Features.Diagnostic;
 using Boilerplate.Server.Api.Features.Attachments;
 using Boilerplate.Server.Api.Features.PersonalData;
 //#if (notification == true)
@@ -87,6 +88,9 @@ public static partial class Program
         //#if (redis == true)
         // Add default Redis connection for Hangfire and application-level distributed locking (persistence Redis with AOF)
         builder.AddKeyedRedisClient("redis-persistent", settings => settings.DisableTracing = true);
+        // Aspire registers its health check without tags, so its category is added here (See HealthCheckCategories).
+        services.PostConfigure<HealthCheckServiceOptions>(options =>
+            options.Registrations.SingleOrDefault(r => r.Name is "StackExchange.Redis_redis-persistent")?.Tags.Add(HealthCheckCategories.Platform));
 
         //#endif
         builder.AddServerApiHealthChecks();
@@ -94,8 +98,7 @@ public static partial class Program
         ServerApiSettings appSettings = new();
         configuration.Bind(appSettings);
 
-        ConfigureImageMagickSecurityPolicy();
-        ConfigureImageMagickResourceLimits();
+        services.AddBitBmageHeadlessServices(options => options.Allocator = new BudgetedPixelAllocator(1024L * 1024 * 1024));
 
         services.AddOAuth();
 
@@ -112,6 +115,8 @@ public static partial class Program
         //#if (signalR == true)
         services.AddScoped<Features.Attachments.AiChatImagesRetentionJobRunner>();
         services.AddScoped<Infrastructure.SignalR.AppChatbot>();
+        // Holds a tool call for the user's decision until it comes back over the hub (See AppChatbot.ClearAppFiles).
+        services.AddSingleton<BitAiApprovalBroker>();
         services.AddSingleton<Features.Chatbot.ChatbotAnswerSigner>();
         services.AddSingleton<Features.Chatbot.ChatbotRateLimiter>();
         //#endif
@@ -500,6 +505,28 @@ public static partial class Program
                         new OpenApiParameter() { In = ParameterLocation.Query, Name = "$orderby", Description = "Orders the results of a query by one or more properties. (ex. Name desc)" }
                     ]);
                 }
+
+                // OData lists about 40 JSON variants per body, which made the document 1 MB; application/json alone describes them.
+                foreach (var content in (operation.Responses?.Values.Select(response => response.Content) ?? []).Append(operation.RequestBody?.Content))
+                {
+                    if (content?.ContainsKey("application/json") is true)
+                    {
+                        foreach (var mediaType in content.Keys.Where(key => key is not "application/json").ToList())
+                        {
+                            content.Remove(mediaType);
+                        }
+
+                        if (content["application/json"] is OpenApiMediaType { Schema: OpenApiSchema { AnyOf.Count: > 1 } union } json)
+                        {
+                            var variants = await Task.WhenAll(union.AnyOf.Select(schema => schema.SerializeAsJsonAsync(OpenApiSpecVersion.OpenApi3_1, cancellationToken)));
+
+                            if (variants.Distinct().Count() is 1)
+                            {
+                                json.Schema = union.AnyOf[0];
+                            }
+                        }
+                    }
+                }
             });
         });
 
@@ -590,14 +617,36 @@ public static partial class Program
         if (string.IsNullOrWhiteSpace(appSettings.AI?.OpenAI?.ChatApiKey) is false)
         {
             // https://github.com/dotnet/extensions/tree/main/src/Libraries/Microsoft.Extensions.AI.OpenAI#microsoftextensionsaiopenai
-            services.AddChatClient(sp => new OpenAI.Chat.ChatClient(model: appSettings.AI.OpenAI.ChatModel, credential: new(appSettings.AI.OpenAI.ChatApiKey), options: new()
+#pragma warning disable OPENAI001 // The Responses api's client is still marked experimental.
+            var chatClient = services.AddChatClient(sp =>
             {
-                Endpoint = appSettings.AI.OpenAI.ChatEndpoint,
-                Transport = new HttpClientPipelineTransport(sp.GetRequiredService<IHttpClientFactory>().CreateClient("AI"))
-            }).AsIChatClient())
-            .UseLogging()
-            .UseFunctionInvocation()
-            .UseOpenTelemetry(configure: c => c.EnableSensitiveData = env.IsDevelopment());
+                var transport = new HttpClientPipelineTransport(sp.GetRequiredService<IHttpClientFactory>().CreateClient("AI"));
+
+                // See AI:OpenAI:ChatUseResponsesApi comment in Server.Api's appsettings.json
+                return appSettings.AI.OpenAI.ChatUseResponsesApi
+                    ? new OpenAI.Responses.ResponsesClient(credential: new(appSettings.AI.OpenAI.ChatApiKey), options: new()
+                    {
+                        Endpoint = appSettings.AI.OpenAI.ChatEndpoint,
+                        Transport = transport
+                    }).AsIChatClient(appSettings.AI.OpenAI.ChatModel)
+                    : new OpenAI.Chat.ChatClient(model: appSettings.AI.OpenAI.ChatModel, credential: new(appSettings.AI.OpenAI.ChatApiKey), options: new()
+                    {
+                        Endpoint = appSettings.AI.OpenAI.ChatEndpoint,
+                        Transport = transport
+                    }).AsIChatClient();
+            });
+
+            if (appSettings.AI.OpenAI.ChatUseResponsesApi)
+            {
+                // Nothing is kept on the provider's side, as with /v1/chat/completions: the app sends the conversation every time
+                // and stores it nowhere but the user's device
+                chatClient.ConfigureOptions(options => options.RawRepresentationFactory ??= _ => new OpenAI.Responses.CreateResponseOptions { StoredOutputEnabled = false });
+            }
+#pragma warning restore OPENAI001
+
+            chatClient.UseLogging()
+                .UseFunctionInvocation()
+                .UseOpenTelemetry(configure: c => c.EnableSensitiveData = env.IsDevelopment());
             // .UseDistributedCache()
 
             //#if (signalR == true)
@@ -960,83 +1009,122 @@ public static partial class Program
         ServerApiSettings appSettings = new();
         configuration.Bind(appSettings);
 
+        // Every check carries one of HealthCheckCategories as a tag, which /healthz reports as the entry's category: the
+        // Operations page and a monitor group a check they don't know by it. Give a check of your own one too.
         var healthChecksBuilder = builder.AddDefaultHealthChecks()
-            .AddDbContextCheck<AppDbContext>()
-            .AddHangfire(setup => setup.MinimumAvailableServers = 1)
-            .AddCheck<AppCertificateHealthCheck>("appCertificate")
+            .AddDbContextCheck<AppDbContext>(tags: [HealthCheckCategories.Platform])
+            .AddHangfire(setup => setup.MinimumAvailableServers = 1, tags: [HealthCheckCategories.Platform])
+            .AddCheck<AppCertificateHealthCheck>("appCertificate", tags: [HealthCheckCategories.Platform])
             // Remote dependencies from here on are bounded and report Degraded, which keeps `/health` at 200 (See
             // MapAppHealthChecks): a provider outage must not drain an otherwise healthy instance.
-            .AddCheck<UserProfileImagesStorageHealthCheck>("userProfileImages", failureStatus: HealthStatus.Degraded, timeout: TimeSpan.FromSeconds(5))
+            .AddCheck<UserProfileImagesStorageHealthCheck>("userProfileImages", failureStatus: HealthStatus.Degraded, tags: [HealthCheckCategories.Platform], timeout: TimeSpan.FromSeconds(5))
             // Cached, as signing in on every probe can trip the mail provider's brute force protection.
-            .AddCachedCheck("smtp", _ => new SmtpHealthCheck(GetSmtpSettings(configuration)), cacheDuration: TimeSpan.FromMinutes(5), timeout: TimeSpan.FromSeconds(10));
+            .AddCachedCheck("smtp", HealthCheckCategories.Messaging, _ => new SmtpHealthCheck(GetSmtpSettings(configuration)), cacheDuration: TimeSpan.FromMinutes(5), timeout: TimeSpan.FromSeconds(10));
+
+        // Whether the mail reaches inboxes: SPF and DMARC of the sender's domain, read from DNS with no setting of its own.
+        // Left out where mail is caught rather than delivered (See EmailDeliverySettings.For).
+        var smtpConnectionString = configuration.GetConnectionString("smtp");
+        var smtpHost = string.IsNullOrWhiteSpace(smtpConnectionString)
+                       || Uri.TryCreate(GetConnectionStringValue(smtpConnectionString, "Endpoint", "smtp://localhost:25"), UriKind.Absolute, out var smtpEndpoint) is false
+            ? null
+            : smtpEndpoint.Host;
+        var appleSignIn = string.IsNullOrWhiteSpace(configuration["Authentication:Apple:ClientId"]) is false;
+
+        if (EmailDeliverySettings.For(appSettings.Email?.DefaultFromEmail, smtpHost, appleSignIn, builder.Environment.IsDevelopment()) is { } emailDelivery)
+        {
+            // DNS records rarely change. A failing result is never reused, and the lookups keep each answer for its TTL.
+            healthChecksBuilder.AddCachedCheck("emailDelivery", HealthCheckCategories.Messaging, _ => new EmailDeliveryHealthCheck(emailDelivery, EmailDeliveryHealthCheck.LookupTxtWithDnsClient),
+                cacheDuration: TimeSpan.FromMinutes(30), timeout: TimeSpan.FromSeconds(10));
+        }
+
+        // The project's other sites, such as its landing page or a blog, so a monitor reading /health watches them too. Optional,
+        // so with none listed there's no entry rather than a missing configuration. No retries: the check reports the first answer.
+        if (WebsitesHealthCheck.Read(configuration.GetSection("HealthChecks:Websites")) is { Length: > 0 } websites)
+        {
+#pragma warning disable EXTEXP0001 // RemoveAllResilienceHandlers is still marked experimental.
+            builder.Services.AddHttpClient(WebsitesHealthCheck.HttpClientName, httpClient => httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (compatible; Boilerplate-HealthCheck)"))
+                .RemoveAllResilienceHandlers();
+#pragma warning restore EXTEXP0001
+
+            // The check bounds itself; the registration's timeout only backs that up, as the report would lose which sites failed.
+            // A healthy result is kept for half of a one-minute monitoring interval, so a monitor reading once a minute always gets
+            // a run of its own and learns a site is down on its next read, while probes in the same half minute share one request.
+            healthChecksBuilder.AddCachedCheck("websites", HealthCheckCategories.Websites, sp => ActivatorUtilities.CreateInstance<WebsitesHealthCheck>(sp, (object)websites),
+                cacheDuration: TimeSpan.FromSeconds(30), timeout: WebsitesHealthCheck.CheckTimeout + TimeSpan.FromSeconds(2));
+        }
 
         // Outside development, a missing configuration is most likely a deployment mistake, so it reports Degraded.
         // A project that doesn't use a dependency should remove its code.
         var reportNotConfigured = builder.Environment.IsDevelopment() is false;
-        void AddCheckIfConfigured(string name, bool configured, string settings, Action addCheck)
+        // addCheck gets the tags to register the check with, so it carries the same category as its stand-in.
+        void AddCheckIfConfigured(string name, string category, bool configured, string settings, Action<string[]> addCheck)
         {
             if (configured)
             {
-                addCheck();
+                addCheck([category]);
             }
             else if (reportNotConfigured)
             {
-                healthChecksBuilder.AddNotConfiguredCheck(name, settings);
+                healthChecksBuilder.AddNotConfiguredCheck(name, category, settings);
             }
         }
 
         // For checks whose request costs money, a token or a sign in: once per cache period rather than per probe.
-        void AddCachedCheckIfConfigured(string name, bool configured, string settings, Func<IServiceProvider, IHealthCheck> factory, TimeSpan cacheDuration, TimeSpan timeout)
-            => AddCheckIfConfigured(name, configured, settings, () => healthChecksBuilder.AddCachedCheck(name, factory, cacheDuration, timeout));
+        void AddCachedCheckIfConfigured(string name, string category, bool configured, string settings, Func<IServiceProvider, IHealthCheck> factory, TimeSpan cacheDuration, TimeSpan timeout)
+            => AddCheckIfConfigured(name, category, configured, settings, _ => healthChecksBuilder.AddCachedCheck(name, category, factory, cacheDuration, timeout));
 
-        AddCheckIfConfigured("sms", appSettings.Sms?.Configured is true, "Sms", () =>
-            healthChecksBuilder.AddCheck<TwilioHealthCheck>("sms", failureStatus: HealthStatus.Degraded, timeout: TimeSpan.FromSeconds(5)));
+        AddCheckIfConfigured("sms", HealthCheckCategories.Messaging, appSettings.Sms?.Configured is true, "Sms", tags =>
+            healthChecksBuilder.AddCheck<TwilioHealthCheck>("sms", failureStatus: HealthStatus.Degraded, tags: tags, timeout: TimeSpan.FromSeconds(5)));
 
         //#if (cloudflare == true)
-        AddCachedCheckIfConfigured("cloudflare", appSettings.Cloudflare?.Configured is true, "Cloudflare",
+        AddCachedCheckIfConfigured("cloudflare", HealthCheckCategories.Platform, appSettings.Cloudflare?.Configured is true, "Cloudflare",
             sp => ActivatorUtilities.CreateInstance<CloudflareHealthCheck>(sp), cacheDuration: TimeSpan.FromMinutes(5), timeout: TimeSpan.FromSeconds(10));
         //#endif
 
         var keycloakBaseUrl = configuration["KEYCLOAK_HTTP"] ?? configuration["Authentication:Keycloak:KeycloakUrl"];
-        AddCheckIfConfigured("keycloakIdentity", string.IsNullOrWhiteSpace(keycloakBaseUrl) is false, "Authentication:Keycloak", () =>
+        AddCheckIfConfigured("keycloakIdentity", HealthCheckCategories.Identity, string.IsNullOrWhiteSpace(keycloakBaseUrl) is false, "Authentication:Keycloak", tags =>
         {
             var realm = configuration["Authentication:Keycloak:Realm"] ?? "dev";
             healthChecksBuilder.AddUrlGroup(
                 new Uri($"{keycloakBaseUrl!.TrimEnd('/')}/realms/{realm}/.well-known/openid-configuration"),
                 name: "keycloakIdentity",
                 failureStatus: HealthStatus.Degraded,
-                tags: [],
+                tags: tags,
                 timeout: TimeSpan.FromSeconds(10),
                 configureClient: (_, client) => client.Timeout = TimeSpan.FromSeconds(10));
         });
 
         // These can't be verified without a user signing in, so they only report a missing configuration.
-        AddCheckIfConfigured("googleSignIn", string.IsNullOrWhiteSpace(configuration["Authentication:Google:ClientId"]) is false, "Authentication:Google", () => { });
-        AddCheckIfConfigured("gitHubSignIn", string.IsNullOrWhiteSpace(configuration["Authentication:GitHub:ClientId"]) is false, "Authentication:GitHub", () => { });
-        AddCheckIfConfigured("twitterSignIn", string.IsNullOrWhiteSpace(configuration["Authentication:Twitter:ConsumerKey"]) is false, "Authentication:Twitter", () => { });
-        AddCheckIfConfigured("facebookSignIn", string.IsNullOrWhiteSpace(configuration["Authentication:Facebook:AppId"]) is false, "Authentication:Facebook", () => { });
+        AddCheckIfConfigured("googleSignIn", HealthCheckCategories.Identity, string.IsNullOrWhiteSpace(configuration["Authentication:Google:ClientId"]) is false, "Authentication:Google", _ => { });
+        AddCheckIfConfigured("gitHubSignIn", HealthCheckCategories.Identity, string.IsNullOrWhiteSpace(configuration["Authentication:GitHub:ClientId"]) is false, "Authentication:GitHub", _ => { });
+        AddCheckIfConfigured("twitterSignIn", HealthCheckCategories.Identity, string.IsNullOrWhiteSpace(configuration["Authentication:Twitter:ConsumerKey"]) is false, "Authentication:Twitter", _ => { });
+        AddCheckIfConfigured("facebookSignIn", HealthCheckCategories.Identity, string.IsNullOrWhiteSpace(configuration["Authentication:Facebook:AppId"]) is false, "Authentication:Facebook", _ => { });
 
-        AddCachedCheckIfConfigured("entraId", string.IsNullOrWhiteSpace(configuration["Authentication:AzureAD:ClientId"]) is false, "Authentication:AzureAD",
+        AddCachedCheckIfConfigured("entraId", HealthCheckCategories.Identity, string.IsNullOrWhiteSpace(configuration["Authentication:AzureAD:ClientId"]) is false, "Authentication:AzureAD",
             sp => ActivatorUtilities.CreateInstance<EntraIdHealthCheck>(sp), cacheDuration: TimeSpan.FromMinutes(5), timeout: TimeSpan.FromSeconds(10));
 
-        AddCachedCheckIfConfigured("appleSignIn", string.IsNullOrWhiteSpace(configuration["Authentication:Apple:ClientId"]) is false, "Authentication:Apple",
+        AddCachedCheckIfConfigured("appleSignIn", HealthCheckCategories.Identity, string.IsNullOrWhiteSpace(configuration["Authentication:Apple:ClientId"]) is false, "Authentication:Apple",
             sp => ActivatorUtilities.CreateInstance<AppleSignInHealthCheck>(sp), cacheDuration: TimeSpan.FromMinutes(5), timeout: TimeSpan.FromSeconds(10));
 
         //#if (captcha == "reCaptcha")
-        healthChecksBuilder.AddCachedCheck("reCaptcha", sp => ActivatorUtilities.CreateInstance<GoogleRecaptchaHealthCheck>(sp), cacheDuration: TimeSpan.FromMinutes(5), timeout: TimeSpan.FromSeconds(10));
+        healthChecksBuilder.AddCachedCheck("reCaptcha", HealthCheckCategories.Identity, sp => ActivatorUtilities.CreateInstance<GoogleRecaptchaHealthCheck>(sp), cacheDuration: TimeSpan.FromMinutes(5), timeout: TimeSpan.FromSeconds(10));
         //#endif
 
         //#if (signalR == true)
-        AddCachedCheckIfConfigured("azureSignalR", string.IsNullOrWhiteSpace(configuration["Azure:SignalR:ConnectionString"]) is false, "Azure:SignalR:ConnectionString",
-            sp => ActivatorUtilities.CreateInstance<Infrastructure.SignalR.AzureSignalRHealthCheck>(sp), cacheDuration: TimeSpan.FromMinutes(1), timeout: TimeSpan.FromSeconds(10));
+        // Azure SignalR is optional in every environment: without it the app serves SignalR itself, so it has no stand-in.
+        if (string.IsNullOrWhiteSpace(configuration["Azure:SignalR:ConnectionString"]) is false)
+        {
+            healthChecksBuilder.AddCachedCheck("azureSignalR", HealthCheckCategories.Messaging, sp => ActivatorUtilities.CreateInstance<Infrastructure.SignalR.AzureSignalRHealthCheck>(sp),
+                cacheDuration: TimeSpan.FromMinutes(1), timeout: TimeSpan.FromSeconds(10));
+        }
         //#endif
 
         //#if (notification == true)
         // Web Push (VAPID) signs locally, so it has nothing to check.
-        AddCachedCheckIfConfigured("firebase", string.IsNullOrWhiteSpace(appSettings.AdsPushFirebase?.PrivateKey) is false, "AdsPushFirebase",
+        AddCachedCheckIfConfigured("firebase", HealthCheckCategories.Messaging, string.IsNullOrWhiteSpace(appSettings.AdsPushFirebase?.PrivateKey) is false, "AdsPushFirebase",
             sp => ActivatorUtilities.CreateInstance<PushNotificationHealthCheck>(sp, AdsPushTarget.Android), cacheDuration: TimeSpan.FromMinutes(5), timeout: TimeSpan.FromSeconds(10));
 
-        AddCachedCheckIfConfigured("apns", string.IsNullOrWhiteSpace(appSettings.AdsPushAPNS?.P8PrivateKey) is false, "AdsPushAPNS",
+        AddCachedCheckIfConfigured("apns", HealthCheckCategories.Messaging, string.IsNullOrWhiteSpace(appSettings.AdsPushAPNS?.P8PrivateKey) is false, "AdsPushAPNS",
             sp => ActivatorUtilities.CreateInstance<PushNotificationHealthCheck>(sp, AdsPushTarget.Ios), cacheDuration: TimeSpan.FromMinutes(5), timeout: TimeSpan.FromSeconds(10));
         //#endif
 
@@ -1044,7 +1132,7 @@ public static partial class Program
         // Each sends a real, minimal request through the client its feature uses.
         var ai = appSettings.AI;
         void AddAICheck<THealthCheck>(string name, bool configured, string settings) where THealthCheck : IHealthCheck
-            => AddCachedCheckIfConfigured(name, configured, settings, sp => ActivatorUtilities.CreateInstance<THealthCheck>(sp), cacheDuration: TimeSpan.FromMinutes(5), timeout: TimeSpan.FromSeconds(20));
+            => AddCachedCheckIfConfigured(name, HealthCheckCategories.AI, configured, settings, sp => ActivatorUtilities.CreateInstance<THealthCheck>(sp), cacheDuration: TimeSpan.FromMinutes(5), timeout: TimeSpan.FromSeconds(20));
 
         AddAICheck<AIChatAgentHealthCheck>("aiChat", string.IsNullOrWhiteSpace(ai?.OpenAI?.ChatApiKey) is false, "AI:OpenAI:ChatApiKey");
         AddAICheck<AIEmbeddingHealthCheck>("aiEmbedding", string.IsNullOrWhiteSpace(ai?.OpenAI?.EmbeddingApiKey) is false || string.IsNullOrWhiteSpace(ai?.HuggingFace?.EmbeddingEndpoint) is false, "AI:OpenAI:EmbeddingApiKey or AI:HuggingFace:EmbeddingEndpoint");
@@ -1056,44 +1144,5 @@ public static partial class Program
         //#endif
 
         return builder;
-    }
-
-    /// <summary>
-    /// Configures global ImageMagick resource limits to prevent denial-of-service (DoS) attacks from untrusted image uploads.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// ImageMagick defaults to machine-derived resource caps (e.g., using physical RAM, 2x memory map, 4x memory area, and unlimited disk space).
-    /// Malicious or unusually large uploads (e.g., a small 6MB PNG declaring 30,000x30,000 pixel dimensions) can force Magick.NET to 
-    /// allocate gigabytes of pixel data in memory or exhaust temporary disk space.
-    /// </para>
-    /// <para>
-    /// Because Magick.NET-Q16 allocates 2 bytes per channel, explicit bounds are applied to width, height, area, memory, and disk usage.
-    /// </para>
-    /// </remarks>
-    private static void ConfigureImageMagickResourceLimits()
-    {
-        ResourceLimits.Memory = 256 * 1024 * 1024;    // 256 MB pixel cache before spilling
-        ResourceLimits.Disk = 1024 * 1024 * 1024;     // 1 GB, instead of MagickResourceInfinity
-        ResourceLimits.Width = 16384;
-        ResourceLimits.Height = 16384;
-        ResourceLimits.Area = 16384 * 16384;
-    }
-
-    private static void ConfigureImageMagickSecurityPolicy()
-    {
-        var allowedCoders = string.Join(',', AttachmentController.AllowedImageFormats.Select(format => format.ToString().ToUpperInvariant()));
-
-        var configurationFiles = ConfigurationFiles.Default;
-
-        configurationFiles.Policy.Data = $$"""
-            <policymap>
-              <policy domain="delegate" rights="none" pattern="*" />
-              <policy domain="coder" rights="none" pattern="*" />
-              <policy domain="coder" rights="read | write" pattern="{{{allowedCoders}}}" />
-            </policymap>
-            """;
-
-        MagickNET.Initialize(configurationFiles);
     }
 }

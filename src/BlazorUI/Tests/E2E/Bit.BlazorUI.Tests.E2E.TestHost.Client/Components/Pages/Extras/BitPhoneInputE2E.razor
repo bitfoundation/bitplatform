@@ -35,7 +35,7 @@
 
 <E2ESection Id="search" Title="Search box">
     <BitPhoneInput Id="phi-search" DefaultCountry="BitCountries.France" SearchBoxPlaceholder="Country or code"
-                   NoResultsMessage="No matching country" @bind-Country="_searchCountry" />
+                   NoResultsText="No matching country" @bind-Country="_searchCountry" />
     <span id="search-country">@(_searchCountry?.Iso2 ?? "null")</span>
     <BitPhoneInput Id="phi-nosearch" NoSearchBox DefaultCountry="BitCountries.France" @bind-Country="_noSearchCountry" />
     <span id="nosearch-country">@(_noSearchCountry?.Iso2 ?? "null")</span>
@@ -236,7 +236,7 @@
 
 <E2ESection Id="localization" Title="Localization">
     <BitPhoneInput Id="phi-german" Countries="_germanCountries" DefaultCountry="_germanCountries[0]" Placeholder="Nummer eingeben"
-                   DropdownAriaLabel="Land" SearchBoxPlaceholder="Suchen" SearchBoxAriaLabel="Land suchen" NoResultsMessage="Kein Land gefunden"
+                   DropdownAriaLabel="Land" SearchBoxPlaceholder="Suchen" SearchBoxAriaLabel="Land suchen" NoResultsText="Kein Land gefunden"
                    SearchResultsAnnouncement="@(count => count == 1 ? "1 Land gefunden" : $"{count} Länder gefunden")"
                    ShowClearButton ClearButtonAriaLabel="Nummer löschen" Value="+4930123456" />
 </E2ESection>

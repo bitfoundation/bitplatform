@@ -1,6 +1,6 @@
 {
     "template": "bit-bp",
-    "version": "11.0.0-pre-18",
+    "version": "11.0.0-pre-19",
     "name": "Boilerplate",
     "options": {
         "framework": "net11.0",

@@ -2265,7 +2265,7 @@ public class BitFullCalendarTests : BunitTestContext
 
         component.FindAll(".bit-bfc-event-badge")[1].Click();
         component.Find(".bit-bfc-dialog-footer .bit-bfc-btn-danger").Click();
-        component.FindAll(".bit-bfc-scope-dialog input[type=radio]")[1].Change(true);
+        component.FindAll(".bit-bfc-scope-dialog input[type=radio]")[^1].Change(true);
         component.Find(".bit-bfc-scope-dialog .bit-bfc-btn-primary").Click();
 
         Assert.AreEqual(0, component.Instance.State.AllEvents.Count);
@@ -2334,7 +2334,7 @@ public class BitFullCalendarTests : BunitTestContext
 
         component.FindAll(".bit-bfc-event-badge")[1].Click();
         component.FindAll(".bit-bfc-dialog-footer .bit-bfc-btn")[0].Click();
-        component.FindAll(".bit-bfc-scope-dialog input[type=radio]")[1].Change(true);
+        component.FindAll(".bit-bfc-scope-dialog input[type=radio]")[^1].Change(true);
         component.Find(".bit-bfc-scope-dialog .bit-bfc-btn-primary").Click();
 
         // The series master is what opens, rule and all.

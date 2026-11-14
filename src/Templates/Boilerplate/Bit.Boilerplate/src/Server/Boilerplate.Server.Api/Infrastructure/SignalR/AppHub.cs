@@ -19,7 +19,7 @@ namespace Boilerplate.Server.Api.Infrastructure.SignalR;
 ///    Read <see cref="UserSession.SignalRConnectionId"/>'s comments for which tab or app that is.
 /// </summary>
 [AllowAnonymous]
-public partial class AppHub : Hub
+public partial class AppHub : BitAiHub // A Hub that also streams the AI chat panel's answers (See AppHub.Chatbot.cs)
 {
     [AutoInject] private IServiceProvider serviceProvider = default!;
     [AutoInject] private IOptionsMonitor<BearerTokenOptions> bearerTokenOptions = default!;

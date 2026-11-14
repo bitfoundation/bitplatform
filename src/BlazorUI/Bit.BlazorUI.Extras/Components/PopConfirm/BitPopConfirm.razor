@@ -1,0 +1,69 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+
+@* The root holds the trigger and the callout the question is asked in. Its Disabled only stops the question from being
+   asked, so the trigger stays live and the root keeps the handlers the page splatted on it (HtmlAttributes). *@
+<div @ref="RootElement" @attributes="HtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
+
+    @* The trigger is the anchor of the callout, which puts the aria-haspopup, aria-controls and aria-expanded of the
+       popup on it and hands the focus back to it once the popup closes. The popup is an alertdialog that keeps the
+       focus (TrapFocus): it asks a question that has to be answered before going on, and Escape or a click outside it
+       answers it with no. Its name is the title, or the message where there is no title. *@
+    <BitCallout @ref="_callout"
+                Disabled="Disabled"
+                IsOpen="IsOpen"
+                IsOpenChanged="HandleIsOpenChanged"
+                TrapFocus
+                ShowArrow
+                Role="alertdialog"
+                AriaLabel="@AriaLabel"
+                AriaLabelledBy="@GetAriaLabelledBy()"
+                AriaDescribedBy="@GetAriaDescribedBy()"
+                Placement="Placement"
+                Dir="Dir"
+                Classes="_calloutClasses"
+                Styles="_calloutStyles">
+        <Anchor>
+            @* It takes no box of its own (display: contents): it is only what the focus is handed back through after a
+               click outside of the popup (see HandleIsOpenChanged). *@
+            <div id="@_triggerId" class="bit-pcf-trg">@ChildContent</div>
+        </Anchor>
+        <ChildContent>
+            <div style="@Styles?.Container" class="bit-pcf-ctn @Classes?.Container">
+                @if (Title.HasValue())
+                {
+                    <div id="@_titleId" style="@Styles?.Title" class="bit-pcf-ttl @Classes?.Title">@Title</div>
+                }
+
+                @if (Message.HasValue())
+                {
+                    <div id="@_messageId" style="@Styles?.Message" class="bit-pcf-msg @Classes?.Message">@Message</div>
+                }
+
+                @* Cancel is the first of the two and the one the focus starts on (data-autofocus): an Enter pressed out
+                   of habit should not be the one that confirms what the question is asking about. *@
+                <div style="@Styles?.Actions" class="bit-pcf-act @Classes?.Actions">
+                    <BitButton data-autofocus
+                               Size="BitSize.Small"
+                               Variant="BitVariant.Outline"
+                               Style="@Styles?.CancelButton"
+                               Class="@($"bit-pcf-cbt {Classes?.CancelButton}")"
+                               OnClick="HandleOnCancelClick">
+                        @(CancelText ?? DefaultCancelText)
+                    </BitButton>
+                    <BitButton Size="BitSize.Small"
+                               Color="ConfirmColor"
+                               Style="@Styles?.ConfirmButton"
+                               Class="@($"bit-pcf-obt {Classes?.ConfirmButton}")"
+                               OnClick="HandleOnConfirmClick">
+                        @(ConfirmText ?? DefaultConfirmText)
+                    </BitButton>
+                </div>
+            </div>
+        </ChildContent>
+    </BitCallout>
+</div>

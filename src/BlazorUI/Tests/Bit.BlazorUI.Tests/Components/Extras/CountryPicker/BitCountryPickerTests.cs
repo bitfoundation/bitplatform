@@ -573,11 +573,11 @@ public class BitCountryPickerTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitCountryPickerShouldRespectNoResultsMessageAndTemplate()
+    public void BitCountryPickerShouldRespectNoResultsTextAndTemplate()
     {
         var component = RenderComponent<BitCountryPicker>(parameters =>
         {
-            parameters.Add(p => p.NoResultsMessage, "nothing here");
+            parameters.Add(p => p.NoResultsText, "nothing here");
         });
 
         component.Find("button.bit-cnp-fld").Click();

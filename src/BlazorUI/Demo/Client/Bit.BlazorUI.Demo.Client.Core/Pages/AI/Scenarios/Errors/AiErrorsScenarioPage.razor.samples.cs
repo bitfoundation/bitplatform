@@ -8,7 +8,7 @@ public partial class AiErrorsScenarioPage
 <div style="height: 560px">
     <BitAiChat Session="session"
                EmptyTitle="Send anything"
-               EmptyBody="The first request fails on purpose. Press Try again."
+               EmptyDescription="The first request fails on purpose. Press Try again."
                Suggestions="suggestions" />
 </div>
 """;

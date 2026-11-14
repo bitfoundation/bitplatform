@@ -107,7 +107,7 @@ public class BitDataGridTests : BunitTestContext
         var component = RenderGrid(new List<TestRow>());
 
         var empty = component.Find(".bit-dtg-empty");
-        StringAssert.Contains(empty.TextContent, "No records to display.");
+        StringAssert.Contains(empty.TextContent, "No items found");
     }
 
     [TestMethod]
@@ -4863,17 +4863,17 @@ public class BitDataGridTests : BunitTestContext
         StringAssert.Contains(component.Find("[aria-live]").TextContent, "Filter applied on Name. Rows: 2");
 
         await component.InvokeAsync(() => component.Instance.ApplyFilterAsync("Name", BitDataGridFilterOperator.Contains, "zzz"));
-        Assert.AreEqual("No records match the current filters.", component.Find(".bit-dtg-empty").TextContent.Trim());
+        Assert.AreEqual("No results found", component.Find(".bit-dtg-empty").TextContent.Trim());
         StringAssert.Contains(component.Find("[aria-live]").TextContent, "Rows: 0");
 
         await component.InvokeAsync(() => component.Instance.ClearFiltersAsync());
         await component.InvokeAsync(() => component.Instance.SearchAsync("zzz"));
-        Assert.AreEqual("No records match the current filters.", component.Find(".bit-dtg-empty").TextContent.Trim(), "the search counts too");
+        Assert.AreEqual("No results found", component.Find(".bit-dtg-empty").TextContent.Trim(), "the search counts too");
 
         // With no criteria at all, an empty grid is simply empty.
         component.Render(parameters => parameters.Add(p => p.Items, new List<TestRow>()));
         await component.InvokeAsync(() => component.Instance.SearchAsync(null));
-        Assert.AreEqual("No records to display.", component.Find(".bit-dtg-empty").TextContent.Trim());
+        Assert.AreEqual("No items found", component.Find(".bit-dtg-empty").TextContent.Trim());
     }
 
     private IRenderedComponent<BitDataGrid<TestRow>> RenderCellEditGrid(List<TestRow> items, Action<TestRow>? onSave = null)

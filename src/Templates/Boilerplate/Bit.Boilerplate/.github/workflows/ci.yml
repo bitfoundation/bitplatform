@@ -47,9 +47,12 @@ jobs:
       run: dotnet format whitespace --folder . --verify-no-changes
 
     - name: Set up and build with bit setup
-      uses: bitfoundation/bitplatform/.github/actions/bit-bp/bit-setup@v-11.0.0-pre-18
+      uses: bitfoundation/bitplatform/.github/actions/bit-bp/bit-setup@v-11.0.0-pre-19
       with:
         arguments: --platforms android -p:EnforceCodeStyleInBuild=true
+
+    - name: Check that the api still works for the app versions it supports
+      run: bit api check
 
     - name: Test
       id: test

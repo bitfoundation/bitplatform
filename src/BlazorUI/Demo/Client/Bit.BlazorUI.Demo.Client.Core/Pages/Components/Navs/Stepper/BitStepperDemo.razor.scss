@@ -1,0 +1,32 @@
+﻿::deep {
+    .example-content {
+        gap: 0.5rem;
+        display: flex;
+        flex-flow: row wrap;
+        align-items: center;
+    }
+
+    .step-content {
+        padding: 1rem;
+        border-radius: 0.25rem;
+        border: 1px dashed var(--bit-clr-brd-pri);
+    }
+
+    .custom-class {
+        padding: 0.5rem;
+        border-radius: 0.5rem;
+        background-color: var(--bit-clr-bg-sec);
+    }
+
+    .custom-item .bit-stp-txt {
+        color: dodgerblue;
+    }
+
+    .custom-current .bit-stp-ind {
+        box-shadow: 0 0 0 0.25rem var(--bit-clr-pri-light);
+    }
+
+    .custom-connector {
+        background-image: repeating-linear-gradient(90deg, var(--bit-clr-bg-pri) 0 0.25rem, transparent 0.25rem 0.5rem);
+    }
+}

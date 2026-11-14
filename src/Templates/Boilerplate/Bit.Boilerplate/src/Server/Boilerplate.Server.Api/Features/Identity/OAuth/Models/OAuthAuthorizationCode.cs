@@ -46,7 +46,10 @@ public partial class OAuthAuthorizationCode
     public string? Amr { get; set; }
 
     //#if (multitenant == true)
-    /// <summary>Null when the request named no tenant, and then the token carries no tenant claim either.</summary>
+    /// <summary>
+    /// The tenant the request named, or else the approving session's (See <c>OAuthController.ResolveTenantId</c>). Null
+    /// when neither is one the user is an accepted member of, and then the token carries no tenant claim either.
+    /// </summary>
     public Guid? TenantId { get; set; }
 
     [ForeignKey(nameof(TenantId))]

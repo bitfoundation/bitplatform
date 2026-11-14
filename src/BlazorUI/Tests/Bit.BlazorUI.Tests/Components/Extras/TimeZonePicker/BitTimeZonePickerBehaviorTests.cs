@@ -945,7 +945,7 @@ public class BitTimeZonePickerBehaviorTests : BunitTestContext
         var component = RenderPicker<string>(parameters =>
         {
             parameters.Add(p => p.SearchResultsAnnouncement, count => { counts.Add(count); return $"{count} zonas"; });
-            parameters.Add(p => p.NoResultsMessage, "Nada");
+            parameters.Add(p => p.NoResultsText, "Nada");
         });
 
         component.Find("button.bit-tzp-fld").Click();
@@ -955,7 +955,7 @@ public class BitTimeZonePickerBehaviorTests : BunitTestContext
 
         component.Find(".bit-tzp-srch").Input("zzzz");
 
-        // An empty result is worded by NoResultsMessage, so the wording is never asked for zero.
+        // An empty result is worded by NoResultsText, so the wording is never asked for zero.
         StringAssert.StartsWith(component.Find(".bit-tzp-lvr").TextContent, "Nada");
         CollectionAssert.AreEqual(new[] { 3 }, counts);
     }

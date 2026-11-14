@@ -13,7 +13,7 @@ public static partial class Program
 
         ConfigureGlobalization();
 
-        var builder = WebApplication.CreateBuilder(args);
+        var builder = WebApplication.CreateBuilder(new WebApplicationOptions { Args = args, EnvironmentName = WritesOpenApiDocument ? Environments.Development : null });
 
         AppEnvironment.Set(builder.Environment.EnvironmentName);
 
@@ -27,6 +27,12 @@ public static partial class Program
         builder.AddServerApiProjectServices();
 
         var app = builder.Build();
+
+        if (WritesOpenApiDocument)
+        {
+            app.ConfigureMiddlewares();
+            return;
+        }
 
         // A deployment's one-shot `migrations` service runs this same image with MigrateDatabaseAndExit=true before the
         // new version starts (See the app host's DockerComposePublishingExtensions).
@@ -52,6 +58,9 @@ public static partial class Program
 
         await app.RunAsync();
     }
+
+    // True while the build runs Main only to write openapi/current.json, not to serve requests.
+    private static bool WritesOpenApiDocument => System.Reflection.Assembly.GetEntryAssembly()?.GetName().Name is "GetDocument.Insider";
 
     /// <summary>
     /// You might consider setting `InvariantGlobalization` to `true` when publishing Server.Web and Blazor WebAssembly simultaneously,

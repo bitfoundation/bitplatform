@@ -1,0 +1,77 @@
+﻿@page "/e2e/stepper"
+
+<PageTitle>BitStepper E2E</PageTitle>
+
+<h1>BitStepper</h1>
+
+<E2ESection Id="basic" Title="Basic">
+    <BitStepper Id="stp-basic" Items="_items" @bind-CurrentIndex="_basic" />
+    <button id="btn-next" type="button" @onclick="() => _basic++">Next</button>
+    <div id="basic-index">@_basic</div>
+</E2ESection>
+
+<E2ESection Id="vertical" Title="Vertical">
+    <BitStepper Id="stp-vertical" Vertical Items="_items" CurrentIndex="1" />
+</E2ESection>
+
+<E2ESection Id="linear" Title="Linear">
+    <button id="before-linear" type="button">Before</button>
+    <BitStepper Id="stp-linear" Linear Items="_items" @bind-CurrentIndex="_linear" />
+    <button id="after-linear" type="button">After</button>
+    <div id="linear-index">@_linear</div>
+</E2ESection>
+
+<E2ESection Id="states" Title="Error and disabled">
+    <button id="before-states" type="button">Before</button>
+    <BitStepper Id="stp-states" Items="_stateItems" CurrentIndex="2" />
+    <button id="after-states" type="button">After</button>
+</E2ESection>
+
+<E2ESection Id="narrow" Title="Narrow">
+    <div style="width: 520px;">
+        <BitStepper Id="stp-narrow" Items="_narrowItems" CurrentIndex="2" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled">
+    <BitStepper Id="stp-disabled" Items="_items" CurrentIndex="2" Disabled />
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <div dir="rtl">
+        <BitStepper Id="stp-rtl" Dir="BitDir.Rtl" Items="_items" CurrentIndex="1" />
+    </div>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private int _basic;
+    private int _linear = 2;
+
+    private readonly List<BitStepperItem> _items =
+    [
+        new() { Text = "Account", Description = "Your details" },
+        new() { Text = "Address" },
+        new() { Text = "Payment" },
+        new() { Text = "Review" }
+    ];
+
+    private readonly List<BitStepperItem> _narrowItems =
+    [
+        new() { Text = "Account" },
+        new() { Text = "Address", Description = "The postal code is not valid", IsError = true },
+        new() { Text = "Payment" },
+        new() { Text = "Gift wrap", Description = "Not available for this order", IsDisabled = true },
+        new() { Text = "Review" }
+    ];
+
+    private readonly List<BitStepperItem> _stateItems =
+    [
+        new() { Text = "Account" },
+        new() { Text = "Address", IsError = true },
+        new() { Text = "Payment" },
+        new() { Text = "Gift wrap", IsDisabled = true },
+        new() { Text = "Review" }
+    ];
+}

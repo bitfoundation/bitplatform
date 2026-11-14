@@ -73,12 +73,12 @@ public class BitChartParams : BitComponentBaseParams, IBitComponentParams
     /// <summary>
     /// Custom content shown in place of the plot when there is nothing to draw.
     /// </summary>
-    public RenderFragment? NoDataTemplate { get; set; }
+    public RenderFragment? EmptyTemplate { get; set; }
 
     /// <summary>
     /// Message shown in place of the plot when there is nothing to draw.
     /// </summary>
-    public string? NoDataText { get; set; }
+    public string? EmptyText { get; set; }
 
     /// <summary>
     /// The chart options: scales, plugins, interaction, animation, culture and zoom. One instance can be shared
@@ -176,14 +176,14 @@ public class BitChartParams : BitComponentBaseParams, IBitComponentParams
             bitChart.TakeFromCascade(nameof(NavigationHint), NavigationHint, static c => c.NavigationHint, static (c, v) => c.NavigationHint = v);
         }
 
-        if (NoDataTemplate is not null)
+        if (EmptyTemplate is not null)
         {
-            bitChart.TakeFromCascade(nameof(NoDataTemplate), NoDataTemplate, static c => c.NoDataTemplate, static (c, v) => c.NoDataTemplate = v);
+            bitChart.TakeFromCascade(nameof(EmptyTemplate), EmptyTemplate, static c => c.EmptyTemplate, static (c, v) => c.EmptyTemplate = v);
         }
 
-        if (NoDataText.HasValue())
+        if (EmptyText.HasValue())
         {
-            bitChart.TakeFromCascade(nameof(NoDataText), NoDataText!, static c => c.NoDataText, static (c, v) => c.NoDataText = v);
+            bitChart.TakeFromCascade(nameof(EmptyText), EmptyText, static c => c.EmptyText, static (c, v) => c.EmptyText = v);
         }
 
         if (Options is not null)
