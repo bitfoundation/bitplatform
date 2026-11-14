@@ -6,7 +6,15 @@ namespace Bit.BevTools;
 /// <param name="Holder">What holds it: "FilterState.Changed (injected)", "the JS runtime", "its own field _timer".</param>
 /// <param name="Detail">How: "handler ProductRow.OnFilterChanged", "lambda in ProductRow.OnInitialized captures it".</param>
 /// <param name="Suggestion">What releases it.</param>
-public sealed record BevRetentionCause(string Holder, string Detail, string Suggestion);
+public sealed record BevRetentionCause(string Holder, string Detail, string Suggestion)
+{
+    /// <summary>
+    /// A hold that keeps one instance at a time and lets it go when it is overwritten: a single field of a component still
+    /// on the page (an <c>@ref</c> inside an <c>@if</c>), which the next render of that markup replaces. It costs one
+    /// instance, it does not grow, so it is not by itself evidence of a leak.
+    /// </summary>
+    public bool Bounded { get; init; }
+}
 
 /// <summary>
 /// Disposed components of one type that garbage collection did not reclaim: the renderer let go of them, and something
@@ -53,8 +61,13 @@ public sealed record BevRetainedTypeCount(string DisplayName, int Count);
 internal sealed class BevLeakTracker(BevToolsSession session)
 {
     internal const int MaxProbes = 2000;
-    private const int MaxAnalysedPerType = 5;
-    private const int MaxAnalysedDescendants = 20;
+
+    /// <summary>
+    /// The instances one check analyses for the first time. Each costs a few lookups in the scan's shared indexes and a
+    /// read of its own fields; the bound is for a page that leaked thousands.
+    /// </summary>
+    private const int MaxAnalysed = 500;
+
     private const int MaxAncestors = 64;
     private const int RequiredFullCollections = 2;
 
@@ -158,25 +171,33 @@ internal sealed class BevLeakTracker(BevToolsSession session)
         var byId = retained.ToDictionary(r => r.Probe.InstanceId);
         var subtrees = retained.GroupBy(r => TopOf(r.Probe, byId).InstanceId).Select(g => (Top: byId[g.Key], Members: g.ToList())).ToList();
 
-        // What holds them, for a few of each type and a few of what they rendered: one scan reads each shared holder
-        // once, however many rows leaked.
+        // What holds them, for every retained instance and what it rendered, up to a budget: one scan reads each shared
+        // holder once, however many rows leaked.
         var scan = new BevRetentionAnalyzer.Scan(session, live.Select(l => l.Component));
+        var budget = MaxAnalysed;
         var result = new List<BevRetainedComponents>();
         foreach (var group in subtrees.GroupBy(s => s.Top.Probe.Type))
         {
             var tops = group.Select(s => s.Top).ToList();
             var descendants = group.SelectMany(s => s.Members.Where(m => !ReferenceEquals(m.Probe, s.Top.Probe))).ToList();
             var causes = new List<BevRetentionCause>();
-            foreach (var (probe, component) in tops.Take(MaxAnalysedPerType))
+            foreach (var (probe, component) in tops)
             {
-                causes.AddRange(probe.Causes ??= BevRetentionAnalyzer.Analyze(scan, component));
+                if (Analysed(probe, component) is { } found)
+                {
+                    causes.AddRange(found);
+                }
             }
 
-            // One of each type first: a hundred icons share one cause, if any.
-            foreach (var (probe, component) in descendants.GroupBy(d => d.Probe.Type).Select(g => g.First()).Take(MaxAnalysedDescendants))
+            // Every instance, not one of each type: of a hundred rows, the one held is the one the user selected. Taken
+            // a type at a time, so a budget spent before the end has still looked at every kind of component it rendered.
+            var interleaved = descendants.GroupBy(d => d.Probe.Type).SelectMany(g => g.Select((d, i) => (d.Probe, d.Component, Rank: i))).OrderBy(d => d.Rank);
+            foreach (var (probe, component, _) in interleaved)
             {
-                probe.Causes ??= BevRetentionAnalyzer.Analyze(scan, component);
-                causes.AddRange(probe.Causes.Where(c => c.Holder != "BevTools").Select(c => c with { Detail = c.Detail + ", on " + probe.DisplayName + ", one of the components it rendered" }));
+                if (Analysed(probe, component) is { } found)
+                {
+                    causes.AddRange(found.Where(c => c.Holder != "BevTools").Select(c => c with { Detail = c.Detail + ", on " + probe.DisplayName + ", one of the components it rendered" }));
+                }
             }
 
             var first = tops[0].Probe;
@@ -197,6 +218,24 @@ internal sealed class BevLeakTracker(BevToolsSession session)
         }
 
         return result.OrderByDescending(r => r.Count + r.DescendantCount).ToArray();
+
+        // An instance is analysed once, and its causes kept: what is still unanalysed when the budget runs out is
+        // analysed by the next check.
+        IReadOnlyList<BevRetentionCause>? Analysed(Probe probe, IComponent component)
+        {
+            if (probe.Causes is null)
+            {
+                if (budget <= 0)
+                {
+                    return null;
+                }
+
+                budget--;
+                probe.Causes = BevRetentionAnalyzer.Analyze(scan, component);
+            }
+
+            return probe.Causes;
+        }
     }
 
     /// <summary>
@@ -299,8 +338,10 @@ internal sealed class BevLeakTracker(BevToolsSession session)
                 continue;
             }
 
+            // A bounded hold (an @ref that the next render of its markup overwrites) lets go too: like the renderer's
+            // buffers, it cannot be judged before survival says so.
             var causes = BevRetentionAnalyzer.Analyze(scan, component);
-            if (causes.Count > 0 && causes.All(c => c.Holder != "BevTools"))
+            if (causes.Any(c => !c.Bounded) && causes.All(c => c.Holder != "BevTools"))
             {
                 probe.Causes = causes;
                 probe.ConfirmedByCause = true;

@@ -454,11 +454,16 @@ time, and the number of full collections so far. *Retained* means alive after tw
 grace period (work the component started may hold it briefly), or after the full collections a developer asked for. A
 retained instance is analysed once: delegates, `EventCallback`s and framework collections on what it was handed
 (injected services, cascading values that are not disposed components themselves, NavigationManager,
-AuthenticationStateProvider) and on the application's and libraries' objects those hold, up to four objects down and
-within a budget per holder; the fields of the components still on the page (`@ref`s); the JS runtime's
-`_trackedRefsById` and what its targets hold; and its own timers, all by reference identity. Retained instances are
-grouped under their topmost retained ancestor, by the ancestor chain recorded at disposal, and reported once per type
-of that ancestor with a count of what it rendered. Instances with no cause found are checked against every frame
+AuthenticationStateProvider) and on the application's and libraries' objects those hold (tuples and key-value pairs in
+a collection read as the item they carry), up to four objects down, within a budget per holder and one for the whole
+check (each object counted once, however many paths reach it); the fields of the components still on the page
+(`@ref`s), with a budget of their own; the JS runtime's `_trackedRefsById` and what its targets hold; and its own
+timers, all by reference identity. A single `@ref` field is a bounded hold - one instance, replaced by the next render
+of its markup - so it neither confirms a leak while the renderer still holds the component nor makes one a warning;
+a list of them, which only grows, does both. Retained instances are grouped under their topmost retained ancestor, by
+the ancestor chain recorded at disposal, and reported once per type of that ancestor with a count of what it rendered;
+every instance of the subtree is analysed (up to 500 new ones a check, a type at a time), since of a hundred rows the
+one held is the one the user selected. Instances with no cause found are checked against every frame
 buffer of every renderer the session saw (both render trees of every live component, whole, and the batch's reference
 frames): a component its parent stopped rendering stays in the parent's previous tree until the parent renders again,
 which is not a leak. That

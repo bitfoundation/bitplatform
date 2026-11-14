@@ -41,6 +41,7 @@ internal sealed class ComponentRegistry
     private BevComponentTreeNode[]? _treeCache;
     private bool _treeCacheIncludesHidden;
     private readonly List<WeakReference<Renderer>> _renderers = [];
+    private WeakReference<Renderer>? _firstRenderer;
 
     // The framework's activities and meters name a component type, never an instance. These remember, past the records
     // themselves, which types the application rendered and which only BevTools' own UI did - its panels, an extension's
@@ -64,8 +65,34 @@ internal sealed class ComponentRegistry
     /// <summary>True when <see cref="BitBevToolsOptions.MaxTrackedComponents"/> was hit and new components are no longer tracked.</summary>
     public bool IsTruncated { get; private set; }
 
-    /// <summary>The first renderer the session saw that is still alive.</summary>
-    public Renderer? Renderer => Renderers.FirstOrDefault();
+    /// <summary>
+    /// The first renderer the session saw that is still alive. Read on every activity stop (each HTTP call, JS call and
+    /// UI event), so the answer is kept: a lock and a walk of the list only when that renderer is gone.
+    /// </summary>
+    public Renderer? Renderer
+    {
+        get
+        {
+            if (Volatile.Read(ref _firstRenderer) is { } first && first.TryGetTarget(out var renderer))
+            {
+                return renderer;
+            }
+
+            lock (_renderers)
+            {
+                foreach (var reference in _renderers)
+                {
+                    if (reference.TryGetTarget(out renderer))
+                    {
+                        Volatile.Write(ref _firstRenderer, reference);
+                        return renderer;
+                    }
+                }
+            }
+
+            return null;
+        }
+    }
 
     /// <summary>
     /// Every live renderer the session's components were rendered by. A page can have more than one: a root component

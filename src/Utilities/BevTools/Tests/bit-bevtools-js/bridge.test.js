@@ -211,6 +211,30 @@ describe('JS -> .NET call tracking', () => {
         bridge.detach();
         expect(DotNetObject.prototype.invokeMethodAsync).toBe(originalAsync);
     });
+
+    it('marks the calls made from a requestAnimationFrame callback, and only those', async () => {
+        installBrowser();
+        const frames = [];
+        const originalRaf = callback => { frames.push(callback); return 41 + frames.length; };
+        window.requestAnimationFrame = originalRaf;
+        const reports = [];
+        const bridge = await loadBridge();
+        bridge.attach({ invokeMethodAsync: (...args) => { reports.push(args); return Promise.resolve(); } }, { trackJsToDotNet: true });
+
+        let received;
+        const id = window.requestAnimationFrame(function (time) { received = [this, time]; window.DotNet.invokeMethodAsync('App', 'OnFrame'); });
+        expect(id, 'the page gets the id the browser gave').toBe(42);
+        frames[0].call(undefined, 16.6);
+        expect(received, 'the callback runs as the browser called it').toEqual([undefined, 16.6]);
+        await window.DotNet.invokeMethodAsync('App', 'OnScroll');
+        await delay(550);
+
+        const entries = reports.filter(args => args[0] === 'ReportJsToDotNet').flatMap(args => args[1]);
+        expect(entries.map(entry => [entry.identifier, entry.frame === true])).toEqual([['App.OnFrame', true], ['App.OnScroll', false]]);
+
+        bridge.detach();
+        expect(window.requestAnimationFrame, 'detach restores the page').toBe(originalRaf);
+    });
 });
 
 describe('error reporting', () => {

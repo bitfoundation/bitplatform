@@ -31,6 +31,7 @@ public sealed class LeakTests : IDisposable
         var services = new ServiceCollection();
         services.AddSingleton<LeakyEvents>();
         services.AddSingleton<TourService>();
+        services.AddSingleton<SubscriberRegistry>();
         services.AddTransient<TransientEvents>();
         services.AddSingleton<IJSRuntime>(new TrackingTestJSRuntime());
         services.AddOptions();
@@ -290,6 +291,93 @@ public sealed class LeakTests : IDisposable
         var cause = Assert.ContainsSingle(group.Causes);
         Assert.AreEqual("RefHost (still rendered) → _child", cause.Holder);
         StringAssert.Contains(cause.Suggestion, "@ref");
+        Assert.IsTrue(cause.Bounded, "one field holds one instance, until the markup renders it again");
+
+        Session.Diagnostics.Evaluate(force: true);
+        var finding = Assert.ContainsSingle(f => f.Diagnostic.RuleId == "memory.retained-components", Session.Diagnostics.Findings).Diagnostic;
+        Assert.AreEqual(BevDiagnosticSeverity.Info, finding.Severity, "memory kept, not memory growing");
+        StringAssert.Contains(finding.Evidence, "this does not grow");
+    }
+
+    [TestMethod]
+    public void An_at_ref_is_not_evidence_of_a_leak_while_the_renderer_still_holds_the_component()
+    {
+        // A dialog host hides its dialog with @if and keeps the @ref: until the host renders again, the renderer holds
+        // the dialog too, and the @ref alone does not make it a leak the way a singleton's event does.
+        var root = _renderer.RenderRoot<RefHost>(new Dictionary<string, object?> { [nameof(RefHost.Show)] = true });
+        Session.Components.Refresh(force: true);
+        _renderer.SetRootParameters(root, new Dictionary<string, object?> { [nameof(RefHost.Show)] = false });
+        Session.Components.Refresh(force: true);
+
+        Assert.IsEmpty(Session.Leaks.CollectAndCheck());
+    }
+
+    [TestMethod]
+    public void A_collection_of_at_refs_a_live_component_keeps_adding_to_is_a_leak()
+    {
+        var root = _renderer.RenderRoot<RefListHost>(new Dictionary<string, object?> { [nameof(RefListHost.Show)] = true });
+        Session.Components.Refresh(force: true);
+        _renderer.SetRootParameters(root, new Dictionary<string, object?> { [nameof(RefListHost.Show)] = false });
+        Session.Components.Refresh(force: true);
+        _renderer.SetRootParameters(root, new Dictionary<string, object?> { [nameof(RefListHost.Show)] = false });
+
+        var group = Assert.ContainsSingle(Session.Leaks.CollectAndCheck());
+        var cause = Assert.ContainsSingle(group.Causes);
+        Assert.AreEqual("RefListHost (still rendered) → _children[]", cause.Holder);
+        Assert.IsFalse(cause.Bounded);
+
+        Session.Diagnostics.Evaluate(force: true);
+        Assert.AreEqual(BevDiagnosticSeverity.Warning, Assert.ContainsSingle(f => f.Diagnostic.RuleId == "memory.retained-components", Session.Diagnostics.Findings).Diagnostic.Severity);
+    }
+
+    [TestMethod]
+    public void The_one_rendered_instance_that_is_held_is_found_among_many_of_its_type()
+    {
+        // The selected row subscribed and keeps the page through its cascading value, and the page every row: the
+        // cause is on the eighteenth row, not the first.
+        RenderAndRemove(typeof(RowPage));
+        RenderParentAgain();
+
+        var group = Assert.ContainsSingle(Session.Leaks.CollectAndCheck());
+        Assert.AreEqual("RowPage", group.DisplayName);
+        Assert.Contains(new BevRetainedTypeCount("PageRow", RowPage.Rows), group.Descendants);
+        var cause = Assert.ContainsSingle(group.Causes);
+        Assert.AreEqual("LeakyEvents (injected) → Changed", cause.Holder);
+        Assert.AreEqual("handler PageRow.OnChanged, on PageRow, one of the components it rendered", cause.Detail);
+    }
+
+    [TestMethod]
+    public void A_callback_kept_in_a_tuple_of_a_services_list_is_found()
+    {
+        var group = Assert.ContainsSingle(RenderRemoveAndCheck<TupleSubscriber>());
+        var cause = Assert.ContainsSingle(group.Causes);
+        Assert.AreEqual("SubscriberRegistry (injected) → _subscribers[]", cause.Holder);
+        Assert.AreEqual("handler TupleSubscriber.OnChanged", cause.Detail);
+    }
+
+    [TestMethod]
+    public void A_component_a_second_renderer_still_holds_is_not_called_leaked()
+    {
+        // A page can have more than one renderer (a root component added from JavaScript, a second WebAssembly root):
+        // the buffers of each are read, not only the first one's.
+        using var second = new PlainRenderer(_scope.ServiceProvider);
+        _renderer.RenderRoot<LeakHost>(new Dictionary<string, object?>());
+        RenderInSecondAndRemove(second);
+
+        CollectionAssert.AreEqual(new Renderer[] { _renderer, second }, Session.Components.Renderers.ToArray());
+        Assert.AreSame(_renderer, Session.Components.Renderer, "the first renderer the session saw");
+        Assert.IsEmpty(Session.Leaks.CollectAndCheck());
+        Assert.IsTrue(WatchedTidySubscriber.Last!.IsAlive, "the second renderer still holds it, so this test proves its buffers are read");
+    }
+
+    // Not inlined, so nothing the render left on this frame's stack can keep the component alive.
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    private void RenderInSecondAndRemove(PlainRenderer renderer)
+    {
+        var root = renderer.RenderRoot<LeakHost>(new Dictionary<string, object?> { [nameof(LeakHost.Child)] = typeof(WatchedTidySubscriber) });
+        Session.Components.Refresh(force: true);
+        renderer.SetRootParameters(root, new Dictionary<string, object?> { [nameof(LeakHost.Child)] = null });
+        Session.Components.Refresh(force: true);
     }
 
     [TestMethod]
@@ -358,6 +446,92 @@ public sealed class LeakTests : IDisposable
             using var answer = JsonDocument.Parse(BevToolsProtocol.Handle(session, "command", "{\"name\":\"collect\"}"));
             StringAssert.Contains(answer.RootElement.GetProperty("error").GetString(), "not allowed");
         }
+    }
+}
+
+public sealed class SubscriberRegistry
+{
+    private readonly List<(Guid Id, Action Callback)> _subscribers = [];
+
+    public void Subscribe(Action callback) => _subscribers.Add((Guid.NewGuid(), callback));
+}
+
+public class TupleSubscriber : ComponentBase
+{
+    [Inject] public SubscriberRegistry Registry { get; set; } = default!;
+
+    protected override void OnInitialized() => Registry.Subscribe(OnChanged);
+
+    private void OnChanged()
+    {
+    }
+}
+
+public class RefListHost : ComponentBase
+{
+    private readonly List<RefChild> _children = [];
+
+    [Parameter] public bool Show { get; set; }
+
+    public int Children => _children.Count;
+
+    protected override void BuildRenderTree(RenderTreeBuilder builder)
+    {
+        if (Show)
+        {
+            builder.OpenComponent<RefChild>(0);
+            builder.AddComponentReferenceCapture(1, c => _children.Add((RefChild)c));
+            builder.CloseComponent();
+        }
+    }
+}
+
+public class RowPage : ComponentBase
+{
+    public const int Rows = 30;
+
+    private readonly List<PageRow> _rows = [];
+
+    public int Count => _rows.Count;
+
+    protected override void BuildRenderTree(RenderTreeBuilder builder)
+    {
+        builder.OpenComponent<CascadingValue<RowPage>>(0);
+        builder.AddComponentParameter(1, nameof(CascadingValue<RowPage>.Value), this);
+        builder.AddComponentParameter(2, nameof(CascadingValue<RowPage>.IsFixed), true);
+        builder.AddComponentParameter(3, nameof(CascadingValue<RowPage>.ChildContent), (RenderFragment)(b =>
+        {
+            for (var i = 0; i < Rows; i++)
+            {
+                b.OpenComponent<PageRow>(0);
+                b.SetKey(i);
+                b.AddComponentParameter(1, nameof(PageRow.Selected), i == 17);
+                b.AddComponentReferenceCapture(2, c => _rows.Add((PageRow)c));
+                b.CloseComponent();
+            }
+        }));
+        builder.CloseComponent();
+    }
+}
+
+public class PageRow : ComponentBase
+{
+    [Inject] public LeakyEvents Events { get; set; } = default!;
+
+    [CascadingParameter] public RowPage Page { get; set; } = default!;
+
+    [Parameter] public bool Selected { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if (Selected)
+        {
+            Events.Changed += OnChanged;
+        }
+    }
+
+    private void OnChanged()
+    {
     }
 }
 

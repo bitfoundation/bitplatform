@@ -560,16 +560,21 @@ internal static class BuiltInRules
             foreach (var group in session.Leaks.Retained())
             {
                 var causes = group.Causes;
+
+                // Held only by @ref fields, one instance each, released when that markup renders again: memory kept,
+                // not memory growing.
+                var bounded = causes.Count > 0 && causes.All(c => c.Bounded);
                 var evidence = (group.Count == 1 ? "Survived " : "Each survived ") + group.FullCollections + "+ full garbage collections since it was disposed (the oldest " + BevFmt.Ago(group.OldestDisposal) + "). "
                     + (group.DescendantCount > 0
                         ? "With it, " + group.DescendantCount + " disposed component" + (group.DescendantCount == 1 ? "" : "s") + " it rendered: " + BevRetentionAnalyzer.Describe(group.Descendants) + ". "
                         : "")
                     + (causes.Count > 0
                         ? "Held by: " + string.Join("; ", causes.Take(3).Select(c => c.Holder + ": " + c.Detail)) + "."
-                        : BevRetentionAnalyzer.NotFound);
+                        : BevRetentionAnalyzer.NotFound)
+                    + (bounded ? " A field holds one instance at a time and the next render of that markup replaces it: this does not grow, but keeps what the component references until then." : "");
                 yield return new BevDiagnostic(
                     Id,
-                    BevDiagnosticSeverity.Warning,
+                    bounded ? BevDiagnosticSeverity.Info : BevDiagnosticSeverity.Warning,
                     group.DisplayName + ": " + group.Count + " disposed instance" + (group.Count == 1 ? "" : "s") + " still alive"
                         + (group.DescendantCount > 0 ? ", with " + group.DescendantCount + " component" + (group.DescendantCount == 1 ? "" : "s") + " " + (group.Count == 1 ? "it" : "they") + " rendered" : ""),
                     evidence,
@@ -1299,8 +1304,10 @@ internal static class BuiltInRules
     /// <summary>
     /// The same interop function called many times within one second. Counted in calls, not timeline events: the calls
     /// JavaScript makes to .NET are one event per name per second, and the interop store has the time of each. A loop
-    /// that calls once per animation frame - evenly spaced at the display's frame interval - is told apart: that is an
-    /// animation's design while it runs, and costs what its calls take, which the finding states.
+    /// that calls .NET once per animation frame is told apart: that is an animation's design while it runs, and costs
+    /// what its calls take, which the finding states. It is told by what the page hub saw - each call made from a
+    /// requestAnimationFrame callback - and by the calls being one per frame, never by their rhythm alone: a scroll or
+    /// pointer handler, or a timer, is as evenly spaced at 60 Hz, and is a burst to throttle.
     /// </summary>
     private sealed class ExcessiveJsInteropRule : IBevDiagnosticRule
     {
@@ -1316,19 +1323,25 @@ internal static class BuiltInRules
         public IEnumerable<BevDiagnostic> Evaluate(IBevDiagnosticContext context)
         {
             var options = Opt(context);
-            var events = context.EventsInWindow(BevToolsEventKind.JsInterop, BurstLookback).ToList();
-            if (events.Count == 0)
+            // Only a name with at least the threshold of calls in the whole half minute can have them in one second: the
+            // interop store is read, and indexed, only when one does.
+            var candidates = context.EventsInWindow(BevToolsEventKind.JsInterop, BurstLookback)
+                .GroupBy(e => e.Title)
+                .Where(g => g.Sum(e => e.TryGetData("calls", out var c) && c is int n ? n : 1) >= options.ExcessiveJsInteropCount)
+                .ToList();
+            if (candidates.Count == 0)
             {
                 yield break;
             }
 
+            var eventIds = candidates.SelectMany(g => g).Select(e => e.Id).ToHashSet();
             var recorded = context is DiagnosticContext { Session: { } session }
-                ? session.Interop.Snapshot().Where(r => r.TimelineEventId > 0).ToLookup(r => r.TimelineEventId)
+                ? session.Interop.Snapshot().Where(r => eventIds.Contains(r.TimelineEventId)).ToLookup(r => r.TimelineEventId)
                 : null;
             var nowTicks = System.Diagnostics.Stopwatch.GetTimestamp();
 
             // The busiest second of the last half minute: a burst is over before anyone opens the panel to look.
-            foreach (var identifier in events.GroupBy(e => e.Title))
+            foreach (var identifier in candidates)
             {
                 var (count, calls, perSecond) = Busiest(identifier, recorded);
                 if (count < options.ExcessiveJsInteropCount)
@@ -1347,7 +1360,8 @@ internal static class BuiltInRules
                 var fingerprint = $"{Id}:{identifier.Key}";
                 var relatedIds = related.Take(10).Select(e => e.Id).ToList();
 
-                if (perSecond.Count == 0 && FrameInterval(calls.Select(c => c.Ticks).ToList()) is { } intervalMs)
+                var fromFrames = related.Count > 0 && related.All(e => e.TryGetData("animationFrame", out var f) && f is true);
+                if (fromFrames && perSecond.Count == 0 && FrameInterval(calls.Select(c => c.Ticks).ToList()) is { } intervalMs)
                 {
                     // Whether it is still going says whether it was stopped: the last call a moment ago, and how long the
                     // calls have gone on within the half minute looked at.
@@ -1361,14 +1375,18 @@ internal static class BuiltInRules
                         Id,
                         totalMs >= FrameLoopBudgetMs ? BevDiagnosticSeverity.Warning : BevDiagnosticSeverity.Info,
                         $"{identifier.Key} runs every animation frame ({count} calls in 1 s)",
-                        origin + $" The calls are evenly spaced, every {intervalMs:0.#} ms: the rhythm of a requestAnimationFrame loop (or a timer at frame rate), whose design is one call per frame while it animates." + cost + running,
+                        origin + $" Each call was made from a requestAnimationFrame callback, one per frame, every {intervalMs:0.#} ms: a loop whose design is one call per frame while it animates." + cost + running,
                         "Stop the loop when the animation ends (cancelAnimationFrame) and dispose its DotNetObjectReference; if each frame's .NET work is heavy, keep the loop in JavaScript and call .NET when the animation starts or ends.",
                         Fingerprint: fingerprint,
                         RelatedEventIds: relatedIds);
                     continue;
                 }
 
-                yield return new BevDiagnostic(Id, BevDiagnosticSeverity.Warning, $"{identifier.Key} called {count} times in 1 s", origin + cost, "Throttle, batch arguments into one call, or keep the loop in JavaScript.", Fingerprint: fingerprint, RelatedEventIds: relatedIds);
+                // The remedy is on the side that makes the calls: .NET calling JavaScript is a .NET timer or loop.
+                var suggestion = identifier.Key.StartsWith("→ JS ", StringComparison.Ordinal)
+                    ? "Throttle the .NET code that makes the calls (a timer, a loop, a handler per event), batch their arguments into one call, or move the loop into JavaScript."
+                    : "Throttle or debounce the JavaScript that makes the calls (a scroll, pointer or resize handler, a timer), batch their arguments into one call, or keep the loop in JavaScript.";
+                yield return new BevDiagnostic(Id, BevDiagnosticSeverity.Warning, $"{identifier.Key} called {count} times in 1 s", origin + cost, suggestion, Fingerprint: fingerprint, RelatedEventIds: relatedIds);
             }
         }
 

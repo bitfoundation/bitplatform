@@ -15,19 +15,7 @@ internal static class BevJSObjectReferences
     /// <summary>The session's table; null when its JS runtime is not a <see cref="JSRuntime"/> or the field is gone.</summary>
     public static IDictionary? Table(BevToolsSession session)
     {
-        object? runtime;
-        using (SessionResolver.BeginBevToolsWork())
-        {
-            try
-            {
-                runtime = session.Services.GetService(typeof(IJSRuntime));
-            }
-            catch
-            {
-                return null;
-            }
-        }
-
+        var runtime = BevRetentionAnalyzer.GetService(session, typeof(IJSRuntime));
         if (runtime is BevTrackingJSRuntime tracking)
         {
             runtime = tracking.Inner;

@@ -45,8 +45,11 @@ public sealed class JsToDotNetTests : IDisposable
         throw new InvalidOperationException("the JS runtime did not track the reference");
     }
 
-    /// <summary><paramref name="count"/> calls of <paramref name="identifier"/>, <paramref name="intervalMs"/> apart, within one second two seconds ago.</summary>
-    private static BevJsCallEntry[] Calls(string identifier, int count, int intervalMs, double durationMs = 0.5)
+    /// <summary>
+    /// <paramref name="count"/> calls of <paramref name="identifier"/>, <paramref name="intervalMs"/> apart, within one
+    /// second two seconds ago; made from requestAnimationFrame callbacks when <paramref name="frame"/> is.
+    /// </summary>
+    private static BevJsCallEntry[] Calls(string identifier, int count, int intervalMs, double durationMs = 0.5, bool frame = false)
     {
         var now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         var second = (now / 1000 - 2) * 1000;
@@ -56,6 +59,7 @@ public sealed class JsToDotNetTests : IDisposable
             At = second + i * intervalMs,
             AgeMs = now - (second + i * intervalMs),
             DurationMs = durationMs,
+            Frame = frame,
         }).ToArray();
     }
 
@@ -66,7 +70,7 @@ public sealed class JsToDotNetTests : IDisposable
     {
         var id = HandToJavaScript(new FrameLoop());
 
-        _bridge.ReportJsToDotNet(Calls("object#" + id + ".ComputeFrame", 60, 16));
+        _bridge.ReportJsToDotNet(Calls("object#" + id + ".ComputeFrame", 60, 16, frame: true));
 
         var records = _session.Interop.Snapshot().Where(r => r.Direction == BevJsInteropDirection.JsToDotNet).ToList();
         Assert.HasCount(60, records);
@@ -74,6 +78,7 @@ public sealed class JsToDotNetTests : IDisposable
 
         var evt = Assert.ContainsSingle(Events("← .NET FrameLoop.ComputeFrame"), "one event for the second, not sixty");
         Assert.IsTrue(evt.TryGetData("calls", out var calls) && calls is 60);
+        Assert.IsTrue(evt.TryGetData("animationFrame", out var frame) && frame is true, "the event says its calls came from animation frames");
         StringAssert.StartsWith(evt.Detail, "60 calls in this second, on a FrameLoop (object #" + id + ")");
         Assert.IsTrue(records.All(r => r.TimelineEventId == evt.Id));
 
@@ -82,7 +87,7 @@ public sealed class JsToDotNetTests : IDisposable
         Assert.AreEqual("← .NET FrameLoop.ComputeFrame runs every animation frame (60 calls in 1 s)", finding.Title);
         Assert.AreEqual(BevDiagnosticSeverity.Info, finding.Severity, "30 ms of calls in a second is what a running animation costs");
         StringAssert.Contains(finding.Evidence, "Called on a FrameLoop, which is not a component.");
-        StringAssert.Contains(finding.Evidence, "every 16 ms");
+        StringAssert.Contains(finding.Evidence, "Each call was made from a requestAnimationFrame callback, one per frame, every 16 ms");
         StringAssert.Contains(finding.Evidence, "The calls took 30 ms of that second");
     }
 
@@ -91,7 +96,7 @@ public sealed class JsToDotNetTests : IDisposable
     {
         var id = HandToJavaScript(new FrameLoop());
 
-        _bridge.ReportJsToDotNet(Calls("object#" + id + ".ComputeFrame", 60, 16, durationMs: 6));
+        _bridge.ReportJsToDotNet(Calls("object#" + id + ".ComputeFrame", 60, 16, durationMs: 6, frame: true));
 
         _session.Diagnostics.Evaluate(force: true);
         var finding = Assert.ContainsSingle(f => f.Diagnostic.RuleId == "jsinterop.excessive", _session.Diagnostics.Findings).Diagnostic;
@@ -108,6 +113,39 @@ public sealed class JsToDotNetTests : IDisposable
         Assert.AreEqual("← .NET App.OnScroll called 60 times in 1 s", finding.Title);
         Assert.AreEqual(BevDiagnosticSeverity.Warning, finding.Severity);
         StringAssert.StartsWith(finding.Evidence, "Origin not attributable to a component. The calls took 30 ms");
+    }
+
+    [TestMethod]
+    public void Calls_at_frame_rate_not_made_from_animation_frames_are_excessive_interop()
+    {
+        // A scroll handler calling .NET on every scroll event: 60 Hz, evenly spaced, and no animation loop to stop.
+        _bridge.ReportJsToDotNet(Calls("App.OnScroll", 60, 16));
+
+        Assert.IsFalse(Assert.ContainsSingle(Events("← .NET App.OnScroll")).TryGetData("animationFrame", out _));
+        _session.Diagnostics.Evaluate(force: true);
+        var finding = Assert.ContainsSingle(f => f.Diagnostic.RuleId == "jsinterop.excessive", _session.Diagnostics.Findings).Diagnostic;
+        Assert.AreEqual("← .NET App.OnScroll called 60 times in 1 s", finding.Title);
+        Assert.AreEqual(BevDiagnosticSeverity.Warning, finding.Severity);
+        StringAssert.Contains(finding.Suggestion, "Throttle or debounce the JavaScript");
+    }
+
+    [TestMethod]
+    public void Calls_from_animation_frames_mixed_with_other_calls_are_not_an_animation_loop()
+    {
+        var frames = Calls("App.Update", 30, 33, frame: true);
+        var others = Calls("App.Update", 30, 33);
+        foreach (var call in others)
+        {
+            call.At += 16;
+            call.AgeMs -= 16;
+        }
+
+        _bridge.ReportJsToDotNet([.. frames, .. others]);
+
+        Assert.HasCount(2, Events("← .NET App.Update"), "one event for the calls from frames, one for the others");
+        _session.Diagnostics.Evaluate(force: true);
+        var finding = Assert.ContainsSingle(f => f.Diagnostic.RuleId == "jsinterop.excessive", _session.Diagnostics.Findings).Diagnostic;
+        Assert.AreEqual("← .NET App.Update called 60 times in 1 s", finding.Title);
     }
 
     [TestMethod]

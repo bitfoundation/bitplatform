@@ -33,6 +33,9 @@ public sealed class BevJsCallEntry
 
     /// <summary>How long before the report the call was made; null from a hub that does not say.</summary>
     public double? AgeMs { get; set; }
+
+    /// <summary>Made while a requestAnimationFrame callback ran; false from a hub that does not say.</summary>
+    public bool Frame { get; set; }
 }
 
 public sealed class BevBrowserSnapshot
@@ -302,7 +305,8 @@ public sealed class BevJsBridge(BevToolsSession session, Action toggle, Action? 
         }
 
         var slowMs = session.Options.Diagnostics.SlowJsInteropMs;
-        foreach (var group in calls.GroupBy(c => (c.Record.Identifier, Second: c.Entry.At / 1000)))
+        // Calls made from animation frames apart from the others: an event says which it holds, for the interop rule.
+        foreach (var group in calls.GroupBy(c => (c.Record.Identifier, Second: c.Entry.At / 1000, c.Entry.Frame)))
         {
             var routine = new List<(BevJsCallEntry Entry, BevJsInteropRecord Record, string? Error, string? ObjectId, string? TargetType)>();
             foreach (var call in group)
@@ -332,6 +336,11 @@ public sealed class BevJsBridge(BevToolsSession session, Action toggle, Action? 
             if (first.TargetType is not null)
             {
                 data["targetType"] = first.TargetType;
+            }
+
+            if (first.Entry.Frame)
+            {
+                data["animationFrame"] = true;
             }
 
             string detail;
