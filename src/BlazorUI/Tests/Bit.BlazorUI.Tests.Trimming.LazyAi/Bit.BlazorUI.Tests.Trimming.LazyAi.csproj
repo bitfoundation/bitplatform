@@ -26,11 +26,14 @@
     </PropertyGroup>
 
     <!-- The assemblies downloaded only when the chat opens: the components, the core they build on, and the app's own
-         library with the page that renders them. Their file names in the publish are .wasm (webcil). -->
-    <ItemGroup>
+         library with the page that renders them. Their file names in the publish are .wasm (webcil). An AOT build loads
+         them with the app (the runtime aborts at startup when AOT-compiled code needs a type of an assembly not loaded
+         yet), so it skips the marks, and the switch beside them tells App.razor whether they are there. -->
+    <ItemGroup Condition=" '$(RunAOTCompilation)' != 'true' ">
         <BlazorWebAssemblyLazyLoad Include="Bit.BlazorUI.AI.wasm" />
         <BlazorWebAssemblyLazyLoad Include="Bit.BlazorUI.AI.Core.wasm" />
         <BlazorWebAssemblyLazyLoad Include="Bit.BlazorUI.Tests.Trimming.LazyAi.Chat.wasm" />
+        <RuntimeHostConfigurationOption Include="Bit.BlazorUI.Tests.Trimming.LazyAi.LazyLoadsChat" Value="true" Trim="true" />
     </ItemGroup>
 
     <ItemGroup>

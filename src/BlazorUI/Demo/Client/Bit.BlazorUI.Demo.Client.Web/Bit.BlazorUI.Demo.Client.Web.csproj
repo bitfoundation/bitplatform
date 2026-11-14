@@ -43,14 +43,37 @@
         <Using Include="Bit.BlazorUI.Demo.Client.Core.Services" />
     </ItemGroup>
 
-    <ItemGroup>
-        <!-- Lazily loaded on demand by the legacy Chart demo (see BitChartLegacyDemo). These
-             assemblies are only needed by the legacy Chart's Newtonsoft.Json serialization, so
-             keeping them out of the initial WASM download reduces the app's startup payload. -->
+    <!-- Lazily loaded on demand by the legacy Chart demo (see BitChartLegacyDemo). These
+         assemblies are only needed by the legacy Chart's Newtonsoft.Json serialization, so
+         keeping them out of the initial WASM download reduces the app's startup payload.
+         AOT builds are left out: AOT compiles every assembly into dotnet.native.wasm, so there is
+         little left to download later, and the runtime aborts at startup when a method it compiled
+         or bridges to the interpreter names a type of an assembly that isn't loaded yet (#14919). -->
+    <ItemGroup Condition=" '$(RunAOTCompilation)' != 'true' ">
         <BlazorWebAssemblyLazyLoad Include="Newtonsoft.Json.wasm" />
         <BlazorWebAssemblyLazyLoad Include="System.Private.Xml.wasm" />
         <BlazorWebAssemblyLazyLoad Include="System.Data.Common.wasm" />
     </ItemGroup>
+
+    <!-- The marks above are the only list of the lazy assemblies: BitChartLegacyDemo loads what this
+         option hands it, the marked assemblies joined by ';', and nothing in an AOT build, where the
+         value is empty. It is set in every build of this project, so the demo can tell a missing
+         value - the name below and the one in BitChartLegacyDemo no longer agree - from an AOT build,
+         and VerifyLazyAssembliesOptionName fails the build before that ships. -->
+    <PropertyGroup>
+        <LazyAssembliesOptionName>Bit.BlazorUI.Demo.LazyLoadedAssemblies</LazyAssembliesOptionName>
+        <LazyAssembliesOptionReader>..\Bit.BlazorUI.Demo.Client.Core\Pages\Components\Legacy\Chart\BitChartLegacyDemo.razor.cs</LazyAssembliesOptionReader>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <RuntimeHostConfigurationOption Include="$(LazyAssembliesOptionName)" Value="@(BlazorWebAssemblyLazyLoad)" />
+    </ItemGroup>
+
+    <Target Name="VerifyLazyAssembliesOptionName" BeforeTargets="BeforeBuild">
+        <Error Condition=" !$([System.IO.File]::ReadAllText('$(MSBuildProjectDirectory)\$(LazyAssembliesOptionReader)').Contains('&quot;$(LazyAssembliesOptionName)&quot;')) "
+               File="$(LazyAssembliesOptionReader)"
+               Text="$(LazyAssembliesOptionReader) does not read the runtime option '$(LazyAssembliesOptionName)' this project sets with its lazy assemblies, so the legacy Chart demo would never download them. Make the two names agree." />
+    </Target>
 
     <PropertyGroup Condition="'$(Configuration)' == 'Release'">
         <!-- https://emscripten.org/docs/tools_reference/emcc.html -->
