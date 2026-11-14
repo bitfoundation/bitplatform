@@ -462,7 +462,13 @@ public partial class BitFullCalendarE2ETests
         await Expect(stop).ToHaveCountAsync(1);
         await Expect(stop).ToHaveAccessibleNameAsync("Tuesday, July 1, 2025");
 
+        // The grid is come to with the keyboard, as the one who walks it does: Firefox carries :focus-visible from the
+        // element the focus leaves to the one a script moves it to, so a stop focused by script after the click above
+        // would hand on no ring to the days the arrows move to.
         await stop.FocusAsync();
+        await Page.Keyboard.PressAsync("Shift+Tab");
+        await Page.Keyboard.PressAsync("Tab");
+        await Expect(stop).ToBeFocusedAsync();
         await Page.Keyboard.PressAsync("ArrowRight");
         var day = Cal.GetByRole(AriaRole.Button, new() { Name = "Wednesday, July 2, 2025", Exact = true });
         await Expect(day).ToBeFocusedAsync();

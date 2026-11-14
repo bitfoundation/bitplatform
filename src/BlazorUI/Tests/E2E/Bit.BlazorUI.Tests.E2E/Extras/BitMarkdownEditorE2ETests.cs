@@ -1699,14 +1699,19 @@ public class BitMarkdownEditorE2ETests : E2ETestBase
         // Ctrl+F is the editor's once its script has been set up for the field, which a dialog's content gets only after
         // the dialog has opened; pressed before that, the key is the browser's own find bar's.
         await Page.WaitForFunctionAsync("ta => Object.values(BitBlazorUI.MarkdownEditor._editors).some(e => e.textArea === ta)", await textArea.ElementHandleAsync());
+        // The dialog puts the focus where it opens with a few round trips after it is shown, which can be after the
+        // textarea is focused below and would take the focus back off it (WebKit gets there late); OnOpen comes after it.
+        await Expect(Page.Locator("#dialog-opened")).ToHaveTextAsync("1");
 
         await textArea.FocusAsync();
         await Page.Keyboard.PressAsync("Control+f");
         var panel = Page.Locator("#mde-dialog .bit-mde-fnd");
         await Expect(panel).ToBeVisibleAsync();
 
-        // The find box claims the Escape that closes the panel.
+        // The find box claims the Escape that closes the panel. It takes the focus a round trip after the panel shows, so
+        // the press waits for it: pressed before, the Escape is the textarea's.
         await Expect(panel.Locator("input[type='search']")).ToHaveAttributeAsync("data-bit-esc", "claim");
+        await Expect(panel.Locator("input[type='search']")).ToBeFocusedAsync();
         await Page.Keyboard.PressAsync("Escape");
         await Expect(panel).ToHaveCountAsync(0);
         await Expect(Page.Locator("#dialog-open")).ToHaveTextAsync("True");

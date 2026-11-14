@@ -647,7 +647,14 @@ public abstract class E2ETestBase
         {
             "chromium" => await _playwright.Chromium.LaunchAsync(options),
             "edge" => await _playwright.Chromium.LaunchAsync(new(options) { Channel = "msedge" }),
-            "firefox" => await _playwright.Firefox.LaunchAsync(options),
+            // Firefox keeps the zoom of a page per site, for every context of the browser: a Ctrl+wheel no page handler
+            // takes (a disabled image viewer's) zooms the page, and every test the browser is handed on to afterwards
+            // would open the host zoomed - its borders a fraction off and every click landing beside its target. Kept
+            // per page, the zoom goes with the context of the test that made it.
+            "firefox" => await _playwright.Firefox.LaunchAsync(new(options)
+            {
+                FirefoxUserPrefs = new Dictionary<string, object> { ["browser.zoom.siteSpecific"] = false }
+            }),
             "webkit" => await _playwright.Webkit.LaunchAsync(options),
             var name => throw new InvalidOperationException($"Unknown BROWSER '{name}'. Use chromium, edge, firefox or webkit.")
         };

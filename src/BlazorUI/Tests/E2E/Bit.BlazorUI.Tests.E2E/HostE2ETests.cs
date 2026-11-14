@@ -121,9 +121,14 @@ public class HostE2ETests : E2ETestBase
     }
 
     // A request of the page being left that the navigation cut off, which Firefox reports as failed with the status of a
-    // load aborted (NS_BINDING_ABORTED, 0x804B0002) - a font it was still downloading, say.
+    // load aborted (NS_BINDING_ABORTED, 0x804B0002) - a font it was still downloading, say - and WebKit as a fetch that
+    // "cannot load ... due to access control checks" (the PDF viewer's sample it was still fetching). WebKit says the
+    // same of a request a real CORS check refused, so only a request to the host itself, which no access control check
+    // refuses, is taken for one cut off.
     private static bool IsCutOffByLeaving(string error)
     {
-        return error.Contains("status=2152398850", StringComparison.Ordinal);
+        return error.Contains("status=2152398850", StringComparison.Ordinal)
+               || (error.Contains($"Fetch API cannot load {BaseUrl}/", StringComparison.Ordinal)
+                   && error.Contains(" due to access control checks", StringComparison.Ordinal));
     }
 }

@@ -238,7 +238,9 @@
 <E2ESection Id="dialog" Title="Inside a dialog">
     <button id="btn-open-dialog" @onclick="() => _dialogOpen = true">Open dialog</button>
     <span id="dialog-open">@_dialogOpen</span>
-    <BitDialog @bind-IsOpen="_dialogOpen" Title="Editor dialog">
+    @* OnOpen runs once the dialog has put the focus where it opens with, which a test moving the focus itself waits for. *@
+    <span id="dialog-opened">@_dialogOpened</span>
+    <BitDialog @bind-IsOpen="_dialogOpen" Title="Editor dialog" OnOpen="() => _dialogOpened++">
         <Body>
             <BitMarkdownEditor Id="mde-dialog" DefaultValue="text in a dialog" Mode="BitMarkdownEditorMode.Edit" Height="6rem" />
         </Body>
@@ -311,6 +313,7 @@
     private string? _submitted;
     private int _validSubmits;
     private bool _dialogOpen;
+    private int _dialogOpened;
     private BitMarkdownEditor? _autoSaveRef;
     private int _draftRestored;
     private string? _draft;

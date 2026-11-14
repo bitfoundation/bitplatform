@@ -731,6 +731,9 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
         if (_showFind)
         {
             _showFind = false;
+            // An Escape pressed in the textarea right after Ctrl+F, before the find box has taken the focus, would
+            // otherwise leave that focus on its way into a box the render below takes away - and so on the page's body.
+            await Focus();
             await InvokeAsync(StateHasChanged);
             return;
         }

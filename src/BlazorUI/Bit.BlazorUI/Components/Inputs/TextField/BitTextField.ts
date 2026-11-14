@@ -539,6 +539,26 @@
             }
         }
 
+        // WebKit fires no change event when the input loses the focus if the last thing to write its value was a script -
+        // and with fast typing the layout written above lands after the last key - so a field committing on change would
+        // never commit what was typed. Once the layout is the last write, the change is raised on the way out unless the
+        // browser raised it (it does so before blur) or the user edited the text since (the browser raises it then).
+        private static keepMaskedChange(inputElement: HTMLInputElement) {
+            const el = inputElement as HTMLInputElement & { _bitMaskWrote?: boolean, _bitMaskWatch?: boolean };
+            el._bitMaskWrote = true;
+
+            if (el._bitMaskWatch) return;
+            el._bitMaskWatch = true;
+
+            el.addEventListener('input', e => { if (e.isTrusted) el._bitMaskWrote = false; });
+            el.addEventListener('change', () => { el._bitMaskWrote = false; });
+            el.addEventListener('blur', () => {
+                if (!el._bitMaskWrote) return;
+                el._bitMaskWrote = false;
+                el.dispatchEvent(new Event('change', { bubbles: true }));
+            });
+        }
+
         // Writes the text of a masked field, laid out over its mask, back into the input without throwing the caret to the
         // end: assigning `value` alone parks it after the last character, which would make the middle of the text
         // impossible to edit. The caret is read as "after the nth character of the value" - counted the way BitMask.Strip
@@ -556,6 +576,7 @@
 
             if (typed !== value) {
                 inputElement.value = value;
+                TextField.keepMaskedChange(inputElement);
             }
 
             if (!focused || start === null) return;

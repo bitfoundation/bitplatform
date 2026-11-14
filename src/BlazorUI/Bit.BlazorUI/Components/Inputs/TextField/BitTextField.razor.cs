@@ -34,6 +34,8 @@ public partial class BitTextField : BitTextInputBase<string?>
     private DotNetObjectReference<BitTextField>? _dotnetObj;
     private string? _inputMode;
     private bool _trimOnParse;
+    // A commit of the field's own running, and the value it writes (see HandleOnStringValueChangeAsync).
+    private (bool Running, string? Value) _ownCommit;
     private bool _isPasswordRevealed;
     private BitInputType? _elementType;
     private string _inputId = string.Empty;
@@ -920,8 +922,13 @@ public partial class BitTextField : BitTextInputBase<string?>
         }
 
         // A value that moved without the field moving it - the page emptying it after a send, say - is what the
-        // input shows from then on, whatever had been typed into it before.
-        ReleaseTypedTextIfMoved(Value);
+        // input shows from then on, whatever had been typed into it before. The value the field's own commit wrote,
+        // handed back by the binding while that commit runs, is left to the commit to settle (see
+        // HandleOnStringValueChangeAsync).
+        if (_ownCommit.Running is false || string.Equals(Value, _ownCommit.Value, StringComparison.Ordinal) is false)
+        {
+            ReleaseTypedTextIfMoved(Value);
+        }
 
         SyncLiveRegion();
 
@@ -1160,7 +1167,19 @@ public partial class BitTextField : BitTextInputBase<string?>
 
     protected override async Task HandleOnStringValueChangeAsync(ChangeEventArgs e)
     {
-        await base.HandleOnStringValueChangeAsync(e);
+        // The value this commit writes, which the binding hands straight back through OnParametersSet while the commit
+        // is still running. A field that commits something other than the text typed (a mask lays it out) must not take
+        // that for the page moving the value: letting go of the typed text there would render the committed value into
+        // the input, a round trip behind the typing on a server circuit, over the keys typed since.
+        _ownCommit = (true, TryParseValueFromString(e.Value?.ToString(), out var committing, out _) ? committing : null);
+        try
+        {
+            await base.HandleOnStringValueChangeAsync(e);
+        }
+        finally
+        {
+            _ownCommit = default;
+        }
 
         // Once the value holds the typed text the input shows the value again; until then the value this commit
         // ended up with is the field's own doing, not a change from the page (see OnParametersSet).
