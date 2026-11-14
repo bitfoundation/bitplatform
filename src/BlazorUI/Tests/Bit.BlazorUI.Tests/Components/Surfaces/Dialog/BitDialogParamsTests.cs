@@ -512,10 +512,9 @@ public class BitDialogParamsTests : BunitTestContext
 
         RenderWithParams(@params, RenderDialog());
 
-        var invocation = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"][0];
+        var invocation = Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"][0];
 
         Assert.AreEqual(".my-scroller", invocation.Arguments[1]);
-        Assert.AreEqual(true, invocation.Arguments[2]);
     }
 
     [TestMethod]
