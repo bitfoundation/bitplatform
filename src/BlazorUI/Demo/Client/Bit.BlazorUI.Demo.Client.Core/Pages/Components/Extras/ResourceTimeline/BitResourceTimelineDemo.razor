@@ -235,7 +235,8 @@
                     grows to hold them (<b>ResourceHeight</b> is its minimum, <b>BarHeight</b> the thickness of a bar).
                     <b>StackLabelClearance</b> widens the gap by the room the labels and icons of the bars need (Gate A3),
                     and <b>StackOnLabelCollision</b> also stacks bars whose labels would collide though their times do not
-                    (Gate A2); both are on by default. <b>MaxStackLanes</b> caps a stack: the bars beyond it hide behind a
+                    (Gate A2); both are on by default. <b>CollapseMatchingEdgeLabels</b> draws the airport two legs
+                    meet at once, between them, instead of stacking them for it (Gate A5). <b>MaxStackLanes</b> caps a stack: the bars beyond it hide behind a
                     +N marker that lists them on hover and selects them on click. While editing, turning
                     <b>AllowOverlap</b> off refuses a move or a resize that would overlap another unlocked bar of its row -
                     drag a bar onto the one of Gate A4.
@@ -252,6 +253,7 @@
                 <div class="toolbar">
                     <BitToggle @bind-Value="stackLabelClearance" @bind-Value:after="UpdateOverlapOptions" Label="StackLabelClearance" Inline />
                     <BitToggle @bind-Value="stackOnLabelCollision" @bind-Value:after="UpdateOverlapOptions" Label="StackOnLabelCollision" Inline />
+                    <BitToggle @bind-Value="collapseMatchingEdgeLabels" @bind-Value:after="UpdateOverlapOptions" Label="CollapseMatchingEdgeLabels" Inline />
                     <BitToggle @bind-Value="allowOverlap" @bind-Value:after="UpdateOverlapOptions" Label="AllowOverlap" Inline />
                 </div>
                 <br />

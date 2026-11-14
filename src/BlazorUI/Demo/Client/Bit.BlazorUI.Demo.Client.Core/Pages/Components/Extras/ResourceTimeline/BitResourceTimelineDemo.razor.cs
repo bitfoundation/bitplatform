@@ -511,6 +511,7 @@ public partial class BitResourceTimelineDemo
                 new() { Name = "BarMargin", Type = "int?", DefaultValue = "null", Description = "Gap between bars stacked for overlapping in time, in px (2)." },
                 new() { Name = "StackLabelClearance", Type = "bool?", DefaultValue = "null", Description = "Whether stacked bars also keep room for their labels and icons (true). Independent of the zoom." },
                 new() { Name = "StackOnLabelCollision", Type = "bool?", DefaultValue = "null", Description = "Whether bars whose labels, icons or edge bars would collide stack too, not only overlapping times (true)." },
+                new() { Name = "CollapseMatchingEdgeLabels", Type = "bool?", DefaultValue = "null", Description = "Whether neighbouring bars whose facing labels match (one's TextEnd, the next one's TextStart) draw that text once in the gap between them, without stacking for it, while the gap is too narrow to show both clearly (false). Follows the zoom; the allocations keep both texts." },
                 new() { Name = "MinBarWidth", Type = "int?", DefaultValue = "null", Description = "Minimum drawn width of a bar in px (2)." },
                 new() { Name = "MinBarWidthForLabels", Type = "int?", DefaultValue = "null", Description = "Minimum bar width for its labels and icons to be drawn, in px (24)." },
                 new() { Name = "BarLabelFont", Type = "string?", DefaultValue = "null", Description = "CSS font of the bar labels (11px, theme font family)." },
@@ -1383,12 +1384,13 @@ public partial class BitResourceTimelineDemo
     private int maxStackLanes;
     private bool stackLabelClearance = true;
     private bool stackOnLabelCollision = true;
+    private bool collapseMatchingEdgeLabels;
     private bool allowOverlap = true;
-    private BitResourceTimelineOptions overlapOptions = CreateOverlapOptions(0, true, true, true);
+    private BitResourceTimelineOptions overlapOptions = CreateOverlapOptions(0, true, true, false, true);
 
-    private void UpdateOverlapOptions() => overlapOptions = CreateOverlapOptions(maxStackLanes, stackLabelClearance, stackOnLabelCollision, allowOverlap);
+    private void UpdateOverlapOptions() => overlapOptions = CreateOverlapOptions(maxStackLanes, stackLabelClearance, stackOnLabelCollision, collapseMatchingEdgeLabels, allowOverlap);
 
-    private static BitResourceTimelineOptions CreateOverlapOptions(int maxStackLanes, bool stackLabelClearance, bool stackOnLabelCollision, bool allowOverlap) => new()
+    private static BitResourceTimelineOptions CreateOverlapOptions(int maxStackLanes, bool stackLabelClearance, bool stackOnLabelCollision, bool collapseMatchingEdgeLabels, bool allowOverlap) => new()
     {
         Editable = true,
         BarHeight = 8,
@@ -1396,6 +1398,7 @@ public partial class BitResourceTimelineDemo
         MaxStackLanes = maxStackLanes,
         StackLabelClearance = stackLabelClearance,
         StackOnLabelCollision = stackOnLabelCollision,
+        CollapseMatchingEdgeLabels = collapseMatchingEdgeLabels,
         AllowOverlap = allowOverlap,
     };
 
@@ -1403,7 +1406,7 @@ public partial class BitResourceTimelineDemo
     {
         var today = BitResourceTimelineDemoData.Today;
 
-        BitResourceTimelineAllocation Flight(string gate, string id, double from, double to, string? below = null, bool times = false) => new()
+        BitResourceTimelineAllocation Flight(string gate, string id, double from, double to, string? below = null, bool times = false, string? origin = null, string? destination = null) => new()
         {
             Id = id,
             ResourceId = gate,
@@ -1411,15 +1414,15 @@ public partial class BitResourceTimelineDemo
             EndTime = today.AddHours(to),
             TextAbove = id,
             TextBelow = below,
-            TextStart = times ? today.AddHours(from).ToString("HH:mm", CultureInfo.InvariantCulture) : null,
-            TextEnd = times ? today.AddHours(to).ToString("HH:mm", CultureInfo.InvariantCulture) : null,
+            TextStart = origin ?? (times ? today.AddHours(from).ToString("HH:mm", CultureInfo.InvariantCulture) : null),
+            TextEnd = destination ?? (times ? today.AddHours(to).ToString("HH:mm", CultureInfo.InvariantCulture) : null),
         };
 
         return new()
         {
             StartDate = today,
             EndDate = today.AddDays(1),
-            Resources = BitResourceTimelineDemoData.Gates(4),
+            Resources = BitResourceTimelineDemoData.Gates(5),
             Allocations =
             [
                 // Five at once: five lanes, or MaxStackLanes and a +N marker.
@@ -1436,6 +1439,11 @@ public partial class BitResourceTimelineDemo
                 Flight("A3", "AF302", 4, 9, below: "Nice"),
                 // Drop a bar on this one to try AllowOverlap.
                 Flight("A4", "KL500", 3, 6),
+                // One aircraft's legs: each lands where the next one leaves from, so each
+                // turn draws the same airport twice - unless CollapseMatchingEdgeLabels.
+                Flight("A5", "KL601", 2, 4, origin: "AMS", destination: "CDG"),
+                Flight("A5", "KL602", 4.25, 6.25, origin: "CDG", destination: "AMS"),
+                Flight("A5", "KL603", 7, 9, origin: "AMS", destination: "LHR"),
             ],
         };
     }

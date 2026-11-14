@@ -713,6 +713,7 @@ private void Log(string line)
 <div class="toolbar">
     <BitToggle @bind-Value="stackLabelClearance" @bind-Value:after="UpdateOverlapOptions" Label="StackLabelClearance" Inline />
     <BitToggle @bind-Value="stackOnLabelCollision" @bind-Value:after="UpdateOverlapOptions" Label="StackOnLabelCollision" Inline />
+    <BitToggle @bind-Value="collapseMatchingEdgeLabels" @bind-Value:after="UpdateOverlapOptions" Label="CollapseMatchingEdgeLabels" Inline />
     <BitToggle @bind-Value="allowOverlap" @bind-Value:after="UpdateOverlapOptions" Label="AllowOverlap" Inline />
 </div>
 <br />
@@ -725,12 +726,13 @@ private readonly BitResourceTimelineConfig overlapConfig = CreateOverlapConfig()
 private int maxStackLanes;
 private bool stackLabelClearance = true;
 private bool stackOnLabelCollision = true;
+private bool collapseMatchingEdgeLabels;
 private bool allowOverlap = true;
-private BitResourceTimelineOptions overlapOptions = CreateOverlapOptions(0, true, true, true);
+private BitResourceTimelineOptions overlapOptions = CreateOverlapOptions(0, true, true, false, true);
 
-private void UpdateOverlapOptions() => overlapOptions = CreateOverlapOptions(maxStackLanes, stackLabelClearance, stackOnLabelCollision, allowOverlap);
+private void UpdateOverlapOptions() => overlapOptions = CreateOverlapOptions(maxStackLanes, stackLabelClearance, stackOnLabelCollision, collapseMatchingEdgeLabels, allowOverlap);
 
-private static BitResourceTimelineOptions CreateOverlapOptions(int maxStackLanes, bool stackLabelClearance, bool stackOnLabelCollision, bool allowOverlap) => new()
+private static BitResourceTimelineOptions CreateOverlapOptions(int maxStackLanes, bool stackLabelClearance, bool stackOnLabelCollision, bool collapseMatchingEdgeLabels, bool allowOverlap) => new()
 {
     Editable = true,
     BarHeight = 8,
@@ -738,6 +740,7 @@ private static BitResourceTimelineOptions CreateOverlapOptions(int maxStackLanes
     MaxStackLanes = maxStackLanes,
     StackLabelClearance = stackLabelClearance,
     StackOnLabelCollision = stackOnLabelCollision,
+    CollapseMatchingEdgeLabels = collapseMatchingEdgeLabels,
     AllowOverlap = allowOverlap,
 };
 
@@ -745,7 +748,7 @@ private static BitResourceTimelineConfig CreateOverlapConfig()
 {
     var today = BitResourceTimelineDemoData.Today;
 
-    BitResourceTimelineAllocation Flight(string gate, string id, double from, double to, string? below = null, bool times = false) => new()
+    BitResourceTimelineAllocation Flight(string gate, string id, double from, double to, string? below = null, bool times = false, string? origin = null, string? destination = null) => new()
     {
         Id = id,
         ResourceId = gate,
@@ -753,15 +756,15 @@ private static BitResourceTimelineConfig CreateOverlapConfig()
         EndTime = today.AddHours(to),
         TextAbove = id,
         TextBelow = below,
-        TextStart = times ? today.AddHours(from).ToString("HH:mm", CultureInfo.InvariantCulture) : null,
-        TextEnd = times ? today.AddHours(to).ToString("HH:mm", CultureInfo.InvariantCulture) : null,
+        TextStart = origin ?? (times ? today.AddHours(from).ToString("HH:mm", CultureInfo.InvariantCulture) : null),
+        TextEnd = destination ?? (times ? today.AddHours(to).ToString("HH:mm", CultureInfo.InvariantCulture) : null),
     };
 
     return new()
     {
         StartDate = today,
         EndDate = today.AddDays(1),
-        Resources = BitResourceTimelineDemoData.Gates(4),
+        Resources = BitResourceTimelineDemoData.Gates(5),
         Allocations =
         [
             // Five at once: five lanes, or MaxStackLanes and a +N marker.
@@ -778,6 +781,11 @@ private static BitResourceTimelineConfig CreateOverlapConfig()
             Flight("A3", "AF302", 4, 9, below: "Nice"),
             // Drop a bar on this one to try AllowOverlap.
             Flight("A4", "KL500", 3, 6),
+            // One aircraft's legs: each lands where the next one leaves from, so each
+            // turn draws the same airport twice - unless CollapseMatchingEdgeLabels.
+            Flight("A5", "KL601", 2, 4, origin: "AMS", destination: "CDG"),
+            Flight("A5", "KL602", 4.25, 6.25, origin: "CDG", destination: "AMS"),
+            Flight("A5", "KL603", 7, 9, origin: "AMS", destination: "LHR"),
         ],
     };
 }
