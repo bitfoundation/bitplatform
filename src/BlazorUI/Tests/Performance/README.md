@@ -198,7 +198,7 @@ RUN_BROWSER_TESTS=1 dotnet test --filter FullyQualifiedName~BitTextFieldBrowserT
 ```
 
 CI runs every test of `Bit.BlazorUI.Tests.Performance` with `RUN_BROWSER_TESTS=1`, in the `browser tests` job of
-`.github/workflows/bit.ci.BlazorUI.e2e.yml`.
+`.github/workflows/ci.blazorui.e2e.yml`.
 
 ## Performance Thresholds
 

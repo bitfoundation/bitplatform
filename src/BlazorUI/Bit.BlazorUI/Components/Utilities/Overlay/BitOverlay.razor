@@ -7,7 +7,7 @@
    the ones that most need to see that value - and the layer is made programmatically focusable instead, so
    the focus it moves lands here, inside the Overlay, rather than on the body, from where the next Tab would
    walk into the page the Overlay is there to keep out of reach. The focus the layer took over is handed back
-   to where it came from as the Overlay closes (Utils.captureFocusOrigin / restoreFocusOrigin).
+   to where it came from as the Overlay closes (Utils.storeFocus / restoreFocus).
    That is also why a layer hosting nothing is not marked aria-hidden, the way a backdrop that is only a
    sibling of its surface is: an element that can take the focus cannot be hidden from assistive technology
    at the same time, and an empty, unnamed layer is nothing to a screen reader either way.
@@ -16,7 +16,7 @@
    A closed Overlay is marked inert, as a closed Panel or Modal is. The layer only turns hidden once it has
    faded out, and until then it would still take the clicks meant for the page it is uncovering and let Tab
    into the content it is fading away with; inert hands both back the moment it closes. A focus that was
-   inside it falls to the body, which is where Utils.restoreFocusOrigin picks it up from. *@
+   inside it falls to the body, which is where Utils.restoreFocus picks it up from. *@
 <div @ref="RootElement"
      tabindex="@(TabIndex ?? "-1")"
      @attributes="HtmlAttributes"

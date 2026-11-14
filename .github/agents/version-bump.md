@@ -85,7 +85,7 @@ The build has a net of its own: projects list the files with a hand-written copy
 Branch `<your-login>/<issue>/prerelease-v-X.Y.Z-pre-NN` (or `release-v-X.Y.Z`). Commit
 `feat(prerelease): v-X.Y.Z-pre-NN #<issue>` or `feat(release): v-X.Y.Z #<issue>`. PR title
 `Prerelease v-X.Y.Z-pre-NN (#<issue>)` or `Release v-X.Y.Z (#<issue>)`, body `closes #<issue>`, base `develop`. The
-title must start with Prerelease or Release: that is what runs the release CI on the PR.
+title must start with Prerelease or Release: that is what starts All Release Build on the PR.
 
 ## Done when
 

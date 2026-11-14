@@ -354,15 +354,30 @@ public class BitOverlayTests : BunitTestContext
 
         var layerId = component.Find(".bit-ovl").Id;
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.captureFocusOrigin"].Count));
-        Assert.AreEqual(layerId, Context.JSInterop.Invocations["BitBlazorUI.Utils.captureFocusOrigin"][^1].Arguments[0]);
-        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.restoreFocusOrigin"]);
+        // Stored under the layer's id with the layer as its scope: a focus already inside the Overlay is no origin.
+        component.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.storeFocus"].Count));
+        CollectionAssert.AreEqual(new object?[] { layerId, layerId }, Context.JSInterop.Invocations["BitBlazorUI.Utils.storeFocus"][^1].Arguments.ToArray());
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.restoreFocus"]);
 
         component.Find(".bit-ovl").Click();
 
+        // Handed back only while the focus is lost - on the body, or still inside the closing layer.
         Assert.IsFalse(isOpen);
-        component.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.restoreFocusOrigin"].Count));
-        Assert.AreEqual(layerId, Context.JSInterop.Invocations["BitBlazorUI.Utils.restoreFocusOrigin"][^1].Arguments[0]);
+        component.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.restoreFocus"].Count));
+        CollectionAssert.AreEqual(new object?[] { layerId, true, layerId }, Context.JSInterop.Invocations["BitBlazorUI.Utils.restoreFocus"][^1].Arguments.ToArray());
+    }
+
+    // A component disposed while it is open has no close to hand the focus back on: what it stored is dropped rather
+    // than kept alive in the map for as long as the page lives.
+    [TestMethod]
+    public async Task BitOverlayShouldForgetTheFocusItStoredWhenItIsDisposed()
+    {
+        var component = RenderComponent<BitOverlay>(parameters => parameters.Add(p => p.IsOpen, true));
+        var layerId = component.Find(".bit-ovl").Id;
+
+        await Context.DisposeComponentsAsync();
+
+        Assert.AreEqual(layerId, Context.JSInterop.Invocations["BitBlazorUI.Utils.forgetFocus"][^1].Arguments[0]);
     }
 
     [TestMethod,

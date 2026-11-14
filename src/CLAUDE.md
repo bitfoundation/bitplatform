@@ -4,14 +4,17 @@ Always follow the settings defined in the `.editorconfig` file located at the ro
 
 # CI Workflows
 
-Never put E2E (browser/Playwright, hybrid, publish-gate) tests in a project's main CI workflow (`.github/workflows/bit.ci.<Project>.yml`).
+Never put E2E (browser/Playwright, hybrid, publish-gate) tests in a project's main CI workflow (`.github/workflows/ci.<project>.yml`).
 The main workflow runs on pull requests and must only build, run the unit/integration tests and (where it applies) pack.
-Put the E2E suites in a separate `.github/workflows/bit.ci.<Project>.e2e.yml` that is triggered by `workflow_dispatch` and `workflow_call` only,
-and point the E2E project's README at that file. Follow `bit.ci.Blex.yml` / `bit.ci.Blex.e2e.yml` and `bit.ci.Bmotion.yml` / `bit.ci.Bmotion.e2e.yml`.
-Every test project runs in one of these workflows, and every one of these workflows is called from All CI (`all.ci.yml`), or
-from All Utilities CI (`all.ci.utilities.yml`) for a project under `src/Utilities`: a new workflow is added there too.
-When the suite drives a demo, drive the demo published the way its `<project>.demo.cd.yml` publishes it, not a build output -
-only a publish trims the WebAssembly client (see `bit.ci.Bsqlite.e2e.yml`).
+Put the E2E suites in a separate `.github/workflows/ci.<project>.e2e.yml` that is triggered by `workflow_dispatch` and `workflow_call` only,
+and point the E2E project's README at that file. Follow `ci.blex.yml` / `ci.blex.e2e.yml` and `ci.bmotion.yml` / `ci.bmotion.e2e.yml`.
+A workflow's name starts with CI or CD, and its file is that name in lower case with dots for spaces ("CI Blex E2E" is `ci.blex.e2e.yml`).
+Every test project runs in one of these workflows, and each of them is called from the All workflow of the project's folder, where a new
+one is added too: All Utilities CI / All Utilities E2E CI for `src/Utilities`, All Toolings CI for `src/Toolings`, All Other CI /
+All Other E2E CI for the rest (`all.utilities.ci.yml`, `all.utilities.e2e.ci.yml`, `all.toolings.ci.yml`, `all.other.ci.yml`, `all.other.e2e.ci.yml`).
+A new folder solution also goes into All Release Build's matrix (`all.release.build.yml`), which builds each one in Release in a job of its own.
+When the suite drives a demo, drive the demo published the way its `cd.<project>.demo.yml` publishes it, not a build output -
+only a publish trims the WebAssembly client (see `ci.bsqlite.e2e.yml`).
 
 # JS interop payloads
 

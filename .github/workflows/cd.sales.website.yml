@@ -1,0 +1,102 @@
+name: CD Sales Website
+
+env:
+  APP_SERVICE_NAME: 'bitservices'
+
+on:
+  workflow_dispatch:
+    inputs:
+      prerelease_packages:
+        description: Bit packages of the latest CD Prerelease nuget packages run instead of nuget.org
+        type: boolean
+        default: false
+  workflow_call:
+    inputs:
+      prerelease_packages:
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+
+  build_api_blazor:
+    name: build api + blazor web
+    runs-on: windows-2025
+
+    steps:
+    
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+      with:
+        global-json-file: src/Websites/Sales/global.json
+        
+    - name: Use prerelease packages
+      if: inputs.prerelease_packages
+      uses: ./.github/actions/use-prerelease-packages
+      with:
+        project-folder: .
+
+    - name: Install wasm
+      run:  cd src/Websites/Sales && dotnet workload install wasm-tools
+      
+    - name: Publish
+      working-directory: src/Websites/Sales
+      run: dotnet publish src/Bit.Websites.Sales.Server/Bit.Websites.Sales.Server.csproj -c Release -p:AspNetCoreHostingModel=OutOfProcess -o "${{ github.workspace }}/server" -p:Version="${{ vars.APP_VERSION}}" -p:BitMinifyMapOutputPath="${{ github.workspace }}/bit-minifier.map"
+
+    # Every publish renames afresh, so this map reads the stack traces of this release and of no other. It lives in
+    # obj, which this checkout throws away - kept here, and never next to the client, which would serve it.
+    - name: Upload minifier map artifact
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: SalesWebsite-minifier-map
+        path: bit-minifier.map
+
+    # Server-owned; C:\inetpub keeps its own copies.
+    - name: Strip server-owned files from bundle
+      shell: pwsh
+      run: |
+        Get-ChildItem server -File -Include 'appsettings*.json', 'AppCertificate.*', 'AppleAuthKey.p8', '*.pfx' -Recurse |
+          ForEach-Object { Write-Host "Removing $($_.FullName)"; Remove-Item $_.FullName -Force }
+
+    - name: Upload server artifact
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: BitServices
+        path: server
+        include-hidden-files: true # Required for wwwroot/.well-known folder
+
+  deploy_server:
+    name: deploy
+    needs: build_api_blazor
+    runs-on: [self-hosted, Windows, X64, bitplatform-iis]
+    environment:
+      name: production
+      url: 'https://services.bitplatform.dev'
+
+    steps:
+
+    - name: Checkout deploy action
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+          fetch-depth: 1
+          sparse-checkout: .github/actions
+
+    - name: Deploy
+      uses: ./.github/actions/deploy-to-server
+      with:
+        artifact-name: BitServices
+        app-pool: BitServices
+        site-path: C:\inetpub\BitServices
+        sentinel-file: Bit.Websites.Sales.Server.dll
+        health-check-url: 'https://services.bitplatform.dev/'
+        cloudflare-zone-id: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+        cloudflare-token: ${{ secrets.CLOUDFLARE_TOKEN }}

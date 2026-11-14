@@ -253,40 +253,12 @@ internal static class UtilsJsRuntimeExtensions
     }
 
 
-    // Remembers the element the focus was on when a popup took it over, so the popup can hand the keyboard
-    // back to where it came from once it closes.
-    internal static ValueTask BitUtilsCaptureFocusOrigin(this IJSRuntime jsRuntime, string elementId)
-    {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.captureFocusOrigin", elementId);
-    }
-
-
-    // The same capture, reporting whether an origin was remembered, which it is not for a focus that was on the body
-    // or already inside the element.
-    internal static ValueTask<bool> BitUtilsTryCaptureFocusOrigin(this IJSRuntime jsRuntime, string elementId)
-    {
-        return jsRuntime.Invoke<bool>("BitBlazorUI.Utils.captureFocusOrigin", elementId);
-    }
-
-
-    internal static ValueTask BitUtilsRestoreFocusOrigin(this IJSRuntime jsRuntime, string elementId)
-    {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.restoreFocusOrigin", elementId);
-    }
-
-
-    // The same hand-back, reporting whether the focus was taken care of: false when there was no origin to
-    // hand it back to (the focus was on the body when the popup opened) or the origin has left the page, which
-    // leaves the caller the focus to place itself.
+    // Hands the focus back to the element captureFocusOrigin remembered, reporting whether the focus was taken
+    // care of: false when there was no origin to hand it back to (the focus was on the body when the popup
+    // opened) or the origin has left the page, which leaves the caller the focus to place itself.
     internal static ValueTask<bool> BitUtilsTryRestoreFocusOrigin(this IJSRuntime jsRuntime, string elementId)
     {
         return jsRuntime.Invoke<bool>("BitBlazorUI.Utils.restoreFocusOrigin", elementId);
-    }
-
-
-    internal static ValueTask BitUtilsDisposeFocusOrigin(this IJSRuntime jsRuntime, string elementId)
-    {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.disposeFocusOrigin", elementId);
     }
 
 
@@ -306,10 +278,23 @@ internal static class UtilsJsRuntimeExtensions
 
 
     // Records the element the focus is on right now under the given key, so that a popup which is about to
-    // take the focus over can hand it back to whatever opened it once it closes.
-    internal static ValueTask BitUtilsStoreFocus(this IJSRuntime jsRuntime, string key)
+    // take the focus over can hand it back to whatever opened it once it closes. scopeId names the popup itself,
+    // for one whose focus may already be inside it: that focus is no origin, and one stored earlier is kept.
+    internal static ValueTask BitUtilsStoreFocus(this IJSRuntime jsRuntime, string key, string? scopeId = null)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.storeFocus", key);
+        return scopeId is null
+            ? jsRuntime.InvokeVoid("BitBlazorUI.Utils.storeFocus", key)
+            : jsRuntime.InvokeVoid("BitBlazorUI.Utils.storeFocus", key, scopeId);
+    }
+
+
+    // The same store, reporting whether an origin was stored, which it is not for a focus that was on the body
+    // or already inside the scope.
+    internal static ValueTask<bool> BitUtilsTryStoreFocus(this IJSRuntime jsRuntime, string key, string? scopeId = null)
+    {
+        return scopeId is null
+            ? jsRuntime.Invoke<bool>("BitBlazorUI.Utils.storeFocus", key)
+            : jsRuntime.Invoke<bool>("BitBlazorUI.Utils.storeFocus", key, scopeId);
     }
 
 
@@ -321,6 +306,15 @@ internal static class UtilsJsRuntimeExtensions
     internal static ValueTask BitUtilsRestoreFocus(this IJSRuntime jsRuntime, string key, bool onlyWhenLost = true, string? scopeId = null)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.Utils.restoreFocus", key, onlyWhenLost, scopeId);
+    }
+
+
+    // The same hand-back, reporting whether the focus was taken care of - handed back, or left where the user put
+    // it: false when there was no origin to hand it back to (the focus was on the body when the popup opened) or
+    // the origin has left the page, which leaves the caller the focus to place itself.
+    internal static ValueTask<bool> BitUtilsTryRestoreFocus(this IJSRuntime jsRuntime, string key, bool onlyWhenLost = true, string? scopeId = null)
+    {
+        return jsRuntime.Invoke<bool>("BitBlazorUI.Utils.restoreFocus", key, onlyWhenLost, scopeId);
     }
 
 

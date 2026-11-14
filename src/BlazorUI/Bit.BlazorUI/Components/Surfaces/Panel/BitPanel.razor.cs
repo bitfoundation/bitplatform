@@ -850,9 +850,9 @@ public partial class BitPanel : BitComponentBase
         // consumer's callbacks are all dealt with once, in one place, and against a DOM that is up to date.
         if (IsOpen)
         {
-            // Remembered before anything else is done, so that what is captured is the element the focus was
+            // Remembered before anything else is done, so that what is stored is the element the focus was
             // on when the panel opened rather than wherever it may have gone while the rest of this ran.
-            await CaptureFocusOrigin();
+            await StoreFocusOrigin();
 
             await LockScroll();
 
@@ -1371,7 +1371,9 @@ public partial class BitPanel : BitComponentBase
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
 
-    private async Task CaptureFocusOrigin()
+    // The container is the scope of both: a focus already inside the panel as it opens is no origin, and a
+    // focus still inside the panel as it slides out - inert already - is as lost as one dropped on the body.
+    private async Task StoreFocusOrigin()
     {
         // Nothing is handed back by a panel that was told not to hand anything back, so nothing is recorded
         // for it either - the map would otherwise keep the element alive until the panel closes.
@@ -1379,7 +1381,7 @@ public partial class BitPanel : BitComponentBase
 
         try
         {
-            await _js.BitUtilsCaptureFocusOrigin(_containerId);
+            await _js.BitUtilsStoreFocus(_containerId, scopeId: _containerId);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
@@ -1390,7 +1392,7 @@ public partial class BitPanel : BitComponentBase
 
         try
         {
-            await _js.BitUtilsRestoreFocusOrigin(_containerId);
+            await _js.BitUtilsRestoreFocus(_containerId, onlyWhenLost: true, scopeId: _containerId);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
@@ -1545,7 +1547,7 @@ public partial class BitPanel : BitComponentBase
 
         try
         {
-            await _js.BitUtilsDisposeFocusOrigin(_containerId);
+            await _js.BitUtilsForgetFocus(_containerId);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
 
