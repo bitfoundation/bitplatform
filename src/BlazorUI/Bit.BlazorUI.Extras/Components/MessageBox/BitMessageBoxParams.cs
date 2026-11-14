@@ -17,7 +17,7 @@ namespace Bit.BlazorUI;
 /// a showing left unset. The service always sets <see cref="BitMessageBox.AutoFocus"/> itself, so the cascaded
 /// <see cref="AutoFocus"/> only reaches the message boxes written in a page.
 /// </remarks>
-public class BitMessageBoxParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitMessageBoxParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitMessageBox"/> cascading parameters within <see cref="BitParams"/>.

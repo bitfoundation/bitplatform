@@ -10,7 +10,7 @@ namespace Bit.BlazorUI;
 /// their label and how long they confirm a copy. The text to copy, the label and the callback are left out on
 /// purpose: they are what makes one copy button the one it is.
 /// </remarks>
-public class BitAiCopyButtonParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitAiCopyButtonParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitAiCopyButton"/> cascading parameters within <see cref="BitParams"/>.

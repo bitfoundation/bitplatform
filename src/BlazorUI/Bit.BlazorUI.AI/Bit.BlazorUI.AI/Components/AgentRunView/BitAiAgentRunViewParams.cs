@@ -9,7 +9,7 @@ namespace Bit.BlazorUI;
 /// What belongs here is what the run views of an application, or of one part of it, agree on: the pace of the clock and
 /// the look. The run, the session and the callback are left out on purpose: they are what makes one view the one it is.
 /// </remarks>
-public class BitAiAgentRunViewParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitAiAgentRunViewParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitAiAgentRunView"/> cascading parameters within <see cref="BitParams"/>.

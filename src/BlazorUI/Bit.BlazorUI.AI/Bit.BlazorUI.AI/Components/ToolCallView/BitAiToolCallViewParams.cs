@@ -10,7 +10,7 @@ namespace Bit.BlazorUI;
 /// out on purpose: they are what makes one card the one it is. Whether the cards start collapsed is an option of the
 /// whole conversation (<see cref="BitAiUiOptions.CollapseToolCalls"/>).
 /// </remarks>
-public class BitAiToolCallViewParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitAiToolCallViewParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitAiToolCallView"/> cascading parameters within <see cref="BitParams"/>.

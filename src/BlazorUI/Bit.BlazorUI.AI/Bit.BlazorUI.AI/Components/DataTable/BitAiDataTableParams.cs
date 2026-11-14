@@ -9,7 +9,7 @@ namespace Bit.BlazorUI;
 /// What belongs here is what every data table of an app or a section of it agrees on - the classes and styles of its
 /// parts - rather than the rows a single table shows.
 /// </remarks>
-public class BitAiDataTableParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitAiDataTableParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitAiDataTable"/> cascading parameters within <see cref="BitParams"/>.

@@ -11,7 +11,7 @@ namespace Bit.BlazorUI;
 /// The country (Country, Iso2, Iso3, Code, Name), the Alt, the Title, the Src and the callbacks are deliberately not
 /// here: they belong to a single flag, and cascading them would give every flag on the page the same one.
 /// </remarks>
-public class BitFlagParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitFlagParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitFlag"/> cascading parameters within <see cref="BitParams"/>.

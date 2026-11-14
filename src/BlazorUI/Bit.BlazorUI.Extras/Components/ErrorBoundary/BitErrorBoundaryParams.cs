@@ -14,7 +14,7 @@ namespace Bit.BlazorUI;
 /// <see cref="Microsoft.AspNetCore.Components.Web.IErrorBoundaryLogger"/> the boundary logs through is for, and
 /// <see cref="BitErrorBoundary.RecoverKeys"/> describes the state behind one boundary rather than a default for many.
 /// </remarks>
-public class BitErrorBoundaryParams : IBitComponentParams
+public partial class BitErrorBoundaryParams : IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitErrorBoundary"/> cascading parameters within <see cref="BitParams"/>.

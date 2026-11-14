@@ -10,7 +10,7 @@ namespace Bit.BlazorUI;
 /// object fits every stepper under it. The steps (Items), the current step (CurrentIndex) and the callbacks stay on the
 /// stepper itself.
 /// </remarks>
-public class BitStepperParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitStepperParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitStepper{TItem}"/> cascading parameters within <see cref="BitParams"/>.

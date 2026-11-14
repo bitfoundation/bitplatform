@@ -13,7 +13,7 @@ namespace Bit.BlazorUI;
 /// The value and its events, the label, the name, the draft key, the display mode and the full-screen state are left
 /// out on purpose: they are what makes one editor the one it is.
 /// </remarks>
-public class BitMarkdownEditorParams : BitInputBaseParams<string?>, IBitComponentParams
+public partial class BitMarkdownEditorParams : BitInputBaseParams<string?>, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitMarkdownEditor"/> cascading parameters within <see cref="BitParams"/>.

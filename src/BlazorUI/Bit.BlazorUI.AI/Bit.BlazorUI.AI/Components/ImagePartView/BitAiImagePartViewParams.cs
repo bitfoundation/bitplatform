@@ -9,7 +9,7 @@ namespace Bit.BlazorUI;
 /// What belongs here is what the image parts of an app, or of one part of it, agree on - the look of their parts. The
 /// part is left out on purpose: it is what makes one instance the one it is.
 /// </remarks>
-public class BitAiImagePartViewParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitAiImagePartViewParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitAiImagePartView"/> cascading parameters within <see cref="BitParams"/>.

@@ -10,7 +10,7 @@ namespace Bit.BlazorUI;
 /// and how they filter them, and their look. The selection and its callbacks are left out on purpose: they are what makes
 /// one selector the one it is.
 /// </remarks>
-public class BitAiModelSelectorParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitAiModelSelectorParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitAiModelSelector"/> cascading parameters within <see cref="BitParams"/>.

@@ -5,7 +5,7 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// The parameters for <see cref="BitFooter"/> component.
 /// </summary>
-public class BitFooterParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitFooterParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitFooter"/> cascading parameters within <see cref="BitParams"/>.

@@ -9,7 +9,7 @@ namespace Bit.BlazorUI;
 /// What belongs here is what every structured data view of an app or a section of it agrees on - the classes and
 /// styles of its parts - rather than the part and the message a single view shows.
 /// </remarks>
-public class BitAiStructuredDataViewParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitAiStructuredDataViewParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitAiStructuredDataView"/> cascading parameters within <see cref="BitParams"/>.

@@ -10,7 +10,7 @@ namespace Bit.BlazorUI;
 /// whether its panel is folded away (<see cref="BitSplitter.Collapsed"/>), the key it remembers that under
 /// (<see cref="BitSplitter.PersistKey"/>) and its callbacks - is not a group default, so it is not carried here.
 /// </remarks>
-public class BitSplitterParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitSplitterParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitSplitter"/> cascading parameters within <see cref="BitParams"/>.

@@ -9,7 +9,7 @@ namespace Bit.BlazorUI;
 /// What belongs here is what the markers of an application, or of one part of it, agree on: their look. The citation
 /// and the callback are left out on purpose: they are what makes one marker the one it is.
 /// </remarks>
-public class BitAiCitationMarkerParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitAiCitationMarkerParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitAiCitationMarker"/> cascading parameters within <see cref="BitParams"/>.

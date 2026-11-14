@@ -9,7 +9,7 @@ namespace Bit.BlazorUI;
 /// The definition, the state of a form (busy, submitted) and its callbacks are left out on purpose: they are what makes
 /// one form the one it is.
 /// </remarks>
-public class BitAiFormParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitAiFormParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitAiForm"/> cascading parameters within <see cref="BitParams"/>.

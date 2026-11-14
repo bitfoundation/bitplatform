@@ -12,7 +12,7 @@ namespace Bit.BlazorUI;
 /// choices that belong to one data set rather than to the app - Editable, the selection mode, row reordering,
 /// virtualization, the toolbar template and the export file name.
 /// </remarks>
-public class BitDataGridParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitDataGridParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitDataGrid{TItem}"/> cascading parameters within <see cref="BitParams"/>.

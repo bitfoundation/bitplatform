@@ -12,7 +12,7 @@ namespace Bit.BlazorUI;
 /// deliberately not here: they are the content of a single image, and cascading them would give every
 /// image on the page the same one.
 /// </remarks>
-public class BitImageParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitImageParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitImage"/> cascading parameters within <see cref="BitParams"/>.

@@ -5,7 +5,7 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// The parameters for <see cref="BitToggleButton"/> component.
 /// </summary>
-public class BitToggleButtonParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitToggleButtonParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitToggleButton"/> cascading parameters within <see cref="BitParams"/>.

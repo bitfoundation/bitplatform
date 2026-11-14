@@ -14,7 +14,7 @@ namespace Bit.BlazorUI;
 /// stays on the markup of that field. The field is generic over its value type while one params object reaches a
 /// field of any of them, so the two are declared here rather than inherited from that class.
 /// </remarks>
-public class BitNumberFieldParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitNumberFieldParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitNumberField{TValue}"/> cascading parameters within <see cref="BitParams"/>.

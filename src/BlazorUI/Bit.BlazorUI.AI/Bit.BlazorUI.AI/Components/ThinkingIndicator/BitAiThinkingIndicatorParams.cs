@@ -9,7 +9,7 @@ namespace Bit.BlazorUI;
 /// The label is left out on purpose: the text the indicators of an application share is the Thinking text of the
 /// string table (<see cref="BitAiUiOptions.Strings"/>), and a Label set on one indicator is what makes it the one it is.
 /// </remarks>
-public class BitAiThinkingIndicatorParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitAiThinkingIndicatorParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitAiThinkingIndicator"/> cascading parameters within <see cref="BitParams"/>.

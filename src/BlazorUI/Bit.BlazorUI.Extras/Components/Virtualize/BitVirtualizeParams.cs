@@ -15,7 +15,7 @@ namespace Bit.BlazorUI;
 /// None of the parameters here depends on the type of the items, so the class is not generic: one instance
 /// reaches every list under the <see cref="BitParams"/> it is given to, whatever it lists.
 /// </remarks>
-public class BitVirtualizeParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitVirtualizeParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitVirtualize{TItem}"/> cascading parameters within <see cref="BitParams"/>.

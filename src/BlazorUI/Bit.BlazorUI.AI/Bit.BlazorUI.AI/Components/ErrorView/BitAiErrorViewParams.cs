@@ -9,7 +9,7 @@ namespace Bit.BlazorUI;
 /// What belongs here is the look every error view of a region shares. The error, whether a view is compact and the
 /// retry handler are left out on purpose: they are what makes one error view the one it is.
 /// </remarks>
-public class BitAiErrorViewParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitAiErrorViewParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitAiErrorView"/> cascading parameters within <see cref="BitParams"/>.

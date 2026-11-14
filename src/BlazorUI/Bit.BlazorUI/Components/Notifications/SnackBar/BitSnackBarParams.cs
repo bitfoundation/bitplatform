@@ -10,7 +10,7 @@ namespace Bit.BlazorUI;
 /// under it the same position, lifetime and look. The templates and the callbacks stay on the snack bar itself: they
 /// belong to the code around the one host that shows them.
 /// </remarks>
-public class BitSnackBarParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitSnackBarParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitSnackBar"/> cascading parameters within <see cref="BitParams"/>.

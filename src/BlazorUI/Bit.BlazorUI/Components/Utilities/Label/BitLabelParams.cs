@@ -5,7 +5,7 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// The parameters for the <see cref="BitLabel"/> component.
 /// </summary>
-public class BitLabelParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitLabelParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the BitLabel cascading parameters within BitParams.

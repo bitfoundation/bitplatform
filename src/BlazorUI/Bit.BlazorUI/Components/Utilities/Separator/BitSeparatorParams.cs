@@ -11,7 +11,7 @@ namespace Bit.BlazorUI;
 /// cascade. What a subtree of separators usually shares is how they look - the color, the weight and the style of the
 /// line, the inset of a list's rows - and how they stand, such as the vertical, decorative separators of a toolbar.
 /// </remarks>
-public class BitSeparatorParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitSeparatorParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the BitSeparator cascading parameters within BitParams.

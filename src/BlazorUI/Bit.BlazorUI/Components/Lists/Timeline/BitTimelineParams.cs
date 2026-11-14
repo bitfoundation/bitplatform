@@ -10,7 +10,7 @@ namespace Bit.BlazorUI;
 /// each of them holds. The parameters that depend on the item type (Items, ItemTemplate, DotTemplate, NameSelectors and
 /// OnItemClick) stay on the timeline itself.
 /// </remarks>
-public class BitTimelineParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitTimelineParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitTimeline{TItem}"/> cascading parameters within <see cref="BitParams"/>.

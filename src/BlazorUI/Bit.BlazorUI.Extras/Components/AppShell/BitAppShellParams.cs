@@ -13,7 +13,7 @@ namespace Bit.BlazorUI;
 /// keep are one store of the page's, which only the one app shell of an application is meant to own, so they
 /// are set on that shell rather than handed to every shell under a BitParams.
 /// </remarks>
-public class BitAppShellParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitAppShellParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitAppShell"/> cascading parameters within <see cref="BitParams"/>.
