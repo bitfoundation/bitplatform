@@ -12,6 +12,7 @@ A workflow's name starts with CI or CD, and its file is that name in lower case 
 Every test project runs in one of these workflows, and each of them is called from the All workflow of the project's folder, where a new
 one is added too: All Utilities CI / All Utilities E2E CI for `src/Utilities`, All Toolings CI for `src/Toolings`, All Other CI /
 All Other E2E CI for the rest (`all.utilities.ci.yml`, `all.utilities.e2e.ci.yml`, `all.toolings.ci.yml`, `all.other.ci.yml`, `all.other.e2e.ci.yml`).
+A new folder solution also goes into All Release Build's matrix (`all.release.build.yml`), which builds each one in Release in a job of its own.
 When the suite drives a demo, drive the demo published the way its `cd.<project>.demo.yml` publishes it, not a build output -
 only a publish trims the WebAssembly client (see `ci.bsqlite.e2e.yml`).
 
