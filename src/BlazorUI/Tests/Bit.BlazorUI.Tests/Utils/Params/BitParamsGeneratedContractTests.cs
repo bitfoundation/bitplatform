@@ -54,6 +54,10 @@ public class BitParamsGeneratedContractTests
 
             if (snapshotType != type) failures.Add($"{type.Name}: a snapshot of {snapshotType.Name}");
             if (values.Length != reflected.Length) failures.Add($"{type.Name}: {values.Length} values for {reflected.Length} properties");
+
+            // Value by value against the snapshot reflection takes of the same object: a property the generator reads
+            // in place of the one reflection does, or in another position, holds another value in at least one of them.
+            if (Internals.AreEqual(snapshot, Internals.TakeSnapshotByReflection(item)) is false) failures.Add($"{type.Name}: not the snapshot reflection takes");
         }
 
         Assert.AreEqual(0, failures.Count, string.Join(Environment.NewLine, failures));
@@ -78,6 +82,13 @@ public class BitParamsGeneratedContractTests
                 property.SetValue(item, first);
                 var before = Internals.TakeSnapshot(item);
 
+                // The one property set is where reflection sees it too: the generated snapshot reads that very property,
+                // in the position reflection reads it in.
+                if (Internals.AreEqual(before, Internals.TakeSnapshotByReflection(item)) is false)
+                {
+                    failures.Add($"{type.Name}.{property.Name}: not where reflection reads it");
+                }
+
                 if (Internals.AreEqual(before, Internals.TakeSnapshot(item)) is false)
                 {
                     failures.Add($"{type.Name}.{property.Name}: two snapshots of the same value differ");
@@ -85,9 +96,16 @@ public class BitParamsGeneratedContractTests
 
                 property.SetValue(item, second);
 
-                if (Internals.AreEqual(before, Internals.TakeSnapshot(item)))
+                var after = Internals.TakeSnapshot(item);
+
+                if (Internals.AreEqual(before, after))
                 {
                     failures.Add($"{type.Name}.{property.Name}: the change is not seen");
+                }
+
+                if (Internals.AreEqual(after, Internals.TakeSnapshotByReflection(item)) is false)
+                {
+                    failures.Add($"{type.Name}.{property.Name}: changed where reflection does not read it");
                 }
             }
         }
@@ -225,6 +243,9 @@ public class BitParamsGeneratedContractTests
         private const BindingFlags Static = BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
 
         public static object? TakeSnapshot(IBitComponentParams item) => Generated.GetMethod("TakeSnapshot")!.Invoke(item, null);
+
+        public static object? TakeSnapshotByReflection(object? value)
+            => Scope.GetMethod("TakeSnapshot", Static, [typeof(object), typeof(int)])!.Invoke(null, [value, 0]);
 
         public static IBitComponentParams? MergeOver(IBitComponentParams item, IBitComponentParams? basis)
             => (IBitComponentParams?)Generated.GetMethod("MergeOver")!.Invoke(item, [basis]);

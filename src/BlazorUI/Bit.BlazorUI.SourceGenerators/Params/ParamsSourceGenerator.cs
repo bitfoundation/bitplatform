@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
@@ -13,61 +14,106 @@ namespace Bit.BlazorUI.SourceGenerators.Params;
 /// Writes the snapshot and the merge BitParamsScope takes of every partial params type of the package (one implementing
 /// Bit.BlazorUI.IBitComponentParams): property by property, as plain code, instead of read off the type by reflection
 /// while a WebAssembly app's first page is being built. What it writes is the reflection of BitParamsScope spelled out -
-/// the same properties, taken apart to the same depth into the same snapshots - so the two never disagree on whether a
-/// params object has changed, and BitParamsGeneratedContractTests compares them for every params type.
+/// the same properties, in the same order, taken apart to the same depth into the same snapshots - so the two never
+/// disagree on whether a params object has changed, and BitParamsGeneratedContractTests compares them for every params
+/// type.
 /// </summary>
+/// <remarks>
+/// Each params type is turned into its code in the transform step, as plain text compared by value (a
+/// <see cref="ParamsModel"/>), and only that text reaches the step writing the file: an edit that leaves what every
+/// params type generates as it was - nearly every edit - stops at the comparison, and the file is neither written again
+/// nor compiled again.
+/// </remarks>
 [Generator]
 public class ParamsSourceGenerator : IIncrementalGenerator
 {
     private const string ParamsInterfaceName = "Bit.BlazorUI.IBitComponentParams";
     private const string GeneratedInterfaceName = "Bit.BlazorUI.IBitGeneratedParams";
     private const string Snapshot = "global::Bit.BlazorUI.BitParamsSnapshot";
+    private const string NestedNamespace = "Bit.BlazorUI.Generated";
 
     private static readonly SymbolDisplayFormat _typeFormat = SymbolDisplayFormat.FullyQualifiedFormat;
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        var types = context.SyntaxProvider
+        var models = context.SyntaxProvider
             .CreateSyntaxProvider(
                 predicate: static (node, _) => node is ClassDeclarationSyntax { BaseList: not null } c
                                                && c.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword)),
-                transform: static (ctx, ct) => ctx.SemanticModel.GetDeclaredSymbol(ctx.Node, ct) as INamedTypeSymbol)
-            .Where(static t => t is not null && t.ContainingType is null)
-            .Select(static (t, _) => t!.ContainingNamespace.IsGlobalNamespace ? t.MetadataName : t.ContainingNamespace.ToDisplayString() + "." + t.MetadataName)
+                transform: static (ctx, ct) => CreateModel(ctx.SemanticModel.GetDeclaredSymbol(ctx.Node, ct) as INamedTypeSymbol, ctx.SemanticModel.Compilation))
+            .Where(static m => m is not null)
             .Collect();
 
-        context.RegisterSourceOutput(types.Combine(context.CompilationProvider), static (spc, pair) => Execute(spc, pair.Left, pair.Right));
+        context.RegisterSourceOutput(models, static (spc, models) => Execute(spc, models));
     }
 
-    private static void Execute(SourceProductionContext context, ImmutableArray<string> names, Compilation compilation)
+    private static ParamsModel? CreateModel(INamedTypeSymbol? type, Compilation compilation)
     {
+        if (type is null || type.ContainingType is not null) return null;
+        if (type.IsAbstract || type.IsStatic) return null;
+
         var paramsInterface = compilation.GetTypeByMetadataName(ParamsInterfaceName);
         var generatedInterface = compilation.GetTypeByMetadataName(GeneratedInterfaceName);
 
-        if (paramsInterface is null || generatedInterface is null) return;
-        if (compilation.IsSymbolAccessibleWithin(generatedInterface, compilation.Assembly) is false) return;
+        if (paramsInterface is null || generatedInterface is null) return null;
+        if (compilation.IsSymbolAccessibleWithin(generatedInterface, compilation.Assembly) is false) return null;
+        if (SymbolEqualityComparer.Default.Equals(type.ContainingAssembly, compilation.Assembly) is false) return null;
+        if (type.AllInterfaces.Any(i => SymbolEqualityComparer.Default.Equals(i, paramsInterface)) is false) return null;
+        if (HasPublicParameterlessConstructor(type) is false) return null;
 
         var dictionaryType = compilation.GetTypeByMetadataName("System.Collections.Generic.Dictionary`2");
         var objectType = compilation.GetSpecialType(SpecialType.System_Object);
         var stringType = compilation.GetSpecialType(SpecialType.System_String);
         var attributesType = dictionaryType?.Construct(stringType, objectType);
 
-        var writer = new Writer(compilation, attributesType);
+        var name = type.ContainingNamespace.IsGlobalNamespace ? type.MetadataName : type.ContainingNamespace.ToDisplayString() + "." + type.MetadataName;
 
-        foreach (var name in names.Distinct().OrderBy(n => n, System.StringComparer.Ordinal))
+        return new Writer(compilation, attributesType).WriteParams(name, type);
+    }
+
+    private static void Execute(SourceProductionContext context, ImmutableArray<ParamsModel?> models)
+    {
+        if (models.IsDefaultOrEmpty) return;
+
+        var sb = new StringBuilder();
+        var written = new HashSet<string>(StringComparer.Ordinal);
+        var nested = new SortedDictionary<string, string>(StringComparer.Ordinal);
+
+        sb.AppendLine("// <auto-generated/>");
+        sb.AppendLine("#nullable disable");
+        sb.AppendLine("#pragma warning disable");
+        sb.AppendLine();
+
+        // A type declared partial in several files is handed over once per declaration.
+        foreach (var model in models.Where(m => m is not null).OrderBy(m => m!.Name, StringComparer.Ordinal))
         {
-            var type = compilation.Assembly.GetTypeByMetadataName(name);
+            if (written.Add(model!.Name) is false) continue;
 
-            if (type is null || type.IsAbstract || type.IsStatic) continue;
-            if (type.AllInterfaces.Any(i => SymbolEqualityComparer.Default.Equals(i, paramsInterface)) is false) continue;
-            if (HasPublicParameterlessConstructor(type) is false) continue;
+            sb.Append(model.Source);
 
-            writer.WriteParams(type);
+            foreach (var snapshot in model.Nested)
+            {
+                // A nested type several params types hold is written the same by each of them.
+                if (nested.ContainsKey(snapshot.ClassName) is false) nested.Add(snapshot.ClassName, snapshot.Source);
+            }
         }
 
-        if (writer.IsEmpty) return;
+        if (written.Count == 0) return;
 
-        context.AddSource("BitParams.Generated.g.cs", SourceText.From(writer.ToString(), Encoding.UTF8));
+        if (nested.Count > 0)
+        {
+            sb.Append("namespace ").AppendLine(NestedNamespace);
+            sb.AppendLine("{");
+
+            foreach (var source in nested.Values)
+            {
+                sb.Append(source);
+            }
+
+            sb.AppendLine("}");
+        }
+
+        context.AddSource("BitParams.Generated.g.cs", SourceText.From(sb.ToString(), Encoding.UTF8));
     }
 
     internal static bool HasPublicParameterlessConstructor(INamedTypeSymbol type)
@@ -76,6 +122,40 @@ public class ParamsSourceGenerator : IIncrementalGenerator
     }
 
 
+
+    /// <summary>
+    /// What one params type generates, as text: its own partial declaration, and the snapshot class of every nested
+    /// type it takes apart. Compared by value, which is what lets the pipeline stop at an unchanged type.
+    /// </summary>
+    private sealed class ParamsModel : IEquatable<ParamsModel>
+    {
+        public ParamsModel(string name, string source, ImmutableArray<NestedSnapshot> nested)
+        {
+            Name = name;
+            Source = source;
+            Nested = nested;
+        }
+
+        public string Name { get; }
+
+        public string Source { get; }
+
+        public ImmutableArray<NestedSnapshot> Nested { get; }
+
+        public bool Equals(ParamsModel? other)
+        {
+            return other is not null
+                && Name == other.Name
+                && Source == other.Source
+                && Nested.SequenceEqual(other.Nested);
+        }
+
+        public override bool Equals(object? obj) => Equals(obj as ParamsModel);
+
+        public override int GetHashCode() => (Name.GetHashCode() * 31) + Source.Length;
+    }
+
+    private readonly record struct NestedSnapshot(string ClassName, string Source);
 
     /// <summary>
     /// One property the snapshot or the merge reads: the public read-write ones, and the public read-only ones holding a
@@ -95,12 +175,14 @@ public class ParamsSourceGenerator : IIncrementalGenerator
     }
 
     /// <summary>
-    /// The properties a value of the type is taken apart by, most derived first, one per name.
+    /// The properties a value of the type is taken apart by, in the order BitParamsScope.GetSnapshotProperties reflects
+    /// them: the read-write ones first, then the read-only collections, each most derived first, one per name.
     /// </summary>
     /// <returns>The properties, or null where one of them cannot be read in code (obsolete as an error).</returns>
     private static List<SnapshotProperty>? GetSnapshotProperties(INamedTypeSymbol type)
     {
-        var result = new List<SnapshotProperty>();
+        var copyable = new List<SnapshotProperty>();
+        var collections = new List<SnapshotProperty>();
         var seen = new HashSet<string>();
 
         for (var current = type; current is not null && current.SpecialType != SpecialType.System_Object; current = current.BaseType)
@@ -114,16 +196,20 @@ public class ParamsSourceGenerator : IIncrementalGenerator
                 if (seen.Add(property.Name) is false) continue;
                 if (IsObsoleteAsError(property)) return null;
 
-                var isCopyable = property.SetMethod is { DeclaredAccessibility: Accessibility.Public };
-
-                if (isCopyable || IsCollectionType(property.Type))
+                if (property.SetMethod is { DeclaredAccessibility: Accessibility.Public })
                 {
-                    result.Add(new SnapshotProperty(property, isCopyable));
+                    copyable.Add(new SnapshotProperty(property, isCopyable: true));
+                }
+                else if (IsCollectionType(property.Type))
+                {
+                    collections.Add(new SnapshotProperty(property, isCopyable: false));
                 }
             }
         }
 
-        return result;
+        copyable.AddRange(collections);
+
+        return copyable;
     }
 
     private static bool IsObsoleteAsError(IPropertySymbol property)
@@ -151,16 +237,62 @@ public class ParamsSourceGenerator : IIncrementalGenerator
             || type.AllInterfaces.Any(i => i.SpecialType == SpecialType.System_Collections_IEnumerable);
     }
 
+    /// <summary>
+    /// The name of the snapshot class of a nested type, which no other type can be given: the type's namespace and the
+    /// chain of types it is declared in, joined the way the runtime names them ('.' after the namespace, '+' between
+    /// types), with every character an identifier cannot hold escaped so that no two names escape to the same one -
+    /// '.' as "__", '_' as "_u", any other as "_x" and its four hex digits.
+    /// </summary>
+    internal static string GetSnapshotClassName(INamedTypeSymbol type)
+    {
+        var chain = new List<string>();
+
+        for (var current = type; current is not null; current = current.ContainingType)
+        {
+            chain.Insert(0, current.MetadataName);
+        }
+
+        var ns = type.ContainingNamespace.IsGlobalNamespace ? "" : type.ContainingNamespace.ToDisplayString() + ".";
+
+        return "BitParamsSnapshotOf_" + Escape(ns + string.Join("+", chain));
+    }
+
+    internal static string Escape(string name)
+    {
+        var sb = new StringBuilder(name.Length + 8);
+
+        foreach (var c in name)
+        {
+            if (c is (>= 'a' and <= 'z') or (>= 'A' and <= 'Z') or (>= '0' and <= '9'))
+            {
+                sb.Append(c);
+            }
+            else if (c == '.')
+            {
+                sb.Append("__");
+            }
+            else if (c == '_')
+            {
+                sb.Append("_u");
+            }
+            else
+            {
+                sb.Append("_x").Append(((int)c).ToString("X4", System.Globalization.CultureInfo.InvariantCulture));
+            }
+        }
+
+        return sb.ToString();
+    }
+
 
 
     private sealed class Writer
     {
         private readonly Compilation _compilation;
         private readonly INamedTypeSymbol? _attributesType;
-        private readonly StringBuilder _params = new();
-        private readonly StringBuilder _nested = new();
         private readonly Dictionary<string, string> _nestedMethods = new();
-        private readonly Queue<INamedTypeSymbol> _pendingNested = new();
+        private readonly Queue<(INamedTypeSymbol Type, string ClassName)> _pendingNested = new();
+        private readonly ImmutableArray<NestedSnapshot>.Builder _nested = ImmutableArray.CreateBuilder<NestedSnapshot>();
 
         public Writer(Compilation compilation, INamedTypeSymbol? attributesType)
         {
@@ -168,19 +300,17 @@ public class ParamsSourceGenerator : IIncrementalGenerator
             _attributesType = attributesType;
         }
 
-        public bool IsEmpty => _params.Length == 0;
-
-        public void WriteParams(INamedTypeSymbol type)
+        public ParamsModel? WriteParams(string name, INamedTypeSymbol type)
         {
             var typeName = type.ToDisplayString(_typeFormat);
             var declaration = type.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
             var properties = GetSnapshotProperties(type);
 
-            if (properties is null) return;
+            if (properties is null) return null;
 
             var ns = type.ContainingNamespace.IsGlobalNamespace ? null : type.ContainingNamespace.ToDisplayString();
 
-            var sb = _params;
+            var sb = new StringBuilder();
 
             if (ns is not null) sb.Append("namespace ").Append(ns).AppendLine().AppendLine("{");
 
@@ -226,23 +356,23 @@ public class ParamsSourceGenerator : IIncrementalGenerator
 
             foreach (var p in properties.Where(p => p.IsCopyable))
             {
-                var name = p.Property.Name;
+                var propertyName = p.Property.Name;
                 var propertyType = p.Property.Type;
 
-                sb.Append("                ").Append(name).Append(" = ");
+                sb.Append("                ").Append(propertyName).Append(" = ");
 
                 if (IsAttributesTarget(propertyType))
                 {
                     sb.Append('(').Append(propertyType.WithNullableAnnotation(NullableAnnotation.NotAnnotated).ToDisplayString(_typeFormat))
-                      .Append(')').Append(Snapshot).Append(".MergeAttributes(this.").Append(name).Append(", b?.").Append(name).Append(')');
+                      .Append(')').Append(Snapshot).Append(".MergeAttributes(this.").Append(propertyName).Append(", b?.").Append(propertyName).Append(')');
                 }
                 else if (propertyType.IsValueType && propertyType.OriginalDefinition.SpecialType != SpecialType.System_Nullable_T)
                 {
-                    sb.Append("this.").Append(name);
+                    sb.Append("this.").Append(propertyName);
                 }
                 else
                 {
-                    sb.Append("this.").Append(name).Append(" ?? b?.").Append(name);
+                    sb.Append("this.").Append(propertyName).Append(" ?? b?.").Append(propertyName);
                 }
 
                 sb.AppendLine(",");
@@ -256,28 +386,14 @@ public class ParamsSourceGenerator : IIncrementalGenerator
 
             sb.AppendLine();
 
-            DrainNested();
-        }
-
-        public override string ToString()
-        {
-            var sb = new StringBuilder();
-
-            sb.AppendLine("// <auto-generated/>");
-            sb.AppendLine("#nullable disable");
-            sb.AppendLine("#pragma warning disable");
-            sb.AppendLine();
-            sb.Append(_params);
-
-            if (_nested.Length > 0)
+            while (_pendingNested.Count > 0)
             {
-                sb.AppendLine("namespace Bit.BlazorUI.Generated");
-                sb.AppendLine("{");
-                sb.Append(_nested);
-                sb.AppendLine("}");
+                var (nestedType, className) = _pendingNested.Dequeue();
+
+                _nested.Add(new NestedSnapshot(className, WriteNested(nestedType, className)));
             }
 
-            return sb.ToString();
+            return new ParamsModel(name, sb.ToString(), _nested.ToImmutable());
         }
 
         // Whether a dictionary of attributes can be assigned to the property, which is what makes BitParamsScope merge
@@ -322,7 +438,7 @@ public class ParamsSourceGenerator : IIncrementalGenerator
             var assembly = type.ContainingAssembly?.Name ?? "";
 
             return SymbolEqualityComparer.Default.Equals(type.ContainingAssembly, _compilation.Assembly)
-                || assembly == "Bit.BlazorUI" || assembly.StartsWith("Bit.BlazorUI.", System.StringComparison.Ordinal);
+                || assembly == "Bit.BlazorUI" || assembly.StartsWith("Bit.BlazorUI.", StringComparison.Ordinal);
         }
 
         private string NestedMethod(INamedTypeSymbol type)
@@ -334,27 +450,19 @@ public class ParamsSourceGenerator : IIncrementalGenerator
             // A class of its own per type, rather than one for all of them: what an app's publish keeps of the scripts and
             // the stylesheets is read off the types its code reaches, and one class reaching every type a params object can
             // hold would have every params type - and so every component - reach all of them.
-            method = "global::Bit.BlazorUI.Generated.BitParamsSnapshotOf_" + Sanitize(type.WithNullableAnnotation(NullableAnnotation.NotAnnotated).ToDisplayString()) + ".Take";
+            var className = GetSnapshotClassName(type);
+
+            method = "global::" + NestedNamespace + "." + className + ".Take";
             _nestedMethods.Add(key, method);
-            _pendingNested.Enqueue(type);
+            _pendingNested.Enqueue((type, className));
 
             return method;
         }
 
-        private void DrainNested()
-        {
-            while (_pendingNested.Count > 0)
-            {
-                WriteNested(_pendingNested.Dequeue());
-            }
-        }
-
-        private void WriteNested(INamedTypeSymbol type)
+        private string WriteNested(INamedTypeSymbol type, string className)
         {
             var typeName = type.ToDisplayString(_typeFormat);
-            var method = _nestedMethods[typeName];
-            var className = method.Substring("global::Bit.BlazorUI.Generated.".Length, method.Length - "global::Bit.BlazorUI.Generated.".Length - ".Take".Length);
-            var sb = _nested;
+            var sb = new StringBuilder();
 
             sb.Append("    /// <summary>The snapshot of a ").Append(type.Name).AppendLine(" a params object holds, written out like the params object's.</summary>");
             sb.Append("    file static class ").AppendLine(className);
@@ -392,16 +500,6 @@ public class ParamsSourceGenerator : IIncrementalGenerator
             sb.AppendLine("        }");
             sb.AppendLine("    }");
             sb.AppendLine();
-        }
-
-        private static string Sanitize(string name)
-        {
-            var sb = new StringBuilder(name.Length);
-
-            foreach (var c in name)
-            {
-                sb.Append(char.IsLetterOrDigit(c) ? c : '_');
-            }
 
             return sb.ToString();
         }

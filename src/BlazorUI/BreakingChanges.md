@@ -25,6 +25,18 @@ render the content at once, as before.
 `BitMediaQuery` asks the browser the same way before its own first render: in a WebAssembly app whose script is in the
 page it renders the matching content right away, and `DefaultMatched` only applies where the browser cannot answer yet.
 
+### `BitCountries`' countries and `All` are properties ([#14867](https://github.com/bitfoundation/bitplatform/issues/14867))
+
+Every country of `BitCountries` (`BitCountries.UnitedStates`, ...) and `BitCountries.All` were `static readonly` fields and
+are now static properties of the same names and types, handing out the same instances. The fields made naming a single
+country (a `DefaultCountry` set up as a WebAssembly app starts) run a static constructor creating all of them, one very
+large method the interpreter has to transform before it runs; the properties build the table the first time any of it
+is read.
+
+Code reading them compiles unchanged. **A library or app compiled against an earlier version** is recompiled, since the
+fields it loads are gone (`MissingFieldException`). **Code passing one by `ref` or `out`**, or reading the fields
+through reflection (`typeof(BitCountries).GetFields()`), reads it into a local or uses `GetProperties()` instead.
+
 ### Seekable PDF sources defer forms and tagged structure ([#13702](https://github.com/bitfoundation/bitplatform/issues/13702))
 
 For a `BitPdfViewer` loaded with `BitPdfSource.FromStreamFactory`, `FormFields` and `StructureTree` now return empty

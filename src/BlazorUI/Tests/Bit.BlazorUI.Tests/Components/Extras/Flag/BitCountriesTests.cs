@@ -21,6 +21,40 @@ public class BitCountriesTests
         CollectionAssert.AreEquivalent(countries, BitCountries.All);
     }
 
+    // Every property reads its row of the table by a constant index, in the order the properties are declared: a row
+    // added, removed or moved without its property following would hand out the country of the row next to it.
+    [TestMethod]
+    public void EveryCountryPropertyShouldReadItsOwnRow()
+    {
+        var properties = typeof(BitCountries).GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static)
+                                             .Where(p => p.PropertyType == typeof(BitCountry))
+                                             .OrderBy(p => p.GetMethod!.MetadataToken)
+                                             .ToArray();
+
+        Assert.AreEqual(BitCountries.All.Length, properties.Length);
+
+        var failures = new List<string>();
+
+        for (var i = 0; i < properties.Length; i++)
+        {
+            var country = (BitCountry)properties[i].GetValue(null)!;
+
+            if (ReferenceEquals(country, BitCountries.All[i]) is false)
+            {
+                failures.Add($"{properties[i].Name}: row {Array.IndexOf(BitCountries.All, country)} where it is declared {i}th");
+            }
+
+            // The property is named after its country, so its name finds it (through the aliases where the property
+            // is named the everyday way and the table the ISO way, or the other way round).
+            if (ReferenceEquals(BitCountries.FindByName(properties[i].Name), country) is false)
+            {
+                failures.Add($"{properties[i].Name}: reads {country.Name}");
+            }
+        }
+
+        Assert.AreEqual(0, failures.Count, string.Join(Environment.NewLine, failures));
+    }
+
     [TestMethod]
     public void BitCountriesShouldHandOutTheSameInstanceEveryTime()
     {
