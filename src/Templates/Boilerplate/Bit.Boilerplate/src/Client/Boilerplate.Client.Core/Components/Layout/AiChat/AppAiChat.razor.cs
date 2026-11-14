@@ -1,5 +1,6 @@
 //+:cnd:noEmit
 using System.Net;
+using System.Runtime.CompilerServices;
 using Boilerplate.Shared.Features.Chatbot;
 using Boilerplate.Shared.Features.Attachments;
 //#if (module == "Sales")
@@ -21,7 +22,7 @@ namespace Boilerplate.Client.Core.Components.Layout.AiChat;
 /// Shared for that reason), and none of theirs appears in a public member here.
 /// </para>
 /// </summary>
-public partial class AppAiChat
+public partial class AppAiChat : IAppAiChat
 {
     /// <summary>The largest image the composer takes; the server refuses anything larger (See AttachmentController).</summary>
     private const long MaxImageSize = 10 * 1024 * 1024;
@@ -127,7 +128,7 @@ public partial class AppAiChat
 
         // Bit.BlazorUI.AI.SignalR's transport, over the app's own connection: each answer streams from AppHub (a BitAiHub),
         // with as much of the conversation as the server reads
-        var transport = new AiChatHistoryWindow(new BitAiSignalRTransport((HubConnection)await hubConnection.GetHubConnection(CurrentCancellationToken)));
+        var transport = new AiChatHistoryWindow(CreateTransport(await hubConnection.GetHubConnection(CurrentCancellationToken)));
 
         session = new BitAiChatSession(transport, await RestoreHistory(), new()
         {
@@ -406,6 +407,10 @@ public partial class AppAiChat
         //#endif
         //#endif
     }
+
+    // The cast stays here, out of line: the WebAssembly interpreter compiles OnInitAsync as it starts, before GetHubConnection has loaded SignalR
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static IBitAiTransport CreateTransport(object hubConnection) => new BitAiSignalRTransport((HubConnection)hubConnection);
 
     private static string FollowUpSentKey(BitAiToolCallPart call) => $"followUpSent:{call.ToolCallId}";
 

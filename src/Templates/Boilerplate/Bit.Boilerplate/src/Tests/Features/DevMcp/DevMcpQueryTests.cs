@@ -1,6 +1,6 @@
 //+:cnd:noEmit
 using System.Text.Json.Nodes;
-//#if (multitenant == true)
+//#if (multitenant == true && (module == "Admin" || module == "Sales"))
 using Boilerplate.Server.Api.Features.Tenants;
 using Boilerplate.Server.Api.Features.Categories;
 //#endif
@@ -276,7 +276,7 @@ public class DevMcpQueryTests
         Assert.Contains("not an aggregate", notAnAggregate, StringComparison.OrdinalIgnoreCase);
     }
 
-    //#if (multitenant == true)
+    //#if (multitenant == true && (module == "Admin" || module == "Sales"))
     /// <summary>
     /// A global admin has no tenant selected, so a tenant-filtered read would answer for the fallback tenant or for
     /// nothing - and an external sign-in gives her no way to switch tenant. A diagnostic tool that quietly hides rows

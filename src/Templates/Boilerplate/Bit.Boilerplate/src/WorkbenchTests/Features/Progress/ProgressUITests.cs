@@ -103,6 +103,21 @@ public class ProgressUITests : ProgressPageTest
         await Expect(box).ToHaveValueAsync("Use the cheapest plan.");
     }
 
+    [TestMethod, Surfaces(WorkbenchSurface.DesktopWithAgent)]
+    public async Task TheTabsTitle_Should_FollowThePage_WhileATaskWaitsForTheUser(WorkbenchSurface surface)
+    {
+        var (first, _) = await Agent.Create("Claude Code", new(null, "Deploy to Test", null, null, [new("token", "Create an API token", "you", "doing", null, null)], null, null, null, null), CancellationToken.None);
+        var (second, _) = await Agent.Create("Codex", new(null, "Loyalty points", null, null, [new("ledger", "Build the ledger", null, "doing", null, null)], null, null, null, null), CancellationToken.None);
+
+        await OpenProgress($"progress/{first}");
+
+        await Expect(Page).ToHaveTitleAsync(new Regex($@"^\(\d+\) {Regex.Escape($"Deploy to Test · {WorkbenchStrings.Progress}")}$"));
+
+        await Press(Page.Locator($".task-card[data-task-id='{second}']"));
+
+        await Expect(Page).ToHaveTitleAsync(new Regex($@"^\(\d+\) {Regex.Escape($"Loyalty points · {WorkbenchStrings.Progress}")}$"));
+    }
+
     [TestMethod, WithAnAgent]
     public async Task ASecret_Should_BePastedHereGoWhereTheQuestionSaysAndNeverShowAgain(WorkbenchSurface surface)
     {
