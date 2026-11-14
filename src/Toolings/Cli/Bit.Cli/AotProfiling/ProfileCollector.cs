@@ -43,14 +43,20 @@ public sealed partial class ProfileCollector(DevToolsPage page, PublishedApp app
         })();
         """;
 
+    // A Blazor Web App whose pages render InteractiveAuto runs a first visit on a Blazor Server circuit and only downloads
+    // the WebAssembly runtime, without starting it. blazor.web.js notes the download in localStorage, under
+    // blazor-resource-hash, and the next page load starts the runtime and renders the pages on it. 'downloaded' says the
+    // first visit got that far without a runtime, so the page is loaded again.
     private const string WaitForRuntime = """
-        async timeout => {
+        async ({ timeout, reloaded }) => {
             const end = Date.now() + timeout;
+            const downloaded = () => { try { return !!localStorage.getItem('blazor-resource-hash'); } catch { return false; } };
             while (Date.now() < end) {
-                if (typeof globalThis.getDotnetRuntime === 'function' && globalThis.getDotnetRuntime(0)) return true;
+                if (typeof globalThis.getDotnetRuntime === 'function' && globalThis.getDotnetRuntime(0)) return 'started';
+                if (!reloaded && downloaded()) return 'downloaded';
                 await new Promise(r => setTimeout(r, 250));
             }
-            return false;
+            return 'timeout';
         }
         """;
 
@@ -153,9 +159,19 @@ public sealed partial class ProfileCollector(DevToolsPage page, PublishedApp app
 
     public async Task<IReadOnlyList<string>> VisitAsync(string startPath, int maxPages, IReadOnlyCollection<string> skipped, Action<string> progress, CancellationToken cancellationToken)
     {
-        await page.SendAsync("Page.navigate", new { url = new Uri(app.Origin, startPath).ToString() }, cancellationToken);
+        var url = new Uri(app.Origin, startPath).ToString();
+        var waited = System.Diagnostics.Stopwatch.StartNew();
+        await page.SendAsync("Page.navigate", new { url }, cancellationToken);
+        var runtime = (await page.EvaluateAsync(WaitForRuntime, new { timeout = 180_000, reloaded = false }, cancellationToken)).GetString();
 
-        if ((await page.EvaluateAsync(WaitForRuntime, 180_000, cancellationToken)).ValueKind is not JsonValueKind.True)
+        if (runtime is "downloaded")
+        {
+            log.Write("The first visit downloaded the .NET runtime without starting it (InteractiveAuto); loading the page again to run it on WebAssembly.");
+            await page.SendAsync("Page.navigate", new { url }, cancellationToken);
+            runtime = (await page.EvaluateAsync(WaitForRuntime, new { timeout = (int)Math.Max(1_000, 180_000 - waited.ElapsedMilliseconds), reloaded = true }, cancellationToken)).GetString();
+        }
+
+        if (runtime is not "started")
             throw new InvalidOperationException("The app's .NET runtime didn't start within 3 minutes.");
 
         await page.EvaluateAsync("() => { window.__bitAotProfile = 1; }", cancellationToken: cancellationToken);

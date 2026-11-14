@@ -300,6 +300,24 @@ public class AotProfileTests
     }
 
     [TestMethod]
+    public async Task AnInteractiveAutoApp_Should_BeLoadedAgainOnceItsFirstVisitDownloadedTheRuntime()
+    {
+        if (OperatingSystem.IsWindows() is false)
+            return;
+
+        using var host = new TestHost();
+        File.WriteAllText(Path.Combine(host.WorkingDirectory, "App.Client.csproj"), "<Project />");
+        PublishesAStaticApp(host);
+        await using var browser = new FakeBrowser(host.Root) { RendersInteractiveAuto = true };
+
+        Assert.AreEqual(0, await host.RunAsync("aot-profile", "--browser", browser.Executable), host.Output);
+
+        Assert.AreEqual(2, browser.Navigations);
+        StringAssert.Contains(host.FlatOutput, "Used the app 1 page");
+        Assert.IsTrue(File.Exists(Path.Combine(host.WorkingDirectory, "App.Client.aotprofile")));
+    }
+
+    [TestMethod]
     public async Task ABrowserThatIsStarting_Should_BeStoppedWhenTheRunIsCanceled()
     {
         if (OperatingSystem.IsWindows() is false)
@@ -428,6 +446,10 @@ public class AotProfileTests
 
         public int Clicks { get; private set; }
 
+        public bool RendersInteractiveAuto { get; init; }
+
+        public int Navigations { get; private set; }
+
         public async ValueTask DisposeAsync()
         {
             File.WriteAllText(stop, "");
@@ -503,6 +525,7 @@ public class AotProfileTests
                     File.WriteAllText(stop, "");
                     return [];
                 case "Page.navigate":
+                    Navigations++;
                     page = new Uri(parameters!["url"]!.GetValue<string>()).AbsolutePath;
                     return [];
                 case "Runtime.evaluate":
@@ -518,7 +541,7 @@ public class AotProfileTests
         private JsonNode? Evaluate(string function, JsonNode? argument)
         {
             if (function.Contains("getDotnetRuntime === 'function'", StringComparison.Ordinal))
-                return true;
+                return RendersInteractiveAuto && Navigations < 2 ? argument!["reloaded"]!.GetValue<bool>() ? "timeout" : "downloaded" : "started";
 
             if (function.Contains("window.__bitAotProfile = 1", StringComparison.Ordinal))
             {
