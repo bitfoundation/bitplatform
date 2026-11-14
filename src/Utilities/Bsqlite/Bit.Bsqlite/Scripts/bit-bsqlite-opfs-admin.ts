@@ -122,6 +122,17 @@ export async function exportDatabase(databaseName: string): Promise<Uint8Array> 
 
     try {
         const handle = await getFileHandle(name, { create: false });
+
+        // A rollback journal with a header is a write that has not finished - another tab's, or one a
+        // crash cut short. The file alone is then half old and half new pages: SQLite rolls the journal
+        // back into it on the next open, and an image taken now would pass every header check and still
+        // be torn. A journal that was committed is deleted, truncated, or has its header zeroed.
+        if (await hasHotJournal(name)) {
+            throw new Error(
+                `OPFS database '${name}' has a rollback journal from a write that has not finished. Open it `
+                + 'once so SQLite rolls the journal back, or wait for the write to commit, then export it.');
+        }
+
         const file = await handle.getFile();
         return new Uint8Array(await file.arrayBuffer());
     } catch (error) {
@@ -136,13 +147,20 @@ export async function exportDatabase(databaseName: string): Promise<Uint8Array> 
 export async function importDatabase(databaseName: string, contents: Uint8Array | ArrayLike<number> | null): Promise<void> {
     const name = requireName(databaseName);
     const bytes = contents instanceof Uint8Array ? contents : new Uint8Array(contents ?? []);
-    const handle = await getFileHandle(name, { create: true });
-    const writable = await handle.createWritable();
-    // Never a SharedArrayBuffer view: the bytes come from .NET interop or a fresh copy.
-    await writable.write(bytes as Uint8Array<ArrayBuffer>);
-    await writable.close();
+    const { directory, fileName } = await directoryFor(name, { create: true });
 
-    const { directory, fileName } = await directoryFor(name, { create: false });
+    // A journal with a header is a write that has not finished - another tab's, or one a crash cut short -
+    // and the file alone is then torn: the journal is what rolls it back. Deleted here, an import that then
+    // failed to write would leave the old database torn for good, so it is refused and the journal kept.
+    if (await hasHotJournal(name)) {
+        throw new Error(
+            `OPFS database '${name}' has a rollback journal from a write that has not finished. Open it once so `
+            + 'SQLite rolls the journal back, or wait for the write to commit, then import over it.');
+    }
+
+    // The old file's journal goes first. Left until after the new file is written, a tab closed in
+    // between - or a removal that fails - would leave it to be rolled back into the imported database
+    // on its next open, writing the old database's pages over the new one's.
     for (const suffix of RELATED_SUFFIXES) {
         try {
             await directory.removeEntry(fileName + suffix);
@@ -152,6 +170,33 @@ export async function importDatabase(databaseName: string, contents: Uint8Array 
             }
         }
     }
+
+    // A writable stream writes to a swap file and replaces the file only on close, so an interrupted
+    // import leaves the previous file whole.
+    const handle = await directory.getFileHandle(fileName, { create: true });
+    const writable = await handle.createWritable();
+    // Never a SharedArrayBuffer view: the bytes come from .NET interop or a fresh copy.
+    await writable.write(bytes as Uint8Array<ArrayBuffer>);
+    await writable.close();
+}
+
+async function hasHotJournal(databaseName: string): Promise<boolean> {
+    const { directory, fileName } = await directoryFor(databaseName, { create: false });
+
+    let journal: File;
+    try {
+        journal = await (await directory.getFileHandle(fileName + '-journal', { create: false })).getFile();
+    } catch (error) {
+        if (isNotFound(error)) {
+            return false;
+        }
+
+        throw error;
+    }
+
+    // SQLite's own test: a journal is hot when its header is there - the first bytes not zero.
+    const header = new Uint8Array(await journal.slice(0, 8).arrayBuffer());
+    return header.some(byte => byte !== 0);
 }
 
 function unavailable(reason: string, environment: Record<string, string>): ProbeResult {
@@ -176,8 +221,14 @@ async function getFileHandle(databaseName: string, { create }: { create: boolean
     return await directory.getFileHandle(fileName, { create });
 }
 
+/**
+ * The directory and file name the VFS keeps <paramref name="databaseName"/> under. OPFSCoopSyncVFS
+ * names its files by the URL path of the name it is opened with, so a space or a non-ASCII character
+ * is stored percent-encoded - `My Notes.db` is the file `My%20Notes.db` - and the admin surface has to
+ * look where the engine writes, or it reports a database that exists as absent.
+ */
 async function directoryFor(databaseName: string, { create }: { create: boolean }): Promise<{ directory: FileSystemDirectoryHandle; fileName: string }> {
-    const parts = databaseName.split('/').filter(Boolean);
+    const parts = new URL(databaseName, 'file://').pathname.split('/').filter(Boolean);
     const fileName = parts.pop()!;
     let directory = await navigator.storage.getDirectory();
 
@@ -195,7 +246,8 @@ async function collect(directory: FileSystemDirectoryHandle, prefix: string, nam
                 continue;
             }
 
-            await collect(handle as FileSystemDirectoryHandle, prefix ? `${prefix}/${name}` : name, names);
+            const decoded = decodeName(name);
+            await collect(handle as FileSystemDirectoryHandle, prefix ? `${prefix}/${decoded}` : decoded, names);
             continue;
         }
 
@@ -203,8 +255,26 @@ async function collect(directory: FileSystemDirectoryHandle, prefix: string, nam
             continue;
         }
 
-        names.push(prefix ? `${prefix}/${name}` : name);
+        const decoded = decodeName(name);
+        names.push(prefix ? `${prefix}/${decoded}` : decoded);
     }
+}
+
+/**
+ * The database name a file of the VFS's stands for: its URL path segment, decoded - but only when the decoded
+ * name maps back to this same segment through {@link directoryFor}. The URL parser escapes a space or a
+ * non-ASCII character and leaves `%` alone, so a file named `a%41.db` or `a%2Fb.db` came from a name spelled
+ * that way: decoded, it would read as `aA.db` or `a/b.db`, which are other files.
+ */
+function decodeName(segment: string): string {
+    let decoded: string;
+    try {
+        decoded = decodeURIComponent(segment);
+    } catch {
+        return segment;
+    }
+
+    return new URL(decoded, 'file://').pathname === `/${segment}` ? decoded : segment;
 }
 
 function isNotFound(error: unknown): boolean {

@@ -23,8 +23,6 @@ namespace Bit.Bsqlite.Interop;
 /// </remarks>
 public sealed class BsqliteStorageMigrator
 {
-    private static ReadOnlySpan<byte> SqliteMagic => "SQLite format 3\0"u8;
-
     public async Task MigrateAsync(
         string databaseName,
         IBsqliteStorageProvider source,
@@ -40,6 +38,15 @@ public sealed class BsqliteStorageMigrator
         if (string.Equals(source.Name, target.Name, StringComparison.OrdinalIgnoreCase))
         {
             return;
+        }
+
+        // A move onto storage that empties on reload deletes the only durable copy: the next load starts
+        // from nothing. Nothing in selection asks for it, so a caller that does is refused.
+        if (source.Capabilities.IsPersistent && !target.Capabilities.IsPersistent)
+        {
+            throw new InvalidOperationException(
+                $"'{databaseName}' cannot be moved from '{source.Name}' to '{target.Name}': '{target.Name}' "
+                + $"does not persist, so the move would delete the only copy that survives a reload.");
         }
 
         var probe = await target.ProbeAsync(cancellationToken).ConfigureAwait(false);
@@ -80,14 +87,26 @@ public sealed class BsqliteStorageMigrator
                 + $"origin only has {quota - usage} bytes free.");
         }
 
-        VerifySqliteImage(image);
+        // Whole pages, a page size SQLite can have, as many pages as the header says - and, for a file a
+        // device left in WAL mode, marked for a rollback journal, which is all a web VFS can open.
+        var prepared = BsqliteDatabaseImage.Prepare(image, $"The export of '{databaseName}' from '{source.Name}'");
 
-        await target.Admin.ImportAsync(databaseName, image, cancellationToken).ConfigureAwait(false);
+        // Two tabs opened after a deploy that ranks a better backend both set out to move the database, and
+        // the binding is shared between them. The one that got there first has flipped it and may already be
+        // writing to the target; importing this - older - export over that would throw its writes away.
+        // Checked as late as possible, so the window left is the import itself.
+        var bound = await bindingStore.GetProviderNameAsync(databaseName, cancellationToken).ConfigureAwait(false);
+        if (bound is not null && !string.Equals(bound, source.Name, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        await target.Admin.ImportAsync(databaseName, prepared, cancellationToken).ConfigureAwait(false);
 
         try
         {
             var copy = await target.Admin.ExportAsync(databaseName, cancellationToken).ConfigureAwait(false);
-            if (!copy.AsSpan().SequenceEqual(image))
+            if (!copy.AsSpan().SequenceEqual(prepared.Span))
             {
                 throw new BsqliteCorruptDatabaseException(
                     $"The copy of '{databaseName}' on '{target.Name}' does not match the source.");
@@ -95,7 +114,10 @@ public sealed class BsqliteStorageMigrator
         }
         catch
         {
-            await target.Admin.DeleteAsync(databaseName, cancellationToken).ConfigureAwait(false);
+            // Not cancellable: a cancel is one of the failures that lands here, and with its token the
+            // delete would throw at once and leave a whole copy behind - one that a lost binding later
+            // finds and opens in place of the source that kept being written.
+            await DeleteQuietlyAsync(target, databaseName).ConfigureAwait(false);
             throw;
         }
 
@@ -190,20 +212,6 @@ public sealed class BsqliteStorageMigrator
         catch (Exception)
         {
             // Left behind, but unbound: nothing opens it, and the next migration's import replaces it.
-        }
-    }
-
-    internal static void VerifySqliteImage(ReadOnlyMemory<byte> image)
-    {
-        if (image.Length == 0)
-        {
-            return;
-        }
-
-        if (image.Length < SqliteMagic.Length || !image.Span[..SqliteMagic.Length].SequenceEqual(SqliteMagic))
-        {
-            throw new BsqliteCorruptDatabaseException(
-                "The exported image is not a SQLite database (missing the 'SQLite format 3' header).");
         }
     }
 }

@@ -84,7 +84,15 @@ interface WorkerResponse {
 /** Starts a worker for one database. */
 export async function open({ databaseName, requiredBuild, vfs, limits, foreignKeys, onOpenSql, extensions, workerUrl }: OpenOptions): Promise<SqliteHost> {
     const host = createHost(workerUrl);
-    await host.send({ kind: 'open', databaseName, requiredBuild, vfs, limits, foreignKeys, onOpenSql, extensions });
+    try {
+        await host.send({ kind: 'open', databaseName, requiredBuild, vfs, limits, foreignKeys, onOpenSql, extensions });
+    } catch (error) {
+        // Nobody else holds the host yet: left alone, its worker, engine heap and change channel would
+        // live as long as the page.
+        host.dispose();
+        throw error;
+    }
+
     return host;
 }
 
@@ -147,6 +155,10 @@ export class SqliteHost {
         this.#worker.addEventListener('error', (event: ErrorEvent) => {
             this.#fatal = new Error(`The SQLite worker failed: ${event.message ?? 'unknown error'}`);
             this.#failAll(this.#fatal);
+
+            // Whatever is left of it - a VFS that registered, an OPFS file it opened - is released now
+            // rather than when the host is disposed, which may be never for a host that failed to open.
+            this.#worker.terminate();
         });
 
         // A reply that cannot be deserialized never reaches #settle, so its request would wait for an
@@ -229,7 +241,13 @@ export class SqliteHost {
 
         return new Promise((resolve, reject) => {
             this.#pending.set(id, { resolve, reject });
-            this.#worker.postMessage({ ...resolveModuleUrls(request), id }, transfer ?? []);
+            try {
+                this.#worker.postMessage({ ...resolveModuleUrls(request), id }, transfer ?? []);
+            } catch (error) {
+                // A value structured cloning refuses never left: nothing will answer for it.
+                this.#pending.delete(id);
+                reject(error);
+            }
         });
     }
 

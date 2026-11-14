@@ -17,6 +17,7 @@ public sealed class BsqliteDataReader : DbDataReader
     private readonly BsqliteConnection? _closeConnection;
     private BsqliteCommandResult _result;
     private Dictionary<string, int>? _ordinals;
+    private Dictionary<string, int>? _exactOrdinals;
     private int _resultIndex;
     private int _rowIndex = -1;
     private bool _closed;
@@ -48,6 +49,8 @@ public sealed class BsqliteDataReader : DbDataReader
 
     public override bool Read()
     {
+        ThrowIfClosed();
+
         if (_rowIndex + 1 >= _result.Rows.Count)
         {
             _rowIndex = _result.Rows.Count;
@@ -63,6 +66,8 @@ public sealed class BsqliteDataReader : DbDataReader
 
     public override bool NextResult()
     {
+        ThrowIfClosed();
+
         if (_resultIndex + 1 >= _results.Count)
         {
             return false;
@@ -71,6 +76,7 @@ public sealed class BsqliteDataReader : DbDataReader
         _resultIndex++;
         _result = _results[_resultIndex];
         _ordinals = null;
+        _exactOrdinals = null;
         _rowIndex = -1;
         return true;
     }
@@ -95,18 +101,23 @@ public sealed class BsqliteDataReader : DbDataReader
     {
         ArgumentNullException.ThrowIfNull(name);
 
-        if (_ordinals is null)
+        // An exact match first - with columns Id and id, "id" is the second - then any case, as
+        // Microsoft.Data.Sqlite and SqlClient look a name up. Both are looked up, not scanned: a reader
+        // asked by name for every column of every row would otherwise walk the names each time.
+        if (_ordinals is null || _exactOrdinals is null)
         {
             var names = _result.ColumnNames;
             _ordinals = new Dictionary<string, int>(names.Count, StringComparer.OrdinalIgnoreCase);
+            _exactOrdinals = new Dictionary<string, int>(names.Count, StringComparer.Ordinal);
             for (var i = names.Count - 1; i >= 0; i--)
             {
                 // First occurrence wins for duplicate names, as every ADO.NET provider does.
                 _ordinals[names[i]] = i;
+                _exactOrdinals[names[i]] = i;
             }
         }
 
-        return _ordinals.TryGetValue(name, out var ordinal)
+        return _exactOrdinals.TryGetValue(name, out var ordinal) || _ordinals.TryGetValue(name, out ordinal)
             ? ordinal
             : throw new IndexOutOfRangeException($"No column named '{name}'.");
     }
@@ -204,7 +215,7 @@ public sealed class BsqliteDataReader : DbDataReader
         var other => Convert.ToBoolean(other, CultureInfo.InvariantCulture),
     };
 
-    public override byte GetByte(int ordinal) => Convert.ToByte(RequireValue(ordinal), CultureInfo.InvariantCulture);
+    public override byte GetByte(int ordinal) => checked((byte)BsqliteValueConversions.ToInt64(RequireValue(ordinal)));
 
     public override char GetChar(int ordinal) => RequireValue(ordinal) switch
     {
@@ -212,23 +223,13 @@ public sealed class BsqliteDataReader : DbDataReader
         var other => Convert.ToChar(other, CultureInfo.InvariantCulture),
     };
 
-    public override DateTime GetDateTime(int ordinal) => RequireValue(ordinal) switch
-    {
-        DateTime value => value,
-        string text => DateTime.Parse(text, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind),
-        var other => Convert.ToDateTime(other, CultureInfo.InvariantCulture),
-    };
+    public override DateTime GetDateTime(int ordinal) => BsqliteValueConversions.ToDateTime(RequireValue(ordinal));
 
-    public override decimal GetDecimal(int ordinal) => RequireValue(ordinal) switch
-    {
-        decimal value => value,
-        string text => decimal.Parse(text, NumberStyles.Number, CultureInfo.InvariantCulture),
-        var other => Convert.ToDecimal(other, CultureInfo.InvariantCulture),
-    };
+    public override decimal GetDecimal(int ordinal) => BsqliteValueConversions.ToDecimal(RequireValue(ordinal));
 
-    public override double GetDouble(int ordinal) => Convert.ToDouble(RequireValue(ordinal), CultureInfo.InvariantCulture);
+    public override double GetDouble(int ordinal) => BsqliteValueConversions.ColumnToDouble(RequireValue(ordinal));
 
-    public override float GetFloat(int ordinal) => Convert.ToSingle(RequireValue(ordinal), CultureInfo.InvariantCulture);
+    public override float GetFloat(int ordinal) => (float)BsqliteValueConversions.ColumnToDouble(RequireValue(ordinal));
 
     public override Guid GetGuid(int ordinal) => RequireValue(ordinal) switch
     {
@@ -238,16 +239,44 @@ public sealed class BsqliteDataReader : DbDataReader
         var other => throw new InvalidCastException($"Cannot convert {other.GetType()} to Guid."),
     };
 
-    public override short GetInt16(int ordinal) => Convert.ToInt16(RequireValue(ordinal), CultureInfo.InvariantCulture);
+    // Truncated, as SQLite turns a REAL into an INTEGER, and checked, as Microsoft.Data.Sqlite narrows one.
+    public override short GetInt16(int ordinal) => checked((short)BsqliteValueConversions.ToInt64(RequireValue(ordinal)));
 
-    public override int GetInt32(int ordinal) => Convert.ToInt32(RequireValue(ordinal), CultureInfo.InvariantCulture);
+    public override int GetInt32(int ordinal) => checked((int)BsqliteValueConversions.ToInt64(RequireValue(ordinal)));
 
-    public override long GetInt64(int ordinal) => Convert.ToInt64(RequireValue(ordinal), CultureInfo.InvariantCulture);
+    public override long GetInt64(int ordinal) => BsqliteValueConversions.ToInt64(RequireValue(ordinal));
 
-    public override string GetString(int ordinal) => Convert.ToString(RequireValue(ordinal), CultureInfo.InvariantCulture)!;
+    public override string GetString(int ordinal) => BsqliteValueConversions.ToText(RequireValue(ordinal));
 
+    /// <remarks>
+    /// On NULL, a type that can hold it gets it - <see langword="null"/>, or <see cref="DBNull.Value"/> for
+    /// <see cref="object"/> - and any other type throws, as Microsoft.Data.Sqlite does: a NULL is never read
+    /// as 0 or <see cref="DateTime.MinValue"/>.
+    /// </remarks>
     public override T GetFieldValue<T>(int ordinal)
-        => BsqliteParameterBinding.FromTransportValue<T>(IsDBNull(ordinal) ? null : RequireValue(ordinal));
+    {
+        if (CurrentRow[ordinal] is not { } value)
+        {
+            if (typeof(T) == typeof(object) || typeof(T) == typeof(DBNull))
+            {
+                return (T)(object)DBNull.Value;
+            }
+
+            return default(T) is null ? default! : throw NullValue(ordinal);
+        }
+
+        if (typeof(T) == typeof(Stream))
+        {
+            return (T)(object)GetStream(ordinal);
+        }
+
+        if (typeof(T) == typeof(TextReader))
+        {
+            return (T)(object)GetTextReader(ordinal);
+        }
+
+        return BsqliteParameterBinding.FromTransportValue<T>(value);
+    }
 
     public override Task<T> GetFieldValueAsync<T>(int ordinal, CancellationToken cancellationToken)
         => Task.FromResult(GetFieldValue<T>(ordinal));
@@ -296,21 +325,34 @@ public sealed class BsqliteDataReader : DbDataReader
         return count;
     }
 
-    public override Stream GetStream(int ordinal) => new MemoryStream(RequireValue(ordinal) switch
-    {
-        byte[] bytes => bytes,
-        string text => System.Text.Encoding.UTF8.GetBytes(text),
-        var other => throw new InvalidCastException($"Cannot read {other.GetType()} as a stream."),
-    }, writable: false);
+    public override Stream GetStream(int ordinal)
+        => new MemoryStream(BsqliteValueConversions.ToBytes(RequireValue(ordinal)), writable: false);
 
     public override TextReader GetTextReader(int ordinal) => new StringReader(GetString(ordinal));
 
     public override IEnumerator GetEnumerator() => new DbEnumerator(this, closeReader: false);
 
-    private object?[] CurrentRow => _rowIndex >= 0 && _rowIndex < _result.Rows.Count
-        ? _result.Rows[_rowIndex]
-        : throw new InvalidOperationException("No row is available. Call Read first.");
+    private object?[] CurrentRow
+    {
+        get
+        {
+            ThrowIfClosed();
+            return _rowIndex >= 0 && _rowIndex < _result.Rows.Count
+                ? _result.Rows[_rowIndex]
+                : throw new InvalidOperationException("No row is available. Call Read first.");
+        }
+    }
 
-    private object RequireValue(int ordinal)
-        => CurrentRow[ordinal] ?? throw new InvalidCastException($"Column {ordinal} is NULL.");
+    private object RequireValue(int ordinal) => CurrentRow[ordinal] ?? throw NullValue(ordinal);
+
+    private static InvalidOperationException NullValue(int ordinal)
+        => new($"The data is NULL at ordinal {ordinal}. This method can't be called on NULL values. Check using IsDBNull before calling.");
+
+    private void ThrowIfClosed()
+    {
+        if (_closed)
+        {
+            throw new InvalidOperationException("The reader is closed.");
+        }
+    }
 }

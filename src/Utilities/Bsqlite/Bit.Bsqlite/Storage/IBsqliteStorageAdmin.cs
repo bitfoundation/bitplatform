@@ -32,8 +32,9 @@ public interface IBsqliteStorageAdmin
     /// Writes a SQLite file image in, replacing any existing database of that name.
     /// </summary>
     /// <remarks>
-    /// Callers are expected to verify the result - the migration protocol runs
-    /// <c>PRAGMA integrity_check</c> against the copy before it trusts it.
+    /// Bytes in, unchecked: callers verify the image first and the copy after - the migration protocol and
+    /// <c>BsqliteDatabase.RestoreAsync</c> check the SQLite header before importing and read the copy back
+    /// to compare it byte for byte before they trust it.
     /// </remarks>
     ValueTask ImportAsync(
         string databaseName,

@@ -200,6 +200,69 @@ public sealed class WorkerTests : BsqliteTest
         Assert.AreEqual(1, result.RecordsAffected);
     }
 
+    /// <summary>
+    /// Each statement of a multi-statement text is prepared once the one before it has run, as
+    /// <c>sqlite3_exec</c> does: prepared all at once, the INSERT is planned before the table exists, and
+    /// the hand-written SQL migrations and <c>OnOpen</c> scripts routinely look like this.
+    /// </summary>
+    [TestMethod]
+    public async Task Batching_a_text_whose_later_statements_use_what_earlier_ones_create_runs_in_order()
+    {
+        await OpenAsync();
+
+        var result = await QueryAsync(
+            Page,
+            """
+            CREATE TABLE tag (id INTEGER PRIMARY KEY, name TEXT);
+            INSERT INTO tag (name) VALUES ('first');
+            ALTER TABLE tag ADD COLUMN weight INTEGER;
+            UPDATE tag SET weight = 7;
+            SELECT name, weight FROM tag;
+            """);
+
+        AssertJson.AreEqual("""[["first",7]]""", result.Rows);
+
+        // And again, now that its statements exist: nothing of the first run is reused in the wrong place.
+        await ExecAsync(Page, "DROP TABLE tag; CREATE TABLE tag (id INTEGER PRIMARY KEY, label TEXT); INSERT INTO tag (label) VALUES ('second')");
+        AssertJson.AreEqual("""[["second"]]""", (await QueryAsync(Page, "SELECT label FROM tag")).Rows);
+    }
+
+    /// <summary>
+    /// A statement that failed part way through a multi-statement text leaves the ones before it run and
+    /// the ones after it not, and the connection usable.
+    /// </summary>
+    [TestMethod]
+    public async Task Batching_a_text_that_fails_part_way_stops_there()
+    {
+        await OpenAsync();
+
+        var error = await ExecuteExpectingFailureAsync(Page, new WireRequest(
+            "INSERT INTO product (name) VALUES ('kept'); INSERT INTO missing VALUES (1); INSERT INTO product (name) VALUES ('never')"));
+
+        Assert.IsNotNull(error);
+        AssertJson.AreEqual("""[["kept"]]""", (await QueryAsync(Page, "SELECT name FROM product")).Rows);
+    }
+
+    /// <summary>
+    /// <c>CommandBehavior.SchemaOnly</c> describes a result without running anything - including the
+    /// statements that return no rows, which would otherwise carry out a DELETE the caller only asked about.
+    /// </summary>
+    [TestMethod]
+    public async Task Batching_a_schema_only_request_runs_nothing()
+    {
+        await OpenAsync();
+        await ExecAsync(Page, "INSERT INTO product (name) VALUES ('A'), ('B')");
+
+        var result = (await ExecuteAsync(Page, new WireRequest(
+            "DELETE FROM product; SELECT id, name FROM product",
+            ResultKind: "reader",
+            MaxRows: 0)))[0];
+
+        CollectionAssert.AreEqual(new[] { "id", "name" }, result.ColumnNames);
+        AssertJson.AreEqual("[]", result.Rows);
+        AssertJson.AreEqual("[[2]]", (await QueryAsync(Page, "SELECT COUNT(*) FROM product")).Rows);
+    }
+
     [TestMethod]
     public async Task Batching_a_scalar_request_stops_after_the_first_row()
     {

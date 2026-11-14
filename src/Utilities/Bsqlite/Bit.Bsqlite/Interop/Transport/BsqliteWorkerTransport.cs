@@ -29,6 +29,9 @@ public sealed class BsqliteWorkerTransport : IBsqliteTransport, IBsqliteSnapshot
     /// <summary>The RCL path the worker host is served from.</summary>
     public const string DefaultHostModuleUrl = "./_content/Bit.Bsqlite/bit-bsqlite-host.js";
 
+    /// <summary>How long disposal lets the database close before the worker is terminated anyway.</summary>
+    private static readonly TimeSpan CloseTimeout = TimeSpan.FromSeconds(2);
+
     /// <summary>
     /// <see cref="DefaultHostModuleUrl"/> stamped with this assembly's version, and what a
     /// transport imports unless an application says otherwise.
@@ -181,9 +184,20 @@ public sealed class BsqliteWorkerTransport : IBsqliteTransport, IBsqliteSnapshot
             throw new InvalidOperationException("The transport is not open.");
         }
 
-        var reply = await _host
-            .InvokeAsync<byte[]>("executeBinary", cancellationToken, BsqliteWireFormat.EncodeBatch(batch))
-            .ConfigureAwait(false);
+        byte[] reply;
+        try
+        {
+            reply = await _host
+                .InvokeAsync<byte[]>("executeBinary", cancellationToken, BsqliteWireFormat.EncodeBatch(batch))
+                .ConfigureAwait(false);
+        }
+        catch (JSException ex)
+        {
+            // SQL failures come back in the reply, typed by their result code. What arrives as a JavaScript
+            // error is the worker itself - one that failed to load, or a host disposed under the batch - and
+            // it is a BsqliteException too, so code that handles database failures handles this one.
+            throw new BsqliteException($"The SQLite worker could not run the batch: {ex.Message}");
+        }
 
         return BsqliteWireFormat.DecodeReply(reply);
     }
@@ -281,9 +295,26 @@ public sealed class BsqliteWorkerTransport : IBsqliteTransport, IBsqliteSnapshot
             // has to find the transport disposed, not a host reference about to be.
             _host = null;
 
-            // Terminate rather than close: dispose means the worker is finished, not that EF opened
-            // and closed a connection around a query. A close would leave a live worker with no
-            // owner, which is a leak in a browser that charges for every one.
+            // The database is closed first, briefly: SQLite finishes with its files - a VFS that buffers
+            // writes until a file closes flushes them - and releases its locks the ordinary way. Bounded,
+            // because a statement still running ahead of it in the worker's queue is not waited for.
+            if (_databaseName is not null)
+            {
+                try
+                {
+                    using var timeout = new CancellationTokenSource(CloseTimeout);
+                    await host.InvokeAsync<JsonElement>("call", timeout.Token, new JsonObject { ["kind"] = "close" })
+                        .ConfigureAwait(false);
+                }
+                catch (Exception)
+                {
+                    // Best effort: whatever stopped the close, the worker is terminated below regardless.
+                }
+            }
+
+            // Then terminated: dispose means the worker is finished, not that EF opened and closed a
+            // connection around a query. A worker left running would have no owner, which is a leak in a
+            // browser that charges for every one.
             try
             {
                 await host.InvokeVoidAsync("dispose").ConfigureAwait(false);

@@ -173,17 +173,22 @@ public sealed class BsqliteConnection : DbConnection
             return;
         }
 
+        ObjectDisposedException.ThrowIf(_disposed, this);
+
+        var original = _state;
         _state = ConnectionState.Connecting;
         try
         {
             await _transport.OpenAsync(_database, cancellationToken).ConfigureAwait(false);
-            _state = ConnectionState.Open;
         }
         catch
         {
-            _state = ConnectionState.Closed;
+            _state = original;
             throw;
         }
+
+        _state = ConnectionState.Open;
+        OnStateChange(new StateChangeEventArgs(original, ConnectionState.Open));
     }
 
     /// <summary>
@@ -203,7 +208,17 @@ public sealed class BsqliteConnection : DbConnection
     /// would deadlock the browser's single main thread - the exact failure this type exists to avoid.
     /// </para>
     /// </remarks>
-    public override void Close() => _state = ConnectionState.Closed;
+    public override void Close() => SetState(ConnectionState.Closed);
+
+    private void SetState(ConnectionState state)
+    {
+        var previous = _state;
+        _state = state;
+        if (previous != state)
+        {
+            OnStateChange(new StateChangeEventArgs(previous, state));
+        }
+    }
 
     public override Task CloseAsync()
     {
@@ -292,13 +307,47 @@ public sealed class BsqliteConnection : DbConnection
     /// Reads the whole database out as a SQLite file image, consistent as of the last committed
     /// write, without closing the connection.
     /// </summary>
+    /// <remarks>
+    /// The snapshot takes a turn like a command does: it waits, at most <see cref="DefaultTimeout"/>,
+    /// for a transaction another connection over the same transport holds, so it never captures that
+    /// transaction half done. A transaction open on this connection is refused at once instead: every
+    /// context of a session shares the connection, nothing here can tell whether the code asking began
+    /// it - EF begins it inside an async method of its own, so no trace of it reaches its caller - and
+    /// waiting for one's own transaction would never end. The
+    /// image is the database's file byte for byte where the backend's pages can be read synchronously
+    /// (OPFS, in-memory, a Blazor Hybrid file); on IndexedDB and Cache Storage it is a compacted copy
+    /// made with <c>VACUUM INTO</c> - the same schema, rows, <c>user_version</c> and
+    /// <c>application_id</c>, without free pages.
+    /// </remarks>
     /// <exception cref="NotSupportedException">The transport cannot snapshot an open database.</exception>
-    public Task<byte[]> ExportAsync(CancellationToken cancellationToken = default)
-        => _transport is IBsqliteSnapshotSource snapshots
-            ? snapshots.ExportAsync(cancellationToken)
-            : throw new NotSupportedException(
+    /// <exception cref="InvalidOperationException">A transaction is open on this connection, whichever context began it.</exception>
+    /// <exception cref="BsqliteConcurrencyException">Another connection's transaction did not end in time.</exception>
+    public async Task<byte[]> ExportAsync(CancellationToken cancellationToken = default)
+    {
+        if (_transport is not IBsqliteSnapshotSource snapshots)
+        {
+            throw new NotSupportedException(
                 $"{_transport.GetType().Name} cannot export an open database. Close the session and "
                 + "use the storage provider's Admin.ExportAsync instead.");
+        }
+
+        // Inside the transaction the code running here began, the snapshot would hold its uncommitted writes -
+        // or, taken by SQL on the asynchronous builds, fail inside it - and waiting for the turn that transaction
+        // holds would never end. Whose transaction it is cannot be told: _begunInThisFlow is set inside
+        // BeginDbTransactionAsync, and EF calls that from an async method of its own, which drops the value on
+        // its way back to the caller. So any transaction open on this connection is refused, at once, rather
+        // than risk a wait that ends only with DefaultTimeout. One another connection holds is waited for below.
+        if (CurrentTransaction is not null)
+        {
+            throw new InvalidOperationException(
+                $"The database '{_database}' cannot be exported while a transaction is open on its connection: "
+                + "the image would hold writes that may yet roll back. Commit or roll back first - or, when "
+                + "another context of the session began it, export once it has ended.");
+        }
+
+        using var turn = await _gate.EnterAsync(DefaultTimeout, _database, cancellationToken).ConfigureAwait(false);
+        return await snapshots.ExportAsync(cancellationToken).ConfigureAwait(false);
+    }
 
     /// <summary>
     /// Runs a batch of requests in one transport round trip and returns one result per request.
@@ -440,10 +489,17 @@ public sealed class BsqliteConnection : DbConnection
     /// Unsubscribes from the transport. The transport itself is not disposed - it belongs to
     /// whoever created it, for the reason <see cref="Close"/> explains.
     /// </summary>
+    /// <remarks>
+    /// A transaction still open on the connection is rolled back, as Microsoft.Data.Sqlite rolls it back:
+    /// left open, it would keep the turn every other connection over the transport waits for, and each of
+    /// them would fail with <see cref="BsqliteConcurrencyException"/> until the transport is gone.
+    /// </remarks>
     protected override void Dispose(bool disposing)
     {
         if (disposing && !_disposed)
         {
+            CurrentTransaction?.Dispose();
+            Close();
             _disposed = true;
             _transport.TablesChanged -= OnTransportTablesChanged;
         }
