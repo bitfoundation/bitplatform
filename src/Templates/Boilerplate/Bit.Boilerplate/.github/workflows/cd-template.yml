@@ -17,6 +17,14 @@ permissions:
 
 jobs:
 
+  # ci.yml's checks: the build with the code style enforced, the formatting, the api's compatibility and the tests. Nothing
+  # is deployed or published until they pass, while the server's images build alongside them.
+  ci:
+    name: ci
+    permissions:
+      contents: read
+    uses: ./.github/workflows/ci.yml
+
 #if (aspire == true)
   # The server is a Docker Compose project that .NET Aspire publishes from the app host. This job builds its images on
   # a GitHub-hosted runner, pushes them to GitHub Container Registry tagged with the environment and the commit, and
@@ -123,7 +131,7 @@ jobs:
   # Compose project in ~/deployments/<project>-<environment> of the runner's user.
   deploy_server:
     name: deploy server
-    needs: build_server
+    needs: [ci, build_server]
     runs-on: [self-hosted, "${{ inputs.ENV_NAME }}"]
     permissions:
       contents: read
@@ -642,6 +650,7 @@ jobs:
     # Off until the app ships on this platform: every run spends Actions minutes. Turn it on for the environments that
     # build it, such as `if: inputs.ENV_NAME == 'Production'`, and set its secrets (.docs/16).
     if: false
+    needs: ci
     runs-on: windows-2025
     timeout-minutes: 45
     permissions:
@@ -725,6 +734,7 @@ jobs:
     # Off until the app ships on this platform: every run spends Actions minutes. Turn it on for the environments that
     # build it, such as `if: inputs.ENV_NAME == 'Production'`, and set its secrets (.docs/16).
     if: false
+    needs: ci
     runs-on: ubuntu-26.04
     timeout-minutes: 45
     permissions:
@@ -798,6 +808,7 @@ jobs:
     # Off until the app ships on this platform: every run spends Actions minutes. Turn it on for the environments that
     # build it, such as `if: inputs.ENV_NAME == 'Production'`, and set its secrets (.docs/16).
     if: false
+    needs: ci
     runs-on: xcode-27
     timeout-minutes: 60
     permissions:

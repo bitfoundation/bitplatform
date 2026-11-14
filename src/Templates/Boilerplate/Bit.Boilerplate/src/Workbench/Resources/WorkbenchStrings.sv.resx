@@ -1347,6 +1347,54 @@
     <data name="SettingsCaption" xml:space="preserve">
         <value>Ditt konto, ditt sätt</value>
     </data>
+    <data name="SettingsSwitchSection" xml:space="preserve">
+        <value>Avsnitt</value>
+    </data>
+    <data name="SettingsSectionProfile" xml:space="preserve">
+        <value>Profil</value>
+    </data>
+    <data name="SettingsSectionAccount" xml:space="preserve">
+        <value>Konto</value>
+    </data>
+    <data name="SettingsSectionTfa" xml:space="preserve">
+        <value>Tvåfaktorsautentisering</value>
+    </data>
+    <data name="SettingsSectionSessions" xml:space="preserve">
+        <value>Sessioner</value>
+    </data>
+    <data name="SettingsSectionPrivacy" xml:space="preserve">
+        <value>Integritet</value>
+    </data>
+    <data name="SettingsSectionUpgrade" xml:space="preserve">
+        <value>Uppgradera</value>
+    </data>
+    <data name="SettingsSwitchTwoFactor" xml:space="preserve">
+        <value>Tvåfaktor</value>
+    </data>
+    <data name="SettingsTwoFactorOff" xml:space="preserve">
+        <value>Inte konfigurerad</value>
+    </data>
+    <data name="SettingsTwoFactorOn" xml:space="preserve">
+        <value>På</value>
+    </data>
+    <data name="SettingsSwitchPasskey" xml:space="preserve">
+        <value>Nyckel</value>
+    </data>
+    <data name="SettingsPasskeyOff" xml:space="preserve">
+        <value>Ingen</value>
+    </data>
+    <data name="SettingsPasskeyOn" xml:space="preserve">
+        <value>På den här enheten</value>
+    </data>
+    <data name="SettingsSwitchConfirm" xml:space="preserve">
+        <value>Bekräfta att det är du</value>
+    </data>
+    <data name="SettingsConfirmRecent" xml:space="preserve">
+        <value>Bekräftat för en minut sedan</value>
+    </data>
+    <data name="SettingsConfirmAsk" xml:space="preserve">
+        <value>Ber först om en kod</value>
+    </data>
     <data name="CalendarViewDay" xml:space="preserve">
         <value>Dag</value>
     </data>

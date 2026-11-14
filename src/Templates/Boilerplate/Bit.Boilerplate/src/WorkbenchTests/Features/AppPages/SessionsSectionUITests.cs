@@ -13,10 +13,13 @@ public class SessionsSectionUITests : SettingsPageTest
 
     private static string LimitMessage(int used) => Message(AppStrings.PrivilegedDeviceLimitMessage, "3", used.ToString(CultureInfo.InvariantCulture));
 
+    /// <summary>The demo user, who has the server's limit of privileged sessions; the admins have none.</summary>
+    private const string LimitedUser = "?user=2";
+
     [TestMethod, EverySurface]
     public async Task TheSection_Should_ShowTheCurrentSessionAndTheOthersWithTheirLimit(WorkbenchSurface surface)
     {
-        await OpenSection(AppStrings.SessionsTitle);
+        await OpenSection(AppStrings.SessionsTitle, LimitedUser);
 
         await Expect(Sessions.GetByText(LimitMessage(2))).ToBeVisibleAsync();
         await Expect(Sessions.GetByText(AppStrings.CurrentSession, new() { Exact = true })).ToBeVisibleAsync();
@@ -25,6 +28,15 @@ public class SessionsSectionUITests : SettingsPageTest
         await Expect(Sessions.GetByText(AppStrings.Recently, new() { Exact = true })).ToBeVisibleAsync();
         await Expect(OtherSessions).ToHaveCountAsync(4);
         await Expect(Revoke).ToHaveCountAsync(4);
+    }
+
+    [TestMethod, EverySurface]
+    public async Task AnAdmin_Should_HaveNoLimitOfPrivilegedSessions(WorkbenchSurface surface)
+    {
+        await OpenSection(AppStrings.SessionsTitle);
+
+        await Expect(Sessions.GetByText(AppStrings.CurrentSession, new() { Exact = true })).ToBeVisibleAsync();
+        await Expect(Sessions.GetByText(LimitMessage(2))).ToHaveCountAsync(0);
     }
 
     [TestMethod, EverySurface]
@@ -52,7 +64,7 @@ public class SessionsSectionUITests : SettingsPageTest
     [TestMethod, EverySurface]
     public async Task Revoking_Should_RemoveTheSessionUpdateTheCountAndStayAfterAReload(WorkbenchSurface surface)
     {
-        await OpenSection(AppStrings.SessionsTitle);
+        await OpenSection(AppStrings.SessionsTitle, LimitedUser);
 
         var privileged = OtherSessions.Filter(new() { HasText = "Rotterdam" });
 
@@ -63,7 +75,8 @@ public class SessionsSectionUITests : SettingsPageTest
         await Expect(OtherSessions).ToHaveCountAsync(3);
         await Expect(Sessions.GetByText(LimitMessage(1))).ToBeVisibleAsync();
 
-        await ReloadTheViewOnceSaved("\"RevokedSessionIds\":[\"");
+        await WaitUntilSaved(state => state.Contains("Utrecht", StringComparison.Ordinal) && state.Contains("Rotterdam", StringComparison.Ordinal) is false);
+        await ReloadTheView();
 
         await Expect(OtherSessions).ToHaveCountAsync(3);
         await Expect(privileged).ToHaveCountAsync(0);

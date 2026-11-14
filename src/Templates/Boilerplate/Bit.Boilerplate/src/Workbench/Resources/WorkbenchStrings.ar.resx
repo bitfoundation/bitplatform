@@ -1347,6 +1347,54 @@
     <data name="SettingsCaption" xml:space="preserve">
         <value>حسابك على طريقتك</value>
     </data>
+    <data name="SettingsSwitchSection" xml:space="preserve">
+        <value>القسم</value>
+    </data>
+    <data name="SettingsSectionProfile" xml:space="preserve">
+        <value>الملف الشخصي</value>
+    </data>
+    <data name="SettingsSectionAccount" xml:space="preserve">
+        <value>الحساب</value>
+    </data>
+    <data name="SettingsSectionTfa" xml:space="preserve">
+        <value>المصادقة الثنائية</value>
+    </data>
+    <data name="SettingsSectionSessions" xml:space="preserve">
+        <value>الجلسات</value>
+    </data>
+    <data name="SettingsSectionPrivacy" xml:space="preserve">
+        <value>الخصوصية</value>
+    </data>
+    <data name="SettingsSectionUpgrade" xml:space="preserve">
+        <value>الترقية</value>
+    </data>
+    <data name="SettingsSwitchTwoFactor" xml:space="preserve">
+        <value>المصادقة الثنائية</value>
+    </data>
+    <data name="SettingsTwoFactorOff" xml:space="preserve">
+        <value>غير مُعدّة</value>
+    </data>
+    <data name="SettingsTwoFactorOn" xml:space="preserve">
+        <value>مفعّلة</value>
+    </data>
+    <data name="SettingsSwitchPasskey" xml:space="preserve">
+        <value>مفتاح المرور</value>
+    </data>
+    <data name="SettingsPasskeyOff" xml:space="preserve">
+        <value>لا يوجد</value>
+    </data>
+    <data name="SettingsPasskeyOn" xml:space="preserve">
+        <value>على هذا الجهاز</value>
+    </data>
+    <data name="SettingsSwitchConfirm" xml:space="preserve">
+        <value>تأكيد هويتك</value>
+    </data>
+    <data name="SettingsConfirmRecent" xml:space="preserve">
+        <value>تم التأكيد قبل دقيقة</value>
+    </data>
+    <data name="SettingsConfirmAsk" xml:space="preserve">
+        <value>يطلب رمزًا أولًا</value>
+    </data>
     <data name="CalendarViewDay" xml:space="preserve">
         <value>يوم</value>
     </data>

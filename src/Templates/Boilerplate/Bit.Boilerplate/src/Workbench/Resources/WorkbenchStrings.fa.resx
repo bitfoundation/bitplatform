@@ -1347,6 +1347,54 @@
     <data name="SettingsCaption" xml:space="preserve">
         <value>حساب شما، به سلیقه شما</value>
     </data>
+    <data name="SettingsSwitchSection" xml:space="preserve">
+        <value>بخش</value>
+    </data>
+    <data name="SettingsSectionProfile" xml:space="preserve">
+        <value>پروفایل</value>
+    </data>
+    <data name="SettingsSectionAccount" xml:space="preserve">
+        <value>حساب کاربری</value>
+    </data>
+    <data name="SettingsSectionTfa" xml:space="preserve">
+        <value>احراز هویت دو عاملی</value>
+    </data>
+    <data name="SettingsSectionSessions" xml:space="preserve">
+        <value>نشست‌ها</value>
+    </data>
+    <data name="SettingsSectionPrivacy" xml:space="preserve">
+        <value>حریم خصوصی</value>
+    </data>
+    <data name="SettingsSectionUpgrade" xml:space="preserve">
+        <value>ارتقاء</value>
+    </data>
+    <data name="SettingsSwitchTwoFactor" xml:space="preserve">
+        <value>دو عاملی</value>
+    </data>
+    <data name="SettingsTwoFactorOff" xml:space="preserve">
+        <value>راه‌اندازی نشده</value>
+    </data>
+    <data name="SettingsTwoFactorOn" xml:space="preserve">
+        <value>فعال</value>
+    </data>
+    <data name="SettingsSwitchPasskey" xml:space="preserve">
+        <value>Passkey</value>
+    </data>
+    <data name="SettingsPasskeyOff" xml:space="preserve">
+        <value>ندارد</value>
+    </data>
+    <data name="SettingsPasskeyOn" xml:space="preserve">
+        <value>روی این دستگاه</value>
+    </data>
+    <data name="SettingsSwitchConfirm" xml:space="preserve">
+        <value>تأیید هویت</value>
+    </data>
+    <data name="SettingsConfirmRecent" xml:space="preserve">
+        <value>یک دقیقه پیش تأیید شده</value>
+    </data>
+    <data name="SettingsConfirmAsk" xml:space="preserve">
+        <value>اول کد می‌خواهد</value>
+    </data>
     <data name="CalendarViewDay" xml:space="preserve">
         <value>روز</value>
     </data>
