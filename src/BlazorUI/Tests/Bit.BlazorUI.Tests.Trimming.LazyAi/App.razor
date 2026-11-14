@@ -19,6 +19,9 @@
 </Router>
 
 @code {
+    // Set only where the assemblies are marked (the project file): loading an assembly that is not marked throws.
+    private static readonly bool LazyLoadsChat = AppContext.TryGetSwitch("Bit.BlazorUI.Tests.Trimming.LazyAi.LazyLoadsChat", out var on) && on;
+
     private readonly List<Assembly> _lazyLoaded = [];
 
     private async Task OnNavigateAsync(NavigationContext context)
@@ -30,10 +33,19 @@
         if ((path.Equals("chat", StringComparison.OrdinalIgnoreCase) || path.StartsWith("chat/", StringComparison.OrdinalIgnoreCase))
             && _lazyLoaded.Count == 0)
         {
-            var assemblies = await AssemblyLoader.LoadAssembliesAsync(
-                ["Bit.BlazorUI.AI.Core.wasm", "Bit.BlazorUI.AI.wasm", "Bit.BlazorUI.Tests.Trimming.LazyAi.Chat.wasm"]);
+            if (LazyLoadsChat)
+            {
+                var assemblies = await AssemblyLoader.LoadAssembliesAsync(
+                    ["Bit.BlazorUI.AI.Core.wasm", "Bit.BlazorUI.AI.wasm", "Bit.BlazorUI.Tests.Trimming.LazyAi.Chat.wasm"]);
 
-            _lazyLoaded.AddRange(assemblies);
+                _lazyLoaded.AddRange(assemblies);
+            }
+            else
+            {
+                // Loaded with the app (an AOT build). It is named, not reached through one of its types: naming a type
+                // here would load the library at startup in the builds that lazy-load it.
+                _lazyLoaded.Add(Assembly.Load("Bit.BlazorUI.Tests.Trimming.LazyAi.Chat"));
+            }
         }
     }
 }
