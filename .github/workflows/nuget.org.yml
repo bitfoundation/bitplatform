@@ -27,6 +27,7 @@ on:
       - 'src/Brouter/**'
       - 'src/Bswup/**'
       - 'src/Butil/**'
+      - 'src/Toolings/BlazorES2019/**'
       - 'src/Toolings/Cli/**'
       - 'src/Toolings/CodeAnalyzers/**'
       - 'src/Toolings/Minifier/**'
