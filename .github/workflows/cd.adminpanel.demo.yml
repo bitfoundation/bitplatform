@@ -66,6 +66,10 @@ permissions:
   contents: read
   actions: read
 
+concurrency:
+  group: cd-adminpanel-demo
+  cancel-in-progress: false
+
 jobs:
 
   build_api_blazor:

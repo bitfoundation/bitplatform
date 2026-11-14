@@ -14,8 +14,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: bit-ci-BlazorES2019-${{ github.event.pull_request.number || github.run_id }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  group: ci-blazores2019-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build-BlazorES2019:

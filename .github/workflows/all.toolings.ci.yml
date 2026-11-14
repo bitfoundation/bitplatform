@@ -9,6 +9,10 @@ env:
 permissions:
   contents: read
 
+concurrency:
+  group: all-toolings-ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
 
   blazores2019:

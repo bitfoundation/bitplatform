@@ -15,6 +15,10 @@ env:
 permissions:
   contents: read
 
+concurrency:
+  group: ci-bmage-e2e-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
 
   # The bit-bmage.js bridge, the browser's own codecs, canvas rendering, editor input and every demo page.

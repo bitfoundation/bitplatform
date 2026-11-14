@@ -65,6 +65,10 @@ permissions:
   contents: read
   actions: read
 
+concurrency:
+  group: cd-todo-demo
+  cancel-in-progress: false
+
 jobs:
 
   build_api:

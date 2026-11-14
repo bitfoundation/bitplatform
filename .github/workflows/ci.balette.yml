@@ -21,8 +21,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: bit-ci-Balette-${{ github.event.pull_request.number || github.run_id }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  group: ci-balette-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
 

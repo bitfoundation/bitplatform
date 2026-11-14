@@ -15,6 +15,10 @@ env:
 permissions:
   contents: read
 
+concurrency:
+  group: ci-bsqlite-e2e-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
 
   # The worker, the engine builds and every VFS in Chromium, driven through the library's own modules, plus every

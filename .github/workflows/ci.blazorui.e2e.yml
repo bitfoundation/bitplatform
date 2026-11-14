@@ -62,6 +62,10 @@ env:
 permissions:
   contents: read
 
+concurrency:
+  group: ci-blazorui-e2e-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
 
   # Builds the host and the tests once for every E2E job, and plans those jobs. The tests the run selects (all, or the

@@ -7,6 +7,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: cd-blex-demo
+  cancel-in-progress: true
+
 jobs:
 
   build_blazor_wasm:

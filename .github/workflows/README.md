@@ -30,6 +30,10 @@ Apart from the exceptions below, each CI, E2E and CD workflow is called by exact
 
 All Release Build starts on pull requests titled Prerelease, Release or Version, and by hand. It builds every folder solution in Release, each in a job of its own. The Boilerplate and the websites build there too, against packages packed from the same commit, because nuget.org doesn't have the version being released yet.
 
+## Concurrency
+
+A newer run of a workflow on the same pull request or branch cancels the older one. A CD that only deploys a website has one group whatever the branch, since every branch deploys to the same server, so the newer deploy wins. The NuGet CDs and the CDs that upload apps to the stores queue instead: stopping them halfway would leave a release half uploaded.
+
 ## Where the Bit packages come from
 
 Libraries, their demos and their tests reference each other as projects, so they always build the code of the same commit.
@@ -42,7 +46,7 @@ The templates, the websites and the demos made from the Boilerplate take the Bit
 
 ## Adding a project
 
-- A `ci.<project>.yml` that runs on pull requests touching the project's folder and packs its packages, and a `ci.<project>.e2e.yml` for its end-to-end suites.
+- A `ci.<project>.yml` that runs on pull requests touching the project's folder and packs its packages, and a `ci.<project>.e2e.yml` for its end-to-end suites, each with a concurrency group like its neighbours'.
 - A call to each from the All workflows of its folder.
 - Its folder solution in All Release Build's matrix.
 - Its packages in both NuGet workflows, and its folder in CD Nuget packages' paths.
@@ -50,9 +54,10 @@ The templates, the websites and the demos made from the Boilerplate take the Bit
 
 ## Exceptions
 
-- Support tracking keeps its own name. It, CD Nuget packages and CD Prerelease nuget packages are called by no All workflow.
+- Support tracking keeps its own name. It, CD Nuget packages, CD Prerelease nuget packages and CI CodeQL are called by no All workflow. CI CodeQL scans the whole repository on pull requests, pushes to `develop` and `main`, and once a week.
 - All Release Build calls no workflows. Its jobs are matrices, one job per solution.
-- CodeQL and the Copilot entries in Actions are GitHub's own workflows, with no file here.
+- All Apps CD and Support tracking have no concurrency group. The CDs that All Apps CD calls decide for themselves, and each Support tracking run handles another issue.
+- The Copilot entries in Actions are GitHub's own workflows, with no file here.
 - CI Templates and CI Websites skip release pull requests, because their version isn't on nuget.org yet. All Release Build builds the Boilerplate and the websites on those pull requests instead.
 - The Boilerplate's tests in CI Templates E2E run on projects made with `bit new`, in Debug, not on a published build.
 - The library demos take Bit.Minifier as a package, not a project.

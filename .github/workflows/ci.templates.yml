@@ -22,8 +22,8 @@ permissions:
   actions: read
 
 concurrency:
-  group: bit-ci-Templates-${{ github.event.pull_request.number || github.run_id }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  group: ci-templates-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build-Templates:

@@ -9,6 +9,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: cd-prerelease-nuget-packages-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   # The packages that target the MAUI platforms (Android, iOS, Mac Catalyst and Windows) need their workloads, and only
   # Windows builds all four: iOS and Mac Catalyst class libraries build there without a Mac. They are packed here, with

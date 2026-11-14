@@ -56,6 +56,10 @@ permissions:
   contents: read
   actions: read
 
+concurrency:
+  group: ci-templates-e2e-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
 
   test_boilerplate_postgres:

@@ -31,6 +31,10 @@ permissions:
   contents: read
   actions: read
 
+concurrency:
+  group: all-other-ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
 
   boilerplate:

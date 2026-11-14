@@ -42,6 +42,10 @@ permissions:
   contents: read
   actions: read
 
+concurrency:
+  group: cd-sales-module-demo
+  cancel-in-progress: false
+
 jobs:
 
   build_api_blazor:

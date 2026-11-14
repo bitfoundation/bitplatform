@@ -48,6 +48,10 @@ permissions:
   contents: read
   actions: read
 
+concurrency:
+  group: all-other-e2e-ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
 
   templates_e2e:

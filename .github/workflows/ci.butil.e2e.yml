@@ -16,6 +16,10 @@ env:
 permissions:
   contents: read
 
+concurrency:
+  group: ci-butil-e2e-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
 
   # The standalone WebAssembly sample, and every render mode of the Blazor Web App harness host (with
