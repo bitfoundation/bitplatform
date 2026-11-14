@@ -75,9 +75,9 @@ dotnet test --filter "FullyQualifiedName~.LiveTests."
 dotnet test --filter "FullyQualifiedName~A_replica_taken_offline"
 ```
 
-The workflow `.github/workflows/bit.ci.Bcrdt.e2e.yml` does the same in Release, in one job per engine. It is started by hand
+The workflow `.github/workflows/ci.bcrdt.e2e.yml` does the same in Release, in one job per engine. It is started by hand
 (`workflow_dispatch`, Actions > "CI Bcrdt E2E" > Run workflow) only, since the suite takes far longer
-than the build-and-unit pipeline in `bit.ci.Bcrdt.yml`, which runs the build, the unit tests, the MCP server tests
+than the build-and-unit pipeline in `ci.bcrdt.yml`, which runs the build, the unit tests, the MCP server tests
 and the pack:
 
 ```bash
@@ -110,7 +110,7 @@ the harness every lazy-loadable library shares); `BCRDT_E2E_LAZY_BASE_URL` point
 running. A sample that has not been published makes them inconclusive - or failed, on a build server - and leaves the
 other suites alone. They still need the demo, which every test of the suite boots first.
 
-The `lazy-loading-aot` job of `bit.ci.Bcrdt.e2e.yml` publishes the sample AOT-compiled too, which leaves its lazy mark
+The `lazy-loading-aot` job of `ci.bcrdt.e2e.yml` publishes the sample AOT-compiled too, which leaves its lazy mark
 out as the README says an AOT build must, and runs `LazyLoadingTests` against it:
 
 ```bash

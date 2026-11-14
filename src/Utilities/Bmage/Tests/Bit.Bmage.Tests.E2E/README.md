@@ -98,16 +98,16 @@ dotnet test --project Utilities\Bmage\Tests\Bit.Bmage.Tests.E2E\Bit.Bmage.Tests.
 
 ## CI
 
-`.github/workflows/bit.ci.Bmage.e2e.yml` runs the whole suite in Release, and only when started by hand (Actions >
+`.github/workflows/ci.bmage.e2e.yml` runs the whole suite in Release, and only when started by hand (Actions >
 "CI Bmage E2E" > Run workflow); the test results (TRX) and the demo's output are uploaded as an
 artifact. Its `e2e` job runs everything but `SamplesMauiTests` on Linux, `LazyLoadingTests` against the lazy loading
 sample published trimmed; its `lazy-loading-aot` job runs `LazyLoadingTests` alone against the sample published with
 `-p:RunAOTCompilation=true` (`BMAGE_E2E_LAZY_AOT=1`); its `e2e-maui` job runs `SamplesMauiTests` on
 `windows-2025`, with the MAUI workloads, the WebView2 Runtime and the debugging-port policy set up first. The
-pull-request pipeline, `bit.ci.Bmage.yml`, runs the build, engine, MCP server and hosting tests only;
+pull-request pipeline, `ci.bmage.yml`, runs the build, engine, MCP server and hosting tests only;
 `Bit.Bmage.Tests.Hosting` boots the same samples in-process and checks what their prerendered responses contain.
 
-The workflow drives the demo published the way `bmage.demo.cd.yml` publishes it (ahead of time, and trimmed) rather
+The workflow drives the demo published the way `cd.bmage.demo.yml` publishes it (ahead of time, and trimmed) rather
 than a build output: only a publish trims the WebAssembly client, so an interop payload the trimmer breaks (an anonymous type whose
 constructor lost its parameter names, a getter nothing but System.Text.Json reads) fails there and nowhere else:
 

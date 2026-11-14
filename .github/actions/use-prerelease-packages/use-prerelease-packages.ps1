@@ -1,6 +1,6 @@
 #Requires -Version 7.4
 # Makes a project restore every Bit.* package from the newest nupkg-files artifact of the
-# prerelease.nuget.org.yml runs. See action.yml.
+# cd.prerelease.nuget.packages.yml runs. See action.yml.
 param(
     [Parameter(Mandatory)] [string] $ProjectFolder, # Of the nuget.config to use; created when missing.
     [Parameter(Mandatory)] [string] $Repository,
@@ -10,7 +10,7 @@ param(
 $ErrorActionPreference = 'Stop'
 $PSNativeCommandUseErrorActionPreference = $true
 
-$runs = gh run list --repo $Repository --workflow prerelease.nuget.org.yml --limit 100 --json databaseId,headBranch,headSha,url |
+$runs = gh run list --repo $Repository --workflow cd.prerelease.nuget.packages.yml --limit 100 --json databaseId,headBranch,headSha,url |
     ConvertFrom-Json
 
 $artifact = (gh api "repos/$Repository/actions/artifacts?name=nupkg-files&per_page=100" | ConvertFrom-Json).artifacts |
@@ -21,7 +21,7 @@ $artifact = (gh api "repos/$Repository/actions/artifacts?name=nupkg-files&per_pa
 $run = $runs | Where-Object databaseId -eq $artifact.workflow_run.id
 
 if (-not $run) {
-    throw "$Repository has no run of prerelease.nuget.org.yml with an unexpired nupkg-files artifact to take the packages from."
+    throw "$Repository has no run of cd.prerelease.nuget.packages.yml with an unexpired nupkg-files artifact to take the packages from."
 }
 
 New-Item -ItemType Directory -Force $PackagesFolder | Out-Null

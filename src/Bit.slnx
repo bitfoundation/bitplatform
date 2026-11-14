@@ -20,15 +20,19 @@
   </Folder>
   <Folder Name="/.Solution Items/.github/" />
   <Folder Name="/.Solution Items/.github/workflows/">
-    <File Path="../.github/workflows/admin-sample.cd.yml" />
-    <File Path="../.github/workflows/bit.ci.yml" />
-    <File Path="../.github/workflows/bit.full.ci.yml" />
-    <File Path="../.github/workflows/blazorui.demo.cd.yml" />
-    <File Path="../.github/workflows/nuget.org.yml" />
-    <File Path="../.github/workflows/platform.website.cd.yml" />
-    <File Path="../.github/workflows/prerelease.nuget.org.yml" />
-    <File Path="../.github/workflows/sales.website.cd.yml" />
-    <File Path="../.github/workflows/todo-sample.cd.yml" />
+    <File Path="../.github/workflows/all.apps.cd.yml" />
+    <File Path="../.github/workflows/all.other.ci.yml" />
+    <File Path="../.github/workflows/all.other.e2e.ci.yml" />
+    <File Path="../.github/workflows/all.toolings.ci.yml" />
+    <File Path="../.github/workflows/all.utilities.ci.yml" />
+    <File Path="../.github/workflows/all.utilities.e2e.ci.yml" />
+    <File Path="../.github/workflows/cd.adminpanel.demo.yml" />
+    <File Path="../.github/workflows/cd.blazorui.demo.yml" />
+    <File Path="../.github/workflows/cd.nuget.packages.yml" />
+    <File Path="../.github/workflows/cd.platform.website.yml" />
+    <File Path="../.github/workflows/cd.prerelease.nuget.packages.yml" />
+    <File Path="../.github/workflows/cd.sales.website.yml" />
+    <File Path="../.github/workflows/cd.todo.demo.yml" />
   </Folder>
   <Folder Name="/Utilities/" />
   <Folder Name="/Utilities/Blex/">

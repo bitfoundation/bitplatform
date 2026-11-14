@@ -60,8 +60,8 @@ dotnet test --filter "FullyQualifiedName~.KeyboardAndTouchTests."
 dotnet test --filter "FullyQualifiedName~Drawing_with_the_mouse"
 ```
 
-CI does the same in Release (`.github/workflows/bit.ci.Bink.e2e.yml`), against the demo published the way
-`bink.demo.cd.yml` publishes it rather than a build output: only a publish trims the WebAssembly client, so an interop payload the trimmer breaks (an anonymous type whose
+CI does the same in Release (`.github/workflows/ci.bink.e2e.yml`), against the demo published the way
+`cd.bink.demo.yml` publishes it rather than a build output: only a publish trims the WebAssembly client, so an interop payload the trimmer breaks (an anonymous type whose
 constructor lost its parameter names, a getter nothing but System.Text.Json reads) fails there and nowhere else:
 
 ```bash
@@ -84,7 +84,7 @@ dotnet publish src/Utilities/Bink/Samples/Lazy/Bit.Bink.Samples.Lazy/Bit.Bink.Sa
 cd src/Utilities/Bink/Tests/Bit.Bink.Tests.E2E && BINK_E2E_LAZY_AOT=1 dotnet test -c Release --no-build --filter "FullyQualifiedName~LazyLoadingTests"
 ```
 
-The pull-request pipeline, `bit.ci.Bink.yml`, runs the build, engine, component and MCP tests, on .NET 10 and 11.
+The pull-request pipeline, `ci.bink.yml`, runs the build, engine, component and MCP tests, on .NET 10 and 11.
 
 ### What another engine cannot run
 

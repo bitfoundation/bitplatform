@@ -155,7 +155,7 @@ from a warm cache - so a `wasm` run takes about five times longer than a `server
 
 ## CI
 
-`.github/workflows/bit.ci.BlazorUI.e2e.yml` runs the whole suite on demand only (Actions > "CI BlazorUI E2E" > Run
+`.github/workflows/ci.blazorui.e2e.yml` runs the whole suite on demand only (Actions > "CI BlazorUI E2E" > Run
 workflow), narrowed through its inputs (engines, modes, an optional test filter):
 
 - One job builds the host (in Release) and the tests, and every test job downloads that build: the host runs from its

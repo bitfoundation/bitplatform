@@ -1,0 +1,46 @@
+name: All Other E2E CI
+
+on:
+  workflow_dispatch:
+    inputs:
+      blazorui:
+        description: BlazorUI E2E suite
+        type: boolean
+        default: true
+      bswup:
+        description: Bswup E2E suite
+        type: boolean
+        default: true
+      butil:
+        description: Butil E2E suite
+        type: boolean
+        default: true
+      brouter:
+        description: Brouter E2E suite
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+
+  blazorui_e2e:
+    name: blazorui e2e
+    if: ${{ inputs.blazorui }}
+    uses: ./.github/workflows/ci.blazorui.e2e.yml
+
+  bswup_e2e:
+    name: bswup e2e
+    if: ${{ inputs.bswup }}
+    uses: ./.github/workflows/ci.bswup.e2e.yml
+
+  butil_e2e:
+    name: butil e2e
+    if: ${{ inputs.butil }}
+    uses: ./.github/workflows/ci.butil.e2e.yml
+
+  brouter_e2e:
+    name: brouter e2e
+    if: ${{ inputs.brouter }}
+    uses: ./.github/workflows/ci.brouter.e2e.yml

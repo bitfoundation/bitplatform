@@ -65,9 +65,9 @@ BLAZEDB_E2E_BROWSER=firefox dotnet test
 
 A build output is not what ships, though: only a publish trims the WebAssembly client, and whatever the trimming
 breaks - a member something finds by reflection - works in every build and fails only there. CI therefore runs
-the suite against the demo published the way `blazedb.demo.cd.yml` publishes it, once per engine, in
-`.github/workflows/bit.ci.BlazeDb.e2e.yml`, which only runs when started by hand (Actions > "CI BlazeDb E2E" > Run
-workflow). The pull-request pipeline, `bit.ci.BlazeDb.yml`, runs the build, engine, EF Core
+the suite against the demo published the way `cd.blazedb.demo.yml` publishes it, once per engine, in
+`.github/workflows/ci.blazedb.e2e.yml`, which only runs when started by hand (Actions > "CI BlazeDb E2E" > Run
+workflow). The pull-request pipeline, `ci.blazedb.yml`, runs the build, engine, EF Core
 provider and MCP tests only. To do what CI does:
 
 ```bash
