@@ -1,12 +1,12 @@
 # Notices
 
-bit platform is licensed under the PolyForm Perimeter License 1.0.1 (see [LICENSE](LICENSE)), except for the parts
+bit platform is licensed under the Functional Source License, FSL-1.1-MIT (see [LICENSE](LICENSE)), except for the parts
 listed below, which stay under the licenses they were received under. Anyone who distributes bit platform, or any part
 of it, passes this file on with it.
 
 ## Contributions made under the MIT License
 
-Until bit platform moved to the PolyForm Perimeter License 1.0.1
+Until bit platform moved to the Functional Source License (FSL-1.1-MIT)
 ([#14834](https://github.com/bitfoundation/bitplatform/issues/14834)), bit platform and every contribution to it were
 licensed under the MIT License. The code contributed by people other than bit platform up to that change keeps that
 license, whose notice follows:

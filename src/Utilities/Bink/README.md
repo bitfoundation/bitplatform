@@ -2821,4 +2821,4 @@ existing operations, including `BinkBatchOperation`, instead.
 ## License
 
 Bink is part of [bitplatform](https://github.com/bitfoundation/bitplatform) and is licensed under the
-[PolyForm Perimeter License 1.0.1](https://github.com/bitfoundation/bitplatform/blob/develop/LICENSE).
+[Functional Source License (FSL-1.1-MIT)](https://github.com/bitfoundation/bitplatform/blob/develop/LICENSE).

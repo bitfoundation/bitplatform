@@ -25,7 +25,7 @@ public partial class Acknowledgements
     /// </summary>
     private static readonly Dependency[] RuntimeDependencies =
     [
-        new("bit platform ❤️", "https://bitplatform.dev", "https://github.com/bitfoundation/bitplatform", "PolyForm Perimeter 1.0.1"),
+        new("bit platform ❤️", "https://bitplatform.dev", "https://github.com/bitfoundation/bitplatform", "FSL-1.1-MIT"),
         new(".NET", "https://dot.net", "https://github.com/dotnet/runtime", "MIT"),
         new("ASP.NET Core - Blazor", "https://asp.net", "https://github.com/dotnet/aspnetcore", "MIT"),
         //#if (aspire == true)
