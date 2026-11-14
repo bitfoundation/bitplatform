@@ -130,8 +130,10 @@ task. Open the task's page in this machine's browser once, and leave the Workben
   maintainer's language, with every run, issue and commit as a link or `code`.
 - Ask nothing there: the questions were all asked up front, in the chat. Never put a secret or the list of the repo's
   variables there either.
-- Building the Workbench's own projects in this checkout, as fixing one of its tests does, fails on the files the
-  running one holds: stop it first and start it again after. Its task waits in its review.
+- Building the Workbench's own projects in this checkout, as fixing one of its tests or building the E2E suite does,
+  fails on the files the running one holds: stop it first and start it again after. Its task waits in its review.
+  Stopping the shell that started `dotnet watch` can leave the watch itself running, and it then rebuilds the
+  Workbench from whatever the next restore wrote and holds those packages too: check that no process of it is left.
 
 ## The helper
 
@@ -264,6 +266,11 @@ websites - is checked. Every command prints what it checked and exits non-zero o
    - A Workbench test on a phone whose tap does nothing can be a tap on the shell's floating Tools button: it lies
      outside the view's iframe, so Playwright's check of what the tap would hit doesn't see it. A screenshot right
      after the tap shows the Tools panel. The Workbench's tests exist only in a project made with `--advancedTests`.
+   - A WebAssembly-only failure that reads `Could not load type of field ... Could not load file or assembly` names a
+     lazily loaded assembly that was touched before it loaded: in the interpreter, a method that reads a field, casts
+     or calls `new` with such a type works out its layout as the method first runs, and the failure stays for the
+     rest of the visit. A click right after the page loads, before the download is done, reproduces it in a project
+     made from the branch; keep such a type out of fields, casts and method bodies that can run before the load.
 
 4. Fix the cause. A timeout grows only when what it waits for is legitimately slow, and a retry that hides a race is
    not a fix. Template changes follow `src/Templates/Boilerplate/Bit.Boilerplate/AGENTS.md`, `[mirror]` comments
@@ -280,7 +287,8 @@ websites - is checked. Every command prints what it checked and exits non-zero o
    is the final proof: `gh workflow run all.ci.yml -R bitfoundation/bitplatform --ref <branch>`. Re-running a failed
    job (`gh run rerun <run-id> --failed`) tells flaky from broken, and proves nothing about a fix. It has to wait for
    the whole run to end, which the E2E suites can hold up for hours: a new All CI with every other job off answers
-   sooner. A push to a branch
+   sooner. GitHub won't re-run a run whose branch is gone, as after its PR was merged: start that All CI on develop
+   or on the fix branch instead. A push to a branch
    with an open PR also starts that PR's CI workflows; cancel the ones All CI runs anyway, so the runners go to it.
 
    A fix in a bit library - any `Bit.*` project other than the Boilerplate template, its tests, demos and samples
