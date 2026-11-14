@@ -129,4 +129,4 @@
     }
 }
 
-// bit-lazy: teardown Utils.disposeFocusOrigin
+// bit-lazy: teardown Utils.forgetFocus
