@@ -205,6 +205,7 @@ describe('JS -> .NET call tracking', () => {
         const entries = reports[0][2];
         expect(entries.map(entry => [entry.identifier, entry.args, entry.sync])).toEqual([['object#7.OnTick', 1, false], ['object#7.Sync', 0, true], ['object#7.Fail', 0, false]]);
         expect(entries[2].error).toBe('boom');
+        expect(entries.every(entry => typeof entry.ageMs === 'number' && entry.ageMs >= 0), 'each call says how long before the report it was made').toBe(true);
         expect(dispatched.some(call => call[0] === 7 && call[1] === 'OnTick' && call[2] === 42), 'the application call still reaches .NET').toBe(true);
 
         bridge.detach();

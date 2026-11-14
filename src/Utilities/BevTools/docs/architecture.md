@@ -452,11 +452,16 @@ point at or before that offset (`At`), and on WebAssembly recording the error is
 When the registry notices a disposal it hands the component to the leak tracker, which keeps a weak reference, the
 time, and the number of full collections so far. *Retained* means alive after two full collections since then and a
 grace period (work the component started may hold it briefly), or after the full collections a developer asked for. A
-retained instance is analysed once: delegates and framework collections on what it was handed (injected services,
-cascading values, NavigationManager, AuthenticationStateProvider), the JS runtime's `_trackedRefsById`, and its own
-timers, all by reference identity. Instances with no cause found are checked against every frame buffer the renderer
-keeps (both render trees of every live component, whole, and the batch's reference frames): a component its parent
-stopped rendering stays in the parent's previous tree until the parent renders again, which is not a leak. That
+retained instance is analysed once: delegates, `EventCallback`s and framework collections on what it was handed
+(injected services, cascading values that are not disposed components themselves, NavigationManager,
+AuthenticationStateProvider) and on the application's and libraries' objects those hold, up to four objects down and
+within a budget per holder; the fields of the components still on the page (`@ref`s); the JS runtime's
+`_trackedRefsById` and what its targets hold; and its own timers, all by reference identity. Retained instances are
+grouped under their topmost retained ancestor, by the ancestor chain recorded at disposal, and reported once per type
+of that ancestor with a count of what it rendered. Instances with no cause found are checked against every frame
+buffer of every renderer the session saw (both render trees of every live component, whole, and the batch's reference
+frames): a component its parent stopped rendering stays in the parent's previous tree until the parent renders again,
+which is not a leak. That
 behaviour was measured on a plain renderer with and without BevTools; the tests run on such a renderer too, since a
 bUnit context keeps every component it rendered until it is disposed. The finding is the
 `memory.retained-components` rule; the Runtime panel lists them and runs the forced check.

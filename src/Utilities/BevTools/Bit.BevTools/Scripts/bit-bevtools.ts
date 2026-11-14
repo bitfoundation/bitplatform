@@ -23,6 +23,8 @@ interface BevJsCallEntry {
     at: number;
     durationMs?: number;
     error?: string;
+    /** How long before the report the call was made, by the page's clock: a server's clock is not the browser's. */
+    ageMs?: number;
 }
 
 interface BevStorageEntry {
@@ -317,6 +319,8 @@ function queueJsToDotNet(target: BevTarget | null, entry: BevJsCallEntry, genera
         if (target.jsToDotNetBatch.length === 0) return;
         const batch = target.jsToDotNetBatch;
         target.jsToDotNetBatch = [];
+        const sent = Date.now();
+        for (const entry of batch) entry.ageMs = Math.max(0, sent - entry.at);
         invoke(target, "ReportJsToDotNet", batch);
     }, 500);
 }

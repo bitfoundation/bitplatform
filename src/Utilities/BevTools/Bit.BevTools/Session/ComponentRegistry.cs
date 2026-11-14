@@ -40,7 +40,7 @@ internal sealed class ComponentRegistry
     private long _lastSweepTicks = Stopwatch.GetTimestamp();
     private BevComponentTreeNode[]? _treeCache;
     private bool _treeCacheIncludesHidden;
-    private WeakReference<Renderer>? _renderer;
+    private readonly List<WeakReference<Renderer>> _renderers = [];
 
     // The framework's activities and meters name a component type, never an instance. These remember, past the records
     // themselves, which types the application rendered and which only BevTools' own UI did - its panels, an extension's
@@ -64,7 +64,32 @@ internal sealed class ComponentRegistry
     /// <summary>True when <see cref="BitBevToolsOptions.MaxTrackedComponents"/> was hit and new components are no longer tracked.</summary>
     public bool IsTruncated { get; private set; }
 
-    public Renderer? Renderer => _renderer is not null && _renderer.TryGetTarget(out var renderer) ? renderer : null;
+    /// <summary>The first renderer the session saw that is still alive.</summary>
+    public Renderer? Renderer => Renderers.FirstOrDefault();
+
+    /// <summary>
+    /// Every live renderer the session's components were rendered by. A page can have more than one: a root component
+    /// added from JavaScript, a second WebAssembly root, a hybrid host's own.
+    /// </summary>
+    public IReadOnlyList<Renderer> Renderers
+    {
+        get
+        {
+            lock (_renderers)
+            {
+                var live = new List<Renderer>(_renderers.Count);
+                foreach (var reference in _renderers)
+                {
+                    if (reference.TryGetTarget(out var renderer))
+                    {
+                        live.Add(renderer);
+                    }
+                }
+
+                return live;
+            }
+        }
+    }
 
     public BevComponentRecord? Register(IComponent component, Type type, bool isBevTools, bool isHidden)
     {
@@ -101,7 +126,23 @@ internal sealed class ComponentRegistry
 
     internal void NoteRenderer(Renderer renderer)
     {
-        _renderer ??= new WeakReference<Renderer>(renderer);
+        // Once per component: a loop over the one or two renderers a page has, without allocating when it is known.
+        lock (_renderers)
+        {
+            for (var i = _renderers.Count - 1; i >= 0; i--)
+            {
+                if (!_renderers[i].TryGetTarget(out var known))
+                {
+                    _renderers.RemoveAt(i);
+                }
+                else if (ReferenceEquals(known, renderer))
+                {
+                    return;
+                }
+            }
+
+            _renderers.Add(new WeakReference<Renderer>(renderer));
+        }
     }
 
     /// <summary>

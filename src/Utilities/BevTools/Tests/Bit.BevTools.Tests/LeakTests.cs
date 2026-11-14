@@ -30,6 +30,7 @@ public sealed class LeakTests : IDisposable
     {
         var services = new ServiceCollection();
         services.AddSingleton<LeakyEvents>();
+        services.AddSingleton<TourService>();
         services.AddTransient<TransientEvents>();
         services.AddSingleton<IJSRuntime>(new TrackingTestJSRuntime());
         services.AddOptions();
@@ -265,6 +266,88 @@ public sealed class LeakTests : IDisposable
     }
 
     [TestMethod]
+    public void A_callback_kept_by_an_object_inside_a_service_is_found_and_its_path_named()
+    {
+        // A tour service keeps the tour, the tour its steps, a step the component's callback: three objects below what
+        // the component injected, which a search of the service's own fields alone does not reach.
+        var group = Assert.ContainsSingle(RenderRemoveAndCheck<TourUser>());
+        var cause = Assert.ContainsSingle(group.Causes);
+        Assert.AreEqual("TourService (injected) → _tour.Steps[].OnClose", cause.Holder);
+        Assert.AreEqual("handler TourUser.Close", cause.Detail);
+    }
+
+    [TestMethod]
+    public void An_at_ref_of_a_component_still_on_the_page_is_named()
+    {
+        var root = _renderer.RenderRoot<RefHost>(new Dictionary<string, object?> { [nameof(RefHost.Show)] = true });
+        Session.Components.Refresh(force: true);
+        _renderer.SetRootParameters(root, new Dictionary<string, object?> { [nameof(RefHost.Show)] = false });
+        Session.Components.Refresh(force: true);
+        _renderer.SetRootParameters(root, new Dictionary<string, object?> { [nameof(RefHost.Show)] = false });
+
+        var group = Assert.ContainsSingle(Session.Leaks.CollectAndCheck());
+        Assert.AreEqual("RefChild", group.DisplayName);
+        var cause = Assert.ContainsSingle(group.Causes);
+        Assert.AreEqual("RefHost (still rendered) → _child", cause.Holder);
+        StringAssert.Contains(cause.Suggestion, "@ref");
+    }
+
+    [TestMethod]
+    public void What_a_retained_component_rendered_is_reported_with_it_not_on_its_own()
+    {
+        RenderAndRemove(typeof(IconPage));
+        RenderParentAgain();
+
+        var group = Assert.ContainsSingle(Session.Leaks.CollectAndCheck(), "one finding for the page, not one per type it rendered");
+        Assert.AreEqual("IconPage", group.DisplayName);
+        Assert.AreEqual(1, group.Count);
+        Assert.AreEqual(3, group.DescendantCount);
+        Assert.AreEqual(new BevRetainedTypeCount("PageIcon", 3), Assert.ContainsSingle(group.Descendants));
+        Assert.AreEqual("LeakyEvents (injected) → Changed", Assert.ContainsSingle(group.Causes).Holder);
+        Assert.HasCount(4, group.InstanceIds);
+
+        Session.Diagnostics.Evaluate(force: true);
+        var finding = Assert.ContainsSingle(f => f.Diagnostic.RuleId == "memory.retained-components", Session.Diagnostics.Findings).Diagnostic;
+        Assert.AreEqual("IconPage: 1 disposed instance still alive, with 3 components it rendered", finding.Title);
+        StringAssert.Contains(finding.Evidence, "With it, 3 disposed components it rendered: PageIcon 3.");
+    }
+
+    [TestMethod]
+    public void A_disposed_component_is_never_named_as_what_holds_another()
+    {
+        // The slide is in the disposed carousel's list, and the carousel was cascaded to it: that is a cycle, which goes
+        // when the carousel's own holder lets go. The slide goes under the carousel, through the CascadingValue between
+        // them (collected), and the cause is the carousel's.
+        RenderAndRemove(typeof(Carousel));
+        RenderParentAgain();
+
+        var group = Assert.ContainsSingle(Session.Leaks.CollectAndCheck());
+        Assert.AreEqual("Carousel", group.DisplayName);
+        Assert.Contains(new BevRetainedTypeCount("CarouselSlide", 1), group.Descendants);
+        Assert.AreEqual("LeakyEvents (injected) → Changed", Assert.ContainsSingle(group.Causes).Holder);
+    }
+
+    [TestMethod]
+    public void A_component_nothing_searched_holds_is_reported_with_what_was_searched()
+    {
+        try
+        {
+            RenderAndRemove(typeof(StaticallyHeld));
+            RenderParentAgain();
+            Session.Leaks.CollectAndCheck();
+            Session.Diagnostics.Evaluate(force: true);
+
+            var finding = Assert.ContainsSingle(f => f.Diagnostic.RuleId == "memory.retained-components", Session.Diagnostics.Findings).Diagnostic;
+            StringAssert.Contains(finding.Evidence, "Not held by its injected services, its cascading values, a field of a component still on the page, the JS runtime's object references or its own timers");
+            StringAssert.Contains(finding.Suggestion, "heap snapshot");
+        }
+        finally
+        {
+            StaticallyHeld.Instances.Clear();
+        }
+    }
+
+    [TestMethod]
     public void A_server_process_outside_Development_does_not_let_the_panel_force_a_collection()
     {
         var (session, scope) = TestHelpers.CreateSession(services: s => s.AddSingleton(Type.GetType(BevToolsAttachPolicy.ServerTypeName + ", Microsoft.AspNetCore.Hosting.Server.Abstractions")!, _ => new object()));
@@ -276,6 +359,127 @@ public sealed class LeakTests : IDisposable
             StringAssert.Contains(answer.RootElement.GetProperty("error").GetString(), "not allowed");
         }
     }
+}
+
+public sealed class TourService
+{
+    private Tour? _tour;
+
+    public void Start(Action onClose) => _tour = new Tour { Steps = [new TourStepModel(), new TourStepModel { OnClose = onClose }] };
+}
+
+public sealed class Tour
+{
+    public List<TourStepModel> Steps { get; init; } = [];
+}
+
+public sealed class TourStepModel
+{
+    public Action? OnClose { get; init; }
+}
+
+public class TourUser : ComponentBase
+{
+    [Inject] public TourService Tour { get; set; } = default!;
+
+    protected override void OnInitialized() => Tour.Start(Close);
+
+    private void Close()
+    {
+    }
+}
+
+public class RefHost : ComponentBase
+{
+    private RefChild? _child;
+
+    [Parameter] public bool Show { get; set; }
+
+    public RefChild? Child => _child;
+
+    protected override void BuildRenderTree(RenderTreeBuilder builder)
+    {
+        if (Show)
+        {
+            builder.OpenComponent<RefChild>(0);
+            builder.AddComponentReferenceCapture(1, c => _child = (RefChild)c);
+            builder.CloseComponent();
+        }
+    }
+}
+
+public class RefChild : ComponentBase
+{
+}
+
+public class IconPage : ComponentBase
+{
+    private readonly List<PageIcon> _icons = [];
+
+    [Inject] public LeakyEvents Events { get; set; } = default!;
+
+    public int Icons => _icons.Count;
+
+    protected override void OnInitialized() => Events.Changed += OnChanged;
+
+    private void OnChanged()
+    {
+    }
+
+    protected override void BuildRenderTree(RenderTreeBuilder builder)
+    {
+        for (var i = 0; i < 3; i++)
+        {
+            builder.OpenComponent<PageIcon>(0);
+            builder.SetKey(i);
+            builder.AddComponentReferenceCapture(1, c => _icons.Add((PageIcon)c));
+            builder.CloseComponent();
+        }
+    }
+}
+
+public class PageIcon : ComponentBase
+{
+}
+
+public class Carousel : ComponentBase
+{
+    [Inject] public LeakyEvents Events { get; set; } = default!;
+
+    public List<CarouselSlide> Slides { get; } = [];
+
+    protected override void OnInitialized() => Events.Changed += OnChanged;
+
+    private void OnChanged()
+    {
+    }
+
+    protected override void BuildRenderTree(RenderTreeBuilder builder)
+    {
+        builder.OpenComponent<CascadingValue<Carousel>>(0);
+        builder.AddComponentParameter(1, nameof(CascadingValue<Carousel>.Value), this);
+        builder.AddComponentParameter(2, nameof(CascadingValue<Carousel>.IsFixed), true);
+        builder.AddComponentParameter(3, nameof(CascadingValue<Carousel>.ChildContent), (RenderFragment)(b =>
+        {
+            b.OpenComponent<CarouselSlide>(0);
+            b.CloseComponent();
+        }));
+        builder.CloseComponent();
+    }
+}
+
+public class CarouselSlide : ComponentBase
+{
+    [CascadingParameter] public Carousel Carousel { get; set; } = default!;
+
+    protected override void OnInitialized() => Carousel.Slides.Add(this);
+}
+
+public class StaticallyHeld : ComponentBase
+{
+    public static readonly List<object> Instances = [];
+
+    protected override void OnInitialized() => Instances.Add(this);
 }
 
 public class ManyRows : ComponentBase

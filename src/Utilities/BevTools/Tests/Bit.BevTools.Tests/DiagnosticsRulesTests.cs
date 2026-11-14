@@ -76,7 +76,7 @@ public class DiagnosticsRulesTests
             var freq = System.Diagnostics.Stopwatch.Frequency;
             for (var i = 0; i < 60; i++)
             {
-                session.Timeline.Record(Interop("→ JS module.ping", now - 6 * freq + i * freq / 200));
+                session.Timeline.Record(Interop("→ JS module.ping", now - 6 * freq + i * freq / 1000));
             }
 
             // The same number of calls to another function, spread over half a minute: no burst.
