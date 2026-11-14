@@ -45,10 +45,11 @@
         </Footer>
     </BitLayout>
 
-    @* Inside the shell on purpose: BitAppShell cascades the element that scrolls the app, and a Modal shown
+    @* Inside the shell on purpose: BitAppShell cascades the element that scrolls the app, and a Modal or a Panel shown
        through the service holds that scroller the same way a declared one does. Left outside, the container
        would sit beyond the cascade and its Modals would fall back to holding a body that never scrolls. *@
     <BitModalContainer />
+    <BitPanelContainer />
 </BitAppShell>
 
 <AppAiChatPanel />

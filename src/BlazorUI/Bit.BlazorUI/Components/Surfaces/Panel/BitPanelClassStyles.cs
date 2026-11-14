@@ -53,4 +53,27 @@ public class BitPanelClassStyles
     /// Custom CSS classes/styles for the grabber of a bottom sheet with more than one snap point, the bar at its top edge.
     /// </summary>
     public string? Grabber { get; set; }
+
+
+    /// <summary>
+    /// Merges two sets of classes or styles part by part, the first one winning where both name a part. Null when both are.
+    /// </summary>
+    public static BitPanelClassStyles? Merge(BitPanelClassStyles? classStyles1, BitPanelClassStyles? classStyles2)
+    {
+        if (classStyles1 is null && classStyles2 is null) return null;
+
+        return new BitPanelClassStyles
+        {
+            Root = classStyles1?.Root ?? classStyles2?.Root,
+            Overlay = classStyles1?.Overlay ?? classStyles2?.Overlay,
+            Container = classStyles1?.Container ?? classStyles2?.Container,
+            HeaderContainer = classStyles1?.HeaderContainer ?? classStyles2?.HeaderContainer,
+            Header = classStyles1?.Header ?? classStyles2?.Header,
+            CloseButton = classStyles1?.CloseButton ?? classStyles2?.CloseButton,
+            CloseIcon = classStyles1?.CloseIcon ?? classStyles2?.CloseIcon,
+            Body = classStyles1?.Body ?? classStyles2?.Body,
+            Footer = classStyles1?.Footer ?? classStyles2?.Footer,
+            Grabber = classStyles1?.Grabber ?? classStyles2?.Grabber,
+        };
+    }
 }
