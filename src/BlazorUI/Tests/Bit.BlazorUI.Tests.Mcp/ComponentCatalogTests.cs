@@ -533,6 +533,24 @@ public class ComponentCatalogTests : McpTestBase
     }
 
     /// <summary>
+    /// The panel service is a service of the same kind, of panels: its answer documents its own reference, parameters
+    /// and container, and points at the params object and the CSS variables of the BitPanel it shows.
+    /// </summary>
+    [TestMethod]
+    public async Task The_panel_service_documents_its_types_and_the_panel_it_shows()
+    {
+        var answer = await CallAsync("GetBitBlazorUIComponent", new { name = "BitPanelService" });
+
+        using var scope = Assert.Scope();
+
+        StringAssert.Contains(answer, "## BitPanelReference (class)", "BitPanelService does not document its reference.");
+        StringAssert.Contains(answer, "## BitPanelParameters (class)", "BitPanelService does not document its parameters.");
+        StringAssert.Contains(answer, "## BitPanelContainer (component)", "BitPanelService does not document its container.");
+        StringAssert.Contains(answer, "`BitPanelParams`", "BitPanelService does not name the params object of the panels it shows.");
+        StringAssert.Contains(answer, "`--bit-Panel-", "BitPanelService does not name a variable of the panels it shows.");
+    }
+
+    /// <summary>
     /// What a params object does NOT carry, which is the half of the cascade a reader cannot infer.
     /// <para>
     /// Every <c>...Params</c> derives from <c>BitComponentBaseParams</c>, so it carries that half of

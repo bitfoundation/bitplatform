@@ -1,0 +1,10 @@
+﻿.example-row {
+    gap: 1rem;
+    display: flex;
+    flex-flow: row wrap;
+    align-items: center;
+}
+
+.result {
+    margin-inline-start: 1rem;
+}
