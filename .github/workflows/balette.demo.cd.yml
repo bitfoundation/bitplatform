@@ -1,4 +1,4 @@
-name: Balette Demo CD
+name: CD Balette Demo
 
 on:
   workflow_dispatch:

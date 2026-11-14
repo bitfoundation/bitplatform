@@ -1,4 +1,4 @@
-name: Bmotion Demo CD
+name: CD Bmotion Demo
 
 on:
   workflow_dispatch:

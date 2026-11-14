@@ -1,4 +1,4 @@
-name: Belemetry Demo CD
+name: CD Belemetry Demo
 
 on:
   workflow_dispatch:

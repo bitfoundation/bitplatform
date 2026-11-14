@@ -1,4 +1,4 @@
-name: Bmage Demo CD
+name: CD Bmage Demo
 
 on:
   workflow_dispatch:

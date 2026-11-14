@@ -1,4 +1,4 @@
-name: bit platform CI - Brouter
+name: CI Brouter
 
 # Build plus the unit, MCP, source-generator and hosting tests. The browser E2E suites and the trimmed/AOT publish
 # gate are in bit.ci.Brouter.e2e.yml and run on demand only.

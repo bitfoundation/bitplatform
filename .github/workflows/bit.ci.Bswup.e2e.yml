@@ -1,6 +1,6 @@
-name: bit platform CI - Bswup E2E
+name: CI Bswup E2E
 
-# On demand only (Actions > bit platform CI - Bswup E2E > Run workflow). The regular build and test pipeline is
+# On demand only (Actions > CI Bswup E2E > Run workflow). The regular build and test pipeline is
 # bit.ci.Bswup.yml. See src/Bswup/Tests/Bit.Bswup.Tests.E2E/README.md for what each job proves and how to run it
 # locally.
 

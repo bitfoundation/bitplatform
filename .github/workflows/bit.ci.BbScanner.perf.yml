@@ -1,4 +1,4 @@
-name: bit platform CI - BbScanner performance
+name: CI BbScanner Performance
 
 # The performance gate: each standard frame's decode time and allocations against the baseline in
 # src/Utilities/BbScanner/Tests/Bit.BbScanner.Benchmarks/budgets.json. Timings measured on a shared runner against a

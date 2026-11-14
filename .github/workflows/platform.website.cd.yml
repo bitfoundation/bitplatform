@@ -1,4 +1,4 @@
-name: Platform Website CD
+name: CD Platform Website
 
 env:
   APP_SERVICE_NAME: 'bitplatform'

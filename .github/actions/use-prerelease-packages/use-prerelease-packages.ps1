@@ -30,7 +30,7 @@ try {
     gh run download $run.databaseId --repo $Repository --name nupkg-files --dir $PackagesFolder
 }
 catch {
-    throw "The nupkg-files artifact of $($run.url) could not be downloaded, it may have expired. Run the Prerelease nuget packages workflow again. $_"
+    throw "The nupkg-files artifact of $($run.url) could not be downloaded, it may have expired. Run the CD Prerelease nuget packages workflow again. $_"
 }
 
 $PackagesFolder = (Resolve-Path $PackagesFolder).Path
@@ -62,7 +62,7 @@ $checkoutVersion = ([xml](Get-Content (Join-Path $PSScriptRoot '..' '..' '..' 's
 
 # Checked before anything changes: the restore would fail anyway, with far less to go on.
 if ($versions -notcontains $checkoutVersion) {
-    throw "$($run.url) ($($run.headBranch)) built Bit.* $($versions -join ', '), but this checkout is on $checkoutVersion (src/Bit.Build.props). Run Prerelease nuget packages on a branch at $checkoutVersion."
+    throw "$($run.url) ($($run.headBranch)) built Bit.* $($versions -join ', '), but this checkout is on $checkoutVersion (src/Bit.Build.props). Run CD Prerelease nuget packages on a branch at $checkoutVersion."
 }
 
 # A nuget.org copy of the same version in the global packages folder would be used as is.

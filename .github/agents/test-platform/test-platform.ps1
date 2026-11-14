@@ -9,7 +9,7 @@
     versions  Compares what the Boilerplate demos' and the platform website's CD workflows deploy with APP_VERSION: the
               IIS sites, the Windows apps, the Android apps, the version each Boilerplate web app shows in its nav panel,
               and the MCP endpoint's own version. With -CdRun it also says where that run took its Bit packages from:
-              nuget.org, or a Prerelease nuget packages run. Exits 1 when anything is behind.
+              nuget.org, or a CD Prerelease nuget packages run. Exits 1 when anything is behind.
     android   Installs the APKs an All CD run built onto the one connected device, booting the AVD when none is up.
     windows   Opens each Windows app that is behind and taps its version in the nav panel, which makes it update itself
               from its feed and restart.
@@ -347,7 +347,7 @@ function Get-CdRunId {
     throw 'Pass the All CD run with -CdRun, as its id or any url of it.'
 }
 
-# With its prerelease_packages option, every job of a CD run that took the Bit packages of a Prerelease nuget packages
+# With its prerelease_packages option, every job of a CD run that took the Bit packages of a CD Prerelease nuget packages
 # run leaves a "Bit packages" notice naming that run (.github/actions/use-prerelease-packages). No notice: nuget.org.
 function Get-BitPackagesSource([string] $runId) {
     $notices = foreach ($jobId in gh api "repos/$repository/actions/runs/$runId/jobs?filter=all&per_page=100" --paginate --jq '.jobs[].id') {
@@ -1061,19 +1061,19 @@ function Add-PrereleasePackages([string] $feed) {
     $run = $runs | Where-Object databaseId -eq $artifact.workflow_run.id
 
     if (-not $run) {
-        throw 'No Prerelease nuget packages run has an unexpired nupkg-files artifact.'
+        throw 'No CD Prerelease nuget packages run has an unexpired nupkg-files artifact.'
     }
 
     $download = Join-Path $feed 'prerelease'
     gh run download $run.databaseId -R $repository --name nupkg-files --dir $download
 
     if ($LASTEXITCODE -ne 0) {
-        throw "The nupkg-files artifact of Prerelease nuget packages run $($run.databaseId) could not be downloaded."
+        throw "The nupkg-files artifact of CD Prerelease nuget packages run $($run.databaseId) could not be downloaded."
     }
 
     Get-ChildItem $download -Filter *.nupkg | Where-Object Name -notlike 'Bit.Cli.*' | Move-Item -Destination $feed
     Remove-Item $download -Recurse -Force
-    Write-Host "Bit packages from Prerelease nuget packages run $($run.databaseId), $($run.headBranch) at $($run.headSha.Substring(0, 9))."
+    Write-Host "Bit packages from CD Prerelease nuget packages run $($run.databaseId), $($run.headBranch) at $($run.headSha.Substring(0, 9))."
 }
 
 function Use-PrereleaseFeedForNewProjects([string] $lab) {

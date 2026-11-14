@@ -1,4 +1,4 @@
-name: bit platform CI - Butil E2E
+name: CI Butil E2E
 
 # The cross-host suites: the standalone WebAssembly sample and every Blazor Web App render mode in Chromium (on
 # net11.0/net10.0 where the runtime is what differs), Blazor Hybrid in WebView2, and trimmed/AOT publishes.

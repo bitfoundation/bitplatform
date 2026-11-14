@@ -1,4 +1,4 @@
-name: bit platform CI - Bortable
+name: CI Bortable
 
 # Build, unit tests and MCP server tests. The browser suite lives in bit.ci.Bortable.e2e.yml and runs on demand only.
 

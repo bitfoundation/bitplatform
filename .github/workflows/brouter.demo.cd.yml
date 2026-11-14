@@ -1,4 +1,4 @@
-name: Brouter Demo CD
+name: CD Brouter Demo
 
 on:
   workflow_dispatch:

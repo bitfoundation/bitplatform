@@ -1,4 +1,4 @@
-name: bit platform CI - Bdnd
+name: CI Bdnd
 
 # Build, unit tests and MCP server tests. The browser suite lives in bit.ci.Bdnd.e2e.yml and runs on demand only.
 

@@ -1,4 +1,4 @@
-name: BevTools Demo CD
+name: CD BevTools Demo
 
 on:
   workflow_dispatch:

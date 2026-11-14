@@ -1,4 +1,4 @@
-name: bit platform CI - Balette E2E
+name: CI Balette E2E
 
 # The demo app in Chromium, Firefox and WebKit: opening and closing, typing and ranking, keyboard navigation, nested pages, modes and
 # async sources, global shortcuts and sequences, theming and every demo page, against the demo published the way

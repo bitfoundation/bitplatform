@@ -1,4 +1,4 @@
-name: BbScanner Demo CD
+name: CD BbScanner Demo
 
 on:
   workflow_dispatch:

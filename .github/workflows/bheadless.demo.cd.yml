@@ -1,4 +1,4 @@
-name: Bheadless Demo CD
+name: CD Bheadless Demo
 
 on:
   workflow_dispatch:

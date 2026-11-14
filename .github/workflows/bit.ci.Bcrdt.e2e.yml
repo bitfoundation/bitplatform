@@ -1,4 +1,4 @@
-name: bit platform CI - Bcrdt E2E
+name: CI Bcrdt E2E
 
 # The browser suite: the demo (prerendered, then running on WebAssembly) driven with Playwright in each of the three
 # engines - Chromium, Firefox and WebKit, one job apiece - the side-by-side replicas of every demo page merging in one

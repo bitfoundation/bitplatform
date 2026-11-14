@@ -1,4 +1,4 @@
-name: bit platform CI - Bonboarding E2E
+name: CI Bonboarding E2E
 
 # The demo app in Chromium, Firefox and WebKit: tours driven with the mouse and the keyboard, spotlight and popover
 # geometry, targets that render late, hide, move or are revealed by the user, focus management, the default theme in a

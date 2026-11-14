@@ -76,7 +76,7 @@ dotnet test --filter "FullyQualifiedName~A_replica_taken_offline"
 ```
 
 The workflow `.github/workflows/bit.ci.Bcrdt.e2e.yml` does the same in Release, in one job per engine. It is started by hand
-(`workflow_dispatch`, Actions > "bit platform CI - Bcrdt E2E" > Run workflow) only, since the suite takes far longer
+(`workflow_dispatch`, Actions > "CI Bcrdt E2E" > Run workflow) only, since the suite takes far longer
 than the build-and-unit pipeline in `bit.ci.Bcrdt.yml`, which runs the build, the unit tests, the MCP server tests
 and the pack:
 

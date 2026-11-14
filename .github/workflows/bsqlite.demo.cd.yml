@@ -1,4 +1,4 @@
-name: Bsqlite Demo CD
+name: CD Bsqlite Demo
 
 on:
   workflow_dispatch:

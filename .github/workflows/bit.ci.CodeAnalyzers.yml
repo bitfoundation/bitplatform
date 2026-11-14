@@ -1,4 +1,4 @@
-name: bit platform CI - CodeAnalyzers
+name: CI CodeAnalyzers
 
 on:
   workflow_dispatch:

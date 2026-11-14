@@ -1,4 +1,4 @@
-name: bit platform CI - Cli
+name: CI Cli
 
 on:
   workflow_dispatch:

@@ -1,4 +1,4 @@
-name: bit platform CI - BlazorUI E2E
+name: CI BlazorUI E2E
 
 # The full end-to-end suite of bit BlazorUI (src/BlazorUI/Tests/E2E): every non-legacy component of Bit.BlazorUI,
 # Bit.BlazorUI.Extras and Bit.BlazorUI.AI driven by Playwright against a test host that renders each page either on the

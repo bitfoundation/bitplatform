@@ -1,4 +1,4 @@
-name: bit platform CI - BlazorUI
+name: CI BlazorUI
 
 on:
   workflow_dispatch:

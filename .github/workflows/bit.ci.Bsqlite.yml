@@ -1,4 +1,4 @@
-name: bit platform CI - Bsqlite
+name: CI Bsqlite
 
 # Build, ADO.NET/EF Core/storage tests, MCP server tests and the JavaScript that needs no browser. The browser suite
 # lives in bit.ci.Bsqlite.e2e.yml and runs on demand only.

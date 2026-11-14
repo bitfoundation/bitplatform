@@ -1,4 +1,4 @@
-name: Butil Demo CD
+name: CD Butil Demo
 
 on:
   workflow_dispatch:

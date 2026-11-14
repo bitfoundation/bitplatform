@@ -1,4 +1,4 @@
-name: bit platform CI - Bdnd E2E
+name: CI Bdnd E2E
 
 # The browser suite: the demo (prerendered, then running on WebAssembly) driven in Chromium with Playwright, from its
 # build output and, in the publish gate, from trimmed and AOT-compiled publishes, and the published lazy loading sample

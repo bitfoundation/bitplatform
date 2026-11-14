@@ -1,4 +1,4 @@
-name: bit platform CI - Bheadless E2E
+name: CI Bheadless E2E
 
 # Every demo page of both styling sections audited by axe-core, and the keyboard and focus flows only a browser can
 # verify, in Chromium against the demo published the way it ships. It takes far longer than the build-and-unit

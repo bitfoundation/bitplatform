@@ -1,4 +1,4 @@
-name: bit platform CI - Blex
+name: CI Blex
 
 # Build, unit, source-generator and MCP tests, and a pack of every package. The browser, hybrid and publish-gate
 # suites live in bit.ci.Blex.e2e.yml and run on demand only.

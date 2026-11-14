@@ -122,7 +122,7 @@ dotnet build src/Utilities/Balette/Tests/Bit.Balette.Tests.E2E/Bit.Balette.Tests
 cd src/Utilities/Balette/Tests/Bit.Balette.Tests.E2E && BALETTE_E2E_LAZY_AOT=1 dotnet test -c Release --no-build --filter "FullyQualifiedName~LazyLoadingTests"
 ```
 
-That workflow only runs when started by hand (Actions > "bit platform CI - Balette E2E" > Run workflow). The pull-request pipeline, `bit.ci.Balette.yml`, runs the build, model, search, component and MCP tests only.
+That workflow only runs when started by hand (Actions > "CI Balette E2E" > Run workflow). The pull-request pipeline, `bit.ci.Balette.yml`, runs the build, model, search, component and MCP tests only.
 
 Without PowerShell 7, the browser can be installed with Windows PowerShell
 (`powershell -ExecutionPolicy Bypass -File bin/Debug/net10.0/playwright.ps1 install chromium`), or with the Node.js

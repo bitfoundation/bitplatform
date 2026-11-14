@@ -73,7 +73,7 @@ answer, and repeat the plan back before starting:
    `bit diff` (step 7) and the agent instructions (step 8: every scenario or some, with which models, and whether
    `-Long`; it draws on the usage limits of this machine's Claude Code login, about 40 minutes per model and as much
    again with `-Long`).
-3. **The Bit packages**: nuget.org's, or the build of a Prerelease nuget packages run (`prerelease_packages`). The
+3. **The Bit packages**: nuget.org's, or the build of a CD Prerelease nuget packages run (`prerelease_packages`). The
    latter needs a successful prerelease run on the branch under test first. It publishes to nuget.org
    only what nuget.org doesn't have yet, package by package. At a version that is already there it builds packages
    and publishes only a package id that is new at that version: start it, and any later one a fix needs, without
@@ -85,7 +85,7 @@ answer, and repeat the plan back before starting:
 6. **`APP_VERSION`**, for a new CD run: raise it, and to which version, or keep it.
 7. **Steps 5 to 8**: from the commit under test (`-Sha`) or from nuget.org. With `-Sha` the other Bit packages still
    come from nuget.org at the template's version; when nuget.org's build of that version is older than the commit's
-   libraries, `-PrereleasePackages` takes them from the newest Prerelease nuget packages run instead.
+   libraries, `-PrereleasePackages` takes them from the newest CD Prerelease nuget packages run instead.
 
 Start, change or skip nothing beyond the answers, and ask nothing more once they are in: the user is often away
 until the report. Start the run's task on the Workbench (next section), then go in this order:
@@ -146,7 +146,7 @@ websites - is checked. Every command prints what it checked and exits non-zero o
 | `versions [-Sha <sha>] [-CdRun <id or url>]` | Every IIS site, Windows app and Android app of those workflows, each Boilerplate web app - the version its nav panel shows in a fresh headless Edge - and the MCP endpoint's own version, against `APP_VERSION`. With `-CdRun`, also where that CD run took its Bit packages from. |
 | `android -CdRun <id or url>` | Downloads the run's APKs, boots the emulator when no device is up, installs them and checks their versions. |
 | `windows [-Force]` | Opens each Windows app that is behind and taps its version, which updates it and restarts it. |
-| `e2e [-Stage <stages>] [-Filter <filter>] [-PrereleasePackages]` | Signs the global admin in once, then runs the E2E suite stage by stage like `RunTests.bat` - skipping the mac's stages when its Playwright server is down or on another version - keeping each stage's log and TRX. With `-PrereleasePackages`, it builds the suite with the Bit packages of the newest Prerelease nuget packages run. |
+| `e2e [-Stage <stages>] [-Filter <filter>] [-PrereleasePackages]` | Signs the global admin in once, then runs the E2E suite stage by stage like `RunTests.bat` - skipping the mac's stages when its Playwright server is down or on another version - keeping each stage's log and TRX. With `-PrereleasePackages`, it builds the suite with the Bit packages of the newest CD Prerelease nuget packages run. |
 | `mcp [-McpVersion <x.y.z>] [-Tool <name> -Arguments <json>] [-AllLibraries]` | One `tools/list` or `tools/call` on `https://bitplatform.dev/mcp`. `-AllLibraries` lists every bit library's tools, as the website's chat does; without it BlazorUI's and Butil's are the only library tools listed. |
 | `devcontainer [-Sha <sha> [-PrereleasePackages]] [-Framework <tfm>] [-Keep]` | Creates a project with `bit new`, for the template's default .NET or the one `-Framework` names, brings its dev container up with the devcontainers CLI and runs `bit doctor` in it, with bit and the template from that commit or from nuget.org. Then removes the container, its volumes and its image, and keeps the logs. |
 | `aspire [-Sha <sha> [-PrereleasePackages]] [-Framework <tfm>] [-Keep]` | Creates a project with `bit new` the same way and runs its Aspire app host three times with `dotnet run`: the second run must reuse the first one's containers, they must stop once the app host has sat idle for its idle time, and the third run must bring them back on the same volumes. Then removes the project, its containers and their volumes, and keeps the logs. |
@@ -228,7 +228,7 @@ websites - is checked. Every command prints what it checked and exits non-zero o
      runner proves nothing; compare a step's duration with an earlier run's instead.
    - Afterwards remove the containers, volumes and leftover `dcp` processes the repro left, never another
      project's containers.
-   - A Prerelease nuget packages run signs the libraries with the release key, which no other build uses. A library
+   - A CD Prerelease nuget packages run signs the libraries with the release key, which no other build uses. A library
      that grants its internals to another one under the repository's key alone builds everywhere else and fails
      there with CS0281; it has to name both keys.
    - A trimmed publish that crashes ILLink with a stack overflow on a new .NET points at one type the trimmer keeps
@@ -358,12 +358,12 @@ nuget.org already has the same build of the Bit packages, that demo's own CD wor
 delivers it instead.
 
 **Bit packages.** All CD has a `prerelease_packages` option. With it, the Boilerplate demos and the platform website
-are built with the Bit packages of the latest Prerelease nuget packages run (`prerelease.nuget.org.yml`) instead of
+are built with the Bit packages of the latest CD Prerelease nuget packages run (`prerelease.nuget.org.yml`) instead of
 nuget.org's, and each job that took them leaves a "Bit packages" notice naming that run's branch and commit. `versions`
 reads those notices when given the CD run. Say where the packages came from next to the versions table: a library
 change is on the demos only when it names the branch that has it.
 
-Every Prerelease nuget packages run, on any branch, uploads all the packages it built as its `nupkg-files` artifact,
+Every CD Prerelease nuget packages run, on any branch, uploads all the packages it built as its `nupkg-files` artifact,
 and each job of a CD or CI run with `prerelease_packages` takes the newest unexpired one when that job starts. So a
 prerelease run that finishes in the middle of a CD run hands the jobs that start after it another build, maybe of
 another branch: compare the jobs' notices. The prerelease run also pushes its packages to nuget.org, skipping every
@@ -488,7 +488,7 @@ storage setting, run `am clear-debug-app`, remove `/data/local/tmp/chrome-comman
 and `adb emu kill` if the emulator was off before.
 
 A fix in a bit library does not have to wait for its release: the demos take the libraries as packages, and
-`prerelease_packages` swaps nuget.org's for the fix's. Ask the user to run Prerelease nuget packages on the fix's
+`prerelease_packages` swaps nuget.org's for the fix's. Ask the user to run CD Prerelease nuget packages on the fix's
 branch and then All CD with that option, with no other prerelease run finishing in between. Both branches have to be
 on the same version in `src/Bit.Build.props`; otherwise the action stops before it changes anything and names both
 versions.
@@ -560,7 +560,7 @@ devcontainers CLI brings its container up, and `bit doctor` runs inside it.
   before that, `dotnet nuget locals http-cache --clear`.
   `dotnet tool install` finds a new Bit.Cli a few minutes after the package itself is listed, so "bit could not
   be installed" right after a publish is that wait; `dotnet tool search Bit.Cli --prerelease` shows when it ends.
-- `-PrereleasePackages` puts the packages of the newest Prerelease nuget packages run into that feed too, bit's
+- `-PrereleasePackages` puts the packages of the newest CD Prerelease nuget packages run into that feed too, bit's
   aside, and maps every `Bit.*` to it: a template that already uses library changes nuget.org's build of its version
   doesn't have compiles against them.
 - It's heavy: a few GB in the container engine's VM and about ten minutes, most of them for the container's image and the

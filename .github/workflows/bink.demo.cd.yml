@@ -1,4 +1,4 @@
-name: Bink Demo CD
+name: CD Bink Demo
 
 on:
   workflow_dispatch:

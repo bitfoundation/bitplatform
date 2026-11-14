@@ -1,4 +1,4 @@
-name: bit platform CI - BbScanner E2E
+name: CI BbScanner E2E
 
 # The demo app in Chromium whose camera is a generated video file: continuous scanning of six symbologies, the
 # camera lifecycle, permissions, keyboard and layout, and every demo page, against the Release build that ships - and

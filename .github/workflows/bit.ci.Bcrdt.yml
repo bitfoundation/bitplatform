@@ -1,4 +1,4 @@
-name: bit platform CI - Bcrdt
+name: CI Bcrdt
 
 # Build, unit and MCP server tests, and a pack of every package. The browser suite lives in bit.ci.Bcrdt.e2e.yml and
 # runs on demand only.

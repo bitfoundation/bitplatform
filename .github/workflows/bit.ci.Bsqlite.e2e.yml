@@ -1,4 +1,4 @@
-name: bit platform CI - Bsqlite E2E
+name: CI Bsqlite E2E
 
 # The worker, the engine builds and every VFS in Chromium, plus every page of the demo website and the published lazy
 # loading sample - trimmed, and in a job of its own AOT-compiled. It takes far longer than the build-and-unit pipeline

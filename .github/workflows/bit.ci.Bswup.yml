@@ -1,4 +1,4 @@
-name: bit platform CI - Bswup
+name: CI Bswup
 
 # Build plus the MCP, hosting and JS unit tests. The browser E2E suites and the published-output gate are in
 # bit.ci.Bswup.e2e.yml and run on demand only.

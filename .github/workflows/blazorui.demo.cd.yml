@@ -1,4 +1,4 @@
-name: Blazor UI Demo CD
+name: CD BlazorUI Demo
 
 env:
   SERVER_ADDRESS: 'https://blazorui.bitplatform.dev/api/'

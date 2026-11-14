@@ -1,4 +1,4 @@
-name: Workbench demo CD
+name: CD Workbench Demo
 
 on:
   workflow_dispatch:

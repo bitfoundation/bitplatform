@@ -1,4 +1,4 @@
-name: Blow Demo CD
+name: CD Blow Demo
 
 on:
   workflow_dispatch:

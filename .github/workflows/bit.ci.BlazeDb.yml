@@ -1,4 +1,4 @@
-name: bit platform CI - BlazeDb
+name: CI BlazeDb
 
 # Build, engine and EF Core provider tests, the Blex and Bcrdt adapter tests, and MCP server tests. The browser suite
 # lives in bit.ci.BlazeDb.e2e.yml and runs on demand only.

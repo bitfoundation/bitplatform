@@ -1,4 +1,4 @@
-name: BlazeDb Demo CD
+name: CD BlazeDb Demo
 
 on:
   workflow_dispatch:

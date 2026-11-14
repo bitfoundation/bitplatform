@@ -1,4 +1,4 @@
-name: bit platform CI - Bmage
+name: CI Bmage
 
 # Build, engine tests, the Bink and BbScanner integration tests, MCP server tests and the hosting samples' HTTP tests. The browser suite lives in bit.ci.Bmage.e2e.yml and runs on demand only.
 

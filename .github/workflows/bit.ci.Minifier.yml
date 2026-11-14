@@ -1,4 +1,4 @@
-name: bit platform CI - Minifier
+name: CI Minifier
 
 on:
   workflow_dispatch:

@@ -1,4 +1,4 @@
-name: Bonboarding Demo CD
+name: CD Bonboarding Demo
 
 on:
   workflow_dispatch:

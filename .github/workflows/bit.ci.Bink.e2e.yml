@@ -1,4 +1,4 @@
-name: bit platform CI - Bink E2E
+name: CI Bink E2E
 
 # The demo app in Chromium, Firefox and WebKit: drawing with mouse, touch and pen input, keyboard handling, display
 # scaling, every demo page and its accessibility (axe-core, WCAG 2.1 AA), against the demo published the way it

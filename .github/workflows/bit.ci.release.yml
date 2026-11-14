@@ -1,4 +1,4 @@
-name: bit platform CI - release
+name: CI Release
 
 on:
   pull_request:

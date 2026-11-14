@@ -110,6 +110,6 @@ the render-mode markers of its home page and refuses to run against the other on
 
 `.github/workflows/bit.ci.Bheadless.e2e.yml` publishes the demo the way `bheadless.demo.cd.yml` does,
 builds this suite in Release, installs Chromium and runs it from this folder with `--report-trx`, once per render mode,
-uploading the TRX and the traces of failed tests. It runs only when started by hand (Actions > "bit platform CI -
-Bheadless E2E" > Run workflow) or called from another workflow; the pull-request pipeline,
+uploading the TRX and the traces of failed tests. It runs only when started by hand (Actions > "CI Bheadless E2E" > Run
+workflow) or called from another workflow; the pull-request pipeline,
 `bit.ci.Bheadless.yml`, runs the build, the component tests and the MCP tests only.

@@ -1,4 +1,4 @@
-name: Blex Demo CD
+name: CD Blex Demo
 
 on:
   workflow_dispatch:

@@ -1,4 +1,4 @@
-name: bit platform CI - Bmage E2E
+name: CI Bmage E2E
 
 # The demo website, the hosting samples and the published lazy loading sample - trimmed, and in a job of its own
 # AOT-compiled - driven in Chromium, and the MAUI sample driven in its WebView2. It takes far longer than the build-and-unit pipeline (bit.ci.Bmage.yml), so

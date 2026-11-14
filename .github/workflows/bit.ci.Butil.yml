@@ -1,4 +1,4 @@
-name: bit platform CI - Butil
+name: CI Butil
 
 # Build, MCP and hosting tests. The browser, hybrid and publish-gate suites live in bit.ci.Butil.e2e.yml and run
 # on demand only.

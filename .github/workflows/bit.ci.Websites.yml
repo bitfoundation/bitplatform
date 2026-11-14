@@ -1,4 +1,4 @@
-name: bit platform CI - Websites
+name: CI Websites
 
 on:
   workflow_dispatch:

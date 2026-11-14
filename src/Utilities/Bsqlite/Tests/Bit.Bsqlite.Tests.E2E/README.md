@@ -61,7 +61,7 @@ dotnet test --filter "FullyQualifiedName~Persistence_survives_a_worker_restart"
 ```
 
 CI does the same in Release (`.github/workflows/bit.ci.Bsqlite.e2e.yml`), only when started by hand (Actions >
-"bit platform CI - Bsqlite E2E" > Run workflow), and uploads the test results (TRX) and the demo's output as an
+"CI Bsqlite E2E" > Run workflow), and uploads the test results (TRX) and the demo's output as an
 artifact. Its demo tests drive the demo published the way `bsqlite.demo.cd.yml` publishes it rather than a build
 output: only a publish trims the WebAssembly client, so an interop payload the trimmer breaks (an anonymous type whose
 constructor lost its parameter names, a getter nothing but System.Text.Json reads) fails there and nowhere else. The

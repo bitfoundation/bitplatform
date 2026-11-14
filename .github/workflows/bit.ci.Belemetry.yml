@@ -1,4 +1,4 @@
-name: bit platform CI - Belemetry
+name: CI Belemetry
 
 # Build plus the unit, browser-script, MCP and hosting tests, and the MAUI sample built for Android (in the solution
 # build), iOS and Mac Catalyst. The browser E2E suites, the MAUI sample driven on Windows and the trimmed/AOT publish

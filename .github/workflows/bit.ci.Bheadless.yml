@@ -1,4 +1,4 @@
-name: bit platform CI - Bheadless
+name: CI Bheadless
 
 # Build plus the unit (component, keyboard, ARIA and audit-engine) and MCP tests. The browser E2E suite is in
 # bit.ci.Bheadless.e2e.yml and runs on demand only.

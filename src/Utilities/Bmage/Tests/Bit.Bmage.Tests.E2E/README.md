@@ -99,7 +99,7 @@ dotnet test --project Utilities\Bmage\Tests\Bit.Bmage.Tests.E2E\Bit.Bmage.Tests.
 ## CI
 
 `.github/workflows/bit.ci.Bmage.e2e.yml` runs the whole suite in Release, and only when started by hand (Actions >
-"bit platform CI - Bmage E2E" > Run workflow); the test results (TRX) and the demo's output are uploaded as an
+"CI Bmage E2E" > Run workflow); the test results (TRX) and the demo's output are uploaded as an
 artifact. Its `e2e` job runs everything but `SamplesMauiTests` on Linux, `LazyLoadingTests` against the lazy loading
 sample published trimmed; its `lazy-loading-aot` job runs `LazyLoadingTests` alone against the sample published with
 `-p:RunAOTCompilation=true` (`BMAGE_E2E_LAZY_AOT=1`); its `e2e-maui` job runs `SamplesMauiTests` on

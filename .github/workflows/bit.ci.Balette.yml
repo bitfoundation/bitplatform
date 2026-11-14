@@ -1,4 +1,4 @@
-name: bit platform CI - Balette
+name: CI Balette
 
 # Build, model, search and component tests, and MCP server tests. The browser suite lives in
 # bit.ci.Balette.e2e.yml and runs on demand only.

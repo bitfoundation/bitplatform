@@ -1,4 +1,4 @@
-name: Sales Website CD
+name: CD Sales Website
 
 env:
   APP_SERVICE_NAME: 'bitservices'

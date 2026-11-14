@@ -1,4 +1,4 @@
-name: Bswup Demo CD
+name: CD Bswup Demo
 
 on:
   workflow_dispatch:

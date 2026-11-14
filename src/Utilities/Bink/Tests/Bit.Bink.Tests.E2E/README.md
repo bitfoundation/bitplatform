@@ -73,7 +73,7 @@ pwsh src/Utilities/Bink/Tests/Bit.Bink.Tests.E2E/bin/Release/net10.0/playwright.
 cd src/Utilities/Bink/Tests/Bit.Bink.Tests.E2E && BINK_E2E_BASE_URL=http://127.0.0.1:5000 dotnet test -c Release --no-build --report-trx --report-trx-filename bink-e2e.trx
 ```
 
-That workflow only runs when started by hand (Actions > "bit platform CI - Bink E2E" > Run workflow), once per
+That workflow only runs when started by hand (Actions > "CI Bink E2E" > Run workflow), once per
 engine: Chromium, Firefox and WebKit run as separate jobs, each with its own results. A fourth job,
 `lazy-loading-aot`, publishes the lazy loading sample with `-p:RunAOTCompilation=true`, which leaves its lazy mark
 out as the README says an AOT build must, and runs `LazyLoadingTests` against it in Chromium to check that Bit.Bink

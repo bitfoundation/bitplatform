@@ -146,7 +146,7 @@ running it.
 
 ## CI
 
-`.github/workflows/bit.ci.Belemetry.e2e.yml` runs on demand only (Actions > bit platform CI - Belemetry E2E > Run
+`.github/workflows/bit.ci.Belemetry.e2e.yml` runs on demand only (Actions > CI Belemetry E2E > Run
 workflow), or from All Utilities CI with `e2e` on; never on its own. Its jobs: the web render modes in Chromium (net11.0, net10.0), the
 hybrid host (`windows-2025`), the MAUI sample (`windows-2025`), and the publish gate, which publishes the web host
 trimmed and AOT-compiled, fails on any trim or AOT analysis warning raised inside Bit.Belemetry (`publish-gate.sh`) and

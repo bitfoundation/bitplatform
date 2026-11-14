@@ -1,4 +1,4 @@
-name: Bortable Demo CD
+name: CD Bortable Demo
 
 on:
   workflow_dispatch:

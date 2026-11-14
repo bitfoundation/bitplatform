@@ -1,4 +1,4 @@
-name: Bcrdt Demo CD
+name: CD Bcrdt Demo
 
 on:
   workflow_dispatch:

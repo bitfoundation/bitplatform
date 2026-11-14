@@ -1,4 +1,4 @@
-name: bit platform CI - Borm
+name: CI Borm
 
 # Build, unit tests and MCP server tests. The browser suite lives in bit.ci.Borm.e2e.yml and runs on demand only.
 

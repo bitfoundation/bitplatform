@@ -1,4 +1,4 @@
-name: bit platform CI - Bonboarding
+name: CI Bonboarding
 
 on:
   workflow_dispatch:

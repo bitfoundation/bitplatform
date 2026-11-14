@@ -109,7 +109,7 @@ trimming a NuGet consumer gets. Serve the published `wwwroot` with any static se
 and set `BUTIL_E2E_BASE_URL` to it.
 
 CI runs all of the above in `.github/workflows/bit.ci.Butil.e2e.yml`, which only runs when started by hand
-(Actions > "bit platform CI - Butil E2E" > Run workflow). The pull-request pipeline, `bit.ci.Butil.yml`, runs the
+(Actions > "CI Butil E2E" > Run workflow). The pull-request pipeline, `bit.ci.Butil.yml`, runs the
 build, MCP and hosting tests only.
 
 ## Harness pages

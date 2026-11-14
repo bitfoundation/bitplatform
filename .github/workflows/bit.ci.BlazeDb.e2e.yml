@@ -1,4 +1,4 @@
-name: bit platform CI - BlazeDb E2E
+name: CI BlazeDb E2E
 
 # The demo app in Chromium, Firefox and WebKit: OPFS persistence across reloads, the Web Lock election between tabs, the
 # browser modules (OPFS, IndexedDB, WebCrypto, BroadcastChannel), every demo page and every button on it, against the

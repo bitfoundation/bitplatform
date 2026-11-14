@@ -1,4 +1,4 @@
-name: bit platform CI - BevTools E2E
+name: CI BevTools E2E
 
 # The browser suite: the published lazy loading sample, which opens BevTools on demand and lazy loads it on
 # WebAssembly, driven in Chromium with Playwright - trimmed, and AOT-compiled in a job of its own. It takes far longer

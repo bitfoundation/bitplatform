@@ -1,4 +1,4 @@
-name: Landing page demo CD
+name: CD Landing Page Demo
 
 on:
   workflow_dispatch:

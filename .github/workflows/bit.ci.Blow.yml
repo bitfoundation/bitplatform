@@ -1,4 +1,4 @@
-name: bit platform CI - Blow
+name: CI Blow
 
 # Build, unit tests and MCP server tests. The browser suite lives in bit.ci.Blow.e2e.yml and runs on demand only.
 

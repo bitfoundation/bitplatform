@@ -1,6 +1,6 @@
-name: bit platform CI - Belemetry E2E
+name: CI Belemetry E2E
 
-# On demand only (Actions > bit platform CI - Belemetry E2E > Run workflow). The regular build and test pipeline is
+# On demand only (Actions > CI Belemetry E2E > Run workflow). The regular build and test pipeline is
 # bit.ci.Belemetry.yml. See src/Utilities/Belemetry/Tests/Bit.Belemetry.Tests.E2E/README.md for what each job proves and how
 # to run it locally.
 

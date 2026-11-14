@@ -1,4 +1,4 @@
-name: bit platform CI - BlazorES2019
+name: CI BlazorES2019
 
 on:
   workflow_dispatch:

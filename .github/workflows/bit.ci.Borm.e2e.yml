@@ -1,4 +1,4 @@
-name: bit platform CI - Borm E2E
+name: CI Borm E2E
 
 # The browser suite: the demo (prerendered, then running on WebAssembly) driven in Chromium with Playwright. It
 # takes far longer than the build-and-unit pipeline (bit.ci.Borm.yml), so it runs only when started by hand. See

@@ -1,4 +1,4 @@
-name: Borm Demo CD
+name: CD Borm Demo
 
 on:
   workflow_dispatch:

@@ -1,4 +1,4 @@
-name: bit platform CI - Bink
+name: CI Bink
 
 # Build, engine and component tests, and MCP server tests. The browser suite lives in bit.ci.Bink.e2e.yml and
 # runs on demand only.
