@@ -26,17 +26,16 @@ public static class IServiceCollectionExtensions
             options.ServiceName = "Boilerplate.LandingPage";
             // Errors are reported from the first moment, as a legitimate interest; everything else waits for consent
             options.Consent.Default = BelemetryFeatures.Errors;
-            options.Errors.CaptureUnhandledExceptions = false;
 
-            if (string.IsNullOrWhiteSpace(configuration["Belemetry:AzureMonitorConnectionString"]) is false)
+            if (string.IsNullOrWhiteSpace(configuration["ApplicationInsights:ConnectionString"]) is false)
             {
-                options.AddAzureMonitorExporter(configuration["Belemetry:AzureMonitorConnectionString"]!);
+                options.AddAzureMonitorExporter(configuration["ApplicationInsights:ConnectionString"]!);
             }
 
             //#if (sentry == true)
-            if (string.IsNullOrWhiteSpace(configuration["Belemetry:SentryDsn"]) is false)
+            if (string.IsNullOrWhiteSpace(configuration["Logging:Sentry:Dsn"]) is false)
             {
-                options.AddSentryExporter(configuration["Belemetry:SentryDsn"]!);
+                options.AddSentryExporter(configuration["Logging:Sentry:Dsn"]!);
             }
             //#endif
 

@@ -154,7 +154,7 @@ sites; and the App Store is asked only about the samples' own apps. It needs no 
 | `ConnectionStrings:smtp` | The SMTP server, in the same format as the app's server. Without it, emails are logged and `/health` answers `Degraded`. |
 | `AI:ChatOptions`, `AI:OpenAI:ChatModel`, `AI:OpenAI:ChatUseResponsesApi`, `AI:OpenAI:ChatApiKey`, `AI:OpenAI:ChatEndpoint` | The chat's model and what it is sent, the same settings and user secrets as the app's server. |
 | `WebAppRender:BlazorMode` | WebAssembly, always prerendered, since being found is what the site is for. We don't recommend Blazor Server or Auto for it. |
-| `Belemetry:AzureMonitorConnectionString` | In the client's `appsettings.json`: where errors go, and analytics after consent. The server sends its logs, traces and metrics there too. |
+| `ApplicationInsights:ConnectionString` | In the client's `appsettings.json`: where errors go, and analytics after consent. The server sends its logs, traces and metrics there too. |
 | `OTEL_EXPORTER_OTLP_ENDPOINT` | Where the server also sends them over OTLP, such as the Aspire dashboard. |
 | `Belemetry:OtlpEndpoint` | Where the browser sends them over OTLP/HTTP, when the server's own endpoint is one a browser can't reach. A deployment sets it to the landing page's own address, whose `/v1/` paths the tunnel, or Caddy without Cloudflare, sends to the dashboard. |
 
@@ -163,7 +163,7 @@ The server's settings are in
 from a secret of its own, such as `LANDINGPAGE__AI__OPENAI__CHATAPIKEY` for `AI:OpenAI:ChatApiKey`, or a variable for
 what isn't secret, except `ConnectionStrings:smtp`, which it gets from `SMTP_CONNECTION_STRING` like the app's server
 ([Stage 16](/.docs/16-%20CI-CD%20Pipeline%20and%20Environments.md)). The client's settings are built into its
-assembly, so what the browser reads, such as its `Belemetry:AzureMonitorConnectionString`, is set in its own
+assembly, so what the browser reads, such as its `ApplicationInsights:ConnectionString`, is set in its own
 `appsettings.json`.
 
 ## Languages

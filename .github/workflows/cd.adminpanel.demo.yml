@@ -117,7 +117,7 @@ jobs:
         WebAppRender.BlazorMode: 'BlazorWebAssembly'
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
         AdsPushVapid.PublicKey: ${{ secrets.ADMINPANEL_PUBLIC_VAPIDKEY }}
-        Belemetry.AzureMonitorConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
+        ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
 
     - name: Configure text embedding
       run: |
@@ -266,7 +266,7 @@ jobs:
         files: 'AdminPanel/**/appsettings*json'
       env:
         ServerAddress: ${{ env.SERVER_API_ADDRESS }}
-        Belemetry.SentryDsn: ${{ secrets.ADMINPANEL_SENTRY_DSN }}
+        Logging.Sentry.Dsn: ${{ secrets.ADMINPANEL_SENTRY_DSN }}
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
         AdsPushVapid.PublicKey: ${{ secrets.ADMINPANEL_PUBLIC_VAPIDKEY }}
 
@@ -336,7 +336,7 @@ jobs:
       env:
         WebAppUrl: ${{ env.SERVER_WEB_ADDRESS }}
         ServerAddress: ${{ env.SERVER_API_ADDRESS }}
-        Belemetry.SentryDsn: ${{ secrets.ADMINPANEL_SENTRY_DSN }}
+        Logging.Sentry.Dsn: ${{ secrets.ADMINPANEL_SENTRY_DSN }}
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
         WindowsUpdate.FilesUrl: https://windows-adminpanel.bitplatform.dev
         Kiosk.Enabled: true
@@ -448,7 +448,7 @@ jobs:
       env:
         WebAppUrl: ${{ env.SERVER_WEB_ADDRESS }}  
         ServerAddress: ${{ env.SERVER_API_ADDRESS }}
-        Belemetry.SentryDsn: ${{ secrets.ADMINPANEL_SENTRY_DSN }}
+        Logging.Sentry.Dsn: ${{ secrets.ADMINPANEL_SENTRY_DSN }}
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
 
   
@@ -530,7 +530,7 @@ jobs:
       env:
         WebAppUrl: ${{ env.SERVER_WEB_ADDRESS }}
         ServerAddress: ${{ env.SERVER_API_ADDRESS }}
-        Belemetry.SentryDsn: ${{ secrets.ADMINPANEL_SENTRY_DSN }}
+        Logging.Sentry.Dsn: ${{ secrets.ADMINPANEL_SENTRY_DSN }}
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
 
     - name: Import Code-Signing Certificates

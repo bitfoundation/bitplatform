@@ -1,6 +1,4 @@
 //+:cnd:noEmit
-using Bit.Belemetry;
-
 namespace Boilerplate.Server.Api;
 
 public static partial class Program
@@ -23,8 +21,6 @@ public static partial class Program
 
         builder.Services.AddSharedProjectServices(builder.Configuration);
         builder.AddServerApiProjectServices();
-        // Unlike Server.Web, this host has no unhandled exception handlers of its own
-        builder.Services.Configure<BelemetryOptions>(options => options.Errors.CaptureUnhandledExceptions = true);
 
         var app = builder.Build();
 

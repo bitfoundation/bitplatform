@@ -13,7 +13,6 @@ public static class BelemetryOptionsExtensions
             options.AddMeters(Meter.Current.Name);
 
             options.Browser.TrackPageVisitTime = true;
-            options.Errors.CaptureUnhandledExceptions = false;
 
             if (options.OtlpExporters.Count is 0 && string.IsNullOrWhiteSpace(configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]) is false)
             {
@@ -39,16 +38,16 @@ public static class BelemetryOptionsExtensions
             }
 
             //#if (appInsights == true)
-            if (options.AzureMonitorExporters.Count is 0 && string.IsNullOrWhiteSpace(configuration["Belemetry:AzureMonitorConnectionString"]) is false)
+            if (options.AzureMonitorExporters.Count is 0 && string.IsNullOrWhiteSpace(configuration["ApplicationInsights:ConnectionString"]) is false)
             {
-                options.AddAzureMonitorExporter(configuration["Belemetry:AzureMonitorConnectionString"]!);
+                options.AddAzureMonitorExporter(configuration["ApplicationInsights:ConnectionString"]!);
             }
             //#endif
 
             //#if (sentry == true)
-            if (options.SentryExporters.Count is 0 && string.IsNullOrWhiteSpace(configuration["Belemetry:SentryDsn"]) is false)
+            if (options.SentryExporters.Count is 0 && string.IsNullOrWhiteSpace(configuration["Logging:Sentry:Dsn"]) is false)
             {
-                options.AddSentryExporter(configuration["Belemetry:SentryDsn"]!);
+                options.AddSentryExporter(configuration["Logging:Sentry:Dsn"]!);
             }
             //#endif
 

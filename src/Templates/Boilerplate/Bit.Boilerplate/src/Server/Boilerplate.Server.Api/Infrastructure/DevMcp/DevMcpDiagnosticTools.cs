@@ -229,12 +229,12 @@ public partial class DevMcpDiagnosticTools
             //#if (appInsights == true)
             // What is actually wired is Belemetry's Azure Monitor exporter, off the same connection string the
             // clients' Belemetry uses (See ConfigureAppTelemetry).
-            AzureMonitorExporter = string.IsNullOrWhiteSpace(configuration["Belemetry:AzureMonitorConnectionString"]) is false,
+            AzureMonitorExporter = string.IsNullOrWhiteSpace(configuration["ApplicationInsights:ConnectionString"]) is false,
             //#endif
             OtlpExporter = string.IsNullOrWhiteSpace(configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]) is false
                            || string.IsNullOrWhiteSpace(configuration["OTEL_EXPORTER_OTLP_LOGS_ENDPOINT"]) is false,
             AspireDashboard = settings.AspireDashboard?.Url is not null,
-            Sentry = string.IsNullOrWhiteSpace(configuration["Belemetry:SentryDsn"]) is false,
+            Sentry = string.IsNullOrWhiteSpace(configuration["Logging:Sentry:Dsn"]) is false,
             Smtp = string.IsNullOrWhiteSpace(configuration.GetConnectionString("smtp")) is false,
             Google = string.IsNullOrWhiteSpace(configuration["Authentication:Google:ClientId"]) is false,
             GitHub = string.IsNullOrWhiteSpace(configuration["Authentication:GitHub:ClientId"]) is false,

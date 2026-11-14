@@ -132,9 +132,8 @@ The logging configuration is centralized in [`src/Shared/appsettings.json`](/src
 
 ```json
 {
-  "Belemetry": {
-    "AzureMonitorConnectionString": null,
-    "SentryDsn": null
+  "ApplicationInsights": {
+    "ConnectionString": null
   },
   "Logging": {
     "LogLevel": {
@@ -142,6 +141,9 @@ The logging configuration is centralized in [`src/Shared/appsettings.json`](/src
       "Microsoft.Hosting.Lifetime": "Information",
       "Microsoft.EntityFrameworkCore.Database.Command": "Information",
       "Microsoft.AspNetCore.Diagnostics.ExceptionHandlerMiddleware": "None"
+    },
+    "Sentry": {
+      "Dsn": ""
     },
     "Belemetry": {
       "LogLevel": {
@@ -232,7 +234,7 @@ public async Task<DiagnosticLogDto[]> GetUserSessionLogs(Guid userSessionId, [Fr
 
 ### 🖥️ Server Applications
 
-Every project sends its telemetry through [bit Belemetry](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Belemetry): logs, traces and metrics over OTLP (the Aspire dashboard, Grafana, Datadog, New Relic etc.) and to Azure Application Insights, and errors to Sentry as Issues. [`ConfigureAppTelemetry`](../src/Shared/Infrastructure/Extensions/BelemetryOptionsExtensions.cs) adds each exporter whose setting is there: `OTEL_EXPORTER_OTLP_ENDPOINT`, `Belemetry:AzureMonitorConnectionString` or `Belemetry:SentryDsn`.
+Every project sends its telemetry through [bit Belemetry](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Belemetry): logs, traces and metrics over OTLP (the Aspire dashboard, Grafana, Datadog, New Relic etc.) and to Azure Application Insights, and errors to Sentry as Issues. [`ConfigureAppTelemetry`](../src/Shared/Infrastructure/Extensions/BelemetryOptionsExtensions.cs) adds each exporter whose setting is there: `OTEL_EXPORTER_OTLP_ENDPOINT`, `ApplicationInsights:ConnectionString` or `Logging:Sentry:Dsn`.
 
 * **Server.Api** and **Server.Web**
 
