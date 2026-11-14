@@ -43,13 +43,18 @@
         <Using Include="Bit.BlazorUI.Demo.Client.Core.Services" />
     </ItemGroup>
 
-    <ItemGroup>
-        <!-- Lazily loaded on demand by the legacy Chart demo (see BitChartLegacyDemo). These
-             assemblies are only needed by the legacy Chart's Newtonsoft.Json serialization, so
-             keeping them out of the initial WASM download reduces the app's startup payload. -->
+    <!-- Lazily loaded on demand by the legacy Chart demo (see BitChartLegacyDemo). These
+         assemblies are only needed by the legacy Chart's Newtonsoft.Json serialization, so
+         keeping them out of the initial WASM download reduces the app's startup payload.
+         AOT builds are left out: AOT compiles every assembly into dotnet.native.wasm, so there is
+         little left to download later, and the runtime aborts at startup when a method it compiled
+         or bridges to the interpreter names a type of an assembly that isn't loaded yet (#14919).
+         The switch is set only where the marks are, so an AOT build skips LoadAssembliesAsync too. -->
+    <ItemGroup Condition=" '$(RunAOTCompilation)' != 'true' ">
         <BlazorWebAssemblyLazyLoad Include="Newtonsoft.Json.wasm" />
         <BlazorWebAssemblyLazyLoad Include="System.Private.Xml.wasm" />
         <BlazorWebAssemblyLazyLoad Include="System.Data.Common.wasm" />
+        <RuntimeHostConfigurationOption Include="Bit.BlazorUI.Demo.LazyLoadsLegacyChartAssemblies" Value="true" Trim="true" />
     </ItemGroup>
 
     <PropertyGroup Condition="'$(Configuration)' == 'Release'">

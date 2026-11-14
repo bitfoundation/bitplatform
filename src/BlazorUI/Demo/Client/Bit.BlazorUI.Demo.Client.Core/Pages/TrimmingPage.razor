@@ -647,6 +647,17 @@ var lazy = BitBlazorUIScripts.LazyScriptsEnabled;</CodeBox>
                         The publish trims the lazy assemblies with the rest of the app, and the stylesheets and scripts of the
                         AI package are trimmed off what they keep, as they are for any other reference.
                     </BitText>
+                    <BitText Element="p">
+                        Leave the marks out of an AOT build: put them in an
+                        <code>&lt;ItemGroup Condition=" '$(RunAOTCompilation)' != 'true' "></code>. AOT compiles every
+                        assembly into <code>dotnet.native.wasm</code>, so there is little left to download later, and the
+                        runtime can abort as the app starts - an assertion at <code>method-builder-ilgen.c</code> - when it
+                        needs a type of an assembly that is not loaded yet. With no marks, <code>LoadAssembliesAsync</code>
+                        throws <code>No assemblies have been marked as lazy-loadable</code>, so set a switch in the same item
+                        group, <code>&lt;RuntimeHostConfigurationOption Include="MyApp.LazyLoadsChat" Value="true" Trim="true" /></code>,
+                        and have the router load the assemblies only while
+                        <code>AppContext.TryGetSwitch("MyApp.LazyLoadsChat", out var on) &amp;&amp; on</code>.
+                    </BitText>
                 </DocSection>
 
                 <DocSection Level="3" Id="lazy-ai-services" Title="No services at startup">

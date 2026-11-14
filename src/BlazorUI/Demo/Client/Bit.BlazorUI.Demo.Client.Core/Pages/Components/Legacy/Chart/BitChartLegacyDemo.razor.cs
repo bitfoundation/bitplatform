@@ -74,7 +74,10 @@ public partial class BitChartLegacyDemo
     // BitChartLegacy serializes its config with Newtonsoft.Json, so the samples need assemblies that this
     // demo app keeps out of its initial WebAssembly payload through the BlazorWebAssemblyLazyLoad item group.
     // They are fetched on demand here, before the samples render. Every other host (Blazor Server, MAUI,
-    // Windows) already has them and the load is skipped.
+    // Windows) already has them and the load is skipped, and so does an AOT build of the WebAssembly client,
+    // which loads them with the app: the switch is set next to the marks, which leave AOT builds out.
+    private static readonly bool lazyLoadsAssemblies = AppContext.TryGetSwitch("Bit.BlazorUI.Demo.LazyLoadsLegacyChartAssemblies", out var on) && on;
+
     [AutoInject] LazyAssemblyLoader lazyAssemblyLoader = default!;
 
     private bool isLoadingAssemblies = true;
@@ -83,7 +86,7 @@ public partial class BitChartLegacyDemo
     {
         try
         {
-            if (OperatingSystem.IsBrowser())
+            if (OperatingSystem.IsBrowser() && lazyLoadsAssemblies)
             {
                 await lazyAssemblyLoader.LoadAssembliesAsync(["Newtonsoft.Json.wasm", "System.Private.Xml.wasm", "System.Data.Common.wasm"]);
             }
