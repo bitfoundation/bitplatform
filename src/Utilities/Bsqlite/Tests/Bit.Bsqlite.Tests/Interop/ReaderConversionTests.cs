@@ -66,6 +66,30 @@ public sealed class ReaderConversionTests
         Assert.AreEqual(2L, reader.GetFieldValue<long>(2));
     }
 
+    /// <summary>
+    /// TEXT read as a number is read by its leading number - <c>0</c> when it has none - as
+    /// <c>sqlite3_column_int64</c> and <c>sqlite3_column_double</c> read it for Microsoft.Data.Sqlite.
+    /// </summary>
+    [TestMethod]
+    public async Task NumericGetters_ReadText_AsMicrosoftDataSqliteDoes()
+    {
+        const string Sql = "SELECT '12abc', 'abc', ' 1.9', '1e3', '-2.5x', '99999999999999999999', '.5', '', '+7'";
+
+        await using var reader = await ReadAsync(Sql);
+        await using var oracle = new Microsoft.Data.Sqlite.SqliteConnection("Data Source=:memory:");
+        await oracle.OpenAsync(Ct);
+        await using var command = oracle.CreateCommand();
+        command.CommandText = Sql;
+        await using var expected = await command.ExecuteReaderAsync(Ct);
+        Assert.IsTrue(await expected.ReadAsync(Ct));
+
+        for (var i = 0; i < expected.FieldCount; i++)
+        {
+            Assert.AreEqual(expected.GetInt64(i), reader.GetInt64(i), $"GetInt64 of column {i}");
+            Assert.AreEqual(expected.GetDouble(i), reader.GetDouble(i), $"GetDouble of column {i}");
+        }
+    }
+
     [TestMethod]
     public async Task IntegerGetters_RefuseAValueTheTypeCannotHold()
     {

@@ -156,6 +156,13 @@ public sealed class BsqliteSessionFactory : IBsqliteSessionFactory
     }
 
     /// <summary>
+    /// Where <paramref name="databaseName"/> lives - or would be created - without opening it or changing
+    /// anything: no worker, no engine, no migration, no binding.
+    /// </summary>
+    internal async Task<BsqliteStorageResolution> ResolveAsync(string databaseName, CancellationToken cancellationToken)
+        => await _resolver.ResolveAsync(databaseName, _selection, cancellationToken).ConfigureAwait(false);
+
+    /// <summary>
     /// Deletes <paramref name="databaseName"/> from every backend that can be reached, then its binding.
     /// The database must be closed - <see cref="BsqliteDatabase.DeleteAsync"/> sees to that.
     /// </summary>
@@ -164,7 +171,8 @@ public sealed class BsqliteSessionFactory : IBsqliteSessionFactory
     /// otherwise be found once the binding is gone - that is how a database whose binding was lost is
     /// recovered - and a database deleted on sign-out would come back with the previous user's rows.
     /// The binding goes last, so a failure part way leaves it naming where the data still is. A backend
-    /// that cannot be reached is skipped with a warning, unless it is the one the binding names.
+    /// that cannot be reached is skipped with a warning, unless it is the one the binding names, and one that
+    /// cannot take the name at all holds no copy and is skipped too - found out before anything is deleted.
     /// </remarks>
     internal async Task DeleteEverywhereAsync(string databaseName, CancellationToken cancellationToken)
     {
@@ -198,6 +206,34 @@ public sealed class BsqliteSessionFactory : IBsqliteSessionFactory
             }
         }
 
+        // And every backend that can be reached is asked whether it holds the database before any is touched: a
+        // backend that cannot take the name at all - the file system refuses 'CON.db' or a ':', which a browser
+        // backend keeps - holds no copy to delete, and finding that out part way would leave the delete half done.
+        var holders = new List<IBsqliteStorageProvider>();
+        foreach (var (provider, probe) in probes)
+        {
+            if (!probe.IsAvailable)
+            {
+                continue;
+            }
+
+            try
+            {
+                await provider.Admin.ExistsAsync(databaseName, cancellationToken).ConfigureAwait(false);
+            }
+            catch (ArgumentException ex) when (!string.Equals(provider.Name, bound, StringComparison.OrdinalIgnoreCase))
+            {
+                _logger.LogDebug(
+                    ex,
+                    "Storage provider {Provider} cannot keep a database named {DatabaseName}, so it holds no copy to delete.",
+                    provider.Name,
+                    databaseName);
+                continue;
+            }
+
+            holders.Add(provider);
+        }
+
         foreach (var (provider, probe) in probes)
         {
             if (!probe.IsAvailable)
@@ -210,9 +246,11 @@ public sealed class BsqliteSessionFactory : IBsqliteSessionFactory
                     probe.UnavailableReason,
                     databaseName,
                     bound ?? "no backend");
-                continue;
             }
+        }
 
+        foreach (var provider in holders)
+        {
             await provider.Admin.DeleteAsync(databaseName, cancellationToken).ConfigureAwait(false);
         }
 

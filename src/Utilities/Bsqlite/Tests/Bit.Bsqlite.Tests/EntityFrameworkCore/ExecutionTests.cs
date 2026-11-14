@@ -121,6 +121,10 @@ public sealed class ExecutionTests
             () => ctx.Products.Where(p => p.Price > 10m).ToListAsync(Ct));
 
         Assert.Contains("no such function: ef_compare", failure.Message, StringComparison.Ordinal);
+
+        // The engine's own exception stays reachable, for code written against Microsoft.Data.Sqlite.
+        var native = Assert.IsInstanceOfType<SqliteException>(failure.InnerException);
+        Assert.AreEqual(failure.SqliteErrorCode, native.SqliteErrorCode);
     }
 
     [TestMethod]

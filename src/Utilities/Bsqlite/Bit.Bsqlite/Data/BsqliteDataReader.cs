@@ -17,6 +17,7 @@ public sealed class BsqliteDataReader : DbDataReader
     private readonly BsqliteConnection? _closeConnection;
     private BsqliteCommandResult _result;
     private Dictionary<string, int>? _ordinals;
+    private Dictionary<string, int>? _exactOrdinals;
     private int _resultIndex;
     private int _rowIndex = -1;
     private bool _closed;
@@ -75,6 +76,7 @@ public sealed class BsqliteDataReader : DbDataReader
         _resultIndex++;
         _result = _results[_resultIndex];
         _ordinals = null;
+        _exactOrdinals = null;
         _rowIndex = -1;
         return true;
     }
@@ -100,27 +102,22 @@ public sealed class BsqliteDataReader : DbDataReader
         ArgumentNullException.ThrowIfNull(name);
 
         // An exact match first - with columns Id and id, "id" is the second - then any case, as
-        // Microsoft.Data.Sqlite and SqlClient look a name up.
-        var names = _result.ColumnNames;
-        for (var i = 0; i < names.Count; i++)
+        // Microsoft.Data.Sqlite and SqlClient look a name up. Both are looked up, not scanned: a reader
+        // asked by name for every column of every row would otherwise walk the names each time.
+        if (_ordinals is null || _exactOrdinals is null)
         {
-            if (string.Equals(names[i], name, StringComparison.Ordinal))
-            {
-                return i;
-            }
-        }
-
-        if (_ordinals is null)
-        {
+            var names = _result.ColumnNames;
             _ordinals = new Dictionary<string, int>(names.Count, StringComparer.OrdinalIgnoreCase);
+            _exactOrdinals = new Dictionary<string, int>(names.Count, StringComparer.Ordinal);
             for (var i = names.Count - 1; i >= 0; i--)
             {
                 // First occurrence wins for duplicate names, as every ADO.NET provider does.
                 _ordinals[names[i]] = i;
+                _exactOrdinals[names[i]] = i;
             }
         }
 
-        return _ordinals.TryGetValue(name, out var ordinal)
+        return _exactOrdinals.TryGetValue(name, out var ordinal) || _ordinals.TryGetValue(name, out ordinal)
             ? ordinal
             : throw new IndexOutOfRangeException($"No column named '{name}'.");
     }
@@ -218,7 +215,7 @@ public sealed class BsqliteDataReader : DbDataReader
         var other => Convert.ToBoolean(other, CultureInfo.InvariantCulture),
     };
 
-    public override byte GetByte(int ordinal) => checked((byte)BsqliteValueConversions.ToInt64(RequireValue(ordinal)));
+    public override byte GetByte(int ordinal) => checked((byte)BsqliteValueConversions.ColumnToInt64(RequireValue(ordinal)));
 
     public override char GetChar(int ordinal) => RequireValue(ordinal) switch
     {
@@ -230,9 +227,9 @@ public sealed class BsqliteDataReader : DbDataReader
 
     public override decimal GetDecimal(int ordinal) => BsqliteValueConversions.ToDecimal(RequireValue(ordinal));
 
-    public override double GetDouble(int ordinal) => BsqliteValueConversions.ToDouble(RequireValue(ordinal));
+    public override double GetDouble(int ordinal) => BsqliteValueConversions.ColumnToDouble(RequireValue(ordinal));
 
-    public override float GetFloat(int ordinal) => (float)BsqliteValueConversions.ToDouble(RequireValue(ordinal));
+    public override float GetFloat(int ordinal) => (float)BsqliteValueConversions.ColumnToDouble(RequireValue(ordinal));
 
     public override Guid GetGuid(int ordinal) => RequireValue(ordinal) switch
     {
@@ -243,11 +240,11 @@ public sealed class BsqliteDataReader : DbDataReader
     };
 
     // Truncated, as SQLite turns a REAL into an INTEGER, and checked, as Microsoft.Data.Sqlite narrows one.
-    public override short GetInt16(int ordinal) => checked((short)BsqliteValueConversions.ToInt64(RequireValue(ordinal)));
+    public override short GetInt16(int ordinal) => checked((short)BsqliteValueConversions.ColumnToInt64(RequireValue(ordinal)));
 
-    public override int GetInt32(int ordinal) => checked((int)BsqliteValueConversions.ToInt64(RequireValue(ordinal)));
+    public override int GetInt32(int ordinal) => checked((int)BsqliteValueConversions.ColumnToInt64(RequireValue(ordinal)));
 
-    public override long GetInt64(int ordinal) => BsqliteValueConversions.ToInt64(RequireValue(ordinal));
+    public override long GetInt64(int ordinal) => BsqliteValueConversions.ColumnToInt64(RequireValue(ordinal));
 
     public override string GetString(int ordinal) => BsqliteValueConversions.ToText(RequireValue(ordinal));
 

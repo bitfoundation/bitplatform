@@ -487,6 +487,145 @@ public sealed class BsqliteSessionFactoryTests
         await Assert.ThrowsExactlyAsync<ObjectDisposedException>(() => database.OpenAsync(Ct).AsTask());
     }
 
+    /// <summary>
+    /// An import cut short has already overwritten the database: it is put back as it was, and the session the
+    /// application had open is reopened on it - not left closed with nothing announcing it.
+    /// </summary>
+    [TestMethod]
+    public async Task Restore_ThatFailsPartWay_PutsTheDatabaseBack_AndReopensIt()
+    {
+        var home = new PersistentTestProvider("home");
+        var original = SqliteImages.Valid(fill: 6);
+        await home.Admin.ImportAsync("app.db", original, Ct);
+        var store = new BsqliteInMemoryStorageBindingStore();
+        await store.SetProviderNameAsync("app.db", "home", Ct);
+        await using var database = new BsqliteDatabase(
+            Factory(store, new RecordingTransportFactory(), s => s.Prefer("home"), home),
+            "app.db");
+        await database.OpenAsync(Ct);
+        var opened = 0;
+        database.Opened += () => { opened++; return Task.CompletedTask; };
+        home.TearNextImport = true;
+
+        await Assert.ThrowsExactlyAsync<BsqliteQuotaExceededException>(
+            () => database.RestoreAsync(SqliteImages.Valid(fill: 7, pages: 2), Ct));
+
+        CollectionAssert.AreEqual(original, await home.Admin.ExportAsync("app.db", Ct));
+        Assert.IsTrue(database.IsOpen);
+        Assert.AreEqual(1, opened);
+    }
+
+    /// <summary>A restore that fails where there was no database yet leaves none - not half of the backup.</summary>
+    [TestMethod]
+    public async Task Restore_ThatFailsWhereNoDatabaseWas_LeavesNone()
+    {
+        var home = new PersistentTestProvider("home") { TearNextImport = true };
+        await using var database = new BsqliteDatabase(
+            Factory(new BsqliteInMemoryStorageBindingStore(), new RecordingTransportFactory(), s => s.Prefer("home"), home),
+            "app.db");
+
+        await Assert.ThrowsExactlyAsync<BsqliteQuotaExceededException>(() => database.RestoreAsync(SqliteImages.Valid(), Ct));
+
+        Assert.IsFalse(await home.Admin.ExistsAsync("app.db", Ct));
+        Assert.IsFalse(database.IsOpen, "A database that was not open is not opened.");
+    }
+
+    /// <summary>
+    /// Where a closed database lives is resolved, not learned by opening it - no worker, engine or binding -
+    /// so the only session the restore opens is the one it leaves open.
+    /// </summary>
+    [TestMethod]
+    public async Task Restore_OfADatabaseNotYetOpen_OpensOnlyTheSessionItLeaves()
+    {
+        var home = new PersistentTestProvider("home");
+        var transports = new RecordingTransportFactory();
+        await using var database = new BsqliteDatabase(
+            Factory(new BsqliteInMemoryStorageBindingStore(), transports, s => s.Prefer("home"), home),
+            "app.db");
+
+        await database.RestoreAsync(SqliteImages.Valid(), Ct);
+
+        Assert.HasCount(1, transports.Created);
+        Assert.IsFalse(transports.Last.Disposed);
+    }
+
+    /// <summary>
+    /// Work that fails still finds the database reopened, and a token cancelled meanwhile does not stop that
+    /// reopen - the database was open before the call, and the application expects it open after.
+    /// </summary>
+    [TestMethod]
+    public async Task WhileClosed_WorkThatFails_StillReopensTheDatabase()
+    {
+        await using var database = new BsqliteDatabase(
+            Factory(new BsqliteInMemoryStorageBindingStore(), new RecordingTransportFactory(), s => s.Prefer("opfs"), Available("opfs")),
+            "app.db");
+        await database.OpenAsync(Ct);
+        using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(Ct);
+
+        await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => database.WhileClosedAsync(_ =>
+        {
+            cancellation.Cancel();
+            throw new InvalidOperationException("The work failed.");
+        }, cancellation.Token));
+
+        Assert.IsTrue(database.IsOpen);
+    }
+
+    /// <summary>
+    /// Disposing from a Closing handler - or from WhileClosedAsync's work - is disposing from code that runs
+    /// holding the gate disposal would wait for: it returns, and the database ends closed and disposed.
+    /// </summary>
+    [TestMethod]
+    public async Task Dispose_FromAClosingHandler_OrFromWorkWhileClosed_DoesNotDeadlock()
+    {
+        var transports = new RecordingTransportFactory();
+        var fromClosing = new BsqliteDatabase(
+            Factory(new BsqliteInMemoryStorageBindingStore(), transports, s => s.Prefer("opfs"), Available("opfs")),
+            "app.db");
+        await fromClosing.OpenAsync(Ct);
+        fromClosing.Closing += async () => await fromClosing.DisposeAsync();
+
+        await fromClosing.CloseAsync(Ct).WaitAsync(TimeSpan.FromSeconds(10), Ct);
+
+        Assert.IsTrue(transports.Last.Disposed);
+        await Assert.ThrowsExactlyAsync<ObjectDisposedException>(() => fromClosing.OpenAsync(Ct).AsTask());
+
+        var fromWork = new BsqliteDatabase(
+            Factory(new BsqliteInMemoryStorageBindingStore(), transports, s => s.Prefer("opfs"), Available("opfs")),
+            "other.db");
+        await fromWork.OpenAsync(Ct);
+
+        await fromWork.WhileClosedAsync(async _ => await fromWork.DisposeAsync(), Ct).WaitAsync(TimeSpan.FromSeconds(10), Ct);
+
+        Assert.IsFalse(fromWork.IsOpen, "A disposed database is not reopened.");
+        Assert.IsTrue(transports.Created.TrueForAll(created => created.Transport.Disposed));
+    }
+
+    /// <summary>
+    /// A backend that cannot take the name at all - the file system refuses 'CON.db', a browser backend keeps
+    /// it - holds no copy: the delete goes on everywhere else instead of stopping part way.
+    /// </summary>
+    [TestMethod]
+    public async Task Delete_SkipsABackendThatCannotTakeTheName_AndFinishes()
+    {
+        var home = new PersistentTestProvider("home");
+        var picky = new PersistentTestProvider("picky", refusesNames: true);
+        var stale = new PersistentTestProvider("stale");
+        await home.Admin.ImportAsync("app.db", SqliteImages.Valid(fill: 1), Ct);
+        await stale.Admin.ImportAsync("app.db", SqliteImages.Valid(fill: 2), Ct);
+        var store = new BsqliteInMemoryStorageBindingStore();
+        await store.SetProviderNameAsync("app.db", "home", Ct);
+        await using var database = new BsqliteDatabase(
+            Factory(store, new RecordingTransportFactory(), s => s.Prefer("home").Fallback("picky").Fallback("stale"), home, picky, stale),
+            "app.db");
+
+        await database.DeleteAsync(Ct);
+
+        Assert.IsFalse(await home.Admin.ExistsAsync("app.db", Ct));
+        Assert.IsFalse(await stale.Admin.ExistsAsync("app.db", Ct));
+        Assert.IsNull(await store.GetProviderNameAsync("app.db", Ct));
+    }
+
     private enum DeleteBehavior
     {
         Deletes,
@@ -506,7 +645,8 @@ public sealed class BsqliteSessionFactoryTests
     private sealed class PersistentTestProvider(
         string name,
         bool refusesImports = false,
-        DeleteBehavior deletes = DeleteBehavior.Deletes)
+        DeleteBehavior deletes = DeleteBehavior.Deletes,
+        bool refusesNames = false)
         : IBsqliteStorageProvider
     {
         public string Name { get; } = name;
@@ -519,23 +659,39 @@ public sealed class BsqliteSessionFactoryTests
 
         public BsqliteJsModule? VfsModule => null;
 
-        public IBsqliteStorageAdmin Admin { get; } = new MemoryAdmin(refusesImports, deletes);
+        public IBsqliteStorageAdmin Admin { get; } = new MemoryAdmin(refusesImports, deletes, refusesNames);
+
+        /// <summary>The next import writes half the image and then fails - a quota hit part way.</summary>
+        public bool TearNextImport
+        {
+            get => ((MemoryAdmin)Admin).TearNextImport;
+            set => ((MemoryAdmin)Admin).TearNextImport = value;
+        }
 
         public ValueTask<BsqliteProbeResult> ProbeAsync(CancellationToken cancellationToken = default)
             => ValueTask.FromResult(BsqliteProbeResult.Available());
 
-        private sealed class MemoryAdmin(bool refusesImports, DeleteBehavior deletes) : IBsqliteStorageAdmin
+        private sealed class MemoryAdmin(bool refusesImports, DeleteBehavior deletes, bool refusesNames) : IBsqliteStorageAdmin
         {
             private readonly Dictionary<string, byte[]> _images = new(StringComparer.Ordinal);
 
+            public bool TearNextImport { get; set; }
+
             public ValueTask<bool> ExistsAsync(string databaseName, CancellationToken cancellationToken = default)
-                => ValueTask.FromResult(_images.ContainsKey(databaseName));
+                => refusesNames
+                    ? throw new ArgumentException($"'{databaseName}' is not a name this backend can keep.", nameof(databaseName))
+                    : ValueTask.FromResult(_images.ContainsKey(databaseName));
 
             public ValueTask<IReadOnlyList<string>> ListAsync(CancellationToken cancellationToken = default)
                 => ValueTask.FromResult<IReadOnlyList<string>>([.. _images.Keys]);
 
             public ValueTask DeleteAsync(string databaseName, CancellationToken cancellationToken = default)
             {
+                if (refusesNames)
+                {
+                    throw new ArgumentException($"'{databaseName}' is not a name this backend can keep.", nameof(databaseName));
+                }
+
                 if (deletes is DeleteBehavior.FailsLeavingIt)
                 {
                     throw new IOException("The file is in use.");
@@ -561,6 +717,13 @@ public sealed class BsqliteSessionFactoryTests
                 if (refusesImports)
                 {
                     throw new BsqliteQuotaExceededException("The origin is out of storage.");
+                }
+
+                if (TearNextImport)
+                {
+                    TearNextImport = false;
+                    _images[databaseName] = contents[..(contents.Length / 2)].ToArray();
+                    throw new BsqliteQuotaExceededException("The origin ran out of storage part way.");
                 }
 
                 _images[databaseName] = contents.ToArray();

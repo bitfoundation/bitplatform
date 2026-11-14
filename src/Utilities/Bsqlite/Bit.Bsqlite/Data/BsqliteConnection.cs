@@ -309,15 +309,19 @@ public sealed class BsqliteConnection : DbConnection
     /// </summary>
     /// <remarks>
     /// The snapshot takes a turn like a command does: it waits, at most <see cref="DefaultTimeout"/>,
-    /// for a transaction another context holds, so it never captures that transaction half done. The
+    /// for a transaction another connection over the same transport holds, so it never captures that
+    /// transaction half done. A transaction open on this connection is refused at once instead: every
+    /// context of a session shares the connection, nothing here can tell whether the code asking began
+    /// it - EF begins it inside an async method of its own, so no trace of it reaches its caller - and
+    /// waiting for one's own transaction would never end. The
     /// image is the database's file byte for byte where the backend's pages can be read synchronously
     /// (OPFS, in-memory, a Blazor Hybrid file); on IndexedDB and Cache Storage it is a compacted copy
     /// made with <c>VACUUM INTO</c> - the same schema, rows, <c>user_version</c> and
     /// <c>application_id</c>, without free pages.
     /// </remarks>
     /// <exception cref="NotSupportedException">The transport cannot snapshot an open database.</exception>
-    /// <exception cref="InvalidOperationException">A transaction is open on this connection.</exception>
-    /// <exception cref="BsqliteConcurrencyException">Another context's transaction did not end in time.</exception>
+    /// <exception cref="InvalidOperationException">A transaction is open on this connection, whichever context began it.</exception>
+    /// <exception cref="BsqliteConcurrencyException">Another connection's transaction did not end in time.</exception>
     public async Task<byte[]> ExportAsync(CancellationToken cancellationToken = default)
     {
         if (_transport is not IBsqliteSnapshotSource snapshots)
@@ -329,13 +333,16 @@ public sealed class BsqliteConnection : DbConnection
 
         // Inside the transaction the code running here began, the snapshot would hold its uncommitted writes -
         // or, taken by SQL on the asynchronous builds, fail inside it - and waiting for the turn that transaction
-        // holds would never end. A transaction another context began is waited for instead, below: every
-        // context of a session shares this connection, so CurrentTransaction alone cannot tell the two apart.
-        if (CurrentTransaction is { } active && ReferenceEquals(_begunInThisFlow.Value, active))
+        // holds would never end. Whose transaction it is cannot be told: _begunInThisFlow is set inside
+        // BeginDbTransactionAsync, and EF calls that from an async method of its own, which drops the value on
+        // its way back to the caller. So any transaction open on this connection is refused, at once, rather
+        // than risk a wait that ends only with DefaultTimeout. One another connection holds is waited for below.
+        if (CurrentTransaction is not null)
         {
             throw new InvalidOperationException(
                 $"The database '{_database}' cannot be exported while a transaction is open on its connection: "
-                + "the image would hold writes that may yet roll back. Commit or roll back first.");
+                + "the image would hold writes that may yet roll back. Commit or roll back first - or, when "
+                + "another context of the session began it, export once it has ended.");
         }
 
         using var turn = await _gate.EnterAsync(DefaultTimeout, _database, cancellationToken).ConfigureAwait(false);

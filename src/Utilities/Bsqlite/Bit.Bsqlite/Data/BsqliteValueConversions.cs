@@ -30,6 +30,97 @@ internal static class BsqliteValueConversions
         _ => Convert.ToInt64(value, CultureInfo.InvariantCulture),
     };
 
+    /// <summary>
+    /// A cell read as an INTEGER, as <c>sqlite3_column_int64</c> - and so Microsoft.Data.Sqlite's
+    /// <c>GetInt64</c> - reads it: TEXT by its leading integer, <c>0</c> when it has none, rather than refused.
+    /// </summary>
+    public static long ColumnToInt64(object value)
+        => value is string text ? TextToInteger(text) : ToInt64(value);
+
+    /// <summary>
+    /// A cell read as a REAL, as <c>sqlite3_column_double</c> - and so Microsoft.Data.Sqlite's
+    /// <c>GetDouble</c> - reads it: TEXT by its leading number, <c>0</c> when it has none, rather than refused.
+    /// </summary>
+    public static double ColumnToDouble(object value)
+        => value is string text ? TextToReal(text) : ToDouble(value);
+
+    /// <summary>
+    /// SQLite's <c>sqlite3Atoi64</c>: leading spaces, a sign, then as many digits as there are - <c>12abc</c>
+    /// is 12, <c>1.9</c> is 1, <c>abc</c> is 0 - saturating past the 64-bit range.
+    /// </summary>
+    private static long TextToInteger(string text)
+    {
+        var span = text.AsSpan().TrimStart();
+        var end = span.Length > 0 && span[0] is '+' or '-' ? 1 : 0;
+        var digitsStart = end;
+        while (end < span.Length && char.IsAsciiDigit(span[end]))
+        {
+            end++;
+        }
+
+        if (end == digitsStart)
+        {
+            return 0;
+        }
+
+        return long.TryParse(span[..end], NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out var parsed)
+            ? parsed
+            : span[0] == '-' ? long.MinValue : long.MaxValue;
+    }
+
+    /// <summary>
+    /// SQLite's <c>sqlite3AtoF</c>: the longest leading run that reads as a number - digits, a point, an
+    /// exponent - and <c>0</c> when there is none.
+    /// </summary>
+    private static double TextToReal(string text)
+    {
+        var span = text.AsSpan().TrimStart();
+        var end = span.Length > 0 && span[0] is '+' or '-' ? 1 : 0;
+        var digits = 0;
+        while (end < span.Length && char.IsAsciiDigit(span[end]))
+        {
+            end++;
+            digits++;
+        }
+
+        if (end < span.Length && span[end] == '.')
+        {
+            end++;
+            while (end < span.Length && char.IsAsciiDigit(span[end]))
+            {
+                end++;
+                digits++;
+            }
+        }
+
+        if (digits == 0)
+        {
+            return 0;
+        }
+
+        if (end < span.Length && span[end] is 'e' or 'E')
+        {
+            var exponent = end + 1;
+            if (exponent < span.Length && span[exponent] is '+' or '-')
+            {
+                exponent++;
+            }
+
+            var exponentDigits = exponent;
+            while (exponentDigits < span.Length && char.IsAsciiDigit(span[exponentDigits]))
+            {
+                exponentDigits++;
+            }
+
+            if (exponentDigits > exponent)
+            {
+                end = exponentDigits;
+            }
+        }
+
+        return double.Parse(span[..end], NumberStyles.Float, CultureInfo.InvariantCulture);
+    }
+
     public static double ToDouble(object value) => value switch
     {
         double real => real,

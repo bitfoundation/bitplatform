@@ -1,4 +1,4 @@
-using System.Buffers.Binary;
+﻿using System.Buffers.Binary;
 using Bit.Bsqlite.Data;
 
 namespace Bit.Bsqlite.Interop;

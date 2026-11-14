@@ -359,11 +359,14 @@ public class BsqliteNativeTransport : IBsqliteTransport, IBsqliteSnapshotSource,
                     // The same typed exception the worker's failures become, so a catch written against the
                     // browser - BsqliteConstraintException, BsqliteConcurrencyException - holds on a device.
                     // The engine's own message, as the worker reports it, without Microsoft.Data.Sqlite's wrapping.
+                    // The SqliteException stays reachable as the inner exception, with its extended result code
+                    // and its stack, for code written against Microsoft.Data.Sqlite.
                     var message = raw.sqlite3_errmsg(connection.Handle!).utf8_to_string();
                     throw BsqliteWireFormat.CreateException(
                         string.IsNullOrEmpty(message) || message == "not an error" ? ex.Message : message,
                         ex.SqliteErrorCode,
-                        errorName: null);
+                        errorName: null,
+                        innerException: ex);
                 }
 
                 results.Add(result with

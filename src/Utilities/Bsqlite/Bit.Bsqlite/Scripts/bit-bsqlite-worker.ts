@@ -529,8 +529,9 @@ async function execute(batch: BatchRequest[]): Promise<TaggedResult[]> {
 async function executeBinary(bytes: Uint8Array): Promise<Uint8Array> {
     // Sized by what a reply usually holds, not by the request: a request carrying a large blob gets a reply
     // of a few bytes, and a buffer four times its size would be allocated, zeroed and transferred for it.
-    // The writer grows by doubling when rows need more.
-    const writer = new BinaryWriter(64 * 1024);
+    // Small too, since most replies - a SaveChanges round trip, a scalar - are a few bytes and the whole
+    // buffer is what the reply keeps or transfers. The writer grows by doubling when rows need more.
+    const writer = new BinaryWriter(4 * 1024);
     beginReply(writer);
 
     let batch;
@@ -683,17 +684,22 @@ async function runRequest(current: Session, request: BatchRequest, sink: RowSink
             } finally {
                 // Whether the statement finished or threw, its bindings and cursor must be released: to
                 // free locks, and so a cached statement starts clean next time.
-                await prepared.release(stmt);
+                let released = false;
+                try {
+                    await prepared.release(stmt);
+                    released = true;
+                } finally {
+                    // Only now: a statement stopped before it was done - a scalar or single-row read of an
+                    // INSERT ... RETURNING in autocommit - commits in the reset above, and its commit hook with
+                    // it. A commit the hook announced for a statement that failed, or whose reset failed, did
+                    // not happen - and is forgotten either way, so a later statement is not taken for it.
+                    if (released && succeeded && current.changes.commitPending && sqlite3.get_autocommit(db)) {
+                        current.changes.committed = true;
+                    }
 
-                // Only now: a statement stopped before it was done - a scalar or single-row read of an
-                // INSERT ... RETURNING in autocommit - commits in the reset above, and its commit hook with it.
-                // A commit the hook announced for a statement that failed did not happen.
-                if (succeeded && current.changes.commitPending && sqlite3.get_autocommit(db)) {
-                    current.changes.committed = true;
+                    current.changes.commitPending = false;
+                    succeeded = false;
                 }
-
-                current.changes.commitPending = false;
-                succeeded = false;
             }
         }
 

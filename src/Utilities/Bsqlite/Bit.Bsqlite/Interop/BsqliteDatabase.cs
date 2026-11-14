@@ -1,4 +1,5 @@
-﻿using Bit.Bsqlite.Data;
+﻿using System.Runtime.ExceptionServices;
+using Bit.Bsqlite.Data;
 using Bit.Bsqlite.Storage;
 
 namespace Bit.Bsqlite.Interop;
@@ -27,6 +28,13 @@ public sealed class BsqliteDatabase : IAsyncDisposable, IDisposable
 
     /// <summary>Set while <see cref="WhileClosedAsync"/> runs its work, which holds <see cref="_gate"/>.</summary>
     private readonly AsyncLocal<bool> _closedForWork = new();
+
+    /// <summary>
+    /// Set while code this instance calls back runs holding <see cref="_gate"/> - <see cref="Closing"/> handlers
+    /// and <see cref="WhileClosedAsync"/> work - so a <see cref="DisposeAsync"/> from there does not wait for a
+    /// gate its own caller holds.
+    /// </summary>
+    private readonly AsyncLocal<bool> _holdingGate = new();
     private BsqliteSession? _session;
     private bool _disposed;
 
@@ -132,7 +140,7 @@ public sealed class BsqliteDatabase : IAsyncDisposable, IDisposable
             // an OpenAsync from one returns it without waiting on the gate.
             if (_session is { } session)
             {
-                await RaiseAsync(Closing).ConfigureAwait(false);
+                await RaiseUnderGateAsync(Closing).ConfigureAwait(false);
                 _session = null;
                 await session.DisposeAsync().ConfigureAwait(false);
             }
@@ -182,7 +190,9 @@ public sealed class BsqliteDatabase : IAsyncDisposable, IDisposable
     /// <para>
     /// The database is closed around the import, as <see cref="WhileClosedAsync"/> closes it: <see cref="Closing"/>
     /// handlers let go first, and <see cref="Opened"/> handlers see the restored database. It is imported onto
-    /// the backend that holds the database now, and read back to check that every byte landed. An EF Core
+    /// the backend that holds the database now, and read back to check that every byte landed. When the import
+    /// or that check fails, the database as it was is put back where it can be read out first, and a database
+    /// that was open is reopened either way. An EF Core
     /// context factory applies the migrations the restored database is missing the next time it creates a
     /// context, so a backup from an earlier release of the app opens on the current model.
     /// </para>
@@ -224,15 +234,64 @@ public sealed class BsqliteDatabase : IAsyncDisposable, IDisposable
                 throw NotPersistent(provider);
             }
 
-            await provider.Admin.ImportAsync(Name, prepared, ct).ConfigureAwait(false);
-
-            var copy = await provider.Admin.ExportAsync(Name, ct).ConfigureAwait(false);
-            if (!copy.AsSpan().SequenceEqual(prepared.Span))
+            var previous = await ReadForRollbackAsync(provider, ct).ConfigureAwait(false);
+            try
             {
-                throw new BsqliteCorruptDatabaseException(
-                    $"The restored copy of '{Name}' on '{provider.Name}' does not match the backup.");
+                await provider.Admin.ImportAsync(Name, prepared, ct).ConfigureAwait(false);
+
+                var copy = await provider.Admin.ExportAsync(Name, ct).ConfigureAwait(false);
+                if (!copy.AsSpan().SequenceEqual(prepared.Span))
+                {
+                    throw new BsqliteCorruptDatabaseException(
+                        $"The restored copy of '{Name}' on '{provider.Name}' does not match the backup.");
+                }
+            }
+            catch (Exception failure) when (previous.CanRollBack)
+            {
+                try
+                {
+                    // Not on the caller's token: a restore cancelled part way is exactly what has to be undone.
+                    if (previous.Image is { } image)
+                    {
+                        await provider.Admin.ImportAsync(Name, image, CancellationToken.None).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        await provider.Admin.DeleteAsync(Name, CancellationToken.None).ConfigureAwait(false);
+                    }
+                }
+                catch (Exception rollbackFailure)
+                {
+                    throw new AggregateException(
+                        $"Restoring '{Name}' on '{provider.Name}' failed, and so did putting the database back as it was.",
+                        failure,
+                        rollbackFailure);
+                }
+
+                throw;
             }
         }, resolve: true, reopen: true, cancellationToken);
+    }
+
+    /// <summary>
+    /// The database as it is before a restore overwrites it, to put back if the restore fails: its image, or
+    /// none when there is no database yet - one to delete again. Nothing to roll back to when it cannot be read
+    /// out - a journal holding a write cut short, say - which must not stop a restore meant to replace it.
+    /// </summary>
+    private async Task<(bool CanRollBack, byte[]? Image)> ReadForRollbackAsync(
+        IBsqliteStorageProvider provider,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            return await provider.Admin.ExistsAsync(Name, cancellationToken).ConfigureAwait(false)
+                ? (true, await provider.Admin.ExportAsync(Name, cancellationToken).ConfigureAwait(false))
+                : (true, null);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            return (false, null);
+        }
     }
 
     /// <summary>Its admin store is not where a connection's data lives: an import would never be read.</summary>
@@ -280,13 +339,15 @@ public sealed class BsqliteDatabase : IAsyncDisposable, IDisposable
     /// Closes the database, runs <paramref name="work"/>, and reopens it - all holding <see cref="_gate"/>, so
     /// no open from elsewhere slips in between.
     /// </summary>
-    /// <param name="work">Given the resolution of the session that was closed, or of one opened to learn it.</param>
+    /// <param name="work">Given the resolution of the session that was closed, or of a resolve made to learn it.</param>
     /// <param name="resolve">
-    /// Whether <paramref name="work"/> needs to know where the database lives: when it is not open, it is
-    /// opened - unannounced, since nobody saw it - and closed again to find out.
+    /// Whether <paramref name="work"/> needs to know where the database lives when it is not open.
     /// </param>
-    /// <param name="reopen">Whether to open afterwards; <see langword="null"/> reopens what was open.</param>
-    /// <param name="cancellationToken">Stops the work; the database reopens regardless.</param>
+    /// <param name="reopen">
+    /// Whether to open afterwards; <see langword="null"/> reopens what was open. When the work fails, what was
+    /// open is reopened unless this is <see langword="false"/>.
+    /// </param>
+    /// <param name="cancellationToken">Stops the work; a database that was open reopens regardless.</param>
     private async Task RunClosedAsync(
         Func<BsqliteStorageResolution?, CancellationToken, Task> work,
         bool resolve,
@@ -310,31 +371,52 @@ public sealed class BsqliteDatabase : IAsyncDisposable, IDisposable
             {
                 wasOpen = true;
                 resolution = session.Resolution;
-                await RaiseAsync(Closing).ConfigureAwait(false);
+                await RaiseUnderGateAsync(Closing).ConfigureAwait(false);
                 _session = null;
                 await session.DisposeAsync().ConfigureAwait(false);
             }
             else if (resolve)
             {
-                await using var probe = await _sessions.OpenAsync(Name, cancellationToken).ConfigureAwait(false);
-                resolution = probe.Resolution;
+                resolution = await ResolveClosedAsync(cancellationToken).ConfigureAwait(false);
             }
 
+            ExceptionDispatchInfo? failure = null;
             _closedForWork.Value = true;
+            _holdingGate.Value = true;
             try
             {
                 await work(resolution, cancellationToken).ConfigureAwait(false);
             }
+            catch (Exception ex)
+            {
+                failure = ExceptionDispatchInfo.Capture(ex);
+            }
             finally
             {
                 _closedForWork.Value = false;
+                _holdingGate.Value = false;
             }
 
-            if (reopen ?? wasOpen)
+            // Not on the caller's token: a cancelled or failed work must not leave closed a database the
+            // application had open - and disposed meanwhile, there is nobody left to open it for.
+            var open = failure is null ? reopen ?? wasOpen : wasOpen && reopen != false;
+            if (open && !_disposed)
             {
-                _session = await _sessions.OpenAsync(Name, cancellationToken).ConfigureAwait(false);
-                reopened = true;
+                try
+                {
+                    _session = await _sessions.OpenAsync(Name, CancellationToken.None).ConfigureAwait(false);
+                    reopened = true;
+                }
+                catch (Exception reopenFailure) when (failure is not null)
+                {
+                    throw new AggregateException(
+                        $"The work on '{Name}' failed, and so did reopening the database afterwards.",
+                        failure.SourceException,
+                        reopenFailure);
+                }
             }
+
+            failure?.Throw();
         }
         finally
         {
@@ -345,6 +427,22 @@ public sealed class BsqliteDatabase : IAsyncDisposable, IDisposable
                 await RaiseAsync(Opened).ConfigureAwait(false);
             }
         }
+    }
+
+    /// <summary>
+    /// Where the closed database lives, without opening it: the registered session factory resolves it - no
+    /// worker, engine, migration or binding. Any other factory is asked the only way it can be, by opening a
+    /// session - unannounced, since nobody saw it - and closing it again.
+    /// </summary>
+    private async Task<BsqliteStorageResolution> ResolveClosedAsync(CancellationToken cancellationToken)
+    {
+        if (_sessions is BsqliteSessionFactory factory)
+        {
+            return await factory.ResolveAsync(Name, cancellationToken).ConfigureAwait(false);
+        }
+
+        await using var probe = await _sessions.OpenAsync(Name, cancellationToken).ConfigureAwait(false);
+        return probe.Resolution;
     }
 
     /// <summary>
@@ -366,6 +464,14 @@ public sealed class BsqliteDatabase : IAsyncDisposable, IDisposable
         }
 
         _disposed = true;
+
+        // Called back from code that runs holding the gate - a Closing handler, WhileClosedAsync's work - the gate
+        // is never released while this waits. Not waited for, then: the caller up the stack disposes the session
+        // it is closing anyway, and does not reopen one for a disposed database.
+        if (_holdingGate.Value)
+        {
+            return;
+        }
 
         // An open or a WhileClosedAsync under way holds the gate: waited for, the session it leaves is disposed
         // here, rather than opened after disposal and kept - with its worker, or on a device its place among
@@ -398,6 +504,20 @@ public sealed class BsqliteDatabase : IAsyncDisposable, IDisposable
         }
 
         _ = DisposeAsync().AsTask();
+    }
+
+    /// <summary>Raises <paramref name="handlers"/> from code that holds <see cref="_gate"/>.</summary>
+    private async Task RaiseUnderGateAsync(Func<Task>? handlers)
+    {
+        _holdingGate.Value = true;
+        try
+        {
+            await RaiseAsync(handlers).ConfigureAwait(false);
+        }
+        finally
+        {
+            _holdingGate.Value = false;
+        }
     }
 
     private static async Task RaiseAsync(Func<Task>? handlers)

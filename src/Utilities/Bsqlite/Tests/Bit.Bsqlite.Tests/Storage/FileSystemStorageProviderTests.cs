@@ -127,6 +127,41 @@ public sealed class FileSystemStorageProviderTests
         Assert.Contains("relative to", error.Message);
     }
 
+    /// <summary>
+    /// The reserved names came in a later release: a database a device already keeps under one - on Android,
+    /// iOS or macOS, where <c>aux.db</c> is a file like any other - still opens, so its data is not cut off.
+    /// </summary>
+    [TestMethod]
+    [DataRow("backup.import")]
+    [DataRow("data/old.aside")]
+    [DataRow("aux.db")]
+    [DataRow("con.sqlite")]
+    public void DatabaseName_ReservedSinceTheDatabaseWasMade_StillOpensIt(string name)
+    {
+        var provider = Provider();
+        if (name is "aux.db" or "con.sqlite" && OperatingSystem.IsWindows())
+        {
+            Assert.Inconclusive("A device name is never a file on Windows.");
+        }
+
+        var path = Path.Combine([provider.RootDirectory, .. name.Split('/')]);
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        File.WriteAllBytes(path, SqliteImages.Valid());
+
+        Assert.AreEqual(path, provider.GetDatabasePath(name));
+    }
+
+    /// <summary>A file SQLite keeps beside a database is no database, so having one there opens nothing.</summary>
+    [TestMethod]
+    public void DatabaseName_OfAJournalThatExists_IsStillRefused()
+    {
+        var provider = Provider();
+        Directory.CreateDirectory(provider.RootDirectory);
+        File.WriteAllBytes(Path.Combine(provider.RootDirectory, "app.db-journal"), [0xd9, 0xd5, 0x05, 0xf9, 0x20, 0xa1, 0x63, 0xd7]);
+
+        Assert.ThrowsExactly<ArgumentException>(() => provider.GetDatabasePath("app.db-journal"));
+    }
+
     [TestMethod]
     [DataRow("console.db")]
     [DataRow("COM10.db")]

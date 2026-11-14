@@ -401,11 +401,37 @@ public sealed class AdoNetSurfaceTests
     }
 
     /// <summary>
-    /// Every context of a session shares one connection, so a transaction another context began is open on the
-    /// very connection the export runs on - and the export waits for it, rather than mistaking it for its own.
+    /// EF begins a transaction inside an async method of its own, so nothing the begin records in the flow
+    /// reaches the caller - and an export there must still fail at once, not wait out DefaultTimeout for a
+    /// turn the caller itself holds.
     /// </summary>
     [TestMethod]
-    public async Task Export_WaitsForATransactionAnotherFlowBeganOnTheSameConnection()
+    public async Task Export_InsideATransactionBegunThroughAnAsyncMethod_IsRefusedAtOnce()
+    {
+        var (transport, connection) = await OpenAsync();
+        await using var _ = transport;
+        await using var __ = connection;
+        connection.DefaultTimeout = 0;
+
+        await using var tx = await BeginLikeEfAsync(connection);
+
+        var exporting = connection.ExportAsync(Ct);
+        Assert.IsTrue(exporting.IsCompleted, "The export does not wait for the caller's own transaction.");
+        await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => exporting);
+
+        async Task<System.Data.Common.DbTransaction> BeginLikeEfAsync(BsqliteConnection connection)
+        {
+            await Task.Yield();
+            return await connection.BeginTransactionAsync(Ct);
+        }
+    }
+
+    /// <summary>
+    /// Every context of a session shares one connection, so a transaction another context began is open on the
+    /// very connection the export runs on - and cannot be told from the caller's own, so it is refused too.
+    /// </summary>
+    [TestMethod]
+    public async Task Export_RefusesATransactionAnotherFlowBeganOnTheSameConnection()
     {
         var (transport, connection) = await OpenAsync();
         await using var _ = transport;
@@ -413,13 +439,11 @@ public sealed class AdoNetSurfaceTests
 
         // Begun in a flow of its own, as another component's SaveChangesAsync would begin it.
         var tx = await Task.Run(() => connection.BeginTransactionAsync(Ct).AsTask(), Ct);
-        var exporting = connection.ExportAsync(Ct);
-        await Task.Delay(50, Ct);
-        Assert.IsFalse(exporting.IsCompleted, "The export waits for the other flow's transaction.");
+        await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => connection.ExportAsync(Ct));
 
         await tx.RollbackAsync(Ct);
         await tx.DisposeAsync();
-        Assert.IsNotEmpty(await exporting);
+        Assert.IsNotEmpty(await connection.ExportAsync(Ct));
     }
 
     /// <summary>
