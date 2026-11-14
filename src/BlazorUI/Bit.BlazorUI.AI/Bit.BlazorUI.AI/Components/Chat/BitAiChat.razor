@@ -2,8 +2,10 @@
 @inherits BitAiComponentBase
 
 @* The options in force - the cascaded ones, the UiOptions of this chat, or the registered ones - are handed down to
-   everything the chat composes, so its parts all read the same strings and settings. *@
+   everything the chat composes, so its parts all read the same strings and settings; and so are the services handed
+   over on the page (the Services of this chat, or the cascaded ones), which its parts read ahead of the registered ones. *@
 <CascadingValue Value="Options" IsFixed="false">
+<CascadingValue Value="CascadedServices" IsFixed="false">
 <CascadingValue Value="_readAloud" IsFixed="false">
     <div @ref="RootElement"
          @attributes="HtmlAttributes"
@@ -90,5 +92,6 @@
             </div>
         </div>
     </div>
+</CascadingValue>
 </CascadingValue>
 </CascadingValue>

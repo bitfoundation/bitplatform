@@ -35,6 +35,12 @@ public sealed class BitAiRendererRegistry
     private readonly ConcurrentDictionary<string, BitAiStructuredDataRenderer> _structured = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
+    /// The registry of a component with none registered or cascaded: nothing in it, so everything renders the built-in
+    /// way. Shared and never handed out, so nothing ever registers into it.
+    /// </summary>
+    internal static BitAiRendererRegistry None { get; } = new();
+
+    /// <summary>
     /// Renders the chip of every inline citation, when set. Overrides the built-in chip.
     /// </summary>
     /// <remarks>
