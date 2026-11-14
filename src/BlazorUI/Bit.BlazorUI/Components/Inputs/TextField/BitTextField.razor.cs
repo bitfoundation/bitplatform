@@ -24,6 +24,7 @@ public partial class BitTextField : BitTextInputBase<string?>
     private bool _selectOnFocusSetup;
     private bool _selectOnFocusSetupIsMultiline;
     private bool _chromeFocusSetup;
+    private bool _maskedChangeSetup;
     private int? _oldRows;
     private int? _oldMaxRows;
     private BitSize? _oldSize;
@@ -34,6 +35,12 @@ public partial class BitTextField : BitTextInputBase<string?>
     private DotNetObjectReference<BitTextField>? _dotnetObj;
     private string? _inputMode;
     private bool _trimOnParse;
+    // How many of the field's own commits are running, and the value the latest of them wrote into the Value - what the
+    // binding hands back while they run (see HandleOnStringValueChangeAsync). _catchOwnWrite is up only while a commit
+    // starts, which is when it writes the Value (see TrackOwnWrite).
+    private int _ownCommitsRunning;
+    private string? _lastOwnWrite;
+    private bool _catchOwnWrite;
     private bool _isPasswordRevealed;
     private BitInputType? _elementType;
     private string _inputId = string.Empty;
@@ -899,6 +906,8 @@ public partial class BitTextField : BitTextInputBase<string?>
 
         SetDefaultValue();
 
+        OnValueChanged += TrackOwnWrite;
+
         await base.OnInitializedAsync();
     }
 
@@ -920,8 +929,14 @@ public partial class BitTextField : BitTextInputBase<string?>
         }
 
         // A value that moved without the field moving it - the page emptying it after a send, say - is what the
-        // input shows from then on, whatever had been typed into it before.
-        ReleaseTypedTextIfMoved(Value);
+        // input shows from then on, whatever had been typed into it before. The value the latest of the field's own
+        // commits wrote, handed back by the binding while the commits run, is left to the commit to settle (see
+        // HandleOnStringValueChangeAsync); any other value is the page's, even one an earlier commit wrote (a binding
+        // refusing the latest one and putting the earlier one back).
+        if (_ownCommitsRunning == 0 || string.Equals(Value, _lastOwnWrite, StringComparison.Ordinal) is false)
+        {
+            ReleaseTypedTextIfMoved(Value);
+        }
 
         SyncLiveRegion();
 
@@ -954,6 +969,8 @@ public partial class BitTextField : BitTextInputBase<string?>
         await SetupSelectOnFocus(isMultiline);
 
         await SetupChromeFocus();
+
+        await SetupMaskedChange();
 
         // The height the content needs follows more than the text itself: the row floor, the row ceiling and
         // the size of the field all move it, and none of them raises an input event the browser side listens
@@ -1092,6 +1109,29 @@ public partial class BitTextField : BitTextInputBase<string?>
         }
     }
 
+    // A masked field's layout is written into the input by a script, after which WebKit raises no change as the field
+    // loses the focus; the script raises the one it owed (TextField.setupMaskedChange). Wired before the field is typed
+    // into, so the text it compares with is known from the first focus on. A masked field is never multiline (see
+    // ActiveMask), so a switch to multiline takes the listeners away with the input, and one back wires the new input.
+    private async Task SetupMaskedChange()
+    {
+        var masked = ActiveMask is not null;
+
+        if (masked == _maskedChangeSetup) return;
+
+        _maskedChangeSetup = masked;
+
+        if (masked)
+        {
+            _jsSetup = true;
+            await _js.BitTextFieldSetupMaskedChange(_Id, InputElement);
+        }
+        else
+        {
+            await _js.BitTextFieldDisposeFeature(_Id, "maskedChange");
+        }
+    }
+
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out string? result, [NotNullWhen(false)] out string? parsingErrorMessage)
     {
         result = _trimOnParse ? value?.Trim() : value;
@@ -1160,11 +1200,48 @@ public partial class BitTextField : BitTextInputBase<string?>
 
     protected override async Task HandleOnStringValueChangeAsync(ChangeEventArgs e)
     {
-        await base.HandleOnStringValueChangeAsync(e);
+        // The value this commit writes, which the binding hands straight back through OnParametersSet while the commit
+        // is still running. A field that commits something other than the text typed (a mask lays it out) must not take
+        // that for the page moving the value: letting go of the typed text there would render the committed value into
+        // the input, a round trip behind the typing on a server circuit, over the keys typed since.
+        // The commit writes the Value as it starts, before it first awaits, which is all the catch is up for: the value
+        // is the one the commit itself parsed, read off the Value rather than parsed a second time here. A commit that
+        // writes nothing new leaves the Value it found as its own.
+        _ownCommitsRunning++;
+        _lastOwnWrite = Value;
+        _catchOwnWrite = true;
+        Task commit;
+        try
+        {
+            commit = base.HandleOnStringValueChangeAsync(e);
+        }
+        finally
+        {
+            _catchOwnWrite = false;
+        }
+
+        try
+        {
+            await commit;
+        }
+        finally
+        {
+            _ownCommitsRunning--;
+        }
 
         // Once the value holds the typed text the input shows the value again; until then the value this commit
         // ended up with is the field's own doing, not a change from the page (see OnParametersSet).
         SettleTypedText(Value, CurrentValueAsString);
+    }
+
+    // The first write of the Value while a commit starts is that commit's own; anything after it - the page answering
+    // the commit's ValueChanged with another value in the same pass - is not.
+    private void TrackOwnWrite(object? sender, EventArgs e)
+    {
+        if (_catchOwnWrite is false) return;
+
+        _catchOwnWrite = false;
+        _lastOwnWrite = Value;
     }
 
     protected override async Task HandleOnStringValueInputAsync(ChangeEventArgs e)
