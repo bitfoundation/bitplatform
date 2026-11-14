@@ -140,9 +140,18 @@ public class AotProfileTests
         var global = new AotProfileClass(Tests, ".ProfileGlobalItem");
         var nested = new AotProfileClass(Tests, ".Nested/Inner");
 
-        var signatures = GenericInstanceMethods(Converter(global, nested)).Select(m => m.Signature).ToList();
+        var globals = new AotProfileClass(CoreLib, "System.Collections.Generic.List`1", [global]);
 
-        CollectionAssert.AreEqual(new[] { "void(ProfileGlobalItem,Bit.Cli.Tests.ProfileSamples/Nested/Inner modreq(System.Runtime.InteropServices.InAttribute)&)" }, signatures);
+        var methods = GenericInstanceMethods(Converter(global, nested), Converter(globals, global));
+
+        CollectionAssert.AreEqual(new[]
+        {
+            "void(ProfileGlobalItem,Bit.Cli.Tests.ProfileSamples/Nested/Inner modreq(System.Runtime.InteropServices.InAttribute)&)",
+            "void(System.Collections.Generic.List`1<ProfileGlobalItem>,ProfileGlobalItem modreq(System.Runtime.InteropServices.InAttribute)&)"
+        }, methods.Select(m => m.Signature).ToList());
+        // The methods' classes keep the names the profile gives them.
+        CollectionAssert.AreEqual(new[] { Converter(global, nested).Key, Converter(globals, global).Key }, methods.Select(m => m.Class.Key).ToList());
+        StringAssert.Contains(methods[1].Class.Key, "System.Collections.Generic.List`1<[Bit.Cli.Tests].ProfileGlobalItem>");
     }
 
     [TestMethod]
