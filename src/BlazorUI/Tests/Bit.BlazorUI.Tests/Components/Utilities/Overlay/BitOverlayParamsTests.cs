@@ -167,9 +167,8 @@ public class BitOverlayParamsTests : BunitTestContext
 
         component.WaitForAssertion(() =>
         {
-            var invocation = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"][0];
+            var invocation = Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"][0];
             Assert.AreEqual(".app-scroller", invocation.Arguments[1]);
-            Assert.AreEqual(true, invocation.Arguments[2]);
         });
     }
 

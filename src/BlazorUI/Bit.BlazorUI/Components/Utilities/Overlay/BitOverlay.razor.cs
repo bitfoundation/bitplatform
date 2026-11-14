@@ -519,12 +519,21 @@ public partial class BitOverlay : BitComponentBase
 
         try
         {
-            // The room the scrollbar took is added back as padding while the overflow is off, so that
-            // taking it away shifts nothing sideways in the frame the Overlay appears in - the same
-            // compensation the scroll lock of the dialog surfaces has always made.
-            _offsetTop = _scrollerElementOnToggle.HasValue
-                ? await _js.BitUtilsToggleOverflow(UniqueId, _scrollerElementOnToggle.Value, isOpen, true)
-                : await _js.BitUtilsToggleOverflow(UniqueId, _scrollerSelectorOnToggle ?? "body", isOpen, true);
+            if (isOpen)
+            {
+                // The room the scrollbar took is added back as padding while the overflow is off, so that
+                // taking it away shifts nothing sideways in the frame the Overlay appears in - the same
+                // compensation the scroll lock of the dialog surfaces has always made.
+                _offsetTop = _scrollerElementOnToggle.HasValue
+                    ? await _js.BitUtilsLockScrollWithOffset(UniqueId, _scrollerElementOnToggle.Value)
+                    : await _js.BitUtilsLockScrollWithOffset(UniqueId, _scrollerSelectorOnToggle ?? "body");
+            }
+            else
+            {
+                // The hold is registered under the key, against the scroller it was taken on, so releasing
+                // the key hands back that scroller whatever the parameters name now.
+                await _js.BitUtilsUnlockScroll(UniqueId);
+            }
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
