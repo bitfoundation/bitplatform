@@ -18,9 +18,14 @@
   </ItemGroup>
 
   <!-- Kept out of the startup download: every Bsqlite connection needs it, so BeforeFirstOpen loads it right before
-       the first database opens (Extensions/IServiceCollectionExtensions.cs). -->
-  <ItemGroup>
+       the first database opens (Extensions/IServiceCollectionExtensions.cs). The switch tells that step it is marked.
+       AOT builds are left out: AOT compiles the assembly into dotnet.native.wasm anyway, and with it marked lazy the
+       runtime aborts at startup with a Mono assertion (method-builder-ilgen.c): it builds code for a method whose
+       signature names one of the assembly's types before the assembly is there, and cannot load that signature.
+       Without the switch, the step loads nothing. -->
+  <ItemGroup Condition=" '$(RunAOTCompilation)' != 'true' ">
     <BlazorWebAssemblyLazyLoad Include="System.Private.Xml.wasm" />
+    <RuntimeHostConfigurationOption Include="Bit.Bsqlite.Demo.LazyLoadsXml" Value="true" Trim="true" />
   </ItemGroup>
 
   <ItemGroup>

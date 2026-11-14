@@ -74,7 +74,11 @@ Builder options:
       .LoadAssembliesAsync(["System.Private.Xml.wasm"]))
   ```
 
-  An app that [lazy loads Bit.Bsqlite](#lazy-loading-on-webassembly) itself loads `System.Private.Xml.wasm` together
+  Mark it only outside AOT builds - `<ItemGroup Condition=" '$(RunAOTCompilation)' != 'true' ">` - with a switch next
+  to the mark the step checks, as the [lazy loading](#lazy-loading-on-webassembly) setup below does: AOT compiles it
+  into `dotnet.native.wasm` anyway, and an AOT build that marks it aborts at startup with a Mono assertion at
+  `method-builder-ilgen.c`. The [demo](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bsqlite/Demo/Client/)
+  does this. An app that [lazy loads Bit.Bsqlite](#lazy-loading-on-webassembly) itself loads `System.Private.Xml.wasm` together
   with it instead.
 - `AddExtensionModule("/my-functions.js")` - JavaScript that registers SQL functions; see [Extending](extending.md).
 - `UseBindingStore<T>()` - replace where sticky bindings are remembered.

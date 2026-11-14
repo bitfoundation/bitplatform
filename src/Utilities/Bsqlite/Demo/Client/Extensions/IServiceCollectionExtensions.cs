@@ -20,6 +20,10 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// </remarks>
 public static class IServiceCollectionExtensions
 {
+    // Set next to the lazy mark in the project file, so unset in an AOT build, which loads System.Private.Xml.wasm with
+    // the app: loading an assembly that is not marked throws.
+    private static readonly bool LazyLoadsXml = AppContext.TryGetSwitch("Bit.Bsqlite.Demo.LazyLoadsXml", out var on) && on;
+
     /// <param name="baseAddress">
     /// The app's own origin, for the <see cref="HttpClient"/> a page can call the host with. The prerendering
     /// host passes nothing: a page never issues a request while it is being prerendered.
@@ -44,10 +48,11 @@ public static class IServiceCollectionExtensions
                 .Fallback(BsqliteCacheStorageProvider.ProviderName)
                 .Fallback(BsqliteInMemoryStorageProvider.ProviderName)
                 .AllowNonPersistentFallback())
-            // System.Private.Xml.wasm is lazy loaded (see the project file): opening a database needs it, so it
-            // downloads right before the first open instead of with the app. Only the browser ever opens one.
-            .BeforeFirstOpen((sp, _) => sp.GetRequiredService<LazyAssemblyLoader>()
-                .LoadAssembliesAsync(["System.Private.Xml.wasm"]))
+            // System.Private.Xml.wasm is lazy loaded outside AOT builds (see the project file): opening a database needs
+            // it, so it downloads right before the first open instead of with the app. Only the browser ever opens one.
+            .BeforeFirstOpen((sp, _) => LazyLoadsXml
+                ? sp.GetRequiredService<LazyAssemblyLoader>().LoadAssembliesAsync(["System.Private.Xml.wasm"])
+                : Task.CompletedTask)
             .AddDatabase(BrowserDatabase.DatabaseName));
 
         // Contexts come from a factory bound to that database. Migrations run once per session, then the

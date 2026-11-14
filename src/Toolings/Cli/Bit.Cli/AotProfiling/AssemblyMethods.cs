@@ -23,7 +23,27 @@ public static class AssemblyMethods
         }
     }
 
+    /// <summary>
+    /// The most arguments a method left on the interpreter can be entered with from compiled code through the wrappers
+    /// every AOT build has (Mono's <c>MAX_INTERP_ENTRY_ARGS</c>). One with more needs a wrapper built for its exact
+    /// signature, which the AOT compiler builds only for the few calls it sees need one.
+    /// </summary>
+    public const int MaxInterpreterEntryArguments = 8;
+
     public static IReadOnlyList<AotProfileMethod> Read(string path, bool unmanagedCallersOnly)
+        => Read(path, (metadata, method, _) => unmanagedCallersOnly is false || method.GetCustomAttributes().Any(a => AttributeName(metadata, a) == "UnmanagedCallersOnlyAttribute"));
+
+    /// <summary>
+    /// The methods with more than <see cref="MaxInterpreterEntryArguments"/> parameters. Left on the interpreter, such a
+    /// method stops the app with a Mono assertion at <c>interp.c</c> once compiled code needs a pointer to it - to call
+    /// it, to make a delegate of it, or to fill an interface slot, which sets up every method sharing that slot, called
+    /// or not - since there is no wrapper for its signature. EF Core's <c>RelationalCommandDiagnosticsLogger</c> alone
+    /// has a dozen. They are few, so compiling them all costs little.
+    /// </summary>
+    public static IReadOnlyList<AotProfileMethod> ReadWide(string path)
+        => Read(path, (_, _, parameterCount) => parameterCount > MaxInterpreterEntryArguments);
+
+    private static List<AotProfileMethod> Read(string path, Func<MetadataReader, MethodDefinition, int, bool> keep)
     {
         using var pe = new PEReader(File.OpenRead(path));
         var metadata = pe.GetMetadataReader();
@@ -45,10 +65,10 @@ public static class AssemblyMethods
                 if (method.RelativeVirtualAddress == 0 || method.GetGenericParameters().Count > 0)
                     continue;
 
-                if (unmanagedCallersOnly && method.GetCustomAttributes().Any(a => AttributeName(metadata, a) == "UnmanagedCallersOnlyAttribute") is false)
+                var signature = method.DecodeSignature(new SignatureFormatter(metadata, type, method), null);
+                if (keep(metadata, method, signature.ParameterTypes.Length) is false)
                     continue;
 
-                var signature = method.DecodeSignature(new SignatureFormatter(metadata, type, method), null);
                 owner ??= new AotProfileClass(image, typeName);
                 methods.Add(new AotProfileMethod(owner, metadata.GetString(method.Name), signature.ParameterTypes.Length,
                     $"{signature.ReturnType.Text}({string.Join(",", signature.ParameterTypes.Select(p => p.Text))})"));

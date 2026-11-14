@@ -98,6 +98,22 @@ public class AotProfileTests
     }
 
     [TestMethod]
+    public void MethodsWithMoreThanEightParameters_Should_BeListed_SinceCompiledCodeCannotEnterTheInterpreterForThem()
+    {
+        var methods = AssemblyMethods.ReadWide(typeof(ProfileSamples).Assembly.Location)
+            .Where(m => m.Class.Name.StartsWith("Bit.Cli.Tests.ProfileSamples", StringComparison.Ordinal))
+            .ToList();
+
+        // The implementation alone: the interface's method has no body to compile, and eight parameters is what the
+        // wrappers every AOT build has can still enter the interpreter with.
+        var log = methods.Single();
+        Assert.AreEqual("Bit.Cli.Tests.ProfileSamples/Wide", log.Class.Name);
+        Assert.AreEqual("Log", log.Name);
+        Assert.AreEqual(9, log.ParameterCount);
+        Assert.AreEqual("void(System.Guid,System.Guid,System.DateTimeOffset,System.TimeSpan,string,int,int,int,System.Threading.CancellationToken)", log.Signature);
+    }
+
+    [TestMethod]
     [DataRow("""<script src="_framework/blazor.web.js"></script>""", """<script src="_framework/blazor.web.js" autostart="false"></script><script>Blazor.start();</script>""")]
     [DataRow("""<body><script src="_framework/blazor.webassembly.4rb4qnk8jm.js"></script><script src="app.js"></script>""", """<body><script src="_framework/blazor.webassembly.4rb4qnk8jm.js" autostart="false"></script><script>Blazor.start();</script><script src="app.js"></script>""")]
     [DataRow("""<script src="_framework/blazor.webassembly.js" autostart="false"></script>""", """<script src="_framework/blazor.webassembly.js" autostart="false"></script>""")]
@@ -766,8 +782,20 @@ public static class ProfileSamples
 
     public static T Generic<T>(T value) => value;
 
+    public static void Eight(int a, int b, int c, int d, int e, int f, int g, int h) { }
+
     public static class Nested
     {
         public sealed class Inner;
+    }
+
+    public interface IWide
+    {
+        void Log(Guid id, Guid connection, DateTimeOffset start, TimeSpan duration, string text, int a, int b, int c, CancellationToken cancellationToken);
+    }
+
+    public sealed class Wide : IWide
+    {
+        public void Log(Guid id, Guid connection, DateTimeOffset start, TimeSpan duration, string text, int a, int b, int c, CancellationToken cancellationToken) { }
     }
 }

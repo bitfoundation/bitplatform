@@ -178,7 +178,8 @@ public sealed class BsqliteBuilder
     /// download with <c>BlazorWebAssemblyLazyLoad</c> loads it here, through <c>LazyAssemblyLoader</c>.
     /// Opening needs it: every connection is a <c>DbConnection</c>, whose <c>GetSchema</c> returns a
     /// <c>DataTable</c>, and the runtime cannot set the connection type up without the assembly that
-    /// type's XML support lives in.
+    /// type's XML support lives in. Mark it lazy only outside AOT builds, with a switch next to the mark
+    /// that the step checks: an AOT build that marks it aborts at startup with a Mono assertion.
     /// </para>
     /// <para>
     /// Steps run in the order they were added, and must not open a database themselves: the open is
