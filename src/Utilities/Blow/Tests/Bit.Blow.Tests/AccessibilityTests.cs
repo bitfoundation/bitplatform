@@ -80,6 +80,37 @@ public class AccessibilityTests : BunitContext
     }
 
     [TestMethod]
+    public void ASelectionTheAppMadeKeepsThePaneATabStopForTheDeleteKeys()
+    {
+        var cut = Render([new BlowNode { Id = "1", Selected = true }], extra: Inert());
+
+        var pane = cut.Find(".bit-blow");
+        Assert.AreEqual("0", pane.GetAttribute("tabindex"));
+        Assert.AreEqual("application", pane.GetAttribute("role"));
+
+        // Nothing for the delete keys to do: a picture again.
+        var noDelete = Render([new BlowNode { Id = "1", Selected = true }],
+            extra: p => { Inert()(p); p.Add(c => c.DeleteKeyEnabled, false); });
+        Assert.IsNull(noDelete.Find(".bit-blow").GetAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public void InstructionsOfTheAppsOwnStayWhenNothingTakesFocus()
+    {
+        var labels = new BlowAriaLabels { PaneInstructions = "Press Delete to remove the selection, Ctrl+Z to undo." };
+        var cut = Render([new BlowNode { Id = "1" }], extra: p =>
+        {
+            Inert(nameof(BlowCanvas.HistoryEnabled))(p);
+            p.Add(c => c.AriaLabels, labels);
+        });
+
+        var pane = cut.Find(".bit-blow");
+        var describedBy = pane.GetAttribute("aria-describedby");
+        Assert.IsNotNull(describedBy);
+        Assert.AreEqual(labels.PaneInstructions, cut.Find($"#{describedBy}").TextContent);
+    }
+
+    [TestMethod]
     public void TheAppsOwnTabIndexRoleAndLabelWin()
     {
         var cut = Render([new BlowNode { Id = "1" }], extra: p => p
@@ -126,10 +157,35 @@ public class AccessibilityTests : BunitContext
         CollectionAssert.Contains(picture, "bit-blow-page-zoom");
         CollectionAssert.Contains(picture, "bit-blow-nodes-locked");
 
-        // Panning with the middle button only leaves the left one - a finger - with nothing to do on the pane.
+        // Panning with the middle button only leaves the left one - a finger - with nothing to do on the pane, but the
+        // middle button's drag still grabs it.
         var middle = ClassesOf(Render([new BlowNode { Id = "1" }], extra: p => p.Add(c => c.PanButtons, [1])));
-        CollectionAssert.DoesNotContain(middle, "bit-blow-pane-pan");
+        CollectionAssert.Contains(middle, "bit-blow-pane-pan");
         CollectionAssert.Contains(middle, "bit-blow-page-scroll");
+    }
+
+    [TestMethod]
+    public void HoldingThePanKeyShowsThatADragNowPans()
+    {
+        var cut = Render([new BlowNode { Id = "1" }], extra: p => p.Add(c => c.SelectionOnDrag, true));
+        var pane = cut.Find(".bit-blow");
+        Assert.IsFalse(pane.ClassList.Contains("bit-blow-pane-pan"));
+
+        pane.KeyDown(new KeyboardEventArgs { Key = " " });
+        Assert.IsTrue(cut.Find(".bit-blow").ClassList.Contains("bit-blow-pane-pan"));
+
+        cut.Find(".bit-blow").KeyUp(new KeyboardEventArgs { Key = " " });
+        Assert.IsFalse(cut.Find(".bit-blow").ClassList.Contains("bit-blow-pane-pan"));
+    }
+
+    [TestMethod]
+    public void ANodeOnlyItsDragHandleDragsSaysSo()
+    {
+        var cut = Render([new BlowNode { Id = "1", UseCustomDragHandle = true }, new BlowNode { Id = "2" }]);
+
+        var nodes = cut.FindAll(".bit-blow-node");
+        Assert.IsTrue(nodes[0].ClassList.Contains("custom-drag-handle"));
+        Assert.IsFalse(nodes[1].ClassList.Contains("custom-drag-handle"));
     }
 
     [TestMethod]
