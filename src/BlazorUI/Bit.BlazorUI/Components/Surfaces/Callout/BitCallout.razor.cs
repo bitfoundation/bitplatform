@@ -1654,7 +1654,9 @@ public partial class BitCallout : BitComponentBase
 
         try
         {
-            await _js.BitUtilsToggleOverflow(UniqueId, "body", true);
+            // The callout has always let the page shift by the width of the scrollbar it takes away, so the
+            // room is not given back as padding.
+            await _js.BitUtilsLockScroll(UniqueId, "body", compensate: false);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
@@ -1667,7 +1669,7 @@ public partial class BitCallout : BitComponentBase
 
         try
         {
-            await _js.BitUtilsToggleOverflow(UniqueId, "body", false);
+            await _js.BitUtilsUnlockScroll(UniqueId);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
@@ -2003,7 +2005,7 @@ public partial class BitCallout : BitComponentBase
                 // still unable to scroll again, with nothing left on the page to release it.
                 if (_scrollLocked)
                 {
-                    await _js.BitUtilsToggleOverflow(UniqueId, "body", false);
+                    await _js.BitUtilsUnlockScroll(UniqueId);
                 }
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
