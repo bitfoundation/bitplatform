@@ -240,19 +240,33 @@ internal sealed class BevLeakTracker(BevToolsSession session)
 
     /// <summary>
     /// The topmost retained ancestor of a retained component, by the ancestors recorded while it was on the page; itself
-    /// when none of them is retained.
+    /// when none of them is retained. Followed until it settles: only <see cref="MaxAncestors"/> ancestors are recorded,
+    /// so the topmost one a deep component knows of can have retained ancestors of its own, and the component belongs
+    /// where that one does - never to a group whose top is itself a member of another.
     /// </summary>
     private static Probe TopOf(Probe probe, Dictionary<long, (Probe Probe, IComponent Component)> retained)
     {
-        for (var i = probe.Ancestors.Length - 1; i >= 0; i--)
+        var seen = new HashSet<long> { probe.InstanceId };
+        while (true)
         {
-            if (retained.TryGetValue(probe.Ancestors[i], out var above))
+            var top = probe;
+            for (var i = probe.Ancestors.Length - 1; i >= 0; i--)
             {
-                return above.Probe;
+                if (retained.TryGetValue(probe.Ancestors[i], out var above))
+                {
+                    top = above.Probe;
+                    break;
+                }
             }
-        }
 
-        return probe;
+            // Ids are recorded as the tree was, so a cycle cannot happen; the guard is for one that somehow did.
+            if (ReferenceEquals(top, probe) || !seen.Add(top.InstanceId))
+            {
+                return top;
+            }
+
+            probe = top;
+        }
     }
 
     /// <summary>The probes whose component is still alive; the others are forgotten.</summary>

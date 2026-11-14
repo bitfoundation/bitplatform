@@ -168,6 +168,47 @@ public sealed class JsToDotNetTests : IDisposable
     }
 
     [TestMethod]
+    public void A_second_reported_in_two_parts_is_one_event()
+    {
+        var entries = Calls("App.Tick", 30, 16);
+
+        _bridge.ReportJsToDotNet(entries[..15]);
+        _bridge.ReportJsToDotNet(entries[15..]);
+
+        var evt = Assert.ContainsSingle(Events("← .NET App.Tick"), "one event for the second, whichever report its calls came in");
+        Assert.IsTrue(evt.TryGetData("calls", out var calls) && calls is 30, evt.Detail);
+        StringAssert.StartsWith(evt.Detail, "30 calls in this second");
+        Assert.IsTrue(_session.Interop.Snapshot().All(r => r.TimelineEventId == evt.Id), "every call links to the one event");
+    }
+
+    [TestMethod]
+    public void Calls_on_several_instances_of_a_component_are_attributed_to_none_of_them()
+    {
+        var first = new ChildComponent();
+        var second = new ChildComponent();
+        var firstRecord = _session.Components.Register(first, typeof(ChildComponent), isBevTools: false, isHidden: false)!;
+        _session.Components.Register(second, typeof(ChildComponent), isBevTools: false, isHidden: false);
+        var firstId = HandToJavaScript(first);
+        var secondId = HandToJavaScript(second);
+
+        var entries = Calls("object#" + firstId + ".OnTick", 4, 10);
+        for (var i = 2; i < entries.Length; i++)
+        {
+            entries[i].Identifier = "object#" + secondId + ".OnTick";
+        }
+
+        _bridge.ReportJsToDotNet(entries[..2]);
+        var alone = Assert.ContainsSingle(_session.Timeline.Snapshot().Where(e => e.Category == "js-interop"));
+        Assert.AreEqual(firstRecord.InstanceId, alone.ComponentInstanceId, "the calls so far are on one instance");
+
+        _bridge.ReportJsToDotNet(entries[2..]);
+        var both = Assert.ContainsSingle(_session.Timeline.Snapshot().Where(e => e.Category == "js-interop"));
+        Assert.IsTrue(both.TryGetData("calls", out var calls) && calls is 4, both.Detail);
+        Assert.IsNull(both.ComponentInstanceId, "not the first instance's alone");
+        Assert.IsNull(both.ComponentName);
+    }
+
+    [TestMethod]
     public void An_id_the_JS_runtime_no_longer_has_is_kept()
     {
         _bridge.ReportJsToDotNet(Calls("object#424242.OnTick", 1, 0));

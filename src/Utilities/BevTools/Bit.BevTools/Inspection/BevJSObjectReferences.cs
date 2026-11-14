@@ -1,17 +1,15 @@
 ﻿using System.Collections;
-using System.Reflection;
 using Microsoft.JSInterop;
 
 namespace Bit.BevTools;
 
 /// <summary>
 /// The JS runtime's table of the <see cref="DotNetObjectReference"/>s it handed to JavaScript, by the id JavaScript
-/// knows them by (<c>object#26</c> in a call from JS). Optional reflection: null when the table cannot be read.
+/// knows them by (<c>object#26</c> in a call from JS). Optional reflection, through <see cref="BlazorReflection"/>: null
+/// when the table cannot be read.
 /// </summary>
 internal static class BevJSObjectReferences
 {
-    private static readonly Lazy<FieldInfo?> TrackedReferences = new(() => typeof(JSRuntime).GetField("_trackedRefsById", BindingFlags.Instance | BindingFlags.NonPublic));
-
     /// <summary>The session's table; null when its JS runtime is not a <see cref="JSRuntime"/> or the field is gone.</summary>
     public static IDictionary? Table(BevToolsSession session)
     {
@@ -21,14 +19,7 @@ internal static class BevJSObjectReferences
             runtime = tracking.Inner;
         }
 
-        try
-        {
-            return runtime is JSRuntime ? TrackedReferences.Value?.GetValue(runtime) as IDictionary : null;
-        }
-        catch
-        {
-            return null;
-        }
+        return BlazorReflection.TrackedDotNetObjectReferences(runtime);
     }
 
     /// <summary>What a reference keeps alive: <c>DotNetObjectReference&lt;T&gt;.Value</c>.</summary>

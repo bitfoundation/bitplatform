@@ -43,10 +43,22 @@ internal static class BevRetentionAnalyzer
 
     private static readonly ConcurrentDictionary<Type, FieldInfo[]> Fields = new();
 
-    /// <summary>What a finding says when no reference was found: what was searched, which is not everywhere.</summary>
-    internal static readonly string NotFound = "Not held by its injected services, its cascading values, a field of a component still on the page, the JS runtime's object references or its own timers"
-        + " (followed up to " + MaxDepth + " objects deep into the application's and its libraries' own types, " + MaxObjectsPerScan.ToString("N0", System.Globalization.CultureInfo.InvariantCulture) + " objects in all)."
-        + " What holds it is outside that: a static field, a cache, a framework object, or a longer path.";
+    /// <summary>
+    /// What a finding says when no reference was found: what was searched and within which limits, which is not
+    /// everywhere, and not everything there either. A source that could not be read (the JS runtime's table, when its
+    /// runtime is not one BevTools can read) is named as not searched.
+    /// </summary>
+    internal static string NotFound(BevToolsSession session)
+    {
+        static string N(int n) => n.ToString("N0", System.Globalization.CultureInfo.InvariantCulture);
+        var jsTable = BevJSObjectReferences.Table(session) is not null;
+        return "No reference to it was found within what BevTools searched: its injected singleton and scoped services, its cascading values, NavigationManager and AuthenticationStateProvider, "
+            + "the fields of the components still on the page, " + (jsTable ? "the JS runtime's DotNetObjectReference table, " : "") + "and its own timers"
+            + " (followed up to " + MaxDepth + " objects deep into the application's and its libraries' own types, at most " + N(MaxItemsPerCollection) + " items of each collection or handler list, "
+            + N(MaxObjectsPerHolder) + " objects per holder and " + N(MaxObjectsPerScan) + " in all)."
+            + (jsTable ? "" : " The JS runtime's DotNetObjectReference table could not be read, so it was not searched.")
+            + " A reference past those limits is not found, and what holds it may also be elsewhere: a static field, a cache, a framework object, or a longer path.";
+    }
 
     /// <summary>How to find what BevTools did not.</summary>
     internal const string HeapSnapshot = "Take a heap snapshot and follow the path from it to a root: dotnet-gcdump for a server process, the runtime's GC dump (collectGcDump, in a build with diagnostics) on WebAssembly.";
@@ -312,7 +324,11 @@ internal static class BevRetentionAnalyzer
     /// </summary>
     private sealed class Walker(int cap, Budget? pool = null)
     {
-        private readonly HashSet<object> _visited = new(ReferenceEqualityComparer.Instance);
+        /// <summary>
+        /// The shallowest depth each object and collection was read at. One reached first by a long path and later by a
+        /// short one is read again, with the depth the short one leaves; never again at the same depth or deeper.
+        /// </summary>
+        private readonly Dictionary<object, int> _visited = new(ReferenceEqualityComparer.Instance);
         private int _left = cap;
 
         /// <summary>Only delegates are read, not collections nor objects: configuration's values are not BevTools' to walk.</summary>
@@ -343,10 +359,35 @@ internal static class BevRetentionAnalyzer
             return pool is null || --pool.Remaining >= 0;
         }
 
+        /// <summary>Whether the cap and the shared pool still allow reading.</summary>
+        private bool HasBudget => _left > 0 && (pool is null || pool.Remaining > 0);
+
+        /// <summary>
+        /// Whether <paramref name="value"/> is read at <paramref name="depth"/>: the first time, counted as one object
+        /// more (when <paramref name="spend"/>); again only from a shallower depth, which reads further below it, and
+        /// not counted again (it is the same object), but only while there is budget left.
+        /// </summary>
+        private bool Enter(object value, int depth, bool spend)
+        {
+            if (_visited.TryGetValue(value, out var at))
+            {
+                if (depth >= at || !HasBudget)
+                {
+                    return false;
+                }
+
+                _visited[value] = depth;
+                return true;
+            }
+
+            _visited[value] = depth;
+            return !spend || Spend();
+        }
+
         /// <summary>The fields of <paramref name="value"/>, which is <paramref name="depth"/> objects below the root (the root is 0).</summary>
         public void Walk(object value, string path, int depth)
         {
-            if (!_visited.Add(value) || !Spend())
+            if (!Enter(value, depth, spend: true))
             {
                 return;
             }
@@ -447,14 +488,14 @@ internal static class BevRetentionAnalyzer
 
             if (value is IDictionary dictionary && IsFrameworkCollection(type))
             {
-                if (_visited.Add(value))
+                if (Enter(value, depth, spend: false))
                 {
                     Items(DictionaryValues(dictionary), path + "[]", depth);
                 }
             }
             else if (value is IEnumerable items && IsFrameworkCollection(type))
             {
-                if (_visited.Add(value))
+                if (Enter(value, depth, spend: false))
                 {
                     Items(items, path + "[]", depth);
                 }

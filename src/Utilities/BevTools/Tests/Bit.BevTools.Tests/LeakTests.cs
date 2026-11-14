@@ -426,7 +426,8 @@ public sealed class LeakTests : IDisposable
             Session.Diagnostics.Evaluate(force: true);
 
             var finding = Assert.ContainsSingle(f => f.Diagnostic.RuleId == "memory.retained-components", Session.Diagnostics.Findings).Diagnostic;
-            StringAssert.Contains(finding.Evidence, "Not held by its injected services, its cascading values, a field of a component still on the page, the JS runtime's object references or its own timers");
+            StringAssert.Contains(finding.Evidence, "No reference to it was found within what BevTools searched: its injected singleton and scoped services, its cascading values");
+            StringAssert.Contains(finding.Evidence, "at most 1,000 items of each collection or handler list, 20,000 objects per holder and 60,000 in all");
             StringAssert.Contains(finding.Suggestion, "heap snapshot");
         }
         finally

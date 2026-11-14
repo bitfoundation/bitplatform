@@ -84,7 +84,7 @@
                                 <td>
                                     @if (group.Causes.Count == 0)
                                     {
-                                        <span class="bev-muted">@BevRetentionAnalyzer.NotFound <div>@BevRetentionAnalyzer.HeapSnapshot</div></span>
+                                        <span class="bev-muted">@NotFound <div>@BevRetentionAnalyzer.HeapSnapshot</div></span>
                                     }
                                     @foreach (var cause in group.Causes)
                                     {
@@ -109,6 +109,11 @@
 
     private BevRetainedComponents[] _retained = [];
 
+    private string? _notFound;
+
+    /// <summary>Read once per check: it asks the JS runtime whether its table can be read.</summary>
+    private string NotFound => _notFound ??= BevRetentionAnalyzer.NotFound(Session);
+
     private BevMemorySample[] _memory = [];
 
     private BevFullCollection[] _collections = [];
@@ -117,6 +122,7 @@
     {
         _sections = BevRuntimeInfo.Build(Session);
         _retained = Session.Leaks.Retained();
+        _notFound = null;
         _memory = Session.Memory.Samples;
         _collections = Session.Memory.FullCollections;
     }
@@ -139,6 +145,7 @@
         }
 
         _retained = await Session.Leaks.CollectAndCheckAsync();
+        _notFound = null;
         Session.Diagnostics.Evaluate(force: true);
         Host.Notify(_retained.Length == 0 ? "No disposed component survived the collection" : _retained.Sum(r => r.Count + r.DescendantCount) + " disposed component(s) survived the collection");
     }

@@ -570,7 +570,7 @@ internal static class BuiltInRules
                         : "")
                     + (causes.Count > 0
                         ? "Held by: " + string.Join("; ", causes.Take(3).Select(c => c.Holder + ": " + c.Detail)) + "."
-                        : BevRetentionAnalyzer.NotFound)
+                        : BevRetentionAnalyzer.NotFound(session))
                     + (bounded ? " A field holds one instance at a time and the next render of that markup replaces it: this does not grow, but keeps what the component references until then." : "");
                 yield return new BevDiagnostic(
                     Id,
@@ -1432,14 +1432,20 @@ internal static class BuiltInRules
                 }
             }
 
-            // A value tuple's MaxBy throws on no elements: there are none when every call's time is known.
-            var bySecond = seconds.GroupBy(e => e.TryGetData("second", out var s) && s is long second ? second : e.Timestamp.ToUnixTimeSeconds())
-                .Select(g => (Count: g.Sum(e => (int)e.Data!["calls"]!), Events: g.ToList()))
-                .DefaultIfEmpty((Count: 0, Events: []))
+            // A second covered by events of many calls also holds the calls of that second whose time is known (a slow or
+            // failed call keeps an event of its own): both count for it, each event once, since an event is either one or
+            // the other. A value tuple's MaxBy throws on no elements: there are none when every call's time is known.
+            var timedBySecond = points.ToLookup(p => SecondOf(p.Event));
+            var bySecond = seconds.GroupBy(SecondOf)
+                .Select(g => (Count: g.Sum(e => (int)e.Data!["calls"]!) + timedBySecond[g.Key].Count(), Events: g.ToList(), Timed: timedBySecond[g.Key].ToList()))
+                .DefaultIfEmpty((Count: 0, Events: [], Timed: []))
                 .MaxBy(g => g.Count);
             return bySecond.Count > bestCount
-                ? (bySecond.Count, [], bySecond.Events)
+                ? (bySecond.Count, bySecond.Timed, bySecond.Events)
                 : (bestCount, points.GetRange(bestStart, bestCount), []);
+
+            // The second the page's clock put the calls in, which the bridge groups them by; the event's own time otherwise.
+            static long SecondOf(BevToolsEvent e) => e.TryGetData("second", out var s) && s is long second ? second : e.Timestamp.ToUnixTimeSeconds();
         }
 
         /// <summary>
