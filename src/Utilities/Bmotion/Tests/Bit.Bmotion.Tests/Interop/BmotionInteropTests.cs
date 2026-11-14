@@ -202,4 +202,41 @@ public class BmotionInteropTests
 
         Assert.AreEqual(0, ctx.JSInterop.Invocations.Count);
     }
+
+    // Every field a different value, so any two swapped land on the wrong parameter and fail.
+    private static readonly BmotionFlip DistinctFlip = new()
+    {
+        Dx = 11, Dy = 12, Sx = 1.3, Sy = 1.4, DurationMs = 150, Easing = "linear", OriginX = 0.25, OriginY = 0.75,
+    };
+
+    [TestMethod]
+    public async Task PlayWaapiFlip_SendsTheFlipInPlayWaapiFlipsParameterOrder()
+    {
+        var (ctx, module, interop) = Create();
+        await using var _ = ctx;
+        module.SetupVoid("playWaapiFlip", _ => true).SetVoidResult();
+        using var target = DotNetObjectReference.Create(new Target());
+
+        await interop.PlayWaapiFlipAsync("box", DistinctFlip, "none", target);
+
+        // playWaapiFlip(elementId, dx, dy, sx, sy, durationMs, easingStr, finalTransform, originX, originY, dotnetRef)
+        var args = module.VerifyInvoke("playWaapiFlip").Arguments;
+        CollectionAssert.AreEqual(
+            new object?[] { "box", 11.0, 12.0, 1.3, 1.4, 150.0, "linear", "none", 0.25, 0.75, target }, args.ToArray());
+    }
+
+    [TestMethod]
+    public async Task PlayLayoutCrossfade_SendsTheFlipInPlayLayoutCrossfadesParameterOrder()
+    {
+        var (ctx, module, interop) = Create();
+        await using var _ = ctx;
+        module.SetupVoid("playLayoutCrossfade", _ => true).SetVoidResult();
+
+        await interop.PlayLayoutCrossfadeAsync("lead", "follow", DistinctFlip);
+
+        // playLayoutCrossfade(leadId, followId, dx, dy, sx, sy, durationMs, easingStr, originX, originY)
+        var args = module.VerifyInvoke("playLayoutCrossfade").Arguments;
+        CollectionAssert.AreEqual(
+            new object?[] { "lead", "follow", 11.0, 12.0, 1.3, 1.4, 150.0, "linear", 0.25, 0.75 }, args.ToArray());
+    }
 }

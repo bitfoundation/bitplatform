@@ -141,9 +141,15 @@ public interface IBmotionInterop : IAsyncDisposable
     /// Crossfades two holders of a LayoutId as the layout animation plays: <paramref name="leadId"/>, the one taking
     /// it over, fades in; <paramref name="followId"/>, the one on its way out, fades out while it travels onto the
     /// lead's box - by the offset and scale of <paramref name="flip"/>, about its anchor - and stays there until it
-    /// is removed. Defaults to doing nothing.
+    /// is removed.
     /// </summary>
-    ValueTask PlayLayoutCrossfadeAsync(string leadId, string followId, BmotionFlip flip) => ValueTask.CompletedTask;
+    /// <remarks>
+    /// No default body, unlike the members around it: it replaces an overload that took the flip one parameter each,
+    /// and with a default an implementation still declaring that overload would compile, never be called, and leave
+    /// every LayoutId crossfade unplayed. An implementation with nothing to play returns
+    /// <see cref="ValueTask.CompletedTask"/>.
+    /// </remarks>
+    ValueTask PlayLayoutCrossfadeAsync(string leadId, string followId, BmotionFlip flip);
 
     /// <summary>Takes an element that came back off its crossfade out (see <see cref="PlayLayoutCrossfadeAsync"/>). Defaults to doing nothing.</summary>
     ValueTask CancelLayoutCrossfadeAsync(string elementId) => ValueTask.CompletedTask;

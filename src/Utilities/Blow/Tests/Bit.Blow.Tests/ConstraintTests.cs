@@ -226,6 +226,40 @@ public class ConstraintTests : BunitContext
         Assert.AreEqual(30, node.Height!.Value, 1e-3);
     }
 
+    [TestMethod]
+    public async Task DefaultResizeOptionsBoundNothingButTheOneUnitFloor()
+    {
+        var node = new BlowNode { Id = "n", Position = new(0, 0), Width = 100, Height = 60 };
+        var cut = Render([node]);
+
+        await cut.InvokeAsync(() => cut.Instance.StartResize("n", BlowResizeDirection.BottomRight, 0, 0, default, 1));
+
+        cut.Find(".bit-blow").PointerMove(new PointerEventArgs { PointerId = 1, ClientX = 400, ClientY = 300 });
+        Assert.AreEqual(500, node.Width!.Value, 1e-3, "no MaxWidth is no upper bound, not a bound of 0");
+        Assert.AreEqual(360, node.Height!.Value, 1e-3);
+
+        cut.Find(".bit-blow").PointerMove(new PointerEventArgs { PointerId = 1, ClientX = -5000, ClientY = -5000 });
+        Assert.AreEqual(1, node.Width!.Value, 1e-3);
+        Assert.AreEqual(1, node.Height!.Value, 1e-3);
+    }
+
+    [TestMethod]
+    public async Task TheObsoleteTenParameterStartResizeStillAppliesItsBounds()
+    {
+        var node = new BlowNode { Id = "n", Position = new(0, 0), Width = 100, Height = 60 };
+        var cut = Render([node]);
+
+#pragma warning disable CS0618 // the overload kept for existing callers is what is under test
+        await cut.InvokeAsync(() => cut.Instance.StartResize(
+            "n", BlowResizeDirection.BottomRight, 0, 0, 20, 20, false, 150, 90, 1));
+#pragma warning restore CS0618
+
+        cut.Find(".bit-blow").PointerMove(new PointerEventArgs { PointerId = 1, ClientX = 5000, ClientY = 5000 });
+
+        Assert.AreEqual(150, node.Width!.Value, 1e-3);
+        Assert.AreEqual(90, node.Height!.Value, 1e-3);
+    }
+
     // ---- id collisions across the node/edge selection sets ----
 
     [TestMethod]

@@ -6640,10 +6640,25 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     /// Begins a node resize gesture with size bounds, capturing the pointer on the pane so the
     /// gesture survives the pointer leaving the flow.
     /// </summary>
+    /// <remarks>Kept on the canvas for existing callers; it is not part of <see cref="IBlowContext"/>.</remarks>
+    [Obsolete("Use StartResize(string, BlowResizeDirection, double, double, BlowResizeOptions, long).")]
+    public void StartResize(string nodeId, BlowResizeDirection direction,
+        double clientX, double clientY, double minWidth, double minHeight, bool keepAspectRatio,
+        double maxWidth, double maxHeight, long pointerId)
+        => StartResize(nodeId, direction, clientX, clientY,
+            new BlowResizeOptions
+            {
+                MinWidth = minWidth, MinHeight = minHeight, MaxWidth = maxWidth, MaxHeight = maxHeight,
+                KeepAspectRatio = keepAspectRatio,
+            }, pointerId);
+
+    /// <summary>
+    /// Begins a node resize gesture with size bounds, capturing the pointer on the pane so the
+    /// gesture survives the pointer leaving the flow.
+    /// </summary>
     public void StartResize(string nodeId, BlowResizeDirection direction,
         double clientX, double clientY, BlowResizeOptions options, long pointerId)
     {
-        ArgumentNullException.ThrowIfNull(options);
         OnPointerPress();
         if (!Index.TryGetValue(nodeId, out var node)) return;
 
@@ -6657,8 +6672,8 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         _resizeOriginalSize = (node.Width, node.Height);
         _resizeMinW = Math.Max(1, options.MinWidth);
         _resizeMinH = Math.Max(1, options.MinHeight);
-        _resizeMaxW = Math.Max(_resizeMinW, options.MaxWidth);
-        _resizeMaxH = Math.Max(_resizeMinH, options.MaxHeight);
+        _resizeMaxW = Math.Max(_resizeMinW, options.MaxWidth ?? double.MaxValue);
+        _resizeMaxH = Math.Max(_resizeMinH, options.MaxHeight ?? double.MaxValue);
 
         // A node pinned inside its parent must not be resizable straight out of it. Folding the
         // extent into the size bounds here means every later step - the clamp, the aspect-ratio

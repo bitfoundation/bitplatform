@@ -9,7 +9,7 @@ namespace Bit.Bmotion;
 /// One object rather than a parameter each: an interface method with more than eight parameters needs a bridge built
 /// for its exact signature when an app compiled with profile-guided AOT reaches it on the interpreter, and none exists.
 /// </remarks>
-public sealed class BmotionFlip
+public sealed record BmotionFlip
 {
     /// <summary>The horizontal offset the element starts from, in CSS pixels.</summary>
     public double Dx { get; init; }

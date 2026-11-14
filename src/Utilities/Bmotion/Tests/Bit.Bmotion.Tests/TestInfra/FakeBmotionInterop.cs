@@ -337,9 +337,9 @@ internal sealed class FakeBmotionInterop : IBmotionInterop
             FlipRefs[elementId] = dotnetRef.Value;
             FlipReferences[elementId] = dotnetRef;
         }
-        // Recorded in the order the bridge hands them to playWaapiFlip.
-        Record("playWaapiFlip", elementId, flip.Dx, flip.Dy, flip.Sx, flip.Sy, flip.DurationMs, flip.Easing, finalTransform,
-            flip.OriginX, flip.OriginY);
+        // Flattened by the real bridge's own code, so the order recorded is the order it sends
+        // (BmotionInteropTests pins that order against playWaapiFlip's parameters).
+        Record("playWaapiFlip", BmotionInterop.WaapiFlipArgs(elementId, flip, finalTransform, dotnetRef));
         return ValueTask.CompletedTask;
     }
 
@@ -359,8 +359,7 @@ internal sealed class FakeBmotionInterop : IBmotionInterop
 
     public ValueTask PlayLayoutCrossfadeAsync(string leadId, string followId, BmotionFlip flip)
     {
-        Record("playLayoutCrossfade", leadId, followId, flip.Dx, flip.Dy, flip.Sx, flip.Sy, flip.DurationMs, flip.Easing,
-            flip.OriginX, flip.OriginY);
+        Record("playLayoutCrossfade", BmotionInterop.LayoutCrossfadeArgs(leadId, followId, flip));
         return ValueTask.CompletedTask;
     }
 

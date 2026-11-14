@@ -150,6 +150,8 @@ internal sealed class HeadlessBmotionInterop : IBmotionInterop
         string elementId, BmotionFlip flip, string? finalTransform, DotNetObjectReference<T>? dotnetRef) where T : class
         => ValueTask.CompletedTask;
 
+    public ValueTask PlayLayoutCrossfadeAsync(string leadId, string followId, BmotionFlip flip) => ValueTask.CompletedTask;
+
     // -- Reading the page ------------------------------------------------------
 
     /// <summary>
