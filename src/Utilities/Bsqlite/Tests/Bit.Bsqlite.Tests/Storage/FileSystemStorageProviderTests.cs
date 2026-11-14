@@ -105,6 +105,36 @@ public sealed class FileSystemStorageProviderTests
         Assert.Contains("relative to", error.Message);
     }
 
+    /// <summary>
+    /// Names that are not the database's to take: a device on Windows, a file SQLite or the backend keeps
+    /// beside a database - <c>app.db-journal</c> would be rolled back into <c>app.db</c> - or the binding file.
+    /// </summary>
+    [TestMethod]
+    [DataRow("CON")]
+    [DataRow("nul.db")]
+    [DataRow("data/COM1.db")]
+    [DataRow("lpt9")]
+    [DataRow("app.db-journal")]
+    [DataRow("app.db-WAL")]
+    [DataRow("app.db-shm")]
+    [DataRow("app.db.0123.import")]
+    [DataRow("app.db.0123.aside")]
+    [DataRow(".bit-bsqlite-bindings")]
+    public void DatabaseName_IsNotOneTheBackendOrTheSystemReserves(string name)
+    {
+        var error = Assert.ThrowsExactly<ArgumentException>(() => Provider().GetDatabasePath(name));
+
+        Assert.Contains("relative to", error.Message);
+    }
+
+    [TestMethod]
+    [DataRow("console.db")]
+    [DataRow("COM10.db")]
+    [DataRow("data/journal.db")]
+    [DataRow("contacts/app.db")]
+    public void DatabaseName_ThatOnlyResemblesAReservedOne_IsAccepted(string name)
+        => Assert.IsNotNull(Provider().GetDatabasePath(name));
+
     [TestMethod]
     public void Root_CanBeADriveOrTheFileSystemRoot()
     {
@@ -297,7 +327,7 @@ public sealed class FileSystemStorageProviderTests
     {
         var provider = Provider();
         await provider.Admin.ImportAsync("app.db", SqliteImage(), Ct);
-        await File.WriteAllBytesAsync(provider.GetDatabasePath($"app.db.{Guid.NewGuid():N}.aside"), SqliteImage(), Ct);
+        await File.WriteAllBytesAsync($"{provider.GetDatabasePath("app.db")}.{Guid.NewGuid():N}.aside", SqliteImage(), Ct);
 
         CollectionAssert.AreEqual(new[] { "app.db" }, (await provider.Admin.ListAsync(Ct)).ToArray());
     }

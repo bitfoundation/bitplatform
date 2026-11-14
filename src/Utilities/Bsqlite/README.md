@@ -1,4 +1,4 @@
-﻿# bit Bsqlite
+﻿# Bit.Bsqlite
 
 SQLite in the browser for Blazor, with EF Core on top. The same entities and the same migrations run on the client as
 on the server, and the database lives in the user's browser tab - in OPFS, IndexedDB, Cache Storage or memory - or, in a
@@ -68,7 +68,10 @@ apart: a Blazor Web App of its own whose browser half downloads Bit.Bsqlite and 
 - **Live queries.** A write re-runs any live query that reads the table, including writes from another tab. Change
   tracking comes from the engine's update hook, so triggers and cascades count too.
 - **Complete ADO.NET.** Commands, batches (`DbBatch`), transactions with savepoints and rollback-on-dispose,
-  multi-result readers, typed exceptions by SQLite result code, and in-place export of an open database.
+  multi-result readers, typed exceptions by SQLite result code, and values read the way Microsoft.Data.Sqlite reads them.
+- **Backup, restore, delete.** `Database.ExportAsync()` snapshots the open database as an ordinary SQLite file;
+  `RestoreAsync` checks a file - a backup, or a WAL-mode database from a server - before it replaces the database, and
+  verifies the copy; `DeleteAsync` removes a database from every backend, for a sign-out that leaves nothing behind.
 
 ## Packages
 
@@ -213,9 +216,11 @@ the router reads, nothing of EF Core's in `Program.cs`, the database asked for o
 - A synchronous worker bridge. Browsers forbid `Atomics.wait` on the main thread, a spin-wait would freeze the UI, and
   multithreaded WebAssembly is not Blazor's default.
 - `in-memory` has no admin view of live data. It registers no VFS, so a database opened on it lives in the engine's own
-  heap inside the worker; `Admin` describes only images passed to it directly. Export, list, and migration away from
-  this backend do not see what a connection wrote, and a migration onto it does not reach the database a connection
-  opens - the source is deleted and the next open starts empty. Persistent backends do not have this gap.
+  heap inside the worker; `Admin` describes only images passed to it directly. List, restore and migration away from
+  this backend do not see what a connection wrote - `Database.ExportAsync()` does - and a migration onto it from a
+  persistent backend is refused. Persistent backends do not have this gap.
+- Full-text search and the R*Tree. The vendored engine leaves FTS3/4/5 and R*Tree out; the *Limits* guide lists what it
+  has.
 - `indexeddb` serializes readers. `IDBBatchAtomicVFS` is registered with `WebLocksMixin`'s default `exclusive` lock
   policy, so a read holds the same lock a write does. `SupportsConcurrentReads` reports that honestly.
 

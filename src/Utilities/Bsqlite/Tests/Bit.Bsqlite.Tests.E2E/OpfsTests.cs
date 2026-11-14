@@ -140,6 +140,99 @@ public sealed class OpfsTests : BsqliteTest
         Assert.IsFalse(outcome.GetProperty("existsAfterDelete").GetBoolean());
     }
 
+    /// <summary>
+    /// The VFS stores a database under the URL path of its name - percent-encoded - so the admin surface has
+    /// to look in the same place: a name with a space or a non-ASCII letter the engine wrote is found,
+    /// listed under its own name, exported, replaced and deleted.
+    /// </summary>
+    [TestMethod]
+    public async Task Admin_finds_a_database_the_engine_wrote_under_a_name_the_VFS_encodes()
+    {
+        await SkipUnlessOpfsAsync(Page);
+
+        var databaseName = $"My Notes é {Guid.NewGuid():N}.db";
+        await OpenOpfsAsync(Page, databaseName);
+        await ExecAsync(Page, "CREATE TABLE note (body TEXT)");
+        await ExecAsync(Page, "INSERT INTO note VALUES ('written by the engine')");
+        await Page.EvaluateAsync(
+            """
+            async () => {
+              await globalThis.host.close();
+              globalThis.host.dispose();
+            }
+            """);
+
+        var outcome = await Page.EvaluateAsync<JsonElement>(
+            """
+            async name => {
+              const admin = await import('/_content/Bit.Bsqlite/bit-bsqlite-opfs-admin.js');
+              const existed = await admin.exists(name);
+              const listed = (await admin.list()).includes(name);
+              const image = await admin.exportDatabase(name);
+              await admin.importDatabase(name, image);
+              const reimported = await admin.exists(name);
+              await admin.deleteDatabase(name);
+              return {
+                existed,
+                listed,
+                magic: new TextDecoder().decode(image.subarray(0, 15)),
+                reimported,
+                existsAfterDelete: await admin.exists(name),
+                rawFileLeft: await admin.exists(encodeURIComponent(name)),
+              };
+            }
+            """, databaseName);
+
+        Assert.IsTrue(outcome.GetProperty("existed").GetBoolean());
+        Assert.IsTrue(outcome.GetProperty("listed").GetBoolean());
+        Assert.AreEqual("SQLite format 3", outcome.GetProperty("magic").GetString());
+        Assert.IsTrue(outcome.GetProperty("reimported").GetBoolean());
+        Assert.IsFalse(outcome.GetProperty("existsAfterDelete").GetBoolean());
+        Assert.IsFalse(outcome.GetProperty("rawFileLeft").GetBoolean());
+    }
+
+    /// <summary>
+    /// A snapshot of an open OPFS database - the backup <c>BsqliteDatabase.ExportAsync</c> takes - on a worker
+    /// that has just opened it: OPFSCoopSyncVFS hands out its access handles cooperatively, so the first read
+    /// answers busy and has to be retried, which <c>sqlite3_serialize</c> on its own cannot do.
+    /// </summary>
+    [TestMethod]
+    public async Task Snapshot_of_an_open_database_is_the_file_byte_for_byte()
+    {
+        await SkipUnlessOpfsAsync(Page);
+
+        var databaseName = UniqueName("opfs-snapshot");
+        await OpenOpfsAsync(Page, databaseName);
+        await ExecAsync(Page, "CREATE TABLE product (id INTEGER PRIMARY KEY, name TEXT)");
+        await ExecAsync(Page, "WITH RECURSIVE n(i) AS (SELECT 1 UNION ALL SELECT i + 1 FROM n WHERE i < 500) INSERT INTO product (name) SELECT 'row ' || i FROM n");
+        await Page.EvaluateAsync(
+            """
+            async () => {
+              await globalThis.host.close();
+              globalThis.host.dispose();
+            }
+            """);
+
+        await OpenOpfsAsync(Page, databaseName);
+        var outcome = await Page.EvaluateAsync<JsonElement>(
+            """
+            async name => {
+              const snapshot = await globalThis.host.export();
+              await globalThis.host.close();
+              globalThis.host.dispose();
+              const admin = await import('/_content/Bit.Bsqlite/bit-bsqlite-opfs-admin.js');
+              const file = await admin.exportDatabase(name);
+              return {
+                length: snapshot.byteLength,
+                same: snapshot.byteLength === file.byteLength && snapshot.every((b, i) => b === file[i]),
+              };
+            }
+            """, databaseName);
+
+        Assert.IsGreaterThan(4096, outcome.GetProperty("length").GetInt32());
+        Assert.IsTrue(outcome.GetProperty("same").GetBoolean());
+    }
+
     [TestMethod]
     public async Task Admin_probe_reports_available_in_a_secure_Chrome_context()
     {

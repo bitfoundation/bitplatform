@@ -350,15 +350,17 @@ public static partial class BsqliteSetupGuide
            yourself: it is registered and put first for a Blazor Hybrid app, and never offered anywhere else.
         3. Optionally move the folder with `ConfigureFileSystemStorage(o => o.RootDirectory = ...)`. The default is
            `{local application data}/{entry assembly name}/bit-bsqlite`; a database name is a path under it, without `..`,
-           without `<>:"|?*` or control characters, and without a segment ending in a dot or a space.
+           without `<>:"|?*` or control characters, without a segment ending in a dot or a space or naming a device such
+           as `CON`, and not ending like a file the backend keeps beside a database (`-journal`, `-wal`, `-shm`).
         4. Keep the async API - `ToListAsync`, `SaveChangesAsync`, `MigrateAsync` - as in the browser: synchronous members
            throw here too, so one code path serves both hosts, and the UI thread never waits on the disk.
         5. A page may open the database whenever it likes - there is no prerendering in a Hybrid app. Two windows are two
            scopes on one file: migrations and first-use steps take a lock shared between them, and live queries in each
            re-run on the other's writes.
-        6. `Database.Resolution` names `file-system` and the folder; `provider.Admin` exports and imports the files as
-           plain SQLite databases, for backups or a pre-populated database - inside `Database.WhileClosedAsync`, and with
-           the database closed in every other window too: while one still has the file open, they throw.
+        6. `Database.Resolution` names `file-system` and the folder. `Database.ExportAsync()` backs the open database up as
+           a plain SQLite file, `Database.RestoreAsync(bytes)` checks one - a backup, or a pre-populated database, WAL
+           mode included - and puts it in place, and `Database.DeleteAsync()` removes it: with the database closed in
+           every other window, since while one still has the file open, a restore or a delete throws.
         """;
 
     private const string StorageChecklist = """

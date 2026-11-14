@@ -117,7 +117,7 @@ public sealed class ExecutionTests
         await ctx.SaveChangesAsync(Ct);
         ctx.ChangeTracker.Clear();
 
-        var failure = await Assert.ThrowsExactlyAsync<SqliteException>(
+        var failure = await Assert.ThrowsExactlyAsync<BsqliteException>(
             () => ctx.Products.Where(p => p.Price > 10m).ToListAsync(Ct));
 
         Assert.Contains("no such function: ef_compare", failure.Message, StringComparison.Ordinal);

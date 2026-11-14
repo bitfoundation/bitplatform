@@ -63,9 +63,11 @@
           CodeTitle="Exporting"
           Code="@Snippets.Admin.Export">
     <Description>
-        Exports <code>@BrowserDatabase.DatabaseName</code> from whichever backend currently
-        owns it. On OPFS that is a file read; on IndexedDB and Cache Storage the image is
-        assembled from pages. Either way the result is an ordinary SQLite file.
+        Snapshots <code>@BrowserDatabase.DatabaseName</code> while it stays open, as of its last
+        committed write - a transaction another context has open is waited for, not captured
+        half done. On OPFS the image is the file byte for byte; on IndexedDB and Cache Storage it
+        is a compacted copy made with <code>VACUUM INTO</code>. Either way it is an ordinary
+        SQLite file, and a backup <code>RestoreAsync</code> takes back.
     </Description>
     <Try>Download it and open it in any desktop SQLite tool - the rows you edited are there.</Try>
     <ChildContent>
@@ -75,36 +77,29 @@
     </ChildContent>
 </DemoCard>
 
-<DemoCard Step="Import"
-          Title="Seed a tab from a file"
-          CodeTitle="Importing"
-          Code="@Snippets.Admin.Import">
+<DemoCard Step="Restore"
+          Title="Restore from a file"
+          CodeTitle="Restoring"
+          Code="@Snippets.Admin.Restore">
     <Description>
-        Replaces the named database on the selected backend and records the sticky binding,
-        so the next open finds the imported data instead of creating an empty file
-        elsewhere. The worker is closed first: an open connection would keep writing the
-        image being replaced.
+        Replaces <code>@BrowserDatabase.DatabaseName</code> with the file, on the backend that
+        holds it now. The file is checked before anything is touched - one that is not a SQLite
+        database, or is cut short, is refused and the database stays as it was - and a file a
+        server or desktop left in WAL mode is accepted. The database closes around the import,
+        is read back to check every byte landed, and reopens; the context factory then applies
+        the migrations an older backup is missing.
     </Description>
     <Try>
-        Export above, delete below, then import the file back. This is also how you ship a
-        pre-built database with an app.
+        Export above, change some rows, then restore the file: the rows come back as they were.
+        This is also how you ship a pre-built database with an app.
     </Try>
     <ChildContent>
         <div class="bb-fields">
             <label class="bb-field">
-                Backend
-                <select @bind="ImportProvider">
-                    @foreach (var provider in Database.Providers)
-                    {
-                        <option value="@provider.Name">@SampleStorage.Title(provider.Name)</option>
-                    }
-                </select>
-            </label>
-            <label class="bb-field">
                 SQLite file
                 <InputFile OnChange="OnFile" accept=".db,.sqlite,application/octet-stream" />
             </label>
-            <button type="button" class="btn btn-primary" @onclick="ImportAsync" disabled="@(_busy || _importBytes is null)">Import and reopen</button>
+            <button type="button" class="btn btn-primary" @onclick="RestoreAsync" disabled="@(_busy || _importBytes is null)">Restore and reopen</button>
         </div>
     </ChildContent>
 </DemoCard>
@@ -114,9 +109,11 @@
           CodeTitle="Deleting"
           Code="@Snippets.Admin.Delete">
     <Description>
-        Removes <code>@BrowserDatabase.DatabaseName</code> from the current backend and
-        forgets the binding, so the next open is free to pick the preferred provider again,
-        run the migrations, and reseed.
+        Removes <code>@BrowserDatabase.DatabaseName</code> from every backend that holds a copy
+        and forgets the binding, so the next open is free to pick the preferred provider again,
+        run the migrations, and reseed. Every backend, not only the current one: a copy left
+        elsewhere would be found again on the next open - what signing out of an offline app
+        must not allow.
     </Description>
     <ChildContent>
         <div class="bb-toolbar">
@@ -132,17 +129,9 @@
     private string? _error;
     private string? _info;
     private bool _busy;
-    // The backend the reader picked to import into; until they pick one, the backend the session is on.
-    private string? _importPicked;
     private byte[]? _importBytes;
 
     private static Task NoopAsync() => Task.CompletedTask;
-
-    private string ImportProvider
-    {
-        get => _importPicked ?? Database.Resolution?.Provider.Name ?? "opfs";
-        set => _importPicked = value;
-    }
 
     private async Task LoadAsync()
     {
@@ -206,10 +195,9 @@
         _info = null;
         try
         {
-            var session = await Database.EnsureSessionAsync();
-            var bytes = await session.Resolution.Provider.Admin.ExportAsync(BrowserDatabase.DatabaseName);
+            var bytes = await Database.Database.ExportAsync();
             await Js.InvokeVoidAsync("bsqliteDemo.download", "app.db", bytes);
-            _info = $"Exported {SampleFormat.Bytes(bytes.LongLength)} from {session.Resolution.Provider.Name}.";
+            _info = $"Exported {SampleFormat.Bytes(bytes.LongLength)} from {Database.Resolution?.Provider.Name}.";
         }
         catch (Exception ex)
         {
@@ -232,8 +220,8 @@
             await stream.CopyToAsync(memory);
             var bytes = memory.ToArray();
 
-            // Refused here rather than on the next open: once imported and bound, a file that is not a
-            // database would fail every page until it was deleted.
+            // Refused as soon as it is picked, for the reader's sake: RestoreAsync checks the file again,
+            // and more thoroughly, before it touches the database.
             if (bytes.Length > 0 && !bytes.AsSpan().StartsWith("SQLite format 3\0"u8))
             {
                 _importBytes = null;
@@ -252,18 +240,10 @@
         }
     }
 
-    private async Task ImportAsync()
+    private async Task RestoreAsync()
     {
         if (_importBytes is null)
         {
-            return;
-        }
-
-        var provider = Database.Providers.FirstOrDefault(p =>
-            string.Equals(p.Name, ImportProvider, StringComparison.OrdinalIgnoreCase));
-        if (provider is null)
-        {
-            _error = $"No registered provider named {ImportProvider}.";
             return;
         }
 
@@ -272,27 +252,18 @@
         _info = null;
         try
         {
-            var bytes = _importBytes;
-            await Database.WhileClosedAsync(async ct =>
-            {
-                await provider.Admin.ImportAsync(BrowserDatabase.DatabaseName, bytes, ct);
-                await Database.Bindings.SetProviderNameAsync(BrowserDatabase.DatabaseName, provider.Name, ct);
-            });
+            await Database.Database.RestoreAsync(_importBytes);
 
-            // Opened here as well, for a database that was not open before: migrations and the seed run
-            // before the pages come back for it.
+            // A context runs the migrations an older backup is missing before the pages come back for it.
             await using (await Database.OpenContextAsync())
             {
             }
-            _info = $"Imported into {provider.Name} and reopened. Catalog and orders will refresh.";
+            _info = $"Restored onto {Database.Resolution?.Provider.Name} and reopened. Catalog and orders will refresh.";
             await ListAllAsync();
         }
         catch (Exception ex)
         {
             SampleLog.Exception(ex);
-
-            // Listed again all the same: an import that fails to reopen has still replaced the file and
-            // moved the binding, and the lists are where the reader finds it to delete.
             await ListAllAsync();
             _error = ex.Message;
         }
@@ -309,16 +280,9 @@
         _info = null;
         try
         {
-            // From the binding when no session is open: a database that no longer opens - a file that
-            // is not a database, say - is the one most in need of deleting.
-            var provider = Database.Resolution?.Provider
-                ?? await Database.BoundProviderAsync()
-                ?? throw new InvalidOperationException("There is nothing to delete: no session is open, and no backend holds the database.");
-            await Database.WhileClosedAsync(async ct =>
-            {
-                await provider.Admin.DeleteAsync(BrowserDatabase.DatabaseName, ct);
-                await Database.Bindings.RemoveAsync(BrowserDatabase.DatabaseName, ct);
-            });
+            // Closed first, and never opened to find where it lives: a database that no longer opens - a
+            // file that is not a database, say - is the one most in need of deleting.
+            await Database.Database.DeleteAsync();
 
             await using (await Database.OpenContextAsync())
             {

@@ -120,7 +120,10 @@ public sealed class BsqliteFileSystemStorageProvider : IBsqliteFileStorageProvid
         var segments = relative.Split('/', StringSplitOptions.RemoveEmptyEntries);
 
         // A leading slash is tolerated, but a drive or a parent is not.
-        var path = segments.Length == 0 || Path.IsPathRooted(relative) || !segments.All(IsPortableSegment)
+        var path = segments.Length == 0
+            || Path.IsPathRooted(relative)
+            || !segments.All(IsPortableSegment)
+            || IsReservedFileName(segments[^1])
             ? null
             : Path.GetFullPath(Path.Combine([RootDirectory, .. segments]));
 
@@ -132,7 +135,9 @@ public sealed class BsqliteFileSystemStorageProvider : IBsqliteFileStorageProvid
             throw new ArgumentException(
                 $"'{databaseName}' is not a database name the file system backend can keep: a name is a path "
                 + $"relative to {RootDirectory}, without '.' or '..' segments, without the characters <>:\"|?* or "
-                + "control characters, and without a segment that ends in a dot or a space.",
+                + "control characters, without a segment that ends in a dot or a space or is a device name such as "
+                + "CON or NUL, and not ending in a suffix SQLite or Bsqlite gives the files beside a database "
+                + "(-journal, -wal, -shm, .import, .aside) or named like Bsqlite's own files (.bit-bsqlite*).",
                 nameof(databaseName));
         }
 
@@ -143,7 +148,35 @@ public sealed class BsqliteFileSystemStorageProvider : IBsqliteFileStorageProvid
         => segment is not ("." or "..")
             && !segment.EndsWith('.')
             && !segment.EndsWith(' ')
-            && !segment.Any(character => char.IsControl(character) || character is '<' or '>' or ':' or '"' or '|' or '?' or '*');
+            && !segment.Any(character => char.IsControl(character) || character is '<' or '>' or ':' or '"' or '|' or '?' or '*')
+            && !IsDeviceName(segment);
+
+    /// <summary>
+    /// CON, NUL, COM1 and the rest - with an extension too - name a device on Windows, not a file: refused on
+    /// every platform, so a name that works on one device works on all of them.
+    /// </summary>
+    private static bool IsDeviceName(string segment)
+    {
+        var stem = segment.Split('.')[0].TrimEnd();
+        return stem.ToUpperInvariant() switch
+        {
+            "CON" or "PRN" or "AUX" or "NUL" => true,
+            { Length: 4 } upper when (upper.StartsWith("COM", StringComparison.Ordinal) || upper.StartsWith("LPT", StringComparison.Ordinal))
+                && upper[3] is >= '1' and <= '9' => true,
+            _ => false,
+        };
+    }
+
+    /// <summary>
+    /// A file name the backend keeps for itself: what SQLite puts beside a database - a database named
+    /// <c>app.db-journal</c> would be taken for <c>app.db</c>'s journal, and rolled back into it - the staging
+    /// and set-aside copies the admin surface makes, and the binding file.
+    /// </summary>
+    private static bool IsReservedFileName(string fileName)
+        => ReservedSuffixes.Any(suffix => fileName.EndsWith(suffix, StringComparison.OrdinalIgnoreCase))
+            || fileName.StartsWith(".bit-bsqlite", StringComparison.OrdinalIgnoreCase);
+
+    private static readonly string[] ReservedSuffixes = ["-journal", "-wal", "-shm", ".import", ".aside"];
 
     /// <inheritdoc />
     /// <remarks>

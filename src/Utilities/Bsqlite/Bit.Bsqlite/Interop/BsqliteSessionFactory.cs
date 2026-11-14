@@ -156,6 +156,70 @@ public sealed class BsqliteSessionFactory : IBsqliteSessionFactory
     }
 
     /// <summary>
+    /// Deletes <paramref name="databaseName"/> from every backend that can be reached, then its binding.
+    /// The database must be closed - <see cref="BsqliteDatabase.DeleteAsync"/> sees to that.
+    /// </summary>
+    /// <remarks>
+    /// Every backend, not only the bound one: a copy a failed migration left on another backend would
+    /// otherwise be found once the binding is gone - that is how a database whose binding was lost is
+    /// recovered - and a database deleted on sign-out would come back with the previous user's rows.
+    /// The binding goes last, so a failure part way leaves it naming where the data still is. A backend
+    /// that cannot be reached is skipped with a warning, unless it is the one the binding names.
+    /// </remarks>
+    internal async Task DeleteEverywhereAsync(string databaseName, CancellationToken cancellationToken)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(databaseName);
+
+        var bound = await _bindings.GetProviderNameAsync(databaseName, cancellationToken).ConfigureAwait(false);
+
+        // Every backend is probed before any is touched, so a database whose own backend cannot be reached is
+        // left whole - not stripped of the copies elsewhere first.
+        var probes = new List<(IBsqliteStorageProvider Provider, BsqliteProbeResult Probe)>();
+        foreach (var provider in _resolver.Providers)
+        {
+            probes.Add((provider, await _resolver.ProbeHolderAsync(provider, cancellationToken).ConfigureAwait(false)));
+        }
+
+        foreach (var (provider, probe) in probes)
+        {
+            if (!probe.IsAvailable && string.Equals(provider.Name, bound, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new BsqliteStorageUnavailableException(
+                    databaseName,
+                    [
+                        new BsqliteStorageCandidateOutcome
+                        {
+                            ProviderName = provider.Name,
+                            Status = BsqliteStorageCandidateStatus.Unavailable,
+                            Probe = probe,
+                            Explanation = "The database lives here, and it cannot be reached to delete it.",
+                        },
+                    ]);
+            }
+        }
+
+        foreach (var (provider, probe) in probes)
+        {
+            if (!probe.IsAvailable)
+            {
+                _logger.LogWarning(
+                    "Storage provider {Provider} is unavailable ({Reason}), so database {DatabaseName} was not "
+                    + "deleted from it. Its binding names {Bound}; a copy left there would be found if the "
+                    + "binding were lost.",
+                    provider.Name,
+                    probe.UnavailableReason,
+                    databaseName,
+                    bound ?? "no backend");
+                continue;
+            }
+
+            await provider.Admin.DeleteAsync(databaseName, cancellationToken).ConfigureAwait(false);
+        }
+
+        await _bindings.RemoveAsync(databaseName, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
     /// Runs the automatic migration, reporting rather than throwing when it fails. The caller
     /// resolves again either way: the binding the migrator leaves behind - unchanged, or moved when
     /// only the source's deletion failed - is what says where the database now lives.

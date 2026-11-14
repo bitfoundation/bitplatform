@@ -213,6 +213,63 @@ public sealed class LiveQueryTests
         Assert.IsFalse(overlapped);
     }
 
+    /// <summary>
+    /// A handler that throws is the handler's failure, not the query's: the write runs the query once,
+    /// calls the handler once, and reports what it threw - it is not mistaken for a busy context and run
+    /// again, which called every handler twice for one write.
+    /// </summary>
+    [TestMethod]
+    public async Task AChangedHandlerThatThrows_IsReported_WithoutRunningTheQueryAgain()
+    {
+        var transport = new RemoteWriteTransport();
+        await using var connection = new BsqliteConnection(transport, "live-throwing.db");
+        await connection.OpenAsync(Ct);
+
+        var runs = 0;
+        var calls = 0;
+        Exception? reported = null;
+        await using var live = new BsqliteLiveQuery<int>(
+            connection,
+            _ => Task.FromResult(Interlocked.Increment(ref runs)),
+            ["product"]);
+        await live.RefreshAsync(Ct);
+        live.Changed += (_, _) =>
+        {
+            Interlocked.Increment(ref calls);
+            throw new InvalidOperationException("the component is gone");
+        };
+        live.RefreshFailed += (_, ex) => reported = ex;
+
+        transport.ReportRemoteWrite("product");
+        await WaitUntilAsync(() => reported is not null);
+        await Task.Delay(50, Ct);
+
+        Assert.AreEqual(2, runs);
+        Assert.AreEqual(1, calls);
+        Assert.AreEqual("the component is gone", reported!.Message);
+    }
+
+    [TestMethod]
+    public async Task DisposedWhileTheQueryRuns_RaisesNothingAfterwards()
+    {
+        var transport = new RemoteWriteTransport();
+        await using var connection = new BsqliteConnection(transport, "live-disposed.db");
+        await connection.OpenAsync(Ct);
+
+        var release = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var live = new BsqliteLiveQuery<int>(connection, _ => release.Task, ["product"]);
+        var changed = false;
+        live.Changed += (_, _) => changed = true;
+
+        var running = live.RefreshAsync(Ct);
+        await live.DisposeAsync();
+        release.SetResult(1);
+
+        await Assert.ThrowsExactlyAsync<ObjectDisposedException>(() => running);
+        Assert.IsFalse(changed);
+        Assert.AreEqual(0, live.Current);
+    }
+
     /// <summary>A transport that can be told to speak for another tab.</summary>
     private sealed class RemoteWriteTransport : IBsqliteTransport
     {

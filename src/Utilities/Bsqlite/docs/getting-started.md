@@ -141,7 +141,8 @@ What the connection offers beyond the basics:
 - **Batches.** `connection.CreateBatch()` runs several commands in one worker round trip; `ExecuteReaderAsync` on a batch walks every result set with `NextResultAsync`.
 - **Transactions.** `BeginTransactionAsync()` issues `BEGIN IMMEDIATE` (as Microsoft.Data.Sqlite does); any isolation level other than `Serializable` begins deferred. Disposing without committing rolls back. Savepoints: `SaveAsync`, `ReleaseAsync`, `RollbackAsync(name)`.
 - **Counters.** `command.LastInsertRowId` and `connection.LastInsertRowId` after any execution.
-- **Export.** `connection.ExportAsync()` returns a consistent SQLite file image of the open database.
+- **Export.** `connection.ExportAsync()` returns a SQLite file image of the open database as of its last committed write. It waits for a transaction another context holds, and refuses to run inside one of its own connection's.
+- **Values.** The getters read a cell as Microsoft.Data.Sqlite does: a REAL read as an integer is truncated, not rounded, and a narrowing that does not fit throws `OverflowException`; `GetString` reads a BLOB as UTF-8; dates are read from TEXT or from a Julian day number; `GetFieldValue<T>` on NULL gives `null` for a type that can hold it and `DBNull.Value` for `object`, and throws for any other. `ExecuteScalarAsync` returns `null` when there is no row and `DBNull.Value` for a NULL cell; `ExecuteNonQueryAsync` returns -1 for a query. An enum parameter binds its underlying integer.
 - **Typed errors.** `BsqliteConstraintException`, `BsqliteConcurrencyException`, `BsqliteQuotaExceededException`, `BsqliteCorruptDatabaseException`, all deriving from `BsqliteException` with `SqliteErrorCode`.
 
 ## The shared database
@@ -158,6 +159,20 @@ await Database.WhileClosedAsync(ct => provider.Admin.ImportAsync("app.db", bytes
 Subscribe to `Closing` to drop contexts and live queries before the worker goes away, and to `Opened` to reload afterwards. The demo's `SessionLifecycle` component is one way to wire that into pages.
 
 `WhileClosedAsync` keeps the database closed until its work is done: an `OpenAsync` from anywhere else - a page loading, an `Opened` handler still running - waits and gets the reopened session, so a binding the work changes is the one the database opens on. The work itself must not open the database; it gets an `InvalidOperationException` if it tries.
+
+## Back up, restore, delete
+
+```csharp
+byte[] backup = await Database.ExportAsync();   // a SQLite file, as of the last committed write
+await Database.RestoreAsync(backup);            // checked, imported where the database lives, verified, reopened
+await Database.DeleteAsync();                   // closed, deleted from every backend, binding forgotten
+```
+
+- **`ExportAsync`** snapshots the database while it stays open. The image is an ordinary SQLite file: open it in any desktop tool, upload it, or restore it later. On OPFS, in memory and on a device it is the file byte for byte; on IndexedDB and Cache Storage it is a compacted copy made with `VACUUM INTO` - the same schema, rows, `user_version` and `application_id`, without free pages.
+- **`RestoreAsync`** checks the file before anything is touched - one that is not a SQLite database, or is cut short, throws `BsqliteCorruptDatabaseException` and the database stays as it was - and accepts a file a server or desktop left in WAL mode, which every database stock EF Core creates there is. It closes the database (`Closing` handlers let go), imports the file onto the backend that holds the database, reads it back to check every byte landed, and reopens (`Opened` handlers reload). The context factory applies the migrations an older backup is missing the next time it creates a context. A database on `in-memory` cannot be restored: its admin store is not where the connection's data lives.
+- **`DeleteAsync`** closes the database and deletes it from every backend that holds a copy, then forgets its binding, so the next open starts empty on the preferred backend. Every backend, not only the current one: a database with no binding is looked for on all of them before it is created, so a copy an interrupted migration left behind would otherwise come back - what signing a user out of an offline app must not allow. It fails, changing nothing, when the backend that holds the database cannot be reached.
+
+Close the database in other tabs before restoring or deleting it: OPFS and a Blazor Hybrid file refuse to replace a file another tab or window holds open, and IndexedDB and Cache Storage would leave that tab working on a database that has been replaced under it.
 
 ## Lazy loading on WebAssembly
 

@@ -168,6 +168,34 @@ public sealed class AdoNetSurfaceTests
         Assert.AreEqual(3, await CountAsync(connection));
     }
 
+    /// <summary>
+    /// A query affects no rows and reports -1: added up as ADO.NET adds them, a batch of a query and an insert
+    /// reports the insert's 1, and a batch of queries alone reports -1.
+    /// </summary>
+    [TestMethod]
+    public async Task Batch_NonQuery_SumsOnlyTheCommandsThatCanAffectRows()
+    {
+        var (transport, connection) = await OpenAsync();
+        await using var _ = transport;
+        await using var __ = connection;
+
+        Assert.AreEqual(1, await RunBatchAsync(connection, "SELECT 1", "INSERT INTO product (name) VALUES ('one')"));
+        Assert.AreEqual(-1, await RunBatchAsync(connection, "SELECT 1", "SELECT 2"));
+    }
+
+    private async Task<int> RunBatchAsync(BsqliteConnection connection, params string[] commands)
+    {
+        await using var batch = connection.CreateBatch();
+        foreach (var sql in commands)
+        {
+            var command = batch.CreateBatchCommand();
+            command.CommandText = sql;
+            batch.BatchCommands.Add(command);
+        }
+
+        return await batch.ExecuteNonQueryAsync(Ct);
+    }
+
     [TestMethod]
     public async Task Batch_Reader_WalksEveryResultSet()
     {
@@ -355,6 +383,83 @@ public sealed class AdoNetSurfaceTests
 
         Assert.IsTrue(image.Length >= 4096);
         CollectionAssert.AreEqual("SQLite format 3\0"u8.ToArray(), image[..16]);
+    }
+
+    /// <summary>
+    /// The snapshot would hold writes that may yet roll back - and waiting for the turn the transaction
+    /// holds would never end.
+    /// </summary>
+    [TestMethod]
+    public async Task Export_InsideATransactionOfTheSameConnection_IsRefused()
+    {
+        var (transport, connection) = await OpenAsync();
+        await using var _ = transport;
+        await using var __ = connection;
+        await using var tx = await connection.BeginTransactionAsync(Ct);
+
+        await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => connection.ExportAsync(Ct));
+    }
+
+    /// <summary>
+    /// Every context of a session shares one connection, so a transaction another context began is open on the
+    /// very connection the export runs on - and the export waits for it, rather than mistaking it for its own.
+    /// </summary>
+    [TestMethod]
+    public async Task Export_WaitsForATransactionAnotherFlowBeganOnTheSameConnection()
+    {
+        var (transport, connection) = await OpenAsync();
+        await using var _ = transport;
+        await using var __ = connection;
+
+        // Begun in a flow of its own, as another component's SaveChangesAsync would begin it.
+        var tx = await Task.Run(() => connection.BeginTransactionAsync(Ct).AsTask(), Ct);
+        var exporting = connection.ExportAsync(Ct);
+        await Task.Delay(50, Ct);
+        Assert.IsFalse(exporting.IsCompleted, "The export waits for the other flow's transaction.");
+
+        await tx.RollbackAsync(Ct);
+        await tx.DisposeAsync();
+        Assert.IsNotEmpty(await exporting);
+    }
+
+    /// <summary>
+    /// Another context's transaction is not captured half done: the export takes a turn like a command, so
+    /// it waits for that transaction to end and holds what it committed.
+    /// </summary>
+    [TestMethod]
+    public async Task Export_WaitsForAnotherContextsTransaction_AndHoldsWhatItCommitted()
+    {
+        var (transport, connection) = await OpenAsync();
+        await using var _ = transport;
+        await using var __ = connection;
+        await using var other = new BsqliteConnection(transport, "ado.db");
+        await other.OpenAsync(Ct);
+
+        var tx = await other.BeginTransactionAsync(Ct);
+        await ExecAsync(other, "INSERT INTO product (name) VALUES ('Pending')");
+
+        var exporting = connection.ExportAsync(Ct);
+        await Task.Delay(50, Ct);
+        Assert.IsFalse(exporting.IsCompleted, "The export waits for the open transaction.");
+
+        await tx.CommitAsync(Ct);
+        await tx.DisposeAsync();
+        var image = await exporting;
+
+        var path = Path.Combine(Path.GetTempPath(), $"bsqlite-export-{Guid.NewGuid():N}.db");
+        try
+        {
+            await File.WriteAllBytesAsync(path, image, Ct);
+            await using var copy = new Microsoft.Data.Sqlite.SqliteConnection($"Data Source={path};Pooling=False");
+            await copy.OpenAsync(Ct);
+            await using var command = copy.CreateCommand();
+            command.CommandText = "SELECT name FROM product";
+            Assert.AreEqual("Pending", await command.ExecuteScalarAsync(Ct));
+        }
+        finally
+        {
+            File.Delete(path);
+        }
     }
 
     // ---------------------------------------------------------------------------------------------

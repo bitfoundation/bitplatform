@@ -475,10 +475,25 @@ public sealed class BsqliteStorageProviderResolver
     internal static bool RunsInBrowser(IBsqliteStorageProvider provider)
         => (provider.Capabilities.SupportedContexts & ~BsqliteExecutionContexts.NativeProcess) != BsqliteExecutionContexts.None;
 
+    /// <summary>Every registered backend, once per name.</summary>
+    internal IReadOnlyCollection<IBsqliteStorageProvider> Providers => _providers.Values;
+
+    /// <summary>
+    /// Whether <paramref name="provider"/> can be reached to work on data it may already hold - in a Blazor
+    /// Hybrid app, a browser backend its web view kept databases on before they moved to the device. Probed
+    /// afresh: an admin operation is rare, and one that trusted an answer from the start of the session would
+    /// skip a backend that has since come back, or fail on one that has gone.
+    /// </summary>
+    internal ValueTask<BsqliteProbeResult> ProbeHolderAsync(
+        IBsqliteStorageProvider provider,
+        CancellationToken cancellationToken)
+        => ProbeAsync(provider, cancellationToken, holdsData: true, fresh: true);
+
     private async ValueTask<BsqliteProbeResult> ProbeAsync(
         IBsqliteStorageProvider provider,
         CancellationToken cancellationToken,
-        bool holdsData = false)
+        bool holdsData = false,
+        bool fresh = false)
     {
         if (UnservableReason(provider, holdsData) is { } reason)
         {
@@ -492,7 +507,7 @@ public sealed class BsqliteStorageProviderResolver
             });
         }
 
-        if (_probeCache.TryGetValue(provider.Name, out var cached))
+        if (!fresh && _probeCache.TryGetValue(provider.Name, out var cached))
         {
             return cached;
         }
@@ -510,7 +525,14 @@ public sealed class BsqliteStorageProviderResolver
                 $"Probing '{provider.Name}' threw {ex.GetType().Name}: {ex.Message}");
         }
 
-        _probeCache[provider.Name] = probe;
+        // Only what is available is remembered. On WebAssembly the scope is the whole application, so a
+        // failure cached here - one quota error, one probe that timed out while the page was busy - would
+        // put every new database on a fallback, and fail every open of one bound here, until a reload.
+        if (probe.IsAvailable)
+        {
+            _probeCache[provider.Name] = probe;
+        }
+
         return probe;
     }
 }

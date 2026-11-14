@@ -246,6 +246,44 @@ public sealed class DemoTests : DemoTest
     }
 
     /// <summary>
+    /// The admin page's backup round trip: the open database is exported as a file - on IndexedDB and Cache
+    /// Storage through the snapshot the worker takes with <c>VACUUM INTO</c> - and that file restored over it,
+    /// after which the database reopens and the catalog is still there.
+    /// </summary>
+    [TestMethod]
+    public async Task A_backup_downloaded_from_the_admin_page_restores_over_the_database()
+    {
+        var errors = new List<string>();
+        var page = await NewDemoPageAsync(errors);
+
+        await GotoInteractiveAsync(page, "/admin");
+        await WaitForSessionAsync(page);
+
+        var download = await page.RunAndWaitForDownloadAsync(() =>
+            page.Locator("button", new PageLocatorOptions { HasText = "Download app.db" }).ClickAsync());
+        var path = Path.Combine(Path.GetTempPath(), $"bsqlite-backup-{Guid.NewGuid():N}.db");
+        await download.SaveAsAsync(path);
+        try
+        {
+            var image = await File.ReadAllBytesAsync(path);
+            CollectionAssert.AreEqual("SQLite format 3\0"u8.ToArray(), image[..16]);
+
+            await page.Locator("section:has(h3:has-text('Restore from a file')) input[type=file]").SetInputFilesAsync(path);
+            await page.Locator("button", new PageLocatorOptions { HasText = "Restore and reopen" }).ClickAsync();
+
+            await Assertions.Expect(page.Locator(".bb-note[role=status]")).ToContainTextAsync("Restored onto");
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+
+        await GotoInteractiveAsync(page, "/catalog");
+        await Assertions.Expect(page.Locator("table[data-rows='products'] tbody tr").First).ToBeVisibleAsync();
+        Assert.AreEqual(0, errors.Count, "Console errors:" + Environment.NewLine + string.Join(Environment.NewLine, errors));
+    }
+
+    /// <summary>
     /// A file that is not a SQLite database is refused when it is picked, before it can replace the database
     /// and leave every page failing to open it.
     /// </summary>
@@ -257,7 +295,7 @@ public sealed class DemoTests : DemoTest
         await GotoInteractiveAsync(page, "/admin");
         await WaitForSessionAsync(page);
 
-        await page.Locator("section:has(h3:has-text('Seed a tab from a file')) input[type=file]").SetInputFilesAsync(new FilePayload
+        await page.Locator("section:has(h3:has-text('Restore from a file')) input[type=file]").SetInputFilesAsync(new FilePayload
         {
             Name = "notes.db",
             MimeType = "application/octet-stream",
@@ -265,7 +303,7 @@ public sealed class DemoTests : DemoTest
         });
 
         await Assertions.Expect(page.Locator(".bb-note-danger[role=alert]")).ToContainTextAsync("notes.db is not a SQLite database");
-        await Assertions.Expect(page.Locator("button", new PageLocatorOptions { HasText = "Import and reopen" })).ToBeDisabledAsync();
+        await Assertions.Expect(page.Locator("button", new PageLocatorOptions { HasText = "Restore and reopen" })).ToBeDisabledAsync();
     }
 
     /// <summary>
