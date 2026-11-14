@@ -12,7 +12,7 @@ Browser and other end-to-end suites live in a separate `ci.<project>.e2e.yml`. T
 
 A `cd.<app>.yml` workflow deploys a demo or a website.
 
-Two workflows publish the NuGet packages: CD Prerelease nuget packages on a `v-*-pre-*` tag, and CD Nuget packages on a push to `main`. Both pack in parallel jobs (other, utilities, toolings, and the MAUI package on Windows). Then one publish job, the only job that can sign and push, signs the bit assemblies, attests the packages and their SBOM, uploads them as the `nupkg-files` artifact and pushes them to nuget.org with trusted publishing.
+Two workflows publish the NuGet packages: CD Prerelease nuget packages on a `v-*-pre-*` tag, and CD Nuget packages on a push to `main`. Both pack in three parallel jobs: other, utilities and toolings. The utilities job runs on Windows, the only runner that builds every platform of Bit.BbScanner.Maui. Then one publish job, the only job that can sign and push, signs the bit assemblies, attests the packages and their SBOM, uploads them as the `nupkg-files` artifact and pushes them to nuget.org with trusted publishing.
 
 ## All workflows
 
@@ -61,6 +61,6 @@ The templates, the websites and the demos made from the Boilerplate take the Bit
 - CI Templates and CI Websites skip release pull requests, because their version isn't on nuget.org yet. All Release Build builds the Boilerplate and the websites on those pull requests instead.
 - The Boilerplate's tests in CI Templates E2E run on projects made with `bit new`, in Debug, not on a published build.
 - The library demos take Bit.Minifier as a package, not a project.
-- The release workflows pack Bit.BbScanner.Maui on Windows, the only runner that builds all of its platforms. Its CI packs the Android target only.
+- The release workflows pack the utilities on Windows, the only runner that builds every platform of Bit.BbScanner.Maui. Its CI, on Linux, packs the Android target only.
 - BlazorEmpty builds only after `dotnet new`, so no workflow builds its folder as it is.
 - The Platform and Sales websites pin their own .NET SDK.

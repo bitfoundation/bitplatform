@@ -42,59 +42,6 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  # The packages that target the MAUI platforms (Android, iOS, Mac Catalyst and Windows) need their workloads, and only
-  # Windows builds all four: iOS and Mac Catalyst class libraries build there without a Mac. They are packed here, with
-  # the same strong name key, and signed, attested and pushed by publish along with every other package.
-  pack-maui:
-    name: pack MAUI packages
-    runs-on: windows-2025
-    permissions:
-      contents: read
-
-    steps:
-
-    - name: Checkout source code
-      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      with:
-          persist-credentials: false
-
-    - name: Setup .NET
-      uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
-      with:
-        global-json-file: src/global.json
-
-    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-      with:
-        node-version: 24
-
-    - name: Delete AssemblyOriginatorKeyFile.snk
-      shell: bash
-      run: |
-        rm src/AssemblyOriginatorKeyFile.snk
-
-    - name: Extract strong sign certificate from env
-      uses: timheuer/base64-to-file@dfa5a5dd38803cb4f5c3a081eeb28e8362d43e9c # v2.0.0
-      with:
-          fileDir: './src/'
-          fileName: 'AssemblyOriginatorKeyFile.snk'
-          encodedString: ${{ secrets.STRONG_SIGN_CERTIFICATE_BASE64 }}
-
-    - name: dotnet workload restore BbScanner.Maui
-      run: cd src/Utilities/BbScanner/Bit.BbScanner.Maui && dotnet workload restore
-
-    - name: dotnet build BbScanner.Maui
-      run: dotnet build src/Utilities/BbScanner/Bit.BbScanner.Maui/Bit.BbScanner.Maui.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
-    - name: dotnet pack BbScanner.Maui
-      run: dotnet pack src/Utilities/BbScanner/Bit.BbScanner.Maui/Bit.BbScanner.Maui.csproj --output ./maui-packages --configuration Release
-
-    - name: Upload the MAUI packages
-      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-      with:
-        name: unsigned-nupkg-files-maui
-        path: ./maui-packages/*.nupkg
-        if-no-files-found: error
-        retention-days: 1
-
   pack-other:
     name: pack other packages
     runs-on: ubuntu-26.04
@@ -236,9 +183,14 @@ jobs:
         if-no-files-found: error
         retention-days: 1
 
+  # Runs on Windows for Bit.BbScanner.Maui, which targets Android, iOS, Mac Catalyst and Windows: only Windows
+  # builds all four, iOS and Mac Catalyst class libraries included, without a Mac.
   pack-utilities:
     name: pack utilities packages
-    runs-on: ubuntu-26.04
+    runs-on: windows-2025
+    defaults:
+      run:
+        shell: bash
     permissions:
       contents: read
 
@@ -364,6 +316,14 @@ jobs:
 
     - name: dotnet pack BbScanner
       run: dotnet pack src/Utilities/BbScanner/Bit.BbScanner/Bit.BbScanner.csproj --output . --configuration Release
+
+    - name: dotnet workload restore BbScanner.Maui
+      run: cd src/Utilities/BbScanner/Bit.BbScanner.Maui && dotnet workload restore
+
+    - name: dotnet build BbScanner.Maui
+      run: dotnet build src/Utilities/BbScanner/Bit.BbScanner.Maui/Bit.BbScanner.Maui.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack BbScanner.Maui
+      run: dotnet pack src/Utilities/BbScanner/Bit.BbScanner.Maui/Bit.BbScanner.Maui.csproj --output . --configuration Release
 
     - name: dotnet build Bdnd
       run: dotnet build src/Utilities/Bdnd/Bit.Bdnd/Bit.Bdnd.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
@@ -670,7 +630,7 @@ jobs:
 
   publish:
     name: sign, attest & publish
-    needs: [pack-maui, pack-other, pack-utilities, pack-toolings]
+    needs: [pack-other, pack-utilities, pack-toolings]
     runs-on: ubuntu-26.04
     environment: code-signing
     permissions:
