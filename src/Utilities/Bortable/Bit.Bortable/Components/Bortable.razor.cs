@@ -963,6 +963,10 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
         int oldIndex = IndexOfItem(item);
         if (oldIndex < 0) return null;
 
+        // The list's own instance of the item: with an ItemKey, MoveAsync and MoveToAsync may be handed a copy the page
+        // loaded before its items were loaded again, and the drag moves and reports the one the list holds now.
+        item = Items![oldIndex];
+
         // Multi-drag: dragging a selected item carries the whole selection; dragging an
         // unselected item drops the selection and drags only that item (like SortableJS).
         List<object>? block = null;
@@ -1164,12 +1168,15 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
         // A swap leaves both lists as long as they were; any other drop takes the items out of the source for good.
         if (!Swap && !ctx.Source.LetsGo(ctx)) return false;
 
-        // Every incoming item must be of this list's type and not already in it: Blazor
+        // Every incoming item must be of this list's type, not already in it and not twice among them: Blazor
         // requires unique @key values, so a value-equal duplicate cannot be added.
         if (ctx.MultiItems is { } block && ctx.PullMode == BortablePull.Move)
-            return CountIn(block, out bool foreign) == 0 && !foreign && HasRoomFor(block.Count);
+            return CountIn(block, out bool unfit) == 0 && !unfit && HasRoomFor(block.Count);
 
-        return ctx.Item is TItem dragged && IndexOfItem(dragged) < 0 && HasRoomFor(1);
+        // A clone a Clone factory makes may have a key of its own, so the original's being here says nothing: the copy
+        // is checked once it is made (CommitPlaceholder). One carried on by a keyboard drag is the copy itself.
+        bool copyToCome = ctx.PullMode == BortablePull.Clone && ReferenceEquals(ctx.CurrentZone, ctx.Source) && ctx.Source.ClonesByFactory;
+        return ctx.Item is TItem dragged && (copyToCome || IndexOfItem(dragged) < 0) && HasRoomFor(1);
     }
 
     /// <summary>Whether <see cref="MaxItems"/> leaves room for <paramref name="incoming"/> more items. A swap brings one and takes one.</summary>
@@ -1714,7 +1721,7 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
 
     /// <summary>
     /// Commits the pending swap or placeholder and gathers a multi-drag selection; returns the items a multi-drag moved.
-    /// <paramref name="refused"/> tells that the gathering was refused, and the drag put back.
+    /// <paramref name="refused"/> tells that the drop or the gathering was refused, and the drag put back.
     /// </summary>
     private static IReadOnlyList<object>? Commit(BortableDragContext ctx, out bool refused)
     {
@@ -1725,8 +1732,13 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
             return null;
         }
 
-        if (ctx.PlaceholderZone is { } target && !ReferenceEquals(target, ctx.CurrentZone))
-            target.CommitPlaceholder(ctx);
+        if (ctx.PlaceholderZone is { } target && !ReferenceEquals(target, ctx.CurrentZone) && !target.CommitPlaceholder(ctx))
+        {
+            // Refused at the drop: nothing left the source, and no selection is gathered.
+            PutBack(ctx);
+            refused = true;
+            return null;
+        }
         return ctx.MultiItems is not null ? CollectMulti(ctx, out refused) : null;
     }
 
@@ -1813,7 +1825,9 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
 
         // A CanDrop that throws refuses too (CanDropAllows): the drag is still put back and reported, and the exception
         // passed on after.
-        if (!target.AllowsDropAt(ctx, anchor + Math.Max(primary, 0)))
+        // Into another list the rest of the selection leaves the source for good: MinItems is asked again, as the page may
+        // have taken items out of it since the primary was carried there (a keyboard drag).
+        if (!target.AllowsDropAt(ctx, anchor + Math.Max(primary, 0)) || !sameList && !source.LetsGo(ctx))
         {
             PutBack(ctx);
             refused = true;
@@ -1852,12 +1866,15 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
         return -1;
     }
 
-    /// <summary>Moves (or clones) the dragged item from its source list into this list at the placeholder index.</summary>
-    private void CommitPlaceholder(BortableDragContext ctx)
+    /// <summary>
+    /// Moves (or clones) the dragged item from its source list into this list at the placeholder index; <c>false</c>
+    /// when the drop is refused (see <see cref="IBortableZone.CommitPlaceholder"/>).
+    /// </summary>
+    private bool CommitPlaceholder(BortableDragContext ctx)
     {
         int index = ctx.PlaceholderIndex;
         ctx.PlaceholderZone = null;
-        if (Items is null || !IsMutable) return;
+        if (Items is null || !IsMutable) return true;
 
         var source = ctx.CurrentZone;
         bool clone = ctx.PullMode == BortablePull.Clone;
@@ -1865,14 +1882,18 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
         // What moves is the source list's own instance of the item: with an ItemKey the page may have loaded its items
         // again since the drag began, and the copy the drag started with is out of date. A clone copies that instance.
         int sourceIndex = clone ? ctx.Source.IndexOf(ctx.OriginalItem) : source.IndexOf(ctx.Item);
-        if (sourceIndex < 0 && !clone) return;
+        if (sourceIndex < 0 && !clone) return true;
         var moving = clone
             ? ctx.Source.CloneItem(sourceIndex >= 0 ? ctx.Source.ItemAt(sourceIndex)! : ctx.OriginalItem)
             : source.ItemAt(sourceIndex);
 
         // Never insert an item of the wrong type or one that is already here (a
-        // duplicate @key, e.g. a Clone factory returning an equal value): cancel instead.
-        if (moving is not TItem item || IndexOfItem(item) >= 0) return;
+        // duplicate @key, e.g. a Clone factory returning an equal value): refuse instead.
+        if (moving is not TItem item || IndexOfItem(item) >= 0) return false;
+
+        // The page may have taken items out of the source since the preview was allowed: MinItems is asked again
+        // before anything leaves it - for a multi-drag, of the whole selection, whose primary is still there.
+        if (!ctx.Source.LetsGo(ctx)) return false;
 
         if (!clone)
         {
@@ -1884,6 +1905,7 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
         Items.Insert(Math.Clamp(index, 0, Items.Count), item);
         ctx.Item = moving;
         ctx.CurrentZone = this;
+        return true;
     }
 
     /// <summary>Clears the drag state and brings every zone the drag touched up to date.</summary>
@@ -2076,7 +2098,9 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
         return item; // value types / strings: safe to share
     }
 
-    void IBortableZone.CommitPlaceholder(BortableDragContext ctx) => CommitPlaceholder(ctx);
+    bool IBortableZone.ClonesByFactory => Clone is not null;
+
+    bool IBortableZone.CommitPlaceholder(BortableDragContext ctx) => CommitPlaceholder(ctx);
 
     Task IBortableZone.CaptureFlipAsync() => CaptureFlipAsync();
 
@@ -2279,17 +2303,20 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
     /// <summary>
     /// How many of <paramref name="block"/> - a multi-drag's items - are in this list: the list's items are hashed once,
     /// rather than the list searched for each item of the block, as this runs for every list the pointer moves over.
+    /// <paramref name="unfit"/> tells that the block could not come in whole: an item is not of this list's type, or two
+    /// are the same to this list's <see cref="ItemKey"/> (the source may tell its items apart by another one).
     /// </summary>
-    private int CountIn(List<object> block, out bool foreign)
+    private int CountIn(List<object> block, out bool unfit)
     {
-        foreign = false;
+        unfit = false;
         var items = Items;
         if (items is null) return 0;
         var here = new HashSet<TItem>(items, _identity);
+        var incoming = new HashSet<TItem>(_identity);
         int count = 0;
         foreach (var item in block)
         {
-            if (item is not TItem t) foreign = true;
+            if (item is not TItem t || !incoming.Add(t)) unfit = true;
             else if (here.Contains(t)) count++;
         }
         return count;

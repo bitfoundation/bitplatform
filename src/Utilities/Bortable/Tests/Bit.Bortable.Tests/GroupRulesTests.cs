@@ -212,6 +212,47 @@ public class GroupRulesTests : BortableTestContext
     }
 
     [TestMethod]
+    public async Task MinItemsIsAskedAgainAtTheDrop()
+    {
+        // The preview was allowed with two items in L1; the page took one out before the drop.
+        List<string> left = ["A", "B"], right = [];
+        var log = new List<Raised<string>>();
+        var l1 = RenderIn("L1", left, "g", p => p.Add(c => c.MinItems, 1), log);
+        var l2 = RenderIn("L2", right, "g");
+
+        await DragStartAsync(l1, "A");
+        Assert.IsTrue(await DragOverAsync(l2, 0));
+        left.Remove("B");
+        await DropAsync(l2);
+
+        Assert.AreSequenceEqual(["A"], left);
+        Assert.IsEmpty(right);
+        Assert.IsTrue(log.Single(r => r.Name == "End").Args!.Canceled);
+    }
+
+    [TestMethod]
+    public async Task MinItemsIsAskedAgainAtTheDropOfAMultiDrag()
+    {
+        List<string> left = ["A", "B", "C"], right = [];
+        var l1 = RenderIn("L1", left, "g", p =>
+        {
+            p.Add(c => c.MinItems, 1);
+            p.Add(c => c.MultiDrag, true);
+        });
+        var l2 = RenderIn("L2", right, "g");
+
+        await ClickAsync(l1, "A");
+        await ClickAsync(l1, "B");
+        await DragStartAsync(l1, "A");
+        Assert.IsTrue(await DragOverAsync(l2, 0));
+        left.Remove("C");
+        await DropAsync(l2);
+
+        Assert.AreSequenceEqual(["A", "B"], left);
+        Assert.IsEmpty(right);
+    }
+
+    [TestMethod]
     public async Task MoveToAsyncFollowsMinItems()
     {
         List<string> left = ["A"], right = [];

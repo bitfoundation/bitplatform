@@ -218,6 +218,70 @@ public class ItemKeyTests : BortableTestContext
     }
 
     [TestMethod]
+    public async Task ACloneWithAKeyOfItsOwnGoesNextToItsOriginal()
+    {
+        // The target holds an item with the original's id; the factory's copy has an id of its own, so it fits.
+        List<Card> palette = [new(1, "A")], board = [new(1, "A")];
+        var source = RenderCards(palette, "P", p =>
+        {
+            p.Add(c => c.Group, "g");
+            p.Add(c => c.Pull, BortablePull.Clone);
+            p.Add(c => c.Clone, c => new Card(c.Id + 100, c.Title));
+        });
+        var target = RenderCards(board, "B", p => p.Add(c => c.Group, "g"));
+
+        var started = await DragStartAsync(source, "A");
+        Assert.Contains("B", started!.Lists);
+        Assert.IsTrue(await DragOverAsync(target, 1));
+        await DropAsync(target);
+
+        Assert.AreSequenceEqual([1, 101], board.Select(c => c.Id).ToList());
+    }
+
+    [TestMethod]
+    public async Task MoveAsyncMovesTheInstanceTheListHoldsNow()
+    {
+        var cards = Load("A", "B", "C");
+        var list = RenderCards(cards);
+        var reloaded = Reload(cards);
+        list.Render(p => p.Add(c => c.Items, reloaded));
+        Card? started = null;
+        list.Render(p => p.Add(c => c.OnStart, e => started = e.Item));
+
+        Assert.IsTrue(await list.InvokeAsync(() => list.Instance.MoveAsync(cards[0], 2)));
+
+        Assert.AreEqual("B,C,A", string.Join(",", reloaded.Select(c => c.Title)));
+        Assert.IsTrue(reloaded.All(c => !cards.Contains(c)), "An instance of the first load came back into the list.");
+        Assert.AreSame(reloaded[2], started);
+    }
+
+    [TestMethod]
+    public async Task ASelectionTwoOfWhichAreOneToTheTargetIsRefused()
+    {
+        // Two cards with distinct ids, one item to a target keyed by the first letter of the title.
+        List<Card> left = [new(1, "S1"), new(2, "S2"), new(3, "C")], right = [];
+        var l1 = RenderCards(left, "L1", p =>
+        {
+            p.Add(c => c.Group, "g");
+            p.Add(c => c.MultiDrag, true);
+        });
+        var l2 = RenderCards(right, "L2", p =>
+        {
+            p.Add(c => c.Group, "g");
+            p.Add(c => c.ItemKey, c => c.Title[0]);
+        }, keyed: false);
+
+        await ClickAsync(l1, "S1");
+        await ClickAsync(l1, "S2");
+        var started = await DragStartAsync(l1, "S1");
+
+        Assert.DoesNotContain("L2", started!.Lists);
+        Assert.IsFalse(await DragOverAsync(l2, 0));
+        await DropAsync(l1);
+        Assert.IsEmpty(right);
+    }
+
+    [TestMethod]
     public async Task ACloneNeedsAKeyOfItsOwn()
     {
         int next = 100;
