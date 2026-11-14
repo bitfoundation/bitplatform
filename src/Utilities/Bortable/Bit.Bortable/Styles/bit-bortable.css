@@ -96,18 +96,16 @@
 }
 
 /* A multi-drag that carries several items says how many on its picture: the preview that follows a finger, a pen or a
-   ForceFallback mouse, and the drag image the browser takes of the item. --bit-bortable-count-display: none hides it. */
-.bit-bortable-item[data-bortable-count] {
-    position: relative;
-}
-
-.bit-bortable-item[data-bortable-count]::after {
-    content: attr(data-bortable-count);
+   ForceFallback mouse, and the copy of the item the browser takes its drag image of. Both are copies placed by the
+   browser layer (position: fixed), and the count is an element of their own: the item itself, its positioning and its
+   pseudo-elements are left alone. --bit-bortable-count-display: none hides it. */
+[data-bortable-count] > .bit-bortable-count {
     display: var(--bit-bortable-count-display, block);
     position: absolute;
     top: 0.35em;
     inset-inline-end: 0.35em;
     min-width: 1.6em;
+    margin: 0;
     padding: 0.2em 0.45em;
     box-sizing: border-box;
     border-radius: 999px;
@@ -167,7 +165,7 @@
         outline-offset: -2px;
     }
 
-    .bit-bortable-item[data-bortable-count]::after {
+    [data-bortable-count] > .bit-bortable-count {
         background: Highlight;
         color: HighlightText;
         forced-color-adjust: none;

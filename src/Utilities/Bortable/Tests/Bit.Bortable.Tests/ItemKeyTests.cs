@@ -71,6 +71,104 @@ public class ItemKeyTests : BortableTestContext
     }
 
     [TestMethod]
+    public async Task AReloadDuringADragKeepsTheNewInstances()
+    {
+        var cards = Load("A", "B", "C");
+        var list = RenderCards(cards);
+
+        await DragStartAsync(list, "A");
+        var reloaded = Reload(cards);
+        list.Render(p => p.Add(c => c.Items, reloaded));
+        await DragOverAsync(list, 3);
+        await DropAsync(list);
+
+        Assert.AreEqual("B,C,A", string.Join(",", reloaded.Select(c => c.Title)));
+        Assert.IsTrue(reloaded.All(c => !cards.Contains(c)), "The instance the drag started with came back into the list.");
+    }
+
+    [TestMethod]
+    public async Task AReloadDuringADragIntoAnotherListMovesTheNewInstance()
+    {
+        var left = Load("A", "B");
+        List<Card> right = [new(10, "X")];
+        var l1 = RenderCards(left, "L1", p => p.Add(c => c.Group, "g"));
+        var l2 = RenderCards(right, "L2", p => p.Add(c => c.Group, "g"));
+        Card? reported = null;
+        l2.Render(p => p.Add(c => c.OnAdd, e => reported = e.Item));
+
+        await DragStartAsync(l1, "A");
+        var reloaded = Reload(left);
+        l1.Render(p => p.Add(c => c.Items, reloaded));
+        await DragOverAsync(l2, 0);
+        await DropAsync(l2);
+
+        Assert.AreEqual("B", string.Join(",", reloaded.Select(c => c.Title)));
+        Assert.AreEqual("A,X", string.Join(",", right.Select(c => c.Title)));
+        Assert.IsTrue(right.All(c => !left.Contains(c)), "The instance the drag started with went into the list.");
+        Assert.AreSame(right[0], reported);
+    }
+
+    [TestMethod]
+    public async Task AReloadedCopyOfTheDraggedItemIsNotItsOwnSwapPartner()
+    {
+        var cards = Load("A", "B", "C");
+        var list = RenderCards(cards, extra: p => p.Add(c => c.Swap, true));
+        var updates = 0;
+        list.Render(p => p.Add(c => c.OnUpdate, _ => updates++));
+
+        await DragStartAsync(list, "A");
+        var reloaded = Reload(cards);
+        list.Render(p => p.Add(c => c.Items, reloaded));
+        await DragOverAsync(list, 0);
+
+        Assert.AreEqual("", LabelsWithClass(list, "bit-bortable-swap-highlight"));
+        await DropAsync(list);
+
+        Assert.AreEqual("A,B,C", string.Join(",", reloaded.Select(c => c.Title)));
+        Assert.IsTrue(reloaded.All(c => !cards.Contains(c)), "The instance the drag started with came back into the list.");
+        Assert.AreEqual(0, updates);
+    }
+
+    [TestMethod]
+    public async Task ASwapAfterAReloadDuringTheDragTradesTheNewInstances()
+    {
+        var cards = Load("A", "B", "C");
+        var list = RenderCards(cards, extra: p => p.Add(c => c.Swap, true));
+
+        await DragStartAsync(list, "A");
+        var reloaded = Reload(cards);
+        list.Render(p => p.Add(c => c.Items, reloaded));
+        await DragOverAsync(list, 2);
+        await DropAsync(list);
+
+        Assert.AreEqual("C,B,A", string.Join(",", reloaded.Select(c => c.Title)));
+        Assert.IsTrue(reloaded.All(c => !cards.Contains(c)), "The instance the drag started with came back into the list.");
+    }
+
+    [TestMethod]
+    public async Task AnInlineItemKeyGivenAgainOnEveryRenderKeepsTheSelection()
+    {
+        // A new delegate of the same lambda on every call, as a page that writes it inline gives on every render.
+        static Func<Card, object> KeyBy(string scope) => c => $"{scope}:{c.Id}";
+
+        var cards = Load("A", "B", "C");
+        var list = RenderCards(cards, keyed: false, extra: p =>
+        {
+            p.Add(c => c.MultiDrag, true);
+            p.Add(c => c.ItemKey, KeyBy("cards"));
+        });
+        await ClickAsync(list, "B");
+        var keys = new[] { "A", "B", "C" }.Select(l => KeyOf(list, l)).ToList();
+
+        for (int i = 0; i < 3; i++)
+            list.Render(p => p.Add(c => c.ItemKey, KeyBy("cards")));
+        list.Render(p => p.Add(c => c.Items, Reload(cards)));
+
+        Assert.AreEqual("B", LabelsWithClass(list, "bit-bortable-selected"));
+        Assert.AreSequenceEqual(keys, new[] { "A", "B", "C" }.Select(l => KeyOf(list, l)).ToList());
+    }
+
+    [TestMethod]
     public async Task TheSelectionSurvivesAReload()
     {
         var cards = Load("A", "B", "C");

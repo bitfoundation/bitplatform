@@ -391,6 +391,11 @@ dropped into it. So the key must be unique within a list and must not change whi
 factory must give the copy a key of its own (`Clone="t => t with { Id = NewId() }"`); a copy that keeps the
 original's key cannot go into a list that already holds an item with that key.
 
+When the items are loaded again during a drag, the drag carries on with the new instances: what lands in a list, and
+what the events report, is the instance the list holds when the drop happens, not the copy the drag started with.
+An inline lambda is fine as the `ItemKey`: the list recognises it by its code, not by the delegate a render creates,
+so giving it again on every render does not make the list start over with its items.
+
 ### Saving an order
 
 The events are raised once the bound lists are updated, so a handler reads the final order from them. To save a move
@@ -600,8 +605,10 @@ click, a range, Shift+Space, a drag that moves the selection (which spends it) o
 clears it) - and takes a selection you set. Items that are not in the list, or are locked by `Filter`, are left out.
 
 A drag that carries several items says how many on its picture - the preview that follows a finger, a pen or a
-`ForceFallback` mouse, and the drag image the browser takes of the item - with a count in its corner, drawn from the
-`data-bortable-count` attribute the browser layer puts on it (see [the custom properties](#the-custom-properties)).
+`ForceFallback` mouse, and the drag image the browser takes of a copy of the item - with a count in its corner: the
+browser layer marks the picture with `data-bortable-count` and draws the count as a `.bit-bortable-count` element of
+its own (see [the custom properties](#the-custom-properties)). The item itself is never changed for it, so its own
+positioning and `::before` / `::after` stay as they are.
 Selected items carry `data-bortable-selected`, whatever `SelectedClass` is.
 
 The `Items` property of the event arguments lists every item a drag moved. Multi-drag moves; combined with a clone
@@ -713,7 +720,7 @@ What counts as a cancel depends on how the item is dragged:
 
 `MoveAsync(item, newIndex)` moves an item within its list, and `MoveToAsync(item, listId, newIndex)` into another
 list of the group, exactly as a drag would: the same rules decide (`Sort`, `Disabled`, `Pull`, `Put`, `Group`,
-`MaxItems`, `CanDrop`), `ConfirmDrop` is asked, the items slide into place, and the drag's events follow with
+`PutGroups`, `MaxItems`, `MinItems`, `CanDrop`), `ConfirmDrop` is asked, the items slide into place, and the drag's events follow with
 `Input` set to `BortableInput.Api`. Both return `true` when the item moved. A clone source puts a copy in the
 target; a swap-mode list trades the item with the one at `newIndex`. `Filter` locks an item against the user's drags
 only, and a multi-drag selection is not carried along.

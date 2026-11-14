@@ -35,7 +35,7 @@
             string? key = KeyOf(current);
             bool selected = MultiDrag && _selected.Contains(current);
             <div @key="ElementKey(current)"
-                 class="@ItemCssClass(current)"
+                 class="@ItemCssClass(current, selected)"
                  role="listitem"
                  tabindex="@(keyboard ? (key == activeKey ? "0" : "-1") : null)"
                  aria-roledescription="@(keyboard ? messages.RoleDescription : null)"

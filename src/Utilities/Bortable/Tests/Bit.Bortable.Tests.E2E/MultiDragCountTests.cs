@@ -5,21 +5,25 @@ using static Microsoft.Playwright.Assertions;
 namespace Bit.Bortable.Tests.E2E;
 
 /// <summary>
-/// A multi-drag says how many items it carries on its picture: the browser's drag image of the item (which carries
-/// <c>data-bortable-count</c> while the browser takes it) and the preview that follows a finger. A drag of one item
-/// carries no count.
+/// A multi-drag says how many items it carries on its picture: the copy of the item the browser takes its drag image
+/// of (which carries <c>data-bortable-count</c> and the count while the browser takes it) and the preview that follows
+/// a finger. The dragged item itself is never marked. A drag of one item carries no count.
 /// </summary>
 [TestClass]
 public sealed class MultiDragCountTests : BortableTest
 {
-    // Records the count the dragged item carried when the browser took its drag image (after every dragstart handler).
+    // Records the count on the drag image when the browser took it (after every dragstart handler), and whether the
+    // dragged item itself was marked.
     private const string RecordCounts = """
         () => {
           window.__counts = [];
+          const picture = () => document.querySelector('[data-bortable-count]');
           window.addEventListener('dragstart', e => {
             const item = e.target.closest('[data-bortable-item]');
-            window.__counts.push(item?.getAttribute('data-bortable-count') ?? 'none');
-            setTimeout(() => window.__counts.push('after:' + (item?.getAttribute('data-bortable-count') ?? 'none')), 50);
+            const image = picture();
+            window.__counts.push(image ? image.getAttribute('data-bortable-count') + ':' + image.querySelector('.bit-bortable-count')?.textContent : 'none');
+            window.__counts.push('item:' + (item?.hasAttribute('data-bortable-count') ? 'marked' : 'clean'));
+            setTimeout(() => window.__counts.push('after:' + (picture()?.getAttribute('data-bortable-count') ?? 'none')), 50);
           });
         }
         """;
@@ -38,9 +42,9 @@ public sealed class MultiDragCountTests : BortableTest
             (await BoxAsync(Item(page, "multi-list", "Item 2"))).Centre,
             (await BoxAsync(Item(page, "multi-list", "Item 6"))).Centre);
 
-        // The count is on the item while the browser takes the image, and gone right after.
+        // The count is on the drag image while the browser takes it, and gone right after; the item is left alone.
         await AssertOrderAsync(page, "multi-list", "multi-order", "Item 1", "Item 3", "Item 6", "Item 2", "Item 4", "Item 5");
-        CollectionAssert.AreEqual(new[] { "3", "after:none" }, await page.EvaluateAsync<string[]>("() => window.__counts"));
+        CollectionAssert.AreEqual(new[] { "3:3", "item:clean", "after:none" }, await page.EvaluateAsync<string[]>("() => window.__counts"));
         await Expect(page.Locator("[data-bortable-count]")).ToHaveCountAsync(0);
     }
 

@@ -69,7 +69,8 @@ public sealed class BortableEventArgs<TItem>
     /// <summary>
     /// In a swap (<see cref="IsSwap"/>), the item <see cref="Item"/> trades places with: it takes the place
     /// <see cref="Item"/> leaves - index <see cref="OldIndex"/> of the source list, unless a keyboard drag carried the
-    /// item into another list first - so that a handler can save both moves. <c>default</c> for any other move.
+    /// item into another list first - so that a handler can save both moves. <c>default</c> for any other move: check
+    /// <see cref="IsSwap"/> rather than this, as for an item of a value type <c>default</c> is an item too.
     /// </summary>
     public TItem? SwappedWith { get; init; }
 }

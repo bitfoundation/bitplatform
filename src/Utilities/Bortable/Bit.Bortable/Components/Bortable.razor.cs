@@ -76,6 +76,8 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
     /// its focus and its selection; or when items compared by reference stand for records with an id. The key must be
     /// unique within the list and must not change while the item is in it, and a <see cref="Clone"/> factory has to
     /// give a copy a key of its own: a copy whose key is already in the target list is refused as a duplicate.
+    /// A lambda written inline is fine: the list tells a new ItemKey by its code, not by the delegate instance a render
+    /// creates, so the same lambda given again - capturing other values or not - is taken to key the items the same way.
     /// Default: the item itself, compared by its <c>Equals</c>.
     /// </summary>
     [Parameter] public Func<TItem, object>? ItemKey { get; set; }
@@ -401,8 +403,14 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
     {
         _parametersVersion++;
 
-        // A new ItemKey tells the items apart differently: the sets that hold them are built again with it.
-        if (!ReferenceEquals(ItemKey, _identity.Key))
+        // A new ItemKey tells the items apart differently: the sets that hold them are built again with it. One that is
+        // the same code as the last - a lambda written inline, which is a new delegate on every render of the page -
+        // keys the items the same way, and only takes the old one's place.
+        if (ItemKey is { } itemKey && _identity.Key is { } current && itemKey.Method == current.Method)
+        {
+            _identity.Key = itemKey;
+        }
+        else if (!ReferenceEquals(ItemKey, _identity.Key))
         {
             _identity = ItemKey is null ? Identity.Default : new Identity(ItemKey);
             _selected = new HashSet<TItem>(_selected, _identity);
@@ -438,7 +446,7 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
         Disabled ? "bit-bortable-disabled" : null,
         string.IsNullOrEmpty(Handle) ? null : "bit-bortable-has-handle");
 
-    private string ItemCssClass(TItem item)
+    private string ItemCssClass(TItem item, bool selected)
     {
         var ctx = Service.Context;
         string? dragState = null;
@@ -458,7 +466,7 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
 
         return Css("bit-bortable-item", ItemClass, ItemClassSelector?.Invoke(item), dragState,
             swapTarget ? SwapClass : null,
-            MultiDrag && _selected.Contains(item) ? SelectedClass : null,
+            selected ? SelectedClass : null,
             IsFiltered(item) ? "bit-bortable-filtered" : null);
     }
 
@@ -1072,6 +1080,9 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
 
         int from = IndexOfItem(dragged);
         if (from < 0) return Unchanged;
+        // The list's own instance of the item: with an ItemKey the page may have loaded its items again since the drag
+        // began, and the item it moves is the one the list holds now, not the copy the drag started with.
+        var moving = Items[from];
         int insertAt = Math.Min(target > from ? target - 1 : target, Items.Count - 1);
         bool previewedElsewhere = ctx.PlaceholderZone is not null;
         if (insertAt == from && !previewedElsewhere) return ClearSwapTarget(ctx) ? Changed : Unchanged;
@@ -1089,7 +1100,8 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
         {
             ctx.Touch(this);
             Items.RemoveAt(from);
-            Items.Insert(insertAt, dragged);
+            Items.Insert(insertAt, moving);
+            ctx.Item = moving!;
             change = MoveInfo(ctx, this, insertAt);
         }
         StateHasChanged();
@@ -1155,11 +1167,7 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
         // Every incoming item must be of this list's type and not already in it: Blazor
         // requires unique @key values, so a value-equal duplicate cannot be added.
         if (ctx.MultiItems is { } block && ctx.PullMode == BortablePull.Move)
-        {
-            foreach (var item in block)
-                if (item is not TItem t || IndexOfItem(t) >= 0) return false;
-            return HasRoomFor(block.Count);
-        }
+            return CountIn(block, out bool foreign) == 0 && !foreign && HasRoomFor(block.Count);
 
         return ctx.Item is TItem dragged && IndexOfItem(dragged) < 0 && HasRoomFor(1);
     }
@@ -1184,16 +1192,9 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
     {
         if (MinItems is not { } min || ctx.PullMode != BortablePull.Move) return true;
 
-        int leaving = 0;
-        if (ctx.MultiItems is { } block)
-        {
-            foreach (var item in block)
-                if (item is TItem t && IndexOfItem(t) >= 0) leaving++;
-        }
-        else if (ctx.Item is TItem t && IndexOfItem(t) >= 0)
-        {
-            leaving = 1;
-        }
+        int leaving = ctx.MultiItems is { } block
+            ? CountIn(block, out _)
+            : ctx.Item is TItem t && IndexOfItem(t) >= 0 ? 1 : 0;
         return Count - leaving >= min;
     }
 
@@ -1249,7 +1250,7 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
             // carried it into. A value-equal duplicate there would break Blazor's unique @key.
             var back = ctx.CurrentZone;
             bool valid = candidate is not null && (home
-                ? !Equals(candidate, ctx.Item)                                  // not the dragged item itself
+                ? !_identity.Same(candidate, ctx.Item)                          // not the dragged item itself
                 : back.Accepts(candidate) && back.IndexOf(candidate) < 0);      // fits the list it goes to
             if (valid && !AllowsSwap(ctx, index, candidate!, home))
             {
@@ -1297,7 +1298,12 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
 
     private static bool SetSwapTarget(BortableDragContext ctx, IBortableZone? zone, object? item)
     {
-        if (ReferenceEquals(ctx.SwapTargetZone, zone) && Equals(ctx.SwapTargetItem, item)) return false;
+        // The same item again keeps the highlight - and the instance picked, which the list renders with.
+        if (ReferenceEquals(ctx.SwapTargetZone, zone) && (zone is null || zone.Same(ctx.SwapTargetItem, item)))
+        {
+            ctx.SwapTargetItem = item;
+            return false;
+        }
 
         var previous = ctx.SwapTargetZone;
         ctx.SwapTargetZone = zone;
@@ -1327,12 +1333,17 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
     {
         var fromZone = ctx.CurrentZone;
         var toZone = ctx.SwapTargetZone!;
-        var dragged = ctx.Item;
-        var target = ctx.SwapTargetItem!;
 
-        int fromIndex = fromZone.IndexOf(dragged);
-        int toIndex = toZone.IndexOf(target);
+        int fromIndex = fromZone.IndexOf(ctx.Item);
+        int toIndex = toZone.IndexOf(ctx.SwapTargetItem!);
         if (fromIndex < 0 || toIndex < 0) return;
+        // A reloaded copy of the dragged item is the dragged item, never its partner.
+        if (ReferenceEquals(fromZone, toZone) && fromIndex == toIndex) return;
+
+        // The lists' own instances: with an ItemKey the page may have loaded its items again since they were picked.
+        var dragged = fromZone.ItemAt(fromIndex)!;
+        var target = toZone.ItemAt(toIndex)!;
+        ctx.Item = dragged;
 
         ctx.Touch(fromZone);
         ctx.Touch(toZone);
@@ -1519,8 +1530,9 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
 
     /// <summary>
     /// Moves <paramref name="item"/> from this list into the list whose <see cref="Id"/> is <paramref name="listId"/>,
-    /// at <paramref name="newIndex"/>, as a drag would: the lists must exchange items (<see cref="Group"/>,
-    /// <see cref="Pull"/>, <see cref="Put"/>, <see cref="Disabled"/>, <see cref="MaxItems"/>, the item type), the destination's
+    /// at <paramref name="newIndex"/>, as a drag would: the lists must exchange items (<see cref="Group"/> or the
+    /// destination's <see cref="PutGroups"/>, <see cref="Pull"/>, <see cref="Put"/>, <see cref="Disabled"/>, the
+    /// destination's <see cref="MaxItems"/>, this list's <see cref="MinItems"/>, the item type), the destination's
     /// <see cref="CanDrop"/> and <see cref="ConfirmDrop"/> are asked, a <see cref="BortablePull.Clone"/> source puts
     /// a copy there, and the drag's events follow with <see cref="BortableEventArgs{TItem}.Input"/> set to
     /// <see cref="BortableInput.Api"/>. Into a swap-mode list the item trades places with the one at
@@ -1790,14 +1802,18 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
         int primaryPos = target.IndexOf(ctx.Item);
         if (primaryPos < 0) return null;
 
+        // Items are told apart by the lists' ItemKey: the page may have loaded them again since the drag began, so the
+        // block may hold older copies of the items the lists now hold.
+        int primary = IndexIn(source, block, ctx.Item);
+
         // Anchor: number of non-block items before the primary in the destination list.
         int anchor = 0;
         for (int i = 0; i < primaryPos; i++)
-            if (!BlockContains(block, target.ItemAt(i))) anchor++;
+            if (IndexIn(target, block, target.ItemAt(i)) < 0) anchor++;
 
         // A CanDrop that throws refuses too (CanDropAllows): the drag is still put back and reported, and the exception
         // passed on after.
-        if (!target.AllowsDropAt(ctx, anchor + block.IndexOf(ctx.Item)))
+        if (!target.AllowsDropAt(ctx, anchor + Math.Max(primary, 0)))
         {
             PutBack(ctx);
             refused = true;
@@ -1808,27 +1824,32 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
         ctx.Touch(source);
         ctx.Touch(target);
 
-        // The primary sits in the destination list; the rest of the block in the source.
-        foreach (var item in block)
+        // The primary sits in the destination list; the rest of the block in the source. What moves is each list's own
+        // instance of the item, and an item the page took out of the list meanwhile is not brought back.
+        var moved = new List<object>(block.Count);
+        for (int b = 0; b < block.Count; b++)
         {
-            var zone = !sameList && Equals(item, ctx.Item) ? target : source;
-            int index = zone.IndexOf(item);
-            if (index >= 0) zone.RemoveAt(index);
+            var zone = !sameList && b == primary ? target : source;
+            int index = zone.IndexOf(block[b]);
+            if (index < 0) continue;
+            moved.Add(zone.ItemAt(index)!);
+            zone.RemoveAt(index);
         }
 
         anchor = Math.Min(anchor, target.Count);
-        for (int i = 0; i < block.Count; i++)
-            target.Insert(anchor + i, block[i]);
+        for (int i = 0; i < moved.Count; i++)
+            target.Insert(anchor + i, moved[i]);
 
         source.ClearSelection();
-        return block;
+        return moved;
     }
 
-    private static bool BlockContains(List<object> block, object? item)
+    /// <summary>Where <paramref name="item"/> is in <paramref name="block"/>, the items being the same to <paramref name="zone"/>; <c>-1</c> when it is not there.</summary>
+    private static int IndexIn(IBortableZone zone, List<object> block, object? item)
     {
-        foreach (var b in block)
-            if (Equals(b, item)) return true;
-        return false;
+        for (int i = 0; i < block.Count; i++)
+            if (zone.Same(block[i], item)) return i;
+        return -1;
     }
 
     /// <summary>Moves (or clones) the dragged item from its source list into this list at the placeholder index.</summary>
@@ -1840,18 +1861,18 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
 
         var source = ctx.CurrentZone;
         bool clone = ctx.PullMode == BortablePull.Clone;
-        var moving = clone ? ctx.Source.CloneItem(ctx.OriginalItem) : ctx.Item;
+
+        // What moves is the source list's own instance of the item: with an ItemKey the page may have loaded its items
+        // again since the drag began, and the copy the drag started with is out of date. A clone copies that instance.
+        int sourceIndex = clone ? ctx.Source.IndexOf(ctx.OriginalItem) : source.IndexOf(ctx.Item);
+        if (sourceIndex < 0 && !clone) return;
+        var moving = clone
+            ? ctx.Source.CloneItem(sourceIndex >= 0 ? ctx.Source.ItemAt(sourceIndex)! : ctx.OriginalItem)
+            : source.ItemAt(sourceIndex);
 
         // Never insert an item of the wrong type or one that is already here (a
         // duplicate @key, e.g. a Clone factory returning an equal value): cancel instead.
         if (moving is not TItem item || IndexOfItem(item) >= 0) return;
-
-        int sourceIndex = -1;
-        if (!clone)
-        {
-            sourceIndex = source.IndexOf(moving);
-            if (sourceIndex < 0) return;
-        }
 
         if (!clone)
         {
@@ -2012,6 +2033,8 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
     private int Count => Items?.Count ?? 0;
     int IBortableZone.Count => Count;
 
+    bool IBortableZone.Same(object? x, object? y) => _identity.Same(x, y);
+
     int IBortableZone.IndexOf(object item) => item is TItem t ? IndexOfItem(t) : -1;
 
     object? IBortableZone.ItemAt(int index) => Items![index];
@@ -2143,7 +2166,10 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
             Input = info.Input,
             IsClone = info.IsClone,
             Canceled = info.Canceled,
-            IsSwap = info.SwappedWith is not null,
+            // A swap partner is always of the type of both lists it is traded between: a list picks as a partner only an
+            // item the list the dragged item is in accepts (UpdateSwapTarget), and takes the dragged item only when it
+            // is of its own type (CanAccept). So a swap never reports a partner the handler cannot read.
+            IsSwap = info.SwappedWith is TItem,
             SwappedWith = info.SwappedWith is TItem partner ? partner : default
         };
     }
@@ -2235,11 +2261,38 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
     {
         var items = Items;
         if (items is null) return -1;
-        if (_identity.Key is null) return items.IndexOf(item);
+        if (_identity.Key is not { } key) return items.IndexOf(item);
 
+        // The key of the item looked for, taken once rather than for every item it is compared with.
+        if (item is null)
+        {
+            for (int i = 0; i < items.Count; i++)
+                if (items[i] is null) return i;
+            return -1;
+        }
+        var wanted = key(item);
         for (int i = 0; i < items.Count; i++)
-            if (_identity.Equals(items[i], item)) return i;
+            if (items[i] is { } candidate && Equals(key(candidate), wanted)) return i;
         return -1;
+    }
+
+    /// <summary>
+    /// How many of <paramref name="block"/> - a multi-drag's items - are in this list: the list's items are hashed once,
+    /// rather than the list searched for each item of the block, as this runs for every list the pointer moves over.
+    /// </summary>
+    private int CountIn(List<object> block, out bool foreign)
+    {
+        foreign = false;
+        var items = Items;
+        if (items is null) return 0;
+        var here = new HashSet<TItem>(items, _identity);
+        int count = 0;
+        foreach (var item in block)
+        {
+            if (item is not TItem t) foreign = true;
+            else if (here.Contains(t)) count++;
+        }
+        return count;
     }
 
     /// <summary>The value an item's element is keyed by (<c>@key</c>): its <see cref="ItemKey"/>, or the item itself.</summary>
@@ -2253,7 +2306,16 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
     {
         public static readonly Identity Default = new(null);
 
-        public Func<TItem, object>? Key => key;
+        // Replaced in place (never on Default) by an ItemKey that is the same code as the one before: a lambda the
+        // page writes inline is a new delegate on every render, and keys the items as the last one did.
+        public Func<TItem, object>? Key
+        {
+            get => key;
+            set => key = value;
+        }
+
+        /// <summary>Whether <paramref name="x"/> and <paramref name="y"/> are the same item; values that are not items compare by <c>Equals</c>.</summary>
+        public bool Same(object? x, object? y) => x is TItem a && y is TItem b ? Equals(a, b) : object.Equals(x, y);
 
         public bool Equals(TItem? x, TItem? y)
         {
@@ -2272,8 +2334,7 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
     /// <summary>Compares boxed items the way <c>@key</c> compares the items themselves.</summary>
     private sealed class ItemComparer(Identity identity) : IEqualityComparer<object>
     {
-        bool IEqualityComparer<object>.Equals(object? x, object? y)
-            => x is TItem a && y is TItem b ? identity.Equals(a, b) : Equals(x, y);
+        bool IEqualityComparer<object>.Equals(object? x, object? y) => identity.Same(x, y);
 
         int IEqualityComparer<object>.GetHashCode(object obj)
             => obj is TItem item ? identity.GetHashCode(item) : obj.GetHashCode();

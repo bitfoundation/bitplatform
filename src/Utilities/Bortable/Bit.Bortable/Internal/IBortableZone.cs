@@ -70,6 +70,12 @@ internal interface IBortableZone
     /// </summary>
     bool LetsGo(BortableDragContext ctx);
 
+    /// <summary>
+    /// Whether <paramref name="x"/> and <paramref name="y"/> are the same item to this list: by its <c>ItemKey</c>, so
+    /// that an item the page loaded again is the same item as the copy a drag started with.
+    /// </summary>
+    bool Same(object? x, object? y);
+
     int Count { get; }
     int IndexOf(object item);
     object? ItemAt(int index);
