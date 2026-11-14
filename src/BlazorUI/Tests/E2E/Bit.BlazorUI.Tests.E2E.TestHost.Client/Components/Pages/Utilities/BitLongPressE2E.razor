@@ -1,0 +1,96 @@
+﻿@page "/e2e/long-press"
+
+@* Every feature of BitLongPress, one section each. Every long press holds a 300x120 box, and writes what its OnLongPress
+   reported into lines of its own: the count, and the pointer type and point of the last one. *@
+
+<PageTitle>BitLongPress E2E</PageTitle>
+
+<style>
+    .e2e-lpr-box {
+        width: 300px;
+        height: 120px;
+        position: relative;
+        background: rgb(230, 240, 255);
+    }
+
+    .e2e-lpr-box > button, .e2e-lpr-box > input {
+        position: absolute;
+        left: 10px;
+        top: 10px;
+    }
+
+    .e2e-lpr-vars {
+        --bit-LongPress-focus-color: rgb(255, 0, 0);
+    }
+</style>
+
+<E2ESection Id="basic" Title="Basic: a held mouse, pen or touch, a child button, the click it swallows">
+    <BitLongPress Id="lpr-basic" OnLongPress="e => Log(_basic, e)">
+        <div class="e2e-lpr-box">
+            <button id="basic-child" @onclick="() => _basicChildClicks++">Child</button>
+        </div>
+    </BitLongPress>
+    <span id="basic-count">@_basic.Count</span>
+    <span id="basic-last">@_basic.Last</span>
+    <span id="basic-child-clicks">@_basicChildClicks</span>
+</E2ESection>
+
+<E2ESection Id="delay" Title="Delay and MoveTolerance">
+    <BitLongPress Id="lpr-delay" Delay="1200" MoveTolerance="30" OnLongPress="e => Log(_delay, e)">
+        <div class="e2e-lpr-box"></div>
+    </BitLongPress>
+    <span id="delay-count">@_delay.Count</span>
+</E2ESection>
+
+<E2ESection Id="touchonly" Title="TouchOnly">
+    <BitLongPress Id="lpr-touchonly" TouchOnly OnLongPress="e => Log(_touchOnly, e)">
+        <div class="e2e-lpr-box"></div>
+    </BitLongPress>
+    <span id="touchonly-count">@_touchOnly.Count</span>
+    <span id="touchonly-last">@_touchOnly.Last</span>
+</E2ESection>
+
+<E2ESection Id="keyboard" Title="KeyboardTrigger: Shift+F10 and the Menu key, a field typed in left alone">
+    <BitLongPress Id="lpr-key" KeyboardTrigger AriaLabel="Keyboard long press" Class="e2e-lpr-vars" OnLongPress="e => Log(_key, e)">
+        <div class="e2e-lpr-box">
+            <input id="key-input" aria-label="A field" />
+        </div>
+    </BitLongPress>
+    <span id="key-count">@_key.Count</span>
+    <span id="key-last">@_key.Last</span>
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled">
+    <BitLongPress Id="lpr-disabled" Disabled KeyboardTrigger AriaLabel="Disabled long press" OnLongPress="e => Log(_disabled, e)">
+        <div class="e2e-lpr-box"></div>
+    </BitLongPress>
+    <span id="disabled-count">@_disabled.Count</span>
+</E2ESection>
+
+@* Room under the sections, so the page scrolls on a phone. *@
+<div style="height: 1500px"></div>
+
+<div style="position: fixed; right: 8px; top: 8px;">
+    <E2EStatus />
+</div>
+
+@code {
+    private sealed class PressLog
+    {
+        public int Count;
+        public string? Last;
+    }
+
+    private readonly PressLog _basic = new();
+    private readonly PressLog _delay = new();
+    private readonly PressLog _touchOnly = new();
+    private readonly PressLog _key = new();
+    private readonly PressLog _disabled = new();
+    private int _basicChildClicks;
+
+    private static void Log(PressLog log, BitLongPressEventArgs e)
+    {
+        log.Count++;
+        log.Last = FormattableString.Invariant($"{e.PointerType}|{Math.Round(e.ClientX)},{Math.Round(e.ClientY)}");
+    }
+}
