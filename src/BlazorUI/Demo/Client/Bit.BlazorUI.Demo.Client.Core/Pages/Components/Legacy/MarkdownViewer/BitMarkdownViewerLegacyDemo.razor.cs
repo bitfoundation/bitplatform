@@ -66,7 +66,7 @@ public partial class BitMarkdownViewerLegacyDemo
 
 <br/>
 
-![License](https://img.shields.io/github/license/bitfoundation/bitplatform.svg)
+[![License](https://img.shields.io/badge/license-PolyForm%20Perimeter%201.0.1-blue.svg)](https://github.com/bitfoundation/bitplatform/blob/develop/LICENSE)
 ![CI Status](https://github.com/bitfoundation/bitplatform/actions/workflows/bit.ci.yml/badge.svg)
 ![NuGet version](https://img.shields.io/nuget/v/bit.blazorui.svg?logo=nuget)
 [![Nuget downloads](https://img.shields.io/badge/packages_download-8.2M-blue.svg?logo=nuget)](https://www.nuget.org/profiles/bit-foundation)
@@ -175,7 +175,7 @@ private string advancedMarkdown = @""![Header](https://user-images.githubusercon
 
 <br/>
 
-![License](https://img.shields.io/github/license/bitfoundation/bitplatform.svg)
+[![License](https://img.shields.io/badge/license-PolyForm%20Perimeter%201.0.1-blue.svg)](https://github.com/bitfoundation/bitplatform/blob/develop/LICENSE)
 ![CI Status](https://github.com/bitfoundation/bitplatform/actions/workflows/bit.ci.yml/badge.svg)
 ![NuGet version](https://img.shields.io/nuget/v/bit.blazorui.svg?logo=nuget)
 [![Nuget downloads](https://img.shields.io/badge/packages_download-8.2M-blue.svg?logo=nuget)](https://www.nuget.org/profiles/bit-foundation)

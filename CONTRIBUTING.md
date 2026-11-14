@@ -46,6 +46,17 @@ The best way to create a minimal reproduction is gradually removing code and dep
 
 Project maintainers will merge changes that improve the product significantly.
 
+### Licensing of Contributions
+
+bit platform is licensed under the [PolyForm Perimeter License 1.0.1](LICENSE). By submitting a contribution (a pull request, a patch or any other code, documentation or asset) you agree that:
+
+* You grant bit platform a perpetual, worldwide, non-exclusive, royalty-free, irrevocable license to use, reproduce, modify, distribute and sublicense your contribution, under the PolyForm Perimeter License 1.0.1 or any other terms bit platform chooses, including open-source and commercial ones.
+* You grant bit platform and everyone who receives bit platform a perpetual, worldwide, non-exclusive, royalty-free, irrevocable license under any patent claims you can license that your contribution would otherwise infringe.
+* The contribution is your own original work, or you have the right to submit it under these terms, and it carries no third-party code whose license conflicts with them. Third-party code you do include is named in the pull request together with its license, so it can be added to [NOTICE.md](NOTICE.md).
+* You keep the copyright in your contribution.
+
+Contributions made before bit platform moved to the PolyForm Perimeter License were made under the MIT License and keep it; see [NOTICE.md](NOTICE.md).
+
 ### DOs and DON'Ts
 
 Please do:

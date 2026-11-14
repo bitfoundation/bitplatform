@@ -2,7 +2,7 @@
 namespace Boilerplate.Client.Core.Components.Common;
 
 /// <summary>
-/// A tip of the hat to the open-source projects, tools, and services this app is built with.
+/// A tip of the hat to the open-source and source-available projects, tools, and services this app is built with.
 /// It also doubles as the third-party attribution / license notice required by many of those licenses.
 /// The lists below mirror the actual dependencies of the generated project: entries wrapped in the
 /// template's conditional markers only ship when the matching option is selected. The marker is spelled `//if` in
@@ -25,7 +25,7 @@ public partial class Acknowledgements
     /// </summary>
     private static readonly Dependency[] RuntimeDependencies =
     [
-        new("bit platform ❤️", "https://bitplatform.dev", "https://github.com/bitfoundation/bitplatform", "MIT"),
+        new("bit platform ❤️", "https://bitplatform.dev", "https://github.com/bitfoundation/bitplatform", "PolyForm Perimeter 1.0.1"),
         new(".NET", "https://dot.net", "https://github.com/dotnet/runtime", "MIT"),
         new("ASP.NET Core - Blazor", "https://asp.net", "https://github.com/dotnet/aspnetcore", "MIT"),
         //#if (aspire == true)

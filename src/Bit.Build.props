@@ -101,6 +101,10 @@
             <Pack>True</Pack>
             <PackagePath>\</PackagePath>
         </None>
+        <None Include="$([System.IO.Path]::GetFullPath($([MSBuild]::GetDirectoryNameOfFileAbove('$(MSBuildProjectDirectory)', 'LICENSE'))\NOTICE.md))">
+            <Pack>True</Pack>
+            <PackagePath>\</PackagePath>
+        </None>
         <None Include="$([System.IO.Path]::GetFullPath($([MSBuild]::GetDirectoryNameOfFileAbove('$(MSBuildProjectDirectory)', 'README.md'))\README.md))">
             <Pack>True</Pack>
             <PackagePath>\</PackagePath>
