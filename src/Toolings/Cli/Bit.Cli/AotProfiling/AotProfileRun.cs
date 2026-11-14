@@ -147,9 +147,10 @@ public sealed class AotProfileRun(CliServices cli)
 
             var profile = AotProfile.Read(data);
             var collected = profile.Methods.Count;
-            var generic = profile.AddRange(AssemblyMethods.ReadGenericInstances([.. profile.Methods], assemblies.Select(a => a.Path)));
-            var unmanaged = assemblies.Sum(a => profile.AddRange(AssemblyMethods.Read(a.Path, unmanagedCallersOnly: true)));
-            var included = request.Include.Sum(name => profile.AddRange(AssemblyMethods.Read(assemblies.First(a => string.Equals(a.Name, name, StringComparison.OrdinalIgnoreCase)).Path, unmanagedCallersOnly: false)));
+            using var images = new AppAssemblies(assemblies.Select(a => a.Path));
+            var generic = profile.AddRange(AssemblyMethods.ReadGenericInstances(profile.Methods, images));
+            var unmanaged = images.Images.Sum(metadata => profile.AddRange(AssemblyMethods.Read(metadata, unmanagedCallersOnly: true)));
+            var included = request.Include.Sum(name => profile.AddRange(AssemblyMethods.Read(images[assemblies.First(a => string.Equals(a.Name, name, StringComparison.OrdinalIgnoreCase)).Name!], unmanagedCallersOnly: false)));
 
             Directory.CreateDirectory(Path.GetDirectoryName(output)!);
             await File.WriteAllBytesAsync(output, profile.ToArray(), cancellationToken);
