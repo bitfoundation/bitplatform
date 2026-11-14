@@ -2,6 +2,11 @@ name: CI Websites
 
 on:
   workflow_dispatch:
+    inputs:
+      prerelease_packages:
+        description: Bit packages of the latest CD Prerelease nuget packages run instead of nuget.org
+        type: boolean
+        default: false
   workflow_call:
     inputs:
       prerelease_packages:
