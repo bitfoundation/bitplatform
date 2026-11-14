@@ -55,7 +55,8 @@ public class AccessibilityTests : BunitContext
         var cut = Render([new BlowNode { Id = "1" }], extra: Inert());
 
         var pane = cut.Find(".bit-blow");
-        Assert.IsNull(pane.GetAttribute("tabindex"));
+        // Focusable from code, so focus can be handed back to it, but no Tab stop.
+        Assert.AreEqual("-1", pane.GetAttribute("tabindex"));
         Assert.AreEqual("group", pane.GetAttribute("role"));
         Assert.AreEqual("Flow diagram", pane.GetAttribute("aria-label"));
         // "Press Tab to move between the nodes and edges" describes nothing when neither takes focus.
@@ -91,7 +92,7 @@ public class AccessibilityTests : BunitContext
         // Nothing for the delete keys to do: a picture again.
         var noDelete = Render([new BlowNode { Id = "1", Selected = true }],
             extra: p => { Inert()(p); p.Add(c => c.DeleteKeyEnabled, false); });
-        Assert.IsNull(noDelete.Find(".bit-blow").GetAttribute("tabindex"));
+        Assert.AreEqual("-1", noDelete.Find(".bit-blow").GetAttribute("tabindex"));
     }
 
     [TestMethod]

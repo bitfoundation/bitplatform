@@ -16,10 +16,12 @@
 <CascadingValue Name="@BlowCascadingNames.GraphVersion" Value="_graphVersion">
 <CascadingValue Name="@BlowCascadingNames.ConnectionVersion" Value="_connectionVersion">
     @* The pane's tabindex, role and aria-label come before the app's attributes, so an app can replace them: the
-       last of two attributes of the same name is the one written. *@
+       last of two attributes of the same name is the one written. A pane that is no Tab stop keeps tabindex -1, not
+       none: the delete keys can take the last selected element - and with it the reason to be a Tab stop - while focus
+       sits on it, and the render after hands focus back to the pane, which only an element with a tabindex can take. *@
     <div class="bit-blow @ColorModeClass @MotionClass @InteractionClass @Class"
          style="@Style"
-         tabindex="@(PaneFocusable ? "0" : null)"
+         tabindex="@(PaneFocusable ? "0" : "-1")"
          role="@(PaneFocusable ? "application" : "group")"
          aria-label="@AriaLabel"
          @attributes="AdditionalAttributes"
