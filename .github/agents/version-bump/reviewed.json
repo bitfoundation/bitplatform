@@ -1,0 +1,12 @@
+[
+  {
+    "file": "src/Toolings/Cli/Tests/Bit.Cli.Tests/SelfUpdateTests.cs",
+    "line": "new { sourceName = \"nuget.org\", packages = new object[] { new { id = \"bit.cli\", version = \"1.7.0\" }, new { id = \"Bit.Cli\", version = \"1.7.0; rm -rf ~\" }, new { id = \"Bit.Boilerplate\", version = \"11.0.0\" } } },",
+    "why": "test data: fake versions of a self update search"
+  },
+  {
+    "file": "src/Utilities/Belemetry/Bit.Belemetry/Diagnostics/BelemetrySupportBundleContents.cs",
+    "line": "/// <summary>What wrote it (<c>Bit.Belemetry 11.0.0</c>).</summary>",
+    "why": "doc comment example"
+  }
+]

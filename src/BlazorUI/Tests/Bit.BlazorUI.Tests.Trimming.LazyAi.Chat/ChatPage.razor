@@ -1,0 +1,12 @@
+﻿@page "/chat"
+
+@* Nothing of the AI packages is registered at startup, so the page hands the chat what the registration would have
+   given it: a BitAiServices with the app's transport here, over which the chat creates a session of its own - and,
+   where an app wants them, its tools, renderers, generative UI registry and model catalog, and the chat's UiOptions. *@
+<div id="chat-ready">
+    <BitAiChat Services="_services" EmptyTitle="Ask me anything" />
+</div>
+
+@code {
+    private readonly BitAiServices _services = new() { Transport = new EchoTransport() };
+}

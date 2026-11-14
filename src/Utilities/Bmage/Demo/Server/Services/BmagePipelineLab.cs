@@ -414,12 +414,6 @@ public static class BmagePipelineLab
                 continue;
             }
 
-            if (format == ImageFormat.Gif)
-            {
-                results.Add(new BmageEncodingDto { Format = "Gif", Note = "Not measured: GIF encoding is not implemented by Bmage or by any browser canvas. Use PNG or WebP." });
-                continue;
-            }
-
             foreach (var quality in format.IsLossy() ? qualities : [double.NaN])
             {
                 var options = new ImageExportOptions { Format = format, Quality = double.IsNaN(quality) ? 0.85 : quality };
@@ -436,7 +430,9 @@ public static class BmagePipelineLab
                     EncodeMilliseconds = Math.Round(ms, 1),
                     Note = transparent && format.SupportsAlpha() is false
                         ? $"{format} has no alpha channel: the transparent pixels were flattened onto ImageExportOptions.Background (white by default)."
-                        : format == ImageFormat.Png ? "Lossless, compression level 6 (the default); level 1 encodes about 3.4 times faster for a larger file." : null
+                        : format == ImageFormat.Png ? "Lossless, compression level 6 (the default); level 1 encodes about 3.4 times faster for a larger file."
+                        : format == ImageFormat.Gif ? "One frame of at most 256 colours (median cut, dithered): a photo loses colour, and a pixel is either opaque or fully transparent. Use PNG or WebP for photos."
+                        : null
                 });
             }
         }

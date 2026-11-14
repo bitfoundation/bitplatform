@@ -13,7 +13,10 @@ public static class OAuthScopes
     /// <summary>Read-only inspection of a running deployment through <c>/dev-mcp</c>.</summary>
     public const string DevMcp = "dev-mcp";
 
-    /// <summary>The detailed health report at <c>/healthz</c>: every check's status, and each failure's exception.</summary>
+    /// <summary>
+    /// The detailed health report at <c>/healthz</c>: every check's status, but never the failures' exceptions, which
+    /// can carry a server name or a connection string and stay with the app's own Operations page.
+    /// </summary>
     public const string Healthz = "healthz";
 
     //#if (signalR == true)

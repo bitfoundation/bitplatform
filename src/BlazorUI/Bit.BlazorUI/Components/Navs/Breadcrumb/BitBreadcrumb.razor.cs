@@ -274,6 +274,18 @@ public partial class BitBreadcrumb<[DynamicallyAccessedMembers(DynamicallyAccess
     [Parameter] public RenderFragment<TItem>? OverflowTemplate { get; set; }
 
     /// <summary>
+    /// Shows the overflow menu as a sheet that slides up from the bottom edge of the screen on small screens,
+    /// instead of the callout under the overflow button.
+    /// </summary>
+    /// <remarks>
+    /// The sheet is shown below the small breakpoint (600px wide): it runs the full width of the screen and grows
+    /// with the collapsed steps up to the height of the screen, where the steps that do not fit scroll inside it. It
+    /// closes the ways the callout does: a step, a tap outside it, Escape. On wider screens the menu is the callout it
+    /// always is. It has nothing to do with <see cref="ExpandOverflow"/>, which opens no menu.
+    /// </remarks>
+    [Parameter] public bool Responsive { get; set; }
+
+    /// <summary>
     /// Lets a long breadcrumb trail scroll sideways inside its container instead of overflowing it.
     /// <br />
     /// It is what a trail whose every step is worth keeping in place asks for, rather than collapsing the
@@ -939,7 +951,7 @@ public partial class BitBreadcrumb<[DynamicallyAccessedMembers(DynamicallyAccess
     // items are repeated on it.
     private string GetCalloutClasses()
     {
-        return string.Join(' ', new[] { "bit-brc-cal", GetColorClass(), GetSizeClass(), Classes?.Callout }
+        return string.Join(' ', new[] { "bit-brc-cal", Responsive ? "bit-brc-res" : null, GetColorClass(), GetSizeClass(), Classes?.Callout }
                                     .Where(c => c.HasValue()));
     }
 
@@ -1471,7 +1483,9 @@ public partial class BitBreadcrumb<[DynamicallyAccessedMembers(DynamicallyAccess
                 callout: null,
                 overlayId: _overlayId,
                 isCalloutOpen: _isCalloutOpen,
-                responsiveMode: BitResponsiveMode.None,
+                // A sheet coming up from the bottom edge, the way BitMenuButton's does: the menu is a short list
+                // of steps within reach of the thumb.
+                responsiveMode: Responsive ? BitResponsiveMode.Bottom : BitResponsiveMode.None,
                 dropDirection: BitDropDirection.TopAndBottom,
                 isRtl: ExplicitRtl,
                 scrollContainerId: _scrollContainerId,

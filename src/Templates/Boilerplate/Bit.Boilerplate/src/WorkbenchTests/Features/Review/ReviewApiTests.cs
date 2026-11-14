@@ -284,5 +284,24 @@ public class ReviewApiTests
         Assert.Contains(reason, await response.Content.ReadAsStringAsync(TestContext.CancellationToken));
     }
 
+    [TestMethod]
+    public async Task AChat_Should_HearOnlyAboutThePagesItListensFor()
+    {
+        var cursor = (long)(await GetReview())["cursor"]!;
+        var others = await reviewer.Comment(server, "shifts", "For the chat that designs shifts");
+        var mine = await reviewer.Comment(server, "buildings", "For the chat that designs buildings");
+
+        var answer = JsonNode.Parse(await client.GetStringAsync($"api/review/wait?cursor={cursor}&agent=Codex&pages=buildings,theme", TestContext.CancellationToken))!;
+
+        Assert.Contains(mine, CommentsIn(answer));
+        Assert.DoesNotContain(others, CommentsIn(answer));
+
+        var listed = CommentsIn(JsonNode.Parse(await client.GetStringAsync("api/review?pages=buildings", TestContext.CancellationToken))!);
+
+        Assert.Contains(mine, listed);
+        Assert.DoesNotContain(others, listed);
+        Assert.Contains(others, CommentsIn(await GetReview()), "Without pages, every page's comments.");
+    }
+
     private static string[] CommentsIn(JsonNode answer) => [.. answer["comments"]!.AsArray().Select(c => (string)c!["id"]!)];
 }

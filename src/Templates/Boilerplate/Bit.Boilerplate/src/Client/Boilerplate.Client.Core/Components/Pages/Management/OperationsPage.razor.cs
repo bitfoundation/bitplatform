@@ -250,6 +250,9 @@ public partial class OperationsPage
                 Status = HealthCheckStatus.Degraded,
                 FailureStatus = HealthCheckStatus.Degraded,
                 Description = "Couldn't read Server.Web's health report.",
+                Title = "Web server report",
+                IconName = BitIconName.Website,
+                About = "Server.Web's own health report can be read.",
                 Exception = exp.ToString()
             };
 

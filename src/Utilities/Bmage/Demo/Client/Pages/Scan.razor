@@ -1,0 +1,447 @@
+﻿@page "/scan"
+@using Bit.Bmage.BbScanner
+@inject ImageLoader Loader
+@inject ImageExporter Exporter
+@implements IDisposable
+
+@* A photographed page made into a clean scan, all on the device: is it sharp enough, how far is it tilted, level
+   it, separate the ink from the paper under uneven light, read the QR code on it, and save it as a 1-bit PNG. *@
+
+<PageTitle>Document scanning · Bmage</PageTitle>
+
+<div class="bb-intro">
+    <h1>Document scanning</h1>
+    <p class="bb-subtitle">
+        A page photographed with a phone becomes a clean scan without leaving the device: Bmage measures whether the
+        photo is sharp enough and how far its lines are tilted, levels it, separates the ink from the paper under
+        uneven light, reads the codes printed on it through <a href="@BbScannerUrl">BbScanner</a>, and saves the result
+        as a two-colour PNG a fraction of the size.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Try it</h3>
+
+    @if (_error is not null)
+    {
+        <div class="bb-note bb-note-danger demo-error" role="alert">@_error</div>
+    }
+
+    <div class="bb-demo bb-page-wide">
+        <div class="bb-demo-bar"><span class="bb-demo-label">Live</span></div>
+        <div class="demo-split">
+            <div>
+                <BmageDropZone Label="Drop a photo of a page here, or click to choose one" OnFilesSelected="OnFilesSelected" />
+                <div class="bb-toolbar">
+                    <button type="button" class="btn btn-secondary" disabled="@(_busy || IsHydrating)" @onclick="UseSample">Use a sample page</button>
+                    <span class="demo-small bb-muted">A generated page, tilted, in shadow and a little soft, with a QR code on it.</span>
+                    @if (_busy)
+                    {
+                        <span class="working" role="status"><span class="bb-spinner" aria-hidden="true"></span>Working&hellip;</span>
+                    }
+                </div>
+
+                @if (_source is not null)
+                {
+                    <div class="bb-stats scan-stats">
+                        <div class="bb-stat">
+                            <span class="bb-stat-label">Sharpness</span>
+                            <span class="bb-stat-value" data-testid="sharpness">@_sharpness.ToString("0")</span>
+                        </div>
+                        <div class="bb-stat">
+                            <span class="bb-stat-label">Tilt</span>
+                            <span class="bb-stat-value" data-testid="tilt">@TiltText</span>
+                        </div>
+                        <div class="bb-stat">
+                            <span class="bb-stat-label">Confidence</span>
+                            <span class="bb-stat-value">@(_skew is { } c ? $"{c.Confidence:P0}" : "-")</span>
+                        </div>
+                        <div class="bb-stat">
+                            <span class="bb-stat-label">Scan PNG</span>
+                            <span class="bb-stat-value" data-testid="scan-size">@(_encoded is null ? "-" : Display.Bytes(_encoded.Length))</span>
+                        </div>
+                    </div>
+
+                    <div class="preview-row">
+                        <div>
+                            <p class="bb-overline demo-label">Scan</p>
+                            <ImagePreview Image="_result" Version="_version" Alt="The page as a scan" Class="scan-preview" />
+                        </div>
+                        <div>
+                            <p class="bb-overline demo-label">Photo</p>
+                            <ImagePreview Image="_source" Alt="The photographed page" Class="scan-preview" />
+                            <p class="demo-small bb-muted preview-meta">@_source.Width &times; @_source.Height</p>
+                        </div>
+                    </div>
+
+                    @if (_read is not null)
+                    {
+                        <p class="bb-overline demo-label">Codes</p>
+                        @if (_read.Found)
+                        {
+                            <ul class="bb-detail-list" data-testid="codes">
+                                @foreach (var barcode in _read.Barcodes)
+                                {
+                                    <li><strong>@barcode.Format</strong> <span class="bb-mono">@barcode.Text</span></li>
+                                }
+                            </ul>
+                            <p class="demo-small bb-muted">Read @(_read.Preprocessing == BarcodePreprocessing.None ? "as photographed" : $"after preprocessing: {_read.Preprocessing}").</p>
+                        }
+                        else
+                        {
+                            <p class="demo-small bb-muted" data-testid="codes">No code found.</p>
+                        }
+                    }
+
+                    <div class="bb-toolbar">
+                        <button type="button" class="btn btn-primary" disabled="@(_busy || _encoded is null)" @onclick="Download">
+                            <Icon Path="@Icons.Download" />
+                            Download the scan
+                        </button>
+                    </div>
+                }
+            </div>
+
+            <div class="demo-panel">
+                <p class="bb-overline demo-label">Steps</p>
+
+                <div class="demo-field demo-field-inline">
+                    <input id="level" type="checkbox" checked="@_level" disabled="@_busy" @onchange="e => Toggle(ref _level, e)" />
+                    <label class="demo-field-label" for="level">Level the lines</label>
+                </div>
+
+                <div class="demo-field demo-field-inline">
+                    <input id="clean" type="checkbox" checked="@_clean" disabled="@_busy" @onchange="e => Toggle(ref _clean, e)" />
+                    <label class="demo-field-label" for="clean">Black ink on white paper</label>
+                </div>
+
+                <div class="demo-field">
+                    <label class="demo-field-label" for="window">Window <span class="demo-field-value">@_window px</span></label>
+                    <input id="window" type="range" min="6" max="60" step="1" value="@_window" disabled="@(_busy || !_clean)" @onchange="OnWindowChanged" />
+                    <span class="bb-field-hint">About the height of a line of text: smaller keeps fine print, larger fills in bold letters.</span>
+                </div>
+
+                <div class="demo-field demo-field-inline">
+                    <input id="codes" type="checkbox" checked="@_codes" disabled="@_busy" @onchange="e => Toggle(ref _codes, e)" />
+                    <label class="demo-field-label" for="codes">Read barcodes and QR codes</label>
+                </div>
+
+                <span class="bb-field-hint">
+                    The sharpness score depends on what is photographed as well as on the focus. Measure a few good and
+                    bad photos of your own documents and pick the threshold between them.
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> The code</h3>
+    <p>
+        Sharpness and tilt are measurements, not operations: they depend on the pixels, so they are taken once and their
+        result recorded in the pipeline, which then replays exactly. The adaptive threshold compares every pixel with the
+        window around it, so a shadow across the page neither blackens the paper nor loses the text, as one level for the
+        whole page would.
+    </p>
+    <CodeSnippet Code="@Snippet" Language="C#" Expanded="true" />
+    <p>
+        Codes are read by BbScanner's managed decoders straight from the Bmage image, with no copy and no canvas. When a
+        photo does not read as it is, <code>ReadBarcodes</code> tries it sharpened, then enlarged, and says which worked.
+        It needs the <code>Bit.Bmage.BbScanner</code> package.
+    </p>
+    <CodeSnippet Code="@CodesSnippet" Language="C#" />
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Notes</h3>
+    <ul class="bb-detail-list">
+        <li><strong>The tilt is found from the lines of text</strong>, projected at each candidate angle; a page of a photo with no lines gets little confidence, and the page applies no level below 30%.</li>
+        <li><strong>Two colours make a 1-bit PNG</strong>: <code>MaxColors = 2</code> writes an indexed image of one bit a pixel, usually many times smaller than the photo and still exact, since the scan has only black and white in it.</li>
+        <li><strong>Read the codes before thresholding.</strong> The decoders binarise locally themselves; given the photo, they see the shades the threshold would throw away.</li>
+        <li><strong>Everything here runs on the device.</strong> On a server the same calls work unchanged, with the managed codecs.</li>
+    </ul>
+</div>
+
+@code {
+    private const string BbScannerUrl = "https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/BbScanner";
+
+    private ImageBuffer? _source;
+    private ImageBuffer? _result;
+    private EncodedImage? _encoded;
+    private long _version;
+    private double _sharpness;
+    private SkewEstimate? _skew;
+    private BarcodeReadResult? _read;
+    private bool _level = true;
+    private bool _clean = true;
+    private bool _codes = true;
+    private int _window = 18;
+    private bool _busy;
+    private string? _error;
+
+    private bool IsHydrating => RendererInfo.IsInteractive is false;
+
+    // The estimate is the clockwise turn that levels the page, so a page turned anticlockwise reports a positive one.
+    private string TiltText => _skew switch
+    {
+        null => "none found",
+        { Angle: var a } when Math.Abs(a) < 0.05 => "level",
+        { Angle: var a } => $"{Math.Abs(a):0.0}° {(a > 0 ? "anticlockwise" : "clockwise")}",
+    };
+
+    private const string Snippet = """
+        using var photo = await loader.LoadAsync(file);
+
+        // Measured once; a soft photo is better taken again than cleaned up.
+        if (ImageSharpness.Measure(photo) < minimumSharpness) return AskForAnotherPhoto();
+
+        var pipeline = ImagePipeline.Create();
+        if (DocumentSkew.Estimate(photo) is { Confidence: > 0.3 } skew)
+            pipeline = pipeline.Rotate(skew.Angle, Rgba32.White, expandCanvas: false);
+        pipeline = pipeline.AdaptiveThreshold(radius: 18);   // about a line of text
+
+        using var scan = await pipeline.ExecuteAsync(photo);
+        var png = await exporter.EncodeAsync(scan, new ImageExportOptions
+        {
+            Format    = ImageFormat.Png,
+            MaxColors = 2,                                    // a 1-bit indexed PNG
+        });
+        """;
+
+    private const string CodesSnippet = """
+        // dotnet add package Bit.Bmage.BbScanner
+        var read = photo.ReadBarcodes();                      // as it is, sharpened, then enlarged
+        foreach (var code in read.Barcodes)
+            Console.WriteLine($"{code.Format}: {code.Text}");
+        """;
+
+    private void Toggle(ref bool field, ChangeEventArgs e)
+    {
+        field = e.Value is true;
+        _ = RunAsync();
+    }
+
+    private void OnWindowChanged(ChangeEventArgs e)
+    {
+        if (!int.TryParse(e.Value?.ToString(), out var value)) return;
+        _window = value;
+        _ = RunAsync();
+    }
+
+    private async Task OnFilesSelected(IReadOnlyList<IBrowserFile> files)
+    {
+        if (files.Count == 0 || _busy) return;
+        try
+        {
+            _error = null;
+            var image = await Loader.LoadAsync(files[0], new DecodeOptions { FileName = files[0].Name, MaxSize = new System.Drawing.Size(2400, 2400) });
+            // The decoder may hand back more than the hint; the page keeps its own cap so the steps stay quick.
+            if (Math.Max(image.Width, image.Height) > 2400)
+            {
+                using var large = image;
+                image = await ImagePipeline.Create().MaxSize(2400, 2400).ExecuteAsync(large);
+            }
+            await SetSourceAsync(image);
+        }
+        catch (Exception ex)
+        {
+            _error = ex is ImageDecodeException ? "Not a readable image." : ex.Message;
+        }
+    }
+
+    private async Task UseSample()
+    {
+        // A run still reads the current source; it is not swapped out (and disposed) under it.
+        if (_busy) return;
+        _error = null;
+        await SetSourceAsync(SamplePage());
+    }
+
+    // Sources replaced while a run still reads one of them: the run disposes them once it is done.
+    private readonly List<ImageBuffer> _retired = [];
+
+    private async Task SetSourceAsync(ImageBuffer image)
+    {
+        if (_source is not null)
+        {
+            if (_busy) _retired.Add(_source);
+            else _source.Dispose();
+        }
+        _source = image;
+        await RunAsync();
+    }
+
+    // A change made while a run is under way asks for one more run once it is done, with the settings as they are then.
+    private bool _again;
+
+    private async Task RunAsync()
+    {
+        if (_source is null) return;
+        if (_busy)
+        {
+            _again = true;
+            return;
+        }
+        do
+        {
+            _again = false;
+            await RunOnceAsync(_source);
+        }
+        while (_again && _source is not null);
+    }
+
+    private async Task RunOnceAsync(ImageBuffer source)
+    {
+        _busy = true;
+        StateHasChanged();
+        // Let the busy state paint before the work, which on WebAssembly holds the page's thread.
+        await Task.Yield();
+        try
+        {
+            _sharpness = ImageSharpness.Measure(source);
+            _skew = DocumentSkew.Estimate(source);
+            _read = _codes ? source.ReadBarcodes() : null;
+
+            var pipeline = ImagePipeline.Create();
+            if (_level && _skew is { Confidence: > 0.3 } skew && Math.Abs(skew.Angle) >= 0.1)
+                pipeline = pipeline.Rotate(skew.Angle, Rgba32.White, expandCanvas: false);
+            pipeline = _clean ? pipeline.AdaptiveThreshold(_window) : pipeline.Grayscale();
+
+            // The scan and its PNG replace the last ones together, once both are made: a failure leaves the last pair.
+            var result = await pipeline.ExecuteAsync(source);
+            EncodedImage encoded;
+            try
+            {
+                encoded = await Exporter.EncodeAsync(result, new ImageExportOptions { Format = ImageFormat.Png, MaxColors = _clean ? 2 : 256 });
+            }
+            catch
+            {
+                result.Dispose();
+                throw;
+            }
+            _result?.Dispose();
+            _result = result;
+            _encoded = encoded;
+            _version++;
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _busy = false;
+            foreach (var retired in _retired) retired.Dispose();
+            _retired.Clear();
+            if (_disposed) ReleaseImages();
+            else StateHasChanged();
+        }
+    }
+
+    private async Task Download()
+    {
+        if (_encoded is null) return;
+        try
+        {
+            await Exporter.DownloadAsync(_encoded, "scan");
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+    }
+
+    /// <summary>
+    /// A letter-size page of "words" with a QR code in its corner, photographed badly: tilted four degrees, darker on
+    /// the left than the right, and a little soft.
+    /// </summary>
+    private static ImageBuffer SamplePage()
+    {
+        const int width = 850, height = 1100;
+        using var page = ImageBuffer.Create(width, height, Rgba32.White);
+        var random = new Random(4);
+        page.Fill(new System.Drawing.Rectangle(70, 70, 420, 26), new Rgba32(20, 20, 30));
+        for (var top = 140; top < height - 320; top += 30)
+        {
+            var x = 70;
+            var end = width - 70 - (top < 300 ? 260 : 0);
+            while (x < end - 40)
+            {
+                var word = random.Next(20, 90);
+                page.Fill(new System.Drawing.Rectangle(x, top, Math.Min(word, end - x), 12), new Rgba32(30, 30, 40));
+                x += word + random.Next(9, 16);
+            }
+        }
+        var module = 5;
+        var origin = new System.Drawing.Point(width - 70 - QrCode[0].Length * module, 70);
+        for (var y = 0; y < QrCode.Length; y++)
+            for (var x = 0; x < QrCode[y].Length; x++)
+                if (QrCode[y][x] == '#') page.Fill(new System.Drawing.Rectangle(origin.X + x * module, origin.Y + y * module, module, module), new Rgba32(10, 10, 20));
+
+        // The camera: a tilt, light falling off to the left, and a slight blur.
+        using var tilted = new RotateOperation(-4, new Rgba32(200, 200, 195), expandCanvas: false).Apply(page, OperationContext.Default);
+        for (var y = 0; y < height; y++)
+        {
+            var row = tilted.GetRow(y);
+            for (var x = 0; x < width; x++)
+            {
+                var light = 0.45f + 0.55f * x / width;
+                var p = row[x];
+                row[x] = new Rgba32((byte)(p.R * light), (byte)(p.G * light), (byte)(p.B * light * 0.95f));
+            }
+        }
+        return new BlurFilter(0.8f).Apply(tilted, OperationContext.Default);
+    }
+
+    private bool _disposed;
+
+    public void Dispose()
+    {
+        _disposed = true;
+        // A run under way still reads the source: it releases the images itself once it is done.
+        if (!_busy) ReleaseImages();
+    }
+
+    private void ReleaseImages()
+    {
+        _source?.Dispose();
+        _result?.Dispose();
+        _source = _result = null;
+        foreach (var retired in _retired) retired.Dispose();
+        _retired.Clear();
+    }
+
+    /// <summary>The QR code for https://bitplatform.dev/bmage/scan, version 3, error correction M, one character a module.</summary>
+    private static readonly string[] QrCode =
+    [
+        "#######....#.#..#..#..#######",
+        "#.....#.##.##.###.###.#.....#",
+        "#.###.#...#.###.#.#...#.###.#",
+        "#.###.#....#####...#..#.###.#",
+        "#.###.#.##....#..###..#.###.#",
+        "#.....#...#..#....##..#.....#",
+        "#######.#.#.#.#.#.#.#.#######",
+        ".........#..###.#####........",
+        "#.#.#.#..###..####..#...#..#.",
+        ".#..#...#.##..##.#..###..#..#",
+        "#...#.##..#..#..###.##..#.###",
+        "####...#.#..#...##..##.#...#.",
+        "..#.#.#.#..#...###.#####.#.##",
+        "#.##...##..#.#..#....##..#..#",
+        "...########.#.#.......#.##.##",
+        "#.#.##..#..#####.####....#.#.",
+        "##.#.##.....#.#.##.#####.#.##",
+        ".#..#..#...##.#.##..#.#..##.#",
+        "#.#.#.#.....##....#.#####..##",
+        ".#..##.#.#.#.....##..#.###.#.",
+        "#.....#.#.##....##..#####....",
+        "........#....#..##..#...#.###",
+        "#######....##.#..#.##.#.##.##",
+        "#.....#..######..##.#...##.##",
+        "#.###.#.#.....#..#..#####...#",
+        "#.###.#..####.#.##..#..##.###",
+        "#.###.#.#..##......#...###..#",
+        "#.....#...##....#####..##..#.",
+        "#######.#..##.#######...#..##",
+    ];
+}

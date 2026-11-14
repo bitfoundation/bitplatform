@@ -46,7 +46,7 @@ domain and the services of section 5. Then go through the steps with them.
 <!--#endif-->
 - **The landing page is a service of its own** in the same Compose project, `landingpage`, on a hostname of its own,
   often the bare domain with the app on a subdomain such as `app.`. It needs no database, and its settings come from
-  the `LANDINGPAGE_SETTINGS` secret.
+  `LANDINGPAGE__` secrets and variables, one per setting (section 6).
 <!--#if (cloudflare == true)-->
 - **Cloudflare is strongly recommended, and it is free.** Its free plan covers the tunnel, the DNS, the certificates,
   the cache and DDoS protection, so tell the user they need no paid plan to start. If they still don't want it, Caddy
@@ -79,10 +79,11 @@ domain and the services of section 5. Then go through the steps with them.
 - Explain every step before you take it, in the person's terms, and do it yourself wherever you have the access: the
   repository, `gh`, the VM. Where only the user can act, give them the exact clicks and wait.
 - **Secrets.** `bit pipeline` creates the ones it can - the app certificate, the VAPID keys, the database and Redis
-  passwords - and stores them straight into the environment's secrets (section 6). For the keys that only the user's
-  accounts can give, open a git-ignored file for the user to paste them into, load it, then delete it. If even that is
-  too much for them, take the key from the chat, store it at once and never repeat it. No secret goes into a commit or a
-  log.
+  passwords - and stores them straight into the environment's secrets (section 6). Ask the user only for what nobody
+  else can give, each with a secret question on the task's Progress page (`workbench` skill, section 9): a key from
+  their accounts goes straight into the environment's secrets, and what only your commands use, like the root password
+  or a setup token, into a file you never read. Never ask for one in the chat or in a file in the repository. No secret
+  goes into a commit or a log.
 <!--#if (cloudflare == true)-->
 - **No inbound port, and no locked door.** SSH is open only while you set the VM up: key only, with password and root
   sign-in off. Once the tunnel runs, give SSH a route through it too, behind Cloudflare Access: a hostname for the
@@ -114,7 +115,7 @@ domain and the services of section 5. Then go through the steps with them.
   so a repository made public by mistake doesn't hand the VM to strangers. A repository that has to be public keeps
   the deploy jobs in a separate private repository.
 - Every change this makes to the repository (the settings, the MCP files, a workflow) is a change like any other. It
-  gets a branch of its own off `main`, goes through ai-dlc, and reaches `main` in its phase 7.
+  gets a branch and a worktree of its own off `main`, goes through ai-dlc, and reaches `main` in its phase 7.
 
 ## 3. The VM
 
@@ -122,8 +123,8 @@ domain and the services of section 5. Then go through the steps with them.
   project runs.
 - Install Docker Engine with its Compose plugin from Docker's own repository, have it start on boot, and create a user
   for the runner that can use Docker. Nothing else: the VM gets no SDK and no source code, only images.
-- Install curl and openssl too: the deploy job checks the public address with curl, and reads the app certificate with
-  openssl.
+- Install curl, openssl and jq too: the deploy job checks the public address with curl, reads the app certificate with
+  openssl, and picks the apps' settings out of the environment's variables and secrets with jq.
 - Point the VM at public DNS resolvers (`1.1.1.1` and `9.9.9.9`, through `systemd-resolved`) when the provider's own
   time out, which shows up as image pulls and `curl` failing now and then.
 - Never retry a failing SSH sign-in in a loop: fail2ban or the provider bans your address after a few, often for longer
@@ -239,8 +240,8 @@ business, and only what the project doesn't answer by itself.
 - The Workbench (`src/Workbench`), when the user deploys it, runs as Blazor Server, the only mode it has, and only on
   Test, on a hostname behind Cloudflare Access (section 8), since it is for the team and the few people they invite.
 <!--#endif-->
-- Apart from the Workbench, Blazor Server is for development only in this template, and so is Auto, which runs on
-  Blazor Server until WebAssembly has loaded: offer neither for the app or the landing page.
+- Apart from the Workbench, we don't recommend Blazor Server outside development, nor Auto, which runs on Blazor
+  Server until WebAssembly has loaded: recommend WebAssembly for the app and the landing page.
 - Multilingual support adds about 800 KB to what a visitor downloads. If the project isn't multilingual, make sure
   `InvariantGlobalization` is on in `src/Directory.Build.props`.
 - Tell the user the outcome in their own terms ("Google can show your product pages, and they appear at once"), and
@@ -279,9 +280,13 @@ there, and the setting or secret that carries it. Every environment gets its own
 - **File storage**: the files stay on disk, in a volume of the app's container. Once they outgrow the VM, suggest
   S3-compatible storage such as Cloudflare R2.
 <!--#endif-->
-- **Email**: a real SMTP provider. Mailpit is for development only. `Email__DefaultFromEmail` in the api's settings
-  secret has to be an address that provider has verified. Left at its default, the provider rejects the mail or it lands
-  in spam.
+- **Email**: a real SMTP provider. Mailpit is for development only. `Email:DefaultFromEmail`
+<!--#if (api == "Standalone")-->
+  (`SERVERAPI__EMAIL__DEFAULTFROMEMAIL`) has to be an address that provider has verified. Left at its default, the
+<!--#else-->
+  (`SERVERWEB__EMAIL__DEFAULTFROMEMAIL`) has to be an address that provider has verified. Left at its default, the
+<!--#endif-->
+  provider rejects the mail or it lands in spam.
 - **SMS**: a Twilio account, or another provider SmsBridge supports, only if the app sends text messages.
 <!--#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")-->
 - **AI**: an OpenAI-compatible endpoint for chat and embeddings, with its key. That can be OpenAI itself or any
@@ -324,13 +329,26 @@ there, and the setting or secret that carries it. Every environment gets its own
   the workflows use, creates the `Test` and `Production` environments, and creates and stores what it can: the app
   certificate, the VAPID keys, the database and Redis passwords and the Android signing key. It lets `Production`
   deploy only from `main`, and turns on Dependabot alerts. `bit pipeline --check` lists what is still missing.
-- Set the variables, and the secrets only the user's accounts can give, from the git-ignored file, with `gh variable set
-  --env <name> -f <file>` and `gh secret set --env <name> -f <file>`, then delete the file. The names are in the table
+- Set the variables with `gh variable set --env <name>`, and ask for each secret only the user's accounts can give with a
+  secret question that stores it in the environment (section 2). The names are in the table
   of `.docs/16- CI-CD Pipeline and Environments.md`, and what the workflows read (`vars.*`, `secrets.*`) is the final
-  word. A setting the CD has no secret of its own for goes into the apps' settings secrets, one `Section__Key=value`
-  line each.
-- The landing page's settings go into `LANDINGPAGE_SETTINGS` the same way: the `smtp` connection string its waitlist
-  emails go through, and the chat's AI key. Set the `LANDING_PAGE_ADDRESS`
+  word.
+<!--#if (api == "Standalone")-->
+- Every other setting is a secret or a variable of its own, named after the app and the setting's key: `SERVERAPI__`,
+  `SERVERWEB__` or `LANDINGPAGE__`, then the key with `__` between its parts, such as
+  `SERVERAPI__SMS__PROVIDERS__TWILIO__AUTHTOKEN` for the api's `Sms:Providers:Twilio:AuthToken` (`.docs/16`). One per
+  setting, so changing one never means rewriting the others. A key is a secret, asked for like the rest. A model name, a voice, an endpoint or a flag is a variable: GitHub blanks a secret's value out of every log, so
+  a secret holding `true` hides every "true" there.
+<!--#else-->
+- Every other setting is a secret or a variable of its own, named after the app and the setting's key: `SERVERWEB__`
+  (the api runs inside the web app) or `LANDINGPAGE__`, then the key with `__` between its parts, such as
+  `SERVERWEB__SMS__PROVIDERS__TWILIO__AUTHTOKEN` for `Sms:Providers:Twilio:AuthToken` (`.docs/16`). One per setting, so
+  changing one never means rewriting the others. A key is a secret, asked for like the rest. A model
+  name, a voice, an endpoint or a flag is a variable: GitHub blanks a secret's value out of every log, so a secret
+  holding `true` hides every "true" there.
+<!--#endif-->
+- The landing page's settings are `LANDINGPAGE__` secrets and variables, such as the chat's AI key. Its waitlist
+  emails go through the app's own `SMTP_CONNECTION_STRING`. Set the `LANDING_PAGE_ADDRESS`
   variable to its public address, and the deployment checks that it answers.
 - The deployment adds `SERVER_ADDRESS` and `LANDING_PAGE_ADDRESS` to the apps' `TrustedOrigins`. Their emails link only
   to a trusted address, and any other address gets a 400, so both have to be the real public addresses.
@@ -340,11 +358,22 @@ there, and the setting or secret that carries it. Every environment gets its own
   SignalR hub included, and where Server.Web reads the sign-in keys. Server.Web's `/api` forwarder exists only for the
   calls that set the prerendering cookie (`UpdateSession`, `SignOut`), not as the app's way to the api.
 <!--#endif-->
-- Keep the app's version in the environment's `APP_VERSION` variable, starting at `0.0.1`, and before each merge into
-  `main` that deploys the app, raise Production's patch, minor or major from a rough idea of how much changed. For now one version covers Android, iOS, Windows, macOS,
-  the web and the api. Before raising it, group `UserSession` by `PlatformType` and `AppVersionCode` with dev-mcp's
-  `AggregateEntity`, and report to the user roughly what share of the Android, iOS and macOS sessions a new major would
-  force to update. It needs no date filter: a job already deletes the sessions that have gone 14 days unused.
+- The app's version is `<Version>` in `src/Directory.Build.props`, and one version covers Android, iOS, Windows, macOS,
+  the web and the api, in every environment. The first release ships the `0.0.1` the project starts with. In the pull
+  request of each later merge into `main` that deploys the app, raise its patch, minor or major from a rough idea of how
+  much changed. Either way, run `bit api release` in that pull request: it checks that the api still works for every app
+  version the server supports and keeps it as `openapi/<version>.json`. The Production deployment, the first one
+  included, stops without that file. A deployment to Test never raises the version: the CD gives Test's Android, iOS and
+  Windows apps the run's number as their build number, so each one installs as an update of the last. Never set the
+  version or a `SupportedAppVersions` minimum through a GitHub variable or secret: the check reads both from the
+  repository, and the deployment stops on such a minimum or an `APP_VERSION` variable.
+- When `bit api release` reports a breaking change, the user decides, never you: keep the old shape working next to the
+  new one, or raise `SupportedAppVersions` in Server.Api's `appsettings.json` to the version it names, so the older apps
+  have to update before they call the server again. A new major does the same for every platform without a minimum.
+  Before asking, group `UserSession` by `PlatformType` and `AppVersionCode` with dev-mcp's `AggregateEntity`, and tell
+  the user roughly what share of each platform's sessions that would force to update: the web app updates itself, the
+  store apps wait for their users. It needs no date filter: a job already deletes the sessions that have gone 14 days
+  unused. A raise goes in the same pull request, and `bit api release` then deletes the documents of the versions it drops.
 - Give each environment an `APP_ID` and an `APP_TITLE` of its own, such as `com.example.app` and `Example` for
   Production and `com.example.app.test` and `Example Test` for Test, so the Test and Production apps install side by side
   on the same phone or computer: Android, iOS and macOS treat another id as another app, with data of its own, and
@@ -371,8 +400,8 @@ have taken requests, so a failure from then on leaves the database ahead and und
   the Test CD runs by hand on any branch, and the Production CD on `main`, on a push only once section 9 has turned
   that on.
 - Set every variable and secret the CD reads for this project's options (section 6).
-- Carry what section 4 decided into the settings: prerendering and the caching flags go into the apps' settings
-  secrets.
+- Carry what section 4 decided into the settings: prerendering and the caching flags, each a secret of its own
+  (section 6).
 - If section 4 chose a static host for the client, add a job that publishes `src/Client/Boilerplate.Client.Web` and
   uploads its `wwwroot` there.
 - The first deployment needs the project's first migration, which `bit new` creates as `Initial`.
@@ -391,14 +420,15 @@ have taken requests, so a failure from then on leaves the database ahead and und
 - **One setup token, asked for once.** With Cloudflare, have the user create a custom API token, expiring within days,
   with, on the account, Cloudflare Tunnel, Access: Apps and Policies, Access: Organizations, Identity Providers, and
   Groups, Workers R2 Storage and Account API Tokens, each with Edit, and on all zones of the account, DNS, Cache
-  Rules and Zone Settings with Edit and Cache Purge with Purge, plus Zone with Edit if the domain isn't on the account yet. With it, do
+  Rules and Zone Settings with Edit and Cache Purge with Purge, plus Zone with Edit if the domain isn't on the account yet,
+  and take it with a secret question that puts it in a file (section 2). With it, do
   everything below yourself through Cloudflare's API, for each environment, and mint every token that runs with it.
   Tell the user Account API Tokens lets it mint any token on the account, so it is as strong as the account until they
   delete it. Before anything else, try one read with it for each permission (tunnels, Access applications, R2 buckets,
   DNS records, zone settings, rulesets and the token list), so a missing one shows now and not halfway through.
 - The setup token never goes into a GitHub secret, a file the VM reads, a commit or a log, and no token that runs is
-  the setup token. Once the environments are up, or if the setup stops before that, the user deletes it in the
-  dashboard, since a token can't delete itself. More environments later get a new one.
+  the setup token. Once the environments are up, or if the setup stops before that, delete its file, and the user
+  deletes the token in the dashboard, since a token can't delete itself. More environments later get a new one.
 <!--#endif-->
 <!--#if (cloudflare == true)-->
 - Add the domain to the account on the free plan if it isn't there, and give the user the nameservers to set. If the
@@ -472,6 +502,13 @@ have taken requests, so a failure from then on leaves the database ahead and und
 <!--#else-->
   takes from Caddy, and the address each provider of section 5 was registered with.
 <!--#endif-->
+- `bit new` writes the addresses given as `--apiServerUrl` and `--webAppUrl` into the project, and leaves
+  `use-your-api-server-url-here.com` and `use-your-web-app-url-here.com` wherever one wasn't given. The CD fills in only
+  the settings, `ServerAddress` and `TrustedOrigins`, so nothing replaces them in the files: the Android app's
+  `DataHosts`, the iOS and macOS `applinks:` entitlements, the `preconnect` links of both `index.html` files, the static
+  client's `robots.txt` and `bit-app.json`, and the MCP files of the next line. Before the first deployment, search the
+  repository for both and put Production's real address in each, the api's and the web app's, or settle it another way,
+  such as removing the app links of an app the user doesn't ship, so nothing is published with a placeholder.
 - Put each environment's dev-mcp address, `https://<its server>/dev-mcp`, into the `dev-mcp-test` and
   `dev-mcp-production` entries of every MCP file (`.mcp.json`, `.vscode/mcp.json`, `.cursor/mcp.json`,
   `.junie/mcp/mcp.json`, `.codex/config.toml`), so the troubleshoot skill reads the environment a problem was seen in.

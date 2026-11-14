@@ -136,6 +136,12 @@ public partial class BitBreadcrumbParams : BitComponentBaseParams, IBitComponent
     public uint? OverflowIndex { get; set; }
 
     /// <summary>
+    /// Shows the overflow menu as a sheet that slides up from the bottom edge of the screen on small screens,
+    /// instead of the callout under the overflow button.
+    /// </summary>
+    public bool? Responsive { get; set; }
+
+    /// <summary>
     /// Lets a long breadcrumb trail scroll sideways inside its container instead of overflowing it.
     /// </summary>
     public bool? Scrollable { get; set; }
@@ -281,6 +287,11 @@ public partial class BitBreadcrumbParams : BitComponentBaseParams, IBitComponent
         if (OverflowIndex.HasValue)
         {
             bitBreadcrumb.TakeFromCascade(nameof(OverflowIndex), OverflowIndex.Value, static b => b.OverflowIndex, static (b, v) => b.OverflowIndex = v);
+        }
+
+        if (Responsive.HasValue)
+        {
+            bitBreadcrumb.TakeFromCascade(nameof(Responsive), Responsive.Value, static b => b.Responsive, static (b, v) => b.Responsive = v);
         }
 
         if (Scrollable.HasValue)

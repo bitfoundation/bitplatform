@@ -18,7 +18,10 @@ namespace Bit.BlazorUI.Tests.E2E.Buttons;
 /// Background, MaxHeight, CloseOnItemClick, ButtonType and FormId, the accessibility attributes, FocusAsync and
 /// AutoFocus, the disabled contract, BitParams, Style/Class/Styles/Classes, the CSS variables and their variant
 /// twins, RTL, Visibility, re-rendering, Escape inside a modal, DropDirection, reduced motion, forced colors and
-/// prerendering - are the same for every API and run against the Items page.
+/// prerendering - are the same for every API and run against the Items page. Responsive has a page of its own
+/// (/e2e/menu-button/responsive): its callout on a wide screen is covered here, its sheet on a phone by
+/// BitMenuButtonMobileE2ETests. OpenAt, which opens the menu at a point as a context menu does, has a page of its own
+/// too (/e2e/menu-button/context), shared with NoOverlay, which leaves the page its own clicks while the menu is open.
 /// </summary>
 [TestClass]
 public class BitMenuButtonE2ETests : E2ETestBase
@@ -1008,6 +1011,29 @@ public class BitMenuButtonE2ETests : E2ETestBase
     }
 
     [TestMethod]
+    public async Task Responsive_OnAWideScreen_TheMenuIsTheCalloutUnderTheButton()
+    {
+        await OpenAsync("/e2e/menu-button/responsive");
+
+        var menu = await OpenMenuAsync("mnb-responsive");
+        var callout = CalloutOf(menu);
+        await SettledAsync(callout);
+
+        // The sheet is only what a phone gets (BitMenuButtonMobileE2ETests): here the menu is placed against the button.
+        await Expect(callout).ToHaveClassAsync(HasClass("bit-mnb-res"));
+        var button = await Root("mnb-responsive").BoxAsync();
+        var box = await callout.BoxAsync();
+        ButtonsE2EHelpers.AreClose(button.Y + button.Height, box.Y, 2, "the menu opens under the button");
+        ButtonsE2EHelpers.AreClose(button.X, box.X, 2, "the menu is aligned with the button");
+        Assert.IsTrue(box.Width < await Page.EvaluateAsync<double>("() => window.innerWidth") / 2, $"The menu is as wide as its items ({box.Width}px).");
+        await Expect(callout).ToHaveCSSAsync("box-shadow", new Regex(".+"));
+
+        await ItemsOf(menu).Nth(1).ClickAsync();
+        await Expect(Text("responsive-clicked")).ToHaveTextAsync("edit");
+        await Expect(menu).ToBeHiddenAsync();
+    }
+
+    [TestMethod]
     public async Task ButtonTypeAndFormId_SubmitTheFormFromTheMainHalfOrAnItem()
     {
         await OpenAsync(ItemsApi);
@@ -1441,6 +1467,253 @@ public class BitMenuButtonE2ETests : E2ETestBase
         var button = await Root("mnb-drop-all").BoxAsync();
         var callout = await CalloutOf(menu).BoxAsync();
         Assert.IsTrue(callout.X >= button.X + button.Width - 1, "All opens the menu beside the button when neither side has the room.");
+    }
+
+    // ---------- OpenAt (a context menu) ----------
+
+    private static void Near(double expected, double actual, string what)
+    {
+        Assert.IsTrue(Math.Abs(expected - actual) < 1.5, $"{what}: expected about {expected}, got {actual}.");
+    }
+
+    private async Task<T> PollAsync<T>(Func<Task<T>> read, Func<T, bool> done, string message)
+    {
+        var started = DateTime.UtcNow;
+        T value;
+        do
+        {
+            value = await read();
+            if (done(value)) return value;
+            await NextFramesAsync();
+        } while (DateTime.UtcNow - started < TimeSpan.FromMilliseconds(DefaultTimeout));
+
+        Assert.Fail($"{message} (last value: {value})");
+        return value;
+    }
+
+    [TestMethod]
+    public async Task OpenAt_ARightClickOpensTheMenuAtThePoint_WithTheKeyboardInIt_AndClosesBackToTheArea()
+    {
+        await OpenAsync("/e2e/menu-button/context");
+
+        var area = Page.Locator("#ctx-area");
+        // The point is the one the browser reports for the press rather than the one it was aimed at: Firefox hands
+        // mouse events whole pixels.
+        await area.EvaluateAsync("el => el.addEventListener('contextmenu', e => window.__ctxPoint = [e.clientX, e.clientY], { capture: true })");
+        Task<double[]> PointAsync() => Page.EvaluateAsync<double[]>("() => window.__ctxPoint");
+
+        await area.ClickAsync(new() { Button = MouseButton.Right, Position = new() { X = 40, Y = 30 } });
+
+        var menu = await MenuOf("mnb-ctx");
+        var callout = CalloutOf(menu);
+        await Expect(menu).ToBeVisibleAsync();
+        await Expect(Text("ctx-open")).ToHaveTextAsync("True");
+        await SettledAsync(callout);
+
+        // Placed at the point, not against the button at the bottom of the page.
+        var box = await callout.BoxAsync();
+        var point = await PointAsync();
+        Near(point[0], box.X, "left at the point");
+        Near(point[1] + 1, box.Y, "top at the point");
+
+        // The keyboard is taken into the menu, which answers it as it does when opened from its button.
+        await Expect(ItemsOf(menu).First).ToBeFocusedAsync();
+        await Page.Keyboard.PressAsync("ArrowDown");
+        await Expect(ItemsOf(menu).Nth(1)).ToBeFocusedAsync();
+
+        // Escape hands the focus back to the area the menu was opened over, not to the button.
+        await Page.Keyboard.PressAsync("Escape");
+        await Expect(menu).ToBeHiddenAsync();
+        await Expect(Text("ctx-open")).ToHaveTextAsync("False");
+        await Expect(area).ToBeFocusedAsync();
+
+        // And so does an item, which runs as it does from the button.
+        await area.ClickAsync(new() { Button = MouseButton.Right, Position = new() { X = 60, Y = 50 } });
+        await Expect(ItemsOf(menu).First).ToBeFocusedAsync();
+        await Page.Keyboard.PressAsync("ArrowDown");
+        await Expect(ItemsOf(menu).Nth(1)).ToBeFocusedAsync();
+        await Page.Keyboard.PressAsync("Enter");
+        await Expect(Text("ctx-clicked")).ToHaveTextAsync("Paste");
+        await Expect(menu).ToBeHiddenAsync();
+        await Expect(area).ToBeFocusedAsync();
+    }
+
+    [TestMethod]
+    public async Task OpenAt_CalledAgainWhileTheMenuIsOpenAtAPoint_MovesItThere()
+    {
+        await OpenAsync("/e2e/menu-button/context");
+
+        var area = Page.Locator("#ctx-area");
+        await area.ClickAsync(new() { Button = MouseButton.Right, Position = new() { X = 40, Y = 30 } });
+
+        var menu = await MenuOf("mnb-ctx");
+        var callout = CalloutOf(menu);
+        await Expect(menu).ToBeVisibleAsync();
+        await SettledAsync(callout);
+        await Expect(ItemsOf(menu).First).ToBeFocusedAsync();
+        await Page.Keyboard.PressAsync("ArrowDown");
+        await Expect(ItemsOf(menu).Nth(1)).ToBeFocusedAsync();
+
+        // The overlay of the open menu covers the page, so a real second right-click lands on it; the event is sent
+        // to the area the way a page that hears it some other way would call OpenAt again.
+        var box = await area.BoxAsync();
+        var (x, y) = (Math.Round(box.X + 300), Math.Round(box.Y + 60));
+        await area.EvaluateAsync("(el, p) => el.dispatchEvent(new MouseEvent('contextmenu', { clientX: p[0], clientY: p[1], button: 2, bubbles: true, cancelable: true }))", new[] { x, y });
+
+        await PollAsync(async () => (await callout.BoxAsync()).X, left => Math.Abs(left - x) < 1.5, "the menu did not move to the new point");
+        Near(y + 1, (await callout.BoxAsync()).Y, "top at the new point");
+
+        // Moved rather than closed and opened again, and the keyboard starts over at the top of the menu.
+        await Expect(menu).ToBeVisibleAsync();
+        await Expect(Text("ctx-open")).ToHaveTextAsync("True");
+        await Expect(ItemsOf(menu).First).ToBeFocusedAsync();
+    }
+
+    [TestMethod]
+    public async Task OpenAt_Coordinates_OpensTheMenuThere_AndTheButtonTakesThePlacementBackAfterwards()
+    {
+        await OpenAsync("/e2e/menu-button/context");
+
+        await Page.Locator("#btn-openat").ClickAsync();
+
+        var menu = await MenuOf("mnb-ctx");
+        var callout = CalloutOf(menu);
+        await Expect(menu).ToBeVisibleAsync();
+        await SettledAsync(callout);
+
+        var box = await callout.BoxAsync();
+        Near(120, box.X, "left at x");
+        Near(301, box.Y, "top at y");
+
+        // The focus came from the button that called OpenAt, and goes back there.
+        await Page.Keyboard.PressAsync("Escape");
+        await Expect(menu).ToBeHiddenAsync();
+        await Expect(Page.Locator("#btn-openat")).ToBeFocusedAsync();
+
+        // Opened from its own button, the menu is placed against that button again.
+        await Opb("mnb-ctx").ClickAsync();
+        await Expect(menu).ToBeVisibleAsync();
+        await SettledAsync(callout);
+
+        var button = await Root("mnb-ctx").BoxAsync();
+        box = await callout.BoxAsync();
+        Assert.IsTrue(box.Y + box.Height <= button.Y + 1, "the menu opens above the button at the bottom of the page.");
+        Near(button.X, box.X, "left along the button");
+    }
+
+    // ---------- NoOverlay ----------
+
+    [TestMethod]
+    public async Task NoOverlay_ASecondRightClickOnTheArea_ReachesIt_AndMovesTheMenuThere()
+    {
+        await OpenAsync("/e2e/menu-button/context");
+
+        var area = Page.Locator("#ctx-area-no");
+        await area.EvaluateAsync("el => el.addEventListener('contextmenu', e => window.__ctxPoint = [e.clientX, e.clientY], { capture: true })");
+        Task<double[]> PointAsync() => Page.EvaluateAsync<double[]>("() => window.__ctxPoint");
+
+        await area.ClickAsync(new() { Button = MouseButton.Right, Position = new() { X = 40, Y = 30 } });
+
+        var menu = await MenuOf("mnb-ctx-no");
+        var callout = CalloutOf(menu);
+        await Expect(menu).ToBeVisibleAsync();
+        await SettledAsync(callout);
+        await Expect(ItemsOf(menu).First).ToBeFocusedAsync();
+
+        // Nothing covers the page, so a real second right-click lands on the area, whose handler takes it for itself
+        // (preventDefault) and moves the menu to the new point rather than letting it be dismissed.
+        await area.ClickAsync(new() { Button = MouseButton.Right, Position = new() { X = 320, Y = 100 } });
+
+        var point = await PollAsync(PointAsync, p => p[0] > 250, "the second right-click did not reach the area");
+        await PollAsync(async () => (await callout.BoxAsync()).X, left => Math.Abs(left - point[0]) < 1.5, "the menu did not move to the new point");
+        Near(point[1] + 1, (await callout.BoxAsync()).Y, "top at the new point");
+
+        await Expect(menu).ToBeVisibleAsync();
+        await Expect(Text("ctx-no-open")).ToHaveTextAsync("True");
+        await Expect(ItemsOf(menu).First).ToBeFocusedAsync();
+
+        // A click inside the menu is not a click outside of it: the item runs, and the focus goes back to the area.
+        await ItemsOf(menu).Nth(2).ClickAsync();
+        await Expect(Text("ctx-no-clicked")).ToHaveTextAsync("Delete");
+        await Expect(menu).ToBeHiddenAsync();
+        await Expect(area).ToBeFocusedAsync();
+    }
+
+    [TestMethod]
+    public async Task NoOverlay_ARightClickOutsideTheMenu_DismissesIt()
+    {
+        await OpenAsync("/e2e/menu-button/context");
+
+        await Page.Locator("#ctx-area-no").ClickAsync(new() { Button = MouseButton.Right, Position = new() { X = 40, Y = 30 } });
+
+        var menu = await MenuOf("mnb-ctx-no");
+        await Expect(menu).ToBeVisibleAsync();
+        await SettledAsync(CalloutOf(menu));
+
+        // The page does not take this one for itself, so it is the user going elsewhere.
+        await Page.Locator("#ctx-page-clicks").ClickAsync(new() { Button = MouseButton.Right });
+
+        await Expect(menu).ToBeHiddenAsync();
+        await Expect(Text("ctx-no-open")).ToHaveTextAsync("False");
+    }
+
+    [TestMethod]
+    public async Task NoOverlay_AClickOnThePage_ReachesIt_AndDismissesTheMenu_WhereTheOverlayTakesItForItself()
+    {
+        await OpenAsync("/e2e/menu-button/context");
+
+        var pageButton = Page.Locator("#btn-page");
+
+        await Opb("mnb-ctx-no").ClickAsync();
+        var menu = await MenuOf("mnb-ctx-no");
+        await Expect(menu).ToBeVisibleAsync();
+        await SettledAsync(CalloutOf(menu));
+
+        await pageButton.ClickAsync();
+
+        await Expect(Text("ctx-page-clicks")).ToHaveTextAsync("1");
+        await Expect(menu).ToBeHiddenAsync();
+        await Expect(Text("ctx-no-open")).ToHaveTextAsync("False");
+
+        // The menu button beside it keeps its overlay, which takes the same click for itself: the menu closes and
+        // the page button never hears it.
+        await Opb("mnb-ctx").ClickAsync();
+        var covered = await MenuOf("mnb-ctx");
+        await Expect(covered).ToBeVisibleAsync();
+        await SettledAsync(CalloutOf(covered));
+
+        var box = await pageButton.BoxAsync();
+        await Page.Mouse.ClickAsync(box.X + box.Width / 2, box.Y + box.Height / 2);
+
+        await Expect(covered).ToBeHiddenAsync();
+        await Expect(Text("ctx-page-clicks")).ToHaveTextAsync("1");
+    }
+
+    [TestMethod]
+    public async Task NoOverlay_TheButtonClosesItsOpenMenu_AndTheMainHalfOfASplitButtonRunsAndClosesIt()
+    {
+        await OpenAsync("/e2e/menu-button/context");
+
+        await Opb("mnb-ctx-no").ClickAsync();
+        var menu = await MenuOf("mnb-ctx-no");
+        await Expect(menu).ToBeVisibleAsync();
+        await SettledAsync(CalloutOf(menu));
+
+        // The click lands on the button itself now, which closes the menu rather than opening it again.
+        await Opb("mnb-ctx-no").ClickAsync();
+        await Expect(menu).ToBeHiddenAsync();
+        await Expect(Text("ctx-no-open")).ToHaveTextAsync("False");
+        await NextFramesAsync();
+        await Expect(menu).ToBeHiddenAsync();
+
+        await Chb("mnb-split-no").ClickAsync();
+        var split = await MenuOf("mnb-split-no");
+        await Expect(split).ToBeVisibleAsync();
+        await SettledAsync(CalloutOf(split));
+
+        await Opb("mnb-split-no").ClickAsync();
+        await Expect(Text("split-no-runs")).ToHaveTextAsync("1");
+        await Expect(split).ToBeHiddenAsync();
     }
 
     [TestMethod]

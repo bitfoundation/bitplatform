@@ -1,0 +1,177 @@
+﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
+
+// Public CSS variables, read off the elements and never declared here, so a value set on :root re-skins every
+// notification center and one set on the Style of an instance re-skins that one. The panel opens in the callout of a
+// BitDropMenu, which is relocated to the body while open and carries what the root and its ancestors declare into it,
+// so it reads them like any inherited value. The bell is that drop menu's button, restyled through the drop menu's own
+// --bit-DropMenu-* variables.
+//   --bit-NotificationCenter-badge-background    background of the unread count badge     (default: $clr-err)
+//   --bit-NotificationCenter-badge-color         text color of the unread count badge     (default: $clr-err-text)
+//   --bit-NotificationCenter-width               width of the panel                       (default: 360px)
+//   --bit-NotificationCenter-max-height          height the list scrolls past             (default: 420px)
+//   --bit-NotificationCenter-new-background      background of a notification that had not
+//                                                been read when the panel opened          (default: $clr-bg-sec)
+
+.bit-ntc {
+    display: inline-flex;
+    vertical-align: middle;
+}
+
+// The badge sits on the corner of the bell, so the button is what it is placed against.
+.bit-ntc-btn {
+    position: relative;
+}
+
+.bit-ntc-icn {
+    font-size: $siz-icon-md;
+}
+
+// Placed by its logical end, so it sits on the bell's far corner in a right-to-left page as well.
+.bit-ntc-bdg {
+    position: absolute;
+    top: rem2(-2px);
+    inset-inline-end: rem2(-4px);
+    box-sizing: border-box;
+    min-width: rem2(18px);
+    height: rem2(18px);
+    padding: 0 rem2(5px);
+    font-size: $tg-fs-xs;
+    line-height: rem2(18px);
+    font-weight: $tg-fw-semibold;
+    text-align: center;
+    white-space: nowrap;
+    pointer-events: none;
+    border-radius: $shp-radius-full;
+    font-variant-numeric: tabular-nums;
+    color: var(--bit-NotificationCenter-badge-color, #{$clr-err-text});
+    background-color: var(--bit-NotificationCenter-badge-background, #{$clr-err});
+}
+
+.bit-ntc-pnl {
+    display: flex;
+    flex-direction: column;
+    max-width: calc(100vw - #{spacing(4)});
+    width: var(--bit-NotificationCenter-width, #{rem2(360px)});
+}
+
+.bit-ntc-hdr {
+    gap: spacing(1);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: spacing(1.5) spacing(2);
+    border-bottom: $shp-border-width $shp-border-style $clr-brd-sec;
+}
+
+.bit-ntc-htx {
+    font-size: $tg-fs-md;
+    font-weight: $tg-fw-semibold;
+}
+
+// Hover moves a private variable rather than painting, so an app's class on the button still wins over it.
+.bit-ntc-clr {
+    --bit-ntc-clr-st-bg: initial;
+
+    margin: 0;
+    border: none;
+    cursor: pointer;
+    font: inherit;
+    color: $clr-pri;
+    font-size: $tg-fs-sm;
+    padding: spacing(0.5) spacing(1);
+    border-radius: $shp-radius-button;
+    background-color: var(--bit-ntc-clr-st-bg, transparent);
+
+    &:hover {
+        --bit-ntc-clr-st-bg: #{$clr-bg-pri-hover};
+    }
+
+    &:focus-visible {
+        @include focus-ring;
+    }
+}
+
+.bit-ntc-lst {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    max-height: var(--bit-NotificationCenter-max-height, #{rem2(420px)});
+}
+
+.bit-ntc-itm {
+    // The color of an item's icon, published by the role class of its Color; one without a Color is the Info one,
+    // the color the snack bar drew it in.
+    --bit-ntc-clr: initial;
+
+    display: flex;
+    gap: spacing(1.5);
+    align-items: flex-start;
+    padding: spacing(1.5) spacing(2);
+
+    & + & {
+        border-top: $shp-border-width $shp-border-style $clr-brd-sec;
+    }
+}
+
+@each $role, $tokens in $bit-color-roles {
+    .bit-ntc-#{$role} {
+        --bit-ntc-clr: #{role($tokens, fg)};
+    }
+}
+
+// What is new is told apart by more than a color: the title is set heavier too, and a screen reader hears it said.
+.bit-ntc-new {
+    background-color: var(--bit-NotificationCenter-new-background, #{$clr-bg-sec});
+
+    .bit-ntc-itt {
+        font-weight: $tg-fw-bold;
+    }
+}
+
+.bit-ntc-iic {
+    flex-shrink: 0;
+    font-size: $siz-icon-md;
+    line-height: rem2(20px);
+    color: var(--bit-ntc-clr, #{$clr-inf-fg});
+}
+
+.bit-ntc-itx {
+    flex: 1;
+    min-width: 0;
+}
+
+.bit-ntc-itt {
+    font-size: $tg-fs-sm;
+    line-height: rem2(20px);
+    overflow-wrap: anywhere;
+    font-weight: $tg-fw-semibold;
+}
+
+.bit-ntc-itb {
+    font-size: $tg-fs-sm;
+    color: $clr-fg-sec;
+    overflow-wrap: anywhere;
+    margin-top: spacing(0.25);
+}
+
+.bit-ntc-tim {
+    flex-shrink: 0;
+    white-space: nowrap;
+    color: $clr-fg-sec;
+    font-size: $tg-fs-xs;
+    line-height: rem2(20px);
+    font-variant-numeric: tabular-nums;
+}
+
+.bit-ntc-emp {
+    color: $clr-fg-sec;
+    text-align: center;
+    font-size: $tg-fs-sm;
+    padding: spacing(3) spacing(2);
+}
+
+.bit-ntc-sro {
+    @include visually-hidden;
+}

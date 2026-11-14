@@ -83,6 +83,24 @@ public sealed record ImageExportOptions
     public int PngCompressionLevel { get; init; } = 6;
 
     /// <summary>
+    /// The most colours a palette-based file may hold, between 2 and 256, or null for none. A PNG is then written as an
+    /// indexed image, often a third of the size of a full-colour one; an icon, logo or screenshot with no more colours
+    /// than this keeps every pixel exactly, while a photo's colours are reduced to the palette, which changes them. A
+    /// GIF always uses a palette, of 256 colours when this is null. Other formats ignore it. Default null.
+    /// </summary>
+    public int? MaxColors
+    {
+        get;
+        init => field = value is < 2 or > 256 ? throw new ArgumentOutOfRangeException(nameof(MaxColors), value, "A palette holds between 2 and 256 colours.") : value;
+    }
+
+    /// <summary>
+    /// When colours are reduced to a palette (<see cref="MaxColors"/>, or a GIF), spread each pixel's error to its
+    /// neighbours, which hides banding in gradients at the cost of fine grain and a slightly larger file. Default true.
+    /// </summary>
+    public bool Dither { get; init; } = true;
+
+    /// <summary>
     /// When set, the exporter searches for the highest quality (and, if needed, smaller dimensions) that keeps the file at
     /// or below this many bytes. Only meaningful for lossy formats; see <see cref="MaxFileSizeStrategy"/>.
     /// </summary>
@@ -170,7 +188,7 @@ public sealed class ImageCodecRegistry
     private readonly List<IImageDecoder> _decoders = [];
     private readonly List<IImageEncoder> _encoders = [];
 
-    /// <summary>Creates a registry with the built-in managed codecs: PNG, JPEG, BMP and WebP, and GIF and AVIF decoding.</summary>
+    /// <summary>Creates a registry with the built-in managed codecs: PNG, JPEG, BMP, GIF, WebP and ICO, and AVIF decoding.</summary>
     public static ImageCodecRegistry CreateDefault()
     {
         var r = new ImageCodecRegistry();
@@ -181,6 +199,9 @@ public sealed class ImageCodecRegistry
         r.AddDecoder(new Jpeg.JpegDecoder());
         r.AddEncoder(new Jpeg.JpegEncoder());
         r.AddDecoder(new Gif.GifDecoder());
+        r.AddEncoder(new Gif.GifEncoder());
+        r.AddDecoder(new Ico.IcoDecoder());
+        r.AddEncoder(new Ico.IcoEncoder());
         r.AddDecoder(new WebP.WebPDecoder());
         r.AddEncoder(new WebP.WebPEncoder());
         r.AddDecoder(new Avif.AvifDecoder());

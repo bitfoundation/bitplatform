@@ -450,7 +450,26 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Color" RazorCode="@example12RazorCode" Id="example12">
+<DemoExample Title="Responsive" RazorCode="@example12RazorCode" Id="example12">
+    <div>
+        With <b>Responsive</b>, the overflow menu becomes a sheet on screens narrower than 600px: it slides up from the
+        bottom edge, runs the full width of the screen, scrolls the options that do not fit, and closes with an option, a
+        tap outside it or Escape. Narrow the window to try it.
+    </div>
+    <br />
+    <div class="example-box">
+        <BitBreadcrumb TItem="BitBreadcrumbOption" MaxDisplayedItems="3" OverflowIndex="1" Responsive>
+            <BitBreadcrumbOption Text="Home" Href="/components/breadcrumb" />
+            <BitBreadcrumbOption Text="Documents" Href="/components/breadcrumb" />
+            <BitBreadcrumbOption Text="Projects" Href="/components/breadcrumb" />
+            <BitBreadcrumbOption Text="2026" Href="/components/breadcrumb" />
+            <BitBreadcrumbOption Text="Reports" Href="/components/breadcrumb" />
+            <BitBreadcrumbOption Text="Q3" Href="/components/breadcrumb" IsSelected />
+        </BitBreadcrumb>
+    </div>
+</DemoExample>
+
+<DemoExample Title="Color" RazorCode="@example13RazorCode" Id="example13">
     <div>The color role of the options, the dividers and the focus ring.</div>
     <br />
     <div class="example-box">
@@ -469,7 +488,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="External Icons" RazorCode="@example13RazorCode" Id="example13">
+<DemoExample Title="External Icons" RazorCode="@example14RazorCode" Id="example14">
     <div>External icon libraries like FontAwesome can be used with the Icon parameter.</div>
     <br />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
@@ -517,7 +536,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Size" RazorCode="@example14RazorCode" Id="example14">
+<DemoExample Title="Size" RazorCode="@example15RazorCode" Id="example15">
     <div>Sizes the text, the glyphs and the overflow menu together.</div>
     <br />
     <div class="example-box">
@@ -536,7 +555,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Style & Class" RazorCode="@example15RazorCode" Id="example15">
+<DemoExample Title="Style & Class" RazorCode="@example16RazorCode" Id="example16">
     <div>
         <b>Style</b>/<b>Class</b> reach the root, an option's own <b>Style</b>/<b>Class</b> reach that option, and
         <b>Styles</b>/<b>Classes</b> reach every part by name. The <BitLink Href="#css-variables-section">CSS variables</BitLink>
@@ -619,7 +638,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example16RazorCode" Id="example16">
+<DemoExample Title="RTL" RazorCode="@example17RazorCode" Id="example17">
     <div>Use BitBreadcrumb in right-to-left (RTL) layouts, where the dividers and the overflow menu flip along with the text.</div>
     <br />
     <div class="example-box">

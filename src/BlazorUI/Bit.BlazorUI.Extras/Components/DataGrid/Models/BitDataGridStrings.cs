@@ -15,14 +15,27 @@ public class BitDataGridStrings
     /// </summary>
     public string GridLabel { get; set; } = "Data grid";
 
-    /// <summary>Shown when the grid has no rows to display.</summary>
-    public string EmptyText { get; set; } = "No records to display.";
+    /// <summary>Shown when the grid has no rows to display. Defaults to <see cref="BitStrings.NoItemsFound"/>, read
+    /// from <see cref="BitStrings.Current"/> each time it is shown until a text of its own is set.</summary>
+    public string EmptyText { get => _emptyText ?? BitStrings.Current.NoItemsFound; set => _emptyText = value; }
+    private string? _emptyText;
 
-    /// <summary>Shown instead of <see cref="EmptyText"/> when there are rows, but the filters or the search exclude them all.</summary>
-    public string NoMatchesText { get; set; } = "No records match the current filters.";
+    /// <summary>Shown instead of <see cref="EmptyText"/> when there are rows, but the filters or the search exclude them all.
+    /// Defaults to <see cref="BitStrings.NoResultsFound"/>, read from <see cref="BitStrings.Current"/> each time it is
+    /// shown until a text of its own is set.</summary>
+    public string NoMatchesText { get => _noMatchesText ?? BitStrings.Current.NoResultsFound; set => _noMatchesText = value; }
+    private string? _noMatchesText;
 
-    /// <summary>Shown while <c>Loading</c> is true.</summary>
+    /// <summary>Shown while <c>Loading</c> is true, and while a server grid (<c>OnRead</c>) with no rows yet reads its
+    /// first ones or reads them again after a failure.</summary>
     public string LoadingText { get; set; } = "Loading…";
+
+    /// <summary>Shown in place of the rows when a read through <c>OnRead</c> failed and the app handles that
+    /// (<c>OnReadError</c>), and told to screen readers then.</summary>
+    public string ReadErrorText { get; set; } = "The records could not be loaded.";
+
+    /// <summary>The button beside <see cref="ReadErrorText"/> that reads the rows again.</summary>
+    public string RetryText { get; set; } = "Retry";
 
     /// <summary>Header of the command (Edit/Delete) column.</summary>
     public string ActionsText { get; set; } = "Actions";

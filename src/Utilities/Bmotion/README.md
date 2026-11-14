@@ -30,6 +30,7 @@ A Blazor-native animation library inspired by [Motion](https://motion.dev) (Fram
 - [Scroll timelines](#scroll-timelines)
 - [Programmatic API](#programmatic-api)
 - [Motion values](#motion-values)
+- [Diagnostics and telemetry](#diagnostics-and-telemetry)
 - [Prerendering & static SSR](#prerendering--static-ssr)
 - [Lazy loading on WebAssembly](#lazy-loading-on-webassembly)
 - [MCP server (for AI agents)](#mcp-server-for-ai-agents)
@@ -559,6 +560,34 @@ A target can also **embed** its own transition, which wins over the component's 
 Bm.To(x: 100, transition: Bm.Spring(bounce: 0.6))
 ```
 
+### Named springs and spring analysis
+
+`BmSprings` names the springs interfaces reach for, so a component says how it should feel instead
+of tuning physics. Each call returns a new `BmSpring` you are free to adjust:
+
+| Spring | Feel | Use for |
+|---|---|---|
+| `Smooth()` | arrives in ~0.5 s, no overshoot | interface chrome: menus, panels, tabs |
+| `Snappy()` | ~0.3 s, settles crisply | buttons, toggles, anything answering a click |
+| `Bouncy()` | ~0.5 s, ~11 % past the target | lively entrances: badges, toasts, likes |
+| `Gentle()` | ~0.8 s, no visible bounce | large surfaces, page-level motion |
+| `Stiff()` | ~0.2 s, no overshoot | small state changes that must not draw attention |
+| `Heavy()` | ~1 s, critically damped mass | drawers, sheets, things with weight |
+| `Responsive()` | ~0.15 s, critically damped | following input (pointer, slider) |
+
+`spring.Analyze(from, to)` measures how a spring moves by running the engine's own spring driver on
+a virtual clock at 60 Hz, as the frame loop and the recorder do - so the numbers are the ones on
+screen, not a textbook approximation:
+
+```csharp
+var a = BmSprings.Bouncy().Analyze();
+// a.SettlingTime ≈ 0.83 s (when its completion resolves), a.Overshoot ≈ 0.11, a.TargetCrossings == 3,
+// a.DampingRatio ≈ 0.54 (Underdamped), a.OscillationPeriod, a.PeakVelocity, a.Samples (60 Hz trace)
+```
+
+Use it to time a CSS transition or a sequence step to a spring, to choose between springs on
+evidence, or to chart one (the demo's Springs page draws each named spring's trace from it).
+
 ### Arcs
 
 `path: Bm.Arc(...)` bends the straight line between two points into a curve. There is no path data
@@ -731,8 +760,8 @@ preset is a starting point rather than a cage:
 <Bmotion Preset="BmPresets.Slide()" Transition="Bm.Spring(bounce: 0.3)">…</Bmotion>
 ```
 
-Presets compose with `+`, target by target, and the right-hand side's transition and viewport win.
-They are records, so `with` adjusts one:
+Presets compose with `+`, target by target, and the right-hand side's transition, viewport and
+reduced-motion behaviour win. They are records, so `with` adjusts one:
 
 ```csharp
 var enter = BmPresets.Fade() + BmPresets.Scale(from: 0.8) with { Transition = Bm.Spring() };
@@ -742,6 +771,7 @@ var enter = BmPresets.Fade() + BmPresets.Scale(from: 0.8) with { Transition = Bm
 |---|---|
 | Enter / exit | `Fade`, `Slide(from, distance)`, `Scale(from)`, `Pop(from, bounce)`, `Blur(amount)`, `Rotate(degrees)`, `Flip(axis, degrees)` |
 | Overlays | `Modal`, `Drawer(edge)`, `Popover(origin)`, `Tooltip(from)`, `Toast(from, distance)` |
+| Disclosure | `Expand(duration)` - an accordion panel to and from its natural height (`height: auto`) |
 | Gestures | `HoverLift(lift, scale)`, `HoverScale(scale)`, `Press(scale)` |
 | Attention (play on mount) | `Pulse(scale, repeat)`, `Shake(distance)`, `Wiggle(degrees)`, `Jump(height)`, `Heartbeat(scale)` |
 | Scroll | `Reveal(from, distance, once, amount)` |
@@ -749,7 +779,8 @@ var enter = BmPresets.Fade() + BmPresets.Scale(from: 0.8) with { Transition = Bm
 
 Every parameter has a default, so `BmPresets.Toast()` is complete as it stands. Exits need a
 presence component, as any `Exit` does. Under reduced motion a preset behaves like hand-written
-targets: moves snap, fades still fade.
+targets: moves snap, fades still fade - unless it says otherwise with `ReducedMotion` (see
+[Accessibility](#accessibility)): `BmPresets.Fade() with { ReducedMotion = BmReducedMotionBehavior.Instant }`.
 
 `BmProps` merge the same way presets do: `a + b` (or `a.With(b)`) is `a` with everything `b` sets
 laid over it, and neither input changes.
@@ -1141,6 +1172,8 @@ x.Jump(0);                                        // set without feeding physics
 var angle = x.Transform([0, 200], [0, 360]);      // range mapping
 var raw   = x.Transform([0, 200], [0, 360], clamp: false);  // extrapolate past the ends
 var label = x.Transform(v => $"{v:0}px");         // arbitrary derivation (useTransform)
+var dist  = Bm.Combine(() => Math.Abs(x.Value - y.Value), x, y);  // from several values (useTransform(() => …))
+bool up   = x.Value > x.Previous;                 // the value before the latest change (getPrevious)
 var speed = Bm.Velocity(x);                       // units/sec as its own value (useVelocity), back to 0 when x stops
 var smooth = Motion.Spring(x, Bm.Spring(stiffness: 120));  // spring follower (useSpring)
 
@@ -1210,6 +1243,43 @@ Scroll-linked animations compose end-to-end:
 ```
 
 ---
+
+## Diagnostics and telemetry
+
+The engine reports how it plays every part of an element animation, so it is never a guess why
+something snapped on Blazor Server or ran on the frame loop:
+
+```csharp
+[Inject] BmotionAnimationEngine Engine { get; set; } = default!;
+
+Engine.AnimationEvent += e =>
+{
+    // e.Kind: Started / Finished / Interrupted; e.Properties: ["x", "opacity"]; e.ElapsedMs on ends
+    if (e.Strategy == BmPlaybackStrategy.InstantWithoutFrameLoop)
+        Logger.LogWarning("{Id}: {Props} landed at once - {Reason}", e.ElementId, e.Properties, e.Reason);
+};
+```
+
+| `BmPlaybackStrategy` | Meaning |
+|---|---|
+| `Instant` | a zero-length transition: lands at once, by design |
+| `BrowserTimeline` | a two-keyframe Web Animation with the curve as its easing (every runtime) |
+| `BrowserRecorded` | frames recorded off the engine's drivers, played by the browser (every runtime) |
+| `FrameLoop` | the C# per-frame loop (WebAssembly), with a `Reason`: a per-frame callback, a playback rate other than 1, an SVG `d`/`points` morph, a drag owning the transform, or a curve the browser can't reproduce exactly |
+| `InstantWithoutFrameLoop` | needed the frame loop and there is none (Blazor Server): landed at once, with the `Reason` |
+
+An animation whose properties play in different ways reports each part on its own. `<BmotionInspector>`
+shows each element's latest parts and their reasons, and counts the parts that landed without a
+frame loop.
+
+For telemetry, the same information goes to the BCL meter `Bit.Bmotion`
+(`BmotionAnimationEngine.MeterName`): the counters `bmotion.animation.started` (tag
+`bmotion.strategy`) and `bmotion.animation.ended` (tags `bmotion.strategy`, `bmotion.outcome` =
+`finished`/`interrupted`), and the histogram `bmotion.animation.duration` (seconds). Subscribe with
+OpenTelemetry's `AddMeter("Bit.Bmotion")` or Bit.Belemetry's `options.Metrics.Meters.Add("Bit.Bmotion")`
+- no dependency on either. Events and metrics carry property names and strategies, never animated
+values or page content, and cost nothing while nobody listens. Layout (FLIP), scroll-timeline and
+motion-value animations are not element animations of this kind and are not reported.
 
 ## Prerendering & static SSR
 
@@ -1546,6 +1616,24 @@ subtree (`null` = follow the mode):
     ...
 </BmotionConfig>
 ```
+
+Whether motion is reduced is the user's and the app's decision; **how an element answers it** is
+the element's, with `ReducedMotion` on the `<Bmotion>` (or on its preset):
+
+| `BmReducedMotionBehavior` | When motion is reduced |
+|---|---|
+| `Reduce` | **Default.** Movement, scaling, rotation and sizes land at once; fades, colours, filters keep their timing. |
+| `Instant` | Everything lands at once, fades too - decorative motion that adds nothing once calm. |
+| `Full` | The whole animation plays - motion that carries information and is calm already (a progress bar, a counter). |
+
+```razor
+<Bmotion Animate='@Bm.To(width: $"{_progress}%")' ReducedMotion="BmReducedMotionBehavior.Full">
+    <div class="bar" role="progressbar" aria-valuenow="@_progress" />
+</Bmotion>
+```
+
+It never turns reduction on or off (that stays with `BmReducedMotionMode` and `BmotionConfig`), and
+`Full` is for calm motion only: nothing that travels far, zooms or spins.
 
 > **Migration note.** The default remains `IgnoreUnlessConfigured` so existing apps are unaffected.
 > New apps should set `ReducedMotion = BmReducedMotionMode.User` to match the platform default;

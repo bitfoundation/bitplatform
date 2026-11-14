@@ -1,0 +1,13 @@
+﻿@page "/"
+
+@* The page the app starts on: core components only, so nothing of the AI packages is downloaded until the link is
+   followed. *@
+<div id="home-ready">
+    <BitText Typography="BitTypography.H4">A page without the chat</BitText>
+    <BitTextField Label="Name" @bind-Value="_name" />
+    <BitLink Href="chat">Open the chat</BitLink>
+</div>
+
+@code {
+    private string? _name;
+}

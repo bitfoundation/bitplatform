@@ -1,6 +1,6 @@
 name: bit platform CI - Bmage
 
-# Build, engine tests, MCP server tests and the hosting samples' HTTP tests. The browser suite lives in bit.ci.Bmage.e2e.yml and runs on demand only.
+# Build, engine tests, the Bink and BbScanner integration tests, MCP server tests and the hosting samples' HTTP tests. The browser suite lives in bit.ci.Bmage.e2e.yml and runs on demand only.
 
 on:
   workflow_dispatch:
@@ -8,6 +8,10 @@ on:
   pull_request:
     paths:
     - 'src/Utilities/Bmage/**'
+    # The integration packages build against these, and their tests render symbols with BbScanner's test kit.
+    - 'src/Utilities/Bink/Bit.Bink/**'
+    - 'src/Utilities/BbScanner/Bit.BbScanner/**'
+    - 'src/Utilities/BbScanner/Tests/Bit.BbScanner.TestKit/**'
 
 env:
   DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
@@ -62,6 +66,9 @@ jobs:
     # (from the repo root the SDK falls back to the unsupported VSTest path).
     - name: dotnet test (engine tests, every target framework)
       run: cd src/Utilities/Bmage/Tests/Bit.Bmage.Tests && dotnet test --no-build
+
+    - name: dotnet test (Bink and BbScanner integrations)
+      run: cd src/Utilities/Bmage/Tests/Bit.Bmage.Tests.Integrations && dotnet test --no-build
 
     - name: dotnet test (MCP server)
       run: cd src/Utilities/Bmage/Tests/Bit.Bmage.Tests.Mcp && dotnet test --no-build

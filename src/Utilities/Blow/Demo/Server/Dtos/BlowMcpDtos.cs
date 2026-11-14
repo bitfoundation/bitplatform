@@ -218,6 +218,51 @@ public record BlowCountDto
     public required int Count { get; init; }
 }
 
+/// <summary>How the flow would run: whether BlowRunner accepts it, the order and stages it runs in, and what the validator finds.</summary>
+public record BlowFlowExecutionDto
+{
+    /// <summary>True when BlowRunner.Check finds nothing to refuse the run over (a cycle is the usual reason).</summary>
+    public required bool Runnable { get; init; }
+
+    /// <summary>What BlowRunner.Check refuses the run over, when it does.</summary>
+    public required BlowFlowIssueDto[] Refusals { get; init; }
+
+    /// <summary>The first node ids in the order the runner starts them (BlowGraphAlgorithms.TopologicalSort), parents left out.</summary>
+    public required string[] Order { get; init; }
+
+    /// <summary>The number of steps the longest dependency chain takes - the least a run can take, in nodes one after another.</summary>
+    public required int Stages { get; init; }
+
+    /// <summary>
+    /// The most nodes in one stage - nodes whose longest chain of dependencies is equally long, so none waits for another.
+    /// A lower bound on how many could run at once (nodes of different stages can overlap too), for choosing
+    /// BlowRunnerOptions.MaxConcurrency.
+    /// </summary>
+    public required int WidestStage { get; init; }
+
+    /// <summary>Where runs start (no incoming edge) and end (no outgoing edge).</summary>
+    public required string[] Roots { get; init; }
+
+    public required string[] Leaves { get; init; }
+
+    /// <summary>BlowGraphValidator.CreateDefault() issues: structure, port limits, required inputs and data types.</summary>
+    public required BlowFlowIssueDto[] Validation { get; init; }
+}
+
+/// <summary>One issue BlowRunner.Check or BlowGraphValidator found in the flow.</summary>
+public record BlowFlowIssueDto
+{
+    public required string Code { get; init; }
+
+    public required string Severity { get; init; }
+
+    public string? NodeId { get; init; }
+
+    public string? EdgeId { get; init; }
+
+    public required string Message { get; init; }
+}
+
 /// <summary>One problem BlowCanvas raised through its OnError callback while it rendered the flow.</summary>
 public record BlowFlowProblemDto
 {
@@ -332,6 +377,12 @@ public record BlowFlowReportDto
 
     /// <summary>The layout that was asked for, when one was.</summary>
     public BlowLayoutReportDto? Layout { get; init; }
+
+    /// <summary>
+    /// How BlowRunner would run the flow and what BlowGraphValidator.CreateDefault() finds in it: whether it can run,
+    /// in what order and how wide, and the problems by node.
+    /// </summary>
+    public BlowFlowExecutionDto? Execution { get; init; }
 
     /// <summary>A small flow written by the library, returned when no flow was passed - the format, by example.</summary>
     public string? Sample { get; init; }

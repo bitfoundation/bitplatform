@@ -148,8 +148,8 @@
                 An item matches when every typed word is in its <b>Text</b>, <b>Description</b> or <b>Data</b>; a
                 matched group keeps its children. <b>SearchText</b> two-way binds the term, <b>OnSearch</b> reports
                 it, <b>SearchDebounceTime</b> delays it, and <b>SearchFilter</b> replaces the matching (here: text
-                prefix only). <b>SearchBoxPlaceholder</b> names the box, <b>EmptyListMessage</b> /
-                <b>EmptyListTemplate</b> replace the no-result message, and <b>SearchAnnouncementProvider</b>
+                prefix only). <b>SearchBoxPlaceholder</b> names the box, <b>NoResultsText</b> /
+                <b>NoResultsTemplate</b> replace the no-result message, and <b>SearchAnnouncementProvider</b>
                 localizes the result count announced to screen readers. <b>NoSearchBox</b> removes the box.
             </div>
             <br />
@@ -169,7 +169,7 @@
                              OnSearch="v => lastSearchedTerm = v"
                              SearchFilter="(item, term) => item.Text.StartsWith(term, StringComparison.OrdinalIgnoreCase)"
                              SearchBoxPlaceholder="Search in menu items..."
-                             EmptyListMessage="There is no item found." />
+                             NoResultsText="There is no item found." />
             </div>
         </DemoExample>
 

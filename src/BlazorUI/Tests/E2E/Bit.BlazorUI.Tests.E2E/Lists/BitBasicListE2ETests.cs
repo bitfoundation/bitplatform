@@ -1,7 +1,7 @@
 ﻿namespace Bit.BlazorUI.Tests.E2E.Lists;
 
 /// <summary>
-/// BitBasicList in a real browser: Items with a RowTemplate and the default template, EmptyContent (items, provider and
+/// BitBasicList in a real browser: Items with a RowTemplate and the default template, EmptyTemplate (items, provider and
 /// virtualized), the header and footer inside the scrolling region, Loading / LoadingLabel / LoadingTemplate and
 /// OnLoadingChange around a held ItemsProvider, Virtualize with ItemSize and OverscanCount scrolled with the real mouse
 /// wheel, a virtualized ItemsProvider with its placeholders, its requests and ItemsProviderDelay, LoadMore with
@@ -49,7 +49,7 @@ public class BitBasicListE2ETests : E2ETestBase
     }
 
     [TestMethod]
-    public async Task EmptyContent_ReplacesTheRowsInEveryMode()
+    public async Task EmptyTemplate_ReplacesTheRowsInEveryMode()
     {
         await OpenAsync("/e2e/basic-list");
 

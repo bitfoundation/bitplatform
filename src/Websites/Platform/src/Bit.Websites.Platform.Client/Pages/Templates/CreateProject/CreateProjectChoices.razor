@@ -1,0 +1,50 @@
+﻿@typeparam TValue
+@inherits AppComponentBase
+
+<div class="answers @(Horizontal ? "is-horizontal" : null)" role="radiogroup" aria-label="@AriaLabel">
+    @for (var i = 0; i < Items.Count; i++)
+    {
+        var item = Items[i];
+        var chosen = EqualityComparer<TValue>.Default.Equals(item.Value, Value);
+        var hintId = item.Description is null ? null : $"{idPrefix}-{i}";
+        <div class="answer @(chosen ? "chosen" : null)">
+            <button type="button"
+                    class="answer-hit"
+                    role="radio"
+                    aria-checked="@(chosen ? "true" : "false")"
+                    aria-label="@item.Text"
+                    aria-describedby="@hintId"
+                    @onclick="() => OnChange.InvokeAsync(item.Value)"></button>
+            <span class="answer-mark" aria-hidden="true"></span>
+            <span class="answer-body">
+                <span class="answer-head">
+                    <span class="answer-text">@item.Text</span>
+                    @if (item.Badge is not null)
+                    {
+                        <span class="answer-badge">@item.Badge</span>
+                    }
+                </span>
+                @if (item.Description is not null)
+                {
+                    <span class="answer-hint" id="@hintId">@item.Description</span>
+                }
+            </span>
+        </div>
+    }
+</div>
+
+@code {
+    private static int count;
+
+    private readonly string idPrefix = $"choice-{Interlocked.Increment(ref count)}";
+
+    [Parameter, EditorRequired] public IReadOnlyList<CreateProjectChoice<TValue>> Items { get; set; } = [];
+
+    [Parameter] public TValue? Value { get; set; }
+
+    [Parameter] public EventCallback<TValue> OnChange { get; set; }
+
+    [Parameter] public string? AriaLabel { get; set; }
+
+    [Parameter] public bool Horizontal { get; set; }
+}

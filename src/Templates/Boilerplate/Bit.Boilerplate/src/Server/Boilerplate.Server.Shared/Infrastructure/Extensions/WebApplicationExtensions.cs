@@ -1,6 +1,7 @@
 //+:cnd:noEmit
 using System.Net;
 using System.Reflection;
+using System.Diagnostics;
 using System.Globalization;
 using Boilerplate.Server.Shared;
 using Microsoft.AspNetCore.Http;
@@ -16,6 +17,7 @@ using Boilerplate.Shared.Features.Diagnostic;
 using Boilerplate.Shared.Infrastructure.Dtos;
 using Boilerplate.Shared.Infrastructure.Services;
 using Boilerplate.Server.Shared.Infrastructure.Services;
+using Boilerplate.Server.Shared.Infrastructure.HealthChecks;
 
 namespace Microsoft.AspNetCore.Builder;
 
@@ -261,31 +263,67 @@ public static class WebApplicationExtensions
     /// </summary>
     private static readonly HashSet<string> HstsExcludedHosts = new(["localhost", "127.0.0.1", "[::1]"], StringComparer.OrdinalIgnoreCase);
 
+    /// <summary>The entry assembly's, which a Release build ends with its commit (See HealthReportDto.ApplicationVersion).</summary>
+    private static readonly string? ApplicationInformationalVersion = Assembly.GetEntryAssembly()?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+
+    private static readonly DateTimeOffset ProcessStartedAt = ReadProcessStartedAt();
+
+    private static DateTimeOffset ReadProcessStartedAt()
+    {
+        using var process = Process.GetCurrentProcess();
+
+        return process.StartTime.ToUniversalTime();
+    }
+
     private static Task WriteHealthReport(HttpContext context, HealthReport report)
     {
         var registrations = context.RequestServices.GetRequiredService<IOptions<HealthCheckServiceOptions>>().Value.Registrations.ToDictionary(r => r.Name);
+        var descriptions = context.RequestServices.GetRequiredService<IOptions<HealthCheckDescriptions>>().Value;
+
+        // An exception can carry a server name or a connection string. The app's own session (the Operations page) gets
+        // it; an OAuth token, which some other app holds, never does.
+        var includeExceptions = context.User.HasClaim(claim => claim.Type is AppClaimTypes.OAUTH_CLIENT_ID) is false;
 
         HealthReportDto body = new()
         {
             Status = (HealthCheckStatus)report.Status,
             TotalDuration = report.TotalDuration,
             CheckedAt = context.RequestServices.GetRequiredService<TimeProvider>().GetUtcNow(),
+            ApplicationVersion = ApplicationInformationalVersion,
+            InstanceName = System.Environment.MachineName,
+            StartedAt = ProcessStartedAt,
             Entries = report.Entries.ToDictionary(entry => entry.Key, entry =>
             {
                 var registration = registrations.GetValueOrDefault(entry.Key);
+                var data = entry.Value.Data;
+                var category = entry.Value.Tags.FirstOrDefault(tag => tag.StartsWith(HealthCheckCategories.TagPrefix, StringComparison.Ordinal))?[HealthCheckCategories.TagPrefix.Length..] is { Length: > 0 } tagged
+                    ? tagged
+                    : null;
+                var description = descriptions.GetValueOrDefault(entry.Key);
 
                 return new HealthReportEntryDto
                 {
                     Status = (HealthCheckStatus)entry.Value.Status,
                     FailureStatus = (HealthCheckStatus)(registration?.FailureStatus ?? HealthStatus.Unhealthy),
                     Timeout = registration?.Timeout is { } timeout && timeout != Timeout.InfiniteTimeSpan ? timeout : null,
-                    Description = entry.Value.Description,
-                    Duration = entry.Value.Duration,
+                    // A check that throws gets its exception's message as its description, which is the error text again.
+                    Description = includeExceptions || entry.Value.Exception is null || entry.Value.Description != entry.Value.Exception.Message
+                        ? entry.Value.Description
+                        : null,
+                    // A reused result's own run, not this report's cache lookup (See CachedHealthCheck).
+                    Duration = data.GetValueOrDefault(HealthCheckResultData.Duration) as TimeSpan? ?? entry.Value.Duration,
+                    VerifiedAt = data.GetValueOrDefault(HealthCheckResultData.VerifiedAt) as DateTimeOffset?,
+                    CacheDuration = data.GetValueOrDefault(HealthCheckResultData.CacheDuration) as TimeSpan?,
                     // ToString() rather than the message alone: the inner exception is usually the one naming the cause.
-                    Exception = entry.Value.Exception?.ToString(),
+                    Exception = includeExceptions ? entry.Value.Exception?.ToString() : null,
                     Tags = [.. entry.Value.Tags],
+                    Category = category,
+                    Title = description?.Title ?? entry.Key,
+                    IconName = description?.IconName ?? HealthCheckCategories.IconOf(category),
+                    About = description?.About,
+                    IsNotConfigured = entry.Value.Tags.Contains(HealthCheckTags.NotConfigured),
                     // Stringified, as a check may put anything in here.
-                    Data = entry.Value.Data.ToDictionary(item => item.Key, item => item.Value switch
+                    Data = data.Where(item => HealthCheckResultData.Keys.Contains(item.Key) is false).ToDictionary(item => item.Key, item => item.Value switch
                     {
                         DateTimeOffset dateTimeOffset => dateTimeOffset.ToString("O", CultureInfo.InvariantCulture),
                         IFormattable formattable => formattable.ToString(null, CultureInfo.InvariantCulture),

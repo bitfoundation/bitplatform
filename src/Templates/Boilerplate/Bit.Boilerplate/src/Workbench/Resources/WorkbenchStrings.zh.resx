@@ -312,6 +312,9 @@
     <data name="ToggleWorkbenchTheme" xml:space="preserve">
         <value>在浅色和深色之间切换工作台</value>
     </data>
+    <data name="WorkbenchLanguage" xml:space="preserve">
+        <value>工作台语言</value>
+    </data>
     <data name="PosStoreAll" xml:space="preserve">
         <value>所有门店</value>
     </data>
@@ -814,16 +817,16 @@
         <value>林堡省</value>
     </data>
     <data name="HomePageTitle" xml:space="preserve">
-        <value>工作台 · 设计、评审并截取每个页面</value>
+        <value>工作台 · 您与 AI 智能体一起构建应用的地方</value>
     </data>
     <data name="HomeEyebrow" xml:space="preserve">
         <value>您项目的一部分</value>
     </data>
     <data name="HomeHeadline" xml:space="preserve">
-        <value>在后端动工之前，先把设计做完。</value>
+        <value>您与 AI 智能体一起构建应用的地方。</value>
     </data>
     <data name="HomeLead" xml:space="preserve">
-        <value>工作台用示例数据运行您应用的页面，让您可以设计每种状态、在每种设备上查看，并导出可直接提交应用商店的截图，所用组件和主题与您的应用完全相同。</value>
+        <value>在示例数据上设计每个页面，覆盖每种状态和每种设备；用评论进行评审，智能体会在您输入时就作出回应；跟进它的长任务，比如部署或新功能，用点击或语音回答它的问题。一切都在您的项目里，使用应用自带的组件和主题。</value>
     </data>
     <data name="HomeStartHere" xml:space="preserve">
         <value>从这里开始</value>
@@ -856,13 +859,13 @@
         <value>为什么您的项目里有工作台</value>
     </data>
     <data name="HomeWhySubtitle" xml:space="preserve">
-        <value>为您的页面提供设计工具、测试台和摄影棚，就在项目内部。</value>
+        <value>设计工具、测试台、摄影棚和智能体的控制室，都在项目里。</value>
     </data>
     <data name="HomeWhyAgentsTitle" xml:space="preserve">
-        <value>用任何 AI 智能体进行设计</value>
+        <value>与任意 AI 智能体协作</value>
     </data>
     <data name="HomeWhyAgentsText" xml:space="preserve">
-        <value>您不需要 Claude Design 或 Figma。无论您用的是 Codex、Copilot 还是 Claude Code，您的智能体都可以在这里设计页面，在真实浏览器中查看并不断改进。</value>
+        <value>Claude Code、Codex、Copilot、Gemini、Junie 或 Cursor：您的智能体在这里设计页面并在真实浏览器中查看，向您展示长任务的进展，并询问它需要的信息。无需 Claude Design 或 Figma。</value>
     </data>
     <data name="HomeWhyRealTitle" xml:space="preserve">
         <value>真实组件，而非效果图</value>
@@ -907,7 +910,7 @@
         <value>交给你的 AI</value>
     </data>
     <data name="HomeHowStep1Text" xml:space="preserve">
-        <value>让 Claude、Codex、GitHub Copilot、Gemini 或 Junie 来做这个页面，它会在这里用示例数据把页面搭出来，数据像真实数据一样加载。</value>
+        <value>向 Claude、Codex、GitHub Copilot、Gemini 或 Junie 提出一个页面、一个功能或一次部署。页面会在这里基于像真实数据一样加载的示例数据构建。</value>
     </data>
     <data name="HomeHowStep2Title" xml:space="preserve">
         <value>检查每种状态</value>
@@ -2458,10 +2461,10 @@
         <value>与您的 AI 智能体实时评审</value>
     </data>
     <data name="HomeWhyLiveText" xml:space="preserve">
-        <value>在页面的任意位置钉上一条评论。在您自己的电脑上，您的编程智能体会在您输入时就收到它，修改页面、在评论下回复，并将其勾选为已完成。支持 Claude Code、Codex、Copilot、Gemini、Junie 和 Cursor。</value>
+        <value>在页面任意位置钉一条评论，可以打字也可以说话。在您自己的电脑上，编程智能体会在您输入时就收到它，修改页面，在评论里回复并勾掉它。支持 Claude Code、Codex、Copilot、Gemini、Junie 和 Cursor。</value>
     </data>
     <data name="TourLiveText" xml:space="preserve">
-        <value>在页面的任意位置钉上一条评论。在您自己的电脑上，您的编程智能体会在您输入时就收到它，修改页面、在评论下回复，并将其勾选为已完成。支持 Claude Code、Codex、Copilot、Gemini、Junie 和 Cursor。现在就试试：写下您的评论并发送。</value>
+        <value>在页面任意位置钉一条评论，可以打字也可以说话：“发送”旁的麦克风会把语音转成文字。在您自己的电脑上，编程智能体会在您输入时就收到它，修改页面，在评论里回复并勾掉它。支持 Claude Code、Codex、Copilot、Gemini、Junie 和 Cursor。现在就试试：写下评论并发送。</value>
     </data>
     <data name="HomeChipLive" xml:space="preserve">
         <value>AI 实时评审</value>
@@ -4811,5 +4814,532 @@
     </data>
     <data name="ThemeLocalizationNote" xml:space="preserve">
         <value>本页组件的文本并未全部翻译成每种语言。这并不代表不支持本地化：这里的每个组件都可以本地化，只是把它们的文本全部翻译出来，对本页的用途帮助不大。需要时，请让您的 AI 智能体补全翻译。</value>
+    </data>
+    <data name="Progress" xml:space="preserve">
+        <value>进度</value>
+    </data>
+    <data name="ProgressTitle" xml:space="preserve">
+        <value>工作中的智能体</value>
+    </data>
+    <data name="ProgressLead" xml:space="preserve">
+        <value>您的 AI 智能体运行的每个长任务，每个对话一个：完成了什么、正在做什么、还剩什么，以及需要您做什么。</value>
+    </data>
+    <data name="ProgressTasks" xml:space="preserve">
+        <value>任务</value>
+    </data>
+    <data name="ProgressSamplesTitle" xml:space="preserve">
+        <value>这些是示例</value>
+    </data>
+    <data name="ProgressSamplesText" xml:space="preserve">
+        <value>智能体的任务一开始就会显示在这里。在此之前，可以先试试这些：回答一个问题、勾掉一个步骤或给智能体留言。</value>
+    </data>
+    <data name="ProgressSamplesVisitorText" xml:space="preserve">
+        <value>此工作台上智能体的任务只在运行它的电脑上显示。这些示例展示了您在那里会看到的内容。</value>
+    </data>
+    <data name="ProgressGroupNeedsYou" xml:space="preserve">
+        <value>等您处理</value>
+    </data>
+    <data name="ProgressGroupWorking" xml:space="preserve">
+        <value>进行中</value>
+    </data>
+    <data name="ProgressGroupFinished" xml:space="preserve">
+        <value>已结束</value>
+    </data>
+    <data name="ProgressAllTasks" xml:space="preserve">
+        <value>全部任务</value>
+    </data>
+    <data name="ProgressNeedsYou" xml:space="preserve">
+        <value>等您处理</value>
+    </data>
+    <data name="ProgressWorking" xml:space="preserve">
+        <value>进行中</value>
+    </data>
+    <data name="ProgressDone" xml:space="preserve">
+        <value>已完成</value>
+    </data>
+    <data name="ProgressFailed" xml:space="preserve">
+        <value>失败</value>
+    </data>
+    <data name="ProgressStopped" xml:space="preserve">
+        <value>已停止</value>
+    </data>
+    <data name="ProgressNeedsYouCount" xml:space="preserve">
+        <value>{0} 项等您处理</value>
+    </data>
+    <data name="ProgressStepsDone" xml:space="preserve">
+        <value>{0}/{1} 步</value>
+    </data>
+    <data name="ProgressAgentActive" xml:space="preserve">
+        <value>当前在线</value>
+    </data>
+    <data name="ProgressAgentLastSeen" xml:space="preserve">
+        <value>最后活动 {0}</value>
+    </data>
+    <data name="ProgressStarted" xml:space="preserve">
+        <value>开始于 {0}</value>
+    </data>
+    <data name="ProgressUpdated" xml:space="preserve">
+        <value>更新于 {0}</value>
+    </data>
+    <data name="ProgressSample" xml:space="preserve">
+        <value>示例</value>
+    </data>
+    <data name="ProgressYourTurn" xml:space="preserve">
+        <value>轮到您了</value>
+    </data>
+    <data name="ProgressYourTurnHint" xml:space="preserve">
+        <value>您一回复，{0} 就会继续。</value>
+    </data>
+    <data name="ProgressOpenLink" xml:space="preserve">
+        <value>打开</value>
+    </data>
+    <data name="ProgressDidIt" xml:space="preserve">
+        <value>我已完成</value>
+    </data>
+    <data name="ProgressNothingForYou" xml:space="preserve">
+        <value>目前没有需要您处理的事。需要时 {0} 会在这里叫您。</value>
+    </data>
+    <data name="ProgressSteps" xml:space="preserve">
+        <value>步骤</value>
+    </data>
+    <data name="ProgressNoSteps" xml:space="preserve">
+        <value>智能体还没有列出步骤。</value>
+    </data>
+    <data name="ProgressYou" xml:space="preserve">
+        <value>您</value>
+    </data>
+    <data name="ProgressStepTodo" xml:space="preserve">
+        <value>待办</value>
+    </data>
+    <data name="ProgressStepDoing" xml:space="preserve">
+        <value>进行中</value>
+    </data>
+    <data name="ProgressStepDone" xml:space="preserve">
+        <value>已完成</value>
+    </data>
+    <data name="ProgressStepBlocked" xml:space="preserve">
+        <value>受阻</value>
+    </data>
+    <data name="ProgressStepSkipped" xml:space="preserve">
+        <value>已跳过</value>
+    </data>
+    <data name="ProgressKeepInMind" xml:space="preserve">
+        <value>请留意</value>
+    </data>
+    <data name="ProgressNoteInfo" xml:space="preserve">
+        <value>说明</value>
+    </data>
+    <data name="ProgressNoteWarning" xml:space="preserve">
+        <value>警告</value>
+    </data>
+    <data name="ProgressNoteDecision" xml:space="preserve">
+        <value>决定</value>
+    </data>
+    <data name="ProgressNoteSuccess" xml:space="preserve">
+        <value>完成</value>
+    </data>
+    <data name="ProgressNoteError" xml:space="preserve">
+        <value>问题</value>
+    </data>
+    <data name="ProgressLinks" xml:space="preserve">
+        <value>链接</value>
+    </data>
+    <data name="ProgressActivity" xml:space="preserve">
+        <value>动态</value>
+    </data>
+    <data name="ProgressMessagePlaceholder" xml:space="preserve">
+        <value>给 {0} 留言</value>
+    </data>
+    <data name="ProgressDelete" xml:space="preserve">
+        <value>删除此任务</value>
+    </data>
+    <data name="ProgressDeleteConfirm" xml:space="preserve">
+        <value>确定永久删除？</value>
+    </data>
+    <data name="ProgressPickTask" xml:space="preserve">
+        <value>选择一个任务查看进展。</value>
+    </data>
+    <data name="ProgressTaskGone" xml:space="preserve">
+        <value>此任务已不存在。它的智能体可能已完成并将其移除。</value>
+    </data>
+    <data name="ProgressAddNote" xml:space="preserve">
+        <value>添加备注</value>
+    </data>
+    <data name="ProgressAnswerPlaceholder" xml:space="preserve">
+        <value>您的回答</value>
+    </data>
+    <data name="ProgressNotePlaceholder" xml:space="preserve">
+        <value>还有补充吗？（可选）</value>
+    </data>
+    <data name="ProgressYes" xml:space="preserve">
+        <value>是</value>
+    </data>
+    <data name="ProgressNo" xml:space="preserve">
+        <value>否</value>
+    </data>
+    <data name="ProgressSendAnswer" xml:space="preserve">
+        <value>发送回答</value>
+    </data>
+    <data name="ProgressAnswerFailed" xml:space="preserve">
+        <value>这个问题在此期间已被回答或撤回。</value>
+    </data>
+    <data name="ProgressSent" xml:space="preserve">
+        <value>已发送给 {0}。</value>
+    </data>
+    <data name="ProgressSampleSentTitle" xml:space="preserve">
+        <value>这是一个示例</value>
+    </data>
+    <data name="ProgressSampleSent" xml:space="preserve">
+        <value>在真实任务中，{0} 会立即收到并继续。</value>
+    </data>
+    <data name="ProgressSampleSecret" xml:space="preserve">
+        <value>在真实任务中，它会存到问题指定的位置，{0} 会继续，且看不到它。</value>
+    </data>
+    <data name="ProgressSecretToGitHubEnvironment" xml:space="preserve">
+        <value>它会直接存入 GitHub，作为 {1} 环境的 secret {0}。{2} 永远看不到它。</value>
+    </data>
+    <data name="ProgressSecretToGitHub" xml:space="preserve">
+        <value>它会直接存入 GitHub，作为仓库的 secret {0}。{1} 永远看不到它。</value>
+    </data>
+    <data name="ProgressSecretToFile" xml:space="preserve">
+        <value>它会存入项目之外的一个文件，{0} 在命令中使用它，却始终看不到它。</value>
+    </data>
+    <data name="ProgressSecretPlaceholder" xml:space="preserve">
+        <value>粘贴到这里</value>
+    </data>
+    <data name="ProgressSecretStore" xml:space="preserve">
+        <value>保存</value>
+    </data>
+    <data name="ProgressSecretStored" xml:space="preserve">
+        <value>已保存。{0} 会继续，且始终看不到它。</value>
+    </data>
+    <data name="ProgressSecretStoreFailed" xml:space="preserve">
+        <value>无法保存：{0}</value>
+    </data>
+    <data name="ProgressSecretOnlyHere" xml:space="preserve">
+        <value>只有运行此工作台的电脑才能接收密钥。</value>
+    </data>
+    <data name="ProgressSecretAnswered" xml:space="preserve">
+        <value>已保存，从不显示</value>
+    </data>
+    <data name="ProgressEntryStepDone" xml:space="preserve">
+        <value>已完成：{0}</value>
+    </data>
+    <data name="ProgressAgentNeedsYou" xml:space="preserve">
+        <value>{0} 需要您</value>
+    </data>
+    <data name="ProgressAgentFinished" xml:space="preserve">
+        <value>{0} 完成了一个任务</value>
+    </data>
+    <data name="ProgressAgentStopped" xml:space="preserve">
+        <value>{0} 停止了一个任务</value>
+    </data>
+    <data name="ProgressGuideListTitle" xml:space="preserve">
+        <value>所有对话，一个列表</value>
+    </data>
+    <data name="ProgressGuideListText" xml:space="preserve">
+        <value>每个运行长任务的 AI 对话，比如首次部署或新功能，都会在这里与其他对话并排显示进度。需要您处理的排在最前。</value>
+    </data>
+    <data name="ProgressGuideTurnTitle" xml:space="preserve">
+        <value>轮到您了</value>
+    </data>
+    <data name="ProgressGuideTurnText" xml:space="preserve">
+        <value>用一次点击、几句话或语音回答智能体的问题，完成您的部分后告诉它。您一发送，它就继续。</value>
+    </data>
+    <data name="ProgressGuideStepsTitle" xml:space="preserve">
+        <value>已完成与待完成</value>
+    </data>
+    <data name="ProgressGuideStepsText" xml:space="preserve">
+        <value>智能体走过的每一步、当前所在的步骤以及后面还剩什么。只有您能完成的步骤会被标出。</value>
+    </data>
+    <data name="ProgressGuideActivityTitle" xml:space="preserve">
+        <value>与智能体交流</value>
+    </data>
+    <data name="ProgressGuideActivityText" xml:space="preserve">
+        <value>在这里给智能体写下或说出任何话，并查看它做了什么、何时做的。它下次查看时就会读到您的消息。</value>
+    </data>
+    <data name="ProgressGuideSoundTitle" xml:space="preserve">
+        <value>需要时它会叫您</value>
+    </data>
+    <data name="ProgressGuideSoundText" xml:space="preserve">
+        <value>智能体向您提问时会播放提示音（除非工作台已静音），标签页标题会显示等您处理的数量。在任一页面的评审标签中打开通知，即使在其他应用中也能收到提醒。</value>
+    </data>
+    <data name="Dictate" xml:space="preserve">
+        <value>语音输入</value>
+    </data>
+    <data name="DictateIn" xml:space="preserve">
+        <value>用说话代替打字（{0}）</value>
+    </data>
+    <data name="StopDictation" xml:space="preserve">
+        <value>停止聆听</value>
+    </data>
+    <data name="DictationLanguage" xml:space="preserve">
+        <value>语音输入语言</value>
+    </data>
+    <data name="Listening" xml:space="preserve">
+        <value>正在聆听…</value>
+    </data>
+    <data name="MicrophoneBlocked" xml:space="preserve">
+        <value>浏览器阻止了麦克风。请在地址栏中允许此网站使用麦克风，然后重试。</value>
+    </data>
+    <data name="DictationNeedsNetwork" xml:space="preserve">
+        <value>在此浏览器中，语音输入需要联网。</value>
+    </data>
+    <data name="DictationLanguageNotSupported" xml:space="preserve">
+        <value>此浏览器不支持{0}语音输入。</value>
+    </data>
+    <data name="DictationFailed" xml:space="preserve">
+        <value>语音输入未能启动。请重试，或改用打字。</value>
+    </data>
+    <data name="TimeJustNow" xml:space="preserve">
+        <value>刚刚</value>
+    </data>
+    <data name="TimeMinutesAgo" xml:space="preserve">
+        <value>{0} 分钟前</value>
+    </data>
+    <data name="TimeHoursAgo" xml:space="preserve">
+        <value>{0} 小时前</value>
+    </data>
+    <data name="SampleDeployTitle" xml:space="preserve">
+        <value>部署到测试和生产环境</value>
+    </data>
+    <data name="SampleDeploySummary" xml:space="preserve">
+        <value>在您自己的服务器上搭建测试和生产环境，并让应用运行在您的域名上。</value>
+    </data>
+    <data name="SampleDeployStepServices" xml:space="preserve">
+        <value>找出应用所需的外部服务及其密钥</value>
+    </data>
+    <data name="SampleDeployStepEnvironments" xml:space="preserve">
+        <value>在 GitHub 上创建测试和生产环境</value>
+    </data>
+    <data name="SampleDeployStepServer" xml:space="preserve">
+        <value>准备一台 Linux 服务器并提供地址</value>
+    </data>
+    <data name="SampleDeployStepToken" xml:space="preserve">
+        <value>创建 Cloudflare API 令牌</value>
+    </data>
+    <data name="SampleDeployStepTokenDetail" xml:space="preserve">
+        <value>在 Cloudflare 控制台中打开 My Profile，再打开 API Tokens，创建一个可以编辑 DNS 和 Cloudflare Tunnel 的令牌。然后把它粘贴到下方。</value>
+    </data>
+    <data name="SampleDeployStepRunner" xml:space="preserve">
+        <value>在服务器上安装 Docker 和 GitHub Actions 运行器</value>
+    </data>
+    <data name="SampleDeployStepTunnel" xml:space="preserve">
+        <value>通过 Cloudflare Tunnel 在您的域名上提供应用</value>
+    </data>
+    <data name="SampleDeployStepFirst" xml:space="preserve">
+        <value>先部署到测试环境，再部署到生产环境</value>
+    </data>
+    <data name="SampleDeployAskEmail" xml:space="preserve">
+        <value>应用的邮件由哪个服务发送？</value>
+    </data>
+    <data name="SampleDeployAskEmailDetail" xml:space="preserve">
+        <value>应用会通过邮件发送登录验证码和密码重置邮件。之后也可以更改。</value>
+    </data>
+    <data name="SampleDeployAskEmailOption1" xml:space="preserve">
+        <value>邮件服务的免费账户</value>
+    </data>
+    <data name="SampleDeployAskEmailOption2" xml:space="preserve">
+        <value>我们公司的邮件服务器</value>
+    </data>
+    <data name="SampleDeployAskEmailOption3" xml:space="preserve">
+        <value>暂不使用：在日志中显示邮件</value>
+    </data>
+    <data name="SampleDeployAskSsh" xml:space="preserve">
+        <value>隧道可用后关闭服务器的 SSH 端口吗？</value>
+    </data>
+    <data name="SampleDeployAskSshDetail" xml:space="preserve">
+        <value>您仍然可以通过隧道和服务商的网页控制台访问服务器。</value>
+    </data>
+    <data name="SampleDeployAskToken" xml:space="preserve">
+        <value>粘贴 Cloudflare 令牌</value>
+    </data>
+    <data name="SampleDeployNoteSecrets" xml:space="preserve">
+        <value>密钥和密码绝不会出现在聊天中。您把它们粘贴到这里，每一个都会直接存到该去的地方，我看不到。</value>
+    </data>
+    <data name="SampleDeployNoteOneServer" xml:space="preserve">
+        <value>两个环境共用一台服务器，以降低成本。</value>
+    </data>
+    <data name="SampleDeployLinkCloudflare" xml:space="preserve">
+        <value>Cloudflare 控制台</value>
+    </data>
+    <data name="SampleDeployFeed1" xml:space="preserve">
+        <value>应用使用了 6 个外部服务，其中 3 个需要您自己账户的密钥。</value>
+    </data>
+    <data name="SampleDeployFeed2" xml:space="preserve">
+        <value>服务器已就绪：203.0.113.24。</value>
+    </data>
+    <data name="SampleDeployFeed3" xml:space="preserve">
+        <value>已用您添加的密钥登录服务器，并关闭了密码登录。</value>
+    </data>
+    <data name="SampleDeployFeed4" xml:space="preserve">
+        <value>正在等待 Cloudflare 令牌来设置隧道。</value>
+    </data>
+    <data name="SampleFeatureTitle" xml:space="preserve">
+        <value>新功能：会员积分</value>
+    </data>
+    <data name="SampleFeatureSummary" xml:space="preserve">
+        <value>顾客每次下单都能获得积分，并在结账时使用。您已批准设计，现在正在开发。</value>
+    </data>
+    <data name="SampleFeatureStepRequirements" xml:space="preserve">
+        <value>确定需求并写入规格文档</value>
+    </data>
+    <data name="SampleFeatureStepPlan" xml:space="preserve">
+        <value>把工作拆分为 6 个任务</value>
+    </data>
+    <data name="SampleFeatureStepDesign" xml:space="preserve">
+        <value>在工作台中批准设计</value>
+    </data>
+    <data name="SampleFeatureStepLedger" xml:space="preserve">
+        <value>开发积分账本及其 API</value>
+    </data>
+    <data name="SampleFeatureStepCheckout" xml:space="preserve">
+        <value>结账时使用积分</value>
+    </data>
+    <data name="SampleFeatureStepTests" xml:space="preserve">
+        <value>在手机和桌面上测试</value>
+    </data>
+    <data name="SampleStepTryOnTest" xml:space="preserve">
+        <value>在测试环境中试用</value>
+    </data>
+    <data name="SampleFeatureAskWorth" xml:space="preserve">
+        <value>结账时一个积分值多少钱？</value>
+    </data>
+    <data name="SampleFeatureAskWorthDetail" xml:space="preserve">
+        <value>它会放在设置中，之后可以修改。</value>
+    </data>
+    <data name="SampleFeatureAskWorthPlaceholder" xml:space="preserve">
+        <value>例如：100 积分 = 1 元</value>
+    </data>
+    <data name="SampleFeatureAskOrders" xml:space="preserve">
+        <value>哪些订单可以获得积分？</value>
+    </data>
+    <data name="SampleFeatureAskOrdersOption1" xml:space="preserve">
+        <value>线上订单</value>
+    </data>
+    <data name="SampleFeatureAskOrdersOption2" xml:space="preserve">
+        <value>门店订单</value>
+    </data>
+    <data name="SampleFeatureAskOrdersOption3" xml:space="preserve">
+        <value>用礼品卡支付的订单</value>
+    </data>
+    <data name="SampleFeatureNoteExpiry" xml:space="preserve">
+        <value>积分在获得 12 个月后过期。</value>
+    </data>
+    <data name="SampleFeatureNoteSpec" xml:space="preserve">
+        <value>目前确定的所有内容以及仍未解决的问题都在该功能的规格文档中。</value>
+    </data>
+    <data name="SampleFeatureLinkDesign" xml:space="preserve">
+        <value>已批准的设计</value>
+    </data>
+    <data name="SampleFeatureFeed1" xml:space="preserve">
+        <value>已把需求写入规格文档，还有 3 个问题等您回答。</value>
+    </data>
+    <data name="SampleFeatureFeed2" xml:space="preserve">
+        <value>看起来不错。把积分徽章再调小一点。</value>
+    </data>
+    <data name="SampleFeatureFeed3" xml:space="preserve">
+        <value>已调小徽章并开始开发。</value>
+    </data>
+    <data name="SampleFeatureFeed4" xml:space="preserve">
+        <value>积分账本及其数据库迁移已完成，正在编写 API。</value>
+    </data>
+    <data name="SampleFixTitle" xml:space="preserve">
+        <value>修复：每日销售报表缺少退款</value>
+    </data>
+    <data name="SampleFixSummary" xml:space="preserve">
+        <value>午夜后的退款被算到了错误的日期。已修复、在测试环境验证并合并。</value>
+    </data>
+    <data name="SampleFixStepLogs" xml:space="preserve">
+        <value>在生产环境日志中找到原因</value>
+    </data>
+    <data name="SampleFixStepTest" xml:space="preserve">
+        <value>编写一个没有修复就会失败的测试</value>
+    </data>
+    <data name="SampleFixStepFix" xml:space="preserve">
+        <value>按门店所在时区统计退款</value>
+    </data>
+    <data name="SampleFixStepMerge" xml:space="preserve">
+        <value>合并，从而更新生产环境</value>
+    </data>
+    <data name="SampleFixAskMerge" xml:space="preserve">
+        <value>合并到 main 吗？这会更新生产环境。</value>
+    </data>
+    <data name="SampleFixNoteDone" xml:space="preserve">
+        <value>生产环境已运行修复版本，测试会防止此问题再次出现。</value>
+    </data>
+    <data name="SampleFixLinkPullRequest" xml:space="preserve">
+        <value>拉取请求</value>
+    </data>
+    <data name="SampleFixLinkTest" xml:space="preserve">
+        <value>测试环境</value>
+    </data>
+    <data name="SampleFixFeed1" xml:space="preserve">
+        <value>找到了：报表用的是服务器时区，而不是门店时区。</value>
+    </data>
+    <data name="SampleFixFeed2" xml:space="preserve">
+        <value>已在测试环境上线，请试一笔午夜后的退款。</value>
+    </data>
+    <data name="SampleFixFeed3" xml:space="preserve">
+        <value>已合并，生产环境已更新。</value>
+    </data>
+    <data name="HomeWhyProgressTitle" xml:space="preserve">
+        <value>跟进长任务，一键作答</value>
+    </data>
+    <data name="HomeWhyProgressText" xml:space="preserve">
+        <value>一次部署或一个新功能需要很多步骤，其中有些只有您能完成。每个智能体对话都会在这里显示完成了什么、还剩什么以及需要您做什么，长对话里不再遗漏任何事。您在那里粘贴的密钥和密码会直接存到该去的地方，从不经过聊天。</value>
+    </data>
+    <data name="HomeWhyVoiceTitle" xml:space="preserve">
+        <value>用说话代替打字</value>
+    </data>
+    <data name="HomeWhyVoiceText" xml:space="preserve">
+        <value>点击评论、回复或回答旁的麦克风，直接说出来。浏览器会把您的语音转成您所选语言的文字。</value>
+    </data>
+    <data name="TourProgressText" xml:space="preserve">
+        <value>一次部署或一个新功能需要很多步骤，其中有些只有您能完成。每个智能体对话都会在这里显示完成了什么、还剩什么以及需要您做什么。用一次点击、几句话或语音作答，它会立即继续。在示例上试试吧。</value>
+    </data>
+    <data name="HomeFactAgent" xml:space="preserve">
+        <value>智能体的进度和问题集中在一处</value>
+    </data>
+    <data name="HomeHowStepAnswerTitle" xml:space="preserve">
+        <value>跟进并作答</value>
+    </data>
+    <data name="HomeHowStepAnswerText" xml:space="preserve">
+        <value>关注它的进度，用点击或语音回答它的问题，并在页面上钉评论，它会在您输入时就作出回应。</value>
+    </data>
+    <data name="HomeProgressSubtitle" xml:space="preserve">
+        <value>首次部署、新功能这类长任务会在这里实时汇报，并排显示，无论您开了多少个对话。</value>
+    </data>
+    <data name="HomeProgressPointSteps" xml:space="preserve">
+        <value>每一步、当前步骤和剩余步骤</value>
+    </data>
+    <data name="HomeProgressPointAnswer" xml:space="preserve">
+        <value>用点击或语音回答的问题</value>
+    </data>
+    <data name="HomeProgressPointSound" xml:space="preserve">
+        <value>需要您时会响铃，标签页上也会显示数量</value>
+    </data>
+    <data name="HomeProgressPointSecrets" xml:space="preserve">
+        <value>密钥和密码直接存到该去的地方，从不经过聊天</value>
+    </data>
+    <data name="HomeProgressOpen" xml:space="preserve">
+        <value>打开进度</value>
+    </data>
+    <data name="ProgressRunningFrom" xml:space="preserve">
+        <value>此工作台显示的是 {0} 的代码</value>
+    </data>
+    <data name="ProgressReport" xml:space="preserve">
+        <value>报告</value>
+    </data>
+    <data name="SampleFixReport" xml:space="preserve">
+        <value>**原因：** 报表按服务器的日期（UTC）汇总销售，所以门店午夜之后的退款被算到了前一天。
+
+**修复：** 退款现在按门店自己的时区统计；新增的测试在门店时间 00:30 发起退款，并检查它落在哪一天。
+
+| 检查 | 结果 |
+| --- | --- |
+| 全部测试 | 通过 |
+| 在 Test 上午夜之后退款 | 在正确的日期 |
+| 合并后的 Production | 已更新 |</value>
     </data>
 </root>

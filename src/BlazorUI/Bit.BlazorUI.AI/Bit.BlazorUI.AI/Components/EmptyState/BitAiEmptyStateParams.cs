@@ -36,14 +36,19 @@ public partial class BitAiEmptyStateParams : BitComponentBaseParams, IBitCompone
 
 
     /// <summary>
-    /// The supporting line under the heading.
-    /// </summary>
-    public string? Body { get; set; }
-
-    /// <summary>
     /// Custom CSS classes for different parts of the empty state.
     /// </summary>
     public BitAiEmptyStateClassStyles? Classes { get; set; }
+
+    /// <summary>
+    /// The supporting line under the heading.
+    /// </summary>
+    public string? Description { get; set; }
+
+    /// <summary>
+    /// Makes the heading a heading of this level (1 to 6) in the outline of the page.
+    /// </summary>
+    public int? HeadingLevel { get; set; }
 
     /// <summary>
     /// The icon of the empty state, provided as custom CSS classes of an external icon library.
@@ -84,14 +89,19 @@ public partial class BitAiEmptyStateParams : BitComponentBaseParams, IBitCompone
 
         UpdateBaseParameters(bitAiEmptyState);
 
-        if (Body.HasValue())
-        {
-            bitAiEmptyState.TakeFromCascade(nameof(Body), Body, static e => e.Body, static (e, v) => e.Body = v);
-        }
-
         if (Classes is not null)
         {
             bitAiEmptyState.TakeFromCascade(nameof(Classes), Classes, static e => e.Classes, static (e, v) => e.Classes = v);
+        }
+
+        if (Description.HasValue())
+        {
+            bitAiEmptyState.TakeFromCascade(nameof(Description), Description, static e => e.Description, static (e, v) => e.Description = v);
+        }
+
+        if (HeadingLevel.HasValue)
+        {
+            bitAiEmptyState.TakeFromCascade(nameof(HeadingLevel), HeadingLevel.Value, static e => e.HeadingLevel, static (e, v) => e.HeadingLevel = v);
         }
 
         if (Icon is not null)

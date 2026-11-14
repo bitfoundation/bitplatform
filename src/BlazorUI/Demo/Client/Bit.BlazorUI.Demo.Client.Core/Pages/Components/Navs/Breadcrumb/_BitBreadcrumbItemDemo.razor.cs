@@ -75,6 +75,16 @@ public partial class _BitBreadcrumbItemDemo
         new() { Text = "Item 6", IsSelected = true }
     ];
 
+    private readonly List<BitBreadcrumbItem> ResponsiveBreadcrumbItems =
+    [
+        new() { Text = "Home", Href = "/components/breadcrumb" },
+        new() { Text = "Documents", Href = "/components/breadcrumb" },
+        new() { Text = "Projects", Href = "/components/breadcrumb" },
+        new() { Text = "2026", Href = "/components/breadcrumb" },
+        new() { Text = "Reports", Href = "/components/breadcrumb" },
+        new() { Text = "Q3", Href = "/components/breadcrumb", IsSelected = true }
+    ];
+
     private readonly List<BitBreadcrumbItem> BreadcrumbItemsWithCustomized =
     [
         new() { Text = "Item 1" },

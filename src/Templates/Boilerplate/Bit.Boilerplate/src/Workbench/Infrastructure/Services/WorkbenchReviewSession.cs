@@ -188,8 +188,19 @@ public sealed partial class WorkbenchReviewSession : IAsyncDisposable
         document?.Transact(_ => edit(document.GetMap("flows")), null);
     }
 
-    /// <summary>Opens the document once per circuit, under the reviewer's name for presence; calls made meanwhile wait for the same open.</summary>
-    public Task Open(string reviewerName) => opening ??= OpenDocument(reviewerName);
+    /// <summary>
+    /// Opens the document once per circuit, under the reviewer's name for presence; calls made meanwhile wait for the same open,
+    /// and one made after it failed tries again.
+    /// </summary>
+    public Task Open(string reviewerName)
+    {
+        if (opening is { IsFaulted: true } or { IsCanceled: true })
+        {
+            opening = null;
+        }
+
+        return opening ??= OpenDocument(reviewerName);
+    }
 
     private async Task OpenDocument(string reviewerName)
     {
@@ -313,6 +324,7 @@ public sealed partial class WorkbenchReviewSession : IAsyncDisposable
         Agent = WorkbenchReviewDocument.ReadAgent(document.GetMap("agent"));
         Flows = WorkbenchReviewDocument.ReadFlows(document.GetMap("flows"));
 
+        RefreshTasks();
         WatchAgent();
     }
 
@@ -329,6 +341,7 @@ public sealed partial class WorkbenchReviewSession : IAsyncDisposable
     public async ValueTask DisposeAsync()
     {
         visitorComments.Dispose();
+        samples?.Dispose();
 
         if (document is null)
             return;

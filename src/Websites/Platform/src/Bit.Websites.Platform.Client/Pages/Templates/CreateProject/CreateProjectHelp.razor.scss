@@ -1,0 +1,132 @@
+﻿@import '../../../Styles/abstracts/_functions.scss';
+@import '../../../Styles/abstracts/_bit-css-variables.scss';
+
+.cp-help {
+    display: grid;
+    gap: rem2(16px);
+    font-size: rem2(14px);
+}
+
+.cp-help-lead {
+    margin: 0;
+    line-height: 1.6;
+}
+
+.cp-help-card {
+    padding: rem2(14px) rem2(16px);
+    border-radius: rem2(10px);
+    background: $bit-color-background-secondary;
+
+    > div {
+        display: grid;
+        gap: rem2(4px);
+    }
+
+    span {
+        color: $bit-color-foreground-secondary;
+    }
+}
+
+.cp-help-prompt {
+    display: block;
+    margin-top: rem2(4px);
+    padding: rem2(8px) rem2(12px);
+    border-radius: rem2(6px);
+    background: $bit-color-background-primary;
+    font-style: normal;
+    quotes: "“" "”";
+}
+
+.cp-help-demos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: rem2(8px) rem2(20px);
+
+    a {
+        color: $bit-color-primary;
+    }
+}
+
+.cp-faqs {
+    display: flex;
+    flex-direction: column;
+    gap: rem2(8px);
+    padding-top: rem2(16px);
+    border-top: 1px dashed $bit-color-border-secondary;
+}
+
+.cp-faqs-title {
+    margin: 0;
+    font-size: rem2(13px);
+    font-weight: 600;
+    color: $bit-color-foreground-secondary;
+}
+
+.cp-faq-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.cp-faq {
+    border-bottom: 1px solid $bit-color-border-secondary;
+
+    &:last-child {
+        border-bottom: none;
+    }
+}
+
+.cp-faq-question {
+    display: flex;
+    gap: rem2(10px);
+    width: 100%;
+    font: inherit;
+    cursor: pointer;
+    text-align: start;
+    align-items: baseline;
+    font-size: rem2(14px);
+    line-height: rem2(20px);
+    padding: rem2(8px) 0;
+    border: none;
+    color: $bit-color-primary;
+    background-color: transparent;
+
+    &:hover span:last-child {
+        text-decoration: underline;
+    }
+
+    &:focus-visible {
+        outline: 2px solid $bit-color-primary;
+        outline-offset: 2px;
+    }
+}
+
+.cp-faq-mark {
+    flex-shrink: 0;
+    width: rem2(8px);
+    height: rem2(8px);
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: translateY(rem2(-2px)) rotate(-45deg);
+    transition: transform 0.15s ease;
+}
+
+.cp-faq.open .cp-faq-mark {
+    transform: translateY(rem2(-4px)) rotate(45deg);
+}
+
+.cp-faq-answer {
+    margin: 0 0 rem2(10px);
+    padding-inline-start: rem2(18px);
+    font-size: rem2(14px);
+    line-height: rem2(21px);
+    color: $bit-color-foreground-secondary;
+}
+
+.cp-help-contact {
+    margin: 0;
+    color: $bit-color-foreground-secondary;
+
+    a {
+        color: $bit-color-primary;
+    }
+}

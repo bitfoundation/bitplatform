@@ -18,6 +18,8 @@ public class BitAccordionListStylesheetTests : BunitTestContext
     [
         "--bit-AccordionList-gap",
         "--bit-AccordionList-divider-color",
+        "--bit-AccordionList-empty-padding",
+        "--bit-AccordionList-empty-color",
     ];
 
     [TestMethod]

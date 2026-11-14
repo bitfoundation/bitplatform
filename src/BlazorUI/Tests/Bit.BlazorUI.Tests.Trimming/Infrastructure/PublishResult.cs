@@ -116,6 +116,54 @@ public sealed partial class PublishResult(string directory, int exitCode, string
             : [];
     }
 
+    /// <summary>
+    /// The path of an assembly a WebAssembly publish holds (<c>_framework/&lt;name&gt;.&lt;fingerprint&gt;.wasm</c>), or null
+    /// where it has none: <c>Bit.BlazorUI.AI</c> is never taken for <c>Bit.BlazorUI.AI.Core</c>.
+    /// </summary>
+    public string? FindFrameworkAssembly(string assembly)
+    {
+        var folder = Path.Combine(WebRoot, "_framework");
+        if (System.IO.Directory.Exists(folder) is false) return null;
+
+        var pattern = new Regex($@"^{Regex.Escape(assembly)}(\.[a-z0-9]+)?\.wasm$");
+        return System.IO.Directory.EnumerateFiles(folder, "*.wasm").SingleOrDefault(f => pattern.IsMatch(Path.GetFileName(f)));
+    }
+
+    /// <summary>
+    /// The virtual paths (<c>Bit.BlazorUI.AI.wasm</c>) of a resource list of a WebAssembly publish's boot configuration -
+    /// <c>assembly</c>, the ones the app starts with, or <c>lazyAssembly</c>, the ones it loads through
+    /// <c>LazyAssemblyLoader</c> - which the .NET 10 SDK and later write into <c>_framework/dotnet.js</c>.
+    /// </summary>
+    public List<string> BootResources(string list)
+    {
+        var bootFiles = new[] { "dotnet.js", "blazor.boot.json" }.Select(f => Path.Combine(WebRoot, "_framework", f)).Where(File.Exists).ToList();
+        Assert.AreNotEqual(0, bootFiles.Count, "The publish has no boot configuration (_framework/dotnet.js or blazor.boot.json).");
+
+        foreach (var file in bootFiles)
+        {
+            var block = Regex.Match(File.ReadAllText(file), $@"""{Regex.Escape(list)}""\s*:\s*\[(?<body>[^\]]*)\]");
+            if (block.Success is false) continue;
+
+            return [.. Regex.Matches(block.Groups["body"].Value, @"""virtualPath""\s*:\s*""(?<path>[^""]+)""").Select(m => m.Groups["path"].Value)];
+        }
+
+        return [];
+    }
+
+    /// <summary>
+    /// The JavaScript initializers a WebAssembly publish's boot configuration lists for Blazor to import as it starts
+    /// (<c>libraryInitializers</c>), by their paths - the counterpart of <see cref="ListedInitializers"/>, a Blazor Web
+    /// App's.
+    /// </summary>
+    public List<string> BootInitializers()
+    {
+        var dotnet = Path.Combine(WebRoot, "_framework", "dotnet.js");
+        if (File.Exists(dotnet) is false) return [];
+
+        var block = Regex.Match(File.ReadAllText(dotnet), @"""libraryInitializers""\s*:\s*\[(?<body>[^\]]*)\]");
+        return block.Success ? [.. Regex.Matches(block.Groups["body"].Value, @"""name""\s*:\s*""(?<name>[^""]+)""").Select(m => m.Groups["name"].Value)] : [];
+    }
+
     /// <summary>Whether the publish holds a file of a package's static web assets.</summary>
     public bool HasAsset(string package, string relativePath) => File.Exists(GetAssetPath(package, relativePath));
 

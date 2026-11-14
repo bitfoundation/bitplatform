@@ -1,0 +1,137 @@
+﻿@page "/components/notificationcenter"
+
+<PageOutlet Url="components/notificationcenter"
+            Title="NotificationCenter"
+            Description="BitNotificationCenter is a bell with an unread count that opens a panel listing the notifications the app's snack bar showed." />
+
+<DemoPage Name="NotificationCenter"
+          SecondaryNames="@(["NotificationBell", "NotificationInbox", "NotificationsPanel"])"
+          Description="BitNotificationCenter is a bell button whose badge counts the notifications not read yet, opening a panel that lists the history of BitSnackBarService: what the app's snack bar showed, newest first, with its time - whether it is still on the screen or long gone."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          PublicMembers="componentPublicMembers"
+          CssVariables="componentCssVariables"
+          GitHubExtrasUrl="NotificationCenter/BitNotificationCenter.razor"
+          GitHubDemoUrl="Extras/NotificationCenter/BitNotificationCenterDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            To use this component, you need to install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Extras" Target="_blank">
+                <BitTag Reversed
+                        Text="Bit.BlazorUI.Extras"
+                        Color="BitColor.SecondaryBackground"
+                        IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            nuget package, as described in the Optional steps of the
+            <BitLink Href="/getting-started">Getting started</BitLink> page.
+        </BitText>
+        <br />
+        <BitText>
+            The center lists what a <b>BitSnackBar</b> marked <b>ServiceHost</b> showed, so place it beside the layout's host;
+            it needs the services <b>AddBitBlazorUIServices</b> registers. The service keeps no history until its
+            <b>HistoryLimit</b> is set, so the center raises it to its own <b>HistoryLimit</b> (50 by default).
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+            <div>
+                Raise a few notifications through <b>BitSnackBarService</b>, then open the bell: the badge counts the ones not read
+                yet, and opening the panel reads them. Every example on this page lists the same history, through this page's
+                snack bar.
+            </div>
+            <br />
+            <BitSnackBar ServiceHost ShowIcon AutoDismiss AutoDismissTime="TimeSpan.FromSeconds(4)" />
+            <BitStack Horizontal Wrap VerticalAlign="BitAlignment.Center">
+                <BitNotificationCenter />
+                <BitButton OnClick="ShowInfo">Info</BitButton>
+                <BitButton OnClick="ShowSuccess">Success</BitButton>
+                <BitButton OnClick="ShowWarning">Warning</BitButton>
+                <BitButton OnClick="ShowError">Error</BitButton>
+            </BitStack>
+        </DemoExample>
+
+        <DemoExample Title="Unread & IsOpen" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <div>
+                What has been read is each center's own: <b>UnreadCount</b> is what its badge shows, <b>MarkAllAsRead</b> reads
+                everything without opening the panel, and <b>IsOpen</b> (two-way bound) opens it from code. The notifications that
+                were unread when the panel opened stay marked for as long as it is open.
+            </div>
+            <br />
+            <BitStack Horizontal Wrap VerticalAlign="BitAlignment.Center">
+                <BitNotificationCenter @ref="unreadCenter" @bind-IsOpen="isCenterOpen" />
+                <BitButton OnClick="ShowSuccess">Notify</BitButton>
+                <BitButton Variant="BitVariant.Outline" OnClick="() => isCenterOpen = true">Open</BitButton>
+                <BitButton Variant="BitVariant.Outline" OnClick="() => unreadCenter?.MarkAllAsRead()">Mark all as read</BitButton>
+                <BitText>Unread: @unreadCenter?.UnreadCount</BitText>
+            </BitStack>
+        </DemoExample>
+
+        <DemoExample Title="Item template" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+            <div>
+                <b>ItemTemplate</b> draws each notification of the list. The item is the BitSnackBarItem the snack bar showed, so
+                its <b>ShownAt</b>, its <b>DismissReason</b> and its <b>Data</b> are all at hand.
+            </div>
+            <br />
+            <BitStack Horizontal Wrap VerticalAlign="BitAlignment.Center">
+                <BitNotificationCenter>
+                    <ItemTemplate Context="item">
+                        <div style="display: flex; flex-direction: column; gap: 2px;">
+                            <b>@item.Title</b>
+                            <span>@(item.DismissReason is { } reason ? $"Dismissed ({reason})" : "On the screen")</span>
+                        </div>
+                    </ItemTemplate>
+                </BitNotificationCenter>
+                <BitButton OnClick="ShowWarning">Notify</BitButton>
+            </BitStack>
+        </DemoExample>
+
+        <DemoExample Title="Texts & time zone" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div>
+                Every word of the center can be replaced: <b>HeaderText</b>, <b>ClearAllText</b>, <b>EmptyText</b>, the name of the
+                bell (<b>AriaLabel</b>, with <b>UnreadAriaLabelFormat</b> for its count) and what a screen reader hears of an
+                unread notification (<b>UnreadItemText</b>). <b>TimeZone</b> is the zone the times are shown in - UTC here.
+            </div>
+            <br />
+            <BitStack Horizontal Wrap VerticalAlign="BitAlignment.Center">
+                <BitNotificationCenter HeaderText="Inbox"
+                                       ClearAllText="Empty the inbox"
+                                       EmptyText="You are all caught up."
+                                       AriaLabel="Inbox"
+                                       UnreadAriaLabelFormat="{0} new"
+                                       UnreadItemText="New"
+                                       TimeZone="TimeZoneInfo.Utc" />
+                <BitButton OnClick="ShowInfo">Notify</BitButton>
+            </BitStack>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                <b>Classes</b> and <b>Styles</b> reach every part of the center, and the <b>--bit-NotificationCenter-*</b> variables
+                restyle it from anywhere above it.
+            </div>
+            <br />
+            <BitStack Horizontal Wrap VerticalAlign="BitAlignment.Center">
+                <BitNotificationCenter Style="--bit-NotificationCenter-badge-background: #6a1b9a; --bit-NotificationCenter-width: 300px;"
+                                       Styles="@(new() { HeaderText = "color: #6a1b9a;", ItemTitle = "font-style: italic;" })" />
+                <BitButton OnClick="ShowError">Notify</BitButton>
+            </BitStack>
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <div>Use BitNotificationCenter in right-to-left (RTL).</div>
+            <br />
+            <div dir="rtl">
+                <BitStack Horizontal Wrap VerticalAlign="BitAlignment.Center">
+                    <BitNotificationCenter Dir="BitDir.Rtl"
+                                           HeaderText="اعلان‌ها"
+                                           ClearAllText="پاک کردن همه"
+                                           EmptyText="اعلانی وجود ندارد"
+                                           AriaLabel="اعلان‌ها"
+                                           UnreadAriaLabelFormat="{0} خوانده نشده"
+                                           UnreadItemText="خوانده نشده" />
+                    <BitButton OnClick="ShowRtl">اعلان</BitButton>
+                </BitStack>
+            </div>
+        </DemoExample>
+    </Examples>
+</DemoPage>

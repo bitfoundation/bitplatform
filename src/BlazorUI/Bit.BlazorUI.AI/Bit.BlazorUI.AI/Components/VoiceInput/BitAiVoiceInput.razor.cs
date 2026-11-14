@@ -58,13 +58,11 @@ public partial class BitAiVoiceInput : BitAiComponentBase
     private DateTimeOffset _recordingDeadline;
     private CancellationTokenSource? _countdownCts;
     private CancellationTokenSource? _transcribeCts;
-    private IBitAiSpeechToText? _speechToText;
     private DotNetObjectReference<BitAiVoiceInput>? _dotnetObj;
 
 
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
-    [Inject] private IServiceProvider _services { get; set; } = default!;
 
 
 
@@ -161,8 +159,9 @@ public partial class BitAiVoiceInput : BitAiComponentBase
     /// <summary>
     /// The app's speech-to-text, given a recording (read from its start, and disposed once the returned task completes),
     /// its media type (such as <c>audio/webm</c>) and a token cancelled when the voice input goes away; it returns what
-    /// was said. When null, an <see cref="IBitAiSpeechToText"/> service registered through
-    /// <c>AddBitBlazorUIAIServices(ai =&gt; ai.UseSpeechToText&lt;T&gt;())</c> is used, if there is one.
+    /// was said. When null, the cascaded <see cref="BitAiServices.SpeechToText"/> is used, else an
+    /// <see cref="IBitAiSpeechToText"/> service registered through
+    /// <c>AddBitBlazorUIAIServices(ai =&gt; ai.UseSpeechToText&lt;T&gt;())</c>, if there is one.
     /// </summary>
     /// <remarks>
     /// With a transcriber the microphone is recorded in the browser and the take transcribed by the app (see
@@ -360,13 +359,6 @@ public partial class BitAiVoiceInput : BitAiComponentBase
         StyleBuilder.Register(() => Styles?.Root);
     }
 
-    protected override void OnInitialized()
-    {
-        _speechToText = _services.GetService(typeof(IBitAiSpeechToText)) as IBitAiSpeechToText;
-
-        base.OnInitialized();
-    }
-
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);
@@ -413,7 +405,10 @@ public partial class BitAiVoiceInput : BitAiComponentBase
 
 
 
-    private bool HasTranscriber => Transcriber is not null || _speechToText is not null;
+    // The cascaded speech-to-text (BitAiServices.SpeechToText), else the registered one.
+    private IBitAiSpeechToText? _SpeechToText => GetAiService<IBitAiSpeechToText>();
+
+    private bool HasTranscriber => Transcriber is not null || _SpeechToText is not null;
 
     // Which way a press dictates, from what the app supplies and what the browser can do.
     private Engine CurrentEngine
@@ -573,7 +568,7 @@ public partial class BitAiVoiceInput : BitAiComponentBase
     {
         if (Transcriber is { } transcriber) return transcriber(audio, contentType, cancellationToken);
 
-        if (_speechToText is { } speechToText) return speechToText.TranscribeAsync(audio, contentType, Language, cancellationToken);
+        if (_SpeechToText is { } speechToText) return speechToText.TranscribeAsync(audio, contentType, Language, cancellationToken);
 
         return Task.FromResult<string?>(null);
     }

@@ -784,10 +784,31 @@ button.bit-bonboarding-checklist-action:focus-visible {
     text-decoration: line-through;
 }
 
-.bit-bonboarding-checklist-item-description {
+.bit-bonboarding-checklist-item-description,
+.bit-bonboarding-checklist-item-locked {
     margin: 0 0 0.375rem;
     padding-inline-start: 2.25rem;
     font-size: var(--bit-bonboarding-font-size-sm);
+    color: var(--bit-bonboarding-text-muted);
+}
+
+/* Waiting for other items: a dashed ring, and the line under it says which (never the ring alone). */
+.bit-bonboarding-checklist-item[data-bonboarding-state="locked"] .bit-bonboarding-checklist-check {
+    border-style: dashed;
+}
+
+.bit-bonboarding-checklist-item[data-bonboarding-state="locked"] .bit-bonboarding-checklist-item-title {
+    color: var(--bit-bonboarding-text-muted);
+}
+
+.bit-bonboarding-checklist-tag {
+    flex: 0 0 auto;
+    margin-inline-start: auto;
+    padding: 0 0.5rem;
+    border: 1px solid var(--bit-bonboarding-border);
+    border-radius: 999px;
+    font-size: var(--bit-bonboarding-font-size-sm);
+    line-height: 1.5;
     color: var(--bit-bonboarding-text-muted);
 }
 

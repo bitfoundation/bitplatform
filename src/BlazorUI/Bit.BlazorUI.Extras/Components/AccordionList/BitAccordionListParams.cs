@@ -61,7 +61,12 @@ public partial class BitAccordionListParams : BitComponentBaseParams, IBitCompon
     /// <summary>
     /// The custom content to render in place of the items when the list has none.
     /// </summary>
-    public RenderFragment? EmptyContent { get; set; }
+    public RenderFragment? EmptyTemplate { get; set; }
+
+    /// <summary>
+    /// The text to render in place of the items when the list has none.
+    /// </summary>
+    public string? EmptyText { get; set; }
 
     /// <summary>
     /// The icon to show in place of the expander icon of all items while they are expanded, using custom CSS classes
@@ -234,9 +239,14 @@ public partial class BitAccordionListParams : BitComponentBaseParams, IBitCompon
             bitAccordionList.TakeFromCascade(nameof(Collapsible), Collapsible.Value, static a => a.Collapsible, static (a, v) => a.Collapsible = v);
         }
 
-        if (EmptyContent is not null)
+        if (EmptyTemplate is not null)
         {
-            bitAccordionList.TakeFromCascade(nameof(EmptyContent), EmptyContent, static a => a.EmptyContent, static (a, v) => a.EmptyContent = v);
+            bitAccordionList.TakeFromCascade(nameof(EmptyTemplate), EmptyTemplate, static a => a.EmptyTemplate, static (a, v) => a.EmptyTemplate = v);
+        }
+
+        if (EmptyText is not null)
+        {
+            bitAccordionList.TakeFromCascade(nameof(EmptyText), EmptyText, static a => a.EmptyText, static (a, v) => a.EmptyText = v);
         }
 
 

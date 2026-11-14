@@ -112,7 +112,7 @@ private BitChartOptions ModeOptions() => new()
           Data=""EmptyDemoData()""
           IsLoading=""_loading""
           LoadingLabel=""Fetching revenue...""
-          NoDataText=""No results for this filter"" />";
+          EmptyText=""No results for this filter"" />";
     private readonly string emptyCsharpCode = @"
 private bool _hasData = true;
 private bool _loading;

@@ -470,7 +470,14 @@ private async Task ClearAll() => await controlRef.Clear();";
 <BitSnackBar ServiceHost ShowIcon AutoDismiss AutoDismissTime=""TimeSpan.FromSeconds(5)"" />
 
 <BitButton OnClick=""SaveThroughService"">Save</BitButton>
-<BitButton OnClick=""FailThroughService"">Fail</BitButton>";
+<BitButton OnClick=""FailThroughService"">Fail</BitButton>
+<BitButton Variant=""BitVariant.Outline"" OnClick=""ClearServiceHistory"">Clear history</BitButton>
+
+<div>History (the latest @snackBarService.HistoryLimit, newest first):</div>
+@foreach (var item in snackBarService.History.Reverse())
+{
+    <div>@item.ShownAt?.ToLocalTime().ToString(""T"") - @item.Title - @(item.DismissReason?.ToString() ?? ""showing"")</div>
+}";
     private readonly string example13CsharpCode = @"
 // Program.cs: builder.Services.AddBitBlazorUIServices();
 
@@ -484,7 +491,20 @@ private async Task SaveThroughService()
 private async Task FailThroughService()
 {
     await snackBarService.Error(""Save failed"", ""The same service reports problems too."");
-}";
+}
+
+protected override void OnInitialized()
+{
+    // The history is off until a limit is set; the list re-renders whenever it changes, a dismissal included.
+    snackBarService.HistoryLimit = 5;
+    snackBarService.OnHistoryChange += HandleHistoryChange;
+}
+
+private void HandleHistoryChange() => _ = InvokeAsync(StateHasChanged);
+
+private void ClearServiceHistory() => snackBarService.ClearHistory();
+
+public void Dispose() => snackBarService.OnHistoryChange -= HandleHistoryChange;";
 
     private readonly string example14RazorCode = @"
 <BitSnackBar @ref=""a11yRef"" ShowIcon AriaLabel=""Demo notifications"" DismissAriaLabel=""Dismiss notification"" />

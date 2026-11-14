@@ -127,12 +127,14 @@ The project supports multiple Blazor hosting models, all configured in a single 
 
 ```json
 "WebAppRender": {
-    "BlazorMode": "BlazorServer",
+    "BlazorMode": "BlazorWebAssembly",
     "BlazorMode_Comment": "BlazorServer, BlazorWebAssembly and BlazorAuto.",
     "PrerenderEnabled": false,
     "PrerenderEnabled_Comment": "for apps with Prerender enabled, follow the instructions in the Client.Web/wwwroot/service-worker.published.js file"
 }
 ```
+
+`appsettings.Development.json` next to it sets `BlazorServer`, so the app runs on Blazor Server in development and on WebAssembly everywhere else.
 
 ### Available Blazor Modes
 
@@ -140,7 +142,7 @@ Blazor Server, Auto, WebAssembly, Blazor WebAssembly Standalone and Blazor Hybri
 
 This [article](https://www.reddit.com/r/Blazor/comments/1kq5eyu/this_is_not_yet_just_another_incorrect_comparison/) is a good resource to compare Blazor modes.
 In a nutshell:
- - Use Blazor Server for development purposes only.
+ - We don't recommend Blazor Server for production
  - Use Blazor WebAssembly or Blazor WebAssembly Standalone for production
  - Use Blazor Hybrid for Android, iOS, Windows and macOS apps
 

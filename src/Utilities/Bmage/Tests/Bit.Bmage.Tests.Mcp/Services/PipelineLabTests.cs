@@ -47,17 +47,19 @@ public class PipelineLabTests
     }
 
     [TestMethod]
-    public async Task Run_WebPIsMeasured_AvifAndGif_AreReportedWithGuidance()
+    public async Task Run_WebPAndGifAreMeasured_Avif_IsReportedWithGuidance()
     {
         var run = await BmagePipelineLab.RunAsync("MaxSize(200, 200)", "photo", 400, 300, "jpeg, webp, avif, gif", "0.8");
 
-        foreach (var format in new[] { "Avif", "Gif" })
-        {
-            var encoding = run.Encodings.Single(entry => entry.Format == format);
+        var avif = run.Encodings.Single(entry => entry.Format == "Avif");
+        Assert.IsNull(avif.Bytes, "Avif was measured, on a server that cannot encode it.");
+        Assert.IsFalse(string.IsNullOrWhiteSpace(avif.Note));
 
-            Assert.IsNull(encoding.Bytes, $"{format} was measured, on a server that cannot encode it.");
-            Assert.IsFalse(string.IsNullOrWhiteSpace(encoding.Note));
-        }
+        // The managed encoder writes a single-frame GIF on the server, so it is measured, and its palette limits are explained.
+        var gif = run.Encodings.Single(entry => entry.Format == "Gif");
+        Assert.IsNotNull(gif.Bytes);
+        Assert.IsNull(gif.Quality, "GIF is not encoded at a quality.");
+        Assert.IsFalse(string.IsNullOrWhiteSpace(gif.Note));
 
         // The managed encoder writes WebP on the server, so it is measured like JPEG, and comes out smaller.
         var webp = run.Encodings.Single(entry => entry.Format == "WebP");

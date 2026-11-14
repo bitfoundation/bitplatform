@@ -31,6 +31,13 @@ jobs:
     environment: ${{ inputs.ENV_NAME }}
     steps:
 
+      # The runner's preinstalled toolchains leave a thin margin once the app is published and its images are built, so drop
+      # the ones no step here uses, as ci.yml does.
+      - name: Free disk space
+        run: |
+          sudo rm -rf /opt/ghc /usr/local/.ghcup /usr/share/swift /usr/local/share/boost /opt/hostedtoolcache/CodeQL /usr/local/share/powershell /usr/share/miniconda /opt/az /usr/local/lib/android/sdk/ndk
+          df -h /
+
       - name: Checkout source code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -42,9 +49,13 @@ jobs:
           global-json-file: global.json
 
       - name: Prepare this machine with bit setup
-        uses: bitfoundation/bitplatform/.github/actions/bit-bp/bit-setup@v-11.0.0-pre-18
+        uses: bitfoundation/bitplatform/.github/actions/bit-bp/bit-setup@v-11.0.0-pre-19
         with:
           arguments: --no-build
+
+      - name: Check the api against the released versions
+        if: inputs.ENV_NAME == 'Production'
+        run: bit api check --release
 
       - name: Translate .resx files
         env:
@@ -58,7 +69,6 @@ jobs:
         with:
           files: 'src/**/appsettings*json'
         env:
-          WebAppRender.BlazorMode: 'BlazorWebAssembly'
           ServerAddress: ${{ vars.SERVER_API_ADDRESS || vars.SERVER_ADDRESS }}
 #if (notification == true)
           AdsPushVapid.PublicKey: ${{ secrets.PUBLIC_VAPIDKEY }}
@@ -79,11 +89,10 @@ jobs:
       - name: Build and push the images
         env:
           ENV_NAME: ${{ inputs.ENV_NAME }}
-          APP_VERSION: ${{ vars.APP_VERSION }}
         run: |
           # Every dotnet build and publish from here on reads Directory.Build.rsp - the ones Aspire runs to build the images
-          # included - which gives the images the version and the environment the other jobs pass with -p.
-          { if [ -n "$APP_VERSION" ]; then echo "-p:Version=$APP_VERSION"; fi; echo "-p:Environment=$ENV_NAME"; } > Directory.Build.rsp
+          # included - which gives the images the environment the other jobs pass with -p.
+          echo "-p:Environment=$ENV_NAME" > Directory.Build.rsp
           export REGISTRY_ENDPOINT=ghcr.io REGISTRY_REPOSITORY="${GITHUB_REPOSITORY,,}" IMAGE_TAG="${ENV_NAME,,}-$GITHUB_SHA"
           # shellcheck disable=SC1010 # `do` is the aspire subcommand here, not the shell keyword.
           aspire do push --apphost src/Server/Boilerplate.Server.AppHost/Boilerplate.Server.AppHost.csproj --environment "$ENV_NAME" --non-interactive
@@ -133,10 +142,17 @@ jobs:
           name: compose
           path: compose
 
+      # The login is this job's own: DOCKER_CONFIG points every later step at a folder in the job's temporary folder. One VM
+      # can host both environments with their runners as one user, and a login in that user's ~/.docker would be shared, so
+      # the deployment that ended first would log the other out before it pulled its images.
       - name: Log in to GitHub Container Registry
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: echo "$GITHUB_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+        run: |
+          docker_config="$RUNNER_TEMP/docker-config"
+          mkdir -p "$docker_config"
+          echo "DOCKER_CONFIG=$docker_config" >> "$GITHUB_ENV"
+          echo "$GITHUB_TOKEN" | DOCKER_CONFIG="$docker_config" docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
 
       # Writes the Compose project to ~/deployments/<project>: its .env, the apps' settings files and the AppCertificate, from
       # this environment's secrets. The steps below read them from there, so only this one sees the secrets.
@@ -148,10 +164,12 @@ jobs:
           SMTP: ${{ secrets.SMTP_CONNECTION_STRING }}
           APP_CERTIFICATE: ${{ secrets.APP_CERTIFICATE }}
           APP_CERTIFICATE_RETIRED: ${{ secrets.APP_CERTIFICATE_RETIRED }}
-          SERVERWEB_SETTINGS: ${{ secrets.SERVERWEB_SETTINGS }}
-          LANDINGPAGE_SETTINGS: ${{ secrets.LANDINGPAGE_SETTINGS }}
-#if (api == "Standalone")
-          SERVERAPI_SETTINGS: ${{ secrets.SERVERAPI_SETTINGS }}
+          # Every variable and secret of the environment, for the settings no parameter carries: one each (see below).
+          VARIABLES: ${{ toJSON(vars) }}
+          SECRETS: ${{ toJSON(secrets) }}
+#if (cloudflare == true)
+          CLOUDFLARE_ZONE: ${{ secrets.CLOUDFLARE_ZONE }}
+          CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}
 #endif
 #if (database == "SqlServer")
           SQLSERVER_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
@@ -232,9 +250,26 @@ jobs:
           fi
           mv "$deploy_dir/.env.new" "$deploy_dir/.env"
 
-          # The settings no parameter carries - serverweb.env, landingpage.env (and serverapi.env) - from KEY=value lines, the same way.
+          # The settings no parameter carries go into each app's own settings file - serverweb.env, landingpage.env (and
+          # serverapi.env) - one KEY='value' line each. Setting the same key twice is a mistake, not an override, so it stops
+          # the deployment.
+          declare -A settings_file=() set_by=()
+          setting() {
+            local file="$1" key="$2" value="$3" source="$4" id="$1:${2^^}"
+            if [[ -n "${set_by[$id]:-}" ]]; then
+              echo "::error::${source^} sets $key in $file, which ${set_by[$id]} already sets. Keep one of them."
+              exit 1
+            fi
+            if [[ "$value" == *"'"* || "$value" == *$'\n'* ]]; then
+              echo "::error::${source^} holds a single quote or a line break, which $file can't carry."
+              exit 1
+            fi
+            set_by[$id]="$source"
+            printf "%s='%s'\n" "$key" "$value" >> "$deploy_dir/$file"
+          }
+
           while IFS= read -r file; do
-            settings="$(printf '%s' "${file%.env}" | tr '[:lower:]-' '[:upper:]_')_SETTINGS"
+            settings_file[$(printf '%s' "${file%.env}" | tr '[:lower:]-' '[:upper:]_')]="$file"
             : > "$deploy_dir/$file"
 
             # Each app first trusts its own public address. The Host header is the client's to write, so the apps link
@@ -252,34 +287,67 @@ jobs:
             fi
             # Index 100 adds the address after the TrustedOrigins of appsettings.json (the binder keeps the order and skips
             # the missing indexes) instead of replacing its first entry. The lines below can still add more.
-            printf "TrustedOrigins__100='%s'\n" "$origin" >> "$deploy_dir/$file"
+            setting "$file" TrustedOrigins__100 "$origin" "this deployment"
+            #if (api == "Standalone")
             # An OAuth client, such as an MCP client signing in to /dev-mcp, reaches a standalone api with no origin, so the api
             # takes the consent page's address from WebAppUrl. Without it, the client lands on the api's own host.
             if [[ "$file" == "serverapi.env" ]]; then
-              printf "WebAppUrl='%s'\n" "$origin" >> "$deploy_dir/$file"
-              printf "TrustedOrigins__101='%s'\n" "$api_origin" >> "$deploy_dir/$file"
+              setting "$file" WebAppUrl "$origin" "this deployment"
+              setting "$file" TrustedOrigins__101 "$api_origin" "this deployment"
             fi
+            #endif
             #if (cloudflare == true)
             # The landing page's browser posts its telemetry to its own address, where the tunnel sends /v1/ to the dashboard.
             #else
             # The landing page's browser posts its telemetry to its own address, where Caddy sends /v1/ to the dashboard.
             #endif
             if [[ "$file" == "landingpage.env" ]]; then
-              printf "Belemetry__OtlpEndpoint='%s'\n" "$origin" >> "$deploy_dir/$file"
+              setting "$file" Belemetry__OtlpEndpoint "$origin" "this deployment"
             fi
-
-            while IFS= read -r line; do
-              line="${line%$'\r'}"
-              if [[ -z "$line" || "$line" == "#"* ]]; then
-                continue
-              fi
-              if [[ "$line" != *=* || "${line#*=}" == *"'"* ]]; then
-                echo "::error::$settings has a line that is not KEY=value, or whose value contains a single quote: ${line%%=*}"
-                exit 1
-              fi
-              printf "%s='%s'\n" "${line%%=*}" "${line#*=}" >> "$deploy_dir/$file"
-            done <<< "${!settings:-}"
           done < <(grep -E '^ +- "?[a-z0-9-]+\.env"?$' compose/docker-compose.yaml | grep -oE '[a-z0-9-]+\.env' | sort -u)
+          #if (api != "Standalone")
+          # The api runs inside serverweb, so its settings go there, whether their secret starts with SERVERWEB__ or SERVERAPI__.
+          settings_file[SERVERAPI]="${settings_file[SERVERWEB]}"
+          #endif
+          #if (cloudflare == true)
+
+          # The api purges Cloudflare's cache by tag with the token and zone this deployment purges it with, rather than a
+          # second copy of them.
+          if [[ -n "$CLOUDFLARE_TOKEN" && -n "$CLOUDFLARE_ZONE" ]]; then
+            setting "${settings_file[SERVERAPI]}" Cloudflare__ApiToken "$CLOUDFLARE_TOKEN" CLOUDFLARE_TOKEN
+            setting "${settings_file[SERVERAPI]}" Cloudflare__ZoneIds__0 "$CLOUDFLARE_ZONE" CLOUDFLARE_ZONE
+          fi
+          #endif
+
+          # Every other setting is a variable or a secret of its own, named <SERVICE>__<Section>__<Key>:
+          # SERVERAPI__SMS__PROVIDERS__TWILIO__AUTHTOKEN is the api's Sms:Providers:Twilio:AuthToken. A secret for a key, a
+          # variable for what isn't secret, such as a model name or a flag: GitHub blanks a secret's value out of every log, so
+          # a secret holding `true` would hide every "true" there. GitHub keeps their names in upper case, which .NET's
+          # configuration doesn't mind, and changing one setting changes it alone. jq reads them out of toJSON(vars) and
+          # toJSON(secrets).
+          if ! command -v jq > /dev/null; then
+            echo "::error::Install jq on this server (sudo apt-get install -y jq). The deployment reads the apps' settings out of the environment's variables and secrets with it."
+            exit 1
+          fi
+          while IFS=$'\t' read -r kind name value; do
+            if [[ "${name^^}" == *__SUPPORTEDAPPVERSIONS__* || "${name^^}" == APP_VERSION ]]; then
+              echo "::error::Delete the $kind $name: the version stays in src/Directory.Build.props and SupportedAppVersions in Server.Api's appsettings files, where bit api check reads them."
+              exit 1
+            fi
+            prefix="${name%%__*}"
+            file=""
+            if [[ -n "$prefix" && -n "${name#*__}" ]]; then
+              file="${settings_file[${prefix^^}]:-}"
+            fi
+            if [[ -z "$file" ]]; then
+              echo "::error::The $kind $name isn't <SERVICE>__<Section>__<Key> with a SERVICE of this deployment: ${!settings_file[*]}."
+              exit 1
+            fi
+            setting "$file" "${name#*__}" "$(printf '%s' "$value" | base64 -d)" "the $kind $name"
+          done < <(
+            jq -r 'to_entries[] | select(.key | contains("__") or . == "APP_VERSION") | "variable\t\(.key)\t\(.value | @base64)"' <<< "$VARIABLES"
+            jq -r 'to_entries[] | select(.key | contains("__") or . == "APP_VERSION") | "secret\t\(.key)\t\(.value | @base64)"' <<< "$SECRETS"
+          )
           #if (cloudflare != true)
 
           # Anyone can post to the landing page's /v1/ paths, so each request's body is capped. A rate limit needs a Caddy
@@ -594,7 +662,7 @@ jobs:
           global-json-file: global.json
 
       - name: Prepare this machine with bit setup
-        uses: bitfoundation/bitplatform/.github/actions/bit-bp/bit-setup@v-11.0.0-pre-18
+        uses: bitfoundation/bitplatform/.github/actions/bit-bp/bit-setup@v-11.0.0-pre-19
         with:
           arguments: --platforms windows --no-build
 
@@ -616,7 +684,7 @@ jobs:
       # Logs in to Azure with the job's OIDC token and points vpk at the Artifact Signing account, so vpk pack signs the app.
       - name: Sign the app with Artifact Signing
         if: vars.CODE_SIGNING_ACCOUNT != ''
-        uses: bitfoundation/bitplatform/.github/actions/bit-bp/artifact-signing@v-11.0.0-pre-18
+        uses: bitfoundation/bitplatform/.github/actions/bit-bp/artifact-signing@v-11.0.0-pre-19
         with:
           endpoint: ${{ vars.CODE_SIGNING_ENDPOINT }}
           account: ${{ vars.CODE_SIGNING_ACCOUNT }}
@@ -629,10 +697,13 @@ jobs:
         env:
           # Read from the environment, so no character of the title is read as part of the script.
           APP_TITLE: ${{ vars.APP_TITLE }}
+          BUILD_NUMBER: ${{ inputs.ENV_NAME != 'Production' && github.run_number || '' }}
         run: |
           cd src\Client\Boilerplate.Client.Windows\
-          dotnet publish Boilerplate.Client.Windows.csproj -c Release -o .\publish-result -r win-x86 -p:Version="${{ vars.APP_VERSION }}" --self-contained -p:Environment=${{ inputs.ENV_NAME }}
-          dnx vpk@1.3.39-g8d2844f -- pack -u ${{ vars.APP_ID }} -v "${{ vars.APP_VERSION }}" -p .\publish-result -e Boilerplate.Client.Windows.exe -r win-x86 --framework webview2 --icon .\wwwroot\favicon.ico --packTitle $env:APP_TITLE
+          dotnet publish Boilerplate.Client.Windows.csproj -c Release -o .\publish-result -r win-x86 --self-contained -p:Environment=${{ inputs.ENV_NAME }}
+          $version = dotnet msbuild Boilerplate.Client.Windows.csproj -getProperty:Version
+          if ($env:BUILD_NUMBER) { $version = "$version-build.$env:BUILD_NUMBER" }
+          dnx vpk@1.3.39-g8d2844f -- pack -u ${{ vars.APP_ID }} -v $version -p .\publish-result -e Boilerplate.Client.Windows.exe -r win-x86 --framework webview2 --icon .\wwwroot\favicon.ico --packTitle $env:APP_TITLE
 
       - name: Upload artifact
         id: artifact
@@ -674,7 +745,7 @@ jobs:
           global-json-file: global.json
 
       - name: Prepare this machine with bit setup
-        uses: bitfoundation/bitplatform/.github/actions/bit-bp/bit-setup@v-11.0.0-pre-18
+        uses: bitfoundation/bitplatform/.github/actions/bit-bp/bit-setup@v-11.0.0-pre-19
         with:
           arguments: --platforms android --no-build
 
@@ -704,7 +775,8 @@ jobs:
           # Read from the environment, so no character of the title is read as part of the script, and passed to MSBuild in
           # quotes of its own, so a comma in it doesn't end the property.
           APP_TITLE: ${{ vars.APP_TITLE }}
-        run: dotnet publish src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -c Release -p:ApplicationId=${{ vars.APP_ID }} "-p:ApplicationTitle=\"$APP_TITLE\"" -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="Boilerplate.keystore" -p:AndroidSigningKeyAlias=Boilerplate -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:Version="${{ vars.APP_VERSION }}" -p:Environment=${{ inputs.ENV_NAME }} -f net11.0-android
+          BUILD_NUMBER: ${{ inputs.ENV_NAME != 'Production' && github.run_number || '' }}
+        run: dotnet publish src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -c Release -p:ApplicationId=${{ vars.APP_ID }} "-p:ApplicationTitle=\"$APP_TITLE\"" ${BUILD_NUMBER:+-p:ApplicationVersion=$BUILD_NUMBER} -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="Boilerplate.keystore" -p:AndroidSigningKeyAlias=Boilerplate -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:Environment=${{ inputs.ENV_NAME }} -f net11.0-android
 
       - name: Upload artifact
         id: artifact
@@ -751,7 +823,7 @@ jobs:
           xcode-version: '27.2'
 
       - name: Prepare this machine with bit setup
-        uses: bitfoundation/bitplatform/.github/actions/bit-bp/bit-setup@v-11.0.0-pre-18
+        uses: bitfoundation/bitplatform/.github/actions/bit-bp/bit-setup@v-11.0.0-pre-19
         with:
           arguments: --platforms ios --no-build
 
@@ -787,7 +859,8 @@ jobs:
         env:
           # As for Android.
           APP_TITLE: ${{ vars.APP_TITLE }}
-        run: dotnet publish src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -p:ApplicationId=${{ vars.APP_ID }} "-p:ApplicationTitle=\"$APP_TITLE\"" -p:RuntimeIdentifier=ios-arm64 -c Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="${{ vars.IOS_CODE_SIGN_PROVISION }}" -p:Version="${{ vars.APP_VERSION }}" -p:Environment=${{ inputs.ENV_NAME }} -f net11.0-ios
+          BUILD_NUMBER: ${{ inputs.ENV_NAME != 'Production' && github.run_number || '' }}
+        run: dotnet publish src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -p:ApplicationId=${{ vars.APP_ID }} "-p:ApplicationTitle=\"$APP_TITLE\"" ${BUILD_NUMBER:+-p:ApplicationVersion=$BUILD_NUMBER} -p:RuntimeIdentifier=ios-arm64 -c Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="${{ vars.IOS_CODE_SIGN_PROVISION }}" -p:Environment=${{ inputs.ENV_NAME }} -f net11.0-ios
 
       - name: Upload artifact
         id: artifact

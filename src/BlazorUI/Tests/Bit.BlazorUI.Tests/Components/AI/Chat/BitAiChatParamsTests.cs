@@ -43,6 +43,7 @@ public class BitAiChatParamsTests : BitAiTestBase
         nameof(BitAiChat.OnFeedback),
         nameof(BitAiChat.OnSourceClick),
         nameof(BitAiChat.OnSubmit),
+        nameof(BitAiChat.Services),
         nameof(BitAiChat.Session),
         nameof(BitAiChat.SessionOptions),
         nameof(BitAiChat.Suggestions),

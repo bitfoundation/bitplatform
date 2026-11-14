@@ -240,9 +240,14 @@ public class BitDropdownClassStyles
     public string? DynamicItem { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the empty state content of the BitDropdown.
+    /// Custom CSS classes/styles for what the callout of the BitDropdown shows when it has no item at all.
     /// </summary>
-    public string? EmptyContent { get; set; }
+    public string? Empty { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for what the callout of the BitDropdown shows when a search matched none of its items.
+    /// </summary>
+    public string? NoResults { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the loading state container of the BitDropdown.

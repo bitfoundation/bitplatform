@@ -47,8 +47,7 @@ public partial class CounterStore
 
     // Returns ValueTask<T>: the generator must await it (via AsTask) rather than fire-and-forget.
     // The explicit name contains spaces, so it is a display label only; the wrapper is "LoadValue".
-    // BLEX011 (discarded return value) is expected here and suppressed via NoWarn in the csproj
-    // -- exercising that shape is exactly what this fixture is for.
+    // The wrapper returns the result as Task<int>.
     [BlexActionAttribute(Name = "Load Value")]
     private async ValueTask<int> OnLoadValue()
     {

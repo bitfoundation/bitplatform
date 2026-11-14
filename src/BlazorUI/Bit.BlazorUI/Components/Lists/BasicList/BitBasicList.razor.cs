@@ -75,7 +75,7 @@ public partial class BitBasicList<TItem> : BitComponentBase
     private bool _ShowLoading => Loading || (_isLoadingMore && _viewItems.Count == 0);
 
     // The role belongs to the element holding the rows, not to the root. A list is required to own list
-    // items, so the role is left off while that element shows the EmptyContent instead: an empty "list" is
+    // items, so the role is left off while that element shows the EmptyTemplate instead: an empty "list" is
     // reported as an error by accessibility checkers and announced as an empty list before the content that
     // explains why. The virtualized provider mode renders straight off the provider and never knows its
     // count here, so it keeps the role.
@@ -187,9 +187,15 @@ public partial class BitBasicList<TItem> : BitComponentBase
     public BitBasicListClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// The custom content that will be rendered when there is no item to show.
+    /// The custom content that will be rendered when there is no item to show, which takes the place of
+    /// <see cref="EmptyText"/>.
     /// </summary>
-    [Parameter] public RenderFragment? EmptyContent { get; set; }
+    [Parameter] public RenderFragment? EmptyTemplate { get; set; }
+
+    /// <summary>
+    /// The text that will be rendered when there is no item to show. Default: <see cref="BitStrings.NoItemsFound"/>.
+    /// </summary>
+    [Parameter] public string? EmptyText { get; set; }
 
     /// <summary>
     /// Sets the height of the list to fit its content.
@@ -369,7 +375,7 @@ public partial class BitBasicList<TItem> : BitComponentBase
     /// the element correctly where that template renders a row of role "listitem" (an <c>li</c> element, for
     /// one). Set this to null to leave the role off altogether where the rows carry a structure of their own.
     /// <br />
-    /// The role is also left off while the list shows its <see cref="EmptyContent"/>, since a list is required
+    /// The role is also left off while the list shows its <see cref="EmptyTemplate"/>, since a list is required
     /// to own list items. Wherever the element holding the rows has no role a name is allowed on (that case,
     /// the loading content standing in for the rows, a null role, or a role of none or presentation), the
     /// AriaLabel names the root instead, which takes the group role for it.

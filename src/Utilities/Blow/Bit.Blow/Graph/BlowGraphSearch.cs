@@ -70,7 +70,7 @@ public static class BlowGraphSearch
         if (text is not null) yield return text(edge);
     }
 
-    private static List<T> Find<T>(IEnumerable<T> elements, string query, Func<T, IEnumerable<string?>> fields)
+    internal static List<T> Find<T>(IEnumerable<T> elements, string query, Func<T, IEnumerable<string?>> fields)
     {
         var folded = Fold(query ?? "").Trim();
         if (folded.Length == 0) return [];

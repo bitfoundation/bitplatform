@@ -37,9 +37,11 @@ public partial class OAuthAuthorizeRequestDto
 
     //#if (multitenant == true)
     /// <summary>
-    /// Optional; the user must be an accepted member of that active tenant. Absent means no tenant claim. Kept as the
-    /// raw string so a malformed one is still malformed when it reaches validation - parsed to null at the boundary, it
-    /// would read as "no tenant asked for" and quietly grant a tenantless code instead of <c>invalid_request</c>.
+    /// Optional; the user must be an accepted member of that active tenant. Absent means the tenant the approving session
+    /// is in, which is what an MCP client gets, since none of them sends this, and <see cref="Guid.Empty"/> means none,
+    /// which the consent page sends when it showed none (See OAuthConsentDto.TenantId). Kept as the raw string so a
+    /// malformed one is still malformed when it reaches validation - parsed to null at the boundary, it would read as "no
+    /// tenant asked for" and quietly grant the session's tenant instead of <c>invalid_request</c>.
     /// </summary>
     public string? TenantId { get; set; }
     //#endif

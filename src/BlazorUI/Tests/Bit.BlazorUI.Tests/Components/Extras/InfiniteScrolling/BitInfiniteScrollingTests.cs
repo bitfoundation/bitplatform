@@ -97,14 +97,14 @@ public class BitInfiniteScrollingTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitInfiniteScrollingShouldShowCustomEmptyMessageWhenNoItems()
+    public void BitInfiniteScrollingShouldShowCustomEmptyTextWhenNoItems()
     {
         var component = RenderComponent<BitInfiniteScrolling<int>>(parameters =>
         {
             parameters.Add(p => p.ItemsProvider, _ => ValueTask.FromResult<IEnumerable<int>>(new List<int>()));
             parameters.Add(p => p.ItemTemplate, ItemTemplate());
             parameters.Add(p => p.Preload, true);
-            parameters.Add(p => p.EmptyMessage, "Nothing here");
+            parameters.Add(p => p.EmptyText, "Nothing here");
         });
 
         component.WaitForAssertion(() =>
@@ -115,7 +115,7 @@ public class BitInfiniteScrollingTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitInfiniteScrollingShouldNotShowEmptyMessageBeforeTheFirstLoad()
+    public void BitInfiniteScrollingShouldNotShowEmptyTextBeforeTheFirstLoad()
     {
         // Nothing is loaded yet, so the list is not empty - it is unknown. Rendering the empty state here
         // would flash "there is no item" on every first paint.
@@ -125,7 +125,7 @@ public class BitInfiniteScrollingTests : BunitTestContext
             parameters.Add(p => p.ItemTemplate, ItemTemplate());
         });
 
-        Assert.IsFalse(component.Markup.Contains("There is no item"));
+        Assert.IsFalse(component.Markup.Contains("No items found"));
     }
 
     [TestMethod]
@@ -1043,7 +1043,7 @@ public class BitInfiniteScrollingTests : BunitTestContext
             parameters.Add(p => p.ItemsProvider, _ => new ValueTask<IEnumerable<int>>(tcs.Task));
             parameters.Add(p => p.ItemTemplate, ItemTemplate());
             parameters.Add(p => p.LoadingMessage, "Loading the next page");
-            parameters.Add(p => p.EmptyMessage, "Nothing here");
+            parameters.Add(p => p.EmptyText, "Nothing here");
             parameters.Add(p => p.Preload, true);
         });
 
@@ -1903,7 +1903,7 @@ public class BitInfiniteScrollingTests : BunitTestContext
             parameters.Add(p => p.ItemsProvider, PagedProvider(100));
             parameters.Add(p => p.ItemTemplate, ItemTemplate());
             parameters.Add(p => p.MaxItems, 0);
-            parameters.Add(p => p.EmptyMessage, "Nothing here");
+            parameters.Add(p => p.EmptyText, "Nothing here");
             parameters.Add(p => p.Preload, true);
         });
 
@@ -2108,7 +2108,7 @@ public class BitInfiniteScrollingTests : BunitTestContext
             parameters.Add(p => p.ItemsProvider, PagedProvider(100));
             parameters.Add(p => p.ItemTemplate, ItemTemplate());
             parameters.Add(p => p.MaxItems, 0);
-            parameters.Add(p => p.EmptyMessage, "Nothing here");
+            parameters.Add(p => p.EmptyText, "Nothing here");
         });
 
         Assert.IsFalse(component.Markup.Contains("Nothing here"));

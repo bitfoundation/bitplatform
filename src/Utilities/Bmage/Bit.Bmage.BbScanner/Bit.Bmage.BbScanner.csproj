@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <Import Project="../../../Bit.Build.props" />
+
+    <PropertyGroup>
+        <TargetFrameworks>net11.0;net10.0</TargetFrameworks>
+        <RootNamespace>Bit.Bmage.BbScanner</RootNamespace>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <IsTrimmable>true</IsTrimmable>
+        <Description>Reads barcodes and QR codes from Bit.Bmage images with Bit.BbScanner's managed decoders, on the device or on a server, and when a photo will not read as it is, retries it through Bmage preprocessing: enlarged, sharpened, levelled or thresholded against its surroundings.</Description>
+        <PackageDescription>$(Description)</PackageDescription>
+        <PackageTags>$(PackageTags);Bmage;BbScanner;barcode;qr;scanner;image;preprocessing</PackageTags>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Bit.Bmage\Bit.Bmage.csproj" />
+        <ProjectReference Include="..\..\BbScanner\Bit.BbScanner\Bit.BbScanner.csproj" />
+    </ItemGroup>
+
+</Project>

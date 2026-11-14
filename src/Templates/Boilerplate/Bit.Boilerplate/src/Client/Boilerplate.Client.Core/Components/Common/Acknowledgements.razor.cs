@@ -83,7 +83,6 @@ public partial class Acknowledgements
         new("SQLite", "https://sqlite.org", "https://github.com/sqlite/sqlite", "Public Domain"),
         new("Microsoft.Identity.Web", "https://github.com/AzureAD/microsoft-identity-web", "https://github.com/AzureAD/microsoft-identity-web", "MIT"),
         new("SmsBridge", "https://teesofttech.github.io/SMSBridge", "https://github.com/teesofttech/SMSBridge", "MIT"),
-        new("Magick.NET", "https://github.com/dlemstra/Magick.NET", "https://github.com/dlemstra/Magick.NET", "Apache-2.0"),
         new("QRCoder", "https://github.com/Shane32/QRCoder", "https://github.com/Shane32/QRCoder", "MIT"),
         new("HtmlSanitizer", "https://github.com/mganss/HtmlSanitizer", "https://github.com/mganss/HtmlSanitizer", "MIT"),
         new("Scalar", "https://scalar.com", "https://github.com/scalar/scalar", "MIT"),

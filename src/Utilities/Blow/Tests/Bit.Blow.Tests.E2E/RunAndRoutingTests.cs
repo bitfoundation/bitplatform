@@ -21,7 +21,7 @@ public sealed class RunAndRoutingTests : BlowTest
         var page = await OpenAsync("/examples/workflow-runner");
         await WaitForEdgesAnchoredAsync(page);
 
-        await page.GetByLabel("Make \"Enrich\" fail").CheckAsync();
+        await page.GetByLabel("Enrich is down").CheckAsync();
         await page.GetByRole(AriaRole.Button, new() { Name = "▶ Run" }).ClickAsync();
 
         await Expect(page.Locator(".wf-status")).ToContainTextAsync("Run finished", new() { Timeout = 20_000 });
@@ -37,6 +37,40 @@ public sealed class RunAndRoutingTests : BlowTest
         var description = await Node(page, "enrich").EvaluateAsync<string>(
             "el => el.getAttribute('aria-describedby').split(' ').map(id => document.getElementById(id).textContent).join(' ')");
         StringAssert.StartsWith(description, "Failed: The enrichment service timed out");
+    }
+
+    [TestMethod]
+    public async Task A_big_batch_waits_for_approval_and_the_branch_not_taken_is_skipped()
+    {
+        var page = await OpenAsync("/examples/workflow-runner");
+        await WaitForEdgesAnchoredAsync(page);
+
+        await page.GetByLabel("Rows fetched").FillAsync("200");
+        await page.GetByRole(AriaRole.Button, new() { Name = "▶ Run" }).ClickAsync();
+
+        await Expect(Node(page, "approve")).ToHaveClassAsync(Class("bit-blow-run-waiting"), new() { Timeout = 20_000 });
+        await Expect(Node(page, "store")).ToHaveClassAsync(Class("bit-blow-run-skipped"));
+        await page.GetByRole(AriaRole.Button, new() { Name = "✓ Approve" }).ClickAsync();
+
+        await Expect(page.Locator(".wf-status")).ToContainTextAsync("Run finished", new() { Timeout = 20_000 });
+        await Expect(Node(page, "archive")).ToHaveClassAsync(Class("bit-blow-run-succeeded"));
+        await Expect(Node(page, "notify")).ToHaveClassAsync(Class("bit-blow-run-succeeded"));
+        await Expect(page.Locator(".bit-blow-edge[data-id=\"size-approve\"]")).ToHaveClassAsync(Class("animated"));
+        await Expect(page.Locator(".bit-blow-edge[data-id=\"size-store\"]")).Not.ToHaveClassAsync(Class("animated"));
+    }
+
+    [TestMethod]
+    public async Task A_flaky_step_is_retried_until_it_succeeds()
+    {
+        var page = await OpenAsync("/examples/workflow-runner");
+        await WaitForEdgesAnchoredAsync(page);
+
+        await page.GetByLabel("Enrich is flaky").CheckAsync();
+        await page.GetByRole(AriaRole.Button, new() { Name = "▶ Run" }).ClickAsync();
+
+        await Expect(page.Locator(".wf-status")).ToContainTextAsync("Run finished", new() { Timeout = 20_000 });
+        await Expect(Node(page, "enrich")).ToHaveClassAsync(Class("bit-blow-run-succeeded"));
+        await Expect(page.Locator(".wf-log")).ToContainTextAsync("Enrich: Succeeded after 3 attempts");
     }
 
     [TestMethod]

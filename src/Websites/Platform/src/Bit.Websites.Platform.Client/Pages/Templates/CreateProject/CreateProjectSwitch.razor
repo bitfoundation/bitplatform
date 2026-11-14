@@ -1,0 +1,39 @@
+﻿@inherits AppComponentBase
+
+<div class="answer @(Value ? "chosen" : null)">
+    <button type="button"
+            class="answer-hit"
+            role="switch"
+            aria-checked="@(Value ? "true" : "false")"
+            aria-label="@Label"
+            aria-describedby="@(HasHint ? hintId : null)"
+            @onclick="() => OnChange.InvokeAsync(Value is false)"></button>
+    <span class="answer-mark square" aria-hidden="true"></span>
+    <span class="answer-body">
+        <span class="answer-head">
+            <span class="answer-text">@Label</span>
+        </span>
+        @if (HasHint)
+        {
+            <span class="answer-hint" id="@hintId">@Description @ChildContent</span>
+        }
+    </span>
+</div>
+
+@code {
+    private static int count;
+
+    private readonly string hintId = $"switch-{Interlocked.Increment(ref count)}";
+
+    [Parameter, EditorRequired] public string Label { get; set; } = default!;
+
+    [Parameter] public string? Description { get; set; }
+
+    [Parameter] public bool Value { get; set; }
+
+    [Parameter] public EventCallback<bool> OnChange { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private bool HasHint => Description is not null || ChildContent is not null;
+}

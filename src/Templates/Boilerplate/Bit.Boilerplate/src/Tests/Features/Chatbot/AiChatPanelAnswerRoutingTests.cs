@@ -1,21 +1,16 @@
 using Microsoft.Extensions.AI;
-using Boilerplate.Shared.Features.Chatbot;
 
 namespace Boilerplate.Tests.Features.Chatbot;
 
 /// <summary>
-/// A turn is one json document (See <see cref="AssistantTurn"/>), streamed down the hub method the panel is
-/// enumerating, so what reaches the screen is a property of a document reassembled from prefixes rather than the frames
-/// themselves (<c>AppAiChatPanel.RunChannel</c>, <see cref="PartialJsonReader{T}"/>). Follow-up suggestions come the other
-/// way, from a tool the model calls (See <c>AppChatbot.ShowFollowUpSuggestions</c>).
+/// Each answer streams from <c>AppHub</c> as a stream of its own (See <c>AppHub.Chatbot.cs</c>), in Bit.BlazorUI.AI's
+/// events, and the panel's chat session puts them in the answer they belong to. A tool call turns one question into two
+/// round trips with the model inside that one stream, and follow-up suggestions come from a tool too (See
+/// <c>AppChatbot.ShowFollowUpSuggestions</c>), so what reaches the screen is the agent pipeline's events read back by
+/// the library's.
 /// <para>
-/// The wire carries no message identity: a frame belongs to whichever question has waited longest, and a turn ends
-/// when its document does. One document too many or too few and the queue is out of step with the conversation for
-/// good - after which every answer lands in the wrong bubble or none, with no error anywhere.
-/// </para>
-/// <para>
-/// Playwright rather than bUnit because these defects live in the crossing: the reader is the client's, the document
-/// is the server's, and the tools are dispatched by the agent pipeline.
+/// Playwright rather than bUnit because these defects live in the crossing: the session is the client's, the events are
+/// the server's, and the tools are dispatched by the agent pipeline.
 /// </para>
 /// </summary>
 [TestClass, TestCategory("UITest"), Retry(2)]
@@ -45,17 +40,17 @@ public partial class AiChatPanelAnswerRoutingTests : AiChatPanelTestBase
 
         await Expect(panel.GetByText(FirstAnswer)).ToBeVisibleAsync();
 
-        var suggestions = panel.Locator(".default-prompt-button");
-
         // The blank one dropped, and the one too many left out.
-        await Expect(suggestions).ToHaveTextAsync(followUpSuggestions);
+        foreach (var suggestion in followUpSuggestions)
+        {
+            await Expect(Suggestion(panel, suggestion)).ToBeVisibleAsync();
+        }
 
-        // And the document around the answer is the panel's business, never the user's.
-        await Expect(panel).Not.ToContainTextAsync("sentAt");
+        await Expect(Suggestion(panel, "One too many")).ToHaveCountAsync(0);
 
         var conversationsBefore = chatClient.ReceivedConversations.Count;
 
-        await suggestions.GetByText(followUpSuggestions[2]).ClickAsync();
+        await Suggestion(panel, followUpSuggestions[2]).ClickAsync();
 
         Assert.IsTrue(await WaitForServerToReceiveAMessage(chatClient, conversationsBefore, TimeSpan.FromSeconds(15)),
                       "Tapping a suggestion sent nothing.");
@@ -64,13 +59,15 @@ public partial class AiChatPanelAnswerRoutingTests : AiChatPanelTestBase
                         "The tapped suggestion must be sent as the user's own words.");
 
         await Expect(panel.GetByText(SecondAnswer)).ToBeVisibleAsync();
-        await Expect(suggestions).ToHaveCountAsync(0);
+
+        // Offered for the answer they followed, so they go once the conversation has moved on.
+        await Expect(Suggestion(panel, followUpSuggestions[0])).ToHaveCountAsync(0);
     }
 
     /// <summary>
-    /// A tool call turns one question into two round trips with the model, and the turn must still be exactly one
-    /// document. A second closing - the extra round trip reporting itself - would end a turn that isn't over and put
-    /// the panel's queue one ahead of the conversation for good, discarding every later answer in silence.
+    /// A tool call turns one question into two round trips with the model, inside the one stream of its answer. The
+    /// first round trip ending must not end the answer, nor the stream - or the answer is written into nothing, and the
+    /// next question waits on a turn that never ends.
     /// </summary>
     [TestMethod]
     public async Task Panel_Should_ShowTheSecondAnswer_WhenTheFirstAnswerNeededAToolCall()
@@ -85,18 +82,25 @@ public partial class AiChatPanelAnswerRoutingTests : AiChatPanelTestBase
         // trip happened.
         await Expect(panel.GetByText(FirstAnswer)).ToBeVisibleAsync();
 
-        // Sent through the connection the first message already proved is up, so the conversation - and the queue this
-        // test is about - survives into the second turn.
+        // Sent through the connection the first message already proved is up, so the conversation survives into the
+        // second turn.
         await SendFollowUpMessage(panel, SecondQuestion, chatClient);
 
         // No timeout of its own: the suite's default is what every other assertion here waits on, and a shorter one
         // turns "the machine is busy" into a failure that reads like the bug.
         await Expect(panel.GetByText(SecondAnswer)).ToBeVisibleAsync();
+
+        // One answer per question, each in its own: two round trips made neither a second answer nor a missing one.
+        var answers = panel.Locator("[data-message-id][data-role=assistant]");
+
+        await Expect(answers).ToHaveCountAsync(2);
+        await Expect(answers.Nth(0)).ToContainTextAsync(FirstAnswer);
+        await Expect(answers.Nth(1)).ToContainTextAsync(SecondAnswer);
     }
 
     /// <summary>
     /// A model that calls a tool can say so first ("let me look that up"), and write the answer on the round trip after
-    /// the tool. Only what came before the tool used to reach the screen, so the answer never did.
+    /// the tool. Both belong on the screen, the answer under what came before it.
     /// </summary>
     [TestMethod]
     public async Task Panel_Should_ShowTheAnswerWrittenAfterAToolCall_UnderWhatWasWrittenBeforeIt()
@@ -109,13 +113,19 @@ public partial class AiChatPanelAnswerRoutingTests : AiChatPanelTestBase
 
         await Expect(panel.GetByText(FirstAnswer)).ToBeVisibleAsync();
         await Expect(panel.GetByText(Preamble)).ToBeVisibleAsync();
-        await Expect(panel).Not.ToContainTextAsync("sentAt");
 
-        // Two round trips still close the turn once, or the next answer would land in no bubble.
+        var preambleBox = await panel.GetByText(Preamble).BoundingBoxAsync();
+        var answerBox = await panel.GetByText(FirstAnswer).BoundingBoxAsync();
+
+        Assert.IsLessThan(answerBox!.Y, preambleBox!.Y, "The answer written after the tool must come under what was written before it.");
+
+        // Two round trips still end the answer once, or the next question would wait on it forever.
         await SendFollowUpMessage(panel, SecondQuestion, chatClient);
 
         await Expect(panel.GetByText(SecondAnswer)).ToBeVisibleAsync();
     }
+
+    private static ILocator Suggestion(ILocator panel, string text) => panel.GetByRole(AriaRole.Button, new() { Name = text, Exact = true });
 
     /// <summary>The answer as a real model streams it: in pieces.</summary>
     private static ChatResponseUpdate[] AnswerInPieces(int callIndex, ChatMessage[] conversation)

@@ -277,14 +277,14 @@ public partial class BitDropdownDemo
             Name = "EmptyTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The custom template to render in the callout when there is no item to show.",
+            Description = "The custom template to render in the callout when there is no item at all, which takes the place of EmptyText.",
         },
         new()
         {
             Name = "EmptyText",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The text to render in the callout when there is no item to show.",
+            Description = "The text to render in the callout when there is no item at all. Default: BitStrings.NoItemsFound (\"No items found\").",
         },
         new()
         {
@@ -549,14 +549,14 @@ public partial class BitDropdownDemo
             Name = "NoResultsTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The custom template to render in the callout when the current search has no result. Falls back to the EmptyTemplate when not set.",
+            Description = "The custom template to render in the callout when the current search matched none of the items, which takes the place of NoResultsText.",
         },
         new()
         {
             Name = "NoResultsText",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The text to render in the callout when the current search has no result. Falls back to the EmptyText when not set.",
+            Description = "The text to render in the callout when the current search matched none of the items. Default: BitStrings.NoResultsFound (\"No results found\").",
         },
         new()
         {
@@ -1724,10 +1724,17 @@ public partial class BitDropdownDemo
                },
                new()
                {
-                   Name = "EmptyContent",
+                   Name = "Empty",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the empty state content of the BitDropdown."
+                   Description = "Custom CSS classes/styles for what the callout of the BitDropdown shows when it has no item at all."
+               },
+               new()
+               {
+                   Name = "NoResults",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for what the callout of the BitDropdown shows when a search matched none of its items."
                },
                new()
                {

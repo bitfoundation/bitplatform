@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.ComponentModel;
+using System.Collections.Frozen;
 
 namespace Boilerplate.Shared;
 
@@ -45,5 +46,25 @@ public static partial class PageUrls
         }
 
         return pages;
+    }
+
+    /// <summary>
+    /// The urls whose <see cref="PageUrls"/> constant carries <see cref="NoIndexAttribute"/>.
+    /// </summary>
+    public static IReadOnlySet<string> NoIndexUrls { get; } = typeof(PageUrls).GetFields(BindingFlags.Public | BindingFlags.Static)
+        .Where(field => field.FieldType == typeof(string) && field.IsDefined(typeof(NoIndexAttribute)))
+        .Select(field => (string)field.GetValue(null)!)
+        .ToFrozenSet(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Whether search engines should leave the page at <paramref name="url"/> out (See <see cref="NoIndexAttribute"/>).
+    /// The culture segment, the query and a trailing slash are ignored, so <c>/fa-IR/confirm/?emailToken=...</c> is
+    /// <see cref="Confirm"/>. Case-insensitive, like the router.
+    /// </summary>
+    public static bool IsNoIndex(Uri url)
+    {
+        var path = url.GetPath();
+
+        return NoIndexUrls.Contains(path.Length > 1 ? path.TrimEnd('/') : path);
     }
 }

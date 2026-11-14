@@ -32,7 +32,11 @@ The `Bm` facade is the entry point for the whole hot path: `Bm.To(...)` builds a
 targets (single values or keyframe sequences), `Bm.Spring` / `Bm.Tween` / `Bm.Inertia` build
 transitions, `Bm.Stagger` builds multi-element delay generators, `Bm.SnapTo` builds the
 snap-to-grid / snap-to-page hook a drag release settles on, `Bm.Value` creates reactive
-motion values, and `Bm.Template` composes them into CSS strings. Components:
+motion values, `Bm.Combine` derives one from several, and `Bm.Template` composes them into CSS
+strings. `BmSprings` names ready-made springs (`Smooth`, `Snappy`, `Bouncy`, ...) and
+`spring.Analyze()` measures any spring's settling time, overshoot and damping on the engine's own
+driver. `BmotionAnimationEngine.AnimationEvent` and the `Bit.Bmotion` meter report how every part
+of an animation plays (browser timeline, browser recording, frame loop, instant) and why. Components:
 `<Bmotion>`, `<BmotionAnimatePresence>`, `<BmotionPresenceSwitch>`, `<BmotionPresenceGroup>`
 (keyed list presence, with a popLayout mode), `<BmotionReorderGroup>` (drag-to-reorder lists),
 `<BmotionSplitText>` (staggered per-character/word/line text animation, split in C# rather than by

@@ -31,12 +31,13 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="11.0.0" />
-    <PackageReference Include="Bit.Minifier" Version="11.0.0-pre-18" PrivateAssets="all" />
+    <PackageReference Include="Bit.Minifier" Version="11.0.0-pre-19" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>
     <!-- The browser integration and the editor component; it brings the Bit.Bmage engine along. -->
     <ProjectReference Include="..\..\Bit.Bmage.Blazor\Bit.Bmage.Blazor.csproj" />
+    <ProjectReference Include="..\..\Bit.Bmage.BbScanner\Bit.Bmage.BbScanner.csproj" />
   </ItemGroup>
 
 </Project>

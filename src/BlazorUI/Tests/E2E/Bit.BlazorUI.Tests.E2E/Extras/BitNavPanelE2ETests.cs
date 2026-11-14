@@ -308,7 +308,7 @@ public class BitNavPanelE2ETests : E2ETestBase
     }
 
     [TestMethod]
-    public async Task SearchFilter_ReplacesTheMatchingAndEmptyListTemplateTheMessage()
+    public async Task SearchFilter_ReplacesTheMatchingAndNoResultsTemplateTheMessage()
     {
         await OpenAsync(Route);
         await ShowAsync("npn-search-filter");

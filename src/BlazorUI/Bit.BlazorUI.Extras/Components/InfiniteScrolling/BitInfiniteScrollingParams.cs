@@ -52,7 +52,7 @@ public partial class BitInfiniteScrollingParams : BitComponentBaseParams, IBitCo
     /// <summary>
     /// The message to render when there is no item available and no EmptyTemplate is provided.
     /// </summary>
-    public string? EmptyMessage { get; set; }
+    public string? EmptyText { get; set; }
 
     /// <summary>
     /// The custom template to render when there is no item available.
@@ -198,9 +198,9 @@ public partial class BitInfiniteScrollingParams : BitComponentBaseParams, IBitCo
             bitInfiniteScrolling.TakeFromCascade(nameof(Classes), Classes, static i => i.Classes, static (i, v) => i.Classes = v);
         }
 
-        if (EmptyMessage is not null)
+        if (EmptyText is not null)
         {
-            bitInfiniteScrolling.TakeFromCascade(nameof(EmptyMessage), EmptyMessage, static i => i.EmptyMessage, static (i, v) => i.EmptyMessage = v);
+            bitInfiniteScrolling.TakeFromCascade(nameof(EmptyText), EmptyText, static i => i.EmptyText, static (i, v) => i.EmptyText = v);
         }
 
         if (EmptyTemplate is not null)

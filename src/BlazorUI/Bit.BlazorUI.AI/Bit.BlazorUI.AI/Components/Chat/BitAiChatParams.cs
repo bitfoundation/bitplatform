@@ -58,7 +58,7 @@ public partial class BitAiChatParams : BitComponentBaseParams, IBitComponentPara
     /// <summary>
     /// The supporting line of the empty state.
     /// </summary>
-    public string? EmptyBody { get; set; }
+    public string? EmptyDescription { get; set; }
 
     /// <summary>
     /// The heading of the empty state.
@@ -134,9 +134,9 @@ public partial class BitAiChatParams : BitComponentBaseParams, IBitComponentPara
             bitAiChat.TakeFromCascade(nameof(Classes), Classes, static c => c.Classes, static (c, v) => c.Classes = v);
         }
 
-        if (EmptyBody.HasValue())
+        if (EmptyDescription.HasValue())
         {
-            bitAiChat.TakeFromCascade(nameof(EmptyBody), EmptyBody, static c => c.EmptyBody, static (c, v) => c.EmptyBody = v);
+            bitAiChat.TakeFromCascade(nameof(EmptyDescription), EmptyDescription, static c => c.EmptyDescription, static (c, v) => c.EmptyDescription = v);
         }
 
         if (EmptyTitle.HasValue())

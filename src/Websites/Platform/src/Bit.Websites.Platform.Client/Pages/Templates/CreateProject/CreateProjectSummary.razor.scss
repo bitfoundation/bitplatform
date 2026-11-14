@@ -1,0 +1,52 @@
+﻿@import '../../../Styles/abstracts/_functions.scss';
+@import '../../../Styles/abstracts/_bit-css-variables.scss';
+
+.cp-summary {
+    display: grid;
+    gap: rem2(14px);
+    min-width: 0;
+}
+
+.cp-summary-list {
+    display: grid;
+    gap: rem2(8px);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    li {
+        display: grid;
+        grid-template-columns: rem2(16px) minmax(0, 1fr);
+        gap: rem2(10px);
+        align-items: start;
+        font-size: rem2(14px);
+    }
+
+    ::deep .cp-summary-icon {
+        margin-top: rem2(3px);
+        color: $bit-color-success;
+        font-size: rem2(12px);
+    }
+}
+
+.cp-estimate {
+    display: flex;
+    flex-wrap: wrap;
+    gap: rem2(6px);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    li {
+        display: inline-flex;
+        align-items: center;
+        gap: rem2(6px);
+        padding: rem2(4px) rem2(12px);
+        border-radius: 9999px;
+        border: 1px solid $bit-color-border-secondary;
+        background: $bit-color-background-secondary;
+        font-size: rem2(12px);
+        font-weight: 500;
+    }
+
+}

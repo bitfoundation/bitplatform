@@ -19,6 +19,11 @@ public class BmValue<T> : IDisposable
         typeof(float), typeof(double), typeof(decimal),
     };
 
+    // Whether T is numeric, resolved once per closed type rather than looked up on every set.
+    private static readonly bool s_isNumeric = _numericTypes.Contains(typeof(T));
+
+    private T _previous;
+
     /// <summary>Subscriptions to parent BmValues when this instance is a derived/combined value.</summary>
     private readonly List<IDisposable> _upstreams = new();
 
@@ -44,16 +49,27 @@ public class BmValue<T> : IDisposable
     internal BmValue(string id, T initial)
     {
         _id    = id;
-        _value = initial;
+        _value = _previous = initial;
     }
 
     // ── Value access ──────────────────────────────────────────────────────────
 
+    /// <summary>The current value. Setting it is <see cref="SetSync"/>.</summary>
     public T Value
     {
         get => _value;
         set => SetSync(value);
     }
+
+    /// <summary>
+    /// The value before the latest change (motion.dev's <c>getPrevious</c>) - the initial value until the first one. Read
+    /// it in a subscriber to tell which way the value moved: <c>x.Value &gt; x.Previous</c>.
+    /// </summary>
+    public T Previous => _previous;
+
+    // Numeric T to double without boxing: for a double the cast pair is a no-op the JIT removes.
+    private static double ToDouble(T value)
+        => typeof(T) == typeof(double) ? (double)(object)value! : Convert.ToDouble(value, System.Globalization.CultureInfo.InvariantCulture);
 
     /// <summary>
     /// The value's current velocity in units per second (numeric value types only; always 0
@@ -79,6 +95,7 @@ public class BmValue<T> : IDisposable
     {
         _velocityPerSec = 0;
         _lastSetMs = TimeSource();
+        _previous = _value;
         _value = value;
         foreach (var sub in _subscribers.ToArray())
         {
@@ -89,7 +106,7 @@ public class BmValue<T> : IDisposable
 
     private void TrackVelocity(T oldValue, T newValue)
     {
-        if (!_numericTypes.Contains(typeof(T))) return;
+        if (!s_isNumeric) return;
         long now = TimeSource();
         if (_lastSetMs >= 0)
         {
@@ -99,7 +116,7 @@ public class BmValue<T> : IDisposable
                 _velocityPerSec = 0;
             else if (dt > 0)
             {
-                _velocityPerSec = (Convert.ToDouble(newValue) - Convert.ToDouble(oldValue)) / dt;
+                _velocityPerSec = (ToDouble(newValue) - ToDouble(oldValue)) / dt;
                 _lastIntervalMs = now - _lastSetMs;
             }
         }
@@ -113,6 +130,7 @@ public class BmValue<T> : IDisposable
     public void SetSync(T value)
     {
         TrackVelocity(_value, value);
+        _previous = _value;
         _value = value;
         foreach (var sub in _subscribers.ToArray())
         {
@@ -133,6 +151,7 @@ public class BmValue<T> : IDisposable
     public async Task SetAsync(T value)
     {
         TrackVelocity(_value, value);
+        _previous = _value;
         _value = value;
         foreach (var sub in _subscribers.ToArray())
         {
@@ -203,7 +222,7 @@ public class BmValue<T> : IDisposable
         var inRange = (double[])inputRange.Clone();
         var outRange = (double[])outputRange.Clone();
 
-        double Map(T v) => BmRangeMap.Map(Convert.ToDouble(v), inRange, outRange, clamp);
+        double Map(T v) => BmRangeMap.Map(ToDouble(v), inRange, outRange, clamp);
 
         var derived = new BmValue<double>($"{_id}_tr", Map(_value));
         derived.AttachUpstream(SubscribeWeak(derived, Map));

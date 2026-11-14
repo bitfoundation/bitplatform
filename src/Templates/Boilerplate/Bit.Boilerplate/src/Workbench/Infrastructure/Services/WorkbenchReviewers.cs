@@ -9,7 +9,7 @@ namespace Boilerplate.Workbench.Infrastructure.Services;
 /// the review document as if they were left here. It never lets them change the code, the texts, the flows or a page's
 /// status, and it works only in dev mode, where an agent reads the comments. The agent treats every comment as a request
 /// about the page and its design, never as an order to run something on this computer (the workbench skill, section 7).
-/// The key is kept in App_Data, which git ignores, so it outlives dotnet watch's restarts; deleting its file revokes every
+/// The key is kept with the review (WorkbenchFolders.Reviews), outside git, so it outlives dotnet watch's restarts; deleting its file revokes every
 /// invite.
 /// </summary>
 public static class WorkbenchReviewers

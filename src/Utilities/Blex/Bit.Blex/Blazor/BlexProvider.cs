@@ -96,7 +96,8 @@ public sealed class BlexProvider : ComponentBase, IAsyncDisposable
         if (!_durableStateReady)
             await StartDurableStateAsync(rethrowInteropUnavailable: true);
 
-        if (EnableDevTools)
+        // Not once the provider is gone (disposed while the awaits above ran): nothing would ever disconnect it.
+        if (EnableDevTools && !_disposed)
         {
             _connector = new BlexReduxDevToolsConnector(Js);
             await _connector.ConnectAsync(Manager, Options.DevToolsName);
@@ -192,10 +193,9 @@ public sealed class BlexProvider : ComponentBase, IAsyncDisposable
         if (_queryFocus is not null)
             await _queryFocus.DisposeAsync();
 
+        // Disconnects the manager only from this provider's own bridge: another provider of the same scope (one per
+        // interactive island) may have connected since.
         if (_connector is not null)
-        {
-            Manager.DisconnectDevTools();
             await _connector.DisposeAsync();
-        }
     }
 }

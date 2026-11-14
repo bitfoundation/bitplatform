@@ -165,6 +165,33 @@ transparency, only over the rows and columns its base reaches, which for a logo 
 single floats, which took them on the WebAssembly interpreter from 128, 459 and 351 ms in an earlier run to 44, 152 and
 105 ms (below), all now cheaper there than vibrance.
 
+### Document tools, effects and palettes
+
+`DocumentAndEffectBenchmarks`, one thread, on an i9-14900K on Windows 11, .NET 11. BenchmarkDotNet 0.15.8 does not yet
+recognise the .NET 11 runtime, so these were taken with a stopwatch over the same benchmark methods instead: the best of
+five runs after a warm-up, which is noisier than BenchmarkDotNet's statistics. Vibrance, measured in the same run, is
+the reference to compare with the tables above. The document rows run on a generated page of text lit from one side.
+
+| Operation | 1920×1080 | 3840×2160 |
+| --- | ---: | ---: |
+| Sharpness | 2.1 ms | 6.6 ms |
+| Adaptive threshold, mean, radius 16 | 11.4 ms | 45.9 ms |
+| Adaptive threshold, Sauvola, radius 16 | 13.5 ms | 53.7 ms |
+| Document skew estimate | 28.0 ms | 32.8 ms |
+| Vibrance (reference) | 34.3 ms | 63.6 ms |
+| 3D LUT, 33 entries an axis | 43.4 ms | 175 ms |
+| GIF, 256 colours, dithered | 55.7 ms | 208 ms |
+| Indexed PNG, 256 colours, dithered | 68.6 ms | 241 ms |
+| 1-bit PNG of the thresholded page (threshold and encode) | 74.4 ms | 293 ms |
+| Zoom blur 0.2 | 333 ms | 1.56 s |
+| Spin blur 0.3 | 518 ms | 2.03 s |
+
+The skew estimate and sharpness measure a reduced copy, so they barely grow with the image. The adaptive threshold's
+sliding sums make its cost independent of the radius. The radial blurs were first written as a sample for every pixel
+of every streak, up to 128 of them, which took 3.2 and 6.3 seconds at 1920×1080 and 16 and 30 seconds at 3840×2160;
+the passes of four samples described in `RadialBlurFilter` brought that down by a factor of 10 to 15. They remain the
+costliest filters here, with streaks hundreds of pixels long, and are best previewed at the editor's proxy size.
+
 ### WebAssembly: editing tools
 
 The rows above in the browser, from the performance page's "Run the editing tools", best of two runs of its best of

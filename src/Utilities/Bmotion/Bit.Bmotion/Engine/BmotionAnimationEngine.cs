@@ -23,7 +23,7 @@ namespace Bit.Bmotion;
 /// this library: the engine has no synchronization and concurrent access would corrupt its state.
 /// </para>
 /// </remarks>
-public sealed class BmotionAnimationEngine : IAsyncDisposable
+public sealed partial class BmotionAnimationEngine : IAsyncDisposable
 {
     private readonly IBmotionInterop _interop;
     private readonly ILogger<BmotionAnimationEngine>? _logger;
@@ -197,6 +197,7 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
             if (state.RefCount > 0) return;
             state.CancelAll();
             _elements.Remove(elementId);
+            EndRunningParts(elementId);
             if (!state.OwnedByComponent)
             {
                 // Oldest first: a dictionary's own order is not insertion order once entries were removed.
@@ -741,7 +742,11 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
     private sealed record WaapiOffload(
         BmotionElementAnimationState.WaapiPlan Plan,
         object[] Keyframes,
-        Dictionary<string, object?> Timing);
+        Dictionary<string, object?> Timing)
+    {
+        /// <summary>Frames recorded off the drivers, rather than the two-keyframe timeline shape.</summary>
+        public bool Recorded { get; init; }
+    }
 
     /// <summary>Whether this environment can run the per-frame rAF loop (Blazor WebAssembly).</summary>
     internal bool SupportsFrameLoop => _interop.IsInProcess;
@@ -879,6 +884,10 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
     {
         if (claim) state.Claim(values.Keys);
 
+        // Reported parts need an end to watch, even when the caller doesn't wait for one.
+        bool observed = IsObserved;
+        if (observed) tcs ??= new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+
         // The browser animations this one overlaps stop where they are, handing their values and velocities over.
         // When that happened is when this animation starts from (see the hand-off below).
         long interruptedAt = InterruptWaapiOverlaps(elementId, state, values.Keys) ? Environment.TickCount64 : 0;
@@ -905,7 +914,7 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
             if (InterruptWaapiOverlaps(elementId, state, values.Keys)) interruptedAt = Environment.TickCount64;
         }
 
-        var (loopValues, instantValues, browserValues) = Partition(state, values, transition);
+        var (loopValues, instantValues, browserValues, loopReason) = Partition(state, values, transition, explain: observed);
 
         // Zero-length keys land now - before any browser animation is built, so one that also writes the
         // transform composes them in. A size that lands on "auto" without playing is simply "auto".
@@ -915,9 +924,16 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
                 foreach (var key in landsOnAuto)
                     if (instantValues.ContainsKey(key)) instantValues[key] = "auto";
             state.SetInstant(instantValues);
+            // A handler of the start may unregister the element: nothing more is started for it then.
+            if (observed && !ReportPart(elementId, instantValues.Keys, BmPlaybackStrategy.Instant, null, Task.FromResult(true)))
+            {
+                tcs?.TrySetResult(false);
+                return;
+            }
         }
 
         WaapiOffload? offload = null;
+        bool browserDeclined = false;
         if (browserValues is not null)
         {
             offload = await TryBuildBrowserPlanAsync(state, browserValues, transition);
@@ -928,6 +944,7 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
             }
             if (offload is null)
             {
+                browserDeclined = true;
                 loopValues ??= new Dictionary<string, object?>();
                 foreach (var (key, value) in browserValues) loopValues[key] = value;
                 browserValues = null;
@@ -960,6 +977,21 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
                 offload.Plan.StartMs = interruptedAt;
             }
             offload.Plan.Completion = Part();
+            if (observed)
+            {
+                if (!ReportPart(elementId, browserValues!.Keys,
+                        offload.Recorded ? BmPlaybackStrategy.BrowserRecorded : BmPlaybackStrategy.BrowserTimeline,
+                        null, offload.Plan.Completion?.Task))
+                {
+                    offload.Plan.Completion?.TrySetResult(false);
+                    tcs?.TrySetResult(false);
+                    return;
+                }
+                // An interruption of some of its keys hands the rest to frame-loop drivers: from then on they are a
+                // frame-loop part (which ends the browser part, as interrupted).
+                offload.Plan.HandOff = (keys, carried) =>
+                    ReportPart(elementId, keys, BmPlaybackStrategy.FrameLoop, HandOffReason, carried);
+            }
             RegisterWaapiPlan(elementId, state, offload.Plan);
             foreach (var key in offload.Plan.Keys) state.StartWritten(key);
             _ = SuperviseOffloadAsync(elementId, state, browserValues!, transition, offload, offload.Plan.Completion);
@@ -969,7 +1001,16 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
         {
             // Without a frame loop this collapses to an instant change: warned once, so it is diagnosable.
             WarnIfDegradingOnServer(elementId, loopValues, transition);
-            state.AnimateTo(loopValues, transition, Part());
+            var loopPart = Part();
+            if (observed && !ReportPart(elementId, loopValues.Keys,
+                    _interop.IsInProcess ? BmPlaybackStrategy.FrameLoop : BmPlaybackStrategy.InstantWithoutFrameLoop,
+                    loopReason ?? (browserDeclined ? BrowserDeclinedReason : "it needs the frame loop"), loopPart?.Task))
+            {
+                loopPart?.TrySetResult(false);
+                tcs?.TrySetResult(false);
+                return;
+            }
+            state.AnimateTo(loopValues, transition, loopPart);
         }
 
         // Noted once whatever plays them is running (starting it forgets an earlier landing on the same keys).
@@ -1101,22 +1142,26 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
 
     /// <summary>
     /// Splits an animation into the keys only the frame loop can play, the zero-length keys that land at once
-    /// (at their resting value), and the keys the browser may play.
+    /// (at their resting value), and the keys the browser may play. With <paramref name="explain"/>, it also says why
+    /// the first loop key went there (for the reported part).
     /// </summary>
-    private (Dictionary<string, object?>? Loop, Dictionary<string, object?>? Instant, Dictionary<string, object?>? Browser)
-        Partition(BmotionElementAnimationState state, Dictionary<string, object?> values, BmotionTransitionConfig? transition)
+    private (Dictionary<string, object?>? Loop, Dictionary<string, object?>? Instant, Dictionary<string, object?>? Browser, string? LoopReason)
+        Partition(BmotionElementAnimationState state, Dictionary<string, object?> values, BmotionTransitionConfig? transition,
+            bool explain = false)
     {
         var config = transition ?? new BmotionTransitionConfig();
         bool inProcess = _interop.IsInProcess;
         // A per-frame callback has frames to report only on the frame loop (as motion.dev runs an animation with
         // an onUpdate there); a paused or re-timed element plays new animations at its rate there too. Without a
         // frame loop the browser is the only way to animate at all, and plays them at the element's rate.
-        bool allOnLoop = HasOnUpdate(config, values.Keys) || (inProcess && (state.OnFrame is not null || state.PlaybackRate != 1));
+        bool onUpdate = HasOnUpdate(config, values.Keys);
+        bool allOnLoop = onUpdate || (inProcess && (state.OnFrame is not null || state.PlaybackRate != 1));
         // The transform is one CSS property: while a drag writes it, or a frame-loop driver animates a component of
         // it, the browser can't own it.
         bool transformOnLoop = state.IsDragging || (inProcess && state.HasActiveTransformDriver());
 
         Dictionary<string, object?>? loop = null, instant = null, browser = null;
+        string? reason = null;
         foreach (var (key, value) in values)
         {
             if (value is null) continue;
@@ -1129,10 +1174,23 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
             // SVG geometry is an attribute, which Web Animations can't animate.
             bool onLoop = allOnLoop || key is "d" or "points"
                 || (transformOnLoop && BmotionTransformComposer.IsTransformProp(key));
-            if (onLoop) (loop ??= new())[key] = value;
+            if (onLoop)
+            {
+                if (explain && reason is null) reason = Why(key);
+                (loop ??= new())[key] = value;
+            }
             else (browser ??= new())[key] = value;
         }
-        return (loop, instant, browser);
+        return (loop, instant, browser, reason);
+
+        // The condition above that put the key on the loop, checked in the same order.
+        string Why(string key)
+        {
+            if (onUpdate) return OnUpdateReason;
+            if (allOnLoop) return state.OnFrame is not null ? OnFrameReason : PlaybackRateReason(state.PlaybackRate);
+            if (key is "d" or "points") return SvgAttributeReason(key);
+            return state.IsDragging ? DragReason : TransformDriverReason;
+        }
 
         static bool IsInstant(BmotionTransitionConfig c)
             => c is { Type: BmotionTransitionType.Tween, Duration: <= 0, Delay: <= 0, Repeat: 0, RepeatInfinite: false, OnUpdate: null };
@@ -1537,7 +1595,7 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
             ["direction"] = "normal",
         };
         ApplyRate(state, plan, timing);
-        return new WaapiOffload(plan, keyframes.ToArray(), timing);
+        return new WaapiOffload(plan, keyframes.ToArray(), timing) { Recorded = true };
     }
 
     // Only reachable without a frame loop (see Partition): the browser plays it at the element's rate.
@@ -1766,9 +1824,17 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
         bool wasStillRegistered = state.TryRealizeWaapiPlan(offload.Plan.Token, out double elapsedMs, neverStartedWithinMs);
         if (wasStillRegistered && elapsedMs < neverStartedWithinMs)
         {
-            // Playback never started - replay through the regular path so the animation isn't lost.
+            // Playback never started - replay through the regular path so the animation isn't lost. It is a frame-loop
+            // part from now on (which ends the browser part, as interrupted).
             try
             {
+                if (IsObserved && !ReportPart(elementId, values.Keys,
+                        _interop.IsInProcess ? BmPlaybackStrategy.FrameLoop : BmPlaybackStrategy.InstantWithoutFrameLoop,
+                        NeverStartedReason, tcs?.Task))
+                {
+                    tcs?.TrySetResult(false);
+                    return;
+                }
                 state.AnimateTo(values, transition, tcs);
                 await EnsureTickingAsync(elementId, state);
             }

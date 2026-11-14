@@ -11,7 +11,7 @@ public partial class AiCommandsScenarioPage
                Mentions="mentions"
                Placeholder="Type / for commands, @@ to reference something"
                EmptyTitle="Try a slash or an at sign"
-               EmptyBody="Start a message with / to pick a command, or type @@ anywhere to reference a file or a person."
+               EmptyDescription="Start a message with / to pick a command, or type @@ anywhere to reference a file or a person."
                Suggestions="suggestions" />
 </div>
 """;

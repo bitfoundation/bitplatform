@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bit.BlazorUI lazy-loaded AI check</title>
+    <base href="/" />
+    <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.css" />
+    <!-- The AI package's stylesheet is still linked at startup: the browser downloads it with the page, though no
+         assembly of the package is, and only fetches its glyph font once something on the page draws a glyph of it. -->
+    <link rel="stylesheet" href="_content/Bit.BlazorUI.AI/styles/bit.blazorui.ai.css" />
+</head>
+<body>
+    <!-- No script tag of the packages: the app publishes the lazy scripts (BitBlazorUILazyScripts). -->
+    <div id="app"></div>
+    <script src="_framework/blazor.webassembly.js"></script>
+</body>
+</html>

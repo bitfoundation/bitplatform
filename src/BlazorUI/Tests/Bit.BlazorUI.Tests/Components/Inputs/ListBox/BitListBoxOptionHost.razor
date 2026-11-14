@@ -1,0 +1,15 @@
+﻿@using Bit.BlazorUI
+
+@* An option inside a component of its own, which renders on its own: a change it makes reaches the option without the
+   list box rendering. *@
+<BitListBoxOption Text="@_text" Value="@("own")" />
+
+@code {
+    private string _text = "Own option";
+
+    public void SetText(string text)
+    {
+        _text = text;
+        StateHasChanged();
+    }
+}

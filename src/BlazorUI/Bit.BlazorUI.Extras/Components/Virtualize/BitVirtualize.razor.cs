@@ -157,9 +157,14 @@ public partial class BitVirtualize<TItem> : BitComponentBase
     [Parameter] public bool Dynamic { get; set; }
 
     /// <summary>
-    /// The custom template to render when there is no item available.
+    /// The custom template to render when there is no item available, which takes the place of <see cref="EmptyText"/>.
     /// </summary>
     [Parameter] public RenderFragment? EmptyTemplate { get; set; }
+
+    /// <summary>
+    /// The text to render when there is no item available. Default: <see cref="BitStrings.NoItemsFound"/>.
+    /// </summary>
+    [Parameter] public string? EmptyText { get; set; }
 
     /// <summary>
     /// The assumed size in pixels of the items that have not been measured yet in dynamic mode.

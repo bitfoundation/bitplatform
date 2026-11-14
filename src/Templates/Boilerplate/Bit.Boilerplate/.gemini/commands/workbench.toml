@@ -1,4 +1,4 @@
-description = "Run the Workbench listening to the user's comments, and design and review a page in it before the app builds it: the app's own components and theme on sample data, every device, theme, language and data state, and store screenshots."
+description = "Run the Workbench listening to the user's comments, and design and review a page in it before the app builds it: the app's own components and theme on sample data, every device, theme, language and data state, and store screenshots. It also shows a long task's progress and asks the user on its Progress page."
 
 prompt = """
 Follow these instructions exactly:

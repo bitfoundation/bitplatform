@@ -109,12 +109,12 @@ public partial class BitNavPanelParams : BitComponentBaseParams, IBitComponentPa
     /// <summary>
     /// The custom message for when the search result is empty.
     /// </summary>
-    public string? EmptyListMessage { get; set; }
+    public string? NoResultsText { get; set; }
 
     /// <summary>
     /// The custom template for when the search result is empty.
     /// </summary>
-    public RenderFragment? EmptyListTemplate { get; set; }
+    public RenderFragment? NoResultsTemplate { get; set; }
 
     /// <summary>
     /// The default aria-label of the expand/collapse button of a collapsed item of the nav.
@@ -473,14 +473,14 @@ public partial class BitNavPanelParams : BitComponentBaseParams, IBitComponentPa
             bitNavPanel.TakeFromCascade(nameof(DrawerBreakpoint), DrawerBreakpoint.Value, static n => n.DrawerBreakpoint, static (n, v) => n.DrawerBreakpoint = v);
         }
 
-        if (EmptyListMessage.HasValue())
+        if (NoResultsText.HasValue())
         {
-            bitNavPanel.TakeFromCascade(nameof(EmptyListMessage), EmptyListMessage, static n => n.EmptyListMessage, static (n, v) => n.EmptyListMessage = v);
+            bitNavPanel.TakeFromCascade(nameof(NoResultsText), NoResultsText, static n => n.NoResultsText, static (n, v) => n.NoResultsText = v);
         }
 
-        if (EmptyListTemplate is not null)
+        if (NoResultsTemplate is not null)
         {
-            bitNavPanel.TakeFromCascade(nameof(EmptyListTemplate), EmptyListTemplate, static n => n.EmptyListTemplate, static (n, v) => n.EmptyListTemplate = v);
+            bitNavPanel.TakeFromCascade(nameof(NoResultsTemplate), NoResultsTemplate, static n => n.NoResultsTemplate, static (n, v) => n.NoResultsTemplate = v);
         }
 
         if (ExpandAriaLabel.HasValue())

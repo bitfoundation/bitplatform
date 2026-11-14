@@ -1,6 +1,9 @@
 //+:cnd:noEmit
+using System.Reflection;
+using System.Diagnostics;
 using Boilerplate.Server.Api;
 using Boilerplate.Server.Api.Infrastructure.HealthChecks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -117,7 +120,9 @@ public partial class HealthCheckIntegrationTests
         var smtp = report.Entries["smtp"];
         Assert.AreEqual(HealthCheckStatus.Degraded, smtp.FailureStatus);
         Assert.AreEqual(TimeSpan.FromSeconds(10), smtp.Timeout);
-        Assert.IsTrue(smtp.Data.ContainsKey("CheckedAt"), "A cached check says when it really ran.");
+        Assert.IsNotNull(smtp.VerifiedAt, "A cached check says when it really ran.");
+        Assert.AreEqual(TimeSpan.FromMinutes(5), smtp.CacheDuration);
+        Assert.IsEmpty(smtp.Data.Keys.Intersect(["Duration", "VerifiedAt", "CacheDuration"]), "Its run is reported in fields, not in its data.");
     }
 
     private async Task<HttpResponseMessage> GetReport(HttpClient httpClient, Uri url)
@@ -163,10 +168,295 @@ public partial class HealthCheckIntegrationTests
     }
 
     /// <summary>
+    /// The report says which build answered, on which instance, since when: a monitor polling it marks a deployment
+    /// where <c>applicationVersion</c> (which ends with the commit in a Release build) changes, and a restart where it
+    /// stays and <c>startedAt</c> moves. The JSON names are what such a monitor codes against.
+    /// </summary>
+    [TestMethod]
+    public async Task DetailedReport_Should_SayWhichBuildAnswered_AndSinceWhen()
+    {
+        await using var server = new AppTestServer();
+
+        await server.Build().Start(TestContext.CancellationToken);
+
+        await using var adminClient = server.CreateAppClient();
+        await adminClient.AuthManager.SignIn(new()
+        {
+            Email = TestData.DefaultTestEmail,
+            Password = TestData.DefaultTestPassword
+        }, TestContext.CancellationToken);
+
+        using var response = await GetReport(adminClient.HttpClient, new Uri(server.ApiAppAddress, "healthz"));
+
+        var body = await response.Content.ReadAsStringAsync(TestContext.CancellationToken);
+
+        using var json = JsonDocument.Parse(body);
+        var root = json.RootElement;
+
+        // The test host is the entry assembly here, as the app's own host is in a deployment.
+        var entryAssembly = Assembly.GetEntryAssembly();
+        Assert.IsNotNull(entryAssembly);
+        var informationalVersion = entryAssembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>();
+        Assert.IsNotNull(informationalVersion);
+
+        Assert.AreEqual(informationalVersion.InformationalVersion, root.GetProperty("applicationVersion").GetString());
+        Assert.AreEqual(Environment.MachineName, root.GetProperty("instanceName").GetString());
+        Assert.IsTrue(root.TryGetProperty("startedAt", out _), $"No startedAt in {body}");
+
+        var report = JsonSerializer.Deserialize(body, adminClient.Services.GetRequiredService<JsonSerializerOptions>().GetTypeInfo<HealthReportDto>());
+        Assert.IsNotNull(report);
+
+        using var process = Process.GetCurrentProcess();
+        var processStartedAt = new DateTimeOffset(process.StartTime.ToUniversalTime());
+
+        Assert.AreEqual(TimeSpan.Zero, report.StartedAt.Offset, "In UTC, so instances in different zones compare.");
+        Assert.IsLessThan(TimeSpan.FromSeconds(1), (report.StartedAt - processStartedAt).Duration(),
+            $"startedAt is when the answering process started ({processStartedAt:O}), not when the report was made: {report.StartedAt:O}.");
+        Assert.IsLessThanOrEqualTo(report.CheckedAt, report.StartedAt);
+    }
+
+    /// <summary>
+    /// Each entry says what kind of dependency it watches, taken from the category tag it was registered with, so a
+    /// monitor and the Operations page can group a check they don't know by name, one of the app's own included. The
+    /// JSON name is what such a monitor codes against.
+    /// </summary>
+    [TestMethod]
+    public async Task DetailedReport_Should_SayWhatKindOfDependencyEachCheckWatches()
+    {
+        await using var server = new AppTestServer();
+
+        await server.Build(configureTestApiAppServices: services => services.AddHealthChecks()
+                .AddCheck("paymentGateway", () => HealthCheckResult.Healthy(), tags: [HealthCheckCategories.Integrations])
+                .Describe("paymentGateway", "Payment gateway", "Money", "Authorizes and voids a one cent payment.")
+                .AddCheck("untagged", () => HealthCheckResult.Healthy()))
+            .Start(TestContext.CancellationToken);
+
+        await using var adminClient = server.CreateAppClient();
+        await adminClient.AuthManager.SignIn(new()
+        {
+            Email = TestData.DefaultTestEmail,
+            Password = TestData.DefaultTestPassword
+        }, TestContext.CancellationToken);
+
+        using var response = await GetReport(adminClient.HttpClient, new Uri(server.ApiAppAddress, "healthz"));
+
+        var body = await response.Content.ReadAsStringAsync(TestContext.CancellationToken);
+
+        using (var json = JsonDocument.Parse(body))
+        {
+            Assert.AreEqual("Integrations", json.RootElement.GetProperty("entries").GetProperty("paymentGateway").GetProperty("category").GetString(), body);
+        }
+
+        var report = JsonSerializer.Deserialize(body, adminClient.Services.GetRequiredService<JsonSerializerOptions>().GetTypeInfo<HealthReportDto>());
+        Assert.IsNotNull(report);
+
+        foreach (var (name, entry) in report.Entries.Where(entry => entry.Key is not "untagged"))
+        {
+            Assert.IsFalse(string.IsNullOrEmpty(entry.Category), $"The '{name}' check has no category. Tag it with one of HealthCheckCategories.");
+            Assert.AreNotEqual(name, entry.Title, $"The '{name}' check has no title. Describe it in HealthCheckDescriptions.");
+            Assert.IsFalse(string.IsNullOrEmpty(entry.IconName), $"The '{name}' check has no icon.");
+        }
+
+        Assert.AreEqual("Database", report.Entries["AppDbContext"].Title, "A monitor shows the check the way the app names it.");
+        Assert.AreEqual("Mail", report.Entries["smtp"].IconName);
+        Assert.IsFalse(string.IsNullOrEmpty(report.Entries["smtp"].About));
+
+        Assert.AreEqual("Platform", report.Entries["binStorage"].Category);
+        Assert.AreEqual("Platform", report.Entries["AppDbContext"].Category);
+        Assert.AreEqual("Messaging", report.Entries["smtp"].Category);
+        //#if (redis == true)
+        Assert.AreEqual("Platform", report.Entries["StackExchange.Redis_redis-persistent"].Category, "Aspire registers it without tags, so its category is added afterwards.");
+        Assert.AreEqual("Platform", report.Entries["StackExchange.Redis_redis-cache"].Category, "Aspire registers it without tags, so its category is added afterwards.");
+        //#endif
+
+        var paymentGateway = report.Entries["paymentGateway"];
+        Assert.AreEqual("Integrations", paymentGateway.Category);
+        Assert.AreEqual("Payment gateway", paymentGateway.Title, "A check of the app's own is described next to its registration.");
+        Assert.AreEqual("Money", paymentGateway.IconName);
+        Assert.AreEqual("Authorizes and voids a one cent payment.", paymentGateway.About);
+        Assert.Contains(HealthCheckCategories.Integrations, paymentGateway.Tags, "The category tag stays among the tags.");
+
+        Assert.IsNull(report.Entries["untagged"].Category, "A check registered without a category tag has none.");
+        Assert.AreEqual("untagged", report.Entries["untagged"].Title, "A check described nowhere goes by its registration name.");
+        Assert.AreEqual(HealthCheckCategories.IconOf(null), report.Entries["untagged"].IconName);
+    }
+
+    /// <summary>
+    /// A monitor given only the app's address finds the app's server here (See bit-app.json in Client.Web's
+    /// wwwroot/.well-known, which a statically hosted front end serves as it is).
+    /// </summary>
+    [TestMethod]
+    public async Task BitAppDocument_Should_NameTheServer_AndTheFrontEnd()
+    {
+        await using var server = new AppTestServer();
+
+        await server.Build().Start(TestContext.CancellationToken);
+
+        using var httpClient = new HttpClient();
+        var body = await httpClient.GetStringAsync(new Uri(server.WebAppAddress, ".well-known/bit-app.json"), TestContext.CancellationToken);
+
+        using var json = JsonDocument.Parse(body);
+        var document = json.RootElement;
+
+        Assert.AreEqual("server", document.GetProperty("front_end").GetString(), body);
+        Assert.IsTrue(Uri.TryCreate(document.GetProperty("server").GetString(), UriKind.Absolute, out var serverAddress), body);
+        Assert.AreEqual("/manifest.json", document.GetProperty("manifest").GetString(), body);
+
+        using var metadata = await httpClient.GetAsync(new Uri(serverAddress, ".well-known/oauth-protected-resource/healthz"), TestContext.CancellationToken);
+        Assert.AreEqual(HttpStatusCode.OK, metadata.StatusCode, $"The server it names must be the one whose /healthz a monitor reads: {serverAddress}");
+    }
+
+    /// <summary>
+    /// A missing configuration reports Degraded like a slow dependency, so /healthz says which of the two an entry is (See
+    /// HealthReportEntryDto.IsNotConfigured): neither the Operations page nor a monitor has to read the description.
+    /// </summary>
+    [TestMethod]
+    public async Task DetailedReport_Should_TellAMissingConfiguration_FromADegradedDependency()
+    {
+        await using var server = new AppTestServer();
+
+        await server.Build(configureTestApiAppServices: services => services.AddHealthChecks()
+                .AddNotConfiguredCheck("paymentGateway", HealthCheckCategories.Integrations, "PaymentGateway")
+                .AddCheck("maps", () => HealthCheckResult.Degraded("Answered in 4 seconds."), tags: [HealthCheckCategories.Integrations]))
+            .Start(TestContext.CancellationToken);
+
+        await using var adminClient = server.CreateAppClient();
+        await adminClient.AuthManager.SignIn(new()
+        {
+            Email = TestData.DefaultTestEmail,
+            Password = TestData.DefaultTestPassword
+        }, TestContext.CancellationToken);
+
+        using var response = await GetReport(adminClient.HttpClient, new Uri(server.ApiAppAddress, "healthz"));
+
+        var body = await response.Content.ReadAsStringAsync(TestContext.CancellationToken);
+
+        using (var json = JsonDocument.Parse(body))
+        {
+            Assert.IsTrue(json.RootElement.GetProperty("entries").GetProperty("paymentGateway").GetProperty("isNotConfigured").GetBoolean(), body);
+        }
+
+        var report = JsonSerializer.Deserialize(body, adminClient.Services.GetRequiredService<JsonSerializerOptions>().GetTypeInfo<HealthReportDto>());
+        Assert.IsNotNull(report);
+
+        Assert.AreEqual(HealthCheckStatus.Degraded, report.Entries["paymentGateway"].Status);
+        Assert.IsTrue(report.Entries["paymentGateway"].IsNotConfigured);
+        Assert.AreEqual("Integrations", report.Entries["paymentGateway"].Category, "A stand-in is grouped where the real check would be.");
+
+        Assert.AreEqual(HealthCheckStatus.Degraded, report.Entries["maps"].Status);
+        Assert.IsFalse(report.Entries["maps"].IsNotConfigured, "A slow dependency is configured.");
+        Assert.IsFalse(report.Entries["binStorage"].IsNotConfigured);
+    }
+
+    /// <summary>
+    /// The category of every check the template registers (See HealthCheckCategories). A check that isn't listed here
+    /// fails <see cref="AssertCategory"/>, so a new one gets a category from the start.
+    /// </summary>
+    private static readonly Dictionary<string, string> expectedCategories = new()
+    {
+        ["binStorage"] = HealthCheckCategories.Platform,
+        ["AppDbContext"] = HealthCheckCategories.Platform,
+        ["hangfire"] = HealthCheckCategories.Platform,
+        ["appCertificate"] = HealthCheckCategories.Platform,
+        ["userProfileImages"] = HealthCheckCategories.Platform,
+        ["websites"] = HealthCheckCategories.Websites,
+        //#if (redis == true)
+        ["StackExchange.Redis_redis-persistent"] = HealthCheckCategories.Platform,
+        ["StackExchange.Redis_redis-cache"] = HealthCheckCategories.Platform,
+        //#endif
+        //#if (cloudflare == true)
+        ["cloudflare"] = HealthCheckCategories.Platform,
+        //#endif
+        ["smtp"] = HealthCheckCategories.Messaging,
+        ["emailDelivery"] = HealthCheckCategories.Messaging,
+        ["sms"] = HealthCheckCategories.Messaging,
+        //#if (notification == true)
+        ["firebase"] = HealthCheckCategories.Messaging,
+        ["apns"] = HealthCheckCategories.Messaging,
+        //#endif
+        //#if (signalR == true)
+        ["azureSignalR"] = HealthCheckCategories.Messaging,
+        //#endif
+        ["keycloakIdentity"] = HealthCheckCategories.Identity,
+        ["googleSignIn"] = HealthCheckCategories.Identity,
+        ["gitHubSignIn"] = HealthCheckCategories.Identity,
+        ["twitterSignIn"] = HealthCheckCategories.Identity,
+        ["facebookSignIn"] = HealthCheckCategories.Identity,
+        ["entraId"] = HealthCheckCategories.Identity,
+        ["appleSignIn"] = HealthCheckCategories.Identity,
+        //#if (captcha == "reCaptcha")
+        ["reCaptcha"] = HealthCheckCategories.Identity,
+        //#endif
+        //#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")
+        ["aiChat"] = HealthCheckCategories.AI,
+        ["aiEmbedding"] = HealthCheckCategories.AI,
+        //#endif
+        //#if (signalR == true)
+        ["aiSpeechToText"] = HealthCheckCategories.AI,
+        ["aiTextToSpeech"] = HealthCheckCategories.AI,
+        ["aiRealtime"] = HealthCheckCategories.AI,
+        //#endif
+    };
+
+    private static void AssertCategory(HealthCheckRegistration registration)
+    {
+        var name = registration.Name;
+
+        Assert.IsTrue(expectedCategories.TryGetValue(name, out var expected), $"The '{name}' check has no entry in expectedCategories.");
+
+        string[] categories = [.. registration.Tags.Where(tag => tag.StartsWith(HealthCheckCategories.TagPrefix, StringComparison.Ordinal))];
+
+        Assert.HasCount(1, categories, $"The '{name}' check must carry exactly one category tag, one of HealthCheckCategories.");
+        Assert.AreEqual(expected, categories[0], $"The '{name}' check is in the wrong category.");
+    }
+
+    /// <summary>
     /// A remote dependency must neither hang <c>/health</c> nor make it answer 503, so every check outside
     /// <c>localChecks</c> needs a timeout, reports Degraded and stays out of <c>/alive</c>. The optional ones are
     /// configured below, as development only registers them then.
     /// </summary>
+    /// <summary>
+    /// The project's other sites in <c>HealthChecks:Websites</c>, given as one value the way a single environment or GitHub
+    /// variable carries them and as a list, are each requested over HTTP: one that answers stays out of the data, and each
+    /// one that failed is in it with what went wrong. The check runs directly, as the detailed report needs an operator.
+    /// </summary>
+    [TestMethod]
+    public async Task Websites_Should_SayWhatWentWrongWithEachSiteThatFailed()
+    {
+        // Sites of the project's own: one that answers, one that's down and one whose redirect ends in a missing page.
+        await using var sites = WebApplication.CreateSlimBuilder().Build();
+        sites.Urls.Add("http://127.0.0.1:0");
+        sites.MapGet("/up", () => "up");
+        sites.MapGet("/down", () => Results.StatusCode(StatusCodes.Status503ServiceUnavailable));
+        sites.MapGet("/moved", () => Results.Redirect("/gone"));
+        await sites.StartAsync(TestContext.CancellationToken);
+        var origin = sites.Urls.Single().TrimEnd('/');
+
+        await using var server = new AppTestServer();
+
+        await server.Build(configureTestConfiguration: configuration =>
+        {
+            configuration["HealthChecks:Websites"] = $"{origin}/up, {origin}/down site.invalid";
+            configuration["HealthChecks:Websites:0"] = $"{origin}/moved";
+            configuration["HealthChecks:Websites:1"] = "ftp://files.example.com";
+        }).Start(TestContext.CancellationToken);
+
+        var registration = server.ApiApp.Services.GetRequiredService<IOptions<HealthCheckServiceOptions>>().Value.Registrations.Single(r => r.Name == "websites");
+        Assert.IsLessThan(TimeSpan.FromSeconds(15), registration.Timeout, "A monitor waits about 15 seconds for /health, so the check must end well before.");
+
+        var report = await server.ApiApp.Services.GetRequiredService<HealthCheckService>()
+            .CheckHealthAsync(r => r.Name == "websites", TestContext.CancellationToken);
+        var entry = report.Entries["websites"];
+
+        Assert.AreEqual(HealthStatus.Degraded, entry.Status, entry.Description);
+        Assert.AreEqual("4 of 5 sites failed", entry.Description);
+        Assert.DoesNotContain(site => site.EndsWith("/up", StringComparison.Ordinal), entry.Data.Keys, "A site that answers stays out of the data.");
+        Assert.AreEqual("503 Service Unavailable.", entry.Data[$"{origin}/down"]);
+        Assert.AreEqual("404 Not Found.", entry.Data[$"{origin}/moved"], "The status is the one the redirects end in.");
+        Assert.AreEqual("Its name doesn't resolve.", entry.Data["https://site.invalid/"]);
+        Assert.AreEqual("Not an http or https address.", entry.Data["ftp://files.example.com"]);
+    }
+
     [TestMethod]
     public async Task ExternalHealthChecks_Should_BeBoundedAndNonFatal()
     {
@@ -174,6 +464,9 @@ public partial class HealthCheckIntegrationTests
 
         await server.Build(configureTestConfiguration: configuration =>
         {
+            // A real-looking SMTP server, as emailDelivery stays out where mail is caught (the shipped ethereal.email).
+            configuration["ConnectionStrings:smtp"] = "Endpoint=smtp://smtp.example.com:587";
+            configuration["HealthChecks:Websites"] = "https://site.invalid";
             configuration["Authentication:Keycloak:KeycloakUrl"] = "http://keycloak.invalid/";
             configuration["Authentication:Keycloak:Realm"] = "dev";
             configuration["Authentication:AzureAD:ClientId"] = "not-a-real-client";
@@ -206,7 +499,7 @@ public partial class HealthCheckIntegrationTests
 
         string[] expectedExternalChecks =
         [
-            "userProfileImages", "smtp", "sms", "keycloakIdentity", "entraId", "appleSignIn",
+            "userProfileImages", "websites", "smtp", "emailDelivery", "sms", "keycloakIdentity", "entraId", "appleSignIn",
             //#if (captcha == "reCaptcha")
             "reCaptcha",
             //#endif
@@ -248,6 +541,12 @@ public partial class HealthCheckIntegrationTests
 
         // The control: the one check that *is* meant to gate liveness still does.
         Assert.Contains("live", registrations.Single(r => r.Name == "binStorage").Tags);
+
+        // With every optional check registered, each one, local ones included, carries its category.
+        foreach (var registration in registrations)
+        {
+            AssertCategory(registration);
+        }
     }
 
     //#if (redis == true)
@@ -314,9 +613,6 @@ public partial class HealthCheckIntegrationTests
             //#if (cloudflare == true)
             "cloudflare",
             //#endif
-            //#if (signalR == true)
-            "azureSignalR",
-            //#endif
             //#if (notification == true)
             "firebase", "apns",
             //#endif
@@ -366,7 +662,15 @@ public partial class HealthCheckIntegrationTests
 
             Assert.AreEqual(HealthStatus.Degraded, result.Status, $"'{name}': {result.Description}");
             Assert.Contains("is not configured", result.Description!, $"'{name}' must say what is missing.");
+            Assert.Contains(HealthCheckTags.NotConfigured, registration.Tags, $"/healthz must report '{name}' as not configured, not as failing.");
+
+            // A stand-in is grouped where the real check would be.
+            AssertCategory(registration);
         }
+        //#if (signalR == true)
+
+        Assert.DoesNotContain(r => r.Name is "azureSignalR", registrations, "Without Azure SignalR the app serves SignalR itself, so a missing connection string is no setup gap.");
+        //#endif
     }
 
     /// <summary>

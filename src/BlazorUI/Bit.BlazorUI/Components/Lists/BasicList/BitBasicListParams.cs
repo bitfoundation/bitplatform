@@ -53,6 +53,11 @@ public partial class BitBasicListParams : BitComponentBaseParams, IBitComponentP
     public BitBasicListClassStyles? Classes { get; set; }
 
     /// <summary>
+    /// The text rendered when there is no item to show.
+    /// </summary>
+    public string? EmptyText { get; set; }
+
+    /// <summary>
     /// Sets the height of the list to fit its content.
     /// </summary>
     public bool? FitHeight { get; set; }
@@ -180,6 +185,11 @@ public partial class BitBasicListParams : BitComponentBaseParams, IBitComponentP
         if (Classes is not null)
         {
             bitBasicList.TakeFromCascade(nameof(Classes), Classes, static b => b.Classes, static (b, v) => b.Classes = v);
+        }
+
+        if (EmptyText is not null)
+        {
+            bitBasicList.TakeFromCascade(nameof(EmptyText), EmptyText, static b => b.EmptyText, static (b, v) => b.EmptyText = v);
         }
 
         if (FitHeight.HasValue)

@@ -890,7 +890,28 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Background" RazorCode="@example19RazorCode" Id="example19">
+    <DemoExample Title="Mask" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">
+        <div>
+            <b>Mask</b> lays the text out as it is typed: <b>#</b> takes a digit, <b>A</b> a letter and <b>*</b> either, every
+            other character is inserted for the user, and a backslash makes the next character a literal. The caret stays where
+            it was as the literals move around it. The value is the formatted text, or with <b>MaskRawValue</b> only what went
+            into the slots.
+        </div>
+        <br />
+        <div class="example-box">
+            <BitTextField Label="Date" Mask="##/##/####" Placeholder="MM/DD/YYYY" Immediate @bind-Value="maskedDate" />
+            <BitText>Value: @maskedDate</BitText>
+            <br />
+            <BitTextField Label="Phone (raw value)" Mask="(###) ###-####" MaskRawValue Immediate @bind-Value="maskedPhone" />
+            <BitText>Value: @maskedPhone</BitText>
+            <br />
+            <BitTextField Label="License plate" Mask="AA-####" Immediate />
+            <br />
+            <BitTextField Label="Part number (the A is escaped)" Mask="@(@"\AX-####")" Immediate />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Background" RazorCode="@example20RazorCode" Id="example20">
         <div>
             <b>Background</b> picks the fill of the field from the color kinds of the theme. <b>Transparent</b> is the one to
             use when the field sits on a colored surface and should inherit it instead of punching a light rectangle into it.
@@ -907,7 +928,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Border" RazorCode="@example20RazorCode" Id="example20">
+    <DemoExample Title="Border" RazorCode="@example21RazorCode" Id="example21">
         <div>
             <b>Border</b> picks the color of the frame from the same color kinds, independently of the background.
             <b>Transparent</b> keeps the border box - and therefore the layout - while making the line itself invisible, which
@@ -927,7 +948,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Accent" RazorCode="@example21RazorCode" Id="example21">
+    <DemoExample Title="Accent" RazorCode="@example22RazorCode" Id="example22">
         <div>
             <b>Accent</b> is the color the field takes on while it has focus: the focus ring, the icon and the affixes all
             follow it. Primary is the default, and the remaining variants are what gives a field a meaning of its own - a
@@ -973,7 +994,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="External Icons" RazorCode="@example22RazorCode" Id="example22">
+    <DemoExample Title="External Icons" RazorCode="@example23RazorCode" Id="example23">
         <div>
             The <b>Icon</b> parameter takes a <b>BitIconInfo</b> instead of a built-in icon name, which is what lets an icon
             come from FontAwesome, Bootstrap Icons or any other icon font: <b>BitIconInfo.Fa</b> and <b>BitIconInfo.Bi</b> build
@@ -1026,7 +1047,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example23RazorCode" Id="example23">
+    <DemoExample Title="Size" RazorCode="@example24RazorCode" Id="example24">
         <div>
             <b>Size</b> scales the whole field at once - its height, its font, its icons and its buttons - so a field stays
             proportional to the controls next to it. Medium is the default; Small is what a dense toolbar or a table row wants,
@@ -1046,7 +1067,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style &amp; Class" RazorCode="@example24RazorCode" CsharpCode="@example24CsharpCode" Id="example24">
+    <DemoExample Title="Style &amp; Class" RazorCode="@example25RazorCode" CsharpCode="@example25CsharpCode" Id="example25">
         <div>
             <b>Style</b> and <b>Class</b> land on the root element, while <b>Styles</b> and <b>Classes</b> reach every inner
             part by name - the label, the field group, the input, the buttons, the footer and the counter - which is what makes
@@ -1103,7 +1124,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example25RazorCode" Id="example25">
+    <DemoExample Title="RTL" RazorCode="@example26RazorCode" Id="example26">
         <div>
             Set <b>Dir="BitDir.Rtl"</b> to mirror the field for a right-to-left language. The label, the affixes, the buttons,
             the required asterisk and the underline all follow the direction, since the layout is written with logical

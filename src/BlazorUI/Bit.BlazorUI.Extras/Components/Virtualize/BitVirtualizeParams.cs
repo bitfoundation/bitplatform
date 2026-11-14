@@ -56,6 +56,11 @@ public partial class BitVirtualizeParams : BitComponentBaseParams, IBitComponent
     public RenderFragment? EmptyTemplate { get; set; }
 
     /// <summary>
+    /// The text to render when there is no item available.
+    /// </summary>
+    public string? EmptyText { get; set; }
+
+    /// <summary>
     /// The assumed size in pixels of the items that have not been measured yet in dynamic mode.
     /// </summary>
     public float? EstimatedItemSize { get; set; }
@@ -137,6 +142,11 @@ public partial class BitVirtualizeParams : BitComponentBaseParams, IBitComponent
         if (EmptyTemplate is not null)
         {
             bitVirtualize.TakeFromCascade(nameof(EmptyTemplate), EmptyTemplate, static l => l.EmptyTemplate, static (l, v) => l.EmptyTemplate = v);
+        }
+
+        if (EmptyText is not null)
+        {
+            bitVirtualize.TakeFromCascade(nameof(EmptyText), EmptyText, static l => l.EmptyText, static (l, v) => l.EmptyText = v);
         }
 
         if (EstimatedItemSize.HasValue)

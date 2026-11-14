@@ -1761,6 +1761,32 @@ public class BitSearchBoxTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitSearchBoxShouldSayAFruitlessSearchFoundNothingInItsDefaultWords()
+    {
+        // No NoResultsText of its own: the callout still opens on a search that matched nothing, and says so.
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.MinSuggestTriggerChars, 1);
+            parameters.Add(p => p.SuggestItems, Fruits);
+        });
+
+        component.Find(".bit-srb-inp").Input("zzz");
+
+        Assert.AreEqual("No results found", component.Find(".bit-srb-nor").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitSearchBoxWithoutSuggestionsShouldNeverSayItFoundNothing()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters => parameters.Add(p => p.Immediate, true));
+
+        component.Find(".bit-srb-inp").Input("zzz");
+
+        Assert.AreEqual(0, component.FindAll(".bit-srb-nor").Count);
+    }
+
+    [TestMethod]
     public void BitSearchBoxNoResultsTextShouldRenderOnlyAfterAFruitlessSearch()
     {
         var component = RenderComponent<BitSearchBox>(parameters =>
@@ -1771,15 +1797,15 @@ public class BitSearchBoxTests : BunitTestContext
             parameters.Add(p => p.SuggestItems, Fruits);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-srb-nrs").Count);
+        Assert.AreEqual(0, component.FindAll(".bit-srb-nor").Count);
 
         var input = component.Find(".bit-srb-inp");
 
         input.Input("apple");
-        Assert.AreEqual(0, component.FindAll(".bit-srb-nrs").Count);
+        Assert.AreEqual(0, component.FindAll(".bit-srb-nor").Count);
 
         input.Input("zzz");
-        Assert.AreEqual("Nothing here", component.Find(".bit-srb-nrs").TextContent.Trim());
+        Assert.AreEqual("Nothing here", component.Find(".bit-srb-nor").TextContent.Trim());
         Assert.AreEqual(0, component.FindAll(".bit-srb-itm").Count);
     }
 
@@ -1961,7 +1987,7 @@ public class BitSearchBoxTests : BunitTestContext
         // A faulted ValueTask is a search that could not run, so the message for a search that ran and
         // found nothing must not stand in for it - the live region says what actually happened.
         Assert.AreEqual(0, component.FindAll(".bit-srb-itm").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-srb-nrs").Count);
+        Assert.AreEqual(0, component.FindAll(".bit-srb-nor").Count);
     }
 
     [TestMethod]
@@ -2009,8 +2035,8 @@ public class BitSearchBoxTests : BunitTestContext
 
         component.Find(".bit-srb-inp").Input("zzz");
 
-        Assert.IsNotNull(component.Find(".bit-srb-nrs #nrs-tpl"));
-        Assert.AreEqual("true", component.Find(".bit-srb-nrs").GetAttribute("aria-hidden"));
+        Assert.IsNotNull(component.Find(".bit-srb-nor #nrs-tpl"));
+        Assert.AreEqual("true", component.Find(".bit-srb-nor").GetAttribute("aria-hidden"));
     }
 
     [TestMethod]
@@ -2221,7 +2247,7 @@ public class BitSearchBoxTests : BunitTestContext
 
         // A search that could not run must not be told as a search that found nothing.
         Assert.AreEqual("Suggestions are unavailable.", component.Find(".bit-srb-fld").TextContent.Trim());
-        Assert.AreEqual(0, component.FindAll(".bit-srb-nrs").Count);
+        Assert.AreEqual(0, component.FindAll(".bit-srb-nor").Count);
         Assert.AreEqual(0, component.FindAll(".bit-srb-itm").Count);
 
         // The exception is the one failure an app would otherwise never get to see.
@@ -3041,7 +3067,7 @@ public class BitSearchBoxTests : BunitTestContext
 
         FocusAndType(component, "zzz");
 
-        Assert.AreEqual("No suggestion found.", GetAnnouncement(component));
+        Assert.AreEqual("No results found", GetAnnouncement(component));
     }
 
     [TestMethod]
@@ -3097,7 +3123,7 @@ public class BitSearchBoxTests : BunitTestContext
         var second = component.Find(".bit-srb-lvr").TextContent;
 
         // the wording is identical, so the raw text has to differ for a screen reader to read it twice.
-        Assert.AreEqual("No suggestion found.", GetAnnouncement(component));
+        Assert.AreEqual("No results found", GetAnnouncement(component));
         Assert.AreNotEqual(first, second);
     }
 
@@ -3167,10 +3193,10 @@ public class BitSearchBoxTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitSearchBoxShouldAnnounceAFruitlessSearchEvenThoughTheCalloutNeverOpens()
+    public void BitSearchBoxShouldShowAndAnnounceAFruitlessSearchWithoutANoResultsTextOfItsOwn()
     {
-        // without a NoResultsText there is nothing to show, so the callout stays closed and the live
-        // region is the only thing that tells a screen reader user that the search returned nothing.
+        // Without a NoResultsText the callout still opens on a search that matched nothing, in the default words,
+        // and the live region says the same to a screen reader user.
         var component = RenderComponent<BitSearchBox>(parameters =>
         {
             parameters.Add(p => p.Immediate, true);
@@ -3184,8 +3210,9 @@ public class BitSearchBoxTests : BunitTestContext
 
         component.Find(".bit-srb-inp").Input("zzz");
 
-        WaitForClosedCallout(component);
-        Assert.AreEqual("No suggestion found.", GetAnnouncement(component));
+        Assert.AreEqual("true", component.Find(".bit-srb-inp").GetAttribute("aria-expanded"));
+        Assert.AreEqual("No results found", component.Find(".bit-srb-nor").TextContent.Trim());
+        Assert.AreEqual("No results found", GetAnnouncement(component));
     }
 
     [TestMethod]

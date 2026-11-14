@@ -46,6 +46,22 @@ public sealed class BonboardingOptions : BonboardingStepOptions
     public bool AutoNavigateToStepRoute { get; set; } = true;
 
     /// <summary>
+    /// Asked before every automatic start (<see cref="BonboardingStartOptions.Automatic"/>,
+    /// <see cref="IBonboardingService.StartOnceAsync"/>, a declarative <c>AutoStart</c>), after the tour's own
+    /// <see cref="BonboardingTourDefinition.CanStart"/>: false holds the tour back. The place for rules about guidance as
+    /// a whole rather than about one tour - the user turned tips off, the screen is too small, a dialog of the
+    /// application is open. Starts the user asks for are not asked, so a help menu keeps working for a user who muted
+    /// the tips. <see langword="null"/> (the default) lets every automatic start through. One that throws holds the tour
+    /// back, and the exception is logged.
+    /// </summary>
+    /// <example>
+    /// <code>
+    /// options.CanAutoStart = ctx =&gt; ValueTask.FromResult(!ctx.Services.GetRequiredService&lt;UserSettings&gt;().MuteTips);
+    /// </code>
+    /// </example>
+    public Func<BonboardingTourContext, ValueTask<bool>>? CanAutoStart { get; set; }
+
+    /// <summary>
     /// Emitted diagnostics verbosity guard: when false the library never touches
     /// <c>console</c> from JavaScript. Default <see langword="false"/>.
     /// </summary>
