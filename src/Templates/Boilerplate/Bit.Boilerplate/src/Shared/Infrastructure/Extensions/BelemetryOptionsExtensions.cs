@@ -18,7 +18,6 @@ public static class BelemetryOptionsExtensions
             {
                 options.AddOtlpExporter(configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]!, otlp =>
                 {
-                    otlp.IncludeInBrowser = OperatingSystem.IsBrowser();
                     otlp.Protocol = configuration["OTEL_EXPORTER_OTLP_PROTOCOL"]?.Trim().ToLowerInvariant() switch
                     {
                         "grpc" => BelemetryOtlpProtocol.Grpc,

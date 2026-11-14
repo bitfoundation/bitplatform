@@ -18,6 +18,9 @@ public static partial class MauiProgram
             var services = builder.Services;
             var configuration = builder.Configuration;
             services.AddClientCoreProjectServices(builder.Configuration);
+            //#if (sentry == true)
+            services.Configure<Bit.Belemetry.BelemetryOptions>(options => options.SentryExporters.ForEach(sentry => sentry.IncludeUnhandledExceptions = false));
+            //#endif
 
             services.AddTransient<MainPage>();
 
