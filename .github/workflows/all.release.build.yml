@@ -69,24 +69,19 @@ jobs:
           solution: src/Utilities/Bsqlite/Bit.Bsqlite.slnx
         - name: BlazorES2019
           solution: src/Toolings/BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj
-          workloads: false
-          node: false
+          tooling: true
         - name: Cli
           solution: src/Toolings/Cli/Bit.Cli.slnx
-          workloads: false
-          node: false
+          tooling: true
         - name: CodeAnalyzers
           solution: src/Toolings/CodeAnalyzers/Bit.CodeAnalyzers.slnx
-          workloads: false
-          node: false
+          tooling: true
         - name: Minifier
           solution: src/Toolings/Minifier/Bit.Minifier.slnx
-          workloads: false
-          node: false
+          tooling: true
         - name: SourceGenerators
           solution: src/Toolings/SourceGenerators/Bit.SourceGenerators.slnx
-          workloads: false
-          node: false
+          tooling: true
 
     steps:
 
@@ -110,7 +105,7 @@ jobs:
         node-version: 24
 
     - name: Restore workloads
-      if: matrix.workloads != false
+      if: ${{ !matrix.tooling }}
       run: cd "$(dirname '${{ matrix.solution }}')" && dotnet workload restore
 
     # The demos install Bit.Minifier as a package at the version being released, which nuget.org only has once this
@@ -121,7 +116,7 @@ jobs:
         dotnet pack src/Toolings/Minifier/Bit.Minifier/Bit.Minifier.csproj --output ${{ github.workspace }}/packages --configuration Release
 
     - name: InstallNodejsDependencies
-      if: matrix.node != false
+      if: ${{ !matrix.tooling }}
       continue-on-error: true # Error MSB4057, not all csproj files have InstallNodejsDependencies target.
       run: dotnet build ${{ matrix.solution }} -t:InstallNodejsDependencies -m:1 -f net11.0 -p:RestoreAdditionalProjectSources=${{ github.workspace }}/packages
 
