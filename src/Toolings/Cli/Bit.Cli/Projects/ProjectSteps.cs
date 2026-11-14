@@ -347,6 +347,14 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         if (result.Succeeded is false)
             return StepResult.FromProcess(result, "", "Couldn't format the code", followUp);
 
+        // What ci.yml's "Verify formatting" checks: every file, those of projects the solution's format couldn't load included,
+        // such as the indentation the template engine leaves where it removed a line inside a method.
+        string[] whitespace = ["format", "whitespace", "--folder", "."];
+        result = await Dotnet(whitespace, cancellationToken, progress, TimeSpan.FromMinutes(10));
+
+        if (result.Succeeded is false)
+            return StepResult.FromProcess(result, "", "Couldn't format the code", $"cd {ProcessSpec.Quote(project.Directory)} && dotnet {string.Join(' ', whitespace)}");
+
         return StepResult.Succeeded("Formatted the code", await CommitAllAsync("Format the code with dotnet format", cancellationToken));
     }
 
