@@ -28,6 +28,8 @@ In the same step, look at the branch you are on and what it holds that `main` do
 
 ## Workflow Phases
 
+On the full track, start a task of your own on the Workbench's Progress page before phase 1, the way `AGENTS.md` section 6 and section 9 of the **workbench** skill (`.github/agents/workbench.agent.md`) describe: these phases are its steps, the plan's approval and every question go there, and it stays current until delivery.
+
 ### 1. Requirements Elaboration
 - In the same step as your first reads, check whether the project is on the newest bit platform release - see **Staying on the Newest bit Platform** below. It runs alongside this phase and never holds it up
 - Ask clarifying questions to fully understand the feature/task

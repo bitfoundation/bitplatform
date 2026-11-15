@@ -81,8 +81,9 @@ domain and the services of section 5. Then go through the steps with them.
 - **Secrets.** `bit pipeline` creates the ones it can - the app certificate, the VAPID keys, the database and Redis
   passwords - and stores them straight into the environment's secrets (section 6). Ask the user only for what nobody
   else can give, each with a secret question on the task's Progress page (`workbench` skill, section 9): a key from
-  their accounts goes straight into the environment's secrets, and what only your commands use, like the root password
-  or a setup token, into a file you never read. Never ask for one in the chat or in a file in the repository. No secret
+  their accounts goes straight into the environment's secrets, what only this machine needs, like the account you sign
+  in with on the deployed site, into the user secrets of the project that reads it, and what only your commands use,
+  like the root password or a setup token, into a file you never read. Never ask for one in the chat or in a file in the repository. No secret
   goes into a commit or a log.
 <!--#if (cloudflare == true)-->
 - **No inbound port, and no locked door.** SSH is open only while you set the VM up: key only, with password and root

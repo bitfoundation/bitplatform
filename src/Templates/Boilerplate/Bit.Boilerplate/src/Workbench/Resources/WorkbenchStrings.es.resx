@@ -5031,6 +5031,12 @@
     <data name="ProgressDeleteConfirm" xml:space="preserve">
         <value>¿Eliminarla para siempre?</value>
     </data>
+    <data name="ProgressRemoveNote" xml:space="preserve">
+        <value>Quitar esta nota</value>
+    </data>
+    <data name="ProgressRemoveEntry" xml:space="preserve">
+        <value>Quitar de la actividad</value>
+    </data>
     <data name="ProgressPickTask" xml:space="preserve">
         <value>Elige una tarea para ver cómo va.</value>
     </data>
@@ -5078,6 +5084,9 @@
     </data>
     <data name="ProgressSecretToFile" xml:space="preserve">
         <value>Va a un archivo fuera del proyecto, que {0} usa en sus comandos sin verlo nunca.</value>
+    </data>
+    <data name="ProgressSecretToUserSecrets" xml:space="preserve">
+        <value>Se queda en este equipo, en los user secrets de {1} como {0}. {2} nunca lo ve.</value>
     </data>
     <data name="ProgressSecretPlaceholder" xml:space="preserve">
         <value>Pégalo aquí</value>

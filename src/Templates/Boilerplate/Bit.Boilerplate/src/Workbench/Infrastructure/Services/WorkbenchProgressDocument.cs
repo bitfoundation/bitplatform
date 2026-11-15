@@ -6,8 +6,9 @@ namespace Boilerplate.Workbench.Infrastructure.Services;
 
 /// <summary>
 /// Reads and writes the agents' tasks in the review's Bcrdt document, one map per task under <c>progress</c>. The agent
-/// changes a task over HTTP; the user answers its questions, finishes their own steps and writes to it from the page.
-/// Texts and lists are cut at fixed sizes, so a chatty agent can't make the document grow without bound.
+/// changes a task over HTTP; the user answers its questions, finishes their own steps, writes to it and removes its notes and
+/// lines of activity from the page. Texts and lists are cut at fixed sizes, so a chatty agent can't make the document grow
+/// without bound.
 /// </summary>
 public static partial class WorkbenchProgressDocument
 {
@@ -62,16 +63,30 @@ public static partial class WorkbenchProgressDocument
                                                                                                  ReadString(note, "text") ?? string.Empty))],
                    [.. ReadMaps(task.GetArray("links")).Select(link => new WorkbenchProgressLink(ReadString(link, "label") ?? string.Empty, ReadString(link, "url") ?? string.Empty))],
                    [.. ReadMaps(task.GetArray("asks")).Select(ReadAsk)],
-                   [.. ReadMaps(task.GetArray("feed")).Select(entry => new WorkbenchProgressEntry(Parse(ReadString(entry, "kind"), WorkbenchProgressEntryKind.Update),
-                                                                                                  ReadString(entry, "author") ?? string.Empty,
-                                                                                                  ReadString(entry, "text") ?? string.Empty,
-                                                                                                  ReadTime(entry, "at") ?? DateTimeOffset.MinValue,
-                                                                                                  ReadLong(entry, "seq"),
-                                                                                                  ReadString(entry, "ref")) { Tone = ParseTone(ReadString(entry, "tone")) })])
+                   [.. ReadMaps(task.GetArray("feed")).Select(ReadEntry)])
         {
-            Report = ReadString(task, "report")
+            Report = ReadString(task, "report"),
+            Language = ReadString(task, "language"),
+            Removed = [.. ReadMaps(task.GetArray("removed")).Select(ReadEntry)]
         };
     }
+
+    private static WorkbenchProgressEntry ReadEntry(BcrdtMap entry)
+    {
+        return new(Parse(ReadString(entry, "kind"), WorkbenchProgressEntryKind.Update),
+                   ReadString(entry, "author") ?? string.Empty,
+                   ReadString(entry, "text") ?? string.Empty,
+                   ReadTime(entry, "at") ?? DateTimeOffset.MinValue,
+                   ReadLong(entry, "seq"),
+                   ReadString(entry, "ref"))
+        {
+            Id = EntryId(entry),
+            Tone = ParseTone(ReadString(entry, "tone"))
+        };
+    }
+
+    // A line written before lines had ids goes by the time it was written, to the tick.
+    private static string EntryId(BcrdtMap entry) => ReadString(entry, "id") ?? ReadString(entry, "at") ?? string.Empty;
 
     private static WorkbenchProgressAsk ReadAsk(BcrdtMap ask)
     {
@@ -90,7 +105,7 @@ public static partial class WorkbenchProgressDocument
                    ReadBool(ask, "withdrawn"))
         {
             Secret = ReadString(ask, "secretTo") is { } to && TryParse<WorkbenchProgressSecretTo>(to, out var target)
-                ? new(target, ReadString(ask, "secretName"), ReadString(ask, "secretEnvironment"))
+                ? new(target, ReadString(ask, "secretName"), ReadString(ask, "secretEnvironment"), ReadString(ask, "secretProject"))
                 : null
         };
     }
@@ -106,6 +121,9 @@ public static partial class WorkbenchProgressDocument
 
         if (update.LogKind is { } logKind && TryParse<WorkbenchProgressNoteKind>(logKind, out _) is false)
             return $"The log kind \"{logKind}\" is none of info, warning, decision, success or error.";
+
+        if (update.Language is { Length: > 0 } language && LanguageTag().IsMatch(language.Trim()) is false)
+            return $"The language \"{language}\" isn't a language tag, like fa or en.";
 
         foreach (var step in update.Steps ?? [])
         {
@@ -202,10 +220,16 @@ public static partial class WorkbenchProgressDocument
             return $"The secret question \"{ask.Id}\" needs an id of letters, digits, - and _.";
 
         if (ask.Secret is null)
-            return asked?.Secret is null ? $"The secret question \"{ask.Id}\" needs a secret saying where it goes: to github, with its name, or to file." : null;
+            return asked?.Secret is null ? $"The secret question \"{ask.Id}\" needs a secret saying where it goes: to github or user-secrets, with its name, or to file." : null;
 
-        if (ask.Secret.To is not { } to || TryParse<WorkbenchProgressSecretTo>(to, out var target) is false)
-            return $"The secret of the question \"{ask.Id}\" goes to neither github nor file.";
+        if (ParseSecretTo(ask.Secret.To) is not { } target)
+            return $"The secret of the question \"{ask.Id}\" goes to none of github, user-secrets or file.";
+
+        if (target is WorkbenchProgressSecretTo.UserSecrets && (ask.Secret.Name is not { } key || UserSecretName().IsMatch(key) is false))
+            return $"The secret of the question \"{ask.Id}\" needs a configuration key as its name, like TestAccount:Password: letters, digits, _, ., : and -.";
+
+        if (target is WorkbenchProgressSecretTo.UserSecrets && (ask.Secret.Project is not { } project || ProjectPath().IsMatch(project.Trim()) is false))
+            return $"The secret of the question \"{ask.Id}\" needs the project whose user secrets take it, as a path in the repository, like src/Server/MyApp.Server.Web.";
 
         if (target is WorkbenchProgressSecretTo.GitHub
             && (ask.Secret.Name is not { } name || GitHubSecretName().IsMatch(name) is false || name.StartsWith("GITHUB_", StringComparison.OrdinalIgnoreCase)))
@@ -230,6 +254,7 @@ public static partial class WorkbenchProgressDocument
         task.Set("links", new BcrdtArray());
         task.Set("asks", new BcrdtArray());
         task.Set("feed", new BcrdtArray());
+        task.Set("removed", new BcrdtArray());
 
         progress.Set(id, task);
 
@@ -247,6 +272,7 @@ public static partial class WorkbenchProgressDocument
         if (update.Summary is not null) task.Set("summary", Trim(update.Summary, MaxSummaryLength));
         if (update.Status is { } status && TryParse<WorkbenchProgressStatus>(status, out var parsed)) task.Set("status", parsed.ToString());
         if (update.Report is not null) task.Set("report", Blank(Trim(update.Report, MaxReportLength)));
+        if (update.Language is not null) task.Set("language", Blank(update.Language.Trim()));
 
         if (task.GetArray("steps") is { } steps)
         {
@@ -258,8 +284,14 @@ public static partial class WorkbenchProgressDocument
 
         if (task.GetArray("notes") is { } notes)
         {
+            // A note the user removed stays removed, however often the agent sends it again.
+            var removedNotes = ReadMaps(task.GetArray("removed")).Where(r => ReadString(r, "kind") is nameof(WorkbenchProgressEntryKind.NoteRemoved)).Select(r => ReadString(r, "ref")).ToHashSet();
+
             foreach (var note in update.Notes ?? [])
             {
+                if (note.Id is { } noteId && removedNotes.Contains(noteId.Trim()))
+                    continue;
+
                 ApplyNote(notes, note);
             }
         }
@@ -407,6 +439,65 @@ public static partial class WorkbenchProgressDocument
         return true;
     }
 
+    /// <summary>
+    /// Takes a note off the task for the user, and tells its agent, which then doesn't add it again; returns false when it is
+    /// gone already.
+    /// </summary>
+    public static bool RemoveNote(BcrdtMap progress, string taskId, string noteId, string by)
+    {
+        if (progress.GetMap(taskId) is not { } task || task.GetArray("notes") is not { } notes || FindItem(notes, noteId) is not { } note)
+            return false;
+
+        var text = ReadString(note, "text") ?? string.Empty;
+
+        RemoveItem(notes, noteId);
+        AddRemoval(task, WorkbenchProgressEntryKind.NoteRemoved, noteId.Trim(), text, by);
+
+        return true;
+    }
+
+    /// <summary>Takes a line off the task's activity for the user, and tells its agent; returns false when it is gone already.</summary>
+    public static bool RemoveEntry(BcrdtMap progress, string taskId, string entryId, string by)
+    {
+        if (progress.GetMap(taskId) is not { } task || task.GetArray("feed") is not { } feed)
+            return false;
+
+        var index = IndexOf(feed, entry => EntryId(entry) == entryId);
+
+        if (index < 0)
+            return false;
+
+        var text = ReadString(feed.GetMap(index)!, "text") ?? string.Empty;
+
+        feed.Delete(index, 1);
+        AddRemoval(task, WorkbenchProgressEntryKind.EntryRemoved, entryId, text, by);
+
+        return true;
+    }
+
+    /// <summary>Records what the user removed, for the agent's wait, dropping the oldest record once there are as many as lines.</summary>
+    private static void AddRemoval(BcrdtMap task, WorkbenchProgressEntryKind kind, string refId, string text, string by)
+    {
+        if (task.GetArray("removed") is not { } removed)
+        {
+            removed = new BcrdtArray();
+            task.Set("removed", removed);
+        }
+
+        if (removed.Count >= MaxFeed)
+        {
+            removed.Delete(0, removed.Count - MaxFeed + 1);
+        }
+
+        removed.Push(NewMap(("id", NewId()),
+                            ("kind", kind.ToString()),
+                            ("author", Trim(by, WorkbenchReviewDocument.MaxNameLength)),
+                            ("text", Trim(text, MaxTextLength)),
+                            ("at", Now()),
+                            ("seq", WorkbenchReviewDocument.NextSequence()),
+                            ("ref", refId)));
+    }
+
     /// <summary>Writes a whole task as it is, times included; the samples and the tests start from one.</summary>
     public static void Write(BcrdtMap progress, WorkbenchProgressTask task)
     {
@@ -416,6 +507,7 @@ public static partial class WorkbenchProgressDocument
         var links = new BcrdtArray();
         var asks = new BcrdtArray();
         var feed = new BcrdtArray();
+        var removed = new BcrdtArray();
 
         map.Set("title", task.Title);
         map.Set("summary", task.Summary);
@@ -425,11 +517,13 @@ public static partial class WorkbenchProgressDocument
         map.Set("updatedAt", Format(task.UpdatedAt));
         map.Set("seenAt", task.SeenAt is { } seen ? Format(seen) : null);
         map.Set("report", task.Report);
+        map.Set("language", task.Language);
         map.Set("steps", steps);
         map.Set("notes", notes);
         map.Set("links", links);
         map.Set("asks", asks);
         map.Set("feed", feed);
+        map.Set("removed", removed);
 
         progress.Set(task.Id, map);
 
@@ -451,7 +545,7 @@ public static partial class WorkbenchProgressDocument
         foreach (var ask in task.Asks)
         {
             var item = NewMap(("id", ask.Id), ("question", ask.Question), ("detail", ask.Detail), ("kind", ask.Kind.ToString()), ("placeholder", ask.Placeholder), ("at", Format(ask.At)), ("withdrawn", ask.IsWithdrawn),
-                              ("secretTo", ask.Secret?.To.ToString()), ("secretName", ask.Secret?.Name), ("secretEnvironment", ask.Secret?.Environment));
+                              ("secretTo", ask.Secret?.To.ToString()), ("secretName", ask.Secret?.Name), ("secretEnvironment", ask.Secret?.Environment), ("secretProject", ask.Secret?.Project));
             var options = new BcrdtArray();
 
             asks.Push(item);
@@ -470,9 +564,12 @@ public static partial class WorkbenchProgressDocument
             }
         }
 
-        foreach (var entry in task.Feed)
+        foreach (var (entries, array) in new[] { (task.Feed, feed), (task.Removed, removed) })
         {
-            feed.Push(NewMap(("kind", entry.Kind.ToString()), ("author", entry.Author), ("text", entry.Text), ("at", Format(entry.At)), ("seq", entry.Sequence), ("ref", entry.RefId), ("tone", entry.Tone?.ToString())));
+            foreach (var entry in entries)
+            {
+                array.Push(NewMap(("id", entry.Id is { Length: > 0 } id ? id : NewId()), ("kind", entry.Kind.ToString()), ("author", entry.Author), ("text", entry.Text), ("at", Format(entry.At)), ("seq", entry.Sequence), ("ref", entry.RefId), ("tone", entry.Tone?.ToString())));
+            }
         }
     }
 
@@ -584,11 +681,12 @@ public static partial class WorkbenchProgressDocument
         if (update.Placeholder is not null) ask.Set("placeholder", Blank(Trim(update.Placeholder, MaxTitleLength)));
         if (update.Kind is { } kind && TryParse<WorkbenchProgressAskKind>(kind, out var parsedKind)) ask.Set("kind", parsedKind.ToString());
 
-        if (update.Secret is { To: { } to } secret && TryParse<WorkbenchProgressSecretTo>(to, out var target))
+        if (update.Secret is { } secret && ParseSecretTo(secret.To) is { } target)
         {
             ask.Set("secretTo", target.ToString());
-            ask.Set("secretName", target is WorkbenchProgressSecretTo.GitHub ? secret.Name : null);
+            ask.Set("secretName", target is WorkbenchProgressSecretTo.GitHub or WorkbenchProgressSecretTo.UserSecrets ? secret.Name : null);
             ask.Set("secretEnvironment", target is WorkbenchProgressSecretTo.GitHub ? Blank(secret.Environment) : null);
+            ask.Set("secretProject", target is WorkbenchProgressSecretTo.UserSecrets ? secret.Project?.Trim() : null);
 
             if (update.Kind is null)
             {
@@ -619,7 +717,8 @@ public static partial class WorkbenchProgressDocument
             feed.Delete(0, feed.Count - MaxFeed + 1);
         }
 
-        feed.Push(NewMap(("kind", kind.ToString()),
+        feed.Push(NewMap(("id", NewId()),
+                         ("kind", kind.ToString()),
                          ("author", Trim(author, WorkbenchReviewDocument.MaxNameLength)),
                          ("text", Trim(text, MaxTextLength)),
                          ("at", Now()),
@@ -655,6 +754,14 @@ public static partial class WorkbenchProgressDocument
     }
 
     private static WorkbenchProgressNoteKind? ParseTone(string? value) => value is not null && TryParse<WorkbenchProgressNoteKind>(value, out var tone) ? tone : null;
+
+    /// <summary>Where a secret goes, from github, user-secrets or file as an agent writes it.</summary>
+    public static WorkbenchProgressSecretTo? ParseSecretTo(string? value) => value is not null && TryParse<WorkbenchProgressSecretTo>(value.Replace("-", string.Empty, StringComparison.Ordinal), out var to) ? to : null;
+
+    /// <summary>The name an agent gives where a secret goes: github, user-secrets or file.</summary>
+    public static string SecretToName(WorkbenchProgressSecretTo to) => to is WorkbenchProgressSecretTo.UserSecrets ? "user-secrets" : to.ToString().ToLowerInvariant();
+
+    private static string NewId() => Guid.NewGuid().ToString("N")[..12];
 
     private static bool IsId(string? id) => string.IsNullOrWhiteSpace(id) is false && id.Trim().Length <= MaxIdLength;
 
@@ -749,6 +856,17 @@ public static partial class WorkbenchProgressDocument
 
     [GeneratedRegex("^[A-Za-z_][A-Za-z0-9_]{0,99}$")]
     private static partial Regex GitHubSecretName();
+
+    // A configuration key, like TestAccount:Password or ConnectionStrings:Db.
+    [GeneratedRegex("^[A-Za-z0-9_][A-Za-z0-9_.:-]{0,199}$")]
+    private static partial Regex UserSecretName();
+
+    // A path in the repository, never starting with a dash, which dotnet would read as an option.
+    [GeneratedRegex(@"^[A-Za-z0-9_.][A-Za-z0-9_. /\\-]{0,259}$")]
+    private static partial Regex ProjectPath();
+
+    [GeneratedRegex("^[A-Za-z]{2,3}(-[A-Za-z0-9]{1,8})*$")]
+    private static partial Regex LanguageTag();
 
     // Never starting with a dash, which gh would read as an option.
     [GeneratedRegex("^[A-Za-z0-9_][A-Za-z0-9_. /-]{0,99}$")]

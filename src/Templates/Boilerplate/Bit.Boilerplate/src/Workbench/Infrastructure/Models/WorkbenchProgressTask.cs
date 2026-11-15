@@ -24,6 +24,12 @@ public sealed record WorkbenchProgressTask(string Id,
     /// <summary>The agent's write-up of the task in Markdown, like the report a long run ends with.</summary>
     public string? Report { get; init; }
 
+    /// <summary>The language the agent writes the task in, like <c>fa</c> or <c>en</c>, which sets the way its texts read; null when it gave none.</summary>
+    public string? Language { get; init; }
+
+    /// <summary>The notes and lines of the activity the user took off the task, which its agent learns of and doesn't add again.</summary>
+    public WorkbenchProgressEntry[] Removed { get; init; } = [];
+
     public bool IsFinished => Status is not WorkbenchProgressStatus.Working;
 
     /// <summary>The questions that wait for an answer; none once the task is over.</summary>
@@ -43,8 +49,8 @@ public sealed record WorkbenchProgressTask(string Id,
     /// <summary>Whether the agent called within the time an agent counts as online for.</summary>
     public bool IsAgentActive => SeenAt is { } seen && DateTimeOffset.UtcNow - seen < WorkbenchReviewAgentInfo.OnlineFor;
 
-    /// <summary>The newest of the user's answers, messages and finished steps, which the agent waits from.</summary>
-    public long Cursor => Feed.Where(e => e.FromYou).Select(e => e.Sequence).DefaultIfEmpty(0).Max();
+    /// <summary>The newest of what the user did: their answers, messages, finished steps and what they removed, which the agent waits from.</summary>
+    public long Cursor => Feed.Concat(Removed).Where(e => e.FromYou).Select(e => e.Sequence).DefaultIfEmpty(0).Max();
 }
 
 /// <summary>One step of a task, taken by the agent or by the user.</summary>
@@ -73,17 +79,23 @@ public sealed record WorkbenchProgressAsk(string Id,
 }
 
 /// <summary>
-/// Where the Workbench puts a secret the user pastes: a GitHub secret, of an environment or of the repository, or a file
-/// outside the repository that the agent's commands read.
+/// Where the Workbench puts a secret the user pastes: a GitHub secret, of an environment or of the repository, a user secret
+/// of one of the repository's projects on this computer, or a file outside the repository that the agent's commands read.
 /// </summary>
-public sealed record WorkbenchProgressSecret(WorkbenchProgressSecretTo To, string? Name, string? Environment);
+public sealed record WorkbenchProgressSecret(WorkbenchProgressSecretTo To, string? Name, string? Environment, string? Project = null);
 
 /// <summary>The user's answer: the options picked, yes or no for a confirmation, and what they wrote.</summary>
 public sealed record WorkbenchProgressAnswer(string[] Choices, string? Text, string By, DateTimeOffset At);
 
-/// <summary>A line of a task's activity: an update from the agent, or a message, an answer or a finished step from the user.</summary>
+/// <summary>
+/// A line of a task's activity: an update from the agent, or a message, an answer or a finished step from the user. A note or
+/// a line the user removed is one too, kept apart from the activity, with what was removed as its <see cref="RefId"/> and text.
+/// </summary>
 public sealed record WorkbenchProgressEntry(WorkbenchProgressEntryKind Kind, string Author, string Text, DateTimeOffset At, long Sequence, string? RefId)
 {
+    /// <summary>What the page removes the line by.</summary>
+    public string Id { get; init; } = string.Empty;
+
     public bool FromYou => Kind is not WorkbenchProgressEntryKind.Update;
 
     /// <summary>What kind of news an agent's update is, like a success or a problem found; null for a plain one.</summary>
@@ -134,6 +146,7 @@ public enum WorkbenchProgressAskKind
 public enum WorkbenchProgressSecretTo
 {
     GitHub,
+    UserSecrets,
     File
 }
 
@@ -142,5 +155,7 @@ public enum WorkbenchProgressEntryKind
     Update,
     Message,
     Answer,
-    Step
+    Step,
+    NoteRemoved,
+    EntryRemoved
 }

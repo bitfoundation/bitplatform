@@ -5031,6 +5031,12 @@
     <data name="ProgressDeleteConfirm" xml:space="preserve">
         <value>Ta bort för gott?</value>
     </data>
+    <data name="ProgressRemoveNote" xml:space="preserve">
+        <value>Ta bort noteringen</value>
+    </data>
+    <data name="ProgressRemoveEntry" xml:space="preserve">
+        <value>Ta bort från aktiviteten</value>
+    </data>
     <data name="ProgressPickTask" xml:space="preserve">
         <value>Välj en uppgift för att se hur det går.</value>
     </data>
@@ -5078,6 +5084,9 @@
     </data>
     <data name="ProgressSecretToFile" xml:space="preserve">
         <value>Den hamnar i en fil utanför projektet, som {0} använder i sina kommandon utan att någonsin se den.</value>
+    </data>
+    <data name="ProgressSecretToUserSecrets" xml:space="preserve">
+        <value>Den stannar på den här datorn, i user secrets för {1} som {0}. {2} ser den aldrig.</value>
     </data>
     <data name="ProgressSecretPlaceholder" xml:space="preserve">
         <value>Klistra in den här</value>

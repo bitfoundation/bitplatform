@@ -89,7 +89,11 @@ public class WorkbenchProgressDocumentTests
     [DataRow("{\"asks\":[{\"id\":\"q\",\"question\":\"Pick\",\"kind\":\"choice\",\"options\":[\"only one\"]}]}", "2 to 8 options")]
     [DataRow("{\"asks\":[{\"id\":\"q\",\"kind\":\"text\"}]}", "needs a text")]
     [DataRow("{\"asks\":[{\"id\":\"k\",\"question\":\"Key?\",\"kind\":\"secret\"}]}", "saying where it goes")]
-    [DataRow("{\"asks\":[{\"id\":\"k\",\"question\":\"Key?\",\"secret\":{\"to\":\"dropbox\"}}]}", "neither github nor file")]
+    [DataRow("{\"asks\":[{\"id\":\"k\",\"question\":\"Key?\",\"secret\":{\"to\":\"dropbox\"}}]}", "none of github, user-secrets or file")]
+    [DataRow("{\"asks\":[{\"id\":\"k\",\"question\":\"Key?\",\"secret\":{\"to\":\"user-secrets\",\"name\":\"TestAccount:Password\"}}]}", "the project whose user secrets take it")]
+    [DataRow("{\"asks\":[{\"id\":\"k\",\"question\":\"Key?\",\"secret\":{\"to\":\"user-secrets\",\"name\":\"TestAccount:Password\",\"project\":\"--id=other\"}}]}", "the project whose user secrets take it")]
+    [DataRow("{\"asks\":[{\"id\":\"k\",\"question\":\"Key?\",\"secret\":{\"to\":\"user-secrets\",\"name\":\"-x\",\"project\":\"src/Server\"}}]}", "a configuration key")]
+    [DataRow("{\"language\":\"fa_IR\"}", "isn't a language tag")]
     [DataRow("{\"asks\":[{\"id\":\"k\",\"question\":\"Key?\",\"secret\":{\"to\":\"github\"}}]}", "GitHub secret's name")]
     [DataRow("{\"asks\":[{\"id\":\"k\",\"question\":\"Key?\",\"secret\":{\"to\":\"github\",\"name\":\"GITHUB_TOKEN\"}}]}", "GitHub secret's name")]
     [DataRow("{\"asks\":[{\"id\":\"k\",\"question\":\"Key?\",\"secret\":{\"to\":\"github\",\"name\":\"KEY\",\"environment\":\"--repo=someone/else\"}}]}", "isn't a GitHub environment's name")]
@@ -172,6 +176,53 @@ public class WorkbenchProgressDocumentTests
         Assert.AreEqual((null, "Sarah"), (task.Asks[0].Answer!.Text, task.Asks[0].Answer!.By));
         Assert.AreEqual((WorkbenchProgressEntryKind.Answer, "smtp", ""), (task.Feed.Last().Kind, task.Feed.Last().RefId, task.Feed.Last().Text));
         Assert.AreEqual(2, task.NeedsYouCount);
+    }
+
+    [TestMethod]
+    public void AUserSecretQuestion_Should_SayWhoseUserSecretsTakeIt()
+    {
+        Create(Update("Sign in on Test", asks: [new("password", "The Test account's password?", null, null, null, null, Secret: new("user-secrets", "TestAccount:Password", "IGNORED", " src/Server/MyApp.Server.Web "))]));
+
+        Assert.AreEqual((WorkbenchProgressAskKind.Secret, new WorkbenchProgressSecret(WorkbenchProgressSecretTo.UserSecrets, "TestAccount:Password", null, "src/Server/MyApp.Server.Web")), (Task().Asks[0].Kind, Task().Asks[0].Secret));
+        Assert.AreEqual("user-secrets", WorkbenchProgressDocument.SecretToName(WorkbenchProgressSecretTo.UserSecrets));
+    }
+
+    [TestMethod]
+    public void WhatTheUserRemoves_Should_GoReachTheAgentAndNotComeBack()
+    {
+        Create(Update("Deploy", notes: [new("keys", "warning", "Never paste keys here."), new("plan", "decision", "The cheapest plan.")], log: "Started"));
+
+        var line = Task().Feed.Single();
+
+        Assert.IsTrue(Edit(() => WorkbenchProgressDocument.RemoveNote(Progress, "t", "keys", "Sarah")));
+        Assert.IsTrue(Edit(() => WorkbenchProgressDocument.RemoveEntry(Progress, "t", line.Id, "Sarah")));
+        Assert.IsFalse(Edit(() => WorkbenchProgressDocument.RemoveNote(Progress, "t", "keys", "Sarah")), "It is gone already.");
+
+        var task = Task();
+
+        Assert.AreSequenceEqual(new[] { "plan" }, task.Notes.Select(n => n.Id).ToArray());
+        Assert.IsEmpty(task.Feed);
+        Assert.AreEqual((WorkbenchProgressEntryKind.NoteRemoved, "keys", "Never paste keys here.", "Sarah"), (task.Removed[0].Kind, task.Removed[0].RefId, task.Removed[0].Text, task.Removed[0].Author));
+        Assert.AreEqual((WorkbenchProgressEntryKind.EntryRemoved, line.Id, "Started"), (task.Removed[1].Kind, task.Removed[1].RefId, task.Removed[1].Text));
+        Assert.IsTrue(task.Removed.All(r => r.FromYou));
+        Assert.AreEqual(task.Removed[1].Sequence, task.Cursor, "The agent waits from after what the user removed.");
+
+        // An agent that sends its notes again doesn't bring back the one the user removed; a new one comes in.
+        Edit(() => WorkbenchProgressDocument.Apply(Progress, "t", "Claude Code", Update(notes: [new("keys", "warning", "Never paste keys here."), new("keys-2", "info", "Keys go on the Progress page.")])));
+
+        Assert.AreSequenceEqual(new[] { "plan", "keys-2" }, Task().Notes.Select(n => n.Id).ToArray());
+    }
+
+    [TestMethod]
+    public void TheLanguage_Should_ReadBackAsTheAgentGaveIt()
+    {
+        Create(Update("ارتقا به template 11.0.0-pre-20") with { Language = "fa" });
+
+        Assert.AreEqual("fa", Task().Language);
+
+        Edit(() => WorkbenchProgressDocument.Apply(Progress, "t", "Claude Code", Update() with { Language = "" }));
+
+        Assert.IsNull(Task().Language, "An empty language takes it away, and the page tells it from the words again.");
     }
 
     [TestMethod]

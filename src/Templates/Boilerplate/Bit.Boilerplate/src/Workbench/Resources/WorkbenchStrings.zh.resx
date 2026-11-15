@@ -5031,6 +5031,12 @@
     <data name="ProgressDeleteConfirm" xml:space="preserve">
         <value>确定永久删除？</value>
     </data>
+    <data name="ProgressRemoveNote" xml:space="preserve">
+        <value>移除此说明</value>
+    </data>
+    <data name="ProgressRemoveEntry" xml:space="preserve">
+        <value>从动态中移除</value>
+    </data>
     <data name="ProgressPickTask" xml:space="preserve">
         <value>选择一个任务查看进展。</value>
     </data>
@@ -5078,6 +5084,9 @@
     </data>
     <data name="ProgressSecretToFile" xml:space="preserve">
         <value>它会存入项目之外的一个文件，{0} 在命令中使用它，却始终看不到它。</value>
+    </data>
+    <data name="ProgressSecretToUserSecrets" xml:space="preserve">
+        <value>它只留在这台电脑上，以 {0} 的名称存入 {1} 的 user secrets。{2} 始终看不到它。</value>
     </data>
     <data name="ProgressSecretPlaceholder" xml:space="preserve">
         <value>粘贴到这里</value>

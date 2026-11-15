@@ -19,6 +19,7 @@ The work is yours to judge. Ask the user only what the code can't answer and wha
 
 ## 1. Know where the project stands
 
+- Before anything else, start a task of your own on the Workbench's Progress page, the way `AGENTS.md` section 6 and section 9 of the **workbench** skill (`.github/agents/workbench.agent.md`) describe: this file's sections are its steps, your questions go there, and it stays current until the report.
 - `bit.json` records the template version the project comes from, its name and the value of every option it was created with. The MCP server configurations (`.mcp.json`, `.vscode/mcp.json`, `.cursor/mcp.json`, `.junie/mcp/mcp.json`, `.gemini/settings.json`, `.codex/config.toml`) pin the bit platform MCP server to a version too. `bit.json` is the one to go by: a team may move those, or the bit platform packages, without upgrading the template.
 - Check the recorded options against the code. The team may have turned something off after creation, switched the database provider, or removed a module, and the diff should be made with the options the project has today.
 - For a newer version, the target is the version the user names. Without one, it's the newest stable release; take a prerelease only when the user asks. The release notes of every version in between say why things changed: the bit platform MCP server's `GetBitPlatformReleases` tool returns them, and its other tools answer questions about any of those versions.

@@ -32,10 +32,11 @@ Chromium when it is installed, otherwise Microsoft Edge or Google Chrome. To ins
 - **Home page**: the agents' tasks, the pages with thumbnails, and why the Workbench exists.
 - **`/progress`**: every long task your agents run, one per chat, side by side: its steps with the ones only you can
   take, what the agent does now, its notes and links, its activity and the report it ends with. A question it asks you
-  is answered there with a click, a few words or your voice, a step of yours is marked done with a button, and you can
-  write to it; it gets each one at once. A new question plays a sound, unless the Workbench is muted, and the tab's
-  title counts what waits for you. With no task yet, and for anyone who isn't at this computer, it shows three samples
-  that can be tried.
+  is answered there with a click, a few words or your voice, a step of yours is marked done with a button, you can write
+  to it, and remove a note or a line of its activity you don't need; it gets each one at once. A task written in Persian
+  or Arabic reads right to left, English terms and all. A new question plays a sound, unless the Workbench is muted, and
+  the tab's title counts what waits for you. With no task yet, and for anyone who isn't at this computer, it shows three
+  samples that can be tried.
 - **Dictation**: the microphone next to a comment, a reply, an answer or a message turns speech into text, with the
   browser's own speech recognition, in the language its menu picks.
 - **`/workbench/<page>`**: one page with its tools. Pick the device, its orientation and frame, the data state

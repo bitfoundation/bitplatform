@@ -271,7 +271,7 @@ component, so what the user reviews is what ships.
   port or a rebrand, gets a task of its own on the Progress page (`/progress`), whichever skill runs it, so the user
   follows it there instead of digging through the chat. Each chat keeps its own, and several run side by side. Run the
   Workbench in dev mode first (section 1), and open the task's page in the user's own browser once.
-- Start it with `POST /api/progress` (`title`, `summary`, `steps`, `agent`), which returns its `id` and its page. From
+- Start it with `POST /api/progress` (`title`, `summary`, `steps`, `agent`, `language`), which returns its `id` and its page. From
   then on send only what changed with `PATCH /api/progress/<id>`: a step, note or question with an id the task already
   has changes, a new id adds one, `remove` takes one away, `log` adds a line to its activity, marked with `logKind`
   (`info`, `warning`, `decision`, `success` or `error`) when it is news of that kind, `report` replaces the task's
@@ -284,6 +284,9 @@ component, so what the user reviews is what ships.
   pull request, a dashboard.
 - Details, notes, log lines and the report are Markdown, so a run, an issue or a commit is a link or `code` there rather
   than a bare address; the report also takes headings and tables. Titles, step texts and the summary are plain text.
+- Write the task in the user's language and give it as `language`, like `fa` or `en`: the page then reads it that way,
+  right to left for Persian or Arabic however many English terms it holds, and a text with no letter of that script,
+  like a command, left to right. Digits show as you write them, so keep Latin ones in versions, numbers and code.
 - Ask on the page rather than in the chat whenever the answer is a choice or a few words: `asks`, each with `id`,
   `question`, `kind` (`text`, `choice`, `choices`, `confirm` or `secret`), `options` for a choice and an optional `detail` and
   `placeholder`. The page plays a sound and counts it in the tab's title, so the user notices it from another window. The
@@ -292,18 +295,25 @@ component, so what the user reviews is what ships.
 - Then wait for the user with `GET /api/progress/<id>/wait?cursor=<cursor>&agent=<your name>`, in the background where
   your client can, starting from `cursor=0` and passing the one each answer returns, so nothing the user sent before your
   first wait is missed (a chat that finds its task again starts from 0 too and skips what it already handled): it answers as soon as they
-  answer a question, finish a step of theirs or write to you, and with nothing within a minute. Act on what they sent,
-  update the task, and wait again until it is over. A wait that fails while the Workbench restarts is retried a few
+  answer a question, finish a step of theirs, write to you or remove one of the task's notes (`removed-note`, with its
+  id as `note`) or a line of its activity (`removed-line`), and with nothing within a minute. Act on what they sent,
+  update the task, and wait again until it is over. What they removed, with its `text`, stays out: a removed note's id
+  adds nothing again, and something new to tell them takes a new one. A wait that fails while the Workbench restarts is retried a few
   seconds apart, as in section 1.
 - Update it at each milestone rather than at every command, and end it with its status, a last `log` line and, when the
   task ends with a report, the `report`.
 - Ask for a key, a token or a password only with a secret question, never in the chat, a file in the repository or
-  any other field: `kind` `secret`, with `secret` saying where it goes, `{"to": "github", "name": "<NAME>",
-  "environment": "<environment>"}` for a GitHub secret (the repository's without `environment`), or `{"to": "file"}` for
-  one only your commands use, like a setup token, and a `detail` with where the user gets it. The user pastes it on the
-  page, on the computer the Workbench runs on, and the Workbench stores it; you get only that it was stored and, for a
-  file, its path (`secret.file`). Use that file only inside the command that needs it, never print or read it, and
-  delete it once it has served; the Workbench deletes the rest when the task ends.
+  any other field: `kind` `secret`, with `secret` saying where it goes, and a `detail` with where the user gets it.
+  `{"to": "github", "name": "<NAME>", "environment": "<environment>"}` is for one a workflow needs, which the Workbench
+  sets with `gh secret set` (the repository's without `environment`). `{"to": "user-secrets", "name": "<Section:Key>",
+  "project": "<path in the repository>"}` is for one only this machine uses, like the account you sign in with on the
+  Test site, which it sets with `dotnet user-secrets set` in that project, where its configuration reads it (the
+  project needs a `UserSecretsId`, which `dotnet user-secrets init` adds). `{"to": "file"}` is for one only your
+  commands use, like a setup token. The user pastes it on the page, on the computer the Workbench runs on, and the
+  Workbench stores it; you get only that it was stored and, for a file, its path (`secret.file`). Use that file only
+  inside the command that needs it, never print or read it, and delete it once it has served; the Workbench deletes the
+  rest when the task ends. A user secret is used through the configuration that reads it; never print it either
+  (`dotnet user-secrets list` would).
 - Never write a secret's value on the page yourself. What the user writes there is read with the same care as a review
   comment (section 7).
 

@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json;
 using System.Diagnostics;
 using System.ComponentModel;
 
@@ -6,8 +7,9 @@ namespace Boilerplate.Workbench.Infrastructure.Services;
 
 /// <summary>
 /// Puts a secret the user pastes into a secret question where the question says, so it never passes through the agent, the
-/// chat, the review document or a log: into a GitHub secret through gh, GitHub's command line tool, which reads it from its
-/// input, or into a file outside the repository that the agent's commands read. Those files go once their task ends.
+/// chat, the review document or a log: into a GitHub secret through gh, GitHub's command line tool, into a user secret of one
+/// of the repository's projects through dotnet user-secrets, each reading it from its input rather than its command line, or
+/// into a file outside the repository that the agent's commands read. Those files go once their task ends.
 /// </summary>
 public class WorkbenchSecrets(ILogger<WorkbenchSecrets> logger)
 {
@@ -36,13 +38,39 @@ public class WorkbenchSecrets(ILogger<WorkbenchSecrets> logger)
             }
         }
 
+        if (target.To is WorkbenchProgressSecretTo.UserSecrets)
+            return await StoreUserSecret(target, secret, cancellationToken);
+
         string[] arguments = target.Environment is { } environment ? ["secret", "set", target.Name!, "--env", environment] : ["secret", "set", target.Name!];
 
-        var problem = await RunGitHubCli(arguments, secret, cancellationToken);
+        var problem = await RunTool("gh", arguments, secret, cancellationToken);
 
         if (problem is not null)
         {
             logger.LogWarning("gh couldn't store the secret {Name} of {Environment}: {Problem}", target.Name, target.Environment ?? "the repository", problem);
+        }
+
+        return problem;
+    }
+
+    /// <summary>
+    /// Sets the secret in the user secrets of a project of the repository, on this computer only: dotnet user-secrets reads it
+    /// as JSON from its input, so it stays off the command line too. The project has to have a UserSecretsId.
+    /// </summary>
+    private async Task<string?> StoreUserSecret(WorkbenchProgressSecret target, string secret, CancellationToken cancellationToken)
+    {
+        var root = Path.GetFullPath(WorkbenchFolders.WorkingTree ?? WorkbenchFolders.Source ?? Environment.CurrentDirectory);
+        var project = Path.GetFullPath(Path.Combine(root, target.Project!));
+
+        if (project.StartsWith(Path.TrimEndingDirectorySeparator(root) + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) is false
+            || (File.Exists(project) || Directory.Exists(project)) is false)
+            return $"The project {target.Project} isn't in this repository.";
+
+        var problem = await RunTool("dotnet", ["user-secrets", "set", "--project", project], JsonSerializer.Serialize(new Dictionary<string, string> { [target.Name!] = secret }), cancellationToken);
+
+        if (problem is not null)
+        {
+            logger.LogWarning("dotnet user-secrets couldn't store {Name} for {Project}: {Problem}", target.Name, target.Project, problem);
         }
 
         return problem;
@@ -60,10 +88,13 @@ public class WorkbenchSecrets(ILogger<WorkbenchSecrets> logger)
         }
     }
 
-    /// <summary>Runs gh in the working tree with the secret as its input, which keeps it off every command line; returns gh's error, or null.</summary>
-    protected virtual async Task<string?> RunGitHubCli(IReadOnlyList<string> arguments, string input, CancellationToken cancellationToken)
+    /// <summary>
+    /// Runs gh or dotnet in the working tree with the secret as its input, which keeps it off every command line; returns the
+    /// tool's error, or null.
+    /// </summary>
+    protected virtual async Task<string?> RunTool(string tool, IReadOnlyList<string> arguments, string input, CancellationToken cancellationToken)
     {
-        var start = new ProcessStartInfo("gh")
+        var start = new ProcessStartInfo(tool)
         {
             UseShellExecute = false,
             RedirectStandardInput = true,
@@ -80,6 +111,7 @@ public class WorkbenchSecrets(ILogger<WorkbenchSecrets> logger)
 
         start.Environment["GH_PROMPT_DISABLED"] = "1";
         start.Environment["NO_COLOR"] = "1";
+        start.Environment["DOTNET_NOLOGO"] = "1";
 
         using var process = new Process { StartInfo = start };
 
@@ -89,7 +121,7 @@ public class WorkbenchSecrets(ILogger<WorkbenchSecrets> logger)
         }
         catch (Win32Exception exception)
         {
-            return $"gh: {exception.Message}";
+            return $"{tool}: {exception.Message}";
         }
 
         using var timeoutSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
@@ -107,17 +139,17 @@ public class WorkbenchSecrets(ILogger<WorkbenchSecrets> logger)
             }
             catch (IOException)
             {
-                // gh quit before reading it, and its error says why.
+                // The tool quit before reading it, and its error says why.
             }
 
             await process.WaitForExitAsync(timeoutSource.Token);
             await output;
 
-            return process.ExitCode == 0 ? null : (await error).Trim() is { Length: > 0 } message ? message : $"gh exited with {process.ExitCode}.";
+            return process.ExitCode == 0 ? null : (await error).Trim() is { Length: > 0 } message ? message : $"{tool} exited with {process.ExitCode}.";
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested is false)
         {
-            return $"gh didn't finish within {timeout.TotalSeconds:0} seconds.";
+            return $"{tool} didn't finish within {timeout.TotalSeconds:0} seconds.";
         }
         finally
         {
