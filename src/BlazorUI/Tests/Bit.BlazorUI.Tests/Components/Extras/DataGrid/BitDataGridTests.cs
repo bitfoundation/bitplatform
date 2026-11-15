@@ -1804,6 +1804,35 @@ public class BitDataGridTests : BunitTestContext
     }
 
     [TestMethod]
+    public void ARenderWithNothingSelectedOrExpandedReadsTheKeysOfTheRowsShownOnly()
+    {
+        // A grid over a list refreshes on every render of its parent; the rows it keeps selected or expanded are pruned
+        // of the ones the list lost, which reads the key of every row of the list - only worth it when there are some.
+        var keyReads = 0;
+        var items = Enumerable.Range(1, 1000).Select(i => new TestRow { Id = i, Name = $"Row {i}", Price = i }).ToList();
+        IReadOnlyList<TestRow>? selected = null;
+        var component = RenderGrid(items, parameters =>
+        {
+            parameters.Add(p => p.KeyField, (Func<TestRow, object>)(r => { keyReads++; return r.Id; }));
+            parameters.Add(p => p.Pageable, true);
+            parameters.Add(p => p.PageSize, 10);
+            parameters.Add(p => p.SelectionMode, BitSelectionMode.Multiple);
+            parameters.Add(p => p.SelectedItemsChanged, EventCallback.Factory.Create<IReadOnlyList<TestRow>>(this, v => selected = v));
+        });
+
+        keyReads = 0;
+        component.Render(parameters => parameters.Add(p => p.Items, items));
+        Assert.IsTrue(keyReads < items.Count, $"a render with nothing to prune read {keyReads} keys of the {items.Count} rows");
+
+        // With a row selected there is something to prune: the row removed in place leaves the selection.
+        component.FindAll(".bit-dtg-cell-select input")[0].Change(true);
+        Assert.AreEqual(1, selected!.Count);
+        items.RemoveAt(0);
+        component.Render(parameters => parameters.Add(p => p.Items, items));
+        Assert.AreEqual(0, selected!.Count, "a row removed in place must not stay selected");
+    }
+
+    [TestMethod]
     public async Task InPlaceItemRemovalPrunesStaleExpandedDetailsOnRefresh()
     {
         IReadOnlyList<TestRow>? expanded = null;

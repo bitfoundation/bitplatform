@@ -3400,10 +3400,16 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
 
         if (Items is not ICollection<TItem> source) return;
 
+        // Only rows the grid itself keeps selected or expanded can go stale. With none, there is nothing to prune, and
+        // the keys of every row of the source - read on every refresh, so on every render of the parent - are not read.
+        var prunesDetails = ExpandedDetailItems is null && _expandedDetailsSet is { Count: > 0 };
+        var prunesSelection = SelectedItems is null && _selectedSet is { Count: > 0 };
+        if (prunesDetails is false && prunesSelection is false) return;
+
         var keys = new HashSet<object>();
         foreach (var item in source) keys.Add(GetKey(item));
 
-        if (ExpandedDetailItems is null && _expandedDetailsSet is { Count: > 0 })
+        if (prunesDetails)
         {
             var collapsed = _expandedDetailsSet.Where(i => !keys.Contains(GetKey(i))).ToList();
             if (collapsed.Count > 0)
