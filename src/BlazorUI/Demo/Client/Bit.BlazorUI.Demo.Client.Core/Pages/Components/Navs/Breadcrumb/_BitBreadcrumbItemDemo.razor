@@ -266,8 +266,9 @@
         The overflow button is named by <b>OverflowAriaLabel</b> ("More items" by default) and announces its menu with
         <code>aria-haspopup="menu"</code> and <code>aria-expanded</code>. Enter, Space or Arrow Down open the menu on its
         first item and Arrow Up on its last. In the menu the arrow keys move between the items, wrapping around, Home and
-        End jump to the first and the last, a letter jumps to the next item starting with it, and disabled items are
-        skipped. Escape or Tab closes the menu and puts the focus back on the overflow button, and so does choosing an
+        End jump to the first and the last, typing jumps to the item that starts with what was typed (the keys typed
+        within a second of each other are one search string, matched by the rules of the current culture, which ignore
+        case and the accents that culture treats as marks on a letter), and disabled items are skipped. Escape or Tab closes the menu and puts the focus back on the overflow button, and so does choosing an
         item. With <b>ExpandOverflow</b> the button is a plain button instead, which moves the focus to the first link or
         button it reveals.
     </div>

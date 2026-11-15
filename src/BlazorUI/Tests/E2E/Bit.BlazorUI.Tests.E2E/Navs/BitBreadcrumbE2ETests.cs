@@ -355,6 +355,43 @@ public class BitBreadcrumbE2ETests : E2ETestBase
     }
 
     [TestMethod]
+    public async Task OverflowMenu_Typeahead_KeysTypedTogetherAreOneSearchString()
+    {
+        await OpenAsync(Url);
+
+        var callout = Page.Locator($"[id='{await CalloutIdAsync("bc-typeahead")}']");
+        ILocator Menu(string text) => callout.Locator("[role='menuitem']").Filter(new() { HasText = text });
+
+        await OverflowButton("bc-typeahead").FocusAsync();
+        await Page.Keyboard.PressAsync("Enter");
+        await Expect(Menu("Apple pie")).ToBeFocusedAsync();
+
+        await Page.Keyboard.PressAsync("b");
+        await Expect(Menu("Brownie")).ToBeFocusedAsync();
+
+        // "bl", not a search for "l" of its own (which nothing starts with).
+        await Page.Keyboard.PressAsync("l");
+        await Expect(Menu("Blueberry")).ToBeFocusedAsync();
+    }
+
+    [TestMethod]
+    public async Task OverflowMenu_Typeahead_APlainLetterFindsTheAccentedTextTheCultureFoldsItInto()
+    {
+        await OpenAsync(Url);
+
+        var callout = Page.Locator($"[id='{await CalloutIdAsync("bc-typeahead")}']");
+        ILocator Menu(string text) => callout.Locator("[role='menuitem']").Filter(new() { HasText = text });
+
+        await OverflowButton("bc-typeahead").FocusAsync();
+        await Page.Keyboard.PressAsync("Enter");
+        await Expect(Menu("Apple pie")).ToBeFocusedAsync();
+
+        // The host runs in en-US, where the accent of "Éclair" is a mark on its letter.
+        await Page.Keyboard.PressAsync("e");
+        await Expect(Menu("clair")).ToBeFocusedAsync();
+    }
+
+    [TestMethod]
     public async Task Truncation_ByDefaultALongTrailStaysOnOneLineAndOverflows()
     {
         await OpenAsync(Url);

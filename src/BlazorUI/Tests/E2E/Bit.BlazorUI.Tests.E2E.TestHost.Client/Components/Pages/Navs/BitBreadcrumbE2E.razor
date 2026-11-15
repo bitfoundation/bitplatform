@@ -54,6 +54,10 @@
     <button id="after-keyboard" type="button">After</button>
 </E2ESection>
 
+<E2ESection Id="typeahead" Title="Overflow menu typeahead">
+    <BitBreadcrumb Id="bc-typeahead" Items="_dessertItems" MaxDisplayedItems="2" />
+</E2ESection>
+
 <E2ESection Id="truncation" Title="MaxItemWidth, Wrap, Scrollable">
     <div id="box-default" style="width:300px;overflow:hidden">
         <BitBreadcrumb Id="bc-long-default" Items="_longItems" />
@@ -336,6 +340,16 @@
         new() { Text = "Charlie" },
         new() { Text = "Delta" },
         new() { Text = "Echo", IsSelected = true }
+    ];
+
+    private readonly List<BitBreadcrumbItem> _dessertItems =
+    [
+        new() { Text = "Apple pie" },
+        new() { Text = "Brownie" },
+        new() { Text = "Blueberry" },
+        new() { Text = "Éclair" },
+        new() { Text = "Fudge" },
+        new() { Text = "Home", IsSelected = true }
     ];
 
     private readonly List<BitBreadcrumbItem> _longItems =
