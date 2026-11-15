@@ -22,9 +22,6 @@ public partial class BitListBox<[DynamicallyAccessedMembers(DynamicallyAccessedM
     // The keys the list box answers itself, whose default action (scrolling the page) is kept from happening.
     private static readonly string[] _navigationKeys = ["ArrowUp", "ArrowDown", "Home", "End", " "];
 
-    // How long a pause in typing starts a new typeahead search.
-    private static readonly TimeSpan _typeaheadTimeout = TimeSpan.FromMilliseconds(1000);
-
     // Why the options of TItem never reach a list box of TValue, or null when they do (see OnInitialized).
     private static readonly string? _optionValueTypeMismatch = BitItemValueType.GetOptionMismatch(nameof(BitListBox<TItem, TValue>), typeof(TItem), typeof(TValue), typeof(BitListBoxOption<>));
 
@@ -51,8 +48,7 @@ public partial class BitListBox<[DynamicallyAccessedMembers(DynamicallyAccessedM
     // could be the value of an item (a 0 among int values) without that item ever having been chosen.
     private bool _hasValue;
 
-    private string _typeahead = string.Empty;
-    private DateTime _typeaheadAt;
+    private readonly BitTypeahead _typeahead = new();
 
     private string _listId = default!;
     private string _labelId = default!;
@@ -535,27 +531,7 @@ public partial class BitListBox<[DynamicallyAccessedMembers(DynamicallyAccessedM
     // starts over. The same letter typed again moves on to the next item that starts with it.
     private int FindByTypeahead(string key, int current)
     {
-        var now = DateTime.UtcNow;
-
-        if (now - _typeaheadAt > _typeaheadTimeout) _typeahead = string.Empty;
-
-        _typeaheadAt = now;
-        _typeahead += key;
-
-        var search = _typeahead.All(c => char.ToUpperInvariant(c) == char.ToUpperInvariant(_typeahead[0])) ? _typeahead[..1] : _typeahead;
-        var start = search.Length == 1 ? current + 1 : Math.Max(current, 0);
-
-        for (var k = 0; k < _items.Count; k++)
-        {
-            var i = (start + k) % _items.Count;
-            var item = _items[i];
-
-            if (GetIsDisabled(item)) continue;
-
-            if ((GetText(item) ?? string.Empty).StartsWith(search, StringComparison.CurrentCultureIgnoreCase)) return i;
-        }
-
-        return -1;
+        return _typeahead.Find(key, _items.Count, current, i => GetText(_items[i]), i => GetIsDisabled(_items[i]));
     }
 
     private string GetOptionId(int index) => $"{_listId}-{index}";
