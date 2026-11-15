@@ -67,11 +67,7 @@
                 }
                 else
                 {
-                    @* Keyed by the draft key, so a new key (another conversation) is a new composer: it restores the draft
-                       of that key, where the old one would carry the text typed for the previous key over and save it
-                       under the new one. *@
                     <BitAiPromptInput @ref="_composer"
-                                      @key="DraftKey"
                                       Session="ActiveSession"
                                       DraftKey="@DraftKey"
                                       Disabled="Disabled"

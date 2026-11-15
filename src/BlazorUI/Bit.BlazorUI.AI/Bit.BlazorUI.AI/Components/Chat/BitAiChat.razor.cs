@@ -123,9 +123,11 @@ public partial class BitAiChat : BitAiComponentBase
     /// </summary>
     /// <remarks>
     /// Use a key that identifies the conversation and the user (such as <c>$"chat-{userId}-{conversationId}"</c>), so
-    /// drafts neither bleed between conversations nor reach the next person to sign in on the same browser. A new key
-    /// gives the chat a new composer, which restores the draft kept under it: the text and the files staged under the
-    /// old key stay with the old key rather than follow the chat into the next conversation.
+    /// drafts neither bleed between conversations nor reach the next person to sign in on the same browser. The composer
+    /// stays on the page when the key changes: the text and the files staged under the old key stay with that key and
+    /// come back with it, and the draft kept under the new one is shown. A key set where there was none, or changed while
+    /// a submission is in flight (a conversation named once it is created), keeps what the composer holds instead - see
+    /// <see cref="BitAiPromptInput.DraftKey"/>.
     /// </remarks>
     [Parameter] public string? DraftKey { get; set; }
 
