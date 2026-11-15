@@ -1,4 +1,7 @@
-﻿using Bunit;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -12,6 +15,15 @@ namespace Bit.BlazorUI.Tests.Components.Surfaces.Modal;
 [TestClass]
 public class BitModalChromeTests : BunitTestContext
 {
+    // Both of the Modal's holds go through lockScroll under the same key, and they are told apart by the
+    // compensation: the hold on the page gives the room of the scrollbar back as padding and leaves the
+    // argument out, while the hold AutoToggleScroll takes has always let the scroller shift and turns it off.
+    private List<JSRuntimeInvocation> PageHolds() =>
+        Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"].Where(i => i.Arguments.Count == 2).ToList();
+
+    private List<JSRuntimeInvocation> ToggleHolds() =>
+        Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"].Where(i => i.Arguments.Count == 3 && i.Arguments[2] is false).ToList();
+
     [TestMethod]
     public void BitModalModelessShouldNotRenderOverlayAndShouldSetAriaModalFalse()
     {
@@ -288,9 +300,11 @@ public class BitModalChromeTests : BunitTestContext
             parameters.Add(p => p.AutoToggleScroll, true);
         });
 
-        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"].Count));
+        com.WaitForAssertion(() => Assert.AreEqual(1, ToggleHolds().Count));
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"].Count);
+        // The one hold taken is the scroller's own, without the room of the scrollbar given back.
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"].Count);
+        Assert.AreEqual(0, PageHolds().Count);
     }
 
     [TestMethod]
@@ -301,9 +315,9 @@ public class BitModalChromeTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
         });
 
-        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"].Count));
+        com.WaitForAssertion(() => Assert.AreEqual(1, PageHolds().Count));
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"].Count);
+        Assert.AreEqual(0, ToggleHolds().Count);
     }
 
     [TestMethod]
@@ -315,7 +329,7 @@ public class BitModalChromeTests : BunitTestContext
             parameters.Add(p => p.AutoToggleScroll, true);
         });
 
-        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"].Count));
+        com.WaitForAssertion(() => Assert.AreEqual(1, ToggleHolds().Count));
 
         com.Render(parameters =>
         {
@@ -323,7 +337,78 @@ public class BitModalChromeTests : BunitTestContext
             parameters.Add(p => p.AutoToggleScroll, true);
         });
 
-        com.WaitForAssertion(() => Assert.AreEqual(2, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"].Count));
+        // Released by the key it was taken under, which is what hands back the scroller it was taken on.
+        com.WaitForAssertion(() =>
+        {
+            var releases = Context.JSInterop.Invocations["BitBlazorUI.Utils.unlockScroll"];
+            Assert.AreEqual(1, releases.Count);
+            Assert.AreEqual(ToggleHolds()[0].Arguments[0], releases[0].Arguments[0]);
+        });
+
+        Assert.AreEqual(1, ToggleHolds().Count);
+    }
+
+    [TestMethod]
+    public void BitModalShouldHandBackTheScrollerItTookEvenAfterTheSelectorChanges()
+    {
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.AutoToggleScroll, true);
+            parameters.Add(p => p.ScrollerSelector, ".first-scroller");
+        });
+
+        com.WaitForAssertion(() => Assert.AreEqual(1, ToggleHolds().Count));
+
+        com.Render(parameters => parameters.Add(p => p.ScrollerSelector, ".second-scroller"));
+
+        com.Render(parameters => parameters.Add(p => p.IsOpen, false));
+
+        // The scroller that was taken is the one handed back, not the one named now: the release goes by the
+        // key the hold was taken under, and nothing is taken on the scroller named since.
+        com.WaitForAssertion(() =>
+        {
+            var releases = Context.JSInterop.Invocations["BitBlazorUI.Utils.unlockScroll"];
+            Assert.AreEqual(1, releases.Count);
+            Assert.AreEqual(ToggleHolds()[0].Arguments[0], releases[0].Arguments[0]);
+        });
+
+        Assert.AreEqual(1, ToggleHolds().Count);
+        Assert.AreEqual(".first-scroller", ToggleHolds()[0].Arguments[1]);
+        Assert.AreEqual(0, PageHolds().Count);
+    }
+
+    [TestMethod]
+    public async Task BitModalShouldHandTheOverflowBackWhenItIsDisposedWhileOpen()
+    {
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.AutoToggleScroll, true);
+        });
+
+        com.WaitForAssertion(() => Assert.AreEqual(1, ToggleHolds().Count));
+
+        await com.Instance.DisposeAsync();
+
+        var releases = Context.JSInterop.Invocations["BitBlazorUI.Utils.unlockScroll"];
+        Assert.AreEqual(1, releases.Count);
+        Assert.AreEqual(ToggleHolds()[0].Arguments[0], releases[0].Arguments[0]);
+    }
+
+    [TestMethod]
+    public void BitModalAbsolutePositionShouldBePushedDownByTheScrollOffsetOfTheScrollerItTook()
+    {
+        Context.JSInterop.Setup<float>("BitBlazorUI.Utils.lockScroll", _ => true).SetResult(120);
+
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.AbsolutePosition, true);
+            parameters.Add(p => p.AutoToggleScroll, true);
+        });
+
+        com.WaitForAssertion(() => StringAssert.Contains(com.Find(".bit-mdl").GetAttribute("style"), "top:120px"));
     }
 
     [TestMethod]
@@ -407,14 +492,11 @@ public class BitModalChromeTests : BunitTestContext
             parameters.Add(p => p.AutoToggleScroll, true);
         });
 
-        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"].Count));
+        com.WaitForAssertion(() => Assert.AreEqual(1, ToggleHolds().Count));
 
         // The hold on the page is given up, and the overflow of the scroller is what holds it instead.
+        Assert.AreEqual(1, PageHolds().Count);
         Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.unlockScroll"].Count);
-
-        // The key is the first argument and the scroller the second; the third is whether the overflow is
-        // being taken away.
-        Assert.AreEqual(true, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"][0].Arguments[2]);
     }
 
     [TestMethod]

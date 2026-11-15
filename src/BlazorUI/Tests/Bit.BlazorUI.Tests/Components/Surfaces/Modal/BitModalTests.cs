@@ -1045,14 +1045,16 @@ public class BitModalTests : BunitTestContext
             parameters.Add(p => p.AutoToggleScroll, true);
         });
 
-        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"].Count));
+        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"].Count));
 
-        var arguments = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"][0].Arguments;
+        var arguments = Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"][0].Arguments;
 
         // The first argument is the key the hold is counted under; the scroller is the second.
         Assert.AreEqual(shell, arguments[1]);
-        // The two holds are never both taken: the Modal that toggles the overflow itself holds its scroller.
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"].Count);
+        // The two holds are never both taken: the one taken is the Modal's own, which has always let the
+        // scroller shift by the width of its scrollbar rather than giving the room back as padding.
+        Assert.AreEqual(3, arguments.Count);
+        Assert.AreEqual(false, arguments[2]);
     }
 
     [TestMethod]
@@ -1180,7 +1182,7 @@ public class BitModalTests : BunitTestContext
             parameters.Add(p => p.AutoToggleScroll, true);
         });
 
-        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"].Count));
+        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"].Count));
 
         Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.forwardScroll"].Count);
     }
