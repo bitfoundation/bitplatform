@@ -91,6 +91,7 @@ public class WorkbenchSecretsTests
 
         Assert.Contains("isn't in this repository", (await secrets.Store("t4", Ask("password", new(WorkbenchProgressSecretTo.UserSecrets, "TestAccount:Password", null, "../elsewhere")), "x", TestContext.CancellationToken))!);
         Assert.Contains("isn't in this repository", (await secrets.Store("t4", Ask("password", new(WorkbenchProgressSecretTo.UserSecrets, "TestAccount:Password", null, "src/Server/Missing")), "x", TestContext.CancellationToken))!);
+        Assert.Contains("doesn't say where", (await secrets.Store("t4", Ask("password", new(WorkbenchProgressSecretTo.UserSecrets, "TestAccount:Password", null, null)), "x", TestContext.CancellationToken))!);
         Assert.IsEmpty(secrets.Calls);
     });
 

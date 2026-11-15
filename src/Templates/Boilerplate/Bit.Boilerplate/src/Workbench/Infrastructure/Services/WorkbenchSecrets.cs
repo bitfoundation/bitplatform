@@ -21,7 +21,10 @@ public class WorkbenchSecrets(ILogger<WorkbenchSecrets> logger)
     /// <summary>Stores the secret where the question says; returns what went wrong, or null once it is there.</summary>
     public async Task<string?> Store(string taskId, WorkbenchProgressAsk ask, string secret, CancellationToken cancellationToken)
     {
-        if (ask.Secret is not { } target)
+        // An agent may have changed a question's kind after saying where its secret goes, without saying all of it.
+        if (ask.Secret is not { } target
+            || (target.To is WorkbenchProgressSecretTo.GitHub && target.Name is null)
+            || (target.To is WorkbenchProgressSecretTo.UserSecrets && (target.Name is null || target.Project is null)))
             return "The question doesn't say where the secret goes.";
 
         if (target.To is WorkbenchProgressSecretTo.File)
@@ -61,8 +64,10 @@ public class WorkbenchSecrets(ILogger<WorkbenchSecrets> logger)
     {
         var root = Path.GetFullPath(WorkbenchFolders.WorkingTree ?? WorkbenchFolders.Source ?? Environment.CurrentDirectory);
         var project = Path.GetFullPath(Path.Combine(root, target.Project!));
+        // Two folders differ by case alone only where the file system tells them apart.
+        var comparison = OperatingSystem.IsWindows() || OperatingSystem.IsMacOS() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
 
-        if (project.StartsWith(Path.TrimEndingDirectorySeparator(root) + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) is false
+        if (project.StartsWith(Path.TrimEndingDirectorySeparator(root) + Path.DirectorySeparatorChar, comparison) is false
             || (File.Exists(project) || Directory.Exists(project)) is false)
             return $"The project {target.Project} isn't in this repository.";
 

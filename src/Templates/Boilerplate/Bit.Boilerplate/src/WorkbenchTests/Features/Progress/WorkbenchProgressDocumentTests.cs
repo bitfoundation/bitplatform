@@ -211,6 +211,13 @@ public class WorkbenchProgressDocumentTests
         Edit(() => WorkbenchProgressDocument.Apply(Progress, "t", "Claude Code", Update(notes: [new("keys", "warning", "Never paste keys here."), new("keys-2", "info", "Keys go on the Progress page.")])));
 
         Assert.AreSequenceEqual(new[] { "plan", "keys-2" }, Task().Notes.Select(n => n.Id).ToArray());
+
+        // Nor does a change to it, without its text, hold up the rest of the update.
+        var update = Update(steps: [new("vm", "Get a server", null, null, null, null)], notes: [new("keys", "info", null)]);
+
+        Assert.IsNull(WorkbenchProgressDocument.Check(update, Task()));
+        Edit(() => WorkbenchProgressDocument.Apply(Progress, "t", "Claude Code", update));
+        Assert.AreEqual(("vm", false), (Task().Steps.Single().Id, Task().Notes.Any(n => n.Id == "keys")));
     }
 
     [TestMethod]

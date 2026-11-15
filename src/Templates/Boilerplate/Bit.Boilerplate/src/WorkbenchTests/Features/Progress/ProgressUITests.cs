@@ -172,12 +172,9 @@ public class ProgressUITests : ProgressPageTest
         await OpenProgress("progress");
 
         await Page.ReloadAsync();
-        await WaitUntilInteractive();
-        await Expect(Page.Locator(".task-list")).ToBeVisibleAsync();
 
-        // The guide would start a moment after the page is interactive, once its state is restored.
-        await Page.WaitForTimeoutAsync(2000);
-
+        // The page says what its guide came to once it has asked for it, a moment after it is interactive.
+        await Expect(Page.Locator(".progress-page")).ToHaveAttributeAsync("data-guide", "seen");
         await Expect(GuideSkip()).ToBeHiddenAsync();
     }
 

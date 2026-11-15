@@ -151,7 +151,8 @@ public static partial class WorkbenchProgressDocument
             if (note.Id is not null && IsId(note.Id) is false)
                 return $"A note's id is up to {MaxIdLength} characters.";
 
-            if (note.Remove)
+            // A note the user removed stays removed: what the agent sends for it is let through and left out.
+            if (note.Remove || (note.Id is { } noteId && existing?.Removed.Any(r => r.Kind is WorkbenchProgressEntryKind.NoteRemoved && r.RefId == noteId.Trim()) is true))
                 continue;
 
             if (existing?.Notes.Any(n => n.Id == note.Id) is not true && string.IsNullOrWhiteSpace(note.Text))

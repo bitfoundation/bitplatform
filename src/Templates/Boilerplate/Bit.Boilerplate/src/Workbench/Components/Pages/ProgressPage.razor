@@ -4,7 +4,7 @@
 
 <PageTitle>@(SelectedTask is { } titled && TaskId is not null ? $"{titled.Title} · {Localizer[nameof(WorkbenchStrings.Progress)]}" : $"{Localizer[nameof(WorkbenchStrings.Progress)]} · {Localizer[nameof(WorkbenchStrings.WorkbenchTitle)]}")</PageTitle>
 
-<div class="progress-page @(TaskId is null ? "showing-list" : "showing-task")">
+<div class="progress-page @(TaskId is null ? "showing-list" : "showing-task")" data-guide="@guideState">
     <header class="topbar">
         <a class="brand" href="@WorkbenchUrls.Home">
             <img src="_content/Boilerplate.Client.Core/images/bit-logo.svg" alt="" width="26" height="26" />

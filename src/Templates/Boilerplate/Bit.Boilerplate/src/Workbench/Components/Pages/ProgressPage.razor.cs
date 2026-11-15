@@ -18,6 +18,9 @@ public partial class ProgressPage
     // The task whose Delete was pressed once; the next press deletes only that one.
     private string? confirmingDeleteId;
     private Timer? clock;
+    // What the first visit's guide came to, which a test waits on: shown, seen before, the Workbench tour's step, or none while
+    // another guide runs.
+    private string? guideState;
     // What the user is writing to each task's agent, kept with its task as the page moves between them.
     private readonly Dictionary<string, string?> drafts = [];
 
@@ -107,10 +110,20 @@ public partial class ProgressPage
         if (bonboardingService.FindSession(WorkbenchViewPage.TourId) is { WaitReason: BonboardingWaitReason.Route } tour)
         {
             await tour.PreviousAsync();
+            guideState = "tour";
         }
         else if (bonboardingService.Active is null)
         {
-            await bonboardingService.StartOnceAsync(CreateGuide());
+            guideState = await bonboardingService.StartOnceAsync(CreateGuide()) is null ? "seen" : "shown";
+        }
+        else
+        {
+            guideState = "busy";
+        }
+
+        if (CurrentCancellationToken.IsCancellationRequested is false)
+        {
+            StateHasChanged();
         }
     }
 
