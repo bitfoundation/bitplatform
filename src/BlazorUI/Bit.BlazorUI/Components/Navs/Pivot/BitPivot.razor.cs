@@ -22,6 +22,7 @@ public partial class BitPivot : BitComponentBase
     private bool _focusMenuAfterRender;
     private bool _itemPositionsStale = true;
     private int _menuFocusIndex = -1;
+    private readonly BitTypeahead _typeahead = new();
     private int _visibleItemCount;
     private string? _preventedKeys;
     private ElementReference _moreRef;
@@ -1622,6 +1623,8 @@ public partial class BitPivot : BitComponentBase
     {
         _isMenuOpen = true;
         _menuFocusIndex = -1;
+        // A menu opened again is a fresh one, so nothing typed into it before carries over.
+        _typeahead.Reset();
 
         for (var i = 0; i < _overflowItems.Count; i++)
         {
@@ -1731,30 +1734,21 @@ public partial class BitPivot : BitComponentBase
         StateHasChanged();
     }
 
-    // The type-ahead of the WAI-ARIA menu pattern: a printable character moves to the next item whose label
-    // starts with it, wrapping around, which is the quick way through a menu holding a long fold.
+    // The type-ahead of the WAI-ARIA menu pattern, which is the quick way through a menu holding a long fold, with the
+    // rules every typeahead of the library shares (BitTypeahead): the keys typed in quick succession are one search
+    // string, the same character typed again cycles through the items starting with it, wrapping around, and the
+    // labels are matched in the current culture. The disabled items are stepped over.
     private bool MoveMenuFocusToCharacter(KeyboardEventArgs e)
     {
         if (e.Key is not { Length: 1 } || e.CtrlKey || e.AltKey || e.MetaKey) return false;
 
-        var count = _overflowItems.Count;
+        var index = _typeahead.Find(e.Key, _overflowItems.Count, _menuFocusIndex,
+                                    i => _overflowItems[i].HeaderText.HasValue() ? _overflowItems[i].HeaderText : _overflowItems[i].Title,
+                                    i => _overflowItems[i].Disabled);
+        if (index < 0) return false;
 
-        for (var i = 1; i <= count; i++)
-        {
-            var index = (_menuFocusIndex + i) % count;
-            var item = _overflowItems[index];
-
-            if (item.Disabled) continue;
-
-            var label = item.HeaderText.HasValue() ? item.HeaderText : item.Title;
-
-            if (label is null || label.StartsWith(e.Key, StringComparison.CurrentCultureIgnoreCase) is false) continue;
-
-            _menuFocusIndex = index;
-            return true;
-        }
-
-        return false;
+        _menuFocusIndex = index;
+        return true;
     }
 
     // The button that opens the menu answers to the keys of a menu button: the arrows open it and step
