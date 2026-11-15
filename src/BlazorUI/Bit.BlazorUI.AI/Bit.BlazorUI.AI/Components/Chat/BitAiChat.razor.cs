@@ -200,6 +200,13 @@ public partial class BitAiChat : BitAiComponentBase
     [Parameter] public EventCallback<BitAiCitation> OnCitationClick { get; set; }
 
     /// <summary>
+    /// The callback for a dictation of the composer that fails, with the name of what failed (see
+    /// <see cref="BitAiVoiceInput.OnError"/>). The user is told either way; this is the same information for the
+    /// application. Only raised when <see cref="AllowDictation"/> is on.
+    /// </summary>
+    [Parameter] public EventCallback<string> OnDictationError { get; set; }
+
+    /// <summary>
     /// The callback for when the user records feedback on a reply, so a host can persist it.
     /// </summary>
     [Parameter] public EventCallback<BitAiMessageFeedback> OnFeedback { get; set; }

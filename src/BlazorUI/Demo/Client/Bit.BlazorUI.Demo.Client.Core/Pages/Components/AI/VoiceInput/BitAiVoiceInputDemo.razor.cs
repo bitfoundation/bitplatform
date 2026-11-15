@@ -48,7 +48,7 @@ public partial class BitAiVoiceInputDemo
             Name = "OnError",
             Type = "EventCallback<string>",
             DefaultValue = "",
-            Description = "Raised when the transcription fails, with the name of the error the browser reported - not-allowed for a microphone the user refused, no-speech, audio-capture, network and the like - or, for a recording, not-allowed, audio-capture, recording-failed, too-large or transcription-failed (the transcriber threw). The dictation has stopped by then, and the live region has announced the failure.",
+            Description = "Raised when the transcription fails, with the name of the error the browser reported - not-allowed for a microphone the user refused, no-speech, audio-capture, network and the like - or, for a recording, not-allowed, audio-capture, recording-failed, too-large or transcription-failed (the transcriber threw). The dictation has stopped by then, the live region has announced the failure, and its reason is shown beside the button for a few seconds.",
         },
         new()
         {
@@ -131,6 +131,13 @@ public partial class BitAiVoiceInputDemo
                 },
                 new()
                 {
+                    Name = "Listening",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the root element of the BitAiVoiceInput while it listens - through the speech recognition of the browser or by recording for the app's transcriber alike - beside the bit-aivci-lsn class it carries then (and bit-aivci-rec, only while it records for the transcriber)."
+                },
+                new()
+                {
                     Name = "Button",
                     Type = "BitToggleButtonClassStyles?",
                     DefaultValue = "null",
@@ -144,6 +151,13 @@ public partial class BitAiVoiceInputDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the time left of a recording for the app's transcriber, shown beside the button while it records."
+                },
+                new()
+                {
+                    Name = "Error",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the reason a dictation failed, shown above the button for a few seconds after the failure."
                 },
                 new()
                 {
@@ -176,7 +190,13 @@ public partial class BitAiVoiceInputDemo
 
     private readonly List<ComponentCssVariable> componentCssVariables =
     [
+        new() { Name = "--bit-AiVoiceInput-listening-color", DefaultValue = "var(--bit-clr-err-text)", Description = "Color of the microphone while the voice input listens, through the speech recognition of the browser or by recording alike." },
+        new() { Name = "--bit-AiVoiceInput-listening-background", DefaultValue = "var(--bit-clr-err)", Description = "Background of the button while the voice input listens." },
+        new() { Name = "--bit-AiVoiceInput-listening-hover-background", DefaultValue = "var(--bit-clr-err-hover)", Description = "Background of the button while the voice input listens and the pointer is over it." },
+        new() { Name = "--bit-AiVoiceInput-listening-active-background", DefaultValue = "var(--bit-clr-err-active)", Description = "Background of the button while the voice input listens and it is pressed." },
+        new() { Name = "--bit-AiVoiceInput-pulse-color", DefaultValue = "the listening background", Description = "Color of the ring pulsing around the button while the voice input listens (a steady ring under reduced motion)." },
         new() { Name = "--bit-AiVoiceInput-countdown-color", DefaultValue = "var(--bit-clr-fg-sec)", Description = "Color of the time left of a recording for the app's transcriber, shown beside the button while it records." },
+        new() { Name = "--bit-AiVoiceInput-error-color", DefaultValue = "var(--bit-clr-err-fg)", Description = "Color of the reason a dictation failed, shown above the button for a few seconds after the failure." },
     ];
 
 

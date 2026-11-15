@@ -40,6 +40,10 @@ public partial class BitAiVoiceInput : BitAiComponentBase
     // The most a recording's buffer is sized for before its bytes arrive: about a minute of Opus.
     private const int InitialRecordingBuffer = 512 * 1024;
 
+    // How long the reason a dictation failed stays by the button: long enough to be read, short enough not to stay around
+    // as if it were still the state of the button. The live region has announced it already.
+    private static readonly TimeSpan ErrorDisplayDuration = TimeSpan.FromSeconds(5);
+
     private BitAiIconClassesCache<BitToggleButtonClassStyles> _buttonClasses;
     private int _handle;
     private Engine _engineInUse;
@@ -55,8 +59,12 @@ public partial class BitAiVoiceInput : BitAiComponentBase
     private bool _timeLeftAnnounced;
     private string? _status;
     private string? _countdown;
+    private string? _error;
+    private int _errorVersion;
+    private int _statusVersion;
     private DateTimeOffset _recordingDeadline;
-    private CancellationTokenSource? _countdownCts;
+    private BitAiTimer? _countdownTimer;
+    private BitAiTimer? _errorTimer;
     private CancellationTokenSource? _transcribeCts;
     private DotNetObjectReference<BitAiVoiceInput>? _dotnetObj;
 
@@ -324,7 +332,7 @@ public partial class BitAiVoiceInput : BitAiComponentBase
             }
 
             _transcribing = false;
-            _status = Strings.DictationStopped;
+            SetStatus(Strings.DictationStopped);
 
             if (string.IsNullOrWhiteSpace(text) is false)
             {
@@ -350,13 +358,20 @@ public partial class BitAiVoiceInput : BitAiComponentBase
 
     protected override void RegisterCssClasses()
     {
+        // The root says that it listens, whichever engine does - the speech API of the browser or a recording for the
+        // transcriber - which the stylesheet draws as the listening look of the button (bit-aivci-lsn); and, as it always
+        // has, that the microphone is recorded for the transcriber (bit-aivci-rec), for a style of the app's own that
+        // means a recording - one sent to its server - and nothing else.
         ClassBuilder.Register(() => Classes?.Root)
-                    .Register(() => _listening && _engineInUse is Engine.Recording ? "bit-aivci-rec" : string.Empty);
+                    .Register(() => _listening ? "bit-aivci-lsn" : string.Empty)
+                    .Register(() => _listening && _engineInUse is Engine.Recording ? "bit-aivci-rec" : string.Empty)
+                    .Register(() => _listening ? Classes?.Listening : string.Empty);
     }
 
     protected override void RegisterCssStyles()
     {
-        StyleBuilder.Register(() => Styles?.Root);
+        StyleBuilder.Register(() => Styles?.Root)
+                    .Register(() => _listening ? Styles?.Listening : string.Empty);
     }
 
     protected override void OnParametersSet()
@@ -374,6 +389,12 @@ public partial class BitAiVoiceInput : BitAiComponentBase
         if (Disabled && _listening)
         {
             await StopAsync();
+        }
+
+        // The reason the last dictation failed is not the state of a button that cannot be pressed.
+        if (Disabled && _error is not null)
+        {
+            HideError();
         }
 
         // A transcriber or a mode changed after the first render may need what the browser was not asked about yet: whether
@@ -579,76 +600,83 @@ public partial class BitAiVoiceInput : BitAiComponentBase
         _transcribing = false;
         StopCountdown();
 
-        await SetListeningAsync(false, Strings.DictationFailed(error));
+        // Announced through the live region, and shown by the button for a while, so a failure - a microphone the browser
+        // refused, say - does not pass with nothing but the button going back to off.
+        await SetListeningAsync(false, Strings.DictationFailed(error), failed: true);
+
         await OnError.InvokeAsync(error);
+    }
+
+    // Shown anew each time, even with the text it already shows: the element is rendered again (its key changes), so its
+    // entrance plays again and the time it stays starts over.
+    private void ShowError(string error)
+    {
+        _error = error;
+        _errorVersion++;
+
+        _errorTimer ??= new BitAiTimer(InvokeAsync);
+        _errorTimer.After(ErrorDisplayDuration, () =>
+        {
+            if (IsDisposing) return;
+
+            _error = null;
+            StateHasChanged();
+        });
+    }
+
+    private void HideError()
+    {
+        _error = null;
+
+        _errorTimer?.Cancel();
     }
 
     // The time left counts down beside the button while it records, and is announced once as the end nears: a deadline
     // the user can see coming rather than be surprised by.
     private void StartCountdown()
     {
-        CancelCountdown();
-
-        var cts = new CancellationTokenSource();
-        _countdownCts = cts;
-
-        _ = RunCountdownAsync(cts.Token);
-    }
-
-    private async Task RunCountdownAsync(CancellationToken cancellationToken)
-    {
-        try
+        _countdownTimer ??= new BitAiTimer(InvokeAsync);
+        _countdownTimer.Every(TimeSpan.FromMilliseconds(250), () =>
         {
-            using var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(250));
+            if (_listening is false || IsDisposing) return;
 
-            while (await timer.WaitForNextTickAsync(cancellationToken))
+            var remaining = _recordingDeadline - DateTimeOffset.UtcNow;
+            if (remaining < TimeSpan.Zero) remaining = TimeSpan.Zero;
+
+            var changed = false;
+
+            if (_timeLeftAnnounced is false && remaining <= TimeLeftWarning)
             {
-                await InvokeAsync(() =>
-                {
-                    if (cancellationToken.IsCancellationRequested || _listening is false || IsDisposing) return;
-
-                    var remaining = _recordingDeadline - DateTimeOffset.UtcNow;
-                    if (remaining < TimeSpan.Zero) remaining = TimeSpan.Zero;
-
-                    var changed = false;
-
-                    if (_timeLeftAnnounced is false && remaining <= TimeLeftWarning)
-                    {
-                        _timeLeftAnnounced = true;
-                        _status = Strings.RecordingTimeLeft(remaining);
-                        changed = true;
-                    }
-
-                    var countdown = Strings.RecordingCountdown(remaining);
-                    if (countdown != _countdown)
-                    {
-                        _countdown = countdown;
-                        changed = true;
-                    }
-
-                    if (changed) StateHasChanged();
-                });
+                _timeLeftAnnounced = true;
+                SetStatus(Strings.RecordingTimeLeft(remaining));
+                changed = true;
             }
-        }
-        catch (OperationCanceledException) { }
-        catch (ObjectDisposedException) { } // the renderer went first
+
+            var countdown = Strings.RecordingCountdown(remaining);
+            if (countdown != _countdown)
+            {
+                _countdown = countdown;
+                changed = true;
+            }
+
+            if (changed) StateHasChanged();
+        });
     }
 
     private void StopCountdown()
     {
         _countdown = null;
 
-        CancelCountdown();
+        _countdownTimer?.Cancel();
     }
 
-    private void CancelCountdown()
+    // What the live region says. Its text is rendered in an element keyed by the announcement, so a new one - even with
+    // the words of the last, a second failure of the same kind - replaces that element: an addition to the region, which
+    // a screen reader announces, where text set to what it already was changes nothing in the page.
+    private void SetStatus(string status)
     {
-        if (_countdownCts is { } cts)
-        {
-            _countdownCts = null;
-            cts.Cancel();
-            cts.Dispose();
-        }
+        _status = status;
+        _statusVersion++;
     }
 
     // The glyph comes from the icon font of this package, since the one of the core carries only the few glyphs its own
@@ -657,15 +685,31 @@ public partial class BitAiVoiceInput : BitAiComponentBase
     private BitToggleButtonClassStyles _ButtonClasses =>
         _buttonClasses.Get("bit-icon-ai bit-icon-ai--Microphone", Classes?.Button, BitAiIconClasses.With);
 
-    private async Task SetListeningAsync(bool listening, string status)
+    private async Task SetListeningAsync(bool listening, string status, bool failed = false)
     {
         var changed = _listening != listening;
 
         _listening = listening;
-        _status = status;
+        SetStatus(status);
 
-        // The root says that it records (bit-aivci-rec), for a style of the app's own.
-        if (changed) ClassBuilder.Reset();
+        // The root says that it listens (bit-aivci-lsn, bit-aivci-rec, and the Listening class and style of the app).
+        if (changed)
+        {
+            ClassBuilder.Reset();
+            StyleBuilder.Reset();
+        }
+
+        // A failure shows its reason, and anything else that happens to the dictation - it starts again, it is stopped, it
+        // ends on its own - leaves that reason behind. Done before the callbacks of the app are awaited, so one removing
+        // the voice input from among them finds the timer of the reason already started, and stops it as it goes.
+        if (failed)
+        {
+            ShowError(status);
+        }
+        else
+        {
+            HideError();
+        }
 
         // Provisional text still showing when the dictation stops, fails or is taken over will never be made final by this
         // recognizer, so it is cleared - with the empty interim OnInterim promises once the text is final or gone. A phrase
@@ -702,7 +746,8 @@ public partial class BitAiVoiceInput : BitAiComponentBase
     {
         if (IsDisposed || disposing is false) return;
 
-        StopCountdown();
+        _countdownTimer?.Dispose();
+        _errorTimer?.Dispose();
 
         if (_transcribeCts is { } transcribing)
         {

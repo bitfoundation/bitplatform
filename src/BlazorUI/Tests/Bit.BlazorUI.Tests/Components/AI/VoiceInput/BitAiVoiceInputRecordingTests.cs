@@ -106,6 +106,7 @@ public class BitAiVoiceInputRecordingTests : BitAiTestBase
 
         Assert.IsTrue(voice.Instance.IsListening);
         Assert.IsTrue(voice.Find(".bit-aivci").ClassList.Contains("bit-aivci-rec"));
+        Assert.IsTrue(voice.Find(".bit-aivci").ClassList.Contains("bit-aivci-lsn"));
         Assert.AreEqual("Stop dictation", voice.Find("button").GetAttribute("aria-label"));
         Assert.AreEqual("Recording, 1 minute left", voice.Find("[role=status]").TextContent.Trim());
     }
@@ -253,7 +254,12 @@ public class BitAiVoiceInputRecordingTests : BitAiTestBase
     [TestMethod]
     public void ARefusedOrMissingMicrophoneIsReportedThroughOnError()
     {
-        foreach (var (code, name) in new[] { (-1, "not-allowed"), (-2, "audio-capture"), (-3, "recording-failed") })
+        foreach (var (code, name, text) in new[]
+                 {
+                     (-1, "not-allowed", "Dictation failed: microphone access was denied"),
+                     (-2, "audio-capture", "Dictation failed: no microphone was found"),
+                     (-3, "recording-failed", "Dictation failed: the recording failed"),
+                 })
         {
             Context.JSInterop.Setup<bool>(IsRecordingSupported, _ => true).SetResult(true);
             Context.JSInterop.Setup<int>(StartRecording, _ => true).SetResult(code);
@@ -268,7 +274,9 @@ public class BitAiVoiceInputRecordingTests : BitAiTestBase
 
             Assert.AreEqual(name, error);
             Assert.IsFalse(voice.Instance.IsListening);
-            Assert.AreEqual($"Dictation failed: {name}", voice.Find("[role=status]").TextContent.Trim());
+            Assert.AreEqual(text, voice.Find("[role=status]").TextContent.Trim());
+            Assert.AreEqual(text, voice.Find(".bit-aivci-err").TextContent.Trim());
+            Assert.IsFalse(voice.Find(".bit-aivci").ClassList.Contains("bit-aivci-rec"));
             Assert.AreEqual("Dictate", voice.Find("button").GetAttribute("aria-label"));
         }
     }
@@ -291,7 +299,8 @@ public class BitAiVoiceInputRecordingTests : BitAiTestBase
 
         Assert.AreEqual("transcription-failed", error);
         Assert.IsFalse(voice.Instance.IsTranscribing);
-        Assert.AreEqual("Dictation failed: transcription-failed", voice.Find("[role=status]").TextContent.Trim());
+        Assert.AreEqual("Dictation failed: the recording could not be transcribed", voice.Find("[role=status]").TextContent.Trim());
+        Assert.AreEqual("Dictation failed: the recording could not be transcribed", voice.Find(".bit-aivci-err").TextContent.Trim());
         Assert.IsFalse(voice.Markup.Contains("secret", StringComparison.Ordinal));
     }
 
@@ -519,6 +528,35 @@ public class BitAiVoiceInputRecordingTests : BitAiTestBase
         });
 
         Assert.AreSame(transcriber, chat.FindComponent<BitAiVoiceInput>().Instance.Transcriber);
+    }
+
+    [TestMethod]
+    public async Task TheComposerAndTheChatPassOnAFailedDictation()
+    {
+        Interactive();
+        SetUpRecording(handle: -1);
+        var errors = new List<string>();
+
+        var composer = RenderComponent<BitAiPromptInput>(p =>
+        {
+            p.Add(c => c.AllowDictation, true);
+            p.Add(c => c.Transcriber, Transcriber(new()));
+            p.Add(c => c.OnDictationError, e => errors.Add($"composer:{e}"));
+        });
+        composer.WaitForElement("[aria-label='Dictate']").Click();
+
+        var chat = RenderComponent<BitAiChat>(p =>
+        {
+            p.Add(c => c.Session, new BitAiChatSession(new SilentTransport()));
+            p.Add(c => c.AllowDictation, true);
+            p.Add(c => c.Transcriber, Transcriber(new()));
+            p.Add(c => c.OnDictationError, e => errors.Add($"chat:{e}"));
+        });
+        var voice = chat.FindComponent<BitAiVoiceInput>();
+        await chat.InvokeAsync(() => voice.Instance._OnDictationError("audio-capture"));
+
+        CollectionAssert.AreEqual(new[] { "composer:not-allowed", "chat:audio-capture" }, errors);
+        Assert.AreEqual("Dictation failed: microphone access was denied", composer.Find(".bit-aivci-err").TextContent.Trim());
     }
 
     private sealed class SilentTransport : IBitAiTransport
