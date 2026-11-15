@@ -208,6 +208,15 @@ public partial class BitAiChatDemo
         },
         new()
         {
+            Name = "OnDictationError",
+            Type = "EventCallback<string>",
+            DefaultValue = "",
+            Description = "The callback for a dictation of the composer that fails, with the name of what failed (not-allowed when the microphone is refused, audio-capture when there is none, ...). The user is told either way; this is the same information for the application. Only raised when AllowDictation is on.",
+            LinkType = LinkType.Link,
+            Href = "/components/ai/voiceinput",
+        },
+        new()
+        {
             Name = "OnFeedback",
             Type = "EventCallback<BitAiMessageFeedback>",
             DefaultValue = "",

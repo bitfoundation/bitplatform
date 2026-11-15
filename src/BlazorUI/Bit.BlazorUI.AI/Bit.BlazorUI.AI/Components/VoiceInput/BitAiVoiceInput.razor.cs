@@ -40,6 +40,10 @@ public partial class BitAiVoiceInput : BitAiComponentBase
     // The most a recording's buffer is sized for before its bytes arrive: about a minute of Opus.
     private const int InitialRecordingBuffer = 512 * 1024;
 
+    // How long the reason a dictation failed stays beside the button: long enough to be read, short enough not to stay
+    // around as if it were still the state of the button. The live region has announced it already.
+    private static readonly TimeSpan ErrorDisplayDuration = TimeSpan.FromSeconds(5);
+
     private BitAiIconClassesCache<BitToggleButtonClassStyles> _buttonClasses;
     private int _handle;
     private Engine _engineInUse;
@@ -55,8 +59,10 @@ public partial class BitAiVoiceInput : BitAiComponentBase
     private bool _timeLeftAnnounced;
     private string? _status;
     private string? _countdown;
+    private string? _error;
     private DateTimeOffset _recordingDeadline;
     private CancellationTokenSource? _countdownCts;
+    private CancellationTokenSource? _errorCts;
     private CancellationTokenSource? _transcribeCts;
     private DotNetObjectReference<BitAiVoiceInput>? _dotnetObj;
 
@@ -350,13 +356,17 @@ public partial class BitAiVoiceInput : BitAiComponentBase
 
     protected override void RegisterCssClasses()
     {
+        // The root says that it listens, whichever engine does - the speech API of the browser or a recording for the
+        // transcriber - which the stylesheet draws as the listening look of the button.
         ClassBuilder.Register(() => Classes?.Root)
-                    .Register(() => _listening && _engineInUse is Engine.Recording ? "bit-aivci-rec" : string.Empty);
+                    .Register(() => _listening ? "bit-aivci-rec" : string.Empty)
+                    .Register(() => _listening ? Classes?.Listening : string.Empty);
     }
 
     protected override void RegisterCssStyles()
     {
-        StyleBuilder.Register(() => Styles?.Root);
+        StyleBuilder.Register(() => Styles?.Root)
+                    .Register(() => _listening ? Styles?.Listening : string.Empty);
     }
 
     protected override void OnParametersSet()
@@ -579,8 +589,62 @@ public partial class BitAiVoiceInput : BitAiComponentBase
         _transcribing = false;
         StopCountdown();
 
-        await SetListeningAsync(false, Strings.DictationFailed(error));
+        var status = Strings.DictationFailed(error);
+
+        await SetListeningAsync(false, status);
+
+        // Announced through the live region, and shown beside the button for a while, so a failure - a microphone the
+        // browser refused, say - does not pass with nothing but the button going back to off.
+        ShowError(status);
+
         await OnError.InvokeAsync(error);
+    }
+
+    private void ShowError(string error)
+    {
+        CancelErrorTimer();
+
+        _error = error;
+
+        var cts = new CancellationTokenSource();
+        _errorCts = cts;
+
+        _ = HideErrorLaterAsync(cts.Token);
+    }
+
+    private async Task HideErrorLaterAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            await Task.Delay(ErrorDisplayDuration, cancellationToken);
+
+            await InvokeAsync(() =>
+            {
+                if (cancellationToken.IsCancellationRequested || IsDisposing) return;
+
+                _error = null;
+                StateHasChanged();
+            });
+        }
+        catch (OperationCanceledException) { }
+        catch (ObjectDisposedException) { } // the renderer went first
+    }
+
+    private void HideError()
+    {
+        _error = null;
+
+        CancelErrorTimer();
+    }
+
+    private void CancelErrorTimer()
+    {
+        if (_errorCts is { } cts)
+        {
+            _errorCts = null;
+            cts.Cancel();
+            cts.Dispose();
+        }
     }
 
     // The time left counts down beside the button while it records, and is announced once as the end nears: a deadline
@@ -664,8 +728,15 @@ public partial class BitAiVoiceInput : BitAiComponentBase
         _listening = listening;
         _status = status;
 
-        // The root says that it records (bit-aivci-rec), for a style of the app's own.
-        if (changed) ClassBuilder.Reset();
+        // The root says that it listens (bit-aivci-rec, and the Listening class and style of the app).
+        if (changed)
+        {
+            ClassBuilder.Reset();
+            StyleBuilder.Reset();
+        }
+
+        // A dictation starting again leaves the reason the last one failed behind.
+        if (listening) HideError();
 
         // Provisional text still showing when the dictation stops, fails or is taken over will never be made final by this
         // recognizer, so it is cleared - with the empty interim OnInterim promises once the text is final or gone. A phrase
@@ -703,6 +774,7 @@ public partial class BitAiVoiceInput : BitAiComponentBase
         if (IsDisposed || disposing is false) return;
 
         StopCountdown();
+        CancelErrorTimer();
 
         if (_transcribeCts is { } transcribing)
         {

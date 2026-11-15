@@ -11,8 +11,9 @@
         @* The name says what a press does next - Dictate, or Stop dictation - and that is the one thing announced: a
            pressed state on top of a name that changes with it would say the same twice and read ambiguously ("Stop
            dictation, pressed"), so the toggle button leaves aria-pressed out, as it does by default for a name that
-           changes. The live region beside it says that the microphone is on. While a recording is being transcribed the
-           button waits for it, unavailable but focusable, so the focus stays where the user left it. *@
+           changes. The live region beside it says that the microphone is on, and the listening look of the root
+           (bit-aivci-rec) shows it. While a recording is being transcribed the button waits for it, unavailable but
+           focusable, so the focus stays where the user left it. *@
         <BitToggleButton IconName="Microphone"
                          IsChecked="@_listening"
                          OnClick="ToggleAsync"
@@ -34,6 +35,17 @@
             <span aria-hidden="true"
                   style="@Styles?.Countdown"
                   class="bit-aivci-cdn @Classes?.Countdown">@countdown</span>
+        }
+
+        @* Why the dictation failed, for the eye, where the countdown sits, for a few seconds: the live region announces the
+           same text, so it is hidden from assistive technologies rather than read twice. The title carries the whole text
+           where it is cut short. *@
+        @if (_error is { } error)
+        {
+            <span aria-hidden="true"
+                  title="@error"
+                  style="@Styles?.Error"
+                  class="bit-aivci-err @Classes?.Error">@error</span>
         }
 
         @* The name of the button does not say that the microphone is live; this does, politely. *@

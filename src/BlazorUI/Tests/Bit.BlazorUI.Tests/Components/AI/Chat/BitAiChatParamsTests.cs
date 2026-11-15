@@ -40,6 +40,7 @@ public class BitAiChatParamsTests : BitAiTestBase
         nameof(BitAiChat.MessageTemplate),
         nameof(BitAiChat.OnAttachmentRejected),
         nameof(BitAiChat.OnCitationClick),
+        nameof(BitAiChat.OnDictationError),
         nameof(BitAiChat.OnFeedback),
         nameof(BitAiChat.OnSourceClick),
         nameof(BitAiChat.OnSubmit),

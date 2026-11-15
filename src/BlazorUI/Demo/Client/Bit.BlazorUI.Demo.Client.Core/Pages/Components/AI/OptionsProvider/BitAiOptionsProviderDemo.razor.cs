@@ -134,7 +134,7 @@ public partial class BitAiOptionsProviderDemo
                 new() { Name = "Copied", Type = "string", DefaultValue = "\"Copied\"", Description = "Confirmation shown after copying." },
                 new() { Name = "Copy", Type = "string", DefaultValue = "\"Copy\"", Description = "Label for copying content." },
                 new() { Name = "Delete", Type = "string", DefaultValue = "\"Delete\"", Description = "Label for deleting a conversation." },
-                new() { Name = "DictationFailed", Type = "string", DefaultValue = "$\"Dictation failed: {error}\"", Description = "DictationFailed(string error): Announced when dictation fails." },
+                new() { Name = "DictationFailed", Type = "string", DefaultValue = "$\"Dictation failed: {error}\"", Description = "DictationFailed(string error): Announced when dictation fails, and shown beside the dictation button for a few seconds. The default says the reason in words for the error names it knows (\"Dictation failed: microphone access was denied\" for not-allowed), and the name itself for any other." },
                 new() { Name = "DictationStopped", Type = "string", DefaultValue = "\"Dictation stopped\"", Description = "Announced when dictation stops." },
                 new() { Name = "Dismiss", Type = "string", DefaultValue = "\"Dismiss\"", Description = "Label for dismissing a notice." },
                 new() { Name = "Download", Type = "string", DefaultValue = "\"Download\"", Description = "Label for downloading an artifact." },

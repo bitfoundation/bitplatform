@@ -103,8 +103,81 @@ public class BitAiVoiceInputTests : BitAiTestBase
 
         Assert.AreEqual("not-allowed", error);
         Assert.IsFalse(voice.Instance.IsListening);
-        Assert.AreEqual("Dictation failed: not-allowed", voice.Find("[role=status]").TextContent.Trim());
+        Assert.AreEqual("Dictation failed: microphone access was denied", voice.Find("[role=status]").TextContent.Trim());
         Assert.AreEqual("Dictate", voice.Find("button").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void ListeningThroughTheSpeechApiGivesTheRootItsListeningLook()
+    {
+        SetUpDictation(handle: 3);
+
+        var voice = RenderComponent<BitAiVoiceInput>(p =>
+        {
+            p.Add(c => c.Classes, new BitAiVoiceInputClassStyles { Root = "root-class", Listening = "listening-class" });
+            p.Add(c => c.Styles, new BitAiVoiceInputClassStyles { Root = "margin: 1px", Listening = "outline: 2px solid red" });
+        });
+        var root = voice.WaitForElement(".bit-aivci");
+
+        Assert.IsFalse(root.ClassList.Contains("bit-aivci-rec"));
+        Assert.IsFalse(root.ClassList.Contains("listening-class"));
+        Assert.IsFalse(root.GetAttribute("style")!.Contains("outline", System.StringComparison.Ordinal));
+
+        voice.Find("button").Click();
+
+        root = voice.Find(".bit-aivci");
+        Assert.IsTrue(root.ClassList.Contains("bit-aivci-rec"));
+        Assert.IsTrue(root.ClassList.Contains("listening-class"));
+        Assert.IsTrue(root.ClassList.Contains("root-class"));
+        StringAssert.Contains(root.GetAttribute("style"), "outline: 2px solid red");
+        StringAssert.Contains(root.GetAttribute("style"), "margin: 1px");
+
+        voice.Find("button").Click();
+
+        root = voice.Find(".bit-aivci");
+        Assert.IsFalse(root.ClassList.Contains("bit-aivci-rec"));
+        Assert.IsFalse(root.ClassList.Contains("listening-class"));
+        Assert.IsTrue(root.ClassList.Contains("root-class"));
+        Assert.IsFalse(root.GetAttribute("style")!.Contains("outline", System.StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public async Task AFailureIsShownBesideTheButtonUntilTheNextDictation()
+    {
+        SetUpDictation(handle: 3);
+
+        var voice = RenderComponent<BitAiVoiceInput>(p =>
+        {
+            p.Add(c => c.Classes, new BitAiVoiceInputClassStyles { Error = "error-class" });
+            p.Add(c => c.Styles, new BitAiVoiceInputClassStyles { Error = "color: red" });
+        });
+        voice.WaitForElement("button").Click();
+
+        Assert.AreEqual(0, voice.FindAll(".bit-aivci-err").Count);
+
+        await voice.InvokeAsync(() => voice.Instance._OnDictationError("audio-capture"));
+
+        var error = voice.Find(".bit-aivci > .bit-aivci-err");
+        Assert.AreEqual("Dictation failed: no microphone was found", error.TextContent.Trim());
+        Assert.AreEqual("Dictation failed: no microphone was found", error.GetAttribute("title"));
+
+        // The live region announces the same text, so the visible copy is not read a second time.
+        Assert.AreEqual("true", error.GetAttribute("aria-hidden"));
+        Assert.AreEqual(error.TextContent.Trim(), voice.Find("[role=status]").TextContent.Trim());
+        Assert.IsTrue(error.ClassList.Contains("error-class"));
+        Assert.AreEqual("color: red", error.GetAttribute("style"));
+        Assert.IsFalse(voice.Find(".bit-aivci").ClassList.Contains("bit-aivci-rec"));
+
+        voice.Find("button").Click();
+
+        Assert.IsTrue(voice.Instance.IsListening);
+        Assert.AreEqual(0, voice.FindAll(".bit-aivci-err").Count);
+    }
+
+    [TestMethod]
+    public void AnUnknownErrorIsShownByItsName()
+    {
+        Assert.AreEqual("Dictation failed: something-new", new BitAiStrings().DictationFailed("something-new"));
     }
 
     [TestMethod]

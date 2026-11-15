@@ -4,7 +4,19 @@
 // classes/styles of the voice input. Its own public CSS variable is read with a fallback and never declared here, so a
 // value set on :root restyles every voice input, one set on an ancestor the voice inputs inside it, and one set on the
 // Style of an instance that one alone (a voice input holds no other voice input):
-//   --bit-AiVoiceInput-countdown-color    color of the time left of a recording    (default: $clr-fg-sec)
+//   --bit-AiVoiceInput-listening-color              microphone while listening                (default: $clr-err-text)
+//   --bit-AiVoiceInput-listening-background         button while listening                    (default: $clr-err)
+//   --bit-AiVoiceInput-listening-hover-background   button while listening and hovered        (default: $clr-err-hover)
+//   --bit-AiVoiceInput-listening-active-background  button while listening and pressed        (default: $clr-err-active)
+//   --bit-AiVoiceInput-pulse-color                  ring pulsing around the listening button  (default: the listening background)
+//   --bit-AiVoiceInput-countdown-color              color of the time left of a recording     (default: $clr-fg-sec)
+//   --bit-AiVoiceInput-error-color                  color of the reason a dictation failed    (default: $clr-err-fg)
+//
+// While it listens - through the speech API of the browser or by recording for the transcriber alike - the root carries
+// bit-aivci-rec, and the look of a listening microphone is handed to the checked state of the toggle button through its
+// --bit-ToggleButton-checked-* variables, on this root, so they reach the button inside it and no other: an app re-skins
+// the listening look with the variables above (or the Listening classes/styles of the voice input), and the other toggle
+// buttons of the page with those of BitToggleButton.
 
 .bit-aivci {
     // The containing block of the visually hidden live region.
@@ -13,11 +25,62 @@
     align-items: center;
 }
 
+.bit-aivci-rec {
+    --bit-ToggleButton-checked-color: var(--bit-AiVoiceInput-listening-color, #{$clr-err-text});
+    --bit-ToggleButton-checked-background: var(--bit-AiVoiceInput-listening-background, #{$clr-err});
+    --bit-ToggleButton-checked-hover-background: var(--bit-AiVoiceInput-listening-hover-background, #{$clr-err-hover});
+    --bit-ToggleButton-checked-active-background: var(--bit-AiVoiceInput-listening-active-background, #{$clr-err-active});
+}
+
+// A ring pulses around the button while it listens, drawn by a layer of its own over the button rather than by the
+// button's box-shadow, which is its focus ring. The pulse loops, so its literal duration is multiplied by the loop
+// factor.
+.bit-aivci-rec > .bit-aivci-btn::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    animation: bit-aivci-pls calc(1.6s * #{$mot-loop-factor}) $mot-easing infinite;
+}
+
+// The pulse is never the only thing saying the microphone is on - the button is filled in the listening color, and its
+// name says Stop dictation - so it is an attention cue that would otherwise run for as long as the dictation does, which
+// is what WCAG 2.2.2 asks to be stoppable. Reduced motion stops it and leaves the ring standing still, so the cue
+// survives without the motion. ForceAnimation renders .bit-fam on the root or on an ancestor, so the opt-out is matched
+// on both.
+@media (prefers-reduced-motion: reduce) {
+    .bit-aivci-rec:not(.bit-fam):not(.bit-fam *) > .bit-aivci-btn::after {
+        animation: none;
+        box-shadow: 0 0 0 spacing(0.375) translucent(var(--bit-AiVoiceInput-pulse-color, var(--bit-AiVoiceInput-listening-background, #{$clr-err})), 35%);
+    }
+}
+
+@keyframes bit-aivci-pls {
+    0%, 100% {
+        box-shadow: 0 0 0 0 translucent(var(--bit-AiVoiceInput-pulse-color, var(--bit-AiVoiceInput-listening-background, #{$clr-err})), 35%);
+    }
+
+    50% {
+        box-shadow: 0 0 0 spacing(0.625) translucent(var(--bit-AiVoiceInput-pulse-color, var(--bit-AiVoiceInput-listening-background, #{$clr-err})), 35%);
+    }
+}
+
 .bit-aivci-cdn {
     color: var(--bit-AiVoiceInput-countdown-color, #{$clr-fg-sec});
     font-size: $tg-fs-xs;
     font-variant-numeric: tabular-nums;
     padding-inline-end: spacing(0.5);
+    white-space: nowrap;
+}
+
+.bit-aivci-err {
+    color: var(--bit-AiVoiceInput-error-color, #{$clr-err-fg});
+    font-size: $tg-fs-xs;
+    padding-inline-end: spacing(0.5);
+    max-inline-size: 20em;
+    overflow: hidden;
+    text-overflow: ellipsis;
     white-space: nowrap;
 }
 

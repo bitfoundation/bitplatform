@@ -29,6 +29,7 @@ public class BitAiPromptInputParamsTests : BitAiTestBase
         nameof(BitAiPromptInput.HintTemplate),
         nameof(BitAiPromptInput.Model),
         nameof(BitAiPromptInput.OnAttachmentRejected),
+        nameof(BitAiPromptInput.OnDictationError),
         nameof(BitAiPromptInput.OnStop),
         nameof(BitAiPromptInput.OnSubmit),
         nameof(BitAiPromptInput.PrefixTemplate),

@@ -244,6 +244,17 @@ public partial class BitAiPromptInput : BitAiComponentBase
     [Parameter] public EventCallback<BitAiAttachmentRejection> OnAttachmentRejected { get; set; }
 
     /// <summary>
+    /// Raised when the dictation fails, with the name of what failed (see <see cref="BitAiVoiceInput.OnError"/>):
+    /// <c>not-allowed</c> when the microphone is refused, <c>audio-capture</c> when there is none, ...
+    /// </summary>
+    /// <remarks>
+    /// The dictation button already tells the user, announcing the failure and showing its reason beside the button for a
+    /// few seconds. Handle this to log it or to tell the user in a way of the app's own. Only raised when
+    /// <see cref="AllowDictation"/> is on.
+    /// </remarks>
+    [Parameter] public EventCallback<string> OnDictationError { get; set; }
+
+    /// <summary>
     /// Raised when the user asks to stop the current turn.
     /// </summary>
     [Parameter] public EventCallback OnStop { get; set; }

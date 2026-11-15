@@ -626,14 +626,29 @@ public class BitAiStrings
     /// <summary>Announced when dictation stops.</summary>
     public virtual string DictationStopped => "Dictation stopped";
 
-    /// <summary>Announced when dictation fails.</summary>
+    /// <summary>
+    /// Announced when dictation fails, and shown beside the dictation button for a few seconds: the reason, in words, for
+    /// an error name it knows, else the name itself.
+    /// </summary>
     /// <param name="error">
     /// The error name the browser reported, such as <c>not-allowed</c> (the microphone was refused) or
     /// <c>audio-capture</c> (there is no microphone to open) - or, where the app transcribes the recording itself,
     /// <c>recording-failed</c>, <c>too-large</c> or <c>transcription-failed</c>.
     /// </param>
     /// <returns>The announcement.</returns>
-    public virtual string DictationFailed(string error) => $"Dictation failed: {error}";
+    public virtual string DictationFailed(string error) => error switch
+    {
+        "not-allowed" => "Dictation failed: microphone access was denied",
+        "service-not-allowed" => "Dictation failed: speech recognition is not allowed",
+        "audio-capture" => "Dictation failed: no microphone was found",
+        "no-speech" => "Dictation failed: no speech was heard",
+        "network" => "Dictation failed: speech recognition is unreachable",
+        "language-not-supported" => "Dictation failed: the language is not supported",
+        "recording-failed" => "Dictation failed: the recording failed",
+        "too-large" => "Dictation failed: the recording is too large",
+        "transcription-failed" => "Dictation failed: the recording could not be transcribed",
+        _ => $"Dictation failed: {error}",
+    };
 
     /// <summary>Announced when the microphone starts recording a take the app transcribes.</summary>
     /// <param name="remaining">How long the take may last.</param>

@@ -146,6 +146,15 @@ public partial class BitAiPromptInputDemo
         },
         new()
         {
+            Name = "OnDictationError",
+            Type = "EventCallback<string>",
+            DefaultValue = "",
+            Description = "Raised when the dictation fails, with the name of what failed (not-allowed when the microphone is refused, audio-capture when there is none, ...), as the OnError of BitAiVoiceInput is. The dictation button already tells the user, announcing the failure and showing its reason beside the button for a few seconds; handle this to log it or to tell the user in a way of the app's own. Only raised when AllowDictation is on.",
+            LinkType = LinkType.Link,
+            Href = "/components/ai/voiceinput",
+        },
+        new()
+        {
             Name = "OnStop",
             Type = "EventCallback",
             DefaultValue = "",

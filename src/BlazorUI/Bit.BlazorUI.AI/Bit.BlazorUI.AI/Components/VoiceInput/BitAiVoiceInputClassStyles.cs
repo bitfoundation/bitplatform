@@ -8,6 +8,12 @@ public class BitAiVoiceInputClassStyles
     public string? Root { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the root element of the BitAiVoiceInput while it listens - through the speech API of
+    /// the browser or by recording for the app's transcriber alike.
+    /// </summary>
+    public string? Listening { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the BitToggleButton of the BitAiVoiceInput that starts and stops the dictation.
     /// </summary>
     public BitToggleButtonClassStyles? Button { get; set; }
@@ -17,6 +23,12 @@ public class BitAiVoiceInputClassStyles
     /// the BitAiVoiceInput while it records.
     /// </summary>
     public string? Countdown { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the reason a dictation failed, shown beside the button of the BitAiVoiceInput for a
+    /// few seconds after the failure.
+    /// </summary>
+    public string? Error { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the visually hidden live region of the BitAiVoiceInput that announces whether the
