@@ -10,7 +10,7 @@ namespace Boilerplate.Server.Api.Infrastructure.HealthChecks;
 /// so the Operations page shows a card for each. It gets a GET that has to end, after its redirects, in a success status: behind a
 /// CDN such as Cloudflare, a TCP connection succeeds whatever state the site is in. A failed check's description says what went wrong.
 /// </summary>
-public class WebsiteHealthCheck(IHttpClientFactory httpClientFactory, string site) : IHealthCheck
+public class WebsiteHealthCheck(IHttpClientFactory httpClientFactory, string site, bool bypassCache) : IHealthCheck
 {
     public const string HttpClientName = "Websites";
 
@@ -57,9 +57,16 @@ public class WebsiteHealthCheck(IHttpClientFactory httpClientFactory, string sit
         if (TryGetAddress(site, out var address) is false)
             return new HealthCheckResult(context.Registration.FailureStatus, "Not an http or https address.");
 
-        return await ProblemOf(httpClientFactory.CreateClient(HttpClientName), address, cancellationToken) is { } problem
+        return await ProblemOf(httpClientFactory.CreateClient(HttpClientName), bypassCache ? WithCacheBuster(address) : address, cancellationToken) is { } problem
             ? new HealthCheckResult(context.Registration.FailureStatus, problem)
             : HealthCheckResult.Healthy("The site answers");
+    }
+
+    private static Uri WithCacheBuster(Uri address)
+    {
+        var query = address.Query.TrimStart('?');
+
+        return new UriBuilder(address) { Query = $"{query}{(query.Length is 0 ? "" : "&")}v={Guid.NewGuid():N}" }.Uri;
     }
 
     /// <summary>

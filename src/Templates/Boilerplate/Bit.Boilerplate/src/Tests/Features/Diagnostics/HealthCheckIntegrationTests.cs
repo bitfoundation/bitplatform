@@ -419,8 +419,8 @@ public partial class HealthCheckIntegrationTests
     /// <summary>
     /// The project's other sites in <c>HealthChecks:Websites</c>, given as one value the way a single environment or GitHub
     /// variable carries them and as a list, each get a check of their own, so the Operations page shows a card for each, and
-    /// a site listed twice gets one. Each one that failed says what went wrong. The checks run directly, as the detailed
-    /// report needs an operator.
+    /// a site listed twice gets one. Each request carries a new <c>v</c> by default, which <c>/up</c> requires. Each one that
+    /// failed says what went wrong. The checks run directly, as the detailed report needs an operator.
     /// </summary>
     [TestMethod]
     public async Task Websites_Should_EachGetACheck_ThatSaysWhatWentWrong()
@@ -428,7 +428,7 @@ public partial class HealthCheckIntegrationTests
         // Sites of the project's own: one that answers, one that's down and one whose redirect ends in a missing page.
         await using var sites = WebApplication.CreateSlimBuilder().Build();
         sites.Urls.Add("http://127.0.0.1:0");
-        sites.MapGet("/up", () => "up");
+        sites.MapGet("/up", (Guid v) => "up");
         sites.MapGet("/down", () => Results.StatusCode(StatusCodes.Status503ServiceUnavailable));
         sites.MapGet("/moved", () => Results.Redirect("/gone"));
         await sites.StartAsync(TestContext.CancellationToken);

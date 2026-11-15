@@ -1051,11 +1051,13 @@ public static partial class Program
             // The check bounds itself; the registration's timeout only backs that up, as the report would lose what went wrong.
             // A healthy result is kept for half of a one-minute monitoring interval, so a monitor reading once a minute always gets
             // a run of its own and learns a site is down on its next read, while probes in the same half minute share one request.
+            var bypassCache = configuration.GetValue("HealthChecks:BypassWebsitesCache", true);
+
             foreach (var site in websites)
             {
                 var name = WebsiteHealthCheck.NameOf(site);
 
-                healthChecksBuilder.AddCachedCheck(name, HealthCheckCategories.Websites, sp => ActivatorUtilities.CreateInstance<WebsiteHealthCheck>(sp, site),
+                healthChecksBuilder.AddCachedCheck(name, HealthCheckCategories.Websites, sp => ActivatorUtilities.CreateInstance<WebsiteHealthCheck>(sp, site, bypassCache),
                         cacheDuration: TimeSpan.FromSeconds(30), timeout: WebsiteHealthCheck.CheckTimeout + TimeSpan.FromSeconds(2))
                     .Describe(name, WebsiteHealthCheck.TitleOf(site), about: "A site in HealthChecks:Websites. It answers a GET with a success status, after its redirects.");
             }

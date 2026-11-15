@@ -425,6 +425,40 @@ public partial class HealthCheckRulesTests
             WebsiteHealthCheck.Read(section));
     }
 
+    [TestMethod]
+    public async Task WebsiteHealthCheck_Should_AddANewVToEachRequest_UnlessBypassCacheIsOff()
+    {
+        var httpClientFactory = new RecordingHttpClientFactory();
+
+        await Check(new WebsiteHealthCheck(httpClientFactory, "https://example.com/docs?lang=en", bypassCache: true));
+        await Check(new WebsiteHealthCheck(httpClientFactory, "https://example.com/docs?lang=en", bypassCache: true));
+        await Check(new WebsiteHealthCheck(httpClientFactory, "example.com", bypassCache: false));
+
+        Assert.HasCount(3, httpClientFactory.Requests);
+        var (first, second, plain) = (httpClientFactory.Requests[0].AbsoluteUri, httpClientFactory.Requests[1].AbsoluteUri, httpClientFactory.Requests[2].AbsoluteUri);
+        Assert.IsTrue(first.StartsWith("https://example.com/docs?lang=en&v=", StringComparison.Ordinal), first);
+        Assert.IsTrue(Guid.TryParse(first[^32..], out _), first);
+        Assert.AreNotEqual(first, second);
+        Assert.AreEqual("https://example.com/", plain);
+    }
+
+    private sealed class RecordingHttpClientFactory : IHttpClientFactory
+    {
+        public List<Uri> Requests { get; } = [];
+
+        public HttpClient CreateClient(string name) => new(new RecordingHandler(Requests));
+
+        private sealed class RecordingHandler(List<Uri> requests) : HttpMessageHandler
+        {
+            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            {
+                requests.Add(request.RequestUri!);
+
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { RequestMessage = request });
+            }
+        }
+    }
+
     private async Task<HealthCheckResult> Check(IHealthCheck healthCheck)
     {
         var registration = new HealthCheckRegistration("test", healthCheck, failureStatus: HealthStatus.Degraded, tags: null);

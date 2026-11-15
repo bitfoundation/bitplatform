@@ -388,7 +388,8 @@ provider outage does not take an otherwise healthy instance out of the load bala
   such as Cloudflare a TCP connection succeeds whatever state the site is in. It gets 10 seconds, so a site that hangs
   can't hold `/health` past a monitor's timeout. A check that failed says what went wrong in its description: its status
   code, a Cloudflare challenge, a name that doesn't resolve, a TLS or connection error, or no answer in time. A bare host is
-  requested over https. List them in `appsettings.json`, or as one value separated by commas or spaces, which a single
+  requested over https. Each request carries `v` with a new GUID in its query, so a CDN's edge cache can't answer for a
+  site that is down; set `HealthChecks:BypassWebsitesCache` to false to request the addresses as they are. List them in `appsettings.json`, or as one value separated by commas or spaces, which a single
   environment variable carries (`HealthChecks__Websites`), and so does one GitHub variable of the deployment. With none
   listed there's no entry, as the check is optional.
 - **`smtp`**: connects, runs STARTTLS when `EnableSsl` is on, signs in when credentials are set, then quits without sending.
