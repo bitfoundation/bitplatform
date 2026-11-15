@@ -362,6 +362,35 @@ public class BitAiChatTests : BitAiTestBase
         await session.DisposeAsync();
     }
 
+    // The composer clears the draft before the chat sends: a session switched meanwhile is not where the prompt goes, and
+    // nor is the one it was typed for, which the chat no longer shows - the prompt is put back in the composer.
+    [TestMethod]
+    public async Task APromptIsNotSentToASessionSwitchedToWhileItWasBeingSubmitted()
+    {
+        Interactive();
+        var clear = Context.JSInterop.SetupVoid("BitBlazorUI.AiPromptInput.clearDraft", _ => true);
+        var first = NewSession();
+        var second = NewSession();
+
+        var component = RenderComponent<BitAiChat>(p => p
+            .Add(c => c.Session, first)
+            .Add(c => c.DraftKey, "chat-1"));
+
+        component.Find(".bit-aicht-ftc textarea").Input("hello");
+        component.Find(".bit-aicht-ftc textarea").KeyDown(Key.Enter);
+
+        component.Render(p => p.Add(c => c.Session, second));
+
+        clear.SetVoidResult();
+
+        component.WaitForAssertion(() => Assert.AreEqual("hello", component.Find(".bit-aicht-ftc textarea").GetAttribute("value")));
+        Assert.IsEmpty(first.Conversation.Messages);
+        Assert.IsEmpty(second.Conversation.Messages);
+
+        await first.DisposeAsync();
+        await second.DisposeAsync();
+    }
+
     [TestMethod]
     public async Task NoDraftIsKeptWithoutADraftKey()
     {

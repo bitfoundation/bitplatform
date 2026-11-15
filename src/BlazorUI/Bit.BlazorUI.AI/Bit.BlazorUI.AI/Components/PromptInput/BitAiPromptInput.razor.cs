@@ -771,7 +771,7 @@ public partial class BitAiPromptInput : BitAiComponentBase
         if (CanSubmit is false) return;
 
         var text = Value;
-        var submission = new BitAiPromptSubmission(Value.Trim(), _attachments.ToArray());
+        var submission = new BitAiPromptSubmission(Value.Trim(), _attachments.ToArray()) { Session = Session };
         var origin = new SubmissionOrigin(_draftKey);
 
         // The message owns the attachments now: their browser streams and previews go with them. The files parked under

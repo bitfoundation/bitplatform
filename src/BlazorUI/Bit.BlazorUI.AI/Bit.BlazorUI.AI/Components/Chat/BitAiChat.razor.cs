@@ -552,8 +552,13 @@ public partial class BitAiChat : BitAiComponentBase
             return;
         }
 
-        // A session that took nothing - a turn it could not interrupt was in flight - leaves the prompt the user's.
-        if (await ActiveSession.SubmitAsync(submission.Text, submission.Attachments) is null)
+        // Sent only to the session it was typed for: one the chat has moved on from since the user submitted (the host
+        // switched threads while the composer cleared its draft) gets nothing, and neither does the one now shown. A session
+        // that took nothing - a turn it could not interrupt was in flight - leaves the prompt the user's too.
+        var session = submission.Session ?? ActiveSession;
+
+        if (ReferenceEquals(session, ActiveSession) is false
+            || await session.SubmitAsync(submission.Text, submission.Attachments) is null)
         {
             submission.Reject();
         }
