@@ -67,4 +67,33 @@ public class BrowserTelemetryTests
         Assert.AreEqual(BelemetryOtlpProtocol.HttpProtobuf, otlp.Protocol);
         Assert.AreEqual(otlp.Endpoint, otlp.BrowserEndpoint);
     }
+
+    /// <summary>
+    /// The CSP allows the address the page posts to: Belemetry:OtlpEndpoint, or the server's own OTLP/HTTP endpoint when
+    /// that one is ignored.
+    /// </summary>
+    [TestMethod]
+    [DataRow("https://app.example.invalid", "https://app.example.invalid")]
+    [DataRow("https://user:password@app.example.invalid", "https://collector.example.invalid")]
+    public void TheCsp_Should_AllowTheAddressThePagePostsTo(string browserEndpoint, string pagePostsTo)
+    {
+        var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
+        {
+            ["OTEL_EXPORTER_OTLP_ENDPOINT"] = "https://collector.example.invalid",
+            ["OTEL_EXPORTER_OTLP_PROTOCOL"] = "http/protobuf",
+            ["Belemetry:OtlpEndpoint"] = browserEndpoint
+        }).Build();
+
+        var otlp = new BelemetryOptions().ConfigureAppTelemetry(configuration).OtlpExporters.Single();
+        var csp = Boilerplate.Client.Core.Components.Layout.ContentSecurityPolicy.BuildCspString(new(),
+            new AbsoluteServerAddressProvider { GetAddress = () => new Uri("https://api.example.invalid/") }, configuration);
+        var connectSrc = csp.Split(';').Single(directive => directive.Trim().StartsWith("connect-src ", StringComparison.Ordinal));
+
+        Assert.AreEqual(pagePostsTo, (otlp.BrowserEndpoint ?? otlp.Endpoint)!.GetLeftPart(UriPartial.Authority));
+        Assert.Contains($" {pagePostsTo}", connectSrc);
+        if (pagePostsTo != browserEndpoint)
+        {
+            Assert.DoesNotContain("app.example.invalid", connectSrc, "An ignored Belemetry:OtlpEndpoint isn't allowed either.");
+        }
+    }
 }
