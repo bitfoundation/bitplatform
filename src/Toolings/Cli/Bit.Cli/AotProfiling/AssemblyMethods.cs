@@ -323,7 +323,7 @@ public static class AssemblyMethods
             return null;
 
         var baseType = metadata.GetTypeDefinition(handle).BaseType;
-        var baseName = baseType.Kind switch
+        var baseName = baseType.IsNil ? null : baseType.Kind switch
         {
             HandleKind.TypeReference => SignatureFormatter.ReferenceName(metadata, (TypeReferenceHandle)baseType),
             HandleKind.TypeDefinition => SignatureFormatter.DefinitionName(metadata, (TypeDefinitionHandle)baseType),
