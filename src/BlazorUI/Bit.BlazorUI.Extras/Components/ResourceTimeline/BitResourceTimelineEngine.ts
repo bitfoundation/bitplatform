@@ -266,6 +266,33 @@
         lineColor?: string | null;
     }
 
+    /**
+     * config.groupSeparators resolved (see _separatorSpec), kept with the row
+     * metrics it sized. Thicknesses in pixels; a null color is Colors.AxisBorder,
+     * read when the scene is built so a change of colors alone needs no relayout.
+     */
+    export interface ResourceTimelineSeparatorSpec {
+        total: number;
+        maxDepth: number;
+        background: string | null;
+        borderColor: string | null;
+        inResourceAxis: boolean;
+        /** The strips that paint one separator, from its top down. */
+        parts: ResourceTimelineSeparatorPart[];
+    }
+
+    /**
+     * A strip of a group separator, `offset` pixels below its top: the band
+     * (border false) or a part of a border, solid or with dash set dashed.
+     */
+    export interface ResourceTimelineSeparatorPart {
+        offset: number;
+        height: number;
+        border: boolean;
+        dash: number;
+        dashGap: number;
+    }
+
     /** A visible row of the flattened resource hierarchy. */
     export interface ResourceTimelineRow {
         resource: ResourceTimelineResource;
@@ -500,6 +527,7 @@
         workingHoursEnd: number | null;
         surface: any;
         axisLines: any;
+        groupSeparators: any;
         maxStackLanes: number;
         showUtcTime: boolean;
         pixelsPerHour: number | null;
@@ -641,6 +669,8 @@
         private _laneScale: number | null;
         private _rowHeights: number[];
         private _rowTops: number[];
+        private _rowGaps: number[];
+        private _separator: ResourceTimelineSeparatorSpec | null;
 
         private _lastView: { start: number; end: number; pph: number } | null;
         private _warnedAllocIds: Set<string>;
@@ -686,6 +716,7 @@
         private _tickNodes!: any[];
         private _utcTickNodes!: any[];
         private _rowNodes!: any[];
+        private _separatorNodes!: any[];
         private _marqueeNode!: { x: number; y: number; width: number; height: number };
         private _ghostNode!: { x: number; y: number; width: number; height: number; color: string; label: string | null; labelBelow: boolean };
         private _surfaceNodes!: any[];
@@ -845,6 +876,12 @@
                 // resource grid. null keeps Colors.Grid on every line. Replaced
                 // as a whole, like surface. See _colorAxisLines.
                 axisLines: null,
+                // Bands between resource groups, across the resource column and
+                // the content pane. null (or one with no height and no border)
+                // draws none. They take room between the rows, so they are part
+                // of the row metrics (see _recomputeRowMetrics, _separatorSpec).
+                // Replaced as a whole, like surface.
+                groupSeparators: null,
                 // Max stacking lanes per cluster. 0 = unlimited. Extra bars are
                 // hidden and a +N label is drawn at the cluster's trailing edge.
                 maxStackLanes: 0,
@@ -1120,6 +1157,12 @@
             // lanes, bar layout options, or the visible row list change.
             this._rowHeights = [];
             this._rowTops = [0];
+            // _rowGaps[i] is the height of the group separator above row i (0 for
+            // none), already counted in _rowTops. See _recomputeRowMetrics.
+            this._rowGaps = [];
+            // The separators _rowGaps was sized for, painted by
+            // _buildGroupSeparatorScene. null for none.
+            this._separator = null;
 
             this._lastView = null;
             this._warnedAllocIds = new Set();
@@ -1827,9 +1870,11 @@
             return this.config.timeAxisHeight + this._rowContentTop(resourceIndex) - this.scrollY;
         }
 
+        // The row under a surface y, or -1 - over a group separator too, which
+        // belongs to no row.
         public getYToResource(y: number): number {
             const resourceY = y - this.config.timeAxisHeight + this.scrollY;
-            return this._rowIndexAtContentY(resourceY);
+            return this._rowAtContentY(resourceY);
         }
 
         // Content-space Y of the top of visible row `i` (0 at the first row).
@@ -1852,29 +1897,63 @@
             return heights[resourceIndex];
         }
 
-        // Total content height of every visible resource row.
+        // Height of the group separator above visible row `i`, 0 for none.
+        private _rowGap(resourceIndex: number): number {
+            const gaps = this._rowGaps;
+            if (!gaps || resourceIndex < 0 || resourceIndex >= gaps.length) return 0;
+            return gaps[resourceIndex];
+        }
+
+        // Total content height of every visible resource row, and of the group
+        // separators between them.
         private _totalRowsHeight(): number {
             const tops = this._rowTops;
             return tops && tops.length ? tops[tops.length - 1] : 0;
         }
 
-        // Binary-searches the cumulative row tops for the row covering contentY
-        // (0 at the top of the first resource row), or -1 when out of range.
+        // Binary-searches the cumulative row tops for the row whose slot covers
+        // contentY (0 at the top of the first resource row), or -1 when out of
+        // range. A row's slot is the group separator above it (see _rowGaps) and
+        // then its own band, so the slots tile the content without a hole and a
+        // point inside a separator falls to the row below it: the first row that
+        // is still on screen once the separator is, which is what the culling, the
+        // keyboard's first focus and the scroll anchor want. contentY is above the
+        // band of the row returned exactly when it is inside that separator; what
+        // a point hits is _rowAtContentY, the row a drop goes to _nearestRowAtContentY.
         private _rowIndexAtContentY(contentY: number): number {
             const tops = this._rowTops;
             const n = this._rows.length;
             if (n === 0 || !tops || tops.length < 2 || contentY < 0 || contentY >= tops[n]) {
                 return -1;
             }
+            // Slot i is [tops[i] - gap(i), tops[i + 1] - gap(i + 1)); the last row
+            // has nothing below it, and _rowGap(n) is 0.
             let lo = 0;
             let hi = n - 1;
             while (lo <= hi) {
                 const mid = (lo + hi) >> 1;
-                if (contentY < tops[mid]) hi = mid - 1;
-                else if (contentY >= tops[mid + 1]) lo = mid + 1;
+                if (contentY < tops[mid] - this._rowGap(mid)) hi = mid - 1;
+                else if (contentY >= tops[mid + 1] - this._rowGap(mid + 1)) lo = mid + 1;
                 else return mid;
             }
             return -1;
+        }
+
+        // The row whose own band covers contentY, or -1 over a group separator
+        // (or out of range): what a pointer is over.
+        private _rowAtContentY(contentY: number): number {
+            const index = this._rowIndexAtContentY(contentY);
+            return index >= 0 && contentY >= this._rowContentTop(index) ? index : -1;
+        }
+
+        // The row nearest to contentY, or -1 out of range: inside a group
+        // separator, the row on the side of its middle that contentY is on. Where
+        // a moved, resized or created bar lands while the pointer crosses a
+        // separator.
+        private _nearestRowAtContentY(contentY: number): number {
+            const index = this._rowIndexAtContentY(contentY);
+            if (index <= 0) return index;
+            return contentY < this._rowContentTop(index) - this._rowGap(index) / 2 ? index - 1 : index;
         }
 
         // Inclusive-ish visible row window for vertical culling. Returns
@@ -1928,21 +2007,106 @@
         // stay inside their row with the same top/bottom padding a single default
         // bar would have in a minimum-height row:
         //   rowH = max(resourceHeight, stackH + (resourceHeight - barHeight))
+        // A group separator above a row (see _separatorBefore) pushes that row's
+        // top down by its thickness, so every coordinate taken from _rowTops
+        // leaves room for it.
         private _recomputeRowMetrics(): void {
             const c = this.config;
             const n = this._rows.length;
             const heights = new Array(n);
             const tops = new Array(n + 1);
+            const gaps = new Array(n);
             tops[0] = 0;
             const padTotal = Math.max(0, c.resourceHeight - c.barHeight);
+            const spec = this._separatorSpec();
             for (let i = 0; i < n; i++) {
                 const row = this.allocationsByResource.get(this._rows[i].resource.id);
                 const stackH = this._maxStackHeightForRow(row);
                 heights[i] = Math.max(c.resourceHeight, stackH + padTotal);
+                gaps[i] = spec && this._separatorBefore(i, spec.maxDepth) ? spec.total : 0;
+                tops[i] += gaps[i];
                 tops[i + 1] = tops[i] + heights[i];
             }
             this._rowHeights = heights;
             this._rowTops = tops;
+            this._rowGaps = gaps;
+            this._separator = spec;
+        }
+
+        // config.groupSeparators resolved: the room a separator takes, its colors
+        // (null for Colors.AxisBorder) and the strips that paint it - the band
+        // between the borders, then the borders, each a solid strip, a dashed or
+        // dotted line, or for a double border two solid strips with the space
+        // between them left unpainted. null when there is nothing to draw - no
+        // spec, no height and no border, or a negative depth - so no row gets a
+        // gap. Called with the row metrics, not per frame.
+        private _separatorSpec(): ResourceTimelineSeparatorSpec | null {
+            const spec = this.config.groupSeparators;
+            if (!spec || typeof spec !== 'object') return null;
+            const height = Math.max(0, Math.floor(+spec.height || 0));
+            const borderWidth = Math.max(0, Math.floor(+spec.borderWidth || 0));
+            const total = height + 2 * borderWidth;
+            if (!(total > 0)) return null;
+            const maxDepth = spec.maxDepth == null ? 0 : Math.floor(+spec.maxDepth);
+            if (!(maxDepth >= 0)) return null;
+            let style = String(spec.borderStyle || 'solid').toLowerCase();
+            if (style !== 'dashed' && style !== 'dotted' && style !== 'double') style = 'solid';
+            // A double border is two lines and the gap between them, so it needs
+            // three pixels at the least; a thinner one is drawn solid, as CSS does.
+            if (style === 'double' && borderWidth < 3) style = 'solid';
+            const parts: ResourceTimelineSeparatorPart[] = [];
+            const part = (offset: number, partHeight: number, border: boolean, dash: number, dashGap: number) => {
+                parts.push({ offset, height: partHeight, border, dash, dashGap });
+            };
+            if (height > 0) part(borderWidth, height, false, 0, 0);
+            if (borderWidth > 0) {
+                const bw = borderWidth;
+                for (const y of [0, bw + height]) {
+                    switch (style) {
+                        case 'dashed':
+                            part(y, bw, true, Math.max(3, 3 * bw), Math.max(2, 2 * bw));
+                            break;
+                        case 'dotted':
+                            part(y, bw, true, bw, bw);
+                            break;
+                        case 'double': {
+                            // Two lines of a third of the width each, as CSS draws it.
+                            const line = Math.max(1, Math.round(bw / 3));
+                            part(y, line, true, 0, 0);
+                            part(y + bw - line, line, true, 0, 0);
+                            break;
+                        }
+                        default:
+                            part(y, bw, true, 0, 0);
+                    }
+                }
+            }
+            return {
+                total,
+                maxDepth,
+                background: this._colorString(spec.background),
+                borderColor: this._colorString(spec.borderColor),
+                inResourceAxis: spec.showInResourceAxis !== false,
+                parts
+            };
+        }
+
+        // Whether a group separator goes above visible row `index`: where a group
+        // at depth maxDepth or less begins or ends among its siblings. Never above
+        // the first row, nor between a group's row and its first child, nor
+        // between two leaves.
+        private _separatorBefore(index: number, maxDepth: number): boolean {
+            if (index <= 0 || index >= this._rows.length) return false;
+            const row = this._rows[index];
+            if (row.depth > maxDepth) return false;
+            const prev = this._rows[index - 1];
+            // The row above is deeper: it ends the expanded group of a sibling of
+            // this row, or of one of its ancestors.
+            if (prev.depth > row.depth) return true;
+            // A sibling: separated when either of the two is a group (one above
+            // that is expanded would have its children in between, so that one is
+            // collapsed). A shallower row above is this row's parent.
+            return prev.depth === row.depth && (prev.hasChildren || row.hasChildren);
         }
 
         // After barHeight/barMargin change, the tallest cluster per row may change
@@ -2123,6 +2287,9 @@
                     // Horizontal line segments across the resource column, present
                     // only for rows that have their own line color. { y, color }.
                     resourceAxisLines: [],
+                    // The strips of the group separators: { y, height, color,
+                    // dash, dashGap, axis }, see _buildGroupSeparatorScene.
+                    groupSeparators: [],
                     resourceRows: null,
                     bars: [],
                     overflow: [],
@@ -2142,6 +2309,7 @@
                 this._tickNodes = [];
                 this._utcTickNodes = [];
                 this._rowNodes = [];
+                this._separatorNodes = [];
                 this._marqueeNode = { x: 0, y: 0, width: 0, height: 0 };
                 this._ghostNode = { x: 0, y: 0, width: 0, height: 0, color: '', label: null, labelBelow: false };
             }
@@ -2152,6 +2320,9 @@
             scene.gridV.length = 0;
             if (!scene.resourceAxisLines) scene.resourceAxisLines = [];
             else scene.resourceAxisLines.length = 0;
+            if (!scene.groupSeparators) scene.groupSeparators = [];
+            else scene.groupSeparators.length = 0;
+            if (!this._separatorNodes) this._separatorNodes = [];
             scene.bars.length = 0;
             if (!scene.overflow) scene.overflow = [];
             else scene.overflow.length = 0;
@@ -2209,6 +2380,10 @@
             //   gridH      [{ y, color|null }]  horizontal lines; null color is Colors.Grid
             //   gridV      [{ x, ts, color|null }]  vertical lines
             //   resourceAxisLines  [{ y, color }]  row lines inside the resource column
+            //   groupSeparators  [{ y, height, color, dash, dashGap, axis }]  the strips
+            //                 of the separators between resource groups, painted
+            //                 across the content pane over the grid, and across
+            //                 the resource column under its labels where axis is set
             //   resourceRows  null when the HTML template overlay is active
             const scene = this._resetScene();
             // Renderers read colors/fonts/dimensions from here. This is a snapshot,
@@ -2243,6 +2418,7 @@
                 : null;
             this._buildTimeAxisScene(scene, hours, utcHours);
             this._buildGridScene(scene);
+            this._buildGroupSeparatorScene(scene);
             this._buildSurfaceScene(scene);
             this._buildNonWorkingScene(scene);
             this._buildBarsScene(scene);
@@ -2523,6 +2699,8 @@
             // line is drawn at each row's *top*, so closing the bottom edge of the
             // last row needs the line one index past it.
             for (let i = visibleStart; i <= visibleEnd; i++) {
+                // A group separator stands in for the line between its rows.
+                if (this._rowGap(i) > 0) continue;
                 const y = this.getResourceToY(i);
                 if (y >= startY && y <= visibleEndY) {
                     scene.gridH.push({ y, color: null, rowIndex: i });
@@ -2537,6 +2715,49 @@
                 scene.gridV.push({ x: tick.x, ts: tick.ts, color: null });
             }
             this._colorAxisLines(scene);
+        }
+
+        // The separators between resource groups, as strips across the timeline:
+        // the parts _separatorSpec resolved, in the room _recomputeRowMetrics left
+        // above each separated row, clipped to the content area's height so none
+        // reaches into the time axis or the corner.
+        private _buildGroupSeparatorScene(scene: any): void {
+            const spec = this._separator;
+            if (!spec) return;
+            const c = this.config;
+            const top = c.timeAxisHeight;
+            const bottom = this._viewportH;
+            const fallback = (c.colors && c.colors.axisBorder) || DEFAULT_COLORS.axisBorder;
+            const background = spec.background || fallback;
+            const borderColor = spec.borderColor || fallback;
+            const parts = spec.parts;
+            const nodes = this._separatorNodes;
+            const { start, end } = this._visibleRowWindow(1);
+            let used = 0;
+            for (let i = Math.max(1, start); i < end; i++) {
+                const gapHeight = this._rowGap(i);
+                if (!(gapHeight > 0)) continue;
+                const y = this.getResourceToY(i) - gapHeight;
+                if (y >= bottom || y + gapHeight <= top) continue;
+                for (let p = 0; p < parts.length; p++) {
+                    const part = parts[p];
+                    const y0 = Math.max(top, y + part.offset);
+                    const y1 = Math.min(bottom, y + part.offset + part.height);
+                    if (!(y1 > y0)) continue;
+                    let node = nodes[used];
+                    if (node === undefined) {
+                        node = nodes[used] = { y: 0, height: 0, color: '', dash: 0, dashGap: 0, axis: true };
+                    }
+                    used++;
+                    node.y = y0;
+                    node.height = y1 - y0;
+                    node.color = part.border ? borderColor : background;
+                    node.dash = part.dash;
+                    node.dashGap = part.dashGap;
+                    node.axis = spec.inResourceAxis;
+                    scene.groupSeparators.push(node);
+                }
+            }
         }
 
         // Recolors grid lines from config.axisLines. A null color still means
@@ -4965,7 +5186,7 @@
                 ed.previewEnd = ne;
                 if (this._rows.length) {
                     const contentY = canvasY - c.timeAxisHeight + this.scrollY;
-                    let row = this._rowIndexAtContentY(contentY);
+                    let row = this._nearestRowAtContentY(contentY);
                     if (row < 0) {
                         row = contentY < 0 ? 0 : this._rows.length - 1;
                     }
@@ -4980,7 +5201,7 @@
                 ed.previewEnd = ne;
                 if (c.allowResourceChange && this._rows.length) {
                     const contentY = canvasY - c.timeAxisHeight + this.scrollY;
-                    let row = this._rowIndexAtContentY(contentY);
+                    let row = this._nearestRowAtContentY(contentY);
                     if (row < 0) {
                         row = contentY < 0 ? 0 : this._rows.length - 1;
                     }
@@ -5913,7 +6134,10 @@
                 depth: r.depth,
                 hasChildren: r.hasChildren,
                 collapsed: this._collapsed.has(r.resource.id),
-                height: this._rowHeight(i)
+                height: this._rowHeight(i),
+                // The group separator above the row, which the overlay leaves
+                // room for so its rows stay on the engine's.
+                gap: this._rowGap(i)
             }));
             const key = JSON.stringify(rows);
             if (key === this._reportedRowsKey) return;
@@ -5998,7 +6222,9 @@
 
         // The vertical half of a view anchor: the row at the top of the content area
         // and how far into it the edge falls. Survives a change of row heights, which
-        // raw pixel offsets do not.
+        // raw pixel offsets do not. An edge inside a group separator anchors to the
+        // row below it, at a negative offset no larger than the separator, which
+        // keeps its place whatever the rows above do.
         private _captureRowAnchor(): ResourceTimelineViewAnchor {
             const anchor: ResourceTimelineViewAnchor = { scrollY: this.scrollY, rowId: null, rowOffset: 0 };
             const topRow = this._rowIndexAtContentY(this.scrollY);
@@ -6164,11 +6390,12 @@
             this._reportResourceRows();
         }
 
-        // Visible-row index at a surface y (content or resource-axis band), or -1.
+        // Visible-row index at a surface y (content or resource-axis band), or -1
+        // (over a group separator too).
         private _rowAtY(canvasY: number): number {
             const c = this.config;
             if (canvasY < c.timeAxisHeight) return -1;
-            return this._rowIndexAtContentY(canvasY - c.timeAxisHeight + this.scrollY);
+            return this._rowAtContentY(canvasY - c.timeAxisHeight + this.scrollY);
         }
 
         // Toggles a group row's collapsed state and re-lays out. Keeps the focused
@@ -7232,8 +7459,11 @@
                 // compete with default-height multi-lane stacks.
                 this._refreshMaxClusterLanes();
             }
+            // The group separators take room between the rows; the room they take
+            // is cheap to work out again, so any separators passed in redo it.
             if (barLayoutChanged || lanesChanged
-                || this.config.resourceHeight !== prevResourceHeight) {
+                || this.config.resourceHeight !== prevResourceHeight
+                || (options && options.groupSeparators != null)) {
                 this._recomputeRowMetrics();
                 this._reportResourceRows();
             }

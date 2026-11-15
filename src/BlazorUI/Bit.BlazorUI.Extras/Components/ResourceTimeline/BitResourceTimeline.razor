@@ -45,6 +45,13 @@
                 <_BitResourceTimelineRenderGate RenderKey="_resourceRowsRenderKey">
                 @foreach (var row in _resourceRows)
                 {
+                    @* The room of a group separator above the row: an element of its own, not a margin of the row, so no
+                       style or class given to the rows (Styles/Classes.ResourceRow) can take it away and move every row
+                       below off the one it labels. The engine's separator shows through it. *@
+                    if (row.Gap > 0)
+                    {
+                        <div @key="(row.Id, nameof(row.Gap))" class="bit-rtm-rgp" style="@GetResourceGapStyle(row)" aria-hidden="true"></div>
+                    }
                     <div @key="row.Id" class="bit-rtm-rrw @Classes?.ResourceRow" style="@JoinStyles(GetResourceRowStyle(row), Styles?.ResourceRow)">
                         @if (row.HasChildren)
                         {

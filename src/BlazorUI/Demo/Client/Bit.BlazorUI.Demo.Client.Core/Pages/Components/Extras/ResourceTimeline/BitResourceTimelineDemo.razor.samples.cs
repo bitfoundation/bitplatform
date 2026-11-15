@@ -59,12 +59,62 @@ private static BitResourceTimelineConfig CreateBasicConfig()
     }
 </style>
 
+<BitChoiceGroup Label="GroupSeparators" Horizontal
+                TItem="BitChoiceGroupOption<string>" TValue="string"
+                @bind-Value="separatorPreset" @bind-Value:after="UpdateHierarchyOptions">
+    <BitChoiceGroupOption Text="None" Value="@("none")" />
+    <BitChoiceGroupOption Text="Line" Value="@("line")" />
+    <BitChoiceGroupOption Text="Band" Value="@("band")" />
+    <BitChoiceGroupOption Text="Dashed" Value="@("dashed")" />
+</BitChoiceGroup>
+
+<BitToggle @bind-Value="separateSubGroups" @bind-Value:after="UpdateHierarchyOptions" Label="MaxDepth 1" Inline />
+
 <div class="timeline">
-    <BitResourceTimeline Config="hierarchyConfig" />
+    <BitResourceTimeline Config="hierarchyConfig" Options="hierarchyOptions" />
 </div>
 """;
     private readonly string example2CsharpCode = """
 private readonly BitResourceTimelineConfig hierarchyConfig = CreateHierarchyConfig();
+
+private string? separatorPreset = "band";
+private bool separateSubGroups;
+private BitResourceTimelineOptions hierarchyOptions = CreateHierarchyOptions("band", false);
+
+private void UpdateHierarchyOptions() => hierarchyOptions = CreateHierarchyOptions(separatorPreset, separateSubGroups);
+
+private static BitResourceTimelineOptions CreateHierarchyOptions(string? preset, bool subGroups)
+{
+    // A new instance replaces the separators as a whole, and an empty one clears them.
+    BitResourceTimelineGroupSeparators separators = preset switch
+    {
+        // A plain 2px line in the color of the axis borders.
+        "line" => new() { Height = 2 },
+        // A tinted band between two thin borders.
+        "band" => new()
+        {
+            Height = 6,
+            Background = "rgba(25, 113, 194, 0.12)",
+            BorderWidth = 1,
+            BorderColor = "rgba(25, 113, 194, 0.5)",
+        },
+        // An empty gap between two dashed borders.
+        "dashed" => new()
+        {
+            Height = 4,
+            Background = "transparent",
+            BorderWidth = 1,
+            BorderColor = "#868e96",
+            BorderStyle = BitLineStyle.Dashed,
+        },
+        _ => new(),
+    };
+
+    // 1 separates the groups inside the terminals (the remote stands) as well.
+    separators.MaxDepth = subGroups ? 1 : 0;
+
+    return new() { GroupSeparators = separators };
+}
 
 private static BitResourceTimelineConfig CreateHierarchyConfig()
 {
@@ -78,9 +128,13 @@ private static BitResourceTimelineConfig CreateHierarchyConfig()
         new() { Id = "AR", Name = "Remote stands", ParentId = "TA" },
         new() { Id = "R1", Name = "Stand R1", ParentId = "AR" },
         new() { Id = "R2", Name = "Stand R2", ParentId = "AR" },
+        new() { Id = "A3", Name = "Gate A3", ParentId = "TA" },
         new() { Id = "TB", Name = "Terminal B", Collapsed = true },
         new() { Id = "B1", Name = "Gate B1", ParentId = "TB" },
         new() { Id = "B2", Name = "Gate B2", ParentId = "TB" },
+        new() { Id = "TC", Name = "Terminal C" },
+        new() { Id = "C1", Name = "Gate C1", ParentId = "TC" },
+        new() { Id = "C2", Name = "Gate C2", ParentId = "TC" },
     ];
 
     return new()
