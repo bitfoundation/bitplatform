@@ -903,6 +903,26 @@ public class BitPanelE2ETests : E2ETestBase
         Assert.IsTrue(overlay.Width <= box.Width && overlay.Height <= box.Height, "The overlay covers the box only.");
     }
 
+    // The panel holding its own scroller (AutoToggleScroll) takes the box's overflow away, and the offset the box was
+    // scrolled to is what an absolutely positioned panel is pushed down by, so it covers the part of the box on the screen.
+    [TestMethod]
+    public async Task AbsolutePosition_AutoToggleScroll_HoldsItsBoxAndCoversItAtTheScrolledOffset()
+    {
+        await OpenAsync(PagePath);
+
+        var box = Page.Locator("#pnl-abs-scroll-box");
+        await box.EvaluateAsync("el => el.scrollTop = 200");
+        await OpenPanelAsync("btn-abs-scroll-open", "abs-scroll-panel");
+
+        await Expect(box).ToHaveCSSAsync("overflow-y", "hidden");
+        await Expect(Root("abs-scroll-panel")).ToHaveCSSAsync("top", "200px");
+        Assert.AreNotEqual("hidden", await BodyOverflowAsync(), "A panel holding its own box leaves the page alone.");
+
+        await Page.Keyboard.PressAsync("Escape");
+        await Expect(Page.Locator("#abs-scroll-open")).ToHaveTextAsync("False");
+        await Expect(box).ToHaveCSSAsync("overflow-y", "auto");
+    }
+
     // ---------- Rendering and events ----------
 
     [TestMethod]

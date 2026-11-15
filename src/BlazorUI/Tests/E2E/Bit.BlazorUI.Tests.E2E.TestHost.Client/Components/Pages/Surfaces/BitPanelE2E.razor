@@ -278,6 +278,17 @@
             Contained by its box.
         </BitPanel>
     </div>
+    @* A box that scrolls, which the panel holds itself (AutoToggleScroll): laid out inside it, the panel is pushed down by
+       the offset the box was scrolled to, so it covers the part of the box on the screen. *@
+    <button id="btn-abs-scroll-open" @onclick="() => _absScrollOpen = true">AbsolutePosition in a scrolled box</button>
+    <span id="abs-scroll-open">@_absScrollOpen</span>
+    <div id="pnl-abs-scroll-box" style="position: relative; height: 240px; overflow: auto; border: 1px solid #888;">
+        <div style="height: 800px;">Tall box content.</div>
+        <BitPanel Id="abs-scroll-panel" @bind-IsOpen="_absScrollOpen" AbsolutePosition AutoToggleScroll ScrollerSelector="#pnl-abs-scroll-box"
+                  Size="220" HeaderText="In a scrolled box" ShowCloseButton>
+            Pushed down by the offset of its box.
+        </BitPanel>
+    </div>
 </E2ESection>
 
 <E2ESection Id="rendering" Title="Rendering and events: KeepMounted, OnOpen, OnToggle, OnTransitionEnd">
@@ -451,6 +462,7 @@
     private bool _siblingOpen;
 
     private bool _absOpen;
+    private bool _absScrollOpen;
 
     private bool _keepMounted;
     private bool _renderOpen;

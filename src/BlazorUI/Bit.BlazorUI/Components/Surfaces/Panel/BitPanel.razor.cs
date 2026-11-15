@@ -40,10 +40,7 @@ public partial class BitPanel : BitComponentBase
     private float _offsetTop;
     // Whether the overflow of a scroller was actually toggled during the open sequence, so the close
     // sequence hands it back if and only if it was taken, regardless of later changes to AutoToggleScroll.
-    // The scroller is snapshotted with it, so the close restores the same one.
     private bool _scrollToggledOnOpen;
-    private ElementReference? _scrollerElementOnToggle;
-    private string? _scrollerSelectorOnToggle;
     private string? _swipesKey;
     private string _headerId = default!;
     private string _containerId = default!;
@@ -1500,31 +1497,34 @@ public partial class BitPanel : BitComponentBase
     // closes, and the room that gave back is what an absolutely positioned panel is pushed down by.
     private async Task ToggleScroll(bool isOpen)
     {
-        if (isOpen)
-        {
-            // The decision is taken at open time; the close reuses it instead of re-reading
-            // AutoToggleScroll, which may have changed since the panel was opened.
-            _scrollToggledOnOpen = AutoToggleScroll && IsDisposed is false && IsRendered;
-            if (_scrollToggledOnOpen is false) return;
-
-            // The scroller is snapshotted with it, so the close hands back the same one even if
-            // ScrollerElement / ScrollerSelector changed in the meantime.
-            _scrollerElementOnToggle = ScrollerElementTarget;
-            _scrollerSelectorOnToggle = ScrollerSelector;
-        }
-        else
-        {
-            // Only hand the overflow back if it was actually taken away, regardless of the current value.
-            if (_scrollToggledOnOpen is false) return;
-
-            _scrollToggledOnOpen = false;
-        }
-
         try
         {
-            _offsetTop = _scrollerElementOnToggle.HasValue
-                ? await _js.BitUtilsToggleOverflow(_containerId, _scrollerElementOnToggle.Value, isOpen)
-                : await _js.BitUtilsToggleOverflow(_containerId, _scrollerSelectorOnToggle ?? "body", isOpen);
+            if (isOpen)
+            {
+                // The decision is taken at open time; the close reuses it instead of re-reading
+                // AutoToggleScroll, which may have changed since the panel was opened.
+                _scrollToggledOnOpen = AutoToggleScroll && IsDisposed is false && IsRendered;
+                if (_scrollToggledOnOpen is false) return;
+
+                // The panel has always let the scroller shift by the width of the scrollbar it takes away,
+                // so the room is not given back as padding.
+                var element = ScrollerElementTarget;
+                _offsetTop = element.HasValue
+                    ? await _js.BitUtilsLockScrollWithOffset(_containerId, element.Value, compensate: false)
+                    : await _js.BitUtilsLockScrollWithOffset(_containerId, ScrollerSelector ?? "body", compensate: false);
+            }
+            else
+            {
+                // Only hand the overflow back if it was actually taken away, regardless of the current value.
+                if (_scrollToggledOnOpen is false) return;
+
+                _scrollToggledOnOpen = false;
+
+                // The hold is registered under the key, against the scroller it was taken on, so releasing the
+                // key hands back that scroller even if ScrollerElement / ScrollerSelector changed since the
+                // panel was opened.
+                await _js.BitUtilsUnlockScroll(_containerId);
+            }
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }

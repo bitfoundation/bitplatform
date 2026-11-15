@@ -13,6 +13,15 @@ public class BitPanelTests : BunitTestContext
 {
     private static RenderFragment Markup(string html) => builder => builder.AddMarkupContent(0, html);
 
+    // The panel takes either of two holds under the one key: the hold on the page, which gives the room the
+    // scrollbar took back as padding, and the one AutoToggleScroll takes on its scroller, which asks for no such
+    // compensation - and that is what tells the two apart.
+    private System.Collections.Generic.List<JSRuntimeInvocation> PageHolds() =>
+        Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"].Where(i => i.Arguments.Count == 2).ToList();
+
+    private System.Collections.Generic.List<JSRuntimeInvocation> ToggleHolds() =>
+        Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"].Where(i => i.Arguments.Count == 3 && i.Arguments[2] is false).ToList();
+
 
 
     [TestMethod]
@@ -614,12 +623,12 @@ public class BitPanelTests : BunitTestContext
 
         com.WaitForAssertion(() =>
         {
-            var toggled = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"][^1];
+            var toggled = ToggleHolds()[^1];
+            Assert.AreEqual(com.Find(".bit-pnl-cnt").Id, toggled.Arguments[0]);
             Assert.AreEqual("body", toggled.Arguments[1]);
-            Assert.AreEqual(true, toggled.Arguments[2]);
         });
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"].Count);
+        Assert.AreEqual(0, PageHolds().Count);
     }
 
     [TestMethod]
@@ -631,14 +640,16 @@ public class BitPanelTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
         });
 
-        com.WaitForAssertion(() => Assert.AreNotEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"].Count));
+        com.WaitForAssertion(() => Assert.AreNotEqual(0, ToggleHolds().Count));
 
         com.Render(p => p.Add(x => x.IsOpen, false));
 
+        // Released by the key it was taken under, which is what hands back the scroller it was taken on.
         com.WaitForAssertion(() =>
         {
-            var toggled = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"][^1];
-            Assert.AreEqual(false, toggled.Arguments[2]);
+            var released = Context.JSInterop.Invocations["BitBlazorUI.Utils.unlockScroll"];
+            Assert.AreEqual(1, released.Count);
+            Assert.AreEqual(ToggleHolds()[0].Arguments[0], released[0].Arguments[0]);
         });
     }
 
@@ -1270,7 +1281,7 @@ public class BitPanelTests : BunitTestContext
     public async Task BitPanelOnTransitionEndShouldComeAfterTheCallbacksOfTheChangeItEnds()
     {
         var log = new System.Collections.Generic.List<string>();
-        var toggleOverflow = Context.JSInterop.Setup<float>("BitBlazorUI.Utils.toggleOverflow", _ => true);
+        var toggleHold = Context.JSInterop.Setup<float>("BitBlazorUI.Utils.lockScroll", _ => true);
 
         var com = RenderComponent<BitPanel>(parameters =>
         {
@@ -1285,13 +1296,13 @@ public class BitPanelTests : BunitTestContext
 
         // The open sequence is held on its round trip to toggle the page's overflow when the transition ends.
         com.Render(p => p.Add(x => x.IsOpen, true));
-        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"].Count));
+        com.WaitForAssertion(() => Assert.AreEqual(1, ToggleHolds().Count));
 
         var transitionEnd = com.InvokeAsync(() => com.Instance._OnTransitionEnd());
 
         Assert.AreEqual(0, log.Count);
 
-        toggleOverflow.SetResult(0);
+        toggleHold.SetResult(0);
         await transitionEnd;
 
         com.WaitForAssertion(() => CollectionAssert.AreEqual(new[] { "OnToggle:True", "OnOpen", "OnTransitionEnd:True" }, log));
@@ -2152,7 +2163,7 @@ public class BitPanelTests : BunitTestContext
     [TestMethod]
     public void BitPanelLaidOutInABoxShouldBePushedDownByTheRoomTheScrollbarGaveBack()
     {
-        Context.JSInterop.Setup<float>("BitBlazorUI.Utils.toggleOverflow", _ => true).SetResult(48);
+        Context.JSInterop.Setup<float>("BitBlazorUI.Utils.lockScroll", _ => true).SetResult(48);
 
         var com = RenderComponent<BitPanel>(parameters =>
         {
@@ -2168,7 +2179,7 @@ public class BitPanelTests : BunitTestContext
     [TestMethod]
     public void BitPanelAnchoredToTheScreenShouldNotBePushedDownByTheScrollbar()
     {
-        Context.JSInterop.Setup<float>("BitBlazorUI.Utils.toggleOverflow", _ => true).SetResult(48);
+        Context.JSInterop.Setup<float>("BitBlazorUI.Utils.lockScroll", _ => true).SetResult(48);
 
         var com = RenderComponent<BitPanel>(parameters =>
         {
@@ -2176,7 +2187,7 @@ public class BitPanelTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
         });
 
-        com.WaitForAssertion(() => Assert.AreNotEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"].Count));
+        com.WaitForAssertion(() => Assert.AreNotEqual(0, ToggleHolds().Count));
 
         Assert.IsFalse((com.Find(".bit-pnl").GetAttribute("style") ?? string.Empty).Contains("top:"));
     }
@@ -2197,9 +2208,8 @@ public class BitPanelTests : BunitTestContext
 
         com.WaitForAssertion(() =>
         {
-            var toggled = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"][^1];
+            var toggled = ToggleHolds()[^1];
             Assert.AreEqual(own, toggled.Arguments[1]);
-            Assert.AreEqual(true, toggled.Arguments[2]);
         });
     }
 
@@ -2215,7 +2225,7 @@ public class BitPanelTests : BunitTestContext
 
         com.WaitForAssertion(() =>
         {
-            var toggled = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"][^1];
+            var toggled = ToggleHolds()[^1];
             Assert.AreEqual(".scroller", toggled.Arguments[1]);
         });
     }
@@ -2231,26 +2241,34 @@ public class BitPanelTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
         });
 
-        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"].Count));
+        com.WaitForAssertion(() => Assert.AreEqual(1, ToggleHolds().Count));
 
         com.Render(p => p.Add(x => x.AutoToggleScroll, false));
         com.Render(p => p.Add(x => x.IsOpen, false));
 
+        // The scroller is handed back as the panel closes. Turning AutoToggleScroll off while it was open stood the
+        // page hold up under the same key - which the counted hold takes as the one it already has - so the close
+        // lets go of that key for both, and the second release finds nothing left to hand back.
         com.WaitForAssertion(() =>
         {
-            Assert.AreEqual(2, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"].Count);
-            Assert.AreEqual(false, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"][^1].Arguments[2]);
+            Assert.AreEqual(1, ToggleHolds().Count);
+            Assert.AreEqual(1, PageHolds().Count);
+            Assert.AreEqual(2, Context.JSInterop.Invocations["BitBlazorUI.Utils.unlockScroll"].Count);
         });
 
-        // Opened with it off and turned on while open, there was nothing taken, so there is nothing to hand back.
+        // Opened with it off and turned on while open, there was nothing taken, so there is nothing to hand back:
+        // the only release is the page hold being stood down for AutoToggleScroll while the panel was open.
         com.Render(p => p.Add(x => x.IsOpen, true));
-        com.WaitForAssertion(() => Assert.AreNotEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"].Count));
+        com.WaitForAssertion(() => Assert.AreEqual(2, PageHolds().Count));
 
         com.Render(p => p.Add(x => x.AutoToggleScroll, true));
+        com.WaitForAssertion(() => Assert.AreEqual(3, Context.JSInterop.Invocations["BitBlazorUI.Utils.unlockScroll"].Count));
+
         com.Render(p => p.Add(x => x.IsOpen, false));
 
         com.WaitForAssertion(() => Assert.AreNotEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.restoreFocus"].Count));
-        Assert.AreEqual(2, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"].Count);
+        Assert.AreEqual(1, ToggleHolds().Count);
+        Assert.AreEqual(3, Context.JSInterop.Invocations["BitBlazorUI.Utils.unlockScroll"].Count);
     }
 
     // Everything the panel registered on the page goes with it, under the ids it was registered with.
@@ -2263,7 +2281,7 @@ public class BitPanelTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
         });
 
-        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"].Count));
+        com.WaitForAssertion(() => Assert.AreEqual(1, ToggleHolds().Count));
 
         var rootId = com.Find(".bit-pnl").Id;
         var containerId = com.Find(".bit-pnl-cnt").Id;
@@ -2277,9 +2295,8 @@ public class BitPanelTests : BunitTestContext
         Assert.AreEqual(rootId, Context.JSInterop.Invocations["BitBlazorUI.Utils.disposeEscapeGuard"][^1].Arguments[0]);
 
         // The overflow it took off its scroller is handed back too.
-        var toggled = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"][^1];
-        Assert.AreEqual(2, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"].Count);
-        Assert.AreEqual(false, toggled.Arguments[2]);
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.unlockScroll"].Count);
+        Assert.AreEqual(containerId, Context.JSInterop.Invocations["BitBlazorUI.Utils.unlockScroll"][^1].Arguments[0]);
     }
 
     [TestMethod]
