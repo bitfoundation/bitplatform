@@ -139,7 +139,9 @@
                 hour). The result count is announced to screen readers. Typing on the closed field opens it with the
                 search already started. <b>SearchBoxPlaceholder</b>, <b>SearchBoxAriaLabel</b> and
                 <b>NoResultsText</b> set its texts. <b>NoSearchBox</b> removes it; the field then answers to
-                type-ahead, open or closed.
+                type-ahead, open or closed. The same letter typed again cycles through the time zones starting with it, and what is
+                typed is matched by the rules of the current culture, which ignore case and the accents that culture treats
+                as marks on a letter.
             </div>
             <br />
             <div class="example-box">

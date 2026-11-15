@@ -489,6 +489,21 @@ public class BitTimeZonePickerTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitTimeZonePickerShouldCycleThroughTheTimeZonesStartingWithALetterTypedAgain()
+    {
+        var component = RenderPicker<string>(parameters => parameters.Add(p => p.NoSearchBox, true));
+
+        component.Find("button.bit-tzp-fld").Click();
+
+        component.Find("button.bit-tzp-fld").KeyDown("t");
+        Assert.AreEqual("Tehran", component.Find(".bit-tzp-act").QuerySelector(".bit-tzp-inm")!.TextContent);
+
+        // The same letter again is the next time zone starting with it, not a search for one starting with "tt".
+        component.Find("button.bit-tzp-fld").KeyDown("t");
+        Assert.AreEqual("Tokyo", component.Find(".bit-tzp-act").QuerySelector(".bit-tzp-inm")!.TextContent);
+    }
+
+    [TestMethod]
     public void BitTimeZonePickerShouldPinThePreferredTimeZones()
     {
         var component = RenderPicker<string>(parameters =>
