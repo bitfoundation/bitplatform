@@ -95,6 +95,13 @@ public partial class BitAiChatDemo
         },
         new()
         {
+            Name = "DraftKey",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "A key under which the unsent text of the composer is kept in the session storage of the browser, so it survives a reload or a dropped circuit; drafts are not kept while it is null. Handed to the built-in composer as its DraftKey (a ComposerTemplate keeps its own drafts). Use a key naming the conversation and the user, such as $\"chat-{userId}-{conversationId}\", so drafts neither bleed between conversations nor reach the next person to sign in on the same browser. A new key gives the chat a new composer, which restores the draft kept under that key.",
+        },
+        new()
+        {
             Name = "EmptyDescription",
             Type = "string?",
             DefaultValue = "null",

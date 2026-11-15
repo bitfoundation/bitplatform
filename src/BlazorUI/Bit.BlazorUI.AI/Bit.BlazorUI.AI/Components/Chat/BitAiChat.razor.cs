@@ -117,6 +117,19 @@ public partial class BitAiChat : BitAiComponentBase
     [Parameter] public BitAiConversation? Conversation { get; set; }
 
     /// <summary>
+    /// A key under which the unsent text of the composer is kept in the session storage of the browser, so it survives a
+    /// reload or a dropped circuit. Drafts are not persisted when it is null. Handed to the built-in composer as its
+    /// <see cref="BitAiPromptInput.DraftKey"/>; a <see cref="ComposerTemplate"/> keeps its own drafts.
+    /// </summary>
+    /// <remarks>
+    /// Use a key that identifies the conversation and the user (such as <c>$"chat-{userId}-{conversationId}"</c>), so
+    /// drafts neither bleed between conversations nor reach the next person to sign in on the same browser. A new key
+    /// gives the chat a new composer, which restores the draft kept under it: the text and the files staged under the
+    /// old key stay with the old key rather than follow the chat into the next conversation.
+    /// </remarks>
+    [Parameter] public string? DraftKey { get; set; }
+
+    /// <summary>
     /// The supporting line of the empty state.
     /// </summary>
     [Parameter] public string? EmptyDescription { get; set; }
