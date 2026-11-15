@@ -164,7 +164,9 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
 
         var userSessionId = User.GetSessionId();
 
-        var sessionsToRevokeQuery = DbContext.UserSessions.Where(us => us.Id != userSessionId && us.UserId == userId);
+        var grantedSessionIds = DbContext.OAuthGrants.Select(grant => grant.UserSessionId);
+
+        var sessionsToRevokeQuery = DbContext.UserSessions.Where(us => us.Id != userSessionId && us.UserId == userId && !grantedSessionIds.Contains(us.Id));
 
         //#if (multitenant == true)
         if (User.HasFeature(AppFeatures.Management.Tenants_Manage_Global) is false)

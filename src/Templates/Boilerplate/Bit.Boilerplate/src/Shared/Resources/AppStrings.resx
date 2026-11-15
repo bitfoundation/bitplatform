@@ -1604,7 +1604,7 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <value>Revoke all sessions</value>
   </data>
     <data name="RevokeAllSessionsConfrimMessage" xml:space="preserve">
-    <value>Are you sure you want to revoke all sessions of {0}?</value>
+    <value>Are you sure you want to revoke all sessions of {0}? Authorized applications are kept.</value>
   </data>
     <data name="UserCantUnassignAllSuperAdminsErrorMessage" xml:space="preserve">
     <value>You can't remove this user from the SuperAdmin user group.</value>
@@ -2008,8 +2008,14 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="OAuthScopeHealthzShortDescription" xml:space="preserve">
     <value>Read the health report.</value>
   </data>
-    <data name="OAuthSessionAuthorizedApplication" xml:space="preserve">
-    <value>Authorized application</value>
+    <data name="OAuthSessionsTitle" xml:space="preserve">
+    <value>Authorized applications</value>
+  </data>
+    <data name="OAuthSessionsHint" xml:space="preserve">
+    <value>These aren't devices, so they don't count toward the devices allowed for full features. Each one is revoked on its own.</value>
+  </data>
+    <data name="OAuthSessionRevokeConfirmMessage" xml:space="preserve">
+    <value>Revoke {0}'s access? It stops working until it is authorized again.</value>
   </data>
     <data name="OAuthClients" xml:space="preserve">
     <value>Applications</value>

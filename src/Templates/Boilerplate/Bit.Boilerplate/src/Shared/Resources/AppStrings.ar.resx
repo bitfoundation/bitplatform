@@ -1604,7 +1604,7 @@
     <value>إلغاء جميع الجلسات</value>
   </data>
   <data name="RevokeAllSessionsConfrimMessage" xml:space="preserve">
-    <value>هل أنت متأكد من إلغاء جميع جلسات {0}؟</value>
+    <value>هل أنت متأكد من إلغاء جميع جلسات {0}؟ تبقى التطبيقات المصرّح لها.</value>
   </data>
   <data name="UserCantUnassignAllSuperAdminsErrorMessage" xml:space="preserve">
     <value>لا يمكنك إزالة هذا المستخدم من مجموعة SuperAdmin.</value>
@@ -2008,8 +2008,14 @@
     <data name="OAuthScopeHealthzShortDescription" xml:space="preserve">
     <value>قراءة تقرير الحالة.</value>
   </data>
-    <data name="OAuthSessionAuthorizedApplication" xml:space="preserve">
-    <value>تطبيق مصرّح له</value>
+    <data name="OAuthSessionsTitle" xml:space="preserve">
+    <value>التطبيقات المصرّح لها</value>
+  </data>
+    <data name="OAuthSessionsHint" xml:space="preserve">
+    <value>هذه ليست أجهزة، لذا لا تُحتسب ضمن الأجهزة المسموح بها للميزات الكاملة. يُلغى كل منها على حدة.</value>
+  </data>
+    <data name="OAuthSessionRevokeConfirmMessage" xml:space="preserve">
+    <value>إلغاء وصول {0}؟ سيتوقف عن العمل حتى يُصرَّح له من جديد.</value>
   </data>
     <data name="OAuthClients" xml:space="preserve">
     <value>التطبيقات</value>
