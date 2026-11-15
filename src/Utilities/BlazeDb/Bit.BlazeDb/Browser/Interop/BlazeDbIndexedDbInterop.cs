@@ -32,6 +32,9 @@ internal static partial class BlazeDbIndexedDbInterop
     [JSImport("deleteFile", ModuleName)]
     public static partial Task DeleteFile(JSObject db, string name);
 
+    [JSImport("listFiles", ModuleName)]
+    public static partial Task<string> ListFiles(JSObject db);
+
     [JSImport("closeDatabase", ModuleName)]
     public static partial void CloseDatabase(JSObject db);
 

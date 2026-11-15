@@ -23,7 +23,7 @@ public partial class BitMediaQueryDemo
             Name = "DefaultMatched",
             Type = "bool",
             DefaultValue = "false",
-            Description = "The matched state to render with until the browser answers the query, to avoid a flash of the wrong content while prerendering. Ignored when IsMatched is bound.",
+            Description = "The matched state to render with until the browser answers the query, to avoid a flash of the wrong content while prerendering. Ignored when IsMatched is bound, and in a WebAssembly app whose script is in the page, which asks the browser synchronously before the first render.",
         },
         new()
         {

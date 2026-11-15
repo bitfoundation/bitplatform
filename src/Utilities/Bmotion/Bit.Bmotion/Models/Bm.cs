@@ -189,11 +189,65 @@ public static class Bm
     public static BmValue<string> Template(Func<string> format, params BmValue<double>[] inputs)
     {
         ArgumentNullException.ThrowIfNull(format);
-        ArgumentNullException.ThrowIfNull(inputs);
+        ThrowIfAnyNull(inputs);
         var composed = new BmValue<string>($"mv_{Guid.NewGuid():N}", format());
         foreach (var input in inputs)
-            composed.AttachUpstream(input.Subscribe(_ => composed.SetSync(format())));
+            composed.AttachUpstream(SubscribeWeak(input, composed, format));
         return composed;
+    }
+
+    /// <summary>
+    /// A numeric motion value computed from several others, recomputed whenever any of them changes - motion.dev's
+    /// <c>useTransform(() =&gt; ...)</c> form. It tracks its own velocity, so it can feed a spring follower, another
+    /// range map or a binding like any value:
+    /// <code>
+    /// var x = Bm.Value(0.0);
+    /// var y = Bm.Value(0.0);
+    /// var distance = Bm.Combine(() =&gt; Math.Sqrt(x.Value * x.Value + y.Value * y.Value), x, y);
+    /// var glow = distance.Transform([0, 300], [0, 1]);
+    /// </code>
+    /// A change of one input recomputes it once; setting several inputs in a row recomputes it once per change. Dispose
+    /// it to detach it from its inputs.
+    /// </summary>
+    /// <param name="compute">Produces the value; read the inputs' <c>Value</c> inside.</param>
+    /// <param name="inputs">The motion values that trigger a recomputation when they change.</param>
+    public static BmValue<double> Combine(Func<double> compute, params BmValue<double>[] inputs)
+    {
+        ArgumentNullException.ThrowIfNull(compute);
+        ThrowIfAnyNull(inputs);
+        var combined = new BmValue<double>($"mv_{Guid.NewGuid():N}", compute());
+        foreach (var input in inputs)
+            combined.AttachUpstream(SubscribeWeak(input, combined, compute));
+        return combined;
+    }
+
+    // Every input is checked before the first is subscribed to: a null one found half-way would leave the inputs
+    // before it subscribed to a composite the caller never received, recomputing it on each of their changes.
+    private static void ThrowIfAnyNull(BmValue<double>[] inputs)
+    {
+        ArgumentNullException.ThrowIfNull(inputs);
+        foreach (var input in inputs)
+            ArgumentNullException.ThrowIfNull(input, nameof(inputs));
+    }
+
+    /// <summary>
+    /// Recomputes <paramref name="derived"/> on every change of <paramref name="input"/> through a weak reference, as
+    /// <see cref="BmValue{T}.Transform{TOut}(Func{T, TOut})"/> does: the input never keeps the derived value alive, so a
+    /// composite that is dropped without <c>Dispose()</c> is collected instead of leaking (and recomputing) for as long
+    /// as its inputs live. The subscription removes itself the first time it fires after the derived value is gone.
+    /// </summary>
+    private static IDisposable SubscribeWeak<TOut>(BmValue<double> input, BmValue<TOut> derived, Func<TOut> compute)
+    {
+        var weak = new WeakReference<BmValue<TOut>>(derived);
+        IDisposable? sub = null;
+        sub = input.Subscribe(_ =>
+        {
+            if (weak.TryGetTarget(out var target))
+                target.SetSync(compute());
+            else
+                sub?.Dispose();
+        });
+        return sub;
     }
 
     /// <summary>

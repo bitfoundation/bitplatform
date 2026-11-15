@@ -2033,6 +2033,52 @@ public class BitMenuButtonTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitMenuButtonShouldMakeOnlyItsMenuASheetInTheResponsiveMode()
+    {
+        var withSubmenu = new List<BitMenuButtonItem>
+        {
+            new() { Text = "More", Key = "more", ChildItems = [new() { Text = "Child", Key = "child" }] }
+        };
+
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, withSubmenu);
+        });
+
+        Assert.IsFalse(com.Find(".bit-mnb-cal:not(.bit-mnb-sub)").ClassList.Contains("bit-mnb-res"));
+
+        com.Render(parameters =>
+        {
+            parameters.Add(p => p.Items, withSubmenu);
+            parameters.Add(p => p.Responsive, true);
+        });
+
+        // A submenu stays a callout beside the item it belongs to, inside the sheet it was opened from.
+        Assert.IsTrue(com.Find(".bit-mnb-cal:not(.bit-mnb-sub)").ClassList.Contains("bit-mnb-res"));
+        Assert.IsFalse(com.Find(".bit-mnb-sub").ClassList.Contains("bit-mnb-res"));
+    }
+
+    [TestMethod,
+        DataRow(false, BitResponsiveMode.None),
+        DataRow(true, BitResponsiveMode.Bottom)]
+    public void BitMenuButtonShouldAskForASheetFromTheBottomEdgeInTheResponsiveMode(bool responsive, BitResponsiveMode expected)
+    {
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.Responsive, responsive);
+        });
+
+        com.Find(".bit-mnb-opb").Click();
+
+        var toggle = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
+
+        // The arguments of Callouts.toggle, in order: dotnetObj, componentId, component, calloutId, callout,
+        // overlayId, isCalloutOpen, responsiveMode, ...
+        Assert.AreEqual(expected, toggle.Arguments[7]);
+    }
+
+    [TestMethod]
     public async Task BitMenuButtonDisposeShouldKeepItsDotNetReferenceUntilItsScriptIsDisposed()
     {
         // The script answers later, the way it does in a browser: until the callout is cleared a click outside of it

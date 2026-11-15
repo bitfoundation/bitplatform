@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Globalization;
+using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Bit.Cli.Infrastructure;
@@ -40,17 +41,47 @@ public sealed partial class ProfileCollector(DevToolsPage page, PublishedApp app
                     Object.defineProperty(value, 'start', { configurable: true, get: () => start, set: f => start = typeof f === 'function' ? wrap(value, f) : f });
                 }
             });
+            const runtime = window.__bitRuntime = { auto: false, hash: undefined };
+            const setItem = Storage.prototype.setItem;
+            Storage.prototype.setItem = function (key, value) {
+                if (String(key).startsWith('blazor-resource-hash')) {
+                    try { runtime.hash = runtime.hash === 'new' || this.getItem(key) !== String(value) ? 'new' : 'same'; } catch { }
+                }
+                return setItem.call(this, key, value);
+            };
+            const auto = /^\s*Blazor:[^{]*\{.*"type"\s*:\s*"auto"/s;
+            new MutationObserver((records, observer) => {
+                if (records.some(record => [...record.addedNodes].some(node => node.nodeType === Node.COMMENT_NODE && auto.test(node.data)))) {
+                    runtime.auto = true;
+                    observer.disconnect();
+                }
+            }).observe(document, { childList: true, subtree: true });
         })();
         """;
 
+    // A Blazor Web App renders an InteractiveAuto component on the server until the browser holds the app's WebAssembly
+    // resources. blazor.web.js keeps their hash in localStorage, under keys starting with blazor-resource-hash (.NET 10 writes
+    // blazor-resource-hash:<assembly>, .NET 11 that and blazor-resource-hash), and writes it once the resources are loaded:
+    // a hash that changed tells the page rendered its InteractiveAuto components on the server. .NET 11 then only downloads
+    // the runtime and never starts it; .NET 10 starts it with nothing to run. The init script notes, per page load, whether
+    // the page holds an InteractiveAuto component (its prerendered <!--Blazor:{"type":"auto",...}--> marker) and whether a
+    // hash was written and changed. 'downloaded' says the components ran on the server, so the page is loaded once more.
+    // A page with InteractiveAuto components that started the runtime waits briefly for the hash, which .NET 10 writes just
+    // after it. A page without them, an InteractiveWebAssembly or standalone app, starts the runtime and is never reloaded.
     private const string WaitForRuntime = """
         async timeout => {
             const end = Date.now() + timeout;
+            let startedAt;
             while (Date.now() < end) {
-                if (typeof globalThis.getDotnetRuntime === 'function' && globalThis.getDotnetRuntime(0)) return true;
+                const state = window.__bitRuntime ?? {};
+                if (state.auto && state.hash === 'new') return 'downloaded';
+                if (typeof globalThis.getDotnetRuntime === 'function' && globalThis.getDotnetRuntime(0)) {
+                    startedAt ??= Date.now();
+                    if (!state.auto || state.hash || Date.now() - startedAt >= 5000) return 'started';
+                }
                 await new Promise(r => setTimeout(r, 250));
             }
-            return false;
+            return 'timeout';
         }
         """;
 
@@ -153,10 +184,7 @@ public sealed partial class ProfileCollector(DevToolsPage page, PublishedApp app
 
     public async Task<IReadOnlyList<string>> VisitAsync(string startPath, int maxPages, IReadOnlyCollection<string> skipped, Action<string> progress, CancellationToken cancellationToken)
     {
-        await page.SendAsync("Page.navigate", new { url = new Uri(app.Origin, startPath).ToString() }, cancellationToken);
-
-        if ((await page.EvaluateAsync(WaitForRuntime, 180_000, cancellationToken)).ValueKind is not JsonValueKind.True)
-            throw new InvalidOperationException("The app's .NET runtime didn't start within 3 minutes.");
+        await LoadAsync(new Uri(app.Origin, startPath).ToString(), cancellationToken);
 
         await page.EvaluateAsync("() => { window.__bitAotProfile = 1; }", cancellationToken: cancellationToken);
         var visited = new List<string> { (await SettleAsync(startPath, cancellationToken)).GetString()! };
@@ -167,7 +195,7 @@ public sealed partial class ProfileCollector(DevToolsPage page, PublishedApp app
         {
             foreach (var link in (await page.EvaluateAsync(Links, cancellationToken: cancellationToken)).EnumerateArray())
             {
-                if (PagePath(link.GetString(), app.Origin) is { } path && visited.Contains(path) is false && queue.Contains(path) is false && skipped.Contains(path) is false)
+                if (PagePath(link.GetString(), app.Origin) is { } path && visited.Contains(path) is false && queue.Contains(path) is false && IsLeftOut(path, skipped) is false)
                 {
                     queue.Enqueue(path);
                 }
@@ -193,6 +221,34 @@ public sealed partial class ProfileCollector(DevToolsPage page, PublishedApp app
             throw new AppReloadedException(visited[^1]);
 
         return visited;
+    }
+
+    // Loads the page until the .NET runtime runs it, at most twice (see WaitForRuntime), within 3 minutes in all. Each load
+    // goes through about:blank: a Page.navigate to the URL the tab is already on only scrolls when the URL has a fragment.
+    private async Task LoadAsync(string url, CancellationToken cancellationToken)
+    {
+        var deadline = DateTime.UtcNow.AddMinutes(3);
+
+        for (var load = 1; ; load++)
+        {
+            await page.SendAsync("Page.navigate", new { url = "about:blank" }, cancellationToken);
+            await page.SendAsync("Page.navigate", new { url }, cancellationToken);
+            var left = (int)Math.Max(1_000, (deadline - DateTime.UtcNow).TotalMilliseconds);
+            var runtime = await page.EvaluateAsync(WaitForRuntime, left, cancellationToken);
+
+            switch (runtime.ValueKind is JsonValueKind.String ? runtime.GetString() : null)
+            {
+                case "started":
+                    return;
+                case "downloaded" when load is 1:
+                    log.Write("The page's InteractiveAuto components ran on the server while the browser downloaded the app's .NET runtime; loading the page again to run them on WebAssembly.");
+                    continue;
+                case "downloaded":
+                    throw new InvalidOperationException("The app's InteractiveAuto components still ran on the server when the page was loaded a second time: the browser didn't keep the .NET runtime it downloaded.");
+                default:
+                    throw new InvalidOperationException("The app's .NET runtime didn't start within 3 minutes.");
+            }
+        }
     }
 
     public async Task<bool> RunStepAsync(string step, CancellationToken cancellationToken)
@@ -266,6 +322,27 @@ public sealed partial class ProfileCollector(DevToolsPage page, PublishedApp app
             || (step.StartsWith("click:", StringComparison.Ordinal) && step.Length > "click:".Length)
             || (step.StartsWith("key:", StringComparison.Ordinal) && step.Length > "key:".Length)
             || (step.StartsWith("wait:", StringComparison.Ordinal) && int.TryParse(step["wait:".Length..], out var wait) && wait >= 0);
+    }
+
+    public static string LeftOut(string reloaded)
+    {
+        if (reloaded.StartsWith('/') is false || reloaded.Split('/')[1] is not { Length: >= 2 } segment)
+            return reloaded;
+
+        try
+        {
+            CultureInfo.GetCultureInfo(segment, predefinedOnly: true);
+            return $"/{segment}/*";
+        }
+        catch (CultureNotFoundException)
+        {
+            return reloaded;
+        }
+    }
+
+    public static bool IsLeftOut(string path, IReadOnlyCollection<string> leftOut)
+    {
+        return leftOut.Contains(path) || leftOut.Any(prefix => prefix.EndsWith("/*", StringComparison.Ordinal) && $"{path}/".StartsWith(prefix[..^1], StringComparison.OrdinalIgnoreCase));
     }
 
     public static string? PagePath(string? href, Uri origin)

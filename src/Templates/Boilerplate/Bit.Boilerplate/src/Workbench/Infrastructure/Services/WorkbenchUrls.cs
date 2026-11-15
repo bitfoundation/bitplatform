@@ -21,6 +21,11 @@ public static class WorkbenchUrls
 
     public const string Flows = "/flows";
 
+    /// <summary>The page of the agents' long tasks: what each one does, what is left and what it needs from the user.</summary>
+    public const string Progress = "/progress";
+
+    public static string ProgressTask(string taskId) => $"{Progress}/{taskId}";
+
     public static string Workbench(string pageKey) => $"/workbench/{pageKey}";
 
     /// <summary>The query key that starts the tour when the shell opens.</summary>

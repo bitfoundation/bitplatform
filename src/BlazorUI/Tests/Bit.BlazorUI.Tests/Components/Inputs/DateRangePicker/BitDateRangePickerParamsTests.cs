@@ -243,6 +243,7 @@ public class BitDateRangePickerParamsTests : BunitTestContext
             ShowTimePickerIcon = showTimePickerIcon,
             ShowTimePickerIconName = "ShowName",
             ShowTimePickerTitle = "Cascaded show time",
+            ShowValidationMessage = true,
             ShowWeekNumbers = true,
             Size = BitSize.Small,
             Standalone = false,
@@ -400,6 +401,7 @@ public class BitDateRangePickerParamsTests : BunitTestContext
         Assert.AreSame(showTimePickerIcon, instance.ShowTimePickerIcon);
         Assert.AreEqual("ShowName", instance.ShowTimePickerIconName);
         Assert.AreEqual("Cascaded show time", instance.ShowTimePickerTitle);
+        Assert.IsTrue(instance.ShowValidationMessage);
         Assert.IsTrue(instance.ShowWeekNumbers);
         Assert.AreEqual(BitSize.Small, instance.Size);
         Assert.IsFalse(instance.Standalone);

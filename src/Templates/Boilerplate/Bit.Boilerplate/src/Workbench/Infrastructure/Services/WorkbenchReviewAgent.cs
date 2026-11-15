@@ -37,21 +37,24 @@ public sealed partial class WorkbenchReviewAgent
 
     /// <summary>
     /// The review as the agent reads it from get_review and GET /api/review: the comments (done ones too when asked),
-    /// the page statuses, the flows and the cursor to wait from.
+    /// the page statuses, the flows and the cursor to wait from. With pages, only the comments on those pages.
     /// </summary>
-    public async Task<object> DescribeReview(bool includeDone, CancellationToken cancellationToken)
+    public async Task<object> DescribeReview(bool includeDone, IReadOnlySet<string>? onPages, CancellationToken cancellationToken)
     {
         var (threads, pages, flows) = await Host.ReadAsync(WorkbenchReviewDocument.Id, document => (WorkbenchReviewDocument.ReadThreads(document.GetMap("threads")),
                                                                                                      WorkbenchReviewDocument.ReadPages(document.GetMap("pages")),
                                                                                                      WorkbenchReviewDocument.ReadFlows(document.GetMap("flows"))), cancellationToken);
+
+        threads = [.. threads.Where(t => onPages is null || onPages.Contains(t.PageKey))];
 
         return WorkbenchReviewJson.Describe(threads.Where(t => includeDone || t.Status is not WorkbenchReviewStatus.Done), pages, threads.Select(t => t.Sequence).DefaultIfEmpty(0).Max(), flows);
     }
 
     /// <summary>
     /// Returns the comments that aren't done and changed after the cursor, as soon as there are any, or none once the timeout passes.
+    /// With pages, only the comments on those pages, so each of several chats hears about its own.
     /// </summary>
-    public async Task<(long Cursor, List<WorkbenchReviewThread> Threads)> Wait(string agentName, long since, TimeSpan timeout, CancellationToken cancellationToken)
+    public async Task<(long Cursor, List<WorkbenchReviewThread> Threads)> Wait(string agentName, long since, TimeSpan timeout, CancellationToken cancellationToken, IReadOnlySet<string>? onPages = null)
     {
         await Touch(agentName, null, cancellationToken);
 
@@ -60,7 +63,7 @@ public sealed partial class WorkbenchReviewAgent
         while (true)
         {
             var signal = Volatile.Read(ref changed).Task;
-            var fresh = (await GetThreads(cancellationToken)).Where(t => t.Sequence > since && t.Status is not WorkbenchReviewStatus.Done).ToList();
+            var fresh = (await GetThreads(cancellationToken)).Where(t => t.Sequence > since && t.Status is not WorkbenchReviewStatus.Done && (onPages is null || onPages.Contains(t.PageKey))).ToList();
 
             if (fresh.Count > 0)
                 return (fresh.Max(t => t.Sequence), fresh);

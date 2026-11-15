@@ -42,10 +42,9 @@
     <meta charset="utf-8" />
 
     @* First after base and charset on purpose: the CSP has to be in force before anything else in the document runs. *@
-    @*#if (appInsights == true)*@
-    @* And App Insights has to be watching before blazor.web.js, so a crash while the app boots still gets reported. *@
-    @*#endif*@
     <AppHeadCoordinator @rendermode="null" InHead />
+    @* And Belemetry has to be watching before blazor.web.js, so a crash while the app boots still gets reported. *@
+    <Bit.Belemetry.BelemetryScript />
     @* [mirror] The PWA status bar / browser chrome color: BitThemeHead writes it for the theme painted first, and bit-theme-color-meta keeps it on the live --bit-clr-bg-pri. *@
     @* Keep in sync with: src/Client/Boilerplate.Client.Web/wwwroot/index.html, src/Client/Boilerplate.Client.Maui/wwwroot/index.html, src/Client/Boilerplate.Client.Web/wwwroot/manifest.json *@
     <BitThemeHead PersistedPreference="@themePreference" Options="@themeOptions" ThemeColors="@BitExtraThemeSurfaces.BackgroundPrimary" />
@@ -96,6 +95,9 @@
     <Link rel="stylesheet" Href="_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.css" />
     <Link rel="stylesheet" Href="_content/Bit.BlazorUI.Assets/styles/bit.blazorui.assets.css" />
     <Link rel="stylesheet" Href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.extras.css" />
+    @*#if (signalR == true)*@
+    <Link rel="stylesheet" Href="_content/Bit.BlazorUI.AI/styles/bit.blazorui.ai.css" />
+    @*#endif*@
     @*#if (theme == "Cupertino")*@
     <Link rel="stylesheet" Href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.cupertino.css" />
     @*#endif*@
@@ -141,6 +143,9 @@
         <Script Src="_content/Bit.BlazorUI/scripts/bit.blazorui.js"></Script>
         <Script Src="_content/Boilerplate.Client.Core/scripts/app.js"></Script>
         <Script Src="_content/Bit.BlazorUI.Extras/scripts/bit.blazorui.extras.js"></Script>
+        @*#if (signalR == true)*@
+        <Script Src="_content/Bit.BlazorUI.AI/scripts/bit.blazorui.ai.js"></Script>
+        @*#endif*@
     }
 </body>
 

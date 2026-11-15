@@ -151,16 +151,10 @@ In [`src/Shared/appsettings.json`](/src/Shared/appsettings.json), you can see lo
             "Microsoft.EntityFrameworkCore.Database.Command": "Information",
             "Microsoft.AspNetCore.Diagnostics.ExceptionHandlerMiddleware": "None"
         },
-        "ApplicationInsights": {
-            "LogLevel": {
-                "Default": "Warning",
-                "Microsoft.Hosting.Lifetime": "Information"
-            }
-        },
         "Sentry": {
-            "Dsn": "",
-            "SendDefaultPii": true,
-            "EnableScopeSync": true,
+            "Dsn": ""
+        },
+        "Belemetry": {
             "LogLevel": {
                 "Default": "Warning",
                 "Microsoft.Hosting.Lifetime": "Information"
@@ -219,13 +213,18 @@ In [`src/Server/Boilerplate.Server.Api/appsettings.json`](/src/Server/Boilerplat
     },
     "AI": {
         "ChatOptions": {
-            "Temperature": 0,
-            "MaxOutputTokens": 2000
+            "Temperature": null,
+            "MaxOutputTokens": 2000,
+            "Reasoning": {
+                "Effort": "None",
+                "Output": "None"
+            }
         },
         "OpenAI": {
-            "ChatModel": "gpt-4.1-mini",
+            "ChatModel": "gpt-6-luna",
             "ChatApiKey": null,
-            "ChatEndpoint": "https://models.inference.ai.azure.com"
+            "ChatEndpoint": "https://api.openai.com/v1",
+            "ChatUseResponsesApi": true
         }
     },
     "Identity": {

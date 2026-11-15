@@ -71,6 +71,22 @@ const cases = [
     { id: 'pdf417compact-bytes', format: 'Pdf417', bcid: 'pdf417compact', options: 'columns=4 binarytext', data: bytes([0, 7, 64, 128, 200, 255, 13, 10, 31, 99]), expectedBytes: [0, 7, 64, 128, 200, 255, 13, 10, 31, 99] },
     { id: 'pdf417compact-one-column', format: 'Pdf417', bcid: 'pdf417compact', options: 'columns=1', data: 'ONE', expected: 'ONE' },
 
+    // MicroPDF417 (ISO/IEC 24728): every column count, short and tall variants, every compaction mode and an ECI. No
+    // start or stop pattern: each row is told by its row address patterns, ten modules each, left, right and - three
+    // and four columns wide - in the centre.
+    { id: 'micropdf417-1col', format: 'MicroPdf417', bcid: 'micropdf417', options: 'columns=1', data: 'MICRO', expected: 'MICRO' },
+    { id: 'micropdf417-1col-tall', format: 'MicroPdf417', bcid: 'micropdf417', options: 'columns=1 rows=28', data: 'One column, 28 rows', expected: 'One column, 28 rows' },
+    { id: 'micropdf417-2col', format: 'MicroPdf417', bcid: 'micropdf417', options: 'columns=2', data: 'MicroPDF417, two', expected: 'MicroPDF417, two' },
+    { id: 'micropdf417-2col-numeric', format: 'MicroPdf417', bcid: 'micropdf417', options: 'columns=2', data: '12345678901234567890123456789012', expected: '12345678901234567890123456789012' },
+    { id: 'micropdf417-3col', format: 'MicroPdf417', bcid: 'micropdf417', options: 'columns=3', data: 'Three columns: a centre RAP between the first and the second.', expected: 'Three columns: a centre RAP between the first and the second.' },
+    { id: 'micropdf417-3col-short', format: 'MicroPdf417', bcid: 'micropdf417', options: 'columns=3 rows=6', data: 'SHORT', expected: 'SHORT' },
+    { id: 'micropdf417-4col', format: 'MicroPdf417', bcid: 'micropdf417', options: 'columns=4', data: 'Four columns, bit platform BbScanner 0123456789', expected: 'Four columns, bit platform BbScanner 0123456789' },
+    { id: 'micropdf417-4col-short', format: 'MicroPdf417', bcid: 'micropdf417', options: 'columns=4 rows=4', data: 'TINY', expected: 'TINY' },
+    { id: 'micropdf417-4col-largest', format: 'MicroPdf417', bcid: 'micropdf417', options: 'columns=4 rows=44', data: 'The largest MicroPDF417 symbol, four columns by forty four rows. '.repeat(3), expected: 'The largest MicroPDF417 symbol, four columns by forty four rows. '.repeat(3) },
+    { id: 'micropdf417-bytes', format: 'MicroPdf417', bcid: 'micropdf417', options: 'columns=2 binarytext', data: bytes([0, 1, 2, 128, 200, 255, 13, 10, 31, 99, 77]), expectedBytes: [0, 1, 2, 128, 200, 255, 13, 10, 31, 99, 77] },
+    { id: 'micropdf417-utf8', format: 'MicroPdf417', bcid: 'micropdf417', options: 'columns=3', data: 'Grüße aus Köln – ☃', expected: 'Grüße aus Köln – ☃' },
+    { id: 'micropdf417-eci', format: 'MicroPdf417', bcid: 'micropdf417', options: 'columns=3 parsefnc', data: '^ECI000026Ελληνικά', expected: 'Ελληνικά', eci: 26 },
+
     // QR Code: versions with and without version information, every error correction level and every mode.
     { id: 'qr-v1-numeric', format: 'QrCode', bcid: 'qrcode', options: 'eclevel=L version=1', data: '01234567890123456789', expected: '01234567890123456789' },
     { id: 'qr-v2-alphanumeric', format: 'QrCode', bcid: 'qrcode', options: 'eclevel=M version=2', data: 'HTTPS://BITPLATFORM.DEV/BBSCANNER', expected: 'HTTPS://BITPLATFORM.DEV/BBSCANNER' },

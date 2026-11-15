@@ -10,7 +10,7 @@ namespace Boilerplate.Workbench.Components.Pages.Showcases.Theme.Sections;
 public partial class ExtrasSection
 {
     /// <summary>The questions the Several selected sample of the accordion list opens together.</summary>
-    private static readonly string[] multipleKeys = ["delivery", "returns"];
+    private static readonly string[] multipleKeys = ["returns", "payment"];
 
     /// <summary>The orders of the grid's loading and empty samples.</summary>
     private static readonly ExtrasOrder[] noOrders = [];
@@ -46,6 +46,10 @@ public partial class ExtrasSection
 
     // Each accordion list sample gets lists of its own, so expanding one never opens another.
     private List<BitAccordionListItem>[] faqLists = [];
+    private List<BitAvatarGroupItem> team = [];
+    private List<BitAvatarGroupItem> customers = [];
+    private List<BitMenuButtonItem> orderMenuItems = [];
+    private BitContextMenu<BitMenuButtonItem>? orderMenu;
     private BitChartData revenueData = new();
     private BitChartData visitorsData = new();
     private BitChartData paymentsData = new();
@@ -62,10 +66,14 @@ public partial class ExtrasSection
     private string markdownDraft = string.Empty;
     private string markdownDocument = string.Empty;
     private string richText = string.Empty;
+    private BitResourceTimelineConfig[] schedules = [];
+    private BitResourceTimelineOptions timelineOptions = new();
+    private BitResourceTimelineTexts timelineTexts = new();
     private BitErrorBoundary? failedBoundary;
     private bool isPhone;
     // The calendar view the user picked; until then the default for the screen.
     private BitFullCalendarView? pickedView;
+
 
     // Texts the samples share.
     private string SaveText => AppLocalizer[nameof(AppStrings.Save)];
@@ -73,6 +81,10 @@ public partial class ExtrasSection
     private string CancelText => AppLocalizer[nameof(AppStrings.Cancel)];
 
     private string OkText => AppLocalizer[nameof(AppStrings.Ok)];
+
+    private string DeleteText => AppLocalizer[nameof(AppStrings.Delete)];
+
+    private string NotificationsText => Localizer[nameof(WorkbenchStrings.ThemeNotifications)];
 
     private string SearchText => Localizer[nameof(WorkbenchStrings.ThemeSearch)];
 
@@ -100,6 +112,8 @@ public partial class ExtrasSection
 
     private string ReportTitle => Localizer[nameof(WorkbenchStrings.ThemeExtrasTodaySSales)];
 
+    private string ScheduleLabel => Localizer[nameof(WorkbenchStrings.ShiftsHeading)];
+
     /// <summary>A day on phones, where a week doesn't fit, a week elsewhere; used until the user picks a view.</summary>
     private BitFullCalendarView CalendarView => pickedView ?? (isPhone ? BitFullCalendarView.Day : BitFullCalendarView.Week);
 
@@ -109,10 +123,42 @@ public partial class ExtrasSection
         openNavItems = CreateNavItems();
         railNavItems = CreateNavItems();
 
+        team = [.. ExtrasSamples.Staff.Select((member, index) => new BitAvatarGroupItem
+        {
+            Key = member.NameKey,
+            Text = Localizer[member.NameKey],
+            ImageUrl = WorkbenchPhotos.Find(member.NameKey),
+            Presence = index switch { 0 => BitPersonaPresence.Online, 1 => BitPersonaPresence.Away, _ => BitPersonaPresence.None }
+        })];
+
+        customers = [.. ExtrasSamples.Orders.Select(order => new BitAvatarGroupItem { Key = order.Number, Text = order.Customer })];
+
+        orderMenuItems =
+        [
+            new() { Key = "edit", Text = AppLocalizer[nameof(AppStrings.Edit)], IconName = BitIconName.Edit },
+            new() { Key = "copy", Text = AppLocalizer[nameof(AppStrings.Copy)], IconName = BitIconName.Copy },
+            new() { Key = "separator", IsSeparator = true },
+            new() { Key = "delete", Text = DeleteText, IconName = BitIconName.Delete }
+        ];
+
         CreateCharts();
 
         calendarEvents = CreateCalendarEvents();
         calendarTexts = CreateCalendarTexts();
+
+        schedules = [.. Enumerable.Range(0, 3).Select(_ => CreateSchedule())];
+
+        // The axis is drawn in UTC, the samples' zone, and in the page's language rather than the browser's.
+        timelineOptions = new()
+        {
+            TimeZone = "UTC",
+            Locale = CultureInfo.CurrentCulture.Name,
+            ResourceHeight = 32,
+            WorkingHoursStart = 7 * 60,
+            WorkingHoursEnd = 19 * 60
+        };
+
+        timelineTexts = new() { Loading = Localizer[nameof(WorkbenchStrings.ThemeExtrasLoadingTheSchedule)] };
 
         mapMarkers = [.. ExtrasSamples.Stores.Select(store => new BitMapMarker
         {
@@ -412,6 +458,71 @@ public partial class ExtrasSection
         }
 
         return texts;
+    }
+
+    /// <summary>
+    /// A week of the three stores' shifts from the samples' Monday, each store a group of its staff; Utrecht starts
+    /// collapsed, so the open and the closed group both show.
+    /// </summary>
+    private BitResourceTimelineConfig CreateSchedule()
+    {
+        var monday = new DateTimeOffset(ThemeSamples.Today.Date, TimeSpan.Zero);
+
+        List<BitResourceTimelineResource> resources = [];
+        List<BitResourceTimelineAllocation> shifts = [];
+
+        foreach (var store in ExtrasSamples.Staff.Select(member => member.StoreKey).Distinct())
+        {
+            resources.Add(new() { Id = store, Name = Localizer[store], Collapsed = store == nameof(WorkbenchStrings.PosStoreUtrecht) });
+
+            foreach (var (nameKey, _, week) in ExtrasSamples.Staff.Where(member => member.StoreKey == store))
+            {
+                resources.Add(new() { Id = nameKey, Name = Localizer[nameKey], ParentId = store });
+
+                for (var day = 0; day < week.Length; day++)
+                {
+                    if (week[day] is '-')
+                        continue;
+
+                    var (start, end, shiftKey) = ExtrasSamples.Shift(week[day]);
+
+                    shifts.Add(new()
+                    {
+                        Id = FormattableString.Invariant($"{nameKey}-{day}"),
+                        ResourceId = nameKey,
+                        StartTime = monday.AddDays(day).AddHours(start),
+                        EndTime = monday.AddDays(day).AddHours(end),
+                        TextAbove = Localizer[shiftKey]
+                    });
+                }
+            }
+        }
+
+        return new() { Resources = resources, StartDate = monday, EndDate = monday.AddDays(7), Allocations = shifts };
+    }
+
+    /// <summary>The shifts of the loading sample, which never arrive, so the timeline keeps showing its loading state.</summary>
+    private async Task<IReadOnlyList<BitResourceTimelineAllocation>> LoadShiftsForever(BitResourceTimelineWindow window)
+    {
+        try
+        {
+            await Task.Delay(Timeout.Infinite, CurrentCancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            // The section went away.
+        }
+
+        return [];
+    }
+
+    private Task OpenOrderMenu(BitLongPressEventArgs args) => orderMenu?.OpenAt(args.ClientX, args.ClientY) ?? Task.CompletedTask;
+
+    private void ShowSnackBars()
+    {
+        SnackBarService.Success(Localizer[nameof(WorkbenchStrings.ThemeSuccess)], Localizer[nameof(WorkbenchStrings.ThemeMessage), BitColor.Success]);
+        SnackBarService.Warning(Localizer[nameof(WorkbenchStrings.ThemeWarning)], Localizer[nameof(WorkbenchStrings.ThemeMessage), BitColor.Warning]);
+        SnackBarService.Error(Localizer[nameof(WorkbenchStrings.ThemeError)], Localizer[nameof(WorkbenchStrings.ThemeMessage), BitColor.Error]);
     }
 
     private void OnPhoneChanged(bool phone) => isPhone = phone;

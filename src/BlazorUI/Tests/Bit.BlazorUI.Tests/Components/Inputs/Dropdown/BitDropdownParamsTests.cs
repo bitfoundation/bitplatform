@@ -204,6 +204,7 @@ public class BitDropdownParamsTests : BunitTestContext
             SelectedItemsTextFormat = "{0} gewählt",
             SelectTextOnFocus = true,
             ShowSelectAll = true,
+            ShowValidationMessage = true,
             StickyHeaders = true,
             ThrottleTime = 50,
             TokenSeparators = separators,
@@ -287,6 +288,7 @@ public class BitDropdownParamsTests : BunitTestContext
         Assert.AreEqual("{0} gewählt", instance.SelectedItemsTextFormat);
         Assert.IsTrue(instance.SelectTextOnFocus);
         Assert.IsTrue(instance.ShowSelectAll);
+        Assert.IsTrue(instance.ShowValidationMessage);
         Assert.IsTrue(instance.StickyHeaders);
         Assert.AreEqual(50, instance.ThrottleTime);
         Assert.AreSame(separators, instance.TokenSeparators);

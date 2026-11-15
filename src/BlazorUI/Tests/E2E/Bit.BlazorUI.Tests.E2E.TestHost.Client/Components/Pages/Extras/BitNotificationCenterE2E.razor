@@ -1,0 +1,17 @@
+﻿@page "/e2e/notification-center"
+@inject BitSnackBarService SnackBarService
+
+<PageTitle>BitNotificationCenter E2E</PageTitle>
+
+<h1>BitNotificationCenter</h1>
+
+@* The page's own snack bar is what the service shows through, and what the center lists the history of. *@
+<BitSnackBar ServiceHost ShowIcon Position="BitPosition.BottomStart" />
+
+<E2ESection Id="basic" Title="Basic">
+    <BitNotificationCenter Id="ntc" />
+    <button id="btn-info" @onclick="@(() => SnackBarService.Info("New comment", "Sara replied to your review."))">Info</button>
+    <button id="btn-error" @onclick="@(() => SnackBarService.Error("Upload failed", "The server did not answer."))">Error</button>
+</E2ESection>
+
+<E2EStatus />

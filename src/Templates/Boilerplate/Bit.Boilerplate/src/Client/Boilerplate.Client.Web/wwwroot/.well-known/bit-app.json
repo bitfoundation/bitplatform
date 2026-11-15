@@ -1,0 +1,5 @@
+{
+    "server": "https://use-your-api-server-url-here.com/",
+    "front_end": "static",
+    "manifest": "/manifest.json"
+}

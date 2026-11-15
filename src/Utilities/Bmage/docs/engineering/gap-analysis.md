@@ -248,3 +248,101 @@ the first measurement showed them several times a reference adjustment's cost, w
   inside each dab's core.
 - **Not done:** real Safari and iOS, for want of a Mac or a device; the interpreter cost of the warp sampler, which
   straightening shares with rotation and which predates this work.
+
+## 12. The third round: a platform-wide roadmap, triaged against the code
+
+The third round started from a broad roadmap for image processing on the bit platform: an engine, a pipeline, an editor,
+a family of components, codecs, privacy, performance, and integrations with the other utilities. Most of it describes
+what sections 1 to 11 had already built, so the first task was to classify every requirement against the source rather
+than reimplement it. The classes are **Implemented** (complete for the requirement), **Incomplete** (exists, with a named
+gap), **Missing**, **Needs refactoring** and **Not applicable** (does not fit the architecture or the product), each with
+the decision taken. Baseline: `Bit.Bmage.Tests` 1307 / 1307 on net10.0, `Bit.Bmage.Tests.Mcp` 231 / 234, the three
+failures being the tests' expectation of the README's old title, which a pending change to the README had renamed.
+
+### Engine, pipeline and codecs
+
+| Requirement | Class | Decision |
+| --- | --- | --- |
+| Image model with explicit ownership, pooling, disposal | Implemented | `ImageBuffer`, `IPixelAllocator`, budgets |
+| Pixel formats beyond RGBA32 (BGRA, RGB24, grey, high bit depth) as image types | Not applicable | One working format keeps every operation, proxy and parallel path exact; decoders convert on the way in (AVIF 10/12-bit, 16-bit PNG), integrations convert at the edge (BbScanner reads RGBA directly) |
+| Colour profiles | Incomplete | Read and preserved, pixels treated as sRGB (deferred in section 5, unchanged) |
+| Loading from files, streams, bytes, URLs, data URLs, clipboard, camera; sniffing; limits; cancellation | Implemented | - |
+| JPEG, PNG, WebP, GIF, BMP, AVIF decode | Implemented | - |
+| GIF encode | Missing | **Built**: `GifEncoder`, median cut palette, dithering, one transparent index |
+| ICO | Missing | **Built**: `IcoDecoder` (PNG and 1/4/8/24/32-bit bitmap entries with masks), `IcoEncoder`, `CreateFavicon` |
+| Indexed (palette) PNG | Missing | **Built**: `ImageExportOptions.MaxColors` and `Dither`, 1/2/4/8-bit packing, exact for few-colour images |
+| TIFF, HEIF/HEIC decode | Missing | Deferred: HEIF needs an HEVC decoder (patent-encumbered, large); TIFF's variety (compressions, planar, tiles, CMYK) is a codec project of its own; both reach Bmage through the browser decoder where the platform has one (Safari) |
+| SVG | Not applicable | Refused by design (section 5) |
+| Animated WebP/GIF/APNG editing | Not applicable | First frame, documented (section 5) |
+| Progressive JPEG export | Missing | Deferred: baseline JPEG is what every decoder reads; the gain is perceived loading on slow links, which WebP and AVIF serve better |
+| Codec capability declaration | Implemented | `ImageCapabilities`, probed |
+| Fluent processing API, geometry, resampling, colour, compositing, blend modes | Implemented | - |
+| Radial (zoom, spin) blur | Missing | **Built**: `RadialBlurFilter` |
+| Colour lookup tables | Missing | **Built**: `ColorLookupTable` (`.cube` read and write, tetrahedral interpolation), `ColorLutAdjustment` |
+| Halftone, glow, bloom, layer effects | Missing | Deferred as in section 5: expressible with masks, blur and blend modes; no use case asked for them over the ones built |
+| Batch processing with concurrency, budgets, partial failures | Implemented | - |
+| Presets and serialisation | Implemented | JSON for every operation, including the new ones (the LUT as base64 floats, checked before decoding) |
+
+### Analysis, documents and privacy
+
+| Requirement | Class | Decision |
+| --- | --- | --- |
+| Histograms, dominant colours, transparency, brightness and contrast statistics | Implemented | `ImageStatistics` |
+| Blur detection, quality metrics | Missing | **Built**: `ImageSharpness` (variance of the Laplacian at a fixed analysis size) |
+| Orientation detection, deskew | Missing | **Built**: `DocumentSkew` (projection profiles, windowed so image borders do not vote for level) |
+| Thresholding for scans and codes | Incomplete (global only) | **Built**: `AdaptiveThresholdFilter` (Sauvola and mean, sliding sums, cost independent of the radius) |
+| Smart cropping | Implemented | Saliency based; face detection not applicable without a model |
+| Background removal providers, AI restoration, upscaling | Not applicable | No model bundled (section 5); the `BitmapMask` extension point stays the seam |
+| Metadata policies, GPS stripped by default | Implemented | - |
+| IPTC read and edit | Missing | Deferred: XMP carries the same fields in every format Bmage writes and is preserved |
+| Security: signatures, decompression bombs, limits, safe malformed metadata | Implemented | The ICO directory is checked entry by entry against the file before any read |
+
+### Editor and components
+
+| Requirement | Class | Decision |
+| --- | --- | --- |
+| Workspace, tools, text, history, compare, layers, projects | Implemented | Sections 5 to 11 |
+| Hide tools, restrict panels | Missing | **Built**: `BmageEditor.Tools` (in toolbar order) and `Panels` (`EditorPanels` flags) |
+| Cropper | Incomplete (only the full editor) | **Built** as the editor reduced: `Tools`, `Panels.None` and `BeginCrop(aspect)`, which places the largest frame and can be applied from the keyboard; a separate component would duplicate the canvas, gestures and history for no gain in payload, since Blazor loads the assembly either way |
+| Viewer, gallery, comparison slider, upload, batch editor components | Not applicable as separate components | The editor's compare and zoom, `BmageDropZone` and the batch API cover them; each would be a thin, opinionated layout better written by the app |
+| Clone stamp, healing | Missing | Deferred as in section 5 |
+| New filters in the editor | Missing | **Built**: a Document look (adaptive threshold sized to the page) and a zoom blur slider in the Filters tab |
+| Accessibility | Implemented | New controls use the existing labelled slider and toggle patterns; the cropper is driven from the keyboard through `BeginCrop` |
+
+### Integrations
+
+| Requirement | Class | Decision |
+| --- | --- | --- |
+| BbScanner preprocessing | Missing | **Built**: `Bit.Bmage.BbScanner`, decoding Bmage pixels with no copy and retrying a photo sharpened, then enlarged. A measurement over softened, small and unevenly lit QR and Code 128 symbols kept only these two: adaptive thresholding rescued nothing (BbScanner binarises locally already) and enlarging with sharpening read nothing either alone did not |
+| Bink annotation round trip | Missing | **Built**: `Bit.Bmage.Bink`, an image as a locked Bink layer, the drawing back as pixels, as a flattened image or as a Bmage `ImageLayer` |
+| Borm image field | Not applicable as a package | Borm's renderer registry hosts a `BmageEditor` configured as a cropper; documented in `docs/integrations.md` |
+| Blex, BlazeDb, Bsqlite, Bcrdt, Bdnd, Bortable, Bmotion | Not applicable as packages | Bmage already exposes plain data (JSON documents, `.bmage` projects, layer order) these store, sync or move; a package per pair would add surface without behaviour |
+| Butil browser infrastructure | Not applicable | Bmage's browser bridge is image specific (worker codecs, bitmaps); nothing in it duplicates a Butil abstraction an app would share |
+
+### What the round found and fixed
+
+- **The skew estimate preferred level for anything with borders.** The first version projected every ink point; the
+  edges of the image project to a sharp step only at 0 and 90 degrees, so a photo with ink to its borders scored
+  highest level. Points are now weighted by an ellipse with a soft rim, and spread over their pixel by a fixed hash so
+  the pixel grid does not line up with some angles and not others; the estimate went from within 0.15 to exact on the
+  test pages.
+- **The sharpness guidance was not calibrated.** A first draft quoted thresholds (100, 300); crisp black text scores in
+  the thousands and blur at 3 pixels still scores 177, so the guide now says to set a threshold from the app's own
+  examples and the tests assert ratios, not absolutes.
+- **The browser encoder would have dropped `MaxColors`.** In WebAssembly PNG goes to the canvas, which has no indexed
+  PNG; the browser encoder now hands an indexed PNG to the managed one, as it already did lossless WebP.
+- **The radial blurs were 10 to 15 times too slow.** Measured, a sample for every pixel of every streak took 3 to 6
+  seconds at 1920×1080. Passes that each average four samples, their spacing growing fourfold, give the same evenly
+  spaced streak in log4 of its length; the bilinear samples of each pass soften slightly across the streak, which a
+  test on hard-edged rings bounds.
+- **The cropper had no starting frame.** With the crop tool selected and nothing drawn, Apply crop did nothing and a
+  keyboard user had no way to crop; `BeginCrop` places one.
+
+Verified independently: Pillow 12.3 decodes the GIF, indexed PNG and ICO output exactly to the pixels the quantizer
+chose, across 1×1 to 640×480 and 2 to 256 colours, LZW table resets included.
+
+Known and not fixed: BbScanner's static web assets can fail to build incrementally ("an item with the same key has
+already been added", or the compressed file "being used by another process") when builds with and without an explicit
+`-c Debug` alternate in one checkout, or while a demo started from that output still runs. BbScanner's own demo does the
+same; a clean build, or `obj` of `Bit.BbScanner` removed, recovers. The Bmage demo now references BbScanner through
+`Bit.Bmage.BbScanner` and so meets it locally; CI builds once and does not.

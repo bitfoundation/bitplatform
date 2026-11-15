@@ -106,6 +106,26 @@ public static partial class Program
                 await next.Invoke();
             });
 
+            // Where this app's server is, for a monitor given only the app's address. Ahead of the static files, which
+            // would serve the copy in Client.Web's wwwroot/.well-known that a statically hosted front end answers with.
+            app.Use(async (context, next) =>
+            {
+                if (context.Request.Path.Equals("/.well-known/bit-app.json", StringComparison.OrdinalIgnoreCase) is false)
+                {
+                    await next.Invoke();
+                    return;
+                }
+
+                var origin = new Uri($"{context.Request.Scheme}://{context.Request.Host}{context.Request.PathBase}/");
+
+                await context.Response.WriteAsJsonAsync(new
+                {
+                    server = new Uri(origin, configuration.GetServerAddress()).ToString(),
+                    front_end = "server",
+                    manifest = "/manifest.json"
+                }, System.Text.Json.JsonSerializerOptions.Web, context.RequestAborted);
+            });
+
             app.UsePrecompressedStaticFiles();
 
             app.UseStaticFiles();
@@ -156,6 +176,8 @@ public static partial class Program
             //#endif
 
             app.UseCultureUrlRedirection();
+
+            app.UseNoIndexHeader();
 
             app.UseOutputCache();
 

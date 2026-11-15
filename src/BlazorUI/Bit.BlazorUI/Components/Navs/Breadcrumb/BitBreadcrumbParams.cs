@@ -10,7 +10,7 @@ namespace Bit.BlazorUI;
 /// whatever each of them holds. What is left on the breadcrumb itself is what depends on the item type (Items,
 /// ItemTemplate, OverflowTemplate, NameSelectors and OnItemClick) and the options it renders (ChildContent/Options).
 /// </remarks>
-public class BitBreadcrumbParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitBreadcrumbParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitBreadcrumb{TItem}"/> cascading parameters within <see cref="BitParams"/>.
@@ -134,6 +134,12 @@ public class BitBreadcrumbParams : BitComponentBaseParams, IBitComponentParams
     /// Optional index where overflow items will be collapsed.
     /// </summary>
     public uint? OverflowIndex { get; set; }
+
+    /// <summary>
+    /// Shows the overflow menu as a sheet that slides up from the bottom edge of the screen on small screens,
+    /// instead of the callout under the overflow button.
+    /// </summary>
+    public bool? Responsive { get; set; }
 
     /// <summary>
     /// Lets a long breadcrumb trail scroll sideways inside its container instead of overflowing it.
@@ -281,6 +287,11 @@ public class BitBreadcrumbParams : BitComponentBaseParams, IBitComponentParams
         if (OverflowIndex.HasValue)
         {
             bitBreadcrumb.TakeFromCascade(nameof(OverflowIndex), OverflowIndex.Value, static b => b.OverflowIndex, static (b, v) => b.OverflowIndex = v);
+        }
+
+        if (Responsive.HasValue)
+        {
+            bitBreadcrumb.TakeFromCascade(nameof(Responsive), Responsive.Value, static b => b.Responsive, static (b, v) => b.Responsive = v);
         }
 
         if (Scrollable.HasValue)

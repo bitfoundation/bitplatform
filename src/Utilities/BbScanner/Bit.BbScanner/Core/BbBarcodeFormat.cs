@@ -85,18 +85,24 @@ public enum BbBarcodeFormat
     /// </summary>
     MicroQrCode = 1 << 17,
 
+    /// <summary>
+    /// MicroPDF417 (ISO/IEC 24728): PDF417's narrow sibling, one to four columns and no start or stop pattern, on
+    /// small items, healthcare labels and electronic components.
+    /// </summary>
+    MicroPdf417 = 1 << 18,
+
     /// <summary>All linear (one dimensional, 1D) symbologies.</summary>
     AllLinear = Code128 | Code39 | Ean13 | Ean8 | UpcA | UpcE | Itf | Codabar | Code93 | DataBar | DataBarLimited | DataBarExpanded,
 
     /// <summary>All matrix (two dimensional, 2D) symbologies.</summary>
-    AllMatrix = QrCode | DataMatrix | Pdf417 | Aztec | MaxiCode | MicroQrCode,
+    AllMatrix = QrCode | DataMatrix | Pdf417 | Aztec | MaxiCode | MicroQrCode | MicroPdf417,
 
     /// <summary>Every supported symbology.</summary>
     All = AllLinear | AllMatrix,
 
     /// <summary>
     /// The symbologies on most products, tickets and labels - QR Code, Data Matrix, Code 128, Code 39, EAN, UPC and
-    /// ITF - and what a scanner looks for unless told otherwise. PDF417, Aztec, MaxiCode, Micro QR, Codabar, Code 93
+    /// ITF - and what a scanner looks for unless told otherwise. PDF417, MicroPDF417, Aztec, MaxiCode, Micro QR, Codabar, Code 93
     /// and the GS1 DataBar family are asked for by name: each costs every frame time of its own, and Codabar, which has
     /// no check character, is a source of misreads wherever it is not expected.
     /// </summary>

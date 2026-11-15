@@ -529,10 +529,10 @@ public class CollaborationConvergenceTests
     }
 
     [TestMethod]
-    public async Task Concurrent_reorders_do_not_converge()
+    public async Task Concurrent_reorders_converge()
     {
-        // Documents a limit, not a guarantee: z-order is index-based, so two concurrent reorders can leave the
-        // replicas in different orders. If ordering is ever made convergent, invert this test and the README.
+        // This documented a limit while z-order was index-based: two concurrent reorders left the replicas in
+        // different orders. Order keys and move clocks make them agree; see OrderConvergenceTests.
         var alex = new BinkDocument();
         BinkStroke[] strokes = [Stroke(0), Stroke(1), Stroke(2)];
         foreach (BinkStroke stroke in strokes) alex.AddElement(stroke);
@@ -547,6 +547,6 @@ public class CollaborationConvergenceTests
         await ts.DeliverAsync(Assert.ContainsSingle(ta.Sent));
         await ta.DeliverAsync(Assert.ContainsSingle(ts.Sent));
 
-        CollectionAssert.AreNotEqual(Ids(alex), Ids(sam));
+        CollectionAssert.AreEqual(Ids(alex), Ids(sam));
     }
 }

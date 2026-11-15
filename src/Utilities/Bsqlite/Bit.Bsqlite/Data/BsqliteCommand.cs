@@ -108,7 +108,8 @@ public sealed class BsqliteCommand : DbCommand
     {
         var result = await ExecuteCoreAsync(BsqliteResultKind.Scalar, rowLimit: 1, cancellationToken)
             .ConfigureAwait(false);
-        return result.Rows.Count > 0 && result.Rows[0].Length > 0 ? result.Rows[0][0] : null;
+        // As Microsoft.Data.Sqlite: null when there is no row, DBNull.Value when the cell is NULL.
+        return result.Rows.Count > 0 && result.Rows[0].Length > 0 ? result.Rows[0][0] ?? DBNull.Value : null;
     }
 
     protected override async Task<DbDataReader> ExecuteDbDataReaderAsync(

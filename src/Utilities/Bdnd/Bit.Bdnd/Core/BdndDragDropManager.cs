@@ -66,9 +66,7 @@ public sealed class BdndDragDropManager : IBdndMonitor
             ArgumentNullException.ThrowIfNull(value);
             if (ReferenceEquals(value, _announcements)) return;
             _announcements = value;
-            var instructionsId = InstructionsIdOf(value.Instructions);
-            if (instructionsId == InstructionsId) return;
-            InstructionsId = instructionsId;
+            if (UpdateInstructions() is false) return;
             // the sources render the id into aria-describedby
             NotifyStateChanged();
         }
@@ -97,11 +95,61 @@ public sealed class BdndDragDropManager : IBdndMonitor
     private bool _allowKeyboard = true;
 
     /// <summary>
-    /// The id of the (hidden) element holding <see cref="BdndAnnouncements.Instructions"/>, which keyboard-draggable
-    /// sources reference through <c>aria-describedby</c>. Derived from the text, so providers with the same
-    /// instructions share one element.
+    /// The keys that pick up, move, drop and cancel keyboard drags of this manager's sources. Defaults to
+    /// <see cref="BdndKeyBindings.Default"/>, the WAI-ARIA keys. A <see cref="BdndProvider"/> given
+    /// <see cref="BdndProvider.KeyBindings"/> sets it.
     /// </summary>
-    internal string InstructionsId { get; private set; } = InstructionsIdOf(BdndAnnouncements.Default.Instructions);
+    /// <exception cref="ArgumentException">A command lists no key it needs, or a key is bound to two commands.</exception>
+    public BdndKeyBindings KeyBindings
+    {
+        get => _keyBindings;
+        set
+        {
+            ArgumentNullException.ThrowIfNull(value);
+            if (ReferenceEquals(value, _keyBindings)) return;
+            var map = value.ToModuleMap(); // validates
+            _keyBindings = value;
+            // the same keys again (an instance created on every render of the page): nothing for the sources to do -
+            // and the same instructions, which name them
+            if (BdndKeyBindings.SameMap(map, KeyMap)) return;
+            KeyMap = map;
+            UpdateInstructions();
+            // the sources hand the keys to the module with their registration
+            NotifyStateChanged();
+        }
+    }
+
+    private BdndKeyBindings _keyBindings = BdndKeyBindings.Default;
+
+    /// <summary>The keys of <see cref="KeyBindings"/> by command, as the module reads them; null for the default ones.</summary>
+    internal Dictionary<string, string[]>? KeyMap { get; private set; }
+
+    /// <summary>
+    /// <see cref="BdndAnnouncements.Instructions"/> with the keys of <see cref="KeyBindings"/> filled in: the text
+    /// keyboard-draggable sources are described by.
+    /// </summary>
+    internal string InstructionsText { get; private set; } = DefaultInstructions;
+
+    /// <summary>
+    /// The id of the (hidden) element holding <see cref="InstructionsText"/>, which keyboard-draggable sources
+    /// reference through <c>aria-describedby</c>. Derived from the text, so providers with the same instructions share
+    /// one element.
+    /// </summary>
+    internal string InstructionsId { get; private set; } = DefaultInstructionsId;
+
+    private static readonly string DefaultInstructions = BdndAnnouncements.Default.InstructionsFor(BdndKeyBindings.Default);
+
+    private static readonly string DefaultInstructionsId = InstructionsIdOf(DefaultInstructions);
+
+    // whether the instructions changed
+    private bool UpdateInstructions()
+    {
+        var text = _announcements.InstructionsFor(_keyBindings);
+        if (text == InstructionsText) return false;
+        InstructionsText = text;
+        InstructionsId = InstructionsIdOf(text);
+        return true;
+    }
 
     // FNV-1a: stable across processes (string.GetHashCode is randomized), so a prerendered id matches the
     // interactive one

@@ -22,6 +22,7 @@ section {
 .run {
     gap: 0.75rem;
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
 }
 
@@ -35,9 +36,10 @@ section {
     border-bottom: 1px dashed $bit-color-border-tertiary;
 }
 
+// The text goes under the chips when they leave it too little room.
 .finding-text {
-    flex: 1;
     min-width: 0;
+    flex: 1 1 12rem;
     overflow-wrap: anywhere;
 }
 
@@ -52,6 +54,11 @@ section {
 .example {
     font-size: 12px;
     color: $bit-color-foreground-secondary;
+}
+
+// The count and the rule's help icon stay together at the end of the text.
+.count {
+    white-space: nowrap;
 }
 
 .example {
@@ -76,6 +83,25 @@ section {
         color: $bit-color-warning-text;
         background-color: $bit-color-warning;
     }
+}
+
+// The part of the page a finding was found in, like a tab and a menu opened on it.
+.where {
+    font-size: 11px;
+    padding: 0 8px;
+    max-width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    border-radius: 999px;
+    text-overflow: ellipsis;
+    color: $bit-color-foreground-secondary;
+    border: 1px solid $bit-color-border-secondary;
+}
+
+// The rule's page, a help icon next to the finding's text.
+::deep .help {
+    vertical-align: middle;
+    margin-inline-start: 0.25rem;
 }
 
 .swatch {

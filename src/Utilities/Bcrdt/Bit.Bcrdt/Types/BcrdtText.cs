@@ -22,8 +22,14 @@ namespace Bit.Bcrdt;
 /// All indices and lengths are in UTF-16 code units, matching <see cref="string"/> and browser
 /// selection APIs.
 /// </para>
+/// <para>
+/// <see cref="BcrdtXmlText"/> derives from it to be the same text inside an XML tree. That is the one
+/// reason it is not sealed, and why everything that defines it on the wire - its kind, how an empty copy
+/// is made, how it integrates and what it raises - is sealed here: a class deriving from it elsewhere is
+/// still exactly a text. A type of your own is written against <see cref="BcrdtAbstractType"/> instead.
+/// </para>
 /// </remarks>
-public sealed class BcrdtText : BcrdtAbstractType
+public class BcrdtText : BcrdtAbstractType
 {
     // A detached text records what it is asked to do and replays it on insertion. Each action takes
     // the text to apply itself to, so a detached copy can share the recording; everything an action
@@ -42,7 +48,13 @@ public sealed class BcrdtText : BcrdtAbstractType
     }
 
     /// <inheritdoc/>
-    public override BcrdtTypeKind Kind => BcrdtTypeKind.Text;
+    public sealed override BcrdtTypeKind Kind => TextKind;
+
+    /// <summary>The wire kind: <see cref="BcrdtTypeKind.Text"/>, or <see cref="BcrdtTypeKind.XmlText"/> for a tree's text.</summary>
+    private protected virtual BcrdtTypeKind TextKind => BcrdtTypeKind.Text;
+
+    /// <summary>An empty, detached text of the same kind.</summary>
+    private protected virtual BcrdtText CreateEmpty() => new();
 
     /// <summary>The number of characters, in UTF-16 code units, with each embed counting as one.</summary>
     /// <remarks>
@@ -51,12 +63,15 @@ public sealed class BcrdtText : BcrdtAbstractType
     /// </remarks>
     public int Count => _pending is not null ? _pendingLength : Length;
 
-    protected internal override BcrdtAbstractType CreateInstance() => new BcrdtText();
+    /// <inheritdoc/>
+    protected internal sealed override BcrdtAbstractType CreateInstance() => CreateEmpty();
 
-    protected internal override BcrdtEvent CreateEvent(BcrdtTransaction transaction, HashSet<string?> changedKeys) =>
+    /// <inheritdoc/>
+    protected internal sealed override BcrdtEvent CreateEvent(BcrdtTransaction transaction, HashSet<string?> changedKeys) =>
         new BcrdtTextEvent(this, transaction);
 
-    protected internal override void Integrate(BcrdtDocument doc, BcrdtItem? item)
+    /// <inheritdoc/>
+    protected internal sealed override void Integrate(BcrdtDocument doc, BcrdtItem? item)
     {
         base.Integrate(doc, item);
 
@@ -461,10 +476,11 @@ public sealed class BcrdtText : BcrdtAbstractType
     /// The text is detached and holds a nested type, which cannot be in two places at once. Insert the
     /// text first, then clone it.
     /// </exception>
-    public override BcrdtText Clone()
-    {
-        var clone = new BcrdtText();
+    public override BcrdtText Clone() => CloneInto(CreateEmpty());
 
+    /// <summary>Fills an empty, detached text with a copy of this one's contents.</summary>
+    private protected BcrdtText CloneInto(BcrdtText clone)
+    {
         if (_pending is not null)
         {
             if (_pendingHasNestedTypes)

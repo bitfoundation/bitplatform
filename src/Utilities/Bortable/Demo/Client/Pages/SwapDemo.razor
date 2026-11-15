@@ -16,7 +16,8 @@
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> A single list</h3>
     <p class="bb-card-desc">
         Nothing moves while you drag: the item under the pointer is highlighted with <code>SwapClass</code>, and the two
-        trade places only when you drop.
+        trade places only when you drop. The events of a swap set <code>IsSwap</code> and name the other item in
+        <code>SwappedWith</code>, so a handler can save both moves.
     </p>
 
     <div class="bb-demo">
@@ -43,7 +44,10 @@
 <section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Try it</h3>
     <ul class="bb-detail-list">
-        <li>Drag <em>Item 1</em> onto <em>Item 5</em> and drop: the two trade places, and Items 2 to 4 stay where they were.</li>
+        <li>
+            Drag <em>Item 1</em> onto <em>Item 5</em> and drop: the two trade places, Items 2 to 4 stay where they were,
+            and <strong>Last swap</strong> shows both.
+        </li>
         <li>Drag <em>Item 2</em> on the left onto <em>Item C</em> on the right: Item 2 goes right, Item C comes left.</li>
         <li>Drag an item over another and back over itself before dropping: no item is highlighted, and nothing changes.</li>
         <li>

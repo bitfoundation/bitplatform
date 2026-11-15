@@ -1,6 +1,9 @@
 //+:cnd:noEmit
 using System.Text;
 using Bit.BevTools;
+//#if (offlineDb == true)
+using Bit.Bsqlite.EntityFrameworkCore;
+//#endif
 
 namespace Boilerplate.Client.Core.Components.Layout.Diagnostic;
 
@@ -109,9 +112,16 @@ public partial class AppDiagnosticModal
         //#if (offlineDb == true)
         try
         {
-            await using var dbContext = await dbContextFactory.CreateDbContextAsync(CurrentCancellationToken);
-            await dbContext.Database.EnsureDeletedAsync(CurrentCancellationToken); // Blazor Hybrid stores the db outside webview's storage.
-            await dbContext.Database.MigrateAsync(CurrentCancellationToken);
+            if (dbContextFactory is IBsqliteDbContextFactory<AppOfflineDbContext> bsqliteDbContextFactory)
+            {
+                await bsqliteDbContextFactory.Database.DeleteAsync(CurrentCancellationToken); // Blazor Hybrid stores the db outside webview's storage.
+            }
+            else
+            {
+                await using var dbContext = await dbContextFactory.CreateDbContextAsync(CurrentCancellationToken);
+                await dbContext.Database.EnsureDeletedAsync(CurrentCancellationToken);
+                await dbContext.Database.MigrateAsync(CurrentCancellationToken);
+            }
         }
         catch (Exception exp)
         {
@@ -149,9 +159,9 @@ public partial class AppDiagnosticModal
         await Attempt(nameof(SessionStorage), sessionStorage.Clear);
 
         //#if (signalR == true)
-        // The conversation the AI chat panel keeps on this device (See AppAiChatPanel.RestoreHistory). The panel drops
-        // its connection on delete, which would otherwise block it.
-        await Attempt(nameof(IndexedDb), () => indexedDb.DeleteDatabase(AppAiChatPanel.HistoryDatabase).AsTask());
+        // The conversation the AI chat keeps on this device (See AppAiChat.RestoreHistory). The chat drops its connection
+        // on delete, which would otherwise block it. A const, so naming it loads nothing of the lazily loaded chat.
+        await Attempt(nameof(IndexedDb), () => indexedDb.DeleteDatabase(AiChat.AppAiChat.HistoryDatabase).AsTask());
         //#endif
 
         await Attempt(nameof(Cookie), async () =>

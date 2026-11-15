@@ -63,7 +63,7 @@ private static BitAiConversation CreateHistory()
     private readonly string example4RazorCode = @"
 <div style=""height:400px"">
     <BitAiChat EmptyTitle=""Hi, I am the docs assistant""
-               EmptyBody=""Ask about any component, or start from one of these.""
+               EmptyDescription=""Ask about any component, or start from one of these.""
                Suggestions=""suggestions"" />
 </div>";
     private readonly string example4CsharpCode = @"
@@ -386,13 +386,44 @@ private readonly BitAiChatParams[] chatParams =
     new()
     {
         EmptyTitle = ""Ask the docs"",
-        EmptyBody = ""Both chats take this heading and line from the BitParams around them."",
+        EmptyDescription = ""Both chats take this heading and line from the BitParams around them."",
         Placeholder = ""Ask about a component..."",
         AllowAttachments = false,
     }
 ];";
 
     private readonly string example15RazorCode = @"
+<BitToggle @bind-Value=""keepReadingAloud"" Text=""Keep reading aloud"" />
+
+<div style=""height:460px"">
+    <BitAiChat Session=""readAloudSession""
+               AllowReadAloud
+               KeepReadingAloud=""keepReadingAloud""
+               Synthesizer=""SynthesizeAsync""
+               AllowDictation
+               Transcriber=""DescribeRecordingAsync""
+               Suggestions=""readAloudSuggestions"" />
+</div>";
+    private readonly string example15CsharpCode = @"
+private bool keepReadingAloud;
+private readonly BitAiChatSession readAloudSession = new(AiDemoTransports.Echo());
+private readonly string[] readAloudSuggestions = [""Read this sentence aloud to me, please."", ""Say something short.""];
+
+// The stand-ins for the app's speech services. A real synthesizer sends the text of the reply (Markdown) to the app's text-to-speech
+// and returns the audio it gets back - BitAiSpeechAudio.FromStream / FromBytes with its media type, or FromUrl for audio
+// it stores; a real transcriber sends the recording, with its media type (audio/webm, audio/mp4, ...), to its
+// speech-to-text and returns what it heard.
+private Task<BitAiSpeechAudio?> SynthesizeAsync(BitAiMessage reply, CancellationToken cancellationToken) =>
+    AiDemoSpeech.SynthesizeAsync(reply.GetText(), cancellationToken); // a voiceless tone about as long as the reply
+
+private static async Task<string?> DescribeRecordingAsync(Stream audio, string contentType, CancellationToken cancellationToken)
+{
+    await Task.Delay(600, cancellationToken);
+
+    return $""(a {audio.Length:N0}-byte {contentType} recording, which a real app sends to its speech-to-text)"";
+}";
+
+    private readonly string example16RazorCode = @"
 <style>
     .custom-chat {
         overflow: hidden;
@@ -430,14 +461,14 @@ private readonly BitAiChatParams[] chatParams =
                Style=""--bit-AiChat-background:var(--bit-clr-bg-sec);--bit-AiChat-max-width:28rem;--bit-AiMessageList-max-width:28rem;--bit-AiChat-footer-padding:0 1rem 1.5rem"" />
 </div>";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example17RazorCode = @"
 <div style=""height:400px"">
     <BitAiChat Dir=""BitDir.Rtl""
                EmptyTitle=""چطور می‌توانم کمک کنم؟""
-               EmptyBody=""پیامی بنویسید یا یکی از پیشنهادها را انتخاب کنید.""
+               EmptyDescription=""پیامی بنویسید یا یکی از پیشنهادها را انتخاب کنید.""
                Placeholder=""پیام خود را بنویسید...""
                Suggestions=""rtlSuggestions"" />
 </div>";
-    private readonly string example16CsharpCode = @"
+    private readonly string example17CsharpCode = @"
 private readonly string[] rtlSuggestions = [""این کامپوننت‌ها چه کارهایی می‌کنند؟"", ""استریم را نشانم بده""];";
 }

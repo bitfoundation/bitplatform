@@ -22,6 +22,15 @@ public partial class BitAiChatDemo
         },
         new()
         {
+            Name = "AllowReadAloud",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Offers a \"Read aloud\" action under each reply, which reads it through the app's text-to-speech - the Synthesizer, or an IBitAiTextToSpeech registered through AddBitBlazorUIAIServices(ai => ai.UseTextToSpeech<T>()); with neither, nothing is offered. The speech plays in the browser and the same button stops it; a dictation silences it while the microphone is open. The chat cascades the BitAiReadAloud driving it to everything inside it.",
+            LinkType = LinkType.Link,
+            Href = "/components/ai/messageactions#read-aloud",
+        },
+        new()
+        {
             Name = "AttachmentUploader",
             Type = "Func<BitAiAttachment, IProgress<double>, CancellationToken, Task<BitAiAttachment>>?",
             DefaultValue = "null",
@@ -86,17 +95,17 @@ public partial class BitAiChatDemo
         },
         new()
         {
-            Name = "EmptyBody",
+            Name = "EmptyDescription",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The supporting line of the empty state. Defaults to the EmptyBody of the string table (\"Ask a question to get started.\").",
+            Description = "The supporting line of the empty state. Defaults to the EmptyDescription of the string table (\"Ask a question to get started.\").",
         },
         new()
         {
             Name = "EmptyTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The content that replaces the empty state (and with it EmptyTitle, EmptyBody and Suggestions) while the conversation has no message to show - the system messages it hides do not count.",
+            Description = "The content that replaces the empty state (and with it EmptyTitle, EmptyDescription and Suggestions) while the conversation has no message to show - the system messages it hides do not count.",
         },
         new()
         {
@@ -139,6 +148,13 @@ public partial class BitAiChatDemo
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "The content at the top of the scroll area, above the first message. Past BitAiUiOptions.VirtualizeThreshold messages it is drawn once the reader has scrolled up to the first message, along with it.",
+        },
+        new()
+        {
+            Name = "KeepReadingAloud",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Goes on reading each reply that finishes after the one a reading was started on, until the reading is stopped. Only used when AllowReadAloud is on.",
         },
         new()
         {
@@ -226,10 +242,26 @@ public partial class BitAiChatDemo
         },
         new()
         {
+            Name = "ReadAloudLanguage",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The language the replies are read aloud in, as a BCP 47 language tag such as en-US, handed to the IBitAiTextToSpeech service; null leaves it to the service. A Synthesizer reads the language it wants itself. Only used when AllowReadAloud is on.",
+        },
+        new()
+        {
+            Name = "Services",
+            Type = "BitAiServices?",
+            DefaultValue = "null",
+            Description = "What AddBitBlazorUIAIServices would register, handed over on the page - for an app that registers nothing of the package at startup, such as one that lazy-loads it. Cascaded to everything inside the chat, which reads each service it sets ahead of the registered one; its Transport is what a chat handed no Session creates its own over.",
+            LinkType = LinkType.Link,
+            Href = "#ai-services",
+        },
+        new()
+        {
             Name = "Session",
             Type = "BitAiChatSession?",
             DefaultValue = "null",
-            Description = "The session to drive. When unset, the chat creates one - through the registered BitAiChatSessionFactory, or over the registered IBitAiTransport - and disposes it with itself; a supplied session belongs to the page, which disposes it.",
+            Description = "The session to drive. When unset, the chat creates one - over the Transport of its Services (or cascaded ones), else through the registered BitAiChatSessionFactory, else over the registered IBitAiTransport - and disposes it with itself; a supplied session belongs to the page, which disposes it.",
             LinkType = LinkType.Link,
             Href = "#chat-session",
         },
@@ -257,6 +289,22 @@ public partial class BitAiChatDemo
             Type = "IReadOnlyList<string>?",
             DefaultValue = "null",
             Description = "The example prompts offered in the empty state. A tap submits one as it is.",
+        },
+        new()
+        {
+            Name = "Synthesizer",
+            Type = "Func<BitAiMessage, CancellationToken, Task<BitAiSpeechAudio?>>?",
+            DefaultValue = "null",
+            Description = "The app's text-to-speech the replies are read aloud through, given the reply - its text (GetText(), Markdown) and whatever else the service needs of it, such as a signature it carries - and a token cancelled when the reading is stopped; it returns the audio to play (BitAiSpeechAudio.FromStream, FromBytes or FromUrl), or null when there is nothing to read. When null, an IBitAiTextToSpeech registered through AddBitBlazorUIAIServices is used, if there is one.",
+        },
+        new()
+        {
+            Name = "Transcriber",
+            Type = "Func<Stream, string, CancellationToken, Task<string?>>?",
+            DefaultValue = "null",
+            Description = "The app's speech-to-text the composer's dictation transcribes a recording of the microphone with, in place of the speech recognition of the browser - which also makes dictation work where the browser has none. When null, an IBitAiSpeechToText registered through AddBitBlazorUIAIServices is used, if there is one. Only used when AllowDictation is on.",
+            LinkType = LinkType.Link,
+            Href = "/components/ai/voiceinput#example8",
         },
         new()
         {
@@ -288,6 +336,15 @@ public partial class BitAiChatDemo
             Description = "The conversation in use, the one of ActiveSession.",
             LinkType = LinkType.Link,
             Href = "/components/ai/messagelist#conversation",
+        },
+        new()
+        {
+            Name = "ReadAloud",
+            Type = "BitAiReadAloud?",
+            DefaultValue = "null",
+            Description = "What reads the replies aloud, while AllowReadAloud is on and there is a text-to-speech to read through.",
+            LinkType = LinkType.Link,
+            Href = "/components/ai/messageactions#read-aloud",
         },
         new()
         {
@@ -360,6 +417,71 @@ public partial class BitAiChatDemo
                     Description = "Custom CSS classes/styles for the BitAiScrollToLatest of the BitAiChat.",
                     LinkType = LinkType.Link,
                     Href = "/components/ai/scrolltolatest#class-styles"
+                }
+            ]
+        },
+        new()
+        {
+            Id = "ai-services",
+            Title = "BitAiServices",
+            Description = "What AddBitBlazorUIAIServices would register, handed to the AI components on the page instead: through the chat's Services, or a CascadingValue of it around any AI component. Each service set here is read ahead of the registered one; one left unset falls back to the registered one, else to the built-in behaviour.",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "Transport",
+                    Type = "IBitAiTransport?",
+                    DefaultValue = "null",
+                    Description = "The transport a chat handed no Session creates its session over (UseTransport). That session follows the chat's SessionOptions and UiOptions."
+                },
+                new()
+                {
+                    Name = "Tools",
+                    Type = "IBitAiToolRegistry?",
+                    DefaultValue = "null",
+                    Description = "The tools a session the chat creates may run (AddTool), and the ones a tool call's card takes its title and icon from until the session puts a definition on the call."
+                },
+                new()
+                {
+                    Name = "ApprovalPolicy",
+                    Type = "IBitAiToolApprovalPolicy?",
+                    DefaultValue = "null",
+                    Description = "What decides which calls of a session the chat creates need a human decision (UseApprovalPolicy)."
+                },
+                new()
+                {
+                    Name = "Renderers",
+                    Type = "BitAiRendererRegistry?",
+                    DefaultValue = "null",
+                    Description = "The renderers (ConfigureRenderers). A CascadingValue of a BitAiRendererRegistry nearer the component still wins over it."
+                },
+                new()
+                {
+                    Name = "GenerativeUi",
+                    Type = "IBitAiGenerativeUiRegistry?",
+                    DefaultValue = "null",
+                    Description = "The components a model may name in a generative UI part (ConfigureGenerativeUi)."
+                },
+                new()
+                {
+                    Name = "ModelCatalog",
+                    Type = "IBitAiModelCatalog?",
+                    DefaultValue = "null",
+                    Description = "The models (AddModels): what a BitAiModelSelector handed no Models or Catalog offers, and the names a reply's metadata shows its model by."
+                },
+                new()
+                {
+                    Name = "TextToSpeech",
+                    Type = "IBitAiTextToSpeech?",
+                    DefaultValue = "null",
+                    Description = "What the replies are read aloud through when the chat is handed no Synthesizer (UseTextToSpeech)."
+                },
+                new()
+                {
+                    Name = "SpeechToText",
+                    Type = "IBitAiSpeechToText?",
+                    DefaultValue = "null",
+                    Description = "What the composer's dictation transcribes through when handed no Transcriber (UseSpeechToText)."
                 }
             ]
         },
@@ -736,11 +858,28 @@ public partial class BitAiChatDemo
         new()
         {
             EmptyTitle = "Ask the docs",
-            EmptyBody = "Both chats take this heading and line from the BitParams around them.",
+            EmptyDescription = "Both chats take this heading and line from the BitParams around them.",
             Placeholder = "Ask about a component...",
             AllowAttachments = false,
         }
     ];
+
+
+    private bool keepReadingAloud;
+    private readonly BitAiChatSession readAloudSession = new(AiDemoTransports.Echo());
+    private readonly string[] readAloudSuggestions = ["Read this sentence aloud to me, please.", "Say something short."];
+
+    // The stand-ins for the app's speech services: a voiceless tone about as long as the reply, and a transcriber that
+    // only says what it was handed.
+    private Task<BitAiSpeechAudio?> SynthesizeAsync(BitAiMessage reply, CancellationToken cancellationToken) =>
+        AiDemoSpeech.SynthesizeAsync(reply.GetText(), cancellationToken);
+
+    private static async Task<string?> DescribeRecordingAsync(Stream audio, string contentType, CancellationToken cancellationToken)
+    {
+        await Task.Delay(600, cancellationToken);
+
+        return $"(a {audio.Length:N0}-byte {contentType} recording, which a real app sends to its speech-to-text)";
+    }
 
 
     private readonly string[] rtlSuggestions = ["این کامپوننت‌ها چه کارهایی می‌کنند؟", "استریم را نشانم بده"];
@@ -779,6 +918,7 @@ public partial class BitAiChatDemo
         await templateSession.DisposeAsync();
         await citedSession.DisposeAsync();
         await reasoningSession.DisposeAsync();
+        await readAloudSession.DisposeAsync();
 
         await base.DisposeAsync(disposing);
     }

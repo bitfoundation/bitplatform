@@ -45,9 +45,13 @@ public sealed class FakeJsModule : IJSObjectReference
         if (Failure?.Invoke(identifier) is { } failure)
             throw failure;
 
-        return Returns.TryGetValue(identifier, out var value) && value is TValue typed
-            ? new ValueTask<TValue>(typed)
-            : new ValueTask<TValue>(default(TValue)!);
+        // A Task<TValue> stands for a call the page answers later.
+        return Returns.TryGetValue(identifier, out var value) switch
+        {
+            true when value is TValue typed => new ValueTask<TValue>(typed),
+            true when value is Task<TValue> pending => new ValueTask<TValue>(pending),
+            _ => new ValueTask<TValue>(default(TValue)!),
+        };
     }
 
     /// <inheritdoc />

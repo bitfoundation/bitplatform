@@ -156,6 +156,7 @@ public static class BbDataMatrixBitStreamParser
             StructuredAppendIndex = structuredAppendIndex,
             StructuredAppendCount = structuredAppendCount,
             StructuredAppendParity = structuredAppendParity,
+            StructuredAppendIsLast = structuredAppendIndex is { } position ? position == structuredAppendCount : null,
         };
     }
 

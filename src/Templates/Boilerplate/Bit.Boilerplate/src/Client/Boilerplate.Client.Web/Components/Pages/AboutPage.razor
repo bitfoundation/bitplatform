@@ -22,9 +22,12 @@
                 </Note>
             </AppInfoCard>
 
-            <BitCard FullSize>
-                <Acknowledgements />
-            </BitCard>
+            @if (showAcknowledgements)
+            {
+                <BitCard FullSize>
+                    <Acknowledgements />
+                </BitCard>
+            }
         </BitStack>
     </section>
 </CascadingValue>

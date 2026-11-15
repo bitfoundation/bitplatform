@@ -127,7 +127,7 @@ public partial class HealthCheckTests
 
                 failures.AddRange(report.Entries
                     .Where(entry => entry.Value.Status is not HealthCheckStatus.Healthy
-                        && (entry.Value.Status is not HealthCheckStatus.Degraded || entry.Value.Description?.Contains("is not configured", StringComparison.Ordinal) is not true))
+                        && (entry.Value.Status is not HealthCheckStatus.Degraded || entry.Value.IsNotConfigured is false))
                     .Select(entry => $"{host}healthz '{entry.Key}' is {entry.Value.Status}: {entry.Value.Description}"));
             }
 

@@ -47,8 +47,13 @@ namespace Bit.Bcrdt.Server;
 /// <see cref="AuthorizeAsync"/> for a plain yes or no.
 /// </para>
 /// <para>
+/// Every connection that joins a document is listed in the <see cref="BcrdtRelayConnections"/> registered in
+/// the container - <c>AddBitBcrdtHub()</c> registers one - which can end or narrow its grant while it is open.
+/// Override <see cref="RelayConnections"/> to list a particular hub's connections elsewhere, or nowhere.
+/// </para>
+/// <para>
 /// A subclass that overrides <see cref="OnDisconnectedAsync"/> must call the base implementation, which
-/// releases the connection's place in every hosted document it joined.
+/// releases the connection's place in every hosted document it joined and takes it off that list.
 /// </para>
 /// </remarks>
 public class BcrdtHub : Hub
@@ -75,6 +80,14 @@ public class BcrdtHub : Hub
     /// <remarks>Defaults to the <see cref="BcrdtDocumentHost"/> registered in the container, if any.</remarks>
     protected virtual BcrdtDocumentHost? DocumentHost =>
         Context.GetHttpContext()?.RequestServices.GetService<BcrdtDocumentHost>();
+
+    /// <summary>
+    /// Where the connections this hub admits are listed, so that a grant can be revoked or narrowed while
+    /// the connection is open, or <see langword="null"/> to list them nowhere.
+    /// </summary>
+    /// <remarks>Defaults to the <see cref="BcrdtRelayConnections"/> registered in the container, if any.</remarks>
+    protected virtual BcrdtRelayConnections? RelayConnections =>
+        Context.GetHttpContext()?.RequestServices.GetService<BcrdtRelayConnections>();
 
     /// <summary>The SignalR group a document's clients belong to.</summary>
     /// <param name="documentId">The document identifier, as the client named it.</param>
@@ -150,21 +163,22 @@ public class BcrdtHub : Hub
         ConcurrentDictionary<string, JoinedDocument> joined = JoinedDocuments();
         if (joined.ContainsKey(documentId)) return;
 
+        // Every hub type is a relay of its own: SignalR keeps groups per hub.
+        var connection = new HubHostConnection(Context, Clients.Client(Context.ConnectionId), Groups, documentId, access, "signalr:" + GetType().FullName);
+
         // Loaded before the client is admitted, so the host is ready to answer the handshake the client
         // sends as soon as this returns. A failure here fails the join, and the client retries it.
         BcrdtHostSession? session = null;
-        HubHostConnection? connection = null;
         if (DocumentHost is { } host)
         {
-            // Every hub type is a relay of its own: SignalR keeps groups per hub.
-            connection = new HubHostConnection(Context, Clients.Client(Context.ConnectionId), access, "signalr:" + GetType().FullName);
+            connection.Host = host;
             session = await host.JoinAsync(documentId, connection, Context.ConnectionAborted).ConfigureAwait(false);
         }
 
         try
         {
             await Groups.AddToGroupAsync(Context.ConnectionId, GroupName(documentId)).ConfigureAwait(false);
-            if (!joined.TryAdd(documentId, new JoinedDocument(access, session, connection)))
+            if (!joined.TryAdd(documentId, new JoinedDocument(session, connection)))
             {
                 session?.Dispose();
                 return;
@@ -176,7 +190,18 @@ public class BcrdtHub : Hub
             throw;
         }
 
+        // Listed once admitted, so that a revocation from here on reaches it.
+        RelayConnections?.Add(connection);
+
+        // Revoked in the meantime: the refusal is the last thing it hears.
+        if (connection.Refused) return;
         await Clients.Caller.SendAsync(ReceiveMethod, BcrdtSyncProtocol.EncodeAuth(access, null)).ConfigureAwait(false);
+
+        // Narrowed while the grant was on its way, and the narrowed grant may have overtaken it: say it again.
+        if (connection.Access != access && !connection.Refused)
+        {
+            await Clients.Caller.SendAsync(ReceiveMethod, BcrdtSyncProtocol.EncodeAuth(connection.Access, null)).ConfigureAwait(false);
+        }
     }
 
     /// <summary>
@@ -192,7 +217,7 @@ public class BcrdtHub : Hub
     {
         ArgumentException.ThrowIfNullOrEmpty(documentId);
 
-        if (JoinedDocuments().TryRemove(documentId, out JoinedDocument? left)) left.Session?.Dispose();
+        if (JoinedDocuments().TryRemove(documentId, out JoinedDocument? left)) Release(left);
         await Groups.RemoveFromGroupAsync(Context.ConnectionId, GroupName(documentId)).ConfigureAwait(false);
     }
 
@@ -211,7 +236,8 @@ public class BcrdtHub : Hub
     /// could otherwise name any document identifier and have the server relay whatever it liked into
     /// a conversation it has no access to. Checking the recorded membership rather than re-running
     /// <see cref="AuthorizeAccessAsync"/> keeps that guarantee without paying for an authorization lookup
-    /// on every message.
+    /// on every message. The grant checked is the one the connection holds now, so a revocation or a
+    /// narrowed grant (<see cref="BcrdtRelayConnections"/>) applies from the next message on.
     /// </para>
     /// <para>
     /// An <c>Auth</c> message is dropped rather than relayed: only the hub may tell a client it has
@@ -228,20 +254,38 @@ public class BcrdtHub : Hub
         if (string.IsNullOrEmpty(documentId) || message is null || message.Length == 0) return;
         if (!BcrdtSyncProtocol.IsRelayable(message)) return;
         if (!JoinedDocuments().TryGetValue(documentId, out JoinedDocument? joined)) return;
-        if (joined.Access != BcrdtDocumentAccess.ReadWrite && BcrdtSyncProtocol.IsWrite(message)) return;
 
-        // Refused by the host and about to be aborted: nothing more it sends counts, least of all changes
-        // built on the one that was rejected.
-        if (joined.Connection is { Refused: true }) return;
-        if (joined.Session is { } session && !await session.ReceiveAsync(message).ConfigureAwait(false)) return;
+        // Refused and about to be aborted - nothing more it sends counts, least of all changes built on one
+        // the host rejected - or a change from a connection that may not write. A revocation waits for a
+        // message that got past here to go wherever it is going.
+        HubHostConnection connection = joined.Connection;
+        if (connection.TryBeginRelay(message) is not { } relaying) return;
 
-        await Clients.OthersInGroup(GroupName(documentId))
-            .SendAsync(ReceiveMethod, message)
-            .ConfigureAwait(false);
+        Task relayed;
+        try
+        {
+            if (joined.Session is { } session && !await session.ReceiveAsync(message).ConfigureAwait(false)) return;
+
+            // Revoked while the host was handling it: it was applied, but goes no further.
+            if (connection.Refused) return;
+
+            // Started inside, awaited outside: once SignalR has it, it has been relayed, and a revocation
+            // need not wait for the slowest member of the group to take it.
+            relayed = Clients.OthersInGroup(GroupName(documentId)).SendAsync(ReceiveMethod, message);
+        }
+        finally
+        {
+            relaying.End();
+        }
+
+        await relayed.ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
-    /// <remarks>Releases the connection's place in every hosted document it joined. Call it from an override.</remarks>
+    /// <remarks>
+    /// Releases the connection's place in every hosted document it joined and takes it off the list of
+    /// connections. Call it from an override.
+    /// </remarks>
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
         if (Context.Items.TryGetValue(JoinedDocumentsKey, out object? found) &&
@@ -249,7 +293,7 @@ public class BcrdtHub : Hub
         {
             foreach (string documentId in joined.Keys)
             {
-                if (joined.TryRemove(documentId, out JoinedDocument? left)) left.Session?.Dispose();
+                if (joined.TryRemove(documentId, out JoinedDocument? left)) Release(left);
             }
         }
 
@@ -284,40 +328,53 @@ public class BcrdtHub : Hub
         }
     }
 
-    private sealed record JoinedDocument(BcrdtDocumentAccess Access, BcrdtHostSession? Session, HubHostConnection? Connection);
+    /// <summary>Lets go of a document the connection left: its hosted session, and its place on the list.</summary>
+    private static void Release(JoinedDocument left)
+    {
+        left.Session?.Dispose();
+        left.Connection.Unlist();
+    }
 
-    /// <summary>A SignalR connection as the document host sees it.</summary>
+    private sealed record JoinedDocument(BcrdtHostSession? Session, HubHostConnection Connection);
+
+    /// <summary>
+    /// A SignalR connection to one document, as the hub, the document host and the list of connections
+    /// see it - whether or not there is a host.
+    /// </summary>
     /// <remarks>
     /// Holds the client proxy rather than the hub, which SignalR creates per invocation and disposes
     /// after it: the proxy addresses the connection through the hub lifetime manager, so it stays
     /// valid - across a backplane too - for as long as the connection does.
     /// </remarks>
-    private sealed class HubHostConnection(HubCallerContext context, IClientProxy client, BcrdtDocumentAccess access, string relay)
-        : IBcrdtHostConnection
+    private sealed class HubHostConnection(
+        HubCallerContext context,
+        IClientProxy client,
+        IGroupManager groups,
+        string documentId,
+        BcrdtDocumentAccess access,
+        string relay)
+        : BcrdtRelayConnection(documentId, context.ConnectionId, access, context.UserIdentifier, relay)
     {
-        private int _refused;
-
-        public string Id => context.ConnectionId;
-
-        public BcrdtDocumentAccess Access => access;
-
-        public string? UserId => context.UserIdentifier;
-
-        public string Relay => relay;
-
-        /// <summary>Whether the host refused the connection; set before the refusal is even sent.</summary>
-        public bool Refused => Volatile.Read(ref _refused) != 0;
-
-        public void Send(byte[] message) => _ = SendQuietlyAsync(message);
-
-        public void Refuse(string reason)
+        public override void Send(byte[] message)
         {
-            if (Interlocked.Exchange(ref _refused, 1) != 0) return;
-            _ = RefuseAsync(reason);
+            if (!Refused) _ = SendQuietlyAsync(message);
         }
+
+        protected override void OnRefused(string reason) => _ = RefuseAsync(reason);
 
         private async Task RefuseAsync(string reason)
         {
+            // Out of the group first, so what the other members send stops reaching it now rather than
+            // once the abort has gone through - and on every instance, behind a backplane.
+            try
+            {
+                await groups.RemoveFromGroupAsync(context.ConnectionId, GroupName(DocumentId)).ConfigureAwait(false);
+            }
+            catch (Exception)
+            {
+                // The connection is already gone; the abort below is what binds the refusal anyway.
+            }
+
             await SendQuietlyAsync(BcrdtSyncProtocol.EncodeAuth(BcrdtDocumentAccess.None, reason)).ConfigureAwait(false);
             context.Abort();
         }

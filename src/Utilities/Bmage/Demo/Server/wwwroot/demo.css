@@ -583,6 +583,11 @@ div.preview-image[aria-busy="true"] {
     }
 }
 
+/* The cropper has no panel, so it needs only the canvas's height, on a phone as well. */
+.cropper-frame {
+    height: clamp(20rem, 60dvh, 30rem);
+}
+
 /* ---------- Page specifics ---------- */
 
 /* Avatar: the result is clipped to its shape as an app would show it - the exported pixels are
@@ -642,6 +647,16 @@ div.preview-image[aria-busy="true"] {
     margin: .5rem 0 .25rem;
     /* The placeholder's description quotes its token, one long word that must wrap inside the card. */
     overflow-wrap: anywhere;
+}
+
+/* Document scanning: the scan beside the photo it came from. */
+.scan-preview {
+    max-height: 24rem;
+    max-width: 100%;
+}
+
+.scan-stats {
+    margin-block: 1rem;
 }
 
 /* Pipelines: the playground's readouts. */

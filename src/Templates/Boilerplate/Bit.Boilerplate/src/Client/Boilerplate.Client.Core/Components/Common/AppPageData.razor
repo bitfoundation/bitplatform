@@ -4,7 +4,22 @@
 
 @* Not a HeadContent of its own: only the last one rendered into the document's single HeadOutlet survives. *@
 <SectionContent SectionName="@HeadSectionName">
-    <meta name="description" content="@(Description ?? localizer[nameof(AppStrings.DescriptionMetaTagValue)])" />
+    <meta name="description" content="@MetaDescription" />
     <link rel="canonical" href="@CanonicalUrl" />
+    @if (NoIndex)
+    {
+        <meta name="robots" content="noindex" />
+    }
+
+    @* What a link to this page shows where it is shared - a chat, a social network. og:url is the canonical url, so
+       every query variant of the page shares as one. *@
+    <meta property="og:type" content="@OpenGraphType" />
+    <meta property="og:site_name" content="Boilerplate" />
+    <meta property="og:title" content="@(PageTitle ?? Title)" />
+    <meta property="og:description" content="@MetaDescription" />
+    <meta property="og:image" content="@ShareImageUrl" />
+    <meta property="og:url" content="@CanonicalUrl" />
+    @* X reads the title, the description and the image from the og tags above; the card is all it needs of its own. *@
+    <meta name="twitter:card" content="@(Image is null ? "summary" : "summary_large_image")" />
     @Head
 </SectionContent>

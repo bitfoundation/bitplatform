@@ -120,6 +120,7 @@ public class BitColorPickerParamsTests : BunitTestContext
             ShowInputsModeSwitch = true,
             ShowPreview = true,
             ShowSaturationArea = false,
+            ShowValidationMessage = true,
             Size = BitSize.Small,
             Styles = styles,
             Texts = texts,
@@ -163,6 +164,7 @@ public class BitColorPickerParamsTests : BunitTestContext
         Assert.IsTrue(instance.ShowInputsModeSwitch);
         Assert.IsTrue(instance.ShowPreview);
         Assert.IsFalse(instance.ShowSaturationArea);
+        Assert.IsTrue(instance.ShowValidationMessage);
         Assert.AreEqual(BitSize.Small, instance.Size);
         Assert.AreSame(styles, instance.Styles);
         Assert.AreSame(texts, instance.Texts);

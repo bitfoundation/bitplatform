@@ -46,8 +46,9 @@
     }
 
     @* What the app rejected the selection as a whole for, right under the browse button and ahead of the hint - the
-       order the button reads the two out in. The files the input rejected on its own say why in the list instead. *@
-    @if (_HasErrorMessage)
+       order the button reads the two out in. The files the input rejected on its own say why in the list instead.
+       The messages of the EditContext (ShowValidationMessage) take the same line while the app has none of its own. *@
+    @if (_HasErrorLine)
     {
         <div id="@_errorId" style="@Styles?.ErrorMessageContainer" class="bit-fin-erm @Classes?.ErrorMessageContainer">
             @if (ErrorMessageTemplate is not null)
@@ -56,7 +57,7 @@
             }
             else
             {
-                @ErrorMessage
+                @(_HasErrorMessage ? ErrorMessage : _ShownValidationMessage)
             }
         </div>
     }

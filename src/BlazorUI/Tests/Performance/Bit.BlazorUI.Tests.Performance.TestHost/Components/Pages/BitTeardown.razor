@@ -242,7 +242,7 @@
             case "basic-list":
                 <div style="height: 200px; overflow: auto;">
                     <BitBasicList Items="_numbers" LoadMore LoadMoreSize="5" OnLoadMore="@(n => Log($"OnLoadMore:{n}"))">
-                        <EmptyContent>Empty</EmptyContent>
+                        <EmptyTemplate>Empty</EmptyTemplate>
                         <RowTemplate Context="n"><div style="height: 30px;">Row @n</div></RowTemplate>
                     </BitBasicList>
                 </div>

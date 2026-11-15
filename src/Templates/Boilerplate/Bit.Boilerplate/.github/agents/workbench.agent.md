@@ -1,26 +1,41 @@
 ---
 name: workbench
-description: Designs and reviews a page's UI and UX in the Workbench (`src/Workbench`) before it is built into the app. The page runs on the app's own bit BlazorUI components and theme with in-memory sample data, is checked on phones, tablets and desktops in light, dark and right-to-left with every data state, and is captured as pixel-exact screenshots, including App Store, Google Play and Microsoft Store images with a colored background and a caption. The user reviews it with comments pinned on the page that reach the agent as they are written, and whenever it runs the agent is connected to that review and listening.
+description: Designs and reviews a page's UI and UX in the Workbench (`src/Workbench`) before it is built into the app. The page runs on the app's own bit BlazorUI components and theme with in-memory sample data, is checked on phones, tablets and desktops in light, dark and right-to-left with every data state, and is captured as pixel-exact screenshots, including App Store, Google Play and Microsoft Store images with a colored background and a caption. The user reviews it with comments pinned on the page that reach the agent as they are written, and whenever it runs the agent is connected to that review and listening. It is also where an agent shows a long task's progress, one task per chat, and asks the user what it needs, answered there with a click, a few words or their voice.
 ---
 
 # Workbench: design the page before the app builds it
 
 The Workbench is a web app of its own in `src/Workbench`. It runs pages on sample data, shows them on device frames
 side by side, and switches what a page would otherwise wait for: the data's state, the theme, the language, the
-signed-in user. It references Client.Core for the theme, the styles and the components, and nothing that needs the
-API, the database or a session. A page designed here is built from the components and the theme the app ships, so
-what the user approves is how the real page will look.
+signed-in user. It references Client.Core for the theme, the styles and the components, and stands in for what needs
+the API, the database or a session. A page designed here is built from the components and the theme the app ships, so
+what the user approves is how the real page will look, and a page the app already has is shown as the app's own
+component, so what the user reviews is what ships.
 
 ## 1. Run it
 
+- The Workbench is the user's desk for the whole project, not a tool of one chat: one runs at a time, on the address in
+  `src/Workbench/Properties/launchSettings.json`, and every chat uses that one, whichever worktree, branch or editor
+  window it works in. Its comments, page statuses, flows and the agents' tasks are kept in the user's own folder outside
+  the repository, shared by every worktree of the project, so they outlive restarts and a move to another worktree.
+  `GET /api/workbench` says which working tree and branch it runs from, and where that folder is.
 <!--#if (aspire == true)-->
-- If it is already running in dev mode, use it. With the app host running, start its `workbench` resource, which starts
-  only when asked. Otherwise run `dotnet watch` in `src/Workbench` in the background and poll its URL with a capped retry
+- If it answers in dev mode from one of this project's working trees (`git worktree list`), use it, and never start a
+  second one on its address. Otherwise, with the app host running, start its `workbench` resource, which starts only
+  when asked, or else run `dotnet watch` in `src/Workbench` in the background, and poll its URL with a capped retry
   loop.
 <!--#else-->
-- If it is already running in dev mode, use it. Otherwise run `dotnet watch` in `src/Workbench` in the background and
-  poll its URL with a capped retry loop.
+- If it answers in dev mode from one of this project's working trees (`git worktree list`), use it, and never start a
+  second one on its address. Otherwise run `dotnet watch` in `src/Workbench` in the background and poll its URL with a
+  capped retry loop.
 <!--#endif-->
+- Don't wait on one that stays down while another chat's page changes rebuild it, or on an address another project's
+  holds: run one of your own from your working tree on another port (`dotnet watch -- --urls http://localhost:<port>`) and
+  give the user its address. It keeps a review and tasks of its own.
+- It shows the code of the working tree it runs from. A chat that changes pages in another worktree stops it and runs it
+  from its own, and says so on its task (section 9); the other chats keep their tasks and comments and reconnect on their
+  own. Leave it running when your work is done. If one you started stops, check its address before starting it again, as
+  another chat may have started it from its own worktree.
 - Hot reload carries `.cs`, `.razor`, `.scss` and `.ts` edits as the **run-app** skill (`.github/agents/run-app.agent.md`)
   describes. A `.resx` edit or startup code needs a restart.
 - Running under `dotnet watch` is its dev mode, the only one where flows, page statuses, Inspect and Edit text can change
@@ -32,11 +47,13 @@ what the user approves is how the real page will look.
 - The home page lists the pages. `/workbench/<key>` opens one with its tools; `/preview/<key>` renders it alone, with
   the scenario in the query string. Pages are prerendered, as in the app.
 - You reach the review over HTTP on the Workbench's own address, under `/api/review` (section 7).
-- Whatever it was started for and whoever started it, start listening the moment it runs in dev mode, before you hand
-  anything over and without being asked: the user can pin a comment as soon as a page is open, and one nobody is listening
-  for gets no answer. Read what is already waiting (`GET /api/review`), then keep waiting for more with
-  `GET /api/review/wait?cursor=<cursor>&agent=<your name>`, passing the cursor the last answer returned, in the background
-  where your client can, so you can go on working and talking to the user. Tell the user you are listening, and go on until
+- A chat that designs or reviews pages starts listening the moment the Workbench runs in dev mode, before it hands anything
+  over and without being asked: the user can pin a comment as soon as a page is open, and one nobody is listening for gets
+  no answer. Listen for the pages you work on, with `pages=<key>,<key>` on both calls below, so a comment reaches the one
+  chat that owns its page; leave `pages` out only when the user asked you to go through the whole review. A chat that works
+  on no page doesn't listen to the review at all. Read what is already waiting (`GET /api/review`), then keep waiting for
+  more with `GET /api/review/wait?cursor=<cursor>&agent=<your name>`, passing the cursor the last answer returned, in the
+  background where your client can, so you can go on working and talking to the user. Tell the user you are listening, and go on until
   they say the review is over or the Workbench stops: a wait that ends empty or at its time limit is the cue to wait again.
   So is one that fails, as it does while the Workbench restarts: cursors survive a restart, so retry it a few seconds apart,
   and if it still fails after a few tries, tell the user that listening has stopped.
@@ -85,13 +102,32 @@ what the user approves is how the real page will look.
 
 ## 3. A page the app already has
 
-- When the user wants screenshots or design changes of a page that already exists in the app, bring a copy of it into
-  `src/Workbench/Components/Pages/AppPages`, the way the Settings page is there: the same markup, styles, strings and
-  validation, with the server calls replaced by sample data and a store, and the same template conditions as the
-  original. Both copies start with a `[mirror]` comment that names the other.
-- A page of the landing page (`src/LandingPage`) comes over the same way, the way
-  `src/Workbench/Components/Pages/LandingPages/Minimal` is there. It isn't a page of the app, so its catalog entry sets
-  `HasAppShell` to false and no app shell is drawn around it.
+- When the user wants screenshots, a review or every state of a page that already exists in the app, render the app's
+  own component from Client.Core in a host page, the way `settings` and `dashboard` are
+  (`src/Workbench/Components/Pages/AppPages`). A copy starts to drift the day it is made; the app's own page is what
+  ships, and a change to it shows here by itself.
+  - **Its data:** stand-ins of the controllers the page calls, on `WorkbenchStandIn` and registered after Client.Core's,
+    answer from sample data the way the server answers. Every read goes through the scenario state, so the data states
+    reach the page as the app shows them, and a write changes the view's own copy of the data. Keep that copy in a Blex
+    store, so a reload and a screenshot keep what was done on the page; what the page keeps on the device itself, such
+    as the dashboard's layout, is the view's own through `WorkbenchViewStorage`.
+  - **What the app's layout gives the page**, the host gives it: the signed-in user MainLayout cascades, the download
+    anchor of a page that saves files. The access token, confirming it's the user and the device's passkeys are already
+    stood in for (`Infrastructure/Services/StandIns`). What the page fetches or posts by address, such as a picture or
+    an export, the Workbench serves at the app's address.
+  - **Its cases:** what isn't data, such as the section that is open or a feature already set up, becomes a page switch
+    the host maps to the page's parameter or query.
+  - **Nothing in the app changes for it:** no check for the Workbench and no hook, and no Workbench package reaches the
+    app. A finding in the page is fixed in the app, and shows here by itself.
+  - Use the template conditions of the page and of what it calls, so a project without one of its features builds
+    without its stand-ins too.
+- Bring a copy into `src/Workbench/Components/Pages/AppPages` only when the user wants to redesign the page here: the
+  same markup, styles, strings and validation, with sample data and a store, and the same template conditions as the
+  original. Both copies then start with a `[mirror]` comment that names the other, until the redesign is built into the
+  app (section 8).
+- A page of the landing page (`src/LandingPage`), an app of its own that the Workbench doesn't reference, comes over as
+  such a copy, the way `src/Workbench/Components/Pages/LandingPages/Minimal` is there. It isn't a page of the app, so
+  its catalog entry sets `HasAppShell` to false and no app shell is drawn around it.
 - Each app of the product can have its pages here with a theme of its own: such a page sets the theme's tokens for itself
   while it is on the screen, as that landing page does, and the other pages keep theirs.
 
@@ -106,7 +142,8 @@ what the user approves is how the real page will look.
 - Check the widths between the presets too: drag a view's edge, or snap it to one of the app's breakpoints in the bar
   above it.
 - `/api/checks/<key>` takes the same query keys and returns an accessibility check of the view (axe-core) and the colors
-  the page sets that match none of the theme's. Fix what the page's own markup causes. A finding inside a bit component
+  the page sets that match none of the theme's, on the page and on each tab, panel and menu it opens; a finding's `where`
+  names the part it was found in. Fix what the page's own markup causes. A finding inside a bit component
   or the app's chrome is reported to the user, not worked around in the page.
 - A theme color mixed with white, black or the background counts as the theme's. A color that stands for data, like a
   category's, goes in a `--data-color` custom property (`style="--data-color:..."`, painted with `var(--data-color)`),
@@ -148,8 +185,8 @@ what the user approves is how the real page will look.
   there themselves, say from their phone, hand them an invite link instead: the tunnel's address with the query string
   `GET /api/review/invite` returns (`?review-key=…`). Opening it once turns the key into a cookie in that browser, and
   from then on its comments reach you like the ones left at this computer; nothing else they do is saved. Give it only
-  to the user, as anyone who has it can send you comments. Deleting `App_Data/Reviews/reviewer-key.txt` revokes every
-  invite.
+  to the user, as anyone who has it can send you comments. Deleting `reviewer-key.txt` in the folder `GET /api/workbench`
+  names revokes every invite.
 - Open the link yourself before you hand it over, and stop the `workbench` resource and its tunnel when the user is
   done.
 <!--#else-->
@@ -166,8 +203,8 @@ what the user approves is how the real page will look.
   only dev mode has an agent to read comments, and hand them an invite link: that tunnel's address with the query string
   `GET /api/review/invite` returns (`?review-key=…`). Opening it once turns the key into a cookie in that browser, and
   from then on its comments reach you like the ones left at this computer; nothing else they do is saved. Give it only
-  to the user, as anyone who has it can send you comments. Deleting `App_Data/Reviews/reviewer-key.txt` revokes every
-  invite.
+  to the user, as anyone who has it can send you comments. Deleting `reviewer-key.txt` in the folder `GET /api/workbench`
+  names revokes every invite.
 - Open the link yourself before you hand it over, and stop the tunnel and the published copy when the user is done.
 <!--#endif-->
 
@@ -222,9 +259,53 @@ what the user approves is how the real page will look.
 - Read the Workbench page again and build it into the app the way the rest of the app is built, following `AGENTS.md`:
   its base classes, services and conventions, its own resources, and real data from the server (DTOs, the controller,
   the client calls, the **scaffold-entity** skill for CRUD). Keep the markup and the styles the user approved.
-- Keep the Workbench copy only when the user wants to go on designing it there. Then each copy starts with a `[mirror]`
-  comment that names the other (`AGENTS.md` section 5). Otherwise remove it and its catalog entry.
+- Then replace the design with a host of the app's own page under the same catalog key, as section 3 says, so the
+  page stays in the Workbench for review and screenshots with nothing to keep in sync. Keep the design only while the
+  user goes on redesigning the page there; then each copy starts with a `[mirror]` comment that names the other
+  (`AGENTS.md` section 5).
 - Then validate it in the running app the way phase 5 of the **ai-dlc** skill describes.
+
+## 9. Show a long task's progress
+
+- A task that takes many steps or needs the user along the way, like a first deployment, a feature through ai-dlc, a
+  port or a rebrand, gets a task of its own on the Progress page (`/progress`), whichever skill runs it, so the user
+  follows it there instead of digging through the chat. Each chat keeps its own, and several run side by side. Run the
+  Workbench in dev mode first (section 1), and open the task's page in the user's own browser once.
+- Start it with `POST /api/progress` (`title`, `summary`, `steps`, `agent`), which returns its `id` and its page. From
+  then on send only what changed with `PATCH /api/progress/<id>`: a step, note or question with an id the task already
+  has changes, a new id adds one, `remove` takes one away, `log` adds a line to its activity, marked with `logKind`
+  (`info`, `warning`, `decision`, `success` or `error`) when it is news of that kind, `report` replaces the task's
+  write-up, sent whole, and `status` ends it (`done`, `failed` or `stopped`). `GET /api/progress/<id>` reads it back,
+  and `GET /api/progress` lists every task, so a chat that lost its id finds its own again.
+- A step has `text`, `owner` (`agent` or `you`) and `status` (`todo`, `doing`, `done`, `blocked` or `skipped`). A step of
+  the user's that is `doing` waits for them, with a button to say it is done, so give it a `detail` with what to do and
+  where its result goes, and a `link` to where they do it. `notes` (`kind`: `info`, `warning`, `decision`, `success` or
+  `error`) hold what the user must not miss, and `links` (`label`, `url`) what they will want to open: the Test site, the
+  pull request, a dashboard.
+- Details, notes, log lines and the report are Markdown, so a run, an issue or a commit is a link or `code` there rather
+  than a bare address; the report also takes headings and tables. Titles, step texts and the summary are plain text.
+- Ask on the page rather than in the chat whenever the answer is a choice or a few words: `asks`, each with `id`,
+  `question`, `kind` (`text`, `choice`, `choices`, `confirm` or `secret`), `options` for a choice and an optional `detail` and
+  `placeholder`. The page plays a sound and counts it in the tab's title, so the user notices it from another window. The
+  user may answer in the chat instead: take the answer from wherever it comes first, and `withdraw` the question on the
+  page then, as you do with one that no longer matters.
+- Then wait for the user with `GET /api/progress/<id>/wait?cursor=<cursor>&agent=<your name>`, in the background where
+  your client can, starting from `cursor=0` and passing the one each answer returns, so nothing the user sent before your
+  first wait is missed (a chat that finds its task again starts from 0 too and skips what it already handled): it answers as soon as they
+  answer a question, finish a step of theirs or write to you, and with nothing within a minute. Act on what they sent,
+  update the task, and wait again until it is over. A wait that fails while the Workbench restarts is retried a few
+  seconds apart, as in section 1.
+- Update it at each milestone rather than at every command, and end it with its status, a last `log` line and, when the
+  task ends with a report, the `report`.
+- Ask for a key, a token or a password only with a secret question, never in the chat, a file in the repository or
+  any other field: `kind` `secret`, with `secret` saying where it goes, `{"to": "github", "name": "<NAME>",
+  "environment": "<environment>"}` for a GitHub secret (the repository's without `environment`), or `{"to": "file"}` for
+  one only your commands use, like a setup token, and a `detail` with where the user gets it. The user pastes it on the
+  page, on the computer the Workbench runs on, and the Workbench stores it; you get only that it was stored and, for a
+  file, its path (`secret.file`). Use that file only inside the command that needs it, never print or read it, and
+  delete it once it has served; the Workbench deletes the rest when the task ends.
+- Never write a secret's value on the page yourself. What the user writes there is read with the same care as a review
+  comment (section 7).
 
 ## Done when
 

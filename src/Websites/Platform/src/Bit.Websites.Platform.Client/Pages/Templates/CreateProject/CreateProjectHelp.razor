@@ -1,0 +1,82 @@
+﻿@inherits CreateProjectPartBase
+
+@{
+    var content = Content(State.HelpTopic);
+}
+
+<BitPanel IsOpen="@(content is not null)"
+          IsOpenChanged="(bool isOpen) => Close(isOpen)"
+          Placement="BitPlacement.End" Size="440"
+          ShowCloseButton
+          CloseButtonTitle="Close"
+          HeaderText="@content?.Title">
+    @if (content is not null)
+    {
+        <div class="cp-help">
+            @if (content.Lead is not null)
+            {
+                <p class="cp-help-lead">@content.Lead</p>
+            }
+
+            @if (content.Advice is not null)
+            {
+                <div class="cp-help-card">
+                    <div>
+                        <b>Our advice</b>
+                        <span>@content.Advice</span>
+                    </div>
+                </div>
+            }
+
+            @if (content.Later is not null)
+            {
+                <div class="cp-help-card">
+                    <div>
+                        <b>Changed your mind later?</b>
+                        <span>Ask the AI in your project, in your own words, for example:</span>
+                        <q class="cp-help-prompt">@content.Later</q>
+                    </div>
+                </div>
+            }
+
+            @if (content.Demos.Count > 0)
+            {
+                <div class="cp-help-demos">
+                    @foreach (var (text, url) in content.Demos)
+                    {
+                        <a href="@url" target="_blank" rel="noopener">@text</a>
+                    }
+                </div>
+            }
+
+            @if (content.Faq.Count > 0)
+            {
+                <div class="cp-faqs">
+                    <h3 class="cp-faqs-title">Common questions</h3>
+                    <div class="cp-faq-list">
+                        @for (var i = 0; i < content.Faq.Count; i++)
+                        {
+                            var index = i;
+                            var (question, answer) = content.Faq[index];
+                            var open = openFaq == index;
+                            <div class="cp-faq @(open ? "open" : null)" @key="@($"{State.HelpTopic}-{index}")">
+                                <button type="button" class="cp-faq-question" aria-expanded="@(open ? "true" : "false")" @onclick="() => ToggleFaq(index)">
+                                    <span class="cp-faq-mark" aria-hidden="true"></span>
+                                    <span>@question</span>
+                                </button>
+                                @if (open)
+                                {
+                                    <p class="cp-faq-answer">@answer</p>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+
+            <p class="cp-help-contact">
+                Still not sure? <a href="mailto:info@bitplatform.dev">Write to us</a>, a person answers.
+            </p>
+        </div>
+    }
+</BitPanel>

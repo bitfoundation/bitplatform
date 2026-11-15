@@ -11,7 +11,7 @@ namespace Bit.BlazorUI;
 /// for the whole site, above all) and how they are styled. The source, the inline layout and the events are left out
 /// on purpose: they are what makes one document the one it is.
 /// </remarks>
-public class BitMarkdownViewerParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitMarkdownViewerParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitMarkdownViewer"/> cascading parameters within <see cref="BitParams"/>.

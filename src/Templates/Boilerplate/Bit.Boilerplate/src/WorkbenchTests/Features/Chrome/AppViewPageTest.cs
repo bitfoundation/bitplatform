@@ -137,7 +137,10 @@ public abstract class AppViewPageTest : WorkbenchPageTest
     }
 
     /// <summary>Waits until the view has saved this part of its stores' JSON.</summary>
-    protected Task WaitUntilSaved(string saved) => WorkbenchTestReviewer.WaitFor(ReadTheViewsSavedState, state => state.Contains(saved, StringComparison.Ordinal));
+    protected Task WaitUntilSaved(string saved) => WaitUntilSaved(state => state.Contains(saved, StringComparison.Ordinal));
+
+    /// <summary>Waits until the view's stores' JSON, as saved, passes the check, such as no longer naming what was removed.</summary>
+    protected Task WaitUntilSaved(Func<string, bool> check) => WorkbenchTestReviewer.WaitFor(ReadTheViewsSavedState, check);
 
     private Task<string> ReadTheViewsSavedState() => View().Locator("html").EvaluateAsync<string>("""
         () => new Promise((resolve, reject) => {

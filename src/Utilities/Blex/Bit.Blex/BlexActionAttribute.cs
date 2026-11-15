@@ -1,10 +1,16 @@
 ﻿namespace Bit.Blex;
 
 /// <summary>
-/// Marks a partial <c>void</c> method whose name starts with <c>On</c> as an action implementation.
+/// Marks a method whose name starts with <c>On</c> as an action implementation.
 /// The generator emits a public wrapper (with the <c>On</c> prefix stripped) that batches the
 /// mutation into a single, named, time-travel-recorded action.
 /// </summary>
+/// <remarks>
+/// The method may be synchronous (<c>void</c>, or returning a value) or asynchronous (<c>Task</c>,
+/// <c>ValueTask</c>, <c>Task&lt;T&gt;</c>, <c>ValueTask&lt;T&gt;</c>). The wrapper returns what the method returns --
+/// <c>Task</c>/<c>Task&lt;T&gt;</c> for both asynchronous kinds -- so an action that creates something can hand back
+/// its id. An action a middleware vetoes never runs, and its wrapper returns <c>default</c>.
+/// </remarks>
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
 public sealed class BlexActionAttribute : Attribute
 {

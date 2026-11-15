@@ -6,6 +6,10 @@
              Defining INCLUDE_WASM here lets AppRenderMode.WasmEnabled know the WASM client is part of the
              build and boot the app as Blazor WebAssembly even in Debug. See AppRenderMode.Current. -->
         <DefineConstants Condition=" '$(IncludeWasm)' == 'true' ">$(DefineConstants);INCLUDE_WASM</DefineConstants>
+        <!-- The demo pages' prose and code samples are string literals, and together they reached the 16 MB the metadata's
+             user string heap can hold (error CS8103). This feature, the one the compiler names for it, emits the
+             literals into the assembly's data section instead, which has no such limit. -->
+        <Features>$(Features);experimental-data-section-string-literals</Features>
     </PropertyGroup>
 
     <ItemGroup>
@@ -16,19 +20,19 @@
         <Content Remove="appsettings.json" />
         <EmbeddedResource Include="appsettings.json" />
 
-        <PackageReference Include="Bit.CodeAnalyzers" Version="11.0.0-pre-17">
+        <PackageReference Include="Bit.CodeAnalyzers" Version="11.0.0-pre-20">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="11.0.0-pre-17">
+        <PackageReference Include="Bit.SourceGenerators" Version="11.0.0-pre-20">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="11.0.0-rc.3.26522.148" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="11.0.0-rc.3.26522.148" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="11.0.0-rc.3.26522.148" />
-        <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="11.0.0-rc.3.26522.148" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="11.0.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="11.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="11.0.0" />
+        <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="11.0.0" />
 
         <Using Include="System.Net.Http.Json" />
         <Using Include="System.Collections.Concurrent" />
@@ -61,7 +65,7 @@
     <Import Project="MSBuild\DemoSharedEnumDocs.targets" />
 
     <ItemGroup>
-        <ProjectReference Include="..\..\..\Bit.BlazorUI.AI\Bit.BlazorUI.AI.csproj" />
+        <ProjectReference Include="..\..\..\Bit.BlazorUI.AI\Bit.BlazorUI.AI\Bit.BlazorUI.AI.csproj" />
         <ProjectReference Include="..\..\..\Bit.BlazorUI.Assets\Bit.BlazorUI.Assets.csproj" />
         <ProjectReference Include="..\..\..\Bit.BlazorUI.Extras\Bit.BlazorUI.Extras.csproj" />
         <ProjectReference Include="..\..\..\Bit.BlazorUI.Icons\Bit.BlazorUI.Icons.csproj" />

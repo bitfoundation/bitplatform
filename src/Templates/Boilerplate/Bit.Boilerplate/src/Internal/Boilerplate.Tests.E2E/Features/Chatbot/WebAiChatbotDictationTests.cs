@@ -7,7 +7,7 @@ namespace Boilerplate.Tests.E2E.Features.Chatbot;
 /// Speaking to the chat panel: a sentence is synthesised to a wav file, chromium runs with that file as its
 /// microphone, and the panel is asked to dictate. The sentence reaching the message box means the recorder captured
 /// it, the upload carried it and <c>ChatbotController.TranscribeSpeech</c> understood it (See
-/// <c>AppAiChatPanel.razor.Dictation.cs</c>).
+/// <c>AppAiChat.Transcribe</c>).
 /// <para>
 /// Chromium only - firefox can fake a device but not its contents, webkit neither - so other runs report
 /// inconclusive. <see cref="SpeechToTextTests"/> covers the same endpoint with no browser at all.
@@ -103,7 +103,7 @@ public partial class WebAiChatbotDictationTests : AppTestBase
         await WaitUntilInteractive(page);
 
         // Recording is free, the transcription request behind it needs an account (See
-        // AppAiChatPanel.EnsureSignedInForSpeech).
+        // AppAiChat.EnsureSignedInForSpeech).
         await SignIn(page, StoreUser.Email, StoreUser.Password);
 
         var panel = await AiChatPanel.Open(page);
@@ -113,13 +113,13 @@ public partial class WebAiChatbotDictationTests : AppTestBase
 
         await panel.DictateButton.ClickAsync();
 
-        // The timer beside the button is the panel saying the microphone is open; without it the recording never began.
-        await Expect(page.Locator(".speech-timer")).ToBeVisibleAsync();
+        // The button turning into a stop button is the panel saying the microphone is open; without it the recording never began.
+        await Expect(panel.StopDictationButton).ToBeVisibleAsync();
 
         // Ended as the sentence finishes: what follows it is silence, which a transcriber fills by repeating itself.
         await page.WaitForTimeoutAsync((float)(SpokenAudio.DurationOf(wavFile) + SpeakingMargin).TotalMilliseconds);
 
-        await panel.DictateButton.ClickAsync();
+        await panel.StopDictationButton.ClickAsync();
 
         // What was heard is written into the box rather than sent, so the user reads it first.
         try

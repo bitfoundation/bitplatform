@@ -85,6 +85,8 @@ global using Bit.BlazeDb.Querying;  // BlazeDbQuery, BlazeDbBound
 | --- | --- |
 | `Bit.BlazeDb` | The engine: tables, indexes, transactions, WAL/snapshot persistence, the storage abstraction with in-memory, file and encrypted backends. It also carries the Roslyn incremental source generator (binary serializers, key extractors and typed index definitions for `[BlazeDbTable]` types) as an analyzer, and - in `Bit.BlazeDb.Browser`, browser-only - the OPFS and IndexedDB storage backends (`[JSImport]` ES modules), Web Locks single-writer election, a WebCrypto cipher and cross-tab sync. |
 | `Bit.BlazeDb.EntityFrameworkCore` | The EF Core provider: `UseBlazeDb`, change tracking over live rows, LINQ translated to query plans. |
+| `Bit.BlazeDb.Blex` | Persists [Bit.Blex](../Blex) stores in a BlazeDb database instead of `localStorage` (see [Bit Platform integrations](#bit-platform-integrations)). |
+| `Bit.BlazeDb.Bcrdt` | Keeps [Bit.Bcrdt](../Bcrdt) collaborative documents in a BlazeDb database (see [Bit Platform integrations](#bit-platform-integrations)). |
 
 Everything public is prefixed `BlazeDb` (`BlazeDbDatabase`, `BlazeDbTable<TKey, TRow>`,
 `BlazeDbOpfsStorage`...) and lives under the `Bit.BlazeDb` namespace and its children.
@@ -573,6 +575,14 @@ foreach (var issue in db.VerifyIntegrity())
 | A storage backend | Every commit flushed to it. Commits reach storage on the background flusher within `FlushInterval` (100 ms by default), or at once with `await db.FlushAsync()`; a crash loses what was committed since the last flush, never part of a commit. |
 | After a flush fails | Committed data stays in memory and the flusher retries; `db.LastBackgroundError` reports the standing failure. |
 
+A flush counts as done only once the backend says the bytes are durable: `BlazeDbFileStorage` flushes each
+file to disk and, on Linux, Android and macOS, the directory as well whenever a file is created or replaced,
+so a new name survives a power loss along with its contents; `BlazeDbIndexedDbStorage` commits with strict
+durability, so a transaction completes only after the browser has flushed it; OPFS writes are atomic
+replacements through the browser's swap file. A process or tab that ends part-way through a checkpoint can
+leave the replaced generation's files behind; the writer removes them the next time it opens, on every
+backend that can list its files (all the built-in ones).
+
 Recovery replays the log up to its torn tail - a record a crash cut short, with nothing intact after it - and
 cuts the tail off, so the database comes back as of a commit boundary. A record that appears again, as a
 retried append can leave it, is applied once. Damage anywhere else - a record that fails its checksum with
@@ -859,6 +869,12 @@ var quota = await db.GetStorageQuotaAsync();   // null when the backend cannot s
 await BlazeDbOpfsStorage.RequestPersistenceAsync();   // ask not to be evicted
 ```
 
+The estimate covers the whole origin - the Cache API, other databases and other tabs write there too -
+and some browsers do not give one, so a write can still meet the real limit. The browser backends report
+that refusal (the browser's `QuotaExceededError`) as `BlazeDbStorageQuotaExceededException` too, and the
+engine handles it the same way: it compacts, which on success has made the buffered commits durable in the
+new snapshot, and otherwise calls `OnQuotaPressure` and refuses the flush.
+
 Wrapping a browser backend in `BlazeDbEncryptedStorage` keeps its quota awareness. When a background
 flush is refused (or fails for any other reason) the data stays committed in memory and the flusher
 keeps retrying; `db.LastBackgroundError` reports the standing failure so a UI can say durability is
@@ -888,6 +904,9 @@ var replica = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions
 await BlazeDbTabSync.CreateReplicaAsync("mydb", replica, onChanged: RefreshUiAsync);
 ```
 
+`CreateReplicaAsync` reloads the replica once when the writer has checkpointed since the replica opened, so
+a checkpoint that lands between the two calls is not missed until the next one.
+
 `CreateReadOnlyAsync` returns `null` when the database does not exist yet, rather than creating an
 empty one: a replica that opens before the writer has written anything should wait for it, not
 invent a database of its own. The storage it returns refuses every write, so forgetting
@@ -915,6 +934,53 @@ throws rather than guess; pass `allowWithoutWebLocks: true` if the application g
 tab. A tab restored from the back/forward cache re-checks that it still holds the lock and stops
 writing - the data stays in memory and `db.LastBackgroundError` says why - if another tab has
 taken over in the meantime.
+
+## Bit Platform integrations
+
+Two optional packages let other Bit Platform libraries keep their data in the application's BlazeDb database, so it
+shares one write-ahead log, one backup, one key for encryption at rest and one storage quota with everything else -
+on OPFS or IndexedDB in the browser, in files on the desktop and the server. Each library stays in charge of its own
+semantics; BlazeDb only stores and journals the bytes it is handed. Neither package is a dependency of the engine.
+
+### Blex state
+
+`Bit.BlazeDb.Blex` is an `IBlexStorage` over a `blex_state` table: Blex still decides what is persisted, when, and how
+it is serialized and protected; each persisted store is one row.
+
+```csharp
+// Wherever the database is opened
+var options = new BlazeDbDatabaseOptions { Storage = storage }.AddTable(TodoItem.Table).AddBlexState();
+
+// Program.cs - instead of AddBitBlexLocalStoragePersistence
+builder.Services.AddBitBlexBlazeDbPersistence(async (sp, _) => await sp.GetRequiredService<AppDatabase>().GetAsync());
+```
+
+A save commits at once and, by default, waits until the write is on storage (`flushOnSave: false` leaves it to the
+flush interval); a value equal to the stored one is not written again. In a read-only replica tab saves fail - the
+writer tab owns the database - and Blex reports them; the replica re-reads every store when it reloads from the
+writer's checkpoints, which Blex hears about as an external change, as it does a write by another instance over the
+same database. The rows belong to the database, not to a user: a browser tab's database is one user's, but on a
+Blazor Server host give each user a database of their own, or keep Blex's per-browser storage there.
+`new BlazeDbBlexStorage(database)` builds one by hand, for a `BlexStatePersistor` you create yourself.
+
+### Bcrdt documents
+
+`Bit.BlazeDb.Bcrdt` is an `IBcrdtDocumentStore` over a `bcrdt_records` table: Bcrdt still owns what an update means,
+how updates merge and when to compact; the store keeps each update as a row.
+
+```csharp
+var options = new BlazeDbDatabaseOptions { Storage = storage }.AddBcrdtDocuments();
+var db = await BlazeDbDatabase.OpenAsync(options);
+
+var store = new BlazeDbBcrdtDocumentStore(db);
+await using var persistence = await BcrdtDocumentPersistence.AttachAsync(document, store, "notes/42");
+```
+
+An append is one insert, committed in memory and journaled within the flush interval - the durability Bcrdt asks of
+a store, since a peer resends a record lost in a crash; call `db.FlushAsync()` where an edit has to be on storage at
+once. A compaction merges a document's records and replaces them in one transaction, and a delete removes them in
+one, so a crash leaves all the records or the merged one, never neither. Updates are rows like any other, held in
+memory; let Bcrdt compact to keep their number down.
 
 ## EF Core
 
@@ -973,7 +1039,9 @@ from anything EF does:
   of that type has unsaved changes in *any* live context on the engine, queries read the rows
   instead of the indexes so both agree. (Contexts on one engine register with it for exactly this
   purpose; the check costs a change-detection pass over the other contexts' trackers, paid only by
-  queries that would otherwise use an index.)
+  queries that would otherwise use an index.) What reaches storage is only ever what `SaveChanges`
+  committed: the log holds committed writes, and checkpoints and exports are built from it rather than from
+  memory, so an edit that was never saved - or whose context was discarded - is gone after the next open.
 - **`SaveChanges` is a memory operation.** It returns as soon as the transaction commits; the log
   reaches storage on the flush interval, or immediately if you call `context.Database.GetBlazeDb().FlushAsync()`.
   A duplicate key or unique-index violation fails the save with `DbUpdateException` (the engine's
@@ -1034,10 +1102,28 @@ rows already on disk decode into the wrong properties without an error. Pin ever
 (1 to 536,870,911) before a type persists real data; the generator warns (`BLZ013`) when a type pins
 some numbers but not others, which is the case where an automatic number moves most easily.
 
+Changing a property's type is safe when the old bytes cannot be misread: a field that comes back with a
+different wire type than the new type expects (a `string` that became an `int`, say) is skipped and reads as
+the default. Integer types share one wire type, though, and signed ones are zigzag-encoded while unsigned
+ones, `char` and `bool` are not - so changing between those groups (`byte` to `int`, `uint` to `long`, `bool`
+to `int`) reads every stored value wrong, without an error. Give the property a new field number for such a
+change and copy the values over in a migration; changes within a group (`int` to `long`, `ushort` to `uint`)
+are safe.
+
 Collections (`List<T>`, `T[]`) and `byte[]` can be stored but not indexed, and a collection's element
 type has to be non-nullable: the wire format has no encoding for a null element, only for an absent
 field. The generator reports each of these as an error on the property rather than letting the
 generated code fail to compile or the index throw on its first insert.
+
+For the same reason a `string` or `byte[]` property declared non-nullable cannot hold null once it is
+persisted: the null would read back as `""` or an empty array and match different queries after a restart
+than before. A write that would persist one fails with a `BlazeDbException` naming the property; declare it
+`string?` to store null. (Nullable-oblivious code, and struct tables - whose strings are null whenever a row is
+made without them, with no compiler warning - keep the old behavior: null stored as empty.) Text that is not
+valid UTF-16 - a string holding half of a surrogate pair, as one cut through the middle of an emoji does - is
+refused the same way, because it has no exact UTF-8 encoding and would come back altered. Both checks apply
+to writes; a checkpoint stores whatever memory holds, so a row changed in place after its write was refused
+cannot stop compaction.
 
 ## Compile-time diagnostics
 
@@ -1046,7 +1132,9 @@ or property at fault, rather than emitting code that fails to compile or a descr
 runtime. An error on the type itself - BLZ001, 002, 004, 006, 007, 010, 011, 012, 018 or 019, or a BLZ003 on a
 property its constructor takes - leaves it with no generated partial at all, so its own diagnostic arrives
 together with "does not contain a definition for 'Table'" errors wherever the type is used - fix the `BLZ`
-one first. The other errors leave out only the property or index at fault.
+one first. The other errors leave out only the property or index at fault. The warnings point at something
+that compiles but is probably not what was meant: BLZ020 at a get-only auto-property the reader cannot restore,
+which is therefore not stored.
 
 | Id | Severity | Title |
 | --- | --- | --- |
@@ -1069,6 +1157,17 @@ one first. The other errors leave out only the property or index at fault.
 | BLZ017 | Error | Indexed property cannot be stored |
 | BLZ018 | Error | Required member is not stored |
 | BLZ019 | Error | Name is reserved for generated members |
+| BLZ020 | Warning | Get-only auto-property is not stored |
+
+## Metrics
+
+BlazeDb publishes metrics through `System.Diagnostics.Metrics` on a meter named `Bit.BlazeDb`
+(`BlazeDbDiagnostics.MeterName`), so OpenTelemetry (`.AddMeter("Bit.BlazeDb")`), Belemetry or
+`dotnet-counters monitor --counters Bit.BlazeDb` can collect them. They cover what decides whether data is
+safe and how far durability lags: commits and rollbacks, log flushes (count, bytes, duration), checkpoints
+(count, duration, snapshot size), recovery on open (duration, log records replayed), storage failures by
+operation and exception type, and quota refusals. With nobody listening each costs a single check. Reads
+are never measured, and no measurement carries a table name, a key or any row content.
 
 ## Performance
 
@@ -1086,8 +1185,9 @@ round-trips and wasm execution overhead on every query.
 
 As the table grows, the first page of an ordered index stays flat - 283 ns at 100,000 rows against
 274 ns at 10,000 - and the cost of persistence grows with the data: a checkpoint of 100,000 small rows
-takes about 4 ms and opening that database (decoding the snapshot and rebuilding every index) about 22 ms
-on a desktop CPU; expect several times that in WebAssembly.
+takes about 5 ms - without pausing writers: it is built from what storage holds, outside the write lock - and
+opening that database (decoding the snapshot and rebuilding every index) about 22 ms on a desktop CPU; expect
+several times that in WebAssembly.
 
 Reproduce with the suite in `Tests/Bit.BlazeDb.Benchmarks` (see its README). The demo app also has an
 in-browser micro-benchmark page (`/bench`) that measures the same operations in the WebAssembly

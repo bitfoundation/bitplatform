@@ -220,6 +220,25 @@ public class BinkCanvasTests : BunitContext
     }
 
     [TestMethod]
+    public void Exports_pdf_from_the_component_and_the_selection_when_asked()
+    {
+        IRenderedComponent<BinkCanvas> canvas = Render<BinkCanvas>();
+        var first = new BinkStroke(TestPoints(), new BinkPenBrush());
+        var second = new BinkStroke(TestPoints(200), new BinkPenBrush());
+        canvas.Instance.CurrentDocument.AddElement(first);
+        canvas.Instance.CurrentDocument.AddElement(second);
+
+        BinkPdfExportResult whole = canvas.Instance.ExportPdf();
+        Assert.StartsWith("%PDF-", System.Text.Encoding.ASCII.GetString(whole.Bytes, 0, 5), StringComparison.Ordinal);
+        Assert.AreEqual(1, whole.PageCount);
+
+        canvas.InvokeAsync(() => canvas.Instance.Selection.Set(second.Id)).GetAwaiter().GetResult();
+        BinkPdfExportResult selected = canvas.Instance.ExportPdf(new BinkPdfExportOptions { Region = BinkExportRegion.Selection, Padding = 0, Scale = 1 });
+        string text = System.Text.Encoding.Latin1.GetString(selected.Bytes);
+        StringAssert.Contains(text, $"/MediaBox [0 0 {BinkPdfFile.Number(second.Bounds.Width)} {BinkPdfFile.Number(second.Bounds.Height)}]", "Cropped to the selected stroke.");
+    }
+
+    [TestMethod]
     public void The_touch_action_style_follows_the_gesture_setting()
     {
         IRenderedComponent<BinkCanvas> withGestures = Render<BinkCanvas>(p => p.Add(c => c.EnableTouchGestures, true));

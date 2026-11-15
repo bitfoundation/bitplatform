@@ -870,13 +870,6 @@ private BitDropdownNameSelectors<Product, string> comboBoxNameSelectors = new()
     private readonly string example12RazorCode = @"
 @using System.ComponentModel.DataAnnotations;
 
-<style>
-    .validation-message {
-        color: #A4262C;
-        font-size: 0.75rem;
-    }
-</style>
-
 <EditForm Model=""validationModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
     <DataAnnotationsValidator />
 
@@ -884,16 +877,16 @@ private BitDropdownNameSelectors<Product, string> comboBoxNameSelectors = new()
                  Label=""Select 1 item""
                  Items=""GetBasicCustoms()""
                  NameSelectors=""nameSelectors""
-                 Placeholder=""Select an item"" />
-    <ValidationMessage For=""@(() => validationModel.Category)"" />
+                 Placeholder=""Select an item""
+                 ShowValidationMessage />
 
     <BitDropdown @bind-Values=""validationModel.Products""
                  MultiSelect
                  Items=""GetBasicCustoms()""
                  Placeholder=""Select items""
                  NameSelectors=""nameSelectors""
-                 Label=""Select min 1 and max 2 items"" />
-    <ValidationMessage For=""@(() => validationModel.Products)"" />
+                 Label=""Select min 1 and max 2 items""
+                 ShowValidationMessage />
 
     <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
 </EditForm>

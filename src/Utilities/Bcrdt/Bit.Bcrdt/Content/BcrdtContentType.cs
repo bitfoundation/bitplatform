@@ -93,19 +93,50 @@ public sealed class BcrdtContentType(BcrdtAbstractType type) : IBcrdtContent
     }
 
     /// <inheritdoc/>
-    public void Write(ref BcrdtBufferWriter writer, int offset) => writer.WriteVarUInt((ulong)Type.Kind);
+    /// <remarks>
+    /// The kind, and for an XML element its name after it: the name is part of what the element is, and
+    /// a peer could not create the same element without it.
+    /// </remarks>
+    public void Write(ref BcrdtBufferWriter writer, int offset)
+    {
+        writer.WriteVarUInt((ulong)Type.Kind);
+        if (Type.Kind == BcrdtTypeKind.XmlElement)
+        {
+            writer.WriteString(Type is BcrdtXmlElement element
+                ? element.Name
+                : throw new InvalidOperationException($"Only a {nameof(BcrdtXmlElement)} can claim the XML element kind."));
+        }
+    }
 
     /// <summary>Reads a payload written by <see cref="Write"/>.</summary>
+    /// <exception cref="BcrdtFormatException">
+    /// The kind is unknown or untyped, or an element's name is not a valid XML name.
+    /// </exception>
     public static BcrdtContentType Read(ref BcrdtBufferReader reader)
     {
         ulong kind = reader.ReadVarUInt();
 
         // Only roots can be untyped: a nested type's kind always travels with it. And a value wider
         // than the enum must not be truncated into a valid kind.
-        if (kind >= (ulong)BcrdtTypeKind.Untyped)
+        if (kind == (ulong)BcrdtTypeKind.Untyped || kind > (ulong)BcrdtTypeKind.XmlText)
         {
             throw BcrdtFormatException.UnknownTag("collaborative type", (int)Math.Min(kind, int.MaxValue));
         }
+
+        if (kind == (ulong)BcrdtTypeKind.XmlElement)
+        {
+            // Checked exactly as a local name is, so a peer cannot give replicas an element they could
+            // never have created - or one whose markup would not parse. Throwing here, while decoding,
+            // rejects the whole update before any of it is applied.
+            string name = reader.ReadString();
+            if (!BcrdtXmlSyntax.IsValidName(name))
+            {
+                throw new BcrdtFormatException(
+                    $"An XML element name must be a non-empty XML name of at most {BcrdtXmlElement.MaxNameLength} characters.");
+            }
+            return new BcrdtContentType(new BcrdtXmlElement(name));
+        }
+
         return new BcrdtContentType(BcrdtTypeFactory.Create((BcrdtTypeKind)kind));
     }
 }
@@ -115,12 +146,21 @@ public static class BcrdtTypeFactory
 {
     /// <summary>Creates an empty instance of the given kind.</summary>
     /// <exception cref="BcrdtFormatException">The kind is not recognised.</exception>
+    /// <exception cref="ArgumentException">
+    /// The kind is <see cref="BcrdtTypeKind.XmlElement"/>, which cannot exist without a name: create one
+    /// with <c>new BcrdtXmlElement(name)</c>.
+    /// </exception>
     public static BcrdtAbstractType Create(BcrdtTypeKind kind) => kind switch
     {
         BcrdtTypeKind.Map => new BcrdtMap(),
         BcrdtTypeKind.Array => new BcrdtArray(),
         BcrdtTypeKind.Text => new BcrdtText(),
         BcrdtTypeKind.Set => new BcrdtSet(),
+        BcrdtTypeKind.Counter => new BcrdtCounter(),
+        BcrdtTypeKind.XmlFragment => new BcrdtXmlFragment(),
+        BcrdtTypeKind.XmlText => new BcrdtXmlText(),
+        BcrdtTypeKind.XmlElement => throw new ArgumentException(
+            "An XML element cannot be created without its name: use new BcrdtXmlElement(name).", nameof(kind)),
         BcrdtTypeKind.Untyped => new BcrdtUntypedType(),
         _ => throw BcrdtFormatException.UnknownTag("collaborative type", (int)kind),
     };

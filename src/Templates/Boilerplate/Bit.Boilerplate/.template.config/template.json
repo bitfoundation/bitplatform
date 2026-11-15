@@ -37,7 +37,7 @@
         "sdkVersion": {
             "type": "generated",
             "generator": "switch",
-            "replaces": "\"version\": \"11.0.100-rc.3.26522.148\"",
+            "replaces": "\"version\": \"11.0.100\"",
             "parameters": {
                 "evaluator": "C++",
                 "datatype": "string",
@@ -48,26 +48,7 @@
                     },
                     {
                         "condition": "",
-                        "value": "\"version\": \"11.0.100-rc.3.26522.148\""
-                    }
-                ]
-            }
-        },
-        "sdkRollForward": {
-            "type": "generated",
-            "generator": "switch",
-            "replaces": "\"rollForward\": \"disable\"",
-            "parameters": {
-                "evaluator": "C++",
-                "datatype": "string",
-                "cases": [
-                    {
-                        "condition": "(framework == 'net10.0')",
-                        "value": "\"rollForward\": \"latestFeature\""
-                    },
-                    {
-                        "condition": "",
-                        "value": "\"rollForward\": \"disable\""
+                        "value": "\"version\": \"11.0.100\""
                     }
                 ]
             }
@@ -75,18 +56,18 @@
         "devContainerImage": {
             "type": "generated",
             "generator": "switch",
-            "replaces": "mcr.microsoft.com/dotnet/sdk:11.0.100-rc.3",
+            "replaces": "mcr.microsoft.com/dotnet/sdk:11.0.100",
             "parameters": {
                 "evaluator": "C++",
                 "datatype": "string",
                 "cases": [
                     {
                         "condition": "(framework == 'net10.0')",
-                        "value": "mcr.microsoft.com/dotnet/sdk:10.0.403"
+                        "value": "mcr.microsoft.com/dotnet/sdk:10.0.404"
                     },
                     {
                         "condition": "",
-                        "value": "mcr.microsoft.com/dotnet/sdk:11.0.100-rc.3"
+                        "value": "mcr.microsoft.com/dotnet/sdk:11.0.100"
                     }
                 ]
             }
@@ -101,30 +82,11 @@
                 "cases": [
                     {
                         "condition": "(framework == 'net10.0')",
-                        "value": "dotnet-ef@10.0.14"
+                        "value": "dotnet-ef@10.0.15"
                     },
                     {
                         "condition": "",
                         "value": "dotnet-ef@11.0.0-rc.3.26522.148"
-                    }
-                ]
-            }
-        },
-        "xcodeVersion": {
-            "type": "generated",
-            "generator": "switch",
-            "replaces": "xcode-version: '27.0'",
-            "parameters": {
-                "evaluator": "C++",
-                "datatype": "string",
-                "cases": [
-                    {
-                        "condition": "(framework == 'net10.0')",
-                        "value": "xcode-version: '27.1'"
-                    },
-                    {
-                        "condition": "",
-                        "value": "xcode-version: '27.0'"
                     }
                 ]
             }
@@ -853,6 +815,7 @@
                         "**/node_modules/**",
                         "**/[Tt]est[Rr]esults/**",
                         ".playwright-mcp/**",
+                        "openapi/**",
                         ".template.config/**",
                         "**/*.filelist",
                         "**/*.user",
@@ -908,7 +871,7 @@
                     "condition": "(module != Sales || (database != PostgreSQL && database != SqlServer))",
                     "exclude": [
                         "src/Shared/Features/Products/ProductRecommendationDto.cs",
-                        "src/Client/Boilerplate.Client.Core/Components/Layout/AppAiChatPanelCards/ProductsCard*"
+                        "src/Client/Boilerplate.Client.Core/Components/Layout/AiChat/ProductsCard*"
                     ]
                 },
                 {
@@ -966,6 +929,7 @@
                         "src/Tests/Features/Identity/GetAccessTokenTests.cs",
                         "src/Tests/Features/Identity/AccessTokenCookieTests.cs",
                         "src/Tests/Features/Identity/IStorageServiceContractTests.cs",
+                        "src/Tests/Features/Identity/ProfileBackOnlineUITests.cs",
                         "src/Tests/Infrastructure/Components/BitOtpInputUtils.cs",
                         "src/Tests/Infrastructure/Components/BitSnackBarUtils.cs",
                         "src/Tests/Infrastructure/Components/AppMenuUtils.cs",
@@ -974,7 +938,6 @@
                         "src/Tests/Features/Urls/ODataQueryFilterTests.cs",
                         "src/Tests/Features/Diagnostics/TelemetryScopeTests.cs",
                         "src/Tests/Features/Diagnostics/LoggingConfigurationTests.cs",
-                        "src/Tests/Features/Diagnostics/AppInsightsReadinessTests.cs",
                         "src/Tests/Features/Diagnostics/DiagnosticModalVirtualizationTests.cs",
                         "src/Tests/Features/TemplateConfig/SourceNameLeakTests.cs",
                         "src/Tests/Features/TemplateConfig/HybridHostHardeningTests.cs",
@@ -991,6 +954,8 @@
                         "src/Tests/Features/Categories/AddOrEditCategoryModalTests.cs",
                         "src/Tests/Features/Ads/AdsServiceTests.cs",
                         "src/Tests/Features/Configuration/ClientSettingsValidationTests.cs",
+                        "src/Tests/Features/Configuration/HttpClientDefaultsTests.cs",
+                        "src/Tests/Features/ForceUpdate/ForceUpdateTests.cs",
                         "src/Tests/Features/Identity/TrustedOriginsTests.cs",
                         "src/Tests/Features/Identity/MagicLinkSignInTests.cs",
                         "src/Tests/Features/Identity/MagicLinkSignInUtils.cs",
@@ -1067,6 +1032,7 @@
                         "src/Tests/Features/Identity/WebAuthnCredentialOwnershipTests.cs",
                         "src/Tests/Features/Attachments/AttachmentReplacementTests.cs",
                         "src/Tests/Features/Attachments/UploadFormatAllowListTests.cs",
+                        "src/Tests/Features/Attachments/Assets/**",
                         "src/Tests/Features/Products/ProductImageLifecycleTests.cs",
                         "src/Tests/Features/Products/ProductCultureSafetyTests.cs",
                         "src/Tests/Features/Categories/CategoryDeleteGuardTests.cs",
@@ -1130,8 +1096,9 @@
                         "src/Tests/Features/Diagnostics/DiagnosticReportSourcesTests.cs",
                         "src/Tests/Features/Mcp/GetCurrentDateTimeMcpIntegrationTests.cs",
                         "src/Tests/Features/Chatbot/SystemPromptContractTests.cs",
-                        "src/Tests/Features/Chatbot/AiChatMessageWireContractTests.cs",
+                        "src/Tests/Features/Chatbot/AiChatWireContractTests.cs",
                         "src/Tests/Features/Chatbot/AiChatPanelThemeUITests.cs",
+                        "src/Tests/Features/Chatbot/AiChatPanelLayoutUITests.cs",
                         "src/Tests/Features/Chatbot/ChatbotSpeechEndpointTests.cs",
                         "src/Tests/Features/Chatbot/ChatbotVoiceCallTests.cs",
                         "src/Tests/Features/Chatbot/SpeakableTextTests.cs",
@@ -1141,12 +1108,13 @@
                         "src/Tests/Features/Chatbot/AiChatPanelCardsUITests.cs",
                         "src/Tests/Features/Chatbot/AiChatPanelHistoryUITests.cs",
                         "src/Tests/Features/Chatbot/AiChatPanelGreetingUITests.cs",
-                        "src/Tests/Features/Chatbot/PartialJsonReaderTests.cs",
                         "src/Tests/Features/Chatbot/ChatbotConversationMetricsTests.cs",
                         "src/Tests/Features/Chatbot/ChatbotMetricsTests.cs",
                         "src/Tests/Features/Chatbot/TestChatClient.cs",
+                        "src/Tests/Features/Chatbot/TestAiChatPanel.cs",
                         "src/Tests/Features/Chatbot/SpeechHealthChecksTests.cs",
                         "src/Tests/Features/Chatbot/ChatbotCostLimitsTests.cs",
+                        "src/Tests/Features/Chatbot/AiChatAnswerStepsTests.cs",
                         "src/Tests/Features/SignalR/AzureSignalRHealthCheckTests.cs",
                         "src/Tests/Features/Attachments/AiChatImagesRetentionTests.cs"
                     ]
@@ -1217,7 +1185,7 @@
                         "src/Server/Boilerplate.Server.Api/Features/Identity/Configurations/UserSessionConfiguration.cs",
                         "src/Server/Boilerplate.Server.Api/Infrastructure/Extensions/IClientProxyExtensions.cs",
                         "src/Client/Boilerplate.Client.Core/Components/Layout/AppAiChatPanel.*",
-                        "src/Client/Boilerplate.Client.Core/Components/Layout/AppAiChatPanelCards/**",
+                        "src/Client/Boilerplate.Client.Core/Components/Layout/AiChat/**",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/SystemPromptsPage.*",
                         "src/Client/Boilerplate.Client.Core/Infrastructure/Services/SignalRInfiniteRetryPolicy.cs",
                         "src/Client/Boilerplate.Client.Core/Infrastructure/Services/AppHubConnection.cs"
@@ -1283,14 +1251,6 @@
                     ]
                 },
                 {
-                    "condition": "(appInsights != true)",
-                    "exclude": [
-                        "src/Client/Boilerplate.Client.Core/Infrastructure/Services/AppInsightsJsSdkService.cs",
-                        "src/Shared/ApplicationInsightsOptions.cs",
-                        "src/Tests/Features/Diagnostics/AppInsightsReadinessTests.cs"
-                    ]
-                },
-                {
                     "condition": "(database != PostgreSQL)",
                     "exclude": [
                         "src/Server/Boilerplate.Server.Api/Infrastructure/Data/Configurations/PostgresDateTimeOffsetConverter.cs",
@@ -1347,7 +1307,7 @@
                     "condition": "(ads != true)",
                     "exclude": [
                         "src/Client/Boilerplate.Client.Core/Components/Pages/Settings/UpgradeAccountSection*.*",
-                        "src/Workbench/Components/Pages/AppPages/Settings/UpgradeAccountSection*.*",
+                        "src/Workbench/Components/Pages/AppPages/Settings/Data/WorkbenchAdsService.cs",
                         "src/Client/Boilerplate.Client.Core/Scripts/Ads.ts",
                         "src/Client/Boilerplate.Client.Core/Infrastructure/Services/Contracts/IAdsService.cs",
                         "src/Client/Boilerplate.Client.Core/Infrastructure/Services/AdsService.cs",

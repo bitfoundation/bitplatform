@@ -443,8 +443,9 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     /// by the input through aria-describedby and announced by a live region the moment it shows up.
     /// </summary>
     /// <remarks>
-    /// A DateRangePicker inside an <c>EditForm</c> already gets its messages from the cascading EditContext
-    /// through the <c>ValidationMessage</c> component.
+    /// A DateRangePicker inside an <c>EditForm</c> already gets its messages from the cascading EditContext,
+    /// which <see cref="ShowValidationMessage"/> shows in this same place - giving way to this message while it
+    /// is set - or the <c>ValidationMessage</c> component shows wherever the page puts it.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public string? ErrorMessage { get; set; }
@@ -938,6 +939,23 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     /// show up in two grids at once.
     /// </summary>
     [Parameter] public bool ShowOutsideDays { get; set; } = true;
+
+    /// <summary>
+    /// Shows the messages the cascading EditContext holds for the bound field - the ones of its data annotations, the
+    /// one the DateRangePicker gives a typed text it refuses (<see cref="InvalidErrorMessage"/>,
+    /// <see cref="OutOfRangeErrorMessage"/> or <see cref="DisabledDateErrorMessage"/>), or those of any other validator
+    /// of the form - under the DateRangePicker, where <see cref="ErrorMessage"/> goes, so an <c>EditForm</c> needs no
+    /// <c>ValidationMessage</c> component beside the field. The input (the calendar, with <see cref="Standalone"/>)
+    /// references them through its aria-describedby attribute, so they are read out whenever it takes the focus.
+    /// </summary>
+    /// <remarks>
+    /// An <see cref="ErrorMessage"/> or <see cref="ErrorMessageTemplate"/> of the app's own wins the place while it is
+    /// set. Unlike an ErrorMessage, the messages are not announced through the live region of the DateRangePicker: a
+    /// submit validates every field of the form at once, and a message from each of them read out in a row would bury
+    /// the form under its own errors - the field that takes the focus says what is wrong with it. A DateRangePicker
+    /// that validates nothing (<see cref="BitInputBase{TValue}.NoValidate"/>) or is bound to nothing shows none.
+    /// </remarks>
+    [Parameter] public bool ShowValidationMessage { get; set; }
 
     /// <summary>
     /// Whether the week number (weeks 1 to 53) should be shown before each week row.
@@ -4501,6 +4519,13 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
     private bool HasErrorMessage => ErrorMessage.HasValue() || ErrorMessageTemplate is not null;
 
+    // The messages of the EditContext the error line shows (ShowValidationMessage), which only take it while the app
+    // has no message of its own there. They mark nothing themselves: the EditContext already has.
+    private string? ShownValidationMessage => ShowValidationMessage && HasErrorMessage is false ? FieldValidationMessage : null;
+
+    // Whether the error line under the field is rendered, for the app's own message or for the EditContext's.
+    private bool HasErrorLine => HasErrorMessage || ShownValidationMessage is not null;
+
     // A rejection the app decided on its own, which the EditContext knows nothing about. A message is one:
     // a field that says what is wrong with its range is a field saying the range is wrong.
     protected override bool HasError => Invalid || HasErrorMessage;
@@ -4521,8 +4546,11 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
                                      : null;
 
     // The element the rejection is described by: a label stands in for a template on focus as well, which may
-    // well be a bare icon with no text to describe the field with at all.
-    private string? ErrorDescriptionId => HasErrorAriaLabel ? _errorLabelId : HasErrorMessage ? _errorId : null;
+    // well be a bare icon with no text to describe the field with at all. The forced state's label gives way to a
+    // message of the EditContext on screen, which is the text the reader can see.
+    private string? ErrorDescriptionId => HasErrorAriaLabel && (HasErrorMessage || ShownValidationMessage is null) ? _errorLabelId
+                                          : HasErrorLine ? _errorId
+                                          : null;
 
     // What is wrong with the range first, then whatever description the app splatted onto the input itself,
     // which is carried over rather than replaced: aria-describedby is a space separated list of IDREFs.

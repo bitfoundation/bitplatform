@@ -12,6 +12,9 @@ public class HomePageUITests : WorkbenchPageTest
 
     private ILocator Header => Page.Locator("header.shell-header");
 
+    /// <summary>A page's title, after the count of what the agents' tasks wait for, which tests sharing the Workbench may have left.</summary>
+    private static Regex WithWaiting(string title) => new($@"^(\(\d+\) )?{Regex.Escape(title)}$");
+
     private ILocator Headline => Page.GetByRole(AriaRole.Heading, new() { Name = WorkbenchStrings.HomeHeadline, Level = 1 });
 
     [TestMethod, EverySurface]
@@ -19,7 +22,7 @@ public class HomePageUITests : WorkbenchPageTest
     {
         await OpenHome();
 
-        await Expect(Page).ToHaveTitleAsync(WorkbenchStrings.HomePageTitle);
+        await Expect(Page).ToHaveTitleAsync(WithWaiting(WorkbenchStrings.HomePageTitle));
         await Expect(Headline).ToBeVisibleAsync();
         await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = WorkbenchStrings.HomeWhyTitle, Level = 2 })).ToBeVisibleAsync();
         await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = WorkbenchStrings.HomeHowTitle, Level = 2 })).ToBeVisibleAsync();
@@ -206,7 +209,7 @@ public class HomePageUITests : WorkbenchPageTest
 
         Assert.IsLessThanOrEqualTo(Page.ViewportSize!.Width, width);
 
-        await Expect(Header.GetByRole(AriaRole.Combobox, new() { Name = WorkbenchStrings.Language })).ToBeInViewportAsync();
+        await Expect(Header.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.WorkbenchLanguage, Exact = true })).ToBeInViewportAsync();
         await Expect(Header.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.ToggleWorkbenchTheme, Exact = true })).ToBeInViewportAsync();
     }
 
@@ -237,8 +240,8 @@ public class HomePageUITests : WorkbenchPageTest
     {
         await OpenHome();
 
-        await Press(Header.GetByRole(AriaRole.Combobox, new() { Name = WorkbenchStrings.Language }));
-        await Press(Page.GetByRole(AriaRole.Option, new() { Name = "فارسی", Exact = true }));
+        await Press(Header.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.WorkbenchLanguage, Exact = true }));
+        await Press(Page.GetByRole(AriaRole.Menuitemradio, new() { Name = "فارسی", Exact = true }));
 
         var headline = InCulture("fa-IR", nameof(WorkbenchStrings.HomeHeadline));
 
@@ -328,7 +331,7 @@ public class HomePageUITests : WorkbenchPageTest
 
         await Expect(Page).ToHaveURLAsync(new Regex("/workbench/shifts$"));
         await WaitForViews();
-        await Expect(Page).ToHaveTitleAsync($"{WorkbenchStrings.ShiftsTitle} · {WorkbenchStrings.WorkbenchTitle}");
+        await Expect(Page).ToHaveTitleAsync(WithWaiting($"{WorkbenchStrings.ShiftsTitle} · {WorkbenchStrings.WorkbenchTitle}"));
     }
 
     [TestMethod, EverySurface]

@@ -45,10 +45,6 @@ public partial class BitModal : BitComponentBase
     // Whether the overflow of a scroller was actually toggled during the open sequence, so the close sequence
     // toggles it back if and only if it was toggled, regardless of later changes to AutoToggleScroll.
     private bool _scrollToggledOnOpen;
-    // Snapshots of the scroller target captured during open, so the close sequence restores the exact same
-    // scroller even if ScrollerElement/ScrollerSelector changed since the Modal was opened.
-    private ElementReference? _scrollerElementOnToggle;
-    private string? _scrollerSelectorOnToggle;
     // Snapshots the drag element selector the drag handlers were registered with, so teardown unregisters the
     // exact same selector even if DragElementSelector changed since the Modal was opened.
     private string? _dragElementSelectorOnSetup;
@@ -1626,31 +1622,34 @@ public partial class BitModal : BitComponentBase
     // closes, and the room that gave back is what an absolutely positioned Modal is pushed down by.
     private async Task ToggleScroll(bool isOpen)
     {
-        if (isOpen)
-        {
-            // Snapshot the decision at open time; the close reuses it instead of re-reading
-            // AutoToggleScroll, which may have changed since the Modal was opened.
-            _scrollToggledOnOpen = (_params.AutoToggleScroll ?? false) && IsDisposed is false;
-            if (_scrollToggledOnOpen is false) return;
-
-            // Snapshot the scroller target at open time so the close restores the same scroller, even if
-            // ScrollerElement/ScrollerSelector changed in the meantime.
-            _scrollerElementOnToggle = ScrollerElementTarget;
-            _scrollerSelectorOnToggle = _params.ScrollerSelector;
-        }
-        else
-        {
-            // Only hand the overflow back if it was actually taken away, regardless of the current value.
-            if (_scrollToggledOnOpen is false) return;
-
-            _scrollToggledOnOpen = false;
-        }
-
         try
         {
-            _offsetTop = _scrollerElementOnToggle.HasValue
-                ? await _js.BitUtilsToggleOverflow(_containerId, _scrollerElementOnToggle.Value, isOpen)
-                : await _js.BitUtilsToggleOverflow(_containerId, _scrollerSelectorOnToggle ?? "body", isOpen);
+            if (isOpen)
+            {
+                // Snapshot the decision at open time; the close reuses it instead of re-reading
+                // AutoToggleScroll, which may have changed since the Modal was opened.
+                _scrollToggledOnOpen = (_params.AutoToggleScroll ?? false) && IsDisposed is false;
+                if (_scrollToggledOnOpen is false) return;
+
+                // The Modal has always let the scroller shift by the width of the scrollbar it takes away,
+                // so the room is not given back as padding.
+                var element = ScrollerElementTarget;
+                _offsetTop = element.HasValue
+                    ? await _js.BitUtilsLockScrollWithOffset(_containerId, element.Value, compensate: false)
+                    : await _js.BitUtilsLockScrollWithOffset(_containerId, _params.ScrollerSelector ?? "body", compensate: false);
+            }
+            else
+            {
+                // Only hand the overflow back if it was actually taken away, regardless of the current value.
+                if (_scrollToggledOnOpen is false) return;
+
+                _scrollToggledOnOpen = false;
+
+                // The hold is registered under the key, against the scroller it was taken on, so releasing the
+                // key hands back that scroller even if ScrollerElement / ScrollerSelector changed since the
+                // Modal was opened.
+                await _js.BitUtilsUnlockScroll(_containerId);
+            }
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
@@ -1903,14 +1902,7 @@ public partial class BitModal : BitComponentBase
 
                 if (toggled)
                 {
-                    if (_scrollerElementOnToggle.HasValue)
-                    {
-                        await _js.BitUtilsToggleOverflow(_containerId, _scrollerElementOnToggle.Value, false);
-                    }
-                    else
-                    {
-                        await _js.BitUtilsToggleOverflow(_containerId, _scrollerSelectorOnToggle ?? "body", false);
-                    }
+                    await _js.BitUtilsUnlockScroll(_containerId);
                 }
 
                 if (stored)

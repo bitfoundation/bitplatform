@@ -25,7 +25,8 @@ namespace Bit.Bcrdt;
 /// <para>
 /// Several tabs may hold the same document open at once. Each is its own replica with its own client
 /// identity, all writing to the same store; updates merge, so what any one of them loads is the union of
-/// everything every tab stored.
+/// everything every tab stored. To have them follow each other as they edit, rather than on the next load, add
+/// <see cref="BcrdtCollaborationBuilder.UseCrossTabSync"/>.
 /// </para>
 /// <para>
 /// IndexedDB is reached through JavaScript interop, which does not exist while a component is

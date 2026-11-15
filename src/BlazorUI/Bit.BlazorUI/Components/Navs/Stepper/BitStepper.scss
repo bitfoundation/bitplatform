@@ -1,0 +1,229 @@
+﻿@import "../../../Styles/functions.scss";
+
+// Public CSS variables. They are read with a fallback and never declared here, so a value set on :root, on an
+// ancestor, on the Style of a stepper or on the Style of a single step inherits down to whatever reads it:
+//   --bit-Stepper-indicator-size      diameter of the indicator of a step                        (default: spacing(4))
+//   --bit-Stepper-active-color        fill of the indicator of the completed and current steps,
+//                                     and of the line after a completed step                     (default: $clr-pri)
+//   --bit-Stepper-active-text-color   number and icon color on that fill                         (default: $clr-pri-text)
+//   --bit-Stepper-error-color         fill of the indicator and color of the text of a step in error (default: $clr-err)
+//   --bit-Stepper-connector-color     color of the line between two steps                        (default: $clr-brd-sec)
+//   --bit-Stepper-connector-width     thickness of the line between two steps                    (default: $shp-border-width-thick)
+// The colors never override a disabled step, which keeps its disabled palette.
+
+.bit-stp {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    list-style: none;
+    color: $clr-fg-pri;
+    font-size: $tg-fs-md;
+    font-family: $tg-font-family;
+}
+
+.bit-stp-hrz {
+    flex-direction: row;
+    align-items: center;
+}
+
+.bit-stp-vrt {
+    flex-direction: column;
+}
+
+.bit-stp-stp {
+    display: flex;
+}
+
+// A step takes what its label needs plus an equal share of the room left in the row, which its connector fills up to
+// the next step, so the lines come out equally long and a label only wraps once the row is too narrow for them all.
+// A step never shrinks past the longest word of its label, so a row too narrow for every step makes the stepper wider
+// than its container rather than run a label into the line next to it; a vertical stepper is the layout for that room.
+// The last one has no connector, so it only takes what its own label needs.
+.bit-stp-hrz > .bit-stp-stp {
+    flex: 1 1 auto;
+    align-items: center;
+
+    &:last-child {
+        flex: 0 0 auto;
+    }
+}
+
+.bit-stp-vrt > .bit-stp-stp {
+    flex-direction: column;
+    align-items: stretch;
+}
+
+// The clickable part of a step: a button when the step can be gone to, a plain block when it cannot. Both are laid
+// out alike, so a step looks the same whichever it is.
+// The hover plate is painted from a private variable the hover rule sets, rather than by the hover rule itself, so an
+// app's class on the part still wins over it as it does at rest. It starts out unset on each step, so a stepper nested
+// in a hovered step never inherits the plate.
+.bit-stp-btn {
+    --bit-stp-btn-bg: initial;
+    margin: 0;
+    border: none;
+    display: flex;
+    font: inherit;
+    color: inherit;
+    gap: spacing(1);
+    text-align: start;
+    align-items: center;
+    padding: spacing(0.5);
+    border-radius: $shp-radius-control;
+    background-color: var(--bit-stp-btn-bg, transparent);
+}
+
+button.bit-stp-btn {
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+
+    &:focus-visible {
+        @include focus-ring;
+    }
+
+    &:disabled {
+        cursor: default;
+    }
+
+    @media (hover: hover) {
+        &:not(:disabled):hover {
+            --bit-stp-btn-bg: #{$clr-bg-pri-hover};
+        }
+    }
+}
+
+.bit-stp-ind {
+    flex: none;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    box-sizing: border-box;
+    justify-content: center;
+    color: $clr-fg-sec;
+    font-size: $tg-fs-sm;
+    font-weight: $tg-fw-semibold;
+    border-radius: $shp-radius-full;
+    border: $shp-border-width solid $clr-brd-pri;
+    width: var(--bit-Stepper-indicator-size, #{spacing(4)});
+    height: var(--bit-Stepper-indicator-size, #{spacing(4)});
+}
+
+.bit-stp-lbl {
+    display: flex;
+    flex-direction: column;
+}
+
+.bit-stp-dsc {
+    color: $clr-fg-sec;
+    font-size: $tg-fs-sm;
+}
+
+// The state of a completed step or of one in error, said to a screen reader after the text.
+.bit-stp-sts {
+    @include visually-hidden;
+}
+
+.bit-stp-upc .bit-stp-txt {
+    color: $clr-fg-sec;
+}
+
+.bit-stp-cur .bit-stp-txt {
+    font-weight: $tg-fw-semibold;
+}
+
+.bit-stp-cmp .bit-stp-ind,
+.bit-stp-cur .bit-stp-ind {
+    color: var(--bit-Stepper-active-text-color, #{$clr-pri-text});
+    border-color: var(--bit-Stepper-active-color, #{$clr-pri});
+    background-color: var(--bit-Stepper-active-color, #{$clr-pri});
+}
+
+.bit-stp-err .bit-stp-ind {
+    color: $clr-err-text;
+    border-color: var(--bit-Stepper-error-color, #{$clr-err});
+    background-color: var(--bit-Stepper-error-color, #{$clr-err});
+}
+
+.bit-stp-err .bit-stp-txt {
+    color: var(--bit-Stepper-error-color, #{$clr-err});
+}
+
+.bit-stp-con {
+    flex: 1 1 auto;
+    background-color: var(--bit-Stepper-connector-color, #{$clr-brd-sec});
+}
+
+.bit-stp-hrz .bit-stp-con {
+    min-width: spacing(2);
+    margin-inline: spacing(1);
+    height: var(--bit-Stepper-connector-width, #{$shp-border-width-thick});
+}
+
+// The line runs down from the middle of the indicator above it: past the padding of the step, half the indicator,
+// less half the line.
+.bit-stp-vrt .bit-stp-con {
+    min-height: spacing(3);
+    margin-block: spacing(0.5);
+    width: var(--bit-Stepper-connector-width, #{$shp-border-width-thick});
+    margin-inline-start: calc(#{spacing(0.5)} + var(--bit-Stepper-indicator-size, #{spacing(4)}) / 2 - var(--bit-Stepper-connector-width, #{$shp-border-width-thick}) / 2);
+}
+
+// The way already come is drawn in the active color, up to the current step.
+.bit-stp-cmp > .bit-stp-con {
+    background-color: var(--bit-Stepper-active-color, #{$clr-pri});
+}
+
+// A disabled step, or every step of a disabled stepper, keeps its disabled palette whatever its state. These rules
+// come after the state ones, which they share their specificity with.
+.bit-stp-sdi .bit-stp-btn,
+.bit-dis .bit-stp-btn,
+.bit-stp-sdi .bit-stp-txt,
+.bit-dis .bit-stp-txt,
+.bit-stp-sdi .bit-stp-dsc,
+.bit-dis .bit-stp-dsc {
+    color: $clr-fg-dis;
+}
+
+.bit-stp-sdi .bit-stp-ind,
+.bit-dis .bit-stp-ind {
+    color: $clr-fg-dis;
+    border-color: $clr-brd-dis;
+    background-color: transparent;
+}
+
+// A disabled stepper draws no way already come either.
+.bit-dis .bit-stp-con {
+    background-color: $clr-brd-dis;
+}
+
+// Forced-colors modes drop the fills of the indicators and the painted lines, so the active and error indicators
+// become Highlight discs, the lines are drawn in the text color, and a disabled step in GrayText.
+@media (forced-colors: active) {
+    .bit-stp-cmp .bit-stp-ind,
+    .bit-stp-cur .bit-stp-ind,
+    .bit-stp-err .bit-stp-ind {
+        color: HighlightText;
+        border-color: Highlight;
+        forced-color-adjust: none;
+        background-color: Highlight;
+    }
+
+    .bit-stp-con,
+    .bit-stp-cmp > .bit-stp-con {
+        forced-color-adjust: none;
+        background-color: CanvasText;
+    }
+
+    .bit-stp-sdi .bit-stp-btn,
+    .bit-dis .bit-stp-btn {
+        color: GrayText;
+    }
+
+    .bit-stp-sdi .bit-stp-ind,
+    .bit-dis .bit-stp-ind {
+        color: GrayText;
+        border-color: GrayText;
+        forced-color-adjust: none;
+        background-color: Canvas;
+    }
+}

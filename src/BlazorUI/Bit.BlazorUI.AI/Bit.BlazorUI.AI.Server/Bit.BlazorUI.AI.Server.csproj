@@ -1,0 +1,39 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <!--
+    The ASP.NET Core ends of the AI transports: the SSE and WebSocket endpoints, the SignalR hub and the approval broker.
+    It references Bit.BlazorUI.AI.Core alone - no component, no stylesheet, no script and no static web asset reaches a
+    server through it - and the ASP.NET Core shared framework, which it declares (it is not PrivateAssets), so an app that
+    is not an ASP.NET Core one is told so at restore rather than failing to load a type at run time.
+    -->
+
+    <Import Project="../../../Bit.Build.props" />
+    <!-- Bit.BlazorUI.PackageValidation.props is not imported yet: package validation compares a pack against the last
+         published package, and this one has never been published. Import it once the first release is out. -->
+    <Import Project="../../Bit.BlazorUI.TrimAnalysis.props" />
+
+    <PropertyGroup>
+        <TargetFrameworks>net11.0;net10.0</TargetFrameworks>
+        <!-- See the note in Bit.BlazorUI.csproj: Debug builds only the TFM the demo and tests run on. -->
+        <TargetFrameworks Condition=" '$(Configuration)' == 'Debug' And '$(BuildAllTfms)' != 'true' ">net11.0</TargetFrameworks>
+        <RootNamespace>Bit.BlazorUI</RootNamespace>
+        <IsTrimmable>true</IsTrimmable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Description>The ASP.NET Core server ends of bit BlazorUI AI's transports: an SSE endpoint, a WebSocket endpoint and a SignalR hub that stream a reply in the package's wire format, and the broker that holds a tool call for the user's decision.</Description>
+        <PackageDescription>$(Description)</PackageDescription>
+        <PackageTags>$(PackageTags);Blazor;AI;LLM;ASP.NET Core;SSE;WebSockets;SignalR</PackageTags>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Bit.BlazorUI.AI.Core\Bit.BlazorUI.AI.Core.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="System.Text.Json" />
+    </ItemGroup>
+
+</Project>

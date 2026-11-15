@@ -85,6 +85,7 @@ namespace Boilerplate.Shared.Infrastructure.Dtos;
 //#if (module == "Sales")
 //#if (database == "PostgreSQL" || database == "SqlServer")
 [JsonSerializable(typeof(List<ProductRecommendationDto>))]
+[JsonSerializable(typeof(ShownProductsDto))]
 //#endif
 //#endif
 //#if (module == "Admin")
@@ -101,10 +102,7 @@ namespace Boilerplate.Shared.Infrastructure.Dtos;
 //#endif
 //#if (signalR == true)
 [JsonSerializable(typeof(DiagnosticLogDto[]))]
-[JsonSerializable(typeof(StartChatRequest))]
 [JsonSerializable(typeof(AiChatMessage))]
-[JsonSerializable(typeof(AiChatCard))]
-[JsonSerializable(typeof(AssistantTurn))]
 [JsonSerializable(typeof(List<SystemPromptDto>))]
 [JsonSerializable(typeof(BackgroundJobProgressDto))]
 [JsonSerializable(typeof(SynthesizeSpeechRequestDto))]

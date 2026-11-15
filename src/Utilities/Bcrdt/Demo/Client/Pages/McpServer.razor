@@ -66,7 +66,7 @@
                 </tr>
                 <tr>
                     <td class="bb-table-key"><code>InspectBcrdtMerge</code></td>
-                    <td>Runs the real engine on concurrent edits by two to four replicas, delivered in every order, and reports each one's state before the merge, what they converge to, every update's size, and what was decided for each contested key, text, list or set - one value wins for a map key, both survive in a text. One operation per line, such as <code>A: map meta set title "Draft"</code>, <code>B: text notes insert 0 "Hi"</code> or <code>B: set tags add "urgent"</code>; <code>base:</code> lines build the shared starting point.</td>
+                    <td>Runs the real engine on concurrent edits by two to four replicas, delivered in every order, and reports each one's state before the merge, what they converge to, every update's size, and what was decided for each contested key, text, list, set or counter - one value wins for a map key, both survive in a text, every change to a counter is summed. One operation per line, such as <code>A: map meta set title "Draft"</code>, <code>B: text notes insert 0 "Hi"</code>, <code>B: set tags add "urgent"</code> or <code>A: counter votes add 2</code>; <code>base:</code> lines build the shared starting point.</td>
                 </tr>
                 <tr>
                     <td class="bb-table-key"><code>InspectBcrdtUpdate</code></td>

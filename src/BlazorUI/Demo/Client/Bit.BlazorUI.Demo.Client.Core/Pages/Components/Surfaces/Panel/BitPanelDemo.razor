@@ -304,7 +304,36 @@
             </BitPanel>
         </DemoExample>
 
-        <DemoExample Title="Nested panels" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+        <DemoExample Title="Bottom sheet" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+            <div>
+                <b>SnapPoints</b> turn a panel at the bottom into a sheet that settles at a few heights, from the smallest to the
+                largest: a value of 1 or less is a fraction of the screen's height, a larger one pixels. It is dragged between
+                them and settles at the nearest one; dragged below the smallest, it is dismissed. <b>SnapPoint</b>, two-way
+                bindable, is the one it is at.
+            </div>
+            <br />
+            <div>
+                With two or more of them the sheet shows a grabber, the way to resize it without dragging: a tap or Enter moves
+                it to the next height, the arrow keys up and down, Home and End to the smallest and the largest.
+            </div>
+            <br />
+            <div class="controls">
+                <BitButton OnClick="() => isSheetOpen = true">Open sheet</BitButton>
+                <span>Snap point: <b>@sheetSnapPoint</b></span>
+            </div>
+
+            <BitPanel @bind-IsOpen="isSheetOpen"
+                      @bind-SnapPoint="sheetSnapPoint"
+                      Placement="BitPlacement.Bottom"
+                      SnapPoints="sheetSnapPoints"
+                      HeaderText="Nearby places">
+                @foreach (var place in places)
+                {
+                    <div class="sheet-row">@place</div>
+                }
+            </BitPanel>
+        </DemoExample>
+        <DemoExample Title="Nested panels" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
             <div>
                 A panel declared inside another one is stacked above it, and Escape, a swipe and an overlay click
                 close the innermost panel first. A panel declared elsewhere shares the outer panel's layer, so its
@@ -341,7 +370,7 @@
             </BitPanel>
         </DemoExample>
 
-        <DemoExample Title="Inside a container" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+        <DemoExample Title="Inside a container" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
             <div>
                 <b>AbsolutePosition</b> lays the panel and its overlay out against the nearest positioned ancestor
                 instead of the screen, and leaves the page scroll alone (a named scroller is still locked).
@@ -362,7 +391,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Rendering and events" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+        <DemoExample Title="Rendering and events" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
             <div>
                 The content is rendered on the first opening and removed once the panel has slid away, so each opening
                 starts fresh. <b>KeepMounted</b> keeps it - hidden and out of reach while closed - so its state
@@ -394,7 +423,7 @@
             </BitPanel>
         </DemoExample>
 
-        <DemoExample Title="Cascading parameters" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+        <DemoExample Title="Cascading parameters" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
             <div>
                 <b>BitParams</b> hands a <b>BitPanelParams</b> to every panel under it, so a page or an app sets the
                 edge, size, overlay and chrome of its panels once. The values are defaults: a panel's own parameters
@@ -417,7 +446,7 @@
             </BitParams>
         </DemoExample>
 
-        <DemoExample Title="External Icons" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+        <DemoExample Title="External Icons" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
             <div>
                 <b>CloseIcon</b> takes the close glyph from an external icon library - FontAwesome, Material Icons,
                 Bootstrap Icons - and wins over <b>CloseIconName</b>, which names a built-in Fluent icon.
@@ -444,7 +473,7 @@
             </BitPanel>
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+        <DemoExample Title="Style & Class" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
             <div>
                 <b>Style</b> and <b>Class</b> land on the root; <b>Styles</b> and <b>Classes</b> reach each part - the
                 overlay, the container, the header, the close button, the body and the footer. The <b>Container</b>
@@ -493,7 +522,7 @@
             </BitPanel>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
+        <DemoExample Title="RTL" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
             <div>
                 <b>Dir</b> turns the panel right-to-left, so <b>Start</b> slides in from the right and <b>End</b> from
                 the left, and the swipe follows. Without <b>Dir</b>, the panel follows the direction of the page.

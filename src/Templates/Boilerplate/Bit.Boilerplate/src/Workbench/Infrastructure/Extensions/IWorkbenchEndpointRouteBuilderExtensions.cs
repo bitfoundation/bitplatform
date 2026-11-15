@@ -2,11 +2,13 @@ using System.Text;
 using System.IO.Compression;
 using Bit.Bcrdt.Server;
 using Microsoft.Extensions.Localization;
+using Boilerplate.Shared.Features.Attachments;
 
 namespace Boilerplate.Workbench.Infrastructure.Extensions;
 
 /// <summary>
-/// Maps the Workbench's HTTP endpoints: screenshots, thumbnails, review sheets, checks and the review API the agent uses.
+/// Maps the Workbench's HTTP endpoints: screenshots, thumbnails, review sheets, checks, the review API the agent uses, and
+/// what the app's own pages fetch from their server by address.
 /// </summary>
 public static class IWorkbenchEndpointRouteBuilderExtensions
 {
@@ -14,8 +16,68 @@ public static class IWorkbenchEndpointRouteBuilderExtensions
 
     extension(IEndpointRouteBuilder endpoints)
     {
+        /// <summary>
+        /// What the browser fetches or sends by address for the app's settings page, rather than its code through a controller:
+        /// the demo users' profile pictures and an upload of a new one. Who uploads comes from the view's access token, which the
+        /// page sends as it would to its server. The personal data export, which the page's code asks for, is answered in the
+        /// view (See WorkbenchExportHandler).
+        /// </summary>
+        public void MapSettingsSampleEndpoints()
+        {
+            foreach (var kind in (AttachmentKind[])[AttachmentKind.UserProfileImageSmall, AttachmentKind.UserProfileImageOriginal])
+            {
+                endpoints.MapGet($"api/v1/Attachment/GetAttachment/{{id:guid}}/{kind}", (Guid id, IWebHostEnvironment environment) =>
+                    WorkbenchProfilePictures.Find(id) is { } uploaded ? Results.File(uploaded.Content, uploaded.ContentType)
+                    : WorkbenchProfilePictures.SampleOf(id) is { } photo ? Results.File(environment.WebRootFileProvider.GetFileInfo(photo).CreateReadStream(), "image/svg+xml")
+                    : Results.NotFound());
+            }
+
+            // The page posts the picture itself: the image editor's result as a form, or BitFileUpload's file as the body.
+            endpoints.MapPost("api/v1/Attachment/UploadUserProfilePicture", async (HttpRequest request, IStringLocalizer<AppStrings> appLocalizer, CancellationToken cancellationToken) =>
+            {
+                if (WorkbenchClaims.UserOf(request.Headers.Authorization.ToString(), elevated: false) is not { } userId)
+                    return Results.Unauthorized();
+
+                if (request.ContentLength > WorkbenchProfilePictures.MaxBytes)
+                    return Results.StatusCode(StatusCodes.Status413PayloadTooLarge);
+
+                byte[] content;
+
+                if (request.HasFormContentType)
+                {
+                    var file = (await request.ReadFormAsync(cancellationToken)).Files.FirstOrDefault();
+                    if (file is null)
+                        return Results.BadRequest();
+
+                    using var stream = new MemoryStream();
+                    await file.CopyToAsync(stream, cancellationToken);
+                    content = stream.ToArray();
+                }
+                else
+                {
+                    using var stream = new MemoryStream();
+                    await request.Body.CopyToAsync(stream, cancellationToken);
+                    content = stream.ToArray();
+                }
+
+                if (content.Length is 0 || content.Length > WorkbenchProfilePictures.MaxBytes)
+                    return Results.BadRequest();
+
+                // Only the images the app's page accepts, told by their bytes as the server tells them, and served as that type:
+                // the picture's address answers anyone, so a page or a script sent as one would run on the Workbench's origin.
+                // What the upload says it is counts for nothing, as BitFileUpload sends a slice of the file, which has no type.
+                if (WorkbenchProfilePictures.ImageTypeOf(content) is not { } imageType)
+                    return Results.BadRequest(appLocalizer[nameof(AppStrings.UnsupportedImageFormat)].ToString());
+
+                WorkbenchProfilePictures.Keep(userId, content, imageType);
+                return Results.Ok();
+            });
+        }
+
         public void MapWorkbenchEndpoints()
         {
+            endpoints.MapSettingsSampleEndpoints();
+
             // The views listed in shots, as one zip of PNGs.
             endpoints.MapGet("api/screenshots/zip", async (string? shots, HttpContext context, WorkbenchScreenshotService screenshotService, WorkbenchScreenshotLimiter limiter, CancellationToken cancellationToken) =>
             {
@@ -148,15 +210,16 @@ public static class IWorkbenchEndpointRouteBuilderExtensions
             // The query string that turns a link to this Workbench, like a tunnel's, into an invite whose comments reach the agent.
             review.MapGet("invite", () => Results.Json(new { query = $"{WorkbenchReviewers.QueryName}={WorkbenchReviewers.Key}" }));
 
-            review.MapGet("", async (bool? includeDone, WorkbenchReviewAgent agent, CancellationToken cancellationToken) =>
+            // The comments of the pages named in pages (keys separated by commas), or of every page; several chats each read their own.
+            review.MapGet("", async (bool? includeDone, string? pages, WorkbenchReviewAgent agent, CancellationToken cancellationToken) =>
             {
-                return Results.Json(await agent.DescribeReview(includeDone is true, cancellationToken));
+                return Results.Json(await agent.DescribeReview(includeDone is true, PageKeys(pages), cancellationToken));
             });
 
-            // A long poll: answers once a reviewer adds, answers or reopens a comment, or with nothing within a minute.
-            review.MapGet("wait", async (long? cursor, string? agent, WorkbenchReviewAgent reviewAgent, CancellationToken cancellationToken) =>
+            // A long poll: answers once a reviewer adds, answers or reopens a comment on one of the pages, or with nothing within a minute.
+            review.MapGet("wait", async (long? cursor, string? agent, string? pages, WorkbenchReviewAgent reviewAgent, CancellationToken cancellationToken) =>
             {
-                var (next, threads) = await reviewAgent.Wait(AgentName(agent), cursor ?? 0, WorkbenchReviewAgent.MaxWait, cancellationToken);
+                var (next, threads) = await reviewAgent.Wait(AgentName(agent), cursor ?? 0, WorkbenchReviewAgent.MaxWait, cancellationToken, PageKeys(pages));
 
                 return Results.Json(WorkbenchReviewJson.Describe(threads, null, next));
             });
@@ -201,7 +264,74 @@ public static class IWorkbenchEndpointRouteBuilderExtensions
             {
                 return await agent.Screenshot(id, cancellationToken) is { } shot ? Results.File(shot.Png, "image/png", shot.FileName) : Results.NotFound();
             });
+
+            endpoints.MapProgressEndpoints();
         }
+
+        /// <summary>
+        /// Maps the agents' tasks of the Progress page: start, change, read, wait for the user and remove. Like the review's,
+        /// they answer only local requests in dev mode (see Program.Middlewares).
+        /// </summary>
+        private void MapProgressEndpoints()
+        {
+            // Which copy of the project this Workbench runs from, as a chat in another worktree asks before it uses or restarts it.
+            endpoints.MapGet("api/workbench", () => Results.Json(new
+            {
+                WorkingTree = WorkbenchFolders.WorkingTree,
+                WorkbenchFolders.Project,
+                WorkbenchFolders.Branch,
+                Data = WorkbenchFolders.Reviews,
+                ProcessId = Environment.ProcessId,
+                StartedAt = startedAt
+            }));
+
+            var progress = endpoints.MapGroup("api/progress");
+
+            progress.MapGet("", async (WorkbenchProgressAgent agent, CancellationToken cancellationToken) =>
+            {
+                return Results.Json(WorkbenchProgressJson.DescribeList(await agent.GetTasks(cancellationToken)));
+            });
+
+            progress.MapPost("", async (WorkbenchProgressUpdate update, WorkbenchProgressAgent agent, CancellationToken cancellationToken) =>
+            {
+                var (id, problem) = await agent.Create(AgentName(update.Agent), update, cancellationToken);
+
+                return id is null ? Results.BadRequest(problem) : Results.Created(WorkbenchUrls.ProgressTask(id), new { Id = id, Page = WorkbenchUrls.ProgressTask(id) });
+            });
+
+            progress.MapGet("{id}", async (string id, WorkbenchProgressAgent agent, CancellationToken cancellationToken) =>
+            {
+                return await agent.GetTask(id, cancellationToken) is { } task ? Results.Json(WorkbenchProgressJson.Describe(task)) : Results.NotFound();
+            });
+
+            progress.MapPatch("{id}", async (string id, WorkbenchProgressUpdate update, WorkbenchProgressAgent agent, CancellationToken cancellationToken) =>
+            {
+                var (found, problem) = await agent.Update(AgentName(update.Agent), id, update, cancellationToken);
+
+                return found is false ? Results.NotFound() : problem is null ? Results.NoContent() : Results.BadRequest(problem);
+            });
+
+            // A long poll: answers once the user answers, finishes a step of theirs or writes to the agent, or with nothing within a minute.
+            progress.MapGet("{id}/wait", async (string id, long? cursor, string? agent, WorkbenchProgressAgent progressAgent, CancellationToken cancellationToken) =>
+            {
+                return await progressAgent.Wait(AgentName(agent), id, cursor ?? 0, WorkbenchProgressAgent.MaxWait, cancellationToken) is { } result
+                    ? Results.Json(WorkbenchProgressJson.DescribeWait(result.Cursor, result.Task, result.Events))
+                    : Results.NotFound();
+            });
+
+            progress.MapDelete("{id}", async (string id, WorkbenchProgressAgent agent, CancellationToken cancellationToken) =>
+            {
+                return await agent.Delete(id, cancellationToken) ? Results.NoContent() : Results.NotFound();
+            });
+        }
+    }
+
+    private static readonly DateTimeOffset startedAt = DateTimeOffset.UtcNow;
+
+    /// <summary>The page keys of a comma-separated list, or null for every page.</summary>
+    private static HashSet<string>? PageKeys(string? pages)
+    {
+        return string.IsNullOrWhiteSpace(pages) ? null : [.. pages.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)];
     }
 
     /// <summary>The name the review shows the agent's changes under.</summary>

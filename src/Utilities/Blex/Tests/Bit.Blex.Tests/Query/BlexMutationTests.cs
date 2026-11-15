@@ -266,4 +266,27 @@ public class BlexMutationTests
         Assert.AreEqual("new", interactive.GetQueryData<string>(["n"]));
         await Task.CompletedTask;
     }
+
+    [TestMethod]
+    public async Task A_handoff_handed_over_again_keeps_the_invalidation_made_before_anyone_claimed_it()
+    {
+        var (prerender, _, _) = Client();
+        prerender.SetQueryData<string>(["n"], "prerendered");
+        var handoff = prerender.Dehydrate();
+
+        var (interactive, _, _) = Client();
+        interactive.Hydrate(handoff);
+        await interactive.InvalidateAsync(["n"]);
+        interactive.Hydrate(handoff);   // the same snapshot again: a scope hydrated twice
+
+        var fetches = 0;
+        using var query = interactive.Query<string>(["n"], _ =>
+        {
+            fetches++;
+            return new TaskCompletionSource<string>().Task;
+        }, new BlexQueryOptions { StaleTime = TimeSpan.FromMinutes(1) });
+
+        Assert.AreEqual("prerendered", query.Data);
+        Assert.AreEqual(1, fetches, "the invalidation still stands: the first query of it refetches");
+    }
 }

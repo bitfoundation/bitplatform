@@ -120,10 +120,10 @@
         (<code>Limits</code>), the same <code>BinkDocumentLimits</code> a loaded file is.
     </p>
     <p class="bb-card-desc">
-        Two limits are worth knowing. Two people dragging the same element at the same moment: one drag wins, and
-        every replica agrees which. And stacking order is not reconciled: concurrent "bring to front" and "send to back"
-        can leave the same elements stacked differently on each side. Nothing is lost, and
-        <code>SendSnapshotAsync</code> brings everyone back to one order.
+        Two people dragging the same element at the same moment: one drag wins, and every replica agrees which. Stacking
+        order reconciles: each element's place is an order key that travels with every addition and move, so concurrent
+        "bring to front" and "send to back", or moves between layers, end in the same order on both sides whatever order
+        they arrive in; two moves of the same element are decided the same way everywhere by the clock each carries.
     </p>
 </div>
 

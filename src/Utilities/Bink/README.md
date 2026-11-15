@@ -38,9 +38,12 @@ re-rendered at any size and edited later, rather than being a picture of a drawi
   included), duplicate, Alt-drag copies, bring-to-front, nested groups, locking, align, distribute and flip, each
   with its usual shortcut and one undo step.
 - **Annotations**: shapes, arrows, highlights, callouts, text with a real HTML editor, and images.
+- **Shape recognition**: a sketched line, arrow, box, ellipse, triangle, diamond or polygon becomes a clean shape,
+  on every stroke or only when the pen rests before lifting, with one undo back to the ink.
 - **Undo and redo** that store inverse operations, never snapshots.
 - **A versioned, compact JSON format** with binary stroke points, validated against hostile input.
-- **SVG, PNG, JPEG and WebP export** that match the screen, including a pure .NET PNG path for servers and tests.
+- **SVG, PNG, JPEG, WebP and PDF export** that match the screen, including pure .NET PNG and vector PDF paths for
+  servers and tests.
 - **Real-time collaboration**: transport-agnostic operation sync, presence and offline queueing.
 - **Touch, stylus, mouse and trackpad**: palm rejection, pinch zoom, wheel and trackpad pan and zoom, coalesced
   samples, high-DPI canvases and an opt-in low-latency canvas.
@@ -127,7 +130,7 @@ Everything ships in one package, `Bit.Bink`, under one namespace, `Bit.Bink`:
 
 | Part | Contents |
 | --- | --- |
-| The engine | Document model, strokes, brushes, geometry, tools, undo, serialization, SVG and PNG export. No UI and no JavaScript; it runs on a server, in a console application or in a unit test. |
+| The engine | Document model, strokes, brushes, geometry, tools, undo, serialization, SVG, PNG and PDF export. No UI and no JavaScript; it runs on a server, in a console application or in a unit test. |
 | The component | `BinkCanvas` and the browser layer. |
 | Collaboration | Transport-agnostic operation sync, presence and offline queueing. Optional: nothing in the engine uses it unless you create a session. |
 
@@ -344,8 +347,11 @@ string svg = await _canvas.ExportSvgAsync();
 byte[] png = await _canvas.ExportPngAsync(new BinkPngExportOptions { Scale = 3f });
 byte[] jpeg = await _canvas.ExportImageAsync(BinkImageFormat.Jpeg, quality: 0.85);
 
+BinkPdfExportResult pdf = _canvas.ExportPdf();
+
 await _canvas.SaveSvgAsync("drawing.svg");
 await _canvas.SavePngAsync("drawing.png");
+await _canvas.SavePdfAsync("drawing.pdf");
 ```
 
 ### Working with the document directly
@@ -630,6 +636,25 @@ For handwriting, prefer less smoothing and closer spacing so small letters keep 
 var writing = new BinkPenBrush { Width = 3f, Smoothing = 0.35f, Spacing = 0.12f, TaperEnd = 5f };
 ```
 
+### Stabilizing a line
+
+`Smoothing` evens out jitter, but a slow hand still wanders, and smoothing that removes a wander also rounds every
+corner. A stabilizer works differently: the ink follows a point the pointer pulls behind it on a string, and that
+point moves only once the string is taut. Any wobble shorter than the string never reaches the ink at all, while
+corners stay as sharp as the hand made them.
+
+```csharp
+var tool = new BinkDrawTool { Stabilization = 24f };   // the string's length in CSS pixels; 0, the default, is off
+```
+
+The length is measured on screen, so it feels the same at every zoom. The ink trails the pointer by up to that
+length while drawing and is finished to where the pen lifts. Sixteen to forty pixels suits lettering, tracing, and
+signatures on a trackpad; more makes long, calm curves. Pointer prediction is not drawn while it is on, since drawing
+ahead of a line that trails on purpose defeats it, and on Blazor Server the provisional trail the browser draws
+follows the pointer itself until the engine's stabilized stroke replaces it. Outside a tool,
+`BinkStrokeBuilder.StabilizerRadius` is the same setting in document units. It is an input setting, not part of the
+brush, so it is not saved with strokes.
+
 ### Pressure curves
 
 A `BinkPressureCurve` maps input pressure (0 to 1) to a width factor between `MinFactor` and `MaxFactor`.
@@ -676,8 +701,22 @@ the browser supports tilt, not that the device produces it.
 ### Tilt and twist
 
 Tilt and barrel rotation are captured into the stroke when the device reports them, and preserved by
-serialization. The built-in brushes do not shape ink from tilt, because a convincing chisel nib needs a brush
-model of its own. The data is there for a custom brush to use; see [Extending Bink](#extending-bink).
+serialization. A brush reads them from `BinkStrokePointsView.TiltX`, `TiltY` and `Twist`, which are empty for points
+from a device without them; see [Extending Bink](#extending-bink).
+
+The calligraphy brush uses them when `FollowPen` is on: its nib turns as a real one turns in the hand.
+
+```csharp
+var italic = new BinkCalligraphyBrush { Width = 10f, NibAngle = 45f, FollowPen = true };
+var leftHanded = italic with { PenLean = 135f };
+```
+
+With a pen that reports barrel rotation, the nib turns by it. With one that reports only tilt, which is most of them,
+it turns by as much as the direction the pen leans differs from `PenLean`, the hand's usual lean: 45 degrees, the
+default, is a right hand's, the pen leaning toward the lower right; 135 suits a left hand. Leaning that way, the nib
+is at `NibAngle`. While the pen is held nearly upright its lean has no direction and the nib keeps the angle it had;
+with a mouse or a finger it stays at `NibAngle`. Each point's angle depends on that point alone, so a stroke an eraser
+cuts in two keeps the same ink in both parts. Both settings are saved with the stroke.
 
 ### Simplification
 
@@ -1133,6 +1172,72 @@ var heart = BinkPathElement.FromSvgPathData("M50 30 C50 0 0 0 0 30 C0 60 50 80 5
 `BinkSvgPathData` is the parser on its own. It understands every command, absolute and relative, turns arcs into
 cubic curves, and bounds what it reads, since path data is often untrusted. Both elements save, paste, export and
 synchronize like every other; a path is stored as SVG path data.
+
+### Recognizing shapes
+
+A sketched box can become a box. `BinkDrawTool.ShapeRecognition` turns a stroke into the clean shape it resembles
+when the pen lifts: a line, an arrow (a shaft with its head drawn in the same stroke), a rectangle, an ellipse, a
+triangle, a diamond or a polygon of up to eight corners.
+
+```csharp
+var tool = new BinkDrawTool { ShapeRecognition = BinkShapeRecognitionMode.OnHold };
+```
+
+| Mode | What it does |
+| --- | --- |
+| `Off` | Strokes stay ink. The default. |
+| `OnHold` | A stroke becomes a shape when the pen rests at its end for `ShapeHoldDuration` (half a second) before lifting. Ink and shapes from one tool, the way note-taking applications do it. |
+| `Always` | Every stroke close enough to a shape becomes one. Right for a diagramming surface; wrong for handwriting, where an O becomes an ellipse. |
+
+The stroke is committed first and replaced in a second step, so one undo brings the ink back and a second removes
+it. The shape keeps the stroke's place in the stacking order and takes the brush's colour, opacity and blend mode,
+and the width it was drawn at on average. Pixel-eraser strokes are never recognized, and a screen reader hears
+"Drawn as rectangle."
+
+Recognition is forgiving in the ways hands are: a loop that stops short of its start or runs past it still closes,
+a box drawn at an angle stays at that angle, and within a few degrees of upright it is straightened, as a nearly
+round ellipse becomes a circle and a nearly square box a square. Writing, curves, spirals and open turns (an L, a U,
+a tick) are left as ink. `ShapeRecognitionOptions` changes how closely a stroke has to match, the size below which
+nothing is recognized, the snapping, and which kinds may be recognized:
+
+```csharp
+tool.ShapeRecognitionOptions = new BinkShapeRecognizerOptions
+{
+    Kinds = new HashSet<BinkShapeKind> { BinkShapeKind.Rectangle, BinkShapeKind.Ellipse, BinkShapeKind.Arrow },
+    Tolerance = 0.035f,   // the average distance from the shape, as a fraction of the stroke's diagonal
+    AngleSnap = 0f,       // keep angles exactly as drawn
+};
+```
+
+The recognizer works without a tool too. It is a pure function of the points, so it runs on a server as well:
+
+```csharp
+if (BinkShapeRecognizer.Recognize(stroke.Points) is { } shape)
+    document.AddElement(shape.CreateElement(new BinkShapeStyle { StrokeWidth = 3f }));
+```
+
+Override `BinkDrawTool.RecognizeShape` to recognize differently or to style the result. An arrow drawn in two
+strokes, the head after the shaft, is two strokes to the recognizer, which looks at one stroke at a time.
+
+### Editing points
+
+`BinkNodeEditTool` edits an outline point by point: the corners of a polygon or polyline, the ends of a line, and
+the anchors and Bézier control points of a path. Click an element to edit it (one already selected is edited at
+once), then drag a point. Moving a path's anchor carries the control points beside it, so the curves on either side
+keep their shape; dragging a control point bends the curve alone. Lines from each control point to its anchor show
+which curve it bends.
+
+```csharp
+var tool = new BinkNodeEditTool();
+```
+
+Every drag is one undo step, and a cancelled one (a palm, a second finger) leaves none. From the keyboard, Tab and
+Shift+Tab step through the points, the arrow keys nudge the current one a unit (ten with Shift), Delete removes a
+polygon's corner while it keeps enough to stay a polygon, and Escape stops editing; the screen reader hears which
+point is current. Locked elements and elements on locked or hidden layers are left alone.
+
+The same edits work without a tool, on any element: `BinkNodeEditTool.GetNodes`, `MoveNode` and `RemoveNode` return
+the points and edited copies to replace in the document.
 
 ### Highlights
 
@@ -1708,6 +1813,50 @@ on a desktop export at exactly the same resolution.
 
 Setting `SelectedIds` limits which elements are drawn whatever the region, so a selection can be exported in place
 on the full page.
+
+### PDF
+
+`BinkPdfExporter` writes a vector PDF in pure .NET, with no native dependencies, so it runs on a server, in
+WebAssembly and in tests alike. It draws through the same `IBinkRenderContext` as the screen, and the regions,
+selection and background options are the ones above.
+
+```csharp
+byte[] pdf = BinkPdfExporter.Export(document, new BinkPdfExportOptions { Title = "Site plan", Language = "en" });
+
+// In a component: the canvas's selection is used for the Selection region, and SavePdfAsync downloads the file.
+BinkPdfExportResult result = await _canvas.SavePdfAsync("plan.pdf");
+
+// Several documents become the pages of one file: a notebook, a report, a signed form with its annex.
+BinkPdfExportResult notebook = BinkPdfExporter.ExportWithDetails(pages, new BinkPdfExportOptions { Region = BinkExportRegion.Content });
+```
+
+What it does with each part of a drawing:
+
+| Content | In the PDF |
+| --- | --- |
+| Strokes, shapes and paths | Paths, curves kept as curves, with their caps, joins, dashes and fill rules. |
+| Opacity, multiply and screen | PDF transparency. A translucent layer is one transparency group, so overlapping ink inside it does not darken. |
+| Pixel-eraser strokes | A soft mask over exactly the content drawn before them in their layer, as the canvas erases; translucent erasers compound where they cross. Nothing is flattened to pixels. |
+| Embedded JPEG | Copied in unchanged, and placed turned as its EXIF orientation says, the way a browser shows a phone photo. |
+| Embedded PNG | Decoded and stored losslessly, with its transparency as a soft mask. A picture shown several times is stored once. |
+| Text | Real, selectable and searchable text in Helvetica, Times or Courier, chosen from the style's font family, which every viewer has, so no font is embedded. |
+
+The page is the export region at `Scale` points per unit; the default, 0.75, treats a unit as a CSS pixel, the size a
+browser prints at. A page whose longer side would pass 14,400 points (200 inches), the most PDF viewers show, is scaled
+down to that. `Title`, `Description`, `Author` and `Language` go into the file's properties, and the title is
+what a viewer shows. Output is deterministic: the same document gives the same bytes.
+
+Two things cannot go in, and both are reported in `BinkPdfExportResult` rather than drawn wrongly:
+
+- **Text with characters outside the standard fonts**, which cover Western European languages (Windows-1252). Persian,
+  Arabic, Greek, Cyrillic, CJK or emoji text is left out and counted in `SkippedTextElements`. Embedding fonts would
+  mean shipping and subsetting them; export such drawings as SVG, or as PNG from the browser, where the viewer's own
+  fonts draw them.
+- **Pictures that are not embedded PNG or JPEG**: remote images, WebP, GIF, CMYK JPEGs, unreadable data, and anything
+  past `MaxImagePixels`, which bounds what an untrusted document can make the exporter decode. They are counted in
+  `SkippedImages`.
+
+`IsComplete` is true when nothing was left out.
 
 ## Hosting models
 
@@ -2615,11 +2764,26 @@ that is already on the dispatcher, such as the one the demo uses, needs nothing 
 
 - Two people editing the same element at the same moment: one edit wins, the other is dropped. Every replica
   agrees on which, but the losing edit is gone.
-- Element and layer order is index-based and is not reconciled. Concurrent reorders (bring to front, send to back,
-  moving between layers, reordering layers), or an undone delete re-inserting an element at its old index while
-  someone else reorders, can leave participants with the same elements stacked in a different order. Nothing is
-  lost, and `SendSnapshotAsync` brings everyone back to one order.
+- Two people moving the same element (or layer) at the same moment: one move wins, the same one everywhere, and the
+  other is dropped, as with edits. Moves of different elements all land.
 - There is no server-side authority in the box. If you need one, the same operations are what it would arbitrate.
+
+### Stacking order
+
+Concurrent reorders reconcile. An element's place in its layer, and a layer's place in the stack, is an order key
+(`BinkOrderKey`): a short string that sorts in stacking order, with room for another between any two. The document
+keeps the keys, and an addition or a move travels with the key it was placed at, so two people bringing different
+strokes to the front at once, one moving a stroke onto another layer while someone else reorders that layer, or an
+undo putting a deleted stroke back while others rearrange, end in the same order on every screen whatever order the
+changes arrive in. When two moves of the same element cross, a Lamport clock carried with each decides, then the key,
+then the layer, so every replica keeps the same one.
+
+The index-based API is unchanged: `AddElement` with an index, `Arrange`, `ReorderLayer` and the operations still take
+indices, and the document makes the keys for them. Keys are not written to files by default, since a file's order is
+the order it lists things in and keys are made from it on reading; `BinkSerializerOptions.IncludeOrderKeys` writes
+them, which is what a session's snapshots do so that a participant who joins carries on with everyone else's keys. A
+participant running a version from before keys sends moves without them, and those are placed by their index, as
+everyone's were before.
 
 ## Extending Bink
 

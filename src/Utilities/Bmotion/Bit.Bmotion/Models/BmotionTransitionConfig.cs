@@ -237,7 +237,9 @@ internal sealed class BmotionTransitionConfig
                 double mass = Mass > 0 ? Mass : 1;
                 double omega0 = Math.Sqrt(Math.Max(Stiffness, 1e-6) / mass);
                 double zeta = Damping / (2 * Math.Sqrt(Math.Max(Stiffness, 1e-6) * mass));
-                double decay = zeta * omega0;
+                // An overdamped spring creeps in on its slow mode, which decays at ω₀(ζ - √(ζ²-1)) - far slower than
+                // ζω₀ (written as ω₀/(ζ + √(ζ²-1)), which keeps its precision for a large ζ).
+                double decay = zeta > 1 ? omega0 / (zeta + Math.Sqrt((zeta * zeta) - 1)) : zeta * omega0;
                 // An undamped spring never settles; cap rather than report infinity.
                 return decay <= 1e-6 ? 10 : Math.Min(4 / decay, 10);
 

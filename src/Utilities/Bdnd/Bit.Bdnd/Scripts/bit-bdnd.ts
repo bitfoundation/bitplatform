@@ -8,7 +8,7 @@
 //   4) track hover per drop target in a way that survives re-rendered/removed child nodes,
 //   5) give drop-effect feedback and read native drop payloads (files/text/url/html),
 //   6) read an element's bounding rectangle,
-//   7) run keyboard drags: pick a source up with Space/Enter, send the keys that move, drop and cancel
+//   7) run keyboard drags: pick a source up with Space/Enter (or the keys bound), send the keys that move, drop and cancel
 //      it to .NET, keep the focus on it, and tell screen readers what happens through a live region,
 //   8) run pointer drags for touch and pen (and, when asked, the mouse), which most touch browsers never
 //      turn into native drags: start them from a press, move a preview, hit-test the targets, auto-scroll,
@@ -40,6 +40,8 @@ interface DragSourceOptions {
     /** The id of the hidden element holding the keyboard instructions, and their text. */
     instructionsId?: string | null;
     instructions?: string | null;
+    /** The keys of keyboard drags by command, or null for the default (WAI-ARIA) ones. Mirrors BdndKeyBindings. */
+    keys?: Partial<Record<KeyCommand, string[]>> | null;
     /** Which pointers drag through pointer events: 'touch' (touch and pen), 'all' or 'none'. */
     pointerDrag?: 'touch' | 'all' | 'none';
     /** How long a touch rests on the source before a pointer drag starts, in milliseconds. */
@@ -52,6 +54,41 @@ interface DragSourceOptions {
     previewAxis?: string | null;
     /** Data put on a native drag's DataTransfer at dragstart, by type, for destinations outside the page. */
     nativeData?: Record<string, string> | null;
+}
+
+/** The commands a key of a keyboard drag can be bound to (BdndKeyBindings). */
+type KeyCommand = 'pickUp' | 'drop' | 'cancel' | 'up' | 'down' | 'left' | 'right' | 'first' | 'last';
+
+/** The WAI-ARIA keys, which a source uses unless its provider was given others. A copy of BdndKeyBindings' defaults,
+ *  which a .NET test checks it against. */
+const defaultKeys: Record<KeyCommand, string[]> = {
+    pickUp: [' ', 'Enter'],
+    drop: [' ', 'Enter'],
+    cancel: ['Escape', 'Esc'],
+    up: ['ArrowUp'],
+    down: ['ArrowDown'],
+    left: ['ArrowLeft'],
+    right: ['ArrowRight'],
+    first: ['Home'],
+    last: ['End'],
+};
+
+/** Whether the key of `e` is bound to `command` for the source with these options. */
+function isKey(options: DragSourceOptions, command: KeyCommand, e: KeyboardEvent): boolean {
+    const pressed = pressedKeys(e);
+    return (options.keys?.[command] ?? defaultKeys[command]).some((key) => pressed.includes(key.length === 1 ? key.toLowerCase() : key));
+}
+
+/** The names a key press goes by, as bound keys are compared with them: a character whatever its case - Caps Lock or
+ *  Shift does not make "l" another key - and, for a letter of a layout that does not write Latin ones (Cyrillic,
+ *  Greek), also the Latin letter of the key in that place, so that "l" is the L key on a Russian keyboard too. */
+function pressedKeys(e: KeyboardEvent): string[] {
+    const key = e.key;
+    if (typeof key !== 'string' || key.length !== 1) return [key];
+    const lower = key.toLowerCase();
+    if (/[a-z]/.test(lower) || !/\p{L}/u.test(lower)) return [lower];
+    const place = /^Key([A-Z])$/.exec(e.code || '');
+    return place ? [lower, place[1].toLowerCase()] : [lower];
 }
 
 /** Mirrors BdndDropTargetOptions. */
@@ -460,13 +497,15 @@ export function registerDragSource(element: HTMLElement | null, dotNetRef: DotNe
         if (session && session.source === source) endSession(true);
     };
 
-    // Space or Enter on the source (or on its handle) picks it up. keydown bubbles: like dragstart, the innermost
-    // registered source the key was pressed on decides.
+    // Space or Enter (or the keys bound) on the source - or on its handle - picks it up. keydown bubbles: like
+    // dragstart, the innermost registered source the key was pressed on decides, whichever keys it is bound to - an
+    // outer source whose keys differ does not pick itself up from a key pressed on an inner one.
     const onKeyDown = (e: KeyboardEvent) => {
-        if (claimedEvents.has(e) || e.defaultPrevented || (e.key !== ' ' && e.key !== 'Enter')) return;
+        if (claimedEvents.has(e) || e.defaultPrevented) return;
         const activator = keyboardActivator(source, e.target);
         if (!activator) return;
         claimedEvents.add(e);
+        if (!isKey(source.options, 'pickUp', e)) return;
         const o = source.options;
         if (!o.keyboard || !o.canDrag || !o.id || e.repeat || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
         if (session || keyboardSession || pointerSession) return; // a drag is in progress already
@@ -1849,36 +1888,16 @@ function onKeyboardSessionKey(s: KeyboardSession, e: KeyboardEvent): void {
     let command: string;
     // in a right-to-left layout the next place is to the left
     const rtl = getComputedStyle(s.activator).direction === 'rtl';
-    switch (e.key) {
-        case 'ArrowDown':
-            command = 'down';
-            break;
-        case 'ArrowUp':
-            command = 'up';
-            break;
-        case 'ArrowRight':
-            command = rtl ? 'previous' : 'next';
-            break;
-        case 'ArrowLeft':
-            command = rtl ? 'next' : 'previous';
-            break;
-        case 'Home':
-            command = 'first';
-            break;
-        case 'End':
-            command = 'last';
-            break;
-        case ' ':
-        case 'Enter':
-            command = 'drop';
-            break;
-        case 'Escape':
-        case 'Esc':
-            command = 'cancel';
-            break;
-        default:
-            return; // Tab moves the focus on, which cancels the drag
-    }
+    const o = s.source.options;
+    if (isKey(o, 'down', e)) command = 'down';
+    else if (isKey(o, 'up', e)) command = 'up';
+    else if (isKey(o, 'right', e)) command = rtl ? 'previous' : 'next';
+    else if (isKey(o, 'left', e)) command = rtl ? 'next' : 'previous';
+    else if (isKey(o, 'first', e)) command = 'first';
+    else if (isKey(o, 'last', e)) command = 'last';
+    else if (isKey(o, 'drop', e)) command = 'drop';
+    else if (isKey(o, 'cancel', e)) command = 'cancel';
+    else return; // Tab moves the focus on, which cancels the drag
     if (e.altKey || e.ctrlKey || e.metaKey) return;
     // the focus is on another element (moved there without a focus event this session saw): the key is that
     // element's, and the drag is over

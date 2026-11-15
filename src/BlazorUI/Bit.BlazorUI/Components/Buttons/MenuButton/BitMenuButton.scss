@@ -1,4 +1,5 @@
 ﻿@import "../../../Styles/functions.scss";
+@import "../../../Styles/media-queries.scss";
 
 // Every private variable the mixin below starts out unset, so an instance never inherits one from an instance
 // it is nested in. A private variable added to the component goes in this list.
@@ -385,6 +386,14 @@ $mnb-private-properties: clr, clr-fg, clr-txt, clr-hover, clr-active, clr-dark, 
     @include visually-hidden;
 }
 
+// The point a menu opened with OpenAt is placed against: a spot on the screen, taking no room and no clicks.
+.bit-mnb-pnt {
+    width: 0;
+    height: 0;
+    position: fixed;
+    pointer-events: none;
+}
+
 .bit-mnb-ovl {
     top: 0;
     left: 0;
@@ -496,6 +505,33 @@ $mnb-cal-private-properties: cal-bg;
 .bit-mnb-cal.bit-mnb-mxh {
     max-height: min(var(--bit-MenuButton-callout-max-height), calc(100vh - #{spacing(2)}));
     max-height: min(var(--bit-MenuButton-callout-max-height), calc(100dvh - #{spacing(2)}));
+}
+
+// A Responsive menu on a small screen: a sheet that slides up from the bottom edge of the screen (an action sheet),
+// sized against the screen rather than placed against the button - Callouts.position caps its height to the screen
+// and shows it, and slides it back out once it closes. Only the menu the button opens carries the class; a submenu
+// stays a callout beside its item. Declared after .bit-mnb-cal, whose display, transform, sizes and corners it
+// takes over at the same weight.
+.bit-mnb-res {
+    @include lt-sm {
+        @include responsive-panel-closed;
+        @include responsive-panel-safe-area(mnb);
+        bottom: 0;
+        inset-inline: 0;
+        // The positioning code writes the width of the button onto the callout (setCalloutWidth), which a
+        // min-width outranks, so the sheet runs the full width of the screen whatever the width of the button.
+        min-width: 100%;
+        max-width: 100%;
+        box-shadow: $box-shadow-sheet;
+        transform: translateY(100%);
+        transition: transform $mot-duration $mot-easing-decelerate, opacity $mot-duration-short linear;
+        border-radius: var(--bit-MenuButton-callout-radius, #{$shp-radius-popup}) var(--bit-MenuButton-callout-radius, #{$shp-radius-popup}) 0 0;
+        // The sheet lies against the bottom edge, which a phone's home indicator (or an app shell's bottom bar)
+        // covers, so its items end above the safe area there. Drawn as a border, which the background of the sheet
+        // still paints, which stays outside the items it scrolls, and which no padding a consumer gives the callout
+        // takes away.
+        border-bottom: var(--bit-callout-sa-bottom) solid transparent;
+    }
 }
 
 .bit-mnb-cul {

@@ -145,6 +145,18 @@ public class BaletteStrings
     /// <summary>Shown when a command failed; <c>{0}</c> is its title. See <see cref="BaletteCommandErrorEventArgs.Message"/>.</summary>
     public virtual string CommandFailed { get; set; } = "Couldn’t run “{0}”.";
 
+    /// <summary>
+    /// Shown when a guard refused a command without a message of its own (see <see cref="IBaletteCommandGuard"/>);
+    /// <c>{0}</c> is its title.
+    /// </summary>
+    public virtual string CommandRefused { get; set; } = "You can’t run “{0}”.";
+
+    /// <summary>
+    /// Shown when a listed command was chosen after it stopped being available - its <c>VisibleWhen</c>, or an
+    /// ancestor's, turned false since the list was built; <c>{0}</c> is its title.
+    /// </summary>
+    public virtual string CommandUnavailable { get; set; } = "“{0}” is no longer available.";
+
     /// <summary>Shown when the children of a page failed to load.</summary>
     public virtual string LoadFailed { get; set; } = "Couldn’t load this list.";
 

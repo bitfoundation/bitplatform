@@ -23,15 +23,15 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.14" />
-        <PackageReference Condition="'$(TargetFramework)' == 'net11.0'" Include="Microsoft.AspNetCore.Components.WebAssembly" Version="11.0.0-rc.3.26522.148" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.15" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net11.0'" Include="Microsoft.AspNetCore.Components.WebAssembly" Version="11.0.0" />
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\..\..\Bit.BlazorUI.Icons\Bit.BlazorUI.Icons.csproj" />
         <ProjectReference Include="..\..\..\Bit.BlazorUI\Bit.BlazorUI.csproj" />
         <ProjectReference Include="..\..\..\Bit.BlazorUI.Extras\Bit.BlazorUI.Extras.csproj" />
-        <ProjectReference Include="..\..\..\Bit.BlazorUI.AI\Bit.BlazorUI.AI.csproj" />
+        <ProjectReference Include="..\..\..\Bit.BlazorUI.AI\Bit.BlazorUI.AI\Bit.BlazorUI.AI.csproj" />
     </ItemGroup>
 
 </Project>

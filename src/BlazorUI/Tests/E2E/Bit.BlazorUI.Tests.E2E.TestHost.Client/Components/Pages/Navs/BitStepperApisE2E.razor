@@ -1,0 +1,67 @@
+﻿@page "/e2e/stepper/apis"
+
+<PageTitle>BitStepper APIs E2E</PageTitle>
+
+<h1>BitStepper: custom items and options</h1>
+
+<E2ESection Id="custom" Title="Custom items">
+    <BitStepper Id="stp-custom" Items="_phases" NameSelectors="_selectors" @bind-CurrentIndex="_customIndex"
+                OnItemClick="(Phase p) => _customClicked = p.Name" />
+    <div id="custom-index">@_customIndex</div>
+    <div id="custom-clicked">@_customClicked</div>
+</E2ESection>
+
+<E2ESection Id="options" Title="Options">
+    <BitStepper Id="stp-options" TItem="BitStepperOption" @bind-CurrentIndex="_optionsIndex">
+        <BitStepperOption Text="First" Description="Start here" />
+        @if (_showMiddle)
+        {
+            <BitStepperOption Text="Middle" OnClick="() => _middleClicks++" />
+        }
+        <BitStepperOption Text="@_lastText" IsError="_lastIsError" />
+    </BitStepper>
+    <button id="btn-middle" type="button" @onclick="() => _showMiddle = !_showMiddle">Toggle middle</button>
+    <button id="btn-last" type="button" @onclick="ChangeLast">Change last</button>
+    <div id="options-index">@_optionsIndex</div>
+    <div id="middle-clicks">@_middleClicks</div>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    public class Phase
+    {
+        public string? Name { get; set; }
+        public string? Hint { get; set; }
+        public bool Failed { get; set; }
+    }
+
+    private readonly BitStepperNameSelectors<Phase> _selectors = new()
+    {
+        Text = { Name = nameof(Phase.Name) },
+        Description = { Selector = p => p.Hint },
+        IsError = { Name = nameof(Phase.Failed) },
+    };
+
+    private readonly List<Phase> _phases =
+    [
+        new() { Name = "Plan", Hint = "What to build" },
+        new() { Name = "Build", Failed = true },
+        new() { Name = "Ship" }
+    ];
+
+    private int _customIndex;
+    private string? _customClicked;
+
+    private int _optionsIndex = 1;
+    private bool _showMiddle;
+    private string _lastText = "Last";
+    private bool _lastIsError;
+    private int _middleClicks;
+
+    private void ChangeLast()
+    {
+        _lastText = "Done";
+        _lastIsError = true;
+    }
+}

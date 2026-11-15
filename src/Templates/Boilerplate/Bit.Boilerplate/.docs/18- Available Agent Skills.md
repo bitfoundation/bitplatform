@@ -24,7 +24,7 @@ start of a session and loads the skill when a task matches it.
 | `port` | An existing app, in any language or with no source left, should be rebuilt on this project with the same features. | `/port our old Xamarin point of sale` |
 | `template-diff` | A newer template version is out, the project moves to another .NET version, or it needs a template feature it was created without. | `/template-diff add Sentry` |
 | `deploy` | The project goes live for the first time, or a new environment, server or domain is needed. | `/deploy to my Ubuntu VM` |
-| `troubleshoot` | Something is wrong in Test or Production: an error, wrong data, a failed background job. | `/troubleshoot confirmation emails stopped arriving` |
+| `troubleshoot` | Something is wrong or slow in Test or Production: an error, wrong data, a failed background job, a website that is slow to load. | `/troubleshoot confirmation emails stopped arriving` |
 
 ## Where they live
 

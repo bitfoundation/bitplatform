@@ -28,7 +28,9 @@ public sealed partial class BitPackagedScriptTargetTests
         // targets every package imports, so no package sets them apart.
         var csproj = SourceFiles.Read(project, $"{project}.csproj");
         Assert.IsFalse(csproj.Contains("node_modules/.bin/esbuild"), $"{project}.csproj runs esbuild itself rather than through build-assets.mjs.");
-        StringAssert.Contains(csproj, @"<Import Project=""..\Bit.BlazorUI.Build\Bit.BlazorUI.Assets.targets"" />");
+        // Relative to the project's folder, which is one level deeper for the AI packages (Bit.BlazorUI.AI/<project>).
+        var up = string.Concat(Enumerable.Repeat(@"..\", SourceFiles.GetProjectFolder(project).Count(c => c is '/' or '\\') + 1));
+        StringAssert.Contains(csproj, $@"<Import Project=""{up}Bit.BlazorUI.Build\Bit.BlazorUI.Assets.targets"" />");
         Assert.IsTrue(Regex.IsMatch(csproj, @"@\(BitAssetsScript->'%\(FullPath\)'\)&quot; scripts [^""]*\$\(_BitAssetsMinify\)"), $"{project}.csproj does not build its scripts through build-assets.mjs.");
         Assert.IsFalse(csproj.Contains("<_BitAssetsMinify"), $"{project}.csproj sets the minify switch of its own.");
 

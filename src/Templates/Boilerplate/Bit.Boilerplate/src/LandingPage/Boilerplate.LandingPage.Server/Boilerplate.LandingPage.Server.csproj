@@ -16,17 +16,13 @@
     <ItemGroup>
         <PackageReference Include="Bit.BlazorES2019" />
         <PackageReference Include="Bit.BlazorUI.Assets" />
+        <PackageReference Include="Bit.BlazorUI.AI.Server" />
+        <PackageReference Include="Bit.BlazorUI.AI.ChatClient" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" />
         <PackageReference Include="Microsoft.Extensions.AI" />
         <PackageReference Include="Microsoft.Extensions.AI.OpenAI" />
         <PackageReference Include="FluentEmail.Smtp" />
         <PackageReference Include="QRCoder" />
-        <PackageReference Include="Azure.Monitor.OpenTelemetry.Exporter" />
-        <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
-        <PackageReference Include="OpenTelemetry.Extensions.Hosting" />
-        <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" />
-        <PackageReference Include="OpenTelemetry.Instrumentation.Http" />
-        <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" />
     </ItemGroup>
 
     <ItemGroup>

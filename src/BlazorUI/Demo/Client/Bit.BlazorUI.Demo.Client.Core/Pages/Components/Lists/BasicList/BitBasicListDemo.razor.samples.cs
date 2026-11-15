@@ -39,12 +39,12 @@ public class Person
             Name: <strong>@person.FirstName</strong>
         </div>
     </RowTemplate>
-    <EmptyContent>
+    <EmptyTemplate>
         <BitStack Alignment=""BitAlignment.Center"" Style=""height: 150px;"">
             <BitIcon IconName=""@BitIconName.SearchIssue"" Size=""BitSize.Large"" />
             <BitText Typography=""BitTypography.Body1"">Nobody to show here yet.</BitText>
         </BitStack>
-    </EmptyContent>
+    </EmptyTemplate>
 </BitBasicList>";
     private readonly string example2CsharpCode = @"
 private readonly List<Person> emptyPeople = [];

@@ -6,7 +6,7 @@
             Description="BitAiMessageActions is the row under a finished AI reply: copy, regenerate and thumbs up or down, plus the model, the token usage and the time the options in force show." />
 
 <DemoPage Name="AiMessageActions"
-          Description="BitAiMessageActions is the row under a finished assistant message: copy, regenerate (with a session, for the newest reply) and thumbs up or down feedback, plus extra buttons of the app's own, and the metadata the BitAiUiOptions in force choose to show - the model, the token usage, the time. The actions are revealed while the message is hovered or holds the focus; the metadata is always shown. BitAiChatMessage renders one under every reply."
+          Description="BitAiMessageActions is the row under a finished assistant message: copy, read aloud (with a BitAiReadAloud), regenerate (with a session, for the newest reply) and thumbs up or down feedback, plus extra buttons of the app's own, and the metadata the BitAiUiOptions in force choose to show - the model, the token usage, the time. The actions are revealed while the message is hovered or holds the focus; the metadata is always shown. BitAiChatMessage renders one under every reply."
           Parameters="componentParameters"
           SubClasses="componentSubClasses"
           SubEnums="componentSubEnums"
@@ -174,7 +174,25 @@
             </BitParams>
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+        <DemoExample Title="Read aloud" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+            <div>
+                <b>ReadAloud</b> offers a "Read aloud" action, which reads the message through the app's own text-to-speech: a
+                <b>BitAiReadAloud</b> made with a synthesizer (or an <b>IBitAiTextToSpeech</b>) plays the speech in the browser,
+                and the same button stops it - the name says what a press does next, Read aloud or Stop reading aloud. One
+                reading plays at a time on a page, so starting the second stops the first. A
+                <BitLink Href="/components/ai/chat">BitAiChat</BitLink> with <b>AllowReadAloud</b> makes one and cascades it to
+                the actions of every reply; a row with none offers no action. The synthesizer here has no voice: it plays a soft
+                tone about as long as the reply.
+            </div>
+            <br />
+            <div>@readAloudMessage.GetText()</div>
+            <BitAiMessageActions Pinned Message="readAloudMessage" ReadAloud="readAloud" />
+            <br />
+            <div>@readAloudOtherMessage.GetText()</div>
+            <BitAiMessageActions Pinned Message="readAloudOtherMessage" ReadAloud="readAloud" />
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
             <div>
                 <b>Style</b> / <b>Class</b> reach the root, <b>Styles</b> / <b>Classes</b> each part (the group of buttons,
                 the regenerate and feedback buttons with the class-styles of BitButton, the model and the time). The public
@@ -199,7 +217,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+        <DemoExample Title="RTL" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
             <div>Use BitAiMessageActions in right-to-left (RTL).</div>
             <br />
             <div dir="rtl">@rtlMessage.GetText()</div>

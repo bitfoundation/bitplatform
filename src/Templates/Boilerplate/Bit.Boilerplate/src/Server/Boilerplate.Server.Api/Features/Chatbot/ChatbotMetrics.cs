@@ -11,7 +11,7 @@ namespace Boilerplate.Server.Api.Features.Chatbot;
 /// </summary>
 public static class ChatbotMetrics
 {
-    public static readonly UpDownCounter<long> ActiveConversations = Meter.Current.CreateUpDownCounter<long>("chatbot.active_conversations", "{conversation}", "Text chats open in the AI chat panel right now.");
+    public static readonly UpDownCounter<long> ActiveConversations = Meter.Current.CreateUpDownCounter<long>("chatbot.active_conversations", "{conversation}", "Answers of the AI chat panel being written right now.");
 
     public static readonly UpDownCounter<long> ActiveVoiceCalls = Meter.Current.CreateUpDownCounter<long>("chatbot.active_voice_calls", "{call}", "Voice calls the server is in right now.");
 

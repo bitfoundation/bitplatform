@@ -1,0 +1,164 @@
+﻿@page "/e2e/focusoninvalidsubmit"
+
+@* BitFocusOnInvalidSubmit in real forms: the focus moved to the first invalid field of the form a submit failed in,
+   whatever input that field is - a text field after a valid one, a choice group with or without a checked radio, a
+   rating - passing over a field nothing can be focused in, and staying in its own form; and left alone by a submit
+   that passes and by a field validated as it is typed in. *@
+
+<PageTitle>BitFocusOnInvalidSubmit E2E</PageTitle>
+
+<E2ESection Id="fields" Title="The first invalid field, a valid one ahead of it passed over">
+    <EditForm Model="_fields" novalidate>
+        <DataAnnotationsValidator />
+        <BitFocusOnInvalidSubmit />
+        <BitTextField Id="tf-name" Label="Name" @bind-Value="_fields.Name" />
+        <BitTextField Id="tf-email" Label="Email" ShowValidationMessage @bind-Value="_fields.Email" />
+        <BitTextField Id="tf-city" Label="City" @bind-Value="_fields.City" />
+        <button id="fields-submit" type="submit">Submit</button>
+    </EditForm>
+</E2ESection>
+
+<E2ESection Id="group-none" Title="A choice group with no radio checked: its first radio">
+    <EditForm Model="_groupNone" novalidate>
+        <DataAnnotationsValidator />
+        <BitFocusOnInvalidSubmit />
+        <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-none" Label="Plan" Items="_planItems" @bind-Value="_groupNone.Plan" />
+        <button id="group-none-submit" type="submit">Submit</button>
+    </EditForm>
+</E2ESection>
+
+<E2ESection Id="group-checked" Title="A choice group whose checked radio is rejected: that radio">
+    <EditForm Model="_groupChecked" novalidate>
+        <DataAnnotationsValidator />
+        <BitFocusOnInvalidSubmit />
+        <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Id="cg-checked" Label="Plan" Items="_planItems" @bind-Value="_groupChecked.Plan" />
+        <button id="group-checked-submit" type="submit">Submit</button>
+    </EditForm>
+</E2ESection>
+
+<E2ESection Id="rating" Title="A rating: the item the Tab key lands on">
+    <EditForm Model="_rating" novalidate>
+        <DataAnnotationsValidator />
+        <BitFocusOnInvalidSubmit />
+        <BitRating Id="rtg-score" AllowZeroStars @bind-Value="_rating.Score" />
+        <button id="rating-submit" type="submit">Submit</button>
+    </EditForm>
+</E2ESection>
+
+<E2ESection Id="hidden" Title="A field in a collapsed part of the form is passed over">
+    <EditForm Model="_hidden" novalidate>
+        <DataAnnotationsValidator />
+        <BitFocusOnInvalidSubmit />
+        <div hidden>
+            <InputText id="hidden-field" @bind-Value="_hidden.Collapsed" />
+        </div>
+        <BitTextField Id="tf-visible" Label="Visible" @bind-Value="_hidden.Visible" />
+        <button id="hidden-submit" type="submit">Submit</button>
+    </EditForm>
+</E2ESection>
+
+<E2ESection Id="valid" Title="A submit that passes leaves the focus on the submit button">
+    <EditForm Model="_valid" OnValidSubmit="() => _validCount++" novalidate>
+        <DataAnnotationsValidator />
+        <BitFocusOnInvalidSubmit />
+        <BitTextField Id="tf-valid" Label="Name" @bind-Value="_valid.Name" />
+        <button id="valid-submit" type="submit">Submit</button>
+    </EditForm>
+    <span id="valid-count">@_validCount</span>
+</E2ESection>
+
+<E2ESection Id="typing" Title="A field validated as it is typed in keeps the focus">
+    <EditForm Model="_typing" novalidate>
+        <DataAnnotationsValidator />
+        <BitFocusOnInvalidSubmit />
+        <BitTextField Id="tf-first" Label="First" @bind-Value="_typing.First" />
+        <BitTextField Id="tf-typed" Label="Typed" Immediate @bind-Value="_typing.Typed" />
+        <button id="typing-submit" type="submit">Submit</button>
+    </EditForm>
+</E2ESection>
+
+<E2ESection Id="two-forms" Title="Each form looks in itself">
+    <EditForm Model="_formA" novalidate>
+        <DataAnnotationsValidator />
+        <BitTextField Id="tf-form-a" Label="Form A" @bind-Value="_formA.Name" />
+        <button id="form-a-submit" type="submit">Submit A</button>
+    </EditForm>
+    <EditForm Model="_formB" novalidate>
+        <DataAnnotationsValidator />
+        <BitFocusOnInvalidSubmit />
+        <BitTextField Id="tf-form-b" Label="Form B" @bind-Value="_formB.Name" />
+        <button id="form-b-submit" type="submit">Submit B</button>
+    </EditForm>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private readonly FieldsModel _fields = new() { Name = "Ada" };
+    private readonly PlanModel _groupNone = new();
+    private readonly PlanModel _groupChecked = new() { Plan = "team" };
+    private readonly RatingModel _rating = new();
+    private readonly HiddenModel _hidden = new();
+    private readonly NameModel _valid = new() { Name = "Ada" };
+    private readonly TypingModel _typing = new();
+    private readonly NameModel _formA = new();
+    private readonly NameModel _formB = new();
+    private int _validCount;
+
+    private readonly List<BitChoiceGroupItem<string>> _planItems =
+    [
+        new() { Text = "Free", Value = "free" },
+        new() { Text = "Team", Value = "team" },
+        new() { Text = "Enterprise", Value = "enterprise" },
+    ];
+
+    private sealed class FieldsModel
+    {
+        [Required]
+        public string? Name { get; set; }
+
+        [Required]
+        public string? Email { get; set; }
+
+        [Required]
+        public string? City { get; set; }
+    }
+
+    private sealed class PlanModel
+    {
+        // A plan that is required and, once picked, has to be the free one: "team" is a checked radio the form rejects.
+        [Required]
+        [RegularExpression("^free$", ErrorMessage = "Only the free plan is available.")]
+        public string? Plan { get; set; }
+    }
+
+    private sealed class RatingModel
+    {
+        [Range(typeof(double), "1", "5")]
+        public double Score { get; set; }
+    }
+
+    private sealed class HiddenModel
+    {
+        [Required]
+        public string? Collapsed { get; set; }
+
+        [Required]
+        public string? Visible { get; set; }
+    }
+
+    private sealed class NameModel
+    {
+        [Required]
+        public string? Name { get; set; }
+    }
+
+    private sealed class TypingModel
+    {
+        [Required]
+        public string? First { get; set; }
+
+        [Required]
+        public string? Typed { get; set; }
+    }
+}

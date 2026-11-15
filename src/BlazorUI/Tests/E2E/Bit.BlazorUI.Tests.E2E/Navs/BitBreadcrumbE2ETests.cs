@@ -13,7 +13,8 @@ namespace Bit.BlazorUI.Tests.E2E.Navs;
 /// dividers and every template, dynamic items, options inserted, renamed and reordered (AutoReorderOptions), the JSON-LD
 /// StructuredData, the disabled contract, every Color and Size, the external icons, Style/Class/Styles/Classes,
 /// Visibility, HtmlAttributes, the BitParams cascade, the public css variables, RTL, Escape inside a dialog and an
-/// unmount while the menu is open.
+/// unmount while the menu is open. Responsive has a page of its own (/e2e/breadcrumb/responsive): its callout on a
+/// wide screen is covered here, its sheet on a phone by BitBreadcrumbMobileE2ETests.
 /// </summary>
 [TestClass]
 public class BitBreadcrumbE2ETests : E2ETestBase
@@ -249,6 +250,30 @@ public class BitBreadcrumbE2ETests : E2ETestBase
 
         await Expect(callout).ToBeHiddenAsync();
         await Expect(OverflowButton("bc-max-2")).ToHaveAttributeAsync("aria-expanded", "false");
+    }
+
+    [TestMethod]
+    public async Task Responsive_OnAWideScreen_TheOverflowMenuIsTheCalloutUnderTheButton()
+    {
+        await OpenAsync("/e2e/breadcrumb/responsive");
+
+        var button = OverflowButton("bc-responsive");
+        var callout = Page.Locator($"[id='{await CalloutIdAsync("bc-responsive")}']");
+
+        await button.ClickAsync();
+        await Expect(callout).ToBeVisibleAsync();
+        await Expect(callout).ToHaveCSSAsync("opacity", "1");
+
+        // The sheet is only what a phone gets (BitBreadcrumbMobileE2ETests): here the menu is placed against the button.
+        await Expect(callout).ToHaveClassAsync(new Regex(@"(^|\s)bit-brc-res(\s|$)"));
+        var anchor = (await button.BoundingBoxAsync())!;
+        var box = (await callout.BoundingBoxAsync())!;
+        Assert.AreEqual(anchor.Y + anchor.Height, box.Y, 2, "The menu opens under the button.");
+        Assert.IsLessThan(await Page.EvaluateAsync<double>("() => window.innerWidth") / 2, box.Width, $"The menu is as wide as its steps ({box.Width}px).");
+
+        await callout.Locator(".bit-brc-ofi", new() { HasText = "Step 3" }).ClickAsync();
+        await Expect(Page.Locator("#clicked")).ToHaveTextAsync("Step 3");
+        await Expect(callout).ToBeHiddenAsync();
     }
 
     [TestMethod]

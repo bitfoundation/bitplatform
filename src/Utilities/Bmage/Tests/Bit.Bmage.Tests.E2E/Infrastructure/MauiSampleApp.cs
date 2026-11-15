@@ -110,7 +110,7 @@ public sealed class MauiSampleApp : IAsyncDisposable
         if (E2EEnvironment.MauiDebuggingPort is null && Environment.IsPrivilegedProcess)
             Assert.Inconclusive("Running elevated, WebView2 ignores WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS. Open the port with the "
                 + @"HKLM\SOFTWARE\Policies\Microsoft\Edge\WebView2\AdditionalBrowserArguments policy and name it in BMAGE_E2E_MAUI_DEBUGGING_PORT, "
-                + "as bit.ci.Bmage.e2e.yml does, or run the suite unelevated.");
+                + "as ci.bmage.e2e.yml does, or run the suite unelevated.");
 
         var port = E2EEnvironment.MauiDebuggingPort ?? ChildProcess.FreePort();
         // A folder of its own: WebView2 instances that share one share a browser process, whose port would then never

@@ -76,7 +76,7 @@ public partial class BitRatingDemo
             Name = "ErrorMessage",
             Type = "string?",
             DefaultValue = "null",
-            Description = "A line under the items, ahead of the description, saying why the value was rejected - by a server, a rule spanning two fields - which marks the rating invalid in the same way Invalid does. The rating is described by it, and a live region announces it the moment it shows up. A rating inside an EditForm already gets its messages from the cascading EditContext through ValidationMessage.",
+            Description = "A line under the items, ahead of the description, saying why the value was rejected - by a server, a rule spanning two fields - which marks the rating invalid in the same way Invalid does. The rating is described by it, and a live region announces it the moment it shows up. A rating inside an EditForm already gets its messages from the cascading EditContext, which ShowValidationMessage shows in this same place or ValidationMessage wherever the page puts it.",
         },
         new()
         {
@@ -232,6 +232,13 @@ public partial class BitRatingDemo
             Type = "string?",
             DefaultValue = "FavoriteStarFill",
             Description = "Custom icon name for selected rating elements (Fluent UI). For external icon libraries, use SelectedIcon instead.",
+        },
+        new()
+        {
+            Name = "ShowValidationMessage",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Shows the messages the cascading EditContext holds for the bound field under the items, where ErrorMessage goes, so an EditForm needs no ValidationMessage component beside the rating. The rating references them through aria-describedby, so they are read out whenever it is entered; they are not announced as they appear, since a submit validates every field at once. An ErrorMessage or ErrorMessageTemplate of the app's own wins the place while it is set.",
         },
         new()
         {

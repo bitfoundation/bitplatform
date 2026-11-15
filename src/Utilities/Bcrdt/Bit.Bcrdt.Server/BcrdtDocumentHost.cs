@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -15,7 +16,11 @@ public interface IBcrdtHostConnection
     /// <summary>A stable identifier for the connection, for logs. Never shown to other clients.</summary>
     string Id { get; }
 
-    /// <summary>What the connection was granted when it joined.</summary>
+    /// <summary>
+    /// What the connection may do now: what it was granted when it joined, or read-only once its grant was
+    /// narrowed (<see cref="BcrdtRelayConnections.MakeReadOnlyAsync(string, Func{IBcrdtHostConnection, bool})"/>).
+    /// The host reads it on every message.
+    /// </summary>
     BcrdtDocumentAccess Access { get; }
 
     /// <summary>
@@ -108,6 +113,13 @@ public sealed class BcrdtDocumentHostOptions
 
     /// <summary>Whether hosted documents reclaim deleted content. See <see cref="BcrdtDocumentOptions.GarbageCollect"/>.</summary>
     public bool GarbageCollect { get; init; } = true;
+
+    /// <summary>
+    /// Roughly how many bytes of client changes a hosted document holds while they wait for something
+    /// they build on, before it discards them and asks the client that sent the last one for the rest.
+    /// See <see cref="BcrdtDocumentOptions.MaxPendingSize"/>.
+    /// </summary>
+    public long MaxPendingSize { get; init; } = BcrdtDocumentOptions.DefaultMaxPendingSize;
 
     /// <summary>
     /// Whether the connections to one document can be spread over several server instances - a SignalR
@@ -232,6 +244,7 @@ public sealed class BcrdtDocumentHost : IAsyncDisposable
     private static bool Drop(string reason)
     {
         DroppedMetric.Add(1, new KeyValuePair<string, object?>("bcrdt.reason", reason));
+        BcrdtDiagnostics.HostDropped(reason);
         return false;
     }
     private bool _disposed;
@@ -355,6 +368,140 @@ public sealed class BcrdtDocumentHost : IAsyncDisposable
         }
     }
 
+    /// <summary>The reason a revoked client is given when the caller names none.</summary>
+    public const string DefaultRevocationReason = "Access to this document was revoked.";
+
+    /// <summary>
+    /// Takes a document away from the connections that no longer may have it - a user removed from a
+    /// shared document, an account disabled - rather than waiting for them to reconnect.
+    /// </summary>
+    /// <param name="documentId">The document.</param>
+    /// <param name="revoke">Which of the document's connections lose it; <see cref="IBcrdtHostConnection.UserId"/> is the usual test.</param>
+    /// <param name="reason">What the clients are told. Defaults to <see cref="DefaultRevocationReason"/>.</param>
+    /// <returns>How many connections were revoked.</returns>
+    /// <remarks>
+    /// <para>
+    /// A grant is checked when a client joins; this is how it ends early. Each revoked connection is
+    /// refused (<see cref="IBcrdtHostConnection.Refuse"/>): the client hears an
+    /// <see cref="BcrdtSyncMessageKind.Auth"/> refusal and stops reconnecting, and its relay closes it. Its
+    /// presence is withdrawn from everyone else at once, and the host sends it nothing more. A change it
+    /// sent that the host was already applying completes first - this waits for it - but goes no further
+    /// than the host; once this completes, nothing it sends is applied or relayed.
+    /// </para>
+    /// <para>
+    /// Change what the relay's authorization hook answers <i>before</i> revoking: a client that was already
+    /// past the hook when this ran joins with the grant the hook gave it. To narrow access rather than end
+    /// it - read-write to read-only - use <see cref="BcrdtRelayConnections.MakeReadOnlyAsync(string, Func{IBcrdtHostConnection, bool})"/>.
+    /// </para>
+    /// <para>
+    /// This reaches the connections this host serves - on this server instance. Behind a backplane, call
+    /// it on every instance. <see cref="BcrdtRelayConnections.RevokeAsync(string, Func{IBcrdtHostConnection, bool}, string?)"/>
+    /// reaches every connection the relays carry, hosted or not, and revokes hosted ones here too.
+    /// </para>
+    /// </remarks>
+    public async ValueTask<int> RevokeAsync(string documentId, Func<IBcrdtHostConnection, bool> revoke, string? reason = null)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(documentId);
+        ArgumentNullException.ThrowIfNull(revoke);
+
+        return _documents.TryGetValue(documentId, out HostedDocument? document)
+            ? await RevokeInAsync(document, revoke, reason ?? DefaultRevocationReason).ConfigureAwait(false)
+            : 0;
+    }
+
+    /// <summary>
+    /// Takes every document from the connections that no longer may have it, whichever documents they
+    /// have open - a user signed out everywhere, say.
+    /// </summary>
+    /// <param name="revoke">Which connections lose which documents, given the document identifier and the connection.</param>
+    /// <param name="reason">What the clients are told. Defaults to <see cref="DefaultRevocationReason"/>.</param>
+    /// <returns>How many connections were revoked.</returns>
+    /// <remarks>See <see cref="RevokeAsync(string, Func{IBcrdtHostConnection, bool}, string?)"/>.</remarks>
+    public async ValueTask<int> RevokeAsync(Func<string, IBcrdtHostConnection, bool> revoke, string? reason = null)
+    {
+        ArgumentNullException.ThrowIfNull(revoke);
+
+        int revoked = 0;
+        foreach (HostedDocument document in _documents.Values)
+        {
+            revoked += await RevokeInAsync(document, connection => revoke(document.Id, connection), reason ?? DefaultRevocationReason).ConfigureAwait(false);
+        }
+        return revoked;
+    }
+
+    private async ValueTask<int> RevokeInAsync(HostedDocument document, Func<IBcrdtHostConnection, bool> revoke, string reason)
+    {
+        IBcrdtHostConnection[] candidates;
+        lock (document.Connections) candidates = [.. document.Connections];
+
+        // The predicate is application code: it runs outside the lock.
+        List<IBcrdtHostConnection> chosen = [.. candidates.Where(revoke)];
+        if (chosen.Count == 0) return 0;
+
+        List<IBcrdtHostConnection> refused = [];
+        List<(ulong ClientId, long Clock)>? departed = null;
+        IBcrdtHostConnection[] remaining;
+        lock (document.Connections)
+        {
+            foreach (IBcrdtHostConnection connection in chosen)
+            {
+                // Only one still connected and not revoked already; leaving takes it off both lists.
+                if (!document.Connections.Remove(connection)) continue;
+                document.Revoked.Add(connection);
+                refused.Add(connection);
+                ReleaseAwarenessClaims(document, connection, ref departed);
+            }
+            remaining = [.. document.Connections];
+        }
+
+        foreach (IBcrdtHostConnection connection in refused)
+        {
+            _logger.LogInformation("Revoked connection {ConnectionId} on document {DocumentId}.", connection.Id, document.LogId);
+            connection.Refuse(reason);
+        }
+
+        AnnounceDepartures(departed, remaining);
+
+        // A change the host was applying for one of them when it was marked finishes before this returns;
+        // every later one finds it marked under the same lock and is dropped.
+        if (refused.Count > 0 && await TryEnterAsync(document).ConfigureAwait(false)) document.Lock.Release();
+
+        return refused.Count;
+    }
+
+    /// <summary>Forgets the presence identities a connection owned. Call under the connections lock.</summary>
+    private static void ReleaseAwarenessClaims(HostedDocument document, IBcrdtHostConnection connection, ref List<(ulong ClientId, long Clock)>? departed)
+    {
+        List<ulong>? released = null;
+        foreach ((ulong clientId, AwarenessClaim claim) in document.AwarenessClaims)
+        {
+            if (!ReferenceEquals(claim.Owner, connection)) continue;
+            (departed ??= []).Add((clientId, claim.Clock));
+            (released ??= []).Add(clientId);
+        }
+
+        if (released is null) return;
+        foreach (ulong clientId in released) document.AwarenessClaims.Remove(clientId);
+    }
+
+    /// <summary>
+    /// Tells the remaining connections that presence identities are gone, so they leave everyone's
+    /// participant list now rather than after the presence timeout.
+    /// </summary>
+    private static void AnnounceDepartures(List<(ulong ClientId, long Clock)>? departed, IBcrdtHostConnection[] remaining)
+    {
+        if (departed is null || remaining.Length == 0) return;
+
+        byte[] removal = BcrdtSyncProtocol.EncodeAwarenessUpdate(BcrdtAwarenessStore.EncodeRemovals(departed));
+        foreach (IBcrdtHostConnection other in remaining) other.Send(removal);
+    }
+
+    /// <summary>Whether a connection's access to a document was revoked.</summary>
+    private static bool IsRevoked(HostedDocument document, IBcrdtHostConnection connection)
+    {
+        lock (document.Connections) return document.Revoked.Contains(connection);
+    }
+
     /// <summary>Waits until every change to a loaded document has reached the store.</summary>
     /// <remarks>Completes at once for a document that is not loaded: unloading flushes it.</remarks>
     public Task FlushAsync(string documentId)
@@ -370,9 +517,22 @@ public sealed class BcrdtDocumentHost : IAsyncDisposable
 
     internal async ValueTask<bool> ReceiveAsync(HostedDocument document, IBcrdtHostConnection connection, ReadOnlyMemory<byte> raw)
     {
-        bool relay = await HandleAsync(document, connection, raw).ConfigureAwait(false);
-        if (relay) ForwardAcrossRelays(document, connection, raw);
-        return relay;
+        using Activity? span = BcrdtDiagnostics.StartHostMessage(raw.Span);
+        try
+        {
+            bool relay = await HandleAsync(document, connection, raw).ConfigureAwait(false);
+            if (relay) ForwardAcrossRelays(document, connection, raw);
+            return relay;
+        }
+        catch (Exception ex)
+        {
+            BcrdtDiagnostics.Fail(span, ex);
+            throw;
+        }
+        finally
+        {
+            BcrdtDiagnostics.EndHostMessage(span);
+        }
     }
 
     /// <summary>
@@ -397,6 +557,9 @@ public sealed class BcrdtDocumentHost : IAsyncDisposable
 
     private async ValueTask<bool> HandleAsync(HostedDocument document, IBcrdtHostConnection connection, ReadOnlyMemory<byte> raw)
     {
+        // Nothing a revoked connection sends counts any more, while its relay is still closing it.
+        if (IsRevoked(document, connection)) return Drop("revoked");
+
         BcrdtSyncMessage message;
         try
         {
@@ -469,6 +632,10 @@ public sealed class BcrdtDocumentHost : IAsyncDisposable
         long now = Environment.TickCount64;
         lock (document.Connections)
         {
+            // Revoked since HandleAsync looked: revoking released this connection's claims under this same lock,
+            // and a claim made now would outlive it - an identity nobody can take over, announced to nobody as gone.
+            if (document.Revoked.Contains(connection)) return Drop("revoked");
+
             int owned = 0;
             foreach (AwarenessClaim claim in document.AwarenessClaims.Values)
             {
@@ -482,8 +649,12 @@ public sealed class BcrdtDocumentHost : IAsyncDisposable
                 {
                     if (ReferenceEquals(claim.Owner, connection)) continue;
 
-                    // A client that lost its connection comes back on a new one before the server has
-                    // noticed the old one is gone, publishing the same identity at a later clock.
+                    // A client that lost its connection, or said goodbye on purpose, comes back on a new one
+                    // before the server has noticed the old one is gone, publishing the same identity at a
+                    // later clock. Withdrawing an entry does not free it for anybody else: the owner's
+                    // connection is still open - a tab merely hidden withdraws its entry and publishes it
+                    // again when shown - so the identity changes hands only as any held one does, to the
+                    // same signed-in user at once and to anyone else once the holder has gone quiet.
                     if (online && clock > claim.Clock && CanTakeOver(claim, connection, now, takeoverAfterMilliseconds))
                     {
                         (claiming ??= []).Add(clientId);
@@ -577,6 +748,10 @@ public sealed class BcrdtDocumentHost : IAsyncDisposable
         if (!await TryEnterAsync(document).ConfigureAwait(false)) return Drop("closed");
         try
         {
+            // Revoked while it waited for the lock. Revoking marks under the connections lock and then
+            // passes through this one, so a change that gets past here is applied before revoking completes.
+            if (IsRevoked(document, connection)) return Drop("revoked");
+
             if (_options.ValidateUpdate is { } validate)
             {
                 bool accepted;
@@ -588,8 +763,11 @@ public sealed class BcrdtDocumentHost : IAsyncDisposable
                 {
                     // A validator that fails has not accepted anything.
                     _logger.LogError(ex, "Update validation threw for document {DocumentId}; the change was refused.", document.LogId);
+                    BcrdtDiagnostics.HostValidationFailed(ex);
                     accepted = false;
                 }
+
+                BcrdtDiagnostics.HostValidated(accepted);
 
                 if (!accepted)
                 {
@@ -602,6 +780,7 @@ public sealed class BcrdtDocumentHost : IAsyncDisposable
             BcrdtStructStore store = document.Crdt.Store;
             byte[]? pendingBefore = store.PendingUpdate;
             ulong pendingDeletionsBefore = Digest(store.PendingDeleteSet);
+            long discardsBefore = document.Crdt.PendingDiscards;
 
             List<byte[]> replies = [];
             try
@@ -627,6 +806,22 @@ public sealed class BcrdtDocumentHost : IAsyncDisposable
             // change that added to what is waiting: a SyncStep2 is already the sender's answer to such a
             // question, and asking again whenever anything at all is waiting would trade handshakes
             // with every client for as long as something nobody has stays unresolved.
+            // What was waiting may also have just outgrown its bound and been discarded. What was thrown
+            // away came from any of the connections, not only the one whose change crossed the bound, and
+            // the deletions that waited with it come back only in an answer: every connection is asked.
+            bool discarded = document.Crdt.PendingDiscards != discardsBefore;
+            if (discarded)
+            {
+                _logger.LogWarning("Document {DocumentId} discarded changes waiting for their dependencies after connection {ConnectionId} outgrew the bound.", document.LogId, connection.Id);
+
+                IBcrdtHostConnection[] everyone;
+                lock (document.Connections) everyone = [.. document.Connections];
+
+                byte[] announcement = BcrdtSyncExchange.CreateAnnouncement(document.Crdt);
+                foreach (IBcrdtHostConnection other in everyone) other.Send(announcement);
+                return true;
+            }
+
             bool newlyWaiting =
                 !ReferenceEquals(pendingBefore, store.PendingUpdate) ||
                 pendingDeletionsBefore != Digest(store.PendingDeleteSet);
@@ -653,6 +848,7 @@ public sealed class BcrdtDocumentHost : IAsyncDisposable
         try
         {
             BcrdtSyncExchange.Handle(document.Crdt, message, connection, replies, _options.MaxMessageSize);
+            BcrdtDiagnostics.HostAnswered(replies);
         }
         catch (BcrdtFormatException ex)
         {
@@ -665,7 +861,8 @@ public sealed class BcrdtDocumentHost : IAsyncDisposable
             document.Lock.Release();
         }
 
-        // Answered to the asker alone: the others did not ask.
+        // Answered to the asker alone: the others did not ask. Not to one revoked meanwhile.
+        if (IsRevoked(document, connection)) return true;
         foreach (byte[] reply in replies) connection.Send(reply);
         return true;
     }
@@ -678,25 +875,15 @@ public sealed class BcrdtDocumentHost : IAsyncDisposable
         lock (document.Connections)
         {
             document.Connections.Remove(connection);
-            foreach ((ulong clientId, AwarenessClaim claim) in document.AwarenessClaims)
-            {
-                if (ReferenceEquals(claim.Owner, connection)) (departed ??= []).Add((clientId, claim.Clock));
-            }
-            if (departed is not null)
-            {
-                foreach ((ulong clientId, long _) in departed) document.AwarenessClaims.Remove(clientId);
-            }
+            document.Revoked.Remove(connection);
+            ReleaseAwarenessClaims(document, connection, ref departed);
             remaining = [.. document.Connections];
         }
 
         // A tab that crashed or lost its network never says goodbye. Saying it on its behalf takes it
         // off everyone's participant list now rather than after the presence timeout; a client that
         // did say goodbye has already moved past this clock, so for it this changes nothing.
-        if (departed is not null && remaining.Length > 0)
-        {
-            byte[] removal = BcrdtSyncProtocol.EncodeAwarenessUpdate(BcrdtAwarenessStore.EncodeRemovals(departed));
-            foreach (IBcrdtHostConnection other in remaining) other.Send(removal);
-        }
+        AnnounceDepartures(departed, remaining);
 
         Release(document);
     }
@@ -832,7 +1019,13 @@ public sealed class BcrdtDocumentHost : IAsyncDisposable
 
     private async Task LoadAsync(HostedDocument document)
     {
-        var crdt = new BcrdtDocument(new BcrdtDocumentOptions { Id = document.Id, GarbageCollect = _options.GarbageCollect });
+        using Activity? span = BcrdtDiagnostics.Start(BcrdtDiagnostics.HostLoadSpan);
+        var crdt = new BcrdtDocument(new BcrdtDocumentOptions
+        {
+            Id = document.Id,
+            GarbageCollect = _options.GarbageCollect,
+            MaxPendingSize = _options.MaxPendingSize,
+        });
         try
         {
             document.Persistence = await BcrdtDocumentPersistence
@@ -842,8 +1035,9 @@ public sealed class BcrdtDocumentHost : IAsyncDisposable
             document.Persistence.WriteFailed += error =>
                 _logger.LogError(error, "Writing document {DocumentId} to the store failed; the write is retried.", document.LogId);
         }
-        catch
+        catch (Exception ex)
         {
+            BcrdtDiagnostics.Fail(span, ex);
             crdt.Dispose();
             throw;
         }
@@ -873,6 +1067,11 @@ public sealed class BcrdtDocumentHost : IAsyncDisposable
 
     private static async Task CloseAsync(HostedDocument document)
     {
+        // Housekeeping, whoever's work happened to schedule it - often a connection that left a while ago:
+        // it starts a trace of its own. Only this method's flow is affected.
+        Activity.Current = null;
+        using Activity? span = BcrdtDiagnostics.Start(BcrdtDiagnostics.HostUnloadSpan);
+
         // Waits out a change in progress, so the writer is closed after the last change it must store.
         await document.Lock.WaitAsync().ConfigureAwait(false);
         try
@@ -886,6 +1085,11 @@ public sealed class BcrdtDocumentHost : IAsyncDisposable
                 crdt.Dispose();
                 LoadedDocumentsMetric.Add(-1);
             }
+        }
+        catch (Exception ex)
+        {
+            BcrdtDiagnostics.Fail(span, ex);
+            throw;
         }
         finally
         {
@@ -967,6 +1171,11 @@ public sealed class BcrdtDocumentHost : IAsyncDisposable
         public SemaphoreSlim Lock { get; } = new(1, 1);
 
         public List<IBcrdtHostConnection> Connections { get; } = [];
+
+        /// <summary>
+        /// Connections whose access was revoked and that have not left yet. Guarded by <see cref="Connections"/>.
+        /// </summary>
+        public HashSet<IBcrdtHostConnection> Revoked { get; } = new(ReferenceEqualityComparer.Instance);
 
         /// <summary>Which connection owns which presence identity. Guarded by <see cref="Connections"/>.</summary>
         public Dictionary<ulong, AwarenessClaim> AwarenessClaims { get; } = [];

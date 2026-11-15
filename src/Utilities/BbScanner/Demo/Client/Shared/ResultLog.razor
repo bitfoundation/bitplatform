@@ -36,7 +36,7 @@
                             <td><span class="bb-badge" data-testid="result-format">@entry.Format</span></td>
                             <td class="bb-mono result-value" data-testid="result-value">@entry.Text</td>
                             <td class="bb-mono bb-nowrap">@Describe(entry.BoundingBox)</td>
-                            <td>@Describe(entry.Metadata)</td>
+                            <td>@Describe(entry)</td>
                         </tr>
                     }
                 </tbody>
@@ -66,9 +66,9 @@
     private static string Describe(BbScanRect box) =>
         box.Width <= 0 ? "-" : $"{box.X:0}, {box.Y:0} · {box.Width:0}×{box.Height:0}";
 
-    private static string Describe(BbBarcodeResultMetadata? metadata)
+    private static string Describe(BbBarcodeResult result)
     {
-        if (metadata is null)
+        if (result.Metadata is not { } metadata)
         {
             return "-";
         }
@@ -97,12 +97,15 @@
 
         if (metadata.IsGs1 == true)
         {
-            parts.Add("GS1");
+            // The element string split into its AIs, when it is a valid one.
+            parts.Add(result.TryGetGs1(out var gs1) ? $"GS1 {gs1.ToBracketedString()}" : "GS1");
         }
 
-        if (metadata.StructuredAppendIndex is not null)
+        if (metadata.StructuredAppendIndex is { } index)
         {
-            parts.Add($"part {metadata.StructuredAppendIndex + 1} of {metadata.StructuredAppendCount}");
+            // Data Matrix numbers its symbols from 1, QR Code and PDF417 from 0.
+            var part = result.Format == BbBarcodeFormat.DataMatrix ? index : index + 1;
+            parts.Add(metadata.StructuredAppendCount is { } count ? $"part {part} of {count}" : $"part {part}");
         }
 
         if (metadata.Rows is not null && metadata.Columns is not null)

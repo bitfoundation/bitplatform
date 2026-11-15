@@ -238,6 +238,12 @@ public static class BlowValidationCodes
 
     /// <summary>A node cannot be reached from any start node.</summary>
     public const string UnreachableNode = "unreachable-node";
+
+    /// <summary>A node's type is not registered (<see cref="BlowNodeRegistry.ValidationRule"/>).</summary>
+    public const string UnknownNodeType = "unknown-node-type";
+
+    /// <summary>A node's type is deprecated (<see cref="BlowNodeDefinition.Deprecated"/>).</summary>
+    public const string DeprecatedNodeType = "deprecated-node-type";
 }
 
 /// <summary>Ready-made validation rules, and helpers for writing your own.</summary>

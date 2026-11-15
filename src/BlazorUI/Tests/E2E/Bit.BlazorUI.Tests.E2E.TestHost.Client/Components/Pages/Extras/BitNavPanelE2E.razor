@@ -54,13 +54,13 @@
     <div class="npn-row">
         <div class="npn-box">
             <BitNavPanel Id="npn-search" Items="@I("search")" @bind-SearchText="_searchText" SearchDebounceTime="100"
-                         OnSearch="v => _lastSearch = v" SearchBoxPlaceholder="Search in menu items..." EmptyListMessage="There is no item found."
+                         OnSearch="v => _lastSearch = v" SearchBoxPlaceholder="Search in menu items..." NoResultsText="There is no item found."
                          SearchAnnouncementProvider="@(count => $"{count} found")" Style="height:420px" />
         </div>
         <div class="npn-box">
             <BitNavPanel Id="npn-search-filter" Items="@I("filter")" SearchDebounceTime="0"
                          SearchFilter="(item, term) => item.Text.StartsWith(term, StringComparison.OrdinalIgnoreCase)" Style="height:420px">
-                <EmptyListTemplate><span class="npn-empty-tpl">Nothing here</span></EmptyListTemplate>
+                <NoResultsTemplate><span class="npn-empty-tpl">Nothing here</span></NoResultsTemplate>
             </BitNavPanel>
         </div>
         <div class="npn-box"><BitNavPanel Id="npn-nosearch" Items="@I("nosearch")" NoSearchBox Style="height:300px" /></div>
@@ -141,6 +141,10 @@
     <button id="btn-open-nonmodal" @onclick="() => _nonModalOpen = true">Open the non-modal drawer</button>
     <span id="nonmodal-open">@_nonModalOpen</span>
     <BitNavPanel Id="npn-drawer-nonmodal" Items="@I("nonmodal")" @bind-IsOpen="_nonModalOpen" DrawerBreakpoint="BitNavPanelBreakpoint.Always" NoOverlay NoAutoClose />
+    <button id="btn-open-notrap" @onclick="() => _noTrapOpen = true">Open the drawer that does not trap the focus</button>
+    <button id="btn-close-notrap" @onclick="() => _noTrapOpen = false">Close the drawer that does not trap the focus</button>
+    <span id="notrap-open">@_noTrapOpen</span>
+    <BitNavPanel Id="npn-drawer-notrap" Items="@I("notrap")" @bind-IsOpen="_noTrapOpen" DrawerBreakpoint="BitNavPanelBreakpoint.Always" AutoFocus NoFocusTrap />
     <button id="btn-api-open" @onclick="() => _drawerRef!.Open()">Open()</button>
     <button id="btn-api-close" @onclick="() => _drawerRef!.Close()">Close()</button>
     <button id="btn-never">A column on every screen</button>
@@ -198,10 +202,10 @@
             <BitNavPanel Id="npn-styled" Items="@I("styled")" IconUrl="@Logo" HeaderText="Styled" ShowCloseButton IsToggled="_styledToggled" Class="npn-root-class"
                          Style="height:300px; border: 2px solid rgb(1, 2, 3)"
                          Classes="@(new() { Root = "c-root", Toggled = "c-toggled", Container = "c-container", Header = "c-header", HeaderIcon = "c-hicon", HeaderText = "c-htext",
-                                            ToggleButton = "c-toggle", CloseButton = "c-close", SearchBox = "c-search", ToggleSearchButton = "c-tsearch", EmptyListMessage = "c-empty", Nav = "c-nav" })"
+                                            ToggleButton = "c-toggle", CloseButton = "c-close", SearchBox = "c-search", ToggleSearchButton = "c-tsearch", NoResults = "c-empty", Nav = "c-nav" })"
                          Styles="@(new() { Root = "padding-top: 3px", Toggled = "outline: 1px solid rgb(9, 9, 9)", Container = "padding-left: 4px", Header = "padding-right: 5px",
                                            HeaderIcon = "opacity: 0.5", HeaderText = "color: rgb(10, 20, 30)", ToggleButton = "margin-left: 6px", SearchBox = "margin-top: 7px",
-                                           ToggleSearchButton = "margin-top: 8px", EmptyListMessage = "color: rgb(40, 50, 60)", Nav = "margin-bottom: 9px" })"
+                                           ToggleSearchButton = "margin-top: 8px", NoResults = "color: rgb(40, 50, 60)", Nav = "margin-bottom: 9px" })"
                          NavClasses="@(new() { ItemContainer = "c-nav-item" })" NavStyles="@(new() { ItemContainer = "letter-spacing: 1px" })"
                          SearchBoxClasses="@(new() { Root = "c-sb-root" })" SearchBoxStyles="@(new() { Root = "letter-spacing: 2px" })"
                          SearchDebounceTime="0" />
@@ -272,6 +276,7 @@
     private bool _drawerOpen;
     private bool _endOpen;
     private bool _nonModalOpen;
+    private bool _noTrapOpen;
     private bool _iconsToggled = true;
     private bool _styledToggled;
     private bool _varsToggled;

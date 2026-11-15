@@ -69,7 +69,7 @@ private readonly List<BitCountry> preferredCountries =
 <BitCountryPicker Label=""Search box""
                   Placeholder=""Select a country""
                   SearchBoxPlaceholder=""Country or ISO code""
-                  NoResultsMessage=""No matching country"" />
+                  NoResultsText=""No matching country"" />
 
 <BitCountryPicker Label=""NoSearchBox"" NoSearchBox Placeholder=""Select a country"" />";
 
@@ -109,8 +109,8 @@ private static string? GetFlagUrl(BitCountry country) => $""https://flagcdn.com/
     <BitCountryPicker Label=""Nationality""
                       Required
                       Placeholder=""Select a country""
+                      ShowValidationMessage
                       @bind-Value=""validationModel.Nationality"" />
-    <ValidationMessage For=""() => validationModel.Nationality"" />
     <br />
     <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
 </EditForm>
@@ -211,7 +211,7 @@ private BitCountry? submissionCountry;";
                   Placeholder=""Land auswählen""
                   SearchBoxPlaceholder=""Suchen""
                   SearchBoxAriaLabel=""Land suchen""
-                  NoResultsMessage=""Kein Land gefunden""
+                  NoResultsText=""Kein Land gefunden""
                   SearchResultsAnnouncement=""@(count => count == 1 ? ""1 Land gefunden"" : $""{count} Länder gefunden"")"" />";
     private readonly string example17CsharpCode = @"
 private readonly List<BitCountry> germanCountries =

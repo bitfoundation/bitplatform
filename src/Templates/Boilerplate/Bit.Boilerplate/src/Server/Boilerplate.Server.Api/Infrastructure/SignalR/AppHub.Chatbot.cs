@@ -1,117 +1,52 @@
 //+:cnd:noEmit
 using System.Runtime.CompilerServices;
-using Boilerplate.Shared.Features.Chatbot;
-
 namespace Boilerplate.Server.Api.Infrastructure.SignalR;
 
+/// <summary>
+/// The AI chat panel's end of the hub. <see cref="AppHub"/> is a BitAiHub of Bit.BlazorUI.AI.Server, so the panel's
+/// BitAiSignalRTransport streams each answer from it over the app's own SignalR connection, in the library's wire format:
+/// the conversation goes up as a BitAiRequest with every message, and the answer comes back as BitAiEvents - the text as
+/// the model writes it, the tools it calls, the products and forms they show. Stopping the answer in the panel cancels the
+/// stream, and with it the model.
+/// <para>
+/// The connection is what makes it more than a stream: the chatbot's tools act on the user's app over it, as it streams -
+/// navigating it, changing its theme or language, showing the sign-in modal (See <see cref="AppChatbot"/>) - and a tool
+/// call that waits on the user's approval (ClearAppFiles) gets the decision back over it too, on the same instance
+/// (BitAiHub's SendBitAiApproval, through the BitAiApprovalBroker).
+/// </para>
+/// <para>
+/// What does NOT travel on this stream is audio and pictures. Dictation and read aloud are ordinary requests to
+/// <c>ChatbotController</c>, and an image goes up to <c>AttachmentController</c> before its message does, so the message
+/// carries only the id it was stored under.
+/// </para>
+/// </summary>
 public partial class AppHub
 {
-    /// <summary>
-    /// This method is accepting stream of user messages and returning stream of string charecters of AI chatbot responses.
-    /// The basic implementation idea is brought from here: https://learn.microsoft.com/en-us/aspnet/core/signalr/streaming?view=aspnetcore-10.0
-    /// Accepting stream of user messages drastically reduces the latency instead of sending different requests for each user message.
-    /// 
-    /// During this process, if a new user message arrives, the ongoing message processing is cancelled and the new message is processed,
-    /// and server is able to send commands such as navigate to specific page, change theme etc to the client as well,
-    /// which means as AI chatbot behind this hub is able to guide user through the application and a lot more interactive experience can be built.
-    /// Using SignalR's `InvokeAsync` method, the AI chatbot would know if the command is successfully executed on client side or not, because it's not a fire-and-forget operation.
-    /// 
-    /// By accepting stream of user messages, we can store `chatMessages` field inside `AppChatbot` for current conversation only,
-    /// which is **scalable** without forcing client to send the whole chat history each time or storing chat history on redis or database.
-    /// 
-    /// The above 3 reasons are the main motivations of this design/implementation using SignalR instead of using SSE or other techniques.
-    /// Checkout <see cref="AppChatbot"/> for more details.
-    ///
-    /// What does NOT travel on this stream is audio. Dictation and read aloud are ordinary requests to
-    /// <c>ChatbotController</c> instead: a recording or a synthesised answer is megabytes rather than a sentence, and
-    /// a new incoming message cancels whatever is being processed - so an upload sharing this stream would both stall
-    /// the conversation and be cancelled by the very message it was meant to become. Only the image a user attaches
-    /// travels here, and only as the id it was stored under.
-    /// </summary>
-    [HubMethodName(SharedAppMessages.StartChat)]
-    public async IAsyncEnumerable<string> StartChat(
-        StartChatRequest request,
-        IAsyncEnumerable<AiChatMessage> incomingMessages,
-        [EnumeratorCancellation] CancellationToken cancellationToken,
-        [FromServices] AppChatbot chatbotService)
+    protected override async IAsyncEnumerable<BitAiEvent> StreamAsync(BitAiRequest request, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        try
-        {
-            // Azure SignalR runs the hub on a persistent connection with no ambient ASP.NET Core request, so it
-            // never sets the IHttpContextAccessor AsyncLocal
-            serviceProvider.GetRequiredService<IHttpContextAccessor>().HttpContext = Context.GetHttpContext();
+        var services = request.Services ?? throw new InvalidOperationException("BitAiHub hands every request the services of its invocation.");
 
-            await chatbotService.StartChat(request,
-                Context.ConnectionId,
-                cancellationToken);
-        }
-        catch (Exception exp)
-        {
-            await HandleException(exp, cancellationToken);
-            yield break;
-        }
+        // Read before the first await: a hub instance doesn't outlive the invocation, and the stream does.
+        var connectionId = Context.ConnectionId;
+        var httpContext = Context.GetHttpContext();
+        var user = httpContext?.User ?? Context.User ?? new ClaimsPrincipal();
 
-        async Task ReadIncomingMessages()
-        {
-            // While processing a user message, a new message may arrive.
-            // To handle this, we cancel the ongoing message processing using `messageSpecificCancellationTokenSrc` and start processing the new message.
-            CancellationTokenSource? messageSpecificCancellationTokenSrc = null;
-            try
-            {
-                await foreach (var incomingMessage in incomingMessages)
-                {
-                    if (messageSpecificCancellationTokenSrc is not null)
-                        await messageSpecificCancellationTokenSrc.TryCancel();
+        // Azure SignalR runs the hub on a persistent connection with no ambient ASP.NET Core request, so it never sets the
+        // IHttpContextAccessor AsyncLocal the chatbot and its tools read the request from.
+        services.GetRequiredService<IHttpContextAccessor>().HttpContext = httpContext;
 
-                    messageSpecificCancellationTokenSrc = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-                    _ = chatbotService.ProcessNewMessage(
-                        incomingMessage,
-                        Context.GetHttpContext()!.User,
-                        messageSpecificCancellationTokenSrc.Token);
-                }
-            }
-            catch (Exception exp) when (exp is HubException or OperationCanceledException)
-            {
-                // The client cancelled its stream or disconnected, and nothing awaits this task to observe that.
-            }
-            finally
-            {
-                if (messageSpecificCancellationTokenSrc is not null)
-                {
-                    await messageSpecificCancellationTokenSrc.TryCancel();
-                    messageSpecificCancellationTokenSrc.Dispose();
-                }
-            }
-        }
-
-        _ = ReadIncomingMessages();
+        ChatbotMetrics.ActiveConversations.Add(1);
 
         try
         {
-            ChatbotMetrics.ActiveConversations.Add(1);
-
-            await foreach (var str in chatbotService.GetStreamingChannel().ReadAllAsync(cancellationToken).WithCancellation(cancellationToken))
+            await foreach (var evt in services.GetRequiredService<AppChatbot>().Reply(request, connectionId, user, cancellationToken))
             {
-                yield return str;
+                yield return evt;
             }
         }
         finally
         {
             ChatbotMetrics.ActiveConversations.Add(-1);
         }
-    }
-
-    private async Task HandleException(Exception exp, CancellationToken cancellationToken)
-    {
-        await using var scope = serviceProvider.CreateAsyncScope();
-        var serverExceptionHandler = scope.ServiceProvider.GetRequiredService<ApiServerExceptionHandler>();
-        var problemDetails = serverExceptionHandler.Handle(exp);
-        if (serverExceptionHandler.IgnoreException(serverExceptionHandler.UnWrapException(exp)))
-            return;
-        try
-        {
-            await Clients.Caller.Publish(SharedAppMessages.EXCEPTION_THROWN, problemDetails, cancellationToken);
-        }
-        catch { }
     }
 }

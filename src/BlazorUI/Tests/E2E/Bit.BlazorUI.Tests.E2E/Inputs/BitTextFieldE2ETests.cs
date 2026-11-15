@@ -2714,6 +2714,45 @@ public class BitTextFieldE2ETests : E2ETestBase
         Assert.IsTrue(MaxSeconds(forced) > 0.01, $"ForceAnimation keeps the full duration ({forced}).");
     }
 
+    [TestMethod]
+    public async Task Mask_LaysTheTextOutAsItIsTyped_AndKeepsTheCaretWhereItWas()
+    {
+        await OpenAsync(Url);
+        var input = Input("tf-mask-date");
+
+        await input.PressSequentiallyAsync("12312025");
+
+        await Expect(input).ToHaveValueAsync("12/31/2025");
+        await Expect(Text("mask-date-value")).ToHaveTextAsync("12/31/2025");
+
+        // An edit in the middle: the caret is put after the '3' and it is deleted. The text is laid out again around the
+        // caret, which stays in the middle rather than jumping to the end - so the next key goes where the user is typing.
+        await input.EvaluateAsync("e => e.setSelectionRange(4, 4)");
+        await Page.Keyboard.PressAsync("Backspace");
+        await Expect(input).ToHaveValueAsync("12/12/025");
+        Assert.IsTrue(await input.EvaluateAsync<int>("e => e.selectionStart") <= 3, "the caret stayed where the deleted character was");
+
+        await Page.Keyboard.TypeAsync("9");
+
+        await Expect(input).ToHaveValueAsync("12/91/2025");
+        await Expect(Text("mask-date-value")).ToHaveTextAsync("12/91/2025");
+    }
+
+    [TestMethod]
+    public async Task Mask_WithMaskRawValue_ShowsTheLayoutButCommitsOnlyTheSlots()
+    {
+        await OpenAsync(Url);
+        var input = Input("tf-mask-phone");
+
+        await input.PressSequentiallyAsync("4155550123");
+        await Expect(input).ToHaveValueAsync("(415) 555-0123");
+
+        await BlurAsync();
+
+        await Expect(Text("mask-phone-value")).ToHaveTextAsync("4155550123");
+        await Expect(input).ToHaveValueAsync("(415) 555-0123");
+    }
+
     private static double MaxSeconds(string durations) =>
         durations.Split(',').Select(d => d.Trim()).Select(d => d.EndsWith("ms") ? double.Parse(d[..^2], System.Globalization.CultureInfo.InvariantCulture) / 1000
                                                                                 : double.Parse(d.TrimEnd('s'), System.Globalization.CultureInfo.InvariantCulture)).Max();

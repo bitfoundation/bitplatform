@@ -105,7 +105,7 @@
             <div>
                 The search matches names (accents folded, word starts), ISO codes and dialing codes (<code>+44</code>,
                 <code>0044</code> and <code>44</code> alike), and the result count is announced to screen readers.
-                <b>SearchBoxPlaceholder</b>, <b>SearchBoxAriaLabel</b> and <b>NoResultsMessage</b> set its texts.
+                <b>SearchBoxPlaceholder</b>, <b>SearchBoxAriaLabel</b> and <b>NoResultsText</b> set its texts.
                 <b>NoSearchBox</b> removes it; the selector then answers to type-ahead, open or closed
                 (<code>united s</code> reaches the United States).
             </div>
@@ -114,7 +114,7 @@
                 <BitPhoneInput DefaultCountry="BitCountries.France"
                                Placeholder="Enter your number"
                                SearchBoxPlaceholder="Country or code"
-                               NoResultsMessage="No matching country" />
+                               NoResultsText="No matching country" />
                 <BitPhoneInput NoSearchBox DefaultCountry="BitCountries.France" Placeholder="Enter your number" />
             </div>
         </DemoExample>
@@ -299,6 +299,16 @@
                 <code>aria-describedby</code> and announced when it appears.
             </div>
             <br />
+            <div>
+                <b>ShowValidationMessage</b> shows the messages of the form under the field, where <b>ErrorMessage</b>
+                goes, so the form below needs no <b>ValidationMessage</b> component. The number input is described by
+                them through <code>aria-describedby</code>, so they are read out when it takes the focus, and an
+                <b>ErrorMessage</b> of the app's own wins the place while it is set. They are not announced as they
+                appear: a submit validates every field at once, and a message from each of them read out in a row
+                would bury the form under its own errors. A <b>BitParams</b> holding a <b>BitPhoneInputParams</b> with
+                <b>ShowValidationMessage</b> turns it on for every phone input inside it.
+            </div>
+            <br />
             <div class="example-box">
                 <BitPhoneInput Invalid Label="Invalid" DefaultCountry="BitCountries.Spain" Value="+34123" />
                 <BitPhoneInput Label="Phone number"
@@ -314,8 +324,8 @@
                                    Immediate
                                    DefaultCountry="BitCountries.Spain"
                                    Placeholder="Enter your number"
+                                   ShowValidationMessage
                                    @bind-Value="validationModel.Phone" />
-                    <ValidationMessage For="() => validationModel.Phone" />
                     <br />
                     <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
                 </EditForm>
@@ -481,7 +491,7 @@
                 Every text the field shows or announces can be translated. Country names come from <b>Countries</b>;
                 <b>DropdownAriaLabel</b> prefixes the selector's spoken name ("Land: Deutschland"); the search box, the
                 empty result and the clear button take <b>SearchBoxPlaceholder</b>, <b>SearchBoxAriaLabel</b>,
-                <b>NoResultsMessage</b> and <b>ClearButtonAriaLabel</b>; and <b>SearchResultsAnnouncement</b> phrases the
+                <b>NoResultsText</b> and <b>ClearButtonAriaLabel</b>; and <b>SearchResultsAnnouncement</b> phrases the
                 result count a screen reader hears.
             </div>
             <br />
@@ -492,7 +502,7 @@
                            DropdownAriaLabel="Land"
                            SearchBoxPlaceholder="Suchen"
                            SearchBoxAriaLabel="Land suchen"
-                           NoResultsMessage="Kein Land gefunden"
+                           NoResultsText="Kein Land gefunden"
                            SearchResultsAnnouncement="@(count => count == 1 ? "1 Land gefunden" : $"{count} Länder gefunden")"
                            ShowClearButton
                            ClearButtonAriaLabel="Nummer löschen" />

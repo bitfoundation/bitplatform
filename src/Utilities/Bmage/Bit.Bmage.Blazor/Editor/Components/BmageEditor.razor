@@ -84,7 +84,7 @@
         {
             @Panel(BuildContext())
         }
-        else if (ShowPanel && _session is not null)
+        else if (ShowPanel && Panels != EditorPanels.None && _session is not null)
         {
             <BmageEditorPanel Context="BuildContext()" />
         }
@@ -181,6 +181,18 @@
 
     /// <summary>Show the built-in options panel. Ignored when <see cref="Panel"/> is set.</summary>
     [Parameter] public bool ShowPanel { get; set; } = true;
+
+    /// <summary>
+    /// The tools the editor offers, or null for every one. The built-in toolbar shows only these, in this order, and
+    /// <see cref="SetTool"/> selects no other: a cropper is <c>[EditorToolKind.Crop, EditorToolKind.Pan]</c>, an
+    /// annotation tool leaves the painting and selection tools out. The editor starts with <see cref="EditorToolKind.Select"/>
+    /// when it is offered, and otherwise with the first tool listed. An empty list offers no tool: the pointer then edits
+    /// nothing, though the panels and the public actions still work.
+    /// </summary>
+    [Parameter] public IReadOnlyList<EditorToolKind>? Tools { get; set; }
+
+    /// <summary>The tabs of the built-in options panel to show. Default <see cref="EditorPanels.All"/>; <see cref="EditorPanels.None"/> hides the panel.</summary>
+    [Parameter] public EditorPanels Panels { get; set; } = EditorPanels.All;
 
     /// <summary>Replaces the toolbar entirely. The context exposes every editor action.</summary>
     [Parameter] public RenderFragment<BmageEditorContext>? Toolbar { get; set; }
@@ -284,6 +296,8 @@
 
     protected override async Task OnParametersSetAsync()
     {
+        // A tool taken away while active gives way to the default one (a white-balance pick keeps its eyedropper).
+        if (!IsToolUsable && _tool != DefaultTool) SelectTool(DefaultTool);
         if (Image is not null && !ReferenceEquals(_loadedParameter, Image))
         {
             _loadedParameter = Image;
@@ -562,7 +576,8 @@
 
     private async Task OnDragStart(CanvasPointerArgs e)
     {
-        if (_session is null) return;
+        // With no tool offered (an empty Tools list) the pointer edits nothing.
+        if (_session is null || !IsToolUsable) return;
         // The original is only to look at: everything but panning waits until the comparison ends.
         if (_comparing && _tool != EditorToolKind.Pan) return;
         // Crop works on the preview (ApplyCropAsync maps it to full resolution); everything else edits the document.
@@ -870,7 +885,7 @@
         if (_pickingWhiteBalance)
         {
             _pickingWhiteBalance = false;
-            _tool = EditorToolKind.Select;
+            _tool = DefaultTool;
             // The preview shows any earlier white balance already, so the new correction is made on top of it.
             var correction = WhiteBalanceAdjustment.FromNeutral(color);
             var existing = _session.Document.Pipeline.OfType<WhiteBalanceAdjustment>().FirstOrDefault();
@@ -1378,12 +1393,47 @@
     /// <summary>The id of the selected annotation, if any.</summary>
     public Guid? SelectedAnnotationId => _selectedId;
 
-    /// <summary>Switches the active tool.</summary>
+    /// <summary>The tools the editor offers, in the order the toolbar shows them: <see cref="Tools"/>, or every tool when that is null.</summary>
+    public IReadOnlyList<EditorToolKind> OfferedTools => Tools is { } tools ? [.. tools.Distinct()] : AllTools;
+
+    /// <summary>Every tool, in the order the built-in toolbar has always shown them.</summary>
+    private static readonly EditorToolKind[] AllTools =
+    [
+        EditorToolKind.Select, EditorToolKind.Pan, EditorToolKind.Crop, EditorToolKind.Draw, EditorToolKind.Arrow,
+        EditorToolKind.Line, EditorToolKind.Rectangle, EditorToolKind.Ellipse, EditorToolKind.Text, EditorToolKind.Step,
+        EditorToolKind.Highlight, EditorToolKind.Redact, EditorToolKind.Brush, EditorToolKind.Eraser, EditorToolKind.Fill,
+        EditorToolKind.MagicEraser, EditorToolKind.Eyedropper, EditorToolKind.SelectRectangle, EditorToolKind.SelectEllipse,
+        EditorToolKind.Lasso, EditorToolKind.MagicWand,
+    ];
+
+    /// <summary>True when the editor offers <paramref name="tool"/>.</summary>
+    public bool IsToolOffered(EditorToolKind tool) => Tools is not { } tools || tools.Contains(tool);
+
+    /// <summary>The tool the editor returns to after a crop or a pick: select when offered, else the first one offered.</summary>
+    /// <remarks>With no tool offered it stays <see cref="EditorToolKind.Select"/>, which <see cref="IsToolUsable"/> then keeps from acting.</remarks>
+    private EditorToolKind DefaultTool => IsToolOffered(EditorToolKind.Select) || Tools is not { Count: > 0 } tools ? EditorToolKind.Select : tools[0];
+
+    /// <summary>
+    /// True when the active tool may act on the pointer: it is offered, or it is the eyedropper of a white-balance pick,
+    /// which the Adjust tab starts whether or not the eyedropper is offered as a tool.
+    /// </summary>
+    private bool IsToolUsable => IsToolOffered(_tool) || (_pickingWhiteBalance && _tool == EditorToolKind.Eyedropper);
+
+    /// <summary>Switches the active tool. A tool the editor does not offer (see <see cref="Tools"/>) is not selected.</summary>
     public void SetTool(EditorToolKind tool)
+    {
+        if (!IsToolOffered(tool)) return;
+        SelectTool(tool);
+    }
+
+    /// <summary>Switches the active tool whether or not the toolbar offers it, for the editor's own uses of a tool.</summary>
+    private void SelectTool(EditorToolKind tool)
     {
         _tool = tool;
         if (tool != EditorToolKind.Eyedropper) _pickingWhiteBalance = false;
-        if (tool != EditorToolKind.Crop) _cropRectangle = null;
+        // Panning to see more of the image keeps the frame for when the crop tool comes back; any other tool discards it,
+        // as applying and cancelling the crop do.
+        if (tool is not (EditorToolKind.Crop or EditorToolKind.Pan)) _cropRectangle = null;
         if (tool != EditorToolKind.Select) _selectedId = null;
         StateHasChanged();
     }
@@ -1403,6 +1453,29 @@
         StateHasChanged();
     }
 
+    /// <summary>
+    /// Selects the crop tool with <paramref name="aspect"/> (null for freeform) and places the largest frame of that shape
+    /// in the middle of the image, ready to move, resize or apply: a cropper's starting point, and one a keyboard user
+    /// can apply without drawing it. Does nothing when no image is loaded or the crop tool is not offered.
+    /// </summary>
+    public void BeginCrop(AspectRatio? aspect = null)
+    {
+        if (_session is null || !IsToolOffered(EditorToolKind.Crop)) return;
+        _cropAspect = aspect;
+        SelectTool(EditorToolKind.Crop);
+        var shown = PreviewDisplaySize;
+        var bounds = shown.IsEmpty ? new SizeF(_session.ProxySize) : shown;
+        var (width, height) = (bounds.Width, bounds.Height);
+        if (aspect is { } ratio)
+        {
+            var target = (float)ratio.Value;
+            if (width / height > target) width = height * target;
+            else height = width / target;
+        }
+        _cropRectangle = new RectangleF((bounds.Width - width) / 2, (bounds.Height - height) / 2, width, height);
+        StateHasChanged();
+    }
+
     /// <summary>Applies the pending crop rectangle to the document.</summary>
     public async Task ApplyCropAsync()
     {
@@ -1415,7 +1488,7 @@
             Math.Max(1, (int)Math.Round(rect.Width * scale)),
             Math.Max(1, (int)Math.Round(rect.Height * scale)));
         _cropRectangle = null;
-        _tool = EditorToolKind.Select;
+        _tool = DefaultTool;
         // Geometric edits carry the annotations, the layers and the selection with the content they mark.
         var crop = new CropOperation(full);
         MoveSelectionWith(crop);
@@ -1520,7 +1593,8 @@
     public void PickWhiteBalance()
     {
         if (_session is null) return;
-        SetTool(EditorToolKind.Eyedropper);
+        // White balance belongs to the Adjust tab, so it picks even where the eyedropper is not offered as a tool.
+        SelectTool(EditorToolKind.Eyedropper);
         _pickingWhiteBalance = true;
         ShowMessage(Strings.PickNeutralHint, isError: false);
     }

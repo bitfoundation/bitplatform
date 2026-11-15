@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Boilerplate.Server.Shared.Infrastructure.HealthChecks;
 
 namespace Boilerplate.Server.Api.Infrastructure.HealthChecks;
 
@@ -36,12 +37,13 @@ public class CachedHealthCheck(IHealthCheck healthCheck, CachedHealthCheck.Resul
         var result = await healthCheck.CheckHealthAsync(context, cancellationToken);
         var checkedAt = timeProvider.GetUtcNow();
 
-        // Tells how old a reused result is and how long its run took, as the report's duration is the cache lookup's (See OperationsPage).
+        // Tells how old a reused result is and how long its run took, as the report's own duration would be the cache
+        // lookup's. /healthz reports them as the entry's fields (See HealthCheckResultData).
         result = new HealthCheckResult(result.Status, result.Description, result.Exception, new Dictionary<string, object>(result.Data)
         {
-            ["CheckedAt"] = checkedAt,
-            ["CacheDuration"] = cacheDuration,
-            ["Duration"] = timeProvider.GetElapsedTime(startedAt)
+            [HealthCheckResultData.VerifiedAt] = checkedAt,
+            [HealthCheckResultData.CacheDuration] = cacheDuration,
+            [HealthCheckResultData.Duration] = timeProvider.GetElapsedTime(startedAt)
         });
 
         if (result.Status is HealthStatus.Healthy)

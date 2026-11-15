@@ -324,6 +324,19 @@ private readonly List<BitBreadcrumbItem> BreadcrumbItemsWithCategories =
 ];";
 
     private readonly string example12RazorCode = @"
+<BitBreadcrumb Items=""ResponsiveBreadcrumbItems"" MaxDisplayedItems=""3"" OverflowIndex=""1"" Responsive />";
+    private readonly string example12CsharpCode = @"
+private readonly List<BitBreadcrumbItem> ResponsiveBreadcrumbItems =
+[
+    new() { Text = ""Home"", Href = ""/components/breadcrumb"" },
+    new() { Text = ""Documents"", Href = ""/components/breadcrumb"" },
+    new() { Text = ""Projects"", Href = ""/components/breadcrumb"" },
+    new() { Text = ""2026"", Href = ""/components/breadcrumb"" },
+    new() { Text = ""Reports"", Href = ""/components/breadcrumb"" },
+    new() { Text = ""Q3"", Href = ""/components/breadcrumb"", IsSelected = true }
+];";
+
+    private readonly string example13RazorCode = @"
 <BitBreadcrumb Items=""BreadcrumbItems"" Color=""BitColor.Primary"" MaxDisplayedItems=""3"" OverflowIndex=""2"" />
 
 <BitBreadcrumb Items=""BreadcrumbItems"" Color=""BitColor.Secondary"" MaxDisplayedItems=""3"" OverflowIndex=""2"" />
@@ -339,7 +352,7 @@ private readonly List<BitBreadcrumbItem> BreadcrumbItemsWithCategories =
 <BitBreadcrumb Items=""BreadcrumbItems"" Color=""BitColor.SevereWarning"" MaxDisplayedItems=""3"" OverflowIndex=""2"" />
 
 <BitBreadcrumb Items=""BreadcrumbItems"" Color=""BitColor.Error"" MaxDisplayedItems=""3"" OverflowIndex=""2"" />";
-    private readonly string example12CsharpCode = @"
+    private readonly string example13CsharpCode = @"
 private readonly List<BitBreadcrumbItem> BreadcrumbItems =
 [
     new() { Text = ""Item 1"", Href = ""/components/breadcrumb"" },
@@ -348,7 +361,7 @@ private readonly List<BitBreadcrumbItem> BreadcrumbItems =
     new() { Text = ""Item 4"", Href = ""/components/breadcrumb"", IsSelected = true }
 ];";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example14RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 <link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
 
@@ -363,7 +376,7 @@ private readonly List<BitBreadcrumbItem> BreadcrumbItems =
 
 <BitBreadcrumb Items=""BreadcrumbItemsWithExternalIcon4""
                MaxDisplayedItems=""3"" OverflowIndex=""2"" Wrap />";
-    private readonly string example13CsharpCode = @"
+    private readonly string example14CsharpCode = @"
 private readonly List<BitBreadcrumbItem> BreadcrumbItemsWithExternalIcon1 =
 [
     new() { Text = ""Home"", Icon = ""fa-solid fa-house"" },
@@ -396,13 +409,13 @@ private readonly List<BitBreadcrumbItem> BreadcrumbItemsWithExternalIcon4 =
     new() { Text = ""Laptops"", Icon = BitIconInfo.Bi(""laptop-fill""), IsSelected = true }
 ];";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example15RazorCode = @"
 <BitBreadcrumb Items=""BreadcrumbItems"" Size=""BitSize.Small"" MaxDisplayedItems=""3"" OverflowIndex=""2"" Wrap />
 
 <BitBreadcrumb Items=""BreadcrumbItems"" Size=""BitSize.Medium"" MaxDisplayedItems=""3"" OverflowIndex=""2"" Wrap />
 
 <BitBreadcrumb Items=""BreadcrumbItems"" Size=""BitSize.Large"" MaxDisplayedItems=""3"" OverflowIndex=""2"" Wrap />";
-    private readonly string example14CsharpCode = @"
+    private readonly string example15CsharpCode = @"
 private readonly List<BitBreadcrumbItem> BreadcrumbItems =
 [
     new() { Text = ""Item 1"", Href = ""/components/breadcrumb"" },
@@ -411,7 +424,7 @@ private readonly List<BitBreadcrumbItem> BreadcrumbItems =
     new() { Text = ""Item 4"", Href = ""/components/breadcrumb"", IsSelected = true }
 ];";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example16RazorCode = @"
 <style>
     .custom-class {
         font-style: italic;
@@ -483,7 +496,7 @@ private readonly List<BitBreadcrumbItem> BreadcrumbItems =
 <div style=""--bit-Breadcrumb-font-size: 0.8125rem; --bit-Breadcrumb-item-height: 1.5rem; --bit-Breadcrumb-divider-spacing: 0.25rem; --bit-Breadcrumb-selected-font-weight: 700;"">
     <BitBreadcrumb Items=""BreadcrumbItems"" DividerText=""/"" />
 </div>";
-    private readonly string example15CsharpCode = @"
+    private readonly string example16CsharpCode = @"
 private readonly List<BitBreadcrumbItem> BreadcrumbItems =
 [
     new() { Text = ""Item 1"", Href = ""/components/breadcrumb"" },
@@ -508,9 +521,9 @@ private readonly List<BitBreadcrumbItem> BreadcrumbItemsWithStyle =
     new() { Text = ""Item 4"", Href = ""/components/breadcrumb"", Style = ""color: aqua; text-shadow: aqua 0 0 1rem;"", IsSelected = true }
 ];";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example17RazorCode = @"
 <BitBreadcrumb Dir=""BitDir.Rtl"" Items=""RtlBreadcrumbItems"" MaxDisplayedItems=""3"" OverflowIndex=""2"" />";
-    private readonly string example16CsharpCode = @"
+    private readonly string example17CsharpCode = @"
 private readonly List<BitBreadcrumbItem> RtlBreadcrumbItems =
 [
     new() { Text = ""پوشه اول"" },

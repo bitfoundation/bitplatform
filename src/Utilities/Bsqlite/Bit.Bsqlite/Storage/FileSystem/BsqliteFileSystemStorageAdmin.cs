@@ -248,8 +248,8 @@ internal sealed class BsqliteFileSystemStorageAdmin(BsqliteFileSystemStorageProv
 
     private static bool HasContent(string path) => new FileInfo(path) is { Exists: true, Length: > 0 };
 
-    /// <summary>A SQLite file starts with its format string.</summary>
-    private static bool IsDatabaseFile(string path)
+    /// <summary>A SQLite file starts with its format string; a missing file, or one that cannot be read, is not one.</summary>
+    internal static bool IsDatabaseFile(string path)
     {
         try
         {

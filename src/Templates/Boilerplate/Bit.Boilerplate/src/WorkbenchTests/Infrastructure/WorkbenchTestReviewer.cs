@@ -81,6 +81,9 @@ public sealed class WorkbenchTestReviewer : IAsyncDisposable
     /// <summary>Changes the review on the session's dispatcher.</summary>
     public Task Change(Action<WorkbenchReviewSession> change) => dispatcher.InvokeAsync(() => change(Session));
 
+    /// <summary>Changes the review on the session's dispatcher, the way an awaited handler of the page does, and returns what it gives back.</summary>
+    public Task<T> Change<T>(Func<WorkbenchReviewSession, Task<T>> change) => dispatcher.InvokeAsync(() => change(Session));
+
     /// <summary>Reads until the condition holds, or fails after the timeout.</summary>
     public static async Task<T> WaitFor<T>(Func<Task<T>> read, Func<T, bool> condition, TimeSpan? timeout = null)
     {

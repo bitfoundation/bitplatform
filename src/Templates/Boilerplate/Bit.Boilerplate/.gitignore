@@ -225,6 +225,7 @@ profile.arm.json
 custom.aprof
 
 /src/**/App_Data/*
+/openapi/current.json
 
 /src/Client/Boilerplate.Client.Core/Scripts/*.js
 /src/Client/Boilerplate.Client.Core/wwwroot/scripts/app*.js

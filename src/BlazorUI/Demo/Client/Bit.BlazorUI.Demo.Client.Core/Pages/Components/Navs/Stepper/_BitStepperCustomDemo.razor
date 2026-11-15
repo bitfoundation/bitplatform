@@ -1,0 +1,158 @@
+﻿<DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+    <div>
+        The steps are objects of a class of the app's own, given through Items and read through NameSelectors, and
+        CurrentIndex says which one the user is on: the steps before it are completed and the ones after it upcoming. The
+        content of each step and the buttons that move between them are the page's. A click on a step goes to it.
+    </div>
+    <br />
+    <div>
+        <BitStepper Items="basicItems" NameSelectors="nameSelectors" @bind-CurrentIndex="basicIndex" />
+        <br />
+        <div class="step-content">@(basicIndex < basicItems.Count ? $"Content of step {basicIndex + 1}" : "All steps are done")</div>
+        <br />
+        <div class="example-content">
+            <BitButton Variant="BitVariant.Outline" Disabled="basicIndex == 0" OnClick="() => basicIndex--">Back</BitButton>
+            <BitButton Disabled="basicIndex >= basicItems.Count" OnClick="() => basicIndex++">@(basicIndex < basicItems.Count - 1 ? "Next" : "Finish")</BitButton>
+        </div>
+    </div>
+</DemoExample>
+
+<DemoExample Title="Vertical" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+    <div>Vertical lays the steps out from top to bottom.</div>
+    <br />
+    <div>
+        <BitStepper Vertical Items="basicItems" NameSelectors="nameSelectors" CurrentIndex="1" />
+    </div>
+</DemoExample>
+
+<DemoExample Title="Description & icon" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+    <div>
+        A step can carry a Description under its text, and an icon in place of its number, which a completed step trades
+        for the check mark.
+    </div>
+    <br />
+    <div>
+        <BitStepper Items="iconItems" NameSelectors="nameSelectors" CurrentIndex="1" />
+    </div>
+</DemoExample>
+
+<DemoExample Title="Linear" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+    <div>
+        A Linear stepper lets the user go back to a step already done, but not skip ahead: only the page moves it forward,
+        once the current step is complete.
+    </div>
+    <br />
+    <div>
+        <BitStepper Linear Items="basicItems" NameSelectors="nameSelectors" @bind-CurrentIndex="linearIndex" />
+        <br />
+        <div class="example-content">
+            <BitButton Variant="BitVariant.Outline" Disabled="linearIndex == 0" OnClick="() => linearIndex--">Back</BitButton>
+            <BitButton Disabled="linearIndex >= basicItems.Count" OnClick="() => linearIndex++">Next</BitButton>
+        </div>
+    </div>
+</DemoExample>
+
+<DemoExample Title="ReadOnly" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <div>A ReadOnly stepper only shows where the process is: no step can be clicked.</div>
+    <br />
+    <div>
+        <BitStepper ReadOnly Items="basicItems" NameSelectors="nameSelectors" CurrentIndex="2" />
+    </div>
+</DemoExample>
+
+<DemoExample Title="Error & disabled" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+    <div>
+        IsError marks a step in error (one that failed its validation, say) with the error icon and color, whatever its
+        position. IsDisabled keeps the user off a step, and Disabled off them all.
+    </div>
+    <br />
+    <div>
+        <BitStepper Items="errorItems" NameSelectors="nameSelectors" CurrentIndex="2" />
+        <br /><br />
+        <BitStepper Items="basicItems" NameSelectors="nameSelectors" CurrentIndex="1" Disabled />
+    </div>
+</DemoExample>
+
+<DemoExample Title="Events" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+    <div>
+        OnItemClick runs for every click on a step that can be gone to, and OnChange for every move to another step - even
+        when CurrentIndex is bound one way, which leaves the page to decide whether to go there. Here the page only lets the
+        user move one step at a time.
+    </div>
+    <br />
+    <div>
+        <BitStepper Items="basicItems"
+                    NameSelectors="nameSelectors"
+                    CurrentIndex="eventsIndex"
+                    OnChange="(int index) => { if (Math.Abs(index - eventsIndex) == 1) eventsIndex = index; eventsChange = index; }"
+                    OnItemClick="(Milestone item) => eventsClicked = item.Name" />
+        <br />
+        <div>Clicked step: <b>@eventsClicked</b></div>
+        <div>Asked for step: <b>@(eventsChange + 1)</b>, current step: <b>@(eventsIndex + 1)</b></div>
+    </div>
+</DemoExample>
+
+<DemoExample Title="External Icons" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+    <div>
+        The Icon of a step, and the CompletedIcon and ErrorIcon of the stepper, take the CSS classes of any icon library,
+        such as FontAwesome or Bootstrap Icons, and win over the icon names.
+    </div>
+    <br />
+    <div>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+
+        <div><b>FontAwesome Icons:</b></div>
+        <br />
+        <BitStepper Items="externalIconItems1"
+                    NameSelectors="nameSelectors"
+                    CurrentIndex="2"
+                    CompletedIcon="@("fa-solid fa-circle-check")"
+                    ErrorIcon="@BitIconInfo.Fa("solid triangle-exclamation")" />
+        <br /><br />
+        <div><b>Bootstrap Icons:</b></div>
+        <br />
+        <BitStepper Items="externalIconItems2"
+                    NameSelectors="nameSelectors"
+                    CurrentIndex="1"
+                    CompletedIcon="@BitIconInfo.Bi("check-lg")" />
+    </div>
+</DemoExample>
+
+<DemoExample Title="Style & Class" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+    <div>
+        Style and Class reach the root, the Style and Class of a step reach that step, and Styles and Classes reach each
+        part by name. The colors and sizes are also the public --bit-Stepper-* variables.
+    </div>
+    <br />
+    <div>
+        <div>Component's Style & Class:</div><br />
+        <BitStepper Items="basicItems" NameSelectors="nameSelectors" CurrentIndex="1" Style="--bit-Stepper-active-color: tomato; --bit-Stepper-indicator-size: 1.5rem;" />
+        <br /><br />
+        <BitStepper Items="basicItems" NameSelectors="nameSelectors" CurrentIndex="1" Class="custom-class" />
+        <br /><br />
+        <div>Item's Style & Class:</div><br />
+        <BitStepper Items="styleClassItems" NameSelectors="nameSelectors" CurrentIndex="1" />
+        <br /><br />
+        <div><b>Styles</b> & <b>Classes</b>:</div><br />
+        <BitStepper Items="basicItems"
+                    NameSelectors="nameSelectors"
+                    CurrentIndex="2"
+                    Styles="@(new() { Indicator = "border-radius: 0.25rem;", Text = "text-transform: uppercase;", Connector = "height: 0.25rem;" })" />
+        <br /><br />
+        <BitStepper Items="basicItems"
+                    NameSelectors="nameSelectors"
+                    CurrentIndex="2"
+                    Classes="@(new() { CurrentStep = "custom-current", Connector = "custom-connector" })" />
+    </div>
+</DemoExample>
+
+<DemoExample Title="RTL" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+    <div>Use BitStepper in right-to-left (RTL).</div>
+    <br />
+    <div dir="rtl">
+        <BitStepper Dir="BitDir.Rtl" Items="rtlItems" NameSelectors="nameSelectors" CurrentIndex="1" />
+        <br /><br />
+        <BitStepper Dir="BitDir.Rtl" Vertical Items="rtlItems" NameSelectors="nameSelectors" CurrentIndex="1" />
+    </div>
+</DemoExample>

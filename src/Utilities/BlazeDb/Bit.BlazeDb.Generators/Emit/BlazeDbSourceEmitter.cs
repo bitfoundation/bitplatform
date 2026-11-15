@@ -20,6 +20,10 @@ internal static class BlazeDbSourceEmitter
     /// </summary>
     private static string Literal(string value) => SymbolDisplay.FormatLiteral(value, quote: true);
 
+    /// <summary>The <c>"table", "property"</c> pair a generated string write reports a refused value with.</summary>
+    private static string Column(BlazeDbTableModel model, BlazeDbPropModel prop) =>
+        Literal(model.TableName) + ", " + Literal(prop.Name);
+
     private static string Members(params string[] names) =>
         "new string[] { " + string.Join(", ", Array.ConvertAll(names, Literal)) + " }";
 
@@ -43,8 +47,11 @@ internal static class BlazeDbSourceEmitter
     /// <paramref name="name"/> as an identifier in generated code. An index name only has to be a valid
     /// identifier, and a keyword such as <c>event</c> is one, but only when it is escaped.
     /// </summary>
-    private static string Identifier(string name) =>
+    internal static string Identifier(string name) =>
         SyntaxFacts.GetKeywordKind(name) == SyntaxKind.None ? name : "@" + name;
+
+    /// <summary>A property as a member access on <paramref name="target"/>, escaped when its name is a keyword (<c>@class</c>).</summary>
+    private static string Access(string target, BlazeDbPropModel prop) => target + "." + Identifier(prop.Name);
 
     public static string Emit(BlazeDbTableModel model)
     {
@@ -83,18 +90,18 @@ internal static class BlazeDbSourceEmitter
             {
                 indexes.Add((prop.HashIndexName,
                     $"global::Bit.BlazeDb.BlazeDbHashIndexDefinition<{self}, {prop.TypeDisplay}>",
-                    $"new({Literal(prop.HashIndexName)}, static row => row.{prop.Name}, null, {Bool(prop.HashIndexUnique)}, {Members(prop.Name)})"));
+                    $"new({Literal(prop.HashIndexName)}, static row => {Access("row", prop)}, null, {Bool(prop.HashIndexUnique)}, {Members(prop.Name)})"));
             }
             if (prop.OrderedIndexName != null)
             {
                 indexes.Add((prop.OrderedIndexName,
                     $"global::Bit.BlazeDb.BlazeDbOrderedIndexDefinition<{self}, {prop.TypeDisplay}>",
-                    $"new({Literal(prop.OrderedIndexName)}, static row => row.{prop.Name}, null, {Bool(prop.OrderedIndexUnique)}, {Members(prop.Name)})"));
+                    $"new({Literal(prop.OrderedIndexName)}, static row => {Access("row", prop)}, null, {Bool(prop.OrderedIndexUnique)}, {Members(prop.Name)})"));
             }
         }
         foreach (var compound in model.CompoundIndexes)
         {
-            var ctor = "(" + string.Join(", ", compound.Props.ConvertAll(p => "row." + p.Name)) + ")";
+            var ctor = "(" + string.Join(", ", compound.Props.ConvertAll(p => Access("row", p))) + ")";
             var defType = compound.Ordered ? "BlazeDbOrderedIndexDefinition" : "BlazeDbHashIndexDefinition";
             indexes.Add((compound.Name,
                 $"global::Bit.BlazeDb.{defType}<{self}, {compound.TupleType}>",
@@ -135,7 +142,7 @@ internal static class BlazeDbSourceEmitter
         }
         sb.AppendLine($"{indent}        public static readonly {descriptorType} Descriptor = new(");
         sb.AppendLine($"{indent}            {Literal(model.TableName)},");
-        sb.AppendLine($"{indent}            static row => row.{key.Name},");
+        sb.AppendLine($"{indent}            static row => {Access("row", key)},");
         sb.AppendLine($"{indent}            __BlazeWriteRow,");
         sb.AppendLine($"{indent}            __BlazeReadRow,");
         sb.AppendLine($"{indent}            __BlazeWriteKey,");
@@ -157,7 +164,7 @@ internal static class BlazeDbSourceEmitter
         // Key serializers.
         sb.AppendLine($"{indent}    private static void __BlazeWriteKey({Writer} writer, {keyType} key)");
         sb.AppendLine($"{indent}    {{");
-        sb.AppendLine($"{indent}        {BlazeDbTypeMap.WriteExpr(key.Kind, "writer", "key")};");
+        sb.AppendLine($"{indent}        {BlazeDbTypeMap.WriteExpr(key.Kind, "writer", "key", Column(model, key))};");
         sb.AppendLine($"{indent}    }}");
         sb.AppendLine();
         sb.AppendLine($"{indent}    private static {keyType} __BlazeReadKey(ref {Reader} reader)");
@@ -206,11 +213,14 @@ internal static class BlazeDbSourceEmitter
         sb.AppendLine($"{indent}            public int Compare({tuple} x, {tuple} y)");
         sb.AppendLine($"{indent}            {{");
         sb.AppendLine($"{indent}                int __c;");
-        foreach (var prop in compound.Props)
+        for (var i = 0; i < compound.Props.Count; i++)
         {
+            // By position: an element may be unnamed (see BlazeDbCompoundIndexModel.TupleType), and ItemN always works.
+            var prop = compound.Props[i];
+            var element = "Item" + (i + 1);
             var compare = prop.Kind == BlazeDbScalarKind.String
-                ? $"global::System.StringComparer.Ordinal.Compare(x.{prop.Name}, y.{prop.Name})"
-                : $"global::System.Collections.Generic.Comparer<{prop.TypeDisplay}>.Default.Compare(x.{prop.Name}, y.{prop.Name})";
+                ? $"global::System.StringComparer.Ordinal.Compare(x.{element}, y.{element})"
+                : $"global::System.Collections.Generic.Comparer<{prop.TypeDisplay}>.Default.Compare(x.{element}, y.{element})";
             sb.AppendLine($"{indent}                __c = {compare};");
             sb.AppendLine($"{indent}                if (__c != 0) return __c;");
         }
@@ -230,35 +240,51 @@ internal static class BlazeDbSourceEmitter
             {
                 case BlazeDbPropCategory.Scalar when !BlazeDbTypeMap.IsReferenceScalar(prop.Kind):
                     sb.AppendLine($"{indent}        {tag}");
-                    sb.AppendLine($"{indent}        {BlazeDbTypeMap.WriteExpr(prop.Kind, "writer", "row." + prop.Name)};");
+                    sb.AppendLine($"{indent}        {BlazeDbTypeMap.WriteExpr(prop.Kind, "writer", Access("row", prop), Column(model, prop))};");
+                    break;
+
+                case BlazeDbPropCategory.Scalar when prop.RejectsNull:
+                    // A null in a property declared non-nullable has no encoding of its own - an absent field reads
+                    // back as the type's default, "" or an empty array - so it would come back as something else
+                    // after the next open, and match different queries than it does now. Refused instead, which
+                    // fails the write that would persist it.
+                    sb.AppendLine($"{indent}        if ({Access("row", prop)} is null)");
+                    sb.AppendLine($"{indent}        {{");
+                    sb.AppendLine($"{indent}            writer.RejectNull({Literal(model.TableName)}, {Literal(prop.Name)});");
+                    sb.AppendLine($"{indent}        }}");
+                    sb.AppendLine($"{indent}        else");
+                    sb.AppendLine($"{indent}        {{");
+                    sb.AppendLine($"{indent}            {tag}");
+                    sb.AppendLine($"{indent}            {BlazeDbTypeMap.WriteExpr(prop.Kind, "writer", Access("row", prop), Column(model, prop))};");
+                    sb.AppendLine($"{indent}        }}");
                     break;
 
                 case BlazeDbPropCategory.Scalar:
                 case BlazeDbPropCategory.NullableRefScalar:
-                    sb.AppendLine($"{indent}        if (row.{prop.Name} is not null)");
+                    sb.AppendLine($"{indent}        if ({Access("row", prop)} is not null)");
                     sb.AppendLine($"{indent}        {{");
                     sb.AppendLine($"{indent}            {tag}");
-                    sb.AppendLine($"{indent}            {BlazeDbTypeMap.WriteExpr(prop.Kind, "writer", "row." + prop.Name)};");
+                    sb.AppendLine($"{indent}            {BlazeDbTypeMap.WriteExpr(prop.Kind, "writer", Access("row", prop), Column(model, prop))};");
                     sb.AppendLine($"{indent}        }}");
                     break;
 
                 case BlazeDbPropCategory.NullableValueScalar:
-                    sb.AppendLine($"{indent}        if (row.{prop.Name} is not null)");
+                    sb.AppendLine($"{indent}        if ({Access("row", prop)} is not null)");
                     sb.AppendLine($"{indent}        {{");
                     sb.AppendLine($"{indent}            {tag}");
-                    sb.AppendLine($"{indent}            {BlazeDbTypeMap.WriteExpr(prop.Kind, "writer", "row." + prop.Name + ".Value")};");
+                    sb.AppendLine($"{indent}            {BlazeDbTypeMap.WriteExpr(prop.Kind, "writer", Access("row", prop) + ".Value", Column(model, prop))};");
                     sb.AppendLine($"{indent}        }}");
                     break;
 
                 case BlazeDbPropCategory.ListCollection:
                 case BlazeDbPropCategory.ArrayCollection:
                 case BlazeDbPropCategory.SetCollection:
-                    sb.AppendLine($"{indent}        if (row.{prop.Name} is not null)");
+                    sb.AppendLine($"{indent}        if ({Access("row", prop)} is not null)");
                     sb.AppendLine($"{indent}        {{");
-                    sb.AppendLine($"{indent}            foreach (var __element in row.{prop.Name})");
+                    sb.AppendLine($"{indent}            foreach (var __element in {Access("row", prop)})");
                     sb.AppendLine($"{indent}            {{");
                     sb.AppendLine($"{indent}                {tag}");
-                    sb.AppendLine($"{indent}                {BlazeDbTypeMap.WriteExpr(prop.Kind, "writer", "__element")};");
+                    sb.AppendLine($"{indent}                {BlazeDbTypeMap.WriteExpr(prop.Kind, "writer", "__element", Column(model, prop))};");
                     sb.AppendLine($"{indent}            }}");
                     sb.AppendLine($"{indent}        }}");
                     break;
@@ -336,7 +362,7 @@ internal static class BlazeDbSourceEmitter
         // unless the constructor is marked [SetsRequiredMembers]; setting it twice to the same value is harmless.
         foreach (var prop in stored.Where(p => !p.BoundByConstructor || p.IsRequired))
         {
-            sb.AppendLine($"{indent}            {prop.Name} = {Value(prop, "__v" + prop.FieldNumber)},");
+            sb.AppendLine($"{indent}            {Identifier(prop.Name)} = {Value(prop, "__v" + prop.FieldNumber)},");
         }
         sb.AppendLine($"{indent}        }};");
         sb.AppendLine($"{indent}    }}");

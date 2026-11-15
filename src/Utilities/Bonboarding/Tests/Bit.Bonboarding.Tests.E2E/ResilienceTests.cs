@@ -81,9 +81,11 @@ public sealed class ResilienceTests : BonboardingTest
 
         await Assertions.Expect(page.Locator(".bit-bonboarding-waiting")).ToBeVisibleAsync();
         Assert.AreEqual(0, await page.Locator(".bit-bonboarding-spotlight").CountAsync(), "There is nothing to put a spotlight around.");
+        await Assertions.Expect(page.Locator(".bit-bonboarding-root")).ToHaveAttributeAsync("data-bonboarding-target-issue", "hidden");
 
         await page.EvaluateAsync("() => document.querySelector(\"[data-bonboarding-anchor='new-project']\").style.display = ''");
         await WaitForStepAsync(page, "Create a project");
+        Assert.IsNull(await page.Locator(".bit-bonboarding-root").GetAttributeAsync("data-bonboarding-target-issue"), "Found, so nothing is missing.");
 
         var target = await BoxOfAsync(page, "[data-bonboarding-anchor='new-project']");
         var spotlight = await BoxOfAsync(page, ".bit-bonboarding-spotlight");
@@ -102,6 +104,7 @@ public sealed class ResilienceTests : BonboardingTest
         // A panel collapsing, say: the element stays in the DOM, its box goes.
         await page.EvaluateAsync("() => document.querySelector(\"[data-bonboarding-anchor='new-project']\").style.visibility = 'hidden'");
         await Assertions.Expect(page.Locator(".bit-bonboarding-waiting")).ToBeVisibleAsync();
+        await Assertions.Expect(page.Locator(".bit-bonboarding-root")).ToHaveAttributeAsync("data-bonboarding-target-issue", "hidden");
 
         await page.EvaluateAsync("() => document.querySelector(\"[data-bonboarding-anchor='new-project']\").style.visibility = ''");
         await WaitForStepAsync(page, "Create a project");

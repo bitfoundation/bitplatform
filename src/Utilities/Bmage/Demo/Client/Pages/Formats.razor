@@ -209,8 +209,9 @@
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> GIF and SVG</h3>
     <p>
         GIF decodes its first frame, with palettes, interlacing and transparency; animation is out of
-        scope, as it is for an animated WebP, and GIF encoding is supported by no browser canvas and is
-        not implemented - use WebP or PNG.
+        scope, as it is for an animated WebP. No browser canvas writes GIF, so the managed
+        <code>GifEncoder</code> does, everywhere: one frame of at most 256 colours, chosen by median cut
+        and dithered, with one fully transparent index. For photos, WebP or PNG are better choices.
     </p>
     <p>
         SVG is refused with an explanatory error rather than rasterised. Rendering untrusted SVG can

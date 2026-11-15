@@ -2,7 +2,7 @@
 
 A [BenchmarkDotNet](https://benchmarkdotnet.org) console harness for the per-keystroke path of the bit Balette
 command palette: fuzzy matching a single field, matching a command across all of its fields, ranking the matches,
-and a whole keystroke over registries of 200, 2,000 and 20,000 commands.
+and a whole keystroke over registries of 200, 2,000, 20,000 and 50,000 commands.
 
 Matching and ranking run in C# on every keystroke, and on WebAssembly that C# usually runs interpreted, so this is
 the code that decides whether typing in the palette feels instant. The changelog of the original BlazorCommandPalette project
@@ -21,25 +21,29 @@ matcher therefore sees real word boundaries, shared prefixes and near misses.
 |-------|----------------|
 | `FuzzyMatcherBenchmarks` | `BaletteFuzzyMatcher.Match` on one field: short and long queries, titles, a description and a 2,000-character text, smart case, non-ASCII text, and the fast reject of a query that is not a subsequence. It runs for every searchable field of every command on every keystroke. |
 | `CommandMatchBenchmarks` | Matching one command that has every searchable field populated, for single and multi-term queries and the `'exact`, `^prefix`, `suffix$` and `!negate` operators. Each query is matched once parsed in advance, as the palette does, and once through the public string overload, which parses it on every call. |
-| `RankerBenchmarks` | `BaletteRanker.Rank` over 200, 2,000 and 20,000 matches: the public overload, which sorts everything; the best 150 (`MaxResults`), which is what the palette asks for; and the empty query, where only priority and frecency decide. |
-| `KeystrokeBenchmarks` | One keystroke end to end over 200, 2,000 and 20,000 commands, as `Balette.Rebuild` runs it: parse the query once, match the root page's commands and the nested ones found from the root, and rank the matches down to 150. The registry snapshot is taken once, outside the keystroke, as the palette does. It covers an empty query, a first keystroke, a word, two terms and a query that matches nothing. |
+| `RankerBenchmarks` | `BaletteRanker.Rank` over 200, 2,000, 20,000 and 50,000 matches: the public overload, which sorts everything; the best 150 (`MaxResults`), which is what the palette asks for; and the empty query, where only priority and frecency decide. |
+| `KeystrokeBenchmarks` | One keystroke end to end over 200, 2,000, 20,000 and 50,000 commands, as `Balette.Rebuild` runs it: parse the query once, match the root page's commands and the nested ones found from the root, and rank the matches down to 150. The registry snapshot is taken once, outside the keystroke, as the palette does. It covers an empty query, a first keystroke, a word, two terms and a query that matches nothing. |
 | `NestedKeystrokeBenchmarks` | The same keystroke over 2,000 and 20,000 commands of which a quarter are nested two levels deep, so the nested-search pass (an ancestor chain per command, one more field to match) is measured on real work. |
 | `SnapshotBenchmarks` | The registry snapshot the palette takes when the registry changed - no longer on every keystroke. |
 | `ShortcutBenchmarks` | Parsing shortcut strings (`Mod+K`, `Ctrl+Shift+P`, `G I`) and computing the normalized form a pressed shortcut is compared against. This is not on the search path; it is here to show it stays negligible. |
 
 ## Running it
 
+The project targets `net11.0`, built with the .NET 11 SDK that `global.json` pins. BenchmarkDotNet 0.15.8, the
+latest stable release, cannot launch a .NET 11 benchmark process (it fails with `GetRuntimeVersion not implemented
+for NotRecognized`), so every run needs `--inProcess`.
+
 ```bash
 # From the repository's src folder. Release is required - a Debug build's numbers are meaningless.
-dotnet run -c Release --project Utilities/Balette/Tests/Bit.Balette.Benchmarks
+dotnet run -c Release --project Utilities/Balette/Tests/Bit.Balette.Benchmarks -- --inProcess
 
 # A single set, selected with BenchmarkDotNet's glob filter:
-dotnet run -c Release --project Utilities/Balette/Tests/Bit.Balette.Benchmarks -- --filter "*Keystroke*"
+dotnet run -c Release --project Utilities/Balette/Tests/Bit.Balette.Benchmarks -- --filter "*Keystroke*" --inProcess
 
-# How the numbers below were captured (3 measured iterations per case, about 7 minutes for the whole suite):
-dotnet run -c Release --project Utilities/Balette/Tests/Bit.Balette.Benchmarks -- --filter "*" --job short
+# The whole suite with the short job (3 measured iterations per case, about 7 minutes):
+dotnet run -c Release --project Utilities/Balette/Tests/Bit.Balette.Benchmarks -- --filter "*" --job short --inProcess
 
-# A quick smoke run (one iteration, in-process, numbers not meaningful):
+# A quick smoke run (one iteration, numbers not meaningful):
 dotnet run -c Release --project Utilities/Balette/Tests/Bit.Balette.Benchmarks -- --filter "*FuzzyMatcher*" --job dry --inProcess
 ```
 
@@ -63,6 +67,29 @@ every keystroke; it now does so only when the registry changes. Measured with th
 Time is within the noise of a short run either way - the keystroke now also runs normalization and the nested-search
 pass - while the garbage a keystroke leaves drops by half or more; the snapshot itself costs 1.2 ms at 20,000 commands,
 once per registry change. The tables below predate the change and were captured on another machine.
+
+## 50,000 commands (2026-11)
+
+The short job, in process (`--job short --inProcess`), on the project's `net11.0` target - .NET 11, x64, an Intel
+Core i9-14900K under Windows 11 - the same machine for every size, with the guard and diagnostics changes in (no
+listener attached, so the instruments cost one `Enabled` check). A re-run on .NET 11.0.0 with SDK 11.0.100, the SDK
+`global.json` pins, gives the same allocations and times within the noise of a short run. To reproduce:
+
+```bash
+dotnet run -c Release --project Utilities/Balette/Tests/Bit.Balette.Benchmarks -- --filter "*.KeystrokeBenchmarks.*" "*.SnapshotBenchmarks.*" --job short --inProcess
+```
+
+| Commands | Empty query | `s` | `sett` | `open sett` | `qjz` | Snapshot |
+| ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 2,000 | 63 us | 936 us | 751 us | 699 us | 305 us | 77 us |
+| 20,000 | 2.6 ms | 13.2 ms | 7.6 ms | 7.2 ms | 3.2 ms | 0.76 ms |
+| 50,000 | 8.5 ms | 33.4 ms | 19.4 ms | 18.5 ms | 8.0 ms | 2.7 ms |
+
+Allocated at 50,000: 7.1 MB for the empty query, 11.2 MB for `s`, 1.5 MB for `sett`, 0.6 KB for `qjz`. Cost grows
+linearly with the registry. At 50,000 the first keystroke takes two frames, which is where the palette's slow-search
+path (paint the keystroke first, fold the keys typed meanwhile into one search) takes over on WebAssembly; a registry
+that size is better served through a `BaletteStaticSource` or an async source backed by an index, which also keeps it
+out of the shortcut snapshot.
 
 ## Indicative results
 

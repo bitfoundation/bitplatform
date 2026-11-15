@@ -20,6 +20,14 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
     /// series, pass the series master instead.
     /// </summary>
     [Parameter] public BitFullCalendarEvent? ExistingEvent { get; set; }
+
+    /// <summary>
+    /// With an occurrence in <see cref="ExistingEvent"/>, edits it and every later occurrence of its series: the form
+    /// opens on the occurrence with the series' rule, and saving ends the series before the occurrence (an Edit of the
+    /// master) and starts a new series from it with the edited fields (an Add). Ignored for any other event.
+    /// </summary>
+    [Parameter] public bool EditFollowing { get; set; }
+
     [Parameter] public DateTime? StartDate { get; set; }
     [Parameter] public int? StartHour { get; set; }
     [Parameter] public int? StartMinute { get; set; }
@@ -98,6 +106,8 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
 
     private bool _isEditing;
     private bool _isOccurrenceEdit;
+    // An occurrence edited with every later one, as a new series (see EditFollowing).
+    private bool _isFollowingEdit;
     private bool _isSubmitting;
     private string _title = "";
     private string _description = "";
@@ -132,6 +142,7 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
 
     private bool _initialized;
     private BitFullCalendarEvent? _lastExistingEvent;
+    private bool _lastEditFollowing;
     private DateTime? _lastStartDate;
     private DateTime _lastSelectedDate;
     private int? _lastStartHour;
@@ -175,6 +186,7 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
         var selectedDateChanged = usesFallbackDate && _lastSelectedDate != State.SelectedDate;
         var parametersChanged = !_initialized
             || !ReferenceEquals(_lastExistingEvent, ExistingEvent)
+            || _lastEditFollowing != EditFollowing
             || _lastStartDate != StartDate
             || selectedDateChanged
             || _lastStartHour != StartHour
@@ -187,6 +199,7 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
 
         _initialized = true;
         _lastExistingEvent = ExistingEvent;
+        _lastEditFollowing = EditFollowing;
         _lastStartDate = StartDate;
         _lastSelectedDate = State.SelectedDate;
         _lastStartHour = StartHour;
@@ -203,7 +216,8 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
         _timedRangeBeforeAllDay = null;
 
         _isEditing = ExistingEvent != null;
-        _isOccurrenceEdit = ExistingEvent?.IsOccurrence is true;
+        _isFollowingEdit = ExistingEvent?.IsOccurrence is true && EditFollowing;
+        _isOccurrenceEdit = ExistingEvent?.IsOccurrence is true && _isFollowingEdit is false;
         // What an EventEditorTemplate edits: a copy, so only a save carries its Data into the calendar.
         _draft = _isEditing ? BitFullCalendarChangeNotifier.CloneEvent(ExistingEvent!) : new BitFullCalendarEvent();
         var defaultColor = ColorScheme.Options.Count > 0
@@ -239,7 +253,20 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
             _endDate = _startDate.AddMinutes(Math.Max(1, DurationMinutes ?? State.SlotDurationMinutes));
         }
 
-        InitializeRepeat(_isEditing && _isOccurrenceEdit is false ? ExistingEvent!.Recurrence : null);
+        // An occurrence carries no rule of its own: the one the new series of an occurrence and every later one starts
+        // with is its series' from that date on.
+        InitializeRepeat(_isFollowingEdit
+            ? (FollowingSeries() is { } series ? BitFullCalendarHelpers.FollowingRule(series.Master, series.Date) : null)
+            : (_isEditing && _isOccurrenceEdit is false ? ExistingEvent!.Recurrence : null));
+    }
+
+    // The series master and the date of the occurrence an EditFollowing edit splits it at, or null when the series
+    // was removed.
+    private (BitFullCalendarEvent Master, DateTime Date)? FollowingSeries()
+    {
+        var occurrence = ExistingEvent!;
+        var master = State.AllEvents.FirstOrDefault(e => string.Equals(e.Id, occurrence.SeriesId, StringComparison.Ordinal));
+        return master is null || occurrence.OccurrenceDate is not { } date ? null : (master, date);
     }
 
     /// <summary>Loads the repeat fields from the rule being edited, or resets them for a one-off.</summary>
@@ -554,7 +581,7 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
         var resourceId = string.IsNullOrWhiteSpace(_resource) ? null : _resource;
         // An occurrence edited on its own is measured as part of its series, so the slot it is
         // leaving (still occupied by the series until the save commits) never counts as taken.
-        var editingId = _isOccurrenceEdit ? ExistingEvent!.SeriesId ?? string.Empty
+        var editingId = _isOccurrenceEdit || _isFollowingEdit ? ExistingEvent!.SeriesId ?? string.Empty
                       : _isEditing ? ExistingEvent!.Id
                       : string.Empty;
         // The save passes through the same gate a drop and a resize do, and says why next to the
@@ -593,9 +620,9 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
         _isSubmitting = true;
         try
         {
-            var committed = _isOccurrenceEdit
-                ? await SaveOccurrenceAsync(resourceId)
-                : await SaveEventAsync(resourceId);
+            var committed = _isOccurrenceEdit ? await SaveOccurrenceAsync(resourceId)
+                          : _isFollowingEdit ? await SaveFollowingAsync(resourceId)
+                          : await SaveEventAsync(resourceId);
 
             // Refused by OnChanging: the state is already back where it was, and the dialog stays open with what
             // the user typed so it can be corrected rather than retyped.
@@ -702,6 +729,49 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
         State.AddEvent(detached);
 
         return await Notifier.CommitDetachAsync(master, updatedMaster, detached, BitFullCalendarChangeSource.Dialog);
+    }
+
+    /// <summary>
+    /// Saves an occurrence edited with every later one (<see cref="EditFollowing"/>): the series ends before the
+    /// occurrence (an Edit of the master) and a new series carrying the edited fields and rule starts from it (an
+    /// Add), approved together the way a detached occurrence is. With nothing of the series before the occurrence,
+    /// the master itself is edited instead.
+    /// </summary>
+    private async Task<bool> SaveFollowingAsync(string? resourceId)
+    {
+        // The series was removed while the dialog was open, so there is nothing left to change.
+        if (FollowingSeries() is not { } series)
+            return true;
+
+        var (master, date) = series;
+        if (BitFullCalendarHelpers.EndSeriesBefore(master, date) is not { } ended)
+        {
+            var oldSnapshot = BitFullCalendarChangeNotifier.CloneEvent(master);
+            var whole = BuildEvent(master.Id, resourceId);
+            State.UpdateEvent(whole);
+            try
+            {
+                return await Notifier.TryNotifyAsync(new BitFullCalendarChangeEventArgs
+                {
+                    Event = BitFullCalendarChangeNotifier.CloneEvent(whole),
+                    OldEvent = oldSnapshot,
+                    Kind = BitFullCalendarChangeKind.Edit,
+                    Source = BitFullCalendarChangeSource.Dialog
+                });
+            }
+            catch
+            {
+                State.UpdateEvent(oldSnapshot);
+                throw;
+            }
+        }
+
+        var following = BuildEvent(Guid.NewGuid().ToString("N"), resourceId);
+
+        State.UpdateEvent(ended);
+        State.AddEvent(following);
+
+        return await Notifier.CommitDetachAsync(master, ended, following, BitFullCalendarChangeSource.Dialog);
     }
 
     /// <summary>

@@ -70,7 +70,7 @@ public class McpDiagnosticsToolTests
     [TestMethod]
     public async Task A_warning_says_how_to_suppress_it()
     {
-        StringAssert.Contains(await McpCall.TextAsync("GetBlexDiagnostics", new() { ["code"] = "BLEX011" }), "<NoWarn>$(NoWarn);BLEX011</NoWarn>");
+        StringAssert.Contains(await McpCall.TextAsync("GetBlexDiagnostics", new() { ["code"] = "BLEX009" }), "<NoWarn>$(NoWarn);BLEX009</NoWarn>");
     }
 
     [TestMethod]

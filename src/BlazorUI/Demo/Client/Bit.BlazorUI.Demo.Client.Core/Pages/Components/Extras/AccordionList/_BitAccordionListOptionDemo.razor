@@ -573,15 +573,15 @@
 
 <DemoExample Title="Empty content" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16" PreventRenderForMcpClient>
     <div>
-        <code>EmptyContent</code> renders while the list has no options.
+        <code>EmptyTemplate</code> renders while the list has no options.
     </div>
     <br />
     <BitCheckbox @bind-Value="showEmptyItems" Label="Show the options" />
     <br />
     <BitAccordionList TItem="BitAccordionListOption">
-        <EmptyContent>
+        <EmptyTemplate>
             <BitText Typography="BitTypography.Body2">There is nothing to show here yet.</BitText>
-        </EmptyContent>
+        </EmptyTemplate>
         <Options>
             @if (showEmptyItems)
             {

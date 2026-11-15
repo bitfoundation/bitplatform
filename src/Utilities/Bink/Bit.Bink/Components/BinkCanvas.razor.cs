@@ -772,6 +772,29 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
             : options;
 
     /// <summary>
+    /// Exports the drawing as a one-page PDF and reports what could not be drawn. The work happens in .NET, like the
+    /// SVG export, so it needs nothing from the browser; see <see cref="BinkPdfExporter"/>. With
+    /// <see cref="BinkExportRegion.Selection"/> and no ids given, the canvas's selection is exported.
+    /// </summary>
+    public BinkPdfExportResult ExportPdf(BinkPdfExportOptions? options = null)
+    {
+        options ??= BinkPdfExportOptions.Default;
+        if (options.Region == BinkExportRegion.Selection && options.SelectedIds is null) options = options with { SelectedIds = _selection.Ids };
+        return BinkPdfExporter.ExportWithDetails(_document, options);
+    }
+
+    /// <summary>Exports the drawing as a PDF and offers it to the user as a file download.</summary>
+    /// <returns>What could not be drawn, as <see cref="ExportPdf"/> reports it.</returns>
+    /// <exception cref="InvalidOperationException">The browser layer is not available, so nothing can be downloaded.</exception>
+    public async Task<BinkPdfExportResult> SavePdfAsync(string fileName = "drawing.pdf", BinkPdfExportOptions? options = null)
+    {
+        RequireBrowser();
+        BinkPdfExportResult result = ExportPdf(options);
+        await _interop!.SaveFileAsync(fileName, result.Bytes, "application/pdf").ConfigureAwait(true);
+        return result;
+    }
+
+    /// <summary>
     /// Exports the drawing as a PNG. Rendering happens in the browser, so real fonts and every image format the
     /// browser supports are included.
     /// </summary>

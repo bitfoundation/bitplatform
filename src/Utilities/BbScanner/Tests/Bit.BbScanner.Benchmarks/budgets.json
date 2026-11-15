@@ -1,0 +1,65 @@
+﻿{
+  "About": "Each case: the lower quartile of the time a frame takes to decode, as a multiple of the calibration work, and the bytes it allocates. Regenerate with: dotnet run -c Release --project Tests/Bit.BbScanner.Benchmarks -- --update-budgets",
+  "Cases": {
+    "Aztec 31x31, every format": {
+      "RelativeTime": 1.323,
+      "BytesPerFrame": 5344
+    },
+    "Code 128, every format": {
+      "RelativeTime": 1.275,
+      "BytesPerFrame": 732
+    },
+    "Data Matrix 22x22, every format": {
+      "RelativeTime": 0.362,
+      "BytesPerFrame": 2120
+    },
+    "EAN-13, every format": {
+      "RelativeTime": 1.047,
+      "BytesPerFrame": 708
+    },
+    "Empty frame, every format": {
+      "RelativeTime": 0.825,
+      "BytesPerFrame": 110
+    },
+    "Empty frame, live defaults": {
+      "RelativeTime": 0.434,
+      "BytesPerFrame": 110
+    },
+    "Empty frame, still image defaults": {
+      "RelativeTime": 4.025,
+      "BytesPerFrame": 272
+    },
+    "Empty frame, still image, every format": {
+      "RelativeTime": 21.293,
+      "BytesPerFrame": 496
+    },
+    "GS1 DataBar Expanded, every format": {
+      "RelativeTime": 1.198,
+      "BytesPerFrame": 3884
+    },
+    "GS1 DataBar, every format": {
+      "RelativeTime": 1.042,
+      "BytesPerFrame": 2604
+    },
+    "MicroPDF417 82x30, every format": {
+      "RelativeTime": 0.861,
+      "BytesPerFrame": 33128
+    },
+    "PDF417 158x31, every format": {
+      "RelativeTime": 1.051,
+      "BytesPerFrame": 44144
+    },
+    "QR 29x29 @3px, every format": {
+      "RelativeTime": 0.167,
+      "BytesPerFrame": 2472
+    },
+    "QR 29x29 @4px, every format": {
+      "RelativeTime": 0.211,
+      "BytesPerFrame": 2472
+    },
+    "QR 57x57 @3px, every format": {
+      "RelativeTime": 0.214,
+      "BytesPerFrame": 7376
+    }
+  }
+}

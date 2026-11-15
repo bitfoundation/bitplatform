@@ -53,6 +53,15 @@ public sealed record BinkSerializerOptions
 
     /// <summary>Converters for custom element types. A custom element without one cannot be written.</summary>
     public BinkElementRegistry ElementRegistry { get; init; } = BinkElementRegistry.Default;
+
+    /// <summary>
+    /// Whether the order keys and move clocks of layers and elements are written (see <see cref="BinkOrderKey"/>), so
+    /// that a document read back has exactly the same ones. Off by default: a file's stacking order is the order it
+    /// lists things in, and keys are made from that order when it is read. A collaboration session turns it on for
+    /// the snapshots it sends, so a joining participant continues with the keys everyone else has. Readers that
+    /// predate the keys ignore them.
+    /// </summary>
+    public bool IncludeOrderKeys { get; init; }
 }
 
 /// <summary>Options controlling document deserialization, including the limits enforced on untrusted input.</summary>

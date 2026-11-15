@@ -388,7 +388,7 @@ public class BitDataGridE2ETests : BitDataGridE2ETestBase
 
         var message = MessageRow("grid-empty");
         await Expect(message).ToHaveAttributeAsync("role", "row");
-        await Expect(message.Locator(".bit-dtg-empty")).ToHaveTextAsync("No records to display.");
+        await Expect(message.Locator(".bit-dtg-empty")).ToHaveTextAsync("No items found");
         await Expect(message.Locator(".bit-dtg-empty")).ToHaveAttributeAsync("aria-colspan", "2");
         await Expect(DataRows("grid-empty")).ToHaveCountAsync(0);
         // The header row and the message row.
@@ -401,7 +401,7 @@ public class BitDataGridE2ETests : BitDataGridE2ETestBase
         await OpenAsync(Url);
 
         await Expect(Page.Locator("#grid-empty-template .custom-empty")).ToContainTextAsync("Nothing here yet");
-        await Expect(Page.Locator("#grid-empty-template .bit-dtg-empty")).Not.ToContainTextAsync("No records");
+        await Expect(Page.Locator("#grid-empty-template .bit-dtg-empty")).Not.ToContainTextAsync("No items found");
 
         await Page.Locator("#btn-empty-load").ClickAsync();
 

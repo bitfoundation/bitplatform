@@ -6,19 +6,21 @@ public partial class BitDataGridDemo
     [
         new() { Name = "Items", Type = "IEnumerable<TItem>?", DefaultValue = "null", Description = "The client-side data source. An IQueryable<T> (e.g. an EF Core DbSet) has its filtering, sorting and paging executed at the source." },
         new() { Name = "OnRead", Type = "Func<BitDataGridReadRequest, Task<BitDataGridReadResult<TItem>>>?", DefaultValue = "null", Description = "Server-side data callback; the grid delegates sort/filter/page/group to it.", LinkType = LinkType.Link, Href = "#BitDataGridReadRequest" },
+        new() { Name = "OnReadError", Type = "EventCallback<Exception>", DefaultValue = "", Description = "Raised with what OnRead threw reading the rows the grid shows. Setting it makes the grid handle the failure: an error row with a Retry button in place of the rows. Without it the exception propagates. A failed export never raises it." },
         new() { Name = "OnLoadMore", Type = "Func<BitDataGridReadRequest, Task<BitDataGridReadResult<TItem>>>?", DefaultValue = "null", Description = "Infinite-scrolling callback, appending a batch as the user scrolls to the end. Exports request all rows with Take = null, so honor a null Take.", LinkType = LinkType.Link, Href = "#BitDataGridReadRequest" },
         new() { Name = "LoadMoreBatchSize", Type = "int", DefaultValue = "50", Description = "Rows fetched per batch in infinite-scrolling mode." },
         new() { Name = "ChildContent", Type = "RenderFragment?", DefaultValue = "null", Description = "Column definitions and other children." },
         new() { Name = "Columns", Type = "RenderFragment?", DefaultValue = "null", Description = "Alias of ChildContent for the column definitions (<Columns>...</Columns>)." },
-        new() { Name = "Loading", Type = "bool", DefaultValue = "false", Description = "Shows a loading row (LoadingTemplate, or a spinner) in place of the rows and marks the grid aria-busy." },
-        new() { Name = "ShowSearchBox", Type = "bool", DefaultValue = "false", Description = "Renders a toolbar quick-search box filtering the rows across every searchable column, ignoring case. Sent as BitDataGridReadRequest.Search in server/infinite modes; not available on a lazy tree (ChildrenProvider)." },
+        new() { Name = "Loading", Type = "bool", DefaultValue = "false", Description = "Shows a loading row (LoadingTemplate, or a spinner) in place of the rows and marks the grid aria-busy. A server grid (OnRead) needs it for neither: it marks itself aria-busy while it reads, and shows the loading row while it has no rows to show yet." },
+        new() { Name = "ShowSearchBox", Type = "bool", DefaultValue = "false", Description = "Renders a toolbar quick-search box filtering the rows across every searchable column, ignoring case. Sent as BitDataGridReadRequest.Search in server/infinite modes; not available on a lazy tree (ChildrenProvider, OnLoadChildren)." },
         new() { Name = "SearchText", Type = "string?", DefaultValue = "null", Description = "The quick-search term (two-way bindable)." },
         new() { Name = "SearchTextChanged", Type = "EventCallback<string?>", DefaultValue = "", Description = "Raised when the quick-search term changes." },
         new() { Name = "SearchDebounce", Type = "int", DefaultValue = "300", Description = "Delay (ms) after the last keystroke before the search applies; 0 applies each keystroke." },
         new() { Name = "KeyField", Type = "Func<TItem, object>?", DefaultValue = "null", Description = "Key selector for selection/edit identity. Defaults to reference equality." },
         new() { Name = "ChildrenSelector", Type = "Func<TItem, IEnumerable<TItem>?>?", DefaultValue = "null", Description = "Child selector that turns the grid into a tree grid." },
         new() { Name = "ChildrenProvider", Type = "Func<TItem, Task<IEnumerable<TItem>?>>?", DefaultValue = "null", Description = "Async children loader of a lazy tree grid: a node's children load on its first expand and are cached. Use instead of ChildrenSelector, with HasChildrenSelector." },
-        new() { Name = "HasChildrenSelector", Type = "Func<TItem, bool>?", DefaultValue = "null", Description = "Whether an unloaded lazy node can have children, so it renders an expand toggle. ChildrenProvider only." },
+        new() { Name = "OnLoadChildren", Type = "Func<BitDataGridChildrenRequest<TItem>, Task<IEnumerable<TItem>?>>?", DefaultValue = "null", Description = "ChildrenProvider with a cancellation token, cancelled once the grid no longer needs the children (new Items, or the grid is disposed). Use only one of ChildrenSelector, ChildrenProvider and OnLoadChildren.", LinkType = LinkType.Link, Href = "#BitDataGridChildrenRequest" },
+        new() { Name = "HasChildrenSelector", Type = "Func<TItem, bool>?", DefaultValue = "null", Description = "Whether an unloaded lazy node can have children, so it renders an expand toggle. ChildrenProvider and OnLoadChildren only." },
         new() { Name = "TreeInitiallyExpanded", Type = "bool", DefaultValue = "false", Description = "Whether the tree nodes start expanded. Ignored in lazy mode." },
         new() { Name = "Height", Type = "string?", DefaultValue = "null", Description = "Height of the scroll viewport, e.g. \"480px\". Required for virtualization and infinite scrolling." },
         new() { Name = "Classes", Type = "BitDataGridClassStyles?", DefaultValue = "null", Description = "Custom CSS classes for the parts of the grid.", LinkType = LinkType.Link, Href = "#class-styles" },
@@ -92,7 +94,7 @@ public partial class BitDataGridDemo
         new() { Name = "OnRowDelete", Type = "EventCallback<TItem>", DefaultValue = "", Description = "Raised when a row is deleted (Delete button or Delete key)." },
         new() { Name = "OnRowCreate", Type = "EventCallback<TItem>", DefaultValue = "", Description = "Raised when a new row is created." },
         new() { Name = "EmptyTemplate", Type = "RenderFragment?", DefaultValue = "null", Description = "Custom content rendered when there is no data." },
-        new() { Name = "LoadingTemplate", Type = "RenderFragment?", DefaultValue = "null", Description = "Custom content replacing the spinner while Loading." },
+        new() { Name = "LoadingTemplate", Type = "RenderFragment?", DefaultValue = "null", Description = "Custom content replacing the spinner while Loading, and while a server grid reads its first rows." },
         new() { Name = "ToolbarTemplate", Type = "RenderFragment?", DefaultValue = "null", Description = "Custom content at the toolbar's start." },
         new() { Name = "DetailTemplate", Type = "RenderFragment<TItem>?", DefaultValue = "null", Description = "Expandable master-detail content rendered under a row." },
         new() { Name = "ShowDetailToggle", Type = "bool", DefaultValue = "true", Description = "Renders the expand/collapse column while a DetailTemplate is set. Turn it off to drive the details from row clicks or code." },
@@ -221,6 +223,7 @@ public partial class BitDataGridDemo
                 new() { Name = "Pager", Type = "string?", DefaultValue = "null", Description = "Custom class or style of the pager." },
                 new() { Name = "Empty", Type = "string?", DefaultValue = "null", Description = "Custom class or style of the empty message cell." },
                 new() { Name = "Loading", Type = "string?", DefaultValue = "null", Description = "Custom class or style of the loading indicator cell." },
+                new() { Name = "ReadError", Type = "string?", DefaultValue = "null", Description = "Custom class or style of the cell showing a failed read and its Retry button." },
             ],
         },
         new()
@@ -292,6 +295,7 @@ public partial class BitDataGridDemo
                 new() { Name = "Filters", Type = "IReadOnlyList<BitDataGridFilterDescriptor>", DefaultValue = "[]", Description = "The active filters.", LinkType = LinkType.Link, Href = "#BitDataGridFilterDescriptor" },
                 new() { Name = "Groups", Type = "IReadOnlyList<BitDataGridGroupDescriptor>", DefaultValue = "[]", Description = "The active groups, in nesting order." },
                 new() { Name = "Search", Type = "string?", DefaultValue = "null", Description = "The quick-search term to match across the searchable columns, or null." },
+                new() { Name = "Aggregates", Type = "IReadOnlyList<BitDataGridAggregateDescriptor>", DefaultValue = "[]", Description = "The aggregates the footer shows, one per aggregating column: compute them over the whole filtered data and return them in the result's Aggregates. Empty for OnLoadMore and export reads.", LinkType = LinkType.Link, Href = "#BitDataGridAggregateDescriptor" },
                 new() { Name = "CancellationToken", Type = "CancellationToken", DefaultValue = "", Description = "Cancelled when a newer request supersedes this one." },
             ],
         },
@@ -305,6 +309,17 @@ public partial class BitDataGridDemo
                 new() { Name = "Items", Type = "IReadOnlyList<TItem>", DefaultValue = "", Description = "The items of the current page/window." },
                 new() { Name = "TotalCount", Type = "int", DefaultValue = "", Description = "The total of the matching items (ignored in infinite mode)." },
                 new() { Name = "Aggregates", Type = "IReadOnlyList<BitDataGridAggregateResult>?", DefaultValue = "null", Description = "Aggregates over the whole filtered data, shown in the footer instead of the page's own.", LinkType = LinkType.Link, Href = "#BitDataGridAggregateResult" },
+            ],
+        },
+        new()
+        {
+            Id = "BitDataGridChildrenRequest",
+            Title = "BitDataGridChildrenRequest<TItem>",
+            Description = "What a lazy tree grid asks of OnLoadChildren.",
+            Parameters =
+            [
+                new() { Name = "Parent", Type = "TItem", DefaultValue = "", Description = "The node whose direct children are requested." },
+                new() { Name = "CancellationToken", Type = "CancellationToken", DefaultValue = "", Description = "Cancelled once the grid no longer needs the children: new Items replaced the hierarchy, or the grid is disposed. Collapsing the node does not cancel it." },
             ],
         },
         new()
@@ -404,6 +419,17 @@ public partial class BitDataGridDemo
         },
         new()
         {
+            Id = "BitDataGridAggregateDescriptor",
+            Title = "BitDataGridAggregateDescriptor",
+            Description = "An aggregate the footer shows (in BitDataGridReadRequest.Aggregates).",
+            Parameters =
+            [
+                new() { Name = "ColumnId", Type = "string", DefaultValue = "", Description = "The aggregating column's identifier." },
+                new() { Name = "Type", Type = "BitDataGridAggregateType", DefaultValue = "", Description = "The column's aggregate function; Custom for a column with its own AggregateBy, which the server computes its own way.", LinkType = LinkType.Link, Href = "#BitDataGridAggregateType" },
+            ],
+        },
+        new()
+        {
             Id = "BitDataGridAggregateResult",
             Title = "BitDataGridAggregateResult",
             Description = "A computed footer or group aggregate (passed to FooterTemplate).",
@@ -454,8 +480,11 @@ public partial class BitDataGridDemo
             Parameters =
             [
                 new() { Name = "GridLabel", Type = "string", DefaultValue = "\"Data grid\"", Description = "The grid's accessible name when no AriaLabel is given." },
-                new() { Name = "EmptyText", Type = "string", DefaultValue = "\"No records to display.\"", Description = "Shown when there are no rows." },
-                new() { Name = "LoadingText", Type = "string", DefaultValue = "\"Loading…\"", Description = "Shown while Loading is true." },
+                new() { Name = "EmptyText", Type = "string", DefaultValue = "BitStrings.NoItemsFound", Description = "Shown when there are no rows; \"No items found\" unless BitStrings.Current says otherwise." },
+                new() { Name = "NoMatchesText", Type = "string", DefaultValue = "BitStrings.NoResultsFound", Description = "Shown instead of EmptyText when the filters or the search exclude every row; \"No results found\" unless BitStrings.Current says otherwise." },
+                new() { Name = "LoadingText", Type = "string", DefaultValue = "\"Loading…\"", Description = "Shown while Loading is true, and while a server grid reads its first rows." },
+                new() { Name = "ReadErrorText", Type = "string", DefaultValue = "\"The records could not be loaded.\"", Description = "Shown in place of the rows when a read fails and OnReadError is set." },
+                new() { Name = "RetryText", Type = "string", DefaultValue = "\"Retry\"", Description = "The button that reads the rows again after a failed read." },
                 new() { Name = "PagerRangeFormat", Type = "string", DefaultValue = "\"{0}–{1} of {2}\"", Description = "Pager range summary format." },
                 new() { Name = "PagerPageFormat", Type = "string", DefaultValue = "\"Page {0} of {1}\"", Description = "Pager page summary format." },
                 new() { Name = "InvalidValueError", Type = "string", DefaultValue = "\"Invalid value for {0}.\"", Description = "Shown when an edited value can't be converted." },

@@ -32,7 +32,7 @@ What each one declares - the core enforces every capability generically, never b
 
 ### OPFS
 
-The one to pick when you can: the only persistent backend on the synchronous engine build, which is the smallest of the three and needs neither JSPI nor Asyncify. Databases live in the origin private file system as real files.
+The one to pick when you can: the only persistent backend on the synchronous engine build, which is the smallest of the three and needs neither JSPI nor Asyncify. Databases live in the origin private file system as real files, named as the VFS names them: by the URL path of the database name, so `My Notes.db` is the file `My%20Notes.db`. `Admin` looks in the same place and lists it under its own name.
 
 It registers `OPFSCoopSyncVFS`, chosen over `AccessHandlePoolVFS` because more than one connection may be open and the `.db` stays a real file - exporting is just a read. Access handles are worker-only, so the engine stays in a dedicated worker; probe and admin use the async file API and run on the window, so availability checks and import/export work from component code. No COOP/COEP headers are required.
 
@@ -54,7 +54,7 @@ Nothing in selection, the transport or the worker knows it exists: it is built o
 
 ### In-memory
 
-SQLite's own memory VFS: no JavaScript to load and nothing persisted. Every connection is its own worker with its own heap, so a second connection to the "same" database would be a different, empty one, and the backend declares no multiple connections. Use it for tests and demos, and as a last resort only behind `AllowNonPersistentFallback()`. Its `Admin` sees only images handed to it directly, not what a connection wrote - so data does not migrate to or from it: a migration away copies nothing, and a migration onto it puts the image in that store, deletes the source, and the next open starts empty. Migrate between persistent backends only.
+SQLite's own memory VFS: no JavaScript to load and nothing persisted. Every connection is its own worker with its own heap, so a second connection to the "same" database would be a different, empty one, and the backend declares no multiple connections. Use it for tests and demos, and as a last resort only behind `AllowNonPersistentFallback()`. Its `Admin` sees only images handed to it directly, not what a connection wrote - so data does not migrate to or from it: a migration away copies nothing, and a migration onto it from a persistent backend is refused, since it would delete the only copy that survives a reload. Migrate between persistent backends only; `Database.ExportAsync()` does read what a connection wrote, for a backup of an in-memory database.
 
 ### File system (Blazor Hybrid)
 
@@ -92,11 +92,13 @@ Two rules shape everything:
 
 `BsqliteStorageMigrationMode.AutomaticOnOpen` moves a database to a better-ranked backend before opening it. `Manual` and `KeepExisting` leave it and report through `Resolution.BetterProviderAvailable`.
 
-A migration is: probe the target, check quota headroom, export, verify the SQLite header, import, read the copy back and compare it byte for byte, flip the binding, delete the source. A failure before the flip leaves the source and the binding untouched. If deleting the source fails - another tab still holding an OPFS file open, say - the flip is undone when the source is still whole, and kept when it is not; the error is rethrown either way, and the binding says where the database now lives. `AutomaticOnOpen` resolves again after any failure, so the session always opens where the binding points. The demo's storage switcher drives the same `BsqliteStorageMigrator` by hand.
+A migration is: probe the target, check quota headroom, export, verify the image - the SQLite header, a page size SQLite can have, whole pages, and as many as the header says - import, read the copy back and compare it byte for byte, flip the binding, delete the source. An image a device left in WAL mode is marked for a rollback journal on the way across, which is the only mode a web VFS opens. A move from a persistent backend onto one that does not persist is refused: it would delete the only copy that survives a reload. Just before the import the binding is read again, and a move another tab finished first - the binding already names another backend - is left alone rather than overwritten with this tab's older export. A failure before the flip leaves the source and the binding untouched. If deleting the source fails - another tab still holding an OPFS file open, say - the flip is undone when the source is still whole, and kept when it is not; the error is rethrown either way, and the binding says where the database now lives. `AutomaticOnOpen` resolves again after any failure, so the session always opens where the binding points. The demo's storage switcher drives the same `BsqliteStorageMigrator` by hand.
 
 ## Admin
 
-`provider.Admin` works on databases as files, with no engine running: `ExistsAsync`, `ListAsync`, `DeleteAsync`, `ExportAsync`, `ImportAsync`. Close the session first when the database may be open:
+For the common jobs, `BsqliteDatabase` has the whole protocol in one call - `ExportAsync` for a backup of the open database, `RestoreAsync` to put one back, `DeleteAsync` to remove a database everywhere: see [Back up, restore, delete](getting-started.md#back-up-restore-delete).
+
+`provider.Admin` works on databases as files, with no engine running: `ExistsAsync`, `ListAsync`, `DeleteAsync`, `ExportAsync`, `ImportAsync`. It moves bytes and checks nothing - a caller importing a file it did not export itself should verify it first, as `RestoreAsync` does. Close the session first when the database may be open:
 
 ```csharp
 await Database.WhileClosedAsync(async ct =>
@@ -106,7 +108,9 @@ await Database.WhileClosedAsync(async ct =>
 });
 ```
 
-For a backup of a database that stays open, use `connection.ExportAsync()` instead: it snapshots through `sqlite3_serialize` under the engine's own lock.
+For a backup of a database that stays open, use `Database.ExportAsync()` (or `connection.ExportAsync()`) instead: it snapshots inside a read transaction, so it never reads a write half done. An OPFS or Cache Storage export through `Admin` refuses a database whose rollback journal holds a write that has not finished - another tab's, or one a crash cut short - since the file alone would be torn; opening the database once rolls the journal back.
+
+What each backend's import guarantees when it is cut short - the tab closed part way - differs: OPFS writes through a swap file and replaces the database in one step, IndexedDB imports in one transaction, and the file system stages the file beside the database and moves it over; Cache Storage cannot write several entries as one, so an import cut short there leaves neither the old database nor the new one.
 
 `BsqlitePersistence.RequestAsync(js)` asks the browser to exempt the origin from storage eviction. It is origin-wide, not per backend.
 

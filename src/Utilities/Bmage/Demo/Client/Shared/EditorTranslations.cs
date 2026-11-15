@@ -106,6 +106,8 @@ public static class EditorTranslations
         BlackAndWhite = "Schwarzweiß",
         Duotone = "Duplex",
         MotionBlur = "Bewegungsunschärfe",
+        Document = "Dokument",
+        ZoomBlur = "Zoomunschärfe",
         Angle = "Winkel",
 
         // Transform
@@ -387,6 +389,8 @@ public static class EditorTranslations
         BlackAndWhite = "سیاه و سفید",
         Duotone = "دورنگ",
         MotionBlur = "محوی حرکتی",
+        Document = "سند",
+        ZoomBlur = "محوی زوم",
         Angle = "زاویه",
 
         // Transform

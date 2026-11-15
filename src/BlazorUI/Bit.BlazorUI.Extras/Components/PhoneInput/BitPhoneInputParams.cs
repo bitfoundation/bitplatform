@@ -19,7 +19,7 @@ namespace Bit.BlazorUI;
 /// <see cref="BitInputBaseParams{TValue}"/> gives: the first is a dictionary the field writes into, and the second
 /// is read while the parameters are still being set, before any cascade has been applied.
 /// </remarks>
-public class BitPhoneInputParams : BitInputBaseParams<string?>, IBitComponentParams
+public partial class BitPhoneInputParams : BitInputBaseParams<string?>, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitPhoneInput"/> cascading parameters within <see cref="BitParams"/>.
@@ -243,7 +243,7 @@ public class BitPhoneInputParams : BitInputBaseParams<string?>, IBitComponentPar
     /// <summary>
     /// The message to show, and to announce, when the search result of the country dropdown is empty.
     /// </summary>
-    public string? NoResultsMessage { get; set; }
+    public string? NoResultsText { get; set; }
 
     /// <summary>
     /// The custom template to show when the search result of the country dropdown is empty.
@@ -309,6 +309,13 @@ public class BitPhoneInputParams : BitInputBaseParams<string?>, IBitComponentPar
     /// Shows a clear button in the number input while it holds a value.
     /// </summary>
     public bool? ShowClearButton { get; set; }
+
+    /// <summary>
+    /// Shows the messages the cascading EditContext holds for the bound field under the field, where the
+    /// <c>ErrorMessage</c> of the phone input goes, so an <c>EditForm</c> needs no <c>ValidationMessage</c> component
+    /// beside it. An error message of the app's own wins the place while it is set.
+    /// </summary>
+    public bool? ShowValidationMessage { get; set; }
 
     /// <summary>
     /// The size of the phone input.
@@ -556,9 +563,9 @@ public class BitPhoneInputParams : BitInputBaseParams<string?>, IBitComponentPar
             bitPhoneInput.TakeFromCascade(nameof(NoFocusOnSelect), NoFocusOnSelect.Value, static p => p.NoFocusOnSelect, static (p, v) => p.NoFocusOnSelect = v);
         }
 
-        if (NoResultsMessage.HasValue())
+        if (NoResultsText.HasValue())
         {
-            bitPhoneInput.TakeFromCascade(nameof(NoResultsMessage), NoResultsMessage, static p => p.NoResultsMessage, static (p, v) => p.NoResultsMessage = v);
+            bitPhoneInput.TakeFromCascade(nameof(NoResultsText), NoResultsText, static p => p.NoResultsText, static (p, v) => p.NoResultsText = v);
         }
 
         if (NoResultsTemplate is not null)
@@ -625,6 +632,11 @@ public class BitPhoneInputParams : BitInputBaseParams<string?>, IBitComponentPar
         if (ShowClearButton.HasValue)
         {
             bitPhoneInput.TakeFromCascade(nameof(ShowClearButton), ShowClearButton.Value, static p => p.ShowClearButton, static (p, v) => p.ShowClearButton = v);
+        }
+
+        if (ShowValidationMessage.HasValue)
+        {
+            bitPhoneInput.TakeFromCascade(nameof(ShowValidationMessage), ShowValidationMessage.Value, static p => p.ShowValidationMessage, static (p, v) => p.ShowValidationMessage = v);
         }
 
         if (Size.HasValue)

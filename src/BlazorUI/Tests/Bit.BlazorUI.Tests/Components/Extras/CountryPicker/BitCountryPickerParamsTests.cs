@@ -194,7 +194,7 @@ public class BitCountryPickerParamsTests : BunitTestContext
             PreferredCountries = [BitCountries.Mexico],
             ExcludeCountries = [BitCountries.Canada],
             SearchBoxPlaceholder = "Buscar",
-            NoResultsMessage = "Sin resultados",
+            NoResultsText = "Sin resultados",
         });
 
         component.Find("button.bit-cnp-fld").Click();

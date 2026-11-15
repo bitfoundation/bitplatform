@@ -1,0 +1,182 @@
+﻿@page "/components/popconfirm"
+@page "/components/pop-confirm"
+
+<PageOutlet Url="components/popconfirm"
+            Title="PopConfirm"
+            Description="BitPopConfirm asks for a confirmation right where an action is triggered, in a small popup anchored to the trigger." />
+
+<DemoPage Name="PopConfirm"
+          SecondaryNames="@(["Popconfirm", "ConfirmPopover", "ConfirmPopup"])"
+          Description="BitPopConfirm asks for a confirmation right where an action is triggered: a small popup anchored to the trigger, with a question and the two buttons that answer it, for the actions worth a second thought that are not worth a modal dialog."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          SubEnums="componentSubEnums"
+          CssVariables="componentCssVariables"
+          GitHubExtrasUrl="PopConfirm/BitPopConfirm.razor"
+          GitHubDemoUrl="Extras/PopConfirm/BitPopConfirmDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            To use this component, you need to install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Extras" Target="_blank">
+                <BitTag Reversed
+                        Text="Bit.BlazorUI.Extras"
+                        Color="BitColor.SecondaryBackground"
+                        IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            nuget package, as described in the Optional steps of the
+            <BitLink Href="/getting-started">Getting started</BitLink> page.
+        </BitText>
+        <br />
+        <BitText>
+            The popup is an alertdialog that keeps the focus while it is open, starting on the Cancel button, so an Enter
+            pressed out of habit does not confirm. Every opening ends in exactly one of OnConfirm and OnCancel: Confirm
+            raises the first, and Cancel, Escape and a click outside of the popup the second. The focus goes back to the
+            trigger either way.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+            <div>
+                The trigger is the child content, and a click on it opens the popup. The title names the popup and the
+                message describes it.
+            </div>
+            <br />
+            <div>
+                <BitPopConfirm Title="Delete the file?"
+                               Message="It cannot be brought back once it is deleted."
+                               OnConfirm="@(() => basicAnswer = "Deleted")"
+                               OnCancel="@(() => basicAnswer = "Kept")">
+                    <BitButton IconName="@BitIconName.Delete">Delete</BitButton>
+                </BitPopConfirm>
+                <br />
+                <br />
+                <div>Answer: <b>@basicAnswer</b></div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Message only" RazorCode="@example2RazorCode" Id="example2">
+            <div>Without a title, the message is what names the popup.</div>
+            <br />
+            <div>
+                <BitPopConfirm Message="Discard the changes?">
+                    <BitButton Variant="BitVariant.Outline">Discard</BitButton>
+                </BitPopConfirm>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Button texts" RazorCode="@example3RazorCode" Id="example3">
+            <div>ConfirmText and CancelText say what the two answers do, which reads better than a plain Ok.</div>
+            <br />
+            <div>
+                <BitPopConfirm Title="Leave the meeting?"
+                               Message="The others will carry on without you."
+                               ConfirmText="Leave"
+                               CancelText="Stay">
+                    <BitButton IconName="@BitIconName.Leave">Leave</BitButton>
+                </BitPopConfirm>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Placement" RazorCode="@example4RazorCode" Id="example4">
+            <div>The popup takes the side of the trigger with the most room, unless Placement names one.</div>
+            <br />
+            <div>
+                <div class="example-content">
+                    <BitPopConfirm Message="Placed on top." Placement="BitPlacement.Top">
+                        <BitButton Variant="BitVariant.Outline">Top</BitButton>
+                    </BitPopConfirm>
+                    <BitPopConfirm Message="Placed at the bottom." Placement="BitPlacement.Bottom">
+                        <BitButton Variant="BitVariant.Outline">Bottom</BitButton>
+                    </BitPopConfirm>
+                    <BitPopConfirm Message="Placed at the start." Placement="BitPlacement.Start">
+                        <BitButton Variant="BitVariant.Outline">Start</BitButton>
+                    </BitPopConfirm>
+                    <BitPopConfirm Message="Placed at the end." Placement="BitPlacement.End">
+                        <BitButton Variant="BitVariant.Outline">End</BitButton>
+                    </BitPopConfirm>
+                </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Binding" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                IsOpen is two-way bindable. Opening or closing the popup through it is the page's own doing, and raises neither
+                OnConfirm nor OnCancel.
+            </div>
+            <br />
+            <div>
+                <div class="example-content">
+                    <BitPopConfirm Title="Archive the project?" @bind-IsOpen="isBoundOpen">
+                        <BitButton IconName="@BitIconName.Archive">Archive</BitButton>
+                    </BitPopConfirm>
+                    <BitButton Variant="BitVariant.Text" OnClick="() => isBoundOpen = true">Ask from here</BitButton>
+                    <BitText>IsOpen: <b>@isBoundOpen</b></BitText>
+                </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Disabled" RazorCode="@example6RazorCode" Id="example6">
+            <div>A disabled pop confirm never opens, and leaves the trigger as it is.</div>
+            <br />
+            <div>
+                <BitPopConfirm Title="Delete the file?" Disabled>
+                    <BitButton IconName="@BitIconName.Delete">Delete</BitButton>
+                </BitPopConfirm>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Color" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <div>ConfirmColor colors the Confirm button: Error marks an action that destroys something.</div>
+            <br />
+            <div>
+                <BitPopConfirm Title="Delete the account?"
+                               Message="Every project of the account goes with it."
+                               ConfirmText="Delete"
+                               ConfirmColor="BitColor.Error"
+                               OnConfirm="() => accountDeleted = true">
+                    <BitButton Color="BitColor.Error" IconName="@BitIconName.Delete">Delete account</BitButton>
+                </BitPopConfirm>
+                <br />
+                <br />
+                <div>Deleted: <b>@accountDeleted</b></div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example8RazorCode" Id="example8">
+            <div>
+                Classes and Styles reach every part of the pop confirm, and the --bit-PopConfirm-* variables restyle its
+                defaults, set on the Style of the pop confirm or on any of its ancestors.
+            </div>
+            <br />
+            <div>
+                <div class="example-content">
+                    <BitPopConfirm Title="Styled popup"
+                                   Message="With custom styles."
+                                   Style="--bit-PopConfirm-title-color: tomato; --bit-PopConfirm-max-width: 14rem;"
+                                   Styles="@(new() { Callout = "border-radius: 1rem;", Actions = "justify-content: center;" })">
+                        <BitButton Variant="BitVariant.Outline">Styles</BitButton>
+                    </BitPopConfirm>
+                    <BitPopConfirm Title="Classed popup"
+                                   Message="With custom classes."
+                                   Classes="@(new() { Callout = "custom-popconfirm", Message = "custom-message" })">
+                        <BitButton Variant="BitVariant.Outline">Classes</BitButton>
+                    </BitPopConfirm>
+                </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example9RazorCode" Id="example9">
+            <div>Use BitPopConfirm in right-to-left (RTL).</div>
+            <br />
+            <div dir="rtl">
+                <BitPopConfirm Dir="BitDir.Rtl"
+                               Title="فایل حذف شود؟"
+                               Message="پس از حذف قابل بازگشت نیست."
+                               ConfirmText="حذف"
+                               CancelText="انصراف">
+                    <BitButton IconName="@BitIconName.Delete">حذف</BitButton>
+                </BitPopConfirm>
+            </div>
+        </DemoExample>
+    </Examples>
+</DemoPage>

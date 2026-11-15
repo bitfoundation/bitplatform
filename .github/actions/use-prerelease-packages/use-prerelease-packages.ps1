@@ -1,6 +1,6 @@
 #Requires -Version 7.4
 # Makes a project restore every Bit.* package from the newest nupkg-files artifact of the
-# prerelease.nuget.org.yml runs. See action.yml.
+# cd.prerelease.nuget.packages.yml runs. See action.yml.
 param(
     [Parameter(Mandatory)] [string] $ProjectFolder, # Of the nuget.config to use; created when missing.
     [Parameter(Mandatory)] [string] $Repository,
@@ -10,7 +10,7 @@ param(
 $ErrorActionPreference = 'Stop'
 $PSNativeCommandUseErrorActionPreference = $true
 
-$runs = gh run list --repo $Repository --workflow prerelease.nuget.org.yml --limit 100 --json databaseId,headBranch,headSha,url |
+$runs = gh run list --repo $Repository --workflow cd.prerelease.nuget.packages.yml --limit 100 --json databaseId,headBranch,headSha,url |
     ConvertFrom-Json
 
 $artifact = (gh api "repos/$Repository/actions/artifacts?name=nupkg-files&per_page=100" | ConvertFrom-Json).artifacts |
@@ -21,7 +21,7 @@ $artifact = (gh api "repos/$Repository/actions/artifacts?name=nupkg-files&per_pa
 $run = $runs | Where-Object databaseId -eq $artifact.workflow_run.id
 
 if (-not $run) {
-    throw "$Repository has no run of prerelease.nuget.org.yml with an unexpired nupkg-files artifact to take the packages from."
+    throw "$Repository has no run of cd.prerelease.nuget.packages.yml with an unexpired nupkg-files artifact to take the packages from."
 }
 
 New-Item -ItemType Directory -Force $PackagesFolder | Out-Null
@@ -30,7 +30,7 @@ try {
     gh run download $run.databaseId --repo $Repository --name nupkg-files --dir $PackagesFolder
 }
 catch {
-    throw "The nupkg-files artifact of $($run.url) could not be downloaded, it may have expired. Run the Prerelease nuget packages workflow again. $_"
+    throw "The nupkg-files artifact of $($run.url) could not be downloaded, it may have expired. Run the CD Prerelease nuget packages workflow again. $_"
 }
 
 $PackagesFolder = (Resolve-Path $PackagesFolder).Path
@@ -62,7 +62,7 @@ $checkoutVersion = ([xml](Get-Content (Join-Path $PSScriptRoot '..' '..' '..' 's
 
 # Checked before anything changes: the restore would fail anyway, with far less to go on.
 if ($versions -notcontains $checkoutVersion) {
-    throw "$($run.url) ($($run.headBranch)) built Bit.* $($versions -join ', '), but this checkout is on $checkoutVersion (src/Bit.Build.props). Run Prerelease nuget packages on a branch at $checkoutVersion."
+    throw "$($run.url) ($($run.headBranch)) built Bit.* $($versions -join ', '), but this checkout is on $checkoutVersion (src/Bit.Build.props). Run CD Prerelease nuget packages on a branch at $checkoutVersion."
 }
 
 # A nuget.org copy of the same version in the global packages folder would be used as is.

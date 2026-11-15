@@ -111,7 +111,7 @@ public sealed class AotProfileRun(CliServices cli)
                 try
                 {
                     visited = await cli.Console.RunWithStatusAsync($"Using the app at {app.Origin}", progress => collector.VisitAsync(request.StartPath, Math.Max(1, request.MaxPages), skipped, progress, cancellationToken));
-                    steps = [.. request.Steps.Where(step => skipped.Contains(step) is false)];
+                    steps = [.. request.Steps.Where(step => ProfileCollector.IsLeftOut(step, skipped) is false)];
 
                     if (steps.Count > 0)
                         await collector.RunStepAsync(request.StartPath, cancellationToken);
@@ -128,8 +128,9 @@ public sealed class AotProfileRun(CliServices cli)
                 catch (AppReloadedException reload) when (reloads < MaxReloads)
                 {
                     reloads++;
-                    cli.Console.StepWarning($"{reload.Path} reloads the app, which starts the profile over. Using the app again without it.");
-                    skipped.Add(reload.Path);
+                    var leftOut = ProfileCollector.LeftOut(reload.Path);
+                    cli.Console.StepWarning($"{reload.Path} reloads the app, which starts the profile over. Using the app again without {(leftOut == reload.Path ? "it" : $"the pages under {leftOut[..^2]}")}.");
+                    skipped.Add(leftOut);
                 }
             }
 
@@ -146,13 +147,19 @@ public sealed class AotProfileRun(CliServices cli)
 
             var profile = AotProfile.Read(data);
             var collected = profile.Methods.Count;
-            var unmanaged = assemblies.Sum(a => profile.AddRange(AssemblyMethods.Read(a.Path, unmanagedCallersOnly: true)));
-            var included = request.Include.Sum(name => profile.AddRange(AssemblyMethods.Read(assemblies.First(a => string.Equals(a.Name, name, StringComparison.OrdinalIgnoreCase)).Path, unmanagedCallersOnly: false)));
+            using var images = new AppAssemblies(assemblies.Select(a => a.Path));
+            // Each count is how many of its kind the profile has, whether the run had already put them there or not.
+            var generic = AddAll(profile, AssemblyMethods.ReadGenericInstances(profile.Methods, images));
+            // The instantiations of generic types the profile has: each gets its wide (and --include) methods compiled too.
+            var instantiated = profile.Methods.Select(m => m.Class).ToList();
+            var unmanaged = AddAll(profile, images.Images.SelectMany(metadata => AssemblyMethods.Read(metadata, unmanagedCallersOnly: true)));
+            var wide = AddAll(profile, images.Images.SelectMany(metadata => AssemblyMethods.ReadWide(metadata, instantiated)));
+            var included = AddAll(profile, request.Include.SelectMany(name => AssemblyMethods.Read(images[assemblies.First(a => string.Equals(a.Name, name, StringComparison.OrdinalIgnoreCase)).Name!], unmanagedCallersOnly: false, instantiated)));
 
             Directory.CreateDirectory(Path.GetDirectoryName(output)!);
             await File.WriteAllBytesAsync(output, profile.ToArray(), cancellationToken);
 
-            var detail = $"{collected:N0} methods run, {unmanaged:N0} [UnmanagedCallersOnly]{(request.Include.Count > 0 ? $", {included:N0} of {string.Join(", ", request.Include)}" : "")}";
+            var detail = $"{collected:N0} methods run, {generic:N0} virtual methods of their generic classes, {unmanaged:N0} [UnmanagedCallersOnly], {wide:N0} with more than {AssemblyMethods.MaxInterpreterEntryArguments} parameters{(request.Include.Count > 0 ? $", {included:N0} of {string.Join(", ", request.Include)}" : "")}";
             cli.Console.Step(StepStatus.Succeeded, $"Wrote {Path.GetRelativePath(current, output)}", detail);
             cli.Console.Line($"[grey]Publish with[/] -p:WasmAotProfilePath={Markup.Escape(output)} [grey]and the same -p properties.[/]");
             return CliApp.ExitOk;
@@ -185,5 +192,13 @@ public sealed class AotProfileRun(CliServices cli)
             return path.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase) ? path : null;
 
         return Directory.Exists(path) && Directory.GetFiles(path, "*.csproj") is [var only] ? only : null;
+    }
+
+    /// <summary>Adds the methods to the profile and returns how many distinct ones there are, added now or there before.</summary>
+    private static int AddAll(AotProfile profile, IEnumerable<AotProfileMethod> methods)
+    {
+        var listed = methods.DistinctBy(m => m.Key).ToList();
+        profile.AddRange(listed);
+        return listed.Count;
     }
 }

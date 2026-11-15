@@ -20,6 +20,12 @@ public enum BlowRunStatus
 
     /// <summary>Not run, because something it depends on did not succeed or a condition passed it by.</summary>
     Skipped,
+
+    /// <summary>Started, and now waiting for something outside the run: an approval, an event, a person.</summary>
+    Waiting,
+
+    /// <summary>Stopped part-way, because the run was cancelled while it worked.</summary>
+    Cancelled,
 }
 
 /// <summary>

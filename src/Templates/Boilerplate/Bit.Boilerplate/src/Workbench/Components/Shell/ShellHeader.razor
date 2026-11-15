@@ -1,7 +1,7 @@
 @inherits WorkbenchComponentBase
 
 <header class="shell-header">
-    <a class="brand" href="/#top">
+    <a class="brand" href="/#top" aria-label="@Localizer[nameof(WorkbenchStrings.WorkbenchTitle)]">
         <img src="_content/Boilerplate.Client.Core/images/bit-logo.svg" alt="" width="28" height="28" />
         <span>@Localizer[nameof(WorkbenchStrings.WorkbenchTitle)]</span>
     </a>
@@ -9,20 +9,29 @@
     <nav class="links">
         <a href="/#pages">@Localizer[nameof(WorkbenchStrings.Pages)]</a>
         <a href="@WorkbenchUrls.Flows">@Localizer[nameof(WorkbenchStrings.Flows)]</a>
+        <a href="@WorkbenchUrls.Progress" class="progress-link">
+            @Localizer[nameof(WorkbenchStrings.Progress)]
+            @if (reviewSession.NeedsYouCount is > 0 and var waiting)
+            {
+                <span class="needs-count" title="@Localizer[nameof(WorkbenchStrings.ProgressNeedsYouCount), waiting]">@waiting.ToString(CultureInfo.CurrentCulture)</span>
+            }
+        </a>
         <a href="/#why">@Localizer[nameof(WorkbenchStrings.HomeWhyButton)]</a>
     </nav>
 
     <BitSpacer />
 
-    @if (CultureInfoManager.InvariantGlobalization is false)
-    {
-        <BitDropdown Items="cultureItems"
-                     Value="@CultureInfo.CurrentUICulture.Name"
-                     ValueChanged="(string? culture) => SetCulture(culture)"
-                     AriaLabel="@Localizer[nameof(WorkbenchStrings.Language)]"
-                     Class="language"
-                     Responsive />
-    }
+    <span class="progress-shortcut">
+        <BitBadge Content="@(reviewSession.NeedsYouCount)" Hidden="reviewSession.NeedsYouCount == 0" Color="BitColor.Warning" Overlap Size="BitSize.Small">
+            <BitButton IconOnly Variant="BitVariant.Text"
+                       IconName="@BitIconName.TaskList"
+                       Href="@WorkbenchUrls.Progress"
+                       Title="@Localizer[nameof(WorkbenchStrings.Progress)]"
+                       AriaLabel="@Localizer[nameof(WorkbenchStrings.Progress)]" />
+        </BitBadge>
+    </span>
+
+    <LanguageMenu />
 
     <SoundToggle />
 

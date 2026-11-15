@@ -35,4 +35,29 @@ public sealed class BlexStateAttribute : Attribute
     /// }
     /// </code></example>
     public bool Persist { get; set; } = true;
+
+    /// <summary>
+    /// The name (use <c>nameof</c>) of a field or property of the store holding the
+    /// <see cref="IEqualityComparer{T}"/> that decides whether an assignment changes this state. An assignment
+    /// the comparer calls equal is skipped entirely: nothing is notified, recorded, persisted or added to the undo
+    /// history. Defaults to <see cref="EqualityComparer{T}.Default"/>. The generator reports <c>BLEX029</c> when
+    /// the member does not exist or is not an <see cref="IEqualityComparer{T}"/> of the field's type.
+    /// </summary>
+    /// <remarks>
+    /// The case it is for is state that is replaced by an equal copy: a list endpoint polled every few seconds
+    /// returns a new array each time, and with reference equality every poll re-renders the components that follow
+    /// it, writes to storage and adds an undo step even though nothing changed. A content comparer
+    /// (<see cref="BlexComparers.Sequence{T}"/>) makes an unchanged response free. The comparer runs on every
+    /// assignment, so keep it proportionate to the value.
+    /// </remarks>
+    /// <example><code>
+    /// [BlexStore(Name = "inbox")]
+    /// public partial class InboxStore
+    /// {
+    ///     private static readonly IEqualityComparer&lt;Message[]&gt; Unchanged = BlexComparers.Sequence&lt;Message&gt;();
+    ///
+    ///     [BlexState(Comparer = nameof(Unchanged))] private Message[] _messages = [];
+    /// }
+    /// </code></example>
+    public string? Comparer { get; set; }
 }

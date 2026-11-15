@@ -1,5 +1,5 @@
 //+:cnd:noEmit
-using ImageMagick;
+using Bit.Bmage;
 using System.Net.Http.Headers;
 using Boilerplate.Shared.Features.Products;
 using Boilerplate.Shared.Features.Categories;
@@ -62,7 +62,7 @@ public partial class ProductImageLifecycleTests
         var productId = Guid.CreateSequentialGuid();
         var name = $"adopt-image-{Guid.NewGuid():N}";
 
-        await UploadProductImage(httpClient, productId, SolidImage(MagickColors.Red));
+        await UploadProductImage(httpClient, productId, SolidImage(TestImageFactory.Red));
 
         var created = await products.Create(await NewProductDto(client, productId, name), TestContext.CancellationToken);
 
@@ -116,7 +116,7 @@ public partial class ProductImageLifecycleTests
             // The DTO the edit form is holding at this moment.
             var staleDto = await products.Get(created.Id, TestContext.CancellationToken);
 
-            await UploadProductImage(httpClient, created.Id, SolidImage(MagickColors.Blue));
+            await UploadProductImage(httpClient, created.Id, SolidImage(TestImageFactory.Blue));
 
             staleDto.Price = 51_000M;
 
@@ -158,7 +158,7 @@ public partial class ProductImageLifecycleTests
         var httpClient = client.HttpClient;
 
         var productId = Guid.CreateSequentialGuid();
-        await UploadProductImage(httpClient, productId, SolidImage(MagickColors.Green));
+        await UploadProductImage(httpClient, productId, SolidImage(TestImageFactory.Green));
 
         var created = await products.Create(
             await NewProductDto(client, productId, $"delete-image-{Guid.NewGuid():N}"), TestContext.CancellationToken);
@@ -231,10 +231,9 @@ public partial class ProductImageLifecycleTests
     }
 
     /// <summary>A solid-colour PNG at least 512x512, which is the minimum the medium kind's resize accepts.</summary>
-    private static byte[] SolidImage(MagickColor color, uint size = 512)
+    private static byte[] SolidImage(Rgba32 color, int size = 512)
     {
-        using var image = TestImageFactory.Solid(color, size, size);
-        return image.ToByteArray(MagickFormat.Png);
+        return TestImageFactory.Solid(color, size, size);
     }
 
     private async Task UploadProductImage(HttpClient httpClient, Guid productId, byte[] imageBytes)

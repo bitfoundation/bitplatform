@@ -209,6 +209,24 @@ foreach (var c in palette) Console.WriteLine($"{c.Color.ToHex(false)} {c.Percent
 Measuring samples on a regular grid by default, which keeps a 24 megapixel photo well under a frame while staying
 indistinguishable from a full pass. Pass `maxSamples: 0` to read every pixel.
 
+Two measurements help with photographed documents and uploads:
+
+```csharp
+// The variance of the Laplacian, at a fixed analysis size: higher is sharper.
+var sharpness = ImageSharpness.Measure(photo);
+if (sharpness < minimumSharpness) return AskForAnotherPhoto();
+
+// How far the lines of a page are tilted, and how sure the estimate is.
+if (DocumentSkew.Estimate(page) is { Confidence: > 0.3 } skew)
+    pipeline = pipeline.Rotate(skew.Angle, Rgba32.White, expandCanvas: false);   // or Straighten(skew.Angle)
+```
+
+`ImageSharpness` depends on what is photographed as well as on the focus: a plain wall scores low however sharp it is.
+Set the threshold from a few good and bad examples of the images your users send. `DocumentSkew` projects the page's ink
+at candidate angles and finds where its rows of text line up, to a twentieth of a degree; `Angle` is the clockwise turn
+that levels them, and `Confidence` is about 0.9 for lines of text and below 0.3 for scattered marks. Like trimming, both
+depend on the pixels, so they are measurements whose result you record, not operations.
+
 ## Placeholders for progressive loading
 
 ```csharp

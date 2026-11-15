@@ -1,0 +1,119 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+
+@{
+    // Read once per render: the history is a snapshot the service copies on every read.
+    var history = History;
+    var unread = history.Count(item => _read.Contains(item) is false);
+    var buttonAriaLabel = GetButtonAriaLabel(unread);
+}
+
+<div @ref="RootElement" @attributes="DisabledAwareHtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
+    @* The drop menu is the popup: its button opens a dialog named by the button, kept in it by TrapFocus, which
+       Escape and a click outside close and which hands the focus back to the bell. *@
+    <BitDropMenu IsOpen="IsOpen"
+                 IsOpenChanged="HandleIsOpenChanged"
+                 AriaLabel="@buttonAriaLabel"
+                 Title="@buttonAriaLabel"
+                 Disabled="Disabled"
+                 Dir="Dir"
+                 Variant="BitVariant.Text"
+                 NoChevron
+                 TrapFocus
+                 AutoFocus
+                 Classes="_dropMenuClasses"
+                 Styles="_dropMenuStyles">
+        <Template>
+            @{
+                var icon = GetButtonIcon();
+            }
+            @if (icon is not null)
+            {
+                <i aria-hidden="true" style="@Styles?.Icon" class="bit-ntc-icn @icon.GetCssClasses() @Classes?.Icon" />
+            }
+            @* The count is in the name of the button already, so the badge is only for the eye. *@
+            @if (unread > 0)
+            {
+                <span aria-hidden="true" style="@Styles?.Badge" class="bit-ntc-bdg @Classes?.Badge">@GetBadgeText(unread)</span>
+            }
+        </Template>
+        <Body>
+            <div style="@Styles?.Panel" class="bit-ntc-pnl @Classes?.Panel">
+                <div style="@Styles?.Header" class="bit-ntc-hdr @Classes?.Header">
+                    <span style="@Styles?.HeaderText" class="bit-ntc-htx @Classes?.HeaderText">@(HeaderText ?? DefaultHeaderText)</span>
+                    @if (history.Count > 0)
+                    {
+                        <button type="button"
+                                style="@Styles?.ClearAllButton"
+                                class="bit-ntc-clr @Classes?.ClearAllButton"
+                                @onclick="ClearAll">
+                            @(ClearAllText ?? DefaultClearAllText)
+                        </button>
+                    }
+                </div>
+
+                @if (history.Count == 0)
+                {
+                    <div style="@Styles?.Empty" class="bit-ntc-emp @Classes?.Empty">
+                        @if (EmptyTemplate is not null)
+                        {
+                            @EmptyTemplate
+                        }
+                        else
+                        {
+                            @(EmptyText ?? BitStrings.Current.NoItemsFound)
+                        }
+                    </div>
+                }
+                else
+                {
+                    <ul style="@Styles?.List" class="bit-ntc-lst @Classes?.List" aria-label="@(HeaderText ?? DefaultHeaderText)">
+                        @for (var i = history.Count - 1; i >= 0; i--)
+                        {
+                            var item = history[i];
+                            var isNew = _new.Contains(item);
+
+                            <li @key="item.Id" class="@GetItemCssClass(item, isNew)" style="@GetItemStyle(isNew)">
+                                @if (ItemTemplate is not null)
+                                {
+                                    @ItemTemplate(item)
+                                }
+                                else
+                                {
+                                    var time = GetItemTime(item);
+                                    var itemIcon = GetItemIcon(item);
+
+                                    @if (itemIcon is not null)
+                                    {
+                                        <i aria-hidden="true" style="@Styles?.ItemIcon" class="bit-ntc-iic @itemIcon.GetCssClasses() @Classes?.ItemIcon" />
+                                    }
+                                    <div class="bit-ntc-itx">
+                                        <div style="@Styles?.ItemTitle" class="bit-ntc-itt @Classes?.ItemTitle">
+                                            @if (isNew)
+                                            {
+                                                <span class="bit-ntc-sro">@(UnreadItemText ?? DefaultUnreadItemText): </span>
+                                            }
+                                            @item.Title
+                                        </div>
+                                        @if (item.Body.HasValue())
+                                        {
+                                            <div style="@Styles?.ItemBody" class="bit-ntc-itb @Classes?.ItemBody">@item.Body</div>
+                                        }
+                                    </div>
+                                    @if (time is { } t)
+                                    {
+                                        <time datetime="@t.Iso" style="@Styles?.ItemTime" class="bit-ntc-tim @Classes?.ItemTime">@t.Text</time>
+                                    }
+                                }
+                            </li>
+                        }
+                    </ul>
+                }
+            </div>
+        </Body>
+    </BitDropMenu>
+</div>

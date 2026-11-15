@@ -1,0 +1,30 @@
+﻿@page "/e2e/breadcrumb/responsive"
+
+<PageTitle>BitBreadcrumb Responsive E2E</PageTitle>
+
+@* Responsive breadcrumbs: an overflow menu that is a sheet from the bottom edge on a phone (BitBreadcrumbMobileE2ETests)
+   and the callout it always is on a wider screen (BitBreadcrumbE2ETests). A page of its own with nothing on it wider
+   than a phone, since a page wider than the screen stretches the layout viewport the sheet is fixed to past the edges
+   of the screen. *@
+<h1>BitBreadcrumb (Responsive)</h1>
+
+<div style="display: flex; flex-direction: column; align-items: flex-start; gap: 12px;">
+    @* Steps 2 to 4 in the menu. *@
+    <BitBreadcrumb Id="bc-responsive" Items="_six" MaxDisplayedItems="3" OverflowIndex="1" Responsive
+                   OnItemClick="(BitBreadcrumbItem item) => Clicked(item)" />
+    <span id="clicked">@_clicked</span>
+
+    @* A menu taller than a phone's screen. *@
+    <BitBreadcrumb Id="bc-responsive-long" Items="_long" MaxDisplayedItems="2" OverflowIndex="1" Responsive />
+</div>
+
+<E2EStatus />
+
+@code {
+    private string _clicked = "none";
+
+    private readonly List<BitBreadcrumbItem> _six = Enumerable.Range(1, 6).Select(i => new BitBreadcrumbItem { Text = $"Step {i}", IsSelected = i == 6 }).ToList();
+    private readonly List<BitBreadcrumbItem> _long = Enumerable.Range(1, 32).Select(i => new BitBreadcrumbItem { Text = $"Level {i}", IsSelected = i == 32 }).ToList();
+
+    private void Clicked(BitBreadcrumbItem item) => _clicked = item.Text ?? "none";
+}

@@ -53,6 +53,139 @@ public partial class IntegrationTests
         Assert.DoesNotContain(PageUrls.Users, siteMap);
         Assert.DoesNotContain(PageUrls.Roles, siteMap);
 
+        // The anonymous pages search engines should not index (See NoIndexAttribute) are left out in every culture -
+        // the steps of a flow the app sends you to, the troubleshooting page and the error pages - while the ones
+        // people do search for stay. The first assertion keeps the loop from passing on an empty set.
+        Assert.IsTrue(PageUrls.NoIndexUrls.IsSupersetOf([PageUrls.Confirm, PageUrls.ForgotPassword, PageUrls.ResetPassword, PageUrls.OAuthConsent, PageUrls.Diagnostic, PageUrls.NotFound, PageUrls.NotAuthorized]),
+            "A page that is only a step of a flow, or a page for troubleshooting, lost its [NoIndex].");
+        foreach (var noIndexUrl in PageUrls.NoIndexUrls)
+        {
+            Assert.DoesNotContain($"{noIndexUrl}</loc>", siteMap, $"{noIndexUrl} is not for search engines, so the sitemap may not list it.");
+        }
+        Assert.Contains($"{PageUrls.SignIn}</loc>", siteMap);
+        Assert.Contains($"{PageUrls.SignUp}</loc>", siteMap);
+    }
+
+    /// <summary>
+    /// A page search engines should not index says so in its pre-rendered html, which is all a crawler reads, and in a
+    /// header too, while a page people do search for says neither. The diagnostic page is the one asserted on: before it
+    /// rendered <c>AppPageData</c> it had no title, no description and no canonical url either.
+    /// <para>
+    /// <see cref="AppTestServer"/> runs in Development, where <c>AppHead</c> adds <c>noindex, nofollow</c> to every page
+    /// and <c>UseSecurityHeaders</c> does not run, so the exact <c>content="noindex"</c> and header asserted here can
+    /// only come from <see cref="NoIndexAttribute"/>.
+    /// </para>
+    /// </summary>
+    [TestMethod, TestCategory("SEO"), TestCategory("PreRendering")]
+    public async Task Prerendering_NoIndexPage_Should_TellSearchEnginesToLeaveItOut()
+    {
+        await using var server = new AppTestServer();
+
+        await server.Build(
+            configureTestServices: services => services.FakeExternalStatistics(),
+            configureTestConfiguration: configuration => configuration["WebAppRender:PrerenderEnabled"] = "true"
+        ).Start(TestContext.CancellationToken);
+
+        // A bare HttpClient: what is asserted is what the server wrote, which is what a crawler reads.
+        using var httpClient = new HttpClient { BaseAddress = server.WebAppAddress };
+
+        using var diagnostic = await httpClient.GetAsync(PageUrls.Diagnostic, TestContext.CancellationToken);
+        diagnostic.EnsureSuccessStatusCode();
+        var diagnosticHtml = WebUtility.HtmlDecode(await diagnostic.Content.ReadAsStringAsync(TestContext.CancellationToken));
+
+        Assert.MatchesRegex(NoIndexMeta(), diagnosticHtml);
+        Assert.IsTrue(diagnostic.Headers.TryGetValues("X-Robots-Tag", out var diagnosticRobots), "The diagnostic page sent no X-Robots-Tag.");
+        Assert.AreEqual("noindex", string.Join(", ", diagnosticRobots!));
+
+        var title = AppStrings.ResourceManager.GetString(nameof(AppStrings.DiagnosticPageTitle), CultureInfo.InvariantCulture)!;
+        var description = AppStrings.ResourceManager.GetString(nameof(AppStrings.DiagnosticPageDescription), CultureInfo.InvariantCulture)!;
+        Assert.MatchesRegex(new Regex($@"<title>\s*{Regex.Escape(title)}\s*</title>"), diagnosticHtml);
+        Assert.AreEqual(description, MetaContent(diagnosticHtml, "name", "description"));
+        Assert.AreEqual(new Uri(diagnostic.RequestMessage!.RequestUri!.GetLeftPart(UriPartial.Path)).ToString(), CanonicalHref(diagnosticHtml));
+
+        using var terms = await httpClient.GetAsync(PageUrls.Terms, TestContext.CancellationToken);
+        terms.EnsureSuccessStatusCode();
+        var termsHtml = await terms.Content.ReadAsStringAsync(TestContext.CancellationToken);
+
+        Assert.DoesNotMatchRegex(NoIndexMeta(), termsHtml, "The terms page is for search engines.");
+        Assert.IsFalse(terms.Headers.Contains("X-Robots-Tag"), "The terms page is for search engines.");
+    }
+
+    /// <summary>
+    /// With pre-rendering off, which is the default, a page's own head tags only exist once its scripts have run, so
+    /// the header is what tells a crawler that does not run them to leave the page out.
+    /// </summary>
+    [TestMethod, TestCategory("SEO")]
+    public async Task NoIndexPage_Should_SayItInAHeader_WithPrerenderingOff()
+    {
+        await using var server = new AppTestServer();
+
+        await server.Build(
+            configureTestConfiguration: configuration => configuration["WebAppRender:PrerenderEnabled"] = "false"
+        ).Start(TestContext.CancellationToken);
+
+        using var httpClient = new HttpClient { BaseAddress = server.WebAppAddress };
+
+        using var forgotPassword = await httpClient.GetAsync(PageUrls.ForgotPassword, TestContext.CancellationToken);
+        forgotPassword.EnsureSuccessStatusCode();
+        Assert.IsTrue(forgotPassword.Headers.TryGetValues("X-Robots-Tag", out var robots), "The forgot password page sent no X-Robots-Tag.");
+        Assert.AreEqual("noindex", string.Join(", ", robots!));
+
+        using var signIn = await httpClient.GetAsync(PageUrls.SignIn, TestContext.CancellationToken);
+        signIn.EnsureSuccessStatusCode();
+        Assert.IsFalse(signIn.Headers.Contains("X-Robots-Tag"), "People search for the sign-in page, so it stays indexable.");
+    }
+
+    /// <summary>
+    /// What a link to a page shows where it is shared - a chat, a social network - comes from its og tags, read out of
+    /// the pre-rendered html by unfurlers that run no scripts. Every page has them from <c>AppPageData</c>, with the
+    /// app's icon as the picture unless the page has one of its own, as a product does.
+    /// </summary>
+    [TestMethod, TestCategory("SEO"), TestCategory("PreRendering")]
+    public async Task Prerendering_Page_Should_DescribeItselfForLinkPreviews()
+    {
+        await using var server = new AppTestServer();
+
+        await server.Build(
+            configureTestServices: services => services.FakeExternalStatistics(),
+            configureTestConfiguration: configuration => configuration["WebAppRender:PrerenderEnabled"] = "true"
+        ).Start(TestContext.CancellationToken);
+
+        using var httpClient = new HttpClient { BaseAddress = server.WebAppAddress };
+
+        using var response = await httpClient.GetAsync(PageUrls.Terms, TestContext.CancellationToken);
+        response.EnsureSuccessStatusCode();
+        var html = WebUtility.HtmlDecode(await response.Content.ReadAsStringAsync(TestContext.CancellationToken));
+
+        var canonicalUrl = CanonicalHref(html);
+        Assert.AreEqual(new Uri(response.RequestMessage!.RequestUri!.GetLeftPart(UriPartial.Path)).ToString(), canonicalUrl);
+
+        Assert.AreEqual(AppStrings.ResourceManager.GetString(nameof(AppStrings.TermsPageTitle), CultureInfo.InvariantCulture), MetaContent(html, "property", "og:title"));
+        Assert.AreEqual(MetaContent(html, "name", "description"), MetaContent(html, "property", "og:description"));
+        Assert.AreEqual(new Uri(server.WebAppAddress, "images/icons/bit-icon-512.png").ToString(), MetaContent(html, "property", "og:image"),
+            "og:image has to be absolute, and with no picture of its own a page shares the app's icon.");
+        Assert.AreEqual(canonicalUrl, MetaContent(html, "property", "og:url"));
+        Assert.AreEqual("website", MetaContent(html, "property", "og:type"));
+        Assert.AreEqual("summary", MetaContent(html, "name", "twitter:card"), "A square icon belongs in the small card.");
+    }
+
+    /// <summary>
+    /// Exactly <c>noindex</c>, which Development's <c>noindex, nofollow</c> is not. Razor writes a tag whose attributes are
+    /// all literal without the closing slash, so either form is accepted.
+    /// </summary>
+    [GeneratedRegex("""<meta name="robots" content="noindex"\s*/?>""", RegexOptions.IgnoreCase)]
+    private static partial Regex NoIndexMeta();
+
+    private static string? MetaContent(string html, string attribute, string name)
+    {
+        var match = Regex.Match(html, $"""<meta {attribute}="{Regex.Escape(name)}" content="(?<content>[^"]*)""", RegexOptions.IgnoreCase);
+        return match.Success ? match.Groups["content"].Value : null;
+    }
+
+    private static string? CanonicalHref(string html)
+    {
+        var match = Regex.Match(html, """<link rel="canonical" href="(?<href>[^"]*)""", RegexOptions.IgnoreCase);
+        return match.Success ? match.Groups["href"].Value : null;
     }
 
     /// <summary>

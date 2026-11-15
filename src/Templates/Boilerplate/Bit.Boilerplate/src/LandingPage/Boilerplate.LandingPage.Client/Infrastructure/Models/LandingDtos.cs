@@ -1,11 +1,5 @@
 namespace Boilerplate.LandingPage.Client.Infrastructure.Models;
 
-public sealed record LandingChatTurn(bool FromVisitor, string Text);
-
-public sealed record LandingChatAsk(string Site, string Culture, LandingChatTurn[] Turns);
-
-public sealed record LandingChatFrame(string? Delta = null, bool Done = false, string? Error = null, bool Retryable = false);
-
 public sealed record WaitlistJoinRequest
 {
     public string Site { get; init; } = string.Empty;
@@ -55,8 +49,6 @@ public sealed record StoreListing
 }
 
 [JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
-[JsonSerializable(typeof(LandingChatAsk))]
-[JsonSerializable(typeof(LandingChatFrame))]
 [JsonSerializable(typeof(WaitlistJoinRequest))]
 [JsonSerializable(typeof(WaitlistJoinResult))]
 [JsonSerializable(typeof(WaitlistTokenRequest))]

@@ -6,7 +6,7 @@ The AI chat panel has a phone button. This document follows one call from that t
 
 | Who | Where | What it does |
 |---|---|---|
-| **The client** | `AppAiChatPanel.razor.Voice.cs` (browser or hybrid WebView) | Opens the microphone, sends a WebRTC offer, plays the model's voice and shows the transcript. |
+| **The client** | `AppAiChat.razor.Voice.cs` (browser or hybrid WebView) | Opens the microphone, sends a WebRTC offer, plays the model's voice and shows the transcript. |
 | **The controller** | `ChatbotController.StartVoiceCall` | Checks the caller and builds the instructions. |
 | **The runner** | `VoiceCallRunner` (singleton) | Creates the call, stays on it, runs tools and always hangs up. |
 | **The provider client** | `OpenAIRealtimeCallClient` | Makes the three HTTP/WebSocket requests to OpenAI. |

@@ -38,4 +38,31 @@ public sealed record BonboardingStepGeometry
     /// of being waited on. <see langword="null"/> when every selector is valid.
     /// </summary>
     public string? InvalidSelector { get; init; }
+
+    /// <summary>
+    /// Why the target was not found, when <see cref="Found"/> is false and the step has a target: <c>"not-found"</c>,
+    /// <c>"hidden"</c> or <c>"invalid-selector"</c>. <see langword="null"/> otherwise, and from a browser layer that does
+    /// not say. Read it as <see cref="Issue"/>.
+    /// </summary>
+    public string? TargetIssue { get; init; }
+
+    /// <summary>
+    /// <see cref="TargetIssue"/> as an enum: <see cref="BonboardingTargetIssue.None"/> when the target was found,
+    /// <see cref="BonboardingTargetIssue.InvalidSelector"/> when <see cref="InvalidSelector"/> is set, and
+    /// <see cref="BonboardingTargetIssue.NotFound"/> for a reason the browser layer did not give.
+    /// </summary>
+    public BonboardingTargetIssue Issue => Found ? BonboardingTargetIssue.None
+        : InvalidSelector is not null ? BonboardingTargetIssue.InvalidSelector
+        : BonboardingStepGeometryIssues.Parse(TargetIssue);
+}
+
+internal static class BonboardingStepGeometryIssues
+{
+    public static BonboardingTargetIssue Parse(string? issue) => issue switch
+    {
+        null or "" or "none" => BonboardingTargetIssue.NotFound,
+        "hidden" => BonboardingTargetIssue.Hidden,
+        "invalid-selector" => BonboardingTargetIssue.InvalidSelector,
+        _ => BonboardingTargetIssue.NotFound,
+    };
 }

@@ -11,7 +11,7 @@ namespace Bit.BlazorUI;
 /// typing aids, their size and their look. The value and its events, the label, the description, the validation state
 /// and the auto-focus are left out on purpose: they are what makes one editor the one it is.
 /// </remarks>
-public class BitRichTextEditorParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitRichTextEditorParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitRichTextEditor"/> cascading parameters within <see cref="BitParams"/>.
@@ -150,6 +150,13 @@ public class BitRichTextEditorParams : BitComponentBaseParams, IBitComponentPara
     /// Whether the formatting toolbar is shown.
     /// </summary>
     public bool? ShowToolbar { get; set; }
+
+    /// <summary>
+    /// Shows the messages the cascading EditContext holds for the bound field under the editor, where the
+    /// <c>ErrorMessage</c> of the editor goes, so an <c>EditForm</c> needs no <c>ValidationMessage</c> component beside
+    /// it. An error message of the app's own wins the place while it is set.
+    /// </summary>
+    public bool? ShowValidationMessage { get; set; }
 
     /// <summary>
     /// Replaces common text patterns with their typographic characters as they are typed.
@@ -313,6 +320,11 @@ public class BitRichTextEditorParams : BitComponentBaseParams, IBitComponentPara
         if (ShowToolbar.HasValue)
         {
             bitRichTextEditor.TakeFromCascade(nameof(ShowToolbar), ShowToolbar.Value, static r => r.ShowToolbar, static (r, v) => r.ShowToolbar = v);
+        }
+
+        if (ShowValidationMessage.HasValue)
+        {
+            bitRichTextEditor.TakeFromCascade(nameof(ShowValidationMessage), ShowValidationMessage.Value, static r => r.ShowValidationMessage, static (r, v) => r.ShowValidationMessage = v);
         }
 
         if (SmartTypography.HasValue)

@@ -1,0 +1,15 @@
+@inherits WorkbenchComponentBase
+
+@if (CultureInfoManager.InvariantGlobalization is false)
+{
+    <BitMenuButton TItem="BitMenuButtonItem"
+                   IconOnly
+                   Size="Size"
+                   Variant="BitVariant.Text"
+                   IconName="@BitIconName.LocaleLanguage"
+                   Title="@Localizer[nameof(WorkbenchStrings.WorkbenchLanguage)]"
+                   AriaLabel="@Localizer[nameof(WorkbenchStrings.WorkbenchLanguage)]"
+                   Items="items"
+                   Styles="styles"
+                   OnClick="SetCulture" />
+}

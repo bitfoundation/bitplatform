@@ -256,10 +256,13 @@ Vary: Origin, X-Origin
 - `X-Origin` - the header a Blazor Hybrid / standalone WASM client sends to tell the backend which web app url it is
   running under (See `HttpRequestExtensions.GetWebAppUrl`), which can end up embedded in the response.
 
-> **A CDN may ignore `Vary`.** Cloudflare does not consider it in caching decisions unless the header is
-> `Accept-Encoding`, or a **Cache Rules → Vary** setting naming `origin` / `x-origin` has been configured on the zone.
-> Without that rule the edge keeps a single variant per URL and hands it to callers of every origin. Configure it before
-> turning `EnableCdnEdgeCaching` on.
+> **A CDN may ignore `Vary`.** Cloudflare keys every cached response on the request's `Origin` by itself, but considers
+> the rest of `Vary` only when the zone has a **Cache Rules → Vary** setting. Give it `accept-encoding` and `x-origin` on
+> **Normalize values**, and **Normalize values** as its default too. Leave `origin` out: Cloudflare refuses it there,
+> and it is in the cache key already. Don't make **Bypass caching** the default: a response whose `Vary` names a header
+> the setting doesn't list is then never cached, and the static files' `Vary: Content-Encoding` and the app's
+> `Vary: Origin` are such headers. Without the setting the edge keeps a single variant per URL and hands it to callers
+> of every `X-Origin`. Configure it before turning `EnableCdnEdgeCaching` on.
 
 **Important Security Note:**
 

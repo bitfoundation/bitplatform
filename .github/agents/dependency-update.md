@@ -41,6 +41,7 @@ Work the surfaces in this order. Each is independent; batch the network lookups.
 4. devcontainers (`.devcontainer/`, `src/Templates/Boilerplate/Bit.Boilerplate/.devcontainer/`)
 5. `dnx <package>@<version>` calls in workflows and docs (`vpk`, `dotnet-ef`), `global.json` (3 files)
 6. Container image tags in the Aspire AppHost
+7. Tools the bit CLI downloads itself (`src/Toolings/Cli/Bit.Cli/Tools/`)
 
 ## The hold-back rules
 
@@ -79,9 +80,12 @@ The rule keys on the `.0` in a *shipped library*. A TFM-conditioned pin at a con
 consumes a test project, so every band takes the newest patch of its own band. Likewise a lone
 `10.0.0` sitting among `10.0.11` siblings in `Directory.Packages.props` is staleness, not intent.
 
-**Version ranges stay.** `[10.0.0,11.0.0)` is a compatibility contract, not a pin.
+**Version ranges stay.** `[10.0.0,11.0.0)` is a compatibility contract, not a pin. Its lower bound is the band's
+floor, so once a new major ships, a range that starts at its preview or release candidate moves to its `.0`: a dotted
+prerelease bound also makes nuget.org list the package as SemVer 2.0.0, which older clients' searches leave out. An
+EF Core range is the exception, see the EF Core rule below.
 
-**`Bit.*` self-references track the in-development version**, currently `11.0.0-pre-17`. Never read
+**`Bit.*` self-references track the in-development version**, currently `11.0.0-pre-20`. Never read
 these off nuget.org — the published `latest` is behind the working tree by design, and unrelated
 higher-numbered lines exist there.
 
@@ -103,16 +107,22 @@ gh api "repos/<owner>/<repo>/git/trees/<sha>?recursive=1" --jq '[.tree[]|select(
 A non-zero count on a JavaScript action that vendors `node_modules` means it will not stage. This is
 worth checking for *any* action bump, not just this one — it is invisible in the release notes.
 
-**MAUI's resizetizer breaks on SVG filters.** MAUI 10.0.101 to 10.0.110 and 11.0.0-rc.2 bundle an `Svg.Skia` that
+**MAUI's resizetizer breaks on SVG filters.** MAUI 10.0.101 to 10.0.110 and 11.0.0-rc.2 to 11.0.0 bundle an `Svg.Skia` that
 calls a SkiaSharp overload missing from the SkiaSharp next to it, so any SVG it resizes that has a `<filter>` fails
 the build with `MAUIR0001` / `MissingMethodException: SKImageFilter.CreateMatrixConvolution`
-([dotnet/maui#38319](https://github.com/dotnet/maui/issues/38319)). 10.0.120 fixed it for .NET 10, which a .NET 10
-Boilerplate project uses. For .NET 11, MAUI can't stay behind: a MAUI built for an
+([dotnet/maui#38319](https://github.com/dotnet/maui/issues/38319)). 10.0.120 and 11.0.10 fixed it, and the app icons
+of the Boilerplate and the BlazorUI demo have a drop shadow (their `<filter>`), so MAUI never goes below those.
+Before a major ships, MAUI can't stay behind: a MAUI built for an
 older preview doesn't compile against the newer preview's Android workload (CS1705 on `Java.Interop`). So MAUI
 follows the MAUI manifest of the SDK's newest workload set (`Microsoft.NET.Workloads.<band>` on NuGet), which
 can stay on the previous release candidate when a new one ships, together with Android and iOS; then MAUI stays
-too. The app icons of the Boilerplate and the BlazorUI demo carry no drop shadow (their
-`<filter>`) until a .NET 11 MAUI builds an app with the Boilerplate's `appicon.svg` as its icon.
+too. A service release of a shipped major doesn't wait for a set that names it when its `Microsoft.Maui.Core`
+references the same `Java.Interop` and `Microsoft.iOS` versions as the one before it. The SDK waits for MAUI the same way: on the day a major ships, MAUI and the first workload set of the new band
+can come hours or days after the SDK, and until that workload set is on NuGet a GA SDK's `dotnet workload restore`
+installs the stale preview workloads bundled in the SDK. The set itself can appear before the packs it names, so
+check that each manifest and pack it points at downloads too. A feature band's patch SDK waits for its own workload
+set the same way: SDK 10.0.404 without one left `wasm-tools` unusable (NETSDK1147). So the SDK, the major's `.0` packages and the `global.json` files move together once it is
+out.
 
 **bit Boilerplate builds for .NET 10 and .NET 11.** Its `framework` option picks one; the template's own tree is
 the .NET 11 project. In its `Directory.Packages.props`, a package whose 11.x build has no `net10.0` assets has a
@@ -122,8 +132,12 @@ version in each of the two framework groups at the end of the file: the 11.x one
 the one `Microsoft.Extensions.Telemetry.Abstractions` turns the framework's logging generator off with, depending
 on import order, and the build fails with CS0757. So do the `CommunityToolkit.Datasync.*` packages: from 10.2.0 the
 client brings SQLitePCLRaw 3, while `Bit.Bsqlite` for .NET 10 asks for 2.x and the restore fails with NU1107, so the
-.NET 10 group keeps the newest Datasync that still brings 2.x. Every other package takes one version for both. The few literals that differ per framework are switch
-symbols in `template.json` (the SDK and its `rollForward`, the dev container image, the `dotnet-ef` version, the
+.NET 10 group keeps the newest Datasync that still brings 2.x. Every other package takes one version for both.
+Outside the Boilerplate, a project that targets only .NET 10 keeps every package built with .NET on its .NET 10
+line the same way: `Microsoft.Extensions.*` (the AI ones too), `Microsoft.AspNetCore.*`, `System.*` and
+`System.CommandLine`, whose 2.0.x ships with .NET 10 and 3.x with .NET 11. A .NET 11 project takes their new
+major. The few literals that differ per framework are switch
+symbols in `template.json` (the SDK, the dev container image, the `dotnet-ef` version, the
 runner image), so they move together with the files they replace. A template line written with the .NET 10 value
 of such a literal is one no symbol maps, so look for the .NET 10 values in the template's files and give them the
 .NET 11 one.
@@ -265,9 +279,10 @@ major changed.
 Feature *options* take a major too, never `latest` — `"helm": "3"`, not `"helm": "latest"`. The
 install scripts resolve a partial version through `find_version_from_git_tags`.
 
-The `image` follows the newest .NET SDK: `curl -s
-https://builds.dotnet.microsoft.com/dotnet/release-metadata/10.0/releases.json` → `.latest-sdk`. Both
-devcontainers must agree.
+The `image` follows the newest SDK of the major `src/global.json` uses: `curl -s
+https://builds.dotnet.microsoft.com/dotnet/release-metadata/<major>.0/releases.json` → `.latest-sdk`. Both
+devcontainers must agree, and `template.json`'s .NET 10 image takes the newest 10.0 SDK. MCR publishes an SDK's image
+hours after the SDK itself, so ask `https://mcr.microsoft.com/v2/dotnet/sdk/manifests/<tag>` before moving to it.
 
 ### dnx tool versions and global.json
 
@@ -281,10 +296,11 @@ EF Core package version of the project it runs on: the .NET 11 one in the templa
 `Microsoft.Playwright.MSTest.v4`: a remote Playwright server of any other version refuses the client, and
 every test that runs on it fails at connect.
 
-`src/global.json` is `rollForward: disable` and tracks the newest SDK. While .NET 11 is a release
-candidate, the two template `global.json` files pin the same RC SDK, also `rollForward: disable`, and
-move with it. Once .NET 11 ships they go back to `11.0.100` + `latestFeature`, so they accept any
-11.0.x on a consumer's machine. A .NET 10 project gets `10.0.100` + `latestFeature` from `template.json`.
+`src/global.json` is `rollForward: disable` and tracks the newest SDK. The two template `global.json` files pin
+`11.0.100` + `latestFeature`, so they accept any 11.0.x on a consumer's machine, and a .NET 10 project gets
+`10.0.100` + `latestFeature` from `template.json`. While the next major is a preview or release candidate, the
+template files pin the same SDK as `src/global.json`, also `rollForward: disable`, with a `template.json` switch
+for the `rollForward` too, and go back to `<major>.0.100` + `latestFeature` once it ships.
 
 ### Container images
 
@@ -304,6 +320,16 @@ current one; compare the registry's `last_updated` against the project's newest 
 curl -s "https://hub.docker.com/v2/repositories/<repo>/tags?page_size=3&ordering=last_updated" \
   | tr '{' '\n' | grep -oE '"name":"[^"]*"|"last_updated":"[^"]*"'
 ```
+
+### Tools the bit CLI downloads
+
+`Oasdiff.cs` pins oasdiff's version together with the SHA-256 of every archive `bit api` downloads, and the CLI
+refuses an archive whose hash differs. So a new version takes new hashes too, each from the `checksums.txt` of that
+release: a version moved without them fails `bit api` on every machine. Read its release notes for renamed or removed
+rule ids as well: `ApiCompatibility.SeverityLevels` names one, and oasdiff refuses an id it doesn't know. The CLI's
+tests run a stand-in for oasdiff, so try the real one: with the CLI built from the branch, run `bit api release` and
+then `bit api check` in a project generated from the template, which downloads the archive, checks its hash and
+compares.
 
 ## The report
 
@@ -356,19 +382,24 @@ Finish every sweep with an issue, a PR and a full CI run. `upstream` is `bitfoun
 4. PR from `<fork-owner>:<n>` into `upstream/develop`, title `Update project dependencies (#<n>)`.
    The body starts with `closes #<n>` and carries the report: Changed, Breaking or important,
    Held back, Missed / drifted, Not verified.
-5. Run `all.ci.yml` and `all.ci.utilities.yml` on the fork against the branch and give both URLs
-   with the PR link:
+5. Run All Other CI (`all.other.ci.yml`), All Toolings CI (`all.toolings.ci.yml`), All Utilities CI
+   (`all.utilities.ci.yml`) and CI Templates E2E (`ci.templates.e2e.yml`, the Boilerplate's tests against each database)
+   on the fork against the branch and give the four URLs with the PR link. All CI is split by folder now, so no one run
+   covers every project:
 
    ```bash
-   gh workflow run all.ci.yml --repo <fork-owner>/bitplatform --ref <n>
-   gh workflow run all.ci.utilities.yml --repo <fork-owner>/bitplatform --ref <n>
-   gh run list --repo <fork-owner>/bitplatform --workflow all.ci.yml --branch <n> --limit 1 --json url --jq '.[0].url'
-   gh run list --repo <fork-owner>/bitplatform --workflow all.ci.utilities.yml --branch <n> --limit 1 --json url --jq '.[0].url'
+   for w in all.other.ci.yml all.toolings.ci.yml all.utilities.ci.yml ci.templates.e2e.yml; do
+     gh workflow run $w --repo <fork-owner>/bitplatform --ref <n>
+   done
+   for w in all.other.ci.yml all.toolings.ci.yml all.utilities.ci.yml ci.templates.e2e.yml; do
+     gh run list --repo <fork-owner>/bitplatform --workflow $w --branch <n> --limit 1 --json url --jq '.[0].url'
+   done
    ```
 
    A red job goes into the PR as a comment, with the failing step and its first error line.
-6. CodeRabbit reviews the PR a few minutes after it opens, and again after every push, so come back to the PR
-   once its review is in. Check each of its comments against the code: fix the ones that hold in the same branch,
+6. CodeRabbit reviews the PR a few minutes after it opens, so come back to the PR once its review is in. It skips
+   later pushes when incremental reviews are off ("Review skipped"), so after the last push comment
+   `@coderabbitai review` and come back for that review too. Check each of its comments against the code: fix the ones that hold in the same branch,
    and answer every other thread with the reason it stays. Its pre-merge checks can't see the lock files it skips,
    so an "inconclusive" that only asks for them needs no answer.
 7. Clean up at once, without asking: `git restore` the pushed files in the original checkout (after

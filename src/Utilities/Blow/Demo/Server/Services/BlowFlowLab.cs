@@ -226,6 +226,8 @@ public static class BlowFlowLab
 
             if (hasViewport) CheckViewport(snapshot.Viewport, notes);
 
+            report = report with { Execution = Execution(nodes, edges, notes) };
+
             notes.AddRange(readingNotes);
 
             // ---- Lay it out, when asked ---------------------------------------------
@@ -244,6 +246,59 @@ public static class BlowFlowLab
             return report with { Notes = [.. notes] };
         }
     }
+
+    // ---- Running it ----------------------------------------------------------------
+
+    /// <summary>
+    /// What BlowRunner and the default validator make of the flow. Parents are frames, not steps, so they are left out
+    /// of the run as an application would leave them out with BlowRunRequest.Include.
+    /// </summary>
+    private static BlowFlowExecutionDto Execution(List<BlowNode> nodes, List<BlowEdge> edges, List<string> notes)
+    {
+        var parents = nodes.Where(n => n.ParentId is not null).Select(n => n.ParentId!).ToHashSet(StringComparer.Ordinal);
+        var steps = nodes.Where(n => !parents.Contains(n.Id)).ToList();
+        var request = new BlowRunRequest { Include = n => !parents.Contains(n.Id) };
+        var runner = new BlowRunner(new BlowRunnerOptions { MissingHandler = BlowMissingHandlerBehavior.PassThrough });
+        var refusals = runner.Check(nodes, edges, request);
+
+        var graph = new BlowGraphIndex(steps, edges);
+        var order = BlowGraphAlgorithms.TopologicalSort(graph);
+
+        // Longest path in nodes: a node's stage is one past the latest stage of what it waits for.
+        var stage = new Dictionary<string, int>(StringComparer.Ordinal);
+        foreach (var node in order.Order)
+        {
+            stage[node.Id] = graph.Incoming(node.Id).Select(e => stage.GetValueOrDefault(e.Source)).DefaultIfEmpty(0).Max() + 1;
+        }
+
+        var validation = BlowGraphValidator.CreateDefault().Validate(nodes, edges);
+        if (refusals.Count > 0)
+        {
+            notes.Add("BlowRunner refuses to run this flow as it is: " + refusals[0].Message +
+                      " A loop is a node that runs a graph of its own (BlowNodeRunContext.RunSubgraphAsync) rather than an edge back.");
+        }
+
+        return new BlowFlowExecutionDto
+        {
+            Runnable = refusals.Count == 0,
+            Refusals = [.. refusals.Take(MaxListed).Select(Issue)],
+            Order = [.. order.Order.Take(50).Select(n => n.Id)],
+            Stages = stage.Count == 0 ? 0 : stage.Values.Max(),
+            WidestStage = stage.Count == 0 ? 0 : stage.Values.GroupBy(s => s).Max(g => g.Count()),
+            Roots = [.. BlowGraphAlgorithms.GetRoots(graph).Take(50).Select(n => n.Id)],
+            Leaves = [.. BlowGraphAlgorithms.GetLeaves(graph).Take(50).Select(n => n.Id)],
+            Validation = [.. validation.Issues.Take(50).Select(Issue)],
+        };
+    }
+
+    private static BlowFlowIssueDto Issue(BlowValidationIssue issue) => new()
+    {
+        Code = issue.Code,
+        Severity = issue.Severity.ToString(),
+        NodeId = issue.NodeId,
+        EdgeId = issue.EdgeId,
+        Message = issue.Message,
+    };
 
     private static BlowFlowReportDto Invalid(int inputBytes, string error, string? note = null) => new()
     {

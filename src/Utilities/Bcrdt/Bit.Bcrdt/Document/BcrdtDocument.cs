@@ -21,6 +21,28 @@ public sealed class BcrdtDocumentOptions
     /// Turning it off makes documents grow without bound in the presence of deletions.
     /// </remarks>
     public bool GarbageCollect { get; init; } = true;
+
+    /// <summary>The default for <see cref="MaxPendingSize"/>: 32 MiB.</summary>
+    public const long DefaultMaxPendingSize = 32L * 1024 * 1024;
+
+    /// <summary>
+    /// Roughly how many bytes of received changes the document holds while they wait for something
+    /// they build on, before it discards them. Zero or less removes the bound.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// A change that builds on content the replica has not received yet cannot be placed, so it is
+    /// kept until that content arrives (<see cref="BcrdtDocument.HasPendingUpdates"/>). Without a bound
+    /// a peer could grow a replica's memory without limit just by sending such changes on purpose.
+    /// </para>
+    /// <para>
+    /// Discarding them loses nothing for good: nothing in them was applied, so the document's state
+    /// vector still says it lacks them, and the next handshake brings them - and the deletions that were
+    /// waiting with them - back. <see cref="BcrdtDocument.PendingUpdatesDiscarded"/> reports it, and a
+    /// <see cref="BcrdtSyncProvider"/> answers it with that handshake.
+    /// </para>
+    /// </remarks>
+    public long MaxPendingSize { get; init; } = DefaultMaxPendingSize;
 }
 
 /// <summary>Carries an update produced by a committed transaction.</summary>
@@ -62,6 +84,7 @@ public sealed class BcrdtDocument : IDisposable
         Id = options.Id ?? Guid.NewGuid().ToString("N");
         ClientId = options.ClientId ?? options.ClientIdProvider.CreateClientId();
         GarbageCollect = options.GarbageCollect;
+        MaxPendingSize = options.MaxPendingSize;
     }
 
     /// <summary>Creates a document with an application-level identifier.</summary>
@@ -111,6 +134,48 @@ public sealed class BcrdtDocument : IDisposable
     public bool HasPendingUpdates => Store.PendingUpdate is not null || Store.PendingDeleteSet is not null;
 
     /// <summary>
+    /// Roughly how many bytes of received changes may wait for their dependencies before they are
+    /// discarded. See <see cref="BcrdtDocumentOptions.MaxPendingSize"/>.
+    /// </summary>
+    public long MaxPendingSize { get; set; }
+
+    /// <summary>How many times this document has discarded waiting changes for outgrowing <see cref="MaxPendingSize"/>.</summary>
+    public long PendingDiscards { get; private set; }
+
+    /// <summary>
+    /// Raised when the changes waiting for their dependencies outgrew <see cref="MaxPendingSize"/> and
+    /// were discarded. The document is missing them until a handshake brings them back.
+    /// </summary>
+    /// <remarks>Raised once the update that crossed the bound has been applied.</remarks>
+    public event Action<BcrdtDocument>? PendingUpdatesDiscarded;
+
+    /// <summary>
+    /// Discards what is waiting for its dependencies if it has outgrown the bound.
+    /// </summary>
+    /// <returns>Whether anything was discarded.</returns>
+    internal bool TrimPending()
+    {
+        if (MaxPendingSize <= 0 || !HasPendingUpdates) return false;
+
+        // Each range costs at most two ten-byte varints on the wire, plus its share of a client header.
+        long size = Store.PendingUpdate?.LongLength ?? 0;
+        if (Store.PendingDeleteSet is { } deletions)
+        {
+            foreach ((_, List<BcrdtDeleteRange> ranges) in deletions.Clients) size += 10 + 20L * ranges.Count;
+        }
+        if (size <= MaxPendingSize) return false;
+
+        Store.PendingUpdate = null;
+        Store.PendingMissing = null;
+        Store.PendingDeleteSet = null;
+        PendingDiscards++;
+        BcrdtDiagnostics.PendingDiscards.Add(1);
+        return true;
+    }
+
+    internal void OnPendingDiscarded() => PendingUpdatesDiscarded?.Invoke(this);
+
+    /// <summary>
     /// Whether a transaction is open or still being settled, so that a change made now would not
     /// settle - and raise its events - before the call making it returns.
     /// </summary>
@@ -154,6 +219,13 @@ public sealed class BcrdtDocument : IDisposable
 
     /// <summary>The set registered under a root name, created if absent.</summary>
     public BcrdtSet GetSet(string name = "") => GetRoot<BcrdtSet>(name);
+
+    /// <summary>The counter registered under a root name, created if absent.</summary>
+    public BcrdtCounter GetCounter(string name = "") => GetRoot<BcrdtCounter>(name);
+
+    /// <summary>The XML fragment registered under a root name, created if absent.</summary>
+    /// <remarks>The root of a collaborative tree, for a structured editor's document.</remarks>
+    public BcrdtXmlFragment GetXmlFragment(string name = "") => GetRoot<BcrdtXmlFragment>(name);
 
     /// <summary>
     /// The root type registered under a name, created as <typeparamref name="T"/> if absent.
@@ -676,6 +748,7 @@ public sealed class BcrdtDocument : IDisposable
         BeforeTransaction = null;
         AfterTransaction = null;
         Settled = null;
+        PendingUpdatesDiscarded = null;
         Destroyed = null;
     }
 }

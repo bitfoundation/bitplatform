@@ -41,7 +41,7 @@
     <div class="example-desc">
         <code>IsLoading</code> veils the plot with a spinner and <code>LoadingLabel</code> (or your
         <code>LoadingTemplate</code>), marks the chart <code>aria-busy</code> and holds back the empty state.
-        With nothing to draw, the chart shows <code>NoDataText</code> or your <code>NoDataTemplate</code> instead
+        With nothing to draw, the chart shows <code>EmptyText</code> or your <code>EmptyTemplate</code> instead
         of bare axes.
     </div>
     <div class="buttons-container">
@@ -54,7 +54,7 @@
                       Data="EmptyDemoData()"
                       IsLoading="_loading"
                       LoadingLabel="Fetching revenue..."
-                      NoDataText="No results for this filter" />
+                      EmptyText="No results for this filter" />
         </div>
     </div>
 </DemoExample>

@@ -163,8 +163,9 @@ public sealed class BcrdtArray : BcrdtAbstractType, IEnumerable<object?>
     /// </param>
     /// <remarks>
     /// Implemented as remove-then-insert, which means two clients moving the same element
-    /// concurrently can produce two copies of it. A move that must be conflict-free needs a
-    /// dedicated move operation; this method is the pragmatic choice for lists where that race is
+    /// concurrently can produce two copies of it. A list whose items several people reorder - a task
+    /// board, say - belongs in a <see cref="BcrdtOrderedCollection"/>, which moves an item by rewriting
+    /// its order key instead; this method is the pragmatic choice for lists where that race is
     /// acceptable, such as a single user reordering their own items. A nested type is moved by
     /// inserting a <see cref="BcrdtAbstractType.Clone"/> of it, because removing the original removes
     /// everything inside it.

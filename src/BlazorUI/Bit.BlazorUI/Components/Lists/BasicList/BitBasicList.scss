@@ -7,6 +7,8 @@
 //   --bit-BasicList-disabled-color                 text of the LoadMore button when disabled       (default: $clr-fg-dis)
 //   --bit-BasicList-loading-padding                padding of the loading content                  (default: spacing(2))
 //   --bit-BasicList-loading-color                  text of the default loading content             (default: $clr-fg-sec)
+//   --bit-BasicList-empty-padding                  padding of what an empty list shows             (default: spacing(2))
+//   --bit-BasicList-empty-color                    text of what an empty list shows                (default: $clr-fg-sec)
 //   --bit-BasicList-spinner-color                  moving arc of the default spinners              (default: $clr-pri)
 //   --bit-BasicList-spinner-size                   size of the default spinners                    (default: $siz-icon-md)
 //   --bit-BasicList-load-more-padding              padding of the default LoadMore button          (default: spacing(2))
@@ -259,4 +261,11 @@ button.bit-bsl-lmb {
     button.bit-bsl-lmb:disabled {
         color: GrayText;
     }
+}
+
+// What a list with no item to show says, in the quieter color of a hint. An EmptyTemplate is drawn inside it as written.
+.bit-bsl-emp {
+    box-sizing: border-box;
+    color: var(--bit-BasicList-empty-color, #{$clr-fg-sec});
+    padding: var(--bit-BasicList-empty-padding, #{spacing(2)});
 }

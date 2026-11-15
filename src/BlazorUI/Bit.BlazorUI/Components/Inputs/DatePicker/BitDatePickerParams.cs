@@ -6,7 +6,7 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// The parameters for <see cref="BitDatePicker"/> component.
 /// </summary>
-public class BitDatePickerParams : BitInputBaseParams<DateTimeOffset?>, IBitComponentParams
+public partial class BitDatePickerParams : BitInputBaseParams<DateTimeOffset?>, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitDatePicker"/> cascading parameters within <see cref="BitParams"/>.
@@ -654,6 +654,12 @@ public class BitDatePickerParams : BitInputBaseParams<DateTimeOffset?>, IBitComp
     /// The title of the ShowTimePicker button (tooltip).
     /// </summary>
     public string? ShowTimePickerTitle { get; set; }
+
+    /// <summary>
+    /// Shows the messages the cascading EditContext holds for the bound field under the DatePicker, where its
+    /// ErrorMessage goes, so the fields of an <c>EditForm</c> need no <c>ValidationMessage</c> component beside them.
+    /// </summary>
+    public bool? ShowValidationMessage { get; set; }
 
     /// <summary>
     /// Whether the week number (weeks 1 to 53) should be shown before each week row.
@@ -1416,6 +1422,11 @@ public class BitDatePickerParams : BitInputBaseParams<DateTimeOffset?>, IBitComp
         if (ShowTimePickerTitle.HasValue())
         {
             bitDatePicker.TakeFromCascade(nameof(ShowTimePickerTitle), ShowTimePickerTitle!, static d => d.ShowTimePickerTitle, static (d, v) => d.ShowTimePickerTitle = v);
+        }
+
+        if (ShowValidationMessage.HasValue)
+        {
+            bitDatePicker.TakeFromCascade(nameof(ShowValidationMessage), ShowValidationMessage.Value, static d => d.ShowValidationMessage, static (d, v) => d.ShowValidationMessage = v);
         }
 
         if (ShowWeekNumbers.HasValue)

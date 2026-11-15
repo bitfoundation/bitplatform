@@ -40,7 +40,7 @@ npm install
 npm run-script build:production
 ```
 
-We're running the above script in [pre-release](https://github.com/bitfoundation/bitplatform/blob/develop/.github/workflows/prerelease.nuget.org.yml) and [release ](https://github.com/bitfoundation/bitplatform/blob/develop/.github/workflows/nuget.org.yml)nuget packages pipelines so you can use these assets published in [nuget.org](https://www.nuget.org/packages/Bit.BlazorES2019/)
+We're running the above script in [pre-release](https://github.com/bitfoundation/bitplatform/blob/develop/.github/workflows/cd.prerelease.nuget.packages.yml) and [release ](https://github.com/bitfoundation/bitplatform/blob/develop/.github/workflows/cd.nuget.packages.yml)nuget packages pipelines so you can use these assets published in [nuget.org](https://www.nuget.org/packages/Bit.BlazorES2019/)
 
 To ensure compatibility with older browsers in Blazor WebAssembly, add the following configuration to your client web project:
 

@@ -49,7 +49,7 @@
 
 <E2ESection Id="search" Title="Search box">
     <BitTimeZonePicker Id="tzp-search" TValue="string" Placeholder="Select a time zone" SearchBoxPlaceholder="City, country or offset"
-                       NoResultsMessage="No matching time zone" ReferenceDate="_januaryFirst" @bind-Value="_searchId" />
+                       NoResultsText="No matching time zone" ReferenceDate="_januaryFirst" @bind-Value="_searchId" />
     <span id="search-value">@(_searchId ?? "null")</span>
     <BitTimeZonePicker Id="tzp-nosearch" TValue="string" NoSearchBox Placeholder="Select a time zone" @bind-Value="_noSearchId" />
     <span id="nosearch-value">@(_noSearchId ?? "null")</span>
@@ -170,7 +170,7 @@
 
 <E2ESection Id="localization" Title="Localization">
     <BitTimeZonePicker Id="tzp-german" TValue="string" TimeZones="_germanTimeZones" Placeholder="Zeitzone wählen"
-                       SearchBoxPlaceholder="Suchen" SearchBoxAriaLabel="Zeitzone suchen" NoResultsMessage="Keine Zeitzone gefunden"
+                       SearchBoxPlaceholder="Suchen" SearchBoxAriaLabel="Zeitzone suchen" NoResultsText="Keine Zeitzone gefunden"
                        SearchResultsAnnouncement="@(count => count == 1 ? "1 Zeitzone gefunden" : $"{count} Zeitzonen gefunden")" />
 </E2ESection>
 

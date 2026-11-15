@@ -6,6 +6,7 @@ using Boilerplate.Server.Api;
 //#else
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Boilerplate.Shared.Features.Diagnostic;
 //#if (redis == true)
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
@@ -69,7 +70,7 @@ public static partial class Program
             healthChecksBuilder.AddUrlGroup(serverApiAliveUrl,
                 name: "serverApi",
                 failureStatus: Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus.Degraded,
-                tags: [],
+                tags: [HealthCheckCategories.Platform],
                 timeout: TimeSpan.FromSeconds(5));
         }
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>

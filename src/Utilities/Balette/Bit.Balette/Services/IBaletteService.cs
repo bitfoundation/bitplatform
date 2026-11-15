@@ -67,6 +67,8 @@ public interface IBaletteService
     /// markup or passed to its <c>Commands</c> parameter. A command that needs the palette (a page, a confirmation, a
     /// prompt) opens it. Throws <see cref="KeyNotFoundException"/> for an unknown id, and rethrows what the handler
     /// throws unless a <see cref="CommandFailed"/> subscriber set <see cref="BaletteCommandErrorEventArgs.Handled"/>.
+    /// Guards (<see cref="IBaletteCommandGuard"/>) are asked first: a refused command does not run, and
+    /// <see cref="CommandRefused"/> reports it.
     /// </summary>
     Task ExecuteAsync(string commandId);
 
@@ -88,6 +90,16 @@ public interface IBaletteService
     /// <see cref="BaletteCommandErrorEventArgs.Handled"/> to say it reported the error itself.
     /// </summary>
     event EventHandler<BaletteCommandErrorEventArgs>? CommandFailed;
+
+    /// <summary>
+    /// Fired when a guard refused a command (see <see cref="IBaletteCommandGuard"/>) - for an audit log, or to explain the
+    /// refusal somewhere other than the palette, which is closed when a refused shortcut or <see cref="ExecuteAsync"/> runs.
+    /// </summary>
+    event EventHandler<BaletteCommandRefusedEventArgs>? CommandRefused
+    {
+        add { }
+        remove { }
+    }
 
     /// <summary>
     /// Raised once the palette has detected the browser's platform, so UI that renders shortcut hints from

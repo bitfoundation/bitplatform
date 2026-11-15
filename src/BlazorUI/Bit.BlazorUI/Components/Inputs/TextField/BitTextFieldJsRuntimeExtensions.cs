@@ -42,6 +42,16 @@ internal static class BitTextFieldJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.TextField.setSelectionRange", input, start, end);
     }
 
+    internal static ValueTask BitTextFieldSetMaskedValue(this IJSRuntime jsRuntime, ElementReference input, string value, string expected, string mask)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.TextField.setMaskedValue", input, value, expected, mask);
+    }
+
+    internal static ValueTask BitTextFieldSetupMaskedChange(this IJSRuntime jsRuntime, string id, ElementReference input)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.TextField.setupMaskedChange", id, input);
+    }
+
     internal static ValueTask BitTextFieldDisposeFeature(this IJSRuntime jsRuntime, string id, string feature)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.TextField.disposeFeature", id, feature);

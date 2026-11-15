@@ -139,6 +139,7 @@ public static class IJSRuntimeFastExtensions
             => await loading ? InvokeInProcess<TValue>(jsInProcessRuntime, identifier, args) : default!;
     }
 
+    [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode", Justification = "TValue keeps the same DynamicallyAccessedMembers that IJSRuntime.InvokeAsync relies on, which the asynchronous path takes without this warning.")]
     private static TValue InvokeInProcess<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(IJSInProcessRuntime jsInProcessRuntime, string identifier, object?[]? args)
     {
         try

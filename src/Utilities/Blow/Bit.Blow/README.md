@@ -78,7 +78,13 @@ Give nodes your own markup with `NodeTemplate` and `BlowHandle`, and edges with 
   and animated viewport transitions - all in C#.
 - Typed change events with origins, transactions, labelled and structurally shared undo history, edits a
   collaborator made that local undo leaves alone, and copy and paste that rewires edges and keeps groups intact.
-- Versioned JSON documents with migrations and bounded imports, React Flow interchange, and SVG export.
+- A workflow engine with no UI, `BlowRunner`: dependency order, parallel branches, conditional paths and joins,
+  retries with backoff, timeouts, cancellation, pausing, approval steps, checkpoints, sub-graphs, and an event
+  stream the canvas shows and plays back.
+- Node kinds defined once in a `BlowNodeRegistry`: a searchable catalog, a node factory, dynamic ports, validation,
+  execution and the upgrade of deprecated kinds.
+- Versioned JSON documents with migrations and bounded imports, React Flow interchange, Mermaid and GraphML import
+  and export, Graphviz DOT export, a graph diff that doubles as a patch, and SVG export.
 - Validation problems and run states shown on the graph by shape as well as colour.
 - Keyboard access including connections, reconnecting edges and the minimap, search and focus helpers, element state
   read by screen readers, reduced motion, high contrast and localizable strings.
@@ -95,7 +101,8 @@ the demo's working pages, and it can inspect a flow you hand it.
 
 ## Documentation
 
-The full guide - nodes, handles and connections, edges, interaction, the viewport, layout and alignment, add-ons,
+The full guide - nodes and node kinds, handles and connections, edges, interaction, the viewport, layout and
+alignment, running a graph, add-ons,
 saving, undo and the clipboard, theming, keyboard and accessibility, localization, diagnostics, performance, hosting
 models, architecture and a React Flow mapping - is in the
 [Blow README](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Blow). See it running at

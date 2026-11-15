@@ -751,3 +751,80 @@ the rest went into notes under the samples, and the pointer page's controls unde
 | MCP | `dotnet test --project Tests/Bit.Bdnd.Tests.Mcp/Bit.Bdnd.Tests.Mcp.csproj` | 101 passed. |
 | E2E Chromium | `dotnet test` in `Tests/Bit.Bdnd.Tests.E2E` (all but the hybrid and perf classes) | 156 passed, the 15 new tests included. |
 | E2E Firefox | `BDND_E2E_BROWSER=firefox dotnet test`, the classes of the pages this round changed | 134 passed, 5 skipped (Chromium-only). |
+
+## Round 14 - the improvement plan of November 2026
+
+An improvement plan asked for a long list of capabilities; [the roadmap](BDND-ROADMAP.md#round-14---the-improvement-plan-of-november-2026-against-the-code)
+records how each was classified against the code. Most were in place and tested; this round took the ones that were
+there in part, and wrote down why the rest of the plan's requests belong elsewhere.
+
+| Gap | Change | Tests |
+| --- | --- | --- |
+| A selection could be archived but not reordered: moving several items to one place, keeping their order, was index arithmetic every app had to get right (the items before the insertion index shift it). | `BdndList.PlanMove(source, sourceIndexes, destination, insertionIndex)` (and a one-index overload) answers a `BdndListMove<T>`: the items, their source indexes, the insertion and finish indexes; null when an index is out of range or nothing would change. | `BdndListMoveTests` (selections to the start, the end, between, onto one of their own; across lists; repeated indexes; out of range; nothing to do); E2E: a selection dropped above a card, with the mouse and with the keyboard. |
+| Undo was written by hand on every page that had it, against the lists as they were after the drop. | `BdndListMove<T>.Apply` and `Revert` (and `Apply` again: redo). Both check that the items are where the move expects them - and that every index they insert at exists - before changing anything, and answer false otherwise: a move kept past other changes cannot half happen. | Revert restores both lists, same list and across; a history undone in reverse order restores everything; stale and shrunk lists refused with nothing changed. E2E: Undo on the multi-select and tree demos. |
+| A tree's own-subtree refusal and its parent lookup were the demo's recursive helpers, which a deep tree would overflow. | `BdndTree.Contains`, `ParentOf` and `PlanMove` (refusing cycles, moving a node with its subtree, revertible), walking with a stack. | `BdndTreeTests`, a 100,000-deep chain included; the tree demo uses them (existing tree E2E, plus Undo). |
+| Nothing said where Bdnd stops and Bortable, Blow, Bink, Bmotion, Blex, Bcrdt, BlazeDb and BevTools begin. | README: "Bdnd and the other bit utilities"; the gap analysis in the roadmap. | MCP search finds the new sections. |
+
+The multi-select demo's rows became drop targets with `Edges`, so a keyboard drag of the selection now visits the
+places among the cards before the archive: the existing keyboard test goes to the archive with End.
+
+### Validation
+
+| Check | Command | Result |
+| --- | --- | --- |
+| Unit | `dotnet test --project Tests/Bit.Bdnd.Tests/Bit.Bdnd.Tests.csproj` | 438 passed on each of net10.0 and net11.0 (876). |
+| MCP | `dotnet test --project Tests/Bit.Bdnd.Tests.Mcp/Bit.Bdnd.Tests.Mcp.csproj` | 161 passed (4 new search questions). |
+| E2E Chromium | `dotnet test --filter` multi-select, tree and every demo page | 45 passed. |
+| E2E Firefox | the same classes, multi-select and tree | 10 of 10 after the first run, in which `An_unticked_card_drags_alone` timed out once on a cold browser; the multi-select class then passed five runs in a row. |
+| E2E WebKit | the same classes | 10 passed. |
+
+The full E2E suite, the hybrid harness and the trim gate were not run this round: the library change is C# that
+crosses no interop boundary, and the demo pages it touched were run on all three engines.
+
+## Round 15 - the candidates round 14 left
+
+| Gap | Change | Tests |
+| --- | --- | --- |
+| A drag that carried a selection was announced by the grabbed card's name alone: "Picked up Charlie." for three cards. | `BdndAnnouncement.ItemCount`, counted by `BdndAnnouncements.CountItems` (an `ICollection`'s `Count`, else one; replaceable). The English texts name the grabbed source and count the rest at the pickup ("Picked up Charlie and 2 other items."), then say "3 items are/were/stay", in agreement. | `BdndAnnouncementsTests` (every text, singular and plural); two keyboard component tests (a list item, and `CountItems = _ => 1`); the multi-select E2E keyboard tests on all three engines. |
+| The keys were WAI-ARIA's and fixed in the module. | `BdndKeyBindings` (pick up, drop, cancel, up, down, left, right, first, last; each a list of `KeyboardEvent.key` values) on `BdndProvider.KeyBindings` and `BdndDragDropManager.KeyBindings`. Setting them validates them (a key bound to two commands of a drag, or no key to pick up or drop, is an `ArgumentException`) and computes the map once; a source sends it with its registration only when it differs from the defaults the module knows, so a provider that keeps them adds nothing to any payload; an instance binding the keys already bound (one created on every render of the page) notifies no source. The keyboard demo has a switch that adds H, J, K and L, with instructions that say so. | `BdndKeyBindingsTests` (equal keys in a new instance included); three component tests (nothing sent by default or for equal keys, the map sent and taken back, none for a source out of keyboard dragging); E2E: the letters do nothing until bound, then move and drop, and the description names them - all three engines. |
+| No measurement of the .NET side of a drag, which on Blazor Server runs per user. | `Tests/Bit.Bdnd.Benchmarks` (BenchmarkDotNet, a headless renderer as Blow's harness has): drag start and end, an edge change, a hover moving on and a keyboard move on 100 and 1,000 rows; list and tree moves on 1,000 and 10,000 items. Results and what they say in its README. | The harness itself. |
+| Found by the harness: moving a selection of 100 items in a 10,000-item `List<T>` and back took 113 µs - the items went out and back one at a time, each shifting the rest of the list. | `BdndListMove<T>` takes a `List<T>`'s selection out and puts it back in one pass, and inserts and removes the moved block as a range: 18 µs. Other `IList<T>`s keep the item-at-a-time path, so their change notifications are unchanged. | A `Collection<T>` and a `List<T>` moved and reverted alike, same list and across; a selection at both ends of a 1,000-item list. |
+
+### Review fixes
+
+A review of the round found ten issues; each is fixed:
+
+| Issue | Change | Tests |
+| --- | --- | --- |
+| `Apply` and `Revert` took the items out of one list before inserting them into the other, so a read-only or fixed-size list (an array) threw halfway and the items were in neither. | Both check that each list takes inserts and removals (`IsReadOnly`, `IList.IsFixedSize`) before anything changes, and throw `NotSupportedException` otherwise. | `AReadOnlyOrFixedSizeListIsRefusedBeforeAnythingChanges` |
+| A move checked that its items were still in place with `EqualityComparer<T>.Default`, so a duplicate or an equal copy passed for the item and the wrong element moved. | The item must be the same instance (an equal value for a value type). | `AnEqualItemInThePlaceOfTheOneMovedDoesNotPassForIt`, `AValueTypeItemIsWhereTheMoveExpectsItWhenAnEqualValueIsThere` |
+| `BdndTree.PlanMove` checked the node but not the parent, so a node could be moved into a detached node and leave the tree. | Null unless the parent is in the tree under the root (the root itself included). | `ANodeIsNotMovedOutOfTheTreeIntoADetachedNode` |
+| Tab could be bound, trapping the focus during a drag (WCAG 2.1.2), or picking up instead of moving on. | `BdndKeyBindings` refuses Tab in any command. | `TabCannotBeBoundSoTheFocusIsNeverTrapped` |
+| Keys were compared exactly, so Caps Lock or Shift turned a bound letter into another key, and a non-Latin layout never matched. | The module matches a one-character key in either case and, for a letter of a non-Latin layout, the Latin letter of the key in that place (`KeyboardEvent.code`); validation treats `"k"` and `"K"` as one key. | `ALetterInEitherCaseIsOneKey`; E2E: Shift+H, and a `д` from the L key, move the drag. |
+| A source whose pick-up keys differ from an outer source's no longer claimed the key, so it bubbled and picked the outer source up. | The innermost source the key was pressed on claims every key, and then picks up only on its own. | None yet: it needs nested sources under providers with different bindings. |
+| `CountItems` counted every `ICollection`, changing what existing apps whose single item is a list announce. | The default counts one; `BdndAnnouncements.CountElements` (for providers whose drags carry selections) counts an `ICollection` or an `IReadOnlyCollection<T>` of a reference type, so a `HashSet<string>` counts too. The multi-select demo opts in. | `AnItemCountsOneByDefaultEvenACollection`, `CountElementsCountsTheElementsOfACollectionAndAnythingElseAsOne`; the component tests. |
+| The instructions named the default keys whatever was bound, so every app rewrote them by hand (the keyboard demo kept four variants). | `Instructions` takes placeholders (`{PickUp}`, `{Move}`, ...) that `NameKeys` fills in from the manager's key bindings; the default text reads as before with the default keys. The keyboard demo keeps one text per language. | `TheDefaultInstructionsNameTheDefaultKeys`, `TheInstructionsNameTheKeysBound`, `TranslatedInstructionsNameTheKeysTheirOwnWay`, `TheInstructionsFollowTheKeys`; E2E: the description names the letters. |
+| The default key table is kept in C# and in the module, and every new bindings instance rebuilt the default map to compare with. | The default map is built once; a test reads `defaultKeys` from `bit-bdnd.ts` and fails if it drifts from `BdndKeyBindings`. | `TheModulesDefaultKeysAreTheseDefaults` |
+
+After the fixes: unit 476 passed on each of net10.0 and net11.0 (952); MCP 161 passed; E2E keyboard, multi-select, tree
+and screen reader classes 26 passed on Chromium, keyboard and multi-select 17 passed on each of Firefox and WebKit.
+
+What the harness showed beyond that is recorded in its README: an edge or hover change renders the rows involved and
+no others at any list size, while the start and the end of a drag render every row whose `CanDrop` changes (about
+10 µs a row, once per drag) - the price of a target's content being a `RenderFragment`.
+
+### Validation
+
+| Check | Command | Result |
+| --- | --- | --- |
+| Build | `dotnet build Bit.Bdnd.slnx` | Succeeded but for the MAUI sample, whose Android workload is not installed on this machine. |
+| Unit | `dotnet test --project Tests/Bit.Bdnd.Tests/Bit.Bdnd.Tests.csproj` | 463 passed on each of net10.0 and net11.0 (926). |
+| MCP | `dotnet test --project Tests/Bit.Bdnd.Tests.Mcp/Bit.Bdnd.Tests.Mcp.csproj` | 161 passed (two new search questions). |
+| E2E Chromium | keyboard, multi-select, screen reader, indicators, tree, grid and page builder classes | 48 passed. |
+| E2E Firefox, WebKit | keyboard, multi-select and tree classes | 21 passed on each. |
+| Benchmarks | `dotnet run -c Release --project Tests/Bit.Bdnd.Benchmarks -- --filter "*" --job short --inProcess` | Ran; numbers in its README. |
+| Trim gate | `bash Tests/Bit.Bdnd.Tests.E2E/publish-gate.sh <out>` | No trim/AOT analysis warnings originate in Bit.Bdnd. |
+| E2E on the trimmed publish | `BDND_E2E_PUBLISHED_HOST=<out> dotnet test` - the key bindings, multi-select and keyboard dustbin tests | 8 passed: the new `Dictionary<string, string[]>` of the source options survives trimming. |
+
+Not run: the full E2E suite and the hybrid harness.
+

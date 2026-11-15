@@ -17,8 +17,8 @@ public static class AotProfileCommand
         var propertyOption = new Option<string[]>("--property", "-p") { Description = "An MSBuild property for the publish, e.g. -p:InvariantGlobalization=true. Pass the ones the AOT publish gets, so both trim and minify alike.", HelpName = "name=value" };
         var originOption = new Option<string?>("--origin") { Description = $"For an app without a server: the address it's served at, e.g. its real one, so its API accepts the requests. Default: {PublishedApp.DefaultOrigin.ToString().TrimEnd('/')}." };
         var pathOption = new Option<string>("--path") { Description = "The page to start on.", DefaultValueFactory = _ => "/" };
-        var stepOption = new Option<string[]>("--step") { Description = "Something to do once every page has been visited: a path like /settings, click:<css selector>, key:<key> or wait:<milliseconds>. Repeat it for more." };
-        var maxPagesOption = new Option<int>("--max-pages") { Description = "Visit at most this many pages, following the app's links.", DefaultValueFactory = _ => 50 };
+        var stepOption = new Option<string[]>("--step") { Description = "Something to do once the pages have been visited: a path like /settings, click:<css selector>, key:<key> or wait:<milliseconds>. Repeat it for more." };
+        var maxPagesOption = new Option<int>("--max-pages") { Description = "Visit at most this many pages, following the app's links. The start page alone runs the startup every page shares, and each page more makes the AOT download bigger.", DefaultValueFactory = _ => 1 };
         var includeOption = new Option<string[]>("--include") { Description = "An assembly whose every method gets compiled, run or not, e.g. --include Bit.Bmage. Repeat it for more." };
         var browserOption = new Option<string?>("--browser") { Description = "The Chromium, Chrome or Edge to use. Default: Playwright's Chromium, then Chrome, then Edge." };
 

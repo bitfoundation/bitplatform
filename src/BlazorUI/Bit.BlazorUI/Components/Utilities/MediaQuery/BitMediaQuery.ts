@@ -22,9 +22,13 @@
 
         // Watches what can re-value the --bit-bp-* breakpoints of the whole document without any
         // component rendering again: BitThemeManager applying a theme (an inline style on the body or
-        // the root), and a switch between named themes (the bit-theme attribute, and the event the
-        // theme runtime dispatches). Only alive while a ScreenQuery listener exists to re-resolve.
+        // the root), a switch between named themes (the bit-theme attribute, any other attribute a theme
+        // can be selected by - data-theme, a class - and the event the theme runtime dispatches), and a
+        // stylesheet added to or removed from the head, or loaded (a page's HeadContent under enhanced
+        // navigation). Only alive while a ScreenQuery listener exists to re-resolve.
         private static _themeObserver: MutationObserver | null = null;
+        // The body the observer watches, attached once there is one: a listener can be set up before it exists.
+        private static _observedBody: HTMLElement | null = null;
         private static _themeFrame = 0;
 
         // Fallback breakpoints (px), used only when the corresponding --bit-bp-* CSS variable is
@@ -46,6 +50,48 @@
         // sides from ever matching at once; two hundredths rather than one because Safari rounds a
         // fractional media-query bound and one is not always enough to stay below the edge.
         private static _rangeEpsilon = 0.02;
+
+        // The --bit-bp-* tokens each element resolves, read once per task rather than once per query: a render pass
+        // builds the queries of every media query it sets up (and the ones matchNow answers before it) in one task, and
+        // each read of the computed style there forces the style of the page to be recalculated. Emptied as the task
+        // ends, so a theme applied afterwards is read anew; a theme re-valuing the tokens later in the same task is
+        // caught by the theme observer, whose refresh runs once the cache has been emptied.
+        private static _tokenReads: Map<Element, Partial<Record<BreakpointKey, string>>> | null = null;
+
+        // The tokens of the document itself (the body, or the root before there is one), which every media query without
+        // an element of its own is built from - most of them, NoWrapper and content-less ones alike, and they set up again
+        // on every render. Kept apart for each of the two, since a theme applied to the body is not the root's, and shared
+        // across the tasks of a short window (_documentTokensMaxAge) while the theme observer is watching: a read in every
+        // task would force the style of a page still being built to be recalculated once per instance and render batch
+        // (a Server app's batches arrive as tasks of their own). The observer empties them as soon as a change it can see
+        // may have re-valued them; the window bounds what it cannot see (a rule re-valuing them under a selector nothing it
+        // watches changes), so a query built after that reads the new value. With no observer alive (no screen query
+        // listening) nothing would tell, so they are kept for the task alone, like an element's.
+        private static _documentTokens: Map<Element, Partial<Record<BreakpointKey, string>>> | null = null;
+        private static _documentTokensAt = 0;
+        private static _documentTokensMaxAge = 50;
+
+        /**
+         * Whether a query matches right now, answered synchronously - for a component that has to decide what to
+         * render before it has rendered anything, ahead of the first report of setup. Built exactly the way setup
+         * builds it, off the body (no element of the component exists yet). Answers null whenever it cannot tell: no
+         * matchMedia, nothing to build, or a query the browser cannot parse.
+         */
+        public static matchNow(query: string | null, screenQuery: string | null, breakpoints: { [key: string]: string } | null): boolean | null {
+            try {
+                if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return null;
+
+                const resolvedQuery = query || (screenQuery ? MediaQuery.buildScreenQuery(screenQuery, null, breakpoints) : '');
+                if (!resolvedQuery) return null;
+
+                const queryList = window.matchMedia(resolvedQuery);
+                if (queryList.media === 'not all' && resolvedQuery.trim() !== 'not all') return null;
+
+                return queryList.matches;
+            } catch {
+                return null;
+            }
+        }
 
         /**
          * @param key          The listener key. The component's own unique id rather than the id of
@@ -175,25 +221,58 @@
             if (needed && !MediaQuery._themeObserver) {
                 if (typeof MutationObserver !== 'function' || typeof document === 'undefined') return;
 
+                // Every attribute rather than a list of them: a theme can be selected by any (data-theme, a class), and
+                // a refresh only rebuilds the listeners whose breakpoints actually moved.
                 const observer = new MutationObserver(MediaQuery.scheduleThemeRefresh);
-                const options = { attributes: true, attributeFilter: ['style', 'class', 'bit-theme'] };
-                observer.observe(document.documentElement, options);
-                if (document.body) {
-                    observer.observe(document.body, options);
+                observer.observe(document.documentElement, { attributes: true });
+                if (document.head) {
+                    observer.observe(document.head, { childList: true });
                 }
                 document.addEventListener('bit-theme-change', MediaQuery.scheduleThemeRefresh);
+                // A stylesheet re-values the tokens once it has loaded, not when it is added; load does not bubble, so it
+                // is heard on its way down.
+                document.addEventListener('load', MediaQuery.handleStylesheetLoad, true);
 
                 MediaQuery._themeObserver = observer;
+                MediaQuery._observedBody = null;
             } else if (!needed && MediaQuery._themeObserver) {
                 MediaQuery._themeObserver.disconnect();
                 MediaQuery._themeObserver = null;
+                MediaQuery._observedBody = null;
+                // Nothing watches the theme any more, so nothing would tell the shared tokens are out of date.
+                MediaQuery._documentTokens = null;
                 document.removeEventListener('bit-theme-change', MediaQuery.scheduleThemeRefresh);
+                document.removeEventListener('load', MediaQuery.handleStylesheetLoad, true);
+            }
+
+            MediaQuery.observeBody();
+        }
+
+        // Attaches the theme observer to the body once there is one (and to a body that replaced it).
+        private static observeBody() {
+            const observer = MediaQuery._themeObserver;
+            const body = typeof document !== 'undefined' ? document.body : null;
+            if (!observer || !body || MediaQuery._observedBody === body) return;
+
+            observer.observe(body, { attributes: true });
+            MediaQuery._observedBody = body;
+            // What was read before the body was watched may already be out of date.
+            MediaQuery._documentTokens = null;
+        }
+
+        private static handleStylesheetLoad(e: Event) {
+            const target = e.target;
+            if (target instanceof HTMLLinkElement && /\bstylesheet\b/i.test(target.rel)) {
+                MediaQuery.scheduleThemeRefresh();
             }
         }
 
         // Coalesces a burst of mutations (a theme applies dozens of properties one by one) into one
         // pass, taken once the style has settled.
         private static scheduleThemeRefresh() {
+            MediaQuery._tokenReads = null;
+            MediaQuery._documentTokens = null;
+
             if (MediaQuery._themeFrame) return;
 
             MediaQuery._themeFrame = requestAnimationFrame(() => {
@@ -357,21 +436,77 @@
         // there is no element - in no-wrapper mode, and when nothing is rendered at all (an
         // OnChange-only usage with no content) - rather than the root: it inherits everything the
         // root declares, and it is where BitThemeManager applies a theme unless told otherwise.
+        // Each breakpoint is resolved as the query asks for it, so the computed style is only read for a token the
+        // given breakpoints leave out - and only once per task for every query built off the same element, or once
+        // per short window for every query built off the document while the theme is watched (see _documentTokens).
         private static resolveBreakpoints(elementId: string | null, breakpoints: { [key: string]: string } | null): Record<BreakpointKey, string> {
             const element = (elementId ? document.getElementById(elementId) : null) ?? document.body ?? document.documentElement;
-            const styles = typeof getComputedStyle === 'function'
-                ? getComputedStyle(element)
-                : null;
 
             const read = (key: BreakpointKey) => {
                 const themed = breakpoints?.[key]?.trim();
                 if (themed) return themed;
 
-                const value = styles?.getPropertyValue(`--bit-bp-${key}`)?.trim();
-                return value || MediaQuery._defaultBreakpoints[key];
+                return MediaQuery.readToken(element, key) || MediaQuery._defaultBreakpoints[key];
             };
 
-            return { xs: read('xs'), sm: read('sm'), md: read('md'), lg: read('lg'), xl: read('xl'), xxl: read('xxl') };
+            const resolved = {} as Record<BreakpointKey, string>;
+            (Object.keys(MediaQuery._defaultBreakpoints) as BreakpointKey[]).forEach(key => {
+                Object.defineProperty(resolved, key, { get: () => read(key), enumerable: true });
+            });
+
+            return resolved;
+        }
+
+        // The --bit-bp-* token an element resolves, or an empty string when it is set nowhere (see _tokenReads and
+        // _documentTokens).
+        private static readToken(element: Element, key: BreakpointKey): string {
+            if (!MediaQuery._tokenReads) {
+                // The first read of a task. A mutation the observer has not been called back for yet (a theme applied
+                // earlier in this task) is taken here, ahead of its callback, so the tokens it re-valued are not answered
+                // from before it; the callback is scheduleThemeRefresh whatever the records say, so taking them loses
+                // nothing. Once per task, like every other read: a theme applied later in the task is the callback's.
+                MediaQuery.observeBody();
+                if (MediaQuery._themeObserver && MediaQuery._themeObserver.takeRecords().length > 0) {
+                    MediaQuery.scheduleThemeRefresh();
+                }
+
+                const reads = new Map<Element, Partial<Record<BreakpointKey, string>>>();
+                MediaQuery._tokenReads = reads;
+                queueMicrotask(() => {
+                    if (MediaQuery._tokenReads === reads) MediaQuery._tokenReads = null;
+                });
+            }
+
+            let tokens: Partial<Record<BreakpointKey, string>> | undefined;
+            if (MediaQuery._themeObserver && (element === document.body || element === document.documentElement)) {
+                const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
+                if (!MediaQuery._documentTokens || now - MediaQuery._documentTokensAt > MediaQuery._documentTokensMaxAge) {
+                    MediaQuery._documentTokens = new Map();
+                    MediaQuery._documentTokensAt = now;
+                }
+
+                tokens = MediaQuery._documentTokens.get(element);
+                if (!tokens) {
+                    tokens = {};
+                    MediaQuery._documentTokens.set(element, tokens);
+                }
+            } else {
+                tokens = MediaQuery._tokenReads.get(element);
+                if (!tokens) {
+                    tokens = {};
+                    MediaQuery._tokenReads.set(element, tokens);
+                }
+            }
+
+            let value = tokens[key];
+            if (value === undefined) {
+                value = typeof getComputedStyle === 'function'
+                    ? (getComputedStyle(element).getPropertyValue(`--bit-bp-${key}`) ?? '').trim()
+                    : '';
+                tokens[key] = value;
+            }
+
+            return value;
         }
 
         // Returns the value just below `value`, for exclusive max-width bounds. A unitless or px

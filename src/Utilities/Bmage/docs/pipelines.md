@@ -176,8 +176,29 @@ pipeline.WhitesBlacks(0.3f, -0.2f)                    // brighten the top of the
         .Colorize(30, saturation: 0.35f)                 // one warm tint over everything
         .Duotone(new Rgba32(20, 30, 90), new Rgba32(250, 210, 120))
         .MotionBlur(24, angle: 15)                       // a 24 pixel streak, rising slightly to the right
-        .HighPass(3);                                    // only detail finer than 3 pixels, around mid grey
+        .RadialBlur(0.25f)                               // a zoom burst from the middle, the centre left sharp
+        .RadialBlur(0.4f, RadialBlurMode.Spin, center: new PointF(0.3f, 0.6f))
+        .HighPass(3)                                     // only detail finer than 3 pixels, around mid grey
+        .AdaptiveThreshold(radius: 18)                   // black ink on white paper, whatever the lighting
+        .ColorLut(ColorLookupTable.ParseCube(cubeText), strength: 0.8f);   // a film look from a grading tool
 ```
+
+`AdaptiveThreshold` compares each pixel with the window of `2 x radius + 1` pixels around it rather than with one level
+for the whole image, so a shadow across a photographed page neither blackens the paper nor loses the text. Sauvola's
+method, the default, lowers the level where the neighbourhood has little contrast and keeps plain paper clean; the mean
+method is the simpler local mean less an offset. Make the radius about the height of a line of text. The cost does not
+depend on the radius.
+
+`RadialBlur` streaks towards the centre (`Zoom`) or around it (`Spin`), more the further a pixel is from it. Its centre is a
+fraction of the width and height. Its strength is a fraction too: for `Zoom`, of the distance from each pixel to the
+centre (at most 95% of it); for `Spin`, of a 45 degree arc. Neither depends on the resolution, so it replays the same on a
+proxy.
+
+`ColorLut` maps every colour through a three-dimensional lookup table, by tetrahedral interpolation. Read one from an
+Adobe or DaVinci Resolve `.cube` file with `ColorLookupTable.ParseCube`, write one with `ToCube`, or build one from any
+function with `ColorLookupTable.Create(size, map)`. Tables take the encoded sRGB values every adjustment sees: one made for
+log or linear footage needs that transfer applied first, which a `.cube` file does not record. One-dimensional `.cube`
+tables are refused; a `CurveOperation` is their equivalent.
 
 `HslAdjustment` adjusts eight hue bands; a pixel between two bands takes from both in proportion, and greys are left
 alone. The HSL model is fast and predictable rather than perceptually uniform, the trade simple editors make.

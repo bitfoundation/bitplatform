@@ -241,7 +241,8 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     /// The error message shown under the phone input, which also puts the field in its invalid state -
     /// for a rejection that comes from a server or from a rule no data annotation can express. Inside an
     /// EditContext the validation of the model is what decides the state instead, and its message is
-    /// rendered by a ValidationMessage of its own.
+    /// rendered by <see cref="ShowValidationMessage"/> in this same place - giving way to this message while it
+    /// is set - or by a ValidationMessage wherever the page puts it.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public string? ErrorMessage { get; set; }
@@ -381,8 +382,9 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     /// <summary>
     /// The message to show when the search result of the country dropdown is empty. It is also what a screen
     /// reader announces for an empty result.
+    /// Defaults to <see cref="BitStrings.NoResultsFound"/> of <see cref="BitStrings.Current"/>.
     /// </summary>
-    [Parameter] public string? NoResultsMessage { get; set; }
+    [Parameter] public string? NoResultsText { get; set; }
 
     /// <summary>
     /// The custom template to show when the search result of the country dropdown is empty.
@@ -524,7 +526,7 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     /// <summary>
     /// What a screen reader announces for the number of countries a search term leaves in the list, in place of
     /// the default "1 country found" / "{count} countries found" - the way to translate that announcement. An
-    /// empty result announces <see cref="NoResultsMessage"/> instead, and returning null or an empty string keeps
+    /// empty result announces <see cref="NoResultsText"/> instead, and returning null or an empty string keeps
     /// a count from being announced at all.
     /// </summary>
     [Parameter] public Func<int, string?>? SearchResultsAnnouncement { get; set; }
@@ -533,6 +535,21 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     /// Shows a clear button in the number input while it holds a value.
     /// </summary>
     [Parameter] public bool ShowClearButton { get; set; }
+
+    /// <summary>
+    /// Shows the messages the cascading EditContext holds for the bound field - the ones of its data annotations or
+    /// those of any other validator of the form - under the field, where <see cref="ErrorMessage"/> goes, so an
+    /// <c>EditForm</c> needs no <c>ValidationMessage</c> component beside it. The number input references them
+    /// through its aria-describedby attribute, so they are read out whenever it takes the focus.
+    /// </summary>
+    /// <remarks>
+    /// An <see cref="ErrorMessage"/> or <see cref="ErrorMessageTemplate"/> of the app's own wins the place while it is
+    /// set. Unlike an ErrorMessage, the messages are not announced through the live region of the phone input: a
+    /// submit validates every field of the form at once, and a message from each of them read out in a row would bury
+    /// the form under its own errors - the field that takes the focus says what is wrong with it. A phone input that
+    /// validates nothing (<see cref="BitInputBase{TValue}.NoValidate"/>) or is bound to nothing shows none.
+    /// </remarks>
+    [Parameter] public bool ShowValidationMessage { get; set; }
 
     /// <summary>
     /// The size of the phone input.
@@ -713,100 +730,6 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     // The pattern the local number is currently formatted with, or null when it is left alone.
     private string? CurrentMask => MaskSelector?.Invoke(Country) ?? Mask;
 
-    // Lays the digits of the local number out over the pattern: every '#' takes the next digit and
-    // every other character is copied as it is, but only while there are still digits to place, so a
-    // half typed number never grows a trailing separator. Digits left over once the pattern runs out
-    // are appended as they are, so a number longer than the pattern is formatted as far as the
-    // pattern goes and kept whole beyond it.
-    private static string ApplyMask(string digits, string mask)
-    {
-        if (digits.Length == 0) return digits;
-
-        var builder = new StringBuilder(mask.Length + digits.Length);
-        var next = 0;
-
-        foreach (var c in mask)
-        {
-            if (next >= digits.Length) break;
-
-            if (c == '#')
-            {
-                builder.Append(digits[next++]);
-            }
-            else
-            {
-                builder.Append(c);
-            }
-        }
-
-        if (next < digits.Length)
-        {
-            builder.Append(digits, next, digits.Length - next);
-        }
-
-        return builder.ToString();
-    }
-
-    // Reads the digits of the local number back out of a text the pattern has already been laid over.
-    // Walking the text and the pattern side by side is what tells a character the pattern inserted
-    // apart from one the user typed, which the digits alone cannot say for a pattern holding a literal
-    // digit ("0## ### ####"): laying such a pattern over its own result would otherwise keep the '0'
-    // the last formatting inserted and grow the number by a digit per keystroke - until the field
-    // reads "00...", the international call prefix of most of the world, which moves the country with it.
-    private static string StripMask(string text, string mask)
-    {
-        var builder = new StringBuilder(text.Length);
-        var maskIndex = 0;
-        var textIndex = 0;
-
-        while (textIndex < text.Length)
-        {
-            var c = text[textIndex];
-
-            // Past the end of the pattern there is nothing left but the digits that did not fit in it.
-            if (maskIndex >= mask.Length)
-            {
-                if (char.IsAsciiDigit(c))
-                {
-                    builder.Append(c);
-                }
-
-                textIndex++;
-            }
-            else if (mask[maskIndex] == '#')
-            {
-                // A separator where the pattern wants a digit is one the text carries of its own, so it
-                // is dropped without spending the placeholder it was found on.
-                if (char.IsAsciiDigit(c))
-                {
-                    builder.Append(c);
-                    maskIndex++;
-                }
-
-                textIndex++;
-            }
-            else if (c == mask[maskIndex])
-            {
-                // A literal of the pattern, in the very place the pattern puts it: it belongs to the
-                // layout rather than to the number.
-                textIndex++;
-                maskIndex++;
-            }
-            else if (char.IsAsciiDigit(c))
-            {
-                // The text has not been laid out this far yet, so the literal it is missing is stepped
-                // over and the same character is measured against what the pattern has after it.
-                maskIndex++;
-            }
-            else
-            {
-                textIndex++;
-            }
-        }
-
-        return builder.ToString();
-    }
-
     // The local number as the input shows it: formatted by the current pattern when there is one,
     // and left exactly as it is when there is not. Laying a pattern over a number it has already been
     // laid over is what typing into the field does on every keystroke, so the pattern is peeled off
@@ -822,11 +745,11 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         // '+' is a literal of the pattern rather than one the number came with.
         if (mask!.Contains('+') is false && KeepDigits(number, keepLeadingPlus: true).StartsWith('+')) return number;
 
-        var digits = StripMask(number!, mask!);
+        var digits = BitMask.Strip(number!, mask!, BitMask.DigitTokens);
 
         if (digits.Length == 0) return number;
 
-        return ApplyMask(digits, mask!);
+        return BitMask.Apply(digits, mask!, BitMask.DigitTokens, appendOverflow: true);
     }
 
     // Builds the full phone number from the selected country and the local number. Both the dialing
@@ -1384,6 +1307,13 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
 
     private bool HasErrorMessage => ErrorMessage.HasValue() || ErrorMessageTemplate is not null;
 
+    // The messages of the EditContext the error line shows (ShowValidationMessage), which only take it while the app
+    // has no message of its own there. They mark nothing themselves: the EditContext already has.
+    private string? ShownValidationMessage => ShowValidationMessage && HasErrorMessage is false ? FieldValidationMessage : null;
+
+    // Whether the error line under the field is rendered, for the app's own message or for the EditContext's.
+    private bool HasErrorLine => HasErrorMessage || ShownValidationMessage is not null;
+
     // The invalid state the consumer forces, either as a flag or by handing the field a message to show.
     protected override bool HasError => Invalid || HasErrorMessage;
 
@@ -1423,13 +1353,13 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         {
             var describesCountry = NoDropdown || ReadOnly;
 
-            if (HasErrorMessage is false && HasDescription is false && describesCountry is false) return GetSplattedInputAttribute("aria-describedby");
+            if (HasErrorLine is false && HasDescription is false && describesCountry is false) return GetSplattedInputAttribute("aria-describedby");
 
             var ids = string.Join(' ', new[]
             {
                 GetSplattedInputAttribute("aria-describedby"),
                 describesCountry ? _dropdownId : null,
-                HasErrorMessage ? _errorId : null,
+                HasErrorLine ? _errorId : null,
                 HasDescription ? _descriptionId : null
             }.Where(id => id.HasValue()));
 
@@ -1862,7 +1792,7 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
 
         // The list the term filtered down to is inside a callout, so its length is only ever seen:
         // it is announced here for the users who cannot see it.
-        Announce(BitCountryList.GetSearchAnnouncement(count, NoResultsMessage, SearchResultsAnnouncement));
+        Announce(BitCountryList.GetSearchAnnouncement(count, NoResultsText, SearchResultsAnnouncement));
 
         await OnSearch.InvokeAsync(_list.SearchText);
     }

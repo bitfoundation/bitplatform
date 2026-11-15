@@ -177,7 +177,7 @@ public partial class ChatbotController : AppControllerBase, IChatbotController
             ? CultureInfo.GetCultureInfo(cultureId)
             : null;
 
-        // The text chat's prompt and variables (See AppChatbot.ProcessNewMessage). The realtime model speaks plainly on its
+        // The text chat's prompt and variables (See AppChatbot.VariablesPrompt). The realtime model speaks plainly on its
         // own, but that prompt asks for markdown links - hence the override.
         var instructions = $$$"""
             {{{SystemPromptProvider.GetSystemPrompt(PromptKind.Support, HttpContext.RequestServices)}}}

@@ -1,0 +1,64 @@
+﻿@import "../../../Styles/functions.scss";
+
+// Public CSS variables, read with a fallback and never declared here, so a value set on :root re-skins every empty
+// state and one set on the Style of an instance re-skins that one:
+//   --bit-EmptyState-gap                       room between the icon, the title, the line and the actions  (default: spacing(1))
+//   --bit-EmptyState-padding                   inset of the empty state                                   (default: spacing(4) spacing(2))
+//   --bit-EmptyState-align                     where the parts sit across it: center, start or end        (default: center)
+//   --bit-EmptyState-icon-size                 size of the icon                                           (default: $tg-fs-4xl)
+//   --bit-EmptyState-icon-color                color of the icon                                          (default: $clr-fg-sec)
+//   --bit-EmptyState-title-color               color of the title                                         (default: $clr-fg-pri)
+//   --bit-EmptyState-title-font-size           size of the title                                          (default: $tg-fs-lg)
+//   --bit-EmptyState-title-font-weight         weight of the title                                        (default: $tg-fw-semibold)
+//   --bit-EmptyState-description-color         color of the line under the title                          (default: $clr-fg-sec)
+//   --bit-EmptyState-description-font-size     size of the line under the title                           (default: $tg-fs-sm)
+//   --bit-EmptyState-content-gap               room between two actions                                   (default: spacing(1))
+
+.bit-ems {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    box-sizing: border-box;
+    font-family: $tg-font-family;
+    gap: var(--bit-EmptyState-gap, #{spacing(1)});
+    align-items: var(--bit-EmptyState-align, center);
+    padding: var(--bit-EmptyState-padding, #{spacing(4)} #{spacing(2)});
+}
+
+// The text follows the parts across the empty state: centered with them by default, and at the start of the line for
+// an empty state aligned to start (its right edge in right-to-left). The three values the variable takes are the ones
+// align-items, justify-content and text-align all understand.
+.bit-ems-ttl, .bit-ems-dsc {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    text-align: var(--bit-EmptyState-align, center);
+}
+
+.bit-ems-ico {
+    line-height: 1;
+    color: var(--bit-EmptyState-icon-color, #{$clr-fg-sec});
+    font-size: var(--bit-EmptyState-icon-size, #{$tg-fs-4xl});
+}
+
+.bit-ems-ttl {
+    margin: 0;
+    color: var(--bit-EmptyState-title-color, #{$clr-fg-pri});
+    font-size: var(--bit-EmptyState-title-font-size, #{$tg-fs-lg});
+    font-weight: var(--bit-EmptyState-title-font-weight, #{$tg-fw-semibold});
+}
+
+.bit-ems-dsc {
+    color: var(--bit-EmptyState-description-color, #{$clr-fg-sec});
+    font-size: var(--bit-EmptyState-description-font-size, #{$tg-fs-sm});
+}
+
+// The actions are set a little further from the text than the text is from the title, and wrap onto a new row
+// rather than push the empty state wider than its container.
+.bit-ems-con {
+    display: flex;
+    flex-wrap: wrap;
+    max-width: 100%;
+    margin-block-start: spacing(1);
+    justify-content: var(--bit-EmptyState-align, center);
+    gap: var(--bit-EmptyState-content-gap, #{spacing(1)});
+}

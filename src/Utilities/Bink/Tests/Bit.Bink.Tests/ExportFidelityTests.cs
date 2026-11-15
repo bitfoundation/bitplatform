@@ -15,6 +15,40 @@ public class ExportFidelityTests
     private static readonly XNamespace XLink = "http://www.w3.org/1999/xlink";
 
     /// <summary>
+    /// The rasterizer drew every round join as a whole circle, which also covers the half behind the corner. A corner
+    /// nearer a flat end than half the line's width therefore rounded the end off: a highlighter, flat-ended on the
+    /// canvas and in SVG, exported to PNG with round ends.
+    /// </summary>
+    [TestMethod]
+    public void A_round_join_next_to_a_flat_end_does_not_round_the_end_off()
+    {
+        var surface = new BinkRasterSurface(100, 40);
+        var context = new BinkRasterRenderContext(surface, Matrix3x2.Identity);
+        BinkPathGeometry path = new BinkPathBuilder(4).MoveTo(new Vector2(20, 20)).LineTo(new Vector2(21, 20.4f)).LineTo(new Vector2(80, 20)).ToGeometry();
+
+        context.StrokePath(path, new BinkStrokePaint(BinkColor.Black, 16f, 1f, BinkBlendMode.Normal, BinkLineCap.Butt, BinkLineJoin.Round));
+
+        Assert.AreEqual(0, surface.GetPixel(14, 20).A, "Nothing is drawn behind the flat start.");
+        Assert.AreEqual(255, surface.GetPixel(24, 20).A);
+        Assert.AreEqual(255, surface.GetPixel(60, 14).A, "The line keeps its full width.");
+    }
+
+    /// <summary>A path that turns straight back still gets a round turn ahead of it, and nothing behind.</summary>
+    [TestMethod]
+    public void A_path_that_turns_straight_back_gets_a_half_round_turn()
+    {
+        var surface = new BinkRasterSurface(100, 40);
+        var context = new BinkRasterRenderContext(surface, Matrix3x2.Identity);
+        BinkPathGeometry path = new BinkPathBuilder(4).MoveTo(new Vector2(20, 20)).LineTo(new Vector2(60, 20)).LineTo(new Vector2(30, 20)).ToGeometry();
+
+        context.StrokePath(path, new BinkStrokePaint(BinkColor.Black, 10f, 1f, BinkBlendMode.Normal, BinkLineCap.Butt, BinkLineJoin.Round));
+
+        Assert.AreEqual(255, surface.GetPixel(63, 20).A, "The turn is rounded ahead of the corner.");
+        Assert.AreEqual(0, surface.GetPixel(67, 20).A);
+        Assert.AreEqual(0, surface.GetPixel(15, 20).A);
+    }
+
+    /// <summary>
     /// Every SVG layer group was isolated, while the canvas and the rasterizer isolate only a layer with an eraser
     /// stroke or an opacity below 1. A multiply highlight on an upper layer then saw only its own empty group in
     /// SVG and composited normally, turning black text under it olive instead of keeping it black.

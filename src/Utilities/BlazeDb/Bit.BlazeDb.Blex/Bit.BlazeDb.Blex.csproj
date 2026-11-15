@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <Import Project="../../../Bit.Build.props" />
+
+    <PropertyGroup>
+        <TargetFrameworks>net11.0;net10.0</TargetFrameworks>
+        <RootNamespace>Bit.BlazeDb.Blex</RootNamespace>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <IsTrimmable>true</IsTrimmable>
+        <Description>Persists Bit.Blex stores in a Bit.BlazeDb database: an IBlexStorage over a BlazeDb table, so persisted state shares the database's write-ahead log, encryption at rest, quota handling and backups with the rest of the application's data, on every platform BlazeDb runs on.</Description>
+        <PackageDescription>$(Description)</PackageDescription>
+        <PackageTags>$(PackageTags);Blazor;WebAssembly;Database;State management;Persistence</PackageTags>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Bit.BlazeDb\Bit.BlazeDb.csproj" />
+        <ProjectReference Include="..\..\Blex\Bit.Blex\Bit.Blex.csproj" />
+        <!-- The state table is a [BlazeDbTable] type of this assembly, so the generator runs here. A consumer gets it
+             through the Bit.BlazeDb package, which carries it. -->
+        <ProjectReference Include="..\Bit.BlazeDb.Generators\Bit.BlazeDb.Generators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    </ItemGroup>
+
+</Project>

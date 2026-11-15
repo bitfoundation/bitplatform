@@ -32,7 +32,7 @@ public partial class WebBlazorUIIconTrimmingTests
         Assert.Contains(".bit-icon--ClearNight::before", stylesheet, $"{url} lacks the ClearNight icon of the theme toggle: the publish trimmed too much.");
 
         Assert.DoesNotContain(".bit-icon--12PointStar::before", stylesheet, $"{url} carries the 12PointStar icon, which nothing in the app names.");
-        Assert.DoesNotContain(".bit-icon--Snowflake::before", stylesheet, $"{url} carries the Snowflake icon, which nothing in the app names.");
+        Assert.DoesNotContain(".bit-icon--Squalls::before", stylesheet, $"{url} carries the Squalls icon, which nothing in the app names.");
 
         var keptIcons = IconRule().Count(stylesheet);
 

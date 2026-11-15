@@ -378,8 +378,143 @@ focusable.
 | `Bit.Bink.Tests` | Not rerun: nothing in the library changed in this round |
 | Firefox, WebKit | Not run in this round |
 
+## Round 5: the improvement plan of November 2026
+
+A broad improvement plan (drawing engine, editing, tools, document model, rendering, persistence, collaboration,
+accessibility, testing, ecosystem integrations) was checked item by item against the code on `develop` before
+anything was built. Baseline: `Bit.Bink.Tests` 782 / 782 on net10.0 and net11.0, `Bit.Bink.Tests.Mcp` 75 / 75.
+
+### Audit against the plan
+
+Most of the plan describes what rounds 1 to 4 already built and verified (the matrix above). What it asks for that
+was genuinely missing, and what this round decided about each:
+
+| Plan item | Finding | Decision |
+| --- | --- | --- |
+| Shape recognition (sketch to clean geometry) | Missing (matrix D, deferred P3) | **Done**: `BinkShapeRecognizer`, `BinkDrawTool.ShapeRecognition` |
+| Configurable smoothing and stabilization | Only exponential streamline smoothing | **Done**: pulled-string stabilizer, `BinkDrawTool.Stabilization` |
+| PDF export | Missing (matrix H, deferred P3) | **Done**: `BinkPdfExporter`, vector, multi-page |
+| Cross-backend rendering consistency | Rasterizer drew round joins as whole circles: butt-capped strokes (the highlighter) exported to PNG with round ends | **Fixed** |
+| Robust import validation | The PNG decoder let `ZLibException` escape on corrupt data (found by the existing fuzz test once its input changed) | **Fixed** |
+| Tilt, azimuth and twist dynamics | Captured and saved; no built-in brush uses them | Backlog P2: calligraphy nib following the pen's azimuth or twist |
+| Bézier node editing | `BinkPathElement` exists; no tool edits its nodes | Backlog P2 |
+| Textured, charcoal, chalk, watercolour, oil, airbrush brushes | One filled outline per stroke cannot vary texture or opacity along it | Deferred, as in matrix C; the brush API is open for applications that rasterize their own |
+| Brush presets, categories, favourites | A brush is an immutable record, so a preset is a saved instance | N/A in the engine: application UI |
+| Boolean shape operations, text on paths, rich text | Large; robust polygon clipping alone is a project | Deferred P3 |
+| Spatial index (R-tree) | README measures culling 10k boxes in tens of µs | Deferred until a benchmark shows culling or hit testing dominating, as the plan itself asks |
+| Rulers, protractor, measurement overlays | Application UI over the public API (`DrawOverlay`, viewport) | Deferred |
+| Ecosystem adapters (Bcrdt, Bmage, Bdnd, Blex, BlazeDb, Butil, Bortable, Bmotion, BevTools, Belemetry, Borm) | Bink has no dependencies beyond `Microsoft.AspNetCore.Components.Web` and already ships its own IndexedDB store, drop and clipboard handling | **Not in the core package.** Adapters would add package references and the risk of circular ones for little gain; each is a sample or a separate package when an application needs it. Bcrdt is evaluated against the operation protocol only after fractional z-order keys, the protocol's one known gap |
+| Application experiences (Notes, Whiteboard, Review, Studio) | | Outside the core package, as the plan says |
+
+### Increments
+
+Each is one reviewable change with its own tests, documentation and demo.
+
+| # | Change | Tests | Docs and demo |
+| --- | --- | --- | --- |
+| 16 | **Shape recognition.** Resampled to 96 evenly spaced points so speed and density do not matter. Open strokes: a line (chord error, and a length ratio that refuses strokes doubling back), or a one-stroke arrow (straight shaft to the first point near the farthest, barbs turning back 10 to 75 degrees). Closed strokes (end near the start, or crossing past it): an ellipse by least squares in its principal axes, and a polygon by simplification from the point farthest from the centre with weak corners removed, the better fit winning; four right angles make a rectangle, corners at the middles of the sides a diamond. Angle and proportion snapping. In the draw tool: `Off`, `OnHold` (the pen rests half a second before lifting) or `Always`; the stroke is committed and then replaced by the shape in a second step, so one undo returns the ink. | 27, including 200 seeded drawings across five shapes and two sizes | README "Recognizing shapes"; whiteboard "Shapes" choice (hold to snap by default) and card |
+| 17 | **Raster round joins.** A wedge on the outside of the turn, as canvas, SVG and PDF draw; a turn straight back gets the half circle ahead of it. | 2 (the first fails on the old code) | |
+| 18 | **PNG decoder.** Inflate errors of either exception type become `FormatException`. | 1 (fails on the old code) | |
+| 19 | **PDF export.** Each paint is written self-contained (`q` clips `cm` paint `Q`) from a transform and clips the context tracks itself, so the content drawn so far can become a form at any moment; that is how pixel erasers work: PDF has no destination-out, so the content before a run of erasers becomes a form drawn through a luminosity soft mask the erasers paint black on white. Layers with opacity, a blend mode or an eraser are isolated transparency groups, as on the canvas. JPEG passes through (`DCTDecode`, frame header read for size and components; CMYK refused); PNG is decoded, stored with Flate and an `SMask` for alpha, each picture once. Text in the standard 14 fonts with WinAnsi encoding and their metrics for alignment; other characters skip the element and are counted. UTF-16 properties, `/Lang`, deterministic bytes. `BinkCanvas.ExportPdf` and `SavePdfAsync`. | 22 PDF tests with a reader that checks every cross-reference offset, plus a canvas test | README "PDF"; whiteboard "Export PDF" |
+| 20 | **Stabilizer.** `BinkStrokeBuilder.StabilizerRadius` pulls the ink along a string before smoothing; the tool measures it in CSS pixels, finishes the stroke to the lift point and draws no prediction while it is on. Not part of the brush, so the format is unchanged. | 7 | README "Stabilizing a line"; handwriting "Stabilizer" slider |
+
+The PDF output was also checked outside the test suite: rendered by pdf.js in Chromium (the browser the E2E suite
+uses) beside the engine's own PNG of the same drawing, they match, erasers included; pdf.js parses it with no
+warnings and extracts the text. pdf.js under Node with a native canvas does not apply soft masks, which is a
+limitation of that canvas, not of the file.
+
+### Review of round 5
+
+An independent reviewer read the whole diff against the code, ran checks of its own, and confirmed two defects;
+four more it rated plausible were each checked and three were real. All fixed, each with a test that fails without
+the fix:
+
+| Severity | Defect | Fix | Test |
+| --- | --- | --- | --- |
+| Medium | A stabilized stroke that never pulled the string taut (the bar of a t, a dash, an accent) ended as a dot: the finishing segment was only added to strokes with two points or more | Added from the first point | `A_stroke_shorter_than_the_string_is_still_a_line_to_where_it_lifted` |
+| Medium | PDF: translucent erasers painted opaque grey into the mask, so where two crossed the second replaced the first; the canvas and the rasterizer compound them (two half erasers leave a quarter) | Erasers multiply into the mask | `Translucent_erasers_compound_where_they_overlap` |
+| Medium | PDF: a phone photo's EXIF orientation is applied by browsers, so by the canvas, but ignored by PDF's DCT filter, so a turned photo came out turned differently | The orientation is read from the Exif segment (both byte orders, bounds checked) and the picture placed turned, with its displayed size; crops are in the picture as shown | `A_photo_is_placed_turned_...` (both byte orders), `A_crop_of_a_turned_photo_...` |
+| Low | Recognition reported the fit's error, measured before snapping, so a snapped shape could stray further than the tolerance the result promises | Measured as drawn; snapping that would pass the tolerance is not done | `The_reported_error_is_that_of_the_shape_as_drawn_...` |
+| Low | PDF: a region too large overflowed the page size to zero; a lone carriage return broke a line, unlike the canvas and SVG | Pages over 14,400 points (the viewers' limit) are scaled down, a region that is not finite is refused; carriage returns draw nothing | `A_page_too_large_...`, `Lines_break_at_line_feeds_only` |
+
+The reviewer also confirmed as correct: the round-join wedge in both turn directions, the PDF structure (20-byte
+cross-reference entries, offsets, balanced `q`/`Q` and `BT`/`ET`, the mask group's colour space and coordinates, layer
+isolation keeping the page background from being erased), WinAnsi ranges, JPEG frame parsing bounds, and the draw
+tool's history: the shape replacement is its own undo step and keeps the stroke's stacking index.
+
+A second review read only those fixes and found two defects they introduced, both fixed with tests:
+
+| Severity | Defect | Fix | Test |
+| --- | --- | --- | --- |
+| Medium | A page scaled down to fit was mapped with its scale rounded to three decimals: a page 70,000 units wide drew 20 points past its edge, one of 30 million drew nothing | The page transform is written at full precision | `A_page_too_large_for_viewers_...` |
+| Medium | Now that a diamond's or rectangle's error was honest, one that fitted badly was still returned and hid the better readings: a box turned 45 degrees came out as an ellipse, a quadrilateral with one slanted side as a rectangle | A regular reading is used only within the tolerance and nearly as close as the raw corners; otherwise the next is tried, down to the polygon | `A_regular_reading_that_fits_badly_gives_way_to_the_next` |
+
+It confirmed the stabilizer fix, all eight EXIF orientation entries against the specification, every bound in the
+Exif reader, and the multiply blend inside the luminosity mask. Left as they are, as minor: a snap is accepted or
+refused for angle and proportion together rather than each on its own, and an arrow's snap is judged against the
+stroke's diagonal rather than its shaft. A third review round was not run.
+
+The Chromium E2E suite's accessibility, display, feature, drawing and editing tests (62) were run against the demo with
+these changes. One failed, on a page this round did not touch: the Getting Started table's links were told apart
+from their sentence by colour alone (WCAG 1.4.1), as round 4 had fixed for cards and notes; links in table cells are
+now underlined too.
+
+### Round 5, second part: the remaining items
+
+| # | Change | Tests | Docs and demo |
+| --- | --- | --- | --- |
+| 21 | **Recognition snaps, one at a time.** An ellipse or rectangle tries both snaps, then each alone, then neither, keeping the first within the tolerance (both were dropped together before). An arrow's straightening is judged against its shaft, as its acceptance is. A JPEG's first Exif segment decides its orientation; a later APP1 (an XMP packet) does not. | 1 | |
+| 22 | **Tilt and twist reach brushes.** `BinkStrokePointsView` carries `TiltX`, `TiltY` and `Twist` (empty when the device reported none; the old constructor still builds a view without them). `BinkCalligraphyBrush.FollowPen` turns the nib by the barrel's twist, or else by how far the pen's lean is from `PenLean` (a right hand's 45 degrees by default), holding its angle while the pen is nearly upright; each point's angle depends on that point alone, so an erased stroke's parts keep their ink. Saved as `followPen` and `penLean`, both always written. | 5 | README "Tilt and twist"; handwriting "Follow pen" |
+| 23 | **Editing points.** `BinkNodeEditTool` edits lines, polygons, polylines and paths point by point: drag a corner, an end, an anchor or a Bézier control point; an anchor carries the cubic controls beside it. A drag is one undo step and a cancelled one none; Tab, the arrow keys, Delete and Escape from the keyboard, with announcements. A grabbed point keeps its offset from the pointer, keys during a drag are the drag's (Escape cancels it), and a closed loop's start and end on one spot move together. `GetNodes`, `MoveNode` and `RemoveNode` work without the tool. | 11 | README "Editing points"; whiteboard "Points" tool and card |
+| 24 | **Stacking order that reconciles.** `BinkOrderKey` (the integer-plus-fraction scheme of the common fractional-indexing libraries: appends step the integer, so the first 3,906 strokes have keys of two or three characters). Each layer keeps a key and a move clock per element, the document one per layer, and both are kept sorted by key, ties by id, so order is a function of keys. Additions and moves resolve their index to a key when applied, and every operation reports the form it was applied in (`ApplyCore` now returns it), so history and collaborators repeat exactly that placement; inverses carry the old key, so undo puts things back at their place whatever moved meanwhile. A collaborator's move applies only if it wins on (Lamport clock, key, layer); additions take no tick, so replicas that started from the same page agree nothing has moved. Keys travel in the operation codec (`key`, `clock`, `elementKeys`, `elementClocks`, ignored by older peers, whose index-only moves are placed by index) and in snapshots (`BinkSerializerOptions.IncludeOrderKeys`), applied authoritatively. Files are unchanged unless asked; keys that contradict a file's list are made afresh from it. | 24 (18 convergence, 5 key, the inverted limitation test), including a randomized three-participant run (moves, cross-layer moves, layer reorders and drawing in random interleavings, three seeds) and the old limitation test inverted | README "Stacking order"; collaboration page card |
+
+**Decision for 24.** Order keys live in the layer, not in the element record: an element's content and its place
+then version independently, a content edit and a concurrent move both land, and nothing about elements, their
+converters or their equality changed. The file format did not need a version: keys are optional fields that earlier
+readers ignore, and a file without them is ordered by its list as before. Chosen by the maintainer over a
+wire-only layer-order message and over leaving the limit documented.
+
+**Review of 24.** An independent review confirmed five defects, each fixed with a regression test built from the
+reviewer's failing scenario:
+
+| Defect | Fix |
+| --- | --- |
+| A move that changed nothing was sent with clock 0; the receiver skipped the comparison and gave it a tick, so it outranked a real move made elsewhere (elements and layers) | A collaborator's keyed move is always compared, and 0 loses; a keyed move to where the thing already is stays a no-op |
+| A joiner's snapshot layer moves stamped clock 0 afresh, so the joiner refused the host's next layer move | Snapshot (authoritative) placements store the clock exactly, 0 included; snapshot additions are authoritative too |
+| A rolled-back batch gave moved elements new ticks and re-added removed ones at clock 0 | Inverses carry the previous clock (and a removed layer's element clocks); a rollback stores them exactly |
+| An undone delete racing a collaborator's move of the same element ended in different places | A removal leaves a bounded tombstone (layer, key, clock); putting an element back is a move made now, weighed against the tombstone as any move is |
+| Keys passed 256 characters after 1,271 insertions at one spot, and `Between`'s `ArgumentException` escaped `Apply` | Keys up to 4,096 characters (some twenty thousand insertions at one spot); past that the change is refused with `InvalidOperationException`, as `Apply` documents |
+
+Known limits, left as they are: an index that falls inside a run of elements sharing a key (which only concurrent
+insertions at one spot make) places the element just above the run, so `GroupElements` may not gather such elements
+contiguously; and a file saved without keys and reopened gets fresh keys and clocks, so participants should join a
+session by snapshot, as they already must to share the document's content.
+
+A third review read these three changes and confirmed four defects in them, all fixed before this record and folded
+into the rows above, each with a test that failed on the code it reviewed: a click near a point moved the point onto
+the pointer and recorded a step; a view with one tilt channel and not the other made the calligraphy brush throw;
+`FollowPen` measured the lean from the stroke's first point, so the part of a stroke an eraser left after a cut
+turned its nib back (now measured from `PenLean`, the hand's usual lean); and keys during a drag reached the canvas,
+where Delete removed the element mid-drag. Its three plausible items were taken too: `followPen` is written when off
+as well, Escape leaves the selection with the element, and a closed loop's coincident start and end move together.
+
+### The intermittent build failure, explained
+
+`ApplyCompressionNegotiation` failed with "An item with the same key has already been added" for
+`Bit.Bink.lib.module.js`. A detailed log showed the two items it collided on: the content item
+`c:\...\wwwroot\Bit.Bink.lib.module.js` and the SDK's JS-module asset `C:\...\wwwroot\Bit.Bink#[.{fingerprint}]!.lib.module.js`,
+the same file with the drive letter in different case. The SDK merges the two by comparing paths case-sensitively,
+so on Windows they stay apart and the file is compressed twice. The casing comes from MSBuild worker nodes, which
+are reused across builds and keep the project paths of the build that started them: a build started from a
+lowercase working directory (some editors' terminals) followed by one with an uppercase path, or the reverse, hits it,
+and the SDK's `*.dswa.cache.json` caches carry it into the next build too. It is not specific to Bink: BbScanner and
+Bheadless add their `lib.module.js` the same way. Use one casing, or run `dotnet build-server shutdown` (or build with
+`-nodeReuse:false`) after switching; CI, which builds from one path, is not affected.
+
 ## Next priorities
 
-1. Fractional z-order keys, which would let concurrent reorders reconcile (a format change).
-2. Rebinding shortcuts to other keys inside the canvas, beyond disabling them.
-3. A per-picture request message, should snapshot recovery for a missing picture prove too heavy in large sessions.
+1. Rebinding shortcuts to other keys inside the canvas, beyond disabling them.
+2. A per-picture request message, should snapshot recovery for a missing picture prove too heavy in large sessions.
+3. Fonts embedded in PDF export, for text beyond Western European languages.
+4. The Bcrdt adapter, now that ordering converges natively: it would have to beat the operation protocol on more
+   than ordering to be worth its dependency.

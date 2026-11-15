@@ -28,7 +28,7 @@
              ILogger, Options, System.Text.Json) comes with the shared framework or transitively
              from this package - deliberately no OpenTelemetry packages. -->
         <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.AspNetCore.Components.Web" Version="[10.0.0,11.0.0)" />
-        <PackageReference Condition="'$(TargetFramework)' == 'net11.0'" Include="Microsoft.AspNetCore.Components.Web" Version="[11.0.0-rc.1.26425.128,12.0.0)" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net11.0'" Include="Microsoft.AspNetCore.Components.Web" Version="[11.0.0,12.0.0)" />
     </ItemGroup>
 
     <ItemGroup>

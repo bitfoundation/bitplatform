@@ -268,6 +268,12 @@ public record BbScannerDecodeAttemptDto
     /// <summary>The members of BbBarcodeResult.Metadata that the symbology filled in, by name.</summary>
     public Dictionary<string, string>? Metadata { get; init; }
 
+    /// <summary>
+    /// BbBarcodeResult.TryGetGs1, in bracketed form - "(01)09521234543213(10)ABC123" - for a GS1 symbol whose content
+    /// is a valid element string; null otherwise.
+    /// </summary>
+    public string? Gs1 { get; init; }
+
     public required BbScannerTimingsDto Timings { get; init; }
 }
 

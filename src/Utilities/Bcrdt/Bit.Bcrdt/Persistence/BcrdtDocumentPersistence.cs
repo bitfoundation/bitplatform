@@ -1,4 +1,5 @@
-﻿using System.Threading.Channels;
+﻿using System.Diagnostics;
+using System.Threading.Channels;
 
 namespace Bit.Bcrdt;
 
@@ -119,9 +120,11 @@ public sealed class BcrdtDocumentPersistence : IAsyncDisposable
         var persistence = new BcrdtDocumentPersistence(
             doc, store, documentId ?? doc.Id, options ?? new BcrdtDocumentPersistenceOptions());
 
+        using Activity? span = BcrdtDiagnostics.Start(BcrdtDiagnostics.PersistenceLoadSpan);
         try
         {
             BcrdtStoredDocument stored = await store.LoadAsync(persistence._documentId, cancellationToken).ConfigureAwait(false);
+            BcrdtDiagnostics.TagPersistence(span, stored.Update?.Length ?? 0, records: stored.RecordCount);
             if (stored.Update is not null)
             {
                 doc.ApplyUpdate(stored.Update, BcrdtDocumentPersistenceOptions.LoadOrigin);
@@ -137,8 +140,9 @@ public sealed class BcrdtDocumentPersistence : IAsyncDisposable
             doc.Updated += persistence.OnDocumentUpdated;
             return persistence;
         }
-        catch
+        catch (Exception ex)
         {
+            BcrdtDiagnostics.Fail(span, ex);
             await persistence.DisposeAsync().ConfigureAwait(false);
             throw;
         }
@@ -262,6 +266,10 @@ public sealed class BcrdtDocumentPersistence : IAsyncDisposable
 
     private async Task WriteLoopAsync()
     {
+        // The loop outlives whatever attached it - a request, a page load - so its writes start traces of
+        // their own rather than joining one that ended long before. Only this method's flow is affected.
+        Activity.Current = null;
+
         CancellationToken token = _shutdown.Token;
 
         // Updates taken from the queue but not yet stored, oldest first. They are kept as they arrived
@@ -296,11 +304,13 @@ public sealed class BcrdtDocumentPersistence : IAsyncDisposable
                     }
                 }
 
+                Activity? write = BcrdtDiagnostics.Start(BcrdtDiagnostics.PersistenceAppendSpan);
                 try
                 {
                     byte[] record = take == 1
                         ? pending[0]
                         : BcrdtUpdateOperations.Merge([.. pending.Take(take).Select(p => (ReadOnlyMemory<byte>)p)]);
+                    BcrdtDiagnostics.TagPersistence(write, record.Length, updates: take);
 
                     await _store.AppendUpdateAsync(_documentId, record, token).ConfigureAwait(false);
                     BcrdtDiagnostics.PersistenceWrites.Add(1);
@@ -308,6 +318,9 @@ public sealed class BcrdtDocumentPersistence : IAsyncDisposable
                 }
                 catch (Exception ex) when (!token.IsCancellationRequested)
                 {
+                    // Ended here rather than below, so the wait before a retry is not counted as the write.
+                    BcrdtDiagnostics.Fail(write, ex);
+                    write?.Stop();
                     ReportFailure(ex);
 
                     if (IsPermanent(ex))
@@ -333,6 +346,10 @@ public sealed class BcrdtDocumentPersistence : IAsyncDisposable
                     delay = TimeSpan.FromTicks(Math.Min(delay.Ticks * 2, _options.MaxRetryDelay.Ticks));
                     continue;
                 }
+                finally
+                {
+                    write?.Stop();
+                }
 
                 delay = _options.RetryDelay;
                 pending.RemoveRange(0, take);
@@ -343,6 +360,8 @@ public sealed class BcrdtDocumentPersistence : IAsyncDisposable
                 int records = Volatile.Read(ref _recordCount);
                 if (records >= _options.CompactionThreshold && records >= _compactionDeferredUntil)
                 {
+                    Activity? compaction = BcrdtDiagnostics.Start(BcrdtDiagnostics.PersistenceCompactSpan);
+                    BcrdtDiagnostics.TagPersistence(compaction, records: records);
                     try
                     {
                         await _store.CompactAsync(_documentId, token).ConfigureAwait(false);
@@ -356,8 +375,13 @@ public sealed class BcrdtDocumentPersistence : IAsyncDisposable
                         // would read and merge the whole log each time for as long as the cause lasts -
                         // a file another process holds open, say - so wait for another threshold's
                         // worth of records first.
+                        BcrdtDiagnostics.Fail(compaction, ex);
                         ReportFailure(ex);
                         _compactionDeferredUntil = records + _options.CompactionThreshold;
+                    }
+                    finally
+                    {
+                        compaction?.Stop();
                     }
                 }
             }

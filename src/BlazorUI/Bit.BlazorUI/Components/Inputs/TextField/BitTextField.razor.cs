@@ -24,6 +24,7 @@ public partial class BitTextField : BitTextInputBase<string?>
     private bool _selectOnFocusSetup;
     private bool _selectOnFocusSetupIsMultiline;
     private bool _chromeFocusSetup;
+    private bool _maskedChangeSetup;
     private int? _oldRows;
     private int? _oldMaxRows;
     private BitSize? _oldSize;
@@ -34,6 +35,12 @@ public partial class BitTextField : BitTextInputBase<string?>
     private DotNetObjectReference<BitTextField>? _dotnetObj;
     private string? _inputMode;
     private bool _trimOnParse;
+    // How many of the field's own commits are running, and the value the latest of them wrote into the Value - what the
+    // binding hands back while they run (see HandleOnStringValueChangeAsync). _catchOwnWrite is up only while a commit
+    // starts, which is when it writes the Value (see TrackOwnWrite).
+    private int _ownCommitsRunning;
+    private string? _lastOwnWrite;
+    private bool _catchOwnWrite;
     private bool _isPasswordRevealed;
     private BitInputType? _elementType;
     private string _inputId = string.Empty;
@@ -400,6 +407,25 @@ public partial class BitTextField : BitTextInputBase<string?>
     /// The custom content of the busy indicator, which replaces the default spinner.
     /// </summary>
     [Parameter] public RenderFragment? LoadingTemplate { get; set; }
+
+    /// <summary>
+    /// The pattern the text is laid out over as the user types: '#' takes a digit, 'A' a letter and '*' a letter or a
+    /// digit, and every other character is a literal inserted for the user - "##/##/####" turns 12312025 into
+    /// "12/31/2025". A backslash makes the character after it a literal (<c>\A</c> is the letter A itself). A character
+    /// a slot does not take is dropped, and so is what is typed beyond the last slot. The caret stays on the character it
+    /// was on as the literals move around it. Ignored in the <see cref="Multiline"/> mode.
+    /// <para>
+    /// The value is the formatted text, literals included, unless <see cref="MaskRawValue"/> is set.
+    /// </para>
+    /// </summary>
+    [Parameter] public string? Mask { get; set; }
+
+    /// <summary>
+    /// Makes the value of a field with a <see cref="Mask"/> hold only the characters that went into its slots
+    /// ("12312025") rather than the formatted text it shows ("12/31/2025"). A value set from outside is laid out over
+    /// the mask either way.
+    /// </summary>
+    [Parameter] public bool MaskRawValue { get; set; }
 
     /// <summary>
     /// Specifies the maximum number of characters allowed in the input.
@@ -880,6 +906,8 @@ public partial class BitTextField : BitTextInputBase<string?>
 
         SetDefaultValue();
 
+        OnValueChanged += TrackOwnWrite;
+
         await base.OnInitializedAsync();
     }
 
@@ -901,8 +929,14 @@ public partial class BitTextField : BitTextInputBase<string?>
         }
 
         // A value that moved without the field moving it - the page emptying it after a send, say - is what the
-        // input shows from then on, whatever had been typed into it before.
-        ReleaseTypedTextIfMoved(Value);
+        // input shows from then on, whatever had been typed into it before. The value the latest of the field's own
+        // commits wrote, handed back by the binding while the commits run, is left to the commit to settle (see
+        // HandleOnStringValueChangeAsync); any other value is the page's, even one an earlier commit wrote (a binding
+        // refusing the latest one and putting the earlier one back).
+        if (_ownCommitsRunning == 0 || string.Equals(Value, _lastOwnWrite, StringComparison.Ordinal) is false)
+        {
+            ReleaseTypedTextIfMoved(Value);
+        }
 
         SyncLiveRegion();
 
@@ -935,6 +969,8 @@ public partial class BitTextField : BitTextInputBase<string?>
         await SetupSelectOnFocus(isMultiline);
 
         await SetupChromeFocus();
+
+        await SetupMaskedChange();
 
         // The height the content needs follows more than the text itself: the row floor, the row ceiling and
         // the size of the field all move it, and none of them raises an input event the browser side listens
@@ -1073,12 +1109,55 @@ public partial class BitTextField : BitTextInputBase<string?>
         }
     }
 
+    // A masked field's layout is written into the input by a script, after which WebKit raises no change as the field
+    // loses the focus; the script raises the one it owed (TextField.setupMaskedChange). Wired before the field is typed
+    // into, so the text it compares with is known from the first focus on. A masked field is never multiline (see
+    // ActiveMask), so a switch to multiline takes the listeners away with the input, and one back wires the new input.
+    private async Task SetupMaskedChange()
+    {
+        var masked = ActiveMask is not null;
+
+        if (masked == _maskedChangeSetup) return;
+
+        _maskedChangeSetup = masked;
+
+        if (masked)
+        {
+            _jsSetup = true;
+            await _js.BitTextFieldSetupMaskedChange(_Id, InputElement);
+        }
+        else
+        {
+            await _js.BitTextFieldDisposeFeature(_Id, "maskedChange");
+        }
+    }
+
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out string? result, [NotNullWhen(false)] out string? parsingErrorMessage)
     {
         result = _trimOnParse ? value?.Trim() : value;
+
+        // The text of a masked field is committed laid out over the mask, or as the characters of its slots alone.
+        if (ActiveMask is { } mask && string.IsNullOrEmpty(result) is false)
+        {
+            var masked = ApplyMask(result, mask);
+            result = MaskRawValue ? BitMask.Strip(masked, mask, BitMask.TextTokens, BitMask.Escape) : masked;
+        }
+
         parsingErrorMessage = null;
         return true;
     }
+
+    // A value is shown laid out over the mask whichever way it came: formatted, raw, or set from outside half formatted.
+    protected override string? FormatValueAsString(string? value)
+        => ActiveMask is { } mask && string.IsNullOrEmpty(value) is false ? ApplyMask(value, mask) : value;
+
+    // The mask the field formats with: a multiline field has none, since a mask lays out a single line.
+    private string? ActiveMask => Multiline || Mask.HasNoValue() ? null : Mask;
+
+    // Lays a text out over the mask, peeling off whatever layout it already carries first: the same text formatted
+    // again is what typing into a masked field does on every keystroke.
+    private static string ApplyMask(string text, string mask)
+        => BitMask.Apply(BitMask.Strip(text, mask, BitMask.TextTokens, BitMask.Escape), mask, BitMask.TextTokens, appendOverflow: false, BitMask.Escape);
 
     // What the value attribute of the input is rendered with: the text typed into it while the value has not caught
     // up with that text - Immediate off, a debounce or a throttle still running, a binding that refuses it - and the
@@ -1092,18 +1171,77 @@ public partial class BitTextField : BitTextInputBase<string?>
     // since, and fast typing lost them.
     private async Task HandleOnElementInput(string? text)
     {
+        // What the input holds from here on, as far as a render knows: the text the event carried, so a render writes
+        // nothing into it (see ElementValue).
         RecordTypedText(text, Value);
+
+        // A masked field lays each keystroke out at once, and writes the layout into the input through a script that keeps
+        // the caret on the character it was on - never through a render, which would park the caret at the end - and only
+        // into an input that still holds the text the event carried: one typed into since holds a newer text, whose own
+        // input event lays it out.
+        if (ActiveMask is { } mask && string.IsNullOrEmpty(text) is false)
+        {
+            var masked = ApplyMask(text, mask);
+
+            if (masked != text)
+            {
+                try
+                {
+                    await _js.BitTextFieldSetMaskedValue(InputElement, masked, text, mask);
+                }
+                catch (JSException) { } // the element might not be ready yet
+
+                text = masked;
+            }
+        }
 
         await HandleOnStringValueInputAsync(new ChangeEventArgs { Value = text });
     }
 
     protected override async Task HandleOnStringValueChangeAsync(ChangeEventArgs e)
     {
-        await base.HandleOnStringValueChangeAsync(e);
+        // The value this commit writes, which the binding hands straight back through OnParametersSet while the commit
+        // is still running. A field that commits something other than the text typed (a mask lays it out) must not take
+        // that for the page moving the value: letting go of the typed text there would render the committed value into
+        // the input, a round trip behind the typing on a server circuit, over the keys typed since.
+        // The commit writes the Value as it starts, before it first awaits, which is all the catch is up for: the value
+        // is the one the commit itself parsed, read off the Value rather than parsed a second time here. A commit that
+        // writes nothing new leaves the Value it found as its own.
+        _ownCommitsRunning++;
+        _lastOwnWrite = Value;
+        _catchOwnWrite = true;
+        Task commit;
+        try
+        {
+            commit = base.HandleOnStringValueChangeAsync(e);
+        }
+        finally
+        {
+            _catchOwnWrite = false;
+        }
+
+        try
+        {
+            await commit;
+        }
+        finally
+        {
+            _ownCommitsRunning--;
+        }
 
         // Once the value holds the typed text the input shows the value again; until then the value this commit
         // ended up with is the field's own doing, not a change from the page (see OnParametersSet).
         SettleTypedText(Value, CurrentValueAsString);
+    }
+
+    // The first write of the Value while a commit starts is that commit's own; anything after it - the page answering
+    // the commit's ValueChanged with another value in the same pass - is not.
+    private void TrackOwnWrite(object? sender, EventArgs e)
+    {
+        if (_catchOwnWrite is false) return;
+
+        _catchOwnWrite = false;
+        _lastOwnWrite = Value;
     }
 
     protected override async Task HandleOnStringValueInputAsync(ChangeEventArgs e)

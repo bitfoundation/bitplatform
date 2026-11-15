@@ -71,10 +71,13 @@ public partial class BitChartLegacyDemo
         }
     ];
 
-    // BitChartLegacy serializes its config with Newtonsoft.Json, so the samples need assemblies that this
-    // demo app keeps out of its initial WebAssembly payload through the BlazorWebAssemblyLazyLoad item group.
-    // They are fetched on demand here, before the samples render. Every other host (Blazor Server, MAUI,
-    // Windows) already has them and the load is skipped.
+    // BitChartLegacy serializes its config with Newtonsoft.Json, so the samples need assemblies that the
+    // WebAssembly client keeps out of its initial payload through its BlazorWebAssemblyLazyLoad items. They
+    // are fetched on demand here, before the samples render. The client's project file hands this option the
+    // marked assemblies, joined by ';', and an empty value in an AOT build, which marks none and loads them
+    // with the app. A build check there keeps its copy of the name in step with this one.
+    private const string LazyAssembliesOption = "Bit.BlazorUI.Demo.LazyLoadedAssemblies";
+
     [AutoInject] LazyAssemblyLoader lazyAssemblyLoader = default!;
 
     private bool isLoadingAssemblies = true;
@@ -83,9 +86,19 @@ public partial class BitChartLegacyDemo
     {
         try
         {
+            // Only the WebAssembly client sets the option: every other host (Blazor Server, MAUI, Windows)
+            // has the assemblies already. In the browser a missing value means the project file sets the
+            // option under another name, and the samples would fail to serialize, so it throws here instead.
             if (OperatingSystem.IsBrowser())
             {
-                await lazyAssemblyLoader.LoadAssembliesAsync(["Newtonsoft.Json.wasm", "System.Private.Xml.wasm", "System.Data.Common.wasm"]);
+                var lazyAssemblies = AppContext.GetData(LazyAssembliesOption) as string
+                    ?? throw new InvalidOperationException($"The runtime option '{LazyAssembliesOption}' is not set. Bit.BlazorUI.Demo.Client.Web.csproj sets it with the assemblies it lazy-loads.");
+
+                var names = lazyAssemblies.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                if (names.Length > 0)
+                {
+                    await lazyAssemblyLoader.LoadAssembliesAsync(names);
+                }
             }
         }
         finally

@@ -1,6 +1,6 @@
 //+:cnd:noEmit
 using System.Text.Json.Nodes;
-//#if (multitenant == true)
+//#if (multitenant == true && (module == "Admin" || module == "Sales"))
 using Boilerplate.Server.Api.Features.Tenants;
 using Boilerplate.Server.Api.Features.Categories;
 //#endif
@@ -230,17 +230,24 @@ public class DevMcpQueryTests
         var all = JsonNode.Parse(await DevMcpTestUtils.CallText(mcp, "AggregateEntity", new() { ["entity"] = "User" }, TestContext.CancellationToken))!;
         Assert.IsGreaterThan(0, all["matchingRows"]!.GetValue<int>());
 
+        await using var otherClient = server.CreateAppClient();
+        var (otherEmail, _) = await TestAccountUtils.CreateAndSignIn(otherClient, TestContext.CancellationToken);
+
         var grouped = JsonNode.Parse(await DevMcpTestUtils.CallText(mcp, "AggregateEntity", new()
         {
             ["entity"] = "User",
-            ["groupBy"] = new[] { "EmailConfirmed" },
-            ["aggregates"] = new[] { "CountDistinct(Id)", "Max(AccessFailedCount)" }
+            ["groupBy"] = new[] { "TwoFactorEnabled" },
+            ["aggregates"] = new[] { "CountDistinct(Id)", "Max(AccessFailedCount)" },
+            ["filter"] = $"Email == \"{email}\" || Email == \"{otherEmail}\""
         }, TestContext.CancellationToken))!;
         var rows = grouped["rows"]!.AsArray();
-        Assert.AreEqual(all["matchingRows"]!.GetValue<int>(), rows.Sum(row => row!["count"]!.GetValue<int>()),
-            "Every user belongs to exactly one group.");
+        Assert.AreEqual(2, grouped["matchingRows"]!.GetValue<int>());
+        Assert.HasCount(2, rows, $"Only the admin signs in with two factors, so each user is a group of its own. Result: {grouped}");
         foreach (var row in rows)
-            Assert.AreEqual(row!["count"]!.GetValue<int>(), row["countDistinctOfId"]!.GetValue<int>());
+        {
+            Assert.AreEqual(1, row!["count"]!.GetValue<int>());
+            Assert.AreEqual(1, row["countDistinctOfId"]!.GetValue<int>());
+        }
 
         var filtered = JsonNode.Parse(await DevMcpTestUtils.CallText(mcp, "AggregateEntity", new()
         {
@@ -269,7 +276,7 @@ public class DevMcpQueryTests
         Assert.Contains("not an aggregate", notAnAggregate, StringComparison.OrdinalIgnoreCase);
     }
 
-    //#if (multitenant == true)
+    //#if (multitenant == true && (module == "Admin" || module == "Sales"))
     /// <summary>
     /// A global admin has no tenant selected, so a tenant-filtered read would answer for the fallback tenant or for
     /// nothing - and an external sign-in gives her no way to switch tenant. A diagnostic tool that quietly hides rows

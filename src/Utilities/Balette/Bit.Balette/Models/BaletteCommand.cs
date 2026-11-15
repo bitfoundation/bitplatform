@@ -103,6 +103,12 @@ public class BaletteCommand
     /// <summary>Dynamic availability check evaluated when the list is built.</summary>
     public Func<bool>? IsVisible { get; init; }
 
+    /// <summary>
+    /// Decides, every time the command is about to run, whether it may - and for a page, whether any command under it may.
+    /// Runs before the registered <see cref="IBaletteCommandGuard"/>s; see there for when guards run.
+    /// </summary>
+    public Func<BaletteGuardContext, CancellationToken, ValueTask<BaletteGuardResult>>? Guard { get; init; }
+
     /// <summary>Marks the command as destructive (styled red).</summary>
     public bool Destructive { get; init; }
 
@@ -129,6 +135,13 @@ public class BaletteCommand
 
     /// <summary>Free-form tags, used by <see cref="BaletteCommandMode"/> scoping.</summary>
     public IReadOnlyList<string> Tags { get; init; } = [];
+
+    /// <summary>
+    /// A row the palette makes for itself - pin, forget, clear recents, a source's retry or "Show more", a mode hint - never
+    /// one of the app's: guards are not asked about it, and diagnostics do not count it. Marked by the palette, not by an
+    /// id or a tag, so no command an app or a source returns can claim it.
+    /// </summary>
+    internal bool IsPaletteOwned { get; init; }
 
     /// <summary>True when this command opens a nested page.</summary>
     public bool HasChildren => Children is { Count: > 0 } || ChildrenProvider is not null || ChildSources is { Count: > 0 };

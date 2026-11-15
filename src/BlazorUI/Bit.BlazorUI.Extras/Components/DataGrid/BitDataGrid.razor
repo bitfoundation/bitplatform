@@ -153,7 +153,7 @@
              aria-describedby="@AriaDescribedBy"
              aria-rowcount="@(ComputeAriaRowCount().ToString(System.Globalization.CultureInfo.InvariantCulture))" aria-colcount="@TotalColumnSpan"
              aria-multiselectable="@(SelectionMode == BitSelectionMode.Multiple && IsStaticTable is false ? "true" : null)"
-             aria-busy="@(Loading || InfiniteLoading ? "true" : null)"
+             aria-busy="@(Loading || InfiniteLoading || IsReading ? "true" : null)"
              aria-disabled="@(Disabled ? "true" : null)"
              style="--bit-dtg-template:@BuildGridTemplate();">
 
@@ -382,23 +382,23 @@
                 }
                 @if (Loading)
                 {
-                    <div class="bit-dtg-row bit-dtg-message-row" role="row" style="grid-template-columns:var(--bit-dtg-template);">
-                        <div class="bit-dtg-cell bit-dtg-loading @Classes?.Loading" role="@CellRole" aria-colindex="1" aria-colspan="@TotalColumnSpan" style="grid-column:1 / -1;@Styles?.Loading">
-                            @if (LoadingTemplate is not null)
-                            {
-                                @LoadingTemplate
-                            }
-                            else
-                            {
-                                <span class="bit-dtg-spinner"></span>
-                                <span>@Strings.LoadingText</span>
-                            }
-                        </div>
-                    </div>
+                    @RenderLoadingMessage
+                }
+                else if (ReadErrorShown)
+                {
+                    @RenderReadError
                 }
                 else if (TotalCount == 0 && PendingNewItem is null && !IsInfiniteMode && !UseServerVirtualization)
                 {
-                    @RenderEmptyMessage
+                    @* A server grid with no rows yet that is reading them says so, rather than that there are none. *@
+                    @if (IsReading)
+                    {
+                        @RenderLoadingMessage
+                    }
+                    else
+                    {
+                        @RenderEmptyMessage
+                    }
                 }
                 else if (_viewGroups is not null)
                 {
@@ -1134,6 +1134,49 @@
                 {
                     <span>@(_filters.Count > 0 || _search is not null ? Strings.NoMatchesText : Strings.EmptyText)</span>
                 }
+            </div>
+        </div>
+    };
+
+    // The message row of a body whose rows are loading: Loading set, or a server grid reading its first rows.
+    private RenderFragment RenderLoadingMessage => __builder =>
+    {
+        <div class="bit-dtg-row bit-dtg-message-row" role="row" style="grid-template-columns:var(--bit-dtg-template);">
+            <div class="bit-dtg-cell bit-dtg-loading @Classes?.Loading" role="@CellRole" aria-colindex="1" aria-colspan="@TotalColumnSpan" style="grid-column:1 / -1;@Styles?.Loading">
+                @if (LoadingTemplate is not null)
+                {
+                    @LoadingTemplate
+                }
+                else
+                {
+                    <span class="bit-dtg-spinner"></span>
+                    <span>@Strings.LoadingText</span>
+                }
+            </div>
+        </div>
+    };
+
+    // The message row of a server grid whose last read failed, when the app handles that (OnReadError): the error, and
+    // a Retry that reads the rows again. While a read is on its way the row says so, and the button stays where it is,
+    // marked busy rather than disabled: a disabled button drops the focus it holds, which it keeps this way through a
+    // read that fails again too.
+    private RenderFragment RenderReadError => __builder =>
+    {
+        <div class="bit-dtg-row bit-dtg-message-row" role="row" style="grid-template-columns:var(--bit-dtg-template);">
+            <div class="bit-dtg-cell bit-dtg-read-error @Classes?.ReadError" role="@CellRole" aria-colindex="1" aria-colspan="@TotalColumnSpan" style="grid-column:1 / -1;@Styles?.ReadError">
+                @if (IsReading)
+                {
+                    <span class="bit-dtg-spinner"></span>
+                    <span>@Strings.LoadingText</span>
+                }
+                else
+                {
+                    <span>@Strings.ReadErrorText</span>
+                }
+                <button type="button" class="bit-dtg-btn bit-dtg-retry" disabled="@(Disabled)"
+                        aria-disabled="@(Disabled || IsReading ? "true" : null)"
+                        aria-busy="@(IsReading ? "true" : null)"
+                        @onclick="RetryReadAsync">@Strings.RetryText</button>
             </div>
         </div>
     };

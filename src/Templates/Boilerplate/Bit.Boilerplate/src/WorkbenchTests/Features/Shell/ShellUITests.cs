@@ -8,6 +8,8 @@ public class ShellUITests : ShellPageTest
 
     private ILocator ToolsButton(string name) => Tools.GetByRole(AriaRole.Button, new() { Name = name, Exact = true });
 
+    private ILocator TopBarButton(string name) => Page.Locator(".topbar").GetByRole(AriaRole.Button, new() { Name = name, Exact = true });
+
     private ILocator BuildingRows(string paneId = "1") => View(paneId).Locator(".name-cell .name");
 
     private ILocator BuildingsPlaceholders(string paneId = "1") => View(paneId).Locator(".list-pane .state");
@@ -23,7 +25,7 @@ public class ShellUITests : ShellPageTest
     {
         await OpenWorkbench("theme");
 
-        await Expect(Page).ToHaveTitleAsync($"{WorkbenchStrings.ThemePageTitle} · {WorkbenchStrings.WorkbenchTitle}");
+        await Expect(Page).ToHaveTitleAsync(new Regex($@"^(\(\d+\) )?{Regex.Escape($"{WorkbenchStrings.ThemePageTitle} · {WorkbenchStrings.WorkbenchTitle}")}$"));
         await Expect(View().GetByRole(AriaRole.Heading, new() { Name = WorkbenchStrings.ThemeHeading, Level = 2 }).First).ToBeVisibleAsync();
 
         if (IsPhone is false)
@@ -1050,8 +1052,8 @@ public class ShellUITests : ShellPageTest
         await Page.GotoAsync(Server.Address.ToString());
         await WaitUntilInteractive();
 
-        await Page.Locator("header.shell-header").GetByRole(AriaRole.Combobox, new() { Name = WorkbenchStrings.Language }).ClickAsync();
-        await Page.GetByRole(AriaRole.Option, new() { Name = "فارسی", Exact = true }).ClickAsync();
+        await Page.Locator("header.shell-header").GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.WorkbenchLanguage, Exact = true }).ClickAsync();
+        await Page.GetByRole(AriaRole.Menuitemradio, new() { Name = "فارسی", Exact = true }).ClickAsync();
         await Expect(Page.Locator("html")).ToHaveAttributeAsync("dir", "rtl");
 
         await OpenWorkbench("theme");
@@ -1075,6 +1077,32 @@ public class ShellUITests : ShellPageTest
     }
 
     [TestMethod, OnDesktops]
+    [TestCategory("Localization")]
+    public async Task EveryPage_Should_OfferTheLanguageNextToTheThemeSwitch(WorkbenchSurface surface)
+    {
+        foreach (var path in new[] { WorkbenchUrls.Progress, WorkbenchUrls.Flows })
+        {
+            await Page.GotoAsync(new Uri(Server.Address, path).ToString());
+            await WaitUntilInteractive();
+
+            await Expect(TopBarButton(WorkbenchStrings.WorkbenchLanguage)).ToBeVisibleAsync();
+            await Expect(TopBarButton(WorkbenchStrings.ToggleWorkbenchTheme)).ToBeVisibleAsync();
+        }
+
+        await OpenWorkbench("theme");
+
+        await Expect(TopBarButton(WorkbenchStrings.ToggleWorkbenchTheme)).ToBeVisibleAsync();
+
+        await Press(TopBarButton(WorkbenchStrings.WorkbenchLanguage));
+        await Press(Page.GetByRole(AriaRole.Menuitemradio, new() { Name = "فارسی", Exact = true }));
+
+        await Expect(Page.Locator("html")).ToHaveAttributeAsync("dir", "rtl");
+        await Expect(Page).ToHaveURLAsync(new Regex("/workbench/theme"));
+        await WaitForViews();
+        await Expect(View().Locator("html")).Not.ToHaveAttributeAsync("dir", "rtl");
+    }
+
+    [TestMethod, OnDesktops]
     public async Task TheLogoInTheTopBar_Should_LeadHome(WorkbenchSurface surface)
     {
         await OpenWorkbench("theme");
@@ -1095,7 +1123,7 @@ public class ShellUITests : ShellPageTest
         await Page.Locator("#wb-navigator").GetByRole(AriaRole.Link, new() { Name = WorkbenchStrings.ShiftsTitle }).ClickAsync();
 
         await Expect(Page.Locator(".topbar").GetByText(WorkbenchStrings.ShiftsTitle)).ToBeVisibleAsync();
-        await Expect(Page).ToHaveTitleAsync($"{WorkbenchStrings.ShiftsTitle} · {WorkbenchStrings.WorkbenchTitle}");
+        await Expect(Page).ToHaveTitleAsync(new Regex($@"^(\(\d+\) )?{Regex.Escape($"{WorkbenchStrings.ShiftsTitle} · {WorkbenchStrings.WorkbenchTitle}")}$"));
     }
 
     [TestMethod, OnPhones]

@@ -177,8 +177,8 @@ private TimeSpan? actionsTime;";
                        AllowedMinutes=""@(m => m % 15 == 0)""
                        InvalidErrorMessage=""Invalid Time!""
                        OutOfRangeErrorMessage=""The time must be between 08:00 and 18:00!""
-                       DisallowedTimeErrorMessage=""Only quarter hours can be booked!"" />
-        <ValidationMessage For=""@(() => formValidationTimePickerModel.Time)"" />
+                       DisallowedTimeErrorMessage=""Only quarter hours can be booked!""
+                       ShowValidationMessage />
     </div>
     <br />
     <BitButton ButtonType=""BitButtonType.Submit"">

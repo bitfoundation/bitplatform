@@ -43,6 +43,13 @@ public partial class BitVirtualizeDemo
          },
          new()
          {
+            Name = "EmptyText",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The text to render when there is no item available and no EmptyTemplate is given. Defaults to BitStrings.NoItemsFound (\"No items found\").",
+         },
+         new()
+         {
             Name = "EstimatedItemSize",
             Type = "float",
             DefaultValue = "50",

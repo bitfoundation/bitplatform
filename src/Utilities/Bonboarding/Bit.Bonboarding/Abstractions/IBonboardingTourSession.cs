@@ -72,6 +72,15 @@ public interface IBonboardingTourSession
     /// </summary>
     string? ValidationMessage => null;
 
+    /// <summary>True for a tour started as a preview (<see cref="BonboardingStartOptions.Preview"/>), which leaves the user's progress alone.</summary>
+    bool IsPreview => false;
+
+    /// <summary>
+    /// Why the current step's target could not be pointed at, while it waits for it or shows without it;
+    /// <see cref="BonboardingTargetIssue.None"/> otherwise.
+    /// </summary>
+    BonboardingTargetIssue TargetIssue => BonboardingTargetIssue.None;
+
     /// <summary>True while the session is on screen and interactive.</summary>
     bool IsActive { get; }
 

@@ -1,0 +1,173 @@
+﻿@page "/examples/diagram-formats"
+<PageTitle>Diagram Formats · Blow</PageTitle>
+
+<ExampleScaffold Title="Diagram Formats & Diff"
+                 Summary="A graph written out as Mermaid, Graphviz DOT, GraphML or Blow's own JSON, and Mermaid or GraphML read back in and laid out. A baseline marks the graph as it was; BlowGraphDiff lists every change since, and reverts them by applying the diff turned round.">
+    <Toolbar>
+        <label>
+            Format
+            <select @bind="_format" aria-label="Export format">
+                <option value="mermaid">Mermaid</option>
+                <option value="dot">Graphviz DOT</option>
+                <option value="graphml">GraphML</option>
+                <option value="json">Blow JSON</option>
+            </select>
+        </label>
+        <button class="btn btn-secondary" @onclick="Import">Import Mermaid / GraphML</button>
+        <button class="btn btn-secondary" @onclick="MarkBaseline">Mark baseline</button>
+        <button class="btn btn-secondary" disabled="@(Diff().IsEmpty)" @onclick="Revert">Revert to baseline</button>
+        <span class="df-status" role="status">@_status</span>
+    </Toolbar>
+    <ChildContent>
+        <div class="df">
+            <div class="df__canvas">
+                <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true" AriaLabel="Diagram"
+                            NodesChanged="_ => StateHasChanged()" EdgesChanged="_ => StateHasChanged()">
+                    <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+                    <BlowControls />
+                </BlowCanvas>
+            </div>
+            <div class="df__side">
+                <label class="df__label" for="df-export">Exported</label>
+                <textarea id="df-export" readonly rows="10">@Export()</textarea>
+                <label class="df__label" for="df-import">Paste Mermaid or GraphML to import</label>
+                <textarea id="df-import" rows="7" @bind="_input"></textarea>
+                @if (_issues.Count > 0)
+                {
+                    <ul class="df__issues" aria-label="Import notes">
+                        @foreach (var issue in _issues) { <li>@issue.Path: @issue.Message</li> }
+                    </ul>
+                }
+            </div>
+        </div>
+    </ChildContent>
+    <Footer>
+        @{ var diff = Diff(); }
+        <strong>Changes since the baseline:</strong>
+        @if (diff.IsEmpty)
+        {
+            <span> none.</span>
+        }
+        else
+        {
+            <ul class="df__changes">
+                @foreach (var n in diff.AddedNodes) { <li>Added node <strong>@n.Label</strong></li> }
+                @foreach (var n in diff.RemovedNodes) { <li>Removed node <strong>@n.Label</strong></li> }
+                @foreach (var c in diff.ChangedNodes) { <li>Changed <strong>@c.After.Label</strong>: @string.Join(", ", c.Properties)</li> }
+                @foreach (var e in diff.AddedEdges) { <li>Added edge @e.Source → @e.Target</li> }
+                @foreach (var e in diff.RemovedEdges) { <li>Removed edge @e.Source → @e.Target</li> }
+                @foreach (var c in diff.ChangedEdges) { <li>Changed edge @c.After.Id: @string.Join(", ", c.Properties)</li> }
+            </ul>
+        }
+    </Footer>
+    <TryIt>
+        <li>Pick a <strong>Format</strong>: the text beside the canvas is the graph written out, updated as you edit. Paste the Mermaid into a Markdown file on GitHub and it renders as a picture.</li>
+        <li><strong>Drag</strong> a node, <strong>connect</strong> two, or <strong>delete</strong> one: the footer lists each change since the baseline - "Changed Review: Position". <strong>Revert to baseline</strong> undoes them all at once; <strong>Mark baseline</strong> starts again from here.</li>
+        <li>Edit the Mermaid in the lower box - add <code>C --> E[Ship]</code> - and press <strong>Import</strong>: it is laid out, since Mermaid has no positions. Anything not imported (a <code>click</code>, a <code>style</code>) is listed, never run.</li>
+        <li>Paste the GraphML export into the lower box and import it: the graph comes back with its positions.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>BlowMermaidFormat.Export(document)</code>, <code>BlowDotFormat.Export</code> and <code>BlowGraphMLFormat.Export</code> write a <code>BlowDocument</code> (here <code>flow.ToDocument()</code>); ids and labels are escaped so nothing in a label can break out of the text.</li>
+        <li><code>BlowMermaidFormat.Import(text)</code> and <code>BlowGraphMLFormat.Import(xml)</code> return a <code>BlowImportResult</code>, as JSON import does: the document, plus issues with their line or element. Input is bounded by <code>BlowImportLimits</code>; GraphML never loads a DTD or an external entity.</li>
+        <li><code>BlowGraphDiff.Compare(before, after)</code> matches nodes and edges by id and names the properties that changed. <code>diff.Invert().ApplyTo(nodes, edges)</code> turns the graph back.</li>
+    </HowItWorks>
+</ExampleScaffold>
+
+<style>
+    .df { display: flex; height: 100%; }
+    .df__canvas { flex: 1; position: relative; min-width: 0; }
+    .df__side { width: 320px; padding: 10px; display: flex; flex-direction: column; gap: 4px; border-left: 1px solid var(--bb-border); background: var(--bb-surface-sunken); color: var(--bb-text); }
+    .df__side textarea { width: 100%; box-sizing: border-box; font: 12px/1.4 ui-monospace, monospace; resize: vertical; }
+    .df__label { font-size: 12px; font-weight: 600; }
+    .df__issues { font-size: 12px; margin: 0; padding-left: 16px; }
+    .df__changes { margin: 4px 0 0; padding-left: 18px; font-size: 12px; columns: 2 260px; }
+    .df-status { margin-left: auto; font-size: 12px; color: var(--bb-text-soft); }
+    @@media (max-width: 760px) {
+        .df { flex-direction: column; }
+        .df__side { width: auto; border-left: 0; border-top: 1px solid var(--bb-border); }
+        .df__canvas { min-height: 300px; }
+    }
+</style>
+
+@code {
+    private BlowCanvas? _flow;
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private List<BlowNode> _baseNodes = [];
+    private List<BlowEdge> _baseEdges = [];
+    private IReadOnlyList<BlowImportIssue> _issues = [];
+    private string _format = "mermaid";
+    private string _status = "";
+    private string _input = """
+        flowchart LR
+            A[Idea] --> B{Review}
+            B -->|yes| C[Build]
+            B -->|no| D([Shelve])
+            C --> E[Ship]
+            click A "https://example.com"
+        """;
+
+    protected override void OnInitialized()
+    {
+        LoadMermaid(_input);
+        MarkBaseline();
+    }
+
+    // The page's lists, which an import has just replaced before the canvas sees them; the canvas only adds its viewport.
+    private BlowDocument Document() => new() { Nodes = _nodes, Edges = _edges, Viewport = _flow?.ToDocument().Viewport };
+
+    private string Export() => _format switch
+    {
+        "dot" => BlowDotFormat.Export(Document()),
+        "graphml" => BlowGraphMLFormat.Export(Document()),
+        "json" => BlowSerializer.Serialize(Document(), new BlowSerializerOptions { WriteIndented = true }),
+        _ => BlowMermaidFormat.Export(Document()),
+    };
+
+    private void Import()
+    {
+        var text = _input.TrimStart();
+        if (text.StartsWith('<')) Load(BlowGraphMLFormat.Import(text));
+        else LoadMermaid(text);
+    }
+
+    private void LoadMermaid(string text) => Load(BlowMermaidFormat.Import(text));
+
+    private void Load(BlowImportResult result)
+    {
+        _issues = result.Issues;
+        if (!result.Succeeded || result.Document is null)
+        {
+            _status = "Not imported: " + (result.Issues.FirstOrDefault()?.Message ?? "unknown problem.");
+            return;
+        }
+        _nodes = result.Document.Nodes;
+        _edges = result.Document.Edges;
+        _status = $"Imported {_nodes.Count} nodes and {_edges.Count} edges.";
+        _ = FitSoonAsync();
+    }
+
+    private async Task FitSoonAsync()
+    {
+        // The new nodes are measured on the next render; fit once they are on screen.
+        await Task.Delay(50);
+        if (_flow is not null) await _flow.FitViewAsync(new BlowFitViewOptions { Padding = 0.15 });
+    }
+
+    private BlowGraphDiff Diff() => BlowGraphDiff.Compare(_baseNodes, _baseEdges, _nodes, _edges, new BlowGraphDiffOptions { PositionTolerance = 0.5 });
+
+    private void MarkBaseline()
+    {
+        _baseNodes = [.. _nodes.Select(n => n.Clone())];
+        _baseEdges = [.. _edges.Select(e => e.Clone())];
+        _status = "Baseline marked.";
+    }
+
+    private void Revert()
+    {
+        var diff = Diff();
+        diff.Invert().ApplyTo(_nodes, _edges);
+        _status = $"Reverted {diff.Count} change(s).";
+        _flow?.Refresh(remeasure: true);
+    }
+}

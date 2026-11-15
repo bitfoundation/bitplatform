@@ -59,6 +59,7 @@
             <div class="composer-actions">
                 <BitButton IconName="@BitIconName.Send" Title="Ctrl+Enter" Disabled="string.IsNullOrWhiteSpace(Drafts.Comment) || isSending" OnClick="Send">@Localizer[nameof(WorkbenchStrings.Send)]</BitButton>
                 <BitButton Variant="BitVariant.Text" OnClick="CancelPending">@Localizer[nameof(WorkbenchStrings.Cancel)]</BitButton>
+                <DictationButton Value="@Drafts.Comment" ValueChanged="(string? text) => Drafts.Comment = text" Class="composer-dictation" />
             </div>
         </section>
     }
@@ -143,6 +144,7 @@
                                   MaxLength="WorkbenchReviewDocument.MaxTextLength" />
                     <div class="thread-actions">
                         <BitButton Size="BitSize.Small" IconName="@BitIconName.Send" Title="Ctrl+Enter" Disabled="string.IsNullOrWhiteSpace(Drafts.Reply)" OnClick="() => Reply(thread)">@Localizer[nameof(WorkbenchStrings.Reply)]</BitButton>
+                        <DictationButton Size="BitSize.Small" Value="@Drafts.Reply" ValueChanged="(string? text) => Drafts.Reply = text" />
                         @if (thread.Status is WorkbenchReviewStatus.Done)
                         {
                             <BitButton Size="BitSize.Small" Variant="BitVariant.Outline" IconName="@BitIconName.Undo" OnClick="() => session.SetStatus(thread.Id, WorkbenchReviewStatus.Open)">@Localizer[nameof(WorkbenchStrings.Reopen)]</BitButton>

@@ -1,0 +1,97 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+@typeparam TItem
+
+@* The steps are a sequence, so they are an ordered list, whose items a screen reader counts ("2 of 4"). The explicit
+   list role is kept on purpose: WebKit drops the list semantics of a list whose markers are hidden (list-style: none)
+   unless the role is spelled out. The current step says so through aria-current="step", and a completed step or one
+   in error through a visually hidden word after its text. *@
+<ol @ref="RootElement" @attributes="DisabledAwareHtmlAttributes"
+    id="@_Id"
+    role="list"
+    style="@StyleBuilder.Value"
+    class="@ClassBuilder.Value"
+    aria-label="@ResolveAriaLabel()"
+    dir="@Dir?.ToString().ToLower()">
+    @* The options render nothing but a marker each: the steps are drawn below from the options that registered. The
+       markers are kept in a hidden item of their own, since an ordered list holds nothing but items, and the first one,
+       so that the last step stays the list's last child. *@
+    @if (Options is not null || ChildContent is not null)
+    {
+        <li hidden aria-hidden="true" style="display:none" id="@_optionsContainerId">
+            <CascadingValue Value="this" IsFixed="true">
+                @(Options ?? ChildContent)
+            </CascadingValue>
+        </li>
+    }
+    @for (int i = 0; i < _items.Count; i++)
+    {
+        var index = i;
+        var item = _items[index];
+        var state = GetState(item, index);
+        var disabled = Disabled || GetIsDisabled(item);
+        var icon = GetIndicatorIcon(item, state);
+        var text = GetText(item);
+        var description = GetDescription(item);
+        var stateText = GetStateText(state);
+        var ariaCurrent = state == BitStepperStepState.Current || (state == BitStepperStepState.Error && index == CurrentIndex) ? "step" : null;
+
+        RenderFragment content = @<text>
+            <span aria-hidden="true" style="@Styles?.Indicator" class="bit-stp-ind @Classes?.Indicator">
+                @if (icon is not null)
+                {
+                    <i style="@Styles?.Icon" class="bit-stp-ico @icon.GetCssClasses() @Classes?.Icon" />
+                }
+                else
+                {
+                    <span style="@Styles?.Number" class="bit-stp-num @Classes?.Number">@GetNumber(index)</span>
+                }
+            </span>
+            <span style="@Styles?.Label" class="bit-stp-lbl @Classes?.Label">
+                @if (text.HasValue())
+                {
+                    <span style="@Styles?.Text" class="bit-stp-txt @Classes?.Text">@text</span>
+                }
+                @if (description.HasValue())
+                {
+                    <span style="@Styles?.Description" class="bit-stp-dsc @Classes?.Description">@description</span>
+                }
+            </span>
+            @if (stateText.HasValue())
+            {
+                <span class="bit-stp-sts">@stateText</span>
+            }
+        </text>;
+
+        <li @key="GetItemKey(item, index)" style="@GetStepStyle(item, state)" class="@GetStepClass(item, state, disabled)">
+            @if (IsButton(item, index))
+            {
+                <button type="button"
+                        @onclick="() => HandleOnStepClick(item, index)"
+                        title="@GetTitle(item)"
+                        disabled="@disabled"
+                        aria-disabled="@(disabled ? "true" : null)"
+                        aria-current="@ariaCurrent"
+                        aria-label="@GetAriaLabel(item)"
+                        style="@Styles?.Button"
+                        class="bit-stp-btn @Classes?.Button">
+                    @content
+                </button>
+            }
+            else
+            {
+                <div title="@GetTitle(item)"
+                     aria-current="@ariaCurrent"
+                     style="@Styles?.Button"
+                     class="bit-stp-btn @Classes?.Button">
+                    @content
+                </div>
+            }
+
+            @if (index < _items.Count - 1)
+            {
+                <span aria-hidden="true" style="@Styles?.Connector" class="bit-stp-con @Classes?.Connector"></span>
+            }
+        </li>
+    }
+</ol>

@@ -8,7 +8,7 @@ public partial class AiBasicScenarioPage
 <div style="height: 560px">
     <BitAiChat Session="session"
                EmptyTitle="Ask me anything"
-               EmptyBody="This demo echoes what you send, a few characters at a time."
+               EmptyDescription="This demo echoes what you send, a few characters at a time."
                Suggestions="suggestions" />
 </div>
 """;

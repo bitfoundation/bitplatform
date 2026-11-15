@@ -90,6 +90,15 @@ public sealed partial record WorkbenchScenario
         return this with { Switches = WriteSwitches(switches) };
     }
 
+    /// <summary>The keys of the switches set to different values here and in another scenario.</summary>
+    public IEnumerable<string> ChangedSwitches(WorkbenchScenario other)
+    {
+        var mine = ReadSwitches(Switches);
+        var theirs = ReadSwitches(other.Switches);
+
+        return mine.Keys.Union(theirs.Keys).Where(key => mine.GetValueOrDefault(key) != theirs.GetValueOrDefault(key));
+    }
+
     /// <summary>A copy on a custom device of this size, clamped to the custom size limits.</summary>
     public WorkbenchScenario WithSize(int width, int height)
     {

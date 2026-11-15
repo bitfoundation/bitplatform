@@ -17,6 +17,8 @@ public partial class BitFcEventDetailsDialog : IAsyncDisposable
 
     private bool _showEdit;
     private BitFullCalendarEvent? _editTarget;
+    // Whether the edit of an occurrence means it and every later one (see BitFcAddEditEventDialog.EditFollowing).
+    private bool _editFollowing;
     private ScopeAction _pendingScopeAction;
     private bool _isDeleting;
     private bool _deleteCommitted;
@@ -137,6 +139,7 @@ public partial class BitFcEventDetailsDialog : IAsyncDisposable
         }
 
         _editTarget = Event;
+        _editFollowing = false;
         _showEdit = true;
     }
 
@@ -186,14 +189,46 @@ public partial class BitFcEventDetailsDialog : IAsyncDisposable
         if (action is ScopeAction.Edit)
         {
             _editTarget = allOccurrences ? master : Event;
+            _editFollowing = false;
             _showEdit = true;
         }
         else if (action is ScopeAction.Delete)
         {
             if (allOccurrences)
                 await DeleteEventAsync(master);
+            else if (Event.OccurrenceDate is { } occurrenceDate)
+                await ReplaceSeriesAsync(master, BitFullCalendarHelpers.SkipOccurrence(master, occurrenceDate));
+        }
+    }
+
+    /// <summary>
+    /// Carries out the action the scope prompt was opened for on this occurrence and every later one. An edit opens
+    /// the add/edit dialog on the occurrence, whose save ends the series before it and starts a new series from it;
+    /// a delete ends the series before it. With nothing of the series before this occurrence, both are the whole
+    /// series.
+    /// </summary>
+    private async Task OnScopeFollowingConfirmed()
+    {
+        var action = _pendingScopeAction;
+        _pendingScopeAction = ScopeAction.None;
+
+        if ((action is ScopeAction.Edit ? CanEdit : CanDelete) is false || SeriesMaster is not { } master
+            || Event.OccurrenceDate is not { } occurrenceDate)
+            return;
+
+        var ended = BitFullCalendarHelpers.EndSeriesBefore(master, occurrenceDate);
+        if (action is ScopeAction.Edit)
+        {
+            _editTarget = ended is null ? master : Event;
+            _editFollowing = ended is not null;
+            _showEdit = true;
+        }
+        else if (action is ScopeAction.Delete)
+        {
+            if (ended is null)
+                await DeleteEventAsync(master);
             else
-                await SkipOccurrenceAsync(master);
+                await ReplaceSeriesAsync(master, ended);
         }
     }
 
@@ -250,12 +285,13 @@ public partial class BitFcEventDetailsDialog : IAsyncDisposable
     }
 
     /// <summary>
-    /// Deletes this occurrence alone: the series skips its date, reported as an Edit of the master,
-    /// and every other occurrence stays where it was.
+    /// Deletes part of the series - this occurrence alone (the series skips its date), or it and every later one (the
+    /// series ends before it) - by putting <paramref name="updated"/> in the master's place, reported as an Edit of the
+    /// master. Every other occurrence stays where it was.
     /// </summary>
-    private async Task SkipOccurrenceAsync(BitFullCalendarEvent master)
+    private async Task ReplaceSeriesAsync(BitFullCalendarEvent master, BitFullCalendarEvent updated)
     {
-        if (_isDeleting || Event.OccurrenceDate is not { } occurrenceDate)
+        if (_isDeleting)
             return;
         _isDeleting = true;
 
@@ -264,7 +300,6 @@ public partial class BitFcEventDetailsDialog : IAsyncDisposable
             if (!_deleteCommitted)
             {
                 var snapshot = BitFullCalendarChangeNotifier.CloneEvent(master);
-                var updated = BitFullCalendarHelpers.SkipOccurrence(master, occurrenceDate);
                 State.UpdateEvent(updated);
                 try
                 {

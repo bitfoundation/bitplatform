@@ -32,7 +32,7 @@ dotnet add package Bit.Bcrdt.SignalR</pre>
             <tbody>
                 <tr>
                     <td class="bb-table-key">Bit.Bcrdt</td>
-                    <td>The engine - <code>BcrdtText</code>, <code>BcrdtArray</code>, <code>BcrdtMap</code> and <code>BcrdtSet</code>, updates, snapshots and selective undo - with presence, the in-memory, file-system and IndexedDB stores, the sync protocol, <code>AddBitBcrdtServices</code>, the input bindings, the in-memory and WebSocket transports, metrics, and the Blazor components: <code>BcrdtCollaborationScope</code>, <code>BcrdtTextArea</code>, <code>BcrdtPresenceView</code> and <code>BcrdtComponentBase</code>.</td>
+                    <td>The engine - <code>BcrdtText</code>, <code>BcrdtArray</code>, <code>BcrdtMap</code> and <code>BcrdtSet</code>, updates, snapshots and selective undo - with presence, the in-memory, file-system and IndexedDB stores, the sync protocol, <code>AddBitBcrdtServices</code>, the input bindings, the in-memory and WebSocket transports, metrics, and the Blazor components: <code>BcrdtCollaborationScope</code>, <code>BcrdtTextArea</code>, <code>BcrdtPresenceView</code>, <code>BcrdtSyncStatus</code> and <code>BcrdtComponentBase</code>.</td>
                 </tr>
                 <tr>
                     <td class="bb-table-key">Bit.Bcrdt.SignalR</td>
@@ -137,14 +137,16 @@ app.MapHub&lt;BcrdtHub&gt;(<span class="s">"/hub/bcrdt"</span>);</pre>
         shows <code>LoadingContent</code> while it opens (and <code>ErrorContent</code> if it cannot), follows
         <code>DocumentId</code> when it changes and releases the document when it goes away.
         <code>BcrdtTextArea</code> turns every keystroke into the minimal edit and publishes the caret through
-        presence; <code>BcrdtPresenceView</code> lists who is here. There is no stylesheet to reference and no script
-        tag to add: the one small module the textarea needs is imported on demand.
+        presence; <code>BcrdtPresenceView</code> lists who is here, and <code>BcrdtSyncStatus</code> says whether the
+        document is synced, reconnecting or offline. There is no stylesheet to reference and no script tag to add: the
+        one small module the textarea needs is imported on demand.
     </p>
     <pre class="bb-code"><span class="k">@@using</span> Bit.Bcrdt
 <span class="k">@@using</span> Bit.Bcrdt.Blazor
 
 &lt;<span class="k">BcrdtCollaborationScope</span> DocumentId=<span class="s">"notes-42"</span> User=<span class="s">"_me"</span> Context=<span class="s">"document"</span>&gt;
     &lt;<span class="k">BcrdtPresenceView</span> Presence=<span class="s">"document.Presence"</span> /&gt;
+    &lt;<span class="k">BcrdtSyncStatus</span> /&gt;
     &lt;<span class="k">BcrdtTextArea</span> Text=<span class="s">"@@document.Text("body")"</span> Presence=<span class="s">"document.Presence"</span> /&gt;
 &lt;/<span class="k">BcrdtCollaborationScope</span>&gt;
 

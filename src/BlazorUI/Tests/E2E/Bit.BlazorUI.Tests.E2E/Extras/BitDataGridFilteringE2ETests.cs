@@ -144,7 +144,7 @@ public class BitDataGridFilteringE2ETests : BitDataGridE2ETestBase
 
         await FilterBox(id, "Name").FillAsync("zzz");
         await Expect(DataRows(id)).ToHaveCountAsync(0);
-        await Expect(MessageRow(id)).ToHaveTextAsync("No records match the current filters.");
+        await Expect(MessageRow(id)).ToHaveTextAsync("No results found");
     }
 
     [TestMethod]
@@ -306,7 +306,7 @@ public class BitDataGridFilteringE2ETests : BitDataGridE2ETestBase
         // A column without blanks has nothing to show for Is blank.
         await OperatorPicker(id, "Stock").SelectOptionAsync("IsEmpty");
         await Expect(DataRows(id)).ToHaveCountAsync(0);
-        await Expect(MessageRow(id)).ToHaveTextAsync("No records match the current filters.");
+        await Expect(MessageRow(id)).ToHaveTextAsync("No results found");
         await OperatorPicker(id, "Stock").SelectOptionAsync("IsNotEmpty");
         await Expect(DataRows(id)).ToHaveCountAsync(10);
     }
@@ -430,7 +430,7 @@ public class BitDataGridFilteringE2ETests : BitDataGridE2ETestBase
         // Stock is not searchable: Novel's 120 matches nothing.
         await box.FillAsync("120");
         await Expect(DataRows("grid-search")).ToHaveCountAsync(0);
-        await Expect(MessageRow("grid-search")).ToHaveTextAsync("No records match the current filters.");
+        await Expect(MessageRow("grid-search")).ToHaveTextAsync("No results found");
     }
 
     [TestMethod]

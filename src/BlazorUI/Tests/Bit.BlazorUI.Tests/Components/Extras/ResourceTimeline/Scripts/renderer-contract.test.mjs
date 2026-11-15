@@ -465,6 +465,30 @@ test('shade flags tint the date row and the resource column', () => {
     assert.equal(scene.surfaceResourceAxis[0].width, 150);
 });
 
+test('stripes tint the rows under the date row once its periods are coarser than them', () => {
+    // At half a pixel an hour the date row marks weeks (Monday-first). Week
+    // stripes starting on Monday still line up with it and tint it; day stripes
+    // would split its weeks between its separators, so they tint the rows under it.
+    const shaded = (unit) => {
+        const engine = surfaceEngine({ columns: { unit, colors: ['#aaa', '#bbb'] }, shadeTimeAxis: true },
+            { pph: 0.5, hours: 24 * 120, firstDayOfWeek: 1 });
+        const scene = engine.buildScene();
+        assert.ok(scene.surfaceTimeAxis.length >= 2, `${unit}: tinted`);
+        return { scene, rect: scene.surfaceTimeAxis[0] };
+    };
+
+    const weeks = shaded('week');
+    const weekStarts = weeks.scene.days.filter(d => d.sepTs != null);
+    assert.ok(weekStarts.length >= 2);
+    assert.equal(weekStarts[1].sepTs - weekStarts[0].sepTs, 7 * 24 * HOUR, 'the date row marks weeks');
+    assert.equal(weeks.rect.y, 0);
+    assert.equal(weeks.rect.height, 22);
+
+    const days = shaded('day');
+    assert.equal(days.rect.y, 22);
+    assert.equal(days.rect.height, days.scene.viewport.axisHeight - 22);
+});
+
 test('clearing the surface drops the previous frame\'s rects', () => {
     const engine = surfaceEngine({
         columns: { colors: ['#111', '#222'] },

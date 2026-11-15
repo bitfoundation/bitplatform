@@ -61,6 +61,47 @@ internal sealed class BlazeDbOpaqueTable : IBlazeDbTableInternal
 
     public void Clear() => _rows.Clear();
 
+    public BlazeDbRowMerger CreateMerger() => new Merger(Name);
+
+    /// <summary>
+    /// Rows of a table no descriptor describes, matched by their key bytes - all that can be known without one.
+    /// Also used for a name the persisted data holds that no table carried when the checkpoint began.
+    /// </summary>
+    internal sealed class Merger(string name) : BlazeDbRowMerger
+    {
+        // The last write per key; null for a delete.
+        private readonly Dictionary<byte[], ReadOnlyMemory<byte>?> _changes = new(ByteArrayComparer.Instance);
+
+        public override bool HasChanges => _changes.Count > 0;
+
+        public override void Set(ReadOnlyMemory<byte> key, ReadOnlyMemory<byte> row) => _changes[key.ToArray()] = row;
+
+        public override void Delete(ReadOnlySpan<byte> key) => _changes[key.ToArray()] = null;
+
+        public override bool Supersedes(ReadOnlySpan<byte> key) => _changes.Count > 0 && _changes.ContainsKey(key.ToArray());
+
+        public override void KeyOfRow(ReadOnlySpan<byte> row, BlazeDbBufferWriter scratch) =>
+            throw new BlazeDbException(
+                $"Persisted data references table '{name}', which is not registered in BlazeDbDatabaseOptions, " +
+                "and the snapshot predates the format that lets unregistered tables be carried along. " +
+                "Register the table to open this database.");
+
+        public override int WriteRows(BlazeDbBufferWriter writer, BlazeDbBufferWriter scratch)
+        {
+            var count = 0;
+            foreach (var (key, row) in _changes)
+            {
+                if (row is { } bytes)
+                {
+                    writer.WriteBytes(key);
+                    writer.WriteBytes(bytes.Span);
+                    count++;
+                }
+            }
+            return count;
+        }
+    }
+
     // Raw bytes have no indexes to disagree with.
     public void VerifyIntegrity(List<BlazeDbIntegrityIssue> issues)
     {

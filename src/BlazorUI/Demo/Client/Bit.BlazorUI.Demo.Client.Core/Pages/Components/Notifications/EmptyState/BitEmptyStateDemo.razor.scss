@@ -1,0 +1,18 @@
+﻿::deep {
+    .custom-root {
+        border-radius: 1rem;
+        background-color: var(--bit-clr-bg-sec);
+    }
+
+    .custom-icon {
+        padding: 0.75rem;
+        border-radius: 50%;
+        color: var(--bit-clr-pri-text);
+        background-color: var(--bit-clr-pri);
+    }
+
+    .custom-title {
+        letter-spacing: 0.05rem;
+        text-transform: uppercase;
+    }
+}

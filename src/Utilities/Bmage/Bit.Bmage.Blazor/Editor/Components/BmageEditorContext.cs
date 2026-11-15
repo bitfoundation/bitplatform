@@ -52,6 +52,15 @@ public sealed class BmageEditorContext
     /// <summary>The active tool.</summary>
     public EditorToolKind Tool => _editor.Tool;
 
+    /// <summary>The tools the editor offers, in toolbar order (<see cref="BmageEditor.Tools"/>).</summary>
+    public IReadOnlyList<EditorToolKind> OfferedTools => _editor.OfferedTools;
+
+    /// <summary>True when the editor offers <paramref name="tool"/>.</summary>
+    public bool IsToolOffered(EditorToolKind tool) => _editor.IsToolOffered(tool);
+
+    /// <summary>The tabs the built-in panel shows (<see cref="BmageEditor.Panels"/>).</summary>
+    public EditorPanels Panels => _editor.Panels;
+
     /// <summary>The current drawing settings.</summary>
     public EditorToolSettings Settings => _editor.Settings;
 
@@ -114,6 +123,9 @@ public sealed class BmageEditorContext
 
     /// <summary>Sets the aspect ratio the crop tool enforces, or null for freeform.</summary>
     public void SetCropAspect(AspectRatio? aspect) => _editor.SetCropAspect(aspect);
+
+    /// <inheritdoc cref="BmageEditor.BeginCrop"/>
+    public void BeginCrop(AspectRatio? aspect = null) => _editor.BeginCrop(aspect);
 
     /// <summary>Applies the pending crop.</summary>
     public Task ApplyCropAsync() => _editor.ApplyCropAsync();

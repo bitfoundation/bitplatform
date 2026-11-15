@@ -25,9 +25,21 @@ public partial class AppPageData
     [Parameter] public string? Description { get; set; }
 
     /// <summary>
-    /// Whatever else this page wants in the document head - a sharing card, a schema. It renders into
+    /// The absolute url of the picture a link to this page shows where it is shared, such as a product's photo, which
+    /// also gets the large card. Left unset, the app's icon, in the small one.
+    /// </summary>
+    [Parameter] public string? Image { get; set; }
+
+    /// <summary>
+    /// The page's <c>og:type</c>; <c>website</c> unless it describes something more specific, such as a product.
+    /// </summary>
+    [Parameter] public string OpenGraphType { get; set; } = "website";
+
+    /// <summary>
+    /// Whatever else this page wants in the document head, such as a schema. It renders into
     /// <see cref="HeadSectionName"/> rather than as a HeadContent of the page's own, which would shadow every other one.
-    /// A tag every page needs goes in <see cref="Layout.AppHead"/> instead.
+    /// A tag every page needs goes in <see cref="Layout.AppHead"/> instead, and the sharing tags are already rendered
+    /// from <see cref="Title"/>, <see cref="Description"/> and <see cref="Image"/>.
     /// </summary>
     [Parameter] public RenderFragment? Head { get; set; }
 
@@ -36,6 +48,17 @@ public partial class AppPageData
     /// <c>QueryKeys = "*"</c> gives every query variant its own cache entry and its own crawlable url.
     /// </summary>
     private string CanonicalUrl => new Uri(navigationManager.Uri).GetCanonicalUrl();
+
+    private string MetaDescription => Description ?? localizer[nameof(AppStrings.DescriptionMetaTagValue)];
+
+    /// <summary>
+    /// Absolute, because an unfurler does not resolve a relative one, and never empty, because several draw a broken
+    /// image rather than none.
+    /// </summary>
+    private string ShareImageUrl => Image ?? new Uri(new Uri(navigationManager.BaseUri), "images/icons/bit-icon-512.png").ToString();
+
+    /// <inheritdoc cref="NoIndexAttribute"/>
+    private bool NoIndex => PageUrls.IsNoIndex(new Uri(navigationManager.Uri));
 
     protected override void OnParametersSet()
     {

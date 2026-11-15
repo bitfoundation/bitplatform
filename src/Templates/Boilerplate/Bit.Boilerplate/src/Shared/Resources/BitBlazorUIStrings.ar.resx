@@ -280,4 +280,166 @@
   <data name="DataGridAnnouncementSearchCleared" xml:space="preserve">
     <value>تم مسح البحث</value>
   </data>
+  <data name="CalendarAriaLabel" xml:space="preserve">
+    <value>التقويم</value>
+  </data>
+  <data name="CalendarGoToNextMonthTitle" xml:space="preserve">
+    <value>الانتقال إلى الشهر التالي</value>
+  </data>
+  <data name="CalendarGoToPrevMonthTitle" xml:space="preserve">
+    <value>الانتقال إلى الشهر السابق</value>
+  </data>
+  <data name="CalendarGoToNextYearTitle" xml:space="preserve">
+    <value>الانتقال إلى السنة التالية {0}</value>
+  </data>
+  <data name="CalendarGoToPrevYearTitle" xml:space="preserve">
+    <value>الانتقال إلى السنة السابقة {0}</value>
+  </data>
+  <data name="CalendarGoToNextYearRangeTitle" xml:space="preserve">
+    <value>نطاق السنوات التالي {0} - {1}</value>
+  </data>
+  <data name="CalendarGoToPrevYearRangeTitle" xml:space="preserve">
+    <value>نطاق السنوات السابق {0} - {1}</value>
+  </data>
+  <data name="CalendarGoToTodayTitle" xml:space="preserve">
+    <value>الانتقال إلى اليوم</value>
+  </data>
+  <data name="CalendarMonthPickerToggleTitle" xml:space="preserve">
+    <value>{0}، تغيير الشهر</value>
+  </data>
+  <data name="CalendarYearPickerToggleTitle" xml:space="preserve">
+    <value>{0}، تغيير السنة</value>
+  </data>
+  <data name="CalendarYearRangePickerToggleTitle" xml:space="preserve">
+    <value>{0} - {1}، تغيير الشهر</value>
+  </data>
+  <data name="CalendarWeekNumbersHeaderTitle" xml:space="preserve">
+    <value>الأسبوع</value>
+  </data>
+  <data name="CalendarWeekNumberTitle" xml:space="preserve">
+    <value>الأسبوع رقم {0}</value>
+  </data>
+  <data name="CalendarShowTimePickerTitle" xml:space="preserve">
+    <value>إظهار منتقي الوقت</value>
+  </data>
+  <data name="CalendarHideTimePickerTitle" xml:space="preserve">
+    <value>إخفاء منتقي الوقت</value>
+  </data>
+  <data name="DatePickerClearButtonTitle" xml:space="preserve">
+    <value>مسح التاريخ</value>
+  </data>
+  <data name="DatePickerCloseButtonTitle" xml:space="preserve">
+    <value>إغلاق منتقي التاريخ</value>
+  </data>
+  <data name="DatePickerDateFormatAriaDescription" xml:space="preserve">
+    <value>التنسيق المتوقع: {0}</value>
+  </data>
+  <data name="DatePickerHighlightedDateAriaLabel" xml:space="preserve">
+    <value>{0}، مميز</value>
+  </data>
+  <data name="DatePickerNowButtonTitle" xml:space="preserve">
+    <value>الانتقال إلى الآن</value>
+  </data>
+  <data name="DatePickerSelectedDateAriaAtomic" xml:space="preserve">
+    <value>التاريخ المحدد {0}</value>
+  </data>
+  <data name="TimeIncreaseHourTitle" xml:space="preserve">
+    <value>زيادة الساعة</value>
+  </data>
+  <data name="TimeDecreaseHourTitle" xml:space="preserve">
+    <value>إنقاص الساعة</value>
+  </data>
+  <data name="TimeIncreaseMinuteTitle" xml:space="preserve">
+    <value>زيادة الدقيقة</value>
+  </data>
+  <data name="TimeDecreaseMinuteTitle" xml:space="preserve">
+    <value>إنقاص الدقيقة</value>
+  </data>
+  <data name="TimeIncreaseSecondTitle" xml:space="preserve">
+    <value>زيادة الثانية</value>
+  </data>
+  <data name="TimeDecreaseSecondTitle" xml:space="preserve">
+    <value>إنقاص الثانية</value>
+  </data>
+  <data name="TimeHourLabel" xml:space="preserve">
+    <value>الساعة</value>
+  </data>
+  <data name="TimeMinuteLabel" xml:space="preserve">
+    <value>الدقيقة</value>
+  </data>
+  <data name="TimeSecondLabel" xml:space="preserve">
+    <value>الثانية</value>
+  </data>
+  <data name="DateRangePickerApplyButtonText" xml:space="preserve">
+    <value>تطبيق</value>
+  </data>
+  <data name="DateRangePickerCancelButtonText" xml:space="preserve">
+    <value>إلغاء</value>
+  </data>
+  <data name="DateRangePickerClearButtonTitle" xml:space="preserve">
+    <value>مسح نطاق التاريخ المحدد</value>
+  </data>
+  <data name="DateRangePickerCloseButtonTitle" xml:space="preserve">
+    <value>إغلاق منتقي نطاق التاريخ</value>
+  </data>
+  <data name="DateRangePickerPresetsAriaLabel" xml:space="preserve">
+    <value>نطاقات تاريخ محددة مسبقًا</value>
+  </data>
+  <data name="DateRangePickerSelectedDateAriaAtomic" xml:space="preserve">
+    <value>نطاق التاريخ المحدد {0}</value>
+  </data>
+  <data name="DateRangePickerStartTimeIncreaseHourTitle" xml:space="preserve">
+    <value>زيادة ساعة البدء</value>
+  </data>
+  <data name="DateRangePickerStartTimeDecreaseHourTitle" xml:space="preserve">
+    <value>إنقاص ساعة البدء</value>
+  </data>
+  <data name="DateRangePickerStartTimeIncreaseMinuteTitle" xml:space="preserve">
+    <value>زيادة دقيقة البدء</value>
+  </data>
+  <data name="DateRangePickerStartTimeDecreaseMinuteTitle" xml:space="preserve">
+    <value>إنقاص دقيقة البدء</value>
+  </data>
+  <data name="DateRangePickerEndTimeIncreaseHourTitle" xml:space="preserve">
+    <value>زيادة ساعة الانتهاء</value>
+  </data>
+  <data name="DateRangePickerEndTimeDecreaseHourTitle" xml:space="preserve">
+    <value>إنقاص ساعة الانتهاء</value>
+  </data>
+  <data name="DateRangePickerEndTimeIncreaseMinuteTitle" xml:space="preserve">
+    <value>زيادة دقيقة الانتهاء</value>
+  </data>
+  <data name="DateRangePickerEndTimeDecreaseMinuteTitle" xml:space="preserve">
+    <value>إنقاص دقيقة الانتهاء</value>
+  </data>
+  <data name="DateRangePickerStartHourLabel" xml:space="preserve">
+    <value>ساعة البدء</value>
+  </data>
+  <data name="DateRangePickerStartMinuteLabel" xml:space="preserve">
+    <value>دقيقة البدء</value>
+  </data>
+  <data name="DateRangePickerEndHourLabel" xml:space="preserve">
+    <value>ساعة الانتهاء</value>
+  </data>
+  <data name="DateRangePickerEndMinuteLabel" xml:space="preserve">
+    <value>دقيقة الانتهاء</value>
+  </data>
+  <data name="DateRangePickerValueFormat" xml:space="preserve">
+    <value>من {0} إلى {1}</value>
+  </data>
+  <data name="TimePickerCalloutAriaLabel" xml:space="preserve">
+    <value>الساعة</value>
+  </data>
+  <data name="TimePickerClearButtonText" xml:space="preserve">
+    <value>مسح</value>
+  </data>
+  <data name="TimePickerClearButtonTitle" xml:space="preserve">
+    <value>مسح الوقت المحدد</value>
+  </data>
+  <data name="TimePickerCloseButtonTitle" xml:space="preserve">
+    <value>إغلاق منتقي الوقت</value>
+  </data>
+  <data name="TimePickerNowButtonText" xml:space="preserve">
+    <value>الآن</value>
+  </data>
 </root>

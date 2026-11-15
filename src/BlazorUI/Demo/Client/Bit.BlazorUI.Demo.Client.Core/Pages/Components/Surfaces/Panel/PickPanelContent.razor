@@ -1,0 +1,12 @@
+﻿<BitStack Gap="0.5rem">
+    @foreach (var size in sizes)
+    {
+        <BitButton Variant="BitVariant.Outline" OnClick="() => panelReference.CloseWith(size)">@size</BitButton>
+    }
+</BitStack>
+
+@code {
+    private static readonly string[] sizes = ["Small", "Medium", "Large"];
+
+    [CascadingParameter] private BitPanelReference panelReference { get; set; } = default!;
+}

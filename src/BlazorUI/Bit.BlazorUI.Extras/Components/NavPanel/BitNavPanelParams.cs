@@ -14,7 +14,7 @@ namespace Bit.BlazorUI;
 /// reaches every panel under the <see cref="BitParams"/> it is given to, whatever its item type is - which is
 /// what makes it the one place a localized app names the panel's controls and announcements.
 /// </remarks>
-public class BitNavPanelParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitNavPanelParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitNavPanel{TItem}"/> cascading parameters within <see cref="BitParams"/>.
@@ -109,12 +109,12 @@ public class BitNavPanelParams : BitComponentBaseParams, IBitComponentParams
     /// <summary>
     /// The custom message for when the search result is empty.
     /// </summary>
-    public string? EmptyListMessage { get; set; }
+    public string? NoResultsText { get; set; }
 
     /// <summary>
     /// The custom template for when the search result is empty.
     /// </summary>
-    public RenderFragment? EmptyListTemplate { get; set; }
+    public RenderFragment? NoResultsTemplate { get; set; }
 
     /// <summary>
     /// The default aria-label of the expand/collapse button of a collapsed item of the nav.
@@ -232,6 +232,12 @@ public class BitNavPanelParams : BitComponentBaseParams, IBitComponentParams
     /// (or AutoFocus moves it further in), and hands it back as it closes.
     /// </summary>
     public bool? NoFocusTrap { get; set; }
+
+    /// <summary>
+    /// Renders the content of the drawer of a small screen while it is still closed, rather than the first time
+    /// it opens.
+    /// </summary>
+    public bool? NoLazyDrawer { get; set; }
 
     /// <summary>
     /// Removes the overlay that is rendered behind the open nav panel in small screens.
@@ -467,14 +473,14 @@ public class BitNavPanelParams : BitComponentBaseParams, IBitComponentParams
             bitNavPanel.TakeFromCascade(nameof(DrawerBreakpoint), DrawerBreakpoint.Value, static n => n.DrawerBreakpoint, static (n, v) => n.DrawerBreakpoint = v);
         }
 
-        if (EmptyListMessage.HasValue())
+        if (NoResultsText.HasValue())
         {
-            bitNavPanel.TakeFromCascade(nameof(EmptyListMessage), EmptyListMessage, static n => n.EmptyListMessage, static (n, v) => n.EmptyListMessage = v);
+            bitNavPanel.TakeFromCascade(nameof(NoResultsText), NoResultsText, static n => n.NoResultsText, static (n, v) => n.NoResultsText = v);
         }
 
-        if (EmptyListTemplate is not null)
+        if (NoResultsTemplate is not null)
         {
-            bitNavPanel.TakeFromCascade(nameof(EmptyListTemplate), EmptyListTemplate, static n => n.EmptyListTemplate, static (n, v) => n.EmptyListTemplate = v);
+            bitNavPanel.TakeFromCascade(nameof(NoResultsTemplate), NoResultsTemplate, static n => n.NoResultsTemplate, static (n, v) => n.NoResultsTemplate = v);
         }
 
         if (ExpandAriaLabel.HasValue())
@@ -590,6 +596,11 @@ public class BitNavPanelParams : BitComponentBaseParams, IBitComponentParams
         if (NoFocusTrap.HasValue)
         {
             bitNavPanel.TakeFromCascade(nameof(NoFocusTrap), NoFocusTrap.Value, static n => n.NoFocusTrap, static (n, v) => n.NoFocusTrap = v);
+        }
+
+        if (NoLazyDrawer.HasValue)
+        {
+            bitNavPanel.TakeFromCascade(nameof(NoLazyDrawer), NoLazyDrawer.Value, static n => n.NoLazyDrawer, static (n, v) => n.NoLazyDrawer = v);
         }
 
         if (NoOverlay.HasValue)

@@ -29,7 +29,7 @@
             <BitText Typography="BitTypography.Subtitle2" Element="h3">@Localizer[nameof(WorkbenchStrings.ThemeDisabled)]</BitText>
             <div class="row">
                 <span class="opacity-sample">@AppLocalizer[nameof(AppStrings.Save)]</span>
-                <span class="opacity-sample faded">@AppLocalizer[nameof(AppStrings.Save)]</span>
+                <button type="button" class="opacity-sample faded" disabled>@AppLocalizer[nameof(AppStrings.Save)]</button>
             </div>
             <TokenLabel Name="@ThemeTokens.DisabledOpacity.Name" Value="@ValueOf(ThemeTokens.DisabledOpacity)" />
         </div>

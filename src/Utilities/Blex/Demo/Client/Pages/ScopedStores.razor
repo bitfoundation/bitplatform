@@ -126,7 +126,7 @@
             <code>blex-docs:draft:doc-2</code>.
         </p>
         <ul class="bb-detail-list">
-            <li><strong>Give it a stable key.</strong> The next scope for the same entity finds the state the last one left. An assigned key counts from 1 again in every session and every tab, so an instance keyed that way is not persisted at all - its state could only ever be found by an unrelated instance that drew the same number.</li>
+            <li><strong>Give it a stable key.</strong> The next scope for the same entity finds the state the last one left. An assigned key (<code>#1</code>, <code>#2</code>, ...) counts from 1 again in every session and every tab, so an instance keyed that way is not persisted at all - its state could only ever be found by an unrelated instance that drew the same number.</li>
             <li><strong>Its saves wait for hydration.</strong> Until its stored state has been read, nothing it does is written - writing its declared defaults first would overwrite the user's data. This mirrors startup, where the stored state wins over anything dispatched before it landed. If the read finds nothing stored, what was changed meanwhile is written then; if it fails, the saves keep waiting until <code>RehydrateAsync</code> reads it.</li>
             <li><strong>Leaving writes what it owes.</strong> With a debounce interval, a scope disposed before the interval elapses still has its last changes written as it unregisters.</li>
             <li><code>OnRehydrated</code> fires for a late store too, with its keyed name. With <code>SkipHydration</code>, a late store waits for <code>RehydrateAsync</code> like every other.</li>

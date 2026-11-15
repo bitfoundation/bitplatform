@@ -55,9 +55,32 @@
          aria-labelledby="@GetTitleAriaId()"
          aria-describedby="@SubtitleAriaId"
          style="@GetContainerCssStyles()"
-         class="@GetContainerCssClasses()">
+         class="@GetContainerCssClasses()"
+         data-bit-snaps="@(_IsSnapping ? GetSnapPointsAttribute() : null)"
+         data-bit-snap="@(_IsSnapping ? _SnapIndex : null)">
         @if (ContentRendered)
         {
+            @* The grabber of a bottom sheet with more than one snap point: what the sheet is dragged by, and the way to
+               resize it without dragging (WCAG 2.5.7) - a tap or Enter moves it to the next height, the arrow keys up and
+               down, Home and End to the smallest and the largest. Its name says the size the sheet is at.
+               data-bit-swipe-handle has the swipe script drag the sheet from it whatever the content is scrolled to, and
+               swallow the click a drag that started on it would end in. *@
+            if (_HasGrabber)
+            {
+                <button @ref="_grabberRef"
+                        type="button"
+                        data-bit-swipe-handle
+                        aria-label="@GetGrabberLabel()"
+                        aria-keyshortcuts="ArrowUp ArrowDown Home End"
+                        disabled="@(Disabled)"
+                        aria-disabled="@(Disabled ? "true" : null)"
+                        @onclick="HandleOnGrabberClick"
+                        @onkeydown="HandleOnGrabberKeyDown"
+                        style="@Styles?.Grabber"
+                        class="bit-pnl-grb @Classes?.Grabber">
+                    <span aria-hidden="true" class="bit-pnl-grh"></span>
+                </button>
+            }
             @* A panel that was given a header, a footer or a close button lays them out around a body that
                takes the scrolling, so that the parts around it stay put while the content moves. A panel
                given none of them is the plain surface it has always been, and its content is left to fill

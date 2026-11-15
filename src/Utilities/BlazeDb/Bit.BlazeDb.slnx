@@ -34,10 +34,13 @@
   <Folder Name="/Tests/">
     <Project Path="Tests/Bit.BlazeDb.Tests/Bit.BlazeDb.Tests.csproj" />
     <Project Path="Tests/Bit.BlazeDb.Tests.Mcp/Bit.BlazeDb.Tests.Mcp.csproj" />
+    <Project Path="Tests/Bit.BlazeDb.Tests.Integrations/Bit.BlazeDb.Tests.Integrations.csproj" />
     <Project Path="Tests/Bit.BlazeDb.Tests.E2E/Bit.BlazeDb.Tests.E2E.csproj" />
     <Project Path="Tests/Bit.BlazeDb.Benchmarks/Bit.BlazeDb.Benchmarks.csproj" />
   </Folder>
   <Project Path="Bit.BlazeDb/Bit.BlazeDb.csproj" />
   <Project Path="Bit.BlazeDb.EntityFrameworkCore/Bit.BlazeDb.EntityFrameworkCore.csproj" />
+  <Project Path="Bit.BlazeDb.Blex/Bit.BlazeDb.Blex.csproj" />
+  <Project Path="Bit.BlazeDb.Bcrdt/Bit.BlazeDb.Bcrdt.csproj" />
   <Project Path="Bit.BlazeDb.Generators/Bit.BlazeDb.Generators.csproj" />
 </Solution>

@@ -410,7 +410,7 @@ public sealed class ImageProcessorFactory
             if (capabilities.Environment == ImageEnvironment.BrowserWebAssembly)
             {
                 var decodable = nativeDecodable.Where(f => f != ImageFormat.Svg).ToArray();
-                var encodable = nativeEncodable.Where(f => f != ImageFormat.Bmp).ToArray();
+                var encodable = nativeEncodable.Where(f => !ImageCapabilities.ManagedOnlyEncodableFormats.Contains(f)).ToArray();
                 if (decodable.Length > 0) registry.AddDecoder(new BrowserImageDecoder(_interop, decodable));
                 if (encodable.Length > 0) registry.AddEncoder(new BrowserImageEncoder(_interop, encodable));
             }
@@ -429,7 +429,7 @@ public sealed class ImageProcessorFactory
                         ? new BrowserImageDecoder(_interop, [format])
                         : new FallbackImageDecoder(format, managed, browser, data => HasWideGamutProfile(format, data)));
                 }
-                var encodable = nativeEncodable.Where(f => f != ImageFormat.Bmp && !registry.CanEncode(f)).ToArray();
+                var encodable = nativeEncodable.Where(f => !ImageCapabilities.ManagedOnlyEncodableFormats.Contains(f) && !registry.CanEncode(f)).ToArray();
                 if (encodable.Length > 0) registry.AddEncoder(new BrowserImageEncoder(_interop, encodable));
             }
             var processor = new ImageProcessor(registry, _options.Allocator ?? PooledPixelAllocator.Shared, _options.Limits) { MaxDegreeOfParallelism = _options.MaxDegreeOfParallelism };

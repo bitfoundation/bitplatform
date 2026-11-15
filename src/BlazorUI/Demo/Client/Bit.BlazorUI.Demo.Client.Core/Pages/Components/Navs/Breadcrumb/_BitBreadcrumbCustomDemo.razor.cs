@@ -75,6 +75,16 @@ public partial class _BitBreadcrumbCustomDemo
         new() { Name = "Custom 6", IsCurrent = true }
     ];
 
+    private readonly List<PageInfo> ResponsiveCustomBreadcrumbItems =
+    [
+        new() { Name = "Home", Address = "/components/breadcrumb" },
+        new() { Name = "Documents", Address = "/components/breadcrumb" },
+        new() { Name = "Projects", Address = "/components/breadcrumb" },
+        new() { Name = "2026", Address = "/components/breadcrumb" },
+        new() { Name = "Reports", Address = "/components/breadcrumb" },
+        new() { Name = "Q3", Address = "/components/breadcrumb", IsCurrent = true }
+    ];
+
     private readonly List<PageInfo> CustomBreadcrumbItemsWithCustomized =
     [
         new() { Name = "Custom 1" },

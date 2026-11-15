@@ -8,7 +8,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <IsTrimmable>true</IsTrimmable>
         <AddRazorSupportForMvc>false</AddRazorSupportForMvc>
-        <Description>Real-time collaborative editing for .NET and Blazor, written natively in C#: a YATA-based CRDT engine (text, arrays, maps and sets), a synchronization protocol with jittered reconnection, presence and awareness, offline-first persistence, selective undo, input bindings and the in-memory and WebSocket transports - with no JavaScript CRDT library and no interop in the engine. Includes the Blazor components: BcrdtComponentBase, which marshals change notifications onto the renderer and coalesces them onto a frame budget; BcrdtCollaborationScope, which opens and closes a document for its content; BcrdtTextArea, a textarea that edits a collaborative text without losing keystrokes; and BcrdtPresenceView. Works in Blazor WebAssembly, Server, Web App and Hybrid.</Description>
+        <Description>Real-time collaborative editing for .NET and Blazor, written natively in C#: a YATA-based CRDT engine (text, arrays, maps, sets, counters and XML trees for structured editors), a synchronization protocol with jittered reconnection, presence and awareness, offline-first persistence, selective undo, input bindings and the in-memory and WebSocket transports - with no JavaScript CRDT library and no interop in the engine. Includes the Blazor components: BcrdtComponentBase, which marshals change notifications onto the renderer and coalesces them onto a frame budget; BcrdtCollaborationScope, which opens and closes a document for its content; BcrdtTextArea, a textarea that edits a collaborative text without losing keystrokes; BcrdtPresenceView; and BcrdtSyncStatus, which says where a document's connection stands. Works in Blazor WebAssembly, Server, Web App and Hybrid.</Description>
         <PackageDescription>$(Description)</PackageDescription>
         <PackageTags>$(PackageTags);Blazor;CRDT;Collaboration;Realtime;YATA;Offline-first;Presence;Undo;Sync;Collaborative editing</PackageTags>
     </PropertyGroup>
@@ -21,9 +21,9 @@
         <!-- Floating low-bound version ranges so consumers can pin to any patch release on their TFM;
              the upper bound keeps a major-version package that targets a newer TFM out. -->
         <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[10.0.0,11.0.0)" />
-        <PackageReference Condition="'$(TargetFramework)' == 'net11.0'" Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[11.0.0-rc.1.26425.128,12.0.0)" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net11.0'" Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[11.0.0,12.0.0)" />
         <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.AspNetCore.Components.Web" Version="[10.0.0,11.0.0)" />
-        <PackageReference Condition="'$(TargetFramework)' == 'net11.0'" Include="Microsoft.AspNetCore.Components.Web" Version="[11.0.0-rc.1.26425.128,12.0.0)" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net11.0'" Include="Microsoft.AspNetCore.Components.Web" Version="[11.0.0,12.0.0)" />
     </ItemGroup>
 
     <ItemGroup>

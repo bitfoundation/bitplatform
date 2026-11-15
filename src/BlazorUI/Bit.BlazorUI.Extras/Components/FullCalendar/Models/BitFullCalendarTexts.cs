@@ -279,6 +279,12 @@ public class BitFullCalendarTexts
     /// <summary>The choice that applies an edit or delete to the opened occurrence only.</summary>
     public string ThisOccurrenceOption { get; set; } = "This event";
 
+    /// <summary>
+    /// The choice that applies an edit or delete to the opened occurrence and every later one: the series ends before
+    /// it, and an edit starts a new series from it.
+    /// </summary>
+    public string ThisAndFollowingOption { get; set; } = "This and following events";
+
     /// <summary>The choice that applies an edit or delete to the whole series.</summary>
     public string AllOccurrencesOption { get; set; } = "All events in the series";
 

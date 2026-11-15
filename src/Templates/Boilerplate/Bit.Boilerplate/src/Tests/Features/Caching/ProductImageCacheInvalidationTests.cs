@@ -1,5 +1,5 @@
 //+:cnd:noEmit
-using ImageMagick;
+using Bit.Bmage;
 using System.Collections.Concurrent;
 using Microsoft.AspNetCore.OutputCaching;
 using Boilerplate.Shared.Features.Products;
@@ -49,7 +49,7 @@ public class ProductImageCacheInvalidationTests
         var recorder = server.ApiApp.Services.GetRequiredService<RecordingOutputCacheStore>();
 
         var productId = Guid.CreateSequentialGuid();
-        await UploadProductImage(httpClient, productId, SolidImage(MagickColors.Red));
+        await UploadProductImage(httpClient, productId, SolidImage(TestImageFactory.Red));
 
         var created = await products.Create(
             await NewProductDto(client, productId, $"image-purge-{Guid.NewGuid():N}"), TestContext.CancellationToken);
@@ -75,7 +75,7 @@ public class ProductImageCacheInvalidationTests
             // Everything above is setup; only what the replacement itself purges counts.
             recorder.Reset();
 
-            await UploadProductImage(httpClient, productId, SolidImage(MagickColors.Blue));
+            await UploadProductImage(httpClient, productId, SolidImage(TestImageFactory.Blue));
 
             var attachmentTag = AttachmentCacheTag(productId);
 
@@ -119,7 +119,7 @@ public class ProductImageCacheInvalidationTests
         var recorder = server.ApiApp.Services.GetRequiredService<RecordingOutputCacheStore>();
 
         var productId = Guid.CreateSequentialGuid();
-        await UploadProductImage(httpClient, productId, SolidImage(MagickColors.Green));
+        await UploadProductImage(httpClient, productId, SolidImage(TestImageFactory.Green));
 
         var created = await products.Create(
             await NewProductDto(client, productId, $"image-delete-purge-{Guid.NewGuid():N}"), TestContext.CancellationToken);
@@ -234,10 +234,9 @@ public class ProductImageCacheInvalidationTests
         ResponseCacheService.AttachmentCacheTagTemplate.Replace("{attachmentId}", attachmentId.ToString()).ToLowerInvariant();
 
     /// <summary>A solid-colour PNG at least 512x512, which is the minimum the medium kind's resize accepts.</summary>
-    private static byte[] SolidImage(MagickColor color, uint size = 512)
+    private static byte[] SolidImage(Rgba32 color, int size = 512)
     {
-        using var image = TestImageFactory.Solid(color, size, size);
-        return image.ToByteArray(MagickFormat.Png);
+        return TestImageFactory.Solid(color, size, size);
     }
 
     private async Task UploadProductImage(HttpClient httpClient, Guid productId, byte[] imageBytes)

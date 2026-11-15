@@ -5,6 +5,147 @@ Breaking changes to the public API of the bit BlazorUI packages (`Bit.BlazorUI`,
 
 ## 11.0.0
 
+### The empty and no-results slots have one name each ([#15029](https://github.com/bitfoundation/bitplatform/issues/15029))
+
+What a component shows when it has nothing to show was spelled five ways. It now has two names, one per meaning:
+`EmptyTemplate` / `EmptyText` (and the `Empty` class-style part) for a component with **no items at all**, and
+`NoResultsTemplate` / `NoResultsText` (and the `NoResults` part) for a search or filter that **matched none** of the
+items it has. The outliers are renamed to them; each row applies to the `[Parameter]` and to its `BitXxxParams`
+counterpart:
+
+| Component | Before | After |
+|---|---|---|
+| `BitBasicList` | `EmptyContent` | `EmptyTemplate` |
+| `BitAccordionList` | `EmptyContent` | `EmptyTemplate` |
+| `BitChart` | `NoDataTemplate`, `NoDataText`, `BitChartClassStyles.NoData` | `EmptyTemplate`, `EmptyText`, `Empty` |
+| `BitInfiniteScrolling` | `EmptyMessage` | `EmptyText` |
+| `BitDropdown` | `BitDropdownClassStyles.EmptyContent` | `Empty` |
+| `BitNavPanel` | `EmptyListTemplate`, `EmptyListMessage`, `BitNavPanelClassStyles.EmptyListMessage` | `NoResultsTemplate`, `NoResultsText`, `NoResults` |
+| `BitCountryPicker`, `BitPhoneInput`, `BitTimeZonePicker` | `NoResultsMessage` | `NoResultsText` |
+
+`BitNavPanel`'s are no-results names, not empty ones: its slot was always the message of a search that matched no item.
+
+**Search the markup for the old names**: an old name written as an attribute (`NoDataText="…"`) still compiles,
+without a warning, and is rendered as an attribute of the root rather than applied, so the component silently falls
+back to its default content. An old template written as a child element fails to compile in a `BitBasicList`
+(`RZ9996`), but in a `BitAccordionList`, which takes child content, it compiles with only a `RZ10012` warning and is
+taken for markup of that content. Leave `EmptyContent` alone on the framework's own `Virtualize`, which is not one of
+these.
+
+### Every empty list and fruitless search says so, in the same words ([#15032](https://github.com/bitfoundation/bitplatform/issues/15032))
+
+What a component shows when it has nothing to show now works the same way on all of them: the template wins, then
+the text, and with neither the component says the default of `BitStrings.Current` - `NoItemsFound` ("No items
+found") for no items at all and `NoResultsFound` ("No results found") for a search or filter that matched none.
+Translate them once through a `BitStrings` subclass (`AddBitBlazorUIServices(o => o.Strings = …)`) instead of on
+every component.
+
+**Components that showed nothing now show the default.** Pass an `EmptyTemplate` that renders nothing to keep the
+old look:
+
+| Component | Before | Now |
+|---|---|---|
+| `BitBasicList`, `BitAccordionList`, `BitVirtualize` | an empty list without an `EmptyTemplate` rendered nothing | renders `EmptyText` (new), else "No items found", in a part of its own (`bit-bsl-emp`, `bit-acl-emp`, `bit-vir-emp`) styled through the `Empty` class-style part (new on the first two); `BitBasicList` and `BitAccordionList` also read the new `--bit-BasicList-empty-*` / `--bit-AccordionList-empty-*` variables |
+| `BitSearchBox` | a search that found no suggestion kept the callout closed unless `NoResultsText` or `NoResultsTemplate` was given | opens the callout and says "No results found" (and announces it) |
+
+**The default words changed** where a component had words of its own:
+
+| Component | Before | Now |
+|---|---|---|
+| `BitChart.EmptyText` | "No data to display" | "No items found" |
+| `BitInfiniteScrolling.EmptyText` | "There is no item" | "No items found" |
+| `BitNotificationCenter.EmptyText` | "No notifications" | "No items found" |
+| `BitDataGridStrings.EmptyText` | "No records to display." | "No items found" |
+| `BitDataGridStrings.NoMatchesText` | "No records match the current filters." | "No results found" |
+| `BitNavPanel.NoResultsText` | "Nothing found!" | "No results found" |
+| `BitSearchBox`'s announcement of a fruitless search | "No suggestion found." | "No results found" |
+
+`BitChart.EmptyText` and `BitInfiniteScrolling.EmptyText` are `null` by default now, as every other `EmptyText` is,
+instead of holding their English text: code that reads them gets `null` until a text is set. The two texts of
+`BitDataGridStrings` above read `BitStrings.Current` each time they are shown until a text of their own is set.
+
+**`BitDropdown` keeps its two states apart.** A search that matches none of the items renders `NoResultsTemplate`,
+else `NoResultsText`, else "No results found", in its own `bit-drp-nor` element styled through the new
+`BitDropdownClassStyles.NoResults` part. `EmptyTemplate` and `EmptyText` are only for a dropdown with no items at
+all, searched or not; before, they were shown for a fruitless search too when no `NoResultsText` was given. Move
+a no-results message written in `EmptyText` or `EmptyTemplate` to `NoResultsText` or `NoResultsTemplate`.
+
+**CSS names:**
+
+| Before | After |
+|---|---|
+| `.bit-cht-nodata` | `.bit-cht-emp` |
+| `.bit-srb-nrs` | `.bit-srb-nor` |
+| `--bit-Chart-no-data-color` | `--bit-Chart-empty-color` |
+
+`BitNotificationCenter` also takes an `EmptyTemplate` now, which wins over its `EmptyText` and cascades through
+`BitNotificationCenterParams`.
+### `BitAiEmptyState` is a `BitEmptyState` and takes its names ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+
+The empty state of a conversation is now drawn by the core `BitEmptyState`, with the words of a conversation, a sparkle
+for its icon and the suggestions for its actions. It takes the names of the core one, with no old name kept beside them:
+
+| Before | After |
+|---|---|
+| `BitAiEmptyState.Body` (and `BitAiEmptyStateParams.Body`) | `Description` |
+| `BitAiEmptyState.ChildContent` | `DescriptionTemplate` |
+| `BitAiEmptyStateClassStyles.Body` | `Description` |
+| `BitAiChat.EmptyBody` (and `BitAiChatParams.EmptyBody`) | `EmptyDescription` |
+| `BitAiStrings.EmptyBody` | `EmptyDescription` |
+| `--bit-AiEmptyState-color` | `--bit-AiEmptyState-description-color` |
+
+Markup written as the child content of a `BitAiEmptyState` no longer compiles (`RZ9996`): wrap it in
+`<DescriptionTemplate>`. A `Body="…"` or `EmptyBody="…"` attribute still compiles, without a warning, and lands on the
+root as an HTML attribute, so the line falls back to the string table: search the markup for them. A `BitAiStrings`
+subclass that overrides `EmptyBody` fails to compile until it overrides `EmptyDescription`.
+
+**The markup changed.** The root keeps its `bit-aiems` class, and a `BitEmptyState` inside it holds the parts:
+
+| Before | After |
+|---|---|
+| `.bit-aiems-ico` (a `BitIcon`, `.bit-ico`) | `.bit-ems-ico` (an `<i>`, or a `<div>` holding the `IconTemplate`) |
+| `.bit-aiems-ttl` | `.bit-ems-ttl` |
+| `.bit-aiems-bdy` | `.bit-ems-dsc` |
+| `.bit-aiems-sgs` | `.bit-ems-con` |
+
+The layout (gap, padding, centering) is on the inner `.bit-ems`, not on the root; the `--bit-AiEmptyState-*` variables
+still restyle it, and the line now takes its color and size from `--bit-AiEmptyState-description-color` and the new
+`--bit-AiEmptyState-description-font-size` (default `--bit-tpg-fs-md`) rather than from the color of the root. The
+`Classes` and `Styles` parts reach the same elements as before.
+
+It also gains the `TitleTemplate` and `HeadingLevel` of the core one.
+### `BitNavPanel` renders the content of its drawer the first time it opens ([#14866](https://github.com/bitfoundation/bitplatform/issues/14866))
+
+Below its `DrawerBreakpoint` the panel is an off-canvas drawer, and the content of a drawer that has never been opened
+(the header, the search box, the `BitNav` and the footer) is now left out until it first opens. It keeps the content from
+then on. Leaving it out takes knowing the shape of the panel before its first render, which only a WebAssembly app can ask
+the browser synchronously (from the start with the bundled scripts, once the media query script is loaded with the lazy
+ones): on Server, Hybrid and the first page of a lazy-scripts app the content is rendered as before. A prerender and a
+static SSR page still render the content, so the links stay in the HTML. On a wide screen the panel is a column and
+renders as before.
+
+What reads the nav still finds it: an app listening to the selection the automatic `NavMode` takes from the URL
+(`SelectedItemChanged`, `@bind-SelectedItem`, `OnSelectItem`) gets the content at once, and the methods that act on the
+nav (`SelectItem`, `ExpandItem`, `CollapseItem`, `ToggleItem`, `ExpandAll`, `CollapseAll`, `FocusItem`,
+`IsItemExpanded`) render it as they are called. **An app that reads something else of the nav before the drawer has been
+opened**, such as a template's side effects, sets `NoLazyDrawer` (or `BitNavPanelParams.NoLazyDrawer`) to `true` to
+render the content at once, as before.
+
+`BitMediaQuery` asks the browser the same way before its own first render: in a WebAssembly app whose script is in the
+page it renders the matching content right away, and `DefaultMatched` only applies where the browser cannot answer yet.
+
+### `BitCountries`' countries and `All` are properties ([#14867](https://github.com/bitfoundation/bitplatform/issues/14867))
+
+Every country of `BitCountries` (`BitCountries.UnitedStates`, ...) and `BitCountries.All` were `static readonly` fields and
+are now static properties of the same names and types, handing out the same instances. The fields made naming a single
+country (a `DefaultCountry` set up as a WebAssembly app starts) run a static constructor creating all of them, one very
+large method the interpreter has to transform before it runs; the properties build the table the first time any of it
+is read.
+
+Code reading them compiles unchanged. **A library or app compiled against an earlier version** is recompiled, since the
+fields it loads are gone (`MissingFieldException`). **Code passing one by `ref` or `out`**, or reading the fields
+through reflection (`typeof(BitCountries).GetFields()`), reads it into a local or uses `GetProperties()` instead.
+
 ### Seekable PDF sources defer forms and tagged structure ([#13702](https://github.com/bitfoundation/bitplatform/issues/13702))
 
 For a `BitPdfViewer` loaded with `BitPdfSource.FromStreamFactory`, `FormFields` and `StructureTree` now return empty

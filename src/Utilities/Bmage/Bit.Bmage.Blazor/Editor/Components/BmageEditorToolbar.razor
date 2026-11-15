@@ -8,7 +8,7 @@
 <div class="bmg-toolbar" role="toolbar" aria-label="@Context.Strings.ToolbarLabel" aria-orientation="horizontal">
 
     <div class="bmg-toolgroup" role="group" aria-label="@Context.Strings.Tools">
-        @foreach (var (kind, label, icon) in Tools)
+        @foreach (var (kind, label, icon) in OfferedTools)
         {
             <button type="button"
                     class="bmg-tool @(Context.Tool == kind ? "bmg-tool-active" : null)"
@@ -118,6 +118,16 @@
 
     /// <summary>File name used by the download button.</summary>
     [Parameter] public string DownloadFileName { get; set; } = "image";
+
+    /// <summary>The editor's tools in the order its <see cref="BmageEditor.Tools"/> lists them; every tool in the default order when that is null.</summary>
+    private IEnumerable<(EditorToolKind Kind, string Label, string Icon)> OfferedTools
+    {
+        get
+        {
+            var all = Tools;
+            return Context.OfferedTools.SelectMany(kind => all.Where(t => t.Kind == kind));
+        }
+    }
 
     private (EditorToolKind Kind, string Label, string Icon)[] Tools =>
     [

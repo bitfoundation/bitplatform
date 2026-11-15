@@ -1,4 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
@@ -35,8 +35,11 @@ internal abstract class BlexQueryEntry(BlexQueryClient client, BlexQueryKey key)
 
     public abstract int ObserverCount { get; }
 
-    /// <summary>The longest <see cref="BlexQueryOptions.GcTime"/> any observer asked for.</summary>
-    public TimeSpan GcTime { get; set; }
+    /// <summary>
+    /// The longest <see cref="BlexQueryOptions.GcTime"/> any query of this key asked for, or <c>null</c> while none has
+    /// (the client's default applies then).
+    /// </summary>
+    public TimeSpan? GcTime { get; set; }
 
     /// <summary>The removal scheduled for when nobody observes the entry; guarded by the gate.</summary>
     public ITimer? GcTimer { get; set; }
@@ -385,9 +388,17 @@ internal sealed class BlexQueryEntry<T>(BlexQueryClient client, BlexQueryKey key
                     SettleCancelled(id);
                     return;
                 }
+                catch (Exception) when (cts.IsCancellationRequested)
+                {
+                    // Cancelled, and the fetch said so in its own words -- gRPC's RpcException(Cancelled), an IOException
+                    // from an aborted stream: the failure is the cancellation's doing, not the server's answer, and is
+                    // settled the way an OperationCanceledException would be.
+                    SettleCancelled(id);
+                    return;
+                }
                 catch (Exception ex)
                 {
-                    if (failures >= retryCount || cts.IsCancellationRequested)
+                    if (failures >= retryCount)
                     {
                         (outcome, failure) = ("error", ex);
                         CommitError(id, ex, failures + 1);
@@ -607,15 +618,21 @@ internal sealed class BlexQueryEntry<T>(BlexQueryClient client, BlexQueryKey key
         }
     }
 
-    /// <summary>Puts back data an optimistic update replaced -- or, when there was none, forgets the optimistic value.</summary>
-    public void Restore(bool hadData, T? data, DateTimeOffset? updatedAt, BlexQueryStatus status)
+    /// <summary>
+    /// Puts back what an optimistic update replaced -- or, when there was no data, forgets the optimistic value. The
+    /// error and the stale mark come back too: data a failed refetch left behind is still the data of a failed refetch,
+    /// and an invalidated query is still owed its refetch.
+    /// </summary>
+    public void Restore(bool hadData, T? data, DateTimeOffset? updatedAt, BlexQueryStatus status, Exception? error, bool invalidated)
     {
         lock (Client.Gate)
         {
             _data = data;
             _hasData = hadData;
             DataUpdatedAt = updatedAt;
-            Status = hadData ? BlexQueryStatus.Success : status;
+            Status = status;
+            Error = error;
+            IsInvalidated = invalidated;
         }
 
         Notify();
@@ -652,6 +669,13 @@ internal sealed class BlexQueryEntry<T>(BlexQueryClient client, BlexQueryKey key
     public override void Hydrate(JsonNode? data, DateTimeOffset updatedAt)
     {
         var value = data is null ? default : JsonSerializer.Deserialize<T>(data, BlexJson.Options);
+
+        // Stamped by the server's clock: one running ahead of this one (a browser's, as often as not) would make the
+        // data younger than it is -- fresh for the skew, even with no stale time at all. It is no newer than now here.
+        var now = Client.TimeProvider.GetUtcNow();
+        if (updatedAt > now)
+            updatedAt = now;
+
         lock (Client.Gate)
         {
             // Newer data -- fetched here since -- wins over what the prerender saw.

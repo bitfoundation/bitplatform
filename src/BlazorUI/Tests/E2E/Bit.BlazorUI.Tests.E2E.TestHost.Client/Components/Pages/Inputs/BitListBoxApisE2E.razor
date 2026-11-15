@@ -1,0 +1,62 @@
+﻿@page "/e2e/listbox/apis"
+
+<PageTitle>BitListBox APIs E2E</PageTitle>
+
+<h1>BitListBox: custom items and options</h1>
+
+<E2ESection Id="custom" Title="Custom items">
+    <BitListBox Id="lbx-custom" Label="Fruit" Items="_fruits" NameSelectors="_selectors" @bind-Value="_customValue" />
+    <div id="custom-value">@_customValue</div>
+</E2ESection>
+
+<E2ESection Id="options" Title="Options">
+    <BitListBox Id="lbx-options" Label="Fruits" TItem="BitListBoxOption<string>" TValue="string" MultiSelect @bind-Values="_optionValues">
+        <BitListBoxOption Text="Apple" Value="@("apple")" />
+        @if (_showMiddle)
+        {
+            <BitListBoxOption Text="Banana" Value="@("banana")" />
+        }
+        <BitListBoxOption Text="@_lastText" Value="@("cherry")" IsDisabled="_lastIsDisabled" />
+    </BitListBox>
+    <button id="btn-middle" type="button" @onclick="() => _showMiddle = !_showMiddle">Toggle middle</button>
+    <button id="btn-last" type="button" @onclick="ChangeLast">Change last</button>
+    <div id="option-values">@string.Join(",", _optionValues ?? [])</div>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    public class Fruit
+    {
+        public string? Name { get; set; }
+        public int Code { get; set; }
+        public bool OutOfSeason { get; set; }
+    }
+
+    private readonly BitListBoxNameSelectors<Fruit, int> _selectors = new()
+    {
+        Text = { Name = nameof(Fruit.Name) },
+        Value = { Name = nameof(Fruit.Code) },
+        IsDisabled = { Selector = f => f.OutOfSeason },
+    };
+
+    private readonly List<Fruit> _fruits =
+    [
+        new() { Name = "Apple", Code = 1 },
+        new() { Name = "Banana", Code = 2, OutOfSeason = true },
+        new() { Name = "Cherry", Code = 3 }
+    ];
+
+    private int _customValue;
+
+    private IEnumerable<string?>? _optionValues;
+    private bool _showMiddle;
+    private string _lastText = "Cherry";
+    private bool _lastIsDisabled;
+
+    private void ChangeLast()
+    {
+        _lastText = "Sour cherry";
+        _lastIsDisabled = true;
+    }
+}

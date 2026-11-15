@@ -119,6 +119,10 @@ public static class BmotionSearchIndex
             // A term in a name is worth far more than the same term buried in prose: someone asking
             // for "StaggerChildren" wants the parameter, not the paragraphs that mention it.
             score += (isTitleWord ? 12 : 0) + inTitle * 3 + inBoosted * 5 + Math.Min(inBody, 6);
+
+            // The plural rule makes "BmSpring" equivalent to "BmSprings"; the name spelled exactly is still the
+            // thing asked for, ahead of its plural namesake, whatever their bodies say.
+            if (string.Equals(entry.LocalName, term, StringComparison.OrdinalIgnoreCase)) score += 12;
         }
 
         // Every term matching is the strongest signal a hit is the right one.

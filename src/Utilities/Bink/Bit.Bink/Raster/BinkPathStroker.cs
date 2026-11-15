@@ -175,7 +175,7 @@ public static class BinkPathStroker
         switch (join)
         {
             case BinkLineJoin.Round:
-                output.Add(CreateCircle(current, radius));
+                output.Add(CreateRoundJoin(current, dirIn, dirOut, radius, cross));
                 break;
             case BinkLineJoin.Bevel:
                 AddBevel(output, current, dirIn, dirOut, radius, cross);
@@ -226,9 +226,38 @@ public static class BinkPathStroker
         }
     }
 
+    /// <summary>
+    /// The round join between two segments: the pie slice on the outside of the turn, from one segment's edge to the
+    /// next one's, which is what canvas, SVG and PDF draw. A whole circle covered the same corner but also stuck out
+    /// behind it, so a corner nearer a butt-capped end than the line's half width rounded that end off.
+    /// </summary>
+    private static Vector2[] CreateRoundJoin(Vector2 center, Vector2 dirIn, Vector2 dirOut, float radius, float cross)
+    {
+        float sign = cross > 0 ? -1f : 1f;
+        Vector2 from = BinkGeometryMath.Perpendicular(dirIn) * sign;
+        Vector2 to = BinkGeometryMath.Perpendicular(dirOut) * sign;
+        float sweep = MathF.Atan2(BinkGeometryMath.Cross(from, to), Vector2.Dot(from, to));
+        // A path that turns straight back has two equally short ways round; the cap-like half circle goes ahead of it.
+        if (MathF.Abs(MathF.Abs(sweep) - MathF.PI) < 1e-4f) sweep = BinkGeometryMath.Cross(from, dirIn) >= 0 ? MathF.PI : -MathF.PI;
+        int full = CircleSteps(radius);
+        int steps = Math.Max((int)MathF.Ceiling(full * MathF.Abs(sweep) / MathF.Tau), 1);
+        var points = new Vector2[steps + 2];
+        points[0] = center;
+        float start = MathF.Atan2(from.Y, from.X);
+        for (int i = 0; i <= steps; i++)
+        {
+            float a = start + sweep * i / steps;
+            points[i + 1] = center + new Vector2(MathF.Cos(a), MathF.Sin(a)) * radius;
+        }
+        return points;
+    }
+
+    private static int CircleSteps(float radius)
+        => Math.Clamp((int)MathF.Ceiling(MathF.PI / MathF.Acos(MathF.Max(1f - 0.2f / MathF.Max(radius, 0.2f), -1f + 1e-6f))), 8, 64);
+
     private static Vector2[] CreateCircle(Vector2 center, float radius)
     {
-        int steps = Math.Clamp((int)MathF.Ceiling(MathF.PI / MathF.Acos(MathF.Max(1f - 0.2f / MathF.Max(radius, 0.2f), -1f + 1e-6f))), 8, 64);
+        int steps = CircleSteps(radius);
         var points = new Vector2[steps];
         for (int i = 0; i < steps; i++)
         {

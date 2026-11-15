@@ -198,7 +198,7 @@ public class BitTimeZonePickerParamsTests : BunitTestContext
             ReferenceDate = new DateTimeOffset(2026, 1, 15, 12, 0, 0, TimeSpan.Zero),
             NoCountry = true,
             SearchBoxPlaceholder = "Buscar",
-            NoResultsMessage = "Sin resultados",
+            NoResultsText = "Sin resultados",
         });
 
         component.Find("button.bit-tzp-fld").Click();

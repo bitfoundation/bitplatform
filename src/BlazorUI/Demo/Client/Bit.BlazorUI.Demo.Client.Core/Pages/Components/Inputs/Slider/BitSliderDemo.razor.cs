@@ -78,7 +78,7 @@ public partial class BitSliderDemo
             Name = "ErrorMessage",
             Type = "string?",
             DefaultValue = "null",
-            Description = "A line under the Slider saying why the value was rejected - by a server, a rule spanning two fields - which marks it invalid in the same way Invalid does. Every thumb is described by it, and a live region announces it the moment it shows up. A Slider inside an EditForm already gets its messages from the cascading EditContext through ValidationMessage.",
+            Description = "A line under the Slider saying why the value was rejected - by a server, a rule spanning two fields - which marks it invalid in the same way Invalid does. Every thumb is described by it, and a live region announces it the moment it shows up. A Slider inside an EditForm already gets its messages from the cascading EditContext, which ShowValidationMessage shows in this same place or ValidationMessage wherever the page puts it.",
         },
         new()
         {
@@ -333,6 +333,13 @@ public partial class BitSliderDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Draws a mark at every MarkStep (or every Step when that is not set) along the track. Setting MarkStep or ShowMarkLabels asks for the same series without it.",
+        },
+        new()
+        {
+            Name = "ShowValidationMessage",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Shows the messages the cascading EditContext holds for the bound field (Value, or RangeValue for a ranged Slider) under the Slider, where ErrorMessage goes, so an EditForm needs no ValidationMessage component beside it. Every thumb references them through aria-describedby, so they are read out when it takes the focus; they are not announced as they appear, since a submit validates every field at once. An ErrorMessage or ErrorMessageTemplate of the app's own wins the place while it is set.",
         },
         new()
         {

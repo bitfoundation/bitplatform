@@ -437,11 +437,12 @@
                   value="@_sourceText" @oninput="OnSourceTextChanged"></textarea>
     }
 
-    @if (ErrorMessage.HasValue())
+    @if (HasErrorLine)
     {
-        @* No live role of its own: the status region at the end of the root says it once as it appears, and the
-           surface is described by it on every later focus, so it is never read out twice. *@
-        <div id="@ErrorMessageId" class="bit-rte-erm @Classes?.ErrorMessage" style="@Styles?.ErrorMessage">@ErrorMessage</div>
+        @* No live role of its own: the status region at the end of the root says the app's message once as it appears,
+           and the surface is described by it on every later focus, so it is never read out twice. The messages of the
+           EditContext (ShowValidationMessage) take the same line while the app has none of its own. *@
+        <div id="@ErrorMessageId" class="bit-rte-erm @Classes?.ErrorMessage" style="@Styles?.ErrorMessage">@(ErrorMessage.HasValue() ? ErrorMessage : ShownValidationMessage)</div>
     }
 
     @if (Description.HasValue() || ShowCount)

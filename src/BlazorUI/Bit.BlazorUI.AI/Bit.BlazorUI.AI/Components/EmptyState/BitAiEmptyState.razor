@@ -1,0 +1,42 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitAiComponentBase
+
+<div @ref="RootElement"
+     @attributes="HtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
+    @* The core empty state draws the glyph, the heading, the line and the actions; this one only picks the words of a
+       conversation and offers the suggestions as the actions - none at all when there is no suggestion, so the core one
+       renders no empty element for them. *@
+    <BitEmptyState Dir="Dir"
+                   Icon="_Icon"
+                   IconName="@_IconName"
+                   IconTemplate="IconTemplate"
+                   Title="@(Title ?? Strings.EmptyTitle)"
+                   TitleTemplate="TitleTemplate"
+                   Description="@(Description ?? Strings.EmptyDescription)"
+                   DescriptionTemplate="DescriptionTemplate"
+                   HeadingLevel="HeadingLevel"
+                   Classes="_emptyStateClasses"
+                   Styles="_emptyStateStyles"
+                   ChildContent="@(Suggestions is { Count: > 0 } ? _suggestionsContent : null)" />
+</div>
+
+@code {
+    private RenderFragment _suggestionsContent => __builder =>
+    {
+        @foreach (var suggestion in Suggestions!)
+        {
+            <BitButton OnClick="() => HandleOnSuggestion(suggestion)"
+                       Disabled="Disabled"
+                       Rounded="true"
+                       Class="bit-btn-dft-sbg"
+                       Styles="@Styles?.Suggestion"
+                       Classes="@Classes?.Suggestion">
+                @suggestion
+            </BitButton>
+        }
+    };
+}

@@ -9,11 +9,18 @@
         dropped on its top half goes before it, on its bottom half after it. Below each row, the list of its children
         is a drop target too: a node dropped there - the indented area, which grows while a node is dragged - becomes
         its last child. Only the innermost target under the pointer shows an edge, and a node can never be dropped
-        into its own subtree. With the keyboard, the arrows visit every place: before, after and into every node.
+        into its own subtree: <code>BdndTree.Contains</code> refuses it, and <code>BdndTree.PlanMove</code> moves a
+        node - children and all - and keeps the move, so <em>Undo</em> takes it back. With the keyboard, the arrows
+        visit every place: before, after and into every node.
     </p>
 </div>
 
 <div class="bb-demo">
+    <div class="bb-demo-bar">
+        <span class="bb-demo-label">@_history.Count move(s)</span>
+        <button type="button" class="btn btn-secondary" disabled="@(_history.Count == 0)" @onclick="Undo">Undo</button>
+    </div>
+
     <BdndProvider>
         <ul class="tree" aria-label="Folders">
             @for (var i = 0; i < _root.Children.Count; i++)
@@ -45,24 +52,23 @@
         new Node("Photos", new Node("2025"), new Node("2026")),
         new Node("Music"));
 
+    private readonly Stack<BdndListMove<Node>> _history = new();
+
+    private static IList<Node> ChildrenOf(Node node) => node.Children;
+
     /// <summary>Whether <paramref name="node"/> is <paramref name="ancestor"/> or under it.</summary>
-    public static bool Contains(Node ancestor, Node node) =>
-        ReferenceEquals(ancestor, node) || ancestor.Children.Any(child => Contains(child, node));
+    public static bool Contains(Node ancestor, Node node) => BdndTree.Contains(ancestor, node, ChildrenOf);
 
     private void MoveNode(NodeMove move)
     {
-        if (Contains(move.Item, move.Parent) || ParentOf(_root, move.Item) is not { } from) return;
-        BdndList.Move(from.Children, from.Children.IndexOf(move.Item), move.Parent.Children, move.Index);
+        // null when the node would go into its own subtree, or stay where it is
+        if (BdndTree.PlanMove(_root, move.Item, move.Parent, move.Index, ChildrenOf) is { } planned && planned.Apply())
+            _history.Push(planned);
     }
 
-    private static Node? ParentOf(Node parent, Node node)
+    private void Undo()
     {
-        if (parent.Children.Contains(node)) return parent;
-        foreach (var child in parent.Children)
-        {
-            if (ParentOf(child, node) is { } found) return found;
-        }
-        return null;
+        if (_history.TryPop(out var move)) move.Revert();
     }
 
     // "Documents (Invoices, Letters), Photos (2025, 2026), Music"

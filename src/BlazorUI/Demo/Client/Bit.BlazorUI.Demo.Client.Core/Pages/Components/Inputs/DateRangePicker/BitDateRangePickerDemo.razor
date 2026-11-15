@@ -519,14 +519,20 @@
             attribute holds the range rules the calendar cannot express. Typed text is also checked against the
             calendar's own restrictions, each failure with its own message: <b>InvalidErrorMessage</b> (unreadable),
             <b>DisabledDateErrorMessage</b> (a blocked day) and <b>OutOfRangeErrorMessage</b> (bounds or min/max length).
+            <br /><br />
+            <b>ShowValidationMessage</b> shows those messages under the field, where <b>ErrorMessage</b> goes, so the
+            forms below need no <code>ValidationMessage</code> component. The input is described by them through
+            <code>aria-describedby</code>, so they are read out when it takes the focus, and an <b>ErrorMessage</b> of
+            the app's own wins the place while it is set. They are not announced as they appear: a submit validates
+            every field at once, and a message from each of them read out in a row would bury the form under its own
+            errors. A <b>BitParams</b> holding a <b>BitDateRangePickerParams</b> with <b>ShowValidationMessage</b>
+            turns it on for every picker inside it.
         </div>
         <div class="example-content">
             <EditForm Model="validationModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
                 <DataAnnotationsValidator />
 
-                <BitDateRangePicker @bind-Value="validationModel.DateRange" />
-
-                <ValidationMessage For="@(() => validationModel.DateRange)" />
+                <BitDateRangePicker @bind-Value="validationModel.DateRange" ShowValidationMessage />
                 <br />
                 <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
                 <BitButton ButtonType="BitButtonType.Reset" Variant="BitVariant.Outline"
@@ -541,19 +547,27 @@
             }
         </div>
         <br /><br /><br />
-        <div>Type a weekend into the field below to see the blocked-day message, and a range longer than 7 days to see the out-of-range one:</div>
+        <div>
+            Type a weekend into the field below to see the blocked-day message, and a range longer than 7 days to see the
+            out-of-range one. Those messages are kept by the EditContext, so the field sits in an <b>EditForm</b> of its
+            own:
+        </div>
         <br />
         <div class="example-content">
-            <BitDateRangePicker Label="Custom messages"
-                                AllowTextInput
-                                DateFormat="dd/MM/yyyy"
-                                ValueFormat="{0} - {1}"
-                                MaxRange="TimeSpan.FromDays(7)"
-                                DisabledDaysOfWeek="@([DayOfWeek.Saturday, DayOfWeek.Sunday])"
-                                InvalidErrorMessage="Write the range as dd/MM/yyyy - dd/MM/yyyy."
-                                DisabledDateErrorMessage="Weekends are not bookable."
-                                OutOfRangeErrorMessage="A booking cannot be longer than a week."
-                                Placeholder="dd/MM/yyyy - dd/MM/yyyy" />
+            <EditForm Model="customMessagesModel">
+                <BitDateRangePicker Label="Custom messages"
+                                    @bind-Value="customMessagesModel.DateRange"
+                                    ShowValidationMessage
+                                    AllowTextInput
+                                    DateFormat="dd/MM/yyyy"
+                                    ValueFormat="{0} - {1}"
+                                    MaxRange="TimeSpan.FromDays(7)"
+                                    DisabledDaysOfWeek="@([DayOfWeek.Saturday, DayOfWeek.Sunday])"
+                                    InvalidErrorMessage="Write the range as dd/MM/yyyy - dd/MM/yyyy."
+                                    DisabledDateErrorMessage="Weekends are not bookable."
+                                    OutOfRangeErrorMessage="A booking cannot be longer than a week."
+                                    Placeholder="dd/MM/yyyy - dd/MM/yyyy" />
+            </EditForm>
         </div>
         <br /><br /><br />
         <div>

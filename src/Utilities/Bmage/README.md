@@ -1,4 +1,4 @@
-﻿# bit Bmage
+﻿# Bit.Bmage
 
 Browser-side image processing for Blazor. Load, transform, annotate and export images entirely on the user's device,
 from strongly typed C#.
@@ -89,10 +89,13 @@ Blazor-native image processing platform where the engine itself is C#.
 | --- | --- | --- |
 | `Bit.Bmage` | The engine: pixel buffers, operations, pipelines, layers, masks, annotations, metadata, the managed codecs and headless processing on a server | `Microsoft.Extensions.DependencyInjection.Abstractions` |
 | `Bit.Bmage.Blazor` | The browser integration: browser codecs, capabilities, loading and export, and the `BmageEditor` / `BmageDropZone` components | `Bit.Bmage`, `Microsoft.AspNetCore.Components.Web` |
+| `Bit.Bmage.BbScanner` | Barcodes and QR codes read from Bmage images by BbScanner's managed decoders, retried sharpened or enlarged when a photo does not read | `Bit.Bmage`, `Bit.BbScanner` |
+| `Bit.Bmage.Bink` | Bmage images opened as Bink documents to sign or mark up, and Bink drawings back as Bmage images or layers | `Bit.Bmage`, `Bit.Bink` |
 
 A browser app takes `Bit.Bmage.Blazor`, which brings `Bit.Bmage` along at exactly its own version. An ASP.NET Core
 API, a console tool or a worker that only processes images headlessly takes `Bit.Bmage` alone, without Blazor. The
-editor's stylesheet is opt-in, so an app that brings its own UI never loads it.
+editor's stylesheet is opt-in, so an app that brings its own UI never loads it. The two integration packages are only
+for apps that use BbScanner or Bink as well; see [integrations](docs/integrations.md).
 
 ## Installation
 
@@ -180,12 +183,12 @@ Every part of its UI can be replaced while keeping the engine:
 | Area | What you get |
 | --- | --- |
 | Loading | `IBrowserFile`, byte arrays, streams, data URLs, object URLs, remote URLs, clipboard, drag and drop, camera |
-| Decoding | PNG, JPEG, BMP, GIF, WebP and AVIF in managed code; PNG, JPEG, WebP, AVIF and GIF through the browser |
-| Encoding | PNG, JPEG, BMP and WebP (lossy or lossless) in managed code; PNG, JPEG, WebP and AVIF through the browser |
+| Decoding | PNG, JPEG, BMP, GIF, WebP, AVIF and ICO in managed code; PNG, JPEG, WebP, AVIF and GIF through the browser |
+| Encoding | PNG (full colour or indexed, 1 to 8 bits), JPEG, BMP, GIF, ICO and WebP (lossy or lossless) in managed code; PNG, JPEG, WebP and AVIF through the browser; palettes by median cut with optional dithering |
 | Transforms | Crop, aspect crop, resize in six modes, rotate, flip, straighten, canvas size and margins, trim to content, skew, affine and perspective warps; annotations and layers stay on the content they mark |
-| Adjustments | Brightness, contrast, saturation, hue, exposure, gamma, levels, temperature, tint, vibrance, shadows, highlights, whites, blacks, white balance (picked or automatic), per-colour HSL, channel mixer, colorize, opacity |
-| Filters | Grayscale, black and white mixer, sepia, invert, posterize, threshold, gradient map and duotone, blur, motion blur, sharpen, high pass, pixelate, noise, median denoise, vignette, custom convolution and colour matrices |
-| Analysis | Histograms, luminance statistics, dominant colour palettes, auto-levels, auto-contrast, saliency-based smart cropping, content bounds for trimming, colour sampling, low-quality placeholders |
+| Adjustments | Brightness, contrast, saturation, hue, exposure, gamma, levels, temperature, tint, vibrance, shadows, highlights, whites, blacks, white balance (picked or automatic), per-colour HSL, channel mixer, colorize, 3D colour lookup tables from `.cube` files, opacity |
+| Filters | Grayscale, black and white mixer, sepia, invert, posterize, threshold, adaptive threshold for documents, gradient map and duotone, blur, motion blur, zoom and spin blur, sharpen, high pass, pixelate, noise, median denoise, vignette, custom convolution and colour matrices |
+| Analysis | Histograms, luminance statistics, dominant colour palettes, auto-levels, auto-contrast, saliency-based smart cropping, content bounds for trimming, document skew, sharpness, colour sampling, low-quality placeholders |
 | Masks | Rectangles, ellipses, lassos, paths, brush strokes, linear and radial gradients, luminance and colour ranges, magic wand, bitmap mattes, combinations; expand, contract, border, feathering, inversion, relative units; masked edits, alpha cut-outs and plain background removal |
 | Layers | Image, fill, adjustment and paint layers (brush with hardness and pen pressure, eraser) with opacity, masks and the W3C blend modes, from `Multiply` and `Screen` to `Color` and `Luminosity`; pass-through and isolated groups, and clipping to the layer below |
 | Drawing | Anti-aliased paths, strokes with caps, joins and dashes, gradients, ellipses, polygons, arrows, freehand, text |
@@ -254,6 +257,7 @@ cd src/Utilities/Bmage/Tests/Bit.Bmage.Tests && dotnet test        # engine test
 cd src/Utilities/Bmage/Tests/Bit.Bmage.Tests.E2E && dotnet test    # drives a real browser against the demo website and the samples
 cd src/Utilities/Bmage/Tests/Bit.Bmage.Tests.Mcp && dotnet test    # the MCP server, hosted in-memory
 cd src/Utilities/Bmage/Tests/Bit.Bmage.Tests.Hosting && dotnet test    # the samples in every render mode, hosted in-memory
+cd src/Utilities/Bmage/Tests/Bit.Bmage.Tests.Integrations && dotnet test    # the BbScanner and Bink packages
 dotnet run --project src/Utilities/Bmage/Tests/Bit.Bmage.Benchmarks -c Release -- --filter "*"
 ```
 
@@ -272,6 +276,7 @@ dotnet run --project src/Utilities/Bmage/Tests/Bit.Bmage.Benchmarks -c Release -
 - [Security](https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bmage/docs/security.md)
 - [Browser support](https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bmage/docs/browser-support.md)
 - [Extending](https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bmage/docs/extending.md)
+- [Integrations with BbScanner, Bink and other bit utilities](https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bmage/docs/integrations.md)
 - [Troubleshooting](https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bmage/docs/troubleshooting.md)
 
 ## License

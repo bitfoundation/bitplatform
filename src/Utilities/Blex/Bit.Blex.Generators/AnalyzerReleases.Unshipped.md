@@ -30,3 +30,6 @@ BLEX023 | Bit.Blex.Generators | Error | Effect timeout needs a CancellationToken
 BLEX024 | Bit.Blex.Generators | Error | Store version cannot be negative
 BLEX025 | Bit.Blex.Generators | Warning | Store version has no effect without Persist
 BLEX026 | Bit.Blex.Generators | Error | Store declares a member the generator overrides
+BLEX027 | Bit.Blex.Generators | Error | Effect throttle cannot be negative
+BLEX028 | Bit.Blex.Generators | Error | Effect cannot both debounce and throttle
+BLEX029 | Bit.Blex.Generators | Error | State comparer is not an equality comparer of the state's type

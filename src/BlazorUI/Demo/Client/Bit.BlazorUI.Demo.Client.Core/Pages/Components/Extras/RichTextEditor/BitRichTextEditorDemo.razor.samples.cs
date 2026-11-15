@@ -230,8 +230,8 @@ private Task<IReadOnlyList<BitRichTextEditorMention>> SearchMentions(string term
                        ShowCount
                        MaxLength=""500""
                        Height=""8rem""
-                       Placeholder=""Write at least 20 characters..."" />
-    <ValidationMessage For=""() => formModel.Body"" />
+                       Placeholder=""Write at least 20 characters...""
+                       ShowValidationMessage />
     <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
 </EditForm>
 

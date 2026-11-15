@@ -1,0 +1,68 @@
+﻿@page "/e2e/menu-button/context"
+
+<PageTitle>BitMenuButton OpenAt E2E</PageTitle>
+
+@* A focusable area whose right-click opens the menu of a menu button at the point of the click (OpenAt), the menu
+   button itself sitting at the bottom of the page, far from where its menu is opened; and a button that opens the
+   same menu at fixed coordinates of the viewport. *@
+<div id="ctx-area" tabindex="0"
+     style="width: 480px; height: 160px; margin: 8px; border: 1px dashed gray;"
+     @oncontextmenu="e => _menu.OpenAt(e)" @oncontextmenu:preventDefault>
+    Right-click here
+</div>
+
+<button id="btn-openat" type="button" @onclick="() => _menu.OpenAt(120, 300)">OpenAt(120, 300)</button>
+
+<div id="ctx-clicked">@_clicked</div>
+<div id="ctx-open">@_isOpen</div>
+
+<div style="position: fixed; left: 8px; bottom: 8px;">
+    <BitMenuButton @ref="_menu" Id="mnb-ctx" Text="Actions" Items="_items" @bind-IsOpen="_isOpen"
+                   OnClick="(BitMenuButtonItem? item) => _clicked = item?.Text" />
+</div>
+
+@* The same without the overlay (NoOverlay): the page keeps its own clicks while the menu is open, so a second
+   right-click on the area reaches its handler, and a click on the page button reaches the button. The split button
+   has no overlay either, so its main half can be clicked with its menu open. *@
+<div id="ctx-area-no" tabindex="0"
+     style="width: 480px; height: 160px; margin: 8px; border: 1px dashed gray;"
+     @oncontextmenu="e => _menuNo.OpenAt(e)" @oncontextmenu:preventDefault>
+    Right-click here (no overlay)
+</div>
+
+<button id="btn-page" type="button" @onclick="() => _pageClicks++">Page button</button>
+
+<div id="ctx-page-clicks">@_pageClicks</div>
+<div id="ctx-no-clicked">@_clickedNo</div>
+<div id="ctx-no-open">@_isOpenNo</div>
+<div id="split-no-runs">@_splitRuns</div>
+
+<div style="position: fixed; left: 160px; bottom: 8px; display: flex; gap: 8px;">
+    <BitMenuButton @ref="_menuNo" Id="mnb-ctx-no" NoOverlay Text="More" Items="_items" @bind-IsOpen="_isOpenNo"
+                   OnClick="(BitMenuButtonItem? item) => _clickedNo = item?.Text" />
+    <BitMenuButton Id="mnb-split-no" NoOverlay Split Text="Save" Items="_items"
+                   OnClick="(BitMenuButtonItem? item) => { if (item is null) _splitRuns++; }" />
+</div>
+
+<div style="position: fixed; right: 8px; top: 8px;">
+    <E2EStatus />
+</div>
+
+@code {
+    private BitMenuButton<BitMenuButtonItem> _menu = default!;
+    private string? _clicked;
+    private bool _isOpen;
+
+    private BitMenuButton<BitMenuButtonItem> _menuNo = default!;
+    private string? _clickedNo;
+    private bool _isOpenNo;
+    private int _pageClicks;
+    private int _splitRuns;
+
+    private readonly List<BitMenuButtonItem> _items =
+    [
+        new() { Key = "copy", Text = "Copy" },
+        new() { Key = "paste", Text = "Paste" },
+        new() { Key = "delete", Text = "Delete" }
+    ];
+}

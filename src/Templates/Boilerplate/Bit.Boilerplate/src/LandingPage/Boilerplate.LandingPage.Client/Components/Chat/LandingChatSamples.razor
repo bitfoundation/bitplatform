@@ -1,0 +1,23 @@
+@inherits LandingComponentBase
+
+@* The samples the gallery's chat recommends (See LandingChatContext.ShowSamplesTool), drawn like small gallery tiles. *@
+@* role="list", as Safari drops a list's semantics once its bullets are styled away *@
+<ul class="lp-chat-samples" role="list">
+    @foreach (var sample in samples)
+    {
+        <li @key="sample.Key" class="lp-chat-sample gallery-brand-@sample.Key">
+            <span class="gallery-logo lp-chat-sample-logo"><DynamicComponent Type="sample.Site.Logo" /></span>
+            <span class="lp-chat-sample-text">
+                <strong>@sample.Site.Name</strong>
+                <span>@sample.CardIndustry</span>
+            </span>
+            <BitButton Href="@sample.Url"
+                       Size="BitSize.Small"
+                       Variant="BitVariant.Outline"
+                       Color="BitColor.PrimaryForeground"
+                       AriaLabel="@Localizer[nameof(LandingStrings.ChatOpenSample), sample.Site.Name]">
+                @Localizer[nameof(LandingStrings.ChatOpenSampleShort)]
+            </BitButton>
+        </li>
+    }
+</ul>

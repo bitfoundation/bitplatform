@@ -23,6 +23,9 @@ internal sealed class FakeInterop : IBonboardingInterop
     /// <summary>Element reference ids that currently "exist".</summary>
     public HashSet<string> ExistingElements { get; } = new(StringComparer.Ordinal);
 
+    /// <summary>Selectors that match an element the fake document does not show (display: none, say).</summary>
+    public HashSet<string> HiddenSelectors { get; } = new(StringComparer.Ordinal);
+
     /// <summary>Selectors the fake browser "cannot parse", reported as the real one reports them.</summary>
     public HashSet<string> InvalidSelectors { get; } = new(StringComparer.Ordinal);
 
@@ -190,15 +193,15 @@ internal sealed class FakeInterop : IBonboardingInterop
         return PushGeometryAsync(sessionId);
     }
 
-    /// <summary>Removes every target and tells the session the element vanished.</summary>
-    public async Task LoseTargetAsync(string sessionId)
+    /// <summary>Removes every target and tells the session the element vanished (or, with an issue, why it went).</summary>
+    public async Task LoseTargetAsync(string sessionId, BonboardingTargetIssue? issue = null)
     {
         ExistingSelectors.Clear();
         ExistingElements.Clear();
 
         if (_callbacks.TryGetValue(sessionId, out var callbacks))
         {
-            await callbacks.OnTargetLostAsync();
+            await (issue is { } why ? callbacks.OnTargetLostAsync(why) : callbacks.OnTargetLostAsync());
         }
     }
 
@@ -225,9 +228,11 @@ internal sealed class FakeInterop : IBonboardingInterop
         if (_callbacks.TryGetValue(sessionId, out var callbacks)) await callbacks.OnAdvanceTriggeredAsync();
     }
 
-    public async Task TimeOutWaitAsync(string sessionId)
+    public async Task TimeOutWaitAsync(string sessionId, BonboardingTargetIssue? issue = null)
     {
-        if (_callbacks.TryGetValue(sessionId, out var callbacks)) await callbacks.OnWaitTimedOutAsync();
+        if (!_callbacks.TryGetValue(sessionId, out var callbacks)) return;
+
+        await (issue is { } why ? callbacks.OnWaitTimedOutAsync(why) : callbacks.OnWaitTimedOutAsync());
     }
 
     public async Task ClickOverlayAsync(string sessionId)
@@ -244,9 +249,12 @@ internal sealed class FakeInterop : IBonboardingInterop
             found = additional.Any(Exists);
         }
 
+        var hidden = !found && target.Selector is { } selector && HiddenSelectors.Contains(selector);
+
         return new BonboardingStepGeometry
         {
             Found = found,
+            TargetIssue = found || target.Kind == BonboardingTargetKind.None ? null : hidden ? "hidden" : "not-found",
             Target = found ? TargetRect : BonboardingRect.Empty,
             Viewport = Viewport,
             Popover = PopoverSize,

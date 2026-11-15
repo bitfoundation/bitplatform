@@ -3,7 +3,7 @@
 <br/>
 
 [![License](https://img.shields.io/badge/license-FSL--1.1--MIT-blue.svg)](https://github.com/bitfoundation/bitplatform/blob/develop/LICENSE)
-![Release CI Status](https://github.com/bitfoundation/bitplatform/actions/workflows/bit.ci.release.yml/badge.svg)
+![Release Build Status](https://github.com/bitfoundation/bitplatform/actions/workflows/all.release.build.yml/badge.svg)
 ![NuGet version](https://img.shields.io/nuget/v/bit.blazorui.svg?logo=nuget)
 [![Nuget downloads](https://img.shields.io/badge/packages_download-10M-blue.svg?logo=nuget)](https://www.nuget.org/profiles/bit-foundation)
 [![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/bitfoundation/bitplatform.svg)](http://isitmaintained.com/project/bitfoundation/bitplatform "Average time to resolve an issue")
@@ -25,7 +25,7 @@ For more details, visit us at [bitplatform.dev](https://bitplatform.dev/).
 Create a ready-to-run [bit Boilerplate](src/Templates/Boilerplate/Readme.md) project on Windows, macOS or Linux with the [bit CLI](src/Toolings/Cli/README.md):
 
 ```bash
-dotnet tool install --global Bit.Cli --version 11.0.0-pre-17
+dotnet tool install --global Bit.Cli --version 11.0.0-pre-20
 bit new MyApp
 ```
 

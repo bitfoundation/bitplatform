@@ -24,7 +24,7 @@ runs in: `Development`, `Test`, `Staging` or `Production`.
 
 | Workflow | Runs on | Does |
 | --- | --- | --- |
-| `ci.yml` | every pull request that isn't a draft, and by hand | builds the whole solution and runs every test |
+| `ci.yml` | by hand: `bit ci` on your machine, or on GitHub; and before every deployment | checks the formatting, builds the whole solution with the code style enforced, checks the api's compatibility and runs every test |
 | `cd-test.yml` | by hand, on any branch | deploys that branch to the Test environment |
 | `cd-production.yml` | by hand, and once its `push` trigger is on, every push to `main` that changes the app | deploys the Production environment |
 | `cd-template.yml` | called by the two above | the jobs both deployments share, with `ENV_NAME` naming the environment |
@@ -43,9 +43,25 @@ already deploying keeps its `push` block when it takes this from a newer templat
 From then on, merging a pull request into `main` updates Production. Only a change under
 `src/Shared`, `src/Server` or `src/Client`, or to `src/Directory.Build.props`, `src/Directory.Packages.props` or that CD's own workflow file, deploys:
 one to the docs, the tests or the agent files doesn't spend the plan's Actions minutes on a deployment. The runs of one
-workflow queue up instead of overlapping, and one that has started is never cancelled halfway. Neither CD
-waits for the tests, so protect `main` with a required `ci.yml` check, which a private repository has with GitHub Pro
-or Team.
+workflow queue up instead of overlapping, and one that has started is never cancelled halfway. Each CD runs `ci.yml`
+first, alongside the server's build, and deploys or publishes nothing until it passes.
+
+## Running CI on your machine
+
+A pull request starts no workflow, so its pushes spend none of the plan's Actions minutes. Run `ci.yml` before asking for
+a review, or before merging:
+
+```bash
+bit ci
+```
+
+It runs the workflow's steps with [act](https://nektosact.com) on this machine itself, not in a container, with the .NET
+SDK, workloads, NuGet packages, Playwright's browsers and Android SDK that `bit setup` installed here, so a run downloads
+nothing again. act runs them on a copy of the project's files without what `.gitignore` leaves out, such as `bin` and
+`obj`: each run builds from scratch, and the app can keep running from the project's folder meanwhile. On Windows the
+steps run in PowerShell 7 rather than bash, so `ci.yml`'s commands are ones both run. The CI each CD runs on GitHub's Linux
+runners is still the clean check. `bit setup` installs act and PowerShell 7 along with the rest. Extra arguments go to act as they are,
+such as `bit ci -- --list`. To run it on GitHub instead: `gh workflow run ci.yml --ref <branch>`.
 
 In a public repository, every build also gets a signed attestation of the commit and the run that made it, which
 `gh attestation verify` checks, and the About page links to them.
@@ -91,6 +107,9 @@ Worth knowing:
   Once one has started it may have taken requests, so a failure from then on leaves the old version running on the
   newer database, and undoing the migrations is left to a person.
 - **The switch takes a few seconds**, while the new containers start.
+- **Production deploys only a recorded api**: `bit api check --release` stops the deployment unless the release kept
+  the api it ships as `openapi/<version>.json` and that api still works for every app version the server supports
+  (`.docs/13- Force Update System.md`).
 - **To roll back**, deploy an earlier commit again; its images are still in the registry. Once it is up, the deployment runs the
   `Down` of the migrations that commit doesn't have, with the image that was running.
 - **The data** lives in Docker volumes on the server, so back them up off the server.
@@ -139,18 +158,18 @@ app's signing. It asks for the rest, and an empty answer skips one. `bit pipelin
 <!--#if (api == "Standalone")-->
 | `SERVER_API_ADDRESS` | variable | The api's public address. Every app is built with it as `ServerAddress`, and the deployment stops if it is missing |
 <!--#endif-->
-| `APP_VERSION`, `APP_TITLE`, `APP_ID` | variable | The app's version, name and id. Each environment has an id and a name of its own, so the Test and Production apps install side by side |
+| `APP_TITLE`, `APP_ID` | variable | The app's name and id. Each environment has an id and a name of its own, so the Test and Production apps install side by side. The version is `<Version>` in `src/Directory.Build.props`: the first release ships `0.0.1` and each later one raises it. Test's Android, iOS and Windows apps take the run's number as their build number, so each Test deployment installs as an update |
 | `OPENAI_APIKEY` | secret, optional | The key `bit translate` fills missing translations with; without it a missing translation fails the deploy |
 <!--#if (aspire == true)-->
-| `SMTP_CONNECTION_STRING` | secret | The SMTP server the app sends email through |
+| `SMTP_CONNECTION_STRING` | secret | The SMTP server the app and the landing page send email through |
 | `APP_CERTIFICATE` | secret | The environment's own `AppCertificate`, its `.crt` and `.key` in one PEM, never the development one |
 | `APP_CERTIFICATE_RETIRED` | secret, optional | The certificate it replaced, while tokens it signed are still alive (see `AppCertificate.md`) |
-| `SERVERWEB_SETTINGS` | secret, optional | Any other setting of the web app, one `Section__Key=value` line each |
-| `LANDINGPAGE_SETTINGS` | secret, optional | The landing page's settings, such as `ConnectionStrings__smtp` and `AI__OpenAI__ChatApiKey`, the same way |
-| `LANDING_PAGE_ADDRESS` | variable | The landing page's public address, which the deployment checks answers and adds to its `TrustedOrigins` |
 <!--#if (api == "Standalone")-->
-| `SERVERAPI_SETTINGS` | secret, optional | The same, for the api |
+| `SERVERAPI__<Section>__<Key>`, `SERVERWEB__<Section>__<Key>`, `LANDINGPAGE__<Section>__<Key>` | secret or variable, optional | Any other setting of the api, the web app or the landing page, one each: `SERVERAPI__SMS__PROVIDERS__TWILIO__AUTHTOKEN` is the api's `Sms:Providers:Twilio:AuthToken`. A secret for a key, a variable for what isn't secret. See below |
+<!--#else-->
+| `SERVERWEB__<Section>__<Key>`, `LANDINGPAGE__<Section>__<Key>` | secret or variable, optional | Any other setting of the app or the landing page, one each: `SERVERWEB__SMS__PROVIDERS__TWILIO__AUTHTOKEN` is the app's `Sms:Providers:Twilio:AuthToken`. A secret for a key, a variable for what isn't secret. See below |
 <!--#endif-->
+| `LANDING_PAGE_ADDRESS` | variable | The landing page's public address, which the deployment checks answers and adds to its `TrustedOrigins` |
 <!--#if (database == "SqlServer" || database == "PostgreSQL" || database == "MySql")-->
 | `DATABASE_PASSWORD` | secret | The database server's password |
 <!--#elif (database == "Other")-->
@@ -166,7 +185,7 @@ app's signing. It asks for the rest, and an empty answer skips one. `bit pipelin
 <!--#endif-->
 <!--#if (cloudflare == true)-->
 | `CLOUDFLARE_TUNNEL_TOKEN` | secret | The connector token of the environment's Cloudflare Tunnel |
-| `CLOUDFLARE_ZONE`, `CLOUDFLARE_TOKEN` | secret | The zone, and an API token that may purge its cache |
+| `CLOUDFLARE_ZONE`, `CLOUDFLARE_TOKEN` | secret | The zone, and an API token that may purge its cache. The deployment purges it with them, and gives them to the api, which purges by cache tag |
 <!--#endif-->
 <!--#if (notification == true)-->
 | `PUBLIC_VAPIDKEY`, `PRIVATE_VAPIDKEY` | secret | The environment's web push key pair |
@@ -177,6 +196,58 @@ app's signing. It asks for the rest, and an empty answer skips one. `bit pipelin
 | `CODE_SIGNING_*`, `WINDOWS_UPDATE_FILES_URL` | secret, variable | Signing the Windows app, and where it looks for updates |
 
 `cd-template.yml` is the final word on what each job reads.
+<!--#if (aspire == true)-->
+
+### One secret or variable per setting
+
+A setting no variable or secret above carries - an AI key, an external sign-in, the SMS provider, a model name, a
+feature flag - is a secret or a variable of its own, named after the app it goes to and the setting's key in
+`appsettings.json`, with `__` between the parts. The deployment writes each one into that app's settings file on the
+server, so changing one setting changes it and nothing else:
+
+| Setting in `appsettings.json` | Name | Kind |
+| --- | --- | --- |
+<!--#if (api == "Standalone")-->
+| The api's `Sms:Providers:Twilio:AuthToken` | `SERVERAPI__SMS__PROVIDERS__TWILIO__AUTHTOKEN` | secret |
+| The api's `Authentication:Google:ClientSecret` | `SERVERAPI__AUTHENTICATION__GOOGLE__CLIENTSECRET` | secret |
+| The api's `AI:OpenAI:ChatApiKey` | `SERVERAPI__AI__OPENAI__CHATAPIKEY` | secret |
+| The api's `AI:OpenAI:ChatModel` | `SERVERAPI__AI__OPENAI__CHATMODEL` | variable |
+| The web app's `WebAppRender:PrerenderEnabled` | `SERVERWEB__WEBAPPRENDER__PRERENDERENABLED` | variable |
+| The second item of the api's `TrustedOrigins` array | `SERVERAPI__TRUSTEDORIGINS__1` | variable |
+<!--#else-->
+| `Sms:Providers:Twilio:AuthToken` | `SERVERWEB__SMS__PROVIDERS__TWILIO__AUTHTOKEN` | secret |
+| `Authentication:Google:ClientSecret` | `SERVERWEB__AUTHENTICATION__GOOGLE__CLIENTSECRET` | secret |
+| `AI:OpenAI:ChatApiKey` | `SERVERWEB__AI__OPENAI__CHATAPIKEY` | secret |
+| `AI:OpenAI:ChatModel` | `SERVERWEB__AI__OPENAI__CHATMODEL` | variable |
+| `WebAppRender:PrerenderEnabled` | `SERVERWEB__WEBAPPRENDER__PRERENDERENABLED` | variable |
+| The second item of the `TrustedOrigins` array | `SERVERWEB__TRUSTEDORIGINS__1` | variable |
+<!--#endif-->
+| The landing page's `AI:OpenAI:ChatApiKey` | `LANDINGPAGE__AI__OPENAI__CHATAPIKEY` | secret |
+
+```bash
+gh secret set LANDINGPAGE__AI__OPENAI__CHATAPIKEY --env Production   # asks for the value
+gh variable set SERVERWEB__WEBAPPRENDER__PRERENDERENABLED --env Production --body true
+```
+
+<!--#if (api == "Standalone")-->
+The api's settings are in `Boilerplate.Server.Api`'s `appsettings.json` and the web app's in `Boilerplate.Server.Web`'s,
+and a setting goes to the app whose file has it.
+<!--#else-->
+The api runs inside the web app, so its settings are `SERVERWEB__` secrets too. A `SERVERAPI__` secret goes there as
+well, rather than nowhere.
+<!--#endif-->
+A key or a password is a secret. Anything else is a variable: GitHub blanks a secret's value out of every log of the
+repository's workflows, so a secret holding `true` or a short name hides that word wherever it appears, and a variable
+can be read back in the repository's settings. GitHub keeps both names in upper case, which .NET's configuration
+doesn't mind. An environment holds up to 100 secrets and 100 variables. The deployment stops, saying which one and why,
+when one names no app (`SERVERWB__...`), when two set the same setting - a secret and a variable included - or one sets
+what the deployment writes itself (such as `TrustedOrigins__100`), and when a value holds a single quote or a line
+break. It reads them with `jq`, which the server needs installed.
+<!--#if (cloudflare == true)-->
+The api's `Cloudflare` token and zone come from `CLOUDFLARE_TOKEN` and `CLOUDFLARE_ZONE`, so they need no secret of
+their own.
+<!--#endif-->
+<!--#endif-->
 
 ---
 

@@ -18,7 +18,7 @@ namespace Bit.BlazorUI;
 /// <see cref="BitInputBaseParams{TValue}"/> gives: the first is a dictionary the field writes into, and the second
 /// is read while the parameters are still being set, before any cascade has been applied.
 /// </remarks>
-public class BitCountryPickerParams : BitInputBaseParams<BitCountry?>, IBitComponentParams
+public partial class BitCountryPickerParams : BitInputBaseParams<BitCountry?>, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitCountryPicker"/> cascading parameters within <see cref="BitParams"/>.
@@ -131,7 +131,7 @@ public class BitCountryPickerParams : BitInputBaseParams<BitCountry?>, IBitCompo
     /// <summary>
     /// The message to show, and to announce, when the search result of the country list is empty.
     /// </summary>
-    public string? NoResultsMessage { get; set; }
+    public string? NoResultsText { get; set; }
 
     /// <summary>
     /// The custom template to show when the search result of the country list is empty.
@@ -192,6 +192,13 @@ public class BitCountryPickerParams : BitInputBaseParams<BitCountry?>, IBitCompo
     /// What a screen reader announces for the number of countries a search term leaves in the list.
     /// </summary>
     public Func<int, string?>? SearchResultsAnnouncement { get; set; }
+
+    /// <summary>
+    /// Shows the messages the cascading EditContext holds for the bound field under the field, where the
+    /// <c>ErrorMessage</c> of the picker goes, so an <c>EditForm</c> needs no <c>ValidationMessage</c> component beside
+    /// it. An error message of the app's own wins the place while it is set.
+    /// </summary>
+    public bool? ShowValidationMessage { get; set; }
 
     /// <summary>
     /// The size of the country picker.
@@ -322,9 +329,9 @@ public class BitCountryPickerParams : BitInputBaseParams<BitCountry?>, IBitCompo
             bitCountryPicker.TakeFromCascade(nameof(NoFlags), NoFlags.Value, static p => p.NoFlags, static (p, v) => p.NoFlags = v);
         }
 
-        if (NoResultsMessage.HasValue())
+        if (NoResultsText.HasValue())
         {
-            bitCountryPicker.TakeFromCascade(nameof(NoResultsMessage), NoResultsMessage, static p => p.NoResultsMessage, static (p, v) => p.NoResultsMessage = v);
+            bitCountryPicker.TakeFromCascade(nameof(NoResultsText), NoResultsText, static p => p.NoResultsText, static (p, v) => p.NoResultsText = v);
         }
 
         if (NoResultsTemplate is not null)
@@ -385,6 +392,11 @@ public class BitCountryPickerParams : BitInputBaseParams<BitCountry?>, IBitCompo
         if (SearchResultsAnnouncement is not null)
         {
             bitCountryPicker.TakeFromCascade(nameof(SearchResultsAnnouncement), SearchResultsAnnouncement, static p => p.SearchResultsAnnouncement, static (p, v) => p.SearchResultsAnnouncement = v);
+        }
+
+        if (ShowValidationMessage.HasValue)
+        {
+            bitCountryPicker.TakeFromCascade(nameof(ShowValidationMessage), ShowValidationMessage.Value, static p => p.ShowValidationMessage, static (p, v) => p.ShowValidationMessage = v);
         }
 
         if (Size.HasValue)

@@ -547,22 +547,13 @@ private readonly List<Order> basicCustoms =
 ];";
 
     private readonly string example9RazorCode = @"
-<style>
-    .validation-message {
-        color: red;
-    }
-</style>
-
 <EditForm Model=""@validationModel"" OnValidSubmit=""@HandleValidSubmit"" OnInvalidSubmit=""@HandleInvalidSubmit"" novalidate>
     <DataAnnotationsValidator />
     
     <BitChoiceGroup Label=""Pick one"" Required @bind-Value=""validationModel.Value""
-                    aria-describedby=""pick-one-error""
                     Items=""basicCustoms""
-                    NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })"" />
-    <div id=""pick-one-error"">
-        <ValidationMessage For=""@(() => validationModel.Value)"" />
-    </div>
+                    NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })""
+                    ShowValidationMessage />
     
     <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
 </EditForm>";

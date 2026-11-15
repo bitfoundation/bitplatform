@@ -1,0 +1,114 @@
+﻿@inherits CreateProjectPartBase
+
+@{
+    var answers = Answers;
+}
+
+<section class="cp-getit" aria-labelledby="cp-getit-title">
+    <div class="cp-getit-head">
+        <h2 class="cp-getit-title" id="cp-getit-title">Create @answers.DisplayName on your computer</h2>
+        <p class="cp-getit-lead">One line, pasted once. It sets everything up on your computer and opens your app.</p>
+    </div>
+
+    <div class="cp-phone-note">
+        <div class="cp-phone-note-text">
+            <b>On your phone?</b>
+            <span>Your project is created on a computer: Windows, Mac or Linux. Send this page to yourself and open it there. Your answers come along.</span>
+            <div class="cp-phone-actions">
+                <BitButton Size="BitSize.Small" Href="@MailLink">Email it to me</BitButton>
+                <BitButton Size="BitSize.Small" Variant="BitVariant.Outline" OnClick="CopyLink">@(isLinkCopied ? "Link copied" : "Copy link")</BitButton>
+            </div>
+        </div>
+    </div>
+
+    <ol class="cp-howto">
+        <li>
+            <span class="cp-howto-number" aria-hidden="true">1</span>
+            <div class="cp-howto-text">
+                <b>Copy this line</b>
+                <div class="cp-line-box">
+                    <CodeBox CopyOnClick OnCopy="RecordCopiedLine">@Words(answers.Line)</CodeBox>
+                </div>
+                <span>It runs the bit CLI, which the <a href="/templates/getting-started">Getting started</a> page installs.</span>
+                <span class="cp-line-safety">Copy this line only from bitplatform.dev. Check the address bar before you do.</span>
+                <div>
+                    <BitButton Variant="BitVariant.Text" Size="BitSize.Small"
+                               IconName="ChevronDownSmall"
+                               aria-expanded="@(State.IsLineExplained ? "true" : "false")" aria-controls="cp-plan"
+                               OnClick="() => State.ExplainLine(State.IsLineExplained is false)"
+                               Class="@(State.IsLineExplained ? "cp-explain is-open" : "cp-explain")">What does this line do?</BitButton>
+                </div>
+                @if (State.IsLineExplained)
+                {
+                    <ol class="cp-plan" id="cp-plan">
+                        @foreach (var step in PlanSteps(answers))
+                        {
+                            <li>@step</li>
+                        }
+                    </ol>
+                    <span class="cp-plan-links">
+                        <a href="https://github.com/bitfoundation/bitplatform/tree/develop/src/Toolings/Cli" target="_blank" rel="noopener">Read the bit CLI's code before you run it</a>
+                        <button type="button" class="help-link" @onclick="() => State.OpenHelp(CreateProjectHelpTopic.Line)">Is it safe?</button>
+                    </span>
+                }
+            </div>
+        </li>
+        <li>
+            <span class="cp-howto-number" aria-hidden="true">2</span>
+            <div class="cp-howto-text">
+                <b>Run it in a terminal</b>
+                <span>When a tool needs it, Windows asks once for administrator permission, and macOS and Linux ask once for your password.</span>
+            </div>
+        </li>
+        <li>
+            <span class="cp-howto-number" aria-hidden="true">3</span>
+            <div class="cp-howto-text">
+                <b>Look around while it works</b>
+                @if (answers.Devices.Count > 0)
+                {
+                    <span>In about @answers.WebReadyMinutes minutes your app opens in your browser, with its landing page and its Workbench. The @CreateProjectNames.ListOf(answers.Devices) tools are set up after that while you look around, then VS Code opens your project, with Claude Code ready for your first prompt.</span>
+                }
+                else
+                {
+                    <span>In about @answers.WebReadyMinutes minutes your app opens in your browser, with its landing page and its Workbench. Then VS Code opens your project, with Claude Code ready for your first prompt.</span>
+                }
+            </div>
+        </li>
+    </ol>
+
+    <div class="cp-needs">
+        <h3 class="cp-needs-title">What you'll need</h3>
+        <ul>
+            <li>@ComputerNeed(answers)</li>
+            @if (answers.HasGitHubRepo)
+            {
+                <li>A free GitHub account. You can make one when the setup asks you to sign in.</li>
+            }
+            @if (answers.Errors is CreateProjectErrors.Sentry)
+            {
+                <li>A Sentry account: free for one person and up to 5,000 errors a month, from about $26 a month for a team.</li>
+            }
+            else if (answers.Errors is CreateProjectErrors.AppInsights)
+            {
+                <li>An Azure account for Application Insights: the first 5 GB a month are free, then about $2.30 for each GB.</li>
+            }
+            @if (answers.NeedsXcode)
+            {
+                <li>Xcode from the App Store, for the iPhone and Mac apps.</li>
+            }
+            @if (answers.NeedsMacForIos)
+            {
+                <li>A Mac with Xcode, on your network or in the cloud, for the iPhone app.</li>
+            }
+            <li>To build with AI afterwards: an AI agent of your own, such as Claude Pro at about $20 a month.</li>
+        </ul>
+    </div>
+</section>
+
+@code {
+    private static RenderFragment Words(string line) =>
+        @<text>@foreach (var (word, index) in line.Split(' ').Select((word, index) => (word, index)))
+        {
+            @(index > 0 ? " " : null)<span class="cp-word">@word</span>
+        }</text>;
+}

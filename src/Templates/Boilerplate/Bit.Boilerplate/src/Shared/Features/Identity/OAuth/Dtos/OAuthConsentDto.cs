@@ -28,6 +28,13 @@ public partial class OAuthConsentDto
     public string[] DeniedScopes { get; set; } = [];
 
     //#if (multitenant == true)
+    /// <summary>
+    /// The tenant the grant will carry, which <see cref="TenantName"/> names. The consent page sends it back with its
+    /// approval, <see cref="Guid.Empty"/> for none, so the user grants the tenant they saw even if the session has
+    /// switched to another one since, in another tab for example.
+    /// </summary>
+    public Guid? TenantId { get; set; }
+
     public string? TenantName { get; set; }
     //#endif
 }

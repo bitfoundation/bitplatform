@@ -434,9 +434,33 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
     /// </summary>
     protected void SetState<T>(ref T field, T value, [System.Runtime.CompilerServices.CallerMemberName] string? propertyName = null)
     {
+        // EqualityComparer<T>.Default is devirtualized by the JIT; keep it off the interface call below.
         if (EqualityComparer<T>.Default.Equals(field, value))
             return;
 
+        ApplyState(ref field, value, propertyName);
+    }
+
+    /// <summary>
+    /// Assigns a state backing field like <see cref="SetState{T}(ref T, T, string)"/>, deciding with
+    /// <paramref name="comparer"/> whether the new value is a change at all. An equal value is not
+    /// assigned, notified, recorded or persisted. Used by generated setters of state marked
+    /// <c>[BlexStateAttribute(Comparer = nameof(...))]</c>.
+    /// </summary>
+    /// <param name="field">The backing field.</param>
+    /// <param name="value">The value being assigned.</param>
+    /// <param name="comparer">Decides equality; <c>null</c> uses <see cref="EqualityComparer{T}.Default"/>.</param>
+    /// <param name="propertyName">The state property's name, which labels the <c>"Set X"</c> action.</param>
+    protected void SetState<T>(ref T field, T value, IEqualityComparer<T>? comparer, string? propertyName)
+    {
+        if (comparer is null ? EqualityComparer<T>.Default.Equals(field, value) : comparer.Equals(field, value))
+            return;
+
+        ApplyState(ref field, value, propertyName);
+    }
+
+    private void ApplyState<T>(ref T field, T value, string? propertyName)
+    {
         var action = CurrentAction;
 
         // EnforceActions: outside code cannot reach the (private) setter at all, so an assignment
@@ -871,10 +895,20 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
     /// <see cref="BeginAction"/>. Records the action when it completes, unless it runs inside another
     /// action of this flow, which records it.
     /// </summary>
-    protected async Task DispatchApprovedAsync(string actionName, Func<Task> mutation, BlexActionArg[]? args)
+    protected Task DispatchApprovedAsync(string actionName, Func<Task> mutation, BlexActionArg[]? args)
     {
         ArgumentNullException.ThrowIfNull(mutation);
+        return RunApprovedAsync<bool>(actionName, mutation, null, args);
+    }
 
+    /// <summary>
+    /// The one lifecycle of an approved asynchronous action -- frame, in-place check, telemetry, error report and
+    /// record -- for a body that returns nothing (<paramref name="mutation"/>) or a value (<paramref name="valued"/>;
+    /// exactly one of the two is set). Shared so the two kinds of action cannot drift apart, and taking either body
+    /// directly so neither pays for an adapter delegate.
+    /// </summary>
+    private async Task<T> RunApprovedAsync<T>(string actionName, Func<Task>? mutation, Func<Task<T>>? valued, BlexActionArg[]? args)
+    {
         // Entered here, before the first await, so the body -- invoked below -- runs in the frame; the
         // assignment reaches only this method's own context, never its caller's.
         var frame = EnterAction(out var began);
@@ -883,8 +917,14 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
         var body = _manager?.EnterActionBody() ?? default;
         try
         {
-            await mutation().ConfigureAwait(true);
+            var result = default(T)!;
+            if (valued is not null)
+                result = await valued().ConfigureAwait(true);
+            else
+                await mutation!().ConfigureAwait(true);
+
             EndInPlaceCheck(inPlace, actionName);
+            return result;
         }
         catch (Exception ex)
         {
@@ -905,6 +945,96 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
             SettleDeferredAnnouncement(recorded);
             telemetry.Stop();
         }
+    }
+
+    /// <summary>
+    /// Runs <paramref name="mutation"/> as a single named action, like <see cref="Dispatch(string, Action, BlexActionArg[])"/>,
+    /// and returns what it returned. Used by generated wrappers of value-returning <c>[BlexActionAttribute]</c> methods.
+    /// </summary>
+    /// <returns>
+    /// The value <paramref name="mutation"/> returned, or <c>default</c> when a middleware vetoed the action and the
+    /// body never ran.
+    /// </returns>
+    /// <remarks>
+    /// An expression lambda that has a value -- <c>Dispatch(name, () =&gt; Count = 5, args)</c>, an assignment included --
+    /// binds to this overload rather than the <see cref="Action"/> one. It runs and records exactly the same; the
+    /// value is only handed back, and a caller that ignores it sees no difference.
+    /// </remarks>
+    protected T Dispatch<T>(string actionName, Func<T> mutation, BlexActionArg[]? args)
+    {
+        ArgumentNullException.ThrowIfNull(mutation);
+        var result = default(T)!;
+
+        // Block-bodied: an expression lambda (an assignment has a value) would bind back to this overload, forever.
+        Dispatch(actionName, () => { result = mutation(); }, args);
+        return result;
+    }
+
+    /// <summary>
+    /// Async variant of <see cref="Dispatch{T}(string, Func{T}, BlexActionArg[])"/>: runs <paramref name="mutation"/>
+    /// as one recorded action and completes with what it returned. Used by generated wrappers of
+    /// <c>[BlexActionAttribute]</c> methods returning <c>Task&lt;T&gt;</c> or <c>ValueTask&lt;T&gt;</c>.
+    /// </summary>
+    /// <returns>
+    /// A task completing with the body's result, or with <c>default</c> at once when a middleware vetoed the action
+    /// and the body never ran.
+    /// </returns>
+    protected Task<T> DispatchAsync<T>(string actionName, Func<Task<T>> mutation, BlexActionArg[]? args)
+    {
+        ArgumentNullException.ThrowIfNull(mutation);
+        return BeginAction(actionName, args)
+            ? DispatchApprovedAsync(actionName, mutation, args)
+            : Task.FromResult(default(T)!);
+    }
+
+    /// <summary>
+    /// <see cref="DispatchApprovedAsync(string, Func{Task}, BlexActionArg[])"/> for a body that returns a value: the
+    /// veto decision has already been taken by <see cref="BeginAction"/>, and the task completes with the body's result.
+    /// </summary>
+    protected Task<T> DispatchApprovedAsync<T>(string actionName, Func<Task<T>> mutation, BlexActionArg[]? args)
+    {
+        ArgumentNullException.ThrowIfNull(mutation);
+        return RunApprovedAsync(actionName, null, mutation, args);
+    }
+
+    /// <summary>
+    /// Whether an effect with <c>ThrottleMilliseconds</c> must drop an invocation because its last run started less
+    /// than <paramref name="milliseconds"/> ago. Never throttles while recorded actions are being replayed. Used by
+    /// generated effect wrappers, together with <see cref="MarkEffectStarted"/>.
+    /// </summary>
+    /// <param name="lastStarted">
+    /// When the effect's last run started -- a <see cref="System.TimeProvider.GetTimestamp"/> value, with the clock it
+    /// was read from -- or <c>null</c>. A start read from another clock than <see cref="TimeProvider"/> is now (the
+    /// store registered with a manager, or moved to another, since) cannot be compared with it and holds nothing back.
+    /// </param>
+    /// <param name="milliseconds">The throttle window.</param>
+    protected bool IsEffectThrottled((TimeProvider Clock, long Timestamp)? lastStarted, int milliseconds)
+    {
+        if (lastStarted is not { } started || _manager is { IsReplaying: true })
+            return false;
+
+        var clock = TimeProvider;
+        if (!ReferenceEquals(started.Clock, clock))
+            return false;
+
+        var elapsed = clock.GetElapsedTime(started.Timestamp);
+        return elapsed >= TimeSpan.Zero && elapsed < TimeSpan.FromMilliseconds(milliseconds);
+    }
+
+    /// <summary>
+    /// Records that a throttled effect's run is starting, which opens its next throttle window: called once the
+    /// invocation has passed the middleware, so a vetoed invocation never delays the next one, and -- under
+    /// <see cref="BlexEffectConcurrency.Queue"/> -- once the run's turn has come, so the window counts from when
+    /// it actually runs. Not while recorded actions are being replayed.
+    /// </summary>
+    protected void MarkEffectStarted(ref (TimeProvider Clock, long Timestamp)? lastStarted)
+    {
+        // A replay is never throttled (IsEffectThrottled), and must not open a window for the live invocation after it.
+        if (_manager is { IsReplaying: true })
+            return;
+
+        var clock = TimeProvider;
+        lastStarted = (clock, clock.GetTimestamp());
     }
 
     /// <summary>

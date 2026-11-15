@@ -26,7 +26,9 @@
         <Using Include="Microsoft.Extensions.DependencyInjection" />
         <Using Include="Microsoft.Extensions.Hosting" />
         <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
+        <Using Include="Bit.BlazorUI" />
         <Using Include="Boilerplate.LandingPage.Client.Infrastructure" />
+        <Using Include="Boilerplate.LandingPage.Client.Infrastructure.Services" />
         <Using Include="Boilerplate.LandingPage.Client.Infrastructure.Models" />
         <Using Include="Boilerplate.LandingPage.Tests.Infrastructure" />
     </ItemGroup>

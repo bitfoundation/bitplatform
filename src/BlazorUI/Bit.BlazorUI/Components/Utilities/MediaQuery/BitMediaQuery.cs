@@ -79,6 +79,11 @@ public partial class BitMediaQuery : BitComponentBase
     /// <remarks>
     /// Ignored when <see cref="IsMatched"/> is bound, since the value handed over is then the initial
     /// state already.
+    /// <br />
+    /// Also ignored where the browser can answer before the first render: a WebAssembly app whose script is
+    /// in the page already asks it synchronously, so its first render is already the right one. The answer
+    /// is the document's (the component has no element of its own yet), and the first report of the
+    /// browser corrects a component whose own themed scope says otherwise.
     /// </remarks>
     [Parameter] public bool DefaultMatched { get; set; }
 
@@ -301,7 +306,7 @@ public partial class BitMediaQuery : BitComponentBase
         {
             _isSeeded = true;
 
-            if (IsMatchedHasBeenSet is false && DefaultMatched)
+            if (IsMatchedHasBeenSet is false && (_InitialMatch ?? DefaultMatched))
             {
                 await AssignIsMatched(true);
             }
@@ -375,6 +380,84 @@ public partial class BitMediaQuery : BitComponentBase
     }
 
 
+
+    // What the browser says of the query before the first render, where it can answer then (see MatchNow): only when
+    // there is content to render off it, since that is all the answer changes - an OnChange is only ever raised by the
+    // reports of the listener.
+    private bool? _InitialMatch
+    {
+        get
+        {
+            if (_HasContent is false || IsStaticRender(_js)) return null;
+
+            var customQuery = NormalizeQuery(Query);
+
+            return MatchNow(_js, customQuery, customQuery is null ? ScreenQuery?.ToString() : null, _ThemeBreakpoints);
+        }
+    }
+
+    /// <summary>
+    /// Whether a media query matches right now, asked of the browser synchronously - which only a WebAssembly app
+    /// can do, and only once the script answering it is in the page (from the start in the bundle mode, once its
+    /// module has been imported with the lazy scripts) - so a component can decide what it renders before its first
+    /// render, which the reports of a listener only follow. Null wherever the browser cannot answer that way (Server,
+    /// Hybrid, a script not loaded yet) or cannot tell, which leaves the component to its default. The caller rules
+    /// out a static render, which has no browser to ask.
+    /// </summary>
+    /// <param name="js">The JS runtime of the component asking.</param>
+    /// <param name="query">A custom media query, verbatim (takes precedence).</param>
+    /// <param name="screenQuery">The name of a <see cref="BitScreenQuery"/>, built off the live breakpoints of the document.</param>
+    /// <param name="breakpoints">The breakpoints that win over the document's (see <see cref="ToScriptBreakpoints"/>).</param>
+    internal static bool? MatchNow(IJSRuntime js, string? query, string? screenQuery, Dictionary<string, string>? breakpoints)
+    {
+        if (js is not IJSInProcessRuntime || (query is null && screenQuery is null)) return null;
+
+        try
+        {
+            var answer = js.BitMediaQueryMatchNow(query, screenQuery, breakpoints);
+
+            if (answer.IsCompletedSuccessfully) return answer.Result;
+
+            // A lazy script on its way (its module is imported by this very call), or a call that failed: either way
+            // nothing to decide on now, and the task is observed so a failure that comes later is not left unobserved.
+            _ = Observe(answer);
+
+            return null;
+        }
+        catch (Exception)
+        {
+            // Only ever a hint: whatever goes wrong (a runtime not ready yet, a strict test runtime), the component
+            // renders as it would have without it.
+            return null;
+        }
+
+        static async Task Observe(ValueTask<bool?> answer)
+        {
+            try { await answer; } catch (Exception) { }
+        }
+    }
+
+    /// <summary>
+    /// The breakpoints of a theme, as the script building a <see cref="BitScreenQuery"/> wants them. Only the ones
+    /// actually set are sent: everything else is left to the CSS variables and the built-in defaults, so a provider
+    /// that re-values a single breakpoint does not flatten the rest of the scale to whatever this theme object holds.
+    /// </summary>
+    internal static Dictionary<string, string>? ToScriptBreakpoints(BitTheme? theme)
+    {
+        var breakpoints = theme?.Layout?.Breakpoints;
+        if (breakpoints is null) return null;
+
+        Dictionary<string, string>? result = null;
+
+        if (breakpoints.Xs.HasValue()) (result ??= [])["xs"] = breakpoints.Xs!;
+        if (breakpoints.Sm.HasValue()) (result ??= [])["sm"] = breakpoints.Sm!;
+        if (breakpoints.Md.HasValue()) (result ??= [])["md"] = breakpoints.Md!;
+        if (breakpoints.Lg.HasValue()) (result ??= [])["lg"] = breakpoints.Lg!;
+        if (breakpoints.Xl.HasValue()) (result ??= [])["xl"] = breakpoints.Xl!;
+        if (breakpoints.Xxl.HasValue()) (result ??= [])["xxl"] = breakpoints.Xxl!;
+
+        return result;
+    }
 
     // A query is written the way a stylesheet writes it more often than not - the "@media" at-rule
     // keyword included, as the BitScreenQuery docs show theirs - and matchMedia rejects that keyword
@@ -450,29 +533,8 @@ public partial class BitMediaQuery : BitComponentBase
 
     private bool _HasContent => Template is not null || Matched is not null || ChildContent is not null || NotMatched is not null;
 
-    // The breakpoints an enclosing BitThemeProvider overrides, as the JS side wants them. Only the
-    // ones actually set are sent: everything else is left to the CSS variables and the built-in
-    // defaults, so a provider that re-values a single breakpoint does not flatten the rest of the
-    // scale to whatever this theme object happens to hold.
-    private Dictionary<string, string>? _ThemeBreakpoints
-    {
-        get
-        {
-            var breakpoints = CascadingTheme?.Layout?.Breakpoints;
-            if (breakpoints is null) return null;
-
-            Dictionary<string, string>? result = null;
-
-            if (breakpoints.Xs.HasValue()) (result ??= [])["xs"] = breakpoints.Xs!;
-            if (breakpoints.Sm.HasValue()) (result ??= [])["sm"] = breakpoints.Sm!;
-            if (breakpoints.Md.HasValue()) (result ??= [])["md"] = breakpoints.Md!;
-            if (breakpoints.Lg.HasValue()) (result ??= [])["lg"] = breakpoints.Lg!;
-            if (breakpoints.Xl.HasValue()) (result ??= [])["xl"] = breakpoints.Xl!;
-            if (breakpoints.Xxl.HasValue()) (result ??= [])["xxl"] = breakpoints.Xxl!;
-
-            return result;
-        }
-    }
+    // The breakpoints an enclosing BitThemeProvider overrides, as the JS side wants them.
+    private Dictionary<string, string>? _ThemeBreakpoints => ToScriptBreakpoints(CascadingTheme);
 
 
 

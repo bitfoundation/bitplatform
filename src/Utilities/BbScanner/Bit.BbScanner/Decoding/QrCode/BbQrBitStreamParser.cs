@@ -48,6 +48,7 @@ public static class BbQrBitStreamParser
         var currentEncoding = BbCharacterSetEci.Latin1;
         int? eci = null;
         var isGs1 = false;
+        var fnc1 = false;
         int? structuredAppendIndex = null;
         int? structuredAppendCount = null;
         int? structuredAppendParity = null;
@@ -71,7 +72,10 @@ public static class BbQrBitStreamParser
             {
                 case ModeFnc1FirstPosition:
                 case ModeFnc1SecondPosition:
-                    isGs1 = true;
+                    // Either FNC1 makes a percent sign in alphanumeric mode stand for a separator, but only FNC1 in
+                    // first position declares GS1 data: in second position it follows an AIM application indicator.
+                    fnc1 = true;
+                    isGs1 |= mode == ModeFnc1FirstPosition;
                     if (mode == ModeFnc1SecondPosition)
                     {
                         if (bits.Available < 8)
@@ -122,7 +126,7 @@ public static class BbQrBitStreamParser
                 case ModeAlphanumeric:
                 {
                     var count = ReadCount(ref bits, version, mode);
-                    if (count < 0 || !DecodeAlphanumeric(ref bits, count, text, raw, isGs1))
+                    if (count < 0 || !DecodeAlphanumeric(ref bits, count, text, raw, fnc1))
                     {
                         return null;
                     }
@@ -180,6 +184,7 @@ public static class BbQrBitStreamParser
             StructuredAppendIndex = structuredAppendIndex,
             StructuredAppendCount = structuredAppendCount,
             StructuredAppendParity = structuredAppendParity,
+            StructuredAppendIsLast = structuredAppendIndex is { } position ? position == structuredAppendCount - 1 : null,
             Rows = version.DimensionForVersion,
             Columns = version.DimensionForVersion,
         };
@@ -308,7 +313,7 @@ public static class BbQrBitStreamParser
             var read = mode switch
             {
                 0 => DecodeNumeric(ref bits, count, text, raw),
-                1 => DecodeAlphanumeric(ref bits, count, text, raw, isGs1: false),
+                1 => DecodeAlphanumeric(ref bits, count, text, raw, fnc1: false),
                 2 => DecodeByte(ref bits, count, text, raw, BbCharacterSetEci.Latin1, sawExplicitEncoding: false),
                 _ => DecodeDoubleByte(ref bits, count, text, raw, kanji: true),
             };
@@ -390,7 +395,7 @@ public static class BbQrBitStreamParser
         }
     }
 
-    private static bool DecodeAlphanumeric(ref BbBitSource bits, int count, StringBuilder text, List<byte> raw, bool isGs1)
+    private static bool DecodeAlphanumeric(ref BbBitSource bits, int count, StringBuilder text, List<byte> raw, bool fnc1)
     {
         var start = text.Length;
 
@@ -431,7 +436,7 @@ public static class BbQrBitStreamParser
             text.Append(AlphanumericChars[index]);
         }
 
-        if (isGs1)
+        if (fnc1)
         {
             // In a GS1 payload a doubled percent sign stands for a literal one, and a single
             // percent sign is the field separator.

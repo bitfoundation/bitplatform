@@ -1,0 +1,240 @@
+﻿<DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+    <div>
+        The items are BitListBoxOption components declared in the markup, and the one the user picks is the Value. The
+        Label names the list for everyone. Tab into the list and use the arrow keys, or type the first letters of a fruit.
+    </div>
+    <br />
+    <div class="example-box">
+        <BitListBox Label="Fruit" TItem="BitListBoxOption<string>" TValue="string" @bind-Value="basicValue">
+            <BitListBoxOption Text="Apple" Value="@("apple")" />
+            <BitListBoxOption Text="Banana" Value="@("banana")" />
+            <BitListBoxOption Text="Cherry" Value="@("cherry")" />
+            <BitListBoxOption Text="Grape" Value="@("grape")" />
+            <BitListBoxOption Text="Orange" Value="@("orange")" />
+        </BitListBox>
+        <div>Value: <b>@basicValue</b></div>
+    </div>
+</DemoExample>
+
+<DemoExample Title="MultiSelect" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+    <div>
+        With MultiSelect the user picks several items, which are the Values. The arrow keys only move; Space, Enter or a
+        click adds the item to the selection or takes it out.
+    </div>
+    <br />
+    <div class="example-box">
+        <BitListBox Label="Fruits" TItem="BitListBoxOption<string>" TValue="string" MultiSelect @bind-Values="multiValues">
+            <BitListBoxOption Text="Apple" Value="@("apple")" />
+            <BitListBoxOption Text="Banana" Value="@("banana")" />
+            <BitListBoxOption Text="Cherry" Value="@("cherry")" />
+            <BitListBoxOption Text="Grape" Value="@("grape")" />
+            <BitListBoxOption Text="Orange" Value="@("orange")" />
+        </BitListBox>
+        <div>Values: <b>@string.Join(", ", multiValues ?? [])</b></div>
+    </div>
+</DemoExample>
+
+<DemoExample Title="Description & icon" RazorCode="@example3RazorCode" Id="example3">
+    <div>An item can carry an icon before its text and a Description under it.</div>
+    <br />
+    <div class="example-box">
+        <BitListBox Label="Shipping" TItem="BitListBoxOption<string>" TValue="string" DefaultValue="@("standard")">
+            <BitListBoxOption Text="Standard" Description="3 to 5 days, free" IconName="@BitIconName.Car" Value="@("standard")" />
+            <BitListBoxOption Text="Express" Description="Next day, $9.99" IconName="@BitIconName.Airplane" Value="@("express")" />
+            <BitListBoxOption Text="Pick up" Description="From a store near you" IconName="@BitIconName.Shop" Value="@("pickup")" />
+        </BitListBox>
+    </div>
+</DemoExample>
+
+<DemoExample Title="Disabled" RazorCode="@example4RazorCode" Id="example4">
+    <div>IsDisabled keeps the user off an item, which the keyboard passes by; Disabled keeps the user off the whole list.</div>
+    <br />
+    <div class="example-box">
+        <BitListBox Label="Some disabled" TItem="BitListBoxOption<string>" TValue="string">
+            <BitListBoxOption Text="Apple" Value="@("apple")" />
+            <BitListBoxOption Text="Banana" Value="@("banana")" IsDisabled />
+            <BitListBoxOption Text="Cherry" Value="@("cherry")" />
+            <BitListBoxOption Text="Grape" Value="@("grape")" IsDisabled />
+            <BitListBoxOption Text="Orange" Value="@("orange")" />
+        </BitListBox>
+        <BitListBox Label="Disabled" TItem="BitListBoxOption<string>" TValue="string" DefaultValue="@("banana")" Disabled>
+            <BitListBoxOption Text="Apple" Value="@("apple")" />
+            <BitListBoxOption Text="Banana" Value="@("banana")" />
+            <BitListBoxOption Text="Cherry" Value="@("cherry")" />
+            <BitListBoxOption Text="Grape" Value="@("grape")" />
+            <BitListBoxOption Text="Orange" Value="@("orange")" />
+        </BitListBox>
+    </div>
+</DemoExample>
+
+<DemoExample Title="ReadOnly" RazorCode="@example5RazorCode" Id="example5">
+    <div>A ReadOnly list box can be read and moved through with the keyboard, but its selection cannot be changed.</div>
+    <br />
+    <div class="example-box">
+        <BitListBox Label="Read only" TItem="BitListBoxOption<string>" TValue="string" DefaultValue="@("cherry")" ReadOnly>
+            <BitListBoxOption Text="Apple" Value="@("apple")" />
+            <BitListBoxOption Text="Banana" Value="@("banana")" />
+            <BitListBoxOption Text="Cherry" Value="@("cherry")" />
+            <BitListBoxOption Text="Grape" Value="@("grape")" />
+            <BitListBoxOption Text="Orange" Value="@("orange")" />
+        </BitListBox>
+    </div>
+</DemoExample>
+
+<DemoExample Title="MaxHeight" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+    <div>
+        MaxHeight is the height past which the list scrolls. The keyboard keeps the item it is on in view, and typing the
+        start of a name goes straight to it.
+    </div>
+    <br />
+    <div class="example-box">
+        <BitListBox Label="Country" TItem="BitListBoxOption<string>" TValue="string" MaxHeight="12rem" @bind-Value="countryValue">
+            @foreach (var country in countries)
+            {
+                <BitListBoxOption Text="@country" Value="@country" />
+            }
+        </BitListBox>
+        <div>Value: <b>@countryValue</b></div>
+    </div>
+</DemoExample>
+
+<DemoExample Title="Validation" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+    <div>
+        The list box binds to an EditForm and is validated with it, in both modes: ShowValidationMessage shows the messages
+        of the field under the list. ErrorMessage and Invalid mark it invalid from the page itself.
+    </div>
+    <br />
+    <div>
+        <EditForm Model="validationModel" OnValidSubmit="() => validationResult = validationModel.ToString()">
+            <DataAnnotationsValidator />
+            <div class="example-box">
+                <BitListBox Label="Fruit (required)" TItem="BitListBoxOption<string>" TValue="string" @bind-Value="validationModel.Fruit" Required ShowValidationMessage>
+                    <BitListBoxOption Text="Apple" Value="@("apple")" />
+                    <BitListBoxOption Text="Banana" Value="@("banana")" />
+                    <BitListBoxOption Text="Cherry" Value="@("cherry")" />
+                    <BitListBoxOption Text="Grape" Value="@("grape")" />
+                    <BitListBoxOption Text="Orange" Value="@("orange")" />
+                </BitListBox>
+                <BitListBox Label="Fruits (at least two)" TItem="BitListBoxOption<string>" TValue="string" MultiSelect @bind-Values="validationModel.Fruits" ShowValidationMessage>
+                    <BitListBoxOption Text="Apple" Value="@("apple")" />
+                    <BitListBoxOption Text="Banana" Value="@("banana")" />
+                    <BitListBoxOption Text="Cherry" Value="@("cherry")" />
+                    <BitListBoxOption Text="Grape" Value="@("grape")" />
+                    <BitListBoxOption Text="Orange" Value="@("orange")" />
+                </BitListBox>
+            </div>
+            <br />
+            <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
+        </EditForm>
+        <br />
+        <div>Submitted: <b>@validationResult</b></div>
+        <br />
+        <div class="example-box">
+            <BitListBox Label="With an error message" TItem="BitListBoxOption<string>" TValue="string" ErrorMessage="This fruit is out of season.">
+                <BitListBoxOption Text="Apple" Value="@("apple")" />
+                <BitListBoxOption Text="Banana" Value="@("banana")" />
+                <BitListBoxOption Text="Cherry" Value="@("cherry")" />
+                <BitListBoxOption Text="Grape" Value="@("grape")" />
+                <BitListBoxOption Text="Orange" Value="@("orange")" />
+            </BitListBox>
+        </div>
+    </div>
+</DemoExample>
+
+<DemoExample Title="Events" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+    <div>OnSelectItem runs when an item is selected, and in multi select mode OnDeselectItem when one is taken out.</div>
+    <br />
+    <div class="example-box">
+        <BitListBox TItem="BitListBoxOption<string>" TValue="string"
+                    AriaLabel="Fruits"
+                    MultiSelect
+                    OnSelectItem="HandleOnSelectItem"
+                    OnDeselectItem="HandleOnDeselectItem">
+            <BitListBoxOption Text="Apple" Value="@("apple")" />
+            <BitListBoxOption Text="Banana" Value="@("banana")" />
+            <BitListBoxOption Text="Cherry" Value="@("cherry")" />
+            <BitListBoxOption Text="Grape" Value="@("grape")" />
+            <BitListBoxOption Text="Orange" Value="@("orange")" />
+        </BitListBox>
+        <div>Last event: <b>@eventsLog</b></div>
+    </div>
+</DemoExample>
+
+<DemoExample Title="External Icons" RazorCode="@example9RazorCode" Id="example9">
+    <div>The Icon of an item takes the CSS classes of any icon library, such as FontAwesome or Bootstrap Icons.</div>
+    <br />
+    <div>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+        <div class="example-box">
+            <BitListBox Label="FontAwesome" TItem="BitListBoxOption<string>" TValue="string" DefaultValue="@("car")">
+                <BitListBoxOption Text="Car" Icon="@("fa-solid fa-car")" Value="@("car")" />
+                <BitListBoxOption Text="Train" Icon="@BitIconInfo.Fa("solid train")" Value="@("train")" />
+                <BitListBoxOption Text="Plane" Icon="@BitIconInfo.Fa("solid plane")" Value="@("plane")" />
+            </BitListBox>
+            <BitListBox Label="Bootstrap Icons" TItem="BitListBoxOption<string>" TValue="string" DefaultValue="@("bike")">
+                <BitListBoxOption Text="Bike" Icon="@BitIconInfo.Bi("bicycle")" Value="@("bike")" />
+                <BitListBoxOption Text="Bus" Icon="@BitIconInfo.Bi("bus-front")" Value="@("bus")" />
+                <BitListBoxOption Text="Taxi" Icon="@BitIconInfo.Bi("taxi-front")" Value="@("taxi")" />
+            </BitListBox>
+        </div>
+    </div>
+</DemoExample>
+
+<DemoExample Title="Style & Class" RazorCode="@example10RazorCode" Id="example10">
+    <div>
+        Style and Class reach the root, the Style and Class of an item reach that item, and Styles and Classes reach each
+        part by name. The selected colors are also the public --bit-ListBox-* variables.
+    </div>
+    <br />
+    <div class="example-box">
+        <BitListBox Label="Style" TItem="BitListBoxOption<string>" TValue="string" DefaultValue="@("banana")" Style="--bit-ListBox-selected-color: tomato; --bit-ListBox-selected-background: #ff63471f;">
+            <BitListBoxOption Text="Apple" Value="@("apple")" />
+            <BitListBoxOption Text="Banana" Value="@("banana")" />
+            <BitListBoxOption Text="Cherry" Value="@("cherry")" />
+            <BitListBoxOption Text="Grape" Value="@("grape")" />
+            <BitListBoxOption Text="Orange" Value="@("orange")" />
+        </BitListBox>
+        <BitListBox Label="Class" TItem="BitListBoxOption<string>" TValue="string" DefaultValue="@("banana")" Class="custom-class">
+            <BitListBoxOption Text="Apple" Value="@("apple")" />
+            <BitListBoxOption Text="Banana" Value="@("banana")" />
+            <BitListBoxOption Text="Cherry" Value="@("cherry")" />
+            <BitListBoxOption Text="Grape" Value="@("grape")" />
+            <BitListBoxOption Text="Orange" Value="@("orange")" />
+        </BitListBox>
+        <BitListBox Label="Item's Style & Class" TItem="BitListBoxOption<string>" TValue="string">
+            <BitListBoxOption Text="Apple" Value="@("apple")" Style="color: seagreen;" />
+            <BitListBoxOption Text="Banana" Value="@("banana")" Class="custom-item" />
+            <BitListBoxOption Text="Cherry" Value="@("cherry")" />
+        </BitListBox>
+        <BitListBox Label="Styles & Classes"
+                    TItem="BitListBoxOption<string>" TValue="string"
+                    MultiSelect
+                    DefaultValues="@(["apple", "cherry"])"
+                    Styles="@(new() { List = "border-radius: 0.75rem;", Text = "font-style: italic;" })"
+                    Classes="@(new() { SelectedItem = "custom-selected" })">
+            <BitListBoxOption Text="Apple" Value="@("apple")" />
+            <BitListBoxOption Text="Banana" Value="@("banana")" />
+            <BitListBoxOption Text="Cherry" Value="@("cherry")" />
+            <BitListBoxOption Text="Grape" Value="@("grape")" />
+            <BitListBoxOption Text="Orange" Value="@("orange")" />
+        </BitListBox>
+    </div>
+</DemoExample>
+
+<DemoExample Title="RTL" RazorCode="@example11RazorCode" Id="example11">
+    <div>Use BitListBox in right-to-left (RTL).</div>
+    <br />
+    <div dir="rtl" class="example-box">
+        <BitListBox Dir="BitDir.Rtl" Label="میوه" TItem="BitListBoxOption<string>" TValue="string" DefaultValue="@("banana")">
+            <BitListBoxOption Text="سیب" Value="@("apple")" />
+            <BitListBoxOption Text="موز" Value="@("banana")" />
+            <BitListBoxOption Text="گیلاس" Value="@("cherry")" />
+        </BitListBox>
+        <BitListBox Dir="BitDir.Rtl" Label="میوه‌ها" TItem="BitListBoxOption<string>" TValue="string" MultiSelect DefaultValues="@(["apple", "cherry"])">
+            <BitListBoxOption Text="سیب" Value="@("apple")" />
+            <BitListBoxOption Text="موز" Value="@("banana")" />
+            <BitListBoxOption Text="گیلاس" Value="@("cherry")" />
+        </BitListBox>
+    </div>
+</DemoExample>

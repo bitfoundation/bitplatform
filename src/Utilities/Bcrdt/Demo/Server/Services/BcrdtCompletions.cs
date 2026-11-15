@@ -44,6 +44,7 @@ public static class BcrdtCompletions
         "a form several people fill in together, without overwriting each other",
         "a kanban board with columns and cards people reorder",
         "tags on a document that people add and remove",
+        "a vote or like count several people change at once",
         "show who else is on the page and where their cursor is",
         "keep working offline and sync when the connection returns",
         "persist documents on the server across restarts",

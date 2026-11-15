@@ -4,7 +4,7 @@ namespace Bit.Bcrdt.Demo.Server.Services;
 
 /// <summary>
 /// One searchable index over everything this MCP server knows: the reference guide, every public
-/// type and member of the four packages, the setup guides, the two labs and the demo's source files.
+/// type and member of its ten packages, the setup guides, the two labs and the demo's source files.
 /// <para>
 /// Without it an agent has to guess which corpus holds the answer and what it is called there -
 /// "keep both edits to a description field" is a guide section, a map method, a text type and a
@@ -435,12 +435,12 @@ public static class BcrdtSearchIndex
 
         entries.Add(new Entry("Lab", "Inspect a merge", null,
             "InspectBcrdtMerge()",
-            "Runs the real engine on concurrent edits made by two to four replicas - text, map, array and set operations - " +
+            "Runs the real engine on concurrent edits made by two to four replicas - text, map, array, set and counter operations - " +
             "exchanges their updates in every delivery order, and reports each replica's state before the merge, the state " +
             "they converge to, whether they converged, every update's size, and what the merge decided: one value wins for a " +
-            "map key, both insertions survive in a text.",
+            "map key, both insertions survive in a text, every change to a counter is summed.",
             "inspect merge conflict concurrent concurrently edits wins winner both survive converge convergence decide " +
-            "simultaneous offline replicas last writer"));
+            "simultaneous offline replicas last writer counter increment decrement sum"));
 
         entries.Add(new Entry("Lab", "Inspect an update", null,
             "InspectBcrdtUpdate()",

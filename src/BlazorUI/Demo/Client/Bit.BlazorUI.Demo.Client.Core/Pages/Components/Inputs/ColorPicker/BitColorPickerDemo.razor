@@ -341,7 +341,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Validation" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" CodeFiles="@example13CodeFiles" Id="example13">
+    <DemoExample Title="Validation" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
         <div>
             Inside an <b>EditForm</b> the picker is a form field like any other: <b>@@bind-Value</b> joins the
             EditContext, every change is reported to it, and while the value is invalid every border the panel draws,
@@ -351,14 +351,25 @@
             also makes it readable by a plain form post.
         </div>
         <br />
+        <div>
+            <b>ShowValidationMessage</b> shows the messages of the form at the foot of the picker, where
+            <b>ErrorMessage</b> goes, so the form below needs no <b>ValidationMessage</b> component. Every control that
+            holds the color - the gradient, the sliders and the text fields - is described by them through
+            <b>aria-describedby</b>, so they are read out when one of them takes the focus, and an <b>ErrorMessage</b>
+            of the app's own wins the place while it is set. They are not announced as they appear: a submit validates
+            every field at once, and a message from each of them read out in a row would bury the form under its own
+            errors. A <b>BitParams</b> holding a <b>BitColorPickerParams</b> with <b>ShowValidationMessage</b> turns it
+            on for every picker inside it.
+        </div>
+        <br />
         <div class="example-box">
             <EditForm Model="validationModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
                 <DataAnnotationsValidator />
 
                 <BitColorPicker Required ShowInputs ShowPreview
                                 Label="Brand color"
+                                ShowValidationMessage
                                 @bind-Value="validationModel.Color" />
-                <ValidationMessage For="@(() => validationModel.Color)" />
 
                 <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
             </EditForm>

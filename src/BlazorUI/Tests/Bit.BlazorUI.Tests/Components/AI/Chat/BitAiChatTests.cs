@@ -110,7 +110,7 @@ public class BitAiChatTests : BitAiTestBase
             .Add(c => c.Suggestions, ["Plan a trip"])
             .Add(c => c.OnSubmit, s => submitted.Add(s.Text)));
 
-        component.Find(".bit-aiems-sgs > button").Click();
+        component.Find(".bit-ems-con > button").Click();
 
         component.WaitForAssertion(() => CollectionAssert.AreEqual(new[] { "Plan a trip" }, submitted));
         Assert.IsEmpty(session.Conversation.Messages);
@@ -132,7 +132,7 @@ public class BitAiChatTests : BitAiTestBase
 
         Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.AiPromptInput.focus"]);
 
-        component.Find(".bit-aiems-sgs > button").Click();
+        component.Find(".bit-ems-con > button").Click();
 
         component.WaitForAssertion(() =>
         {
@@ -153,7 +153,7 @@ public class BitAiChatTests : BitAiTestBase
             .Add(c => c.Session, session)
             .Add(c => c.Suggestions, ["Plan a trip"]));
 
-        component.Find(".bit-aiems-sgs > button").Click();
+        component.Find(".bit-ems-con > button").Click();
 
         component.WaitForAssertion(() => Assert.AreEqual("Plan a trip", session.Conversation.Messages[0].GetText()));
 
@@ -169,10 +169,10 @@ public class BitAiChatTests : BitAiTestBase
         var component = RenderComponent<BitAiChat>(p => p
             .Add(c => c.Session, session)
             .Add(c => c.EmptyTitle, "Hi there")
-            .Add(c => c.EmptyBody, "Ask me about cats."));
+            .Add(c => c.EmptyDescription, "Ask me about cats."));
 
-        Assert.AreEqual("Hi there", component.Find(".bit-aiems-ttl").TextContent);
-        Assert.AreEqual("Ask me about cats.", component.Find(".bit-aiems-bdy").TextContent.Trim());
+        Assert.AreEqual("Hi there", component.Find(".bit-ems-ttl").TextContent);
+        Assert.AreEqual("Ask me about cats.", component.Find(".bit-ems-dsc").TextContent.Trim());
 
         component.Render(p => p.Add(c => c.EmptyTemplate, b => b.AddMarkupContent(0, "<p class=\"own-empty\"></p>")));
 

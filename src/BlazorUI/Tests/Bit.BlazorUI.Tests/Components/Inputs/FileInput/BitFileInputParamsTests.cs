@@ -289,6 +289,7 @@ public class BitFileInputParamsTests : BunitTestContext
             ShowDropZone = true,
             ShowPreview = true,
             ShowRemoveButton = true,
+            ShowValidationMessage = true,
             Size = BitSize.Small,
             Styles = new() { Root = "--s: root;" },
             Title = "Cascaded title",
@@ -346,6 +347,7 @@ public class BitFileInputParamsTests : BunitTestContext
         Assert.IsTrue(instance.ShowDropZone);
         Assert.IsTrue(instance.ShowPreview);
         Assert.IsTrue(instance.ShowRemoveButton);
+        Assert.IsTrue(instance.ShowValidationMessage);
         Assert.AreEqual(BitSize.Small, instance.Size);
         Assert.AreSame(@params.Styles, instance.Styles);
         Assert.AreEqual("Cascaded title", instance.Title);

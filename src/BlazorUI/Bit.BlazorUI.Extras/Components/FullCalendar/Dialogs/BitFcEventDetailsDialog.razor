@@ -145,10 +145,10 @@
 @if (_pendingScopeAction is not ScopeAction.None)
 {
     <BitFcRecurrenceScopeDialog Title="@(_pendingScopeAction is ScopeAction.Edit ? Texts.RecurringEditTitle : Texts.RecurringDeleteTitle)"
-                                OnConfirm="OnScopeConfirmed" OnCancel="OnScopeCancelled" />
+                                OnConfirm="OnScopeConfirmed" OnConfirmFollowing="OnScopeFollowingConfirmed" OnCancel="OnScopeCancelled" />
 }
 
 @if (_showEdit && _editTarget is not null)
 {
-    <BitFcAddEditEventDialog ExistingEvent="_editTarget" OnClose="OnEditClose" OnSaved="OnEditSaved" />
+    <BitFcAddEditEventDialog ExistingEvent="_editTarget" EditFollowing="_editFollowing" OnClose="OnEditClose" OnSaved="OnEditSaved" />
 }

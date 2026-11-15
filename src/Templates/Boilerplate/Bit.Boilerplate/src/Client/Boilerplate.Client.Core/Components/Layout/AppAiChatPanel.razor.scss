@@ -1,6 +1,16 @@
 @import '../../Styles/abstracts/_media-queries.scss';
 @import '../../Styles/abstracts/_bit-css-variables.scss';
 
+// The chat fills the panel, and scrolls its own transcript.
+.body {
+    width: 600px;
+    height: 100%;
+    display: flex;
+    min-height: 0;
+    max-width: 100%;
+    flex-direction: column;
+}
+
 ::deep {
     .open-panel-button {
         --bit-Button-padding: 0;
@@ -18,10 +28,10 @@
 
         // A call goes on while the panel is closed.
         &.in-call {
-            animation: open-panel-in-call 1.6s ease-out infinite;
+            animation: open-panel-in-call calc(1.6s * #{$bit-motion-loop-factor}) $bit-motion-easing-decelerate infinite;
         }
 
-        // A card waits for the user's answer.
+        // A tool waits for the user's approval.
         &.needs-answer::after {
             top: 0;
             content: "";
@@ -66,171 +76,8 @@
         }
     }
 
-    .scr-container {
-        padding-inline-end: 0.5rem;
-        --bit-MarkdownViewer-code-block-padding: 0.5rem 1rem;
-        --bit-MarkdownViewer-code-block-radius: 0.25rem;
-        --bit-MarkdownViewer-code-block-background: #{$bit-color-background-secondary};
-
-        img {
-            padding: 0.5rem;
-            max-width: 256px;
-        }
-
+    .load-failed {
+        flex: 1;
+        gap: 0.75rem;
     }
-
-    .body {
-        width: 600px;
-        max-width: 100%;
-    }
-
-    .message-row {
-        padding-bottom: 0.25rem; // Separates two messages; the parent stack has no gap of its own.
-
-        &:hover .message-actions, &:focus-within .message-actions {
-            opacity: 1;
-        }
-    }
-
-    .message-actions {
-        opacity: 0;
-        min-height: 1.25rem;
-        transition: opacity 0.15s ease-in-out;
-        --bit-Button-padding: 0;
-        --bit-Button-border-width: 0;
-        --bit-Button-min-height: 1.25rem;
-        --bit-Button-icon-size: 0.7rem;
-        --bit-Button-spinner-size: 0.7rem;
-        --bit-Button-text-color: #{$bit-color-foreground-secondary};
-        --bit-Button-text-hover-color: #{$bit-color-foreground-primary};
-        --bit-Button-text-hover-background: transparent;
-        --bit-Button-text-active-background: transparent;
-
-        // Something is being fetched for this message, so the row stays put instead of fading out from under it.
-        &.busy {
-            opacity: 1;
-        }
-    }
-
-    .user-message {
-        align-self: end;
-        padding: 0.5rem 1rem;
-
-        pre {
-            margin: 0;
-        }
-    }
-
-    .default-prompt-container {
-        @include gt-xs {
-            flex-flow: row !important;
-        }
-    }
-
-    .default-prompt-button {
-        height: 100%;
-    }
-
-    .dictate-button {
-        inset-inline-end: 3rem;
-    }
-
-    // Floats inside the field just before the microphone or call button, with the time left written on it. The
-    // field's own end padding is widened while it is there so no text ends up underneath.
-    .speech-timer {
-        width: 4rem;
-        bottom: 0.75rem;
-        position: absolute;
-        pointer-events: none;
-        inset-inline-end: 5.25rem;
-
-        // The stack aligns to flex-start, and a bar of absolutely positioned parts has no width of its own.
-        .speech-timer-progress {
-            width: 100%;
-        }
-
-        // Faded so the time on top stays readable in every phase color.
-        .speech-timer-bar {
-            opacity: 0.45;
-        }
-
-        .speech-timer-text {
-            inset: 0;
-            display: grid;
-            position: absolute;
-            place-items: center;
-            color: $bit-color-foreground-primary;
-        }
-
-        &.ending {
-            animation: speech-timer-ending 1.2s ease-in-out infinite;
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-            &.ending {
-                animation: none;
-            }
-        }
-    }
-
-    @keyframes speech-timer-ending {
-        50% {
-            opacity: 0.55;
-        }
-    }
-
-    // Beside the microphone button, or in its place while that is hidden.
-    .voice-call-button {
-        inset-inline-end: 5.5rem;
-
-        &.no-dictation {
-            inset-inline-end: 3rem;
-        }
-    }
-
-    // The file upload wraps the message box, so it is the composer rather than a control of its own size.
-    .composer {
-        width: 100%;
-        max-width: unset;
-        gap: 0.3rem;
-        --bit-Button-float-shadow: none;
-
-        // The file list is drawn after the label the box lives in, and the pending thumbnail belongs above the box.
-        flex-flow: column-reverse nowrap;
-    }
-
-    .message-box {
-        border-radius: 0.25rem;
-    }
-
-    // While an image is over the box, the box says it is what will catch it.
-    .composer.dragging .message-box {
-        outline: 1px dashed $bit-color-primary;
-        outline-offset: 0.25rem;
-    }
-
-    // Only as wide as the picture, and what the cross on its corner is positioned against.
-    .pending-attachment {
-        position: relative;
-    }
-
-    // A badge on a thumbnail rather than a control of its own, so it is smaller than the smallest preset and carries
-    // no surface - under the pointer no more than at rest, since a plate lighting up over a picture reads as the
-    // picture changing. The shadow is the page background, keeping the cross legible over a photograph of any color.
-    .remove-attachment {
-        --bit-Button-padding: 0;
-        --bit-Button-min-height: 1.25rem;
-        --bit-Button-icon-size: 0.75rem;
-        filter: drop-shadow(0 0 1px $bit-color-background-primary) drop-shadow(0 0 1px $bit-color-background-primary);
-
-        &, &:hover, &:active, &:focus {
-            background: none;
-        }
-    }
-}
-
-// Playback has no visible surface of its own: the element exists for the `ended` event that chains one read aloud
-// segment to the next, and a hidden media element still plays.
-.read-aloud-audio {
-    display: none;
 }

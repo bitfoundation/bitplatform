@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFrameworks>net11.0;net10.0</TargetFrameworks>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <LangVersion>preview</LangVersion>
+        <IsPackable>false</IsPackable>
+        <IsTestProject>true</IsTestProject>
+        <NoWarn>$(NoWarn);CS1591</NoWarn>
+        <EnableMSTestRunner>true</EnableMSTestRunner>
+        <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="MSTest" Version="4.5.2" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\Bit.BlazeDb.Blex\Bit.BlazeDb.Blex.csproj" />
+        <ProjectReference Include="..\..\Bit.BlazeDb.Bcrdt\Bit.BlazeDb.Bcrdt.csproj" />
+        <!-- Stores for the Blex end-to-end tests, and Bcrdt's operation generator for the document tests. -->
+        <ProjectReference Include="..\..\..\Blex\Bit.Blex.Generators\Bit.Blex.Generators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+        <ProjectReference Include="..\..\..\Bcrdt\Bit.Bcrdt.Testing\Bit.Bcrdt.Testing.csproj" />
+    </ItemGroup>
+
+</Project>

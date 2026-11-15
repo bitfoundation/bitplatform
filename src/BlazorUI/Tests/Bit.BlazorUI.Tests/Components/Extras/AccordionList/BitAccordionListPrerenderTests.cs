@@ -12,22 +12,22 @@ namespace Bit.BlazorUI.Tests.Components.Extras.AccordionList;
 [TestClass]
 public class BitAccordionListPrerenderTests
 {
-    private static readonly RenderFragment EmptyContent = builder => builder.AddMarkupContent(0, "<span class=\"no-items\">Nothing here</span>");
+    private static readonly RenderFragment EmptyTemplate = builder => builder.AddMarkupContent(0, "<span class=\"no-items\">Nothing here</span>");
 
     [TestMethod]
-    public async Task BitAccordionListShouldRenderTheEmptyContentOfAListOfOptionsBeforeInteractivity()
+    public async Task BitAccordionListShouldRenderTheEmptyTemplateOfAListOfOptionsBeforeInteractivity()
     {
         var html = await Prerenderer.RenderAsync<BitAccordionList<BitAccordionListOption>>(new Dictionary<string, object?>
         {
             [nameof(BitAccordionList<BitAccordionListOption>.ChildContent)] = (RenderFragment)(builder => { }),
-            [nameof(BitAccordionList<BitAccordionListOption>.EmptyContent)] = EmptyContent,
+            [nameof(BitAccordionList<BitAccordionListOption>.EmptyTemplate)] = EmptyTemplate,
         });
 
         StringAssert.Contains(html, "no-items");
     }
 
     [TestMethod]
-    public async Task BitAccordionListShouldNotRenderTheEmptyContentOfAListWithOptionsBeforeInteractivity()
+    public async Task BitAccordionListShouldNotRenderTheEmptyTemplateOfAListWithOptionsBeforeInteractivity()
     {
         var html = await Prerenderer.RenderAsync<BitAccordionList<BitAccordionListOption>>(new Dictionary<string, object?>
         {
@@ -37,7 +37,7 @@ public class BitAccordionListPrerenderTests
                 builder.AddComponentParameter(1, nameof(BitAccordionListOption.Title), "First");
                 builder.CloseComponent();
             }),
-            [nameof(BitAccordionList<BitAccordionListOption>.EmptyContent)] = EmptyContent,
+            [nameof(BitAccordionList<BitAccordionListOption>.EmptyTemplate)] = EmptyTemplate,
         });
 
         StringAssert.Contains(html, "First");
@@ -45,12 +45,12 @@ public class BitAccordionListPrerenderTests
     }
 
     [TestMethod]
-    public async Task BitAccordionListShouldRenderTheEmptyContentOfAnEmptyListOfItemsBeforeInteractivity()
+    public async Task BitAccordionListShouldRenderTheEmptyTemplateOfAnEmptyListOfItemsBeforeInteractivity()
     {
         var html = await Prerenderer.RenderAsync<BitAccordionList<BitAccordionListItem>>(new Dictionary<string, object?>
         {
             [nameof(BitAccordionList<BitAccordionListItem>.Items)] = new List<BitAccordionListItem>(),
-            [nameof(BitAccordionList<BitAccordionListItem>.EmptyContent)] = EmptyContent,
+            [nameof(BitAccordionList<BitAccordionListItem>.EmptyTemplate)] = EmptyTemplate,
         });
 
         StringAssert.Contains(html, "no-items");

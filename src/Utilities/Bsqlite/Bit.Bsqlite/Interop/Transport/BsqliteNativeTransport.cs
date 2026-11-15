@@ -349,7 +349,27 @@ public class BsqliteNativeTransport : IBsqliteTransport, IBsqliteSnapshotSource,
                 OnExecuting(request);
 
                 var changesBefore = raw.sqlite3_total_changes(connection.Handle!);
-                results.Add(Execute(connection, request) with
+                BsqliteCommandResult result;
+                try
+                {
+                    result = Execute(connection, request);
+                }
+                catch (SqliteException ex)
+                {
+                    // The same typed exception the worker's failures become, so a catch written against the
+                    // browser - BsqliteConstraintException, BsqliteConcurrencyException - holds on a device.
+                    // The engine's own message, as the worker reports it, without Microsoft.Data.Sqlite's wrapping.
+                    // The SqliteException stays reachable as the inner exception, with its extended result code
+                    // and its stack, for code written against Microsoft.Data.Sqlite.
+                    var message = raw.sqlite3_errmsg(connection.Handle!).utf8_to_string();
+                    throw BsqliteWireFormat.CreateException(
+                        string.IsNullOrEmpty(message) || message == "not an error" ? ex.Message : message,
+                        ex.SqliteErrorCode,
+                        errorName: null,
+                        innerException: ex);
+                }
+
+                results.Add(result with
                 {
                     LastInsertRowId = raw.sqlite3_last_insert_rowid(connection.Handle!),
                 });
@@ -607,12 +627,14 @@ public class BsqliteNativeTransport : IBsqliteTransport, IBsqliteSnapshotSource,
 
             case BsqliteResultKind.Scalar:
             {
+                // No row is no row - ExecuteScalar's null - and a NULL cell is a row holding NULL, as the worker
+                // reports them, so the command above can tell the two apart.
                 var value = command.ExecuteScalar();
                 return new BsqliteCommandResult
                 {
                     ColumnNames = ["value"],
                     ColumnTypes = [null],
-                    Rows = [[value is DBNull ? null : value]],
+                    Rows = value is null ? [] : [[value is DBNull ? null : value]],
                 };
             }
 

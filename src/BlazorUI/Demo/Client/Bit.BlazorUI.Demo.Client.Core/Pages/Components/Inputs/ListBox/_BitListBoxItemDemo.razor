@@ -1,0 +1,139 @@
+﻿<DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+    <div>
+        The items are given through Items, and the one the user picks is the Value. The Label names the list for everyone.
+        Tab into the list and use the arrow keys, or type the first letters of a fruit.
+    </div>
+    <br />
+    <div class="example-box">
+        <BitListBox Label="Fruit" Items="basicItems" @bind-Value="basicValue" />
+        <div>Value: <b>@basicValue</b></div>
+    </div>
+</DemoExample>
+
+<DemoExample Title="MultiSelect" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+    <div>
+        With MultiSelect the user picks several items, which are the Values. The arrow keys only move; Space, Enter or a
+        click adds the item to the selection or takes it out.
+    </div>
+    <br />
+    <div class="example-box">
+        <BitListBox Label="Fruits" Items="basicItems" MultiSelect @bind-Values="multiValues" />
+        <div>Values: <b>@string.Join(", ", multiValues ?? [])</b></div>
+    </div>
+</DemoExample>
+
+<DemoExample Title="Description & icon" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+    <div>An item can carry an icon before its text and a Description under it.</div>
+    <br />
+    <div class="example-box">
+        <BitListBox Label="Shipping" Items="iconItems" DefaultValue="@("standard")" />
+    </div>
+</DemoExample>
+
+<DemoExample Title="Disabled" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+    <div>IsDisabled keeps the user off an item, which the keyboard passes by; Disabled keeps the user off the whole list.</div>
+    <br />
+    <div class="example-box">
+        <BitListBox Label="Some disabled" Items="disabledItems" TItem="BitListBoxItem<string>" TValue="string" />
+        <BitListBox Label="Disabled" Items="basicItems" DefaultValue="@("banana")" Disabled />
+    </div>
+</DemoExample>
+
+<DemoExample Title="ReadOnly" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <div>A ReadOnly list box can be read and moved through with the keyboard, but its selection cannot be changed.</div>
+    <br />
+    <div class="example-box">
+        <BitListBox Label="Read only" Items="basicItems" DefaultValue="@("cherry")" ReadOnly />
+    </div>
+</DemoExample>
+
+<DemoExample Title="MaxHeight" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+    <div>
+        MaxHeight is the height past which the list scrolls. The keyboard keeps the item it is on in view, and typing the
+        start of a name goes straight to it.
+    </div>
+    <br />
+    <div class="example-box">
+        <BitListBox Label="Country" Items="countryItems" MaxHeight="12rem" @bind-Value="countryValue" />
+        <div>Value: <b>@countryValue</b></div>
+    </div>
+</DemoExample>
+
+<DemoExample Title="Validation" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+    <div>
+        The list box binds to an EditForm and is validated with it, in both modes: ShowValidationMessage shows the messages
+        of the field under the list. ErrorMessage and Invalid mark it invalid from the page itself.
+    </div>
+    <br />
+    <div>
+        <EditForm Model="validationModel" OnValidSubmit="() => validationResult = validationModel.ToString()">
+            <DataAnnotationsValidator />
+            <div class="example-box">
+                <BitListBox Label="Fruit (required)" Items="basicItems" @bind-Value="validationModel.Fruit" Required ShowValidationMessage />
+                <BitListBox Label="Fruits (at least two)" Items="basicItems" MultiSelect @bind-Values="validationModel.Fruits" ShowValidationMessage />
+            </div>
+            <br />
+            <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
+        </EditForm>
+        <br />
+        <div>Submitted: <b>@validationResult</b></div>
+        <br />
+        <div class="example-box">
+            <BitListBox Label="With an error message" Items="basicItems" TItem="BitListBoxItem<string>" TValue="string" ErrorMessage="This fruit is out of season." />
+        </div>
+    </div>
+</DemoExample>
+
+<DemoExample Title="Events" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+    <div>OnSelectItem runs when an item is selected, and in multi select mode OnDeselectItem when one is taken out.</div>
+    <br />
+    <div class="example-box">
+        <BitListBox Items="basicItems" TItem="BitListBoxItem<string>" TValue="string"
+                    AriaLabel="Fruits"
+                    MultiSelect
+                    OnSelectItem="HandleOnSelectItem"
+                    OnDeselectItem="HandleOnDeselectItem" />
+        <div>Last event: <b>@eventsLog</b></div>
+    </div>
+</DemoExample>
+
+<DemoExample Title="External Icons" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+    <div>The Icon of an item takes the CSS classes of any icon library, such as FontAwesome or Bootstrap Icons.</div>
+    <br />
+    <div>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+        <div class="example-box">
+            <BitListBox Label="FontAwesome" Items="externalIconItems1" DefaultValue="@("car")" />
+            <BitListBox Label="Bootstrap Icons" Items="externalIconItems2" DefaultValue="@("bike")" />
+        </div>
+    </div>
+</DemoExample>
+
+<DemoExample Title="Style & Class" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+    <div>
+        Style and Class reach the root, the Style and Class of an item reach that item, and Styles and Classes reach each
+        part by name. The selected colors are also the public --bit-ListBox-* variables.
+    </div>
+    <br />
+    <div class="example-box">
+        <BitListBox Label="Style" Items="basicItems" DefaultValue="@("banana")" Style="--bit-ListBox-selected-color: tomato; --bit-ListBox-selected-background: #ff63471f;" />
+        <BitListBox Label="Class" Items="basicItems" DefaultValue="@("banana")" Class="custom-class" />
+        <BitListBox Label="Item's Style & Class" Items="styleClassItems" TItem="BitListBoxItem<string>" TValue="string" />
+        <BitListBox Label="Styles & Classes"
+                    Items="basicItems"
+                    MultiSelect
+                    DefaultValues="@(["apple", "cherry"])"
+                    Styles="@(new() { List = "border-radius: 0.75rem;", Text = "font-style: italic;" })"
+                    Classes="@(new() { SelectedItem = "custom-selected" })" />
+    </div>
+</DemoExample>
+
+<DemoExample Title="RTL" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+    <div>Use BitListBox in right-to-left (RTL).</div>
+    <br />
+    <div dir="rtl" class="example-box">
+        <BitListBox Dir="BitDir.Rtl" Label="میوه" Items="rtlItems" DefaultValue="@("banana")" />
+        <BitListBox Dir="BitDir.Rtl" Label="میوه‌ها" Items="rtlItems" MultiSelect DefaultValues="@(["apple", "cherry"])" />
+    </div>
+</DemoExample>

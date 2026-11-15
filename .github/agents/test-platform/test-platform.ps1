@@ -2,15 +2,15 @@
 <#
 .SYNOPSIS
     The mechanical half of the test-platform skill (.github/agents/test-platform.md): which version every deployed app is
-    at, rolling an All CD run's Android and Windows apps out onto this machine, running the E2E suite's stages, and
+    at, rolling an All Apps CD run's Android and Windows apps out onto this machine, running the E2E suite's stages, and
     calling https://bitplatform.dev/mcp.
 
 .DESCRIPTION
     versions  Compares what the Boilerplate demos' and the platform website's CD workflows deploy with APP_VERSION: the
               IIS sites, the Windows apps, the Android apps, the version each Boilerplate web app shows in its nav panel,
               and the MCP endpoint's own version. With -CdRun it also says where that run took its Bit packages from:
-              nuget.org, or a Prerelease nuget packages run. Exits 1 when anything is behind.
-    android   Installs the APKs an All CD run built onto the one connected device, booting the AVD when none is up.
+              nuget.org, or a CD Prerelease nuget packages run. Exits 1 when anything is behind.
+    android   Installs the APKs an All Apps CD run built onto the one connected device, booting the AVD when none is up.
     windows   Opens each Windows app that is behind and taps its version in the nav panel, which makes it update itself
               from its feed and restart.
     e2e       Runs Boilerplate.Tests.E2E stage by stage, as RunTests.bat does, keeping each stage's log and TRX.
@@ -59,7 +59,7 @@ param(
     # The CD run's head commit, full or abbreviated. When given, a ProductVersion's +<sha> must match it too.
     [string] $Sha,
 
-    # android: the All CD run whose android-bundle artifacts get installed. versions: the All CD run whose Bit packages
+    # android: the All Apps CD run whose android-bundle artifacts get installed. versions: the All Apps CD run whose Bit packages
     # source gets reported. As its id or any url of it.
     [string] $CdRun,
 
@@ -120,7 +120,7 @@ $repository = 'bitfoundation/bitplatform'
 $repositoryRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..\..')).Path
 # Only the Boilerplate demos (AdminPanel, SalesModule, Todo) and the platform website, which serves bitplatform.dev/mcp,
 # are checked. The library demos and the other websites are left out on purpose.
-$workflows = 'admin-sample.cd.yml', 'sales-module-demo.cd.yml', 'todo-sample.cd.yml', 'platform.website.cd.yml' |
+$workflows = 'cd.adminpanel.demo.yml', 'cd.sales.module.demo.yml', 'cd.todo.demo.yml', 'cd.platform.website.yml' |
     ForEach-Object { Get-Item (Join-Path $repositoryRoot ".github\workflows\$_") }
 $e2eProject = Join-Path $repositoryRoot 'src\Templates\Boilerplate\Bit.Boilerplate\src\Internal\Boilerplate.Tests.E2E'
 $deployedAppsFile = Join-Path $e2eProject 'Infrastructure\DeployedApps.cs'
@@ -304,21 +304,27 @@ function Initialize-AndroidDevice {
         throw "No Android device is connected and $emulator lists no AVD to boot."
     }
 
-    Write-Host "Booting the $avd emulator..."
-    Start-Process $emulator -ArgumentList '-avd', $avd | Out-Null
+    foreach ($arguments in @(@('-avd', $avd), @('-avd', $avd, '-no-snapshot-load'))) {
+        Write-Host ($arguments -contains '-no-snapshot-load' ? "It didn't boot from its quick boot snapshot within 5 minutes. Booting it cold..." : "Booting the $avd emulator...")
+        $process = Start-Process $emulator -ArgumentList $arguments -PassThru
+        $deadline = (Get-Date).AddMinutes(5)
 
-    $deadline = (Get-Date).AddMinutes(5)
+        while ((Get-Date) -lt $deadline) {
+            if ((Get-AndroidDevices).Count -eq 1 -and (Invoke-Adb shell getprop sys.boot_completed).Trim() -eq '1') {
+                Disable-AndroidSystemSheets
+                return
+            }
 
-    while ((Get-Date) -lt $deadline) {
-        if ((Get-AndroidDevices).Count -eq 1 -and (Invoke-Adb shell getprop sys.boot_completed).Trim() -eq '1') {
-            Disable-AndroidSystemSheets
-            return
+            Start-Sleep -Seconds 3
         }
 
+        Get-CimInstance Win32_Process -Filter "ParentProcessId = $($process.Id)" | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
+        Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
         Start-Sleep -Seconds 3
+        Remove-Item (Join-Path $env:USERPROFILE ".android\avd\$avd.avd\hardware-qemu.ini.lock") -Recurse -Force -ErrorAction SilentlyContinue
     }
 
-    throw "The $avd emulator did not finish booting within 5 minutes."
+    throw "The $avd emulator did not finish booting within 5 minutes, from its quick boot snapshot or cold."
 }
 
 function Get-AndroidVersion([string] $package) {
@@ -338,10 +344,10 @@ function Get-CdRunId {
         return $CdRun
     }
 
-    throw 'Pass the All CD run with -CdRun, as its id or any url of it.'
+    throw 'Pass the All Apps CD run with -CdRun, as its id or any url of it.'
 }
 
-# With its prerelease_packages option, every job of a CD run that took the Bit packages of a Prerelease nuget packages
+# With its prerelease_packages option, every job of a CD run that took the Bit packages of a CD Prerelease nuget packages
 # run leaves a "Bit packages" notice naming that run (.github/actions/use-prerelease-packages). No notice: nuget.org.
 function Get-BitPackagesSource([string] $runId) {
     $notices = foreach ($jobId in gh api "repos/$repository/actions/runs/$runId/jobs?filter=all&per_page=100" --paginate --jq '.jobs[].id') {
@@ -630,7 +636,14 @@ function Update-WindowsApps {
         $tapped = $false
 
         while (-not (Test-Version (Get-ProductVersion $app.Exe)) -and (Get-Date) -lt $deadline) {
-            if (-not $tapped -and (Get-CdpOwner 9222) -eq $name) {
+            $owner = Get-CdpOwner 9222
+
+            if (-not $tapped -and $owner -like '*.Client.Windows' -and $owner -ne $name) {
+                Write-Host "  $owner restarted into its update and holds the debugging port. Closing it and opening $($app.Id) again."
+                Stop-WindowsApps
+                Start-Process $app.Exe -WindowStyle Minimized
+            }
+            elseif (-not $tapped -and $owner -eq $name) {
                 try {
                     $page = Get-CdpPage 9222 5
                     $shown = Wait-AppVersion $page.webSocketDebuggerUrl 5
@@ -933,6 +946,48 @@ function Write-BitSteps([string] $log, [string] $after) {
         ForEach-Object { Write-Host $_.TrimEnd() }
 }
 
+function Invoke-DevContainerUp([string] $cli, [string] $folder, [string[]] $mount, [string] $log) {
+    $job = Start-ThreadJob -ArgumentList $cli, $folder, $mount, $log -ScriptBlock {
+        param($cli, $folder, $mount, $log)
+        npx.cmd -y '@devcontainers/cli' up --docker-path $cli --workspace-folder $folder @mount *> $log
+    }
+
+    $length = -1
+    $quietSince = [DateTimeOffset]::Now
+
+    while (-not (Wait-Job $job -Timeout 15)) {
+        $text = Get-Content $log -Raw -Encoding utf8 -ErrorAction SilentlyContinue
+
+        if ("$text".Length -ne $length) {
+            $length = "$text".Length
+            $quietSince = [DateTimeOffset]::Now
+            continue
+        }
+
+        if ($text -notmatch 'Container started' -or $text -match 'Running the onCreateCommand' -or ([DateTimeOffset]::Now - $quietSince).TotalMinutes -lt 2) {
+            continue
+        }
+
+        if (-not (Get-DevContainerIds $folder | Where-Object { (docker inspect $_ --format '{{.State.Running}}') -eq 'true' })) {
+            continue
+        }
+
+        Write-Host "The devcontainers CLI missed the container's start. Running up again at $(Get-Date -Format 'HH:mm:ss')."
+        $processes = Get-CimInstance Win32_Process
+        $stuck = @($processes | Where-Object { $_.CommandLine -and $_.CommandLine.Contains($folder) -and $_.CommandLine -match 'devcontainer.*\sup\s' })
+        $stuck += $processes | Where-Object { $_.ParentProcessId -in $stuck.ProcessId }
+        $stuck | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
+        Wait-Job $job -Timeout 60 | Out-Null
+
+        $log = [IO.Path]::ChangeExtension($log, '.again.log')
+        npx.cmd -y '@devcontainers/cli' up --docker-path $cli --workspace-folder $folder @mount *> $log
+        break
+    }
+
+    Remove-Job $job -Force
+    $log
+}
+
 function Assert-DockerLinux {
     $cli = 'docker'
 
@@ -984,7 +1039,7 @@ function Install-BitUnderTest([string] $lab) {
     }
     else {
         Write-Host 'Installing bit from nuget.org...'
-        dotnet tool install Bit.Cli --tool-path $tools --version 11.0.0-pre-17 | Out-Null
+        dotnet tool install Bit.Cli --tool-path $tools --version 11.0.0-pre-20 | Out-Null
     }
 
     if ($LASTEXITCODE -ne 0) {
@@ -998,7 +1053,7 @@ function Install-BitUnderTest([string] $lab) {
 }
 
 function Add-PrereleasePackages([string] $feed) {
-    $runs = gh run list -R $repository --workflow prerelease.nuget.org.yml --limit 100 --json databaseId,headBranch,headSha | ConvertFrom-Json
+    $runs = gh run list -R $repository --workflow cd.prerelease.nuget.packages.yml --limit 100 --json databaseId,headBranch,headSha | ConvertFrom-Json
     $artifact = (gh api "repos/$repository/actions/artifacts?name=nupkg-files&per_page=100" | ConvertFrom-Json).artifacts |
         Where-Object { -not $_.expired -and $_.workflow_run.id -in $runs.databaseId } |
         Sort-Object { [datetimeoffset]$_.created_at } -Descending |
@@ -1006,19 +1061,19 @@ function Add-PrereleasePackages([string] $feed) {
     $run = $runs | Where-Object databaseId -eq $artifact.workflow_run.id
 
     if (-not $run) {
-        throw 'No Prerelease nuget packages run has an unexpired nupkg-files artifact.'
+        throw 'No CD Prerelease nuget packages run has an unexpired nupkg-files artifact.'
     }
 
     $download = Join-Path $feed 'prerelease'
     gh run download $run.databaseId -R $repository --name nupkg-files --dir $download
 
     if ($LASTEXITCODE -ne 0) {
-        throw "The nupkg-files artifact of Prerelease nuget packages run $($run.databaseId) could not be downloaded."
+        throw "The nupkg-files artifact of CD Prerelease nuget packages run $($run.databaseId) could not be downloaded."
     }
 
     Get-ChildItem $download -Filter *.nupkg | Where-Object Name -notlike 'Bit.Cli.*' | Move-Item -Destination $feed
     Remove-Item $download -Recurse -Force
-    Write-Host "Bit packages from Prerelease nuget packages run $($run.databaseId), $($run.headBranch) at $($run.headSha.Substring(0, 9))."
+    Write-Host "Bit packages from CD Prerelease nuget packages run $($run.databaseId), $($run.headBranch) at $($run.headSha.Substring(0, 9))."
 }
 
 function Use-PrereleaseFeedForNewProjects([string] $lab) {
@@ -1124,7 +1179,7 @@ function Invoke-DevContainerTest {
         $upLog = Join-Path $lab 'up.log'
         Write-Host "Bringing the dev container up at $(Get-Date -Format 'HH:mm:ss'), log: $upLog"
         $started = [DateTimeOffset]::Now
-        npx -y '@devcontainers/cli' up --docker-path $containerCli --workspace-folder $project @mount *> $upLog
+        $upLog = Invoke-DevContainerUp $containerCli $project $mount $upLog
         $result = Get-Content $upLog -Encoding utf8 | Where-Object { $_ -match '^\{"outcome"' } | Select-Object -Last 1 | ConvertFrom-Json -ErrorAction SilentlyContinue
 
         Write-BitSteps $upLog 'Running the onCreateCommand'
@@ -1481,7 +1536,8 @@ function Stop-FolderProcesses([string] $folder) {
 }
 
 function Get-ChangedPaths([string] $folder, [string] $since) {
-    @(git -C $folder diff --name-only $since) + @(git -C $folder ls-files --others --exclude-standard) |
+    git -C $folder worktree list --porcelain | Where-Object { $_ -like 'worktree *' } | ForEach-Object { $_.Substring(9) } | Where-Object { Test-Path $_ } |
+        ForEach-Object { @(git -C $_ diff --name-only $since) + @(git -C $_ ls-files --others --exclude-standard) } |
         Where-Object { $_ -and $_ -notlike '.playwright-mcp/*' -and $_ -ne '.claude/settings.local.json' } |
         Sort-Object -Unique
 }
@@ -1526,6 +1582,17 @@ function Install-AgentFixture([string] $folder, $scenario, $scenarios) {
 
     git @git add -A
     git @git commit -q -m $fixture.commit
+}
+
+# Where the Workbench of a project keeps its review and the agents' tasks: named after the clone's folder and a hash of its
+# git folder and of where the Workbench sits in it, the way WorkbenchFolders.Reviews names it.
+function Get-WorkbenchDataFolder([string] $project) {
+    $gitFolder = [IO.Path]::TrimEndingDirectorySeparator([IO.Path]::GetFullPath((Join-Path $project '.git')))
+    $key = "$gitFolder|src/Workbench"
+    $bytes = [Text.Encoding]::UTF8.GetBytes($IsWindows ? $key.ToLowerInvariant() : $key)
+    $hash = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($bytes)).ToLowerInvariant().Substring(0, 12)
+
+    Join-Path ([Environment]::GetFolderPath('LocalApplicationData')) "bit-workbench\$(Split-Path $project -Leaf)-$hash"
 }
 
 function Set-AgentMemory([string] $folder, $scenario) {
@@ -1810,6 +1877,7 @@ function Invoke-AgentsTest {
             Get-ChildItem (Join-Path $lab 'runs') -Directory -ErrorAction SilentlyContinue | ForEach-Object {
                 Stop-FolderProcesses $_.FullName
                 Remove-Item (Get-ClaudeProjectFolder (Join-Path $_.FullName $scenarios.project)) -Recurse -Force -ErrorAction SilentlyContinue
+                Remove-Item (Get-WorkbenchDataFolder (Join-Path $_.FullName $scenarios.project)) -Recurse -Force -ErrorAction SilentlyContinue
                 Remove-Item $_.FullName -Recurse -Force -ErrorAction SilentlyContinue
             }
 

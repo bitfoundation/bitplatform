@@ -45,6 +45,7 @@ public static class BinkOperationCodec
                 writer.WriteString("op", "add");
                 writer.WriteString("layer", add.LayerId);
                 if (add.Index is { } index) writer.WriteNumber("index", index);
+                WritePosition(writer, add.OrderKey, add.OrderClock);
                 writer.WritePropertyName("element");
                 BinkSerializer.WriteElementTo(writer, add.Element, options, assets);
                 break;
@@ -62,11 +63,13 @@ public static class BinkOperationCodec
                 writer.WriteString("element", reorder.ElementId);
                 writer.WriteString("layer", reorder.TargetLayerId);
                 if (reorder.Index is { } target) writer.WriteNumber("index", target);
+                WritePosition(writer, reorder.OrderKey, reorder.OrderClock);
                 break;
             case BinkAddLayerOperation addLayer:
                 writer.WriteString("op", "addLayer");
                 writer.WriteString("layer", addLayer.LayerId);
                 if (addLayer.Index is { } layerIndex) writer.WriteNumber("index", layerIndex);
+                WritePosition(writer, addLayer.OrderKey, addLayer.OrderClock);
                 WriteLayerProperties(writer, addLayer.Properties);
                 if (addLayer.Elements is { Count: > 0 })
                 {
@@ -74,6 +77,20 @@ public static class BinkOperationCodec
                     writer.WriteStartArray();
                     foreach (BinkElement element in addLayer.Elements) BinkSerializer.WriteElementTo(writer, element, options, assets);
                     writer.WriteEndArray();
+                    if (addLayer.ElementOrderKeys is { } keys && keys.Count == addLayer.Elements.Count)
+                    {
+                        writer.WritePropertyName("elementKeys");
+                        writer.WriteStartArray();
+                        foreach (string k in keys) writer.WriteStringValue(k);
+                        writer.WriteEndArray();
+                    }
+                    if (addLayer.ElementOrderClocks is { } clocks && clocks.Count == addLayer.Elements.Count)
+                    {
+                        writer.WritePropertyName("elementClocks");
+                        writer.WriteStartArray();
+                        foreach (long c in clocks) writer.WriteNumberValue(c);
+                        writer.WriteEndArray();
+                    }
                 }
                 break;
             case BinkRemoveLayerOperation removeLayer:
@@ -89,6 +106,7 @@ public static class BinkOperationCodec
                 writer.WriteString("op", "reorderLayer");
                 writer.WriteString("layer", reorderLayer.LayerId);
                 writer.WriteNumber("index", reorderLayer.Index);
+                WritePosition(writer, reorderLayer.OrderKey, reorderLayer.OrderClock);
                 break;
             case BinkUpdateSettingsOperation settings:
                 writer.WriteString("op", "settings");
@@ -178,34 +196,61 @@ public static class BinkOperationCodec
             case "add":
             {
                 BinkElement item = ReadElement(element, "element", options, assets);
-                return new BinkAddElementOperation(ReadGuid(element, "layer"), item, ReadInt(element, "index"));
+                return new BinkAddElementOperation(ReadGuid(element, "layer"), item, ReadInt(element, "index")) { OrderKey = ReadKey(element), OrderClock = ReadClock(element) };
             }
             case "remove":
                 return new BinkRemoveElementOperation(ReadGuid(element, "element"));
             case "replace":
                 return new BinkReplaceElementOperation(ReadElement(element, "element", options, assets));
             case "reorder":
-                return new BinkReorderElementOperation(ReadGuid(element, "element"), ReadGuid(element, "layer"), ReadInt(element, "index"));
+                return new BinkReorderElementOperation(ReadGuid(element, "element"), ReadGuid(element, "layer"), ReadInt(element, "index")) { OrderKey = ReadKey(element), OrderClock = ReadClock(element) };
             case "addLayer":
             {
                 List<BinkElement>? elements = null;
+                // The element keys and clocks sit beside the elements one for one; one left out takes its key with it.
+                List<string>? keys = null;
+                List<long>? clocks = null;
                 if (element.TryGetProperty("elements", out JsonElement array) && array.ValueKind == JsonValueKind.Array)
                 {
                     elements = new List<BinkElement>();
+                    bool keyed = element.TryGetProperty("elementKeys", out JsonElement keyArray) && keyArray.ValueKind == JsonValueKind.Array && keyArray.GetArrayLength() == array.GetArrayLength();
+                    bool clocked = keyed && element.TryGetProperty("elementClocks", out JsonElement clockArray) && clockArray.ValueKind == JsonValueKind.Array && clockArray.GetArrayLength() == array.GetArrayLength();
+                    if (keyed) keys = new List<string>();
+                    if (clocked) clocks = new List<long>();
+                    int position = -1;
                     foreach (JsonElement e in array.EnumerateArray())
                     {
+                        position++;
                         BinkElement? parsed = BinkSerializer.ReadElementFrom(e, options, assets);
-                        if (parsed is not null) elements.Add(parsed);
+                        if (parsed is null) continue;
+                        elements.Add(parsed);
+                        if (keys is not null)
+                        {
+                            JsonElement k = element.GetProperty("elementKeys")[position];
+                            if (k.ValueKind == JsonValueKind.String) keys.Add(k.GetString()!);
+                            else keys = null;
+                        }
+                        if (clocks is not null)
+                        {
+                            JsonElement c = element.GetProperty("elementClocks")[position];
+                            clocks.Add(c.ValueKind == JsonValueKind.Number && c.TryGetInt64(out long value) && value is > 0 and <= MaxClock ? value : 0);
+                        }
                     }
                 }
-                return new BinkAddLayerOperation(ReadGuid(element, "layer"), ReadLayerProperties(element), ReadInt(element, "index"), elements);
+                return new BinkAddLayerOperation(ReadGuid(element, "layer"), ReadLayerProperties(element), ReadInt(element, "index"), elements)
+                {
+                    OrderKey = ReadKey(element),
+                    OrderClock = ReadClock(element),
+                    ElementOrderKeys = keys,
+                    ElementOrderClocks = keys is null ? null : clocks,
+                };
             }
             case "removeLayer":
                 return new BinkRemoveLayerOperation(ReadGuid(element, "layer"));
             case "updateLayer":
                 return new BinkUpdateLayerOperation(ReadGuid(element, "layer"), ReadLayerProperties(element));
             case "reorderLayer":
-                return new BinkReorderLayerOperation(ReadGuid(element, "layer"), ReadInt(element, "index") ?? 0);
+                return new BinkReorderLayerOperation(ReadGuid(element, "layer"), ReadInt(element, "index") ?? 0) { OrderKey = ReadKey(element), OrderClock = ReadClock(element) };
             case "settings":
                 return new BinkUpdateSettingsOperation(new BinkDocumentSettings
                 {
@@ -267,6 +312,27 @@ public static class BinkOperationCodec
         }
         return result;
     }
+
+    /// <summary>The largest clock accepted: the largest whole number JavaScript represents exactly.</summary>
+    private const long MaxClock = 9_007_199_254_740_991;
+
+    /// <summary>
+    /// Writes where an addition or a move placed what it placed. Receivers that predate order keys ignore both and
+    /// place it by its index, as before.
+    /// </summary>
+    private static void WritePosition(Utf8JsonWriter writer, string? key, long clock)
+    {
+        if (key is null) return;
+        writer.WriteString("key", key);
+        if (clock > 0) writer.WriteNumber("clock", clock);
+    }
+
+    /// <summary>A well-formed order key, or null: a malformed one, from an untrusted peer, falls back to the index.</summary>
+    private static string? ReadKey(JsonElement element)
+        => element.TryGetProperty("key", out JsonElement value) && value.ValueKind == JsonValueKind.String && value.GetString() is { } key && BinkOrderKey.IsValid(key) ? key : null;
+
+    private static long ReadClock(JsonElement element)
+        => element.TryGetProperty("clock", out JsonElement value) && value.ValueKind == JsonValueKind.Number && value.TryGetInt64(out long clock) && clock is > 0 and <= MaxClock ? clock : 0;
 
     private static Guid ReadGuid(JsonElement element, string name)
         => element.TryGetProperty(name, out JsonElement value) && value.ValueKind == JsonValueKind.String && value.TryGetGuid(out Guid guid)

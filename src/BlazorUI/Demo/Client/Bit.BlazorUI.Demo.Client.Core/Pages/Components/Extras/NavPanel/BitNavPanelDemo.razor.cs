@@ -107,20 +107,6 @@ public partial class BitNavPanelDemo
         },
         new()
         {
-            Name = "EmptyListTemplate",
-            Type = "RenderFragment?",
-            DefaultValue = "null",
-            Description = "The custom template for when the search result is empty.",
-        },
-        new()
-        {
-            Name = "EmptyListMessage",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "The custom message for when the search result is empty.",
-        },
-        new()
-        {
             Name = "ExpandAriaLabel",
             Type = "string?",
             DefaultValue = "null",
@@ -347,6 +333,13 @@ public partial class BitNavPanelDemo
         },
         new()
         {
+            Name = "NoLazyDrawer",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Renders the content of the drawer of a small screen while it is still closed. By default the header, the search box, the nav and the footer of a drawer that has never been opened are left out until it first opens, and kept from then on, so the start of the app does not build what is not on screen. That needs the shape of the panel before its first render, which only a WebAssembly app can ask the browser synchronously; on Server, Hybrid and the first page of a lazy-scripts app the content is rendered as before, and a prerender and a static SSR page always render it. The content is also rendered at once while the app listens to the selection of the automatic NavMode (SelectedItemChanged, @bind-SelectedItem, OnSelectItem), and the moment a method that acts on the nav (SelectItem, ExpandItem, IsItemExpanded, ...) is called. Set it to true when the app reads any other navigation state before the drawer has ever been opened, such as the side effects of a template: a nav that is not rendered calls no template.",
+        },
+        new()
+        {
             Name = "NoOverlay",
             Type = "bool",
             DefaultValue = "false",
@@ -365,6 +358,20 @@ public partial class BitNavPanelDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Stops the closing drawer of a small screen from handing the focus back to the element that had it when the drawer opened. Only ever read by a panel that took the focus in the first place: a modal drawer, or one with AutoFocus.",
+        },
+        new()
+        {
+            Name = "NoResultsTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The custom template for when the search result is empty.",
+        },
+        new()
+        {
+            Name = "NoResultsText",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The custom message for when the search result is empty. Defaults to BitStrings.NoResultsFound (\"No results found\").",
         },
         new()
         {
@@ -693,7 +700,7 @@ public partial class BitNavPanelDemo
                 },
                 new()
                 {
-                    Name = "EmptyListMessage",
+                    Name = "NoResults",
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the empty list message of the BitNavPanel.",
@@ -1469,7 +1476,7 @@ public partial class BitNavPanelDemo
         {
             ExpandOnHover = true,
             SearchBoxPlaceholder = "Find a page...",
-            EmptyListMessage = "No page matches.",
+            NoResultsText = "No page matches.",
             ToggleAriaLabel = "Collapse or expand the menu",
             SearchAnnouncementProvider = count => count == 1 ? "One page matches." : $"{count} pages match.",
         }

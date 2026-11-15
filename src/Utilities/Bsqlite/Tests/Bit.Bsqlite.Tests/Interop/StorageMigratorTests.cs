@@ -11,11 +11,7 @@ public sealed class StorageMigratorTests
 
     private CancellationToken Ct => TestContext.CancellationToken;
 
-    private static readonly byte[] Image =
-    [
-        .. "SQLite format 3\0"u8,
-        .. Enumerable.Repeat((byte)7, 48),
-    ];
+    private static readonly byte[] Image = SqliteImages.Valid();
 
     [TestMethod]
     public async Task CopiesTheImage_FlipsTheBinding_AndDeletesTheSource()
@@ -85,6 +81,81 @@ public sealed class StorageMigratorTests
 
         Assert.AreEqual(target.Name, await store.GetProviderNameAsync("app.db", Ct));
         CollectionAssert.AreEqual(Image, await target.Admin.ExportAsync("app.db", Ct));
+    }
+
+    /// <summary>
+    /// The move would delete the only copy that survives a reload, and leave the binding on storage that
+    /// is empty by the next load.
+    /// </summary>
+    [TestMethod]
+    public async Task AMoveFromPersistentStorageOntoStorageThatDoesNotPersist_IsRefused()
+    {
+        var source = new Storage.Tests.FakeStorageProvider("disk", holds: "app.db");
+        var target = new BsqliteInMemoryStorageProvider("target-memory");
+        var store = new BsqliteInMemoryStorageBindingStore();
+        await store.SetProviderNameAsync("app.db", "disk", Ct);
+
+        await Assert.ThrowsExactlyAsync<InvalidOperationException>(
+            () => new BsqliteStorageMigrator().MigrateAsync("app.db", source, target, store, Ct));
+
+        Assert.AreEqual("disk", await store.GetProviderNameAsync("app.db", Ct));
+        Assert.AreEqual(0, source.ProbeCount + source.ExistsCount, "Refused before touching anything.");
+    }
+
+    [TestMethod]
+    public async Task AnExportThatIsCutShort_IsRefusedBeforeTheTargetIsWritten()
+    {
+        var source = new BsqliteInMemoryStorageProvider("source-memory");
+        var target = new BsqliteInMemoryStorageProvider("target-memory");
+        var store = new BsqliteInMemoryStorageBindingStore();
+        await source.Admin.ImportAsync("app.db", SqliteImages.Valid(pages: 4)[..3000], Ct);
+
+        await Assert.ThrowsExactlyAsync<BsqliteCorruptDatabaseException>(
+            () => new BsqliteStorageMigrator().MigrateAsync("app.db", source, target, store, Ct));
+
+        Assert.IsFalse(await target.Admin.ExistsAsync("app.db", Ct));
+        Assert.IsTrue(await source.Admin.ExistsAsync("app.db", Ct));
+        Assert.IsNull(await store.GetProviderNameAsync("app.db", Ct));
+    }
+
+    /// <summary>
+    /// A file a device left in WAL mode opens nowhere a web VFS serves it; the copy is marked for a rollback
+    /// journal on the way across, and verified against what was written, not against the source.
+    /// </summary>
+    [TestMethod]
+    public async Task AWalModeExport_IsMovedAsARollbackJournalDatabase()
+    {
+        var source = new BsqliteInMemoryStorageProvider("source-memory");
+        var target = new BsqliteInMemoryStorageProvider("target-memory");
+        var store = new BsqliteInMemoryStorageBindingStore();
+        await source.Admin.ImportAsync("app.db", SqliteImages.Valid(walMode: true), Ct);
+
+        await new BsqliteStorageMigrator().MigrateAsync("app.db", source, target, store, Ct);
+
+        CollectionAssert.AreEqual(SqliteImages.Valid(), await target.Admin.ExportAsync("app.db", Ct));
+        Assert.AreEqual(target.Name, await store.GetProviderNameAsync("app.db", Ct));
+    }
+
+    /// <summary>
+    /// Another tab moved the database while this one was exporting it: the binding no longer names the
+    /// source, and the target holds the other tab's copy - which it may be writing to. This tab's older
+    /// export is not imported over it.
+    /// </summary>
+    [TestMethod]
+    public async Task AMoveAnotherTabFinishedFirst_IsLeftAlone()
+    {
+        var source = new BsqliteInMemoryStorageProvider("source-memory");
+        var target = new BsqliteInMemoryStorageProvider("target-memory");
+        var store = new BsqliteInMemoryStorageBindingStore();
+        await source.Admin.ImportAsync("app.db", SqliteImages.Valid(fill: 1), Ct);
+        var theirs = SqliteImages.Valid(fill: 2);
+        await target.Admin.ImportAsync("app.db", theirs, Ct);
+        await store.SetProviderNameAsync("app.db", target.Name, Ct);
+
+        await new BsqliteStorageMigrator().MigrateAsync("app.db", source, target, store, Ct);
+
+        CollectionAssert.AreEqual(theirs, await target.Admin.ExportAsync("app.db", Ct));
+        Assert.AreEqual(target.Name, await store.GetProviderNameAsync("app.db", Ct));
     }
 
     /// <summary>A binding store whose writes land and then report a cancellation.</summary>

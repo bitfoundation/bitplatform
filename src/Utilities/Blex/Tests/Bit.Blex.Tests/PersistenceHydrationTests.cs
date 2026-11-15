@@ -222,9 +222,13 @@ public class PersistenceHydrationTests
         var read = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         storage.ReadGate = read;
         var start = persistor.StartAsync();
-        await persistor.DisposeAsync();
+
+        // Disposal waits for the read under way, and for whatever save it releases.
+        var disposing = persistor.DisposeAsync().AsTask();
+        Assert.IsFalse(disposing.IsCompleted, "Disposal returned while storage was still being read.");
 
         read.SetResult();
+        await disposing;
         await start;
 
         store.SetTheme("after");

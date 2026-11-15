@@ -10,6 +10,7 @@ public partial class PickersSection
     private readonly TimeSpan? lateTime = new TimeSpan(19, 15, 0);
     private readonly DateTimeOffset? birthDate = new DateTimeOffset(1990, 5, 17, 0, 0, 0, TimeSpan.Zero);
     private readonly BitDateRangePickerValue stay = new() { StartDate = ThemeSamples.Today.AddDays(4), EndDate = ThemeSamples.Today.AddDays(9) };
+    private readonly BitDateRangePickerValue oneNight = new() { StartDate = ThemeSamples.Today.AddDays(4), EndDate = ThemeSamples.Today.AddDays(5) };
 
     private string StartLabel => Localizer[nameof(WorkbenchStrings.ThemePickersOpensAt)];
 

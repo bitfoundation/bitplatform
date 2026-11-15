@@ -172,7 +172,7 @@ public class BitDropdownStyleE2ETests : BitDropdownE2ETestBase
         await Expect(single).ToBeHiddenAsync();
 
         var empty = await OpenDropdownAsync("dd-sc-empty");
-        await AssertPartsAsync(empty, "EmptyContent");
+        await AssertPartsAsync(empty, "Empty");
         await Page.Keyboard.PressAsync("Escape");
         await Expect(empty).ToBeHiddenAsync();
 

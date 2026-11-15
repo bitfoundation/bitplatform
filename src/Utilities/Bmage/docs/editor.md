@@ -17,6 +17,8 @@ The editor fills its container, so give it a height. Everything else has a worki
 | `Direction` | `"ltr"` or `"rtl"`. The layout uses logical CSS properties, so it mirrors correctly. |
 | `Class`, `Style` | Applied to the root element. Use `bmg-theme-dark` or `bmg-theme-light` to force a theme. |
 | `ShowToolbar`, `ShowPanel` | Hide the built-in chrome without replacing it. |
+| `Tools` | The tools offered, in toolbar order, or null for all of them. `SetTool` selects no other. See [A cropper](#a-cropper). |
+| `Panels` | The tabs of the built-in panel (`EditorPanels` flags: `Adjust`, `Filters`, `Transform`, `Tools`, `Layers`, `History`, `Export`); `EditorPanels.None` hides it. |
 | `Toolbar`, `Panel`, `Footer` | Replace the chrome entirely; each receives a `BmageEditorContext`. |
 | `EmptyState` | Replace the "drop an image here" view. |
 | `MaxProxyDimension` | Longest edge used for interactive editing. Falls back to `BitBmageOptions.MaxInteractiveDimension`, then 2048. Set 0 to always edit at full resolution. |
@@ -226,6 +228,24 @@ entries for layers, and `FormatBlendMode` and `FormatAnchor` name blend modes an
 For right-to-left languages set `Direction="rtl"`. The layout uses logical properties throughout, so the panel, the crop
 handles and the toolbar all mirror.
 
+## A cropper
+
+The editor with less of it is a cropper: offer only the crop and pan tools, hide the panel, and start the crop with
+`BeginCrop`, which selects the tool and places the largest frame of the aspect ratio in the middle of the image, ready to
+move, resize and apply - with a pointer, or from the keyboard without drawing anything.
+
+```razor
+<BmageEditor @ref="cropper"
+             Tools="[EditorToolKind.Crop, EditorToolKind.Pan]"
+             Panels="EditorPanels.None"
+             OnImageLoaded="_ => cropper.BeginCrop(AspectRatio.Square)" />
+```
+
+The toolbar lists the tools in the order `Tools` gives them. A tool taken away while it is active gives way to `Select`,
+or to the first tool listed when `Select` is not offered. The editor's own uses of a tool still work: picking a neutral
+for the white balance uses the eyedropper whether or not it is offered. Hiding the panel's tabs with `Panels` takes their
+controls away, not the operations: a host can still call `SetAdjustmentAsync` or any other action itself.
+
 ## Tools
 
 | Tool | Behaviour |
@@ -268,7 +288,7 @@ disposed, because the history can still return to a step that uses them.
 
 The panel's tabs: **Adjust** (a luminance histogram with its clipping, auto levels, auto white balance and a white
 balance picker, every tonal slider, and a colour mixer of eight hue bands), **Filters** (exclusive looks, including
-black and white and duotone, and motion blur), **Transform** (straighten, resize with proportions kept, canvas size with
+black and white, duotone and a document look that thresholds a photographed page to black ink on white paper, and motion and zoom blur), **Transform** (straighten, resize with proportions kept, canvas size with
 an anchor and a background, trim), **Tools** (the style of the active tool), **Layers** (add a paint or image layer;
 select, show, lock, reorder, duplicate and delete layers, a group's layers listed under it; the selected layer's
 opacity, blend mode and clipping to the layer below; group it with the layer below or move it into the group below,

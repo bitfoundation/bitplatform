@@ -1,4 +1,4 @@
-using Bit.Bsqlite.Data;
+﻿using Bit.Bsqlite.Data;
 using Bit.Bsqlite.Storage;
 using Bit.Bsqlite.Storage.InMemory;
 using Bit.Bsqlite.Testing;
@@ -15,11 +15,7 @@ public sealed class SessionFactoryMigrationTests
 {
     private const string Database = "App_Data/AppOffline.db";
 
-    private static readonly byte[] Image =
-    [
-        .. "SQLite format 3\0"u8,
-        .. Enumerable.Repeat((byte)7, 48),
-    ];
+    private static readonly byte[] Image = SqliteImages.Valid();
 
     public TestContext TestContext { get; set; } = null!;
 

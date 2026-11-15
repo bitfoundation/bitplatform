@@ -292,11 +292,20 @@
             <b>AddBitBlazorUIServices</b>) to show notifications from any component, without passing the host's
             reference around. It has the same <b>Show</b>, color shortcuts, <b>Close</b>, <b>Update</b> and
             <b>Clear</b> as the host; with no host rendered, <b>IsHostAvailable</b> is false and nothing is shown.
+            Set <b>HistoryLimit</b> and its <b>History</b> keeps the latest notifications the host showed, with what
+            took each away, raising <b>OnHistoryChange</b> as it changes - the record a notification center lists.
         </div>
         <br />
         <BitSnackBar ServiceHost ShowIcon AutoDismiss AutoDismissTime="TimeSpan.FromSeconds(5)" />
         <BitButton OnClick="SaveThroughService">Save</BitButton>
         <BitButton OnClick="FailThroughService">Fail</BitButton>
+        <BitButton Variant="BitVariant.Outline" OnClick="ClearServiceHistory">Clear history</BitButton>
+        <br /><br />
+        <div>History (the latest @snackBarService.HistoryLimit, newest first):</div>
+        @foreach (var item in snackBarService.History.Reverse())
+        {
+            <div>@item.ShownAt?.ToLocalTime().ToString("T") - @item.Title - @(item.DismissReason?.ToString() ?? "showing")</div>
+        }
     </DemoExample>
 
     <DemoExample Title="Accessibility" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">

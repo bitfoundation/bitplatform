@@ -691,7 +691,7 @@ private async Task SimulateLoading()
 </BitDataGrid>
 
 <BitDataGrid Items=""@lazyTreeRoots"" Height=""360px"" KeyField=""n => n.Id""
-             ChildrenProvider=""LoadChildrenAsync"" HasChildrenSelector=""IsFolder"">
+             OnLoadChildren=""LoadChildrenAsync"" HasChildrenSelector=""IsFolder"">
     <BitDataGridColumn Property=""p => p.Name"" Width=""280px"" />
     <BitDataGridColumn Property=""p => p.Kind"" Title=""Type"" Width=""110px"" />
     <BitDataGridColumn Property=""p => p.Size"" Title=""Size (bytes)"" Format=""N0"" Align=""BitTextAlign.End"" />
@@ -716,10 +716,12 @@ private int nextLazyNodeId = 1000;
 // An unloaded node cannot know its children; this decides whether it offers a toggle.
 private static bool IsFolder(FileNode node) => node.Kind == ""Folder"";
 
-// Called on a node's first expand only; the grid caches the result.
-private async Task<IEnumerable<FileNode>?> LoadChildrenAsync(FileNode parent)
+// Called on a node's first expand only; the grid caches the result. The grid cancels the token
+// once it no longer needs the children (new Items, or the grid is gone).
+private async Task<IEnumerable<FileNode>?> LoadChildrenAsync(BitDataGridChildrenRequest<FileNode> request)
 {
-    await Task.Delay(600); // e.g. await http.GetFromJsonAsync<List<FileNode>>($""api/files/{parent.Id}"")
+    var parent = request.Parent;
+    await Task.Delay(600, request.CancellationToken); // e.g. await http.GetFromJsonAsync<List<FileNode>>($""api/files/{parent.Id}"", request.CancellationToken)
     return
     [
         new FileNode { Id = ++nextLazyNodeId, Name = $""{parent.Name}-sub"", Kind = ""Folder"", Modified = parent.Modified.AddDays(1) },
@@ -772,8 +774,19 @@ private List<Product> virtualProducts = SampleData.Generate(10_000);" + ProductM
     <BitDataGridColumn Property=""p => p.Supplier"" Width=""180px"" />
     <BitDataGridColumn Property=""p => p.Price"" Width=""140px"" Format=""C2"" Align=""BitTextAlign.End"" Aggregate=""BitDataGridAggregateType.Sum"" AggregateFormat=""C0"" />
     <BitDataGridColumn Property=""p => p.Stock"" Width=""120px"" Align=""BitTextAlign.End"" />
-    <BitDataGridColumn Property=""p => p.Rating"" Width=""110px"" Format=""N1"" Align=""BitTextAlign.End"" FrozenEnd=""true"" />
-</BitDataGrid>";
+    <BitDataGridColumn Property=""p => p.Rating"" Width=""110px"" Format=""N1"" Align=""BitTextAlign.End"" FrozenEnd=""true"" Aggregate=""BitDataGridAggregateType.Average"" />
+</BitDataGrid>
+
+<BitCheckbox Label=""Make the server fail"" @bind-Value=""serverFails"" />
+
+<BitDataGrid OnRead=""LoadFlakyServerData"" OnReadError=""HandleReadError"" Height=""300px"" Pageable=""true"" PageSize=""5"">
+    <BitDataGridColumn Property=""p => p.Id"" Title=""ID"" Width=""70px"" Align=""BitTextAlign.End"" />
+    <BitDataGridColumn Property=""p => p.Name"" Width=""220px"" />
+    <BitDataGridColumn Property=""p => p.Category"" />
+    <BitDataGridColumn Property=""p => p.Price"" Format=""C2"" Align=""BitTextAlign.End"" />
+</BitDataGrid>
+
+<BitText>@serverLastError</BitText>";
     private readonly string example18CsharpCode = @"
 private readonly List<Product> serverAll = SampleData.Generate(523);
 private bool serverLoading;
@@ -820,15 +833,41 @@ private async Task<BitDataGridReadResult<Product>> LoadVirtualServerData(BitData
     var filtered = Query(serverVirtualAll, request).ToList();
     var items = filtered.Skip(request.Skip).Take(request.Take ?? filtered.Count).ToList();
 
-    // Computed over the WHOLE filtered set, so the footer shows a real grand total.
-    var priceSum = filtered.Sum(p => p.Price);
-    var aggregates = new List<BitDataGridAggregateResult>
+    // The grid names the aggregates its footer shows (a sum of Price and an average of Rating). Computed over
+    // the WHOLE filtered set, so the footer shows real totals.
+    var aggregates = new List<BitDataGridAggregateResult>();
+    foreach (var aggregate in request.Aggregates)
     {
-        new() { ColumnId = nameof(Product.Price), Type = BitDataGridAggregateType.Sum, Value = priceSum, FormattedValue = priceSum.ToString(""C0"") }
-    };
+        if (aggregate is { ColumnId: nameof(Product.Price), Type: BitDataGridAggregateType.Sum })
+        {
+            var sum = filtered.Sum(p => p.Price);
+            aggregates.Add(new() { ColumnId = aggregate.ColumnId, Type = aggregate.Type, Value = sum, FormattedValue = sum.ToString(""C0"") });
+        }
+        else if (aggregate is { ColumnId: nameof(Product.Rating), Type: BitDataGridAggregateType.Average })
+        {
+            var average = filtered.Count == 0 ? 0 : filtered.Average(p => p.Rating);
+            aggregates.Add(new() { ColumnId = aggregate.ColumnId, Type = aggregate.Type, Value = average, FormattedValue = average.ToString(""N1"") });
+        }
+    }
 
     return new BitDataGridReadResult<Product>(items, filtered.Count) { Aggregates = aggregates };
 }
+
+private bool serverFails;
+private string serverLastError = """";
+
+private async Task<BitDataGridReadResult<Product>> LoadFlakyServerData(BitDataGridReadRequest request)
+{
+    await Task.Delay(400, request.CancellationToken);
+
+    if (serverFails) throw new InvalidOperationException(""The server did not answer."");
+
+    var filtered = Query(serverAll, request).ToList();
+    return new BitDataGridReadResult<Product>(filtered.Skip(request.Skip).Take(request.Take ?? filtered.Count).ToList(), filtered.Count);
+}
+
+// The grid shows its error row and Retry button; this is the place to log the failure or tell the user more.
+private void HandleReadError(Exception exception) => serverLastError = $""OnReadError: {exception.Message}"";
 
 // Applies the request's filters, search and sorts the way a backend would.
 private static IEnumerable<Product> Query(IEnumerable<Product> source, BitDataGridReadRequest request)

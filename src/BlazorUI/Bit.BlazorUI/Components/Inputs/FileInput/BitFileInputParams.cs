@@ -5,7 +5,7 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// The parameters for <see cref="BitFileInput"/> component.
 /// </summary>
-public class BitFileInputParams : BitInputBaseParams<string?>, IBitComponentParams
+public partial class BitFileInputParams : BitInputBaseParams<string?>, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitFileInput"/> cascading parameters within <see cref="BitParams"/>.
@@ -253,6 +253,13 @@ public class BitFileInputParams : BitInputBaseParams<string?>, IBitComponentPara
     /// Whether to display a remove button next to each file in the file list.
     /// </summary>
     public bool? ShowRemoveButton { get; set; }
+
+    /// <summary>
+    /// Shows the messages the cascading EditContext holds for the bound field under the browse button, where
+    /// <see cref="ErrorMessage"/> goes, so an <c>EditForm</c> needs no <c>ValidationMessage</c> component beside it.
+    /// An error message of the app's own wins the place while it is set.
+    /// </summary>
+    public bool? ShowValidationMessage { get; set; }
 
     /// <summary>
     /// The size of the file input, applied to the browse button and the file list items.
@@ -504,6 +511,11 @@ public class BitFileInputParams : BitInputBaseParams<string?>, IBitComponentPara
         if (ShowRemoveButton.HasValue)
         {
             bitFileInput.TakeFromCascade(nameof(ShowRemoveButton), ShowRemoveButton.Value, static f => f.ShowRemoveButton, static (f, v) => f.ShowRemoveButton = v);
+        }
+
+        if (ShowValidationMessage.HasValue)
+        {
+            bitFileInput.TakeFromCascade(nameof(ShowValidationMessage), ShowValidationMessage.Value, static f => f.ShowValidationMessage, static (f, v) => f.ShowValidationMessage = v);
         }
 
         if (Size.HasValue)

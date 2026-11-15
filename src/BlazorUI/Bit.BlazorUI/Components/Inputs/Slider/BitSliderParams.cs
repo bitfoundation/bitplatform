@@ -10,7 +10,7 @@ namespace Bit.BlazorUI;
 /// and the accessible names of the two ends of a range. What each slider holds of its own is not: a value,
 /// a default value, a name, the templates and the event callbacks stay on the markup of the slider itself.
 /// </remarks>
-public class BitSliderParams : BitInputBaseParams<double>, IBitComponentParams
+public partial class BitSliderParams : BitInputBaseParams<double>, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitSlider"/> cascading parameters within <see cref="BitParams"/>.
@@ -191,6 +191,13 @@ public class BitSliderParams : BitInputBaseParams<double>, IBitComponentParams
     /// Draws a mark at every <see cref="MarkStep"/> (or every <see cref="Step"/> when that is not set).
     /// </summary>
     public bool? ShowMarks { get; set; }
+
+    /// <summary>
+    /// Shows the messages the cascading EditContext holds for the bound field under the slider, where
+    /// <see cref="ErrorMessage"/> goes, so an <c>EditForm</c> needs no <c>ValidationMessage</c> component beside it.
+    /// An error message of the app's own wins the place while it is set.
+    /// </summary>
+    public bool? ShowValidationMessage { get; set; }
 
     /// <summary>
     /// Whether to show the value beside the slider.
@@ -395,6 +402,11 @@ public class BitSliderParams : BitInputBaseParams<double>, IBitComponentParams
         if (ShowMarks.HasValue)
         {
             bitSlider.TakeFromCascade(nameof(ShowMarks), ShowMarks.Value, static s => s.ShowMarks, static (s, v) => s.ShowMarks = v);
+        }
+
+        if (ShowValidationMessage.HasValue)
+        {
+            bitSlider.TakeFromCascade(nameof(ShowValidationMessage), ShowValidationMessage.Value, static s => s.ShowValidationMessage, static (s, v) => s.ShowValidationMessage = v);
         }
 
         if (ShowValue.HasValue)

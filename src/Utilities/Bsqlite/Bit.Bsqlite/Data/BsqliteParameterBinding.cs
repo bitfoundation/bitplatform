@@ -36,6 +36,11 @@ public static class BsqliteParameterBinding
             : timeOnly.ToString(@"HH:mm:ss.fffffff", CultureInfo.InvariantCulture),
         TimeSpan timeSpan => timeSpan.ToString("c"),
         Guid guid => guid.ToString().ToUpperInvariant(),
+
+        // The underlying integer, as Microsoft.Data.Sqlite binds an enum.
+        Enum enumeration => Type.GetTypeCode(enumeration.GetType()) is TypeCode.UInt64
+            ? Convert.ToUInt64(enumeration, CultureInfo.InvariantCulture)
+            : Convert.ToInt64(enumeration, CultureInfo.InvariantCulture),
         _ => value,
     };
 
@@ -81,6 +86,7 @@ public static class BsqliteParameterBinding
             return value switch
             {
                 DateTime dateTime => new DateTimeOffset(dateTime, TimeSpan.Zero),
+                double or long => new DateTimeOffset(BsqliteValueConversions.ToDateTime(value), TimeSpan.Zero),
                 string text => DateTimeOffset.Parse(
                     text,
                     CultureInfo.InvariantCulture,
@@ -98,6 +104,7 @@ public static class BsqliteParameterBinding
             {
                 DateTime dateTime => DateOnly.FromDateTime(dateTime),
                 string text => DateOnly.Parse(text, CultureInfo.InvariantCulture),
+                double or long => DateOnly.FromDateTime(BsqliteValueConversions.ToDateTime(value)),
                 _ => DateOnly.Parse(
                     Convert.ToString(value, CultureInfo.InvariantCulture)!,
                     CultureInfo.InvariantCulture),
@@ -109,6 +116,7 @@ public static class BsqliteParameterBinding
             return value switch
             {
                 string text => TimeOnly.Parse(text, CultureInfo.InvariantCulture),
+                double or long => TimeOnly.FromDateTime(BsqliteValueConversions.ToDateTime(value)),
                 _ => TimeOnly.Parse(
                     Convert.ToString(value, CultureInfo.InvariantCulture)!,
                     CultureInfo.InvariantCulture),
@@ -117,11 +125,7 @@ public static class BsqliteParameterBinding
 
         if (target == typeof(DateTime))
         {
-            return value switch
-            {
-                string text => DateTime.Parse(text, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind),
-                _ => Convert.ToDateTime(value, CultureInfo.InvariantCulture),
-            };
+            return BsqliteValueConversions.ToDateTime(value);
         }
 
         if (target == typeof(Guid))
@@ -146,20 +150,49 @@ public static class BsqliteParameterBinding
 
         if (target == typeof(decimal))
         {
-            return value switch
-            {
-                string text => decimal.Parse(text, NumberStyles.Number, CultureInfo.InvariantCulture),
-                _ => Convert.ToDecimal(value, CultureInfo.InvariantCulture),
-            };
+            return BsqliteValueConversions.ToDecimal(value);
         }
 
         if (target.IsEnum)
         {
             return value is string name
                 ? Enum.Parse(target, name, ignoreCase: true)
-                : Enum.ToObject(target, value);
+                : Enum.ToObject(target, BsqliteValueConversions.ToInt64(value));
         }
 
-        return Convert.ChangeType(value, target, CultureInfo.InvariantCulture)!;
+        if (target == typeof(string))
+        {
+            return BsqliteValueConversions.ToText(value);
+        }
+
+        if (target == typeof(byte[]))
+        {
+            return BsqliteValueConversions.ToBytes(value);
+        }
+
+        if (target == typeof(double))
+        {
+            return BsqliteValueConversions.ToDouble(value);
+        }
+
+        if (target == typeof(float))
+        {
+            return (float)BsqliteValueConversions.ToDouble(value);
+        }
+
+        // Integers truncate a REAL, as SQLite's CAST does, and narrow checked, as Microsoft.Data.Sqlite does:
+        // Convert.ChangeType would round 3.5 to 4.
+        return Type.GetTypeCode(target) switch
+        {
+            TypeCode.Int64 => BsqliteValueConversions.ToInt64(value),
+            TypeCode.Int32 => checked((int)BsqliteValueConversions.ToInt64(value)),
+            TypeCode.Int16 => checked((short)BsqliteValueConversions.ToInt64(value)),
+            TypeCode.SByte => checked((sbyte)BsqliteValueConversions.ToInt64(value)),
+            TypeCode.Byte => checked((byte)BsqliteValueConversions.ToInt64(value)),
+            TypeCode.UInt16 => checked((ushort)BsqliteValueConversions.ToInt64(value)),
+            TypeCode.UInt32 => checked((uint)BsqliteValueConversions.ToInt64(value)),
+            TypeCode.UInt64 => checked((ulong)BsqliteValueConversions.ToInt64(value)),
+            _ => Convert.ChangeType(value, target, CultureInfo.InvariantCulture)!,
+        };
     }
 }

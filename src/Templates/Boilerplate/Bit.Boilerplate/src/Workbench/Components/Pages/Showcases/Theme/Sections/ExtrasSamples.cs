@@ -41,6 +41,29 @@ public static class ExtrasSamples
         (nameof(WorkbenchStrings.PosStoreUtrecht), 52.0908, 5.1215)
     ];
 
+    /// <summary>
+    /// The staff of the resource timeline, as resource keys with the store they work at and a week of shifts, Monday first:
+    /// O opening, M midday, B bakery, C closing, - a day off.
+    /// </summary>
+    public static readonly (string NameKey, string StoreKey, string Week)[] Staff =
+    [
+        (nameof(WorkbenchStrings.PosStaffEmma), nameof(WorkbenchStrings.PosStoreAmsterdam), "OOC-CO-"),
+        (nameof(WorkbenchStrings.PosStaffLucas), nameof(WorkbenchStrings.PosStoreAmsterdam), "C-OOC-O"),
+        (nameof(WorkbenchStrings.PosStaffMila), nameof(WorkbenchStrings.PosStoreAmsterdam), "BB-BBB-"),
+        (nameof(WorkbenchStrings.PosStaffSem), nameof(WorkbenchStrings.PosStoreRotterdam), "MCC-CC-"),
+        (nameof(WorkbenchStrings.PosStaffNoah), nameof(WorkbenchStrings.PosStoreRotterdam), "OM-MOM-"),
+        (nameof(WorkbenchStrings.PosStaffJulia), nameof(WorkbenchStrings.PosStoreUtrecht), "OM-MO-M")
+    ];
+
+    /// <summary>The hours a shift letter of <see cref="Staff"/> starts and ends at, with the resource key of its name.</summary>
+    public static (int Start, int End, string NameKey) Shift(char letter) => letter switch
+    {
+        'O' => (7, 15, nameof(WorkbenchStrings.ShiftsOpening)),
+        'M' => (10, 18, nameof(WorkbenchStrings.ShiftsMidday)),
+        'B' => (7, 13, nameof(WorkbenchStrings.ShiftsBakery)),
+        _ => (11, 19, nameof(WorkbenchStrings.ShiftsClosing))
+    };
+
     /// <summary>Revenue of the last six months, the latest last, in euros.</summary>
     public static readonly double[] RevenueThisYear = [18200, 16900, 21400, 23800, 22100, 26500];
 

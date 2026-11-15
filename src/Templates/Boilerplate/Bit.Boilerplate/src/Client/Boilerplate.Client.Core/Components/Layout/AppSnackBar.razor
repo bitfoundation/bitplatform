@@ -3,8 +3,11 @@
 @inherits AppComponentBase
 
 <BitSnackBar @ref="snackBarRef"
+             ServiceHost
              Multiline
              AutoDismiss
+             MaxItems="3"
+             OverflowBehavior="BitSnackBarOverflowBehavior.Queue"
              Class="snackbar"
              Position="BitPosition.TopCenter"
              AutoDismissTime="TimeSpan.FromSeconds(10)" />

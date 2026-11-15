@@ -3,10 +3,7 @@
 .lp-hotel-software {
     --lp-chat-bubble-bg: var(--hs-board);
     --lp-chat-bubble-fg: var(--hs-board-fg);
-}
-
-::deep .hs-chat .lp-chat-bubble {
-    --bit-Icon-color: var(--hs-brass);
+    --lp-chat-bubble-icon: var(--hs-brass);
 }
 
 ::deep .hs-nav-cta {

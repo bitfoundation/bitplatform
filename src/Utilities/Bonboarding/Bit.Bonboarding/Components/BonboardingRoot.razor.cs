@@ -282,6 +282,15 @@ public sealed partial class BonboardingRoot : ComponentBase, IAsyncDisposable
 
     private string ThemeAttribute => BonboardingCss.Theme(Theme ?? _options?.Theme);
 
+    /// <summary>Why the step's target is not pointed at, for styling and for debugging in the browser's inspector.</summary>
+    private string? TargetIssueAttribute => _session?.TargetIssue switch
+    {
+        null or BonboardingTargetIssue.None => null,
+        BonboardingTargetIssue.Hidden => "hidden",
+        BonboardingTargetIssue.InvalidSelector => "invalid-selector",
+        _ => "not-found",
+    };
+
     private string DirectionAttribute => _options?.Direction == BonboardingDirection.RightToLeft ? "rtl" : "ltr";
 
     private string RootStyle

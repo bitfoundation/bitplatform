@@ -19,7 +19,7 @@
         <PackageReference Include="MSTest" Version="4.5.2" />
         <!-- Hosts the real Program.cs in memory, so the tests exercise the wiring that ships rather than a
              second registration written for the tests. -->
-        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="11.0.0-rc.3.26522.148" />
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="11.0.0" />
         <!-- The MCP client half of the library the server is built on: the tests talk to the server the way
              an agent does, not by calling the C# methods. -->
         <PackageReference Include="ModelContextProtocol" Version="2.4.0" />

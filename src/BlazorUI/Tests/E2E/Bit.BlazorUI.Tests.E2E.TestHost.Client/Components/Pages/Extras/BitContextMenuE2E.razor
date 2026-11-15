@@ -1,0 +1,41 @@
+﻿@page "/e2e/context-menu"
+
+<PageTitle>BitContextMenu E2E</PageTitle>
+
+<h1>BitContextMenu</h1>
+
+@* An area with two focusable rows, the second one well inside it, so a menu opened from the keyboard at a focused row
+   is told apart from one opened at the area; a disabled one; and a page button that counts its clicks. *@
+<BitContextMenu Id="ctm" Items="_items" @bind-IsOpen="_isOpen" OnItemClick="(BitMenuButtonItem item) => _clicked = item.Text">
+    <div id="ctm-area" style="width: 480px; height: 160px; border: 1px dashed gray;">
+        <button id="row-1" type="button">Row 1</button>
+        <button id="row-2" type="button" style="margin-left: 200px; margin-top: 80px;">Row 2</button>
+    </div>
+</BitContextMenu>
+
+<BitContextMenu Id="ctm-dis" Items="_items" Disabled>
+    <div id="dis-area" style="width: 480px; height: 60px; border: 1px dashed gray;">Disabled</div>
+</BitContextMenu>
+
+<button id="btn-page" type="button" @onclick="() => _pageClicks++">Page button</button>
+
+<div id="ctm-clicked">@_clicked</div>
+<div id="ctm-open">@_isOpen</div>
+<div id="ctm-page-clicks">@_pageClicks</div>
+
+<div style="position: fixed; right: 8px; top: 8px;">
+    <E2EStatus />
+</div>
+
+@code {
+    private string? _clicked;
+    private bool _isOpen;
+    private int _pageClicks;
+
+    private readonly List<BitMenuButtonItem> _items =
+    [
+        new() { Key = "copy", Text = "Copy" },
+        new() { Key = "paste", Text = "Paste" },
+        new() { Key = "delete", Text = "Delete" }
+    ];
+}

@@ -10,7 +10,7 @@ namespace Bit.BlazorUI;
 /// the strings that name its parts for a screen reader. What belongs to one search box alone - the value,
 /// the label, the suggest source, the templates and the callbacks - stays in the markup of that search box.
 /// </remarks>
-public class BitSearchBoxParams : BitInputBaseParams<string?>, IBitComponentParams
+public partial class BitSearchBoxParams : BitInputBaseParams<string?>, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitSearchBox"/> cascading parameters within <see cref="BitParams"/>.

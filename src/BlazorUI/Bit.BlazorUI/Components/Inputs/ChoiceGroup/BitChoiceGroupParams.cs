@@ -12,7 +12,7 @@ namespace Bit.BlazorUI;
 /// instance, which is what keeps this object usable from a single non-generic <see cref="BitParams"/> list
 /// no matter which of the three item APIs each choice group under it uses.
 /// </remarks>
-public class BitChoiceGroupParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitChoiceGroupParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitChoiceGroup{TItem, TValue}"/> cascading parameters within <see cref="BitParams"/>.
@@ -151,6 +151,13 @@ public class BitChoiceGroupParams : BitComponentBaseParams, IBitComponentParams
     public bool? NoCircle { get; set; }
 
     /// <summary>
+    /// Shows the messages the cascading EditContext holds for the bound field under the items, where
+    /// <see cref="ErrorMessage"/> goes, so an <c>EditForm</c> needs no <c>ValidationMessage</c> component beside the
+    /// group. An error message of the app's own wins the place while it is set.
+    /// </summary>
+    public bool? ShowValidationMessage { get; set; }
+
+    /// <summary>
     /// The size of the BitChoiceGroup.
     /// </summary>
     public BitSize? Size { get; set; }
@@ -284,6 +291,11 @@ public class BitChoiceGroupParams : BitComponentBaseParams, IBitComponentParams
         if (NoCircle.HasValue)
         {
             bitChoiceGroup.TakeFromCascade(nameof(NoCircle), NoCircle.Value, static c => c.NoCircle, static (c, v) => c.NoCircle = v);
+        }
+
+        if (ShowValidationMessage.HasValue)
+        {
+            bitChoiceGroup.TakeFromCascade(nameof(ShowValidationMessage), ShowValidationMessage.Value, static c => c.ShowValidationMessage, static (c, v) => c.ShowValidationMessage = v);
         }
 
         if (Size.HasValue)

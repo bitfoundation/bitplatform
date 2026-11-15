@@ -1,0 +1,11 @@
+﻿<BitStack Gap="1rem">
+    <BitText>This content reaches its own panel through the cascaded BitPanelReference.</BitText>
+    <BitStack Horizontal Gap="0.5rem" AutoHeight>
+        <BitButton OnClick="() => panelReference.Close()">Ok</BitButton>
+        <BitButton Variant="BitVariant.Outline" OnClick="() => panelReference.Dismiss()">Cancel</BitButton>
+    </BitStack>
+</BitStack>
+
+@code {
+    [CascadingParameter] private BitPanelReference panelReference { get; set; } = default!;
+}

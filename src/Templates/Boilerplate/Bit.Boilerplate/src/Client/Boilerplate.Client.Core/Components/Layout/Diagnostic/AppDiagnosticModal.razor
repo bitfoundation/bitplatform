@@ -20,7 +20,7 @@
             </BitStack>
 
             <BitAccordion Title="Diagnostic">
-                <DiagnosticReport AutoRun="false" />
+                <DiagnosticReport AutoRun="false" Embedded />
             </BitAccordion>
 
             <BitStack Horizontal FitHeight Wrap>
@@ -131,7 +131,7 @@
                           ItemSize="32"
                           Style="height:unset"
                           Items="indexedFilteredLogs">
-                <EmptyContent>Nothing to show!</EmptyContent>
+                <EmptyTemplate>Nothing to show!</EmptyTemplate>
                 <RowTemplate Context="logIndex">
                     <BitStack @key="TimeZoneService.ToLocalTime(logIndex.item.CreatedOn)" role="listitem" Horizontal AutoHeight VerticalAlign="BitAlignment.Center">
                         <BitText Style="min-width:7rem">@($"{logIndex.index + 1}. [{TimeZoneService.ToLocalTime(logIndex.item.CreatedOn).ToString("HH:mm:ss")}]")</BitText>

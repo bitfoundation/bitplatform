@@ -1,5 +1,4 @@
 //+:cnd:noEmit
-using ImageMagick;
 using System.IO.Compression;
 using System.Text.Json.Nodes;
 using System.Net.Http.Headers;
@@ -184,10 +183,10 @@ public class PersonalDataExportTests
 
     private async Task UploadProfilePicture(HttpClient httpClient)
     {
-        using var image = TestImageFactory.Solid(MagickColors.Red, 512, 512);
+        var image = TestImageFactory.Solid(TestImageFactory.Red, 512, 512);
 
         using var form = new MultipartFormDataContent();
-        using var fileContent = new ByteArrayContent(image.ToByteArray(MagickFormat.Png));
+        using var fileContent = new ByteArrayContent(image);
         fileContent.Headers.ContentType = new MediaTypeHeaderValue("image/png");
         form.Add(fileContent, "file", "picture.png"); // The endpoint binds an IFormFile parameter named "file".
 

@@ -165,6 +165,25 @@ never
      aria-label="@TagName(tag)">
 ```
 
+## One name per concept
+
+A concept that more than one component has is spelled the same on all of them, and an outlier is renamed to it, the
+break recorded in `BreakingChanges.md` - never kept beside the new name as an `[Obsolete]` alias.
+
+- **What a component shows when it has nothing to show** has two names, one per meaning: `EmptyTemplate` /
+  `EmptyText` and the `Empty` class-style part for **no items at all**, and `NoResultsTemplate` / `NoResultsText` and
+  the `NoResults` part for a search or filter that **matched none** of the items there are. A component with both
+  (`BitDropdown`) has both. Never `EmptyContent`, `NoDataTemplate`, `EmptyMessage` or `EmptyListTemplate`: the
+  framework's own `Virtualize.EmptyContent` is the one `EmptyContent` left, and it is not ours.
+- **...and it works the same way everywhere.** The template wins, then the text, and with neither the component
+  still says something: `BitStrings.Current.NoItemsFound` for empty, `BitStrings.Current.NoResultsFound` for no
+  results - never a literal of its own, and never nothing. The text parameters are `string?` defaulting to `null`
+  (the default is read at render time, so a `BitStrings` set later still reaches it). The message sits in a wrapper
+  element of its own, `bit-<prefix>-emp` / `bit-<prefix>-nor`, carrying the `Empty` / `NoResults` class-style part,
+  with the template rendered inside it. A component with both meanings keeps them apart: a fruitless search never
+  falls back to the empty text, and an empty component searched stays empty. A component that keeps its words in a
+  texts object (`BitDataGridStrings`) keeps them there, with a getter that falls back to `BitStrings.Current`.
+
 ## Core components never render each other
 
 A component in the core `Bit.BlazorUI` project draws everything it shows with its own markup and its own
@@ -196,21 +215,46 @@ components' markup, defaults and accessibility behaviour as well.
   renders a BitTextField), which is exactly what keeps the core ones from having to be. `Bit.BlazorUI.AI` is one
   too (BitAiChat's actions are BitButtons), over the core package only - it never references Extras.
 
-## The AI package
+## The AI packages
 
 `Bit.BlazorUI.AI` is the UI of AI apps - chat, prompt input, streaming Markdown, tool calls, agents, citations,
 artifacts, structured output, generative UI - and every rule of this file holds for it as it does for Extras. What is
 its own:
 
-- **Every type is `BitAi*`** (interfaces `IBitAi*`), in the one `Bit.BlazorUI` namespace. The non-UI layers keep a
-  folder each - `Abstractions/` (contracts, events, transport), `Core/` (conversation state, the streaming reducer,
-  sessions, tools, persistence), `Markdown/` (the incremental parser and highlighter), `GenerativeUI/` - beside
-  `Components/`, `Rendering/`, `Utils/` and `Extensions/`. Nothing in them references a model provider: an app
-  implements `IBitAiTransport` and registers it through `AddBitBlazorUIAIServices(ai => ai.UseTransport<T>())`.
+- **Five packages, one folder, split by what each end of an app can load.** All live under `Bit.BlazorUI.AI/`:
+  `Bit.BlazorUI.AI` (the components; a Razor library), `Bit.BlazorUI.AI.Core` (the contracts, events, wire format,
+  conversation, session, tools, `BitAiBuilder`, and the SSE and WebSocket client transports - a plain library with no
+  UI and no ASP.NET Core), `Bit.BlazorUI.AI.Server` (`MapBitAiSse`, `MapBitAiWebSocket`, `MapBitAiApprovals`,
+  `BitAiHub`, `BitAiApprovalBroker` - the only one with the ASP.NET Core shared framework, which it declares),
+  `Bit.BlazorUI.AI.SignalR` (the SignalR client transport) and `Bit.BlazorUI.AI.ChatClient` (the
+  `Microsoft.Extensions.AI` adapter). The UI and every satellite reference the core; nothing else references anything.
+  A browser or Hybrid app must never load a type built on the server's shared framework, a server must never get a
+  component, and Microsoft.Extensions.AI and the SignalR client reach only the apps that install their package -
+  `BitAiPackageBoundaryTests` pins each assembly's references. So a new type goes in the package whose dependencies it
+  needs and no wider one, and a convenience for another package's type is an extension method in that package
+  (`ConfigureUi` in the UI, `UseSignalRTransport`, `UseChatClient`), never a member that drags its dependency into the
+  core. The core opens its internals to the UI package only; the satellites stay on its public API.
+- **Every type is `BitAi*`** (interfaces `IBitAi*`), in the one `Bit.BlazorUI` namespace, whichever package it is in. The
+  UI package keeps `Components/`, `Markdown/` (the incremental parser and highlighter), `GenerativeUI/`, `Rendering/`,
+  `Utils/` and `Extensions/`; the core keeps `Abstractions/` (contracts, events, transport) beside the conversation,
+  the streaming reducer, sessions, tools, persistence and `Transports/`. Nothing references a model provider: an app
+  implements `IBitAiTransport` (or uses one of the packages') and registers it through
+  `AddBitBlazorUIAIServices(ai => ai.UseTransport<T>())`. A test reads a package's sources as
+  `SourceFiles.Read("Bit.BlazorUI.AI.Core", ...)`, which finds the folder under `Bit.BlazorUI.AI/`.
 - **The components derive from `BitAiComponentBase`**, a `BitComponentBase` that adds the options in force
   (`BitAiOptionsProvider`, else the registered `BitAiUiOptions`), their `BitAiStrings`, and `RequestRender()` - a
   re-render coalesced to one per frame interval. A component reacting to streamed changes calls that, never
   `StateHasChanged` per token. Every user-facing word goes through `BitAiStrings`.
+- **Nothing of the package has to be registered for a component to render.** A WebAssembly app may lazy-load the AI
+  assemblies (`BlazorWebAssemblyLazyLoad`), and then cannot call `AddBitBlazorUIAIServices` at startup, which would load
+  them there. So a component reads every AI service through `BitAiComponentBase.GetAiService<T>()` - never an
+  `[Inject]` or a `GetService` of its own - which takes the one the cascaded `BitAiServices` sets (a `CascadingValue`
+  of it, or the chat's `Services`), else the registered one, else none and the built-in behaviour. A new optional
+  service is a property of `BitAiServices` (and a type in its `Find`), never a cascade or parameter of the one
+  component that reads it. A chat handed no `Session` creates its own over `BitAiServices.Transport`, so it follows
+  its `UiOptions`; a tool card reads the tools of its session first. `BitAiUnregisteredServicesTests`
+  renders them with the core's services alone, and `LazyAiTrimmingTests` (in the trimming suite) publishes and runs such
+  an app; the Trimming page's "Lazy-loading the AI package" section is where app authors read it.
 - **Its glyphs outside the core font subset come from its own subset** (`Styles/fabric.mdl2.bit.blazoui.ai.scss` and
   `wwwroot/fonts/FabMDL2.4.66.bit.BlazorUI.AI.woff2`), as Extras' `bit-icon-ex` ones do: a core component is handed
   the name as `IconName` plus `bit-icon-ai bit-icon-ai--Name` as its icon class (merged with the app's own classes
@@ -225,6 +269,17 @@ its own:
   image through `BitAiSafeUrls.Decide`, which asks the `BitAiUiOptions.Images` policy about the address the browser would
   fetch (a relative one resolved against the base address). Markdown images, image parts, image artifacts, attachment
   chip thumbnails and source favicons all follow the policy that way.
+- **What crosses the network is the wire format** (`BitAiWireSerializer`): an event is written member by member by
+  `BitAiEventJsonConverter`, one JSON object told apart by its `type`, and a request is a `BitAiRequestSnapshot` of the
+  same message snapshots a conversation persists. It is a contract between servers and browsers of different versions,
+  so it changes by addition only - a new event or property, never a renamed or removed one - and a reader skips what it
+  does not know (an unknown `type` reads as `null`). `BitAiWireContractTests` pins every event's JSON, and a new event
+  type goes into the converter, `BitAiWireSamples` and the pins together. The transports built on it - SSE and
+  WebSocket in the core, SignalR in its package, their server ends in `Bit.BlazorUI.AI.Server`, the
+  `Microsoft.Extensions.AI` adapter in `Bit.BlazorUI.AI.ChatClient` - are tested end to end in `Components/AI/Wire`
+  (the WebSocket ones on a loopback Kestrel, since the in-memory test server has no `ClientWebSocket`), and
+  `AiWireFormatTrimmingTests` (in the trimming suite) round-trips the format in a trimmed and a native AOT app that
+  reference the core alone.
 - **The demo** has a page per component under `/components/ai/<name>` and the scenario pages under
   `/ai/scenarios/<name>` (prose pages, outside `/components/`, so the catalog does not count them), all driven by
   the scripted transports of `Demo/.../Services/AI`; the E2E host has its own (`E2EAiTransport`, a script per page).

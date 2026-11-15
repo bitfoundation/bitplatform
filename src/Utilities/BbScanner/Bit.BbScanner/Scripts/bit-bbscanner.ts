@@ -216,6 +216,13 @@ const IMAGE_TOO_MANY_PIXELS = -5;
  */
 const MAX_IMAGE_PIXELS = 268_435_456;
 
+/**
+ * How long a start waits for the camera to switch to continuous focus. A camera whose applyConstraints never settles
+ * would otherwise hold the start forever - in-process there is no watchdog to recover it - so past this the start
+ * returns and the focus is left to arrive, or not, on its own.
+ */
+const FOCUS_TIMEOUT_MS = 1000;
+
 /** poll flags, above the 24 bits of change versions; the values of BbScannerBridge's Poll constants. */
 const POLL_HIDDEN = 1 << 24;
 const POLL_ENDED = 1 << 25;
@@ -733,7 +740,8 @@ export async function start(sessionId: string, videoElementId: string, deviceId:
 }
 
 async function open(sessionId: string, videoElementId: string, deviceId: string | null, requestedWidth: number,
-                    requestedHeight: number, facingMode: string | null, watchdogMs: number): Promise<string> {
+                    requestedHeight: number, facingMode: string | null, watchdogMs: number,
+                    awaitFocus = true): Promise<string> {
     const session = getSession(sessionId);
     releaseStream(session);
     const generation = session.generation;
@@ -822,8 +830,59 @@ async function open(sessionId: string, videoElementId: string, deviceId: string 
     scheduleFrameCallback(session);
     observeViewSize(session, video);
     startWatchdog(session, watchdogMs);
+    if (!awaitFocus) {
+        // A reopen after the watchdog: the focus is set without being waited for, so the watchdog cannot close this
+        // camera again before the start returns.
+        void preferContinuousFocus(track);
+        return JSON.stringify(describeTrack(track, video));
+    }
+
+    await preferContinuousFocus(track);
+    if (superseded()) {
+        stopTracks(stream);
+
+        // The watchdog's own releaseStream is the only one that leaves the session released, one generation on, and the
+        // map still holding it: the camera was closed because the start itself took longer than the watchdog allows -
+        // the managed side has nothing to poll until it returns - not because anyone gave up on it. Open it again.
+        if (session.released && session.generation === generation + 1 && state.sessions.get(sessionId) === session) {
+            return open(sessionId, videoElementId, deviceId, requestedWidth, requestedHeight, facingMode, watchdogMs, false);
+        }
+
+        // Released or restarted while the focus was being set: the stream is already closed by then.
+        throw new Error('AbortError: the camera request was superseded.');
+    }
 
     return JSON.stringify(describeTrack(track, video));
+}
+
+/**
+ * Asks a camera that can refocus by itself to keep doing so. Some phones open their rear camera focused once, or at a
+ * fixed distance, which leaves a barcode held close a blur for good; a camera that reports no focus modes, or does not
+ * offer a continuous one, is left as it is, and one that refuses keeps the focus it had.
+ */
+async function preferContinuousFocus(track: MediaStreamTrack): Promise<void> {
+    if (typeof track.getCapabilities !== 'function' || typeof track.applyConstraints !== 'function') {
+        return;
+    }
+
+    try {
+        const modes = (track.getCapabilities() as { focusMode?: unknown }).focusMode;
+        const current = (track.getSettings() as { focusMode?: unknown }).focusMode;
+        if (Array.isArray(modes) && modes.includes('continuous') && current !== 'continuous') {
+            const applied = track.applyConstraints({ advanced: [{ focusMode: 'continuous' } as MediaTrackConstraintSet] });
+
+            // A refusal that comes after the wait has ended is still caught.
+            applied.catch(() => { });
+            let timer: ReturnType<typeof setTimeout> | undefined;
+            try {
+                await Promise.race([applied, new Promise<void>(resolve => { timer = setTimeout(resolve, FOCUS_TIMEOUT_MS); })]);
+            } finally {
+                clearTimeout(timer);
+            }
+        }
+    } catch {
+        // A track stopped meanwhile, or a camera that rejects the mode: scanning goes on with the focus there is.
+    }
 }
 
 function observeViewSize(session: Session, video: HTMLVideoElement): void {

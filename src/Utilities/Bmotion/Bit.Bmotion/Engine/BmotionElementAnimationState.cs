@@ -1468,6 +1468,12 @@ internal sealed class BmotionElementAnimationState
         public bool HandedOff { get; set; }
 
         /// <summary>
+        /// Told which keys an interruption handed to rAF drivers, and the task that settles when they are done
+        /// (<c>true</c> for a natural finish) - so what plays them is reported as it changes.
+        /// </summary>
+        public Action<IReadOnlyCollection<string>, Task<bool>>? HandOff { get; set; }
+
+        /// <summary>
         /// Asks the browser where it has really got with the animation (<see cref="IBmotionInterop.GetWaapiPlayhead"/>).
         /// Null where it can't be asked (Blazor Server), and once the browser has said the animation's start is final.
         /// </summary>
@@ -1705,6 +1711,7 @@ internal sealed class BmotionElementAnimationState
         var carried = new TaskCompletionSource<bool>();
         carried.Task.ContinueWith(_ => completion.TrySetResult(false), TaskContinuationOptions.ExecuteSynchronously);
         _batches.Add(new CompletionBatch { Source = carried, Keys = continued });
+        plan.HandOff?.Invoke(continued, carried.Task);
     }
 
     /// <summary>

@@ -14,7 +14,7 @@ namespace Bit.BlazorUI;
 /// the event callbacks are left out on purpose: they describe the data and the state of a single map rather than a
 /// default for many.
 /// </remarks>
-public class BitMapParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitMapParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitMap{TMapProvider}"/> cascading parameters within <see cref="BitParams"/>.

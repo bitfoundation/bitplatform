@@ -18,7 +18,7 @@ public sealed class ForcedColorsAndPointerTests : BlowTest
         await page.EmulateMediaAsync(new() { ForcedColors = ForcedColors.Active });
         await WaitForEdgesAnchoredAsync(page);
 
-        await page.GetByLabel("Make \"Enrich\" fail").CheckAsync();
+        await page.GetByLabel("Enrich is down").CheckAsync();
         await page.GetByRole(AriaRole.Button, new() { Name = "▶ Run" }).ClickAsync();
         await Expect(page.Locator(".wf-status")).ToContainTextAsync("Run finished", new() { Timeout = 20_000 });
 

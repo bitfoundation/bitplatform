@@ -21,6 +21,40 @@ public static class FrameFactory
     /// <param name="Expected">The value the frame encodes, or null for an empty frame.</param>
     public sealed record Frame(string Name, BbBarcodeFormat Format, byte[] Pixels, int Width, int Height, string? Expected);
 
+    /// <summary>
+    /// The frames every benchmark decodes, and the budget check measures: one of every family of symbol, and an empty
+    /// frame - the common case while a user is still aiming.
+    /// </summary>
+    public static IReadOnlyList<Frame> Standard() =>
+    [
+        QrCode("https://example.com/p/12345", scale: 3),
+        QrCode(new string('A', 300), scale: 3),
+        QrCode("https://example.com/p/12345", scale: 4, noise: 35),
+        DataMatrix("BIT-PLATFORM-BBSCANNER-DM-26"),
+        Pdf417("BIT PLATFORM BBSCANNER PDF417 BENCHMARK"),
+        Aztec("M1BENCHMARK/BBSCANNER EABC123 AMSJFKKL 0641 300Y012A0042 100"),
+        MicroPdf417("MICRO PDF417 BENCHMARK 2026"),
+        Linear("Code 128", BbBarcodeFormat.Code128, LinearEncoders.Code128("BARCODE-SCANNER-128"), "BARCODE-SCANNER-128"),
+        Linear("EAN-13", BbBarcodeFormat.Ean13, LinearEncoders.Ean13("4006381333931"), "4006381333931"),
+        Linear("GS1 DataBar", BbBarcodeFormat.DataBar, LinearEncoders.DataBar("09521234543213"), "0109521234543213"),
+        Linear("GS1 DataBar Expanded", BbBarcodeFormat.DataBarExpanded, LinearEncoders.DataBarExpanded("010952123454321310ABC123"), "010952123454321310ABC123"),
+        Empty(),
+    ];
+
+    /// <summary>Renders a MicroPDF417 symbol, turned a little the way a hand holds a phone, centred in a camera sized frame.</summary>
+    /// <param name="content">Value to encode.</param>
+    /// <param name="width">Frame width.</param>
+    /// <param name="height">Frame height.</param>
+    /// <param name="scale">Pixels per module.</param>
+    /// <param name="degrees">Rotation, within what a live frame reads in every frame.</param>
+    public static Frame MicroPdf417(string content, int width = 640, int height = 480, int scale = 3, double degrees = 0.5)
+    {
+        using var matrix = MicroPdf417Encoder.Encode(content, columns: 3);
+        using var symbol = SyntheticImage.FromMatrix(matrix, scale);
+        using var rotated = ImageTransforms.Rotate(symbol, degrees, background: 232);
+        return Compose($"MicroPDF417 {matrix.Width}x{matrix.Height}", BbBarcodeFormat.MicroPdf417, rotated, width, height, content, 0);
+    }
+
     /// <summary>Renders a QR code centred in a camera sized frame.</summary>
     /// <param name="content">Value to encode.</param>
     /// <param name="width">Frame width.</param>

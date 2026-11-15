@@ -232,8 +232,8 @@ public class SolutionAndRepoFilesTests
             }
         }
 
-        // Non-vacuity: the base file stubs four *_HEADERS keys.
-        Assert.IsGreaterThan(2, headerKeysSeen,
+        // Non-vacuity: the base file stubs the OTEL_EXPORTER_OTLP_HEADERS key.
+        Assert.IsGreaterThan(0, headerKeysSeen,
             $"Only {headerKeysSeen} OTLP header stubs were found in src/Shared/appsettings*.json - the stubs moved and this test is checking nothing.");
 
         Assert.IsEmpty(filled,

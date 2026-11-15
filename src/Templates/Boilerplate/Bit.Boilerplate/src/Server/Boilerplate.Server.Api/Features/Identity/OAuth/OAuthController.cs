@@ -25,6 +25,10 @@ public partial class OAuthController : AppControllerBase, IOAuthController
 
         var client = validated.Client!;
 
+        //#if (multitenant == true)
+        var tenantId = await ResolveTenantId(request.TenantId, cancellationToken);
+        //#endif
+
         return new OAuthConsentDto
         {
             ClientName = client.ClientName,
@@ -35,9 +39,10 @@ public partial class OAuthController : AppControllerBase, IOAuthController
             Scopes = grantedScopes,
             DeniedScopes = deniedScopes,
             //#if (multitenant == true)
+            TenantId = tenantId,
             // Resolved, not read: TenantNameOf queries by id alone, so the request's own value would let anyone learn a
             // workspace's name by putting its id in the query string.
-            TenantName = await TenantNameOf(await ResolveTenantId(request.TenantId, cancellationToken), cancellationToken)
+            TenantName = await TenantNameOf(tenantId, cancellationToken)
             //#endif
         };
     }
@@ -107,25 +112,37 @@ public partial class OAuthController : AppControllerBase, IOAuthController
 
     //#if (multitenant == true)
     /// <summary>
-    /// A tenant is accepted only for an accepted member of an active one; a request naming none gets no tenant claim
-    /// rather than being quietly placed in one.
+    /// A tenant is accepted only for an accepted member of an active one. A request naming none gets the tenant the
+    /// approving session is in, which Review names on the consent page, so the user sees which one they grant: an MCP
+    /// client such as grok.com knows nothing of tenants and never names one, and a token without one could read none of
+    /// a tenant's data. A user with no tenant, or whose session's tenant they left, grants none.
+    /// <see cref="Guid.Empty"/> asks for none: the consent page approves with the tenant Review named, none included, so
+    /// a session that switched tenants since grants the one shown.
     /// </summary>
     private async Task<Guid?> ResolveTenantId(string? requestedTenantId, CancellationToken cancellationToken)
     {
-        // A malformed one never gets here - OAuthService.Validate turns it into invalid_request first.
-        if (Guid.TryParse(requestedTenantId, out var tenantId) is false)
-            return null;
-
         var userId = User.GetUserId();
 
-        var isMember = await DbContext.TenantUsers
-            .AnyAsync(tu => tu.UserId == userId && tu.TenantId == tenantId && tu.AcceptedOn != null && tu.Tenant!.IsActive, cancellationToken);
+        // A malformed one never gets here - OAuthService.Validate turns it into invalid_request first.
+        if (Guid.TryParse(requestedTenantId, out var tenantId) is false)
+        {
+            if (User.GetTenantId() is not Guid sessionTenantId)
+                return null;
 
-        if (isMember is false)
+            return await IsActiveMember(userId, sessionTenantId, cancellationToken) ? sessionTenantId : null;
+        }
+
+        if (tenantId == Guid.Empty)
+            return null;
+
+        if (await IsActiveMember(userId, tenantId, cancellationToken) is false)
             throw new BadRequestException(Localizer[nameof(AppStrings.OAuthErrorNotAMemberOfWorkspace)]);
 
         return tenantId;
     }
+
+    private Task<bool> IsActiveMember(Guid userId, Guid tenantId, CancellationToken cancellationToken)
+        => DbContext.TenantUsers.AnyAsync(tu => tu.UserId == userId && tu.TenantId == tenantId && tu.AcceptedOn != null && tu.Tenant!.IsActive, cancellationToken);
 
     private async Task<string?> TenantNameOf(Guid? tenantId, CancellationToken cancellationToken)
     {

@@ -63,7 +63,7 @@ public static class McpPrompts
     }
 
     [McpServerPrompt(Name = "implement-bcrdt-feature", Title = "Implement a collaborative feature")]
-    [Description("Implements a collaborative feature with Bit.Bcrdt - shared text, forms, lists, sets, presence, offline work, persistence, undo, history - using its real API and the merge semantics it really has.")]
+    [Description("Implements a collaborative feature with Bit.Bcrdt - shared text, forms, lists, sets, counters, presence, offline work, persistence, undo, history - using its real API and the merge semantics it really has.")]
     public static string ImplementBcrdtFeature(
         [Description("What should be collaborative, in your own words - e.g. 'a form several people fill in together' or 'a kanban board people reorder'.")] string feature)
     {
@@ -79,8 +79,9 @@ public static class McpPrompts
                it is the decision that matters most. In a `BcrdtMap` a key written concurrently keeps one value and the
                other is lost; a `BcrdtText` keeps both edits; a `BcrdtArray` keeps both insertions (but `Move` and `Replace`
                are delete-then-insert); a `BcrdtSet` add wins over a concurrent remove when it adds an element the adder
-               did not hold. Prose goes in a nested `BcrdtText` created once, before people edit it - two replicas that
-               each create one at the same key keep only one.
+               did not hold; a `BcrdtCounter` sums every concurrent increment, where a number written back into a map
+               key keeps only one. Prose goes in a nested `BcrdtText` created once, before people edit it - two replicas
+               that each create one at the same key keep only one.
             4. Write the concurrent edits you are worried about as operations and run them through `InspectBcrdtMerge`. It
                runs the real engine and tells you what every replica ends up with; build on that, not on a guess.
             5. Call `GetBcrdtApi` for every Bcrdt type you are about to use, and match the member names, types and
@@ -116,7 +117,8 @@ public static class McpPrompts
             2. If an edit is lost rather than late, it is usually the merge doing what the data type says. Write the
                concurrent edits as operations and run them through `InspectBcrdtMerge`: a `BcrdtMap` key keeps one value,
                a nested text created on two replicas at once keeps one of the two, a set add of an element already present
-               is a no-op. The fix is a different data type - a nested `BcrdtText` created once - not a retry.
+               is a no-op, a count written back into a map key keeps one of two increments. The fix is a different data
+               type - a nested `BcrdtText` created once, a `BcrdtCounter` for a count - not a retry.
             3. Call `SearchBcrdt` with the symptom, and read the guide section it points to - "Offline and reconnection",
                "Presence" (a Blazor Server circuit keeps publishing until AddBitBcrdtCircuitPresence's CircuitHandler suspends it), "Binding to
                inputs" (writing an input's whole value replaces the text), "Undo" (only origins in TrackedOrigins are

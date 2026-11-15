@@ -1,0 +1,114 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitAiComponentBase
+
+<div @ref="RootElement"
+     @attributes="HtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
+    @if (Options.ShowMessageActions)
+    {
+        <div style="@Styles?.Actions" class="bit-aimac-act @Classes?.Actions">
+            @{ var text = Message.GetText(); }
+
+            <BitAiCopyButton Content="@text" Disabled="Disabled" />
+
+            @if (_ReadAloud is { } readAloud && string.IsNullOrWhiteSpace(text) is false)
+            {
+                var reading = readAloud.IsReading(Message);
+
+                @* Like the dictation button, the name says what a press does next - Read aloud, or Stop reading aloud - and
+                   is the one thing announced, so no pressed state is put on top of it. The button stays pressable while the
+                   speech is being synthesized, which is when a user who changed their mind wants to stop it. The
+                   data-bit-ai-read-aloud attribute is what wakes the player in the browser inside the click itself
+                   (BitAiReadAloud.PrepareAsync). *@
+                <BitButton IconName="@(reading ? "StopSolid" : "ReadOutLoud")"
+                           data-bit-ai-read-aloud="true"
+                           OnClick="ToggleReadAloudAsync"
+                           Disabled="Disabled"
+                           Title="@(reading ? Strings.StopReadingAloud : Strings.ReadAloud)"
+                           AriaLabel="@(reading ? Strings.StopReadingAloud : Strings.ReadAloud)"
+                           Variant="BitVariant.Text"
+                           Class="@(reading ? "bit-btn-dft-pri" : "bit-btn-dft-ter")"
+                           Styles="@Styles?.ReadAloudButton"
+                           Classes="_ReadAloudButtonClasses" />
+            }
+
+            @if (Session is not null && CanRegenerate)
+            {
+                <BitButton IconName="Refresh"
+                           OnClick="RegenerateAsync"
+                           Disabled="Disabled"
+                           Title="@Strings.Regenerate"
+                           AriaLabel="@Strings.Regenerate"
+                           Variant="BitVariant.Text"
+                           Class="bit-btn-dft-ter"
+                           Styles="@Styles?.RegenerateButton"
+                           Classes="_RegenerateButtonClasses" />
+            }
+
+            @if (ShowFeedback)
+            {
+                var positive = Message.Feedback is BitAiFeedbackKind.Positive;
+                var negative = Message.Feedback is BitAiFeedbackKind.Negative;
+
+                @* A pressed button says so through aria-pressed, and draws its glyph solid and in the primary color, so
+                   the choice is never carried by the color alone. *@
+                <BitButton IconName="@(positive ? "LikeSolid" : "Like")"
+                           OnClick="() => SetFeedbackAsync(BitAiFeedbackKind.Positive)"
+                           Disabled="Disabled"
+                           Title="@Strings.GoodResponse"
+                           AriaLabel="@Strings.GoodResponse"
+                           aria-pressed="@(positive ? "true" : "false")"
+                           Variant="BitVariant.Text"
+                           Class="@(positive ? "bit-btn-dft-pri" : "bit-btn-dft-ter")"
+                           Styles="@Styles?.FeedbackButton"
+                           Classes="_PositiveButtonClasses" />
+                <BitButton IconName="@(negative ? "DislikeSolid" : "Dislike")"
+                           OnClick="() => SetFeedbackAsync(BitAiFeedbackKind.Negative)"
+                           Disabled="Disabled"
+                           Title="@Strings.BadResponse"
+                           AriaLabel="@Strings.BadResponse"
+                           aria-pressed="@(negative ? "true" : "false")"
+                           Variant="BitVariant.Text"
+                           Class="@(negative ? "bit-btn-dft-pri" : "bit-btn-dft-ter")"
+                           Styles="@Styles?.FeedbackButton"
+                           Classes="_NegativeButtonClasses" />
+            }
+
+            @if (ExtraActionsTemplate is not null)
+            {
+                @ExtraActionsTemplate
+            }
+        </div>
+
+        @if (_ReadAloud is { } reader)
+        {
+            @* A reading that failed flips the button back, which says nothing of why: the failure is shown, and announced,
+               beside the actions - outside them, since they fade out when the reply is not hovered. The region is on the
+               page from the first render with nothing in it, so the text landing in it is announced. *@
+            <span role="status"
+                  aria-live="polite"
+                  style="@Styles?.ReadAloudStatus"
+                  class="bit-aimac-ras @Classes?.ReadAloudStatus">@(reader.HasFailed(Message) ? Strings.ReadAloudFailed(reader.Error ?? string.Empty) : null)</span>
+        }
+    }
+
+    @if (Options.ShowModelName && _ModelName is { } model)
+    {
+        <span style="@Styles?.Model" class="bit-aimac-mdl @Classes?.Model">@model</span>
+    }
+
+    @if (Options.ShowUsage && Message.Metadata is { } metadata && metadata.Usage.IsEmpty is false)
+    {
+        <BitAiTokenUsageView Usage="metadata.Usage" Metadata="metadata" />
+    }
+
+    @if (Options.ShowTimestamps)
+    {
+        @* The time a reader reads is in the zone of the options in force; the one written for machines is the instant
+           itself, in UTC. *@
+        <time style="@Styles?.Time" class="bit-aimac-tim @Classes?.Time" datetime="@_Instant">@_Time</time>
+    }
+</div>

@@ -1,4 +1,4 @@
-﻿# bit Blex
+﻿# Bit.Blex
 
 Lightweight, source-generator-powered **reactive state management for Blazor and .NET MAUI** - with **Redux DevTools time-travel** built in.
 
@@ -43,7 +43,9 @@ instead of guessing at it - or at Fluxor's. Point an MCP client at `https://blex
 | Derived state | manual / selectors | `[BlexComputed]` (memoized) |
 | Derived state *across* stores | manual | `manager.CreateSelector(...)` (lazy, shared, memoized) |
 | Async side-effects | Effect classes | `[BlexEffect]` (auto loading/error) |
-| Effect cancellation / concurrency | manual | `CancellationToken` + `Latest`/`Drop`/`Queue` + `DebounceMilliseconds` |
+| Effect cancellation / concurrency | manual | `CancellationToken` + `Latest`/`Drop`/`Queue` + `DebounceMilliseconds` / `ThrottleMilliseconds` |
+| Actions that return a result | ✗ (dispatch returns nothing) | `int id = store.Create(...)`; an async action returns `Task<T>` |
+| Skip assignments that change nothing | manual | `[BlexState(Comparer = nameof(...))]` (an equal copy notifies, records and saves nothing) |
 | Effect retries / timeouts | manual | `RetryCount` (exponential backoff) + `TimeoutMilliseconds` |
 | Server-state cache (queries, mutations, optimistic rollback) | ✗ | `BlexQueryClient` / `UseQuery` / `<BlexQueryView>` (TanStack Query model, prerender handoff) |
 | Failed action leaves no partial state | ✗ | opt-in `[BlexStore(RollbackOnError = true)]` |
@@ -119,6 +121,13 @@ base type.
   supported (they update the UI as they go but record as one action). Override the name with
   `[BlexAction(Name = "...")]`. Action arguments are captured as the action's payload (visible to
   middleware, subscribers and DevTools).
+- **Results**: an action may return a value - `T`, `Task<T>` or `ValueTask<T>` - and its wrapper hands it back
+  once the action is recorded (`var id = store.Create(draft);`, `var saved = await store.Save(order);`). A
+  middleware that vetoes the action stops it before the body runs, and the wrapper returns `default`.
+  Because the wrapper now returns `T` instead of `void`, its method group no longer converts to `Action` or an
+  event handler: write `@onclick="() => store.AddItem()"` (or `Action a = () => store.AddItem();`) for an
+  action whose method returns a value. A ref struct (`Span<T>`, `ReadOnlySpan<char>`) or pointer result cannot be
+  handed back; its wrapper returns `void` and `BLEX011` warns that the value is discarded.
 - Directly assigning a generated property (e.g. `store.Count = 5`) is recorded as a `Set Count` action.
 - **Batching from outside**: `store.Batch("Apply preset", () => { store.Count = 10; store.Step = 5; })`
   groups ad-hoc mutations into one named action with a single re-render (the `$patch`/`runInAction`
@@ -362,6 +371,18 @@ Subscribe(Store, () => Store.Todos.All.Where(t => !t.Done), BlexComparers.Sequen
 using var sub = store.Subscribe(() => store.SelectedIds, Refresh, BlexComparers.Set<int>());
 ```
 
+The same goes for state itself. An endpoint polled every few seconds returns a new array each time, and with
+the default reference comparison every poll re-renders whatever follows the store, writes it to storage and adds
+an undo step - for data that did not change. `[BlexState(Comparer = nameof(...))]` names a field or property of
+the store holding the `IEqualityComparer<T>` its setter decides with: an assignment it calls equal is skipped
+entirely (`BLEX029` when the member is missing or holds something else):
+
+```csharp
+private static readonly IEqualityComparer<Message[]> Unchanged = BlexComparers.Sequence<Message>();
+
+[BlexState(Comparer = nameof(Unchanged))] private Message[] _messages = [];
+```
+
 ### Selective rendering in markup
 
 A component subscribing to a store re-renders as a whole. `<BlexSelect>` narrows that to a fragment:
@@ -489,6 +510,18 @@ hand-rolling it: a superseded invocation never flips `IsLoading`, never clears `
 offered to middleware and records no action. A spinner bound to `IsLoading` therefore does not blink
 once per keystroke, and DevTools does not fill up with searches that never happened. The gate is per
 effect, not per argument.
+
+A debounce runs the *last* invocation of a burst; `ThrottleMilliseconds` runs the *first* one at once and
+drops every invocation made within that window after a run started - the shape for a refresh button pressed
+repeatedly, or a list that loads more as it is scrolled. A dropped invocation leaves no trace, like one `Drop`
+ignores, and only one the middleware lets through opens a window (under `Queue`, once the run starts after
+its predecessor; an invocation made while an accepted run still waits is dropped). The window runs on the manager's
+`TimeProvider`, a replay never throttles, and the two settings are exclusive (`BLEX028`):
+
+```csharp
+[BlexEffect(ThrottleMilliseconds = 2000)]   // at most one refresh every two seconds
+private async Task OnRefresh(CancellationToken ct) => Orders = await _api.GetOrdersAsync(ct);
+```
 
 ### Retries and timeouts
 
@@ -766,6 +799,11 @@ options.Migrate = (storeName, fromVersion, state) => storeName.Split(':')[0] swi
   feature, a [scoped store](#scoped-stores)) is hydrated the moment it registers, and its saves wait until
   that has happened - writing its declared defaults first would overwrite the user's data. A store
   that leaves the manager writes the debounced save it still owes on its way out.
+- **Edits while hydrating** - the page is interactive while storage is read (on Blazor Server every read is
+  a round trip), and each store's saves wait for its *own* read only: an edit to a store already read is saved
+  as usual, and one to a store not read yet is held, then written if nothing was stored for it. A store whose
+  read failed keeps holding its saves until a later `StartAsync`/`RehydrateAsync` gets through, so a retry
+  after prerendering never finds its stored state overwritten by declared defaults.
 - **Rehydration hooks** - `options.OnRehydrated` fires once per persistent store with the slice that
   was applied, or `null` when nothing was stored - which is how you tell a returning user from a
   first visit.
@@ -949,7 +987,7 @@ as long as it lives, and unregistered and disposed when it goes away.
 
 `<BlexScope>` creates the store from DI (constructor dependencies resolved as usual; `Factory` builds one
 DI cannot), cascades it to every descendant, and disposes it with the component. Changing `Key` replaces
-the instance; omitting it assigns a unique one. Outside Blazor:
+the instance; omitting it assigns a unique one (`#1`, `#2`, ... - never mistaken for an id you give). Outside Blazor:
 
 ```csharp
 using var editor = manager.CreateScope(new DocumentStore(api), key: "42");
@@ -960,7 +998,7 @@ A scoped store marked `Persist = true` is hydrated as soon as it registers and s
 so give it a stable key (the document's id) for the next instance to find its state. Its saves wait for
 that read, so a quick edit never overwrites stored state nobody has seen yet; if nothing was stored, the
 edit is written once the read comes back empty. An instance whose key was assigned for it is never
-persisted: those keys count from `1` again in every session and every tab, so its state could only ever be
+persisted: those keys count from `#1` again in every session and every tab, so its state could only ever be
 found by an unrelated instance. Scoped stores are not registered with `AddBitBlexStore` and are not part
 of the prerender handoff.
 
@@ -1308,8 +1346,8 @@ code: `BLEX001` store not partial · `BLEX002/003` underivable action/computed n
 `BLEX004` computed with parameters · `BLEX005` generated-member collisions (including against
 your own members and `BlexStoreBase`) · `BLEX006` nested/generic/static stores · `BLEX007` non-async
 effects · `BLEX008` static/readonly members · `BLEX009` `Latest` effect without a
-`CancellationToken` (warning) · `BLEX010` `async void` actions · `BLEX011` discarded action
-return values (warning) · `BLEX012` state field/property name conflicts · `BLEX013` by-ref
+`CancellationToken` (warning) · `BLEX010` `async void` actions · `BLEX011` an action returning a ref struct
+or pointer, whose value the wrapper discards (warning) · `BLEX012` state field/property name conflicts · `BLEX013` by-ref
 parameters · `BLEX014` generic action/effect methods · `BLEX015` record stores ·
 `BLEX016` conflicting base class · `BLEX017` `void` computed methods · `BLEX018` a Blex member
 attribute used outside a `[BlexStore]` class (warning) - the one mistake that otherwise
@@ -1320,7 +1358,8 @@ descriptors are not generated (warning) · `BLEX021` two actions dispatched unde
 `TimeoutMilliseconds` on an effect without a `CancellationToken` parameter · `BLEX024` a negative
 store `Version` · `BLEX025` a store `Version` without `Persist = true` (warning) · `BLEX026` a store
 member of its own that the generated code also overrides (`PersistVersion` next to `Version = n`,
-`SerializeState`, …).
+`SerializeState`, …) · `BLEX027` a negative `ThrottleMilliseconds` · `BLEX028` an effect that both debounces
+and throttles · `BLEX029` a `[BlexState(Comparer = ...)]` naming no equality comparer of the state's type.
 
 ## Time-travel debugging
 
@@ -1443,6 +1482,17 @@ persisted state from `Preferences`, and starts `BlexHistory` recording (when reg
 before the first page appears. `AddBitBlexPreferencesPersistence()` supports the same
 debounce/versioning/migration options as the browser-storage providers, and an unreadable
 payload is reported through `options.OnError` and discarded rather than crashing startup.
+
+A mobile OS stops a backgrounded app without disposing anything, so a debounced save still waiting would
+be lost with the process. Call `BlexPreferencesStorage.NotifySuspending()` where the app learns it is going
+to the background - the browser storage does the same on its own as the page is hidden:
+
+```csharp
+public partial class App : Application
+{
+    protected override void OnSleep() => BlexPreferencesStorage.NotifySuspending();
+}
+```
 
 To persist somewhere else (files, SQLite), register your own `IBlexStorage` before calling
 `AddBitBlexPreferencesPersistence()` - the first registration wins, so give it the same lifetime as

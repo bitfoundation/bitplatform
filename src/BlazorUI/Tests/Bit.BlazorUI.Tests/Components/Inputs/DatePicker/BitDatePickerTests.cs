@@ -3735,6 +3735,7 @@ public class BitDatePickerTests : BunitTestContext
             ShowNowButton = false,
             ShowOutsideDays = false,
             ShowTimePicker = true,
+            ShowValidationMessage = true,
             ShowWeekNumbers = true,
             Size = BitSize.Small,
             StartingValue = startingValue,
@@ -3812,6 +3813,7 @@ public class BitDatePickerTests : BunitTestContext
         Assert.IsFalse(instance.ShowNowButton);
         Assert.IsFalse(instance.ShowOutsideDays);
         Assert.IsTrue(instance.ShowTimePicker);
+        Assert.IsTrue(instance.ShowValidationMessage);
         Assert.IsTrue(instance.ShowWeekNumbers);
         Assert.AreEqual(BitSize.Small, instance.Size);
         Assert.AreEqual(startingValue, instance.StartingValue);

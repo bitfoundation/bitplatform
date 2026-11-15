@@ -930,10 +930,11 @@
 
 @code {
     // What is wrong with the value comes first, then the helper text, then the text meant for a screen reader
-    // alone - the order the field reads them out in through aria-describedby.
+    // alone - the order the field reads them out in through aria-describedby. The messages of the EditContext
+    // (ShowValidationMessage) take the error line while the app has none of its own.
     private RenderFragment RenderMessages() => __builder =>
     {
-        @if (HasErrorMessage)
+        @if (HasErrorLine)
         {
             <div id="@_errorId" dir="@(Standalone ? Dir?.ToString().ToLower() : null)" style="@GetStandaloneStyles(Styles?.ErrorMessageContainer)" class="bit-dtp-erm @Classes?.ErrorMessageContainer">
                 @if (ErrorMessageTemplate is not null)
@@ -942,7 +943,7 @@
                 }
                 else
                 {
-                    <span style="@Styles?.ErrorMessage" class="@Classes?.ErrorMessage">@ErrorMessage</span>
+                    <span style="@Styles?.ErrorMessage" class="@Classes?.ErrorMessage">@(HasErrorMessage ? ErrorMessage : ShownValidationMessage)</span>
                 }
             </div>
         }

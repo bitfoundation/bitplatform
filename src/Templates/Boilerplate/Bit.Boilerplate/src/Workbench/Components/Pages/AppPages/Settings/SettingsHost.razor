@@ -1,0 +1,18 @@
+@* The app's own settings page (src/Client/Boilerplate.Client.Core/Components/Pages/Settings/SettingsPage.razor) on the view's sample account. *@
+@attribute [Authorize]
+@inherits WorkbenchComponentBase
+
+@if (isReady is false)
+{
+    <AppPagePlaceholder />
+}
+else
+{
+    @* What the app's MainLayout cascades to its pages: the signed-in user, null while it loads. *@
+    <CascadingValue Value="currentUser">
+        <Boilerplate.Client.Core.Components.Pages.Settings.SettingsPage Section="@Section" />
+    </CascadingValue>
+}
+
+@* The anchor the app's layout renders for downloads (See FileSaveService), which the personal data export goes through. *@
+<Boilerplate.Client.Core.Components.Layout.AppFileSaveAnchor />

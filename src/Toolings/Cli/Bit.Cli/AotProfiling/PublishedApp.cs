@@ -2,6 +2,8 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Bit.Cli.Infrastructure;
 
 namespace Bit.Cli.AotProfiling;
@@ -27,17 +29,39 @@ public sealed class PublishedApp : IAsyncDisposable
 
     public static string? FindServer(string publishFolder)
     {
-        return Directory.EnumerateFiles(publishFolder, "*.runtimeconfig.json")
-            .Where(config => File.ReadAllText(config).Contains("\"framework", StringComparison.Ordinal))
-            .Select(config => config[..^".runtimeconfig.json".Length] + ".dll")
-            .FirstOrDefault(File.Exists);
+        foreach (var config in Directory.EnumerateFiles(publishFolder, "*.runtimeconfig.json"))
+        {
+            var app = config[..^".runtimeconfig.json".Length];
+            JsonNode? options;
+
+            try
+            {
+                options = JsonNode.Parse(File.ReadAllText(config))?["runtimeOptions"];
+            }
+            catch (JsonException)
+            {
+                continue;
+            }
+
+            if (options is null || File.Exists(app + ".dll") is false)
+                continue;
+
+            if (options["framework"] is not null || options["frameworks"] is not null)
+                return app + ".dll";
+
+            var apphost = OperatingSystem.IsWindows() ? app + ".exe" : app;
+            if (options["includedFrameworks"] is not null && options["wasmHostProperties"] is null && File.Exists(apphost))
+                return apphost;
+        }
+
+        return null;
     }
 
     public static async Task<PublishedApp> StartAsync(string publishFolder, Uri? origin, CliLog log, CancellationToken cancellationToken)
     {
         var webRoot = Path.Combine(publishFolder, "wwwroot");
 
-        if (FindServer(publishFolder) is not { } dll)
+        if (FindServer(publishFolder) is not { } entry)
         {
             if (File.Exists(Path.Combine(webRoot, "index.html")) is false)
                 throw new InvalidOperationException("The publish has neither a server to start nor a wwwroot/index.html to serve.");
@@ -45,14 +69,17 @@ public sealed class PublishedApp : IAsyncDisposable
             return new PublishedApp(origin ?? DefaultOrigin, webRoot, null);
         }
 
+        var dll = entry.EndsWith(".dll", StringComparison.OrdinalIgnoreCase);
         var address = new Uri($"http://127.0.0.1:{FreePort()}/");
-        var start = new ProcessStartInfo("dotnet") { WorkingDirectory = publishFolder, UseShellExecute = false, RedirectStandardOutput = true, RedirectStandardError = true, CreateNoWindow = true };
-        start.ArgumentList.Add(dll);
+        var start = new ProcessStartInfo(dll ? "dotnet" : entry) { WorkingDirectory = publishFolder, UseShellExecute = false, RedirectStandardOutput = true, RedirectStandardError = true, CreateNoWindow = true };
+        if (dll)
+            start.ArgumentList.Add(entry);
+
         start.ArgumentList.Add("--urls");
         start.ArgumentList.Add(address.ToString().TrimEnd('/'));
 
-        log.Write($"> dotnet {Path.GetFileName(dll)} --urls {address}");
-        var process = Process.Start(start) ?? throw new InvalidOperationException($"Couldn't start {Path.GetFileName(dll)}.");
+        log.Write($"> {(dll ? "dotnet " : "")}{Path.GetFileName(entry)} --urls {address}");
+        var process = Process.Start(start) ?? throw new InvalidOperationException($"Couldn't start {Path.GetFileName(entry)}.");
         var output = new StringBuilder();
         void Collect(string? line)
         {
@@ -90,7 +117,7 @@ public sealed class PublishedApp : IAsyncDisposable
                     await app.DisposeAsync();
                     string text;
                     lock (output) text = output.ToString().Trim();
-                    throw new InvalidOperationException($"{Path.GetFileName(dll)} didn't start. {text}");
+                    throw new InvalidOperationException($"{Path.GetFileName(entry)} didn't start. {text}");
                 }
 
                 await Task.Delay(250, cancellationToken);

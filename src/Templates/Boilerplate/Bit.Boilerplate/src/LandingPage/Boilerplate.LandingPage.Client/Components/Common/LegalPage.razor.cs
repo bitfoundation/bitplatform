@@ -6,7 +6,7 @@ public partial class LegalPage
 
     [Parameter] public string? Icon { get; set; }
 
-    [Parameter] public DateOnly UpdatedOn { get; set; } = new(2026, 11, 1);
+    [Parameter] public DateOnly UpdatedOn { get; set; } = new(2026, 11, 13);
 
     private LandingLegalKind kind;
     private string slug = default!;
@@ -16,7 +16,7 @@ public partial class LegalPage
     {
         LandingLegalKind.Privacy => 6,
         LandingLegalKind.Terms => 5,
-        LandingLegalKind.Cookies => 3,
+        LandingLegalKind.Cookies => 4,
         LandingLegalKind.Accessibility => 3,
         _ => 0
     };

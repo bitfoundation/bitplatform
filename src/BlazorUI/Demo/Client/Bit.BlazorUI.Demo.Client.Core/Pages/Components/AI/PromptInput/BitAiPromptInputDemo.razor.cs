@@ -25,7 +25,7 @@ public partial class BitAiPromptInputDemo
             Name = "AllowDictation",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Offers the dictation button (a BitAiVoiceInput) where the browser has speech recognition; it renders nothing where it has none. A Model (or Capabilities) that does not declare Audio hides it. Each finished phrase is appended to the text (cut at MaxLength), and the provisional one is shown under the text meanwhile.",
+            Description = "Offers the dictation button (a BitAiVoiceInput) where the browser has speech recognition - or, with a Transcriber or an IBitAiSpeechToText service, where it can record the microphone; it renders nothing where it can do neither. A Model (or Capabilities) that does not declare Audio hides it. Each finished phrase is appended to the text (cut at MaxLength), and the provisional one is shown under the text meanwhile.",
         },
         new()
         {
@@ -198,6 +198,15 @@ public partial class BitAiPromptInputDemo
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "The content placed between the tools (the attach and dictation buttons) and the send button.",
+        },
+        new()
+        {
+            Name = "Transcriber",
+            Type = "Func<Stream, string, CancellationToken, Task<string?>>?",
+            DefaultValue = "null",
+            Description = "The app's speech-to-text the dictation button transcribes a recording of the microphone with, in place of the speech recognition of the browser - which also makes dictation work where the browser has none (Firefox, Android WebView). When null, an IBitAiSpeechToText registered through AddBitBlazorUIAIServices(ai => ai.UseSpeechToText<T>()) is used, if there is one. Only used when AllowDictation is on.",
+            LinkType = LinkType.Link,
+            Href = "/components/ai/voiceinput#example8",
         },
         new()
         {

@@ -17,7 +17,7 @@ public partial class AiConversationsScenarioPage
         <BitAiChat @key="session.Conversation.ConversationId"
                    Session="session"
                    EmptyTitle="New conversation"
-                   EmptyBody="Send a message and this thread will appear in the list."
+                   EmptyDescription="Send a message and this thread will appear in the list."
                    Suggestions="suggestions" />
     }
 </div>
@@ -184,7 +184,7 @@ builder.Services.AddBitBlazorUIAIServices(ai =>
         <BitAiChat @key="session"
                    Session="session"
                    EmptyTitle="Write something to save"
-                   EmptyBody="Then press Save, keep writing, and press Restore."
+                   EmptyDescription="Then press Save, keep writing, and press Restore."
                    Suggestions="suggestions" />
     }
 </div>

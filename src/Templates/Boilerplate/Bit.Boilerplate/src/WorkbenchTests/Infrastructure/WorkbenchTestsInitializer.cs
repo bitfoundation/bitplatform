@@ -30,6 +30,11 @@ public static class WorkbenchTestsInitializer
         {
             Directory.Delete(WorkbenchFolders.Reviews, recursive: true);
         }
+
+        if (WorkbenchFolders.Project is null && Directory.Exists(WorkbenchFolders.Secrets))
+        {
+            Directory.Delete(WorkbenchFolders.Secrets, recursive: true);
+        }
     }
 
     [AssemblyCleanup]

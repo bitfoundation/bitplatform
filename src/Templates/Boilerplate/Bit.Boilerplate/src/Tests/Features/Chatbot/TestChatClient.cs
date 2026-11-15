@@ -14,7 +14,7 @@ namespace Boilerplate.Tests.Features.Chatbot;
 /// </para>
 /// <para>
 /// Two things make the tests deterministic. <see cref="ReceivedConversations"/> records the exact message list handed
-/// to the model on every call - which is the only place the chatbot's private history is observable - and
+/// to the model on every call - which is the only place what the chatbot made of the conversation is observable - and
 /// <see cref="PauseAfterFirstChunk"/> stops a stream half way, so a test can interrupt a message at a known point
 /// rather than racing the wall clock.
 /// </para>
@@ -57,9 +57,9 @@ public sealed class TestChatClient : IChatClient
     public Func<int, ChatMessage[], ChatResponseUpdate[]>? StreamingUpdates { get; set; }
 
     /// <summary>
-    /// When set, the stream stops after its first chunk and waits here. Tests never complete this task - they cancel
-    /// the message's own <see cref="CancellationToken"/> instead, which is exactly what the hub does when a new user
-    /// message arrives while the previous one is still streaming.
+    /// When set, the stream stops after its first chunk and waits here. Tests never complete this task - they stop the
+    /// answer instead, which cancels its <see cref="CancellationToken"/> exactly as the panel's stop button does, or a
+    /// new question sent while the answer is still streaming.
     /// </summary>
     public TaskCompletionSource? PauseAfterFirstChunk { get; set; }
 

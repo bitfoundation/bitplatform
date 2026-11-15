@@ -144,6 +144,12 @@
                         v => SetMotionBlur(GetValue<MotionBlurFilter>(a => a.Distance), (float)v, true),
                         () => SetMotionBlur(GetValue<MotionBlurFilter>(a => a.Distance), GetValue<MotionBlurFilter>(a => a.Angle), false))
                 </fieldset>
+                <fieldset class="bmg-fieldset" disabled="@(!Context.HasImage)">
+                    <legend class="bmg-legend">@Context.Strings.ZoomBlur</legend>
+                    @RenderSlider(Context.Strings.ZoomBlur, GetValue<RadialBlurFilter>(a => a.Amount) * 100, 0, 60, 1,
+                        v => SetZoomBlur((float)v / 100, true),
+                        () => SetZoomBlur(GetValue<RadialBlurFilter>(a => a.Amount), false))
+                </fieldset>
                 break;
 
             case PanelTab.Transform:
@@ -492,14 +498,29 @@
 
     private (PanelTab Key, string Label)[] Tabs =>
     [
-        (PanelTab.Adjust, Context.Strings.Adjust),
-        (PanelTab.Filters, Context.Strings.Filters),
-        (PanelTab.Transform, Context.Strings.Transform),
-        (PanelTab.Style, Context.Strings.Tools),
-        (PanelTab.Layers, Context.Strings.Layers),
-        (PanelTab.History, Context.Strings.History),
-        (PanelTab.Export, Context.Strings.Export),
+        .. new (PanelTab Key, string Label)[]
+        {
+            (PanelTab.Adjust, Context.Strings.Adjust),
+            (PanelTab.Filters, Context.Strings.Filters),
+            (PanelTab.Transform, Context.Strings.Transform),
+            (PanelTab.Style, Context.Strings.Tools),
+            (PanelTab.Layers, Context.Strings.Layers),
+            (PanelTab.History, Context.Strings.History),
+            (PanelTab.Export, Context.Strings.Export),
+        }.Where(t => IsShown(t.Key)),
     ];
+
+    /// <summary>True when the editor's <see cref="BmageEditor.Panels"/> include the tab.</summary>
+    private bool IsShown(PanelTab tab) => Context.Panels.HasFlag(tab switch
+    {
+        PanelTab.Adjust => EditorPanels.Adjust,
+        PanelTab.Filters => EditorPanels.Filters,
+        PanelTab.Transform => EditorPanels.Transform,
+        PanelTab.Style => EditorPanels.Tools,
+        PanelTab.Layers => EditorPanels.Layers,
+        PanelTab.History => EditorPanels.History,
+        _ => EditorPanels.Export,
+    });
 
     private (string Key, string Label)[] FilterPresets =>
     [
@@ -511,6 +532,7 @@
         ("threshold", Context.Strings.Threshold),
         ("blackAndWhite", Context.Strings.BlackAndWhite),
         ("duotone", Context.Strings.Duotone),
+        ("document", Context.Strings.Document),
     ];
 
     /// <summary>The look the duotone preset gives: navy shadows, warm gold highlights.</summary>
@@ -518,7 +540,7 @@
 
     /// <summary>Whether an operation is one of the mutually exclusive looks the filter grid offers.</summary>
     private static bool IsPreset(IImageOperation operation)
-        => operation is GrayscaleFilter or SepiaFilter or InvertFilter or PosterizeFilter or ThresholdFilter or GradientMapOperation or ChannelMixerAdjustment { IsMonochrome: true };
+        => operation is GrayscaleFilter or SepiaFilter or InvertFilter or PosterizeFilter or ThresholdFilter or AdaptiveThresholdFilter or GradientMapOperation or ChannelMixerAdjustment { IsMonochrome: true };
 
     private IEnumerable<ImageFormat> AvailableFormats
     {
@@ -591,6 +613,7 @@
         "threshold" => Context.FindAdjustment<ThresholdFilter>() is not null,
         "blackAndWhite" => Context.FindAdjustment<ChannelMixerAdjustment>() is { IsMonochrome: true },
         "duotone" => Context.FindAdjustment<GradientMapOperation>() is not null,
+        "document" => Context.FindAdjustment<AdaptiveThresholdFilter>() is not null,
         "none" => Context.Document?.Pipeline.Any(IsPreset) != true,
         _ => false,
     };
@@ -606,6 +629,8 @@
             "threshold" => new ThresholdFilter(),
             "blackAndWhite" => ChannelMixerAdjustment.Monochrome(),
             "duotone" => GradientMapOperation.Duotone(DuotoneColors.Shadows, DuotoneColors.Highlights),
+            // A window about a line of text tall on a page photographed whole: a sixtieth of its longer side.
+            "document" => new AdaptiveThresholdFilter(Math.Clamp(Math.Max(Context.OutputSize.Width, Context.OutputSize.Height) / 60f, 8, AdaptiveThresholdFilter.MaxRadius)),
             _ => null,
         };
         var label = key switch
@@ -617,6 +642,7 @@
             "threshold" => Context.Strings.Threshold,
             "blackAndWhite" => Context.Strings.BlackAndWhite,
             "duotone" => Context.Strings.Duotone,
+            "document" => Context.Strings.Document,
             _ => Context.Strings.Filters,
         };
         // Filters are mutually exclusive in this panel: one edit removes the others and adds the choice, so it costs
@@ -666,6 +692,9 @@
 
     private Task SetMotionBlur(float distance, float angle, bool transient)
         => Context.SetAdjustmentAsync(distance < 1 ? null : new MotionBlurFilter(distance, angle), Context.Strings.MotionBlur, transient);
+
+    private Task SetZoomBlur(float amount, bool transient)
+        => Context.SetAdjustmentAsync(amount <= 0 ? null : new RadialBlurFilter(amount), Context.Strings.ZoomBlur, transient);
 
     // ---- Histogram ----
 
@@ -765,8 +794,10 @@
     protected override void OnParametersSet()
     {
         var selected = Context.SelectedAnnotationId;
-        if (selected != _shownSelection && selected is not null && _activeTab != PanelTab.Layers) _activeTab = PanelTab.Style;
+        if (selected != _shownSelection && selected is not null && _activeTab != PanelTab.Layers && IsShown(PanelTab.Style)) _activeTab = PanelTab.Style;
         _shownSelection = selected;
+        // A tab the host has taken away gives way to the first one left.
+        if (!IsShown(_activeTab) && Tabs is [var first, ..]) _activeTab = first.Key;
 
         // By the values the tab shows: a host that writes its options inline hands in a fresh copy on every render,
         // one its dictionary of extensions makes unequal as a record even when nothing changed.

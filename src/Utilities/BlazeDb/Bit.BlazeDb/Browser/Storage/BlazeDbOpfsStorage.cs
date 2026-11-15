@@ -10,7 +10,7 @@ namespace Bit.BlazeDb.Browser;
 /// and the Web Locks API to guarantee a single writer tab per database.
 /// </summary>
 [SupportedOSPlatform("browser")]
-public sealed class BlazeDbOpfsStorage : IBlazeDbQuotaAwareStorage, IDisposable
+public sealed class BlazeDbOpfsStorage : IBlazeDbQuotaAwareStorage, IBlazeDbEnumerableStorage, IDisposable
 {
     private readonly JSObject _directory;
     private readonly string? _lockName;
@@ -96,19 +96,53 @@ public sealed class BlazeDbOpfsStorage : IBlazeDbQuotaAwareStorage, IDisposable
     public async ValueTask WriteAtomicAsync(string name, ReadOnlyMemory<byte> data, CancellationToken cancellationToken = default)
     {
         EnsureWritable();
-        await BlazeDbOpfsInterop.WriteAtomic(_directory, name, data.ToArray()).ConfigureAwait(false);
+        try
+        {
+            await BlazeDbOpfsInterop.WriteAtomic(_directory, name, data.ToArray()).ConfigureAwait(false);
+        }
+        catch (JSException ex) when (BlazeDbBrowserQuota.IsQuotaError(ex))
+        {
+            throw await BlazeDbBrowserQuota.RefusalAsync(this, data.Length, ex).ConfigureAwait(false);
+        }
     }
 
     public async ValueTask AppendAsync(string name, ReadOnlyMemory<byte> data, CancellationToken cancellationToken = default)
     {
         EnsureWritable();
-        await BlazeDbOpfsInterop.AppendFile(_directory, name, data.ToArray()).ConfigureAwait(false);
+        try
+        {
+            await BlazeDbOpfsInterop.AppendFile(_directory, name, data.ToArray()).ConfigureAwait(false);
+        }
+        catch (JSException ex) when (BlazeDbBrowserQuota.IsQuotaError(ex))
+        {
+            throw await BlazeDbBrowserQuota.RefusalAsync(this, data.Length, ex).ConfigureAwait(false);
+        }
     }
 
     public async ValueTask DeleteAsync(string name, CancellationToken cancellationToken = default)
     {
         EnsureWritable();
         await BlazeDbOpfsInterop.DeleteFile(_directory, name).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// The names of every file the database holds, which lets <see cref="BlazeDbDatabase.DeleteAsync"/> remove
+    /// all of them and lets the writer reclaim files a closed tab left behind (see <see cref="IBlazeDbEnumerableStorage"/>).
+    /// </summary>
+    public async ValueTask<IReadOnlyCollection<string>> ListAsync(CancellationToken cancellationToken = default)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        string names;
+        try
+        {
+            names = await BlazeDbOpfsInterop.ListFiles(_directory).ConfigureAwait(false);
+        }
+        catch (JSException ex)
+        {
+            // A browser that cannot enumerate the directory: the engine falls back to what the manifest names.
+            throw new NotSupportedException("This browser could not list the database's files.", ex);
+        }
+        return names.Length == 0 ? [] : names.Split('/');
     }
 
     /// <summary>

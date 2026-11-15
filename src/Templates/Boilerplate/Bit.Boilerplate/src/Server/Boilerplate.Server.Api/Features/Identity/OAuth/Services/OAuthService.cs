@@ -70,8 +70,8 @@ public partial class OAuthService(AppDbContext dbContext,
             return OAuthValidationResult.Redirectable(client, "invalid_scope");
 
         //#if (multitenant == true)
-        // Told apart from an absent one: a client that names a workspace and gets a tenantless grant is worse off than
-        // one that is told its request was wrong.
+        // Told apart from an absent one, which gets the approving session's tenant: a client that names a workspace and
+        // is granted another one, or none, is worse off than one that is told its request was wrong.
         if (string.IsNullOrWhiteSpace(request.TenantId) is false && Guid.TryParse(request.TenantId, out _) is false)
             return OAuthValidationResult.Redirectable(client, "invalid_request");
         //#endif

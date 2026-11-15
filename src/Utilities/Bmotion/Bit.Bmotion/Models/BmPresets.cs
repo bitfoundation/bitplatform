@@ -17,10 +17,10 @@ public enum BmAxis
 }
 
 /// <summary>
-/// Ready-made <see cref="BmPreset"/>s for the motion most interfaces need - entrances and exits, overlays, hover and
-/// press feedback, attention effects, scroll reveals and loading indicators. Each is a starting point, not a fixed
-/// look: every factory takes the knobs that matter, presets compose with <c>+</c>, and anything set on the
-/// <c>&lt;Bmotion&gt;</c> itself wins over the preset.
+/// Ready-made <see cref="BmPreset"/>s for the motion most interfaces need - entrances and exits, overlays, disclosure
+/// panels, hover and press feedback, attention effects, scroll reveals and loading indicators. Each is a starting
+/// point, not a fixed look: every factory takes the knobs that matter, presets compose with <c>+</c>, and anything set
+/// on the <c>&lt;Bmotion&gt;</c> itself wins over the preset.
 /// <code>
 /// &lt;BmotionAnimatePresence IsPresent="_open"&gt;
 ///     &lt;Bmotion Preset="BmPresets.Modal()"&gt;&lt;div class="dialog" role="dialog"&gt;...&lt;/div&gt;&lt;/Bmotion&gt;
@@ -197,6 +197,25 @@ public static class BmPresets
             Transition = Springy(0.25, 0.45),
         };
     }
+
+    /// <summary>
+    /// An accordion or disclosure panel: grows from nothing to its natural height (<c>height: auto</c>, measured, so it
+    /// follows its content afterwards) and shrinks back on exit, fading as it goes. Give the element
+    /// <c>overflow: hidden</c>, and keep the disclosure's button outside it with <c>aria-expanded</c> on it.
+    /// <code>
+    /// &lt;BmotionAnimatePresence IsPresent="_open"&gt;
+    ///     &lt;Bmotion Preset="BmPresets.Expand()"&gt;&lt;div id="panel" style="overflow: hidden"&gt;...&lt;/div&gt;&lt;/Bmotion&gt;
+    /// &lt;/BmotionAnimatePresence&gt;
+    /// </code>
+    /// Under reduced motion the height lands at once and the fade remains.
+    /// </summary>
+    public static BmPreset Expand(double duration = 0.3) => new()
+    {
+        Initial = Bm.To(height: "0px", opacity: 0),
+        Animate = Bm.To(height: "auto", opacity: 1),
+        Exit = Bm.To(height: "0px", opacity: 0, transition: Bm.Tween(duration * 0.8, BmEase.InOut)),
+        Transition = Bm.Tween(duration, BmEase.InOut),
+    };
 
     // ── Hover and press feedback ──────────────────────────────────────────────
 

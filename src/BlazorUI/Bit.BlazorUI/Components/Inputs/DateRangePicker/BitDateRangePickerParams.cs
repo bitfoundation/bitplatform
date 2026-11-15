@@ -6,7 +6,7 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// The parameters for <see cref="BitDateRangePicker"/> component.
 /// </summary>
-public class BitDateRangePickerParams : BitInputBaseParams<BitDateRangePickerValue?>, IBitComponentParams
+public partial class BitDateRangePickerParams : BitInputBaseParams<BitDateRangePickerValue?>, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitDateRangePicker"/> cascading parameters within <see cref="BitParams"/>.
@@ -684,6 +684,12 @@ public class BitDateRangePickerParams : BitInputBaseParams<BitDateRangePickerVal
     /// The title of the ShowTimePicker button (tooltip).
     /// </summary>
     public string? ShowTimePickerTitle { get; set; }
+
+    /// <summary>
+    /// Shows the messages the cascading EditContext holds for the bound field under the DateRangePicker, where its
+    /// ErrorMessage goes, so the fields of an <c>EditForm</c> need no <c>ValidationMessage</c> component beside them.
+    /// </summary>
+    public bool? ShowValidationMessage { get; set; }
 
     /// <summary>
     /// Whether the week number (weeks 1 to 53) should be shown before each week row.
@@ -1437,6 +1443,11 @@ public class BitDateRangePickerParams : BitInputBaseParams<BitDateRangePickerVal
         if (ShowTimePickerTitle.HasValue())
         {
             bitDateRangePicker.TakeFromCascade(nameof(ShowTimePickerTitle), ShowTimePickerTitle!, static d => d.ShowTimePickerTitle, static (d, v) => d.ShowTimePickerTitle = v);
+        }
+
+        if (ShowValidationMessage.HasValue)
+        {
+            bitDateRangePicker.TakeFromCascade(nameof(ShowValidationMessage), ShowValidationMessage.Value, static d => d.ShowValidationMessage, static (d, v) => d.ShowValidationMessage = v);
         }
 
         if (ShowWeekNumbers.HasValue)

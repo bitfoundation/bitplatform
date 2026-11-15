@@ -3,7 +3,7 @@ using Microsoft.Extensions.AI;
 namespace Boilerplate.Tests.Features.Chatbot;
 
 /// <summary>
-/// The conversation is kept on the device (See <c>AppAiChatPanel.RestoreHistory</c>), and its hardest moment is a soft
+/// The conversation is kept on the device (See <c>AppAiChat.RestoreHistory</c>), and its hardest moment is a soft
 /// restart: a culture change rebuilds the whole component tree, so the panel reading the conversation back is not the
 /// one that wrote it.
 /// <para>

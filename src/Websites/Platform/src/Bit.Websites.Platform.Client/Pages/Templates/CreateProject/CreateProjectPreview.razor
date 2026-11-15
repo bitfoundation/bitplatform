@@ -1,0 +1,114 @@
+﻿@inherits CreateProjectPartBase
+
+@{
+    var answers = Answers;
+    var initial = answers.DisplayName[..1].ToUpperInvariant();
+}
+
+<figure class="cp-preview">
+    <div class="cp-preview-stage" aria-hidden="true">
+        <div class="cp-browser">
+            <div class="cp-browser-bar">
+                <span class="cp-dot"></span><span class="cp-dot"></span><span class="cp-dot"></span>
+                <span class="cp-browser-address"></span>
+            </div>
+            <div class="cp-app">
+                <div class="cp-app-top">
+                    <span class="cp-app-logo">@initial</span>
+                    <span class="cp-app-name">@answers.DisplayName</span>
+                    <span class="cp-app-gap"></span>
+                    @if (answers.HasPush)
+                    {
+                        <span class="cp-app-bell"><svg viewBox="0 0 16 16" width="12" height="12"><path d="M8 1.75a4 4 0 0 0-4 4v2.5L2.75 11h10.5L12 8.25v-2.5a4 4 0 0 0-4-4ZM6.5 12.75a1.5 1.5 0 0 0 3 0" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" /></svg></span>
+                    }
+                    <span class="cp-app-avatar">SA</span>
+                </div>
+                <div class="cp-app-body">
+                    @if (answers.IsMultiTenant)
+                    {
+                        <span class="cp-app-tenant">Acme Inc <BitIcon IconName="ChevronDownSmall" Size="BitSize.Small" /></span>
+                    }
+                    @switch (answers.Start)
+                    {
+                        case CreateProjectStart.Admin:
+                            <div class="cp-tiles">
+                                <div class="cp-tile"><span>Revenue</span><b>€12,480</b></div>
+                                <div class="cp-tile"><span>Orders</span><b>318</b></div>
+                                <div class="cp-tile"><span>Customers</span><b>1,204</b></div>
+                            </div>
+                            <div class="cp-chart">
+                                @foreach (var height in barHeights)
+                                {
+                                    <span style="--bar:@(height)%"></span>
+                                }
+                                @if (answers.HasLiveDashboard)
+                                {
+                                    <span class="cp-live"><span class="cp-live-dot"></span>Live</span>
+                                }
+                            </div>
+                            break;
+                        case CreateProjectStart.Store:
+                            <div class="cp-products">
+                                @for (var i = 0; i < 6; i++)
+                                {
+                                    <div class="cp-product"><span class="cp-product-photo"></span><span class="cp-line"></span><span class="cp-line is-short"></span></div>
+                                }
+                            </div>
+                            break;
+                        default:
+                            <div class="cp-welcome">
+                                <b>Welcome back, Sara</b>
+                                <span class="cp-row">Profile</span>
+                                <span class="cp-row">Passkeys and two-step sign-in</span>
+                                <span class="cp-row">11 languages, light and dark</span>
+                            </div>
+                            break;
+                    }
+                    @if (answers.IsTry)
+                    {
+                        <span class="cp-sample">Sample pages: a to-do list</span>
+                    }
+                </div>
+                @if (answers.HasAssistant)
+                {
+                    <span class="cp-chat">Ask me anything</span>
+                }
+            </div>
+        </div>
+
+        <div class="cp-phone">
+            <span class="cp-phone-notch"></span>
+            <div class="cp-app-top is-phone">
+                <span class="cp-app-logo">@initial</span>
+                <span class="cp-app-name">@answers.DisplayName</span>
+            </div>
+            <div class="cp-phone-body">
+                @if (answers.Start is CreateProjectStart.Admin)
+                {
+                    <div class="cp-tile"><span>Revenue</span><b>€12,480</b></div>
+                    <div class="cp-chart is-phone">
+                        @foreach (var height in barHeights.Take(5))
+                        {
+                            <span style="--bar:@(height)%"></span>
+                        }
+                    </div>
+                }
+                else if (answers.Start is CreateProjectStart.Store)
+                {
+                    <div class="cp-product"><span class="cp-product-photo"></span><span class="cp-line"></span></div>
+                    <div class="cp-product"><span class="cp-product-photo"></span><span class="cp-line"></span></div>
+                }
+                else
+                {
+                    <b class="cp-phone-hello">Welcome back, Sara</b>
+                    <span class="cp-line"></span>
+                    <span class="cp-line is-short"></span>
+                }
+            </div>
+        </div>
+    </div>
+</figure>
+
+@code {
+    private static readonly int[] barHeights = [42, 58, 50, 72, 64, 86, 78];
+}

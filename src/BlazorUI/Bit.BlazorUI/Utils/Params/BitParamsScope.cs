@@ -14,7 +14,7 @@ namespace Bit.BlazorUI;
 internal sealed class BitParamsScope
 {
     // How deep a value is taken apart for its snapshot; anything deeper is compared as it is.
-    private const int MaxSnapshotDepth = 16;
+    internal const int MaxSnapshotDepth = 16;
 
     private static readonly ConcurrentDictionary<Type, PropertyInfo[]?> _copyablePropertiesCache = new();
     private static readonly ConcurrentDictionary<Type, PropertyInfo[]?> _snapshotPropertiesCache = new();
@@ -97,7 +97,7 @@ internal sealed class BitParamsScope
         {
             if (item is null) continue;
 
-            var snapshot = TakeSnapshot(item, 0);
+            var snapshot = TakeSnapshot(item);
 
             inputs.Add(snapshot);
 
@@ -182,7 +182,7 @@ internal sealed class BitParamsScope
 
             if (index == _inputs.Count) return false;
 
-            if (AreEqual(TakeSnapshot(item, 0), _inputs[index]) is false) return false;
+            if (AreEqual(TakeSnapshot(item), _inputs[index]) is false) return false;
 
             index++;
         }
@@ -213,8 +213,25 @@ internal sealed class BitParamsScope
     /// <paramref name="basis"/>, a params object of the same type, if there is one. A type that cannot be copied -
     /// one without a public parameterless constructor - is used as is.
     /// </summary>
-    [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = "A params object is of a type an app created, which the DynamicDependency of its constructor preserves.")]
     private static IBitComponentParams Merge(IBitComponentParams? basis, IBitComponentParams overlay)
+    {
+        // The params types of the packages have their merge generated, which is what a WebAssembly app's start goes
+        // through: the reflection below is for the types of an app's own, and the ones derived from those of the packages.
+        var result = (overlay as IBitGeneratedParams)?.MergeOver(basis) ?? MergeByReflection(basis, overlay);
+
+        if (ReferenceEquals(result, overlay) is false)
+        {
+            _copies.Add(result, result);
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// <see cref="Merge"/> read off the type by reflection, for a params type the source generator has not written it for.
+    /// </summary>
+    [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = "A params object is of a type an app created, which the DynamicDependency of its constructor preserves.")]
+    internal static IBitComponentParams MergeByReflection(IBitComponentParams? basis, IBitComponentParams overlay)
     {
         var type = overlay.GetType();
         var properties = GetCopyableProperties(type);
@@ -235,30 +252,45 @@ internal sealed class BitParamsScope
 
             // A dictionary is merged entry by entry, so that a nested params object only adds to the attributes of
             // the one around it.
-            if (value is IDictionary<string, object> dictionary && property.PropertyType.IsAssignableFrom(typeof(Dictionary<string, object>)))
-            {
-                var merged = basisValue is IDictionary<string, object> basisDictionary
-                                ? new Dictionary<string, object>(basisDictionary)
-                                : new Dictionary<string, object>(dictionary.Count);
-
-                foreach (var (name, entry) in dictionary)
-                {
-                    merged[name] = entry;
-                }
-
-                value = merged;
-            }
-            else if (value is null)
-            {
-                value = basisValue;
-            }
+            value = property.PropertyType.IsAssignableFrom(typeof(Dictionary<string, object>))
+                        ? MergeAttributes(value, basisValue)
+                        : value ?? basisValue;
 
             property.SetValue(result, value);
         }
 
-        _copies.Add(result, result);
-
         return result;
+    }
+
+    /// <summary>
+    /// What a merged copy carries for a parameter of a type a dictionary of attributes can be assigned to: a new
+    /// dictionary holding the attributes of the basis and then those of the value, so that a nested params object only
+    /// adds to the attributes of the one around it, when the value holds a dictionary; otherwise the value, or the
+    /// basis' where it is unset.
+    /// </summary>
+    internal static object? MergeAttributes(object? value, object? basisValue)
+    {
+        if (value is not IDictionary<string, object> dictionary) return value ?? basisValue;
+
+        var merged = basisValue is IDictionary<string, object> basisDictionary
+                        ? new Dictionary<string, object>(basisDictionary)
+                        : new Dictionary<string, object>(dictionary.Count);
+
+        foreach (var (name, entry) in dictionary)
+        {
+            merged[name] = entry;
+        }
+
+        return merged;
+    }
+
+    /// <summary>
+    /// The snapshot of a params object listed by a <see cref="BitParams"/>: the one its generated code takes, for the
+    /// params types of the packages, and otherwise the one reflection takes (see <see cref="TakeSnapshot(object?, int)"/>).
+    /// </summary>
+    private static object? TakeSnapshot(IBitComponentParams item)
+    {
+        return (item as IBitGeneratedParams)?.TakeSnapshot() ?? TakeSnapshot(item, 0);
     }
 
     /// <summary>
@@ -270,7 +302,7 @@ internal sealed class BitParamsScope
     /// is. A params type that cannot be copied is cascaded as is, so it is a leaf too, and the same only when it is
     /// the same object.
     /// </summary>
-    private static object? TakeSnapshot(object? value, int depth)
+    internal static object? TakeSnapshot(object? value, int depth)
     {
         if (value is null or string or Delegate or Type || value.GetType().IsValueType) return value;
 
@@ -325,7 +357,7 @@ internal sealed class BitParamsScope
             || sequence.GetType().Namespace?.StartsWith("System.Collections", StringComparison.Ordinal) is true;
     }
 
-    private static bool AreEqual(object? first, object? second)
+    internal static bool AreEqual(object? first, object? second)
     {
         if (BitCascadeExtensions.AreSame(first, second)) return true;
 
@@ -371,7 +403,7 @@ internal sealed class BitParamsScope
     /// The public read-write properties of a params type, or null when the type cannot be copied.
     /// </summary>
     [UnconditionalSuppressMessage("Trimming", "IL2070", Justification = "A params object is of a type an app created, which the DynamicDependency of its constructor preserves.")]
-    private static PropertyInfo[]? GetCopyableProperties(Type type)
+    internal static PropertyInfo[]? GetCopyableProperties(Type type)
     {
         return _copyablePropertiesCache.GetOrAdd(type, static t =>
         {
@@ -389,7 +421,7 @@ internal sealed class BitParamsScope
     /// ones holding a collection, which is changed through what it holds rather than by being assigned.
     /// </summary>
     [UnconditionalSuppressMessage("Trimming", "IL2070", Justification = "A params object is of a type an app created, which the DynamicDependency of its constructor preserves.")]
-    private static PropertyInfo[]? GetSnapshotProperties(Type type)
+    internal static PropertyInfo[]? GetSnapshotProperties(Type type)
     {
         return _snapshotPropertiesCache.GetOrAdd(type, static t =>
         {
@@ -436,7 +468,7 @@ internal sealed class BitParamsScope
         public IBitComponentParams Value { get; set; } = default!;
     }
 
-    private sealed record ObjectSnapshot(Type Type, object?[] Values);
+    internal sealed record ObjectSnapshot(Type Type, object?[] Values);
 
     private sealed record SequenceSnapshot(List<object?> Items);
 

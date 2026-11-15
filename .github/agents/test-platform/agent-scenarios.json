@@ -79,7 +79,17 @@
       "longTurns": [
         "Looks good, go ahead."
       ],
+      "heavy": true,
       "checks": [
+        {
+          "skill": "workbench"
+        },
+        {
+          "called": "api/progress"
+        },
+        {
+          "finalMatches": "progress/[0-9a-f]{12}"
+        },
         {
           "skill": "ai-dlc"
         },

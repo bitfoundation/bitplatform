@@ -24,6 +24,13 @@
     [Parameter] public bool? AllowKeyboard { get; set; }
 
     /// <summary>
+    /// The keys that pick up, move, drop and cancel the keyboard drags of this provider's sources - remapping or
+    /// adding to the WAI-ARIA defaults. When omitted the manager keeps its own (<see cref="BdndKeyBindings.Default"/>
+    /// unless set on a supplied <see cref="Manager"/>).
+    /// </summary>
+    [Parameter] public BdndKeyBindings? KeyBindings { get; set; }
+
+    /// <summary>
     /// Called when any drag of this context begins - right after it is published and its source's <c>OnBegin</c>
     /// started - for what watches every drag rather than one source.
     /// </summary>
@@ -79,6 +86,7 @@
         _manager = manager;
         if (Announcements is not null) manager.Announcements = Announcements;
         if (AllowKeyboard is { } allowKeyboard) manager.AllowKeyboard = allowKeyboard;
+        if (KeyBindings is not null) manager.KeyBindings = KeyBindings;
         if (_subscribed is false)
         {
             _subscribed = true;

@@ -23,3 +23,4 @@ BLZ016 | Bit.BlazeDb.Generators | Error | Compound index lists a property twice
 BLZ017 | Bit.BlazeDb.Generators | Error | Indexed property cannot be stored
 BLZ018 | Bit.BlazeDb.Generators | Error | Required member is not stored
 BLZ019 | Bit.BlazeDb.Generators | Error | Name is reserved for generated members
+BLZ020 | Bit.BlazeDb.Generators | Warning | Get-only auto-property is not stored

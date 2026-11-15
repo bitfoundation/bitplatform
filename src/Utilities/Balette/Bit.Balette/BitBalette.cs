@@ -66,6 +66,19 @@ public static class BitBalette
     }
 
     /// <summary>
+    /// Registers an <see cref="IBaletteCommandGuard"/>, resolved from the scope and asked before every command runs - the
+    /// place for permission checks that hold for many commands. Registering the same guard twice registers it once.
+    /// </summary>
+    public static IServiceCollection AddBitBaletteCommandGuard<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TGuard>(this IServiceCollection services)
+        where TGuard : class, IBaletteCommandGuard
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        services.TryAddEnumerable(ServiceDescriptor.Scoped<IBaletteCommandGuard, TGuard>());
+        return services;
+    }
+
+    /// <summary>
     /// The <see cref="IBaletteService"/> the palettes of this circuit or WebAssembly runtime use: the one
     /// <see cref="AddBitBaletteServices"/> registered, otherwise the one Balette creates itself. Inject
     /// <see cref="IBaletteService"/> instead wherever the services are registered; this is for an app that lazy loads

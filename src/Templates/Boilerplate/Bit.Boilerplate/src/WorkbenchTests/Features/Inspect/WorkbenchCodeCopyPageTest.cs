@@ -1,3 +1,6 @@
+using System.Text;
+using System.Security.Cryptography;
+
 namespace Boilerplate.WorkbenchTests.Features.Inspect;
 
 /// <summary>
@@ -8,7 +11,8 @@ namespace Boilerplate.WorkbenchTests.Features.Inspect;
 [DoNotParallelize]
 public abstract class WorkbenchCodeCopyPageTest : WorkbenchPageTest
 {
-    private static readonly string copyFolder = Path.Combine(AppContext.BaseDirectory, "CodeCopy", "src");
+    // Outside the repository, as a copy inside it would share the review the user's own Workbench keeps for the project.
+    private static readonly string copyFolder = Path.Combine(Path.GetTempPath(), "bit-workbench-code-copy", Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(AppContext.BaseDirectory)))[..12], "src");
 
     protected override Task<WorkbenchTestServer> ServerToTest => HasAgent ? WorkbenchTestsInitializer.CodeCopyServer : base.ServerToTest;
 

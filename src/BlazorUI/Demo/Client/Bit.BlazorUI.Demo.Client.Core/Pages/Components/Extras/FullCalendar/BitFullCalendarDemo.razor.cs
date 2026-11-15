@@ -822,6 +822,7 @@ public partial class BitFullCalendarDemo
                 new() { Name = "RecurringEditTitle", Type = "string", DefaultValue = "\"Edit recurring event\"", Description = "Title of the prompt that asks whether an edit applies to one occurrence or the series." },
                 new() { Name = "RecurringDeleteTitle", Type = "string", DefaultValue = "\"Delete recurring event\"", Description = "Title of the prompt that asks whether a delete applies to one occurrence or the series." },
                 new() { Name = "ThisOccurrenceOption", Type = "string", DefaultValue = "\"This event\"", Description = "The choice that applies an edit or delete to the opened occurrence only." },
+                new() { Name = "ThisAndFollowingOption", Type = "string", DefaultValue = "\"This and following events\"", Description = "The choice that applies an edit or delete to the opened occurrence and every later one: the series ends before it, and an edit starts a new series from it." },
                 new() { Name = "AllOccurrencesOption", Type = "string", DefaultValue = "\"All events in the series\"", Description = "The choice that applies an edit or delete to the whole series." },
                 new() { Name = "OkButton", Type = "string", DefaultValue = "\"OK\"", Description = "Label of the button that confirms a prompt." },
                 new() { Name = "GetWeekOfMonthLabel(BitFullCalendarWeekOfMonth)", Type = "string", DefaultValue = "", Description = "Method that returns the localized name of a week of the month." },

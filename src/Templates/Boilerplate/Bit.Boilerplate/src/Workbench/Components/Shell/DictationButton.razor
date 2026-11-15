@@ -1,0 +1,26 @@
+@inherits WorkbenchComponentBase
+
+@* Shown only where the browser can turn speech into text, which it finds out once it runs. *@
+@if (isSupported)
+{
+    <span class="dictation @(isListening ? "listening" : null) @Class" role="group" aria-label="@Localizer[nameof(WorkbenchStrings.Dictate)]">
+        <BitMenuButton TItem="BitMenuButtonItem"
+                       Split
+                       IconOnly
+                       Size="Size"
+                       Variant="@(isListening ? BitVariant.Fill : BitVariant.Text)"
+                       Color="@(isListening ? BitColor.Error : BitColor.Primary)"
+                       IconName="@(isListening ? BitIconName.StopSolid : BitIconName.Microphone)"
+                       Title="@HeaderTitle"
+                       ChevronDownTitle="@Localizer[nameof(WorkbenchStrings.DictationLanguage)]"
+                       ChevronDownAriaLabel="@Localizer[nameof(WorkbenchStrings.DictationLanguage)]"
+                       aria-pressed="@(isListening ? "true" : "false")"
+                       Items="LanguageItems"
+                       Class="dictation-button"
+                       OnClick="OnClick" />
+        @if (isListening)
+        {
+            <span class="listening-label" role="status">@Localizer[nameof(WorkbenchStrings.Listening)]</span>
+        }
+    </span>
+}

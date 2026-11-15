@@ -1,0 +1,18 @@
+@*+:cnd:noEmit*@
+@* The app's own dashboard (src/Client/Boilerplate.Client.Core/Components/Pages/Dashboard/DashboardPage.razor) on the view's sample product catalog, *@
+@* authorized as the app's page is, so a user without its feature gets the not-authorized page. *@
+@attribute [Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
+@*#if (multitenant == true)*@
+@attribute [Authorize(Policy = AuthPolicies.TENANT_SELECTED)]
+@*#endif*@
+@attribute [Authorize(Policy = AppFeatures.AdminPanel.Dashboard_View)]
+@inherits WorkbenchComponentBase
+
+@if (isReady is false)
+{
+    <AppPagePlaceholder />
+}
+else
+{
+    <Boilerplate.Client.Core.Components.Pages.Dashboard.DashboardPage />
+}

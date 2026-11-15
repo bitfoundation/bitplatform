@@ -1,4 +1,6 @@
-using ImageMagick;
+using Bit.Bmage;
+using Bit.Bmage.Geometry;
+using Bit.Bmage.Metadata;
 using System.Net.Http.Headers;
 using Boilerplate.Shared.Features.Attachments;
 
@@ -23,10 +25,7 @@ public class AttachmentMetadataStrippingTests
 
         var uploaded = JpegWithExif();
 
-        using (var check = new MagickImage(uploaded))
-        {
-            Assert.IsNotNull(check.GetExifProfile(), "The fixture must actually carry EXIF, otherwise this test passes without checking anything.");
-        }
+        Assert.IsNotNull((await TestImageFactory.ReadMetadata(uploaded))?.Exif, "The fixture must actually carry EXIF, otherwise this test passes without checking anything.");
 
         try
         {
@@ -34,9 +33,9 @@ public class AttachmentMetadataStrippingTests
 
             foreach (var kind in new[] { AttachmentKind.UserProfileImageSmall, AttachmentKind.UserProfileImageOriginal })
             {
-                using var stored = new MagickImage(await Download(httpClient, userId, kind));
+                var stored = await TestImageFactory.ReadMetadata(await Download(httpClient, userId, kind));
 
-                Assert.IsNull(stored.GetExifProfile(),
+                Assert.IsNull(stored?.Exif,
                     $"{kind} kept its EXIF. GetAttachment is anonymous, so the GPS coordinates of wherever the photo was taken are then public to anyone holding the user id.");
             }
         }
@@ -59,21 +58,19 @@ public class AttachmentMetadataStrippingTests
         var (_, userId) = await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
         var httpClient = client.HttpClient;
 
-        var uploaded = SidewaysJpegWithColorProfile();
+        var uploaded = TestImageFactory.Asset("sideways-600x300.jpg");
 
-        using (var check = new MagickImage(uploaded))
-        {
-            Assert.AreEqual(Orientation.RightTop, check.Orientation, "The fixture must actually be sideways, otherwise this test passes without checking anything.");
-        }
+        Assert.AreEqual(Orientation.Rotate90, TestImageFactory.Identify(uploaded).Orientation, "The fixture must actually be sideways, otherwise this test passes without checking anything.");
 
         try
         {
             await Upload(httpClient, uploaded);
 
-            using var original = new MagickImage(await Download(httpClient, userId, AttachmentKind.UserProfileImageOriginal));
+            var original = await Download(httpClient, userId, AttachmentKind.UserProfileImageOriginal);
+            var originalInfo = TestImageFactory.Identify(original);
 
-            Assert.AreEqual((300u, 600u), (original.Width, original.Height), "The original was stored lying on its side.");
-            Assert.IsNotNull(original.GetColorProfile(), "The original lost its ICC profile.");
+            Assert.AreEqual((300, 600), (originalInfo.Width, originalInfo.Height), "The original was stored lying on its side.");
+            Assert.IsFalse((await TestImageFactory.ReadMetadata(original))?.IccProfile.IsEmpty ?? true, "The original lost its ICC profile.");
         }
         finally
         {
@@ -92,28 +89,11 @@ public class AttachmentMetadataStrippingTests
     /// <summary>512px so it clears the 256px floor the small kind enforces, as a JPEG because that is what a camera produces.</summary>
     private static byte[] JpegWithExif()
     {
-        using var image = TestImageFactory.Solid(MagickColors.Teal, 512, 512);
+        var exif = new ExifData(
+            primary: new ExifDirectory().With(ExifTag.Software, ExifValue.FromString("boilerplate-test")),
+            gps: new ExifDirectory().With(ExifTag.GpsLatitudeRef, ExifValue.FromString("N")));
 
-        var exif = new ExifProfile();
-        exif.SetValue(ExifTag.Software, "boilerplate-test");
-        exif.SetValue(ExifTag.GPSLatitudeRef, "N");
-        image.SetProfile(exif);
-
-        return image.ToByteArray(MagickFormat.Jpeg);
-    }
-
-    /// <summary>600 x 300 pixels with EXIF orientation 6 (turn 90 degrees clockwise), so it shows as 300 x 600.</summary>
-    private static byte[] SidewaysJpegWithColorProfile()
-    {
-        using var image = TestImageFactory.Solid(MagickColors.Teal, 600, 300);
-
-        var exif = new ExifProfile();
-        exif.SetValue(ExifTag.Orientation, (ushort)6);
-        image.SetProfile(exif);
-        image.Orientation = Orientation.RightTop;
-        image.SetProfile(ColorProfiles.AdobeRGB1998);
-
-        return image.ToByteArray(MagickFormat.Jpeg);
+        return TestImageFactory.Solid(TestImageFactory.Teal, 512, 512, ImageFormat.Jpeg, new ImageMetadata(exif));
     }
 
     private async Task Upload(HttpClient httpClient, byte[] imageBytes)

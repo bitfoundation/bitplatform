@@ -108,8 +108,11 @@ public sealed class BinkRasterRenderContext : IBinkRenderContext, IBinkRenderCon
     /// </summary>
     public long ImagePixelBudget { get; init; } = 80_000_000;
 
-    /// <summary>Rasterizing work this context may do; see <see cref="BinkPngExportOptions.MaxRasterWork"/>.</summary>
-    internal long RasterWorkBudget { get; init; } = long.MaxValue;
+    /// <summary>
+    /// Rasterizing work this context may do before it throws <see cref="InvalidOperationException"/>; see
+    /// <see cref="BinkPngExportOptions.MaxRasterWork"/>, which <see cref="BinkPngExporter"/> passes here. Unlimited by default.
+    /// </summary>
+    public long RasterWorkBudget { get; init; } = long.MaxValue;
 
     /// <summary>Number of text elements that could not be drawn.</summary>
     public int SkippedText { get; private set; }

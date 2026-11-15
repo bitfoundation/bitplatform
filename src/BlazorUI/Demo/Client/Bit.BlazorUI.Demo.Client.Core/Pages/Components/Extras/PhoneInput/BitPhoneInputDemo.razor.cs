@@ -186,7 +186,7 @@ public partial class BitPhoneInputDemo
             Name = "ErrorMessage",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The error message shown under the phone input, which also puts the field in its invalid state.",
+            Description = "The error message shown under the phone input, which also puts the field in its invalid state. Inside an EditForm, ShowValidationMessage shows the messages of the cascading EditContext in this same place while it is not set.",
         },
         new()
         {
@@ -345,10 +345,10 @@ public partial class BitPhoneInputDemo
         },
         new()
         {
-            Name = "NoResultsMessage",
+            Name = "NoResultsText",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The message to show, and to announce to a screen reader, when the search result of the country dropdown is empty.",
+            Description = "The message to show, and to announce to a screen reader, when the search result of the country dropdown is empty. Defaults to BitStrings.NoResultsFound (\"No results found\").",
         },
         new()
         {
@@ -532,7 +532,7 @@ public partial class BitPhoneInputDemo
             Name = "SearchResultsAnnouncement",
             Type = "Func<int, string?>?",
             DefaultValue = "null",
-            Description = "What a screen reader announces for the number of countries a search term leaves in the list, in place of the default \"1 country found\" / \"{count} countries found\". An empty result announces NoResultsMessage instead, and returning null keeps a count from being announced.",
+            Description = "What a screen reader announces for the number of countries a search term leaves in the list, in place of the default \"1 country found\" / \"{count} countries found\". An empty result announces NoResultsText instead, and returning null keeps a count from being announced.",
         },
         new()
         {
@@ -540,6 +540,13 @@ public partial class BitPhoneInputDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Shows a clear button in the number input while it holds a value.",
+        },
+        new()
+        {
+            Name = "ShowValidationMessage",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Shows the messages the cascading EditContext holds for the bound field under the field, where ErrorMessage goes, so an EditForm needs no ValidationMessage component beside it. The number input references them through aria-describedby, so they are read out when it takes the focus; they are not announced as they appear, since a submit validates every field at once. An ErrorMessage or ErrorMessageTemplate of the app's own wins the place while it is set.",
         },
         new()
         {
@@ -891,7 +898,7 @@ private readonly List<BitCountry> preferredCountries =
 <BitPhoneInput DefaultCountry=""BitCountries.France""
                Placeholder=""Enter your number""
                SearchBoxPlaceholder=""Country or code""
-               NoResultsMessage=""No matching country"" />
+               NoResultsText=""No matching country"" />
 
 <BitPhoneInput NoSearchBox DefaultCountry=""BitCountries.France"" Placeholder=""Enter your number"" />";
 
@@ -1030,8 +1037,8 @@ private static string? GetMask(BitCountry? country) => country?.Iso2 switch
                    Immediate
                    DefaultCountry=""BitCountries.Spain""
                    Placeholder=""Enter your number""
+                   ShowValidationMessage
                    @bind-Value=""validationModel.Phone"" />
-    <ValidationMessage For=""() => validationModel.Phone"" />
     <br />
     <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
 </EditForm>
@@ -1164,7 +1171,7 @@ private BitCountry? submissionCountry = BitCountries.Canada;";
                DropdownAriaLabel=""Land""
                SearchBoxPlaceholder=""Suchen""
                SearchBoxAriaLabel=""Land suchen""
-               NoResultsMessage=""Kein Land gefunden""
+               NoResultsText=""Kein Land gefunden""
                SearchResultsAnnouncement=""@(count => count == 1 ? ""1 Land gefunden"" : $""{count} Länder gefunden"")""
                ShowClearButton
                ClearButtonAriaLabel=""Nummer löschen"" />";

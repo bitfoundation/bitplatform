@@ -14,7 +14,7 @@ namespace Bit.BlazorUI;
 /// link would be one link written many times over. The one worth having above all the others is <see cref="NewTabHint"/>: the sentence a new-tab link is announced with is English
 /// until an app says otherwise, and an app says it once here rather than at every link it writes.
 /// </remarks>
-public class BitLinkParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitLinkParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the BitLink cascading parameters within BitParams.

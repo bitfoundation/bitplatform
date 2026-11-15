@@ -130,10 +130,13 @@ public partial class AppProblemDetails
 
         var assembly = typeof(KnownException).Assembly;
 
+        // A type of the server's own, or of a project's, is matched by its name among this assembly's exceptions. Looked
+        // up by name rather than found among the assembly's types: listing them loads each one, and in the browser one
+        // built on a lazily loaded assembly (See AiChatStrings) would then fail to load for the rest of the visit.
         var exceptionType = assembly.GetType(type)
-            ?? assembly.ExportedTypes.FirstOrDefault(t => type.EndsWith(t.Name, StringComparison.Ordinal));
+            ?? assembly.GetType($"{typeof(KnownException).Namespace}.{type[(type.LastIndexOfAny(['.', '+']) + 1)..]}");
 
-        // The fuzzy EndsWith fallback above matches any exported type name, not just exception ones.
+        // The fallback above matches any type of that namespace by its name, not just exception ones.
         if (exceptionType is null || typeof(Exception).IsAssignableFrom(exceptionType) is false || exceptionType.IsAbstract)
             return null;
 

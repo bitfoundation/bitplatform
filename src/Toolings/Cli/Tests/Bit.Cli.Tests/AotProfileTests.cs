@@ -89,12 +89,194 @@ public class AotProfileTests
     public void EveryMethod_Should_BeListedWithMonosSignatures()
     {
         var methods = AssemblyMethods.Read(typeof(ProfileSamples).Assembly.Location, unmanagedCallersOnly: false)
-            .Where(m => m.Class.Name.StartsWith("Bit.Cli.Tests.ProfileSamples", StringComparison.Ordinal))
+            .Where(m => m.Class.Name.StartsWith("Bit.Cli.Tests.ProfileSamples", StringComparison.Ordinal) && m.Class.Name != "Bit.Cli.Tests.ProfileSamples/WideOverloads`1")
             .ToDictionary(m => $"{m.Class.Name}::{m.Name}", m => m.Signature);
 
         Assert.AreEqual("void(string,int&,System.Collections.Generic.List`1<int>[],Bit.Cli.Tests.ProfileSamples/Nested/Inner)", methods["Bit.Cli.Tests.ProfileSamples::Plain"]);
         Assert.AreEqual("void()", methods["Bit.Cli.Tests.ProfileSamples/Nested/Inner::.ctor"]);
         Assert.IsFalse(methods.ContainsKey("Bit.Cli.Tests.ProfileSamples::Generic"));
+    }
+
+    [TestMethod]
+    public void MethodsWithMoreThanEightParameters_Should_BeListed_SinceCompiledCodeCannotEnterTheInterpreterForThem()
+    {
+        var methods = AssemblyMethods.ReadWide(typeof(ProfileSamples).Assembly.Location)
+            .Where(m => m.Class.Name.StartsWith("Bit.Cli.Tests.ProfileSamples", StringComparison.Ordinal) && m.Class.Name is not ("Bit.Cli.Tests.ProfileSamples/WideOf`1" or "Bit.Cli.Tests.ProfileSamples/WideOverloads`1"))
+            .ToList();
+
+        // The implementation alone: the interface's method has no body to compile, and eight parameters is what the
+        // wrappers every AOT build has can still enter the interpreter with.
+        var log = methods.Single();
+        Assert.AreEqual("Bit.Cli.Tests.ProfileSamples/Wide", log.Class.Name);
+        Assert.AreEqual("Log", log.Name);
+        Assert.AreEqual(9, log.ParameterCount);
+        Assert.AreEqual("void(System.Guid,System.Guid,System.DateTimeOffset,System.TimeSpan,string,int,int,int,System.Threading.CancellationToken)", log.Signature);
+    }
+
+    [TestMethod]
+    public void MethodsWithEightParameters_Should_NotBeListed_SinceThisIsNotCounted()
+    {
+        // Mono's interpreter entry wrappers take this besides their eight arguments, so an instance method with eight
+        // parameters - nine arguments with this - is entered like a static one with eight.
+        var methods = AssemblyMethods.ReadWide(typeof(ProfileSamples).Assembly.Location)
+            .Where(m => m.Class.Name.StartsWith("Bit.Cli.Tests.ProfileSamples", StringComparison.Ordinal))
+            .ToList();
+
+        Assert.IsFalse(methods.Any(m => m.Name is "Eight" or "EightOnInstance"));
+    }
+
+    [TestMethod]
+    public void WideMethodsOfGenericTypes_Should_BeListedForEachInstantiationTheAppRan()
+    {
+        var assembly = typeof(ProfileSamples).Assembly;
+        var image = new AotProfileImage(assembly.GetName().Name!, "00000000-0000-0000-0000-000000000000");
+        var coreLib = new AotProfileImage("System.Private.CoreLib", "00000000-0000-0000-0000-000000000000");
+        var list = new AotProfileClass(coreLib, "System.Collections.Generic.List`1", [new AotProfileClass(coreLib, "System.String")]);
+        var ran = new[]
+        {
+            new AotProfileClass(image, "Bit.Cli.Tests.ProfileSamples/WideOf`1", [new AotProfileClass(coreLib, "System.Int32")]),
+            new AotProfileClass(image, "Bit.Cli.Tests.ProfileSamples/WideOf`1", [list]),
+            new AotProfileClass(image, "Bit.Cli.Tests.ProfileSamples/WideOf`1", [new AotProfileClass(coreLib, "System.Int32")]),
+        };
+
+        var methods = AssemblyMethods.ReadWide(assembly.Location, ran)
+            .Where(m => m.Class.Name == "Bit.Cli.Tests.ProfileSamples/WideOf`1")
+            .ToDictionary(m => m.Class.Key, m => m.Signature);
+
+        // The definition, then each instantiation once, inflated the way Mono's profiler writes it.
+        Assert.HasCount(3, methods);
+        Assert.AreEqual("void(T,int,int,int,int,int,int,int,int)", methods[$"[{image.Name}]Bit.Cli.Tests.ProfileSamples/WideOf`1"]);
+        Assert.AreEqual("void(int,int,int,int,int,int,int,int,int)", methods[ran[0].Key]);
+        Assert.AreEqual("void(System.Collections.Generic.List`1<string>,int,int,int,int,int,int,int,int)", methods[ran[1].Key]);
+
+        // A generic method is not: nothing says which instantiations the app makes.
+        Assert.IsFalse(AssemblyMethods.ReadWide(assembly.Location, ran).Any(m => m.Name == "GenericWide"));
+    }
+
+    [TestMethod]
+    public void WideOverloadsOfGenericTypes_Should_EachReachTheProfile_UnlessAnInstantiationGivesThemOneSignature()
+    {
+        var assembly = typeof(ProfileSamples).Assembly;
+        var image = new AotProfileImage(assembly.GetName().Name!, "00000000-0000-0000-0000-000000000000");
+        var coreLib = new AotProfileImage("System.Private.CoreLib", "00000000-0000-0000-0000-000000000000");
+        const string name = "Bit.Cli.Tests.ProfileSamples/WideOverloads`1";
+        var ofLong = new AotProfileClass(image, name, [new AotProfileClass(coreLib, "System.Int64")]);
+        var ofString = new AotProfileClass(image, name, [new AotProfileClass(coreLib, "System.String")]);
+        const string ints = "int,int,int,int,int,int,int,int";
+
+        var profile = new AotProfile();
+        profile.AddRange(AssemblyMethods.ReadWide(assembly.Location, [ofLong, ofString]).Where(m => m.Class.Name == name));
+
+        // What the AOT compiler reads: Mono resolves each record by class, name, parameter count and signature text.
+        var signatures = AotProfile.Read(profile.ToArray()).Methods
+            .Where(m => m.Name == "Log")
+            .GroupBy(m => m.Class.Key)
+            .ToDictionary(g => g.Key, g => g.Select(m => m.Signature).Order(StringComparer.Ordinal).ToList());
+
+        CollectionAssert.AreEqual(new[] { $"void(System.Guid,{ints})", $"void(T,{ints})", $"void(string,{ints})" }, signatures[$"[{image.Name}]{name}"]);
+        CollectionAssert.AreEqual(new[] { $"void(System.Guid,{ints})", $"void(long,{ints})", $"void(string,{ints})" }, signatures[ofLong.Key]);
+
+        // Log(T, ...) and Log(string, ...) are one signature on WideOverloads<string>: a single record, which Mono resolves
+        // to the overload declared first. The other stays on the interpreter - the documented limitation.
+        CollectionAssert.AreEqual(new[] { $"void(System.Guid,{ints})", $"void(string,{ints})" }, signatures[ofString.Key]);
+    }
+
+    [TestMethod]
+    public void TheVirtualMethodsOfTheGenericClassesAMethodRanIn_Should_BeListedForTheSameInstance()
+    {
+        var methods = GenericInstanceMethods(Converter(Text, Texts), Converter(Number, Number));
+
+        // Over value types alone, an instance has code of its own: no instance the profiler leaves out runs on it. And of
+        // the rest, only the methods a vtable calls: First and the constructor stay as the profile has them.
+        var method = methods.Single();
+        Assert.AreEqual(Converter(Text, Texts).Key, method.Class.Key);
+        Assert.AreEqual("Add", method.Name);
+        Assert.AreEqual(2, method.ParameterCount);
+        Assert.AreEqual("void(string,System.Collections.Generic.List`1<string> modreq(System.Runtime.InteropServices.InAttribute)&)", method.Signature);
+    }
+
+    [TestMethod]
+    public void AnInstanceOverAReferenceTypeAndAValueType_Should_BeListed()
+    {
+        var method = GenericInstanceMethods(Converter(Text, Number)).Single();
+
+        Assert.AreEqual("void(string,int modreq(System.Runtime.InteropServices.InAttribute)&)", method.Signature);
+    }
+
+    [TestMethod]
+    public void AnInstanceOverAnInterface_Should_BeListed()
+    {
+        var method = GenericInstanceMethods(Converter(new AotProfileClass(CoreLib, "System.IDisposable"), Number)).Single();
+
+        Assert.AreEqual("void(System.IDisposable,int modreq(System.Runtime.InteropServices.InAttribute)&)", method.Signature);
+    }
+
+    [TestMethod]
+    public void AnInstanceOverAGenericStructOfAReferenceType_Should_BeListed()
+    {
+        // KeyValuePair<string, string> runs on KeyValuePair<__Canon, __Canon>, which other instances share.
+        var pair = new AotProfileClass(CoreLib, "System.Collections.Generic.KeyValuePair`2", [Text, Text]);
+        var numbers = new AotProfileClass(CoreLib, "System.Collections.Generic.KeyValuePair`2", [Number, Number]);
+
+        var method = GenericInstanceMethods(Converter(pair, Number), Converter(numbers, Number)).Single();
+
+        Assert.AreEqual(Converter(pair, Number).Key, method.Class.Key);
+        Assert.AreEqual("void(System.Collections.Generic.KeyValuePair`2<string, string>,int modreq(System.Runtime.InteropServices.InAttribute)&)", method.Signature);
+    }
+
+    [TestMethod]
+    public void ClassesInTheGlobalNamespaceOrNestedTwice_Should_BeNamedTheWayMonosSignaturesNameThem()
+    {
+        // The profile writes a class of the global namespace with a dot first, and of a class nested twice only the class
+        // it's nested in directly; a signature names the first without the dot and the second in full.
+        var global = new AotProfileClass(Tests, ".ProfileGlobalItem");
+        var nested = new AotProfileClass(Tests, ".Nested/Inner");
+
+        var globals = new AotProfileClass(CoreLib, "System.Collections.Generic.List`1", [global]);
+
+        var methods = GenericInstanceMethods(Converter(global, nested), Converter(globals, global));
+
+        CollectionAssert.AreEqual(new[]
+        {
+            "void(ProfileGlobalItem,Bit.Cli.Tests.ProfileSamples/Nested/Inner modreq(System.Runtime.InteropServices.InAttribute)&)",
+            "void(System.Collections.Generic.List`1<ProfileGlobalItem>,ProfileGlobalItem modreq(System.Runtime.InteropServices.InAttribute)&)"
+        }, methods.Select(m => m.Signature).ToList());
+        // The methods' classes keep the names the profile gives them.
+        CollectionAssert.AreEqual(new[] { Converter(global, nested).Key, Converter(globals, global).Key }, methods.Select(m => m.Class.Key).ToList());
+        StringAssert.Contains(methods[1].Class.Key, "System.Collections.Generic.List`1<[Bit.Cli.Tests].ProfileGlobalItem>");
+    }
+
+    [TestMethod]
+    public void TheVirtualMethodsOfTheGenericBaseClasses_Should_BeListedForTheTypeArgumentsTheyAreGiven()
+    {
+        var methods = GenericInstanceMethods(new AotProfileClass(Tests, "Bit.Cli.Tests.ProfileTextConverter`1", [Texts]))
+            .ToDictionary(m => $"{m.Class.Key}::{m.Name}", m => m.Signature);
+
+        Assert.HasCount(2, methods);
+        Assert.AreEqual("System.Collections.Generic.List`1<string>(string)", methods["[Bit.Cli.Tests]Bit.Cli.Tests.ProfileTextConverter`1<[System.Private.CoreLib]System.Collections.Generic.List`1<[System.Private.CoreLib]System.String>>::Read"]);
+        Assert.AreEqual("void(string,System.Collections.Generic.List`1<string> modreq(System.Runtime.InteropServices.InAttribute)&)", methods[$"{Converter(Text, Texts).Key}::Add"]);
+    }
+
+    [TestMethod]
+    public void AnInstanceOverAClassThatIsNotInTheApp_Should_NotBeListed()
+    {
+        var missing = new AotProfileClass(new AotProfileImage("Missing", ""), "Missing.Item");
+
+        Assert.IsEmpty(GenericInstanceMethods(Converter(missing, Number), Converter(Text, new AotProfileClass(Tests, "Bit.Cli.Tests.Missing"))));
+    }
+
+    private static readonly AotProfileImage Tests = new("Bit.Cli.Tests", "");
+    private static readonly AotProfileClass Text = new(CoreLib, "System.String");
+    private static readonly AotProfileClass Number = new(CoreLib, "System.Int32");
+    private static readonly AotProfileClass Texts = new(CoreLib, "System.Collections.Generic.List`1", [Text]);
+
+    private static AotProfileClass Converter(AotProfileClass key, AotProfileClass value) => new(Tests, "Bit.Cli.Tests.ProfileConverter`2", [key, value]);
+
+    private static IReadOnlyList<AotProfileMethod> GenericInstanceMethods(params AotProfileClass[] classes)
+    {
+        return AssemblyMethods.ReadGenericInstances(
+            classes.Select(c => new AotProfileMethod(c, "First", 2, "")),
+            [typeof(ProfileConverter<,>).Assembly.Location, typeof(object).Assembly.Location]);
     }
 
     [TestMethod]
@@ -131,6 +313,23 @@ public class AotProfileTests
     public void Steps_Should_BeChecked(string step, bool valid)
     {
         Assert.AreEqual(valid, ProfileCollector.IsValidStep(step));
+    }
+
+    [TestMethod]
+    [DataRow("/fa-IR", "/fa-IR/*")]
+    [DataRow("/fa-IR/hotel/rooms", "/fa-IR/*")]
+    [DataRow("/sign-out", "/sign-out")]
+    [DataRow("/account/sign-out", "/account/sign-out")]
+    [DataRow("/", "/")]
+    [DataRow("click:#sign-out", "click:#sign-out")]
+    public void AReloadingLinkIntoALanguage_Should_LeaveOutTheWholeLanguage(string reloaded, string expected)
+    {
+        var leftOut = ProfileCollector.LeftOut(reloaded);
+
+        Assert.AreEqual(expected, leftOut);
+        Assert.IsTrue(ProfileCollector.IsLeftOut(reloaded, [leftOut]));
+        Assert.IsFalse(ProfileCollector.IsLeftOut("/fa-IRAN", [leftOut]));
+        Assert.IsFalse(ProfileCollector.IsLeftOut("/hotel", [leftOut]));
     }
 
     [TestMethod]
@@ -269,14 +468,87 @@ public class AotProfileTests
         using var host = new TestHost();
         File.WriteAllText(Path.Combine(host.WorkingDirectory, "App.Client.csproj"), "<Project />");
         PublishesAStaticApp(host);
-        await using var browser = new FakeBrowser(host.Root) { ReloadsWhileSettling = "/sign-out" };
+        await using var browser = new FakeBrowser(host.Root) { ReloadsWhileSettling = page => page == "/sign-out" };
         browser.Links["/"] = ["/counter", "/sign-out"];
 
-        Assert.AreEqual(0, await host.RunAsync("aot-profile", "--browser", browser.Executable), host.Output);
+        Assert.AreEqual(0, await host.RunAsync("aot-profile", "--browser", browser.Executable, "--max-pages", "10"), host.Output);
 
         StringAssert.Contains(host.FlatOutput, "/sign-out reloads the app");
         StringAssert.Contains(host.FlatOutput, "Used the app 2 pages");
         Assert.IsTrue(File.Exists(Path.Combine(host.WorkingDirectory, "App.Client.aotprofile")));
+    }
+
+    [TestMethod]
+    public async Task TheStartPage_Should_BeTheOnlyPageVisitedByDefault()
+    {
+        if (OperatingSystem.IsWindows() is false)
+            return;
+
+        using var host = new TestHost();
+        File.WriteAllText(Path.Combine(host.WorkingDirectory, "App.Client.csproj"), "<Project />");
+        PublishesAStaticApp(host);
+        await using var browser = new FakeBrowser(host.Root);
+        browser.Links["/"] = ["/counter", "/weather"];
+
+        Assert.AreEqual(0, await host.RunAsync("aot-profile", "--browser", browser.Executable), host.Output);
+
+        StringAssert.Contains(host.FlatOutput, "Used the app 1 page");
+    }
+
+    [TestMethod]
+    public async Task PagesInAnotherLanguage_Should_BeLeftOutTogether()
+    {
+        if (OperatingSystem.IsWindows() is false)
+            return;
+
+        using var host = new TestHost();
+        File.WriteAllText(Path.Combine(host.WorkingDirectory, "App.Client.csproj"), "<Project />");
+        PublishesAStaticApp(host);
+        await using var browser = new FakeBrowser(host.Root) { ReloadsWhileSettling = page => page.StartsWith("/fa-IR", StringComparison.Ordinal) };
+        string[] pages = ["/hotel", "/retail", "/crm", "/fitness", "/minimal", "/accounting"];
+        browser.Links["/"] = ["/fa-IR", .. pages];
+        foreach (var page in pages)
+        {
+            browser.Links[page] = [$"/fa-IR{page}"];
+        }
+
+        Assert.AreEqual(0, await host.RunAsync("aot-profile", "--browser", browser.Executable, "--max-pages", "50"), host.Output);
+
+        StringAssert.Contains(host.FlatOutput, "/fa-IR reloads the app");
+        Assert.DoesNotContain("/fa-IR/hotel reloads the app", host.FlatOutput);
+        StringAssert.Contains(host.FlatOutput, "Used the app 7 pages");
+    }
+
+    [TestMethod]
+    public void TheServer_Should_BeFoundWhetherItPublishesSelfContainedOrNot()
+    {
+        using var host = new TestHost();
+        var client = """{ "runtimeOptions": { "tfm": "net11.0", "includedFrameworks": [ { "name": "Microsoft.NETCore.App", "version": "11.0.0" } ], "wasmHostProperties": { "perHostConfig": [ { "name": "browser", "host": "browser" } ] } } }""";
+        var selfContained = """{ "runtimeOptions": { "tfm": "net11.0", "includedFrameworks": [ { "name": "Microsoft.NETCore.App", "version": "11.0.0" }, { "name": "Microsoft.AspNetCore.App", "version": "11.0.0" } ] } }""";
+        var frameworkDependent = """{ "runtimeOptions": { "tfm": "net11.0", "frameworks": [ { "name": "Microsoft.NETCore.App", "version": "11.0.0" }, { "name": "Microsoft.AspNetCore.App", "version": "11.0.0" } ] } }""";
+        var apphost = OperatingSystem.IsWindows() ? ".exe" : "";
+
+        var standalone = Directory.CreateDirectory(Path.Combine(host.Root, "standalone")).FullName;
+        File.WriteAllText(Path.Combine(standalone, "App.Client.runtimeconfig.json"), client);
+        File.WriteAllText(Path.Combine(standalone, "App.Client.dll"), "");
+
+        var contained = Directory.CreateDirectory(Path.Combine(host.Root, "self-contained")).FullName;
+        File.WriteAllText(Path.Combine(contained, "App.Client.runtimeconfig.json"), client);
+        File.WriteAllText(Path.Combine(contained, "App.Client.dll"), "");
+        File.WriteAllText(Path.Combine(contained, "App.Server.runtimeconfig.json"), selfContained);
+        File.WriteAllText(Path.Combine(contained, "App.Server.dll"), "");
+        File.WriteAllText(Path.Combine(contained, "App.Server" + apphost), "");
+
+        var dependent = Directory.CreateDirectory(Path.Combine(host.Root, "framework-dependent")).FullName;
+        File.WriteAllText(Path.Combine(dependent, "App.Client.runtimeconfig.json"), client);
+        File.WriteAllText(Path.Combine(dependent, "App.Client.dll"), "");
+        File.WriteAllText(Path.Combine(dependent, "App.Server.runtimeconfig.json"), frameworkDependent);
+        File.WriteAllText(Path.Combine(dependent, "App.Server.dll"), "");
+        File.WriteAllText(Path.Combine(dependent, "App.Server" + apphost), "");
+
+        Assert.IsNull(PublishedApp.FindServer(standalone));
+        Assert.AreEqual(Path.Combine(contained, "App.Server" + apphost), PublishedApp.FindServer(contained));
+        Assert.AreEqual(Path.Combine(dependent, "App.Server.dll"), PublishedApp.FindServer(dependent));
     }
 
     [TestMethod]
@@ -297,6 +569,62 @@ public class AotProfileTests
         Assert.AreEqual(1, browser.Clicks);
         StringAssert.Contains(host.FlatOutput, "click:#sign-out reloads the app");
         StringAssert.Contains(host.FlatOutput, "Used the app 1 page, 1 step");
+    }
+
+    [TestMethod]
+    public async Task AnInteractiveAutoApp_Should_BeLoadedAgainOnceItsFirstVisitDownloadedTheRuntime()
+    {
+        if (OperatingSystem.IsWindows() is false)
+            return;
+
+        using var host = new TestHost();
+        File.WriteAllText(Path.Combine(host.WorkingDirectory, "App.Client.csproj"), "<Project />");
+        PublishesAStaticApp(host);
+        await using var browser = new FakeBrowser(host.Root) { RendersInteractiveAuto = true };
+
+        Assert.AreEqual(0, await host.RunAsync("aot-profile", "--browser", browser.Executable), host.Output);
+
+        Assert.AreEqual(2, browser.Loads);
+        Assert.AreEqual(1, browser.Downloads);
+        StringAssert.Contains(host.FlatOutput, "Used the app 1 page");
+        Assert.IsTrue(File.Exists(Path.Combine(host.WorkingDirectory, "App.Client.aotprofile")));
+    }
+
+    [TestMethod]
+    public async Task AnInteractiveAutoStartPathWithAFragment_Should_BeLoadedAgainAsANewDocument()
+    {
+        if (OperatingSystem.IsWindows() is false)
+            return;
+
+        using var host = new TestHost();
+        File.WriteAllText(Path.Combine(host.WorkingDirectory, "App.Client.csproj"), "<Project />");
+        PublishesAStaticApp(host);
+        await using var browser = new FakeBrowser(host.Root) { RendersInteractiveAuto = true };
+
+        Assert.AreEqual(0, await host.RunAsync("aot-profile", "--browser", browser.Executable, "--path", "/#home"), host.Output);
+
+        Assert.AreEqual(2, browser.Loads);
+        Assert.AreEqual(1, browser.Downloads);
+    }
+
+    [TestMethod]
+    public async Task AnInteractiveAutoAppUsedAgainAfterAReload_Should_NotBeLoadedTwiceAgain()
+    {
+        if (OperatingSystem.IsWindows() is false)
+            return;
+
+        using var host = new TestHost();
+        File.WriteAllText(Path.Combine(host.WorkingDirectory, "App.Client.csproj"), "<Project />");
+        PublishesAStaticApp(host);
+        await using var browser = new FakeBrowser(host.Root) { RendersInteractiveAuto = true, ReloadsWhileSettling = page => page == "/sign-out" };
+        browser.Links["/"] = ["/sign-out"];
+
+        Assert.AreEqual(0, await host.RunAsync("aot-profile", "--browser", browser.Executable, "--max-pages", "10"), host.Output);
+
+        StringAssert.Contains(host.FlatOutput, "/sign-out reloads the app");
+        Assert.AreEqual(3, browser.Loads);
+        Assert.AreEqual(1, browser.Downloads);
+        StringAssert.Contains(host.FlatOutput, "Used the app 1 page");
     }
 
     [TestMethod]
@@ -394,6 +722,9 @@ public class AotProfileTests
         private TcpClient? client;
         private string page = "/";
         private bool started;
+        private Uri? current;
+        private bool hashStored;
+        private bool downloadedHere;
 
         public FakeBrowser(string folder)
         {
@@ -422,11 +753,17 @@ public class AotProfileTests
 
         public Dictionary<string, string[]> Links { get; } = [];
 
-        public string? ReloadsWhileSettling { get; init; }
+        public Func<string, bool>? ReloadsWhileSettling { get; init; }
 
         public string? ReloadingClick { get; init; }
 
         public int Clicks { get; private set; }
+
+        public bool RendersInteractiveAuto { get; init; }
+
+        public int Loads { get; private set; }
+
+        public int Downloads { get; private set; }
 
         public async ValueTask DisposeAsync()
         {
@@ -503,7 +840,7 @@ public class AotProfileTests
                     File.WriteAllText(stop, "");
                     return [];
                 case "Page.navigate":
-                    page = new Uri(parameters!["url"]!.GetValue<string>()).AbsolutePath;
+                    Navigate(parameters!["url"]!.GetValue<string>());
                     return [];
                 case "Runtime.evaluate":
                     var expression = parameters!["expression"]!.GetValue<string>();
@@ -515,10 +852,42 @@ public class AotProfileTests
             }
         }
 
+        // Like Chromium, a navigation to the URL the tab is on that differs only by its fragment, or not at all when it has
+        // one, stays in the same document. A new document of an InteractiveAuto app renders on the server, and stores a new
+        // resource hash, until a document before it has stored one: localStorage outlives the document.
+        private void Navigate(string url)
+        {
+            var next = new Uri(url);
+
+            if (next.Fragment.Length > 0 && current is not null && Uri.Compare(next, current, UriComponents.HttpRequestUrl, UriFormat.UriEscaped, StringComparison.Ordinal) == 0)
+            {
+                current = next;
+                return;
+            }
+
+            current = next;
+
+            if (next.Scheme is "about")
+                return;
+
+            Loads++;
+            page = next.AbsolutePath;
+            downloadedHere = RendersInteractiveAuto && hashStored is false;
+            hashStored |= RendersInteractiveAuto;
+        }
+
         private JsonNode? Evaluate(string function, JsonNode? argument)
         {
             if (function.Contains("getDotnetRuntime === 'function'", StringComparison.Ordinal))
-                return true;
+            {
+                if (downloadedHere)
+                {
+                    Downloads++;
+                    return "downloaded";
+                }
+
+                return "started";
+            }
 
             if (function.Contains("window.__bitAotProfile = 1", StringComparison.Ordinal))
             {
@@ -537,7 +906,7 @@ public class AotProfileTests
 
             if (function.Contains("MutationObserver", StringComparison.Ordinal))
             {
-                if (page == ReloadsWhileSettling)
+                if (ReloadsWhileSettling?.Invoke(page) is true)
                 {
                     started = false;
                     throw new DevToolsException("Execution context was destroyed.");
@@ -579,8 +948,53 @@ public static class ProfileSamples
 
     public static T Generic<T>(T value) => value;
 
+    public static void Eight(int a, int b, int c, int d, int e, int f, int g, int h) { }
+
+    public static void GenericWide<T>(T value, int a, int b, int c, int d, int e, int f, int g, int h) { }
+
     public static class Nested
     {
         public sealed class Inner;
     }
+
+    public interface IWide
+    {
+        void Log(Guid id, Guid connection, DateTimeOffset start, TimeSpan duration, string text, int a, int b, int c, CancellationToken cancellationToken);
+    }
+
+    public sealed class Wide : IWide
+    {
+        public void Log(Guid id, Guid connection, DateTimeOffset start, TimeSpan duration, string text, int a, int b, int c, CancellationToken cancellationToken) { }
+
+        public void EightOnInstance(int a, int b, int c, int d, int e, int f, int g, int h) { }
+    }
+
+    public sealed class WideOf<T>
+    {
+        public void Log(T value, int a, int b, int c, int d, int e, int f, int g, int h) { }
+    }
+
+    public sealed class WideOverloads<T>
+    {
+        public void Log(T value, int a, int b, int c, int d, int e, int f, int g, int h) { }
+
+        public void Log(string value, int a, int b, int c, int d, int e, int f, int g, int h) { }
+
+        public void Log(Guid value, int a, int b, int c, int d, int e, int f, int g, int h) { }
+    }
+}
+
+/// <summary>Shaped like System.Text.Json's dictionary converters: a virtual method that takes a type parameter by <c>in</c>.</summary>
+public class ProfileConverter<TKey, TValue>
+{
+    public virtual void Add(TKey key, in TValue value) { }
+
+    public TValue First(TKey key, List<TValue> values) => values[0];
+
+    public T Convert<T>(T value) => value;
+}
+
+public class ProfileTextConverter<TValue> : ProfileConverter<string, TValue>
+{
+    public virtual TValue Read(string text) => default!;
 }

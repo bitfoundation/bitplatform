@@ -222,6 +222,13 @@ public sealed class ImagePipeline : IReadOnlyList<IImageOperation>
     /// <summary>Converts to pure black and white at the given luminance level.</summary>
     public ImagePipeline Threshold(float level = 0.5f) => Add(new ThresholdFilter(level));
 
+    /// <summary>
+    /// Converts to black and white by comparing each pixel with its surroundings, the window of <c>2 × radius + 1</c>
+    /// pixels around it: a page lit unevenly, a receipt, a barcode on a glossy label. See <see cref="AdaptiveThresholdFilter"/>.
+    /// </summary>
+    public ImagePipeline AdaptiveThreshold(float radius = 16, float bias = 0.2f, AdaptiveThresholdMethod method = AdaptiveThresholdMethod.Sauvola, Rectangle? region = null)
+        => Add(new AdaptiveThresholdFilter(radius, bias, method, region));
+
     /// <summary>Applies a gaussian blur, optionally limited to a region.</summary>
     public ImagePipeline Blur(float radius, Rectangle? region = null) => Add(new BlurFilter(radius, region));
 
@@ -239,6 +246,13 @@ public sealed class ImagePipeline : IReadOnlyList<IImageOperation>
     /// vertical), as motion during an exposure does.
     /// </summary>
     public ImagePipeline MotionBlur(float distance, float angle = 0, Rectangle? region = null) => Add(new MotionBlurFilter(distance, angle, region));
+
+    /// <summary>
+    /// Blurs towards (<see cref="RadialBlurMode.Zoom"/>) or around (<see cref="RadialBlurMode.Spin"/>) a centre, given as
+    /// fractions of the width and height, leaving the centre sharp. <paramref name="amount"/> is in [0,1].
+    /// </summary>
+    public ImagePipeline RadialBlur(float amount, RadialBlurMode mode = RadialBlurMode.Zoom, PointF? center = null, Rectangle? region = null)
+        => Add(new RadialBlurFilter(amount, mode, center, region));
 
     /// <summary>Keeps only detail finer than <paramref name="radius"/>, around mid grey: edges and texture.</summary>
     public ImagePipeline HighPass(float radius = 3f, Rectangle? region = null) => Add(new HighPassFilter(radius, region));
@@ -262,6 +276,12 @@ public sealed class ImagePipeline : IReadOnlyList<IImageOperation>
 
     /// <summary>Applies an arbitrary colour matrix.</summary>
     public ImagePipeline ColorMatrix(ColorMatrix matrix, string? name = null) => Add(new ColorMatrixOperation(matrix, name));
+
+    /// <summary>
+    /// Maps every colour through a three-dimensional lookup table, such as a film look read from a <c>.cube</c> file
+    /// with <see cref="ColorLookupTable.ParseCube"/>. <paramref name="strength"/> blends the result with the original.
+    /// </summary>
+    public ImagePipeline ColorLut(ColorLookupTable table, float strength = 1f) => Add(new ColorLutAdjustment(table, strength));
 
     /// <summary>Applies a custom per-pixel operation.</summary>
     public ImagePipeline Apply(IImageOperation operation) => Add(operation);
@@ -464,6 +484,10 @@ public sealed class ImagePipeline : IReadOnlyList<IImageOperation>
             Masks.AlphaMaskOperation alpha => MaskBytes(alpha.Mask, pixels),
             // Both read a copy of the region they filter.
             MedianFilter or ConvolutionFilter => 4 * pixels,
+            // A byte of luminance a pixel.
+            AdaptiveThresholdFilter => pixels,
+            // Two premultiplied copies at 16 bits a channel.
+            RadialBlurFilter => 16 * pixels,
             PipelineOperation nested => nested.Pipeline.EstimateMemory(input).PeakBytes,
             _ => 0,
         };

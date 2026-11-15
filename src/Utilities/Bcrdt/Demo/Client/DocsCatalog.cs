@@ -136,7 +136,7 @@ public static class DocsCatalog
         [
             new("/live", "Live, across tabs",
                 "One replica per browser tab, meeting through the demo server's SignalR hub or WebSocket endpoint - with a read-only link to share.",
-                "live tabs SignalR hub WebSocket relay BcrdtCollaborationScope BcrdtPresenceView server share link room read-only access authorization AuthorizeAccessAsync document host IndexedDB",
+                "live tabs SignalR hub WebSocket relay BcrdtCollaborationScope BcrdtPresenceView BcrdtSyncStatus server share link room read-only access authorization AuthorizeAccessAsync document host IndexedDB",
                 typeof(Live)),
         ]),
         new("Tooling",

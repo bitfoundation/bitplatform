@@ -1,0 +1,195 @@
+﻿@page "/components/imageviewer"
+@page "/components/image-viewer"
+
+<PageOutlet Url="components/imageviewer"
+            Title="ImageViewer"
+            Description="BitImageViewer shows an image in a frame it can be zoomed and panned in, with the pointer, a pinch, the keyboard or its zoom buttons." />
+
+<DemoPage Name="ImageViewer"
+          SecondaryNames="@(["ZoomableImage", "PanZoom", "ImageZoom"])"
+          Description="BitImageViewer shows an image in a frame it can be zoomed and panned in: with Ctrl+wheel, a pinch, a double-click, the + and - keys or its zoom buttons, and moved around by dragging it or with the arrow keys while it is zoomed in."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          PublicMembers="componentPublicMembers"
+          CssVariables="componentCssVariables"
+          GitHubExtrasUrl="ImageViewer/BitImageViewer.razor"
+          GitHubDemoUrl="Extras/ImageViewer/BitImageViewerDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            To use this component, you need to install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Extras" Target="_blank">
+                <BitTag Reversed
+                        Text="Bit.BlazorUI.Extras"
+                        Color="BitColor.SecondaryBackground"
+                        IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            nuget package, as described in the Optional steps of the
+            <BitLink Href="/getting-started">Getting started</BitLink> page.
+        </BitText>
+        <br />
+        <BitText>
+            Zoom 1 is the image fitted in the frame: as large as fits, never larger than it is. The frame is a tab stop of
+            its own: + and - zoom, the arrow keys move a zoomed image, and 0 fits it again. The plain wheel is left to the
+            page, so it still scrolls past the viewer; Ctrl+wheel (Cmd+wheel on a Mac) and a trackpad pinch zoom it.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+            <div>
+                Zoom with the buttons, Ctrl+wheel, a pinch or a double-click; drag the zoomed image around. Tab to the frame
+                to do the same from the keyboard.
+            </div>
+            <br />
+            <div>
+                <BitImageViewer Src="/_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" Alt="A granite cliff above a misty autumn forest" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Binding" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <div>Zoom is two-way bindable: it follows every gesture, and setting it zooms the image around its center.</div>
+            <br />
+            <div>
+                <BitImageViewer Src="/_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" Alt="A mountain road above a lake between hills" @bind-Zoom="boundZoom" />
+                <br />
+                <div class="example-content">
+                    <BitText>Zoom: <b>@boundZoom.ToString("0.##")</b></BitText>
+                    <BitButton Variant="BitVariant.Outline" OnClick="() => boundZoom = 3">Zoom to 3</BitButton>
+                </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Zoom range" RazorCode="@example3RazorCode" Id="example3">
+            <div>
+                MinZoom and MaxZoom are the range, as multiples of the fitted image: a MinZoom below 1 lets the image get
+                smaller than the frame. ZoomFactor is a step of the buttons and the keys, and DoubleClickZoom where a
+                double-click goes.
+            </div>
+            <br />
+            <div>
+                <BitImageViewer Src="/_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg"
+                                Alt="A granite cliff above a misty autumn forest"
+                                MinZoom="0.5"
+                                MaxZoom="4"
+                                ZoomFactor="2"
+                                DoubleClickZoom="4" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Wheel zoom" RazorCode="@example4RazorCode" Id="example4">
+            <div>
+                WheelZoom zooms with the plain wheel too, for a viewer with no page around it to scroll: one that fills the
+                screen, or sits in a dialog.
+            </div>
+            <br />
+            <div>
+                <BitImageViewer Src="/_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" Alt="A mountain road above a lake between hills" WheelZoom />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Full screen" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                ShowFullScreenButton adds a button to the toolbar that shows the viewer over the whole page, as a dialog the
+                focus is kept inside, which a plain Escape or its close button leaves. FullScreen is two-way bindable, and the
+                plain wheel zooms a full screen viewer.
+            </div>
+            <br />
+            <div>
+                <BitImageViewer Src="/_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg"
+                                Alt="A mountain road above a lake between hills"
+                                ShowFullScreenButton
+                                @bind-FullScreen="isFullScreen" />
+                <br />
+                <BitText>FullScreen: <b>@isFullScreen</b></BitText>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Lightbox" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <div>
+                FullScreenOnly leaves the viewer out of the page until it is full screen: a lightbox the page opens from a
+                thumbnail of its own, which the focus goes back to as it closes.
+            </div>
+            <br />
+            <div>
+                <div class="example-content">
+                    @foreach (var photo in photos)
+                    {
+                        <button type="button" class="lightbox-thumb" @onclick="() => OpenLightbox(photo)">
+                            <img src="@photo.Src" alt="@photo.Alt" />
+                        </button>
+                    }
+                </div>
+                <BitImageViewer Src="@lightboxPhoto?.Src"
+                                Alt="@lightboxPhoto?.Alt"
+                                FullScreenOnly
+                                @bind-FullScreen="isLightboxOpen" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Public API" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <div>
+                NoToolbar leaves the zoom buttons out, and ZoomIn, ZoomOut, Reset and EnterFullScreen do the same from code.
+            </div>
+            <br />
+            <div>
+                <BitImageViewer @ref="viewerRef" Src="/_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" Alt="A granite cliff above a misty autumn forest" NoToolbar />
+                <br />
+                <div class="example-content">
+                    <BitButton Variant="BitVariant.Outline" OnClick="() => viewerRef.ZoomIn()">ZoomIn</BitButton>
+                    <BitButton Variant="BitVariant.Outline" OnClick="() => viewerRef.ZoomOut()">ZoomOut</BitButton>
+                    <BitButton Variant="BitVariant.Outline" OnClick="() => viewerRef.Reset()">Reset</BitButton>
+                    <BitButton Variant="BitVariant.Outline" OnClick="() => viewerRef.EnterFullScreen()">EnterFullScreen</BitButton>
+                </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Height" RazorCode="@example8RazorCode" Id="example8">
+            <div>Height is the height of the frame, as any CSS value.</div>
+            <br />
+            <div>
+                <BitImageViewer Src="/_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" Alt="A mountain road above a lake between hills" Height="10rem" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Disabled" RazorCode="@example9RazorCode" Id="example9">
+            <div>A disabled viewer neither zooms nor pans, and takes no focus.</div>
+            <br />
+            <div>
+                <BitImageViewer Src="/_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" Alt="A granite cliff above a misty autumn forest" Disabled />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Texts" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+            <div>Texts is every word the viewer says: the names of its buttons and the instructions of its keyboard.</div>
+            <br />
+            <div>
+                <BitImageViewer Src="/_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" Alt="Una carretera de montaña sobre un lago entre colinas" Texts="spanishTexts" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example11RazorCode" Id="example11">
+            <div>
+                Classes and Styles reach every part of the viewer, and the --bit-ImageViewer-* variables restyle its defaults.
+            </div>
+            <br />
+            <div>
+                <div class="example-stack">
+                    <BitImageViewer Src="/_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg"
+                                    Alt="A granite cliff above a misty autumn forest"
+                                    Style="--bit-ImageViewer-background: #000; --bit-ImageViewer-radius: 1rem;"
+                                    Styles="@(new() { Toolbar = "justify-content: flex-end;" })" />
+                    <BitImageViewer Src="/_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg"
+                                    Alt="A mountain road above a lake between hills"
+                                    Classes="@(new() { Viewport = "custom-viewport", Button = "custom-button" })" />
+                </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+            <div>Use BitImageViewer in right-to-left (RTL).</div>
+            <br />
+            <div dir="rtl">
+                <BitImageViewer Dir="BitDir.Rtl" Src="/_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" Alt="صخره‌ای گرانیتی بالای جنگلی مه‌آلود در پاییز" Texts="persianTexts" />
+            </div>
+        </DemoExample>
+    </Examples>
+</DemoPage>

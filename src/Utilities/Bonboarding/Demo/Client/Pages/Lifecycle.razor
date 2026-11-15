@@ -1,6 +1,7 @@
 @page "/lifecycle"
 @implements IDisposable
 @inject IBonboardingService BonboardingService
+@inject DemoPreferences Preferences
 
 <PageTitle>Lifecycle &amp; orchestration · Bonboarding</PageTitle>
 
@@ -132,6 +133,12 @@
         the tour over; afterwards it resumes where it was snoozed. A start the user asks for (<code>StartAsync</code>) is
         never held back. Offer the announcement, press <strong>Remind me in 30 seconds</strong>, and offer it again.
     </p>
+    <p>
+        One rule covers every automatic start at once: <code>BonboardingOptions.CanAutoStart</code>. This demo registers one
+        that reads a "turn tips off" preference. Switch it on and offering the announcement (or any page's
+        <code>AutoStart</code> tour) does nothing, while <strong>Show it anyway</strong> - a start the user asked for - still
+        shows it.
+    </p>
 
     <div class="bb-demo">
         <div class="bb-demo-bar">
@@ -139,6 +146,10 @@
             <button type="button" class="btn btn-primary" @onclick="OfferAnnouncementAsync">Offer the announcement</button>
             <button type="button" class="btn btn-secondary" @onclick="ShowAnnouncementAsync">Show it anyway</button>
             <button type="button" class="btn btn-secondary" @onclick="ForgetAnnouncementAsync">Forget it</button>
+            <label class="bb-check">
+                <input type="checkbox" @bind="Preferences.MuteTips" />
+                Turn automatic tips off
+            </label>
         </div>
 
         @if (_announcementState is not null)
@@ -429,7 +440,9 @@
         var record = await BonboardingService.GetRecordAsync(Announcement.Id);
         _announcementState = record?.SnoozedUntil is { } until && until > DateTimeOffset.Now
             ? $"Not offered: snoozed until {until.ToLocalTime():HH:mm:ss}."
-            : $"Not offered: already {(record?.Completed == true ? "completed" : "dismissed")}. Forget it to have it offered again.";
+            : record?.IsClosed == true
+                ? $"Not offered: already {(record.Completed ? "completed" : "dismissed")}. Forget it to have it offered again."
+                : "Not offered: automatic tips are turned off (CanAutoStart said no). Show it anyway still works.";
     }
 
     private async Task ShowAnnouncementAsync()

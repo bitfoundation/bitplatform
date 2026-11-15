@@ -1,0 +1,340 @@
+@page "/progress"
+@page "/progress/{TaskId}"
+@inherits WorkbenchComponentBase
+
+<PageTitle>@(SelectedTask is { } titled && TaskId is not null ? $"{titled.Title} · {Localizer[nameof(WorkbenchStrings.Progress)]}" : $"{Localizer[nameof(WorkbenchStrings.Progress)]} · {Localizer[nameof(WorkbenchStrings.WorkbenchTitle)]}")</PageTitle>
+
+<div class="progress-page @(TaskId is null ? "showing-list" : "showing-task")">
+    <header class="topbar">
+        <a class="brand" href="@WorkbenchUrls.Home">
+            <img src="_content/Boilerplate.Client.Core/images/bit-logo.svg" alt="" width="26" height="26" />
+            <span>@Localizer[nameof(WorkbenchStrings.WorkbenchTitle)]</span>
+        </a>
+        <span class="crumb-separator">/</span>
+        <a class="crumb" href="@WorkbenchUrls.Progress">@Localizer[nameof(WorkbenchStrings.Progress)]</a>
+        @if (TaskId is not null && SelectedTask is { } named)
+        {
+            <span class="crumb-separator">/</span>
+            <BitText Typography="BitTypography.Body1" Class="crumb-title" NoWrap Dir="BitDir.Auto">@named.Title</BitText>
+        }
+
+        <BitSpacer />
+
+        <BitButton IconOnly Variant="BitVariant.Text" Size="BitSize.Small" IconName="@BitIconName.Help"
+                   Title="@Localizer[nameof(WorkbenchStrings.TourStart)]" AriaLabel="@Localizer[nameof(WorkbenchStrings.TourStart)]"
+                   OnClick="StartGuide" />
+        <LanguageMenu Size="BitSize.Small" />
+        <SoundToggle Size="BitSize.Small" />
+        <BitButton IconOnly Variant="BitVariant.Text" Size="BitSize.Small" IconName="@BitIconName.Contrast"
+                   Title="@Localizer[nameof(WorkbenchStrings.ToggleWorkbenchTheme)]" AriaLabel="@Localizer[nameof(WorkbenchStrings.ToggleWorkbenchTheme)]"
+                   OnClick="ToggleShellTheme" />
+    </header>
+
+    @* Who may see the real tasks waits for them, so the samples never flash by first. *@
+    @if (reviewSession.CanSeeTasks && reviewSession.IsOpen is false && isOpenFailed is false)
+    {
+        <div class="loading"><BitRingLoading /></div>
+    }
+    else if (reviewSession.CanSeeTasks && reviewSession.IsOpen is false)
+    {
+        @* The real tasks couldn't be read, so no samples stand in for them. *@
+        <div class="loading open-failed" role="alert">
+            <span>@Localizer[nameof(WorkbenchStrings.LoadFailed)]</span>
+            <BitButton Variant="BitVariant.Outline" IconName="@BitIconName.Refresh" OnClick="Reload">@Localizer[nameof(WorkbenchStrings.ReloadPage)]</BitButton>
+        </div>
+    }
+    else
+    {
+        <div class="layout">
+            <aside class="task-list" aria-label="@Localizer[nameof(WorkbenchStrings.ProgressTasks)]" data-bonboarding-anchor="progress-list">
+                <div class="list-head">
+                    <h1 class="list-title">@Localizer[nameof(WorkbenchStrings.ProgressTitle)]</h1>
+                    <p class="list-lead">@Localizer[nameof(WorkbenchStrings.ProgressLead)]</p>
+                    @* Which worktree's code the views show, as several chats may work in several of them; on this machine only. *@
+                    @if (reviewSession.CanWrite && RunningFrom is { } runningFrom)
+                    {
+                        <p class="running-from" title="@WorkbenchFolders.WorkingTree"><BitIcon IconName="@BitIconName.BranchFork" Size="BitSize.Small" /> @Localizer[nameof(WorkbenchStrings.ProgressRunningFrom), runningFrom]</p>
+                    }
+                </div>
+
+                @if (reviewSession.ShowsSampleTasks)
+                {
+                    <div class="samples-note" role="note">
+                        <BitIcon IconName="@BitIconName.Lightbulb" Color="BitColor.Primary" />
+                        <div>
+                            <strong>@Localizer[nameof(WorkbenchStrings.ProgressSamplesTitle)]</strong>
+                            <span>@Localizer[reviewSession.CanSeeTasks ? nameof(WorkbenchStrings.ProgressSamplesText) : nameof(WorkbenchStrings.ProgressSamplesVisitorText)]</span>
+                        </div>
+                    </div>
+                }
+
+                @foreach (var (titleKey, tasks) in Groups)
+                {
+                    <section class="group" aria-label="@Localizer[titleKey]">
+                        <h2 class="group-title">@Localizer[titleKey] <span class="group-count">@tasks.Count.ToString(CultureInfo.CurrentCulture)</span></h2>
+                        <ul class="cards">
+                            @foreach (var listed in tasks)
+                            {
+                                <li @key="listed.Id"><ProgressTaskCard ProgressTask="listed" Selected="listed.Id == SelectedTask?.Id" /></li>
+                            }
+                        </ul>
+                    </section>
+                }
+            </aside>
+
+            <main class="task-detail">
+                <a class="back" href="@WorkbenchUrls.Progress"><BitIcon IconName="@BackIcon" Size="BitSize.Small" /> @Localizer[nameof(WorkbenchStrings.ProgressAllTasks)]</a>
+
+                @if (SelectedTask is { } task)
+                {
+                    var canAnswer = reviewSession.CanAnswer(task);
+                    var textDir = TaskDirection(task);
+
+                    <article class="task" @key="task.Id" data-task-id="@task.Id" dir="@textDir">
+                        <header class="task-head" data-bonboarding-anchor="progress-head">
+                            <div class="title-row">
+                                <h2 class="task-title" dir="auto">@task.Title</h2>
+                                <ProgressStatusTag ProgressTask="task" Size="BitSize.Medium" />
+                            </div>
+                            @if (string.IsNullOrWhiteSpace(task.Summary) is false)
+                            {
+                                <p class="task-summary" dir="@(textDir ?? "auto")">@task.Summary</p>
+                            }
+                            <div class="task-meta">
+                                <span class="agent @(task.IsAgentActive && task.IsFinished is false ? "active" : null)">
+                                    <span class="agent-dot" aria-hidden="true"></span>
+                                    <BitIcon IconName="@BitIconName.Robot" Size="BitSize.Small" />
+                                    <span dir="auto">@task.Agent</span>
+                                    @if (task.IsFinished is false)
+                                    {
+                                        <span class="agent-state">· @(task.IsAgentActive ? Localizer[nameof(WorkbenchStrings.ProgressAgentActive)].Value : Localizer[nameof(WorkbenchStrings.ProgressAgentLastSeen), WorkbenchTimes.Ago(task.SeenAt ?? task.UpdatedAt, Localizer)].Value)</span>
+                                    }
+                                </span>
+                                <span class="meta-item">@Localizer[nameof(WorkbenchStrings.ProgressStarted), WorkbenchTimes.Ago(task.CreatedAt, Localizer)]</span>
+                                <span class="meta-item">@Localizer[nameof(WorkbenchStrings.ProgressUpdated), WorkbenchTimes.Ago(task.UpdatedAt, Localizer)]</span>
+                                @if (task.IsSample)
+                                {
+                                    <BitTag Text="@Localizer[nameof(WorkbenchStrings.ProgressSample)]" Variant="BitVariant.Outline" Size="BitSize.Small" IconName="@BitIconName.Lightbulb" />
+                                }
+                            </div>
+                            <div class="overall">
+                                <BitProgress Percent="task.Percent" Thickness="8" Rounded
+                                             Color="@(task.Status is WorkbenchProgressStatus.Done ? BitColor.Success : task.Status is WorkbenchProgressStatus.Failed ? BitColor.Error : BitColor.Primary)"
+                                             AriaValueText="@Localizer[nameof(WorkbenchStrings.ProgressStepsDone), task.CompletedCount, task.Steps.Length]"
+                                             Class="overall-bar" />
+                                <span class="overall-text">@Localizer[nameof(WorkbenchStrings.ProgressStepsDone), task.CompletedCount, task.Steps.Length]</span>
+                            </div>
+                        </header>
+
+                        <div class="columns">
+                            <div class="main-column">
+                                @if (task.NeedsYouCount > 0)
+                                {
+                                    <section class="your-turn" aria-labelledby="your-turn-title" data-bonboarding-anchor="progress-your-turn">
+                                        <h3 id="your-turn-title" class="section-title">
+                                            <BitIcon IconName="@BitIconName.Ringer" Color="BitColor.Warning" />
+                                            @Localizer[nameof(WorkbenchStrings.ProgressYourTurn)]
+                                            <span class="turn-count">@task.NeedsYouCount.ToString(CultureInfo.CurrentCulture)</span>
+                                        </h3>
+                                        <p class="turn-hint">@Localizer[nameof(WorkbenchStrings.ProgressYourTurnHint), task.Agent]</p>
+
+                                        @foreach (var step in task.StepsForYou)
+                                        {
+                                            @* Steps and questions sit side by side here and may share an id, so their keys say which is which. *@
+                                            <div class="todo" @key="@($"step:{step.Id}")" data-step-id="@step.Id">
+                                                <div class="todo-head">
+                                                    <span class="todo-icon" aria-hidden="true"><BitIcon IconName="@BitIconName.Contact" Size="BitSize.Small" /></span>
+                                                    <strong class="todo-text" dir="@(textDir ?? "auto")">@step.Text</strong>
+                                                </div>
+                                                @if (string.IsNullOrWhiteSpace(step.Detail) is false)
+                                                {
+                                                    <div class="todo-detail" dir="@(textDir ?? "auto")"><BitMarkdownViewer Markdown="@step.Detail" Pipeline="BitMarkdownPipelines.GitHub" Inline /></div>
+                                                }
+                                                <div class="todo-actions">
+                                                    @if (step.Link is { Length: > 0 } link)
+                                                    {
+                                                        <BitButton Variant="BitVariant.Outline" Size="BitSize.Small" IconName="@BitIconName.OpenInNewWindow" Href="@link" Target="@LinkTarget(link)">@Localizer[nameof(WorkbenchStrings.ProgressOpenLink)]</BitButton>
+                                                    }
+                                                    <BitButton Size="BitSize.Small" IconName="@BitIconName.CheckMark" Disabled="canAnswer is false" OnClick="() => CompleteStep(task, step)">@Localizer[nameof(WorkbenchStrings.ProgressDidIt)]</BitButton>
+                                                </div>
+                                            </div>
+                                        }
+
+                                        @foreach (var ask in task.OpenAsks)
+                                        {
+                                            <ProgressAskCard @key="@($"ask:{ask.Id}")" Ask="ask" Agent="@task.Agent" CanAnswer="canAnswer" CanStoreSecret="reviewSession.CanStoreSecrets(task)"
+                                                             OnAnswer="(a, choices, text) => Answer(task, a, choices, text)" OnSecret="(a, secret) => StoreSecret(task, a, secret)" />
+                                        }
+                                    </section>
+                                }
+                                else if (task.IsFinished is false)
+                                {
+                                    <div class="nothing-for-you" role="status">
+                                        <BitIcon IconName="@BitIconName.CompletedSolid" Color="BitColor.Success" />
+                                        <span>@Localizer[nameof(WorkbenchStrings.ProgressNothingForYou), task.Agent]</span>
+                                    </div>
+                                }
+
+                                @* The agent's write-up, like the report a long run ends with, read as a document. *@
+                                @if (string.IsNullOrWhiteSpace(task.Report) is false)
+                                {
+                                    <section class="report" aria-labelledby="report-title">
+                                        <h3 id="report-title" class="section-title">@Localizer[nameof(WorkbenchStrings.ProgressReport)]</h3>
+                                        <div class="report-body" dir="@(textDir ?? "auto")">
+                                            <BitMarkdownViewer Markdown="@task.Report" Pipeline="BitMarkdownPipelines.GitHub" HeadingLevelOffset="3" HeadingIdPrefix="report-" />
+                                        </div>
+                                    </section>
+                                }
+
+                                <section class="steps" aria-labelledby="steps-title" data-bonboarding-anchor="progress-steps">
+                                    <h3 id="steps-title" class="section-title">@Localizer[nameof(WorkbenchStrings.ProgressSteps)]</h3>
+                                    @if (task.Steps.Length == 0)
+                                    {
+                                        <p class="empty">@Localizer[nameof(WorkbenchStrings.ProgressNoSteps)]</p>
+                                    }
+                                    else
+                                    {
+                                        <ol class="step-list">
+                                            @foreach (var step in task.Steps)
+                                            {
+                                                <li @key="step.Id" class="step status-@step.Status.ToString().ToLowerInvariant() @(step.Owner is WorkbenchProgressOwner.You ? "yours" : null)" data-step-id="@step.Id">
+                                                    <span class="step-marker" aria-hidden="true">
+                                                        @if (step.Status is WorkbenchProgressStepStatus.Doing && step.Owner is WorkbenchProgressOwner.Agent && task.IsFinished is false)
+                                                        {
+                                                            <span class="spinner"></span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <BitIcon IconName="@StepIcon(step)" Size="BitSize.Small" />
+                                                        }
+                                                    </span>
+                                                    <div class="step-body">
+                                                        <div class="step-line">
+                                                            <span class="step-text" dir="@(textDir ?? "auto")">@step.Text</span>
+                                                            @if (step.Owner is WorkbenchProgressOwner.You)
+                                                            {
+                                                                <span class="owner">@Localizer[nameof(WorkbenchStrings.ProgressYou)]</span>
+                                                            }
+                                                            <span class="step-state">@Localizer[$"ProgressStep{step.Status}"]</span>
+                                                        </div>
+                                                        @if (string.IsNullOrWhiteSpace(step.Detail) is false && (step.Owner is WorkbenchProgressOwner.Agent || step.Status is not WorkbenchProgressStepStatus.Doing))
+                                                        {
+                                                            <div class="step-detail" dir="@(textDir ?? "auto")"><BitMarkdownViewer Markdown="@step.Detail" Pipeline="BitMarkdownPipelines.GitHub" Inline /></div>
+                                                        }
+                                                        @if (step.Link is { Length: > 0 } stepLink)
+                                                        {
+                                                            <a class="step-link" href="@stepLink" target="@LinkTarget(stepLink)" rel="noopener"><BitIcon IconName="@BitIconName.Link" Size="BitSize.Small" /> @LinkText(stepLink)</a>
+                                                        }
+                                                    </div>
+                                                </li>
+                                            }
+                                        </ol>
+                                    }
+                                </section>
+                            </div>
+
+                            <div class="side-column">
+                                @if (task.Notes.Length > 0)
+                                {
+                                    <section class="notes" aria-labelledby="notes-title" data-bonboarding-anchor="progress-notes">
+                                        <h3 id="notes-title" class="section-title">@Localizer[nameof(WorkbenchStrings.ProgressKeepInMind)]</h3>
+                                        @foreach (var note in task.Notes)
+                                        {
+                                            <BitMessage @key="note.Id" Color="NoteColor(note.Kind)" IconName="@NoteIcon(note.Kind)" Variant="BitVariant.Outline" Tinted Multiline Class="note">
+                                                <strong class="note-kind">@Localizer[$"ProgressNote{note.Kind}"]</strong>
+                                                <span class="note-text" dir="@(textDir ?? "auto")"><BitMarkdownViewer Markdown="@note.Text" Pipeline="BitMarkdownPipelines.GitHub" Inline /></span>
+                                            </BitMessage>
+                                        }
+                                    </section>
+                                }
+
+                                @if (task.Links.Length > 0)
+                                {
+                                    <section class="links" aria-labelledby="links-title">
+                                        <h3 id="links-title" class="section-title">@Localizer[nameof(WorkbenchStrings.ProgressLinks)]</h3>
+                                        <div class="link-list">
+                                            @foreach (var link in task.Links)
+                                            {
+                                                <BitButton Variant="BitVariant.Outline" Size="BitSize.Small" IconName="@BitIconName.OpenInNewWindow" Href="@link.Url" Target="@LinkTarget(link.Url)" Title="@link.Url">@link.Label</BitButton>
+                                            }
+                                        </div>
+                                    </section>
+                                }
+
+                                <section class="activity" aria-labelledby="activity-title" data-bonboarding-anchor="progress-activity">
+                                    <h3 id="activity-title" class="section-title">@Localizer[nameof(WorkbenchStrings.ProgressActivity)]</h3>
+                                    @if (canAnswer)
+                                    {
+                                        <div class="composer">
+                                            <BitTextField Value="@Draft(task)"
+                                                          ValueChanged="(string? text) => SetDraft(task, text)"
+                                                          Immediate
+                                                          Multiline
+                                                          Rows="2"
+                                                          OnKeyDown="e => SendOnCtrlEnter(e, task)"
+                                                          Placeholder="@Localizer[nameof(WorkbenchStrings.ProgressMessagePlaceholder), task.Agent]"
+                                                          AriaLabel="@Localizer[nameof(WorkbenchStrings.ProgressMessagePlaceholder), task.Agent]"
+                                                          MaxLength="WorkbenchProgressDocument.MaxTextLength" />
+                                            <div class="composer-actions">
+                                                <BitButton Size="BitSize.Small" IconName="@BitIconName.Send" Title="Ctrl+Enter" Disabled="isSendingMessage || string.IsNullOrWhiteSpace(Draft(task))" OnClick="() => SendMessage(task)">@Localizer[nameof(WorkbenchStrings.Send)]</BitButton>
+                                                <DictationButton Size="BitSize.Small" Value="@Draft(task)" ValueChanged="(string? heard) => SetDraft(task, heard)" Class="composer-dictation" />
+                                            </div>
+                                        </div>
+                                    }
+                                    <ol class="feed" aria-label="@Localizer[nameof(WorkbenchStrings.ProgressActivity)]">
+                                        @foreach (var entry in Enumerable.Reverse(task.Feed))
+                                        {
+                                            <li class="entry @(entry.FromYou ? "from-you" : "from-agent") kind-@entry.Kind.ToString().ToLowerInvariant() @(entry.Tone is { } tone ? $"tone-{tone.ToString().ToLowerInvariant()}" : null)">
+                                                <span class="entry-meta">
+                                                    <span class="entry-author" dir="auto">
+                                                        @if (entry.Tone is { } toned)
+                                                        {
+                                                            <span class="tone-dot" role="img" aria-label="@Localizer[$"ProgressNote{toned}"]" title="@Localizer[$"ProgressNote{toned}"]"></span>
+                                                        }
+                                                        @(entry.FromYou ? entry.Author : task.Agent)
+                                                    </span>
+                                                    <time datetime="@entry.At.ToString("O", CultureInfo.InvariantCulture)">@WorkbenchTimes.Ago(entry.At, Localizer)</time>
+                                                </span>
+                                                @if (AnswerOf(task, entry) is { } answered)
+                                                {
+                                                    <span class="entry-question" dir="auto">@answered.Question</span>
+                                                    <span class="entry-text" dir="auto">@answered.Said</span>
+                                                }
+                                                else if (entry.FromYou)
+                                                {
+                                                    <span class="entry-text" dir="auto">@EntryText(entry)</span>
+                                                }
+                                                else
+                                                {
+                                                    <div class="entry-text" dir="@(textDir ?? "auto")"><BitMarkdownViewer Markdown="@entry.Text" Pipeline="BitMarkdownPipelines.GitHub" Inline /></div>
+                                                }
+                                            </li>
+                                        }
+                                    </ol>
+                                </section>
+
+                                @if (reviewSession.CanDelete(task))
+                                {
+                                    <div class="danger">
+                                        <BitButton Variant="BitVariant.Text" Size="BitSize.Small" Color="BitColor.Error" IconName="@BitIconName.Delete" OnClick="() => DeleteTask(task)">
+                                            @Localizer[confirmingDeleteId == task.Id ? nameof(WorkbenchStrings.ProgressDeleteConfirm) : nameof(WorkbenchStrings.ProgressDelete)]
+                                        </BitButton>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </article>
+                }
+                else
+                {
+                    <div class="gone">
+                        <BitIcon IconName="@BitIconName.TaskList" />
+                        <BitText Typography="BitTypography.Body1">@Localizer[TaskId is null ? nameof(WorkbenchStrings.ProgressPickTask) : nameof(WorkbenchStrings.ProgressTaskGone)]</BitText>
+                    </div>
+                }
+            </main>
+        </div>
+    }
+
+    <ChromeSnackBar />
+</div>

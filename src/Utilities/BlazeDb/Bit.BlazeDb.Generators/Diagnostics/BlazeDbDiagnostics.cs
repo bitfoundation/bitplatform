@@ -150,6 +150,14 @@ internal static class BlazeDbDiagnostics
         DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
+    public static readonly DiagnosticDescriptor UnstoredGetOnlyProperty = new(
+        "BLZ020",
+        "Get-only auto-property is not stored",
+        "Property '{0}.{1}' is a get-only auto-property that the constructor rows are read back through does not take, so it is not stored: its value would be lost on reload. Give it a setter or init accessor, take it as a constructor parameter, or mark it [BlazeDbIgnore] if leaving it out is intended.",
+        Category,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true);
+
     public static readonly DiagnosticDescriptor UnsupportedTypeShape = new(
         "BLZ007",
         "Unsupported table type shape",

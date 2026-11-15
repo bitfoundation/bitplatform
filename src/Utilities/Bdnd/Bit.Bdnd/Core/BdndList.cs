@@ -8,6 +8,8 @@
 /// A target with <see cref="BdndDropTarget{TItem}.Edges"/> reports the edge a drop was closest to; with the index of the
 /// item that target shows, <see cref="InsertionIndex"/> gives where the dropped item goes in that list, and
 /// <see cref="Move{T}"/> moves it there - out of the list it came from, which may be the same one.
+/// <see cref="PlanMove{T}(IList{T}, IEnumerable{int}, IList{T}, int)"/> works a move - of one item or a selection - out
+/// without making it, so it can be checked first and taken back after (<see cref="BdndListMove{T}"/>).
 /// </remarks>
 public static class BdndList
 {
@@ -68,5 +70,45 @@ public static class BdndList
         source.RemoveAt(sourceIndex);
         destination.Insert(insertionIndex, item);
         return true;
+    }
+
+    /// <summary>
+    /// Works out moving the item at <paramref name="sourceIndex"/> of <paramref name="source"/> to
+    /// <paramref name="insertionIndex"/> of <paramref name="destination"/>, as <see cref="Move{T}"/> does, without
+    /// making the move yet: <see cref="BdndListMove{T}.Apply"/> makes it, <see cref="BdndListMove{T}.Revert"/> takes it
+    /// back. Answers null when the indexes are out of range or the item would stay where it is.
+    /// </summary>
+    public static BdndListMove<T>? PlanMove<T>(IList<T> source, int sourceIndex, IList<T> destination, int insertionIndex) =>
+        PlanMove(source, [sourceIndex], destination, insertionIndex);
+
+    /// <summary>
+    /// Works out moving the items at <paramref name="sourceIndexes"/> of <paramref name="source"/> - a selection, in
+    /// any order - to <paramref name="insertionIndex"/> of <paramref name="destination"/> (an index in the destination
+    /// as it is before the move, what <see cref="InsertionIndex"/> answers), whether or not the two are the same list.
+    /// The items keep the order they have in the source and land next to each other. Nothing changes until
+    /// <see cref="BdndListMove{T}.Apply"/> is called; <see cref="BdndListMove{T}.Revert"/> takes the move back.
+    /// Answers null when there are no indexes, an index is out of range, or the items would stay where they are.
+    /// </summary>
+    public static BdndListMove<T>? PlanMove<T>(IList<T> source, IEnumerable<int> sourceIndexes, IList<T> destination, int insertionIndex)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(sourceIndexes);
+        ArgumentNullException.ThrowIfNull(destination);
+        int[] indexes = [.. sourceIndexes.Distinct().Order()];
+        if (indexes.Length == 0 || indexes[0] < 0 || indexes[^1] >= source.Count) return null;
+        if (insertionIndex < 0 || insertionIndex > destination.Count) return null;
+
+        var finishIndex = insertionIndex;
+        if (ReferenceEquals(source, destination))
+        {
+            // the items that leave from before the insertion index shift it up
+            foreach (var index in indexes)
+            {
+                if (index < insertionIndex) finishIndex--;
+            }
+            // already next to each other, starting there: nothing would change
+            if (indexes[0] == finishIndex && indexes[^1] - indexes[0] == indexes.Length - 1) return null;
+        }
+        return new(source, indexes, destination, insertionIndex, finishIndex);
     }
 }

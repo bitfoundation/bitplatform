@@ -247,7 +247,7 @@
 </DemoExample>
 
 <DemoExample Title="Validation" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9" PreventRenderForMcpClient>
-    <div>Integrates with EditForm and data annotations. While the field is invalid the radiogroup and its inputs carry aria-invalid and the radio circles turn red, until a choice is made. Required is separate from the validation attribute of the model: it adds the required asterisk to the label, the aria-required of the group and the native required check of the inputs, so set both. A read-only group is barred from that native check the way a read-only control is in HTML, so it cannot block a submit with an error no one can clear. Pointing the aria-describedby of the group at the ValidationMessage is what has the error read out with the group: the group keeps its own description as well, since aria-describedby is a list.</div>
+    <div>Integrates with EditForm and data annotations. While the field is invalid the radiogroup and its inputs carry aria-invalid and the radio circles turn red, until a choice is made. Required is separate from the validation attribute of the model: it adds the required asterisk to the label, the aria-required of the group and the native required check of the inputs, so set both. A read-only group is barred from that native check the way a read-only control is in HTML, so it cannot block a submit with an error no one can clear.<br /><br />ShowValidationMessage shows the messages of the form under the items, where ErrorMessage goes, so the form below needs no ValidationMessage component. The group is described by them through aria-describedby, after its own description, so they are read out whenever the group is entered, and an ErrorMessage of the app's own wins the place while it is set. They are not announced as they appear: a submit validates every field at once, and a message from each of them read out in a row would bury the form under its own errors. A BitParams holding a BitChoiceGroupParams with ShowValidationMessage turns it on for every choice group inside it.</div>
     <br />
     @if (string.IsNullOrEmpty(successMessage))
     {
@@ -255,15 +255,9 @@
             <DataAnnotationsValidator />
 
             <BitChoiceGroup Label="Pick one" Required @bind-Value="validationModel.Value"
-                            aria-describedby="chg-custom-error"
                             Items="basicCustoms"
-                            NameSelectors="@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })" />
-            @* A wrapper rather than an id on the ValidationMessage itself: it renders one element per
-               message, so an id there would be duplicated the moment a second rule fails, and it renders
-               nothing at all while the field is valid, which would leave a dangling reference behind. *@
-            <div id="chg-custom-error">
-                <ValidationMessage For="@(() => validationModel.Value)" />
-            </div>
+                            NameSelectors="@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })"
+                            ShowValidationMessage />
 
             <br />
 

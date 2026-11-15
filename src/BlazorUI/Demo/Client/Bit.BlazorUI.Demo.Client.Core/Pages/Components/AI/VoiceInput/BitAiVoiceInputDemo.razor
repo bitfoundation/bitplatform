@@ -2,13 +2,15 @@
 
 <PageOutlet Url="components/ai/voiceinput"
             Title="AiVoiceInput"
-            Description="BitAiVoiceInput is a dictation button for an AI chat: speech is turned into text by the speech recognition of the browser, each finished phrase raised to the app, the provisional one while the user is still speaking." />
+            Description="BitAiVoiceInput is a dictation button for an AI chat: speech is turned into text by the speech recognition of the browser, or by the app's own speech-to-text from a recording made in the browser, and raised to the app as text." />
 
 <DemoPage Name="AiVoiceInput"
           SecondaryNames="@(["Dictation", "SpeechToText"])"
-          Description="BitAiVoiceInput is a dictation button: a toggle that turns the microphone on and off and hands over what is said as text, through the speech recognition of the browser (the Web Speech API) - no server of yours, no audio for your app to handle. Each finished phrase is raised through OnTranscript and the provisional text through OnInterim while the user is still speaking. Where the browser cannot transcribe, it renders nothing at all rather than a button that does nothing."
+          Description="BitAiVoiceInput is a dictation button: a toggle that turns the microphone on and off and hands over what is said as text, through the speech recognition of the browser (the Web Speech API) - no server of yours, no audio for your app to handle. Each finished phrase is raised through OnTranscript and the provisional text through OnInterim while the user is still speaking. With a Transcriber (or an IBitAiSpeechToText service registered through UseSpeechToText) it records the microphone instead and hands the whole take to the app's own speech-to-text - which also works where the browser has no speech recognition (Firefox, Android WebView), with the time left of the recording shown beside the button. Where it cannot dictate either way, it renders nothing at all rather than a button that does nothing."
           Parameters="componentParameters"
           SubClasses="componentSubClasses"
+          SubEnums="componentSubEnums"
+          CssVariables="componentCssVariables"
           PublicMembers="componentPublicMembers"
           GitHubAIUrl="VoiceInput/BitAiVoiceInput.razor"
           GitHubDemoUrl="AI/VoiceInput/BitAiVoiceInputDemo.razor">
@@ -26,9 +28,9 @@
         </BitText>
         <br />
         <BitText>
-            <b>BitAiVoiceInput renders nothing in a browser without speech recognition</b> (Firefox, for one) - it asks the
-            browser once it is on the page, so it is never part of a prerendered page either. Where nothing shows in the examples
-            below, try a Chromium browser or Safari. The browser asks for the microphone the first time it is pressed, and does
+            <b>BitAiVoiceInput renders nothing in a browser without speech recognition</b> (Firefox, for one) - unless the app
+            transcribes the speech itself (the Transcriber example below) - and it asks the browser once it is on the page, so it is
+            never part of a prerendered page either. Where nothing shows in the examples below, try a Chromium browser or Safari. The browser asks for the microphone the first time it is pressed, and does
             the recognition itself - some (Chrome, for one) in their vendor's cloud service, so do not offer it for speech that
             must not leave the device. One dictation runs at a time on a page: starting one in a second voice input stops the
             first, which raises its <b>OnListeningChanged</b> as if it had stopped on its own.
@@ -146,11 +148,41 @@
             <div>Heard: <b>@disabledTranscript</b></div>
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+        <DemoExample Title="Transcriber" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+            <div>
+                <b>Transcriber</b> hands the speech to the app's own speech-to-text (Whisper, Azure Speech, ...): the microphone is
+                recorded in the browser - which works in Firefox and Android WebView too - and the whole take is handed to it, with
+                its media type, once the user stops; what it returns arrives through <b>OnTranscript</b>. An app that transcribes
+                the same way everywhere registers an <b>IBitAiSpeechToText</b> instead
+                (<b>AddBitBlazorUIAIServices(ai => ai.UseSpeechToText&lt;T&gt;())</b>), which every voice input, and every
+                composer's dictation, then uses. The recording stops on its own at <b>MaxRecordingDuration</b> - the time left
+                counts down beside the button, and is announced once ten seconds before - and, with <b>SilenceTimeout</b>, once the
+                user has said something and then been quiet that long. <b>Mode</b> decides which way a press dictates: Auto (the
+                transcriber when there is one), Browser (the speech recognition of the browser, with the transcriber only where there
+                is none) or Recording (the transcriber only). The transcriber here only describes what it was handed.
+            </div>
+            <br />
+            <BitChoiceGroup @bind-Value="dictationMode" Items="dictationModes" Horizontal />
+            <br />
+            <BitAiVoiceInput Transcriber="DescribeRecordingAsync"
+                             Mode="dictationMode"
+                             MaxRecordingDuration="TimeSpan.FromSeconds(20)"
+                             SilenceTimeout="TimeSpan.FromSeconds(2)"
+                             OnListeningChanged="v => isRecording = v"
+                             OnTranscript="HandleTranscriberTranscript"
+                             OnError="v => transcriberError = v" />
+            <br />
+            <div>Listening: <b>@isRecording</b></div>
+            <div>Heard: <b>@transcriberTranscript</b></div>
+            <div>Last error: <b>@transcriberError</b></div>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
             <div>
                 <b>Style</b> and <b>Class</b> reach the root, <b>Styles</b> and <b>Classes</b> its button (BitToggleButtonClassStyles)
-                and its visually hidden live region. The voice input has no CSS variables of its own: the button is restyled through
-                the public <b>--bit-ToggleButton-*</b> variables, from <b>:root</b>, an ancestor or <b>Style</b>.
+                and its visually hidden live region (and the countdown of a recording). The button is restyled through the public
+                <b>--bit-ToggleButton-*</b> variables, from <b>:root</b>, an ancestor or <b>Style</b>; of its own the voice input has
+                <b>--bit-AiVoiceInput-countdown-color</b>, the color of the time left of a recording.
             </div>
             <br />
             @* A plain element of this page for the scoped ::deep rules of the custom classes to anchor on. *@
@@ -170,7 +202,7 @@
             <div>Heard: <b>@styleTranscript</b></div>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+        <DemoExample Title="RTL" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
             <div>
                 Use BitAiVoiceInput in right-to-left (RTL). The direction only lays it out: its <b>Language</b> is what decides the
                 language listened for - Persian here.

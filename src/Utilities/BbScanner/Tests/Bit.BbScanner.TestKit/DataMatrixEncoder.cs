@@ -14,11 +14,26 @@ public static class DataMatrixEncoder
     /// <summary>Encodes text into a Data Matrix module grid, borders included.</summary>
     /// <param name="content">The text to encode; ISO-8859-1 characters only.</param>
     /// <param name="minimumVersion">Forces a symbol shape of at least this version number.</param>
-    public static BbBitMatrix Encode(string content, int minimumVersion = 1)
+    /// <param name="structuredAppend">
+    /// Writes a structured append header ahead of the data: the symbol's position from 1, the number of symbols, and
+    /// the two byte file identification the sequence shares.
+    /// </param>
+    /// <param name="eci">Writes an ECI designator, below 127, ahead of the data: 26 has its bytes read as UTF-8.</param>
+    public static BbBitMatrix Encode(string content, int minimumVersion = 1, (int Position, int Count, int FileId)? structuredAppend = null, int? eci = null)
     {
         ArgumentNullException.ThrowIfNull(content);
 
         var codewords = EncodeAscii(content);
+        if (eci is { } designator)
+        {
+            codewords.InsertRange(0, [241, (byte)(designator + 1)]);
+        }
+
+        if (structuredAppend is { } header)
+        {
+            codewords.InsertRange(0, [233, (byte)(((header.Position - 1) << 4) | (17 - header.Count)), (byte)(header.FileId >> 8), (byte)header.FileId]);
+        }
+
         var version = ChooseVersion(codewords.Count, minimumVersion)
             ?? throw new ArgumentException("The content does not fit in any Data Matrix symbol.", nameof(content));
 

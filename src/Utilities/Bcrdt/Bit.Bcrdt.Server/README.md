@@ -23,6 +23,11 @@ app.MapBitBcrdtWebSocket("/ws/bcrdt/{documentId}");
 - Decide who may work on a document by deriving from `BcrdtHub` and overriding `AuthorizeAsync`, or by passing
   `authorize` to `MapBitBcrdtWebSocket`. A refusal reaches the client as a final
   `BcrdtTransportAuthorizationException` rather than a failure to retry.
+- End or narrow a grant while the connection is open through `BcrdtRelayConnections`, which both relays list their
+  connections in - registered by `AddBitBcrdtHub`, or by `AddBitBcrdtRelayConnections` in an application that maps
+  only the WebSocket endpoint. `RevokeAsync` refuses the matching connections, in a `BcrdtDocumentHost` too when there
+  is one, and `MakeReadOnlyAsync` makes them read-only without disconnecting them. Change the authorization hook
+  first, and revoke on every instance behind a backplane: the list is per process.
 - The hub scales out with a SignalR backplane. The WebSocket relay's rooms are process-local: use sticky sessions or
   a broker behind a load balancer. Every WebSocket client gets its own bounded outbound queue, so one slow client
   cannot hold up the others.

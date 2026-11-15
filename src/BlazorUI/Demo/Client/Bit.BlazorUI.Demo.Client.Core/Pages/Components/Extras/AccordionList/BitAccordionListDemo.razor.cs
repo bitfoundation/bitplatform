@@ -142,10 +142,17 @@ public partial class BitAccordionListDemo
         },
         new()
         {
-            Name = "EmptyContent",
+            Name = "EmptyTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "The custom content to render in place of the items when the list has none. A list built from Options or ChildContent only knows it is empty once its options have had their turn to register, so its empty content takes the render after the first; a list built from Items shows it right away.",
+        },
+        new()
+        {
+            Name = "EmptyText",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The text to render in place of the items when the list has none and no EmptyTemplate is given. Defaults to BitStrings.NoItemsFound (\"No items found\").",
         },
         new()
         {
@@ -566,6 +573,7 @@ public partial class BitAccordionListDemo
                 new() { Name = "ItemContentContainer", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the content container of each accordion item of the BitAccordionList." },
                 new() { Name = "ItemContentWrapper", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the content wrapper of each accordion item, which clips the content while it collapses." },
                 new() { Name = "ItemContent", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the content of each accordion item of the BitAccordionList." },
+                new() { Name = "Empty", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for what the BitAccordionList shows when it has no item, EmptyText or EmptyTemplate." },
             ]
         }
     ];
@@ -583,6 +591,18 @@ public partial class BitAccordionListDemo
             Name = "--bit-AccordionList-divider-color",
             DefaultValue = "The items' border color (--bit-clr-brd-pri with NoBorder)",
             Description = "Line between two items of a Joined list. The Border parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-AccordionList-empty-padding",
+            DefaultValue = "spacing(2)",
+            Description = "Padding of what an empty list shows.",
+        },
+        new()
+        {
+            Name = "--bit-AccordionList-empty-color",
+            DefaultValue = "--bit-clr-fg-sec",
+            Description = "Text of what an empty list shows.",
         },
     ];
 

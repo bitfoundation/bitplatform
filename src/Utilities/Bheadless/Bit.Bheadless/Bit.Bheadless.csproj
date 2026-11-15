@@ -22,12 +22,11 @@
     <ItemGroup>
         <!-- The upper bounds sit below every prerelease of the next major (-alpha; nuget.org refuses -0): NuGet orders 11.0.0-rc.x below 11.0.0,
              so a plain 11.0.0 bound would still let a net11-only prerelease into the net10.0 range.
-             While the net11.0 lower bound is a dotted prerelease (11.0.0-rc.3.26522.148), nuget.org classifies the package as SemVer 2.0.0
-             and leaves it out of every search that does not send semVerLevel=2.0.0 (older clients, scripts and tools calling the search API),
-             which still find Bit.Bheadless.Testing. Move it to 11.0.0 once .NET 11 ships; a SemVer 1.0.0 prerelease bound such as 11.0.0-rc
-             exists in no feed, so every restore that has nothing else asking for Components.Web would warn NU1603 and resolve rc.1. -->
+             A dotted prerelease lower bound (such as 11.0.0-rc.3.26522.148) makes nuget.org classify the package as SemVer 2.0.0 and leave it
+             out of every search that does not send semVerLevel=2.0.0 (older clients, scripts and tools calling the search API), and a SemVer 1.0.0
+             prerelease bound such as 11.0.0-rc exists in no feed, so restores warn NU1603: the lower bounds are stable releases. -->
         <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.AspNetCore.Components.Web" Version="[10.0.0,11.0.0-alpha)" />
-        <PackageReference Condition="'$(TargetFramework)' == 'net11.0'" Include="Microsoft.AspNetCore.Components.Web" Version="[11.0.0-rc.3.26522.148,12.0.0-alpha)" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net11.0'" Include="Microsoft.AspNetCore.Components.Web" Version="[11.0.0,12.0.0-alpha)" />
     </ItemGroup>
 
     <ItemGroup>

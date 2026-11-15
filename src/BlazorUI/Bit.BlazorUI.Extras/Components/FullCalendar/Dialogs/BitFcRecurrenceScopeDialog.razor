@@ -12,11 +12,18 @@
         </div>
         <div class="bit-bfc-dialog-body" role="radiogroup" aria-labelledby="@_titleId">
             <label class="bit-bfc-field-inline bit-bfc-scope-option">
-                <input type="radio" name="@_groupName" checked="@(_allOccurrences is false)" @onchange="() => _allOccurrences = false" />
+                <input type="radio" name="@_groupName" checked="@(_scope is Scope.This)" @onchange="() => _scope = Scope.This" />
                 <span>@Texts.ThisOccurrenceOption</span>
             </label>
+            @if (OnConfirmFollowing.HasDelegate)
+            {
+                <label class="bit-bfc-field-inline bit-bfc-scope-option">
+                    <input type="radio" name="@_groupName" checked="@(_scope is Scope.Following)" @onchange="() => _scope = Scope.Following" />
+                    <span>@Texts.ThisAndFollowingOption</span>
+                </label>
+            }
             <label class="bit-bfc-field-inline bit-bfc-scope-option">
-                <input type="radio" name="@_groupName" checked="@_allOccurrences" @onchange="() => _allOccurrences = true" />
+                <input type="radio" name="@_groupName" checked="@(_scope is Scope.All)" @onchange="() => _scope = Scope.All" />
                 <span>@Texts.AllOccurrencesOption</span>
             </label>
         </div>

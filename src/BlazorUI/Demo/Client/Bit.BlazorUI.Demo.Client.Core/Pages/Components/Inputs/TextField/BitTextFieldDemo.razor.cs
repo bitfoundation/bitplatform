@@ -309,6 +309,20 @@ public partial class BitTextFieldDemo : IDisposable
         },
         new()
         {
+            Name = "Mask",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The pattern the text is laid out over as the user types: '#' takes a digit, 'A' a letter and '*' a letter or a digit, every other character is a literal inserted for the user, and a backslash makes the next character a literal. What a slot does not take, and what is typed beyond the last slot, is dropped; the caret stays where it was. Ignored in the Multiline mode.",
+        },
+        new()
+        {
+            Name = "MaskRawValue",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Makes the value of a masked field hold only the characters that went into the slots of the Mask rather than the formatted text it shows.",
+        },
+        new()
+        {
             Name = "MaxLength",
             Type = "int",
             DefaultValue = "-1",
@@ -1212,6 +1226,8 @@ public partial class BitTextFieldDemo : IDisposable
 
 
 
+    private string? maskedDate;
+    private string? maskedPhone;
     private string? oneWayValue;
     private string? twoWayValue;
     private string? onChangeValue;
@@ -2203,18 +2219,32 @@ private readonly BitTextFieldParams[] textFieldParams =
 ];";
 
     private readonly string example19RazorCode = @"
+<BitTextField Label=""Date"" Mask=""##/##/####"" Placeholder=""MM/DD/YYYY"" Immediate @bind-Value=""maskedDate"" />
+<BitText>Value: @maskedDate</BitText>
+
+<BitTextField Label=""Phone (raw value)"" Mask=""(###) ###-####"" MaskRawValue Immediate @bind-Value=""maskedPhone"" />
+<BitText>Value: @maskedPhone</BitText>
+
+<BitTextField Label=""License plate"" Mask=""AA-####"" Immediate />
+
+<BitTextField Label=""Part number (the A is escaped)"" Mask=""@(@""\AX-####"")"" Immediate />";
+    private readonly string example19CsharpCode = @"
+private string? maskedDate;
+private string? maskedPhone;";
+
+    private readonly string example20RazorCode = @"
 <BitTextField Label=""Primary"" Background=""BitColorKind.Primary"" IconName=""@BitIconName.Calendar"" />
 <BitTextField Label=""Secondary"" Background=""BitColorKind.Secondary"" IconName=""@BitIconName.Calendar"" />
 <BitTextField Label=""Tertiary"" Background=""BitColorKind.Tertiary"" IconName=""@BitIconName.Calendar"" />
 <BitTextField Label=""Transparent"" Background=""BitColorKind.Transparent"" IconName=""@BitIconName.Calendar"" />";
 
-    private readonly string example20RazorCode = @"
+    private readonly string example21RazorCode = @"
 <BitTextField Label=""Primary"" Border=""BitColorKind.Primary"" />
 <BitTextField Label=""Secondary"" Border=""BitColorKind.Secondary"" />
 <BitTextField Label=""Tertiary"" Border=""BitColorKind.Tertiary"" />
 <BitTextField Label=""Transparent"" Border=""BitColorKind.Transparent"" />";
 
-    private readonly string example21RazorCode = @"
+    private readonly string example22RazorCode = @"
 <BitTextField Label=""Primary"" Accent=""BitColor.Primary"" IconName=""@BitIconName.Calendar"" />
 <BitTextField Label=""Secondary"" Accent=""BitColor.Secondary"" IconName=""@BitIconName.Calendar"" />
 <BitTextField Label=""Tertiary"" Accent=""BitColor.Tertiary"" IconName=""@BitIconName.Calendar"" />
@@ -2237,7 +2267,7 @@ private readonly BitTextFieldParams[] textFieldParams =
 <BitTextField Label=""SecondaryBorder"" Accent=""BitColor.SecondaryBorder"" IconName=""@BitIconName.Calendar"" />
 <BitTextField Label=""TertiaryBorder"" Accent=""BitColor.TertiaryBorder"" IconName=""@BitIconName.Calendar"" />";
 
-    private readonly string example22RazorCode = @"
+    private readonly string example23RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitTextField Label=""House"" Icon=""@(""fa-solid fa-house"")"" />
@@ -2259,7 +2289,7 @@ private readonly BitTextFieldParams[] textFieldParams =
 
 <BitTextField Label=""Gear"" Icon=""@BitIconInfo.Bi(""gear-fill"")"" />";
 
-    private readonly string example23RazorCode = @"
+    private readonly string example24RazorCode = @"
 <BitTextField Label=""Small"" Size=""BitSize.Small"" Placeholder=""Enter a text..."" IconName=""@BitIconName.Calendar"" />
 <BitTextField Label=""Medium"" Size=""BitSize.Medium"" Placeholder=""Enter a text..."" IconName=""@BitIconName.Calendar"" />
 <BitTextField Label=""Large"" Size=""BitSize.Large"" Placeholder=""Enter a text..."" IconName=""@BitIconName.Calendar"" />
@@ -2270,7 +2300,7 @@ private readonly BitTextFieldParams[] textFieldParams =
 <BitTextField Label=""Large with a clear button"" Size=""BitSize.Large"" ShowClearButton
               DefaultValue=""A large field."" />";
 
-    private readonly string example24RazorCode = @"
+    private readonly string example25RazorCode = @"
 <style>
     .tfl-brand-scope {
         --bit-TextField-radius: 0.75rem;
@@ -2403,10 +2433,10 @@ private readonly BitTextFieldParams[] textFieldParams =
                                  Focused = ""custom-focus"",
                                  Input = ""custom-input"",
                                  Label = $""custom-label{(string.IsNullOrEmpty(classesValue) ? string.Empty : "" custom-label-top"")}"" })"" />";
-    private readonly string example24CsharpCode = @"
+    private readonly string example25CsharpCode = @"
 private string? classesValue;";
 
-    private readonly string example25RazorCode = @"
+    private readonly string example26RazorCode = @"
 <BitTextField Dir=""BitDir.Rtl""
               Placeholder=""پست الکترونیکی""
               IconName=""@BitIconName.EditMail"" />

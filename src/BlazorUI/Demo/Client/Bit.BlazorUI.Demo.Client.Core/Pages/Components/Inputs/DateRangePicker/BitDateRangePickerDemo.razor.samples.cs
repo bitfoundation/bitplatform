@@ -388,9 +388,7 @@ private CultureInfo culture = CultureInfo.CurrentUICulture;";
 <EditForm Model=""validationModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
     <DataAnnotationsValidator />
 
-    <BitDateRangePicker @bind-Value=""validationModel.DateRange"" />
-
-    <ValidationMessage For=""@(() => validationModel.DateRange)"" />
+    <BitDateRangePicker @bind-Value=""validationModel.DateRange"" ShowValidationMessage />
 
     <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
     <BitButton ButtonType=""BitButtonType.Reset"" Variant=""BitVariant.Outline""
@@ -404,16 +402,20 @@ private CultureInfo culture = CultureInfo.CurrentUICulture;";
     <BitMessage Color=""BitColor.Success"">@successMessage</BitMessage>
 }
 
-<BitDateRangePicker Label=""Custom messages""
-                    AllowTextInput
-                    DateFormat=""dd/MM/yyyy""
-                    ValueFormat=""{0} - {1}""
-                    MaxRange=""TimeSpan.FromDays(7)""
-                    DisabledDaysOfWeek=""@([DayOfWeek.Saturday, DayOfWeek.Sunday])""
-                    InvalidErrorMessage=""Write the range as dd/MM/yyyy - dd/MM/yyyy.""
-                    DisabledDateErrorMessage=""Weekends are not bookable.""
-                    OutOfRangeErrorMessage=""A booking cannot be longer than a week.""
-                    Placeholder=""dd/MM/yyyy - dd/MM/yyyy"" />
+<EditForm Model=""customMessagesModel"">
+    <BitDateRangePicker Label=""Custom messages""
+                        @bind-Value=""customMessagesModel.DateRange""
+                        ShowValidationMessage
+                        AllowTextInput
+                        DateFormat=""dd/MM/yyyy""
+                        ValueFormat=""{0} - {1}""
+                        MaxRange=""TimeSpan.FromDays(7)""
+                        DisabledDaysOfWeek=""@([DayOfWeek.Saturday, DayOfWeek.Sunday])""
+                        InvalidErrorMessage=""Write the range as dd/MM/yyyy - dd/MM/yyyy.""
+                        DisabledDateErrorMessage=""Weekends are not bookable.""
+                        OutOfRangeErrorMessage=""A booking cannot be longer than a week.""
+                        Placeholder=""dd/MM/yyyy - dd/MM/yyyy"" />
+</EditForm>
 
 
 <BitDateRangePicker Label=""Stay""
@@ -450,6 +452,7 @@ public class CompleteDateRangeAttribute : ValidationAttribute
 
 private string successMessage = string.Empty;
 private FormValidationDateRangePickerModel validationModel = new();
+private FormValidationDateRangePickerModel customMessagesModel = new();
 
 private void HandleValidSubmit()
 {

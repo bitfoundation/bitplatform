@@ -42,4 +42,10 @@
   <Project Path="Bit.Bcrdt.SignalR/Bit.Bcrdt.SignalR.csproj" />
   <Project Path="Bit.Bcrdt.Server/Bit.Bcrdt.Server.csproj" />
   <Project Path="Bit.Bcrdt.Testing/Bit.Bcrdt.Testing.csproj" />
+  <Project Path="Bit.Bcrdt.Borm/Bit.Bcrdt.Borm.csproj" />
+  <Project Path="Bit.Bcrdt.Blex/Bit.Bcrdt.Blex.csproj" />
+  <Project Path="Bit.Bcrdt.BlazeDb/Bit.Bcrdt.BlazeDb.csproj" />
+  <Project Path="Bit.Bcrdt.Butil/Bit.Bcrdt.Butil.csproj" />
+  <Project Path="Bit.Bcrdt.Bink/Bit.Bcrdt.Bink.csproj" />
+  <Project Path="Bit.Bcrdt.Blow/Bit.Bcrdt.Blow.csproj" />
 </Solution>

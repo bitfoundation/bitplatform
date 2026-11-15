@@ -35,7 +35,8 @@ BcrdtConvergenceHarness.AssertConverged(network);
 
 ## Random operations
 
-`BcrdtOperationGenerator` applies random transactions - text, arrays, maps, formatting and nested types, as
+`BcrdtOperationGenerator` applies random transactions - text, arrays, maps, formatting and nested types, and on request
+sets, counters and XML trees (`Set`, `Counter`, `Xml`; off by default so recorded seeds replay unchanged), as
 `BcrdtOperationGeneratorOptions` selects - and returns a description of each, so a failure can say what happened:
 
 ```csharp

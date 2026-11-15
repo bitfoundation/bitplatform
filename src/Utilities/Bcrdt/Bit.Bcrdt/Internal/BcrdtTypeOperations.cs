@@ -203,6 +203,16 @@ public static class BcrdtTypeOperations
                 throw new InvalidOperationException("A collaborative type cannot contain itself.");
             }
         }
+
+        // A detached tree is placed level by level, and a level too deep is refused only when it is reached -
+        // with the levels above it already in the document. Measured here, against where it is going, it is
+        // refused before anything is placed.
+        if (owner is { IsAttached: true } &&
+            owner.NestingDepth + nested.PendingHeight(BcrdtAbstractType.MaxNestingDepth) > BcrdtAbstractType.MaxNestingDepth)
+        {
+            throw new InvalidOperationException(
+                $"Collaborative types cannot be nested more than {BcrdtAbstractType.MaxNestingDepth} levels deep.");
+        }
     }
 
     /// <summary>

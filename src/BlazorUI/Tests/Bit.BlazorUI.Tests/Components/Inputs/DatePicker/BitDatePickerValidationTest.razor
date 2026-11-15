@@ -10,6 +10,7 @@
                    GoToTodayTitle="@GoToToday"
                    @bind-IsOpen="IsOpen"
                    OnClick="HandleOnClick"
+                   ShowValidationMessage="ShowValidationMessage"
                    OnChange="HandleSelectDate">
         <LabelTemplate>
             @LabelTemplate
@@ -27,6 +28,7 @@
     [Parameter] public string? GoToToday { get; set; }
     [Parameter] public bool IsOpen { get; set; }
     [Parameter] public RenderFragment? LabelTemplate { get; set; }
+    [Parameter] public bool ShowValidationMessage { get; set; }
 
     public int ClickedValue { get; set; }
     public int SelectedDateValue { get; set; }

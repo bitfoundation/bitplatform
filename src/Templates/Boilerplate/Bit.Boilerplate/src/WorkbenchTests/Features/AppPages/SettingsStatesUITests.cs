@@ -2,11 +2,14 @@ using Boilerplate.WorkbenchTests.Features.Showcases;
 
 namespace Boilerplate.WorkbenchTests.Features.AppPages;
 
-/// <summary>The Settings page's sections in the data states picked in the tools: loading, empty, and error with a retry that works.</summary>
+/// <summary>The Settings page's sections in the data states picked in the tools, as the app shows each: loading, empty, slow, error and mixed.</summary>
 [TestClass, TestCategory("UITest")]
 public class SettingsStatesUITests : SettingsPageTest
 {
     private ILocator Shimmers(string title) => Section(title).Locator(".bit-smr");
+
+    /// <summary>What the app says when its server can't be reached, as a failed load in the Error state is.</summary>
+    private ILocator Unreachable => View().GetByText(AppStrings.TransientException, new() { Exact = true }).First;
 
     private ILocator FullName => Section(AppStrings.ProfileTitle).GetByRole(AriaRole.Textbox, new() { Name = AppStrings.FullName, Exact = true });
 
@@ -23,7 +26,7 @@ public class SettingsStatesUITests : SettingsPageTest
         await WaitForTheViewToReloadWith("data=loading");
         await Expect(Shimmers(AppStrings.ProfileTitle).First).ToBeVisibleAsync();
         await Expect(FullName).ToHaveCountAsync(0);
-        await Expect(Failed(AppStrings.ProfileTitle)).ToHaveCountAsync(0);
+        await Expect(Unreachable).ToHaveCountAsync(0);
 
         foreach (var title in new[] { AppStrings.TfaTitle, AppStrings.SessionsTitle })
         {
@@ -61,47 +64,36 @@ public class SettingsStatesUITests : SettingsPageTest
     }
 
     [TestMethod, EverySurface]
-    public async Task Error_Should_FailTheProfileAndARetryShouldLoadIt(WorkbenchSurface surface)
+    public async Task Error_Should_SayTheServerCantBeReachedAndLeaveTheProfileOnItsPlaceholder(WorkbenchSurface surface)
     {
         await OpenWorkbench("settings");
 
         await PressInTheTools(WorkbenchStrings.DataError);
 
         await Expect(Page).ToHaveURLAsync(new Regex(@"\?data=error$"));
-        await Expect(Failed(AppStrings.ProfileTitle)).ToBeVisibleAsync();
+        await Expect(Unreachable).ToBeVisibleAsync();
+        await Expect(Shimmers(AppStrings.ProfileTitle).First).ToBeVisibleAsync();
         await Expect(FullName).ToHaveCountAsync(0);
-
-        await Press(Retry(AppStrings.ProfileTitle));
-
-        await Expect(FullName).ToHaveValueAsync(WorkbenchStrings.DemoUserYas);
-        await Expect(Failed(AppStrings.ProfileTitle)).ToHaveCountAsync(0);
     }
 
     [TestMethod, EverySurface]
-    public async Task Error_Should_FailTheTwoFactorSectionAndARetryShouldLoadIt(WorkbenchSurface surface)
+    public async Task Error_Should_LeaveTheTwoFactorSectionOnItsPlaceholder(WorkbenchSurface surface)
     {
         await OpenSection(AppStrings.TfaTitle, "?data=error");
 
-        await Expect(Failed(AppStrings.TfaTitle)).ToBeVisibleAsync();
-
-        await Press(Retry(AppStrings.TfaTitle));
-
-        await Expect(Section(AppStrings.TfaTitle).GetByRole(AriaRole.Button, new() { Name = AppStrings.TfaConfigureAutAppVerifyButtonText, Exact = true })).ToBeVisibleAsync();
-        await Expect(Failed(AppStrings.TfaTitle)).ToHaveCountAsync(0);
+        await Expect(Unreachable).ToBeVisibleAsync();
+        await Expect(Shimmers(AppStrings.TfaTitle).First).ToBeVisibleAsync();
+        await Expect(Section(AppStrings.TfaTitle).GetByRole(AriaRole.Button, new() { Name = AppStrings.TfaConfigureAutAppVerifyButtonText, Exact = true })).ToHaveCountAsync(0);
     }
 
     [TestMethod, EverySurface]
-    public async Task Error_Should_FailTheSessionsAndARetryShouldLoadThem(WorkbenchSurface surface)
+    public async Task Error_Should_ListNoSessions(WorkbenchSurface surface)
     {
         await OpenSection(AppStrings.SessionsTitle, "?data=error");
 
-        await Expect(Failed(AppStrings.SessionsTitle)).ToBeVisibleAsync();
-
-        await Press(Retry(AppStrings.SessionsTitle));
-
-        await Expect(Section(AppStrings.SessionsTitle).GetByText(AppStrings.CurrentSession, new() { Exact = true })).ToBeVisibleAsync();
-        await Expect(Section(AppStrings.SessionsTitle).GetByRole(AriaRole.Listitem)).ToHaveCountAsync(4);
-        await Expect(Failed(AppStrings.SessionsTitle)).ToHaveCountAsync(0);
+        await Expect(Unreachable).ToBeVisibleAsync();
+        await Expect(Section(AppStrings.SessionsTitle).GetByText(AppStrings.CurrentSession, new() { Exact = true })).ToHaveCountAsync(0);
+        await Expect(Section(AppStrings.SessionsTitle).GetByRole(AriaRole.Listitem)).ToHaveCountAsync(0);
     }
 
     [TestMethod, EverySurface]
@@ -122,12 +114,9 @@ public class SettingsStatesUITests : SettingsPageTest
     {
         await OpenWorkbench("settings", "?data=mixed");
 
-        await Expect(Failed(AppStrings.ProfileTitle)).ToBeVisibleAsync();
+        // The profile is asked for first, so it fails, as the app shows a failure.
+        await Expect(Unreachable).ToBeVisibleAsync();
         await Expect(FullName).ToHaveCountAsync(0);
-
-        await Press(Retry(AppStrings.ProfileTitle));
-
-        await Expect(FullName).ToHaveValueAsync(WorkbenchStrings.DemoUserYas);
 
         await Press(SectionHeader(AppStrings.SessionsTitle));
 
@@ -135,12 +124,10 @@ public class SettingsStatesUITests : SettingsPageTest
 
         await Expect(sessions.GetByText(AppStrings.CurrentSession, new() { Exact = true })).ToBeVisibleAsync();
         await Expect(sessions.GetByText(AppStrings.OtherSessions, new() { Exact = true })).ToHaveCountAsync(0);
-        await Expect(Failed(AppStrings.SessionsTitle)).ToHaveCountAsync(0);
 
         await Press(SectionHeader(AppStrings.TfaTitle));
 
         await Expect(Section(AppStrings.TfaTitle).GetByRole(AriaRole.Button, new() { Name = AppStrings.TfaConfigureAutAppVerifyButtonText, Exact = true })).ToBeVisibleAsync();
-        await Expect(Failed(AppStrings.TfaTitle)).ToHaveCountAsync(0);
     }
 
     [TestMethod, EverySurface]
@@ -148,7 +135,7 @@ public class SettingsStatesUITests : SettingsPageTest
     {
         await OpenWorkbench("settings", "?data=error");
 
-        await Expect(Failed(AppStrings.ProfileTitle)).ToBeVisibleAsync();
+        await Expect(Unreachable).ToBeVisibleAsync();
 
         await PressInTheTools(WorkbenchStrings.DataLive);
 

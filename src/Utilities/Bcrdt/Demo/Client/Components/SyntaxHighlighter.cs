@@ -112,7 +112,7 @@ public static class SyntaxHighlighter
         // ── Vocabularies ──────────────────────────────────────────────────────
         private static readonly HashSet<string> BcrdtTags = new(StringComparer.Ordinal)
         {
-            "BcrdtCollaborationScope", "BcrdtTextArea", "BcrdtPresenceView",
+            "BcrdtCollaborationScope", "BcrdtTextArea", "BcrdtPresenceView", "BcrdtSyncStatus",
         };
         private static readonly HashSet<string> Keywords = new()
         {

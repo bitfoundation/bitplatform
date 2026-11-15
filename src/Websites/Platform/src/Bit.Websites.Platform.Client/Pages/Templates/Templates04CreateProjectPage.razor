@@ -5,281 +5,308 @@
 
 <PageOutlet Url="templates/create-project"
             Title="Create project - Templates"
-            Description="Create a new project from the bit Boilerplate template: answer a few everyday questions and copy the bit new command that sets everything up." />
+            Description="Set up a new bit Boilerplate project in a few plain questions, see a sketch of your product as you answer, and copy the one bit new line that creates it on your computer." />
 
-@{
-    RenderFragment EffectTag(List<EffectPart> effectParts) =>
-        @<span class="effect">
-            @if (effectParts.Count is 0)
-            {
-                <span class="effect-part">no change</span>
-            }
-            else
-            {
-                foreach (var part in effectParts)
-                {
-                    <span class="effect-part">@(part.Verb + " ")<code>@part.Flags</code></span>
-                }
-            }
-        </span>;
-
-    RenderFragment RichText(string text) =>
-        @<span>
-            @foreach (var part in AnswerParts(text))
-            {
-                if (part.IsCode)
-                {
-                    <code>@part.Text</code>
-                }
-                else if (part.Url is not null)
-                {
-                    var external = part.Url.StartsWith("http", StringComparison.Ordinal);
-                    <a href="@part.Url" target="@(external ? "_blank" : null)" rel="@(external ? "noopener" : null)">@part.Text</a>
-                }
-                else
-                {
-                    @part.Text
-                }
-            }
-        </span>;
-
-    RenderFragment Faqs(Faq[] faqs) =>
-        @<div class="faqs">
-            <span class="faqs-title">Common questions</span>
-            <div class="faq-list">
-                @foreach (var faq in faqs)
-                {
-                    var open = openFaq == faq;
-                    <div class="faq @(open ? "open" : null)">
-                        <button type="button" class="faq-question" aria-expanded="@(open ? "true" : "false")" @onclick="() => ToggleFaq(faq)">
-                            <span class="faq-mark" aria-hidden="true"></span>
-                            <span>@faq.Question</span>
-                        </button>
-                        @if (open)
-                        {
-                            <p class="faq-answer">@RichText(faq.Answer)</p>
-                        }
-                    </div>
-                }
-            </div>
-        </div>;
-
-    RenderFragment Choices(Step step) =>
-        @<div class="choices">
-            @if (step.Warning is not null)
-            {
-                <BitMessage Color="BitColor.Warning" Multiline Class="question-warning">@step.Warning</BitMessage>
-            }
-
-            @foreach (var group in step.Groups)
-            {
-                <div class="choice-group">
-                    @if (group.Prompt is not null)
-                    {
-                        <h3 class="group-prompt">@group.Prompt</h3>
-                    }
-                    <div class="answers" role="@(group.Multiple ? "group" : "radiogroup")" aria-label="@(group.Prompt ?? step.Question)">
-                        @foreach (var answer in group.Answers)
-                        {
-                            var chosen = answer.IsChosen();
-                            <div class="answer @(chosen ? "chosen" : null) @(answer.IsLocked ? "locked" : null)">
-                                <button type="button"
-                                        class="answer-hit"
-                                        role="@(group.Multiple ? "checkbox" : "radio")"
-                                        aria-checked="@(chosen ? "true" : "false")"
-                                        disabled="@answer.IsLocked"
-                                        aria-label="@answer.Text"
-                                        aria-describedby="@(answer.Hint is null ? null : answer.HintId)"
-                                        @onclick="WrapHandled(() => Choose(group, answer))"></button>
-                                <span class="answer-mark @(group.Multiple ? "square" : null)" aria-hidden="true"></span>
-                                <span class="answer-body">
-                                    <span class="answer-head">
-                                        <span class="answer-text">@answer.Text</span>
-                                        @if (answer.ShowsRecommended)
-                                        {
-                                            <span class="answer-badge">Recommended</span>
-                                        }
-                                    </span>
-                                    @if (answer.Hint is not null)
-                                    {
-                                        <span class="answer-hint" id="@answer.HintId">@RichText(answer.Hint)</span>
-                                    }
-                                </span>
-                            </div>
-                        }
-                    </div>
-                </div>
-            }
-        </div>;
-
-    RenderFragment NameField() =>
-        @<BitTextField @bind-Value="setup.Name"
-                       Label="Project name"
-                       Placeholder="MyFirstProject"
-                       ErrorMessage="@NameError"
-                       MaxLength="60"
-                       Immediate
-                       DebounceTime="300"
-                       Class="name-field" />;
-}
-
+<CascadingValue Value="state" IsFixed="true">
 <div class="page-container">
     <BitText Typography="BitTypography.H3" Element="h1" Gutter>Create Project</BitText>
     <BitText Typography="BitTypography.Subtitle1" Class="page-intro">
-        Answer a few everyday questions, one at a time. Every answer updates the command right away, so you can copy it whenever you're ready.
+        A few questions in plain words, then one line to paste. No account needed, and your code is created on your own computer.
     </BitText>
 
-    <BitSticky Top="64px">
-        <CreateProjectCommandBar Setup="setup" />
-    </BitSticky>
-    <CreateProjectCommandHint />
+    <div class="wizard">
+        <section class="interview" aria-label="Questions">
+            <div class="interview-top">
+                <nav class="stepper" aria-label="Steps">
+                    <ol>
+                        @for (var i = 0; i < stepTitles.Length; i++)
+                        {
+                            var index = i;
+                            <li class="@(index == CurrentStep ? "is-current" : index < CurrentStep ? "is-done" : null)">
+                                <button type="button" class="stepper-step" aria-current="@(index == CurrentStep ? "step" : null)" @onclick="() => GoToStep(index)">
+                                    <span class="stepper-number">@(index + 1)</span>
+                                    <span class="stepper-title">@stepTitles[index]</span>
+                                </button>
+                            </li>
+                        }
+                    </ol>
+                    <span class="stepper-compact">Step @(CurrentStep + 1) of @stepTitles.Length: @stepTitles[CurrentStep]</span>
+                </nav>
+                <button type="button" class="help-link" @onclick="() => state.OpenHelp(CreateProjectHelpTopic.General)">Questions?</button>
+            </div>
 
-    <section class="interview" aria-label="Questions">
-        <div class="interview-top">
-            <span class="progress-text">@ProgressText</span>
-            @if (IsFinalStep is false)
-            {
-                <button type="button" class="done-link" @onclick="WrapHandled(ShowCommand)">I'm done, show my command</button>
-            }
-        </div>
-        <BitProgress Percent="ProgressPercent" Thickness="4" Rounded AriaLabel="Progress" AriaValueText="@ProgressText" />
+            <div class="step" @key="CurrentStep" tabindex="-1" @ref="stepElement">
+                @switch (CurrentStep)
+                {
+                    case 0:
+                        <CreateProjectQuestion Title="What's your product called?" Topic="CreateProjectHelpTopic.Name">
+                            <BitTextField Label="Product name"
+                                          Placeholder="For example, Bluebird"
+                                          Value="@state.ProductName"
+                                          OnChange="(string? name) => state.Rename(name)"
+                                          Immediate DebounceTime="200"
+                                          MaxLength="60"
+                                          AutoComplete="off"
+                                          Class="name-field" />
+                            <div aria-live="polite">
+                                @if (Answers.IsNameValid)
+                                {
+                                    <p class="name-hint">This names your project's folder and code, so it takes English letters and numbers, with no spaces, starting with a letter. The name people see in the app can be in any language, and can change any time.</p>
+                                }
+                                else
+                                {
+                                    <div class="name-invalid">
+                                        <BitIcon IconName="ErrorBadge" Color="BitColor.Error" Class="name-invalid-icon" />
+                                        <div class="name-invalid-text">
+                                            <span>This name can't name a project: use English letters and numbers, with no spaces, starting with a letter. The name people see in the app can still be in any language: ask your AI to change it once your project is open.</span>
+                                            <BitButton Variant="BitVariant.Outline" Size="BitSize.Small" OnClick="() => state.Rename(Answers.SuggestedName)">Use @Answers.SuggestedName</BitButton>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </CreateProjectQuestion>
+                        <CreateProjectQuestion Title="Is this your real product, or a quick try?" Topic="CreateProjectHelpTopic.Goal">
+                            <CreateProjectChoices TValue="CreateProjectGoal" AriaLabel="Is this your real product, or a quick try?"
+                                                  Items="goalChoices" Value="Answers.Goal" OnChange="goal => state.Aim(goal)" />
+                        </CreateProjectQuestion>
+                        break;
 
-        @if (IsFinalStep)
-        {
-            <div class="question" @key="stepIndex">
-                <h2 class="question-title" tabindex="-1" @ref="questionHeading">Your command is ready</h2>
-                <BitText Typography="BitTypography.Body2" Class="question-help">
-                    It's at the top of the page, ready to copy. Here's what you told us. Open an answer to change it.
-                </BitText>
+                    case 1:
+                        <CreateProjectQuestion Title="What should it start with?"
+                                               Lead="Every project already has a complete identity solution, roles and permissions, settings, 11 languages and light and dark themes."
+                                               Topic="CreateProjectHelpTopic.Start">
+                            <CreateProjectChoices TValue="CreateProjectStart" AriaLabel="What should it start with?"
+                                                  Items="startChoices" Value="Answers.Start" OnChange="start => state.StartWith(start)" />
+                            <div class="demo-links">
+                                <a href="https://adminpanel.bitplatform.dev" target="_blank" rel="noopener">See the admin panel live</a>
+                                <a href="https://sales.bitplatform.dev" target="_blank" rel="noopener">See the store live</a>
+                            </div>
+                        </CreateProjectQuestion>
+                        <CreateProjectQuestion Title="Who will use it?" Topic="CreateProjectHelpTopic.Customers">
+                            <CreateProjectChoices TValue="bool" AriaLabel="Who will use it?"
+                                                  Items="customersChoices" Value="Answers.IsMultiTenant" OnChange="isMultiTenant => state.Serve(isMultiTenant is false)" />
+                        </CreateProjectQuestion>
+                        break;
 
-                <ol class="summary">
-                    @for (var i = 0; i < QuestionCount; i++)
-                    {
-                        var index = i;
-                        var step = steps[index];
-                        var parts = StepEffect(step);
-                        <li class="summary-row @(parts.Count > 0 ? "changed" : null)" @key="step.Key">
-                            <BitAccordion IsExpanded="openSummaryRow == index"
-                                          IsExpandedChanged="(bool expanded) => ToggleSummaryRow(index, expanded)"
-                                          NoBorder
-                                          HeadingLevel="3"
-                                          Classes="summaryRowClasses">
-                                <TitleTemplate>
-                                    <span class="summary-number" aria-hidden="true">@(index + 1)</span>
-                                    <span class="summary-body">
-                                        <span class="summary-label">@step.Label</span>
-                                        <span class="summary-answer">@Describe(step)</span>
-                                        @if (parts.Count > 0)
-                                        {
-                                            @EffectTag(parts)
-                                        }
-                                    </span>
-                                </TitleTemplate>
-                                <Body>
-                                    @if (step.Key is "name")
+                    case 2:
+                        <CreateProjectQuestion Title="What should it have from day one?"
+                                               Lead="Both are on unless you turn them off. Taking something out later is easier than adding it."
+                                               Topic="CreateProjectHelpTopic.Features">
+                            <div class="answers">
+                                <CreateProjectSwitch Label="An AI assistant for your users"
+                                                     Description="Answers their questions from your app's data, and keeps open screens up to date live. It needs a key from an AI provider, paid by use."
+                                                     Value="Answers.HasAssistant" OnChange="isOn => state.SwitchAssistant(isOn)" />
+                                <CreateProjectSwitch Label="Push notifications"
+                                                     Description="On phones, computers and browsers, with nothing to pay per message."
+                                                     Value="Answers.HasPush" OnChange="isOn => state.SwitchPush(isOn)" />
+                            </div>
+                        </CreateProjectQuestion>
+                        <CreateProjectQuestion Title="Where should your app's errors and logs go?"
+                                               Lead="When something goes wrong in your app, its error is kept, so you and your AI can find the cause and fix it."
+                                               Topic="CreateProjectHelpTopic.Errors">
+                            <CreateProjectChoices TValue="CreateProjectErrors" AriaLabel="Where should your app's errors and logs go?"
+                                                  Items="errorsChoices" Value="Answers.Errors" OnChange="errors => state.SendErrorsTo(errors)" />
+                        </CreateProjectQuestion>
+                        break;
+
+                    case 3:
+                        <CreateProjectQuestion Title="Which apps do you want on your own computer?"
+                                               Lead="Your project has all five apps: web, Android, iPhone and iPad, Windows and Mac. Its pipeline builds every one of them, even in a private GitHub repository, on GitHub's free minutes, which are limited each month. If you like, set some up on your computer too, so trying them as you build uses none of those minutes. You can add the others any time."
+                                               Topic="CreateProjectHelpTopic.Devices">
+                            <div class="group">
+                                <h3 class="group-prompt">Your computer</h3>
+                                @if (ComputerHint is not null)
+                                {
+                                    <p class="group-hint">@ComputerHint</p>
+                                }
+                                <CreateProjectChoices TValue="CreateProjectComputer" AriaLabel="Your computer" Horizontal
+                                                      Items="computerChoices" Value="Answers.Computer" OnChange="computer => state.PickComputer(computer)" />
+                            </div>
+
+                            <div class="device-web">
+                                <BitIcon IconName="Accept" Class="device-web-icon" />
+                                <div>
+                                    <div class="device-web-title">Web app</div>
+                                    <div class="device-web-text">Always ready. You can open it on your phone too, in its browser, through a link your project gives you.</div>
+                                </div>
+                            </div>
+
+                            <div class="answers">
+                                @foreach (var device in Enum.GetValues<CreateProjectDevice>())
+                                {
+                                    if (Answers.CanBuild(device))
                                     {
-                                        @NameField()
+                                        var isOn = Answers.Devices.Contains(device);
+                                        <CreateProjectSwitch Label="@CreateProjectNames.Of(device)" Description="@DeviceNote(device)"
+                                                             Value="isOn" OnChange="on => state.SwitchDevice(device, on)">
+                                            @if (isOn)
+                                            {
+                                                <span class="device-later">Or set it up later instead, whenever you like: <code>bit setup --platforms @device.ToString().ToLowerInvariant()</code></span>
+                                            }
+                                        </CreateProjectSwitch>
                                     }
                                     else
                                     {
-                                        @Choices(step)
+                                        <div class="device-off">
+                                            <div class="device-off-title">@CreateProjectNames.Of(device)</div>
+                                            <div class="device-off-text">@DeviceNote(device)</div>
+                                        </div>
                                     }
-                                </Body>
-                            </BitAccordion>
-                        </li>
+                                }
+                            </div>
+
+                            <div class="devices-note">
+                                <BitIcon IconName="Info" Color="BitColor.Info" Class="devices-note-icon" />
+                                <span>Each app you set up on your computer costs a bigger download and an install. In return, trying it there costs you nothing.</span>
+                            </div>
+                        </CreateProjectQuestion>
+                        break;
+
+                    default:
+                        <div class="step-summary">
+                            <CreateProjectSummary />
+                        </div>
+
+                        <div class="more">
+                            <BitButton Variant="BitVariant.Text" Size="BitSize.Small"
+                                       IconName="ChevronDownSmall"
+                                       aria-expanded="@(state.IsMoreOpen ? "true" : "false")"
+                                       OnClick="() => state.ShowMore(state.IsMoreOpen is false)"
+                                       Class="@(state.IsMoreOpen ? "more-toggle is-open" : "more-toggle")">Technical choices</BitButton>
+                            @if (state.IsMoreOpen)
+                            {
+                                <CreateProjectQuestion Title="Where should your data live?" Topic="CreateProjectHelpTopic.Database" HeadingElement="h3">
+                                    @if (Answers.IsTry)
+                                    {
+                                        <p class="question-lead">A quick try keeps your data in one file (SQLite), so there's no database to set up. Pick “My real product” to choose a database.</p>
+                                    }
+                                    else
+                                    {
+                                        <CreateProjectChoices TValue="CreateProjectDatabase" AriaLabel="Where should your data live?"
+                                                              Items="databaseChoices" Value="Answers.Database" OnChange="database => state.PickDatabase(database)" />
+                                        @if (Answers.Database is CreateProjectDatabase.MySql)
+                                        {
+                                            <BitMessage Color="BitColor.Warning" Multiline>@CreateProjectHelp.MySqlLicense</BitMessage>
+                                        }
+                                        else if (Answers.Database is CreateProjectDatabase.SqlServer)
+                                        {
+                                            <BitMessage Color="BitColor.Info" Multiline>On a Linux server, only SQL Server Express is free: up to 50 GB for each database, and no scheduled backups.</BitMessage>
+                                        }
+                                    }
+                                </CreateProjectQuestion>
+
+                                @OptionQuestion(filesStorage, "Recommended")
+
+                                <CreateProjectQuestion Title="Must it keep working without internet?" Topic="CreateProjectHelpTopic.Offline" HeadingElement="h3">
+                                    <div class="answers">
+                                        <CreateProjectSwitch Label="Works offline"
+                                                             Description="Keeps a copy of its data on each phone, computer and browser, so people can go on working without internet. Most apps don't need it."
+                                                             Value="Answers.IsOffline" OnChange="isOn => state.SwitchOffline(isOn)" />
+                                    </div>
+                                    @if (Answers.IsOffline)
+                                    {
+                                        <BitMessage Color="BitColor.Warning" Multiline>Pick this only if people really must work offline. It puts a database on every device, so the web app downloads a few MB more and starts noticeably slower.</BitMessage>
+                                    }
+                                </CreateProjectQuestion>
+
+                                <CreateProjectQuestion Title="Where should your code be kept?" Topic="CreateProjectHelpTopic.GitHub" HeadingElement="h3">
+                                    <div class="answers">
+                                        <CreateProjectSwitch Label="Create a private GitHub repository"
+                                                             Description="Keeps your code and its history safe in your own GitHub account, and later publishes your app to your server. You sign in to GitHub once, in your browser; a free account is enough."
+                                                             Value="Answers.HasGitHubRepo" OnChange="isOn => state.SwitchGitHubRepo(isOn)" />
+                                    </div>
+                                </CreateProjectQuestion>
+
+                                <CreateProjectQuestion Title="Cloudflare" HeadingElement="h3">
+                                    <div class="answers">
+                                        <CreateProjectSwitch Label="Serve the app through Cloudflare"
+                                                             Description="Its network brings the app closer to people, so it loads faster and your server does less."
+                                                             Value="@(Answers.Option("cloudflare") is "true")" OnChange="@(isOn => SwitchOption("cloudflare", isOn))" />
+                                    </div>
+                                </CreateProjectQuestion>
+                            }
+
+                            <BitButton Variant="BitVariant.Text" Size="BitSize.Small"
+                                       IconName="ChevronDownSmall"
+                                       aria-expanded="@(state.IsSuperTechnicalOpen ? "true" : "false")"
+                                       OnClick="() => state.ShowSuperTechnical(state.IsSuperTechnicalOpen is false)"
+                                       Class="@(state.IsSuperTechnicalOpen ? "more-toggle is-open" : "more-toggle")">@SuperTechnicalSummary</BitButton>
+                            @if (state.IsSuperTechnicalOpen)
+                            {
+                                <p class="question-lead">The project template's other options, each set to its default. Most projects never change them, and your AI can change any of them later.</p>
+
+                                @foreach (var option in superTechnicalChoicesBeforeSwitches)
+                                {
+                                    @OptionQuestion(option, "Default")
+                                }
+
+                                <CreateProjectQuestion Title="Built in" Lead="What the project comes with besides your features." HeadingElement="h3">
+                                    <div class="answers">
+                                        @foreach (var option in superTechnicalSwitches)
+                                        {
+                                            <CreateProjectSwitch Label="@option.Title" Description="@option.Lead"
+                                                                 Value="@(Answers.Option(option.Name) is "true")" OnChange="@(isOn => SwitchOption(option.Name, isOn))" />
+                                        }
+                                    </div>
+                                </CreateProjectQuestion>
+
+                                @foreach (var option in superTechnicalChoicesAfterSwitches)
+                                {
+                                    @OptionQuestion(option, "Default")
+                                }
+                            }
+                        </div>
+
+                        <CreateProjectGetIt />
+                        break;
+                }
+            </div>
+
+            <div class="interview-nav">
+                <BitButton Variant="BitVariant.Outline"
+                           IconName="ChevronRight"
+                           Class="back-button"
+                           Disabled="@(CurrentStep is 0)"
+                           OnClick="() => GoToStep(CurrentStep - 1)">Back</BitButton>
+                <div class="nav-forward">
+                    @if (CurrentStep < LastStep)
+                    {
+                        <BitButton IconName="ChevronRight" IconPosition="BitIconPosition.End" OnClick="() => GoToStep(CurrentStep + 1)">@(CurrentStep == LastStep - 1 ? "Show me how to get it" : "Next")</BitButton>
                     }
-                </ol>
-
-                <div class="final-section">
-                    <h3 class="final-section-title">Technical extras</h3>
-                    <BitText Typography="BitTypography.Body2" Class="question-help">
-                        Already set the way most projects want them. Change them only if you know you need to.
-                    </BitText>
-                    <div class="extras-list">
-                        @foreach (var option in technicalExtras)
-                        {
-                            <ProjectOptionEditor Option="option" Setup="setup" Compact OnChange="() => MarkTouched(option.Key)" />
-                        }
-                    </div>
-                </div>
-
-                @Faqs(finalFaqs)
-
-                <div class="final-section">
-                    <h3 class="final-section-title">What happens next</h3>
-                    <ol class="next-steps">
-                        <li>Paste the command into a terminal. If something needs administrator rights, Windows asks once.</li>
-                        <li><code>bit new</code> installs what this machine is missing, creates the project and opens it in the editor you picked.</li>
-                        <li>Use any AI assistant you like. The project comes set up for Claude Code, GitHub Copilot, Codex, Gemini CLI and Cursor.</li>
-                    </ol>
+                    else
+                    {
+                        <BitButton Variant="BitVariant.Outline" OnClick="StartOver">Start over</BitButton>
+                    }
                 </div>
             </div>
-        }
-        else if (stepIndex is 0)
-        {
-            <div class="question" @key="stepIndex">
-                <h2 class="question-title" tabindex="-1" @ref="questionHeading">@CurrentStep.Question</h2>
-                <BitText Typography="BitTypography.Body2" Class="question-help">@CurrentStep.Help</BitText>
-                @NameField()
-                @Faqs(CurrentStep.Faqs)
-            </div>
-        }
-        else
-        {
-            var step = CurrentStep;
-            <div class="question" @key="stepIndex">
-                <h2 class="question-title" tabindex="-1" @ref="questionHeading">@step.Question</h2>
-                @if (step.Help is not null)
-                {
-                    <BitText Typography="BitTypography.Body2" Class="question-help">@step.Help</BitText>
-                }
-                @Choices(step)
+            @if (CurrentStep < LastStep)
+            {
+                <p class="reassure">Not sure? Keep the recommended answers. You can change anything later by asking your AI.</p>
+            }
+        </section>
 
-                @if (step.Key is "platforms")
+        <aside class="preview-aside @(CurrentStep is 0 or LastStep ? null : "is-quiet")" aria-label="Your product">
+            <div class="preview-sticky">
+                <CreateProjectPreview />
+                @if (CurrentStep < LastStep)
                 {
-                    <BitText Typography="BitTypography.Body2" Class="question-help">
-                        Add one later from the project folder with <code>bit setup --platforms android</code>.
-                    </BitText>
-                }
-
-                @if (step.Links.Length > 0)
-                {
-                    <div class="demo-links">
-                        @foreach (var link in step.Links)
-                        {
-                            <a href="@link.Url" target="_blank" rel="noopener">@link.Text</a>
-                        }
-                    </div>
-                }
-
-                @if (step.Faqs.Length > 0)
-                {
-                    @Faqs(step.Faqs)
+                    <CreateProjectSummary ShowsList="false" />
                 }
             </div>
-        }
+        </aside>
+    </div>
 
-        <div class="interview-nav">
-            <BitButton Variant="BitVariant.Outline"
-                       IconName="ChevronLeft"
-                       Disabled="@(stepIndex is 0)"
-                       OnClick="WrapHandled(GoBack)">Back</BitButton>
-            <div class="nav-forward">
-                @if (CanSkip)
-                {
-                    <BitButton Variant="BitVariant.Text" Title="Keep the current answer and go on" OnClick="WrapHandled(GoNext)">Skip</BitButton>
-                }
-                @if (IsFinalStep)
-                {
-                    <BitButton Variant="BitVariant.Outline" IconName="Refresh" OnClick="WrapHandled(StartOver)">Start over</BitButton>
-                }
-                else
-                {
-                    <BitButton IconName="ChevronRight" IconPosition="BitIconPosition.End" OnClick="WrapHandled(GoNext)">@NextText</BitButton>
-                }
-            </div>
-        </div>
-    </section>
+    <CreateProjectHelp />
 </div>
+</CascadingValue>
 
 <NavigationButtons Prev="Getting started" PrevUrl="/templates/getting-started" Next="Project structure" NextUrl="/templates/project-structure" />
+
+@code {
+    private RenderFragment OptionQuestion(CreateProjectOption option, string defaultBadge) =>
+        @<CreateProjectQuestion Title="@option.Title" Lead="@option.Lead" HeadingElement="h3">
+            <CreateProjectChoices TValue="string" AriaLabel="@option.Title"
+                                  Items="@OptionChoices(option, defaultBadge)" Value="@Answers.Option(option.Name)"
+                                  OnChange="value => state.SetTemplateOption(option.Name, value)" />
+        </CreateProjectQuestion>;
+}

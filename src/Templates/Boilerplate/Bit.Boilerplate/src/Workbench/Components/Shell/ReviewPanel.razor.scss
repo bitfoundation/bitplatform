@@ -78,6 +78,11 @@ section {
     align-items: center;
 }
 
+// The microphone sits at the far end of the composer's buttons.
+.composer-actions ::deep .composer-dictation {
+    margin-inline-start: auto;
+}
+
 ::deep .empty {
     padding-block: 0.5rem;
 }

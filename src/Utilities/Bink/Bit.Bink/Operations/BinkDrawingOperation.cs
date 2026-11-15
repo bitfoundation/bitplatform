@@ -14,7 +14,9 @@ public abstract record BinkDrawingOperation
     public abstract string Label { get; }
 
     /// <summary>Applies the operation to a document and returns its inverse. Throws when the operation cannot be applied.</summary>
-    internal abstract BinkDrawingOperation ApplyCore(BinkDocument document);
+    /// <param name="document">The document.</param>
+    /// <param name="applied">The operation as it was applied: with the order key and clock it was placed with, when it places something, so that history and collaborators repeat exactly what happened here.</param>
+    internal abstract BinkDrawingOperation ApplyCore(BinkDocument document, out BinkDrawingOperation applied);
 
     /// <summary>
     /// Whether the operation can be applied to the document in its current state (e.g. the referenced element exists).
@@ -35,9 +37,22 @@ public sealed record BinkAddElementOperation(Guid LayerId, BinkElement Element, 
     /// <inheritdoc />
     public override bool CanApply(BinkDocument document) => document.TryGetLayer(LayerId, out _) && !document.ContainsElement(Element.Id);
 
-    internal override BinkDrawingOperation ApplyCore(BinkDocument document)
+    /// <summary>
+    /// The element's order key, which places it in the layer when given; otherwise <see cref="Index"/> does and the
+    /// document makes the key. See <see cref="BinkOrderKey"/>.
+    /// </summary>
+    public string? OrderKey { get; init; }
+
+    /// <summary>The move clock the element was placed with, or 0 for a new move; see <see cref="BinkReorderElementOperation.OrderClock"/>.</summary>
+    public long OrderClock { get; init; }
+
+    /// <summary>Set for a snapshot's additions, which state the key and clock to store, as they are.</summary>
+    internal bool Authoritative { get; init; }
+
+    internal override BinkDrawingOperation ApplyCore(BinkDocument document, out BinkDrawingOperation applied)
     {
-        document.InsertElementCore(LayerId, Element, Index);
+        (string key, long clock) = document.InsertElementCore(LayerId, Element, Index, OrderKey, OrderClock, Authoritative);
+        applied = key == OrderKey && clock == OrderClock ? this : this with { OrderKey = key, OrderClock = clock };
         return new BinkRemoveElementOperation(Element.Id);
     }
 }
@@ -52,10 +67,13 @@ public sealed record BinkRemoveElementOperation(Guid ElementId) : BinkDrawingOpe
     /// <inheritdoc />
     public override bool CanApply(BinkDocument document) => document.ContainsElement(ElementId);
 
-    internal override BinkDrawingOperation ApplyCore(BinkDocument document)
+    internal override BinkDrawingOperation ApplyCore(BinkDocument document, out BinkDrawingOperation applied)
     {
-        (BinkLayer layer, int index, BinkElement removed) = document.RemoveElementCore(ElementId);
-        return new BinkAddElementOperation(layer.Id, removed, index);
+        applied = this;
+        (BinkLayer layer, int index, BinkElement removed, string key, long clock) = document.RemoveElementCore(ElementId);
+        // Undoing puts the element back at its key, which is its place whatever has moved around it meanwhile. The
+        // clock is what a rolled-back batch restores exactly; an undo is a move made now and takes a new one.
+        return new BinkAddElementOperation(layer.Id, removed, index) { OrderKey = key, OrderClock = clock };
     }
 }
 
@@ -69,8 +87,9 @@ public sealed record BinkReplaceElementOperation(BinkElement Element) : BinkDraw
     /// <inheritdoc />
     public override bool CanApply(BinkDocument document) => document.ContainsElement(Element.Id);
 
-    internal override BinkDrawingOperation ApplyCore(BinkDocument document)
+    internal override BinkDrawingOperation ApplyCore(BinkDocument document, out BinkDrawingOperation applied)
     {
+        applied = this;
         BinkElement previous = document.ReplaceElementCore(Element);
         return new BinkReplaceElementOperation(previous);
     }
@@ -88,10 +107,26 @@ public sealed record BinkReorderElementOperation(Guid ElementId, Guid TargetLaye
     /// <inheritdoc />
     public override bool CanApply(BinkDocument document) => document.ContainsElement(ElementId) && document.TryGetLayer(TargetLayerId, out _);
 
-    internal override BinkDrawingOperation ApplyCore(BinkDocument document)
+    /// <summary>
+    /// The order key the element moves to, which places it when given; otherwise <see cref="Index"/> does and the
+    /// document makes the key. See <see cref="BinkOrderKey"/>.
+    /// </summary>
+    public string? OrderKey { get; init; }
+
+    /// <summary>
+    /// The Lamport clock of the move, or 0 for a new move here. When two collaborators move one element at once, the
+    /// move with the greater clock (then key, then layer id) wins on every replica, so they end in the same order.
+    /// </summary>
+    public long OrderClock { get; init; }
+
+    /// <summary>Set for a snapshot's moves, which apply whatever clock the element was last moved with.</summary>
+    internal bool Authoritative { get; init; }
+
+    internal override BinkDrawingOperation ApplyCore(BinkDocument document, out BinkDrawingOperation applied)
     {
-        (Guid previousLayer, int previousIndex) = document.ReorderElementCore(ElementId, TargetLayerId, Index);
-        return new BinkReorderElementOperation(ElementId, previousLayer, previousIndex);
+        var moved = document.ReorderElementCore(ElementId, TargetLayerId, Index, OrderKey, OrderClock, Authoritative);
+        applied = moved.Key == OrderKey && moved.Clock == OrderClock ? this : this with { OrderKey = moved.Key, OrderClock = moved.Clock };
+        return new BinkReorderElementOperation(ElementId, moved.PreviousLayerId, moved.PreviousIndex) { OrderKey = moved.PreviousKey, OrderClock = moved.PreviousClock };
     }
 }
 
@@ -108,10 +143,37 @@ public sealed record BinkAddLayerOperation(Guid LayerId, BinkLayerProperties Pro
     /// <inheritdoc />
     public override bool CanApply(BinkDocument document) => !document.TryGetLayer(LayerId, out _);
 
-    internal override BinkDrawingOperation ApplyCore(BinkDocument document)
+    /// <summary>The layer's order key in the layer stack, which places it when given; otherwise <see cref="Index"/> does.</summary>
+    public string? OrderKey { get; init; }
+
+    /// <summary>The move clock the layer was placed with, or 0 for a new move.</summary>
+    public long OrderClock { get; init; }
+
+    /// <summary>The order keys of <see cref="Elements"/>, in their order, or null to make them from it.</summary>
+    public IReadOnlyList<string>? ElementOrderKeys { get; init; }
+
+    /// <summary>The move clocks of <see cref="Elements"/>, kept only for a collaborator's layer.</summary>
+    public IReadOnlyList<long>? ElementOrderClocks { get; init; }
+
+    internal override BinkDrawingOperation ApplyCore(BinkDocument document, out BinkDrawingOperation applied)
     {
-        document.InsertLayerCore(LayerId, Properties, Index, Elements);
+        (string key, long clock) = document.InsertLayerCore(LayerId, Properties, Index, Elements, OrderKey, OrderClock, ElementOrderKeys, ElementOrderClocks);
+        BinkLayer layer = document.GetLayer(LayerId);
+        // The elements' keys and clocks are copied only when the layer did not keep the ones given: copying them every
+        // time cost two arrays the size of the layer on every apply, and made any batch holding it rebuild itself.
+        bool sameElements = Elements is not { Count: > 0 } || (SameAs(ElementOrderKeys, layer.Keys) && SameAs(ElementOrderClocks, layer.Clocks));
+        if (key == OrderKey && clock == OrderClock && sameElements) applied = this;
+        else if (sameElements) applied = this with { OrderKey = key, OrderClock = clock };
+        else applied = this with { OrderKey = key, OrderClock = clock, ElementOrderKeys = layer.Keys.ToArray(), ElementOrderClocks = layer.Clocks.ToArray() };
         return new BinkRemoveLayerOperation(LayerId);
+    }
+
+    private static bool SameAs<T>(IReadOnlyList<T>? given, IReadOnlyList<T> kept)
+    {
+        if (given is null || given.Count != kept.Count) return false;
+        EqualityComparer<T> comparer = EqualityComparer<T>.Default;
+        for (int i = 0; i < kept.Count; i++) if (!comparer.Equals(given[i], kept[i])) return false;
+        return true;
     }
 }
 
@@ -125,10 +187,17 @@ public sealed record BinkRemoveLayerOperation(Guid LayerId) : BinkDrawingOperati
     /// <inheritdoc />
     public override bool CanApply(BinkDocument document) => document.TryGetLayer(LayerId, out _) && document.Layers.Count > 1;
 
-    internal override BinkDrawingOperation ApplyCore(BinkDocument document)
+    internal override BinkDrawingOperation ApplyCore(BinkDocument document, out BinkDrawingOperation applied)
     {
-        (int index, BinkLayer removed) = document.RemoveLayerCore(LayerId);
-        return new BinkAddLayerOperation(removed.Id, removed.Properties, index, removed.Elements.ToArray());
+        applied = this;
+        (int index, BinkLayer removed, string key, long clock) = document.RemoveLayerCore(LayerId);
+        return new BinkAddLayerOperation(removed.Id, removed.Properties, index, removed.Elements.ToArray())
+        {
+            OrderKey = key,
+            OrderClock = clock,
+            ElementOrderKeys = removed.Keys.ToArray(),
+            ElementOrderClocks = removed.Clocks.ToArray(),
+        };
     }
 }
 
@@ -143,8 +212,9 @@ public sealed record BinkUpdateLayerOperation(Guid LayerId, BinkLayerProperties 
     /// <inheritdoc />
     public override bool CanApply(BinkDocument document) => document.TryGetLayer(LayerId, out _);
 
-    internal override BinkDrawingOperation ApplyCore(BinkDocument document)
+    internal override BinkDrawingOperation ApplyCore(BinkDocument document, out BinkDrawingOperation applied)
     {
+        applied = this;
         BinkLayerProperties previous = document.UpdateLayerCore(LayerId, Properties);
         return new BinkUpdateLayerOperation(LayerId, previous);
     }
@@ -161,10 +231,20 @@ public sealed record BinkReorderLayerOperation(Guid LayerId, int Index) : BinkDr
     /// <inheritdoc />
     public override bool CanApply(BinkDocument document) => document.TryGetLayer(LayerId, out _);
 
-    internal override BinkDrawingOperation ApplyCore(BinkDocument document)
+    /// <summary>The order key the layer moves to, which places it when given; otherwise <see cref="Index"/> does.</summary>
+    public string? OrderKey { get; init; }
+
+    /// <summary>The Lamport clock of the move, or 0 for a new move; concurrent moves resolve as <see cref="BinkReorderElementOperation.OrderClock"/> does.</summary>
+    public long OrderClock { get; init; }
+
+    /// <summary>Set for a snapshot's moves, which always apply.</summary>
+    internal bool Authoritative { get; init; }
+
+    internal override BinkDrawingOperation ApplyCore(BinkDocument document, out BinkDrawingOperation applied)
     {
-        int previous = document.ReorderLayerCore(LayerId, Index);
-        return new BinkReorderLayerOperation(LayerId, previous);
+        var moved = document.ReorderLayerCore(LayerId, Index, OrderKey, OrderClock, Authoritative);
+        applied = moved.Key == OrderKey && moved.Clock == OrderClock ? this : this with { OrderKey = moved.Key, OrderClock = moved.Clock };
+        return new BinkReorderLayerOperation(LayerId, moved.PreviousIndex) { OrderKey = moved.PreviousKey, OrderClock = moved.PreviousClock };
     }
 }
 
@@ -178,8 +258,9 @@ public sealed record BinkUpdateSettingsOperation(BinkDocumentSettings Settings) 
     /// <inheritdoc />
     public override bool CanApply(BinkDocument document) => true;
 
-    internal override BinkDrawingOperation ApplyCore(BinkDocument document)
+    internal override BinkDrawingOperation ApplyCore(BinkDocument document, out BinkDrawingOperation applied)
     {
+        applied = this;
         BinkDocumentSettings previous = document.UpdateSettingsCore(Settings);
         return new BinkUpdateSettingsOperation(previous);
     }
@@ -196,8 +277,9 @@ public sealed record BinkSetMetadataOperation(string Key, string? Value) : BinkD
     /// <inheritdoc />
     public override bool CanApply(BinkDocument document) => !string.IsNullOrEmpty(Key);
 
-    internal override BinkDrawingOperation ApplyCore(BinkDocument document)
+    internal override BinkDrawingOperation ApplyCore(BinkDocument document, out BinkDrawingOperation applied)
     {
+        applied = this;
         string? previous = document.SetMetadataCore(Key, Value);
         return new BinkSetMetadataOperation(Key, previous);
     }
@@ -222,16 +304,23 @@ public sealed record BinkBatchOperation(IReadOnlyList<BinkDrawingOperation> Oper
     /// </remarks>
     public override bool CanApply(BinkDocument document) => Operations.Count == 0 || Operations[0].CanApply(document);
 
-    internal override BinkDrawingOperation ApplyCore(BinkDocument document)
+    internal override BinkDrawingOperation ApplyCore(BinkDocument document, out BinkDrawingOperation applied)
     {
         var inverses = new BinkDrawingOperation[Operations.Count];
-        int applied = 0;
+        BinkDrawingOperation[]? resolved = null;
+        int count = 0;
         try
         {
             for (int i = 0; i < Operations.Count; i++)
             {
-                inverses[Operations.Count - 1 - i] = Operations[i].ApplyCore(document);
-                applied++;
+                inverses[Operations.Count - 1 - i] = Operations[i].ApplyCore(document, out BinkDrawingOperation done);
+                if (!ReferenceEquals(done, Operations[i]) && resolved is null)
+                {
+                    resolved = new BinkDrawingOperation[Operations.Count];
+                    for (int j = 0; j < i; j++) resolved[j] = Operations[j];
+                }
+                if (resolved is not null) resolved[i] = done;
+                count++;
             }
         }
         catch
@@ -243,7 +332,7 @@ public sealed record BinkBatchOperation(IReadOnlyList<BinkDrawingOperation> Oper
             document.Restoring = true;
             try
             {
-                for (int i = 0; i < applied; i++) inverses[Operations.Count - applied + i].ApplyCore(document);
+                for (int i = 0; i < count; i++) inverses[Operations.Count - count + i].ApplyCore(document, out _);
             }
             finally
             {
@@ -251,6 +340,7 @@ public sealed record BinkBatchOperation(IReadOnlyList<BinkDrawingOperation> Oper
             }
             throw;
         }
+        applied = resolved is null ? this : new BinkBatchOperation(resolved, Label);
         return new BinkBatchOperation(inverses, Label);
     }
 }

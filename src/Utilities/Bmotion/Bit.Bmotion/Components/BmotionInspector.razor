@@ -3,14 +3,14 @@
 @implements IAsyncDisposable
 
 @* A debug overlay that lists every element registered with the engine and its live animation state
-   (active drivers, transform / numeric / string values). Drop it anywhere in a dev build:
+   (active drivers, how its latest animation plays and why, transform / numeric / string values). Drop it anywhere in a dev build:
    <BmotionInspector /> - it polls the engine a few times a second and renders a floating panel. *@
 
 <div class="bm-inspector @(_open ? "open" : "closed")">
     <div class="bm-insp-bar" @onclick="Toggle" role="button" tabindex="0"
          @onkeydown="@(e => { if (e.Key is "Enter" or " ") Toggle(); })">
         <span class="bm-insp-title">Bmotion</span>
-        <span class="bm-insp-count">@_snapshot.Count el · @_activeTotal active</span>
+        <span class="bm-insp-count">@_snapshot.Count el · @_activeTotal active@(_degraded > 0 ? $" · {_degraded} landed without a frame loop" : null)</span>
         <span class="bm-insp-caret">@(_open ? "▾" : "▸")</span>
     </div>
 
@@ -39,6 +39,15 @@
                             <span class="bm-insp-badge drag">drag</span>
                         }
                     </div>
+                    @if (_lastStarts.TryGetValue(d.Id, out var starts))
+                    {
+                        @foreach (var s in starts)
+                        {
+                            <div class="bm-insp-how @(s.Strategy == BmPlaybackStrategy.InstantWithoutFrameLoop ? "warn" : null)" title="@s.Reason">
+                                @StrategyLabel(s.Strategy): @string.Join(", ", s.Properties)@(s.Reason is null ? null : " - " + s.Reason)
+                            </div>
+                        }
+                    }
                     @if (d.ActiveProperties.Count > 0)
                     {
                         <div class="bm-insp-props">@string.Join(", ", d.ActiveProperties)</div>
@@ -87,6 +96,8 @@
     .bm-insp-id { color: #b9a7ff; }
     .bm-insp-badge { font-size: 10px; background: rgba(108,71,255,.3); border-radius: 999px; padding: 0 .45rem; }
     .bm-insp-badge.drag { background: rgba(255,71,133,.35); }
+    .bm-insp-how { opacity: .75; margin: .2rem 0 0; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .bm-insp-how.warn { color: #ffcf70; opacity: 1; }
     .bm-insp-props { opacity: .65; margin: .2rem 0; }
     .bm-insp-vals { display: flex; flex-wrap: wrap; gap: .25rem; }
     .bm-insp-chip { background: rgba(255,255,255,.06); border-radius: 5px; padding: .05rem .35rem; opacity: .9; }
@@ -115,7 +126,47 @@
     }
     private BmotionAnimationEngine Engine { get; set; } = null!;
 
-    protected override void OnInitialized() => _open = StartOpen;
+    // The parts of each element's latest animation and how they play (Engine.AnimationEvent), and how many parts landed
+    // at once for want of a frame loop - so why something snapped on Blazor Server is on screen, not a guess.
+    private readonly Dictionary<string, List<BmotionAnimationEvent>> _lastStarts = new(StringComparer.Ordinal);
+    private int _degraded;
+    private const int MaxPartsShown = 3;
+
+    protected override void OnInitialized()
+    {
+        _open = StartOpen;
+        Engine.AnimationEvent += OnAnimationEvent;
+    }
+
+    private void OnAnimationEvent(BmotionAnimationEvent e)
+    {
+        if (e.Kind != BmAnimationEventKind.Started) return;
+        if (e.Strategy == BmPlaybackStrategy.InstantWithoutFrameLoop) _degraded++;
+        if (!_lastStarts.TryGetValue(e.ElementId, out var parts)) _lastStarts[e.ElementId] = parts = new();
+        // The parts of one start arrive together: a part for properties already listed replaces their old line.
+        parts.RemoveAll(p => p.Properties.Intersect(e.Properties).Any());
+        parts.Add(e);
+        if (parts.Count > MaxPartsShown) parts.RemoveAt(0);
+    }
+
+    // Elements that unmounted (a keyed list, a presence switch, a virtualized grid) never show again: drop their lines
+    // so the map tracks the live elements instead of every id that ever animated.
+    private void PruneLastStarts(IReadOnlyList<BmotionElementDiagnostics> snapshot)
+    {
+        if (_lastStarts.Count == 0) return;
+        var live = new HashSet<string>(snapshot.Select(d => d.Id), StringComparer.Ordinal);
+        foreach (var id in _lastStarts.Keys.Where(id => !live.Contains(id)).ToList())
+            _lastStarts.Remove(id);
+    }
+
+    private static string StrategyLabel(BmPlaybackStrategy strategy) => strategy switch
+    {
+        BmPlaybackStrategy.Instant => "instant",
+        BmPlaybackStrategy.BrowserTimeline => "browser",
+        BmPlaybackStrategy.BrowserRecorded => "browser (recorded)",
+        BmPlaybackStrategy.FrameLoop => "frame loop",
+        _ => "landed (no frame loop)",
+    };
 
     protected override void OnAfterRender(bool firstRender)
     {
@@ -133,7 +184,11 @@
             {
                 _snapshot = Engine.GetDiagnostics();
                 _activeTotal = _snapshot.Count(d => d.HasActiveAnimations);
-                await InvokeAsync(StateHasChanged);
+                await InvokeAsync(() =>
+                {
+                    PruneLastStarts(_snapshot);
+                    StateHasChanged();
+                });
             }
         }
         // Disposal races the poll loop: the timer/CTS may be disposed, or the renderer torn down,
@@ -149,6 +204,7 @@
 
     public ValueTask DisposeAsync()
     {
+        Engine.AnimationEvent -= OnAnimationEvent;
         _cts?.Cancel();
         _timer?.Dispose();
         _cts?.Dispose();

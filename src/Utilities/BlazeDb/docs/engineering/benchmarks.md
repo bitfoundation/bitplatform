@@ -58,9 +58,24 @@ ordered index keeps `SortedSet` (decisions.md, ADR-003). Final and baseline agre
 | Open | 100,000 | 21.7 ms, 32.0 MB | 21.9 ms, 32.0 MB |
 
 The checkpoint improvement comes from sizing the snapshot buffer from the previous snapshot and handing
-its bytes to storage without copying them into an exact-size array (round 6). The
-checkpoint runs under the write lock, so this is also the pause a writer sees. Open is dominated by
+its bytes to storage without copying them into an exact-size array (round 6). Open is dominated by
 decoding rows and rebuilding indexes and was not changed.
+
+Round 14 (November 2026, same machine, `--job short --inProcess` because BenchmarkDotNet 0.15.8 does not recognize
+the net11.0 runtime the suite now targets): checkpoints are rolled forward from the committed bytes rather than
+encoded from memory (ADR-021).
+
+| Operation | Rows | Round 6 (from memory, under the write lock) | Round 14 (from storage, outside it) |
+| --- | ---: | ---: | ---: |
+| Checkpoint | 10,000 | 502 us, 512 KB | 582 us, 753 KB |
+| Checkpoint | 100,000 | 4.06 ms, 5.6 MB | 4.85 ms, 8.3 MB |
+| Open | 10,000 | 2.09 ms, 3.29 MB | 2.27 ms, 3.04 MB |
+| Open | 100,000 | 21.9 ms, 32.0 MB | 25.9 ms, 29.3 MB |
+
+The extra checkpoint time and memory are the read of the old snapshot; the write lock is now held only to take the
+log buffer, so the pause a writer used to see is gone. A first attempt that put every row of the old snapshot
+into a dictionary cost 12.3 ms and 18.4 MB; copying untouched tables as they stand brought it back. Open was not
+changed - the difference is the in-process job and noise.
 
 ## Writes (WriteBenchmarks)
 

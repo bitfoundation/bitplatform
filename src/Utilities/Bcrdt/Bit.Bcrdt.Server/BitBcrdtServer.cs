@@ -30,6 +30,10 @@ public static class BitBcrdtServer
     /// <para>
     /// Map the hub as usual afterwards: <c>app.MapHub&lt;BcrdtHub&gt;("/hub/collaboration")</c>.
     /// </para>
+    /// <para>
+    /// Also registers <see cref="BcrdtRelayConnections"/> (<see cref="AddBitBcrdtRelayConnections"/>), where the hub
+    /// lists the connections it admits.
+    /// </para>
     /// </remarks>
     /// <param name="services">The container to register with.</param>
     /// <param name="maximumReceiveMessageSize">The largest message, in bytes, a client may send.</param>
@@ -56,9 +60,29 @@ public static class BitBcrdtServer
         ArgumentNullException.ThrowIfNull(services);
         ArgumentOutOfRangeException.ThrowIfLessThan(maximumReceiveMessageSize, 1);
 
+        services.AddBitBcrdtRelayConnections();
         ISignalRServerBuilder builder = services.AddSignalR();
         builder.AddHubOptions<THub>(options => options.MaximumReceiveMessageSize = maximumReceiveMessageSize);
         return builder;
+    }
+
+    /// <summary>
+    /// Registers the <see cref="BcrdtRelayConnections"/> the relays list their connections in, so that a grant can be
+    /// revoked or narrowed while the connection is open.
+    /// </summary>
+    /// <remarks>
+    /// <c>AddBitBcrdtHub()</c> calls this already; an application that maps only the WebSocket endpoint calls it
+    /// itself, and every <c>MapBitBcrdtWebSocket</c> then uses it. A singleton, registered once however often this is
+    /// called.
+    /// </remarks>
+    /// <param name="services">The container to register with.</param>
+    /// <returns>The container, for chaining.</returns>
+    public static IServiceCollection AddBitBcrdtRelayConnections(this IServiceCollection services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        services.TryAddSingleton<BcrdtRelayConnections>();
+        return services;
     }
 
     /// <summary>

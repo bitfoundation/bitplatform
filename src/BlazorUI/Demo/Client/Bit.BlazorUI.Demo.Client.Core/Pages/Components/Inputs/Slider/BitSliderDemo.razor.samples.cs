@@ -301,8 +301,8 @@ private string focusState = blurredText;";
                    Max=""7""
                    ShowMarks
                    ShowMarkLabels
+                   ShowValidationMessage
                    @bind-Value=""ValidationModel.Days"" />
-        <ValidationMessage For=""@(() => ValidationModel.Days)"" />
 
         <br />
 
@@ -310,8 +310,8 @@ private string focusState = blurredText;";
                    Label=""Budget bracket""
                    Max=""100""
                    Step=""5""
+                   ShowValidationMessage
                    @bind-RangeValue=""ValidationModel.Budget"" />
-        <ValidationMessage For=""@(() => ValidationModel.Budget)"" />
 
         <br />
 

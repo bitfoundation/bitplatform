@@ -50,10 +50,14 @@ Check the change against every rule in `AGENTS.md` section 5, `[mirror]` counter
 - [ ] Queries go through Mapperly's `Project()`
 - [ ] A missing row is a `ResourceNotFoundException` and an invalid request a `BadRequestException`
 - [ ] Route carries the API version segment - `[ApiVersion(1)]` + `Route("api/v{v:apiVersion}/[controller]/[action]")` on the controller, literal `api/v1/...` on the shared interface
+- [ ] A change to a request or response keeps working for the app versions in users' hands, or the change plan records the user's decision to raise `SupportedAppVersions` instead; `bit api check` lists what it breaks
 <!--#if (multitenant == true)-->
 - [ ] Every entity the controller queries either implements `ITenantAware` (so `AppDbContext` applies the tenant row filter) or is scoped by an explicit ownership term in the query - a new entity with neither is readable across tenants.
 A deliberately global entity is the one exception the **scaffold-entity** skill (`.github/agents/scaffold-entity.agent.md`) allows; flag it anyway, so the intent gets stated rather than assumed
 <!--#endif-->
+
+### Migrations
+- [ ] A migration leaves the database working for the previous server version, which keeps serving while a deployment applies it: nothing that version still uses is dropped or renamed, a new required column has a default or a backfill, and its Down really undoes it
 
 ### Security
 When a change touches sign-in, permissions, user input, uploaded files or data that belongs to someone else, look for the safeguard in the code around it as well (the controller and its base class, the query, what the server registers) and raise a finding when you cannot find one, even without a proven exploit:

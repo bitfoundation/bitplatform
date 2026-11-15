@@ -1,4 +1,7 @@
 ﻿namespace BitBlazorUI {
+    // The input of a masked field, marked while the last write to its text is the mask's layout (see setupMaskedChange).
+    type MaskedInput = HTMLInputElement & { _bitMaskWrote?: boolean };
+
     export class TextField {
         // The three concerns of a text field (the multiline behaviors, the ghost text and the IME guard)
         // are wired independently and can be turned on and off at any point in the life of a component,
@@ -537,6 +540,168 @@
                 // Selection APIs are not available on every input type (a number or an email input
                 // throws), which is not an error worth breaking the caller over.
             }
+        }
+
+        // WebKit fires no change event when the input loses the focus if the last thing to write its value was a script -
+        // and with fast typing the layout setMaskedValue writes lands after the last key - so a field committing on change
+        // would never commit what was typed. So the change is raised on the way out, but only where the browser itself
+        // owed one and skipped it: the last write was the layout (setMaskedValue, while focused), and the text differs
+        // from the one the browser compares with - the text at focus, or at the last change raised since - exactly the
+        // rule a browser raises its own change by. That leaves every engine that does raise it alone: it raises it ahead
+        // of blur, which moves that text along, and a text the mask put back to what it was raises nothing anywhere. A
+        // native change still arriving after this one, for the same text, is kept from the page, so one edit commits once.
+        // Set up by .NET for every masked field before it is typed into, so the text at its first focus is known.
+        public static setupMaskedChange(id: string, inputElement: HTMLInputElement) {
+            if (!inputElement) return;
+
+            const signal = TextField.getSignal(id, 'maskedChange');
+            const el = inputElement as MaskedInput;
+
+            let settled = el.value;
+            let raised: string | null = null;
+            el._bitMaskWrote = false;
+
+            el.addEventListener('focus', () => {
+                settled = el.value;
+                raised = null;
+                el._bitMaskWrote = false;
+            }, { signal });
+
+            el.addEventListener('input', e => {
+                if (e.isTrusted) el._bitMaskWrote = false;
+            }, { signal });
+
+            el.addEventListener('change', e => {
+                if (e.isTrusted && raised !== null && raised === el.value) {
+                    // The browser's own change for the text the blur below already committed; Blazor listens on the
+                    // document, so stopping it on the element is what keeps the commit from running twice.
+                    raised = null;
+                    e.stopImmediatePropagation();
+                    return;
+                }
+
+                settled = el.value;
+                el._bitMaskWrote = false;
+            }, { signal });
+
+            el.addEventListener('blur', () => {
+                if (!el._bitMaskWrote) return;
+                el._bitMaskWrote = false;
+
+                if (el.value === settled) return;
+
+                raised = el.value;
+                el.dispatchEvent(new Event('change', { bubbles: true }));
+            }, { signal });
+        }
+
+        // Writes the text of a masked field, laid out over its mask, back into the input without throwing the caret to the
+        // end: assigning `value` alone parks it after the last character, which would make the middle of the text
+        // impossible to edit. The caret is read as "after the nth character of the value" - counted the way BitMask.Strip
+        // reads the value out of the typed text, so a literal typed in the place the mask puts it is not counted - and put
+        // back after the nth slot of the new text. Only written into an input that still holds the text the input event
+        // carried (expected): one typed into since holds a newer text, whose own input event lays it out.
+        public static setMaskedValue(inputElement: HTMLInputElement, value: string, expected: string, mask: string) {
+            if (!inputElement) return;
+
+            const typed = inputElement.value ?? '';
+            if (typed !== expected) return;
+
+            const focused = document.activeElement === inputElement;
+            const start = focused ? inputElement.selectionStart : null;
+
+            if (typed !== value) {
+                inputElement.value = value;
+                // Only a layout written while the user is in the field is one its blur may owe a change for (see
+                // setupMaskedChange); one landing after the focus has gone is no edit of the next visit.
+                if (focused) (inputElement as MaskedInput)._bitMaskWrote = true;
+            }
+
+            if (!focused || start === null) return;
+
+            const units = TextField.parseMask(mask);
+            const before = TextField.countValueChars(typed, units, start);
+
+            // After the nth slot of the new text; at its end when it holds fewer, which is where the next one goes.
+            let caret = value.length;
+            if (before === 0) {
+                caret = 0;
+            } else {
+                let seen = 0;
+                for (let i = 0, u = 0; i < value.length && u < units.length; i++, u++) {
+                    if (units[u].slot === null) continue;
+                    seen++;
+                    if (seen === before) {
+                        caret = i + 1;
+                        break;
+                    }
+                }
+            }
+
+            try {
+                inputElement.setSelectionRange(caret, caret);
+            } catch (e) { /* an input type that has no text selection to set */ }
+        }
+
+        // The tokens of a mask, as BitMask.TextTokens has them: '#' a digit, 'A' a letter, '*' a letter or a digit.
+        private static accepts(token: string, c: string) {
+            switch (token) {
+                case '#': return c >= '0' && c <= '9';
+                case 'A': return /\p{L}/u.test(c);
+                case '*': return /[\p{L}\p{Nd}]/u.test(c);
+                default: return false;
+            }
+        }
+
+        private static acceptedByAny(c: string) {
+            return TextField.accepts('#', c) || TextField.accepts('A', c) || TextField.accepts('*', c);
+        }
+
+        // The mask as the run of characters it writes: a slot (its token) or a literal, a backslash making the next one a
+        // literal.
+        private static parseMask(mask: string) {
+            const units: { char: string, slot: string | null }[] = [];
+            for (let i = 0; i < mask.length; i++) {
+                const c = mask[i];
+                if (c === '\\' && i + 1 < mask.length) {
+                    units.push({ char: mask[++i], slot: null });
+                } else {
+                    units.push({ char: c, slot: c === '#' || c === 'A' || c === '*' ? c : null });
+                }
+            }
+            return units;
+        }
+
+        // How many characters of the value the text holds before the end index, read the way BitMask.Strip reads them.
+        private static countValueChars(text: string, units: { char: string, slot: string | null }[], end: number) {
+            let count = 0;
+            let maskIndex = 0;
+            let textIndex = 0;
+            const last = Math.min(end, text.length);
+
+            while (textIndex < last) {
+                const c = text[textIndex];
+
+                if (maskIndex >= units.length) {
+                    if (TextField.acceptedByAny(c)) count++;
+                    textIndex++;
+                } else if (units[maskIndex].slot !== null) {
+                    if (TextField.accepts(units[maskIndex].slot!, c)) {
+                        count++;
+                        maskIndex++;
+                    }
+                    textIndex++;
+                } else if (c === units[maskIndex].char) {
+                    textIndex++;
+                    maskIndex++;
+                } else if (TextField.acceptedByAny(c)) {
+                    maskIndex++;
+                } else {
+                    textIndex++;
+                }
+            }
+
+            return count;
         }
 
         // Tears a single feature down, which is what happens when a text field stops being multiline or

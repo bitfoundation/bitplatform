@@ -13,7 +13,7 @@ namespace Bit.BlazorUI;
 /// and the rejection it is currently showing (<see cref="BitTimePicker.Invalid"/> and its message), which
 /// no two fields ever share.
 /// </remarks>
-public class BitTimePickerParams : BitInputBaseParams<TimeSpan?>, IBitComponentParams
+public partial class BitTimePickerParams : BitInputBaseParams<TimeSpan?>, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitTimePicker"/> cascading parameters within <see cref="BitParams"/>.
@@ -274,6 +274,9 @@ public class BitTimePickerParams : BitInputBaseParams<TimeSpan?>, IBitComponentP
 
     /// <inheritdoc cref="BitTimePicker.ShowSeconds"/>
     public bool? ShowSeconds { get; set; }
+
+    /// <inheritdoc cref="BitTimePicker.ShowValidationMessage"/>
+    public bool? ShowValidationMessage { get; set; }
 
     /// <inheritdoc cref="BitTimePicker.Size"/>
     public BitSize? Size { get; set; }
@@ -723,6 +726,11 @@ public class BitTimePickerParams : BitInputBaseParams<TimeSpan?>, IBitComponentP
         if (ShowSeconds.HasValue)
         {
             bitTimePicker.TakeFromCascade(nameof(ShowSeconds), ShowSeconds.Value, static t => t.ShowSeconds, static (t, v) => t.ShowSeconds = v);
+        }
+
+        if (ShowValidationMessage.HasValue)
+        {
+            bitTimePicker.TakeFromCascade(nameof(ShowValidationMessage), ShowValidationMessage.Value, static t => t.ShowValidationMessage, static (t, v) => t.ShowValidationMessage = v);
         }
 
         if (Size.HasValue)

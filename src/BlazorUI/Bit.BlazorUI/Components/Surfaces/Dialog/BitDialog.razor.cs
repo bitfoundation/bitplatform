@@ -61,10 +61,6 @@ public partial class BitDialog : BitComponentBase
     // Whether scroll was actually locked during the open sequence, so the close sequence unlocks if and
     // only if it locked, regardless of later changes to AutoToggleScroll.
     private bool _scrollLocked;
-    // Snapshots of the scroller target captured during open, so the close sequence unlocks the exact same
-    // scroller even if ScrollerElement/ScrollerSelector changed since the Dialog was opened.
-    private ElementReference? _scrollerElementOnOpen;
-    private string? _scrollerSelectorOnOpen;
     // Snapshot of the drag element selector used to register the drag handlers, so teardown unregisters
     // the exact same selector even if DragElementSelector changed since the Dialog was opened.
     private string? _dragElementSelectorOnSetup;
@@ -961,28 +957,33 @@ public partial class BitDialog : BitComponentBase
 
     private async Task ToggleScroll(bool isOpen)
     {
-        if (isOpen)
-        {
-            // The lock decision and its target are snapshot at open time; close reuses them instead of
-            // re-reading parameters that may have changed while the Dialog was up.
-            _scrollLocked = AutoToggleScroll;
-            if (_scrollLocked is false) return;
-
-            _scrollerElementOnOpen = ScrollerElementTarget;
-            _scrollerSelectorOnOpen = ScrollerSelector;
-        }
-        else
-        {
-            if (_scrollLocked is false) return;
-
-            _scrollLocked = false;
-        }
-
         try
         {
-            _offsetTop = _scrollerElementOnOpen.HasValue
-                ? await _js.BitUtilsToggleOverflow(_containerId, _scrollerElementOnOpen.Value, isOpen)
-                : await _js.BitUtilsToggleOverflow(_containerId, _scrollerSelectorOnOpen ?? "body", isOpen);
+            if (isOpen)
+            {
+                // The lock decision is snapshot at open time; close reuses it instead of re-reading
+                // AutoToggleScroll, which may have changed while the Dialog was up.
+                _scrollLocked = AutoToggleScroll;
+                if (_scrollLocked is false) return;
+
+                // The Dialog has always let the scroller shift by the width of the scrollbar it takes away,
+                // so the room is not given back as padding.
+                var element = ScrollerElementTarget;
+                _offsetTop = element.HasValue
+                    ? await _js.BitUtilsLockScrollWithOffset(_containerId, element.Value, compensate: false)
+                    : await _js.BitUtilsLockScrollWithOffset(_containerId, ScrollerSelector ?? "body", compensate: false);
+            }
+            else
+            {
+                if (_scrollLocked is false) return;
+
+                _scrollLocked = false;
+
+                // The hold is registered under the key, against the scroller it was taken on, so releasing the
+                // key hands back that scroller even if ScrollerElement/ScrollerSelector changed since the
+                // Dialog was opened.
+                await _js.BitUtilsUnlockScroll(_containerId);
+            }
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }

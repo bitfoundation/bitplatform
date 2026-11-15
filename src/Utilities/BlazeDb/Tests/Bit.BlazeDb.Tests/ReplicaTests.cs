@@ -248,7 +248,10 @@ public class ReplicaTests
         await writer.FlushAsync();
 
         await using var replica = await OpenReplicaAsync(storage);
-        storage.BeforeRead = name => name.StartsWith("wal-") ? gate.Task : Task.CompletedTask;
+        // Only the first read of a log stalls - the replica's. The writer's checkpoint reads the log too, to roll
+        // the committed rows forward, and has to get past.
+        var gated = 0;
+        storage.BeforeRead = name => name.StartsWith("wal-") && Interlocked.Exchange(ref gated, 1) == 0 ? gate.Task : Task.CompletedTask;
 
         // The replica reads the generation-2 manifest and snapshot, then stalls on wal-2 ...
         var reload = replica.ReloadAsync().AsTask();

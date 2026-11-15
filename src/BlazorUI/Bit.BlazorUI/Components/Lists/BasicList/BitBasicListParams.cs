@@ -12,7 +12,7 @@ namespace Bit.BlazorUI;
 /// None of the parameters here depends on the type of the items, so the class is not generic: one instance
 /// reaches every list under the <see cref="BitParams"/> it is given to, whatever the type of its items.
 /// </remarks>
-public class BitBasicListParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitBasicListParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitBasicList{TItem}"/> cascading parameters within <see cref="BitParams"/>.
@@ -51,6 +51,11 @@ public class BitBasicListParams : BitComponentBaseParams, IBitComponentParams
     /// Custom CSS classes for different parts of the list.
     /// </summary>
     public BitBasicListClassStyles? Classes { get; set; }
+
+    /// <summary>
+    /// The text rendered when there is no item to show.
+    /// </summary>
+    public string? EmptyText { get; set; }
 
     /// <summary>
     /// Sets the height of the list to fit its content.
@@ -180,6 +185,11 @@ public class BitBasicListParams : BitComponentBaseParams, IBitComponentParams
         if (Classes is not null)
         {
             bitBasicList.TakeFromCascade(nameof(Classes), Classes, static b => b.Classes, static (b, v) => b.Classes = v);
+        }
+
+        if (EmptyText is not null)
+        {
+            bitBasicList.TakeFromCascade(nameof(EmptyText), EmptyText, static b => b.EmptyText, static (b, v) => b.EmptyText = v);
         }
 
         if (FitHeight.HasValue)

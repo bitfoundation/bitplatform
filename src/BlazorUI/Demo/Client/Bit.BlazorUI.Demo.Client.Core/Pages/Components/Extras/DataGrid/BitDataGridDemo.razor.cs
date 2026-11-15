@@ -252,10 +252,11 @@ public partial class BitDataGridDemo : AppComponentBase
 
     private static bool IsFolder(FileNode node) => node.Kind == "Folder";
 
-    private async Task<IEnumerable<FileNode>?> LoadChildrenAsync(FileNode parent)
+    private async Task<IEnumerable<FileNode>?> LoadChildrenAsync(BitDataGridChildrenRequest<FileNode> request)
     {
         // Simulates a backend call; results are cached by the grid, so each folder loads once.
-        await Task.Delay(600);
+        var parent = request.Parent;
+        await Task.Delay(600, request.CancellationToken);
         return
         [
             new FileNode { Id = ++nextLazyNodeId, Name = $"{parent.Name}-sub", Kind = "Folder", Modified = parent.Modified.AddDays(1) },
@@ -317,15 +318,41 @@ public partial class BitDataGridDemo : AppComponentBase
         var filtered = Query(serverVirtualAll, request).ToList();
         var items = filtered.Skip(request.Skip).Take(request.Take ?? filtered.Count).ToList();
 
-        // Computed over the WHOLE filtered set, so the footer shows a real grand total.
-        var priceSum = filtered.Sum(p => p.Price);
-        var aggregates = new List<BitDataGridAggregateResult>
+        // The grid names the aggregates its footer shows (a sum of Price and an average of Rating). Computed over
+        // the WHOLE filtered set, so the footer shows real totals.
+        var aggregates = new List<BitDataGridAggregateResult>();
+        foreach (var aggregate in request.Aggregates)
         {
-            new() { ColumnId = nameof(Product.Price), Type = BitDataGridAggregateType.Sum, Value = priceSum, FormattedValue = priceSum.ToString("C0") }
-        };
+            if (aggregate is { ColumnId: nameof(Product.Price), Type: BitDataGridAggregateType.Sum })
+            {
+                var sum = filtered.Sum(p => p.Price);
+                aggregates.Add(new() { ColumnId = aggregate.ColumnId, Type = aggregate.Type, Value = sum, FormattedValue = sum.ToString("C0") });
+            }
+            else if (aggregate is { ColumnId: nameof(Product.Rating), Type: BitDataGridAggregateType.Average })
+            {
+                var average = filtered.Count == 0 ? 0 : filtered.Average(p => p.Rating);
+                aggregates.Add(new() { ColumnId = aggregate.ColumnId, Type = aggregate.Type, Value = average, FormattedValue = average.ToString("N1") });
+            }
+        }
 
         return new BitDataGridReadResult<Product>(items, filtered.Count) { Aggregates = aggregates };
     }
+
+    private bool serverFails;
+    private string serverLastError = "";
+
+    private async Task<BitDataGridReadResult<Product>> LoadFlakyServerData(BitDataGridReadRequest request)
+    {
+        await Task.Delay(400, request.CancellationToken);
+
+        if (serverFails) throw new InvalidOperationException("The server did not answer.");
+
+        var filtered = Query(serverAll, request).ToList();
+        return new BitDataGridReadResult<Product>(filtered.Skip(request.Skip).Take(request.Take ?? filtered.Count).ToList(), filtered.Count);
+    }
+
+    // The grid shows its error row and Retry button; this is the place to log the failure or tell the user more.
+    private void HandleReadError(Exception exception) => serverLastError = $"OnReadError: {exception.Message}";
 
     // Applies the request's filters and sorts the way a backend would.
     private static IEnumerable<Product> Query(IEnumerable<Product> source, BitDataGridReadRequest request)

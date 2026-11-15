@@ -30,18 +30,19 @@ public partial class McpOracleTests
             var labels = Enumerable.Range(0, replicas).Select(i => ((char)('A' + i)).ToString()).ToArray();
 
             // A shared start the replicas can all safely edit, then a few edits each that are valid on their own.
-            var lines = new List<string> { "base: text notes insert 0 \"start\"", "base: array todo push \"a\" \"b\"", "base: set tags add \"t\"", "base: map meta set owner \"base\"" };
+            var lines = new List<string> { "base: text notes insert 0 \"start\"", "base: array todo push \"a\" \"b\"", "base: set tags add \"t\"", "base: map meta set owner \"base\"", "base: counter votes add 3" };
 
             foreach (var label in labels)
             {
                 for (var i = random.Next(1, 4); i > 0; i--)
                 {
-                    lines.Add(random.Next(5) switch
+                    lines.Add(random.Next(6) switch
                     {
                         0 => $"{label}: map meta set {_words[random.Next(3)]} \"{_words[random.Next(_words.Length)]}\"",
                         1 => $"{label}: text notes insert {random.Next(0, 6)} \"{_words[random.Next(_words.Length)]}\"",
                         2 => $"{label}: array todo push {random.Next(100)}",
                         3 => $"{label}: set tags {(random.Next(2) == 0 ? "add" : "remove")} \"{_words[random.Next(3)]}\"",
+                        4 => $"{label}: counter votes {(random.Next(3) switch { 0 => "increment", 1 => "decrement", _ => $"add {random.Next(-5, 6)}" })}",
                         _ => $"{label}: map meta delete {_words[random.Next(3)]}"
                     });
                 }
@@ -50,7 +51,7 @@ public partial class McpOracleTests
             // The replicas' lines interleaved arbitrarily, each replica's own staying in its order: which replica
             // a line belongs to is what the lab goes by, not where the line is.
             var queues = labels.Select(label => new Queue<string>(lines.Where(line => line.StartsWith($"{label}:", StringComparison.Ordinal)))).ToList();
-            var interleaved = lines.Take(4).ToList();
+            var interleaved = lines.TakeWhile(line => line.StartsWith("base:", StringComparison.Ordinal)).ToList();
 
             while (queues.Count > 0)
             {
@@ -97,6 +98,12 @@ public partial class McpOracleTests
                 foreach (var document in documents)
                 {
                     Assert.AreEqual(Json(Project(document)), Json(report.Merged), $"{context}\nafter the merge");
+                }
+
+                // A counter decision states the total the engine converged to.
+                if (report.Decisions!.SingleOrDefault(decision => decision.Target == "counter 'votes'") is { } counter)
+                {
+                    Assert.Contains($"every replica now holds {documents[0].GetCounter("votes").Value}", counter.Detail, context);
                 }
 
                 // Each update's size is the size of what that replica's transaction really produced.
@@ -152,6 +159,15 @@ public partial class McpOracleTests
                     case ("map", "delete"):
                         document.GetMap(words[1]).Delete(argument);
                         break;
+                    case ("counter", "add"):
+                        document.GetCounter(words[1]).Add(long.Parse(argument));
+                        break;
+                    case ("counter", "increment"):
+                        document.GetCounter(words[1]).Increment();
+                        break;
+                    case ("counter", "decrement"):
+                        document.GetCounter(words[1]).Decrement();
+                        break;
                 }
             }
         }
@@ -164,6 +180,7 @@ public partial class McpOracleTests
             document.GetArray("todo");
             document.GetSet("tags");
             document.GetMap("meta");
+            document.GetCounter("votes");
             return document;
         }
     }
@@ -277,7 +294,7 @@ public partial class McpOracleTests
         var indexed = BcrdtApiCatalog.Types.Select(type => type.Name).ToHashSet(StringComparer.Ordinal);
 
         CollectionAssert.AreEquivalent(exported.ToArray(), indexed.ToArray());
-        CollectionAssert.AreEquivalent(new[] { "Bit.Bcrdt", "Bit.Bcrdt.SignalR", "Bit.Bcrdt.Server", "Bit.Bcrdt.Testing" },
+        CollectionAssert.AreEquivalent(new[] { "Bit.Bcrdt", "Bit.Bcrdt.SignalR", "Bit.Bcrdt.Server", "Bit.Bcrdt.Testing", "Bit.Bcrdt.Borm", "Bit.Bcrdt.Blex", "Bit.Bcrdt.BlazeDb", "Bit.Bcrdt.Butil", "Bit.Bcrdt.Bink", "Bit.Bcrdt.Blow" },
             BcrdtApiCatalog.Types.Select(type => type.Package).Distinct().ToArray());
     }
 

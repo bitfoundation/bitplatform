@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Notifications.SnackBar;
 
-public partial class BitSnackBarDemo
+public partial class BitSnackBarDemo : IDisposable
 {
     private readonly List<ComponentParameter> componentParameters =
     [
@@ -589,6 +589,34 @@ public partial class BitSnackBarDemo
                     DefaultValue = "",
                     Description = "Closes every item of the current host and drops its queue."
                 },
+                new()
+                {
+                    Name = "HistoryLimit",
+                    Type = "int",
+                    DefaultValue = "0",
+                    Description = "How many of the latest notifications History keeps; 0 keeps none. Off by default because a kept item keeps what it references (its callbacks and what they close over) alive; lowering it drops the oldest at once."
+                },
+                new()
+                {
+                    Name = "History",
+                    Type = "IReadOnlyList<BitSnackBarItem>",
+                    DefaultValue = "[]",
+                    Description = "The latest notifications a ServiceHost showed or queued, oldest first - through the service or the host itself, Track included. A dismissed one stays, with its DismissReason; one shown again moves to the end. A snapshot, safe to read from any thread."
+                },
+                new()
+                {
+                    Name = "OnHistoryChange",
+                    Type = "event Action?",
+                    DefaultValue = "",
+                    Description = "Raised when History changes: an item is recorded, dropped or cleared, or one in it arrives, is updated, repeats or is dismissed. Raised on the host's renderer, so re-render through InvokeAsync."
+                },
+                new()
+                {
+                    Name = "ClearHistory",
+                    Type = "void ClearHistory()",
+                    DefaultValue = "",
+                    Description = "Forgets every notification in History; the ones on the screen stay."
+                },
             ]
         },
         new()
@@ -743,6 +771,13 @@ public partial class BitSnackBarDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "A custom ARIA role for this snack bar item, overriding the one its color implies."
+                },
+                new()
+                {
+                    Name = "ShownAt",
+                    Type = "DateTimeOffset?",
+                    DefaultValue = "null",
+                    Description = "When the item last arrived on the screen, set by the host; null until then (a queued item has not). What a list of past notifications shows as their time."
                 },
                 new()
                 {
@@ -1387,6 +1422,19 @@ public partial class BitSnackBarDemo
     {
         await snackBarService.Error("Save failed", "The same service reports problems too.");
     }
+
+    protected override void OnInitialized()
+    {
+        // The history is off until a limit is set; the list below re-renders whenever it changes, a dismissal included.
+        snackBarService.HistoryLimit = 5;
+        snackBarService.OnHistoryChange += HandleHistoryChange;
+    }
+
+    private void HandleHistoryChange() => _ = InvokeAsync(StateHasChanged);
+
+    private void ClearServiceHistory() => snackBarService.ClearHistory();
+
+    public void Dispose() => snackBarService.OnHistoryChange -= HandleHistoryChange;
 
 
     private BitSnackBar a11yRef = default!;

@@ -405,7 +405,7 @@ public partial class DemoPage
         (_packageName, _sourceUrl) =
             GitHubExtrasUrl.HasValue() ? ("Bit.BlazorUI.Extras", $"{REPO_URL}/blob/develop/src/BlazorUI/Bit.BlazorUI.Extras/Components/{GitHubExtrasUrl}")
             : GitHubLegacyUrl.HasValue() ? ("Bit.BlazorUI.Legacy", $"{REPO_URL}/blob/develop/src/BlazorUI/Bit.BlazorUI.Legacy/Components/{GitHubLegacyUrl}")
-            : GitHubAIUrl.HasValue() ? ("Bit.BlazorUI.AI", $"{REPO_URL}/blob/develop/src/BlazorUI/Bit.BlazorUI.AI/Components/{GitHubAIUrl}")
+            : GitHubAIUrl.HasValue() ? ("Bit.BlazorUI.AI", $"{REPO_URL}/blob/develop/src/BlazorUI/Bit.BlazorUI.AI/Bit.BlazorUI.AI/Components/{GitHubAIUrl}")
             : GitHubUrl.HasValue() ? ("Bit.BlazorUI", $"{REPO_URL}/blob/develop/src/BlazorUI/Bit.BlazorUI/Components/{GitHubUrl}")
             : ("Bit.BlazorUI", null);
 

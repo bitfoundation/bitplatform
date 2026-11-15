@@ -16,6 +16,20 @@ public sealed class BlazeDbStorageQuotaExceededException : BlazeDbException
         RequiredBytes = requiredBytes;
     }
 
+    /// <summary>
+    /// For a write the storage itself refused for lack of space - the browser's <c>QuotaExceededError</c> -
+    /// rather than one the engine held back on its own estimate. <paramref name="innerException"/> is what
+    /// the storage reported.
+    /// </summary>
+    public BlazeDbStorageQuotaExceededException(Storage.BlazeDbStorageQuota quota, long requiredBytes, Exception innerException)
+        : base($"The storage refused to write {requiredBytes} bytes because the storage quota is exhausted " +
+               $"({quota.UsageBytes} of {quota.QuotaBytes} bytes used, as last estimated). " +
+               "The database is intact in memory; free space or reduce the data set and flush again.", innerException)
+    {
+        Quota = quota;
+        RequiredBytes = requiredBytes;
+    }
+
     public Storage.BlazeDbStorageQuota Quota { get; }
 
     public long RequiredBytes { get; }

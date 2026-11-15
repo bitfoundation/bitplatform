@@ -40,17 +40,23 @@ internal sealed class ScriptedTransport : IBsqliteTransport
 
     public Exception? OpenThrows { get; init; }
 
-    public Task OpenAsync(string databaseName, CancellationToken cancellationToken = default)
+    /// <summary>An open that does not finish until this task does - one still under way.</summary>
+    public Task? OpenWaitsFor { get; init; }
+
+    public async Task OpenAsync(string databaseName, CancellationToken cancellationToken = default)
     {
         OpenCount++;
         OpenedAs = databaseName;
+
+        if (OpenWaitsFor is not null)
+        {
+            await OpenWaitsFor.ConfigureAwait(false);
+        }
 
         if (OpenThrows is not null)
         {
             throw OpenThrows;
         }
-
-        return Task.CompletedTask;
     }
 
     public Task CloseAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
@@ -75,7 +81,7 @@ internal sealed class ConfigurableProvider : IBsqliteStorageProvider
 
     public bool IsPersistent { get; init; } = true;
 
-    public bool IsAvailable { get; init; } = true;
+    public bool IsAvailable { get; set; } = true;
 
     public BsqliteJsModule? Vfs { get; init; }
 

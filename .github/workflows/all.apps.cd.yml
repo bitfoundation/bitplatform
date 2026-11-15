@@ -1,0 +1,263 @@
+name: All Apps CD
+
+# Runs every CD workflow in one run. Local `./` reusable workflows always run from the caller's
+# commit, so whatever branch is picked in the "Run workflow" dropdown is the branch they all build.
+
+on:
+  workflow_dispatch:
+    inputs:
+      server:
+        description: Server web + api
+        type: boolean
+        default: true
+      wasm:
+        description: Blazor WASM standalone
+        type: boolean
+        default: true
+      windows:
+        description: Windows apps
+        type: boolean
+        default: true
+      android:
+        description: Android apps
+        type: boolean
+        default: true
+      ios:
+        description: iOS apps
+        type: boolean
+        default: true
+      prerelease_packages:
+        description: Bit packages of the latest CD Prerelease nuget packages run instead of nuget.org (AdminPanel, Sales, Todo, Workbench, the landing page, and the platform and sales websites)
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+
+  platform_website:
+    name: platform website
+    if: inputs.server
+    uses: ./.github/workflows/cd.platform.website.yml
+    secrets: inherit
+    with:
+      prerelease_packages: ${{ inputs.prerelease_packages }}
+
+  sales_website:
+    name: sales website
+    if: inputs.server
+    uses: ./.github/workflows/cd.sales.website.yml
+    secrets: inherit
+    with:
+      prerelease_packages: ${{ inputs.prerelease_packages }}
+
+  bevtools_demo:
+    name: bevtools demo
+    if: inputs.server
+    uses: ./.github/workflows/cd.bevtools.demo.yml
+    secrets: inherit
+
+  blex_demo:
+    name: blex demo
+    if: inputs.server
+    uses: ./.github/workflows/cd.blex.demo.yml
+    secrets: inherit
+
+  bmotion_demo:
+    name: bmotion demo
+    if: inputs.server
+    uses: ./.github/workflows/cd.bmotion.demo.yml
+    secrets: inherit
+
+  bmage_demo:
+    name: bmage demo
+    if: inputs.server
+    uses: ./.github/workflows/cd.bmage.demo.yml
+    secrets: inherit
+
+  bsqlite_demo:
+    name: bsqlite demo
+    if: inputs.server
+    uses: ./.github/workflows/cd.bsqlite.demo.yml
+    secrets: inherit
+
+  bink_demo:
+    name: bink demo
+    if: inputs.server
+    uses: ./.github/workflows/cd.bink.demo.yml
+    secrets: inherit
+
+  balette_demo:
+    name: balette demo
+    if: inputs.server
+    uses: ./.github/workflows/cd.balette.demo.yml
+    secrets: inherit
+
+  bbscanner_demo:
+    name: bbscanner demo
+    if: inputs.server
+    uses: ./.github/workflows/cd.bbscanner.demo.yml
+    secrets: inherit
+
+  bdnd_demo:
+    name: bdnd demo
+    if: inputs.server
+    uses: ./.github/workflows/cd.bdnd.demo.yml
+    secrets: inherit
+
+  blazedb_demo:
+    name: blazedb demo
+    if: inputs.server
+    uses: ./.github/workflows/cd.blazedb.demo.yml
+    secrets: inherit
+
+  blow_demo:
+    name: blow demo
+    if: inputs.server
+    uses: ./.github/workflows/cd.blow.demo.yml
+    secrets: inherit
+
+  borm_demo:
+    name: borm demo
+    if: inputs.server
+    uses: ./.github/workflows/cd.borm.demo.yml
+    secrets: inherit
+
+  bcrdt_demo:
+    name: bcrdt demo
+    if: inputs.server
+    uses: ./.github/workflows/cd.bcrdt.demo.yml
+    secrets: inherit
+
+  bonboarding_demo:
+    name: bonboarding demo
+    if: inputs.server
+    uses: ./.github/workflows/cd.bonboarding.demo.yml
+    secrets: inherit
+
+  bortable_demo:
+    name: bortable demo
+    if: inputs.server
+    uses: ./.github/workflows/cd.bortable.demo.yml
+    secrets: inherit
+
+  belemetry_demo:
+    name: belemetry demo
+    if: inputs.server
+    uses: ./.github/workflows/cd.belemetry.demo.yml
+    secrets: inherit
+
+  bheadless_demo:
+    name: bheadless demo
+    if: inputs.server
+    uses: ./.github/workflows/cd.bheadless.demo.yml
+    secrets: inherit
+
+  brouter_demo:
+    name: brouter demo
+    if: inputs.server
+    uses: ./.github/workflows/cd.brouter.demo.yml
+    secrets: inherit
+
+  bswup_demo:
+    name: bswup demo
+    if: inputs.server
+    uses: ./.github/workflows/cd.bswup.demo.yml
+    secrets: inherit
+
+  butil_demo:
+    name: butil demo
+    if: inputs.server
+    uses: ./.github/workflows/cd.butil.demo.yml
+    secrets: inherit
+
+  blazorui_demo:
+    name: blazorui demo
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+      attestations: write
+    uses: ./.github/workflows/cd.blazorui.demo.yml
+    secrets: inherit
+    with:
+      server: ${{ inputs.server }}
+      windows: ${{ inputs.windows }}
+      android: ${{ inputs.android }}
+      ios: ${{ inputs.ios }}
+
+  sales_module_demo:
+    name: sales module demo
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+      attestations: write
+    uses: ./.github/workflows/cd.sales.module.demo.yml
+    secrets: inherit
+    with:
+      server: ${{ inputs.server }}
+      windows: ${{ inputs.windows }}
+      prerelease_packages: ${{ inputs.prerelease_packages }}
+
+  admin_sample:
+    name: admin sample
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+      attestations: write
+    uses: ./.github/workflows/cd.adminpanel.demo.yml
+    secrets: inherit
+    with:
+      server: ${{ inputs.server }}
+      wasm: ${{ inputs.wasm }}
+      windows: ${{ inputs.windows }}
+      android: ${{ inputs.android }}
+      ios: ${{ inputs.ios }}
+      prerelease_packages: ${{ inputs.prerelease_packages }}
+
+  workbench_demo:
+    name: workbench demo
+    if: inputs.server
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+      attestations: write
+    uses: ./.github/workflows/cd.workbench.demo.yml
+    secrets: inherit
+    with:
+      prerelease_packages: ${{ inputs.prerelease_packages }}
+
+  landingpage_demo:
+    name: landing page demo
+    if: inputs.server
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+      attestations: write
+    uses: ./.github/workflows/cd.landing.page.demo.yml
+    secrets: inherit
+    with:
+      prerelease_packages: ${{ inputs.prerelease_packages }}
+
+  todo_sample:
+    name: todo sample
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+      attestations: write
+    uses: ./.github/workflows/cd.todo.demo.yml
+    secrets: inherit
+    with:
+      server: ${{ inputs.server }}
+      wasm: ${{ inputs.wasm }}
+      windows: ${{ inputs.windows }}
+      android: ${{ inputs.android }}
+      ios: ${{ inputs.ios }}
+      prerelease_packages: ${{ inputs.prerelease_packages }}

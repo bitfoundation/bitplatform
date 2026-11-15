@@ -68,6 +68,33 @@
 </section>
 
 <section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Disclosure panels</h3>
+    <p>
+        <strong>BmPresets.Expand()</strong> opens an accordion panel to its natural height - <code>height: auto</code>,
+        measured, so the panel follows its content once open - and closes it back to nothing on exit. The button stays
+        outside the animated panel and says whether it is open with <code>aria-expanded</code>; the panel needs
+        <code>overflow: hidden</code>. Under reduced motion the height lands at once and the fade remains.
+    </p>
+    <div class="demo-row">
+        <div class="demo-card stack" style="align-items: stretch; min-width: 260px">
+            <button class="btn btn-secondary" aria-expanded="@(_expanded ? "true" : "false")" aria-controls="expand-panel"
+                    @onclick="() => _expanded = !_expanded">@(_expanded ? "Hide details" : "Show details")</button>
+            <BmotionAnimatePresence IsPresent="_expanded">
+                <Bmotion Preset="BmPresets.Expand()">
+                    <div id="expand-panel" style="overflow: hidden">
+                        <p style="margin: .75rem 0 0">
+                            The panel grows to fit whatever it holds, and keeps following it once open - add a line,
+                            and it grows with it.
+                        </p>
+                    </div>
+                </Bmotion>
+            </BmotionAnimatePresence>
+        </div>
+    </div>
+    <CodeSnippet Code="@ExpandCode" />
+</section>
+
+<section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Hover and press</h3>
     <p>
         Gesture presets add an overlay and nothing else, so they combine with whatever the element animates.
@@ -181,6 +208,24 @@
     private bool _shown = true;
     private string? _overlay = "Modal";
     private int _attentionRun;
+    private bool _expanded;
+
+    private const string ExpandCode = """
+        @using Bit.Bmotion
+
+        <button aria-expanded="@(_open ? "true" : "false")" aria-controls="details"
+                @onclick="() => _open = !_open">Details</button>
+
+        <BmotionAnimatePresence IsPresent="_open">
+            <Bmotion Preset="BmPresets.Expand()">
+                <div id="details" style="overflow: hidden">...</div>
+            </Bmotion>
+        </BmotionAnimatePresence>
+
+        @code {
+            private bool _open;
+        }
+        """;
 
     private readonly (string Name, BmPreset Preset)[] _enterExit =
     [

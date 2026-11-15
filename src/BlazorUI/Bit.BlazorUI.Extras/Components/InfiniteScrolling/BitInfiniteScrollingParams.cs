@@ -14,7 +14,7 @@ namespace Bit.BlazorUI;
 /// None of the parameters here depends on the type of the items, so the class is not generic: one instance
 /// reaches every list under the <see cref="BitParams"/> it is given to, whatever it lists.
 /// </remarks>
-public class BitInfiniteScrollingParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitInfiniteScrollingParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitInfiniteScrolling{TItem}"/> cascading parameters within <see cref="BitParams"/>.
@@ -52,7 +52,7 @@ public class BitInfiniteScrollingParams : BitComponentBaseParams, IBitComponentP
     /// <summary>
     /// The message to render when there is no item available and no EmptyTemplate is provided.
     /// </summary>
-    public string? EmptyMessage { get; set; }
+    public string? EmptyText { get; set; }
 
     /// <summary>
     /// The custom template to render when there is no item available.
@@ -198,9 +198,9 @@ public class BitInfiniteScrollingParams : BitComponentBaseParams, IBitComponentP
             bitInfiniteScrolling.TakeFromCascade(nameof(Classes), Classes, static i => i.Classes, static (i, v) => i.Classes = v);
         }
 
-        if (EmptyMessage is not null)
+        if (EmptyText is not null)
         {
-            bitInfiniteScrolling.TakeFromCascade(nameof(EmptyMessage), EmptyMessage, static i => i.EmptyMessage, static (i, v) => i.EmptyMessage = v);
+            bitInfiniteScrolling.TakeFromCascade(nameof(EmptyText), EmptyText, static i => i.EmptyText, static (i, v) => i.EmptyText = v);
         }
 
         if (EmptyTemplate is not null)

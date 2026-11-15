@@ -32,6 +32,9 @@
         <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFocused)" Force="focus">
             <BitCheckbox Label="@OptionLabel" Value="true" />
         </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateError)">
+            <BitCheckbox Label="@OptionLabel" ErrorMessage="@Localizer[nameof(WorkbenchStrings.ThemeInputsCheckThisToContinue)]" />
+        </StateSample>
         <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
             <BitCheckbox Label="@OptionLabel" Disabled />
         </StateSample>
@@ -52,6 +55,9 @@
         </StateSample>
         <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFocused)" Force="focus">
             <BitChoiceGroup Items="choices" Label="@ChoiceLabel" DefaultValue="@("1")" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateError)">
+            <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Items="choices" Label="@ChoiceLabel" ErrorMessage="@Localizer[nameof(WorkbenchStrings.ThemeChoiceError)]" />
         </StateSample>
         <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
             <BitChoiceGroup Items="choices" Label="@ChoiceLabel" DefaultValue="@("1")" Disabled />
@@ -98,6 +104,9 @@
         <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateDefault)">
             <BitFileInput Label="@Localizer[nameof(WorkbenchStrings.ThemeInputsAttachTheInvoice)]" />
         </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateError)">
+            <BitFileInput Label="@Localizer[nameof(WorkbenchStrings.ThemeInputsAttachTheInvoice)]" ShowDropZone Accept=".pdf" ErrorMessage="@Localizer[nameof(WorkbenchStrings.ThemeInputsAttachAPdfOfUpTo5Mb)]" />
+        </StateSample>
         <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
             <BitFileInput Label="@Localizer[nameof(WorkbenchStrings.ThemeInputsAttachTheInvoice)]" ShowDropZone Disabled />
         </StateSample>
@@ -112,6 +121,18 @@
         </StateSample>
         <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
             <BitFileUpload Label="@Localizer[nameof(WorkbenchStrings.ThemeInputsUploadPhotos)]" ShowDropArea Disabled />
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitListBox" Wide>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateSelected)">
+            <BitListBox TItem="BitListBoxItem<string>" TValue="string" Items="deliveryItems" Label="@DeliveryLabel" DefaultValue="@("van")" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateMultiple)">
+            <BitListBox TItem="BitListBoxItem<string>" TValue="string" Items="tagItems" Label="@TagsLabel" MultiSelect DefaultValues="selectedTags" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+            <BitListBox TItem="BitListBoxItem<string>" TValue="string" Items="deliveryItems" Label="@DeliveryLabel" DefaultValue="@("van")" Disabled />
         </StateSample>
     </ComponentStates>
 
@@ -161,6 +182,9 @@
         <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFocused)" Force="focus">
             <BitRating AriaLabel="@RatingLabel" Value="3" />
         </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateError)">
+            <BitRating AriaLabel="@RatingLabel" AllowZeroStars ErrorMessage="@Localizer[nameof(WorkbenchStrings.ThemeInputsPickAtLeastOneStar)]" />
+        </StateSample>
         <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeInputsHalfStars)]">
             <BitRating AriaLabel="@RatingLabel" Value="3.5" Precision="0.5" Color="BitColor.Warning" />
         </StateSample>
@@ -185,6 +209,9 @@
         <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFocused)" Force="focus">
             <BitSearchBox Placeholder="@SearchText" AriaLabel="@SearchText" Value="@("Amsterdam")" />
         </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateError)">
+            <BitSearchBox Placeholder="@SearchText" AriaLabel="@SearchText" Value="@("Am")" ErrorMessage="@Localizer[nameof(WorkbenchStrings.ThemeInputsTypeAtLeastThreeLetters)]" />
+        </StateSample>
         <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
             <BitSearchBox Placeholder="@SearchText" AriaLabel="@SearchText" Disabled />
         </StateSample>
@@ -199,6 +226,9 @@
         </StateSample>
         <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFocused)" Force="focus">
             <BitSlider Label="@AmountLabel" Min="0" Max="100" DefaultValue="40" ShowValue />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateError)">
+            <BitSlider Label="@AmountLabel" Min="0" Max="100" DefaultValue="90" ShowValue ErrorMessage="@Localizer[nameof(WorkbenchStrings.ThemeInputsKeepItAt80OrBelow)]" />
         </StateSample>
         <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
             <BitSlider Label="@AmountLabel" Min="0" Max="100" DefaultValue="40" ShowValue Disabled />
@@ -277,6 +307,9 @@
         </StateSample>
         <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFocused)" Force="focus">
             <BitToggle Label="@ToggleLabel" Value="true" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateError)">
+            <BitToggle Label="@ToggleLabel" ErrorMessage="@Localizer[nameof(WorkbenchStrings.ThemeInputsTurnNotificationsOnToGet)]" />
         </StateSample>
         <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
             <BitToggle Label="@ToggleLabel" Disabled />

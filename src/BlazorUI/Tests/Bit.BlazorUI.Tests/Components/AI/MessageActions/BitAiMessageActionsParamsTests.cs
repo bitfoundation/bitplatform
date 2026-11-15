@@ -24,6 +24,7 @@ public class BitAiMessageActionsParamsTests : BitAiTestBase
         nameof(BitAiMessageActions.ExtraActionsTemplate),
         nameof(BitAiMessageActions.Message),
         nameof(BitAiMessageActions.OnFeedback),
+        nameof(BitAiMessageActions.ReadAloud),
         nameof(BitAiMessageActions.Session),
     ];
 

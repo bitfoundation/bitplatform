@@ -374,12 +374,13 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
     [Parameter] public Func<TItem?, TValue>? DynamicValueGenerator { get; set; }
 
     /// <summary>
-    /// The custom template to render in the callout when there is no item to show.
+    /// The custom template to render in the callout when there is no item at all, which takes the place of
+    /// <see cref="EmptyText"/>.
     /// </summary>
     [Parameter] public RenderFragment? EmptyTemplate { get; set; }
 
     /// <summary>
-    /// The text to render in the callout when there is no item to show.
+    /// The text to render in the callout when there is no item at all. Default: <see cref="BitStrings.NoItemsFound"/>.
     /// </summary>
     [Parameter] public string? EmptyText { get; set; }
 
@@ -393,7 +394,8 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
     /// <remarks>
     /// It is meant for a rejection the app itself knows about (a server response, a rule spanning two
     /// fields). A dropdown inside an <c>EditForm</c> already gets its messages from the cascading
-    /// EditContext through the <c>ValidationMessage</c> component.
+    /// EditContext, which <see cref="ShowValidationMessage"/> shows in this same place - giving way to this
+    /// message while it is set - or the <c>ValidationMessage</c> component shows wherever the page puts it.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public string? ErrorMessage { get; set; }
@@ -624,8 +626,8 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
     public bool NoBorder { get; set; }
 
     /// <summary>
-    /// The custom template to render in the callout when the current search has no result.
-    /// Falls back to the <see cref="EmptyTemplate"/> when not set.
+    /// The custom template to render in the callout when the current search matched none of the items, which takes
+    /// the place of <see cref="NoResultsText"/>.
     /// </summary>
     [Parameter] public RenderFragment? NoResultsTemplate { get; set; }
 
@@ -640,8 +642,8 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
     [Parameter] public bool NoWrapNavigation { get; set; }
 
     /// <summary>
-    /// The text to render in the callout when the current search has no result.
-    /// Falls back to the <see cref="EmptyText"/> when not set.
+    /// The text to render in the callout when the current search matched none of the items. Default:
+    /// <see cref="BitStrings.NoResultsFound"/>.
     /// </summary>
     [Parameter] public string? NoResultsText { get; set; }
 
@@ -892,6 +894,22 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
     /// loaded yet cannot be selected.
     /// </summary>
     [Parameter] public bool ShowSelectAll { get; set; }
+
+    /// <summary>
+    /// Shows the messages the cascading EditContext holds for the bound field - <see cref="BitInputBase{TValue}.Value"/>,
+    /// or <see cref="Values"/> in the multi select mode - under the dropdown, where <see cref="ErrorMessage"/> goes, so
+    /// an <c>EditForm</c> needs no <c>ValidationMessage</c> component beside the field. The dropdown (the input of the
+    /// ComboBox mode) references them through its aria-describedby attribute, so they are read out whenever it takes
+    /// the focus.
+    /// </summary>
+    /// <remarks>
+    /// An <see cref="ErrorMessage"/> or <see cref="ErrorMessageTemplate"/> of the app's own wins the place while it is
+    /// set. Unlike an ErrorMessage, the messages are not announced through the live region of the dropdown: a submit
+    /// validates every field of the form at once, and a message from each of them read out in a row would bury the
+    /// form under its own errors - the field that takes the focus says what is wrong with it. A dropdown that
+    /// validates nothing (<see cref="BitInputBase{TValue}.NoValidate"/>) or is bound to nothing shows none.
+    /// </remarks>
+    [Parameter] public bool ShowValidationMessage { get; set; }
 
     /// <summary>
     /// The size of the dropdown.
@@ -3324,6 +3342,13 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
     // The same, for the error element carrying _errorId.
     private bool HasErrorMessage => ErrorMessage.HasValue() || ErrorMessageTemplate is not null;
 
+    // The messages of the EditContext the error line shows (ShowValidationMessage), which only take it while the app
+    // has no message of its own there. They mark nothing themselves: the EditContext already has.
+    private string? ShownValidationMessage => ShowValidationMessage && HasErrorMessage is false ? FieldValidationMessage : null;
+
+    // Whether the error line under the field is rendered, for the app's own message or for the EditContext's.
+    private bool HasErrorLine => HasErrorMessage || ShownValidationMessage is not null;
+
     // A rejection the app decided on its own, which the EditContext knows nothing about. A message is
     // one: a field that says what is wrong with its value is a field saying the value is wrong.
     protected override bool HasError => Invalid || HasErrorMessage;
@@ -3352,8 +3377,11 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
             var ids = string.Join(' ', new[]
             {
                 // A label stands in for the template on focus as well, which may well be a bare icon with
-                // no text to describe the field with at all.
-                HasErrorAriaLabel ? _errorLabelId : HasErrorMessage ? _errorId : null,
+                // no text to describe the field with at all. The forced state's label gives way to a message of
+                // the EditContext on screen, which is the text the reader can see.
+                HasErrorAriaLabel && (HasErrorMessage || ShownValidationMessage is null) ? _errorLabelId
+                    : HasErrorLine ? _errorId
+                    : null,
                 HasDescription ? _descriptionId : null,
                 AriaDescription.HasValue() ? _ariaDescriptionId : null
             }.Where(id => id.HasValue()));
@@ -3468,6 +3496,17 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
     private bool HasNoVisibleItems()
     {
         return GetDisplayItems().Any(i => GetItemType(i) == BitDropdownItemType.Normal && GetIsHidden(i) is false) is false;
+    }
+
+    // Whether the empty list is a search that matched none of the items there are, rather than a list with no items to
+    // search at all. An ItemsProvider only hands over what it matched, so with one a typed search is taken for it.
+    private bool IsNoResults()
+    {
+        if (HasSearchText is false) return false;
+
+        if (ItemsProvider is not null) return true;
+
+        return Items?.Any(i => GetItemType(i) == BitDropdownItemType.Normal && GetIsHidden(i) is false) ?? false;
     }
 
     // Read on every render of the callout, so the items are counted in place rather than collected into

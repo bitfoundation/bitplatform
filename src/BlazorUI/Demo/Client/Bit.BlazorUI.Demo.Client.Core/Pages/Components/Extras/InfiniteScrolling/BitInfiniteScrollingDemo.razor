@@ -43,7 +43,7 @@
             <DemoExample Title="PageSize & states" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
                 <div>
                     <b>PageSize</b> is sent as the <b>Count</b> of each request, and a shorter page marks the end of the
-                    data without an extra empty round trip. <b>EndMessage</b> follows the last item; <b>EmptyMessage</b>
+                    data without an extra empty round trip. <b>EndMessage</b> follows the last item; <b>EmptyText</b>
                     replaces the list when the first page has no item.
                 </div>
                 <br />
@@ -55,11 +55,11 @@
                     <div>Item @item</div>
                 </BitInfiniteScrolling>
                 <br /><br />
-                <div><b>EmptyMessage:</b></div><br />
+                <div><b>EmptyText:</b></div><br />
                 <BitInfiniteScrolling ItemsProvider="LoadEmptyItems"
                                       Class="basic"
                                       Context="item"
-                                      EmptyMessage="Nothing to show here.">
+                                      EmptyText="Nothing to show here.">
                     <div>Item @item</div>
                 </BitInfiniteScrolling>
             </DemoExample>

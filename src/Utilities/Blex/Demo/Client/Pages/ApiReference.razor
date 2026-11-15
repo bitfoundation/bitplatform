@@ -114,6 +114,10 @@
                         <td>the same property, and <code>"Foo"</code> in an <code>override TransientStateKeys</code> - kept out of durable persistence</td>
                     </tr>
                     <tr>
+                        <td><code>[BlexState(Comparer = nameof(C))] private T _foo;</code></td>
+                        <td>the same property, whose setter passes <code>C</code> to <code>SetState</code> to decide whether an assignment changes anything</td>
+                    </tr>
+                    <tr>
                         <td><code>[BlexComputed] T ComputeFoo()</code></td>
                         <td><code>public T Foo { get; }</code> plus <code>__FooValid</code> / <code>__FooValue</code>, an entry in <code>InvalidateComputed()</code>, and one in <code>InvalidateComputed(string?)</code> under every state property its body reads</td>
                     </tr>

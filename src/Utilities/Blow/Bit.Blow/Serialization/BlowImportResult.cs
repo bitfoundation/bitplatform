@@ -46,6 +46,9 @@ public static class BlowImportCodes
     /// <summary>The input is not valid JSON.</summary>
     public const string InvalidJson = "invalid-json";
 
+    /// <summary>The input is not well-formed XML (GraphML).</summary>
+    public const string InvalidXml = "invalid-xml";
+
     /// <summary>The input is larger than <see cref="BlowImportLimits.MaxBytes"/>.</summary>
     public const string TooLarge = "too-large";
 

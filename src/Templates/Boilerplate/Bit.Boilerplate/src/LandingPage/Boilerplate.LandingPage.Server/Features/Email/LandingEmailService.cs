@@ -49,9 +49,12 @@ public static class LandingEmailServiceCollectionExtensions
 
         var healthChecks = services.AddHealthChecks();
 
+        // The app's HealthCheckCategories.Messaging, spelled out as this site references none of the app's projects.
+        string[] smtpTags = ["category:Messaging"];
+
         if (configuration.GetConnectionString("smtp") is not { Length: > 0 } connectionString)
         {
-            healthChecks.AddCheck("smtp", () => HealthCheckResult.Degraded("ConnectionStrings:smtp is not set."));
+            healthChecks.AddCheck("smtp", () => HealthCheckResult.Degraded("ConnectionStrings:smtp is not set."), tags: smtpTags);
             return services;
         }
 
@@ -68,7 +71,7 @@ public static class LandingEmailServiceCollectionExtensions
         var password = values.GetValueOrDefault("Password");
         var enableSsl = values.GetValueOrDefault("EnableSsl", port is 465 or 587 ? "true" : "false").Equals("false", StringComparison.OrdinalIgnoreCase) is false;
 
-        healthChecks.AddCheck("smtp", new SmtpHealthCheck(new(endpoint.Host, port, userName ?? string.Empty, password ?? string.Empty, enableSsl)));
+        healthChecks.AddCheck("smtp", new SmtpHealthCheck(new(endpoint.Host, port, userName ?? string.Empty, password ?? string.Empty, enableSsl)), tags: smtpTags);
 
         services.AddFluentEmail(settings.Email.DefaultFromEmail)
             .AddSmtpSender(() =>

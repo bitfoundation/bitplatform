@@ -12,7 +12,7 @@ namespace Bit.BlazorUI;
 /// The document, the page, zoom and rotation the reader is on and the events are left out on purpose: they are
 /// what makes one viewer the one it is.
 /// </remarks>
-public class BitPdfViewerParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitPdfViewerParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitPdfViewer"/> cascading parameters within <see cref="BitParams"/>.

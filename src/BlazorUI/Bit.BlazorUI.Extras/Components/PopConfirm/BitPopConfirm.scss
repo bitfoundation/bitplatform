@@ -1,0 +1,59 @@
+﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
+
+// Public CSS variables, read with a fallback and never declared here, so a value set on :root re-skins every pop
+// confirm, one set on an ancestor the pop confirms inside it, and one set on the Style of an instance that one. The
+// popup is moved to the end of the body while it is open, but the callout carries the classes and the custom
+// properties of its ancestors along with it, so the values reach it there as well:
+//   --bit-PopConfirm-max-width       width the popup stops growing at, the message wrapping inside   (default: spacing(40))
+//   --bit-PopConfirm-padding         inset of the content of the popup                               (default: spacing(1.5))
+//   --bit-PopConfirm-gap             room between the title, the message and the buttons             (default: spacing(1))
+//   --bit-PopConfirm-title-color     color of the title                                              (default: $clr-fg-pri)
+//   --bit-PopConfirm-message-color   color of the message                                            (default: $clr-fg-sec)
+//   --bit-PopConfirm-actions-gap     room between the two buttons                                    (default: spacing(1))
+
+// The root only holds the trigger, which it lays out inline, the way the button it usually is would be. A disabled pop
+// confirm only stops asking, so the callout around the trigger is kept from greying it out and taking its pointer
+// away: what the trigger looks like, disabled or not, is the trigger's own.
+.bit-pcf {
+    display: inline-block;
+
+    > .bit-clo.bit-dis {
+        color: inherit;
+        cursor: auto;
+        pointer-events: auto;
+    }
+}
+
+// What the focus is handed back through, which leaves the layout of the trigger to the anchor of the callout.
+.bit-pcf-trg {
+    display: contents;
+}
+
+.bit-pcf-ctn {
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    gap: var(--bit-PopConfirm-gap, #{spacing(1)});
+    padding: var(--bit-PopConfirm-padding, #{spacing(1.5)});
+    max-width: var(--bit-PopConfirm-max-width, #{spacing(40)});
+}
+
+.bit-pcf-ttl {
+    font-size: $tg-fs-md;
+    font-weight: $tg-fw-semibold;
+    color: var(--bit-PopConfirm-title-color, #{$clr-fg-pri});
+}
+
+.bit-pcf-msg {
+    font-size: $tg-fs-sm;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+    color: var(--bit-PopConfirm-message-color, #{$clr-fg-sec});
+}
+
+.bit-pcf-act {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: var(--bit-PopConfirm-actions-gap, #{spacing(1)});
+}

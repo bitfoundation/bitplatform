@@ -1,0 +1,35 @@
+@import '../../../Client/Boilerplate.Client.Core/Styles/abstracts/_bit-css-variables.scss';
+
+.dictation {
+    gap: 0.5rem;
+    display: inline-flex;
+    align-items: center;
+}
+
+// A ring that breathes around the button while it listens, so it shows from across the room.
+.listening ::deep .dictation-button {
+    border-radius: $bit-shape-radius-control;
+    animation: wb-listening 1.4s $bit-motion-easing infinite;
+}
+
+.listening-label {
+    font-size: 12px;
+    color: $bit-color-error;
+}
+
+@keyframes wb-listening {
+    0%, 100% {
+        box-shadow: 0 0 0 0 color-mix(in srgb, #{$bit-color-error} 45%, transparent);
+    }
+
+    50% {
+        box-shadow: 0 0 0 6px color-mix(in srgb, #{$bit-color-error} 0%, transparent);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .listening ::deep .dictation-button {
+        animation: none;
+        box-shadow: 0 0 0 2px $bit-color-error;
+    }
+}

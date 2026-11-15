@@ -51,19 +51,16 @@ public partial class SharedAppMessages
     public const string SHOW_SIGN_IN_MODAL = nameof(SHOW_SIGN_IN_MODAL);
 
     /// <summary>
-    /// A publisher that sends this message announces that the subscriber should show an AiChatCard in the AI chat panel's conversation.
+    /// During a voice call, which has no reply streaming to the AI chat panel, a tool sends what it shows with this message
+    /// instead: Bit.BlazorUI.AI events in their wire format, which the panel applies to the conversation (See AppChatbot's VoiceCallUi).
     /// </summary>
-    public const string SHOW_AI_CHAT_CARD = nameof(SHOW_AI_CHAT_CARD);
+    public const string SHOW_AI_CHAT_EVENTS = nameof(SHOW_AI_CHAT_EVENTS);
 
     /// <summary>
-    /// A publisher that sends this message asks the subscriber to show an AiChatCard the user has to answer, and to return that answer (See AiChatCardDecision).
+    /// Like <see cref="SHOW_AI_CHAT_EVENTS"/>, for a tool call that waits on the user's approval: the subscriber answers with
+    /// the user's decision (See AppChatbot's VoiceCallUi).
     /// </summary>
-    public const string AWAIT_AI_CHAT_CARD = nameof(AWAIT_AI_CHAT_CARD);
-
-    /// <summary>
-    /// A publisher that sends this message announces what the AI chat panel should offer the user to ask or do next.
-    /// </summary>
-    public const string SHOW_AI_CHAT_SUGGESTIONS = nameof(SHOW_AI_CHAT_SUGGESTIONS);
+    public const string AWAIT_AI_CHAT_DECISION = nameof(AWAIT_AI_CHAT_DECISION);
 
     #endregion
 
@@ -96,10 +93,6 @@ public partial class SharedAppMessages
 
     #region Client commands to server
 
-    /// <summary>
-    /// Using this message, the client asks the server to start a new chat session.
-    /// </summary>
-    public const string StartChat = nameof(StartChat);
 
     /// <summary>
     /// Using this message, the client notifies the server about a change in its authentication state.

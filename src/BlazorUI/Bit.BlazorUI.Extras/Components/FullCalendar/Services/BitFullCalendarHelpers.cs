@@ -457,6 +457,76 @@ public static class BitFullCalendarHelpers
     }
 
     /// <summary>
+    /// A copy of the series <paramref name="master"/> that ends before <paramref name="date"/>: what is left of it when
+    /// the occurrence on that date and every later one go, or move to a series of their own (see
+    /// <see cref="FollowingRule"/>). Its pattern ends the day before, and the dates it skips or adds from that date on
+    /// are dropped. <c>null</c> when nothing of the series shows before the date, so nothing of it would be left.
+    /// </summary>
+    internal static BitFullCalendarEvent? EndSeriesBefore(BitFullCalendarEvent master, DateTime date)
+    {
+        if (master.Recurrence is not { } original)
+            return null;
+
+        date = date.Date;
+        if (HasOccurrenceBefore(master, original, date) is false)
+            return null;
+
+        var rule = original.Copy();
+        var lastDay = date.AddDays(-1);
+        if (rule.Until is not { } until || until.Date > lastDay)
+            rule.Until = lastDay;
+        // The extra dates are not stopped by Until, so those from the date on must go as well.
+        rule.ExceptionDates = DatesWhere(rule.ExceptionDates, d => d < date);
+        rule.AdditionalDates = DatesWhere(rule.AdditionalDates, d => d < date);
+
+        var ended = BitFullCalendarChangeNotifier.CloneEvent(master);
+        ended.Recurrence = rule;
+        return ended;
+    }
+
+    /// <summary>
+    /// The rule of a new series that carries on <paramref name="master"/>'s from <paramref name="date"/>, starting with
+    /// the occurrence on that date: the same pattern, the dates it skips or adds from that date on, and - for a series a
+    /// <see cref="BitFullCalendarRecurrence.Count"/> closes - the occurrences that count still had left there.
+    /// <c>null</c> when the master does not repeat.
+    /// </summary>
+    internal static BitFullCalendarRecurrence? FollowingRule(BitFullCalendarEvent master, DateTime date)
+    {
+        if (master.Recurrence is not { } original)
+            return null;
+
+        date = date.Date;
+        var rule = original.Copy();
+        if (rule.Count is { } count)
+            rule.Count = Math.Max(1, count - PatternDatesBefore(master.StartDate.Date, original, date));
+        rule.ExceptionDates = DatesWhere(rule.ExceptionDates, d => d >= date);
+        rule.AdditionalDates = DatesWhere(rule.AdditionalDates, d => d >= date);
+        return rule;
+    }
+
+    // Whether the series shows anything before the date: a date of its pattern or an extra one, either not skipped.
+    private static bool HasOccurrenceBefore(BitFullCalendarEvent master, BitFullCalendarRecurrence rule, DateTime date)
+    {
+        var skipped = rule.ExceptionDates is { Count: > 0 } ? rule.ExceptionDates.Select(d => d.Date).ToHashSet() : null;
+        bool Shown(DateTime d) => skipped?.Contains(d) is not true;
+
+        if (rule.AdditionalDates?.Any(d => d.Date < date && Shown(d.Date)) is true)
+            return true;
+
+        var start = master.StartDate.Date;
+        return date > start && EnumerateOccurrenceDates(start, rule, start, date.AddDays(-1), _ => false).Any(Shown);
+    }
+
+    // How many dates of the pattern come before the date - skipped ones included, the extra ones not: the place in the
+    // series the date is at, which Count is measured against. No date is "shown" to the walk, so the cap on what one
+    // expansion shows never stops it short.
+    private static int PatternDatesBefore(DateTime seriesStart, BitFullCalendarRecurrence rule, DateTime date)
+        => date > seriesStart ? EnumerateOccurrenceDates(seriesStart, rule, seriesStart, date.AddDays(-1), _ => false).Count() : 0;
+
+    private static IReadOnlyList<DateTime>? DatesWhere(IReadOnlyList<DateTime>? dates, Func<DateTime, bool> keep)
+        => dates?.Where(d => keep(d.Date)).ToList() is { Count: > 0 } kept ? kept : null;
+
+    /// <summary>
     /// <paramref name="date"/> plus <paramref name="days"/> days, or <c>null</c> when the result
     /// would fall outside the representable range.
     /// </summary>

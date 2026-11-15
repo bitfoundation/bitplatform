@@ -1,0 +1,66 @@
+.lp-chat-samples {
+    display: grid;
+    gap: 8px;
+    margin: 4px 0;
+    padding: 0;
+    list-style: none;
+}
+
+.lp-chat-sample {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border: 1px solid color-mix(in oklab, var(--brand) 22%, transparent);
+    border-radius: var(--lp-radius);
+    background: var(--brand-surface);
+    animation: lp-chat-sample-in .3s var(--lp-ease) both;
+
+    @for $i from 2 through 3 {
+        &:nth-child(#{$i}) {
+            animation-delay: #{($i - 1) * 70}ms;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        animation: none;
+    }
+}
+
+.lp-chat-sample-logo {
+    height: 36px;
+    padding: 6px;
+    border-radius: 10px;
+    background: var(--brand);
+    color: var(--brand-fg);
+}
+
+.lp-chat-sample-text {
+    display: grid;
+    min-width: 0;
+    line-height: 1.3;
+
+    strong {
+        overflow: hidden;
+        color: var(--lp-fg);
+        font-size: .9375rem;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    span {
+        overflow: hidden;
+        color: var(--lp-fg-muted);
+        font-size: .8125rem;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+}
+
+@keyframes lp-chat-sample-in {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+}

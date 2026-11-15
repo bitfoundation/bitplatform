@@ -56,6 +56,15 @@ public partial class BitAiMessageActionsDemo
         },
         new()
         {
+            Name = "ReadAloud",
+            Type = "BitAiReadAloud?",
+            DefaultValue = "null",
+            Description = "What reads the message aloud, which offers the \"Read aloud\" action. When null, the one cascaded by an ancestor - a BitAiChat with AllowReadAloud on - is used, and with none the action is not offered.",
+            LinkType = LinkType.Link,
+            Href = "#read-aloud",
+        },
+        new()
+        {
             Name = "Session",
             Type = "BitAiChatSession?",
             DefaultValue = "null",
@@ -87,6 +96,7 @@ public partial class BitAiMessageActionsDemo
         new() { Name = "--bit-AiMessageActions-actions-gap", DefaultValue = "spacing(0.5)", Description = "Room between two action buttons." },
         new() { Name = "--bit-AiMessageActions-color", DefaultValue = "var(--bit-clr-fg-ter)", Description = "Text of the metadata: the model, the usage and the time." },
         new() { Name = "--bit-AiMessageActions-font-size", DefaultValue = "var(--bit-tpg-fs-xs)", Description = "Size of the metadata." },
+        new() { Name = "--bit-AiMessageActions-error-color", DefaultValue = "var(--bit-clr-err-fg)", Description = "Text saying that reading the reply aloud failed." },
     ];
 
     private readonly List<ComponentSubClass> componentSubClasses =
@@ -110,6 +120,22 @@ public partial class BitAiMessageActionsDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the group of action buttons of the BitAiMessageActions."
+                },
+                new()
+                {
+                    Name = "ReadAloudButton",
+                    Type = "BitButtonClassStyles?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the read aloud button of the BitAiMessageActions.",
+                    LinkType = LinkType.Link,
+                    Href = "/components/button#button-class-styles"
+                },
+                new()
+                {
+                    Name = "ReadAloudStatus",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the status of the BitAiMessageActions saying that reading the message aloud failed."
                 },
                 new()
                 {
@@ -143,6 +169,141 @@ public partial class BitAiMessageActionsDemo
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the time of the BitAiMessageActions."
                 }
+            ]
+        },
+        new()
+        {
+            Id = "read-aloud",
+            Title = "BitAiReadAloud",
+            Description = "Reads replies aloud through the app's own text-to-speech: made with an IBitAiTextToSpeech, or a synthesizer delegate (the reply and a token in, a BitAiSpeechAudio - FromStream, FromBytes or FromUrl - out), it plays the speech in the browser. One instance drives the action of every reply of a chat; a BitAiChat with AllowReadAloud makes one and cascades it. One reading plays at a time on a page, nothing is read while a dictation records, and a dictation starting silences what plays.",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "KeepReading",
+                    Type = "bool",
+                    DefaultValue = "false",
+                    Description = "Whether a reading goes on with each reply that finishes after the one it was started on (ReadNextAsync), until it is stopped. Read as a reading starts."
+                },
+                new()
+                {
+                    Name = "Language",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "The language handed to the IBitAiTextToSpeech service, as a BCP 47 language tag; null leaves it to the service."
+                },
+                new()
+                {
+                    Name = "PlaybackRate",
+                    Type = "double",
+                    DefaultValue = "1",
+                    Description = "The speed the speech plays at, 1 being as synthesized; the browser keeps its pitch."
+                },
+                new()
+                {
+                    Name = "Message",
+                    Type = "BitAiMessage?",
+                    DefaultValue = "null",
+                    Description = "The reply being read - loading, playing, waiting to finish arriving, or, while keep reading follows the conversation, the last one it read."
+                },
+                new()
+                {
+                    Name = "IsLoading",
+                    Type = "bool",
+                    DefaultValue = "false",
+                    Description = "Whether the speech of the reply is being synthesized."
+                },
+                new()
+                {
+                    Name = "IsPlaying",
+                    Type = "bool",
+                    DefaultValue = "false",
+                    Description = "Whether speech is playing."
+                },
+                new()
+                {
+                    Name = "IsFollowing",
+                    Type = "bool",
+                    DefaultValue = "false",
+                    Description = "Whether keep reading follows the conversation."
+                },
+                new()
+                {
+                    Name = "FailedMessage",
+                    Type = "BitAiMessage?",
+                    DefaultValue = "null",
+                    Description = "The reply whose reading failed last, until another reading starts or the reading is stopped - for its button to say so."
+                },
+                new()
+                {
+                    Name = "Error",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "What failed in the reading of the FailedMessage: synthesis-failed or playback-failed."
+                },
+                new()
+                {
+                    Name = "IsReading(message)",
+                    Type = "bool",
+                    DefaultValue = "",
+                    Description = "Whether the reply is the one being read, which its button stops rather than starts."
+                },
+                new()
+                {
+                    Name = "HasFailed(message)",
+                    Type = "bool",
+                    DefaultValue = "",
+                    Description = "Whether the reading of the reply is the one that failed last."
+                },
+                new()
+                {
+                    Name = "PrepareAsync()",
+                    Type = "Task",
+                    DefaultValue = "",
+                    Description = "Has the browser wake the player inside every click of an element carrying data-bit-ai-read-aloud, so the speech may play on Blazor Server, where the press reaches .NET only once the gesture is over. The actions of a reply carry the attribute and call it; a button of the app's own does the same."
+                },
+                new()
+                {
+                    Name = "ReadAsync(message)",
+                    Type = "Task",
+                    DefaultValue = "",
+                    Description = "Reads a reply, in place of whatever is being read. A reply still arriving is read once it has finished."
+                },
+                new()
+                {
+                    Name = "ToggleAsync(message)",
+                    Type = "Task",
+                    DefaultValue = "",
+                    Description = "Stops the reading of the reply when it is the one being read, and reads it otherwise - what the action's button does."
+                },
+                new()
+                {
+                    Name = "ReadNextAsync(reply)",
+                    Type = "Task",
+                    DefaultValue = "",
+                    Description = "Tells the reader a reply has finished: it is read when a reading waits for it, or when keep reading follows the conversation - only a reply that finished normally, never one stopped or failed half way. BitAiChat calls it as each turn ends (BitAiChatSession.TurnCompleted); a chat assembled by hand calls it itself."
+                },
+                new()
+                {
+                    Name = "StopAsync()",
+                    Type = "Task",
+                    DefaultValue = "",
+                    Description = "Stops the reading, keep reading with it."
+                },
+                new()
+                {
+                    Name = "Changed",
+                    Type = "event Action",
+                    DefaultValue = "",
+                    Description = "Raised whenever what is read, or whether it is loading or playing, changes."
+                },
+                new()
+                {
+                    Name = "Failed",
+                    Type = "event Action<string>",
+                    DefaultValue = "",
+                    Description = "Raised when a reading fails: synthesis-failed (the synthesizer threw) or playback-failed (the browser could not play the audio). The reading is stopped, and the actions of the reply show and announce the failure."
+                },
             ]
         },
     ];
@@ -244,12 +405,21 @@ public partial class BitAiMessageActionsDemo
     private readonly BitAiMessage variablesMessage = CreateReply("Restyled by its variables.");
 
 
+    private BitAiReadAloud? readAloud;
+    private readonly BitAiMessage readAloudMessage = CreateReply("A reply to read aloud. Press the speaker under it to hear it, and again to stop.");
+    private readonly BitAiMessage readAloudOtherMessage = CreateReply("Another reply: starting its reading stops the first one.");
+
+
     private readonly BitAiMessage rtlMessage = CreateReply("پاسخی که دکمه‌هایش همیشه نمایش داده می‌شوند.");
 
 
 
     protected override Task OnInitAsync()
     {
+        // A real app hands BitAiReadAloud its text-to-speech service; this stand-in plays a voiceless tone about as long as
+        // the reply.
+        readAloud = new BitAiReadAloud(JSRuntime, (reply, cancellationToken) => AiDemoSpeech.SynthesizeAsync(reply.GetText(), cancellationToken));
+
         regenerateSession.Conversation.MessageAdded += OnRegenerateMessageAdded;
         regenerateSession.TurnCompleted += OnRegenerateTurnCompleted;
 
@@ -262,6 +432,8 @@ public partial class BitAiMessageActionsDemo
         regenerateSession.TurnCompleted -= OnRegenerateTurnCompleted;
 
         await regenerateSession.DisposeAsync();
+
+        if (readAloud is not null) await readAloud.DisposeAsync();
 
         await base.DisposeAsync(disposing);
     }

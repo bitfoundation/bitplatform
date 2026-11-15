@@ -9,7 +9,7 @@
     <ItemGroup>
         <SupportedPlatform Include="browser" />
         <!-- The engine is not a Blazor library, so the pages need the components themselves. -->
-        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="11.0.0-rc.3.26522.148" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="11.0.0" />
         <!-- The engine, browser backends included. -->
         <ProjectReference Include="..\..\Bit.BlazeDb\Bit.BlazeDb.csproj" />
         <!-- The generator as an analyzer, which is what the Bit.BlazeDb package adds to a consumer: it turns

@@ -26,6 +26,9 @@
         <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateDefault)">
             <BitColorPicker Label="@Localizer[nameof(WorkbenchStrings.ThemePickersBrandColor)]" Value="@("#ca5010")" />
         </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateError)">
+            <BitColorPicker Label="@Localizer[nameof(WorkbenchStrings.ThemePickersBrandColor)]" Value="@("#fff1a8")" ErrorMessage="@Localizer[nameof(WorkbenchStrings.ThemePickersTooLightToReadOnWhite)]" />
+        </StateSample>
         <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
             <BitColorPicker Label="@Localizer[nameof(WorkbenchStrings.ThemePickersBrandColor)]" Value="@("#107c10")" Disabled />
         </StateSample>
@@ -61,6 +64,9 @@
         </StateSample>
         <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFocused)" Force="focus">
             <BitDateRangePicker Label="@StayLabel" Value="stay" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateError)">
+            <BitDateRangePicker Label="@StayLabel" Value="oneNight" ErrorMessage="@Localizer[nameof(WorkbenchStrings.ThemePickersStayAtLeastTwoNights)]" />
         </StateSample>
         <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
             <BitDateRangePicker Label="@StayLabel" Value="stay" Disabled />

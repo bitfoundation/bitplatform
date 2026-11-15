@@ -3,8 +3,11 @@ using Bit.Bonboarding;
 using Bit.Bcrdt;
 using Bit.Bcrdt.Server;
 using Microsoft.Extensions.Localization;
+using Boilerplate.Shared.Features.Identity;
+using Boilerplate.Shared.Features.Attachments;
 //#if (module == "Admin")
-using Boilerplate.Workbench.Components.Pages.AppPages.Dashboard;
+using Boilerplate.Shared.Features.Dashboard;
+using Boilerplate.Workbench.Components.Pages.AppPages.Dashboard.Data;
 //#endif
 
 namespace Boilerplate.Workbench.Infrastructure.Extensions;
@@ -19,6 +22,8 @@ public static class IWorkbenchServiceCollectionExtensions
         public void AddWorkbenchServices(IConfiguration configuration)
         {
             services.AddScoped<WorkbenchScenarioState>();
+            // What a link of the app's own pages opens in a view (See PreviewPage.StayInThePreview).
+            services.AddScoped<WorkbenchAppLinks>();
             services.AddSingleton<WorkbenchScreenshotService>();
             services.AddSingleton(_ => new WorkbenchScreenshotLimiter(configuration));
             services.AddSingleton<WorkbenchSnapshots>();
@@ -26,6 +31,20 @@ public static class IWorkbenchServiceCollectionExtensions
             services.AddScoped<BuildingsService>();
             services.AddScoped<AssistantService>();
             services.AddScoped<ShiftsService>();
+
+            // The app's own pages, on stand-ins of its server: the settings page on the view's sample account, through the
+            // user and attachment controllers and the device's passkeys, and the dashboard on a sample product catalog.
+            services.AddScoped<SettingsSampleAccount>();
+            services.AddScoped<IUserController, WorkbenchUserController>();
+            services.AddScoped<IAttachmentController, WorkbenchAttachmentController>();
+            services.AddScoped<IWebAuthnService, WorkbenchWebAuthnService>();
+            services.AddScoped<WorkbenchScenarioSignOut>();
+            //#if (ads == true)
+            services.AddScoped<IAdsService, WorkbenchAdsService>();
+            //#endif
+            //#if (module == "Admin")
+            services.AddScoped<IDashboardController, WorkbenchDashboardController>();
+            //#endif
 
             // The assistant page's chat runs on the sample replies of AssistantService.
             services.AddBitBlazorUIAIServices(ai =>
@@ -55,9 +74,7 @@ public static class IWorkbenchServiceCollectionExtensions
             services.AddBitBlexStore<AssistantStore>();
             services.AddBitBlexStore<ShiftsStore>();
             services.AddBitBlexStore<SettingsStore>();
-            //#if (module == "Admin")
-            services.AddBitBlexStore<DashboardStore>();
-            //#endif
+            services.AddBitBlexStore<WorkbenchDeviceStore>();
             services.AddScoped<IBlexStorage, WorkbenchStateStorage>();
             services.AddBitBlexPersistence();
             services.AddScoped<IBitAccentColorStore, ChromeAccentStore>();
@@ -73,8 +90,10 @@ public static class IWorkbenchServiceCollectionExtensions
             services.AddScoped<IComponentActivator, WorkbenchComponentActivator>();
             services.AddSingleton<WorkbenchComponentEdits>();
 
-            // The review: a Bcrdt document kept in App_Data/Reviews, synced to every circuit through the relay and served to the agent over HTTP.
+            // The review: a Bcrdt document kept in WorkbenchFolders.Reviews, synced to every circuit through the relay and served to the agent over HTTP.
             services.AddSingleton<WorkbenchReviewAgent>();
+            services.AddSingleton<WorkbenchProgressAgent>();
+            services.AddSingleton<WorkbenchSecrets>();
             services.AddSingleton<WorkbenchReviewAttachments>();
             services.AddSingleton<WorkbenchReviewRelay>();
             services.AddScoped<WorkbenchReviewSession>();
@@ -84,8 +103,9 @@ public static class IWorkbenchServiceCollectionExtensions
                 Store = WorkbenchFolders.Project is null ? new BcrdtInMemoryDocumentStore() : new BcrdtFileSystemDocumentStore(WorkbenchFolders.Reviews),
                 ValidateUpdate = context =>
                 {
-                    // Wakes an agent waiting for comments; only the review document is accepted.
+                    // Wakes an agent waiting for comments or for an answer on its task; only the review document is accepted.
                     sp.GetRequiredService<WorkbenchReviewAgent>().Pulse();
+                    sp.GetRequiredService<WorkbenchProgressAgent>().Pulse();
                     return ValueTask.FromResult(context.DocumentId == WorkbenchReviewDocument.Id);
                 }
             });

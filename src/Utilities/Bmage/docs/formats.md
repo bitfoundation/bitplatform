@@ -7,9 +7,10 @@
 | PNG | yes | yes | yes | yes |
 | JPEG | yes | yes | yes | yes |
 | BMP | yes | yes | yes | via managed |
-| GIF | first frame | no | first frame | no |
+| GIF | first frame | yes, one frame, up to 256 colours | first frame | via managed |
 | WebP | yes; first frame of an animation | lossy and lossless | yes | usually, lossy only |
 | AVIF | yes; no colour management | no | usually | rarely |
+| ICO | largest image; PNG or bitmap | yes, PNG images | usually | via managed |
 | SVG | refused | no | refused | no |
 
 "Managed" means pure C#, working anywhere including a server. "Browser" means the platform's own codecs, which is the
@@ -207,10 +208,47 @@ What it does not do:
   their full-size base layer, or are refused when that layer is smaller.
 - **Encoding.** AVIF is written only by a browser that can, which few can; always pair it with a fallback.
 
+## Palettes: indexed PNG and GIF
+
+`ImageExportOptions.MaxColors` writes a PNG as an indexed image: a palette of at most that many colours (2 to 256) and one
+index a pixel, packed into 1, 2, 4 or 8 bits as the palette allows. An icon, a logo, a chart or a screenshot with no more
+colours than that keeps every pixel exactly and is often a third of the size of the full-colour file; a scanned page
+thresholded to black and white becomes a 1-bit PNG. A photo is reduced to the palette, which changes its colours, so
+the option is off unless set.
+
+```csharp
+var logo = await processor.EncodeAsync(image, new ImageExportOptions { Format = ImageFormat.Png, MaxColors = 64 });
+var scan = await processor.EncodeAsync(page, new ImageExportOptions { Format = ImageFormat.Png, MaxColors = 2 });
+```
+
+When the image has more colours than allowed, the palette is chosen by median cut, every fully transparent pixel shares
+one entry and translucent colours keep their alpha in PNG's `tRNS` chunk. `Dither` (on by default) spreads each pixel's
+error to its neighbours with serpentine Floyd-Steinberg, which hides banding in gradients for a little grain; turn it off
+for flat artwork. The managed encoder writes it everywhere, including in the browser, whose canvas has no indexed PNG.
+
+GIF always uses a palette: `MaxColors`, or 256 when it is null, with the same median cut and dithering. GIF has no
+partial transparency, so a pixel under half opaque becomes transparent and the others opaque, and only one frame is
+written. No browser canvas writes GIF, so the managed encoder is the only way to it; for photos, WebP or PNG are better.
+
+## ICO
+
+`IcoEncoder` writes Windows icon files, each image stored as PNG (read by every browser, and by Windows since Vista), at
+most 256 pixels either way. `IcoEncoder.CreateFavicon` fits an image on transparency at 16, 32 and 48 pixels, or the sizes
+given, in one file:
+
+```csharp
+var favicon = IcoEncoder.CreateFavicon(logo);            // favicon.ico with three sizes
+var app = IcoEncoder.CreateFavicon(logo, [16, 24, 32, 48, 64, 256]);
+```
+
+Through `ImageProcessor.EncodeAsync` with `ImageFormat.Ico`, one image becomes a one-image icon. The decoder reads the
+largest image in a file, stored as PNG or as a Windows bitmap of 1, 4, 8, 24 or 32 bits a pixel with its transparency
+mask, and checks every directory entry against the file's length before reading it.
+
 ## GIF and SVG
 
-GIF decodes its first frame, with palettes, interlacing and transparency. Animation is out of scope. GIF encoding is not
-supported by any browser canvas and is not implemented here; use WebP or PNG.
+GIF decodes its first frame, with palettes, interlacing and transparency. Animation is out of scope. Encoding writes one
+frame, as above.
 
 SVG is refused with an explanatory error rather than rasterised. Rendering untrusted SVG can execute embedded scripts and
 fetch remote resources, and a library cannot make that safe on the caller's behalf. If you control the SVG, rasterise it

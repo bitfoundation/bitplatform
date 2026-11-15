@@ -222,7 +222,7 @@ public class McpSurfaceTests
         StringAssert.Contains(McpResources.ApiType("ImagePipeline"), "# ImagePipeline");
         StringAssert.Contains(McpResources.ApiType("ImagePipeline"), "`using Bit.Bmage.Pipeline;`");
 
-        StringAssert.Contains(McpResources.Guide(), "# bit Bmage");
+        StringAssert.Contains(McpResources.Guide(), "# Bit.Bmage");
 
         foreach (var recipe in BmageRecipeCatalog.All)
         {

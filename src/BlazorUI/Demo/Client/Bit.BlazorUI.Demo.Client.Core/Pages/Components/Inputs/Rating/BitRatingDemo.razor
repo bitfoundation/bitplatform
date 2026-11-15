@@ -354,7 +354,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Validation" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" CodeFiles="@example13CodeFiles" Id="example13">
+    <DemoExample Title="Validation" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
         <div>
             Inside an <b>EditForm</b> the rating is a form field like any other: it joins the EditContext,
             reports its changes to it, and turns red while the value is invalid. Combined with
@@ -365,11 +365,16 @@
         </div>
         <br />
         <div>
-            <code>aria-invalid</code> says that something is wrong but not what, so the failure message is
-            given an <b>id</b> and pointed at from the rating. A splatted <code>aria-describedby</code> is
-            carried over rather than replaced - both it and the component's own <b>Description</b> are kept,
-            since the attribute is a list - so the reason is announced with the field instead of only being
-            visible under it.
+            <code>aria-invalid</code> says that something is wrong but not what, so <b>ShowValidationMessage</b>
+            shows the messages of the form under the items, where <b>ErrorMessage</b> goes, and the rating is
+            described by them through <code>aria-describedby</code>, ahead of its own <b>Description</b> - so the
+            reason is announced with the field instead of only being visible under it, and the form below needs no
+            <b>ValidationMessage</b> component. An <b>ErrorMessage</b> of the app's own wins the place while it is
+            set. The messages are not announced as they appear: a submit validates every field at once, and a
+            message from each of them read out in a row would bury the form under its own errors. A
+            <b>BitParams</b> holding a <b>BitRatingParams</b> with <b>ShowValidationMessage</b> turns it on for
+            every rating inside it, and a splatted <code>aria-describedby</code> is still carried over rather than
+            replaced, since the attribute is a list.
         </div>
         <br />
         <div class="example-box">
@@ -381,9 +386,8 @@
 
                     <BitRating Required AllowZeroStars
                                Label="Your rate"
-                               aria-describedby="rating-validation-message"
+                               ShowValidationMessage
                                @bind-Value="ValidationModel.Value" />
-                    <ValidationMessage id="rating-validation-message" For="@(() => ValidationModel.Value)" />
 
                     <br />
 

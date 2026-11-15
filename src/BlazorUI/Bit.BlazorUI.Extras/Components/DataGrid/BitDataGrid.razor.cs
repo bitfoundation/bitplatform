@@ -28,6 +28,18 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     [Parameter] public Func<BitDataGridReadRequest, Task<BitDataGridReadResult<TItem>>>? OnRead { get; set; }
 
     /// <summary>
+    /// Raised with the exception <see cref="OnRead"/> threw while the grid was reading the rows it shows - a page, or a
+    /// window of a virtualized grid. Setting it is what makes the grid handle the failure itself: it shows an error row
+    /// in place of the rows, with a Retry button that reads them again, and tells screen readers the rows could not be
+    /// loaded. A read the grid cancelled because a newer one replaced it is not a failure and never raises it.
+    /// </summary>
+    /// <remarks>
+    /// Without this callback the exception propagates, as it always has. Exports read through <see cref="OnRead"/>
+    /// too, but a failed export throws to whatever started it and never raises this callback.
+    /// </remarks>
+    [Parameter] public EventCallback<Exception> OnReadError { get; set; }
+
+    /// <summary>
     /// Infinite-scrolling data callback. When set, the grid loads rows in batches and appends the
     /// next batch automatically as the user scrolls to the end of the viewport - with no paging UI
     /// and no knowledge of the total row count. Each call receives a <see cref="BitDataGridReadRequest"/>
@@ -83,6 +95,9 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     /// Replaces the grid body with a loading row (<see cref="LoadingTemplate"/>, or a spinner and the
     /// localized loading text) while data is being fetched, and marks the grid <c>aria-busy</c>. The
     /// rows are hidden for as long as it is set rather than dimmed behind an overlay.
+    /// <para>A server grid (<see cref="OnRead"/>) needs it for none of that: it marks itself <c>aria-busy</c> while it
+    /// reads, and shows the loading row while it has no rows yet. Rows already on screen stay up while it reads the
+    /// next ones, unless this is set.</para>
     /// </summary>
     [Parameter] public bool Loading { get; set; }
 
@@ -98,7 +113,8 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     [Parameter] public Func<TItem, IEnumerable<TItem>?>? ChildrenSelector { get; set; }
 
     /// <summary>When tree mode is active, controls whether nodes start expanded. Default: collapsed.
-    /// Ignored in lazy mode (<see cref="ChildrenProvider"/>), where children aren't known up front.</summary>
+    /// Ignored in lazy mode (<see cref="ChildrenProvider"/> or <see cref="OnLoadChildren"/>), where children aren't
+    /// known up front.</summary>
     [Parameter] public bool TreeInitiallyExpanded { get; set; }
 
     /// <summary>
@@ -106,14 +122,25 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     /// backend) the first time a node is expanded and cached for later toggles. Pair it with
     /// <see cref="HasChildrenSelector"/> so unloaded nodes know whether to render an expand toggle.
     /// Mutually exclusive with <see cref="ChildrenSelector"/>.
+    /// <para>The grid cannot tell it to stop: <see cref="OnLoadChildren"/> loads the same way and also hands over a
+    /// token the grid cancels once it no longer needs the children.</para>
     /// </summary>
     [Parameter] public Func<TItem, Task<IEnumerable<TItem>?>>? ChildrenProvider { get; set; }
 
     /// <summary>
+    /// The <see cref="ChildrenProvider"/> that can be cancelled: it loads a node's children the same way, and is called
+    /// with a <see cref="BitDataGridChildrenRequest{TItem}"/> carrying the node and a <see cref="CancellationToken"/>.
+    /// The grid cancels that token once it no longer needs the children - a new <see cref="Items"/> reference replaced
+    /// the hierarchy, or the grid was disposed - and then ignores the <see cref="OperationCanceledException"/> the fetch
+    /// throws. Set only one of <see cref="ChildrenSelector"/>, <see cref="ChildrenProvider"/> and this.
+    /// </summary>
+    [Parameter] public Func<BitDataGridChildrenRequest<TItem>, Task<IEnumerable<TItem>?>>? OnLoadChildren { get; set; }
+
+    /// <summary>
     /// Tells whether a node can have children before they are loaded, so the expand toggle renders on
-    /// unloaded lazy nodes. Only used with <see cref="ChildrenProvider"/>; when omitted, a node shows
-    /// a toggle only after its children have been loaded (i.e. never for the initial render), so
-    /// providing it is strongly recommended.
+    /// unloaded lazy nodes. Only used with <see cref="ChildrenProvider"/> or <see cref="OnLoadChildren"/>; when
+    /// omitted, a node shows a toggle only after its children have been loaded (i.e. never for the initial render),
+    /// so providing it is strongly recommended.
     /// </summary>
     [Parameter] public Func<TItem, bool>? HasChildrenSelector { get; set; }
 
@@ -489,7 +516,7 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     [Parameter] public RenderFragment? EmptyTemplate { get; set; }
 
     /// <summary>Custom content rendered in place of the built-in spinner while <see cref="Loading"/>
-    /// is true.</summary>
+    /// is true, and while a server grid (<see cref="OnRead"/>) with no rows yet reads its first ones.</summary>
     [Parameter] public RenderFragment? LoadingTemplate { get; set; }
 
     /// <summary>Custom content at the start of the toolbar, before the built-in controls.</summary>
@@ -636,12 +663,16 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     private readonly Dictionary<object, (int Level, bool HasChildren)> _treeMeta = new();
     private List<TItem>? _treeRows;
     private bool _treeInitialized;
-    // lazy tree mode (ChildrenProvider): children fetched on first expand, cached by node key
+    // lazy tree mode (ChildrenProvider or OnLoadChildren): children fetched on first expand, cached by node key
     private readonly Dictionary<object, IReadOnlyList<TItem>> _loadedChildren = new();
     private readonly HashSet<object> _loadingNodes = new();
     // Which tree hierarchy the two sets above belong to: moved on whenever a new Items reference clears them, so a
     // lazy fetch started for the previous hierarchy can tell, once it returns, that its rows are gone.
     private int _treeGeneration;
+    // Gives every OnLoadChildren fetch of the current hierarchy its token. Cancelled, and dropped for a new one, when
+    // the generation moves on, and cancelled when the grid is disposed; never disposed, for the reason
+    // ResetLoadCancellation gives.
+    private CancellationTokenSource? _treeLoadCts;
 
     // cell navigation
     private TItem? _focusedRow;
@@ -767,6 +798,13 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     private bool _serverHeadLoading;
     private Task? _serverHeadLoad;
 
+    // The load version of the page read of a server grid (LoadServerDataAsync) in flight. It reads only while that is
+    // still the current version: whatever replaced it - a newer read, another data mode - owns the busy state from then.
+    private int _pageReadVersion = -1;
+    // What OnRead threw on the last read, when OnReadError handles it: the error row stands in for the rows until a
+    // read succeeds.
+    private Exception? _readError;
+
     // True while the footer shows aggregates provided by the OnRead result (computed server-side over
     // the whole dataset); local per-page recomputation must not overwrite them.
     private bool _serverAggregates;
@@ -867,6 +905,10 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     private readonly CancellationTokenSource _disposalCts = new();
     // Monotonic load version; bumped on every (re)load so a superseded response can detect it is stale.
     private int _loadVersion;
+    // Moved on whenever a column registers, changes or goes, which can change the aggregates the footer declares; and
+    // the version AggregatesNeedARead last looked at, so it reads again at most once for each.
+    private int _aggregateColumnsVersion;
+    private int _aggregatesCheckedFor;
 
     internal IReadOnlyList<BitDataGridColumn<TItem>> AllColumns => _columns;
     // Cached: VisibleColumns is read many times per render (per row, per cell, in layout helpers), so
@@ -885,7 +927,8 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     /// <summary>Items is an <see cref="IQueryable{T}"/>: filters/sorts/paging are translated into
     /// expression trees and executed by the provider (e.g. EF Core → SQL) instead of in memory.</summary>
     internal bool IsQueryableMode => Items is IQueryable<TItem> && !IsTreeMode && !IsServerMode && !IsInfiniteMode;
-    internal bool IsTreeMode => ChildrenSelector is not null || ChildrenProvider is not null;
+    internal bool IsTreeMode => ChildrenSelector is not null || IsLazyTreeMode;
+    private bool IsLazyTreeMode => ChildrenProvider is not null || OnLoadChildren is not null;
     internal bool IsEditing(TItem item) => _editItem is not null && KeyEquals(_editItem, item);
     internal bool IsRowSelected(TItem item) => _selected.Contains(item);
     /// <summary>Total number of rows in the current (filtered) view; the provider-reported total in
@@ -945,6 +988,7 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
         _columns.Add(column);
         _columnsById[column.Id] = column;
         InvalidateVisibleColumns();
+        _aggregateColumnsVersion++;
 
         // A column registering itself must not trigger a fresh data fetch in server/infinite modes -
         // doing so once per column re-queries the backend (or resets the infinite list) repeatedly.
@@ -976,6 +1020,7 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     /// </summary>
     internal void NotifyColumnChanged()
     {
+        _aggregateColumnsVersion++;
         if (IsServerMode || IsInfiniteMode)
         {
             if (!_serverAggregates)
@@ -1010,6 +1055,7 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
         {
             _columnsById.Remove(key);
             InvalidateVisibleColumns();
+            _aggregateColumnsVersion++;
             // The filter editor's UI state is keyed by column id too; drop it with the column so a
             // later column reusing the id doesn't inherit a stale operator/raw text.
             _filterOps.Remove(key);
@@ -1078,6 +1124,7 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
         if (_columnsById.TryGetValue(oldId, out var existing) && ReferenceEquals(existing, column))
             _columnsById.Remove(oldId);
         _columnsById[column.Id] = column;
+        _aggregateColumnsVersion++;
 
         // Descriptors are immutable on ColumnId, so rebuild the affected entries with the new id to
         // preserve the column's active sort/filter/group state across the rename.
@@ -1133,21 +1180,21 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
         // Tree mode flattens the bound Items via ProcessTreeData and never calls the remote data
         // callbacks, so combining it with OnRead/OnLoadMore would let RefreshAsync bypass tree
         // processing and present a flat remote list under a tree UI. Reject the ambiguous config.
-        if ((ChildrenSelector is not null || ChildrenProvider is not null) && (OnRead is not null || OnLoadMore is not null))
+        if (IsTreeMode && (OnRead is not null || OnLoadMore is not null))
         {
             throw new InvalidOperationException(
-                $"{nameof(BitDataGrid<TItem>)} cannot combine tree mode ({nameof(ChildrenSelector)}/{nameof(ChildrenProvider)}) with " +
+                $"{nameof(BitDataGrid<TItem>)} cannot combine tree mode ({nameof(ChildrenSelector)}/{nameof(ChildrenProvider)}/{nameof(OnLoadChildren)}) with " +
                 $"{nameof(OnRead)} (server mode) or {nameof(OnLoadMore)} (infinite-scrolling mode). " +
                 $"Tree data must be provided through {nameof(Items)}.");
         }
 
         // Two children sources would be ambiguous: the synchronous selector and the async lazy
-        // provider resolve children in incompatible ways, so exactly one may drive tree mode.
-        if (ChildrenSelector is not null && ChildrenProvider is not null)
+        // providers resolve children in incompatible ways, so exactly one may drive tree mode.
+        if ((ChildrenSelector is null ? 0 : 1) + (ChildrenProvider is null ? 0 : 1) + (OnLoadChildren is null ? 0 : 1) > 1)
         {
             throw new InvalidOperationException(
-                $"{nameof(BitDataGrid<TItem>)} cannot use both {nameof(ChildrenSelector)} and " +
-                $"{nameof(ChildrenProvider)} at the same time. Provide only one children source.");
+                $"{nameof(BitDataGrid<TItem>)} can use only one of {nameof(ChildrenSelector)}, {nameof(ChildrenProvider)} and " +
+                $"{nameof(OnLoadChildren)} at a time. Provide only one children source.");
         }
 
         // The parent owns the quick-search term while it binds SearchText, so an actual parameter
@@ -1235,10 +1282,13 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
                 _treeInitialized = false;
                 _expandedTree.Clear();
                 _treeFilterCollapsed.Clear();
-                // A new hierarchy invalidates lazily-fetched children of the previous one.
+                // A new hierarchy invalidates lazily-fetched children of the previous one, so the fetches still out for
+                // it can stop.
                 _loadedChildren.Clear();
                 _loadingNodes.Clear();
                 _treeGeneration++;
+                _treeLoadCts?.Cancel();
+                _treeLoadCts = null;
             }
 
             // A replaced client-side data source drops rows for good; prune per-row state keyed on the
@@ -1384,6 +1434,10 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
             }
         }
 
+        // A failure the grid handles itself takes this Virtualize out of the page (see FailReadAsync), so a request it
+        // made before that - one waiting on the window read ahead of it, say - is not read: Retry reads afresh.
+        if (_readError is not null) return new ItemsProviderResult<TItem>(Array.Empty<TItem>(), _totalCount);
+
         BitDataGridReadResult<TItem>? result;
         if (head is null)
         {
@@ -1429,6 +1483,8 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
         {
             _serverHead = null;
             _serverHeadLoading = false;
+            if (_retryFocusVersion == _focusVersion) _focusPending = true;
+            _retryFocusVersion = -1;
         }
         if (empty != _serverVirtualizeEmpty || footerChanged || standInsDropped)
         {
@@ -1477,6 +1533,14 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
             // once it has measured, reads the window again; a failure there is the grid's own and is reported.
             return;
         }
+        catch (Exception exception) when (OnReadError.HasDelegate)
+        {
+            // A read a newer one replaced failing late is no news: the newer one tells how it went.
+            if (version != _loadVersion) return;
+            _serverHeadLoading = false;
+            await FailReadAsync(exception);
+            return;
+        }
         catch
         {
             if (version == _loadVersion) _serverHeadLoading = false;
@@ -1485,12 +1549,14 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
         if (version != _loadVersion) return;
 
         _serverHeadLoading = false;
+        _readError = null;
         _serverHead = result;
         _serverVirtualizeEmpty = result.TotalCount == 0;
         CommitServerWindow(result, 0);
     }
 
-    // Reads a window of a server-virtualized grid for Virtualize; null when a newer window superseded it.
+    // Reads a window of a server-virtualized grid for Virtualize; null when a newer window superseded it, or when the
+    // read failed and the grid handles that itself.
     private async Task<BitDataGridReadResult<TItem>?> ReadServerWindowAsync(int skip, int take, CancellationToken cancellationToken)
     {
         try
@@ -1503,6 +1569,91 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
             // irrelevant - the caller just keeps the last known total.
             return null;
         }
+        catch (Exception exception) when (OnReadError.HasDelegate)
+        {
+            // Virtualize can have several windows out at once; the first to fail reports it, and takes Virtualize out
+            // of the page with the others still waiting on theirs.
+            if (_readError is null && cancellationToken.IsCancellationRequested is false)
+            {
+                await FailReadAsync(exception);
+                StateHasChanged();
+            }
+            return null;
+        }
+    }
+
+    // What a failed read the grid handles itself leaves: no rows, the error row in their place (with a Retry that reads
+    // them again), the failure told to screen readers, and to the app through OnReadError. The total read before stays,
+    // so the pager still pages. A server-virtualized grid takes its Virtualize out of the page: the error row stands in
+    // for it, and Retry reads the first window ahead of a new one, the way the grid's first render does. A read that
+    // fails once the grid is going away has no rows left to stand in for, and no one to tell.
+    private async Task FailReadAsync(Exception exception)
+    {
+        if (IsDisposing) return;
+
+        _readError = exception;
+        _pageItems = [];
+        _view = [];
+        RebuildRowIndexMap(_pageItems, 0);
+        ReconcileEditState();
+        if (UseServerVirtualization)
+        {
+            _serverVirtualize = null;
+            _serverHead = null;
+            _serverHeadLoad = null;
+            _serverHeadLoading = false;
+        }
+        Announce(Strings.ReadErrorText);
+        await OnReadError.InvokeAsync(exception);
+    }
+
+    /// <summary>Whether the error row stands in for the rows: the last read failed, and the app handles that.</summary>
+    internal bool ReadErrorShown => _readError is not null && IsServerMode;
+
+    /// <summary>Whether the grid is reading the rows it shows through <see cref="OnRead"/>: a page, or the first window of
+    /// a virtualized grid - which Virtualize's own placeholders stand in for while it reads the later ones.</summary>
+    internal bool IsReading => _pageReadVersion == _loadVersion || _serverHeadLoading;
+
+    // Reads the rows again after a failure. A read already on its way is waited out instead (the button is marked
+    // disabled meanwhile, not made so, so it keeps the focus it holds, and keeps it when this read fails too). When the
+    // rows come back the button goes with the error row, so the focus moves to their first cell, where a cell can take
+    // it, rather than falling to the page.
+    private async Task RetryReadAsync()
+    {
+        if (Disabled || IsReading) return;
+
+        await RefreshAsync();
+
+        if (_readError is null && CellNavigationActive && NavigableRows is { Count: > 0 } rows && VisibleColumns.Count > 0)
+        {
+            _focusedRow = rows[0];
+            _focusedCol = 0;
+            _focusVersion++;
+            _focusPending = true;
+            // A virtualized grid shows the rows read ahead until Virtualize has rows of its own, and those replace the
+            // cell the focus goes to: it goes to theirs then, unless it has moved on to another cell since.
+            if (UseServerVirtualization) _retryFocusVersion = _focusVersion;
+        }
+    }
+
+    // The focus version RetryReadAsync left the focus at, for the rows Virtualize renders in place of the ones read
+    // ahead to take it over from them; -1 when there is none to take over.
+    private int _retryFocusVersion = -1;
+
+    // A server read asks for the aggregates the footer shows (BitDataGridReadRequest.Aggregates), but the first one goes
+    // out before the columns register, and a column can change its aggregate later. So once the columns have rendered,
+    // a data source that computes aggregates (its last result had them) and left out one the columns now declare is
+    // read again, asking for it: at most once for each change of the columns, so a source that never returns that
+    // aggregate costs one read, not one per render. A source that returns no aggregates is never read again for them:
+    // the footer aggregates its rows itself, as before.
+    private bool AggregatesNeedARead()
+    {
+        if (!IsServerMode || !_serverAggregates || _aggregatesCheckedFor == _aggregateColumnsVersion) return false;
+        if (IsReading || _readError is not null || IsDisposing) return false;
+
+        _aggregatesCheckedFor = _aggregateColumnsVersion;
+        return BitDataGridDataProcessor.AggregateDescriptors(_columns)
+            .Any(d => !_footerAggregates.Any(a => a.ColumnId == d.ColumnId && a.Type == d.Type));
     }
 
     private BitDataGridReadRequest CreateServerWindowRequest(int skip, int take, CancellationToken cancellationToken) => new()
@@ -1513,6 +1664,8 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
         Filters = _filters.ToList(),
         Groups = _groups.ToList(),
         Search = _search,
+        // Every window commits the result's aggregates to the footer (CommitServerWindow).
+        Aggregates = BitDataGridDataProcessor.AggregateDescriptors(_columns),
         CancellationToken = cancellationToken
     };
 
@@ -1718,7 +1871,7 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
             // children themselves don't exist locally yet). Once the children are loaded (or a
             // selector provides them) the real list wins, so a node whose fetch returned no
             // children drops its expand toggle even when the selector claimed it had some.
-            var hasChildren = ChildrenProvider is not null && children is null
+            var hasChildren = IsLazyTreeMode && children is null
                 ? HasChildrenSelector?.Invoke(item) ?? false
                 : children is { Count: > 0 };
             _treeMeta[GetKey(item)] = (ancestors.Count, hasChildren);
@@ -1793,9 +1946,9 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
 
     /// <summary>Whether tree rows can be pruned by the search/filters at all: the synchronous
     /// <see cref="ChildrenSelector"/> can be walked to find a match deeper in a collapsed branch,
-    /// while a lazy <see cref="ChildrenProvider"/>'s unloaded children cannot be examined without
-    /// fetching the whole tree - so a lazy tree keeps rendering unfiltered rather than pruning on a
-    /// half-known hierarchy.</summary>
+    /// while a lazy tree's unloaded children (<see cref="ChildrenProvider"/>, <see cref="OnLoadChildren"/>) cannot
+    /// be examined without fetching the whole tree - so a lazy tree keeps rendering unfiltered rather than pruning on
+    /// a half-known hierarchy.</summary>
     internal bool TreeFilteringSupported => ChildrenSelector is not null;
 
     private bool TreeFilteringActive
@@ -1919,7 +2072,7 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
         {
             // Expanding a lazy node for the first time: fetch and cache its children. A re-entrant
             // toggle while the fetch is in flight is ignored so the provider isn't called twice.
-            if (ChildrenProvider is not null && !_loadedChildren.ContainsKey(key))
+            if (IsLazyTreeMode && !_loadedChildren.ContainsKey(key))
             {
                 if (!_loadingNodes.Add(key))
                 {
@@ -1932,12 +2085,22 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
                 // may then be cached, collapsed or unflagged under that key: it would show the old hierarchy's
                 // children on the next expand without a fetch, or clear a newer fetch's loading flag.
                 var generation = _treeGeneration;
+                // Only OnLoadChildren takes a token, so ChildrenProvider's fetch keeps one that never cancels.
+                var cancellationToken = OnLoadChildren is null ? CancellationToken.None : (_treeLoadCts ??= new()).Token;
                 try
                 {
-                    var children = await ChildrenProvider(item);
+                    var children = OnLoadChildren is not null
+                        ? await OnLoadChildren(new() { Parent = item, CancellationToken = cancellationToken })
+                        : await ChildrenProvider!(item);
                     if (generation != _treeGeneration) return;
                     _loadedChildren[key] = children as IReadOnlyList<TItem> ?? children?.ToList() ?? (IReadOnlyList<TItem>)Array.Empty<TItem>();
                     childrenLoaded = true;
+                }
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                {
+                    // The grid cancelled this fetch itself, because the hierarchy it was for is gone or the grid is.
+                    // That is not a failure, and there is nothing left to put back.
+                    return;
                 }
                 catch
                 {
@@ -1960,15 +2123,15 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     }
 
     /// <summary>Expands every node in the tree. No-op outside tree mode. In lazy mode
-    /// (<see cref="ChildrenProvider"/>) only already-loaded branches expand - recursively fetching the
-    /// whole tree could be unbounded.</summary>
+    /// (<see cref="ChildrenProvider"/> or <see cref="OnLoadChildren"/>) only already-loaded branches expand -
+    /// recursively fetching the whole tree could be unbounded.</summary>
     public async Task ExpandAllAsync()
     {
         if (!IsTreeMode) return;
         // A pruned tree renders from the collapse set, so dropping it is what "expand all" means there.
         _treeFilterCollapsed.Clear();
         _expandedTree.Clear();
-        if (ChildrenProvider is not null)
+        if (IsLazyTreeMode)
         {
             foreach (var key in _loadedChildren.Keys) _expandedTree.Add(key);
         }
@@ -2135,6 +2298,8 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
             _stateChangePending = false;
             if (OnStateChange.HasDelegate) await OnStateChange.InvokeAsync(GetState());
         }
+
+        if (AggregatesNeedARead()) await RefreshAsync(viewRowsKept: true);
 
         if (_revealPending)
         {
@@ -2426,6 +2591,7 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
         // ObjectDisposedException for an OnRead/OnLoadMore call still holding the token.
         _loadCts?.Cancel();
         _disposalCts.Cancel();
+        _treeLoadCts?.Cancel();
 
         await base.DisposeAsync(disposing);
     }
@@ -2457,11 +2623,13 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
             Filters = _filters.ToList(),
             Groups = _groups.ToList(),
             Search = _search,
+            Aggregates = BitDataGridDataProcessor.AggregateDescriptors(_columns),
             CancellationToken = ResetLoadCancellation()
         };
         // Capture this request's version right after ResetLoadCancellation; bail out below if a newer
         // request has since superseded it so a stale response can't overwrite fresher state.
         var version = _loadVersion;
+        _pageReadVersion = version;
         BitDataGridReadResult<TItem> result;
         try
         {
@@ -2471,10 +2639,26 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
         {
             // Superseded by a newer request whose cancellation token fired; cancellation from our own
             // token is expected, so keep the existing state and let the newer load complete. Any other
-            // cancellation (e.g. a provider-side timeout) is a real error and propagates.
+            // cancellation (e.g. a provider-side timeout) is a real error and propagates - or, when the
+            // app handles read errors, is reported like any other.
             return;
         }
+        catch (Exception exception) when (OnReadError.HasDelegate)
+        {
+            // A read a newer one replaced failing late is no news: the newer one tells how it went.
+            if (version != _loadVersion) return;
+            _pageReadVersion = -1;
+            await FailReadAsync(exception);
+            return;
+        }
+        catch
+        {
+            if (version == _loadVersion) _pageReadVersion = -1;
+            throw;
+        }
         if (version != _loadVersion) return;
+        _pageReadVersion = -1;
+        _readError = null;
 
         // Enforce the OnRead (server-mode) contract here, where the data mode is unambiguous, rather
         // than in the shared BitDataGridReadResult constructor: a single page can never legitimately
@@ -2648,8 +2832,8 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     // ----------------------------------------------------------- Filtering
     internal bool ColumnFilterable(BitDataGridColumn<TItem> column)
         // A tree grid filters by pruning the hierarchy to the branches containing a match, which needs
-        // the whole hierarchy in hand; a lazily-loaded tree (ChildrenProvider) cannot see its unloaded
-        // children, so the filter row is suppressed there rather than appearing active while silently
+        // the whole hierarchy in hand; a lazily-loaded tree (ChildrenProvider, OnLoadChildren) cannot see its
+        // unloaded children, so the filter row is suppressed there rather than appearing active while silently
         // ignoring most of the data.
         => column.HasField && (!IsTreeMode || TreeFilteringSupported) && (column.Filterable ?? Filterable);
 
@@ -2811,8 +2995,8 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
 
     /// <summary>Whether the grid renders (and applies) the quick-search box. A tree grid searches by
     /// pruning the hierarchy to the branches containing a match; a lazily-loaded tree
-    /// (<see cref="ChildrenProvider"/>) cannot see its unloaded children, so the box is suppressed
-    /// there rather than appearing active while searching only part of the data - mirroring how the
+    /// (<see cref="ChildrenProvider"/>, <see cref="OnLoadChildren"/>) cannot see its unloaded children, so the box is
+    /// suppressed there rather than appearing active while searching only part of the data - mirroring how the
     /// filter row behaves.</summary>
     internal bool SearchActive => ShowSearchBox && (!IsTreeMode || TreeFilteringSupported);
 
@@ -5304,9 +5488,10 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
         if (IsInfiniteMode) return _ariaRowCount = -1;
 
         var body = CurrentGroupedLayout()?.BodyRowCount ?? TotalCount;
-        // A body with no data row still renders a row: the loading message, or the empty one unless a new row is being
-        // added. Loading over rows that exist keeps their count, since they come back once it is done.
-        if (body == 0 && (Loading || (_pendingNew is null && (UseServerVirtualization is false || _serverVirtualizeEmpty)))) body = 1;
+        // A body with no data row still renders a row: the loading message, the error one, or the empty one unless a new
+        // row is being added. Loading over rows that exist keeps their count, since they come back once it is done, and
+        // so does a failed read of them.
+        if (body == 0 && (Loading || ReadErrorShown || (_pendingNew is null && (UseServerVirtualization is false || _serverVirtualizeEmpty)))) body = 1;
         return _ariaRowCount = HeaderRowCount + PendingRowCount + body + (HasFooterRow ? 1 : 0);
     }
 

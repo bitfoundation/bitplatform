@@ -194,6 +194,18 @@ public record BmotionSimulationDto
     /// <summary>Seconds from the start to the moment 90% of the distance is covered.</summary>
     public required double TimeTo90Percent { get; init; }
 
+    /// <summary>
+    /// For a spring: its damping ratio ζ (1 = critically damped, below 1 it bounces), from <c>BmSpring.Analyze</c>. Null
+    /// for other transitions.
+    /// </summary>
+    public double? DampingRatio { get; init; }
+
+    /// <summary>For a spring: Underdamped, CriticallyDamped or Overdamped. Null for other transitions.</summary>
+    public string? Damping { get; init; }
+
+    /// <summary>For an underdamped spring: seconds per oscillation. Null otherwise.</summary>
+    public double? OscillationPeriodSeconds { get; init; }
+
     /// <summary>Evenly spaced samples of the motion: (seconds, value) pairs.</summary>
     public required BmotionSampleDto[] Samples { get; init; }
 

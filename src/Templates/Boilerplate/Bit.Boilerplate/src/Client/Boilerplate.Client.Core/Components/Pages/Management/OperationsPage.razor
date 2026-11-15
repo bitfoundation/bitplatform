@@ -357,7 +357,7 @@
                                         @* Keeps the tags at the bottom, so cards in a row line up. *@
                                         <BitSpacer />
 
-                                        @if (check.IsCritical || check.Entry.Tags.Length > 0)
+                                        @if (check.IsCritical || check.IsLiveness || check.OtherTags.Length > 0)
                                         {
                                             <BitStack Horizontal Wrap FitHeight VerticalAlign="BitAlignment.Center" Gap="0.3rem">
                                                 @if (check.IsCritical)
@@ -373,7 +373,7 @@
                                                         <BitTag Size="BitSize.Small" Variant="BitVariant.Text" IconName="@BitIconName.Heart" Text="Liveness" />
                                                     </BitTooltip>
                                                 }
-                                                @foreach (var tag in check.Entry.Tags.Where(t => t is not "live"))
+                                                @foreach (var tag in check.OtherTags)
                                                 {
                                                     <BitTag Size="BitSize.Small" Variant="BitVariant.Text" Text="@tag" />
                                                 }

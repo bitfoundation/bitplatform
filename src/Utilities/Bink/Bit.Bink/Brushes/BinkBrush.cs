@@ -34,8 +34,16 @@ public abstract record BinkBrush
     /// <summary>Blend mode used when compositing the stroke onto its layer.</summary>
     public BinkBlendMode BlendMode { get; init; } = BinkBlendMode.Normal;
 
-    /// <summary>Mapping from pressure to width factor.</summary>
-    public BinkPressureCurve PressureCurve { get; init; } = BinkPressureCurve.Linear;
+    /// <summary>Mapping from pressure to width factor. Null stands for <see cref="BinkPressureCurve.Linear"/>.</summary>
+    /// <remarks>
+    /// A brush built or read with no curve draws with the linear one: everything that reads the curve, from the stroke
+    /// builder to shape recognition and serialization, relies on there being one.
+    /// </remarks>
+    public BinkPressureCurve PressureCurve
+    {
+        get;
+        init => field = value ?? BinkPressureCurve.Linear;
+    } = BinkPressureCurve.Linear;
 
     /// <summary>
     /// Input smoothing 0..1 ("streamline"). Each new point is pulled toward the previous one by this amount, which

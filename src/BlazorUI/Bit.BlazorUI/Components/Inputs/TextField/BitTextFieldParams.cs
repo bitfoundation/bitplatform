@@ -19,7 +19,7 @@ namespace Bit.BlazorUI;
 /// <see cref="BitInputBaseParams{TValue}"/> gives: the first is a dictionary the field writes into, and the second
 /// is read while the parameters are still being set, before any cascade has been applied.
 /// </remarks>
-public class BitTextFieldParams : BitInputBaseParams<string?>, IBitComponentParams
+public partial class BitTextFieldParams : BitInputBaseParams<string?>, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitTextField"/> cascading parameters within <see cref="BitParams"/>.
@@ -242,6 +242,16 @@ public class BitTextFieldParams : BitInputBaseParams<string?>, IBitComponentPara
     /// The custom content of the busy indicator, which replaces the default spinner.
     /// </summary>
     public RenderFragment? LoadingTemplate { get; set; }
+
+    /// <summary>
+    /// The pattern the text is laid out over as the user types ('#' a digit, 'A' a letter, '*' either).
+    /// </summary>
+    public string? Mask { get; set; }
+
+    /// <summary>
+    /// Makes the value of a masked field hold only the characters that went into the slots of its mask.
+    /// </summary>
+    public bool? MaskRawValue { get; set; }
 
     /// <summary>
     /// Specifies the maximum number of characters allowed in the input.
@@ -617,6 +627,16 @@ public class BitTextFieldParams : BitInputBaseParams<string?>, IBitComponentPara
         if (LoadingTemplate is not null)
         {
             bitTextField.TakeFromCascade(nameof(LoadingTemplate), LoadingTemplate, static t => t.LoadingTemplate, static (t, v) => t.LoadingTemplate = v);
+        }
+
+        if (Mask is not null)
+        {
+            bitTextField.TakeFromCascade(nameof(Mask), Mask, static t => t.Mask, static (t, v) => t.Mask = v);
+        }
+
+        if (MaskRawValue.HasValue)
+        {
+            bitTextField.TakeFromCascade(nameof(MaskRawValue), MaskRawValue.Value, static t => t.MaskRawValue, static (t, v) => t.MaskRawValue = v);
         }
 
         if (MaxLength.HasValue)

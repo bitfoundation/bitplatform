@@ -13,6 +13,8 @@ public enum ImageFormat
     /// <summary>Scalable Vector Graphics. Only supported for rasterisation by browser decoders and treated as untrusted input.</summary>
     Svg,
     Tiff,
+    /// <summary>Windows icon: one or more images of up to 256 pixels, each stored as PNG or as a bitmap. Used for favicons.</summary>
+    Ico,
 }
 
 /// <summary>Helpers for <see cref="ImageFormat"/>: MIME types, extensions and magic-byte detection.</summary>
@@ -29,6 +31,7 @@ public static class ImageFormats
         ImageFormat.Bmp => "image/bmp",
         ImageFormat.Svg => "image/svg+xml",
         ImageFormat.Tiff => "image/tiff",
+        ImageFormat.Ico => "image/x-icon",
         _ => "application/octet-stream",
     };
 
@@ -43,11 +46,12 @@ public static class ImageFormats
         ImageFormat.Bmp => ".bmp",
         ImageFormat.Svg => ".svg",
         ImageFormat.Tiff => ".tiff",
+        ImageFormat.Ico => ".ico",
         _ => ".bin",
     };
 
     /// <summary>True for formats that can store an alpha channel.</summary>
-    public static bool SupportsAlpha(this ImageFormat format) => format is ImageFormat.Png or ImageFormat.WebP or ImageFormat.Avif or ImageFormat.Gif or ImageFormat.Svg or ImageFormat.Tiff;
+    public static bool SupportsAlpha(this ImageFormat format) => format is ImageFormat.Png or ImageFormat.WebP or ImageFormat.Avif or ImageFormat.Gif or ImageFormat.Svg or ImageFormat.Tiff or ImageFormat.Ico;
 
     /// <summary>Why an SVG is refused, in the words every decode path uses: docs/security.md quotes it.</summary>
     internal const string SvgRefused = "SVG input is not decoded by Bmage because rasterising untrusted SVG can execute embedded scripts and fetch remote resources. Rasterise it yourself and pass the pixels instead.";
@@ -73,6 +77,7 @@ public static class ImageFormats
         if (s.Equals("image/bmp", StringComparison.OrdinalIgnoreCase) || s.Equals("image/x-ms-bmp", StringComparison.OrdinalIgnoreCase)) return ImageFormat.Bmp;
         if (s.Equals("image/svg+xml", StringComparison.OrdinalIgnoreCase)) return ImageFormat.Svg;
         if (s.Equals("image/tiff", StringComparison.OrdinalIgnoreCase)) return ImageFormat.Tiff;
+        if (s.Equals("image/x-icon", StringComparison.OrdinalIgnoreCase) || s.Equals("image/vnd.microsoft.icon", StringComparison.OrdinalIgnoreCase)) return ImageFormat.Ico;
         return ImageFormat.Unknown;
     }
 
@@ -92,6 +97,7 @@ public static class ImageFormats
             ".bmp" or ".dib" => ImageFormat.Bmp,
             ".svg" => ImageFormat.Svg,
             ".tif" or ".tiff" => ImageFormat.Tiff,
+            ".ico" => ImageFormat.Ico,
             _ => ImageFormat.Unknown,
         };
     }
@@ -118,8 +124,21 @@ public static class ImageFormats
             for (var i = 16; i + 3 < limit; i += 4)
                 if (data[i] == 'a' && data[i + 1] == 'v' && data[i + 2] == 'i' && (data[i + 3] == 'f' || data[i + 3] == 's')) return ImageFormat.Avif;
         }
+        if (LooksLikeIco(data)) return ImageFormat.Ico;
         if (LooksLikeSvg(data)) return ImageFormat.Svg;
         return ImageFormat.Unknown;
+    }
+
+    /// <summary>
+    /// An icon directory: reserved zero, type 1, a count of images, and a first entry whose reserved byte is zero and
+    /// whose colour planes are 0 or 1. Checked after AVIF, whose first box can be 256 bytes long and so start alike.
+    /// </summary>
+    private static bool LooksLikeIco(ReadOnlySpan<byte> data)
+    {
+        if (data.Length < 22 || data[0] != 0 || data[1] != 0 || data[2] != 1 || data[3] != 0) return false;
+        var count = data[4] | data[5] << 8;
+        var planes = data[10] | data[11] << 8;
+        return count is > 0 and <= 256 && data[9] == 0 && planes <= 1;
     }
 
     private static bool LooksLikeSvg(ReadOnlySpan<byte> data)

@@ -1,0 +1,353 @@
+﻿@page "/forms"
+@inherits AppComponentBase
+
+<PageOutlet Url="forms"
+            Title="Forms and validation"
+            Keywords="Blazor form validation, Blazor EditForm, Blazor DataAnnotations, Blazor validation message, Blazor server validation, ShowValidationMessage, BitFocusOnInvalidSubmit, Bit.BlazorUI forms"
+            Description="How the bit BlazorUI inputs work inside a Blazor EditForm: the data annotations of the model, the message under each field, the focus on the first invalid field of a failed submit, the field CSS classes, and errors only the server knows about." />
+
+<DocsArticle Eyebrow="Documentation"
+             Title="Forms and validation"
+             Lead="The bit BlazorUI inputs are Blazor form inputs. Inside an EditForm they are validated by the form, through the same EditContext the framework's own inputs use. A few opt-in parameters add what the framework leaves to the app: the message under each field, and the focus on the first invalid field when a submit fails."
+             GitHubUrl="Forms/FormsPage.razor">
+
+    <Badges>
+        <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" Text="EditForm" />
+        <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" Text="DataAnnotations" />
+        <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" Text="Core and Extras" />
+    </Badges>
+
+    <Actions>
+        <BitButton Size="BitSize.Large" Href="/forms#a-whole-form" IconName="@BitIconName.Play">
+            See a whole form
+        </BitButton>
+        <BitButton Size="BitSize.Large" Variant="BitVariant.Text" Color="BitColor.SecondaryForeground" Href="/forms#which-inputs" IconName="@BitIconName.List">
+            Which inputs
+        </BitButton>
+    </Actions>
+
+    <ChildContent>
+        <DocSection Id="at-a-glance" Title="At a glance"
+                    Description="What an input does inside an EditForm, and the parameter or component behind each part.">
+            <ul>
+                <li>
+                    <b>It joins the form.</b> <code>@@bind-Value</code> names the field, and inside an <code>EditForm</code>
+                    the input reads the cascading <code>EditContext</code>, so the form's validator -
+                    <code>DataAnnotationsValidator</code> or any other - validates it with the rest of the form.
+                </li>
+                <li>
+                    <b>It shows the state.</b> A field that fails carries <code>aria-invalid="true"</code> and the invalid
+                    look, and its root takes the framework's <code>valid</code>, <code>invalid</code> and
+                    <code>modified</code> classes.
+                </li>
+                <li>
+                    <b>It shows the message</b>, with <code>ShowValidationMessage</code>: the field's messages under it,
+                    read out by a screen reader when the field takes the focus.
+                </li>
+                <li>
+                    <b>It takes the focus</b>, with <code>&lt;BitFocusOnInvalidSubmit /&gt;</code> in the form: a failed
+                    submit moves the focus to the first invalid field.
+                </li>
+                <li>
+                    <b>It takes errors from the app</b>, with <code>ErrorMessage</code> and <code>Invalid</code>: a
+                    rejection the app knows about, in a form or out of one.
+                </li>
+            </ul>
+            <p>
+                None of it replaces the validation of the framework: the attributes of the model are the rules, the
+                <code>EditContext</code> holds the messages, and <code>ValidationMessage</code> and
+                <code>ValidationSummary</code> keep working beside the inputs.
+            </p>
+        </DocSection>
+
+        <DocSection Id="a-whole-form" Title="A whole form"
+                    Description="Six kinds of input, one model of data annotations, a message under each field and the focus on the first invalid one.">
+            <DemoExample Title="Sign-up form" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" CodeFiles="@example1CodeFiles" Id="example1">
+                <div>
+                    Submit the form empty: the focus lands on the name, which reads out its message. Fill a field in and
+                    its message goes as soon as it passes; submit again and the focus moves on to the first field that is
+                    still wrong.
+                </div>
+                <br />
+                @if (signUpDone)
+                {
+                    <BitMessage Color="BitColor.Success">Account created for @signUpModel.Name.</BitMessage>
+                    <br />
+                    <BitButton Variant="BitVariant.Outline" OnClick="ResetSignUp">Start over</BitButton>
+                }
+                else
+                {
+                    <EditForm Model="signUpModel" OnValidSubmit="() => signUpDone = true" novalidate>
+                        <DataAnnotationsValidator />
+                        <BitFocusOnInvalidSubmit />
+
+                        <BitStack Gap="1rem">
+                            <BitTextField Label="Name" Required ShowValidationMessage @bind-Value="signUpModel.Name" />
+                            <BitTextField Label="Email" Type="BitInputType.Email" Required ShowValidationMessage @bind-Value="signUpModel.Email" />
+                            <BitNumberField Label="Age" Required ShowValidationMessage @bind-Value="signUpModel.Age" />
+                            <BitDropdown Label="Team" Placeholder="Pick a team" Required ShowValidationMessage Items="teamItems" @bind-Value="signUpModel.Team" />
+                            <BitDatePicker Label="Start date" Required ShowValidationMessage @bind-Value="signUpModel.StartDate" />
+                            <BitChoiceGroup Label="Plan" Horizontal Required ShowValidationMessage Items="planItems" @bind-Value="signUpModel.Plan" />
+                            <BitCheckbox Label="I accept the terms" ShowValidationMessage @bind-Value="signUpModel.AcceptTerms" />
+                            <BitButton ButtonType="BitButtonType.Submit">Create account</BitButton>
+                        </BitStack>
+                    </EditForm>
+                }
+            </DemoExample>
+
+            <p>Four things make it:</p>
+            <ol>
+                <li>
+                    The attributes of the model are the rules: <code>[Required]</code>, <code>[EmailAddress]</code>,
+                    <code>[Range]</code>, <code>[AllowedValues]</code>. Their <code>ErrorMessage</code> is what the field
+                    shows and what a screen reader reads out, so write it for a person.
+                </li>
+                <li>
+                    <code>&lt;DataAnnotationsValidator /&gt;</code> runs the attributes, on every field as it is edited and
+                    on the whole form when it is submitted.
+                </li>
+                <li>
+                    <code>ShowValidationMessage</code> on each input shows its messages under it, and
+                    <code>&lt;BitFocusOnInvalidSubmit /&gt;</code> takes the user to the first one.
+                </li>
+                <li>
+                    <code>novalidate</code> on the <code>EditForm</code> leaves the checking to the form - the next section
+                    says why.
+                </li>
+            </ol>
+        </DocSection>
+
+        <DocSection Id="novalidate" Title="The browser's own check"
+                    Description="Why every form on this page carries novalidate.">
+            <p>
+                <code>Required</code> on an input marks it: an asterisk by its label, and the <code>required</code> or
+                <code>aria-required</code> attribute, so a screen reader announces it as a required field. It validates
+                nothing by itself - the <code>[Required]</code> of the model does. A browser, though, checks a
+                <code>required</code> control of its own accord before it lets a form submit: it stops the submit, shows a
+                bubble of its own in the language of the browser, and the <code>EditContext</code> is never asked. No message
+                shows under the field, and none of the rules of the model runs until the browser is satisfied.
+            </p>
+            <p>
+                <code>novalidate</code> turns that check off and keeps the attributes, so the form is validated once, by the
+                rules of the model, with every message where the app put it. Keep <code>Required</code> on the inputs whose
+                property is <code>[Required]</code>: it is how the user knows before submitting.
+            </p>
+            <CodeBox Language="cshtml">&lt;EditForm Model="model" OnValidSubmit="Save" novalidate&gt;</CodeBox>
+        </DocSection>
+
+        <DocSection Id="messages" Title="Showing the messages"
+                    Description="ShowValidationMessage puts the messages of a field under it; the components of the framework still work beside it.">
+            <p>
+                With <code>ShowValidationMessage</code>, an input shows the messages the <code>EditContext</code> holds for
+                its field under it, in the place its <code>ErrorMessage</code> goes, and references them through
+                <code>aria-describedby</code>, so a screen reader reads them out whenever the field takes the focus. They are
+                not announced as they appear: a submit validates every field at once, and a message from each of them read
+                out in a row would bury the form under its own errors. The field that takes the focus says what is wrong
+                with it.
+            </p>
+            <p>
+                It is off by default, so a form that places its own <code>ValidationMessage</code> components does not show
+                every message twice. To turn it on for a whole form, cascade it with <code>BitParams</code>. What a
+                <code>BitParams</code> carries is a default, never an override: a field that sets
+                <code>ShowValidationMessage</code> itself keeps its own value.
+            </p>
+            <CodeBox Language="cshtml">&lt;BitParams Parameters="formParams"&gt;
+    &lt;EditForm Model="model" OnValidSubmit="Save" novalidate&gt;
+        ...
+    &lt;/EditForm&gt;
+&lt;/BitParams&gt;
+
+@@code {
+    private readonly IBitComponentParams[] formParams =
+    [
+        new BitTextFieldParams { ShowValidationMessage = true },
+        new BitNumberFieldParams { ShowValidationMessage = true },
+        new BitDatePickerParams { ShowValidationMessage = true },
+        new BitChoiceGroupParams { ShowValidationMessage = true },
+        new BitCheckboxParams { ShowValidationMessage = true },
+        new BitDropdownParams&lt;BitDropdownItem&lt;string&gt;, string&gt; { ShowValidationMessage = true },
+    ];
+}</CodeBox>
+            <p>
+                A <code>BitDropdownParams</code> reaches only the dropdowns of its own type arguments, so a form with
+                dropdowns of other item or value types adds one for each pair.
+            </p>
+            <p>
+                The messages belong to the <code>EditContext</code>, so the components of the framework show them too:
+                <code>&lt;ValidationSummary /&gt;</code> lists them all above the form, and
+                <code>&lt;ValidationMessage For="() =&gt; model.Email" /&gt;</code> shows one field's anywhere on the page.
+                An <code>ErrorMessage</code> of the app's own wins the place under the field while it is set.
+            </p>
+        </DocSection>
+
+        <DocSection Id="focus" Title="The focus on a failed submit"
+                    Description="BitFocusOnInvalidSubmit takes the user to the first field to fix.">
+            <p>
+                A failed submit otherwise leaves the focus on the submit button, and a keyboard or screen reader user has to
+                go looking for what to fix. Put <code>&lt;BitFocusOnInvalidSubmit /&gt;</code> anywhere inside the
+                <code>EditForm</code>: it renders nothing visible, and once the validation of a submit is over it moves the
+                focus to the first field of that form, in document order, that carries <code>aria-invalid="true"</code>.
+            </p>
+            <ul>
+                <li>
+                    Every input with a message slot carries it when its field fails, and so do the inputs of the framework. A
+                    group hands the focus to the item the Tab key lands on: a ChoiceGroup to its checked radio, or its first
+                    one.
+                </li>
+                <li>
+                    Only a validation of the whole form moves the focus: a submit, or one the app asks the
+                    <code>EditContext</code> for. A field validated as the user edits it never does.
+                </li>
+                <li>
+                    A validator that finishes asynchronously (.NET 11) is waited for, and the focus is left alone if the user
+                    starts editing a field before it finishes.
+                </li>
+                <li>It moves the focus in the browser, so it takes an interactive render mode.</li>
+            </ul>
+            <p>
+                <BitLink Href="/components/focusoninvalidsubmit">BitFocusOnInvalidSubmit</BitLink> has the rest.
+            </p>
+        </DocSection>
+
+        <DocSection Id="server-errors" Title="Errors only the server knows"
+                    Description="A message added to the EditContext after the submit, shown and focused like the others.">
+            <DemoExample Title="A taken user name" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" CodeFiles="@example2CodeFiles" Id="example2">
+                <div>
+                    The user names admin, root and bit are taken. Save one of them: the answer of the server shows under the
+                    field, and the focus goes back to it. Change the name and the message goes.
+                </div>
+                <br />
+                <EditForm EditContext="accountEditContext" OnValidSubmit="SaveAccount" novalidate>
+                    <DataAnnotationsValidator />
+                    <BitFocusOnInvalidSubmit />
+
+                    <BitStack Gap="1rem">
+                        <BitTextField @ref="userNameField"
+                                      Label="User name"
+                                      Required
+                                      ShowValidationMessage
+                                      @bind-Value="accountModel.UserName" />
+                        <BitButton ButtonType="BitButtonType.Submit" IsLoading="accountSaving">Save</BitButton>
+                    </BitStack>
+                </EditForm>
+                @if (savedUserName is not null)
+                {
+                    <br />
+                    <BitMessage Color="BitColor.Success">Saved "@savedUserName".</BitMessage>
+                }
+            </DemoExample>
+
+            <p>
+                A data annotation can only check what the browser has: whether a user name is taken is for the server to
+                say, after the submit. The way of the framework is a <code>ValidationMessageStore</code> of the app's own on
+                the <code>EditContext</code> of the form. Add the message of the server to it and call
+                <code>NotifyValidationStateChanged</code>, and the field shows it, carries <code>aria-invalid</code>, and is
+                listed by a <code>ValidationSummary</code>, as it would for a message of the model.
+            </p>
+            <p>
+                Two handlers keep the message true: it is about the value the server was sent, so editing the field
+                (<code>OnFieldChanged</code>) or submitting again (<code>OnValidationRequested</code>) clears it.
+            </p>
+            <p>
+                <code>BitFocusOnInvalidSubmit</code> does not move the focus here: the validation of the submit passed, and
+                the message came after it. Call <code>FocusAsync</code> on the field yourself, after the notification, so
+                the field already describes itself with the message when the focus arrives.
+            </p>
+            <p>
+                For a rejection outside any form, or one the app keeps in its own state, set <code>ErrorMessage</code> on the
+                input: it marks the field invalid and shows the text in the same place, and unlike a message of the
+                <code>EditContext</code> it is announced by the live region of the field as it appears.
+                <code>Invalid</code> marks the field without a text, for a reason explained elsewhere on the page. The
+                <BitLink Href="/components/textfield">TextField</BitLink> page shows both.
+            </p>
+        </DocSection>
+
+        <DocSection Id="styling" Title="Styling the state"
+                    Description="The field classes of the framework, on the root of every input.">
+            <p>
+                Inside an <code>EditForm</code>, the root of each input carries the classes the <code>EditContext</code> gives
+                its field, the same ones <code>InputText</code> carries: <code>valid</code> or <code>invalid</code>, with
+                <code>modified</code> once the field has changed. They sit on the root, around the label and the messages,
+                rather than on the native control. The inputs draw their own invalid look without them (the
+                <code>bit-inv</code> class), so they are there for a stylesheet of the app - the one that already styles the
+                inputs of the framework:
+            </p>
+            <CodeBox Language="css">/* the root of a field the user has changed, once it passes */
+.modified.valid {
+    border-inline-start: 3px solid var(--bit-clr-suc);
+    padding-inline-start: 0.5rem;
+}</CodeBox>
+            <p>
+                An app whose stylesheet expects other names, such as the <code>is-valid</code> and <code>is-invalid</code> of
+                Bootstrap, sets a <code>FieldCssClassProvider</code> on the <code>EditContext</code>, and the inputs carry
+                its names instead:
+            </p>
+            <CodeBox Language="csharp">editContext.SetFieldCssClassProvider(new BootstrapFieldCssClassProvider());
+
+public class BootstrapFieldCssClassProvider : FieldCssClassProvider
+{
+    public override string GetFieldCssClass(EditContext editContext, in FieldIdentifier fieldIdentifier)
+    {
+        var isValid = editContext.IsValid(fieldIdentifier);
+
+        if (editContext.IsModified(fieldIdentifier)) return isValid ? "is-valid" : "is-invalid";
+
+        return isValid ? "" : "is-invalid";
+    }
+}</CodeBox>
+            <p>
+                An input with <code>NoValidate</code> carries none of them: it stays out of the <code>EditContext</code>
+                altogether.
+            </p>
+        </DocSection>
+
+        <DocSection Id="typed-values" Title="Values that do not convert"
+                    Description="Text an input cannot turn into the bound type.">
+            <p>
+                Some inputs read typed text into the bound type: a number into a NumberField, a date into a DatePicker that
+                takes typing, a color into a ColorPicker. Text they cannot read is not written to the model. The field gets
+                a message in the <code>EditContext</code> instead, such as "The Age field is not valid.", so the form cannot
+                be submitted with it. The message names the field by its <code>DisplayName</code>, or by the name of its
+                property when it has none. The NumberField takes a <code>ParsingErrorMessage</code> of your own, and the
+                date and time pickers an <code>InvalidErrorMessage</code>.
+            </p>
+        </DocSection>
+
+        <DocSection Id="which-inputs" Title="Which inputs"
+                    Description="Every input joins the EditContext; most also have a place for its messages.">
+            <p>
+                These have a message slot under the field, and with it <code>ErrorMessage</code>, <code>Invalid</code> and
+                <code>ShowValidationMessage</code>:
+                <BitLink Href="/components/checkbox">Checkbox</BitLink>,
+                <BitLink Href="/components/choicegroup">ChoiceGroup</BitLink>,
+                <BitLink Href="/components/colorpicker">ColorPicker</BitLink>,
+                <BitLink Href="/components/datepicker">DatePicker</BitLink>,
+                <BitLink Href="/components/daterangepicker">DateRangePicker</BitLink>,
+                <BitLink Href="/components/dropdown">Dropdown</BitLink>,
+                <BitLink Href="/components/fileinput">FileInput</BitLink>,
+                <BitLink Href="/components/numberfield">NumberField</BitLink>,
+                <BitLink Href="/components/rating">Rating</BitLink>,
+                <BitLink Href="/components/searchbox">SearchBox</BitLink>,
+                <BitLink Href="/components/slider">Slider</BitLink>,
+                <BitLink Href="/components/textfield">TextField</BitLink>,
+                <BitLink Href="/components/timepicker">TimePicker</BitLink>,
+                <BitLink Href="/components/toggle">Toggle</BitLink>,
+                and in Bit.BlazorUI.Extras
+                <BitLink Href="/components/countrypicker">CountryPicker</BitLink>,
+                <BitLink Href="/components/phoneinput">PhoneInput</BitLink>,
+                <BitLink Href="/components/richtexteditor">RichTextEditor</BitLink> and
+                <BitLink Href="/components/timezonepicker">TimeZonePicker</BitLink>.
+            </p>
+            <p>
+                These join the <code>EditContext</code> the same way, but have no message slot of their own - put a
+                <code>ValidationMessage</code> beside them:
+                <BitLink Href="/components/calendar">Calendar</BitLink>,
+                <BitLink Href="/components/circulartimepicker">CircularTimePicker</BitLink>,
+                <BitLink Href="/components/fileupload">FileUpload</BitLink>,
+                <BitLink Href="/components/otpinput">OtpInput</BitLink>,
+                <BitLink Href="/components/tagsinput">TagsInput</BitLink>,
+                and in Bit.BlazorUI.Extras <BitLink Href="/components/markdowneditor">MarkdownEditor</BitLink>.
+            </p>
+        </DocSection>
+    </ChildContent>
+</DocsArticle>

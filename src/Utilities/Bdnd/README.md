@@ -60,7 +60,9 @@ put down in another - including files, text and links dragged in from outside th
   instructions screen readers read out - translatable through `BdndAnnouncements`.
 - **Insertion positions**: a target with `Edges` reports the edge a drag is closest to - before or after the item
   it shows - for drop indicators, and `BdndList` turns it into list moves, within a list or across lists, in
-  vertical lists, wrapping grids (where the keyboard moves by row), trees and virtualized lists.
+  vertical lists, wrapping grids (where the keyboard moves by row), trees and virtualized lists. A move of one item
+  or a whole selection can be worked out first, checked, applied and reverted (`BdndList.PlanMove`), and `BdndTree`
+  moves tree nodes without ever putting one inside itself.
 - **Watching every drag**: `OnEnter`/`OnLeave` on targets, `OnDragStart`/`OnDragEnd` on the provider for undo
   histories and analytics, and `Disabled` to close a target.
 - **Styling hooks**: hosts carry `data-bit-bdnd-dragging`, `data-bit-bdnd-can-drop`, `data-bit-bdnd-over` and
@@ -497,6 +499,13 @@ dragged, and a target receives the whole list:
 }
 ```
 
+To let the selection be reordered too, make each card a drop target with `Edges` and move the cards with
+`BdndList.PlanMove`, which takes the indexes of all of them:
+
+```razor
+OnDrop="@(e => BdndList.PlanMove(_cards, e.Item!.Select(c => _cards.IndexOf(c)), _cards, BdndList.InsertionIndex(index, e.ClosestEdge))?.Apply())"
+```
+
 A `BdndDragLayer<IReadOnlyList<Card>>` can draw "3 cards" as the preview. The keyboard drags the selection the same
 way (Space on a selected card picks them all up). The demo's
 [dragging several items](https://bdnd.bitplatform.dev/sortable/multi-select) page is the complete example, with a
@@ -644,8 +653,23 @@ the targets of one provider.
 A tree is nested targets with edges: each node's row is a target with `Edges="BdndEdges.Vertical"` (a node dropped
 on its top half goes before it, on its bottom half after it) and the list of its children another target (a node
 dropped there becomes a child). A `CanDropPredicate` that refuses a node's own subtree keeps a node from being dropped
-into itself; the keyboard skips those targets too, and only the innermost hovered row shows an insertion line. The
-demo's [tree](https://bdnd.bitplatform.dev/nesting/tree) page is the complete example.
+into itself; the keyboard skips those targets too, and only the innermost hovered row shows an insertion line.
+
+`BdndTree` does the walking for a tree of your own nodes, given how to reach a node's children - without recursion,
+so a deep tree does not exhaust the stack:
+
+```csharp
+// refuses the node's own subtree
+CanDropPredicate="@((dragged, _) => dragged is not null && BdndTree.Contains(dragged, node, n => n.Children) is false)"
+
+// moves the node, children and all, under parent at index - null when it would go into itself, either node is not
+// in the tree under _root, or the node would stay where it is
+if (BdndTree.PlanMove(_root, dragged, parent, index, n => n.Children) is { } move && move.Apply()) _history.Push(move);
+```
+
+`BdndTree.ParentOf(root, node, children)` finds the node a node is a child of. The move is a `BdndListMove<T>`
+between two lists of children, so `Revert` takes it back as for any list. The demo's
+[tree](https://bdnd.bitplatform.dev/nesting/tree) page is the complete example, with an undo button.
 
 ## Custom drag layers
 
@@ -818,6 +842,7 @@ is a simpler way, Pragmatic drag and drop's: let each item's target tell *where*
 | `ReorderIndex(startIndex, targetIndex, edge)` | Where an item of the same list ends up, accounting for it leaving its place. |
 | `Move(source, sourceIndex, destination, insertionIndex)` | Moves an item to an insertion index of a list - another, or the same one; false (and no change) when it would stay where it is. |
 | `Reorder(list, startIndex, finishIndex)` | Moves an item within a list. |
+| `PlanMove(source, sourceIndexes, destination, insertionIndex)` | Works a move of one item or a selection out without making it: a `BdndListMove<T>` to check, apply and revert (below); null when nothing would change. |
 
 The order is changed on drop, not on hover, so nothing re-renders as the pointer crosses the list, and a drop
 elsewhere needs no undo. Edges are tracked in the browser and sent to .NET only when they change, for native,
@@ -835,6 +860,43 @@ its cards ("the end of Backlog"). Two items count as neighbours only when no oth
 an item that refuses the drag still separates two places. Make the list itself a drop target too (taking drops below
 the cards, or in an empty list) and check `Monitor.DidDrop()` there, as the demo's
 [drop indicators](https://bdnd.bitplatform.dev/sortable/indicators) page does with two lists.
+
+### Moves you can check, apply and undo
+
+`BdndList.Move` makes a move at once. `BdndList.PlanMove` works it out first and answers a `BdndListMove<T>`: the
+items it moves (`Items`, in their order), where they come from (`SourceIndexes`) and where the first of them ends up
+(`FinishIndex` - the insertion index less the items that came from before it). Nothing changes until `Apply()`;
+`Revert()` puts both lists back as they were, and `Apply()` makes the move again - which is an undo and redo history:
+
+```razor
+@code {
+    private readonly Stack<BdndListMove<Card>> _history = new();
+
+    private void Drop(BdndDropEventArgs<Card> e, int index)
+    {
+        var move = BdndList.PlanMove(_cards, _cards.IndexOf(e.Item!), _cards, BdndList.InsertionIndex(index, e.ClosestEdge));
+        if (move is null || _cards.Count > 10 && move.IsReorder is false) return; // checked before anything moved
+        if (move.Apply()) _history.Push(move);
+    }
+
+    private void Undo()
+    {
+        if (_history.TryPop(out var move)) move.Revert();
+    }
+}
+```
+
+`PlanMove` takes several indexes too: the items of a selection move together, keep the order they have in the list
+and land next to each other - within the list (a selection dropped on one of its own cards closes up around it) or in
+another. It answers null when an index is out of range or nothing would change, and `Apply` and `Revert` answer false,
+changing nothing, when the items are no longer where the move expects them: a history undone in reverse order always
+finds them, a move kept past other changes to the lists may not. An item is where the move expects it when the very
+instance is there - an equal one (a duplicate, a copy of a record) does not pass for it; for a value type, an equal
+value does. Both lists must take inserts and removals: a read-only or fixed-size list (an array) makes `Apply` and
+`Revert` throw a `NotSupportedException` before either list changes. A move holds on to the two lists and the items, not
+to a component, so it can live in a store - an action of a state container whose undo calls `Revert`. In a document
+shared by several people, record what moved (the items' ids and where they went) rather than the indexes, which
+another person's edit can shift; the indexes are for the lists in front of you.
 
 ### Grids and wrapping lists
 
@@ -1111,6 +1173,8 @@ A draggable that can drag is focusable (`tabindex="0"`, unless it was given a `t
 | <kbd>Space</kbd> or <kbd>Enter</kbd> | Drops it on the target it is over - or, over none, cancels. |
 | <kbd>Escape</kbd> | Cancels. Moving the focus away (<kbd>Tab</kbd>, a click) cancels too. |
 
+These are the default keys; a provider can bind others ([choosing the keys](#choosing-the-keys)).
+
 A keyboard drag is the manager's like any other. The targets it moves onto report `IsOver` (with their enclosing
 targets) and `IsOverShallow`, their `OnHover` runs with the pointer at the middle of the target, the drop runs the
 `OnDrop` chain innermost first, and the source's `OnEnd` gets `DidDrop` and the drop result. Only targets the
@@ -1146,6 +1210,45 @@ the keyboard drag ends as a cancel, and the exception reaches the renderer (see
 drag that begins before .NET has handled that cancel ends the keyboard drag first (its `OnEnd` runs with
 `DidDrop` false), so every `OnBegin` is followed by its `OnEnd`.
 
+### Choosing the keys
+
+The keys are WAI-ARIA's, and `BdndKeyBindings` changes them for a provider - for an app whose users move with letters,
+or one where the arrows already do something else. Each command lists `KeyboardEvent.key` values (`" "` for Space,
+`"Enter"`, `"j"`), pressed without Ctrl, Alt or Meta; set the commands to change and keep the rest. A key of one
+character matches in either case (Caps Lock, or Shift during a drag), and a Latin letter is also the key in its place
+on a layout that writes other letters - `"j"` is the J key on a Russian keyboard too:
+
+```razor
+<BdndProvider KeyBindings="_keys">...</BdndProvider>
+
+@code {
+    private static readonly BdndKeyBindings _keys = new()
+    {
+        Down = ["ArrowDown", "j"],
+        Up = ["ArrowUp", "k"],
+    };
+}
+```
+
+| `BdndKeyBindings` | Default | Does |
+| --- | --- | --- |
+| `PickUp` | <kbd>Space</kbd>, <kbd>Enter</kbd> | Picks the focused source up. |
+| `Drop` | <kbd>Space</kbd>, <kbd>Enter</kbd> | Drops (or, over no target, cancels). |
+| `Cancel` | <kbd>Escape</kbd> | Cancels. |
+| `Up`, `Down` | <kbd>↑</kbd>, <kbd>↓</kbd> | A row up or down in a wrapping layout, else the previous or next place. |
+| `Left`, `Right` | <kbd>←</kbd>, <kbd>→</kbd> | The previous or next place (swapped right to left). |
+| `First`, `Last` | <kbd>Home</kbd>, <kbd>End</kbd> | The first or last place. |
+
+Each key of a drag in progress does one thing: a key listed for two of `Drop`, `Cancel` and the moves is refused with
+an `ArgumentException` when the bindings are set (`"k"` and `"K"` being one key), and so are a `PickUp` or a `Drop`
+without a key - a drag must stay possible from the keyboard - and any binding of <kbd>Tab</kbd>, which always moves
+the focus and so ends a drag: the keyboard never traps the focus (WCAG 2.1.2). `PickUp` may share its keys with
+`Drop`, as the defaults do. The default keys are the module's own, so a provider that keeps them sends nothing for
+them; one that changes them sends the keys with each source's registration. The instructions screen readers read name
+the keys bound: their placeholders are filled in from the bindings ("Down Arrow or J for down, ..."), see
+[what screen readers hear](#what-screen-readers-hear). The
+[keyboard demo](https://bdnd.bitplatform.dev/accessibility/keyboard) has a switch that adds H, J, K and L.
+
 ### What screen readers hear
 
 Every keyboard-draggable source is described (`aria-describedby`) by instructions, and a live region announces the
@@ -1176,6 +1279,29 @@ one answering `null` is not read out:
         Cancelled = a => $"Ziehen von {a.SourceLabel} abgebrochen.",
     };
 }
+```
+
+The instructions name the keys through placeholders - `{PickUp}`, `{Drop}`, `{Cancel}`, `{Up}`, `{Down}`, `{Left}`,
+`{Right}`, `{First}`, `{Last}`, and `{Move}` for the four moves - which `BdndAnnouncements.NameKeys` fills in from the
+provider's [`KeyBindings`](#choosing-the-keys), so they follow the keys bound. The English default names each key
+("Space", "Up Arrow", "K"), joins a command's keys with "or", and reads `{Move}` as "the arrow keys" for the default
+moves. A translation that keeps the placeholders gives its own `NameKeys`; a text without placeholders (like the one
+above) is read as it is, and then names whatever keys it says. The
+[keyboard demo](https://bdnd.bitplatform.dev/accessibility/keyboard) translates both.
+
+A drag that carries several items - a [selection](#dragging-several-items) whose item is a list - can be announced by
+how many it carries rather than by the grabbed source's name alone:
+
+> Picked up Charlie and 2 other items. 1 drop target is available. · 3 items are over the archive. · 3 items were dropped on the archive.
+
+`BdndAnnouncements.CountItems` decides how many things an item stands for, and every announcement gets it as
+`ItemCount`. By default an item is one thing, whatever it is - a column dragged as its list of cards is one column.
+For drags that carry selections, give the provider `CountItems = BdndAnnouncements.CountElements`, which counts the
+elements of an item that is a collection (an `ICollection` - lists, arrays - or an `IReadOnlyCollection<T>` of a
+reference type, such as a `HashSet<string>`), or count a selection object of your own:
+
+```csharp
+private static readonly BdndAnnouncements _texts = new() { CountItems = BdndAnnouncements.CountElements };
 ```
 
 The live region and the instructions are elements the module adds to the end of the `body` - one region per
@@ -1438,6 +1564,25 @@ and so the order native events bubble in.
 5. The source's `dragend` reaches .NET; `OnEnd` runs with `DidDrop` and `DropResult`, and the manager clears the
    drag.
 
+## Bdnd and the other bit utilities
+
+Bdnd owns the generic mechanics of dragging and dropping: what is dragged and where it may go, every input (mouse,
+touch, pen, keyboard, native), hover and insertion edges, previews, auto-scrolling, announcements and the index
+arithmetic of a drop. The libraries next to it own what is particular to their domain, and none of them depends on
+the others:
+
+| Library | Owns | With Bdnd |
+| --- | --- | --- |
+| **Bit.Bortable** | Sortable lists the SortableJS way: swap thresholds, FLIP animations, clone and swap modes, groups. | Pick one per list. Bortable for a list that sorts as you hover and animates; Bdnd for drags between different kinds of things (a card to a bin, a file to a folder), trees, palettes and boards whose order changes on drop. |
+| **Bit.Blow** | Node editors: nodes, edges, connections, pan and zoom, and dragging inside a canvas. | Dragging *onto* a canvas from outside it - a palette of node types - is a Bdnd drag whose target is the canvas; the drop converts the client point to flow coordinates with Blow's own conversion and adds the node. Moving nodes stays Blow's. |
+| **Bit.Bink** | Drawing and ink: strokes, pressure, selections on its surface. | Assets dragged onto a drawing surface, and layer lists reordered with `BdndList`, are Bdnd drags; drawing and moving what is drawn stay Bink's. |
+| **Bit.Bmotion** | Animations, layout (FLIP) transitions, reduced motion. | Bdnd animates nothing. Render the list in Bmotion's layout animation and the order a drop changes animates into place; a drop's `OnDrop` and the provider's `OnDragEnd` are where an animation starts. |
+| **Bit.Blex** | State, actions, undo and redo, DevTools. | A drop dispatches an action; a `BdndListMove<T>` is a move that can be applied and reverted, so undo and redo come with it. |
+| **Bit.Bcrdt** | Shared documents and presence. | Commit a drop to the shared document as an operation (what moved where, by id); keep the drag itself - hover, edges, previews - local. Never send pointer moves through the document. |
+| **Bit.BlazeDb** | Storage in the browser. | Persist the order a drop leaves - a layout, a board, a tree - from `OnDrop` or `OnDragEnd`. |
+| **Bit.BevTools** | Diagnostics. | `OnDragStart`/`OnDragEnd` on the provider, `DragStarted`/`DragEnded` on the manager and `IBdndMonitor` give a log of every drag at no cost while nothing listens. |
+| **Bit.BlazorUI**, **Bit.Bheadless** | Components and headless behaviours. | Wrap a component in a `BdndDraggable` or a `BdndDropTarget`, or give it a `BdndDragHandle`; Bdnd renders no visuals of its own, so a design system's styles apply. |
+
 ## Coming from React DnD
 
 | React DnD | Bit.Bdnd |
@@ -1476,6 +1621,7 @@ instead of arriving in `drop`.
 | `Manager` | `BdndDragDropManager?` | `null` | An externally-owned manager. When omitted, one is created for the subtree. Cannot change once set. |
 | `Announcements` | `BdndAnnouncements?` | `null` | The keyboard instructions and screen-reader announcements; sets the manager's (`BdndAnnouncements.Default` otherwise). |
 | `AllowKeyboard` | `bool?` | `null` | `false` takes every draggable of the context out of keyboard dragging; sets the manager's (`true` otherwise). |
+| `KeyBindings` | `BdndKeyBindings?` | `null` | The keys that pick up, move, drop and cancel keyboard drags; sets the manager's (`BdndKeyBindings.Default`, the WAI-ARIA keys, otherwise). |
 | `OnDragStart` | `EventCallback<BdndDragEventArgs>` | | Any drag of the context began: runs once the drag is published and its source's `OnBegin` started. |
 | `OnDragEnd` | `EventCallback<BdndDragEventArgs>` | | Any drag of the context ended, with `DidDrop` and the drop result. |
 | `ChildContent` | `RenderFragment?` | | The drag-and-drop content. |

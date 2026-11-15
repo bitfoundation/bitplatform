@@ -78,6 +78,26 @@ public partial class AppHubConnection : IAsyncDisposable
         }
     }
 
+    /// <summary>
+    /// The connection itself, for a library that takes a HubConnection of its own: the AI chat's transport streams over it
+    /// (See AppAiChat). Started if it can be; one that can't start yet is handed over all the same, since that transport
+    /// starts it, or waits for it to reconnect, as each answer is asked for. Typed object, as every SignalR type stays in
+    /// <see cref="Connection"/>.
+    /// </summary>
+    internal async Task<object> GetHubConnection(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await GetStartedConnection(cancellationToken);
+        }
+        catch (Exception) when (connection is not null && cancellationToken.IsCancellationRequested is false)
+        {
+            // Built, but not connected: offline, or the server is restarting.
+        }
+
+        return connection!.HubConnection;
+    }
+
     public IDisposable On<T1>(string methodName, Func<T1, Task> handler) => Add(methodName, c => c.On(methodName, handler));
 
     public IDisposable On<TResult>(string methodName, Func<Task<TResult>> handler) => Add(methodName, c => c.On(methodName, handler));
@@ -221,6 +241,8 @@ public partial class AppHubConnection : IAsyncDisposable
 
             return connection;
         }
+
+        public HubConnection HubConnection => hubConnection;
 
         public bool IsConnected => hubConnection.State is HubConnectionState.Connected;
 

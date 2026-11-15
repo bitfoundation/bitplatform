@@ -86,8 +86,8 @@ public partial class BitChart : BitComponentBase
         + "the up and down arrow keys to move between series, Home and End for the first and last value, "
         + "Enter to select, and Escape to leave.";
 
-    /// <summary>Custom content shown in place of the plot when there is nothing to draw.</summary>
-    [Parameter] public RenderFragment? NoDataTemplate { get; set; }
+    /// <summary>Custom content shown in place of the plot when there is nothing to draw, which takes the place of <see cref="EmptyText"/>.</summary>
+    [Parameter] public RenderFragment? EmptyTemplate { get; set; }
 
     /// <summary>
     /// The sentence added to the <see cref="NavigationHint"/> while zoom is enabled, telling a keyboard user that the
@@ -96,8 +96,8 @@ public partial class BitChart : BitComponentBase
     /// </summary>
     [Parameter] public string? ZoomHint { get; set; } = "Press plus or minus to zoom, and 0 to reset the zoom.";
 
-    /// <summary>Message shown in place of the plot when there is nothing to draw.</summary>
-    [Parameter] public string NoDataText { get; set; } = "No data to display";
+    /// <summary>Message shown in place of the plot when there is nothing to draw. Default: <see cref="BitStrings.NoItemsFound"/>.</summary>
+    [Parameter] public string? EmptyText { get; set; }
 
     /// <summary>Raised when a data element is clicked: (datasetIndex, dataIndex).</summary>
     [Parameter] public EventCallback<(int DatasetIndex, int DataIndex)> OnElementClick { get; set; }
@@ -1229,7 +1229,7 @@ public partial class BitChart : BitComponentBase
     private BitChartTexts ActiveTexts => Texts ?? BitChartTexts.Default;
 
     /// <summary>Whether the empty state is shown: there is nothing to draw and nothing is still on its way.</summary>
-    private bool ShowNoData => _scene.IsEmpty && IsLoading is false;
+    private bool ShowEmpty => _scene.IsEmpty && IsLoading is false;
 
     private string? ClipId => _scene.PlotArea is null ? null : $"{_instanceId}-clip";
     private string? ClipRef => ClipId is null ? null : $"url(#{ClipId})";

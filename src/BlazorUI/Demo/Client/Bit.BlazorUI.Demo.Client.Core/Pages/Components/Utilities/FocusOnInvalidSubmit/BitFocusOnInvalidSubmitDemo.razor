@@ -1,0 +1,42 @@
+﻿@page "/components/focusoninvalidsubmit"
+
+<PageOutlet Url="components/focusoninvalidsubmit"
+            Title="FocusOnInvalidSubmit"
+            Description="BitFocusOnInvalidSubmit moves the focus to the first invalid field of an EditForm when a submit of the form fails." />
+
+<DemoPage Name="FocusOnInvalidSubmit"
+          SecondaryNames="@(["FocusFirstInvalid", "ScrollToFirstError"])"
+          Description="BitFocusOnInvalidSubmit moves the focus to the first invalid field of an EditForm when a submit of the form fails, so a keyboard or screen reader user lands on what has to be fixed instead of staying on the submit button. Put it anywhere inside the form; it renders nothing visible."
+          Notes="The field it focuses is the first element of the form, in document order, that reports aria-invalid=&quot;true&quot; - every bit BlazorUI input does when its field fails, and so do the inputs of the framework. A group that carries the state for its items hands the focus to the item the Tab key lands on: a ChoiceGroup to its checked radio, or its first one. Only a validation of the whole form - the one a submit runs, or one the app asks the EditContext for - moves the focus, and only once it is over: a validator that finishes asynchronously is waited for. A field validated as it is edited never moves it, and neither does a validation still running when the user starts editing a field again. Paired with ShowValidationMessage on the inputs, the focused field reads out what is wrong with it. The focus is moved by the browser, so it takes an interactive render mode."
+          Parameters="componentParameters"
+          GitHubUrl="Utilities/FocusOnInvalidSubmit/BitFocusOnInvalidSubmit.cs"
+          GitHubDemoUrl="Utilities/FocusOnInvalidSubmit/BitFocusOnInvalidSubmitDemo.razor">
+    <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+        <div>
+            Submit the form below: the name is already filled in, so the focus skips it and lands on the email, which
+            reads out its message (<b>ShowValidationMessage</b>). Fix the email and submit again, and it moves on to the
+            plan.
+        </div>
+        <br />
+        @if (basicSubmitted)
+        {
+            <BitMessage Color="BitColor.Success">Submitted.</BitMessage>
+            <br />
+            <BitButton Variant="BitVariant.Outline" OnClick="ResetBasic">Reset</BitButton>
+        }
+        else
+        {
+            <EditForm Model="basicModel" OnValidSubmit="() => basicSubmitted = true" novalidate>
+                <DataAnnotationsValidator />
+                <BitFocusOnInvalidSubmit />
+
+                <BitStack Gap="1rem">
+                    <BitTextField Label="Name" Required ShowValidationMessage @bind-Value="basicModel.Name" />
+                    <BitTextField Label="Email" Required ShowValidationMessage @bind-Value="basicModel.Email" />
+                    <BitChoiceGroup Label="Plan" Required ShowValidationMessage Items="planItems" @bind-Value="basicModel.Plan" />
+                    <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
+                </BitStack>
+            </EditForm>
+        }
+    </DemoExample>
+</DemoPage>

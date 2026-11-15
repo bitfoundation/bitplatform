@@ -1,0 +1,64 @@
+﻿@page "/e2e/listbox"
+@using System.ComponentModel.DataAnnotations
+
+<PageTitle>BitListBox E2E</PageTitle>
+
+<h1>BitListBox</h1>
+
+<E2ESection Id="single" Title="Single select">
+    <button id="before-single" type="button">Before</button>
+    <BitListBox Id="lbx-single" Label="Fruit" Items="_fruits" @bind-Value="_single" />
+    <button id="after-single" type="button">After</button>
+    <div id="single-value">@_single</div>
+</E2ESection>
+
+<E2ESection Id="multi" Title="Multi select">
+    <BitListBox Id="lbx-multi" Label="Fruits" Items="_fruits" MultiSelect @bind-Values="_multi" />
+    <div id="multi-values">@string.Join(",", _multi ?? [])</div>
+</E2ESection>
+
+<E2ESection Id="long" Title="Long list">
+    <BitListBox Id="lbx-long" Label="Number" Items="_numbers" MaxHeight="8rem" @bind-Value="_long" />
+    <div id="long-value">@_long</div>
+</E2ESection>
+
+<E2ESection Id="form" Title="Form">
+    <EditForm Model="_model" OnValidSubmit="() => _submitted = true">
+        <DataAnnotationsValidator />
+        <BitListBox Id="lbx-form" Label="Required fruit" Items="_fruits" @bind-Value="_model.Fruit" Required ShowValidationMessage />
+        <button id="btn-submit" type="submit">Submit</button>
+    </EditForm>
+    <div id="form-submitted">@_submitted</div>
+</E2ESection>
+
+@* Room under the sections, so the page can scroll and a key that scrolled it would show. *@
+<div style="height: 150vh;"></div>
+
+<E2EStatus />
+
+@code {
+    public class FormModel
+    {
+        [Required(ErrorMessage = "Pick a fruit")]
+        public string? Fruit { get; set; }
+    }
+
+    private readonly FormModel _model = new();
+    private bool _submitted;
+
+    private string? _single;
+    private IEnumerable<string?>? _multi;
+    private string? _long;
+
+    private readonly List<BitListBoxItem<string>> _fruits =
+    [
+        new() { Text = "Apple", Value = "apple" },
+        new() { Text = "Avocado", Value = "avocado" },
+        new() { Text = "Banana", Value = "banana", IsDisabled = true },
+        new() { Text = "Blueberry", Value = "blueberry" },
+        new() { Text = "Cherry", Value = "cherry" }
+    ];
+
+    private readonly List<BitListBoxItem<string>> _numbers =
+        [.. Enumerable.Range(1, 30).Select(i => new BitListBoxItem<string> { Text = $"Number {i}", Value = i.ToString() })];
+}

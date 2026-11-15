@@ -1,22 +1,16 @@
 //+:cnd:noEmit
 using System.Net;
 using System.IO.Compression;
-using System.Diagnostics.Metrics;
-//#if (appInsights == true)
-using Azure.Monitor.OpenTelemetry.Exporter;
-//#endif
+using Bit.Belemetry;
 using Boilerplate.Server.Shared;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Logging;
-using OpenTelemetry;
-using OpenTelemetry.Metrics;
-using OpenTelemetry.Resources;
-using OpenTelemetry.Trace;
 using ZiggyCreatures.Caching.Fusion;
 using ZiggyCreatures.Caching.Fusion.Serialization.SystemTextJson;
 using Boilerplate.Server.Shared.Infrastructure.Services;
+using Boilerplate.Shared.Features.Diagnostic;
 //#if (redis == true)
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using ZiggyCreatures.Caching.Fusion.Locking.Distributed.Redis;
@@ -62,11 +56,13 @@ public static class WebApplicationBuilderExtensions
             builder.AddKeyedRedisClient("redis-cache", settings => settings.DisableTracing = true /*FusionCache is already handling cache traces*/);
 
             // Losing the cache only costs speed (FusionCache keeps serving from memory), so it degrades the instance instead of draining it.
+            // Aspire registers the check without tags, so its category is added here too (See HealthCheckCategories).
             services.PostConfigure<HealthCheckServiceOptions>(options =>
             {
                 var redisCacheCheck = options.Registrations.SingleOrDefault(r => r.Name is "StackExchange.Redis_redis-cache");
                 redisCacheCheck?.FailureStatus = HealthStatus.Degraded;
                 redisCacheCheck?.Timeout = TimeSpan.FromSeconds(5);
+                redisCacheCheck?.Tags.Add(HealthCheckCategories.Platform);
             });
             //#endif
 
@@ -146,13 +142,13 @@ public static class WebApplicationBuilderExtensions
 
         /// <summary>
         /// Also knows as AddServiceDefaults
-        /// Adds common services for API: service discovery, resilience, health checks, and OpenTelemetry.
+        /// Adds common services for API: service discovery, resilience, health checks, and telemetry.
         /// This project should be referenced by each service project in your solution.
         /// To learn more about using this project, see https://aka.ms/dotnet/aspire/service-defaults
         /// </summary>
         private TBuilder AddServiceDefaults()
         {
-            builder.ConfigureOpenTelemetry();
+            builder.ConfigureTelemetry();
 
             builder.Services.AddServiceDiscovery();
 
@@ -193,105 +189,27 @@ public static class WebApplicationBuilderExtensions
             return builder;
         }
 
-        // [mirror] OpenTelemetry setup - keep in sync with:
-        // - src/LandingPage/Boilerplate.LandingPage.Server/Infrastructure/Extensions/WebApplicationBuilderExtensions.cs (AddLandingOpenTelemetry)
-        private TBuilder ConfigureOpenTelemetry()
+        // [mirror] telemetry setup - keep in sync with:
+        // - src/LandingPage/Boilerplate.LandingPage.Server/Infrastructure/Extensions/WebApplicationBuilderExtensions.cs (AddLandingTelemetry)
+        private TBuilder ConfigureTelemetry()
         {
-            builder.Logging.AddOpenTelemetry(options =>
-            {
-                options.IncludeScopes = true;
-                options.IncludeFormattedMessage = true;
-                builder.Configuration.Bind("Logging:OpenTelemetry", options);
-            });
-
             if (builder.Environment.IsDevelopment() is false)
             {
                 builder.Logging.AddSampler<AppLoggingSampler>();
             }
 
-            builder.Services.AddOpenTelemetry()
-                .WithMetrics(metrics =>
-                {
-                    metrics.AddAspNetCoreInstrumentation()
-                        .AddFusionCacheInstrumentation()
-                        .AddHttpClientInstrumentation()
-                        .AddRuntimeInstrumentation();
-
-                    metrics.AddMeter(Meter.Current.Name)
-                        .AddMeter("Experimental.Microsoft.Extensions.AI");
-                })
-                .WithTracing(tracing =>
-                {
-                    tracing.AddSource(ActivitySource.Current.Name)
-                        .AddSource("Experimental.Microsoft.Extensions.AI")
-                        .AddSource("SmsBridge")
-                        .AddProcessor<AppOpenTelemetryProcessor>()
-                        .AddAspNetCoreInstrumentation(options =>
-                        {
-                            // Filter out Blazor static files and health checks requests.
-                            string[] toBeIgnoredSegments = ["/health",
-                                "/alive",
-                                "/_content",
-                                "/_framework"];
-
-                            options.Filter = context =>
-                            {
-                                foreach (var segment in toBeIgnoredSegments)
-                                {
-                                    if (context.Request.Path.StartsWithSegments(segment, StringComparison.OrdinalIgnoreCase))
-                                        return false;
-                                }
-
-                                return true;
-                            };
-                        })
-                        .AddHttpClientInstrumentation()
-                        .AddFusionCacheInstrumentation()
-                        .AddEntityFrameworkCoreInstrumentation(options => options.Filter = (providerName, command) => command?.CommandText?.Contains("Hangfire") is not true /* Ignore Hangfire */)
-                        .AddHangfireInstrumentation();
-                })
-                .ConfigureResource(resource =>
-                {
-                    resource
-                        .AddAzureAppServiceDetector()
-                        .AddAzureContainerAppsDetector()
-                        .AddAzureVMDetector()
-                        .AddContainerDetector()
-                        .AddHostDetector()
-                        .AddOperatingSystemDetector()
-                        .AddProcessDetector()
-                        .AddProcessRuntimeDetector()
-                        .AddService(builder.Environment.ApplicationName);
-                });
-
-            builder.AddOpenTelemetryExporters();
-
-            return builder;
-        }
-
-        private TBuilder AddOpenTelemetryExporters()
-        {
-            var useOtlpExporter = string.IsNullOrWhiteSpace(builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]) is false
-                || string.IsNullOrWhiteSpace(builder.Configuration["OTEL_EXPORTER_OTLP_LOGS_ENDPOINT"]) is false;
-
-            if (useOtlpExporter)
+            builder.Services.AddBitBelemetryServices(options =>
             {
-                builder.Services
-                    .AddOpenTelemetry()
-                    .UseOtlpExporter();
-            }
+                options.Server.CollectDotnetTelemetry = true;
+                options.Server.IgnoredRequestPaths.AddRange(["/health", "/alive", "/_content", "/_framework"]);
 
-            //#if (appInsights == true)
-            var appInsightsConnectionString = string.IsNullOrWhiteSpace(builder.Configuration["ApplicationInsights:ConnectionString"]) is false ? builder.Configuration["ApplicationInsights:ConnectionString"] : null;
+                options.AddTraceSources("Experimental.Microsoft.Extensions.AI", "SmsBridge", FusionCacheDiagnostics.ActivitySourceName)
+                    .AddMeters("Experimental.Microsoft.Extensions.AI", FusionCacheDiagnostics.MeterName);
 
-            if (appInsightsConnectionString is not null)
-            {
-                builder.Services.AddOpenTelemetry().UseAzureMonitorExporter(options =>
-                {
-                    builder.Configuration.Bind("ApplicationInsights", options);
-                });
-            }
-            //#endif
+                options.Traces.IgnoredActivityNames.Add("Microsoft.AspNetCore.Components.HandleEvent");
+
+                options.AddProcessor(new AppBelemetryProcessor(builder.Environment));
+            });
 
             return builder;
         }
@@ -303,7 +221,7 @@ public static class WebApplicationBuilderExtensions
                 build: static policy => policy.Expire(TimeSpan.FromSeconds(10)).SetVaryByQuery([])));
 
             return builder.Services.AddHealthChecks()
-                .AddDiskStorageHealthCheck(options => options.AddDrive(Path.GetPathRoot(Directory.GetCurrentDirectory())!, minimumFreeMegabytes: 2 * 1024), name: "binStorage", tags: ["live"]);
+                .AddDiskStorageHealthCheck(options => options.AddDrive(Path.GetPathRoot(Directory.GetCurrentDirectory())!, minimumFreeMegabytes: 2 * 1024), name: "binStorage", tags: ["live", HealthCheckCategories.Platform]);
         }
     }
 }

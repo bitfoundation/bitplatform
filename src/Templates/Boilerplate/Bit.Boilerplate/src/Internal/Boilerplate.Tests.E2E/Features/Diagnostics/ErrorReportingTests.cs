@@ -14,10 +14,10 @@ public partial class ErrorReportingTests : AppTestBase
     protected override IAppOpener AppOpener => new WebAppOpener();
 
     [TestMethod]
-    [DataRow(App.AdminPanel, "applicationinsights.azure.com/v2/track", DisplayName = "AdminPanel (Application Insights)")]
+    [DataRow(App.AdminPanel, "applicationinsights.azure.com/v2.1/track", DisplayName = "AdminPanel (Application Insights)")]
     [DataRow(App.AdminPanelWasmStandalone, ".sentry.io/api/", DisplayName = "AdminPanel WASM standalone (Sentry)")]
     // Sales redirects to a culture url, where a script placed before <base> resolved under /en-US/.
-    [DataRow(App.Sales, "applicationinsights.azure.com/v2/track", DisplayName = "Sales (Application Insights)")]
+    [DataRow(App.Sales, "applicationinsights.azure.com/v2.1/track", DisplayName = "Sales (Application Insights)")]
     public async Task TheDiagnosticTestError_Should_ReachTheErrorTracker(App app, string ingestionUrl)
     {
         var sent = new ConcurrentQueue<(int Status, string Body)>();
@@ -46,8 +46,8 @@ public partial class ErrorReportingTests : AppTestBase
         {
             try
             {
-                // App Insights batches for up to 15 seconds otherwise.
-                await page.EvaluateAsync("() => window.appInsights?.flush?.()");
+                // Belemetry's browser script batches for a few seconds otherwise.
+                await page.EvaluateAsync("() => window.BitBelemetry?.flush?.()");
             }
             catch (PlaywrightException)
             {

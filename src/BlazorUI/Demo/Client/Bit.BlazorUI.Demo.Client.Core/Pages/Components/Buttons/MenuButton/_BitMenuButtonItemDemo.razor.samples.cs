@@ -525,6 +525,43 @@ private static List<BitMenuButtonItem> basicItems =
 ];";
 
     private readonly string example20RazorCode = @"
+<BitMenuButton Text=""Share"" IconName=""@BitIconName.Share"" Items=""responsiveItems"" Responsive />
+<BitMenuButton Text=""Share"" Items=""responsiveItems"" Responsive Split />";
+
+    private readonly string example20CsharpCode = @"
+private static List<BitMenuButtonItem> responsiveItems =
+[
+    new() { Text = ""Copy link"", Key = ""copy"", IconName = BitIconName.Link },
+    new() { Text = ""Email"", Key = ""email"", IconName = BitIconName.Mail },
+    new() { Text = ""Download"", Key = ""download"", IconName = BitIconName.Download },
+    new() { IsSeparator = true },
+    new() { Text = ""Report"", Key = ""report"", IconName = BitIconName.Flag }
+];";
+
+    private readonly string example21RazorCode = @"
+<div class=""context-area"" tabindex=""0""
+     @oncontextmenu=""e => contextMenuButton.OpenAt(e)"" @oncontextmenu:preventDefault>
+    Right-click here
+</div>
+<BitMenuButton @ref=""contextMenuButton"" NoOverlay Text=""Edit"" Items=""contextItems""
+               OnClick=""(BitMenuButtonItem? item) => contextClickedItem = item?.Text ?? contextClickedItem"" />
+
+<div>Clicked item: <b>@contextClickedItem</b></div>";
+
+    private readonly string example21CsharpCode = @"
+private string? contextClickedItem;
+private BitMenuButton<BitMenuButtonItem> contextMenuButton = default!;
+
+private static List<BitMenuButtonItem> contextItems =
+[
+    new() { Text = ""Cut"", Key = ""cut"", IconName = BitIconName.Cut },
+    new() { Text = ""Copy"", Key = ""copy"", IconName = BitIconName.Copy },
+    new() { Text = ""Paste"", Key = ""paste"", IconName = BitIconName.Paste },
+    new() { IsSeparator = true },
+    new() { Text = ""Delete"", Key = ""delete"", IconName = BitIconName.Delete }
+];";
+
+    private readonly string example22RazorCode = @"
 <BitMenuButton Text=""Primary"" Items=""basicItems"" Variant=""BitVariant.Fill"" Color=""BitColor.Primary"" />
 <BitMenuButton Text=""Primary"" Items=""basicItems"" Variant=""BitVariant.Outline"" Color=""BitColor.Primary"" />
 <BitMenuButton Text=""Primary"" Items=""basicItems"" Variant=""BitVariant.Text"" Color=""BitColor.Primary"" />
@@ -832,7 +869,7 @@ private static List<BitMenuButtonItem> basicItems =
 <BitMenuButton Text=""TertiaryBorder"" Items=""basicItems"" Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryBorder"" Disabled Split />
 <BitMenuButton Text=""TertiaryBorder"" Items=""basicItems"" Variant=""BitVariant.Text"" Color=""BitColor.TertiaryBorder"" Disabled Split />";
 
-    private readonly string example20CsharpCode = @"
+    private readonly string example22CsharpCode = @"
 private List<BitMenuButtonItem> basicItems =
 [
     new() { Text = ""Item A"", Key = ""A"" },
@@ -840,7 +877,7 @@ private List<BitMenuButtonItem> basicItems =
     new() { Text = ""Item C"", Key = ""C"" }
 ];";
 
-    private readonly string example21RazorCode = @"
+    private readonly string example23RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitMenuButton Text=""Actions"" 
@@ -883,7 +920,7 @@ private List<BitMenuButtonItem> basicItems =
                Icon=""@BitIconInfo.Fa(""brands github"")""
                ChevronDownIcon=""@BitIconInfo.Fa(""solid angles-down"")"" />";
 
-    private readonly string example21CsharpCode = @"
+    private readonly string example23CsharpCode = @"
 private static List<BitMenuButtonItem> externalIconItems =
 [
     new() { Text = ""Add"", Icon = ""fa-solid fa-plus"" },
@@ -891,7 +928,7 @@ private static List<BitMenuButtonItem> externalIconItems =
     new() { Text = ""Delete"", Icon = BitIconInfo.Fa(""solid trash"") }
 ];";
 
-    private readonly string example22RazorCode = @"
+    private readonly string example24RazorCode = @"
 <BitMenuButton Text=""Small"" Items=""basicItems"" Variant=""BitVariant.Fill"" Size=""BitSize.Small"" />
 <BitMenuButton Text=""Small"" Items=""basicItems"" Variant=""BitVariant.Outline"" Size=""BitSize.Small"" />
 <BitMenuButton Text=""Small"" Items=""basicItems"" Variant=""BitVariant.Text"" Size=""BitSize.Small"" />
@@ -904,7 +941,7 @@ private static List<BitMenuButtonItem> externalIconItems =
 <BitMenuButton Text=""Large"" Items=""basicItems"" Variant=""BitVariant.Outline"" Size=""BitSize.Large"" />
 <BitMenuButton Text=""Large"" Items=""basicItems"" Variant=""BitVariant.Text"" Size=""BitSize.Large"" />";
 
-    private readonly string example22CsharpCode = @"
+    private readonly string example24CsharpCode = @"
 private List<BitMenuButtonItem> basicItems =
 [
     new() { Text = ""Item A"", Key = ""A"" },
@@ -912,7 +949,7 @@ private List<BitMenuButtonItem> basicItems =
     new() { Text = ""Item C"", Key = ""C"" }
 ];";
 
-    private readonly string example23RazorCode = @"
+    private readonly string example25RazorCode = @"
 <style>
     .custom-class {
         margin-inline: 1rem;
@@ -1003,7 +1040,7 @@ private List<BitMenuButtonItem> basicItems =
 
 <BitMenuButton Text=""Actions"" IconName=""@BitIconName.Settings"" Items=""destructiveItems"" Variant=""BitVariant.Outline"" />";
 
-    private readonly string example23CsharpCode = @"
+    private readonly string example25CsharpCode = @"
 private List<BitMenuButtonItem> basicItems = new()
 {
     new() { Text = ""Item A"", Key = ""A"" },
@@ -1026,11 +1063,11 @@ private static List<BitMenuButtonItem> destructiveItems =
     new() { Text = ""Delete"", Key = ""delete"", IconName = BitIconName.Delete, Style = ""--bit-MenuButton-item-color: var(--bit-clr-err);"" }
 ];";
 
-    private readonly string example24RazorCode = @"
+    private readonly string example26RazorCode = @"
 <BitMenuButton Text=""گزینه ها"" Dir=""BitDir.Rtl"" Items=""rtlItemsIcon"" IconName=""@BitIconName.Edit"" />
 <BitMenuButton Text=""گزینه ها"" Dir=""BitDir.Rtl"" Items=""rtlItemsIcon"" ChevronDownIconName=""@BitIconName.DoubleChevronDown"" Split />";
 
-    private readonly string example24CsharpCode = @"
+    private readonly string example26CsharpCode = @"
  private static List<BitMenuButtonItem> rtlItemsIcon =
 [
     new() { Text = ""گزینه الف"", Key = ""A"", IconName = BitIconName.Emoji },

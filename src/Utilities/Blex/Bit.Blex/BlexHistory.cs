@@ -348,7 +348,7 @@ public class BlexHistory : IDisposable
         _started = true;
         _present = _boundary = Capture();
         _presentLabel = null;
-        _manager.ActionDispatched += OnAction;
+        _manager.ActionRecorded += OnAction;
         _manager.StoreRegistered += OnStoreRegistered;
         _manager.StoreRestored += OnStoreRestored;
         _manager.StateRestored += OnExternalRestore;
@@ -890,7 +890,7 @@ public class BlexHistory : IDisposable
     {
         if (_started)
         {
-            _manager.ActionDispatched -= OnAction;
+            _manager.ActionRecorded -= OnAction;
             _manager.StoreRegistered -= OnStoreRegistered;
             _manager.StoreRestored -= OnStoreRestored;
             _manager.StateRestored -= OnExternalRestore;

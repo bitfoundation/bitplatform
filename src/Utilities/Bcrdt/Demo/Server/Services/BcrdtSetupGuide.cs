@@ -30,8 +30,15 @@ public static partial class BcrdtSetupGuide
         "Demo/Server/Program.cs",
         "Demo/Client/Program.cs",
         "Demo/Server/Components/App.razor",
-        "Demo/Client/Pages/Live.razor",
     ];
+
+    /// <summary>
+    /// The demo's page over that wiring, named rather than quoted. It is longer than all of the hosting files together,
+    /// and most of it is the demo's own - its explanations and its room, relay and sharing controls - so quoting it
+    /// pushed the guide past the length an answer is cut at, and the cut fell in the guide's own sections after it.
+    /// <c>GetBcrdtSourceFile</c> returns it whole.
+    /// </summary>
+    private const string LivePage = "Demo/Client/Pages/Live.razor";
 
     private sealed record Mode(string Key, string Title, string Summary, string Checklist, string[] GuideSections, string? Files, bool IncludeDemo);
 
@@ -117,7 +124,8 @@ public static partial class BcrdtSetupGuide
                 separate ASP.NET Core app - with CORS, because the app and the hub are on different origins - and the hub
                 address is absolute. With no transport at all the document is purely local, which is the right way to build
                 a feature first. `UseIndexedDbStore()` keeps documents in the browser, so they - and edits made offline -
-                survive a reload; with `UseInMemoryStore()` they last as long as the tab. This is the setup for an app that
+                survive a reload; with `UseInMemoryStore()` they last as long as the tab. `UseCrossTabSync()` keeps the
+                tabs of one browser in sync with each other directly, offline too. This is the setup for an app that
                 loads Bit.Bcrdt at startup; one that lazy loads it registers nothing and configures the service in a page
                 instead - a different setup, in `GetBcrdtGuideSection(heading: "Lazy loading on WebAssembly")`.
                 """,
@@ -210,7 +218,7 @@ public static partial class BcrdtSetupGuide
             builder.AppendLine("## The files, from this demo").AppendLine();
             builder.AppendLine("Everything below compiles as-is once the projects and namespaces are renamed to your own - except what is the ")
                    .AppendLine("demo's own: `DemoWorkspace` and the side-by-side replicas `AddDemoServices` registers serve the other demo pages, ")
-                   .AppendLine("`ConnectionBadge` is a badge, and the room and relay switching of the live page are there to let visitors share a link.")
+                   .AppendLine("and the relay switching of `LiveRelay` is there to let visitors of the live page pick one.")
                    .AppendLine();
 
             foreach (var path in _hostingFiles)
@@ -219,6 +227,17 @@ public static partial class BcrdtSetupGuide
                 if (content is null) continue;
 
                 AppendFile(builder, path, content);
+            }
+
+            if (BcrdtSourceCatalog.GetSourceFile(LivePage) is { } page)
+            {
+                builder.AppendLine($"### `{LivePage}`").AppendLine();
+                builder.AppendLine("The page over this wiring: `BcrdtCollaborationScope` opens the document once the page is interactive and ")
+                       .AppendLine("cascades it to `BcrdtTextArea` and `BcrdtPresenceView`, through whichever relay `LiveRelay` names. It is ")
+                       .AppendLine($"{page.Length:N0} characters, most of them the demo's explanations and its room and sharing controls, so it is not ")
+                       .AppendLine($"quoted here: `GetBcrdtSourceFile(path: \"{LivePage}\")` returns it whole, and ")
+                       .AppendLine("`GetBcrdtSourceFile(path: \"Demo/Samples/Notes.razor\")` is the same editor as an application writes it.")
+                       .AppendLine();
             }
         }
 
@@ -328,10 +347,11 @@ public static partial class BcrdtSetupGuide
         builder.RootComponents.Add<HeadOutlet>("head::after");
 
         // The relay below runs on its own origin, and the .NET SignalR client only takes an absolute address.
-        // IndexedDB keeps documents - and edits made offline - across a reload.
+        // IndexedDB keeps documents - and edits made offline - across a reload; the tabs of one browser sync directly.
         builder.Services.AddBitBcrdtServices(collaboration => collaboration
             .UseTransport(new BcrdtSignalRTransportFactory("https://collab.example.com/hub/bcrdt"))
-            .UseIndexedDbStore());
+            .UseIndexedDbStore()
+            .UseCrossTabSync());
 
         await builder.Build().RunAsync();
         ```

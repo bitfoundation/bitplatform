@@ -1,0 +1,19 @@
+﻿@using Bit.BlazorUI
+
+<BitListBox TItem="BitListBoxOption<string>" TValue="string" @bind-Value="Value" Label="Fruit">
+    <BitListBoxOption Text="Apple" Value="@("apple")" Description="Red or green" IconName="Heart" />
+    @if (ShowMiddle)
+    {
+        <BitListBoxOption Text="Banana" Value="@("banana")" />
+    }
+    <BitListBoxOption Text="@LastText" Value="@("cherry")" IsDisabled="LastIsDisabled" Title="The last one"
+                      Class="last-class" Style="margin:1px" AriaLabel="@LastAriaLabel" />
+</BitListBox>
+
+@code {
+    [Parameter] public bool ShowMiddle { get; set; }
+    [Parameter] public string LastText { get; set; } = "Cherry";
+    [Parameter] public bool LastIsDisabled { get; set; }
+    [Parameter] public string? LastAriaLabel { get; set; }
+    [Parameter] public string? Value { get; set; }
+}

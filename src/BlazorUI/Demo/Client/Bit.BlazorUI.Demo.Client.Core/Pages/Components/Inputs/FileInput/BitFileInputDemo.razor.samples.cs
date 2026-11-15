@@ -487,8 +487,8 @@ private readonly BitFileInputParams[] fileInputParams =
     <BitFileInput Required ShowRemoveButton
                   Label=""Attach your resume""
                   AllowedExtensions=""@(["".pdf"", "".docx""])""
+                  ShowValidationMessage
                   @bind-Value=""validationModel.Resume"" />
-    <ValidationMessage For=""@(() => validationModel.Resume)"" />
 
     <br />
 
@@ -534,14 +534,6 @@ private void HandleInvalidSubmit()
 
 // The names of the valid files, joined with commas.
 private string? contractNames;";
-    private const string example20ScssCode = @"
-.validation-message {
-    color: var(--bit-clr-err);
-}";
-    private readonly DemoCodeFile[] example20CodeFiles =
-    [
-        new("BitFileInputDemo.razor.scss", example20ScssCode),
-    ];
 
     private readonly string example21RazorCode = @"
 <BitFileInput Color=""BitColor.Primary"" Label=""Primary"" />

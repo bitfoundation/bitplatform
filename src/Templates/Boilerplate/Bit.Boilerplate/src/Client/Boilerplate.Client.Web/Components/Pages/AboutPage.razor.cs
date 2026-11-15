@@ -15,6 +15,13 @@ public partial class AboutPage
     private string platform = default!;
     private string appVersion = default!;
 
+    /// <summary>
+    /// The acknowledgements are about a hundred cards below the fold, and rendered with the rest of the page they take a large
+    /// part of its start on a phone. On WebAssembly they follow once the page has shown what it is about;
+    /// a prerendered page has them at once, for search engines and link previews, as they double as the license notice.
+    /// </summary>
+    private bool showAcknowledgements;
+
     protected override async Task OnInitAsync()
     {
         await base.OnInitAsync();
@@ -33,12 +40,23 @@ public partial class AboutPage
         if (InPrerenderSession)
         {
             platform = "Generic Server";
+            showAcknowledgements = true;
         }
         else
         {
-            var userAgentData = await userAgent.Extract();
-            oem = userAgentData.Manufacturer ?? "?";
-            platform = string.Join(' ', [userAgentData.Manufacturer, userAgentData.OsName, userAgentData.Name, "browser"]);
+            try
+            {
+                var userAgentData = await userAgent.Extract();
+                oem = userAgentData.Manufacturer ?? "?";
+                platform = string.Join(' ', [userAgentData.Manufacturer, userAgentData.OsName, userAgentData.Name, "browser"]);
+            }
+            finally
+            {
+                // The page as it is, then the acknowledgements in a render of their own, after the browser had its turn.
+                StateHasChanged();
+                await Task.Yield();
+                showAcknowledgements = true;
+            }
         }
     }
 }

@@ -280,7 +280,7 @@ public class BitDropdownComboE2ETests : BitDropdownE2ETestBase
         await Expect(row).ToHaveClassAsync(HasClass("bit-drp-ctg"));
         await Expect(row).ToHaveAttributeAsync("id", $"{triggerId}-dyn");
         await Expect(input).ToHaveAttributeAsync("aria-activedescendant", $"{triggerId}-dyn");
-        await Expect(callout.Locator(".bit-drp-emp")).ToHaveCountAsync(0);
+        await Expect(callout.Locator(".bit-drp-emp, .bit-drp-nor")).ToHaveCountAsync(0);
 
         await input.PressAsync("Enter");
 

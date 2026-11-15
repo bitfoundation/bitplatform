@@ -32,7 +32,7 @@
 
     <DemoExample Title="Empty content" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
         <div>
-            <b>EmptyContent</b> replaces the rows while the list holds no items, in every mode - including a virtualized list or an items provider that came back empty.
+            <b>EmptyTemplate</b> replaces the rows while the list holds no items, in every mode - including a virtualized list or an items provider that came back empty.
         </div>
         <br />
         <BitBasicList Items="emptyPeople" Style="border: 1px solid var(--bit-clr-brd-sec); border-radius: 4px; height: 150px;">
@@ -41,12 +41,12 @@
                     Name: <strong>@person.FirstName</strong>
                 </div>
             </RowTemplate>
-            <EmptyContent>
+            <EmptyTemplate>
                 <BitStack Alignment="BitAlignment.Center" Style="height: 150px;">
                     <BitIcon IconName="@BitIconName.SearchIssue" Size="BitSize.Large" />
                     <BitText Typography="BitTypography.Body1">Nobody to show here yet.</BitText>
                 </BitStack>
-            </EmptyContent>
+            </EmptyTemplate>
         </BitBasicList>
     </DemoExample>
 

@@ -35,6 +35,15 @@ internal static partial class BaletteLog
     [LoggerMessage(12, LogLevel.Warning, "The shortcut '{Shortcut}' of the command '{CommandId}' is one browsers keep for themselves (closing or opening tabs and windows): a page never receives it.")]
     public static partial void BrowserReservedShortcut(ILogger logger, string shortcut, string commandId);
 
+    [LoggerMessage(14, LogLevel.Information, "The command '{CommandId}' ({Title}) was refused by a guard ({Trigger}).")]
+    public static partial void CommandRefused(ILogger logger, string commandId, string title, BaletteExecutionTrigger trigger);
+
+    [LoggerMessage(15, LogLevel.Error, "A guard of the command '{CommandId}' ({Title}) failed; the command was refused.")]
+    public static partial void GuardFailed(ILogger logger, string commandId, string title, Exception exception);
+
+    [LoggerMessage(16, LogLevel.Warning, "An ancestor of the command '{CommandId}' ({Title}) cannot be found - not registered, out of reach with IncludeRegisteredCommands off, or nested deeper than 32 levels - so its guard cannot be asked; the command was refused.")]
+    public static partial void AncestorMissing(ILogger logger, string commandId, string title);
+
     [LoggerMessage(8, LogLevel.Warning, "Loading the command history failed; the palette starts without recents, pins and frecency.")]
     public static partial void HistoryLoadFailed(ILogger logger, Exception exception);
 

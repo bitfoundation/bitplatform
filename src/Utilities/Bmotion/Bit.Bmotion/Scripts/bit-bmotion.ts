@@ -219,23 +219,28 @@ export function flipRadiusFrames(radius: number, sx: number, sy: number): Keyfra
 //
 
 let _rafId: number | null = null;
-// Set of engine DotNetObjectReferences. Using a set (rather than a single global) means
-// multiple Blazor roots / engine instances sharing this module each get ticked, instead of a
-// second startRafLoop silently hijacking the loop from the first.
-const _engines = new Set<DotNet.DotNetObject>();
+// The engines the loop ticks, by a key each engine's interop gives it. Using a map (rather than a single global)
+// means multiple Blazor roots / engine instances sharing this module each get ticked, instead of a second
+// startRafLoop silently hijacking the loop from the first. It is keyed, not a set of the refs themselves, because
+// Blazor revives a new DotNetObject wrapper every time it marshals the same DotNetObjectReference: the wrapper
+// stopRafLoop receives is never the one startRafLoop stored, so removing by identity would never remove anything.
+const _engines = new Map<string, DotNet.DotNetObject>();
 
-export function startRafLoop(dotnetRef: DotNet.DotNetObject): void {
-    _engines.add(dotnetRef);
+export function startRafLoop(key: string, dotnetRef: DotNet.DotNetObject): void {
+    _engines.set(key, dotnetRef);
     if (_rafId === null) _rafId = requestAnimationFrame(_tick);
 }
 
-export function stopRafLoop(dotnetRef?: DotNet.DotNetObject): void {
-    // With an argument, stop only that engine; without one, stop everything (back-compat).
-    if (dotnetRef) _engines.delete(dotnetRef);
+export function stopRafLoop(key?: string | null): void {
+    // With a key, stop only that engine; without one, stop everything (back-compat).
+    if (key) _engines.delete(key);
     else _engines.clear();
     if (_engines.size === 0 && _rafId !== null) {
         cancelAnimationFrame(_rafId);
         _rafId = null;
+        // Work queued while the loop was running counted on its next tick, so it never got a frame of its own:
+        // the frame just cancelled was the only one that would have run it.
+        if (_beforeFrame.size > 0) _scheduleOwnFrame();
     }
 }
 
@@ -245,7 +250,8 @@ export function stopRafLoop(dotnetRef?: DotNet.DotNetObject): void {
 const _beforeFrame = new Set<() => void>();
 let _ownFrame: number | null = null;
 
-function _requestBeforeFrame(callback: () => void): void {
+// Exported for the JS tests only.
+export function _requestBeforeFrame(callback: () => void): void {
     _beforeFrame.add(callback);
     if (_rafId === null) _scheduleOwnFrame();
 }
@@ -264,13 +270,20 @@ function _runBeforeFrame(): void {
 }
 
 function _tick(timestamp: number): void {
+    // The id this frame was scheduled under. On WebAssembly the work below runs .NET synchronously, and .NET can stop
+    // the loop (an engine whose last animation just finished) - and start it again, scheduling a frame of its own -
+    // before this tick returns. A tick that finds the loop no longer on its own frame leaves it as it is: scheduling
+    // the next frame anyway would run a second chain beside the new one (every engine ticked twice a frame, and only
+    // one of the chains cancellable), or keep ticking a stopped loop for one empty frame.
+    const self = _rafId;
     _runBeforeFrame();
+    if (_rafId !== self) return;
     if (_engines.size === 0) {
         _rafId = null;
         if (_beforeFrame.size > 0) _scheduleOwnFrame();
         return;
     }
-    for (const ref of _engines) {
+    for (const ref of _engines.values()) {
         try {
             // invokeMethod is synchronous in Blazor WASM  C# does all animation math here
             const updates = ref.invokeMethod<{ [elementId: string]: BmStyleMap } | null>('ComputeFrame', timestamp);
@@ -286,6 +299,7 @@ function _tick(timestamp: number): void {
             console.error('bmotion: ComputeFrame tick failed', e);
         }
     }
+    if (_rafId !== self) return;
     _rafId = requestAnimationFrame(_tick);
 }
 
@@ -419,9 +433,10 @@ export function prefersReducedMotion(): boolean {
         matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
-// Live prefers-reduced-motion change notifications. Keyed by engine DotNetObjectReference so
-// each engine can subscribe/unsubscribe independently and we only keep one media-query listener.
-const _reducedMotionRefs = new Set<DotNet.DotNetObject>();
+// Live prefers-reduced-motion change notifications. Keyed like the rAF loop's engines (a fresh wrapper arrives
+// with every call, so the refs themselves can't be told apart) so each engine can subscribe/unsubscribe
+// independently and we only keep one media-query listener.
+const _reducedMotionRefs = new Map<string, DotNet.DotNetObject>();
 let _reducedMotionMql: MediaQueryList | null = null;
 let _reducedMotionListener: ((e: MediaQueryListEvent) => void) | null = null;
 
@@ -429,7 +444,7 @@ function _ensureReducedMotionListener(): void {
     if (_reducedMotionMql || typeof matchMedia !== 'function') return;
     _reducedMotionMql = matchMedia('(prefers-reduced-motion: reduce)');
     _reducedMotionListener = (e: MediaQueryListEvent) => {
-        for (const ref of _reducedMotionRefs) {
+        for (const ref of _reducedMotionRefs.values()) {
             try { ref.invokeMethodAsync('OnReducedMotionChanged', e.matches); }
             catch { /* a disposed/faulted engine ref must not break the others */ }
         }
@@ -439,13 +454,13 @@ function _ensureReducedMotionListener(): void {
     else if (_reducedMotionMql.addListener) _reducedMotionMql.addListener(_reducedMotionListener);
 }
 
-export function watchReducedMotion(dotnetRef: DotNet.DotNetObject): void {
-    _reducedMotionRefs.add(dotnetRef);
+export function watchReducedMotion(key: string, dotnetRef: DotNet.DotNetObject): void {
+    _reducedMotionRefs.set(key, dotnetRef);
     _ensureReducedMotionListener();
 }
 
-export function unwatchReducedMotion(dotnetRef: DotNet.DotNetObject): void {
-    _reducedMotionRefs.delete(dotnetRef);
+export function unwatchReducedMotion(key: string): void {
+    _reducedMotionRefs.delete(key);
     if (_reducedMotionRefs.size === 0 && _reducedMotionMql && _reducedMotionListener) {
         if (_reducedMotionMql.removeEventListener) _reducedMotionMql.removeEventListener('change', _reducedMotionListener);
         else if (_reducedMotionMql.removeListener) _reducedMotionMql.removeListener(_reducedMotionListener);

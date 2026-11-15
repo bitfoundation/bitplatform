@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 
 namespace Bit.Bmotion;
 /// <summary>
@@ -104,20 +105,39 @@ public sealed class BmotionInterop : IBmotionInterop
 
     private async ValueTask<IJSObjectReference> Module() => await _moduleTask.Value;
 
+    // The key the module's engine registries (the rAF loop, the reduced-motion watchers) know a reference by.
+    // Blazor hands JS a brand-new DotNetObject wrapper every time it marshals the same DotNetObjectReference,
+    // so a registry holding the wrappers themselves could never find the one to remove: a stopped engine would
+    // keep being ticked, and every restart would add another. Shared across interop instances, and released with the
+    // reference. The counter is only unique within this .NET runtime, but a page can hold several - a Server circuit
+    // and a WebAssembly runtime (InteractiveAuto, or mixed render modes) - that all share the one JS module, so every
+    // key starts with an id drawn at random for this runtime.
+    private static readonly ConditionalWeakTable<object, string> _refKeys = new();
+    private static readonly string _runtimeKey = Guid.NewGuid().ToString("N");
+    private static long _lastRefKey;
+
+    private static string KeyOf(object dotnetRef)
+        => _refKeys.GetValue(dotnetRef, static _ => string.Create(System.Globalization.CultureInfo.InvariantCulture,
+            $"{_runtimeKey}:{Interlocked.Increment(ref _lastRefKey)}"));
+
     // ── rAF loop ──────────────────────────────────────────────────────────────
 
     /// <summary>
     /// Start the JS rAF loop. The loop calls <c>dotnetRef.invokeMethod('ComputeFrame', timestamp)</c>
-    /// synchronously each tick (Blazor WASM) and applies the returned style updates.
+    /// synchronously each tick (Blazor WASM) and applies the returned style updates. Starting it again with
+    /// the same reference keeps a single registration.
     /// </summary>
     public async ValueTask StartRafLoopAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(DotNetObjectReference<T> dotnetRef) where T : class
-        => await (await Module()).InvokeVoidAsync("startRafLoop", dotnetRef);
+    {
+        ArgumentNullException.ThrowIfNull(dotnetRef);
+        await (await Module()).InvokeVoidAsync("startRafLoop", KeyOf(dotnetRef), dotnetRef);
+    }
 
     /// <summary>Stop the JS rAF loop for the given engine reference (or all engines when null).</summary>
     public async ValueTask StopRafLoopAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(DotNetObjectReference<T>? dotnetRef = null) where T : class
     {
         if (!_moduleTask.IsValueCreated) return;
-        await (await Module()).InvokeVoidAsync("stopRafLoop", dotnetRef);
+        await (await Module()).InvokeVoidAsync("stopRafLoop", dotnetRef is null ? null : KeyOf(dotnetRef));
     }
 
     // ── Reduced motion (accessibility) ────────────────────────────────────────
@@ -133,13 +153,17 @@ public sealed class BmotionInterop : IBmotionInterop
     /// <c>OnReducedMotionChanged(bool)</c> on the engine ref whenever the OS preference changes.
     /// </summary>
     public async ValueTask WatchReducedMotionAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(DotNetObjectReference<T> dotnetRef) where T : class
-        => await (await Module()).InvokeVoidAsync("watchReducedMotion", dotnetRef);
+    {
+        ArgumentNullException.ThrowIfNull(dotnetRef);
+        await (await Module()).InvokeVoidAsync("watchReducedMotion", KeyOf(dotnetRef), dotnetRef);
+    }
 
     /// <summary>Unsubscribes the engine ref from <c>prefers-reduced-motion</c> change notifications.</summary>
     public async ValueTask UnwatchReducedMotionAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(DotNetObjectReference<T> dotnetRef) where T : class
     {
+        ArgumentNullException.ThrowIfNull(dotnetRef);
         if (!_moduleTask.IsValueCreated) return;
-        await (await Module()).InvokeVoidAsync("unwatchReducedMotion", dotnetRef);
+        await (await Module()).InvokeVoidAsync("unwatchReducedMotion", KeyOf(dotnetRef));
     }
 
     // ── Style application ─────────────────────────────────────────────────────
@@ -240,12 +264,16 @@ public sealed class BmotionInterop : IBmotionInterop
 
     /// <summary>Run a FLIP animation via the Web Animations API.</summary>
     public async ValueTask PlayWaapiFlipAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(
-        string elementId, double dx, double dy, double sx, double sy,
-        double durationMs, string easingStr, string? finalTransform,
-        double originX, double originY, DotNetObjectReference<T>? dotnetRef) where T : class
-        => await (await Module()).InvokeVoidAsync(
-            "playWaapiFlip", elementId, dx, dy, sx, sy, durationMs, easingStr, finalTransform,
-            originX, originY, dotnetRef);
+        string elementId, BmotionFlip flip, string? finalTransform, DotNetObjectReference<T>? dotnetRef) where T : class
+        => await (await Module()).InvokeVoidAsync("playWaapiFlip", WaapiFlipArgs(elementId, flip, finalTransform, dotnetRef));
+
+    /// <summary>
+    /// The arguments of <c>playWaapiFlip</c>, in its parameter order. The one place <see cref="BmotionFlip"/> is
+    /// flattened for it, so the test fake records exactly what this bridge sends.
+    /// </summary>
+    internal static object?[] WaapiFlipArgs(string elementId, BmotionFlip flip, string? finalTransform, object? dotnetRef)
+        => [elementId, flip.Dx, flip.Dy, flip.Sx, flip.Sy, flip.DurationMs, flip.Easing, finalTransform,
+            flip.OriginX, flip.OriginY, dotnetRef];
 
     public async ValueTask<BmotionBoundingRect?> MeasureAndHoldLayoutAsync(string elementId, BmotionMeasureOptions options,
         bool translate, bool scale, double anchorX, double anchorY)
@@ -260,10 +288,15 @@ public sealed class BmotionInterop : IBmotionInterop
     public async ValueTask ReleaseLayoutHoldAsync(string elementId)
         => await (await Module()).InvokeVoidAsync("releaseLayoutHold", elementId);
 
-    public async ValueTask PlayLayoutCrossfadeAsync(string leadId, string followId, double dx, double dy, double sx, double sy,
-        double durationMs, string easingStr, double originX, double originY)
-        => await (await Module()).InvokeVoidAsync(
-            "playLayoutCrossfade", leadId, followId, dx, dy, sx, sy, durationMs, easingStr, originX, originY);
+    public async ValueTask PlayLayoutCrossfadeAsync(string leadId, string followId, BmotionFlip flip)
+        => await (await Module()).InvokeVoidAsync("playLayoutCrossfade", LayoutCrossfadeArgs(leadId, followId, flip));
+
+    /// <summary>
+    /// The arguments of <c>playLayoutCrossfade</c>, in its parameter order. The one place <see cref="BmotionFlip"/> is
+    /// flattened for it, so the test fake records exactly what this bridge sends.
+    /// </summary>
+    internal static object?[] LayoutCrossfadeArgs(string leadId, string followId, BmotionFlip flip)
+        => [leadId, followId, flip.Dx, flip.Dy, flip.Sx, flip.Sy, flip.DurationMs, flip.Easing, flip.OriginX, flip.OriginY];
 
     public async ValueTask CancelLayoutCrossfadeAsync(string elementId)
         => await (await Module()).InvokeVoidAsync("cancelLayoutCrossfade", elementId);

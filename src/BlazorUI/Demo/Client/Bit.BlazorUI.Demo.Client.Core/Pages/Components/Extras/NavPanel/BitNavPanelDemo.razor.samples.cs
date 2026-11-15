@@ -208,7 +208,7 @@ private List<BitNavItem> headerTextNavItems = CreateBasicNavItems();
                  OnSearch=""v => lastSearchedTerm = v""
                  SearchFilter=""(item, term) => item.Text.StartsWith(term, StringComparison.OrdinalIgnoreCase)""
                  SearchBoxPlaceholder=""Search in menu items...""
-                 EmptyListMessage=""There is no item found."" />
+                 NoResultsText=""There is no item found."" />
 </div>";
     private readonly string example5CsharpCode = @"
 private bool searchIsOpen;
@@ -531,7 +531,7 @@ private readonly BitNavPanelParams[] navPanelParams =
     {
         ExpandOnHover = true,
         SearchBoxPlaceholder = ""Find a page..."",
-        EmptyListMessage = ""No page matches."",
+        NoResultsText = ""No page matches."",
         ToggleAriaLabel = ""Collapse or expand the menu"",
         SearchAnnouncementProvider = count => count == 1 ? ""One page matches."" : $""{count} pages match."",
     }

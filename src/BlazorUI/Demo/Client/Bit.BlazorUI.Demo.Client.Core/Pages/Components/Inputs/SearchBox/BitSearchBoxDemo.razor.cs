@@ -351,7 +351,7 @@ public partial class BitSearchBoxDemo
             Name = "NoResultsText",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The text rendered in the callout when the search finds no suggest item.",
+            Description = "The text rendered, and announced, in the callout when the search finds no suggest item. Defaults to BitStrings.NoResultsFound (\"No results found\").",
         },
         new()
         {

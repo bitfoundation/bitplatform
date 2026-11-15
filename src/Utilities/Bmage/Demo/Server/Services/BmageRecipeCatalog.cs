@@ -1177,6 +1177,77 @@ public static class BmageRecipeCatalog
                     "carry the photo's location. Malformed or hostile archives throw ImageDocumentFormatException and leave " +
                     "nothing allocated."
         },
+        new()
+        {
+            Id = "document-scan",
+            Title = "Turn a photographed page into a clean scan",
+            Intent = "Check a photo of a document is sharp, level its tilted lines, make it black ink on white paper under uneven light, and save it small.",
+            Keywords = "document scan scanner page receipt deskew skew tilt level documentskew sharpness blur blurry imagesharpness adaptive threshold sauvola binarize shadow black white 1-bit indexed png maxcolors barcode qr bbscanner",
+            RunsIn = "Anywhere",
+            SeeAlso = "/scan",
+            Code = """
+                using Bit.Bmage;
+                using Bit.Bmage.Analysis;
+                using Bit.Bmage.Pipeline;
+
+                using var photo = await processor.DecodeAsync(bytes);
+
+                // Measured, not applied: both depend on the pixels, so record their result.
+                if (ImageSharpness.Measure(photo) < minimumSharpness)   // chosen from your own good and bad samples
+                    return Results.BadRequest("The photo is blurred; take it again.");
+
+                var pipeline = ImagePipeline.Create();
+                if (DocumentSkew.Estimate(photo) is { Confidence: > 0.3 } skew)
+                    pipeline = pipeline.Rotate(skew.Angle, Rgba32.White, expandCanvas: false);
+                pipeline = pipeline.AdaptiveThreshold(radius: 18);    // about the height of a line of text
+
+                using var scan = await pipeline.ExecuteAsync(photo);
+                var png = await processor.EncodeAsync(scan, new ImageExportOptions
+                {
+                    Format    = ImageFormat.Png,
+                    MaxColors = 2,                                     // a 1-bit indexed PNG
+                });
+                """,
+            Notes = "ImageSharpness depends on the content as well as the focus, so no fixed threshold suits every kind of " +
+                    "image: set it from a few good and bad examples of what your users send. DocumentSkew.Estimate returns the " +
+                    "clockwise turn that levels the lines; below a confidence of about 0.3 leave the page as it is. The adaptive " +
+                    "threshold compares each pixel with the window around it, so a shadow across the page neither blackens the " +
+                    "paper nor loses the text; its radius should be about a line of text. Read barcodes or QR codes from the photo, " +
+                    "not the thresholded scan: with the Bit.Bmage.BbScanner package, photo.ReadBarcodes() decodes the Bmage " +
+                    "pixels directly and retries a soft photo sharpened, then enlarged."
+        },
+        new()
+        {
+            Id = "palette-png-gif-favicon",
+            Title = "Indexed PNG, GIF and favicons",
+            Intent = "Write a logo, icon or screenshot as a small palette PNG or a GIF, or make a favicon.ico with several sizes.",
+            Keywords = "indexed png palette png8 maxcolors dither quantize colours gif encode favicon ico icon icoencoder createfavicon small file logo screenshot",
+            RunsIn = "Anywhere",
+            SeeAlso = "/formats",
+            Code = """
+                using Bit.Bmage;
+                using Bit.Bmage.Codecs;
+                using Bit.Bmage.Codecs.Ico;
+
+                // At most 64 colours: exact for a logo with fewer, often a third of the full-colour PNG's size.
+                var logo = await processor.EncodeAsync(image, new ImageExportOptions
+                {
+                    Format    = ImageFormat.Png,
+                    MaxColors = 64,
+                    Dither    = false,          // flat artwork; leave it on for gradients and photos
+                });
+
+                // GIF: one frame, 256 colours, one transparent colour.
+                var gif = await processor.EncodeAsync(image, new ImageExportOptions { Format = ImageFormat.Gif });
+
+                // favicon.ico at 16, 32 and 48 pixels, the image fitted on transparency.
+                var favicon = IcoEncoder.CreateFavicon(image);
+                """,
+            Notes = "MaxColors reduces a photo's colours to the palette, which changes them, so it is off unless set; an " +
+                    "image with no more colours than allowed keeps every pixel. In the browser the managed encoder writes " +
+                    "indexed PNG and GIF, since no canvas does. GIF has no partial transparency: a pixel under half opaque " +
+                    "becomes transparent. Icon images are at most 256 pixels either way; CreateFavicon resizes for you."
+        },
     ];
 
     /// <summary>The listing: every recipe without its code and notes, for picking one.</summary>

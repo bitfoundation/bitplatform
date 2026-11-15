@@ -136,7 +136,7 @@ public partial class BitFileInputDemo
             Name = "ErrorMessage",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The message shown under the browse button for a rejection of the whole selection the app decided on its own (a server that refused the upload, a cross-field rule), apart from the message of each file the component rejects itself. It marks the file input invalid, is referenced by the browse button's aria-describedby and is announced as it appears."
+            Description = "The message shown under the browse button for a rejection of the whole selection the app decided on its own (a server that refused the upload, a cross-field rule), apart from the message of each file the component rejects itself. It marks the file input invalid, is referenced by the browse button's aria-describedby and is announced as it appears. Inside an EditForm, ShowValidationMessage shows the messages of the cascading EditContext in this same place while it is not set."
         },
         new()
         {
@@ -376,6 +376,13 @@ public partial class BitFileInputDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Whether to display a remove button next to each file in the file list, allowing individual file removal."
+        },
+        new()
+        {
+            Name = "ShowValidationMessage",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Shows the messages the cascading EditContext holds for the bound field under the browse button, where ErrorMessage goes, so an EditForm needs no ValidationMessage component beside it. The browse button references them through aria-describedby, so they are read out when it takes the focus; they are not announced as they appear, since a submit validates every field at once. An ErrorMessage or ErrorMessageTemplate of the app's own wins the place while it is set, and a file the component rejects on its own still says why in the list."
         },
         new()
         {

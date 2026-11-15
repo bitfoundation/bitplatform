@@ -23,11 +23,16 @@ public static class QrEncoder
     /// <param name="level">The error correction level.</param>
     /// <param name="maskPattern">The data mask to apply, 0 to 7.</param>
     /// <param name="minimumVersion">Forces a version of at least this number.</param>
+    /// <param name="structuredAppend">
+    /// Writes a structured append header ahead of the data: the symbol's position from 0, the number of symbols, and
+    /// the parity byte of the whole message.
+    /// </param>
     public static BbBitMatrix Encode(
         string content,
         BbQrErrorCorrectionLevel level = BbQrErrorCorrectionLevel.M,
         int maskPattern = 0,
-        int minimumVersion = 1)
+        int minimumVersion = 1,
+        (int Index, int Count, int Parity)? structuredAppend = null)
     {
         ArgumentNullException.ThrowIfNull(content);
         ArgumentOutOfRangeException.ThrowIfNegative(maskPattern);
@@ -36,13 +41,22 @@ public static class QrEncoder
         var mode = ChooseMode(content);
         var payload = mode == ModeByte ? Encoding.UTF8.GetBytes(content) : [];
 
-        var version = ChooseVersion(content, payload, mode, level, minimumVersion)
+        var headerBits = structuredAppend is null ? 0 : 20;
+        var version = ChooseVersion(content, payload, mode, level, minimumVersion, headerBits)
             ?? throw new ArgumentException("The content does not fit in any QR Code version.", nameof(content));
 
         var ecBlocks = version.GetEcBlocksForLevel(level);
         var totalDataBits = ecBlocks.TotalDataCodewords * 8;
 
         var bits = new BitWriter();
+        if (structuredAppend is { } header)
+        {
+            bits.Append(0x03, 4);
+            bits.Append(header.Index, 4);
+            bits.Append(header.Count - 1, 4);
+            bits.Append(header.Parity, 8);
+        }
+
         bits.Append(mode, 4);
         var characterCount = mode == ModeByte ? payload.Length : content.Length;
         bits.Append(characterCount, BbQrBitStreamParser.GetCharacterCountBits(version, mode));
@@ -121,7 +135,7 @@ public static class QrEncoder
     }
 
     private static BbQrVersion? ChooseVersion(
-        string content, byte[] payload, int mode, BbQrErrorCorrectionLevel level, int minimumVersion)
+        string content, byte[] payload, int mode, BbQrErrorCorrectionLevel level, int minimumVersion, int headerBits)
     {
         for (var number = Math.Max(1, minimumVersion); number <= 40; number++)
         {
@@ -136,7 +150,7 @@ public static class QrEncoder
                 _ => payload.Length * 8,
             };
 
-            if (4 + countBits + dataBits <= capacityBits)
+            if (headerBits + 4 + countBits + dataBits <= capacityBits)
             {
                 return version;
             }

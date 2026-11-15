@@ -1,4 +1,5 @@
 //+:cnd:noEmit
+using System.Reflection;
 using Boilerplate.Shared.Features.Identity.OAuth;
 
 namespace Boilerplate.Server.Api.Features.Identity.OAuth.Services;
@@ -27,6 +28,14 @@ public static class OAuthProtectedResource
     }
 
     /// <summary>
+    /// The bit platform template version this project was made from or last upgraded to, the one <c>bit.json</c>
+    /// records (See BitTemplateVersion in Boilerplate.Server.Api.csproj). Null when the build found no bit.json.
+    /// </summary>
+    public static string? BitTemplateVersion { get; } = typeof(OAuthProtectedResource).Assembly
+        .GetCustomAttributes<AssemblyMetadataAttribute>()
+        .FirstOrDefault(attribute => attribute.Key is "BitTemplateVersion")?.Value is { Length: > 0 } version ? version : null;
+
+    /// <summary>
     /// The document itself. The issuer is passed in so every caller derives it the one way, <c>GetIssuer()</c> - a
     /// client that discovers one issuer here and another there aborts on the mismatch (RFC 9207).
     /// </summary>
@@ -39,7 +48,10 @@ public static class OAuthProtectedResource
             authorization_servers = new[] { issuer },
             scopes_supported = OAuthResources.ScopesFor(resourcePath),
             bearer_methods_supported = new[] { "header" },
-            resource_documentation = $"{issuer}/scalar"
+            resource_documentation = $"{issuer}/scalar",
+            // RFC 9728 §2 allows parameters of its own. Anonymous like the rest of the document, so a monitor seeing
+            // this app for the first time can tell it is a bit Boilerplate app, and how old, before asking for a token.
+            bit_template_version = BitTemplateVersion
         };
     }
 }

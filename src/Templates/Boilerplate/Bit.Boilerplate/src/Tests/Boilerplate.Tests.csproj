@@ -26,6 +26,10 @@
     </ItemGroup>
 
     <ItemGroup>
+        <EmbeddedResource Include="Features\Attachments\Assets\*" LogicalName="%(Filename)%(Extension)" />
+    </ItemGroup>
+
+    <ItemGroup>
         <Using Include="System.Net" />
         <Using Include="System.Net.Http.Headers" />
         <Using Include="System.Net.Http.Json" />

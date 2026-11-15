@@ -1,0 +1,167 @@
+﻿@page "/components/avatargroup"
+@page "/components/avatar-group"
+
+<PageOutlet Url="components/avatargroup"
+            Title="AvatarGroup"
+            Description="BitAvatarGroup draws the avatars of a group of people as a row of overlapping coins, with a +N coin for the ones that do not fit." />
+
+<DemoPage Name="AvatarGroup"
+          SecondaryNames="@(["Facepile", "PersonaGroup", "AvatarStack"])"
+          Description="BitAvatarGroup draws the avatars of a group of people - the members of a team, the people on a document - as a row of overlapping BitPersona coins, with a +N coin standing in for the ones past MaxDisplayed."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          SubEnums="componentSubEnums"
+          CssVariables="componentCssVariables"
+          GitHubExtrasUrl="AvatarGroup/BitAvatarGroup.razor"
+          GitHubDemoUrl="Extras/AvatarGroup/BitAvatarGroupDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            To use this component, you need to install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Extras" Target="_blank">
+                <BitTag Reversed
+                        Text="Bit.BlazorUI.Extras"
+                        Color="BitColor.SecondaryBackground"
+                        IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            nuget package, as described in the Optional steps of the
+            <BitLink Href="/getting-started">Getting started</BitLink> page.
+        </BitText>
+        <br />
+        <BitText>
+            Each avatar is a <BitLink Href="/components/persona">BitPersona</BitLink> that shows only its coin, named after
+            its person to the screen readers. It is a button where the group has an OnItemClick, and a link where its item
+            has an Href. The overflow coin names the people it hides, and is a button where the group has an OnOverflowClick.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+            <div>The people of the group, as a picture or the initials of their name. Hover an avatar for the name.</div>
+            <br />
+            <div>
+                <BitAvatarGroup Items="people" AriaLabel="Project team" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Overflow" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <div>
+                MaxDisplayed is the number of avatars drawn before the rest are counted by the overflow coin, whose tooltip
+                lists them. OverflowAriaLabelFormat is its name to the screen readers ({0} is the count, {1} the names).
+            </div>
+            <br />
+            <div>
+                <div class="example-stack">
+                    <BitAvatarGroup Items="people" MaxDisplayed="3" AriaLabel="Project team" />
+                    <BitAvatarGroup Items="people" MaxDisplayed="4" OverflowAriaLabelFormat="and {0} other people: {1}" AriaLabel="Project team" />
+                </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Presence" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+            <div>The Presence of an item is drawn as a dot on its coin, and read out with its name.</div>
+            <br />
+            <div>
+                <BitAvatarGroup Items="presentPeople" Size="BitPersonaSize.Size40" AriaLabel="Online now" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Spread" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div>Spread lays the avatars out side by side, with a gap between them, instead of overlapping them.</div>
+            <br />
+            <div>
+                <BitAvatarGroup Items="people" MaxDisplayed="4" Spread AriaLabel="Project team" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Click" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                OnItemClick makes every avatar a button, and OnOverflowClick makes the overflow coin one, handed the items it
+                stands in for - to open the full list, most of the time.
+            </div>
+            <br />
+            <div>
+                <BitAvatarGroup Items="people"
+                                MaxDisplayed="3"
+                                AriaLabel="Project team"
+                                OnItemClick="(BitAvatarGroupItem item) => clickedPerson = item.Text"
+                                OnOverflowClick="HandleOverflowClick" />
+                <br />
+                <br />
+                <div>Clicked: <b>@clickedPerson</b></div>
+                <div>Hidden: <b>@hiddenPeople</b></div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Links" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <div>An item with an Href is a link, to the profile of its person most of the time.</div>
+            <br />
+            <div>
+                <BitAvatarGroup Items="linkedPeople" AriaLabel="Reviewers" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Disabled" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <div>A disabled group disables every avatar and the overflow coin; IsDisabled disables one item.</div>
+            <br />
+            <div>
+                <div class="example-stack">
+                    <BitAvatarGroup Items="people" MaxDisplayed="3" Disabled AriaLabel="Project team"
+                                    OnItemClick="(BitAvatarGroupItem _) => { }" />
+                    <BitAvatarGroup Items="partlyDisabledPeople" AriaLabel="Project team"
+                                    OnItemClick="(BitAvatarGroupItem _) => { }" />
+                </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Color" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+            <div>
+                A coin with no picture is given a color picked from the name of its person, so neighbours tell apart; the
+                CoinColor of an item takes its place.
+            </div>
+            <br />
+            <div>
+                <BitAvatarGroup Items="coloredPeople" Size="BitPersonaSize.Size40" AriaLabel="Project team" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Size" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+            <div>Size is the size of every avatar of the group, the overflow coin included.</div>
+            <br />
+            <div>
+                <div class="example-stack">
+                    <BitAvatarGroup Items="people" MaxDisplayed="3" Size="BitPersonaSize.Size24" AriaLabel="Project team" />
+                    <BitAvatarGroup Items="people" MaxDisplayed="3" Size="BitPersonaSize.Size32" AriaLabel="Project team" />
+                    <BitAvatarGroup Items="people" MaxDisplayed="3" Size="BitPersonaSize.Size48" AriaLabel="Project team" />
+                    <BitAvatarGroup Items="people" MaxDisplayed="3" Size="BitPersonaSize.Size72" AriaLabel="Project team" />
+                </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+            <div>
+                Classes and Styles reach the root, the avatars and the overflow coin, and the --bit-AvatarGroup-* variables
+                restyle the defaults: here a larger overlap, and an overflow coin of the primary color.
+            </div>
+            <br />
+            <div>
+                <div class="example-stack">
+                    <BitAvatarGroup Items="people"
+                                    MaxDisplayed="4"
+                                    AriaLabel="Project team"
+                                    Style="--bit-AvatarGroup-overlap: 0.4; --bit-AvatarGroup-overflow-background: var(--bit-clr-pri); --bit-AvatarGroup-overflow-color: var(--bit-clr-pri-text);" />
+                    <BitAvatarGroup Items="people"
+                                    MaxDisplayed="4"
+                                    AriaLabel="Project team"
+                                    Classes="@(new() { Root = "custom-group", Overflow = "custom-overflow" })" />
+                </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+            <div>Use BitAvatarGroup in right-to-left (RTL).</div>
+            <br />
+            <div dir="rtl">
+                <BitAvatarGroup Dir="BitDir.Rtl" Items="rtlPeople" MaxDisplayed="3" AriaLabel="اعضای تیم" OverflowAriaLabelFormat="{0} نفر دیگر: {1}" />
+            </div>
+        </DemoExample>
+    </Examples>
+</DemoPage>

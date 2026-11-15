@@ -90,6 +90,18 @@
             </label>
         }
 
+        @if (_toolId is "draw" or "marker" or "highlighter")
+        {
+            <label class="bink-field" title="Turn a sketched line, arrow, box, ellipse, triangle or diamond into a clean shape">
+                Shapes
+                <select value="@_recognition" @onchange="OnRecognitionChanged" aria-label="Shape recognition">
+                    <option value="@BinkShapeRecognitionMode.Off">Stay ink</option>
+                    <option value="@BinkShapeRecognitionMode.OnHold">Hold to snap</option>
+                    <option value="@BinkShapeRecognitionMode.Always">Always snap</option>
+                </select>
+            </label>
+        }
+
         @if (_toolId == "text")
         {
             <label class="bb-check">
@@ -169,6 +181,7 @@
             </label>
             <button type="button" class="btn btn-secondary" disabled="@_document.IsEmpty" @onclick="ExportSvgAsync">Export SVG</button>
             <button type="button" class="btn btn-secondary" disabled="@_document.IsEmpty" @onclick="ExportPngAsync">Export PNG</button>
+            <button type="button" class="btn btn-secondary" disabled="@_document.IsEmpty" title="A vector PDF, made in .NET: erasers, layers and transparency included" @onclick="ExportPdfAsync">Export PDF</button>
             <label class="bb-check" title="Export only what is selected, cropped to it, rather than the whole drawing">
                 <input type="checkbox" checked="@_exportSelection" @onchange="e => _exportSelection = e.Value is true" />
                 Selection only
@@ -372,6 +385,28 @@ _shapeStyle = <span class="k">new</span> BinkShapeStyle
         path is a <code>BinkPathElement</code> holding curves in any number of sub-paths; both save, paste, export and
         synchronize like every other element.
     </p>
+    <p class="bb-card-desc">
+        <strong>Points</strong> (<code>BinkNodeEditTool</code>) edits any of them, and lines, point by point: click one,
+        drag a corner, an end, an anchor or a curve's control point. Moving an anchor carries its control points, so the
+        curves beside it keep their shape. Each drag is one undo step; Tab steps through the points, the arrow keys
+        nudge, Delete removes a corner.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Sketch a shape</h3>
+    <p class="bb-card-desc">
+        With the pen, marker or highlighter, draw a box, a loop, a triangle, a diamond, a line or an arrow (its head drawn
+        in the same stroke), and rest the pen at the end for half a second before lifting: the stroke becomes the clean
+        shape. <strong>Shapes</strong> beside the tools switches between that, every stroke, and none. The stroke is
+        committed first and replaced in a second step, so <strong>Undo</strong> once brings your ink back. Writing,
+        curves and open turns stay ink.
+    </p>
+    <pre class="bb-code">_tool = <span class="k">new</span> BinkDrawTool { ShapeRecognition = BinkShapeRecognitionMode.OnHold };
+
+<span class="c">// Or without a tool, on any points:</span>
+<span class="k">if</span> (BinkShapeRecognizer.Recognize(stroke.Points) <span class="k">is</span> { } shape)
+    document.AddElement(shape.CreateElement(<span class="k">new</span> BinkShapeStyle { StrokeWidth = 3f }));</pre>
 </div>
 
 <div class="bb-card">
@@ -654,7 +689,10 @@ _document.MarkSaved(revision);   <span class="c">// what changed while it was be
     private int _starPoints = 5;
     private string _eraserMode = "Stroke";
     private string _shapeKind = "rect";
-    private IBinkTool _tool = new BinkDrawTool();
+    private const BinkShapeRecognitionMode InitialRecognition = BinkShapeRecognitionMode.OnHold;
+    private BinkShapeRecognitionMode _recognition = InitialRecognition;
+    // The pen the board opens with recognizes shapes as the selector beside the tools says it does.
+    private IBinkTool _tool = new BinkDrawTool { ShapeRecognition = InitialRecognition };
     private BinkBrush _brush = new BinkPenBrush { Width = 4f, Color = BinkColor.Parse("#111827") };
     private BinkShapeStyle _shapeStyle = new() { StrokeColor = BinkColor.Parse("#111827"), StrokeWidth = 3f };
     private string? _message;
@@ -671,6 +709,7 @@ _document.MarkSaved(revision);   <span class="c">// what changed while it was be
         ("highlighter", "Highlighter", "Translucent highlighter"),
         ("eraser", "Eraser", "Eraser: whole strokes, parts of strokes or a pixel mask, chosen beside the tools"),
         ("shape", "Shape", "Rectangles, ellipses, lines, arrows, polygons, stars and outlines: pick which beside the tools"),
+        ("points", "Points", "Edit the points of lines, polygons and paths: drag a point, Tab between them, Delete removes one"),
         ("text", "Text", "Text, typed into a real text box"),
         ("pan", "Pan", "Pan and pinch zoom"),
     ];
@@ -764,15 +803,15 @@ _document.MarkSaved(revision);   <span class="c">// what changed while it was be
                 break;
             case "draw":
                 _brush = new BinkPenBrush { Width = _width, Color = color };
-                _tool = new BinkDrawTool();
+                _tool = new BinkDrawTool { ShapeRecognition = _recognition };
                 break;
             case "marker":
                 _brush = new BinkMarkerBrush { Width = MathF.Max(_width * 1.5f, 6f), Color = color };
-                _tool = new BinkDrawTool();
+                _tool = new BinkDrawTool { ShapeRecognition = _recognition };
                 break;
             case "highlighter":
                 _brush = new BinkHighlighterBrush { Width = MathF.Max(_width * 4f, 16f), Color = color with { A = 255 } };
-                _tool = new BinkDrawTool();
+                _tool = new BinkDrawTool { ShapeRecognition = _recognition };
                 break;
             case "eraser":
                 // The eraser makes its own brush from its radius; the canvas brush is left for the drawing tools.
@@ -803,10 +842,20 @@ _document.MarkSaved(revision);   <span class="c">// what changed while it was be
             case "text":
                 _tool = new BinkTextTool { Style = BinkTextStyle.Default with { FontSize = MathF.Max(_width * 4f, 14f), Color = color, Bold = _bold } };
                 break;
+            case "points":
+                // Edits what is selected straight away, or what is clicked next.
+                _tool = new BinkNodeEditTool();
+                break;
             case "pan":
                 _tool = new BinkPanTool();
                 break;
         }
+    }
+
+    private void OnRecognitionChanged(ChangeEventArgs e)
+    {
+        _recognition = Enum.TryParse(e.Value?.ToString(), out BinkShapeRecognitionMode mode) ? mode : BinkShapeRecognitionMode.Off;
+        SelectTool(_toolId);
     }
 
     private void OnShapeKindChanged(ChangeEventArgs e)
@@ -1148,4 +1197,14 @@ _document.MarkSaved(revision);   <span class="c">// what changed while it was be
 
     private Task ExportPngAsync()
         => _canvas?.SavePngAsync("whiteboard.png", new BinkPngExportOptions { Region = ExportRegion, Padding = 24f, Scale = 2f }) ?? Task.CompletedTask;
+
+    private async Task ExportPdfAsync()
+    {
+        if (_canvas is null) return;
+        BinkPdfExportResult result = await _canvas.SavePdfAsync("whiteboard.pdf", new BinkPdfExportOptions { Region = ExportRegion, Padding = 24f, Title = "Whiteboard" });
+        // The standard PDF fonts cover Western European text only, and only embedded PNG and JPEG pictures can go in.
+        _message = result.IsComplete
+            ? $"Exported a PDF of {result.Bytes.Length / 1024.0:0.#} KB."
+            : $"Exported a PDF; left out {result.SkippedTextElements} text element(s) the standard fonts cannot show and {result.SkippedImages} picture(s). SVG keeps both.";
+    }
 }

@@ -11,7 +11,7 @@ namespace Bit.BlazorUI;
 /// <see cref="Static"/> set once over a region is how a single "pause animations" switch reaches every shimmer in it.
 /// The text, the content and its length are left out on purpose: they are what makes one shimmer the one it is.
 /// </remarks>
-public class BitTextShimmerParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitTextShimmerParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitTextShimmer"/> cascading parameters within <see cref="BitParams"/>.

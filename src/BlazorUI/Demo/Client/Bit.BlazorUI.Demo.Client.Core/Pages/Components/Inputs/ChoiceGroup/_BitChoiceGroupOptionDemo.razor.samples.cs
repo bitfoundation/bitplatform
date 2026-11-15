@@ -337,25 +337,16 @@ private string twoWayValue = ""A"";
 private string? uncontrolledValue = ""A"";";
 
     private readonly string example9RazorCode = @"
-<style>
-    .validation-message {
-        color: red;
-    }
-</style>
-
 <EditForm Model=""@validationModel"" OnValidSubmit=""@HandleValidSubmit"" OnInvalidSubmit=""@HandleInvalidSubmit"" novalidate>
     <DataAnnotationsValidator />
     
-    <BitChoiceGroup Label=""Pick one"" Required aria-describedby=""pick-one-error""
+    <BitChoiceGroup Label=""Pick one"" Required ShowValidationMessage
                     TItem=""BitChoiceGroupOption<string>"" TValue=""string"" @bind-Value=""validationModel.Value"">
         <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
         <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
         <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
         <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
     </BitChoiceGroup>
-    <div id=""pick-one-error"">
-        <ValidationMessage For=""@(() => validationModel.Value)"" />
-    </div>
     
     <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
 </EditForm>";

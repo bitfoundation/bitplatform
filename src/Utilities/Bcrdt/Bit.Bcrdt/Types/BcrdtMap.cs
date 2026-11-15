@@ -190,6 +190,12 @@ public sealed class BcrdtMap : BcrdtAbstractType, IEnumerable<KeyValuePair<strin
     /// <summary>Reads a nested set, or <see langword="null"/> if the key holds something else.</summary>
     public BcrdtSet? GetSet(string key) => Get(key) as BcrdtSet;
 
+    /// <summary>Reads a nested counter, or <see langword="null"/> if the key holds something else.</summary>
+    public BcrdtCounter? GetCounter(string key) => Get(key) as BcrdtCounter;
+
+    /// <summary>Reads a nested XML fragment, or <see langword="null"/> if the key holds something else.</summary>
+    public BcrdtXmlFragment? GetXmlFragment(string key) => Get(key) as BcrdtXmlFragment;
+
     /// <summary>Returns the nested map at a key, creating it if the key is empty.</summary>
     /// <remarks>
     /// The create-if-absent pattern is safe here in a way it is not in a database: if two clients
@@ -207,6 +213,22 @@ public sealed class BcrdtMap : BcrdtAbstractType, IEnumerable<KeyValuePair<strin
 
     /// <summary>Returns the nested set at a key, creating it if the key is empty.</summary>
     public BcrdtSet EnsureSet(string key) => Ensure(key, static () => new BcrdtSet());
+
+    /// <summary>Returns the nested counter at a key, creating it if the key is empty.</summary>
+    /// <remarks>
+    /// Two clients creating the counter concurrently each get one, and one of the two wins - with the
+    /// increments made into the losing one. Create counters up front, where several clients will
+    /// change them from the start.
+    /// </remarks>
+    public BcrdtCounter EnsureCounter(string key) => Ensure(key, static () => new BcrdtCounter());
+
+    /// <summary>Returns the nested XML fragment at a key, creating it if the key is empty.</summary>
+    /// <remarks>
+    /// One tree per entry - a rich document per note, say. As with <see cref="EnsureMap"/>, two clients
+    /// creating it concurrently each get one and one of the two wins, so create it where the entry is
+    /// created.
+    /// </remarks>
+    public BcrdtXmlFragment EnsureXmlFragment(string key) => Ensure(key, static () => new BcrdtXmlFragment());
 
     private T Ensure<T>(string key, Func<T> factory) where T : BcrdtAbstractType
     {

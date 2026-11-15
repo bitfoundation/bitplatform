@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <!-- Single-target: this is a measurement tool, not a shipped/multi-TFM library. net11.0 matches
+             global.json's pinned SDK. -->
+        <TargetFramework>net11.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <IsPackable>false</IsPackable>
+        <!-- BenchmarkDotNet refuses to measure an unoptimized assembly, so keep the JIT-relevant optimizations on
+             even when the project is built without -c Release. Numbers should still come from a Release run. -->
+        <Optimize>true</Optimize>
+        <!-- Not a unit-test project: it's a console harness run manually (dotnet run -c Release), so it
+             deliberately does NOT set IsTestProject. -->
+        <!-- BL0006: the render benchmarks host the components in a renderer of their own (HeadlessRenderer), which
+             has to subclass Blazor's RenderTree types to exist at all. -->
+        <!-- BL0016: the "JS interop call" it flags is the stand-in runtime forwarding to itself; there is no browser to fail. -->
+        <NoWarn>$(NoWarn);BL0006;BL0016</NoWarn>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="BenchmarkDotNet" Version="0.15.8" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\Bit.Bdnd\Bit.Bdnd.csproj" />
+    </ItemGroup>
+
+</Project>

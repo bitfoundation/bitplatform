@@ -319,6 +319,16 @@ private readonly BitBreadcrumbParams[] breadcrumbParams =
 </BitBreadcrumb>";
 
     private readonly string example12RazorCode = @"
+<BitBreadcrumb TItem=""BitBreadcrumbOption"" MaxDisplayedItems=""3"" OverflowIndex=""1"" Responsive>
+    <BitBreadcrumbOption Text=""Home"" Href=""/components/breadcrumb"" />
+    <BitBreadcrumbOption Text=""Documents"" Href=""/components/breadcrumb"" />
+    <BitBreadcrumbOption Text=""Projects"" Href=""/components/breadcrumb"" />
+    <BitBreadcrumbOption Text=""2026"" Href=""/components/breadcrumb"" />
+    <BitBreadcrumbOption Text=""Reports"" Href=""/components/breadcrumb"" />
+    <BitBreadcrumbOption Text=""Q3"" Href=""/components/breadcrumb"" IsSelected />
+</BitBreadcrumb>";
+
+    private readonly string example13RazorCode = @"
 @foreach (var color in colors)
 {
     <BitBreadcrumb TItem=""BitBreadcrumbOption"" Color=""color"" MaxDisplayedItems=""3"" OverflowIndex=""2"">
@@ -343,7 +353,7 @@ private readonly BitBreadcrumbParams[] breadcrumbParams =
     ];
 }";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example14RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 <link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
 
@@ -378,7 +388,7 @@ private readonly BitBreadcrumbParams[] breadcrumbParams =
     <BitBreadcrumbOption Text=""Laptops"" Icon=""@BitIconInfo.Bi(""laptop-fill"")"" IsSelected />
 </BitBreadcrumb>";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example15RazorCode = @"
 @foreach (var size in sizes)
 {
     <BitBreadcrumb TItem=""BitBreadcrumbOption"" Size=""size"" MaxDisplayedItems=""3"" OverflowIndex=""2"" Wrap>
@@ -393,7 +403,7 @@ private readonly BitBreadcrumbParams[] breadcrumbParams =
     private readonly BitSize[] sizes = [BitSize.Small, BitSize.Medium, BitSize.Large];
 }";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example16RazorCode = @"
 <style>
     .custom-class {
         font-style: italic;
@@ -504,7 +514,7 @@ private readonly BitBreadcrumbParams[] breadcrumbParams =
     </BitBreadcrumb>
 </div>";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example17RazorCode = @"
 <BitBreadcrumb Dir=""BitDir.Rtl"" TItem=""BitBreadcrumbOption"" MaxDisplayedItems=""3"" OverflowIndex=""2"">
     <BitBreadcrumbOption Text=""پوشه اول"" />
     <BitBreadcrumbOption Text=""پوشه دوم"" />

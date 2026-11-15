@@ -10,7 +10,7 @@
     "ResxPaths": [ "/src/Shared/**/*.resx", "/src/Server/**/*.resx", "/src/Client/**/*.resx", "/src/Workbench/**/*.resx" ],
 
     "OpenAI": {
-        "Model": "gpt-5.6-luna",
+        "Model": "gpt-6-luna",
         "Endpoint": "https://api.openai.com/v1",
         "Endpoint__Samples": "Google AI Studio: https://generativelanguage.googleapis.com/v1beta/openai",
         "Endpoint__Samples2": "xAI(Grok): https://api.x.ai/v1 | Azure AI Foundry: https://YOUR_AZURE_FOUNDRY.services.ai.azure.com/openai/v1",

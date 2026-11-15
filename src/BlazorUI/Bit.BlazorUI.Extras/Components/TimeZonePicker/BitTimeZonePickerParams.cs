@@ -21,7 +21,7 @@ namespace Bit.BlazorUI;
 /// <see cref="BitInputBaseParams{TValue}"/> gives: the first is a dictionary the field writes into, and the second is
 /// read while the parameters are still being set, before any cascade has been applied.
 /// </remarks>
-public class BitTimeZonePickerParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitTimeZonePickerParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitTimeZonePicker{TValue}"/> cascading parameters within <see cref="BitParams"/>.
@@ -124,7 +124,7 @@ public class BitTimeZonePickerParams : BitComponentBaseParams, IBitComponentPara
     /// <summary>
     /// The message to show, and to announce, when the search result of the time zone list is empty.
     /// </summary>
-    public string? NoResultsMessage { get; set; }
+    public string? NoResultsText { get; set; }
 
     /// <summary>
     /// The custom template to show when the search result of the time zone list is empty.
@@ -200,6 +200,13 @@ public class BitTimeZonePickerParams : BitComponentBaseParams, IBitComponentPara
     /// What a screen reader announces for the number of time zones a search term leaves in the list.
     /// </summary>
     public Func<int, string?>? SearchResultsAnnouncement { get; set; }
+
+    /// <summary>
+    /// Shows the messages the cascading EditContext holds for the bound field under the field, where the
+    /// <c>ErrorMessage</c> of the picker goes, so an <c>EditForm</c> needs no <c>ValidationMessage</c> component beside
+    /// it. An error message of the app's own wins the place while it is set.
+    /// </summary>
+    public bool? ShowValidationMessage { get; set; }
 
     /// <summary>
     /// The size of the time zone picker.
@@ -324,9 +331,9 @@ public class BitTimeZonePickerParams : BitComponentBaseParams, IBitComponentPara
             bitTimeZonePicker.TakeFromCascade(nameof(NoOffset), NoOffset.Value, static p => p.NoOffset, static (p, v) => p.NoOffset = v);
         }
 
-        if (NoResultsMessage.HasValue())
+        if (NoResultsText.HasValue())
         {
-            bitTimeZonePicker.TakeFromCascade(nameof(NoResultsMessage), NoResultsMessage, static p => p.NoResultsMessage, static (p, v) => p.NoResultsMessage = v);
+            bitTimeZonePicker.TakeFromCascade(nameof(NoResultsText), NoResultsText, static p => p.NoResultsText, static (p, v) => p.NoResultsText = v);
         }
 
         if (NoResultsTemplate is not null)
@@ -402,6 +409,11 @@ public class BitTimeZonePickerParams : BitComponentBaseParams, IBitComponentPara
         if (SearchResultsAnnouncement is not null)
         {
             bitTimeZonePicker.TakeFromCascade(nameof(SearchResultsAnnouncement), SearchResultsAnnouncement, static p => p.SearchResultsAnnouncement, static (p, v) => p.SearchResultsAnnouncement = v);
+        }
+
+        if (ShowValidationMessage.HasValue)
+        {
+            bitTimeZonePicker.TakeFromCascade(nameof(ShowValidationMessage), ShowValidationMessage.Value, static p => p.ShowValidationMessage, static (p, v) => p.ShowValidationMessage = v);
         }
 
         if (Size.HasValue)

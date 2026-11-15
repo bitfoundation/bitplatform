@@ -49,11 +49,32 @@ internal static class SourceFiles
     /// </remarks>
     public static string Root { get; } = FindRoot();
 
+    /// <summary>
+    /// The folder the AI packages share (Bit.BlazorUI.AI/Bit.BlazorUI.AI, Bit.BlazorUI.AI/Bit.BlazorUI.AI.Core, ...).
+    /// </summary>
+    public const string AiPackagesFolder = "Bit.BlazorUI.AI";
+
     /// <summary>The full path of a file or folder, given by its path relative to the src/BlazorUI folder.</summary>
+    /// <remarks>
+    /// A path that starts with the name of one of the AI packages (<c>"Bit.BlazorUI.AI"</c>, <c>"Bit.BlazorUI.AI.Core"</c>,
+    /// ...) is read in that package's folder under <see cref="AiPackagesFolder"/>, so a test names a package the way it
+    /// names the others, by its project's name.
+    /// </remarks>
     public static string GetPath(params string[] segments)
     {
-        return Path.GetFullPath(Path.Combine([Root, .. segments]));
+        return Path.GetFullPath(Path.Combine([Root, .. Locate(segments)]));
     }
+
+    /// <summary>The path of the folder of a package's project, relative to the src/BlazorUI folder.</summary>
+    /// <param name="project">The project's name, such as <c>Bit.BlazorUI.Extras</c> or <c>Bit.BlazorUI.AI.Core</c>.</param>
+    public static string GetProjectFolder(string project) =>
+        IsAiPackage(project) ? Path.Combine(AiPackagesFolder, project) : project;
+
+    private static string[] Locate(string[] segments) =>
+        segments is [var first, ..] && IsAiPackage(first) ? [AiPackagesFolder, .. segments] : segments;
+
+    private static bool IsAiPackage(string project) =>
+        project == AiPackagesFolder || project.StartsWith(AiPackagesFolder + ".", StringComparison.Ordinal);
 
     /// <summary>
     /// The full path of a folder, given by its path relative to the src/BlazorUI folder; fails when it is missing.

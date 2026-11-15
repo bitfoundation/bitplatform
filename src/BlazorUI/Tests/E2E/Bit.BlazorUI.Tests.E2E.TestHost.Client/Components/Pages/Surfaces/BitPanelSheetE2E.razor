@@ -1,0 +1,52 @@
+﻿@page "/e2e/panel-sheet"
+
+@* BitPanel as a bottom sheet with snap points: one bound two ways, at three fractions of the viewport's height; one with a
+   snap point in pixels; one whose SnapPoint the page holds one way at the middle one. Each writes whether it is open and
+   the snap point it is at into lines of its own. The rows of the first are buttons: a region that scrolls has to hold
+   something the keyboard reaches it by. *@
+
+<PageTitle>BitPanel bottom sheet E2E</PageTitle>
+
+<h1>BitPanel bottom sheet</h1>
+
+<button id="open-sheet" @onclick="() => _isOpen = true">Open sheet</button>
+<button id="open-pixels" @onclick="() => _isPixelsOpen = true">Open pixels sheet</button>
+<button id="open-held" @onclick="() => _isHeldOpen = true">Open held sheet</button>
+
+<span id="sheet-open">@_isOpen</span>
+<span id="sheet-snap">@(_snapPoint?.ToString() ?? "null")</span>
+<span id="held-open">@_isHeldOpen</span>
+
+<BitPanel Id="sheet"
+          @bind-IsOpen="_isOpen"
+          @bind-SnapPoint="_snapPoint"
+          Placement="BitPlacement.Bottom"
+          SnapPoints="_fractions"
+          HeaderText="Sheet">
+    @for (var i = 1; i <= 40; i++)
+    {
+        <button class="e2e-sheet-row">Row @i</button>
+    }
+</BitPanel>
+
+<BitPanel Id="pixels" @bind-IsOpen="_isPixelsOpen" Placement="BitPlacement.Bottom" SnapPoints="_pixels" HeaderText="Pixels">
+    Content
+</BitPanel>
+
+<BitPanel Id="held" @bind-IsOpen="_isHeldOpen" SnapPoint="1" Placement="BitPlacement.Bottom" SnapPoints="_fractions" HeaderText="Held">
+    Content
+</BitPanel>
+
+<div style="position: fixed; right: 8px; top: 8px;">
+    <E2EStatus />
+</div>
+
+@code {
+    private bool _isOpen;
+    private bool _isPixelsOpen;
+    private bool _isHeldOpen;
+    private int? _snapPoint;
+
+    private static readonly double[] _fractions = [0.3, 0.6, 0.9];
+    private static readonly double[] _pixels = [250, 0.8];
+}

@@ -258,6 +258,15 @@
             the latter alone). In an <code>EditForm</code>, <code>InvalidErrorMessage</code>,
             <code>OutOfRangeErrorMessage</code> and <code>DisallowedTimeErrorMessage</code> word the three ways a
             typed time is refused.
+            <br /><br />
+            <code>ShowValidationMessage</code> shows the messages of the form under the picker, where
+            <code>ErrorMessage</code> goes, so the form below needs no <code>ValidationMessage</code> component. The
+            input is described by them through <code>aria-describedby</code>, so they are read out when it takes the
+            focus, and an <code>ErrorMessage</code> of the app's own wins the place while it is set. They are not
+            announced as they appear: a submit validates every field at once, and a message from each of them read out
+            in a row would bury the form under its own errors. A <code>BitParams</code> holding a
+            <code>BitTimePickerParams</code> with <code>ShowValidationMessage</code> turns it on for every picker inside
+            it.
         </div>
         <br />
         <div class="example-content">
@@ -286,8 +295,8 @@
                                AllowedMinutes="@(m => m % 15 == 0)"
                                InvalidErrorMessage="Invalid Time!"
                                OutOfRangeErrorMessage="The time must be between 08:00 and 18:00!"
-                               DisallowedTimeErrorMessage="Only quarter hours can be booked!" />
-                <ValidationMessage For="@(() => formValidationTimePickerModel.Time)" />
+                               DisallowedTimeErrorMessage="Only quarter hours can be booked!"
+                               ShowValidationMessage />
             </div>
             <br />
             <BitButton ButtonType="BitButtonType.Submit">

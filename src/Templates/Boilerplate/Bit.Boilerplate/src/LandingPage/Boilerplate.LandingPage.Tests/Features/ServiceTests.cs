@@ -78,36 +78,63 @@ public class ServiceTests
     }
 
     [TestMethod]
-    public async Task AQuestion_Should_BeAnsweredInStreamedFrames()
+    public async Task AQuestion_Should_BeAnsweredInStreamedEvents()
     {
-        using var socket = await Connect(server.Address.GetLeftPart(UriPartial.Authority));
+        var events = await Ask(LandingSites.All[0].Key, "What does it cost?");
 
-        await Send(socket, new LandingChatAsk(LandingSites.All[0].Key, "en-US", [new(true, "What does it cost?")]));
-        var frames = await ReceiveAnswer(socket);
-
-        Assert.IsTrue(frames[^1].Done, frames[^1].Error);
-        Assert.IsGreaterThan(1, frames.Count(frame => frame.Delta is not null), "The answer streams in pieces.");
-        Assert.IsFalse(string.IsNullOrWhiteSpace(string.Concat(frames.Select(frame => frame.Delta))));
+        Assert.IsInstanceOfType<BitAiMessageStartedEvent>(events[0]);
+        Assert.IsInstanceOfType<BitAiMessageCompletedEvent>(events[^1]);
+        Assert.IsGreaterThan(1, events.OfType<BitAiTextDeltaEvent>().Count(), "The answer streams in pieces.");
+        Assert.IsFalse(string.IsNullOrWhiteSpace(string.Concat(events.OfType<BitAiTextDeltaEvent>().Select(delta => delta.Delta))));
     }
 
     [TestMethod]
-    public async Task ATooLongQuestion_Should_GetAnError()
+    public async Task TheGallerysChat_Should_AnswerToo()
     {
-        using var socket = await Connect(server.Address.GetLeftPart(UriPartial.Authority));
+        var events = await Ask(LandingChatContext.Gallery, "Which sample suits a café?");
 
-        await Send(socket, new LandingChatAsk(LandingSites.All[0].Key, "en-US", [new(true, new string('a', 1001))]));
-        var frames = await ReceiveAnswer(socket);
+        Assert.IsInstanceOfType<BitAiMessageCompletedEvent>(events[^1]);
+        Assert.IsNotEmpty(events.OfType<BitAiTextDeltaEvent>());
+    }
 
-        Assert.IsNotNull(frames.Single().Error);
+    [TestMethod]
+    [DataRow("ecommerce", 1001)]
+    [DataRow("no-such-sample", 10)]
+    public async Task AQuestionTheServerWontTake_Should_GetAnErrorTheVisitorCanRead(string site, int length)
+    {
+        var events = await Ask(site, new string('a', length));
+
+        var error = (BitAiErrorEvent)events.Single();
+        Assert.IsFalse(error.Error.IsRetryable, "Asking the same again gets the same answer.");
+        Assert.AreEqual("That question is too long to answer here. Please ask it more briefly.", error.Error.Message);
     }
 
     [TestMethod]
     public async Task AChatFromAnotherSite_Should_BeRefused()
     {
-        await Assert.ThrowsExactlyAsync<WebSocketException>(() => Connect("https://attacker.example"));
+        var refused = await Assert.ThrowsExactlyAsync<HttpRequestException>(() => Ask(LandingSites.All[0].Key, "Hi", origin: "https://attacker.example"));
+        Assert.AreEqual(HttpStatusCode.Forbidden, refused.StatusCode);
 
         using var plain = await client.GetAsync("api/chat");
         Assert.AreEqual(HttpStatusCode.BadRequest, plain.StatusCode, "The chat only speaks WebSocket.");
+    }
+
+    [TestMethod]
+    public async Task UnderBlazorServer_TheChat_Should_BeAnsweredWithoutASocket()
+    {
+        await using var scope = server.Services.CreateAsyncScope();
+        var backend = scope.ServiceProvider.GetRequiredService<ILandingChatBackend>();
+
+        var request = BitAiWireSerializer.SerializeRequest(BitAiWireSerializer.ToSnapshot(Question(LandingSites.All[0].Key, "What does it cost?")));
+        List<BitAiEvent> events = [];
+
+        await foreach (var item in backend.StreamAsync(request, CancellationToken.None))
+        {
+            events.Add(BitAiWireSerializer.Deserialize(item)!);
+        }
+
+        Assert.IsInstanceOfType<BitAiMessageCompletedEvent>(events[^1]);
+        Assert.IsNotEmpty(events.OfType<BitAiTextDeltaEvent>());
     }
 
     [TestMethod]
@@ -142,53 +169,37 @@ public class ServiceTests
         return await storeClient.GetStringAsync(sample.Path.Length is 0 ? LandingRoutes.Home : sample.Path);
     }
 
-    private static async Task<ClientWebSocket> Connect(string origin)
+    private static BitAiRequest Question(string site, string question)
     {
-        var socket = new ClientWebSocket();
-        socket.Options.SetRequestHeader("Origin", origin);
+        var conversation = new BitAiConversation();
+        conversation.AddMessage(BitAiRole.User, question);
 
-        try
+        return new(conversation.Messages)
         {
-            await socket.ConnectAsync(new UriBuilder(new Uri(server.Address, "api/chat")) { Scheme = "ws" }.Uri, CancellationToken.None);
-            return socket;
-        }
-        catch
-        {
-            socket.Dispose();
-            throw;
-        }
+            Context = new Dictionary<string, object?> { [LandingChatContext.Site] = site, [LandingChatContext.Culture] = "en-US" }
+        };
     }
 
-    private static Task Send(ClientWebSocket socket, LandingChatAsk ask)
+    /// <summary>Asks over the chat's WebSocket, the way the page does (See LandingAiTransport).</summary>
+    private static async Task<List<BitAiEvent>> Ask(string site, string question, string? origin = null)
     {
-        var bytes = JsonSerializer.SerializeToUtf8Bytes(ask, LandingJsonContext.Default.LandingChatAsk);
-
-        return socket.SendAsync(new ArraySegment<byte>(bytes), WebSocketMessageType.Text, true, CancellationToken.None);
-    }
-
-    private static async Task<List<LandingChatFrame>> ReceiveAnswer(ClientWebSocket socket)
-    {
-        List<LandingChatFrame> frames = [];
-        var buffer = new byte[16 * 1024];
-        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(60));
-
-        while (true)
+        var transport = new BitAiWebSocketTransport(new Uri(server.Address, "api/chat"), new()
         {
-            using var message = new MemoryStream();
-            WebSocketReceiveResult result;
-
-            do
+            ConfigureSocket = (options, _) =>
             {
-                result = await socket.ReceiveAsync(new ArraySegment<byte>(buffer), timeout.Token);
-                message.Write(buffer, 0, result.Count);
+                options.SetRequestHeader("Origin", origin ?? server.Address.GetLeftPart(UriPartial.Authority));
+                return ValueTask.CompletedTask;
             }
-            while (result.EndOfMessage is false);
+        });
 
-            var frame = JsonSerializer.Deserialize(message.ToArray(), LandingJsonContext.Default.LandingChatFrame)!;
-            frames.Add(frame);
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(60));
+        List<BitAiEvent> events = [];
 
-            if (frame.Done || frame.Error is not null)
-                return frames;
+        await foreach (var evt in transport.StreamAsync(Question(site, question), timeout.Token))
+        {
+            events.Add(evt);
         }
+
+        return events;
     }
 }

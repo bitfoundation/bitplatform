@@ -205,14 +205,20 @@ public partial class BitAccordionList<[DynamicallyAccessedMembers(DynamicallyAcc
     [Parameter] public bool ExpandOnPrint { get; set; }
 
     /// <summary>
-    /// The custom content to render in place of the items when the list has none.
+    /// The custom content to render in place of the items when the list has none, which takes the place of
+    /// <see cref="EmptyText"/>.
     /// </summary>
     /// <remarks>
     /// A list built from <see cref="Options"/> or <see cref="ChildContent"/> only knows it is empty once its
     /// options have had their turn to register, so the empty content of one takes the render after the first
     /// rather than the first itself; a list built from <see cref="Items"/> shows it right away.
     /// </remarks>
-    [Parameter] public RenderFragment? EmptyContent { get; set; }
+    [Parameter] public RenderFragment? EmptyTemplate { get; set; }
+
+    /// <summary>
+    /// The text to render in place of the items when the list has none. Default: <see cref="BitStrings.NoItemsFound"/>.
+    /// </summary>
+    [Parameter] public string? EmptyText { get; set; }
 
     /// <summary>
     /// The space (gap) in pixels between the accordion items, overriding the --bit-AccordionList-gap CSS variable.
@@ -1684,9 +1690,8 @@ public partial class BitAccordionList<[DynamicallyAccessedMembers(DynamicallyAcc
     // A list built from options only knows it is empty once its options have had their turn to register, so
     // the empty content of one waits for the marker rendered behind them rather than flashing on the first
     // render, before any of them has registered.
-    private bool _ShowEmptyContent => EmptyContent is not null
-                                   && _items.Count == 0
-                                   && ((Options ?? ChildContent) is null || _optionsReached);
+    private bool _ShowEmpty => _items.Count == 0
+                              && ((Options ?? ChildContent) is null || _optionsReached);
 
     // The options of the first render have all registered by the time the marker behind them is reached, so the
     // list knows from here on whether it is empty - and the empty content it was given needs a render of its own
@@ -1698,11 +1703,11 @@ public partial class BitAccordionList<[DynamicallyAccessedMembers(DynamicallyAcc
     {
         if (_optionsReached) return;
 
-        var showEmptyContent = _ShowEmptyContent;
+        var showEmpty = _ShowEmpty;
 
         _optionsReached = true;
 
-        if (showEmptyContent is false && _ShowEmptyContent)
+        if (showEmpty is false && _ShowEmpty)
         {
             StateHasChanged();
         }

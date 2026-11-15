@@ -699,6 +699,31 @@ public partial class ProductsPage
 }
 ```
 
+### 5.3 The Page's Head: Search Engines and Link Previews
+
+**Location**: [`/src/Client/Boilerplate.Client.Core/Components/Common/AppPageData.razor`](/src/Client/Boilerplate.Client.Core/Components/Common/AppPageData.razor)
+
+From the values a page gives `AppPageData`, every page gets in its head:
+
+- `<title>` from `PageTitle`, or `Title` when there is none
+- `<meta name="description">` from `Description`, or the app-wide `DescriptionMetaTagValue`
+- `<link rel="canonical">`: the page's own address, with its culture and without its query, so `?utm_source=x` is not a page of its own
+- `og:title`, `og:description`, `og:image`, `og:url`, `og:type`, `og:site_name` and `twitter:card`, which are what a link to the page shows where it is shared. `Image` is the page's own picture, an absolute url, which also gets the large card; without it the app's icon is shared, in the small one. `OpenGraphType` is `website` unless the page sets it, as `ProductPage` does with `product`
+- `<meta name="robots" content="noindex">` when the page's url is marked `[NoIndex]` (see below)
+
+`App.razor` in Server.Web adds the `hreflang` alternates of each page, one per supported culture plus `x-default`. Whatever else a page needs, such as a JSON-LD schema, goes in `<AppPageData><Head>...</Head></AppPageData>`.
+
+Crawlers and link-preview bots read these tags from the first html they get, so they need pre-rendering on (see [Stage 12](/.docs/12-%20Blazor%20Modes,%20PreRendering%20&%20PWA.md)).
+
+**Pages that are not for search engines**: mark the page's `PageUrls` constant with `[NoIndex]`, as `Confirm`, `ForgotPassword`, `ResetPassword`, `OAuthConsent`, `Diagnostic`, `NotFound` and `NotAuthorized` are:
+
+```csharp
+[NoIndex]
+public const string Confirm = "/confirm";
+```
+
+Such a page renders `noindex`, gets an `X-Robots-Tag: noindex` header from Server.Web, which holds with pre-rendering off too, and is left out of `sitemap.xml`. Use it for the steps of a flow the app sends people to and for pages meant for troubleshooting, whose place in the search results takes a visitor nowhere useful. Pages people do search for, such as sign-in and sign-up, stay indexable. Pages behind `[Authorize]` are never in the sitemap anyway.
+
 ---
 
 ### AI Wiki

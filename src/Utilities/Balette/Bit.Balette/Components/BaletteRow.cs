@@ -87,6 +87,18 @@ internal sealed class BalettePageFrame
 
     public bool IsActions { get; init; }
 
+    /// <summary>
+    /// For a page without a <see cref="Command"/>: the command that made it - the handler that returned a
+    /// <see cref="BaletteCommandResult.Page"/>, the row whose action panel it is. Its guard covers the page's rows.
+    /// </summary>
+    public BaletteCommand? Owner { get; init; }
+
+    /// <summary>
+    /// Pushed by something outside the palette - a shortcut or code - on top of whatever page was open, which it has
+    /// nothing to do with: the guards of the pages under it do not cover its rows.
+    /// </summary>
+    public bool Detached { get; set; }
+
     /// <summary>Query to restore when this page is popped.</summary>
     public string QueryBefore { get; init; } = string.Empty;
 

@@ -106,6 +106,14 @@ export async function exportDatabase(databaseName: string): Promise<Uint8Array> 
         throw new Error(`Cache Storage holds no database named '${name}'.`);
     }
 
+    // See the OPFS admin's export: a journal with a header is a write that has not finished, and the
+    // pages alone are then half old and half new.
+    if (await hasHotJournal(cache, path + '-journal')) {
+        throw new Error(
+            `Cache Storage database '${name}' has a rollback journal from a write that has not finished. Open `
+            + 'it once so SQLite rolls the journal back, or wait for the write to commit, then export it.');
+    }
+
     const { size } = await meta.json();
     const image = new Uint8Array(size ?? 0);
     const reads: Promise<void>[] = [];
@@ -146,6 +154,21 @@ export async function importDatabase(databaseName: string, contents: Uint8Array 
     await cache.put(metaUrl(path), new Response(JSON.stringify({ size: bytes.byteLength }), {
         headers: { 'content-type': 'application/json' },
     }));
+}
+
+async function hasHotJournal(cache: Cache, journalPath: string): Promise<boolean> {
+    const meta = await cache.match(metaUrl(journalPath));
+    if (!meta || !((await meta.json())?.size > 0)) {
+        return false;
+    }
+
+    const first = await cache.match(pageUrl(journalPath, 0));
+    if (!first) {
+        return false;
+    }
+
+    // SQLite's own test: a journal is hot when its header is there - the first bytes not zero.
+    return new Uint8Array(await first.arrayBuffer()).subarray(0, 8).some(byte => byte !== 0);
 }
 
 function unavailable(reason: string, environment: Record<string, string>): ProbeResult {
