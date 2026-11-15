@@ -123,8 +123,9 @@ public static class BitDataGridDataProcessor
             if (!columns.TryGetValue(sort.ColumnId, out var column) || column.SortKey is not { } key)
                 continue;
             // A column may supply its own comparer (e.g. a domain ordering the default value comparer
-            // can't express); otherwise the shared null-safe value comparer orders the keys.
-            var comparer = column.Comparer ?? BitDataGridValueComparer.Instance;
+            // can't express); otherwise the shared null-safe value comparer's order is used, through the
+            // comparer it picks for this column's keys (see BitDataGridValueComparer.For).
+            var comparer = column.Comparer ?? BitDataGridValueComparer.For(source.Select(key));
             if (ordered is null)
             {
                 ordered = sort.Direction == BitDataGridSortDirection.Ascending
